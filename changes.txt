@@ -1,0 +1,24 @@
+1.2.0
+- Added ability to pin points - freezing them at their current position
+- Added ability to place remote-controlled and timer bombs (thanks Mart!)
+- Added chainsaw to cut ship in pieces 
+- Added magic swirl force
+
+1.1.0
+ - Completely rewritten all data structures to maximize data locality - a performance gain of 50%!
+ - Rewritten dynamics integration step to make full use of packed SSE floating point instructions on Intel x86
+ - Rewritten dynamics layer as force-based rather than position-based
+ - Revisited tessellation algorithm, cutting in half the number of triangles that have to be rendered
+
+1.0.1
+ - Ship and land textures are now mipmapped
+
+1.0
+ - Sounds and music (on cue)
+ - Textures for ships, land, water, and clouds in the sky
+ - Ropes
+ - Connected component detection for ship pieces, so they hide each other correctly
+ - The strength of the smash and grab tools depends on how long the mouse button is kept pressed for
+ - Menu and keyboard shortcuts (+/-) for zoom
+ - New settings window
+ - Application icon and cursors 

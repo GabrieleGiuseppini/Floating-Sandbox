@@ -1,0 +1,6 @@
+{
+	"structure_image":"ikc_krafting_structure.png",
+	"texture_image":"ikc_krafting_texture.png",
+	"ship_name":"I.K.C. Krafting",
+	"offset":{"x":0.0, "y":-5.0}
+}

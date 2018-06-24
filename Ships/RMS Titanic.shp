@@ -1,0 +1,6 @@
+{
+	"structure_image":"rms_titanic_structure.png",
+	"texture_image":"rms_titanic_texture.png",
+	"ship_name":"R.M.S. Titanic",
+	"offset":{"x":0.0, "y":0.0}
+}
