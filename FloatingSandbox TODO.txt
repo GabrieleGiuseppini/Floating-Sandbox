@@ -1,0 +1,1811 @@
+=================================================
+Current perf
+=================================================
+- fps: 27.1 (Samsung: 23.7 (Krafting)) (Mattia's: 27.5 (Krafting))
+- GameController::DoStep: 33.80%
+	- Ship::Update: 32.75% (Incl) 0.00% (Excl)
+		- UpdateDynamics: 25.79%
+			- UpdateSpringForces: 18.47%
+			- UpdatePointForces: 4.00%
+			- HandleCollisionsWithSeafloor: 2.35%
+			- Integrate: 0.97%
+		- GravitateWater: 4.89%
+		- BalancePressure: 1.23%
+		- UpdateStrains: 0.82%
+		- LeakWater: 0.02%
+	- DiffuseLight: 0.89%
+	- WaterSurface::Update: 0.14%
+		- sinf: 0.10%
+- MainFrame::RenderGame: 59.44%
+	- Ship::Render: 52.65% (Incl) 0.00% (Excl)
+		- ShipRenderContext::RenderSprings: 30.39%
+		- ShipRenderContext::RenderTriangles: 21.66%
+		- ShipRenderContext::RenderRopes: 0.42%
+		- Points::Upload: 0.14%
+	- RenderContext::RenderCloudsEnd: 2.85%
+=================================================
+Prev perf (before point et al destructuring)
+=================================================
+- fps: 17.8/18.1 (Samsung: TBD (Krafting)) (Mattia's: TBD (Krafting))
+- GameController::DoStep: 56.52%
+	- Ship::Update: 55.82% (Incl) 1.50% (Excl)
+		- UpdateDynamics: 41.74%
+			- UpdateSpringForces: 24.76%
+			- UpdatePointForces: 6.77%
+			- HandleCollisionsWithSeafloor: 5.11%
+			- Integrate: 5.08%
+		- GravitateWater: 6.58%
+		- BalancePressure: 5.84%
+		- LeakWater: 0.16%
+	- DiffuseLight: 0.65%
+	- WaterSurface::Update: 0.05%
+- MainFrame::RenderGame: 35.98%
+	- Ship::Render: 31.92% (Incl) 0.39% (Excl)
+		- ShipRenderContext::RenderSprings: 17.91%
+		- ShipRenderContext::RenderTriangles: 13.24%
+		- ShipRenderContext::RenderRopes: 0.30%
+	- RenderContext::RenderCloudsEnd: 1.69%
+=================================================
+
+- Release:
+	- Make some ships
+	- Build and release 1.2.0
+	- Change LinkedIn link
+	- Post to forum
+	- Add to gamejolt
+
+
+- Technical Debt:
+	+ Move definition of ElementIndex et al into GameTypes.h
+	- Move also pinned points to a PinnedPoints class, just like Bombs
+	- Textures are json files, with world sizes, offset, and lighting boolean
+		- SEE MOLESKINE
+		- Then:
+			- Change bomb rendering: takes vector of frame indices, no optionals needed
+			- Remove hardcoded sizes and offsets
+				- Cloud size
+				- Water size
+				- Land size
+				- Bombs sizes and offsets
+
+- Optimizations:	
+	- See if can avoid other IsDeleted checks, via zero'ing of coefficients
+	- UpdatePointForces:
+		- Precalculate things that do not depend on position nor velocity
+			- Stored either in buffers (if we go for exploded Pos, Vel, etc.) or in Point (if we don't go for that)
+			- Technically, would have to store separately effectiveMassMultiplier (*Mass) and effectiveBuoyancy (*Mass)
+				- Test: but could cheat and use water height based on initial positions only, in which case
+				  we store directly StaticForce == Gravity + Water Drag (?REALLY?)
+				  - StaticForce used directly in Integrate() added to Force
+					- Or better if added to Force at UpdatePointDynamics()?
+	- Split Spring::WaterPermeability in two, with pre-calculated values:
+		- WaterGravitationFactor
+		- WaterPropagationFactor
+	- GravitateWater:
+		- Calculate once and for all cos theta's at first iteration
+			- !!! Actually, calculate WaterGravityFactorA = dt*0.6*(1+cos_theta)/2, WaterGravityFactorB = -dt*0.6*(1-cos_theta)/2
+				float cos_theta_select = (1.0f + cos_theta) / 2.0f;
+		                float correction = 0.60f * cos_theta_select * pointA->GetWater() - 0.60f * (1.0f - cos_theta_select) * pointB->GetWater();
+		                correction *= GameParameters::SimulationStepTimeDuration<float>;
+			- Test (check disassembly) with templated lambda (Spring const &)->void
+				- First one calculates factors and stores them in Spring
+				- All others empty
+				- All iters take factors from Spring after calling lambda
+	- If SSE2 works, see if can parallelize also:
+		- BalancePressure, GravitateWater, SpringDynamics
+			- See shuffled loading and storing of 4 arbitrary floats in ETH deck
+	- Water and Land interpolations:
+		- 1: see if it's better to store delta's and/or other pre-calculated things
+		- 2: see if can do semi-integer x-axis interpolation
+
+- Release:
+	- Do final round with all ships
+	- Post on Forum
+
+- Gfx:
+	- Option to enable drawing of force vectors for each point
+	- Texture atlas:
+		- Test first if with a single texture bind per ship (which will look crappy!) there's a significant
+		  performance difference
+			- Check the three boxes
+	- Optimizations:
+		- More connected components => slower (multiple batches); try
+		  to draw one single batch then, using Z buffer
+			- Assign Z based on connected component ID
+		- See if drawing springs & triangles with Z buffer and depth test helps (for springs' fragment shader, may be it takes 
+		  shortcuts if it knows it's behind)
+	- AmbientLightIntensity:
+		+ Use also in RenderContext::RenderStart() for clear (sky) color
+		+ Phase 1: pgup/down
+		- Phase 2: with clock - TBD
+	- Magnifying glass
+		- https://www.opengl.org/discussion_boards/showthread.php/154811-magnifying-glass-effect
+		- https://www.shadertoy.com/view/4tdXDl
+	- ocean depth bitmaps
+	- Save photos (opens SaveAs FileDialog)
+	- Text (for query tool):
+		- see https://github.com/wxWidgets/wxWidgets/blob/master/samples/opengl/pyramid/pyramid.cpp
+
+- Dynamics:
+
+	- Ephemeral Particles:
+		- Carve out room at tail of Points for ephemeral particles
+			- No need to mark as deleted to hide them
+			- Tail managed as circular queue, used when creating new ones - eventually smothering oldest
+			  ones (started more anciently, but not necessarily closest to death as each has own lifetime)
+				- TODO: not really circular queue, dead not last must be reused
+			- Points has new buffers:
+				- EphemeralType (uint8 enum)
+					- None (set at non-ephemeral and at dead ephimerals)
+					- Sparkle
+				- EphemeralLife (float between 0.0 and 1.0)
+				- EphemeralXTODOX: union of structs
+					- SparkleXTODOX:
+						- TODO
+			- Smothering done by Ship (UpdateEphemeralParticles) as:
+				- TODO:
+			- Points methods:
+				- TODO: create/kill, create has first overload that takes all the dynamics params, including Material, and
+				  type-specific params
+		- Rendering:
+			- Points::UploadEphemeralParticles():
+				- (Ship)RenderContext::TODOHERE
+	- Do chainsaw sparkles with Ephemeral Particles
+		- At Ship::Chainsaw
+	- Test:
+		- Self-adjustment of kSpring and kDamp based off paper's formula (H and L bounds)
+		- Debug to see if bounds ever exceeded
+	- See if can draw a bit more often
+	- Frontier:
+		- Only for non-rope points - rope points never take part in frontier
+		- Preliminaries:
+			- Make sure endpoints in triangle are always in CW order
+			- In order to correctly draw dangling (i.e. same connected component) parts on top of all of the connected component's 
+			  frontiers, we'd need to have the dangling parts disconnected from the connected component, which means that we should
+			  not follow ropes during connected component detection
+				- Still vulnerable to dangling parts not connected via ropes (e.g. masts) though: frontier would be drawn on top of it
+				- Might get away with drawing frontiers - *enlarged* - before all of the rest? The enlarged part would be visible
+				  only through holes and around external frontiers
+		
+		- TODO: all the following might have to be revisited
+		- Realize that a node can belong to up to 4 frontiers (center of 4 holes)
+			- And a point deletion might cause a merge of the four
+		- Frontier is set of points, marked as frontier, and connected to each other via 
+		  nextInFrontier * and prevInFrontier * (in CW order) 
+		- Algo:
+			- There are multiple frontiers, 0 is external, N is internal, isolated
+			- Calculate frontier at ship create, based off structural matrix, using geometry
+			- At each point deletion:
+				- 2 cases: OR: only later check if one of the connected points is already a frontier 
+				  (a deleted frontier point is bound to be connected to two other points of the same frontier, for each frontier)
+					- Point deleted is a frontier point:
+						- TODO
+					- Point deleted is NOT a frontier point:
+						- All its connected points become a frontier
+						- If one of the connected points is already a frontier, then the new frontier points
+						  take that frontierId
+						- TODO
+	- Water drag 
+		- The one already there assumes velocity always normal to surface, but we should consider surface normal instead
+	- Experiment with:
+		- Runge-Kutta
+		- Semi-implicit Euler (https://www.scss.tcd.ie/Michael.Manzke/CS7057/cs7057-1516-14-MassSpringSystems-mm.pdf)
+	- Water:
+		- Sinking detection is broken - it currently only considers total water that entered the ship, which comes proportionally to external
+		  water pressure; all this water could be confined to a tiny volume, and yet we trigger sinking
+			- Option 1: make it based on total number of points that have water instead, i.e. wet points
+				- ...which requires Points to keep track of point's water going from 0.0 to > 0.0, at all possible
+				  avenues of change (LeakWater, BalancePressure, etc.)
+				- Or can just be calculated at end of each update with simple pass through water buffer
+			- Option 2: make it based on total number of points whose Y is underwater
+				- Could be done @ Ship::UpdatePoint() when the count of underwater points reaches threshold for the first time
+					- Just reset count before loop
+				- HOWEVER: a big part of the ship could be below water but dry...
+				- So: should try a combination of current mTotalWater and 3/4ths of points below water
+		+ Did original game propagate water also through hull springs? YES. How did hull thin dividers work? THEY DIDN'T WORK
+		+ Add Point::Hull Characteristic, and don't leak/propagate(incl. gravitate) water if at least one of the two points is hull			
+			+ Alternatively: just make a spring hull if one point is hull; test it
+		- BalancePressure: see if shouldn't average water among two points - do we lose waves if we do so?
+		- GravitateWater: can avoid checking sign of cos theta - using minus to still move water from higher to lower?
+		- BalancePressure: use gradient, it seems we stuff too much water into points with already too much water
+		- GravitateWater: try inverse visit (from H to L)
+			- Requires PointerVector::rbegin,rend
+		- Try directional BalancePressure?
+		- Make waves with Shallow Water Equations plus breaking waves
+			- And if frontier works, change height when frontier touches water for the first time
+	- DestroyAt:
+		- Test: Ship::SpringDestroyHandler() only destroys triangles that contain A-B
+			- Should definitely make both A and B leak, as they both now have an adjacent hole
+		
+- Controls:			
+	- SettingsDialog: save settings, and defaults
+		- JSON for both game & render params, assembled & saved by gamecontroller, who also loads it on startup if exists 
+		- GameParameters::ToJson()->picojson::value
+		- GameParameters::FromJson(picojson::value) (sets own)
+		- Save Settings: saves current to personal_settings.json 
+			- where? see wxwidgets or portable way
+				- Standard paths: http://docs.wxwidgets.org/3.1/classwx_standard_paths.html#a4752213ef4d7bdc71170b9e5c3691f0f
+					- Call App::SetAppName() at startup
+					- Pass user folder path to GameController at startup, so latter doesn't have to deal with wxWidgets
+				+ https://softwareengineering.stackexchange.com/questions/3956/best-way-to-save-application-settings/3990#3990?newreg=bffd79f524c14afe84f2178cd3211a94
+			- personal_settings.json loaded at startup if exists, else default_settings.json
+		- Save Settings As: saves with filename, nothing else
+		- Load Settings: loads with filename, changes own settings
+		- Reset Settings: loads default_settings.json, changes own settings
+
+- Sounds:
+	+ Reset sound controller at ResetAndLoadShip()
+	- Water rushing-in
+		- Continuously-playing sound
+		- Volume time-interpolated off total quantity of water that entered ships during step
+			- Communicated via new event
+			- Volume = -1/(Qw+1) + 1
+
+- Histograms:
+	- class Histogram
+		- map<float, float in [0,1]>
+	- class Statistics (various Histograms, etc.)
+		- Histogram pointWaterHistogram
+		- ...
+	- World::GetStatistics() -> Statistics
+		- Visits all points across ships, no need to merge histograms
+		- Exposed by GameController as well
+	- StatisticsDialog
+		- Pre-created member of MainFrame
+			- Has GameController
+		- Shown depending on menu (like LoggingDialog)
+		- exposes Update() invoked by MainFrame, always, after simulation step
+		- Update(): 
+			- if not visible, return;
+			- Get and draw Statistics
+				- Histogram control (panel? Check wx literature)
+
+- Lights
+	+ need Optional()
+	+ Material:
+		+ use picojson
+		+ Material.ElectricalProperties (optional)
+			+ type (Material::ElectricalProperties::ElectricalElementType=lamp, cable, generator)
+			+ flat list of all electrical properties, some apply some don't
+	+ class Lamp()
+		+ points to Point and Point points optionally to ElectricalElement (base abstract of Lamp, Cable, Generator)
+			+ ElectricalElement::GetType(){return mType;}: non-virtual, it's optimized by compiler
+	- Move electrical components to ElectricalComponents class, an ElementContainer but also like bombs, with update and state machines
+	  (but no render)
+		- Buffer of pointers
+		- Buffer of ElementIndex of points
+			- Same at Points: electrical elements are indices
+		- Add additional buffers that might simplify electrical connectivity test, e.g. Type and VisitedGen
+	- Current Propagation Algo (Ship::UpdateCurrentConnectivity()):
+		+ create new generation seq number; if new is 0 => 1
+		- Consider adding a new "ConductsElectricity" buffer to Springs, set to true or folse at Add() depending
+		  on whether or not both endpoints' materials have ConductsElectricity=true
+			- ConductsElectricity replaces all the other useless electrical properties
+			- This simplifies current connectivity graph visit
+			- Alternative is to check at visit time whether other endpoint has a non-None attached ElectricalElement index,
+			  but this means lots of useless cache misses for getting point's buffer content (only a small percentage of points
+			  have an ElectricalElement attached)
+		- ElectricalElement has SetVisited(curGen), bool IsVisited(curGen), operating on buffers
+		- @Sip::Update, electrical section: if mAreElementsDirty: invoke UpdateCurrentConnectivity()
+			- Visit whole electrical graph, as:
+			- For each generator point:
+				- if not visited=>flood all connected ElectricalElements from here
+					- for each node: set to visited
+					- No need to have a visited set, just call ElElement->IsVisited(curGen)
+			- Then, lamps will be considered lighted if visited at this generation
+		- OLD: generators and cumulative current calculation:
+			- visit all generator points and count the points in their graphs; for each connected component:
+				- # nodes in component => current
+				- propagate from each of these points to all adjacent cables until light
+				- at a light: add up all incoming currents (compare seq number to decide whether to zero or not) 
+				  and then lower them by distance(==ohm), and then update gen number of lamp
+		- Then, ElectricalElements::Update(currentGenerationNumber)
+			- Calls Lamp->Update(currentGenerationNumber):
+				- TODO: draw state machine
+				- Looks at own (generationVisitNumber, state) and:
+					- Updates state
+					- Eventually starts flicker state machine:
+						+ Based off clock time, not simulation step
+						- iff: state==On and generationVisitNumber != current
+						- Invokes IGameEventHandler->OnLightFlicker()
+						- Sets gen_number = 0
+							- If revisited, state machine will transition to lighted again
+						- Flicker state machine is based off clock time, not simulation step
+							- Use random choices
+					- Sets own lightIntensity = f(generationVisitNumber, state, flicker state machine)
+		- Then, go ahead with DiffuseLight as now
+	+ Diffusion:
+		+ Can test it by itself, by using light material and by cheating with current!
+		+ After current propagation:
+			+ Zero out mLight of each point (use generation sequence number? useful for other Point properties?)
+				+ No, easier and probably faster to do it in same pass as LeakWater - LeakWaterAndZeroLight()
+		+ Diffusion: propagate mLight to adjacent points (incl. other lamps),
+		  inv. proportional to distance^2, with a graph flood stopping at max distance
+		+ Point.GetColour() takes also into account mLight (from itself, not from lamp) 
+                  and makes alpha blend just like water
+		+ Need "off" color to use at lamp point when Lamp is off (different than structural color),
+		  used when rendering point in springs/triangles/points
+			+ Not used when using textures, of course
+			+ Needs material's Color to split in StructuralColor and RenderColor (set to the same except for lamps)
+	- Diffusion improvement: see if can simply add light (rather than max'ing it)
+		- Need to ensure sum is always < 1.0
+			- May be via adding +1 to distance? 
+	
+
+- Smoke
+	- Smoke-material points, emitting particles with a lifetime and a transparency connected to age
+
+- Multiple ships:
+	- Better after collision detection
+	- When ship loaded (added):
+		- World adds it not to mShips, but as opt<Ship> mPendingShip
+			- Not considered in Update(), but considered in Render()
+		- MainFrame begins new PendingShipPlace tool
+			- OnMouseMove: tell GameController (->World) mouse position as GameController::MovePendingShipTo(screen coords)
+				- Ship::MoveTo(world x, y): 
+					- Moves all Points by (x,y)-mCurrentRepresentativePosition
+						- Ship::mCurrentRepresentativePosition (init'd as {0,0}) tracks current "center"
+					- mCurrentRepresentativePosition = (x,y)
+			- OnLDown:
+				- Tell GameController (DropPendingShip(x, y)) which:
+					- Tells World via World::DropPendingShip(x, y):
+						- Final Ship::MoveTo()
+						- Move ship from mPendingShip into mShips
+					- Fires IGameEventHandler::OnPendingShipPlaced(shipId)
+						- EventTicker: say this and other Reset/Load
+						- SoundController: play sound
+				- Stop PendingShipPlace tool
+
+==============================================================================
+==============================================================================
+==============================================================================
+==============================================================================
+==============================================================================
+==== DONE
+==============================================================================
+==============================================================================
+==============================================================================
+==============================================================================
+==============================================================================
+
++ Build glfw yourself
+	+ clone from git
+	+ build
+	+ fix Ship's CMake
+		+ C:\Users\Neurodancer\source\build\glfw\src\Release
++ move to source/build:
+	+ ShipSandbox
+
+IF WX:
++ build WX (Debug, Release)
++ add WX to CMakeFiles.txt
+	C:\Users\Neurodancer\source\repos\wxWidgets\include
+	C:\Users\Neurodancer\source\repos\wxWidgets\lib\vc_x64_lib
+		names: wxmsw31u[d]_core.lib wxbase31u[d].lib
++ remove titanicapp.*, titanicmain.* from CMakeFiles.txt
++ do a simple main with wx
++ rebuild WX with C++ Runtime being statically linked
++ test
++ see getting rid of whole wx.h and only include wxwindow
++ get rid of GLFW in all source files
++ setup CMakeFiles.txt: Remove GLFW
++ resuscitate old code, merging it with new existing structure:
+	+ mainApp - mainApp class, main #define
+	+ mainFrame - entire frame
++ test	
++ remove titanicapp.*, titanicmain.*, main_old.cpp
++ one-shot timer
++ nuke GLFW from hard disk (repo, build)
++ add logger and fix missing ship
+
++ Get perf baseline and start Readme.md and Changes.txt
+
+===========
++ cherry-pick that typo fix
++ logging window: try http://docs.wxwidgets.org/3.0/classwx_text_ctrl.html
++ rename members of Frame, cleanup code
+
++ Render/Game"Settings" -> "Parameters"
++ LoggingWindow -> "Dialog"
+
++ SettingsDialog:
+	+ Add spacing
+	+ Taller sliders
+	+ Min and Max
+	+ add textboxes 4 vals
+	+ ApplySettings()
+		+ GameController takes (& gives) absolute vals, & provides GetXMax/MinValue() (from YYYParameters)
+		+ Helper funcs in SettingsDialog do conversions
+	+ ReadSettings()
+	+ Other controls for other settings
+	+ rename members, cleanup code
+
++ MainFrame:
+	+ LogWindow bug when minimizing and maximizing main frame
+	+ Do we need mMainGLCanvas and context to be unique_ptr's?
+	+ Render once @ beginning
+		+ Check if OnPaint is the right one
+	+ Maximize
+	+ ReloadLastSelected
+	+ See if canvas.setcontext is necessary
+		+ Watch out for resize
+	+ +/- for zoom *IN MENU*
+		+ remove wxEVT_CHAR_HOOK at panel and use menu hotkey and event instead
+
++ Investigate dirty lines
+
++ Use own exception
+
++ Fix DestroyAt
+	+ Add DestroyRadius to GameParameters (not in SettingsDialog yet)
+
++ Fix final destroyer
+
++ Setup UnitTests
+	+ Build GTest Debug and Release
+	+ Create UnitTests project in CMake
+	+ First unit test: vectors
+
++ GameException: cctor with string
+	+ Utils::Convert(string)->wstring
+
++ Rebuild Devil but make it a dll with static runtime
++ Move DevIL init to GameController
+	+ No DevIL dep's in ShipSandbox
+	+ DevIL_INCLUDEs from GameLib are not public
+
++ Move to picojson
+	+ Nuke SDK
+	+ Remove public-ness of JSonCPP
+
++ Settings: 
+	+ Destroy Radius
+	+ "World"XYZ if really it is world
+
++ Frustum? For 2D? Try Ortho?
+
++ Change MainFrame's build info
+	+ separate Version.h
+
++ Mask with copyright at all source files (copy from XXmain)
+	+ Already capitalized
+	+ Those to be capitalized
+		+ material
+			+ Rename
+			+ cctors:
+				+ from picojson obj
+			+ Create()->UQ_PTR
+				+ private cctor
+				+ all members const
+			+ optional Material::ElectricalProperties
+		+ Also Renderer becomes a namespace, not a class
+		+ render
+			+ Renderer
+			+ move ScreenToWorld here
+			+ All static methods, inline
+		+ util
+		+ phys: 
+			+ Rename as Ship, World, Point, etc.
+			+ TODO: see first if can split into separate files
+				+ commit & push first
+				+ cpp's in namespace
+				+ Physics.h: includes all and each .h and .cpp includes Physics.h 
+			+ Private vs Public attributes:
+				+ No friends
+				+ All members mPrivate
+				+ All getters and setters (when needed)
+		+ vec
+
++ Perf optimizations:
+	+ Move back to baseline
+	+ Take profile X 2
+	+ set these flags and see impact (on Release)
+		+ Ox
+		+ fp:fast
+	+ Flags for non-MSVC:
+				<Compiler>
+					<Add option="-O3" />
+					<Add option="-ffast-math" />
+					<Add option="-fno-math-errno" />
+					<Add option="-funsafe-math-optimizations" />
+					<Add option="-ffinite-math-only" />
+					<Add option="-fno-trapping-math" />
+				</Compiler>
+	+ Make all render() const
+	+ Make all render() inline
+	+ Make all vector funcs inline in .h
+	+ Take full baseline first
+	+ FPS: 17.3/17.7
+	+ We don't need redundant triangles
+		+ Row visit: for each point *after* the very first of a streak, only do triangles up to 90 degrees
+			+ But keep doing all springs
+			+ use boolean isInShip, init=false, set to true at end of single-point processing if point exists and set to false otherwise
+		+ Before: 5231 points, 19932 springs, 19569 triangles
+		+ After: 5231 points, 19932 springs, 9819 triangles
+	+ FPS: 19.2/19.3
+	+ Fix division by zero
+		+ Do fix
+	+ FPS: 19.1
+	+ SSE2:
+		+ Test first: Integrate: 
+			+ 1a: pack Pos, Vel, Force from 2 points into local vec4f
+				+ For loop with two points at a time
+			+ 1b: create buffers with all Pos, Vel, Forces, and call function with restricted pointers: IT USES PACKED SSE's!
+		+ Undo
+	+ Vertex cache optimizations with Forsyth's algo:
+		+ Break out ShipBuilder, friend
+		+ Use own LRU cache and calculate current ACMR for triangles and springs
+			+ Spring ACMR: 0.516807
+			+ Triangle ACMR: 1.01986
+		+ Do triangle vertex cache optimization
+			+ New ACMR: 0.68174
+			+ FPS improvement: 19.1 -> 19.0
+			+ Check if self-covering within same connected component now looks weird
+			+ Test on samsung: 18.5/18.8 -> 18.5/18.6/18.8/19.0
+			+ REVERT, IT'S (MARGINALLY) WORSE!
+		+ Do spring vertex cache optimization
+			+ New ACMR: 0.325156
+			+ New FPS: 19.4/19.7
+	+ FPS: 19.3/19.5
+	+ ShipRendering: upload triangles, ropes, springs only when they change
+		+ Have VBOs per connected component
+	+ FPS: 19.0/19.4/19.7/19.9
+	+ Point & Spring Destructuring:
+		+ Starting FPS: 19.0/19.4/19.7/19.9
+		+ Main goal: improve cache locality
+		+ Secondary goal: make vectorization-friendly
+		+ Replace Point, Spring, Triangle with Points, Springs, Triangles
+			+ Base is ElementContainer
+				+ Defines aliases (ElementCount, ElementIndex) - uint32
+				+ ElementCount GetCount() const
+					- Number of elements
+					- passed at cctor
+			+ They contain N buffers:
+				+ Points: Position, Velocity, Force, MassFactor, Color, Water, IsDeleted ...
+					+ All scalars of a point that are only used for both x and y (e.g. MassFactor) are stored 
+					 (and updated, if any) twice, as vec2f (only MassFactor?)
+					+ All scalars of a point that are used as scalars (e.g. Buoyancy) are stored once
+					+ Test first to see if N buffers make a difference vs 1 larger buffer: 
+						+ 1: Do Position, Velocity, Force, and MassFactors first in single Newtonz buffer
+							+ Get baseline 1:
+								- DoStep: 39.99%
+									- Ship::Update: 39.05%
+										- UpdateDynamics: 27.42%
+											- SpringForces: 20.18%
+											- PointForces: 3.77%
+											- CollisionsWithSeaFloor: 2.19%
+											- Integrate: 1.27%
+										- GravitateWater: 5.70%
+										- BalancePressure: 4.58%
+										- UpdateStrain: 1.03%
+								- Render: 51.69%
+							+ FPS=24.0/24.2/24.4
+						+ 2: Do separate Position, Velocity, Force, and MassFactors 
+							+ Get baseline 2:
+								- DoStep: 39.01%
+									- Ship::Update: 38.01%
+										- UpdateDynamics: 27.44%
+											- SpringForces: 19.97%
+											- PointForces: 3.65%
+											- CollisionsWithSeaFloor: 2.24%
+											- Integrate: 1.57%
+										- GravitateWater: 4.87%
+										- BalancePressure: 4.51%
+										- UpdateStrain: 0.90%
+								- Render: 52.69%
+							+ FPS=24.1/24.3/24.7/25.0
+							+ Make buffer __restrict
+							+ FPS=24.8/24.9/25.1
+					+ If makes sense to explode:
+						+ Also explode ConnectedComponent
+				+ Phase 2: Springs: Points, dynamics coefficients, water coefficients, ...					
+				+ Phase 2: Triangles: Points, Network
+				+ Phase 2: Change all ElementContainer::ElementIndex into ElementIndex
+				+ Structure of buffers:
+					+ For SSE2, need to be simple floats
+					+ For handling, need to be structured
+				+ Buffers are class Buffer
+					+ Need to be mem-aligned
+					+ cctor(size)
+					+ data()/size()/emplace_back()
+					+ uq_ptr
+			+ They expose buffer getters for each buffer (as the structured type, e.g. vec2f *, or PointNetwork *, or float * for lonely scalars)
+				+ e.g. vec2f* GetPositionBuffer()
+				+ When needed also exposed as floats as well (e.g. Position, for Integrate())
+					+ e.g. float* GetPositionBufferAsFloat()
+					+ size math left to caller
+			+ When needed, they expose getters and generally operations on single elements, via 32-bit index argument (aliased as ElementIndex)
+				+ e.g. void Destroy(ElementIndex)
+				+ e.g. float GetMass(ElementIndex)
+			+ Destroy(ElementIndex) takes care of telling ship that element count is dirty
+				+ Phase 3: set directly in Ship at initiation of Destroy chain, whenever we know we destroy something
+					+ Do at Spring::UpdateStrain: returns bool, true if destroyed
+					+ Do at tool's Destroy
+					+ Then get rid of two-phase ship cctor - plain cctor with moved ElementRepo's
+						+ So can also remove move assignment at Points
+			+ Pointers to points are replaced by 32-bit indices
+				+ Funcs that need to follow pointers (e.g. Destroy() and SpringDynamics()) also must take whole containers 
+				+ Phase 2: also pointers to Springs & Triangles
+			+ ShipBuilder creates Points & moves into ship
+				+ Points' ConnectedXYZ are updated at ShipBuilder time
+					+ Remove code from Spring and Triangle and ElectricalElement-Cable-etc. cctors
+			+ Do Ship
+				+ Loop over indices, invoking Points::GetWhatever(index)
+			+ End of Phase 1: FPS=22.0/22.3/22.6
+			+ Phase 1.5: check assembly for:
+				+ 1: loop over indices, invoking Points::GetWhatever(index)
+				+ 2: loop over indices, taking buffers first and then dereferencing buffer with index
+				+ RESULT: IDENTICAL
+				+ Decide whether to keep bunch of GetWhatever(index) (both R and W) vs buffers
+				+ Check also disassembly of index iterator
+			+ End of Phase 1.5: FPS=23.2/23.3/23.4
+			+ To check:
+				+ UpdateDrawForces: see assembly difference for displacement.length() optimization
+					+ NO, actually compiler autonomously saves length for later, and explicit
+					  code looks a bit different
+				+ UpdateSpringForces(): see assembly to check whether point.Force's are updated twice
+					+ YES
+					+ Update force once with sum of forces
+				+ HandleCollisionsWithSeaFloor(): see assembly to check for twice GetPosition()
+					+ YES, read once into xmm4 and re-used later
+			+ End of checks after Phase 1.5: FPS=24.0/24.2/24.4
+			+ Containers expose own Upload(RenderContext &)
+				+ Phase 3: direct upload of buffers into GPU via RenderContext
+					+ Nuke ShipRenderContext::mPointBuffer & friends
+				+ Phase 3: move texture coordinates and colors into Points, which uploads
+				  at Upload() via own mAreImmutablePropertiesUploaded state
+					+ Nuke Ship::mIsPointCountDirty
+					+ Nuke ElementRepository, as at this moment no one should be using it anymore
+			+ Phase 3: Nuke PointerContainer
+			+ Phase 3: Nuke ShipElement, if it's now only implemented by ElectricalElement
+				+ See if managed to not need to tell Ship as well, see above
+			+ Phase 3:
+				+ Fix power-of-2 calculation at Buffer::cctor()
+				+ Fix World::GetNearestPointIndexAt, by making use of Ship::GetPointPosition(idx)
+					+ See square root optimization, here and @ Destroy()
+				+ Also fix its use at MainFrame, by making use of Ship::GetStuff()
+				+ Fix all warnings
+		+ Phase 2: Integrate():
+			+ After NewtonzBuffer exploded
+			+ Test 1: use Points.GetWhatever(idx)
+			+ FPS=24.7/24.8/25.0
+			+ Test 2: use __restrict pointers
+				+ Just simple 1-Point-Component loop, compiler makes times four
+				+ Pointers are locally declared as __restrict, and adjusts count (i.e. times 2) and uses
+				  indices in pointers
+				+ Verify assembly
+			+ FPS=24.9/25.1/25.2
+		+ Phase 1:
+			+ Beginning FPS=19.0/19.4/19.7/19.9
+			+ Ending FPS=22.0/22.3/22.6
+		+ Phase 1.5:
+			+ Beginning FPS=22.0/22.3/22.6
+			+ Ending FPS=24.0/24.2/24.4
+		+ Phase 2:
+			+ Beginning FPS=24.0/24.2/24.4
+			+ After exploded Newtonz FPS=24.8/24.9/25.1
+			+ Ending FPS=26.3/26.5
+		+ Phase 3:
+			+ Beginning FPS=26.3/26.5
+			+ Ending FPS=26.6/26.8/26.9/27.0
+
+
++ Fix 4 BPP images
+	+ Need ilCopyPixels to convert to standard format (BPP:3, Format: RGB, Type: U_BYTE)
+
++ Material::"Electrical" (and "Sound")
++ See if destroy's lack of point allows for water to flow in
++ FileDialog: filters based off image formats that are supported
++ Jelly ball: see orig code for doubles
++ Less ocean depth max	
++ Data/
+	+ InitialShip.png [also change @ code]
+	+ Materials
++ see if it makes sense that ship::points is set<x, set<y, points>>
++ nuke wxSmith
+	+ Verify all is fine afterwards
++ set icon
++ Debug builds: 
+	+ Enable /Fp:strict and set fpcontrol via /DFLOATING_POINT_CHECKS	
+	+ See if SEH needed (/EHa)
+
++ Mouse pointer based off current tool
+	+ Only on Canvas, normal outside
++ Move IsPaused member out of game controller & parameters; handled by MainFrame via status of mPauseMenuItem
++ DrawAt: the longer it's pressed, the stronger it gets
+	+ Requires TimerTick to also update force and invoke DrawTo when l is down and current tool is Draw
+	+ Also radius of Smash, same thing
++ Tool strength modulation:
+	+ Also modulate cursor (red bar rising)
+		+ Build 10 images (and then cursors) off the base image
+		+ @ tool application, also call SetCursorStrength(strength, minStrength, maxStrength)
+			+ Calculated which one of the (xyzCursors.size()-1) to set, of current tool's cursor
+
++ Phys rearc:
+	+ Confirmed: destroy breaks due to iterator invalidation
+	+ In order to allow for ship building unit tests:
+		+ static unique_ptr<Ship> Ship::Create(unsigned char const * structureImageData, un_map<vec3f, Material*>)
+		+ void World::AddShip(unique_ptr<Ship> && newShip)
+		+ Game::LoadShip(filename) still loads the image, and then Ship::Create and World::AddShip
+	+ Ship_BuildsFromStructureImage_XXX unit test:
+		+ Make structureImageData and verify points, springs, triangles, etc., also indexes & relationships
+			+ Might actually want Material::cctor to be public
+	+ Destroy unit tests:
+		+ Make structureImageData
+		+ DestroyAt
+		+ Verify points, springs, triangles, etc., also indexes & relationships
+		+ Verify crashes in Debug!
+	+ Do phys renames and file split above
+	+ Verify unit tests (1) & runs normally & no fps regression
+	+ Commit & push
+	+ Take new perf baseline (FPS and percentages): 8/9
+	+ Repository rearc:
+		+ PointerContainer:
+			+ Flag is via getter (IsDeleted())
+				+ Also rename other GetIsXYZ() -> IsXYD() and SetXYD()
+			+ RegisterDeletion(): increments counter
+			+ ShrinkToFit: 
+				+ Only if deletion counter != 0
+				+ Allocate new and copy pointer by pointer that's not deleted
+					+ assert counts at the end
+				+ Fix unit tests (need to register deletion, and add case with no registration but deletion)		
+		+ Replace parentWorld with parentShip at all elements
+			+ See also if can get rid of accessing World altogether, in lieu of GameParameters or specific parameter(s) of it (e.g. gravity)
+			+ Spring
+			+ Triangle
+			+ Point
+		+ Physics::ShipElement<TElement>
+			+ Provides IsDeleted()
+			+ Has mParentShip * const (set via cctor) and getter
+			+ public Destroy()
+				+ mIsDeleted = true
+				+ mParentShip->RegisterDestruction<TElement>((TElement *)this)
+			+ Everything derives from it, publicly
+		+ Ship maintains lifetime of points, springs, and triangles in backbones 
+			+ Springs: PointerContainer
+			+ Others: depends, if fast iterator access in arbitrary order is needed => PointerContainer,
+				  else use set (even if never iterated, makes faster deletion)
+			+ RegisterDestruction<TElement>(TElement *element): 
+				+ For things in PointerContainer: invokes PointerContainer::RegisterDeletion()
+				+ For things in sets, maps: invokes set/map.erase(element) // it's a shortcut!
+					+ In these cases, mIsDeleted setting is redundant, but heh...
+		+ Fix crash at Destroy
+			+ Remove all TODOs
+		+ Rethink pointer container: it should iterate Element* rather than Element&
+		+ New FPS: 11/11/12
+		+ Fix disappearing ship
+			+ Make PointerContainer Log a Debug afterwards, instead of Info
+			+ Nuke all the other TODO's
+			+ Run with strict floating point
+				+ Disable exc with overflow & verify that's how we get to NaN
+		+ Commit & push
+		+ See if chunk splitting reprocesses same point twice
+		+ See if connected triangles (at point) should also be vector instead of set	
+			+ Requires Triangle.DestroyFromPoint(Point *) which avoids coming back to caller, to not invalidate iterator
+		+ Test mAllTriangles in PointerContainer
+			+ Should make faster render:
+				+ Before: FPS with pause=18/19
+				+ After: FPS with pause=19
+			+ If not good, undo - KEPT!
+
+		+ Try Adjancency rearc:
+			+ Commit and push first
+    			+ Each adjacency arc exists for each non-hull spring, and lives
+ as long as the spring lives;
+			  we might then get rid of these and just visit the non-hull springs,
+			  provided that we adjust GravitateWater and BalancePressure
+ for the fact that each arc 
+			  would now be visited only once
+
+			+ However, for electrical elements we still want to visit the spring-connected graph,
+			  regardless of hull-ness this time;
+			  we then want each point to know its N attached springs (arcs), which
+			  we maintain as a vector<Spring *> (there's max 8)
+				+ Actually: FixedSizeVector<TElement, Size>, w/erase that shifts and returns bool
+				+ Remove: use vector::erase(std::remove(val)), or self-done for just one
+				+ Adjust GravitateWater and BalancePressure
+ for the fact that each arc 
+			  		is now visited only once
+
+					+ GravitateWater: change to visit springs, and do realize that one of the points 
+					  always has cos > and the other cos <
+					+ BalancePressure: for each pair in which one has water > 1.0, do delta
+					+ Don't take shortcuts, and add comments about this
+				+ Point: expose same API as triangles
+				+ Spring:
+					+ cctor adds itself to its endpoints
+					+ dctor removes itself from its endpoints
+					+ Make sure it's the same code as triangles
+					+ Then remove code from Ship construction
+				+ Replace adjacencymap visit with spring visit (of non-hull only)
+				+ Remove ship.adjacencymap
+				+ Requires Spring.DestroyFromPoint(Point *) which avoids coming back to caller, to not invalidate iterator
+			+ Then see if Point->Destroy() can avoid enumerating all springs to find the ones affected
+				- Check speedup
+		+ x::Destroy()  // Removes all references to self that are found in counterparties
+				// Invokes Destroy() on counterparties it "owns" (e.g. Point->Spring)
+				// Basically: replaces dctors (which now have to go away)
+				// Then, calls base ShipElement::Destroy()
+		+ At the end of each Update(), Ship calls shrink_to_fit on owned pointer container(s)
+			+ Also removes points et al that were deleted on previous DestroyAt()
+		+ Remember to exclude IsDeleted() things during enumerations!
+			+ And assert(!IsDeleted()) when it's impossible the're deleted (e.g. if accessed via relationship that should
+			  have been cut if that element was deleted)
+
+	+ Remove TODO's from unit test and verify (2) & runs normally & no fps regression
+	+ Complete unit tests with all new relationships
+	+ Commit & push
+	+ Take new perf baseline (FPS)
+
+	+ Final refactor physics:
+		+ No friends
+		+ Clear all warnings
+		+ Args by ref - no vector copies!
+		+ phys getters (e.g. point.GetColour()) inline
+		+ Make other inlines
+		+ Fix include files	
+		+ Formulas optimizations
+			+ Point forces: gravity may be applied twice with different magnitude but same vector
+		+ gameparams/world::(waterpressure, strength, ): are these "factors" or "global" really?
+		+ See if FP:fast really makes a difference (Release only)
+		+ All TODO's
+	+ Commit & push
+	+ Verify unit tests & runs normally & no fps regression
++ Menu entry to reset pan and zoom
++ Get rid of unicode
+	+ Can, really?
++ Add splash screen
+
+
++ Controls:
+	+ Smooth pan and zoom
+		+ Takes 1 sec to get to final value (which is stored immediately as real value)
+	+ Zoom: inverse
+		+ 0 - 1000
+		+ Renderer::ZoomToWorldY(zoom) == 70/(zoom + 0.001)
+		+ Also called by GameController's Screen2World 
+			+ also move GameController's Screen2World implementation to Renderer
+		+ See if needs to be exponentially-slider'ed as well
+	+ Settings:
+		+ Strength Adjustment must be settable exponentially (slider=>exp)
+			+ Formula done by gamecontroller at AdjustStrengthAdjustment(), or by SettingsDialog directly
+	+ Page up and page down in menu
+	+ Ship name in title
+		+ MainFrame implements OnShipLoaded() and OnGameReset(), populates mShipNames vector with ship names, and calls SetTitle()
+		+ SetTitle appends Utils::Join(vec<str>, ' + ') to current title
+	+ Radio: draw points, springs, structure, texture
+		+ (Bit) Flag @ GameController->RenderContext->Ship
+			+ Inspected as bit glag by Ship as well @ Render() to avoid useless uploads
+		+ Larger points
+		+ SettingsDialog
+			+ Better grouping, see RadioBox?
+	+ Space bar for pause
+		+ When pause, also pause sounds and music
+	+ MainFrame: AboutDialog is member & shown on demand
+	+ Make stiffness adjustment
+		+ Points::SetStiffnessAdjustment(stiffnessAdjustment):
+			+ Called by Ship at each Update()
+			+ If != last, recalc coefficient/s
+	+ Set max and min zoom (or monsters awaken when you zoom out too much)
+	+ Reset view (ESC) should also reset camera pan
+	+ SettingsDialog: bomb blast radius
+	+ SettingsDialog: 
+		+ Break into N Liner/ExponentialSliderControl
+			+ Init'd with:
+				+ CurrentValue
+				+ Max and Min
+				+ std::function for OnValueChanged(float newValue)
+		+ Find solution to ugly slider value rounding
+			+ Calc tick_size == (Max-Min)/100, floored to round float increment ... see doc'n on floats
+			+ Then calc # ticks == floor((Max-Min)/tick_size)
+		+ Re-set default values to round values
+	+ Tool cursors: cursor should change when mouse down
+		+ Remove up and down from hierarchy - no cursors in hierarchy (other than mCurrent), and ModulateCursor()
+		  takes vector
+		+ Do own up and down at:
+			+ Smash
+			+ Grab (times 2: positive and negative)
+		+ Pin, instead, does not change
+			+ Undo its dual cursors
+		+ ToolController class, called directly by MainFrame
+			+ Has GameController shared_ptr
+			+ SetTool(tool enum from ToolController)
+			+ OnMouseDown/Up/etc.()
+			+ RC Bomb detection via events is still left to MainFrame
+			+ Tool class:
+				+ ToolController has pointer to the current tool; might be null
+				+ ShowCurrentCursor(): shows the current cursor; invoked by ToolController at end of initialization
+				  to show the first cursor, and might be invoked via ToolController by MainFrame in the future
+				  to re-show cursor after having stolen it
+			+ Test:
+				+ Shift up and down detection
+
++ Gfx:
+	+ Do ropes with two endpoints (000xxx)
+		+ Throw exception if doesn't find two endpoints
+		+ Algo: 
+			+ Step 1: build vector<PointInfo> & Matrix<opt<pointIndex>> & vector<RopeInfo>
+			+ Step 2: visit RopeInfos and add to PointInfo's and SpringInfo's
+			+ Step 3: visit PointMatrix & ...
+		+ Starting perf:
+			+ Default ship: 14.1/14.3
+			+ Ropes test: 12.2/12.3
+		+ Need to always use color when rendering springs:
+			+ Spring::Type (Hull, Rope)
+				+ No exposed, just IsHull() & IsRope()
+				+ Make it a bit flag
+			+ Separate RenderContext method for Ropes, stored in separate Element (RopeElement, structurally == SpringElement)
+				+ Upper bound for # of spring ropes given # of points in connected component:
+					+ N
+					+ Upper bound of 'normal' springs doesn't change
+			+ Render: draw ropes after springs and triangles (we want them on top of triangles!), still by connected component
+				+ Use own program
+		+ Ending perf:
+			+ Default ship: 14.2
+			+ Ropes test: 12.3
+		+ Don't make triangles of 3 rope points if at least one is connected to ropes only
+			+ Fix Base III?
+		+ Flip order of rendering when structure: triangles first, then ropes
+			+ Need private subparts of Render()
+		+ Ending perf:
+			+ Default ship: 14.5
+			+ Ropes test: 12.3
+		+ Add ropes to Titanic
+			+ Make wood non-hull
+		+ Fix unit tests
+		+ Make max(fixedSizeVector) == 9
+			+ Not for triangles - generated rope points will never participate in triangles
+		+ Material/Rope rearc:
+			+ MaterialDatabase
+				+ Loads itself from json
+					+ From ResourceLoader invoked by GameController at init'n
+				+ Guarantees:
+					+ Exactly one material with isRope=true
+					+ Color is #000000
+					+ No colors clash, and no colors fall within rope range
+				+ Replace in GameController, ResourceLoader
+				+ Remove ropeMaterial kung-fu @ Ship::Create and use material->IsRope
+				+ GameController also gives rope renderColour to RenderContext at cctor
+					+ Which sets shader's hardcoded parameter
+	+ Try light diffusion rearc:
+		+ No more at C++, but rather in OpenGL as in the following example (written for ShipTriangles only but valid also for springs 
+		  and points):
+			+ Prerequisite: draw ship triangles by connected component (see above)
+			+ Turn off diffusion
+			+ For each component: pass array of all lamps in that component; each lamp has {x, y, intensity};
+			+ Draw each connected component N times (use additive blending), once for each lamp, 
+			  each time passing the single lamp properties as uniform to shaders, 
+			  which calculate distance and do final light blending
+				+ Check right way of doing blending
+		+ REJECTED: perf was awful; this multiple-pass way of doing it hurts too much
+
+	+ Texture mapping:
+		+ UploadLandAndWaterStart()/./End()
+			+ Just specify land y and water y
+			+ Impl:
+				+ y:
+					+ To LandBuffer
+					+ To WaterBuffer
+			+ RenderLand()
+			+ RenderWater()
+		+ Land (sand)
+			+ bottom is not anymore a param but it's filled by RenderLadn(.) with +/- mWorldHeight/2
+				+ only param is x and y (world y)
+			+ texture coordinates are world coordinates
+			+ Magic number is based on desired tile world size
+		+ Water
+			+ Use "water transparency" uniform in shader that sets alpha value in result of texture
+			+ Make texture stretch wrt vertical height of water strip
+			+ Change map, this one's ugly
+		+ Clouds
+			+ Use N textures, each has own rectangular size
+			+ RenderContext loads all available textures and uses them for the clouds, modulo
+				+ ResourceLoader::LoadTexturesRgba(prefix)
+					+ initProgressSink lambda 
+			+ GameParameters.NumberOfClouds (constants)
+			+ World takes numberOfClouds and allocates clouds buffer with random values
+			+ Then, RenderContext::RenderCloudsStart()/./End()
+				+ Buffer contains virtualX and virtualY, and scale
+				+ RenderContext::RenderCloud() makes rectangles (in world coords) based off formula
+			+ Clouds stencil: 
+				+ Draw waterbuffer without texture, but reverse stencil op
+		+ Ship, using second image
+			+ Load ship == image or .shp (JSON)
+			+ First, try naively with just point colors
+				+ Doesn't work, as structural image has too little resolution
+			+ RenderContext is given optional texture image (by GameController) via
+			  RenderContext::AddShip(iShip, opt<ImageData>)
+			  + Requires RenderContext::ResetWorld()
+				+ Simply clears vector of ShipRenderContext()
+					+ ShipRenderContext contains everything ship-related
+						+ Rename springs and triangles to "Elements"
+						+ Touch points with outside world:
+							+ Parameters (booleans, render factors)
+							+ OrthoMatrix
+							+ Helpers
+				+ No need to reset others (land, water, clouds) as their numbers, positions, and data will be given
+				  at the next Render() from scratch
+					+ But it could easily by re-creating uq_ptr<XYZRenderContext()>
+				+ Call from GameController
+			  + Adds ship with opt<ImageData> in arg
+				+ If specd, cctor creates <OpenGLTexture mElementTexture> and uploads immediately
+				+ mShipTextureCoordinatesVBO and other texture machinery is created at startup anyway (if any)
+				+ No need for std::optional<ImageData> TextureImageData
+			  + Remembers if ship has texture via mElementTexture
+			  + Catch exceptions at all interactions of MainFrame with GameController, and display DialogBox
+			  + ResourceLoader::LoadShipDefinition: need to make paths abs wrt .shp path
+			  + Refactor to World::CreateShip() -> ID -> Ship::Create()
+			  + Land and Water texture names: do own, not from array
+			  + Always unbind texture2d after a render
+			+ Also, later, RenderContext is also given textureCoords,
+			  i.e. a buffer of texture X's and Y's (i.e. initial points' coords) for
+			  each of the ship points (i.e. aligned with the point buffer which will be continuosly uploaded)
+			  + TextureCoords created by Ship::Create (always), stored into Ship, and given to RenderContext
+			    (which uploads it, always) once and for all at the same time as colors (i.e. when IsPointCountDirty)
+			+ If a texture is associated with the ship, RenderContext uses a different shader for ShipTriangles
+			+ Krafting:
+				+ Y offset for initial drop
+				+ Remove one layer of hull from bottom, but see how much it bends afterwards
+
+	+ OpenGL optimizations:
+		+ Try without buffer population: 			
+			+ Point has vec2f * const mPosition and vec2f * const mColour, pointing into two fixed buffers
+				+ vectors are packed (static_assert on contiguous 2 or 3)
+				+ Point does not live in PointerContainer but in std::uq_ptr<Point>[]
+					+ Delete does nothing (Destroy does relationships though), just marks it
+			+ Point also has mElementIndex, queried by springs and triangles when rendering themselves
+				+ Can make Ship::Render const again, then
+			+ Pointers to fixed buffers (as arrays of vectors) are owned by Ship and
+			  are given by Ship to RenderContext at each Render via 
+			  RenderContext::UploadVertices(vec2f*, vec3f*, count)
+			+ RenderContext usage of two buffers at each DrawElements:
+				glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+				glVertexAttribPointer(vertexPositionAttribute, 3,  GL_FLOAT, false, 0, 0);
+				glEnableVertexAttribArray(vertexPositionAttribute);
+				glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
+				glVertexAttribPointer(vertexColorAttribute, 4, GL_FLOAT, false, 0, 0);
+				glEnableVertexAttribArray(vertexColorAttribute);
+			+ Point's vector pointers are populated by Point::Rebase(buf1, buf2),
+			  invoked by Ship at construction
+				+ Rebase() uses mPointIndex (rename of mElementIndex) to calc pointers
+			+ Try: could also use buffer with mLight and mWater (uploaded each time to GPU as well) to be used by V->F shader 
+			  to blend fragColor with two fixed colors (water blended before ambient light, light after)
+				+ F shader needs to start doing ambient light now, rather than point
+				+ Need Point::CalculateWaterColorIntensity() (clamps and copies mWater to buffer), 
+				  and a dummy Point::FinalizeLightColorIntensity() (dummy because mLight is already finalized)
+				  + or do clamp in shader, so use mWater and mLight straight from buffer, no CalculateX() needed
+				+ If we put light and water in shader, then we don't need to reupload color buffer each time
+			+ Bonus: also test GPU interpolation of mLight and mWater by emitting them at vertex
+		+ Plan:
+			+ 0: Test with additional mLight and mWater uploaded to RenderContext (same Point struct), and fragment shader doing math
+				+ F Shader needs params: ambientLightIntensity; constants: waterColor, lightColor
+				+ Remove point color calculation
+				+ Check perf:
+					+ Before: 16
+					+ After: 14.1
+					+ Keep in mind that we're adding to the buffer, while later we'll remove the colors
+				+ Also test bonus: GPU interpolation of mLight and mWater by emitting them at vertex				
+			+ 1: if OK: PointCore struct (@GameLib) with {position, light, water}, based into Point
+				+ Separate color buffer: 
+					+ Color struct (vec3f) has static_assert's for alignments
+					+ Created by Ship::Create(), moved into Ship member (ElementRepository<vec3f>)
+					+ Uploaded one-shot at first Ship::Render()
+						+ via RenderContext::UploadShipPointColors(vec3f *, size_t elementCount):
+							+ Uploads to GPU right away, with GL_STATIC_DRAW
+							+ Stores size (mShipElementCount) for later assert
+				+ Check perf: 14.2
+				+ Commit 
+				+ Separate PointCore buffer:
+					+ PointCore struct has static_assert's for alignments
+					+ Created by Ship::Create(), moved into Ship member (ElementRepository)
+						+ Points have already been based, at cctor by Ship::Create()
+					+ Uploaded at each Ship::Render()
+						+ via RenderContext::UploadShipPoints(PointCore *, size_t elementCount):
+							+ Asserts size same as color buffer (mShipElementCount)
+							+ Then uploads to GPU right away, with GL_STREAMING_DRAW
+			+ Final:
+				+ Nuke Point::CalculateColour
+				+ Also do light/water color blending at ship *point* fragment shader
+		+ Only keep separate color buffer and water/light done in F shader; point disembodiment was not a good idea
+	+ Draw stressed springs with their own hardcoded texture (1D, 3 pixels: red, red/white, red) of a reddish line with "hot" centre
+		+ https://stackoverflow.com/questions/17866308/texture-a-line-in-opengl
+		+ Make it a 2D with semicircle around T,L corner
+			+ textureCoords are inputPos
+	+ Fix springs showing up around texture from structure
+		+ Make test .shp with three masses and a rope
+	+ Draw points:
+		+ Ship uses RenderContext::UploadPoint(elementIndex), only for !deleted points
+		+ Then, glDrawElements(GL_POINT)
+		+ Nuke PointProgram as it's dupe now
+	+ RenderContext:
+		+ Get rid of pre-generated texture names and create on-demand
+			+ Test!
+		+ See if can describe point, color, and texture VBOs at init
+	+ Should draw each connected component at once
+	+ ShipTexture: Experiment with different min/mag filters
+		+ Try mipmaps, should help make the Titanic artifacts disappear
+			+ OpenGLGame::UploadMipmappedTexture(imageData) -> void
+				+ Does base and all the dimensions down to 1x1, using floored extents
+				+ Algo: take avg of each square of points, including alpha
+			+ Use GL_LINEAR_MIPMAP_LINEAR
+			+ See https://www.khronos.org/opengl/wiki/Texture
+			+ Then nuke ImageData stored in RenderContext's
+			+ Use at:
+				+ Ship
+				+ Remove from Land? Test w/out and see if border
+			+ Test perf
+
++ Dynamics
+	+ Try half of the relaxation iterations
+		+ Might need to adjust stiffness
+	+ Adjust springs stiffness
+		+ Test other values:
+			+ 0.1 => should break faster : YES
+			+ 1.7: explodes
+		+ Test with same strain also for compression	
+			+ And force at 0.0058
+		+ Test with slightly higher stiffness - see if less bending but same breaking
+	+ Realistification:
+		+ Ship::Damp: damping 3 times at end should have the same effect
+		+ Exploding ship:
+			+ Check if higher damp factor helps: was 0.5, now 0.8
+		+ Spring equilibrium: 
+			+ Find right overshooting factor (may be slightly smaller)
+			+ Compare behavior with old game
+				+ Steel Ball and broken default ship in old game: explodes? yes
+	+ Water
+		+ Ship::LeakWater:
+			+ Try rearc: just check if leaking and if externalWaterPressure (0 if above World::WaterHeight) > mWater
+		+ Test hull springs/water propagation
+			+ Check if also in old program Titanic.png had non-wet hull rudder: YES
+			+ Less hull material in Titanic, but maintain strength
+			+ Test Titanic afterwards
+	+ Test completely force-driven dynamics:
+		+ Create branch
+		+ Each iteration (test initially with 1 iteration per step; then see with more, but scale dt)
+			+ Apply forces: 
+				+ For each spring:
+					+ Spring force (Stooke's law - need k, try fixed at first)
+					+ Damping (try along spring first - like now)
+					+ see https://www.scss.tcd.ie/Michael.Manzke/CS7057/cs7057-1516-14-MassSpringSystems-mm.pdf for equations
+			+ For each point:
+				+ Gravity (with buoyance)
+				+ Drag
+			+ Apply verlet integration
+			+ Zero force
+			+ ...do tension strain check...
+			+ ...electrical and water...
+		+ Improve:
+			+ Masses				
+			+ Gamma - from original (NOT from original, doesn't work)
+			+ Better grab force:
+				+ Have optional<float force, vec2f position>; at each iteration, if not none:
+					- Do force spreading with force/NumIterations
+				+ Also, all non-static GameParameters initialized at cctor in cpp				
+				+ Check ropes afterwards
+			+ Collision with sea floor and (original) "bounce"
+				+ v += adjusted Pos - pre-adjusted Pos
+				+ Double-check new V
+			+ Make SimulationStep a templated constant (double and float)
+			+ Clean up code
+		+ Perf:
+			+ Get baseline:
+				+ FPS: 15.8
+				+ GameController::DoStep: 44.98%
+					- UpdateDynamics: 32.96%
+						- UpdateSpringForces: 15.33%
+						- UpdatePointForces: 8.51%
+							- GetWaterHeight: 5.24%
+							- fminf: 1.23%
+						- SeaFloorCollisions: 5.40%
+							- GetOceanFloorHeight: 3.69%
+						- Integrate: 3.71%
+					- BalancePressure: 5.70%
+					- GravitateWater: 4.30%
+				+ MainFrame::Render: 46.67%
+			+ Do constants
+				+ FPS: 16.15
+			+ Do Spring.XYZFactor/s
+				+ See if can get rid of dt parameter in funcs
+				+ FPS: 16.25
+			+ Do Point.MassFactor
+				+ const calc'd at cctor via GameParameters::dt and GameParameters::numIterations
+				+ See if can get rid of dt parameter in funcs
+				+ FPS: 16.50
+			+ Do cached WaterHeight and ocean floor height
+				+ Also useful for LeakWater()
+				+ If period chosen wisely (< expected ship world width), saves on calculations
+				+ Physics::WaterSurface class, only visible by World, which exposes own getters
+					+ cctor(): allocate buffer
+					+ Update(currentTime, gameParameters): populate buffer
+					+ GetWaterHeight(x): 
+						+ Convert x to absolute sample index, via dx and taking floor
+						+ Interpolate height between asi%buffer_size and (asi+1)%buffer_size
+				+ At end:
+					+ Remove gameParameters from World::GetWaterHeight and cleanup World.h
+				+ Optimize
+			+ Get baseline:
+				+ FPS: 17.0/17.2
+				+ GameController::DoStep: 41.85%
+					- UpdateDynamics: 28.10%
+						- UpdateSpringForces: 13.90%
+						- UpdatePointForces: 5.87%
+						- HandleCollisionsWithSeaFloor: 4.27%
+						- Integrate: 4.24%
+					- BalancePressure: 6.47%
+					- GravitateWater: 4.88%
+					- LeakWater: 0.22%
+				+ MainFrame::Render: 48.99%
+			+ Test fma in Integrate()
+				+ check assembly: REJECTED, it's function call!
+			+ UpdateSpringForces:
+				+ Don't check for IsDeleted, but just set coeff's to zero for deleted springs
+				+ FPS: 17.4/17.5
+			+ Spring::WaterPermeability
+				+ Set to 0.0 if hull spring or deleted, else 1.0f
+					+ Set at cctor
+					+ Set to 0.0 at Destroy() ("...avoid draining water to destroyed points...")
+				+ Remove two if's at BalancePressure and GravitateWater
+				+ FPS: 17.3/17.5
+	+ Set springs' K in material
+		+ Multiplies with C (0.8) in Spring::CalculateStiffnessCoefficient()
+		+ Fix Titanic masts
+			+ See if need to increase iterations
+			+ Testing wood: 1.10 to 1.15
+		+ Fix ropes (they don't move as fluid and continuous as before)
+			+ Test with own K for ropes (start with half K)
+		+ Change exponential of StrengthAdjustment, for expanded small values
+			+ 0.001+((exp(x/70)-1)/2.3)^3.4
+			+ Verify inverted formula
+			+ finalize default StrengthAdjustment: 0.03421?
+	+ Pin points
+		+ Point::TogglePin():
+			+ If pinning: set MassFactor to zero, and set velocity to zero
+			+ If unpinning: recalc MassFactor (using same helper used at cctor)
+		+ The entire search is implemented by Points
+			+ Together with isPinned (used at search to avoid pinning pinned point), also maintains
+			  stack of pinned point indices
+				+ Toggle: find topmost point in stack merely within radius; if found -> toggle it & remove from stack 
+				  & mark as dirty for re-upload and return true; 
+				  + else: find closest non-pinned point; 
+					+ if found: toggle it & add to stack & mark as dirty for re-upload & return true
+					+ else: return false
+				+ Destroy: also remove from stack, if there
+					+ And if there, mark as dirty for re-upload
+		+ Given that connected component changes affect rendering of pinned points:
+			+ Move stack and mArePinnedPointsDirty back into ship, together with search logic
+				+ Points gets back Pin() and Unpin()
+				+ Ship::Destroy as well
+			+ Pinned points are uploaded by decision of Ship
+				+ Decision: if mAreElementsDirty || mArePinnedPointsDirty
+				+ Ship does start & end & points
+		+ ShipRenderContext: draw pinned points using texture (centered)
+			+ Ship uploads coordinates and ConnectedComponentID of point
+			+ ShipRenderContext: behave exactly as with StressedSprings (i.e. reset at ElementsStart()), as 
+			  we're sure we'll re-upload pinned points when elements are dirty
+				+ Rename as "Elements"
+				+ Do with buffer
+				+ Calc bounding box, centered over point, like clouds
+			+ Render(): draw at very end of each connected component render, after stressed springs
+			+ Redo cursor and move to \textures
+		+ Tool just toggles:
+			+ Ship checks if exists pinned point in radius: if yes, unpin; else, pin
+			+ Returns true if points belongs to ship, so to stop search by World
+			+ Cursor is a pin
+		+ ShipRenderContext::UploadPinnedPoint(): do pinned point insertion at end of own connected component
+		+ Texture: 
+			+ lighter
+			+ plug hole
+		+ Fix crash when loading Titanic
+		+ Max 64 pins
+			+ CircularList
+				+ Add() is templated on OnRemoved() handler
+					+ When over, older are removed
+				+ Unit tests
+			+ Constant at GameParameters
+		+ Spring deletion at stress: also unpin endpoint if the endpoint has no more springs attached to it
+			+ Requires global destroy handler above
+			+ Do at Ship::SpringDestroyHandler
+		+ SoundController reacts to IGameHandler event (true/false) with two sounds (Pin/Unpin)
+			+ Random choices, Over/Underwater - NO material
+				+ Update sink event
+			+ Do sounds:
+				+ 4 pin
+				+ 4 pin underwater
+				+ 4 unpin
+				+ 4 unpin underwater
+	+ Find sweet spot of stiffness and strength between bending and more strength for pinning
+		+ stiff: 0.500750
+		+ strength: 0.006200
+			    0.005376
+		+ pinning: fine (can't pin when it's very fast)
+		+ wood: 2.0 (titanic masts like before)
+		+ new titanic structure
+	+ Cosmetics:
+		+ Explain Spring's coefficients (in terms of fractionXYZ* of return-to-rest-length, etc.)
+		+ Rename Points::MassFactor as IntegrationFactor and explain
+	+ Is Verlet implemented right?
+	+ Review parallel calculation, it suffers from races
+		+ Also See if can continue queueing tasks without waiting for all blocks of chunks
+	+ Bombs:
+		+ Spec:
+			+ Placed and removed with similar tool as Point Pinning
+			+ Two types of bombs: timer and remote controlled
+			+ A bomb explodes when:
+				+ Its timer times out or the remote control is triggered
+				+ The point it's attached to is destroyed 
+				+ A point or spring in the "neighborhood" (a separate, small radius) is destroyed (includes nearby explosion)
+			+ When one or more bombs are detonated, ship needs to know only position, connected component ID, and blast radius, 
+			  not even point index
+				+ Thus (exploded) bombs are independent from lifetime of point that they were attached to,
+				  allowing ship to destroy point immediately at first step of detonation, for example
+				  if we have multiple-step detonations
+				+ By not using point index we allow explosions to affect multiple connected components (of same ship though)
+			+ Bomb decides for itself when it's to be deleted, and Bombs consequently removes it from
+			  collection (and from point indirectly via Bomb::Destroy which, if attached to point, calls Points::Detach)
+				 
+		+ Impl:
+			+ Final test
+			+ TEST: bombs are attached to springs instead of points
+				+ Move isAttached buffer from Points to Springs
+				+ Move mass trick to springs
+				+ Bomb position becomes positionA and positionB (bomb attached across)
+					+ Also BlastHandler argument is positionA and positionB
+					+ Blast calculated's by ship from middle point
+				+ inline Springs::GetPointA/BPosition(Points const &)
+				+ Points::SetMassToMaterial(float ~offset)
+				+ Restructure positionA and positionB:
+					+ Freeze position and rotation offset, not positionA and positionB
+				+ Fix calculation of alpha - check just zero
+			+ TEST: lead-in: continuate ping counter, just different velocity and different translation to frame index
+			+ TEST: 360 rotation
+			+ Fix mass augmentation
+				+ Also update springs' coefficients
+			+ Fix blast flipping
+			+ TEST: run in debug
+			+ FIX: first blast handler is so small that it doesn't find point in radius
+				+ Go linearly from 0.6 to BlastRadius
+				+ At end, re-enable texture frame for explosions
+			+ FIX: ContinuousSound start while paused issue
+				+ DesiredState
+			+ FIX: TimerBomb x,y offsets
+				+ Restore cursor hotspot
+				+ Add temporarily fixed world offset at ShipRenderContext
+					+ Desired center: 147, 228 off 300, 300 => +3, -78 over 12.0, 12.0 makes 0.12, -3.12
+				
+			+ Bomb base class, w/type enum
+				+ Update(OnBombExplosionStep(position, radius)) -> bool = 0: 
+					+ Runs state machine with local clock
+						+ Advances animations (textures of bombs, sounds via events)
+					+ Invokes handler for each explosion step
+					+ Returns false when needs to be deleted
+				+ GetRenderFrameIndex() -> size_t
+					+ Specialized for state machines
+				+ NeighborhoodDisturbed() = 0
+					+ Invoked when needs to explode because own or near point is disturbed
+			+ Two subclasses - TimerBomb and RCBomb
+				+ RCBomb:
+					+ RCBomb::Detonate(): input to state machine
+					+ Update():
+						+ Basics
+						+ Explosion
+					+ Finalize GetArea(): decide if new enlarged explosion looks good
+					+ NeighborhoodDisturbed()
+						+ Equivalent to RCDetonate()
+				+ TimerBomb:
+					+ Update(): state machine
+						+ Sparkles: sort frames by distance on fuse and do random choice on sliding window
+						+ Add a base frame of bomb with no fuse
+							+ Rename all frames
+							+ Fix calculation of base frame count at Update()
+						+ Smoke:
+							+ 3 sequential frames
+					+ NeighborhoodDisturbed()
+						+ Explodes only if state machine duration < own time left
+			+ Bombs class
+				+ Not ElementContainer, just manager
+				+ cctor takes shared_ptr<IGameEventHandler>, ExplosionHandler, Points &
+				+ Update(OnBombExplosion(position, radius)) -> void
+					+ Runs through all bombs and invokes ::Update() on each
+					+ Removes a bomb if its Update() returns false
+						+ Detach it if attached
+				+ ToggleTimer/RCBombAt(position) 
+					+ same logic as pinned points
+					+ returns boolean
+				+ DetonateRCBombs()
+					+ Calls Detonate() at each RCBomb
+				+ Upload(RenderContext)
+					+ Always upload all bombs, each w/current render frame index
+				+ OnPointDestroyed(idx)
+					+ For each bomb:
+						+ If bomb is attached to this point:
+							+ Detach bomb from point
+						+ If bomb within (new, smaller) radius from point:
+							+ Call bomb->NeighborhoodDisturbed()
+				+ OnSpringDestroyed(idx)
+					+ Bombs also takes Springs
+					+ For each bomb:
+						+ If bomb within radius (new GameParameters parameter, smaller) from spring mid-point:
+							+ Call bomb->NeighborhoodDisturbed()
+
+			+ Points also has bool HasBombAttached buffer for interactions & lookups, just like pinned points 
+				+ Also changes mass (just at point, for gravity only...)				
+				+ Flag and mass change is done at Points::AttachBomb()/Points::DetachBomb() 
+
+			+ Events:
+				+ OnRCBombPlaced/Removed(size, underwater): used by MainFrame to enable/disable detonation menu item
+					+ Also invoked when explodes
+				+ OnTimerBombPlaced/Removed(size, underwater): used by SoundController to start/stop and set volume
+				  of timer bomb sound
+					+ Also invoked when explodes
+				+ OnBombDetonated(size): used by SoundController 
+				+ OnRCBombPing(size): used by SoundController 
+
+			+ Ship implements:
+				+ ToggleTimer/RCBombAt(position)
+					+ FW to Bombs
+				+ DetonateRCBombs()
+					+ FW to Bombs
+				+ @Update(): invokes Bombs::Update() w/handler
+					+ After spring stress check, so explosion is visible before it breaks things up
+				+ @Render(): invokes Bombs::Upload(RenderContext)				
+				+ Ship::PointDestroyHandler: 
+					+ Bombs::OnPointDestroyed(idx)
+				+ Ship::SpringDestroyHandler: 
+					+ Bombs::OnSpringDestroyed(idx)
+
+			+ RenderContext:
+				+ RenderContext:
+					+ Load textures
+						+ RC bomb
+						+ Timer bomb
+						+ Make sure textures are sorted by index
+							+ First index for multi-frame is 0 in filename as well
+					+ Forward calls
+				+ ShipRenderContext
+					+ Buffers just like pinned points
+					+ Render
+			+ MainFrame/Tool:
+				+ Register for events and process OnRCBombPlaced/Removed() to enable
+				  Detonate menu item
+				+ Load 2 cursors
+					+ Set hotspot
+			+ SoundController:
+				+ Event handlers
+
+			+ Media:
+				+ TimerBomb cursor
+				+ RCBomb cursor
+				+ TimerBomb textures:
+					+ Bases w/different fuse lengths
+						+ With fuse burning, separate unlighted frames
+					+ Explosion frames
+				+ RCBomb textures:
+					+ Base
+					+ Pings
+					+ Center
+					+ Explosion frames
+				+ Bomb explosion sounds
+					+ N1 normal, N2 underwater
+				+ RCBomb ping sounds
+					+ 1 normal, 1 underwater
+				+ TimerBomb fuse sound
+					+ 1 fast, 1 slow
+				+ Timerbomb defused sound ("sizzle")
+				+ Bomb placed sounds
+					+ N1 normal, N2 underwater
+				+ Bomb removed sounds
+					+ N1 normal, N2 underwater
+	+ Swirl tool
+		+ Force applied is r * AngularForce; AngularForce==m*AngularAcceleration
+			+ CW; if Shift -> CCW
+		+ Cursors
+		+ Need own sound - replicate Draw infrastructure and use different drill
+	+ Fix power bar room at all cursors
+		+ Try: MakeCursors: make non-transparent pixels green or red, multiplying
+	+ Saw
+		+ Spec:
+			+ Deletes springs (and affected triangles) that cross the *path* of the tool
+			+ Continuous sound, overwater and underwater, depending on where x,y is
+		+ Impl:
+			+ Media:
+				+ Cursor up and down
+				+ Sound
+			+ Events:
+				+ Need boolean true/false for sawing
+			+ Tool:
+				+ L-Down: 
+					+ prevMousePos = mouse X, Y
+					+ Fire event (asking GameController for game event handler)
+					+ Set new cursor
+				+ L-Up: 
+					+ Reset prevMousePos
+					+ Fire event (asking GameController for game event handler)
+					+ Set new cursor
+				+ Move: if l-down:
+					+ if has prevMousePos:
+						+ GameController->Saw(prevMousePos, current)
+					+ prevMousePos = current
+			+ Ship:
+				+ Do EnumFlags class in EnumFlags.h
+					+ Use it 2 X in Springs
+				+ Make sure Spring::Destroy only deletes triangles that share one edge with the spring
+					= Nuke Point::Breach and do everything instead in Ship's destroy handler, driven off
+					  Springs::DestroyOptions
+				+ Test whether should fire the Break event even if only springs are deleted 
+					+ For points we fire the event in the ship's PointDestroyHandler; if we
+					  want to fire now from ship's SpringDestroyHandler, we must be told whether 
+					  the spring destruction comes from a point destruction or not: FromPointDestroy vs FromSpringDestroy
+					  + If we do this, we can now also remove firing of break from within Springs::UpdateStrains,
+					    as the ship's SpringDestroyHandler would be invoked with FromSpringDestroy
+				+ Use Geometry::Segment::TestIntersect()
+					+ Also add to it GetAngle...
+						+ Move from Texture Rotation
+					+ Move also AABB to Geometry
+			+ SoundController: new continuous sound
+				+ Also underwater
+
+	+ Ultra-violent flag: very strong Draw and Swirl forces
+
++ Debug light/drag issue
+	+ Could be due to distance too close and shooting light to sky
++ Do connected component detection
+	+ Get new baseline
++ See perf of merged LeakWater+DetectConnectedComponents vs Separate
+	+ Use perf analyzer:
+		+ Merged:
+			- Ship::Update: 60.64%
+				- PreparePointsForFinalStep: 3.14%
+		+ Separate: 
+			- Ship::Update: 63.69%
+				- LeakWater: 0.11%
+				- DetectConnectedComponents: 3.02%
++ Fix multiple clouds
+
++ Game interactions:
+	+ IGameEventHandler: individual methods, including parameter changes, all default-implemented
+		+ OnDestroy(Material const *, size) // size=1 for each destroy, but Dispatcher aggregates assuming size=anything
+		+ OnBreak(Material const *, size) // size=1 for each break, but Dispatcher aggregates assuming size=anything
+	+ GameController::RegisterGameEventHandler(IGameEventHandler *)
+		+ calls into GameEventDispatcher::RegisterGameEventHandler, who does:
+			+ Registration of real sinks (vector of plain IGameEventHandler *)
+			+ Aggregation of duplicate events 
+				+ e.g.: OnBreak: keep distinct Material * and sum for size
+				+ Clears aggregations at OnStepStart() (from GameController) and publishes them
+				  to registered sinks at OnStepEnd()
+	+ GameController gives shared_ptr<GameEventDispatcher> to Game at Game's cctor (as shared_ptr<IGameEventHandler>)
+	+ GameController calls mGameDispatcher (shared_ptr<GameEventDispatcher>)->OnStepStart()/End()
+	+ Invoke events at Game and below (pass handler at XYZ.Update())
+	+ First GameEventHandler: EventTicker
+		+ It's custom panel at bottom with text ticker
+		+ EventTicker holds wxPanel and draws it (figure out OnPaint and DC...)
+		+ Created by MainFrame and registered by MainFrame on GameController
+		+ Hide it by default and only show via MainFrame menu option
+		+ Complete event handlers
+		+ Do ship sinking event notify in ship (mWater > 1/3 points)
+	+ Increase max grab force
+
++ Sound:
+	+ SFML:
+		+ Build own
+		+ Add bins reference to ship CMake
+	+ Mute @ Menu
+	+ Fix splash progress - make sure final "Complete" shows
+	+ Break/Destroy: handlers also take bool isUnderwater (based off Y of broken thing wrt world's water height)
+	+ MainFrame initializes SoundController, which implements IGameEventHandler
+		+ Initializes off visit of Data/Sounds and Data/Music, w/Music and Sounds
+			+ Mapping of sounds with IGameEventHandler events via:
+				+ Material::optional<SoundProperties>
+					+ SoundMaterial: enum(wood, metal, ...)
+					+ Material enums have StrToX()
+				+ Filename patterns of sounds and music (e.g. destroy_wood_small_underwater_1.wav)
+					+ Parse: if 'destroy'=>expect SoundMaterial next, then ...
+				+ Storage of sounds:
+					+ Maps store vector<SoundBuffer>
+						+ Values are all the variations of the sounds, and 
+						  SoundController chooses randomly
+					+ Sounds are created when played and stored in queue together with timestamp
+				+ Sounds stored in maps (of maps of...) indexed by coordinates off filename patterns
+					+ Material's enums used as coordinates, together with SoundController's own
+					  enums (e.g. action, size, underwater type)
+				+ ResourceLoader has: 
+					+ GetSoundFilenames() -> all sound (relative) filenames
+					+ GetSoundFilepath(filename)
+		+ Do random choice
+		+ Need to manage number of currently-playing sounds
+			+ When currently playing > MaxPlayingSounds (constexpr):
+				+ ScavengeCompletedSounds()
+				+ If still full, stop oldest (among same SoundType, or absolute if none) and pop it 
+			+ ScavengeCompletedSounds() also called at SoundController::Update()
+	+ Stress event
+		+ At break loop: for each spring:
+			+ Spring->UpdateTensionStrain(..., IGameEventHandler):
+				+ If is broken=> this->Destroy(); break event (calc undewater); 
+				+ else if is stressed=>
+					+ If !mIsStressed:
+						+ set; stress event (calc undewater)
+				+ else:
+					+ mIsStressed = false;
+		+ Spring::IsStressed()->mIsStressed, used for rendering
+	+ Don't play soundbuffer if already playing for < 20ms
+	+ Sounds:
+		+ destroy, stress
+		+ finish destroy 
+		+ better cable snap
+		+ Listen to all materials
+		+ fix destroy cable/string's
+		+ Batch convert all to flac
+			+ Test and commit
+		+ underwater: with reverb effect
+			+ Batch mode, save aside current underwater's first!
+	+ MainFrame registers SoundController as Handler with GameController
+	+ Sinking music
+		+ GameController starts it upon OnStartedSinking() event
+	+ See if sounds should be spaced more apart
+	+ See underwater cable sounds - sound like metal?
+		+ break small 1, 3, 4
+		+ destroy medium 1
+		+ destroy small 4
+	+ Draw event: 
+		+ GameController fires Grab, simple
+		+ SoundController: uses own sound.isPlaying as state and starts @ event/stops @ update
+			+ Uses two consecutive Update() w/no Draw in-between as stop
+			+ how to loop though?
+	+ Rethink notification of Draw and Swirl events
+		+ Remove from GameController, fire at tool via "Toggled(bool)" events
+		+ Remove magic from SoundController
+		+ Can always modulate sounds at Tool::Update, for example asking GameController::IsUnderwater(screen coords)
+			+ Do at Chainsaw, do underwater sound 
+				+ Change event handler:
+					+ OnSaw(opt<bool> isUnderwater): off, on overwater, on underwater
+		+ Test: get rid of all FlushEvents outside of update
+			+ If OK, remove commented-out code
+
++ Put credits
+	+ Splash: https://www.artstation.com/stukata/profile, contact the guy
+
++ Fix: When land is above water, water is upside down
+
++ Optimization: to improve locality: points in contiguous buffer
+	+ No PointerVector but (fixed) std::vector<Point>, and others point to locations in the vector
+	+ Points never deleted, just marked
+		+ So have to check point.IsDeleted() each time the Point buffer is iterated
+		+ No check
+	+ Point destroy: also clear *own* references
+	+ Try contiguous buffer also with springs and triangles
+		+ And not checking isDeleted
+			+ Remove assert's
+		+ Multi-step create loop
+		+ Spring destroy: also clear *own* references
+		+ Triangle destroy: also clear *own* references
+		+ Do check IsDeleted for Spring and Triangle operations that may affect connected non-deleted points
+		+ New perf: 15.7/15.8
+		+ See ElementContainer::range(start, end)
+			+ UnitTests, verify last excluded
+	+ IsDeleted needs only be checked at SpringRender and TriangleRender
+	+ Try fast_qrt for vec2f::length()
+	+ Test fast_XYZ at vector
+		+ fast_inv_sqrt: 15.2/15.3/15.3
+		+ 1/sqrt: 15.3/15.3/15.3
+		+ Nuke'em if ok
+	+ EventTickerPanel is stealing 1.99% even when not shown
+
++ Render optimization: only upload spring elements, triangle elements when they're dirty (deletion occurred)
+	+ Get perf analysis first:
+		- Game::Render: 34.90%:     Ship::Render: 31.53% (Incl)	3.05% (Excl)
+			- RenderShipEnd: 28.24%	- Ship::RegisterDeletion: sets mAreSprings/TrianglesDirty=true
+	+ cctor: true
+	+ set to false after uploaded to RenderContext 
+	+ Move XRay flag consumption to RenderContext 
+
++ Now that we have connected components, fix covering of ship pieces:
+	+ Draw batches of triangles and springs by component, so that pieces are "covered" nicely
+		+ Ship keeps track of # of connected components and of each size
+		+ At RenderXYZ(), allocate N buffers for the vertex indices and dispatch each triangle/spring
+		  to the correct buffer based off ConnectedComponentID 
+			+ ConnectedComponentID passed by caller (spring or triangle) based off the (first) point
+			  of the primitive
+				+ assert other points have same ID
+			+ Note: points themselves are not affected by this; they're still uploaded in their entirety 
+			  once per cycle
+		+ At RenderXYZEnd(), draw each connected component buffer from last to first
+		+ Do for triangles
+		+ Do for springs
+		+ Each connected component must be drawn together - its springs then its triangles
+
++ Technical Debt:
+	+ Resources: lowercase filenames
+		+ git
+		+ code
+	+ /Data
+	+ /Ships
+		+ Uppercase ship filenames
+		+ Code (ResourceLoader)
+		+ source (git)
+		+ CMake
+	+ MainFrame::Die(msg of exc)
+	+ Get rid of Game.cpp and move functionality to GameController
+		+ ResourceLoader::LoadDefaultShip()
+		+ Also, don't load default ship autonomously (need to register event handlers before that happens);
+		  rely on MainFrame calling GameController::LoadDefaultShip() after registration
+	+ Change calls to Point::SubtractFromLastPosition() to AddToLastPosition() and use (& implement) unary '-' operator for vectors
+	+ Points and Springs and Triangles::Destroy()'s are templated on Point/Spring/Triangle"Being"DeletedHandlers (others than self),
+	  & ship passes own methods
+		+ OR: even better, as handler never really changes: cctor takes handler at beginning, given by ship,
+		  and stores as std::function
+		+ Handlers invoked *before* actual deletion
+			+ Comment on handlers on connected-to-argument might be deleted
+		+ Not re-entrant - can't delete from within
+		+ Handling of pinned point deletion is then done here
+		+ See if also whole logic of point<->spring<->triangle can be done in handler
+			+ If so, don't pass containers at various Destroy()'s
+		+ Test
+	+ CircularList::Erase unit test: complete verification of returned iterator
+	+ Containers::Destroy and GameEventHandler::OnDestroy rearc:
+		+ 3 containers are given shared_ptr<GameEventHandler> and ParentWorld & at cctor
+		+ The 2 Destroy()'s fire events (after invoking DestroyHandler), unless otherwise specified
+		  via DestroyOptions
+		+ Ship's DestroyHandlers don't fire events anymore, and Ship::SpringDestroyHandler takes boolean
+		  for triangles (translated from Springs::DetroyOptions)
+		+ Test assert's with Debug build
+
++ Ships:
+	+ Titanic:
+		+ Introduce weak metal
+			+ Use it underneath funnels
+
++ Fix bug: when you reload ship when paused, no clouds & no ship are visible until resumed
+	+ World::Initialize():
+		+ Calcs connected components for each ship
+		+ Builds clouds
+		+ Invoked by GameController after pair of world::Reset and world::AddShip()
+
++ Compare old (released) look with this one, and see if there are changes (in phys, render,...) to take in
+	+ Also jellyfish fixed in 1.2.6? NO
+
++ Release:
+	+ Do structure first (above)
+	+ Check if less rope mass makes empress of britain not break
+	+ Add all other ships 
+		+ Remember: uppercase and spaces filenames
+	+ Do new .shp's:
+		+ Carnival
+		+ Titanic
+	+ Rerun perf profiling
+	+ Lower volume of stress sounds, so that break sounds are louder
+	+ @Release only: make Krafting.shp the default ship
+	+ Screenshots @ github readme
+	+ Tell art guy
+	+ Send email to Luke
+
++ Bugs to fix in master: 
+	+ Ship::Render: when there are no changes to elements and we keep uploading stressed springs, we don't reset the count
+	  in ShipRenderContext::mElementBufferSizes
+		+ Fix simply by having Start and End for uploading stressed springs
+		+ Done in FB branch
+	+ No default args @ vec cctors
+		+ Done in FB branch
+
+==============================================
+        // Inputs from previous shader
+        varying vec3 vertexCol;
+        varying float vertexLampDistance;
+
+        // Parameters        
+        uniform float paramLampLightIntensity;
+        uniform float paramLampLightDiffusionAdjustmentCoefficient;        
+        uniform float paramMultiplePassFraction;
+
+        void main()
+        {
+            vec3 lightPointColour = vec3(1.0, 1.0, 0.25);
+
+            float distance = max(1.0, vertexLampDistance * vertexLampDistance * paramLampLightDiffusionAdjustmentCoefficient);
+            float lightness = paramLampLightIntensity / distance;                        
+            vec3 col = (vertexCol * (1.0 - lightness) + lightPointColour * lightness) * paramMultiplePassFraction;
+            //vec3 multColor = lightPointColour * lightness + (vec3(1.0, 1.0, 1.0) * (1.0 - lightness));
+            //vertexCol = inputCol * multColor;
+
+            gl_FragColor = vec4(col.xyz, 1.0);
+        } 
+==============================================
