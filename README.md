@@ -1,7 +1,7 @@
 
 
 # Floating Sandbox
-Two-dimensional mass-spring network in C++, simulating ships floating on water and sinking.
+Two-dimensional mass-spring network in C++, simulating bodies floating on water and sinking.
 
 ---
 This game is a C++ implementation of a particular class of particle systems, namely a *mass-spring-damper* network. With a mass-spring-damper network it is possible to simulate a rigid body by decomposing it into a number of infinitesimal particles ("points"), which are linked to each other via spring-damper pairs. Springs help maintain the rigidity of the body, while dampers are mostly to maintain the numerical stability of the system.
@@ -12,18 +12,20 @@ At any given moment, the forces acting on a point are:
 - Gravity and buoyance forces, scalar force fields and thus independent from the positions or velocities of the points
 - Forces deriving from the interactions with the user, who can apply radial or angular forces
 
-Water that enters the ship's body moves following gravitation and pressure gradients, and it adds to the mass of each "wet" point rendering parts of the body heavier.
+Water that enters the body moves following gravitation and pressure gradients, and it adds to the mass of each "wet" point rendering parts of the body heavier.
 
-Ships are loaded from *png* images; each pixel in the image becomes a point in the simulated world, and springs connect each point to all of its neighbours. The color of the pixel in the original image determines the material of the corresponding point, based on a dictionary containing tens of materials; the material of a point in turn determines the physical properties of the point (e.g. mass, water permeability, electrical conductivity) and of the springs attached to it (e.g. stiffness, strength).
+Bodies are loaded from *png* images; each pixel in the image becomes a point in the simulated world, and springs connect each point to all of its neighbours. The color of the pixel in the original image determines the material of the corresponding point, based on a dictionary containing tens of materials; the material of a point in turn determines the physical properties of the point (e.g. mass, water permeability, electrical conductivity) and of the springs attached to it (e.g. stiffness, strength).
 
-An optional texture map may be applied on top of the ship, which will be drawn according to a tessellation of the network of points.
+An optional texture map may be applied on top of the body, which will be drawn according to a tessellation of the network of points.
 
-Users can interact with a ship in different ways:
-- Break parts of the ship
-- Slice the ship in pieces
+Users can interact with a body in different ways:
+- Break parts of the body
+- Slice the body in pieces
 - Apply radial forces and angular forces
 - Deploy timer bombs and remotely-controlled bombs
-- Pin points of the ship so that their position (and velocity) become frozen
+- Pin individual points of the body so that their position (and velocity) become frozen
+
+The game was originally designed to simulate sinking ships, but at this moment it's really a generic physics simulator that can be used to simulate just about anything.
 
 <img src="https://i.imgur.com/c8fTsgY.png">
 <img src="https://i.imgur.com/kovxCty.png">
