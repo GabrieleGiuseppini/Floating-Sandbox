@@ -118,9 +118,10 @@ endif(MSVC)
 # Sub-projects
 ####################################################
 
+add_subdirectory(FloatingSandbox)
 add_subdirectory(GameLib)
 add_subdirectory(Glad)
-add_subdirectory(FloatingSandbox)
+add_subdirectory(ShipTools)
 add_subdirectory(UILib)
 add_subdirectory(UnitTests)
 

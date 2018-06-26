@@ -9,8 +9,8 @@ This game is a C++ implementation of a particular class of particle systems, nam
 At any given moment, the forces acting on a point are:
 - Spring forces, proportional to the elongation of the spring (Hooke's law) and thus to the positions of the two endpoints 
 - Damper forces, proportional to the relative velocity of the endpoints of the spring and thus to the velocity of the two endpoints 
-- Gravity and buoyance forces, scalar force fields and thus independent from the positions or velocities of the points
-- Forces deriving from the interactions with the user, who can apply radial or angular forces
+- Gravity and buoyance forces, proportional to the mass and "wetness" of the points
+- Forces deriving from the interactions with the user, who can apply radial or angular forces, generate explosions, and so on
 
 Water that enters the body moves following gravitation and pressure gradients, and it adds to the mass of each "wet" point rendering parts of the body heavier.
 

@@ -20,7 +20,7 @@
 class MaterialDatabase
 {
 public:
-        
+
     static MaterialDatabase Create(picojson::value const & root)
     {
         std::vector<std::unique_ptr<Material const>> materials;
@@ -115,6 +115,18 @@ public:
     Material const & GetRopeMaterial() const
     {
         return mRopeMaterial;
+    }
+
+    size_t GetMaterialCount() const
+    {
+        return mMaterialsMap.size();
+    }
+
+    Material const & GetMaterialAt(size_t index) const
+    {
+        auto it = mMaterialsMap.begin();
+        std::advance(it, index);
+        return *(it->second);
     }
 
 private:

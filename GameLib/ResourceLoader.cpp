@@ -200,7 +200,12 @@ std::vector<ImageData> ResourceLoader::LoadTexturesRgba(
 
 MaterialDatabase ResourceLoader::LoadMaterials()
 {
-    picojson::value root = Utils::ParseJSONFile("Data/materials.json");
+    return LoadMaterials(std::filesystem::path("Data") / "materials.json");
+}
+
+MaterialDatabase ResourceLoader::LoadMaterials(std::filesystem::path const & filePath)
+{
+    picojson::value root = Utils::ParseJSONFile(filePath.string());
     return MaterialDatabase::Create(root);
 }
 
@@ -256,13 +261,13 @@ std::filesystem::path ResourceLoader::GetArtFilepath(std::string const & artName
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////
+// Images
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 ImageData ResourceLoader::LoadImage(
     std::filesystem::path const & filepath,
-    int format,
-    int origin)
+    int targetFormat,
+    int targetOrigin)
 {
     //
     // Load image
@@ -287,9 +292,9 @@ ImageData ResourceLoader::LoadImage(
 
     int imageFormat = ilGetInteger(IL_IMAGE_FORMAT);
     int imageType = ilGetInteger(IL_IMAGE_TYPE);
-    if (format != imageFormat || IL_UNSIGNED_BYTE != imageType)
+    if (targetFormat != imageFormat || IL_UNSIGNED_BYTE != imageType)
     {
-        if (!ilConvertImage(format, IL_UNSIGNED_BYTE))
+        if (!ilConvertImage(targetFormat, IL_UNSIGNED_BYTE))
         {
             ILint devilError = ilGetError();
             std::string devilErrorMessage(iluErrorString(devilError));
@@ -298,7 +303,7 @@ ImageData ResourceLoader::LoadImage(
     }
 
     int imageOrigin = ilGetInteger(IL_IMAGE_ORIGIN);
-    if (imageOrigin != origin)
+    if (targetOrigin != imageOrigin)
     {
         iluFlipImage();
     }
@@ -328,3 +333,7 @@ ImageData ResourceLoader::LoadImage(
         height, 
         std::move(data));
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////

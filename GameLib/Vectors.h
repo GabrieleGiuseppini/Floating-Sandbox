@@ -273,6 +273,11 @@ public:
 		return sqrtf(x * x + y * y + z * z);
 	}
 
+    float squareLength() const
+    {
+        return x * x + y * y + z * z;
+    }
+
 	vec3f normalise() const
 	{
         float const squareLength = x * x + y * y + z * z;

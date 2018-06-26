@@ -29,7 +29,7 @@ public:
     // Ships
     //
 
-    ShipDefinition LoadShipDefinition(std::filesystem::path const & filepath);
+    ShipDefinition LoadShipDefinition(std::filesystem::path const & filePath);
 
     std::filesystem::path GetDefaultShipDefinitionFilePath() const;
 
@@ -57,6 +57,8 @@ public:
 
     MaterialDatabase LoadMaterials();
 
+    static MaterialDatabase LoadMaterials(std::filesystem::path const & filePath);
+
 
     //
     // Music
@@ -82,10 +84,13 @@ public:
 
     std::filesystem::path GetArtFilepath(std::string const & artName) const;
 
-private:
+
+    //
+    // Generic
+    //
 
     ImageData LoadImage(
         std::filesystem::path const & filepath,
-        int format,
-        int origin);
+        int targetFormat,
+        int targetOrigin);
 };

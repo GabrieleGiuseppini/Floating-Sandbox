@@ -49,11 +49,16 @@ Prev perf (before point et al destructuring)
 
 - Release:
 	- Make some ships
+		+ Make ShipTools, -quantize verb
+		- Make some stiffer columns of steel, iron, titanium, etc.
+			- Add "f=..." to template or better "M:S:F"
+		- Call .shp parts ".png.dat"
+			- Rename via git
+			- Edit .shp files
 	- Build and release 1.2.0
 	- Change LinkedIn link
 	- Post to forum
 	- Add to gamejolt
-
 
 - Technical Debt:
 	+ Move definition of ElementIndex et al into GameTypes.h
@@ -217,7 +222,7 @@ Prev perf (before point et al destructuring)
 		- Test: Ship::SpringDestroyHandler() only destroys triangles that contain A-B
 			- Should definitely make both A and B leak, as they both now have an adjacent hole
 		
-- Controls:			
+- Controls:
 	- SettingsDialog: save settings, and defaults
 		- JSON for both game & render params, assembled & saved by gamecontroller, who also loads it on startup if exists 
 		- GameParameters::ToJson()->picojson::value
@@ -289,8 +294,10 @@ Prev perf (before point et al destructuring)
 		- @Sip::Update, electrical section: if mAreElementsDirty: invoke UpdateCurrentConnectivity()
 			- Visit whole electrical graph, as:
 			- For each generator point:
-				- if not visited=>flood all connected ElectricalElements from here
-					- for each node: set to visited
+				- if not visited=>flood all connected ElectricalElements (of any type) from here
+					- Only start from a generator if its wetness < threshold
+						- But still mark it as visited
+					- For each node: set to visited
 					- No need to have a visited set, just call ElElement->IsVisited(curGen)
 			- Then, lamps will be considered lighted if visited at this generation
 		- OLD: generators and cumulative current calculation:
