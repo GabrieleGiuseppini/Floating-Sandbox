@@ -48,15 +48,26 @@ Prev perf (before point et al destructuring)
 =================================================
 
 - Release:
-	- Make some ships
+	= Change LinkedIn link
+	= Make some ships
 		+ Make ShipTools, -quantize verb
-		- Make some stiffer columns of steel, iron, titanium, etc.
-			- Add "f=..." to template or better "M:S:F"
+		+ Make some stiffer columns of steel, iron, titanium, etc.
+			+ materials: also order rows based on mass
+			+ Do last steel column stiff
+			+ Iron and Wood
+				+ Switch stiff wood with new one
+					+ Switch also Titanic
+						+ Test
+			+ Add "f=..." to template or better "M:S:F"
+			+ Test newest ship
+		- Antennas
+			- Draft with barrels
+		- That warship
 		- Call .shp parts ".png.dat"
 			- Rename via git
 			- Edit .shp files
 	- Build and release 1.2.0
-	- Change LinkedIn link
+	- PinnedPoints below
 	- Post to forum
 	- Add to gamejolt
 
@@ -103,11 +114,11 @@ Prev perf (before point et al destructuring)
 		- 1: see if it's better to store delta's and/or other pre-calculated things
 		- 2: see if can do semi-integer x-axis interpolation
 
-- Release:
-	- Do final round with all ships
-	- Post on Forum
 
 - Gfx:
+	- Change connected component detection by not propagating from a "spring only" to a "body"
+		- In practice: food the *edge* network, not the spring network, and don't propagate
+		  from edge with zero triangles to edge with !=0 triangles
 	- Option to enable drawing of force vectors for each point
 	- Texture atlas:
 		- Test first if with a single texture bind per ship (which will look crappy!) there's a significant
@@ -196,6 +207,7 @@ Prev perf (before point et al destructuring)
 		- Runge-Kutta
 		- Semi-implicit Euler (https://www.scss.tcd.ie/Michael.Manzke/CS7057/cs7057-1516-14-MassSpringSystems-mm.pdf)
 	- Water:
+		- Test forcing incoming water @ LeakWater to be max 1.0
 		- Sinking detection is broken - it currently only considers total water that entered the ship, which comes proportionally to external
 		  water pressure; all this water could be confined to a tiny volume, and yet we trigger sinking
 			- Option 1: make it based on total number of points that have water instead, i.e. wet points
@@ -211,7 +223,6 @@ Prev perf (before point et al destructuring)
 		+ Add Point::Hull Characteristic, and don't leak/propagate(incl. gravitate) water if at least one of the two points is hull			
 			+ Alternatively: just make a spring hull if one point is hull; test it
 		- BalancePressure: see if shouldn't average water among two points - do we lose waves if we do so?
-		- GravitateWater: can avoid checking sign of cos theta - using minus to still move water from higher to lower?
 		- BalancePressure: use gradient, it seems we stuff too much water into points with already too much water
 		- GravitateWater: try inverse visit (from H to L)
 			- Requires PointerVector::rbegin,rend
@@ -340,7 +351,7 @@ Prev perf (before point et al destructuring)
 	
 
 - Smoke
-	- Smoke-material points, emitting particles with a lifetime and a transparency connected to age
+	- Smoke-material points, using ephemeral particles
 
 - Multiple ships:
 	- Better after collision detection

@@ -2,7 +2,7 @@
     {
         "name": "Steel Hull",
 	"template": {
-		"row": "0|Steel Hull",
+		"row": "2|Steel Hull",
 		"column": 0
 	},
         "strength": 175,
@@ -18,7 +18,7 @@
     {
         "name": "Steel",
 	"template": {
-		"row": "1|Steel",
+		"row": "3|Steel",
 		"column": 0
 	},
         "strength": 160,
@@ -33,7 +33,7 @@
     {
         "name": "Titanium Hull",
 	"template": {
-		"row": "2|Titanium Hull",
+		"row": "4|Titanium Hull",
 		"column": 0
 	},
         "strength": 150,
@@ -49,7 +49,7 @@
     {
         "name": "Titanium",
 	"template": {
-		"row": "3|Titanium",
+		"row": "5|Titanium",
 		"column": 0
 	},
         "strength": 140,
@@ -64,7 +64,7 @@
     {
         "name": "Iron Hull",
 	"template": {
-		"row": "4|Iron Hull",
+		"row": "0|Iron Hull",
 		"column": 0
 	},
         "strength": 110,
@@ -80,7 +80,7 @@
     {
         "name": "Iron",
 	"template": {
-		"row": "5|Iron",
+		"row": "1|Iron",
 		"column": 0
 	},
         "strength": 100,
@@ -100,7 +100,7 @@
 	},
         "strength": 50,
         "mass": 1000,
-	"stiffness": 2,
+	"stiffness": 1,
         "structural_colour": "#905020",
 	"render_colour": "#905020",
         "isHull": true,
@@ -116,7 +116,7 @@
 	},
         "strength": 40,
         "mass": 800,
-	"stiffness": 2,
+	"stiffness": 1,
         "structural_colour": "#E0D8C0",
 	"render_colour": "#E0D8C0",
 	"sound_properties": {
@@ -189,7 +189,7 @@
     {
         "name": "Steel Hull Red",
 	"template": {
-		"row": "0|Steel Hull",
+		"row": "2|Steel Hull",
 		"column": 1
 	},
         "strength": 175,
@@ -205,7 +205,7 @@
     {
         "name": "Steel Red",
 	"template": {
-		"row": "1|Steel",
+		"row": "3|Steel",
 		"column": 1
 	},
         "strength": 160,
@@ -220,7 +220,7 @@
     {
         "name": "Iron Hull Red",
 	"template": {
-		"row": "4|Iron Hull",
+		"row": "0|Iron Hull",
 		"column": 1
 	},
         "strength": 110,
@@ -236,7 +236,7 @@
     {
         "name": "Iron Red",
 	"template": {
-		"row": "5|Iron",
+		"row": "1|Iron",
 		"column": 1
 	},
         "strength": 100,
@@ -282,7 +282,7 @@
     {
         "name": "Titanium Hull Red",
 	"template": {
-		"row": "2|Titanium Hull",
+		"row": "4|Titanium Hull",
 		"column": 1
 	},
         "strength": 150,
@@ -298,7 +298,7 @@
     {
         "name": "Titanum Red",
 	"template": {
-		"row": "3|Titanium",
+		"row": "5|Titanium",
 		"column": 1
 	},
         "strength": 140,
@@ -313,7 +313,7 @@
     {
         "name": "Steel Hull Yellow",
 	"template": {
-		"row": "0|Steel Hull",
+		"row": "2|Steel Hull",
 		"column": 2
 	},
         "strength": 175,
@@ -329,7 +329,7 @@
     {
         "name": "Steel Yellow",
 	"template": {
-		"row": "1|Steel",
+		"row": "3|Steel",
 		"column": 2
 	},
         "strength": 160,
@@ -344,7 +344,7 @@
     {
         "name": "Iron Hull Yellow",
 	"template": {
-		"row": "4|Iron Hull",
+		"row": "0|Iron Hull",
 		"column": 2
 	},
         "strength": 110,
@@ -360,7 +360,7 @@
     {
         "name": "Iron Yellow",
 	"template": {
-		"row": "5|Iron",
+		"row": "1|Iron",
 		"column": 2
 	},
         "strength": 100,
@@ -406,7 +406,7 @@
     {
         "name": "Titanium Hull Yellow",
 	"template": {
-		"row": "2|Titanium Hull",
+		"row": "4|Titanium Hull",
 		"column": 2
 	},
         "strength": 150,
@@ -422,7 +422,7 @@
     {
         "name": "Titanium Yellow",
 	"template": {
-		"row": "3|Titanium",
+		"row": "5|Titanium",
 		"column": 2
 	},
         "strength": 140,
@@ -437,7 +437,7 @@
     {
         "name": "Steel Hull Green",
 	"template": {
-		"row": "0|Steel Hull",
+		"row": "2|Steel Hull",
 		"column": 3
 	},
         "strength": 175,
@@ -453,7 +453,7 @@
     {
         "name": "Steel Green",
 	"template": {
-		"row": "1|Steel",
+		"row": "3|Steel",
 		"column": 3
 	},
         "strength": 160,
@@ -468,7 +468,7 @@
     {
         "name": "Iron Hull Green",
 	"template": {
-		"row": "4|Iron Hull",
+		"row": "0|Iron Hull",
 		"column": 3
 	},
         "strength": 110,
@@ -484,7 +484,7 @@
     {
         "name": "Iron Green",
 	"template": {
-		"row": "5|Iron",
+		"row": "1|Iron",
 		"column": 3
 	},
         "strength": 100,
@@ -530,7 +530,7 @@
     {
         "name": "Titanium Hull Green",
 	"template": {
-		"row": "2|Titanium Hull",
+		"row": "4|Titanium Hull",
 		"column": 3
 	},
         "strength": 150,
@@ -546,7 +546,7 @@
     {
         "name": "Titanium Green",
 	"template": {
-		"row": "3|Titanium",
+		"row": "5|Titanium",
 		"column": 3
 	},
         "strength": 140,
@@ -561,7 +561,7 @@
     {
         "name": "Steel Hull Blue",	
 	"template": {
-		"row": "0|Steel Hull",
+		"row": "2|Steel Hull",
 		"column": 4
 	},
         "strength": 175,
@@ -577,7 +577,7 @@
     {
         "name": "Steel Blue",	
 	"template": {
-		"row": "1|Steel",
+		"row": "3|Steel",
 		"column": 4
 	},
         "strength": 160,
@@ -592,7 +592,7 @@
     {
         "name": "Iron Hull Blue",	
 	"template": {
-		"row": "4|Iron Hull",
+		"row": "0|Iron Hull",
 		"column": 4
 	},
         "strength": 110,
@@ -608,7 +608,7 @@
     {
         "name": "Iron Blue",	
 	"template": {
-		"row": "5|Iron",
+		"row": "1|Iron",
 		"column": 4
 	},
         "strength": 100,
@@ -654,7 +654,7 @@
     {
         "name": "Titanium Hull Blue",	
 	"template": {
-		"row": "2|Titanium Hull",
+		"row": "4|Titanium Hull",
 		"column": 4
 	},
         "strength": 150,
@@ -670,7 +670,7 @@
     {
         "name": "Titanium Blue",	
 	"template": {
-		"row": "3|Titanium",
+		"row": "5|Titanium",
 		"column": 4
 	},
         "strength": 140,
@@ -685,7 +685,7 @@
     {
         "name": "Steel Hull Blue2",
 	"template": {
-		"row": "0|Steel Hull",
+		"row": "2|Steel Hull",
 		"column": 5
 	},
         "strength": 175,
@@ -701,7 +701,7 @@
     {
         "name": "Steel Blue2",
 	"template": {
-		"row": "1|Steel",
+		"row": "3|Steel",
 		"column": 5
 	},
         "strength": 160,
@@ -716,7 +716,7 @@
     {
         "name": "Iron Hull Blue2",
 	"template": {
-		"row": "4|Iron Hull",
+		"row": "0|Iron Hull",
 		"column": 5
 	},
         "strength": 110,
@@ -732,7 +732,7 @@
     {
         "name": "Iron Blue2",
 	"template": {
-		"row": "5|Iron",
+		"row": "1|Iron",
 		"column": 5
 	},
         "strength": 100,
@@ -778,7 +778,7 @@
     {
         "name": "Titanium Hull Blue2",
 	"template": {
-		"row": "2|Titanium Hull",
+		"row": "4|Titanium Hull",
 		"column": 5
 	},
         "strength": 150,
@@ -794,7 +794,7 @@
     {
         "name": "Titanium Blue2",
 	"template": {
-		"row": "3|Titanium",
+		"row": "5|Titanium",
 		"column": 5
 	},
         "strength": 140,
@@ -809,7 +809,7 @@
     {
         "name": "Steel Hull Pink",
 	"template": {
-		"row": "0|Steel Hull",
+		"row": "2|Steel Hull",
 		"column": 6
 	},
         "strength": 175,
@@ -825,7 +825,7 @@
     {
         "name": "Steel Pink",
 	"template": {
-		"row": "1|Steel",
+		"row": "3|Steel",
 		"column": 6
 	},
         "strength": 160,
@@ -840,7 +840,7 @@
     {
         "name": "Iron Hull Pink",
 	"template": {
-		"row": "4|Iron Hull",
+		"row": "0|Iron Hull",
 		"column": 6
 	},
         "strength": 110,
@@ -856,7 +856,7 @@
     {
         "name": "Iron Pink",
 	"template": {
-		"row": "5|Iron",
+		"row": "1|Iron",
 		"column": 6
 	},
         "strength": 100,
@@ -902,7 +902,7 @@
     {
         "name": "Titanium Hull Pink",
 	"template": {
-		"row": "2|Titanium Hull",
+		"row": "4|Titanium Hull",
 		"column": 6
 	},
         "strength": 150,
@@ -918,7 +918,7 @@
     {
         "name": "Titanium Pink",
 	"template": {
-		"row": "3|Titanium",
+		"row": "5|Titanium",
 		"column": 6
 	},
         "strength": 140,
@@ -933,7 +933,7 @@
     {
         "name": "Steel Hull Orange",	
 	"template": {
-		"row": "0|Steel Hull",
+		"row": "2|Steel Hull",
 		"column": 7
 	},
         "strength": 175,
@@ -949,7 +949,7 @@
     {
         "name": "Steel Orange",	
 	"template": {
-		"row": "1|Steel",
+		"row": "3|Steel",
 		"column": 7
 	},
         "strength": 160,
@@ -964,7 +964,7 @@
     {
         "name": "Iron Hull Orange",	
 	"template": {
-		"row": "4|Iron Hull",
+		"row": "0|Iron Hull",
 		"column": 7
 	},
         "strength": 110,
@@ -980,7 +980,7 @@
     {
         "name": "Iron Orange",	
 	"template": {
-		"row": "5|Iron",
+		"row": "1|Iron",
 		"column": 7
 	},
         "strength": 100,
@@ -1026,7 +1026,7 @@
     {
         "name": "Titanium Hull Orange",	
 	"template": {
-		"row": "2|Titanium Hull",
+		"row": "4|Titanium Hull",
 		"column": 7
 	},
         "strength": 150,
@@ -1042,7 +1042,7 @@
     {
         "name": "Titanium Orange",	
 	"template": {
-		"row": "3|Titanium",
+		"row": "5|Titanium",
 		"column": 7
 	},
         "strength": 140,
@@ -1052,6 +1052,146 @@
 	"render_colour": "#EF6B00",
 	"sound_properties": {
 		"element_type": "Metal"
+	}
+    },
+    {
+        "name": "Iron Hull Stiff",
+	"template": {
+		"row": "0|Iron Hull",
+		"column": 8
+	},
+        "strength": 110,
+        "mass": 7950,
+	"stiffness": 2,
+        "structural_colour": "#111111",
+	"render_colour": "#111111",
+        "isHull": true,
+	"sound_properties": {
+		"element_type": "Metal"
+	}
+    },
+    {
+        "name": "Iron Stiff",
+	"template": {
+		"row": "1|Iron",
+		"column": 8
+	},
+        "strength": 100,
+        "mass": 7850,
+	"stiffness": 2.2,
+        "structural_colour": "#222222",
+	"render_colour": "#222222",
+	"sound_properties": {
+		"element_type": "Metal"
+	}
+    },
+
+    {
+        "name": "Steel Hull Stiff",
+	"template": {
+		"row": "2|Steel Hull",
+		"column": 8
+	},
+        "strength": 175,
+        "mass": 7580,
+	"stiffness": 2,
+        "structural_colour": "#333333",
+	"render_colour": "#333333",
+        "isHull": true,
+	"sound_properties": {
+		"element_type": "Metal"
+	}
+    },
+    {
+        "name": "Steel Stiff",
+	"template": {
+		"row": "3|Steel",
+		"column": 8
+	},
+        "strength": 160,
+        "mass": 7480,
+	"stiffness": 2.2,
+        "structural_colour": "#444444",
+	"render_colour": "#444444",
+	"sound_properties": {
+		"element_type": "Metal"
+	}
+    },
+    {
+        "name": "Black Steel",
+	"template": {
+		"row": "3|Steel",
+		"column": 9
+	},
+        "strength": 160,
+        "mass": 7480,
+	"stiffness": 1,
+        "structural_colour": "#262626",
+	"render_colour": "#262626",
+	"sound_properties": {
+		"element_type": "Metal"
+	}
+    },
+    {
+        "name": "Titanium Hull Stiff",	
+	"template": {
+		"row": "4|Titanium Hull",
+		"column": 8
+	},
+        "strength": 150,
+        "mass": 4600,
+	"stiffness": 2,
+        "structural_colour": "#555555",
+	"render_colour": "#555555",
+	"isHull": true,
+	"sound_properties": {
+		"element_type": "Metal"
+	}
+    },
+    {
+        "name": "Titanium Stiff",	
+	"template": {
+		"row": "5|Titanium",
+		"column": 8
+	},
+        "strength": 140,
+        "mass": 4500,
+	"stiffness": 2.2,
+        "structural_colour": "#666666",
+	"render_colour": "#666666",
+	"sound_properties": {
+		"element_type": "Metal"
+	}
+    },
+    {
+        "name": "Wood Hull Stiff",	
+	"template": {
+		"row": "6|Wood Hull",
+		"column": 8
+	},
+        "strength": 50,
+        "mass": 1000,
+	"stiffness": 2,
+        "structural_colour": "#777777",
+	"render_colour": "#777777",
+	"isHull": true,
+	"sound_properties": {
+		"element_type": "Wood"
+	}
+    },
+    {
+        "name": "Wood Stiff",	
+	"template": {
+		"row": "7|Wood",
+		"column": 8
+	},
+        "strength": 50,
+        "mass": 800,
+	"stiffness": 2.2,
+        "structural_colour": "#888888",
+	"render_colour": "#888888",
+	"sound_properties": {
+		"element_type": "Wood"
 	}
     },
     {
@@ -1147,37 +1287,6 @@
 	"render_colour": "#232323",
 	"sound_properties": {
 		"element_type": "Wood"
-	}
-    },
-    {
-        "name": "Black Steel Hull",
-	"template": {
-		"row": "0|Steel Hull",
-		"column": 8
-	},
-        "strength": 175,
-        "mass": 7580,
-	"stiffness": 1,
-        "structural_colour": "#111111",
-	"render_colour": "#111111",
-        "isHull": true,
-	"sound_properties": {
-		"element_type": "Metal"
-	}
-    },
-    {
-        "name": "Black Steel",
-	"template": {
-		"row": "1|Steel",
-		"column": 8
-	},
-        "strength": 160,
-        "mass": 7480,
-	"stiffness": 1,
-        "structural_colour": "#262626",
-	"render_colour": "#262626",
-	"sound_properties": {
-		"element_type": "Metal"
 	}
     },
     {

@@ -1,7 +1,5 @@
-
-
 # Floating Sandbox
-Two-dimensional mass-spring network in C++, simulating bodies floating on water and sinking.
+Two-dimensional mass-spring network in C++, simulating physical bodies floating in water and sinking.
 
 ---
 This game is a C++ implementation of a particular class of particle systems, namely a *mass-spring-damper* network. With a mass-spring-damper network it is possible to simulate a rigid body by decomposing it into a number of infinitesimal particles ("points"), which are linked to each other via spring-damper pairs. Springs help maintain the rigidity of the body, while dampers are mostly to maintain the numerical stability of the system.
