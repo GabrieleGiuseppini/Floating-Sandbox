@@ -175,9 +175,9 @@
 		"row": "20|Rope",
 		"column": 0
 	},
-        "strength": 80,
+        "strength": 40,
         "mass": 300,
-	"stiffness": 1.0,
+	"stiffness": 0.8,
         "structural_colour": "#000000",
 	"render_colour": "#000000",
         "isHull": true,
