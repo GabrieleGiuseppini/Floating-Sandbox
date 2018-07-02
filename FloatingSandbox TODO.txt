@@ -53,7 +53,7 @@ Prev perf (before point et al destructuring)
 		+ test with hack what would happen if all non-hull materials were 1/nth of the mass
 		= If ok:
 			= Before unhack: fix ships:
-				- Do Masts and investigate mass effect on breakage
+				+ Do Masts and investigate mass effect on breakage
 				+ Fix Titanic:
 					+ Lighter rudder
 					+ Also generally Lighter?
