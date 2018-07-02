@@ -48,6 +48,16 @@ std::unique_ptr<Material> Material::Create(picojson::object const & materialJson
             elementType);
     }
 
+    // TODOTEST
+    mass /= 6.0f;
+    if (!isHull)
+    {
+        if (!!soundProperties && soundProperties->ElementType == SoundProperties::SoundElementType::Metal)
+            mass /= 10.0f;
+        else 
+            mass /= 4.0f;
+    }
+
 	return std::unique_ptr<Material>(
 		new Material(
 			name,

@@ -4,11 +4,15 @@
 #
 
 set  (SHIP_TOOLS_SOURCES
+	Helpers.cpp
+	Helpers.h
 	Main.cpp
 	Quantizer.cpp
 	Quantizer.h
 	Resizer.cpp
 	Resizer.h
+	ShipAnalyzer.cpp
+	ShipAnalyzer.h
 	)
 
 source_group(" " FILES ${SHIP_TOOLS_SOURCES})

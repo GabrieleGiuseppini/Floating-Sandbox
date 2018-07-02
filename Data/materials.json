@@ -1170,7 +1170,7 @@
 		"column": 8
 	},
         "strength": 50,
-        "mass": 1000,
+        "mass": 2000,
 	"stiffness": 2,
         "structural_colour": "#777777",
 	"render_colour": "#777777",
@@ -1186,8 +1186,8 @@
 		"column": 8
 	},
         "strength": 50,
-        "mass": 800,
-	"stiffness": 2.2,
+        "mass": 1800,
+	"stiffness": 2.4,
         "structural_colour": "#888888",
 	"render_colour": "#888888",
 	"sound_properties": {
@@ -1278,7 +1278,7 @@
         "name": "Carbon",
 	"template": {
 		"row": "12|Carbon",
-		"column": 0
+		"column": 1
 	},
         "strength": 600,
         "mass": 758,

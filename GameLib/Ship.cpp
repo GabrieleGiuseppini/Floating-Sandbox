@@ -580,18 +580,31 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
         // 1. Add gravity and buoyancy
         //
 
-        float const effectiveBuoyancy = gameParameters.BuoyancyAdjustment * mPoints.GetBuoyancy(pointIndex);
+        // TODOTEST
+        ////float const effectiveBuoyancy = gameParameters.BuoyancyAdjustment * mPoints.GetBuoyancy(pointIndex);
 
+        ////// Mass = own + contained water (clamped to 1)
+        ////float effectiveMassMultiplier = 1.0f + std::min(mPoints.GetWater(pointIndex), 1.0f) * effectiveBuoyancy;
+        ////if (mPoints.GetPosition(pointIndex).y < waterHeightAtThisPoint)
+        ////{
+        ////    // Apply buoyancy of own mass (i.e. 1 * effectiveBuoyancy), which is
+        ////    // opposite to gravity
+        ////    effectiveMassMultiplier -= effectiveBuoyancy;
+        ////}
+
+        ////mPoints.GetForce(pointIndex) += gameParameters.Gravity * mPoints.GetMass(pointIndex) * effectiveMassMultiplier;
+
+        // Water = 1000kg
+        // Hull points have buoyancy=0 so that there's no buoyancy (and they're always dry)
+        float const effectiveWaterMass = 1000.0f * gameParameters.BuoyancyAdjustment * mPoints.GetBuoyancy(pointIndex);
         // Mass = own + contained water (clamped to 1)
-        float effectiveMassMultiplier = 1.0f + std::min(mPoints.GetWater(pointIndex), 1.0f) * effectiveBuoyancy;
+        mPoints.GetForce(pointIndex) += gameParameters.Gravity * (mPoints.GetMass(pointIndex) + std::min(mPoints.GetWater(pointIndex), 1.0f) * effectiveWaterMass);
+        
         if (mPoints.GetPosition(pointIndex).y < waterHeightAtThisPoint)
         {
-            // Apply buoyancy of own mass (i.e. 1 * effectiveBuoyancy), which is
-            // opposite to gravity
-            effectiveMassMultiplier -= effectiveBuoyancy;
+            // Apply upward push of water mass (i.e. buoyancy!)
+            mPoints.GetForce(pointIndex) -= gameParameters.Gravity * effectiveWaterMass;
         }
-
-        mPoints.GetForce(pointIndex) += gameParameters.Gravity * mPoints.GetMass(pointIndex) * effectiveMassMultiplier;
 
 
         //

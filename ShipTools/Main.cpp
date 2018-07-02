@@ -6,6 +6,7 @@
 
 #include "Quantizer.h"
 #include "Resizer.h"
+#include "ShipAnalyzer.h"
 
 #include <IL/il.h>
 #include <IL/ilu.h>
@@ -19,6 +20,7 @@
 
 int DoQuantize(int argc, char ** argv);
 int DoResize(int argc, char ** argv);
+int DoWeightShip(int argc, char ** argv);
 
 void PrintUsage();
 
@@ -44,6 +46,10 @@ int main(int argc, char ** argv)
         else if (verb == "resize")
         {
             return DoResize(argc, argv);
+        }
+        else if (verb == "weight")
+        {
+            return DoWeightShip(argc, argv);
         }
         else
         {
@@ -128,6 +134,25 @@ int DoResize(int argc, char ** argv)
     return 0;
 }
 
+int DoWeightShip(int argc, char ** argv)
+{
+    if (argc < 4)
+    {
+        PrintUsage();
+        return 0;
+    }
+
+    std::string inputFile(argv[2]);
+    std::string materialsFile(argv[3]);
+
+    auto weightInfo = ShipAnalyzer::Weight(inputFile, materialsFile);
+
+    std::cout << "  Total mass        : " << weightInfo.TotalMass << std::endl;
+    std::cout << "  Average point mass: " << weightInfo.MassPerPoint<< std::endl;
+
+    return 0;
+}
+
 void PrintUsage()
 {
     std::cout << std::endl;
@@ -136,4 +161,5 @@ void PrintUsage()
     std::cout << "      -r, --keep_ropes" << std::endl;
     std::cout << "      -g, --keep_glass" << std::endl;
     std::cout << " resize <in_file> <out_png> <width>" << std::endl;
+    std::cout << " weight <in_file> <materials_file>" << std::endl;
 }

@@ -89,7 +89,7 @@ public:
     // Generic
     //
 
-    ImageData LoadImage(
+    static ImageData LoadImage(
         std::filesystem::path const & filepath,
         int targetFormat,
         int targetOrigin);

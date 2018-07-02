@@ -49,7 +49,31 @@ Prev perf (before point et al destructuring)
 
 - Release:
 	= Change LinkedIn link
+	= Buoyancy fix:
+		+ test with hack what would happen if all non-hull materials were 1/nth of the mass
+		= If ok:
+			= Before unhack: fix ships:
+				- Do Masts and investigate mass effect on breakage
+				+ Fix Titanic:
+					+ Lighter rudder
+					+ Also generally Lighter?
+					+ Stronger under funnels (make tin stronger?)
+				- Fix Base III: make it float
+				- Fix default ship: just lighter
+				- Fix cargo ship
+					- Lighter back
+					- Weaker supports to containers
+					- Stronger mid-top material
+				- Fix Carnival - lighter
+			- Rewrite buoyancy code - use WaterMass
+			- Change materials
+				- Add density = [copy from current hack] 1/6th for hull, 1/(6*10or4)
+				- Material loading: just store mass*density at mass
+				- Materials Template: redo
+			+ Fix strength adjust
+		- Add to change list
 	= Make some ships
+		+ Copy three balls
 		+ Make ShipTools, -quantize verb
 		+ Make some stiffer columns of steel, iron, titanium, etc.
 			+ materials: also order rows based on mass
@@ -116,9 +140,10 @@ Prev perf (before point et al destructuring)
 
 
 - Gfx:
-	- Change connected component detection by not propagating from a "spring only" to a "body"
-		- In practice: food the *edge* network, not the spring network, and don't propagate
-		  from edge with zero triangles to edge with !=0 triangles
+	- Draw better parts connected only by ropes 
+		- Change connected component detection by not propagating from a "spring only" to a "body"
+			- In practice: flood the *edge* network, not the spring network, and don't propagate
+			  if coming from edge with zero triangles to an edge with !=0 triangles
 	- Option to enable drawing of force vectors for each point
 	- Texture atlas:
 		- Test first if with a single texture bind per ship (which will look crappy!) there's a significant
@@ -137,10 +162,11 @@ Prev perf (before point et al destructuring)
 	- Magnifying glass
 		- https://www.opengl.org/discussion_boards/showthread.php/154811-magnifying-glass-effect
 		- https://www.shadertoy.com/view/4tdXDl
-	- ocean depth bitmaps
+	- Ocean depth bitmaps
 	- Save photos (opens SaveAs FileDialog)
 	- Text (for query tool):
 		- see https://github.com/wxWidgets/wxWidgets/blob/master/samples/opengl/pyramid/pyramid.cpp
+	- Bug: bombs et al fade more rapidly than ship when ambient light goes away
 
 - Dynamics:
 
