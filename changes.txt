@@ -1,3 +1,6 @@
+1.3.0
+- Fixed bug with ocean depth adjustment
+
 1.2.0
 - Added ability to pin points - freezing them at their current position
 - Added ability to place remote-controlled and timer bombs (thanks Mart!)

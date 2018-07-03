@@ -1,7 +1,7 @@
 ﻿/***************************************************************************************
- * Original Author:		Gabriele Giuseppini
- * Created:				2018-01-21
- * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
+ * Original Author:     Gabriele Giuseppini
+ * Created:             2018-01-21
+ * Copyright:           Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
  ***************************************************************************************/
 #include "Physics.h"
 
@@ -197,8 +197,9 @@ void World::Update(GameParameters const & gameParameters)
     if (0u == mCurrentStepSequenceNumber)
         mCurrentStepSequenceNumber = 1u;
 
-    // Update water surface
+    // Update water surface and ocean floor
     mWaterSurface.Update(mCurrentTime, gameParameters);
+    mOceanFloor.Update(gameParameters);
 
     // Update all ships
     for (auto & ship : mAllShips)

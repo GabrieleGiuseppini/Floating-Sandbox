@@ -56,6 +56,9 @@ private:
 
     // The samples
     std::unique_ptr<float[]> mSamples;    
+
+    // The sea depth for which we're current
+    float mCurrentSeaDepth;
 };
 
 }
