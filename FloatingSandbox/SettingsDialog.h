@@ -1,7 +1,7 @@
 /***************************************************************************************
- * Original Author:		Gabriele Giuseppini
- * Created:				2018-01-21
- * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
+ * Original Author:     Gabriele Giuseppini
+ * Created:             2018-01-21
+ * Copyright:           Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
  ***************************************************************************************/
 #pragma once
 
@@ -58,20 +58,20 @@ private:
 
     wxCheckBox * mQuickWaterFixCheckBox;
     wxRadioBox * mShipRenderModeRadioBox;
-	wxCheckBox* mShowStressCheckBox;
+    wxCheckBox* mShowStressCheckBox;
 
-	wxButton * mOkButton;
-	wxButton * mCancelButton;
-	wxButton * mApplyButton;
+    wxButton * mOkButton;
+    wxButton * mCancelButton;
+    wxButton * mApplyButton;
 
 private:
 
     void ReadSettings();
 
-	void ApplySettings();
+    void ApplySettings();
 
 private:
 
-	wxWindow * const mParent;
-	std::shared_ptr<GameController> mGameController;
+    wxWindow * const mParent;
+    std::shared_ptr<GameController> mGameController;
 };

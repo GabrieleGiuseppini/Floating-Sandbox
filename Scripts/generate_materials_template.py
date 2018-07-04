@@ -97,7 +97,7 @@ def main():
         html += "<tr>"
         for cv in col_values:
             html += "<td style='font-size:8px;'>"
-            html += str(cv[2]["mass"]) + "|" + str(cv[2]["strength"]) + "|" + str(cv[2]["stiffness"])
+            html += str(cv[2]["mass"]["nominal_mass"] * cv[2]["mass"]["density"]) + "|" + str(cv[2]["strength"]) + "|" + str(cv[2]["stiffness"])
             html += "</td>"
         html += "</tr>"
         

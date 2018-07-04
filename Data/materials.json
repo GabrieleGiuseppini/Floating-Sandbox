@@ -5,12 +5,15 @@
 		"row": "2|Steel Hull",
 		"column": 0
 	},
-        "strength": 175,
-        "mass": 7580,
+        "strength": 0.092,
+	"mass": {
+		"nominal_mass": 7580,
+		"density": 0.17
+	},        
 	"stiffness": 1,
+        "is_hull": true,
         "structural_colour": "#A0A0A0",
         "render_colour": "#A0A0A0",
-        "isHull": true,
 	"sound_properties": {
 		"element_type": "Metal"
 	}
@@ -21,8 +24,12 @@
 		"row": "3|Steel",
 		"column": 0
 	},
-        "strength": 160,
-        "mass": 7480,
+        "strength": 0.0856,
+	"mass": {
+		"nominal_mass": 7480,
+		"density": 0.017
+	},   
+        "is_hull": false,
 	"stiffness": 1,
         "structural_colour": "#D8D8D8",
 	"render_colour": "#D8D8D8",
@@ -36,12 +43,15 @@
 		"row": "4|Titanium Hull",
 		"column": 0
 	},
-        "strength": 150,
-        "mass": 4600,
+        "strength": 0.13,
+	"mass": {
+		"nominal_mass": 4600,
+		"density": 0.17
+	},
 	"stiffness": 1,
         "structural_colour": "#565663",
 	"render_colour": "#565663",
-        "isHull": true,
+        "is_hull": true,
 	"sound_properties": {
 		"element_type": "Metal"
 	}
@@ -52,8 +62,12 @@
 		"row": "5|Titanium",
 		"column": 0
 	},
-        "strength": 140,
-        "mass": 4500,
+        "strength": 0.125,
+	"mass": {
+		"nominal_mass": 4500,
+		"density": 0.017
+	},   
+        "is_hull": false,
 	"stiffness": 1,
         "structural_colour": "#787896",
 	"render_colour": "#787896",
@@ -67,12 +81,15 @@
 		"row": "0|Iron Hull",
 		"column": 0
 	},
-        "strength": 110,
-        "mass": 7950,
+        "strength": 0.055,
+	"mass": {
+		"nominal_mass": 7950,
+		"density": 0.17
+	},
 	"stiffness": 1,
         "structural_colour": "#404050",
 	"render_colour": "#404050",
-        "isHull": true,
+        "is_hull": true,
 	"sound_properties": {
 		"element_type": "Metal"
 	}
@@ -83,8 +100,12 @@
 		"row": "1|Iron",
 		"column": 0
 	},
-        "strength": 100,
-        "mass": 7850,
+        "strength": 0.051,
+	"mass": {
+		"nominal_mass": 7850,
+		"density": 0.017
+	},   
+        "is_hull": false,
 	"stiffness": 1,
         "structural_colour": "#808090",
 	"render_colour": "#808090",
@@ -98,12 +119,15 @@
 		"row": "6|Wood Hull",
 		"column": 0
 	},
-        "strength": 50,
-        "mass": 1000,
+        "strength": 0.2,
+	"mass": {
+		"nominal_mass": 1000,
+		"density": 0.17
+	},
 	"stiffness": 1,
         "structural_colour": "#905020",
 	"render_colour": "#905020",
-        "isHull": true,
+        "is_hull": true,
 	"sound_properties": {
 		"element_type": "Wood"
 	}
@@ -114,8 +138,12 @@
 		"row": "7|Wood",
 		"column": 0
 	},
-        "strength": 40,
-        "mass": 800,
+        "strength": 0.15,
+	"mass": {
+		"nominal_mass": 800,
+		"density": 0.0417
+	},  
+	"is_hull": false,
 	"stiffness": 1,
         "structural_colour": "#E0D8C0",
 	"render_colour": "#E0D8C0",
@@ -124,13 +152,37 @@
 	}
     },
     {
-        "name": "Tin",
+        "name": "Tin Hull",
 	"template": {
-		"row": "8|Tin",
+		"row": "8|Tin Hull",
 		"column": 0
 	},
-        "strength": 20,
-        "mass": 300,
+        "strength": 0.53,
+	"mass": {
+		"nominal_mass": 300,
+		"density": 0.17
+	},   
+        "is_hull": true,
+	"stiffness": 0.5,
+        "structural_colour": "#C0C0C0",
+	"render_colour": "#C0C0C0",
+	"sound_properties": {
+		"element_type": "Metal"
+	}
+    },
+
+    {
+        "name": "Tin",
+	"template": {
+		"row": "9|Tin",
+		"column": 0
+	},
+        "strength": 0.267,
+	"mass": {
+		"nominal_mass": 300,
+		"density": 0.017
+	},   
+        "is_hull": false,
 	"stiffness": 0.5,
         "structural_colour": "#D0D0D0",
 	"render_colour": "#D0D0D0",
@@ -141,15 +193,18 @@
     {
         "name": "Cardboard Hull",
 	"template": {
-		"row": "9|Cardboard Hull",
+		"row": "10|Cardboard Hull",
 		"column": 0
 	},
-        "strength": 5,
-        "mass": 30,
+        "strength": 0.67,
+	"mass": {
+		"nominal_mass": 30,
+		"density": 0.17
+	},
+	"is_hull": true,
 	"stiffness": 1,
         "structural_colour": "#A88848",
         "render_colour": "#A88848",
-        "isHull": true,
 	"sound_properties": {
 		"element_type": "Wood"
 	}
@@ -157,11 +212,15 @@
     {
         "name": "Cardboard",
 	"template": {
-		"row": "10|Cardboard",
+		"row": "11|Cardboard",
 		"column": 0
 	},
-        "strength": 5,
-        "mass": 20,
+        "strength": 0.6,
+        "mass": {
+		"nominal_mass": 20,
+		"density": 0.0417
+	},  
+	"is_hull": false,
 	"stiffness": 1,
         "structural_colour": "#C1A46A",
 	"render_colour": "#C1A46A",
@@ -175,13 +234,16 @@
 		"row": "20|Rope",
 		"column": 0
 	},
-        "strength": 40,
-        "mass": 300,
+        "strength": 0.33,
+	"mass": {
+		"nominal_mass": 30,
+		"density": 0.17
+	},
 	"stiffness": 0.8,
         "structural_colour": "#000000",
 	"render_colour": "#000000",
-        "isHull": true,
-	"isRope": true,
+        "is_hull": true,
+	"is_rope": true,
 	"sound_properties": {
 		"element_type": "Cable"
 	}
@@ -192,12 +254,15 @@
 		"row": "2|Steel Hull",
 		"column": 1
 	},
-        "strength": 175,
-        "mass": 7580,
+        "strength": 0.092,
+	"mass": {
+		"nominal_mass": 7580,
+		"density": 0.17
+	},
 	"stiffness": 1,
         "structural_colour": "#A71000",
 	"render_colour": "#A71000",
-        "isHull": true,
+        "is_hull": true,
 	"sound_properties": {
 		"element_type": "Metal"
 	}
@@ -208,8 +273,12 @@
 		"row": "3|Steel",
 		"column": 1
 	},
-        "strength": 160,
-        "mass": 7480,
+        "strength": 0.0856,
+	"mass": {
+		"nominal_mass": 7480,
+		"density": 0.017
+	},   
+        "is_hull": false,
 	"stiffness": 1,
         "structural_colour": "#D80E00",
 	"render_colour": "#D80E00",
@@ -223,12 +292,15 @@
 		"row": "0|Iron Hull",
 		"column": 1
 	},
-        "strength": 110,
-        "mass": 7950,
+        "strength": 0.055,
+	"mass": {
+		"nominal_mass": 7950,
+		"density": 0.17
+	},
 	"stiffness": 1,
         "structural_colour": "#840E00",
 	"render_colour": "#840E00",
-        "isHull": true,
+        "is_hull": true,
 	"sound_properties": {
 		"element_type": "Metal"
 	}
@@ -239,8 +311,12 @@
 		"row": "1|Iron",
 		"column": 1
 	},
-        "strength": 100,
-        "mass": 7850,
+        "strength": 0.051,
+	"mass": {
+		"nominal_mass": 7850,
+		"density": 0.017
+	},   
+        "is_hull": false,
 	"stiffness": 1,
         "structural_colour": "#9E0F00",
 	"render_colour": "#9E0F00",
@@ -254,12 +330,15 @@
 		"row": "6|Wood Hull",
 		"column": 1
 	},
-        "strength": 10,
-        "mass": 1000,
+        "strength": 0.2,
+	"mass": {
+		"nominal_mass": 1000,
+		"density": 0.17
+	},
 	"stiffness": 1,
         "structural_colour": "#9E2E0C",
 	"render_colour": "#9E2E0C",
-        "isHull": true,
+        "is_hull": true,
 	"sound_properties": {
 		"element_type": "Wood"
 	}
@@ -270,8 +349,12 @@
 		"row": "7|Wood",
 		"column": 1
 	},
-        "strength": 5,
-        "mass": 800,
+        "strength": 0.15,
+        "mass": {
+		"nominal_mass": 800,
+		"density": 0.0417
+	},  
+	"is_hull": false,
 	"stiffness": 1,
         "structural_colour": "#B51B1B",
 	"render_colour": "#B51B1B",
@@ -285,12 +368,15 @@
 		"row": "4|Titanium Hull",
 		"column": 1
 	},
-        "strength": 150,
-        "mass": 4600,
+        "strength": 0.13,
+	"mass": {
+		"nominal_mass": 4600,
+		"density": 0.17
+	},
 	"stiffness": 1,
         "structural_colour": "#8F1F00",
 	"render_colour": "#8F1F00",
-        "isHull": true,
+        "is_hull": true,
 	"sound_properties": {
 		"element_type": "Metal"
 	}
@@ -301,8 +387,12 @@
 		"row": "5|Titanium",
 		"column": 1
 	},
-        "strength": 140,
-        "mass": 4500,
+        "strength": 0.125,
+	"mass": {
+		"nominal_mass": 4500,
+		"density": 0.017
+	},   
+        "is_hull": false,
 	"stiffness": 1,
         "structural_colour": "#BE1400",
 	"render_colour": "#BE1400",
@@ -316,12 +406,15 @@
 		"row": "2|Steel Hull",
 		"column": 2
 	},
-        "strength": 175,
-        "mass": 7580,
+        "strength": 0.092,
+	"mass": {
+		"nominal_mass": 7580,
+		"density": 0.17
+	},
 	"stiffness": 1,
         "structural_colour": "#A27A00",
 	"render_colour": "#A27A00",
-        "isHull": true,
+        "is_hull": true,
 	"sound_properties": {
 		"element_type": "Metal"
 	}
@@ -332,8 +425,12 @@
 		"row": "3|Steel",
 		"column": 2
 	},
-        "strength": 160,
-        "mass": 7480,
+        "strength": 0.0856,
+	"mass": {
+		"nominal_mass": 7480,
+		"density": 0.017
+	},   
+        "is_hull": false,
 	"stiffness": 1, 
         "structural_colour": "#D29800",
 	"render_colour": "#D29800",
@@ -347,12 +444,15 @@
 		"row": "0|Iron Hull",
 		"column": 2
 	},
-        "strength": 110,
-        "mass": 7950,
+        "strength": 0.055,
+	"mass": {
+		"nominal_mass": 7950,
+		"density": 0.17
+	},
 	"stiffness": 1,
         "structural_colour": "#806200",
 	"render_colour": "#806200",
-        "isHull": true,
+        "is_hull": true,
 	"sound_properties": {
 		"element_type": "Metal"
 	}
@@ -363,8 +463,12 @@
 		"row": "1|Iron",
 		"column": 2
 	},
-        "strength": 100,
-        "mass": 7850,
+        "strength": 0.051,
+	"mass": {
+		"nominal_mass": 7850,
+		"density": 0.017
+	},   
+        "is_hull": false,
 	"stiffness": 1,
         "structural_colour": "#997200",
 	"render_colour": "#997200",
@@ -378,12 +482,15 @@
 		"row": "6|Wood Hull",
 		"column": 2
 	},
-        "strength": 30,
-        "mass": 1000,
+        "strength": 0.2,
+	"mass": {
+		"nominal_mass": 1000,
+		"density": 0.17
+	},
 	"stiffness": 1,
         "structural_colour": "#998B0A",
 	"render_colour": "#998B0A",
-        "isHull": true,
+        "is_hull": true,
 	"sound_properties": {
 		"element_type": "Wood"
 	}
@@ -394,8 +501,12 @@
 		"row": "7|Wood",
 		"column": 2
 	},
-        "strength": 20,
-        "mass": 800,
+        "strength": 0.15,
+        "mass": {
+		"nominal_mass": 800,
+		"density": 0.0417
+	},  
+	"is_hull": false,
 	"stiffness": 1,
         "structural_colour": "#AF7C18",
 	"render_colour": "#AF7C18",
@@ -409,12 +520,15 @@
 		"row": "4|Titanium Hull",
 		"column": 2
 	},
-        "strength": 150,
-        "mass": 4600,
+        "strength": 0.13,
+	"mass": {
+		"nominal_mass": 4600,
+		"density": 0.17
+	},
 	"stiffness": 1,
         "structural_colour": "#8B7A00",
 	"render_colour": "#8B7A00",
-        "isHull": true,
+        "is_hull": true,
 	"sound_properties": {
 		"element_type": "Metal"
 	}
@@ -425,8 +539,12 @@
 		"row": "5|Titanium",
 		"column": 2
 	},
-        "strength": 140,
-        "mass": 4500,
+        "strength": 0.125,
+	"mass": {
+		"nominal_mass": 4500,
+		"density": 0.017
+	},   
+        "is_hull": false,
 	"stiffness": 1,
         "structural_colour": "#B88D00",
 	"render_colour": "#B88D00",
@@ -440,12 +558,15 @@
 		"row": "2|Steel Hull",
 		"column": 3
 	},
-        "strength": 175,
-        "mass": 7580,
+        "strength": 0.092,
+	"mass": {
+		"nominal_mass": 7580,
+		"density": 0.17
+	},
 	"stiffness": 1,
         "structural_colour": "#5A9B00",
 	"render_colour": "#5A9B00",
-        "isHull": true,
+        "is_hull": true,
 	"sound_properties": {
 		"element_type": "Metal"
 	}
@@ -456,8 +577,12 @@
 		"row": "3|Steel",
 		"column": 3
 	},
-        "strength": 160,
-        "mass": 7480,
+        "strength": 0.0856,
+	"mass": {
+		"nominal_mass": 7480,
+		"density": 0.017
+	},   
+        "is_hull": false,
 	"stiffness": 1,
         "structural_colour": "#7BC800",
 	"render_colour": "#7BC800",
@@ -471,12 +596,15 @@
 		"row": "0|Iron Hull",
 		"column": 3
 	},
-        "strength": 110,
-        "mass": 7950,
+        "strength": 0.055,
+	"mass": {
+		"nominal_mass": 7950,
+		"density": 0.17
+	},
 	"stiffness": 1,
         "structural_colour": "#467B00",
 	"render_colour": "#467B00",
-        "isHull": true,
+        "is_hull": true,
 	"sound_properties": {
 		"element_type": "Metal"
 	}
@@ -487,8 +615,12 @@
 		"row": "1|Iron",
 		"column": 3
 	},
-        "strength": 100,
-        "mass": 7850,
+        "strength": 0.051,
+	"mass": {
+		"nominal_mass": 7850,
+		"density": 0.017
+	},   
+        "is_hull": false,
 	"stiffness": 1,
         "structural_colour": "#569200",
 	"render_colour": "#569200",
@@ -502,12 +634,15 @@
 		"row": "6|Wood Hull",
 		"column": 3
 	},
-        "strength": 10,
-        "mass": 1000,
+        "strength": 0.2,
+	"mass": {
+		"nominal_mass": 1000,
+		"density": 0.17
+	},
 	"stiffness": 1,
         "structural_colour": "#439206",
 	"render_colour": "#439206",
-        "isHull": true,
+        "is_hull": true,
 	"sound_properties": {
 		"element_type": "Wood"
 	}
@@ -518,8 +653,12 @@
 		"row": "7|Wood",
 		"column": 3
 	},
-        "strength": 5,
-        "mass": 800,
+        "strength": 0.15,
+        "mass": {
+		"nominal_mass": 800,
+		"density": 0.0417
+	},  
+	"is_hull": false,
 	"stiffness": 1,
         "structural_colour": "#78A814",
 	"render_colour": "#78A814",
@@ -533,12 +672,15 @@
 		"row": "4|Titanium Hull",
 		"column": 3
 	},
-        "strength": 150,
-        "mass": 4600,
+        "strength": 0.13,
+	"mass": {
+		"nominal_mass": 4600,
+		"density": 0.17
+	},
 	"stiffness": 1,
         "structural_colour": "#3C8400",
 	"render_colour": "#3C8400",
-        "isHull": true,
+        "is_hull": true,
 	"sound_properties": {
 		"element_type": "Metal"
 	}
@@ -549,8 +691,12 @@
 		"row": "5|Titanium",
 		"column": 3
 	},
-        "strength": 140,
-        "mass": 4500,
+        "strength": 0.125,
+	"mass": {
+		"nominal_mass": 4500,
+		"density": 0.017
+	},   
+        "is_hull": false,
 	"stiffness": 1,
         "structural_colour": "#66B100",
 	"render_colour": "#66B100",
@@ -564,12 +710,15 @@
 		"row": "2|Steel Hull",
 		"column": 4
 	},
-        "strength": 175,
-        "mass": 7580,
+        "strength": 0.092,
+	"mass": {
+		"nominal_mass": 7580,
+		"density": 0.17
+	},
 	"stiffness": 1,
         "structural_colour": "#008A95",
 	"render_colour": "#008A95",
-        "isHull": true,
+        "is_hull": true,
 	"sound_properties": {
 		"element_type": "Metal"
 	}
@@ -580,8 +729,12 @@
 		"row": "3|Steel",
 		"column": 4
 	},
-        "strength": 160,
-        "mass": 7480,
+        "strength": 0.0856,
+	"mass": {
+		"nominal_mass": 7480,
+		"density": 0.017
+	},   
+        "is_hull": false,
 	"stiffness": 1,
         "structural_colour": "#00B6BF",
 	"render_colour": "#00B6BF",
@@ -595,12 +748,15 @@
 		"row": "0|Iron Hull",
 		"column": 4
 	},
-        "strength": 110,
-        "mass": 7950,
+        "strength": 0.055,
+	"mass": {
+		"nominal_mass": 7950,
+		"density": 0.17
+	},
 	"stiffness": 1,
         "structural_colour": "#006A76",
 	"render_colour": "#006A76",
-        "isHull": true,
+        "is_hull": true,
 	"sound_properties": {
 		"element_type": "Metal"
 	}
@@ -611,8 +767,12 @@
 		"row": "1|Iron",
 		"column": 4
 	},
-        "strength": 100,
-        "mass": 7850,
+        "strength": 0.051,
+	"mass": {
+		"nominal_mass": 7850,
+		"density": 0.017
+	},   
+        "is_hull": false,
 	"stiffness": 1,
         "structural_colour": "#00818C",
 	"render_colour": "#00818C",
@@ -626,12 +786,15 @@
 		"row": "6|Wood Hull",
 		"column": 4
 	},
-        "strength": 10,
-        "mass": 1000,
+        "strength": 0.2,
+	"mass": {
+		"nominal_mass": 1000,
+		"density": 0.17
+	},
 	"stiffness": 1,
         "structural_colour": "#036E8C",
 	"render_colour": "#036E8C",
-        "isHull": true,
+        "is_hull": true,
 	"sound_properties": {
 		"element_type": "Wood"
 	}
@@ -642,8 +805,12 @@
 		"row": "7|Wood",
 		"column": 4
 	},
-        "strength": 5,
-        "mass": 800,
+        "strength": 0.15,
+        "mass": {
+		"nominal_mass": 800,
+		"density": 0.0417
+	},  
+	"is_hull": false,
 	"stiffness": 1,
         "structural_colour": "#10A19D",
 	"render_colour": "#10A19D",
@@ -657,12 +824,15 @@
 		"row": "4|Titanium Hull",
 		"column": 4
 	},
-        "strength": 150,
-        "mass": 4600,
+        "strength": 0.13,
+	"mass": {
+		"nominal_mass": 4600,
+		"density": 0.17
+	},
 	"stiffness": 1,
         "structural_colour": "#00657E",
 	"render_colour": "#00657E",
-        "isHull": true,
+        "is_hull": true,
 	"sound_properties": {
 		"element_type": "Metal"
 	}
@@ -673,8 +843,12 @@
 		"row": "5|Titanium",
 		"column": 4
 	},
-        "strength": 140,
-        "mass": 4500,
+        "strength": 0.125,
+	"mass": {
+		"nominal_mass": 4500,
+		"density": 0.017
+	},   
+        "is_hull": false,
 	"stiffness": 1,
         "structural_colour": "#009BA9",
 	"render_colour": "#009BA9",
@@ -688,12 +862,15 @@
 		"row": "2|Steel Hull",
 		"column": 5
 	},
-        "strength": 175,
-        "mass": 7580,
+        "strength": 0.092,
+	"mass": {
+		"nominal_mass": 7580,
+		"density": 0.17
+	},
 	"stiffness": 1,
         "structural_colour": "#22437B",
 	"render_colour": "#22437B",
-        "isHull": true,
+        "is_hull": true,
 	"sound_properties": {
 		"element_type": "Metal"
 	}
@@ -704,8 +881,12 @@
 		"row": "3|Steel",
 		"column": 5
 	},
-        "strength": 160,
-        "mass": 7480,
+        "strength": 0.0856,
+	"mass": {
+		"nominal_mass": 7480,
+		"density": 0.017
+	},   
+        "is_hull": false,
 	"stiffness": 1,
         "structural_colour": "#2D58A0",
 	"render_colour": "#2D58A0",
@@ -719,12 +900,15 @@
 		"row": "0|Iron Hull",
 		"column": 5
 	},
-        "strength": 110,
-        "mass": 7950,
+        "strength": 0.055,
+	"mass": {
+		"nominal_mass": 7950,
+		"density": 0.17
+	},
 	"stiffness": 1,
         "structural_colour": "#1B3261",
 	"render_colour": "#1B3261",
-        "isHull": true,
+        "is_hull": true,
 	"sound_properties": {
 		"element_type": "Metal"
 	}
@@ -735,8 +919,12 @@
 		"row": "1|Iron",
 		"column": 5
 	},
-        "strength": 100,
-        "mass": 7850,
+        "strength": 0.051,
+	"mass": {
+		"nominal_mass": 7850,
+		"density": 0.017
+	},   
+        "is_hull": false,
 	"stiffness": 1,
         "structural_colour": "#203E74",
 	"render_colour": "#203E74",
@@ -750,12 +938,15 @@
 		"row": "6|Wood Hull",
 		"column": 5
 	},
-        "strength": 10,
-        "mass": 1000,
+        "strength": 0.2,
+	"mass": {
+		"nominal_mass": 1000,
+		"density": 0.17
+	},
 	"stiffness": 1,
         "structural_colour": "#1E3070",
 	"render_colour": "#1E3070",
-        "isHull": true,
+        "is_hull": true,
 	"sound_properties": {
 		"element_type": "Wood"
 	}
@@ -766,8 +957,12 @@
 		"row": "7|Wood",
 		"column": 5
 	},
-        "strength": 5,
-        "mass": 800,
+        "strength": 0.15,
+        "mass": {
+		"nominal_mass": 800,
+		"density": 0.0417
+	},  
+	"is_hull": false,
 	"stiffness": 1,
         "structural_colour": "#325989",
 	"render_colour": "#325989",
@@ -781,12 +976,15 @@
 		"row": "4|Titanium Hull",
 		"column": 5
 	},
-        "strength": 150,
-        "mass": 4600,
+        "strength": 0.13,
+	"mass": {
+		"nominal_mass": 4600,
+		"density": 0.17
+	},
 	"stiffness": 1,
         "structural_colour": "#1A2C66",
 	"render_colour": "#1A2C66",
-        "isHull": true,
+        "is_hull": true,
 	"sound_properties": {
 		"element_type": "Metal"
 	}
@@ -797,8 +995,12 @@
 		"row": "5|Titanium",
 		"column": 5
 	},
-        "strength": 140,
-        "mass": 4500,
+        "strength": 0.125,
+	"mass": {
+		"nominal_mass": 4500,
+		"density": 0.017
+	},   
+        "is_hull": false,
 	"stiffness": 1,
         "structural_colour": "#26498C",
 	"render_colour": "#26498C",
@@ -812,12 +1014,15 @@
 		"row": "2|Steel Hull",
 		"column": 6
 	},
-        "strength": 175,
-        "mass": 7580,
+        "strength": 0.092,
+	"mass": {
+		"nominal_mass": 7580,
+		"density": 0.17
+	},
 	"stiffness": 1,
         "structural_colour": "#A900A7",
 	"render_colour": "#A900A7",
-        "isHull": true,
+        "is_hull": true,
 	"sound_properties": {
 		"element_type": "Metal"
 	}
@@ -828,8 +1033,12 @@
 		"row": "3|Steel",
 		"column": 6
 	},
-        "strength": 160,
-        "mass": 7480,
+        "strength": 0.0856,
+	"mass": {
+		"nominal_mass": 7480,
+		"density": 0.017
+	},   
+        "is_hull": false,
 	"stiffness": 1,
         "structural_colour": "#D100D6",
 	"render_colour": "#D100D6",
@@ -843,12 +1052,15 @@
 		"row": "0|Iron Hull",
 		"column": 6
 	},
-        "strength": 110,
-        "mass": 7950,
+        "strength": 0.055,
+	"mass": {
+		"nominal_mass": 7950,
+		"density": 0.17
+	},
 	"stiffness": 1,
         "structural_colour": "#860080",
 	"render_colour": "#860080",
-        "isHull": true,
+        "is_hull": true,
 	"sound_properties": {
 		"element_type": "Metal"
 	}
@@ -859,8 +1071,12 @@
 		"row": "1|Iron",
 		"column": 6
 	},
-        "strength": 100,
-        "mass": 7850,
+        "strength": 0.051,
+	"mass": {
+		"nominal_mass": 7850,
+		"density": 0.017
+	},   
+        "is_hull": false,
 	"stiffness": 1,
         "structural_colour": "#9F009C",
 	"render_colour": "#9F009C",
@@ -874,12 +1090,15 @@
 		"row": "6|Wood Hull",
 		"column": 6
 	},
-        "strength": 10,
-        "mass": 1000,
+        "strength": 0.2,
+	"mass": {
+		"nominal_mass": 1000,
+		"density": 0.17
+	},
 	"stiffness": 1,
         "structural_colour": "#A30085",
         "render_colour": "#A30085",
-        "isHull": true,
+        "is_hull": true,
 	"sound_properties": {
 		"element_type": "Wood"
 	}
@@ -890,8 +1109,12 @@
 		"row": "7|Wood",
 		"column": 6
 	},
-        "strength": 5,
-        "mass": 800,
+        "strength": 0.15,
+        "mass": {
+		"nominal_mass": 800,
+		"density": 0.0417
+	},  
+	"is_hull": false,
 	"stiffness": 1,
         "structural_colour": "#9B00AF",
 	"render_colour": "#9B00AF",
@@ -905,12 +1128,15 @@
 		"row": "4|Titanium Hull",
 		"column": 6
 	},
-        "strength": 150,
-        "mass": 4600,
+        "strength": 0.13,
+	"mass": {
+		"nominal_mass": 4600,
+		"density": 0.17
+	},
 	"stiffness": 1,
         "structural_colour": "#93007B",
 	"render_colour": "#93007B",
-        "isHull": true,
+        "is_hull": true,
 	"sound_properties": {
 		"element_type": "Metal"
 	}
@@ -921,8 +1147,12 @@
 		"row": "5|Titanium",
 		"column": 6
 	},
-        "strength": 140,
-        "mass": 4500,
+        "strength": 0.125,
+	"mass": {
+		"nominal_mass": 4500,
+		"density": 0.017
+	},   
+        "is_hull": false,
 	"stiffness": 1,
         "structural_colour": "#BF00BA",
 	"render_colour": "#BF00BA",
@@ -936,12 +1166,15 @@
 		"row": "2|Steel Hull",
 		"column": 7
 	},
-        "strength": 175,
-        "mass": 7580,
+        "strength": 0.092,
+	"mass": {
+		"nominal_mass": 7580,
+		"density": 0.17
+	},
 	"stiffness": 1,
         "structural_colour": "#D45B00",
         "render_colour": "#D45B00",
-        "isHull": true,
+        "is_hull": true,
 	"sound_properties": {
 		"element_type": "Metal"
 	}
@@ -952,8 +1185,12 @@
 		"row": "3|Steel",
 		"column": 7
 	},
-        "strength": 160,
-        "mass": 7480,
+        "strength": 0.0856,
+	"mass": {
+		"nominal_mass": 7480,
+		"density": 0.017
+	},   
+        "is_hull": false,
 	"stiffness": 1,
         "structural_colour": "#F26500",
 	"render_colour": "#F26500",
@@ -967,12 +1204,15 @@
 		"row": "0|Iron Hull",
 		"column": 7
 	},
-        "strength": 110,
-        "mass": 7950,
+        "strength": 0.055,
+	"mass": {
+		"nominal_mass": 7950,
+		"density": 0.17
+	},
 	"stiffness": 1,
         "structural_colour": "#A84F00",
 	"render_colour": "#A84F00",
-        "isHull": true,
+        "is_hull": true,
 	"sound_properties": {
 		"element_type": "Metal"
 	}
@@ -983,8 +1223,12 @@
 		"row": "1|Iron",
 		"column": 7
 	},
-        "strength": 100,
-        "mass": 7850,
+        "strength": 0.051,
+	"mass": {
+		"nominal_mass": 7850,
+		"density": 0.017
+	},   
+        "is_hull": false,
 	"stiffness": 1,
         "structural_colour": "#C85800",
 	"render_colour": "#C85800",
@@ -998,12 +1242,15 @@
 		"row": "6|Wood Hull",
 		"column": 7
 	},
-        "strength": 10,
-        "mass": 1000,
+        "strength": 0.2,
+	"mass": {
+		"nominal_mass": 1000,
+		"density": 0.17
+	},
 	"stiffness": 1,
         "structural_colour": "#CE8100",
 	"render_colour": "#CE8100",
-        "isHull": true,
+        "is_hull": true,
 	"sound_properties": {
 		"element_type": "Wood"
 	}
@@ -1014,8 +1261,12 @@
 		"row": "7|Wood",
 		"column": 7
 	},
-        "strength": 5,
-        "mass": 800,
+        "strength": 0.15,
+        "mass": {
+		"nominal_mass": 800,
+		"density": 0.0417
+	},  
+	"is_hull": false,
 	"stiffness": 1,
         "structural_colour": "#DE4000",
 	"render_colour": "#DE4000",
@@ -1029,12 +1280,15 @@
 		"row": "4|Titanium Hull",
 		"column": 7
 	},
-        "strength": 150,
-        "mass": 4600,
+        "strength": 0.13,
+	"mass": {
+		"nominal_mass": 4600,
+		"density": 0.17
+	},
 	"stiffness": 1,
         "structural_colour": "#BA7100",
 	"render_colour": "#BA7100",
-        "isHull": true,
+        "is_hull": true,
 	"sound_properties": {
 		"element_type": "Metal"
 	}
@@ -1045,8 +1299,12 @@
 		"row": "5|Titanium",
 		"column": 7
 	},
-        "strength": 140,
-        "mass": 4500,
+        "strength": 0.125,
+	"mass": {
+		"nominal_mass": 4500,
+		"density": 0.017
+	},   
+        "is_hull": false,
 	"stiffness": 1,
         "structural_colour": "#EF6B00",
 	"render_colour": "#EF6B00",
@@ -1060,12 +1318,15 @@
 		"row": "0|Iron Hull",
 		"column": 8
 	},
-        "strength": 110,
-        "mass": 7950,
+        "strength": 0.055,
+	"mass": {
+		"nominal_mass": 7950,
+		"density": 0.17
+	},
 	"stiffness": 2,
         "structural_colour": "#111111",
 	"render_colour": "#111111",
-        "isHull": true,
+        "is_hull": true,
 	"sound_properties": {
 		"element_type": "Metal"
 	}
@@ -1076,8 +1337,12 @@
 		"row": "1|Iron",
 		"column": 8
 	},
-        "strength": 100,
-        "mass": 7850,
+        "strength": 0.051,
+	"mass": {
+		"nominal_mass": 7850,
+		"density": 0.017
+	},   
+        "is_hull": false,
 	"stiffness": 2.2,
         "structural_colour": "#222222",
 	"render_colour": "#222222",
@@ -1092,12 +1357,15 @@
 		"row": "2|Steel Hull",
 		"column": 8
 	},
-        "strength": 175,
-        "mass": 7580,
+        "strength": 0.092,
+	"mass": {
+		"nominal_mass": 7580,
+		"density": 0.17
+	},
 	"stiffness": 2,
         "structural_colour": "#333333",
 	"render_colour": "#333333",
-        "isHull": true,
+        "is_hull": true,
 	"sound_properties": {
 		"element_type": "Metal"
 	}
@@ -1108,8 +1376,12 @@
 		"row": "3|Steel",
 		"column": 8
 	},
-        "strength": 160,
-        "mass": 7480,
+        "strength": 0.0856,
+	"mass": {
+		"nominal_mass": 7480,
+		"density": 0.017
+	},   
+        "is_hull": false,
 	"stiffness": 2.2,
         "structural_colour": "#444444",
 	"render_colour": "#444444",
@@ -1123,8 +1395,12 @@
 		"row": "3|Steel",
 		"column": 9
 	},
-        "strength": 160,
-        "mass": 7480,
+        "strength": 0.0856,
+	"mass": {
+		"nominal_mass": 7480,
+		"density": 0.017
+	},   
+        "is_hull": false,
 	"stiffness": 1,
         "structural_colour": "#262626",
 	"render_colour": "#262626",
@@ -1138,12 +1414,15 @@
 		"row": "4|Titanium Hull",
 		"column": 8
 	},
-        "strength": 150,
-        "mass": 4600,
+        "strength": 0.13,
+	"mass": {
+		"nominal_mass": 4600,
+		"density": 0.17
+	},
 	"stiffness": 2,
         "structural_colour": "#555555",
 	"render_colour": "#555555",
-	"isHull": true,
+	"is_hull": true,
 	"sound_properties": {
 		"element_type": "Metal"
 	}
@@ -1154,8 +1433,12 @@
 		"row": "5|Titanium",
 		"column": 8
 	},
-        "strength": 140,
-        "mass": 4500,
+        "strength": 0.125,
+	"mass": {
+		"nominal_mass": 4500,
+		"density": 0.017
+	},  
+	"is_hull": false,
 	"stiffness": 2.2,
         "structural_colour": "#666666",
 	"render_colour": "#666666",
@@ -1169,12 +1452,15 @@
 		"row": "6|Wood Hull",
 		"column": 8
 	},
-        "strength": 50,
-        "mass": 2000,
+        "strength": 0.2,
+	"mass": {
+		"nominal_mass": 1000,
+		"density": 0.17
+	},
 	"stiffness": 2,
         "structural_colour": "#777777",
 	"render_colour": "#777777",
-	"isHull": true,
+	"is_hull": true,
 	"sound_properties": {
 		"element_type": "Wood"
 	}
@@ -1185,8 +1471,12 @@
 		"row": "7|Wood",
 		"column": 8
 	},
-        "strength": 50,
-        "mass": 1800,
+        "strength": 0.15,
+        "mass": {
+		"nominal_mass": 800,
+		"density": 0.0417
+	},  
+	"is_hull": false,
 	"stiffness": 2.4,
         "structural_colour": "#888888",
 	"render_colour": "#888888",
@@ -1197,15 +1487,18 @@
     {
         "name": "Double-Bottom Steel Red",
 	"template": {
-		"row": "11|Double-Bottom",
+		"row": "12|Double-Bottom",
 		"column": "0|Double-Bottom Steel"
 	},
-        "strength": 320,
-        "mass": 6500,
+        "strength": 0.197,
+	"mass": {
+		"nominal_mass": 6500,
+		"density": 0.17
+	},
 	"stiffness": 1,
         "structural_colour": "#A21000",
 	"render_colour": "#A21000",
-        "isHull": true,
+        "is_hull": true,
 	"sound_properties": {
 		"element_type": "Metal"
 	}
@@ -1213,15 +1506,18 @@
     {
         "name": "Double-Bottom Titanium Red",
 	"template": {
-		"row": "11|Double-Bottom",
+		"row": "12|Double-Bottom",
 		"column": "1|Double-Bottom Titanium"
 	},
-        "strength": 400,
-        "mass": 6500,
+        "strength": 0.247,
+	"mass": {
+		"nominal_mass": 6500,
+		"density": 0.17
+	},
 	"stiffness": 1,
         "structural_colour": "#842005",
 	"render_colour": "#842005",
-        "isHull": true,
+        "is_hull": true,
 	"sound_properties": {
 		"element_type": "Metal"
 	}
@@ -1229,17 +1525,39 @@
     {
         "name": "Double-Bottom Iron Red",
 	"template": {
-		"row": "11|Double-Bottom",
+		"row": "12|Double-Bottom",
 		"column": "2|Double-Bottom Iron"
 	},
-        "strength": 250,
-        "mass": 7500,
+        "strength": 0.134,
+	"mass": {
+		"nominal_mass": 7500,
+		"density": 0.17
+	},
 	"stiffness": 1,
         "structural_colour": "#7E0C00",
 	"render_colour": "#7E0C00",
-        "isHull": true,
+        "is_hull": true,
 	"sound_properties": {
 		"element_type": "Metal"
+	}
+    },
+    {
+        "name": "Double-Bottom Wood Red",
+	"template": {
+		"row": "12|Double-Bottom",
+		"column": "3|Double-Bottom Wood"
+	},
+        "strength": 0.5,
+	"mass": {
+		"nominal_mass": 1600,
+		"density": 0.17
+	},
+	"stiffness": 1,
+        "structural_colour": "#9B3012",
+	"render_colour": "#9B3012",
+        "is_hull": true,
+	"sound_properties": {
+		"element_type": "Wood"
 	}
     },
     {
@@ -1248,12 +1566,15 @@
 		"row": "Glass",
 		"column": 0
 	},
-        "strength": 40,
-        "mass": 1000,
+        "strength": 0.1,
+	"mass": {
+		"nominal_mass": 1000,
+		"density": 0.0417
+	},  
+	"is_hull": false,
 	"stiffness": 1,
         "structural_colour": "#E5FFFF",
 	"render_colour": "#E5FFFF",
-        "isHull": false,
 	"sound_properties": {
 		"element_type": "Glass"
 	}
@@ -1261,15 +1582,18 @@
     {
         "name": "Carbon Hull",
 	"template": {
-		"row": "12|Carbon",
+		"row": "13|Carbon",
 		"column": 0
 	},
-        "strength": 600,
-        "mass": 758,
+        "strength": 3.166,
+	"mass": {
+		"nominal_mass": 758,
+		"density": 0.17
+	},
 	"stiffness": 1,
         "structural_colour": "#1A1A1A",
 	"render_colour": "#1A1A1A",
-        "isHull": true,
+        "is_hull": true,
 	"sound_properties": {
 		"element_type": "Wood"
 	}
@@ -1277,30 +1601,18 @@
     {
         "name": "Carbon",
 	"template": {
-		"row": "12|Carbon",
+		"row": "13|Carbon",
 		"column": 1
 	},
-        "strength": 600,
-        "mass": 758,
+        "strength": 3.166,
+	"mass": {
+		"nominal_mass": 758,
+		"density": 0.0417
+	},  
+	"is_hull": false,
 	"stiffness": 1,
         "structural_colour": "#232323",
 	"render_colour": "#232323",
-	"sound_properties": {
-		"element_type": "Wood"
-	}
-    },
-    {
-        "name": "Double-Bottom Wood Red",
-	"template": {
-		"row": "11|Double-Bottom",
-		"column": "3|Double-Bottom Wood"
-	},
-        "strength": 200,
-        "mass": 1600,
-	"stiffness": 1,
-        "structural_colour": "#9B3012",
-	"render_colour": "#9B3012",
-        "isHull": true,
 	"sound_properties": {
 		"element_type": "Wood"
 	}
@@ -1311,8 +1623,12 @@
 		"row": "100|Electrical",
 		"column": "0|Lamp"
 	},
-        "strength": 5,
-        "mass": 30,
+        "strength": 0.67,
+	"mass": {
+		"nominal_mass": 30,
+		"density": 0.5
+	},  
+	"is_hull": false,
 	"stiffness": 1,
         "structural_colour": "#FFFF00",
 	"render_colour": "#404040",
@@ -1331,8 +1647,12 @@
 		"row": "100|Electrical",
 		"column": "1|Generator"
 	},
-        "strength": 20,
-        "mass": 900,
+        "strength": 0.089,
+	"mass": {
+		"nominal_mass": 900,
+		"density": 0.5
+	},   
+        "is_hull": false,
 	"stiffness": 1,
         "structural_colour": "#FC0808",
 	"render_colour": "#303030",
@@ -1351,8 +1671,12 @@
 		"row": "100|Electrical",
 		"column": "2|Cable"
 	},
-        "strength": 20,
-        "mass": 30,
+        "strength": 2.67,
+	"mass": {
+		"nominal_mass": 30,
+		"density": 0.5
+	},  
+	"is_hull": false,
 	"stiffness": 1,
         "structural_colour": "#700000",
 	"render_colour": "#202020",

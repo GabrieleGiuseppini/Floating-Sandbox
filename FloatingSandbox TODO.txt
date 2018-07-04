@@ -58,20 +58,35 @@ Prev perf (before point et al destructuring)
 					+ Lighter rudder
 					+ Also generally Lighter?
 					+ Stronger under funnels (make tin stronger?)
+					+ Make it break
+						+ Study tension based off mass
+							+ Solve integral manually
+							+ Do tests
+						+ Softer again under funnels
+					+ Fix mast
 				- Fix Base III: make it float
+					- Larger base, boat-shaped
 				- Fix default ship: just lighter
 				- Fix cargo ship
 					- Lighter back
 					- Weaker supports to containers
 					- Stronger mid-top material
 				- Fix Carnival - lighter
-			- Rewrite buoyancy code - use WaterMass
-			- Change materials
-				- Add density = [copy from current hack] 1/6th for hull, 1/(6*10or4)
-				- Material loading: just store mass*density at mass
-				- Materials Template: redo
-			+ Fix strength adjust
+			+ Rewrite buoyancy code - use WaterMass
+			+ Change materials
+				+ No Mass but object with:
+					+ nominalMass
+					+ density
+				+ Springs: get mass from points, not from material
+				+ Add density = [copy from current hack] 1/6th for hull, 1/(6*10or4)
+				+ Material loading: just store mass*density at mass
+			+ Redo Materials Template
+			+ Watch out for strength: it was (/ mass * 1000)
+			= Fix strength adjust
+				= Fix max, min
 		- Add to change list
+	- Fix Ocean Depth
+		- Affects only textures, not land
 	= Make some ships
 		+ Copy three balls
 		+ Make ShipTools, -quantize verb

@@ -91,10 +91,12 @@ public:
         // Endpoints
         , mEndpointsBuffer(elementCount)
         // Physical characteristics
+        , mStrengthBuffer(elementCount)
+        , mStiffnessBuffer(elementCount)
         , mRestLengthBuffer(elementCount)
         , mCoefficientsBuffer(elementCount)
         , mCharacteristicsBuffer(elementCount)
-        , mMaterialBuffer(elementCount)
+        , mBaseMaterialBuffer(elementCount)
         // Water characteristics
         , mWaterPermeabilityBuffer(elementCount)
         // Stress
@@ -135,7 +137,6 @@ public:
         ElementIndex pointAIndex,
         ElementIndex pointBIndex,
         Characteristics characteristics,
-        Material const * material,
         Points const & points);
 
     void Destroy(
@@ -156,7 +157,7 @@ public:
         CalculateStiffnessCoefficient(
             mEndpointsBuffer[springElementIndex].PointAIndex,
             mEndpointsBuffer[springElementIndex].PointBIndex,
-            mMaterialBuffer[springElementIndex]->Stiffness,
+            mStiffnessBuffer[springElementIndex],
             mCurrentStiffnessAdjustment,
             points);
     }
@@ -243,6 +244,20 @@ public:
     // Physical characteristics
     //
 
+    inline float GetStrength(ElementIndex springElementIndex) const
+    {
+        assert(springElementIndex < mElementCount);
+
+        return mStrengthBuffer[springElementIndex];
+    }
+
+    inline float GetStiffness(ElementIndex springElementIndex) const
+    {
+        assert(springElementIndex < mElementCount);
+
+        return mStiffnessBuffer[springElementIndex];
+    }
+
     inline float GetRestLength(ElementIndex springElementIndex) const
     {
         assert(springElementIndex < mElementCount);
@@ -264,11 +279,11 @@ public:
         return mCoefficientsBuffer[springElementIndex].DampingCoefficient;
     }
 
-    inline Material const * GetMaterial(ElementIndex springElementIndex) const
+    inline Material const * GetBaseMaterial(ElementIndex springElementIndex) const
     {
         assert(springElementIndex < mElementCount);
 
-        return mMaterialBuffer[springElementIndex];
+        return mBaseMaterialBuffer[springElementIndex];
     }
 
     inline bool IsHull(ElementIndex springElementIndex) const;
@@ -363,10 +378,12 @@ private:
     // Physical characteristics
     //
 
+    Buffer<float> mStrengthBuffer;
+    Buffer<float> mStiffnessBuffer;
     Buffer<float> mRestLengthBuffer;
     Buffer<Coefficients> mCoefficientsBuffer;
     Buffer<Characteristics> mCharacteristicsBuffer;
-    Buffer<Material const *> mMaterialBuffer;
+    Buffer<Material const *> mBaseMaterialBuffer;
 
     //
     // Water characteristics

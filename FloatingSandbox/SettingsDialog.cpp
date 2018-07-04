@@ -1,7 +1,7 @@
 /***************************************************************************************
- * Original Author:		Gabriele Giuseppini
- * Created:				2018-01-21
- * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
+ * Original Author:     Gabriele Giuseppini
+ * Created:             2018-01-21
+ * Copyright:           Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
  ***************************************************************************************/
 #include "SettingsDialog.h"
 
@@ -22,35 +22,35 @@ const long ID_QUICK_WATER_FIX_CHECKBOX = wxNewId();
 const long ID_SHOW_STRESS_CHECKBOX = wxNewId();
 
 SettingsDialog::SettingsDialog(
-	wxWindow* parent,
-	std::shared_ptr<GameController> gameController)
-	: mParent(parent)
-	, mGameController(std::move(gameController))
+    wxWindow* parent,
+    std::shared_ptr<GameController> gameController)
+    : mParent(parent)
+    , mGameController(std::move(gameController))
 {
-	Create(
-		mParent, 
-		wxID_ANY, 
-		_("Settings"), 
-		wxDefaultPosition, 
-		wxSize(400, 200),
-		wxCAPTION | wxCLOSE_BOX | wxMINIMIZE_BOX | wxFRAME_SHAPED, 
-		_T("Settings Window"));
+    Create(
+        mParent, 
+        wxID_ANY, 
+        _("Settings"), 
+        wxDefaultPosition, 
+        wxSize(400, 200),
+        wxCAPTION | wxCLOSE_BOX | wxMINIMIZE_BOX | wxFRAME_SHAPED, 
+        _T("Settings Window"));
 
 
-	//
-	// Lay out the dialog
-	//
+    //
+    // Lay out the dialog
+    //
 
-	wxBoxSizer * mainSizer = new wxBoxSizer(wxVERTICAL);
+    wxBoxSizer * mainSizer = new wxBoxSizer(wxVERTICAL);
 
-	mainSizer->AddSpacer(10);
-	
+    mainSizer->AddSpacer(10);
+    
 
-	// Controls 1
+    // Controls 1
 
-	wxBoxSizer* controls1Sizer = new wxBoxSizer(wxHORIZONTAL);
+    wxBoxSizer* controls1Sizer = new wxBoxSizer(wxHORIZONTAL);
 
-	controls1Sizer->AddSpacer(20);
+    controls1Sizer->AddSpacer(20);
 
 
     // Stiffness
@@ -75,9 +75,9 @@ SettingsDialog::SettingsDialog(
     controls1Sizer->AddSpacer(20);
 
 
-	// Strength
+    // Strength
 
-	mStrengthSlider = std::make_unique<SliderControl>(
+    mStrengthSlider = std::make_unique<SliderControl>(
         this,
         SliderWidth,
         SliderHeight,
@@ -88,17 +88,17 @@ SettingsDialog::SettingsDialog(
             // Remember we're dirty now
             this->mApplyButton->Enable(true);
         },
-        std::make_unique<ExponentialSliderCore>(
+        std::make_unique<LinearSliderCore>(
             mGameController->GetMinStrengthAdjustment(),
             mGameController->GetMaxStrengthAdjustment()));
 
     controls1Sizer->Add(mStrengthSlider.get(), 0);
-	
+    
     controls1Sizer->AddSpacer(20);
 
 
-	// Buoyancy
-	
+    // Buoyancy
+    
     mBuoyancySlider = std::make_unique<SliderControl>(
         this,
         SliderWidth,
@@ -113,15 +113,15 @@ SettingsDialog::SettingsDialog(
         std::make_unique<LinearSliderCore>(
             mGameController->GetMinBuoyancyAdjustment(),
             mGameController->GetMaxBuoyancyAdjustment()));
-	
+    
     controls1Sizer->Add(mBuoyancySlider.get(), 0);
-	
+    
     controls1Sizer->AddSpacer(20);
 
 
-	// Water Pressure
+    // Water Pressure
 
-	mWaterPressureSlider = std::make_unique<SliderControl>(
+    mWaterPressureSlider = std::make_unique<SliderControl>(
         this,
         SliderWidth,
         SliderHeight,
@@ -141,9 +141,9 @@ SettingsDialog::SettingsDialog(
     controls1Sizer->AddSpacer(20);
 
 
-	// Wave Height
+    // Wave Height
 
-	mWaveHeightSlider = std::make_unique<SliderControl>(
+    mWaveHeightSlider = std::make_unique<SliderControl>(
         this,
         SliderWidth,
         SliderHeight,
@@ -234,9 +234,9 @@ SettingsDialog::SettingsDialog(
     controls2Sizer->AddSpacer(20);
 
 
-	// Sea Depth
+    // Sea Depth
 
-	mSeaDepthSlider = std::make_unique<SliderControl>(
+    mSeaDepthSlider = std::make_unique<SliderControl>(
         this,
         SliderWidth,
         SliderHeight,
@@ -256,7 +256,7 @@ SettingsDialog::SettingsDialog(
     controls2Sizer->AddSpacer(20);
 
 
-	// Destroy Radius
+    // Destroy Radius
 
     mDestroyRadiusSlider = std::make_unique<SliderControl>(
         this,
@@ -276,7 +276,7 @@ SettingsDialog::SettingsDialog(
     controls2Sizer->Add(mDestroyRadiusSlider.get(), 0);
 
     controls2Sizer->AddSpacer(20);
-	
+    
 
     // Bomb Blast Radius
 
@@ -331,46 +331,46 @@ SettingsDialog::SettingsDialog(
 
 
 
-	mainSizer->Add(controls2Sizer);
+    mainSizer->Add(controls2Sizer);
 
-	mainSizer->AddSpacer(20);
-
-
-	// Buttons
-
-	wxBoxSizer * buttonsSizer = new wxBoxSizer(wxHORIZONTAL);
-
-	buttonsSizer->AddSpacer(20);
-
-	mOkButton = new wxButton(this, wxID_OK);
-	Connect(wxID_OK, wxEVT_BUTTON, (wxObjectEventFunction)&SettingsDialog::OnOkButton);
-	buttonsSizer->Add(mOkButton, 0);
-
-	buttonsSizer->AddSpacer(20);
-
-	mCancelButton = new wxButton(this, wxID_CANCEL);
-	buttonsSizer->Add(mCancelButton, 0);
-
-	buttonsSizer->AddSpacer(20);
-
-	mApplyButton = new wxButton(this, wxID_APPLY);
-	mApplyButton->Enable(false);
-	Connect(wxID_APPLY, wxEVT_BUTTON, (wxObjectEventFunction)&SettingsDialog::OnApplyButton);
-	buttonsSizer->Add(mApplyButton, 0);
-	
-	buttonsSizer->AddSpacer(20);
-
-	mainSizer->Add(buttonsSizer, 0, wxALIGN_RIGHT);
-	
-	mainSizer->AddSpacer(20);
+    mainSizer->AddSpacer(20);
 
 
+    // Buttons
 
-	//
-	// Finalize dialog
-	//
+    wxBoxSizer * buttonsSizer = new wxBoxSizer(wxHORIZONTAL);
 
-	SetSizerAndFit(mainSizer);
+    buttonsSizer->AddSpacer(20);
+
+    mOkButton = new wxButton(this, wxID_OK);
+    Connect(wxID_OK, wxEVT_BUTTON, (wxObjectEventFunction)&SettingsDialog::OnOkButton);
+    buttonsSizer->Add(mOkButton, 0);
+
+    buttonsSizer->AddSpacer(20);
+
+    mCancelButton = new wxButton(this, wxID_CANCEL);
+    buttonsSizer->Add(mCancelButton, 0);
+
+    buttonsSizer->AddSpacer(20);
+
+    mApplyButton = new wxButton(this, wxID_APPLY);
+    mApplyButton->Enable(false);
+    Connect(wxID_APPLY, wxEVT_BUTTON, (wxObjectEventFunction)&SettingsDialog::OnApplyButton);
+    buttonsSizer->Add(mApplyButton, 0);
+    
+    buttonsSizer->AddSpacer(20);
+
+    mainSizer->Add(buttonsSizer, 0, wxALIGN_RIGHT);
+    
+    mainSizer->AddSpacer(20);
+
+
+
+    //
+    // Finalize dialog
+    //
+
+    SetSizerAndFit(mainSizer);
 }
 
 SettingsDialog::~SettingsDialog()
@@ -379,20 +379,20 @@ SettingsDialog::~SettingsDialog()
 
 void SettingsDialog::Open()
 {
-	assert(!!mGameController);
+    assert(!!mGameController);
 
     ReadSettings();
 
-	// We're not dirty
-	mApplyButton->Enable(false);
+    // We're not dirty
+    mApplyButton->Enable(false);
 
-	this->Show();
+    this->Show();
 }
 
 void SettingsDialog::OnQuickWaterFixCheckBoxClick(wxCommandEvent & /*event*/)
 {
-	// Remember we're dirty now
-	mApplyButton->Enable(true);
+    // Remember we're dirty now
+    mApplyButton->Enable(true);
 }
 
 void SettingsDialog::OnUltraViolentCheckBoxClick(wxCommandEvent & /*event*/)
@@ -409,49 +409,49 @@ void SettingsDialog::OnShipRenderModeRadioBox(wxCommandEvent & /*event*/)
 
 void SettingsDialog::OnShowStressCheckBoxClick(wxCommandEvent & /*event*/)
 {
-	// Remember we're dirty now
-	mApplyButton->Enable(true);
+    // Remember we're dirty now
+    mApplyButton->Enable(true);
 }
 
 void SettingsDialog::OnOkButton(wxCommandEvent & /*event*/)
 {
-	assert(!!mGameController);
+    assert(!!mGameController);
 
-	// Write settings back to controller
-	ApplySettings();
+    // Write settings back to controller
+    ApplySettings();
 
-	// Close ourselves
-	this->Close();
+    // Close ourselves
+    this->Close();
 }
 
 void SettingsDialog::OnApplyButton(wxCommandEvent & /*event*/)
 {
-	assert(!!mGameController);
+    assert(!!mGameController);
 
-	// Write settings back to controller
-	ApplySettings();
+    // Write settings back to controller
+    ApplySettings();
 
-	// We're not dirty anymore
-	mApplyButton->Enable(false);
+    // We're not dirty anymore
+    mApplyButton->Enable(false);
 }
 
 void SettingsDialog::ApplySettings()
 {
-	assert(!!mGameController);
+    assert(!!mGameController);
 
     mGameController->SetStiffnessAdjustment(
         mStiffnessSlider->GetValue());
 
-	mGameController->SetStrengthAdjustment(
-		mStrengthSlider->GetValue());
+    mGameController->SetStrengthAdjustment(
+        mStrengthSlider->GetValue());
 
     mGameController->SetBuoyancyAdjustment(
         mBuoyancySlider->GetValue());
 
-	mGameController->SetWaterPressureAdjustment(
+    mGameController->SetWaterPressureAdjustment(
         mWaterPressureSlider->GetValue());
 
-	mGameController->SetWaveHeight(
+    mGameController->SetWaveHeight(
         mWaveHeightSlider->GetValue());
 
     mGameController->SetWaterTransparency(
@@ -460,10 +460,10 @@ void SettingsDialog::ApplySettings()
     mGameController->SetLightDiffusionAdjustment(
         mLightDiffusionSlider->GetValue());
 
-	mGameController->SetSeaDepth(
+    mGameController->SetSeaDepth(
         mSeaDepthSlider->GetValue());
 
-	mGameController->SetDestroyRadius(
+    mGameController->SetDestroyRadius(
         mDestroyRadiusSlider->GetValue());
 
     mGameController->SetBombBlastRadius(
@@ -471,7 +471,7 @@ void SettingsDialog::ApplySettings()
 
     mGameController->SetUltraViolentMode(mUltraViolentCheckBox->IsChecked());
 
-	mGameController->SetShowShipThroughWater(mQuickWaterFixCheckBox->IsChecked());
+    mGameController->SetShowShipThroughWater(mQuickWaterFixCheckBox->IsChecked());
 
     auto selectedShipRenderMode = mShipRenderModeRadioBox->GetSelection();
     if (0 == selectedShipRenderMode)
@@ -497,11 +497,11 @@ void SettingsDialog::ApplySettings()
 
 void SettingsDialog::ReadSettings()
 {
-	assert(!!mGameController);
+    assert(!!mGameController);
 
     mUltraViolentCheckBox->SetValue(mGameController->GetUltraViolentMode());
 
-	mQuickWaterFixCheckBox->SetValue(mGameController->GetShowShipThroughWater());
+    mQuickWaterFixCheckBox->SetValue(mGameController->GetShowShipThroughWater());
 
     auto shipRenderMode = mGameController->GetShipRenderMode();
     switch (shipRenderMode)

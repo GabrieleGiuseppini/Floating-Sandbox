@@ -58,8 +58,8 @@ struct GameParameters
     static constexpr float MaxStiffnessAdjustment = 2.4f;
 
 	float StrengthAdjustment;
-	static constexpr float MinStrengthAdjustment = 0.0001f;
-	static constexpr float MaxStrengthAdjustment = 3.0f;
+	static constexpr float MinStrengthAdjustment = 0.001f;
+	static constexpr float MaxStrengthAdjustment = 10.0f;
 
 	float BuoyancyAdjustment;
 	static constexpr float MinBuoyancyAdjustment = 0.0f;
@@ -75,7 +75,7 @@ struct GameParameters
 
 	float SeaDepth;
 	static constexpr float MinSeaDepth = 20.0f;
-	static constexpr float MaxSeaDepth = 300.0f;
+	static constexpr float MaxSeaDepth = 500.0f;
 
 	float DestroyRadius;
 	static constexpr float MinDestroyRadius = 0.1f;

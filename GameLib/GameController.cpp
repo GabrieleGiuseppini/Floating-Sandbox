@@ -174,7 +174,7 @@ void GameController::DrawTo(
 {
 	vec2f worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
-    float strength = 50000.0f * strengthMultiplier;
+    float strength = 50000.0f / 6.0f * strengthMultiplier;
     if (mGameParameters.IsUltraViolentMode)
         strength *= 10.0f;
 
@@ -191,7 +191,7 @@ void GameController::SwirlAt(
 {
     vec2f worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
-    float strength = 1000.0f * strengthMultiplier;
+    float strength = 1000.0f / 6.0f * strengthMultiplier;
     if (mGameParameters.IsUltraViolentMode)
         strength *= 20.0f;
 
@@ -209,10 +209,6 @@ void GameController::TogglePinAt(vec2 const & screenCoordinates)
     mWorld->TogglePinAt(
         worldCoordinates,
         mGameParameters);
-
-    // TODOTEST: flush
-    ////// Flush events
-    ////mGameEventDispatcher->Flush();
 }
 
 void GameController::ToggleTimerBombAt(vec2f const & screenCoordinates)

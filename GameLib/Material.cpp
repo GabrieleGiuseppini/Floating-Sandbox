@@ -12,14 +12,18 @@
 std::unique_ptr<Material> Material::Create(picojson::object const & materialJson)
 {
 	std::string name = Utils::GetOptionalJsonMember<std::string>(materialJson, "name", "Unspecified");
-    float mass = static_cast<float>(Utils::GetOptionalJsonMember<double>(materialJson, "mass", 1.0));
-    float strength = static_cast<float>(Utils::GetOptionalJsonMember<double>(materialJson, "strength", 1.0) / mass * 1000.0);
+
+    picojson::object massJson = Utils::GetMandatoryJsonObject(materialJson, "mass");
+    float mass = static_cast<float>(Utils::GetMandatoryJsonMember<double>(massJson, "nominal_mass"))
+               * static_cast<float>(Utils::GetOptionalJsonMember<double>(massJson, "density", 1.0));
+
+    float strength = static_cast<float>(Utils::GetOptionalJsonMember<double>(materialJson, "strength", 1.0));
     float stiffness = static_cast<float>(Utils::GetOptionalJsonMember<double>(materialJson, "stiffness", 1.0));
 	
     std::array<uint8_t, 3u> structuralColourRgb = Hex2RgbColour(Utils::GetMandatoryJsonMember<std::string>(materialJson, "structural_colour"));
     std::array<uint8_t, 3u> renderColourRgb = Hex2RgbColour(Utils::GetMandatoryJsonMember<std::string>(materialJson, "render_colour"));
-	bool isHull = Utils::GetOptionalJsonMember<bool>(materialJson, "isHull", false);
-    bool isRope = Utils::GetOptionalJsonMember<bool>(materialJson, "isRope", false);
+	bool isHull = Utils::GetMandatoryJsonMember<bool>(materialJson, "is_hull");
+    bool isRope = Utils::GetOptionalJsonMember<bool>(materialJson, "is_rope", false);
 
 	std::optional<ElectricalProperties> electricalProperties;
 	std::optional<picojson::object> electricalPropertiesJson = Utils::GetOptionalJsonObject(materialJson, "electrical_properties");
@@ -46,16 +50,6 @@ std::unique_ptr<Material> Material::Create(picojson::object const & materialJson
 
         soundProperties.emplace(
             elementType);
-    }
-
-    // TODOTEST
-    mass /= 6.0f;
-    if (!isHull)
-    {
-        if (!!soundProperties && soundProperties->ElementType == SoundProperties::SoundElementType::Metal)
-            mass /= 10.0f;
-        else 
-            mass /= 4.0f;
     }
 
 	return std::unique_ptr<Material>(

@@ -13,19 +13,31 @@ void Springs::Add(
     ElementIndex pointAIndex,
     ElementIndex pointBIndex,
     Characteristics characteristics,
-    Material const * material,
     Points const & points)
 {
     mIsDeletedBuffer.emplace_back(false);
 
     mEndpointsBuffer.emplace_back(pointAIndex, pointBIndex);
 
+    // Strength is average
+    mStrengthBuffer.emplace_back((points.GetMaterial(pointAIndex)->Strength + points.GetMaterial(pointBIndex)->Strength) / 2.0f);
+
+    // Stiffness is average
+    float stiffness = (points.GetMaterial(pointAIndex)->Stiffness + points.GetMaterial(pointBIndex)->Stiffness) / 2.0f;
+    mStiffnessBuffer.emplace_back(stiffness);
+
     mRestLengthBuffer.emplace_back((points.GetPosition(pointAIndex) - points.GetPosition(pointBIndex)).length());
     mCoefficientsBuffer.emplace_back(
-        CalculateStiffnessCoefficient(pointAIndex, pointBIndex, material->Stiffness, 1.0f, points),
+        CalculateStiffnessCoefficient(pointAIndex, pointBIndex, stiffness, 1.0f, points),
         CalculateDampingCoefficient(pointAIndex, pointBIndex, points));
     mCharacteristicsBuffer.emplace_back(characteristics);
-    mMaterialBuffer.emplace_back(material);
+
+    // Base material is arbitrarily the weakest of the two;
+    // only affects sound and name
+    mBaseMaterialBuffer.emplace_back(
+        points.GetMaterial(pointAIndex)->Strength < points.GetMaterial(pointBIndex)->Strength
+        ? points.GetMaterial(pointAIndex)
+        : points.GetMaterial(pointBIndex));
 
     mWaterPermeabilityBuffer.emplace_back(Characteristics::None != (characteristics & Characteristics::Hull) ? 0.0f : 1.0f);
 
@@ -54,7 +66,7 @@ void Springs::Destroy(
     if (!!(destroyOptions & Springs::DestroyOptions::FireBreakEvent))
     {
         mGameEventHandler->OnBreak(
-            GetMaterial(springElementIndex),
+            GetBaseMaterial(springElementIndex),
             mParentWorld.IsUnderwater(GetPointAPosition(springElementIndex, points)), // Arbitrary
             1);
     }
@@ -88,7 +100,7 @@ void Springs::SetStiffnessAdjustment(
                 mCoefficientsBuffer[i].StiffnessCoefficient = CalculateStiffnessCoefficient(
                     GetPointAIndex(i),
                     GetPointBIndex(i),
-                    GetMaterial(i)->Stiffness,
+                    GetStiffness(i),
                     stiffnessAdjustment,
                     points);
             }
@@ -169,7 +181,7 @@ bool Springs::UpdateStrains(
             float const strain = fabs(mRestLengthBuffer[i] - dx) / mRestLengthBuffer[i];
 
             // Check against strength
-            float const effectiveStrength = gameParameters.StrengthAdjustment * mMaterialBuffer[i]->Strength;
+            float const effectiveStrength = gameParameters.StrengthAdjustment * mStrengthBuffer[i];
             if (strain > effectiveStrength)
             {
                 // It's broken!
@@ -192,7 +204,7 @@ bool Springs::UpdateStrains(
 
                     // Notify stress
                     mGameEventHandler->OnStress(
-                        mMaterialBuffer[i],
+                        mBaseMaterialBuffer[i],
                         mParentWorld.IsUnderwater(points.GetPosition(mEndpointsBuffer[i].PointAIndex)),
                         1);
                 }
