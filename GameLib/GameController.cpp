@@ -174,9 +174,9 @@ void GameController::DrawTo(
 {
 	vec2f worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
-    float strength = 50000.0f / 6.0f * strengthMultiplier;
+    float strength = 1000.0f * strengthMultiplier;
     if (mGameParameters.IsUltraViolentMode)
-        strength *= 10.0f;
+        strength *= 20.0f;
 
 	// Apply action
 	assert(!!mWorld);
@@ -191,9 +191,9 @@ void GameController::SwirlAt(
 {
     vec2f worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
-    float strength = 1000.0f / 6.0f * strengthMultiplier;
+    float strength = 30.0f * strengthMultiplier;
     if (mGameParameters.IsUltraViolentMode)
-        strength *= 20.0f;
+        strength *= 40.0f;
 
     // Apply action
     assert(!!mWorld);

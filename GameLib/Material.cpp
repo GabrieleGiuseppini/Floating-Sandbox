@@ -15,7 +15,7 @@ std::unique_ptr<Material> Material::Create(picojson::object const & materialJson
 
     picojson::object massJson = Utils::GetMandatoryJsonObject(materialJson, "mass");
     float mass = static_cast<float>(Utils::GetMandatoryJsonMember<double>(massJson, "nominal_mass"))
-               * static_cast<float>(Utils::GetOptionalJsonMember<double>(massJson, "density", 1.0));
+               * static_cast<float>(Utils::GetMandatoryJsonMember<double>(massJson, "density"));
 
     float strength = static_cast<float>(Utils::GetOptionalJsonMember<double>(materialJson, "strength", 1.0));
     float stiffness = static_cast<float>(Utils::GetOptionalJsonMember<double>(materialJson, "stiffness", 1.0));

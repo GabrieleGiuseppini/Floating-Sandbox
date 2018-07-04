@@ -64,8 +64,9 @@ Prev perf (before point et al destructuring)
 							+ Do tests
 						+ Softer again under funnels
 					+ Fix mast
-				- Fix Base III: make it float
-					- Larger base, boat-shaped
+				= Fix Base III: make it float
+					+ Larger base, boat-shaped
+					- See if it's cooler if it floats more (another floating level)
 				- Fix default ship: just lighter
 				- Fix cargo ship
 					- Lighter back
@@ -84,6 +85,7 @@ Prev perf (before point et al destructuring)
 			+ Watch out for strength: it was (/ mass * 1000)
 			= Fix strength adjust
 				= Fix max, min
+					- Rethink exponential slider: takes also midpoint (1.0 for us) and then it's two exp curves
 		- Add to change list
 	- Fix Ocean Depth
 		- Affects only textures, not land
