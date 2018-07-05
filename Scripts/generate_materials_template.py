@@ -76,48 +76,53 @@ def main():
 
     html += "<table style='border: 1px solid black' cellpadding=0 cellspacing=0>"
 
-    def render_cols(col_values, func_render, func_empty):
-        html = ""
-        col_index = 0
+    # Visit all rows
+    for k in sorted([x for x in d.iterkeys()], key=order_dict.get):
+
+        input_col_values = d[k]
+        output_col_values = []
+
+        # 1. Prepare data
+        output_col_number = 0
         ci = 0
-        while ci < len(col_values):
-            col_value = col_values[ci]
-            if col_value[0] == col_index:
-                html += func_render(col_value)
+        while ci < len(input_col_values):
+            input_col_value = input_col_values[ci]
+            if input_col_value[0] == output_col_number:
+                output_col_values.append(input_col_value)
                 ci += 1
             else:
-                html += func_empty()
-            col_index += 1
-        return html
+                output_col_values.append(None)
+            output_col_number += 1
 
-    for k in sorted([x for x in d.iterkeys()], key=order_dict.get):
+        # 2. Render
 
         # Colors
         html += "<tr>"
         html += "<td rowspan='3' valign='middle' style='padding-right:5px;font-size:10px;'>" + k + "</td>"
-        
-        html += render_cols(d[k], lambda col_value: (
-            "<td bgcolor='" + col_value[2]["structural_colour"] + "'class='border_top' style='width: 50px;'>&nbsp;</td>"
-            ), lambda: (
-            "<td style='width: 50px;'>&nbsp;</td>"
-            ))
+        for c in output_col_values:
+            if c:
+                html += "<td bgcolor='" + c[2]["structural_colour"] + "'class='border_top' style='width: 50px;'>&nbsp;</td>"
+            else:
+                html += "<td style='width: 50px;'>&nbsp;</td>"
 
         # Name
         html += "<tr>"
-        html += render_cols(d[k], lambda col_value: (
-            "<td style='font-size:8px;'>" + col_value[1] + "</td>"
-            ), lambda: (
-            "<td/>"
-            ))
+        for c in output_col_values:
+            if c:
+                html += "<td style='font-size:8px;'>" + c[1] + "</td>"
+            else:
+                html += "<td/>"
         html += "</tr>"
 
         # Data
         html += "<tr>"
-        html += render_cols(d[k], lambda col_value: (
-            "<td style='font-size:8px;'>" + str(col_value[2]["mass"]["nominal_mass"] * col_value[2]["mass"]["density"]) + "|" + str(col_value[2]["strength"]) + "|" + str(col_value[2]["stiffness"]) + "</td>"
-            ), lambda: (
-            "<td/>"
-            ))
+        for c in output_col_values:
+            if c:
+                html += "<td style='font-size:8px;'>"
+                html += str(c[2]["mass"]["nominal_mass"] * c[2]["mass"]["density"]) + "|" + str(c[2]["strength"]) + "|" + str(c[2]["stiffness"])
+                html += "</td>"
+            else:
+                html += "<td/>"
         html += "</tr>"
 
         
