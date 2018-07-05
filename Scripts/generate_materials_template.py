@@ -49,6 +49,7 @@ def main():
             col_order = int(col_parts[0])
         else:
             assert(len(col_parts) == 1)
+            col_name = ""
             col_order = int(col_parts[0])
 
         d_vals = d.setdefault(row_name, [])
@@ -75,31 +76,50 @@ def main():
 
     html += "<table style='border: 1px solid black' cellpadding=0 cellspacing=0>"
 
+    def render_cols(col_values, func_render, func_empty):
+        html = ""
+        col_index = 0
+        ci = 0
+        while ci < len(col_values):
+            col_value = col_values[ci]
+            if col_value[0] == col_index:
+                html += func_render(col_value)
+                ci += 1
+            else:
+                html += func_empty()
+            col_index += 1
+        return html
+
     for k in sorted([x for x in d.iterkeys()], key=order_dict.get):
 
         # Colors
         html += "<tr>"
         html += "<td rowspan='3' valign='middle' style='padding-right:5px;font-size:10px;'>" + k + "</td>"
-        col_values = d[k]
-        for cv in col_values:
-            html += "<td bgcolor='" + cv[2]["structural_colour"] + "'class='border_top' style='width: 50px;'>&nbsp;</td>"
-        html += "</tr>"
+        
+        html += render_cols(d[k], lambda col_value: (
+            "<td bgcolor='" + col_value[2]["structural_colour"] + "'class='border_top' style='width: 50px;'>&nbsp;</td>"
+            ), lambda: (
+            "<td style='width: 50px;'>&nbsp;</td>"
+            ))
 
         # Name
         html += "<tr>"
-        for cv in col_values:
-            html += "<td style='font-size:8px;'>"
-            if cv[1] is not None:
-                html += cv[1]
-            html += "</td>"
+        html += render_cols(d[k], lambda col_value: (
+            "<td style='font-size:8px;'>" + col_value[1] + "</td>"
+            ), lambda: (
+            "<td/>"
+            ))
         html += "</tr>"
 
+        # Data
         html += "<tr>"
-        for cv in col_values:
-            html += "<td style='font-size:8px;'>"
-            html += str(cv[2]["mass"]["nominal_mass"] * cv[2]["mass"]["density"]) + "|" + str(cv[2]["strength"]) + "|" + str(cv[2]["stiffness"])
-            html += "</td>"
+        html += render_cols(d[k], lambda col_value: (
+            "<td style='font-size:8px;'>" + str(col_value[2]["mass"]["nominal_mass"] * col_value[2]["mass"]["density"]) + "|" + str(col_value[2]["strength"]) + "|" + str(col_value[2]["stiffness"]) + "</td>"
+            ), lambda: (
+            "<td/>"
+            ))
         html += "</tr>"
+
         
     html += "</table>";
     html += "</body></html>";
