@@ -15,31 +15,17 @@ def main():
     # Prepare data
     #
 
-    max_order = -1
-    # order_dict: key=row_name,val=row_order    
-    order_dict={}
-    # d: key=row_name, val=list((col_order,col_name,Material))
+    # d: key=row_order, val=list((row_name,col_order,col_name,Material))
     d={}
     
     for elem in data:
         
         row = elem["template"]["row"]
         row_parts = row.split("|")
-        row_name = None
-        row_order = None
-        if len(row_parts) == 2:
-            row_name = row_parts[1]
-            row_order = int(row_parts[0])
-        else:
-            assert(len(row_parts) == 1)
-            row_name = row_parts[0]
+        assert(len(row_parts) == 2)
+        row_order = int(row_parts[0])
+        row_name = row_parts[1]
             
-        old_order=order_dict.get(row_name)
-        if old_order is not None and row_order != old_order:
-            raise Exception("Conflicting order for row '" + row + "'; old order was '" + str(old_order) + "'")
-        order_dict[row_name] = row_order
-        max_order = max(max_order, row_order)
-
         col = str(elem["template"]["column"])
         col_parts = col.split("|")
         col_name = None
@@ -52,18 +38,12 @@ def main():
             col_name = ""
             col_order = int(col_parts[0])
 
-        d_vals = d.setdefault(row_name, [])
-        d_vals.append((col_order,col_name,elem))
-
-    # Fill-in None orders 
-    for k,v in order_dict.iteritems():
-        if v is None:
-            max_order += 1
-            order_dict[k] = max_order
+        d_vals = d.setdefault(row_order, [])
+        d_vals.append((row_name,col_order,col_name,elem))
 
     # Sort cols
     for k,v in d.iteritems():
-        d[k] = sorted(v, key=itemgetter(0))
+        d[k] = sorted(v, key=itemgetter(1))
 
 
     #
@@ -77,31 +57,38 @@ def main():
     html += "<table style='border: 1px solid black' cellpadding=0 cellspacing=0>"
 
     # Visit all rows
-    for k in sorted([x for x in d.iterkeys()], key=order_dict.get):
+    for k, input_col_values in d.iteritems():
 
-        input_col_values = d[k]
         output_col_values = []
 
         # 1. Prepare data
-        output_col_number = 0
         ci = 0
+        labels_count = 0
+        cur_row_name = None
         while ci < len(input_col_values):
             input_col_value = input_col_values[ci]
-            if input_col_value[0] == output_col_number:
-                output_col_values.append(input_col_value)
-                ci += 1
+            if input_col_value[1] + labels_count <= len(output_col_values):
+                if input_col_value[0] != cur_row_name:
+                    output_col_values.append(input_col_value[0])
+                    labels_count += 1
+                    cur_row_name = input_col_value[0]
+                else:
+                    output_col_values.append(input_col_value)
+                    ci += 1
             else:
                 output_col_values.append(None)
-            output_col_number += 1
 
         # 2. Render
 
         # Colors
         html += "<tr>"
-        html += "<td rowspan='3' valign='middle' style='padding-right:5px;font-size:10px;'>" + k + "</td>"
         for c in output_col_values:
             if c:
-                html += "<td bgcolor='" + c[2]["structural_colour"] + "'class='border_top' style='width: 50px;'>&nbsp;</td>"
+                if type(c) != tuple:
+                    # Title
+                    html += "<td valign='middle' style='padding-right:5px;font-size:10px;'>" + c + "</td>"
+                else:
+                    html += "<td bgcolor='" + c[3]["structural_colour"] + "'class='border_top' style='width: 50px;'>&nbsp;</td>"
             else:
                 html += "<td style='width: 50px;'>&nbsp;</td>"
 
@@ -109,7 +96,10 @@ def main():
         html += "<tr>"
         for c in output_col_values:
             if c:
-                html += "<td style='font-size:8px;'>" + c[1] + "</td>"
+                if type(c) != tuple:
+                    html += "<td/>"
+                else:
+                    html += "<td style='font-size:8px;'>" + c[2] + "</td>"
             else:
                 html += "<td/>"
         html += "</tr>"
@@ -118,9 +108,12 @@ def main():
         html += "<tr>"
         for c in output_col_values:
             if c:
-                html += "<td style='font-size:8px;'>"
-                html += str(c[2]["mass"]["nominal_mass"] * c[2]["mass"]["density"]) + "|" + str(c[2]["strength"]) + "|" + str(c[2]["stiffness"])
-                html += "</td>"
+                if type(c) != tuple:
+                    html += "<td/>"
+                else:
+                    html += "<td style='font-size:8px;'>"
+                    html += str(c[3]["mass"]["nominal_mass"] * c[3]["mass"]["density"]) + "|" + str(c[3]["strength"]) + "|" + str(c[3]["stiffness"])
+                    html += "</td>"
             else:
                 html += "<td/>"
         html += "</tr>"
