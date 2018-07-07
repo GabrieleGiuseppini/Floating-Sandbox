@@ -14,10 +14,12 @@ public:
     {
         float TotalMass;
         float MassPerPoint;
+        float BuoyantMassPerPoint;
 
         WeightInfo()
             : TotalMass(0.0f)
             , MassPerPoint(0.0f)
+            , BuoyantMassPerPoint(0.0f)
         {}
     };
 

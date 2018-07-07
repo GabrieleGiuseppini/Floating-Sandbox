@@ -1873,7 +1873,7 @@
 		"row": "20|Glass",
 		"column": 0
 	},
-        "strength": 0.02,
+        "strength": 0.1,
 	"mass": {
 		"nominal_mass": 1000,
 		"density": 0.0417

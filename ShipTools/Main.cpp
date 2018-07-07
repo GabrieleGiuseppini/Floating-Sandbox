@@ -71,9 +71,9 @@ int DoQuantize(int argc, char ** argv)
         return 0;
     }
 
-    std::string inputFile(argv[2]);
-    std::string outputFile(argv[3]);
-    std::string materialsFile(argv[4]);
+    std::string materialsFile(argv[2]);
+    std::string inputFile(argv[3]);
+    std::string outputFile(argv[4]);    
 
     bool doKeepRopes = false;
     bool doKeepGlass = false;
@@ -142,13 +142,16 @@ int DoWeightShip(int argc, char ** argv)
         return 0;
     }
 
-    std::string inputFile(argv[2]);
-    std::string materialsFile(argv[3]);
+    std::string materialsFile(argv[2]);
+    std::string inputFile(argv[3]);    
 
     auto weightInfo = ShipAnalyzer::Weight(inputFile, materialsFile);
 
-    std::cout << "  Total mass        : " << weightInfo.TotalMass << std::endl;
-    std::cout << "  Average point mass: " << weightInfo.MassPerPoint<< std::endl;
+    std::cout << std::fixed;
+
+    std::cout << "  Total mass             : " << weightInfo.TotalMass << std::endl;
+    std::cout << "  Equivalent mass        : " << weightInfo.MassPerPoint<< std::endl;
+    std::cout << "  Equivalent buoyant mass: " << weightInfo.BuoyantMassPerPoint << std::endl;
 
     return 0;
 }
@@ -157,9 +160,9 @@ void PrintUsage()
 {
     std::cout << std::endl;
     std::cout << "Usage:" << std::endl;
-    std::cout << " quantize <in_file> <out_png> <materials_file> [-r, --keep_ropes]" << std::endl;
+    std::cout << " quantize <materials_file> <in_file> <out_png> [-r, --keep_ropes]" << std::endl;
     std::cout << "      -r, --keep_ropes" << std::endl;
     std::cout << "      -g, --keep_glass" << std::endl;
     std::cout << " resize <in_file> <out_png> <width>" << std::endl;
-    std::cout << " weight <in_file> <materials_file>" << std::endl;
+    std::cout << " weight <materials_file> <in_file>" << std::endl;
 }

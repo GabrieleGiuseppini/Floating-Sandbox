@@ -195,7 +195,7 @@ bool Springs::UpdateStrains(
 
                 isAtLeastOneBroken = true;
             }
-            else if (strain > 0.25f * effectiveStrength)
+            else if (strain > 0.5f * effectiveStrength)
             {
                 // It's stressed!
                 if (!mIsStressedBuffer[i])

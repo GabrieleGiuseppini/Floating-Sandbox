@@ -30,6 +30,7 @@ ShipAnalyzer::WeightInfo ShipAnalyzer::Weight(
     // Visit all points
     ShipAnalyzer::WeightInfo weightInfo;
     float numPoints = 0.0f;
+    float numBuoyantPoints = 0.0f;
     for (int x = 0; x < image.Size.Width; ++x)
     {
         // From bottom to top
@@ -47,6 +48,8 @@ ShipAnalyzer::WeightInfo ShipAnalyzer::Weight(
             {
                 weightInfo.TotalMass += material->Mass;
                 numPoints += 1.0f;
+                if (!material->IsHull)
+                    numBuoyantPoints += 1.0f;
             }
         }
     }
@@ -54,6 +57,11 @@ ShipAnalyzer::WeightInfo ShipAnalyzer::Weight(
     if (numPoints != 0.0f)
     {
         weightInfo.MassPerPoint = weightInfo.TotalMass / numPoints;
+    }
+
+    if (numBuoyantPoints != 0.0f)
+    {
+        weightInfo.BuoyantMassPerPoint = weightInfo.TotalMass / numBuoyantPoints;
     }
 
     return weightInfo;
