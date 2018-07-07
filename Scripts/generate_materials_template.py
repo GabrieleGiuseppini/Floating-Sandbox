@@ -86,7 +86,7 @@ def main():
             if c:
                 if type(c) != tuple:
                     # Title
-                    html += "<td valign='middle' style='padding-right:5px;font-size:10px;'>" + c + "</td>"
+                    html += "<td valign='middle' align='right' style='padding-right:5px;font-size:10px;'>" + c + "</td>"
                 else:
                     html += "<td bgcolor='" + c[3]["structural_colour"] + "'class='border_top' style='width: 50px;'>&nbsp;</td>"
             else:
