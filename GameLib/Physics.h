@@ -15,6 +15,7 @@ namespace Physics
     class Generator;
     class Lamp;
     class OceanFloor;
+    class PinnedPoints;
 	class Points;
 	class Ship;
 	class Springs;
@@ -43,5 +44,7 @@ namespace Physics
 #include "TimerBomb.h"
 #include "RCBomb.h"
 #include "Bombs.h"
+
+#include "PinnedPoints.h"
 
 #include "Ship.h"

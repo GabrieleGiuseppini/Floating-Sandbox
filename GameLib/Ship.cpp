@@ -47,8 +47,11 @@ Ship::Ship(
     , mAreElementsDirty(true)
     , mIsSinking(false)
     , mTotalWater(0.0)
-    , mCurrentPinnedPoints()
-    , mArePinnedPointsDirty(false)
+    , mPinnedPoints(
+        mParentWorld,
+        mGameEventHandler,
+        mPoints,
+        mSprings)
     , mBombs(
         mParentWorld,
         mGameEventHandler,
@@ -155,100 +158,9 @@ bool Ship::TogglePinAt(
     vec2f const & targetPos,
     GameParameters const & gameParameters)
 {
-    float const squareSearchRadius = gameParameters.ToolSearchRadius * gameParameters.ToolSearchRadius;
-
-    //
-    // See first if there's a pinned point within the search radius, most recent first;
-    // if so we unpin it and we're done
-    //
-
-    for (auto it = mCurrentPinnedPoints.begin(); it != mCurrentPinnedPoints.end(); ++it)
-    {
-        assert(!mPoints.IsDeleted(*it));
-        assert(mPoints.IsPinned(*it));
-
-        float squareDistance = (mPoints.GetPosition(*it) - targetPos).squareLength();
-        if (squareDistance < squareSearchRadius)
-        {
-            // Found a pinned point
-
-            // Unpin it
-            mPoints.Unpin(*it);
-
-            // Remove from set of pinned points
-            mCurrentPinnedPoints.erase(it);
-
-            // Remember we have to re-upload the pinned points
-            mArePinnedPointsDirty = true;
-
-            // Notify
-            mGameEventHandler->OnPinToggled(
-                false,
-                mParentWorld.IsUnderwater(mPoints.GetPosition(*it)));
-
-            // We're done
-            return true;
-        }
-    }
-
-
-    //
-    // No pinned points in radius...
-    // ...so find closest unpinned point within the search radius, and
-    // if found, pin it
-    //
-
-    ElementIndex nearestUnpinnedPointIndex = NoneElementIndex;
-    float nearestUnpinnedPointDistance = std::numeric_limits<float>::max();
-
-    for (auto pointIndex : mPoints)
-    {
-        if (!mPoints.IsDeleted(pointIndex) && !mPoints.IsPinned(pointIndex))
-        {
-            float squareDistance = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
-            if (squareDistance < squareSearchRadius)
-            {
-                // This point is within the search radius
-
-                // Keep the nearest
-                if (squareDistance < squareSearchRadius && squareDistance < nearestUnpinnedPointDistance)
-                {
-                    nearestUnpinnedPointIndex = pointIndex;
-                    nearestUnpinnedPointDistance = squareDistance;
-                }
-            }
-        }
-    }
-
-    if (NoneElementIndex != nearestUnpinnedPointIndex)
-    {
-        // We have a nearest, unpinned point
-
-        // Pin it
-        mPoints.Pin(nearestUnpinnedPointIndex);
-
-        // Add to set of pinned points, unpinning eventual pins that might get purged 
-        mCurrentPinnedPoints.emplace(
-            [this](auto purgedPinnedPointIndex)
-            {
-                this->mPoints.Unpin(purgedPinnedPointIndex);
-            },
-            nearestUnpinnedPointIndex);
-
-        // Remember we have to re-upload the pinned points
-        mArePinnedPointsDirty = true;
-
-        // Notify
-        mGameEventHandler->OnPinToggled(
-            true,
-            mParentWorld.IsUnderwater(mPoints.GetPosition(nearestUnpinnedPointIndex)));
-
-        // We're done
-        return true;
-    }
-
-    // No point found on this ship
-    return false;
+    return mPinnedPoints.ToggleAt(
+        targetPos,
+        gameParameters);
 }
 
 bool Ship::ToggleTimerBombAt(
@@ -448,33 +360,6 @@ void Ship::Render(
         renderContext.UploadShipElementStressedSpringsEnd(mId);
 
 
-        //
-        // Upload pinned points, if they've changed since the last time
-        //
-
-        if (mArePinnedPointsDirty || mAreElementsDirty)
-        {
-            renderContext.UploadShipElementPinnedPointsStart(
-                mId,
-                mCurrentPinnedPoints.size());
-
-            for (auto pinnedPointIndex : mCurrentPinnedPoints)
-            {
-                assert(!mPoints.IsDeleted(pinnedPointIndex));
-                assert(mPoints.IsPinned(pinnedPointIndex));
-
-                renderContext.UploadShipElementPinnedPoint(
-                    mId,
-                    mPoints.GetPosition(pinnedPointIndex).x,
-                    mPoints.GetPosition(pinnedPointIndex).y,
-                    mPoints.GetConnectedComponentId(pinnedPointIndex));
-            }
-
-            renderContext.UploadShipElementPinnedPointsEnd(mId);
-
-            mArePinnedPointsDirty = false;
-        }
-
         mAreElementsDirty = false;
     }        
 
@@ -484,6 +369,14 @@ void Ship::Render(
     //
 
     mBombs.Upload(
+        mId,
+        renderContext);
+
+    //
+    // Upload pinned points
+    //
+
+    mPinnedPoints.Upload(
         mId,
         renderContext);
 
@@ -1099,27 +992,11 @@ void Ship::PointDestroyHandler(ElementIndex pointElementIndex)
         mElectricalElements.Destroy(mPoints.GetConnectedElectricalElement(pointElementIndex));
     }
 
-
-    //
-    // If the point is pinned, unpin it
-    //
-
-    auto it = std::find(mCurrentPinnedPoints.begin(), mCurrentPinnedPoints.end(), pointElementIndex);
-    if (it != mCurrentPinnedPoints.end())
-    {
-        // Unpin it
-        assert(mPoints.IsPinned(*it));
-        mPoints.Unpin(*it);
-
-        // Remove from stack
-        mCurrentPinnedPoints.erase(it);
-
-        // Remember we have to re-upload the pinned points
-        mArePinnedPointsDirty = true;
-    }
-
     // Notify bombs
     mBombs.OnPointDestroyed(pointElementIndex);
+
+    // Notify pinned points
+    mPinnedPoints.OnPointDestroyed(pointElementIndex);
 
     // Remember our elements are now dirty
     mAreElementsDirty = true;
@@ -1152,39 +1029,11 @@ void Ship::SpringDestroyHandler(
     mPoints.RemoveConnectedSpring(pointAIndex, springElementIndex);
     mPoints.RemoveConnectedSpring(pointBIndex, springElementIndex);
 
-    //
-    // If an endpoint was pinned and it has now lost all of its springs, then make 
-    // it unpinned
-    //
-
-    if (mPoints.IsPinned(pointAIndex)
-        && mPoints.GetConnectedSprings(pointAIndex).empty())
-    {
-        // Unpin it
-        mPoints.Unpin(pointAIndex);
-
-        // Remove from set of pinned points
-        mCurrentPinnedPoints.erase(pointAIndex);
-
-        // Remember we have to re-upload the pinned points
-        mArePinnedPointsDirty = true;
-    }
-
-    if (mPoints.IsPinned(pointBIndex)
-        && mPoints.GetConnectedSprings(pointBIndex).empty())
-    {
-        // Unpin it
-        mPoints.Unpin(pointBIndex);
-
-        // Remove from set of pinned points
-        mCurrentPinnedPoints.erase(pointBIndex);
-
-        // Remember we have to re-upload the pinned points
-        mArePinnedPointsDirty = true;
-    }
-
     // Notify bombs
     mBombs.OnSpringDestroyed(springElementIndex);
+
+    // Notify pinned points
+    mPinnedPoints.OnSpringDestroyed(springElementIndex);
 
     // Remember our elements are now dirty
     mAreElementsDirty = true;

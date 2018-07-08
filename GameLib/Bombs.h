@@ -41,6 +41,7 @@ public:
         , mBlastHandler(blastHandler)
         , mShipPoints(shipPoints)
         , mShipSprings(shipSprings)
+        , mCurrentBombs()
     {
     }
 

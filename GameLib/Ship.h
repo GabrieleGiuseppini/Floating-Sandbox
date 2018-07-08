@@ -1,7 +1,7 @@
 /***************************************************************************************
- * Original Author:		Gabriele Giuseppini
- * Created:				2018-01-21
- * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
+ * Original Author:     Gabriele Giuseppini
+ * Created:             2018-01-21
+ * Copyright:           Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
  ***************************************************************************************/
 #pragma once
 
@@ -179,22 +179,10 @@ private:
     bool mIsSinking;
     float mTotalWater;
 
-
-    //
     // Pinned points
-    //
+    PinnedPoints mPinnedPoints;
 
-    // The current set of pinned points
-    CircularList<ElementIndex, GameParameters::MaxPinnedPoints> mCurrentPinnedPoints;
-
-    // Flag remembering whether the set of pinned points has changed since the last step
-    bool mutable mArePinnedPointsDirty;
-
-
-    //
     // Bombs
-    //
-
     Bombs mBombs;
 
 

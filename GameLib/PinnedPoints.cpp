@@ -1,71 +1,82 @@
 /***************************************************************************************
 * Original Author:      Gabriele Giuseppini
-* Created:              2018-06-23
+* Created:              2018-07-08
 * Copyright:            Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
 #include "Physics.h"
 
 namespace Physics {
 
-
-void Bombs::OnPointDestroyed(ElementIndex pointElementIndex)
+void PinnedPoints::OnPointDestroyed(ElementIndex pointElementIndex)
 {
-    auto squareNeighborhoodRadius = GameParameters::BombNeighborhoodRadius * GameParameters::BombNeighborhoodRadius;
+    //
+    // If the point is pinned, unpin it
+    //
 
-    auto neighborhoodCenter = mShipPoints.GetPosition(pointElementIndex);
-
-    for (auto & bomb : mCurrentBombs)
+    auto it = std::find(mCurrentPinnedPoints.begin(), mCurrentPinnedPoints.end(), pointElementIndex);
+    if (it != mCurrentPinnedPoints.end())
     {
-        // Check if the bomb is within the neighborhood of the disturbed point
-        float squareBombDistance = (bomb->GetPosition() - neighborhoodCenter).squareLength();
-        if (squareBombDistance < squareNeighborhoodRadius)
-        {
-            // Tel the bomb that its neighborhood has been disturbed
-            bomb->OnNeighborhoodDisturbed();
-        }
+        // Unpin it
+        assert(mShipPoints.IsPinned(*it));
+        mShipPoints.Unpin(*it);
+
+        // Remove from stack
+        mCurrentPinnedPoints.erase(it);
     }
 }
 
-void Bombs::OnSpringDestroyed(ElementIndex springElementIndex)
+void PinnedPoints::OnSpringDestroyed(ElementIndex springElementIndex)
 {
-    auto squareNeighborhoodRadius = GameParameters::BombNeighborhoodRadius * GameParameters::BombNeighborhoodRadius;
+    //
+    // If an endpoint was pinned and it has now lost all of its springs, then make 
+    // it unpinned
+    //
 
-    auto neighborhoodCenter = mShipSprings.GetMidpointPosition(springElementIndex, mShipPoints);
+    auto const pointAIndex = mShipSprings.GetPointAIndex(springElementIndex);
+    auto const pointBIndex = mShipSprings.GetPointBIndex(springElementIndex);
 
-    for (auto & bomb : mCurrentBombs)
+    if (mShipPoints.IsPinned(pointAIndex)
+        && mShipPoints.GetConnectedSprings(pointAIndex).empty())
     {
-        // Check if the bomb is attached to this spring
-        auto bombSpring = bomb->GetAttachedSpringIndex();
-        if (!!bombSpring && *bombSpring == springElementIndex)
-        {
-            // Detach bomb
-            bomb->DetachIfAttached();
-        }
+        // Unpin it
+        mShipPoints.Unpin(pointAIndex);
 
-        // Check if the bomb is within the neighborhood of the disturbed center
-        float squareBombDistance = (bomb->GetPosition() - neighborhoodCenter).squareLength();
-        if (squareBombDistance < squareNeighborhoodRadius)
-        {
-            // Tel the bomb that its neighborhood has been disturbed
-            bomb->OnNeighborhoodDisturbed();
-        }
+        // Remove from set of pinned points
+        mCurrentPinnedPoints.erase(pointAIndex);
+    }
+
+    if (mShipPoints.IsPinned(pointBIndex)
+        && mShipPoints.GetConnectedSprings(pointBIndex).empty())
+    {
+        // Unpin it
+        mShipPoints.Unpin(pointBIndex);
+
+        // Remove from set of pinned points
+        mCurrentPinnedPoints.erase(pointBIndex);
     }
 }
 
-void Bombs::Upload(
+void PinnedPoints::Upload(
     int shipId,
     RenderContext & renderContext) const
 {
-    renderContext.UploadShipElementBombsStart(
+    renderContext.UploadShipElementPinnedPointsStart(
         shipId,
-        mCurrentBombs.size());
+        mCurrentPinnedPoints.size());
 
-    for (auto & bomb : mCurrentBombs)
+    for (auto pinnedPointIndex : mCurrentPinnedPoints)
     {
-        bomb->Upload(shipId, renderContext);
+        assert(!mShipPoints.IsDeleted(pinnedPointIndex));
+        assert(mShipPoints.IsPinned(pinnedPointIndex));
+
+        renderContext.UploadShipElementPinnedPoint(
+            shipId,
+            mShipPoints.GetPosition(pinnedPointIndex).x,
+            mShipPoints.GetPosition(pinnedPointIndex).y,
+            mShipPoints.GetConnectedComponentId(pinnedPointIndex));
     }
 
-    renderContext.UploadShipElementBombsEnd(shipId);
+    renderContext.UploadShipElementPinnedPointsEnd(shipId);
 }
 
 }

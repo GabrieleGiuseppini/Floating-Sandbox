@@ -48,9 +48,13 @@ Prev perf (before point et al destructuring)
 =================================================
 
 - Release:
-	= Change LinkedIn link
 	= Buoyancy fix:
 		+ test with hack what would happen if all non-hull materials were 1/nth of the mass
+		+ python script: allow empty cells (skip cols if != index)
+			+ Make template more compact
+		+ Regenerate template
+		+ Re-check bomb weight
+		+ Regenerate template
 		= If ok:
 			= Before unhack: fix ships:
 				+ Do Masts and investigate mass effect on breakage
@@ -64,15 +68,16 @@ Prev perf (before point et al destructuring)
 							+ Do tests
 						+ Softer again under funnels
 					+ Fix mast
+					+ Glass breaks immediately
 				= Fix Base III: make it float
 					+ Larger base, boat-shaped
-					- See if it's cooler if it floats more (another floating level)
-				- Fix default ship: just lighter
-				- Fix cargo ship
-					- Lighter back
-					- Weaker supports to containers
-					- Stronger mid-top material
-				- Fix Carnival - lighter
+					+ See if it's cooler if it floats more (another floating level)
+					- See with thicker columns (make a new one and call it Base II)
+				+ Fix default ship: just lighter
+				+ Fix cargo ship
+					+ Y offset
+				+ Fix Carnival - lighter
+				+ Fix Krafting - no sudden stress
 			+ Rewrite buoyancy code - use WaterMass
 			+ Change materials
 				+ No Mass but object with:
@@ -87,8 +92,8 @@ Prev perf (before point et al destructuring)
 				= Fix max, min
 					- Rethink exponential slider: takes also midpoint (1.0 for us) and then it's two exp curves
 		- Add to change list
-	- Fix Ocean Depth
-		- Affects only textures, not land
+	+ Fix Ocean Depth
+		+ Affects only textures, not land
 	= Make some ships
 		+ Copy three balls
 		+ Make ShipTools, -quantize verb
@@ -101,8 +106,9 @@ Prev perf (before point et al destructuring)
 						+ Test
 			+ Add "f=..." to template or better "M:S:F"
 			+ Test newest ship
-		- Antennas
-			- Draft with barrels
+		- Copy, change, and fix from old:
+			- Ship5
+			- Ship6
 		- That warship
 		- Call .shp parts ".png.dat"
 			- Rename via git
@@ -113,8 +119,6 @@ Prev perf (before point et al destructuring)
 	- Add to gamejolt
 
 - Technical Debt:
-	+ Move definition of ElementIndex et al into GameTypes.h
-	- Move also pinned points to a PinnedPoints class, just like Bombs
 	- Textures are json files, with world sizes, offset, and lighting boolean
 		- SEE MOLESKINE
 		- Then:
@@ -1809,6 +1813,8 @@ IF WX:
 		+ Ship's DestroyHandlers don't fire events anymore, and Ship::SpringDestroyHandler takes boolean
 		  for triangles (translated from Springs::DetroyOptions)
 		+ Test assert's with Debug build
+	+ Move definition of ElementIndex et al into GameTypes.h
+	+ Move also pinned points to a PinnedPoints class, just like Bombs
 
 + Ships:
 	+ Titanic:

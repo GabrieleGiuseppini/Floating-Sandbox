@@ -35,6 +35,7 @@ public:
         , mGameEventHandler(std::move(gameEventHandler))
         , mShipPoints(shipPoints)
         , mShipSprings(shipSprings)
+        , mCurrentPinnedPoints()
     {
     }
 
@@ -42,25 +43,99 @@ public:
 
     void OnSpringDestroyed(ElementIndex springElementIndex);
 
-    bool ToggleTimerBombAt(
+    bool ToggleAt(
         vec2 const & targetPos,
         GameParameters const & gameParameters)
     {
-        return ToggleBombAt<TimerBomb>(
-            targetPos,
-            gameParameters);
-    }
+        float const squareSearchRadius = gameParameters.ToolSearchRadius * gameParameters.ToolSearchRadius;
 
-    bool ToggleRCBombAt(
-        vec2 const & targetPos,
-        GameParameters const & gameParameters)
-    {
-        return ToggleBombAt<RCBomb>(
-            targetPos,
-            gameParameters);
-    }
+        //
+        // See first if there's a pinned point within the search radius, most recent first;
+        // if so we unpin it and we're done
+        //
 
-    void DetonateRCBombs();
+        for (auto it = mCurrentPinnedPoints.begin(); it != mCurrentPinnedPoints.end(); ++it)
+        {
+            assert(!mShipPoints.IsDeleted(*it));
+            assert(mShipPoints.IsPinned(*it));
+
+            float squareDistance = (mShipPoints.GetPosition(*it) - targetPos).squareLength();
+            if (squareDistance < squareSearchRadius)
+            {
+                // Found a pinned point
+
+                // Unpin it
+                mShipPoints.Unpin(*it);
+
+                // Remove from set of pinned points
+                mCurrentPinnedPoints.erase(it);
+
+                // Notify
+                mGameEventHandler->OnPinToggled(
+                    false,
+                    mParentWorld.IsUnderwater(mShipPoints.GetPosition(*it)));
+
+                // We're done
+                return true;
+            }
+        }
+
+
+        //
+        // No pinned points in radius...
+        // ...so find closest unpinned point within the search radius, and
+        // if found, pin it
+        //
+
+        ElementIndex nearestUnpinnedPointIndex = NoneElementIndex;
+        float nearestUnpinnedPointDistance = std::numeric_limits<float>::max();
+
+        for (auto pointIndex : mShipPoints)
+        {
+            if (!mShipPoints.IsDeleted(pointIndex) && !mShipPoints.IsPinned(pointIndex))
+            {
+                float squareDistance = (mShipPoints.GetPosition(pointIndex) - targetPos).squareLength();
+                if (squareDistance < squareSearchRadius)
+                {
+                    // This point is within the search radius
+
+                    // Keep the nearest
+                    if (squareDistance < squareSearchRadius && squareDistance < nearestUnpinnedPointDistance)
+                    {
+                        nearestUnpinnedPointIndex = pointIndex;
+                        nearestUnpinnedPointDistance = squareDistance;
+                    }
+                }
+            }
+        }
+
+        if (NoneElementIndex != nearestUnpinnedPointIndex)
+        {
+            // We have a nearest, unpinned point
+
+            // Pin it
+            mShipPoints.Pin(nearestUnpinnedPointIndex);
+
+            // Add to set of pinned points, unpinning eventual pins that might get purged 
+            mCurrentPinnedPoints.emplace(
+                [this](auto purgedPinnedPointIndex)
+                {
+                    this->mShipPoints.Unpin(purgedPinnedPointIndex);
+                },
+                nearestUnpinnedPointIndex);
+
+            // Notify
+            mGameEventHandler->OnPinToggled(
+                true,
+                mParentWorld.IsUnderwater(mShipPoints.GetPosition(nearestUnpinnedPointIndex)));
+
+            // We're done
+            return true;
+        }
+
+        // No point found on this ship
+        return false;
+    }
 
     void Upload(
         int shipId,
@@ -179,9 +254,6 @@ private:
 
     // The game event handler
     std::shared_ptr<IGameEventHandler> mGameEventHandler;
-
-    // The handler to invoke for each explosion
-    Bomb::BlastHandler const mBlastHandler;
     
     // The container of all the ship's points
     Points & mShipPoints;
@@ -189,8 +261,8 @@ private:
     // The container of all the ship's springs
     Springs & mShipSprings;
 
-    // The current set of bombs
-    CircularList<std::unique_ptr<Bomb>, GameParameters::MaxBombs> mCurrentBombs;
+    // The current set of pinned points
+    CircularList<ElementIndex, GameParameters::MaxPinnedPoints> mCurrentPinnedPoints;
 };
 
 }
