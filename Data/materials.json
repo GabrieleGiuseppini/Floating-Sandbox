@@ -1868,10 +1868,30 @@
 	}
     },
     {
+        "name": "Glass Hull",
+	"template": {
+		"row": "20|Glass Hull",
+		"column": 1
+	},
+        "strength": 0.1,
+	"mass": {
+		"nominal_mass": 1000,
+		"density": 0.17
+	},  
+	"is_hull": true,
+	"stiffness": 1,
+        "structural_colour": "#D5EFEF",
+	"render_colour": "#D5EFEF",
+	"sound_properties": {
+		"element_type": "Glass"
+	}
+    },
+
+    {
         "name": "Glass",
 	"template": {
 		"row": "20|Glass",
-		"column": 0
+		"column": 2
 	},
         "strength": 0.1,
 	"mass": {
@@ -1890,9 +1910,9 @@
         "name": "Standard Lamp",	
 	"template": {
 		"row": "20|Electrical",
-		"column": "0|Lamp"
+		"column": "3|Lamp"
 	},
-        "strength": 0.02,
+        "strength": 0.1,
 	"mass": {
 		"nominal_mass": 30,
 		"density": 0.5
@@ -1914,7 +1934,7 @@
         "name": "Standard Generator",	
 	"template": {
 		"row": "20|Electrical",
-		"column": "1|Generator"
+		"column": "4|Generator"
 	},
         "strength": 0.089,
 	"mass": {
@@ -1938,9 +1958,9 @@
         "name": "Standard Electrical Cable",	
 	"template": {
 		"row": "20|Electrical",
-		"column": "2|Cable"
+		"column": "5|Cable"
 	},
-        "strength": 2.67,
+        "strength": 0.8,
 	"mass": {
 		"nominal_mass": 30,
 		"density": 0.5
