@@ -48,50 +48,6 @@ Prev perf (before point et al destructuring)
 =================================================
 
 - Release:
-	= Buoyancy fix:
-		+ test with hack what would happen if all non-hull materials were 1/nth of the mass
-		+ python script: allow empty cells (skip cols if != index)
-			+ Make template more compact
-		+ Regenerate template
-		+ Re-check bomb weight
-		+ Regenerate template
-		= If ok:
-			= Before unhack: fix ships:
-				+ Do Masts and investigate mass effect on breakage
-				+ Fix Titanic:
-					+ Lighter rudder
-					+ Also generally Lighter?
-					+ Stronger under funnels (make tin stronger?)
-					+ Make it break
-						+ Study tension based off mass
-							+ Solve integral manually
-							+ Do tests
-						+ Softer again under funnels
-					+ Fix mast
-					+ Glass breaks immediately
-				= Fix Base III: make it float
-					+ Larger base, boat-shaped
-					+ See if it's cooler if it floats more (another floating level)
-					- See with thicker columns (make a new one and call it Base II)
-				+ Fix default ship: just lighter
-				+ Fix cargo ship
-					+ Y offset
-				+ Fix Carnival - lighter
-				+ Fix Krafting - no sudden stress
-			+ Rewrite buoyancy code - use WaterMass
-			+ Change materials
-				+ No Mass but object with:
-					+ nominalMass
-					+ density
-				+ Springs: get mass from points, not from material
-				+ Add density = [copy from current hack] 1/6th for hull, 1/(6*10or4)
-				+ Material loading: just store mass*density at mass
-			+ Redo Materials Template
-			+ Watch out for strength: it was (/ mass * 1000)
-			= Fix strength adjust
-				= Fix max, min
-					- Rethink exponential slider: takes also midpoint (1.0 for us) and then it's two exp curves
-		- Add to change list
 	+ Fix Ocean Depth
 		+ Affects only textures, not land
 	= Make some ships
@@ -114,7 +70,6 @@ Prev perf (before point et al destructuring)
 			- Rename via git
 			- Edit .shp files
 	- Build and release 1.2.0
-	- PinnedPoints below
 	- Post to forum
 	- Add to gamejolt
 
@@ -1611,6 +1566,51 @@ IF WX:
 				+ Also underwater
 
 	+ Ultra-violent flag: very strong Draw and Swirl forces
+
+	+ Buoyancy redesign:
+		+ test with hack what would happen if all non-hull materials were 1/nth of the mass
+		+ python script: allow empty cells (skip cols if != index)
+			+ Make template more compact
+		+ Regenerate template
+		+ Re-check bomb weight
+		+ Regenerate template
+		+ If ok:
+			+ Before unhack: fix ships:
+				+ Do Masts and investigate mass effect on breakage
+				+ Fix Titanic:
+					+ Lighter rudder
+					+ Also generally Lighter?
+					+ Stronger under funnels (make tin stronger?)
+					+ Make it break
+						+ Study tension based off mass
+							+ Solve integral manually
+							+ Do tests
+						+ Softer again under funnels
+					+ Fix mast
+					+ Glass breaks immediately
+				+ Fix Base III: make it float
+					+ Larger base, boat-shaped
+					+ See if it's cooler if it floats more (another floating level)
+					+ See with thicker columns (make a new one and call it Base II)
+				+ Fix default ship: just lighter
+				+ Fix cargo ship
+					+ Y offset
+				+ Fix Carnival - lighter
+				+ Fix Krafting - no sudden stress
+			+ Rewrite buoyancy code - use WaterMass
+			+ Change materials
+				+ No Mass but object with:
+					+ nominalMass
+					+ density
+				+ Springs: get mass from points, not from material
+				+ Add density = [copy from current hack] 1/6th for hull, 1/(6*10or4)
+				+ Material loading: just store mass*density at mass
+			+ Redo Materials Template
+			+ Watch out for strength: it was (/ mass * 1000)
+			+ Fix strength adjust
+				+ Fix max, min
+					+ Rethink exponential slider: takes also midpoint (1.0 for us) and then it's two exp curves
+		+ Add to change list
 
 + Debug light/drag issue
 	+ Could be due to distance too close and shooting light to sky

@@ -1,4 +1,5 @@
 1.3.0
+- Completely redesigned the physics of buoyancy, and as a consequence overhauled the material system
 - Fixed bug with ocean depth adjustment
 
 1.2.0

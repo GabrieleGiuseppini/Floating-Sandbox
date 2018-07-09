@@ -13,6 +13,7 @@ public:
 
     ExponentialSliderCore(
         float minValue,
+        float zeroValue,
         float maxValue);
 
     virtual int GetNumberOfTicks() const override;
@@ -24,5 +25,11 @@ public:
 private:
 
     float const mMinValue;
+    float const mZeroValue;
     float const mMaxValue;
+
+    float const mLowerA;
+    float const mLowerB;
+    float const mUpperA;
+    float const mUpperB;
 };

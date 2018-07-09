@@ -88,8 +88,9 @@ SettingsDialog::SettingsDialog(
             // Remember we're dirty now
             this->mApplyButton->Enable(true);
         },
-        std::make_unique<LinearSliderCore>(
+        std::make_unique<ExponentialSliderCore>(
             mGameController->GetMinStrengthAdjustment(),
+            1.0f,
             mGameController->GetMaxStrengthAdjustment()));
 
     controls1Sizer->Add(mStrengthSlider.get(), 0);
