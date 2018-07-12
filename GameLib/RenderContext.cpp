@@ -692,9 +692,9 @@ void RenderContext::RenderStart()
 {
     // Set anti-aliasing for lines and polygons
     glEnable(GL_LINE_SMOOTH);
-    glHint(GL_LINE_SMOOTH, GL_NICEST);
+    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
     glEnable(GL_POLYGON_SMOOTH);
-    glHint(GL_POLYGON_SMOOTH, GL_NICEST);
+    glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
 
     // Enable blend for alpha transparency
     glEnable(GL_BLEND);
