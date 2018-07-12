@@ -161,8 +161,7 @@ void PrintUsage()
     std::cout << std::endl;
     std::cout << "Usage:" << std::endl;
     std::cout << " quantize <materials_file> <in_file> <out_png> [-r, --keep_ropes]" << std::endl;
-    std::cout << "      -r, --keep_ropes" << std::endl;
-    std::cout << "      -g, --keep_glass" << std::endl;
+    std::cout << "          [-g, --keep_glass]" << std::endl;
     std::cout << " resize <in_file> <out_png> <width>" << std::endl;
     std::cout << " weight <materials_file> <in_file>" << std::endl;
 }

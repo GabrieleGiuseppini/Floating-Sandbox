@@ -62,10 +62,11 @@ Prev perf (before point et al destructuring)
 						+ Test
 			+ Add "f=..." to template or better "M:S:F"
 			+ Test newest ship
-		- Copy, change, and fix from old:
-			- Ship5
-			- Ship6
+		+ Copy, change, and fix from old:
+			+ Ship5
+			+ Ship6
 		- That warship
+			- See if can make it bulky first
 		- Call .shp parts ".png.dat"
 			- Rename via git
 			- Edit .shp files
