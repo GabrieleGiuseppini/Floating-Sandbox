@@ -683,7 +683,12 @@ void RenderContext::AddShip(
             mRopeColour,
             *mPinnedPointTexture,
             rcBombTextures,
-            timerBombTextures));
+            timerBombTextures,
+            mOrthoMatrix,
+            mVisibleWorldHeight,
+            mVisibleWorldWidth,
+            mCanvasToVisibleWorldHeightRatio,
+            mAmbientLightIntensity));
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -946,11 +951,12 @@ void RenderContext::RenderEnd()
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-void RenderContext::CalculateOrthoMatrix()
+void RenderContext::UpdateOrthoMatrix()
 {
     static constexpr float zFar = 1000.0f;
     static constexpr float zNear = 1.0f;
 
+    // Calculate new matrix
     mOrthoMatrix[0][0] = 2.0f / mVisibleWorldWidth;
     mOrthoMatrix[1][1] = 2.0f / mVisibleWorldHeight;
     mOrthoMatrix[2][2] = -2.0f / (zFar - zNear);
@@ -958,10 +964,36 @@ void RenderContext::CalculateOrthoMatrix()
     mOrthoMatrix[3][1] = -2.0f * mCamY / mVisibleWorldHeight;
     mOrthoMatrix[3][2] = -(zFar + zNear) / (zFar - zNear);
     mOrthoMatrix[3][3] = 1.0f;
+
+    // Update all ships
+    for (auto & ship : mShips)
+    {
+        ship->UpdateOrthoMatrix(mOrthoMatrix);
+    }
 }
 
-void RenderContext::CalculateVisibleWorldCoordinates()
+void RenderContext::UpdateVisibleWorldCoordinates()
 {
+    // Calculate new dimensions
     mVisibleWorldHeight = 2.0f * 70.0f / (mZoom + 0.001f);
     mVisibleWorldWidth = static_cast<float>(mCanvasWidth) / static_cast<float>(mCanvasHeight) * mVisibleWorldHeight;
+    mCanvasToVisibleWorldHeightRatio = static_cast<float>(mCanvasHeight) / mVisibleWorldHeight;
+
+    // Update all ships
+    for (auto & ship : mShips)
+    {
+        ship->UpdateVisibleWorldCoordinates(
+            mVisibleWorldHeight,
+            mVisibleWorldWidth,
+            mCanvasToVisibleWorldHeightRatio);
+    }
+}
+
+void RenderContext::UpdateAmbientLightIntensity()
+{
+    // Update all ships
+    for (auto & ship : mShips)
+    {
+        ship->UpdateAmbientLightIntensity(mAmbientLightIntensity);
+    }
 }

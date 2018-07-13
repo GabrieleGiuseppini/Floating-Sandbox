@@ -12,9 +12,16 @@ ShipRenderContext::ShipRenderContext(
     vec3f const & ropeColour,
     GLuint pinnedPointTexture,
     std::vector<GLuint> rcBombTextures,
-    std::vector<GLuint> timerBombTextures)
+    std::vector<GLuint> timerBombTextures,
+    float const(&orthoMatrix)[4][4],
+    float visibleWorldHeight,
+    float visibleWorldWidth,
+    float canvasToVisibleWorldHeightRatio,
+    float ambientLightIntensity)
+    : mCanvasToVisibleWorldHeightRatio(0)
+    , mAmbientLightIntensity(0)
     // Points
-    : mPointCount(0u)
+    , mPointCount(0u)
     , mPointPositionVBO()
     , mPointLightVBO()
     , mPointWaterVBO()
@@ -608,10 +615,87 @@ ShipRenderContext::ShipRenderContext(
 
     // Unbind VBO
     glBindBuffer(GL_ARRAY_BUFFER, 0u);
+
+    //
+    // Set parameters to initial values
+    //
+
+    UpdateOrthoMatrix(orthoMatrix);
+
+    UpdateVisibleWorldCoordinates(
+        visibleWorldHeight,
+        visibleWorldWidth,
+        canvasToVisibleWorldHeightRatio);
+
+    UpdateAmbientLightIntensity(ambientLightIntensity);
 }
 
 ShipRenderContext::~ShipRenderContext()
 {
+}
+
+void ShipRenderContext::UpdateOrthoMatrix(float const(&orthoMatrix)[4][4])
+{
+    //
+    // Set parameter in all programs
+    //
+
+    glUseProgram(*mElementColorShaderProgram);
+    glUniformMatrix4fv(mElementColorShaderOrthoMatrixParameter, 1, GL_FALSE, &(orthoMatrix[0][0]));
+
+    glUseProgram(*mElementTextureShaderProgram);
+    glUniformMatrix4fv(mElementTextureShaderOrthoMatrixParameter, 1, GL_FALSE, &(orthoMatrix[0][0]));
+
+    glUseProgram(*mElementColorShaderProgram);
+    glUniformMatrix4fv(mElementColorShaderOrthoMatrixParameter, 1, GL_FALSE, &(orthoMatrix[0][0]));
+
+    glUseProgram(*mElementRopeShaderProgram);
+    glUniformMatrix4fv(mElementRopeShaderOrthoMatrixParameter, 1, GL_FALSE, &(orthoMatrix[0][0]));
+
+    glUseProgram(*mElementStressedSpringShaderProgram);
+    glUniformMatrix4fv(mElementStressedSpringShaderOrthoMatrixParameter, 1, GL_FALSE, &(orthoMatrix[0][0]));
+
+    glUseProgram(*mElementBombShaderProgram);
+    glUniformMatrix4fv(mElementBombShaderOrthoMatrixParameter, 1, GL_FALSE, &(orthoMatrix[0][0]));
+
+    glUseProgram(*mElementPinnedPointShaderProgram);
+    glUniformMatrix4fv(mElementPinnedPointShaderOrthoMatrixParameter, 1, GL_FALSE, &(orthoMatrix[0][0]));
+
+    glUseProgram(0);
+}
+
+void ShipRenderContext::UpdateVisibleWorldCoordinates(
+    float /*visibleWorldHeight*/,
+    float /*visibleWorldWidth*/,
+    float canvasToVisibleWorldHeightRatio)
+{
+    mCanvasToVisibleWorldHeightRatio = canvasToVisibleWorldHeightRatio;
+}
+
+void ShipRenderContext::UpdateAmbientLightIntensity(float ambientLightIntensity)
+{
+    mAmbientLightIntensity = ambientLightIntensity;
+
+    //
+    // Set parameter in all programs
+    //
+
+    glUseProgram(*mElementColorShaderProgram);
+    glUniform1f(mElementColorShaderAmbientLightIntensityParameter, ambientLightIntensity);
+
+    glUseProgram(*mElementTextureShaderProgram);
+    glUniform1f(mElementTextureShaderAmbientLightIntensityParameter, ambientLightIntensity);
+
+    glUseProgram(*mElementColorShaderProgram);
+    glUniform1f(mElementColorShaderAmbientLightIntensityParameter, ambientLightIntensity);
+
+    glUseProgram(*mElementRopeShaderProgram);
+    glUniform1f(mElementRopeShaderAmbientLightIntensityParameter, ambientLightIntensity);
+
+    glUseProgram(*mElementPinnedPointShaderProgram);
+    glUniform1f(mElementPinnedPointShaderAmbientLightIntensityParameter, ambientLightIntensity);
+
+    glUseProgram(0);
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -921,10 +1005,7 @@ void ShipRenderContext::UploadLampsEnd()
 
 void ShipRenderContext::Render(
     ShipRenderMode renderMode,
-    bool showStressedSprings,
-    float ambientLightIntensity,
-    float canvasToVisibleWorldHeightRatio,
-    float(&orthoMatrix)[4][4])
+    bool showStressedSprings)
 {
     //
     // Process all connected components, from first to last, and draw all elements
@@ -938,11 +1019,7 @@ void ShipRenderContext::Render(
 
         if (renderMode == ShipRenderMode::Points)
         {
-            RenderPointElements(
-                mConnectedComponents[c],
-                ambientLightIntensity,
-                canvasToVisibleWorldHeightRatio,
-                orthoMatrix);
+            RenderPointElements(mConnectedComponents[c]);
         }
 
 
@@ -961,10 +1038,7 @@ void ShipRenderContext::Render(
         {
             RenderSpringElements(
                 mConnectedComponents[c],
-                renderMode == ShipRenderMode::Texture,
-                ambientLightIntensity,
-                canvasToVisibleWorldHeightRatio,
-                orthoMatrix);
+                renderMode == ShipRenderMode::Texture);
         }
 
 
@@ -977,11 +1051,7 @@ void ShipRenderContext::Render(
         if (renderMode == ShipRenderMode::Springs
             || renderMode == ShipRenderMode::Texture)
         {
-            RenderRopeElements(
-                mConnectedComponents[c],
-                ambientLightIntensity,
-                canvasToVisibleWorldHeightRatio,
-                orthoMatrix);
+            RenderRopeElements(mConnectedComponents[c]);
         }
 
 
@@ -994,9 +1064,7 @@ void ShipRenderContext::Render(
         {
             RenderTriangleElements(
                 mConnectedComponents[c],
-                renderMode == ShipRenderMode::Texture,
-                ambientLightIntensity,
-                orthoMatrix);
+                renderMode == ShipRenderMode::Texture);
         }
 
 
@@ -1006,11 +1074,7 @@ void ShipRenderContext::Render(
 
         if (renderMode == ShipRenderMode::Structure)
         {
-            RenderRopeElements(
-                mConnectedComponents[c],
-                ambientLightIntensity,
-                canvasToVisibleWorldHeightRatio,
-                orthoMatrix);
+            RenderRopeElements(mConnectedComponents[c]);
         }
 
 
@@ -1020,10 +1084,7 @@ void ShipRenderContext::Render(
 
         if (showStressedSprings)
         {
-            RenderStressedSpringElements(
-                mConnectedComponents[c],
-                canvasToVisibleWorldHeightRatio,
-                orthoMatrix);
+            RenderStressedSpringElements(mConnectedComponents[c]);
         }
 
 
@@ -1031,40 +1092,26 @@ void ShipRenderContext::Render(
         // Draw bombs
         //
 
-        RenderBombElements(
-            mConnectedComponents[c],
-            ambientLightIntensity,
-            orthoMatrix);
+        RenderBombElements(mConnectedComponents[c]);
 
 
         //
         // Draw pinned points
         //
 
-        RenderPinnedPointElements(
-            mConnectedComponents[c],
-            ambientLightIntensity,
-            orthoMatrix);
+        RenderPinnedPointElements(mConnectedComponents[c]);
     }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-void ShipRenderContext::RenderPointElements(
-    ConnectedComponentData const & connectedComponent,
-    float ambientLightIntensity,
-    float canvasToVisibleWorldHeightRatio,
-    float(&orthoMatrix)[4][4])
+void ShipRenderContext::RenderPointElements(ConnectedComponentData const & connectedComponent)
 {
     // Use color program
     glUseProgram(*mElementColorShaderProgram);
 
-    // Set parameters
-    glUniformMatrix4fv(mElementColorShaderOrthoMatrixParameter, 1, GL_FALSE, &(orthoMatrix[0][0]));
-    glUniform1f(mElementColorShaderAmbientLightIntensityParameter, ambientLightIntensity);
-
     // Set point size
-    glPointSize(0.2f * 2.0f * canvasToVisibleWorldHeightRatio);
+    glPointSize(0.2f * 2.0f * mCanvasToVisibleWorldHeightRatio);
 
     // Bind VBO
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *connectedComponent.pointElementVBO);
@@ -1078,20 +1125,13 @@ void ShipRenderContext::RenderPointElements(
 
 void ShipRenderContext::RenderSpringElements(
     ConnectedComponentData const & connectedComponent,
-    bool withTexture,
-    float ambientLightIntensity,
-    float canvasToVisibleWorldHeightRatio,
-    float(&orthoMatrix)[4][4])
+    bool withTexture)
 {
     if (withTexture && !!mElementTexture)
     {
         // Use texture program
         glUseProgram(*mElementTextureShaderProgram);
-
-        // Set parameters
-        glUniformMatrix4fv(mElementTextureShaderOrthoMatrixParameter, 1, GL_FALSE, &(orthoMatrix[0][0]));
-        glUniform1f(mElementTextureShaderAmbientLightIntensityParameter, ambientLightIntensity);
-
+        
         // Bind texture
         glBindTexture(GL_TEXTURE_2D, *mElementTexture);
     }
@@ -1099,14 +1139,10 @@ void ShipRenderContext::RenderSpringElements(
     {
         // Use color program
         glUseProgram(*mElementColorShaderProgram);
-
-        // Set parameters
-        glUniformMatrix4fv(mElementColorShaderOrthoMatrixParameter, 1, GL_FALSE, &(orthoMatrix[0][0]));
-        glUniform1f(mElementColorShaderAmbientLightIntensityParameter, ambientLightIntensity);
     }
 
     // Set line size
-    glLineWidth(0.1f * 2.0f * canvasToVisibleWorldHeightRatio);
+    glLineWidth(0.1f * 2.0f * mCanvasToVisibleWorldHeightRatio);
 
     // Bind VBO
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *connectedComponent.springElementVBO);
@@ -1124,21 +1160,13 @@ void ShipRenderContext::RenderSpringElements(
     glUseProgram(0);
 }
 
-void ShipRenderContext::RenderRopeElements(
-    ConnectedComponentData const & connectedComponent,
-    float ambientLightIntensity,
-    float canvasToVisibleWorldHeightRatio,
-    float(&orthoMatrix)[4][4])
+void ShipRenderContext::RenderRopeElements(ConnectedComponentData const & connectedComponent)
 {
     // Use rope program
     glUseProgram(*mElementRopeShaderProgram);
 
-    // Set parameters
-    glUniformMatrix4fv(mElementRopeShaderOrthoMatrixParameter, 1, GL_FALSE, &(orthoMatrix[0][0]));
-    glUniform1f(mElementRopeShaderAmbientLightIntensityParameter, ambientLightIntensity);
-
     // Set line size
-    glLineWidth(0.1f * 2.0f * canvasToVisibleWorldHeightRatio);
+    glLineWidth(0.1f * 2.0f * mCanvasToVisibleWorldHeightRatio);
 
     // Bind VBO
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *connectedComponent.ropeElementVBO);
@@ -1152,18 +1180,12 @@ void ShipRenderContext::RenderRopeElements(
 
 void ShipRenderContext::RenderTriangleElements(
     ConnectedComponentData const & connectedComponent,
-    bool withTexture,
-    float ambientLightIntensity,
-    float(&orthoMatrix)[4][4])
+    bool withTexture)
 {
     if (withTexture && !!mElementTexture)
     {
         // Use texture program
         glUseProgram(*mElementTextureShaderProgram);
-
-        // Set parameters
-        glUniformMatrix4fv(mElementTextureShaderOrthoMatrixParameter, 1, GL_FALSE, &(orthoMatrix[0][0]));
-        glUniform1f(mElementTextureShaderAmbientLightIntensityParameter, ambientLightIntensity);
 
         // Bind texture
         glBindTexture(GL_TEXTURE_2D, *mElementTexture);
@@ -1172,10 +1194,6 @@ void ShipRenderContext::RenderTriangleElements(
     {
         // Use color program
         glUseProgram(*mElementColorShaderProgram);
-
-        // Set parameters
-        glUniformMatrix4fv(mElementColorShaderOrthoMatrixParameter, 1, GL_FALSE, &(orthoMatrix[0][0]));
-        glUniform1f(mElementColorShaderAmbientLightIntensityParameter, ambientLightIntensity);
     }
 
     // Bind VBO
@@ -1194,16 +1212,10 @@ void ShipRenderContext::RenderTriangleElements(
     glUseProgram(0);
 }
 
-void ShipRenderContext::RenderStressedSpringElements(
-    ConnectedComponentData const & connectedComponent,
-    float canvasToVisibleWorldHeightRatio,
-    float(&orthoMatrix)[4][4])
+void ShipRenderContext::RenderStressedSpringElements(ConnectedComponentData const & connectedComponent)
 {
     // Use program
     glUseProgram(*mElementStressedSpringShaderProgram);
-
-    // Set parameters
-    glUniformMatrix4fv(mElementStressedSpringShaderOrthoMatrixParameter, 1, GL_FALSE, &(orthoMatrix[0][0]));
 
     // Bind texture
     glBindTexture(GL_TEXTURE_2D, *mElementStressedSpringTexture);
@@ -1212,7 +1224,7 @@ void ShipRenderContext::RenderStressedSpringElements(
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *connectedComponent.stressedSpringElementVBO);
 
     // Set line size
-    glLineWidth(0.1f * 2.0f * canvasToVisibleWorldHeightRatio);
+    glLineWidth(0.1f * 2.0f * mCanvasToVisibleWorldHeightRatio);
 
     // Draw
     glDrawElements(GL_LINES, static_cast<GLsizei>(2 * connectedComponent.stressedSpringElementCount), GL_UNSIGNED_INT, 0);
@@ -1224,16 +1236,10 @@ void ShipRenderContext::RenderStressedSpringElements(
     glUseProgram(0);
 }
 
-void ShipRenderContext::RenderBombElements(
-    ConnectedComponentData const & connectedComponent,
-    float ambientLightIntensity,
-    float(&orthoMatrix)[4][4])
+void ShipRenderContext::RenderBombElements(ConnectedComponentData const & connectedComponent)
 {
     // Use program
     glUseProgram(*mElementBombShaderProgram);
-
-    // Set parameters
-    glUniformMatrix4fv(mElementBombShaderOrthoMatrixParameter, 1, GL_FALSE, &(orthoMatrix[0][0]));
 
     // Bind VBO
     glBindBuffer(GL_ARRAY_BUFFER, *mBombVBO);
@@ -1248,7 +1254,7 @@ void ShipRenderContext::RenderBombElements(
             //
 
             // Set light parameter
-            glUniform1f(mElementBombShaderAmbientLightIntensityParameter, ambientLightIntensity);
+            glUniform1f(mElementBombShaderAmbientLightIntensityParameter, mAmbientLightIntensity);
 
             // Bind texture
             switch (connectedComponent.bombElementInfos[b].bombType)
@@ -1307,17 +1313,10 @@ void ShipRenderContext::RenderBombElements(
     glUseProgram(0);
 }
 
-void ShipRenderContext::RenderPinnedPointElements(
-    ConnectedComponentData const & connectedComponent,
-    float ambientLightIntensity,
-    float(&orthoMatrix)[4][4])
+void ShipRenderContext::RenderPinnedPointElements(ConnectedComponentData const & connectedComponent)
 {
     // Use program
     glUseProgram(*mElementPinnedPointShaderProgram);
-
-    // Set parameters
-    glUniformMatrix4fv(mElementPinnedPointShaderOrthoMatrixParameter, 1, GL_FALSE, &(orthoMatrix[0][0]));
-    glUniform1f(mElementPinnedPointShaderAmbientLightIntensityParameter, ambientLightIntensity);
 
     // Bind texture
     glBindTexture(GL_TEXTURE_2D, mElementPinnedPointTexture);

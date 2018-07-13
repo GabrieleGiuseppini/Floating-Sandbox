@@ -28,9 +28,26 @@ public:
         vec3f const & ropeColour,
         GLuint pinnedPointTexture,
         std::vector<GLuint> rcBombTextures,
-        std::vector<GLuint> timerBombTextures);
+        std::vector<GLuint> timerBombTextures,
+        float const(&orthoMatrix)[4][4],
+        float visibleWorldHeight,
+        float visibleWorldWidth,
+        float canvasToVisibleWorldHeightRatio,
+        float ambientLightIntensity);
     
     ~ShipRenderContext();
+
+public:
+
+    void UpdateOrthoMatrix(float const(&orthoMatrix)[4][4]);
+
+    void UpdateVisibleWorldCoordinates(
+        float visibleWorldHeight,
+        float visibleWorldWidth,
+        float canvasToVisibleWorldHeightRatio);
+
+    void UpdateAmbientLightIntensity(float ambientLightIntensity);
+
 
 public:
 
@@ -328,54 +345,35 @@ public:
 
     void Render(
         ShipRenderMode renderMode,
-        bool showStressedSprings,
-        float ambientLightIntensity,
-        float canvasToVisibleWorldHeightRatio,
-        float(&orthoMatrix)[4][4]);
+        bool showStressedSprings);
 
 private:
 
     struct ConnectedComponentData;
 
-    void RenderPointElements(
-        ConnectedComponentData const & connectedComponent,
-        float ambientLightIntensity,
-        float canvasToVisibleWorldHeightRatio,
-        float(&orthoMatrix)[4][4]);
+    void RenderPointElements(ConnectedComponentData const & connectedComponent);
 
     void RenderSpringElements(
         ConnectedComponentData const & connectedComponent,
-        bool withTexture,
-        float ambientLightIntensity,
-        float canvasToVisibleWorldHeightRatio,
-        float(&orthoMatrix)[4][4]);
+        bool withTexture);
 
-    void RenderRopeElements(
-        ConnectedComponentData const & connectedComponent,
-        float ambientLightIntensity,
-        float canvasToVisibleWorldHeightRatio,
-        float(&orthoMatrix)[4][4]);
+    void RenderRopeElements(ConnectedComponentData const & connectedComponent);
 
     void RenderTriangleElements(
         ConnectedComponentData const & connectedComponent,
-        bool withTexture,
-        float ambientLightIntensity,
-        float(&orthoMatrix)[4][4]);
+        bool withTexture);
 
-    void RenderStressedSpringElements(
-        ConnectedComponentData const & connectedComponent,
-        float canvasToVisibleWorldHeightRatio,
-        float(&orthoMatrix)[4][4]);
+    void RenderStressedSpringElements(ConnectedComponentData const & connectedComponent);
 
-    void RenderBombElements(
-        ConnectedComponentData const & connectedComponent,
-        float ambientLightIntensity,
-        float(&orthoMatrix)[4][4]);
+    void RenderBombElements(ConnectedComponentData const & connectedComponent);
 
-    void RenderPinnedPointElements(
-        ConnectedComponentData const & connectedComponent,
-        float ambientLightIntensity,
-        float(&orthoMatrix)[4][4]);
+    void RenderPinnedPointElements(ConnectedComponentData const & connectedComponent);
+
+
+private:
+
+    float mCanvasToVisibleWorldHeightRatio;
+    float mAmbientLightIntensity;
 
 private:
 

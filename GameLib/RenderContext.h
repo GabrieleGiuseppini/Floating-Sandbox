@@ -43,16 +43,16 @@ public:
     {
         mZoom = zoom;
 
-        CalculateVisibleWorldCoordinates();
-        CalculateOrthoMatrix();        
+        UpdateVisibleWorldCoordinates();
+        UpdateOrthoMatrix();        
     }
 
     void AdjustZoom(float amount)
     {
         mZoom *= amount;
 
-        CalculateVisibleWorldCoordinates();
-        CalculateOrthoMatrix();
+        UpdateVisibleWorldCoordinates();
+        UpdateOrthoMatrix();
     }
 
     vec2f GetCameraWorldPosition() const
@@ -65,8 +65,8 @@ public:
         mCamX = pos.x;
         mCamY = pos.y;
 
-        CalculateVisibleWorldCoordinates();
-        CalculateOrthoMatrix();
+        UpdateVisibleWorldCoordinates();
+        UpdateOrthoMatrix();
     }
 
     void AdjustCameraWorldPosition(vec2f const & worldOffset)
@@ -74,8 +74,8 @@ public:
         mCamX += worldOffset.x;
         mCamY += worldOffset.y;
 
-        CalculateVisibleWorldCoordinates();
-        CalculateOrthoMatrix();
+        UpdateVisibleWorldCoordinates();
+        UpdateOrthoMatrix();
     }
 
     int GetCanvasSizeWidth() const
@@ -95,8 +95,8 @@ public:
 
         glViewport(0, 0, mCanvasWidth, mCanvasHeight);
 
-        CalculateVisibleWorldCoordinates();
-        CalculateOrthoMatrix();
+        UpdateVisibleWorldCoordinates();
+        UpdateOrthoMatrix();
     }
 
     float GetVisibleWorldWidth() const
@@ -117,6 +117,8 @@ public:
     void SetAmbientLightIntensity(float intensity)
     {
         mAmbientLightIntensity = intensity;
+
+        UpdateAmbientLightIntensity();
     }
 
     float GetWaterTransparency() const
@@ -569,10 +571,7 @@ public:
 
         mShips[shipId]->Render(
             mShipRenderMode,
-            mShowStressedSprings,
-            mAmbientLightIntensity,
-            static_cast<float>(mCanvasHeight) / mVisibleWorldHeight,
-            mOrthoMatrix);
+            mShowStressedSprings);
     }
 
 
@@ -585,9 +584,11 @@ public:
 
 private:
     
-    void CalculateOrthoMatrix();
+    void UpdateOrthoMatrix();
 
-    void CalculateVisibleWorldCoordinates();
+    void UpdateVisibleWorldCoordinates();
+
+    void UpdateAmbientLightIntensity();
 
 private:
 
@@ -729,6 +730,7 @@ private:
     // The world coordinates of the visible portion
     float mVisibleWorldWidth;
     float mVisibleWorldHeight;
+    float mCanvasToVisibleWorldHeightRatio;
 
 
     //
