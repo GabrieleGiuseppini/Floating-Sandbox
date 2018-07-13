@@ -129,6 +129,8 @@ public:
     void SetWaterTransparency(float transparency)
     {
         mWaterTransparency = transparency;
+
+        UpdateWaterTransparency();
     }
 
     bool GetShowShipThroughWater() const
@@ -589,6 +591,8 @@ private:
     void UpdateVisibleWorldCoordinates();
 
     void UpdateAmbientLightIntensity();
+
+    void UpdateWaterTransparency();
 
 private:
 

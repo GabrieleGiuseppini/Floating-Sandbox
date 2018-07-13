@@ -634,6 +634,16 @@ RenderContext::RenderContext(
 
 
     //
+    // Update parameters
+    //
+
+    UpdateOrthoMatrix();
+    UpdateVisibleWorldCoordinates();
+    UpdateAmbientLightIntensity();
+    UpdateWaterTransparency();
+
+
+    //
     // Flush all pending operations
     //
 
@@ -741,7 +751,6 @@ void RenderContext::RenderCloudsEnd()
 
     // Set parameters
     glUniform4f(mMatteWorldShaderColorParameter, 1.0f, 1.0f, 1.0f, 1.0f);
-    glUniformMatrix4fv(mMatteWorldShaderOrthoMatrixParameter, 1, GL_FALSE, &(mOrthoMatrix[0][0]));
 
     // Bind water buffer
     glBindBuffer(GL_ARRAY_BUFFER, *mWaterVBO);
@@ -780,9 +789,6 @@ void RenderContext::RenderCloudsEnd()
 
     // Use program
     glUseProgram(*mCloudShaderProgram);
-
-    // Set parameters
-    glUniform1f(mCloudShaderAmbientLightIntensityParameter, mAmbientLightIntensity);
 
     // Upload cloud buffer 
     glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
@@ -886,10 +892,6 @@ void RenderContext::RenderLand()
     // Use program
     glUseProgram(*mLandShaderProgram);
 
-    // Set parameters
-    glUniform1f(mLandShaderAmbientLightIntensityParameter, mAmbientLightIntensity);
-    glUniformMatrix4fv(mLandShaderOrthoMatrixParameter, 1, GL_FALSE, &(mOrthoMatrix[0][0]));
-
     // Bind texture
     glBindTexture(GL_TEXTURE_2D, *mLandTexture);
 
@@ -914,11 +916,6 @@ void RenderContext::RenderWater()
 {
     // Use program
     glUseProgram(*mWaterShaderProgram);
-
-    // Set parameters
-    glUniform1f(mWaterShaderAmbientLightIntensityParameter, mAmbientLightIntensity);
-    glUniform1f(mWaterShaderWaterTransparencyParameter, mWaterTransparency);
-    glUniformMatrix4fv(mWaterShaderOrthoMatrixParameter, 1, GL_FALSE, &(mOrthoMatrix[0][0]));
 
     // Bind texture
     glBindTexture(GL_TEXTURE_2D, *mWaterTexture);
@@ -970,6 +967,17 @@ void RenderContext::UpdateOrthoMatrix()
     {
         ship->UpdateOrthoMatrix(mOrthoMatrix);
     }
+
+    // Set parameters in all programs
+
+    glUseProgram(*mMatteWorldShaderProgram);
+    glUniformMatrix4fv(mMatteWorldShaderOrthoMatrixParameter, 1, GL_FALSE, &(mOrthoMatrix[0][0]));
+
+    glUseProgram(*mLandShaderProgram);
+    glUniformMatrix4fv(mLandShaderOrthoMatrixParameter, 1, GL_FALSE, &(mOrthoMatrix[0][0]));
+
+    glUseProgram(*mWaterShaderProgram);
+    glUniformMatrix4fv(mWaterShaderOrthoMatrixParameter, 1, GL_FALSE, &(mOrthoMatrix[0][0]));
 }
 
 void RenderContext::UpdateVisibleWorldCoordinates()
@@ -996,4 +1004,23 @@ void RenderContext::UpdateAmbientLightIntensity()
     {
         ship->UpdateAmbientLightIntensity(mAmbientLightIntensity);
     }
+
+    // Set parameters in all programs
+
+    glUseProgram(*mLandShaderProgram);
+    glUniform1f(mLandShaderAmbientLightIntensityParameter, mAmbientLightIntensity);
+
+    glUseProgram(*mWaterShaderProgram);
+    glUniform1f(mWaterShaderAmbientLightIntensityParameter, mAmbientLightIntensity);
+
+    glUseProgram(*mCloudShaderProgram);
+    glUniform1f(mCloudShaderAmbientLightIntensityParameter, mAmbientLightIntensity);
+}
+
+void RenderContext::UpdateWaterTransparency()
+{
+    // Set parameters in all programs
+
+    glUseProgram(*mWaterShaderProgram);
+    glUniform1f(mWaterShaderWaterTransparencyParameter, mWaterTransparency);
 }

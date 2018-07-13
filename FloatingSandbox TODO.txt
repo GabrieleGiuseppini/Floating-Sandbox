@@ -66,7 +66,13 @@ Prev perf (before point et al destructuring)
 			+ Ship5
 			+ Ship6
 		- That warship
-			- See if can make it bulky first
+			- Plan:
+				1 - New layer, with thin hull and light interior
+					- Fix buoyancy
+				2 - Introduce heavy metals - own row, just grey's
+					- Make strong structural beams
+				3 - Adjust colors by peeking at lower layer
+					- Redo the layer with quantize
 		- Call .shp parts ".png.dat"
 			- Rename via git
 			- Edit .shp files
@@ -75,7 +81,7 @@ Prev perf (before point et al destructuring)
 	- Add to gamejolt
 
 - Technical Debt:
-	- Textures are json files, with world sizes, offset, and lighting boolean
+	- Textures are json files, with world size, offset, and lighting boolean
 		- SEE MOLESKINE
 		- Then:
 			- Change bomb rendering: takes vector of frame indices, no optionals needed
@@ -117,7 +123,21 @@ Prev perf (before point et al destructuring)
 
 
 - Gfx:
-	- Draw better parts connected only by ropes 
+	- Optimizations:
+		- More connected components => slower (multiple batches); try
+		  to draw one single batch then, using Z buffer and depth test 
+			- Assign Z based on connected component ID
+		- Plan:
+			1 - Test perspective with hardcoded z=-800 at shader, and see if it makes any difference
+			2 - Ship assigns points' ConnectedComponentID as float in vector
+			3 - ShipRenderContext's shaders (Triangles, Springs) take Z and with as-hoc OrthoMatrix
+			    transform ConnectedComponentID to Z
+			4 - ShipRenderContext::UploadXYZElement() does not take anymore connected component ID
+			5 - (Nice to have): sticky component IDs, by leveraging the fact that normally IDs are assigned from L,T to R,B
+		- See if drawing springs & triangles at separate depths also helps more (for springs' fragment shader, may be it takes 
+		  shortcuts if it knows it's behind)
+
+	- Draw better those parts that are only connected by ropes 
 		- Change connected component detection by not propagating from a "spring only" to a "body"
 			- In practice: flood the *edge* network, not the spring network, and don't propagate
 			  if coming from edge with zero triangles to an edge with !=0 triangles
@@ -126,12 +146,6 @@ Prev perf (before point et al destructuring)
 		- Test first if with a single texture bind per ship (which will look crappy!) there's a significant
 		  performance difference
 			- Check the three boxes
-	- Optimizations:
-		- More connected components => slower (multiple batches); try
-		  to draw one single batch then, using Z buffer
-			- Assign Z based on connected component ID
-		- See if drawing springs & triangles with Z buffer and depth test helps (for springs' fragment shader, may be it takes 
-		  shortcuts if it knows it's behind)
 	- AmbientLightIntensity:
 		+ Use also in RenderContext::RenderStart() for clear (sky) color
 		+ Phase 1: pgup/down
@@ -1846,13 +1860,39 @@ IF WX:
 	+ Tell art guy
 	+ Send email to Luke
 
-+ Bugs to fix in master: 
++ Bugs: 
 	+ Ship::Render: when there are no changes to elements and we keep uploading stressed springs, we don't reset the count
 	  in ShipRenderContext::mElementBufferSizes
 		+ Fix simply by having Start and End for uploading stressed springs
 		+ Done in FB branch
 	+ No default args @ vec cctors
 		+ Done in FB branch
+	+ Fix mem leak
+		+ Plan:
+			+ Calc base rate of growth: 500K/sec
+			+ Comment out ShipRenderContext::Render halves until find the one
+				+ When nothing done in loop: 159K max
+				+ Just PinnedPoints: grows fast
+				+ No texture & no buffer: grows fast
+				+ No parameters: grows extremely slow
+				! No OrthoMatrix param, Yes AmbientLight param: grows fast
+				+ Yes OrthoMatrix param, No AmbientLight param: grows extremely slow
+			+ Undo all (dbl-check)
+			+ Commit other work
+			+ glHint(..._HINT) x 2 at Render::Start()
+		+ Cut down on calls to glSetParameter:
+			+ Before FPS: 27.4
+			+ ShipRenderContext::SetXYZ (ortho, visible world coordinates, and light)
+				+ Sets into all programs
+				+ Nuke member references
+			+ ShipRenderContext::cctor:
+				+ Sets into all programs with value from cctor args (this time by val)
+			+ RenderContext::UpdateXYZ
+				+ Set into all ships
+				+ Passes current values by val into new ships
+			+ After FPS: 27.4
+			+ Verify leak is slower
+			+ Do also at RenderContext
 
 ==============================================
         // Inputs from previous shader
