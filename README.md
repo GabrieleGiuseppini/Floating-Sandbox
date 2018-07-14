@@ -24,6 +24,8 @@ There are lots of ideas that I'm currently working on; some of these are:
 
 These and other ideas will come out with frequent releases.
 
+The game is also featured at [GameJolt](https://gamejolt.com/games/floating-sandbox/353572)!
+
 # Technical Details
 This game is a C++ implementation of a particular class of particle systems, namely a *mass-spring-damper* network. With a mass-spring-damper network it is possible to simulate a rigid body by decomposing it into a number of infinitesimal particles ("points"), which are linked to each other via spring-damper pairs. Springs help maintain the rigidity of the body, while dampers are mostly to maintain the numerical stability of the system.
 
