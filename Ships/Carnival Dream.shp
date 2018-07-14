@@ -1,6 +1,6 @@
 {
-	"structure_image":"carnival_dream_structure.png",
-	"texture_image":"carnival_dream_texture.png",
+	"structure_image":"carnival_dream_structure.png.dat",
+	"texture_image":"carnival_dream_texture.png.dat",
 	"ship_name":"Carnival Dream",
 	"offset":{"x":0.0, "y":-5.0}
 }

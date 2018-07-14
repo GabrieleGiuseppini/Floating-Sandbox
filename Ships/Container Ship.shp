@@ -1,5 +1,5 @@
 {
-	"structure_image":"container_ship_structure.png",
+	"structure_image":"container_ship_structure.png.dat",
 	"ship_name":"Container Ship",
 	"offset":{"x":0.0, "y":-18.0}
 }
