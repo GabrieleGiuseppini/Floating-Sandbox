@@ -1,0 +1,6 @@
+{
+	"structure_image":"cruise_vessel_structure.png",
+	"texture_image":"cruise_vessel_texture.png",
+	"ship_name":"Cruise Vessel",
+	"offset":{"x":0.0, "y":-5.0}
+}
