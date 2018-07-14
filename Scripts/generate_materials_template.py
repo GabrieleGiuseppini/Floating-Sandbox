@@ -57,7 +57,9 @@ def main():
     html += "<table style='border: 1px solid black' cellpadding=0 cellspacing=0>"
 
     # Visit all rows
-    for k, input_col_values in d.iteritems():
+    for k in sorted(d.iterkeys()):
+
+        input_col_values = d[k]
 
         output_col_values = []
 
