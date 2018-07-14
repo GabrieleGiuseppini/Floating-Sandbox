@@ -17,52 +17,69 @@
 #include <stdexcept>
 #include <vector>
 
-ShipAnalyzer::WeightInfo ShipAnalyzer::Weight(
+ShipAnalyzer::AnalysisInfo ShipAnalyzer::Analyze(
     std::string const & inputFile,
     std::string const & materialsFile)
 {
     // Load image
     auto image = ResourceLoader::LoadImage(std::filesystem::path(inputFile), IL_RGB, IL_ORIGIN_UPPER_LEFT);
 
+    float const halfWidth = static_cast<float>(image.Size.Width) / 2.0f;
+
     // Load materials
     MaterialDatabase materials = ResourceLoader::LoadMaterials(materialsFile);
 
     // Visit all points
-    ShipAnalyzer::WeightInfo weightInfo;
+    ShipAnalyzer::AnalysisInfo analysisInfo;
     float numPoints = 0.0f;
     float numBuoyantPoints = 0.0f;
     for (int x = 0; x < image.Size.Width; ++x)
     {
+        float worldX = static_cast<float>(x) - halfWidth;
+
         // From bottom to top
         for (int y = 0; y < image.Size.Height; ++y)
         {
-            auto index = (x + (image.Size.Height - y - 1) * image.Size.Width) * 3;
+            float worldY = static_cast<float>(y);
+
+            auto pixelIndex = (x + (image.Size.Height - y - 1) * image.Size.Width) * 3;
 
             std::array<uint8_t, 3u> rgbColour = {
-                image.Data[index + 0],
-                image.Data[index + 1],
-                image.Data[index + 2] };
+                image.Data[pixelIndex + 0],
+                image.Data[pixelIndex + 1],
+                image.Data[pixelIndex + 2] };
 
             Material const * material = materials.Get(rgbColour);
             if (nullptr != material)
             {
-                weightInfo.TotalMass += material->Mass;
+                analysisInfo.TotalMass += material->Mass;
+
                 numPoints += 1.0f;
+
                 if (!material->IsHull)
                     numBuoyantPoints += 1.0f;
+
+                analysisInfo.BaricentricX += worldX * material->Mass;
+                analysisInfo.BaricentricY += worldY * material->Mass;
             }
         }
     }
 
     if (numPoints != 0.0f)
     {
-        weightInfo.MassPerPoint = weightInfo.TotalMass / numPoints;
+        analysisInfo.MassPerPoint = analysisInfo.TotalMass / numPoints;
     }
 
     if (numBuoyantPoints != 0.0f)
     {
-        weightInfo.BuoyantMassPerPoint = weightInfo.TotalMass / numBuoyantPoints;
+        analysisInfo.BuoyantMassPerPoint = analysisInfo.TotalMass / numBuoyantPoints;
     }
 
-    return weightInfo;
+    if (analysisInfo.TotalMass != 0.0f)
+    {
+        analysisInfo.BaricentricX /= analysisInfo.TotalMass;
+        analysisInfo.BaricentricY /= analysisInfo.TotalMass;
+    }
+
+    return analysisInfo;
 }

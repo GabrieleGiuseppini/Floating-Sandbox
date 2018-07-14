@@ -20,7 +20,7 @@
 
 int DoQuantize(int argc, char ** argv);
 int DoResize(int argc, char ** argv);
-int DoWeightShip(int argc, char ** argv);
+int DoAnalyzeShip(int argc, char ** argv);
 
 void PrintUsage();
 
@@ -47,9 +47,9 @@ int main(int argc, char ** argv)
         {
             return DoResize(argc, argv);
         }
-        else if (verb == "weight")
+        else if (verb == "analyze")
         {
-            return DoWeightShip(argc, argv);
+            return DoAnalyzeShip(argc, argv);
         }
         else
         {
@@ -134,7 +134,7 @@ int DoResize(int argc, char ** argv)
     return 0;
 }
 
-int DoWeightShip(int argc, char ** argv)
+int DoAnalyzeShip(int argc, char ** argv)
 {
     if (argc < 4)
     {
@@ -145,13 +145,14 @@ int DoWeightShip(int argc, char ** argv)
     std::string materialsFile(argv[2]);
     std::string inputFile(argv[3]);    
 
-    auto weightInfo = ShipAnalyzer::Weight(inputFile, materialsFile);
+    auto analysisInfo = ShipAnalyzer::Analyze(inputFile, materialsFile);
 
     std::cout << std::fixed;
 
-    std::cout << "  Total mass             : " << weightInfo.TotalMass << std::endl;
-    std::cout << "  Equivalent mass        : " << weightInfo.MassPerPoint<< std::endl;
-    std::cout << "  Equivalent buoyant mass: " << weightInfo.BuoyantMassPerPoint << std::endl;
+    std::cout << "  Total mass             : " << analysisInfo.TotalMass << std::endl;
+    std::cout << "  Equivalent mass        : " << analysisInfo.MassPerPoint<< std::endl;
+    std::cout << "  Equivalent buoyant mass: " << analysisInfo.BuoyantMassPerPoint << std::endl;
+    std::cout << "  Center of mass         : " << analysisInfo.BaricentricX << "," << analysisInfo.BaricentricY << std::endl;
 
     return 0;
 }
@@ -163,5 +164,5 @@ void PrintUsage()
     std::cout << " quantize <materials_file> <in_file> <out_png> [-r, --keep_ropes]" << std::endl;
     std::cout << "          [-g, --keep_glass]" << std::endl;
     std::cout << " resize <in_file> <out_png> <width>" << std::endl;
-    std::cout << " weight <materials_file> <in_file>" << std::endl;
+    std::cout << " analyze <materials_file> <in_file>" << std::endl;
 }
