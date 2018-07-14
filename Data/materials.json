@@ -2004,6 +2004,29 @@
 		"element_type": "Wood"
 	}
     },
+
+    {
+        "name": "Nails",
+	"description": "The most fragile material of them all",
+	"template": {
+		"row": "90|Nails",
+		"column": "4|Nails"
+	},
+        "strength": 0.08,
+	"mass": {
+		"nominal_mass": 20,
+		"density": 0.0417
+	},
+	"stiffness": 1,
+        "structural_colour": "#545454",
+	"render_colour": "#545454",
+        "is_hull": false,
+	"sound_properties": {
+		"element_type": "Metal"
+	}
+    },
+
+
     {
         "name": "Glass Hull",
 	"template": {
