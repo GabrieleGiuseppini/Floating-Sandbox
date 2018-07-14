@@ -31,12 +31,12 @@ The game was originally designed to simulate sinking ships, but at this moment i
 
 # History
 I started coding this game after stumbling upon Luke Wren's [Ship Sandbox](https://github.com/Wren6991/Ship-Sandbox). After becoming fascinated by it, I [forked](https://github.com/GabrieleGiuseppini/Ship-Sandbox) his GitHub repo and started playing with the source code. Here's a list of the major changes I've been doing on the original codebase:
+- Completely rewritten physics layer, making simulation more grounded in reality
 - Completely rewritten data structures to maximize data locality
-- Rewritten the physics layer as force-based rather than position-based
 - Rewritten dynamics integration step to make full use of packed SSE floating point instructions on Intel x86
 - Restructured interactions between the UI and the game, splitting settings between physics-related settings and render-related settings
 - Rearchitected lifetime management of elements - originally elements were removed from vectors while these are being iterated, and the entire "points-to" graph was a tad too complex 
-- Completely re-written the graphics layer, targeting OpenGL 2.0 "core profile" (i.e. no compatibility API) with custom shaders and texture mapping
+- Completely rewritten the graphics layer, targeting OpenGL 2.0 "core profile" (i.e. no compatibility API) with custom shaders and texture mapping
 - Added sounds and cued music
 - Added initial proof of concept of lights
 - Added connected component detection, used to correctly draw ship break-away parts on top of each other, among other things

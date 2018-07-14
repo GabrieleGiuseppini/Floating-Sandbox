@@ -47,10 +47,14 @@ Prev perf (before point et al destructuring)
 	- RenderContext::RenderCloudsEnd: 1.69%
 =================================================
 
-- Release:
+- Ships
+	- Warship
+	- See Moleskine
+
+= Release:
 	+ Fix Ocean Depth
 		+ Affects only textures, not land
-	= Make some ships
+	+ Make some ships
 		+ Copy three balls
 		+ Make ShipTools, -quantize verb
 		+ Make some stiffer columns of steel, iron, titanium, etc.
@@ -65,17 +69,19 @@ Prev perf (before point et al destructuring)
 		+ Copy, change, and fix from old:
 			+ Ship5
 			+ Ship6
-		- That warship
-			- Plan:
-				1 - New layer, with thin hull and light interior
-					- Fix buoyancy
-				2 - Introduce heavy metals - own row, just grey's
-					- Make strong structural beams
-				3 - Adjust colors by peeking at lower layer
-					- Redo the layer with quantize
-		- Call .shp parts ".png.dat"
-			- Rename via git
-			- Edit .shp files
+		+ Cruise vessel
+			+ Plan:
+				1 + New layer, with thin hull and light interior
+					+ Fix buoyancy
+				2 + Introduce heavy metals - own row, just grey's
+					+ Make strong structural beams
+				3 + Adjust colors by peeking at lower layer
+					+ Redo the layer with quantize
+				4 + Detachable life raft 
+					+ Make "Nails" material
+	+ Call .shp parts ".png.dat"
+		+ Rename via git
+		+ Edit .shp files
 	- Build and release 1.2.0
 	- Post to forum
 	- Add to gamejolt
@@ -305,10 +311,12 @@ Prev perf (before point et al destructuring)
 			+ ElectricalElement::GetType(){return mType;}: non-virtual, it's optimized by compiler
 	- Move electrical components to ElectricalComponents class, an ElementContainer but also like bombs, with update and state machines
 	  (but no render)
-		- Buffer of pointers
-		- Buffer of ElementIndex of points
-			- Same at Points: electrical elements are indices
-		- Add additional buffers that might simplify electrical connectivity test, e.g. Type and VisitedGen
+		- For buffers, see Moleskine
+			- TODO: This was old:
+			- Buffer of pointers
+			- Buffer of ElementIndex of points
+				- Same at Points: electrical elements are indices
+			- Add additional buffers that might simplify electrical connectivity test, e.g. Type and VisitedGen
 	- Current Propagation Algo (Ship::UpdateCurrentConnectivity()):
 		+ create new generation seq number; if new is 0 => 1
 		- Consider adding a new "ConductsElectricity" buffer to Springs, set to true or folse at Add() depending
