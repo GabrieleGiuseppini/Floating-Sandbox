@@ -45,7 +45,7 @@ public:
     void AddShip(std::filesystem::path const & filepath);
     void ReloadLastShip();
 
-    void DoStep();
+    void Update();
     void Render();
 
 
@@ -69,8 +69,10 @@ public:
     {
         vec2f worldOffset = mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
 
-        mTargetCameraPosition = mTargetCameraPosition + worldOffset;
+        mCurrentCameraPosition = mTargetCameraPosition; // Skip straight to current target, in case we're already smoothing
         mStartingCameraPosition = mCurrentCameraPosition;
+        mTargetCameraPosition = mTargetCameraPosition + worldOffset;
+
         mStartCameraPositionTimestamp = std::chrono::steady_clock::now();
     }
 
@@ -99,8 +101,10 @@ public:
 
         if (newTargetZoom != mTargetZoom)
         {
-            mTargetZoom = newTargetZoom;
+            mCurrentZoom = mTargetZoom; // Skip straight to current target, in case we're already smoothing
             mStartingZoom = mCurrentZoom;
+            mTargetZoom = newTargetZoom;
+
             mStartZoomTimestamp = std::chrono::steady_clock::now();
         }
     }

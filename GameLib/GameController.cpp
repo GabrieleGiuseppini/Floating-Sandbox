@@ -80,7 +80,7 @@ void GameController::ReloadLastShip()
     AddShip(std::move(shipDefinition));
 }
 
-void GameController::DoStep()
+void GameController::Update()
 {
 	// Update world
 	assert(!!mWorld);

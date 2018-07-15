@@ -1,7 +1,7 @@
 /***************************************************************************************
- * Original Author:		Gabriele Giuseppini
- * Created:				2018-01-21
- * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
+ * Original Author:     Gabriele Giuseppini
+ * Created:             2018-01-21
+ * Copyright:           Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
  ***************************************************************************************/
 #include "MainFrame.h"
 
@@ -940,7 +940,7 @@ void MainFrame::DoGameStep()
     if (!IsPaused())
     {
         assert(!!mGameController);
-        mGameController->DoStep();
+        mGameController->Update();
     }
 
     // Render
