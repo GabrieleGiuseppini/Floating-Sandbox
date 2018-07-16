@@ -32,7 +32,7 @@ public:
         Springs && springs,
         Triangles && triangles,
         ElectricalElements && electricalElements,
-        uint64_t currentStepSequenceNumber);
+        VisitSequenceNumber currentVisitSequenceNumber);
 
     ~Ship();
 
@@ -88,7 +88,7 @@ public:
         float radius) const;
 
     void Update(
-        uint64_t currentStepSequenceNumber,
+        VisitSequenceNumber currentVisitSequenceNumber,
         GameParameters const & gameParameters);
 
     void Render(
@@ -119,13 +119,15 @@ public:
 
     void HandleCollisionsWithSeaFloor();
 
-    void DetectConnectedComponents(uint64_t currentStepSequenceNumber);
+    void DetectConnectedComponents(VisitSequenceNumber currentVisitSequenceNumber);
 
     void LeakWater(GameParameters const & gameParameters);
 
     void GravitateWater(GameParameters const & gameParameters);
 
     void BalancePressure(GameParameters const & gameParameters);
+
+    void UpdateElectricalConnectivity(VisitSequenceNumber currentVisitSequenceNumber);
 
     void DiffuseLight(GameParameters const & gameParameters);
 

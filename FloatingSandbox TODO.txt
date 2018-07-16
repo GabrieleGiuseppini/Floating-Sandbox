@@ -1,28 +1,28 @@
 =================================================
-Current perf
+Current perf (1.3.0)
 =================================================
-- fps: 27.1 (Samsung: 23.7 (Krafting)) (Mattia's: 27.5 (Krafting))
-- GameController::DoStep: 33.80%
-	- Ship::Update: 32.75% (Incl) 0.00% (Excl)
-		- UpdateDynamics: 25.79%
-			- UpdateSpringForces: 18.47%
-			- UpdatePointForces: 4.00%
-			- HandleCollisionsWithSeafloor: 2.35%
-			- Integrate: 0.97%
-		- GravitateWater: 4.89%
-		- BalancePressure: 1.23%
-		- UpdateStrains: 0.82%
-		- LeakWater: 0.02%
+- fps: 27.3 (Samsung: TODO (Krafting)) (Mattia's: TODO (Krafting))
+- GameController::DoStep: 33.06%
+	- Ship::Update: 32.07%
+		- UpdateDynamics: 25.53%
+			- UpdateSpringForces: 18.72%
+			- UpdatePointForces: 3.55%
+			- HandleCollisionsWithSeafloor: 2.27%
+			- Integrate: 0.98%
+		- GravitateWater: 4.60%
+		- BalancePressure: 1.06%
+		- UpdateStrains: 0.83%
+		- LeakWater: 0.03%
 	- DiffuseLight: 0.89%
-	- WaterSurface::Update: 0.14%
-		- sinf: 0.10%
-- MainFrame::RenderGame: 59.44%
-	- Ship::Render: 52.65% (Incl) 0.00% (Excl)
-		- ShipRenderContext::RenderSprings: 30.39%
-		- ShipRenderContext::RenderTriangles: 21.66%
-		- ShipRenderContext::RenderRopes: 0.42%
+	- WaterSurface::Update: 0.09%
+		- sinf: 0.07%
+- MainFrame::RenderGame: 60.47%
+	- ShipRenderContext::Render: 53.52% (Incl) 0.00% (Excl)
+		- ShipRenderContext::RenderSprings: 30.72%
+		- ShipRenderContext::RenderTriangles: 22.29%
+		- ShipRenderContext::RenderRopes: 0.45%
 		- Points::Upload: 0.14%
-	- RenderContext::RenderCloudsEnd: 2.85%
+	- RenderContext::RenderCloudsEnd: 2.87%
 =================================================
 Prev perf (before point et al destructuring)
 =================================================
@@ -50,41 +50,6 @@ Prev perf (before point et al destructuring)
 - Ships
 	- Warship
 	- See Moleskine
-
-= Release:
-	+ Fix Ocean Depth
-		+ Affects only textures, not land
-	+ Make some ships
-		+ Copy three balls
-		+ Make ShipTools, -quantize verb
-		+ Make some stiffer columns of steel, iron, titanium, etc.
-			+ materials: also order rows based on mass
-			+ Do last steel column stiff
-			+ Iron and Wood
-				+ Switch stiff wood with new one
-					+ Switch also Titanic
-						+ Test
-			+ Add "f=..." to template or better "M:S:F"
-			+ Test newest ship
-		+ Copy, change, and fix from old:
-			+ Ship5
-			+ Ship6
-		+ Cruise vessel
-			+ Plan:
-				1 + New layer, with thin hull and light interior
-					+ Fix buoyancy
-				2 + Introduce heavy metals - own row, just grey's
-					+ Make strong structural beams
-				3 + Adjust colors by peeking at lower layer
-					+ Redo the layer with quantize
-				4 + Detachable life raft 
-					+ Make "Nails" material
-	+ Call .shp parts ".png.dat"
-		+ Rename via git
-		+ Edit .shp files
-	- Build and release 1.2.0
-	- Post to forum
-	- Add to gamejolt
 
 - Technical Debt:
 	- Textures are json files, with world size, offset, and lighting boolean
@@ -309,17 +274,63 @@ Prev perf (before point et al destructuring)
 	+ class Lamp()
 		+ points to Point and Point points optionally to ElectricalElement (base abstract of Lamp, Cable, Generator)
 			+ ElectricalElement::GetType(){return mType;}: non-virtual, it's optimized by compiler
-	- Move electrical components to ElectricalComponents class, an ElementContainer but also like bombs, with update and state machines
+	= Move electrical components to ElectricalElements class, an ElementContainer but also like bombs, with update and state machines
 	  (but no render)
-		- For buffers, see Moleskine
-			- TODO: This was old:
-			- Buffer of pointers
-			- Buffer of ElementIndex of points
-				- Same at Points: electrical elements are indices
-			- Add additional buffers that might simplify electrical connectivity test, e.g. Type and VisitedGen
+		+ GameEventHandler and points members
+		+ Buffers (type, connected electrical elements, etc.)
+		+ AddCable/Lamp/...()		
+		= Destroy
+			= Removes self from connected
+				- OR NOT: If Ship::PointDestroyHandler deletes point's connected springs before point's electrical element,
+				  then we can assert that electrical element has no connected points anymore already
+		+ Getters ("subset" section) for Lamps and Generators
+		- Update()
+			- Invoked by Ship
+			+ For each lamp: runs its state machine 
+				+ Via RunLampStateMachine(LampState &)
+				+ Outcome: AvailableCurrent
+	+ Materials: self-powered lamp
+		+ Just boolean property in JSON
+			+ Current light material is self-powered
+			+ New light material is not
+		+ ElectricalElements: store boolean at LampState (const, passed via cctor)
+	+ Point has ElectricalElementIndex (or None), passed at cctor
+	+ ShipBuilder:
+		+ Create ElectricalElements via ElectricalElements::Add
+		+ Give point/elec element index to each other
+		+ Add connected electrical elements to each other
+			+ See how it's done for points, springs, etc.
+	+ Nuke ElectricalElement, Cable, Generator, Lamp
+	+ Nuke unused Material electrical properties
+	- Ship::PointDestroyHandler:
+		- Destroy point's ElectricalElement, if any
+		- Do this after deleting springs, so that ElectricalElement::Destroy does not have to remove self from connected elements (see above)
+	- Ship::SpringDestroyHandler:
+		- Remove each endpoint's ElectricalElement (if any - both must be elec elems) from each other's ElectricalElement
+	+ @Ship::Update():
+		+ New "inline" electrical section:
+			+ UpdateCurrentConnectivity():
+				+ Invoke regardless of dirty elements, as generators might become wet
+				+ From generators to all reachable points, just propagates visit seq num
+			+ ElectricalElements::Update()
+			+ DiffuseLight()
+				+ For each ElectricalElement::Lamp: 
+					+ Use its AvailableCurrent and set mLight 
+	- Do test with ship with passive lamp
+	- Implement full lamp state machine @ ElectricalElements::RunLampStateMachine
+		- EventHandler: OnLightFlicker(size, isUnderwater)
+		- Find 2 sounds ("electrical discharge" or "electric arc")
+			- And make them also underwater
+	- Code improvements:
+		- See if makes sense to merge UpdateCurrentConnectivity() with connected components' graph visit
+	- Optimizations:
+		- Ship::DiffuseLight: see inverting nested loops (for each lamp: for each point)
+			- But requires first point light zeroing!
+
+	- THIS WAS OLD:
 	- Current Propagation Algo (Ship::UpdateCurrentConnectivity()):
 		+ create new generation seq number; if new is 0 => 1
-		- Consider adding a new "ConductsElectricity" buffer to Springs, set to true or folse at Add() depending
+		- Consider adding a new "ConductsElectricity" buffer to Springs, set to true or false at Add() depending
 		  on whether or not both endpoints' materials have ConductsElectricity=true
 			- ConductsElectricity replaces all the other useless electrical properties
 			- This simplifies current connectivity graph visit
@@ -327,7 +338,7 @@ Prev perf (before point et al destructuring)
 			  but this means lots of useless cache misses for getting point's buffer content (only a small percentage of points
 			  have an ElectricalElement attached)
 		- ElectricalElement has SetVisited(curGen), bool IsVisited(curGen), operating on buffers
-		- @Sip::Update, electrical section: if mAreElementsDirty: invoke UpdateCurrentConnectivity()
+		- @Ship::Update, electrical section: if mAreElementsDirty: invoke UpdateCurrentConnectivity()
 			- Visit whole electrical graph, as:
 			- For each generator point:
 				- if not visited=>flood all connected ElectricalElements (of any type) from here
@@ -373,6 +384,7 @@ Prev perf (before point et al destructuring)
 	- Diffusion improvement: see if can simply add light (rather than max'ing it)
 		- Need to ensure sum is always < 1.0
 			- May be via adding +1 to distance? 
+		- Or just set to max(1.0, cur+new)
 	
 
 - Smoke
@@ -962,6 +974,7 @@ IF WX:
 				  to re-show cursor after having stolen it
 			+ Test:
 				+ Shift up and down detection
+	+ View control smoothing: test with restart from last target for faster convergence
 
 + Gfx:
 	+ Do ropes with two endpoints (000xxx)
@@ -1867,6 +1880,41 @@ IF WX:
 	+ Screenshots @ github readme
 	+ Tell art guy
 	+ Send email to Luke
+	1.3.0:
+	+ Fix Ocean Depth
+		+ Affects only textures, not land
+	+ Make some ships
+		+ Copy three balls
+		+ Make ShipTools, -quantize verb
+		+ Make some stiffer columns of steel, iron, titanium, etc.
+			+ materials: also order rows based on mass
+			+ Do last steel column stiff
+			+ Iron and Wood
+				+ Switch stiff wood with new one
+					+ Switch also Titanic
+						+ Test
+			+ Add "f=..." to template or better "M:S:F"
+			+ Test newest ship
+		+ Copy, change, and fix from old:
+			+ Ship5
+			+ Ship6
+		+ Cruise vessel
+			+ Plan:
+				1 + New layer, with thin hull and light interior
+					+ Fix buoyancy
+				2 + Introduce heavy metals - own row, just grey's
+					+ Make strong structural beams
+				3 + Adjust colors by peeking at lower layer
+					+ Redo the layer with quantize
+				4 + Detachable life raft 
+					+ Make "Nails" material
+	+ Call .shp parts ".png.dat"
+		+ Rename via git
+		+ Edit .shp files
+	+ Build and release 1.2.0
+	+ Post to forum
+	+ Add to gamejolt
+
 
 + Bugs: 
 	+ Ship::Render: when there are no changes to elements and we keep uploading stressed springs, we don't reset the count

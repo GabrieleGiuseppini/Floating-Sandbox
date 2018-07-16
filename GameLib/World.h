@@ -1,7 +1,7 @@
 /***************************************************************************************
- * Original Author:		Gabriele Giuseppini
- * Created:				2018-01-21
- * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
+ * Original Author:     Gabriele Giuseppini
+ * Created:             2018-01-21
+ * Copyright:           Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
  ***************************************************************************************/
 #pragma once
 
@@ -26,7 +26,7 @@ class World
 {
 public:
 
-	World(
+    World(
         std::shared_ptr<IGameEventHandler> gameEventHandler,
         GameParameters const & gameParameters);
 
@@ -44,21 +44,21 @@ public:
     {
         return position.y < GetWaterHeightAt(position.x);
     }
-	
+    
     inline float GetOceanFloorHeightAt(float x) const
     {
         return mOceanFloor.GetFloorHeightAt(x);
     }
 
-	void DestroyAt(
-		vec2 const & targetPos, 
-		float radius);
+    void DestroyAt(
+        vec2 const & targetPos, 
+        float radius);
 
     void SawThrough(
         vec2 const & startPos,
         vec2 const & endPos);
 
-	void DrawTo(
+    void DrawTo(
         vec2 const & targetPos,
         float strength);
 
@@ -84,11 +84,11 @@ public:
         vec2 const & targetPos,
         float radius) const;
 
-	void Update(GameParameters const & gameParameters);
+    void Update(GameParameters const & gameParameters);
 
-	void Render(		
+    void Render(        
         GameParameters const & gameParameters,
-		RenderContext & renderContext) const;
+        RenderContext & renderContext) const;
 
 private:
 
@@ -96,24 +96,24 @@ private:
 
     void RenderClouds(RenderContext & renderContext) const;
 
-	void UploadLandAndWater(
-		GameParameters const & gameParameters,
+    void UploadLandAndWater(
+        GameParameters const & gameParameters,
         RenderContext & renderContext) const;
 
 private:
 
-	// Repository
-	std::vector<std::unique_ptr<Ship>> mAllShips;
+    // Repository
+    std::vector<std::unique_ptr<Ship>> mAllShips;
     std::vector<std::unique_ptr<Cloud>> mAllClouds;
     WaterSurface mWaterSurface;
     OceanFloor mOceanFloor;
 
-	// The current time 
-	float mCurrentTime;
+    // The current time 
+    float mCurrentTime;
 
     // The current step sequence number; used to avoid zero-ing out things.
     // Guaranteed to never be zero, but expected to rollover
-    uint64_t mCurrentStepSequenceNumber;
+    VisitSequenceNumber mCurrentVisitSequenceNumber;
 
     // The game event handler
     std::shared_ptr<IGameEventHandler> mGameEventHandler;

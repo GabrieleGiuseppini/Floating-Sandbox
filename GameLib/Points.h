@@ -42,8 +42,8 @@ private:
 
         ElementIndex ConnectedElectricalElement;
 
-        Network()
-            : ConnectedElectricalElement(NoneElementIndex)
+        Network(ElementIndex connectedElectricalElement)
+            : ConnectedElectricalElement(connectedElectricalElement)
         {}
     };
 
@@ -75,7 +75,7 @@ public:
         , mNetworkBuffer(elementCount)
         // Connected component
         , mConnectedComponentIdBuffer(elementCount)
-        , mCurrentConnectedComponentDetectionStepSequenceNumberBuffer(elementCount)
+        , mCurrentConnectedComponentDetectionVisitSequenceNumberBuffer(elementCount)
         // Pinning
         , mIsPinnedBuffer(elementCount)
         // Immutable render attributes
@@ -114,6 +114,7 @@ public:
     void Add(
         vec2 const & position,
         Material const * material,
+        ElementIndex electricalElementIndex,
         float buoyancy,
         vec3f const & color,
         vec2f const & textureCoordinates);
@@ -325,12 +326,13 @@ public:
         return mNetworkBuffer[pointElementIndex].ConnectedSprings;
     }
 
-    inline auto & GetConnectedSprings(ElementIndex pointElementIndex) 
-    {
-        assert(pointElementIndex < mElementCount);
+    // TODOTEST: fine to nuke?
+    ////inline auto & GetConnectedSprings(ElementIndex pointElementIndex) 
+    ////{
+    ////    assert(pointElementIndex < mElementCount);
 
-        return mNetworkBuffer[pointElementIndex].ConnectedSprings;
-    }
+    ////    return mNetworkBuffer[pointElementIndex].ConnectedSprings;
+    ////}
 
     inline void AddConnectedSpring(
         ElementIndex pointElementIndex,
@@ -360,12 +362,13 @@ public:
         return mNetworkBuffer[pointElementIndex].ConnectedTriangles;
     }
 
-    inline auto & GetConnectedTriangles(ElementIndex pointElementIndex)
-    {
-        assert(pointElementIndex < mElementCount);
+    // TODOTEST: fine to nuke?
+    ////inline auto & GetConnectedTriangles(ElementIndex pointElementIndex)
+    ////{
+    ////    assert(pointElementIndex < mElementCount);
 
-        return mNetworkBuffer[pointElementIndex].ConnectedTriangles;
-    }
+    ////    return mNetworkBuffer[pointElementIndex].ConnectedTriangles;
+    ////}
 
     inline void AddConnectedTriangle(
         ElementIndex pointElementIndex,
@@ -395,15 +398,16 @@ public:
         return mNetworkBuffer[pointElementIndex].ConnectedElectricalElement;
     }
 
-    inline void SetConnectedElectricalElement(
-        ElementIndex pointElementIndex,
-        ElementIndex electricalElementIndex)
-    {
-        assert(pointElementIndex < mElementCount);
-        assert(NoneElementIndex == mNetworkBuffer[pointElementIndex].ConnectedElectricalElement);
+    // TODO: NUKE
+    ////inline void SetConnectedElectricalElement(
+    ////    ElementIndex pointElementIndex,
+    ////    ElementIndex electricalElementIndex)
+    ////{
+    ////    assert(pointElementIndex < mElementCount);
+    ////    assert(NoneElementIndex == mNetworkBuffer[pointElementIndex].ConnectedElectricalElement);
 
-        mNetworkBuffer[pointElementIndex].ConnectedElectricalElement = electricalElementIndex;
-    }
+    ////    mNetworkBuffer[pointElementIndex].ConnectedElectricalElement = electricalElementIndex;
+    ////}
 
     //
     // Pinning
@@ -459,21 +463,21 @@ public:
         mConnectedComponentIdBuffer[pointElementIndex] = connectedComponentId;
     }
 
-    inline uint64_t GetCurrentConnectedComponentDetectionStepSequenceNumber(ElementIndex pointElementIndex) const
+    inline VisitSequenceNumber GetCurrentConnectedComponentDetectionVisitSequenceNumber(ElementIndex pointElementIndex) const
     {
         assert(pointElementIndex < mElementCount);
 
-        return mCurrentConnectedComponentDetectionStepSequenceNumberBuffer[pointElementIndex];
+        return mCurrentConnectedComponentDetectionVisitSequenceNumberBuffer[pointElementIndex];
     }
 
-    inline void SetCurrentConnectedComponentDetectionStepSequenceNumber(
+    inline void SetCurrentConnectedComponentDetectionVisitSequenceNumber(
         ElementIndex pointElementIndex,
-        uint64_t connectedComponentDetectionStepSequenceNumber) 
+        VisitSequenceNumber connectedComponentDetectionVisitSequenceNumber)
     { 
         assert(pointElementIndex < mElementCount);
 
-        mCurrentConnectedComponentDetectionStepSequenceNumberBuffer[pointElementIndex] =
-            connectedComponentDetectionStepSequenceNumber;
+        mCurrentConnectedComponentDetectionVisitSequenceNumberBuffer[pointElementIndex] =
+            connectedComponentDetectionVisitSequenceNumber;
     }
 
 private:
@@ -531,7 +535,7 @@ private:
     //
 
     Buffer<ConnectedComponentId> mConnectedComponentIdBuffer; 
-    Buffer<uint64_t> mCurrentConnectedComponentDetectionStepSequenceNumberBuffer;
+    Buffer<VisitSequenceNumber> mCurrentConnectedComponentDetectionVisitSequenceNumberBuffer;
 
     //
     // Pinning

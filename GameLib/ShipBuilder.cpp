@@ -49,7 +49,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     ShipDefinition const & shipDefinition,
     MaterialDatabase const & materials,
     GameParameters const & /*gameParameters*/,
-    uint64_t currentStepSequenceNumber)
+    VisitSequenceNumber currentVisitSequenceNumber)
 {
     int const structureWidth = shipDefinition.StructuralImage.Size.Width;
     float const halfWidth = static_cast<float>(structureWidth) / 2.0f;
@@ -233,7 +233,11 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     // Create Electrical Elements
     //
 
-    ElectricalElements electricalElements = CreateElectricalElements(points);
+    ElectricalElements electricalElements = CreateElectricalElements(
+        points,
+        springs,
+        parentWorld,
+        gameEventHandler);
 
 
     //
@@ -252,7 +256,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
         std::move(springs),
         std::move(triangles),
         std::move(electricalElements),
-        currentStepSequenceNumber);
+        currentVisitSequenceNumber);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -376,21 +380,31 @@ Points ShipBuilder::CreatePoints(
         parentWorld,
         std::move(gameEventHandler));
 
+    ElementIndex electricalElementCounter = 0;
     for (size_t p = 0; p < pointInfos.size(); ++p)
     {
         PointInfo const & pointInfo = pointInfos[p];
 
         Material const * mtl = pointInfo.Mtl;
 
+        ElementIndex electricalElementIndex = NoneElementIndex;
+        if (!!mtl->Electrical)
+        {
+            // This point has an associated electrical element
+            electricalElementIndex = electricalElementCounter;
+            ++electricalElementCounter;
+        }
+
+        float buoyancy = mtl->IsHull ? 0.0f : 1.0f; // No buoyancy if it's a hull point, as it can't get water
+
         //
         // Create point
         //
 
-        float buoyancy = mtl->IsHull ? 0.0f : 1.0f; // No buoyancy if it's a hull point, as it can't get water
-
         points.Add(
             pointInfo.Position,
             mtl,
+            electricalElementIndex,
             buoyancy,
             mtl->RenderColour,
             pointInfo.TextureCoordinates);
@@ -652,51 +666,80 @@ Physics::Triangles ShipBuilder::CreateTriangles(
 }
 
 ElectricalElements ShipBuilder::CreateElectricalElements(
-    Physics::Points & points)
+    Physics::Points const & points,
+    Physics::Springs const & springs,
+    Physics::World & parentWorld,
+    std::shared_ptr<IGameEventHandler> gameEventHandler)
 {
+    // Get count of electrical elements first
     ElementIndex electricalElementsCount = 0;
     for (auto pointIndex : points)
     {
-        if (!!points.GetMaterial(pointIndex)->Electrical)
+        if (NoneElementIndex != points.GetConnectedElectricalElement(pointIndex))
         {
             ++electricalElementsCount;
         }
     }
 
-    ElectricalElements electricalElements(electricalElementsCount);
+    // Create electrical elements
+
+    ElectricalElements electricalElements(
+        electricalElementsCount,
+        parentWorld,
+        gameEventHandler);
 
     ElementIndex electricalElementIndex = 0;
     for (auto pointIndex : points)
     {
-        if (!!points.GetMaterial(pointIndex)->Electrical)
+        if (NoneElementIndex != points.GetConnectedElectricalElement(pointIndex))
         {
-            switch (points.GetMaterial(pointIndex)->Electrical->ElementType)
+            electricalElements.Add(
+                pointIndex,
+                points.GetMaterial(pointIndex)->Electrical->ElementType,
+                points.GetMaterial(pointIndex)->Electrical->IsSelfPowered);
+
+            // Visit all electrical elements connected to this point, and connect this electrical element
+            // and those electrical elements to each other
+            for (auto spring : points.GetConnectedSprings(pointIndex))
             {
-                case Material::ElectricalProperties::ElectricalElementType::Cable:
+                auto pointAIndex = springs.GetPointAIndex(spring);
+                if (pointAIndex != pointIndex)
                 {
-                    electricalElements.Add(std::unique_ptr<ElectricalElement>(new Cable(pointIndex)));
-                    break;
-                }
+                    auto otherEndpointElectricalElement = points.GetConnectedElectricalElement(pointAIndex);
+                    if (NoneElementIndex != otherEndpointElectricalElement)
+                    {
+                        electricalElements.AddConnectedElectricalElement(
+                            electricalElementIndex,
+                            otherEndpointElectricalElement);
 
-                case Material::ElectricalProperties::ElectricalElementType::Generator:
-                {
-                    electricalElements.Add(std::unique_ptr<ElectricalElement>(new Generator(pointIndex)));
-                    break;
+                        electricalElements.AddConnectedElectricalElement(
+                            otherEndpointElectricalElement,
+                            electricalElementIndex);
+                    }
                 }
-
-                case Material::ElectricalProperties::ElectricalElementType::Lamp:
+                else
                 {
-                    electricalElements.Add(std::unique_ptr<ElectricalElement>(new Lamp(pointIndex)));
-                    break;
+                    assert(springs.GetPointBIndex(spring) != pointIndex);
+
+                    auto otherEndpointElectricalElement = points.GetConnectedElectricalElement(springs.GetPointBIndex(spring));
+                    if (NoneElementIndex != otherEndpointElectricalElement)
+                    {
+                        electricalElements.AddConnectedElectricalElement(
+                            electricalElementIndex,
+                            otherEndpointElectricalElement);
+
+                        electricalElements.AddConnectedElectricalElement(
+                            otherEndpointElectricalElement,
+                            electricalElementIndex);
+                    }
                 }
             }
-
-            // Add electrical element to its point
-            points.SetConnectedElectricalElement(pointIndex, electricalElementIndex);
 
             ++electricalElementIndex;
         }
     }
+
+    assert(electricalElementIndex == electricalElementsCount);
 
     return electricalElements;
 }

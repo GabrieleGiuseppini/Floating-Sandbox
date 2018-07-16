@@ -59,17 +59,9 @@ set  (PHYSICS_SOURCES
 	Bomb.h
 	Bombs.cpp
 	Bombs.h
-	Cable.cpp
-	Cable.h
 	Cloud.h
-	ElectricalElement.cpp
-	ElectricalElement.h
 	ElectricalElements.cpp
 	ElectricalElements.h
-	Generator.cpp
-	Generator.h
-	Lamp.cpp
-	Lamp.h
 	OceanFloor.cpp
 	OceanFloor.h
 	Physics.h

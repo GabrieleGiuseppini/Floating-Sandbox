@@ -7,17 +7,64 @@
 
 namespace Physics {
 
-void ElectricalElements::Add(std::unique_ptr<ElectricalElement> electricalElement)
+void ElectricalElements::Add(
+    ElementIndex pointElementIndex,
+    Material::ElectricalProperties::ElectricalElementType elementType,
+    bool isSelfPowered)
 {
     mIsDeletedBuffer.emplace_back(false);
+    mPointIndexBuffer.emplace_back(pointElementIndex);
+    mTypeBuffer.emplace_back(elementType);
+    mConnectedElectricalElementsBuffer.emplace_back();
+    mAvailableCurrentBuffer.emplace_back(0.f);
 
-    mElectricalElementBuffer.emplace_back(std::move(electricalElement));
+    switch (elementType)
+    {
+        case Material::ElectricalProperties::ElectricalElementType::Cable:
+        {
+            mElementStateBuffer.emplace_back(ElementState::CableState());
+            break;
+        }
+
+        case Material::ElectricalProperties::ElectricalElementType::Generator:
+        {
+            mGenerators.emplace_back(static_cast<ElementIndex>(mElementStateBuffer.GetCurrentSize()));
+            mElementStateBuffer.emplace_back(ElementState::GeneratorState());
+            break;
+        }
+
+        case Material::ElectricalProperties::ElectricalElementType::Lamp:
+        {
+            mLamps.emplace_back(static_cast<ElementIndex>(mElementStateBuffer.GetCurrentSize()));
+            mElementStateBuffer.emplace_back(ElementState::LampState(isSelfPowered));
+            break;
+        }
+    }
+    
+    mCurrentConnectivityVisitSequenceNumberBuffer.emplace_back(NoneVisitSequenceNumber);
 }
 
 void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
 {
     assert(electricalElementIndex < mElementCount);
     assert(!IsDeleted(electricalElementIndex));
+
+    // Zero out our current
+    mAvailableCurrentBuffer[electricalElementIndex] = 0.0f;
+
+    // TODOHERE: see notes: remove this code and add comment on Ship's DestroyHandlers
+    // Remove self from connected electrical elements
+    for (auto connectedElectricalElementIndex : GetConnectedElectricalElements(electricalElementIndex))
+    {
+        assert(!IsDeleted(connectedElectricalElementIndex));
+
+        RemoveConnectedElectricalElement(
+            connectedElectricalElementIndex,
+            electricalElementIndex);
+    }
+
+    // Our own connected electrical elements will go once the springs attached
+    // to the point that has been deleted, are also deleted
 
     // Invoke destroy handler
     if (!!mDestroyHandler)
@@ -27,6 +74,56 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
 
     // Flag ourselves as deleted
     mIsDeletedBuffer[electricalElementIndex] = true;
+}
+
+void ElectricalElements::Update(
+    VisitSequenceNumber currentConnectivityVisitSequenceNumber,
+    GameParameters const & gameParameters)
+{
+    //
+    // Visit all lamps and run their state machine
+    //
+
+    for (auto iLamp : mLamps)
+    {
+        if (!mIsDeletedBuffer[iLamp])
+        {
+            RunLampStateMachine(
+                iLamp,
+                currentConnectivityVisitSequenceNumber,
+                gameParameters);
+        }
+        else
+        {
+            assert(0.0f == mAvailableCurrentBuffer[iLamp]);
+        }
+    }
+}
+
+void ElectricalElements::RunLampStateMachine(
+    ElementIndex elementLampIndex,
+    VisitSequenceNumber currentConnectivityVisitSequenceNumber,
+    GameParameters const & gameParameters)
+{
+    if (mElementStateBuffer[elementLampIndex].Lamp.IsSelfPowered)
+    {
+        //
+        // Self-powered lamp, always on
+        //
+
+        mAvailableCurrentBuffer[elementLampIndex] = 1.0f;
+    }
+    else
+    {
+        //
+        // Normal lamp, only on if visited, and controlled by flicker state machine
+        //
+
+        // TODOTEST: flicker state machine is missing
+        mAvailableCurrentBuffer[elementLampIndex] =
+            (currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[elementLampIndex]) ?
+            1.0f : 0.0f;
+    }
 }
 
 }

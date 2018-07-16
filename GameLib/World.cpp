@@ -21,7 +21,7 @@ World::World(
     , mWaterSurface()
     , mOceanFloor()
     , mCurrentTime(0.0f)
-    , mCurrentStepSequenceNumber(1u)
+    , mCurrentVisitSequenceNumber(1u)
     , mGameEventHandler(std::move(gameEventHandler))
 {
     // Initialize clouds
@@ -46,7 +46,7 @@ int World::AddShip(
         shipDefinition,
         materials,
         gameParameters,
-        mCurrentStepSequenceNumber);
+        mCurrentVisitSequenceNumber);
 
     mAllShips.push_back(std::move(newShip));
 
@@ -192,10 +192,10 @@ void World::Update(GameParameters const & gameParameters)
     // Update current time
     mCurrentTime += GameParameters::SimulationStepTimeDuration<float>;
 
-    // Generate a new step sequence number
-    ++mCurrentStepSequenceNumber;
-    if (0u == mCurrentStepSequenceNumber)
-        mCurrentStepSequenceNumber = 1u;
+    // Generate a new visit sequence number
+    ++mCurrentVisitSequenceNumber;
+    if (NoneVisitSequenceNumber == mCurrentVisitSequenceNumber)
+        mCurrentVisitSequenceNumber = 1u;
 
     // Update water surface and ocean floor
     mWaterSurface.Update(mCurrentTime, gameParameters);
@@ -205,7 +205,7 @@ void World::Update(GameParameters const & gameParameters)
     for (auto & ship : mAllShips)
     {
         ship->Update(
-            mCurrentStepSequenceNumber,
+            mCurrentVisitSequenceNumber,
             gameParameters);
     }
 

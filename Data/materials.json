@@ -2066,11 +2066,12 @@
 		"element_type": "Glass"
 	}
     },
+
     {
-        "name": "Standard Lamp",	
+        "name": "Self-Powered Lamp",	
 	"template": {
 		"row": "100|Electrical",
-		"column": "3|Lamp"
+		"column": "3|Self-Powered Lamp"
 	},
         "strength": 0.1,
 	"mass": {
@@ -2083,18 +2084,40 @@
 	"render_colour": "#404040",
 	"electrical_properties": {
 		"element_type": "Lamp",
-		"resistance": 0,
-		"generated_voltage": 0
+		"is_self_powered": true
 	},
 	"sound_properties": {
 		"element_type": "Glass"
 	}
     },
     {
-        "name": "Standard Generator",	
+        "name": "Lamp",	
 	"template": {
 		"row": "100|Electrical",
-		"column": "4|Generator"
+		"column": "4|Lamp"
+	},
+        "strength": 0.1,
+	"mass": {
+		"nominal_mass": 30,
+		"density": 0.5
+	},  
+	"is_hull": false,
+	"stiffness": 1,
+        "structural_colour": "#FFE010",
+	"render_colour": "#404040",
+	"electrical_properties": {
+		"element_type": "Lamp",
+		"is_self_powered": false
+	},
+	"sound_properties": {
+		"element_type": "Glass"
+	}
+    },
+    {
+        "name": "Generator",	
+	"template": {
+		"row": "100|Electrical",
+		"column": "5|Generator"
 	},
         "strength": 0.089,
 	"mass": {
@@ -2107,18 +2130,17 @@
 	"render_colour": "#FC0808",
 	"electrical_properties": {
 		"element_type": "Generator",
-		"resistance": 0,
-		"generated_voltage": 12
+		"is_self_powered": false
 	},
 	"sound_properties": {
 		"element_type": "Metal"
 	}
     },
     {
-        "name": "Standard Electrical Cable",	
+        "name": "Electrical Cable",	
 	"template": {
 		"row": "100|Electrical",
-		"column": "5|Cable"
+		"column": "6|Cable"
 	},
         "strength": 0.8,
 	"mass": {
@@ -2131,8 +2153,7 @@
 	"render_colour": "#700000",
 	"electrical_properties": {
 		"element_type": "Cable",
-		"resistance": 1000,
-		"generated_voltage": 0
+		"is_self_powered": false
 	},
 	"sound_properties": {
 		"element_type": "Cable"

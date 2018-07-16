@@ -60,16 +60,14 @@ struct Material
         }
 
 		ElectricalElementType ElementType;
-		float const Resistance;
-		float const GeneratedVoltage;
+
+        bool IsSelfPowered;
 
 		ElectricalProperties(
 			ElectricalElementType elementType,
-			float resistance,
-			float generatedVoltage)
+			bool isSelfPowered)
 			: ElementType(elementType)
-			, Resistance(resistance)
-			, GeneratedVoltage(generatedVoltage)
+			, IsSelfPowered(isSelfPowered)
 		{
 		}
 	};

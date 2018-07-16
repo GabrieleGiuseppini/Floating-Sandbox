@@ -32,7 +32,7 @@ public:
         ShipDefinition const & shipDefinition,
         MaterialDatabase const & materials,
         GameParameters const & gameParameters,
-        uint64_t currentStepSequenceNumber);
+        VisitSequenceNumber currentVisitSequenceNumber);
 
 private:
 
@@ -134,7 +134,10 @@ private:
         Physics::Springs & springs);
 
     static Physics::ElectricalElements CreateElectricalElements(
-        Physics::Points & points);
+        Physics::Points const & points,
+        Physics::Springs const & springs,
+        Physics::World & parentWorld,
+        std::shared_ptr<IGameEventHandler> gameEventHandler);
 
 private:
 

@@ -32,13 +32,11 @@ std::unique_ptr<Material> Material::Create(picojson::object const & materialJson
 		std::string elementTypeStr = Utils::GetMandatoryJsonMember<std::string>(*electricalPropertiesJson, "element_type");
         ElectricalProperties::ElectricalElementType elementType = ElectricalProperties::StrToElectricalElementType(elementTypeStr);
 
-		float resistance = static_cast<float>(Utils::GetOptionalJsonMember<double>(*electricalPropertiesJson, "resistance", 0.0));
-		float generatedVoltage = static_cast<float>(Utils::GetOptionalJsonMember<double>(*electricalPropertiesJson, "generated_voltage", 0.0));
+        bool isSelfPowered = Utils::GetMandatoryJsonMember<bool>(*electricalPropertiesJson, "is_self_powered");
 
 		electricalProperties.emplace(
 			elementType,
-			resistance,
-			generatedVoltage);
+            isSelfPowered);
 	}
 
     std::optional<SoundProperties> soundProperties;

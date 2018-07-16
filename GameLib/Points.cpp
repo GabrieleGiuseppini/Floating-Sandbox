@@ -13,6 +13,7 @@ namespace Physics {
 void Points::Add(
     vec2 const & position,
     Material const * material,
+    ElementIndex electricalElementIndex,
     float buoyancy,
     vec3f const & color,
     vec2f const & textureCoordinates)
@@ -33,10 +34,10 @@ void Points::Add(
 
     mLightBuffer.emplace_back(0.0f);
 
-    mNetworkBuffer.emplace_back();
+    mNetworkBuffer.emplace_back(electricalElementIndex);
 
     mConnectedComponentIdBuffer.emplace_back(0u);
-    mCurrentConnectedComponentDetectionStepSequenceNumberBuffer.emplace_back(0u);
+    mCurrentConnectedComponentDetectionVisitSequenceNumberBuffer.emplace_back(NoneVisitSequenceNumber);
 
     mIsPinnedBuffer.emplace_back(false);
 

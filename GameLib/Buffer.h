@@ -48,6 +48,15 @@ public:
     }
 
     /*
+     * Gets the current number of elements in the buffer; less than or equal the declared buffer size.
+     */
+
+    size_t GetCurrentSize() const
+    {
+        return mCurrentSize;
+    }
+
+    /*
      * Adds an element to the buffer. Assumed to be invoked only at initialization time.
      *
      * Cannot add more elements than the size specified at constructor time.

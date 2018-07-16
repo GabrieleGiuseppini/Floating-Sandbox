@@ -35,7 +35,7 @@ Ship::Ship(
     Springs && springs,
     Triangles && triangles,
     ElectricalElements && electricalElements,
-    uint64_t currentStepSequenceNumber)
+    VisitSequenceNumber currentVisitSequenceNumber)
     : mId(id)
     , mParentWorld(parentWorld)    
     , mGameEventHandler(std::move(gameEventHandler))
@@ -80,7 +80,7 @@ Ship::Ship(
     mElectricalElements.RegisterDestroyHandler(std::bind(&Ship::ElectricalElementDestroyHandler, this, std::placeholders::_1));
 
     // Do a first connected component detection pass 
-    DetectConnectedComponents(currentStepSequenceNumber);
+    DetectConnectedComponents(currentVisitSequenceNumber);
 }
 
 Ship::~Ship()
@@ -212,7 +212,7 @@ ElementIndex Ship::GetNearestPointIndexAt(
 }
 
 void Ship::Update(
-    uint64_t currentStepSequenceNumber,
+    VisitSequenceNumber currentVisitSequenceNumber,
     GameParameters const & gameParameters)
 {
     //
@@ -257,7 +257,7 @@ void Ship::Update(
 
     if (mAreElementsDirty)
     {
-        DetectConnectedComponents(currentStepSequenceNumber);
+        DetectConnectedComponents(currentVisitSequenceNumber);
     }
 
 
@@ -280,6 +280,13 @@ void Ship::Update(
     //
     // Update electrical dynamics
     //
+
+    // Invoked regardless of dirty elements, as generators might become wet
+    UpdateElectricalConnectivity(currentVisitSequenceNumber);
+
+    mElectricalElements.Update(
+        currentVisitSequenceNumber,
+        gameParameters);
 
     DiffuseLight(gameParameters);
 }
@@ -608,7 +615,7 @@ void Ship::HandleCollisionsWithSeaFloor()
     }
 }
 
-void Ship::DetectConnectedComponents(uint64_t currentStepSequenceNumber)
+void Ship::DetectConnectedComponents(VisitSequenceNumber currentVisitSequenceNumber)
 {
     mConnectedComponentSizes.clear();
 
@@ -622,7 +629,7 @@ void Ship::DetectConnectedComponents(uint64_t currentStepSequenceNumber)
         if (!mPoints.IsDeleted(pointIndex))
         {
             // Check if visited
-            if (mPoints.GetCurrentConnectedComponentDetectionStepSequenceNumber(pointIndex) != currentStepSequenceNumber)
+            if (mPoints.GetCurrentConnectedComponentDetectionVisitSequenceNumber(pointIndex) != currentVisitSequenceNumber)
             {
                 // This node has not been visited, hence it's the beginning of a new connected component
                 ++currentConnectedComponentId;
@@ -632,14 +639,22 @@ void Ship::DetectConnectedComponents(uint64_t currentStepSequenceNumber)
                 // Propagate the connected component ID to all points reachable from this point
                 //
 
+                // Add point to queue
                 assert(pointsToVisitForConnectedComponents.empty());
                 pointsToVisitForConnectedComponents.push(pointIndex);
-                mPoints.SetCurrentConnectedComponentDetectionStepSequenceNumber(pointIndex, currentStepSequenceNumber);
 
+                // Mark as visited
+                mPoints.SetCurrentConnectedComponentDetectionVisitSequenceNumber(
+                    pointIndex, 
+                    currentVisitSequenceNumber);
+
+                // Visit all points reachable from this point via springs
                 while (!pointsToVisitForConnectedComponents.empty())
                 {
                     auto currentPointIndex = pointsToVisitForConnectedComponents.front();
                     pointsToVisitForConnectedComponents.pop();
+
+                    assert(currentVisitSequenceNumber == mPoints.GetCurrentConnectedComponentDetectionVisitSequenceNumber(currentPointIndex));
 
                     // Assign the connected component ID
                     mPoints.SetConnectedComponentId(currentPointIndex, currentConnectedComponentId);
@@ -652,17 +667,17 @@ void Ship::DetectConnectedComponents(uint64_t currentStepSequenceNumber)
 
                         auto pointAIndex = mSprings.GetPointAIndex(adjacentSpringElementIndex);
                         assert(!mPoints.IsDeleted(pointAIndex));
-                        if (mPoints.GetCurrentConnectedComponentDetectionStepSequenceNumber(pointAIndex) != currentStepSequenceNumber)
+                        if (currentVisitSequenceNumber != mPoints.GetCurrentConnectedComponentDetectionVisitSequenceNumber(pointAIndex))
                         {
-                            mPoints.SetCurrentConnectedComponentDetectionStepSequenceNumber(pointAIndex, currentStepSequenceNumber);
+                            mPoints.SetCurrentConnectedComponentDetectionVisitSequenceNumber(pointAIndex, currentVisitSequenceNumber);
                             pointsToVisitForConnectedComponents.push(pointAIndex);
                         }
 
                         auto pointBIndex = mSprings.GetPointBIndex(adjacentSpringElementIndex);
                         assert(!mPoints.IsDeleted(pointBIndex));
-                        if (mPoints.GetCurrentConnectedComponentDetectionStepSequenceNumber(pointBIndex) != currentStepSequenceNumber)
+                        if (currentVisitSequenceNumber != mPoints.GetCurrentConnectedComponentDetectionVisitSequenceNumber(pointBIndex))
                         {
-                            mPoints.SetCurrentConnectedComponentDetectionStepSequenceNumber(pointBIndex, currentStepSequenceNumber);
+                            mPoints.SetCurrentConnectedComponentDetectionVisitSequenceNumber(pointBIndex, currentVisitSequenceNumber);
                             pointsToVisitForConnectedComponents.push(pointBIndex);
                         }
                     }
@@ -784,6 +799,66 @@ void Ship::BalancePressure(GameParameters const & /*gameParameters*/)
     }
 }
 
+void Ship::UpdateElectricalConnectivity(VisitSequenceNumber currentVisitSequenceNumber)
+{
+    //
+    // Visit electrical graph starting from (non-wet) generators, and propagate
+    // visit sequence number
+    //
+
+    std::queue<ElementIndex> electricalElementsToVisit;
+
+    for (auto generatorIndex : mElectricalElements.GetGenerators())
+    {   
+        // Do not visit deleted generators
+        if (!mElectricalElements.IsDeleted(generatorIndex))
+        {
+            // Make sure we haven't visited it already
+            if (currentVisitSequenceNumber != mElectricalElements.GetCurrentConnectivityVisitSequenceNumber(generatorIndex))
+            {
+                // Mark it as visited
+                mElectricalElements.SetConnectivityVisitSequenceNumber(
+                    generatorIndex,
+                    currentVisitSequenceNumber);
+
+                // Check if dry enough
+                if (mPoints.GetWater(mElectricalElements.GetPointIndex(generatorIndex)) < 0.3f)
+                {
+                    // Add generator to queue
+                    assert(electricalElementsToVisit.empty());
+                    electricalElementsToVisit.push(generatorIndex);
+
+                    // Visit all electrical elements reachable from this generator
+                    while (!electricalElementsToVisit.empty())
+                    {
+                        auto e = electricalElementsToVisit.front();
+                        electricalElementsToVisit.pop();
+
+                        assert(currentVisitSequenceNumber == mElectricalElements.GetCurrentConnectivityVisitSequenceNumber(e));
+
+                        for (auto reachableElectricalElementIndex : mElectricalElements.GetConnectedElectricalElements(e))
+                        {
+                            assert(!mElectricalElements.IsDeleted(reachableElectricalElementIndex));
+
+                            // Make sure not visited already
+                            if (currentVisitSequenceNumber != mElectricalElements.GetCurrentConnectivityVisitSequenceNumber(reachableElectricalElementIndex))
+                            {
+                                // Add to queue
+                                electricalElementsToVisit.push(reachableElectricalElementIndex);
+
+                                // Mark it as visited
+                                mElectricalElements.SetConnectivityVisitSequenceNumber(
+                                    reachableElectricalElementIndex,
+                                    currentVisitSequenceNumber);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 void Ship::DiffuseLight(GameParameters const & gameParameters)
 {
     //
@@ -794,39 +869,33 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
     // Greater adjustment => underrated distance => wider diffusion
     float const adjustmentCoefficient = powf(1.0f - gameParameters.LightDiffusionAdjustment, 2.0f);
 
-    // Visit all points
+    // Visit all points (including deleted ones)
     for (auto pointIndex : mPoints)
     {
-        // Zero light
+        // Zero its light
         mPoints.GetLight(pointIndex) = 0.0f;
 
         vec2f const & pointPosition = mPoints.GetPosition(pointIndex);
+        ConnectedComponentId const pointConnectedComponentId = mPoints.GetConnectedComponentId(pointIndex);
 
         // Go through all lamps in the same connected component
-        for (auto electricaElementIndex : mElectricalElements)
+        // Can safely visit deleted lamps as their current will always be zero
+        for (auto lampIndex : mElectricalElements.GetLamps())
         {
-            if (!mElectricalElements.IsDeleted(electricaElementIndex))
+            // Make sure it's the same connected component
+            if (mPoints.GetConnectedComponentId(mElectricalElements.GetPointIndex(lampIndex)) == pointConnectedComponentId)
             {
-                if (ElectricalElement::Type::Lamp == mElectricalElements.GetElectricalElement(electricaElementIndex)->GetType()
-                    && mPoints.GetConnectedComponentId(mElectricalElements.GetElectricalElement(electricaElementIndex)->GetPointIndex()) == mPoints.GetConnectedComponentId(pointIndex))
-                {
-                    auto lampPointIndex = mElectricalElements.GetElectricalElement(electricaElementIndex)->GetPointIndex();
+                float const lampLight = mElectricalElements.GetAvailableCurrent(lampIndex);
 
-                    assert(!mPoints.IsDeleted(lampPointIndex));
+                float squareDistance = std::max(
+                    1.0f,
+                    (pointPosition - mPoints.GetPosition(mElectricalElements.GetPointIndex(lampIndex))).squareLength() * adjustmentCoefficient);
 
-                    // TODO: this needs to be replaced with getting Light from the lamp itself
-                    float const lampLight = 1.0f;
+                assert(squareDistance >= 1.0f);
 
-                    float squareDistance = std::max(
-                        1.0f,
-                        (pointPosition - mPoints.GetPosition(lampPointIndex)).squareLength() * adjustmentCoefficient);
-
-                    assert(squareDistance >= 1.0f);
-
-                    float newLight = lampLight / squareDistance;
-                    if (newLight > mPoints.GetLight(pointIndex))
-                        mPoints.GetLight(pointIndex) = newLight;
-                }
+                float newLight = lampLight / squareDistance;
+                if (newLight > mPoints.GetLight(pointIndex))
+                    mPoints.GetLight(pointIndex) = newLight;
             }
         }
     }

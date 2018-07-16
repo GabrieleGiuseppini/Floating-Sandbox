@@ -36,6 +36,14 @@ using ConnectedComponentId = std::uint32_t;
 using ObjectId = std::uint32_t;
 
 /*
+ * Graph visit sequence numbers. 
+ *
+ * Equatable. Never zero.
+ */
+using VisitSequenceNumber = std::uint32_t; 
+static constexpr VisitSequenceNumber NoneVisitSequenceNumber = 0;
+
+/*
  * The different ways in which ships may be rendered.
  */
 enum class ShipRenderMode
