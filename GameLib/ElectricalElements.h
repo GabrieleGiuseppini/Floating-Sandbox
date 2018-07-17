@@ -221,6 +221,18 @@ private:
         CableState Cable;
         GeneratorState Generator;
         LampState Lamp;
+
+        ElementState(CableState cable)
+            : Cable(cable)
+        {}
+
+        ElementState(GeneratorState generator)
+            : Generator(generator)
+        {}
+
+        ElementState(LampState lamp)
+            : Lamp(lamp)
+        {}
     };
 
 private:

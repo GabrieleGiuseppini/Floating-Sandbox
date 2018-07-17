@@ -671,75 +671,70 @@ ElectricalElements ShipBuilder::CreateElectricalElements(
     Physics::World & parentWorld,
     std::shared_ptr<IGameEventHandler> gameEventHandler)
 {
-    // Get count of electrical elements first
-    ElementIndex electricalElementsCount = 0;
+    //
+    // Get indices of points with electrical elements
+    //
+
+    std::vector<ElementIndex> electricalElementPointIndices;
     for (auto pointIndex : points)
     {
         if (NoneElementIndex != points.GetConnectedElectricalElement(pointIndex))
         {
-            ++electricalElementsCount;
+            electricalElementPointIndices.push_back(pointIndex);
         }
     }
 
+    //
     // Create electrical elements
+    //
 
     ElectricalElements electricalElements(
-        electricalElementsCount,
+        electricalElementPointIndices.size(),
         parentWorld,
         gameEventHandler);
 
-    ElementIndex electricalElementIndex = 0;
-    for (auto pointIndex : points)
+    for (auto pointIndex : electricalElementPointIndices)
     {
-        if (NoneElementIndex != points.GetConnectedElectricalElement(pointIndex))
-        {
-            electricalElements.Add(
-                pointIndex,
-                points.GetMaterial(pointIndex)->Electrical->ElementType,
-                points.GetMaterial(pointIndex)->Electrical->IsSelfPowered);
-
-            // Visit all electrical elements connected to this point, and connect this electrical element
-            // and those electrical elements to each other
-            for (auto spring : points.GetConnectedSprings(pointIndex))
-            {
-                auto pointAIndex = springs.GetPointAIndex(spring);
-                if (pointAIndex != pointIndex)
-                {
-                    auto otherEndpointElectricalElement = points.GetConnectedElectricalElement(pointAIndex);
-                    if (NoneElementIndex != otherEndpointElectricalElement)
-                    {
-                        electricalElements.AddConnectedElectricalElement(
-                            electricalElementIndex,
-                            otherEndpointElectricalElement);
-
-                        electricalElements.AddConnectedElectricalElement(
-                            otherEndpointElectricalElement,
-                            electricalElementIndex);
-                    }
-                }
-                else
-                {
-                    assert(springs.GetPointBIndex(spring) != pointIndex);
-
-                    auto otherEndpointElectricalElement = points.GetConnectedElectricalElement(springs.GetPointBIndex(spring));
-                    if (NoneElementIndex != otherEndpointElectricalElement)
-                    {
-                        electricalElements.AddConnectedElectricalElement(
-                            electricalElementIndex,
-                            otherEndpointElectricalElement);
-
-                        electricalElements.AddConnectedElectricalElement(
-                            otherEndpointElectricalElement,
-                            electricalElementIndex);
-                    }
-                }
-            }
-
-            ++electricalElementIndex;
-        }
+        electricalElements.Add(
+            pointIndex,
+            points.GetMaterial(pointIndex)->Electrical->ElementType,
+            points.GetMaterial(pointIndex)->Electrical->IsSelfPowered);
     }
 
-    assert(electricalElementIndex == electricalElementsCount);
+
+    //
+    // Connect electrical elements that are connected by springs to each other
+    //
+
+    for (auto electricalElementIndex : electricalElements)
+    {
+        auto pointIndex = electricalElements.GetPointIndex(electricalElementIndex);
+
+        for (auto springIndex : points.GetConnectedSprings(pointIndex))
+        {
+            ElementIndex otherEndpointElectricalElement;
+
+            auto pointAIndex = springs.GetPointAIndex(springIndex);
+            if (pointAIndex != pointIndex)
+            {
+                assert(springs.GetPointBIndex(springIndex) == pointIndex);
+                otherEndpointElectricalElement = points.GetConnectedElectricalElement(pointAIndex);                
+            }
+            else
+            {
+                assert(springs.GetPointBIndex(springIndex) != pointIndex);
+
+                otherEndpointElectricalElement = points.GetConnectedElectricalElement(springs.GetPointBIndex(springIndex));
+            }
+
+            if (NoneElementIndex != otherEndpointElectricalElement)
+            {
+                electricalElements.AddConnectedElectricalElement(
+                    electricalElementIndex,
+                    otherEndpointElectricalElement);
+            }
+        }
+    }
 
     return electricalElements;
 }
