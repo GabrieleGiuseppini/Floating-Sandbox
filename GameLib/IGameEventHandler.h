@@ -87,6 +87,14 @@ public:
         // Default-implemented
     }
 
+    virtual void OnLightFlicker(
+        DurationShortLongType /*duration*/,
+        bool /*isUnderwater*/,
+        unsigned int /*size*/)
+    {
+        // Default-implemented
+    }
+
     //
     // Bombs
     //

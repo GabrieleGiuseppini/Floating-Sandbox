@@ -24,6 +24,7 @@ SoundController::SoundController(
     , mBombsEmittingFastFuseSounds()
     // One-shot sounds
     , mMSUSoundBuffers()
+    , mDslUSoundBuffers()
     , mUSoundBuffers()
     , mCurrentlyPlayingSounds()
     // Continuous sounds
@@ -162,6 +163,44 @@ SoundController::SoundController(
 
             mMSUSoundBuffers[std::make_tuple(soundType, soundElementType, sizeType, isUnderwater)]
                 .SoundBuffers.emplace_back(std::move(soundBuffer));
+        }
+        else if (soundType == SoundType::LightFlicker)
+        {
+            //
+            // DslU sound
+            //
+
+            std::regex dsluRegex(R"(([^_]+)_([^_]+)(?:_(underwater))?)");
+            std::smatch dsluMatch;
+            if (!std::regex_match(soundName, dsluMatch, dsluRegex))
+            {
+                throw GameException("DslU sound filename \"" + soundName + "\" is not recognized");
+            }
+
+            assert(dsluMatch.size() >= 1 + 2 && dsluMatch.size() <= 1 + 3);
+
+            // 1. Parse Duration
+            DurationShortLongType durationType = StrToDurationShortLongType(dsluMatch[2].str());
+
+            // 2. Parse Underwater
+            bool isUnderwater;
+            if (dsluMatch[3].matched)
+            {
+                assert(dsluMatch[3].str() == "underwater");
+                isUnderwater = true;
+            }
+            else
+            {
+                isUnderwater = false;
+            }
+
+
+            //
+            // Store sound buffer
+            //
+
+            mDslUSoundBuffers[std::make_tuple(soundType, durationType, isUnderwater)].SoundBuffer 
+                = std::move(soundBuffer);
         }
         else
         {
@@ -388,9 +427,9 @@ void SoundController::OnStress(
     assert(nullptr != material);
 
     PlayMSUSound(
-        SoundType::Stress, 
-        material, 
-        size, 
+        SoundType::Stress,
+        material,
+        size,
         isUnderwater,
         50.0f);
 }
@@ -416,6 +455,20 @@ void SoundController::OnSinkingBegin(unsigned int /*shipId*/)
     {
         mSinkingMusic.play();
     }
+}
+
+void SoundController::OnLightFlicker(
+    DurationShortLongType duration,
+    bool isUnderwater,
+    unsigned int size)
+{
+    PlayDslUSound(
+        SoundType::LightFlicker,
+        duration,
+        isUnderwater,
+        std::max(
+            100.0f,
+            30.0f * size));
 }
 
 void SoundController::OnBombPlaced(
@@ -619,6 +672,42 @@ void SoundController::PlayMSUSound(
         volume);
 }
 
+void SoundController::PlayDslUSound(
+    SoundType soundType,
+    DurationShortLongType duration,
+    bool isUnderwater,
+    float volume)
+{
+    LogDebug("DslUSound: <",
+        static_cast<int>(soundType),
+        ",",
+        static_cast<int>(duration),
+        ",",
+        static_cast<int>(isUnderwater),
+        ">");
+
+    //
+    // Find sound
+    //
+
+    auto it = mDslUSoundBuffers.find(std::make_tuple(soundType, duration, isUnderwater));
+    if (it == mDslUSoundBuffers.end())
+    {
+        // No luck
+        return;
+    }
+
+
+    //
+    // Play sound
+    //
+
+    PlaySound(
+        soundType,
+        it->second.SoundBuffer.get(),
+        volume);
+}
+
 void SoundController::PlayUSound(
     SoundType soundType,
     bool isUnderwater,
@@ -663,8 +752,6 @@ void SoundController::ChooseAndPlaySound(
     MultipleSoundChoiceInfo & multipleSoundChoiceInfo,
     float volume)
 {
-    auto const now = std::chrono::steady_clock::now();
-
     //
     // Choose sound buffer
     //
@@ -693,16 +780,31 @@ void SoundController::ChooseAndPlaySound(
 
     assert(nullptr != chosenSoundBuffer);
 
+    PlaySound(
+        soundType,
+        chosenSoundBuffer,        
+        volume);
+}
+
+void SoundController::PlaySound(
+    SoundType soundType,
+    sf::SoundBuffer * soundBuffer,    
+    float volume)
+{
+    assert(nullptr != soundBuffer);
+
     //
     // Make sure there isn't already a sound with this sound buffer that started
     // playing too recently;
     // if there is, adjust its volume
     //
 
+    auto const now = std::chrono::steady_clock::now();
+
     for (auto const & currentlyPlayingSound : mCurrentlyPlayingSounds)
     {
         assert(!!currentlyPlayingSound.Sound);
-        if (currentlyPlayingSound.Sound->getBuffer() == chosenSoundBuffer
+        if (currentlyPlayingSound.Sound->getBuffer() == soundBuffer
             && std::chrono::duration_cast<std::chrono::milliseconds>(now - currentlyPlayingSound.StartedTimestamp) < MinDeltaTimeSound)
         {
             currentlyPlayingSound.Sound->setVolume(
@@ -739,7 +841,7 @@ void SoundController::ChooseAndPlaySound(
     //
 
     std::unique_ptr<sf::Sound> sound = std::make_unique<sf::Sound>();
-    sound->setBuffer(*chosenSoundBuffer);
+    sound->setBuffer(*soundBuffer);
 
     sound->setVolume(volume);
     sound->play();    

@@ -22,6 +22,7 @@ public:
         , mStressEvents()
         , mBreakEvents()
         , mSinkingBeginEvents()
+        , mLightFlickerEvents()
         , mBombExplosionEvents()
         , mRCBombPingEvents()
         , mTimerBombDefusedEvents()
@@ -115,6 +116,14 @@ public:
         {
             mSinkingBeginEvents.push_back(shipId);
         }
+    }
+
+    virtual void OnLightFlicker(
+        DurationShortLongType duration,
+        bool isUnderwater,
+        unsigned int size) override
+    {
+        mLightFlickerEvents[std::make_tuple(duration, isUnderwater)] += size;
     }
 
     //
@@ -220,6 +229,11 @@ public:
                 sink->OnSinkingBegin(shipId);
             }
 
+            for (auto const & entry : mLightFlickerEvents)
+            {
+                sink->OnLightFlicker(std::get<0>(entry.first), std::get<1>(entry.first), entry.second);
+            }
+
             for (auto const & entry : mBombExplosionEvents)
             {
                 sink->OnBombExplosion(std::get<0>(entry.first), entry.second);
@@ -242,6 +256,7 @@ public:
         mStressEvents.clear();
         mBreakEvents.clear();
         mSinkingBeginEvents.clear();
+        mLightFlickerEvents.clear();
         mBombExplosionEvents.clear();
         mRCBombPingEvents.clear();
         mTimerBombDefusedEvents.clear();
@@ -260,6 +275,7 @@ private:
     unordered_tuple_map<std::tuple<Material const *, bool>, unsigned int> mStressEvents;
     unordered_tuple_map<std::tuple<Material const *, bool>, unsigned int> mBreakEvents;
     std::vector<unsigned int> mSinkingBeginEvents;
+    unordered_tuple_map<std::tuple<DurationShortLongType, bool>, unsigned int> mLightFlickerEvents;
     unordered_tuple_map<std::tuple<bool>, unsigned int> mBombExplosionEvents;
     unordered_tuple_map<std::tuple<bool>, unsigned int> mRCBombPingEvents;
     unordered_tuple_map<std::tuple<bool>, unsigned int> mTimerBombDefusedEvents;

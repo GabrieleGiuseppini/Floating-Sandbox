@@ -141,8 +141,6 @@ public:
 
     inline bool IsDeleted(ElementIndex pointElementIndex) const
     {
-        assert(pointElementIndex < mElementCount);
-
         return mIsDeletedBuffer[pointElementIndex];
     }
 
@@ -152,8 +150,6 @@ public:
 
     inline Material const * GetMaterial(ElementIndex pointElementIndex) const
     {
-        assert(pointElementIndex < mElementCount);
-
         return mMaterialBuffer[pointElementIndex];
     }
 
@@ -163,15 +159,11 @@ public:
 
     vec2f const & GetPosition(ElementIndex pointElementIndex) const
     {
-        assert(pointElementIndex < mElementCount);
-
         return mPositionBuffer[pointElementIndex];
     }
 
     vec2f & GetPosition(ElementIndex pointElementIndex) 
     {
-        assert(pointElementIndex < mElementCount);
-
         return mPositionBuffer[pointElementIndex];
     }
 
@@ -182,15 +174,11 @@ public:
 
     vec2f const & GetVelocity(ElementIndex pointElementIndex) const
     {
-        assert(pointElementIndex < mElementCount);
-
         return mVelocityBuffer[pointElementIndex];
     }
 
     vec2f & GetVelocity(ElementIndex pointElementIndex)
     {
-        assert(pointElementIndex < mElementCount);
-
         return mVelocityBuffer[pointElementIndex];
     }
 
@@ -201,15 +189,11 @@ public:
 
     vec2f const & GetForce(ElementIndex pointElementIndex) const
     {
-        assert(pointElementIndex < mElementCount);
-
         return mForceBuffer[pointElementIndex];
     }
 
     vec2f & GetForce(ElementIndex pointElementIndex)
     {
-        assert(pointElementIndex < mElementCount);
-
         return mForceBuffer[pointElementIndex];
     }
 
@@ -220,8 +204,6 @@ public:
 
     vec2f const & GetIntegrationFactor(ElementIndex pointElementIndex) const
     {
-        assert(pointElementIndex < mElementCount);
-
         return mIntegrationFactorBuffer[pointElementIndex];
     }
 
@@ -232,8 +214,6 @@ public:
 
     float GetMass(ElementIndex pointElementIndex) const
     {
-        assert(pointElementIndex < mElementCount);
-
         return mMassBuffer[pointElementIndex];
     }
 
@@ -248,22 +228,16 @@ public:
 
     inline float GetBuoyancy(ElementIndex pointElementIndex) const
     {
-        assert(pointElementIndex < mElementCount);
-
         return mBuoyancyBuffer[pointElementIndex];
     }
 
     inline float GetWater(ElementIndex pointElementIndex) const
     {
-        assert(pointElementIndex < mElementCount);
-
         return mWaterBuffer[pointElementIndex];
     }
 
     inline float & GetWater(ElementIndex pointElementIndex)
     {
-        assert(pointElementIndex < mElementCount);
-
         return mWaterBuffer[pointElementIndex];
     }
 
@@ -285,15 +259,11 @@ public:
 
     inline bool IsLeaking(ElementIndex pointElementIndex) const
     {
-        assert(pointElementIndex < mElementCount);
-
         return mIsLeakingBuffer[pointElementIndex];
     }
 
     inline void SetLeaking(ElementIndex pointElementIndex)
     {
-        assert(pointElementIndex < mElementCount);
-
         mIsLeakingBuffer[pointElementIndex] = true;
     }
 
@@ -303,15 +273,11 @@ public:
 
     inline float GetLight(ElementIndex pointElementIndex) const
     {
-        assert(pointElementIndex < mElementCount);
-
         return mLightBuffer[pointElementIndex];
     }
 
     inline float & GetLight(ElementIndex pointElementIndex)
     {
-        assert(pointElementIndex < mElementCount);
-
         return mLightBuffer[pointElementIndex];
     }
 
@@ -321,25 +287,13 @@ public:
 
     inline auto const & GetConnectedSprings(ElementIndex pointElementIndex) const
     {
-        assert(pointElementIndex < mElementCount);
-
         return mNetworkBuffer[pointElementIndex].ConnectedSprings;
     }
-
-    // TODOTEST: fine to nuke?
-    ////inline auto & GetConnectedSprings(ElementIndex pointElementIndex) 
-    ////{
-    ////    assert(pointElementIndex < mElementCount);
-
-    ////    return mNetworkBuffer[pointElementIndex].ConnectedSprings;
-    ////}
 
     inline void AddConnectedSpring(
         ElementIndex pointElementIndex,
         ElementIndex springElementIndex)
     {
-        assert(pointElementIndex < mElementCount);
-
         mNetworkBuffer[pointElementIndex].ConnectedSprings.push_back(springElementIndex);
     }
 
@@ -347,8 +301,6 @@ public:
         ElementIndex pointElementIndex,
         ElementIndex springElementIndex)
     {
-        assert(pointElementIndex < mElementCount);
-        
         bool found = mNetworkBuffer[pointElementIndex].ConnectedSprings.erase_first(springElementIndex);
 
         assert(found);
@@ -357,25 +309,13 @@ public:
 
     inline auto const & GetConnectedTriangles(ElementIndex pointElementIndex) const
     {
-        assert(pointElementIndex < mElementCount);
-
         return mNetworkBuffer[pointElementIndex].ConnectedTriangles;
     }
-
-    // TODOTEST: fine to nuke?
-    ////inline auto & GetConnectedTriangles(ElementIndex pointElementIndex)
-    ////{
-    ////    assert(pointElementIndex < mElementCount);
-
-    ////    return mNetworkBuffer[pointElementIndex].ConnectedTriangles;
-    ////}
 
     inline void AddConnectedTriangle(
         ElementIndex pointElementIndex,
         ElementIndex triangleElementIndex)
     {
-        assert(pointElementIndex < mElementCount);
-
         mNetworkBuffer[pointElementIndex].ConnectedTriangles.push_back(triangleElementIndex);
     }
 
@@ -383,8 +323,6 @@ public:
         ElementIndex pointElementIndex,
         ElementIndex triangleElementIndex)
     {
-        assert(pointElementIndex < mElementCount);
-
         bool found = mNetworkBuffer[pointElementIndex].ConnectedTriangles.erase_first(triangleElementIndex);
 
         assert(found);
@@ -393,21 +331,8 @@ public:
 
     inline ElementIndex GetConnectedElectricalElement(ElementIndex pointElementIndex) const
     {
-        assert(pointElementIndex < mElementCount);
-
         return mNetworkBuffer[pointElementIndex].ConnectedElectricalElement;
     }
-
-    // TODO: NUKE
-    ////inline void SetConnectedElectricalElement(
-    ////    ElementIndex pointElementIndex,
-    ////    ElementIndex electricalElementIndex)
-    ////{
-    ////    assert(pointElementIndex < mElementCount);
-    ////    assert(NoneElementIndex == mNetworkBuffer[pointElementIndex].ConnectedElectricalElement);
-
-    ////    mNetworkBuffer[pointElementIndex].ConnectedElectricalElement = electricalElementIndex;
-    ////}
 
     //
     // Pinning
@@ -415,14 +340,11 @@ public:
 
     inline bool IsPinned(ElementIndex pointElementIndex) const
     {
-        assert(pointElementIndex < mElementCount);
-
         return mIsPinnedBuffer[pointElementIndex];
     }
 
     void Pin(ElementIndex pointElementIndex) 
     {
-        assert(pointElementIndex < mElementCount);
         assert(false == mIsPinnedBuffer[pointElementIndex]);
     
         mIsPinnedBuffer[pointElementIndex] = true;
@@ -434,7 +356,6 @@ public:
 
     void Unpin(ElementIndex pointElementIndex)
     {
-        assert(pointElementIndex < mElementCount);
         assert(true == mIsPinnedBuffer[pointElementIndex]);
     
         mIsPinnedBuffer[pointElementIndex] = false;
@@ -449,8 +370,6 @@ public:
 
     inline ConnectedComponentId GetConnectedComponentId(ElementIndex pointElementIndex) const
     {
-        assert(pointElementIndex < mElementCount);
-
         return mConnectedComponentIdBuffer[pointElementIndex];
     }
 
@@ -458,15 +377,11 @@ public:
         ElementIndex pointElementIndex,
         ConnectedComponentId connectedComponentId)
     { 
-        assert(pointElementIndex < mElementCount);
-
         mConnectedComponentIdBuffer[pointElementIndex] = connectedComponentId;
     }
 
     inline VisitSequenceNumber GetCurrentConnectedComponentDetectionVisitSequenceNumber(ElementIndex pointElementIndex) const
     {
-        assert(pointElementIndex < mElementCount);
-
         return mCurrentConnectedComponentDetectionVisitSequenceNumberBuffer[pointElementIndex];
     }
 
@@ -474,8 +389,6 @@ public:
         ElementIndex pointElementIndex,
         VisitSequenceNumber connectedComponentDetectionVisitSequenceNumber)
     { 
-        assert(pointElementIndex < mElementCount);
-
         mCurrentConnectedComponentDetectionVisitSequenceNumberBuffer[pointElementIndex] =
             connectedComponentDetectionVisitSequenceNumber;
     }

@@ -52,19 +52,10 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
     // Zero out our current
     mAvailableCurrentBuffer[electricalElementIndex] = 0.0f;
 
-    // TODOHERE: see notes: remove this code and add comment on Ship's DestroyHandlers
-    // Remove self from connected electrical elements
-    for (auto connectedElectricalElementIndex : GetConnectedElectricalElements(electricalElementIndex))
-    {
-        assert(!IsDeleted(connectedElectricalElementIndex));
-
-        RemoveConnectedElectricalElement(
-            connectedElectricalElementIndex,
-            electricalElementIndex);
-    }
-
-    // Our own connected electrical elements will go once the springs attached
-    // to the point that has been deleted, are also deleted
+    // Note: no need to remove self from connected electrical elements, as Ship's PointDestroyHandler,
+    // which is the caller of this Destroy(), has already destroyed the point's springs, hence
+    // this electrical element has no connected points anymore already and viceversa
+    assert(GetConnectedElectricalElements(electricalElementIndex).empty());
 
     // Invoke destroy handler
     if (!!mDestroyHandler)

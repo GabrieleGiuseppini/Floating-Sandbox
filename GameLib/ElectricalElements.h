@@ -90,8 +90,6 @@ public:
 
     inline bool IsDeleted(ElementIndex electricalElementIndex) const
     {
-        assert(electricalElementIndex < mElementCount);
-
         return mIsDeletedBuffer[electricalElementIndex];
     }
 
@@ -101,8 +99,6 @@ public:
 
     inline ElementIndex GetPointIndex(ElementIndex electricalElementIndex) const
     {
-        assert(electricalElementIndex < mElementCount);
-
         return mPointIndexBuffer[electricalElementIndex];
     }
 
@@ -112,8 +108,6 @@ public:
 
     inline Material::ElectricalProperties::ElectricalElementType GetType(ElementIndex electricalElementIndex) const
     {
-        assert(electricalElementIndex < mElementCount);
-
         return mTypeBuffer[electricalElementIndex];
     }
 
@@ -123,8 +117,6 @@ public:
 
     inline auto const & GetConnectedElectricalElements(ElementIndex electricalElementIndex) const
     {
-        assert(electricalElementIndex < mElementCount);
-
         return mConnectedElectricalElementsBuffer[electricalElementIndex];
     }
 
@@ -132,7 +124,6 @@ public:
         ElementIndex electricalElementIndex,
         ElementIndex connectedElectricalElementIndex)
     {
-        assert(electricalElementIndex < mElementCount);
         assert(connectedElectricalElementIndex < mElementCount);
 
         mConnectedElectricalElementsBuffer[electricalElementIndex].push_back(connectedElectricalElementIndex);
@@ -142,7 +133,6 @@ public:
         ElementIndex electricalElementIndex,
         ElementIndex connectedElectricalElementIndex)
     {
-        assert(electricalElementIndex < mElementCount);
         assert(connectedElectricalElementIndex < mElementCount);
 
         bool found = mConnectedElectricalElementsBuffer[electricalElementIndex].erase_first(connectedElectricalElementIndex);
@@ -157,8 +147,6 @@ public:
 
     inline float GetAvailableCurrent(ElementIndex electricalElementIndex) const
     {
-        assert(electricalElementIndex < mElementCount);
-
         return mAvailableCurrentBuffer[electricalElementIndex];
     }
 
@@ -168,8 +156,6 @@ public:
 
     inline VisitSequenceNumber GetCurrentConnectivityVisitSequenceNumber(ElementIndex electricalElementIndex) const
     {
-        assert(electricalElementIndex < mElementCount);
-
         return mCurrentConnectivityVisitSequenceNumberBuffer[electricalElementIndex];
     }
 
@@ -177,8 +163,6 @@ public:
         ElementIndex electricalElementIndex,
         VisitSequenceNumber connectivityVisitSequenceNumber)
     {
-        assert(electricalElementIndex < mElementCount);
-
         mCurrentConnectivityVisitSequenceNumberBuffer[electricalElementIndex] =
             connectivityVisitSequenceNumber;
     }

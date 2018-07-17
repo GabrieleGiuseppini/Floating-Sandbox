@@ -73,6 +73,11 @@ public:
 
     virtual void OnSinkingBegin(unsigned int shipId) override;
 
+    virtual void OnLightFlicker(
+        DurationShortLongType duration,
+        bool isUnderwater,
+        unsigned int size) override;
+
     virtual void OnBombPlaced(
         ObjectId bombId,
         BombType bombType,
@@ -111,6 +116,7 @@ private:
         PinPoint,
         UnpinPoint,
         Stress,
+        LightFlicker,
         BombAttached,
         BombDetached,
         RCBombPing,
@@ -140,6 +146,8 @@ private:
             return SoundType::UnpinPoint;
         else if (lstr == "stress")
             return SoundType::Stress;
+        else if (lstr == "lightflicker")
+            return SoundType::LightFlicker;
         else if (lstr == "bombattached")
             return SoundType::BombAttached;
         else if (lstr == "bombdetached")
@@ -193,6 +201,16 @@ private:
         MultipleSoundChoiceInfo()
             : SoundBuffers()
             , LastPlayedSoundIndex(0u)
+        {
+        }
+    };
+
+    struct SingleSoundInfo
+    {
+        std::unique_ptr<sf::SoundBuffer> SoundBuffer;
+
+        SingleSoundInfo()
+            : SoundBuffer()
         {
         }
     };
@@ -313,6 +331,12 @@ private:
         bool isUnderwater,
         float volume);
 
+    void PlayDslUSound(
+        SoundType soundType,
+        DurationShortLongType duration,
+        bool isUnderwater,
+        float volume);
+
     void PlayUSound(
         SoundType soundType,
         bool isUnderwater,
@@ -321,6 +345,11 @@ private:
     void ChooseAndPlaySound(
         SoundType soundType,
         MultipleSoundChoiceInfo & multipleSoundChoiceInfo,
+        float volume);
+
+    void PlaySound(        
+        SoundType soundType,
+        sf::SoundBuffer * soundBuffer,
         float volume);
 
     void ScavengeStoppedSounds();
@@ -357,6 +386,10 @@ private:
     unordered_tuple_map<
         std::tuple<SoundType, Material::SoundProperties::SoundElementType, SizeType, bool>,
         MultipleSoundChoiceInfo> mMSUSoundBuffers;
+
+    unordered_tuple_map<
+        std::tuple<SoundType, DurationShortLongType, bool>,
+        SingleSoundInfo> mDslUSoundBuffers;
 
     unordered_tuple_map<
         std::tuple<SoundType, bool>,

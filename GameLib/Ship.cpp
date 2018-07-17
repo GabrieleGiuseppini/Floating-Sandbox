@@ -1053,6 +1053,8 @@ void Ship::PointDestroyHandler(ElementIndex pointElementIndex)
     //
     // Destroy the connected electrical element, if any
     //
+    // Note: we rely on the fact that this happens after connected springs have been destroyed
+    //
 
     if (NoneElementIndex != mPoints.GetConnectedElectricalElement(pointElementIndex))
     {
@@ -1082,7 +1084,10 @@ void Ship::SpringDestroyHandler(
     mPoints.SetLeaking(pointAIndex);
     mPoints.SetLeaking(pointBIndex);
 
+    //
     // Destroy connected triangles
+    //
+
     if (destroyAllTriangles)
     {
         // We destroy all triangles connected to each endpoint
@@ -1094,9 +1099,35 @@ void Ship::SpringDestroyHandler(
         DestroyConnectedTriangles(pointAIndex, pointBIndex);
     }
 
+
+    //
     // Remove the spring from its endpoints
+    //
+
     mPoints.RemoveConnectedSpring(pointAIndex, springElementIndex);
     mPoints.RemoveConnectedSpring(pointBIndex, springElementIndex);
+
+
+    //
+    // If both endpoints are electrical elements, then disconnect them - i.e. remove
+    // them from each other's set of connected electrical elements
+    //
+
+    auto electricalElementAIndex = mPoints.GetConnectedElectricalElement(pointAIndex);
+    if (NoneElementIndex != electricalElementAIndex)
+    {
+        auto electricalElementBIndex = mPoints.GetConnectedElectricalElement(pointBIndex);
+        if (NoneElementIndex != electricalElementBIndex)
+        {
+            mElectricalElements.RemoveConnectedElectricalElement(
+                electricalElementAIndex,
+                electricalElementBIndex);
+            
+            mElectricalElements.RemoveConnectedElectricalElement(
+                electricalElementBIndex,
+                electricalElementAIndex);
+        }
+    }
 
     // Notify bombs
     mBombs.OnSpringDestroyed(springElementIndex);

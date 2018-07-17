@@ -5,8 +5,12 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GameException.h"
+#include "Utils.h"
+
 #include <cstdint>
 #include <limits>
+#include <string>
 
 /*
  * These types define the cardinality of elements in the ElementContainer.
@@ -62,3 +66,25 @@ enum class BombType
     TimerBomb,
     RCBomb
 };
+
+/*
+ * Generic duration enum - short and long.
+ */
+enum class DurationShortLongType
+{
+    Short,
+    Long
+};
+
+inline DurationShortLongType StrToDurationShortLongType(std::string const & str)
+{
+    std::string lstr = Utils::ToLower(str);
+
+    if (lstr == "short")
+        return DurationShortLongType::Short;
+    else if (lstr == "long")
+        return DurationShortLongType::Long;
+    else
+        throw GameException("Unrecognized DurationShortLongType \"" + str + "\"");
+}
+

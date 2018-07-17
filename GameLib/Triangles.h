@@ -103,8 +103,6 @@ public:
 
     inline bool IsDeleted(ElementIndex triangleElementIndex) const
     {
-        assert(triangleElementIndex < mElementCount);
-
         return mIsDeletedBuffer[triangleElementIndex];
     }
 
@@ -114,26 +112,18 @@ public:
 
     inline ElementIndex GetPointAIndex(ElementIndex triangleElementIndex) const
     {
-        assert(triangleElementIndex < mElementCount);
-
         return mEndpointsBuffer[triangleElementIndex].PointAIndex;
     }
 
     inline ElementIndex GetPointBIndex(ElementIndex triangleElementIndex) const
     {
-        assert(triangleElementIndex < mElementCount);
-
         return mEndpointsBuffer[triangleElementIndex].PointBIndex;
     }
 
     inline ElementIndex GetPointCIndex(ElementIndex triangleElementIndex) const
     {
-        assert(triangleElementIndex < mElementCount);
-
         return mEndpointsBuffer[triangleElementIndex].PointCIndex;
     }
-
-private:
 
 private:
 

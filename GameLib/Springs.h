@@ -189,8 +189,6 @@ public:
 
     inline bool IsDeleted(ElementIndex springElementIndex) const
     {
-        assert(springElementIndex < mElementCount);
-
         return mIsDeletedBuffer[springElementIndex];
     }
 
@@ -200,15 +198,11 @@ public:
 
     inline ElementIndex GetPointAIndex(ElementIndex springElementIndex) const
     {
-        assert(springElementIndex < mElementCount);
-
         return mEndpointsBuffer[springElementIndex].PointAIndex;
     }
 
     inline ElementIndex GetPointBIndex(ElementIndex springElementIndex) const
     {
-        assert(springElementIndex < mElementCount);
-
         return mEndpointsBuffer[springElementIndex].PointBIndex;
     }
 
@@ -216,8 +210,6 @@ public:
         ElementIndex springElementIndex,
         Points const & points) const
     {
-        assert(springElementIndex < mElementCount);
-
         return points.GetPosition(mEndpointsBuffer[springElementIndex].PointAIndex);
     }
 
@@ -225,8 +217,6 @@ public:
         ElementIndex springElementIndex,
         Points const & points) const
     {
-        assert(springElementIndex < mElementCount);
-
         return points.GetPosition(mEndpointsBuffer[springElementIndex].PointBIndex);
     }
 
@@ -234,8 +224,6 @@ public:
         ElementIndex springElementIndex,
         Points const & points) const
     {
-        assert(springElementIndex < mElementCount);
-
         return (GetPointAPosition(springElementIndex, points)
             + GetPointBPosition(springElementIndex, points)) / 2.0f;
     }
@@ -246,43 +234,31 @@ public:
 
     inline float GetStrength(ElementIndex springElementIndex) const
     {
-        assert(springElementIndex < mElementCount);
-
         return mStrengthBuffer[springElementIndex];
     }
 
     inline float GetStiffness(ElementIndex springElementIndex) const
     {
-        assert(springElementIndex < mElementCount);
-
         return mStiffnessBuffer[springElementIndex];
     }
 
     inline float GetRestLength(ElementIndex springElementIndex) const
     {
-        assert(springElementIndex < mElementCount);
-
         return mRestLengthBuffer[springElementIndex];
     }
 
     inline float GetStiffnessCoefficient(ElementIndex springElementIndex) const
     {
-        assert(springElementIndex < mElementCount);
-
         return mCoefficientsBuffer[springElementIndex].StiffnessCoefficient;
     }
 
     inline float GetDampingCoefficient(ElementIndex springElementIndex) const
     {
-        assert(springElementIndex < mElementCount);
-
         return mCoefficientsBuffer[springElementIndex].DampingCoefficient;
     }
 
     inline Material const * GetBaseMaterial(ElementIndex springElementIndex) const
     {
-        assert(springElementIndex < mElementCount);
-
         return mBaseMaterialBuffer[springElementIndex];
     }
 
@@ -295,8 +271,6 @@ public:
 
     inline float GetWaterPermeability(ElementIndex springElementIndex) const
     {
-        assert(springElementIndex < mElementCount);
-
         return mWaterPermeabilityBuffer[springElementIndex];
     }
     
@@ -306,8 +280,6 @@ public:
 
     inline bool IsBombAttached(ElementIndex springElementIndex) const
     {
-        assert(springElementIndex < mElementCount);
-
         return mIsBombAttachedBuffer[springElementIndex];
     }
 
@@ -316,7 +288,6 @@ public:
         Points & points,
         GameParameters const & gameParameters)
     {
-        assert(springElementIndex < mElementCount);
         assert(false == mIsBombAttachedBuffer[springElementIndex]);
 
         mIsBombAttachedBuffer[springElementIndex] = true;
@@ -338,7 +309,6 @@ public:
         ElementIndex springElementIndex,
         Points & points)
     {
-        assert(springElementIndex < mElementCount);
         assert(true == mIsBombAttachedBuffer[springElementIndex]);
 
         mIsBombAttachedBuffer[springElementIndex] = false;
