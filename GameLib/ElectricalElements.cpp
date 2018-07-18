@@ -94,7 +94,7 @@ void ElectricalElements::Update(
 void ElectricalElements::RunLampStateMachine(
     ElementIndex elementLampIndex,
     VisitSequenceNumber currentConnectivityVisitSequenceNumber,
-    GameParameters const & gameParameters)
+    GameParameters const & /*gameParameters*/)
 {
     if (mElementStateBuffer[elementLampIndex].Lamp.IsSelfPowered)
     {
@@ -110,10 +110,63 @@ void ElectricalElements::RunLampStateMachine(
         // Normal lamp, only on if visited, and controlled by flicker state machine
         //
 
-        // TODOTEST: flicker state machine is missing
-        mAvailableCurrentBuffer[elementLampIndex] =
-            (currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[elementLampIndex]) ?
-            1.0f : 0.0f;
+        switch (mElementStateBuffer[elementLampIndex].Lamp.State)
+        {
+            case ElementState::LampState::StateType::LightOn:
+            {
+                // Check whether we still have current
+                if (currentConnectivityVisitSequenceNumber != mCurrentConnectivityVisitSequenceNumberBuffer[elementLampIndex])
+                {
+                    // TODOHERE
+
+                    mAvailableCurrentBuffer[elementLampIndex] = 0.f;
+
+                    mGameEventHandler->OnLightFlicker(
+                        DurationShortLongType::Short,
+                        false,
+                        1);
+
+                    // Transition state
+                    mElementStateBuffer[elementLampIndex].Lamp.State = ElementState::LampState::StateType::LightOff;
+                }
+
+                break;
+            }
+
+            case ElementState::LampState::StateType::FlickerOn:
+            {
+                // TODO
+                break;
+            }
+
+            case ElementState::LampState::StateType::FlickerOff:
+            {
+                // TODO
+                break;
+            }
+
+            case ElementState::LampState::StateType::BetweenFlickerTrains:
+            {
+                // TODO
+                break;
+            }
+
+            case ElementState::LampState::StateType::LightOff:
+            {
+                assert(mAvailableCurrentBuffer[elementLampIndex] == 0.f);
+
+                // Check if current started flowing again, by any chance
+                if (currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[elementLampIndex])
+                {
+                    mAvailableCurrentBuffer[elementLampIndex] = 1.f;
+
+                    // Transition state
+                    mElementStateBuffer[elementLampIndex].Lamp.State = ElementState::LampState::StateType::LightOn;
+                }
+                
+                break;
+            }
+        }
     }
 }
 

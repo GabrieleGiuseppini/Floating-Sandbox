@@ -61,6 +61,8 @@ Prev perf (before point et al destructuring)
 				- Water size
 				- Land size
 				- Bombs sizes and offsets
+	- TODECIDE: Ship::Render() should take ShipRenderContext instead of RenderContext, and eventually RenderContext if really needed
+		- Can then get rid of forwards from RenderContext
 
 - Optimizations:	
 	- See if can avoid other IsDeleted checks, via zero'ing of coefficients
@@ -131,7 +133,14 @@ Prev perf (before point et al destructuring)
 	- Bug: bombs et al fade more rapidly than ship when ambient light goes away
 
 - Dynamics:
+	- 3rd type of bomb: anti-matter bomb
+		- [Do after texture json]
+		- When it explodes: first sucks everything in, then evertyhing out
+			- Controllable also via ultra-violent mode
+		- Requires ExplosionType argument at Ship::BlastHandler
 
+	- Bomb explosions: see if better done with forces
+		- At each explosion frame: radial forces, centered at center, strongest at radius=f(expl frame)
 	- Ephemeral Particles:
 		- Carve out room at tail of Points for ephemeral particles
 			- No need to mark as deleted to hide them
@@ -148,6 +157,7 @@ Prev perf (before point et al destructuring)
 						- TODO
 			- Smothering done by Ship (UpdateEphemeralParticles) as:
 				- TODO:
+				- TODO: why not by Points::UpdateEphemeralParticles() ?
 			- Points methods:
 				- TODO: create/kill, create has first overload that takes all the dynamics params, including Material, and
 				  type-specific params
@@ -155,7 +165,11 @@ Prev perf (before point et al destructuring)
 			- Points::UploadEphemeralParticles():
 				- (Ship)RenderContext::TODOHERE
 	- Do chainsaw sparkles with Ephemeral Particles
-		- At Ship::Chainsaw
+		- At Ship::Chainsaw for each broken spring
+		- Initial particle dynamics:
+			- Position: midpoint of spring
+			- Velocity: radial vector, according to pseudo-Gaussian centered in the direction of sawing, with magnitude uniformly random
+			- Number: per Update step: uniform random centered around SparkleDensity (ratio over 10, initially) (from GameParameters, adjustable)
 	- Test:
 		- Self-adjustment of kSpring and kDamp based off paper's formula (H and L bounds)
 		- Debug to see if bounds ever exceeded
@@ -274,18 +288,18 @@ Prev perf (before point et al destructuring)
 	+ class Lamp()
 		+ points to Point and Point points optionally to ElectricalElement (base abstract of Lamp, Cable, Generator)
 			+ ElectricalElement::GetType(){return mType;}: non-virtual, it's optimized by compiler
-	= Move electrical components to ElectricalElements class, an ElementContainer but also like bombs, with update and state machines
+	+ Move electrical components to ElectricalElements class, an ElementContainer but also like bombs, with update and state machines
 	  (but no render)
 		+ GameEventHandler and points members
 		+ Buffers (type, connected electrical elements, etc.)
 		+ AddCable/Lamp/...()		
-		= Destroy
-			= Removes self from connected
-				- OR NOT: If Ship::PointDestroyHandler deletes point's connected springs before point's electrical element,
+		+ Destroy
+			+ Removes self from connected
+				+ OR NOT: If Ship::PointDestroyHandler deletes point's connected springs before point's electrical element,
 				  then we can assert that electrical element has no connected points anymore already
 		+ Getters ("subset" section) for Lamps and Generators
-		- Update()
-			- Invoked by Ship
+		+ Update()
+			+ Invoked by Ship
 			+ For each lamp: runs its state machine 
 				+ Via RunLampStateMachine(LampState &)
 				+ Outcome: AvailableCurrent
@@ -302,11 +316,20 @@ Prev perf (before point et al destructuring)
 			+ See how it's done for points, springs, etc.
 	+ Nuke ElectricalElement, Cable, Generator, Lamp
 	+ Nuke unused Material electrical properties
-	- Ship::PointDestroyHandler:
-		- Destroy point's ElectricalElement, if any
-		- Do this after deleting springs, so that ElectricalElement::Destroy does not have to remove self from connected elements (see above)
-	- Ship::SpringDestroyHandler:
-		- Remove each endpoint's ElectricalElement (if any - both must be elec elems) from each other's ElectricalElement
+	+ Ship::PointDestroyHandler:
+		+ Destroy point's ElectricalElement, if any
+		+ Do this after deleting springs, so that ElectricalElement::Destroy does not have to remove self from connected elements (see above)
+	+ Ship::SpringDestroyHandler:
+		+ Remove each endpoint's ElectricalElement (if any - both must be elec elems) from each other's ElectricalElement
+	- GameJolt:
+		- Replace cover with real image?
+			- Do animated gif
+			- Add cover to media then
+	+ Move StrToDuration and includes to GameTypes.cpp
+	+ Move ElectricalElementIndex at Points to own buffer
+	- See continuous flicker sound
+		- Watch Titanic and other movies
+		- Requires bool at event
 	+ @Ship::Update():
 		+ New "inline" electrical section:
 			+ UpdateCurrentConnectivity():
@@ -316,58 +339,18 @@ Prev perf (before point et al destructuring)
 			+ DiffuseLight()
 				+ For each ElectricalElement::Lamp: 
 					+ Use its AvailableCurrent and set mLight 
-	- Do test with ship with passive lamp
 	- Implement full lamp state machine @ ElectricalElements::RunLampStateMachine
-		- EventHandler: OnLightFlicker(size, isUnderwater)
-		- Find 2 sounds ("electrical discharge" or "electric arc")
-			- And make them also underwater
+		+ EventHandler: OnLightFlicker(size, length, isUnderwater)
+		- Implement
+		= SoundController
+			= Find 2 sounds ("electrical discharge" or "electric arc")
+				- And make them also underwater
 	- Code improvements:
 		- See if makes sense to merge UpdateCurrentConnectivity() with connected components' graph visit
 	- Optimizations:
 		- Ship::DiffuseLight: see inverting nested loops (for each lamp: for each point)
 			- But requires first point light zeroing!
 
-	- THIS WAS OLD:
-	- Current Propagation Algo (Ship::UpdateCurrentConnectivity()):
-		+ create new generation seq number; if new is 0 => 1
-		- Consider adding a new "ConductsElectricity" buffer to Springs, set to true or false at Add() depending
-		  on whether or not both endpoints' materials have ConductsElectricity=true
-			- ConductsElectricity replaces all the other useless electrical properties
-			- This simplifies current connectivity graph visit
-			- Alternative is to check at visit time whether other endpoint has a non-None attached ElectricalElement index,
-			  but this means lots of useless cache misses for getting point's buffer content (only a small percentage of points
-			  have an ElectricalElement attached)
-		- ElectricalElement has SetVisited(curGen), bool IsVisited(curGen), operating on buffers
-		- @Ship::Update, electrical section: if mAreElementsDirty: invoke UpdateCurrentConnectivity()
-			- Visit whole electrical graph, as:
-			- For each generator point:
-				- if not visited=>flood all connected ElectricalElements (of any type) from here
-					- Only start from a generator if its wetness < threshold
-						- But still mark it as visited
-					- For each node: set to visited
-					- No need to have a visited set, just call ElElement->IsVisited(curGen)
-			- Then, lamps will be considered lighted if visited at this generation
-		- OLD: generators and cumulative current calculation:
-			- visit all generator points and count the points in their graphs; for each connected component:
-				- # nodes in component => current
-				- propagate from each of these points to all adjacent cables until light
-				- at a light: add up all incoming currents (compare seq number to decide whether to zero or not) 
-				  and then lower them by distance(==ohm), and then update gen number of lamp
-		- Then, ElectricalElements::Update(currentGenerationNumber)
-			- Calls Lamp->Update(currentGenerationNumber):
-				- TODO: draw state machine
-				- Looks at own (generationVisitNumber, state) and:
-					- Updates state
-					- Eventually starts flicker state machine:
-						+ Based off clock time, not simulation step
-						- iff: state==On and generationVisitNumber != current
-						- Invokes IGameEventHandler->OnLightFlicker()
-						- Sets gen_number = 0
-							- If revisited, state machine will transition to lighted again
-						- Flicker state machine is based off clock time, not simulation step
-							- Use random choices
-					- Sets own lightIntensity = f(generationVisitNumber, state, flicker state machine)
-		- Then, go ahead with DiffuseLight as now
 	+ Diffusion:
 		+ Can test it by itself, by using light material and by cheating with current!
 		+ After current propagation:

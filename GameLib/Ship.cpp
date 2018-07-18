@@ -1053,14 +1053,15 @@ void Ship::PointDestroyHandler(ElementIndex pointElementIndex)
     //
     // Destroy the connected electrical element, if any
     //
-    // Note: we rely on the fact that this happens after connected springs have been destroyed
+    // Note: we rely on the fact that this happens after connected springs have been destroyed, which
+    // ensures that the electrical element's set of connected electrical elements is empty
     //
 
-    if (NoneElementIndex != mPoints.GetConnectedElectricalElement(pointElementIndex))
+    if (NoneElementIndex != mPoints.GetElectricalElement(pointElementIndex))
     {
-        assert(!mElectricalElements.IsDeleted(mPoints.GetConnectedElectricalElement(pointElementIndex)));
+        assert(!mElectricalElements.IsDeleted(mPoints.GetElectricalElement(pointElementIndex)));
 
-        mElectricalElements.Destroy(mPoints.GetConnectedElectricalElement(pointElementIndex));
+        mElectricalElements.Destroy(mPoints.GetElectricalElement(pointElementIndex));
     }
 
     // Notify bombs
@@ -1113,10 +1114,10 @@ void Ship::SpringDestroyHandler(
     // them from each other's set of connected electrical elements
     //
 
-    auto electricalElementAIndex = mPoints.GetConnectedElectricalElement(pointAIndex);
+    auto electricalElementAIndex = mPoints.GetElectricalElement(pointAIndex);
     if (NoneElementIndex != electricalElementAIndex)
     {
-        auto electricalElementBIndex = mPoints.GetConnectedElectricalElement(pointBIndex);
+        auto electricalElementBIndex = mPoints.GetElectricalElement(pointBIndex);
         if (NoneElementIndex != electricalElementBIndex)
         {
             mElectricalElements.RemoveConnectedElectricalElement(

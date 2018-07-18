@@ -197,8 +197,20 @@ private:
         {
             bool const IsSelfPowered;
 
+            enum class StateType
+            {
+                LightOn,
+                FlickerOn,
+                FlickerOff,
+                BetweenFlickerTrains,
+                LightOff
+            };
+
+            StateType State;
+           
             LampState(bool isSelfPowered)
                 : IsSelfPowered(isSelfPowered)
+                , State(StateType::LightOff)
             {}
         };
 

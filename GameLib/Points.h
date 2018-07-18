@@ -40,10 +40,9 @@ private:
 
         FixedSizeVector<ElementIndex, 8U> ConnectedTriangles;
 
-        ElementIndex ConnectedElectricalElement;
-
-        Network(ElementIndex connectedElectricalElement)
-            : ConnectedElectricalElement(connectedElectricalElement)
+        Network()
+            : ConnectedSprings()
+            , ConnectedTriangles()
         {}
     };
 
@@ -70,6 +69,7 @@ public:
         , mWaterBuffer(elementCount)
         , mIsLeakingBuffer(elementCount)
         // Electrical dynamics
+        , mElectricalElementBuffer(elementCount)
         , mLightBuffer(elementCount)
         // Structure
         , mNetworkBuffer(elementCount)
@@ -271,6 +271,11 @@ public:
     // Electrical dynamics
     //
 
+    inline ElementIndex GetElectricalElement(ElementIndex pointElementIndex) const
+    {
+        return mElectricalElementBuffer[pointElementIndex];
+    }
+
     inline float GetLight(ElementIndex pointElementIndex) const
     {
         return mLightBuffer[pointElementIndex];
@@ -327,11 +332,6 @@ public:
 
         assert(found);
         (void)found;
-    }
-
-    inline ElementIndex GetConnectedElectricalElement(ElementIndex pointElementIndex) const
-    {
-        return mNetworkBuffer[pointElementIndex].ConnectedElectricalElement;
     }
 
     //
@@ -433,6 +433,9 @@ private:
     //
     // Electrical dynamics
     //
+
+    // Electrical element, when any
+    Buffer<ElementIndex> mElectricalElementBuffer;
 
     // Total illumination, 0.0->1.0
     Buffer<float> mLightBuffer;

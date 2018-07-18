@@ -19,6 +19,7 @@ set  (GAME_SOURCES
 	GameParameters.cpp
 	GameParameters.h	
 	GameRandomEngine.h
+	GameTypes.cpp
 	GameTypes.h
 	GameWallClock.h
 	IGameEventHandler.h

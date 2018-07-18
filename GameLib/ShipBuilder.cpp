@@ -678,7 +678,7 @@ ElectricalElements ShipBuilder::CreateElectricalElements(
     std::vector<ElementIndex> electricalElementPointIndices;
     for (auto pointIndex : points)
     {
-        if (NoneElementIndex != points.GetConnectedElectricalElement(pointIndex))
+        if (NoneElementIndex != points.GetElectricalElement(pointIndex))
         {
             electricalElementPointIndices.push_back(pointIndex);
         }
@@ -689,7 +689,7 @@ ElectricalElements ShipBuilder::CreateElectricalElements(
     //
 
     ElectricalElements electricalElements(
-        electricalElementPointIndices.size(),
+        static_cast<ElementCount>(electricalElementPointIndices.size()),
         parentWorld,
         gameEventHandler);
 
@@ -718,13 +718,13 @@ ElectricalElements ShipBuilder::CreateElectricalElements(
             if (pointAIndex != pointIndex)
             {
                 assert(springs.GetPointBIndex(springIndex) == pointIndex);
-                otherEndpointElectricalElement = points.GetConnectedElectricalElement(pointAIndex);                
+                otherEndpointElectricalElement = points.GetElectricalElement(pointAIndex);
             }
             else
             {
                 assert(springs.GetPointBIndex(springIndex) != pointIndex);
 
-                otherEndpointElectricalElement = points.GetConnectedElectricalElement(springs.GetPointBIndex(springIndex));
+                otherEndpointElectricalElement = points.GetElectricalElement(springs.GetPointBIndex(springIndex));
             }
 
             if (NoneElementIndex != otherEndpointElectricalElement)

@@ -5,9 +5,6 @@
 ***************************************************************************************/
 #pragma once
 
-#include "GameException.h"
-#include "Utils.h"
-
 #include <cstdint>
 #include <limits>
 #include <string>
@@ -76,15 +73,5 @@ enum class DurationShortLongType
     Long
 };
 
-inline DurationShortLongType StrToDurationShortLongType(std::string const & str)
-{
-    std::string lstr = Utils::ToLower(str);
-
-    if (lstr == "short")
-        return DurationShortLongType::Short;
-    else if (lstr == "long")
-        return DurationShortLongType::Long;
-    else
-        throw GameException("Unrecognized DurationShortLongType \"" + str + "\"");
-}
+DurationShortLongType StrToDurationShortLongType(std::string const & str);
 

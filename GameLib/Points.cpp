@@ -32,9 +32,10 @@ void Points::Add(
     mIsLeakingBuffer.emplace_back(false);
     mWaterBuffer.emplace_back(0.0f);
 
+    mElectricalElementBuffer.emplace_back(electricalElementIndex);
     mLightBuffer.emplace_back(0.0f);
 
-    mNetworkBuffer.emplace_back(electricalElementIndex);
+    mNetworkBuffer.emplace_back();
 
     mConnectedComponentIdBuffer.emplace_back(0u);
     mCurrentConnectedComponentDetectionVisitSequenceNumberBuffer.emplace_back(NoneVisitSequenceNumber);

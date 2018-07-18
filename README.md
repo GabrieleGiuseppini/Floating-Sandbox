@@ -20,11 +20,14 @@ There are lots of ideas that I'm currently working on; some of these are:
 - Waves and splashes originating from collisions with water
 - Sparkles when metal is sliced
 - Lights flickering and turning off when generators are wet or when electrical cables break
+- Anti-matter bomb
 - Multiple ships and collision detection among parts of the ships
 
 These and other ideas will come out with frequent releases.
 
 The game is also featured at [GameJolt](https://gamejolt.com/games/floating-sandbox/353572)!
+
+And a Youtube video is at [https://youtu.be/LkYAFKVdZec](https://youtu.be/LkYAFKVdZec).
 
 # Technical Details
 This game is a C++ implementation of a particular class of particle systems, namely a *mass-spring-damper* network. With a mass-spring-damper network it is possible to simulate a rigid body by decomposing it into a number of infinitesimal particles ("points"), which are linked to each other via spring-damper pairs. Springs help maintain the rigidity of the body, while dampers are mostly to maintain the numerical stability of the system.
@@ -94,3 +97,5 @@ The top of the main CMakeFiles.txt contains a section with hardcoded paths to th
 At this moment I'm looking for volunteers for two specific tasks: creating a "Ship Editor" for the game, and creating new ships. With the "Ship Editor" a user would be able to craft a ship from nothing, picking materials out of a dictionary, laying out ropes, and adjusting texture maps to the ship's structure. The UI would also provide feedback on the current buoyancy of the ship and its mass center. Contact me if you'd like to apply! 
 
 If you're more on the graphics side, instead, I'd like to collect your ships - and whatever other bodies you can imagine floating and sinking in water! Just send your ships to me and you'll get a proper *thank you* in the About dialog!
+
+Finally, I'm looking for builders for non-Windows platforms. I'll also gladly accept any code contributions that may be necessary to ensure the project builds on multiple platforms.
