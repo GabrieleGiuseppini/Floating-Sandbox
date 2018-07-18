@@ -500,6 +500,28 @@ void SettingsDialog::ReadSettings()
 {
     assert(!!mGameController);
 
+    mStiffnessSlider->SetValue(mGameController->GetStiffnessAdjustment());
+    
+    mStrengthSlider->SetValue(mGameController->GetStrengthAdjustment());
+    
+    mBuoyancySlider->SetValue(mGameController->GetBuoyancyAdjustment());
+    
+    mWaterPressureSlider->SetValue(mGameController->GetWaterPressureAdjustment());
+    
+    mWaveHeightSlider->SetValue(mGameController->GetWaveHeight());
+    
+    mWaterTransparencySlider->SetValue(mGameController->GetWaterTransparency());
+    
+    mLightDiffusionSlider->SetValue(mGameController->GetLightDiffusionAdjustment());
+    
+    mSeaDepthSlider->SetValue(mGameController->GetSeaDepth());
+    
+    mDestroyRadiusSlider->SetValue(mGameController->GetDestroyRadius());
+    
+    mBombBlastRadiusSlider->SetValue(mGameController->GetBombBlastRadius());
+
+
+
     mUltraViolentCheckBox->SetValue(mGameController->GetUltraViolentMode());
 
     mQuickWaterFixCheckBox->SetValue(mGameController->GetShowShipThroughWater());

@@ -59,7 +59,7 @@ struct GameParameters
 
 	float StrengthAdjustment;
 	static constexpr float MinStrengthAdjustment = 0.001f;
-	static constexpr float MaxStrengthAdjustment = 10.0f;
+	static constexpr float MaxStrengthAdjustment = 20.0f;
 
 	float BuoyancyAdjustment;
 	static constexpr float MinBuoyancyAdjustment = 0.0f;

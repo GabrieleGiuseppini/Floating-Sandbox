@@ -80,6 +80,6 @@ int LinearSliderCore::ValueToTick(float value) const
     }
     else
     {
-        return static_cast<int>(floorf((value - mValueAtTickZero) / mTickSize));
+        return static_cast<int>(floorf(value / mTickSize));
     }
 }

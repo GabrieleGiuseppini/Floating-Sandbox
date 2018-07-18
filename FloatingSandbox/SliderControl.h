@@ -42,6 +42,12 @@ public:
         return mSliderCore->TickToValue(mSlider->GetValue());
     }
 
+    void SetValue(float value)
+    {
+        mSlider->SetValue(mSliderCore->ValueToTick(value));
+        mTextCtrl->SetValue(std::to_string(value));
+    }
+
 private:
 
     void OnSliderScroll(wxScrollEvent & event);

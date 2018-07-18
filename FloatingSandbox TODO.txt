@@ -321,10 +321,6 @@ Prev perf (before point et al destructuring)
 		+ Do this after deleting springs, so that ElectricalElement::Destroy does not have to remove self from connected elements (see above)
 	+ Ship::SpringDestroyHandler:
 		+ Remove each endpoint's ElectricalElement (if any - both must be elec elems) from each other's ElectricalElement
-	- GameJolt:
-		- Replace cover with real image?
-			- Do animated gif
-			- Add cover to media then
 	+ Move StrToDuration and includes to GameTypes.cpp
 	+ Move ElectricalElementIndex at Points to own buffer
 	- See continuous flicker sound
@@ -958,6 +954,11 @@ IF WX:
 			+ Test:
 				+ Shift up and down detection
 	+ View control smoothing: test with restart from last target for faster convergence
+	+ Up MaxStrength
+	+ See why waves change when settings dialog is opened and closed
+		+ Problem with ocean depth: value on exit looks like current - min == 180
+		+ First of all, need to set slider ticks based on current values upon opening of dialog
+		+ Then, see if floor at linear control should be round
 
 + Gfx:
 	+ Do ropes with two endpoints (000xxx)

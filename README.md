@@ -94,7 +94,9 @@ You'll need the following libraries in order to build the game:
 The top of the main CMakeFiles.txt contains a section with hardcoded paths to these three libraries; you'll have to edit your CMakeFiles to match your environment.
 
 # Contributing
-At this moment I'm looking for volunteers for two specific tasks: creating a "Ship Editor" for the game, and creating new ships. With the "Ship Editor" a user would be able to craft a ship from nothing, picking materials out of a dictionary, laying out ropes, and adjusting texture maps to the ship's structure. The UI would also provide feedback on the current buoyancy of the ship and its mass center. Contact me if you'd like to apply! 
+At this moment I'm looking for volunteers for three specific tasks: creating a "Ship Editor" for the game, creating new ships, and building the game on non-Windows platforms.
+
+With the "Ship Editor" a user would be able to craft a ship from nothing, picking materials out of a dictionary, laying out ropes, and adjusting texture maps to the ship's structure. The UI would also provide feedback on the current buoyancy of the ship and its mass center. Contact me if you'd like to apply! You need to know C++ as most of the physics code you’ll use in the UI will come straight from the game’s core library.
 
 If you're more on the graphics side, instead, I'd like to collect your ships - and whatever other bodies you can imagine floating and sinking in water! Just send your ships to me and you'll get a proper *thank you* in the About dialog!
 
