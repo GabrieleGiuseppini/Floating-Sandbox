@@ -7,12 +7,16 @@
 
 #include "Buffer.h"
 #include "ElementContainer.h"
+#include "GameWallClock.h"
 #include "Material.h"
 
 #include <cassert>
+#include <chrono>
 #include <functional>
 #include <memory>
 #include <vector>
+
+using namespace std::chrono_literals;
 
 namespace Physics
 {
@@ -80,6 +84,7 @@ public:
 
     void Update(
         VisitSequenceNumber currentConnectivityVisitSequenceNumber,
+        Points const & points,
         GameParameters const & gameParameters);
 
 public:
@@ -199,18 +204,26 @@ private:
 
             enum class StateType
             {
+                Initial, // At ship load
                 LightOn,
-                FlickerOn,
-                FlickerOff,
-                BetweenFlickerTrains,
+                FlickerA,
+                FlickerB,
                 LightOff
             };
 
+            static constexpr auto FlickerStartInterval = 150ms;
+            static constexpr auto FlickerAInterval = 220ms;
+            static constexpr auto FlickerBInterval = 150ms;
+
             StateType State;
+            std::uint8_t FlickerCounter;
+            GameWallClock::time_point NextStateTransitionTimePoint;
            
             LampState(bool isSelfPowered)
                 : IsSelfPowered(isSelfPowered)
-                , State(StateType::LightOff)
+                , State(StateType::Initial)
+                , FlickerCounter(0u)
+                , NextStateTransitionTimePoint()
             {}
         };
 
@@ -236,7 +249,15 @@ private:
     void RunLampStateMachine(        
         ElementIndex elementLampIndex,
         VisitSequenceNumber currentConnectivityVisitSequenceNumber,
+        Points const & points,
         GameParameters const & gameParameters);
+
+    inline vec2f const & GetPosition(
+        ElementIndex elementLampIndex,
+        Points const & points) const
+    {
+        return points.GetPosition(mPointIndexBuffer[elementLampIndex]);
+    }
 
 private:
 

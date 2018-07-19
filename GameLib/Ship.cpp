@@ -286,6 +286,7 @@ void Ship::Update(
 
     mElectricalElements.Update(
         currentVisitSequenceNumber,
+        mPoints,
         gameParameters);
 
     DiffuseLight(gameParameters);
@@ -722,7 +723,7 @@ void Ship::LeakWater(GameParameters const & gameParameters)
     //
 
     if (!mIsSinking
-        && mTotalWater > static_cast<float>(mPoints.GetElementCount()) / 2.0f)
+        && mTotalWater > static_cast<float>(mPoints.GetElementCount()) / 1.5f)
     {
         // Started sinking
         mGameEventHandler->OnSinkingBegin(mId);

@@ -83,9 +83,10 @@ struct Material
         enum class SoundElementType
         {
             Cable,
+            ElectricalCable,
             Glass,
             Metal,            
-            Wood
+            Wood,            
         };
 
         static SoundElementType StrToSoundElementType(std::string const & str)
@@ -94,6 +95,8 @@ struct Material
 
             if (lstr == "cable")
                 return SoundElementType::Cable;
+            else if (lstr == "electricalcable")
+                return SoundElementType::ElectricalCable;
             else if (lstr == "glass")
                 return SoundElementType::Glass;
             else if (lstr == "metal")

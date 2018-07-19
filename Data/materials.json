@@ -2156,7 +2156,7 @@
 		"is_self_powered": false
 	},
 	"sound_properties": {
-		"element_type": "Cable"
+		"element_type": "ElectricalCable"
 	}
     }
 ]

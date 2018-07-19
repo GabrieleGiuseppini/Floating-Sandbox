@@ -209,6 +209,9 @@ Prev perf (before point et al destructuring)
 		- Runge-Kutta
 		- Semi-implicit Euler (https://www.scss.tcd.ie/Michael.Manzke/CS7057/cs7057-1516-14-MassSpringSystems-mm.pdf)
 	- Water:
+		- See if can make water more mobile (for gravity), without though drying up water that just entered
+			- Increase quantity that gets gravitated, and also make sure that last step of water dynamics
+			  is a LeakWater (so that just-entered water is visible for a while)
 		- Test forcing incoming water @ LeakWater to be max 1.0
 		- Sinking detection is broken - it currently only considers total water that entered the ship, which comes proportionally to external
 		  water pressure; all this water could be confined to a tiny volume, and yet we trigger sinking
@@ -323,9 +326,6 @@ Prev perf (before point et al destructuring)
 		+ Remove each endpoint's ElectricalElement (if any - both must be elec elems) from each other's ElectricalElement
 	+ Move StrToDuration and includes to GameTypes.cpp
 	+ Move ElectricalElementIndex at Points to own buffer
-	- See continuous flicker sound
-		- Watch Titanic and other movies
-		- Requires bool at event
 	+ @Ship::Update():
 		+ New "inline" electrical section:
 			+ UpdateCurrentConnectivity():
@@ -337,8 +337,15 @@ Prev perf (before point et al destructuring)
 					+ Use its AvailableCurrent and set mLight 
 	- Implement full lamp state machine @ ElectricalElements::RunLampStateMachine
 		+ EventHandler: OnLightFlicker(size, length, isUnderwater)
-		- Implement
+		+ Update() takes Points (for underwater)
+		= Implement
+			- TO CONSIDER: See continuous flicker sound
+				+ Watch Titanic and other movies
+				- Requires bool at event
+
 		= SoundController
+			- Add new sound for electrical cable
+				- 2 X random, X 2 underwater
 			= Find 2 sounds ("electrical discharge" or "electric arc")
 				- And make them also underwater
 	- Code improvements:

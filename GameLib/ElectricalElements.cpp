@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "Physics.h"
 
+#include "GameRandomEngine.h"
+
 namespace Physics {
 
 void ElectricalElements::Add(
@@ -69,6 +71,7 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
 
 void ElectricalElements::Update(
     VisitSequenceNumber currentConnectivityVisitSequenceNumber,
+    Points const & points,
     GameParameters const & gameParameters)
 {
     //
@@ -82,6 +85,7 @@ void ElectricalElements::Update(
             RunLampStateMachine(
                 iLamp,
                 currentConnectivityVisitSequenceNumber,
+                points,
                 gameParameters);
         }
         else
@@ -94,6 +98,7 @@ void ElectricalElements::Update(
 void ElectricalElements::RunLampStateMachine(
     ElementIndex elementLampIndex,
     VisitSequenceNumber currentConnectivityVisitSequenceNumber,
+    Points const & points,
     GameParameters const & /*gameParameters*/)
 {
     if (mElementStateBuffer[elementLampIndex].Lamp.IsSelfPowered)
@@ -110,44 +115,161 @@ void ElectricalElements::RunLampStateMachine(
         // Normal lamp, only on if visited, and controlled by flicker state machine
         //
 
+        auto const now = GameWallClock::GetInstance().Now();
+
         switch (mElementStateBuffer[elementLampIndex].Lamp.State)
         {
-            case ElementState::LampState::StateType::LightOn:
+            case ElementState::LampState::StateType::Initial:
             {
-                // Check whether we still have current
-                if (currentConnectivityVisitSequenceNumber != mCurrentConnectivityVisitSequenceNumberBuffer[elementLampIndex])
+                // Check whether we have current
+                if (currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[elementLampIndex])
                 {
-                    // TODOHERE
-
+                    // Transition to ON
+                    mAvailableCurrentBuffer[elementLampIndex] = 1.f;
+                    mElementStateBuffer[elementLampIndex].Lamp.State = ElementState::LampState::StateType::LightOn;
+                }
+                else
+                {
+                    // Transition to OFF
                     mAvailableCurrentBuffer[elementLampIndex] = 0.f;
-
-                    mGameEventHandler->OnLightFlicker(
-                        DurationShortLongType::Short,
-                        false,
-                        1);
-
-                    // Transition state
                     mElementStateBuffer[elementLampIndex].Lamp.State = ElementState::LampState::StateType::LightOff;
                 }
 
                 break;
             }
 
-            case ElementState::LampState::StateType::FlickerOn:
+            case ElementState::LampState::StateType::LightOn:
             {
-                // TODO
+                // Check whether we still have current
+                if (currentConnectivityVisitSequenceNumber != mCurrentConnectivityVisitSequenceNumberBuffer[elementLampIndex])
+                {
+                    //
+                    // Start flicker state machine
+                    //
+
+                    mAvailableCurrentBuffer[elementLampIndex] = 0.f;
+
+                    // Transition state, choose whether to A or B
+                    mElementStateBuffer[elementLampIndex].Lamp.FlickerCounter = 0u;
+                    mElementStateBuffer[elementLampIndex].Lamp.NextStateTransitionTimePoint = now + ElementState::LampState::FlickerStartInterval;
+                    if (GameRandomEngine::GetInstance().Choose(2) == 0)
+                        mElementStateBuffer[elementLampIndex].Lamp.State = ElementState::LampState::StateType::FlickerA;
+                    else
+                        mElementStateBuffer[elementLampIndex].Lamp.State = ElementState::LampState::StateType::FlickerB;                            
+                }
+
                 break;
             }
 
-            case ElementState::LampState::StateType::FlickerOff:
+            case ElementState::LampState::StateType::FlickerA:
             {
-                // TODO
+                // Check if current started flowing again, by any chance
+                if (currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[elementLampIndex])
+                {
+                    mAvailableCurrentBuffer[elementLampIndex] = 1.f;
+
+                    // Transition state
+                    mElementStateBuffer[elementLampIndex].Lamp.State = ElementState::LampState::StateType::LightOn;
+                }
+                else if (now > mElementStateBuffer[elementLampIndex].Lamp.NextStateTransitionTimePoint)
+                {
+                    ++mElementStateBuffer[elementLampIndex].Lamp.FlickerCounter;
+
+                    if (1 == mElementStateBuffer[elementLampIndex].Lamp.FlickerCounter
+                        || 3 == mElementStateBuffer[elementLampIndex].Lamp.FlickerCounter)
+                    { 
+                        // Flicker to on, for a short time
+
+                        mAvailableCurrentBuffer[elementLampIndex] = 1.f;
+
+                        mGameEventHandler->OnLightFlicker(
+                            DurationShortLongType::Short,
+                            mParentWorld.IsUnderwater(GetPosition(elementLampIndex, points)),
+                            1);
+
+                        mElementStateBuffer[elementLampIndex].Lamp.NextStateTransitionTimePoint = now + ElementState::LampState::FlickerAInterval;
+                    }
+                    else if (2 == mElementStateBuffer[elementLampIndex].Lamp.FlickerCounter)
+                    {
+                        // Flicker to off, for a short time
+
+                        mAvailableCurrentBuffer[elementLampIndex] = 0.f;
+
+                        mElementStateBuffer[elementLampIndex].Lamp.NextStateTransitionTimePoint = now + ElementState::LampState::FlickerAInterval;
+                    }
+                    else
+                    {
+                        assert(4 == mElementStateBuffer[elementLampIndex].Lamp.FlickerCounter);
+
+                        // Transition to off for good
+                        mAvailableCurrentBuffer[elementLampIndex] = 0.f;
+                        mElementStateBuffer[elementLampIndex].Lamp.State = ElementState::LampState::StateType::LightOff;
+                    }
+                }
+
                 break;
             }
 
-            case ElementState::LampState::StateType::BetweenFlickerTrains:
+            case ElementState::LampState::StateType::FlickerB:
             {
-                // TODO
+                // Check if current started flowing again, by any chance
+                if (currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[elementLampIndex])
+                {
+                    mAvailableCurrentBuffer[elementLampIndex] = 1.f;
+
+                    // Transition state
+                    mElementStateBuffer[elementLampIndex].Lamp.State = ElementState::LampState::StateType::LightOn;
+                }
+                else if (now > mElementStateBuffer[elementLampIndex].Lamp.NextStateTransitionTimePoint)
+                {
+                    ++mElementStateBuffer[elementLampIndex].Lamp.FlickerCounter;
+
+                    if (1 == mElementStateBuffer[elementLampIndex].Lamp.FlickerCounter
+                        || 5 == mElementStateBuffer[elementLampIndex].Lamp.FlickerCounter)
+                    {
+                        // Flicker to on, for a short time
+
+                        mAvailableCurrentBuffer[elementLampIndex] = 1.f;
+
+                        mGameEventHandler->OnLightFlicker(
+                            DurationShortLongType::Short,
+                            mParentWorld.IsUnderwater(GetPosition(elementLampIndex, points)),
+                            1);
+
+                        mElementStateBuffer[elementLampIndex].Lamp.NextStateTransitionTimePoint = now + ElementState::LampState::FlickerBInterval;
+                    }
+                    else if (2 == mElementStateBuffer[elementLampIndex].Lamp.FlickerCounter
+                            || 4 == mElementStateBuffer[elementLampIndex].Lamp.FlickerCounter)
+                    {
+                        // Flicker to off, for a short time
+
+                        mAvailableCurrentBuffer[elementLampIndex] = 0.f;
+
+                        mElementStateBuffer[elementLampIndex].Lamp.NextStateTransitionTimePoint = now + ElementState::LampState::FlickerBInterval;
+                    }
+                    else if (3 == mElementStateBuffer[elementLampIndex].Lamp.FlickerCounter)
+                    {
+                        // Flicker to on, for a longer time
+
+                        mAvailableCurrentBuffer[elementLampIndex] = 1.f;
+
+                        mGameEventHandler->OnLightFlicker(
+                            DurationShortLongType::Long,
+                            mParentWorld.IsUnderwater(GetPosition(elementLampIndex, points)),
+                            1);
+
+                        mElementStateBuffer[elementLampIndex].Lamp.NextStateTransitionTimePoint = now + 2 * ElementState::LampState::FlickerBInterval;
+                    }
+                    else
+                    {
+                        assert(6 == mElementStateBuffer[elementLampIndex].Lamp.FlickerCounter);
+
+                        // Transition to off for good
+                        mAvailableCurrentBuffer[elementLampIndex] = 0.f;
+                        mElementStateBuffer[elementLampIndex].Lamp.State = ElementState::LampState::StateType::LightOff;
+                    }
+                }
+
                 break;
             }
 
@@ -160,10 +282,15 @@ void ElectricalElements::RunLampStateMachine(
                 {
                     mAvailableCurrentBuffer[elementLampIndex] = 1.f;
 
+                    mGameEventHandler->OnLightFlicker(
+                        DurationShortLongType::Short,
+                        mParentWorld.IsUnderwater(GetPosition(elementLampIndex, points)),
+                        1);
+
                     // Transition state
                     mElementStateBuffer[elementLampIndex].Lamp.State = ElementState::LampState::StateType::LightOn;
                 }
-                
+
                 break;
             }
         }
