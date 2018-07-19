@@ -211,9 +211,9 @@ private:
                 LightOff
             };
 
-            static constexpr auto FlickerStartInterval = 150ms;
-            static constexpr auto FlickerAInterval = 220ms;
-            static constexpr auto FlickerBInterval = 150ms;
+            static constexpr auto FlickerStartInterval = 100ms;
+            static constexpr auto FlickerAInterval = 150ms;
+            static constexpr auto FlickerBInterval = 100ms;
 
             StateType State;
             std::uint8_t FlickerCounter;

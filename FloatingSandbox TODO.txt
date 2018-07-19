@@ -218,7 +218,7 @@ Prev perf (before point et al destructuring)
 			- Option 1: make it based on total number of points that have water instead, i.e. wet points
 				- ...which requires Points to keep track of point's water going from 0.0 to > 0.0, at all possible
 				  avenues of change (LeakWater, BalancePressure, etc.)
-				- Or can just be calculated at end of each update with simple pass through water buffer
+				- Or can just be calculated at end of each update with simple pass through water buffer and state buffer
 			- Option 2: make it based on total number of points whose Y is underwater
 				- Could be done @ Ship::UpdatePoint() when the count of underwater points reaches threshold for the first time
 					- Just reset count before loop
@@ -259,8 +259,9 @@ Prev perf (before point et al destructuring)
 	- Water rushing-in
 		- Continuously-playing sound
 		- Volume time-interpolated off total quantity of water that entered ships during step
-			- Communicated via new event
-			- Volume = -1/(Qw+1) + 1
+			- Communicated via new event - OnWaterRushedIn(total_water_quantity)
+			- Volume = 100 * ( -1/(Qw+1) + 1 )
+				- Qw = some scaled version of total_water_quantity
 
 - Histograms:
 	- class Histogram
@@ -268,18 +269,20 @@ Prev perf (before point et al destructuring)
 	- class Statistics (various Histograms, etc.)
 		- Histogram pointWaterHistogram
 		- ...
-	- World::GetStatistics() -> Statistics
-		- Visits all points across ships, no need to merge histograms
-		- Exposed by GameController as well
+	- Somehow World::Update is "injected" a StatisticsProbe when needed
+		- The probe might contain radius
+		- When injected, world and ship update stats into it by invoking various methods for various statistics points, 
+		  e.g. StatisticsProbe::ProbePointForces(Points const &)
 	- StatisticsDialog
 		- Pre-created member of MainFrame
 			- Has GameController
 		- Shown depending on menu (like LoggingDialog)
-		- exposes Update() invoked by MainFrame, always, after simulation step
+		- Controls create and program the StatisticsProbe that is then injected into World
+		- Then exposes Update() invoked by MainFrame, always, after simulation step
 		- Update(): 
 			- if not visible, return;
-			- Get and draw Statistics
-				- Histogram control (panel? Check wx literature)
+			- Draw current Statistics from current StatisticsProbe
+				- Histogram control and various other controls
 
 - Lights
 	+ need Optional()
@@ -335,22 +338,18 @@ Prev perf (before point et al destructuring)
 			+ DiffuseLight()
 				+ For each ElectricalElement::Lamp: 
 					+ Use its AvailableCurrent and set mLight 
-	- Implement full lamp state machine @ ElectricalElements::RunLampStateMachine
+	= Implement full lamp state machine @ ElectricalElements::RunLampStateMachine
 		+ EventHandler: OnLightFlicker(size, length, isUnderwater)
 		+ Update() takes Points (for underwater)
 		= Implement
-			- TO CONSIDER: See continuous flicker sound
-				+ Watch Titanic and other movies
-				- Requires bool at event
-
 		= SoundController
 			- Add new sound for electrical cable
 				- 2 X random, X 2 underwater
 			= Find 2 sounds ("electrical discharge" or "electric arc")
 				- And make them also underwater
-	- Code improvements:
-		- See if makes sense to merge UpdateCurrentConnectivity() with connected components' graph visit
+				- Lower volume of overwater ones
 	- Optimizations:
+		- Take perf analysis of circuit test 1
 		- Ship::DiffuseLight: see inverting nested loops (for each lamp: for each point)
 			- But requires first point light zeroing!
 
