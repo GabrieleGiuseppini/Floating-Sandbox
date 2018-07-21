@@ -219,8 +219,8 @@ void Ship::Update(
     // Process eventual parameter changes
     //
 
-    mSprings.SetStiffnessAdjustment(
-        gameParameters.StiffnessAdjustment, 
+    mSprings.UpdateGameParameters(
+        gameParameters, 
         mPoints);
 
 
@@ -265,11 +265,30 @@ void Ship::Update(
     // Update water dynamics
     //
 
-    LeakWater(gameParameters);
+    // Take water
+    float waterTaken = 0.f;
+    LeakWater(gameParameters, waterTaken);
 
+    // Notify
+    mGameEventHandler->OnWaterTaken(waterTaken);
+
+    // Update total water taken
+    mTotalWater += waterTaken;
+
+    // Check whether we've started sinking
+    if (!mIsSinking
+        && mTotalWater > static_cast<float>(mPoints.GetElementCount()) / 1.5f)
+    {
+        // Started sinking
+        mGameEventHandler->OnSinkingBegin(mId);
+        mIsSinking = true;
+    }
+
+    // Balance pressure
     for (int i = 0; i < 4; i++)
         BalancePressure(gameParameters);
 
+    // Balance pressure and gravitate water
     for (int i = 0; i < 4; i++)
     {
         BalancePressure(gameParameters);
@@ -691,43 +710,40 @@ void Ship::DetectConnectedComponents(VisitSequenceNumber currentVisitSequenceNum
     }
 }
 
-void Ship::LeakWater(GameParameters const & gameParameters)
+void Ship::LeakWater(
+    GameParameters const & gameParameters,
+    float & waterTaken)
 {
+    // Magic number
+    float const effectivePressureAdjustment = 0.1f * gameParameters.WaterPressureAdjustment;
+
+    //
+    // Inject water into all the leaking nodes that are underwater, 
+    // provided the external pressure is larger than the internal water pressure
+    // of the node
+    //
+
     for (auto pointIndex : mPoints)
     {
-        //
-        // Stuff some water into all the leaking nodes that are underwater, 
-        // if the external pressure is larger
-        //
-
-        if (mPoints.IsLeaking(pointIndex))
+        // Avoid updating water taken for points that are destroyed
+        if (!mPoints.IsDeleted(pointIndex))
         {
-            float waterLevel = mParentWorld.GetWaterHeightAt(mPoints.GetPosition(pointIndex).x);
-
-            float const externalWaterPressure = mPoints.GetExternalWaterPressure(
-                pointIndex,
-                waterLevel,
-                gameParameters) * gameParameters.WaterPressureAdjustment;
-
-            if (externalWaterPressure > mPoints.GetWater(pointIndex))
+            if (mPoints.IsLeaking(pointIndex))
             {
-                float newWater = GameParameters::SimulationStepTimeDuration<float> * (externalWaterPressure - mPoints.GetWater(pointIndex));
-                mPoints.GetWater(pointIndex) += newWater;
-                mTotalWater += newWater;
+                float waterLevel = mParentWorld.GetWaterHeightAt(mPoints.GetPosition(pointIndex).x);
+
+                float const externalWaterPressure = mPoints.GetExternalWaterPressure(
+                    pointIndex,
+                    waterLevel) * effectivePressureAdjustment;
+
+                if (externalWaterPressure > mPoints.GetWater(pointIndex))
+                {
+                    float newWater = GameParameters::SimulationStepTimeDuration<float> * (externalWaterPressure - mPoints.GetWater(pointIndex));
+                    mPoints.GetWater(pointIndex) += newWater;
+                    waterTaken += newWater;
+                }
             }
         }
-    }
-
-    //
-    // Check whether we've started sinking
-    //
-
-    if (!mIsSinking
-        && mTotalWater > static_cast<float>(mPoints.GetElementCount()) / 1.5f)
-    {
-        // Started sinking
-        mGameEventHandler->OnSinkingBegin(mId);
-        mIsSinking = true;
     }
 }
 

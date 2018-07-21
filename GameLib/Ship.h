@@ -121,7 +121,9 @@ public:
 
     void DetectConnectedComponents(VisitSequenceNumber currentVisitSequenceNumber);
 
-    void LeakWater(GameParameters const & gameParameters);
+    void LeakWater(
+        GameParameters const & gameParameters,
+        float & waterTaken);
 
     void GravitateWater(GameParameters const & gameParameters);
 

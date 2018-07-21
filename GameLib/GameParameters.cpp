@@ -8,13 +8,10 @@
 #include "GameParameters.h"
 
 GameParameters::GameParameters()
-    : Gravity(0.0f, -9.80f)
-    , GravityNormal(Gravity.normalise())
-    , GravityMagnitude(Gravity.length())
-    , StiffnessAdjustment(1.0f)
+    : StiffnessAdjustment(1.0f)
     , StrengthAdjustment(1.0f)
     , BuoyancyAdjustment(1.0f)
-    , WaterPressureAdjustment(1.625f)
+    , WaterPressureAdjustment(1.0f)
     , WaveHeight(2.5f)
     , SeaDepth(200.0f)
     , DestroyRadius(0.75f)

@@ -49,6 +49,7 @@ Prev perf (before point et al destructuring)
 
 - Ships
 	- Warship
+	- Cruise liner with generators and lamps
 	- See Moleskine
 
 - Technical Debt:
@@ -77,16 +78,6 @@ Prev perf (before point et al destructuring)
 	- Split Spring::WaterPermeability in two, with pre-calculated values:
 		- WaterGravitationFactor
 		- WaterPropagationFactor
-	- GravitateWater:
-		- Calculate once and for all cos theta's at first iteration
-			- !!! Actually, calculate WaterGravityFactorA = dt*0.6*(1+cos_theta)/2, WaterGravityFactorB = -dt*0.6*(1-cos_theta)/2
-				float cos_theta_select = (1.0f + cos_theta) / 2.0f;
-		                float correction = 0.60f * cos_theta_select * pointA->GetWater() - 0.60f * (1.0f - cos_theta_select) * pointB->GetWater();
-		                correction *= GameParameters::SimulationStepTimeDuration<float>;
-			- Test (check disassembly) with templated lambda (Spring const &)->void
-				- First one calculates factors and stores them in Spring
-				- All others empty
-				- All iters take factors from Spring after calling lambda
 	- If SSE2 works, see if can parallelize also:
 		- BalancePressure, GravitateWater, SpringDynamics
 			- See shuffled loading and storing of 4 arbitrary floats in ETH deck
@@ -163,7 +154,7 @@ Prev perf (before point et al destructuring)
 				  type-specific params
 		- Rendering:
 			- Points::UploadEphemeralParticles():
-				- (Ship)RenderContext::TODOHERE
+				- (Ship)RenderContext::TODO
 	- Do chainsaw sparkles with Ephemeral Particles
 		- At Ship::Chainsaw for each broken spring
 		- Initial particle dynamics:
@@ -208,37 +199,56 @@ Prev perf (before point et al destructuring)
 	- Experiment with:
 		- Runge-Kutta
 		- Semi-implicit Euler (https://www.scss.tcd.ie/Michael.Manzke/CS7057/cs7057-1516-14-MassSpringSystems-mm.pdf)
-	- Water:
-		- See if can make water more mobile (for gravity), without though drying up water that just entered
-			- Increase quantity that gets gravitated, and also make sure that last step of water dynamics
-			  is a LeakWater (so that just-entered water is visible for a while)
-		- Test forcing incoming water @ LeakWater to be max 1.0
-		- Sinking detection is broken - it currently only considers total water that entered the ship, which comes proportionally to external
-		  water pressure; all this water could be confined to a tiny volume, and yet we trigger sinking
-			- Option 1: make it based on total number of points that have water instead, i.e. wet points
-				- ...which requires Points to keep track of point's water going from 0.0 to > 0.0, at all possible
-				  avenues of change (LeakWater, BalancePressure, etc.)
-				- Or can just be calculated at end of each update with simple pass through water buffer and state buffer
-			- Option 2: make it based on total number of points whose Y is underwater
-				- Could be done @ Ship::UpdatePoint() when the count of underwater points reaches threshold for the first time
-					- Just reset count before loop
-				- HOWEVER: a big part of the ship could be below water but dry...
-				- So: should try a combination of current mTotalWater and 3/4ths of points below water
-		+ Did original game propagate water also through hull springs? YES. How did hull thin dividers work? THEY DIDN'T WORK
-		+ Add Point::Hull Characteristic, and don't leak/propagate(incl. gravitate) water if at least one of the two points is hull			
-			+ Alternatively: just make a spring hull if one point is hull; test it
-		- BalancePressure: see if shouldn't average water among two points - do we lose waves if we do so?
-		- BalancePressure: use gradient, it seems we stuff too much water into points with already too much water
-		- GravitateWater: try inverse visit (from H to L)
-			- Requires PointerVector::rbegin,rend
-		- Try directional BalancePressure?
-		- Make waves with Shallow Water Equations plus breaking waves
-			- And if frontier works, change height when frontier touches water for the first time
 	- DestroyAt:
 		- Test: Ship::SpringDestroyHandler() only destroys triangles that contain A-B
 			- Should definitely make both A and B leak, as they both now have an adjacent hole
-		
+
+- Water:
+	+ Rush sound: should water rush sound be more....rushy?
+	- Optimizations:
+		- Ship::LeakWater: 
+			- Check assembly
+			- Incorporate isDeleted and coefficients into Points::ExternalWaterPermeability
+				- Maintain IsLeaking
+			- If OK, do also update at Points::UpdateGameParameters(.)
+				- Test with also IsLeaking, no ifs in loop
+		- GravitateWater:
+			- Calculate once and for all cos theta's at first iteration
+				- !!! Actually, calculate WaterGravityFactorA = dt*0.6*(1+cos_theta)/2, WaterGravityFactorB = -dt*0.6*(1-cos_theta)/2
+					float cos_theta_select = (1.0f + cos_theta) / 2.0f;
+			                float correction = 0.60f * cos_theta_select * pointA->GetWater() - 0.60f * (1.0f - cos_theta_select) * pointB->GetWater();
+			                correction *= GameParameters::SimulationStepTimeDuration<float>;
+				- Test (check disassembly) with templated lambda (Spring const &)->void
+					- First one calculates factors and stores them in Spring
+					- All others empty
+					- All iters take factors from Spring after calling lambda
+
+	- See if can make water more mobile (for gravity), without though drying up water that just entered
+		- Increase quantity that gets gravitated, and also make sure that last step of water dynamics
+		  is a LeakWater (so that just-entered water is visible for a while)
+	- Test forcing incoming water @ LeakWater to be max 1.0
+	- Sinking detection is broken - it currently only considers total water that entered the ship, which comes proportionally to external
+	  water pressure; all this water could be confined to a tiny volume, and yet we trigger sinking
+		- Solution: make it based on total number of points that have water instead, i.e. wet points
+			- ...which requires Points to keep track of point's water going from 0.0 to > 0.0, at all possible
+			  avenues of change (LeakWater, BalancePressure, etc.)
+			- Or can just be calculated at end of each update with simple pass through water buffer and state buffer
+				- Better, done only once
+	+ Did original game propagate water also through hull springs? YES. How did hull thin dividers work? THEY DIDN'T WORK
+	+ Add Point::Hull Characteristic, and don't leak/propagate(incl. gravitate) water if at least one of the two points is hull			
+		+ Alternatively: just make a spring hull if one point is hull; test it
+	- BalancePressure: see if shouldn't average water among two points - do we lose waves if we do so?
+	- BalancePressure: use gradient, it seems we stuff too much water into points with already too much water
+	- GravitateWater: try inverse visit (from H to L)
+		- Requires PointerVector::rbegin,rend
+	- Try directional BalancePressure?
+	- Make waves with Shallow Water Equations plus breaking waves
+		- And if frontier works, change height when frontier touches water for the first time
+
+
 - Controls:
+	- SettingsDialog: also sound options
+		- Turn on/off sinking music
 	- SettingsDialog: save settings, and defaults
 		- JSON for both game & render params, assembled & saved by gamecontroller, who also loads it on startup if exists 
 		- GameParameters::ToJson()->picojson::value
@@ -255,13 +265,6 @@ Prev perf (before point et al destructuring)
 		- Reset Settings: loads default_settings.json, changes own settings
 
 - Sounds:
-	+ Reset sound controller at ResetAndLoadShip()
-	- Water rushing-in
-		- Continuously-playing sound
-		- Volume time-interpolated off total quantity of water that entered ships during step
-			- Communicated via new event - OnWaterRushedIn(total_water_quantity)
-			- Volume = 100 * ( -1/(Qw+1) + 1 )
-				- Qw = some scaled version of total_water_quantity
 
 - Histograms:
 	- class Histogram
@@ -338,17 +341,18 @@ Prev perf (before point et al destructuring)
 			+ DiffuseLight()
 				+ For each ElectricalElement::Lamp: 
 					+ Use its AvailableCurrent and set mLight 
-	= Implement full lamp state machine @ ElectricalElements::RunLampStateMachine
+	+ Implement full lamp state machine @ ElectricalElements::RunLampStateMachine
 		+ EventHandler: OnLightFlicker(size, length, isUnderwater)
 		+ Update() takes Points (for underwater)
-		= Implement
-		= SoundController
-			- Add new sound for electrical cable
-				- 2 X random, X 2 underwater
-			= Find 2 sounds ("electrical discharge" or "electric arc")
-				- And make them also underwater
-				- Lower volume of overwater ones
+		+ Implement
+		+ SoundController
+			+ Add new sound for electrical cable
+				+ 2 X random, X 2 underwater
+			+ Find 2 sounds ("electrical discharge" or "electric arc")
+				+ And make them also underwater
+				+ Lower volume of overwater ones
 	- Optimizations:
+		- TODOHERE
 		- Take perf analysis of circuit test 1
 		- Ship::DiffuseLight: see inverting nested loops (for each lamp: for each point)
 			- But requires first point light zeroing!
@@ -374,6 +378,9 @@ Prev perf (before point et al destructuring)
 
 - Smoke
 	- Smoke-material points, using ephemeral particles
+
+- Help:
+	- wxWidgets HTML help: http://docs.wxwidgets.org/3.0/group__group__class__help.html
 
 - Multiple ships:
 	- Better after collision detection
@@ -1751,6 +1758,16 @@ IF WX:
 					+ OnSaw(opt<bool> isUnderwater): off, on overwater, on underwater
 		+ Test: get rid of all FlushEvents outside of update
 			+ If OK, remove commented-out code
+	+ Reset sound controller at ResetAndLoadShip()
+	+ Water rushing-in
+		+ Continuously-playing sound
+			+ Find sample
+		+ Volume time-interpolated off total quantity of water that entered ships during step
+			+ Communicated via new event - OnWaterRushedIn(total_water_quantity)
+			+ total_water_quantity update (passed by arg &) replaces mTotalWater update
+				+ mTotalWater updated afterwards with +
+			+ Volume = 100 * ( -1/(Qw+1) + 1 )
+				+ Qw = some scaled version of total_water_quantity (1.0f might suffice)
 
 + Put credits
 	+ Splash: https://www.artstation.com/stukata/profile, contact the guy

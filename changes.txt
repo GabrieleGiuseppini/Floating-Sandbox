@@ -1,4 +1,7 @@
 1.4.0
+- Lamps are now powered by generators and electrical cables, and flicker and turn off when the circuit
+  is interrupted or the connected generator is wet
+- Added sound of water rushing in the ship
 - Improved smoothing of panning and zooming
 
 1.3.0

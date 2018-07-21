@@ -44,14 +44,17 @@ struct GameParameters
     template <typename T>
     static constexpr T DynamicsSimulationStepTimeDuration = SimulationStepTimeDuration<T> / NumDynamicIterations<T>;
 
+    //
+    // Gravity
+    //
+
+    static constexpr vec2f Gravity = vec2f(0.0f, -9.80f);
+    static constexpr vec2f GravityNormal = vec2f(0.0f, -1.0f);
+    static constexpr float GravityMagnitude = 9.80f;
 
     //
     // Tunable parameters
     //
-
-	vec2 const Gravity;
-	vec2 const GravityNormal;
-	float const GravityMagnitude;
 
     float StiffnessAdjustment;
     static constexpr float MinStiffnessAdjustment = 0.001f;

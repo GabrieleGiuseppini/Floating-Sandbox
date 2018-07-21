@@ -78,6 +78,8 @@ public:
         bool isUnderwater,
         unsigned int size) override;
 
+    virtual void OnWaterTaken(float waterTaken) override;
+
     virtual void OnBombPlaced(
         ObjectId bombId,
         BombType bombType,
@@ -117,6 +119,7 @@ private:
         UnpinPoint,
         Stress,
         LightFlicker,
+        WaterRush,
         BombAttached,
         BombDetached,
         RCBombPing,
@@ -148,6 +151,8 @@ private:
             return SoundType::Stress;
         else if (lstr == "lightflicker")
             return SoundType::LightFlicker;
+        else if (lstr == "waterrush")
+            return SoundType::WaterRush;
         else if (lstr == "bombattached")
             return SoundType::BombAttached;
         else if (lstr == "bombdetached")
@@ -389,7 +394,7 @@ private:
 
     unordered_tuple_map<
         std::tuple<SoundType, DurationShortLongType, bool>,
-        SingleSoundInfo> mDslUSoundBuffers;
+        MultipleSoundChoiceInfo> mDslUSoundBuffers;
 
     unordered_tuple_map<
         std::tuple<SoundType, bool>,
@@ -405,6 +410,7 @@ private:
     SingleContinuousSound mSawUnderwaterSound;
     SingleContinuousSound mDrawSound;
     SingleContinuousSound mSwirlSound;
+    SingleContinuousSound mWaterRushSound;
     SingleContinuousSound mTimerBombSlowFuseSound;
     SingleContinuousSound mTimerBombFastFuseSound;
 

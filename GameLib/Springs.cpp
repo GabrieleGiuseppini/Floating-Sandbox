@@ -86,11 +86,11 @@ void Springs::Destroy(
     mIsDeletedBuffer[springElementIndex] = true;
 }
 
-void Springs::SetStiffnessAdjustment(
-    float stiffnessAdjustment,
+void Springs::UpdateGameParameters(
+    GameParameters const & gameParameters,
     Points const & points)
 {
-    if (stiffnessAdjustment != mCurrentStiffnessAdjustment)
+    if (gameParameters.StiffnessAdjustment != mCurrentStiffnessAdjustment)
     {       
         // Recalc coefficients
         for (ElementIndex i : *this)
@@ -101,13 +101,13 @@ void Springs::SetStiffnessAdjustment(
                     GetPointAIndex(i),
                     GetPointBIndex(i),
                     GetStiffness(i),
-                    stiffnessAdjustment,
+                    gameParameters.StiffnessAdjustment,
                     points);
             }
         }
 
         // Remember the new stiffness
-        mCurrentStiffnessAdjustment = stiffnessAdjustment;
+        mCurrentStiffnessAdjustment = gameParameters.StiffnessAdjustment;
     }
 }
 

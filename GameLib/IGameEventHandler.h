@@ -95,6 +95,11 @@ public:
         // Default-implemented
     }
 
+    virtual void OnWaterTaken(float /*waterTaken*/)
+    {
+        // Default-implemented
+    }
+
     //
     // Bombs
     //

@@ -144,8 +144,8 @@ public:
         DestroyOptions destroyOptions,
         Points const & points);
 
-    void SetStiffnessAdjustment(
-        float stiffnessAdjustment,
+    void UpdateGameParameters(
+        GameParameters const & gameParameters,
         Points const & points);
 
     inline void OnPointMassUpdated(

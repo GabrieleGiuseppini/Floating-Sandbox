@@ -32,6 +32,7 @@ SoundController::SoundController(
     , mSawUnderwaterSound()
     , mDrawSound()
     , mSwirlSound()
+    , mWaterRushSound()
     , mTimerBombSlowFuseSound()
     , mTimerBombFastFuseSound()
     // Music
@@ -115,6 +116,10 @@ SoundController::SoundController(
         {
             mSwirlSound.Initialize(std::move(soundBuffer));
         }
+        else if (soundType == SoundType::WaterRush)
+        {
+            mWaterRushSound.Initialize(std::move(soundBuffer));
+        }
         else if (soundType == SoundType::TimerBombSlowFuse)
         {
             mTimerBombSlowFuseSound.Initialize(std::move(soundBuffer));
@@ -170,7 +175,7 @@ SoundController::SoundController(
             // DslU sound
             //
 
-            std::regex dsluRegex(R"(([^_]+)_([^_]+)(?:_(underwater))?)");
+            std::regex dsluRegex(R"(([^_]+)_([^_]+)_(?:(underwater)_)?\d+)");
             std::smatch dsluMatch;
             if (!std::regex_match(soundName, dsluMatch, dsluRegex))
             {
@@ -199,8 +204,8 @@ SoundController::SoundController(
             // Store sound buffer
             //
 
-            mDslUSoundBuffers[std::make_tuple(soundType, durationType, isUnderwater)].SoundBuffer 
-                = std::move(soundBuffer);
+            mDslUSoundBuffers[std::make_tuple(soundType, durationType, isUnderwater)]
+                .SoundBuffers.emplace_back(std::move(soundBuffer));
         }
         else
         {
@@ -263,6 +268,7 @@ void SoundController::SetPaused(bool isPaused)
 
     // We don't pause the continuous tool sounds
 
+    mWaterRushSound.SetPaused(isPaused);
     mTimerBombSlowFuseSound.SetPaused(isPaused);
     mTimerBombFastFuseSound.SetPaused(isPaused);
 
@@ -327,6 +333,7 @@ void SoundController::Reset()
     mSawUnderwaterSound.Stop();
     mDrawSound.Stop();
     mSwirlSound.Stop();
+    mWaterRushSound.Stop();
     mTimerBombSlowFuseSound.Stop();
     mTimerBombFastFuseSound.Stop();
 
@@ -469,6 +476,13 @@ void SoundController::OnLightFlicker(
         std::max(
             100.0f,
             30.0f * size));
+}
+
+void SoundController::OnWaterTaken(float waterTaken)
+{
+    float volume = 100.f * (-1.f / expf(waterTaken) + 1.f);
+    mWaterRushSound.SetVolume(volume);
+    mWaterRushSound.Start();
 }
 
 void SoundController::OnBombPlaced(
@@ -687,7 +701,7 @@ void SoundController::PlayDslUSound(
         ">");
 
     //
-    // Find sound
+    // Find vector
     //
 
     auto it = mDslUSoundBuffers.find(std::make_tuple(soundType, duration, isUnderwater));
@@ -702,9 +716,9 @@ void SoundController::PlayDslUSound(
     // Play sound
     //
 
-    PlaySound(
+    ChooseAndPlaySound(
         soundType,
-        it->second.SoundBuffer.get(),
+        it->second,
         volume);
 }
 

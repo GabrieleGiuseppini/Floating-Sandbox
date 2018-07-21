@@ -241,15 +241,15 @@ public:
         return mWaterBuffer[pointElementIndex];
     }
 
-    float GetExternalWaterPressure(
+    inline float GetExternalWaterPressure(
         ElementIndex pointElementIndex,
-        float waterLevel,
-        GameParameters const & gameParameters) const
+        float waterLevel) const
     {
         // Negative Y == under water line
         if (GetPosition(pointElementIndex).y < waterLevel)
         {
-            return gameParameters.GravityMagnitude * (waterLevel - GetPosition(pointElementIndex).y) * 0.1f;  // 0.1 = scaling constant, represents 1/ship width
+            // Pressure of a column of water of width 1.0 from the point up to the surface
+            return GameParameters::GravityMagnitude * (waterLevel - GetPosition(pointElementIndex).y);
         }
         else
         {

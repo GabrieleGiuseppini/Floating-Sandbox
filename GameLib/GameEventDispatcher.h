@@ -126,6 +126,15 @@ public:
         mLightFlickerEvents[std::make_tuple(duration, isUnderwater)] += size;
     }
 
+    virtual void OnWaterTaken(float waterTaken) override
+    {
+        // No need to aggregate this one
+        for (auto sink : mSinks)
+        {
+            sink->OnWaterTaken(waterTaken);
+        }
+    }
+
     //
     // Bombs
     //
