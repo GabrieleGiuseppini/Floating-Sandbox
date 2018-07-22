@@ -129,6 +129,7 @@ Prev perf (before point et al destructuring)
 		- When it explodes: first sucks everything in, then evertyhing out
 			- Controllable also via ultra-violent mode
 		- Requires ExplosionType argument at Ship::BlastHandler
+			- Or see if easy to move BombBlaster inside bomb (i.e. explosion code is in bomb's state machine)
 
 	- Bomb explosions: see if better done with forces
 		- At each explosion frame: radial forces, centered at center, strongest at radius=f(expl frame)
@@ -233,7 +234,8 @@ Prev perf (before point et al destructuring)
 			- ...which requires Points to keep track of point's water going from 0.0 to > 0.0, at all possible
 			  avenues of change (LeakWater, BalancePressure, etc.)
 			- Or can just be calculated at end of each update with simple pass through water buffer and state buffer
-				- Better, done only once
+				- Better, "if" done only once
+			- Or can use Points::mIsWetBuffer and mWetPoints, both set automagically when Points::AddWater is called
 	+ Did original game propagate water also through hull springs? YES. How did hull thin dividers work? THEY DIDN'T WORK
 	+ Add Point::Hull Characteristic, and don't leak/propagate(incl. gravitate) water if at least one of the two points is hull			
 		+ Alternatively: just make a spring hull if one point is hull; test it
@@ -378,9 +380,6 @@ Prev perf (before point et al destructuring)
 
 - Smoke
 	- Smoke-material points, using ephemeral particles
-
-- Help:
-	- wxWidgets HTML help: http://docs.wxwidgets.org/3.0/group__group__class__help.html
 
 - Multiple ships:
 	- Better after collision detection
@@ -1863,6 +1862,11 @@ IF WX:
 	+ Titanic:
 		+ Introduce weak metal
 			+ Use it underneath funnels
+
++ Help:
+	+ wxWidgets HTML help: http://docs.wxwidgets.org/3.0/group__group__class__help.html
+		+ Also, just https://github.com/wxWidgets/wxWidgets/blob/WX_3_0_BRANCH/samples/html/about/about.cpp
+	+ Use icons for keys
 
 + Fix bug: when you reload ship when paused, no clouds & no ship are visible until resumed
 	+ World::Initialize():
