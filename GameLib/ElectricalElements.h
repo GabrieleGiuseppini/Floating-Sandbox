@@ -176,12 +176,12 @@ public:
     // Subsets
     //
 
-    inline auto GetGenerators() const
+    inline auto const & GetGenerators() const
     {
         return mGenerators;
     }
 
-    inline auto GetLamps() const
+    inline auto const & GetLamps() const
     {
         return mLamps;
     }
