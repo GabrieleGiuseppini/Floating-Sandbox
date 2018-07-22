@@ -8,6 +8,8 @@ set  (FLOATING_SANDBOX_SOURCES
 	AboutDialog.h
 	EventTickerPanel.cpp
 	EventTickerPanel.h
+	HelpDialog.cpp
+	HelpDialog.h
 	LoggingDialog.cpp
 	LoggingDialog.h
 	MainApp.cpp

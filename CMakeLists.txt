@@ -23,7 +23,7 @@ set(wxWidgets_ROOT_DIR "C:/Users/Neurodancer/source/SDK/wxWidgets")
 find_path(PICOJSON_INCLUDE_DIRS
     NAMES picojson/picojson.h)
 
-find_package(wxWidgets REQUIRED base gl core media)
+find_package(wxWidgets REQUIRED base gl core html media)
 
 find_package(DevIL REQUIRED)
 if (WIN32)

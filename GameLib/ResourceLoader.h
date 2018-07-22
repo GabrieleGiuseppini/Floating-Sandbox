@@ -86,6 +86,13 @@ public:
 
 
     //
+    // Help
+    //
+
+    std::filesystem::path GetHelpFilepath() const;
+
+
+    //
     // Generic
     //
 

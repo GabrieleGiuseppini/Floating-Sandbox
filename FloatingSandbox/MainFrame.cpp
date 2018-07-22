@@ -51,6 +51,7 @@ const long ID_OPEN_LOG_WINDOW_MENUITEM = wxNewId();
 const long ID_SHOW_EVENT_TICKER_MENUITEM = wxNewId();
 const long ID_MUTE_MENUITEM = wxNewId();
 
+const long ID_HELP_MENUITEM = wxNewId();
 const long ID_ABOUT_MENUITEM = wxNewId();
 
 const long ID_POSTIINITIALIZE_TIMER = wxNewId();
@@ -276,7 +277,11 @@ MainFrame::MainFrame(wxApp * mainApp)
 
     wxMenu * helpMenu = new wxMenu();
 
-    wxMenuItem * aboutMenuItem = new wxMenuItem(helpMenu, ID_ABOUT_MENUITEM, _("About\tF1"), _("Show info about this application"), wxITEM_NORMAL);
+    wxMenuItem * helpMenuItem = new wxMenuItem(helpMenu, ID_HELP_MENUITEM, _("Help\tF1"), _("Get help about the simulator"), wxITEM_NORMAL);
+    helpMenu->Append(helpMenuItem);
+    Connect(ID_HELP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnHelpMenuItemSelected);
+
+    wxMenuItem * aboutMenuItem = new wxMenuItem(helpMenu, ID_ABOUT_MENUITEM, _("About\tF2"), _("Show credits and other I'vedunnit stuff"), wxITEM_NORMAL);
     helpMenu->Append(aboutMenuItem);
     Connect(ID_ABOUT_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAboutMenuItemSelected);
 
@@ -581,7 +586,7 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
         }
     }
 
-    // Run a game step
+    // Run a game step (Update and Render)
     DoGameStep();
     
     // Update stats
@@ -857,6 +862,18 @@ void MainFrame::OnMuteMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mSoundController);
     mSoundController->SetMute(mMuteMenuItem->IsChecked());
+}
+
+void MainFrame::OnHelpMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    if (!mHelpDialog)
+    {
+        mHelpDialog = std::make_unique<HelpDialog>(
+            this,
+            *mResourceLoader);
+    }
+
+    mHelpDialog->ShowModal();
 }
 
 void MainFrame::OnAboutMenuItemSelected(wxCommandEvent & /*event*/)
