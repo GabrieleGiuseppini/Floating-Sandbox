@@ -18,6 +18,7 @@ The original idea for the game is from Luke Wren, who wrote a Sinking Ship Simul
 There are lots of ideas that I'm currently working on; some of these are:
 - Water drag to simulate parts gliding underwater
 - Waves and splashes originating from collisions with water
+- Debris when parts break
 - Sparkles when metal is sliced
 - Lights flickering and turning off when generators are wet or when electrical cables break
 - Anti-matter bomb

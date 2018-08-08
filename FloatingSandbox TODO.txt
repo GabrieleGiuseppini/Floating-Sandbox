@@ -367,7 +367,7 @@ Prev perf (before point et al destructuring)
 			+ Find 2 sounds ("electrical discharge" or "electric arc")
 				+ And make them also underwater
 				+ Lower volume of overwater ones
-	= Optimizations:		
+	+ Optimizations:		
 		+ Take perf analysis of circuit test 1 (2 mins Circuit Test 1)
 			- World::Update: 30.15%
 				- UpdateElectricalConn: 0.06%
@@ -381,8 +381,9 @@ Prev perf (before point et al destructuring)
 			+ Switch loops:
 				+ Requires first point light zeroing!
 				+ After perf analysis: DiffuseLight: 30.63%; fps=24.x
-		= Do perf analysis with complex graph
-			- Need circuit test 3
+		+ Do perf analysis with complex graph
+			+ Need circuit test 3
+			+ Impact negligible: Ship::UpdateElectricalConnectivity: 0.21%
 
 	+ Diffusion:
 		+ Can test it by itself, by using light material and by cheating with current!
@@ -397,11 +398,12 @@ Prev perf (before point et al destructuring)
 		  used when rendering point in springs/triangles/points
 			+ Not used when using textures, of course
 			+ Needs material's Color to split in StructuralColor and RenderColor (set to the same except for lamps)
-	- Diffusion improvement: see if can simply add light (rather than max'ing it)
-		- Need to ensure sum is always < 1.0
-			- May be via adding +1 to distance? 
-		- Or just set to max(1.0, cur+new)
-			- Best when done in point->lamp loop: add up in inner loop, then assign to point as max
+	+ Diffusion improvement: see if can simply add light (rather than max'ing it)
+		+ Need to ensure sum is always < 1.0
+		+ Or just set to max(1.0, cur+new)
+			+ Best when done in point->lamp loop: add up in inner loop, then assign to point as max
+			+ Doesn't improve look considerably, and still requires an if
+			
 	
 
 - Smoke
