@@ -4,6 +4,8 @@
  * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
  ***************************************************************************************/
 
+#include <array>
+#include <optional>
 #include <string>
 
 class Quantizer
@@ -15,5 +17,6 @@ public:
         std::string const & outputFile,
         std::string const & materialsFile,
         bool doKeepRopes,
-        bool doKeepGlass);
+        bool doKeepGlass,
+        std::optional<std::array<uint8_t, 3u>> targetFixedColor);
 };

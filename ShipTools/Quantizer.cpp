@@ -12,7 +12,6 @@
 #include <IL/il.h>
 #include <IL/ilu.h>
 
-#include <array>
 #include <limits>
 #include <stdexcept>
 #include <vector>
@@ -22,7 +21,8 @@ void Quantizer::Quantize(
     std::string const & outputFile,
     std::string const & materialsFile,
     bool doKeepRopes,
-    bool doKeepGlass)
+    bool doKeepGlass,
+    std::optional<std::array<uint8_t, 3u>> targetFixedColor)
 {
     //
     // Load image
@@ -70,10 +70,20 @@ void Quantizer::Quantize(
         if ( (!material.IsRope || doKeepRopes)
             && (material.Name != "Glass" || doKeepGlass))
         {
-            gameColors.emplace_back(
-                std::make_pair(
-                    material.StructuralColour,
-                    material.StructuralColourRgb));
+            if (!targetFixedColor)
+            {
+                gameColors.emplace_back(
+                    std::make_pair(
+                        material.StructuralColour,
+                        material.StructuralColourRgb));
+            }
+            else
+            {
+                gameColors.emplace_back(
+                    std::make_pair(
+                        material.StructuralColour,
+                        *targetFixedColor));
+            }
         }
     }
 

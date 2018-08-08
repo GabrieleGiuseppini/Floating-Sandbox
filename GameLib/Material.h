@@ -137,19 +137,13 @@ public:
 		, Strength(strength)
 		, Mass(mass)
         , Stiffness(stiffness)
-		, StructuralColour(RgbToVec(structuralColourRgb))
+		, StructuralColour(Utils::RgbToVec(structuralColourRgb))
         , StructuralColourRgb(structuralColourRgb)
-        , RenderColour(RgbToVec(renderColourRgb))
+        , RenderColour(Utils::RgbToVec(renderColourRgb))
 		, IsHull(isHull)
         , IsRope(isRope)
 		, Electrical(std::move(electricalProperties))
         , Sound(std::move(soundProperties))
 	{
 	}
-
-private:
-
-    static uint8_t Material::Hex2Byte(std::string const & str);
-    static std::array<uint8_t, 3u> Hex2RgbColour(std::string str);
-    static vec3f RgbToVec(std::array<uint8_t, 3u> const & rgbColour);
 };

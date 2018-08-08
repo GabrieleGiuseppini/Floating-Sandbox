@@ -6,11 +6,14 @@
 #pragma once
 
 #include "GameException.h"
+#include "Vectors.h"
 
 #include <picojson/picojson.h>
 
 #include <algorithm>
+#include <array>
 #include <cctype>
+#include <cstdint>
 #include <iterator>
 #include <optional>
 #include <sstream>
@@ -151,5 +154,39 @@ public:
         }
 
         return ss.str();
+    }
+
+    static uint8_t Hex2Byte(std::string const & str)
+    {
+        std::stringstream ss;
+        ss << std::hex << str;
+        int x;
+        ss >> x;
+
+        return static_cast<uint8_t>(x);
+    }
+
+    static std::array<uint8_t, 3u> Hex2RgbColour(std::string str)
+    {
+        if (str[0] == '#')
+            str = str.substr(1);
+
+        if (str.length() != 6)
+            throw GameException("Error: badly formed hex colour value \"" + str + "\"");
+
+        std::array<uint8_t, 3u> rgbColour;
+        rgbColour[0] = Hex2Byte(str.substr(0, 2));
+        rgbColour[1] = Hex2Byte(str.substr(2, 2));
+        rgbColour[2] = Hex2Byte(str.substr(4, 2));
+
+        return rgbColour;
+    }
+
+    static vec3f RgbToVec(std::array<uint8_t, 3u> const & rgbColour)
+    {
+        return vec3f(
+            rgbColour[0] / 255.f,
+            rgbColour[1] / 255.f,
+            rgbColour[2] / 255.f);
     }
 };

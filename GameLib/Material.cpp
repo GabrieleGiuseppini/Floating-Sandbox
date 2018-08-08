@@ -7,8 +7,6 @@
 
 #include "Utils.h"
 
-#include <sstream>
-
 std::unique_ptr<Material> Material::Create(picojson::object const & materialJson)
 {
 	std::string name = Utils::GetOptionalJsonMember<std::string>(materialJson, "name", "Unspecified");
@@ -20,8 +18,8 @@ std::unique_ptr<Material> Material::Create(picojson::object const & materialJson
     float strength = static_cast<float>(Utils::GetOptionalJsonMember<double>(materialJson, "strength", 1.0));
     float stiffness = static_cast<float>(Utils::GetOptionalJsonMember<double>(materialJson, "stiffness", 1.0));
 	
-    std::array<uint8_t, 3u> structuralColourRgb = Hex2RgbColour(Utils::GetMandatoryJsonMember<std::string>(materialJson, "structural_colour"));
-    std::array<uint8_t, 3u> renderColourRgb = Hex2RgbColour(Utils::GetMandatoryJsonMember<std::string>(materialJson, "render_colour"));
+    std::array<uint8_t, 3u> structuralColourRgb = Utils::Hex2RgbColour(Utils::GetMandatoryJsonMember<std::string>(materialJson, "structural_colour"));
+    std::array<uint8_t, 3u> renderColourRgb = Utils::Hex2RgbColour(Utils::GetMandatoryJsonMember<std::string>(materialJson, "render_colour"));
 	bool isHull = Utils::GetMandatoryJsonMember<bool>(materialJson, "is_hull");
     bool isRope = Utils::GetOptionalJsonMember<bool>(materialJson, "is_rope", false);
 
@@ -62,38 +60,4 @@ std::unique_ptr<Material> Material::Create(picojson::object const & materialJson
             isRope,
 			electricalProperties,
             soundProperties));
-}
-
-uint8_t Material::Hex2Byte(std::string const & str)
-{
-    std::stringstream ss;
-    ss << std::hex << str;
-    int x;
-    ss >> x;
-
-    return static_cast<uint8_t>(x);
-}
-
-std::array<uint8_t, 3u> Material::Hex2RgbColour(std::string str)    //  e.g. "#00FF00";
-{
-    if (str[0] == '#')
-        str = str.substr(1);
-
-    if (str.length() != 6)
-        throw GameException("Error: badly formed hex colour value \"" + str + "\"");
-
-    std::array<uint8_t, 3u> rgbColour;
-    rgbColour[0] = Hex2Byte(str.substr(0, 2));
-    rgbColour[1] = Hex2Byte(str.substr(2, 2));
-    rgbColour[2] = Hex2Byte(str.substr(4, 2));
-
-    return rgbColour;
-}
-
-vec3f Material::RgbToVec(std::array<uint8_t, 3u> const & rgbColour)    
-{
-    return vec3f(
-        rgbColour[0] / 255.f,
-        rgbColour[1] / 255.f,
-        rgbColour[2] / 255.f);
 }

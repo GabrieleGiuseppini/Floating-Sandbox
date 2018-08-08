@@ -8,6 +8,8 @@
 #include "Resizer.h"
 #include "ShipAnalyzer.h"
 
+#include <GameLib/Utils.h>
+
 #include <IL/il.h>
 #include <IL/ilu.h>
 
@@ -77,6 +79,8 @@ int DoQuantize(int argc, char ** argv)
 
     bool doKeepRopes = false;
     bool doKeepGlass = false;
+    std::optional<std::array<uint8_t, 3u>> targetFixedColor;
+    std::string targetFixedColorStr;
     for (int i = 5; i < argc; ++i)
     {
         std::string option(argv[i]);
@@ -87,6 +91,17 @@ int DoQuantize(int argc, char ** argv)
         else if (option == "-g" || option == "--keep_glass")
         {
             doKeepGlass = true;
+        }
+        else if (option == "-c")
+        {
+            ++i;
+            if (i == argc)
+            {
+                throw std::runtime_error("-c option specified without a color");
+            }
+
+            targetFixedColorStr = argv[i];
+            targetFixedColor = Utils::Hex2RgbColour(targetFixedColorStr);
         }
         else
         {
@@ -101,8 +116,16 @@ int DoQuantize(int argc, char ** argv)
     std::cout << "  materials file: " << materialsFile << std::endl;
     std::cout << "  keep ropes    : " << doKeepRopes << std::endl;
     std::cout << "  keep glass    : " << doKeepGlass << std::endl;
+    if (!!targetFixedColor)
+        std::cout << "  target color  : " << targetFixedColorStr << std::endl;
 
-    Quantizer::Quantize(inputFile, outputFile, materialsFile, doKeepRopes, doKeepGlass);
+    Quantizer::Quantize(
+        inputFile, 
+        outputFile, 
+        materialsFile, 
+        doKeepRopes, 
+        doKeepGlass,
+        targetFixedColor);
 
     std::cout << "Quantize completed." << std::endl;
 
@@ -161,8 +184,8 @@ void PrintUsage()
 {
     std::cout << std::endl;
     std::cout << "Usage:" << std::endl;
-    std::cout << " quantize <materials_file> <in_file> <out_png> [-r, --keep_ropes]" << std::endl;
-    std::cout << "          [-g, --keep_glass]" << std::endl;
+    std::cout << " quantize <materials_file> <in_file> <out_png> [-c <target_fixed_color>]" << std::endl;
+    std::cout << "          -r, --keep_ropes] [-g, --keep_glass]" << std::endl;
     std::cout << " resize <in_file> <out_png> <width>" << std::endl;
     std::cout << " analyze <materials_file> <in_file>" << std::endl;
 }
