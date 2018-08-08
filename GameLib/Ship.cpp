@@ -886,27 +886,31 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
     // Greater adjustment => underrated distance => wider diffusion
     float const adjustmentCoefficient = powf(1.0f - gameParameters.LightDiffusionAdjustment, 2.0f);
 
-    // Visit all points (including deleted ones)
+    // Zero-out light at all points first
     for (auto pointIndex : mPoints)
     {
         // Zero its light
         mPoints.GetLight(pointIndex) = 0.0f;
+    }
 
-        vec2f const & pointPosition = mPoints.GetPosition(pointIndex);
-        ConnectedComponentId const pointConnectedComponentId = mPoints.GetConnectedComponentId(pointIndex);
+    // Go through all lamps;
+    // can safely visit deleted lamps as their current will always be zero
+    for (auto lampIndex : mElectricalElements.GetLamps())
+    {
+        float const lampLight = mElectricalElements.GetAvailableCurrent(lampIndex);
 
-        // Go through all lamps in the same connected component
-        // Can safely visit deleted lamps as their current will always be zero
-        for (auto lampIndex : mElectricalElements.GetLamps())
+        auto const lampPointIndex = mElectricalElements.GetPointIndex(lampIndex);
+        vec2f const & lampPosition = mPoints.GetPosition(lampPointIndex);
+        ConnectedComponentId const lampConnectedComponentId = mPoints.GetConnectedComponentId(lampPointIndex);        
+
+        // Visit all points (including deleted ones) in the same connected component
+        for (auto pointIndex : mPoints)
         {
-            // Make sure it's the same connected component
-            if (mPoints.GetConnectedComponentId(mElectricalElements.GetPointIndex(lampIndex)) == pointConnectedComponentId)
+            if (mPoints.GetConnectedComponentId(pointIndex) == lampConnectedComponentId)
             {
-                float const lampLight = mElectricalElements.GetAvailableCurrent(lampIndex);
-
                 float squareDistance = std::max(
                     1.0f,
-                    (pointPosition - mPoints.GetPosition(mElectricalElements.GetPointIndex(lampIndex))).squareLength() * adjustmentCoefficient);
+                    (mPoints.GetPosition(pointIndex) - lampPosition).squareLength() * adjustmentCoefficient);
 
                 assert(squareDistance >= 1.0f);
 
@@ -916,6 +920,48 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
             }
         }
     }
+
+
+    // TODOOLD
+
+    //////
+    ////// Diffuse light from each lamp to the closest adjacent (i.e. spring-connected) points,
+    ////// inversely-proportional to the square of the distance
+    //////
+
+    ////// Greater adjustment => underrated distance => wider diffusion
+    ////float const adjustmentCoefficient = powf(1.0f - gameParameters.LightDiffusionAdjustment, 2.0f);
+
+    ////// Visit all points (including deleted ones)
+    ////for (auto pointIndex : mPoints)
+    ////{
+    ////    // Zero its light
+    ////    mPoints.GetLight(pointIndex) = 0.0f;
+
+    ////    vec2f const & pointPosition = mPoints.GetPosition(pointIndex);
+    ////    ConnectedComponentId const pointConnectedComponentId = mPoints.GetConnectedComponentId(pointIndex);
+
+    ////    // Go through all lamps in the same connected component
+    ////    // Can safely visit deleted lamps as their current will always be zero
+    ////    for (auto lampIndex : mElectricalElements.GetLamps())
+    ////    {
+    ////        // Make sure it's the same connected component
+    ////        if (mPoints.GetConnectedComponentId(mElectricalElements.GetPointIndex(lampIndex)) == pointConnectedComponentId)
+    ////        {
+    ////            float const lampLight = mElectricalElements.GetAvailableCurrent(lampIndex);
+
+    ////            float squareDistance = std::max(
+    ////                1.0f,
+    ////                (pointPosition - mPoints.GetPosition(mElectricalElements.GetPointIndex(lampIndex))).squareLength() * adjustmentCoefficient);
+
+    ////            assert(squareDistance >= 1.0f);
+
+    ////            float newLight = lampLight / squareDistance;
+    ////            if (newLight > mPoints.GetLight(pointIndex))
+    ////                mPoints.GetLight(pointIndex) = newLight;
+    ////        }
+    ////    }
+    ////}
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////

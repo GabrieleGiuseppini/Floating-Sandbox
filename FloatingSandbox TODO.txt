@@ -134,28 +134,42 @@ Prev perf (before point et al destructuring)
 	- Bomb explosions: see if better done with forces
 		- At each explosion frame: radial forces, centered at center, strongest at radius=f(expl frame)
 	- Ephemeral Particles:
-		- Carve out room at tail of Points for ephemeral particles
-			- No need to mark as deleted to hide them
-			- Tail managed as circular queue, used when creating new ones - eventually smothering oldest
-			  ones (started more anciently, but not necessarily closest to death as each has own lifetime)
-				- TODO: not really circular queue, dead not last must be reused
-			- Points has new buffers:
-				- EphemeralType (uint8 enum)
-					- None (set at non-ephemeral and at dead ephimerals)
-					- Sparkle
-				- EphemeralLife (float between 0.0 and 1.0)
-				- EphemeralXTODOX: union of structs
-					- SparkleXTODOX:
-						- TODO
-			- Smothering done by Ship (UpdateEphemeralParticles) as:
-				- TODO:
-				- TODO: why not by Points::UpdateEphemeralParticles() ?
-			- Points methods:
-				- TODO: create/kill, create has first overload that takes all the dynamics params, including Material, and
-				  type-specific params
+		- Summary:
+			- Carve out room at tail of Points for ephemeral particles
+				- Two different segments
+				- Each segment is a circular buffer of particles all with same lifetime
+					- New particles are just taken from older ones
+				- No need to mark as deleted to hide them
+			- Ephemeral particles are drawn with alpha going to transparent as lifetime increases
+				- Test first perf impact of using vec4f for point colors
+					- If sucks, need new buffer just for ephemeral particles' alpha
+				- In any case, epehemeral color buffer or ephemeral portion of entire points color buffer needs to
+				  be reloaded at each UploadEphemeralParticles()
+			- Points::UpdateEphemeralParticles():
+				- Adds dAlpha to current alpha
+				- Moves buffer head over expired particles
+			- Points::UploadEphemeralParticles():
+				- Only uploads those with non-zero lifetime - by using buffer head, no need to check lifetime
+				- Color buffer? depends on choice above
+		- Points has new buffers:
+			- EphemeralType (uint8 enum)
+				- None (set at non-ephemeral and at dead ephimerals)
+				- Debris
+				- Sparkle
+			- EphemeralLifetime (std::chrono::seconds)
+			- EphemeralXTODOX: union of structs
+				- SparkleXTODOX:
+					- TODO
+		- Points methods:
+			- TODO: create; create has first overload that takes all the dynamics params, including Material and Color, and
+			  type-specific params
 		- Rendering:
 			- Points::UploadEphemeralParticles():
 				- (Ship)RenderContext::TODO
+	- Do debris each time a spring breaks
+		- At Ship::SpringDestroyHandler()
+		- Initial particle dynamics:
+			- TODO
 	- Do chainsaw sparkles with Ephemeral Particles
 		- At Ship::Chainsaw for each broken spring
 		- Initial particle dynamics:
@@ -353,11 +367,22 @@ Prev perf (before point et al destructuring)
 			+ Find 2 sounds ("electrical discharge" or "electric arc")
 				+ And make them also underwater
 				+ Lower volume of overwater ones
-	- Optimizations:
-		- TODOHERE
-		- Take perf analysis of circuit test 1
-		- Ship::DiffuseLight: see inverting nested loops (for each lamp: for each point)
-			- But requires first point light zeroing!
+	= Optimizations:		
+		+ Take perf analysis of circuit test 1 (2 mins Circuit Test 1)
+			- World::Update: 30.15%
+				- UpdateElectricalConn: 0.06%
+					- Deque::new: 0.01%
+					- Deque::~: 0.01%
+				- ElectricalElements::Update: 0.05%
+				- DiffuseLight: 0.43%
+		+ Ship::DiffuseLight: see inverting nested loops (for each lamp: for each point)
+			+ Need test ship with many more lamps
+			+ Before perf analysis: DiffuseLight: 35.83% == ~30,000 samples; fps=22.10
+			+ Switch loops:
+				+ Requires first point light zeroing!
+				+ After perf analysis: DiffuseLight: 30.63%; fps=24.x
+		= Do perf analysis with complex graph
+			- Need circuit test 3
 
 	+ Diffusion:
 		+ Can test it by itself, by using light material and by cheating with current!
@@ -376,6 +401,7 @@ Prev perf (before point et al destructuring)
 		- Need to ensure sum is always < 1.0
 			- May be via adding +1 to distance? 
 		- Or just set to max(1.0, cur+new)
+			- Best when done in point->lamp loop: add up in inner loop, then assign to point as max
 	
 
 - Smoke
