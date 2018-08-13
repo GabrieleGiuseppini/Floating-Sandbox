@@ -725,7 +725,7 @@ void Ship::LeakWater(
 
     for (auto pointIndex : mPoints)
     {
-        // Avoid updating water taken for points that are destroyed
+        // Avoid taking water into points that are destroyed, changes total water taken
         if (!mPoints.IsDeleted(pointIndex))
         {
             if (mPoints.IsLeaking(pointIndex))

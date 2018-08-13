@@ -114,7 +114,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
                     else
                     {
                         throw GameException(
-                            std::string("More than two rope endpoints found at (")
+                            std::string("More than two \"" + Utils::RgbColour2Hex(rgbColour) + "\" rope endpoints found at (")
                             + std::to_string(x) + "," + std::to_string(structureHeight - y - 1) + ")");
                     }
 

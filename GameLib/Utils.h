@@ -14,6 +14,7 @@
 #include <array>
 #include <cctype>
 #include <cstdint>
+#include <iomanip>
 #include <iterator>
 #include <optional>
 #include <sstream>
@@ -166,6 +167,14 @@ public:
         return static_cast<uint8_t>(x);
     }
 
+    static std::string Byte2Hex(uint8_t byte)
+    {
+        std::stringstream ss;
+        ss << std::hex << std::setfill('0') << std::setw(2) << static_cast<unsigned int>(byte);
+
+        return ss.str();
+    }
+
     static std::array<uint8_t, 3u> Hex2RgbColour(std::string str)
     {
         if (str[0] == '#')
@@ -180,6 +189,11 @@ public:
         rgbColour[2] = Hex2Byte(str.substr(4, 2));
 
         return rgbColour;
+    }
+
+    static std::string RgbColour2Hex(std::array<uint8_t, 3u> const & rgbColour)
+    {
+        return std::string("#") + Byte2Hex(rgbColour[0]) + Byte2Hex(rgbColour[1]) + Byte2Hex(rgbColour[2]);
     }
 
     static vec3f RgbToVec(std::array<uint8_t, 3u> const & rgbColour)

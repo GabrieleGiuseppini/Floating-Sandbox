@@ -47,9 +47,17 @@ Prev perf (before point et al destructuring)
 	- RenderContext::RenderCloudsEnd: 1.69%
 =================================================
 
-- Ships
+- Release:
+	= Make cruise liner with generators and lamps
+		- Texture outer fix: edge must be more blended - a bit more transparent and less contrast-y
+		- Credits at About Box
+		+ Ropes
+		+ Electrical
+		- Rename components as .dat
+
+
+- New ships
 	- Warship
-	- Cruise liner with generators and lamps
 	- See Moleskine
 
 - Technical Debt:
@@ -87,6 +95,9 @@ Prev perf (before point et al destructuring)
 
 
 - Gfx:
+	- Problem with texture over edges of structure: when texture is not reduced by structure (i.e. when structure is
+	  larger than texture), then one sees parts of the springs
+		- It's a problem with rendering springs with the texture shader
 	- Optimizations:
 		- More connected components => slower (multiple batches); try
 		  to draw one single batch then, using Z buffer and depth test 
@@ -136,24 +147,31 @@ Prev perf (before point et al destructuring)
 	- Ephemeral Particles:
 		- Summary:
 			- Carve out room at tail of Points for ephemeral particles
-				- Two different segments
+				- Two different segments for two different "classes"
 				- Each segment is a circular buffer of particles all with same lifetime
 					- New particles are just taken from older ones
 				- No need to mark as deleted to hide them
 			- Ephemeral particles are drawn with alpha going to transparent as lifetime increases
 				- Test first perf impact of using vec4f for point colors
 					- If sucks, need new buffer just for ephemeral particles' alpha
-				- In any case, epehemeral color buffer or ephemeral portion of entire points color buffer needs to
+				- In any case, ephemeral color buffer or ephemeral portion of entire points color buffer needs to
 				  be reloaded at each UploadEphemeralParticles()
+			- Story for texture coords needs to be bundled with smal rearc:
+				- Creation (and possibly deletion) of eph particles needs to be communicated
+				  to ShipRenderContext, which then inits texture coords in own buffer based off texture index and texture atlas
+				  - ShipRenderContext needs then to be always available to Ship
 			- Points::UpdateEphemeralParticles():
 				- Adds dAlpha to current alpha
 				- Moves buffer head over expired particles
+					- Resets velocity and integration factor of expired particles to avoid drifting
+						- Rename Points::Pin/Unpin() to Freeze/Thaw()
+						- And also sets EphemeralType to None
 			- Points::UploadEphemeralParticles():
 				- Only uploads those with non-zero lifetime - by using buffer head, no need to check lifetime
 				- Color buffer? depends on choice above
 		- Points has new buffers:
 			- EphemeralType (uint8 enum)
-				- None (set at non-ephemeral and at dead ephimerals)
+				- None (set at non-ephemeral and at dead ephemerals)
 				- Debris
 				- Sparkle
 			- EphemeralLifetime (std::chrono::seconds)
@@ -161,7 +179,7 @@ Prev perf (before point et al destructuring)
 				- SparkleXTODOX:
 					- TODO
 		- Points methods:
-			- TODO: create; create has first overload that takes all the dynamics params, including Material and Color, and
+			- TODO: createXYZ(); create has first overload that takes all the dynamics params, including Material and Color, and
 			  type-specific params
 		- Rendering:
 			- Points::UploadEphemeralParticles():
@@ -220,13 +238,23 @@ Prev perf (before point et al destructuring)
 
 - Water:
 	+ Rush sound: should water rush sound be more....rushy?
+
+	- Test forcing incoming water @ LeakWater to be max 1.0
+		+ After all, water cannot be compressed
+		- Cap al water movements (3x) to move between 0.0 and 1.0-current_water, or just simply with max
+			- LeakWater:
+				- ExternalWaterPressure only regulates *velocity* of incoming 1.0-current_water
+			- Might make all water movements slower, in which case might try with LeakWater before *all* iterations
+			- Need to remove entry condition at BalancePressure: we do want to stil balance two water pressures that are < 1.0
+		- If it works, sinking detection should work automagically with just total_water_in_ship
+
 	- Optimizations:
 		- Ship::LeakWater: 
 			- Check assembly
-			- Incorporate isDeleted and coefficients into Points::ExternalWaterPermeability
-				- Maintain IsLeaking
-			- If OK, do also update at Points::UpdateGameParameters(.)
-				- Test with also IsLeaking, no ifs in loop
+			- Incorporate isDeleted and effectivePressureAdjustment into Points::ExternalWater~Permeability~
+				- Maintain IsLeaking first, we'll later test incorporating also this one 
+			- If OK, do also update of ExternalWaterPermeability at Points::UpdateGameParameters(.)
+			- Test with also incorporating IsLeaking, no ifs in loop
 		- GravitateWater:
 			- Calculate once and for all cos theta's at first iteration
 				- !!! Actually, calculate WaterGravityFactorA = dt*0.6*(1+cos_theta)/2, WaterGravityFactorB = -dt*0.6*(1-cos_theta)/2
@@ -238,18 +266,20 @@ Prev perf (before point et al destructuring)
 					- All others empty
 					- All iters take factors from Spring after calling lambda
 
+
 	- See if can make water more mobile (for gravity), without though drying up water that just entered
 		- Increase quantity that gets gravitated, and also make sure that last step of water dynamics
 		  is a LeakWater (so that just-entered water is visible for a while)
-	- Test forcing incoming water @ LeakWater to be max 1.0
 	- Sinking detection is broken - it currently only considers total water that entered the ship, which comes proportionally to external
 	  water pressure; all this water could be confined to a tiny volume, and yet we trigger sinking
 		- Solution: make it based on total number of points that have water instead, i.e. wet points
 			- ...which requires Points to keep track of point's water going from 0.0 to > 0.0, at all possible
 			  avenues of change (LeakWater, BalancePressure, etc.)
 			- Or can just be calculated at end of each update with simple pass through water buffer and state buffer
-				- Better, "if" done only once
-			- Or can use Points::mIsWetBuffer and mWetPoints, both set automagically when Points::AddWater is called
+				- Better, "if" for prev_value=0 would be done only once per Ship::Update()
+				- Costly to copy water buffer
+			- Or can use Points::mIsWetBuffer and mWetPointsCount, both set/incrd automagically when Points::AddWater is called
+				- Still multiple ifs
 	+ Did original game propagate water also through hull springs? YES. How did hull thin dividers work? THEY DIDN'T WORK
 	+ Add Point::Hull Characteristic, and don't leak/propagate(incl. gravitate) water if at least one of the two points is hull			
 		+ Alternatively: just make a spring hull if one point is hull; test it
@@ -258,8 +288,15 @@ Prev perf (before point et al destructuring)
 	- GravitateWater: try inverse visit (from H to L)
 		- Requires PointerVector::rbegin,rend
 	- Try directional BalancePressure?
-	- Make waves with Shallow Water Equations plus breaking waves
+	- Make waves with Shallow Water Equations 
 		- And if frontier works, change height when frontier touches water for the first time
+		- Problem with extent of heightfield (X segment): needs to look good when zooming out; 3 alternatives:
+			- 1: Find a way to stitch X segment to required world X
+				- Note that can't mirror segments or else waves would have different directions
+			- 2: Upsample and downsample depending on zoom
+				- But we lose details when we zoom out and then in again
+			- 3: Just cap zoom to reasonable max
+	- Breaking waves (Muller's paper)
 
 
 - Controls:
@@ -281,6 +318,7 @@ Prev perf (before point et al destructuring)
 		- Reset Settings: loads default_settings.json, changes own settings
 
 - Sounds:
+	- Should lower the volume of stress sounds?
 
 - Histograms:
 	- class Histogram
