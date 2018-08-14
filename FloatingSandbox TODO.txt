@@ -51,10 +51,10 @@ Prev perf (before point et al destructuring)
 	= Make cruise liner with generators and lamps
 		- Texture outer fix: edge must be more blended - a bit more transparent and less contrast-y
 		- Credits at About Box
+		- Fix hull rope endpoints
 		+ Ropes
 		+ Electrical
 		- Rename components as .dat
-
 
 - New ships
 	- Warship
@@ -244,8 +244,12 @@ Prev perf (before point et al destructuring)
 		- Cap al water movements (3x) to move between 0.0 and 1.0-current_water, or just simply with max
 			- LeakWater:
 				- ExternalWaterPressure only regulates *velocity* of incoming 1.0-current_water
+					- Use Bernoulli's equation for velocity out of pressure delta
+					- Still need to cap because of dt possibly being too large
 			- Might make all water movements slower, in which case might try with LeakWater before *all* iterations
-			- Need to remove entry condition at BalancePressure: we do want to stil balance two water pressures that are < 1.0
+				- Cache water depth from PointDynamics at Points, using lambda 
+					- Testi wit asm
+			- Need to remove entry condition at BalancePressure: we do want to still balance two water pressures that are < 1.0
 		- If it works, sinking detection should work automagically with just total_water_in_ship
 
 	- Optimizations:
@@ -267,10 +271,10 @@ Prev perf (before point et al destructuring)
 					- All iters take factors from Spring after calling lambda
 
 
-	- See if can make water more mobile (for gravity), without though drying up water that just entered
+	- MAYBEOLD: See if can make water more mobile (for gravity), without though drying up water that just entered
 		- Increase quantity that gets gravitated, and also make sure that last step of water dynamics
 		  is a LeakWater (so that just-entered water is visible for a while)
-	- Sinking detection is broken - it currently only considers total water that entered the ship, which comes proportionally to external
+	- MAYBEOLD: Sinking detection is broken - it currently only considers total water that entered the ship, which comes proportionally to external
 	  water pressure; all this water could be confined to a tiny volume, and yet we trigger sinking
 		- Solution: make it based on total number of points that have water instead, i.e. wet points
 			- ...which requires Points to keep track of point's water going from 0.0 to > 0.0, at all possible
