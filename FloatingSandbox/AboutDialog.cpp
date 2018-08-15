@@ -36,6 +36,7 @@ AboutDialog::AboutDialog(
 
     mainSizer->AddSpacer(5);
 
+
     //
     // Title
     //
@@ -69,7 +70,7 @@ AboutDialog::AboutDialog(
 
 
     //
-    // Credits
+    // Credits title
     //
 
     wxStaticText * creditsTitleLabel = new wxStaticText(this, wxID_ANY, _("Credits:"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
@@ -78,33 +79,66 @@ AboutDialog::AboutDialog(
 
     mainSizer->AddSpacer(2);
 
+
+    //
+    // Credits Text control
+    //
+
+    mTextCtrl = new wxTextCtrl(
+        this,
+        wxID_ANY,
+        wxEmptyString,
+        wxDefaultPosition,
+        wxSize(-1, -1),
+        wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH | wxVSCROLL | wxHSCROLL | wxBORDER_NONE);
+
+    mTextCtrl->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
+   
+    mainSizer->Add(
+        mTextCtrl, 
+        1,                  // Proportion
+        wxEXPAND | wxALL, 
+        10);                // Border
+
+
+    //
+    // Populate credits
+    //
+
     std::vector<std::pair<std::string, std::string>> credits
     {
-        {"Cover art:", "Dimitar Katsarov - https://www.artstation.com/stukata/profile" },
-        {"Textures:", "Tune 'Prototstar' Katerungroch"},
-        {"wxWidgets:", "Copyright (c) 1998-2005 Julian Smart, Robert Roebling et al - https://www.wxwidgets.org/"},
-        {"SFML:", "Copyright (c) Laurent Gomila - https://www.sfml-dev.org/"},
-        {"DevIL:", "Denton Woods et al - http://openil.sourceforge.net/" },
-        {"picojson:", "Copyright 2009-2010 Cybozu Labs, Inc.; Copyright 2011 - 2014 Kazuho Oku - https://github.com/kazuho/picojson"},
-        { "OpenGL tutorial:", "Joey de Vries - https://learnopengl.com/" }
+        {"Cover art:\t", "Dimitar Katsarov - https://www.artstation.com/stukata/profile" },
+        {"Ship art:\t\t", "OceanLinerOrca - https://www.deviantart.com/oceanlinerorca" },
+        {"Textures:\t", "Tune 'Prototstar' Katerungroch"},
+        {"wxWidgets:\t", "Copyright (c) 1998-2005 Julian Smart, Robert Roebling et al - https://www.wxwidgets.org/"},
+        {"SFML:\t\t", "Copyright (c) Laurent Gomila - https://www.sfml-dev.org/"},
+        {"DevIL:\t\t", "Denton Woods et al - http://openil.sourceforge.net/" },
+        {"picojson:\t", "Copyright (c) 2009-2010 Cybozu Labs, Inc.; Copyright (c) 2011-2014 Kazuho Oku - https://github.com/kazuho/picojson"},
+        { "OpenGL tutorial:\t", "Joey de Vries - https://learnopengl.com/" }
     };
 
-    wxFlexGridSizer * creditsSizer = new wxFlexGridSizer(4, 0, 2);
-    for (auto const & credit : credits)
-    {
-        creditsSizer->AddSpacer(5);
+    wxTextAttr titleAttr;
+    titleAttr.SetFontPixelSize(10);
+    titleAttr.SetFontWeight(wxFONTWEIGHT_BOLD);
 
-        wxStaticText * credits1Label = new wxStaticText(this, wxID_ANY, credit.first, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
-        creditsSizer->Add(credits1Label, 0, wxALIGN_LEFT);
+    wxTextAttr creditsAttr;
+    creditsAttr.SetFontPixelSize(10);
+    creditsAttr.SetFontWeight(wxFONTWEIGHT_NORMAL);
 
-        creditsSizer->AddSpacer(5);
+    for (size_t c = 0; c < credits.size(); ++c)
+    {        
+        mTextCtrl->SetDefaultStyle(titleAttr);
+        mTextCtrl->WriteText(credits[c].first);
 
-        wxStaticText * credits2Label = new wxStaticText(this, wxID_ANY, credit.second, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
-        creditsSizer->Add(credits2Label, 1, wxALIGN_LEFT);
+        mTextCtrl->SetDefaultStyle(creditsAttr);
+        mTextCtrl->WriteText(credits[c].second);
+
+        if (c < credits.size() - 1)
+            mTextCtrl->WriteText("\n");
     }
-
-    mainSizer->Add(creditsSizer);
-
+    
+    mTextCtrl->SetFocus();
+    mTextCtrl->HideNativeCaret();
 
     //
     // Finalize
@@ -117,6 +151,15 @@ AboutDialog::AboutDialog(
 
 AboutDialog::~AboutDialog()
 {
+}
+
+void AboutDialog::Open()
+{
+    mTextCtrl->ShowPosition(0);
+    mTextCtrl->SetScrollPos(wxVERTICAL, 0, true);
+    mTextCtrl->SetInsertionPoint(0);
+
+    this->ShowModal();
 }
 
 void AboutDialog::OnClose(wxCloseEvent & event)

@@ -8,6 +8,7 @@
 #include <GameLib/ResourceLoader.h>
 
 #include <wx/dialog.h>
+#include <wx/textctrl.h>
 
 class AboutDialog : public wxDialog
 {
@@ -19,6 +20,8 @@ public:
 	
 	virtual ~AboutDialog();
 
+    void Open();
+
 private:
 
 	void OnClose(wxCloseEvent& event);
@@ -26,6 +29,8 @@ private:
 private:
 
 	wxWindow * const mParent;
+
+    wxTextCtrl * mTextCtrl;
 
 	DECLARE_EVENT_TABLE()
 };

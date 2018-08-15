@@ -885,7 +885,7 @@ void MainFrame::OnAboutMenuItemSelected(wxCommandEvent & /*event*/)
             *mResourceLoader);
     }
 
-    mAboutDialog->ShowModal();
+    mAboutDialog->Open();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
