@@ -8,7 +8,7 @@
 #include <GameLib/ResourceLoader.h>
 
 #include <wx/dialog.h>
-#include <wx/textctrl.h>
+#include <wx/scrolwin.h>
 
 class AboutDialog : public wxDialog
 {
@@ -30,7 +30,7 @@ private:
 
 	wxWindow * const mParent;
 
-    wxTextCtrl * mTextCtrl;
+    wxScrolled<wxPanel> * mCreditsPanel;
 
 	DECLARE_EVENT_TABLE()
 };

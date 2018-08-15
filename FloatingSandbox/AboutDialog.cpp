@@ -1,7 +1,7 @@
 /***************************************************************************************
- * Original Author:		Gabriele Giuseppini
- * Created:				2018-03-12
- * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
+ * Original Author:     Gabriele Giuseppini
+ * Created:             2018-03-12
+ * Copyright:           Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
  ***************************************************************************************/
 #include "AboutDialog.h"
 
@@ -13,24 +13,24 @@
 #include <wx/stattext.h>
 
 wxBEGIN_EVENT_TABLE(AboutDialog, wxDialog)
-	EVT_CLOSE(AboutDialog::OnClose)
+    EVT_CLOSE(AboutDialog::OnClose)
 wxEND_EVENT_TABLE()
 
 AboutDialog::AboutDialog(
     wxWindow * parent,
     ResourceLoader const & resourceLoader)
-	: mParent(parent)
+    : mParent(parent)
 {
-	Create(
-		mParent,
-		wxID_ANY,
-		_("About " + GetVersionInfo(VersionFormat::Long)),
-		wxDefaultPosition, 
-		wxSize(760, 450),
-		wxCAPTION | wxCLOSE_BOX | wxFRAME_SHAPED | wxSTAY_ON_TOP,
-		_T("About Window"));
+    Create(
+        mParent,
+        wxID_ANY,
+        _("About " + GetVersionInfo(VersionFormat::Long)),
+        wxDefaultPosition, 
+        wxSize(760, 450),
+        wxCAPTION | wxCLOSE_BOX | wxFRAME_SHAPED | wxSTAY_ON_TOP,
+        _T("About Window"));
 
-	SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
+    SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 
     wxBoxSizer * mainSizer = new wxBoxSizer(wxVERTICAL);
 
@@ -81,24 +81,15 @@ AboutDialog::AboutDialog(
 
 
     //
-    // Credits Text control
+    // Credits content
     //
 
-    mTextCtrl = new wxTextCtrl(
+    mCreditsPanel = new wxScrolled<wxPanel>(
         this,
         wxID_ANY,
-        wxEmptyString,
         wxDefaultPosition,
         wxSize(-1, -1),
-        wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH | wxVSCROLL | wxHSCROLL | wxBORDER_NONE);
-
-    mTextCtrl->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
-   
-    mainSizer->Add(
-        mTextCtrl, 
-        1,                  // Proportion
-        wxEXPAND | wxALL, 
-        10);                // Border
+        wxVSCROLL);
 
 
     //
@@ -117,28 +108,35 @@ AboutDialog::AboutDialog(
         { "OpenGL tutorial:\t", "Joey de Vries - https://learnopengl.com/" }
     };
 
-    wxTextAttr titleAttr;
-    titleAttr.SetFontPixelSize(10);
-    titleAttr.SetFontWeight(wxFONTWEIGHT_BOLD);
+    wxFont creditsTitleFont(wxFontInfo(8).Bold());
+    wxFont creditsContentFont(wxFontInfo(8));
 
-    wxTextAttr creditsAttr;
-    creditsAttr.SetFontPixelSize(10);
-    creditsAttr.SetFontWeight(wxFONTWEIGHT_NORMAL);
+    wxFlexGridSizer * creditsSizer = new wxFlexGridSizer(4, 0, 2);
+    for (auto const & credit : credits)
+    {
+        creditsSizer->AddSpacer(5);
 
-    for (size_t c = 0; c < credits.size(); ++c)
-    {        
-        mTextCtrl->SetDefaultStyle(titleAttr);
-        mTextCtrl->WriteText(credits[c].first);
+        wxStaticText * credits1Label = new wxStaticText(mCreditsPanel, wxID_ANY, credit.first, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
+        credits1Label->SetFont(creditsTitleFont);
+        creditsSizer->Add(credits1Label, 0, wxALIGN_LEFT);
 
-        mTextCtrl->SetDefaultStyle(creditsAttr);
-        mTextCtrl->WriteText(credits[c].second);
+        creditsSizer->AddSpacer(5);
 
-        if (c < credits.size() - 1)
-            mTextCtrl->WriteText("\n");
-    }
-    
-    mTextCtrl->SetFocus();
-    mTextCtrl->HideNativeCaret();
+        wxStaticText * credits2Label = new wxStaticText(mCreditsPanel, wxID_ANY, credit.second, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
+        credits2Label->SetFont(creditsContentFont);
+        creditsSizer->Add(credits2Label, 1, wxALIGN_LEFT);
+    }    
+
+    mCreditsPanel->SetSizer(creditsSizer);
+    mCreditsPanel->FitInside();
+    mCreditsPanel->SetScrollRate(5, 5);
+
+    mainSizer->Add(
+        mCreditsPanel,
+        1,                  // Proportion
+        wxEXPAND | wxALL,
+        4);                 // Border
+
 
     //
     // Finalize
@@ -155,15 +153,11 @@ AboutDialog::~AboutDialog()
 
 void AboutDialog::Open()
 {
-    mTextCtrl->ShowPosition(0);
-    mTextCtrl->SetScrollPos(wxVERTICAL, 0, true);
-    mTextCtrl->SetInsertionPoint(0);
-
     this->ShowModal();
 }
 
 void AboutDialog::OnClose(wxCloseEvent & event)
 {
-	event.Skip();
+    event.Skip();
 }
 

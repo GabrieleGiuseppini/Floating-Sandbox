@@ -49,12 +49,16 @@ Prev perf (before point et al destructuring)
 
 - Release:
 	= Make cruise liner with generators and lamps
-		- Texture outer fix: edge must be more blended - a bit more transparent and less contrast-y
+		+ Texture outer fix: edge must be more blended - a bit more transparent and less contrast-y
 		- Credits at About Box
 		+ Fix hull rope endpoints
 		+ Ropes
 		+ Electrical
 		+ Rename components as .dat
+	- Update changes
+	- Build
+	- Release on Github
+	- Release on Gamejolt
 
 - New ships
 	- Warship
