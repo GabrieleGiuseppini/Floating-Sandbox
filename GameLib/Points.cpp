@@ -13,6 +13,8 @@ namespace Physics {
 void Points::Add(
     vec2 const & position,
     Material const * material,
+    bool isHull,
+    bool isRope,
     ElementIndex electricalElementIndex,
     float buoyancy,
     vec3f const & color,
@@ -21,6 +23,8 @@ void Points::Add(
     mIsDeletedBuffer.emplace_back(false);
 
     mMaterialBuffer.emplace_back(material);
+    mIsHullBuffer.emplace_back(isHull);
+    mIsRopeBuffer.emplace_back(isRope);
 
     mPositionBuffer.emplace_back(position);
     mVelocityBuffer.emplace_back(vec2f(0.0f, 0.0f));

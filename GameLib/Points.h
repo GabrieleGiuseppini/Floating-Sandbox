@@ -57,7 +57,10 @@ public:
         // Buffers
         //////////////////////////////////
         , mIsDeletedBuffer(elementCount)
+        // Material
         , mMaterialBuffer(elementCount)
+        , mIsHullBuffer(elementCount)
+        , mIsRopeBuffer(elementCount)
         // Dynamics
         , mPositionBuffer(elementCount)
         , mVelocityBuffer(elementCount)
@@ -114,6 +117,8 @@ public:
     void Add(
         vec2 const & position,
         Material const * material,
+        bool isHull,
+        bool isRope,
         ElementIndex electricalElementIndex,
         float buoyancy,
         vec3f const & color,
@@ -151,6 +156,16 @@ public:
     inline Material const * GetMaterial(ElementIndex pointElementIndex) const
     {
         return mMaterialBuffer[pointElementIndex];
+    }
+
+    inline bool IsHull(ElementIndex pointElementIndex) const
+    {
+        return mIsHullBuffer[pointElementIndex];
+    }
+
+    inline bool IsRope(ElementIndex pointElementIndex) const
+    {
+        return mIsRopeBuffer[pointElementIndex];
     }
 
     //
@@ -408,6 +423,8 @@ private:
 
     // Material
     Buffer<Material const *> mMaterialBuffer;
+    Buffer<bool> mIsHullBuffer;
+    Buffer<bool> mIsRopeBuffer;
 
     //
     // Dynamics

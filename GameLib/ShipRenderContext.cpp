@@ -166,9 +166,11 @@ ShipRenderContext::ShipRenderContext(
         // Inputs
         attribute vec2 inputPos;        
         attribute float inputLight;
+        attribute float inputWater;
 
         // Outputs        
         varying float vertexLight;
+        varying float vertexWater;
 
         // Params
         uniform mat4 paramOrthoMatrix;
@@ -176,6 +178,7 @@ ShipRenderContext::ShipRenderContext(
         void main()
         {            
             vertexLight = inputLight;
+            vertexWater = inputWater;
 
             gl_Position = paramOrthoMatrix * vec4(inputPos.xy, -1.0, 1.0);
         }
@@ -187,6 +190,7 @@ ShipRenderContext::ShipRenderContext(
 
         // Inputs from previous shader        
         varying float vertexLight;
+        varying float vertexWater;
 
         // Params
         uniform vec3 paramRopeColour;
@@ -194,13 +198,23 @@ ShipRenderContext::ShipRenderContext(
 
         // Constants
         vec3 lightColour = vec3(1.0, 1.0, 0.25);
+        vec3 wetColour = vec3(0.0, 0.0, 0.8);
 
         void main()
         {
-            vec3 colour1 = paramRopeColour * paramAmbientLightIntensity;
-            colour1 = colour1 * (1.0 - vertexLight) + lightColour * vertexLight;
+            vec3 vertexCol = paramRopeColour * paramAmbientLightIntensity;
+
+            // Apply point water
+            float colorWetness = min(vertexWater, 1.0) * 0.7;
+            vec3 fragColour = vertexCol * (1.0 - colorWetness) + wetColour * colorWetness;
+
+            // Apply ambient light
+            fragColour *= paramAmbientLightIntensity;
+
+            // Apply point light
+            fragColour = fragColour * (1.0 - vertexLight) + lightColour * vertexLight;
             
-            gl_FragColor = vec4(colour1.xyz, 1.0);
+            gl_FragColor = vec4(fragColour.xyz, 1.0);
         } 
     )";
 
@@ -209,6 +223,7 @@ ShipRenderContext::ShipRenderContext(
     // Bind attribute locations
     glBindAttribLocation(*mElementRopeShaderProgram, PointPosVertexAttribute, "inputPos");
     glBindAttribLocation(*mElementRopeShaderProgram, PointLightVertexAttribute, "inputLight");
+    glBindAttribLocation(*mElementRopeShaderProgram, PointWaterVertexAttribute, "inputWater");
 
     // Link
     GameOpenGL::LinkShaderProgram(mElementRopeShaderProgram, "Ship Rope Elements");

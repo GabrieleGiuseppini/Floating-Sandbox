@@ -51,10 +51,10 @@ Prev perf (before point et al destructuring)
 	= Make cruise liner with generators and lamps
 		- Texture outer fix: edge must be more blended - a bit more transparent and less contrast-y
 		- Credits at About Box
-		- Fix hull rope endpoints
+		+ Fix hull rope endpoints
 		+ Ropes
 		+ Electrical
-		- Rename components as .dat
+		+ Rename components as .dat
 
 - New ships
 	- Warship
@@ -320,6 +320,10 @@ Prev perf (before point et al destructuring)
 		- Save Settings As: saves with filename, nothing else
 		- Load Settings: loads with filename, changes own settings
 		- Reset Settings: loads default_settings.json, changes own settings
+	- Revised FileDialog for loading ships: shows previews of ships
+		- Option 1: see if possible to hook into basic FileDialog's rendering of files
+		- Option 2: own FileDialog ("ShipFileDialog"), wit directory tree on the left and previous in main area
+			- Show also name, dimensions, and mass
 
 - Sounds:
 	- Should lower the volume of stress sounds?

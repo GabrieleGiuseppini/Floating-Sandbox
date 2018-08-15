@@ -28,8 +28,8 @@ namespace /* anonymous */ {
 
         for (auto springIndex : points.GetConnectedSprings(pointIndex))
         {
-            if (!points.GetMaterial(springs.GetPointAIndex(springIndex))->IsRope
-                || !points.GetMaterial(springs.GetPointBIndex(springIndex))->IsRope)
+            if (!points.IsRope(springs.GetPointAIndex(springIndex))
+                || !points.IsRope(springs.GetPointBIndex(springIndex)))
             {
                 return true;
             }
@@ -94,6 +94,8 @@ std::unique_ptr<Ship> ShipBuilder::Create(
                 shipDefinition.StructuralImage.Data[(x + (structureHeight - y - 1) * structureWidth) * 3 + 1],
                 shipDefinition.StructuralImage.Data[(x + (structureHeight - y - 1) * structureWidth) * 3 + 2] };
 
+            bool isRopeEndpoint = false;
+
             Material const * material = materials.Get(rgbColour);
             if (nullptr == material)
             {
@@ -101,6 +103,9 @@ std::unique_ptr<Ship> ShipBuilder::Create(
                 if (0x00 == rgbColour[0]
                     && 0 == (rgbColour[1] & 0xF0))
                 {
+                    // It's a rope endpoint
+                    isRopeEndpoint = true;
+                    
                     // Store in RopeSegments
                     RopeSegment & ropeSegment = ropeSegments[rgbColour];
                     if (NoneElementIndex == ropeSegment.PointAIndex)
@@ -139,7 +144,8 @@ std::unique_ptr<Ship> ShipBuilder::Create(
                     vec2f(
                         static_cast<float>(x) / static_cast<float>(structureWidth),
                         static_cast<float>(y) / static_cast<float>(structureHeight)),
-                    material);
+                    material,
+                    isRopeEndpoint);
             }
         }
     }
@@ -335,7 +341,10 @@ void ShipBuilder::CreateRopeSegments(
             curN += slope * stepW;
 
             if (fabs(endW - curW) <= 0.5f)
+            {
+                // Reached destination
                 break;
+            }
 
             // Create position
             vec2f newPosition;
@@ -362,7 +371,8 @@ void ShipBuilder::CreateRopeSegments(
                 vec2f(
                     newPosition.x / static_cast<float>(structureImageSize.Width),
                     newPosition.y / static_cast<float>(structureImageSize.Height)),
-                &ropeMaterial);
+                &ropeMaterial,
+                false);
         }
 
         // Add last SpringInfo (no PointInfo as the endpoint has already a PointInfo)
@@ -387,6 +397,18 @@ Points ShipBuilder::CreatePoints(
 
         Material const * mtl = pointInfo.Mtl;
 
+        // Make point non-hull if it's endpoint of a rope, otherwise springs connected
+        // to this point would be hull and thus this point would never catch water
+        bool isHull;
+        if (pointInfo.IsRopeEndpoint)
+        {
+            isHull = false;
+        }
+        else
+        {
+            isHull = mtl->IsHull;
+        }
+
         ElementIndex electricalElementIndex = NoneElementIndex;
         if (!!mtl->Electrical)
         {
@@ -395,7 +417,7 @@ Points ShipBuilder::CreatePoints(
             ++electricalElementCounter;
         }
 
-        float buoyancy = mtl->IsHull ? 0.0f : 1.0f; // No buoyancy if it's a hull point, as it can't get water
+        float buoyancy = mtl->IsHull ? 0.0f : 1.0f; // No buoyancy if it's a hull material, as it can't get water
 
         //
         // Create point
@@ -404,6 +426,8 @@ Points ShipBuilder::CreatePoints(
         points.Add(
             pointInfo.Position,
             mtl,
+            isHull,
+            mtl->IsRope,
             electricalElementIndex,
             buoyancy,
             mtl->RenderColour,
@@ -459,7 +483,7 @@ void ShipBuilder::CreateShipElementInfos(
 
                 ElementIndex pointIndex = *pointIndexMatrix[x][y];
 
-                // If a non-hull node has empty space on one of its four sides, it is automatically leaking.
+                // If a non-hull node has empty space on one of its four sides, it is leaking.
                 // Check if a is leaking; a is leaking if:
                 // - a is not hull, AND
                 // - there is at least a hole at E, S, W, N
@@ -579,19 +603,16 @@ Physics::Springs ShipBuilder::CreateSprings(
 
     for (ElementIndex s = 0; s < springInfos.size(); ++s)
     {
-        Material const * pointAMaterial = points.GetMaterial(springInfos[s].PointAIndex);
-        Material const * pointBMaterial = points.GetMaterial(springInfos[s].PointBIndex);
-
         int characteristics = 0;
 
         // The spring is hull if at least one node is hull 
         // (we don't propagate water along a hull spring)
-        if (pointAMaterial->IsHull || pointBMaterial->IsHull)
+        if (points.IsHull(springInfos[s].PointAIndex) || points.IsHull(springInfos[s].PointBIndex))
             characteristics |= static_cast<int>(Springs::Characteristics::Hull);
 
         // If both nodes are rope, then the spring is rope 
         // (non-rope <-> rope springs are "connections" and not to be treated as ropes)
-        if (pointAMaterial->IsRope && pointBMaterial->IsRope)
+        if (points.IsRope(springInfos[s].PointAIndex) && points.IsRope(springInfos[s].PointBIndex))
             characteristics |= static_cast<int>(Springs::Characteristics::Rope);
 
         // Create spring
@@ -623,9 +644,9 @@ Physics::Triangles ShipBuilder::CreateTriangles(
 
     for (ElementIndex t = 0; t < triangleInfos.size(); ++t)
     {
-        if (points.GetMaterial(triangleInfos[t].PointAIndex)->IsRope
-            && points.GetMaterial(triangleInfos[t].PointBIndex)->IsRope
-            && points.GetMaterial(triangleInfos[t].PointCIndex)->IsRope)
+        if (points.IsRope(triangleInfos[t].PointAIndex)
+            && points.IsRope(triangleInfos[t].PointBIndex)
+            && points.IsRope(triangleInfos[t].PointCIndex))
         {
             // Do not add triangle if at least one vertex is connected to rope points only
             if (!IsConnectedToNonRopePoints(triangleInfos[t].PointAIndex, points, springs)

@@ -41,14 +41,17 @@ private:
         vec2f Position;
         vec2f TextureCoordinates;
         Material const * Mtl;
+        bool IsRopeEndpoint;
 
         PointInfo(
             vec2f position,
             vec2f textureCoordinates,
-            Material const * mtl)
+            Material const * mtl,
+            bool isRopeEndpoint)
             : Position(position)
             , TextureCoordinates(textureCoordinates)
             , Mtl(mtl)
+            , IsRopeEndpoint(isRopeEndpoint)
         {
         }
     };
