@@ -48,15 +48,16 @@ Prev perf (before point et al destructuring)
 =================================================
 
 - Release:
-	= Make cruise liner with generators and lamps
+	+ Make cruise liner with generators and lamps
 		+ Texture outer fix: edge must be more blended - a bit more transparent and less contrast-y
-		- Credits at About Box
+		+ Credits at About Box
 		+ Fix hull rope endpoints
 		+ Ropes
 		+ Electrical
 		+ Rename components as .dat
-	- Update changes
-	- Build
+	+ Update changes
+	+ Build
+	- Package
 	- Release on Github
 	- Release on Gamejolt
 
@@ -243,7 +244,26 @@ Prev perf (before point et al destructuring)
 - Water:
 	+ Rush sound: should water rush sound be more....rushy?
 
-	- Test forcing incoming water @ LeakWater to be max 1.0
+	- Do Bernoulli:		
+		- LeakWater: calc new velocity with Bernoulli
+			- Should we keep track of quantity of water and pressure separately?
+				- Pressure (built up when point was at height h) is wq*h*g, so depends on that moment
+				- Quantity of water is instead independent from moment water entered
+					- Quantity of water would have to be capped to 1.0, and used as input to mass as-is at UpdatePointDynamics()
+				- Points::mWaterQuantityBuffer (volume fraction) and Points::mWaterPressureBuffer
+		- BalancePressure: calc new velocity with Bernoulli
+			- Try to remove entry condition at BalancePressure: we might want to still balance two water pressures that are < 1.0
+		- GravitateWater: as-is, may be larger coefficient
+		- Consider this loop, N1 times (adjusting dt):
+			- 1 x LeakWater
+			- 1 x GravitateWater
+			- N2 X BalancePressure
+			- Followed? by 1 x LeakWater? (for aesthetics)
+				- If so, may be just do here, but then we lose a loop...
+		- Cache water depth from PointDynamics at Points, using lambda 
+			- Test asm
+
+	- TODOOLD: Test forcing incoming water @ LeakWater to be max 1.0
 		+ After all, water cannot be compressed
 		- Cap al water movements (3x) to move between 0.0 and 1.0-current_water, or just simply with max
 			- LeakWater:
@@ -252,7 +272,11 @@ Prev perf (before point et al destructuring)
 					- Still need to cap because of dt possibly being too large
 			- Might make all water movements slower, in which case might try with LeakWater before *all* iterations
 				- Cache water depth from PointDynamics at Points, using lambda 
-					- Testi wit asm
+					- Test asm
+				- Consider this loop, N1 times:
+					- 1 x LeakWater
+					- 1 x GravitateWater
+					- ...
 			- Need to remove entry condition at BalancePressure: we do want to still balance two water pressures that are < 1.0
 		- If it works, sinking detection should work automagically with just total_water_in_ship
 
@@ -278,16 +302,18 @@ Prev perf (before point et al destructuring)
 	- MAYBEOLD: See if can make water more mobile (for gravity), without though drying up water that just entered
 		- Increase quantity that gets gravitated, and also make sure that last step of water dynamics
 		  is a LeakWater (so that just-entered water is visible for a while)
-	- MAYBEOLD: Sinking detection is broken - it currently only considers total water that entered the ship, which comes proportionally to external
+	- Sinking detection is broken - it currently only considers total water that entered the ship, which comes proportionally to external
 	  water pressure; all this water could be confined to a tiny volume, and yet we trigger sinking
 		- Solution: make it based on total number of points that have water instead, i.e. wet points
-			- ...which requires Points to keep track of point's water going from 0.0 to > 0.0, at all possible
-			  avenues of change (LeakWater, BalancePressure, etc.)
-			- Or can just be calculated at end of each update with simple pass through water buffer and state buffer
-				- Better, "if" for prev_value=0 would be done only once per Ship::Update()
+			- ...which requires 
+			- Option1: or can just be calculated at end of each update with simple pass through water buffer and previous water buffer
+				- Better, "if" for prev_value==0 would be done only once per Ship::Update()
 				- Costly to copy water buffer
-			- Or can use Points::mIsWetBuffer and mWetPointsCount, both set/incrd automagically when Points::AddWater is called
-				- Still multiple ifs
+			- Option 2: 
+				- Points keep track of point's water going from 0.0 to > 0.0, at all possible
+				  avenues of change (LeakWater, BalancePressure, etc.)
+					- Need Points::mIsWetBuffer and mWetPointsCount, both set/incrd automagically when Points::AddWater is called
+				- Needs multiple ifs - one at each change - vs. a single if at Option1
 	+ Did original game propagate water also through hull springs? YES. How did hull thin dividers work? THEY DIDN'T WORK
 	+ Add Point::Hull Characteristic, and don't leak/propagate(incl. gravitate) water if at least one of the two points is hull			
 		+ Alternatively: just make a spring hull if one point is hull; test it
