@@ -63,19 +63,19 @@ SplashScreenDialog::SplashScreenDialog(ResourceLoader const & resourceLoader)
 	// Create Text control
 	//
 
-    mTextCtrl = new wxTextCtrl(
-		this, 
-		wxID_ANY, 
-		wxEmptyString, 
-		wxDefaultPosition,
-		wxSize(400, 20), 
-		wxTE_READONLY | wxTE_CENTRE | wxBORDER_NONE);
+    mProgressText = new wxStaticText(
+        this, 
+        wxID_ANY, 
+        wxEmptyString,
+        wxDefaultPosition,
+        wxSize(400, 20),
+        wxALIGN_CENTER | wxBORDER_NONE);
 
 	wxFont font(10, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
-	mTextCtrl->SetFont(font);
+    mProgressText->SetFont(font);
 
     mainSizer->AddSpacer(2);
-    mainSizer->Add(mTextCtrl, 0, wxALIGN_CENTER);
+    mainSizer->Add(mProgressText, 0, wxALIGN_CENTER);
 
 
     //
@@ -99,6 +99,5 @@ void SplashScreenDialog::UpdateProgress(
 {
     mGauge->SetValue(1 + static_cast<int>(100.0f * progress));
 
-    mTextCtrl->Clear();
-    mTextCtrl->WriteText(message);
+    mProgressText->SetLabelText(message);
 }

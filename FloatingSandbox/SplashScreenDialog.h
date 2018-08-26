@@ -9,7 +9,7 @@
 
 #include <wx/dialog.h>
 #include <wx/gauge.h>
-#include <wx/textctrl.h>
+#include <wx/stattext.h>
 
 #include <memory>
 #include <string>
@@ -29,5 +29,5 @@ public:
 private:
 
     wxGauge * mGauge;
-    wxTextCtrl * mTextCtrl;    
+    wxStaticText * mProgressText;
 };

@@ -1,30 +1,30 @@
 /***************************************************************************************
-* Original Author:		Gabriele Giuseppini
-* Created:				2018-01-21
-* Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
+* Original Author:      Gabriele Giuseppini
+* Created:              2018-01-21
+* Copyright:            Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
 #pragma once
 
 #include <cassert>
 #include <string>
 
-#define VERSION "1.4.0"
+#define VERSION "1.5.0"
 
 enum class VersionFormat
 {
-	Short,
-	Long,
+    Short,
+    Long,
     LongWithDate
 };
 
 inline std::string GetVersionInfo(VersionFormat versionFormat)
 {
-	switch (versionFormat)
-	{
-		case VersionFormat::Short:
-		{
-			return std::string(VERSION);
-		}
+    switch (versionFormat)
+    {
+        case VersionFormat::Short:
+        {
+            return std::string(VERSION);
+        }
 
         case VersionFormat::Long:
         {
@@ -36,10 +36,10 @@ inline std::string GetVersionInfo(VersionFormat versionFormat)
             return std::string("Floating Sandbox v" VERSION " (" __DATE__ ")");
         }
 
-		default:
-		{
-			assert(false);
-			return "";
-		}
-	}
+        default:
+        {
+            assert(false);
+            return "";
+        }
+    }
 }
