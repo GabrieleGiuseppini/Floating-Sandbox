@@ -39,6 +39,7 @@ void Springs::Add(
         ? points.GetMaterial(pointAIndex)
         : points.GetMaterial(pointBIndex));
 
+    mWaterVelocityBuffer.emplace_back(0.0f);
     mWaterPermeabilityBuffer.emplace_back(Characteristics::None != (characteristics & Characteristics::Hull) ? 0.0f : 1.0f);
 
     mIsStressedBuffer.emplace_back(false);
@@ -79,7 +80,7 @@ void Springs::Destroy(
     mCoefficientsBuffer[springElementIndex].DampingCoefficient = 0.0f;
 
     // Zero out our water permeability, to
-    // avoid draining water to destroyed points
+    // avoid draining water from/to non-destroyed points along non-existing springs
     mWaterPermeabilityBuffer[springElementIndex] = 0.0f;
 
     // Flag ourselves as deleted
@@ -238,7 +239,7 @@ float Springs::CalculateStiffnessCoefficient(
     //       
 
     float const massFactor = (points.GetMass(pointAIndex) * points.GetMass(pointBIndex)) / (points.GetMass(pointAIndex) + points.GetMass(pointBIndex));
-    static constexpr float dtSquared = GameParameters::DynamicsSimulationStepTimeDuration<float> * GameParameters::DynamicsSimulationStepTimeDuration<float>;
+    static constexpr float dtSquared = GameParameters::MechanicalDynamicsSimulationStepTimeDuration<float> * GameParameters::MechanicalDynamicsSimulationStepTimeDuration<float>;
 
     static constexpr float C = 0.4f;
 
@@ -258,7 +259,7 @@ float Springs::CalculateDampingCoefficient(
     static constexpr float C = 0.03f;
 
     float const massFactor = (points.GetMass(pointAIndex) * points.GetMass(pointBIndex)) / (points.GetMass(pointAIndex) + points.GetMass(pointBIndex));
-    static constexpr float dt = GameParameters::DynamicsSimulationStepTimeDuration<float>;
+    static constexpr float dt = GameParameters::MechanicalDynamicsSimulationStepTimeDuration<float>;
 
     return C * massFactor / dt;
 }

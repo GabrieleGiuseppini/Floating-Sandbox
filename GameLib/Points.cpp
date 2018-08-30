@@ -168,7 +168,7 @@ vec2f Points::CalculateIntegrationFactor(float mass)
     // yields the change in position, during a time interval equal to the dynamics simulation step.
     //
 
-    static constexpr float dt = GameParameters::DynamicsSimulationStepTimeDuration<float>;
+    static constexpr float dt = GameParameters::MechanicalDynamicsSimulationStepTimeDuration<float>;
     
     return vec2f(dt * dt / mass, dt * dt / mass);
 }

@@ -263,7 +263,7 @@ public:
         // Negative Y == under water line
         if (GetPosition(pointElementIndex).y < waterLevel)
         {
-            // Pressure of a column of water of width 1.0 from the point up to the surface
+            // Pressure of a column of water of area 1m2 from the point up to the surface
             return GameParameters::GravityMagnitude * (waterLevel - GetPosition(pointElementIndex).y);
         }
         else
@@ -442,7 +442,8 @@ private:
 
     Buffer<float> mBuoyancyBuffer;
     
-    // Total quantity of water, 0.0->+INF (== internal water pressure)
+    // Height of a 1m2 column of water which provides a pressure equivalent to the pressure at
+    // this point. Quantity of water is max(water, 1.0)
     Buffer<float> mWaterBuffer;
 
     Buffer<bool> mIsLeakingBuffer;

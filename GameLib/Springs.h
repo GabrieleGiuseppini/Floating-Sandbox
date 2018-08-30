@@ -90,14 +90,15 @@ public:
         , mIsDeletedBuffer(elementCount)
         // Endpoints
         , mEndpointsBuffer(elementCount)
-        // Physical characteristics
+        // Physical
         , mStrengthBuffer(elementCount)
         , mStiffnessBuffer(elementCount)
         , mRestLengthBuffer(elementCount)
         , mCoefficientsBuffer(elementCount)
         , mCharacteristicsBuffer(elementCount)
         , mBaseMaterialBuffer(elementCount)
-        // Water characteristics
+        // Water
+        , mWaterVelocityBuffer(elementCount)
         , mWaterPermeabilityBuffer(elementCount)
         // Stress
         , mIsStressedBuffer(elementCount)
@@ -229,7 +230,7 @@ public:
     }
 
     //
-    // Physical characteristics
+    // Physical
     //
 
     inline float GetStrength(ElementIndex springElementIndex) const
@@ -266,8 +267,18 @@ public:
     inline bool IsRope(ElementIndex springElementIndex) const;
 
     //
-    // Water characteristics
+    // Water
     //
+
+    inline float GetWaterVelocity(ElementIndex springElementIndex) const
+    {
+        return mWaterVelocityBuffer[springElementIndex];
+    }
+
+    inline float & GetWaterVelocity(ElementIndex springElementIndex) 
+    {
+        return mWaterVelocityBuffer[springElementIndex];
+    }
 
     inline float GetWaterPermeability(ElementIndex springElementIndex) const
     {
@@ -345,7 +356,7 @@ private:
     Buffer<Endpoints> mEndpointsBuffer;
 
     //
-    // Physical characteristics
+    // Physical
     //
 
     Buffer<float> mStrengthBuffer;
@@ -356,11 +367,15 @@ private:
     Buffer<Material const *> mBaseMaterialBuffer;
 
     //
-    // Water characteristics
+    // Water
     //
 
+    // The current speed of water along this spring,
+    // from point A to point B
+    Buffer<float> mWaterVelocityBuffer;
+
     // Water propagates through this spring according to this value;
-    // 0.0 make water not propagate
+    // 0.0 makes water not propagate
     Buffer<float> mWaterPermeabilityBuffer;
 
     //

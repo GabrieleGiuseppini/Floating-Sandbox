@@ -1,5 +1,31 @@
 =================================================
-Current perf (1.3.0)
+Current perf (1.4.0)
+=================================================
+- fps: TBD (Samsung: 32.7 (Krafting)) (Mattia's: TBD (Krafting))
+- GameController::DoStep: TBD%
+	- Ship::Update: 32.07%
+		- UpdateDynamics: 25.53%
+			- UpdateSpringForces: 18.72%
+			- UpdatePointForces: 3.55%
+			- HandleCollisionsWithSeafloor: 2.27%
+			- Integrate: 0.98%
+		- GravitateWater: 4.60%
+		- BalancePressure: 1.06%
+		- UpdateStrains: 0.83%
+		- LeakWater: 0.03%
+	- DiffuseLight: 0.89%
+	- WaterSurface::Update: 0.09%
+		- sinf: 0.07%
+- MainFrame::RenderGame: TBD%
+	- ShipRenderContext::Render: 53.52% (Incl) 0.00% (Excl)
+		- ShipRenderContext::RenderSprings: 30.72%
+		- ShipRenderContext::RenderTriangles: 22.29%
+		- ShipRenderContext::RenderRopes: 0.45%
+		- Points::Upload: 0.14%
+	- RenderContext::RenderCloudsEnd: 2.87%
+
+=================================================
+1.3.0 perf
 =================================================
 - fps: 27.3 (Samsung: TODO (Krafting)) (Mattia's: TODO (Krafting))
 - GameController::DoStep: 33.06%
@@ -47,20 +73,6 @@ Prev perf (before point et al destructuring)
 	- RenderContext::RenderCloudsEnd: 1.69%
 =================================================
 
-- Release:
-	+ Make cruise liner with generators and lamps
-		+ Texture outer fix: edge must be more blended - a bit more transparent and less contrast-y
-		+ Credits at About Box
-		+ Fix hull rope endpoints
-		+ Ropes
-		+ Electrical
-		+ Rename components as .dat
-	+ Update changes
-	+ Build
-	- Package
-	- Release on Github
-	- Release on Gamejolt
-
 - New ships
 	- Warship
 	- See Moleskine
@@ -104,6 +116,9 @@ Prev perf (before point et al destructuring)
 	  larger than texture), then one sees parts of the springs
 		- It's a problem with rendering springs with the texture shader
 	- Optimizations:
+		- Use CPU and GPU in parallel
+			- Finalize render before render step, not after
+			- Research glFlush()
 		- More connected components => slower (multiple batches); try
 		  to draw one single batch then, using Z buffer and depth test 
 			- Assign Z based on connected component ID
@@ -243,50 +258,61 @@ Prev perf (before point et al destructuring)
 
 - Water:
 	+ Rush sound: should water rush sound be more....rushy?
+	- Water rearc:
+		- Points::Water is height of water column that provides equivalent pressure
+			- When 0<=Water<=1 is also fraction of volume filled with water
+			- Add comments at Points
+		- Ship::LeakWater:
+			- Calc velocity of entering water with Bernoulli
+				- Still need to cap to max (external pressure) because of dt possibly being too large
+			- Also do negative pressure (i.e. water leaving cell)
+		- Then, see if still need Gravitate+Balance instead of a new, single BalancePressure with gravitational directionality
+			- Single BalancePressure notes:
+				- Goal: point and all its (non-hull) neighbors reach a common pressure (avg of all), adjusted according to points' y's
+				- Adjustment of target pressure: target point's pressure - 1.0 if straight above, +1.0 if straight below, everything else in-between
+					- i.e. cosine
+			- Gravitate+Balance notes:
+				- After LeakWater, we should do a Balance followed by a Gravitate, which adjusts the naive balance for gravity
+				- BalanceWaterPressure:
+					- Goal: point and all its (non-hull) neighbors reach a common pressure, which is avg of all
+					- For each neighbour: point gives or takes water so that other point gets to average
+						- dWater is then other point's Water - avg; CONFIRMED that point gets to avg as well
+					- Speed is Bernoullian, based on dWater
+						- Though flow lines are not horizontal anymore, hence Bernoulli's constant should be adjusted by dh
+					- Visit by points
+				- GravitateWater:
+					- Fraction of water that goes out through *one* spring is fraction of meter that water does in dt, 
+					  i.e. g*dt*dt ~= 0.004, projected onto gravity normal
+					- This is separately for each spring
+					
+		- Optimizations:
+			- UpdateWaterIntake:
+				- Incorporate isDeleted isLeaking (and may be other coeffs)into Points::ExternalWater~Permeability~
+				- Test; if OK, do also update of ExternalWater~Permeability~ at Points::UpdateGameParameters(.)
 
-	- Do Bernoulli:		
-		- LeakWater: calc new velocity with Bernoulli
-			- Should we keep track of quantity of water and pressure separately?
-				- Pressure (built up when point was at height h) is wq*h*g, so depends on that moment
-				- Quantity of water is instead independent from moment water entered
-					- Quantity of water would have to be capped to 1.0, and used as input to mass as-is at UpdatePointDynamics()
-				- Points::mWaterQuantityBuffer (volume fraction) and Points::mWaterPressureBuffer
-		- BalancePressure: calc new velocity with Bernoulli
-			- Try to remove entry condition at BalancePressure: we might want to still balance two water pressures that are < 1.0
-		- GravitateWater: as-is, may be larger coefficient
-		- Consider this loop, N1 times (adjusting dt):
-			- 1 x LeakWater
-			- 1 x GravitateWater
-			- N2 X BalancePressure
-			- Followed? by 1 x LeakWater? (for aesthetics)
-				- If so, may be just do here, but then we lose a loop...
-		- Cache water depth from PointDynamics at Points, using lambda 
-			- Test asm
+			- Cache sea depth from PointDynamics at Points, using lambda 
+				- Test asm
 
-	- TODOOLD: Test forcing incoming water @ LeakWater to be max 1.0
-		+ After all, water cannot be compressed
-		- Cap al water movements (3x) to move between 0.0 and 1.0-current_water, or just simply with max
-			- LeakWater:
-				- ExternalWaterPressure only regulates *velocity* of incoming 1.0-current_water
-					- Use Bernoulli's equation for velocity out of pressure delta
-					- Still need to cap because of dt possibly being too large
-			- Might make all water movements slower, in which case might try with LeakWater before *all* iterations
-				- Cache water depth from PointDynamics at Points, using lambda 
-					- Test asm
-				- Consider this loop, N1 times:
-					- 1 x LeakWater
-					- 1 x GravitateWater
-					- ...
-			- Need to remove entry condition at BalancePressure: we do want to still balance two water pressures that are < 1.0
-		- If it works, sinking detection should work automagically with just total_water_in_ship
+		- Cleanups and deferred TODOs:
+			= GameParameters:
+				+ Rename NumDynamicIterations as NumMechanicalDynamicsIterations
+				+ Add NumWaterDynamicsIterations
+				- Undo if NumWaterDynamicsIterations stays 1
+			- Is Springs::WaterPermeability still used?
+			- See if can remove if(Deleted) at IntegrateWaterVelocities()
+			- See if GameParameters::WaterPressureAdjustment still needed (or needs to change name)
+			- Remove old water dynamics code from Ship
+
+		- Sound rearc:
+			+ Rushing water stays, for water moved during leaking;
+			- Add new "splashing" water, based off quantity of water moved during IntegrateWaterVelocities
+
+
+	-Do water bubbles (at intake) and water drops (at outtake)
+		- Ephemeral particles emitted at UpdateWaterIntake()
+			- Material with zero weight so rises up automagically
 
 	- Optimizations:
-		- Ship::LeakWater: 
-			- Check assembly
-			- Incorporate isDeleted and effectivePressureAdjustment into Points::ExternalWater~Permeability~
-				- Maintain IsLeaking first, we'll later test incorporating also this one 
-			- If OK, do also update of ExternalWaterPermeability at Points::UpdateGameParameters(.)
-			- Test with also incorporating IsLeaking, no ifs in loop
 		- GravitateWater:
 			- Calculate once and for all cos theta's at first iteration
 				- !!! Actually, calculate WaterGravityFactorA = dt*0.6*(1+cos_theta)/2, WaterGravityFactorB = -dt*0.6*(1-cos_theta)/2
@@ -486,7 +512,7 @@ Prev perf (before point et al destructuring)
 	- Smoke-material points, using ephemeral particles
 
 - Multiple ships:
-	- Better after collision detection
+	- Better done after collision detection
 	- When ship loaded (added):
 		- World adds it not to mShips, but as opt<Ship> mPendingShip
 			- Not considered in Update(), but considered in Render()
@@ -505,6 +531,10 @@ Prev perf (before point et al destructuring)
 						- EventTicker: say this and other Reset/Load
 						- SoundController: play sound
 				- Stop PendingShipPlace tool
+
+
+- Floor breaking up upon impact
+	- Does not need full particle-zation, can get away with triangles
 
 ==============================================================================
 ==============================================================================

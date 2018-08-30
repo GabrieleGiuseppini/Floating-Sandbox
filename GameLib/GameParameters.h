@@ -25,24 +25,31 @@ struct GameParameters
 
 
     //
-    // The number of iterations we run in the dynamics step for
+    // The number of iterations we run in the various dynamics updates for
     // each simulation step
     //
-    // The number of iterations dictates how stiff bodies are:
+    // The number of mechanical iterations dictates how stiff bodies are:
     // - Less iterations => softer (jelly) body
     // - More iterations => hard body (never breaks though) 
     //
 
     template <typename T>
-    static constexpr T NumDynamicIterations = 12;
+    static constexpr T NumMechanicalDynamicsIterations = 12;
+
+    template <typename T>
+    static constexpr T NumWaterDynamicsIterations = 1;
 
 
     //
-    // The dt of each iteration in the dynamics step
+    // The dt of each iteration in the dynamics updates
     //
 
     template <typename T>
-    static constexpr T DynamicsSimulationStepTimeDuration = SimulationStepTimeDuration<T> / NumDynamicIterations<T>;
+    static constexpr T MechanicalDynamicsSimulationStepTimeDuration = SimulationStepTimeDuration<T> / NumMechanicalDynamicsIterations<T>;
+
+    template <typename T>
+    static constexpr T WaterDynamicsSimulationStepTimeDuration = SimulationStepTimeDuration<T> / NumWaterDynamicsIterations<T>;
+
 
     //
     // Gravity

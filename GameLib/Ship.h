@@ -5,7 +5,6 @@
  ***************************************************************************************/
 #pragma once
 
-#include "CircularList.h"
 #include "GameParameters.h"
 #include "GameTypes.h"
 #include "MaterialDatabase.h"
@@ -101,7 +100,9 @@ public:
     // Dynamics
     /////////////////////////////////////////////////////////////////////////
 
-    void UpdateDynamics(GameParameters const & gameParameters);
+    // Mechanical
+
+    void UpdateMechanicalDynamics(GameParameters const & gameParameters);
 
     void UpdateDrawForces(
         vec2f const & position,
@@ -115,25 +116,46 @@ public:
 
     void UpdateSpringForces(GameParameters const & gameParameters);    
 
-    void Integrate();
+    void IntegratePointForces();
 
     void HandleCollisionsWithSeaFloor();
 
-    void DetectConnectedComponents(VisitSequenceNumber currentVisitSequenceNumber);
+    // Water
 
+    void UpdateWaterDynamics(GameParameters const & gameParameters);
+
+    void UpdateWaterInflow(
+        GameParameters const & gameParameters,
+        float & waterTaken);
+
+    void UpdateWaterVelocities(GameParameters const & gameParameters);
+
+    void IntegrateWaterVelocities(GameParameters const & gameParameters);
+
+    // TODOOLD
     void LeakWater(
         GameParameters const & gameParameters,
         float & waterTaken);
 
+    // TODOOLD
     void GravitateWater(GameParameters const & gameParameters);
 
+    // TODOOLD
     void BalancePressure(GameParameters const & gameParameters);
+
+    // Electrical 
+
+    void UpdateElectricalDynamics(
+        VisitSequenceNumber currentVisitSequenceNumber,
+        GameParameters const & gameParameters);
 
     void UpdateElectricalConnectivity(VisitSequenceNumber currentVisitSequenceNumber);
 
     void DiffuseLight(GameParameters const & gameParameters);
 
 private:
+
+    void DetectConnectedComponents(VisitSequenceNumber currentVisitSequenceNumber);
 
     void DestroyConnectedTriangles(ElementIndex pointElementIndex);
 

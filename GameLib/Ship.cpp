@@ -225,10 +225,10 @@ void Ship::Update(
 
 
     //
-    // Update dynamics
+    // Update mechanical dynamics
     //
 
-    UpdateDynamics(gameParameters);
+    UpdateMechanicalDynamics(gameParameters);
 
 
     //
@@ -265,50 +265,16 @@ void Ship::Update(
     // Update water dynamics
     //
 
-    // Take water
-    float waterTaken = 0.f;
-    LeakWater(gameParameters, waterTaken);
-
-    // Notify
-    mGameEventHandler->OnWaterTaken(waterTaken);
-
-    // Update total water taken
-    mTotalWater += waterTaken;
-
-    // Check whether we've started sinking
-    if (!mIsSinking
-        && mTotalWater > static_cast<float>(mPoints.GetElementCount()) / 1.5f)
-    {
-        // Started sinking
-        mGameEventHandler->OnSinkingBegin(mId);
-        mIsSinking = true;
-    }
-
-    // Balance pressure
-    for (int i = 0; i < 4; i++)
-        BalancePressure(gameParameters);
-
-    // Balance pressure and gravitate water
-    for (int i = 0; i < 4; i++)
-    {
-        BalancePressure(gameParameters);
-        GravitateWater(gameParameters);
-    }
+    UpdateWaterDynamics(gameParameters);
 
 
     //
     // Update electrical dynamics
     //
 
-    // Invoked regardless of dirty elements, as generators might become wet
-    UpdateElectricalConnectivity(currentVisitSequenceNumber);
-
-    mElectricalElements.Update(
-        currentVisitSequenceNumber,
-        mPoints,
+    UpdateElectricalDynamics(
+        currentVisitSequenceNumber, 
         gameParameters);
-
-    DiffuseLight(gameParameters);
 }
 
 void Ship::Render(
@@ -418,9 +384,13 @@ void Ship::Render(
 // Private Helpers
 ///////////////////////////////////////////////////////////////////////////////////
 
-void Ship::UpdateDynamics(GameParameters const & gameParameters)
+///////////////////////////////////////////////////////////////////////////////////
+// Mechanical Dynamics
+///////////////////////////////////////////////////////////////////////////////////
+
+void Ship::UpdateMechanicalDynamics(GameParameters const & gameParameters)
 {
-    for (int iter = 0; iter < GameParameters::NumDynamicIterations<int>; ++iter)
+    for (int iter = 0; iter < GameParameters::NumMechanicalDynamicsIterations<int>; ++iter)
     {
         // Update tool forces, if we have any
         if (!!mCurrentToolForce)
@@ -442,7 +412,7 @@ void Ship::UpdateDynamics(GameParameters const & gameParameters)
         UpdateSpringForces(gameParameters);
 
         // Integrate
-        Integrate();
+        IntegratePointForces();
 
         // Handle collisions with sea floor
         HandleCollisionsWithSeaFloor();
@@ -574,9 +544,9 @@ void Ship::UpdateSpringForces(GameParameters const & /*gameParameters*/)
     }
 }
 
-void Ship::Integrate()
+void Ship::IntegratePointForces()
 {
-    static constexpr float dt = GameParameters::DynamicsSimulationStepTimeDuration<float>;
+    static constexpr float dt = GameParameters::MechanicalDynamicsSimulationStepTimeDuration<float>;
 
     // Global damp - lowers velocity uniformly, damping oscillations originating between gravity and buoyancy
     // Note: it's extremely sensitive, big difference between 0.9995 and 0.9998
@@ -630,86 +600,271 @@ void Ship::HandleCollisionsWithSeaFloor()
 
             // Move point back along normal
             mPoints.GetPosition(pointIndex) += bounceDisplacement;
-            mPoints.GetVelocity(pointIndex) = bounceDisplacement / GameParameters::DynamicsSimulationStepTimeDuration<float>;
+            mPoints.GetVelocity(pointIndex) = bounceDisplacement / GameParameters::MechanicalDynamicsSimulationStepTimeDuration<float>;
         }
     }
 }
 
-void Ship::DetectConnectedComponents(VisitSequenceNumber currentVisitSequenceNumber)
+///////////////////////////////////////////////////////////////////////////////////
+// Water Dynamics
+///////////////////////////////////////////////////////////////////////////////////
+void Ship::UpdateWaterDynamics(GameParameters const & gameParameters)
 {
-    mConnectedComponentSizes.clear();
+    float waterTakenInStep = 0.f;
 
-    ConnectedComponentId currentConnectedComponentId = 0;
-    std::queue<ElementIndex> pointsToVisitForConnectedComponents;    
+    for (int i = 0; i < GameParameters::NumWaterDynamicsIterations<int>; ++i)
+    {
+        UpdateWaterVelocities(gameParameters);
 
-    // Visit all points
+        IntegrateWaterVelocities(gameParameters);
+
+        UpdateWaterInflow(gameParameters, waterTakenInStep);
+    }
+
+    // Notify water taken
+    mGameEventHandler->OnWaterTaken(waterTakenInStep);
+
+    // Update total water taken
+    mTotalWater += waterTakenInStep;
+
+    // Check whether we've started sinking
+    if (!mIsSinking
+        && mTotalWater > static_cast<float>(mPoints.GetElementCount()) / 1.5f)
+    {
+        // Started sinking
+        mGameEventHandler->OnSinkingBegin(mId);
+        mIsSinking = true;
+    }
+
+    /* TODOOLD
+    // Take water
+    float waterTaken = 0.f;
+    LeakWater(gameParameters, waterTaken);
+
+    // Notify
+    mGameEventHandler->OnWaterTaken(waterTaken);
+
+    // Update total water taken
+    mTotalWater += waterTaken;
+
+    // Check whether we've started sinking
+    if (!mIsSinking
+    && mTotalWater > static_cast<float>(mPoints.GetElementCount()) / 1.5f)
+    {
+    // Started sinking
+    mGameEventHandler->OnSinkingBegin(mId);
+    mIsSinking = true;
+    }
+
+    // Balance pressure
+    for (int i = 0; i < 4; i++)
+    BalancePressure(gameParameters);
+
+    // Balance pressure and gravitate water
+    for (int i = 0; i < 4; i++)
+    {
+    BalancePressure(gameParameters);
+    GravitateWater(gameParameters);
+    }
+    */
+}
+
+void Ship::UpdateWaterInflow(
+    GameParameters const & /*gameParameters*/,
+    float & waterTaken)
+{
+    //
+    // Intake/outtake water into/from all the leaking nodes that are underwater
+    //
+
     for (auto pointIndex : mPoints)
     {
-        // Don't visit destroyed points, or we run the risk of creating a zillion connected components
+        // Avoid taking water into points that are destroyed, changes total water taken
         if (!mPoints.IsDeleted(pointIndex))
         {
-            // Check if visited
-            if (mPoints.GetCurrentConnectedComponentDetectionVisitSequenceNumber(pointIndex) != currentVisitSequenceNumber)
+            if (mPoints.IsLeaking(pointIndex))
             {
-                // This node has not been visited, hence it's the beginning of a new connected component
-                ++currentConnectedComponentId;
-                size_t pointsInCurrentConnectedComponent = 0;
-
                 //
-                // Propagate the connected component ID to all points reachable from this point
+                // 1) Calculate velocity of incoming water, based off Bernoulli's equation applied to point:
+                //  v**2/2 + p/density = c (assuming y of incoming water does not change along the intake)
+                //      With: p = pressure of water at point = d*wh*g (d = water density, wh = water height in point)
+                //
+                // Considering that at equilibrium we have v=0 and p=external_pressure, 
+                // then c=external_pressure/density;
+                // external_pressure is height_of_water_at_y*g*density, then c=height_of_water_at_y*g; 
+                // hence, the velocity of water incoming at point p, when the "water height" in the point is already
+                // wh and the external water pressure is d*height_of_water_at_y*g, is:
+                //  v = +/- sqrt(2*g*|height_of_water_at_y-wh|)
                 //
 
-                // Add point to queue
-                assert(pointsToVisitForConnectedComponents.empty());
-                pointsToVisitForConnectedComponents.push(pointIndex);
+                float const externalWaterHeight = fmaxf(
+                    mParentWorld.GetWaterHeightAt(mPoints.GetPosition(pointIndex).x) - mPoints.GetPosition(pointIndex).y,
+                    0.0f);
 
-                // Mark as visited
-                mPoints.SetCurrentConnectedComponentDetectionVisitSequenceNumber(
-                    pointIndex, 
-                    currentVisitSequenceNumber);
+                float const internalWaterHeight = mPoints.GetWater(pointIndex);
 
-                // Visit all points reachable from this point via springs
-                while (!pointsToVisitForConnectedComponents.empty())
+                float incomingWaterVelocity;
+                if (externalWaterHeight >= internalWaterHeight)
                 {
-                    auto currentPointIndex = pointsToVisitForConnectedComponents.front();
-                    pointsToVisitForConnectedComponents.pop();
-
-                    assert(currentVisitSequenceNumber == mPoints.GetCurrentConnectedComponentDetectionVisitSequenceNumber(currentPointIndex));
-
-                    // Assign the connected component ID
-                    mPoints.SetConnectedComponentId(currentPointIndex, currentConnectedComponentId);
-                    ++pointsInCurrentConnectedComponent;
-
-                    // Go through this point's adjacents
-                    for (auto adjacentSpringElementIndex : mPoints.GetConnectedSprings(currentPointIndex))
-                    {
-                        assert(!mSprings.IsDeleted(adjacentSpringElementIndex));
-
-                        auto pointAIndex = mSprings.GetPointAIndex(adjacentSpringElementIndex);
-                        assert(!mPoints.IsDeleted(pointAIndex));
-                        if (currentVisitSequenceNumber != mPoints.GetCurrentConnectedComponentDetectionVisitSequenceNumber(pointAIndex))
-                        {
-                            mPoints.SetCurrentConnectedComponentDetectionVisitSequenceNumber(pointAIndex, currentVisitSequenceNumber);
-                            pointsToVisitForConnectedComponents.push(pointAIndex);
-                        }
-
-                        auto pointBIndex = mSprings.GetPointBIndex(adjacentSpringElementIndex);
-                        assert(!mPoints.IsDeleted(pointBIndex));
-                        if (currentVisitSequenceNumber != mPoints.GetCurrentConnectedComponentDetectionVisitSequenceNumber(pointBIndex))
-                        {
-                            mPoints.SetCurrentConnectedComponentDetectionVisitSequenceNumber(pointBIndex, currentVisitSequenceNumber);
-                            pointsToVisitForConnectedComponents.push(pointBIndex);
-                        }
-                    }
+                    // Incoming water
+                    incomingWaterVelocity = sqrtf(2.0f * GameParameters::GravityMagnitude * (externalWaterHeight - internalWaterHeight));
+                }
+                else
+                {
+                    // Outgoing water
+                    incomingWaterVelocity = - sqrtf(2.0f * GameParameters::GravityMagnitude * (internalWaterHeight - externalWaterHeight));
                 }
 
-                // Store number of connected components
-                mConnectedComponentSizes.push_back(pointsInCurrentConnectedComponent);
+                //
+                // 2) Move water according to velocity:
+                // - During dt, we move a volume of water Vw equal to A*v*dt; the equivalent change in water
+                //   height is thus Vw/A, i.e. v*dt
+                //
+
+                float newWater = GameParameters::WaterDynamicsSimulationStepTimeDuration<float> * incomingWaterVelocity;
+                mPoints.GetWater(pointIndex) += newWater;
+
+                // Update water taken during step
+                waterTaken += newWater;
             }
         }
     }
 }
 
+void Ship::UpdateWaterVelocities(GameParameters const & /*gameParameters*/)
+{
+    //
+    // For each spring, update the velocity of water along the spring.
+    //
+    // At spring s:
+    //    v(t+1) = v(t) + Dv
+    //
+    // Dv is the additional velocity gained during this dt, which is the sum of 2 components: 
+    //  - pressure gradient - i.e. difference in "water height" among the two endpoints, assuming no y difference
+    //  - gravity gradient - i.e. difference in y among the two endpoints
+    //
+    // The two components are taken care of automagically by Bernoulli's equation:
+    //
+    //      Pa/density + g*ya + 1/2va**2 = Pb/density + g*yb + 1/2vb**2
+    //
+    // In which:
+    //   Pa, Pb = pressure at point A, B
+    //   ya, yb = height of point A, B
+    //   va, vb = velocity of water entering point A, B
+    // 
+    // Considering that:
+    //  - P is Wh*density*g
+    //  - vb is zero
+    //
+    // Then we can rewrite Bernoulli's equation as:
+    //  
+    //      Wha*g + g*ya + 1/2va**2 = Whb*g + g*yb
+    //
+    // Hence:
+    //   va = sqrt( 2*g*( (Whb-Wha) + (yb-ya) )  )
+    //
+
+
+
+    for (auto springIndex : mSprings)
+    {
+        auto const pointAIndex = mSprings.GetPointAIndex(springIndex);
+        auto const pointBIndex = mSprings.GetPointBIndex(springIndex);
+
+        // TODOTEST
+        static constexpr float waterVelocityDrag = 0.985f;
+        //static constexpr float waterVelocityDrag = 0.5f;
+        mSprings.GetWaterVelocity(springIndex) *= waterVelocityDrag;
+
+        float const dw = mPoints.GetWater(pointAIndex) - mPoints.GetWater(pointBIndex);
+        float const dy = mPoints.GetPosition(pointAIndex).y - mPoints.GetPosition(pointBIndex).y;
+
+        float const dwy = dw + dy;
+        if (dwy >= 0.0f)
+        {
+            mSprings.GetWaterVelocity(springIndex) +=
+                sqrtf(2.0f * GameParameters::GravityMagnitude * dwy)
+                * 1.0f;
+        }
+        else
+        {
+            mSprings.GetWaterVelocity(springIndex) -= 
+                sqrtf(2.0f * GameParameters::GravityMagnitude * -dwy)
+                * 1.0f;
+        }
+    }
+}
+
+void Ship::IntegrateWaterVelocities(GameParameters const & /*gameParameters*/)
+{
+    //
+    // For each spring, move water from one endpoint to the other, based on the current water velocity
+    // in the spring.
+    //
+    // Given a water velocity v, the distance travelled by water from the source endpoint towards the destination
+    // endpoint is D=v*dt; given a spring section A, this travelled distance corresponds to a moved volume of 
+    // water V=D*A. This volume of water V is responsible for a change in water height
+    // at its source and destination points of +/- V/A. 
+    //
+    // Technically, this volume of water disappears immediately from the source endpoint, and only appears
+    // at the destination endpoint after having travelled the entire spring distance L. In practice, however, 
+    // we don't "park" water in a spring, and we simulate the latency by scaling the distance traveled by the 
+    // water by L, so D=v*dt/L.
+    //
+    // Putting it all together, the change in water height at either endpoint is dw = +/- v*dt/L.
+    //
+    // We then have to take into account boundary conditions (due to our Eulearian explicit integration scheme),
+    // which might cause more water to leave a point than it is actually available. 
+    // Furthermore, the first spring connected to a point might drain completely that point,
+    // leaving no water available for the other springs connected to the same point. This causes unpleasant
+    // artifacts in the water distribution.
+    //
+    // To overcome this, we first associate a normalization factor to each point, equal to all the water that
+    // would ideally leave the point. 
+    //
+
+    // TODOHERE:
+    // - Visit by points and:
+    //      - Calc normalization factor
+    //      - Integrate, using half of the outcome (as the other half will come when the other endpoints are visited)
+    //
+
+    for (auto springIndex : mSprings)
+    {
+        auto const pointAIndex = mSprings.GetPointAIndex(springIndex);
+        auto const pointBIndex = mSprings.GetPointBIndex(springIndex);
+
+        // TODOTEST
+        static constexpr float waterVelocityAdjustment = 1.0f;
+
+        float const theoreticalWaterDelta =
+            mSprings.GetWaterVelocity(springIndex) * GameParameters::WaterDynamicsSimulationStepTimeDuration<float>
+            / mSprings.GetRestLength(springIndex)
+            * mSprings.GetWaterPermeability(springIndex)
+            * waterVelocityAdjustment;
+
+        float actualWaterDelta;
+        if (theoreticalWaterDelta >= 0.f)
+        { 
+            // From A to B
+            actualWaterDelta = fminf(
+                mPoints.GetWater(pointAIndex),
+                theoreticalWaterDelta);
+        }
+        else
+        {
+            // From B to A
+            actualWaterDelta = fmaxf(
+                -mPoints.GetWater(pointBIndex),
+                theoreticalWaterDelta);
+        }
+
+        mPoints.GetWater(pointAIndex) -= actualWaterDelta;
+        mPoints.GetWater(pointBIndex) += actualWaterDelta;
+    }
+}
+
+// TODOOLD
 void Ship::LeakWater(
     GameParameters const & gameParameters,
     float & waterTaken)
@@ -747,6 +902,7 @@ void Ship::LeakWater(
     }
 }
 
+// TODOOLD
 void Ship::GravitateWater(GameParameters const & gameParameters)
 {
     //
@@ -784,6 +940,7 @@ void Ship::GravitateWater(GameParameters const & gameParameters)
     }
 }
 
+// TODOOLD
 void Ship::BalancePressure(GameParameters const & /*gameParameters*/)
 {
     //
@@ -814,6 +971,25 @@ void Ship::BalancePressure(GameParameters const & /*gameParameters*/)
         mPoints.GetWater(pointAIndex) += correction;
         mPoints.GetWater(pointBIndex) -= correction;
     }
+}
+
+///////////////////////////////////////////////////////////////////////////////////
+// Electrical Dynamics
+///////////////////////////////////////////////////////////////////////////////////
+
+void Ship::UpdateElectricalDynamics(
+    VisitSequenceNumber currentVisitSequenceNumber,
+    GameParameters const & gameParameters)
+{
+    // Invoked regardless of dirty elements, as generators might become wet
+    UpdateElectricalConnectivity(currentVisitSequenceNumber);
+
+    mElectricalElements.Update(
+        currentVisitSequenceNumber,
+        mPoints,
+        gameParameters);
+
+    DiffuseLight(gameParameters);
 }
 
 void Ship::UpdateElectricalConnectivity(VisitSequenceNumber currentVisitSequenceNumber)
@@ -925,6 +1101,81 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
 // Private helpers
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
+void Ship::DetectConnectedComponents(VisitSequenceNumber currentVisitSequenceNumber)
+{
+    mConnectedComponentSizes.clear();
+
+    ConnectedComponentId currentConnectedComponentId = 0;
+    std::queue<ElementIndex> pointsToVisitForConnectedComponents;
+
+    // Visit all points
+    for (auto pointIndex : mPoints)
+    {
+        // Don't visit destroyed points, or we run the risk of creating a zillion connected components
+        if (!mPoints.IsDeleted(pointIndex))
+        {
+            // Check if visited
+            if (mPoints.GetCurrentConnectedComponentDetectionVisitSequenceNumber(pointIndex) != currentVisitSequenceNumber)
+            {
+                // This node has not been visited, hence it's the beginning of a new connected component
+                ++currentConnectedComponentId;
+                size_t pointsInCurrentConnectedComponent = 0;
+
+                //
+                // Propagate the connected component ID to all points reachable from this point
+                //
+
+                // Add point to queue
+                assert(pointsToVisitForConnectedComponents.empty());
+                pointsToVisitForConnectedComponents.push(pointIndex);
+
+                // Mark as visited
+                mPoints.SetCurrentConnectedComponentDetectionVisitSequenceNumber(
+                    pointIndex,
+                    currentVisitSequenceNumber);
+
+                // Visit all points reachable from this point via springs
+                while (!pointsToVisitForConnectedComponents.empty())
+                {
+                    auto currentPointIndex = pointsToVisitForConnectedComponents.front();
+                    pointsToVisitForConnectedComponents.pop();
+
+                    assert(currentVisitSequenceNumber == mPoints.GetCurrentConnectedComponentDetectionVisitSequenceNumber(currentPointIndex));
+
+                    // Assign the connected component ID
+                    mPoints.SetConnectedComponentId(currentPointIndex, currentConnectedComponentId);
+                    ++pointsInCurrentConnectedComponent;
+
+                    // Go through this point's adjacents
+                    for (auto adjacentSpringElementIndex : mPoints.GetConnectedSprings(currentPointIndex))
+                    {
+                        assert(!mSprings.IsDeleted(adjacentSpringElementIndex));
+
+                        auto pointAIndex = mSprings.GetPointAIndex(adjacentSpringElementIndex);
+                        assert(!mPoints.IsDeleted(pointAIndex));
+                        if (currentVisitSequenceNumber != mPoints.GetCurrentConnectedComponentDetectionVisitSequenceNumber(pointAIndex))
+                        {
+                            mPoints.SetCurrentConnectedComponentDetectionVisitSequenceNumber(pointAIndex, currentVisitSequenceNumber);
+                            pointsToVisitForConnectedComponents.push(pointAIndex);
+                        }
+
+                        auto pointBIndex = mSprings.GetPointBIndex(adjacentSpringElementIndex);
+                        assert(!mPoints.IsDeleted(pointBIndex));
+                        if (currentVisitSequenceNumber != mPoints.GetCurrentConnectedComponentDetectionVisitSequenceNumber(pointBIndex))
+                        {
+                            mPoints.SetCurrentConnectedComponentDetectionVisitSequenceNumber(pointBIndex, currentVisitSequenceNumber);
+                            pointsToVisitForConnectedComponents.push(pointBIndex);
+                        }
+                    }
+                }
+
+                // Store number of connected components
+                mConnectedComponentSizes.push_back(pointsInCurrentConnectedComponent);
+            }
+        }
+    }
+}
+
 void Ship::DestroyConnectedTriangles(ElementIndex pointElementIndex)
 {
     // 
@@ -982,7 +1233,7 @@ void Ship::BombBlastHandler(
     // 
     // Go through all the connected component's points and, for each point in radius:
     // - Keep closest to blast position, which we'll Destroy later (if this is the fist frame of the 
-    //   bast sequence)
+    //   blast sequence)
     // - Flip over the point outside of the radius
     //
 
@@ -1012,7 +1263,7 @@ void Ship::BombBlastHandler(
                 // Flip the point
                 vec2f flippedRadius = pointRadius.normalise() * (blastRadius + (blastRadius - pointRadius.length()));
                 vec2f newPosition = blastPosition + flippedRadius;                
-                mPoints.GetVelocity(pointIndex) = (newPosition - mPoints.GetPosition(pointIndex)) / GameParameters::DynamicsSimulationStepTimeDuration<float>;
+                mPoints.GetVelocity(pointIndex) = (newPosition - mPoints.GetPosition(pointIndex)) / GameParameters::MechanicalDynamicsSimulationStepTimeDuration<float>;
                 mPoints.GetPosition(pointIndex) = newPosition;
             }
         }

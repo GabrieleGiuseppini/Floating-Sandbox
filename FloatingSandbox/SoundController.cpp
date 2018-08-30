@@ -480,7 +480,7 @@ void SoundController::OnLightFlicker(
 
 void SoundController::OnWaterTaken(float waterTaken)
 {
-    float volume = 100.f * (-1.f / expf(waterTaken) + 1.f);
+    float volume = 100.f * (-1.f / expf(fabs(waterTaken)) + 1.f);
     mWaterRushSound.SetVolume(volume);
     mWaterRushSound.Start();
 }
