@@ -103,7 +103,11 @@ Prev perf (before point et al destructuring)
 	- Split Spring::WaterPermeability in two, with pre-calculated values:
 		- WaterGravitationFactor
 		- WaterPropagationFactor
-	- If SSE2 works, see if can parallelize also:
+	- Use libspm
+		- For IntegratePointDynamics, to guarantee SSE2
+		- For others, to replace if's/maxf'
+			- Check first how maxf is compiled
+	- See if can parallelize also:
 		- BalancePressure, GravitateWater, SpringDynamics
 			- See shuffled loading and storing of 4 arbitrary floats in ETH deck
 	- Water and Land interpolations:
@@ -300,8 +304,9 @@ Prev perf (before point et al destructuring)
 				- Undo if NumWaterDynamicsIterations stays 1
 			- Is Springs::WaterPermeability still used?
 			- See if can remove if(Deleted) at IntegrateWaterVelocities()
-			- See if GameParameters::WaterPressureAdjustment still needed (or needs to change name)
+			+ See if GameParameters::WaterPressureAdjustment still needed (or needs to change name)
 			- Remove old water dynamics code from Ship
+			- SettingsDialog: fix for missing slider
 
 		- Sound rearc:
 			+ Rushing water stays, for water moved during leaking;
