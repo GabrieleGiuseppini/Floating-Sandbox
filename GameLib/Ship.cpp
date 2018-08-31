@@ -862,23 +862,24 @@ void Ship::IntegrateWaterVelocities(GameParameters const & gameParameters)
                 otherEndpointIndex = mSprings.GetPointAIndex(springIndex);
                 springDirection = -1.0f;
             }
-
+            
             float const theoreticalOutgoingWaterDelta =
                 mSprings.GetWaterVelocity(springIndex) * GameParameters::WaterDynamicsSimulationStepTimeDuration<float>
                 / mSprings.GetRestLength(springIndex)
                 * mSprings.GetWaterPermeability(springIndex)
                 * gameParameters.WaterVelocityAdjustment
-                * springDirection;
+                * springDirection
+                / 2.0f; // Leave room for the endpoint's other spring
 
             if (theoreticalOutgoingWaterDelta >= 0.0f)
             {
                 // Outgoing flow, from us to other endpoint
 
-                // Store it for later, and leave room for the endpoint's other spring
-                theoreticalSpringOutgoingDw[s] = theoreticalOutgoingWaterDelta / 2.0f;
+                // Store it for later
+                theoreticalSpringOutgoingDw[s] = theoreticalOutgoingWaterDelta;
 
                 // Update total outgoing flow
-                totalTheoreticalOutgoingFlow += theoreticalSpringOutgoingDw[s];
+                totalTheoreticalOutgoingFlow += theoreticalOutgoingWaterDelta;
             }
             else
             {
@@ -886,11 +887,9 @@ void Ship::IntegrateWaterVelocities(GameParameters const & gameParameters)
 
                 theoreticalSpringOutgoingDw[s] = 0.0f;
 
-                // Cap it to make sure we don't drain the other point completely,
-                // and also leave room for the endpoint's other spring
+                // Cap it to make sure we don't drain the other point completely
                 float const actualIncomingWaterDelta =
-                    fminf(mPoints.GetWater(otherEndpointIndex), -theoreticalOutgoingWaterDelta)
-                    / 2.0f;
+                    fminf(mPoints.GetWater(otherEndpointIndex), -theoreticalOutgoingWaterDelta);
 
                 assert(actualIncomingWaterDelta >= 0.0f);
 
@@ -929,6 +928,7 @@ void Ship::IntegrateWaterVelocities(GameParameters const & gameParameters)
         // Update point's water
         mPoints.GetWater(pointIndex) -= fminf(totalTheoreticalOutgoingFlow, mPoints.GetWater(pointIndex));
     }
+
     // TODOOLD
     ////for (auto springIndex : mSprings)
     ////{
@@ -967,7 +967,7 @@ void Ship::IntegrateWaterVelocities(GameParameters const & gameParameters)
 
 // TODOOLD
 void Ship::LeakWater(
-    GameParameters const & gameParameters,
+    GameParameters const & /*gameParameters*/,
     float & waterTaken)
 {
     // Magic number
