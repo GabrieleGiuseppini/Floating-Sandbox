@@ -812,14 +812,12 @@ void Ship::IntegrateWaterVelocities(GameParameters const & gameParameters)
     // in the spring.
     //
     // Given a water velocity v, the distance travelled by water from the source endpoint towards the destination
-    // endpoint is D=v*dt; given a spring section A, this travelled distance corresponds to a moved volume of 
-    // water V=D*A. This volume of water V is responsible for a change in water height
+    // endpoint during a simulation step is D=v*dt; given a spring section A, this travelled distance corresponds 
+    // to a moved volume of water V=D*A. This volume of water V is responsible for a change in water height
     // at its source and destination points of +/- V/A. 
     //
-    // Technically, this volume of water disappears immediately from the source endpoint, and only appears
-    // at the destination endpoint after having travelled the entire spring distance L. In practice, however, 
-    // we don't "park" water in a spring, and we simulate the latency by scaling the distance traveled by the 
-    // water by L, so D=v*dt/L.
+    // We immediately move this volume of water to its destination point along a spring of length 1.0, 
+    // but then we have to adjust for springs with lengths different than 1.0: V=v*dt*A/L.
     //
     // Putting it all together, the change in water height at either endpoint is dW = +/- v*dt/L.
     //
