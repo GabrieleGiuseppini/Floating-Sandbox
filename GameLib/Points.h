@@ -34,11 +34,10 @@ private:
      * The elements connected to a point.
      */
     struct Network
-    {
-        // 8 neighbours and 1 rope spring, when this is a rope endpoint
-        FixedSizeVector<ElementIndex, 8U + 1U> ConnectedSprings; 
+    {        
+        FixedSizeVector<ElementIndex, GameParameters::MaxSpringsPerPoint> ConnectedSprings; 
 
-        FixedSizeVector<ElementIndex, 8U> ConnectedTriangles;
+        FixedSizeVector<ElementIndex, GameParameters::MaxTrianglesPerPoint> ConnectedTriangles;
 
         Network()
             : ConnectedSprings()

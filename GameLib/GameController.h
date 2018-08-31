@@ -131,10 +131,15 @@ public:
     float GetMinBuoyancyAdjustment() const { return GameParameters::MinBuoyancyAdjustment; }
     float GetMaxBuoyancyAdjustment() const { return GameParameters::MaxBuoyancyAdjustment; }
 
-    float GetWaterPressureAdjustment() const { return mGameParameters.WaterPressureAdjustment; }
-    void SetWaterPressureAdjustment(float value) { mGameParameters.WaterPressureAdjustment = value; }
-    float GetMinWaterPressureAdjustment() const { return GameParameters::MinWaterPressureAdjustment; }
-    float GetMaxWaterPressureAdjustment() const { return GameParameters::MaxWaterPressureAdjustment; }
+    float GetWaterVelocityDrag() const { return mGameParameters.WaterVelocityDrag; }
+    void SetWaterVelocityDrag(float value) { mGameParameters.WaterVelocityDrag = value; }
+    float GetMinWaterVelocityDrag() const { return GameParameters::MinWaterVelocityDrag; }
+    float GetMaxWaterVelocityDrag() const { return GameParameters::MaxWaterVelocityDrag; }
+
+    float GetWaterVelocityAdjustment() const { return mGameParameters.WaterVelocityAdjustment; }
+    void SetWaterVelocityAdjustment(float value) { mGameParameters.WaterVelocityAdjustment = value; }
+    float GetMinWaterVelocityAdjustment() const { return GameParameters::MinWaterVelocityAdjustment; }
+    float GetMaxWaterVelocityAdjustment() const { return GameParameters::MaxWaterVelocityAdjustment; }
 
     float GetWaveHeight() const { return mGameParameters.WaveHeight; }
     void SetWaveHeight(float value) { mGameParameters.WaveHeight = value; }

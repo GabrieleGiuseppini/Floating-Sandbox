@@ -46,7 +46,8 @@ private:
     std::unique_ptr<SliderControl> mStiffnessSlider;
     std::unique_ptr<SliderControl> mStrengthSlider;
     std::unique_ptr<SliderControl> mBuoyancySlider;
-    std::unique_ptr<SliderControl> mWaterPressureSlider;
+    std::unique_ptr<SliderControl> mWaterVelocitySlider;
+    std::unique_ptr<SliderControl> mWaterVelocityDragSlider;
     std::unique_ptr<SliderControl> mWaveHeightSlider;
     std::unique_ptr<SliderControl> mWaterTransparencySlider;
     std::unique_ptr<SliderControl> mLightDiffusionSlider;

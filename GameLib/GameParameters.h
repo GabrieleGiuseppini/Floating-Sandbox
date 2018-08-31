@@ -75,9 +75,13 @@ struct GameParameters
 	static constexpr float MinBuoyancyAdjustment = 0.0f;
 	static constexpr float MaxBuoyancyAdjustment = 4.0f;
 
-	float WaterPressureAdjustment;
-	static constexpr float MinWaterPressureAdjustment = 0.0f;
-	static constexpr float MaxWaterPressureAdjustment = 4.0f;
+    float WaterVelocityAdjustment;
+    static constexpr float MinWaterVelocityAdjustment = 0.001f;
+    static constexpr float MaxWaterVelocityAdjustment = 2.4f;
+
+    float WaterVelocityDrag;
+    static constexpr float MinWaterVelocityDrag = 0.0f;
+    static constexpr float MaxWaterVelocityDrag = 1.0f;
 
 	float WaveHeight;
 	static constexpr float MinWaveHeight = 0.0f;
@@ -121,4 +125,9 @@ struct GameParameters
 
     static constexpr size_t MaxBombs = 64u;
     static constexpr size_t MaxPinnedPoints = 64u;    
+
+    // 8 neighbours and 1 rope spring, when this is a rope endpoint
+    static constexpr size_t MaxSpringsPerPoint = 8u + 1u;
+
+    static constexpr size_t MaxTrianglesPerPoint = 8u;
 };

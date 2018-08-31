@@ -16,6 +16,7 @@
 
 static constexpr int SliderWidth = 40;
 static constexpr int SliderHeight = 140;
+static constexpr int HorizontalPadding = 10;
 
 const long ID_ULTRA_VIOLENT_CHECKBOX = wxNewId();
 const long ID_QUICK_WATER_FIX_CHECKBOX = wxNewId();
@@ -50,7 +51,7 @@ SettingsDialog::SettingsDialog(
 
     wxBoxSizer* controls1Sizer = new wxBoxSizer(wxHORIZONTAL);
 
-    controls1Sizer->AddSpacer(20);
+    controls1Sizer->AddSpacer(HorizontalPadding);
 
 
     // Stiffness
@@ -72,7 +73,7 @@ SettingsDialog::SettingsDialog(
 
     controls1Sizer->Add(mStiffnessSlider.get(), 0);
 
-    controls1Sizer->AddSpacer(20);
+    controls1Sizer->AddSpacer(HorizontalPadding);
 
 
     // Strength
@@ -95,7 +96,7 @@ SettingsDialog::SettingsDialog(
 
     controls1Sizer->Add(mStrengthSlider.get(), 0);
     
-    controls1Sizer->AddSpacer(20);
+    controls1Sizer->AddSpacer(HorizontalPadding);
 
 
     // Buoyancy
@@ -117,29 +118,51 @@ SettingsDialog::SettingsDialog(
     
     controls1Sizer->Add(mBuoyancySlider.get(), 0);
     
-    controls1Sizer->AddSpacer(20);
+    controls1Sizer->AddSpacer(HorizontalPadding);
 
 
-    // Water Pressure
+    // Water Velocity
 
-    mWaterPressureSlider = std::make_unique<SliderControl>(
+    mWaterVelocitySlider = std::make_unique<SliderControl>(
         this,
         SliderWidth,
         SliderHeight,
-        "Water Pressure Adjust",
-        mGameController->GetWaterPressureAdjustment(),
+        "Water Velocity Adjust",
+        mGameController->GetWaterVelocityAdjustment(),
         [this](float /*value*/)
         {
             // Remember we're dirty now
             this->mApplyButton->Enable(true);
         },
         std::make_unique<LinearSliderCore>(
-            mGameController->GetMinWaterPressureAdjustment(),
-            mGameController->GetMaxWaterPressureAdjustment()));
+            mGameController->GetMinWaterVelocityAdjustment(),
+            mGameController->GetMaxWaterVelocityAdjustment()));
 
-    controls1Sizer->Add(mWaterPressureSlider.get(), 0);
+    controls1Sizer->Add(mWaterVelocitySlider.get(), 0);
 
-    controls1Sizer->AddSpacer(20);
+    controls1Sizer->AddSpacer(HorizontalPadding);
+
+
+    // Water Velocity Drag
+
+    mWaterVelocityDragSlider = std::make_unique<SliderControl>(
+        this,
+        SliderWidth,
+        SliderHeight,
+        "Water Velocity Drag",
+        mGameController->GetWaterVelocityDrag(),
+        [this](float /*value*/)
+    {
+        // Remember we're dirty now
+        this->mApplyButton->Enable(true);
+    },
+        std::make_unique<LinearSliderCore>(
+            mGameController->GetMinWaterVelocityDrag(),
+            mGameController->GetMaxWaterVelocityDrag()));
+
+    controls1Sizer->Add(mWaterVelocityDragSlider.get(), 0);
+
+    controls1Sizer->AddSpacer(HorizontalPadding);
 
 
     // Wave Height
@@ -161,7 +184,7 @@ SettingsDialog::SettingsDialog(
     
     controls1Sizer->Add(mWaveHeightSlider.get(), 0);
 
-    controls1Sizer->AddSpacer(20);
+    controls1Sizer->AddSpacer(HorizontalPadding);
 
 
     // Check boxes 1
@@ -174,7 +197,7 @@ SettingsDialog::SettingsDialog(
 
     controls1Sizer->Add(checkboxesSizer1, 0);
 
-    controls1Sizer->AddSpacer(20);
+    controls1Sizer->AddSpacer(HorizontalPadding);
 
 
     mainSizer->Add(controls1Sizer);
@@ -188,7 +211,7 @@ SettingsDialog::SettingsDialog(
 
     wxBoxSizer* controls2Sizer = new wxBoxSizer(wxHORIZONTAL);
 
-    controls2Sizer->AddSpacer(20);
+    controls2Sizer->AddSpacer(HorizontalPadding);
 
     
     // Water Transparency
@@ -210,7 +233,7 @@ SettingsDialog::SettingsDialog(
     
     controls2Sizer->Add(mWaterTransparencySlider.get(), 0);
 
-    controls2Sizer->AddSpacer(20);
+    controls2Sizer->AddSpacer(HorizontalPadding);
 
 
     // Light Diffusion
@@ -232,7 +255,7 @@ SettingsDialog::SettingsDialog(
 
     controls2Sizer->Add(mLightDiffusionSlider.get(), 0);
 
-    controls2Sizer->AddSpacer(20);
+    controls2Sizer->AddSpacer(HorizontalPadding);
 
 
     // Sea Depth
@@ -254,7 +277,7 @@ SettingsDialog::SettingsDialog(
 
     controls2Sizer->Add(mSeaDepthSlider.get(), 0);
 
-    controls2Sizer->AddSpacer(20);
+    controls2Sizer->AddSpacer(HorizontalPadding);
 
 
     // Destroy Radius
@@ -276,7 +299,7 @@ SettingsDialog::SettingsDialog(
 
     controls2Sizer->Add(mDestroyRadiusSlider.get(), 0);
 
-    controls2Sizer->AddSpacer(20);
+    controls2Sizer->AddSpacer(HorizontalPadding);
     
 
     // Bomb Blast Radius
@@ -298,7 +321,9 @@ SettingsDialog::SettingsDialog(
 
     controls2Sizer->Add(mBombBlastRadiusSlider.get(), 0);
 
-    controls2Sizer->AddSpacer(20);
+    controls2Sizer->AddSpacer(HorizontalPadding);
+
+    // Missing slider
 
 
     // Check boxes 2
@@ -328,7 +353,7 @@ SettingsDialog::SettingsDialog(
 
     controls2Sizer->Add(checkboxesSizer2, 0);
 
-    controls2Sizer->AddSpacer(20);
+    controls2Sizer->AddSpacer(HorizontalPadding);
 
 
 
@@ -449,8 +474,11 @@ void SettingsDialog::ApplySettings()
     mGameController->SetBuoyancyAdjustment(
         mBuoyancySlider->GetValue());
 
-    mGameController->SetWaterPressureAdjustment(
-        mWaterPressureSlider->GetValue());
+    mGameController->SetWaterVelocityAdjustment(
+        mWaterVelocitySlider->GetValue());
+
+    mGameController->SetWaterVelocityDrag(
+        mWaterVelocityDragSlider->GetValue());
 
     mGameController->SetWaveHeight(
         mWaveHeightSlider->GetValue());
@@ -506,7 +534,9 @@ void SettingsDialog::ReadSettings()
     
     mBuoyancySlider->SetValue(mGameController->GetBuoyancyAdjustment());
     
-    mWaterPressureSlider->SetValue(mGameController->GetWaterPressureAdjustment());
+    mWaterVelocitySlider->SetValue(mGameController->GetWaterVelocityAdjustment());
+
+    mWaterVelocityDragSlider->SetValue(mGameController->GetWaterVelocityDrag());
     
     mWaveHeightSlider->SetValue(mGameController->GetWaveHeight());
     
