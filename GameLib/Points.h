@@ -251,9 +251,12 @@ public:
         return mWaterBuffer[pointElementIndex];
     }
 
-    inline float & GetWater(ElementIndex pointElementIndex)
+    inline void AddWater(
+        ElementIndex pointElementIndex,
+        float water)
     {
-        return mWaterBuffer[pointElementIndex];
+        mWaterBuffer[pointElementIndex] += water;
+        assert(mWaterBuffer[pointElementIndex] >= 0.0f);
     }
 
     inline vec2f GetWaterMomentum(ElementIndex pointElementIndex) const
@@ -261,9 +264,15 @@ public:
         return mWaterMomentumBuffer[pointElementIndex];
     }
 
-    inline vec2f & GetWaterMomentum(ElementIndex pointElementIndex)
+    inline void AddWaterMomentum(
+        ElementIndex pointElementIndex,
+        vec2f const & momentum)
     {
-        return mWaterMomentumBuffer[pointElementIndex];
+        if (momentum.length() > 1000000000.f)
+            LogMessage("TODO1");
+        if ((mWaterMomentumBuffer[pointElementIndex] + momentum).length() > 1000000000.f)
+            LogMessage("TODO2");
+        mWaterMomentumBuffer[pointElementIndex] += momentum;
     }
 
     // TODOOLD (verify first that it's not used)
