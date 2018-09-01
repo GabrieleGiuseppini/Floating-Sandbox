@@ -671,7 +671,7 @@ void Ship::UpdateWaterDynamics(GameParameters const & gameParameters)
 }
 
 void Ship::UpdateWaterInflow(
-    GameParameters const & /*gameParameters*/,
+    GameParameters const & gameParameters,
     float & waterTaken)
 {
     //
@@ -737,10 +737,180 @@ void Ship::UpdateWaterInflow(
                 // Update water taken during step
                 waterTaken += newWater;
             }
+
+            // TODO: apply water drag (this is the only handy place to do so at the moment)
+            mPoints.GetWaterMomentum(pointIndex) *= 1.0f - gameParameters.WaterVelocityDrag;
         }
     }
 }
 
+void Ship::UpdateWaterMomenta(GameParameters const & gameParameters)
+{
+    //
+    // For each spring, calculate the velocity gained by water in the source endpoint due to 
+    // pressure difference and gravity difference along the spring, and update the source endpoint's
+    // water momentum with it. 
+    //
+    // At integration time, we will move the dt portion of this source endpoint momentum to the 
+    // destination endpoint.
+    //
+    // The velocity of the outgoing water is given by Bernoulli's equation:
+    //
+    //      Pa/density + g*ya + 1/2va**2 = Pb/density + g*yb + 1/2vb**2
+    //
+    // In which:
+    //   Pa, Pb = pressure at point A, B
+    //   ya, yb = height of point A, B
+    //   va, vb = velocity of water entering point A, B
+    // 
+    // Considering that:
+    //  - P is Wh*density*g
+    //  - vb is zero (we calculate the new velocity only, hence we assume everything's static at this moment)
+    //
+    // Then we can rewrite Bernoulli's equation as:
+    //  
+    //      Wha*g + g*ya + 1/2va**2 = Whb*g + g*yb
+    //
+    // Hence:
+    //   va = sqrt( 2*g*( (Whb-Wha) + (yb-ya) )  )
+    //
+
+    for (auto springIndex : mSprings)
+    {
+        auto const pointAIndex = mSprings.GetPointAIndex(springIndex);
+        auto const pointBIndex = mSprings.GetPointBIndex(springIndex);
+
+        // Normalized spring vector, oriented A -> B
+        vec2f const s = (mPoints.GetPosition(pointBIndex) - mPoints.GetPosition(pointAIndex)).normalise();
+
+        float const dw = mPoints.GetWater(pointAIndex) - mPoints.GetWater(pointBIndex);
+        float const dy = mPoints.GetPosition(pointAIndex).y - mPoints.GetPosition(pointBIndex).y;
+        float const dwy = dw + dy;
+
+        // Update momentum of source endpoint with this velocity delta
+        if (dwy >= 0.0f)
+        {
+            // Water goes from A to B, update A's momentum
+            mPoints.GetWaterMomentum(pointAIndex) +=
+                s
+                * mPoints.GetWater(pointAIndex)
+                * sqrtf(2.0f * GameParameters::GravityMagnitude * dwy);
+        }
+        else
+        {
+            // Water goes from B to A, update B's momentum
+            mPoints.GetWaterMomentum(pointBIndex) +=
+                -s
+                * mPoints.GetWater(pointBIndex)
+                * sqrtf(2.0f * GameParameters::GravityMagnitude * -dwy);
+        }
+    }
+}
+
+void Ship::IntegrateWaterMomenta(GameParameters const & gameParameters)
+{
+    //
+    // For each point, move a dt portion of its water momentum along all springs to the destination
+    // endpoint.
+    //
+    // In order to avoid the first springs draining out all the water and not leaving any for
+    // subsequent springs, we normalize the outgoing flows to ensure we can distribute water among
+    // all springs.
+    //
+
+    // Theoretical outgoing water along each spring; the actual water we move will be a fraction of 
+    // these so that we never exceed the quantity of water available at this point
+    std::array<float, GameParameters::MaxSpringsPerPoint> theoreticalSpringOutgoingWater;
+
+    // Velocity vectors along all outgoing springs
+    std::array<vec2f, GameParameters::MaxSpringsPerPoint> springOutgoingVelocity;
+
+    for (auto pointIndex : mPoints)
+    {
+        // Water velocity - independent from mass
+        vec2f pointWaterVelocity = vec2f::zero();
+        if (mPoints.GetWater(pointIndex) > 0.0f)
+            pointWaterVelocity  = mPoints.GetWaterMomentum(pointIndex) / mPoints.GetWater(pointIndex);
+
+        // Adjust velocity based off user's preferences
+        pointWaterVelocity *= gameParameters.WaterVelocityAdjustment;
+
+        // Water velocity norm and normalized vector
+        float const pointWaterVelocityNorm = pointWaterVelocity.length();
+        vec2f const normalizedPointWaterVelocity = pointWaterVelocity.normalise(pointWaterVelocityNorm);
+
+        // Visit all springs and calculate theoretical outgoing flows
+        for (size_t s = 0; s < mPoints.GetConnectedSprings(pointIndex).size(); ++s)
+        {
+            auto const springIndex = mPoints.GetConnectedSprings(pointIndex)[s];
+
+            auto otherEndpointIndex = mSprings.GetPointBIndex(springIndex);
+            if (otherEndpointIndex == pointIndex)
+            {
+                // This point is B, other point is then A
+                otherEndpointIndex = mSprings.GetPointAIndex(springIndex);
+            }            
+
+            vec2f normalizedSpring = (mPoints.GetPosition(otherEndpointIndex) - mPoints.GetPosition(pointIndex)).normalise();
+
+            // Calculate angle between our water's velocity and this spring in the outgoing direction
+            float cosTheta = normalizedPointWaterVelocity.dot(normalizedSpring);
+            if (cosTheta > 0.0f)
+            {
+                // The water momentum at this point has a positive component along the spring 
+                // in the outgoing direction
+
+                // Scalar velocity along the spring
+                float const vs = pointWaterVelocityNorm * cosTheta;
+
+                // Theoretical quantity of water leaving the point, adjusted for
+                // the springg length
+                float const theoreticalOutgoingWater =
+                    vs * GameParameters::WaterDynamicsSimulationStepTimeDuration<float>
+                    / mSprings.GetRestLength(springIndex)
+                    * mSprings.GetWaterPermeability(springIndex);
+
+                // TODOHERE: normalization
+
+                // Actual quantity of water leaving the point
+                float const actualOutgoingWater = fminf(
+                    theoreticalOutgoingWater,
+                    mPoints.GetWater(pointIndex));
+
+                // Actual momentum leaving the point
+                vec2f const actualOutgoingWaterMomentum =
+                    normalizedSpring
+                    * actualOutgoingWater
+                    * vs;
+
+                // Update quantities of water
+                mPoints.GetWater(pointIndex) -= actualOutgoingWater;
+                mPoints.GetWater(otherEndpointIndex) += actualOutgoingWater;
+
+                assert(mPoints.GetWater(pointIndex) >= 0.0f);
+                assert(mPoints.GetWater(otherEndpointIndex) >= 0.0f);
+
+                // Update momenta
+                mPoints.GetWaterMomentum(pointIndex) -= actualOutgoingWaterMomentum;
+                mPoints.GetWaterMomentum(otherEndpointIndex) += actualOutgoingWaterMomentum;
+            }
+            else
+            {
+                // Nothing along this spring
+                theoreticalSpringOutgoingWater[s] = 0.0f;
+                springOutgoingVelocity[s] = vec2f::zero(); // TODO: see if needed
+            }
+        }
+
+        // Calculate normalization factor
+        // TODOHERE
+
+        // Move momenta now
+        // TODOHERE
+    }
+}
+
+// TODOOLD
 void Ship::UpdateWaterVelocities(GameParameters const & gameParameters)
 {
     //
@@ -805,6 +975,7 @@ void Ship::UpdateWaterVelocities(GameParameters const & gameParameters)
     }
 }
 
+// TODOOLD
 void Ship::IntegrateWaterVelocities(GameParameters const & gameParameters)
 {
     //

@@ -128,8 +128,14 @@ public:
         GameParameters const & gameParameters,
         float & waterTaken);
 
+    void UpdateWaterMomenta(GameParameters const & gameParameters);
+
+    void IntegrateWaterMomenta(GameParameters const & gameParameters);
+
+    // TODOOLD
     void UpdateWaterVelocities(GameParameters const & gameParameters);
 
+    // TODOOLD
     void IntegrateWaterVelocities(GameParameters const & gameParameters);
 
     // TODOOLD

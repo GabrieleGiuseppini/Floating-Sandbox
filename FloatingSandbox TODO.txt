@@ -298,6 +298,7 @@ Prev perf (before point et al destructuring)
 				- Test asm
 
 		- Cleanups and deferred TODOs:
+			- See if need to do anything for deleted springs and/or points
 			= GameParameters:
 				+ Rename NumDynamicIterations as NumMechanicalDynamicsIterations
 				+ Add NumWaterDynamicsIterations
@@ -307,6 +308,7 @@ Prev perf (before point et al destructuring)
 			+ See if GameParameters::WaterPressureAdjustment still needed (or needs to change name)
 			- Remove old water dynamics code from Ship
 			- SettingsDialog: fix for missing slider
+			- Rename GameParameters::GravityNormal to NormalizedGravity
 
 		- Sound rearc:
 			+ Rushing water stays, for water moved during leaking;

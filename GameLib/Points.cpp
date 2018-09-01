@@ -27,14 +27,15 @@ void Points::Add(
     mIsRopeBuffer.emplace_back(isRope);
 
     mPositionBuffer.emplace_back(position);
-    mVelocityBuffer.emplace_back(vec2f(0.0f, 0.0f));
-    mForceBuffer.emplace_back(vec2f(0.0f, 0.0f));
+    mVelocityBuffer.emplace_back(vec2f::zero());
+    mForceBuffer.emplace_back(vec2f::zero());
     mIntegrationFactorBuffer.emplace_back(CalculateIntegrationFactor(material->Mass));
     mMassBuffer.emplace_back(material->Mass);
 
     mBuoyancyBuffer.emplace_back(buoyancy);
-    mIsLeakingBuffer.emplace_back(false);
     mWaterBuffer.emplace_back(0.0f);
+    mWaterMomentumBuffer.emplace_back(vec2f::zero());
+    mIsLeakingBuffer.emplace_back(false);    
 
     mElectricalElementBuffer.emplace_back(electricalElementIndex);
     mLightBuffer.emplace_back(0.0f);

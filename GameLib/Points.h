@@ -60,7 +60,7 @@ public:
         , mMaterialBuffer(elementCount)
         , mIsHullBuffer(elementCount)
         , mIsRopeBuffer(elementCount)
-        // Dynamics
+        // Mechanical dynamics
         , mPositionBuffer(elementCount)
         , mVelocityBuffer(elementCount)
         , mForceBuffer(elementCount)
@@ -69,6 +69,7 @@ public:
         // Water dynamics
         , mBuoyancyBuffer(elementCount)        
         , mWaterBuffer(elementCount)
+        , mWaterMomentumBuffer(elementCount)
         , mIsLeakingBuffer(elementCount)
         // Electrical dynamics
         , mElectricalElementBuffer(elementCount)
@@ -255,6 +256,17 @@ public:
         return mWaterBuffer[pointElementIndex];
     }
 
+    inline vec2f GetWaterMomentum(ElementIndex pointElementIndex) const
+    {
+        return mWaterMomentumBuffer[pointElementIndex];
+    }
+
+    inline vec2f & GetWaterMomentum(ElementIndex pointElementIndex)
+    {
+        return mWaterMomentumBuffer[pointElementIndex];
+    }
+
+    // TODOOLD (verify first that it's not used)
     inline float GetExternalWaterPressure(
         ElementIndex pointElementIndex,
         float waterLevel) const
@@ -444,6 +456,9 @@ private:
     // Height of a 1m2 column of water which provides a pressure equivalent to the pressure at
     // this point. Quantity of water is max(water, 1.0)
     Buffer<float> mWaterBuffer;
+
+    // Total momentum of the water at this point
+    Buffer<vec2f> mWaterMomentumBuffer;
 
     Buffer<bool> mIsLeakingBuffer;
 
