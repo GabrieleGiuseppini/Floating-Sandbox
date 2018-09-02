@@ -53,6 +53,14 @@ public:
         }
     }
 
+    //
+    // Getters
+    //
+
+    vec2f const & GetMouseScreenCoordinates() const
+    {
+        return mInputState.MousePosition;
+    }
 
     //
     // External event handlers

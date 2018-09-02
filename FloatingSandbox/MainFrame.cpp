@@ -543,6 +543,19 @@ void MainFrame::OnKeyDown(wxKeyEvent & event)
         // Down
         mGameController->Pan(vec2f(0.0f, 20.0f));
     }
+    else if (event.GetKeyCode() == WXK_DOWN)
+    {
+        // Down
+        mGameController->Pan(vec2f(0.0f, 20.0f));
+    }
+    else if (event.GetKeyCode() == '/')
+    {
+        // Query
+        auto pointIndex = mGameController->GetNearestPointAt(
+            mToolController->GetMouseScreenCoordinates());
+
+        LogMessage("Point: ", pointIndex);
+    }
     
     event.Skip();
 }
