@@ -69,7 +69,7 @@ public:
         // Water dynamics
         , mBuoyancyBuffer(elementCount)        
         , mWaterBuffer(elementCount)
-        , mWaterMomentumBuffer(elementCount)
+        , mWaterVelocityBuffer(elementCount)
         , mIsLeakingBuffer(elementCount)
         // Electrical dynamics
         , mElectricalElementBuffer(elementCount)
@@ -259,20 +259,16 @@ public:
         assert(mWaterBuffer[pointElementIndex] >= 0.0f);
     }
 
-    inline vec2f GetWaterMomentum(ElementIndex pointElementIndex) const
+    inline vec2f GetWaterVelocity(ElementIndex pointElementIndex) const
     {
-        return mWaterMomentumBuffer[pointElementIndex];
+        return mWaterVelocityBuffer[pointElementIndex];
     }
 
-    inline void AddWaterMomentum(
+    inline void SetWaterVelocity(
         ElementIndex pointElementIndex,
-        vec2f const & momentum)
+        vec2f const & velocity)
     {
-        if (momentum.length() > 1000000000.f)
-            LogMessage("TODO1");
-        if ((mWaterMomentumBuffer[pointElementIndex] + momentum).length() > 1000000000.f)
-            LogMessage("TODO2");
-        mWaterMomentumBuffer[pointElementIndex] += momentum;
+        mWaterVelocityBuffer[pointElementIndex] = velocity;
     }
 
     // TODOOLD (verify first that it's not used)
@@ -466,8 +462,8 @@ private:
     // this point. Quantity of water is max(water, 1.0)
     Buffer<float> mWaterBuffer;
 
-    // Total momentum of the water at this point
-    Buffer<vec2f> mWaterMomentumBuffer;
+    // Total velocity of the water at this point
+    Buffer<vec2f> mWaterVelocityBuffer;
 
     Buffer<bool> mIsLeakingBuffer;
 
