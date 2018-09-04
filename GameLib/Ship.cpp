@@ -1085,16 +1085,16 @@ void Ship::UpdateWaterVelocities(GameParameters const & gameParameters)
 
     for (auto pointIndex : mPoints)
     {
-        mPoints.SetWater(pointIndex, newPointWater[pointIndex]);
+        mPoints.SetWater(pointIndex, fmaxf(newPointWater[pointIndex], 0.0f));
 
         // TODOTEST1
         //mPoints.SetWaterVelocity(pointIndex, newPointWaterVelocity[pointIndex]);
         // Make velocity mass-independent again
-        if (newPointWater[pointIndex] > 0.0f)
+        if (mPoints.GetWater(pointIndex) > 0.0f)
         {
             mPoints.SetWaterVelocity(pointIndex, 
                 newPointWaterVelocity[pointIndex]
-                / newPointWater[pointIndex]);
+                / mPoints.GetWater(pointIndex));
         }
         else
         {

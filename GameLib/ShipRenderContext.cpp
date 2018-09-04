@@ -130,7 +130,7 @@ ShipRenderContext::ShipRenderContext(
 
         void main()
         {
-            float colorWetness = min(vertexWater, 1.0) * 0.7;
+            float colorWetness = min(vertexWater, 0.25) * 2.8;
             vec3 colour1 = vertexCol * (1.0 - colorWetness) + wetColour * colorWetness;
             colour1 *= paramAmbientLightIntensity;
             colour1 = colour1 * (1.0 - vertexLight) + lightColour * vertexLight;
@@ -205,7 +205,7 @@ ShipRenderContext::ShipRenderContext(
             vec3 vertexCol = paramRopeColour * paramAmbientLightIntensity;
 
             // Apply point water
-            float colorWetness = min(vertexWater, 1.0) * 0.7;
+            float colorWetness = min(vertexWater, 0.25) * 2.8;
             vec3 fragColour = vertexCol * (1.0 - colorWetness) + wetColour * colorWetness;
 
             // Apply ambient light
@@ -300,7 +300,7 @@ ShipRenderContext::ShipRenderContext(
             vec4 vertexCol = texture2D(inputTexture, vertexTextureCoords);
 
             // Apply point water
-            float colorWetness = min(vertexWater, 1.0) * 0.7;
+            float colorWetness = min(vertexWater, 0.25) * 2.8;
             vec4 fragColour = vertexCol * (1.0 - colorWetness) + wetColour * colorWetness;
 
             // Apply ambient light
