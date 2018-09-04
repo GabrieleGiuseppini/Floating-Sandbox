@@ -251,6 +251,14 @@ public:
         return mWaterBuffer[pointElementIndex];
     }
 
+    inline void SetWater(
+        ElementIndex pointElementIndex,
+        float water)
+    {
+        mWaterBuffer[pointElementIndex] = water;
+        assert(mWaterBuffer[pointElementIndex] >= 0.0f);
+    }
+
     inline void AddWater(
         ElementIndex pointElementIndex,
         float water)

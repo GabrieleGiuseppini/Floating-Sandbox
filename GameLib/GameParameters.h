@@ -77,7 +77,7 @@ struct GameParameters
 
     float WaterVelocityAdjustment;
     static constexpr float MinWaterVelocityAdjustment = 0.001f;
-    static constexpr float MaxWaterVelocityAdjustment = 2.4f;
+    static constexpr float MaxWaterVelocityAdjustment = 1.0f;
 
     float WaterVelocityDrag;
     static constexpr float MinWaterVelocityDrag = 0.0f;
