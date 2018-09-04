@@ -9,6 +9,7 @@ set  (GAME_SOURCES
 	ElementContainer.h
 	EnumFlags.h
 	FixedSizeVector.h
+	FloatingPoint.h
 	GameController.cpp
 	GameController.h
 	GameEventDispatcher.h

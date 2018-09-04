@@ -1,7 +1,7 @@
 /***************************************************************************************
-* Original Author:		Gabriele Giuseppini
-* Created:				2018-02-18
-* Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
+* Original Author:      Gabriele Giuseppini
+* Created:              2018-02-18
+* Copyright:            Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
 #pragma once
 
