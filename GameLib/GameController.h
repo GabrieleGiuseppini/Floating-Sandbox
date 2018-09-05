@@ -136,6 +136,11 @@ public:
     float GetMinWaterIntakeAdjustment() const { return GameParameters::MinWaterIntakeAdjustment; }
     float GetMaxWaterIntakeAdjustment() const { return GameParameters::MaxWaterIntakeAdjustment; }
 
+    float GetWaterCrazyness() const { return mGameParameters.WaterCrazyness; }
+    void SetWaterCrazyness(float value) { mGameParameters.WaterCrazyness = value; }
+    float GetMinWaterCrazyness() const { return GameParameters::MinWaterCrazyness; }
+    float GetMaxWaterCrazyness() const { return GameParameters::MaxWaterCrazyness; }
+
     float GetWaterQuickness() const { return mGameParameters.WaterQuickness; }
     void SetWaterQuickness(float value) { mGameParameters.WaterQuickness = value; }
     float GetMinWaterQuickness() const { return GameParameters::MinWaterQuickness; }

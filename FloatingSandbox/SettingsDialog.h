@@ -43,21 +43,29 @@ private:
 
     // Controls
 
+    // Mechanics
     std::unique_ptr<SliderControl> mStiffnessSlider;
     std::unique_ptr<SliderControl> mStrengthSlider;
     std::unique_ptr<SliderControl> mBuoyancySlider;
+
+    // Fluids
     std::unique_ptr<SliderControl> mWaterIntakeSlider;
+    std::unique_ptr<SliderControl> mWaterCrazynessSlider;
     std::unique_ptr<SliderControl> mWaterQuicknessSlider;
     std::unique_ptr<SliderControl> mWaterLevelOfDetailSlider;
+
+    // World
     std::unique_ptr<SliderControl> mWaveHeightSlider;
-    std::unique_ptr<SliderControl> mSeaWaterTransparencySlider;
-    std::unique_ptr<SliderControl> mLightDiffusionSlider;
     std::unique_ptr<SliderControl> mSeaDepthSlider;
+    std::unique_ptr<SliderControl> mLightDiffusionSlider;
+
+    // Interactions
     std::unique_ptr<SliderControl> mDestroyRadiusSlider;
     std::unique_ptr<SliderControl> mBombBlastRadiusSlider;
-
     wxCheckBox * mUltraViolentCheckBox;
 
+    // Rendering
+    std::unique_ptr<SliderControl> mSeaWaterTransparencySlider;
     wxCheckBox * mSeeShipThroughSeaWaterCheckBox;
     wxRadioBox * mShipRenderModeRadioBox;
     wxCheckBox* mShowStressCheckBox;
@@ -67,6 +75,12 @@ private:
     wxButton * mApplyButton;
 
 private:
+
+    void PopulateMechanicsPanel(wxPanel * panel);
+    void PopulateFluidsPanel(wxPanel * panel);
+    void PopulateWorldPanel(wxPanel * panel);
+    void PopulateInteractionsPanel(wxPanel * panel);    
+    void PopulateRenderingPanel(wxPanel * panel);
 
     void ReadSettings();
 

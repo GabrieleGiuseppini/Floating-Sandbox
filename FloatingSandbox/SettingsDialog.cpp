@@ -10,6 +10,7 @@
 #include <UILib/LinearSliderCore.h>
 
 #include <wx/intl.h>
+#include <wx/notebook.h>
 #include <wx/sizer.h>
 #include <wx/stattext.h>
 #include <wx/string.h>
@@ -39,350 +40,88 @@ SettingsDialog::SettingsDialog(
 
 
     //
-    // Lay out the dialog
+    // Lay the dialog out
     //
 
-    wxBoxSizer * mainSizer = new wxBoxSizer(wxVERTICAL);
+    wxBoxSizer * dialogVSizer = new wxBoxSizer(wxVERTICAL);
 
-    mainSizer->AddSpacer(10);
+
+    wxNotebook * notebook = new wxNotebook(
+        this,
+        wxID_ANY,
+        wxPoint(-1, -1),
+        wxSize(-1, -1),
+        wxNB_TOP);
     
 
-    // Controls 1
-
-    wxBoxSizer* controls1Sizer = new wxBoxSizer(wxHORIZONTAL);
-
-    controls1Sizer->AddSpacer(HorizontalPadding);
-
-
-    // Stiffness
-
-    mStiffnessSlider = std::make_unique<SliderControl>(
-        this,
-        SliderWidth,
-        SliderHeight,
-        "Stiffness Adjust",
-        mGameController->GetStiffnessAdjustment(),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            mGameController->GetMinStiffnessAdjustment(),
-            mGameController->GetMaxStiffnessAdjustment()));
-
-    controls1Sizer->Add(mStiffnessSlider.get(), 0);
-
-    controls1Sizer->AddSpacer(HorizontalPadding);
-
-
-    // Strength
-
-    mStrengthSlider = std::make_unique<SliderControl>(
-        this,
-        SliderWidth,
-        SliderHeight,
-        "Strength Adjust",
-        mGameController->GetStrengthAdjustment(),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<ExponentialSliderCore>(
-            mGameController->GetMinStrengthAdjustment(),
-            1.0f,
-            mGameController->GetMaxStrengthAdjustment()));
-
-    controls1Sizer->Add(mStrengthSlider.get(), 0);
-    
-    controls1Sizer->AddSpacer(HorizontalPadding);
-
-
-    // Buoyancy
-    
-    mBuoyancySlider = std::make_unique<SliderControl>(
-        this,
-        SliderWidth,
-        SliderHeight,
-        "Buoyancy Adjust",
-        mGameController->GetBuoyancyAdjustment(),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            mGameController->GetMinBuoyancyAdjustment(),
-            mGameController->GetMaxBuoyancyAdjustment()));
-    
-    controls1Sizer->Add(mBuoyancySlider.get(), 0);
-    
-    controls1Sizer->AddSpacer(HorizontalPadding);
+    //
+    // Mechanics
+    //
 
+    wxPanel * mechanicsPanel = new wxPanel(notebook);
 
-    // Water Intake 
+    mechanicsPanel->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 
-    mWaterIntakeSlider = std::make_unique<SliderControl>(
-        this,
-        SliderWidth,
-        SliderHeight,
-        "Water Intake Adjust",
-        mGameController->GetWaterIntakeAdjustment(),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            mGameController->GetMinWaterIntakeAdjustment(),
-            mGameController->GetMaxWaterIntakeAdjustment()));
+    PopulateMechanicsPanel(mechanicsPanel);
 
-    controls1Sizer->Add(mWaterIntakeSlider.get(), 0);
+    notebook->AddPage(mechanicsPanel, "Mechanics");
 
-    controls1Sizer->AddSpacer(HorizontalPadding);
 
+    //
+    // Fluids
+    //
 
-    // Water Quickness
+    wxPanel * fluidsPanel = new wxPanel(notebook);
 
-    mWaterQuicknessSlider = std::make_unique<SliderControl>(
-        this,
-        SliderWidth,
-        SliderHeight,
-        "Water Quickness",
-        mGameController->GetWaterQuickness(),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            mGameController->GetMinWaterQuickness(),
-            mGameController->GetMaxWaterQuickness()));
+    fluidsPanel->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 
-    controls1Sizer->Add(mWaterQuicknessSlider.get(), 0);
+    PopulateFluidsPanel(fluidsPanel);
 
-    controls1Sizer->AddSpacer(HorizontalPadding);
+    notebook->AddPage(fluidsPanel, "Fluids");
 
 
-    // Water Level of Detail
+    //
+    // World
+    //
 
-    mWaterLevelOfDetailSlider = std::make_unique<SliderControl>(
-        this,
-        SliderWidth,
-        SliderHeight,
-        "Water Level of Detail",
-        mGameController->GetWaterLevelOfDetail(),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            mGameController->GetMinWaterLevelOfDetail(),
-            mGameController->GetMaxWaterLevelOfDetail()));
+    wxPanel * worldPanel = new wxPanel(notebook);
 
-    controls1Sizer->Add(mWaterLevelOfDetailSlider.get(), 0);
+    worldPanel->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 
-    controls1Sizer->AddSpacer(HorizontalPadding);
+    PopulateWorldPanel(worldPanel);
 
+    notebook->AddPage(worldPanel, "World");
 
 
-    // Check boxes 1
+    //
+    // Interactions
+    //
 
-    wxStaticBoxSizer* checkboxesSizer1 = new wxStaticBoxSizer(wxVERTICAL, this);
+    wxPanel * interactionsPanel = new wxPanel(notebook);
 
-    mUltraViolentCheckBox = new wxCheckBox(this, ID_ULTRA_VIOLENT_CHECKBOX, _("Ultra-Violent Mode"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Ultra-Violent Checkbox"));
-    Connect(ID_ULTRA_VIOLENT_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnUltraViolentCheckBoxClick);
-    checkboxesSizer1->Add(mUltraViolentCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
+    interactionsPanel->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 
-    controls1Sizer->Add(checkboxesSizer1, 0);
+    PopulateInteractionsPanel(interactionsPanel);
 
-    controls1Sizer->AddSpacer(HorizontalPadding);
+    notebook->AddPage(interactionsPanel, "Interactions");
 
 
-    mainSizer->Add(controls1Sizer);
+    //
+    // Rendering
+    //
 
-    mainSizer->AddSpacer(20);
+    wxPanel * renderingPanel = new wxPanel(notebook);
 
+    renderingPanel->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 
+    PopulateRenderingPanel(renderingPanel);
 
+    notebook->AddPage(renderingPanel, "Rendering");
 
-    // Controls 2
 
-    wxBoxSizer* controls2Sizer = new wxBoxSizer(wxHORIZONTAL);
+    dialogVSizer->Add(notebook, 0, wxEXPAND);
 
-    controls2Sizer->AddSpacer(HorizontalPadding);
-
-
-    // Wave Height
-
-    mWaveHeightSlider = std::make_unique<SliderControl>(
-        this,
-        SliderWidth,
-        SliderHeight,
-        "Wave Height",
-        mGameController->GetWaveHeight(),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            mGameController->GetMinWaveHeight(),
-            mGameController->GetMaxWaveHeight()));
-    
-    controls2Sizer->Add(mWaveHeightSlider.get(), 0);
-
-    controls2Sizer->AddSpacer(HorizontalPadding);
-
-
-    // Sea Water Transparency
-
-    mSeaWaterTransparencySlider = std::make_unique<SliderControl>(
-        this,
-        SliderWidth,
-        SliderHeight,
-        "Sea Water Transparency",
-        mGameController->GetSeaWaterTransparency(),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            0.0f,
-            1.0f));
-    
-    controls2Sizer->Add(mSeaWaterTransparencySlider.get(), 0);
-
-    controls2Sizer->AddSpacer(HorizontalPadding);
-
-
-    // Light Diffusion
-
-    mLightDiffusionSlider = std::make_unique<SliderControl>(
-        this,
-        SliderWidth,
-        SliderHeight,
-        "Light Diffusion Adjust",
-        mGameController->GetLightDiffusionAdjustment(),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            0.0f,
-            1.0f));
-
-    controls2Sizer->Add(mLightDiffusionSlider.get(), 0);
-
-    controls2Sizer->AddSpacer(HorizontalPadding);
-
-
-    // Sea Depth
-
-    mSeaDepthSlider = std::make_unique<SliderControl>(
-        this,
-        SliderWidth,
-        SliderHeight,
-        "Ocean Depth",
-        mGameController->GetSeaDepth(),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            mGameController->GetMinSeaDepth(),
-            mGameController->GetMaxSeaDepth()));
-
-    controls2Sizer->Add(mSeaDepthSlider.get(), 0);
-
-    controls2Sizer->AddSpacer(HorizontalPadding);
-
-
-    // Destroy Radius
-
-    mDestroyRadiusSlider = std::make_unique<SliderControl>(
-        this,
-        SliderWidth,
-        SliderHeight,
-        "Destroy Radius",
-        mGameController->GetDestroyRadius(),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            mGameController->GetMinDestroyRadius(),
-            mGameController->GetMaxDestroyRadius()));
-
-    controls2Sizer->Add(mDestroyRadiusSlider.get(), 0);
-
-    controls2Sizer->AddSpacer(HorizontalPadding);
-    
-
-    // Bomb Blast Radius
-
-    mBombBlastRadiusSlider = std::make_unique<SliderControl>(
-        this,
-        SliderWidth,
-        SliderHeight,
-        "Bomb Blast Radius",
-        mGameController->GetBombBlastRadius(),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            mGameController->GetMinBombBlastRadius(),
-            mGameController->GetMaxBombBlastRadius()));
-
-    controls2Sizer->Add(mBombBlastRadiusSlider.get(), 0);
-
-    controls2Sizer->AddSpacer(HorizontalPadding);
-
-    // Missing slider
-
-
-    // Check boxes 2
-
-    wxStaticBoxSizer* checkboxesSizer2 = new wxStaticBoxSizer(wxVERTICAL, this);
-
-    mSeeShipThroughSeaWaterCheckBox = new wxCheckBox(this, ID_SEE_SHIP_THROUGH_SEA_WATER_CHECKBOX, _("See Ship Through Water"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T(""));
-    Connect(ID_SEE_SHIP_THROUGH_SEA_WATER_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnSeeShipThroughSeaWaterCheckBoxClick);
-    checkboxesSizer2->Add(mSeeShipThroughSeaWaterCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
-
-    wxString shipRenderModeChoices[] =
-    {
-        _("Draw Only Points"),
-        _("Draw Only Springs"),
-        _("Draw Structure"),
-        _("Draw Image")
-    };
-
-    mShipRenderModeRadioBox = new wxRadioBox(this, wxID_ANY, _("Ship Draw Options"), wxDefaultPosition, wxDefaultSize,
-        WXSIZEOF(shipRenderModeChoices), shipRenderModeChoices, 1, wxRA_SPECIFY_COLS);
-    Connect(mShipRenderModeRadioBox->GetId(), wxEVT_RADIOBOX, (wxObjectEventFunction)&SettingsDialog::OnShipRenderModeRadioBox);
-    checkboxesSizer2->Add(mShipRenderModeRadioBox, 0, wxALL | wxALIGN_LEFT, 5);
-
-    mShowStressCheckBox = new wxCheckBox(this, ID_SHOW_STRESS_CHECKBOX, _("Show Stress"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Show Stress Checkbox"));
-    Connect(ID_SHOW_STRESS_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnShowStressCheckBoxClick);
-    checkboxesSizer2->Add(mShowStressCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
-
-    controls2Sizer->Add(checkboxesSizer2, 0);
-
-    controls2Sizer->AddSpacer(HorizontalPadding);
-
-
-
-    mainSizer->Add(controls2Sizer);
-
-    mainSizer->AddSpacer(20);
+    dialogVSizer->AddSpacer(20);
 
 
     // Buttons
@@ -409,9 +148,9 @@ SettingsDialog::SettingsDialog(
     
     buttonsSizer->AddSpacer(20);
 
-    mainSizer->Add(buttonsSizer, 0, wxALIGN_RIGHT);
+    dialogVSizer->Add(buttonsSizer, 0, wxALIGN_RIGHT);
     
-    mainSizer->AddSpacer(20);
+    dialogVSizer->AddSpacer(20);
 
 
 
@@ -419,7 +158,7 @@ SettingsDialog::SettingsDialog(
     // Finalize dialog
     //
 
-    SetSizerAndFit(mainSizer);
+    SetSizerAndFit(dialogVSizer);
 }
 
 SettingsDialog::~SettingsDialog()
@@ -500,6 +239,9 @@ void SettingsDialog::ApplySettings()
     mGameController->SetWaterIntakeAdjustment(
         mWaterIntakeSlider->GetValue());
 
+    mGameController->SetWaterCrazyness(
+        mWaterCrazynessSlider->GetValue());
+
     mGameController->SetWaterQuickness(
         mWaterQuicknessSlider->GetValue());
 
@@ -550,6 +292,396 @@ void SettingsDialog::ApplySettings()
     mGameController->SetShowShipStress(mShowStressCheckBox->IsChecked());
 }
 
+void SettingsDialog::PopulateMechanicsPanel(wxPanel * panel)
+{
+    wxBoxSizer* controlsSizer = new wxBoxSizer(wxHORIZONTAL);
+
+    controlsSizer->AddSpacer(HorizontalPadding);
+
+
+    // Stiffness
+
+    mStiffnessSlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Stiffness Adjust",
+        mGameController->GetStiffnessAdjustment(),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<LinearSliderCore>(
+            mGameController->GetMinStiffnessAdjustment(),
+            mGameController->GetMaxStiffnessAdjustment()));
+
+    controlsSizer->Add(mStiffnessSlider.get(), 0);
+
+    controlsSizer->AddSpacer(HorizontalPadding);
+
+
+    // Strength
+
+    mStrengthSlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Strength Adjust",
+        mGameController->GetStrengthAdjustment(),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<ExponentialSliderCore>(
+            mGameController->GetMinStrengthAdjustment(),
+            1.0f,
+            mGameController->GetMaxStrengthAdjustment()));
+
+    controlsSizer->Add(mStrengthSlider.get(), 0);
+
+    controlsSizer->AddSpacer(HorizontalPadding);
+
+
+    // Buoyancy
+
+    mBuoyancySlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Buoyancy Adjust",
+        mGameController->GetBuoyancyAdjustment(),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<LinearSliderCore>(
+            mGameController->GetMinBuoyancyAdjustment(),
+            mGameController->GetMaxBuoyancyAdjustment()));
+
+    controlsSizer->Add(mBuoyancySlider.get(), 0);
+
+    controlsSizer->AddSpacer(HorizontalPadding);
+
+
+    // Finalize panel
+
+    panel->SetSizerAndFit(controlsSizer);
+}
+
+void SettingsDialog::PopulateFluidsPanel(wxPanel * panel)
+{
+    wxBoxSizer* controlsSizer = new wxBoxSizer(wxHORIZONTAL);
+
+    controlsSizer->AddSpacer(HorizontalPadding);
+
+
+    // Water Intake 
+
+    mWaterIntakeSlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Water Intake Adjust",
+        mGameController->GetWaterIntakeAdjustment(),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<LinearSliderCore>(
+            mGameController->GetMinWaterIntakeAdjustment(),
+            mGameController->GetMaxWaterIntakeAdjustment()));
+
+    controlsSizer->Add(mWaterIntakeSlider.get(), 0);
+
+    controlsSizer->AddSpacer(HorizontalPadding);
+
+
+    // Water Crazyness
+
+    mWaterCrazynessSlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Water Crazyness",
+        mGameController->GetWaterCrazyness(),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<LinearSliderCore>(
+            mGameController->GetMinWaterCrazyness(),
+            mGameController->GetMaxWaterCrazyness()));
+
+    controlsSizer->Add(mWaterCrazynessSlider.get(), 0);
+
+    controlsSizer->AddSpacer(HorizontalPadding);
+
+
+    // Water Quickness
+
+    mWaterQuicknessSlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Water Quickness",
+        mGameController->GetWaterQuickness(),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<LinearSliderCore>(
+            mGameController->GetMinWaterQuickness(),
+            mGameController->GetMaxWaterQuickness()));
+
+    controlsSizer->Add(mWaterQuicknessSlider.get(), 0);
+
+    controlsSizer->AddSpacer(HorizontalPadding);
+
+
+    // Water Level of Detail
+
+    mWaterLevelOfDetailSlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Water Level of Detail",
+        mGameController->GetWaterLevelOfDetail(),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<LinearSliderCore>(
+            mGameController->GetMinWaterLevelOfDetail(),
+            mGameController->GetMaxWaterLevelOfDetail()));
+
+    controlsSizer->Add(mWaterLevelOfDetailSlider.get(), 0);
+
+    controlsSizer->AddSpacer(HorizontalPadding);
+
+
+    // Finalize panel
+
+    panel->SetSizerAndFit(controlsSizer);
+}
+
+void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
+{
+    wxBoxSizer* controlsSizer = new wxBoxSizer(wxHORIZONTAL);
+
+    controlsSizer->AddSpacer(HorizontalPadding);
+
+
+    // Wave Height
+
+    mWaveHeightSlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Wave Height",
+        mGameController->GetWaveHeight(),
+        [this](float /*value*/)
+    {
+        // Remember we're dirty now
+        this->mApplyButton->Enable(true);
+    },
+        std::make_unique<LinearSliderCore>(
+            mGameController->GetMinWaveHeight(),
+            mGameController->GetMaxWaveHeight()));
+
+    controlsSizer->Add(mWaveHeightSlider.get(), 0);
+
+    controlsSizer->AddSpacer(HorizontalPadding);
+
+
+    // Sea Depth
+
+    mSeaDepthSlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Ocean Depth",
+        mGameController->GetSeaDepth(),
+        [this](float /*value*/)
+    {
+        // Remember we're dirty now
+        this->mApplyButton->Enable(true);
+    },
+        std::make_unique<LinearSliderCore>(
+            mGameController->GetMinSeaDepth(),
+            mGameController->GetMaxSeaDepth()));
+
+    controlsSizer->Add(mSeaDepthSlider.get(), 0);
+
+    controlsSizer->AddSpacer(HorizontalPadding);
+
+
+    // Light Diffusion
+
+    mLightDiffusionSlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Light Diffusion Adjust",
+        mGameController->GetLightDiffusionAdjustment(),
+        [this](float /*value*/)
+    {
+        // Remember we're dirty now
+        this->mApplyButton->Enable(true);
+    },
+        std::make_unique<LinearSliderCore>(
+            0.0f,
+            1.0f));
+
+    controlsSizer->Add(mLightDiffusionSlider.get(), 0);
+
+    controlsSizer->AddSpacer(HorizontalPadding);
+
+
+    // Finalize panel
+
+    panel->SetSizerAndFit(controlsSizer);
+}
+
+void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
+{
+    wxBoxSizer* controlsSizer = new wxBoxSizer(wxHORIZONTAL);
+
+    controlsSizer->AddSpacer(HorizontalPadding);
+
+
+    // Destroy Radius
+
+    mDestroyRadiusSlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Destroy Radius",
+        mGameController->GetDestroyRadius(),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<LinearSliderCore>(
+            mGameController->GetMinDestroyRadius(),
+            mGameController->GetMaxDestroyRadius()));
+
+    controlsSizer->Add(mDestroyRadiusSlider.get(), 0);
+
+    controlsSizer->AddSpacer(HorizontalPadding);
+    
+
+    // Bomb Blast Radius
+
+    mBombBlastRadiusSlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Bomb Blast Radius",
+        mGameController->GetBombBlastRadius(),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<LinearSliderCore>(
+            mGameController->GetMinBombBlastRadius(),
+            mGameController->GetMaxBombBlastRadius()));
+
+    controlsSizer->Add(mBombBlastRadiusSlider.get(), 0);
+
+    controlsSizer->AddSpacer(HorizontalPadding);
+
+
+    // Check boxes
+
+    wxStaticBoxSizer* checkboxesSizer = new wxStaticBoxSizer(wxVERTICAL, panel);
+
+    mUltraViolentCheckBox = new wxCheckBox(panel, ID_ULTRA_VIOLENT_CHECKBOX, _("Ultra-Violent Mode"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Ultra-Violent Checkbox"));
+    Connect(ID_ULTRA_VIOLENT_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnUltraViolentCheckBoxClick);
+    checkboxesSizer->Add(mUltraViolentCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
+
+    controlsSizer->Add(checkboxesSizer, 0);
+
+    controlsSizer->AddSpacer(HorizontalPadding);
+    
+
+    // Finalize panel
+
+    panel->SetSizerAndFit(controlsSizer);
+}
+
+void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
+{
+    wxBoxSizer* controlsSizer = new wxBoxSizer(wxHORIZONTAL);
+
+    controlsSizer->AddSpacer(HorizontalPadding);
+
+
+    // Sea Water Transparency
+
+    mSeaWaterTransparencySlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Sea Water Transparency",
+        mGameController->GetSeaWaterTransparency(),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<LinearSliderCore>(
+            0.0f,
+            1.0f));
+    
+    controlsSizer->Add(mSeaWaterTransparencySlider.get(), 0);
+
+    controlsSizer->AddSpacer(HorizontalPadding);
+
+
+    // Check boxes
+
+    wxStaticBoxSizer* checkboxesSizer = new wxStaticBoxSizer(wxVERTICAL, panel);
+
+    mSeeShipThroughSeaWaterCheckBox = new wxCheckBox(panel, ID_SEE_SHIP_THROUGH_SEA_WATER_CHECKBOX, _("See Ship Through Water"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T(""));
+    Connect(ID_SEE_SHIP_THROUGH_SEA_WATER_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnSeeShipThroughSeaWaterCheckBoxClick);
+    checkboxesSizer->Add(mSeeShipThroughSeaWaterCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
+
+    wxString shipRenderModeChoices[] =
+    {
+        _("Draw Only Points"),
+        _("Draw Only Springs"),
+        _("Draw Structure"),
+        _("Draw Image")
+    };
+
+    mShipRenderModeRadioBox = new wxRadioBox(panel, wxID_ANY, _("Ship Draw Options"), wxDefaultPosition, wxDefaultSize,
+        WXSIZEOF(shipRenderModeChoices), shipRenderModeChoices, 1, wxRA_SPECIFY_COLS);
+    Connect(mShipRenderModeRadioBox->GetId(), wxEVT_RADIOBOX, (wxObjectEventFunction)&SettingsDialog::OnShipRenderModeRadioBox);
+    checkboxesSizer->Add(mShipRenderModeRadioBox, 0, wxALL | wxALIGN_LEFT, 5);
+
+    mShowStressCheckBox = new wxCheckBox(panel, ID_SHOW_STRESS_CHECKBOX, _("Show Stress"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Show Stress Checkbox"));
+    Connect(ID_SHOW_STRESS_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnShowStressCheckBoxClick);
+    checkboxesSizer->Add(mShowStressCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
+
+    controlsSizer->Add(checkboxesSizer, 0);
+
+    controlsSizer->AddSpacer(HorizontalPadding);
+
+
+    // Finalize panel
+
+    panel->SetSizerAndFit(controlsSizer);
+}
+
 void SettingsDialog::ReadSettings()
 {
     assert(!!mGameController);
@@ -560,27 +692,35 @@ void SettingsDialog::ReadSettings()
     
     mBuoyancySlider->SetValue(mGameController->GetBuoyancyAdjustment());
     
+
+
     mWaterIntakeSlider->SetValue(mGameController->GetWaterIntakeAdjustment());
+
+    mWaterCrazynessSlider->SetValue(mGameController->GetWaterCrazyness());
 
     mWaterQuicknessSlider->SetValue(mGameController->GetWaterQuickness());
 
     mWaterLevelOfDetailSlider->SetValue(mGameController->GetWaterLevelOfDetail());
     
+
+
     mWaveHeightSlider->SetValue(mGameController->GetWaveHeight());
-    
-    mSeaWaterTransparencySlider->SetValue(mGameController->GetSeaWaterTransparency());
-    
+        
     mLightDiffusionSlider->SetValue(mGameController->GetLightDiffusionAdjustment());
     
     mSeaDepthSlider->SetValue(mGameController->GetSeaDepth());
     
+
+
     mDestroyRadiusSlider->SetValue(mGameController->GetDestroyRadius());
     
     mBombBlastRadiusSlider->SetValue(mGameController->GetBombBlastRadius());
 
-
-
     mUltraViolentCheckBox->SetValue(mGameController->GetUltraViolentMode());
+
+
+
+    mSeaWaterTransparencySlider->SetValue(mGameController->GetSeaWaterTransparency());
 
     mSeeShipThroughSeaWaterCheckBox->SetValue(mGameController->GetShowShipThroughSeaWater());
 
