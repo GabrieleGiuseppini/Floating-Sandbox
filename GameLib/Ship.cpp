@@ -713,27 +713,25 @@ void Ship::UpdateWaterInflow(
 void Ship::UpdateWaterVelocities(GameParameters const & gameParameters)
 {
     //
-    // For each point, update water velocities along each of its springs with Bernoulli's
-    // velocity, and move water in or out the point according to its velocity.
+    // For each point, move each spring's outgoing water momentum to 
+    // its destination point
     //
 
-    // Quantity of water flowing along each spring connected to a point 
-    // (positive is outgoing: from point to other endpoint)
-    std::array<float, GameParameters::MaxSpringsPerPoint> waterFlows;
+    // Outgoing water velocities along each spring
+    std::array<float, GameParameters::MaxSpringsPerPoint> springOutgoingWaterVelocities;
 
-    // Calculated velocity of water moving along each spring
-    // (positive is outgoing: from point to other endpoint)
-    std::array<float, GameParameters::MaxSpringsPerPoint> waterVelocities;
+    // Outgoing quantity of water along each spring
+    std::array<float, GameParameters::MaxSpringsPerPoint> springOutgoingWaterQuantities;
+
 
     // TODO:DOUBLE BUFFER
     std::vector<float> newPointWater(mPoints.GetElementCount());
-    std::vector<vec2f> newPointWaterVelocity(mPoints.GetElementCount());
+    std::vector<vec2f> newPointWaterMomentum(mPoints.GetElementCount());
     for (auto pointIndex : mPoints)
     {
         newPointWater[pointIndex] = mPoints.GetWater(pointIndex);
 
-        // Make velocity temporarily mass-dependent
-        newPointWaterVelocity[pointIndex] = 
+        newPointWaterMomentum[pointIndex] =
             mPoints.GetWaterVelocity(pointIndex)
             * mPoints.GetWater(pointIndex);
     }
@@ -741,10 +739,10 @@ void Ship::UpdateWaterVelocities(GameParameters const & gameParameters)
     for (auto pointIndex : mPoints)
     {
         //
-        // 1) Calculate water flows along all springs
+        // 1) Calculate water momenta along all springs
         //
 
-        float totalOutgoingWaterQuantity = 0.0f;    // Always positive
+        float totalOutgoingWaterQuantity = 0.0f;
         for (size_t s = 0; s < mPoints.GetConnectedSprings(pointIndex).size(); ++s)
         {
             auto const springIndex = mPoints.GetConnectedSprings(pointIndex)[s];
@@ -788,20 +786,17 @@ void Ship::UpdateWaterVelocities(GameParameters const & gameParameters)
             }
 
             //
-            // Calculate outflow from this point along this spring
+            // Calculate outflow from this point along this spring due to this velocity
             //
 
-            // This point's resultant water velocity == point's water velocity + gained water velocity
-            vec2f const resultantPointWaterVelocity = 
-                mPoints.GetWaterVelocity(pointIndex) 
-                + (dv * mPoints.GetWater(pointIndex));
-
-            // Scalar resultant point water velocity along the spring
-            waterVelocities[s] = resultantPointWaterVelocity.dot(springNormalizedVector);
+            // Scalar total point water velocity along the spring
+            springOutgoingWaterVelocities[s] = 
+                (mPoints.GetWaterVelocity(pointIndex) + dv)
+                .dot(springNormalizedVector);
 
             // Outflow (point -> other endpoint) due to this velocity
             float outgoingDw =
-                waterVelocities[s] 
+                springOutgoingWaterVelocities[s]
                 * mSprings.GetWaterPermeability(springIndex);
 
             if (outgoingDw >= 0.0f)
@@ -823,7 +818,7 @@ void Ship::UpdateWaterVelocities(GameParameters const & gameParameters)
             }
 
             // Store flow
-            waterFlows[s] = outgoingDw;
+            springOutgoingWaterQuantities[s] = outgoingDw;
         }
 
         assert(totalOutgoingWaterQuantity >= 0.0f);
@@ -881,8 +876,8 @@ void Ship::UpdateWaterVelocities(GameParameters const & gameParameters)
             //
 
             float normalizedWaterFlow =
-                waterFlows[s]
-                * (waterFlows[s] >= 0.0f ? normalizationFactor : 1.0f);
+                springOutgoingWaterQuantities[s]
+                * (springOutgoingWaterQuantities[s] >= 0.0f ? normalizationFactor : 1.0f);
 
             assert(normalizedWaterFlow >= 0.0f);
 
@@ -900,8 +895,8 @@ void Ship::UpdateWaterVelocities(GameParameters const & gameParameters)
             if (finalOtherEndpointWaterMass > 0.0f)
             {
                 // Add velocity weighted by the amount of water transfered
-                newPointWaterVelocity[otherEndpointIndex] +=
-                    springNormalizedVector * waterVelocities[s] * normalizedWaterFlow;
+                newPointWaterMomentum[otherEndpointIndex] +=
+                    springNormalizedVector * springOutgoingWaterVelocities[s] * normalizedWaterFlow;
             }
             else
             {
@@ -924,7 +919,7 @@ void Ship::UpdateWaterVelocities(GameParameters const & gameParameters)
         //
         
         // Decrease velocity weighted by the quantity that left the point
-        newPointWaterVelocity[pointIndex] -=
+        newPointWaterMomentum[pointIndex] -=
             mPoints.GetWaterVelocity(pointIndex) 
             * actualOutgoingWaterQuantity;
 
@@ -941,7 +936,7 @@ void Ship::UpdateWaterVelocities(GameParameters const & gameParameters)
         if (mPoints.GetWater(pointIndex) > 0.0f)
         {
             mPoints.SetWaterVelocity(pointIndex, 
-                newPointWaterVelocity[pointIndex]
+                newPointWaterMomentum[pointIndex]
                 / mPoints.GetWater(pointIndex));
         }
         else
