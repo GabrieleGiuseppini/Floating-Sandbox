@@ -14,6 +14,7 @@ GameParameters::GameParameters()
     , BuoyancyAdjustment(1.0f)
     // Water
     , WaterIntakeAdjustment(1.0f)
+    , WaterCrazyness(1.0f)
     , WaterQuickness(0.5f)
     // Misc
     , WaveHeight(2.5f)

@@ -83,6 +83,10 @@ struct GameParameters
     static constexpr float MinWaterIntakeAdjustment = 0.1f;
     static constexpr float MaxWaterIntakeAdjustment = 10.0f;
 
+    float WaterCrazyness;
+    static constexpr float MinWaterCrazyness = 0.0f;
+    static constexpr float MaxWaterCrazyness = 2.0f;
+
     float WaterQuickness;
     static constexpr float MinWaterQuickness = 0.001f;
     static constexpr float MaxWaterQuickness = 1.0f;
