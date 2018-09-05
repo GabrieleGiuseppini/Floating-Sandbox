@@ -875,50 +875,27 @@ void Ship::UpdateWaterVelocities(GameParameters const & gameParameters)
 
 
             //
-            // Add water velocity to destination, according to the law of conservation of momentum
+            // Add water and water momentum to destination
             //
 
-            // TODOHERE
-            // Final water mass of other endpoint 
-            // TODO:refactor:needed?
-            float const finalOtherEndpointWaterMass = 
-                mPoints.GetWater(otherEndpointIndex)                 
-                + normalizedOutgoingWaterQuantity;
+            newPointWater[otherEndpointIndex] += 
+                normalizedOutgoingWaterQuantity;
 
-            // TODO:refactor:should we just remove the entire check and else?
-            if (finalOtherEndpointWaterMass > 0.0f)
-            {
-                // Add velocity weighted by the amount of water transfered
-                newPointWaterMomentum[otherEndpointIndex] +=
-                    springOutgoingWaterVelocities[s] 
-                    * normalizedOutgoingWaterQuantity;
-            }
-            else
-            {
-                // No mass, no velocity
-
-                // Previous water must have been zero already
-               assert(mPoints.GetWaterVelocity(otherEndpointIndex) == vec2f::zero());
-            }
-
-            //
-            // Add water to destination
-            //
-
-            newPointWater[otherEndpointIndex] += normalizedOutgoingWaterQuantity;
+            newPointWaterMomentum[otherEndpointIndex] +=
+                springOutgoingWaterVelocities[s]
+                * normalizedOutgoingWaterQuantity;
         }
 
 
         //
-        // 4) Update once and for all this point's quantity of water and water velocity
+        // 4) Update once and for all this point's quantity of water and water momentum
         //
-        
-        // Decrease velocity weighted by the quantity of water that left the point
+
+        newPointWater[pointIndex] -= actualTotalOutgoingWaterQuantity;
+
         newPointWaterMomentum[pointIndex] -=
             mPoints.GetWaterVelocity(pointIndex) 
             * actualTotalOutgoingWaterQuantity;
-
-        newPointWater[pointIndex] -= actualTotalOutgoingWaterQuantity;
     }
 
 
