@@ -121,28 +121,42 @@ public:
         UpdateAmbientLightIntensity();
     }
 
-    float GetWaterTransparency() const
+    float GetSeaWaterTransparency() const
     {
-        return mWaterTransparency;
+        return mSeaWaterTransparency;
     }
 
-    void SetWaterTransparency(float transparency)
+    void SetSeaWaterTransparency(float transparency)
     {
-        mWaterTransparency = transparency;
+        mSeaWaterTransparency = transparency;
 
-        UpdateWaterTransparency();
+        UpdateSeaWaterTransparency();
     }
 
-    bool GetShowShipThroughWater() const
+    bool GetShowShipThroughSeaWater() const
     {
-        return mShowShipThroughWater;
+        return mShowShipThroughSeaWater;
     }
 
-    void SetShowShipThroughWater(bool showShipThroughWater)
+    void SetShowShipThroughSeaWater(bool showShipThroughSeaWater)
     {
-        mShowShipThroughWater = showShipThroughWater;
+        mShowShipThroughSeaWater = showShipThroughSeaWater;
     }
 
+    float GetWaterLevelOfDetail() const
+    {
+        return mWaterLevelOfDetail;
+    }
+
+    void SetWaterLevelOfDetail(float levelOfDetail)
+    {
+        mWaterLevelOfDetail = levelOfDetail;
+
+        UpdateWaterLevelOfDetail();
+    }
+
+    static constexpr float MinWaterLevelOfDetail = 0.01f;
+    static constexpr float MaxWaterLevelOfDetail = 2.0f;
 
     //
     // Ship rendering
@@ -592,7 +606,9 @@ private:
 
     void UpdateAmbientLightIntensity();
 
-    void UpdateWaterTransparency();
+    void UpdateSeaWaterTransparency();
+
+    void UpdateWaterLevelOfDetail();
 
 private:
 
@@ -670,7 +686,7 @@ private:
 
 
     //
-    // Water
+    // Sea water
     //
 
     GameOpenGLShaderProgram mWaterShaderProgram;
@@ -748,9 +764,9 @@ private:
     int mCanvasHeight;
 
     float mAmbientLightIntensity;
-    float mWaterTransparency;
-
-    bool mShowShipThroughWater;
+    float mSeaWaterTransparency;    
+    bool mShowShipThroughSeaWater;
+    float mWaterLevelOfDetail;
     ShipRenderMode mShipRenderMode;
     bool mShowStressedSprings;
 };

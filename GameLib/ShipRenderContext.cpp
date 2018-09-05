@@ -17,9 +17,11 @@ ShipRenderContext::ShipRenderContext(
     float visibleWorldHeight,
     float visibleWorldWidth,
     float canvasToVisibleWorldHeightRatio,
-    float ambientLightIntensity)
+    float ambientLightIntensity,
+    float waterLevelOfDetail)
     : mCanvasToVisibleWorldHeightRatio(0)
-    , mAmbientLightIntensity(0)
+    , mAmbientLightIntensity(0.0f) // Set later
+    , mWaterLevelOfDetail(0.0f) // Set later
     // Points
     , mPointCount(0u)
     , mPointPositionVBO()
@@ -123,6 +125,7 @@ ShipRenderContext::ShipRenderContext(
 
         // Params
         uniform float paramAmbientLightIntensity;
+        uniform float paramWaterLevelOfDetail;
 
         // Constants
         vec3 lightColour = vec3(1.0, 1.0, 0.25);
@@ -130,7 +133,7 @@ ShipRenderContext::ShipRenderContext(
 
         void main()
         {
-            float colorWetness = min(vertexWater, 0.25) * 2.8;
+            float colorWetness = min(vertexWater, paramWaterLevelOfDetail) * 0.7 / paramWaterLevelOfDetail;
             vec3 colour1 = vertexCol * (1.0 - colorWetness) + wetColour * colorWetness;
             colour1 *= paramAmbientLightIntensity;
             colour1 = colour1 * (1.0 - vertexLight) + lightColour * vertexLight;
@@ -153,6 +156,7 @@ ShipRenderContext::ShipRenderContext(
     // Get uniform locations
     mElementColorShaderOrthoMatrixParameter = GameOpenGL::GetParameterLocation(mElementColorShaderProgram, "paramOrthoMatrix");
     mElementColorShaderAmbientLightIntensityParameter = GameOpenGL::GetParameterLocation(mElementColorShaderProgram, "paramAmbientLightIntensity");
+    mElementColorShaderWaterLevelOfDetailParameter = GameOpenGL::GetParameterLocation(mElementColorShaderProgram, "paramWaterLevelOfDetail");
 
 
     //
@@ -643,6 +647,7 @@ ShipRenderContext::ShipRenderContext(
         canvasToVisibleWorldHeightRatio);
 
     UpdateAmbientLightIntensity(ambientLightIntensity);
+    UpdateWaterLevelOfDetail(waterLevelOfDetail);
 }
 
 ShipRenderContext::~ShipRenderContext()
@@ -709,6 +714,35 @@ void ShipRenderContext::UpdateAmbientLightIntensity(float ambientLightIntensity)
 
     glUseProgram(*mElementPinnedPointShaderProgram);
     glUniform1f(mElementPinnedPointShaderAmbientLightIntensityParameter, ambientLightIntensity);
+
+    glUseProgram(0);
+}
+
+void ShipRenderContext::UpdateWaterLevelOfDetail(float waterLevelOfDetail)
+{
+    mWaterLevelOfDetail = waterLevelOfDetail;
+
+    //
+    // Set parameter in all programs
+    //
+
+    glUseProgram(*mElementColorShaderProgram);
+    glUniform1f(mElementColorShaderWaterLevelOfDetailParameter, waterLevelOfDetail);
+
+    /* TODO: others
+    glUseProgram(*mElementTextureShaderProgram);
+    glUniform1f(mElementTextureShaderAmbientLightIntensityParameter, ambientLightIntensity);
+
+    glUseProgram(*mElementColorShaderProgram);
+    glUniform1f(mElementColorShaderAmbientLightIntensityParameter, ambientLightIntensity);
+
+    glUseProgram(*mElementRopeShaderProgram);
+    glUniform1f(mElementRopeShaderAmbientLightIntensityParameter, ambientLightIntensity);
+
+    glUseProgram(*mElementPinnedPointShaderProgram);
+    glUniform1f(mElementPinnedPointShaderAmbientLightIntensityParameter, ambientLightIntensity);
+
+    */
 
     glUseProgram(0);
 }

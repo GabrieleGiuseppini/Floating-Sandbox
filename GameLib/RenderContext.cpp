@@ -31,7 +31,7 @@ RenderContext::RenderContext(
     , mLandBufferMaxSize(0u)
     , mLandVBO()
     , mLandTexture()
-    // Water
+    // Sea water
     , mWaterShaderProgram()
     , mWaterShaderAmbientLightIntensityParameter(0)
     , mWaterShaderWaterTransparencyParameter(0)
@@ -65,8 +65,9 @@ RenderContext::RenderContext(
     , mCanvasWidth(100)
     , mCanvasHeight(100)
     , mAmbientLightIntensity(1.0f)
-    , mWaterTransparency(0.68750f)
-    , mShowShipThroughWater(false)
+    , mSeaWaterTransparency(0.68750f)
+    , mShowShipThroughSeaWater(false)
+    , mWaterLevelOfDetail(0.25f)
     , mShipRenderMode(ShipRenderMode::Texture)
     , mShowStressedSprings(false)
 {
@@ -640,7 +641,8 @@ RenderContext::RenderContext(
     UpdateOrthoMatrix();
     UpdateVisibleWorldCoordinates();
     UpdateAmbientLightIntensity();
-    UpdateWaterTransparency();
+    UpdateSeaWaterTransparency();
+    UpdateWaterLevelOfDetail();
 
 
     //
@@ -698,7 +700,8 @@ void RenderContext::AddShip(
             mVisibleWorldHeight,
             mVisibleWorldWidth,
             mCanvasToVisibleWorldHeightRatio,
-            mAmbientLightIntensity));
+            mAmbientLightIntensity,
+            mWaterLevelOfDetail));
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -1017,10 +1020,20 @@ void RenderContext::UpdateAmbientLightIntensity()
     glUniform1f(mCloudShaderAmbientLightIntensityParameter, mAmbientLightIntensity);
 }
 
-void RenderContext::UpdateWaterTransparency()
+void RenderContext::UpdateSeaWaterTransparency()
 {
-    // Set parameters in all programs
+    // Set parameter in all programs
 
     glUseProgram(*mWaterShaderProgram);
-    glUniform1f(mWaterShaderWaterTransparencyParameter, mWaterTransparency);
+    glUniform1f(mWaterShaderWaterTransparencyParameter, mSeaWaterTransparency);
+}
+
+void RenderContext::UpdateWaterLevelOfDetail()
+{
+    // Set parameter in all ships
+
+    for (auto & s : mShips)
+    {
+        s->UpdateWaterLevelOfDetail(mWaterLevelOfDetail);
+    }
 }

@@ -279,23 +279,6 @@ public:
         mWaterVelocityBuffer[pointElementIndex] = velocity;
     }
 
-    // TODOOLD (verify first that it's not used)
-    inline float GetExternalWaterPressure(
-        ElementIndex pointElementIndex,
-        float waterLevel) const
-    {
-        // Negative Y == under water line
-        if (GetPosition(pointElementIndex).y < waterLevel)
-        {
-            // Pressure of a column of water of area 1m2 from the point up to the surface
-            return GameParameters::GravityMagnitude * (waterLevel - GetPosition(pointElementIndex).y);
-        }
-        else
-        {
-            return 0.0f;
-        }
-    }
-
     inline bool IsLeaking(ElementIndex pointElementIndex) const
     {
         return mIsLeakingBuffer[pointElementIndex];

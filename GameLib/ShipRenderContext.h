@@ -33,7 +33,8 @@ public:
         float visibleWorldHeight,
         float visibleWorldWidth,
         float canvasToVisibleWorldHeightRatio,
-        float ambientLightIntensity);
+        float ambientLightIntensity,
+        float waterLevelOfDetail);
     
     ~ShipRenderContext();
 
@@ -48,6 +49,7 @@ public:
 
     void UpdateAmbientLightIntensity(float ambientLightIntensity);
 
+    void UpdateWaterLevelOfDetail(float waterLevelOfDetail);
 
 public:
 
@@ -374,6 +376,7 @@ private:
 
     float mCanvasToVisibleWorldHeightRatio;
     float mAmbientLightIntensity;
+    float mWaterLevelOfDetail;
 
 private:
 
@@ -409,6 +412,8 @@ private:
     GameOpenGLShaderProgram mElementColorShaderProgram;
     GLint mElementColorShaderOrthoMatrixParameter;
     GLint mElementColorShaderAmbientLightIntensityParameter;
+    GLint mElementColorShaderWaterLevelOfDetailParameter;
+    // TODO: @ others?
 
     GameOpenGLShaderProgram mElementRopeShaderProgram;
     GLint mElementRopeShaderOrthoMatrixParameter;

@@ -231,7 +231,7 @@ void World::Render(
     renderContext.RenderLand();
 
     // Render the water now, if we want to see the ship through the water
-    if (renderContext.GetShowShipThroughWater())
+    if (renderContext.GetShowShipThroughSeaWater())
     {
         renderContext.RenderWater();
     }
@@ -245,7 +245,7 @@ void World::Render(
     }
 
     // Render the water now, if we want to see the ship *in* the water instead
-    if (!renderContext.GetShowShipThroughWater())
+    if (!renderContext.GetShowShipThroughSeaWater())
     {
         renderContext.RenderWater();
     }

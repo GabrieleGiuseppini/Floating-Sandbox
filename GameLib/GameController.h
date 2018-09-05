@@ -131,15 +131,15 @@ public:
     float GetMinBuoyancyAdjustment() const { return GameParameters::MinBuoyancyAdjustment; }
     float GetMaxBuoyancyAdjustment() const { return GameParameters::MaxBuoyancyAdjustment; }
 
-    float GetWaterVelocityDrag() const { return mGameParameters.WaterVelocityDrag; }
-    void SetWaterVelocityDrag(float value) { mGameParameters.WaterVelocityDrag = value; }
-    float GetMinWaterVelocityDrag() const { return GameParameters::MinWaterVelocityDrag; }
-    float GetMaxWaterVelocityDrag() const { return GameParameters::MaxWaterVelocityDrag; }
+    float GetWaterIntakeAdjustment() const { return mGameParameters.WaterIntakeAdjustment; }
+    void SetWaterIntakeAdjustment(float value) { mGameParameters.WaterIntakeAdjustment = value; }
+    float GetMinWaterIntakeAdjustment() const { return GameParameters::MinWaterIntakeAdjustment; }
+    float GetMaxWaterIntakeAdjustment() const { return GameParameters::MaxWaterIntakeAdjustment; }
 
-    float GetWaterVelocityAdjustment() const { return mGameParameters.WaterVelocityAdjustment; }
-    void SetWaterVelocityAdjustment(float value) { mGameParameters.WaterVelocityAdjustment = value; }
-    float GetMinWaterVelocityAdjustment() const { return GameParameters::MinWaterVelocityAdjustment; }
-    float GetMaxWaterVelocityAdjustment() const { return GameParameters::MaxWaterVelocityAdjustment; }
+    float GetWaterQuickness() const { return mGameParameters.WaterQuickness; }
+    void SetWaterQuickness(float value) { mGameParameters.WaterQuickness = value; }
+    float GetMinWaterQuickness() const { return GameParameters::MinWaterQuickness; }
+    float GetMaxWaterQuickness() const { return GameParameters::MaxWaterQuickness; }
 
     float GetWaveHeight() const { return mGameParameters.WaveHeight; }
     void SetWaveHeight(float value) { mGameParameters.WaveHeight = value; }
@@ -161,20 +161,26 @@ public:
     float GetMinBombBlastRadius() const { return GameParameters::MinBombBlastRadius; }
     float GetMaxBombBlastRadius() const { return GameParameters::MaxBombBlastRadius; }
 
-    float GetAmbientLightIntensity() const { return mRenderContext->GetAmbientLightIntensity(); }
-    void SetAmbientLightIntensity(float value) { mRenderContext->SetAmbientLightIntensity(value); }
-
-    float GetWaterTransparency() const { return mRenderContext->GetWaterTransparency(); }
-    void SetWaterTransparency(float value) { mRenderContext->SetWaterTransparency(value); }
-
     float GetLightDiffusionAdjustment() const { return mGameParameters.LightDiffusionAdjustment; }
     void SetLightDiffusionAdjustment(float value) { mGameParameters.LightDiffusionAdjustment = value; }
 
     bool GetUltraViolentMode() const { return mGameParameters.IsUltraViolentMode; }
     void SetUltraViolentMode(bool value) { mGameParameters.IsUltraViolentMode = value; }
 
-    bool GetShowShipThroughWater() const { return mRenderContext->GetShowShipThroughWater();  }
-    void SetShowShipThroughWater(bool value) { mRenderContext->SetShowShipThroughWater(value); }
+
+    float GetAmbientLightIntensity() const { return mRenderContext->GetAmbientLightIntensity(); }
+    void SetAmbientLightIntensity(float value) { mRenderContext->SetAmbientLightIntensity(value); }
+
+    float GetSeaWaterTransparency() const { return mRenderContext->GetSeaWaterTransparency(); }
+    void SetSeaWaterTransparency(float value) { mRenderContext->SetSeaWaterTransparency(value); }
+
+    bool GetShowShipThroughSeaWater() const { return mRenderContext->GetShowShipThroughSeaWater(); }
+    void SetShowShipThroughSeaWater(bool value) { mRenderContext->SetShowShipThroughSeaWater(value); }
+
+    float GetWaterLevelOfDetail() const { return mRenderContext->GetWaterLevelOfDetail(); }
+    void SetWaterLevelOfDetail(float value) { mRenderContext->SetWaterLevelOfDetail(value); }
+    float GetMinWaterLevelOfDetail() const { return RenderContext::MinWaterLevelOfDetail; }
+    float GetMaxWaterLevelOfDetail() const { return RenderContext::MaxWaterLevelOfDetail; }
 
     ShipRenderMode GetShipRenderMode() const { return mRenderContext->GetShipRenderMode(); }
     void SetShipRenderMode(ShipRenderMode shipRenderMode) { mRenderContext->SetShipRenderMode(shipRenderMode); }

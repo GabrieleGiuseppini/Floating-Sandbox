@@ -8,11 +8,14 @@
 #include "GameParameters.h"
 
 GameParameters::GameParameters()
+    // Dynamics
     : StiffnessAdjustment(1.0f)
     , StrengthAdjustment(1.0f)
     , BuoyancyAdjustment(1.0f)
-    , WaterVelocityDrag(0.0)
-    , WaterVelocityAdjustment(0.5f)
+    // Water
+    , WaterIntakeAdjustment(1.0f)
+    , WaterQuickness(0.5f)
+    // Misc
     , WaveHeight(2.5f)
     , SeaDepth(200.0f)
     , DestroyRadius(0.75f)

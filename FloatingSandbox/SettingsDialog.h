@@ -32,7 +32,7 @@ private:
 
     void OnUltraViolentCheckBoxClick(wxCommandEvent & event);
 
-    void OnQuickWaterFixCheckBoxClick(wxCommandEvent & event);
+    void OnSeeShipThroughSeaWaterCheckBoxClick(wxCommandEvent & event);
     void OnShipRenderModeRadioBox(wxCommandEvent & event);
     void OnShowStressCheckBoxClick(wxCommandEvent & event);
 
@@ -46,10 +46,11 @@ private:
     std::unique_ptr<SliderControl> mStiffnessSlider;
     std::unique_ptr<SliderControl> mStrengthSlider;
     std::unique_ptr<SliderControl> mBuoyancySlider;
-    std::unique_ptr<SliderControl> mWaterVelocitySlider;
-    std::unique_ptr<SliderControl> mWaterVelocityDragSlider;
+    std::unique_ptr<SliderControl> mWaterIntakeSlider;
+    std::unique_ptr<SliderControl> mWaterQuicknessSlider;
+    std::unique_ptr<SliderControl> mWaterLevelOfDetailSlider;
     std::unique_ptr<SliderControl> mWaveHeightSlider;
-    std::unique_ptr<SliderControl> mWaterTransparencySlider;
+    std::unique_ptr<SliderControl> mSeaWaterTransparencySlider;
     std::unique_ptr<SliderControl> mLightDiffusionSlider;
     std::unique_ptr<SliderControl> mSeaDepthSlider;
     std::unique_ptr<SliderControl> mDestroyRadiusSlider;
@@ -57,7 +58,7 @@ private:
 
     wxCheckBox * mUltraViolentCheckBox;
 
-    wxCheckBox * mQuickWaterFixCheckBox;
+    wxCheckBox * mSeeShipThroughSeaWaterCheckBox;
     wxRadioBox * mShipRenderModeRadioBox;
     wxCheckBox* mShowStressCheckBox;
 

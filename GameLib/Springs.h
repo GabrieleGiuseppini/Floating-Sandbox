@@ -98,7 +98,6 @@ public:
         , mCharacteristicsBuffer(elementCount)
         , mBaseMaterialBuffer(elementCount)
         // Water
-        , mWaterVelocityBuffer(elementCount)
         , mWaterPermeabilityBuffer(elementCount)
         // Stress
         , mIsStressedBuffer(elementCount)
@@ -270,16 +269,6 @@ public:
     // Water
     //
 
-    inline float GetWaterVelocity(ElementIndex springElementIndex) const
-    {
-        return mWaterVelocityBuffer[springElementIndex];
-    }
-
-    inline float & GetWaterVelocity(ElementIndex springElementIndex) 
-    {
-        return mWaterVelocityBuffer[springElementIndex];
-    }
-
     inline float GetWaterPermeability(ElementIndex springElementIndex) const
     {
         return mWaterPermeabilityBuffer[springElementIndex];
@@ -369,10 +358,6 @@ private:
     //
     // Water
     //
-
-    // The current speed of water along this spring,
-    // from point A to point B
-    Buffer<float> mWaterVelocityBuffer;
 
     // Water propagates through this spring according to this value;
     // 0.0 makes water not propagate

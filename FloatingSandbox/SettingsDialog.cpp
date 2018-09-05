@@ -19,7 +19,7 @@ static constexpr int SliderHeight = 140;
 static constexpr int HorizontalPadding = 10;
 
 const long ID_ULTRA_VIOLENT_CHECKBOX = wxNewId();
-const long ID_QUICK_WATER_FIX_CHECKBOX = wxNewId();
+const long ID_SEE_SHIP_THROUGH_SEA_WATER_CHECKBOX = wxNewId();
 const long ID_SHOW_STRESS_CHECKBOX = wxNewId();
 
 SettingsDialog::SettingsDialog(
@@ -121,70 +121,71 @@ SettingsDialog::SettingsDialog(
     controls1Sizer->AddSpacer(HorizontalPadding);
 
 
-    // Water Velocity
+    // Water Intake 
 
-    mWaterVelocitySlider = std::make_unique<SliderControl>(
+    mWaterIntakeSlider = std::make_unique<SliderControl>(
         this,
         SliderWidth,
         SliderHeight,
-        "Water Velocity Adjust",
-        mGameController->GetWaterVelocityAdjustment(),
+        "Water Intake Adjust",
+        mGameController->GetWaterIntakeAdjustment(),
         [this](float /*value*/)
         {
             // Remember we're dirty now
             this->mApplyButton->Enable(true);
         },
         std::make_unique<LinearSliderCore>(
-            mGameController->GetMinWaterVelocityAdjustment(),
-            mGameController->GetMaxWaterVelocityAdjustment()));
+            mGameController->GetMinWaterIntakeAdjustment(),
+            mGameController->GetMaxWaterIntakeAdjustment()));
 
-    controls1Sizer->Add(mWaterVelocitySlider.get(), 0);
-
-    controls1Sizer->AddSpacer(HorizontalPadding);
-
-
-    // Water Velocity Drag
-
-    mWaterVelocityDragSlider = std::make_unique<SliderControl>(
-        this,
-        SliderWidth,
-        SliderHeight,
-        "Water Velocity Drag",
-        mGameController->GetWaterVelocityDrag(),
-        [this](float /*value*/)
-    {
-        // Remember we're dirty now
-        this->mApplyButton->Enable(true);
-    },
-        std::make_unique<LinearSliderCore>(
-            mGameController->GetMinWaterVelocityDrag(),
-            mGameController->GetMaxWaterVelocityDrag()));
-
-    controls1Sizer->Add(mWaterVelocityDragSlider.get(), 0);
+    controls1Sizer->Add(mWaterIntakeSlider.get(), 0);
 
     controls1Sizer->AddSpacer(HorizontalPadding);
 
 
-    // Wave Height
+    // Water Quickness
 
-    mWaveHeightSlider = std::make_unique<SliderControl>(
+    mWaterQuicknessSlider = std::make_unique<SliderControl>(
         this,
         SliderWidth,
         SliderHeight,
-        "Wave Height",
-        mGameController->GetWaveHeight(),
+        "Water Quickness",
+        mGameController->GetWaterQuickness(),
         [this](float /*value*/)
         {
             // Remember we're dirty now
             this->mApplyButton->Enable(true);
         },
         std::make_unique<LinearSliderCore>(
-            mGameController->GetMinWaveHeight(),
-            mGameController->GetMaxWaveHeight()));
-    
-    controls1Sizer->Add(mWaveHeightSlider.get(), 0);
+            mGameController->GetMinWaterQuickness(),
+            mGameController->GetMaxWaterQuickness()));
+
+    controls1Sizer->Add(mWaterQuicknessSlider.get(), 0);
 
     controls1Sizer->AddSpacer(HorizontalPadding);
+
+
+    // Water Level of Detail
+
+    mWaterLevelOfDetailSlider = std::make_unique<SliderControl>(
+        this,
+        SliderWidth,
+        SliderHeight,
+        "Water Level of Detail",
+        mGameController->GetWaterLevelOfDetail(),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<LinearSliderCore>(
+            mGameController->GetMinWaterLevelOfDetail(),
+            mGameController->GetMaxWaterLevelOfDetail()));
+
+    controls1Sizer->Add(mWaterLevelOfDetailSlider.get(), 0);
+
+    controls1Sizer->AddSpacer(HorizontalPadding);
+
 
 
     // Check boxes 1
@@ -213,15 +214,37 @@ SettingsDialog::SettingsDialog(
 
     controls2Sizer->AddSpacer(HorizontalPadding);
 
-    
-    // Water Transparency
 
-    mWaterTransparencySlider = std::make_unique<SliderControl>(
+    // Wave Height
+
+    mWaveHeightSlider = std::make_unique<SliderControl>(
         this,
         SliderWidth,
         SliderHeight,
-        "Water Transparency",
-        mGameController->GetWaterTransparency(),
+        "Wave Height",
+        mGameController->GetWaveHeight(),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<LinearSliderCore>(
+            mGameController->GetMinWaveHeight(),
+            mGameController->GetMaxWaveHeight()));
+    
+    controls2Sizer->Add(mWaveHeightSlider.get(), 0);
+
+    controls2Sizer->AddSpacer(HorizontalPadding);
+
+
+    // Sea Water Transparency
+
+    mSeaWaterTransparencySlider = std::make_unique<SliderControl>(
+        this,
+        SliderWidth,
+        SliderHeight,
+        "Sea Water Transparency",
+        mGameController->GetSeaWaterTransparency(),
         [this](float /*value*/)
         {
             // Remember we're dirty now
@@ -231,7 +254,7 @@ SettingsDialog::SettingsDialog(
             0.0f,
             1.0f));
     
-    controls2Sizer->Add(mWaterTransparencySlider.get(), 0);
+    controls2Sizer->Add(mSeaWaterTransparencySlider.get(), 0);
 
     controls2Sizer->AddSpacer(HorizontalPadding);
 
@@ -330,9 +353,9 @@ SettingsDialog::SettingsDialog(
 
     wxStaticBoxSizer* checkboxesSizer2 = new wxStaticBoxSizer(wxVERTICAL, this);
 
-    mQuickWaterFixCheckBox = new wxCheckBox(this, ID_QUICK_WATER_FIX_CHECKBOX, _("See Ship Through Water"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Quick Water Fix Checkbox"));
-    Connect(ID_QUICK_WATER_FIX_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnQuickWaterFixCheckBoxClick);
-    checkboxesSizer2->Add(mQuickWaterFixCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
+    mSeeShipThroughSeaWaterCheckBox = new wxCheckBox(this, ID_SEE_SHIP_THROUGH_SEA_WATER_CHECKBOX, _("See Ship Through Water"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T(""));
+    Connect(ID_SEE_SHIP_THROUGH_SEA_WATER_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnSeeShipThroughSeaWaterCheckBoxClick);
+    checkboxesSizer2->Add(mSeeShipThroughSeaWaterCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
 
     wxString shipRenderModeChoices[] =
     {
@@ -415,7 +438,7 @@ void SettingsDialog::Open()
     this->Show();
 }
 
-void SettingsDialog::OnQuickWaterFixCheckBoxClick(wxCommandEvent & /*event*/)
+void SettingsDialog::OnSeeShipThroughSeaWaterCheckBoxClick(wxCommandEvent & /*event*/)
 {
     // Remember we're dirty now
     mApplyButton->Enable(true);
@@ -474,17 +497,20 @@ void SettingsDialog::ApplySettings()
     mGameController->SetBuoyancyAdjustment(
         mBuoyancySlider->GetValue());
 
-    mGameController->SetWaterVelocityAdjustment(
-        mWaterVelocitySlider->GetValue());
+    mGameController->SetWaterIntakeAdjustment(
+        mWaterIntakeSlider->GetValue());
 
-    mGameController->SetWaterVelocityDrag(
-        mWaterVelocityDragSlider->GetValue());
+    mGameController->SetWaterQuickness(
+        mWaterQuicknessSlider->GetValue());
+
+    mGameController->SetWaterLevelOfDetail(
+        mWaterLevelOfDetailSlider->GetValue());
 
     mGameController->SetWaveHeight(
         mWaveHeightSlider->GetValue());
 
-    mGameController->SetWaterTransparency(
-        mWaterTransparencySlider->GetValue());
+    mGameController->SetSeaWaterTransparency(
+        mSeaWaterTransparencySlider->GetValue());
 
     mGameController->SetLightDiffusionAdjustment(
         mLightDiffusionSlider->GetValue());
@@ -500,7 +526,7 @@ void SettingsDialog::ApplySettings()
 
     mGameController->SetUltraViolentMode(mUltraViolentCheckBox->IsChecked());
 
-    mGameController->SetShowShipThroughWater(mQuickWaterFixCheckBox->IsChecked());
+    mGameController->SetShowShipThroughSeaWater(mSeeShipThroughSeaWaterCheckBox->IsChecked());
 
     auto selectedShipRenderMode = mShipRenderModeRadioBox->GetSelection();
     if (0 == selectedShipRenderMode)
@@ -534,13 +560,15 @@ void SettingsDialog::ReadSettings()
     
     mBuoyancySlider->SetValue(mGameController->GetBuoyancyAdjustment());
     
-    mWaterVelocitySlider->SetValue(mGameController->GetWaterVelocityAdjustment());
+    mWaterIntakeSlider->SetValue(mGameController->GetWaterIntakeAdjustment());
 
-    mWaterVelocityDragSlider->SetValue(mGameController->GetWaterVelocityDrag());
+    mWaterQuicknessSlider->SetValue(mGameController->GetWaterQuickness());
+
+    mWaterLevelOfDetailSlider->SetValue(mGameController->GetWaterLevelOfDetail());
     
     mWaveHeightSlider->SetValue(mGameController->GetWaveHeight());
     
-    mWaterTransparencySlider->SetValue(mGameController->GetWaterTransparency());
+    mSeaWaterTransparencySlider->SetValue(mGameController->GetSeaWaterTransparency());
     
     mLightDiffusionSlider->SetValue(mGameController->GetLightDiffusionAdjustment());
     
@@ -554,7 +582,7 @@ void SettingsDialog::ReadSettings()
 
     mUltraViolentCheckBox->SetValue(mGameController->GetUltraViolentMode());
 
-    mQuickWaterFixCheckBox->SetValue(mGameController->GetShowShipThroughWater());
+    mSeeShipThroughSeaWaterCheckBox->SetValue(mGameController->GetShowShipThroughSeaWater());
 
     auto shipRenderMode = mGameController->GetShipRenderMode();
     switch (shipRenderMode)

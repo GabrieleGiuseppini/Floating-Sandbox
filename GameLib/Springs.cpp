@@ -39,7 +39,6 @@ void Springs::Add(
         ? points.GetMaterial(pointAIndex)
         : points.GetMaterial(pointBIndex));
 
-    mWaterVelocityBuffer.emplace_back(0.0f);
     mWaterPermeabilityBuffer.emplace_back(Characteristics::None != (characteristics & Characteristics::Hull) ? 0.0f : 1.0f);
 
     mIsStressedBuffer.emplace_back(false);
