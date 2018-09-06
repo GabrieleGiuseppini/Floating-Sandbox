@@ -665,7 +665,7 @@ void Ship::UpdateWaterInflow(
                 //  v = +/- sqrt(2*g*|height_of_water_at_y-wh|)
                 //
 
-                float const externalWaterHeight = fmaxf(
+                float const externalWaterHeight = std::max(
                     mParentWorld.GetWaterHeightAt(mPoints.GetPosition(pointIndex).x) - mPoints.GetPosition(pointIndex).y,
                     0.0f);
 
@@ -697,7 +697,7 @@ void Ship::UpdateWaterInflow(
                 if (newWater < 0.0f)
                 {
                     // Make sure we don't over-drain the point in case of an outgoing flow
-                    newWater = -fminf(-newWater, mPoints.GetWater(pointIndex));
+                    newWater = -std::min(-newWater, mPoints.GetWater(pointIndex));
                 }
 
                 // Adjust water
@@ -814,7 +814,7 @@ void Ship::UpdateWaterVelocities(GameParameters const & gameParameters)
                 * mSprings.GetWaterPermeability(springIndex);
 
             // We only consider outgoing flows
-            outgoingWaterQuantity = fmaxf(outgoingWaterQuantity, 0.0f);
+            outgoingWaterQuantity = std::max(outgoingWaterQuantity, 0.0f);
 
             // Store outgoing flow
             springOutgoingWaterQuantities[s] = outgoingWaterQuantity;
@@ -902,7 +902,7 @@ void Ship::UpdateWaterVelocities(GameParameters const & gameParameters)
     // TODO: double-buffer
     for (auto pointIndex : mPoints)
     {
-        mPoints.SetWater(pointIndex, fmaxf(newPointWater[pointIndex], 0.0f));
+        mPoints.SetWater(pointIndex, std::max(newPointWater[pointIndex], 0.0f));
 
         // Make velocity mass-independent again
         if (mPoints.GetWater(pointIndex) > 0.0f)

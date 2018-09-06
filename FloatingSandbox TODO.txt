@@ -262,63 +262,79 @@ Prev perf (before point et al destructuring)
 
 - Water:
 	+ Rush sound: should water rush sound be more....rushy?
-	- Water rearc:
-		- Points::Water is height of water column that provides equivalent pressure
-			- When 0<=Water<=1 is also fraction of volume filled with water
-			- Add comments at Points
-		- Ship::LeakWater:
-			- Calc velocity of entering water with Bernoulli
-				- Still need to cap to max (external pressure) because of dt possibly being too large
-			- Also do negative pressure (i.e. water leaving cell)
-		- Then, see if still need Gravitate+Balance instead of a new, single BalancePressure with gravitational directionality
-			- Single BalancePressure notes:
-				- Goal: point and all its (non-hull) neighbors reach a common pressure (avg of all), adjusted according to points' y's
-				- Adjustment of target pressure: target point's pressure - 1.0 if straight above, +1.0 if straight below, everything else in-between
-					- i.e. cosine
-			- Gravitate+Balance notes:
-				- After LeakWater, we should do a Balance followed by a Gravitate, which adjusts the naive balance for gravity
-				- BalanceWaterPressure:
-					- Goal: point and all its (non-hull) neighbors reach a common pressure, which is avg of all
-					- For each neighbour: point gives or takes water so that other point gets to average
-						- dWater is then other point's Water - avg; CONFIRMED that point gets to avg as well
-					- Speed is Bernoullian, based on dWater
-						- Though flow lines are not horizontal anymore, hence Bernoulli's constant should be adjusted by dh
-					- Visit by points
-				- GravitateWater:
-					- Fraction of water that goes out through *one* spring is fraction of meter that water does in dt, 
-					  i.e. g*dt*dt ~= 0.004, projected onto gravity normal
-					- This is separately for each spring
-					
+	= Water rearc:
+		+ Points::Water is height of water column that provides equivalent pressure
+			+ When 0<=Water<=1 is also fraction of volume filled with water
+			+ Add comments at Points
+		+ Ship::LeakWater:
+			+ Calc velocity of entering water with Bernoulli
+				+ Still need to cap to max (external pressure) because of dt possibly being too large?
+			+ Also do negative pressure (i.e. water leaving cell)
+		+ Do water-momentum based dynamics					
+		= Cleanups and deferred TODOs:
+			+ Test with Bernoulli's spring velocity being added to point's water velocity (times its mass of course)
+			+ Do U-shaped tube
+			+ SettingsDialog:
+				+ Flex spacing
+			+ Rename water detail parameter: Water Detail Coarseness
+			+ Take perf measurements:
+				+ FPS: 26.8/26.9/27.0/27.4
+				- MainFrame::RenderGame:	61.08%
+				- GameController::Update:	32.92%
+					- UpdateWaterDynamics:	 5.85%
+						- UpdateWaterVelocities:	5.77%
+			= Refactor UpdateWaterVelocities:
+				+ Normalize based off sum of magnitudes
+				- Make points's WaterVelocity a WaterMomentum instead
+					- Make sure each SetWaterVelocity() can take mass into account
+				- Finalize double-buffering
+					- mPoints::mWaterMomentaTempBuffer
+					- mPoints::Get/SetWaterMomentaTemp(...)
+					TODOOLD:
+					- mPoints::SetWaterMomentaTemp(...)
+					- mPoints::PrepareWaterMomentaTemp()
+					- mPoints::UpdateWaterVelocitiesWithWaterMomentaTemp()
+				- Take perf measurements			
+			- ShipRenderContext: add waterLevelOfDetail param to all other shader programs
+			- See if need to do anything for deleted springs and/or points
+			+ SettingsDialog: make it tabbed: mechanics, fluid, rendering
+			+ Add crazyness to SettingsDialog
+			+ Rename GameParameters::GravityNormal to GravityNormalized
+			+ GameParameters:
+				+ Rename NumDynamicIterations as NumMechanicalDynamicsIterations
+				+ Add NumWaterDynamicsIterations
+			+ Is Springs::WaterPermeability still used?
+			+ See if GameParameters::WaterPressureAdjustment still needed (or needs to change name)
+			+ Remove old water dynamics code from Ship
+
 		- Optimizations:
 			- UpdateWaterIntake:
-				- Incorporate isDeleted isLeaking (and may be other coeffs)into Points::ExternalWater~Permeability~
-				- Test; if OK, do also update of ExternalWater~Permeability~ at Points::UpdateGameParameters(.)
+				- Incorporate isDeleted, isLeaking (and may be other coeffs) into Points::ExternalWater~Permeability~
+				- Test; if OK, do also update of ExternalWater~Permeability~ at Points::UpdateGameParameters(.) if needed
+				- Take perf measurements
 
 			- Cache sea depth from PointDynamics at Points, using lambda 
 				- Test asm
+				- Take perf measurements
+		- Update final perf measurements
 
-		- Cleanups and deferred TODOs:
-			- See if need to do anything for deleted springs and/or points
-			= GameParameters:
-				+ Rename NumDynamicIterations as NumMechanicalDynamicsIterations
-				+ Add NumWaterDynamicsIterations
-				- Undo if NumWaterDynamicsIterations stays 1
-			- Is Springs::WaterPermeability still used?
-			- See if can remove if(Deleted) at IntegrateWaterVelocities()
-			+ See if GameParameters::WaterPressureAdjustment still needed (or needs to change name)
-			- Remove old water dynamics code from Ship
-			- SettingsDialog: fix for missing slider
-			- Rename GameParameters::GravityNormal to NormalizedGravity
-
-		- Sound rearc:
-			+ Rushing water stays, for water moved during leaking;
-			- Add new "splashing" water, based off quantity of water moved during IntegrateWaterVelocities
+	- Splash sound:
+		- First we need to cleanse "rushing water" of bubbles sound
+		- New "splash" continuous sound, with volume controlled by total magnitude of momentum change
+			- Might need a low-pass filter to smoothen out peaks
+			- Total magnitude of momentum change:
+				- TODO
 
 
 	-Do water bubbles (at intake) and water drops (at outtake)
 		- Ephemeral particles emitted at UpdateWaterIntake()
-			- Material with zero weight so rises up automagically
-
+			- Intake:
+				- Material ("Air") with zero weight so rises up automagically
+					- Hardcoded material added by MaterialDB from in-code list
+			- Outtake:
+				- Only emit if Y above water line
+				- Material is water
+					- Hardcoded material added by MaterialDB from in-code list
 	- Optimizations:
 		- GravitateWater:
 			- Calculate once and for all cos theta's at first iteration
