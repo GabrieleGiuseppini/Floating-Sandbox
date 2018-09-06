@@ -17,7 +17,7 @@
 
 static constexpr int SliderWidth = 40;
 static constexpr int SliderHeight = 140;
-static constexpr int HorizontalPadding = 10;
+static constexpr int SliderBorder = 10;
 
 const long ID_ULTRA_VIOLENT_CHECKBOX = wxNewId();
 const long ID_SEE_SHIP_THROUGH_SEA_WATER_CHECKBOX = wxNewId();
@@ -296,8 +296,6 @@ void SettingsDialog::PopulateMechanicsPanel(wxPanel * panel)
 {
     wxBoxSizer* controlsSizer = new wxBoxSizer(wxHORIZONTAL);
 
-    controlsSizer->AddSpacer(HorizontalPadding);
-
 
     // Stiffness
 
@@ -316,9 +314,7 @@ void SettingsDialog::PopulateMechanicsPanel(wxPanel * panel)
             mGameController->GetMinStiffnessAdjustment(),
             mGameController->GetMaxStiffnessAdjustment()));
 
-    controlsSizer->Add(mStiffnessSlider.get(), 0);
-
-    controlsSizer->AddSpacer(HorizontalPadding);
+    controlsSizer->Add(mStiffnessSlider.get(), 1, wxALL, SliderBorder);
 
 
     // Strength
@@ -339,9 +335,7 @@ void SettingsDialog::PopulateMechanicsPanel(wxPanel * panel)
             1.0f,
             mGameController->GetMaxStrengthAdjustment()));
 
-    controlsSizer->Add(mStrengthSlider.get(), 0);
-
-    controlsSizer->AddSpacer(HorizontalPadding);
+    controlsSizer->Add(mStrengthSlider.get(), 1, wxALL, SliderBorder);
 
 
     // Buoyancy
@@ -361,9 +355,7 @@ void SettingsDialog::PopulateMechanicsPanel(wxPanel * panel)
             mGameController->GetMinBuoyancyAdjustment(),
             mGameController->GetMaxBuoyancyAdjustment()));
 
-    controlsSizer->Add(mBuoyancySlider.get(), 0);
-
-    controlsSizer->AddSpacer(HorizontalPadding);
+    controlsSizer->Add(mBuoyancySlider.get(), 1, wxALL, SliderBorder);
 
 
     // Finalize panel
@@ -374,8 +366,6 @@ void SettingsDialog::PopulateMechanicsPanel(wxPanel * panel)
 void SettingsDialog::PopulateFluidsPanel(wxPanel * panel)
 {
     wxBoxSizer* controlsSizer = new wxBoxSizer(wxHORIZONTAL);
-
-    controlsSizer->AddSpacer(HorizontalPadding);
 
 
     // Water Intake 
@@ -395,9 +385,7 @@ void SettingsDialog::PopulateFluidsPanel(wxPanel * panel)
             mGameController->GetMinWaterIntakeAdjustment(),
             mGameController->GetMaxWaterIntakeAdjustment()));
 
-    controlsSizer->Add(mWaterIntakeSlider.get(), 0);
-
-    controlsSizer->AddSpacer(HorizontalPadding);
+    controlsSizer->Add(mWaterIntakeSlider.get(), 1, wxALL, SliderBorder);
 
 
     // Water Crazyness
@@ -417,9 +405,7 @@ void SettingsDialog::PopulateFluidsPanel(wxPanel * panel)
             mGameController->GetMinWaterCrazyness(),
             mGameController->GetMaxWaterCrazyness()));
 
-    controlsSizer->Add(mWaterCrazynessSlider.get(), 0);
-
-    controlsSizer->AddSpacer(HorizontalPadding);
+    controlsSizer->Add(mWaterCrazynessSlider.get(), 1, wxALL, SliderBorder);
 
 
     // Water Quickness
@@ -439,9 +425,7 @@ void SettingsDialog::PopulateFluidsPanel(wxPanel * panel)
             mGameController->GetMinWaterQuickness(),
             mGameController->GetMaxWaterQuickness()));
 
-    controlsSizer->Add(mWaterQuicknessSlider.get(), 0);
-
-    controlsSizer->AddSpacer(HorizontalPadding);
+    controlsSizer->Add(mWaterQuicknessSlider.get(), 1, wxALL, SliderBorder);
 
 
     // Water Level of Detail
@@ -461,9 +445,7 @@ void SettingsDialog::PopulateFluidsPanel(wxPanel * panel)
             mGameController->GetMinWaterLevelOfDetail(),
             mGameController->GetMaxWaterLevelOfDetail()));
 
-    controlsSizer->Add(mWaterLevelOfDetailSlider.get(), 0);
-
-    controlsSizer->AddSpacer(HorizontalPadding);
+    controlsSizer->Add(mWaterLevelOfDetailSlider.get(), 1, wxALL, SliderBorder);
 
 
     // Finalize panel
@@ -475,8 +457,6 @@ void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
 {
     wxBoxSizer* controlsSizer = new wxBoxSizer(wxHORIZONTAL);
 
-    controlsSizer->AddSpacer(HorizontalPadding);
-
 
     // Wave Height
 
@@ -487,17 +467,15 @@ void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
         "Wave Height",
         mGameController->GetWaveHeight(),
         [this](float /*value*/)
-    {
-        // Remember we're dirty now
-        this->mApplyButton->Enable(true);
-    },
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
         std::make_unique<LinearSliderCore>(
             mGameController->GetMinWaveHeight(),
             mGameController->GetMaxWaveHeight()));
 
-    controlsSizer->Add(mWaveHeightSlider.get(), 0);
-
-    controlsSizer->AddSpacer(HorizontalPadding);
+    controlsSizer->Add(mWaveHeightSlider.get(), 1, wxALL, SliderBorder);
 
 
     // Sea Depth
@@ -509,17 +487,15 @@ void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
         "Ocean Depth",
         mGameController->GetSeaDepth(),
         [this](float /*value*/)
-    {
-        // Remember we're dirty now
-        this->mApplyButton->Enable(true);
-    },
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
         std::make_unique<LinearSliderCore>(
             mGameController->GetMinSeaDepth(),
             mGameController->GetMaxSeaDepth()));
 
-    controlsSizer->Add(mSeaDepthSlider.get(), 0);
-
-    controlsSizer->AddSpacer(HorizontalPadding);
+    controlsSizer->Add(mSeaDepthSlider.get(), 1, wxALL, SliderBorder);
 
 
     // Light Diffusion
@@ -531,17 +507,15 @@ void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
         "Light Diffusion Adjust",
         mGameController->GetLightDiffusionAdjustment(),
         [this](float /*value*/)
-    {
-        // Remember we're dirty now
-        this->mApplyButton->Enable(true);
-    },
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
         std::make_unique<LinearSliderCore>(
             0.0f,
             1.0f));
 
-    controlsSizer->Add(mLightDiffusionSlider.get(), 0);
-
-    controlsSizer->AddSpacer(HorizontalPadding);
+    controlsSizer->Add(mLightDiffusionSlider.get(), 1, wxALL, SliderBorder);
 
 
     // Finalize panel
@@ -552,8 +526,6 @@ void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
 void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 {
     wxBoxSizer* controlsSizer = new wxBoxSizer(wxHORIZONTAL);
-
-    controlsSizer->AddSpacer(HorizontalPadding);
 
 
     // Destroy Radius
@@ -573,9 +545,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
             mGameController->GetMinDestroyRadius(),
             mGameController->GetMaxDestroyRadius()));
 
-    controlsSizer->Add(mDestroyRadiusSlider.get(), 0);
-
-    controlsSizer->AddSpacer(HorizontalPadding);
+    controlsSizer->Add(mDestroyRadiusSlider.get(), 1, wxALL, SliderBorder);
     
 
     // Bomb Blast Radius
@@ -595,9 +565,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
             mGameController->GetMinBombBlastRadius(),
             mGameController->GetMaxBombBlastRadius()));
 
-    controlsSizer->Add(mBombBlastRadiusSlider.get(), 0);
-
-    controlsSizer->AddSpacer(HorizontalPadding);
+    controlsSizer->Add(mBombBlastRadiusSlider.get(), 1, wxALL, SliderBorder);
 
 
     // Check boxes
@@ -606,11 +574,10 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 
     mUltraViolentCheckBox = new wxCheckBox(panel, ID_ULTRA_VIOLENT_CHECKBOX, _("Ultra-Violent Mode"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Ultra-Violent Checkbox"));
     Connect(ID_ULTRA_VIOLENT_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnUltraViolentCheckBoxClick);
+
     checkboxesSizer->Add(mUltraViolentCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
 
-    controlsSizer->Add(checkboxesSizer, 0);
-
-    controlsSizer->AddSpacer(HorizontalPadding);
+    controlsSizer->Add(checkboxesSizer, 0, wxALL, SliderBorder);
     
 
     // Finalize panel
@@ -621,8 +588,6 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 {
     wxBoxSizer* controlsSizer = new wxBoxSizer(wxHORIZONTAL);
-
-    controlsSizer->AddSpacer(HorizontalPadding);
 
 
     // Sea Water Transparency
@@ -642,9 +607,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
             0.0f,
             1.0f));
     
-    controlsSizer->Add(mSeaWaterTransparencySlider.get(), 0);
-
-    controlsSizer->AddSpacer(HorizontalPadding);
+    controlsSizer->Add(mSeaWaterTransparencySlider.get(), 1, wxALL, SliderBorder);
 
 
     // Check boxes
@@ -653,6 +616,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
     mSeeShipThroughSeaWaterCheckBox = new wxCheckBox(panel, ID_SEE_SHIP_THROUGH_SEA_WATER_CHECKBOX, _("See Ship Through Water"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T(""));
     Connect(ID_SEE_SHIP_THROUGH_SEA_WATER_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnSeeShipThroughSeaWaterCheckBoxClick);
+
     checkboxesSizer->Add(mSeeShipThroughSeaWaterCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
 
     wxString shipRenderModeChoices[] =
@@ -666,15 +630,15 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
     mShipRenderModeRadioBox = new wxRadioBox(panel, wxID_ANY, _("Ship Draw Options"), wxDefaultPosition, wxDefaultSize,
         WXSIZEOF(shipRenderModeChoices), shipRenderModeChoices, 1, wxRA_SPECIFY_COLS);
     Connect(mShipRenderModeRadioBox->GetId(), wxEVT_RADIOBOX, (wxObjectEventFunction)&SettingsDialog::OnShipRenderModeRadioBox);
+    
     checkboxesSizer->Add(mShipRenderModeRadioBox, 0, wxALL | wxALIGN_LEFT, 5);
 
     mShowStressCheckBox = new wxCheckBox(panel, ID_SHOW_STRESS_CHECKBOX, _("Show Stress"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Show Stress Checkbox"));
     Connect(ID_SHOW_STRESS_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnShowStressCheckBoxClick);
+    
     checkboxesSizer->Add(mShowStressCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
 
-    controlsSizer->Add(checkboxesSizer, 0);
-
-    controlsSizer->AddSpacer(HorizontalPadding);
+    controlsSizer->Add(checkboxesSizer, 0, wxALL, SliderBorder);
 
 
     // Finalize panel
