@@ -49,7 +49,7 @@ public:
 
     void UpdateAmbientLightIntensity(float ambientLightIntensity);
 
-    void UpdateWaterLevelOfDetail(float waterLevelOfDetail);
+    void UpdateWaterLevelThreshold(float waterLevelOfDetail);
 
 public:
 
@@ -376,7 +376,7 @@ private:
 
     float mCanvasToVisibleWorldHeightRatio;
     float mAmbientLightIntensity;
-    float mWaterLevelOfDetail;
+    float mWaterLevelThreshold;
 
 private:
 
@@ -412,16 +412,17 @@ private:
     GameOpenGLShaderProgram mElementColorShaderProgram;
     GLint mElementColorShaderOrthoMatrixParameter;
     GLint mElementColorShaderAmbientLightIntensityParameter;
-    GLint mElementColorShaderWaterLevelOfDetailParameter;
-    // TODO: @ others?
+    GLint mElementColorShaderWaterLevelThresholdParameter;
 
     GameOpenGLShaderProgram mElementRopeShaderProgram;
     GLint mElementRopeShaderOrthoMatrixParameter;
     GLint mElementRopeShaderAmbientLightIntensityParameter;
-
+    GLint mElementRopeShaderWaterLevelThresholdParameter;
+    
     GameOpenGLShaderProgram mElementTextureShaderProgram;
     GLint mElementTextureShaderOrthoMatrixParameter;
     GLint mElementTextureShaderAmbientLightIntensityParameter;
+    GLint mElementTextureShaderWaterLevelThresholdParameter;
 
     GameOpenGLShaderProgram mElementStressedSpringShaderProgram;
     GLint mElementStressedSpringShaderOrthoMatrixParameter;

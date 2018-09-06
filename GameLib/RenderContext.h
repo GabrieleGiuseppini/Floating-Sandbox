@@ -155,8 +155,8 @@ public:
         UpdateWaterLevelOfDetail();
     }
 
-    static constexpr float MinWaterLevelOfDetail = 0.01f;
-    static constexpr float MaxWaterLevelOfDetail = 2.0f;
+    static constexpr float MinWaterLevelOfDetail = 0.0f;
+    static constexpr float MaxWaterLevelOfDetail = 1.0f;
 
     //
     // Ship rendering

@@ -67,7 +67,7 @@ RenderContext::RenderContext(
     , mAmbientLightIntensity(1.0f)
     , mSeaWaterTransparency(0.68750f)
     , mShowShipThroughSeaWater(false)
-    , mWaterLevelOfDetail(0.25f)
+    , mWaterLevelOfDetail(0.875f)
     , mShipRenderMode(ShipRenderMode::Texture)
     , mShowStressedSprings(false)
 {
@@ -1034,6 +1034,6 @@ void RenderContext::UpdateWaterLevelOfDetail()
 
     for (auto & s : mShips)
     {
-        s->UpdateWaterLevelOfDetail(mWaterLevelOfDetail);
+        s->UpdateWaterLevelThreshold(mWaterLevelOfDetail);
     }
 }

@@ -21,7 +21,7 @@ ShipRenderContext::ShipRenderContext(
     float waterLevelOfDetail)
     : mCanvasToVisibleWorldHeightRatio(0)
     , mAmbientLightIntensity(0.0f) // Set later
-    , mWaterLevelOfDetail(0.0f) // Set later
+    , mWaterLevelThreshold(0.0f)
     // Points
     , mPointCount(0u)
     , mPointPositionVBO()
@@ -125,7 +125,7 @@ ShipRenderContext::ShipRenderContext(
 
         // Params
         uniform float paramAmbientLightIntensity;
-        uniform float paramWaterLevelOfDetail;
+        uniform float paramWaterLevelThreshold;
 
         // Constants
         vec3 lightColour = vec3(1.0, 1.0, 0.25);
@@ -133,12 +133,13 @@ ShipRenderContext::ShipRenderContext(
 
         void main()
         {
-            float colorWetness = min(vertexWater, paramWaterLevelOfDetail) * 0.7 / paramWaterLevelOfDetail;
-            vec3 colour1 = vertexCol * (1.0 - colorWetness) + wetColour * colorWetness;
-            colour1 *= paramAmbientLightIntensity;
-            colour1 = colour1 * (1.0 - vertexLight) + lightColour * vertexLight;
+            float colorWetness = min(vertexWater, paramWaterLevelThreshold) * 0.7 / paramWaterLevelThreshold;
+            vec3 fragColour = vertexCol * (1.0 - colorWetness) + wetColour * colorWetness;
+
+            fragColour *= paramAmbientLightIntensity;
+            fragColour = fragColour * (1.0 - vertexLight) + lightColour * vertexLight;
             
-            gl_FragColor = vec4(colour1.xyz, 1.0);
+            gl_FragColor = vec4(fragColour.xyz, 1.0);
         } 
     )";
 
@@ -156,7 +157,7 @@ ShipRenderContext::ShipRenderContext(
     // Get uniform locations
     mElementColorShaderOrthoMatrixParameter = GameOpenGL::GetParameterLocation(mElementColorShaderProgram, "paramOrthoMatrix");
     mElementColorShaderAmbientLightIntensityParameter = GameOpenGL::GetParameterLocation(mElementColorShaderProgram, "paramAmbientLightIntensity");
-    mElementColorShaderWaterLevelOfDetailParameter = GameOpenGL::GetParameterLocation(mElementColorShaderProgram, "paramWaterLevelOfDetail");
+    mElementColorShaderWaterLevelThresholdParameter = GameOpenGL::GetParameterLocation(mElementColorShaderProgram, "paramWaterLevelThreshold");
 
 
     //
@@ -199,6 +200,7 @@ ShipRenderContext::ShipRenderContext(
         // Params
         uniform vec3 paramRopeColour;
         uniform float paramAmbientLightIntensity;
+        uniform float paramWaterLevelThreshold;
 
         // Constants
         vec3 lightColour = vec3(1.0, 1.0, 0.25);
@@ -209,7 +211,7 @@ ShipRenderContext::ShipRenderContext(
             vec3 vertexCol = paramRopeColour * paramAmbientLightIntensity;
 
             // Apply point water
-            float colorWetness = min(vertexWater, 0.25) * 2.8;
+            float colorWetness = min(vertexWater, paramWaterLevelThreshold) * 0.7 / paramWaterLevelThreshold;
             vec3 fragColour = vertexCol * (1.0 - colorWetness) + wetColour * colorWetness;
 
             // Apply ambient light
@@ -236,6 +238,7 @@ ShipRenderContext::ShipRenderContext(
     mElementRopeShaderOrthoMatrixParameter = GameOpenGL::GetParameterLocation(mElementRopeShaderProgram, "paramOrthoMatrix");
     GLint ropeShaderRopeColourParameter = GameOpenGL::GetParameterLocation(mElementRopeShaderProgram, "paramRopeColour");
     mElementRopeShaderAmbientLightIntensityParameter = GameOpenGL::GetParameterLocation(mElementRopeShaderProgram, "paramAmbientLightIntensity");
+    mElementRopeShaderWaterLevelThresholdParameter = GameOpenGL::GetParameterLocation(mElementRopeShaderProgram, "paramWaterLevelThreshold");
 
     // Set hardcoded parameters
     glUseProgram(*mElementRopeShaderProgram);
@@ -294,6 +297,7 @@ ShipRenderContext::ShipRenderContext(
 
         // Params
         uniform float paramAmbientLightIntensity;
+        uniform float paramWaterLevelThreshold;
 
         // Constants
         vec4 lightColour = vec4(1.0, 1.0, 0.25, 1.0);
@@ -304,7 +308,7 @@ ShipRenderContext::ShipRenderContext(
             vec4 vertexCol = texture2D(inputTexture, vertexTextureCoords);
 
             // Apply point water
-            float colorWetness = min(vertexWater, 0.25) * 2.8;
+            float colorWetness = min(vertexWater, paramWaterLevelThreshold) * 0.7 / paramWaterLevelThreshold;
             vec4 fragColour = vertexCol * (1.0 - colorWetness) + wetColour * colorWetness;
 
             // Apply ambient light
@@ -331,7 +335,7 @@ ShipRenderContext::ShipRenderContext(
     // Get uniform locations
     mElementTextureShaderOrthoMatrixParameter = GameOpenGL::GetParameterLocation(mElementTextureShaderProgram, "paramOrthoMatrix");
     mElementTextureShaderAmbientLightIntensityParameter = GameOpenGL::GetParameterLocation(mElementTextureShaderProgram, "paramAmbientLightIntensity");
-
+    mElementTextureShaderWaterLevelThresholdParameter = GameOpenGL::GetParameterLocation(mElementTextureShaderProgram, "paramWaterLevelThreshold");
 
     //
     // Create stressed spring program
@@ -647,7 +651,7 @@ ShipRenderContext::ShipRenderContext(
         canvasToVisibleWorldHeightRatio);
 
     UpdateAmbientLightIntensity(ambientLightIntensity);
-    UpdateWaterLevelOfDetail(waterLevelOfDetail);
+    UpdateWaterLevelThreshold(waterLevelOfDetail);
 }
 
 ShipRenderContext::~ShipRenderContext()
@@ -718,31 +722,23 @@ void ShipRenderContext::UpdateAmbientLightIntensity(float ambientLightIntensity)
     glUseProgram(0);
 }
 
-void ShipRenderContext::UpdateWaterLevelOfDetail(float waterLevelOfDetail)
+void ShipRenderContext::UpdateWaterLevelThreshold(float waterLevelOfDetail)
 {
-    mWaterLevelOfDetail = waterLevelOfDetail;
+    // Transform: 0->1 == 2.0->0.01
+    mWaterLevelThreshold = 2.0f + waterLevelOfDetail * (-2.0f + 0.01f);
 
     //
     // Set parameter in all programs
     //
 
     glUseProgram(*mElementColorShaderProgram);
-    glUniform1f(mElementColorShaderWaterLevelOfDetailParameter, waterLevelOfDetail);
-
-    /* TODO: others
-    glUseProgram(*mElementTextureShaderProgram);
-    glUniform1f(mElementTextureShaderAmbientLightIntensityParameter, ambientLightIntensity);
-
-    glUseProgram(*mElementColorShaderProgram);
-    glUniform1f(mElementColorShaderAmbientLightIntensityParameter, ambientLightIntensity);
+    glUniform1f(mElementColorShaderWaterLevelThresholdParameter, mWaterLevelThreshold);
 
     glUseProgram(*mElementRopeShaderProgram);
-    glUniform1f(mElementRopeShaderAmbientLightIntensityParameter, ambientLightIntensity);
+    glUniform1f(mElementRopeShaderWaterLevelThresholdParameter, mWaterLevelThreshold);
 
-    glUseProgram(*mElementPinnedPointShaderProgram);
-    glUniform1f(mElementPinnedPointShaderAmbientLightIntensityParameter, ambientLightIntensity);
-
-    */
+    glUseProgram(*mElementTextureShaderProgram);
+    glUniform1f(mElementTextureShaderWaterLevelThresholdParameter, mWaterLevelThreshold);
 
     glUseProgram(0);
 }
