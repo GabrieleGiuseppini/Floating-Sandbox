@@ -34,7 +34,9 @@ void Points::Add(
 
     mBuoyancyBuffer.emplace_back(buoyancy);
     mWaterBuffer.emplace_back(0.0f);
+    mWaterBufferTmp.emplace_back(0.0f); 
     mWaterVelocityBuffer.emplace_back(vec2f::zero());
+    mWaterMomentumBuffer.emplace_back(vec2f::zero());
     mIsLeakingBuffer.emplace_back(false);    
 
     mElectricalElementBuffer.emplace_back(electricalElementIndex);

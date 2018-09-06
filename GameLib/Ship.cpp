@@ -567,7 +567,7 @@ void Ship::IntegratePointForces()
     float * restrict forceBuffer = mPoints.GetForceBufferAsFloat();
     float * restrict integrationFactorBuffer = mPoints.GetIntegrationFactorBufferAsFloat();
 
-    size_t const numIterations = mPoints.GetElementCount() * 2;
+    size_t const numIterations = mPoints.GetElementCount() * 2; // Two components per vector
     for (size_t i = 0; i < numIterations; ++i)
     {
         //
@@ -723,19 +723,26 @@ void Ship::UpdateWaterVelocities(GameParameters const & gameParameters)
     // Outgoing quantity of water along each spring
     std::array<float, GameParameters::MaxSpringsPerPoint> springOutgoingWaterQuantities;
 
+    //
+    // Prepare result water and water momenta buffers
+    //
 
-    // TODO:DOUBLE BUFFER
-    std::vector<float> newPointWater(mPoints.GetElementCount());
-    std::vector<vec2f> newPointWaterMomentum(mPoints.GetElementCount());
+    float * restrict newPointWaterBuffer = mPoints.GetWaterBufferTmpAsFloat();
+    vec2f * restrict newPointWaterMomentumBuffer = mPoints.GetWaterMomentumBufferAsVec2();
     for (auto pointIndex : mPoints)
     {
-        newPointWater[pointIndex] = mPoints.GetWater(pointIndex);
+        newPointWaterBuffer[pointIndex] = mPoints.GetWater(pointIndex);
 
-        newPointWaterMomentum[pointIndex] =
+        newPointWaterMomentumBuffer[pointIndex] =
             mPoints.GetWaterVelocity(pointIndex)
             * mPoints.GetWater(pointIndex);
     }
 
+
+    //
+    // Visit all points and move water and its momenta
+    //
+    
     for (auto pointIndex : mPoints)
     {
         //
@@ -878,10 +885,10 @@ void Ship::UpdateWaterVelocities(GameParameters const & gameParameters)
             // Add water and water momentum to destination
             //
 
-            newPointWater[otherEndpointIndex] += 
+            newPointWaterBuffer[otherEndpointIndex] += 
                 normalizedOutgoingWaterQuantity;
 
-            newPointWaterMomentum[otherEndpointIndex] +=
+            newPointWaterMomentumBuffer[otherEndpointIndex] +=
                 springOutgoingWaterVelocities[s]
                 * normalizedOutgoingWaterQuantity;
         }
@@ -891,24 +898,25 @@ void Ship::UpdateWaterVelocities(GameParameters const & gameParameters)
         // 4) Update once and for all this point's quantity of water and water momentum
         //
 
-        newPointWater[pointIndex] -= actualTotalOutgoingWaterQuantity;
+        newPointWaterBuffer[pointIndex] -= actualTotalOutgoingWaterQuantity;
 
-        newPointWaterMomentum[pointIndex] -=
+        newPointWaterMomentumBuffer[pointIndex] -=
             mPoints.GetWaterVelocity(pointIndex) 
             * actualTotalOutgoingWaterQuantity;
     }
 
-
-    // TODO: double-buffer
+    //
+    // Move result values to point, transforming momenta into velocities
+    //
+    
     for (auto pointIndex : mPoints)
     {
-        mPoints.SetWater(pointIndex, std::max(newPointWater[pointIndex], 0.0f));
+        mPoints.SetWater(pointIndex, std::max(newPointWaterBuffer[pointIndex], 0.0f));
 
-        // Make velocity mass-independent again
         if (mPoints.GetWater(pointIndex) > 0.0f)
         {
             mPoints.SetWaterVelocity(pointIndex, 
-                newPointWaterMomentum[pointIndex]
+                newPointWaterMomentumBuffer[pointIndex]
                 / mPoints.GetWater(pointIndex));
         }
         else

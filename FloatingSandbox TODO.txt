@@ -285,16 +285,14 @@ Prev perf (before point et al destructuring)
 						- UpdateWaterVelocities:	5.77%
 			= Refactor UpdateWaterVelocities:
 				+ Normalize based off sum of magnitudes
-				- Make points's WaterVelocity a WaterMomentum instead
-					- Make sure each SetWaterVelocity() can take mass into account
-				- Finalize double-buffering
-					- mPoints::mWaterMomentaTempBuffer
-					- mPoints::Get/SetWaterMomentaTemp(...)
-					TODOOLD:
-					- mPoints::SetWaterMomentaTemp(...)
-					- mPoints::PrepareWaterMomentaTemp()
-					- mPoints::UpdateWaterVelocitiesWithWaterMomentaTemp()
-				- Take perf measurements			
+				+ Finalize double-buffering
+					+ Take perf measurements afterwards: 27.3/27.5/27.6
+				- Use restrict pointers also for source buffers and springs' properties
+					- Check asm before
+					- Take perf measurements afterwards
+					- Check asm afterwards
+			- Move "other endpoint" to Springs class
+				- Verify with asm: it's inlined
 			- ShipRenderContext: add waterLevelOfDetail param to all other shader programs
 			- See if need to do anything for deleted springs and/or points
 			+ SettingsDialog: make it tabbed: mechanics, fluid, rendering

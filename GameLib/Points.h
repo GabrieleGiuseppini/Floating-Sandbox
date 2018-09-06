@@ -69,7 +69,9 @@ public:
         // Water dynamics
         , mBuoyancyBuffer(elementCount)        
         , mWaterBuffer(elementCount)
+        , mWaterBufferTmp(elementCount)
         , mWaterVelocityBuffer(elementCount)
+        , mWaterMomentumBuffer(elementCount)
         , mIsLeakingBuffer(elementCount)
         // Electrical dynamics
         , mElectricalElementBuffer(elementCount)
@@ -144,7 +146,7 @@ public:
     // IsDeleted
     //
 
-    inline bool IsDeleted(ElementIndex pointElementIndex) const
+    bool IsDeleted(ElementIndex pointElementIndex) const
     {
         return mIsDeletedBuffer[pointElementIndex];
     }
@@ -153,17 +155,17 @@ public:
     // Material
     //
 
-    inline Material const * GetMaterial(ElementIndex pointElementIndex) const
+    Material const * GetMaterial(ElementIndex pointElementIndex) const
     {
         return mMaterialBuffer[pointElementIndex];
     }
 
-    inline bool IsHull(ElementIndex pointElementIndex) const
+    bool IsHull(ElementIndex pointElementIndex) const
     {
         return mIsHullBuffer[pointElementIndex];
     }
 
-    inline bool IsRope(ElementIndex pointElementIndex) const
+    bool IsRope(ElementIndex pointElementIndex) const
     {
         return mIsRopeBuffer[pointElementIndex];
     }
@@ -241,17 +243,22 @@ public:
     // Water dynamics
     //
 
-    inline float GetBuoyancy(ElementIndex pointElementIndex) const
+    float GetBuoyancy(ElementIndex pointElementIndex) const
     {
         return mBuoyancyBuffer[pointElementIndex];
     }
 
-    inline float GetWater(ElementIndex pointElementIndex) const
+    float * restrict GetWaterBufferAsFloat()
+    {
+        return mWaterBuffer.data();
+    }
+
+    float GetWater(ElementIndex pointElementIndex) const
     {
         return mWaterBuffer[pointElementIndex];
     }
 
-    inline void SetWater(
+    void SetWater(
         ElementIndex pointElementIndex,
         float water)
     {
@@ -259,7 +266,7 @@ public:
         assert(mWaterBuffer[pointElementIndex] >= 0.0f);
     }
 
-    inline void AddWater(
+    void AddWater(
         ElementIndex pointElementIndex,
         float water)
     {
@@ -267,24 +274,39 @@ public:
         assert(mWaterBuffer[pointElementIndex] >= 0.0f);
     }
 
-    inline vec2f GetWaterVelocity(ElementIndex pointElementIndex) const
+    float * restrict GetWaterBufferTmpAsFloat()
+    {
+        return mWaterBufferTmp.data();
+    }
+
+    vec2f * restrict GetWaterVelocityBufferAsVec2()
+    {
+        return mWaterVelocityBuffer.data();
+    }
+
+    vec2f GetWaterVelocity(ElementIndex pointElementIndex) const
     {
         return mWaterVelocityBuffer[pointElementIndex];
     }
 
-    inline void SetWaterVelocity(
+    void SetWaterVelocity(
         ElementIndex pointElementIndex,
         vec2f const & velocity)
     {
         mWaterVelocityBuffer[pointElementIndex] = velocity;
     }
 
-    inline bool IsLeaking(ElementIndex pointElementIndex) const
+    vec2f * restrict GetWaterMomentumBufferAsVec2()
+    {
+        return mWaterMomentumBuffer.data();
+    }
+
+    bool IsLeaking(ElementIndex pointElementIndex) const
     {
         return mIsLeakingBuffer[pointElementIndex];
     }
 
-    inline void SetLeaking(ElementIndex pointElementIndex)
+    void SetLeaking(ElementIndex pointElementIndex)
     {
         mIsLeakingBuffer[pointElementIndex] = true;
     }
@@ -293,17 +315,17 @@ public:
     // Electrical dynamics
     //
 
-    inline ElementIndex GetElectricalElement(ElementIndex pointElementIndex) const
+    ElementIndex GetElectricalElement(ElementIndex pointElementIndex) const
     {
         return mElectricalElementBuffer[pointElementIndex];
     }
 
-    inline float GetLight(ElementIndex pointElementIndex) const
+    float GetLight(ElementIndex pointElementIndex) const
     {
         return mLightBuffer[pointElementIndex];
     }
 
-    inline float & GetLight(ElementIndex pointElementIndex)
+    float & GetLight(ElementIndex pointElementIndex)
     {
         return mLightBuffer[pointElementIndex];
     }
@@ -312,19 +334,19 @@ public:
     // Network
     //
 
-    inline auto const & GetConnectedSprings(ElementIndex pointElementIndex) const
+    auto const & GetConnectedSprings(ElementIndex pointElementIndex) const
     {
         return mNetworkBuffer[pointElementIndex].ConnectedSprings;
     }
 
-    inline void AddConnectedSpring(
+    void AddConnectedSpring(
         ElementIndex pointElementIndex,
         ElementIndex springElementIndex)
     {
         mNetworkBuffer[pointElementIndex].ConnectedSprings.push_back(springElementIndex);
     }
 
-    inline void RemoveConnectedSpring(
+    void RemoveConnectedSpring(
         ElementIndex pointElementIndex,
         ElementIndex springElementIndex)
     {
@@ -334,19 +356,19 @@ public:
         (void)found;
     }
 
-    inline auto const & GetConnectedTriangles(ElementIndex pointElementIndex) const
+    auto const & GetConnectedTriangles(ElementIndex pointElementIndex) const
     {
         return mNetworkBuffer[pointElementIndex].ConnectedTriangles;
     }
 
-    inline void AddConnectedTriangle(
+    void AddConnectedTriangle(
         ElementIndex pointElementIndex,
         ElementIndex triangleElementIndex)
     {
         mNetworkBuffer[pointElementIndex].ConnectedTriangles.push_back(triangleElementIndex);
     }
 
-    inline void RemoveConnectedTriangle(
+    void RemoveConnectedTriangle(
         ElementIndex pointElementIndex,
         ElementIndex triangleElementIndex)
     {
@@ -360,7 +382,7 @@ public:
     // Pinning
     //
 
-    inline bool IsPinned(ElementIndex pointElementIndex) const
+    bool IsPinned(ElementIndex pointElementIndex) const
     {
         return mIsPinnedBuffer[pointElementIndex];
     }
@@ -390,24 +412,24 @@ public:
     // Connected component
     //
 
-    inline ConnectedComponentId GetConnectedComponentId(ElementIndex pointElementIndex) const
+    ConnectedComponentId GetConnectedComponentId(ElementIndex pointElementIndex) const
     {
         return mConnectedComponentIdBuffer[pointElementIndex];
     }
 
-    inline void SetConnectedComponentId(
+    void SetConnectedComponentId(
         ElementIndex pointElementIndex,
         ConnectedComponentId connectedComponentId)
     { 
         mConnectedComponentIdBuffer[pointElementIndex] = connectedComponentId;
     }
 
-    inline VisitSequenceNumber GetCurrentConnectedComponentDetectionVisitSequenceNumber(ElementIndex pointElementIndex) const
+    VisitSequenceNumber GetCurrentConnectedComponentDetectionVisitSequenceNumber(ElementIndex pointElementIndex) const
     {
         return mCurrentConnectedComponentDetectionVisitSequenceNumberBuffer[pointElementIndex];
     }
 
-    inline void SetCurrentConnectedComponentDetectionVisitSequenceNumber(
+    void SetCurrentConnectedComponentDetectionVisitSequenceNumber(
         ElementIndex pointElementIndex,
         VisitSequenceNumber connectedComponentDetectionVisitSequenceNumber)
     { 
@@ -453,8 +475,15 @@ private:
     // this point. Quantity of water is max(water, 1.0)
     Buffer<float> mWaterBuffer;
 
+    // Temporary buffer to use during calculations (water dynamics);
+    // does not hold any meaningful value outside of calculations
+    Buffer<float> mWaterBufferTmp;
+
     // Total velocity of the water at this point
     Buffer<vec2f> mWaterVelocityBuffer;
+
+    // Total momentum of the water at this point
+    Buffer<vec2f> mWaterMomentumBuffer;
 
     Buffer<bool> mIsLeakingBuffer;
 
