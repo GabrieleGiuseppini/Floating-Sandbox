@@ -128,7 +128,9 @@ public:
         GameParameters const & gameParameters,
         float & waterTaken);
 
-    void UpdateWaterVelocities(GameParameters const & gameParameters);
+    void UpdateWaterVelocities(
+        GameParameters const & gameParameters,
+        float & waterSplashed);
 
     // Electrical 
 
