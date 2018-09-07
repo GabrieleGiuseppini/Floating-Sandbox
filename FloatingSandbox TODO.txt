@@ -50,8 +50,7 @@ Current perf (1.5.0 - after Water)
 ====================================================
 ====================== Plan ========================
 
-= Water
-- Spring/cache optimization with own heuristics
+- Splash w/Probe
 - GfxOptimizations:
 	- Z buffer
 - USS Shark
@@ -81,9 +80,9 @@ Current perf (1.5.0 - after Water)
 			- Check asm first
 			- Use restrict pointers for target forces
 			- Check asm again
-		- Try with different cache optimization heuristics
+		+ Try with different cache optimization heuristics
 			+ Starting point: Spring ACMR: original=0.516807, optimized=0.325156
-			- Choose springs with largest numbers of points in cache
+			+ Choose springs with largest numbers of points in cache
 	- See if can avoid other IsDeleted checks, via zero'ing of coefficients
 	- UpdatePointForces:
 		- Precalculate things that do not depend on position nor velocity
@@ -94,11 +93,9 @@ Current perf (1.5.0 - after Water)
 				  - StaticForce used directly in Integrate() added to Force
 					- Or better if added to Force at UpdatePointDynamics()?
 	- Use libspm
-		- For IntegratePointDynamics, to guarantee SSE2
-		- For others, to replace if's/maxf'
-			- Check first how maxf is compiled
-	- See if can vectorize also:
-		- UpdateWaterDynamic, SpringDynamics
+		- At IntegratePointDynamics, to guarantee SSE2
+		- See if can vectorize also UpdateWaterDynamics and UpdateSpringDynamics
+			- See replacing if's
 			- See shuffled loading and storing of 4 arbitrary floats in ETH deck
 	- Water and Land interpolations:
 		- 1: see if it's better to store delta's and/or other pre-calculated things
