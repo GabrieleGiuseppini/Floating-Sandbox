@@ -9,6 +9,7 @@
 #include "EventTickerPanel.h"
 #include "HelpDialog.h"
 #include "LoggingDialog.h"
+#include "ProbePanel.h"
 #include "SettingsDialog.h"
 #include "SoundController.h"
 #include "ToolController.h"
@@ -59,8 +60,10 @@ private:
     wxMenu * mToolsMenu;
     wxMenuItem * mRCBombsDetonateMenuItem;
     wxMenuItem * mShowEventTickerMenuItem;
+    wxMenuItem * mShowProbePanelMenuItem;
     wxMenuItem * mMuteMenuItem;
     std::unique_ptr<EventTickerPanel> mEventTickerPanel;
+    std::unique_ptr<ProbePanel> mProbePanel;
 
     //
     // Dialogs
@@ -124,6 +127,7 @@ private:
     void OnOpenSettingsWindowMenuItemSelected(wxCommandEvent& event);
     void OnOpenLogWindowMenuItemSelected(wxCommandEvent& event);
     void OnShowEventTickerMenuItemSelected(wxCommandEvent& event);
+    void OnShowProbePanelMenuItemSelected(wxCommandEvent& event);
     void OnMuteMenuItemSelected(wxCommandEvent& event);
     void OnHelpMenuItemSelected(wxCommandEvent& event);
     void OnAboutMenuItemSelected(wxCommandEvent& event);

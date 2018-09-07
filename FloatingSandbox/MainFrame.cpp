@@ -49,6 +49,7 @@ const long ID_RCBOMBDETONATE_MENUITEM = wxNewId();
 const long ID_OPEN_SETTINGS_WINDOW_MENUITEM = wxNewId();
 const long ID_OPEN_LOG_WINDOW_MENUITEM = wxNewId();
 const long ID_SHOW_EVENT_TICKER_MENUITEM = wxNewId();
+const long ID_SHOW_PROBE_PANEL_MENUITEM = wxNewId();
 const long ID_MUTE_MENUITEM = wxNewId();
 
 const long ID_HELP_MENUITEM = wxNewId();
@@ -263,6 +264,11 @@ MainFrame::MainFrame(wxApp * mainApp)
     mShowEventTickerMenuItem->Check(false);
     Connect(ID_SHOW_EVENT_TICKER_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnShowEventTickerMenuItemSelected);
 
+    mShowProbePanelMenuItem = new wxMenuItem(optionsMenu, ID_SHOW_PROBE_PANEL_MENUITEM, _("Show Probe Panel\tCtrl+P"), wxEmptyString, wxITEM_CHECK);
+    optionsMenu->Append(mShowProbePanelMenuItem);
+    mShowProbePanelMenuItem->Check(false);
+    Connect(ID_SHOW_PROBE_PANEL_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnShowProbePanelMenuItemSelected);
+
     optionsMenu->Append(new wxMenuItem(optionsMenu, wxID_SEPARATOR));
 
     mMuteMenuItem = new wxMenuItem(optionsMenu, ID_MUTE_MENUITEM, _("Mute\tCtrl+M"), wxEmptyString, wxITEM_CHECK);
@@ -288,6 +294,18 @@ MainFrame::MainFrame(wxApp * mainApp)
     mainMenuBar->Append(helpMenu, _("Help"));
 
     SetMenuBar(mainMenuBar);
+
+
+    //
+    // Probe panel
+    //
+
+    mProbePanel = std::make_unique<ProbePanel>(mainPanel);
+
+    mMainFrameSizer->Add(mProbePanel.get(), 0, wxEXPAND);
+
+    mMainFrameSizer->Hide(mProbePanel.get());
+
 
     //
     // Event ticker panel
@@ -437,6 +455,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
     mGameController->RegisterGameEventHandler(this);
     mGameController->RegisterGameEventHandler(mEventTickerPanel.get());
+    mGameController->RegisterGameEventHandler(mProbePanel.get());
     mGameController->RegisterGameEventHandler(mSoundController.get());
 
 
@@ -871,6 +890,21 @@ void MainFrame::OnShowEventTickerMenuItemSelected(wxCommandEvent & /*event*/)
     mMainFrameSizer->Layout();
 }
 
+void MainFrame::OnShowProbePanelMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!ProbePanelPanel);
+    if (mShowProbePanelMenuItem->IsChecked())
+    {
+        mMainFrameSizer->Show(mProbePanel.get());
+    }
+    else
+    {
+        mMainFrameSizer->Hide(mProbePanel.get());
+    }
+
+    mMainFrameSizer->Layout();
+}
+
 void MainFrame::OnMuteMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mSoundController);
@@ -979,6 +1013,10 @@ void MainFrame::DoGameStep()
     // Update event ticker
     assert(!!mEventTickerPanel);
     mEventTickerPanel->Update();
+
+    // Update probe panel
+    assert(!!mProbePanel);
+    mProbePanel->Update();
 
     // Update sound controller
     assert(!!mSoundController);

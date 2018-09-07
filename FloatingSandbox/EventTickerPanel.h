@@ -24,6 +24,10 @@ public:
 
 public:
 
+    //
+    // IGameEventHandler events
+    //
+
     virtual void OnGameReset() override;
 
     virtual void OnShipLoaded(

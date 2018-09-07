@@ -15,6 +15,10 @@ set  (FLOATING_SANDBOX_SOURCES
 	MainApp.cpp
 	MainFrame.cpp
 	MainFrame.h
+	ProbePanel.cpp
+	ProbePanel.h
+	ScalarTimeSeriesProbeControl.cpp
+	ScalarTimeSeriesProbeControl.h
 	SettingsDialog.cpp
 	SettingsDialog.h
 	SliderControl.cpp
