@@ -135,6 +135,15 @@ public:
         }
     }
 
+    virtual void OnWaterSplashed(float waterSplashed) override
+    {
+        // No need to aggregate this one
+        for (auto sink : mSinks)
+        {
+            sink->OnWaterSplashed(waterSplashed);
+        }
+    }
+
     //
     // Bombs
     //

@@ -100,6 +100,11 @@ public:
         // Default-implemented
     }
 
+    virtual void OnWaterSplashed(float /*waterSplashed*/)
+    {
+        // Default-implemented
+    }
+
     //
     // Bombs
     //
