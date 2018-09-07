@@ -97,8 +97,8 @@ int ScalarTimeSeriesProbeControl::MapValueToY(float value) const
     if (mMaxValue == mMinValue)
         return Height / 2;
 
-    float y = static_cast<float>(Height - 6) * (value - mMinValue) / (mMaxValue - mMinValue);
-    return Height - 4 - static_cast<int>(round(y));
+    float y = static_cast<float>(Height - 4) * (value - mMinValue) / (mMaxValue - mMinValue);
+    return Height - 3 - static_cast<int>(round(y));
 }
 
 void ScalarTimeSeriesProbeControl::Render(wxDC & dc)
@@ -132,7 +132,8 @@ void ScalarTimeSeriesProbeControl::Render(wxDC & dc)
             }
         }
 
-        int gridStepSize = std::min(mWidth, Height) / static_cast<int>(ceil(numberOfGridLines));
+        static const int xGridStepSize = mWidth / 6;
+        int yGridStepSize = std::min(mWidth, Height) / static_cast<int>(ceil(numberOfGridLines));
 
 
         //
@@ -141,14 +142,14 @@ void ScalarTimeSeriesProbeControl::Render(wxDC & dc)
 
         dc.SetPen(mGridPen);
 
-        for (int y = 2; y < Height - 3; y += gridStepSize)
+        for (int y = yGridStepSize; y < Height - 1; y += yGridStepSize)
         {
-            dc.DrawLine(2, y, mWidth - 3, y);
+            dc.DrawLine(0, y, mWidth - 1, y);
         }
 
-        for (int x = 2; x < mWidth - 3; x += mWidth / 6)
+        for (int x = xGridStepSize; x < mWidth - 1; x += xGridStepSize)
         {
-            dc.DrawLine(x, 2, x, Height - 3);
+            dc.DrawLine(x, 0, x, Height - 1);
         }
 
 
@@ -159,7 +160,7 @@ void ScalarTimeSeriesProbeControl::Render(wxDC & dc)
         dc.SetPen(mTimeSeriesPen);
 
         auto it = mSamples.begin();
-        int lastX = mWidth - 4;
+        int lastX = mWidth - 2;
         int lastY = MapValueToY(*it);
         ++it;
 
@@ -174,7 +175,7 @@ void ScalarTimeSeriesProbeControl::Render(wxDC & dc)
             do
             {
                 int newX = lastX - 1;
-                if (newX == 1)
+                if (newX == 0)
                     break;
 
                 int newY = MapValueToY(*it);
