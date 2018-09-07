@@ -9,7 +9,7 @@
 
 #include <wx/wx.h>
 
-#include <vector>
+#include <memory>
 
 class ScalarTimeSeriesProbeControl : public wxPanel
 {
@@ -34,11 +34,15 @@ private:
 
     void Render(wxDC& dc);
 
+    inline int MapValueToY(float value) const;
+
 private:
 
     int const mWidth;
 
     std::unique_ptr<wxBitmap> mBufferedDCBitmap;
+    wxPen const mTimeSeriesPen;
+    wxPen mGridPen;
 
     float mMaxValue;
     float mMinValue;
