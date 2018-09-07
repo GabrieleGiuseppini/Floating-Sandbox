@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
+#include <cstring>
 #include <limits>
 #include <queue>
 #include <set>
@@ -723,20 +724,11 @@ void Ship::UpdateWaterVelocities(GameParameters const & gameParameters)
     // Outgoing quantity of water along each spring
     std::array<float, GameParameters::MaxSpringsPerPoint> springOutgoingWaterQuantities;
 
-    //
-    // Prepare result water and water momenta buffers
-    //
-
-    float * restrict newPointWaterBuffer = mPoints.GetWaterBufferTmpAsFloat();
-    vec2f * restrict newPointWaterMomentumBuffer = mPoints.GetWaterMomentumBufferAsVec2();
-    for (auto pointIndex : mPoints)
-    {
-        newPointWaterBuffer[pointIndex] = mPoints.GetWater(pointIndex);
-
-        newPointWaterMomentumBuffer[pointIndex] =
-            mPoints.GetWaterVelocity(pointIndex)
-            * mPoints.GetWater(pointIndex);
-    }
+    // Source and result water buffers
+    float * restrict oldPointWaterBuffer = mPoints.GetWaterBufferAsFloat();
+    float * restrict newPointWaterBuffer = mPoints.CheckoutWaterBufferTmpAsFloat();
+    vec2f * restrict oldPointWaterVelocityBuffer = mPoints.GetWaterVelocityBufferAsVec2();
+    vec2f * restrict newPointWaterMomentumBuffer = mPoints.PopulateWaterMomentaFromVelocitiesAndCheckoutAsVec2();
 
 
     //
@@ -751,7 +743,7 @@ void Ship::UpdateWaterVelocities(GameParameters const & gameParameters)
 
         // A higher crazyness gives more emphasys to bernoulli's velocity, as if pressures
         // and gravity were exaggerated
-        float const alphaCrazyness = 1.0f + gameParameters.WaterCrazyness * (mPoints.GetWater(pointIndex) - 1.0f);
+        float const alphaCrazyness = 1.0f + gameParameters.WaterCrazyness * (oldPointWaterBuffer[pointIndex] - 1.0f);
 
         // Total quantity of water leaving this point, before normalization
         float theoreticalTotalOutgoingWaterQuantity = 0.0f;
@@ -760,12 +752,7 @@ void Ship::UpdateWaterVelocities(GameParameters const & gameParameters)
         {
             auto const springIndex = mPoints.GetConnectedSprings(pointIndex)[s];
 
-            auto otherEndpointIndex = mSprings.GetPointBIndex(springIndex);
-            if (otherEndpointIndex == pointIndex)
-            {
-                // This point is B, other point is then A
-                otherEndpointIndex = mSprings.GetPointAIndex(springIndex);
-            }
+            auto const otherEndpointIndex = mSprings.GetOtherEndpointIndex(springIndex, pointIndex);
 
             // Normalized spring vector, oriented point -> other endpoint
             vec2f const springNormalizedVector = (mPoints.GetPosition(otherEndpointIndex) - mPoints.GetPosition(pointIndex)).normalise();
@@ -776,7 +763,7 @@ void Ship::UpdateWaterVelocities(GameParameters const & gameParameters)
             //
 
             // Pressure difference (positive implies point -> other endpoint flow)
-            float const dw = mPoints.GetWater(pointIndex) - mPoints.GetWater(otherEndpointIndex);
+            float const dw = oldPointWaterBuffer[pointIndex] - oldPointWaterBuffer[otherEndpointIndex];
 
             // Gravity potential difference (positive implies point -> other endpoint flow)
             float const dy = mPoints.GetPosition(pointIndex).y - mPoints.GetPosition(otherEndpointIndex).y;
@@ -807,7 +794,7 @@ void Ship::UpdateWaterVelocities(GameParameters const & gameParameters)
 
             // Final scalar water velocity along the spring
             float scalarWaterVelocity =
-                (mPoints.GetWaterVelocity(pointIndex) + dv * alphaCrazyness)
+                (oldPointWaterVelocityBuffer[pointIndex] + dv * alphaCrazyness)
                 .dot(springNormalizedVector);
 
             // Final vector water velocity along the spring
@@ -845,7 +832,7 @@ void Ship::UpdateWaterVelocities(GameParameters const & gameParameters)
         if (theoreticalTotalOutgoingWaterQuantity > 0.0f)
         {
             actualTotalOutgoingWaterQuantity =
-                mPoints.GetWater(pointIndex)
+                oldPointWaterBuffer[pointIndex]
                 * gameParameters.WaterQuickness;
 
             normalizationFactor = 
@@ -860,14 +847,9 @@ void Ship::UpdateWaterVelocities(GameParameters const & gameParameters)
 
         for (size_t s = 0; s < mPoints.GetConnectedSprings(pointIndex).size(); ++s)
         {
-            auto const springIndex = mPoints.GetConnectedSprings(pointIndex)[s];
-
-            auto otherEndpointIndex = mSprings.GetPointBIndex(springIndex);
-            if (otherEndpointIndex == pointIndex)
-            {
-                // This point is B, other point is then A
-                otherEndpointIndex = mSprings.GetPointAIndex(springIndex);
-            }
+            auto const otherEndpointIndex = mSprings.GetOtherEndpointIndex(
+                mPoints.GetConnectedSprings(pointIndex)[s],
+                pointIndex);
 
 
             //
@@ -901,31 +883,18 @@ void Ship::UpdateWaterVelocities(GameParameters const & gameParameters)
         newPointWaterBuffer[pointIndex] -= actualTotalOutgoingWaterQuantity;
 
         newPointWaterMomentumBuffer[pointIndex] -=
-            mPoints.GetWaterVelocity(pointIndex) 
+            oldPointWaterVelocityBuffer[pointIndex]
             * actualTotalOutgoingWaterQuantity;
     }
 
     //
-    // Move result values to point, transforming momenta into velocities
+    // Move result values back to point, transforming momenta into velocities
     //
-    
-    for (auto pointIndex : mPoints)
-    {
-        mPoints.SetWater(pointIndex, std::max(newPointWaterBuffer[pointIndex], 0.0f));
 
-        if (mPoints.GetWater(pointIndex) > 0.0f)
-        {
-            mPoints.SetWaterVelocity(pointIndex, 
-                newPointWaterMomentumBuffer[pointIndex]
-                / mPoints.GetWater(pointIndex));
-        }
-        else
-        {
-            // No mass, no velocity
-            mPoints.SetWaterVelocity(pointIndex, vec2f::zero());
-        }
-    }
+    mPoints.CommitWaterBufferTmp();
+    mPoints.PopulateWaterVelocitiesFromMomenta();
 }
+
 
 ///////////////////////////////////////////////////////////////////////////////////
 // Electrical Dynamics

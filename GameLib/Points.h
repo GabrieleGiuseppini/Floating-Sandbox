@@ -16,6 +16,7 @@
 #include "Vectors.h"
 
 #include <cassert>
+#include <cstring>
 #include <functional>
 #include <vector>
 
@@ -258,14 +259,6 @@ public:
         return mWaterBuffer[pointElementIndex];
     }
 
-    void SetWater(
-        ElementIndex pointElementIndex,
-        float water)
-    {
-        mWaterBuffer[pointElementIndex] = water;
-        assert(mWaterBuffer[pointElementIndex] >= 0.0f);
-    }
-
     void AddWater(
         ElementIndex pointElementIndex,
         float water)
@@ -274,9 +267,28 @@ public:
         assert(mWaterBuffer[pointElementIndex] >= 0.0f);
     }
 
-    float * restrict GetWaterBufferTmpAsFloat()
+    float * restrict CheckoutWaterBufferTmpAsFloat()
     {
-        return mWaterBufferTmp.data();
+        float * const restrict waterBuffer = mWaterBuffer.data();
+        float * restrict waterBufferTmp = mWaterBufferTmp.data();
+
+        std::memcpy(
+            waterBufferTmp, 
+            waterBuffer, 
+            sizeof(float) * GetElementCount());
+
+        return waterBufferTmp;
+    }
+
+    void CommitWaterBufferTmp()
+    {
+        float * restrict waterBuffer = mWaterBuffer.data();
+        float * const restrict waterBufferTmp = mWaterBufferTmp.data();
+
+        std::memcpy(
+            waterBuffer,
+            waterBufferTmp,
+            sizeof(float) * GetElementCount());
     }
 
     vec2f * restrict GetWaterVelocityBufferAsVec2()
@@ -284,21 +296,42 @@ public:
         return mWaterVelocityBuffer.data();
     }
 
-    vec2f GetWaterVelocity(ElementIndex pointElementIndex) const
+    vec2f * restrict PopulateWaterMomentaFromVelocitiesAndCheckoutAsVec2()
     {
-        return mWaterVelocityBuffer[pointElementIndex];
+        float * const restrict waterBuffer = mWaterBuffer.data();
+        vec2f * const restrict waterVelocityBuffer = mWaterVelocityBuffer.data();
+        vec2f * restrict waterMomentumBuffer = mWaterMomentumBuffer.data();
+
+        for (auto pointIndex : *this)
+        {
+            waterMomentumBuffer[pointIndex] =
+                waterVelocityBuffer[pointIndex]
+                * waterBuffer[pointIndex];
+        }
+
+        return waterMomentumBuffer;
     }
 
-    void SetWaterVelocity(
-        ElementIndex pointElementIndex,
-        vec2f const & velocity)
+    void PopulateWaterVelocitiesFromMomenta()
     {
-        mWaterVelocityBuffer[pointElementIndex] = velocity;
-    }
-
-    vec2f * restrict GetWaterMomentumBufferAsVec2()
-    {
-        return mWaterMomentumBuffer.data();
+        float * const restrict waterBuffer = mWaterBuffer.data();
+        vec2f * restrict waterVelocityBuffer = mWaterVelocityBuffer.data();
+        vec2f * const restrict waterMomentumBuffer = mWaterMomentumBuffer.data();
+        
+        for (auto pointIndex : *this)
+        {
+            if (waterBuffer[pointIndex] > 0.0f)
+            {
+                waterVelocityBuffer[pointIndex] =
+                    waterMomentumBuffer[pointIndex]
+                    / waterBuffer[pointIndex];
+            }
+            else
+            {
+                // No mass, no velocity
+                waterVelocityBuffer[pointIndex] = vec2f::zero();
+            }
+        }
     }
 
     bool IsLeaking(ElementIndex pointElementIndex) const

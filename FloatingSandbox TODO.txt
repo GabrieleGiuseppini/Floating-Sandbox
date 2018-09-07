@@ -1,28 +1,25 @@
 =================================================
-Current perf (1.4.0)
+Current perf (1.5.0 - after Water)
 =================================================
-- fps: TBD (Samsung: 32.7 (Krafting)) (Mattia's: TBD (Krafting))
-- GameController::DoStep: TBD%
-	- Ship::Update: 32.07%
-		- UpdateDynamics: 25.53%
-			- UpdateSpringForces: 18.72%
-			- UpdatePointForces: 3.55%
-			- HandleCollisionsWithSeafloor: 2.27%
-			- Integrate: 0.98%
-		- GravitateWater: 4.60%
-		- BalancePressure: 1.06%
-		- UpdateStrains: 0.83%
-		- LeakWater: 0.03%
-	- DiffuseLight: 0.89%
-	- WaterSurface::Update: 0.09%
-		- sinf: 0.07%
-- MainFrame::RenderGame: TBD%
-	- ShipRenderContext::Render: 53.52% (Incl) 0.00% (Excl)
-		- ShipRenderContext::RenderSprings: 30.72%
-		- ShipRenderContext::RenderTriangles: 22.29%
-		- ShipRenderContext::RenderRopes: 0.45%
-		- Points::Upload: 0.14%
-	- RenderContext::RenderCloudsEnd: 2.87%
+- fps: 27.4/27.7/27.9 (Samsung: TBD-was 32.7 (Krafting)) (Mattia's: TBD (Krafting))
+- GameController::Update: 33.33%
+	- Ship::Update: 32.53%
+		- UpdateMechanicalDynamics: 26.15%
+			- UpdateSpringForces: 19.24%
+			- UpdatePointForces: 3.42%
+			- HandleCollisionsWithSeafloor: 2.28%
+			- Integrate: 1.20%
+		- UpdateWaterDynamics: 5.56%
+			- UpdateWaterVelocities: 5.48%
+			- UpdateWaterInflow: 0.04%
+		- UpdateStrains: 0.79%
+	- DiffuseLight: 0.66%
+- MainFrame::RenderGame: 60.32%
+	- ShipRenderContext::Render: 53.35%
+		- ShipRenderContext::RenderSprings: 30.85%
+		- ShipRenderContext::RenderTriangles: 21.96%
+		- ShipRenderContext::RenderRopes: 0.47%
+	- RenderContext::RenderCloudsEnd: 2.92%
 
 =================================================
 1.3.0 perf
@@ -49,29 +46,17 @@ Current perf (1.4.0)
 		- ShipRenderContext::RenderRopes: 0.45%
 		- Points::Upload: 0.14%
 	- RenderContext::RenderCloudsEnd: 2.87%
-=================================================
-Prev perf (before point et al destructuring)
-=================================================
-- fps: 17.8/18.1 (Samsung: TBD (Krafting)) (Mattia's: TBD (Krafting))
-- GameController::DoStep: 56.52%
-	- Ship::Update: 55.82% (Incl) 1.50% (Excl)
-		- UpdateDynamics: 41.74%
-			- UpdateSpringForces: 24.76%
-			- UpdatePointForces: 6.77%
-			- HandleCollisionsWithSeafloor: 5.11%
-			- Integrate: 5.08%
-		- GravitateWater: 6.58%
-		- BalancePressure: 5.84%
-		- LeakWater: 0.16%
-	- DiffuseLight: 0.65%
-	- WaterSurface::Update: 0.05%
-- MainFrame::RenderGame: 35.98%
-	- Ship::Render: 31.92% (Incl) 0.39% (Excl)
-		- ShipRenderContext::RenderSprings: 17.91%
-		- ShipRenderContext::RenderTriangles: 13.24%
-		- ShipRenderContext::RenderRopes: 0.30%
-	- RenderContext::RenderCloudsEnd: 1.69%
-=================================================
+====================================================
+====================================================
+====================== Plan ========================
+
+= Water
+- Spring/cache optimization with own heuristics
+- GfxOptimizations:
+	- Z buffer
+- USS Shark
+
+====================================================
 
 - New ships
 	- Warship
@@ -91,6 +76,14 @@ Prev perf (before point et al destructuring)
 		- Can then get rid of forwards from RenderContext
 
 - Optimizations:	
+	- UpdateSpringForces:
+		- See if using restrict pointers helps
+			- Check asm first
+			- Use restrict pointers for target forces
+			- Check asm again
+		- Try with different cache optimization heuristics
+			+ Starting point: Spring ACMR: original=0.516807, optimized=0.325156
+			- Choose springs with largest numbers of points in cache
 	- See if can avoid other IsDeleted checks, via zero'ing of coefficients
 	- UpdatePointForces:
 		- Precalculate things that do not depend on position nor velocity
@@ -100,19 +93,17 @@ Prev perf (before point et al destructuring)
 				  we store directly StaticForce == Gravity + Water Drag (?REALLY?)
 				  - StaticForce used directly in Integrate() added to Force
 					- Or better if added to Force at UpdatePointDynamics()?
-	- Split Spring::WaterPermeability in two, with pre-calculated values:
-		- WaterGravitationFactor
-		- WaterPropagationFactor
 	- Use libspm
 		- For IntegratePointDynamics, to guarantee SSE2
 		- For others, to replace if's/maxf'
 			- Check first how maxf is compiled
-	- See if can parallelize also:
-		- BalancePressure, GravitateWater, SpringDynamics
+	- See if can vectorize also:
+		- UpdateWaterDynamic, SpringDynamics
 			- See shuffled loading and storing of 4 arbitrary floats in ETH deck
 	- Water and Land interpolations:
 		- 1: see if it's better to store delta's and/or other pre-calculated things
 		- 2: see if can do semi-integer x-axis interpolation
+	- Cache sea depth from PointDynamics at first calculation (Points?), using lambda 
 
 
 - Gfx:
@@ -261,67 +252,13 @@ Prev perf (before point et al destructuring)
 			- Should definitely make both A and B leak, as they both now have an adjacent hole
 
 - Water:
-	+ Rush sound: should water rush sound be more....rushy?
-	= Water rearc:
-		+ Points::Water is height of water column that provides equivalent pressure
-			+ When 0<=Water<=1 is also fraction of volume filled with water
-			+ Add comments at Points
-		+ Ship::LeakWater:
-			+ Calc velocity of entering water with Bernoulli
-				+ Still need to cap to max (external pressure) because of dt possibly being too large?
-			+ Also do negative pressure (i.e. water leaving cell)
-		+ Do water-momentum based dynamics					
-		= Cleanups and deferred TODOs:
-			+ Test with Bernoulli's spring velocity being added to point's water velocity (times its mass of course)
-			+ Do U-shaped tube
-			+ SettingsDialog:
-				+ Flex spacing
-			+ Rename water detail parameter: Water Detail Coarseness
-			+ Take perf measurements:
-				+ FPS: 26.8/26.9/27.0/27.4
-				- MainFrame::RenderGame:	61.08%
-				- GameController::Update:	32.92%
-					- UpdateWaterDynamics:	 5.85%
-						- UpdateWaterVelocities:	5.77%
-			= Refactor UpdateWaterVelocities:
-				+ Normalize based off sum of magnitudes
-				+ Finalize double-buffering
-					+ Take perf measurements afterwards: 27.3/27.5/27.6
-				- Use restrict pointers also for source buffers and springs' properties
-					- Check asm before
-					- Take perf measurements afterwards
-					- Check asm afterwards
-			- Move "other endpoint" to Springs class
-				- Verify with asm: it's inlined
-			- ShipRenderContext: add waterLevelOfDetail param to all other shader programs
-			- See if need to do anything for deleted springs and/or points
-			+ SettingsDialog: make it tabbed: mechanics, fluid, rendering
-			+ Add crazyness to SettingsDialog
-			+ Rename GameParameters::GravityNormal to GravityNormalized
-			+ GameParameters:
-				+ Rename NumDynamicIterations as NumMechanicalDynamicsIterations
-				+ Add NumWaterDynamicsIterations
-			+ Is Springs::WaterPermeability still used?
-			+ See if GameParameters::WaterPressureAdjustment still needed (or needs to change name)
-			+ Remove old water dynamics code from Ship
-
-		- Optimizations:
-			- UpdateWaterIntake:
-				- Incorporate isDeleted, isLeaking (and may be other coeffs) into Points::ExternalWater~Permeability~
-				- Test; if OK, do also update of ExternalWater~Permeability~ at Points::UpdateGameParameters(.) if needed
-				- Take perf measurements
-
-			- Cache sea depth from PointDynamics at Points, using lambda 
-				- Test asm
-				- Take perf measurements
-		- Update final perf measurements
-
 	- Splash sound:
 		- First we need to cleanse "rushing water" of bubbles sound
 		- New "splash" continuous sound, with volume controlled by total magnitude of momentum change
 			- Might need a low-pass filter to smoothen out peaks
 			- Total magnitude of momentum change:
 				- TODO
+			- Test with ProbePanel, ScalarTimeSeriesControl
 
 
 	-Do water bubbles (at intake) and water drops (at outtake)
@@ -1798,6 +1735,73 @@ IF WX:
 				+ Fix max, min
 					+ Rethink exponential slider: takes also midpoint (1.0 for us) and then it's two exp curves
 		+ Add to change list
+
++ Water
+ 	+ Rush sound: should water rush sound be more....rushy?
+	+ Water rearc:
+		+ Points::Water is height of water column that provides equivalent pressure
+			+ When 0<=Water<=1 is also fraction of volume filled with water
+			+ Add comments at Points
+		+ Ship::LeakWater:
+			+ Calc velocity of entering water with Bernoulli
+				+ Still need to cap to max (external pressure) because of dt possibly being too large?
+			+ Also do negative pressure (i.e. water leaving cell)
+		+ Do water-momentum based dynamics					
+		+ Cleanups and deferred TODOs:
+			+ Test with Bernoulli's spring velocity being added to point's water velocity (times its mass of course)
+			+ Do U-shaped tube
+			+ SettingsDialog:
+				+ Flex spacing
+			+ Rename water detail parameter: Water Detail Coarseness
+			+ Take perf measurements:
+				+ FPS: 26.8/26.9/27.0/27.4
+				- MainFrame::RenderGame:	61.08%
+				- GameController::Update:	32.92%
+					- UpdateWaterDynamics:	 5.85%
+						- UpdateWaterVelocities:	5.77%
+			+ Refactor UpdateWaterVelocities:
+				+ Normalize based off sum of magnitudes
+				+ Finalize double-buffering
+					+ Take perf measurements afterwards: 27.3/27.5/27.6
+				+ 1) Test with memcpy of water buffer
+					+ Perf before: UpdateWaterVelocities: 5.59%
+					+ Inline first (taking also oldPointWaterBuffer * as restrict)
+					+ Perf after: 27.4/27.6
+					+ Move to Points as:
+						- float * restrict CheckoutWaterBufferTmp()
+						- void CommitWaterBufferTmp(float * restrict ...)
+							- asserts same as own				
+				+ 2) See to improve (sse for 2?) water momentum making/demaking
+					+ Move to Points (anyway) as:
+						- vec2f * restrict CalculateAndCheckoutWaterMomentumBuffer()
+						  or: vec2f * restrict PopulateWaterMomenta()
+							- Returns the buffer afterwards
+						- void CommitWaterMomentumBuffer(float * restrict ...)
+							- asserts same as own
+						  or: void PopulateWaterFromMomenta()
+				+ Use restrict pointers also for source buffers and springs' properties
+					+ Start with only waterBuffer and waterVelocityBuffer, see if improves 1) pre- and post- steps,
+					  and 2) main loop
+					+ Check asm before
+					+ Take perf measurements afterwards: 27.7/28.0
+			+ Move "other endpoint" to Springs class
+				+ Verify with asm: it's inlined
+			+ Finalize 
+				+ Take measurements: 27.4/27.7/27.9
+				+ Check asm
+					+ Momenta initialization
+					+ Velocity recalculation
+				+ Finalize perf snapshot
+			+ ShipRenderContext: add waterLevelOfDetail param to all other shader programs
+			+ SettingsDialog: make it tabbed: mechanics, fluid, rendering
+			+ Add crazyness to SettingsDialog
+			+ Rename GameParameters::GravityNormal to GravityNormalized
+			+ GameParameters:
+				+ Rename NumDynamicIterations as NumMechanicalDynamicsIterations
+				+ Add NumWaterDynamicsIterations
+			+ Is Springs::WaterPermeability still used?
+			+ See if GameParameters::WaterPressureAdjustment still needed (or needs to change name)
+			+ Remove old water dynamics code from Ship
 
 + Debug light/drag issue
 	+ Could be due to distance too close and shooting light to sky

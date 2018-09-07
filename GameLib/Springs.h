@@ -148,7 +148,7 @@ public:
         GameParameters const & gameParameters,
         Points const & points);
 
-    inline void OnPointMassUpdated(
+    void OnPointMassUpdated(
         ElementIndex springElementIndex,
         Points const & points)
     {
@@ -187,7 +187,7 @@ public:
     // IsDeleted
     //
 
-    inline bool IsDeleted(ElementIndex springElementIndex) const
+    bool IsDeleted(ElementIndex springElementIndex) const
     {
         return mIsDeletedBuffer[springElementIndex];
     }
@@ -196,31 +196,44 @@ public:
     // Endpoints
     //
 
-    inline ElementIndex GetPointAIndex(ElementIndex springElementIndex) const
+    ElementIndex GetPointAIndex(ElementIndex springElementIndex) const
     {
         return mEndpointsBuffer[springElementIndex].PointAIndex;
     }
 
-    inline ElementIndex GetPointBIndex(ElementIndex springElementIndex) const
+    ElementIndex GetPointBIndex(ElementIndex springElementIndex) const
     {
         return mEndpointsBuffer[springElementIndex].PointBIndex;
     }
 
-    inline vec2f const & GetPointAPosition(
+    ElementIndex GetOtherEndpointIndex(
+        ElementIndex springElementIndex,
+        ElementIndex pointIndex) const
+    {
+        ElementIndex otherEndpointIndex = mEndpointsBuffer[springElementIndex].PointBIndex;
+        if (otherEndpointIndex == pointIndex)
+        {
+            otherEndpointIndex = mEndpointsBuffer[springElementIndex].PointAIndex;
+        }
+
+        return otherEndpointIndex;
+    }
+
+    vec2f const & GetPointAPosition(
         ElementIndex springElementIndex,
         Points const & points) const
     {
         return points.GetPosition(mEndpointsBuffer[springElementIndex].PointAIndex);
     }
 
-    inline vec2f const & GetPointBPosition(
+    vec2f const & GetPointBPosition(
         ElementIndex springElementIndex,
         Points const & points) const
     {
         return points.GetPosition(mEndpointsBuffer[springElementIndex].PointBIndex);
     }
 
-    inline vec2f GetMidpointPosition(
+    vec2f GetMidpointPosition(
         ElementIndex springElementIndex,
         Points const & points) const
     {
@@ -232,32 +245,32 @@ public:
     // Physical
     //
 
-    inline float GetStrength(ElementIndex springElementIndex) const
+    float GetStrength(ElementIndex springElementIndex) const
     {
         return mStrengthBuffer[springElementIndex];
     }
 
-    inline float GetStiffness(ElementIndex springElementIndex) const
+    float GetStiffness(ElementIndex springElementIndex) const
     {
         return mStiffnessBuffer[springElementIndex];
     }
 
-    inline float GetRestLength(ElementIndex springElementIndex) const
+    float GetRestLength(ElementIndex springElementIndex) const
     {
         return mRestLengthBuffer[springElementIndex];
     }
 
-    inline float GetStiffnessCoefficient(ElementIndex springElementIndex) const
+    float GetStiffnessCoefficient(ElementIndex springElementIndex) const
     {
         return mCoefficientsBuffer[springElementIndex].StiffnessCoefficient;
     }
 
-    inline float GetDampingCoefficient(ElementIndex springElementIndex) const
+    float GetDampingCoefficient(ElementIndex springElementIndex) const
     {
         return mCoefficientsBuffer[springElementIndex].DampingCoefficient;
     }
 
-    inline Material const * GetBaseMaterial(ElementIndex springElementIndex) const
+    Material const * GetBaseMaterial(ElementIndex springElementIndex) const
     {
         return mBaseMaterialBuffer[springElementIndex];
     }
@@ -269,7 +282,7 @@ public:
     // Water
     //
 
-    inline float GetWaterPermeability(ElementIndex springElementIndex) const
+    float GetWaterPermeability(ElementIndex springElementIndex) const
     {
         return mWaterPermeabilityBuffer[springElementIndex];
     }
@@ -278,7 +291,7 @@ public:
     // Bombs
     //
 
-    inline bool IsBombAttached(ElementIndex springElementIndex) const
+    bool IsBombAttached(ElementIndex springElementIndex) const
     {
         return mIsBombAttachedBuffer[springElementIndex];
     }
