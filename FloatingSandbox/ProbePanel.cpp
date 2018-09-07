@@ -76,7 +76,7 @@ void ProbePanel::OnGameReset()
     mWaterSplashProbe->Reset();
 }
 
-void ProbePanel::OnWaterTaken(float waterTaken)
+void ProbePanel::OnWaterSplashed(float waterSplashed)
 {
-    mWaterSplashProbe->RegisterSample(waterTaken);
+    mWaterSplashProbe->RegisterSample(waterSplashed);
 }

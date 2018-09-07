@@ -32,8 +32,7 @@ public:
 
     virtual void OnGameReset() override;
 
-    // TODO: splash
-    virtual void OnWaterTaken(float waterTaken) override;
+    virtual void OnWaterSplashed(float waterSplashed) override;
 
 private:
 

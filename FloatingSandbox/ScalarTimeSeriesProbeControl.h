@@ -29,6 +29,7 @@ public:
 
 private:
 
+    void OnMouseClick(wxMouseEvent & event);
     void OnPaint(wxPaintEvent & event);
     void OnEraseBackground(wxPaintEvent & event);
 

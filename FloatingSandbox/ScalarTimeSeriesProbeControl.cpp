@@ -7,6 +7,7 @@
 
 #include <wx/dcbuffer.h>
 
+#include <algorithm>
 #include <cassert>
 #include <limits>
 #include <numeric>
@@ -37,6 +38,7 @@ ScalarTimeSeriesProbeControl::ScalarTimeSeriesProbeControl(
     wxFont font(wxFontInfo(wxSize(8, 8)).Family(wxFONTFAMILY_TELETYPE));
     SetFont(font);
 
+    Connect(this->GetId(), wxEVT_LEFT_DOWN, (wxObjectEventFunction)&ScalarTimeSeriesProbeControl::OnMouseClick);
     Connect(this->GetId(), wxEVT_PAINT, (wxObjectEventFunction)&ScalarTimeSeriesProbeControl::OnPaint);
     Connect(this->GetId(), wxEVT_ERASE_BACKGROUND, (wxObjectEventFunction)&ScalarTimeSeriesProbeControl::OnEraseBackground);
 
@@ -49,11 +51,8 @@ ScalarTimeSeriesProbeControl::~ScalarTimeSeriesProbeControl()
 
 void ScalarTimeSeriesProbeControl::RegisterSample(float value)
 {
-    if (value > mMaxValue)
-        mMaxValue = value;
-
-    if (value < mMinValue)
-        mMinValue = value;
+    mMaxValue = std::max(mMaxValue, value);
+    mMinValue = std::min(mMinValue, value);
 
     mSamples.emplace(
         [](float) {},
@@ -74,6 +73,20 @@ void ScalarTimeSeriesProbeControl::Reset()
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
+
+void ScalarTimeSeriesProbeControl::OnMouseClick(wxMouseEvent & /*event*/)
+{
+    // Reset extent
+    mMaxValue = std::numeric_limits<float>::lowest();
+    mMinValue = std::numeric_limits<float>::max();
+    for (auto it : mSamples)
+    {
+        mMaxValue = std::max(mMaxValue, it);
+        mMinValue = std::min(mMinValue, it);
+    }
+
+    Refresh();
+}
 
 void ScalarTimeSeriesProbeControl::OnPaint(wxPaintEvent & /*event*/)
 {
@@ -195,7 +208,6 @@ void ScalarTimeSeriesProbeControl::Render(wxDC & dc)
         // Draw label
         //
 
-        // TODO: write text at sensible place
         wxString testText(std::to_string(*mSamples.begin()));        
         dc.DrawText(testText, 0, Height - 9);
     }
