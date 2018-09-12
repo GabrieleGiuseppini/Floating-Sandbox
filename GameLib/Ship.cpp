@@ -824,65 +824,64 @@ void Ship::UpdateWaterVelocities(
             // We only consider outgoing flows
             outgoingWaterQuantity = std::max(outgoingWaterQuantity, 0.0f);
 
-            // TODOTEST1
+            // TODOTEST1: WATER SPLASH
             if (scalarWaterVelocity > 0.0f)
             {
-                // A bit cheating
-                vec2f springOutgoingMomentum =
-                    springOutgoingWaterVelocities[s]
-                    * oldPointWaterBuffer[pointIndex]
-                    //* gameParameters.WaterQuickness
-                    ;
+                float ma = oldPointWaterBuffer[pointIndex];
+                float va = scalarWaterVelocity;
 
-                // Calculate momentum resultant at point B
-                vec2f resultantMomentum;
+                float mb;
+                float vb;
                 if (mSprings.GetWaterPermeability(springIndex) != 0.0f)
                 {
-                    resultantMomentum =
-                        springOutgoingMomentum
-                        + oldPointWaterVelocityBuffer[otherEndpointIndex] * oldPointWaterBuffer[otherEndpointIndex];
+                    mb = oldPointWaterBuffer[otherEndpointIndex];
+                    vb = oldPointWaterVelocityBuffer[otherEndpointIndex]
+                        .dot(springNormalizedVector)
+                        / mSprings.GetRestLength(springIndex);
                 }
                 else
                 {
-                    // Same but opposite
-                    resultantMomentum = -springOutgoingMomentum;
+                    mb = std::numeric_limits<float>::max();
+                    vb = 0.0f;
                 }
 
-                // Make scalar
-                float resultantMomentumScalar = resultantMomentum.dot(springNormalizedVector);
-
-                auto foo1 = oldPointWaterBuffer[pointIndex];
-                auto foo2 = oldPointWaterBuffer[otherEndpointIndex];
-                auto othermomentum = oldPointWaterVelocityBuffer[otherEndpointIndex] * oldPointWaterBuffer[otherEndpointIndex];
-                ////LogMessage("TODO: ", springOutgoingMomentum.toString(), " ",
-                ////    resultantMomentum.toString(), " ", foo1, " ", foo2,
-                ////    othermomentum.toString(),
-                ////    " SWV:", scalarWaterVelocity);
-
-                // TODO: this was fine
-                ////// Splash is bigger when resultantMomentumScalar is more contrary to 
-                ////// this point's momentum
-                ////float springWaterSplashed = std::max(
-                ////    springOutgoingMomentum.dot(springNormalizedVector) - resultantMomentumScalar,
-                ////    0.0f);
-
-                float springWaterSplashed;
-                if (oldPointWaterBuffer[pointIndex] + oldPointWaterBuffer[otherEndpointIndex] > 0.0f)
+                float vf;
+                if (ma + mb != 0.0f)
                 {
-                    float resultantVelocityScalar =
-                        resultantMomentumScalar
-                        / (oldPointWaterBuffer[pointIndex] + oldPointWaterBuffer[otherEndpointIndex]);
-
-                    springWaterSplashed = std::max(
-                        scalarWaterVelocity - resultantVelocityScalar,
-                        0.0f);
+                    vf = (ma * va + mb * vb) / (ma + mb);
                 }
                 else
                 {
-                    springWaterSplashed = 0.0f;
+                    vf = 0.0;
                 }
 
-                totalWaterSplashed += springWaterSplashed;
+                float deltaT1 =
+                    0.5f
+                    * ma
+                    * (va * va - vf * vf);
+
+                float deltaT2 = 
+                    0.5f
+                    * mb
+                    * (vb * vb - vf * vf);
+
+                float initialT1 = 
+                    0.5f
+                    * ma
+                    * va * va;
+
+                float initialT2 =
+                    0.5f
+                    * mb
+                    * vb * vb;
+
+                float waterSplashedDelta = 0.5f * std::max(deltaT1 + deltaT2, 0.0f);
+                if (initialT1 + initialT2 != 0.0f)
+                {
+                    //waterSplashedDelta /= (initialT1 + initialT2);
+                }
+                
+                totalWaterSplashed += waterSplashedDelta;
             }
 
             // Store outgoing flow
@@ -962,79 +961,34 @@ void Ship::UpdateWaterVelocities(
             * actualTotalOutgoingWaterQuantity;
     }
 
-    
-    //////
-    ////// Calculate delta with average, and update average
-    //////
 
-    ////static float mCurrentWaterSplashedAverage_Sum = 0.0f;
-    ////static float mCurrentWaterSplashedAverage_Count = 0.0f;
+    //
+    // Normalize water splashed
+    //
 
-    ////float deltaWaterSplashedFromAverage = 
-    ////    totalWaterSplashed 
-    ////    - (mCurrentWaterSplashedAverage_Count != 0.0f 
-    ////        ? mCurrentWaterSplashedAverage_Sum / mCurrentWaterSplashedAverage_Count
-    ////        : 0.0f);
-
-    ////deltaWaterSplashedFromAverage = std::max(deltaWaterSplashedFromAverage, 0.0f);
-
-    ////mCurrentWaterSplashedAverage_Sum += totalWaterSplashed;
-    ////mCurrentWaterSplashedAverage_Count += 1.0f;
-
-    //////
-    ////// Run low-pass filter on delta from average
-    //////
-
-    ////static constexpr size_t NumWaterSplashedSamples = 6;
-    ////static std::deque<float> mLastWaterSplashedSamples(NumWaterSplashedSamples, 0.0f);
-    ////static float mCurrentWaterSplashedLowPassAverage = 0.0f;
-
-    ////mCurrentWaterSplashedLowPassAverage -= mLastWaterSplashedSamples.front();
-    ////mLastWaterSplashedSamples.pop_front();
-    ////// mLastWaterSplashedSamples.push_back(totalWaterSplashed / static_cast<float>(NumWaterSplashedSamples));
-    ////mLastWaterSplashedSamples.push_back(deltaWaterSplashedFromAverage / static_cast<float>(NumWaterSplashedSamples));
-    ////mCurrentWaterSplashedLowPassAverage += mLastWaterSplashedSamples.back();
-
-    ////// TODO
-    ////waterSplashed = mCurrentWaterSplashedLowPassAverage;
-    ////waterSplashed = std::max(deltaWaterSplashedFromAverage, 0.0f);
-
-
+    // TODO: not with total water but with total kinetic energy instead
+    ////if (mTotalWater != 0.0f)
+    ////    totalWaterSplashed /= mTotalWater;
 
     //
     // Calculate delta from running average
     //
 
-    static constexpr size_t NumWaterSplashedSamples = 6;
-    static std::deque<float> mLastWaterSplashedSamples(NumWaterSplashedSamples, 0.0f);
-    static float mCurrentWaterSplashedAverage = 0.0f;
+    static RunningAverage<6> mWaterSplashedRunningAverage;
 
-    mCurrentWaterSplashedAverage -= mLastWaterSplashedSamples.front();
-    mLastWaterSplashedSamples.pop_front();
-    mLastWaterSplashedSamples.push_back(totalWaterSplashed / static_cast<float>(NumWaterSplashedSamples));
-    mCurrentWaterSplashedAverage += mLastWaterSplashedSamples.back();
+    float newWaterSplashedAverage = mWaterSplashedRunningAverage.Update(totalWaterSplashed);
+    float waterSplashedDeltaFromRunningAverage = std::max(totalWaterSplashed - newWaterSplashedAverage, 0.0f);
+    
+    // TODO
+    //////
+    ////// Run low-pass filter on delta from running average
+    //////
 
-    waterSplashed = std::max(totalWaterSplashed - mCurrentWaterSplashedAverage, 0.0f);
-    ////if (mTotalWater > 0.0f)
-    ////    waterSplashed /= mTotalWater;
+    ////static RunningAverage<30> mWaterSplashedLPFilter;
 
-    //waterSplashed = std::max(totalWaterSplashed - mCurrentWaterSplashedLowPassAverage, 0.0f);
+    ////waterSplashed = mWaterSplashedLPFilter.Update(waterSplashedDeltaFromRunningAverage);
+    waterSplashed = waterSplashedDeltaFromRunningAverage;
 
-
-    //
-    // Run low-pass filter on delta from average
-    //
-
-    static constexpr size_t NumWaterSplashedLPSamples = 60;
-    static std::deque<float> mLastWaterSplashedLPSamples(NumWaterSplashedLPSamples, 0.0f);
-    static float mCurrentWaterSplashedLowPassAverage = 0.0f;
-
-    mCurrentWaterSplashedLowPassAverage -= mLastWaterSplashedLPSamples.front();
-    mLastWaterSplashedLPSamples.pop_front();
-    mLastWaterSplashedLPSamples.push_back(waterSplashed / static_cast<float>(NumWaterSplashedLPSamples));
-    mCurrentWaterSplashedLowPassAverage += mLastWaterSplashedLPSamples.back();
-
-    waterSplashed = mCurrentWaterSplashedLowPassAverage;
 
 
     //
@@ -1043,6 +997,32 @@ void Ship::UpdateWaterVelocities(
 
     mPoints.CommitWaterBufferTmp();
     mPoints.PopulateWaterVelocitiesFromMomenta();
+
+
+    ////// TODO:ZERO OUT VEL ON IMPACT
+    ////vec2f * restrict waterVelocityBuffer = mPoints.GetWaterVelocityBufferAsVec2();
+    ////for (auto pointIndex : mPoints)
+    ////{
+    ////    for (auto springIndex : mPoints.GetConnectedSprings(pointIndex))
+    ////    {
+    ////        if (mSprings.GetWaterPermeability(springIndex) == 0.0f)
+    ////        {
+    ////            // Zero out this point's component velocity along the spring
+    ////            vec2f s =
+    ////                mPoints.GetPosition(mSprings.GetOtherEndpointIndex(springIndex, pointIndex))
+    ////                - mPoints.GetPosition(pointIndex);
+
+    ////            vec2f projectedVel =
+    ////                s
+    ////                * waterVelocityBuffer[pointIndex].dot(s);
+
+    ////            if (projectedVel.length() > 0.0f)
+    ////            {
+    ////                waterVelocityBuffer[pointIndex] -= projectedVel;
+    ////            }
+    ////        }
+    ////    }
+    ////}
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
