@@ -403,7 +403,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
     try
     {
-        mSoundController = std::make_unique<SoundController>(
+        mSoundController = std::make_shared<SoundController>(
             mResourceLoader,
             [&splash, this](float progress, std::string const & message)
             {
@@ -859,7 +859,8 @@ void MainFrame::OnOpenSettingsWindowMenuItemSelected(wxCommandEvent & /*event*/)
     {
         mSettingsDialog = std::make_unique<SettingsDialog>(
             this,
-            mGameController);
+            mGameController,
+            mSoundController);
     }
 
     mSettingsDialog->Open();

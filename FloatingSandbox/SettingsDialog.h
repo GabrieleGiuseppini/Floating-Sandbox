@@ -6,6 +6,7 @@
 #pragma once
 
 #include "SliderControl.h"
+#include "SoundController.h"
 
 #include <GameLib/GameController.h>
 
@@ -22,7 +23,8 @@ public:
 
     SettingsDialog(
         wxWindow * parent,
-        std::shared_ptr<GameController> gameController);
+        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<SoundController> soundController);
 
     virtual ~SettingsDialog();
 
@@ -35,6 +37,8 @@ private:
     void OnSeeShipThroughSeaWaterCheckBoxClick(wxCommandEvent & event);
     void OnShipRenderModeRadioBox(wxCommandEvent & event);
     void OnShowStressCheckBoxClick(wxCommandEvent & event);
+
+    void OnPlaySinkingMusicCheckBoxClick(wxCommandEvent & event);
 
     void OnOkButton(wxCommandEvent & event);
     void OnApplyButton(wxCommandEvent & event);
@@ -70,6 +74,9 @@ private:
     wxRadioBox * mShipRenderModeRadioBox;
     wxCheckBox* mShowStressCheckBox;
 
+    // Sound
+    wxCheckBox * mPlaySinkingMusicCheckBox;
+
     wxButton * mOkButton;
     wxButton * mCancelButton;
     wxButton * mApplyButton;
@@ -81,6 +88,7 @@ private:
     void PopulateWorldPanel(wxPanel * panel);
     void PopulateInteractionsPanel(wxPanel * panel);    
     void PopulateRenderingPanel(wxPanel * panel);
+    void PopulateSoundPanel(wxPanel * panel);
 
     void ReadSettings();
 
@@ -90,4 +98,5 @@ private:
 
     wxWindow * const mParent;
     std::shared_ptr<GameController> mGameController;
+    std::shared_ptr<SoundController> mSoundController;
 };

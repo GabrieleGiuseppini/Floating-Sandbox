@@ -192,7 +192,7 @@ private:
 
     std::shared_ptr<ResourceLoader> mResourceLoader;
     std::shared_ptr<GameController> mGameController;
-    std::unique_ptr<SoundController> mSoundController;
+    std::shared_ptr<SoundController> mSoundController;
     std::unique_ptr<ToolController> mToolController;
 
 

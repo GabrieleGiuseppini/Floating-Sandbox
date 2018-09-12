@@ -29,6 +29,10 @@ public:
     {
         assert(static_cast<size_t>(toolType) < mAllTools.size());
 
+        // Notify old tool
+        if (nullptr != mCurrentTool)
+            mCurrentTool->Deinitialize(mInputState);
+
         // Switch tool
         mCurrentTool = mAllTools[static_cast<size_t>(toolType)].get();
         mCurrentTool->Initialize(mInputState);

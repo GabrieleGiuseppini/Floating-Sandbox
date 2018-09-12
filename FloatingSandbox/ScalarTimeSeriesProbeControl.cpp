@@ -208,7 +208,7 @@ void ScalarTimeSeriesProbeControl::Render(wxDC & dc)
         // Draw label
         //
 
-        wxString testText(std::to_string(*mSamples.begin()));        
+        wxString testText(std::to_string(*mSamples.begin()) + " (" + std::to_string(mMaxValue) + ")");        
         dc.DrawText(testText, 0, Height - 9);
     }
 }

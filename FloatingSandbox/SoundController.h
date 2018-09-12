@@ -28,11 +28,26 @@ public:
 
 	virtual ~SoundController();
 
+    //
+    // Controlling
+    //
+
     void SetPaused(bool isPaused);
 
     void SetMute(bool isMute);
 
     void SetVolume(float volume);
+
+    bool GetPlaySinkingMusic() const
+    {
+        return mPlaySinkingMusic;
+    }
+
+    void SetPlaySinkingMusic(bool playSinkingMusic);
+
+    //
+    // Updating
+    //
 
     void HighFrequencyUpdate();
 
@@ -80,6 +95,8 @@ public:
 
     virtual void OnWaterTaken(float waterTaken) override;
 
+    virtual void OnWaterSplashed(float waterSplashed) override;
+
     virtual void OnBombPlaced(
         ObjectId bombId,
         BombType bombType,
@@ -120,6 +137,7 @@ private:
         Stress,
         LightFlicker,
         WaterRush,
+        WaterSplash,
         BombAttached,
         BombDetached,
         RCBombPing,
@@ -153,6 +171,8 @@ private:
             return SoundType::LightFlicker;
         else if (lstr == "waterrush")
             return SoundType::WaterRush;
+        else if (lstr == "watersplash")
+            return SoundType::WaterSplash;
         else if (lstr == "bombattached")
             return SoundType::BombAttached;
         else if (lstr == "bombdetached")
@@ -369,12 +389,13 @@ private:
 
     std::shared_ptr<ResourceLoader> mResourceLoader;
 
-    float mCurrentVolume;
-
 
     //
     // State
     //
+
+    float mCurrentVolume;
+    bool mPlaySinkingMusic;
 
     // Tracking which bombs are emitting which fuse sounds
     std::set<ObjectId> mBombsEmittingSlowFuseSounds;
@@ -411,6 +432,7 @@ private:
     SingleContinuousSound mDrawSound;
     SingleContinuousSound mSwirlSound;
     SingleContinuousSound mWaterRushSound;
+    SingleContinuousSound mWaterSplashSound;
     SingleContinuousSound mTimerBombSlowFuseSound;
     SingleContinuousSound mTimerBombFastFuseSound;
 

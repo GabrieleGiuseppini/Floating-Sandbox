@@ -14,11 +14,14 @@
 #include <limits>
 #include <regex>
 
+static constexpr float SinkingMusicVolume = 20.0f;
+
 SoundController::SoundController(
     std::shared_ptr<ResourceLoader> resourceLoader,
     ProgressCallback const & progressCallback)
     : mResourceLoader(std::move(resourceLoader))
     , mCurrentVolume(100.0f)
+    , mPlaySinkingMusic(true)
     // State
     , mBombsEmittingSlowFuseSounds()
     , mBombsEmittingFastFuseSounds()
@@ -33,6 +36,7 @@ SoundController::SoundController(
     , mDrawSound()
     , mSwirlSound()
     , mWaterRushSound()
+    , mWaterSplashSound()
     , mTimerBombSlowFuseSound()
     , mTimerBombFastFuseSound()
     // Music
@@ -48,7 +52,7 @@ SoundController::SoundController(
     }
 
     mSinkingMusic.setLoop(true);
-    mSinkingMusic.setVolume(20);
+    mSinkingMusic.setVolume(SinkingMusicVolume);
 
 
     //
@@ -119,6 +123,10 @@ SoundController::SoundController(
         else if (soundType == SoundType::WaterRush)
         {
             mWaterRushSound.Initialize(std::move(soundBuffer));
+        }
+        else if (soundType == SoundType::WaterSplash)
+        {
+            mWaterSplashSound.Initialize(std::move(soundBuffer));
         }
         else if (soundType == SoundType::TimerBombSlowFuse)
         {
@@ -269,6 +277,7 @@ void SoundController::SetPaused(bool isPaused)
     // We don't pause the continuous tool sounds
 
     mWaterRushSound.SetPaused(isPaused);
+    mWaterSplashSound.SetPaused(isPaused);
     mTimerBombSlowFuseSound.SetPaused(isPaused);
     mTimerBombFastFuseSound.SetPaused(isPaused);
 
@@ -292,11 +301,20 @@ void SoundController::SetMute(bool isMute)
         sf::Listener::setGlobalVolume(mCurrentVolume);
 }
 
-
 void SoundController::SetVolume(float volume)
 {
     mCurrentVolume = volume;
     sf::Listener::setGlobalVolume(mCurrentVolume);
+}
+
+void SoundController::SetPlaySinkingMusic(bool playSinkingMusic)
+{
+    if (playSinkingMusic)
+        mSinkingMusic.setVolume(SinkingMusicVolume);
+    else
+        mSinkingMusic.setVolume(0.0f);
+
+    mPlaySinkingMusic = playSinkingMusic;
 }
 
 void SoundController::HighFrequencyUpdate()
@@ -334,6 +352,7 @@ void SoundController::Reset()
     mDrawSound.Stop();
     mSwirlSound.Stop();
     mWaterRushSound.Stop();
+    mWaterSplashSound.Stop();
     mTimerBombSlowFuseSound.Stop();
     mTimerBombFastFuseSound.Stop();
 
@@ -480,9 +499,16 @@ void SoundController::OnLightFlicker(
 
 void SoundController::OnWaterTaken(float waterTaken)
 {
-    float volume = 100.f * (-1.f / expf(fabs(waterTaken)) + 1.f);
+    float volume = 100.f * (-1.f / expf(std::abs(waterTaken)) + 1.f);
     mWaterRushSound.SetVolume(volume);
     mWaterRushSound.Start();
+}
+
+void SoundController::OnWaterSplashed(float waterSplashed)
+{
+    float volume = 100.f * (-1.f / expf(0.01f * std::abs(waterSplashed)) + 1.f);
+    mWaterSplashSound.SetVolume(volume);
+    mWaterSplashSound.Start();
 }
 
 void SoundController::OnBombPlaced(

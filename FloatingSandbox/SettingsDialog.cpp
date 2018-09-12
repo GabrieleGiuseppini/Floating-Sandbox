@@ -22,12 +22,15 @@ static constexpr int SliderBorder = 10;
 const long ID_ULTRA_VIOLENT_CHECKBOX = wxNewId();
 const long ID_SEE_SHIP_THROUGH_SEA_WATER_CHECKBOX = wxNewId();
 const long ID_SHOW_STRESS_CHECKBOX = wxNewId();
+const long ID_PLAY_SINKING_MUSIC_CHECKBOX = wxNewId();
 
 SettingsDialog::SettingsDialog(
     wxWindow* parent,
-    std::shared_ptr<GameController> gameController)
+    std::shared_ptr<GameController> gameController,
+    std::shared_ptr<SoundController> soundController)
     : mParent(parent)
     , mGameController(std::move(gameController))
+    , mSoundController(std::move(soundController))
 {
     Create(
         mParent, 
@@ -119,6 +122,20 @@ SettingsDialog::SettingsDialog(
     notebook->AddPage(renderingPanel, "Rendering");
 
 
+    //
+    // Sound
+    //
+
+    wxPanel * soundPanel = new wxPanel(notebook);
+
+    soundPanel->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
+
+    PopulateSoundPanel(soundPanel);
+
+    notebook->AddPage(soundPanel, "Sound");
+
+
+
     dialogVSizer->Add(notebook, 0, wxEXPAND);
 
     dialogVSizer->AddSpacer(20);
@@ -196,6 +213,12 @@ void SettingsDialog::OnShipRenderModeRadioBox(wxCommandEvent & /*event*/)
 }
 
 void SettingsDialog::OnShowStressCheckBoxClick(wxCommandEvent & /*event*/)
+{
+    // Remember we're dirty now
+    mApplyButton->Enable(true);
+}
+
+void SettingsDialog::OnPlaySinkingMusicCheckBoxClick(wxCommandEvent & /*event*/)
 {
     // Remember we're dirty now
     mApplyButton->Enable(true);
@@ -290,6 +313,8 @@ void SettingsDialog::ApplySettings()
     }
 
     mGameController->SetShowShipStress(mShowStressCheckBox->IsChecked());
+
+    mSoundController->SetPlaySinkingMusic(mPlaySinkingMusicCheckBox->IsChecked());
 }
 
 void SettingsDialog::PopulateMechanicsPanel(wxPanel * panel)
@@ -646,6 +671,28 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
     panel->SetSizerAndFit(controlsSizer);
 }
 
+void SettingsDialog::PopulateSoundPanel(wxPanel * panel)
+{
+    wxBoxSizer* controlsSizer = new wxBoxSizer(wxHORIZONTAL);
+
+
+    // Check boxes
+
+    wxStaticBoxSizer* checkboxesSizer = new wxStaticBoxSizer(wxVERTICAL, panel);
+
+    mPlaySinkingMusicCheckBox = new wxCheckBox(panel, ID_PLAY_SINKING_MUSIC_CHECKBOX, _("Play Farewell Music"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Play Sinking Music Checkbox"));
+    Connect(ID_PLAY_SINKING_MUSIC_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnPlaySinkingMusicCheckBoxClick);
+
+    checkboxesSizer->Add(mPlaySinkingMusicCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
+
+    controlsSizer->Add(checkboxesSizer, 0, wxALL, SliderBorder);
+    
+
+    // Finalize panel
+
+    panel->SetSizerAndFit(controlsSizer);
+}
+
 void SettingsDialog::ReadSettings()
 {
     assert(!!mGameController);
@@ -717,5 +764,7 @@ void SettingsDialog::ReadSettings()
     }
 
     mShowStressCheckBox->SetValue(mGameController->GetShowShipStress());
+
+    mPlaySinkingMusicCheckBox->SetValue(mSoundController->GetPlaySinkingMusic());
 }
 
