@@ -745,6 +745,7 @@ void Ship::UpdateWaterVelocities(
 
     // TODOTEST1
     float totalWaterSplashed = 0.0f;
+    float waterSplashedNormalizationFactor = 0.0f;
     
     for (auto pointIndex : mPoints)
     {
@@ -754,6 +755,9 @@ void Ship::UpdateWaterVelocities(
 
         // A higher crazyness gives more emphasys to bernoulli's velocity, as if pressures
         // and gravity were exaggerated
+        //
+        // WaterCrazyness=0 -> alpha=1
+        // WaterCrazyness=1 -> alpha=Wh
         float const alphaCrazyness = 1.0f + gameParameters.WaterCrazyness * (oldPointWaterBuffer[pointIndex] - 1.0f);
 
         // Total quantity of water leaving this point, before normalization
@@ -825,64 +829,63 @@ void Ship::UpdateWaterVelocities(
             outgoingWaterQuantity = std::max(outgoingWaterQuantity, 0.0f);
 
             // TODOTEST1: WATER SPLASH
-            if (scalarWaterVelocity > 0.0f)
+            if (scalarWaterVelocity > 0.0f && mSprings.GetWaterPermeability(springIndex) == 0.0f)
             {
                 float ma = oldPointWaterBuffer[pointIndex];
                 float va = scalarWaterVelocity;
 
-                float mb;
-                float vb;
-                if (mSprings.GetWaterPermeability(springIndex) != 0.0f)
-                {
-                    mb = oldPointWaterBuffer[otherEndpointIndex];
-                    vb = oldPointWaterVelocityBuffer[otherEndpointIndex]
-                        .dot(springNormalizedVector)
-                        / mSprings.GetRestLength(springIndex);
-                }
-                else
-                {
-                    mb = std::numeric_limits<float>::max();
-                    vb = 0.0f;
-                }
+                ////float va =
+                ////    oldPointWaterVelocityBuffer[pointIndex]
+                ////    .dot(springNormalizedVector);
 
-                float vf;
-                if (ma + mb != 0.0f)
-                {
-                    vf = (ma * va + mb * vb) / (ma + mb);
-                }
-                else
-                {
-                    vf = 0.0;
-                }
+                ////float mb = std::numeric_limits<float>::max();
+                ////float vb = 0.0f;
 
-                float deltaT1 =
-                    0.5f
-                    * ma
-                    * (va * va - vf * vf);
+                ////float vf = 0.0f;
 
-                float deltaT2 = 
-                    0.5f
-                    * mb
-                    * (vb * vb - vf * vf);
+                ////float deltaT1 =
+                ////    0.5f
+                ////    * ma
+                ////    * (va * va - vf * vf);
 
-                float initialT1 = 
+                ////float deltaT2 = 
+                ////    0.5f
+                ////    * mb
+                ////    * (vb * vb - vf * vf);
+
+                ////float initialT1 = 
+                ////    0.5f
+                ////    * ma
+                ////    * va * va;
+
+                ////float initialT2 =
+                ////    0.5f
+                ////    * mb
+                ////    * vb * vb;
+
+                ////float waterSplashedDelta = 0.5f * std::max(deltaT1 + deltaT2, 0.0f);
+                ////if (initialT1 + initialT2 != 0.0f)
+                ////{
+                ////    //waterSplashedDelta /= (initialT1 + initialT2);
+                ////}
+                ////
+                ////totalWaterSplashed += waterSplashedDelta;
+
+                totalWaterSplashed +=
                     0.5f
                     * ma
                     * va * va;
 
-                float initialT2 =
-                    0.5f
-                    * mb
-                    * vb * vb;
-
-                float waterSplashedDelta = 0.5f * std::max(deltaT1 + deltaT2, 0.0f);
-                if (initialT1 + initialT2 != 0.0f)
-                {
-                    //waterSplashedDelta /= (initialT1 + initialT2);
-                }
-                
-                totalWaterSplashed += waterSplashedDelta;
+                //totalWaterSplashed += va;
             }
+
+            waterSplashedNormalizationFactor +=
+                0.5f
+                * oldPointWaterBuffer[pointIndex]
+                * scalarWaterVelocity
+                * scalarWaterVelocity;
+            // TODO: test with swv=max(0, swv)
+
 
             // Store outgoing flow
             springOutgoingWaterQuantities[s] = outgoingWaterQuantity;
@@ -962,23 +965,25 @@ void Ship::UpdateWaterVelocities(
     }
 
 
-    //
-    // Normalize water splashed
-    //
+    waterSplashed = totalWaterSplashed;
 
-    // TODO: not with total water but with total kinetic energy instead
-    ////if (mTotalWater != 0.0f)
-    ////    totalWaterSplashed /= mTotalWater;
+    // TODOTEST: NORMALIZATION
+    ////if (waterSplashedNormalizationFactor != 0.0f)
+    ////    waterSplashed /= waterSplashedNormalizationFactor;
 
-    //
-    // Calculate delta from running average
-    //
 
-    static RunningAverage<6> mWaterSplashedRunningAverage;
+    ////// TODO
+    //////
+    ////// Calculate delta from running average
+    //////
 
-    float newWaterSplashedAverage = mWaterSplashedRunningAverage.Update(totalWaterSplashed);
-    float waterSplashedDeltaFromRunningAverage = std::max(totalWaterSplashed - newWaterSplashedAverage, 0.0f);
-    
+    ////static RunningAverage<6> mWaterSplashedRunningAverage;
+
+    ////float newWaterSplashedAverage = mWaterSplashedRunningAverage.Update(totalWaterSplashed);
+    ////float waterSplashedDeltaFromRunningAverage = std::max(totalWaterSplashed - newWaterSplashedAverage, 0.0f);
+
+    ////waterSplashed = waterSplashedDeltaFromRunningAverage;
+
     // TODO
     //////
     ////// Run low-pass filter on delta from running average
@@ -987,7 +992,6 @@ void Ship::UpdateWaterVelocities(
     ////static RunningAverage<30> mWaterSplashedLPFilter;
 
     ////waterSplashed = mWaterSplashedLPFilter.Update(waterSplashedDeltaFromRunningAverage);
-    waterSplashed = waterSplashedDeltaFromRunningAverage;
 
 
 
