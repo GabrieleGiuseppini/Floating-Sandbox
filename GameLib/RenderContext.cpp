@@ -65,9 +65,9 @@ RenderContext::RenderContext(
     , mCanvasWidth(100)
     , mCanvasHeight(100)
     , mAmbientLightIntensity(1.0f)
-    , mSeaWaterTransparency(0.68750f)
+    , mSeaWaterTransparency(0.8125f)
     , mShowShipThroughSeaWater(false)
-    , mWaterLevelOfDetail(0.875f)
+    , mWaterLevelOfDetail(0.6875f)
     , mShipRenderMode(ShipRenderMode::Texture)
     , mShowStressedSprings(false)
 {
