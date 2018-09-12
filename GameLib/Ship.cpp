@@ -522,7 +522,10 @@ void Ship::UpdateSpringForces(GameParameters const & /*gameParameters*/)
         //
 
         // Calculate spring force on point A
-        vec2f const fSpringA = springDir * (displacementLength - mSprings.GetRestLength(springIndex)) * mSprings.GetStiffnessCoefficient(springIndex);
+        vec2f const fSpringA = 
+            springDir 
+            * (displacementLength - mSprings.GetRestLength(springIndex)) 
+            * mSprings.GetStiffnessCoefficient(springIndex);
 
 
         //
@@ -534,7 +537,10 @@ void Ship::UpdateSpringForces(GameParameters const & /*gameParameters*/)
 
         // Calculate damp force on point A
         vec2f const relVelocity = mPoints.GetVelocity(pointBIndex) - mPoints.GetVelocity(pointAIndex);
-        vec2f const fDampA = springDir * relVelocity.dot(springDir) * mSprings.GetDampingCoefficient(springIndex);
+        vec2f const fDampA = 
+            springDir 
+            * relVelocity.dot(springDir) 
+            * mSprings.GetDampingCoefficient(springIndex);
 
 
         //
@@ -614,21 +620,21 @@ void Ship::HandleCollisionsWithSeaFloor()
 void Ship::UpdateWaterDynamics(GameParameters const & gameParameters)
 {
     float waterTakenInStep = 0.f;
+    float waterSplashedInStep = 0.f;
 
     for (int i = 0; i < GameParameters::NumWaterDynamicsIterations<int>; ++i)
     {
         UpdateWaterInflow(gameParameters, waterTakenInStep);
 
-        UpdateWaterVelocities(gameParameters);        
+        UpdateWaterVelocities(gameParameters, waterSplashedInStep);
     }
 
-    // Notify water taken
+    // Notify waters
     mGameEventHandler->OnWaterTaken(waterTakenInStep);
+    mGameEventHandler->OnWaterSplashed(waterSplashedInStep);
 
-    // Update total water taken
+    // Update total water taken and check whether we've started sinking
     mTotalWater += waterTakenInStep;
-
-    // Check whether we've started sinking
     if (!mIsSinking
         && mTotalWater > static_cast<float>(mPoints.GetElementCount()) / 1.5f)
     {
@@ -711,18 +717,14 @@ void Ship::UpdateWaterInflow(
     }
 }
 
-void Ship::UpdateWaterVelocities(GameParameters const & gameParameters)
+void Ship::UpdateWaterVelocities(
+    GameParameters const & gameParameters,
+    float & waterSplashed)
 {
     //
     // For each point, move each spring's outgoing water momentum to 
     // its destination point
     //
-
-    // Outgoing water velocities along each spring
-    std::array<vec2f, GameParameters::MaxSpringsPerPoint> springOutgoingWaterVelocities;
-
-    // Outgoing quantity of water along each spring
-    std::array<float, GameParameters::MaxSpringsPerPoint> springOutgoingWaterQuantities;
 
     // Source and result water buffers
     float * restrict oldPointWaterBuffer = mPoints.GetWaterBufferAsFloat();
@@ -730,10 +732,19 @@ void Ship::UpdateWaterVelocities(GameParameters const & gameParameters)
     vec2f * restrict oldPointWaterVelocityBuffer = mPoints.GetWaterVelocityBufferAsVec2();
     vec2f * restrict newPointWaterMomentumBuffer = mPoints.PopulateWaterMomentaFromVelocitiesAndCheckoutAsVec2();
 
+    // Outgoing water velocities along each spring
+    std::array<vec2f, GameParameters::MaxSpringsPerPoint> springOutgoingWaterVelocities;
+
+    // Outgoing quantity of water along each spring
+    std::array<float, GameParameters::MaxSpringsPerPoint> springOutgoingWaterQuantities;
+
 
     //
     // Visit all points and move water and its momenta
     //
+
+    // TODOTEST1
+    float totalWaterSplashed = 0.0f;
     
     for (auto pointIndex : mPoints)
     {
@@ -792,23 +803,87 @@ void Ship::UpdateWaterVelocities(GameParameters const & gameParameters)
             // and to the prior point's velocity
             //
 
-            // Final scalar water velocity along the spring
+            // Resultant scalar water velocity along the spring
             float scalarWaterVelocity =
                 (oldPointWaterVelocityBuffer[pointIndex] + dv * alphaCrazyness)
-                .dot(springNormalizedVector);
+                .dot(springNormalizedVector)
+                / mSprings.GetRestLength(springIndex);
 
-            // Final vector water velocity along the spring
+            // Resultant vector water velocity along the spring
             springOutgoingWaterVelocities[s] =
                 springNormalizedVector
                 * scalarWaterVelocity;
 
-            // Outflow (point -> other endpoint) due to this velocity
+            // Outflow (point -> other endpoint) due to this velocity, before
+            // normalization; in reality we will distribute all the non-retained water 
+            // in this point among all the outgoing springs in proportion to these quantities
             float outgoingWaterQuantity =
-                scalarWaterVelocity                
+                scalarWaterVelocity
                 * mSprings.GetWaterPermeability(springIndex);
-
+                
             // We only consider outgoing flows
             outgoingWaterQuantity = std::max(outgoingWaterQuantity, 0.0f);
+
+            // TODOTEST1
+            if (scalarWaterVelocity > 0.0f)
+            {
+                // A bit cheating
+                vec2f springOutgoingMomentum =
+                    springOutgoingWaterVelocities[s]
+                    * oldPointWaterBuffer[pointIndex]
+                    //* gameParameters.WaterQuickness
+                    ;
+
+                // Calculate momentum resultant at point B
+                vec2f resultantMomentum;
+                if (mSprings.GetWaterPermeability(springIndex) != 0.0f)
+                {
+                    resultantMomentum =
+                        springOutgoingMomentum
+                        + oldPointWaterVelocityBuffer[otherEndpointIndex] * oldPointWaterBuffer[otherEndpointIndex];
+                }
+                else
+                {
+                    // Same but opposite
+                    resultantMomentum = -springOutgoingMomentum;
+                }
+
+                // Make scalar
+                float resultantMomentumScalar = resultantMomentum.dot(springNormalizedVector);
+
+                auto foo1 = oldPointWaterBuffer[pointIndex];
+                auto foo2 = oldPointWaterBuffer[otherEndpointIndex];
+                auto othermomentum = oldPointWaterVelocityBuffer[otherEndpointIndex] * oldPointWaterBuffer[otherEndpointIndex];
+                ////LogMessage("TODO: ", springOutgoingMomentum.toString(), " ",
+                ////    resultantMomentum.toString(), " ", foo1, " ", foo2,
+                ////    othermomentum.toString(),
+                ////    " SWV:", scalarWaterVelocity);
+
+                // TODO: this was fine
+                ////// Splash is bigger when resultantMomentumScalar is more contrary to 
+                ////// this point's momentum
+                ////float springWaterSplashed = std::max(
+                ////    springOutgoingMomentum.dot(springNormalizedVector) - resultantMomentumScalar,
+                ////    0.0f);
+
+                float springWaterSplashed;
+                if (oldPointWaterBuffer[pointIndex] + oldPointWaterBuffer[otherEndpointIndex] > 0.0f)
+                {
+                    float resultantVelocityScalar =
+                        resultantMomentumScalar
+                        / (oldPointWaterBuffer[pointIndex] + oldPointWaterBuffer[otherEndpointIndex]);
+
+                    springWaterSplashed = std::max(
+                        scalarWaterVelocity - resultantVelocityScalar,
+                        0.0f);
+                }
+                else
+                {
+                    springWaterSplashed = 0.0f;
+                }
+
+                totalWaterSplashed += springWaterSplashed;
+            }
 
             // Store outgoing flow
             springOutgoingWaterQuantities[s] = outgoingWaterQuantity;
@@ -828,7 +903,7 @@ void Ship::UpdateWaterVelocities(GameParameters const & gameParameters)
         //
 
         float actualTotalOutgoingWaterQuantity = 0.0f;
-        float normalizationFactor = 0.0f;
+        float normalizationFactor = 0.0f;        
         if (theoreticalTotalOutgoingWaterQuantity > 0.0f)
         {
             actualTotalOutgoingWaterQuantity =
@@ -867,7 +942,7 @@ void Ship::UpdateWaterVelocities(GameParameters const & gameParameters)
             // Add water and water momentum to destination
             //
 
-            newPointWaterBuffer[otherEndpointIndex] += 
+            newPointWaterBuffer[otherEndpointIndex] +=
                 normalizedOutgoingWaterQuantity;
 
             newPointWaterMomentumBuffer[otherEndpointIndex] +=
@@ -887,6 +962,81 @@ void Ship::UpdateWaterVelocities(GameParameters const & gameParameters)
             * actualTotalOutgoingWaterQuantity;
     }
 
+    
+    //////
+    ////// Calculate delta with average, and update average
+    //////
+
+    ////static float mCurrentWaterSplashedAverage_Sum = 0.0f;
+    ////static float mCurrentWaterSplashedAverage_Count = 0.0f;
+
+    ////float deltaWaterSplashedFromAverage = 
+    ////    totalWaterSplashed 
+    ////    - (mCurrentWaterSplashedAverage_Count != 0.0f 
+    ////        ? mCurrentWaterSplashedAverage_Sum / mCurrentWaterSplashedAverage_Count
+    ////        : 0.0f);
+
+    ////deltaWaterSplashedFromAverage = std::max(deltaWaterSplashedFromAverage, 0.0f);
+
+    ////mCurrentWaterSplashedAverage_Sum += totalWaterSplashed;
+    ////mCurrentWaterSplashedAverage_Count += 1.0f;
+
+    //////
+    ////// Run low-pass filter on delta from average
+    //////
+
+    ////static constexpr size_t NumWaterSplashedSamples = 6;
+    ////static std::deque<float> mLastWaterSplashedSamples(NumWaterSplashedSamples, 0.0f);
+    ////static float mCurrentWaterSplashedLowPassAverage = 0.0f;
+
+    ////mCurrentWaterSplashedLowPassAverage -= mLastWaterSplashedSamples.front();
+    ////mLastWaterSplashedSamples.pop_front();
+    ////// mLastWaterSplashedSamples.push_back(totalWaterSplashed / static_cast<float>(NumWaterSplashedSamples));
+    ////mLastWaterSplashedSamples.push_back(deltaWaterSplashedFromAverage / static_cast<float>(NumWaterSplashedSamples));
+    ////mCurrentWaterSplashedLowPassAverage += mLastWaterSplashedSamples.back();
+
+    ////// TODO
+    ////waterSplashed = mCurrentWaterSplashedLowPassAverage;
+    ////waterSplashed = std::max(deltaWaterSplashedFromAverage, 0.0f);
+
+
+
+    //
+    // Calculate delta from running average
+    //
+
+    static constexpr size_t NumWaterSplashedSamples = 6;
+    static std::deque<float> mLastWaterSplashedSamples(NumWaterSplashedSamples, 0.0f);
+    static float mCurrentWaterSplashedAverage = 0.0f;
+
+    mCurrentWaterSplashedAverage -= mLastWaterSplashedSamples.front();
+    mLastWaterSplashedSamples.pop_front();
+    mLastWaterSplashedSamples.push_back(totalWaterSplashed / static_cast<float>(NumWaterSplashedSamples));
+    mCurrentWaterSplashedAverage += mLastWaterSplashedSamples.back();
+
+    waterSplashed = std::max(totalWaterSplashed - mCurrentWaterSplashedAverage, 0.0f);
+    ////if (mTotalWater > 0.0f)
+    ////    waterSplashed /= mTotalWater;
+
+    //waterSplashed = std::max(totalWaterSplashed - mCurrentWaterSplashedLowPassAverage, 0.0f);
+
+
+    //
+    // Run low-pass filter on delta from average
+    //
+
+    static constexpr size_t NumWaterSplashedLPSamples = 60;
+    static std::deque<float> mLastWaterSplashedLPSamples(NumWaterSplashedLPSamples, 0.0f);
+    static float mCurrentWaterSplashedLowPassAverage = 0.0f;
+
+    mCurrentWaterSplashedLowPassAverage -= mLastWaterSplashedLPSamples.front();
+    mLastWaterSplashedLPSamples.pop_front();
+    mLastWaterSplashedLPSamples.push_back(waterSplashed / static_cast<float>(NumWaterSplashedLPSamples));
+    mCurrentWaterSplashedLowPassAverage += mLastWaterSplashedLPSamples.back();
+
+    waterSplashed = mCurrentWaterSplashedLowPassAverage;
+
+
     //
     // Move result values back to point, transforming momenta into velocities
     //
@@ -894,7 +1044,6 @@ void Ship::UpdateWaterVelocities(GameParameters const & gameParameters)
     mPoints.CommitWaterBufferTmp();
     mPoints.PopulateWaterVelocitiesFromMomenta();
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////////
 // Electrical Dynamics
