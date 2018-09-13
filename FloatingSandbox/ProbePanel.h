@@ -13,6 +13,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 class ProbePanel : public wxPanel, public IGameEventHandler
 {
@@ -34,6 +35,10 @@ public:
 
     virtual void OnWaterSplashed(float waterSplashed) override;
 
+    virtual void OnCustomProbe(
+        std::string const & name,
+        float value) override;
+
 private:
 
     bool IsActive() const
@@ -48,4 +53,5 @@ private:
     //
 
     std::unique_ptr<ScalarTimeSeriesProbeControl> mWaterSplashProbe;
+    std::unordered_map<std::string, std::unique_ptr<ScalarTimeSeriesProbeControl>> mCustomProbes;
 };

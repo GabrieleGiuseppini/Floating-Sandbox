@@ -506,7 +506,7 @@ void SoundController::OnWaterTaken(float waterTaken)
 
 void SoundController::OnWaterSplashed(float waterSplashed)
 {
-    float volume = 100.f * (-1.f / expf(0.01f * std::abs(waterSplashed)) + 1.f);
+    float volume = 100.f * (-1.f / expf(0.001f * std::abs(waterSplashed)) + 1.f);
     mWaterSplashSound.SetVolume(volume);
     mWaterSplashSound.Start();
 }

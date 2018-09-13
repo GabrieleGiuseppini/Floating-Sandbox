@@ -80,3 +80,10 @@ void ProbePanel::OnWaterSplashed(float waterSplashed)
 {
     mWaterSplashProbe->RegisterSample(waterSplashed);
 }
+
+void ProbePanel::OnCustomProbe(
+    std::string const & name,
+    float value)
+{
+    // TODO
+}

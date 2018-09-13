@@ -144,6 +144,19 @@ public:
         }
     }
 
+    virtual void OnCustomProbe(
+        std::string const & name,
+        float value) override
+    {
+        // No need to aggregate this one
+        for (auto sink : mSinks)
+        {
+            sink->OnCustomProbe(
+                name,
+                value);
+        }
+    }
+
     //
     // Bombs
     //

@@ -10,6 +10,7 @@
 #include "MaterialDatabase.h"
 #include "Physics.h"
 #include "RenderContext.h"
+#include "RunningAverage.h"
 #include "ShipDefinition.h"
 #include "Vectors.h"
 
