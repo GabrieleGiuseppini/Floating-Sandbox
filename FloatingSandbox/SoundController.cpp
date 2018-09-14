@@ -497,18 +497,23 @@ void SoundController::OnLightFlicker(
             30.0f * size));
 }
 
-void SoundController::OnWaterTaken(float waterTaken)
+void SoundController::OnWaterTaken(float /*waterTaken*/)
 {
-    float volume = 100.f * (-1.f / expf(std::abs(waterTaken)) + 1.f);
-    mWaterRushSound.SetVolume(volume);
-    mWaterRushSound.Start();
+    // Not responding to this event at the moment
 }
 
 void SoundController::OnWaterSplashed(float waterSplashed)
 {
-    float volume = 100.f * (-1.f / expf(0.001f * std::abs(waterSplashed)) + 1.f);
-    mWaterSplashSound.SetVolume(volume);
+    // 100 * (-1 / 1.3^(0.004 * x) + 1)
+    // @200: 19
+    // @1000: 65
+    float splashVolume = 100.f * (-1.f / std::pow(1.3f, 0.004f * std::abs(waterSplashed)) + 1.f);
+    mWaterSplashSound.SetVolume(splashVolume);
     mWaterSplashSound.Start();
+
+    float rushVolume = 50.f * (-1.f / std::pow(2.0f, 0.1f * std::abs(waterSplashed)) + 1.f);
+    mWaterRushSound.SetVolume(rushVolume);
+    mWaterRushSound.Start();
 }
 
 void SoundController::OnBombPlaced(
