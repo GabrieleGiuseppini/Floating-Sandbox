@@ -50,7 +50,19 @@ Current perf (1.5.0 - after Water)
 ====================================================
 ====================== Plan ========================
 
-- Splash w/Probe
++ Movie 
+= Article
+	+ Water retain essentially controls the speed at which water moves
+	+ Add rest length
+	- Add boundary conditions
+		- <h3>
+		- spring water permeability
+		- write final decision on impact
+	- GameJolt
+= Splash w/Probe
+- Merge into master
+- Release
+
 - GfxOptimizations:
 	- Z buffer
 - USS Shark
@@ -71,6 +83,13 @@ Current perf (1.5.0 - after Water)
 				- Water size
 				- Land size
 				- Bombs sizes and offsets
+	- GameController rearc:
+		- GameController moves to FloatingSandbox, and contains SoundController and ToolController as well
+		- MainFrame talks exclusively to GameController, which in turn talks to the others
+		- ToolController has SoundController, and tells the latter when to play and stop tools' sounds 
+			- IGameEventHandler events exist only for the world-generated noises (e.g. something really breaking), not
+			  for the tools
+			  - So Swirl, for example, should disappear from IGameEventHandler; some others as well
 	- TODECIDE: Ship::Render() should take ShipRenderContext instead of RenderContext, and eventually RenderContext if really needed
 		- Can then get rid of forwards from RenderContext
 
@@ -249,13 +268,29 @@ Current perf (1.5.0 - after Water)
 			- Should definitely make both A and B leak, as they both now have an adjacent hole
 
 - Water:
-	- Splash sound:
-		- First we need to cleanse "rushing water" of bubbles sound
-		- New "splash" continuous sound, with volume controlled by total magnitude of momentum change
-			- Might need a low-pass filter to smoothen out peaks
-			- Total magnitude of momentum change:
-				- TODO
-			- Test with ProbePanel, ScalarTimeSeriesControl
+	+ UpdateWaterVelocities: 
+		+ See what happens when we also incorporate dest's velocity in Bernoulli
+		+ See what happens with drag (after final calculation of velocities)
+			+ See if needs to be linear or quadratic
+		= Test with reflected momentum
+
+	= Splash sound:
+		+ First we need to cleanse "rushing water" of bubbles sound
+		+ New "splash" continuous sound, with volume controlled by total magnitude of momentum change
+			+ Test with ProbePanel, ScalarTimeSeriesControl
+			+ Go for kinetic energy lost instead		
+		= Finalization:
+			= Nail down sound
+			= Measure perf:
+				+ FPS: 26.7
+				- UpdateWaterVelocities (2m): 8.09%
+					- expf: 0.91
+			- Cleanup
+			- Optimizations
+				- That scalar/vector/scalar
+				- Instead of checking >= 0.0f, use std::max
+				- Moleskine
+			+ Should replace water rushing in - decide
 
 
 	-Do water bubbles (at intake) and water drops (at outtake)
@@ -267,7 +302,7 @@ Current perf (1.5.0 - after Water)
 				- Only emit if Y above water line
 				- Material is water
 					- Hardcoded material added by MaterialDB from in-code list
-	- Optimizations:
+	- TODOOLD: Optimizations:
 		- GravitateWater:
 			- Calculate once and for all cos theta's at first iteration
 				- !!! Actually, calculate WaterGravityFactorA = dt*0.6*(1+cos_theta)/2, WaterGravityFactorB = -dt*0.6*(1-cos_theta)/2
@@ -339,26 +374,30 @@ Current perf (1.5.0 - after Water)
 - Sounds:
 	- Should lower the volume of stress sounds?
 
-- Histograms:
-	- class Histogram
-		- map<float, float in [0,1]>
-	- class Statistics (various Histograms, etc.)
-		- Histogram pointWaterHistogram
-		- ...
-	- Somehow World::Update is "injected" a StatisticsProbe when needed
-		- The probe might contain radius
-		- When injected, world and ship update stats into it by invoking various methods for various statistics points, 
-		  e.g. StatisticsProbe::ProbePointForces(Points const &)
-	- StatisticsDialog
+-Probing:
+	- IProbe:
+		- World and Ship take shared_ptr<IProbe> and store it, exactly like IGameEventHandler
+		- Single instance of IProbe is ProbePanel, which is given to GameController::cctor by Frame at initialization
+		- Example IProbe methods:
+			- void ProbeWaterSplashed(float waterSplashed)
+				- One scalar, pass through to ScalarTimeSeriesProbeControl (iff IsActive)
+			- void ProbePointForces(vec2f const *)
+				- For other things at different steps in the simulation algorithm
+				- IProbe knows whether it cares about a specific point and, if so, takes that and draw is
+				- IProbe might also create stats
+	= ProbePanel
 		- Pre-created member of MainFrame
-			- Has GameController
-		- Shown depending on menu (like LoggingDialog)
-		- Controls create and program the StatisticsProbe that is then injected into World
-		- Then exposes Update() invoked by MainFrame, always, after simulation step
-		- Update(): 
-			- if not visible, return;
-			- Draw current Statistics from current StatisticsProbe
-				- Histogram control and various other controls
+		+ Then exposes Update() invoked by MainFrame, always, after simulation step
+		+ Update(): 
+			+ if not visible, return;
+			+ Draw current Statistics from current StatisticsProbe
+		- TBD: mechanism to select point, etc. from ship, which will be used for probing afterwards
+	- Histograms:
+		- class Histogram
+			- map<float, float in [0,1]>
+		- class Statistics (various Histograms, etc.)
+			- Histogram pointWaterHistogram
+			- ...
 
 - Lights
 	+ need Optional()

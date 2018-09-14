@@ -763,8 +763,8 @@ void Ship::UpdateWaterVelocities(
         float pointKineticEnergyLoss = 0.0f;
         
         // Count of non-hull free and drowned neighbor points
-        float pointNeighbors = 0.0f;
-        float pointFreeNeighbors = 0.0f;
+        float pointSplashNeighbors = 0.0f;
+        float pointSplashFreeNeighbors = 0.0f;
 
         for (size_t s = 0; s < mPoints.GetConnectedSprings(pointIndex).size(); ++s)
         {
@@ -879,14 +879,13 @@ void Ship::UpdateWaterVelocities(
             }
 
 
-            // Update neighbors
+            // Update splash neighbors counts
 
-            pointFreeNeighbors +=
+            pointSplashFreeNeighbors +=
                 mSprings.GetWaterPermeability(springIndex)
-                * exp(-oldPointWaterBuffer[otherEndpointIndex] * 5.0f);
-                //* 1.0f / (1.0f + oldPointWaterBuffer[otherEndpointIndex] * 10.0f);
+                * exp(-oldPointWaterBuffer[otherEndpointIndex] * 10.0f);
 
-            pointNeighbors += mSprings.GetWaterPermeability(springIndex);
+            pointSplashNeighbors += mSprings.GetWaterPermeability(springIndex);
         }
 
         // The total and each component are all non-negative
@@ -963,14 +962,14 @@ void Ship::UpdateWaterVelocities(
         // 5) Update water splash
         //
         
-        if (pointNeighbors != 0.0f)
+        if (pointSplashNeighbors != 0.0f)
         {
             // Water splashed is proportional to kinetic energy loss that took
             // place near free points (i.e. not drowned by water)
             waterSplashed +=
                 pointKineticEnergyLoss
-                * pointFreeNeighbors
-                / pointNeighbors;
+                * pointSplashFreeNeighbors
+                / pointSplashNeighbors;
         }
     }
 
