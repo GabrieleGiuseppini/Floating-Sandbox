@@ -926,7 +926,7 @@ void Ship::UpdateWaterVelocities(
                     * mb
                     * (vb * vb - vf * vf);
 
-                pointKineticEnergyLoss += deltaT1 + deltaT2;
+                pointKineticEnergyLoss += std::max(deltaT1 + deltaT2, 0.0f);
             }
 
 
