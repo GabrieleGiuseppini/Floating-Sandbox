@@ -884,7 +884,9 @@ void Ship::UpdateWaterVelocities(
                     * mb
                     * (vb * vb - vf * vf);
 
-                pointKineticEnergyLoss += std::max(deltaT1 + deltaT2, 0.0f);
+                // TODOTEST
+                //pointKineticEnergyLoss += std::max(deltaT1 + deltaT2, 0.0f);
+                pointKineticEnergyLoss += std::max(deltaT1, 0.0f);
             }
 
 
