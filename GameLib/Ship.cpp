@@ -760,8 +760,9 @@ void Ship::UpdateWaterVelocities(
         // A higher crazyness gives more emphasys to bernoulli's velocity, as if pressures
         // and gravity were exaggerated
         //
-        // WaterCrazyness=0 -> alpha=1
-        // WaterCrazyness=1 -> alpha=Wh
+        // WaterCrazyness=0   -> alpha=1
+        // WaterCrazyness=0.5 -> alpha=0.5 + 0.5*Wh
+        // WaterCrazyness=1   -> alpha=Wh
         float const alphaCrazyness = 1.0f + gameParameters.WaterCrazyness * (oldPointWaterBuffer[pointIndex] - 1.0f);
 
         // Total quantity of water leaving this point, before normalization
@@ -796,19 +797,19 @@ void Ship::UpdateWaterVelocities(
 
             // Calculate gained water velocity along this spring, from point to other endpoint
             // (Bernoulli, 1738)
-            vec2f dv;
+            vec2f dvb;
             float const dwy = dw + dy;
             if (dwy >= 0.0f)
             {
                 // Gained velocity goes from point to other endpoint
-                dv =
+                dvb =
                     springNormalizedVector
                     * sqrtf(2.0f * GameParameters::GravityMagnitude * dwy);
             }
             else
             {
                 // Gained velocity goes from other endpoint to point
-                dv =
+                dvb =
                     springNormalizedVector
                     * -sqrtf(2.0f * GameParameters::GravityMagnitude * -dwy);
             }
@@ -820,7 +821,7 @@ void Ship::UpdateWaterVelocities(
 
             // Resultant scalar water velocity along the spring
             float scalarWaterVelocity =
-                (oldPointWaterVelocityBuffer[pointIndex] + dv * alphaCrazyness)
+                (oldPointWaterVelocityBuffer[pointIndex] + dvb * alphaCrazyness)
                 .dot(springNormalizedVector)
                 / mSprings.GetRestLength(springIndex);
 
