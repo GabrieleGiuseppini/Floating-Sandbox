@@ -740,16 +740,17 @@ void Ship::UpdateWaterVelocities(
     vec2f * restrict oldPointWaterVelocityBuffer = mPoints.GetWaterVelocityBufferAsVec2();
     vec2f * restrict newPointWaterMomentumBuffer = mPoints.PopulateWaterMomentaFromVelocitiesAndCheckoutAsVec2();
 
-    // Outgoing resultant scalar water velocities along each spring
-    // Springs whose resultant scalar water velocities are directed towards the point being visited
-    // have zero
-    std::array<float, GameParameters::MaxSpringsPerPoint> springOutgoingScalarWaterVelocities;
+    // Weights of outbound water flows along each spring, including impermeable ones;
+    // set to zero for springs whose resultant scalar water velocities are 
+    // directed towards the point being visited
+    std::array<float, GameParameters::MaxSpringsPerPoint> springOutboundWaterFlowWeights;
 
-    // Resultant vector water velocities along each spring
-    std::array<vec2f, GameParameters::MaxSpringsPerPoint> springOutgoingVectorWaterVelocities;
+    // Total weight
+    float totalOutboundWaterFlowWeight;
 
-    // Total outgoing (resultant) scalar water velocities along all springs of a point
-    float totalOutgoingScalarWaterVelocity;
+    // Resultant water velocities along each spring
+    std::array<vec2f, GameParameters::MaxSpringsPerPoint> springOutboundWaterVelocities;
+
 
 
     //
@@ -777,7 +778,7 @@ void Ship::UpdateWaterVelocities(
         float pointSplashNeighbors = 0.0f;
         float pointSplashFreeNeighbors = 0.0f;
 
-        totalOutgoingScalarWaterVelocity = 0.0f;
+        totalOutboundWaterFlowWeight = 0.0f;
 
         for (size_t s = 0; s < mPoints.GetConnectedSprings(pointIndex).size(); ++s)
         {
@@ -819,23 +820,24 @@ void Ship::UpdateWaterVelocities(
                 bernoulliVelocityAlongSpring = -sqrtf(2.0f * GameParameters::GravityMagnitude * -dwy);
             }
 
-            // Resultant scalar velocity along spring, outgoing only
-            springOutgoingScalarWaterVelocities[s] = std::max(
+            // Resultant scalar velocity along spring, outbound only
+            float const springOutboundScalarWaterVelocity = std::max(
                 pointVelocityAlongSpring + bernoulliVelocityAlongSpring * alphaCrazyness,
                 0.0f);
 
-            // TODOTEST1:accepted; do as follows:
-            // - "springOutgoingScalarWaterVelocities" == springOutgoingWaterFlowWeights
-            // - Do not scale the vector water velocity instead
-            springOutgoingScalarWaterVelocities[s] /= mSprings.GetRestLength(springIndex);
+            // Store weight along spring, scaling for the greater distance traveled along
+            // diagonalsprings
+            springOutboundWaterFlowWeights[s] = 
+                springOutboundScalarWaterVelocity
+                / mSprings.GetRestLength(springIndex);
 
-            // Resultant vector velocity along spring
-            springOutgoingVectorWaterVelocities[s] =
+            // Resultant outbound velocity along spring
+            springOutboundWaterVelocities[s] =
                 springNormalizedVector
-                * springOutgoingScalarWaterVelocities[s];
+                * springOutboundScalarWaterVelocity;
 
-            // Update total outgoing scalar velocity
-            totalOutgoingScalarWaterVelocity += springOutgoingScalarWaterVelocities[s];
+            // Update total outbound flow weight
+            totalOutboundWaterFlowWeight += springOutboundWaterFlowWeights[s];
 
             ////// TODOOLD
 
@@ -888,18 +890,11 @@ void Ship::UpdateWaterVelocities(
             // Update kinetic energy loss
             //
 
-            // Resultant (sane) velocity along spring
-            // TODOTEST: see if really needed - ain't it better with crazy one?
-            ////float saneSpringOutgoingScalarWaterVelocity = std::max(
-            ////    pointVelocityAlongSpring + bernoulliVelocityAlongSpring,
-            ////    0.0f);
-            float saneSpringOutgoingScalarWaterVelocity = springOutgoingScalarWaterVelocities[s];
-
             // Only if outbound
-            if (saneSpringOutgoingScalarWaterVelocity > 0.0f)
+            if (springOutboundScalarWaterVelocity > 0.0f)
             {
                 float ma = oldPointWaterBuffer[pointIndex];
-                float va = saneSpringOutgoingScalarWaterVelocity;
+                float va = springOutboundScalarWaterVelocity;
 
                 float mb;
                 float vb;
@@ -948,20 +943,20 @@ void Ship::UpdateWaterVelocities(
 
         //
         // 2) Calculate normalization factor for water flows:
-        //    the quantity of water along a spring is proportional to the resultant velocity
-        //    along that spring, and the sum of all outgoing water flows is the water currently
-        //    at the point times the quickness fractio
+        //    the quantity of water along a spring is proportional to the weight of the spring
+        //    (resultant velocity along that spring), and the sum of all outbound water flows must
+        //    match the water currently at the point times the quickness fractio
         //
 
-        assert(totalOutgoingScalarWaterVelocity >= 0.0f);
+        assert(totalOutboundWaterFlowWeight >= 0.0f);
 
         float waterQuantityNormalizationFactor = 0.0f;
-        if (totalOutgoingScalarWaterVelocity != 0.0f)
+        if (totalOutboundWaterFlowWeight != 0.0f)
         { 
             waterQuantityNormalizationFactor =
                 oldPointWaterBuffer[pointIndex]
                 * gameParameters.WaterQuickness
-                / totalOutgoingScalarWaterVelocity;
+                / totalOutboundWaterFlowWeight;
         }
 
 
@@ -980,11 +975,8 @@ void Ship::UpdateWaterVelocities(
 
             // Calculate quantity of water directed outwards
             float const springOutboundQuantityOfWater =
-                springOutgoingScalarWaterVelocities[s]
-                * waterQuantityNormalizationFactor
-                // TODOTEST
-                /// mSprings.GetRestLength(springIndex);
-                ;
+                springOutboundWaterFlowWeights[s]
+                * waterQuantityNormalizationFactor;
 
             assert(springOutboundQuantityOfWater >= 0.0f);
 
@@ -1005,7 +997,7 @@ void Ship::UpdateWaterVelocities(
 
                 // Add "new momentum" (old velocity + velocity gained) to other endpoint
                 newPointWaterMomentumBuffer[otherEndpointIndex] +=
-                    springOutgoingVectorWaterVelocities[s]
+                    springOutboundWaterVelocities[s]
                     * springOutboundQuantityOfWater;
             }
             else
@@ -1019,7 +1011,7 @@ void Ship::UpdateWaterVelocities(
                 //
 
                 newPointWaterMomentumBuffer[pointIndex] -=
-                    springOutgoingVectorWaterVelocities[s]
+                    springOutboundWaterVelocities[s]
                     * springOutboundQuantityOfWater;
             }
         }
