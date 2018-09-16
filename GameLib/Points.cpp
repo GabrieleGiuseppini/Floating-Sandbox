@@ -183,7 +183,7 @@ void Points::UploadVectors(
             mElementCount,
             mPositionBuffer.data(),
             mWaterMomentumBuffer.data(),
-            1.0f,
+            0.4f,
             VectorColor);
     }    
 }

@@ -743,8 +743,9 @@ void Ship::UpdateWaterVelocities(
     // Outgoing water velocities along each spring
     std::array<vec2f, GameParameters::MaxSpringsPerPoint> springOutgoingWaterVelocities;
 
-    // Outgoing quantity of water along each spring
+    // Outgoing quantity of water along each spring, along permeable and all springs
     std::array<float, GameParameters::MaxSpringsPerPoint> springOutgoingWaterQuantities;
+    std::array<float, GameParameters::MaxSpringsPerPoint> springDistributedWaterQuantities;
 
 
     //
@@ -766,7 +767,8 @@ void Ship::UpdateWaterVelocities(
         float const alphaCrazyness = 1.0f + gameParameters.WaterCrazyness * (oldPointWaterBuffer[pointIndex] - 1.0f);
 
         // Total quantity of water leaving this point, before normalization
-        float theoreticalTotalOutgoingWaterQuantity = 0.0f;
+        float theoreticalTotalOutgoingWaterQuantity = 0.0f; // Will move along permeable springs
+        float theoreticalTotalDistributedWaterQuantity = 0.0f; // Would move along all springs
 
         // Kinetic energy lost at this point
         float pointKineticEnergyLoss = 0.0f;
@@ -847,29 +849,44 @@ void Ship::UpdateWaterVelocities(
             theoreticalTotalOutgoingWaterQuantity += outgoingWaterQuantity;
 
 
+            // Store distributed flow
+            springDistributedWaterQuantities[s] = std::max(scalarWaterVelocity, 0.0f);
+
+            // Update theoretical distributed water quantity
+            theoreticalTotalDistributedWaterQuantity += std::max(scalarWaterVelocity, 0.0f);
+
             //
             // Update kinetic energy loss
             //
 
-            if (scalarWaterVelocity > 0.0f)
+            // TODOTEST
+            float saneScalarWaterVelocity =
+                (oldPointWaterVelocityBuffer[pointIndex] + dvb)
+                .dot(springNormalizedVector)
+                / mSprings.GetRestLength(springIndex);
+
+            // Only if outbound
+            if (saneScalarWaterVelocity > 0.0f)
             {
                 float ma = oldPointWaterBuffer[pointIndex];
-                float va = scalarWaterVelocity;
+                float va = saneScalarWaterVelocity;
 
                 float mb;
                 float vb;
                 if (mSprings.GetWaterPermeability(springIndex) == 0.0f)
                 {
+                    // Full absorption, final vf=0
                     mb = std::numeric_limits<float>::max();
                     vb = 0.0f;
                 }
                 else
-                {
+                {                    
                     mb = oldPointWaterBuffer[otherEndpointIndex];
                     vb = oldPointWaterVelocityBuffer[otherEndpointIndex]
                         .dot(springNormalizedVector);
                 }
 
+                // Perfectly inelastic
                 float vf = 0.0f;
                 if (ma + mb != 0.0f)
                     vf = (ma * va + mb * vb) / (ma + mb);
@@ -897,8 +914,6 @@ void Ship::UpdateWaterVelocities(
             pointSplashNeighbors += mSprings.GetWaterPermeability(springIndex);
         }
 
-        // The total and each component are all non-negative
-        assert(totalOutgoingWaterQuantity >= 0.0f);
 
 
         //
@@ -908,16 +923,25 @@ void Ship::UpdateWaterVelocities(
         //
 
         float actualTotalOutgoingWaterQuantity = 0.0f;
-        float normalizationFactor = 0.0f;        
+        float outgoingWaterNormalizationFactor = 0.0f;        
         if (theoreticalTotalOutgoingWaterQuantity > 0.0f)
         {
             actualTotalOutgoingWaterQuantity =
                 oldPointWaterBuffer[pointIndex]
                 * gameParameters.WaterQuickness;
 
-            normalizationFactor = 
+            outgoingWaterNormalizationFactor =
                 actualTotalOutgoingWaterQuantity
                 / theoreticalTotalOutgoingWaterQuantity;
+        }
+
+        float distributedWaterNormalizationFactor = 0.0f;
+        if (theoreticalTotalDistributedWaterQuantity > 0.0f)
+        {
+            distributedWaterNormalizationFactor =
+                oldPointWaterBuffer[pointIndex]
+                * gameParameters.WaterQuickness
+                / theoreticalTotalDistributedWaterQuantity;
         }
 
         //
@@ -927,8 +951,10 @@ void Ship::UpdateWaterVelocities(
 
         for (size_t s = 0; s < mPoints.GetConnectedSprings(pointIndex).size(); ++s)
         {
+            auto const springIndex = mPoints.GetConnectedSprings(pointIndex)[s];
+
             auto const otherEndpointIndex = mSprings.GetOtherEndpointIndex(
-                mPoints.GetConnectedSprings(pointIndex)[s],
+                springIndex,
                 pointIndex);
 
 
@@ -938,7 +964,7 @@ void Ship::UpdateWaterVelocities(
 
             float normalizedOutgoingWaterQuantity =
                 springOutgoingWaterQuantities[s]
-                * normalizationFactor;
+                * outgoingWaterNormalizationFactor;
 
             assert(normalizedOutgoingWaterQuantity >= 0.0f);
 
@@ -953,6 +979,21 @@ void Ship::UpdateWaterVelocities(
             newPointWaterMomentumBuffer[otherEndpointIndex] +=
                 springOutgoingWaterVelocities[s]
                 * normalizedOutgoingWaterQuantity;
+
+
+            //
+            // TODOTEST: Impact with walls
+            //
+
+            if (mSprings.GetWaterPermeability(springIndex) == 0.0f)
+            {
+                // TODO: this is perfectly inelastic; have game parameter
+                // that ends up multiply this with 1..2 (inelastic..elastic)
+                newPointWaterMomentumBuffer[pointIndex] -=
+                    springOutgoingWaterVelocities[s]
+                    * springDistributedWaterQuantities[s]
+                    * distributedWaterNormalizationFactor;
+            }
         }
 
 
