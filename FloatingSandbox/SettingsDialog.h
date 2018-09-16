@@ -36,8 +36,9 @@ private:
 
     void OnSeeShipThroughSeaWaterCheckBoxClick(wxCommandEvent & event);
     void OnShipRenderModeRadioBox(wxCommandEvent & event);
+    void OnVectorFieldRenderModeRadioBox(wxCommandEvent & event);
     void OnShowStressCheckBoxClick(wxCommandEvent & event);
-
+    
     void OnPlaySinkingMusicCheckBoxClick(wxCommandEvent & event);
 
     void OnOkButton(wxCommandEvent & event);
@@ -72,6 +73,7 @@ private:
     std::unique_ptr<SliderControl> mSeaWaterTransparencySlider;
     wxCheckBox * mSeeShipThroughSeaWaterCheckBox;
     wxRadioBox * mShipRenderModeRadioBox;
+    wxRadioBox * mVectorFieldRenderModeRadioBox;
     wxCheckBox* mShowStressCheckBox;
 
     // Sound

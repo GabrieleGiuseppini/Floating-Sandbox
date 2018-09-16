@@ -6,6 +6,7 @@
 #include "ShipRenderContext.h"
 
 #include "GameException.h"
+#include "GameMath.h"
 
 ShipRenderContext::ShipRenderContext(
     std::optional<ImageData> texture,
@@ -52,6 +53,9 @@ ShipRenderContext::ShipRenderContext(
     , mPinnedPointVBO()
     , mBombElementBuffer()
     , mBombVBO()
+    // Vectors
+    , mVectorArrowPointPositionBuffer()
+    , mVectorArrowPointPositionVBO()
     // Texture
     , mElementTexture()
     , mElementStressedSpringTexture()
@@ -639,6 +643,60 @@ ShipRenderContext::ShipRenderContext(
     // Unbind VBO
     glBindBuffer(GL_ARRAY_BUFFER, 0u);
 
+
+    //
+    // Create vectors program
+    //
+
+    // Create program
+
+    mVectorArrowShaderProgram = glCreateProgram();
+
+    char const * vectorArrowVertexShaderSource = R"(
+
+        // Inputs
+        attribute vec2 inputPos;
+        
+        // Params
+        uniform mat4 paramOrthoMatrix;
+
+        void main()
+        {
+            gl_Position = paramOrthoMatrix * vec4(inputPos.xy, -1.0, 1.0);            
+        }
+    )";
+
+    GameOpenGL::CompileShader(vectorArrowVertexShaderSource, GL_VERTEX_SHADER, mVectorArrowShaderProgram);
+
+    char const * vectorArrowFragmentShaderSource = R"(
+
+        // Parameters        
+        uniform vec3 paramColor;
+
+        void main()
+        {
+            gl_FragColor = vec4(paramColor.xyz, 1.0);
+        } 
+    )";
+
+    GameOpenGL::CompileShader(vectorArrowFragmentShaderSource, GL_FRAGMENT_SHADER, mVectorArrowShaderProgram);
+
+    // Bind attribute locations
+    glBindAttribLocation(*mVectorArrowShaderProgram, VectorArrowPosVertexAttribute, "inputPos");
+
+    // Link
+    GameOpenGL::LinkShaderProgram(mVectorArrowShaderProgram, "Vector Arrow");
+
+    // Get uniform locations
+    mVectorArrowShaderOrthoMatrixParameter = GameOpenGL::GetParameterLocation(mVectorArrowShaderProgram, "paramOrthoMatrix");
+    mVectorArrowShaderColorParameter = GameOpenGL::GetParameterLocation(mVectorArrowShaderProgram, "paramColor");
+
+    // Create VBO
+    GLuint vectorArrowPointPositionVBO;
+    glGenBuffers(1, &vectorArrowPointPositionVBO);
+    mVectorArrowPointPositionVBO = vectorArrowPointPositionVBO;
+
+
     //
     // Set parameters to initial values
     //
@@ -684,6 +742,9 @@ void ShipRenderContext::UpdateOrthoMatrix(float const(&orthoMatrix)[4][4])
 
     glUseProgram(*mElementPinnedPointShaderProgram);
     glUniformMatrix4fv(mElementPinnedPointShaderOrthoMatrixParameter, 1, GL_FALSE, &(orthoMatrix[0][0]));
+
+    glUseProgram(*mVectorArrowShaderProgram);
+    glUniformMatrix4fv(mVectorArrowShaderOrthoMatrixParameter, 1, GL_FALSE, &(orthoMatrix[0][0]));
 
     glUseProgram(0);
 }
@@ -1037,6 +1098,68 @@ void ShipRenderContext::UploadElementBombsEnd()
     glBufferData(GL_ARRAY_BUFFER, mBombElementBuffer.size() * sizeof(BombElement), mBombElementBuffer.data(), GL_STATIC_DRAW);
 }
 
+void ShipRenderContext::UploadVectors(
+    size_t count,
+    vec2f const * restrict position,
+    vec2f const * restrict vector,
+    float lengthAdjustment,
+    vec3f const & color)
+{
+    static float const CosAlphaLeftRight = cos(-2.f * Pi<float> / 8.f);
+    static float const SinAlphaLeft = sin(-2.f * Pi<float> / 8.f);
+    static float const SinAlphaRight = -SinAlphaLeft;
+
+    static vec2f const XMatrixLeft = vec2f(CosAlphaLeftRight, SinAlphaLeft);
+    static vec2f const YMatrixLeft = vec2f(-SinAlphaLeft, CosAlphaLeftRight);
+    static vec2f const XMatrixRight = vec2f(CosAlphaLeftRight, SinAlphaRight);
+    static vec2f const YMatrixRight = vec2f(-SinAlphaRight, CosAlphaLeftRight);
+
+    //
+    // Create buffer with endpoint positions of each segment of each arrow
+    //
+
+    mVectorArrowPointPositionBuffer.clear();
+    mVectorArrowPointPositionBuffer.reserve(count * 3 * 2);
+
+    for (size_t i = 0; i < count; ++i)
+    {
+        // Stem
+        vec2f stemEndpoint = position[i] + vector[i] * lengthAdjustment;
+        mVectorArrowPointPositionBuffer.push_back(position[i]);
+        mVectorArrowPointPositionBuffer.push_back(stemEndpoint);
+
+        // Left
+        vec2f leftDir = vec2f(-vector[i].dot(XMatrixLeft), -vector[i].dot(YMatrixLeft)).normalise();
+        mVectorArrowPointPositionBuffer.push_back(stemEndpoint);
+        mVectorArrowPointPositionBuffer.push_back(stemEndpoint + leftDir * 0.2f);
+
+        // Right
+        vec2f rightDir = vec2f(-vector[i].dot(XMatrixRight), -vector[i].dot(YMatrixRight)).normalise();
+        mVectorArrowPointPositionBuffer.push_back(stemEndpoint);
+        mVectorArrowPointPositionBuffer.push_back(stemEndpoint + rightDir * 0.2f);
+    }
+
+
+    //
+    // Upload buffer
+    //
+
+    glBindBuffer(GL_ARRAY_BUFFER, *mVectorArrowPointPositionVBO);
+    glBufferData(GL_ARRAY_BUFFER, mVectorArrowPointPositionBuffer.size() * sizeof(vec2f), mVectorArrowPointPositionBuffer.data(), GL_STREAM_DRAW);
+    glVertexAttribPointer(VectorArrowPosVertexAttribute, 2, GL_FLOAT, GL_FALSE, sizeof(vec2f), (void*)(0));
+    glEnableVertexAttribArray(VectorArrowPosVertexAttribute);
+    glBindBuffer(GL_ARRAY_BUFFER, 0u);
+
+
+    //
+    // Set color parameter
+    //
+
+    glUseProgram(*mVectorArrowShaderProgram);
+    glUniform3f(mVectorArrowShaderColorParameter, color.x, color.y, color.z);
+    glUseProgram(0);
+}
+
 void ShipRenderContext::UploadLampsStart(size_t connectedComponents)
 {
     mLampBuffers.clear();
@@ -1049,7 +1172,8 @@ void ShipRenderContext::UploadLampsEnd()
 }
 
 void ShipRenderContext::Render(
-    ShipRenderMode renderMode,
+    ShipRenderMode shipRenderMode,
+    VectorFieldRenderMode vectorFieldRenderMode,
     bool showStressedSprings)
 {
     //
@@ -1062,7 +1186,7 @@ void ShipRenderContext::Render(
         // Draw points
         //
 
-        if (renderMode == ShipRenderMode::Points)
+        if (shipRenderMode == ShipRenderMode::Points)
         {
             RenderPointElements(mConnectedComponents[c]);
         }
@@ -1077,13 +1201,13 @@ void ShipRenderContext::Render(
         // - RenderMode is texture (so to draw 1D chains), in which case we use texture iff it is present
         //
 
-        if (renderMode == ShipRenderMode::Springs
-            || renderMode == ShipRenderMode::Structure
-            || renderMode == ShipRenderMode::Texture)
+        if (shipRenderMode == ShipRenderMode::Springs
+            || shipRenderMode == ShipRenderMode::Structure
+            || shipRenderMode == ShipRenderMode::Texture)
         {
             RenderSpringElements(
                 mConnectedComponents[c],
-                renderMode == ShipRenderMode::Texture);
+                shipRenderMode == ShipRenderMode::Texture);
         }
 
 
@@ -1093,8 +1217,8 @@ void ShipRenderContext::Render(
         // - Texture (so rope endpoints are hidden behind texture, looks better)
         //
 
-        if (renderMode == ShipRenderMode::Springs
-            || renderMode == ShipRenderMode::Texture)
+        if (shipRenderMode == ShipRenderMode::Springs
+            || shipRenderMode == ShipRenderMode::Texture)
         {
             RenderRopeElements(mConnectedComponents[c]);
         }
@@ -1104,12 +1228,12 @@ void ShipRenderContext::Render(
         // Draw triangles
         //
 
-        if (renderMode == ShipRenderMode::Structure
-            || renderMode == ShipRenderMode::Texture)
+        if (shipRenderMode == ShipRenderMode::Structure
+            || shipRenderMode == ShipRenderMode::Texture)
         {
             RenderTriangleElements(
                 mConnectedComponents[c],
-                renderMode == ShipRenderMode::Texture);
+                shipRenderMode == ShipRenderMode::Texture);
         }
 
 
@@ -1117,7 +1241,7 @@ void ShipRenderContext::Render(
         // Draw ropes now if RenderMode is Structure (so rope endpoints on the structure are visible)
         //
 
-        if (renderMode == ShipRenderMode::Structure)
+        if (shipRenderMode == ShipRenderMode::Structure)
         {
             RenderRopeElements(mConnectedComponents[c]);
         }
@@ -1145,6 +1269,16 @@ void ShipRenderContext::Render(
         //
 
         RenderPinnedPointElements(mConnectedComponents[c]);
+    }
+
+
+    //
+    // Render vectors, if we're asked to
+    //
+
+    if (vectorFieldRenderMode != VectorFieldRenderMode::None)
+    {
+        RenderVectors();
     }
 }
 
@@ -1378,6 +1512,24 @@ void ShipRenderContext::RenderPinnedPointElements(ConnectedComponentData const &
     // Unbind texture
     glBindTexture(GL_TEXTURE_2D, 0);
 
+    // Stop using program
+    glUseProgram(0);
+}
+
+void ShipRenderContext::RenderVectors()
+{
+    // Use vector arrow program
+    glUseProgram(*mVectorArrowShaderProgram);
+    
+    // Bind VBO
+    glBindBuffer(GL_ARRAY_BUFFER, *mVectorArrowPointPositionVBO);
+
+    // Set line size
+    glLineWidth(0.5f);
+
+    // Draw
+    glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(mVectorArrowPointPositionBuffer.size()));
+    
     // Stop using program
     glUseProgram(0);
 }

@@ -376,6 +376,14 @@ void Ship::Render(
         renderContext);
 
     //
+    // Upload point vectors
+    //
+
+    mPoints.UploadVectors(
+        mId,
+        renderContext);
+
+    //
     // Render ship
     //
 

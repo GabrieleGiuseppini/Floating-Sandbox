@@ -141,6 +141,10 @@ public:
         int shipId,
         RenderContext & renderContext) const;
 
+    void UploadVectors(
+        int shipId,
+        RenderContext & renderContext) const;
+
 public:
 
     //

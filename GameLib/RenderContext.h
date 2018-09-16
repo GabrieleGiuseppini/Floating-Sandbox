@@ -172,6 +172,26 @@ public:
         mShipRenderMode = shipRenderMode;
     }
 
+    VectorFieldRenderMode GetVectorFieldRenderMode() const
+    {
+        return mVectorFieldRenderMode;
+    }
+
+    void SetVectorFieldRenderMode(VectorFieldRenderMode vectorFieldRenderMode)
+    {
+        mVectorFieldRenderMode = vectorFieldRenderMode;
+    }
+
+    float GetVectorFieldLengthMultiplier() const
+    {
+        return mVectorFieldLengthMultiplier;
+    }
+
+    void SetVectorFieldLengthMultiplier(float vectorFieldLengthMultiplier)
+    {
+        mVectorFieldLengthMultiplier = vectorFieldLengthMultiplier;
+    }
+
     bool GetShowStressedSprings() const
     {
         return mShowStressedSprings;
@@ -546,6 +566,28 @@ public:
     }
 
     //
+    // Vectors
+    //
+
+    void UploadShipVectors(
+        int shipId,
+        size_t count,
+        vec2f const * restrict position,
+        vec2f const * restrict vector,
+        float lengthAdjustment,
+        vec3f const & color)
+    {
+        assert(shipId < mShips.size());
+
+        mShips[shipId]->UploadVectors(
+            count,
+            position,
+            vector,
+            lengthAdjustment * mVectorFieldLengthMultiplier,
+            color);
+    }
+
+    //
     // Lamps
     //
 
@@ -587,6 +629,7 @@ public:
 
         mShips[shipId]->Render(
             mShipRenderMode,
+            mVectorFieldRenderMode,
             mShowStressedSprings);
     }
 
@@ -768,5 +811,7 @@ private:
     bool mShowShipThroughSeaWater;
     float mWaterLevelOfDetail;
     ShipRenderMode mShipRenderMode;
+    VectorFieldRenderMode mVectorFieldRenderMode;
+    float mVectorFieldLengthMultiplier;
     bool mShowStressedSprings;
 };

@@ -212,6 +212,12 @@ void SettingsDialog::OnShipRenderModeRadioBox(wxCommandEvent & /*event*/)
     mApplyButton->Enable(true);
 }
 
+void SettingsDialog::OnVectorFieldRenderModeRadioBox(wxCommandEvent & /*event*/)
+{
+    // Remember we're dirty now
+    mApplyButton->Enable(true);
+}
+
 void SettingsDialog::OnShowStressCheckBoxClick(wxCommandEvent & /*event*/)
 {
     // Remember we're dirty now
@@ -310,6 +316,25 @@ void SettingsDialog::ApplySettings()
     {
         assert(3 == selectedShipRenderMode);
         mGameController->SetShipRenderMode(ShipRenderMode::Texture);
+    }
+
+    auto selectedVectorFieldRenderMode = mVectorFieldRenderModeRadioBox->GetSelection();
+    if (0 == selectedVectorFieldRenderMode)
+    {
+        mGameController->SetVectorFieldRenderMode(VectorFieldRenderMode::None);
+    }
+    else if (1 == selectedVectorFieldRenderMode)
+    {
+        mGameController->SetVectorFieldRenderMode(VectorFieldRenderMode::PointVelocity);
+    }
+    else if (2 == selectedVectorFieldRenderMode)
+    {
+        mGameController->SetVectorFieldRenderMode(VectorFieldRenderMode::PointWaterVelocity);
+    }
+    else
+    {
+        assert(3 == selectedVectorFieldRenderMode);
+        mGameController->SetVectorFieldRenderMode(VectorFieldRenderMode::PointWaterMomentum);
     }
 
     mGameController->SetShowShipStress(mShowStressCheckBox->IsChecked());
@@ -639,10 +664,12 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
     wxStaticBoxSizer* checkboxesSizer = new wxStaticBoxSizer(wxVERTICAL, panel);
 
+
     mSeeShipThroughSeaWaterCheckBox = new wxCheckBox(panel, ID_SEE_SHIP_THROUGH_SEA_WATER_CHECKBOX, _("See Ship Through Water"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T(""));
     Connect(ID_SEE_SHIP_THROUGH_SEA_WATER_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnSeeShipThroughSeaWaterCheckBoxClick);
 
     checkboxesSizer->Add(mSeeShipThroughSeaWaterCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
+
 
     wxString shipRenderModeChoices[] =
     {
@@ -657,6 +684,22 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
     Connect(mShipRenderModeRadioBox->GetId(), wxEVT_RADIOBOX, (wxObjectEventFunction)&SettingsDialog::OnShipRenderModeRadioBox);
     
     checkboxesSizer->Add(mShipRenderModeRadioBox, 0, wxALL | wxALIGN_LEFT, 5);
+
+
+    wxString vectorFieldRenderModeChoices[] =
+    {
+        _("None"),
+        _("Point Velocities"),
+        _("Point Water Velocities"),
+        _("Point Water Momenta")
+    };
+
+    mVectorFieldRenderModeRadioBox = new wxRadioBox(panel, wxID_ANY, _("Vector Field Draw Options"), wxDefaultPosition, wxSize(-1,-1),
+        WXSIZEOF(vectorFieldRenderModeChoices), vectorFieldRenderModeChoices, 1, wxRA_SPECIFY_COLS);
+    Connect(mVectorFieldRenderModeRadioBox->GetId(), wxEVT_RADIOBOX, (wxObjectEventFunction)&SettingsDialog::OnVectorFieldRenderModeRadioBox);
+
+    checkboxesSizer->Add(mVectorFieldRenderModeRadioBox, 0, wxALL | wxALIGN_LEFT, 5);
+
 
     mShowStressCheckBox = new wxCheckBox(panel, ID_SHOW_STRESS_CHECKBOX, _("Show Stress"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Show Stress Checkbox"));
     Connect(ID_SHOW_STRESS_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnShowStressCheckBoxClick);
@@ -759,6 +802,34 @@ void SettingsDialog::ReadSettings()
         case ShipRenderMode::Texture:
         {
             mShipRenderModeRadioBox->SetSelection(3);
+            break;
+        }
+    }
+
+    auto vectorFieldRenderMode = mGameController->GetVectorFieldRenderMode();
+    switch (vectorFieldRenderMode)
+    {
+    case VectorFieldRenderMode::None:
+        {
+            mVectorFieldRenderModeRadioBox->SetSelection(0);
+            break;
+        }
+
+        case VectorFieldRenderMode::PointVelocity:
+        {
+            mVectorFieldRenderModeRadioBox->SetSelection(1);
+            break;
+        }
+
+        case VectorFieldRenderMode::PointWaterVelocity:
+        {
+            mVectorFieldRenderModeRadioBox->SetSelection(2);
+            break;
+        }
+
+        case VectorFieldRenderMode::PointWaterMomentum:
+        {
+            mVectorFieldRenderModeRadioBox->SetSelection(3);
             break;
         }
     }

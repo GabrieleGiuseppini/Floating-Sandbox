@@ -15,7 +15,10 @@ public:
 	
     float x, y;
 
-    static constexpr const vec2f zero() { return vec2f(); }
+    static constexpr const vec2f zero() 
+    { 
+        return vec2f(); 
+    }
 
 	inline vec2f operator+(vec2f const & rhs) const
 	{

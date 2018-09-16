@@ -190,6 +190,9 @@ public:
     ShipRenderMode GetShipRenderMode() const { return mRenderContext->GetShipRenderMode(); }
     void SetShipRenderMode(ShipRenderMode shipRenderMode) { mRenderContext->SetShipRenderMode(shipRenderMode); }
 
+    VectorFieldRenderMode GetVectorFieldRenderMode() const { return mRenderContext->GetVectorFieldRenderMode(); }
+    void SetVectorFieldRenderMode(VectorFieldRenderMode VectorFieldRenderMode) { mRenderContext->SetVectorFieldRenderMode(VectorFieldRenderMode); }
+
     bool GetShowShipStress() const { return mRenderContext->GetShowStressedSprings(); }
     void SetShowShipStress(bool value) { mRenderContext->SetShowStressedSprings(value); }
 

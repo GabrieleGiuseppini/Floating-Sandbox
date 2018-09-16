@@ -69,6 +69,8 @@ RenderContext::RenderContext(
     , mShowShipThroughSeaWater(false)
     , mWaterLevelOfDetail(0.6875f)
     , mShipRenderMode(ShipRenderMode::Texture)
+    , mVectorFieldRenderMode(VectorFieldRenderMode::None)
+    , mVectorFieldLengthMultiplier(1.0f)
     , mShowStressedSprings(false)
 {
     GLuint tmpGLuint;

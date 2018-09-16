@@ -56,7 +56,8 @@ private:
     //
 
     wxBoxSizer * mMainFrameSizer;
-    wxMenuItem * mPauseMenuItem;    
+    wxMenuItem * mPauseMenuItem;
+    wxMenuItem * mStepMenuItem;
     wxMenu * mToolsMenu;
     wxMenuItem * mRCBombsDetonateMenuItem;
     wxMenuItem * mShowEventTickerMenuItem;
@@ -113,6 +114,7 @@ private:
     void OnAmbientLightUpMenuItemSelected(wxCommandEvent& event);
     void OnAmbientLightDownMenuItemSelected(wxCommandEvent& event);
     void OnPauseMenuItemSelected(wxCommandEvent& event);
+    void OnStepMenuItemSelected(wxCommandEvent& event);
     void OnResetViewMenuItemSelected(wxCommandEvent& event);    
     void OnLoadShipMenuItemSelected(wxCommandEvent& event);
     void OnReloadLastShipMenuItemSelected(wxCommandEvent& event);
@@ -203,6 +205,7 @@ private:
     std::vector<std::string> mCurrentShipNames;
     size_t mCurrentRCBombCount;
     bool mIsShiftKeyDown;
+    bool mIsNextFrameAllowedToStep;
 
 
     //

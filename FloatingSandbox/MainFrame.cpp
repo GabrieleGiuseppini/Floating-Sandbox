@@ -35,6 +35,7 @@ const long ID_ZOOM_OUT_MENUITEM = wxNewId();
 const long ID_AMBIENT_LIGHT_UP_MENUITEM = wxNewId();
 const long ID_AMBIENT_LIGHT_DOWN_MENUITEM = wxNewId();
 const long ID_PAUSE_MENUITEM = wxNewId();
+const long ID_STEP_MENUITEM = wxNewId();
 const long ID_RESET_VIEW_MENUITEM = wxNewId();
 
 const long ID_SMASH_MENUITEM = wxNewId();
@@ -71,6 +72,7 @@ MainFrame::MainFrame(wxApp * mainApp)
     , mCurrentShipNames()
     , mCurrentRCBombCount(0u)
     , mIsShiftKeyDown(false)
+    , mIsNextFrameAllowedToStep(false)
     // Stats
     , mTotalFrameCount(0u)
     , mLastFrameCount(0u)
@@ -195,6 +197,11 @@ MainFrame::MainFrame(wxApp * mainApp)
     controlsMenu->Append(mPauseMenuItem);
     mPauseMenuItem->Check(false);
     Connect(ID_PAUSE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnPauseMenuItemSelected);
+
+    mStepMenuItem = new wxMenuItem(controlsMenu, ID_STEP_MENUITEM, _("Step\tEnter"), _("Step one frame at a time"), wxITEM_NORMAL);
+    mStepMenuItem->Enable(false);
+    controlsMenu->Append(mStepMenuItem);
+    Connect(ID_STEP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnStepMenuItemSelected);
 
     controlsMenu->Append(new wxMenuItem(controlsMenu, wxID_SEPARATOR));
 
@@ -758,6 +765,8 @@ void MainFrame::OnPauseMenuItemSelected(wxCommandEvent & /*event*/)
 
         if (!!mSoundController)
             mSoundController->SetPaused(true);
+
+        mStepMenuItem->Enable(true);
     }
     else
     { 
@@ -765,7 +774,14 @@ void MainFrame::OnPauseMenuItemSelected(wxCommandEvent & /*event*/)
 
         if (!!mSoundController)
             mSoundController->SetPaused(false);
+
+        mStepMenuItem->Enable(false);
     }
+}
+
+void MainFrame::OnStepMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    mIsNextFrameAllowedToStep = true;
 }
 
 void MainFrame::OnResetViewMenuItemSelected(wxCommandEvent & /*event*/)
@@ -1002,8 +1018,10 @@ void MainFrame::DoGameStep()
     mToolController->Update();
 
     // Do a simulation step
-    if (!IsPaused())
+    if (!IsPaused() || mIsNextFrameAllowedToStep)
     {
+        mIsNextFrameAllowedToStep = false;
+
         assert(!!mGameController);
         mGameController->Update();
     }

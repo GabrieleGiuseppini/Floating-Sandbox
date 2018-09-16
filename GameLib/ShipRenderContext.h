@@ -316,6 +316,16 @@ public:
 
     void UploadElementBombsEnd();
 
+    //
+    // Vectors
+    //
+
+    void UploadVectors(
+        size_t count,
+        vec2f const * restrict position,
+        vec2f const * restrict vector,
+        float lengthAdjustment,
+        vec3f const & color);
 
     //
     // Lamps
@@ -346,7 +356,8 @@ public:
     /////////////////////////////////////////////////////////////
 
     void Render(
-        ShipRenderMode renderMode,
+        ShipRenderMode shipRenderMode,
+        VectorFieldRenderMode vectorFieldRenderMode,
         bool showStressedSprings);
 
 private:
@@ -371,6 +382,7 @@ private:
 
     void RenderPinnedPointElements(ConnectedComponentData const & connectedComponent);
 
+    void RenderVectors();
 
 private:
 
@@ -390,6 +402,7 @@ private:
     static constexpr GLuint PinnedPointTextureCoordinatesVertexAttribute = 6;
     static constexpr GLuint BombPosVertexAttribute = 7;
     static constexpr GLuint BombTextureCoordinatesVertexAttribute = 8;
+    static constexpr GLuint VectorArrowPosVertexAttribute = 9;
 
 private:
 
@@ -621,6 +634,16 @@ private:
 
     std::vector<BombElement> mBombElementBuffer;
     GameOpenGLVBO mBombVBO;
+
+    //
+    // Vectors
+    //
+
+    std::vector<vec2f> mVectorArrowPointPositionBuffer;
+    GameOpenGLVBO mVectorArrowPointPositionVBO;
+    GameOpenGLShaderProgram mVectorArrowShaderProgram;
+    GLint mVectorArrowShaderOrthoMatrixParameter;
+    GLint mVectorArrowShaderColorParameter;
 
     //
     // Textures
