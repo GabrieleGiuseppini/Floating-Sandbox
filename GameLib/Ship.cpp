@@ -820,7 +820,11 @@ void Ship::UpdateWaterVelocities(
                 bernoulliVelocityAlongSpring = -sqrtf(2.0f * GameParameters::GravityMagnitude * -dwy);
             }
 
-            // Resultant scalar velocity along spring, outbound only
+            // Resultant scalar velocity along spring; outbound only, as
+            // if this were inbound it wouldn't result in any water movement
+            // between these two springs. Morevoer, Bernoulli's velocity injected
+            // along this spring will be picked up later also by the other endpoint,
+            // and at that time it would move water if it agrees with its velocity
             float const springOutboundScalarWaterVelocity = std::max(
                 pointVelocityAlongSpring + bernoulliVelocityAlongSpring * alphaCrazyness,
                 0.0f);
