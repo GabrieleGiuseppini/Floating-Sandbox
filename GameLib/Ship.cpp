@@ -839,52 +839,6 @@ void Ship::UpdateWaterVelocities(
             // Update total outbound flow weight
             totalOutboundWaterFlowWeight += springOutboundWaterFlowWeights[s];
 
-            ////// TODOOLD
-
-            //////
-            ////// Now calculate outflow from this point along this spring due to both this velocity
-            ////// and to the prior point's velocity
-            //////
-
-            ////// Resultant scalar water velocity along the spring
-            ////float scalarWaterVelocity =
-            ////    (oldPointWaterVelocityBuffer[pointIndex] + dvb * alphaCrazyness)
-            ////    .dot(springNormalizedVector)
-            ////    / mSprings.GetRestLength(springIndex);
-
-            ////// Resultant vector water velocity along the spring
-            ////springOutgoingWaterVelocities[s] =
-            ////    springNormalizedVector
-            ////    * scalarWaterVelocity;
-
-            ////// Outflow (point -> other endpoint) due to this velocity, before
-            ////// normalization; in reality we will distribute all the non-retained water 
-            ////// in this point among all the outgoing springs in proportion to these quantities
-            ////float outgoingWaterQuantity =
-            ////    scalarWaterVelocity
-            ////    * mSprings.GetWaterPermeability(springIndex);
-            ////    
-            ////// We only consider outgoing flows
-            ////outgoingWaterQuantity = std::max(outgoingWaterQuantity, 0.0f);
-
-            ////// Store outgoing flow
-            ////springOutgoingWaterQuantities[s] = outgoingWaterQuantity;
-
-            ////// Update theoretical total outgoing water quantity
-            ////theoreticalTotalOutgoingWaterQuantity += outgoingWaterQuantity;
-
-
-            ////// Store distributed and bounced flows
-            ////springDistributedWaterQuantities[s] = std::max(scalarWaterVelocity, 0.0f);
-            ////springBouncedWaterQuantities[s] = 
-            ////    std::max(scalarWaterVelocity, 0.0f)
-            ////    * (1.0f - mSprings.GetWaterPermeability(springIndex));
-
-            ////// Update theoretical distributed and bounced water quantities
-            ////theoreticalTotalDistributedWaterQuantity += std::max(scalarWaterVelocity, 0.0f);
-            ////theoreticalTotalBouncedWaterQuantity +=
-            ////    std::max(scalarWaterVelocity, 0.0f)
-            ////    * (1.0f - mSprings.GetWaterPermeability(springIndex));
 
             //
             // Update kinetic energy loss
@@ -1006,8 +960,8 @@ void Ship::UpdateWaterVelocities(
                 assert(!mSprings.IsDeleted(springIndex));
 
                 //
-                // New momentum (old velocity + velocity gained) bounces back,
-                // assuming perfectly inelastic collision
+                // New momentum (old velocity + velocity gained) bounces back 
+                // (and zeroes outgoing), assuming perfectly inelastic collision
                 //
 
                 newPointWaterMomentumBuffer[pointIndex] -=
