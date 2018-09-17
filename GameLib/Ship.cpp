@@ -845,52 +845,8 @@ void Ship::UpdateWaterVelocities(
 
 
             //
-            // Update kinetic energy loss
-            //
-
-            // Only if outbound
-            if (springOutboundScalarWaterVelocity > 0.0f)
-            {
-                float ma = oldPointWaterBuffer[pointIndex];
-                float va = springOutboundScalarWaterVelocity;
-
-                float mb;
-                float vb;
-                if (mSprings.GetWaterPermeability(springIndex) == 0.0f)
-                {
-                    // Full absorption, final vf=0
-                    mb = std::numeric_limits<float>::max();
-                    vb = 0.0f;
-                }
-                else
-                {                    
-                    mb = oldPointWaterBuffer[otherEndpointIndex];
-                    vb = oldPointWaterVelocityBuffer[otherEndpointIndex]
-                        .dot(springNormalizedVector);
-                }
-
-                // Perfectly inelastic
-                float vf = 0.0f;
-                if (ma + mb != 0.0f)
-                    vf = (ma * va + mb * vb) / (ma + mb);
-
-                float deltaT1 =
-                    0.5f
-                    * ma
-                    * (va * va - vf * vf);
-
-                float deltaT2 =
-                    0.5f
-                    * mb
-                    * (vb * vb - vf * vf);
-
-                // TODOTEST
-                //pointKineticEnergyLoss += std::max(deltaT1 + deltaT2, 0.0f);
-                pointKineticEnergyLoss += std::max(deltaT1, 0.0f);
-            }
-
-
             // Update splash neighbors counts
+            //
 
             pointSplashFreeNeighbors +=
                 mSprings.GetWaterPermeability(springIndex)
@@ -959,6 +915,31 @@ void Ship::UpdateWaterVelocities(
                 newPointWaterMomentumBuffer[otherEndpointIndex] +=
                     springOutboundWaterVelocities[s]
                     * springOutboundQuantityOfWater;
+
+
+                //
+                // Update point's kinetic energy loss:
+                // splintered water colliding with whole other endpoint
+                //
+
+                vec2f const springNormalizedVector = (mPoints.GetPosition(otherEndpointIndex) - mPoints.GetPosition(pointIndex)).normalise();
+
+                float ma = springOutboundQuantityOfWater;
+                float va = springOutboundWaterVelocities[s].length();
+                float mb = oldPointWaterBuffer[otherEndpointIndex];
+                float vb = oldPointWaterVelocityBuffer[otherEndpointIndex].dot(springNormalizedVector);
+
+                float vf = 0.0f;
+                if (ma + mb != 0.0f)
+                    vf = (ma * va + mb * vb) / (ma + mb);
+
+                float deltaKa =
+                    0.5f
+                    * ma
+                    * (va * va - vf * vf);
+
+                assert(deltaKa >= 0.0f);
+                pointKineticEnergyLoss += std::max(deltaKa, 0.0f);
             }
             else
             {
@@ -966,13 +947,32 @@ void Ship::UpdateWaterVelocities(
                 assert(!mSprings.IsDeleted(springIndex));
 
                 //
-                // New momentum (old velocity + velocity gained) bounces back 
+                // New momentum (old velocity + velocity gained) bounces back
                 // (and zeroes outgoing), assuming perfectly inelastic collision
                 //
 
                 newPointWaterMomentumBuffer[pointIndex] -=
                     springOutboundWaterVelocities[s]
                     * springOutboundQuantityOfWater;
+
+
+                //
+                // Update point's kinetic energy loss:
+                // entire splintered water
+                //
+
+                vec2f const springNormalizedVector = (mPoints.GetPosition(otherEndpointIndex) - mPoints.GetPosition(pointIndex)).normalise();
+
+                float ma = springOutboundQuantityOfWater;
+                float va = springOutboundWaterVelocities[s].length();
+
+                float deltaKa =
+                    0.5f
+                    * ma
+                    * va * va;
+
+                assert(deltaKa >= 0.0f);
+                pointKineticEnergyLoss += std::max(deltaKa, 0.0f);
             }
         }
 
