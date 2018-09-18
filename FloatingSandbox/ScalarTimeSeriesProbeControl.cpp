@@ -70,6 +70,8 @@ void ScalarTimeSeriesProbeControl::Reset()
 
     mMaxValue = std::numeric_limits<float>::lowest();
     mMinValue = std::numeric_limits<float>::max();
+
+    mGridValueSize = 0.0f;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -123,9 +125,6 @@ void ScalarTimeSeriesProbeControl::Render(wxDC & dc)
         //
         // Check if need to resize grid
         //
-
-        // TODO: member
-        static float mGridValueSize = 0.0f;
 
         // Calculate new grid step
         float numberOfGridLines = 6.0f;

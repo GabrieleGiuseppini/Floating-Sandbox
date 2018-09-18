@@ -51,16 +51,16 @@ ShipDefinition ResourceLoader::LoadShipDefinition(std::filesystem::path const & 
 
         std::filesystem::path basePath = filepath.parent_path();
 
-        std::filesystem::path absoluteStructuralImageFilePath = std::filesystem::absolute(
-            sdf.StructuralImageFilePath,
-            basePath);
+        std::filesystem::path absoluteStructuralImageFilePath = 
+            std::filesystem::path(sdf.StructuralImageFilePath)
+            / basePath;
 
         std::optional<ImageData> textureImage;
         if (!!sdf.TextureImageFilePath)
         {
-            std::filesystem::path absoluteTextureImageFilePath = std::filesystem::absolute(
-                *sdf.TextureImageFilePath,
-                basePath);
+            std::filesystem::path absoluteTextureImageFilePath = 
+                std::filesystem::path(*sdf.TextureImageFilePath)
+                / basePath;
 
             textureImage.emplace(std::move(LoadTextureRgba(absoluteTextureImageFilePath)));
         }

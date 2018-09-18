@@ -47,6 +47,7 @@ private:
 
     float mMaxValue;
     float mMinValue;
+    float mGridValueSize;
 
     CircularList<float, 200> mSamples;
 };

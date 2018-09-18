@@ -909,7 +909,7 @@ void MainFrame::OnShowEventTickerMenuItemSelected(wxCommandEvent & /*event*/)
 
 void MainFrame::OnShowProbePanelMenuItemSelected(wxCommandEvent & /*event*/)
 {
-    assert(!!ProbePanelPanel);
+    assert(!!mProbePanel);
     if (mShowProbePanelMenuItem->IsChecked())
     {
         mMainFrameSizer->Show(mProbePanel.get());

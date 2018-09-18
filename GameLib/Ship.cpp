@@ -938,7 +938,9 @@ void Ship::UpdateWaterVelocities(
                     * ma
                     * (va * va - vf * vf);
 
-                assert(deltaKa >= 0.0f);
+                // Note: deltaKa might be negative, in which case deltaKb would have been
+                // more positive (perfectly inelastic -> deltaK == max); we will pickup
+                // deltaKb later
                 pointKineticEnergyLoss += std::max(deltaKa, 0.0f);
             }
             else

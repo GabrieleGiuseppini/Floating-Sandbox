@@ -7,13 +7,6 @@
 
 #ifdef _MSC_VER
 
-// At the time of writing, VS 2017 shipped with std::filesystem being still experimental
-#include <filesystem>
-namespace std {
-    namespace filesystem = experimental::filesystem;
-}
-
-
 #include <malloc.h>
 
 inline void * aligned_alloc(
