@@ -16,9 +16,13 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 list(APPEND CMAKE_PREFIX_PATH "C:/Users/Neurodancer/source/SDK/DevIL")
 list(APPEND CMAKE_PREFIX_PATH "C:/Users/Neurodancer/source/SDK/PicoJSON")
 list(APPEND CMAKE_PREFIX_PATH "C:/Users/Neurodancer/source/SDK/SFML")
+list(APPEND CMAKE_PREFIX_PATH "C:/Users/Neurodancer/source/SDK/benchmark")
 list(APPEND CMAKE_LIBRARY_PATH "C:/Users/Neurodancer/source/SDK/DevIL")
 set(SFML_ROOT "C:/Users/Neurodancer/source/SDK/SFML")
 set(wxWidgets_ROOT_DIR "C:/Users/Neurodancer/source/SDK/wxWidgets")
+set(GOOGLE_TEST_ROOT "C:/Users/Neurodancer/source/repos/googletest")
+
+find_package(benchmark REQUIRED) 
 
 find_path(PICOJSON_INCLUDE_DIRS
     NAMES picojson/picojson.h)
@@ -94,11 +98,11 @@ endif()
  
 
 
-message ("cxx Flags:" ${CMAKE_CXX_FLAGS})
-message ("cxx Flags Release:" ${CMAKE_CXX_FLAGS_RELEASE})
-message ("cxx Flags RelWithDebInfo:" ${CMAKE_CXX_FLAGS_RELEASE})
-message ("cxx Flags Debug:" ${CMAKE_CXX_FLAGS_DEBUG})
-message ("exe Linker Flags Debug:" ${CMAKE_EXE_LINKER_FLAGS_DEBUG})
+message (STATUS "cxx Flags:" ${CMAKE_CXX_FLAGS})
+message (STATUS "cxx Flags Release:" ${CMAKE_CXX_FLAGS_RELEASE})
+message (STATUS "cxx Flags RelWithDebInfo:" ${CMAKE_CXX_FLAGS_RELEASE})
+message (STATUS "cxx Flags Debug:" ${CMAKE_CXX_FLAGS_DEBUG})
+message (STATUS "exe Linker Flags Debug:" ${CMAKE_EXE_LINKER_FLAGS_DEBUG})
 
 
 
@@ -118,6 +122,7 @@ endif(MSVC)
 # Sub-projects
 ####################################################
 
+add_subdirectory(Benchmarks)
 add_subdirectory(FloatingSandbox)
 add_subdirectory(GameLib)
 add_subdirectory(Glad)

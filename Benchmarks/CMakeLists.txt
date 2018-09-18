@@ -1,31 +1,19 @@
-enable_testing()
+set (BENCHMARK_SOURCES
+	DivisionByZero.cpp
+	Utils.cpp
+	Utils.h
+)
 
-if(MSVC)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING /DGTEST_HAS_TR1_TUPLE=0")
-endif(MSVC)
+source_group(" " FILES ${BENCHMARK_SOURCES})
 
-# Google advises to compile gtest from source with the project
-add_subdirectory("${GOOGLE_TEST_ROOT}" gtest)
+add_executable (Benchmarks ${BENCHMARK_SOURCES})
 
-set (UNIT_TEST_SOURCES
-	CircularListTests.cpp
-	EnumFlagsTests.cpp
-	FixedSizeVectorTests.cpp
-	GameEventDispatcherTests.cpp
-	SegmentTests.cpp
-	SliderCoreTests.cpp
-	TupleKeysTests.cpp
-	VectorsTests.cpp)
-
-add_executable (UnitTests ${UNIT_TEST_SOURCES})
-add_test (UnitTests UnitTests)
-
-target_link_libraries (UnitTests
+target_link_libraries (Benchmarks
 	GameLib
 	UILib
 	${OPENGL_LIBRARIES}
-	gmock
-	gtest_main
+	benchmark::benchmark
+	benchmark::benchmark_main
 	${ADDITIONAL_LIBRARIES})
 
 
@@ -36,7 +24,7 @@ target_link_libraries (UnitTests
 if (MSVC)
 	
 	set_target_properties(
-		UnitTests
+		Benchmarks
 		PROPERTIES
 			# Set debugger working directory to binary output directory
 			VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/$(Configuration)"

@@ -69,7 +69,7 @@ endif (MSVC)
 
 if (MSVC)
 
-	set (VS_STARTUP_PROJECT FloatingSandbox)
+	set_property( DIRECTORY PROPERTY VS_STARTUP_PROJECT "FloatingSandbox" )
 	
 	set_target_properties(
 		FloatingSandbox
