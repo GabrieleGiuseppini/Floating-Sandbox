@@ -78,10 +78,6 @@ void Springs::Destroy(
     mCoefficientsBuffer[springElementIndex].StiffnessCoefficient = 0.0f;
     mCoefficientsBuffer[springElementIndex].DampingCoefficient = 0.0f;
 
-    // Zero out our water permeability, to
-    // avoid draining water from/to non-destroyed points along non-existing springs
-    mWaterPermeabilityBuffer[springElementIndex] = 0.0f;
-
     // Flag ourselves as deleted
     mIsDeletedBuffer[springElementIndex] = true;
 }
