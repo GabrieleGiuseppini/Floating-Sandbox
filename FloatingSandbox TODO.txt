@@ -57,7 +57,7 @@ Current perf (1.5.0 - after Water)
 	- Add boundary conditions
 		- <h3>
 		- spring water permeability
-		- write final decision on impact
+		- perfectly inelastic impact => for each spring, bounce back q==resultant V along spring * normalized quantity of water bounced back (remaining)
 	- GameJolt
 = Splash w/Probe
 - Merge into master
@@ -93,7 +93,21 @@ Current perf (1.5.0 - after Water)
 	- TODECIDE: Ship::Render() should take ShipRenderContext instead of RenderContext, and eventually RenderContext if really needed
 		- Can then get rid of forwards from RenderContext
 
-- Optimizations:	
+- Optimizations:
+	- BufferAllocator<Type:vec2f or float>
+		- cctor takes ElementCount
+		- Allocate() returns std::unique_ptr<Buffer<Type>>, with deleter invoking mAllocator->Return(Buffer<type>*)
+		- Points::mWaterBufferTmp creator borrows one, fill it in, and returns it as std::unique_ptr<Buffer<float>>
+	- SSE has reciprocal of square root; see fast way of doing normalizations
+		+ Check assembly first and see if not done yet - NOT DONE, sqrt and then divide
+		- Think of precalculating all normalized vectors before they're needed 
+			- Call before each spring iteration (so to catch bombs and destroy's) and before water (so to catch last Integrate())
+			- Springs::CalculateNormalizedVectors()
+				- Fills-in own vec2f buffer, exposed also via getter (GetNormalizedVector(springIndex))
+			- std::unique_ptr<Buffer<float>> Springs::CalculateNormalizedVectorsWithLengths()
+				- Borrows a float buffer
+			- Add "Benchmarks" project w/Googlebench
+
 	- UpdateSpringForces:
 		- See if using restrict pointers helps
 			- Check asm first
@@ -272,8 +286,7 @@ Current perf (1.5.0 - after Water)
 		+ See what happens when we also incorporate dest's velocity in Bernoulli
 		+ See what happens with drag (after final calculation of velocities)
 			+ See if needs to be linear or quadratic
-		= Test with reflected momentum
-
+		+ Test with reflected momentum
 	= Splash sound:
 		+ First we need to cleanse "rushing water" of bubbles sound
 		+ New "splash" continuous sound, with volume controlled by total magnitude of momentum change
@@ -281,14 +294,32 @@ Current perf (1.5.0 - after Water)
 			+ Go for kinetic energy lost instead		
 		= Finalization:
 			= Nail down sound
-			= Measure perf:
-				+ FPS: 26.7
-				- UpdateWaterVelocities (2m): 8.09%
-					- expf: 0.91
-			- Cleanup
-			- Optimizations
-				- That scalar/vector/scalar
-				- Instead of checking >= 0.0f, use std::max
+			- Nail down volume
+			+ Measure perf:
+				+ FPS: 25.9/26.1/26.2
+				+ UpdateWaterVelocities (2m): 11.19%
+					+ expf: 2.34%
+			+ When removing Q from point, test with using only component of oldV along spring
+			+ Recheck one-sided deltaT
+			+ Cleanup
+			+ Run in debug mode
+			+ Averager needs to become member of ship
+			= Optimizations - things to test:
+				+ That scalar/vector/scalar
+				+ See if can either update all point water momentum once, or for each spring - not both like now!
+					+ => FPS=26.2/26.5
+					- UpdateWaterVelocities (2m): 8.75%
+						- expf: 0.81%
+				+ Low-hanging fruit
+				- No 0.0 checks for divisions, but + 0.00001
+					- Verify behavior of float::max/float::min
+					- Do benchmark
+				- Initial spring visit for all Bernoulli's
+					- Requires temp buffers
+					- Still need to assign sign depending on whether pointIndex is spring's point A or not
+				- Initial point visit for populating exp(water) 
+					- Requires temp buffer
+				- Spring normalization pre-calculation above
 				- Moleskine
 			+ Should replace water rushing in - decide
 
@@ -315,9 +346,6 @@ Current perf (1.5.0 - after Water)
 					- All iters take factors from Spring after calling lambda
 
 
-	- MAYBEOLD: See if can make water more mobile (for gravity), without though drying up water that just entered
-		- Increase quantity that gets gravitated, and also make sure that last step of water dynamics
-		  is a LeakWater (so that just-entered water is visible for a while)
 	- Sinking detection is broken - it currently only considers total water that entered the ship, which comes proportionally to external
 	  water pressure; all this water could be confined to a tiny volume, and yet we trigger sinking
 		- Solution: make it based on total number of points that have water instead, i.e. wet points
@@ -333,11 +361,6 @@ Current perf (1.5.0 - after Water)
 	+ Did original game propagate water also through hull springs? YES. How did hull thin dividers work? THEY DIDN'T WORK
 	+ Add Point::Hull Characteristic, and don't leak/propagate(incl. gravitate) water if at least one of the two points is hull			
 		+ Alternatively: just make a spring hull if one point is hull; test it
-	- BalancePressure: see if shouldn't average water among two points - do we lose waves if we do so?
-	- BalancePressure: use gradient, it seems we stuff too much water into points with already too much water
-	- GravitateWater: try inverse visit (from H to L)
-		- Requires PointerVector::rbegin,rend
-	- Try directional BalancePressure?
 	- Make waves with Shallow Water Equations 
 		- And if frontier works, change height when frontier touches water for the first time
 		- Problem with extent of heightfield (X segment): needs to look good when zooming out; 3 alternatives:
@@ -1314,6 +1337,13 @@ IF WX:
 				+ Ship
 				+ Remove from Land? Test w/out and see if border
 			+ Test perf
+	+ VectorField rendering
+		+ Final cleanups:
+			+ Check all vector fields wrt deleted points
+			+ RenderContext: initialize vector render mode to None
+			+ Make vector field render mode changeable in SettingsDialog, Render tab
+			+ Add length adjustment as render parameter, multiplied by RenderContext before passing to ship
+				+ No dialog adjustment needed yet
 
 + Dynamics
 	+ Try half of the relaxation iterations

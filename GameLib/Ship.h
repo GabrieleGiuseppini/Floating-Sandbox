@@ -193,7 +193,10 @@ private:
 
     // Sinking detection
     bool mIsSinking;
+
+    // Water
     float mTotalWater;
+    RunningAverage<30> mWaterSplashedRunningAverage;
 
     // Pinned points
     PinnedPoints mPinnedPoints;

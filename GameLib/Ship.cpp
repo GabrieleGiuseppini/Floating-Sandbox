@@ -49,6 +49,7 @@ Ship::Ship(
     , mAreElementsDirty(true)
     , mIsSinking(false)
     , mTotalWater(0.0)
+    , mWaterSplashedRunningAverage()
     , mPinnedPoints(
         mParentWorld,
         mGameEventHandler,
@@ -922,6 +923,7 @@ void Ship::UpdateWaterVelocities(
                 // splintered water colliding with whole other endpoint
                 //
 
+                // TODO: get rid of this re-calculation once we pre-calculate all spring normalized vectors
                 vec2f const springNormalizedVector = (mPoints.GetPosition(otherEndpointIndex) - mPoints.GetPosition(pointIndex)).normalise();
 
                 float ma = springOutboundQuantityOfWater;
@@ -963,8 +965,6 @@ void Ship::UpdateWaterVelocities(
                 // entire splintered water
                 //
 
-                vec2f const springNormalizedVector = (mPoints.GetPosition(otherEndpointIndex) - mPoints.GetPosition(pointIndex)).normalise();
-
                 float ma = springOutboundQuantityOfWater;
                 float va = springOutboundWaterVelocities[s].length();
 
@@ -974,7 +974,7 @@ void Ship::UpdateWaterVelocities(
                     * va * va;
 
                 assert(deltaKa >= 0.0f);
-                pointKineticEnergyLoss += std::max(deltaKa, 0.0f);
+                pointKineticEnergyLoss += deltaKa;
             }
         }
 
@@ -996,13 +996,10 @@ void Ship::UpdateWaterVelocities(
 
 
     //
-    // Run low-pass filter on kinetic energy loss
+    // Average kinetic energy loss
     //
 
-    // TODO: make member
-    static RunningAverage<30> mWaterSplashedLPFilter;
-
-    waterSplashed = mWaterSplashedLPFilter.Update(waterSplashed);
+    waterSplashed = mWaterSplashedRunningAverage.Update(waterSplashed);
 
 
 
