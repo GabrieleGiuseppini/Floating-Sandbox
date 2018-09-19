@@ -12,6 +12,7 @@ set (UNIT_TEST_SOURCES
 	EnumFlagsTests.cpp
 	FixedSizeVectorTests.cpp
 	GameEventDispatcherTests.cpp
+	LibSimDppTests.cpp
 	SegmentTests.cpp
 	SliderCoreTests.cpp
 	TupleKeysTests.cpp
@@ -19,6 +20,8 @@ set (UNIT_TEST_SOURCES
 
 add_executable (UnitTests ${UNIT_TEST_SOURCES})
 add_test (UnitTests UnitTests)
+
+target_include_directories(UnitTests PRIVATE SYSTEM ${LIBSIMDPP_INCLUDE_DIRS})
 
 target_link_libraries (UnitTests
 	GameLib

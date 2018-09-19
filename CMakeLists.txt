@@ -13,19 +13,23 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # Release builds, just use the same library for both.
 ####################################################
 
-list(APPEND CMAKE_PREFIX_PATH "C:/Users/Neurodancer/source/SDK/DevIL")
 list(APPEND CMAKE_PREFIX_PATH "C:/Users/Neurodancer/source/SDK/PicoJSON")
-list(APPEND CMAKE_PREFIX_PATH "C:/Users/Neurodancer/source/SDK/SFML")
 list(APPEND CMAKE_PREFIX_PATH "C:/Users/Neurodancer/source/SDK/benchmark")
+list(APPEND CMAKE_PREFIX_PATH "C:/Users/Neurodancer/source/SDK/libsimdpp-2.1")
+list(APPEND CMAKE_PREFIX_PATH "C:/Users/Neurodancer/source/SDK/DevIL")
+list(APPEND CMAKE_PREFIX_PATH "C:/Users/Neurodancer/source/SDK/SFML")
 list(APPEND CMAKE_LIBRARY_PATH "C:/Users/Neurodancer/source/SDK/DevIL")
 set(SFML_ROOT "C:/Users/Neurodancer/source/SDK/SFML")
 set(wxWidgets_ROOT_DIR "C:/Users/Neurodancer/source/SDK/wxWidgets")
 set(GOOGLE_TEST_ROOT "C:/Users/Neurodancer/source/repos/googletest")
 
-find_package(benchmark REQUIRED) 
-
 find_path(PICOJSON_INCLUDE_DIRS
     NAMES picojson/picojson.h)
+
+find_package(benchmark REQUIRED) 
+
+find_path(LIBSIMDPP_INCLUDE_DIRS
+    NAMES simdpp/simd.h)
 
 find_package(wxWidgets REQUIRED base gl core html media)
 
