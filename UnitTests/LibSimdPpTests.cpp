@@ -10,7 +10,7 @@
 
 #include <vector>
 
-TEST(LibSimDppTests, MulConstant)
+TEST(LibSimdPpTests, MulConstant)
 {
     std::vector<vec2f> vectors{
         {0.0f, 0.0f},
@@ -44,7 +44,7 @@ TEST(LibSimDppTests, MulConstant)
     EXPECT_EQ(vec2f(0.2f, 0.4f), results[3]);
 }
 
-TEST(LibSimDppTests, ReciprocalSquareRoot)
+TEST(LibSimdPpTests, ReciprocalSquareRoot)
 {
     std::vector<float> values{
         1.0f, 2.0, 4.0f, 9.0, 81.0f, 0.0f, 100.0f, 10000.0f
@@ -70,7 +70,7 @@ TEST(LibSimDppTests, ReciprocalSquareRoot)
     ////EXPECT_EQ(1.0f / 100.0f, results[7]);
 }
 
-TEST(LibSimDppTests, ReciprocalSquareRoot_WithMask)
+TEST(LibSimdPpTests, ReciprocalSquareRoot_WithMask)
 {
     std::vector<float> values{
         1.0f, 2.0, 4.0f, 9.0, 81.0f, 0.0f, 100.0f, 10000.0f
@@ -98,7 +98,7 @@ TEST(LibSimDppTests, ReciprocalSquareRoot_WithMask)
     EXPECT_EQ(0.0f, results[5]);
 }
 
-TEST(LibSimDppTests, VectorNormalization)
+TEST(LibSimdPpTests, VectorNormalization)
 {
     std::vector<vec2f> vectors{
         {0.0f, 0.0f},

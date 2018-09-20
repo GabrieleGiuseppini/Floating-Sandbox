@@ -12,7 +12,7 @@ set (UNIT_TEST_SOURCES
 	EnumFlagsTests.cpp
 	FixedSizeVectorTests.cpp
 	GameEventDispatcherTests.cpp
-	LibSimDppTests.cpp
+	LibSimdPpTests.cpp
 	SegmentTests.cpp
 	SliderCoreTests.cpp
 	TupleKeysTests.cpp
