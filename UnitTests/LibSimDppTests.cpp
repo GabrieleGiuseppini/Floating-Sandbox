@@ -28,11 +28,14 @@ TEST(LibSimDppTests, MulConstant)
 
     static constexpr size_t BatchSize = SIMDPP_FAST_FLOAT32_SIZE / 2; // Vec has two components
 
+    vec2f * __restrict vectorsData = vectors.data();
+    vec2f * __restrict resultsData = results.data();
+
     for (size_t i = 0; i < vectors.size(); i += BatchSize)
     {
-        simdpp::float32v block = simdpp::load(vectors.data() + i);
+        simdpp::float32v block = simdpp::load(vectorsData + i);
         block = block * simdpp::make_float<simdpp::float32v>(2.0f);
-        simdpp::store(results.data() + i, block);
+        simdpp::store(resultsData + i, block);
     }    
 
     EXPECT_EQ(vec2f(0.0f, 0.0f), results[0]);
@@ -78,14 +81,18 @@ TEST(LibSimDppTests, ReciprocalSquareRoot_WithMask)
 
     static constexpr size_t BatchSize = SIMDPP_FAST_FLOAT32_SIZE / 1;
 
+    float * __restrict valuesData = values.data();
+    float * __restrict resultsData = results.data();
+
     for (size_t i = 0; i < values.size(); i += BatchSize)
     {
-        simdpp::float32v block = simdpp::load(values.data() + i);
-        simdpp::mask_float32v validMask = (block != 0.0f);
+        simdpp::float32v block = simdpp::load(valuesData + i);
 
+        simdpp::mask_float32v validMask = (block != 0.0f);
         block = simdpp::rsqrt_e(block);
         simdpp::float32v result = simdpp::blend(block, simdpp::make_float<simdpp::float32v>(0.0f), validMask);
-        simdpp::store(results.data() + i, result);
+
+        simdpp::store(resultsData + i, result);
     }
 
     EXPECT_EQ(0.0f, results[5]);
