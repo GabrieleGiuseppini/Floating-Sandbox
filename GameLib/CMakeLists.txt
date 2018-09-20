@@ -93,6 +93,7 @@ source_group("Physics" FILES ${PHYSICS_SOURCES})
 
 add_library (GameLib ${GAME_SOURCES} ${GEOMETRY_SOURCES} ${PHYSICS_SOURCES})
 
+target_include_directories(GameLib PUBLIC ${LIBSIMDPP_INCLUDE_DIRS})
 target_include_directories(GameLib PUBLIC ${PICOJSON_INCLUDE_DIRS})
 target_include_directories(GameLib PRIVATE ${IL_INCLUDE_DIR})
 target_include_directories(GameLib INTERFACE ..)

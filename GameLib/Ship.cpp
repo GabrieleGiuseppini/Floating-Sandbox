@@ -583,7 +583,7 @@ void Ship::IntegratePointForces()
     float * restrict forceBuffer = mPoints.GetForceBufferAsFloat();
     float * restrict integrationFactorBuffer = mPoints.GetIntegrationFactorBufferAsFloat();
 
-    size_t const numIterations = mPoints.GetElementCount() * 2; // Two components per vector
+    size_t const numIterations = mPoints.GetBufferElementCount() * 2; // Two components per vector
     for (size_t i = 0; i < numIterations; ++i)
     {
         //
@@ -735,11 +735,14 @@ void Ship::UpdateWaterVelocities(
     // its destination point
     //
 
+    // Calculate water momenta
+    mPoints.UpdateWaterMomentaFromVelocities();
+
     // Source and result water buffers
     float * restrict oldPointWaterBuffer = mPoints.GetWaterBufferAsFloat();
     float * restrict newPointWaterBuffer = mPoints.CheckoutWaterBufferTmpAsFloat();
     vec2f * restrict oldPointWaterVelocityBuffer = mPoints.GetWaterVelocityBufferAsVec2();
-    vec2f * restrict newPointWaterMomentumBuffer = mPoints.PopulateWaterMomentaFromVelocitiesAndCheckoutAsVec2();
+    vec2f * restrict newPointWaterMomentumBuffer = mPoints.GetWaterMomentumBufferAsVec2f();
 
     // Weights of outbound water flows along each spring, including impermeable ones;
     // set to zero for springs whose resultant scalar water velocities are 
@@ -1008,7 +1011,7 @@ void Ship::UpdateWaterVelocities(
     //
 
     mPoints.CommitWaterBufferTmp();
-    mPoints.PopulateWaterVelocitiesFromMomenta();
+    mPoints.UpdateWaterVelocitiesFromMomenta();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////

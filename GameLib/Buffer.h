@@ -10,6 +10,7 @@
 
 #include <cassert>
 #include <cstdlib>
+#include <cstring>
 #include <stdexcept>
 
 /*
@@ -17,6 +18,7 @@
 * grow more than the size that it is initially constructed with.
 *
 * The buffer is mem-aligned and takes care of deallocating itself at destruction time.
+* The number of elements is assumed to be rounded to a multiple of the word size.
 */
 template <typename TElement>
 class Buffer
@@ -25,16 +27,31 @@ public:
 
     Buffer(size_t size)
         : mSize(size)
-        , mCurrentSize(0)
+        , mCurrentPopulatedSize(0)
     {
+        assert(make_aligned_element_count(size) == size);
+
         mBuffer = static_cast<TElement *>(aligned_alloc(CeilPowerOfTwo(sizeof(TElement)), size * sizeof(TElement)));
         assert(nullptr != mBuffer);
+    }
+
+    Buffer(
+        size_t size,
+        size_t fillStart,
+        TElement fillValue)
+        : Buffer(size)
+    {
+        assert(fillStart <= mSize);
+
+        // Fill-in values
+        for (size_t i = fillStart; i < mSize; ++i)
+            mBuffer[i] = fillValue;
     }
 
     Buffer(Buffer && other)
         : mBuffer(other.mBuffer)
         , mSize(other.mSize)
-        , mCurrentSize(other.mCurrentSize)
+        , mCurrentPopulatedSize(other.mCurrentPopulatedSize)
     {
         other.mBuffer = nullptr;
     }
@@ -48,12 +65,12 @@ public:
     }
 
     /*
-     * Gets the current number of elements in the buffer; less than or equal the declared buffer size.
+     * Gets the current number of elements populated in the buffer via emplace_back(); 
+     * less than or equal the declared buffer size.
      */
-
-    size_t GetCurrentSize() const
+    size_t GetCurrentPopulatedSize() const
     {
-        return mCurrentSize;
+        return mCurrentPopulatedSize;
     }
 
     /*
@@ -64,14 +81,35 @@ public:
     template <typename... Args>
     TElement & emplace_back(Args&&... args)
     {
-        if (mCurrentSize < mSize)
+        if (mCurrentPopulatedSize < mSize)
         {
-            return *new(&(mBuffer[mCurrentSize++])) TElement(std::forward<Args>(args)...);
+            return *new(&(mBuffer[mCurrentPopulatedSize++])) TElement(std::forward<Args>(args)...);
         }
         else
         {
-            throw std::runtime_error("The repository is already full");
+            throw std::runtime_error("The buffer is already full");
         }
+    }
+
+    /*
+     * Fills the buffer with a value.
+     */
+    void fill(TElement value)
+    {
+        for (size_t i = 0; i < mSize; ++i)
+            mBuffer[i] = value;
+    }
+
+    /*
+     * Copies a buffer into this buffer.
+     *
+     * The sizes of the buffers must match.
+     */
+    void copy(Buffer<TElement> const & other)
+    {
+        assert(mSize == other.mSize);
+
+        std::memcpy(mBuffer, other.mBuffer, mSize * sizeof(TElement));
     }
 
     /*
@@ -82,9 +120,9 @@ public:
     {
 #ifndef NDEBUG
         // Ugly trick to allows setting breakpoints
-        if (index >= mCurrentSize)
+        if (index >= mSize)
         {
-            assert(index < mCurrentSize);
+            assert(index < mSize);
         }
 #endif
 
@@ -93,7 +131,7 @@ public:
 
     inline TElement & operator[](size_t index) noexcept
     {
-        assert(index < mCurrentSize);
+        assert(index < mSize);
 
         return mBuffer[index];
     }   
@@ -116,5 +154,5 @@ private:
 
     TElement * restrict mBuffer;
     size_t const mSize;
-    size_t mCurrentSize;
+    size_t mCurrentPopulatedSize;
 };

@@ -56,37 +56,37 @@ public:
         //////////////////////////////////
         // Buffers
         //////////////////////////////////
-        , mIsDeletedBuffer(elementCount)
+        , mIsDeletedBuffer(mBufferElementCount, mElementCount, true)
         // Material
-        , mMaterialBuffer(elementCount)
-        , mIsHullBuffer(elementCount)
-        , mIsRopeBuffer(elementCount)
+        , mMaterialBuffer(mBufferElementCount, mElementCount, nullptr)
+        , mIsHullBuffer(mBufferElementCount, mElementCount, false)
+        , mIsRopeBuffer(mBufferElementCount, mElementCount, false)
         // Mechanical dynamics
-        , mPositionBuffer(elementCount)
-        , mVelocityBuffer(elementCount)
-        , mForceBuffer(elementCount)
-        , mIntegrationFactorBuffer(elementCount)
-        , mMassBuffer(elementCount)
+        , mPositionBuffer(mBufferElementCount, mElementCount, vec2f::zero())
+        , mVelocityBuffer(mBufferElementCount, mElementCount, vec2f::zero())
+        , mForceBuffer(mBufferElementCount, mElementCount, vec2f::zero())
+        , mIntegrationFactorBuffer(mBufferElementCount, mElementCount, vec2f::zero())
+        , mMassBuffer(mBufferElementCount, mElementCount, 1.0f)
         // Water dynamics
-        , mBuoyancyBuffer(elementCount)        
-        , mWaterBuffer(elementCount)
-        , mWaterBufferTmp(elementCount)
-        , mWaterVelocityBuffer(elementCount)
-        , mWaterMomentumBuffer(elementCount)
-        , mIsLeakingBuffer(elementCount)
+        , mBuoyancyBuffer(mBufferElementCount, mElementCount, 0.0f)
+        , mWaterBuffer(mBufferElementCount, mElementCount, 0.0f)
+        , mWaterBufferTmp(mBufferElementCount, mElementCount, 0.0f)
+        , mWaterVelocityBuffer(mBufferElementCount, mElementCount, vec2f::zero())
+        , mWaterMomentumBuffer(mBufferElementCount, mElementCount, vec2f::zero())
+        , mIsLeakingBuffer(mBufferElementCount, mElementCount, false)
         // Electrical dynamics
-        , mElectricalElementBuffer(elementCount)
-        , mLightBuffer(elementCount)
+        , mElectricalElementBuffer(mBufferElementCount, mElementCount, NoneElementIndex)
+        , mLightBuffer(mBufferElementCount, mElementCount, 0.0f)
         // Structure
-        , mNetworkBuffer(elementCount)
+        , mNetworkBuffer(mBufferElementCount, mElementCount, Network())
         // Connected component
-        , mConnectedComponentIdBuffer(elementCount)
-        , mCurrentConnectedComponentDetectionVisitSequenceNumberBuffer(elementCount)
+        , mConnectedComponentIdBuffer(mBufferElementCount, mElementCount, NoneElementIndex)
+        , mCurrentConnectedComponentDetectionVisitSequenceNumberBuffer(mBufferElementCount, mElementCount, NoneElementIndex)
         // Pinning
-        , mIsPinnedBuffer(elementCount)
+        , mIsPinnedBuffer(mBufferElementCount, mElementCount, false)
         // Immutable render attributes
-        , mColorBuffer(elementCount)
-        , mTextureCoordinatesBuffer(elementCount)
+        , mColorBuffer(mBufferElementCount, mElementCount, vec3f::zero())
+        , mTextureCoordinatesBuffer(mBufferElementCount, mElementCount, vec2f::zero())
         //////////////////////////////////
         // Container
         //////////////////////////////////
@@ -271,28 +271,18 @@ public:
         assert(mWaterBuffer[pointElementIndex] >= 0.0f);
     }
 
+    // TODO: rename as MakeWaterBufferCopy() and change: borrow, copy, and return
     float * restrict CheckoutWaterBufferTmpAsFloat()
     {
-        float * const restrict waterBuffer = mWaterBuffer.data();
-        float * restrict waterBufferTmp = mWaterBufferTmp.data();
+        mWaterBufferTmp.copy(mWaterBuffer);
 
-        std::memcpy(
-            waterBufferTmp, 
-            waterBuffer, 
-            sizeof(float) * GetElementCount());
-
-        return waterBufferTmp;
+        return mWaterBufferTmp.data();
     }
 
+    // TODO: rename as UpdateWaterBuffer(std::unique_ptr<Buffer<float>>) and change: takes moved borrowed buffer, and copies it (and releases it)
     void CommitWaterBufferTmp()
     {
-        float * restrict waterBuffer = mWaterBuffer.data();
-        float * const restrict waterBufferTmp = mWaterBufferTmp.data();
-
-        std::memcpy(
-            waterBuffer,
-            waterBufferTmp,
-            sizeof(float) * GetElementCount());
+        mWaterBuffer.copy(mWaterBufferTmp);
     }
 
     vec2f * restrict GetWaterVelocityBufferAsVec2()
@@ -300,40 +290,47 @@ public:
         return mWaterVelocityBuffer.data();
     }
 
-    vec2f * restrict PopulateWaterMomentaFromVelocitiesAndCheckoutAsVec2()
+    /*
+     * Only valid after a call to UpdateWaterMomentaFromVelocities() and when
+     * neither water quantities nor velocities have changed.
+     */
+    vec2f * restrict GetWaterMomentumBufferAsVec2f()
+    {
+        return mWaterMomentumBuffer.data();
+    }
+
+    void UpdateWaterMomentaFromVelocities()
     {
         float * const restrict waterBuffer = mWaterBuffer.data();
         vec2f * const restrict waterVelocityBuffer = mWaterVelocityBuffer.data();
         vec2f * restrict waterMomentumBuffer = mWaterMomentumBuffer.data();
 
-        for (auto pointIndex : *this)
+        for (ElementIndex p = 0; p < mBufferElementCount; ++p)
         {
-            waterMomentumBuffer[pointIndex] =
-                waterVelocityBuffer[pointIndex]
-                * waterBuffer[pointIndex];
+            waterMomentumBuffer[p] =
+                waterVelocityBuffer[p]
+                * waterBuffer[p];
         }
-
-        return waterMomentumBuffer;
     }
 
-    void PopulateWaterVelocitiesFromMomenta()
+    void UpdateWaterVelocitiesFromMomenta()
     {
         float * const restrict waterBuffer = mWaterBuffer.data();
         vec2f * restrict waterVelocityBuffer = mWaterVelocityBuffer.data();
         vec2f * const restrict waterMomentumBuffer = mWaterMomentumBuffer.data();
         
-        for (auto pointIndex : *this)
+        for (ElementIndex p = 0; p < mBufferElementCount; ++p)
         {
-            if (waterBuffer[pointIndex] > 0.0f)
+            if (waterBuffer[p] != 0.0f)
             {
-                waterVelocityBuffer[pointIndex] =
-                    waterMomentumBuffer[pointIndex]
-                    / waterBuffer[pointIndex];
+                waterVelocityBuffer[p] =
+                    waterMomentumBuffer[p]
+                    / waterBuffer[p];
             }
             else
             {
                 // No mass, no velocity
-                waterVelocityBuffer[pointIndex] = vec2f::zero();
+                waterVelocityBuffer[p] = vec2f::zero();
             }
         }
     }

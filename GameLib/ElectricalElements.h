@@ -37,13 +37,13 @@ public:
         //////////////////////////////////
         // Buffers
         //////////////////////////////////
-        , mIsDeletedBuffer(elementCount)
-        , mPointIndexBuffer(elementCount)
-        , mTypeBuffer(elementCount)
-        , mConnectedElectricalElementsBuffer(elementCount)
-        , mElementStateBuffer(elementCount)
-        , mAvailableCurrentBuffer(elementCount)
-        , mCurrentConnectivityVisitSequenceNumberBuffer(elementCount)
+        , mIsDeletedBuffer(mBufferElementCount, mElementCount, true)
+        , mPointIndexBuffer(mBufferElementCount, mElementCount, NoneElementIndex)
+        , mTypeBuffer(mBufferElementCount, mElementCount, Material::ElectricalProperties::ElectricalElementType::Cable)
+        , mConnectedElectricalElementsBuffer(mBufferElementCount, mElementCount, FixedSizeVector<ElementIndex, 8u>())
+        , mElementStateBuffer(mBufferElementCount, mElementCount, ElementState::CableState())
+        , mAvailableCurrentBuffer(mBufferElementCount, mElementCount, 0.0f)
+        , mCurrentConnectivityVisitSequenceNumberBuffer(mBufferElementCount, mElementCount, NoneVisitSequenceNumber)
         //////////////////////////////////
         // Container
         //////////////////////////////////
@@ -200,7 +200,7 @@ private:
 
         struct LampState
         {
-            bool const IsSelfPowered;
+            bool IsSelfPowered;
 
             enum class StateType
             {

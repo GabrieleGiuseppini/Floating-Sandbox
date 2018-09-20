@@ -87,22 +87,22 @@ public:
         //////////////////////////////////
         // Buffers
         //////////////////////////////////
-        , mIsDeletedBuffer(elementCount)
+        , mIsDeletedBuffer(mBufferElementCount, mElementCount, true)
         // Endpoints
-        , mEndpointsBuffer(elementCount)
+        , mEndpointsBuffer(mBufferElementCount, mElementCount, Endpoints(NoneElementIndex, NoneElementIndex))
         // Physical
-        , mStrengthBuffer(elementCount)
-        , mStiffnessBuffer(elementCount)
-        , mRestLengthBuffer(elementCount)
-        , mCoefficientsBuffer(elementCount)
-        , mCharacteristicsBuffer(elementCount)
-        , mBaseMaterialBuffer(elementCount)
+        , mStrengthBuffer(mBufferElementCount, mElementCount, 0.0f)
+        , mStiffnessBuffer(mBufferElementCount, mElementCount, 0.0f)
+        , mRestLengthBuffer(mBufferElementCount, mElementCount, 1.0f)
+        , mCoefficientsBuffer(mBufferElementCount, mElementCount, Coefficients(0.0f, 0.0f))
+        , mCharacteristicsBuffer(mBufferElementCount, mElementCount, Characteristics::None)
+        , mBaseMaterialBuffer(mBufferElementCount, mElementCount, nullptr)
         // Water
-        , mWaterPermeabilityBuffer(elementCount)
+        , mWaterPermeabilityBuffer(mBufferElementCount, mElementCount, 0.0f)
         // Stress
-        , mIsStressedBuffer(elementCount)
+        , mIsStressedBuffer(mBufferElementCount, mElementCount, false)
         // Bombs
-        , mIsBombAttachedBuffer(elementCount)
+        , mIsBombAttachedBuffer(mBufferElementCount, mElementCount, false)
         //////////////////////////////////
         // Container
         //////////////////////////////////
