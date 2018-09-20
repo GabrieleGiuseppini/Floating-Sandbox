@@ -6,6 +6,7 @@
 #pragma once
 
 #include "Buffer.h"
+#include "BufferAllocator.h"
 #include "ElementContainer.h"
 #include "EnumFlags.h"
 #include "FixedSizeVector.h"
@@ -110,6 +111,8 @@ public:
         , mGameEventHandler(std::move(gameEventHandler))
         , mDestroyHandler()
         , mCurrentStiffnessAdjustment(std::numeric_limits<float>::lowest())
+        , mFloatBufferAllocator(mBufferElementCount)
+        , mVec2fBufferAllocator(mBufferElementCount)
     {
     }
 
@@ -331,6 +334,20 @@ public:
         points.SetMassToMaterialOffset(mEndpointsBuffer[springElementIndex].PointBIndex, 0.0f, *this);
     }
 
+    //
+    // Temporary buffer
+    //
+
+    std::shared_ptr<Buffer<float>> AllocateWorkBufferFloat()
+    {
+        return mFloatBufferAllocator.Allocate();
+    }
+
+    std::shared_ptr<Buffer<vec2f>> AllocateWorkBufferVec2f()
+    {
+        return mVec2fBufferAllocator.Allocate();
+    }
+
 private:
 
     static float CalculateStiffnessCoefficient(        
@@ -401,6 +418,10 @@ private:
 
     // The current stiffness adjustment
     float mCurrentStiffnessAdjustment;
+
+    // Allocators for work buffers
+    BufferAllocator<float> mFloatBufferAllocator;
+    BufferAllocator<vec2f> mVec2fBufferAllocator;
 };
 
 }

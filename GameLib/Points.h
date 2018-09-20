@@ -6,6 +6,7 @@
 #pragma once
 
 #include "Buffer.h"
+#include "BufferAllocator.h"
 #include "ElementContainer.h"
 #include "FixedSizeVector.h"
 #include "GameParameters.h"
@@ -70,7 +71,6 @@ public:
         // Water dynamics
         , mBuoyancyBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mWaterBuffer(mBufferElementCount, mElementCount, 0.0f)
-        , mWaterBufferTmp(mBufferElementCount, mElementCount, 0.0f)
         , mWaterVelocityBuffer(mBufferElementCount, mElementCount, vec2f::zero())
         , mWaterMomentumBuffer(mBufferElementCount, mElementCount, vec2f::zero())
         , mIsLeakingBuffer(mBufferElementCount, mElementCount, false)
@@ -94,6 +94,8 @@ public:
         , mGameEventHandler(std::move(gameEventHandler))
         , mDestroyHandler()
         , mAreImmutableRenderAttributesUploaded(false)
+        , mFloatBufferAllocator(mBufferElementCount)
+        , mVec2fBufferAllocator(mBufferElementCount)
     {
     }
 
@@ -271,18 +273,17 @@ public:
         assert(mWaterBuffer[pointElementIndex] >= 0.0f);
     }
 
-    // TODO: rename as MakeWaterBufferCopy() and change: borrow, copy, and return
-    float * restrict CheckoutWaterBufferTmpAsFloat()
+    std::shared_ptr<Buffer<float>> MakeWaterBufferCopy()
     {
-        mWaterBufferTmp.copy(mWaterBuffer);
+        auto waterBufferCopy = mFloatBufferAllocator.Allocate();
+        waterBufferCopy->copy(mWaterBuffer);
 
-        return mWaterBufferTmp.data();
+        return waterBufferCopy;
     }
 
-    // TODO: rename as UpdateWaterBuffer(std::unique_ptr<Buffer<float>>) and change: takes moved borrowed buffer, and copies it (and releases it)
-    void CommitWaterBufferTmp()
+    void UpdateWaterBuffer(std::shared_ptr<Buffer<float>> newWaterBuffer)
     {
-        mWaterBuffer.copy(mWaterBufferTmp);
+        mWaterBuffer.copy(*newWaterBuffer);
     }
 
     vec2f * restrict GetWaterVelocityBufferAsVec2()
@@ -471,6 +472,20 @@ public:
             connectedComponentDetectionVisitSequenceNumber;
     }
 
+    //
+    // Temporary buffer
+    //
+
+    std::shared_ptr<Buffer<float>> AllocateWorkBufferFloat()
+    {
+        return mFloatBufferAllocator.Allocate();
+    }
+
+    std::shared_ptr<Buffer<vec2f>> AllocateWorkBufferVec2f()
+    {
+        return mVec2fBufferAllocator.Allocate();
+    }
+
 private:
 
     static vec2f CalculateIntegrationFactor(float mass);
@@ -508,10 +523,6 @@ private:
     // Height of a 1m2 column of water which provides a pressure equivalent to the pressure at
     // this point. Quantity of water is max(water, 1.0)
     Buffer<float> mWaterBuffer;
-
-    // Temporary buffer to use during calculations (water dynamics);
-    // does not hold any meaningful value outside of calculations
-    Buffer<float> mWaterBufferTmp;
 
     // Total velocity of the water at this point
     Buffer<vec2f> mWaterVelocityBuffer;
@@ -571,6 +582,10 @@ private:
     // Flag remembering whether or not we've already uploaded
     // the immutable render attributes
     bool mutable mAreImmutableRenderAttributesUploaded;
+
+    // Allocators for work buffers
+    BufferAllocator<float> mFloatBufferAllocator;
+    BufferAllocator<vec2f> mVec2fBufferAllocator;
 };
 
 }

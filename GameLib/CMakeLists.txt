@@ -5,6 +5,7 @@
 
 set  (GAME_SOURCES
 	Buffer.h
+	BufferAllocator.h
 	CircularList.h
 	ElementContainer.h
 	EnumFlags.h

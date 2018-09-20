@@ -61,6 +61,7 @@ Current perf (1.5.0 - after Water)
 	- GameJolt
 = Splash w/Probe
 - Merge into master
+- Update changes
 - Release
 
 - GfxOptimizations:
@@ -94,28 +95,58 @@ Current perf (1.5.0 - after Water)
 		- Can then get rid of forwards from RenderContext
 
 - Optimizations:
-	- BufferAllocator<Type:vec2f or float>
-		- cctor takes ElementCount
-		- Allocate() returns std::unique_ptr<Buffer<Type>>, with deleter invoking mAllocator->Return(Buffer<type>*)
-		- Points::mWaterBufferTmp creator borrows one, fill it in, and returns it as std::unique_ptr<Buffer<float>>
-	- SSE has reciprocal of square root; see fast way of doing normalizations
-		+ Check assembly first and see if not done yet - NOT DONE, sqrt and then divide
+
+	+ BufferAllocator<Type:vec2f or float>
+		+ cctor takes ElementCount
+		+ Allocate() returns std::unique_ptr<Buffer<Type>>, with deleter invoking mAllocator->Release(Buffer<type>*)
+		+ Points::CheckoutWaterBufferTmp (as "AllocateWaterBufferCopy()") borrows one, copies it in, and returns it as std::unique_ptr<Buffer<float>>
+		+ Opposite for Commit() (as "UpdateWaterBuffer")
+
+	- Do SSE with libsimdpp:
+		- Prepare sources:
+			- GameLib/LibSimdPp.h
+				- Defines macro for SSE3 and includes simd.h
+					- So that we have a single place for the macro
+				- Then defines VECTORIZATION_FLOAT32_SIZE as SIMDPP_FAST_FLOAT32_SIZE, and VECTORIZATION_INT32_SIZE as ...
+					- Allowing us to change it once to experiment with loop unrolling
+				- SSE code will use VECTORIZATION_FLOAT32_SIZE as the batch size
+			- Merge FloatingPoint.h into SysSpecifics.h and nuke FloatingPoint.h
+			- SysSpecifics.h:
+				- Includes LibSimdPp.h
+				- make_aligned_element_count: local static constexpr for word size, choosing max of VECTORIZATION_FLOAT32_SIZE & VECTORIZATION_INT32_SIZE
+
+		- Use at IntegratePointDynamics, to guarantee SSE2
+			- Verify with asm
+			- Add to credits
+		- See if can vectorize also UpdateWaterDynamics and UpdateSpringDynamics
+			- See replacing if's with masks
+			- See shuffled loading and storing of 4 arbitrary floats in ETH deck
+		+ Avoiding if's for divisor==0
+			+ No 0.0 checks for divisions, but + 0.00001
+				+ Verify behavior of float::max/float::min
+				+ Do benchmark: worse
+				+ Conclusion: should be used only for SSE vectorization, and when dividend has same
+				  magnitude as divisor (e.g. for normalized vector, len==0 <-> x==0 && y==0)
+			+ Should investigate masking at the same time, might be faster
 		- Think of precalculating all normalized vectors before they're needed 
 			- Call before each spring iteration (so to catch bombs and destroy's) and before water (so to catch last Integrate())
+				- TODO: Double-think - who knows when something has changed?
 			- Springs::CalculateNormalizedVectors()
+				- For use by Water
+					- It's also more approx
 				- Fills-in own vec2f buffer, exposed also via getter (GetNormalizedVector(springIndex))
+				- Uses simdpp::load_packed2 to make x1x2x3x4 & y1y2y3y4
+				- Use in water and get perf improvement
 			- std::unique_ptr<Buffer<float>> Springs::CalculateNormalizedVectorsWithLengths()
+				- For use in Springs iteration
 				- Borrows a float buffer
-			- Add "Benchmarks" project w/Googlebench
+				- Use in springs and get perf improvement
+			- Add benchmark
 
-	- UpdateSpringForces:
-		- See if using restrict pointers helps
-			- Check asm first
-			- Use restrict pointers for target forces
-			- Check asm again
 		+ Try with different cache optimization heuristics
 			+ Starting point: Spring ACMR: original=0.516807, optimized=0.325156
 			+ Choose springs with largest numbers of points in cache
+
 	- See if can avoid other IsDeleted checks, via zero'ing of coefficients
 	- UpdatePointForces:
 		- Precalculate things that do not depend on position nor velocity
@@ -125,11 +156,6 @@ Current perf (1.5.0 - after Water)
 				  we store directly StaticForce == Gravity + Water Drag (?REALLY?)
 				  - StaticForce used directly in Integrate() added to Force
 					- Or better if added to Force at UpdatePointDynamics()?
-	- Use libspm
-		- At IntegratePointDynamics, to guarantee SSE2
-		- See if can vectorize also UpdateWaterDynamics and UpdateSpringDynamics
-			- See replacing if's
-			- See shuffled loading and storing of 4 arbitrary floats in ETH deck
 	- Water and Land interpolations:
 		- 1: see if it's better to store delta's and/or other pre-calculated things
 		- 2: see if can do semi-integer x-axis interpolation
@@ -308,17 +334,16 @@ Current perf (1.5.0 - after Water)
 				+ That scalar/vector/scalar
 				+ See if can either update all point water momentum once, or for each spring - not both like now!
 					+ => FPS=26.2/26.5
-					- UpdateWaterVelocities (2m): 8.75%
+					+ UpdateWaterVelocities (2m): 8.75%
 						- expf: 0.81%
 				+ Low-hanging fruit
-				- No 0.0 checks for divisions, but + 0.00001
-					- Verify behavior of float::max/float::min
-					- Do benchmark
+				+ Initial point visit for populating exp(water) 
+					+ Requires temp buffer
+					+ Pre: 26.2/26.5
+					+ Post: 26.8/26.9
 				- Initial spring visit for all Bernoulli's
-					- Requires temp buffers
+					+ Requires temp buffers
 					- Still need to assign sign depending on whether pointIndex is spring's point A or not
-				- Initial point visit for populating exp(water) 
-					- Requires temp buffer
 				- Spring normalization pre-calculation above
 				- Moleskine
 			+ Should replace water rushing in - decide

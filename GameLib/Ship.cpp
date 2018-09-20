@@ -739,10 +739,11 @@ void Ship::UpdateWaterVelocities(
     mPoints.UpdateWaterMomentaFromVelocities();
 
     // Source and result water buffers
-    float * restrict oldPointWaterBuffer = mPoints.GetWaterBufferAsFloat();
-    float * restrict newPointWaterBuffer = mPoints.CheckoutWaterBufferTmpAsFloat();
-    vec2f * restrict oldPointWaterVelocityBuffer = mPoints.GetWaterVelocityBufferAsVec2();
-    vec2f * restrict newPointWaterMomentumBuffer = mPoints.GetWaterMomentumBufferAsVec2f();
+    float * restrict oldPointWaterBufferData = mPoints.GetWaterBufferAsFloat();
+    auto newPointWaterBuffer = mPoints.MakeWaterBufferCopy();
+    float * restrict newPointWaterBufferData = newPointWaterBuffer->data();
+    vec2f * restrict oldPointWaterVelocityBufferData = mPoints.GetWaterVelocityBufferAsVec2();
+    vec2f * restrict newPointWaterMomentumBufferData = mPoints.GetWaterMomentumBufferAsVec2f();
 
     // Weights of outbound water flows along each spring, including impermeable ones;
     // set to zero for springs whose resultant scalar water velocities are 
@@ -755,6 +756,18 @@ void Ship::UpdateWaterVelocities(
     // Resultant water velocities along each spring
     std::array<vec2f, GameParameters::MaxSpringsPerPoint> springOutboundWaterVelocities;
 
+    //
+    // Precalculate point "freeness factors", i.e. how much each point's
+    // quantity of water "suppresses" splashes from adjacent kinetic energy losses
+    //
+
+    auto pointFreenessFactorBuffer = mPoints.AllocateWorkBufferFloat();
+    float * restrict pointFreenessFactorBufferData = pointFreenessFactorBuffer->data();
+    for (auto pointIndex : mPoints)
+    {
+        pointFreenessFactorBufferData[pointIndex] = 
+            exp(-oldPointWaterBufferData[pointIndex] * 10.0f);
+    }
 
 
     //
@@ -773,7 +786,7 @@ void Ship::UpdateWaterVelocities(
         // WaterCrazyness=0   -> alpha=1
         // WaterCrazyness=0.5 -> alpha=0.5 + 0.5*Wh
         // WaterCrazyness=1   -> alpha=Wh
-        float const alphaCrazyness = 1.0f + gameParameters.WaterCrazyness * (oldPointWaterBuffer[pointIndex] - 1.0f);
+        float const alphaCrazyness = 1.0f + gameParameters.WaterCrazyness * (oldPointWaterBufferData[pointIndex] - 1.0f);
 
         // Kinetic energy lost at this point
         float pointKineticEnergyLoss = 0.0f;
@@ -795,7 +808,7 @@ void Ship::UpdateWaterVelocities(
 
             // Component of the point's own velocity along the spring
             float const pointVelocityAlongSpring =
-                oldPointWaterVelocityBuffer[pointIndex]
+                oldPointWaterVelocityBufferData[pointIndex]
                 .dot(springNormalizedVector);
 
             //
@@ -804,7 +817,7 @@ void Ship::UpdateWaterVelocities(
             //
 
             // Pressure difference (positive implies point -> other endpoint flow)
-            float const dw = oldPointWaterBuffer[pointIndex] - oldPointWaterBuffer[otherEndpointIndex];
+            float const dw = oldPointWaterBufferData[pointIndex] - oldPointWaterBufferData[otherEndpointIndex];
 
             // Gravity potential difference (positive implies point -> other endpoint flow)
             float const dy = mPoints.GetPosition(pointIndex).y - mPoints.GetPosition(otherEndpointIndex).y;
@@ -854,7 +867,7 @@ void Ship::UpdateWaterVelocities(
 
             pointSplashFreeNeighbors +=
                 mSprings.GetWaterPermeability(springIndex)
-                * exp(-oldPointWaterBuffer[otherEndpointIndex] * 10.0f);
+                * pointFreenessFactorBufferData[otherEndpointIndex];
 
             pointSplashNeighbors += mSprings.GetWaterPermeability(springIndex);
         }
@@ -874,7 +887,7 @@ void Ship::UpdateWaterVelocities(
         if (totalOutboundWaterFlowWeight != 0.0f)
         { 
             waterQuantityNormalizationFactor =
-                oldPointWaterBuffer[pointIndex]
+                oldPointWaterBufferData[pointIndex]
                 * gameParameters.WaterQuickness
                 / totalOutboundWaterFlowWeight;
         }
@@ -907,16 +920,16 @@ void Ship::UpdateWaterVelocities(
                 //
 
                 // Move water quantity
-                newPointWaterBuffer[pointIndex] -= springOutboundQuantityOfWater;
-                newPointWaterBuffer[otherEndpointIndex] += springOutboundQuantityOfWater;
+                newPointWaterBufferData[pointIndex] -= springOutboundQuantityOfWater;
+                newPointWaterBufferData[otherEndpointIndex] += springOutboundQuantityOfWater;
 
                 // Remove "old momentum" (old velocity) from point
-                newPointWaterMomentumBuffer[pointIndex] -= 
-                    oldPointWaterVelocityBuffer[pointIndex]
+                newPointWaterMomentumBufferData[pointIndex] -=
+                    oldPointWaterVelocityBufferData[pointIndex]
                     * springOutboundQuantityOfWater;
 
                 // Add "new momentum" (old velocity + velocity gained) to other endpoint
-                newPointWaterMomentumBuffer[otherEndpointIndex] +=
+                newPointWaterMomentumBufferData[otherEndpointIndex] +=
                     springOutboundWaterVelocities[s]
                     * springOutboundQuantityOfWater;
 
@@ -931,8 +944,8 @@ void Ship::UpdateWaterVelocities(
 
                 float ma = springOutboundQuantityOfWater;
                 float va = springOutboundWaterVelocities[s].length();
-                float mb = oldPointWaterBuffer[otherEndpointIndex];
-                float vb = oldPointWaterVelocityBuffer[otherEndpointIndex].dot(springNormalizedVector);
+                float mb = oldPointWaterBufferData[otherEndpointIndex];
+                float vb = oldPointWaterVelocityBufferData[otherEndpointIndex].dot(springNormalizedVector);
 
                 float vf = 0.0f;
                 if (ma + mb != 0.0f)
@@ -958,7 +971,7 @@ void Ship::UpdateWaterVelocities(
                 // (and zeroes outgoing), assuming perfectly inelastic collision
                 //
 
-                newPointWaterMomentumBuffer[pointIndex] -=
+                newPointWaterMomentumBufferData[pointIndex] -=
                     springOutboundWaterVelocities[s]
                     * springOutboundQuantityOfWater;
 
@@ -1010,7 +1023,7 @@ void Ship::UpdateWaterVelocities(
     // Move result values back to point, transforming momenta into velocities
     //
 
-    mPoints.CommitWaterBufferTmp();
+    mPoints.UpdateWaterBuffer(std::move(newPointWaterBuffer));
     mPoints.UpdateWaterVelocitiesFromMomenta();
 }
 
