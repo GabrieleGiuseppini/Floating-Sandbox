@@ -222,6 +222,18 @@ public:
         return otherEndpointIndex;
     }
 
+    // Returns +1.0 if the spring is directed outward from the specified point;
+    // otherwise, -1.0.
+    float GetSpringDirectionFrom(
+        ElementIndex springElementIndex,
+        ElementIndex pointIndex) const
+    {
+        if (pointIndex == mEndpointsBuffer[springElementIndex].PointAIndex)
+            return 1.0f;
+        else
+            return -1.0f;
+    }
+
     vec2f const & GetPointAPosition(
         ElementIndex springElementIndex,
         Points const & points) const
