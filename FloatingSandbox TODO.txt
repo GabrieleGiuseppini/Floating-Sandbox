@@ -61,7 +61,7 @@ Current perf (1.5.0 - after Water)
 	- GameJolt
 + Splash w/Probe
 + Merge into master
-- Update changes
++ Update changes
 - Release
 
 - GfxOptimizations:

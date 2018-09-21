@@ -1,5 +1,9 @@
 1.5.0
-- 
+- Completely redesigned water flooding, and added splash sounds
+  when waves break inside a physical body
+- Added ability to draw vector fields
+- Added probes, to display real-time scalar time series
+- Redesigned settings dialog
 
 1.4.0
 - Lamps are now powered by generators and electrical cables, and they flicker and turn off when the circuit

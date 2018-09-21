@@ -725,7 +725,7 @@ void RenderContext::RenderStart()
 
     // Clear canvas 
     static const vec3f ClearColorBase(0.529f, 0.808f, 0.980f); // (cornflower blue)
-    vec3f clearColor = ClearColorBase * mAmbientLightIntensity;
+    vec3f const clearColor = ClearColorBase * mAmbientLightIntensity;
     glClearColor(clearColor.x, clearColor.y, clearColor.z, 1.0f);
     glStencilMask(0xFF);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
