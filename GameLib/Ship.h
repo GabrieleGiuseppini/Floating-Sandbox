@@ -10,6 +10,7 @@
 #include "MaterialDatabase.h"
 #include "Physics.h"
 #include "RenderContext.h"
+#include "RunningAverage.h"
 #include "ShipDefinition.h"
 #include "Vectors.h"
 
@@ -128,20 +129,9 @@ public:
         GameParameters const & gameParameters,
         float & waterTaken);
 
-    void UpdateWaterVelocities(GameParameters const & gameParameters);
-
-    void IntegrateWaterVelocities(GameParameters const & gameParameters);
-
-    // TODOOLD
-    void LeakWater(
+    void UpdateWaterVelocities(
         GameParameters const & gameParameters,
-        float & waterTaken);
-
-    // TODOOLD
-    void GravitateWater(GameParameters const & gameParameters);
-
-    // TODOOLD
-    void BalancePressure(GameParameters const & gameParameters);
+        float & waterSplashed);
 
     // Electrical 
 
@@ -203,7 +193,10 @@ private:
 
     // Sinking detection
     bool mIsSinking;
+
+    // Water
     float mTotalWater;
+    RunningAverage<30> mWaterSplashedRunningAverage;
 
     // Pinned points
     PinnedPoints mPinnedPoints;

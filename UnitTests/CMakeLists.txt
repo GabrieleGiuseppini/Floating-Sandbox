@@ -4,14 +4,15 @@ if(MSVC)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING /DGTEST_HAS_TR1_TUPLE=0")
 endif(MSVC)
 
-# google advises to compile gtest from source with the project
-add_subdirectory("C:/Users/Neurodancer/source/repos/googletest" gtest)
+# Google advises to compile gtest from source with the project
+add_subdirectory("${GOOGLE_TEST_ROOT}" gtest)
 
 set (UNIT_TEST_SOURCES
 	CircularListTests.cpp
 	EnumFlagsTests.cpp
 	FixedSizeVectorTests.cpp
 	GameEventDispatcherTests.cpp
+	LibSimdPpTests.cpp
 	SegmentTests.cpp
 	SliderCoreTests.cpp
 	TupleKeysTests.cpp
@@ -19,6 +20,8 @@ set (UNIT_TEST_SOURCES
 
 add_executable (UnitTests ${UNIT_TEST_SOURCES})
 add_test (UnitTests UnitTests)
+
+target_include_directories(UnitTests PRIVATE SYSTEM ${LIBSIMDPP_INCLUDE_DIRS})
 
 target_link_libraries (UnitTests
 	GameLib

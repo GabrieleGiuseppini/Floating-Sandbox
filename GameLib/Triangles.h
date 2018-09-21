@@ -53,9 +53,9 @@ public:
         //////////////////////////////////
         // Buffers
         //////////////////////////////////
-        , mIsDeletedBuffer(elementCount)
+        , mIsDeletedBuffer(mBufferElementCount, mElementCount, true)
         // Endpoints
-        , mEndpointsBuffer(elementCount)        
+        , mEndpointsBuffer(mBufferElementCount, mElementCount, Endpoints(NoneElementIndex, NoneElementIndex, NoneElementIndex))
         //////////////////////////////////
         // Container
         //////////////////////////////////

@@ -6,6 +6,7 @@
 #pragma once
 
 #include "Buffer.h"
+#include "BufferAllocator.h"
 #include "ElementContainer.h"
 #include "FixedSizeVector.h"
 #include "GameParameters.h"
@@ -16,6 +17,7 @@
 #include "Vectors.h"
 
 #include <cassert>
+#include <cstring>
 #include <functional>
 #include <vector>
 
@@ -55,34 +57,36 @@ public:
         //////////////////////////////////
         // Buffers
         //////////////////////////////////
-        , mIsDeletedBuffer(elementCount)
+        , mIsDeletedBuffer(mBufferElementCount, mElementCount, true)
         // Material
-        , mMaterialBuffer(elementCount)
-        , mIsHullBuffer(elementCount)
-        , mIsRopeBuffer(elementCount)
-        // Dynamics
-        , mPositionBuffer(elementCount)
-        , mVelocityBuffer(elementCount)
-        , mForceBuffer(elementCount)
-        , mIntegrationFactorBuffer(elementCount)
-        , mMassBuffer(elementCount)
+        , mMaterialBuffer(mBufferElementCount, mElementCount, nullptr)
+        , mIsHullBuffer(mBufferElementCount, mElementCount, false)
+        , mIsRopeBuffer(mBufferElementCount, mElementCount, false)
+        // Mechanical dynamics
+        , mPositionBuffer(mBufferElementCount, mElementCount, vec2f::zero())
+        , mVelocityBuffer(mBufferElementCount, mElementCount, vec2f::zero())
+        , mForceBuffer(mBufferElementCount, mElementCount, vec2f::zero())
+        , mIntegrationFactorBuffer(mBufferElementCount, mElementCount, vec2f::zero())
+        , mMassBuffer(mBufferElementCount, mElementCount, 1.0f)
         // Water dynamics
-        , mBuoyancyBuffer(elementCount)        
-        , mWaterBuffer(elementCount)
-        , mIsLeakingBuffer(elementCount)
+        , mBuoyancyBuffer(mBufferElementCount, mElementCount, 0.0f)
+        , mWaterBuffer(mBufferElementCount, mElementCount, 0.0f)
+        , mWaterVelocityBuffer(mBufferElementCount, mElementCount, vec2f::zero())
+        , mWaterMomentumBuffer(mBufferElementCount, mElementCount, vec2f::zero())
+        , mIsLeakingBuffer(mBufferElementCount, mElementCount, false)
         // Electrical dynamics
-        , mElectricalElementBuffer(elementCount)
-        , mLightBuffer(elementCount)
+        , mElectricalElementBuffer(mBufferElementCount, mElementCount, NoneElementIndex)
+        , mLightBuffer(mBufferElementCount, mElementCount, 0.0f)
         // Structure
-        , mNetworkBuffer(elementCount)
+        , mNetworkBuffer(mBufferElementCount, mElementCount, Network())
         // Connected component
-        , mConnectedComponentIdBuffer(elementCount)
-        , mCurrentConnectedComponentDetectionVisitSequenceNumberBuffer(elementCount)
+        , mConnectedComponentIdBuffer(mBufferElementCount, mElementCount, NoneElementIndex)
+        , mCurrentConnectedComponentDetectionVisitSequenceNumberBuffer(mBufferElementCount, mElementCount, NoneElementIndex)
         // Pinning
-        , mIsPinnedBuffer(elementCount)
+        , mIsPinnedBuffer(mBufferElementCount, mElementCount, false)
         // Immutable render attributes
-        , mColorBuffer(elementCount)
-        , mTextureCoordinatesBuffer(elementCount)
+        , mColorBuffer(mBufferElementCount, mElementCount, vec3f::zero())
+        , mTextureCoordinatesBuffer(mBufferElementCount, mElementCount, vec2f::zero())
         //////////////////////////////////
         // Container
         //////////////////////////////////
@@ -90,6 +94,8 @@ public:
         , mGameEventHandler(std::move(gameEventHandler))
         , mDestroyHandler()
         , mAreImmutableRenderAttributesUploaded(false)
+        , mFloatBufferAllocator(mBufferElementCount)
+        , mVec2fBufferAllocator(mBufferElementCount)
     {
     }
 
@@ -137,13 +143,17 @@ public:
         int shipId,
         RenderContext & renderContext) const;
 
+    void UploadVectors(
+        int shipId,
+        RenderContext & renderContext) const;
+
 public:
 
     //
     // IsDeleted
     //
 
-    inline bool IsDeleted(ElementIndex pointElementIndex) const
+    bool IsDeleted(ElementIndex pointElementIndex) const
     {
         return mIsDeletedBuffer[pointElementIndex];
     }
@@ -152,17 +162,17 @@ public:
     // Material
     //
 
-    inline Material const * GetMaterial(ElementIndex pointElementIndex) const
+    Material const * GetMaterial(ElementIndex pointElementIndex) const
     {
         return mMaterialBuffer[pointElementIndex];
     }
 
-    inline bool IsHull(ElementIndex pointElementIndex) const
+    bool IsHull(ElementIndex pointElementIndex) const
     {
         return mIsHullBuffer[pointElementIndex];
     }
 
-    inline bool IsRope(ElementIndex pointElementIndex) const
+    bool IsRope(ElementIndex pointElementIndex) const
     {
         return mIsRopeBuffer[pointElementIndex];
     }
@@ -240,43 +250,98 @@ public:
     // Water dynamics
     //
 
-    inline float GetBuoyancy(ElementIndex pointElementIndex) const
+    float GetBuoyancy(ElementIndex pointElementIndex) const
     {
         return mBuoyancyBuffer[pointElementIndex];
     }
 
-    inline float GetWater(ElementIndex pointElementIndex) const
+    float * restrict GetWaterBufferAsFloat()
+    {
+        return mWaterBuffer.data();
+    }
+
+    float GetWater(ElementIndex pointElementIndex) const
     {
         return mWaterBuffer[pointElementIndex];
     }
 
-    inline float & GetWater(ElementIndex pointElementIndex)
-    {
-        return mWaterBuffer[pointElementIndex];
-    }
-
-    inline float GetExternalWaterPressure(
+    void AddWater(
         ElementIndex pointElementIndex,
-        float waterLevel) const
+        float water)
     {
-        // Negative Y == under water line
-        if (GetPosition(pointElementIndex).y < waterLevel)
+        mWaterBuffer[pointElementIndex] += water;
+        assert(mWaterBuffer[pointElementIndex] >= 0.0f);
+    }
+
+    std::shared_ptr<Buffer<float>> MakeWaterBufferCopy()
+    {
+        auto waterBufferCopy = mFloatBufferAllocator.Allocate();
+        waterBufferCopy->copy(mWaterBuffer);
+
+        return waterBufferCopy;
+    }
+
+    void UpdateWaterBuffer(std::shared_ptr<Buffer<float>> newWaterBuffer)
+    {
+        mWaterBuffer.copy(*newWaterBuffer);
+    }
+
+    vec2f * restrict GetWaterVelocityBufferAsVec2()
+    {
+        return mWaterVelocityBuffer.data();
+    }
+
+    /*
+     * Only valid after a call to UpdateWaterMomentaFromVelocities() and when
+     * neither water quantities nor velocities have changed.
+     */
+    vec2f * restrict GetWaterMomentumBufferAsVec2f()
+    {
+        return mWaterMomentumBuffer.data();
+    }
+
+    void UpdateWaterMomentaFromVelocities()
+    {
+        float * const restrict waterBuffer = mWaterBuffer.data();
+        vec2f * const restrict waterVelocityBuffer = mWaterVelocityBuffer.data();
+        vec2f * restrict waterMomentumBuffer = mWaterMomentumBuffer.data();
+
+        for (ElementIndex p = 0; p < mBufferElementCount; ++p)
         {
-            // Pressure of a column of water of area 1m2 from the point up to the surface
-            return GameParameters::GravityMagnitude * (waterLevel - GetPosition(pointElementIndex).y);
-        }
-        else
-        {
-            return 0.0f;
+            waterMomentumBuffer[p] =
+                waterVelocityBuffer[p]
+                * waterBuffer[p];
         }
     }
 
-    inline bool IsLeaking(ElementIndex pointElementIndex) const
+    void UpdateWaterVelocitiesFromMomenta()
+    {
+        float * const restrict waterBuffer = mWaterBuffer.data();
+        vec2f * restrict waterVelocityBuffer = mWaterVelocityBuffer.data();
+        vec2f * const restrict waterMomentumBuffer = mWaterMomentumBuffer.data();
+        
+        for (ElementIndex p = 0; p < mBufferElementCount; ++p)
+        {
+            if (waterBuffer[p] != 0.0f)
+            {
+                waterVelocityBuffer[p] =
+                    waterMomentumBuffer[p]
+                    / waterBuffer[p];
+            }
+            else
+            {
+                // No mass, no velocity
+                waterVelocityBuffer[p] = vec2f::zero();
+            }
+        }
+    }
+
+    bool IsLeaking(ElementIndex pointElementIndex) const
     {
         return mIsLeakingBuffer[pointElementIndex];
     }
 
-    inline void SetLeaking(ElementIndex pointElementIndex)
+    void SetLeaking(ElementIndex pointElementIndex)
     {
         mIsLeakingBuffer[pointElementIndex] = true;
     }
@@ -285,17 +350,17 @@ public:
     // Electrical dynamics
     //
 
-    inline ElementIndex GetElectricalElement(ElementIndex pointElementIndex) const
+    ElementIndex GetElectricalElement(ElementIndex pointElementIndex) const
     {
         return mElectricalElementBuffer[pointElementIndex];
     }
 
-    inline float GetLight(ElementIndex pointElementIndex) const
+    float GetLight(ElementIndex pointElementIndex) const
     {
         return mLightBuffer[pointElementIndex];
     }
 
-    inline float & GetLight(ElementIndex pointElementIndex)
+    float & GetLight(ElementIndex pointElementIndex)
     {
         return mLightBuffer[pointElementIndex];
     }
@@ -304,19 +369,19 @@ public:
     // Network
     //
 
-    inline auto const & GetConnectedSprings(ElementIndex pointElementIndex) const
+    auto const & GetConnectedSprings(ElementIndex pointElementIndex) const
     {
         return mNetworkBuffer[pointElementIndex].ConnectedSprings;
     }
 
-    inline void AddConnectedSpring(
+    void AddConnectedSpring(
         ElementIndex pointElementIndex,
         ElementIndex springElementIndex)
     {
         mNetworkBuffer[pointElementIndex].ConnectedSprings.push_back(springElementIndex);
     }
 
-    inline void RemoveConnectedSpring(
+    void RemoveConnectedSpring(
         ElementIndex pointElementIndex,
         ElementIndex springElementIndex)
     {
@@ -326,19 +391,19 @@ public:
         (void)found;
     }
 
-    inline auto const & GetConnectedTriangles(ElementIndex pointElementIndex) const
+    auto const & GetConnectedTriangles(ElementIndex pointElementIndex) const
     {
         return mNetworkBuffer[pointElementIndex].ConnectedTriangles;
     }
 
-    inline void AddConnectedTriangle(
+    void AddConnectedTriangle(
         ElementIndex pointElementIndex,
         ElementIndex triangleElementIndex)
     {
         mNetworkBuffer[pointElementIndex].ConnectedTriangles.push_back(triangleElementIndex);
     }
 
-    inline void RemoveConnectedTriangle(
+    void RemoveConnectedTriangle(
         ElementIndex pointElementIndex,
         ElementIndex triangleElementIndex)
     {
@@ -352,7 +417,7 @@ public:
     // Pinning
     //
 
-    inline bool IsPinned(ElementIndex pointElementIndex) const
+    bool IsPinned(ElementIndex pointElementIndex) const
     {
         return mIsPinnedBuffer[pointElementIndex];
     }
@@ -382,29 +447,43 @@ public:
     // Connected component
     //
 
-    inline ConnectedComponentId GetConnectedComponentId(ElementIndex pointElementIndex) const
+    ConnectedComponentId GetConnectedComponentId(ElementIndex pointElementIndex) const
     {
         return mConnectedComponentIdBuffer[pointElementIndex];
     }
 
-    inline void SetConnectedComponentId(
+    void SetConnectedComponentId(
         ElementIndex pointElementIndex,
         ConnectedComponentId connectedComponentId)
     { 
         mConnectedComponentIdBuffer[pointElementIndex] = connectedComponentId;
     }
 
-    inline VisitSequenceNumber GetCurrentConnectedComponentDetectionVisitSequenceNumber(ElementIndex pointElementIndex) const
+    VisitSequenceNumber GetCurrentConnectedComponentDetectionVisitSequenceNumber(ElementIndex pointElementIndex) const
     {
         return mCurrentConnectedComponentDetectionVisitSequenceNumberBuffer[pointElementIndex];
     }
 
-    inline void SetCurrentConnectedComponentDetectionVisitSequenceNumber(
+    void SetCurrentConnectedComponentDetectionVisitSequenceNumber(
         ElementIndex pointElementIndex,
         VisitSequenceNumber connectedComponentDetectionVisitSequenceNumber)
     { 
         mCurrentConnectedComponentDetectionVisitSequenceNumberBuffer[pointElementIndex] =
             connectedComponentDetectionVisitSequenceNumber;
+    }
+
+    //
+    // Temporary buffer
+    //
+
+    std::shared_ptr<Buffer<float>> AllocateWorkBufferFloat()
+    {
+        return mFloatBufferAllocator.Allocate();
+    }
+
+    std::shared_ptr<Buffer<vec2f>> AllocateWorkBufferVec2f()
+    {
+        return mVec2fBufferAllocator.Allocate();
     }
 
 private:
@@ -444,6 +523,12 @@ private:
     // Height of a 1m2 column of water which provides a pressure equivalent to the pressure at
     // this point. Quantity of water is max(water, 1.0)
     Buffer<float> mWaterBuffer;
+
+    // Total velocity of the water at this point
+    Buffer<vec2f> mWaterVelocityBuffer;
+
+    // Total momentum of the water at this point
+    Buffer<vec2f> mWaterMomentumBuffer;
 
     Buffer<bool> mIsLeakingBuffer;
 
@@ -497,6 +582,10 @@ private:
     // Flag remembering whether or not we've already uploaded
     // the immutable render attributes
     bool mutable mAreImmutableRenderAttributesUploaded;
+
+    // Allocators for work buffers
+    BufferAllocator<float> mFloatBufferAllocator;
+    BufferAllocator<vec2f> mVec2fBufferAllocator;
 };
 
 }

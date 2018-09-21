@@ -5,10 +5,12 @@
 
 set  (GAME_SOURCES
 	Buffer.h
+	BufferAllocator.h
 	CircularList.h
 	ElementContainer.h
 	EnumFlags.h
 	FixedSizeVector.h
+	FloatingPoint.h
 	GameController.cpp
 	GameController.h
 	GameEventDispatcher.h
@@ -38,6 +40,7 @@ set  (GAME_SOURCES
 	ResourceLoader.h
 	RotatedRectangle.h
 	RotatedTextureRenderInfo.h
+	RunningAverage.h
 	ShipBuilder.cpp
 	ShipBuilder.h
 	ShipDefinition.h
@@ -91,6 +94,7 @@ source_group("Physics" FILES ${PHYSICS_SOURCES})
 
 add_library (GameLib ${GAME_SOURCES} ${GEOMETRY_SOURCES} ${PHYSICS_SOURCES})
 
+target_include_directories(GameLib PUBLIC ${LIBSIMDPP_INCLUDE_DIRS})
 target_include_directories(GameLib PUBLIC ${PICOJSON_INCLUDE_DIRS})
 target_include_directories(GameLib PRIVATE ${IL_INCLUDE_DIR})
 target_include_directories(GameLib INTERFACE ..)

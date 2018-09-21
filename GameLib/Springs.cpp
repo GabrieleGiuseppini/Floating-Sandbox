@@ -39,7 +39,6 @@ void Springs::Add(
         ? points.GetMaterial(pointAIndex)
         : points.GetMaterial(pointBIndex));
 
-    mWaterVelocityBuffer.emplace_back(0.0f);
     mWaterPermeabilityBuffer.emplace_back(Characteristics::None != (characteristics & Characteristics::Hull) ? 0.0f : 1.0f);
 
     mIsStressedBuffer.emplace_back(false);
@@ -78,10 +77,6 @@ void Springs::Destroy(
     // affecting non-deleted points
     mCoefficientsBuffer[springElementIndex].StiffnessCoefficient = 0.0f;
     mCoefficientsBuffer[springElementIndex].DampingCoefficient = 0.0f;
-
-    // Zero out our water permeability, to
-    // avoid draining water from/to non-destroyed points along non-existing springs
-    mWaterPermeabilityBuffer[springElementIndex] = 0.0f;
 
     // Flag ourselves as deleted
     mIsDeletedBuffer[springElementIndex] = true;

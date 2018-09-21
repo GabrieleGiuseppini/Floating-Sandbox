@@ -33,7 +33,8 @@ public:
         float visibleWorldHeight,
         float visibleWorldWidth,
         float canvasToVisibleWorldHeightRatio,
-        float ambientLightIntensity);
+        float ambientLightIntensity,
+        float waterLevelOfDetail);
     
     ~ShipRenderContext();
 
@@ -48,6 +49,7 @@ public:
 
     void UpdateAmbientLightIntensity(float ambientLightIntensity);
 
+    void UpdateWaterLevelThreshold(float waterLevelOfDetail);
 
 public:
 
@@ -314,6 +316,16 @@ public:
 
     void UploadElementBombsEnd();
 
+    //
+    // Vectors
+    //
+
+    void UploadVectors(
+        size_t count,
+        vec2f const * restrict position,
+        vec2f const * restrict vector,
+        float lengthAdjustment,
+        vec3f const & color);
 
     //
     // Lamps
@@ -344,7 +356,8 @@ public:
     /////////////////////////////////////////////////////////////
 
     void Render(
-        ShipRenderMode renderMode,
+        ShipRenderMode shipRenderMode,
+        VectorFieldRenderMode vectorFieldRenderMode,
         bool showStressedSprings);
 
 private:
@@ -369,11 +382,13 @@ private:
 
     void RenderPinnedPointElements(ConnectedComponentData const & connectedComponent);
 
+    void RenderVectors();
 
 private:
 
     float mCanvasToVisibleWorldHeightRatio;
     float mAmbientLightIntensity;
+    float mWaterLevelThreshold;
 
 private:
 
@@ -387,6 +402,7 @@ private:
     static constexpr GLuint PinnedPointTextureCoordinatesVertexAttribute = 6;
     static constexpr GLuint BombPosVertexAttribute = 7;
     static constexpr GLuint BombTextureCoordinatesVertexAttribute = 8;
+    static constexpr GLuint VectorArrowPosVertexAttribute = 9;
 
 private:
 
@@ -409,14 +425,17 @@ private:
     GameOpenGLShaderProgram mElementColorShaderProgram;
     GLint mElementColorShaderOrthoMatrixParameter;
     GLint mElementColorShaderAmbientLightIntensityParameter;
+    GLint mElementColorShaderWaterLevelThresholdParameter;
 
     GameOpenGLShaderProgram mElementRopeShaderProgram;
     GLint mElementRopeShaderOrthoMatrixParameter;
     GLint mElementRopeShaderAmbientLightIntensityParameter;
-
+    GLint mElementRopeShaderWaterLevelThresholdParameter;
+    
     GameOpenGLShaderProgram mElementTextureShaderProgram;
     GLint mElementTextureShaderOrthoMatrixParameter;
     GLint mElementTextureShaderAmbientLightIntensityParameter;
+    GLint mElementTextureShaderWaterLevelThresholdParameter;
 
     GameOpenGLShaderProgram mElementStressedSpringShaderProgram;
     GLint mElementStressedSpringShaderOrthoMatrixParameter;
@@ -615,6 +634,16 @@ private:
 
     std::vector<BombElement> mBombElementBuffer;
     GameOpenGLVBO mBombVBO;
+
+    //
+    // Vectors
+    //
+
+    std::vector<vec2f> mVectorArrowPointPositionBuffer;
+    GameOpenGLVBO mVectorArrowPointPositionVBO;
+    GameOpenGLShaderProgram mVectorArrowShaderProgram;
+    GLint mVectorArrowShaderOrthoMatrixParameter;
+    GLint mVectorArrowShaderColorParameter;
 
     //
     // Textures

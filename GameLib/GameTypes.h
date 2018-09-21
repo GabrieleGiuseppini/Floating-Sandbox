@@ -56,6 +56,17 @@ enum class ShipRenderMode
 };
 
 /*
+ * The different vector fields that may be rendered.
+ */
+enum class VectorFieldRenderMode
+{
+    None,
+    PointVelocity,
+    PointWaterVelocity,
+    PointWaterMomentum
+};
+
+/*
  * Types of bombs (duh).
  */
 enum class BombType

@@ -27,14 +27,16 @@ void Points::Add(
     mIsRopeBuffer.emplace_back(isRope);
 
     mPositionBuffer.emplace_back(position);
-    mVelocityBuffer.emplace_back(vec2f(0.0f, 0.0f));
-    mForceBuffer.emplace_back(vec2f(0.0f, 0.0f));
+    mVelocityBuffer.emplace_back(vec2f::zero());
+    mForceBuffer.emplace_back(vec2f::zero());
     mIntegrationFactorBuffer.emplace_back(CalculateIntegrationFactor(material->Mass));
     mMassBuffer.emplace_back(material->Mass);
 
     mBuoyancyBuffer.emplace_back(buoyancy);
-    mIsLeakingBuffer.emplace_back(false);
     mWaterBuffer.emplace_back(0.0f);
+    mWaterVelocityBuffer.emplace_back(vec2f::zero());
+    mWaterMomentumBuffer.emplace_back(vec2f::zero());
+    mIsLeakingBuffer.emplace_back(false);    
 
     mElectricalElementBuffer.emplace_back(electricalElementIndex);
     mLightBuffer.emplace_back(0.0f);
@@ -69,6 +71,13 @@ void Points::Destroy(ElementIndex pointElementIndex)
 
     // Flag ourselves as deleted
     mIsDeletedBuffer[pointElementIndex] = true;
+
+    // Let the physical world forget about us
+    mPositionBuffer[pointElementIndex] = vec2f::zero();
+    mVelocityBuffer[pointElementIndex] = vec2f::zero();
+    mIntegrationFactorBuffer[pointElementIndex] = vec2f::zero();
+    mWaterVelocityBuffer[pointElementIndex] = vec2f::zero();
+    mWaterMomentumBuffer[pointElementIndex] = vec2f::zero();
 }
 
 void Points::Breach(
@@ -138,6 +147,44 @@ void Points::UploadElements(
                 mConnectedComponentIdBuffer[i]);
         }
     }
+}
+
+void Points::UploadVectors(
+    int shipId,
+    RenderContext & renderContext) const
+{
+    static constexpr vec3f VectorColor(0.5f, 0.1f, 0.f);
+
+    if (renderContext.GetVectorFieldRenderMode() == VectorFieldRenderMode::PointVelocity)
+    {
+        renderContext.UploadShipVectors(
+            shipId,
+            mElementCount,
+            mPositionBuffer.data(),
+            mVelocityBuffer.data(),
+            0.25f,
+            VectorColor);
+    }
+    else if (renderContext.GetVectorFieldRenderMode() == VectorFieldRenderMode::PointWaterVelocity)
+    {
+        renderContext.UploadShipVectors(
+            shipId,
+            mElementCount,
+            mPositionBuffer.data(),
+            mWaterVelocityBuffer.data(),
+            1.0f,
+            VectorColor);
+    }
+    else if (renderContext.GetVectorFieldRenderMode() == VectorFieldRenderMode::PointWaterMomentum)
+    {
+        renderContext.UploadShipVectors(
+            shipId,
+            mElementCount,
+            mPositionBuffer.data(),
+            mWaterMomentumBuffer.data(),
+            0.4f,
+            VectorColor);
+    }    
 }
 
 void Points::SetMassToMaterialOffset(

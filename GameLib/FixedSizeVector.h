@@ -81,9 +81,9 @@ public:
     {
     }
 
-    // Make sure we don't introduce unnecessary copies inadvertently
-    FixedSizeVector(FixedSizeVector const & other) = delete;
-    FixedSizeVector & operator=(FixedSizeVector const & other) = delete;
+    
+    FixedSizeVector(FixedSizeVector const & other) = default;
+    FixedSizeVector & operator=(FixedSizeVector const & other) = default;
 
 
     //

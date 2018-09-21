@@ -15,6 +15,11 @@ public:
 	
     float x, y;
 
+    static constexpr const vec2f zero() 
+    { 
+        return vec2f(); 
+    }
+
 	inline vec2f operator+(vec2f const & rhs) const
 	{
 		return vec2f(
@@ -174,6 +179,8 @@ struct vec3f
 public:
 	
     float x, y, z;
+
+    static constexpr const vec3f zero() { return vec3f(); }
 
 	inline vec3f operator+(vec3f const & rhs) const
 	{

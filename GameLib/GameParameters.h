@@ -56,12 +56,14 @@ struct GameParameters
     //
 
     static constexpr vec2f Gravity = vec2f(0.0f, -9.80f);
-    static constexpr vec2f GravityNormal = vec2f(0.0f, -1.0f);
+    static constexpr vec2f GravityNormalized = vec2f(0.0f, -1.0f);
     static constexpr float GravityMagnitude = 9.80f;
 
     //
     // Tunable parameters
     //
+
+    // Dynamics
 
     float StiffnessAdjustment;
     static constexpr float MinStiffnessAdjustment = 0.001f;
@@ -75,13 +77,21 @@ struct GameParameters
 	static constexpr float MinBuoyancyAdjustment = 0.0f;
 	static constexpr float MaxBuoyancyAdjustment = 4.0f;
 
-    float WaterVelocityAdjustment;
-    static constexpr float MinWaterVelocityAdjustment = 0.001f;
-    static constexpr float MaxWaterVelocityAdjustment = 2.4f;
+    // Water
 
-    float WaterVelocityDrag;
-    static constexpr float MinWaterVelocityDrag = 0.0f;
-    static constexpr float MaxWaterVelocityDrag = 1.0f;
+    float WaterIntakeAdjustment;
+    static constexpr float MinWaterIntakeAdjustment = 0.1f;
+    static constexpr float MaxWaterIntakeAdjustment = 10.0f;
+
+    float WaterCrazyness;
+    static constexpr float MinWaterCrazyness = 0.0f;
+    static constexpr float MaxWaterCrazyness = 2.0f;
+
+    float WaterQuickness;
+    static constexpr float MinWaterQuickness = 0.001f;
+    static constexpr float MaxWaterQuickness = 1.0f;
+
+    // Misc
 
 	float WaveHeight;
 	static constexpr float MinWaveHeight = 0.0f;
