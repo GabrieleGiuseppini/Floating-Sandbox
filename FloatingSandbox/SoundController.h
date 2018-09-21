@@ -144,7 +144,8 @@ private:
         TimerBombSlowFuse,
         TimerBombFastFuse,
         TimerBombDefused,
-        Explosion
+        Explosion,
+        Wave
     };
 
     static SoundType StrToSoundType(std::string const & str)
@@ -187,6 +188,8 @@ private:
             return SoundType::TimerBombDefused;
         else if (lstr == "explosion")
             return SoundType::Explosion;
+        else if (lstr == "wave")
+            return SoundType::Wave;
         else
             throw GameException("Unrecognized SoundType \"" + str + "\"");
     }
@@ -367,6 +370,10 @@ private:
         bool isUnderwater,
         float volume);
 
+    void PlaySound(
+        SoundType soundType,
+        float volume);
+
     void ChooseAndPlaySound(
         SoundType soundType,
         MultipleSoundChoiceInfo & multipleSoundChoiceInfo,
@@ -397,6 +404,9 @@ private:
     float mCurrentVolume;
     bool mPlaySinkingMusic;
 
+    float mLastWaterSplashed;
+    float mCurrentWaterSplashedTrigger;
+
     // Tracking which bombs are emitting which fuse sounds
     std::set<ObjectId> mBombsEmittingSlowFuseSounds;
     std::set<ObjectId> mBombsEmittingFastFuseSounds;
@@ -420,6 +430,10 @@ private:
     unordered_tuple_map<
         std::tuple<SoundType, bool>,
         MultipleSoundChoiceInfo> mUSoundBuffers;
+
+    unordered_tuple_map<
+        std::tuple<SoundType>,
+        MultipleSoundChoiceInfo> mSoundBuffers;
 
     std::vector<PlayingSound> mCurrentlyPlayingSounds;
 

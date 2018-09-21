@@ -37,8 +37,22 @@ ProbePanel::ProbePanel(wxWindow* parent)
 
         sizer->AddSpacer(TopPadding);
 
+        mWaterTakenProbe = std::make_unique<ScalarTimeSeriesProbeControl>(this, 120);
+        sizer->Add(mWaterTakenProbe.get(), 1, wxALIGN_CENTRE, 0);        
+
+        wxStaticText * label = new wxStaticText(this, wxID_ANY, "Water Inflow", wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
+        sizer->Add(label, 0, wxALIGN_CENTRE, 0);
+
+        probesSizer->Add(sizer, 1, wxLEFT | wxRIGHT, ProbePadding);
+    }
+
+    {
+        wxBoxSizer * sizer = new wxBoxSizer(wxVERTICAL);
+
+        sizer->AddSpacer(TopPadding);
+
         mWaterSplashProbe = std::make_unique<ScalarTimeSeriesProbeControl>(this, 200);
-        sizer->Add(mWaterSplashProbe.get(), 1, wxALIGN_CENTRE, 0);        
+        sizer->Add(mWaterSplashProbe.get(), 1, wxALIGN_CENTRE, 0);
 
         wxStaticText * label = new wxStaticText(this, wxID_ANY, "Water Splash", wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
         sizer->Add(label, 0, wxALIGN_CENTRE, 0);
@@ -65,6 +79,7 @@ void ProbePanel::Update()
 
     if (IsActive())
     {
+        mWaterTakenProbe->Update();
         mWaterSplashProbe->Update();
     }
 }
@@ -74,6 +89,11 @@ void ProbePanel::Update()
 void ProbePanel::OnGameReset()
 {
     mWaterSplashProbe->Reset();
+}
+
+void ProbePanel::OnWaterTaken(float waterTaken)
+{
+    mWaterTakenProbe->RegisterSample(waterTaken);
 }
 
 void ProbePanel::OnWaterSplashed(float waterSplashed)

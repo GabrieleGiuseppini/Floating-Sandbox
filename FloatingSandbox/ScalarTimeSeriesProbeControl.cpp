@@ -9,8 +9,10 @@
 
 #include <algorithm>
 #include <cassert>
+#include <iomanip>
 #include <limits>
 #include <numeric>
+#include <sstream>
 
 static constexpr int Height = 80;
 
@@ -207,7 +209,10 @@ void ScalarTimeSeriesProbeControl::Render(wxDC & dc)
         // Draw label
         //
 
-        wxString testText(std::to_string(*mSamples.begin()) + " (" + std::to_string(mMaxValue) + ")");        
-        dc.DrawText(testText, 0, Height - 9);
+        std::stringstream ss;
+        ss << std::fixed << std::setprecision(3) << *mSamples.begin() << " (" << mMaxValue << ")";
+
+        wxString testText(ss.str());
+        dc.DrawText(testText, 0, 1);
     }
 }

@@ -33,6 +33,8 @@ public:
 
     virtual void OnGameReset() override;
 
+    virtual void OnWaterTaken(float waterTaken) override;
+
     virtual void OnWaterSplashed(float waterSplashed) override;
 
     virtual void OnCustomProbe(
@@ -52,6 +54,7 @@ private:
     // Probes
     //
 
+    std::unique_ptr<ScalarTimeSeriesProbeControl> mWaterTakenProbe;
     std::unique_ptr<ScalarTimeSeriesProbeControl> mWaterSplashProbe;
     std::unordered_map<std::string, std::unique_ptr<ScalarTimeSeriesProbeControl>> mCustomProbes;
 };

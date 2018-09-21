@@ -34,3 +34,16 @@ std::vector<float> MakeFloats(size_t count, float value)
 
     return floats;
 }
+
+std::vector<vec2f> MakeVectors(size_t count)
+{
+    std::vector<vec2f> vectors;
+    vectors.reserve(count);
+
+    for (size_t i = 0; i < count; ++i)
+    {
+        vectors.emplace_back(static_cast<float>(i), static_cast<float>(i) / 5.0f);
+    }
+
+    return vectors;
+}

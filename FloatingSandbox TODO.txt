@@ -59,7 +59,7 @@ Current perf (1.5.0 - after Water)
 		- spring water permeability
 		- perfectly inelastic impact => for each spring, bounce back q==resultant V along spring * normalized quantity of water bounced back (remaining)
 	- GameJolt
-= Splash w/Probe
++ Splash w/Probe
 - Merge into master
 - Update changes
 - Release
@@ -308,47 +308,6 @@ Current perf (1.5.0 - after Water)
 			- Should definitely make both A and B leak, as they both now have an adjacent hole
 
 - Water:
-	+ UpdateWaterVelocities: 
-		+ See what happens when we also incorporate dest's velocity in Bernoulli
-		+ See what happens with drag (after final calculation of velocities)
-			+ See if needs to be linear or quadratic
-		+ Test with reflected momentum
-	= Splash sound:
-		+ First we need to cleanse "rushing water" of bubbles sound
-		+ New "splash" continuous sound, with volume controlled by total magnitude of momentum change
-			+ Test with ProbePanel, ScalarTimeSeriesControl
-			+ Go for kinetic energy lost instead		
-		= Finalization:
-			= Nail down sound
-			- Nail down volume
-			+ Measure perf:
-				+ FPS: 25.9/26.1/26.2
-				+ UpdateWaterVelocities (2m): 11.19%
-					+ expf: 2.34%
-			+ When removing Q from point, test with using only component of oldV along spring
-			+ Recheck one-sided deltaT
-			+ Cleanup
-			+ Run in debug mode
-			+ Averager needs to become member of ship
-			= Optimizations - things to test:
-				+ That scalar/vector/scalar
-				+ See if can either update all point water momentum once, or for each spring - not both like now!
-					+ => FPS=26.2/26.5
-					+ UpdateWaterVelocities (2m): 8.75%
-						- expf: 0.81%
-				+ Low-hanging fruit
-				+ Initial point visit for populating exp(water) 
-					+ Requires temp buffer
-					+ Pre: 26.2/26.5
-					+ Post: 26.8/26.9
-				- Initial spring visit for all Bernoulli's
-					+ Requires temp buffers
-					- Still need to assign sign depending on whether pointIndex is spring's point A or not
-				- Spring normalization pre-calculation above
-				- Moleskine
-			+ Should replace water rushing in - decide
-
-
 	-Do water bubbles (at intake) and water drops (at outtake)
 		- Ephemeral particles emitted at UpdateWaterIntake()
 			- Intake:
@@ -1388,13 +1347,6 @@ IF WX:
 			+ Find right overshooting factor (may be slightly smaller)
 			+ Compare behavior with old game
 				+ Steel Ball and broken default ship in old game: explodes? yes
-	+ Water
-		+ Ship::LeakWater:
-			+ Try rearc: just check if leaking and if externalWaterPressure (0 if above World::WaterHeight) > mWater
-		+ Test hull springs/water propagation
-			+ Check if also in old program Titanic.png had non-wet hull rudder: YES
-			+ Less hull material in Titanic, but maintain strength
-			+ Test Titanic afterwards
 	+ Test completely force-driven dynamics:
 		+ Create branch
 		+ Each iteration (test initially with 1 iteration per step; then see with more, but scale dt)
@@ -1828,6 +1780,13 @@ IF WX:
 		+ Add to change list
 
 + Water
+	+ Water
+		+ Ship::LeakWater:
+			+ Try rearc: just check if leaking and if externalWaterPressure (0 if above World::WaterHeight) > mWater
+		+ Test hull springs/water propagation
+			+ Check if also in old program Titanic.png had non-wet hull rudder: YES
+			+ Less hull material in Titanic, but maintain strength
+			+ Test Titanic afterwards
  	+ Rush sound: should water rush sound be more....rushy?
 	+ Water rearc:
 		+ Points::Water is height of water column that provides equivalent pressure
@@ -1893,6 +1852,46 @@ IF WX:
 			+ Is Springs::WaterPermeability still used?
 			+ See if GameParameters::WaterPressureAdjustment still needed (or needs to change name)
 			+ Remove old water dynamics code from Ship
+	+ UpdateWaterVelocities: 
+		+ See what happens when we also incorporate dest's velocity in Bernoulli
+		+ See what happens with drag (after final calculation of velocities)
+			+ See if needs to be linear or quadratic
+		+ Test with reflected momentum
+	+ Splash sound:
+		+ First we need to cleanse "rushing water" of bubbles sound
+		+ New "splash" continuous sound, with volume controlled by total magnitude of momentum change
+			+ Test with ProbePanel, ScalarTimeSeriesControl
+			+ Go for kinetic energy lost instead		
+		+ Finalization:
+			+ Nail down sound
+			+ Nail down volume
+			+ Measure perf:
+				+ FPS: 25.9/26.1/26.2
+				+ UpdateWaterVelocities (2m): 11.19%
+					+ expf: 2.34%
+			+ When removing Q from point, test with using only component of oldV along spring
+			+ Recheck one-sided deltaT
+			+ Cleanup
+			+ Run in debug mode
+			+ Averager needs to become member of ship
+			+ Optimizations - things to test:
+				+ That scalar/vector/scalar
+				+ See if can either update all point water momentum once, or for each spring - not both like now!
+					+ => FPS=26.2/26.5
+					+ UpdateWaterVelocities (2m): 8.75%
+						- expf: 0.81%
+				+ Low-hanging fruit
+				+ Initial point visit for populating exp(water) 
+					+ Requires temp buffer
+					+ Pre: 26.2/26.5
+					+ Post: 26.8/26.9
+				+ Initial spring visit for all Bernoulli's (scalar)
+					+ Requires temp buffers
+					+ Still need to assign sign depending on whether pointIndex is spring's point A or not
+					+ Post: 26.8/26.9
+					+ NOT WORTH IT
+			+ Should replace water rushing in - decide
+
 
 + Debug light/drag issue
 	+ Could be due to distance too close and shooting light to sky

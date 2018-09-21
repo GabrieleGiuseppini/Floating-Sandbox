@@ -15,20 +15,24 @@
 #include <regex>
 
 static constexpr float SinkingMusicVolume = 20.0f;
+static constexpr float WaveSplashTriggerSize = 0.5f;
 
 SoundController::SoundController(
     std::shared_ptr<ResourceLoader> resourceLoader,
     ProgressCallback const & progressCallback)
     : mResourceLoader(std::move(resourceLoader))
+    // State
     , mCurrentVolume(100.0f)
     , mPlaySinkingMusic(true)
-    // State
+    , mLastWaterSplashed(0.0f)
+    , mCurrentWaterSplashedTrigger(WaveSplashTriggerSize)
     , mBombsEmittingSlowFuseSounds()
     , mBombsEmittingFastFuseSounds()
     // One-shot sounds
     , mMSUSoundBuffers()
     , mDslUSoundBuffers()
     , mUSoundBuffers()
+    , mSoundBuffers()
     , mCurrentlyPlayingSounds()
     // Continuous sounds
     , mSawAbovewaterSound()
@@ -213,6 +217,28 @@ SoundController::SoundController(
             //
 
             mDslUSoundBuffers[std::make_tuple(soundType, durationType, isUnderwater)]
+                .SoundBuffers.emplace_back(std::move(soundBuffer));
+        }
+        else if (soundType == SoundType::Wave)
+        {
+            //
+            // - sound
+            //
+
+            std::regex sRegex(R"(([^_]+)_\d+)");
+            std::smatch sMatch;
+            if (!std::regex_match(soundName, sMatch, sRegex))
+            {
+                throw GameException("- sound filename \"" + soundName + "\" is not recognized");
+            }
+
+            assert(sMatch.size() == 1 + 1);
+
+            //
+            // Store sound buffer
+            //
+
+            mSoundBuffers[std::make_tuple(soundType)]
                 .SoundBuffers.emplace_back(std::move(soundBuffer));
         }
         else
@@ -477,9 +503,12 @@ void SoundController::OnBreak(
 
 void SoundController::OnSinkingBegin(unsigned int /*shipId*/)
 {
-    if (sf::SoundSource::Status::Playing != mSinkingMusic.getStatus())
+    if (mPlaySinkingMusic)
     {
-        mSinkingMusic.play();
+        if (sf::SoundSource::Status::Playing != mSinkingMusic.getStatus())
+        {
+            mSinkingMusic.play();
+        }
     }
 }
 
@@ -497,29 +526,52 @@ void SoundController::OnLightFlicker(
             30.0f * size));
 }
 
-void SoundController::OnWaterTaken(float /*waterTaken*/)
+void SoundController::OnWaterTaken(float waterTaken)
 {
-    // Not responding to this event at the moment
+    // 50 * (-1 / 2.4^(0.3 * x) + 1)
+    float rushVolume = 50.f * (-1.f / std::pow(2.4f, 0.3f * std::abs(waterTaken)) + 1.f);
+    mWaterRushSound.SetVolume(rushVolume);
+    mWaterRushSound.Start();
 }
 
 void SoundController::OnWaterSplashed(float waterSplashed)
 {
-    // 100 * (-1 / 1.3^(0.01 * x) + 1)
-    //  10:  2.5
-    // 100: 23.0
+    //
+    // Trigger waves
+    //
 
-    // 100 * (-1 / 2.0^(0.01 * x) + 1)
-    //  10:  6.7
-    // 100: 50.0
+    if (waterSplashed > mLastWaterSplashed)
+    {
+        if (waterSplashed > mCurrentWaterSplashedTrigger)
+        {
+            // 100 * (-1 / 1.8^(0.08 * x) + 1)
+            //   3: 13.0
+            float waveVolume = 100.f * (-1.f / std::pow(1.8f, 0.08f * std::abs(waterSplashed)) + 1.f);
 
+            PlaySound(
+                SoundType::Wave,
+                waveVolume);
+
+            // Advance trigger
+            mCurrentWaterSplashedTrigger = waterSplashed + WaveSplashTriggerSize;
+        }
+    }
+    else
+    {
+        // Lower trigger
+        mCurrentWaterSplashedTrigger = waterSplashed + WaveSplashTriggerSize;
+    }
+
+    mLastWaterSplashed = waterSplashed;
+
+
+    //
+    // Adjust continuous splash sound
+    //
 
     float splashVolume = 100.f * (-1.f / std::pow(1.3f, 0.01f * std::abs(waterSplashed)) + 1.f);
     mWaterSplashSound.SetVolume(splashVolume);
     mWaterSplashSound.Start();
-
-    float rushVolume = 50.f * (-1.f / std::pow(2.0f, 0.1f * std::abs(waterSplashed)) + 1.f);
-    mWaterRushSound.SetVolume(rushVolume);
-    mWaterRushSound.Start();
 }
 
 void SoundController::OnBombPlaced(
@@ -782,6 +834,36 @@ void SoundController::PlayUSound(
     }
 
     if (it == mUSoundBuffers.end())
+    {
+        // No luck
+        return;
+    }
+
+
+    //
+    // Play sound
+    //
+
+    ChooseAndPlaySound(
+        soundType,
+        it->second,
+        volume);
+}
+
+void SoundController::PlaySound(
+    SoundType soundType,
+    float volume)
+{
+    LogDebug("Sound: <",
+        static_cast<int>(soundType),
+        ">");
+
+    //
+    // Find vector
+    //
+
+    auto it = mSoundBuffers.find(std::make_tuple(soundType));
+    if (it == mSoundBuffers.end())
     {
         // No luck
         return;

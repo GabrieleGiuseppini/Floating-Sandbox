@@ -1,3 +1,5 @@
+#include <GameLib/GameTypes.h>
+#include <GameLib/SysSpecifics.h>
 #include <GameLib/Vectors.h>
 
 #include <iostream>
@@ -28,8 +30,8 @@ TEST(LibSimdPpTests, MulConstant)
 
     static constexpr size_t BatchSize = SIMDPP_FAST_FLOAT32_SIZE / 2; // Vec has two components
 
-    vec2f * __restrict vectorsData = vectors.data();
-    vec2f * __restrict resultsData = results.data();
+    vec2f * restrict vectorsData = vectors.data();
+    vec2f * restrict resultsData = results.data();
 
     for (size_t i = 0; i < vectors.size(); i += BatchSize)
     {
@@ -81,8 +83,8 @@ TEST(LibSimdPpTests, ReciprocalSquareRoot_WithMask)
 
     static constexpr size_t BatchSize = SIMDPP_FAST_FLOAT32_SIZE / 1;
 
-    float * __restrict valuesData = values.data();
-    float * __restrict resultsData = results.data();
+    float * restrict valuesData = values.data();
+    float * restrict resultsData = results.data();
 
     for (size_t i = 0; i < values.size(); i += BatchSize)
     {
@@ -100,28 +102,110 @@ TEST(LibSimdPpTests, ReciprocalSquareRoot_WithMask)
 
 TEST(LibSimdPpTests, VectorNormalization)
 {
-    std::vector<vec2f> vectors{
+    std::vector<vec2f> points{
         {0.0f, 0.0f},
         {1.0f, 1.0f},
-        {4.0f, 2.0f},
-        {0.01f, 0.02f}
+        {4.0f, 82.0f},
+        {0.00001f, 0.00002f}
     };
 
-    std::vector<vec2f> results;
-    results.resize(vectors.size());
-
-    static constexpr size_t BatchSize = SIMDPP_FAST_FLOAT32_SIZE / 2; // Vec has two components
-
-    for (size_t i = 0; i < vectors.size(); i += BatchSize)
+    struct Spring
     {
-        // TODOHERE
-        simdpp::float32v block = simdpp::load(vectors.data() + i);
-        block = block * simdpp::make_float<simdpp::float32v>(2.0f);
-        simdpp::store(results.data() + i, block);
+        ElementIndex PointAIndex;
+        ElementIndex PointBIndex;
+    };
+
+    std::vector<Spring> springs{
+        {0, 1},
+        {0, 2},
+        {0, 3},
+        {1, 2},
+        {1, 3},
+        {2, 3},
+        {0, 0},
+        {0, 0}
+    };
+
+
+    //
+    // Test
+    //
+
+    vec2f * const restrict pointsData = points.data();
+    Spring * const restrict springsData = springs.data();
+
+    std::vector<vec2f> springDirs;
+    springDirs.resize(springs.size());
+    vec2f * restrict springDirsData = springDirs.data();
+
+    std::vector<float> springLengths;
+    springLengths.resize(springs.size());
+    float * restrict springLengthsData = springLengths.data();
+
+    // TODOHERE: make vectorization-size agnostic
+    for (size_t s = 0; s < springs.size(); s += 4)
+    {
+        float pAx_[4] = {
+            pointsData[springsData[s + 0].PointAIndex].x,
+            pointsData[springsData[s + 1].PointAIndex].x,
+            pointsData[springsData[s + 2].PointAIndex].x,
+            pointsData[springsData[s + 3].PointAIndex].x
+        };
+
+        simdpp::float32<4> pAx = simdpp::load(pAx_);
+
+        simdpp::float32<4> pAy = simdpp::make_float(
+            pointsData[springsData[s + 0].PointAIndex].y,
+            pointsData[springsData[s + 1].PointAIndex].y,
+            pointsData[springsData[s + 2].PointAIndex].y,
+            pointsData[springsData[s + 3].PointAIndex].y);
+
+        simdpp::float32<4> pBx = simdpp::make_float(
+            pointsData[springsData[s + 0].PointBIndex].x,
+            pointsData[springsData[s + 1].PointBIndex].x,
+            pointsData[springsData[s + 2].PointBIndex].x,
+            pointsData[springsData[s + 3].PointBIndex].x);
+
+        simdpp::float32<4> pBy = simdpp::make_float(
+            pointsData[springsData[s + 0].PointBIndex].y,
+            pointsData[springsData[s + 1].PointBIndex].y,
+            pointsData[springsData[s + 2].PointBIndex].y,
+            pointsData[springsData[s + 3].PointBIndex].y);
+
+        simdpp::float32<4> displacementX = pBx - pAx;
+        simdpp::float32<4> displacementY = pBy - pAy;
+
+        simdpp::float32<4> _dx = displacementX * displacementX;
+        simdpp::float32<4> _dy = displacementY * displacementY;
+
+        simdpp::float32<4> _dxy = _dx + _dy;
+
+        simdpp::float32<4> springLength = simdpp::sqrt(_dxy);
+        
+        displacementX = displacementX / springLength;
+        displacementY = displacementY / springLength;
+
+        simdpp::mask_float32<4> validMask = (springLength != 0.0f);
+
+        displacementX = simdpp::bit_and(displacementX, validMask);
+        displacementY = simdpp::bit_and(displacementY, validMask);
+
+        simdpp::store(springLengthsData + s, springLength);
+        simdpp::store_packed2(springDirsData + s, displacementX, displacementY);
     }
 
-    EXPECT_EQ(vec2f(0.0f, 0.0f), results[0]);
-    EXPECT_EQ(vec2f(0.707107f, 0.707107f), results[1]);
-    EXPECT_EQ(vec2f(0.894427, 0.447214), results[2]);
-    EXPECT_EQ(vec2f(0.447214, 0.894427), results[3]);
+    //
+    // Results
+    //
+
+    for (size_t s = 0; s < springs.size(); s++)
+    {
+        vec2f const displacement = points[springs[s].PointBIndex] - points[springs[s].PointAIndex];
+        float const springLength = displacement.length();
+        vec2f const springDir = displacement.normalise(springLength);
+
+        EXPECT_FLOAT_EQ(springLength, springLengths[s]);
+        EXPECT_FLOAT_EQ(springDir.x, springDirs[s].x);
+        EXPECT_FLOAT_EQ(springDir.y, springDirs[s].y);
+    }
 }

@@ -2,6 +2,7 @@ set (BENCHMARK_SOURCES
 	DivisionByZero.cpp
 	Utils.cpp
 	Utils.h
+	VectorNormalization.cpp
 )
 
 source_group(" " FILES ${BENCHMARK_SOURCES})
