@@ -6,6 +6,7 @@
 #pragma once
 
 #include "Buffer.h"
+#include "BufferAllocator.h"
 #include "ElementContainer.h"
 #include "EnumFlags.h"
 #include "FixedSizeVector.h"
@@ -87,23 +88,22 @@ public:
         //////////////////////////////////
         // Buffers
         //////////////////////////////////
-        , mIsDeletedBuffer(elementCount)
+        , mIsDeletedBuffer(mBufferElementCount, mElementCount, true)
         // Endpoints
-        , mEndpointsBuffer(elementCount)
+        , mEndpointsBuffer(mBufferElementCount, mElementCount, Endpoints(NoneElementIndex, NoneElementIndex))
         // Physical
-        , mStrengthBuffer(elementCount)
-        , mStiffnessBuffer(elementCount)
-        , mRestLengthBuffer(elementCount)
-        , mCoefficientsBuffer(elementCount)
-        , mCharacteristicsBuffer(elementCount)
-        , mBaseMaterialBuffer(elementCount)
+        , mStrengthBuffer(mBufferElementCount, mElementCount, 0.0f)
+        , mStiffnessBuffer(mBufferElementCount, mElementCount, 0.0f)
+        , mRestLengthBuffer(mBufferElementCount, mElementCount, 1.0f)
+        , mCoefficientsBuffer(mBufferElementCount, mElementCount, Coefficients(0.0f, 0.0f))
+        , mCharacteristicsBuffer(mBufferElementCount, mElementCount, Characteristics::None)
+        , mBaseMaterialBuffer(mBufferElementCount, mElementCount, nullptr)
         // Water
-        , mWaterVelocityBuffer(elementCount)
-        , mWaterPermeabilityBuffer(elementCount)
+        , mWaterPermeabilityBuffer(mBufferElementCount, mElementCount, 0.0f)
         // Stress
-        , mIsStressedBuffer(elementCount)
+        , mIsStressedBuffer(mBufferElementCount, mElementCount, false)
         // Bombs
-        , mIsBombAttachedBuffer(elementCount)
+        , mIsBombAttachedBuffer(mBufferElementCount, mElementCount, false)
         //////////////////////////////////
         // Container
         //////////////////////////////////
@@ -111,6 +111,8 @@ public:
         , mGameEventHandler(std::move(gameEventHandler))
         , mDestroyHandler()
         , mCurrentStiffnessAdjustment(std::numeric_limits<float>::lowest())
+        , mFloatBufferAllocator(mBufferElementCount)
+        , mVec2fBufferAllocator(mBufferElementCount)
     {
     }
 
@@ -149,7 +151,7 @@ public:
         GameParameters const & gameParameters,
         Points const & points);
 
-    inline void OnPointMassUpdated(
+    void OnPointMassUpdated(
         ElementIndex springElementIndex,
         Points const & points)
     {
@@ -188,7 +190,7 @@ public:
     // IsDeleted
     //
 
-    inline bool IsDeleted(ElementIndex springElementIndex) const
+    bool IsDeleted(ElementIndex springElementIndex) const
     {
         return mIsDeletedBuffer[springElementIndex];
     }
@@ -197,31 +199,56 @@ public:
     // Endpoints
     //
 
-    inline ElementIndex GetPointAIndex(ElementIndex springElementIndex) const
+    ElementIndex GetPointAIndex(ElementIndex springElementIndex) const
     {
         return mEndpointsBuffer[springElementIndex].PointAIndex;
     }
 
-    inline ElementIndex GetPointBIndex(ElementIndex springElementIndex) const
+    ElementIndex GetPointBIndex(ElementIndex springElementIndex) const
     {
         return mEndpointsBuffer[springElementIndex].PointBIndex;
     }
 
-    inline vec2f const & GetPointAPosition(
+    ElementIndex GetOtherEndpointIndex(
+        ElementIndex springElementIndex,
+        ElementIndex pointIndex) const
+    {
+        ElementIndex otherEndpointIndex = mEndpointsBuffer[springElementIndex].PointBIndex;
+        if (otherEndpointIndex == pointIndex)
+        {
+            otherEndpointIndex = mEndpointsBuffer[springElementIndex].PointAIndex;
+        }
+
+        return otherEndpointIndex;
+    }
+
+    // Returns +1.0 if the spring is directed outward from the specified point;
+    // otherwise, -1.0.
+    float GetSpringDirectionFrom(
+        ElementIndex springElementIndex,
+        ElementIndex pointIndex) const
+    {
+        if (pointIndex == mEndpointsBuffer[springElementIndex].PointAIndex)
+            return 1.0f;
+        else
+            return -1.0f;
+    }
+
+    vec2f const & GetPointAPosition(
         ElementIndex springElementIndex,
         Points const & points) const
     {
         return points.GetPosition(mEndpointsBuffer[springElementIndex].PointAIndex);
     }
 
-    inline vec2f const & GetPointBPosition(
+    vec2f const & GetPointBPosition(
         ElementIndex springElementIndex,
         Points const & points) const
     {
         return points.GetPosition(mEndpointsBuffer[springElementIndex].PointBIndex);
     }
 
-    inline vec2f GetMidpointPosition(
+    vec2f GetMidpointPosition(
         ElementIndex springElementIndex,
         Points const & points) const
     {
@@ -233,32 +260,32 @@ public:
     // Physical
     //
 
-    inline float GetStrength(ElementIndex springElementIndex) const
+    float GetStrength(ElementIndex springElementIndex) const
     {
         return mStrengthBuffer[springElementIndex];
     }
 
-    inline float GetStiffness(ElementIndex springElementIndex) const
+    float GetStiffness(ElementIndex springElementIndex) const
     {
         return mStiffnessBuffer[springElementIndex];
     }
 
-    inline float GetRestLength(ElementIndex springElementIndex) const
+    float GetRestLength(ElementIndex springElementIndex) const
     {
         return mRestLengthBuffer[springElementIndex];
     }
 
-    inline float GetStiffnessCoefficient(ElementIndex springElementIndex) const
+    float GetStiffnessCoefficient(ElementIndex springElementIndex) const
     {
         return mCoefficientsBuffer[springElementIndex].StiffnessCoefficient;
     }
 
-    inline float GetDampingCoefficient(ElementIndex springElementIndex) const
+    float GetDampingCoefficient(ElementIndex springElementIndex) const
     {
         return mCoefficientsBuffer[springElementIndex].DampingCoefficient;
     }
 
-    inline Material const * GetBaseMaterial(ElementIndex springElementIndex) const
+    Material const * GetBaseMaterial(ElementIndex springElementIndex) const
     {
         return mBaseMaterialBuffer[springElementIndex];
     }
@@ -270,17 +297,7 @@ public:
     // Water
     //
 
-    inline float GetWaterVelocity(ElementIndex springElementIndex) const
-    {
-        return mWaterVelocityBuffer[springElementIndex];
-    }
-
-    inline float & GetWaterVelocity(ElementIndex springElementIndex) 
-    {
-        return mWaterVelocityBuffer[springElementIndex];
-    }
-
-    inline float GetWaterPermeability(ElementIndex springElementIndex) const
+    float GetWaterPermeability(ElementIndex springElementIndex) const
     {
         return mWaterPermeabilityBuffer[springElementIndex];
     }
@@ -289,7 +306,7 @@ public:
     // Bombs
     //
 
-    inline bool IsBombAttached(ElementIndex springElementIndex) const
+    bool IsBombAttached(ElementIndex springElementIndex) const
     {
         return mIsBombAttachedBuffer[springElementIndex];
     }
@@ -327,6 +344,20 @@ public:
         // Reset mass of endpoints 
         points.SetMassToMaterialOffset(mEndpointsBuffer[springElementIndex].PointAIndex, 0.0f, *this);
         points.SetMassToMaterialOffset(mEndpointsBuffer[springElementIndex].PointBIndex, 0.0f, *this);
+    }
+
+    //
+    // Temporary buffer
+    //
+
+    std::shared_ptr<Buffer<float>> AllocateWorkBufferFloat()
+    {
+        return mFloatBufferAllocator.Allocate();
+    }
+
+    std::shared_ptr<Buffer<vec2f>> AllocateWorkBufferVec2f()
+    {
+        return mVec2fBufferAllocator.Allocate();
     }
 
 private:
@@ -370,10 +401,6 @@ private:
     // Water
     //
 
-    // The current speed of water along this spring,
-    // from point A to point B
-    Buffer<float> mWaterVelocityBuffer;
-
     // Water propagates through this spring according to this value;
     // 0.0 makes water not propagate
     Buffer<float> mWaterPermeabilityBuffer;
@@ -403,6 +430,10 @@ private:
 
     // The current stiffness adjustment
     float mCurrentStiffnessAdjustment;
+
+    // Allocators for work buffers
+    BufferAllocator<float> mFloatBufferAllocator;
+    BufferAllocator<vec2f> mVec2fBufferAllocator;
 };
 
 }

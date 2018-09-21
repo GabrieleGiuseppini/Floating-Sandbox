@@ -28,11 +28,26 @@ public:
 
 	virtual ~SoundController();
 
+    //
+    // Controlling
+    //
+
     void SetPaused(bool isPaused);
 
     void SetMute(bool isMute);
 
     void SetVolume(float volume);
+
+    bool GetPlaySinkingMusic() const
+    {
+        return mPlaySinkingMusic;
+    }
+
+    void SetPlaySinkingMusic(bool playSinkingMusic);
+
+    //
+    // Updating
+    //
 
     void HighFrequencyUpdate();
 
@@ -80,6 +95,8 @@ public:
 
     virtual void OnWaterTaken(float waterTaken) override;
 
+    virtual void OnWaterSplashed(float waterSplashed) override;
+
     virtual void OnBombPlaced(
         ObjectId bombId,
         BombType bombType,
@@ -120,13 +137,15 @@ private:
         Stress,
         LightFlicker,
         WaterRush,
+        WaterSplash,
         BombAttached,
         BombDetached,
         RCBombPing,
         TimerBombSlowFuse,
         TimerBombFastFuse,
         TimerBombDefused,
-        Explosion
+        Explosion,
+        Wave
     };
 
     static SoundType StrToSoundType(std::string const & str)
@@ -153,6 +172,8 @@ private:
             return SoundType::LightFlicker;
         else if (lstr == "waterrush")
             return SoundType::WaterRush;
+        else if (lstr == "watersplash")
+            return SoundType::WaterSplash;
         else if (lstr == "bombattached")
             return SoundType::BombAttached;
         else if (lstr == "bombdetached")
@@ -167,6 +188,8 @@ private:
             return SoundType::TimerBombDefused;
         else if (lstr == "explosion")
             return SoundType::Explosion;
+        else if (lstr == "wave")
+            return SoundType::Wave;
         else
             throw GameException("Unrecognized SoundType \"" + str + "\"");
     }
@@ -347,6 +370,10 @@ private:
         bool isUnderwater,
         float volume);
 
+    void PlaySound(
+        SoundType soundType,
+        float volume);
+
     void ChooseAndPlaySound(
         SoundType soundType,
         MultipleSoundChoiceInfo & multipleSoundChoiceInfo,
@@ -369,12 +396,16 @@ private:
 
     std::shared_ptr<ResourceLoader> mResourceLoader;
 
-    float mCurrentVolume;
-
 
     //
     // State
     //
+
+    float mCurrentVolume;
+    bool mPlaySinkingMusic;
+
+    float mLastWaterSplashed;
+    float mCurrentWaterSplashedTrigger;
 
     // Tracking which bombs are emitting which fuse sounds
     std::set<ObjectId> mBombsEmittingSlowFuseSounds;
@@ -400,6 +431,10 @@ private:
         std::tuple<SoundType, bool>,
         MultipleSoundChoiceInfo> mUSoundBuffers;
 
+    unordered_tuple_map<
+        std::tuple<SoundType>,
+        MultipleSoundChoiceInfo> mSoundBuffers;
+
     std::vector<PlayingSound> mCurrentlyPlayingSounds;
 
     //
@@ -411,6 +446,7 @@ private:
     SingleContinuousSound mDrawSound;
     SingleContinuousSound mSwirlSound;
     SingleContinuousSound mWaterRushSound;
+    SingleContinuousSound mWaterSplashSound;
     SingleContinuousSound mTimerBombSlowFuseSound;
     SingleContinuousSound mTimerBombFastFuseSound;
 

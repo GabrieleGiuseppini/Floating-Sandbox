@@ -69,6 +69,7 @@ public:
     ToolType GetToolType() const { return mToolType; }
 
     virtual void Initialize(InputState const & inputState) = 0;
+    virtual void Deinitialize(InputState const & inputState) = 0;
 
     virtual void Update(InputState const & inputState) = 0;
 
@@ -107,6 +108,8 @@ class OneShotTool : public Tool
 public:
 
     virtual ~OneShotTool() {}
+
+    virtual void Deinitialize(InputState const & /*inputState*/) override {}
 
     virtual void Update(InputState const & /*inputState*/) override {}
 
@@ -260,6 +263,11 @@ public:
         }
     }
 
+    virtual void Deinitialize(InputState const & /*inputState*/) override
+    {
+        mCurrentCursor = mUpCursor.get();
+    }
+
     virtual void OnLeftMouseDown(InputState const & inputState) override
     {
         ContinuousTool::OnLeftMouseDown(inputState);
@@ -322,6 +330,12 @@ public:
             // Set current cursor to the up cursor
             mCurrentCursor = mUpCursor.get();
         }        
+    }
+
+    virtual void Deinitialize(InputState const & /*inputState*/) override
+    {
+        // Notify
+        mGameController->GetGameEventHandler()->OnSaw(std::nullopt);
     }
 
     virtual void Update(InputState const & inputState) override
@@ -440,6 +454,12 @@ public:
         SetBasisCursor(inputState);
     }
 
+    virtual void Deinitialize(InputState const & /*inputState*/) override
+    {
+        // Notify
+        mGameController->GetGameEventHandler()->OnDraw(std::nullopt);
+    }
+
     virtual void OnLeftMouseDown(InputState const & inputState) override
     {
         ContinuousTool::OnLeftMouseDown(inputState);
@@ -536,6 +556,12 @@ public:
     virtual void Initialize(InputState const & inputState) override
     {
         SetBasisCursor(inputState);
+    }
+
+    virtual void Deinitialize(InputState const & /*inputState*/) override
+    {
+        // Notify
+        mGameController->GetGameEventHandler()->OnSwirl(std::nullopt);
     }
 
     virtual void OnLeftMouseDown(InputState const & inputState) override

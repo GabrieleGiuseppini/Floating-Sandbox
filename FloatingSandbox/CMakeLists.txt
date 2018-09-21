@@ -15,6 +15,10 @@ set  (FLOATING_SANDBOX_SOURCES
 	MainApp.cpp
 	MainFrame.cpp
 	MainFrame.h
+	ProbePanel.cpp
+	ProbePanel.h
+	ScalarTimeSeriesProbeControl.cpp
+	ScalarTimeSeriesProbeControl.h
 	SettingsDialog.cpp
 	SettingsDialog.h
 	SliderControl.cpp
@@ -65,7 +69,7 @@ endif (MSVC)
 
 if (MSVC)
 
-	set (VS_STARTUP_PROJECT FloatingSandbox)
+	set_property( DIRECTORY PROPERTY VS_STARTUP_PROJECT "FloatingSandbox" )
 	
 	set_target_properties(
 		FloatingSandbox

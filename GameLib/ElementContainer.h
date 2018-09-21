@@ -6,6 +6,7 @@
 #pragma once
 
 #include "GameTypes.h"
+#include "SysSpecifics.h"
 
 #include <cassert>
 #include <cstdint>
@@ -73,7 +74,14 @@ public:
     ElementCount GetElementCount() const { return mElementCount; }
 
     /*
-     * Visitors. These iterators iterate the *indices* of the elements.
+     * Gets the  number of elements in the buffers of this container.
+     * The number of elements in the buffers is a multiple of the vectorized
+     * word size.
+     */
+    ElementCount GetBufferElementCount() const { return mBufferElementCount; }
+
+    /*
+     * Visitors. These iterators iterate the (non-vectorized) *indices* of the elements.
      */
 
     inline iterator begin() const noexcept
@@ -90,8 +98,14 @@ protected:
 
     ElementContainer(ElementCount elementCount)
         : mElementCount(elementCount)
+        , mBufferElementCount(static_cast<ElementCount>(make_aligned_element_count(elementCount)))
     {
     }
 
     ElementCount const mElementCount;
+
+    // The number of elements available in the buffers of this container;
+    // differs from the element count as this is rounded up to the 
+    // vectorization word size
+    ElementCount const mBufferElementCount;
 };

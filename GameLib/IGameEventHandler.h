@@ -100,6 +100,18 @@ public:
         // Default-implemented
     }
 
+    virtual void OnWaterSplashed(float /*waterSplashed*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnCustomProbe(
+        std::string const & /*name*/,
+        float /*value*/)
+    {
+        // Default-implemented
+    }
+
     //
     // Bombs
     //

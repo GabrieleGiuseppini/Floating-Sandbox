@@ -22,6 +22,7 @@ public:
 
 private:
 
+    void OnKeyDown(wxKeyEvent& event);
 	void OnClose(wxCloseEvent& event);
 
 private:

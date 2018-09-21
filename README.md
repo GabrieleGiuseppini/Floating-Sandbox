@@ -82,6 +82,7 @@ Here's a rought list of the major remaining changes I want to do:
 - Add multiple ships and collision detection
 
 # Building the Game
+I build this game with Visual Studio 2017 (update 15.8, hence with std::filesystem).
 I tried to do my best to craft the CMake files in a platform-independent way, but I'm working on this exclusively in Visual Studio, hence I'm sure some unportable features have slipped in. Feel free to send pull requests for CMake edits for other platforms.
 You'll need the following libraries in order to build the game:
 - <a href="https://www.wxwidgets.org/">WxWidgets</a> (cross-platform GUI library) (on Windows, has to be built with statically-linked CRT libraries)

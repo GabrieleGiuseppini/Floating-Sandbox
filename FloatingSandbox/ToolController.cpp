@@ -9,7 +9,6 @@
 
 #include <cassert>
 
-
 ToolController::ToolController(
     ToolType initialToolType,
     wxFrame * parentFrame,

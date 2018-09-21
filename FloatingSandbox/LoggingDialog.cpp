@@ -7,6 +7,7 @@
 
 #include <GameLib/Log.h>
 
+#include <wx/clipbrd.h>
 #include <wx/settings.h>
 
 #include <cassert>
@@ -23,7 +24,7 @@ LoggingDialog::LoggingDialog(wxWindow * parent)
 		wxID_ANY,
 		_("Logging"), 
 		wxDefaultPosition, 
-		wxSize(800, 200),
+        wxSize(800, 250),
 		wxCAPTION | wxCLOSE_BOX | wxRESIZE_BORDER | wxMINIMIZE_BOX | wxFRAME_SHAPED,
 		_T("Logging Window"));
 
@@ -43,6 +44,13 @@ LoggingDialog::LoggingDialog(wxWindow * parent)
 
 	wxFont font(10, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
 	mTextCtrl->SetFont(font);
+
+    //
+    // Connect key events
+    //
+
+    this->Connect(wxID_ANY, wxEVT_KEY_DOWN, wxKeyEventHandler(LoggingDialog::OnKeyDown), (wxObject*)NULL, this);
+    mTextCtrl->Connect(wxID_ANY, wxEVT_KEY_DOWN, wxKeyEventHandler(LoggingDialog::OnKeyDown), (wxObject*)NULL, this);
 }
 
 LoggingDialog::~LoggingDialog()
@@ -59,6 +67,21 @@ void LoggingDialog::Open()
 		});
 
 	this->Show();
+}
+
+void LoggingDialog::OnKeyDown(wxKeyEvent& event)
+{
+    if (event.GetKeyCode() == 'C')
+    {
+        // Copy content to clipboard
+        if (wxTheClipboard->Open())
+        {
+            wxTheClipboard->Clear();
+            wxTheClipboard->SetData(new wxTextDataObject(this->mTextCtrl->GetValue()));
+            wxTheClipboard->Flush();
+            wxTheClipboard->Close();
+        }
+    }
 }
 
 void LoggingDialog::OnClose(wxCloseEvent & event)

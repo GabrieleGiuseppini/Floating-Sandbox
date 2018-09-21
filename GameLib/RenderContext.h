@@ -121,28 +121,42 @@ public:
         UpdateAmbientLightIntensity();
     }
 
-    float GetWaterTransparency() const
+    float GetSeaWaterTransparency() const
     {
-        return mWaterTransparency;
+        return mSeaWaterTransparency;
     }
 
-    void SetWaterTransparency(float transparency)
+    void SetSeaWaterTransparency(float transparency)
     {
-        mWaterTransparency = transparency;
+        mSeaWaterTransparency = transparency;
 
-        UpdateWaterTransparency();
+        UpdateSeaWaterTransparency();
     }
 
-    bool GetShowShipThroughWater() const
+    bool GetShowShipThroughSeaWater() const
     {
-        return mShowShipThroughWater;
+        return mShowShipThroughSeaWater;
     }
 
-    void SetShowShipThroughWater(bool showShipThroughWater)
+    void SetShowShipThroughSeaWater(bool showShipThroughSeaWater)
     {
-        mShowShipThroughWater = showShipThroughWater;
+        mShowShipThroughSeaWater = showShipThroughSeaWater;
     }
 
+    float GetWaterLevelOfDetail() const
+    {
+        return mWaterLevelOfDetail;
+    }
+
+    void SetWaterLevelOfDetail(float levelOfDetail)
+    {
+        mWaterLevelOfDetail = levelOfDetail;
+
+        UpdateWaterLevelOfDetail();
+    }
+
+    static constexpr float MinWaterLevelOfDetail = 0.0f;
+    static constexpr float MaxWaterLevelOfDetail = 1.0f;
 
     //
     // Ship rendering
@@ -156,6 +170,26 @@ public:
     void SetShipRenderMode(ShipRenderMode shipRenderMode) 
     {
         mShipRenderMode = shipRenderMode;
+    }
+
+    VectorFieldRenderMode GetVectorFieldRenderMode() const
+    {
+        return mVectorFieldRenderMode;
+    }
+
+    void SetVectorFieldRenderMode(VectorFieldRenderMode vectorFieldRenderMode)
+    {
+        mVectorFieldRenderMode = vectorFieldRenderMode;
+    }
+
+    float GetVectorFieldLengthMultiplier() const
+    {
+        return mVectorFieldLengthMultiplier;
+    }
+
+    void SetVectorFieldLengthMultiplier(float vectorFieldLengthMultiplier)
+    {
+        mVectorFieldLengthMultiplier = vectorFieldLengthMultiplier;
     }
 
     bool GetShowStressedSprings() const
@@ -532,6 +566,28 @@ public:
     }
 
     //
+    // Vectors
+    //
+
+    void UploadShipVectors(
+        int shipId,
+        size_t count,
+        vec2f const * restrict position,
+        vec2f const * restrict vector,
+        float lengthAdjustment,
+        vec3f const & color)
+    {
+        assert(shipId < mShips.size());
+
+        mShips[shipId]->UploadVectors(
+            count,
+            position,
+            vector,
+            lengthAdjustment * mVectorFieldLengthMultiplier,
+            color);
+    }
+
+    //
     // Lamps
     //
 
@@ -573,6 +629,7 @@ public:
 
         mShips[shipId]->Render(
             mShipRenderMode,
+            mVectorFieldRenderMode,
             mShowStressedSprings);
     }
 
@@ -592,7 +649,9 @@ private:
 
     void UpdateAmbientLightIntensity();
 
-    void UpdateWaterTransparency();
+    void UpdateSeaWaterTransparency();
+
+    void UpdateWaterLevelOfDetail();
 
 private:
 
@@ -670,7 +729,7 @@ private:
 
 
     //
-    // Water
+    // Sea water
     //
 
     GameOpenGLShaderProgram mWaterShaderProgram;
@@ -748,9 +807,11 @@ private:
     int mCanvasHeight;
 
     float mAmbientLightIntensity;
-    float mWaterTransparency;
-
-    bool mShowShipThroughWater;
+    float mSeaWaterTransparency;    
+    bool mShowShipThroughSeaWater;
+    float mWaterLevelOfDetail;
     ShipRenderMode mShipRenderMode;
+    VectorFieldRenderMode mVectorFieldRenderMode;
+    float mVectorFieldLengthMultiplier;
     bool mShowStressedSprings;
 };

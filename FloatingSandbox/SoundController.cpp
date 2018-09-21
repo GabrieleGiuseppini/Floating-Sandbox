@@ -14,18 +14,25 @@
 #include <limits>
 #include <regex>
 
+static constexpr float SinkingMusicVolume = 20.0f;
+static constexpr float WaveSplashTriggerSize = 0.5f;
+
 SoundController::SoundController(
     std::shared_ptr<ResourceLoader> resourceLoader,
     ProgressCallback const & progressCallback)
     : mResourceLoader(std::move(resourceLoader))
-    , mCurrentVolume(100.0f)
     // State
+    , mCurrentVolume(100.0f)
+    , mPlaySinkingMusic(true)
+    , mLastWaterSplashed(0.0f)
+    , mCurrentWaterSplashedTrigger(WaveSplashTriggerSize)
     , mBombsEmittingSlowFuseSounds()
     , mBombsEmittingFastFuseSounds()
     // One-shot sounds
     , mMSUSoundBuffers()
     , mDslUSoundBuffers()
     , mUSoundBuffers()
+    , mSoundBuffers()
     , mCurrentlyPlayingSounds()
     // Continuous sounds
     , mSawAbovewaterSound()
@@ -33,6 +40,7 @@ SoundController::SoundController(
     , mDrawSound()
     , mSwirlSound()
     , mWaterRushSound()
+    , mWaterSplashSound()
     , mTimerBombSlowFuseSound()
     , mTimerBombFastFuseSound()
     // Music
@@ -48,7 +56,7 @@ SoundController::SoundController(
     }
 
     mSinkingMusic.setLoop(true);
-    mSinkingMusic.setVolume(20);
+    mSinkingMusic.setVolume(SinkingMusicVolume);
 
 
     //
@@ -119,6 +127,10 @@ SoundController::SoundController(
         else if (soundType == SoundType::WaterRush)
         {
             mWaterRushSound.Initialize(std::move(soundBuffer));
+        }
+        else if (soundType == SoundType::WaterSplash)
+        {
+            mWaterSplashSound.Initialize(std::move(soundBuffer));
         }
         else if (soundType == SoundType::TimerBombSlowFuse)
         {
@@ -207,6 +219,28 @@ SoundController::SoundController(
             mDslUSoundBuffers[std::make_tuple(soundType, durationType, isUnderwater)]
                 .SoundBuffers.emplace_back(std::move(soundBuffer));
         }
+        else if (soundType == SoundType::Wave)
+        {
+            //
+            // - sound
+            //
+
+            std::regex sRegex(R"(([^_]+)_\d+)");
+            std::smatch sMatch;
+            if (!std::regex_match(soundName, sMatch, sRegex))
+            {
+                throw GameException("- sound filename \"" + soundName + "\" is not recognized");
+            }
+
+            assert(sMatch.size() == 1 + 1);
+
+            //
+            // Store sound buffer
+            //
+
+            mSoundBuffers[std::make_tuple(soundType)]
+                .SoundBuffers.emplace_back(std::move(soundBuffer));
+        }
         else
         {
             //
@@ -269,6 +303,7 @@ void SoundController::SetPaused(bool isPaused)
     // We don't pause the continuous tool sounds
 
     mWaterRushSound.SetPaused(isPaused);
+    mWaterSplashSound.SetPaused(isPaused);
     mTimerBombSlowFuseSound.SetPaused(isPaused);
     mTimerBombFastFuseSound.SetPaused(isPaused);
 
@@ -292,11 +327,20 @@ void SoundController::SetMute(bool isMute)
         sf::Listener::setGlobalVolume(mCurrentVolume);
 }
 
-
 void SoundController::SetVolume(float volume)
 {
     mCurrentVolume = volume;
     sf::Listener::setGlobalVolume(mCurrentVolume);
+}
+
+void SoundController::SetPlaySinkingMusic(bool playSinkingMusic)
+{
+    if (playSinkingMusic)
+        mSinkingMusic.setVolume(SinkingMusicVolume);
+    else
+        mSinkingMusic.setVolume(0.0f);
+
+    mPlaySinkingMusic = playSinkingMusic;
 }
 
 void SoundController::HighFrequencyUpdate()
@@ -334,6 +378,7 @@ void SoundController::Reset()
     mDrawSound.Stop();
     mSwirlSound.Stop();
     mWaterRushSound.Stop();
+    mWaterSplashSound.Stop();
     mTimerBombSlowFuseSound.Stop();
     mTimerBombFastFuseSound.Stop();
 
@@ -458,9 +503,12 @@ void SoundController::OnBreak(
 
 void SoundController::OnSinkingBegin(unsigned int /*shipId*/)
 {
-    if (sf::SoundSource::Status::Playing != mSinkingMusic.getStatus())
+    if (mPlaySinkingMusic)
     {
-        mSinkingMusic.play();
+        if (sf::SoundSource::Status::Playing != mSinkingMusic.getStatus())
+        {
+            mSinkingMusic.play();
+        }
     }
 }
 
@@ -480,9 +528,50 @@ void SoundController::OnLightFlicker(
 
 void SoundController::OnWaterTaken(float waterTaken)
 {
-    float volume = 100.f * (-1.f / expf(fabs(waterTaken)) + 1.f);
-    mWaterRushSound.SetVolume(volume);
+    // 50 * (-1 / 2.4^(0.3 * x) + 1)
+    float rushVolume = 50.f * (-1.f / std::pow(2.4f, 0.3f * std::abs(waterTaken)) + 1.f);
+    mWaterRushSound.SetVolume(rushVolume);
     mWaterRushSound.Start();
+}
+
+void SoundController::OnWaterSplashed(float waterSplashed)
+{
+    //
+    // Trigger waves
+    //
+
+    if (waterSplashed > mLastWaterSplashed)
+    {
+        if (waterSplashed > mCurrentWaterSplashedTrigger)
+        {
+            // 100 * (-1 / 1.8^(0.08 * x) + 1)
+            //   3: 13.0
+            float waveVolume = 100.f * (-1.f / std::pow(1.8f, 0.08f * std::abs(waterSplashed)) + 1.f);
+
+            PlaySound(
+                SoundType::Wave,
+                waveVolume);
+
+            // Advance trigger
+            mCurrentWaterSplashedTrigger = waterSplashed + WaveSplashTriggerSize;
+        }
+    }
+    else
+    {
+        // Lower trigger
+        mCurrentWaterSplashedTrigger = waterSplashed + WaveSplashTriggerSize;
+    }
+
+    mLastWaterSplashed = waterSplashed;
+
+
+    //
+    // Adjust continuous splash sound
+    //
+
+    float splashVolume = 100.f * (-1.f / std::pow(1.3f, 0.01f * std::abs(waterSplashed)) + 1.f);
+    mWaterSplashSound.SetVolume(splashVolume);
+    mWaterSplashSound.Start();
 }
 
 void SoundController::OnBombPlaced(
@@ -745,6 +834,36 @@ void SoundController::PlayUSound(
     }
 
     if (it == mUSoundBuffers.end())
+    {
+        // No luck
+        return;
+    }
+
+
+    //
+    // Play sound
+    //
+
+    ChooseAndPlaySound(
+        soundType,
+        it->second,
+        volume);
+}
+
+void SoundController::PlaySound(
+    SoundType soundType,
+    float volume)
+{
+    LogDebug("Sound: <",
+        static_cast<int>(soundType),
+        ">");
+
+    //
+    // Find vector
+    //
+
+    auto it = mSoundBuffers.find(std::make_tuple(soundType));
+    if (it == mSoundBuffers.end())
     {
         // No luck
         return;

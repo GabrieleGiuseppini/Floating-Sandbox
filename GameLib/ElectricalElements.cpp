@@ -30,14 +30,14 @@ void ElectricalElements::Add(
 
         case Material::ElectricalProperties::ElectricalElementType::Generator:
         {
-            mGenerators.emplace_back(static_cast<ElementIndex>(mElementStateBuffer.GetCurrentSize()));
+            mGenerators.emplace_back(static_cast<ElementIndex>(mElementStateBuffer.GetCurrentPopulatedSize()));
             mElementStateBuffer.emplace_back(ElementState::GeneratorState());
             break;
         }
 
         case Material::ElectricalProperties::ElectricalElementType::Lamp:
         {
-            mLamps.emplace_back(static_cast<ElementIndex>(mElementStateBuffer.GetCurrentSize()));
+            mLamps.emplace_back(static_cast<ElementIndex>(mElementStateBuffer.GetCurrentPopulatedSize()));
             mElementStateBuffer.emplace_back(ElementState::LampState(isSelfPowered));
             break;
         }

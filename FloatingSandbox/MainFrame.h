@@ -9,6 +9,7 @@
 #include "EventTickerPanel.h"
 #include "HelpDialog.h"
 #include "LoggingDialog.h"
+#include "ProbePanel.h"
 #include "SettingsDialog.h"
 #include "SoundController.h"
 #include "ToolController.h"
@@ -55,12 +56,15 @@ private:
     //
 
     wxBoxSizer * mMainFrameSizer;
-    wxMenuItem * mPauseMenuItem;    
+    wxMenuItem * mPauseMenuItem;
+    wxMenuItem * mStepMenuItem;
     wxMenu * mToolsMenu;
     wxMenuItem * mRCBombsDetonateMenuItem;
     wxMenuItem * mShowEventTickerMenuItem;
+    wxMenuItem * mShowProbePanelMenuItem;
     wxMenuItem * mMuteMenuItem;
     std::unique_ptr<EventTickerPanel> mEventTickerPanel;
+    std::unique_ptr<ProbePanel> mProbePanel;
 
     //
     // Dialogs
@@ -110,6 +114,7 @@ private:
     void OnAmbientLightUpMenuItemSelected(wxCommandEvent& event);
     void OnAmbientLightDownMenuItemSelected(wxCommandEvent& event);
     void OnPauseMenuItemSelected(wxCommandEvent& event);
+    void OnStepMenuItemSelected(wxCommandEvent& event);
     void OnResetViewMenuItemSelected(wxCommandEvent& event);    
     void OnLoadShipMenuItemSelected(wxCommandEvent& event);
     void OnReloadLastShipMenuItemSelected(wxCommandEvent& event);
@@ -124,6 +129,7 @@ private:
     void OnOpenSettingsWindowMenuItemSelected(wxCommandEvent& event);
     void OnOpenLogWindowMenuItemSelected(wxCommandEvent& event);
     void OnShowEventTickerMenuItemSelected(wxCommandEvent& event);
+    void OnShowProbePanelMenuItemSelected(wxCommandEvent& event);
     void OnMuteMenuItemSelected(wxCommandEvent& event);
     void OnHelpMenuItemSelected(wxCommandEvent& event);
     void OnAboutMenuItemSelected(wxCommandEvent& event);
@@ -188,7 +194,7 @@ private:
 
     std::shared_ptr<ResourceLoader> mResourceLoader;
     std::shared_ptr<GameController> mGameController;
-    std::unique_ptr<SoundController> mSoundController;
+    std::shared_ptr<SoundController> mSoundController;
     std::unique_ptr<ToolController> mToolController;
 
 
@@ -199,6 +205,7 @@ private:
     std::vector<std::string> mCurrentShipNames;
     size_t mCurrentRCBombCount;
     bool mIsShiftKeyDown;
+    bool mIsNextFrameAllowedToStep;
 
 
     //
