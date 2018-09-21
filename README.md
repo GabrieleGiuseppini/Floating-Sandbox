@@ -92,7 +92,7 @@ You'll need the following libraries in order to build the game:
 -- I've actually built my own SFML, as there are no SFML releases for Visual Studio 2017
 - <a href="https://github.com/kazuho/picojson">picojson</a> (header-only JSON parser and serializer)
 
-The top of the main CMakeFiles.txt contains a section with hardcoded paths to these three libraries; you'll have to edit your CMakeFiles to match your environment.
+The top of the main CMakeFiles.txt contains a section with hardcoded paths to these libraries; you'll have to edit your CMakeFiles to match your environment.
 
 # Contributing
 At this moment I'm looking for volunteers for three specific tasks: creating a "Ship Editor" for the game, creating new ships, and building the game on non-Windows platforms.
