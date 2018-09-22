@@ -131,8 +131,8 @@ TEST(LibSimdPpTests, VectorNormalization)
     // Test
     //
 
-    vec2f * const restrict pointsData = points.data();
-    Spring * const restrict springsData = springs.data();
+    vec2f * const restrict pointData = points.data();
+    Spring * const restrict springData = springs.data();
 
     std::vector<vec2f> springDirs;
     springDirs.resize(springs.size());
@@ -146,31 +146,31 @@ TEST(LibSimdPpTests, VectorNormalization)
     for (size_t s = 0; s < springs.size(); s += 4)
     {
         float pAx_[4] = {
-            pointsData[springsData[s + 0].PointAIndex].x,
-            pointsData[springsData[s + 1].PointAIndex].x,
-            pointsData[springsData[s + 2].PointAIndex].x,
-            pointsData[springsData[s + 3].PointAIndex].x
+            pointData[springData[s + 0].PointAIndex].x,
+            pointData[springData[s + 1].PointAIndex].x,
+            pointData[springData[s + 2].PointAIndex].x,
+            pointData[springData[s + 3].PointAIndex].x
         };
 
         simdpp::float32<4> pAx = simdpp::load(pAx_);
 
         simdpp::float32<4> pAy = simdpp::make_float(
-            pointsData[springsData[s + 0].PointAIndex].y,
-            pointsData[springsData[s + 1].PointAIndex].y,
-            pointsData[springsData[s + 2].PointAIndex].y,
-            pointsData[springsData[s + 3].PointAIndex].y);
+            pointData[springData[s + 0].PointAIndex].y,
+            pointData[springData[s + 1].PointAIndex].y,
+            pointData[springData[s + 2].PointAIndex].y,
+            pointData[springData[s + 3].PointAIndex].y);
 
         simdpp::float32<4> pBx = simdpp::make_float(
-            pointsData[springsData[s + 0].PointBIndex].x,
-            pointsData[springsData[s + 1].PointBIndex].x,
-            pointsData[springsData[s + 2].PointBIndex].x,
-            pointsData[springsData[s + 3].PointBIndex].x);
+            pointData[springData[s + 0].PointBIndex].x,
+            pointData[springData[s + 1].PointBIndex].x,
+            pointData[springData[s + 2].PointBIndex].x,
+            pointData[springData[s + 3].PointBIndex].x);
 
         simdpp::float32<4> pBy = simdpp::make_float(
-            pointsData[springsData[s + 0].PointBIndex].y,
-            pointsData[springsData[s + 1].PointBIndex].y,
-            pointsData[springsData[s + 2].PointBIndex].y,
-            pointsData[springsData[s + 3].PointBIndex].y);
+            pointData[springData[s + 0].PointBIndex].y,
+            pointData[springData[s + 1].PointBIndex].y,
+            pointData[springData[s + 2].PointBIndex].y,
+            pointData[springData[s + 3].PointBIndex].y);
 
         simdpp::float32<4> displacementX = pBx - pAx;
         simdpp::float32<4> displacementY = pBy - pAy;
