@@ -1,5 +1,13 @@
 #include "Utils.h"
 
+size_t MakeSize(size_t count)
+{
+    if (0 == (count % 16))
+        return count;
+    else
+        return count + 16 - (count % 16);
+}
+
 std::vector<float> MakeFloats(size_t count)
 {
     std::vector<float> floats;
@@ -46,4 +54,25 @@ std::vector<vec2f> MakeVectors(size_t count)
     }
 
     return vectors;
+}
+
+void MakeGraph(
+    size_t count,
+    std::vector<vec2f> & points,
+    std::vector<Spring> & springs)
+{
+    points.clear();
+    points.reserve(count);
+
+    springs.clear();
+    springs.reserve(count);
+
+    for (size_t i = 0; i < count; ++i)
+    {
+        points.emplace_back(static_cast<float>(i), static_cast<float>(i) / 5.0f);
+        springs.push_back({
+            static_cast<ElementIndex>(i < count / 2 ? i + count / 2 : i),
+            static_cast<ElementIndex>(i >= count / 2 ? i - count / 2 : i)
+        });
+    }
 }

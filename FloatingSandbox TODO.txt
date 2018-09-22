@@ -1,7 +1,8 @@
 =================================================
-Current perf (1.5.0 - after Water)
+Current perf
 =================================================
-- fps: 27.4/27.7/27.9 (Samsung: TBD-was 32.7 (Krafting)) (Mattia's: TBD (Krafting))
+- fps: 26.6 (Samsung: TBD-was 32.7 (Krafting)) (Mattia's: TBD (Krafting))
+- TODO
 - GameController::Update: 33.33%
 	- Ship::Update: 32.53%
 		- UpdateMechanicalDynamics: 26.15%
@@ -50,27 +51,13 @@ Current perf (1.5.0 - after Water)
 ====================================================
 ====================== Plan ========================
 
-+ Movie 
-= Article
-	+ Water retain essentially controls the speed at which water moves
-	+ Add rest length
-	- Add boundary conditions
-		- <h3>
-		- spring water permeability
-		- perfectly inelastic impact => for each spring, bounce back q==resultant V along spring * normalized quantity of water bounced back (remaining)
-	- GameJolt
-+ Splash w/Probe
-+ Merge into master
-+ Update changes
-- Release
-
-- GfxOptimizations:
-	- Z buffer
-- USS Shark
+- Libsimdpp vector normalization
 
 ====================================================
 
 - New ships
+	= USS Shark
+		- Need Z buffer work first
 	- Warship
 	- See Moleskine
 
@@ -91,7 +78,8 @@ Current perf (1.5.0 - after Water)
 			- IGameEventHandler events exist only for the world-generated noises (e.g. something really breaking), not
 			  for the tools
 			  - So Swirl, for example, should disappear from IGameEventHandler; some others as well
-	- TODECIDE: Ship::Render() should take ShipRenderContext instead of RenderContext, and eventually RenderContext if really needed
+	- CMake INSTALL target for release
+	- Test: Ship::Render() should take ShipRenderContext instead of RenderContext, and eventually RenderContext if really needed
 		- Can then get rid of forwards from RenderContext
 
 - Optimizations:
@@ -110,10 +98,39 @@ Current perf (1.5.0 - after Water)
 				- Then defines VECTORIZATION_FLOAT32_SIZE as SIMDPP_FAST_FLOAT32_SIZE, and VECTORIZATION_INT32_SIZE as ...
 					- Allowing us to change it once to experiment with loop unrolling
 				- SSE code will use VECTORIZATION_FLOAT32_SIZE as the batch size
+
+				- #define SIMDPP_NO_DISPATCHER
+				- CMake:
+					- register_external(libsimdpp x_libsimdpp) à libsimdpp_path = /../../../ x_libsimdpp
+					= target_include_directories(common_models_lib SYSTEM PUBLIC ${libsimdpp_path})
 			- Merge FloatingPoint.h into SysSpecifics.h and nuke FloatingPoint.h
 			- SysSpecifics.h:
 				- Includes LibSimdPp.h
 				- make_aligned_element_count: local static constexpr for word size, choosing max of VECTORIZATION_FLOAT32_SIZE & VECTORIZATION_INT32_SIZE
+
+		- Vector normalization:
+			- Benchmark versions:
+				+ Naive-NoLength
+				+ Naive-NoLength w/restrict pointers
+				- Naive-AndLength w/fastest of above
+				- Vectorized-NoLength-VecSizeGnostic - current unit test, harmonized to 1
+				- Vectorized-NoLength-VecSizeGnostic - current unit test, harmonized to 2
+				- Vectorized-NoLength-VecSizeGnostic - xyxy
+				- Vectorized-NoLength-VecSizeAgnostic
+				- Vectorized-AndLength w/fastest of above
+			- Think of precalculating all normalized vectors before they're needed 
+				- Call before each spring iteration (so to catch bombs and destroy's) and before water (so to catch last Integrate())
+					- TODO: Double-think - who knows when something has changed?
+				- Springs::CalculateNormalizedVectors()
+					- For use by Water
+						- It's also more approx
+					- Fills-in own vec2f buffer, exposed also via getter (GetNormalizedVector(springIndex))
+					- Uses simdpp::load_packed2 to make x1x2x3x4 & y1y2y3y4
+					- Use in water and get perf improvement
+				- std::unique_ptr<Buffer<float>> Springs::CalculateNormalizedVectorsWithLengths()
+					- For use in Springs iteration
+					- Borrows a float buffer
+					- Use in springs and get perf improvement
 
 		- Use at IntegratePointDynamics, to guarantee SSE2
 			- Verify with asm
@@ -128,20 +145,6 @@ Current perf (1.5.0 - after Water)
 				+ Conclusion: should be used only for SSE vectorization, and when dividend has same
 				  magnitude as divisor (e.g. for normalized vector, len==0 <-> x==0 && y==0)
 			+ Should investigate masking at the same time, might be faster
-		- Think of precalculating all normalized vectors before they're needed 
-			- Call before each spring iteration (so to catch bombs and destroy's) and before water (so to catch last Integrate())
-				- TODO: Double-think - who knows when something has changed?
-			- Springs::CalculateNormalizedVectors()
-				- For use by Water
-					- It's also more approx
-				- Fills-in own vec2f buffer, exposed also via getter (GetNormalizedVector(springIndex))
-				- Uses simdpp::load_packed2 to make x1x2x3x4 & y1y2y3y4
-				- Use in water and get perf improvement
-			- std::unique_ptr<Buffer<float>> Springs::CalculateNormalizedVectorsWithLengths()
-				- For use in Springs iteration
-				- Borrows a float buffer
-				- Use in springs and get perf improvement
-			- Add benchmark
 
 		+ Try with different cache optimization heuristics
 			+ Starting point: Spring ACMR: original=0.516807, optimized=0.325156
