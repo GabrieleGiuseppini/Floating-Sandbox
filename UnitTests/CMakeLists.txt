@@ -16,6 +16,8 @@ set (UNIT_TEST_SOURCES
 	SegmentTests.cpp
 	SliderCoreTests.cpp
 	TupleKeysTests.cpp
+	Utils.cpp
+	Utils.h
 	VectorsTests.cpp)
 
 add_executable (UnitTests ${UNIT_TEST_SOURCES})
