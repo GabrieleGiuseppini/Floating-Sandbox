@@ -49,32 +49,6 @@ TEST(LibSimdPpTests, MulConstant)
     EXPECT_EQ(vec2f(0.2f, 0.4f), results[3]);
 }
 
-TEST(LibSimdPpTests, ReciprocalSquareRoot)
-{
-    std::vector<float> values{
-        1.0f, 2.0, 4.0f, 9.0, 81.0f, 0.0f, 100.0f, 10000.0f
-    };
-
-    std::vector<float> results;
-    results.resize(values.size());
-
-    static constexpr size_t BatchSize = SIMDPP_FAST_FLOAT32_SIZE / 1;
-
-    for (size_t i = 0; i < values.size(); i += BatchSize)
-    {
-        simdpp::float32v block = simdpp::load(values.data() + i);
-        block = simdpp::rsqrt_e(block);
-        simdpp::store(results.data() + i, block);
-    }
-
-    ////EXPECT_EQ(1.0f/1.0f, results[0]);
-    ////EXPECT_EQ(1.0f / 2.0f, results[2]);
-    ////EXPECT_EQ(1.0f / 3.0f, results[3]);
-    ////EXPECT_EQ(1.0f / 9.0f, results[4]);
-    ////EXPECT_EQ(1.0f / 10.0f, results[6]);
-    ////EXPECT_EQ(1.0f / 100.0f, results[7]);
-}
-
 TEST(LibSimdPpTests, ReciprocalSquareRoot_WithMask)
 {
     std::vector<float> values{
@@ -147,23 +121,22 @@ TEST(LibSimdPpTests, VectorNormalization)
 
 
 
+    ////// TODO: repro for libsimdpp issue
+    ////float testtest1[4] = { 0.f, 1.f, 2.f, 3.f};
+    ////float testtest2[4] = { 4.f, 5.f, 6.f, 7.f};
 
-    float testtest1[4] = { 0.f, 1.f, 2.f, 3.f};
-    float testtest2[4] = { 4.f, 5.f, 6.f, 7.f};
+    ////simdpp::float32<4> v1 = simdpp::load(testtest1);
+    ////simdpp::float32<4> v2 = simdpp::load(testtest2);
 
-    simdpp::float32<4> v1 = simdpp::load(testtest1);
-    simdpp::float32<4> v2 = simdpp::load(testtest2);
+    ////simdpp::float32<4> vs = simdpp::shuffle2x2<0, 2>(v1, v2); // Exp: 0, 4, 2, 6
 
-    simdpp::float32<4> vs = simdpp::shuffle2x2<0, 2>(v1, v2); // Exp: 0, 4, 2, 6
-
-    DoSomething(vs);
-
-
+    ////DoSomething(vs);
 
 
 
+
+    ////// TODO: repro for libsimdpp issue
     ////float testtest[4] = { 1.f, 2.f, 3.f, 4.f };
-
     ////simdpp::float32<1> v0 = simdpp::load(testtest);
     ////simdpp::float32<1> v1 = simdpp::load(testtest+1);
     ////simdpp::float32<1> v2 = simdpp::load(testtest+2);
@@ -185,14 +158,15 @@ TEST(LibSimdPpTests, VectorNormalization)
 
 
 
+    ////// TODO: repro for libsimdpp issue
     ////__m128 foo01 = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double *>(testtest)));
     ////__m128 foo23 = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double *>(testtest + 2)));
     ////__m128 foo0123 = _mm_movelh_ps(foo01, foo23);
     ////DoSomething(foo0123);
 
-    // TODOHERE: make vectorization-size agnostic
     for (size_t s = 0; s < springs.size(); s += 4)
     {
+        ////// TODO: if libsimdpp didn't have issues, this would be our ideal code
         //simdpp::float32<2> vecA0 = simdpp::load(pointData + springData[s + 0].PointAIndex);
         //simdpp::float32<2> vecA1 = simdpp::load(pointData + springData[s + 1].PointAIndex);
         //simdpp::float32<4> vecA01 = simdpp::combine(vecA0, vecA1); // xa0,ya0,xa1,ya1
@@ -213,35 +187,6 @@ TEST(LibSimdPpTests, VectorNormalization)
         //simdpp::float32<4> vecB23 = simdpp::combine(vecB2, vecB3); // xb2,yb2,xb3,yb3
 
         //simdpp::float32<4> displacement23 = vecB23 - vecA23; // x2,y2,x3,y3
-
-
-
-        ////// TODO: P0P2,P1P3
-        ////__m128 vecA0 = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double *>(pointData + springData[s + 0].PointAIndex)));
-        ////__m128 vecA2 = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double *>(pointData + springData[s + 2].PointAIndex)));
-        ////__m128 vecA02 = _mm_movelh_ps(vecA0, vecA2);
-
-        ////__m128 vecB0 = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double *>(pointData + springData[s + 0].PointBIndex)));
-        ////__m128 vecB2 = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double *>(pointData + springData[s + 2].PointBIndex)));
-        ////__m128 vecB02 = _mm_movelh_ps(vecB0, vecB2);
-
-        ////simdpp::float32<4> displacement02 = simdpp::float32<4>(vecB02) - simdpp::float32<4>(vecA02); // x0,y0,x2,y2
-
-        ////
-        ////__m128 vecA1 = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double *>(pointData + springData[s + 1].PointAIndex)));
-        ////__m128 vecA3 = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double *>(pointData + springData[s + 3].PointAIndex)));
-        ////__m128 vecA13 = _mm_movelh_ps(vecA1, vecA3);
-
-        ////__m128 vecB1 = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double *>(pointData + springData[s + 1].PointBIndex)));
-        ////__m128 vecB3 = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double *>(pointData + springData[s + 3].PointBIndex)));
-        ////__m128 vecB13 = _mm_movelh_ps(vecB1, vecB3);
-
-        ////simdpp::float32<4> displacement13 = simdpp::float32<4>(vecB13) - simdpp::float32<4>(vecA13); // x1,y1,x3,y3
-
-        ////simdpp::float32<4> displacementX = simdpp::shuffle2x2<0, 2>(displacement02, displacement13); // x0,x1,x2,x3
-        ////simdpp::float32<4> displacementY = simdpp::shuffle2x2<1, 3>(displacement02, displacement13); // y0,y1,y2,y3
-
-
 
 
         __m128 vecA0 = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const *>(pointData + springData[s + 0].PointAIndex)));
@@ -266,9 +211,6 @@ TEST(LibSimdPpTests, VectorNormalization)
 
         simdpp::float32<4> displacementX = simdpp::unzip4_lo(simdpp::float32<4>(vecD01), simdpp::float32<4>(vecD23)); // x0,x1,x2,x3
         simdpp::float32<4> displacementY = simdpp::unzip4_hi(simdpp::float32<4>(vecD01), simdpp::float32<4>(vecD23)); // y0,y1,y2,y3
-
-
-
 
 
         simdpp::float32<4> const springLength = simdpp::sqrt(displacementX * displacementX + displacementY * displacementY);
@@ -431,7 +373,7 @@ TEST(LibSimdPpTests, UpdateSpringForces)
         ElementIndex PointBIndex;
     };
 
-    std::vector<SpringEndpoints> springsEndpoint{
+    std::vector<SpringEndpoints> springsEndpoints{
         {0, 1},
         {0, 2},
         {0, 3},
@@ -475,7 +417,7 @@ TEST(LibSimdPpTests, UpdateSpringForces)
 
     vec2f * const restrict pointsPositionData = pointsPosition.data();
     vec2f * const restrict pointsVelocityData = pointsVelocity.data();
-    SpringEndpoints * const restrict springsEndpointData = springsEndpoint.data();
+    SpringEndpoints * const restrict springsEndpointsData = springsEndpoints.data();
     float * const restrict springsStiffnessCoefficientData = springsStiffnessCoefficient.data();
     float * const restrict springsDamperCoefficientData = springsDamperCoefficient.data();
     float * const restrict springsRestLengthData = springsRestLength.data();
@@ -486,21 +428,21 @@ TEST(LibSimdPpTests, UpdateSpringForces)
 
     __m128 const Zero = _mm_set_ps(0.0f, 0.0f, 0.0f, 0.0f);
 
-    for (size_t s = 0; s < springsEndpoint.size(); s += 4)
+    for (size_t s = 0; s < springsEndpoints.size(); s += 4)
     {
         //
         // s0..3
         // s0.pA.pos.x      
         //
 
-        auto const s0_pA_index = springsEndpointData[s].PointAIndex;
-        auto const s0_pB_index = springsEndpointData[s].PointBIndex;
-        auto const s1_pA_index = springsEndpointData[s + 1].PointAIndex;
-        auto const s1_pB_index = springsEndpointData[s + 1].PointBIndex;
-        auto const s2_pA_index = springsEndpointData[s + 2].PointAIndex;
-        auto const s2_pB_index = springsEndpointData[s + 2].PointBIndex;
-        auto const s3_pA_index = springsEndpointData[s + 3].PointAIndex;
-        auto const s3_pB_index = springsEndpointData[s + 3].PointBIndex;
+        auto const s0_pA_index = springsEndpointsData[s].PointAIndex;
+        auto const s0_pB_index = springsEndpointsData[s].PointBIndex;
+        auto const s1_pA_index = springsEndpointsData[s + 1].PointAIndex;
+        auto const s1_pB_index = springsEndpointsData[s + 1].PointBIndex;
+        auto const s2_pA_index = springsEndpointsData[s + 2].PointAIndex;
+        auto const s2_pB_index = springsEndpointsData[s + 2].PointBIndex;
+        auto const s3_pA_index = springsEndpointsData[s + 3].PointAIndex;
+        auto const s3_pB_index = springsEndpointsData[s + 3].PointBIndex;
 
         // s*.p*.x, s*.p*.y
         __m128 s0_pA_pos = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(&(pointsPositionData[s0_pA_index]))));
@@ -551,15 +493,39 @@ TEST(LibSimdPpTests, UpdateSpringForces)
         // along the same direction as the spring
         //
 
-        // TODOHERE
+        // s*.p*.vx, s*.p*.vy
+        __m128 s0_pA_vel = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(&(pointsVelocityData[s0_pA_index]))));
+        __m128 s0_pB_vel = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(&(pointsVelocityData[s0_pB_index]))));
+        __m128 s1_pA_vel = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(&(pointsVelocityData[s1_pA_index]))));
+        __m128 s1_pB_vel = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(&(pointsVelocityData[s1_pB_index]))));
+        __m128 s2_pA_vel = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(&(pointsVelocityData[s2_pA_index]))));
+        __m128 s2_pB_vel = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(&(pointsVelocityData[s2_pB_index]))));
+        __m128 s3_pA_vel = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(&(pointsVelocityData[s3_pA_index]))));
+        __m128 s3_pB_vel = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(&(pointsVelocityData[s3_pB_index]))));
 
-        // Calculate damp force on point A
-        ////vec2f const relVelocity = pointsVelocity[pointBIndex] - pointsVelocity[pointAIndex];
-        ////vec2f const fDampA =
-        ////    springDir
-        ////    * relVelocity.dot(springDir)
-        ////    * springsDamperCoefficient[springIndex];
+        __m128 s0s1_pA_vel = _mm_movelh_ps(s0_pA_vel, s1_pA_vel); // x0,y0,x1,y1
+        __m128 s2s3_pA_vel = _mm_movelh_ps(s2_pA_vel, s3_pA_vel); // x2,y2,x3,y3
+        __m128 s0s1_pB_vel = _mm_movelh_ps(s0_pB_vel, s1_pB_vel); // x0,y0,x1,y1
+        __m128 s2s3_pB_vel = _mm_movelh_ps(s2_pB_vel, s3_pB_vel); // x2,y2,x3,y3
 
+        simdpp::float32<4> s0s1_deltaVel = simdpp::float32<4>(s0s1_pB_vel) - simdpp::float32<4>(s0s1_pA_vel); // x0,y0,x1,y1
+        simdpp::float32<4> s2s3_deltaVel = simdpp::float32<4>(s2s3_pB_vel) - simdpp::float32<4>(s2s3_pA_vel); // x2,y2,x3,y3
+
+        simdpp::float32<4> deltaVelX = simdpp::unzip4_lo(s0s1_deltaVel, s2s3_deltaVel); // x0,x1,x2,x3
+        simdpp::float32<4> deltaVelY = simdpp::unzip4_hi(s0s1_deltaVel, s2s3_deltaVel); // y0,y1,y2,y3
+
+        // deltaVelProjection = deltaVel.dot(springDir)
+        simdpp::float32<4> deltaVelProjection = deltaVelX * springDirX + deltaVelY * springDirY;
+
+        fX = fX 
+            + springDirX
+            * deltaVelProjection
+            * simdpp::load<simdpp::float32<4>>(&(springsDamperCoefficientData[s]));
+
+        fY = fY
+            + springDirY
+            * deltaVelProjection
+            * simdpp::load<simdpp::float32<4>>(&(springsDamperCoefficientData[s]));
 
         //
         // Zero-out forces where spring length is zero
@@ -636,10 +602,10 @@ TEST(LibSimdPpTests, UpdateSpringForces)
     std::vector<vec2f> expectedPointsForce;
     expectedPointsForce.resize(pointsPosition.size());
 
-    for (size_t springIndex = 0; springIndex < springsEndpoint.size(); springIndex++)
+    for (size_t springIndex = 0; springIndex < springsEndpoints.size(); springIndex++)
     {
-        auto const pointAIndex = springsEndpoint[springIndex].PointAIndex;
-        auto const pointBIndex = springsEndpoint[springIndex].PointBIndex;
+        auto const pointAIndex = springsEndpoints[springIndex].PointAIndex;
+        auto const pointBIndex = springsEndpoints[springIndex].PointBIndex;
 
         vec2f const displacement = pointsPosition[pointBIndex] - pointsPosition[pointAIndex];
         float const displacementLength = displacement.length();
@@ -675,11 +641,8 @@ TEST(LibSimdPpTests, UpdateSpringForces)
         // Apply forces
         //
 
-        // TODOTEST
-        //expectedPointsForce[pointAIndex] += fSpringA + fDampA;
-        //expectedPointsForce[pointBIndex] -= fSpringA + fDampA;
-        expectedPointsForce[pointAIndex] += fSpringA;
-        expectedPointsForce[pointBIndex] -= fSpringA;
+        expectedPointsForce[pointAIndex] += fSpringA + fDampA;
+        expectedPointsForce[pointBIndex] -= fSpringA + fDampA;
     }
 
     for (int p = 0; p < pointsForce.size(); ++p)

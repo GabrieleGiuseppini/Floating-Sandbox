@@ -59,7 +59,7 @@ std::vector<vec2f> MakeVectors(size_t count)
 void MakeGraph(
     size_t count,
     std::vector<vec2f> & points,
-    std::vector<Spring> & springs)
+    std::vector<SpringEndpoints> & springs)
 {
     points.clear();
     points.reserve(count);
@@ -74,5 +74,48 @@ void MakeGraph(
             static_cast<ElementIndex>(i < count / 2 ? i + count / 2 : i),
             static_cast<ElementIndex>(i >= count / 2 ? i - count / 2 : i)
         });
+    }
+}
+
+void MakeGraph2(
+    size_t count,
+    std::vector<vec2f> & pointsPosition,
+    std::vector<vec2f> & pointsVelocity,
+    std::vector<vec2f> & pointsForce,
+    std::vector<SpringEndpoints> & springsEndpoints,
+    std::vector<float> & springsStiffnessCoefficient,
+    std::vector<float> & springsDamperCoefficient,
+    std::vector<float> & springsRestLength)
+{
+    pointsPosition.clear();
+    pointsPosition.reserve(count);
+    pointsVelocity.clear();
+    pointsVelocity.reserve(count);
+    pointsForce.clear();
+    pointsForce.reserve(count);
+
+    springsEndpoints.clear();
+    springsEndpoints.reserve(count);
+    springsStiffnessCoefficient.clear();
+    springsStiffnessCoefficient.reserve(count);
+    springsDamperCoefficient.clear();
+    springsDamperCoefficient.reserve(count);
+    springsRestLength.clear();
+    springsRestLength.reserve(count);
+
+    for (size_t i = 0; i < count; ++i)
+    {
+        pointsPosition.emplace_back(static_cast<float>(i), static_cast<float>(i) / 5.0f);
+        pointsVelocity.emplace_back(static_cast<float>(i) * 0.3f, static_cast<float>(i) / 2.0f);
+        pointsForce.emplace_back(0.f, 0.f);
+
+        springsEndpoints.push_back({
+            static_cast<ElementIndex>(i < count / 2 ? i + count / 2 : i),
+            static_cast<ElementIndex>(i >= count / 2 ? i - count / 2 : i)
+            });
+
+        springsStiffnessCoefficient.emplace_back(static_cast<float>(i) * 0.4f);
+        springsDamperCoefficient.emplace_back(static_cast<float>(i) * 0.5f);
+        springsRestLength.emplace_back(1.0f + static_cast<float>(i % 2));
     }
 }
