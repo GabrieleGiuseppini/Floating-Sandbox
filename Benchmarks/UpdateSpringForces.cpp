@@ -93,13 +93,14 @@ static void UpdateSpringForces_LibSimdPpAndIntrinsics(benchmark::State& state)
     MakeGraph2(size, pointsPosition, pointsVelocity, pointsForce,
         springsEndpoints, springsStiffnessCoefficient, springsDamperCoefficient, springsRestLength);
 
-    vec2f * const restrict pointsPositionData = pointsPosition.data();
-    vec2f * const restrict pointsVelocityData = pointsVelocity.data();
-    vec2f * restrict pointsForceData = pointsForce.data();
-    SpringEndpoints * const restrict springsEndpointsData = springsEndpoints.data();
-    float * const restrict springsStiffnessCoefficientData = springsStiffnessCoefficient.data();
-    float * const restrict springsDamperCoefficientData = springsDamperCoefficient.data();
-    float * const restrict springsRestLengthData = springsRestLength.data();
+    vec2f const * const restrict pointsPositionData = pointsPosition.data();
+    vec2f const * const restrict pointsVelocityData = pointsVelocity.data();
+    vec2f * const restrict pointsForceData = pointsForce.data();
+    SpringEndpoints const * const restrict springsEndpointsData = springsEndpoints.data();
+    float const * const restrict springsStiffnessCoefficientData = springsStiffnessCoefficient.data();
+    float const * const restrict springsDamperCoefficientData = springsDamperCoefficient.data();
+    float const * const restrict springsRestLengthData = springsRestLength.data();
+
 
     __m128 const Zero = _mm_set_ps(0.0f, 0.0f, 0.0f, 0.0f);
 
@@ -156,9 +157,6 @@ static void UpdateSpringForces_LibSimdPpAndIntrinsics(benchmark::State& state)
                 (springLength - simdpp::load<simdpp::float32<4>>(&(springsRestLengthData[s])))
                 * simdpp::load<simdpp::float32<4>>(&(springsStiffnessCoefficientData[s]));
 
-            // Zero-out forces where spring length is zero
-            simdpp::mask_float32<4> const validMask = (springLength != 0.0f);
-            fS = simdpp::bit_and(fS, validMask);
 
 
             //
@@ -200,6 +198,11 @@ static void UpdateSpringForces_LibSimdPpAndIntrinsics(benchmark::State& state)
             // Make force vectors by multiplying scalar forces with spring normalized vector
             simdpp::float32<4> fX = springDirX * fS;
             simdpp::float32<4> fY = springDirY * fS;
+
+            // Zero-out forces where spring length is zero
+            simdpp::mask_float32<4> const validMask = (springLength != 0.0f);
+            fX = simdpp::bit_and(fX, validMask);
+            fY = simdpp::bit_and(fY, validMask);
 
 
             //
