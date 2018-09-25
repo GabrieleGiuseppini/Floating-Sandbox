@@ -143,10 +143,8 @@ static void UpdateSpringForces_LibSimdPpAndIntrinsics(benchmark::State& state)
             simdpp::float32<4> deltaPosX = simdpp::unzip4_lo(s0s1_deltaPos, s2s3_deltaPos); // x0,x1,x2,x3
             simdpp::float32<4> deltaPosY = simdpp::unzip4_hi(s0s1_deltaPos, s2s3_deltaPos); // y0,y1,y2,y3
 
-            // Calculate normalized spring vector
+        // Calculate spring length
             simdpp::float32<4> const springLength = simdpp::sqrt(deltaPosX * deltaPosX + deltaPosY * deltaPosY);
-            simdpp::float32<4> springDirX = deltaPosX / springLength;
-            simdpp::float32<4> springDirY = deltaPosY / springLength;
 
             //
             // 1. Hooke's law
@@ -188,21 +186,19 @@ static void UpdateSpringForces_LibSimdPpAndIntrinsics(benchmark::State& state)
             simdpp::float32<4> deltaVelY = simdpp::unzip4_hi(s0s1_deltaVel, s2s3_deltaVel); // y0,y1,y2,y3
 
             // deltaVelProjection = deltaVel.dot(springDir)
-            simdpp::float32<4> deltaVelProjection = deltaVelX * springDirX + deltaVelY * springDirY;
+            simdpp::float32<4> deltaVelProjection = (deltaVelX * deltaPosX + deltaVelY * deltaPosY) / springLength;
 
             // Scalar force on point A along each spring
             fS = fS + (
                 deltaVelProjection
                 * simdpp::load<simdpp::float32<4>>(&(springsDamperCoefficientData[s])));
 
-            // Make force vectors by multiplying scalar forces with spring normalized vector
-            simdpp::float32<4> fX = springDirX * fS;
-            simdpp::float32<4> fY = springDirY * fS;
-
-            // Zero-out forces where spring length is zero
+            // Make force vectors by multiplying scalar forces with spring normalized vector,
+            // making sure we zero out force where spring length is zero
             simdpp::mask_float32<4> const validMask = (springLength != 0.0f);
-            fX = simdpp::bit_and(fX, validMask);
-            fY = simdpp::bit_and(fY, validMask);
+            fS = simdpp::bit_and(fS / springLength, validMask);
+            simdpp::float32<4> fX = deltaPosX * fS;
+            simdpp::float32<4> fY = deltaPosY * fS;
 
 
             //

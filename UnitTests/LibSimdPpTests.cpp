@@ -415,16 +415,16 @@ TEST(LibSimdPpTests, UpdateSpringForces)
     // Test
     //
 
-    vec2f * const restrict pointsPositionData = pointsPosition.data();
-    vec2f * const restrict pointsVelocityData = pointsVelocity.data();
-    SpringEndpoints * const restrict springsEndpointsData = springsEndpoints.data();
-    float * const restrict springsStiffnessCoefficientData = springsStiffnessCoefficient.data();
-    float * const restrict springsDamperCoefficientData = springsDamperCoefficient.data();
-    float * const restrict springsRestLengthData = springsRestLength.data();
+    vec2f const * const restrict pointsPositionData = pointsPosition.data();
+    vec2f const * const restrict pointsVelocityData = pointsVelocity.data();
+    SpringEndpoints const * const restrict springsEndpointsData = springsEndpoints.data();
+    float const * const restrict springsStiffnessCoefficientData = springsStiffnessCoefficient.data();
+    float const * const restrict springsDamperCoefficientData = springsDamperCoefficient.data();
+    float const * const restrict springsRestLengthData = springsRestLength.data();
 
     std::vector<vec2f> pointsForce;
     pointsForce.resize(pointsPosition.size());
-    vec2f * restrict pointsForceData = pointsForce.data();
+    vec2f * const restrict pointsForceData = pointsForce.data();
 
     __m128 const Zero = _mm_set_ps(0.0f, 0.0f, 0.0f, 0.0f);
 
@@ -465,10 +465,8 @@ TEST(LibSimdPpTests, UpdateSpringForces)
         simdpp::float32<4> deltaPosX = simdpp::unzip4_lo(s0s1_deltaPos, s2s3_deltaPos); // x0,x1,x2,x3
         simdpp::float32<4> deltaPosY = simdpp::unzip4_hi(s0s1_deltaPos, s2s3_deltaPos); // y0,y1,y2,y3
 
-        // Calculate normalized spring vector
+        // Calculate spring length
         simdpp::float32<4> const springLength = simdpp::sqrt(deltaPosX * deltaPosX + deltaPosY * deltaPosY);
-        simdpp::float32<4> springDirX = deltaPosX / springLength;
-        simdpp::float32<4> springDirY = deltaPosY / springLength;
         
         //
         // 1. Hooke's law
@@ -479,10 +477,7 @@ TEST(LibSimdPpTests, UpdateSpringForces)
             (springLength - simdpp::load<simdpp::float32<4>>(&(springsRestLengthData[s])))
             * simdpp::load<simdpp::float32<4>>(&(springsStiffnessCoefficientData[s]));
 
-        // Zero-out forces where spring length is zero
-        simdpp::mask_float32<4> const validMask = (springLength != 0.0f);
-        fS = simdpp::bit_and(fS, validMask);
-
+    
 
         //
         // 2. Damper forces
@@ -513,18 +508,20 @@ TEST(LibSimdPpTests, UpdateSpringForces)
         simdpp::float32<4> deltaVelY = simdpp::unzip4_hi(s0s1_deltaVel, s2s3_deltaVel); // y0,y1,y2,y3
 
         // deltaVelProjection = deltaVel.dot(springDir)
-        simdpp::float32<4> deltaVelProjection = deltaVelX * springDirX + deltaVelY * springDirY;
+        simdpp::float32<4> deltaVelProjection = (deltaVelX * deltaPosX + deltaVelY * deltaPosY) / springLength;
 
         // Scalar force on point A along each spring
         fS = fS + (
             deltaVelProjection
             * simdpp::load<simdpp::float32<4>>(&(springsDamperCoefficientData[s])));
 
-        // Make force vectors by multiplying scalar forces with spring normalized vector
-        simdpp::float32<4> fX = springDirX * fS;
-        simdpp::float32<4> fY = springDirY * fS;
-        
-        
+        // Make force vectors by multiplying scalar forces with spring normalized vector,
+        // making sure we zero out force where spring length is zero
+        simdpp::mask_float32<4> const validMask = (springLength != 0.0f);
+        fS = simdpp::bit_and(fS / springLength, validMask);
+        simdpp::float32<4> fX = deltaPosX * fS;
+        simdpp::float32<4> fY = deltaPosY * fS;
+
 
         //
         // Apply forces - must do on each point alone as we might be adding to the same point
