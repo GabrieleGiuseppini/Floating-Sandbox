@@ -474,17 +474,15 @@ TEST(LibSimdPpTests, UpdateSpringForces)
         // 1. Hooke's law
         //
 
-        // Calculate spring force on point A
-
-        simdpp::float32<4> fX =
-            springDirX
-            * (springLength - simdpp::load<simdpp::float32<4>>(&(springsRestLengthData[s])))
+        // Scalar force on point A along each spring
+        simdpp::float32<4> fS =
+            (springLength - simdpp::load<simdpp::float32<4>>(&(springsRestLengthData[s])))
             * simdpp::load<simdpp::float32<4>>(&(springsStiffnessCoefficientData[s]));
 
-        simdpp::float32<4> fY =
-            springDirY
-            * (springLength - simdpp::load<simdpp::float32<4>>(&(springsRestLengthData[s])))
-            * simdpp::load<simdpp::float32<4>>(&(springsStiffnessCoefficientData[s]));
+        // Zero-out forces where spring length is zero
+        simdpp::mask_float32<4> const validMask = (springLength != 0.0f);
+        fS = simdpp::bit_and(fS, validMask);
+
 
         //
         // 2. Damper forces
@@ -517,28 +515,19 @@ TEST(LibSimdPpTests, UpdateSpringForces)
         // deltaVelProjection = deltaVel.dot(springDir)
         simdpp::float32<4> deltaVelProjection = deltaVelX * springDirX + deltaVelY * springDirY;
 
-        fX = fX 
-            + springDirX
-            * deltaVelProjection
-            * simdpp::load<simdpp::float32<4>>(&(springsDamperCoefficientData[s]));
+        // Scalar force on point A along each spring
+        fS = fS + (
+            deltaVelProjection
+            * simdpp::load<simdpp::float32<4>>(&(springsDamperCoefficientData[s])));
 
-        fY = fY
-            + springDirY
-            * deltaVelProjection
-            * simdpp::load<simdpp::float32<4>>(&(springsDamperCoefficientData[s]));
-
-        //
-        // Zero-out forces where spring length is zero
-        //
-
-        simdpp::mask_float32<4> const validMask = (springLength != 0.0f);
-
-        fX = simdpp::bit_and(fX, validMask);
-        fY = simdpp::bit_and(fY, validMask);
-
+        // Make force vectors by multiplying scalar forces with spring normalized vector
+        simdpp::float32<4> fX = springDirX * fS;
+        simdpp::float32<4> fY = springDirY * fS;
+        
+        
 
         //
-        // Apply forces
+        // Apply forces - must do on each point alone as we might be adding to the same point
         //
 
         simdpp::float32<4> s01_f = simdpp::zip4_lo(fX, fY); // x0,y0,x1,y1
