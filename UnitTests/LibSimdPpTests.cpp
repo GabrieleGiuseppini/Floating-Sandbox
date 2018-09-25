@@ -465,9 +465,12 @@ TEST(LibSimdPpTests, UpdateSpringForces)
         simdpp::float32<4> deltaPosX = simdpp::unzip4_lo(s0s1_deltaPos, s2s3_deltaPos); // x0,x1,x2,x3
         simdpp::float32<4> deltaPosY = simdpp::unzip4_hi(s0s1_deltaPos, s2s3_deltaPos); // y0,y1,y2,y3
 
-        // Calculate spring length
+        // Calculate normalized spring length
         simdpp::float32<4> const springLength = simdpp::sqrt(deltaPosX * deltaPosX + deltaPosY * deltaPosY);
-        
+        simdpp::mask_float32<4> const validMask = (springLength != 0.0f);
+        simdpp::float32<4> const springDirX = simdpp::bit_and(deltaPosX / springLength, validMask);
+        simdpp::float32<4> const springDirY = simdpp::bit_and(deltaPosY / springLength, validMask);
+
         //
         // 1. Hooke's law
         //
@@ -508,19 +511,16 @@ TEST(LibSimdPpTests, UpdateSpringForces)
         simdpp::float32<4> deltaVelY = simdpp::unzip4_hi(s0s1_deltaVel, s2s3_deltaVel); // y0,y1,y2,y3
 
         // deltaVelProjection = deltaVel.dot(springDir)
-        simdpp::float32<4> deltaVelProjection = (deltaVelX * deltaPosX + deltaVelY * deltaPosY) / springLength;
+        simdpp::float32<4> deltaVelProjection = deltaVelX * springDirX + deltaVelY * springDirY;
 
         // Scalar force on point A along each spring
         fS = fS + (
             deltaVelProjection
             * simdpp::load<simdpp::float32<4>>(&(springsDamperCoefficientData[s])));
 
-        // Make force vectors by multiplying scalar forces with spring normalized vector,
-        // making sure we zero out force where spring length is zero
-        simdpp::mask_float32<4> const validMask = (springLength != 0.0f);
-        fS = simdpp::bit_and(fS / springLength, validMask);
-        simdpp::float32<4> fX = deltaPosX * fS;
-        simdpp::float32<4> fY = deltaPosY * fS;
+        // Make force vectors by multiplying scalar forces with spring normalized vector
+        simdpp::float32<4> fX = springDirX * fS;
+        simdpp::float32<4> fY = springDirY * fS;
 
 
         //
