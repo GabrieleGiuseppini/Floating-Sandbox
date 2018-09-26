@@ -64,7 +64,7 @@ endif (MSVC)
 
 
 #
-# Set VS properties
+# VS properties
 #
 
 if (MSVC)
@@ -113,3 +113,40 @@ if (WIN32)
 	file(COPY ${SFML_RUNTIME_RELEASE_LIBRARIES}
 		DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/RelWithDebInfo")
 endif (WIN32)
+
+
+####################################################
+# Install
+####################################################
+
+# Main binary
+install(TARGETS FloatingSandbox
+	CONFIGURATIONS Release
+        RUNTIME 
+	DESTINATION .)
+
+# Runtime libraries
+if (WIN32)
+	# Devil
+	install(FILES ${DEVIL_RUNTIME_LIBRARIES} 
+		DESTINATION .)
+	# SFML
+	install(FILES ${SFML_RUNTIME_RELEASE_LIBRARIES} 
+		DESTINATION .)
+endif (WIN32)
+
+# Resources
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/Data" 
+	DESTINATION .)
+
+# Ships
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/Ships" 
+	DESTINATION .
+	PATTERN "default_ship.png" EXCLUDE)
+install(FILES "${CMAKE_SOURCE_DIR}/Ships/IKC Krafting.shp" 
+	DESTINATION Ships
+	RENAME "default_ship.shp")
+
+# License
+install(FILES "${CMAKE_SOURCE_DIR}/license.txt"
+	DESTINATION .)

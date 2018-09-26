@@ -5,6 +5,14 @@ project (FloatingSandbox)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 ####################################################
+# Hardcoded paths
+####################################################
+
+set(SDK_ROOT "C:/Users/Neurodancer/source/SDK" CACHE PATH "..." FORCE)
+set(REPOS_ROOT "C:/Users/Neurodancer/source/repos" CACHE PATH "..." FORCE)
+
+
+####################################################
 #                External libraries 
 #
 # The library paths I'm using are from my MSVC build
@@ -13,15 +21,15 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # Release builds, just use the same library for both.
 ####################################################
 
-list(APPEND CMAKE_PREFIX_PATH "C:/Users/Neurodancer/source/SDK/PicoJSON")
-list(APPEND CMAKE_PREFIX_PATH "C:/Users/Neurodancer/source/SDK/benchmark")
-list(APPEND CMAKE_PREFIX_PATH "C:/Users/Neurodancer/source/SDK/libsimdpp-2.1")
-list(APPEND CMAKE_PREFIX_PATH "C:/Users/Neurodancer/source/SDK/DevIL")
-list(APPEND CMAKE_PREFIX_PATH "C:/Users/Neurodancer/source/SDK/SFML")
-list(APPEND CMAKE_LIBRARY_PATH "C:/Users/Neurodancer/source/SDK/DevIL")
-set(SFML_ROOT "C:/Users/Neurodancer/source/SDK/SFML")
-set(wxWidgets_ROOT_DIR "C:/Users/Neurodancer/source/SDK/wxWidgets")
-set(GOOGLE_TEST_ROOT "C:/Users/Neurodancer/source/repos/googletest")
+list(APPEND CMAKE_PREFIX_PATH "${SDK_ROOT}/PicoJSON")
+list(APPEND CMAKE_PREFIX_PATH "${SDK_ROOT}/benchmark")
+list(APPEND CMAKE_PREFIX_PATH "${SDK_ROOT}/libsimdpp-2.1")
+list(APPEND CMAKE_PREFIX_PATH "${SDK_ROOT}/DevIL")
+list(APPEND CMAKE_PREFIX_PATH "${SDK_ROOT}/SFML")
+list(APPEND CMAKE_LIBRARY_PATH "${SDK_ROOT}/DevIL")
+set(SFML_ROOT "${SDK_ROOT}/SFML")
+set(wxWidgets_ROOT_DIR "${SDK_ROOT}/wxWidgets")
+set(GOOGLE_TEST_ROOT "${REPOS_ROOT}/googletest")
 
 find_path(PICOJSON_INCLUDE_DIRS
     NAMES picojson/picojson.h)
@@ -84,6 +92,12 @@ if (MSVC)
 		endif(${flag_var} MATCHES "/W3")
 		set(${flag_var} "${${flag_var}} /W4")
 	endforeach(flag_var)
+
+	# Make RelWithDebInfo use aggressive inlining
+	if(${CMAKE_CXX_FLAGS_RELWITHDEBINFO} MATCHES "/Ob1")
+		string(REGEX REPLACE "/Ob1" "" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+	endif(${CMAKE_CXX_FLAGS_RELWITHDEBINFO} MATCHES "/Ob1")
+	set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /Ob2")
 	
 	if(CMAKE_EXE_LINKER_FLAGS_DEBUG MATCHES "/INCREMENTAL")		
 		string(REGEX REPLACE "/INCREMENTAL" "" CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG}")
@@ -104,10 +118,9 @@ endif()
 
 message (STATUS "cxx Flags:" ${CMAKE_CXX_FLAGS})
 message (STATUS "cxx Flags Release:" ${CMAKE_CXX_FLAGS_RELEASE})
-message (STATUS "cxx Flags RelWithDebInfo:" ${CMAKE_CXX_FLAGS_RELEASE})
+message (STATUS "cxx Flags RelWithDebInfo:" ${CMAKE_CXX_FLAGS_RELWITHDEBINFO})
 message (STATUS "cxx Flags Debug:" ${CMAKE_CXX_FLAGS_DEBUG})
 message (STATUS "exe Linker Flags Debug:" ${CMAKE_EXE_LINKER_FLAGS_DEBUG})
-
 
 
 ####################################################
@@ -126,11 +139,18 @@ endif(MSVC)
 # Sub-projects
 ####################################################
 
-add_subdirectory(Benchmarks)
+add_subdirectory(Benchmarks EXCLUDE_FROM_ALL)
 add_subdirectory(FloatingSandbox)
-add_subdirectory(GameLib)
-add_subdirectory(Glad)
-add_subdirectory(ShipTools)
-add_subdirectory(UILib)
-add_subdirectory(UnitTests)
+add_subdirectory(GameLib EXCLUDE_FROM_ALL)
+add_subdirectory(Glad EXCLUDE_FROM_ALL)
+add_subdirectory(ShipTools EXCLUDE_FROM_ALL)
+add_subdirectory(UILib EXCLUDE_FROM_ALL)
+add_subdirectory(UnitTests EXCLUDE_FROM_ALL)
 
+
+
+####################################################
+# Install
+####################################################
+
+set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/Install" CACHE PATH "..." FORCE)
