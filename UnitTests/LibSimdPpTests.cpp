@@ -527,10 +527,10 @@ TEST(LibSimdPpTests, UpdateSpringForces)
         // Apply forces - must do on each point alone as we might be adding to the same point
         //
 
-        simdpp::float32<4> s01_f = simdpp::zip4_lo(fX, fY); // x0,y0,x1,y1
-        __m128 s1_f = _mm_movehl_ps(s01_f.wrapped(), s01_f.wrapped());
-        simdpp::float32<4> s23_f = simdpp::zip4_hi(fX, fY); // x2,y2,x3,y3
-        __m128 s3_f = _mm_movehl_ps(s23_f.wrapped(), s23_f.wrapped());
+        simdpp::float32<4> s01_f = simdpp::zip4_lo(fX, fY);             // f0.x,f0.y (, f1.x, f1.y)
+        __m128 s1_f = _mm_movehl_ps(s01_f.wrapped(), s01_f.wrapped());  // f1.x, f1.y
+        simdpp::float32<4> s23_f = simdpp::zip4_hi(fX, fY);             // f2.x, f2.y (, f3.x, f4.y)
+        __m128 s3_f = _mm_movehl_ps(s23_f.wrapped(), s23_f.wrapped());  // f3.x, f4.y
 
         //
         // S0
