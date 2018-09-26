@@ -139,13 +139,13 @@ endif(MSVC)
 # Sub-projects
 ####################################################
 
-add_subdirectory(Benchmarks EXCLUDE_FROM_ALL)
+add_subdirectory(Benchmarks)
 add_subdirectory(FloatingSandbox)
-add_subdirectory(GameLib EXCLUDE_FROM_ALL)
-add_subdirectory(Glad EXCLUDE_FROM_ALL)
-add_subdirectory(ShipTools EXCLUDE_FROM_ALL)
-add_subdirectory(UILib EXCLUDE_FROM_ALL)
-add_subdirectory(UnitTests EXCLUDE_FROM_ALL)
+add_subdirectory(GameLib)
+add_subdirectory(Glad)
+add_subdirectory(ShipTools)
+add_subdirectory(UILib)
+add_subdirectory(UnitTests)
 
 
 

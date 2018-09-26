@@ -5,7 +5,7 @@ if(MSVC)
 endif(MSVC)
 
 # Google advises to compile gtest from source with the project
-add_subdirectory("${GOOGLE_TEST_ROOT}" gtest)
+add_subdirectory("${GOOGLE_TEST_ROOT}" gtest EXCLUDE_FROM_ALL)
 
 set (UNIT_TEST_SOURCES
 	CircularListTests.cpp
