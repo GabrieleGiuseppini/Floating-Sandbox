@@ -4,8 +4,20 @@ if(MSVC)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING /DGTEST_HAS_TR1_TUPLE=0")
 endif(MSVC)
 
+#
+# Setup google test
+#
+
 # Google advises to compile gtest from source with the project
 add_subdirectory("${GOOGLE_TEST_ROOT}" gtest EXCLUDE_FROM_ALL)
+
+set_property(
+	TARGET gmock gtest gtest_main
+	PROPERTY FOLDER "GoogleTest")
+
+#
+# Setup target
+#
 
 set (UNIT_TEST_SOURCES
 	CircularListTests.cpp

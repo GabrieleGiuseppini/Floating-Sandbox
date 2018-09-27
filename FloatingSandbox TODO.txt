@@ -62,15 +62,40 @@ Current perf
 	- See Moleskine
 
 - Technical Debt:
-	- Textures are json files, with world size, offset, and lighting boolean
-		- SEE MOLESKINE
+	= Textures are json files, with world size, offset, and lighting boolean
+		= SEE MOLESKINE
+		- Cleanup:
+			- Double-check clouds's aspect ratio
+			- RenderContext:
+				- Hook up IProgress to individual loads
+				- OpenGL helper wrapping upload of texture given frame
+					- Also use at OpenGLHelper itself in Mipmapper
 		- Then:
-			- Change bomb rendering: takes vector of frame indices, no optionals needed
-			- Remove hardcoded sizes and offsets
+			- (Ship)RenderContext: Do not store sizes but metadata instead
+			- Remove hardcoded sizes and offsets and substitute with metadata lookups
 				- Cloud size
 				- Water size
 				- Land size
 				- Bombs sizes and offsets
+			- Test and commit
+			- ShipRenderContext: replace pinned points and bombs with Upload(Ship)TextureRenderSpecification:
+				- ShipID (used only by RenderContext to dispatch)
+				- ConnectedComponentID
+					- Until Z-rearc
+					- ShipRenderContext has one TextureRenderSpecification per-connected component
+				- Position vec2f
+					- Of anchor
+				- Orientation std::optional<vec2f>
+					- Off <1.0, 0.0f>
+				- TextureFrameId
+					- Need to figure out way to store all TextureFrameMetadata in map indexed by this
+		- Then, after Z:
+			- Write a single shader to do all the work for one texture
+				- Initially, runs on 1 texture at a time
+				- After atlas, runs on all textures (via updated texture coordinates)
+				- Takes as input struct 
+					- Described to OpenGL
+
 	- GameController rearc:
 		- GameController moves to FloatingSandbox, and contains SoundController and ToolController as well
 		- MainFrame talks exclusively to GameController, which in turn talks to the others
@@ -78,8 +103,11 @@ Current perf
 			- IGameEventHandler events exist only for the world-generated noises (e.g. something really breaking), not
 			  for the tools
 			  - So Swirl, for example, should disappear from IGameEventHandler; some others as well
-	- CMake INSTALL target for release
-	- Test: Ship::Render() should take ShipRenderContext instead of RenderContext, and eventually RenderContext if really needed
+	+ CMake:
+		+ INSTALL target for release
+		+ RelWithDebInfo: Inline any suitable (/Ob2)
+
+	- Test: Ship::Render() should give its subordinates ShipRenderContext instead of RenderContext
 		- Can then get rid of forwards from RenderContext
 
 - Optimizations:
@@ -90,7 +118,7 @@ Current perf
 		+ Points::CheckoutWaterBufferTmp (as "AllocateWaterBufferCopy()") borrows one, copies it in, and returns it as std::unique_ptr<Buffer<float>>
 		+ Opposite for Commit() (as "UpdateWaterBuffer")
 
-	- Do SSE with libsimdpp:
+	= Do SSE with libsimdpp:
 		- Prepare sources:
 			- GameLib/LibSimdPp.h
 				- Defines macro for SSE3 and includes simd.h
@@ -108,36 +136,29 @@ Current perf
 				- Includes LibSimdPp.h
 				- make_aligned_element_count: local static constexpr for word size, choosing max of VECTORIZATION_FLOAT32_SIZE & VECTORIZATION_INT32_SIZE
 
-		- Vector normalization:
-			- Benchmark versions:
-				+ Naive-NoLength
-				+ Naive-NoLength w/restrict pointers
-				- Naive-AndLength w/fastest of above
-				- Vectorized-NoLength-VecSizeGnostic - current unit test, harmonized to 1
-				- Vectorized-NoLength-VecSizeGnostic - current unit test, harmonized to 2
-				- Vectorized-NoLength-VecSizeGnostic - xyxy
-				- Vectorized-NoLength-VecSizeAgnostic
-				- Vectorized-AndLength w/fastest of above
-			- Think of precalculating all normalized vectors before they're needed 
-				- Call before each spring iteration (so to catch bombs and destroy's) and before water (so to catch last Integrate())
-					- TODO: Double-think - who knows when something has changed?
-				- Springs::CalculateNormalizedVectors()
-					- For use by Water
-						- It's also more approx
-					- Fills-in own vec2f buffer, exposed also via getter (GetNormalizedVector(springIndex))
-					- Uses simdpp::load_packed2 to make x1x2x3x4 & y1y2y3y4
-					- Use in water and get perf improvement
-				- std::unique_ptr<Buffer<float>> Springs::CalculateNormalizedVectorsWithLengths()
-					- For use in Springs iteration
-					- Borrows a float buffer
-					- Use in springs and get perf improvement
-
+		= UpdateSpringForces:
+			+ Version 0/Optimization 1:
+				UpdateSpringForces_Naive_mean                     566158909 ns  553803550 ns          1
+				UpdateSpringForces_Naive_median                   564963849 ns  561603600 ns          1
+				UpdateSpringForces_Naive_stddev                     4619531 ns   18596554 ns          1
+				UpdateSpringForces_LibSimdPpAndIntrinsics_mean    431502311 ns  409502625 ns          2
+				UpdateSpringForces_LibSimdPpAndIntrinsics_median  415921334 ns  409502625 ns          2
+				UpdateSpringForces_LibSimdPpAndIntrinsics_stddev   35247735 ns   18160977 ns          2
+			+ Optimization 2 (SpringDir less divisions):
+				UpdateSpringForces_LibSimdPpAndIntrinsics_mean    419323870 ns  408332618 ns          2
+				UpdateSpringForces_LibSimdPpAndIntrinsics_median  418272468 ns  405602600 ns          2
+				UpdateSpringForces_LibSimdPpAndIntrinsics_stddev    6254057 ns    7279802 ns          2
+			+ First NaN avoidance:
+				UpdateSpringForces_LibSimdPpAndIntrinsics_mean    424542593 ns  402872582 ns          2
+				UpdateSpringForces_LibSimdPpAndIntrinsics_median  412086262 ns  401702575 ns          2
+				UpdateSpringForces_LibSimdPpAndIntrinsics_stddev   39465568 ns   11672674 ns          2
+					and
+				UpdateSpringForces_LibSimdPpAndIntrinsics_mean    416146077 ns  398192553 ns          2
+				UpdateSpringForces_LibSimdPpAndIntrinsics_median  410967797 ns  397802550 ns          2
+				UpdateSpringForces_LibSimdPpAndIntrinsics_stddev    9809876 ns    9628195 ns          2
 		- Use at IntegratePointDynamics, to guarantee SSE2
 			- Verify with asm
 			- Add to credits
-		- See if can vectorize also UpdateWaterDynamics and UpdateSpringDynamics
-			- See replacing if's with masks
-			- See shuffled loading and storing of 4 arbitrary floats in ETH deck
 		+ Avoiding if's for divisor==0
 			+ No 0.0 checks for divisions, but + 0.00001
 				+ Verify behavior of float::max/float::min
@@ -150,10 +171,14 @@ Current perf
 			+ Starting point: Spring ACMR: original=0.516807, optimized=0.325156
 			+ Choose springs with largest numbers of points in cache
 
+	- UpdateWaterDynamics:
+		- Test turning it around into (multiple) spring visits, rather than point visits
+			- Multiple because of need to normalize outgoing for each point
+
 	- See if can avoid other IsDeleted checks, via zero'ing of coefficients
 	- UpdatePointForces:
 		- Precalculate things that do not depend on position nor velocity
-			- Stored either in buffers (if we go for exploded Pos, Vel, etc.) or in Point (if we don't go for that)
+			- Stored in buffers
 			- Technically, would have to store separately effectiveMassMultiplier (*Mass) and effectiveBuoyancy (*Mass)
 				- Test: but could cheat and use water height based on initial positions only, in which case
 				  we store directly StaticForce == Gravity + Water Drag (?REALLY?)
@@ -162,7 +187,7 @@ Current perf
 	- Water and Land interpolations:
 		- 1: see if it's better to store delta's and/or other pre-calculated things
 		- 2: see if can do semi-integer x-axis interpolation
-	- Cache sea depth from PointDynamics at first calculation (Points?), using lambda 
+	- Cache sea depth from PointDynamics at first calculation (Points?), using lambda
 
 
 - Gfx:
@@ -170,21 +195,21 @@ Current perf
 	  larger than texture), then one sees parts of the springs
 		- It's a problem with rendering springs with the texture shader
 	- Optimizations:
-		- Use CPU and GPU in parallel
+		= Use CPU and GPU in parallel
 			- Finalize render before render step, not after
 			- Research glFlush()
 		- More connected components => slower (multiple batches); try
 		  to draw one single batch then, using Z buffer and depth test 
 			- Assign Z based on connected component ID
-		- Plan:
-			1 - Test perspective with hardcoded z=-800 at shader, and see if it makes any difference
-			2 - Ship assigns points' ConnectedComponentID as float in vector
-			3 - ShipRenderContext's shaders (Triangles, Springs) take Z and with as-hoc OrthoMatrix
-			    transform ConnectedComponentID to Z
-			4 - ShipRenderContext::UploadXYZElement() does not take anymore connected component ID
-			5 - (Nice to have): sticky component IDs, by leveraging the fact that normally IDs are assigned from L,T to R,B
-		- See if drawing springs & triangles at separate depths also helps more (for springs' fragment shader, may be it takes 
-		  shortcuts if it knows it's behind)
+			- Plan:
+				1 - Test perspective with hardcoded z=-800 at shader, and see if it makes any difference
+				2 - Ship assigns points' ConnectedComponentID as float in vector
+				3 - ShipRenderContext's shaders (Triangles, Springs) take Z and with as-hoc OrthoMatrix
+				    transform ConnectedComponentID to Z
+				4 - ShipRenderContext::UploadXYZElement() does not take anymore connected component ID
+				5 - (Nice to have): sticky component IDs, by leveraging the fact that normally IDs are assigned from L,T to R,B
+			- See if drawing springs & triangles at separate depths also helps more (for springs' fragment shader, may be it takes 
+			  shortcuts if it knows it's behind)
 
 	- Draw better those parts that are only connected by ropes 
 		- Change connected component detection by not propagating from a "spring only" to a "body"
@@ -195,6 +220,17 @@ Current perf
 		- Test first if with a single texture bind per ship (which will look crappy!) there's a significant
 		  performance difference
 			- Check the three boxes
+		- Spec:
+			- Atlas is built on-the-fly, completely independently from texture DB, via a separate
+			  component that is given multiple TextureFrame's and eventually spits out TextureAtlas
+			- TextureAtlas:
+				- unique_ptr<[]> Data
+				- vector<TextureAtlasFrameMetadata> / anything else addressable via TextureFrameId (see above)
+					- TextureAtlasFrameMetadata:
+						- box in atlas (i.e. texture coords, as 2xvec2f)
+						- TextureFrameMetadata
+			- Separate mipmapper helper in GameOpenGL takes whole TextureAtlas (by move)
+
 	- AmbientLightIntensity:
 		+ Use also in RenderContext::RenderStart() for clear (sky) color
 		+ Phase 1: pgup/down
@@ -383,6 +419,7 @@ Current perf
 
 - Sounds:
 	- Should lower the volume of stress sounds?
+	- Revert light flicker sounds to higher (older) volume, and fix volume in SoundController instead, via const
 
 -Probing:
 	- IProbe:

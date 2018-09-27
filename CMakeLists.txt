@@ -114,7 +114,7 @@ elseif(CMAKE_COMPILER_IS_GNUXX)
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /fp:strict -DFLOATING_POINT_CHECKS")
 endif()
  
-
+add_definitions(-DPICOJSON_USE_INT64)
 
 message (STATUS "cxx Flags:" ${CMAKE_CXX_FLAGS})
 message (STATUS "cxx Flags Release:" ${CMAKE_CXX_FLAGS_RELEASE})

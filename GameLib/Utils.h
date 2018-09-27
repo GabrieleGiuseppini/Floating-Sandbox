@@ -31,7 +31,7 @@ public:
     static picojson::value ParseJSONFile(std::string const & filename);
 
     template<typename T>
-    static T const & GetOptionalJsonMember(
+    static T GetOptionalJsonMember(
         picojson::object const & obj,
         std::string const & memberName,
         T const & defaultValue)
@@ -48,6 +48,36 @@ public:
         }
 
         return memberIt->second.get<T>();
+    }
+
+    template<>
+    static float GetOptionalJsonMember(
+        picojson::object const & obj,
+        std::string const & memberName,
+        float const & defaultValue)
+    {
+        double defaultValueDouble = static_cast<double>(defaultValue);
+
+        return static_cast<float>(
+            GetOptionalJsonMember<double>(
+                obj,
+                memberName,
+                defaultValueDouble));
+    }
+
+    template<>
+    static int GetOptionalJsonMember(
+        picojson::object const & obj,
+        std::string const & memberName,
+        int const & defaultValue)
+    {
+        int64_t defaultValueInt64 = static_cast<int64_t>(defaultValue);
+
+        return static_cast<int>(
+            GetOptionalJsonMember<int64_t>(
+                obj,
+                memberName,
+                defaultValueInt64));
     }
 
     template<typename T>
@@ -69,6 +99,30 @@ public:
         return std::make_optional<T>(memberIt->second.get<T>());
     }
 
+    template<>
+    static std::optional<float> GetOptionalJsonMember(
+        picojson::object const & obj,
+        std::string const & memberName)
+    {
+        auto r = GetOptionalJsonMember<double>(obj, memberName);
+        if (r)
+            return static_cast<float>(*r);
+        else
+            return std::nullopt;
+    }
+
+    template<>
+    static std::optional<int> GetOptionalJsonMember(
+        picojson::object const & obj,
+        std::string const & memberName)
+    {
+        auto r = GetOptionalJsonMember<int64_t>(obj, memberName);
+        if (r)
+            return static_cast<int>(*r);
+        else
+            return std::nullopt;
+    }
+
     static std::optional<picojson::object> GetOptionalJsonObject(
         picojson::object const & obj,
         std::string const & memberName)
@@ -88,7 +142,7 @@ public:
     }
 
     template<typename T>
-    static T const & GetMandatoryJsonMember(
+    static T const GetMandatoryJsonMember(
         picojson::object const & obj,
         std::string const & memberName)
     {
@@ -122,6 +176,24 @@ public:
         }
 
         return memberIt->second.get<picojson::object>();
+    }
+
+    static picojson::array GetMandatoryJsonArray(
+        picojson::object const & obj,
+        std::string const & memberName)
+    {
+        auto const & memberIt = obj.find(memberName);
+        if (obj.end() == memberIt)
+        {
+            throw GameException("Error parsing JSON: cannot find member \"" + memberName + "\"");
+        }
+
+        if (!memberIt->second.is<picojson::array>())
+        {
+            throw GameException("Error parsing JSON: requested member \"" + memberName + "\" is not of the array type");
+        }
+
+        return memberIt->second.get<picojson::array>();
     }
 
     //

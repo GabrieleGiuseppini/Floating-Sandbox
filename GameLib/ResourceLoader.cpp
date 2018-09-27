@@ -15,6 +15,7 @@
 #include <IL/il.h>
 #include <IL/ilu.h>
 
+
 #include <cstring>
 #include <regex>
 
@@ -60,7 +61,11 @@ ShipDefinition ResourceLoader::LoadShipDefinition(std::filesystem::path const & 
             std::filesystem::path absoluteTextureImageFilePath = 
                 basePath / std::filesystem::path(*sdf.TextureImageFilePath);
 
-            textureImage.emplace(std::move(LoadTextureRgba(absoluteTextureImageFilePath)));
+            textureImage.emplace(std::move(
+                LoadImage(
+                    absoluteTextureImageFilePath.string(),
+                    IL_RGBA,
+                    IL_ORIGIN_LOWER_LEFT)));
         }
 
 
@@ -107,89 +112,11 @@ std::filesystem::path ResourceLoader::GetDefaultShipDefinitionFilePath() const
 // Textures
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-ImageData ResourceLoader::LoadTextureRgb(std::string const & name)
+TextureDatabase ResourceLoader::LoadTextures(ProgressCallback progressCallback) const
 {
-    return LoadImage(
-        (std::filesystem::path("Data") / "Textures" / name).string(),
-        IL_RGB,
-        IL_ORIGIN_LOWER_LEFT);
-}
-
-ImageData ResourceLoader::LoadTextureRgb(std::filesystem::path const & filePath)
-{
-    return LoadImage(
-        filePath.string(),
-        IL_RGB,
-        IL_ORIGIN_LOWER_LEFT);
-}
-
-ImageData ResourceLoader::LoadTextureRgba(std::string const & name)
-{
-    return LoadImage(
-        (std::filesystem::path("Data") / "Textures" / name).string(),
-        IL_RGBA,
-        IL_ORIGIN_LOWER_LEFT);
-}
-
-ImageData ResourceLoader::LoadTextureRgba(std::filesystem::path const & filePath)
-{
-    return LoadImage(
-        filePath.string(),
-        IL_RGBA,
-        IL_ORIGIN_LOWER_LEFT);
-}
-
-std::vector<ImageData> ResourceLoader::LoadTexturesRgba(
-    std::string const & prefix,
-    ProgressCallback progressCallback)
-{
-    std::regex textureFilenameRegex(R"((.+)_(\d+)\.png)");
-    std::smatch match;
-
-    std::vector<std::pair<int, std::filesystem::path>> matchingEntries;
-    for (auto const & entryIt : std::filesystem::directory_iterator(std::filesystem::path("Data") / "Textures"))
-    {
-        std::string filename = entryIt.path().filename().string();
-
-        if (std::filesystem::is_regular_file(entryIt.path())
-            && std::regex_match(filename, match, textureFilenameRegex))
-        {
-            assert(match.size() == 1 + 2 && match[1].matched && match[2].matched);
-
-            if (match[1].str() == prefix)
-            {
-                int textureIndex = std::stoi(match[2].str());
-
-                matchingEntries.emplace_back(
-                    textureIndex,
-                    entryIt.path());
-            }
-        }
-    }
-
-    std::sort(
-        matchingEntries.begin(),
-        matchingEntries.end(),
-        [](auto const & entry1, auto const & entry2)
-        {
-            return entry1.first < entry2.first;
-        });
-
-    std::vector<ImageData> textures;
-    for (size_t i = 0; i < matchingEntries.size(); ++i)
-    {
-        if (progressCallback)
-            progressCallback(static_cast<float>(i + 1) / static_cast<float>(matchingEntries.size()), "Loading texture...");
-
-        auto imageData = LoadImage(
-            matchingEntries[i].second,
-            IL_RGBA,
-            IL_ORIGIN_LOWER_LEFT);
-
-        textures.emplace_back(std::move(imageData));
-    }
-
-    return textures;
+    return TextureDatabase::Load(
+        std::filesystem::path("Data") / "Textures",
+        progressCallback);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -271,6 +198,74 @@ std::filesystem::path ResourceLoader::GetHelpFilepath() const
 ////////////////////////////////////////////////////////////////////////////////////////////
 // Images
 ////////////////////////////////////////////////////////////////////////////////////////////
+
+ImageSize ResourceLoader::GetImageSize(std::filesystem::path const & filepath)
+{
+    ILuint imghandle;
+    ilGenImages(1, &imghandle);
+    ilBindImage(imghandle);
+
+    //
+    // Load image
+    //
+
+    std::string filepathStr = filepath.string();
+    ILconst_string ilFilename(filepathStr.c_str());
+    if (!ilLoadImage(ilFilename))
+    {
+        ILint devilError = ilGetError();
+        std::string devilErrorMessage(iluErrorString(devilError));
+        throw GameException("Could not load image \"" + filepathStr + "\": " + devilErrorMessage);
+    }
+
+    //
+    // Get size
+    //
+
+    int const width = ilGetInteger(IL_IMAGE_WIDTH);
+    int const height = ilGetInteger(IL_IMAGE_HEIGHT);
+
+
+    //
+    // Delete image
+    //
+
+    ilDeleteImage(imghandle);
+
+    return ImageSize(width, height);
+}
+
+ImageData ResourceLoader::LoadImageRgbaUpperLeft(std::filesystem::path const & filepath)
+{
+    return LoadImage(
+        filepath,
+        IL_RGBA,
+        IL_ORIGIN_UPPER_LEFT);
+}
+
+ImageData ResourceLoader::LoadImageRgbaLowerLeft(std::filesystem::path const & filepath)
+{
+    return LoadImage(
+        filepath,
+        IL_RGBA,
+        IL_ORIGIN_LOWER_LEFT);
+}
+
+ImageData ResourceLoader::LoadImageRgbUpperLeft(std::filesystem::path const & filepath)
+{
+    return LoadImage(
+        filepath,
+        IL_RGB,
+        IL_ORIGIN_UPPER_LEFT);
+}
+
+ImageData ResourceLoader::LoadImageRgbLowerLeft(std::filesystem::path const & filepath)
+{
+    return LoadImage(
+        filepath,
+        IL_RGB,
+        IL_ORIGIN_LOWER_LEFT);
+}
 
 ImageData ResourceLoader::LoadImage(
     std::filesystem::path const & filepath,

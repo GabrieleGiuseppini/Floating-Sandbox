@@ -271,15 +271,15 @@ void World::UpdateClouds(GameParameters const & gameParameters)
             mAllClouds.emplace_back(
                 new Cloud(
                     GameRandomEngine::GetInstance().GenerateRandomNormalReal() * 100.0f,    // OffsetX
-                    GameRandomEngine::GetInstance().GenerateRandomNormalReal() * 0.01f,      // SpeedX1
+                    GameRandomEngine::GetInstance().GenerateRandomNormalReal() * 0.01f,     // SpeedX1
                     GameRandomEngine::GetInstance().GenerateRandomNormalReal() * 0.04f,     // AmpX
                     GameRandomEngine::GetInstance().GenerateRandomNormalReal() * 0.01f,     // SpeedX2
                     GameRandomEngine::GetInstance().GenerateRandomNormalReal() * 100.0f,    // OffsetY
                     GameRandomEngine::GetInstance().GenerateRandomNormalReal() * 0.001f,    // AmpY
-                    GameRandomEngine::GetInstance().GenerateRandomNormalReal() * 0.005f,     // SpeedY
+                    GameRandomEngine::GetInstance().GenerateRandomNormalReal() * 0.005f,    // SpeedY
                     0.2f + static_cast<float>(c) / static_cast<float>(c + 3), // OffsetScale - the earlier clouds are smaller
                     GameRandomEngine::GetInstance().GenerateRandomNormalReal() * 0.05f,     // AmpScale
-                    GameRandomEngine::GetInstance().GenerateRandomNormalReal() * 0.005f));    // SpeedScale
+                    GameRandomEngine::GetInstance().GenerateRandomNormalReal() * 0.005f));  // SpeedScale
         }
     }
 

@@ -1,0 +1,38 @@
+[
+
+{
+	"groupName": "Cloud",
+	"comment": "World sizes are in NDC coordinates and are calculated with image sizes divided by 1280x1024; in other words, a texture this size would fill the entire screen",
+	"hasOwnAmbientLight": false,
+	"frames":[
+		{	
+			"worldScaling": 0.00078125,
+			"filename": "cloud_.*"
+		}
+	]
+},
+
+{
+	"groupName": "Land",
+	"hasOwnAmbientLight": false,
+	"frames":[
+		{	
+			"worldScaling": 0.125,
+			"filename": "land_.*"
+		}
+	]
+},
+
+{
+	"groupName": "Water",
+	"hasOwnAmbientLight": false,
+	"frames":[
+		{	
+			"worldScaling": 0.32,
+			"filename": "water_.*"
+		}
+	]
+}
+
+
+]

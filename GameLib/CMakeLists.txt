@@ -49,6 +49,8 @@ set  (GAME_SOURCES
 	ShipRenderContext.cpp
 	ShipRenderContext.h
 	SysSpecifics.h
+	TextureDatabase.cpp
+	TextureDatabase.h
 	TupleKeys.h
 	Utils.cpp
 	Utils.h	

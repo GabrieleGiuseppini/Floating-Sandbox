@@ -35,7 +35,7 @@ public:
         {
             if (!rootElem.is<picojson::object>())
             {
-                throw GameException("Found a non-array in materials database");
+                throw GameException("Found a non-object in materials database");
             }
 
             materials.emplace_back(Material::Create(rootElem.get<picojson::object>()));

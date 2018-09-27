@@ -10,6 +10,7 @@
 #include "ProgressCallback.h"
 #include "ShipDefinition.h"
 #include "SysSpecifics.h"
+#include "TextureDatabase.h"
 
 #include <cstdint>
 #include <filesystem>
@@ -38,17 +39,7 @@ public:
     // Textures
     //
 
-    ImageData LoadTextureRgb(std::string const & name);
-
-    ImageData LoadTextureRgb(std::filesystem::path const & filePath);
-
-    ImageData LoadTextureRgba(std::string const & name);
-
-    ImageData LoadTextureRgba(std::filesystem::path const & filePath);
-
-    std::vector<ImageData> LoadTexturesRgba(
-        std::string const & prefix, 
-        ProgressCallback progressCallback);
+    TextureDatabase LoadTextures(ProgressCallback progressCallback) const;
 
 
     //
@@ -93,8 +84,17 @@ public:
 
 
     //
-    // Generic
+    // Images
     //
+
+    static ImageSize GetImageSize(std::filesystem::path const & filepath);
+
+    static ImageData LoadImageRgbaUpperLeft(std::filesystem::path const & filepath);
+    static ImageData LoadImageRgbaLowerLeft(std::filesystem::path const & filepath);
+    static ImageData LoadImageRgbUpperLeft(std::filesystem::path const & filepath);
+    static ImageData LoadImageRgbLowerLeft(std::filesystem::path const & filepath);
+
+private:
 
     static ImageData LoadImage(
         std::filesystem::path const & filepath,

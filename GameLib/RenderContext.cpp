@@ -89,44 +89,13 @@ RenderContext::RenderContext(
     // Load textures
     //
 
-    auto cloudTextureDatas = resourceLoader.LoadTexturesRgba(
-        "cloud",
+    TextureDatabase textureDatabase = resourceLoader.LoadTextures(
         [&progressCallback](float progress, std::string const &)
         {
             if (progressCallback)
-                progressCallback(progress / 6.0f, "Loading textures...");
+                progressCallback(progress, "Loading textures...");
         });
 
-    if (progressCallback)
-        progressCallback(2.0f/6.0f, "Loading textures...");
-
-    auto landTextureData = resourceLoader.LoadTextureRgba(std::string("sand_1.jpg"));
-
-    if (progressCallback)
-        progressCallback(3.0f / 6.0f, "Loading textures...");
-
-    auto waterTextureData = resourceLoader.LoadTextureRgba(std::string("water_1.jpg"));
-
-    if (progressCallback)
-        progressCallback(4.0f / 6.0f, "Loading textures...");
-
-    auto pinnedPointTextureData = resourceLoader.LoadTextureRgba(std::string("pin_down_1.png"));
-
-    auto rcBombTextureDatas = resourceLoader.LoadTexturesRgba(
-        "rc_bomb",
-        [&progressCallback](float progress, std::string const &)
-        {
-            if (progressCallback)
-                progressCallback((4.0f + progress) / 6.0f, "Loading textures...");
-        });
-
-    auto timerBombTextureDatas = resourceLoader.LoadTexturesRgba(
-        "timer_bomb",
-        [&progressCallback](float progress, std::string const &)
-    {
-        if (progressCallback)
-            progressCallback((5.0f + progress) / 6.0f, "Loading textures...");
-    });
 
 
     //
@@ -193,8 +162,10 @@ RenderContext::RenderContext(
     glUseProgram(0);
 
     // Create textures
-    for (size_t i = 0; i < cloudTextureDatas.size(); ++i)
+    for (TextureFrameIndex i = 0; i < textureDatabase.GetGroup(TextureGroupType::Cloud).GetFrameCount(); ++i)
     {
+        TextureFrame frame = textureDatabase.GetGroup(TextureGroupType::Cloud).GetFrame(i);
+
         // Create texture name
         glGenTextures(1, &tmpGLuint);
         mCloudTextures.emplace_back(tmpGLuint);
@@ -211,14 +182,14 @@ RenderContext::RenderContext(
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         // Upload texture data
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, cloudTextureDatas[i].Size.Width, cloudTextureDatas[i].Size.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, cloudTextureDatas[i].Data.get());
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, frame.Metadata.Size.Width, frame.Metadata.Size.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, frame.Data.get());
         if (GL_NO_ERROR != glGetError())
         {
             throw GameException("Error uploading cloud texture onto GPU");
         }
 
         // Store size
-        mCloudTextureSizes.push_back(cloudTextureDatas[i].Size);
+        mCloudTextureSizes.push_back(frame.Metadata.Size);
 
         // Unbind texture
         glBindTexture(GL_TEXTURE_2D, 0);
@@ -315,8 +286,12 @@ RenderContext::RenderContext(
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+    // Load texture
+    assert(1 == textureDatabase.GetGroup(TextureGroupType::Land).GetFrameCount());
+    TextureFrame landTextureFrame = textureDatabase.GetGroup(TextureGroupType::Land).GetFrame(0);
+
     // Upload texture data
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, landTextureData.Size.Width, landTextureData.Size.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, landTextureData.Data.get());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, landTextureFrame.Metadata.Size.Width, landTextureFrame.Metadata.Size.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, landTextureFrame.Data.get());
     GLenum glError = glGetError();
     if (GL_NO_ERROR != glError)
     {
@@ -421,8 +396,12 @@ RenderContext::RenderContext(
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+    // Load texture
+    assert(1 == textureDatabase.GetGroup(TextureGroupType::Water).GetFrameCount());
+    TextureFrame waterTextureFrame = textureDatabase.GetGroup(TextureGroupType::Water).GetFrame(0);
+
     // Upload texture data
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, waterTextureData.Size.Width, waterTextureData.Size.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, waterTextureData.Data.get());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, waterTextureFrame.Metadata.Size.Width, waterTextureFrame.Metadata.Size.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, waterTextureFrame.Data.get());
     if (GL_NO_ERROR != glGetError())
     {
         throw GameException("Error uploading water texture onto GPU");
@@ -436,8 +415,12 @@ RenderContext::RenderContext(
     // Pinned points
     //
 
+    // Load texture
+    assert(1 == textureDatabase.GetGroup(TextureGroupType::PinnedPoint).GetFrameCount());
+    TextureFrame pinnedPointTextureFrame = textureDatabase.GetGroup(TextureGroupType::PinnedPoint).GetFrame(0);
+
     // Store texture size
-    mPinnedPointTextureSize = pinnedPointTextureData.Size;
+    mPinnedPointTextureSize = pinnedPointTextureFrame.Metadata.Size;
 
     // Create texture name
     glGenTextures(1, &tmpGLuint);
@@ -447,7 +430,7 @@ RenderContext::RenderContext(
     glBindTexture(GL_TEXTURE_2D, *mPinnedPointTexture);
 
     // Upload texture
-    GameOpenGL::UploadMipmappedTexture(std::move(pinnedPointTextureData));
+    GameOpenGL::UploadMipmappedTexture(std::move(pinnedPointTextureFrame));
 
     // Set repeat mode
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -466,10 +449,12 @@ RenderContext::RenderContext(
     //
 
     // Create textures
-    for (size_t i = 0; i < rcBombTextureDatas.size(); ++i)
+    for (TextureFrameIndex i = 0; i < textureDatabase.GetGroup(TextureGroupType::RcBomb).GetFrameCount(); ++i)
     {
+        TextureFrame frame = textureDatabase.GetGroup(TextureGroupType::RcBomb).GetFrame(i);
+
         // Store size
-        mRCBombTextureSizes.push_back(rcBombTextureDatas[i].Size);
+        mRCBombTextureSizes.push_back(frame.Metadata.Size);
 
         // Create texture name
         glGenTextures(1, &tmpGLuint);
@@ -479,7 +464,7 @@ RenderContext::RenderContext(
         glBindTexture(GL_TEXTURE_2D, *mRCBombTextures.back());
 
         // Upload texture
-        GameOpenGL::UploadMipmappedTexture(std::move(rcBombTextureDatas[i]));
+        GameOpenGL::UploadMipmappedTexture(std::move(frame));
 
         // Set repeat mode
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -499,10 +484,12 @@ RenderContext::RenderContext(
     //
 
     // Create textures
-    for (size_t i = 0; i < timerBombTextureDatas.size(); ++i)
+    for (TextureFrameIndex i = 0; i < textureDatabase.GetGroup(TextureGroupType::TimerBomb).GetFrameCount(); ++i)
     {
+        TextureFrame frame = textureDatabase.GetGroup(TextureGroupType::TimerBomb).GetFrame(i);
+
         // Store size
-        mTimerBombTextureSizes.push_back(timerBombTextureDatas[i].Size);
+        mTimerBombTextureSizes.push_back(frame.Metadata.Size);
 
         // Create texture name
         glGenTextures(1, &tmpGLuint);
@@ -512,7 +499,7 @@ RenderContext::RenderContext(
         glBindTexture(GL_TEXTURE_2D, *mTimerBombTextures.back());
 
         // Upload texture
-        GameOpenGL::UploadMipmappedTexture(std::move(timerBombTextureDatas[i]));
+        GameOpenGL::UploadMipmappedTexture(std::move(frame));
 
         // Set repeat mode
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
