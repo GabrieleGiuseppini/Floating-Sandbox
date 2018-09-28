@@ -63,15 +63,23 @@ Current perf
 
 - Technical Debt:
 	= Textures are json files, with world size, offset, and lighting boolean
-		= SEE MOLESKINE
+		+ SEE MOLESKINE
 		- Cleanup:
-			- Double-check clouds's aspect ratio
 			- RenderContext:
 				- Hook up IProgress to individual loads
-				- OpenGL helper wrapping upload of texture given frame
+				- OpenGL helper wrapping upload of texture given TextureFrame
 					- Also use at OpenGLHelper itself in Mipmapper
+			- Test
+				- Double-check clouds's aspect ratio
+				- Anchor at all frames of timer bomb
+			- Commit
 		- Then:
-			- (Ship)RenderContext: Do not store sizes but metadata instead
+			- (Ship)RenderContext: Do not store sizes but whole database instead
+				- TODO: database must be associated with GLuint's of textures
+				- RenderContext stores (moves) database at cctor
+				- Passes reference to ship
+				+ TextureDatabase::GetFrameMetadata(TextureFrameId)
+					+ TextureDatabase builds map of references at cctor
 			- Remove hardcoded sizes and offsets and substitute with metadata lookups
 				- Cloud size
 				- Water size
@@ -79,22 +87,32 @@ Current perf
 				- Bombs sizes and offsets
 			- Test and commit
 			- ShipRenderContext: replace pinned points and bombs with Upload(Ship)TextureRenderSpecification:
-				- ShipID (used only by RenderContext to dispatch)
-				- ConnectedComponentID
-					- Until Z-rearc
-					- ShipRenderContext has one TextureRenderSpecification per-connected component
-				- Position vec2f
-					- Of anchor
-				- Orientation std::optional<vec2f>
-					- Off <1.0, 0.0f>
-				- TextureFrameId
-					- Need to figure out way to store all TextureFrameMetadata in map indexed by this
+				- Args:
+					- ShipID (used only by RenderContext to dispatch)
+					- ConnectedComponentID
+						- Until Z-rearc: ShipRenderContext has one TextureRenderSpecification per-connected component
+						- After Z-rearc: put in buffer for shader to transform to Z
+					- Position vec2f
+						- Of anchor
+					- Orientation std::optional<vec2f>
+						- Off <1.0, 0.0f>
+					- TextureFrameId
+						- Used to lookup into (reference of) TextureDatabase to fetch TextureFrameMetadata
+				- Use a single shader for these "simple" textures
+					- Takes all calculated values (for now), as it is now
 		- Then, after Z:
-			- Write a single shader to do all the work for one texture
+			- Change the single shader to do *all the work* (for the "simple" textures) for all ships and connected components
 				- Initially, runs on 1 texture at a time
-				- After atlas, runs on all textures (via updated texture coordinates)
-				- Takes as input struct 
+					- After atlas, runs on all textures (via atlas' per-frame texture coordinates)
+				- Takes struct as input with all params, including ConnectedComponentID for Z
 					- Described to OpenGL
+				- Finally, move this shader and RenderContext::UploadShipTextureRenderSpecification to protected
+				  member of RenderContextBase
+					- ShipRenderContext::UploadTextureRenderSpecification (which exists because of ShipRenderContext being
+					  the only render context available to ships) simply forwards to this one
+					- TODO: (*1): figure better way; may be just have a single UploadTextureRenderSpecification on RenderContext,
+					  with optional <ship ID, connected component ID> pair (not set -> main UI, on top of everything), 
+					  and eat the fact that ships don't take ShipRenderContext anymore but whole RenderContext
 
 	- GameController rearc:
 		- GameController moves to FloatingSandbox, and contains SoundController and ToolController as well
@@ -109,6 +127,8 @@ Current perf
 
 	- Test: Ship::Render() should give its subordinates ShipRenderContext instead of RenderContext
 		- Can then get rid of forwards from RenderContext
+		- RenderContextBase: contains common static vars and helpers for both
+		- TODO: (*1) Really? It's nice to keep ships separate anyway 
 
 - Optimizations:
 
@@ -204,12 +224,12 @@ Current perf
 			- Plan:
 				1 - Test perspective with hardcoded z=-800 at shader, and see if it makes any difference
 				2 - Ship assigns points' ConnectedComponentID as float in vector
-				3 - ShipRenderContext's shaders (Triangles, Springs) take Z and with as-hoc OrthoMatrix
+				3 - ShipRenderContext's shaders (Triangles, Springs) take Z and with ad-hoc OrthoMatrix
 				    transform ConnectedComponentID to Z
 				4 - ShipRenderContext::UploadXYZElement() does not take anymore connected component ID
 				5 - (Nice to have): sticky component IDs, by leveraging the fact that normally IDs are assigned from L,T to R,B
-			- See if drawing springs & triangles at separate depths also helps more (for springs' fragment shader, may be it takes 
-			  shortcuts if it knows it's behind)
+			- See if drawing springs & triangles at separate depths also helps generally with render speed, even for one single
+			  connected component (for springs' fragment shader - may be it takes shortcuts if it knows it's behind)
 
 	- Draw better those parts that are only connected by ropes 
 		- Change connected component detection by not propagating from a "spring only" to a "body"

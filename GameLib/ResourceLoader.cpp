@@ -112,11 +112,9 @@ std::filesystem::path ResourceLoader::GetDefaultShipDefinitionFilePath() const
 // Textures
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-TextureDatabase ResourceLoader::LoadTextures(ProgressCallback progressCallback) const
+TextureDatabase ResourceLoader::LoadTextureDatabase() const
 {
-    return TextureDatabase::Load(
-        std::filesystem::path("Data") / "Textures",
-        progressCallback);
+    return TextureDatabase::Load(std::filesystem::path("Data") / "Textures");
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////

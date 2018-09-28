@@ -2,7 +2,7 @@
 
 {
 	"groupName": "Cloud",
-	"comment": "World sizes are in NDC coordinates and are calculated with image sizes divided by 1280x1024; in other words, a texture this size would fill the entire screen",
+	"comment": "World sizes are in NDC coordinates and are calculated as image sizes divided by 1280x1024; in other words, a texture this size would fill the entire screen",
 	"hasOwnAmbientLight": false,
 	"frames":[
 		{	
@@ -19,6 +19,110 @@
 		{	
 			"worldScaling": 0.125,
 			"filename": "land_.*"
+		}
+	]
+},
+
+{
+	"groupName": "PinnedPoint",
+	"hasOwnAmbientLight": false,
+	"frames":[
+		{	
+			"worldWidth": 6.0,
+			"worldHeight": 6.0,
+			"filename": "pinned_point_.*"
+		}
+	]
+},
+
+{
+	"groupName": "RCBomb",
+	"hasOwnAmbientLight": false,
+	"frames":[
+		{	
+			"worldWidth": 12.0,
+			"worldHeight": 12.0,
+			"filename": "rc_bomb_\\d+"
+		}
+	]
+},
+
+{
+	"groupName": "RCBombExplosion",
+	"hasOwnAmbientLight": true,
+	"frames":[
+		{	
+			"worldWidth": 12.0,
+			"worldHeight": 12.0,
+			"filename": "rc_bomb_explosion_\\d+"
+		}
+	]
+},
+
+{
+	"groupName": "RCBombPing",
+	"hasOwnAmbientLight": true,
+	"frames":[
+		{	
+			"worldWidth": 12.0,
+			"worldHeight": 12.0,
+			"filename": "rc_bomb_ping_\\d+"
+		}
+	]
+},
+
+{
+	"groupName": "TimerBomb",
+	"hasOwnAmbientLight": false,
+	"frames":[
+		{	
+			"worldWidth": 12.0,
+			"worldHeight": 12.0,
+			"anchorX": 3,
+			"anchorY": 78,
+			"filename": "timer_bomb_\\d+"
+		}
+	]
+},
+
+{
+	"groupName": "TimerBombDefuse",
+	"hasOwnAmbientLight": false,
+	"frames":[
+		{	
+			"worldWidth": 12.0,
+			"worldHeight": 12.0,
+			"anchorX": 3,
+			"anchorY": 78,
+			"filename": "timer_bomb_defuse_\\d+"
+		}
+	]
+},
+
+{
+	"groupName": "TimerBombExplosion",
+	"hasOwnAmbientLight": true,
+	"frames":[
+		{	
+			"worldWidth": 12.0,
+			"worldHeight": 12.0,
+			"anchorX": 2,
+			"anchorY": 52,
+			"filename": "timer_bomb_explosion_\\d+"
+		}
+	]
+},
+
+{
+	"groupName": "TimerBombFuse",
+	"hasOwnAmbientLight": true,
+	"frames":[
+		{	
+			"worldWidth": 12.0,
+			"worldHeight": 12.0,
+			"anchorX": 3,
+			"anchorY": 78,
+			"filename": "timer_bomb_fuse_\\d+"
 		}
 	]
 },

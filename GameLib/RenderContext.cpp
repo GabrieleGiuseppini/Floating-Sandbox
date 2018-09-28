@@ -86,15 +86,13 @@ RenderContext::RenderContext(
 
 
     //
-    // Load textures
+    // Load texture database
     //
 
-    TextureDatabase textureDatabase = resourceLoader.LoadTextures(
-        [&progressCallback](float progress, std::string const &)
-        {
-            if (progressCallback)
-                progressCallback(progress, "Loading textures...");
-        });
+    TextureDatabase textureDatabase = resourceLoader.LoadTextureDatabase();
+
+    // TODO: prepare structure that maps TextureFrameId to FrameMetadata and GLuint, only for "simple"(TODO) 
+    // textures
 
 
 
@@ -164,7 +162,7 @@ RenderContext::RenderContext(
     // Create textures
     for (TextureFrameIndex i = 0; i < textureDatabase.GetGroup(TextureGroupType::Cloud).GetFrameCount(); ++i)
     {
-        TextureFrame frame = textureDatabase.GetGroup(TextureGroupType::Cloud).GetFrame(i);
+        TextureFrame frame = textureDatabase.GetGroup(TextureGroupType::Cloud).LoadFrame(i);
 
         // Create texture name
         glGenTextures(1, &tmpGLuint);
@@ -288,7 +286,7 @@ RenderContext::RenderContext(
 
     // Load texture
     assert(1 == textureDatabase.GetGroup(TextureGroupType::Land).GetFrameCount());
-    TextureFrame landTextureFrame = textureDatabase.GetGroup(TextureGroupType::Land).GetFrame(0);
+    TextureFrame landTextureFrame = textureDatabase.GetGroup(TextureGroupType::Land).LoadFrame(0);
 
     // Upload texture data
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, landTextureFrame.Metadata.Size.Width, landTextureFrame.Metadata.Size.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, landTextureFrame.Data.get());
@@ -398,7 +396,7 @@ RenderContext::RenderContext(
 
     // Load texture
     assert(1 == textureDatabase.GetGroup(TextureGroupType::Water).GetFrameCount());
-    TextureFrame waterTextureFrame = textureDatabase.GetGroup(TextureGroupType::Water).GetFrame(0);
+    TextureFrame waterTextureFrame = textureDatabase.GetGroup(TextureGroupType::Water).LoadFrame(0);
 
     // Upload texture data
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, waterTextureFrame.Metadata.Size.Width, waterTextureFrame.Metadata.Size.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, waterTextureFrame.Data.get());
@@ -417,7 +415,7 @@ RenderContext::RenderContext(
 
     // Load texture
     assert(1 == textureDatabase.GetGroup(TextureGroupType::PinnedPoint).GetFrameCount());
-    TextureFrame pinnedPointTextureFrame = textureDatabase.GetGroup(TextureGroupType::PinnedPoint).GetFrame(0);
+    TextureFrame pinnedPointTextureFrame = textureDatabase.GetGroup(TextureGroupType::PinnedPoint).LoadFrame(0);
 
     // Store texture size
     mPinnedPointTextureSize = pinnedPointTextureFrame.Metadata.Size;
@@ -451,7 +449,7 @@ RenderContext::RenderContext(
     // Create textures
     for (TextureFrameIndex i = 0; i < textureDatabase.GetGroup(TextureGroupType::RcBomb).GetFrameCount(); ++i)
     {
-        TextureFrame frame = textureDatabase.GetGroup(TextureGroupType::RcBomb).GetFrame(i);
+        TextureFrame frame = textureDatabase.GetGroup(TextureGroupType::RcBomb).LoadFrame(i);
 
         // Store size
         mRCBombTextureSizes.push_back(frame.Metadata.Size);
@@ -486,7 +484,7 @@ RenderContext::RenderContext(
     // Create textures
     for (TextureFrameIndex i = 0; i < textureDatabase.GetGroup(TextureGroupType::TimerBomb).GetFrameCount(); ++i)
     {
-        TextureFrame frame = textureDatabase.GetGroup(TextureGroupType::TimerBomb).GetFrame(i);
+        TextureFrame frame = textureDatabase.GetGroup(TextureGroupType::TimerBomb).LoadFrame(i);
 
         // Store size
         mTimerBombTextureSizes.push_back(frame.Metadata.Size);

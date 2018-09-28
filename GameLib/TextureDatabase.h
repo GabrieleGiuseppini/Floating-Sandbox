@@ -10,7 +10,6 @@
  */
 
 #include "ImageSize.h"
-#include "ProgressCallback.h"
 
 #include <cassert>
 #include <cstdint>
@@ -25,8 +24,13 @@ enum class TextureGroupType : uint16_t
     Cloud,
     Land,
     PinnedPoint,
-    RcBomb,    
+    RcBomb,
+    RcBombExplosion,
+    RcBombPing,
     TimerBomb,
+    TimerBombDefuse,
+    TimerBombExplosion,
+    TimerBombFuse,
     Water    
 };
 
@@ -136,7 +140,7 @@ public:
     }
 
     // Loads a frame
-    TextureFrame GetFrame(TextureFrameIndex frameIndex) const;
+    TextureFrame LoadFrame(TextureFrameIndex frameIndex) const;
 
 private:
 
@@ -151,9 +155,7 @@ class TextureDatabase
 {
 public:
 
-    static TextureDatabase Load(
-        std::filesystem::path const & texturesRoot,
-        ProgressCallback progressCallback);
+    static TextureDatabase Load(std::filesystem::path const & texturesRoot);
 
     TextureGroup const & GetGroup(TextureGroupType group) const
     {

@@ -14,25 +14,33 @@
 
 TextureGroupType StrToTextureGroupType(std::string const & str)
 {
-    std::string lstr = Utils::ToLower(str);
-
-    if (lstr == "cloud")
+    if (str == "Cloud")
         return TextureGroupType::Cloud;
-    else if (lstr == "land")
+    else if (str == "Land")
         return TextureGroupType::Land;
-    else if (lstr == "pinned_point")
+    else if (str == "PinnedPoint")
         return TextureGroupType::PinnedPoint;
-    else if (lstr == "rc_bomb")
+    else if (str == "RCBomb")
         return TextureGroupType::RcBomb;
-    else if (lstr == "timer_bomb")
+    else if (str == "RCBombExplosion")
+        return TextureGroupType::RcBombExplosion;
+    else if (str == "RCBombPing")
+        return TextureGroupType::RcBombPing;
+    else if (str == "TimerBomb")
         return TextureGroupType::TimerBomb;
-    else if (lstr == "water")
+    else if (str == "TimerBombDefuse")
+        return TextureGroupType::TimerBombDefuse;
+    else if (str == "TimerBombExplosion")
+        return TextureGroupType::TimerBombExplosion;
+    else if (str == "TimerBombFuse")
+        return TextureGroupType::TimerBombFuse;
+    else if (str == "Water")
         return TextureGroupType::Water;
     else
         throw GameException("Unrecognized TextureGroupType \"" + str + "\"");
 }
 
-TextureFrame TextureGroup::GetFrame(TextureFrameIndex frameIndex) const
+TextureFrame TextureGroup::LoadFrame(TextureFrameIndex frameIndex) const
 {
     assert(frameIndex < mFrameSpecifications.size());
 
@@ -43,9 +51,7 @@ TextureFrame TextureGroup::GetFrame(TextureFrameIndex frameIndex) const
         std::move(imageData.Data));
 }
 
-TextureDatabase TextureDatabase::Load(
-    std::filesystem::path const & texturesRoot,
-    ProgressCallback progressCallback)
+TextureDatabase TextureDatabase::Load(std::filesystem::path const & texturesRoot)
 {
     //
     // Visit directory and build set of all files
@@ -69,7 +75,7 @@ TextureDatabase TextureDatabase::Load(
     for (auto const & entryIt : std::filesystem::directory_iterator(texturesRoot))
     {
         if (std::filesystem::is_regular_file(entryIt.path())
-            && entryIt.path().extension().string() != "json")
+            && entryIt.path().extension().string() != ".json")
         {
             std::string const stem = entryIt.path().filename().stem().string();
 
@@ -112,6 +118,8 @@ TextureDatabase TextureDatabase::Load(
         
         // Load defaults
         std::optional<float> groupWorldScaling = Utils::GetOptionalJsonMember<float>(groupJson, "worldScaling");
+        std::optional<float> groupWorldWidth = Utils::GetOptionalJsonMember<float>(groupJson, "worldWidth");
+        std::optional<float> groupWorldHeight = Utils::GetOptionalJsonMember<float>(groupJson, "worldHeight");
         bool groupHasOwnAmbientLight = Utils::GetOptionalJsonMember<bool>(groupJson, "hasOwnAmbientLight", false);
         int groupAnchorX = Utils::GetOptionalJsonMember<int>(groupJson, "anchorX", 0);
         int groupAnchorY = Utils::GetOptionalJsonMember<int>(groupJson, "anchorY", 0);
@@ -134,6 +142,8 @@ TextureDatabase TextureDatabase::Load(
 
             // Get frame properties
             std::optional<float> frameWorldScaling = Utils::GetOptionalJsonMember<float>(frameJson, "worldScaling");
+            std::optional<float> frameWorldWidth = Utils::GetOptionalJsonMember<float>(frameJson, "worldWidth");
+            std::optional<float> frameWorldHeight = Utils::GetOptionalJsonMember<float>(frameJson, "worldHeight");
             std::optional<bool> frameHasOwnAmbientLight = Utils::GetOptionalJsonMember<bool>(frameJson, "hasOwnAmbientLight");
             std::optional<int> frameAnchorX = Utils::GetOptionalJsonMember<int>(frameJson, "anchorX");
             std::optional<int> frameAnchorY = Utils::GetOptionalJsonMember<int>(frameJson, "anchorY");
@@ -151,6 +161,13 @@ TextureDatabase TextureDatabase::Load(
                 if (std::regex_match(fileData.Stem, frameFilenameRegex))
                 {
                     // This file belongs to this group
+
+                    //
+                    // Get frame size
+                    //
+
+                    ImageSize textureSize = ResourceLoader::GetImageSize(fileData.Path);
+
 
                     //
                     // Extract frame index
@@ -171,24 +188,57 @@ TextureDatabase TextureDatabase::Load(
                     // Resolve properties
                     //
 
-                    if (!groupWorldScaling && !frameWorldScaling)
+                    float worldWidth;
+                    float worldHeight;
+                    if (!!frameWorldWidth || !!frameWorldHeight)
+                    {
+                        if (!frameWorldWidth)
+                        {
+                            throw GameException("Texture database: frame \"" + frameFilename + "\" has worldHeight but no worldWidth");
+                        }
+
+                        if (!frameWorldHeight)
+                        { 
+                            throw GameException("Texture database: frame \"" + frameFilename + "\" has worldWidth but no worldHeight");
+                        }
+
+                        worldWidth = *frameWorldWidth;
+                        worldHeight = *frameWorldHeight;
+                    }
+                    else if (!!frameWorldScaling)
                     { 
-                        throw GameException("Texture database: cannot find \"worldScaling\" property in frame \"" + frameFilename + "\"");
+                        worldWidth = static_cast<float>(textureSize.Width) * *frameWorldScaling;
+                        worldHeight = static_cast<float>(textureSize.Height) * *frameWorldScaling;
+                    }
+                    else if (!!groupWorldWidth || !!groupWorldHeight)
+                    {
+                        if (!groupWorldWidth)
+                        {
+                            throw GameException("Texture database: group \"" + groupName + "\" has worldHeight but no worldWidth");
+                        }
+
+                        if (!groupWorldHeight)
+                        {
+                            throw GameException("Texture database: group \"" + groupName + "\" has worldWidth but no worldHeight");
+                        }
+
+                        worldWidth = *groupWorldWidth;
+                        worldHeight = *groupWorldHeight;
+                    }
+                    else if (!!groupWorldScaling)
+                    {
+                        worldWidth = static_cast<float>(textureSize.Width) * *groupWorldScaling;
+                        worldHeight = static_cast<float>(textureSize.Height) * *groupWorldScaling;
+                    }
+                    else
+                    { 
+                        throw GameException("Texture database: cannot find world dimensions for frame \"" + frameFilename + "\"");
                     }
 
-                    float worldScaling = !!frameWorldScaling ? *frameWorldScaling : *groupWorldScaling;
                     bool hasOwnAmbientLight = !!frameHasOwnAmbientLight ? *frameHasOwnAmbientLight : groupHasOwnAmbientLight;
                     int anchorX = !!frameAnchorX ? *frameAnchorX : groupAnchorX;
                     int anchorY = !!frameAnchorY ? *frameAnchorY : groupAnchorY;
 
-                    //
-                    // Get texture size and calculate world dimensions
-                    //
-
-                    ImageSize textureSize = ResourceLoader::GetImageSize(fileData.Path);
-                    // TODO: verify clouds look ok
-                    float worldWidth = static_cast<float>(textureSize.Width) * worldScaling;
-                    float worldHeight = static_cast<float>(textureSize.Height) * worldScaling;
 
                     //
                     // Store frame
