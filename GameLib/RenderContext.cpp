@@ -13,8 +13,9 @@ RenderContext::RenderContext(
     ResourceLoader & resourceLoader,
     vec3f const & ropeColour,
     ProgressCallback const & progressCallback)
-    : // Clouds
-      mCloudShaderProgram()
+    : mTextureRenderManager()
+    // Clouds
+    , mCloudShaderProgram()
     , mCloudShaderAmbientLightIntensityParameter(0)
     , mCloudBuffer()
     , mCloudBufferSize(0u)
@@ -91,10 +92,6 @@ RenderContext::RenderContext(
 
     TextureDatabase textureDatabase = resourceLoader.LoadTextureDatabase();
 
-    // TODO: prepare structure that maps TextureFrameId to FrameMetadata and GLuint, only for "simple"(TODO) 
-    // textures
-
-
 
     //
     // Clouds 
@@ -160,6 +157,7 @@ RenderContext::RenderContext(
     glUseProgram(0);
 
     // Create textures
+    // TODOHERE: use TextureRenderManager
     for (TextureFrameIndex i = 0; i < textureDatabase.GetGroup(TextureGroupType::Cloud).GetFrameCount(); ++i)
     {
         TextureFrame frame = textureDatabase.GetGroup(TextureGroupType::Cloud).LoadFrame(i);
@@ -680,6 +678,7 @@ void RenderContext::AddShip(
         new ShipRenderContext(
             std::move(texture), 
             mRopeColour,
+            mTextureRenderManager,
             *mPinnedPointTexture,
             rcBombTextures,
             timerBombTextures,

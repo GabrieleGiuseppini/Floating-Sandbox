@@ -40,14 +40,12 @@ TextureGroupType StrToTextureGroupType(std::string const & str)
         throw GameException("Unrecognized TextureGroupType \"" + str + "\"");
 }
 
-TextureFrame TextureGroup::LoadFrame(TextureFrameIndex frameIndex) const
+TextureFrame TextureFrameSpecification::LoadFrame() const
 {
-    assert(frameIndex < mFrameSpecifications.size());
-
-    ImageData imageData = ResourceLoader::LoadImageRgbaLowerLeft(mFrameSpecifications[frameIndex].FilePath);
+    ImageData imageData = ResourceLoader::LoadImageRgbaLowerLeft(FilePath);
 
     return TextureFrame(
-        mFrameSpecifications[frameIndex].Metadata,
+        Metadata,
         std::move(imageData.Data));
 }
 

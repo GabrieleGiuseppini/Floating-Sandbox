@@ -51,6 +51,8 @@ set  (GAME_SOURCES
 	SysSpecifics.h
 	TextureDatabase.cpp
 	TextureDatabase.h
+	TextureRenderManager.cpp
+	TextureRenderManager.h
 	TupleKeys.h
 	Utils.cpp
 	Utils.h	

@@ -10,6 +10,7 @@
 #include "ImageData.h"
 #include "RotatedTextureRenderInfo.h"
 #include "SysSpecifics.h"
+#include "TextureRenderManager.h"
 #include "Vectors.h"
 
 #include <array>
@@ -26,6 +27,7 @@ public:
     ShipRenderContext(
         std::optional<ImageData> texture,
         vec3f const & ropeColour,
+        TextureRenderManager const & textureRenderManager,
         GLuint pinnedPointTexture,
         std::vector<GLuint> rcBombTextures,
         std::vector<GLuint> timerBombTextures,
@@ -405,6 +407,8 @@ private:
     static constexpr GLuint VectorArrowPosVertexAttribute = 9;
 
 private:
+
+    TextureRenderManager const & const mTextureRenderManager;
 
     //
     // Points

@@ -45,6 +45,15 @@ struct TextureFrameId
         : Group(group)
         , FrameIndex(frameIndex)
     {}
+
+
+    TextureFrameId & operator=(TextureFrameId const & other) = default;
+
+    inline bool operator<(TextureFrameId const & other) const
+    {
+        return this->Group < other.Group
+            || (this->Group == other.Group && this->FrameIndex < other.FrameIndex);
+    }
 };
 
 struct TextureFrameMetadata
@@ -116,6 +125,8 @@ struct TextureFrameSpecification
         : Metadata(metadata)
         , FilePath(filePath)
     {}
+
+    TextureFrame LoadFrame() const;
 };
 
 /*
@@ -133,14 +144,21 @@ public:
         : mFrameSpecifications(std::move(frameSpecifications))
     {}
 
+    auto const & GetFrameSpecifications() const
+    {
+        return mFrameSpecifications;
+    }
+
     // Gets the number of frames in this group
     TextureFrameIndex GetFrameCount() const
     {
         return static_cast<TextureFrameIndex>(mFrameSpecifications.size());
     }
 
-    // Loads a frame
-    TextureFrame LoadFrame(TextureFrameIndex frameIndex) const;
+    TextureFrame LoadFrame(TextureFrameIndex frameIndex) const
+    {
+        return mFrameSpecifications[frameIndex].LoadFrame();
+    }
 
 private:
 

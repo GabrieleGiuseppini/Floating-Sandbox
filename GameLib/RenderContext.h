@@ -13,6 +13,7 @@
 #include "RotatedTextureRenderInfo.h"
 #include "ShipRenderContext.h"
 #include "SysSpecifics.h"
+#include "TextureRenderManager.h"
 #include "Vectors.h"
 
 #include <array>
@@ -654,6 +655,8 @@ private:
     void UpdateWaterLevelOfDetail();
 
 private:
+
+    TextureRenderManager mTextureRenderManager;
 
     //
     // Clouds

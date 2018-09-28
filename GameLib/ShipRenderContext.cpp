@@ -8,9 +8,10 @@
 #include "GameException.h"
 #include "GameMath.h"
 
-ShipRenderContext::ShipRenderContext(
+ShipRenderContext::ShipRenderContext(    
     std::optional<ImageData> texture,
     vec3f const & ropeColour,
+    TextureRenderManager const & textureRenderManager,
     GLuint pinnedPointTexture,
     std::vector<GLuint> rcBombTextures,
     std::vector<GLuint> timerBombTextures,
@@ -20,7 +21,8 @@ ShipRenderContext::ShipRenderContext(
     float canvasToVisibleWorldHeightRatio,
     float ambientLightIntensity,
     float waterLevelOfDetail)
-    : mCanvasToVisibleWorldHeightRatio(0)
+    : mTextureRenderManager(textureRenderManager)
+    , mCanvasToVisibleWorldHeightRatio(0)
     , mAmbientLightIntensity(0.0f) // Set later
     , mWaterLevelThreshold(0.0f)
     // Points
