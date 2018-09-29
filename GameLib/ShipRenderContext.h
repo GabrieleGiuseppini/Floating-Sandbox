@@ -408,7 +408,7 @@ private:
 
 private:
 
-    TextureRenderManager const & const mTextureRenderManager;
+    TextureRenderManager const & mTextureRenderManager;
 
     //
     // Points

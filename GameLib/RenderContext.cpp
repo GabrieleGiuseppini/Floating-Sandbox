@@ -21,8 +21,6 @@ RenderContext::RenderContext(
     , mCloudBufferSize(0u)
     , mCloudBufferMaxSize(0u)    
     , mCloudVBO()
-    , mCloudTextureSizes()
-    , mCloudTextures()
     // Land
     , mLandShaderProgram()
     , mLandShaderAmbientLightIntensityParameter(0)
@@ -97,6 +95,8 @@ RenderContext::RenderContext(
     // Clouds 
     //
 
+    mCloudTextureCount = textureDatabase.GetGroup(TextureGroupType::Cloud).GetFrameCount();
+
     // Create program
 
     mCloudShaderProgram = glCreateProgram();
@@ -157,41 +157,13 @@ RenderContext::RenderContext(
     glUseProgram(0);
 
     // Create textures
-    // TODOHERE: use TextureRenderManager
-    for (TextureFrameIndex i = 0; i < textureDatabase.GetGroup(TextureGroupType::Cloud).GetFrameCount(); ++i)
-    {
-        TextureFrame frame = textureDatabase.GetGroup(TextureGroupType::Cloud).LoadFrame(i);
-
-        // Create texture name
-        glGenTextures(1, &tmpGLuint);
-        mCloudTextures.emplace_back(tmpGLuint);
-
-        // Bind texture
-        glBindTexture(GL_TEXTURE_2D, *mCloudTextures.back());
-
-        // Set repeat mode
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-        // Set texture filtering parameters
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        // Upload texture data
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, frame.Metadata.Size.Width, frame.Metadata.Size.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, frame.Data.get());
-        if (GL_NO_ERROR != glGetError())
+    mTextureRenderManager.UploadGroup(
+        textureDatabase.GetGroup(TextureGroupType::Cloud),
+        [&progressCallback](float progress, std::string const &)
         {
-            throw GameException("Error uploading cloud texture onto GPU");
-        }
+            progressCallback(progress / 6.0f, "Loading textures...");
+        });
 
-        // Store size
-        mCloudTextureSizes.push_back(frame.Metadata.Size);
-
-        // Unbind texture
-        glBindTexture(GL_TEXTURE_2D, 0);
-    }
-
-    assert(mCloudTextureSizes.size() == mCloudTextures.size());
 
     //
     // Land 
@@ -797,7 +769,11 @@ void RenderContext::RenderCloudsEnd()
     for (size_t c = 0; c < mCloudBufferSize; ++c)
     {
         // Bind Texture
-        glBindTexture(GL_TEXTURE_2D, *(mCloudTextures[GetCloudTextureIndex(c)]));
+        glBindTexture(
+            GL_TEXTURE_2D, 
+            mTextureRenderManager.GetOpenGLHandle(
+                TextureGroupType::Cloud, 
+                static_cast<TextureFrameIndex>(c % mCloudTextureCount)));
 
         // Draw
         glDrawArrays(GL_TRIANGLE_STRIP, static_cast<GLint>(4 * c), 4);

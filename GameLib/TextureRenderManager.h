@@ -10,7 +10,7 @@
 #include "TextureDatabase.h"
 
 #include <cassert>
-#include <map>
+#include <vector>
 
 class TextureRenderManager
 {
@@ -26,16 +26,36 @@ public:
 
     inline TextureFrameMetadata const & GetFrameMetadata(TextureFrameId const & frameId) const
     {
-        assert(0 != mFrameData.count(frameId));
+        return GetFrameMetadata(
+            frameId.Group,
+            frameId.FrameIndex);
+    }
 
-        return mFrameData.at(frameId).Metadata;
+    inline TextureFrameMetadata const & GetFrameMetadata(
+        TextureGroupType group,
+        TextureFrameIndex frameIndex) const
+    {
+        assert(static_cast<size_t>(group) < mFrameData.size());
+        assert(frameIndex < mFrameData[static_cast<size_t>(group)].size());
+
+        return mFrameData[static_cast<size_t>(group)][frameIndex].Metadata;
     }
 
     inline GLuint GetOpenGLHandle(TextureFrameId const & frameId) const
     {
-        assert(0 != mFrameData.count(frameId));
+        return GetOpenGLHandle(
+            frameId.Group,
+            frameId.FrameIndex);
+    }
 
-        return mFrameData.at(frameId).OpenGLHandle;
+    inline GLuint GetOpenGLHandle(
+        TextureGroupType group,
+        TextureFrameIndex frameIndex) const
+    {
+        assert(static_cast<size_t>(group) < mFrameData.size());
+        assert(frameIndex < mFrameData[static_cast<size_t>(group)].size());
+
+        return mFrameData[static_cast<size_t>(group)][frameIndex].OpenGLHandle;
     }
 
 private:
@@ -53,5 +73,5 @@ private:
         {}
     };
 
-    std::map<TextureFrameId, FrameData> mFrameData;
+    std::vector<std::vector<FrameData>> mFrameData;
 };

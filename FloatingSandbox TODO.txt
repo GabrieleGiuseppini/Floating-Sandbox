@@ -64,20 +64,16 @@ Current perf
 - Technical Debt:
 	= Textures are json files, with world size, offset, and lighting boolean
 		+ SEE MOLESKINE
-		- Cleanup:
-			- RenderContext:
-				- Hook up IProgress to individual loads
-				- OpenGL helper wrapping upload of texture given TextureFrame
-					- Also use at OpenGLHelper itself in Mipmapper
-			- Test
-				- Double-check clouds's aspect ratio
-				- Anchor at all frames of timer bomb
+		= Cleanup:
+			= RenderContext:
+				= Hook up IProgress to individual loads
+					- Double-check total count adjustment
 			- Commit
 		- Then:
-			- (Ship)RenderContext: Do not store sizes but whole database instead
-				- TODO: database must be associated with GLuint's of textures
-				- RenderContext stores (moves) database at cctor
-				- Passes reference to ship
+			+ (Ship)RenderContext: Do not store sizes but whole database instead
+				+ TODO: database must be associated with GLuint's of textures
+				+ RenderContext stores (moves) database at cctor
+				+ Passes reference to ship
 				+ TextureDatabase::GetFrameMetadata(TextureFrameId)
 					+ TextureDatabase builds map of references at cctor
 			- Remove hardcoded sizes and offsets and substitute with metadata lookups
@@ -85,7 +81,10 @@ Current perf
 				- Water size
 				- Land size
 				- Bombs sizes and offsets
-			- Test and commit
+			- Test
+				- Double-check clouds's aspect ratio
+				- Anchor at all frames of timer bomb
+			- Commit
 			- ShipRenderContext: replace pinned points and bombs with Upload(Ship)TextureRenderSpecification:
 				- Args:
 					- ShipID (used only by RenderContext to dispatch)
@@ -100,14 +99,20 @@ Current perf
 						- Used to lookup into (reference of) TextureDatabase to fetch TextureFrameMetadata
 				- Use a single shader for these "simple" textures
 					- Takes all calculated values (for now), as it is now
-		- Then, after Z:
-			- Change the single shader to do *all the work* (for the "simple" textures) for all ships and connected components
-				- Initially, runs on 1 texture at a time
-					- After atlas, runs on all textures (via atlas' per-frame texture coordinates)
-				- Takes struct as input with all params, including ConnectedComponentID for Z
+		- Change the single shader to do *all the work* (for the "simple" textures, including rotation) for all ships and connected components
+			- Initially, runs on 1 texture at a time
+				- After atlas and Z, runs on all textures (via atlas' per-frame texture coordinates)
+			- First of all, test rotation in shader with current implementation
+				- Does not need to wait for Z
+				- TexturePolygon (at RenderTexture.h which includes other Texture render .h's)
+					- Just bounding box, calc'd by TextureRenderManager
+				- Ship (for now) haw own RotatedTexturePolygon, with TexturePolygon as member
 					- Described to OpenGL
-				- Finally, move this shader and RenderContext::UploadShipTextureRenderSpecification to protected
-				  member of RenderContextBase
+			- After Z: 
+				- Shader also takes ShipID, ConnectedComponentID for Z
+				- Invoked shader at one place (still for 1 texture at a time, waiting for atlas)
+					- Move this shader and RenderContext::UploadShipTextureRenderSpecification to protected
+					  member of RenderContextBase (not really, *1)
 					- ShipRenderContext::UploadTextureRenderSpecification (which exists because of ShipRenderContext being
 					  the only render context available to ships) simply forwards to this one
 					- TODO: (*1): figure better way; may be just have a single UploadTextureRenderSpecification on RenderContext,
@@ -215,9 +220,10 @@ Current perf
 	  larger than texture), then one sees parts of the springs
 		- It's a problem with rendering springs with the texture shader
 	- Optimizations:
-		= Use CPU and GPU in parallel
-			- Finalize render before render step, not after
-			- Research glFlush()
+		- (Retry) Use CPU and GPU in parallel
+			- Finalize render (glFlush) before render step, not after
+				- Research glFlush()
+				- By inoking glFlush() and SwapBuffers() in MainFrame, before Render()
 		- More connected components => slower (multiple batches); try
 		  to draw one single batch then, using Z buffer and depth test 
 			- Assign Z based on connected component ID

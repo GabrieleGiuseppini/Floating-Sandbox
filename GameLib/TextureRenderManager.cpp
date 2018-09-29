@@ -11,6 +11,11 @@ void TextureRenderManager::UploadGroup(
     TextureGroup const & group,
     ProgressCallback const & progressCallback)
 {
+    // Make sure we have room for this group
+    if (mFrameData.size() < static_cast<size_t>(group.Group) + 1)
+        mFrameData.resize(static_cast<size_t>(group.Group) + 1);
+    auto & frameDataGroup = mFrameData[static_cast<size_t>(group.Group)];
+
     float totalFramesCount = static_cast<float>(group.GetFrameCount());
     float currentFramesCount = 0;
 
@@ -21,7 +26,7 @@ void TextureRenderManager::UploadGroup(
 
         // Notify progress
         currentFramesCount += 1.0f;
-        progressCallback(currentFramesCount / totalFramesCount, "Loading textures...");
+        progressCallback(currentFramesCount / totalFramesCount, "Loading texture group...");
 
         // Create OpenGL handle
         GLuint openGLHandle;
@@ -49,10 +54,10 @@ void TextureRenderManager::UploadGroup(
         glBindTexture(GL_TEXTURE_2D, 0);
 
         // Store data
-        mFrameData.emplace(
-            std::make_pair(
-                frameSpec.Metadata.FrameId,
-                FrameData(frameSpec.Metadata, openGLHandle)));
+        assert(frameSpec.Metadata.FrameId.FrameIndex == frameDataGroup.size());
+        frameDataGroup.emplace_back(
+            frameSpec.Metadata,
+            openGLHandle);
     }
 }
 
@@ -60,6 +65,11 @@ void TextureRenderManager::UploadMipmappedGroup(
     TextureGroup const & group,
     ProgressCallback const & progressCallback)
 {
+    // Make sure we have room for this group
+    if (mFrameData.size() < static_cast<size_t>(group.Group) + 1)
+        mFrameData.resize(static_cast<size_t>(group.Group) + 1);
+    auto & frameDataGroup = mFrameData[static_cast<size_t>(group.Group)];
+
     float totalFramesCount = static_cast<float>(group.GetFrameCount());
     float currentFramesCount = 0;
 
@@ -94,9 +104,9 @@ void TextureRenderManager::UploadMipmappedGroup(
         glBindTexture(GL_TEXTURE_2D, 0);
 
         // Store data
-        mFrameData.emplace(
-            std::make_pair(
-                frameSpec.Metadata.FrameId,
-                FrameData(frameSpec.Metadata, openGLHandle)));
+        assert(frameSpec.Metadata.FrameId.FrameIndex == frameDataGroup.size());
+        frameDataGroup.emplace_back(
+            frameSpec.Metadata, 
+            openGLHandle);
     }
 }

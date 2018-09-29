@@ -21,17 +21,19 @@ using TextureFrameIndex = std::uint16_t;
 
 enum class TextureGroupType : uint16_t
 {
-    Cloud,
-    Land,
-    PinnedPoint,
-    RcBomb,
-    RcBombExplosion,
-    RcBombPing,
-    TimerBomb,
-    TimerBombDefuse,
-    TimerBombExplosion,
-    TimerBombFuse,
-    Water    
+    Cloud = 0,
+    Land = 1,
+    PinnedPoint = 2,
+    RcBomb = 3,
+    RcBombExplosion = 4,
+    RcBombPing = 5,
+    TimerBomb = 6,
+    TimerBombDefuse = 7,
+    TimerBombExplosion = 8,
+    TimerBombFuse = 9,
+    Water = 10,
+
+    _Count = 11
 };
 
 struct TextureFrameId
@@ -140,8 +142,11 @@ public:
     // The group
     TextureGroupType Group;
 
-    explicit TextureGroup(std::vector<TextureFrameSpecification> frameSpecifications)
-        : mFrameSpecifications(std::move(frameSpecifications))
+    TextureGroup(
+        TextureGroupType group,
+        std::vector<TextureFrameSpecification> frameSpecifications)
+        : Group(group)
+        , mFrameSpecifications(std::move(frameSpecifications))
     {}
 
     auto const & GetFrameSpecifications() const

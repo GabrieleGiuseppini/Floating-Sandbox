@@ -299,7 +299,31 @@ TextureDatabase TextureDatabase::Load(std::filesystem::path const & texturesRoot
         }
 
         // Store texture frames
-        textureGroups.emplace_back(textureFrames);
+        textureGroups.emplace_back(
+            groupType, 
+            textureFrames);
+    }
+
+    // Sort groups by group index
+    std::sort(
+        textureGroups.begin(),
+        textureGroups.end(),
+        [](auto const & a, auto const & b)
+    {
+        return a.Group < b.Group;
+    });
+
+    // Make sure all group indices are found
+    for (uint16_t expectedIndex = 0; expectedIndex < static_cast<uint16_t>(TextureGroupType::_Count); ++expectedIndex)
+    {
+        if (static_cast<uint16_t>(textureGroups[expectedIndex].Group) < expectedIndex)
+        {
+            throw GameException("Texture database: duplicate group \"" + std::to_string(static_cast<uint16_t>(textureGroups[expectedIndex].Group)) + "\"");
+        }
+        else if (static_cast<uint16_t>(textureGroups[expectedIndex].Group) > expectedIndex)
+        {
+            throw GameException("Texture database: missing group \"" + std::to_string(expectedIndex) + "\"");
+        }
     }
 
     // Make sure all textures found in file system have been exhausted

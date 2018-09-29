@@ -269,8 +269,11 @@ public:
 
         // Calculate texture dimensions in NDC, as proportion in 1280 X 1024
         // (totally arbitrary, a texture this size would fill the entire screen)
-        float textureTileNdcW = static_cast<float>(mCloudTextureSizes[GetCloudTextureIndex(mCloudBufferSize)].Width) / 1280.0f;
-        float textureTileNdcH = static_cast<float>(mCloudTextureSizes[GetCloudTextureIndex(mCloudBufferSize)].Height) / 1024.0f;
+        TextureFrameMetadata const & cloudTextureMetadata = mTextureRenderManager.GetFrameMetadata(
+            TextureGroupType::Cloud,
+            static_cast<TextureFrameIndex>(mCloudBufferSize % mCloudTextureCount));
+        float textureTileNdcW = static_cast<float>(cloudTextureMetadata.Size.Width) / 1280.0f;
+        float textureTileNdcH = static_cast<float>(cloudTextureMetadata.Size.Height) / 1024.0f;
 
         float leftX = mappedX - textureTileNdcW * scale / 2.0f;
         float rightX = mappedX + textureTileNdcW * scale / 2.0f;
@@ -696,13 +699,7 @@ private:
     
     GameOpenGLVBO mCloudVBO;
 
-    std::vector<ImageSize> mCloudTextureSizes;
-    std::vector<GameOpenGLTexture> mCloudTextures;
-
-    inline size_t GetCloudTextureIndex(size_t cloudIndex) const
-    {
-        return cloudIndex % mCloudTextures.size();
-    }
+    size_t mCloudTextureCount;
 
     //
     // Land
