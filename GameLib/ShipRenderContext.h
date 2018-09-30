@@ -28,9 +28,6 @@ public:
         std::optional<ImageData> texture,
         vec3f const & ropeColour,
         TextureRenderManager const & textureRenderManager,
-        GLuint pinnedPointTexture,
-        std::vector<GLuint> rcBombTextures,
-        std::vector<GLuint> timerBombTextures,
         float const(&orthoMatrix)[4][4],
         float visibleWorldHeight,
         float visibleWorldWidth,
@@ -72,7 +69,7 @@ public:
 
 
     //
-    // Springs and triangles
+    // Elements
     //
 
     void UploadElementsStart(std::vector<std::size_t> const & connectedComponentsMaxSizes);
@@ -244,8 +241,8 @@ public:
     inline void UploadElementBomb(
         BombType bombType,
         RotatedTextureRenderInfo const & renderInfo,
-        std::optional<uint32_t> lightedFrameIndex,
-        std::optional<uint32_t> unlightedFrameIndex,
+        std::optional<TextureFrameId> lightedFrameId,
+        std::optional<TextureFrameId> unlightedFrameId,
         ConnectedComponentId connectedComponentId)
     {
         size_t const connectedComponentIndex = connectedComponentId - 1;
@@ -302,8 +299,8 @@ public:
 
         mConnectedComponents[connectedComponentIndex].bombElementInfos.emplace_back(
             bombType,
-            lightedFrameIndex,
-            unlightedFrameIndex);
+            lightedFrameId,
+            unlightedFrameId);
        
 
         //
@@ -545,16 +542,16 @@ private:
     struct BombElementInfo
     {
         BombType bombType;
-        std::optional<uint32_t> lightedFrameIndex;
-        std::optional<uint32_t> unlightedFrameIndex;
+        std::optional<TextureFrameId> lightedFrameId;
+        std::optional<TextureFrameId> unlightedFrameId;
 
         BombElementInfo(
             BombType _bombType,
-            std::optional<uint32_t> _lightedFrameIndex,
-            std::optional<uint32_t> _unlightedFrameIndex)
+            std::optional<TextureFrameId> _lightedFrameId,
+            std::optional<TextureFrameId> _unlightedFrameId)
             : bombType(_bombType)
-            , lightedFrameIndex(_lightedFrameIndex)
-            , unlightedFrameIndex(_unlightedFrameIndex)
+            , lightedFrameId(_lightedFrameId)
+            , unlightedFrameId(_unlightedFrameId)
         {}
     };
 
@@ -655,9 +652,6 @@ private:
 
     GameOpenGLTexture mElementTexture;
     GameOpenGLTexture mElementStressedSpringTexture;
-    GLuint const mElementPinnedPointTexture;
-    std::vector<GLuint> const mElementRCBombTextures;
-    std::vector<GLuint> const mElementTimerBombTextures;
 
     //
     // Lamps

@@ -67,7 +67,7 @@ Current perf
 		= Cleanup:
 			= RenderContext:
 				= Hook up IProgress to individual loads
-					- Double-check total count adjustment
+					- Double-check total count adjustment				
 			- Commit
 		- Then:
 			+ (Ship)RenderContext: Do not store sizes but whole database instead
@@ -86,6 +86,9 @@ Current perf
 				- Anchor at all frames of timer bomb
 			- Commit
 			- ShipRenderContext: replace pinned points and bombs with Upload(Ship)TextureRenderSpecification:
+				- Bombs:
+					- Upload4Render() eventually invokes twice (lighted and unlighted)
+					- Frame indices are TextureFrameIndex instead of uint32
 				- Args:
 					- ShipID (used only by RenderContext to dispatch)
 					- ConnectedComponentID

@@ -49,7 +49,9 @@ TextureFrame TextureFrameSpecification::LoadFrame() const
         std::move(imageData.Data));
 }
 
-TextureDatabase TextureDatabase::Load(std::filesystem::path const & texturesRoot)
+TextureDatabase TextureDatabase::Load(
+    std::filesystem::path const & texturesRoot,
+    ProgressCallback const & progressCallback)
 {
     //
     // Visit directory and build set of all files
@@ -99,6 +101,9 @@ TextureDatabase TextureDatabase::Load(std::filesystem::path const & texturesRoot
     //
     // Process JSON groups and build texture groups
     //
+
+    float const framesToLoad = static_cast<float>(allTextureFiles.size());
+    float framesLoaded = 0.0f;
 
     std::vector<TextureGroup> textureGroups;
 
@@ -261,6 +266,14 @@ TextureDatabase TextureDatabase::Load(std::filesystem::path const & texturesRoot
                     fileIt = allTextureFiles.erase(fileIt);
 
                     ++filesFoundCount;
+
+
+                    //
+                    // Notify progress
+                    //
+
+                    framesLoaded += 1.0f;
+                    progressCallback(framesLoaded / framesToLoad, "Loading textures...");
                 }
                 else
                 {
@@ -331,6 +344,9 @@ TextureDatabase TextureDatabase::Load(std::filesystem::path const & texturesRoot
     {
         throw GameException("Texture database: couldn't match " + std::to_string(allTextureFiles.size()) + " texture files (e.g. \"" + allTextureFiles[0].Stem + "\") to texture specification file");
     }
+
+    // Notify progress
+    progressCallback(1.0f, "Loading textures...");
 
     return TextureDatabase(std::move(textureGroups));
 }

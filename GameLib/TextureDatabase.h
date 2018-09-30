@@ -10,6 +10,7 @@
  */
 
 #include "ImageSize.h"
+#include "ProgressCallback.h"
 
 #include <cassert>
 #include <cstdint>
@@ -178,7 +179,9 @@ class TextureDatabase
 {
 public:
 
-    static TextureDatabase Load(std::filesystem::path const & texturesRoot);
+    static TextureDatabase Load(
+        std::filesystem::path const & texturesRoot,
+        ProgressCallback const & progressCallback);
 
     TextureGroup const & GetGroup(TextureGroupType group) const
     {

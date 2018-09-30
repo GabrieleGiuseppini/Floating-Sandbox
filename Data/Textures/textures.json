@@ -17,7 +17,8 @@
 	"hasOwnAmbientLight": false,
 	"frames":[
 		{	
-			"worldScaling": 0.125,
+			"worldWidth": 128.0,
+			"worldHeight": 128.0,
 			"filename": "land_.*"
 		}
 	]

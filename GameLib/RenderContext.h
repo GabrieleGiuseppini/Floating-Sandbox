@@ -548,8 +548,8 @@ public:
         int shipId,
         BombType bombType,
         RotatedTextureRenderInfo const & renderInfo,
-        std::optional<uint32_t> lightedFrameIndex,
-        std::optional<uint32_t> unlightedFrameIndex,
+        std::optional<TextureFrameId> lightedFrameId,
+        std::optional<TextureFrameId> unlightedFrameId,
         ConnectedComponentId connectedComponentId)
     {
         assert(shipId < mShips.size());
@@ -557,8 +557,8 @@ public:
         mShips[shipId]->UploadElementBomb(
             bombType,
             renderInfo,
-            lightedFrameIndex,
-            unlightedFrameIndex,
+            lightedFrameId,
+            unlightedFrameId,
             connectedComponentId);
     }
 
@@ -723,10 +723,7 @@ private:
     size_t mLandBufferSize;
     size_t mLandBufferMaxSize;
 
-    GameOpenGLVBO mLandVBO;
-    
-    GameOpenGLTexture mLandTexture;
-
+    GameOpenGLVBO mLandVBO;    
 
     //
     // Sea water
@@ -756,20 +753,12 @@ private:
 
     GameOpenGLVBO mWaterVBO;
 
-    GameOpenGLTexture mWaterTexture;
-
     //
     // Ships
     //
 
     std::vector<std::unique_ptr<ShipRenderContext>> mShips;
     vec3f const mRopeColour;
-    ImageSize mPinnedPointTextureSize;
-    GameOpenGLTexture mPinnedPointTexture;
-    std::vector<ImageSize> mRCBombTextureSizes;
-    std::vector<GameOpenGLTexture> mRCBombTextures;
-    std::vector<ImageSize> mTimerBombTextureSizes;
-    std::vector<GameOpenGLTexture> mTimerBombTextures;
 
 
     //

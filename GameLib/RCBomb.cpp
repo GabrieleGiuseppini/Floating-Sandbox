@@ -153,7 +153,7 @@ void RCBomb::Upload(
                     1.0f,
                     mRotationBaseAxis,
                     GetRotationOffsetAxis()),
-                0,
+                TextureFrameId(TextureGroupType::RcBomb, 0),
                 std::nullopt,
                 GetConnectedComponentId());
 
@@ -170,8 +170,8 @@ void RCBomb::Upload(
                     1.0f,
                     mRotationBaseAxis,
                     GetRotationOffsetAxis()),
-                0,
-                1 + ((mPingOnStepCounter - 1) % PingFramesCount),
+                TextureFrameId(TextureGroupType::RcBomb, 0),
+                TextureFrameId(TextureGroupType::RcBombPing, (mPingOnStepCounter - 1) % PingFramesCount),
                 GetConnectedComponentId());
 
             break;
@@ -187,8 +187,8 @@ void RCBomb::Upload(
                     1.0f,
                     mRotationBaseAxis,
                     GetRotationOffsetAxis()),
-                0,
-                1 + ((mPingOnStepCounter - 1) % PingFramesCount),
+                TextureFrameId(TextureGroupType::RcBomb, 0),
+                TextureFrameId(TextureGroupType::RcBombPing, (mPingOnStepCounter - 1) % PingFramesCount),
                 GetConnectedComponentId());
 
             break;
@@ -208,7 +208,7 @@ void RCBomb::Upload(
                     mRotationBaseAxis,
                     GetRotationOffsetAxis()),
                 std::nullopt,
-                1 + PingFramesCount + (mExplodingStepCounter - 1),
+                TextureFrameId(TextureGroupType::RcBombExplosion, mExplodingStepCounter - 1),
                 GetConnectedComponentId());
 
             break;

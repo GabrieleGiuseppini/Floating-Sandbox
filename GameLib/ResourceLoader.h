@@ -39,7 +39,7 @@ public:
     // Textures
     //
 
-    TextureDatabase LoadTextureDatabase() const;
+    TextureDatabase LoadTextureDatabase(ProgressCallback const & progressCallback) const;
 
 
     //

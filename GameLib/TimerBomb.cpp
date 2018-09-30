@@ -250,8 +250,8 @@ void TimerBomb::Upload(
                     1.0f,
                     mRotationBaseAxis,
                     GetRotationOffsetAxis()),
-                mFuseStepCounter / FuseFramesPerFuseLengthCount,           // Base frame
-                FuseLengthStepCount + 1 + mFuseFlameFrameIndex,     // Fuse frame
+                TextureFrameId(TextureGroupType::TimerBomb, mFuseStepCounter / FuseFramesPerFuseLengthCount),
+                TextureFrameId(TextureGroupType::TimerBombFuse, mFuseFlameFrameIndex),
                 GetConnectedComponentId());
 
             break;
@@ -273,8 +273,8 @@ void TimerBomb::Upload(
                     1.0f,
                     mRotationBaseAxis,
                     GetRotationOffsetAxis()),
-                FuseLengthStepCount,    // Base frame
-                std::nullopt,           // Fuse frame
+                TextureFrameId(TextureGroupType::TimerBomb, FuseLengthStepCount),
+                std::nullopt,
                 GetConnectedComponentId());
 
             break;
@@ -293,7 +293,7 @@ void TimerBomb::Upload(
                     mRotationBaseAxis,
                     GetRotationOffsetAxis()),
                 std::nullopt,
-                FuseLengthStepCount + 1 + FuseStepCount + 1 + DefuseStepsCount + mExplodingStepCounter,
+                TextureFrameId(TextureGroupType::TimerBombExplosion, mExplodingStepCounter),
                 GetConnectedComponentId());
 
             break;
@@ -309,8 +309,8 @@ void TimerBomb::Upload(
                     1.0f,
                     mRotationBaseAxis,
                     GetRotationOffsetAxis()),
-                mFuseStepCounter / FuseFramesPerFuseLengthCount,                               // Base frame
-                FuseLengthStepCount + 1 + FuseStepCount + 1 + mDefuseStepCounter,       // Fuse frame
+                TextureFrameId(TextureGroupType::TimerBomb, mFuseStepCounter / FuseFramesPerFuseLengthCount),
+                TextureFrameId(TextureGroupType::TimerBombDefuse, mDefuseStepCounter),
                 GetConnectedComponentId());
 
             break;
@@ -326,8 +326,8 @@ void TimerBomb::Upload(
                     1.0f,
                     mRotationBaseAxis,
                     GetRotationOffsetAxis()),
-                mFuseStepCounter / FuseFramesPerFuseLengthCount,   // Base frame
-                std::nullopt,                               // Fuse frame
+                TextureFrameId(TextureGroupType::TimerBomb, mFuseStepCounter / FuseFramesPerFuseLengthCount),
+                std::nullopt,
                 GetConnectedComponentId());
 
             break;

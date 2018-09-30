@@ -12,9 +12,6 @@ ShipRenderContext::ShipRenderContext(
     std::optional<ImageData> texture,
     vec3f const & ropeColour,
     TextureRenderManager const & textureRenderManager,
-    GLuint pinnedPointTexture,
-    std::vector<GLuint> rcBombTextures,
-    std::vector<GLuint> timerBombTextures,
     float const(&orthoMatrix)[4][4],
     float visibleWorldHeight,
     float visibleWorldWidth,
@@ -58,12 +55,9 @@ ShipRenderContext::ShipRenderContext(
     // Vectors
     , mVectorArrowPointPositionBuffer()
     , mVectorArrowPointPositionVBO()
-    // Texture
+    // Textures
     , mElementTexture()
     , mElementStressedSpringTexture()
-    , mElementPinnedPointTexture(pinnedPointTexture)
-    , mElementRCBombTextures(rcBombTextures)
-    , mElementTimerBombTextures(timerBombTextures)
     // Lamps
     , mLampBuffers()
 {
@@ -534,7 +528,10 @@ ShipRenderContext::ShipRenderContext(
 
         void main()
         {
-            gl_FragColor = texture2D(inputTexture, vertexTextureCoords) * paramAmbientLightIntensity;
+            vec4 textureColor = texture2D(inputTexture, vertexTextureCoords);
+            gl_FragColor = vec4(
+                textureColor.xyz * paramAmbientLightIntensity,
+                textureColor.w);
         } 
     )";
 
@@ -611,7 +608,10 @@ ShipRenderContext::ShipRenderContext(
 
         void main()
         {
-            gl_FragColor = texture2D(inputTexture, vertexTextureCoords) * paramAmbientLightIntensity;
+            vec4 textureColor = texture2D(inputTexture, vertexTextureCoords);
+            gl_FragColor = vec4(
+                textureColor.xyz * paramAmbientLightIntensity,
+                textureColor.w);
         } 
     )";
 
@@ -1428,7 +1428,7 @@ void ShipRenderContext::RenderBombElements(ConnectedComponentData const & connec
     // Draw all bombs for this connected component
     for (size_t b = 0; b < connectedComponent.bombElementInfos.size(); ++b)
     {
-        if (!!connectedComponent.bombElementInfos[b].lightedFrameIndex)
+        if (!!connectedComponent.bombElementInfos[b].lightedFrameId)
         {
             //
             // Lighted element
@@ -1438,26 +1438,15 @@ void ShipRenderContext::RenderBombElements(ConnectedComponentData const & connec
             glUniform1f(mElementBombShaderAmbientLightIntensityParameter, mAmbientLightIntensity);
 
             // Bind texture
-            switch (connectedComponent.bombElementInfos[b].bombType)
-            {
-                case BombType::RCBomb:
-                {
-                    glBindTexture(GL_TEXTURE_2D, mElementRCBombTextures[*connectedComponent.bombElementInfos[b].lightedFrameIndex]);
-                    break;
-                }
-
-                case BombType::TimerBomb:
-                {
-                    glBindTexture(GL_TEXTURE_2D, mElementTimerBombTextures[*connectedComponent.bombElementInfos[b].lightedFrameIndex]);
-                    break;
-                }
-            }
+            glBindTexture(
+                GL_TEXTURE_2D,
+                mTextureRenderManager.GetOpenGLHandle(*connectedComponent.bombElementInfos[b].lightedFrameId));
 
             // Draw
             glDrawArrays(GL_TRIANGLE_STRIP, static_cast<GLint>(4 * (connectedComponent.bombElementOffset + b)), 4);
         }
 
-        if (!!connectedComponent.bombElementInfos[b].unlightedFrameIndex)
+        if (!!connectedComponent.bombElementInfos[b].unlightedFrameId)
         {
             //
             // Unlighted element
@@ -1467,20 +1456,9 @@ void ShipRenderContext::RenderBombElements(ConnectedComponentData const & connec
             glUniform1f(mElementBombShaderAmbientLightIntensityParameter, 1.0f);
 
             // Bind texture
-            switch (connectedComponent.bombElementInfos[b].bombType)
-            {
-                case BombType::RCBomb:
-                {
-                    glBindTexture(GL_TEXTURE_2D, mElementRCBombTextures[*connectedComponent.bombElementInfos[b].unlightedFrameIndex]);
-                    break;
-                }
-
-                case BombType::TimerBomb:
-                {
-                    glBindTexture(GL_TEXTURE_2D, mElementTimerBombTextures[*connectedComponent.bombElementInfos[b].unlightedFrameIndex]);
-                    break;
-                }
-            }
+            glBindTexture(
+                GL_TEXTURE_2D,
+                mTextureRenderManager.GetOpenGLHandle(*connectedComponent.bombElementInfos[b].unlightedFrameId));
 
             // Draw
             glDrawArrays(GL_TRIANGLE_STRIP, static_cast<GLint>(4 * (connectedComponent.bombElementOffset + b)), 4);
@@ -1500,7 +1478,9 @@ void ShipRenderContext::RenderPinnedPointElements(ConnectedComponentData const &
     glUseProgram(*mElementPinnedPointShaderProgram);
 
     // Bind texture
-    glBindTexture(GL_TEXTURE_2D, mElementPinnedPointTexture);
+    glBindTexture(
+        GL_TEXTURE_2D, 
+        mTextureRenderManager.GetOpenGLHandle(TextureGroupType::PinnedPoint, 0));
 
     // Bind VBO
     glBindBuffer(GL_ARRAY_BUFFER, *mPinnedPointVBO);
