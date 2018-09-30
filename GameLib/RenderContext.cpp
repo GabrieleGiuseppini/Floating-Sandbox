@@ -226,15 +226,13 @@ RenderContext::RenderContext(
     glGenBuffers(1, &tmpGLuint);
     mLandVBO = tmpGLuint;
 
-    // Calculate scaling: we want a tile to be repeated every these many world units
-    static constexpr float LandTileWorldSize = 128.0f;
-    
     // Set hardcoded parameters
     glUseProgram(*mLandShaderProgram);
+    auto const & landTextureMetadata = textureDatabase.GetFrameMetadata(TextureGroupType::Land, 0);
     glUniform2f(
         landShaderTextureScalingParameter, 
-        1.0f / LandTileWorldSize,
-        1.0f / LandTileWorldSize);
+        1.0f / landTextureMetadata.WorldWidth,
+        1.0f / landTextureMetadata.WorldHeight);
     glUseProgram(0);
 
     // Upload textures
@@ -314,15 +312,13 @@ RenderContext::RenderContext(
     glGenBuffers(1, &tmpGLuint);
     mWaterVBO = tmpGLuint;
 
-    // Calculate scaling: we want a tile to be repeated every these many world units
-    static constexpr float WaterTileWorldSize = 128.0f;
-
     // Set hardcoded parameters
     glUseProgram(*mWaterShaderProgram);
+    auto const & waterTextureMetadata = textureDatabase.GetFrameMetadata(TextureGroupType::Water, 0);
     glUniform2f(
         waterShaderTextureScalingParameter,
-        1.0f / WaterTileWorldSize,
-        1.0f / WaterTileWorldSize);
+        1.0f / waterTextureMetadata.WorldWidth,
+        1.0f / waterTextureMetadata.WorldHeight);
     glUseProgram(0);
 
     // Upload textures

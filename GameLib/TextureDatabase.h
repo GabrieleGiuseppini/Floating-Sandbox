@@ -69,13 +69,13 @@ struct TextureFrameMetadata
     float WorldHeight;
 
     // When true, the texture does not need to be blended with ambient light
-    // (it basically shines at night)
+    // (i.e. it shines at night)
     bool HasOwnAmbientLight;
 
     // Anchor point: when this texture is requested to be drawn at a specific
-    // world coordinate, that is the coordinate of this point in the texture image
-    int AnchorX;
-    int AnchorY;
+    // world coordinate, that is the coordinate of this point
+    float AnchorWorldX;
+    float AnchorWorldY;
 
     // The ID of this frame
     TextureFrameId FrameId;
@@ -85,15 +85,15 @@ struct TextureFrameMetadata
         float worldWidth,
         float worldHeight,
         bool hasOwnAmbientLight,
-        int anchorX,
-        int anchorY,
+        float anchorWorldX,
+        float anchorWorldY,
         TextureFrameId frameId)
         : Size(size)
         , WorldWidth(worldWidth)
         , WorldHeight(worldHeight)
         , HasOwnAmbientLight(hasOwnAmbientLight)
-        , AnchorX(anchorX)
-        , AnchorY(anchorY)
+        , AnchorWorldX(anchorWorldX)
+        , AnchorWorldY(anchorWorldY)
         , FrameId(frameId)
     {}
 };
@@ -187,6 +187,15 @@ public:
     {
         assert(static_cast<size_t>(group) < mGroups.size());
         return mGroups[static_cast<size_t>(group)];
+    }
+
+    TextureFrameMetadata const & GetFrameMetadata(
+        TextureGroupType group,
+        TextureFrameIndex frameIndex) const
+    {
+        assert(static_cast<size_t>(group) < mGroups.size());
+        assert(frameIndex < mGroups[static_cast<size_t>(group)].GetFrameCount());
+        return mGroups[static_cast<size_t>(group)].GetFrameSpecifications()[frameIndex].Metadata;
     }
 
 private:

@@ -79,8 +79,8 @@
 		{	
 			"worldWidth": 12.0,
 			"worldHeight": 12.0,
-			"anchorX": 3,
-			"anchorY": 78,
+			"anchorOffsetX": 3,
+			"anchorOffsetY": 78,
 			"filename": "timer_bomb_\\d+"
 		}
 	]
@@ -93,8 +93,8 @@
 		{	
 			"worldWidth": 12.0,
 			"worldHeight": 12.0,
-			"anchorX": 3,
-			"anchorY": 78,
+			"anchorOffsetX": 3,
+			"anchorOffsetY": 78,
 			"filename": "timer_bomb_defuse_\\d+"
 		}
 	]
@@ -107,8 +107,8 @@
 		{	
 			"worldWidth": 12.0,
 			"worldHeight": 12.0,
-			"anchorX": 2,
-			"anchorY": 52,
+			"anchorOffsetX": 2,
+			"anchorOffsetY": 52,
 			"filename": "timer_bomb_explosion_\\d+"
 		}
 	]
@@ -121,8 +121,8 @@
 		{	
 			"worldWidth": 12.0,
 			"worldHeight": 12.0,
-			"anchorX": 3,
-			"anchorY": 78,
+			"anchorOffsetX": 3,
+			"anchorOffsetY": 78,
 			"filename": "timer_bomb_fuse_\\d+"
 		}
 	]
@@ -133,7 +133,8 @@
 	"hasOwnAmbientLight": false,
 	"frames":[
 		{	
-			"worldScaling": 0.32,
+			"worldWidth": 128.0,
+			"worldHeight": 128.0,
 			"filename": "water_.*"
 		}
 	]

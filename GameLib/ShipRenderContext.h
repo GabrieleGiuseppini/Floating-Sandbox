@@ -191,14 +191,15 @@ public:
 
         PinnedPointElement & pinnedPointElement = *insertedIt;
 
-        // World size that the texture should be scaled to
-        static constexpr float textureTileW = 6.0f;
-        static constexpr float textureTileH = 6.0f;
-        
-        float leftX = pinnedPointX - textureTileW / 2.0f;
-        float rightX = pinnedPointX + textureTileW / 2.0f;
-        float topY = pinnedPointY - textureTileH / 2.0f;
-        float bottomY = pinnedPointY + textureTileH / 2.0f;
+        TextureFrameMetadata const & textureMetadata = mTextureRenderManager.GetFrameMetadata(
+            TextureGroupType::PinnedPoint,
+            0);
+
+        // TODOHERE: double-check
+        float leftX = pinnedPointX - textureMetadata.AnchorWorldX;
+        float rightX = pinnedPointX + (textureMetadata.WorldWidth - textureMetadata.AnchorWorldX);
+        float topY = pinnedPointY - textureMetadata.AnchorWorldY;
+        float bottomY = pinnedPointY + (textureMetadata.WorldHeight - textureMetadata.AnchorWorldY);
 
         pinnedPointElement.xTopLeft = leftX;
         pinnedPointElement.yTopLeft = topY;
@@ -260,10 +261,15 @@ public:
             + mConnectedComponents[connectedComponentIndex].bombElementInfos.size());
 
         BombElement & bombElement = *insertedIt;
-       
+        
+        // TODOHERE: we are doing it for both textures temporarily; this invocation will however become
+        // two calls soon
+        TextureFrameId textureFrameId = (!!lightedFrameId ? *lightedFrameId : *unlightedFrameId);
+        TextureFrameMetadata const & textureMetadata = mTextureRenderManager.GetFrameMetadata(textureFrameId);
+
         // World size that the texture should be scaled to
-        static constexpr float textureTileW = 12.0f;
-        static constexpr float textureTileH = 12.0f;
+        static float const textureTileW = textureMetadata.WorldWidth;
+        static float const textureTileH = textureMetadata.WorldHeight;
 
         // Offsets
         // TODO: temporary, until we use Textures.json

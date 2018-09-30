@@ -64,23 +64,24 @@ Current perf
 - Technical Debt:
 	= Textures are json files, with world size, offset, and lighting boolean
 		+ SEE MOLESKINE
-		= Cleanup:
-			= RenderContext:
-				= Hook up IProgress to individual loads
-					- Double-check total count adjustment				
-			- Commit
-		- Then:
+		+ Cleanup:
+			+ RenderContext:
+				+ Hook up IProgress to individual loads
+					+ Double-check total count adjustment				
+			+ Commit
+		= Then:
 			+ (Ship)RenderContext: Do not store sizes but whole database instead
 				+ TODO: database must be associated with GLuint's of textures
 				+ RenderContext stores (moves) database at cctor
 				+ Passes reference to ship
 				+ TextureDatabase::GetFrameMetadata(TextureFrameId)
 					+ TextureDatabase builds map of references at cctor
-			- Remove hardcoded sizes and offsets and substitute with metadata lookups
-				- Cloud size
-				- Water size
-				- Land size
-				- Bombs sizes and offsets
+			= Remove hardcoded sizes and offsets and substitute with metadata lookups
+				+ Cloud size
+				+ Water size
+				+ Land size
+				+ Pinned point size
+				+ Bombs sizes and offsets
 			- Test
 				- Double-check clouds's aspect ratio
 				- Anchor at all frames of timer bomb
@@ -94,23 +95,27 @@ Current perf
 					- ConnectedComponentID
 						- Until Z-rearc: ShipRenderContext has one TextureRenderSpecification per-connected component
 						- After Z-rearc: put in buffer for shader to transform to Z
-					- Position vec2f
+					- Position (vec2f)
 						- Of anchor
-					- Orientation std::optional<vec2f>
-						- Off <1.0, 0.0f>
+					- Orientation (std::optional<vec2f, vec2f>)
 					- TextureFrameId
-						- Used to lookup into (reference of) TextureDatabase to fetch TextureFrameMetadata
+				- ShipRenderContext gets TexturePolygon from TextureRenderManager::CalculateTexturePolygon
+					- TexturePolygon is declared at RenderTexture.h, which includes other Texture render .h's
+					- For the time being it calculates also rotation
 				- Use a single shader for these "simple" textures
-					- Takes all calculated values (for now), as it is now
+					- Takes TexturePolygon, described to OpenGL
+				- Test
+					- Double-check clouds's aspect ratio
+					- Anchor at all frames of timer bomb
+					- Everything else
+				- Commit
 		- Change the single shader to do *all the work* (for the "simple" textures, including rotation) for all ships and connected components
 			- Initially, runs on 1 texture at a time
 				- After atlas and Z, runs on all textures (via atlas' per-frame texture coordinates)
-			- First of all, test rotation in shader with current implementation
+			- First of all, test perf of rotation in shader with current implementation
 				- Does not need to wait for Z
-				- TexturePolygon (at RenderTexture.h which includes other Texture render .h's)
-					- Just bounding box, calc'd by TextureRenderManager
-				- Ship (for now) haw own RotatedTexturePolygon, with TexturePolygon as member
-					- Described to OpenGL
+				- TexturePolygon is modified to also contain orientation and AmbientLight adjustment
+					- TextureRenderManager::CalculateTexturePolygon is modified to just copy these extra values
 			- After Z: 
 				- Shader also takes ShipID, ConnectedComponentID for Z
 				- Invoked shader at one place (still for 1 texture at a time, waiting for atlas)

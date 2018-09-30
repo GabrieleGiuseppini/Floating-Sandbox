@@ -265,20 +265,17 @@ public:
         float mappedY = -1.0f + 2.0f * (rolledY - 0.5f);
 
         assert(mCloudBufferSize + 1u <= mCloudBufferMaxSize);
-        CloudElement * cloudElement = &(mCloudBuffer[mCloudBufferSize]);
+        CloudElement * cloudElement = &(mCloudBuffer[mCloudBufferSize]);        
 
-        // Calculate texture dimensions in NDC, as proportion in 1280 X 1024
-        // (totally arbitrary, a texture this size would fill the entire screen)
-        TextureFrameMetadata const & cloudTextureMetadata = mTextureRenderManager.GetFrameMetadata(
+        TextureFrameMetadata const & textureMetadata = mTextureRenderManager.GetFrameMetadata(
             TextureGroupType::Cloud,
             static_cast<TextureFrameIndex>(mCloudBufferSize % mCloudTextureCount));
-        float textureTileNdcW = static_cast<float>(cloudTextureMetadata.Size.Width) / 1280.0f;
-        float textureTileNdcH = static_cast<float>(cloudTextureMetadata.Size.Height) / 1024.0f;
 
-        float leftX = mappedX - textureTileNdcW * scale / 2.0f;
-        float rightX = mappedX + textureTileNdcW * scale / 2.0f;
-        float topY = mappedY - textureTileNdcH * scale / 2.0f;
-        float bottomY = mappedY + textureTileNdcH * scale / 2.0f;
+        // TODOHERE: double-check
+        float leftX = mappedX - scale * textureMetadata.AnchorWorldX;
+        float rightX = mappedX + scale * (textureMetadata.WorldWidth - textureMetadata.AnchorWorldX);
+        float topY = mappedY - scale * textureMetadata.AnchorWorldY;
+        float bottomY = mappedY + scale * (textureMetadata.WorldHeight - textureMetadata.AnchorWorldY);
         
         cloudElement->ndcXTopLeft = leftX;
         cloudElement->ndcYTopLeft = topY;

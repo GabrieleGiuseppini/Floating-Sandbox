@@ -124,8 +124,8 @@ TextureDatabase TextureDatabase::Load(
         std::optional<float> groupWorldWidth = Utils::GetOptionalJsonMember<float>(groupJson, "worldWidth");
         std::optional<float> groupWorldHeight = Utils::GetOptionalJsonMember<float>(groupJson, "worldHeight");
         bool groupHasOwnAmbientLight = Utils::GetOptionalJsonMember<bool>(groupJson, "hasOwnAmbientLight", false);
-        int groupAnchorX = Utils::GetOptionalJsonMember<int>(groupJson, "anchorX", 0);
-        int groupAnchorY = Utils::GetOptionalJsonMember<int>(groupJson, "anchorY", 0);
+        int groupAnchorOffsetX = Utils::GetOptionalJsonMember<int>(groupJson, "anchorOffsetX", 0);
+        int groupAnchorOffsetY = Utils::GetOptionalJsonMember<int>(groupJson, "anchorOffsetY", 0);
 
 
         //
@@ -148,8 +148,8 @@ TextureDatabase TextureDatabase::Load(
             std::optional<float> frameWorldWidth = Utils::GetOptionalJsonMember<float>(frameJson, "worldWidth");
             std::optional<float> frameWorldHeight = Utils::GetOptionalJsonMember<float>(frameJson, "worldHeight");
             std::optional<bool> frameHasOwnAmbientLight = Utils::GetOptionalJsonMember<bool>(frameJson, "hasOwnAmbientLight");
-            std::optional<int> frameAnchorX = Utils::GetOptionalJsonMember<int>(frameJson, "anchorX");
-            std::optional<int> frameAnchorY = Utils::GetOptionalJsonMember<int>(frameJson, "anchorY");
+            std::optional<int> frameAnchorOffsetX = Utils::GetOptionalJsonMember<int>(frameJson, "anchorOffsetX");
+            std::optional<int> frameAnchorOffsetY = Utils::GetOptionalJsonMember<int>(frameJson, "anchorOffsetY");
 
             // Get filename and make regex out of it
             std::string frameFilename = Utils::GetMandatoryJsonMember<std::string>(frameJson, "filename");
@@ -239,8 +239,13 @@ TextureDatabase TextureDatabase::Load(
                     }
 
                     bool hasOwnAmbientLight = !!frameHasOwnAmbientLight ? *frameHasOwnAmbientLight : groupHasOwnAmbientLight;
-                    int anchorX = !!frameAnchorX ? *frameAnchorX : groupAnchorX;
-                    int anchorY = !!frameAnchorY ? *frameAnchorY : groupAnchorY;
+
+                    int anchorX = (textureSize.Width / 2) + (!!frameAnchorOffsetX ? *frameAnchorOffsetX : groupAnchorOffsetX);
+                    int anchorY = (textureSize.Height / 2) + (!!frameAnchorOffsetY ? *frameAnchorOffsetY : groupAnchorOffsetY);
+
+                    // Transform to world
+                    float anchorWorldX = static_cast<float>(anchorX) * worldWidth / static_cast<float>(textureSize.Width);
+                    float anchorWorldY = static_cast<float>(textureSize.Height - anchorY) * worldHeight / static_cast<float>(textureSize.Height);
 
 
                     //
@@ -254,8 +259,8 @@ TextureDatabase TextureDatabase::Load(
                                 worldWidth,
                                 worldHeight,
                                 hasOwnAmbientLight,
-                                anchorX,
-                                anchorY,
+                                anchorWorldX,
+                                anchorWorldY,
                                 TextureFrameId(groupType, frameIndex)),
                             fileData.Path));
 
