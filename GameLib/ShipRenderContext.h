@@ -33,7 +33,10 @@ public:
         float visibleWorldWidth,
         float canvasToVisibleWorldHeightRatio,
         float ambientLightIntensity,
-        float waterLevelOfDetail);
+        float waterLevelOfDetail,
+        ShipRenderMode shipRenderMode,
+        VectorFieldRenderMode vectorFieldRenderMode,
+        bool showStressedSprings);
     
     ~ShipRenderContext();
 
@@ -50,7 +53,15 @@ public:
 
     void UpdateWaterLevelThreshold(float waterLevelOfDetail);
 
+    void UpdateShipRenderMode(ShipRenderMode shipRenderMode);
+
+    void UpdateVectorFieldRenderMode(VectorFieldRenderMode vectorFieldRenderMode);
+
+    void UpdateShowStressedSprings(bool showStressedSprings);
+
 public:
+
+    void RenderStart(std::vector<std::size_t> const & connectedComponentsMaxSizes);
 
     //
     // Points
@@ -67,12 +78,11 @@ public:
         float const * restrict light,
         float const * restrict water);
 
-
     //
     // Elements
     //
 
-    void UploadConnectedComponentsStart(std::vector<std::size_t> const & connectedComponentsMaxSizes);
+    void UploadElementsStart();
 
     inline void UploadElementPoint(
         int pointIndex,
@@ -146,6 +156,34 @@ public:
         ++(mConnectedComponents[connectedComponentIndex].triangleElementCount);
     }
 
+    void UploadElementsEnd();
+    
+    void UploadElementStressedSpringsStart();
+
+    inline void UploadElementStressedSpring(
+        int pointIndex1,
+        int pointIndex2,
+        ConnectedComponentId connectedComponentId)
+    {
+        size_t const connectedComponentIndex = connectedComponentId - 1;
+
+        assert(connectedComponentIndex < mConnectedComponents.size());
+        assert(mConnectedComponents[connectedComponentIndex].stressedSpringElementCount + 1u <= mConnectedComponents[connectedComponentIndex].stressedSpringElementMaxCount);
+
+        StressedSpringElement * const stressedSpringElement = &(mConnectedComponents[connectedComponentIndex].stressedSpringElementBuffer[mConnectedComponents[connectedComponentIndex].stressedSpringElementCount]);
+
+        stressedSpringElement->pointIndex1 = pointIndex1;
+        stressedSpringElement->pointIndex2 = pointIndex2;
+
+        ++(mConnectedComponents[connectedComponentIndex].stressedSpringElementCount);
+    }
+
+    void UploadElementStressedSpringsEnd();
+
+    //
+    // Generic textures
+    //
+
     inline void UploadGenericTextureRenderSpecification(
         ConnectedComponentId connectedComponentId,
         TextureFrameId const & textureFrameId,
@@ -168,10 +206,10 @@ public:
     {
         size_t const connectedComponentIndex = connectedComponentId - 1;
 
-        assert(connectedComponentIndex < mConnectedComponents.size());
+        assert(connectedComponentIndex < mConnectedComponentGenericTextureInfos.size());
 
         // Store <Index in TexturePolygonVertices, textureFrameId> in per-connected component data
-        mConnectedComponents[connectedComponentIndex].genericTextureInfos.emplace_back(
+        mConnectedComponentGenericTextureInfos[connectedComponentIndex].emplace_back(
             mGenericTextureRenderPolygonVertexBuffer.size(),
             textureFrameId);
 
@@ -184,30 +222,6 @@ public:
             mGenericTextureRenderPolygonVertexBuffer);
     }
 
-    void UploadConnectedComponentsEnd();
-
-
-    void UploadElementStressedSpringsStart();
-
-    inline void UploadElementStressedSpring(
-        int pointIndex1,
-        int pointIndex2,
-        ConnectedComponentId connectedComponentId)
-    {
-        size_t const connectedComponentIndex = connectedComponentId - 1;
-
-        assert(connectedComponentIndex < mConnectedComponents.size());
-        assert(mConnectedComponents[connectedComponentIndex].stressedSpringElementCount + 1u <= mConnectedComponents[connectedComponentIndex].stressedSpringElementMaxCount);
-
-        StressedSpringElement * const stressedSpringElement = &(mConnectedComponents[connectedComponentIndex].stressedSpringElementBuffer[mConnectedComponents[connectedComponentIndex].stressedSpringElementCount]);
-
-        stressedSpringElement->pointIndex1 = pointIndex1;
-        stressedSpringElement->pointIndex2 = pointIndex2;
-
-        ++(mConnectedComponents[connectedComponentIndex].stressedSpringElementCount);
-    }
-
-    void UploadElementStressedSpringsEnd();
 
 
     // TODOOLD
@@ -373,18 +387,14 @@ public:
         vec2f const * restrict position,
         vec2f const * restrict vector,
         float lengthAdjustment,
-        vec3f const & color);
+        vec3f const & color);    
 
-    /////////////////////////////////////////////////////////////
-
-    void Render(
-        ShipRenderMode shipRenderMode,
-        VectorFieldRenderMode vectorFieldRenderMode,
-        bool showStressedSprings);
+    void RenderEnd();
 
 private:
-
+    
     struct ConnectedComponentData;
+    struct GenericTextureInfo;
 
     void RenderPointElements(ConnectedComponentData const & connectedComponent);
 
@@ -400,7 +410,7 @@ private:
 
     void RenderStressedSpringElements(ConnectedComponentData const & connectedComponent);
 
-    void RenderGenericTextures(ConnectedComponentData const & connectedComponent);
+    void RenderGenericTextures(std::vector<GenericTextureInfo> const & connectedComponent);
 
     void RenderVectors();
 
@@ -413,6 +423,9 @@ private:
     float mCanvasToVisibleWorldHeightRatio;
     float mAmbientLightIntensity;
     float mWaterLevelThreshold;
+    ShipRenderMode mShipRenderMode;
+    VectorFieldRenderMode mVectorFieldRenderMode;
+    bool mShowStressedSprings;
 
 private:
 
@@ -476,6 +489,21 @@ private:
 
     TextureRenderManager const & mTextureRenderManager;
 
+    struct GenericTextureInfo
+    {
+        size_t polygonIndex;
+        TextureFrameId frameId;
+
+        GenericTextureInfo(
+            size_t _polygonIndex,
+            TextureFrameId _frameId)
+            : polygonIndex(_polygonIndex)
+            , frameId(_frameId)
+        {}
+    };
+
+    std::vector<std::vector<GenericTextureInfo>> mConnectedComponentGenericTextureInfos;
+
     std::vector<TextureRenderPolygonVertex> mGenericTextureRenderPolygonVertexBuffer;
     GameOpenGLVBO mGenericTextureRenderPolygonVertexVBO;
     GameOpenGLShaderProgram mGenericTextureShaderProgram;
@@ -486,6 +514,8 @@ private:
     //
     // Connected component data
     //
+
+    std::vector<std::size_t> mConnectedComponentsMaxSizes;
 
 #pragma pack(push)
     struct PointElement
@@ -527,19 +557,6 @@ private:
     };
 #pragma pack(pop)
 
-    struct GenericTextureInfo
-    {
-        size_t polygonIndex;
-        TextureFrameId frameId;
-
-        GenericTextureInfo(
-            size_t _polygonIndex,
-            TextureFrameId _frameId)
-            : polygonIndex(_polygonIndex)
-            , frameId(_frameId)
-        {}
-    };
-
     
     //
     // All the data that belongs to a single connected component
@@ -572,8 +589,6 @@ private:
         std::unique_ptr<StressedSpringElement[]> stressedSpringElementBuffer;
         GameOpenGLVBO stressedSpringElementVBO;
 
-        std::vector<GenericTextureInfo> genericTextureInfos;
-
         ConnectedComponentData()
             : pointElementCount(0)
             , pointElementMaxCount(0)
@@ -595,7 +610,6 @@ private:
             , stressedSpringElementMaxCount(0)
             , stressedSpringElementBuffer()
             , stressedSpringElementVBO()
-            , genericTextureInfos()
         {}
     };
 

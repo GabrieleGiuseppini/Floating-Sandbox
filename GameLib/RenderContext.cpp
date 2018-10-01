@@ -524,7 +524,9 @@ RenderContext::RenderContext(
     UpdateAmbientLightIntensity();
     UpdateSeaWaterTransparency();
     UpdateWaterLevelOfDetail();
-
+    UpdateShipRenderMode();
+    UpdateVectorFieldRenderMode();
+    UpdateShowStressedSprings();
 
     //
     // Flush all pending operations
@@ -573,7 +575,10 @@ void RenderContext::AddShip(
             mVisibleWorldWidth,
             mCanvasToVisibleWorldHeightRatio,
             mAmbientLightIntensity,
-            mWaterLevelOfDetail));
+            mWaterLevelOfDetail,
+            mShipRenderMode,
+            mVectorFieldRenderMode,
+            mShowStressedSprings));
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -915,5 +920,35 @@ void RenderContext::UpdateWaterLevelOfDetail()
     for (auto & s : mShips)
     {
         s->UpdateWaterLevelThreshold(mWaterLevelOfDetail);
+    }
+}
+
+void RenderContext::UpdateShipRenderMode()
+{
+    // Set parameter in all ships
+
+    for (auto & s : mShips)
+    {
+        s->UpdateShipRenderMode(mShipRenderMode);
+    }
+}
+
+void RenderContext::UpdateVectorFieldRenderMode()
+{
+    // Set parameter in all ships
+
+    for (auto & s : mShips)
+    {
+        s->UpdateVectorFieldRenderMode(mVectorFieldRenderMode);
+    }
+}
+
+void RenderContext::UpdateShowStressedSprings()
+{
+    // Set parameter in all ships
+
+    for (auto & s : mShips)
+    {
+        s->UpdateShowStressedSprings(mShowStressedSprings);
     }
 }

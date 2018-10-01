@@ -7,6 +7,7 @@
 
 #include "GameException.h"
 #include "GameMath.h"
+#include "GameParameters.h"
 
 ShipRenderContext::ShipRenderContext(    
     std::optional<ImageData> texture,
@@ -17,11 +18,17 @@ ShipRenderContext::ShipRenderContext(
     float visibleWorldWidth,
     float canvasToVisibleWorldHeightRatio,
     float ambientLightIntensity,
-    float waterLevelOfDetail)
+    float waterLevelOfDetail,
+    ShipRenderMode shipRenderMode,
+    VectorFieldRenderMode vectorFieldRenderMode,
+    bool showStressedSprings)
     // Parameters
     : mCanvasToVisibleWorldHeightRatio(0)
     , mAmbientLightIntensity(0.0f) // Set later
     , mWaterLevelThreshold(0.0f)
+    , mShipRenderMode(ShipRenderMode::Structure)
+    , mVectorFieldRenderMode(VectorFieldRenderMode::None)
+    , mShowStressedSprings(false)
     // Textures
     , mElementShipTexture()
     , mElementStressedSpringTexture()
@@ -46,12 +53,14 @@ ShipRenderContext::ShipRenderContext(
     , mElementStressedSpringShaderOrthoMatrixParameter(0)
     // Generic Textures
     , mTextureRenderManager(textureRenderManager)
+    , mConnectedComponentGenericTextureInfos()
     , mGenericTextureRenderPolygonVertexBuffer()
     , mGenericTextureRenderPolygonVertexVBO()
     , mGenericTextureShaderProgram(0)
     , mGenericTextureShaderOrthoMatrixParameter(0)
     , mGenericTextureShaderAmbientLightIntensityParameter(0)
     // Connected components
+    , mConnectedComponentsMaxSizes()
     , mConnectedComponents()
     // Vectors
     , mVectorArrowPointPositionBuffer()
@@ -630,15 +639,15 @@ ShipRenderContext::ShipRenderContext(
     //
 
     UpdateOrthoMatrix(orthoMatrix);
-
     UpdateVisibleWorldCoordinates(
         visibleWorldHeight,
         visibleWorldWidth,
         canvasToVisibleWorldHeightRatio);
-
     UpdateAmbientLightIntensity(ambientLightIntensity);
-
     UpdateWaterLevelThreshold(waterLevelOfDetail);
+    UpdateShipRenderMode(shipRenderMode);
+    UpdateVectorFieldRenderMode(vectorFieldRenderMode);
+    UpdateShowStressedSprings(showStressedSprings);
 }
 
 ShipRenderContext::~ShipRenderContext()
@@ -730,7 +739,38 @@ void ShipRenderContext::UpdateWaterLevelThreshold(float waterLevelOfDetail)
     glUseProgram(0);
 }
 
+void ShipRenderContext::UpdateShipRenderMode(ShipRenderMode shipRenderMode)
+{
+    mShipRenderMode = shipRenderMode;
+}
+
+void ShipRenderContext::UpdateVectorFieldRenderMode(VectorFieldRenderMode vectorFieldRenderMode)
+{
+    mVectorFieldRenderMode = vectorFieldRenderMode;
+}
+
+void ShipRenderContext::UpdateShowStressedSprings(bool showStressedSprings)
+{
+    mShowStressedSprings = showStressedSprings;
+}
+
 //////////////////////////////////////////////////////////////////////////////////
+
+void ShipRenderContext::RenderStart(std::vector<std::size_t> const & connectedComponentsMaxSizes)
+{
+    // Store connected component max sizes
+    mConnectedComponentsMaxSizes = connectedComponentsMaxSizes;
+
+    //
+    // Reset generic textures 
+    //
+
+    mConnectedComponentGenericTextureInfos.clear();
+    mConnectedComponentGenericTextureInfos.resize(connectedComponentsMaxSizes.size());
+
+    mGenericTextureRenderPolygonVertexBuffer.clear();
+    mGenericTextureRenderPolygonVertexBuffer.reserve(4 * 200);
+}
 
 void ShipRenderContext::UploadPointImmutableGraphicalAttributes(
     size_t count,
@@ -789,25 +829,25 @@ void ShipRenderContext::UploadPoints(
     glBindBuffer(GL_ARRAY_BUFFER, 0u);
 }
 
-void ShipRenderContext::UploadConnectedComponentsStart(std::vector<std::size_t> const & connectedComponentsMaxSizes)
+void ShipRenderContext::UploadElementsStart()
 {
     GLuint elementVBO;
 
-    if (connectedComponentsMaxSizes.size() != mConnectedComponents.size())
+    if (mConnectedComponentsMaxSizes.size() != mConnectedComponents.size())
     {
         // A change in the number of connected components, nuke everything
         mConnectedComponents.clear();
-        mConnectedComponents.resize(connectedComponentsMaxSizes.size());
+        mConnectedComponents.resize(mConnectedComponentsMaxSizes.size());
     }
     
-    for (size_t c = 0; c < connectedComponentsMaxSizes.size(); ++c)
+    for (size_t c = 0; c < mConnectedComponentsMaxSizes.size(); ++c)
     {
         //
         // Prepare point elements
         //
 
         // Max # of points = number of points
-        size_t maxConnectedComponentPoints = connectedComponentsMaxSizes[c];
+        size_t maxConnectedComponentPoints = mConnectedComponentsMaxSizes[c];
         if (mConnectedComponents[c].pointElementMaxCount != maxConnectedComponentPoints)
         {
             // A change in the max size of this connected component
@@ -828,8 +868,7 @@ void ShipRenderContext::UploadConnectedComponentsStart(std::vector<std::size_t> 
         // Prepare spring elements
         //
 
-        // Max # of springs = number of points * 9 (8 neighbours plus one rope for endpoint points)
-        size_t maxConnectedComponentSprings = connectedComponentsMaxSizes[c] * 9;        
+        size_t maxConnectedComponentSprings = mConnectedComponentsMaxSizes[c] * GameParameters::MaxSpringsPerPoint;
         if (mConnectedComponents[c].springElementMaxCount != maxConnectedComponentSprings)
         {
             // A change in the max size of this connected component
@@ -872,8 +911,7 @@ void ShipRenderContext::UploadConnectedComponentsStart(std::vector<std::size_t> 
         // Prepare triangle elements
         //
 
-        // Max # of triangles = number of points * 8 (each of the 8 directions)
-        size_t maxConnectedComponentTriangles = connectedComponentsMaxSizes[c] * 8;
+        size_t maxConnectedComponentTriangles = mConnectedComponentsMaxSizes[c] * GameParameters::MaxTrianglesPerPoint;
         if (mConnectedComponents[c].triangleElementMaxCount != maxConnectedComponentTriangles)
         {
             // A change in the max size of this connected component
@@ -910,22 +948,11 @@ void ShipRenderContext::UploadConnectedComponentsStart(std::vector<std::size_t> 
         {
             glGenBuffers(1, &elementVBO);
             mConnectedComponents[c].stressedSpringElementVBO = elementVBO;
-        }
-        
-        //
-        // Prepare textures
-        //
-
-        mConnectedComponents[c].genericTextureInfos.clear();
-        mConnectedComponents[c].genericTextureInfos.reserve(10);
+        }        
     }
-
-    // Reset texture data
-    mGenericTextureRenderPolygonVertexBuffer.clear();
-    mGenericTextureRenderPolygonVertexBuffer.reserve(4 * 200);
 }
 
-void ShipRenderContext::UploadConnectedComponentsEnd()
+void ShipRenderContext::UploadElementsEnd()
 {
     //
     // Upload all elements, except for stressed springs
@@ -1035,10 +1062,7 @@ void ShipRenderContext::UploadVectors(
     glUseProgram(0);
 }
 
-void ShipRenderContext::Render(
-    ShipRenderMode shipRenderMode,
-    VectorFieldRenderMode vectorFieldRenderMode,
-    bool showStressedSprings)
+void ShipRenderContext::RenderEnd()
 {
     //
     // Upload Generic Textures data
@@ -1058,7 +1082,7 @@ void ShipRenderContext::Render(
         // Draw points
         //
 
-        if (shipRenderMode == ShipRenderMode::Points)
+        if (mShipRenderMode == ShipRenderMode::Points)
         {
             RenderPointElements(mConnectedComponents[c]);
         }
@@ -1073,13 +1097,13 @@ void ShipRenderContext::Render(
         // - RenderMode is texture (so to draw 1D chains), in which case we use texture iff it is present
         //
 
-        if (shipRenderMode == ShipRenderMode::Springs
-            || shipRenderMode == ShipRenderMode::Structure
-            || shipRenderMode == ShipRenderMode::Texture)
+        if (mShipRenderMode == ShipRenderMode::Springs
+            || mShipRenderMode == ShipRenderMode::Structure
+            || mShipRenderMode == ShipRenderMode::Texture)
         {
             RenderSpringElements(
                 mConnectedComponents[c],
-                shipRenderMode == ShipRenderMode::Texture);
+                mShipRenderMode == ShipRenderMode::Texture);
         }
 
 
@@ -1089,8 +1113,8 @@ void ShipRenderContext::Render(
         // - Texture (so rope endpoints are hidden behind texture, looks better)
         //
 
-        if (shipRenderMode == ShipRenderMode::Springs
-            || shipRenderMode == ShipRenderMode::Texture)
+        if (mShipRenderMode == ShipRenderMode::Springs
+            || mShipRenderMode == ShipRenderMode::Texture)
         {
             RenderRopeElements(mConnectedComponents[c]);
         }
@@ -1100,12 +1124,12 @@ void ShipRenderContext::Render(
         // Draw triangles
         //
 
-        if (shipRenderMode == ShipRenderMode::Structure
-            || shipRenderMode == ShipRenderMode::Texture)
+        if (mShipRenderMode == ShipRenderMode::Structure
+            || mShipRenderMode == ShipRenderMode::Texture)
         {
             RenderTriangleElements(
                 mConnectedComponents[c],
-                shipRenderMode == ShipRenderMode::Texture);
+                mShipRenderMode == ShipRenderMode::Texture);
         }
 
 
@@ -1113,7 +1137,7 @@ void ShipRenderContext::Render(
         // Draw ropes now if RenderMode is Structure (so rope endpoints on the structure are visible)
         //
 
-        if (shipRenderMode == ShipRenderMode::Structure)
+        if (mShipRenderMode == ShipRenderMode::Structure)
         {
             RenderRopeElements(mConnectedComponents[c]);
         }
@@ -1123,7 +1147,7 @@ void ShipRenderContext::Render(
         // Draw stressed springs
         //
 
-        if (showStressedSprings)
+        if (mShowStressedSprings)
         {
             RenderStressedSpringElements(mConnectedComponents[c]);
         }
@@ -1133,7 +1157,7 @@ void ShipRenderContext::Render(
         // Draw Generic textures
         //
 
-        RenderGenericTextures(mConnectedComponents[c]);
+        RenderGenericTextures(mConnectedComponentGenericTextureInfos[c]);
     }
 
 
@@ -1141,7 +1165,7 @@ void ShipRenderContext::Render(
     // Render vectors, if we're asked to
     //
 
-    if (vectorFieldRenderMode != VectorFieldRenderMode::None)
+    if (mVectorFieldRenderMode != VectorFieldRenderMode::None)
     {
         RenderVectors();
     }
@@ -1286,9 +1310,9 @@ void ShipRenderContext::RenderStressedSpringElements(ConnectedComponentData cons
     }
 }
 
-void ShipRenderContext::RenderGenericTextures(ConnectedComponentData const & connectedComponent)
+void ShipRenderContext::RenderGenericTextures(std::vector<GenericTextureInfo> const & connectedComponent)
 {
-    if (!connectedComponent.genericTextureInfos.empty())
+    if (!connectedComponent.empty())
     {
         // Use program
         glUseProgram(*mGenericTextureShaderProgram);
@@ -1297,17 +1321,19 @@ void ShipRenderContext::RenderGenericTextures(ConnectedComponentData const & con
         glBindBuffer(GL_ARRAY_BUFFER, *mGenericTextureRenderPolygonVertexVBO);
 
         // Draw all textures for this connected component
-        for (size_t b = 0; b < connectedComponent.genericTextureInfos.size(); ++b)
+        for (size_t c = 0; c < connectedComponent.size(); ++c)
         {
             // Bind texture
             glBindTexture(
                 GL_TEXTURE_2D,
-                mTextureRenderManager.GetOpenGLHandle(connectedComponent.genericTextureInfos[b].frameId));
+                mTextureRenderManager.GetOpenGLHandle(connectedComponent[c].frameId));
 
             // Draw polygon
             glDrawArrays(
                 GL_TRIANGLE_STRIP,
-                static_cast<GLint>(connectedComponent.genericTextureInfos[b].polygonIndex * sizeof(TextureRenderPolygonVertex)),
+                // TODOTEST
+                //static_cast<GLint>(connectedComponent[c].polygonIndex * sizeof(TextureRenderPolygonVertex)),
+                static_cast<GLint>(connectedComponent[c].polygonIndex),
                 4);
         }
 

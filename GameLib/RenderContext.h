@@ -171,6 +171,8 @@ public:
     void SetShipRenderMode(ShipRenderMode shipRenderMode) 
     {
         mShipRenderMode = shipRenderMode;
+
+        UpdateShipRenderMode();
     }
 
     VectorFieldRenderMode GetVectorFieldRenderMode() const
@@ -181,6 +183,8 @@ public:
     void SetVectorFieldRenderMode(VectorFieldRenderMode vectorFieldRenderMode)
     {
         mVectorFieldRenderMode = vectorFieldRenderMode;
+
+        UpdateVectorFieldRenderMode();
     }
 
     float GetVectorFieldLengthMultiplier() const
@@ -201,6 +205,8 @@ public:
     void SetShowStressedSprings(bool showStressedSprings)
     {
         mShowStressedSprings = showStressedSprings;
+
+        UpdateShowStressedSprings();
     }
 
 
@@ -370,11 +376,7 @@ public:
     {
         assert(shipId < mShips.size());
 
-        mShips[shipId]->RenderStart(
-            mShipRenderMode,
-            mVectorFieldRenderMode,
-            mShowStressedSprings,
-            connectedComponentsMaxSizes);
+        mShips[shipId]->RenderStart(connectedComponentsMaxSizes);
     }
 
     //
@@ -415,13 +417,11 @@ public:
     // Ship elements (points, springs, ropes, and triangles)
     //
 
-    inline void UploadShipConnectedComponentsStart(
-        int shipId, 
-        std::vector<std::size_t> const & connectedComponentsMaxSizes)
+    inline void UploadShipElementsStart(int shipId)
     {
         assert(shipId < mShips.size());
 
-        mShips[shipId]->UploadConnectedComponentsStart(connectedComponentsMaxSizes);
+        mShips[shipId]->UploadElementsStart();
     }
 
     inline void UploadShipElementPoint(
@@ -480,11 +480,11 @@ public:
             connectedComponentId);
     }
 
-    inline void UploadShipConnectedComponentsEnd(int shipId)
+    inline void UploadShipElementsEnd(int shipId)
     {
         assert(shipId < mShips.size());
 
-        mShips[shipId]->UploadConnectedComponentsEnd();
+        mShips[shipId]->UploadElementsEnd();
     }
 
     inline void UploadShipElementStressedSpringsStart(int shipId)
@@ -514,6 +514,10 @@ public:
 
         mShips[shipId]->UploadElementStressedSpringsEnd();
     }
+
+    //
+    // Generic textures
+    //
 
     inline void UploadShipGenericTextureRenderSpecification(
         int shipId,
@@ -569,14 +573,11 @@ public:
             color);
     }
 
-    void RenderShip(int shipId)
+    void RenderShipEnd(int shipId)
     {
         assert(shipId < mShips.size());
 
-        mShips[shipId]->Render(
-            mShipRenderMode,
-            mVectorFieldRenderMode,
-            mShowStressedSprings);
+        mShips[shipId]->RenderEnd();
     }
 
 
@@ -590,14 +591,13 @@ public:
 private:
     
     void UpdateOrthoMatrix();
-
     void UpdateVisibleWorldCoordinates();
-
     void UpdateAmbientLightIntensity();
-
     void UpdateSeaWaterTransparency();
-
     void UpdateWaterLevelOfDetail();
+    void UpdateShipRenderMode();
+    void UpdateVectorFieldRenderMode();
+    void UpdateShowStressedSprings();
 
 private:
 

@@ -285,6 +285,15 @@ void Ship::Render(
     RenderContext & renderContext) const
 {
     //
+    // Initialize render
+    //
+
+    renderContext.RenderShipStart(
+        mId,
+        mConnectedComponentSizes);
+
+
+    //
     // Upload points's mutable attributes
     //
 
@@ -305,9 +314,7 @@ void Ship::Render(
 
         if (mAreElementsDirty)
         {
-            renderContext.UploadShipConnectedComponentsStart(
-                mId,
-                mConnectedComponentSizes);
+            renderContext.UploadShipElementsStart(mId);
 
             //
             // Upload all the point elements
@@ -335,7 +342,7 @@ void Ship::Render(
                 renderContext,
                 mPoints);
 
-            renderContext.UploadShipConnectedComponentsEnd(mId);            
+            renderContext.UploadShipElementsEnd(mId);            
         }
 
 
@@ -383,12 +390,12 @@ void Ship::Render(
     mPoints.UploadVectors(
         mId,
         renderContext);
-
+    
     //
-    // Render ship
+    // Finalize render
     //
 
-    renderContext.RenderShip(mId);
+    renderContext.RenderShipEnd(mId);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////

@@ -76,45 +76,60 @@ Current perf
 				+ Passes reference to ship
 				+ TextureDatabase::GetFrameMetadata(TextureFrameId)
 					+ TextureDatabase builds map of references at cctor
-			= Remove hardcoded sizes and offsets and substitute with metadata lookups
+			+ Remove hardcoded sizes and offsets and substitute with metadata lookups
 				+ Cloud size
 				+ Water size
 				+ Land size
 				+ Pinned point size
 				+ Bombs sizes and offsets
-			- Test
-				- Double-check clouds's aspect ratio
-				- Anchor at all frames of timer bomb
-			- Commit
-			- ShipRenderContext: replace pinned points and bombs with Upload(Ship)TextureRenderSpecification:
-				- Bombs:
-					- Upload4Render() eventually invokes twice (lighted and unlighted)
-					- Frame indices are TextureFrameIndex instead of uint32
-				- Args:
-					- ShipID (used only by RenderContext to dispatch)
-					- ConnectedComponentID
-						- Until Z-rearc: ShipRenderContext has one TextureRenderSpecification per-connected component
+			+ Test
+				+ Double-check clouds's aspect ratio
+				+ Anchor at all frames of timer bomb
+			+ Commit
+			= ShipRenderContext: replace pinned points and bombs with Upload(Ship)TextureRenderSpecification:
+				+ PinnedPoints
+				+ Bombs:
+					+ Upload4Render() eventually invokes twice (lighted and unlighted)
+					+ Frame indices are TextureFrameIndex instead of uint32
+				+ Args:
+					+ ShipID (used only by RenderContext to dispatch)
+					+ ConnectedComponentID
+						+ Until Z-rearc: ShipRenderContext has one TextureRenderSpecification per-connected component
 						- After Z-rearc: put in buffer for shader to transform to Z
-					- Position (vec2f)
-						- Of anchor
-					- Orientation (std::optional<vec2f, vec2f>)
-					- TextureFrameId
-				- ShipRenderContext gets TexturePolygon from TextureRenderManager::CalculateTexturePolygon
-					- TexturePolygon is declared at RenderTexture.h, which includes other Texture render .h's
-					- For the time being it calculates also rotation
-				- Use a single shader for these "simple" textures
-					- Takes TexturePolygon, described to OpenGL
+					+ Position (vec2f)
+						+ Of anchor
+					+ Orientation (std::optional<vec2f, vec2f>)
+					+ TextureFrameId
+				+ ShipRenderContext gets TexturePolygon from TextureRenderManager::CalculateTexturePolygon
+					+ TexturePolygon is declared at RenderTexture.h, which includes other Texture render .h's
+					+ Contains 4X{pos,textureCoord, and AmbientLight adjustment}
+					+ For the time being it calculates also rotation
+					+ Nuke RotatedTextureRenderInfo.h
+				+ Use a single shader for these "simple" textures
+					+ Takes TexturePolygon, described to OpenGL
+				+ ShipRenderContext rearc:
+					+ Textures -> TBD Name="Generic"
+					+ Simplify alpha and beta with just beta, and beta is "ambientLightSensitivity"
+				= ShipRenderContext: Detach textures from ConnectedComponentData
+					- RenderContext::RenderShipStart(connected components)
+						- Reset texture data
+						- NOTHING ELSE - elements are reset only when needed
+					- RenderContext::RenderShipEnd()
+						- Upload stuff
+				- Double-check cloud rectangle calc'n against TexturePolygon
 				- Test
 					- Double-check clouds's aspect ratio
 					- Anchor at all frames of timer bomb
 					- Everything else
+				- Move TextureRenderManager::AddRenderPolygon method to .h, and call it EmitRenderPolygon
+				- Nuke old bombs/pinnedpoints at ShipRenderContext
 				- Commit
 		- Change the single shader to do *all the work* (for the "simple" textures, including rotation) for all ships and connected components
 			- Initially, runs on 1 texture at a time
 				- After atlas and Z, runs on all textures (via atlas' per-frame texture coordinates)
 			- First of all, test perf of rotation in shader with current implementation
 				- Does not need to wait for Z
-				- TexturePolygon is modified to also contain orientation and AmbientLight adjustment
+				- TexturePolygon is modified to also contain orientation
 					- TextureRenderManager::CalculateTexturePolygon is modified to just copy these extra values
 			- After Z: 
 				- Shader also takes ShipID, ConnectedComponentID for Z
@@ -292,20 +307,29 @@ Current perf
 		- Summary:
 			- Carve out room at tail of Points for ephemeral particles
 				- Two different segments for two different "classes"
+					- Rethink
 				- Each segment is a circular buffer of particles all with same lifetime
 					- New particles are just taken from older ones
 				- No need to mark as deleted to hide them
+			- Rendering: via:
+				- UploadEphemeralParticlePoints (e.g. for points)
+					- Just indexes
+					- Color/alpha portion of buffer has to be uploaded first, together with other
+					  properties which we already upload each time (position, connected component ID)
+				- UploadGenericTexture (e.g. for bubbles)
+					- Need to also support alphaTransparency
 			- Ephemeral particles are drawn with alpha going to transparent as lifetime increases
 				- Test first perf impact of using vec4f for point colors
-					- If sucks, need new buffer just for ephemeral particles' alpha
+					- If sucks, need new buffer just for ephemeral particles' alpha,
 				- In any case, ephemeral color buffer or ephemeral portion of entire points color buffer needs to
 				  be reloaded at each UploadEphemeralParticles()
-			- Story for texture coords needs to be bundled with smal rearc:
+					- See openGL functions to upload portion of buffer only
+			- TODO: RETHINK NOW THAT WE HAVE HAD REARC: Story for texture coords needs to be bundled with small rearc:
 				- Creation (and possibly deletion) of eph particles needs to be communicated
 				  to ShipRenderContext, which then inits texture coords in own buffer based off texture index and texture atlas
 				  - ShipRenderContext needs then to be always available to Ship
 			- Points::UpdateEphemeralParticles():
-				- Adds dAlpha to current alpha
+				- Adds dAlpha to current alpha, either to (portion of) color buffer or to (portion of) alpha
 				- Moves buffer head over expired particles
 					- Resets velocity and integration factor of expired particles to avoid drifting
 						- Rename Points::Pin/Unpin() to Freeze/Thaw()
@@ -318,7 +342,7 @@ Current perf
 				- None (set at non-ephemeral and at dead ephemerals)
 				- Debris
 				- Sparkle
-			- EphemeralLifetime (std::chrono::seconds)
+			- EphemeralLifetime (std::chrono::milliseconds)
 			- EphemeralXTODOX: union of structs
 				- SparkleXTODOX:
 					- TODO
