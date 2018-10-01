@@ -8,8 +8,11 @@
 #include "GameOpenGL.h"
 #include "ProgressCallback.h"
 #include "TextureDatabase.h"
+#include "TextureTypes.h"
+#include "Vectors.h"
 
 #include <cassert>
+#include <optional>
 #include <vector>
 
 class TextureRenderManager
@@ -23,6 +26,13 @@ public:
     void UploadMipmappedGroup(
         TextureGroup const & group,
         ProgressCallback const & progressCallback);
+
+    void AddRenderPolygon(
+        TextureFrameId const & textureFrameId,
+        vec2f const & position,
+        float scale,
+        std::optional<std::pair<vec2f, vec2f>> const & orientation,
+        std::vector<TextureRenderPolygonVertex> & renderPolygonVertexBuffer) const;
 
     inline TextureFrameMetadata const & GetFrameMetadata(TextureFrameId const & frameId) const
     {

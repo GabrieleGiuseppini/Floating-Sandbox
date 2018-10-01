@@ -8,9 +8,9 @@
 #include "GameOpenGL.h"
 #include "GameTypes.h"
 #include "ImageData.h"
-#include "RotatedTextureRenderInfo.h"
 #include "SysSpecifics.h"
 #include "TextureRenderManager.h"
+#include "TextureTypes.h"
 #include "Vectors.h"
 
 #include <array>
@@ -72,7 +72,7 @@ public:
     // Elements
     //
 
-    void UploadElementsStart(std::vector<std::size_t> const & connectedComponentsMaxSizes);
+    void UploadConnectedComponentsStart(std::vector<std::size_t> const & connectedComponentsMaxSizes);
 
     inline void UploadElementPoint(
         int pointIndex,
@@ -146,7 +146,45 @@ public:
         ++(mConnectedComponents[connectedComponentIndex].triangleElementCount);
     }
 
-    void UploadElementsEnd();
+    inline void UploadGenericTextureRenderSpecification(
+        ConnectedComponentId connectedComponentId,
+        TextureFrameId const & textureFrameId,
+        vec2f const & position)
+    {
+        UploadGenericTextureRenderSpecification(
+            connectedComponentId,
+            textureFrameId,
+            position,
+            1.0f,
+            std::nullopt);
+    }
+
+    inline void UploadGenericTextureRenderSpecification(
+        ConnectedComponentId connectedComponentId,
+        TextureFrameId const & textureFrameId,
+        vec2f const & position,
+        float scale,
+        std::optional<std::pair<vec2f, vec2f>> const & orientation)
+    {
+        size_t const connectedComponentIndex = connectedComponentId - 1;
+
+        assert(connectedComponentIndex < mConnectedComponents.size());
+
+        // Store <Index in TexturePolygonVertices, textureFrameId> in per-connected component data
+        mConnectedComponents[connectedComponentIndex].genericTextureInfos.emplace_back(
+            mGenericTextureRenderPolygonVertexBuffer.size(),
+            textureFrameId);
+
+        // Append vertices
+        mTextureRenderManager.AddRenderPolygon(
+            textureFrameId,
+            position,
+            scale,
+            orientation,
+            mGenericTextureRenderPolygonVertexBuffer);
+    }
+
+    void UploadConnectedComponentsEnd();
 
 
     void UploadElementStressedSpringsStart();
@@ -172,6 +210,9 @@ public:
     void UploadElementStressedSpringsEnd();
 
 
+    // TODOOLD
+
+    /*
     void UploadElementPinnedPointsStart(size_t count);
 
     inline void UploadElementPinnedPoint(
@@ -320,6 +361,8 @@ public:
     }
 
     void UploadElementBombsEnd();
+    */
+
 
     //
     // Vectors
@@ -331,32 +374,6 @@ public:
         vec2f const * restrict vector,
         float lengthAdjustment,
         vec3f const & color);
-
-    //
-    // Lamps
-    //
-
-    void UploadLampsStart(size_t connectedComponents);
-
-    void UploadLamp(
-        float x,
-        float y,
-        float lightIntensity,
-        ConnectedComponentId connectedComponentId)
-    {
-        size_t const connectedComponentIndex = connectedComponentId - 1;
-
-        assert(connectedComponentIndex < mLampBuffers.size());
-
-        LampElement & lampElement = mLampBuffers[connectedComponentIndex].emplace_back();
-
-        lampElement.x = x;
-        lampElement.y = y;
-        lampElement.lightIntensity = lightIntensity;
-    }
-
-    void UploadLampsEnd();
-
 
     /////////////////////////////////////////////////////////////
 
@@ -383,13 +400,15 @@ private:
 
     void RenderStressedSpringElements(ConnectedComponentData const & connectedComponent);
 
-    void RenderBombElements(ConnectedComponentData const & connectedComponent);
-
-    void RenderPinnedPointElements(ConnectedComponentData const & connectedComponent);
+    void RenderGenericTextures(ConnectedComponentData const & connectedComponent);
 
     void RenderVectors();
 
 private:
+
+    //
+    // Parameters
+    //
 
     float mCanvasToVisibleWorldHeightRatio;
     float mAmbientLightIntensity;
@@ -403,15 +422,19 @@ private:
     static constexpr GLuint PointWaterVertexAttribute = 2;
     static constexpr GLuint PointColorVertexAttribute = 3;
     static constexpr GLuint PointTextureCoordinatesVertexAttribute = 4;
-    static constexpr GLuint PinnedPointPosVertexAttribute = 5;
-    static constexpr GLuint PinnedPointTextureCoordinatesVertexAttribute = 6;
-    static constexpr GLuint BombPosVertexAttribute = 7;
-    static constexpr GLuint BombTextureCoordinatesVertexAttribute = 8;
-    static constexpr GLuint VectorArrowPosVertexAttribute = 9;
+    static constexpr GLuint GenericTexturePosVertexAttribute = 5;
+    static constexpr GLuint GenericTextureTextureCoordinatesVertexAttribute = 6;
+    static constexpr GLuint GenericTextureAmbientLightSensitivityVertexAttribute = 7;
+    static constexpr GLuint VectorArrowPosVertexAttribute = 8;
 
 private:
 
-    TextureRenderManager const & mTextureRenderManager;
+    //
+    // Textures
+    //
+
+    GameOpenGLTexture mElementShipTexture;
+    GameOpenGLTexture mElementStressedSpringTexture;
 
     //
     // Points
@@ -426,7 +449,7 @@ private:
     GameOpenGLVBO mPointElementTextureCoordinatesVBO;
     
     //
-    // Elements (points, springs, ropes, triangles, stressed springs, pinned points, bombs)
+    // Elements (points, springs, ropes, triangles, stressed springs)
     //
 
     GameOpenGLShaderProgram mElementColorShaderProgram;
@@ -439,21 +462,30 @@ private:
     GLint mElementRopeShaderAmbientLightIntensityParameter;
     GLint mElementRopeShaderWaterLevelThresholdParameter;
     
-    GameOpenGLShaderProgram mElementTextureShaderProgram;
-    GLint mElementTextureShaderOrthoMatrixParameter;
-    GLint mElementTextureShaderAmbientLightIntensityParameter;
-    GLint mElementTextureShaderWaterLevelThresholdParameter;
+    GameOpenGLShaderProgram mElementShipTextureShaderProgram;
+    GLint mElementShipTextureShaderOrthoMatrixParameter;
+    GLint mElementShipTextureShaderAmbientLightIntensityParameter;
+    GLint mElementShipTextureShaderWaterLevelThresholdParameter;
 
     GameOpenGLShaderProgram mElementStressedSpringShaderProgram;
     GLint mElementStressedSpringShaderOrthoMatrixParameter;
 
-    GameOpenGLShaderProgram mElementPinnedPointShaderProgram;
-    GLint mElementPinnedPointShaderOrthoMatrixParameter;
-    GLint mElementPinnedPointShaderAmbientLightIntensityParameter;
+    //
+    // Generic Textures
+    //
 
-    GameOpenGLShaderProgram mElementBombShaderProgram;
-    GLint mElementBombShaderOrthoMatrixParameter;
-    GLint mElementBombShaderAmbientLightIntensityParameter;
+    TextureRenderManager const & mTextureRenderManager;
+
+    std::vector<TextureRenderPolygonVertex> mGenericTextureRenderPolygonVertexBuffer;
+    GameOpenGLVBO mGenericTextureRenderPolygonVertexVBO;
+    GameOpenGLShaderProgram mGenericTextureShaderProgram;
+    GLint mGenericTextureShaderOrthoMatrixParameter;
+    GLint mGenericTextureShaderAmbientLightIntensityParameter;
+
+
+    //
+    // Connected component data
+    //
 
 #pragma pack(push)
     struct PointElement
@@ -495,74 +527,22 @@ private:
     };
 #pragma pack(pop)
 
-#pragma pack(push)
-    struct PinnedPointElement
+    struct GenericTextureInfo
     {
-        float xTopLeft;
-        float yTopLeft;
-        float textureXTopLeft;
-        float textureYTopLeft;
+        size_t polygonIndex;
+        TextureFrameId frameId;
 
-        float xBottomLeft;
-        float yBottomLeft;
-        float textureXBottomLeft;
-        float textureYBottomLeft;
-
-        float xTopRight;
-        float yTopRight;
-        float textureXTopRight;
-        float textureYTopRight;
-
-        float xBottomRight;
-        float yBottomRight;
-        float textureXBottomRight;
-        float textureYBottomRight;
-    };
-#pragma pack(pop)
-
-#pragma pack(push)
-    struct BombElement
-    {
-        float xTopLeft;
-        float yTopLeft;
-        float textureXTopLeft;
-        float textureYTopLeft;
-
-        float xBottomLeft;
-        float yBottomLeft;
-        float textureXBottomLeft;
-        float textureYBottomLeft;
-
-        float xTopRight;
-        float yTopRight;
-        float textureXTopRight;
-        float textureYTopRight;
-
-        float xBottomRight;
-        float yBottomRight;
-        float textureXBottomRight;
-        float textureYBottomRight;
-    };
-#pragma pack(pop)
-
-    struct BombElementInfo
-    {
-        BombType bombType;
-        std::optional<TextureFrameId> lightedFrameId;
-        std::optional<TextureFrameId> unlightedFrameId;
-
-        BombElementInfo(
-            BombType _bombType,
-            std::optional<TextureFrameId> _lightedFrameId,
-            std::optional<TextureFrameId> _unlightedFrameId)
-            : bombType(_bombType)
-            , lightedFrameId(_lightedFrameId)
-            , unlightedFrameId(_unlightedFrameId)
+        GenericTextureInfo(
+            size_t _polygonIndex,
+            TextureFrameId _frameId)
+            : polygonIndex(_polygonIndex)
+            , frameId(_frameId)
         {}
     };
 
+    
     //
-    // All the data that belongs to a single connected component.
+    // All the data that belongs to a single connected component
     //
 
     struct ConnectedComponentData
@@ -592,11 +572,7 @@ private:
         std::unique_ptr<StressedSpringElement[]> stressedSpringElementBuffer;
         GameOpenGLVBO stressedSpringElementVBO;
 
-        size_t pinnedPointElementOffset;
-        size_t pinnedPointElementCount;
-
-        size_t bombElementOffset;
-        std::vector<BombElementInfo> bombElementInfos;
+        std::vector<GenericTextureInfo> genericTextureInfos;
 
         ConnectedComponentData()
             : pointElementCount(0)
@@ -619,28 +595,12 @@ private:
             , stressedSpringElementMaxCount(0)
             , stressedSpringElementBuffer()
             , stressedSpringElementVBO()
-            , pinnedPointElementOffset(0)
-            , pinnedPointElementCount(0)
-            , bombElementOffset(0)
-            , bombElementInfos()
+            , genericTextureInfos()
         {}
     };
 
     std::vector<ConnectedComponentData> mConnectedComponents;
 
-    //
-    // Pinned point data, stored globally once across all connected components.
-    //
-
-    std::vector<PinnedPointElement> mPinnedPointElementBuffer;
-    GameOpenGLVBO mPinnedPointVBO;
-
-    //
-    // Bomb point data, stored globally once across all connected components.
-    //
-
-    std::vector<BombElement> mBombElementBuffer;
-    GameOpenGLVBO mBombVBO;
 
     //
     // Vectors
@@ -651,26 +611,4 @@ private:
     GameOpenGLShaderProgram mVectorArrowShaderProgram;
     GLint mVectorArrowShaderOrthoMatrixParameter;
     GLint mVectorArrowShaderColorParameter;
-
-    //
-    // Textures
-    //
-
-    GameOpenGLTexture mElementTexture;
-    GameOpenGLTexture mElementStressedSpringTexture;
-
-    //
-    // Lamps
-    //
-
-#pragma pack(push)
-    struct LampElement
-    {
-        float x;
-        float y;
-        float lightIntensity;
-    };
-#pragma pack(pop)
-
-    std::vector<std::vector<LampElement>> mLampBuffers;
 };

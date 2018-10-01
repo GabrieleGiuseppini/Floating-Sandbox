@@ -6,6 +6,7 @@
 #pragma once
 
 #include "Physics.h"
+#include "TextureTypes.h"
 
 #include <chrono>
 #include <cstdint>
@@ -115,7 +116,7 @@ private:
     GameWallClock::time_point mNextStateTransitionTimePoint;
 
     // The fuse flame frame index, which is calculated at state transitions
-    uint32_t mFuseFlameFrameIndex;
+    TextureFrameIndex mFuseFlameFrameIndex;
 
     // The counters for the various states; set to zero upon
     // entering the state for the first time. Fine to rollover!

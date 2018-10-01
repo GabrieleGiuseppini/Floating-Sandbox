@@ -14,7 +14,7 @@ void TextureRenderManager::UploadGroup(
     // Make sure we have room for this group
     if (mFrameData.size() < static_cast<size_t>(group.Group) + 1)
         mFrameData.resize(static_cast<size_t>(group.Group) + 1);
-    auto & frameDataGroup = mFrameData[static_cast<size_t>(group.Group)];
+    std::vector<FrameData> & frameDataGroup = mFrameData[static_cast<size_t>(group.Group)];
 
     float totalFramesCount = static_cast<float>(group.GetFrameCount());
     float currentFramesCount = 0;
@@ -68,7 +68,7 @@ void TextureRenderManager::UploadMipmappedGroup(
     // Make sure we have room for this group
     if (mFrameData.size() < static_cast<size_t>(group.Group) + 1)
         mFrameData.resize(static_cast<size_t>(group.Group) + 1);
-    auto & frameDataGroup = mFrameData[static_cast<size_t>(group.Group)];
+    std::vector<FrameData> & frameDataGroup = mFrameData[static_cast<size_t>(group.Group)];
 
     float totalFramesCount = static_cast<float>(group.GetFrameCount());
     float currentFramesCount = 0;
@@ -109,4 +109,78 @@ void TextureRenderManager::UploadMipmappedGroup(
             frameSpec.Metadata, 
             openGLHandle);
     }
+}
+
+void TextureRenderManager::AddRenderPolygon(
+    TextureFrameId const & textureFrameId,
+    vec2f const & position,
+    float scale,
+    std::optional<std::pair<vec2f, vec2f>> const & orientation,
+    std::vector<TextureRenderPolygonVertex> & renderPolygonVertexBuffer) const
+{
+    //
+    // Calculate rotation matrix, based off cosine of the angle between rotation offset and rotation base
+    //
+
+    // First columns
+    vec2f rotationMatrixX;
+    vec2f rotationMatrixY;
+
+    if (!!orientation)
+    {
+        float const alpha = orientation->first.angle(orientation->second);
+
+        float const cosAlpha = cos(alpha);
+        float const sinAlpha = sin(alpha);
+
+        rotationMatrixX = vec2f(cosAlpha, sinAlpha);
+        rotationMatrixY = vec2f(-sinAlpha, cosAlpha);
+    }
+    else
+    {
+        rotationMatrixX = vec2f(1.0f, 0.0f);
+        rotationMatrixY = vec2f(0.0f, 1.0f);
+    }
+
+
+    //
+    // Calculate rectangle vertices
+    //
+
+    TextureFrameMetadata const & frameMetadata = this->GetFrameMetadata(textureFrameId);
+
+    // Relative to position
+    float const relativeLeftX = -frameMetadata.AnchorWorldX * scale;
+    float const relativeRightX = (frameMetadata.WorldWidth - frameMetadata.AnchorWorldX) * scale;
+    float const relativeTopY = (frameMetadata.WorldHeight - frameMetadata.AnchorWorldY) * scale;
+    float const relativeBottomY = -frameMetadata.AnchorWorldY * scale;
+
+    vec2f const relativeTopLeft{ relativeLeftX, relativeTopY };
+    vec2f const relativeTopRight{ relativeRightX, relativeTopY };
+    vec2f const relativeBottomLeft{ relativeLeftX, relativeBottomY };
+    vec2f const relativeBottomRight{ relativeRightX, relativeBottomY };
+
+    //
+    // Create vertices
+    //
+
+    renderPolygonVertexBuffer.emplace_back(
+        vec2f(relativeTopLeft.dot(rotationMatrixX) + position.x, relativeTopLeft.dot(rotationMatrixY) + position.y),
+        vec2f(0.0f, 1.0f),
+        frameMetadata.HasOwnAmbientLight ? 0.0f : 1.0f);
+
+    renderPolygonVertexBuffer.emplace_back(
+        vec2f(relativeTopRight.dot(rotationMatrixX) + position.x, relativeTopRight.dot(rotationMatrixY) + position.y),
+        vec2f(1.0f, 1.0f),
+        frameMetadata.HasOwnAmbientLight ? 0.0f : 1.0f);
+
+    renderPolygonVertexBuffer.emplace_back(
+        vec2f(relativeBottomLeft.dot(rotationMatrixX) + position.x, relativeBottomLeft.dot(rotationMatrixY) + position.y),
+        vec2f(0.0f, 0.0f),
+        frameMetadata.HasOwnAmbientLight ? 0.0f : 1.0f);
+
+    renderPolygonVertexBuffer.emplace_back(
+        vec2f(relativeBottomRight.dot(rotationMatrixX) + position.x, relativeBottomRight.dot(rotationMatrixY) + position.y),
+        vec2f(1.0f, 0.0f),
+        frameMetadata.HasOwnAmbientLight ? 0.0f : 1.0f);
 }

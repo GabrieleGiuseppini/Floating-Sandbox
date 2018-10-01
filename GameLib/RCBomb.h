@@ -6,6 +6,7 @@
 #pragma once
 
 #include "Physics.h"
+#include "TextureTypes.h"
 
 #include <chrono>
 #include <cstdint>

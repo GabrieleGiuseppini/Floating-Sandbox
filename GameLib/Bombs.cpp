@@ -101,16 +101,10 @@ void Bombs::Upload(
     int shipId,
     RenderContext & renderContext) const
 {
-    renderContext.UploadShipElementBombsStart(
-        shipId,
-        mCurrentBombs.size());
-
     for (auto & bomb : mCurrentBombs)
     {
         bomb->Upload(shipId, renderContext);
     }
-
-    renderContext.UploadShipElementBombsEnd(shipId);
 }
 
 }

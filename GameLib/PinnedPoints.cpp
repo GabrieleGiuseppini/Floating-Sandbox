@@ -60,23 +60,17 @@ void PinnedPoints::Upload(
     int shipId,
     RenderContext & renderContext) const
 {
-    renderContext.UploadShipElementPinnedPointsStart(
-        shipId,
-        mCurrentPinnedPoints.size());
-
     for (auto pinnedPointIndex : mCurrentPinnedPoints)
     {
         assert(!mShipPoints.IsDeleted(pinnedPointIndex));
         assert(mShipPoints.IsPinned(pinnedPointIndex));
 
-        renderContext.UploadShipElementPinnedPoint(
+        renderContext.UploadShipGenericTextureRenderSpecification(
             shipId,
-            mShipPoints.GetPosition(pinnedPointIndex).x,
-            mShipPoints.GetPosition(pinnedPointIndex).y,
-            mShipPoints.GetConnectedComponentId(pinnedPointIndex));
+            mShipPoints.GetConnectedComponentId(pinnedPointIndex),
+            TextureFrameId(TextureGroupType::PinnedPoint, 0),
+            mShipPoints.GetPosition(pinnedPointIndex));
     }
-
-    renderContext.UploadShipElementPinnedPointsEnd(shipId);
 }
 
 }

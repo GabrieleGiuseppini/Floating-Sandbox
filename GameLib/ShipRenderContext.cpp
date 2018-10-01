@@ -18,10 +18,13 @@ ShipRenderContext::ShipRenderContext(
     float canvasToVisibleWorldHeightRatio,
     float ambientLightIntensity,
     float waterLevelOfDetail)
-    : mTextureRenderManager(textureRenderManager)
-    , mCanvasToVisibleWorldHeightRatio(0)
+    // Parameters
+    : mCanvasToVisibleWorldHeightRatio(0)
     , mAmbientLightIntensity(0.0f) // Set later
     , mWaterLevelThreshold(0.0f)
+    // Textures
+    , mElementShipTexture()
+    , mElementStressedSpringTexture()
     // Points
     , mPointCount(0u)
     , mPointPositionVBO()
@@ -36,30 +39,23 @@ ShipRenderContext::ShipRenderContext(
     , mElementRopeShaderProgram()
     , mElementRopeShaderOrthoMatrixParameter(0)
     , mElementRopeShaderAmbientLightIntensityParameter(0)
-    , mElementTextureShaderProgram()
-    , mElementTextureShaderOrthoMatrixParameter(0)
-    , mElementTextureShaderAmbientLightIntensityParameter(0)
+    , mElementShipTextureShaderProgram()
+    , mElementShipTextureShaderOrthoMatrixParameter(0)
+    , mElementShipTextureShaderAmbientLightIntensityParameter(0)
     , mElementStressedSpringShaderProgram(0)
     , mElementStressedSpringShaderOrthoMatrixParameter(0)
-    , mElementPinnedPointShaderProgram(0)
-    , mElementPinnedPointShaderOrthoMatrixParameter(0)
-    , mElementPinnedPointShaderAmbientLightIntensityParameter(0)
-    , mElementBombShaderProgram(0)
-    , mElementBombShaderOrthoMatrixParameter(0)
-    , mElementBombShaderAmbientLightIntensityParameter(0)
+    // Generic Textures
+    , mTextureRenderManager(textureRenderManager)
+    , mGenericTextureRenderPolygonVertexBuffer()
+    , mGenericTextureRenderPolygonVertexVBO()
+    , mGenericTextureShaderProgram(0)
+    , mGenericTextureShaderOrthoMatrixParameter(0)
+    , mGenericTextureShaderAmbientLightIntensityParameter(0)
+    // Connected components
     , mConnectedComponents()
-    , mPinnedPointElementBuffer()
-    , mPinnedPointVBO()
-    , mBombElementBuffer()
-    , mBombVBO()
     // Vectors
     , mVectorArrowPointPositionBuffer()
     , mVectorArrowPointPositionVBO()
-    // Textures
-    , mElementTexture()
-    , mElementStressedSpringTexture()
-    // Lamps
-    , mLampBuffers()
 {
     GLuint tmpGLuint;
     GLenum glError;
@@ -252,12 +248,12 @@ ShipRenderContext::ShipRenderContext(
 
 
     //
-    // Create texture elements program
+    // Create ship texture elements program
     //
 
-    mElementTextureShaderProgram = glCreateProgram();
+    mElementShipTextureShaderProgram = glCreateProgram();
 
-    char const * elementTextureVertexShaderSource = R"(
+    char const * elementShipTextureVertexShaderSource = R"(
 
         // Inputs
         attribute vec2 inputPos;        
@@ -283,9 +279,9 @@ ShipRenderContext::ShipRenderContext(
         }
     )";
 
-    GameOpenGL::CompileShader(elementTextureVertexShaderSource, GL_VERTEX_SHADER, mElementTextureShaderProgram);
+    GameOpenGL::CompileShader(elementShipTextureVertexShaderSource, GL_VERTEX_SHADER, mElementShipTextureShaderProgram);
 
-    char const * elementTextureFragmentShaderSource = R"(
+    char const * elementShipTextureFragmentShaderSource = R"(
 
         // Inputs from previous shader        
         varying float vertexLight;
@@ -321,21 +317,21 @@ ShipRenderContext::ShipRenderContext(
         } 
     )";
 
-    GameOpenGL::CompileShader(elementTextureFragmentShaderSource, GL_FRAGMENT_SHADER, mElementTextureShaderProgram);
+    GameOpenGL::CompileShader(elementShipTextureFragmentShaderSource, GL_FRAGMENT_SHADER, mElementShipTextureShaderProgram);
 
     // Bind attribute locations
-    glBindAttribLocation(*mElementTextureShaderProgram, PointPosVertexAttribute, "inputPos");
-    glBindAttribLocation(*mElementTextureShaderProgram, PointLightVertexAttribute, "inputLight");
-    glBindAttribLocation(*mElementTextureShaderProgram, PointWaterVertexAttribute, "inputWater");
-    glBindAttribLocation(*mElementTextureShaderProgram, PointTextureCoordinatesVertexAttribute, "inputTextureCoords");
+    glBindAttribLocation(*mElementShipTextureShaderProgram, PointPosVertexAttribute, "inputPos");
+    glBindAttribLocation(*mElementShipTextureShaderProgram, PointLightVertexAttribute, "inputLight");
+    glBindAttribLocation(*mElementShipTextureShaderProgram, PointWaterVertexAttribute, "inputWater");
+    glBindAttribLocation(*mElementShipTextureShaderProgram, PointTextureCoordinatesVertexAttribute, "inputTextureCoords");
 
     // Link
-    GameOpenGL::LinkShaderProgram(mElementTextureShaderProgram, "Ship Texture Elements");
+    GameOpenGL::LinkShaderProgram(mElementShipTextureShaderProgram, "Ship Texture Elements");
 
     // Get uniform locations
-    mElementTextureShaderOrthoMatrixParameter = GameOpenGL::GetParameterLocation(mElementTextureShaderProgram, "paramOrthoMatrix");
-    mElementTextureShaderAmbientLightIntensityParameter = GameOpenGL::GetParameterLocation(mElementTextureShaderProgram, "paramAmbientLightIntensity");
-    mElementTextureShaderWaterLevelThresholdParameter = GameOpenGL::GetParameterLocation(mElementTextureShaderProgram, "paramWaterLevelThreshold");
+    mElementShipTextureShaderOrthoMatrixParameter = GameOpenGL::GetParameterLocation(mElementShipTextureShaderProgram, "paramOrthoMatrix");
+    mElementShipTextureShaderAmbientLightIntensityParameter = GameOpenGL::GetParameterLocation(mElementShipTextureShaderProgram, "paramAmbientLightIntensity");
+    mElementShipTextureShaderWaterLevelThresholdParameter = GameOpenGL::GetParameterLocation(mElementShipTextureShaderProgram, "paramWaterLevelThreshold");
 
     //
     // Create stressed spring program
@@ -399,10 +395,10 @@ ShipRenderContext::ShipRenderContext(
     if (!!texture)
     {
         glGenTextures(1, &tmpGLuint);
-        mElementTexture = tmpGLuint;
+        mElementShipTexture = tmpGLuint;
 
         // Bind texture
-        glBindTexture(GL_TEXTURE_2D, *mElementTexture);
+        glBindTexture(GL_TEXTURE_2D, *mElementShipTexture);
         glError = glGetError();
         if (GL_NO_ERROR != glError)
         {
@@ -487,21 +483,21 @@ ShipRenderContext::ShipRenderContext(
 
 
     //
-    // Create pinned points program
+    // Generic Textures
     //
 
-    // Create program
+    mGenericTextureShaderProgram = glCreateProgram();
 
-    mElementPinnedPointShaderProgram = glCreateProgram();
-
-    char const * elementPinnedPointVertexShaderSource = R"(
-
+    char const * genericTextureVertexShaderSource = R"(
+        
         // Inputs
         attribute vec2 inputPos;
         attribute vec2 inputTextureCoords;
+        float inputAmbientLightSensitivity;
         
         // Outputs
         varying vec2 vertexTextureCoords;
+        varying float vertexAmbientLightSensitivity;
 
         // Params
         uniform mat4 paramOrthoMatrix;
@@ -509,16 +505,18 @@ ShipRenderContext::ShipRenderContext(
         void main()
         {
             vertexTextureCoords = inputTextureCoords; 
+            vertexAmbientLightSensitivity = inputAmbientLightSensitivity;
             gl_Position = paramOrthoMatrix * vec4(inputPos.xy, -1.0, 1.0);
         }
     )";
 
-    GameOpenGL::CompileShader(elementPinnedPointVertexShaderSource, GL_VERTEX_SHADER, mElementPinnedPointShaderProgram);
+    GameOpenGL::CompileShader(genericTextureVertexShaderSource, GL_VERTEX_SHADER, mGenericTextureShaderProgram);
 
-    char const * elementPinnedPointFragmentShaderSource = R"(
+    char const * genericTextureFragmentShaderSource = R"(
 
         // Inputs from previous shader
         varying vec2 vertexTextureCoords;
+        varying float vertexAmbientLightSensitivity;
 
         // The texture
         uniform sampler2D inputTexture;
@@ -529,125 +527,53 @@ ShipRenderContext::ShipRenderContext(
         void main()
         {
             vec4 textureColor = texture2D(inputTexture, vertexTextureCoords);
+
+            float ambientLightIntensity = 
+                (1.0 - vertexAmbientLightSensitivity)
+                + vertexAmbientLightSensitivity * paramAmbientLightIntensity;
+
             gl_FragColor = vec4(
-                textureColor.xyz * paramAmbientLightIntensity,
+                textureColor.xyz * ambientLightIntensity,
                 textureColor.w);
         } 
     )";
 
-    GameOpenGL::CompileShader(elementPinnedPointFragmentShaderSource, GL_FRAGMENT_SHADER, mElementPinnedPointShaderProgram);
+    GameOpenGL::CompileShader(genericTextureFragmentShaderSource, GL_FRAGMENT_SHADER, mGenericTextureShaderProgram);
 
     // Bind attribute locations
-    glBindAttribLocation(*mElementPinnedPointShaderProgram, PinnedPointPosVertexAttribute, "inputPos");
-    glBindAttribLocation(*mElementPinnedPointShaderProgram, PinnedPointTextureCoordinatesVertexAttribute, "inputTextureCoords");
+    glBindAttribLocation(*mGenericTextureShaderProgram, GenericTexturePosVertexAttribute, "inputPos");
+    glBindAttribLocation(*mGenericTextureShaderProgram, GenericTextureTextureCoordinatesVertexAttribute, "inputTextureCoords");
+    glBindAttribLocation(*mGenericTextureShaderProgram, GenericTextureAmbientLightSensitivityVertexAttribute, "inputAmbientLightSensitivity");
 
     // Link
-    GameOpenGL::LinkShaderProgram(mElementPinnedPointShaderProgram, "Pinned Point");
+    GameOpenGL::LinkShaderProgram(mGenericTextureShaderProgram, "Texture");
 
     // Get uniform locations
-    mElementPinnedPointShaderOrthoMatrixParameter = GameOpenGL::GetParameterLocation(mElementPinnedPointShaderProgram, "paramOrthoMatrix");
-    mElementPinnedPointShaderAmbientLightIntensityParameter = GameOpenGL::GetParameterLocation(mElementPinnedPointShaderProgram, "paramAmbientLightIntensity");
+    mGenericTextureShaderOrthoMatrixParameter = GameOpenGL::GetParameterLocation(mGenericTextureShaderProgram, "paramOrthoMatrix");
+    mGenericTextureShaderAmbientLightIntensityParameter = GameOpenGL::GetParameterLocation(mGenericTextureShaderProgram, "paramAmbientLightIntensity");
 
     // Create VBO
-    GLuint pinnedPointVBO;
-    glGenBuffers(1, &pinnedPointVBO);
-    mPinnedPointVBO = pinnedPointVBO;
+    GLuint genericTextureRenderPolygonVertexVBO;
+    glGenBuffers(1, &genericTextureRenderPolygonVertexVBO);
+    mGenericTextureRenderPolygonVertexVBO = genericTextureRenderPolygonVertexVBO;
 
     // Bind VBO
-    glBindBuffer(GL_ARRAY_BUFFER, *mPinnedPointVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, *mGenericTextureRenderPolygonVertexVBO);
 
     // Describe buffer
-    glVertexAttribPointer(PinnedPointPosVertexAttribute, 2, GL_FLOAT, GL_FALSE, (2 + 2) * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(PinnedPointPosVertexAttribute);
-    glVertexAttribPointer(PinnedPointTextureCoordinatesVertexAttribute, 2, GL_FLOAT, GL_FALSE, (2 + 2) * sizeof(float), (void*)(2 * sizeof(float)));
-    glEnableVertexAttribArray(PinnedPointTextureCoordinatesVertexAttribute);
+    glVertexAttribPointer(GenericTexturePosVertexAttribute, 2, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)0);
+    glEnableVertexAttribArray(GenericTexturePosVertexAttribute);
+    glVertexAttribPointer(GenericTextureTextureCoordinatesVertexAttribute, 2, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)(2 * sizeof(float)));
+    glEnableVertexAttribArray(GenericTextureTextureCoordinatesVertexAttribute);
+    glVertexAttribPointer(GenericTextureAmbientLightSensitivityVertexAttribute, 1, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)((2 + 2) * sizeof(float)));
+    glEnableVertexAttribArray(GenericTextureAmbientLightSensitivityVertexAttribute);
 
     // Unbind VBO
     glBindBuffer(GL_ARRAY_BUFFER, 0u);
 
 
     //
-    // Create bombs program
-    //
-
-    // Create program
-
-    mElementBombShaderProgram = glCreateProgram();
-
-    char const * elementBombVertexShaderSource = R"(
-
-        // Inputs
-        attribute vec2 inputPos;
-        attribute vec2 inputTextureCoords;
-        
-        // Outputs
-        varying vec2 vertexTextureCoords;
-
-        // Params
-        uniform mat4 paramOrthoMatrix;
-
-        void main()
-        {
-            vertexTextureCoords = inputTextureCoords; 
-            gl_Position = paramOrthoMatrix * vec4(inputPos.xy, -1.0, 1.0);
-        }
-    )";
-
-    GameOpenGL::CompileShader(elementBombVertexShaderSource, GL_VERTEX_SHADER, mElementBombShaderProgram);
-
-    char const * elementBombFragmentShaderSource = R"(
-
-        // Inputs from previous shader
-        varying vec2 vertexTextureCoords;
-
-        // The texture
-        uniform sampler2D inputTexture;
-
-        // Parameters        
-        uniform float paramAmbientLightIntensity;
-
-        void main()
-        {
-            vec4 textureColor = texture2D(inputTexture, vertexTextureCoords);
-            gl_FragColor = vec4(
-                textureColor.xyz * paramAmbientLightIntensity,
-                textureColor.w);
-        } 
-    )";
-
-    GameOpenGL::CompileShader(elementBombFragmentShaderSource, GL_FRAGMENT_SHADER, mElementBombShaderProgram);
-
-    // Bind attribute locations
-    glBindAttribLocation(*mElementBombShaderProgram, BombPosVertexAttribute, "inputPos");
-    glBindAttribLocation(*mElementBombShaderProgram, BombTextureCoordinatesVertexAttribute, "inputTextureCoords");
-
-    // Link
-    GameOpenGL::LinkShaderProgram(mElementBombShaderProgram, "Bomb");
-
-    // Get uniform locations
-    mElementBombShaderOrthoMatrixParameter = GameOpenGL::GetParameterLocation(mElementBombShaderProgram, "paramOrthoMatrix");
-    mElementBombShaderAmbientLightIntensityParameter = GameOpenGL::GetParameterLocation(mElementBombShaderProgram, "paramAmbientLightIntensity");
-
-    // Create VBO
-    GLuint bombVBO;
-    glGenBuffers(1, &bombVBO);
-    mBombVBO = bombVBO;
-
-    // Bind VBO
-    glBindBuffer(GL_ARRAY_BUFFER, *mBombVBO);
-
-    // Describe buffer
-    glVertexAttribPointer(BombPosVertexAttribute, 2, GL_FLOAT, GL_FALSE, (2 + 2) * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(BombPosVertexAttribute);
-    glVertexAttribPointer(BombTextureCoordinatesVertexAttribute, 2, GL_FLOAT, GL_FALSE, (2 + 2) * sizeof(float), (void*)(2 * sizeof(float)));
-    glEnableVertexAttribArray(BombTextureCoordinatesVertexAttribute);
-
-    // Unbind VBO
-    glBindBuffer(GL_ARRAY_BUFFER, 0u);
-
-
-    //
-    // Create vectors program
+    // Vectors
     //
 
     // Create program
@@ -711,6 +637,7 @@ ShipRenderContext::ShipRenderContext(
         canvasToVisibleWorldHeightRatio);
 
     UpdateAmbientLightIntensity(ambientLightIntensity);
+
     UpdateWaterLevelThreshold(waterLevelOfDetail);
 }
 
@@ -727,8 +654,8 @@ void ShipRenderContext::UpdateOrthoMatrix(float const(&orthoMatrix)[4][4])
     glUseProgram(*mElementColorShaderProgram);
     glUniformMatrix4fv(mElementColorShaderOrthoMatrixParameter, 1, GL_FALSE, &(orthoMatrix[0][0]));
 
-    glUseProgram(*mElementTextureShaderProgram);
-    glUniformMatrix4fv(mElementTextureShaderOrthoMatrixParameter, 1, GL_FALSE, &(orthoMatrix[0][0]));
+    glUseProgram(*mElementShipTextureShaderProgram);
+    glUniformMatrix4fv(mElementShipTextureShaderOrthoMatrixParameter, 1, GL_FALSE, &(orthoMatrix[0][0]));
 
     glUseProgram(*mElementColorShaderProgram);
     glUniformMatrix4fv(mElementColorShaderOrthoMatrixParameter, 1, GL_FALSE, &(orthoMatrix[0][0]));
@@ -739,11 +666,8 @@ void ShipRenderContext::UpdateOrthoMatrix(float const(&orthoMatrix)[4][4])
     glUseProgram(*mElementStressedSpringShaderProgram);
     glUniformMatrix4fv(mElementStressedSpringShaderOrthoMatrixParameter, 1, GL_FALSE, &(orthoMatrix[0][0]));
 
-    glUseProgram(*mElementBombShaderProgram);
-    glUniformMatrix4fv(mElementBombShaderOrthoMatrixParameter, 1, GL_FALSE, &(orthoMatrix[0][0]));
-
-    glUseProgram(*mElementPinnedPointShaderProgram);
-    glUniformMatrix4fv(mElementPinnedPointShaderOrthoMatrixParameter, 1, GL_FALSE, &(orthoMatrix[0][0]));
+    glUseProgram(*mGenericTextureShaderProgram);
+    glUniformMatrix4fv(mGenericTextureShaderOrthoMatrixParameter, 1, GL_FALSE, &(orthoMatrix[0][0]));
 
     glUseProgram(*mVectorArrowShaderProgram);
     glUniformMatrix4fv(mVectorArrowShaderOrthoMatrixParameter, 1, GL_FALSE, &(orthoMatrix[0][0]));
@@ -770,8 +694,8 @@ void ShipRenderContext::UpdateAmbientLightIntensity(float ambientLightIntensity)
     glUseProgram(*mElementColorShaderProgram);
     glUniform1f(mElementColorShaderAmbientLightIntensityParameter, ambientLightIntensity);
 
-    glUseProgram(*mElementTextureShaderProgram);
-    glUniform1f(mElementTextureShaderAmbientLightIntensityParameter, ambientLightIntensity);
+    glUseProgram(*mElementShipTextureShaderProgram);
+    glUniform1f(mElementShipTextureShaderAmbientLightIntensityParameter, ambientLightIntensity);
 
     glUseProgram(*mElementColorShaderProgram);
     glUniform1f(mElementColorShaderAmbientLightIntensityParameter, ambientLightIntensity);
@@ -779,8 +703,8 @@ void ShipRenderContext::UpdateAmbientLightIntensity(float ambientLightIntensity)
     glUseProgram(*mElementRopeShaderProgram);
     glUniform1f(mElementRopeShaderAmbientLightIntensityParameter, ambientLightIntensity);
 
-    glUseProgram(*mElementPinnedPointShaderProgram);
-    glUniform1f(mElementPinnedPointShaderAmbientLightIntensityParameter, ambientLightIntensity);
+    glUseProgram(*mGenericTextureShaderProgram);
+    glUniform1f(mGenericTextureShaderAmbientLightIntensityParameter, ambientLightIntensity);
 
     glUseProgram(0);
 }
@@ -800,8 +724,8 @@ void ShipRenderContext::UpdateWaterLevelThreshold(float waterLevelOfDetail)
     glUseProgram(*mElementRopeShaderProgram);
     glUniform1f(mElementRopeShaderWaterLevelThresholdParameter, mWaterLevelThreshold);
 
-    glUseProgram(*mElementTextureShaderProgram);
-    glUniform1f(mElementTextureShaderWaterLevelThresholdParameter, mWaterLevelThreshold);
+    glUseProgram(*mElementShipTextureShaderProgram);
+    glUniform1f(mElementShipTextureShaderWaterLevelThresholdParameter, mWaterLevelThreshold);
 
     glUseProgram(0);
 }
@@ -819,7 +743,7 @@ void ShipRenderContext::UploadPointImmutableGraphicalAttributes(
     glVertexAttribPointer(PointColorVertexAttribute, 3, GL_FLOAT, GL_FALSE, sizeof(vec3f), (void*)(0));
     glEnableVertexAttribArray(PointColorVertexAttribute);
 
-    if (!!mElementTexture)
+    if (!!mElementShipTexture)
     {
         // Upload texture coordinates
         glBindBuffer(GL_ARRAY_BUFFER, *mPointElementTextureCoordinatesVBO);
@@ -865,7 +789,7 @@ void ShipRenderContext::UploadPoints(
     glBindBuffer(GL_ARRAY_BUFFER, 0u);
 }
 
-void ShipRenderContext::UploadElementsStart(std::vector<std::size_t> const & connectedComponentsMaxSizes)
+void ShipRenderContext::UploadConnectedComponentsStart(std::vector<std::size_t> const & connectedComponentsMaxSizes)
 {
     GLuint elementVBO;
 
@@ -876,7 +800,7 @@ void ShipRenderContext::UploadElementsStart(std::vector<std::size_t> const & con
         mConnectedComponents.resize(connectedComponentsMaxSizes.size());
     }
     
-    for (size_t c = 0; c < mConnectedComponents.size(); ++c)
+    for (size_t c = 0; c < connectedComponentsMaxSizes.size(); ++c)
     {
         //
         // Prepare point elements
@@ -989,25 +913,22 @@ void ShipRenderContext::UploadElementsStart(std::vector<std::size_t> const & con
         }
         
         //
-        // Prepare pinned point elements
+        // Prepare textures
         //
 
-        mConnectedComponents[c].pinnedPointElementOffset = 0;
-        mConnectedComponents[c].pinnedPointElementCount = 0;
-
-        //
-        // Prepare bomb elements
-        //
-
-        mConnectedComponents[c].bombElementOffset = 0;
-        mConnectedComponents[c].bombElementInfos.clear();
+        mConnectedComponents[c].genericTextureInfos.clear();
+        mConnectedComponents[c].genericTextureInfos.reserve(10);
     }
+
+    // Reset texture data
+    mGenericTextureRenderPolygonVertexBuffer.clear();
+    mGenericTextureRenderPolygonVertexBuffer.reserve(4 * 200);
 }
 
-void ShipRenderContext::UploadElementsEnd()
+void ShipRenderContext::UploadConnectedComponentsEnd()
 {
     //
-    // Upload all elements, except for stressed springs, pinned points, and bombs
+    // Upload all elements, except for stressed springs
     //
 
     for (size_t c = 0; c < mConnectedComponents.size(); ++c)
@@ -1050,54 +971,6 @@ void ShipRenderContext::UploadElementStressedSpringsEnd()
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mConnectedComponents[c].stressedSpringElementVBO);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, mConnectedComponents[c].stressedSpringElementCount * sizeof(StressedSpringElement), mConnectedComponents[c].stressedSpringElementBuffer.get(), GL_DYNAMIC_DRAW);
     }
-}
-
-void ShipRenderContext::UploadElementPinnedPointsStart(size_t count)
-{
-    // Clear per-connected component metadata
-    for (auto c = 0; c < mConnectedComponents.size(); ++c)
-    {
-        mConnectedComponents[c].pinnedPointElementOffset = 0;
-        mConnectedComponents[c].pinnedPointElementCount = 0;
-    }
-
-    // Clear pinned point buffer
-    mPinnedPointElementBuffer.clear();
-    mPinnedPointElementBuffer.reserve(count);
-}
-
-void ShipRenderContext::UploadElementPinnedPointsEnd()
-{
-    //
-    // Upload pinned points
-    //
-
-    glBindBuffer(GL_ARRAY_BUFFER, *mPinnedPointVBO);
-    glBufferData(GL_ARRAY_BUFFER, mPinnedPointElementBuffer.size() * sizeof(PinnedPointElement), mPinnedPointElementBuffer.data(), GL_STATIC_DRAW);
-}
-
-void ShipRenderContext::UploadElementBombsStart(size_t count)
-{
-    // Clear per-connected component metadata
-    for (auto c = 0; c < mConnectedComponents.size(); ++c)
-    {
-        mConnectedComponents[c].bombElementOffset = 0;
-        mConnectedComponents[c].bombElementInfos.clear();
-    }
-
-    // Clear bomb buffer
-    mBombElementBuffer.clear();
-    mBombElementBuffer.reserve(count);
-}
-
-void ShipRenderContext::UploadElementBombsEnd()
-{
-    //
-    // Upload bombs
-    //
-
-    glBindBuffer(GL_ARRAY_BUFFER, *mBombVBO);
-    glBufferData(GL_ARRAY_BUFFER, mBombElementBuffer.size() * sizeof(BombElement), mBombElementBuffer.data(), GL_STATIC_DRAW);
 }
 
 void ShipRenderContext::UploadVectors(
@@ -1162,22 +1035,19 @@ void ShipRenderContext::UploadVectors(
     glUseProgram(0);
 }
 
-void ShipRenderContext::UploadLampsStart(size_t connectedComponents)
-{
-    mLampBuffers.clear();
-    mLampBuffers.resize(connectedComponents);
-}
-
-void ShipRenderContext::UploadLampsEnd()
-{
-    // Nop
-}
-
 void ShipRenderContext::Render(
     ShipRenderMode shipRenderMode,
     VectorFieldRenderMode vectorFieldRenderMode,
     bool showStressedSprings)
 {
+    //
+    // Upload Generic Textures data
+    //
+
+    glBindBuffer(GL_ARRAY_BUFFER, *mGenericTextureRenderPolygonVertexVBO);
+    glBufferData(GL_ARRAY_BUFFER, mGenericTextureRenderPolygonVertexBuffer.size() * sizeof(TextureRenderPolygonVertex), mGenericTextureRenderPolygonVertexBuffer.data(), GL_STATIC_DRAW);
+
+
     //
     // Process all connected components, from first to last, and draw all elements
     //
@@ -1260,17 +1130,10 @@ void ShipRenderContext::Render(
 
 
         //
-        // Draw bombs
+        // Draw Generic textures
         //
 
-        RenderBombElements(mConnectedComponents[c]);
-
-
-        //
-        // Draw pinned points
-        //
-
-        RenderPinnedPointElements(mConnectedComponents[c]);
+        RenderGenericTextures(mConnectedComponents[c]);
     }
 
 
@@ -1308,13 +1171,13 @@ void ShipRenderContext::RenderSpringElements(
     ConnectedComponentData const & connectedComponent,
     bool withTexture)
 {
-    if (withTexture && !!mElementTexture)
+    if (withTexture && !!mElementShipTexture)
     {
         // Use texture program
-        glUseProgram(*mElementTextureShaderProgram);
+        glUseProgram(*mElementShipTextureShaderProgram);
         
         // Bind texture
-        glBindTexture(GL_TEXTURE_2D, *mElementTexture);
+        glBindTexture(GL_TEXTURE_2D, *mElementShipTexture);
     }
     else
     {
@@ -1332,7 +1195,7 @@ void ShipRenderContext::RenderSpringElements(
     glDrawElements(GL_LINES, static_cast<GLsizei>(2 * connectedComponent.springElementCount), GL_UNSIGNED_INT, 0);
 
     // Unbind texture (if any)
-    if (withTexture && !!mElementTexture)
+    if (withTexture && !!mElementShipTexture)
     {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
@@ -1343,33 +1206,36 @@ void ShipRenderContext::RenderSpringElements(
 
 void ShipRenderContext::RenderRopeElements(ConnectedComponentData const & connectedComponent)
 {
-    // Use rope program
-    glUseProgram(*mElementRopeShaderProgram);
+    if (connectedComponent.ropeElementCount > 0)
+    {
+        // Use rope program
+        glUseProgram(*mElementRopeShaderProgram);
 
-    // Set line size
-    glLineWidth(0.1f * 2.0f * mCanvasToVisibleWorldHeightRatio);
+        // Set line size
+        glLineWidth(0.1f * 2.0f * mCanvasToVisibleWorldHeightRatio);
 
-    // Bind VBO
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *connectedComponent.ropeElementVBO);
+        // Bind VBO
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *connectedComponent.ropeElementVBO);
 
-    // Draw
-    glDrawElements(GL_LINES, static_cast<GLsizei>(2 * connectedComponent.ropeElementCount), GL_UNSIGNED_INT, 0);
+        // Draw
+        glDrawElements(GL_LINES, static_cast<GLsizei>(2 * connectedComponent.ropeElementCount), GL_UNSIGNED_INT, 0);
 
-    // Stop using program
-    glUseProgram(0);
+        // Stop using program
+        glUseProgram(0);
+    }
 }
 
 void ShipRenderContext::RenderTriangleElements(
     ConnectedComponentData const & connectedComponent,
     bool withTexture)
 {
-    if (withTexture && !!mElementTexture)
+    if (withTexture && !!mElementShipTexture)
     {
         // Use texture program
-        glUseProgram(*mElementTextureShaderProgram);
+        glUseProgram(*mElementShipTextureShaderProgram);
 
         // Bind texture
-        glBindTexture(GL_TEXTURE_2D, *mElementTexture);
+        glBindTexture(GL_TEXTURE_2D, *mElementShipTexture);
     }
     else
     {
@@ -1384,7 +1250,7 @@ void ShipRenderContext::RenderTriangleElements(
     glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(3 * connectedComponent.triangleElementCount), GL_UNSIGNED_INT, 0);
 
     // Unbind texture (if any)
-    if (withTexture && !!mElementTexture)
+    if (withTexture && !!mElementShipTexture)
     {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
@@ -1395,107 +1261,62 @@ void ShipRenderContext::RenderTriangleElements(
 
 void ShipRenderContext::RenderStressedSpringElements(ConnectedComponentData const & connectedComponent)
 {
-    // Use program
-    glUseProgram(*mElementStressedSpringShaderProgram);
+    if (connectedComponent.stressedSpringElementCount > 0)
+    {
+        // Use program
+        glUseProgram(*mElementStressedSpringShaderProgram);
 
-    // Bind texture
-    glBindTexture(GL_TEXTURE_2D, *mElementStressedSpringTexture);
+        // Bind texture
+        glBindTexture(GL_TEXTURE_2D, *mElementStressedSpringTexture);
 
-    // Bind VBO
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *connectedComponent.stressedSpringElementVBO);
+        // Bind VBO
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *connectedComponent.stressedSpringElementVBO);
 
-    // Set line size
-    glLineWidth(0.1f * 2.0f * mCanvasToVisibleWorldHeightRatio);
+        // Set line size
+        glLineWidth(0.1f * 2.0f * mCanvasToVisibleWorldHeightRatio);
 
-    // Draw
-    glDrawElements(GL_LINES, static_cast<GLsizei>(2 * connectedComponent.stressedSpringElementCount), GL_UNSIGNED_INT, 0);
+        // Draw
+        glDrawElements(GL_LINES, static_cast<GLsizei>(2 * connectedComponent.stressedSpringElementCount), GL_UNSIGNED_INT, 0);
 
-    // Unbind texture
-    glBindTexture(GL_TEXTURE_2D, 0);
+        // Unbind texture
+        glBindTexture(GL_TEXTURE_2D, 0);
 
-    // Stop using program
-    glUseProgram(0);
+        // Stop using program
+        glUseProgram(0);
+    }
 }
 
-void ShipRenderContext::RenderBombElements(ConnectedComponentData const & connectedComponent)
+void ShipRenderContext::RenderGenericTextures(ConnectedComponentData const & connectedComponent)
 {
-    // Use program
-    glUseProgram(*mElementBombShaderProgram);
-
-    // Bind VBO
-    glBindBuffer(GL_ARRAY_BUFFER, *mBombVBO);
-
-    // Draw all bombs for this connected component
-    for (size_t b = 0; b < connectedComponent.bombElementInfos.size(); ++b)
+    if (!connectedComponent.genericTextureInfos.empty())
     {
-        if (!!connectedComponent.bombElementInfos[b].lightedFrameId)
+        // Use program
+        glUseProgram(*mGenericTextureShaderProgram);
+
+        // Bind VBO
+        glBindBuffer(GL_ARRAY_BUFFER, *mGenericTextureRenderPolygonVertexVBO);
+
+        // Draw all textures for this connected component
+        for (size_t b = 0; b < connectedComponent.genericTextureInfos.size(); ++b)
         {
-            //
-            // Lighted element
-            //
-
-            // Set light parameter
-            glUniform1f(mElementBombShaderAmbientLightIntensityParameter, mAmbientLightIntensity);
-
             // Bind texture
             glBindTexture(
                 GL_TEXTURE_2D,
-                mTextureRenderManager.GetOpenGLHandle(*connectedComponent.bombElementInfos[b].lightedFrameId));
+                mTextureRenderManager.GetOpenGLHandle(connectedComponent.genericTextureInfos[b].frameId));
 
-            // Draw
-            glDrawArrays(GL_TRIANGLE_STRIP, static_cast<GLint>(4 * (connectedComponent.bombElementOffset + b)), 4);
-        }
-
-        if (!!connectedComponent.bombElementInfos[b].unlightedFrameId)
-        {
-            //
-            // Unlighted element
-            //
-
-            // Set light parameter
-            glUniform1f(mElementBombShaderAmbientLightIntensityParameter, 1.0f);
-
-            // Bind texture
-            glBindTexture(
-                GL_TEXTURE_2D,
-                mTextureRenderManager.GetOpenGLHandle(*connectedComponent.bombElementInfos[b].unlightedFrameId));
-
-            // Draw
-            glDrawArrays(GL_TRIANGLE_STRIP, static_cast<GLint>(4 * (connectedComponent.bombElementOffset + b)), 4);
+            // Draw polygon
+            glDrawArrays(
+                GL_TRIANGLE_STRIP,
+                static_cast<GLint>(connectedComponent.genericTextureInfos[b].polygonIndex * sizeof(TextureRenderPolygonVertex)),
+                4);
         }
 
         // Unbind texture
         glBindTexture(GL_TEXTURE_2D, 0);
+
+        // Stop using program
+        glUseProgram(0);
     }
-
-    // Stop using program
-    glUseProgram(0);
-}
-
-void ShipRenderContext::RenderPinnedPointElements(ConnectedComponentData const & connectedComponent)
-{
-    // Use program
-    glUseProgram(*mElementPinnedPointShaderProgram);
-
-    // Bind texture
-    glBindTexture(
-        GL_TEXTURE_2D, 
-        mTextureRenderManager.GetOpenGLHandle(TextureGroupType::PinnedPoint, 0));
-
-    // Bind VBO
-    glBindBuffer(GL_ARRAY_BUFFER, *mPinnedPointVBO);
-
-    // Draw
-    for (size_t p = 0; p < connectedComponent.pinnedPointElementCount; ++p)
-    {
-        glDrawArrays(GL_TRIANGLE_STRIP, static_cast<GLint>(4 * (connectedComponent.pinnedPointElementOffset + p)), 4);
-    }
-
-    // Unbind texture
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    // Stop using program
-    glUseProgram(0);
 }
 
 void ShipRenderContext::RenderVectors()

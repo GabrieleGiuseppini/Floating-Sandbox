@@ -10,10 +10,10 @@
 #include "ImageData.h"
 #include "ProgressCallback.h"
 #include "ResourceLoader.h"
-#include "RotatedTextureRenderInfo.h"
 #include "ShipRenderContext.h"
 #include "SysSpecifics.h"
 #include "TextureRenderManager.h"
+#include "TextureTypes.h"
 #include "Vectors.h"
 
 #include <array>
@@ -364,6 +364,19 @@ public:
     // Ships
     /////////////////////////////////////////////////////////////////////////
 
+    void RenderShipStart(
+        int shipId,
+        std::vector<std::size_t> const & connectedComponentsMaxSizes)
+    {
+        assert(shipId < mShips.size());
+
+        mShips[shipId]->RenderStart(
+            mShipRenderMode,
+            mVectorFieldRenderMode,
+            mShowStressedSprings,
+            connectedComponentsMaxSizes);
+    }
+
     //
     // Ship Points
     //
@@ -402,13 +415,13 @@ public:
     // Ship elements (points, springs, ropes, and triangles)
     //
 
-    inline void UploadShipElementsStart(
+    inline void UploadShipConnectedComponentsStart(
         int shipId, 
         std::vector<std::size_t> const & connectedComponentsMaxSizes)
     {
         assert(shipId < mShips.size());
 
-        mShips[shipId]->UploadElementsStart(connectedComponentsMaxSizes);
+        mShips[shipId]->UploadConnectedComponentsStart(connectedComponentsMaxSizes);
     }
 
     inline void UploadShipElementPoint(
@@ -467,11 +480,11 @@ public:
             connectedComponentId);
     }
 
-    inline void UploadShipElementsEnd(int shipId)
+    inline void UploadShipConnectedComponentsEnd(int shipId)
     {
         assert(shipId < mShips.size());
 
-        mShips[shipId]->UploadElementsEnd();
+        mShips[shipId]->UploadConnectedComponentsEnd();
     }
 
     inline void UploadShipElementStressedSpringsStart(int shipId)
@@ -502,68 +515,36 @@ public:
         mShips[shipId]->UploadElementStressedSpringsEnd();
     }
 
-    inline void UploadShipElementPinnedPointsStart(
+    inline void UploadShipGenericTextureRenderSpecification(
         int shipId,
-        size_t count)
+        ConnectedComponentId connectedComponentId,
+        TextureFrameId const & textureFrameId,
+        vec2f const & position)
     {
         assert(shipId < mShips.size());
 
-        mShips[shipId]->UploadElementPinnedPointsStart(count);
+        mShips[shipId]->UploadGenericTextureRenderSpecification(
+            connectedComponentId,
+            textureFrameId,
+            position);
     }
 
-    inline void UploadShipElementPinnedPoint(
+    inline void UploadShipGenericTextureRenderSpecification(
         int shipId,
-        float x,
-        float y,
-        ConnectedComponentId connectedComponentId)
+        ConnectedComponentId connectedComponentId,
+        TextureFrameId const & textureFrameId,
+        vec2f const & position,
+        float scale,
+        std::optional<std::pair<vec2f, vec2f>> const & orientation)
     {
         assert(shipId < mShips.size());
 
-        mShips[shipId]->UploadElementPinnedPoint(
-            x,
-            y,
-            connectedComponentId);
-    }
-
-    inline void UploadShipElementPinnedPointsEnd(int shipId)
-    {
-        assert(shipId < mShips.size());
-
-        mShips[shipId]->UploadElementPinnedPointsEnd();
-    }
-
-    inline void UploadShipElementBombsStart(
-        int shipId,
-        size_t count)
-    {
-        assert(shipId < mShips.size());
-
-        mShips[shipId]->UploadElementBombsStart(count);
-    }
-
-    inline void UploadShipElementBomb(
-        int shipId,
-        BombType bombType,
-        RotatedTextureRenderInfo const & renderInfo,
-        std::optional<TextureFrameId> lightedFrameId,
-        std::optional<TextureFrameId> unlightedFrameId,
-        ConnectedComponentId connectedComponentId)
-    {
-        assert(shipId < mShips.size());
-
-        mShips[shipId]->UploadElementBomb(
-            bombType,
-            renderInfo,
-            lightedFrameId,
-            unlightedFrameId,
-            connectedComponentId);
-    }
-
-    inline void UploadShipElementBombsEnd(int shipId)
-    {
-        assert(shipId < mShips.size());
-
-        mShips[shipId]->UploadElementBombsEnd();
+        mShips[shipId]->UploadGenericTextureRenderSpecification(
+            connectedComponentId,
+            textureFrameId,
+            position,
+            scale,
+            orientation);
     }
 
     //
@@ -586,42 +567,6 @@ public:
             vector,
             lengthAdjustment * mVectorFieldLengthMultiplier,
             color);
-    }
-
-    //
-    // Lamps
-    //
-
-    void UploadLampsStart(
-        int shipId,
-        size_t connectedComponents)
-    {
-        assert(shipId < mShips.size());
-
-        mShips[shipId]->UploadLampsStart(connectedComponents);
-    }
-
-    void UploadLamp(
-        int shipId,
-        float x,
-        float y,
-        float lightIntensity,
-        ConnectedComponentId connectedComponentId)
-    {
-        assert(shipId < mShips.size());
-
-        mShips[shipId]->UploadLamp(
-            x,
-            y,
-            lightIntensity,
-            connectedComponentId);
-    }
-
-    void UploadLampsEnd(int shipId)
-    {
-        assert(shipId < mShips.size());
-
-        mShips[shipId]->UploadLampsEnd();
     }
 
     void RenderShip(int shipId)

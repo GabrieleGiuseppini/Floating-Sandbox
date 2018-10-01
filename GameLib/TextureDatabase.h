@@ -11,53 +11,13 @@
 
 #include "ImageSize.h"
 #include "ProgressCallback.h"
+#include "TextureTypes.h"
 
 #include <cassert>
 #include <cstdint>
 #include <filesystem>
 #include <memory>
 #include <vector>
-
-using TextureFrameIndex = std::uint16_t;
-
-enum class TextureGroupType : uint16_t
-{
-    Cloud = 0,
-    Land = 1,
-    PinnedPoint = 2,
-    RcBomb = 3,
-    RcBombExplosion = 4,
-    RcBombPing = 5,
-    TimerBomb = 6,
-    TimerBombDefuse = 7,
-    TimerBombExplosion = 8,
-    TimerBombFuse = 9,
-    Water = 10,
-
-    _Count = 11
-};
-
-struct TextureFrameId
-{
-    TextureGroupType Group;
-    TextureFrameIndex FrameIndex;
-
-    TextureFrameId(
-        TextureGroupType group,
-        TextureFrameIndex frameIndex)
-        : Group(group)
-        , FrameIndex(frameIndex)
-    {}
-
-
-    TextureFrameId & operator=(TextureFrameId const & other) = default;
-
-    inline bool operator<(TextureFrameId const & other) const
-    {
-        return this->Group < other.Group
-            || (this->Group == other.Group && this->FrameIndex < other.FrameIndex);
-    }
-};
 
 struct TextureFrameMetadata
 {

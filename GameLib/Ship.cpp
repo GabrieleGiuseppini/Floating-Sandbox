@@ -305,7 +305,7 @@ void Ship::Render(
 
         if (mAreElementsDirty)
         {
-            renderContext.UploadShipElementsStart(
+            renderContext.UploadShipConnectedComponentsStart(
                 mId,
                 mConnectedComponentSizes);
 
@@ -335,7 +335,7 @@ void Ship::Render(
                 renderContext,
                 mPoints);
 
-            renderContext.UploadShipElementsEnd(mId);            
+            renderContext.UploadShipConnectedComponentsEnd(mId);            
         }
 
 

@@ -38,8 +38,6 @@ set  (GAME_SOURCES
 	RenderContext.h	
 	ResourceLoader.cpp
 	ResourceLoader.h
-	RotatedRectangle.h
-	RotatedTextureRenderInfo.h
 	RunningAverage.h
 	ShipBuilder.cpp
 	ShipBuilder.h
@@ -53,6 +51,7 @@ set  (GAME_SOURCES
 	TextureDatabase.h
 	TextureRenderManager.cpp
 	TextureRenderManager.h
+	TextureTypes.h
 	TupleKeys.h
 	Utils.cpp
 	Utils.h	

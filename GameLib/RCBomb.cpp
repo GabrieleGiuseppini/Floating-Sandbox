@@ -145,51 +145,55 @@ void RCBomb::Upload(
     {
         case State::IdlePingOff:
         {
-            renderContext.UploadShipElementBomb(
+            renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
-                BombType::RCBomb,
-                RotatedTextureRenderInfo(
-                    GetPosition(),
-                    1.0f,
-                    mRotationBaseAxis,
-                    GetRotationOffsetAxis()),
+                GetConnectedComponentId(),
                 TextureFrameId(TextureGroupType::RcBomb, 0),
-                std::nullopt,
-                GetConnectedComponentId());
+                GetPosition(),
+                1.0,
+                std::make_pair(mRotationBaseAxis, GetRotationOffsetAxis()));
 
             break;
         }
 
         case State::IdlePingOn:
         {
-            renderContext.UploadShipElementBomb(
+            renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
-                BombType::RCBomb,
-                RotatedTextureRenderInfo(
-                    GetPosition(),
-                    1.0f,
-                    mRotationBaseAxis,
-                    GetRotationOffsetAxis()),
+                GetConnectedComponentId(),
                 TextureFrameId(TextureGroupType::RcBomb, 0),
+                GetPosition(),
+                1.0,
+                std::make_pair(mRotationBaseAxis, GetRotationOffsetAxis()));
+
+            renderContext.UploadShipGenericTextureRenderSpecification(
+                shipId,
+                GetConnectedComponentId(),
                 TextureFrameId(TextureGroupType::RcBombPing, (mPingOnStepCounter - 1) % PingFramesCount),
-                GetConnectedComponentId());
+                GetPosition(),
+                1.0,
+                std::make_pair(mRotationBaseAxis, GetRotationOffsetAxis()));
 
             break;
         }
 
         case State::DetonationLeadIn:
         {
-            renderContext.UploadShipElementBomb(
+            renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
-                BombType::RCBomb,
-                RotatedTextureRenderInfo(
-                    GetPosition(),
-                    1.0f,
-                    mRotationBaseAxis,
-                    GetRotationOffsetAxis()),
+                GetConnectedComponentId(),
                 TextureFrameId(TextureGroupType::RcBomb, 0),
+                GetPosition(),
+                1.0,
+                std::make_pair(mRotationBaseAxis, GetRotationOffsetAxis()));
+
+            renderContext.UploadShipGenericTextureRenderSpecification(
+                shipId,
+                GetConnectedComponentId(),
                 TextureFrameId(TextureGroupType::RcBombPing, (mPingOnStepCounter - 1) % PingFramesCount),
-                GetConnectedComponentId());
+                GetPosition(),
+                1.0,
+                std::make_pair(mRotationBaseAxis, GetRotationOffsetAxis()));
 
             break;
         }
@@ -198,18 +202,14 @@ void RCBomb::Upload(
         {
             assert(mExplodingStepCounter >= 1);
             assert(mExplodingStepCounter <= ExplosionStepsCount);
-            
-            renderContext.UploadShipElementBomb(
+
+            renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
-                BombType::RCBomb,
-                RotatedTextureRenderInfo(                    
-                    GetPosition(),
-                    1.0f + static_cast<float>(mExplodingStepCounter) / static_cast<float>(ExplosionStepsCount),
-                    mRotationBaseAxis,
-                    GetRotationOffsetAxis()),
-                std::nullopt,
+                GetConnectedComponentId(),
                 TextureFrameId(TextureGroupType::RcBombExplosion, mExplodingStepCounter - 1),
-                GetConnectedComponentId());
+                GetPosition(),
+                1.0f + static_cast<float>(mExplodingStepCounter) / static_cast<float>(ExplosionStepsCount),
+                std::make_pair(mRotationBaseAxis, GetRotationOffsetAxis()));
 
             break;
         }
