@@ -277,31 +277,30 @@ public:
             TextureGroupType::Cloud,
             static_cast<TextureFrameIndex>(mCloudBufferSize % mCloudTextureCount));
 
-        // TODOHERE: double-check
         float leftX = mappedX - scale * textureMetadata.AnchorWorldX;
-        float rightX = mappedX + scale * (textureMetadata.WorldWidth - textureMetadata.AnchorWorldX);
-        float topY = mappedY - scale * textureMetadata.AnchorWorldY;
-        float bottomY = mappedY + scale * (textureMetadata.WorldHeight - textureMetadata.AnchorWorldY);
+        float rightX = mappedX + scale * (textureMetadata.WorldWidth - textureMetadata.AnchorWorldX);        
+        float topY = mappedY + scale * (textureMetadata.WorldHeight - textureMetadata.AnchorWorldY);
+        float bottomY = mappedY - scale * textureMetadata.AnchorWorldY;
         
         cloudElement->ndcXTopLeft = leftX;
         cloudElement->ndcYTopLeft = topY;
         cloudElement->ndcTextureXTopLeft = 0.0f;
-        cloudElement->ndcTextureYTopLeft = 0.0f;
+        cloudElement->ndcTextureYTopLeft = 1.0f;
 
         cloudElement->ndcXBottomLeft = leftX;
         cloudElement->ndcYBottomLeft = bottomY;
         cloudElement->ndcTextureXBottomLeft = 0.0f;
-        cloudElement->ndcTextureYBottomLeft = 1.0f;
+        cloudElement->ndcTextureYBottomLeft = 0.0f;
 
         cloudElement->ndcXTopRight = rightX;
         cloudElement->ndcYTopRight = topY;
         cloudElement->ndcTextureXTopRight = 1.0f;
-        cloudElement->ndcTextureYTopRight = 0.0f;
+        cloudElement->ndcTextureYTopRight = 1.0f;
 
         cloudElement->ndcXBottomRight = rightX;
         cloudElement->ndcYBottomRight = bottomY;
         cloudElement->ndcTextureXBottomRight = 1.0f;
-        cloudElement->ndcTextureYBottomRight = 1.0f;
+        cloudElement->ndcTextureYBottomRight = 0.0f;
 
         ++mCloudBufferSize;
     }

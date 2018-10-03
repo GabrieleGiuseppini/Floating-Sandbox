@@ -210,8 +210,8 @@ TextureDatabase TextureDatabase::Load(
                     }
                     else if (!!frameWorldScaling)
                     { 
-                        worldWidth = static_cast<float>(textureSize.Width) * *frameWorldScaling;
-                        worldHeight = static_cast<float>(textureSize.Height) * *frameWorldScaling;
+                        worldWidth = static_cast<float>(textureSize.Width) * (*frameWorldScaling);
+                        worldHeight = static_cast<float>(textureSize.Height) * (*frameWorldScaling) * static_cast<float>(textureSize.Width) / static_cast<float>(textureSize.Height);
                     }
                     else if (!!groupWorldWidth || !!groupWorldHeight)
                     {
@@ -230,8 +230,8 @@ TextureDatabase TextureDatabase::Load(
                     }
                     else if (!!groupWorldScaling)
                     {
-                        worldWidth = static_cast<float>(textureSize.Width) * *groupWorldScaling;
-                        worldHeight = static_cast<float>(textureSize.Height) * *groupWorldScaling;
+                        worldWidth = static_cast<float>(textureSize.Width) * (*groupWorldScaling);
+                        worldHeight = static_cast<float>(textureSize.Height) * (*groupWorldScaling) * static_cast<float>(textureSize.Width) / static_cast<float>(textureSize.Height);
                     }
                     else
                     { 

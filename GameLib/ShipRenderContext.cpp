@@ -1331,8 +1331,6 @@ void ShipRenderContext::RenderGenericTextures(std::vector<GenericTextureInfo> co
             // Draw polygon
             glDrawArrays(
                 GL_TRIANGLE_STRIP,
-                // TODOTEST
-                //static_cast<GLint>(connectedComponent[c].polygonIndex * sizeof(TextureRenderPolygonVertex)),
                 static_cast<GLint>(connectedComponent[c].polygonIndex),
                 4);
         }
