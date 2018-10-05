@@ -148,7 +148,7 @@ public:
     }
 
     static void CompileShader(
-        char const * shaderSource,
+        std::string const & shaderSource,
         GLenum shaderType,
         GameOpenGLShaderProgram const & shaderProgram);
 

@@ -61,6 +61,10 @@ Current perf
 	- Warship
 	- See Moleskine
 
+= Make collisions with sea floor more dramatic
+	= vel *= 0.5
+- Fix buoyancy
+
 - Technical Debt:
 	= Textures are json files, with world size, offset, and lighting boolean
 		+ SEE MOLESKINE
@@ -110,19 +114,16 @@ Current perf
 				+ ShipRenderContext rearc:
 					+ Textures -> TBD Name="Generic"
 					+ Simplify alpha and beta with just beta, and beta is "ambientLightSensitivity"
-				= ShipRenderContext: Detach textures from ConnectedComponentData
-					- RenderContext::RenderShipStart(connected components)
-						- Reset texture data
-						- NOTHING ELSE - elements are reset only when needed
-					- RenderContext::RenderShipEnd()
-						- Upload stuff
-				- Double-check cloud rectangle calc'n against TexturePolygon
-				- Test
-					- Double-check clouds's aspect ratio
-					- Anchor at all frames of timer bomb
-					- Everything else
+				+ ShipRenderContext: Detach textures from ConnectedComponentData
+					+ RenderContext::RenderShipStart(connected components)
+					+ RenderContext::RenderShipEnd()
+				+ Double-check cloud rectangle calc'n against TexturePolygon
+				= Test
+					+ Double-check clouds's aspect ratio
+					+ Anchor at all frames of timer bomb
+					- Everything else:
 				- Move TextureRenderManager::AddRenderPolygon method to .h, and call it EmitRenderPolygon
-				- Nuke old bombs/pinnedpoints at ShipRenderContext
+				+ Nuke old bombs/pinnedpoints at ShipRenderContext
 				- Commit
 		- Change the single shader to do *all the work* (for the "simple" textures, including rotation) for all ships and connected components
 			- Initially, runs on 1 texture at a time
@@ -204,6 +205,7 @@ Current perf
 				UpdateSpringForces_LibSimdPpAndIntrinsics_mean    416146077 ns  398192553 ns          2
 				UpdateSpringForces_LibSimdPpAndIntrinsics_median  410967797 ns  397802550 ns          2
 				UpdateSpringForces_LibSimdPpAndIntrinsics_stddev    9809876 ns    9628195 ns          2
+			- Try rearranging instructions for cache
 		- Use at IntegratePointDynamics, to guarantee SSE2
 			- Verify with asm
 			- Add to credits
@@ -310,33 +312,43 @@ Current perf
 					- Rethink
 				- Each segment is a circular buffer of particles all with same lifetime
 					- New particles are just taken from older ones
+					- Rethink
 				- No need to mark as deleted to hide them
 			- Rendering: via:
-				- UploadEphemeralParticlePoints (e.g. for points)
+				- ShipRenderContext::UploadEphemeralParticlePoints (e.g. for points)
 					- Just indexes
 					- Color/alpha portion of buffer has to be uploaded first, together with other
-					  properties which we already upload each time (position, connected component ID)
-				- UploadGenericTexture (e.g. for bubbles)
+					  properties which we already upload each time (position, connected component ID) 
+					  - (2*) Or just at UploadEphemeralParticlePoints, given it's portion specific to eph
+				- ShipRenderContext::UploadGenericTexture (e.g. for bubbles)
 					- Need to also support alphaTransparency
 			- Ephemeral particles are drawn with alpha going to transparent as lifetime increases
 				- Test first perf impact of using vec4f for point colors
 					- If sucks, need new buffer just for ephemeral particles' alpha,
 				- In any case, ephemeral color buffer or ephemeral portion of entire points color buffer needs to
-				  be reloaded at each UploadEphemeralParticles()
+				  be reloaded at each Upload() or UploadEphemeralParticles() (2*)
 					- See openGL functions to upload portion of buffer only
-			- TODO: RETHINK NOW THAT WE HAVE HAD REARC: Story for texture coords needs to be bundled with small rearc:
-				- Creation (and possibly deletion) of eph particles needs to be communicated
-				  to ShipRenderContext, which then inits texture coords in own buffer based off texture index and texture atlas
-				  - ShipRenderContext needs then to be always available to Ship
-			- Points::UpdateEphemeralParticles():
-				- Adds dAlpha to current alpha, either to (portion of) color buffer or to (portion of) alpha
-				- Moves buffer head over expired particles
+			- Points::UpdateEphemeralParticles(clockNow):
+				- If expired:
 					- Resets velocity and integration factor of expired particles to avoid drifting
 						- Rename Points::Pin/Unpin() to Freeze/Thaw()
 						- And also sets EphemeralType to None
+				- Else:
+					- Those that are points:
+						- Calc remaining life
+						- Update alpha either in (portion of) color buffer or in (portion of) alpha
+					- Those that are textures:
+						- Calc remaining life
 			- Points::UploadEphemeralParticles():
-				- Only uploads those with non-zero lifetime - by using buffer head, no need to check lifetime
-				- Color buffer? depends on choice above
+				- If we do 2*: upload portion of color buffer specific to eph
+				- Only uploads those with non-zero lifetime
+				- Those that are points:
+					- Add point index to buffer
+				- Those that are textures:
+					- ShipRenderContext::UploadGenericTexture(...)
+				- At end:
+					- Upload index buffer
+					- Note: color buffer uploaded already (see 2*)
 		- Points has new buffers:
 			- EphemeralType (uint8 enum)
 				- None (set at non-ephemeral and at dead ephemerals)
@@ -349,9 +361,8 @@ Current perf
 		- Points methods:
 			- TODO: createXYZ(); create has first overload that takes all the dynamics params, including Material and Color, and
 			  type-specific params
-		- Rendering:
-			- Points::UploadEphemeralParticles():
-				- (Ship)RenderContext::TODO
+			  - See if can do Points::CreateEphemeralParticle<Debris>(&&args)
+				- Requires Points::Debris to be public
 	- Do debris each time a spring breaks
 		- At Ship::SpringDestroyHandler()
 		- Initial particle dynamics:

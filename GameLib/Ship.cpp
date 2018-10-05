@@ -91,7 +91,7 @@ Ship::~Ship()
 }
 
 void Ship::DestroyAt(
-    vec2 const & targetPos, 
+    vec2f const & targetPos, 
     float radius)
 {
     float const squareRadius = radius * radius;
@@ -111,8 +111,8 @@ void Ship::DestroyAt(
 }
 
 void Ship::SawThrough(
-    vec2 const & startPos,
-    vec2 const & endPos)
+    vec2f const & startPos,
+    vec2f const & endPos)
 {
     //
     // Find all springs that intersect the saw segment
@@ -167,7 +167,7 @@ bool Ship::TogglePinAt(
 }
 
 bool Ship::ToggleTimerBombAt(
-    vec2 const & targetPos,
+    vec2f const & targetPos,
     GameParameters const & gameParameters)
 {
     return mBombs.ToggleTimerBombAt(
@@ -176,7 +176,7 @@ bool Ship::ToggleTimerBombAt(
 }
 
 bool Ship::ToggleRCBombAt(
-    vec2 const & targetPos,
+    vec2f const & targetPos,
     GameParameters const & gameParameters)
 {
     return mBombs.ToggleRCBombAt(
@@ -190,7 +190,7 @@ void Ship::DetonateRCBombs()
 }
 
 ElementIndex Ship::GetNearestPointIndexAt(
-    vec2 const & targetPos, 
+    vec2f const & targetPos, 
     float radius) const
 {
     float const squareRadius = radius * radius;
@@ -494,7 +494,9 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
         float const effectiveWaterMass = waterMass * mPoints.GetBuoyancy(pointIndex);
 
         // Mass = own + contained water (clamped to 1)
-        mPoints.GetForce(pointIndex) += gameParameters.Gravity * (mPoints.GetMass(pointIndex) + std::min(mPoints.GetWater(pointIndex), 1.0f) * effectiveWaterMass);
+        // TODOHERE: should not include buoyancy adjustment here
+        mPoints.GetForce(pointIndex) += gameParameters.Gravity 
+            * (mPoints.GetMass(pointIndex) + std::min(mPoints.GetWater(pointIndex), 1.0f) * effectiveWaterMass);
         
         if (mPoints.GetPosition(pointIndex).y < waterHeightAtThisPoint)
         {
@@ -619,12 +621,16 @@ void Ship::HandleCollisionsWithSeaFloor()
                 floorheight - mParentWorld.GetOceanFloorHeightAt(mPoints.GetPosition(pointIndex).x + 0.01f),
                 0.01f).normalise();
 
-            // Calculate displacement to move point back to sea floor, along the normal to the floor
+            // Calculate displacement to move point back to sea floor, along the normal to the floor 
+            // (which is oriented upwards)
             vec2f bounceDisplacement = seaFloorNormal * (floorheight - mPoints.GetPosition(pointIndex).y);
 
             // Move point back along normal
             mPoints.GetPosition(pointIndex) += bounceDisplacement;
-            mPoints.GetVelocity(pointIndex) = bounceDisplacement / GameParameters::MechanicalDynamicsSimulationStepTimeDuration<float>;
+            // TODOTEST
+            //mPoints.GetVelocity(pointIndex) = bounceDisplacement / GameParameters::MechanicalDynamicsSimulationStepTimeDuration<float>;
+            // Perfectly elastic impact
+            mPoints.GetVelocity(pointIndex) = seaFloorNormal * mPoints.GetVelocity(pointIndex).length();
         }
     }
 }

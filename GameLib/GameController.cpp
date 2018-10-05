@@ -157,8 +157,8 @@ void GameController::DestroyAt(
 }
 
 void GameController::SawThrough(
-    vec2 const & startScreenCoordinates,
-    vec2 const & endScreenCoordinates)
+    vec2f const & startScreenCoordinates,
+    vec2f const & endScreenCoordinates)
 {
     vec2f startWorldCoordinates = mRenderContext->ScreenToWorld(startScreenCoordinates);
     vec2f endWorldCoordinates = mRenderContext->ScreenToWorld(endScreenCoordinates);
@@ -169,7 +169,7 @@ void GameController::SawThrough(
 }
 
 void GameController::DrawTo(
-    vec2 const & screenCoordinates,
+    vec2f const & screenCoordinates,
     float strengthMultiplier)
 {
 	vec2f worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
@@ -186,7 +186,7 @@ void GameController::DrawTo(
 }
 
 void GameController::SwirlAt(
-    vec2 const & screenCoordinates,
+    vec2f const & screenCoordinates,
     float strengthMultiplier)
 {
     vec2f worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
@@ -200,7 +200,7 @@ void GameController::SwirlAt(
     mWorld->SwirlAt(worldCoordinates, strength);
 }
 
-void GameController::TogglePinAt(vec2 const & screenCoordinates)
+void GameController::TogglePinAt(vec2f const & screenCoordinates)
 {
     vec2f worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -240,7 +240,7 @@ void GameController::DetonateRCBombs()
     mWorld->DetonateRCBombs();
 }
 
-ElementIndex GameController::GetNearestPointAt(vec2 const & screenCoordinates) const
+ElementIndex GameController::GetNearestPointAt(vec2f const & screenCoordinates) const
 {
     vec2f worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 

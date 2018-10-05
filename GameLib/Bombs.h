@@ -52,7 +52,7 @@ public:
     void OnSpringDestroyed(ElementIndex springElementIndex);
 
     bool ToggleTimerBombAt(
-        vec2 const & targetPos,
+        vec2f const & targetPos,
         GameParameters const & gameParameters)
     {
         return ToggleBombAt<TimerBomb>(
@@ -61,7 +61,7 @@ public:
     }
 
     bool ToggleRCBombAt(
-        vec2 const & targetPos,
+        vec2f const & targetPos,
         GameParameters const & gameParameters)
     {
         return ToggleBombAt<RCBomb>(
@@ -79,7 +79,7 @@ private:
 
     template <typename TBomb>
     bool ToggleBombAt(
-        vec2 const & targetPos,
+        vec2f const & targetPos,
         GameParameters const & gameParameters)
     {
         float const squareSearchRadius = gameParameters.ToolSearchRadius * gameParameters.ToolSearchRadius;

@@ -21,7 +21,7 @@ namespace /* anonymous */ {
         else if (lstr == "water")
             return ShaderManager::ProgramType::Water;
         else
-            throw GameException("Unrecognized ProgramType \"" + str + "\"");
+            throw GameException("Unrecognized program \"" + str + "\"");
     }
 
     std::string ProgramTypeToStr(ShaderManager::ProgramType programType)
@@ -32,24 +32,33 @@ namespace /* anonymous */ {
             return "Clouds";
         case ShaderManager::ProgramType::Water:
             return "Water";
+        default:
+            assert(false);
+            throw GameException("Unsupported ProgramType");
         }
     }
 
-    ShaderManager::ParameterType StrToParameterType(std::string const & str)
+    ShaderManager::DynamicParameterType StrToDynamicParameterType(std::string const & str)
     {
-        std::string lstr = Utils::ToLower(str);
-        if (lstr == "AmbientLightIntensity")
-            return ShaderManager::ParameterType::AmbientLightIntensity;
+        if (str == "AmbientLightIntensity")
+            return ShaderManager::DynamicParameterType::AmbientLightIntensity;
+        else if (str == "OrthoMatrix")
+            return ShaderManager::DynamicParameterType::OrthoMatrix;
         else
-            throw GameException("Unrecognized ParameterType \"" + str + "\"");
+            throw GameException("Unrecognized dynamic parameter \"" + str + "\"");
     }
 
-    std::string ParameterTypeToStr(ShaderManager::ParameterType parameterType)
+    std::string DynamicParameterTypeToStr(ShaderManager::DynamicParameterType dynamicParameterType)
     {
-        switch (parameterType)
+        switch (dynamicParameterType)
         {
-        case ShaderManager::ParameterType::AmbientLightIntensity:
+        case ShaderManager::DynamicParameterType::AmbientLightIntensity:
             return "AmbientLightIntensity";
+        case ShaderManager::DynamicParameterType::OrthoMatrix:
+            return "OrthoMatrix";
+        default:
+            assert(false);
+            throw GameException("Unsupported DynamicParameterType");
         }
     }
 }
@@ -83,7 +92,12 @@ ShaderManager::ShaderManager(
     globalParameters.ToParameters(staticParameters);
 
     // 2) From file
-    // TODOHERE
+    std::filesystem::path localStaticParametersFilepath = shadersRoot / "static_parameters.glsl";
+    if (std::filesystem::exists(localStaticParametersFilepath))
+    {
+        std::string localStaticParametersSource = Utils::LoadTextFile(localStaticParametersFilepath);
+        ParseLocalStaticParameters(localStaticParametersSource, staticParameters);
+    }
 
 
     //
@@ -102,25 +116,43 @@ ShaderManager::ShaderManager(
     // Verify all programs have been loaded
     //
 
-    // TODO
+    for (uint32_t i = 0; i <= static_cast<uint32_t>(ProgramType::_Last); ++i)
+    {
+        if (i >= mPrograms.size() || !(mPrograms[i].OpenGLHandle))
+        {
+            throw GameException("Cannot find GLSL source file for program \"" + ProgramTypeToStr(static_cast<ProgramType>(i)) + "\"");
+        }
+    }
 }
 
 void ShaderManager::CompileShader(
     std::filesystem::path const & shaderFilepath,
     std::map<std::string, std::string> const & staticParameters)
 {
-    // Get the program
-    ProgramType programType = StrToProgramType(shaderFilepath.stem().string());
-
-    // TODO: assert first time we see it
-
     // Load the source file
     std::string shaderSource = Utils::LoadTextFile(shaderFilepath);
 
     try
     {
+        // Get the program type
+        ProgramType programType = StrToProgramType(shaderFilepath.stem().string());
+
+        // Make sure we have room for it
+        size_t programIndex = static_cast<size_t>(programType);
+        if (programIndex + 1 > mPrograms.size())
+        {
+            mPrograms.resize(programIndex + 1);
+        }
+
+        // First time we see it (guaranteed by file system)
+        assert(!(mPrograms[programIndex].OpenGLHandle));
+
         // Split the source file
         auto [vertexShaderSource, fragmentShaderSource] = SplitSource(shaderSource);
+
+        // Create program
+        mPrograms[programIndex].OpenGLHandle = glCreateProgram();
+
 
         //
         // Compile vertex shader
@@ -128,9 +160,8 @@ void ShaderManager::CompileShader(
 
         vertexShaderSource = SubstituteStaticParameters(vertexShaderSource, staticParameters);
 
-        auto vertexParameters = ExtractDynamicParameters(vertexShaderSource);
+        GameOpenGL::CompileShader(vertexShaderSource, GL_VERTEX_SHADER, mPrograms[programIndex].OpenGLHandle);
 
-        // TODOHERE
 
         //
         // Compile fragment shader
@@ -138,9 +169,33 @@ void ShaderManager::CompileShader(
 
         fragmentShaderSource = SubstituteStaticParameters(fragmentShaderSource, staticParameters);
 
-        auto fragmentParameters = ExtractDynamicParameters(fragmentShaderSource);
+        GameOpenGL::CompileShader(fragmentShaderSource, GL_FRAGMENT_SHADER, mPrograms[programIndex].OpenGLHandle);
 
-        // TODOHERE
+
+        //
+        // Get uniform locations
+        //
+
+        std::vector<GLint> uniformLocations;
+
+        auto allDynamicParameters = ExtractDynamicParameters(vertexShaderSource);
+        auto fragmentDynamicParameters = ExtractDynamicParameters(fragmentShaderSource);
+        allDynamicParameters.merge(fragmentDynamicParameters);
+
+        for (DynamicParameterType dynamicParameterType : allDynamicParameters)
+        {
+            // Make sure there is room
+            size_t dynamicParameterIndex = static_cast<size_t>(dynamicParameterType);
+            if (dynamicParameterIndex + 1 > mPrograms[programIndex].UniformLocations.size())
+            {
+                mPrograms[programIndex].UniformLocations.resize(dynamicParameterIndex + 1);
+            }
+
+            // Get and store
+            mPrograms[programIndex].UniformLocations[dynamicParameterIndex] = GameOpenGL::GetParameterLocation(
+                mPrograms[programIndex].OpenGLHandle,
+                "param" + DynamicParameterTypeToStr(dynamicParameterType));
+        }
     }
     catch (GameException const & ex)
     {
@@ -150,8 +205,8 @@ void ShaderManager::CompileShader(
 
 std::tuple<std::string, std::string> ShaderManager::SplitSource(std::string const & source)
 {
-    static std::regex VertexHeaderRegex(R"!(\s*\*\*\*VERTEX\s*)!");
-    static std::regex FragmentHeaderRegex(R"!(\s*\*\*\*FRAGMENT\s*)!");
+    static std::regex VertexHeaderRegex(R"!(\s*###VERTEX\s*)!");
+    static std::regex FragmentHeaderRegex(R"!(\s*###FRAGMENT\s*)!");
 
     std::stringstream sSource(source);
 
@@ -280,16 +335,31 @@ std::string ShaderManager::SubstituteStaticParameters(
     return sSubstitutedSource.str();
 }
 
-std::set<ShaderManager::ParameterType> ShaderManager::ExtractDynamicParameters(std::string const & source)
+std::set<ShaderManager::DynamicParameterType> ShaderManager::ExtractDynamicParameters(std::string const & source)
 {
-    // TODO: make it multiline somehow
-    static std::regex ParamNameRegex(R"!(^\s*uniform\s+.?\s+param([_a-zA-Z0-9]*);\s*$)!");
+    static std::regex DynamicParamNameRegex(R"!(\buniform\s+.*?\s+param([_a-zA-Z0-9]*);)!");
 
-    // TODOHERE: parse all tokens 
-    // 
-    // THEN: verify known param
-    // THEN: add to set
+    std::set<ShaderManager::DynamicParameterType> dynamicParameters;
 
-    // TODO
-    return std::set<ShaderManager::ParameterType>();
+    std::string remainingSource = source;
+    std::smatch match;
+    while (std::regex_search(remainingSource, match, DynamicParamNameRegex))
+    {
+        assert(2 == match.size());
+        auto dynamicParameterName = match[1].str();
+
+        // Lookup the parameter
+        DynamicParameterType dynamicParameterType = StrToDynamicParameterType(dynamicParameterName);
+
+        // Store it, making sure it's not specified more than once
+        if (!dynamicParameters.insert(dynamicParameterType).second)
+        {
+            throw GameException("Dynamic parameter \"" + DynamicParameterTypeToStr(dynamicParameterType) + "\" is declared more than once");
+        }
+
+        // Advance
+        remainingSource = match.suffix();
+    }
+
+    return dynamicParameters;
 }

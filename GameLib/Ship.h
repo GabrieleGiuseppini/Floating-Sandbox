@@ -54,37 +54,37 @@ public:
     auto & GetElectricalElements() { return mElectricalElements; }
 
     void DestroyAt(
-        vec2 const & targetPos,
+        vec2f const & targetPos,
         float radius);
 
     void SawThrough(
-        vec2 const & startPos,
-        vec2 const & endPos);
+        vec2f const & startPos,
+        vec2f const & endPos);
 
     void DrawTo(
-        vec2 const & targetPos,
+        vec2f const & targetPos,
         float strength);
 
     void SwirlAt(
-        vec2 const & targetPos,
+        vec2f const & targetPos,
         float strength);
 
     bool TogglePinAt(
-        vec2 const & targetPos,
+        vec2f const & targetPos,
         GameParameters const & gameParameters);
 
     bool ToggleTimerBombAt(
-        vec2 const & targetPos,
+        vec2f const & targetPos,
         GameParameters const & gameParameters);
 
     bool ToggleRCBombAt(
-        vec2 const & targetPos,
+        vec2f const & targetPos,
         GameParameters const & gameParameters);
 
     void DetonateRCBombs();
 
     ElementIndex GetNearestPointIndexAt(
-        vec2 const & targetPos,
+        vec2f const & targetPos,
         float radius) const;
 
     void Update(

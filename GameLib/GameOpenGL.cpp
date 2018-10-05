@@ -11,13 +11,15 @@
 #include <memory>
 
 void GameOpenGL::CompileShader(
-    char const * shaderSource,
+    std::string const & shaderSource,
     GLenum shaderType,
     GameOpenGLShaderProgram const & shaderProgram)
 {
+    char const * shaderSourceCString = shaderSource.c_str();
+
     // Compile
     GLuint shader = glCreateShader(shaderType);
-    glShaderSource(shader, 1, &shaderSource, NULL);
+    glShaderSource(shader, 1, &shaderSourceCString, NULL);
     glCompileShader(shader);
 
     // Check

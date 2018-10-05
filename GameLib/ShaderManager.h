@@ -7,6 +7,7 @@
 
 #include "GameOpenGL.h"
 #include "ResourceLoader.h"
+#include "Vectors.h"
 
 #include <cassert>
 #include <cstdint>
@@ -41,12 +42,15 @@ public:
     enum class ProgramType : uint32_t
     {
         Clouds = 0,
-        Water = 1
+        Water = 1,
+
+        _Last = Water
     };
 
-    enum class ParameterType : uint32_t
+    enum class DynamicParameterType : uint32_t
     {
-        AmbientLightIntensity = 0
+        AmbientLightIntensity = 0,
+        OrthoMatrix = 1
     };
 
     struct GlobalParameters
@@ -77,6 +81,79 @@ public:
         std::filesystem::path const & shadersRoot,
         GlobalParameters const & globalParameters);
 
+    void SetDynamicParameter(
+        ProgramType programType,
+        DynamicParameterType dynamicParameterType, 
+        float value)
+    {
+        uint32_t const programIndex = static_cast<uint32_t>(programType);
+        uint32_t const dynamicParameterIndex = static_cast<uint32_t>(dynamicParameterType);
+
+        glUniform1f(
+            mPrograms[programIndex].UniformLocations[dynamicParameterIndex], 
+            value);
+    }
+
+    void SetDynamicParameter(
+        ProgramType programType,
+        DynamicParameterType dynamicParameterType,
+        vec2f const & value)
+    {
+        uint32_t const programIndex = static_cast<uint32_t>(programType);
+        uint32_t const dynamicParameterIndex = static_cast<uint32_t>(dynamicParameterType);
+
+        glUniform2f(
+            mPrograms[programIndex].UniformLocations[dynamicParameterIndex], 
+            value.x, 
+            value.y);
+    }
+
+    void SetDynamicParameter(
+        ProgramType programType,
+        DynamicParameterType dynamicParameterType,
+        vec3f const & value)
+    {
+        uint32_t const programIndex = static_cast<uint32_t>(programType);
+        uint32_t const dynamicParameterIndex = static_cast<uint32_t>(dynamicParameterType);
+
+        glUniform3f(
+            mPrograms[programIndex].UniformLocations[dynamicParameterIndex], 
+            value.x, 
+            value.y, 
+            value.z);
+    }
+
+    void SetDynamicParameter(
+        ProgramType programType,
+        DynamicParameterType dynamicParameterType,
+        vec4f const & value)
+    {
+        uint32_t const programIndex = static_cast<uint32_t>(programType);
+        uint32_t const dynamicParameterIndex = static_cast<uint32_t>(dynamicParameterType);
+
+        glUniform4f(
+            mPrograms[programIndex].UniformLocations[dynamicParameterIndex], 
+            value.x, 
+            value.y, 
+            value.z, 
+            value.w);
+    }
+
+    void SetDynamicParameter(
+        ProgramType programType,
+        DynamicParameterType dynamicParameterType,
+        float const(&value)[4][4])
+    {
+        uint32_t const programIndex = static_cast<uint32_t>(programType);
+        uint32_t const dynamicParameterIndex = static_cast<uint32_t>(dynamicParameterType);
+
+        glUniformMatrix4fv(
+            mPrograms[programIndex].UniformLocations[dynamicParameterIndex],
+            1,
+            GL_FALSE,
+            &(value[0][0]));
+    }
+
 private:
 
     ShaderManager(
@@ -97,7 +174,21 @@ private:
         std::string const & source,
         std::map<std::string, std::string> const & staticParameters);
 
-    static std::set<ParameterType> ExtractDynamicParameters(std::string const & source);
+    static std::set<DynamicParameterType> ExtractDynamicParameters(std::string const & source);
+
+private:
+
+    struct ProgramInfo
+    {
+        // The OpenGL handle to the program
+        GameOpenGLShaderProgram OpenGLHandle;
+
+        // The uniform locations, indexed by dynamic parameter type
+        std::vector<GLint> UniformLocations;
+    };
+
+    // All programs, indexed by program type
+    std::vector<ProgramInfo> mPrograms;
 
 private:
 
@@ -116,5 +207,10 @@ private:
     friend class ShaderManagerTests_SubstitutesStaticParameters_Multiple_Different_Test;
     friend class ShaderManagerTests_SubstitutesStaticParameters_Multiple_Repeated_Test;
     friend class ShaderManagerTests_SubstitutesStaticParameters_ErrorsOnUnrecognizedParameter_Test;
+
+    friend class ShaderManagerTests_ExtractsDynamicParameters_Single_Test;
+    friend class ShaderManagerTests_ExtractsDynamicParameters_Multiple_Test;
+    friend class ShaderManagerTests_ExtractsDynamicParameters_ErrorsOnUnrecognizedParameter_Test;
+    friend class ShaderManagerTests_ExtractsDynamicParameters_ErrorsOnRedefinedParameter_Test;
 };
 

@@ -120,7 +120,7 @@ public:
     }
 
     void Add(
-        vec2 const & position,
+        vec2f const & position,
         Material const * material,
         bool isHull,
         bool isRope,

@@ -21,3 +21,10 @@ std::string vec3f::toString() const
     return ss.str();
 }
 
+std::string vec4f::toString() const
+{
+    std::stringstream ss;
+    ss << "(" << x << ", " << y << ", " << z << ", " << w << ")";
+    return ss.str();
+}
+

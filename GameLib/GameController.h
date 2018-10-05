@@ -54,14 +54,14 @@ public:
     //
 
     void DestroyAt(vec2f const & screenCoordinates, float radiusMultiplier);
-    void SawThrough(vec2 const & startScreenCoordinates, vec2 const & endScreenCoordinates);
+    void SawThrough(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates);
     void DrawTo(vec2f const & screenCoordinates, float strengthMultiplier);
     void SwirlAt(vec2f const & screenCoordinates, float strengthMultiplier);
     void TogglePinAt(vec2f const & screenCoordinates);
     void ToggleTimerBombAt(vec2f const & screenCoordinates);
     void ToggleRCBombAt(vec2f const & screenCoordinates);
     void DetonateRCBombs();
-    ElementIndex GetNearestPointAt(vec2 const & screenCoordinates) const;
+    ElementIndex GetNearestPointAt(vec2f const & screenCoordinates) const;
 
     void SetCanvasSize(int width, int height) { mRenderContext->SetCanvasSize(width, height); }
 

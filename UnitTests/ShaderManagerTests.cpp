@@ -20,9 +20,9 @@ protected:
 TEST_F(ShaderManagerTests, SplitsShaders)
 {
     std::string source = R"(
-    ***VERTEX
+    ###VERTEX
 vfoo
-    ***FRAGMENT
+    ###FRAGMENT
  fbar
 )";
 
@@ -36,7 +36,7 @@ TEST_F(ShaderManagerTests, SplitsShaders_ErrorsOnMissingVertexSection)
 {
     std::string source = R"(
 vfoo
-***FRAGMENT
+###FRAGMENT
 fbar
     )";
 
@@ -57,7 +57,7 @@ TEST_F(ShaderManagerTests, SplitsShaders_ErrorsOnMissingVertexSection_EmptyFile)
 TEST_F(ShaderManagerTests, SplitsShaders_ErrorsOnMissingFragmentSection)
 {
     std::string source = R"(
-***VERTEX
+###VERTEX
 vfoo
 fbar
     )";
@@ -76,6 +76,8 @@ TEST_F(ShaderManagerTests, ParsesStaticParameters_Single)
     std::map<std::string, std::string> params;
     ShaderManager::ParseLocalStaticParameters(source, params);
 
+    EXPECT_EQ(1, params.size());
+
     auto const & it = params.find("FOO");
     ASSERT_NE(it, params.end());
     EXPECT_EQ("56.8", it->second);
@@ -90,6 +92,8 @@ BAR = 89)";
 
     std::map<std::string, std::string> params;
     ShaderManager::ParseLocalStaticParameters(source, params);
+
+    EXPECT_EQ(2, params.size());
 
     auto const & it1 = params.find("FOO");
     ASSERT_NE(it1, params.end());
@@ -163,5 +167,56 @@ TEST_F(ShaderManagerTests, SubstitutesStaticParameters_ErrorsOnUnrecognizedParam
 
     EXPECT_THROW(
         ShaderManager::SubstituteStaticParameters(source, MakeStaticParameters()),
+        GameException);
+}
+
+TEST_F(ShaderManagerTests, ExtractsDynamicParameters_Single)
+{
+    std::string source = "  uniform float paramAmbientLightIntensity;\n";
+
+    auto result = ShaderManager::ExtractDynamicParameters(source);
+
+    ASSERT_EQ(1, result.size());
+    EXPECT_EQ(1, result.count(ShaderManager::DynamicParameterType::AmbientLightIntensity));
+}
+
+TEST_F(ShaderManagerTests, ExtractsDynamicParameters_Multiple)
+{
+    std::string source = R"!!!(
+uniform float paramAmbientLightIntensity;
+foobar;
+uniform mat4 paramOrthoMatrix;
+)!!!";
+
+    auto result = ShaderManager::ExtractDynamicParameters(source);
+
+    ASSERT_EQ(2, result.size());
+    EXPECT_EQ(1, result.count(ShaderManager::DynamicParameterType::AmbientLightIntensity));
+    EXPECT_EQ(1, result.count(ShaderManager::DynamicParameterType::OrthoMatrix));
+}
+
+TEST_F(ShaderManagerTests, ExtractsDynamicParameters_ErrorsOnUnrecognizedParameter)
+{
+    std::string source = R"!!!(
+uniform float paramAmbientLightIntensity;
+foobar;
+uniform mat4 paramOrthoMatriz;
+)!!!";
+
+    EXPECT_THROW(
+        ShaderManager::ExtractDynamicParameters(source),
+        GameException);
+}
+
+TEST_F(ShaderManagerTests, ExtractsDynamicParameters_ErrorsOnRedefinedParameter)
+{
+    std::string source = R"!!!(
+uniform float paramAmbientLightIntensity;
+foobar;
+uniform mat4 paramAmbientLightIntensity;
+)!!!";
+
+    EXPECT_THROW(
+        ShaderManager::ExtractDynamicParameters(source),
         GameException);
 }

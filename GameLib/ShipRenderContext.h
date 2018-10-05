@@ -8,6 +8,7 @@
 #include "GameOpenGL.h"
 #include "GameTypes.h"
 #include "ImageData.h"
+#include "ShaderManager.h"
 #include "SysSpecifics.h"
 #include "TextureRenderManager.h"
 #include "TextureTypes.h"
@@ -27,6 +28,7 @@ public:
     ShipRenderContext(
         std::optional<ImageData> texture,
         vec3f const & ropeColour,
+        ShaderManager & shaderManager,
         TextureRenderManager const & textureRenderManager,
         float const(&orthoMatrix)[4][4],
         float visibleWorldHeight,
@@ -286,6 +288,9 @@ private:
     static constexpr GLuint VectorArrowPosVertexAttribute = 8;
 
 private:
+
+    ShaderManager & mShaderManager;
+
 
     //
     // Textures

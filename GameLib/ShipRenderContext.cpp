@@ -12,6 +12,7 @@
 ShipRenderContext::ShipRenderContext(    
     std::optional<ImageData> texture,
     vec3f const & ropeColour,
+    ShaderManager & shaderManager,
     TextureRenderManager const & textureRenderManager,
     float const(&orthoMatrix)[4][4],
     float visibleWorldHeight,
@@ -22,8 +23,9 @@ ShipRenderContext::ShipRenderContext(
     ShipRenderMode shipRenderMode,
     VectorFieldRenderMode vectorFieldRenderMode,
     bool showStressedSprings)
-    // Parameters
-    : mCanvasToVisibleWorldHeightRatio(0)
+    : mShaderManager(shaderManager)
+    // Parameters    
+    , mCanvasToVisibleWorldHeightRatio(0)
     , mAmbientLightIntensity(0.0f) // Set later
     , mWaterLevelThreshold(0.0f)
     , mShipRenderMode(ShipRenderMode::Structure)

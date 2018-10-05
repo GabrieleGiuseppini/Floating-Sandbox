@@ -39,6 +39,8 @@ set  (GAME_SOURCES
 	ResourceLoader.cpp
 	ResourceLoader.h
 	RunningAverage.h
+	ShaderManager.cpp
+	ShaderManager.h
 	ShipBuilder.cpp
 	ShipBuilder.h
 	ShipDefinition.h

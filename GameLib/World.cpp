@@ -54,7 +54,7 @@ int World::AddShip(
 }
 
 void World::DestroyAt(
-    vec2 const & targetPos, 
+    vec2f const & targetPos, 
     float radius)
 {
     for (auto & ship : mAllShips)
@@ -66,8 +66,8 @@ void World::DestroyAt(
 }
 
 void World::SawThrough(
-    vec2 const & startPos,
-    vec2 const & endPos)
+    vec2f const & startPos,
+    vec2f const & endPos)
 {
     for (auto & ship : mAllShips)
     {
@@ -102,7 +102,7 @@ void World::SwirlAt(
 }
 
 void World::TogglePinAt(
-    vec2 const & targetPos,
+    vec2f const & targetPos,
     GameParameters const & gameParameters)
 {
     // Stop at first ship that successfully pins or unpins a point
@@ -120,7 +120,7 @@ void World::TogglePinAt(
 }
 
 void World::ToggleTimerBombAt(
-    vec2 const & targetPos,
+    vec2f const & targetPos,
     GameParameters const & gameParameters)
 {
     // Stop at first ship that successfully places or removes a bomb
@@ -138,7 +138,7 @@ void World::ToggleTimerBombAt(
 }
 
 void World::ToggleRCBombAt(
-    vec2 const & targetPos,
+    vec2f const & targetPos,
     GameParameters const & gameParameters)
 {
     // Stop at first ship that successfully places or removes a bomb
@@ -164,7 +164,7 @@ void World::DetonateRCBombs()
 }
 
 ElementIndex World::GetNearestPointAt(
-    vec2 const & targetPos,
+    vec2f const & targetPos,
     float radius) const
 {
     ElementIndex bestPointIndex = NoneElementIndex;

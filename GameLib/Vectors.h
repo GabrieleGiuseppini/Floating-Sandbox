@@ -172,7 +172,7 @@ static_assert(offsetof(vec2f, x) == 0);
 static_assert(offsetof(vec2f, y) == sizeof(float));
 static_assert(sizeof(vec2f) == 2 * sizeof(float));
 
-using vec2 = vec2f;
+
 
 struct vec3f
 {
@@ -323,4 +323,132 @@ static_assert(offsetof(vec3f, y) == sizeof(float));
 static_assert(offsetof(vec3f, z) == 2 * sizeof(float));
 static_assert(sizeof(vec3f) == 3 * sizeof(float));
 
-using vec3 = vec3f;
+
+
+struct vec4f
+{
+public:
+
+    float x, y, z, w;
+
+    static constexpr const vec4f zero() { return vec4f(); }
+
+    inline vec4f operator+(vec4f const & rhs) const
+    {
+        return vec4f(
+            x + rhs.x,
+            y + rhs.y,
+            z + rhs.z,
+            w + rhs.w);
+    }
+
+    inline vec4f operator-(vec4f const & rhs) const
+    {
+        return vec4f(
+            x - rhs.x,
+            y - rhs.y,
+            z - rhs.z,
+            w - rhs.w);
+    }
+
+    inline vec4f operator-() const
+    {
+        return vec4f(
+            -x,
+            -y,
+            -z,
+            -w);
+    }
+
+    inline vec4f operator*(float rhs) const
+    {
+        return vec4f(
+            x * rhs,
+            y * rhs,
+            z * rhs,
+            w * rhs);
+    }
+
+    inline vec4f operator/(float rhs) const
+    {
+        return vec4f(
+            x / rhs,
+            y / rhs,
+            z / rhs,
+            w / rhs);
+    }
+
+    inline vec4f & operator+=(vec4f const & rhs)
+    {
+        x += rhs.x;
+        y += rhs.y;
+        z += rhs.z;
+        w += rhs.w;
+        return *this;
+    }
+
+    inline vec4f & operator-=(vec4f const & rhs)
+    {
+        x -= rhs.x;
+        y -= rhs.y;
+        z -= rhs.z;
+        w -= rhs.w;
+        return *this;
+    }
+
+    inline vec4f & operator*=(float rhs)
+    {
+        x *= rhs;
+        y *= rhs;
+        z *= rhs;
+        w *= rhs;
+        return *this;
+    }
+
+    inline vec4f & operator/=(float rhs)
+    {
+        x /= rhs;
+        y /= rhs;
+        z /= rhs;
+        w /= rhs;
+        return *this;
+    }
+
+    inline bool operator==(vec4f const & rhs) const
+    {
+        return x == rhs.x && y == rhs.y && z == rhs.z && w == rhs.w;
+    }
+
+    inline bool operator!=(vec4f const & rhs) const
+    {
+        return !(*this == rhs);
+    }
+    
+    std::string toString() const;
+
+    inline constexpr vec4f()
+        : x(0.0f)
+        , y(0.0f)
+        , z(0.0f)
+        , w(0.0f)
+    {
+    }
+
+    inline constexpr vec4f(
+        float _x,
+        float _y,
+        float _z,
+        float _w)
+        : x(_x)
+        , y(_y)
+        , z(_z)
+        , w(_w)
+    {
+    }
+};
+
+static_assert(offsetof(vec4f, x) == 0);
+static_assert(offsetof(vec4f, y) == sizeof(float));
+static_assert(offsetof(vec4f, z) == 2 * sizeof(float));
+static_assert(offsetof(vec4f, w) == 3 * sizeof(float));
+static_assert(sizeof(vec4f) == 4 * sizeof(float));

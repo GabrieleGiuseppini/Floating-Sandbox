@@ -13,7 +13,8 @@ RenderContext::RenderContext(
     ResourceLoader & resourceLoader,
     vec3f const & ropeColour,
     ProgressCallback const & progressCallback)
-    : mTextureRenderManager()
+    : mShaderManager()
+    , mTextureRenderManager()
     // Clouds
     , mCloudShaderProgram()
     , mCloudShaderAmbientLightIntensityParameter(0)
@@ -79,14 +80,30 @@ RenderContext::RenderContext(
 
 
     //
+    // Load shader manager
+    //
+
+    progressCallback(0.0f, "Loading shaders...");
+
+    ShaderManager::GlobalParameters globalParameters(
+        3.45f); // TODOTEST
+
+    mShaderManager = ShaderManager::CreateInstance(resourceLoader, globalParameters);
+
+
+    //
     // Load texture database
     //
+
+    progressCallback(0.25f, "Loading textures...");
 
     TextureDatabase textureDatabase = resourceLoader.LoadTextureDatabase(
         [&progressCallback](float progress, std::string const &)
         {
-            progressCallback(progress / 2.0f, "Loading textures...");
+            progressCallback(0.25f + progress / 4.0f, "Loading textures...");
         });
+
+    mTextureRenderManager = std::make_unique<TextureRenderManager>();
 
 
     //
@@ -155,7 +172,7 @@ RenderContext::RenderContext(
     glUseProgram(0);
 
     // Upload textures
-    mTextureRenderManager.UploadGroup(
+    mTextureRenderManager->UploadGroup(
         textureDatabase.GetGroup(TextureGroupType::Cloud),
         [&progressCallback](float progress, std::string const &)
         {
@@ -236,7 +253,7 @@ RenderContext::RenderContext(
     glUseProgram(0);
 
     // Upload textures
-    mTextureRenderManager.UploadMipmappedGroup(
+    mTextureRenderManager->UploadMipmappedGroup(
         textureDatabase.GetGroup(TextureGroupType::Land),
         [&progressCallback](float progress, std::string const &)
         {
@@ -322,7 +339,7 @@ RenderContext::RenderContext(
     glUseProgram(0);
 
     // Upload textures
-    mTextureRenderManager.UploadGroup(
+    mTextureRenderManager->UploadGroup(
         textureDatabase.GetGroup(TextureGroupType::Water),
         [&progressCallback](float progress, std::string const &)
         {
@@ -335,7 +352,7 @@ RenderContext::RenderContext(
     //
 
     // Upload textures
-    mTextureRenderManager.UploadMipmappedGroup(
+    mTextureRenderManager->UploadMipmappedGroup(
         textureDatabase.GetGroup(TextureGroupType::PinnedPoint),
         [&progressCallback](float progress, std::string const &)
         {
@@ -349,21 +366,21 @@ RenderContext::RenderContext(
 
     // Upload textures
 
-    mTextureRenderManager.UploadMipmappedGroup(
+    mTextureRenderManager->UploadMipmappedGroup(
         textureDatabase.GetGroup(TextureGroupType::RcBomb),
         [&progressCallback](float progress, std::string const &)
         {
             progressCallback(0.5f + (4.0f + progress) / (2.0f * TextureLoadSteps), "Loading textures...");
         });
 
-    mTextureRenderManager.UploadMipmappedGroup(
+    mTextureRenderManager->UploadMipmappedGroup(
         textureDatabase.GetGroup(TextureGroupType::RcBombExplosion),
         [&progressCallback](float progress, std::string const &)
         {
             progressCallback(0.5f + (5.0f + progress) / (2.0f * TextureLoadSteps), "Loading textures...");
         });
 
-    mTextureRenderManager.UploadMipmappedGroup(
+    mTextureRenderManager->UploadMipmappedGroup(
         textureDatabase.GetGroup(TextureGroupType::RcBombPing),
         [&progressCallback](float progress, std::string const &)
         {
@@ -378,28 +395,28 @@ RenderContext::RenderContext(
 
     // Upload textures
 
-    mTextureRenderManager.UploadMipmappedGroup(
+    mTextureRenderManager->UploadMipmappedGroup(
         textureDatabase.GetGroup(TextureGroupType::TimerBomb),
         [&progressCallback](float progress, std::string const &)
         {
             progressCallback(0.5f + (7.0f + progress) / (2.0f * TextureLoadSteps), "Loading textures...");
         });
 
-    mTextureRenderManager.UploadMipmappedGroup(
+    mTextureRenderManager->UploadMipmappedGroup(
         textureDatabase.GetGroup(TextureGroupType::TimerBombDefuse),
         [&progressCallback](float progress, std::string const &)
         {
             progressCallback(0.5f + (8.0f + progress) / (2.0f * TextureLoadSteps), "Loading textures...");
         });
 
-    mTextureRenderManager.UploadMipmappedGroup(
+    mTextureRenderManager->UploadMipmappedGroup(
         textureDatabase.GetGroup(TextureGroupType::TimerBombExplosion),
         [&progressCallback](float progress, std::string const &)
         {
             progressCallback(0.5f + (9.0f + progress) / (2.0f * TextureLoadSteps), "Loading textures...");
         });
 
-    mTextureRenderManager.UploadMipmappedGroup(
+    mTextureRenderManager->UploadMipmappedGroup(
         textureDatabase.GetGroup(TextureGroupType::TimerBombFuse),
         [&progressCallback](float progress, std::string const &)
         {
@@ -569,7 +586,8 @@ void RenderContext::AddShip(
         new ShipRenderContext(
             std::move(texture), 
             mRopeColour,
-            mTextureRenderManager,
+            *mShaderManager,
+            *mTextureRenderManager,
             mOrthoMatrix,
             mVisibleWorldHeight,
             mVisibleWorldWidth,
@@ -690,7 +708,7 @@ void RenderContext::RenderCloudsEnd()
         // Bind Texture
         glBindTexture(
             GL_TEXTURE_2D, 
-            mTextureRenderManager.GetOpenGLHandle(
+            mTextureRenderManager->GetOpenGLHandle(
                 TextureGroupType::Cloud, 
                 static_cast<TextureFrameIndex>(c % mCloudTextureCount)));
 
@@ -779,7 +797,7 @@ void RenderContext::RenderLand()
     // Bind texture
     glBindTexture(
         GL_TEXTURE_2D,
-        mTextureRenderManager.GetOpenGLHandle(TextureGroupType::Land, 0));
+        mTextureRenderManager->GetOpenGLHandle(TextureGroupType::Land, 0));
 
     // Bind land VBO
     glBindBuffer(GL_ARRAY_BUFFER, *mLandVBO);
@@ -806,7 +824,7 @@ void RenderContext::RenderWater()
     // Bind texture
     glBindTexture(
         GL_TEXTURE_2D, 
-        mTextureRenderManager.GetOpenGLHandle(TextureGroupType::Water, 0));
+        mTextureRenderManager->GetOpenGLHandle(TextureGroupType::Water, 0));
 
     // Bind water VBO
     glBindBuffer(GL_ARRAY_BUFFER, *mWaterVBO);

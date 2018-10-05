@@ -10,6 +10,7 @@
 #include "ImageData.h"
 #include "ProgressCallback.h"
 #include "ResourceLoader.h"
+#include "ShaderManager.h"
 #include "ShipRenderContext.h"
 #include "SysSpecifics.h"
 #include "TextureRenderManager.h"
@@ -214,16 +215,16 @@ public:
     // Screen <-> World transformations
     //
 
-    inline vec2 ScreenToWorld(vec2 const & screenCoordinates)
+    inline vec2f ScreenToWorld(vec2f const & screenCoordinates)
     {
-        return vec2(
+        return vec2f(
             (screenCoordinates.x / static_cast<float>(mCanvasWidth) - 0.5f) * mVisibleWorldWidth + mCamX,
             (screenCoordinates.y / static_cast<float>(mCanvasHeight) - 0.5f) * -mVisibleWorldHeight + mCamY);
     }
 
-    inline vec2 ScreenOffsetToWorldOffset(vec2 const & screenOffset)
+    inline vec2f ScreenOffsetToWorldOffset(vec2f const & screenOffset)
     {
-        return vec2(
+        return vec2f(
             screenOffset.x / static_cast<float>(mCanvasWidth) * mVisibleWorldWidth,
             screenOffset.y / static_cast<float>(mCanvasHeight) * -mVisibleWorldHeight);
     }
@@ -273,7 +274,7 @@ public:
         assert(mCloudBufferSize + 1u <= mCloudBufferMaxSize);
         CloudElement * cloudElement = &(mCloudBuffer[mCloudBufferSize]);        
 
-        TextureFrameMetadata const & textureMetadata = mTextureRenderManager.GetFrameMetadata(
+        TextureFrameMetadata const & textureMetadata = mTextureRenderManager->GetFrameMetadata(
             TextureGroupType::Cloud,
             static_cast<TextureFrameIndex>(mCloudBufferSize % mCloudTextureCount));
 
@@ -600,7 +601,8 @@ private:
 
 private:
 
-    TextureRenderManager mTextureRenderManager;
+    std::unique_ptr<ShaderManager> mShaderManager;
+    std::unique_ptr<TextureRenderManager> mTextureRenderManager;
 
     //
     // Clouds

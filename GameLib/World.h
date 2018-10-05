@@ -51,37 +51,37 @@ public:
     }
 
     void DestroyAt(
-        vec2 const & targetPos, 
+        vec2f const & targetPos, 
         float radius);
 
     void SawThrough(
-        vec2 const & startPos,
-        vec2 const & endPos);
+        vec2f const & startPos,
+        vec2f const & endPos);
 
     void DrawTo(
-        vec2 const & targetPos,
+        vec2f const & targetPos,
         float strength);
 
     void SwirlAt(
-        vec2 const & targetPos,
+        vec2f const & targetPos,
         float strength);
 
     void TogglePinAt(
-        vec2 const & targetPos,
+        vec2f const & targetPos,
         GameParameters const & gameParameters);
 
     void ToggleTimerBombAt(
-        vec2 const & targetPos,
+        vec2f const & targetPos,
         GameParameters const & gameParameters);
 
     void ToggleRCBombAt(
-        vec2 const & targetPos,
+        vec2f const & targetPos,
         GameParameters const & gameParameters);
 
     void DetonateRCBombs();
 
     ElementIndex GetNearestPointAt(
-        vec2 const & targetPos,
+        vec2f const & targetPos,
         float radius) const;
 
     void Update(GameParameters const & gameParameters);
