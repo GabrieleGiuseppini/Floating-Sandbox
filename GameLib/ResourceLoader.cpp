@@ -15,7 +15,6 @@
 #include <IL/il.h>
 #include <IL/ilu.h>
 
-
 #include <cstring>
 #include <regex>
 
@@ -192,6 +191,16 @@ std::filesystem::path ResourceLoader::GetArtFilepath(std::string const & artName
 std::filesystem::path ResourceLoader::GetHelpFilepath() const
 {
     std::filesystem::path localPath = std::filesystem::path("Data") / "Help" / "index.html";
+    return std::filesystem::absolute(localPath);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// Shaders
+////////////////////////////////////////////////////////////////////////////////////////////
+
+std::filesystem::path ResourceLoader::GetShadersRootPath() const
+{
+    std::filesystem::path localPath = std::filesystem::path("Data") / "Shaders";
     return std::filesystem::absolute(localPath);
 }
 

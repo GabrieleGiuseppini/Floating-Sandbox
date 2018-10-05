@@ -82,6 +82,12 @@ public:
 
     std::filesystem::path GetHelpFilepath() const;
 
+    //
+    // Shaders
+    //
+
+    std::filesystem::path GetShadersRootPath() const;
+
 
     //
     // Images

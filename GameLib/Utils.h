@@ -14,7 +14,10 @@
 #include <array>
 #include <cctype>
 #include <cstdint>
+#include <filesystem>
+#include <fstream>
 #include <iomanip>
+#include <iostream>
 #include <iterator>
 #include <optional>
 #include <sstream>
@@ -28,7 +31,7 @@ public:
     // JSON
     //
 
-    static picojson::value ParseJSONFile(std::string const & filename);
+    static picojson::value ParseJSONFile(std::filesystem::path const & filepath);
 
     template<typename T>
     static T GetOptionalJsonMember(
@@ -274,5 +277,23 @@ public:
             rgbColour[0] / 255.f,
             rgbColour[1] / 255.f,
             rgbColour[2] / 255.f);
+    }
+
+    //
+    // Text files
+    //
+
+    static std::string LoadTextFile(std::filesystem::path const & filepath)
+    {
+        std::ifstream file(filepath.string(), std::ios::in);
+        if (!file.is_open())
+        {
+            throw GameException("Cannot open file \"" + filepath.string() + "\"");
+        }
+
+        std::stringstream ss;
+        ss << file.rdbuf();
+
+        return ss.str();
     }
 };

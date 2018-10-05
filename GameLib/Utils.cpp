@@ -8,38 +8,20 @@
 #include "GameException.h"
 
 #include <cwchar>
-#include <fstream>
-#include <iostream>
 #include <memory>
-#include <sstream>
 
 namespace /* anonymous */ {
-
-	std::string GetTextFileContents(std::string const & filename)
-	{
-		
-		std::ifstream file(filename.c_str(), std::ios::in);
-		if (!file.is_open())
-		{
-			throw GameException("Cannot open file \"" + filename + "\"");
-		}
-
-		std::stringstream ss;
-		ss << file.rdbuf();
-
-		return ss.str();
-	}
 }
 
-picojson::value Utils::ParseJSONFile(std::string const & filename)
+picojson::value Utils::ParseJSONFile(std::filesystem::path const & filepath)
 {
-	std::string fileContents = GetTextFileContents(filename);
+	std::string fileContents = Utils::LoadTextFile(filepath);
 
 	picojson::value jsonContent;
 	std::string parseError = picojson::parse(jsonContent, fileContents);
 	if (!parseError.empty())
 	{
-		throw GameException("Error parsing JSON file \"" + filename + "\": " + parseError);
+		throw GameException("Error parsing JSON file \"" + filepath.string() + "\": " + parseError);
 	}
 
 	return jsonContent;

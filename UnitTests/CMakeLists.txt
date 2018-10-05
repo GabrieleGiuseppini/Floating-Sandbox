@@ -26,11 +26,14 @@ set (UNIT_TEST_SOURCES
 	GameEventDispatcherTests.cpp
 	LibSimdPpTests.cpp
 	SegmentTests.cpp
+	ShaderManagerTests.cpp
 	SliderCoreTests.cpp
 	TupleKeysTests.cpp
 	Utils.cpp
 	Utils.h
 	VectorsTests.cpp)
+
+source_group(" " FILES ${UNIT_TEST_SOURCES})
 
 add_executable (UnitTests ${UNIT_TEST_SOURCES})
 add_test (UnitTests UnitTests)
