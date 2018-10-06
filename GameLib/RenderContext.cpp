@@ -194,8 +194,6 @@ RenderContext::RenderContext(
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
 
-    // TODOTEST
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 
 
@@ -225,8 +223,6 @@ RenderContext::RenderContext(
     // Enable vertex arrays
     glEnableVertexAttribArray(0);
 
-    // TODOTEST
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 
     //
@@ -257,8 +253,6 @@ RenderContext::RenderContext(
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
 
-    // TODOTEST
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 
     //
@@ -421,10 +415,8 @@ void RenderContext::RenderCloudsEnd()
     // Bind water VBO
     glBindBuffer(GL_ARRAY_BUFFER, *mWaterVBO);
 
-    // TODOTEST
     // Describe InputPos
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
 
     // Draw
     glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mWaterBufferSize));
@@ -435,8 +427,6 @@ void RenderContext::RenderCloudsEnd()
     // Re-enable writing to the color buffer
     glColorMask(true, true, true, true);
     
-    // TODOTEST
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 
 
@@ -459,10 +449,7 @@ void RenderContext::RenderCloudsEnd()
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, (2 + 2) * sizeof(float), (void*)0);
     // Describe InputTexturePos
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, (2 + 2) * sizeof(float), (void*)(2 * sizeof(float)));
-    // TODOTEST
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    
+
     // Enable stenciling - only draw where there are no 1's
     glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 
@@ -479,9 +466,6 @@ void RenderContext::RenderCloudsEnd()
         // Draw
         glDrawArrays(GL_TRIANGLE_STRIP, static_cast<GLint>(4 * c), 4);
     }
-
-    // TODOTEST
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     // Disable stenciling - draw always
     glStencilFunc(GL_ALWAYS, 0, 0x00);
@@ -530,14 +514,6 @@ void RenderContext::UploadLandAndWaterEnd()
     // Upload land buffer
     glBufferData(GL_ARRAY_BUFFER, mLandBufferSize * sizeof(LandElement), mLandBuffer.get(), GL_DYNAMIC_DRAW);
 
-    // Describe InputPos
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
-
-    // TODOTEST
-    glEnableVertexAttribArray(0);
-
-    // TODOTEST
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 
     //
@@ -551,18 +527,6 @@ void RenderContext::UploadLandAndWaterEnd()
 
     // Upload water buffer
     glBufferData(GL_ARRAY_BUFFER, mWaterBufferSize * sizeof(WaterElement), mWaterBuffer.get(), GL_DYNAMIC_DRAW);
-
-    // Describe InputPos
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void*)0);
-    // Describe InputTextureY
-    glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void*)(2 * sizeof(float)));
-
-    // TODOTEST
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-
-    // TODOTEST
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void RenderContext::RenderLand()
@@ -577,17 +541,13 @@ void RenderContext::RenderLand()
 
     // Bind VBO
     glBindBuffer(GL_ARRAY_BUFFER, *mLandVBO);
-
-    // TODOTEST: THIS IS THE NEEDED ONE
+    
     // Describe InputPos
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
     // Draw
     glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mLandBufferSize));
-
-    // TODOTEST
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void RenderContext::RenderWater()
@@ -602,8 +562,7 @@ void RenderContext::RenderWater()
 
     // Bind VBO
     glBindBuffer(GL_ARRAY_BUFFER, *mWaterVBO);
-
-    // TODOTEST: needed
+    
     // Describe InputPos
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void*)0);
     // Describe InputTextureY
@@ -611,9 +570,6 @@ void RenderContext::RenderWater()
 
     // Draw
     glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mWaterBufferSize));
-
-    // TODOTEST
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void RenderContext::RenderEnd()
