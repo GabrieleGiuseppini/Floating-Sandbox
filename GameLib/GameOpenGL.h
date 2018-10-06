@@ -150,7 +150,8 @@ public:
     static void CompileShader(
         std::string const & shaderSource,
         GLenum shaderType,
-        GameOpenGLShaderProgram const & shaderProgram);
+        GameOpenGLShaderProgram const & shaderProgram,
+        std::string const & programName);
 
     static void LinkShaderProgram(
         GameOpenGLShaderProgram const & shaderProgram,

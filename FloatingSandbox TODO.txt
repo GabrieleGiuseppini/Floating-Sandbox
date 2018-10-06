@@ -51,8 +51,6 @@ Current perf
 ====================================================
 ====================== Plan ========================
 
-- Libsimdpp vector normalization
-
 ====================================================
 
 - New ships
@@ -60,6 +58,10 @@ Current perf
 		- Need Z buffer work first
 	- Warship
 	- See Moleskine
+
+= ShaderManager
+	+ WetColor, LightColor: make them static hardcoded params
+	- Get rid of vector_arrows shader, use matte
 
 = Make collisions with sea floor more dramatic
 	= vel *= 0.5

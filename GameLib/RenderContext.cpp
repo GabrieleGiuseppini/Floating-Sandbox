@@ -86,7 +86,7 @@ RenderContext::RenderContext(
     progressCallback(0.0f, "Loading shaders...");
 
     ShaderManager::GlobalParameters globalParameters(
-        3.45f); // TODOTEST
+        ropeColour); 
 
     mShaderManager = ShaderManager::CreateInstance(resourceLoader, globalParameters);
 
@@ -132,7 +132,7 @@ RenderContext::RenderContext(
         }
     )";
 
-    GameOpenGL::CompileShader(cloudVertexShaderSource, GL_VERTEX_SHADER, mCloudShaderProgram);
+    GameOpenGL::CompileShader(cloudVertexShaderSource, GL_VERTEX_SHADER, mCloudShaderProgram, "TODO");
 
     char const * cloudFragmentShaderSource = R"(
 
@@ -151,7 +151,7 @@ RenderContext::RenderContext(
         } 
     )";
 
-    GameOpenGL::CompileShader(cloudFragmentShaderSource, GL_FRAGMENT_SHADER, mCloudShaderProgram);
+    GameOpenGL::CompileShader(cloudFragmentShaderSource, GL_FRAGMENT_SHADER, mCloudShaderProgram, "TODO");
 
     // Bind attribute locations
     glBindAttribLocation(*mCloudShaderProgram, 0, "inputPos");
@@ -206,7 +206,7 @@ RenderContext::RenderContext(
         }
     )";
 
-    GameOpenGL::CompileShader(landVertexShaderSource, GL_VERTEX_SHADER, mLandShaderProgram);
+    GameOpenGL::CompileShader(landVertexShaderSource, GL_VERTEX_SHADER, mLandShaderProgram, "TODO");
 
     char const * landFragmentShaderSource = R"(
 
@@ -226,7 +226,7 @@ RenderContext::RenderContext(
         } 
     )";
 
-    GameOpenGL::CompileShader(landFragmentShaderSource, GL_FRAGMENT_SHADER, mLandShaderProgram);
+    GameOpenGL::CompileShader(landFragmentShaderSource, GL_FRAGMENT_SHADER, mLandShaderProgram, "TODO");
 
     // Bind attribute locations
     glBindAttribLocation(*mLandShaderProgram, 0, "inputPos");
@@ -288,7 +288,7 @@ RenderContext::RenderContext(
         }
     )";
 
-    GameOpenGL::CompileShader(waterVertexShaderSource, GL_VERTEX_SHADER, mWaterShaderProgram);
+    GameOpenGL::CompileShader(waterVertexShaderSource, GL_VERTEX_SHADER, mWaterShaderProgram, "TODO");
 
     char const * waterFragmentShaderSource = R"(
 
@@ -310,7 +310,7 @@ RenderContext::RenderContext(
         } 
     )";
 
-    GameOpenGL::CompileShader(waterFragmentShaderSource, GL_FRAGMENT_SHADER, mWaterShaderProgram);
+    GameOpenGL::CompileShader(waterFragmentShaderSource, GL_FRAGMENT_SHADER, mWaterShaderProgram, "TODO");
 
     // Bind attribute locations
     glBindAttribLocation(*mWaterShaderProgram, 0, "inputPos");
@@ -440,7 +440,7 @@ RenderContext::RenderContext(
         }
     )";
 
-    GameOpenGL::CompileShader(matteNdcShaderSource, GL_VERTEX_SHADER, mMatteNdcShaderProgram);
+    GameOpenGL::CompileShader(matteNdcShaderSource, GL_VERTEX_SHADER, mMatteNdcShaderProgram, "TODO");
 
     char const * matteNdcFragmentShaderSource = R"(
 
@@ -453,7 +453,7 @@ RenderContext::RenderContext(
         } 
     )";
 
-    GameOpenGL::CompileShader(matteNdcFragmentShaderSource, GL_FRAGMENT_SHADER, mMatteNdcShaderProgram);
+    GameOpenGL::CompileShader(matteNdcFragmentShaderSource, GL_FRAGMENT_SHADER, mMatteNdcShaderProgram, "TODO");
 
     // Bind attribute locations
     glBindAttribLocation(*mMatteNdcShaderProgram, 0, "inputPos");
@@ -489,7 +489,7 @@ RenderContext::RenderContext(
         }
     )";
 
-    GameOpenGL::CompileShader(matteWorldShaderSource, GL_VERTEX_SHADER, mMatteWorldShaderProgram);
+    GameOpenGL::CompileShader(matteWorldShaderSource, GL_VERTEX_SHADER, mMatteWorldShaderProgram, "TODO");
 
     char const * matteWorldFragmentShaderSource = R"(
 
@@ -502,7 +502,7 @@ RenderContext::RenderContext(
         } 
     )";
 
-    GameOpenGL::CompileShader(matteWorldFragmentShaderSource, GL_FRAGMENT_SHADER, mMatteWorldShaderProgram);
+    GameOpenGL::CompileShader(matteWorldFragmentShaderSource, GL_FRAGMENT_SHADER, mMatteWorldShaderProgram, "TODO");
 
     // Bind attribute locations
     glBindAttribLocation(*mMatteWorldShaderProgram, 0, "inputPos");

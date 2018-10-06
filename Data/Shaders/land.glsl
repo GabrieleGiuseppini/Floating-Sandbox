@@ -1,20 +1,18 @@
 ###VERTEX
 
-//
-// Clouds's inputs are directly in NDC coordinates
-//
-
 // Inputs
 attribute vec2 inputPos;
-attribute vec2 inputTexturePos;
+
+// Parameters
+uniform mat4 paramOrthoMatrix;
 
 // Outputs
 varying vec2 texturePos;
 
 void main()
 {
-    gl_Position = vec4(inputPos.xy, -1.0, 1.0);
-    texturePos = inputTexturePos;
+    gl_Position = paramOrthoMatrix * vec4(inputPos.xy, -1.0, 1.0);
+    texturePos = inputPos.xy;
 }
 
 ###FRAGMENT
@@ -27,8 +25,9 @@ uniform sampler2D inputTexture;
 
 // Parameters        
 uniform float paramAmbientLightIntensity;
+uniform vec2 paramTextureScaling;
 
 void main()
 {
-    gl_FragColor = texture2D(inputTexture, texturePos) * paramAmbientLightIntensity;
+    gl_FragColor = texture2D(inputTexture, texturePos * paramTextureScaling) * paramAmbientLightIntensity;
 } 

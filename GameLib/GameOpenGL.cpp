@@ -13,27 +13,38 @@
 void GameOpenGL::CompileShader(
     std::string const & shaderSource,
     GLenum shaderType,
-    GameOpenGLShaderProgram const & shaderProgram)
+    GameOpenGLShaderProgram const & shaderProgram,
+    std::string const & programName)
 {
     char const * shaderSourceCString = shaderSource.c_str();
 
-    // Compile
+    // Set source
     GLuint shader = glCreateShader(shaderType);
     glShaderSource(shader, 1, &shaderSourceCString, NULL);
-    glCompileShader(shader);
+    GLenum glError = glGetError();
+    if (GL_NO_ERROR != glError)
+    {
+        throw GameException("Error setting shader source for program \"" + programName + "\"");
+    }
 
-    // Check
+    // Compile
+    glCompileShader(shader);
     int success;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
     if (!success)
     {
         char infoLog[1024];
         glGetShaderInfoLog(shader, sizeof(infoLog), NULL, infoLog);
-        throw GameException("Error Compiling vertex shader: " + std::string(infoLog));
+        throw GameException("Error compiling shader: " + std::string(infoLog));
     }
 
     // Attach to program
     glAttachShader(*shaderProgram, shader);
+    glError = glGetError();
+    if (GL_NO_ERROR != glError)
+    {
+        throw GameException("Error attaching compiled shader to program \"" + programName + "\"");
+    }
 
     // Delete shader
     glDeleteShader(shader);
@@ -63,7 +74,7 @@ GLint GameOpenGL::GetParameterLocation(
     GLint parameterLocation = glGetUniformLocation(*shaderProgram, parameterName.c_str());
     if (parameterLocation == -1)
     {
-        throw GameException("ERROR retrieving location of parameter \"" + parameterName + "\"");
+        throw GameException("Cannot retrieve location of parameter \"" + parameterName + "\"");
     }
 
     return parameterLocation;

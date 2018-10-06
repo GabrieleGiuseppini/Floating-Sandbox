@@ -42,7 +42,16 @@ public:
     enum class ProgramType : uint32_t
     {
         Clouds = 0,
-        Water = 1,
+        GenericTextures,
+        Land,
+        Matte,
+        MatteNDC,
+        ShipRopes,
+        ShipStressedSprings,
+        ShipTrianglesColor,
+        ShipTrianglesTexture,
+        VectorArrows,
+        Water,
 
         _Last = Water
     };
@@ -50,24 +59,31 @@ public:
     enum class DynamicParameterType : uint32_t
     {
         AmbientLightIntensity = 0,
-        OrthoMatrix = 1
+        MatteColor,
+        OrthoMatrix,
+        TextureScaling,
+        WaterLevelThreshold,
+        WaterTransparency
     };
 
     struct GlobalParameters
     {
-        float ZDepth;
+        vec3f RopeColor;
 
         GlobalParameters(
-            float zDepth)
-            : ZDepth(zDepth)
+            vec3f ropeColor)
+            : RopeColor(ropeColor)
         {}
 
         void ToParameters(std::map<std::string, std::string> & parameters) const
         {
+            std::stringstream ss;
+            ss << std::fixed << RopeColor.x << ", " << RopeColor.y << ", " << RopeColor.z;
+
             parameters.insert(
                 std::make_pair(
-                    "Z_DEPTH",
-                    ToString(ZDepth)));
+                    "ROPE_COLOR_VEC3",
+                    ss.str()));
         }
     };
 
@@ -81,26 +97,30 @@ public:
         std::filesystem::path const & shadersRoot,
         GlobalParameters const & globalParameters);
 
-    void SetDynamicParameter(
-        ProgramType programType,
-        DynamicParameterType dynamicParameterType, 
-        float value)
+    template <ProgramType _ProgramType>
+    inline void ActivateProgram()
     {
-        uint32_t const programIndex = static_cast<uint32_t>(programType);
-        uint32_t const dynamicParameterIndex = static_cast<uint32_t>(dynamicParameterType);
+        uint32_t const programIndex = static_cast<uint32_t>(_ProgramType);
+
+        glUseProgram(*(mPrograms[programIndex].OpenGLHandle));
+    }
+
+    template <ProgramType _ProgramType, DynamicParameterType _DynamicParameterType>
+    inline void SetDynamicParameter(float value)
+    {
+        constexpr uint32_t programIndex = static_cast<uint32_t>(_ProgramType);
+        constexpr uint32_t dynamicParameterIndex = static_cast<uint32_t>(_DynamicParameterType);
 
         glUniform1f(
             mPrograms[programIndex].UniformLocations[dynamicParameterIndex], 
             value);
     }
 
-    void SetDynamicParameter(
-        ProgramType programType,
-        DynamicParameterType dynamicParameterType,
-        vec2f const & value)
+    template <ProgramType _ProgramType, DynamicParameterType _DynamicParameterType>
+    inline void SetDynamicParameter(vec2f const & value)
     {
-        uint32_t const programIndex = static_cast<uint32_t>(programType);
-        uint32_t const dynamicParameterIndex = static_cast<uint32_t>(dynamicParameterType);
+        constexpr uint32_t programIndex = static_cast<uint32_t>(_ProgramType);
+        constexpr uint32_t dynamicParameterIndex = static_cast<uint32_t>(_DynamicParameterType);
 
         glUniform2f(
             mPrograms[programIndex].UniformLocations[dynamicParameterIndex], 
@@ -108,13 +128,11 @@ public:
             value.y);
     }
 
-    void SetDynamicParameter(
-        ProgramType programType,
-        DynamicParameterType dynamicParameterType,
-        vec3f const & value)
+    template <ProgramType _ProgramType, DynamicParameterType _DynamicParameterType>
+    inline void SetDynamicParameter(vec3f const & value)
     {
-        uint32_t const programIndex = static_cast<uint32_t>(programType);
-        uint32_t const dynamicParameterIndex = static_cast<uint32_t>(dynamicParameterType);
+        constexpr uint32_t programIndex = static_cast<uint32_t>(_ProgramType);
+        constexpr uint32_t dynamicParameterIndex = static_cast<uint32_t>(_DynamicParameterType);
 
         glUniform3f(
             mPrograms[programIndex].UniformLocations[dynamicParameterIndex], 
@@ -123,13 +141,11 @@ public:
             value.z);
     }
 
-    void SetDynamicParameter(
-        ProgramType programType,
-        DynamicParameterType dynamicParameterType,
-        vec4f const & value)
+    template <ProgramType _ProgramType, DynamicParameterType _DynamicParameterType>
+    inline void SetDynamicParameter(vec4f const & value)
     {
-        uint32_t const programIndex = static_cast<uint32_t>(programType);
-        uint32_t const dynamicParameterIndex = static_cast<uint32_t>(dynamicParameterType);
+        constexpr uint32_t programIndex = static_cast<uint32_t>(_ProgramType);
+        constexpr uint32_t dynamicParameterIndex = static_cast<uint32_t>(_DynamicParameterType);
 
         glUniform4f(
             mPrograms[programIndex].UniformLocations[dynamicParameterIndex], 
@@ -139,13 +155,11 @@ public:
             value.w);
     }
 
-    void SetDynamicParameter(
-        ProgramType programType,
-        DynamicParameterType dynamicParameterType,
-        float const(&value)[4][4])
+    template <ProgramType _ProgramType, DynamicParameterType _DynamicParameterType>
+    inline void SetDynamicParameter(float const(&value)[4][4])
     {
-        uint32_t const programIndex = static_cast<uint32_t>(programType);
-        uint32_t const dynamicParameterIndex = static_cast<uint32_t>(dynamicParameterType);
+        constexpr uint32_t programIndex = static_cast<uint32_t>(_ProgramType);
+        constexpr uint32_t dynamicParameterIndex = static_cast<uint32_t>(_DynamicParameterType);
 
         glUniformMatrix4fv(
             mPrograms[programIndex].UniformLocations[dynamicParameterIndex],

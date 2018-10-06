@@ -121,7 +121,7 @@ ShipRenderContext::ShipRenderContext(
         }
     )";
 
-    GameOpenGL::CompileShader(elementColorVertexShaderSource, GL_VERTEX_SHADER, mElementColorShaderProgram);
+    GameOpenGL::CompileShader(elementColorVertexShaderSource, GL_VERTEX_SHADER, mElementColorShaderProgram, "TODO");
 
     char const * elementColorFragmentShaderSource = R"(
 
@@ -150,7 +150,7 @@ ShipRenderContext::ShipRenderContext(
         } 
     )";
 
-    GameOpenGL::CompileShader(elementColorFragmentShaderSource, GL_FRAGMENT_SHADER, mElementColorShaderProgram);
+    GameOpenGL::CompileShader(elementColorFragmentShaderSource, GL_FRAGMENT_SHADER, mElementColorShaderProgram, "TODO");
 
     // Bind attribute locations
     glBindAttribLocation(*mElementColorShaderProgram, PointPosVertexAttribute, "inputPos");
@@ -196,7 +196,7 @@ ShipRenderContext::ShipRenderContext(
         }
     )";
 
-    GameOpenGL::CompileShader(elementRopeVertexShaderSource, GL_VERTEX_SHADER, mElementRopeShaderProgram);
+    GameOpenGL::CompileShader(elementRopeVertexShaderSource, GL_VERTEX_SHADER, mElementRopeShaderProgram, "TODO");
 
     char const * elementRopeFragmentShaderSource = R"(
 
@@ -231,7 +231,7 @@ ShipRenderContext::ShipRenderContext(
         } 
     )";
 
-    GameOpenGL::CompileShader(elementRopeFragmentShaderSource, GL_FRAGMENT_SHADER, mElementRopeShaderProgram);
+    GameOpenGL::CompileShader(elementRopeFragmentShaderSource, GL_FRAGMENT_SHADER, mElementRopeShaderProgram, "TODO");
 
     // Bind attribute locations
     glBindAttribLocation(*mElementRopeShaderProgram, PointPosVertexAttribute, "inputPos");
@@ -290,7 +290,7 @@ ShipRenderContext::ShipRenderContext(
         }
     )";
 
-    GameOpenGL::CompileShader(elementShipTextureVertexShaderSource, GL_VERTEX_SHADER, mElementShipTextureShaderProgram);
+    GameOpenGL::CompileShader(elementShipTextureVertexShaderSource, GL_VERTEX_SHADER, mElementShipTextureShaderProgram, "TODO");
 
     char const * elementShipTextureFragmentShaderSource = R"(
 
@@ -328,7 +328,7 @@ ShipRenderContext::ShipRenderContext(
         } 
     )";
 
-    GameOpenGL::CompileShader(elementShipTextureFragmentShaderSource, GL_FRAGMENT_SHADER, mElementShipTextureShaderProgram);
+    GameOpenGL::CompileShader(elementShipTextureFragmentShaderSource, GL_FRAGMENT_SHADER, mElementShipTextureShaderProgram, "TODO");
 
     // Bind attribute locations
     glBindAttribLocation(*mElementShipTextureShaderProgram, PointPosVertexAttribute, "inputPos");
@@ -368,7 +368,7 @@ ShipRenderContext::ShipRenderContext(
         }
     )";
 
-    GameOpenGL::CompileShader(elementStressedSpringVertexShaderSource, GL_VERTEX_SHADER, mElementStressedSpringShaderProgram);
+    GameOpenGL::CompileShader(elementStressedSpringVertexShaderSource, GL_VERTEX_SHADER, mElementStressedSpringShaderProgram, "TODO");
 
     char const * elementStressedSpringFragmentShaderSource = R"(
     
@@ -387,7 +387,7 @@ ShipRenderContext::ShipRenderContext(
         } 
     )";
 
-    GameOpenGL::CompileShader(elementStressedSpringFragmentShaderSource, GL_FRAGMENT_SHADER, mElementStressedSpringShaderProgram);
+    GameOpenGL::CompileShader(elementStressedSpringFragmentShaderSource, GL_FRAGMENT_SHADER, mElementStressedSpringShaderProgram, "TODO");
 
     // Bind attribute locations
     glBindAttribLocation(*mElementStressedSpringShaderProgram, 0, "inputPos");
@@ -521,7 +521,7 @@ ShipRenderContext::ShipRenderContext(
         }
     )";
 
-    GameOpenGL::CompileShader(genericTextureVertexShaderSource, GL_VERTEX_SHADER, mGenericTextureShaderProgram);
+    GameOpenGL::CompileShader(genericTextureVertexShaderSource, GL_VERTEX_SHADER, mGenericTextureShaderProgram, "TODO");
 
     char const * genericTextureFragmentShaderSource = R"(
 
@@ -549,7 +549,7 @@ ShipRenderContext::ShipRenderContext(
         } 
     )";
 
-    GameOpenGL::CompileShader(genericTextureFragmentShaderSource, GL_FRAGMENT_SHADER, mGenericTextureShaderProgram);
+    GameOpenGL::CompileShader(genericTextureFragmentShaderSource, GL_FRAGMENT_SHADER, mGenericTextureShaderProgram, "TODO");
 
     // Bind attribute locations
     glBindAttribLocation(*mGenericTextureShaderProgram, GenericTexturePosVertexAttribute, "inputPos");
@@ -605,7 +605,7 @@ ShipRenderContext::ShipRenderContext(
         }
     )";
 
-    GameOpenGL::CompileShader(vectorArrowVertexShaderSource, GL_VERTEX_SHADER, mVectorArrowShaderProgram);
+    GameOpenGL::CompileShader(vectorArrowVertexShaderSource, GL_VERTEX_SHADER, mVectorArrowShaderProgram, "TODO");
 
     char const * vectorArrowFragmentShaderSource = R"(
 
@@ -618,7 +618,7 @@ ShipRenderContext::ShipRenderContext(
         } 
     )";
 
-    GameOpenGL::CompileShader(vectorArrowFragmentShaderSource, GL_FRAGMENT_SHADER, mVectorArrowShaderProgram);
+    GameOpenGL::CompileShader(vectorArrowFragmentShaderSource, GL_FRAGMENT_SHADER, mVectorArrowShaderProgram, "TODO");
 
     // Bind attribute locations
     glBindAttribLocation(*mVectorArrowShaderProgram, VectorArrowPosVertexAttribute, "inputPos");

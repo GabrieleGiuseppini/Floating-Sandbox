@@ -11,6 +11,8 @@
 
 #include <regex>
 
+static const std::string StaticParametersFilenameStem = "static_parameters";
+
 namespace /* anonymous */ {
 
     ShaderManager::ProgramType StrToProgramType(std::string const & str)
@@ -18,6 +20,24 @@ namespace /* anonymous */ {
         std::string lstr = Utils::ToLower(str);
         if (lstr == "clouds")
             return ShaderManager::ProgramType::Clouds;
+        else if (lstr == "generic_textures")
+            return ShaderManager::ProgramType::GenericTextures;
+        else if (lstr == "land")
+            return ShaderManager::ProgramType::Land;
+        else if (lstr == "matte")
+            return ShaderManager::ProgramType::Matte;
+        else if (lstr == "matte_ndc")
+            return ShaderManager::ProgramType::MatteNDC;
+        else if (lstr == "ship_ropes")
+            return ShaderManager::ProgramType::ShipRopes;
+        else if (lstr == "ship_stressed_springs")
+            return ShaderManager::ProgramType::ShipStressedSprings;
+        else if (lstr == "ship_triangles_color")
+            return ShaderManager::ProgramType::ShipTrianglesColor;
+        else if (lstr == "ship_triangles_texture")
+            return ShaderManager::ProgramType::ShipTrianglesTexture;
+        else if (lstr == "vector_arrows")
+            return ShaderManager::ProgramType::VectorArrows;
         else if (lstr == "water")
             return ShaderManager::ProgramType::Water;
         else
@@ -30,6 +50,24 @@ namespace /* anonymous */ {
         {
         case ShaderManager::ProgramType::Clouds:
             return "Clouds";
+        case ShaderManager::ProgramType::GenericTextures:
+            return "GenericTextures";
+        case ShaderManager::ProgramType::Land:
+            return "Land";
+        case ShaderManager::ProgramType::Matte:
+            return "Matte";
+        case ShaderManager::ProgramType::MatteNDC:
+            return "MatteNDC";
+        case ShaderManager::ProgramType::ShipRopes:
+            return "ShipRopes";
+        case ShaderManager::ProgramType::ShipStressedSprings:
+            return "ShipStressedSprings";
+        case ShaderManager::ProgramType::ShipTrianglesColor:
+            return "ShipTrianglesColor";
+        case ShaderManager::ProgramType::ShipTrianglesTexture:
+            return "ShipTrianglesTexture";
+        case ShaderManager::ProgramType::VectorArrows:
+            return "VectorArrows";
         case ShaderManager::ProgramType::Water:
             return "Water";
         default:
@@ -42,8 +80,16 @@ namespace /* anonymous */ {
     {
         if (str == "AmbientLightIntensity")
             return ShaderManager::DynamicParameterType::AmbientLightIntensity;
+        else if (str == "MatteColor")
+            return ShaderManager::DynamicParameterType::MatteColor;
         else if (str == "OrthoMatrix")
             return ShaderManager::DynamicParameterType::OrthoMatrix;
+        else if (str == "TextureScaling")
+            return ShaderManager::DynamicParameterType::TextureScaling;
+        else if (str == "WaterLevelThreshold")
+            return ShaderManager::DynamicParameterType::WaterLevelThreshold;
+        else if (str == "WaterTransparency")
+            return ShaderManager::DynamicParameterType::WaterTransparency;
         else
             throw GameException("Unrecognized dynamic parameter \"" + str + "\"");
     }
@@ -54,8 +100,16 @@ namespace /* anonymous */ {
         {
         case ShaderManager::DynamicParameterType::AmbientLightIntensity:
             return "AmbientLightIntensity";
+        case ShaderManager::DynamicParameterType::MatteColor:
+            return "MatteColor";
         case ShaderManager::DynamicParameterType::OrthoMatrix:
             return "OrthoMatrix";
+        case ShaderManager::DynamicParameterType::TextureScaling:
+            return "TextureScaling";
+        case ShaderManager::DynamicParameterType::WaterLevelThreshold:
+            return "WaterLevelThreshold";
+        case ShaderManager::DynamicParameterType::WaterTransparency:
+            return "WaterTransparency";
         default:
             assert(false);
             throw GameException("Unsupported DynamicParameterType");
@@ -92,7 +146,7 @@ ShaderManager::ShaderManager(
     globalParameters.ToParameters(staticParameters);
 
     // 2) From file
-    std::filesystem::path localStaticParametersFilepath = shadersRoot / "static_parameters.glsl";
+    std::filesystem::path localStaticParametersFilepath = shadersRoot / (StaticParametersFilenameStem + ".glsl");
     if (std::filesystem::exists(localStaticParametersFilepath))
     {
         std::string localStaticParametersSource = Utils::LoadTextFile(localStaticParametersFilepath);
@@ -104,9 +158,11 @@ ShaderManager::ShaderManager(
     // Enumerate and compile all shader files
     //
 
-    for (auto const & entryIt : std::filesystem::directory_iterator(shadersRoot / "*.glsl"))
+    for (auto const & entryIt : std::filesystem::directory_iterator(shadersRoot))
     {
-        if (std::filesystem::is_regular_file(entryIt.path()))
+        if (std::filesystem::is_regular_file(entryIt.path())
+            && entryIt.path().extension() == ".glsl"
+            && entryIt.path().stem() != StaticParametersFilenameStem)
         {
             CompileShader(entryIt.path(), staticParameters);
         }
@@ -135,7 +191,8 @@ void ShaderManager::CompileShader(
     try
     {
         // Get the program type
-        ProgramType programType = StrToProgramType(shaderFilepath.stem().string());
+        ProgramType const programType = StrToProgramType(shaderFilepath.stem().string());
+        std::string const programName = ProgramTypeToStr(programType);
 
         // Make sure we have room for it
         size_t programIndex = static_cast<size_t>(programType);
@@ -160,7 +217,11 @@ void ShaderManager::CompileShader(
 
         vertexShaderSource = SubstituteStaticParameters(vertexShaderSource, staticParameters);
 
-        GameOpenGL::CompileShader(vertexShaderSource, GL_VERTEX_SHADER, mPrograms[programIndex].OpenGLHandle);
+        GameOpenGL::CompileShader(
+            vertexShaderSource, 
+            GL_VERTEX_SHADER, 
+            mPrograms[programIndex].OpenGLHandle,
+            programName);
 
 
         //
@@ -169,7 +230,18 @@ void ShaderManager::CompileShader(
 
         fragmentShaderSource = SubstituteStaticParameters(fragmentShaderSource, staticParameters);
 
-        GameOpenGL::CompileShader(fragmentShaderSource, GL_FRAGMENT_SHADER, mPrograms[programIndex].OpenGLHandle);
+        GameOpenGL::CompileShader(
+            fragmentShaderSource, 
+            GL_FRAGMENT_SHADER, 
+            mPrograms[programIndex].OpenGLHandle,
+            programName);
+
+
+        //
+        // Link
+        //
+
+        GameOpenGL::LinkShaderProgram(mPrograms[programIndex].OpenGLHandle, programName);
 
 
         //
@@ -268,7 +340,7 @@ void ShaderManager::ParseLocalStaticParameters(
     std::string const & localStaticParametersSource,
     std::map<std::string, std::string> & staticParameters)
 {
-    static std::regex StaticParamDefinitionRegex(R"!(^\s*([_a-zA-Z][_a-zA-Z0-9]*)\s*=\s*([^\s]*)\s*$)!");
+    static std::regex StaticParamDefinitionRegex(R"!(^\s*([_a-zA-Z][_a-zA-Z0-9]*)\s*=(.*)$)!");
 
     std::stringstream sSource(localStaticParametersSource);
     std::string line;
