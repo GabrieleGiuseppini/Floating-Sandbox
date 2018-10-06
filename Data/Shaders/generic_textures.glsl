@@ -1,13 +1,15 @@
 ###VERTEX
 
+#version 130
+
 // Inputs
-attribute vec2 inputPos;
-attribute vec2 inputTextureCoords;
-float inputAmbientLightSensitivity;
+in vec2 inputPos;
+in vec2 inputTextureCoords;
+in float inputAmbientLightSensitivity;
 
 // Outputs
-varying vec2 vertexTextureCoords;
-varying float vertexAmbientLightSensitivity;
+out vec2 vertexTextureCoords;
+out float vertexAmbientLightSensitivity;
 
 // Params
 uniform mat4 paramOrthoMatrix;
@@ -21,9 +23,11 @@ void main()
 
 ###FRAGMENT
 
+#version 130
+
 // Inputs from previous shader
-varying vec2 vertexTextureCoords;
-varying float vertexAmbientLightSensitivity;
+in vec2 vertexTextureCoords;
+in float vertexAmbientLightSensitivity;
 
 // The texture
 uniform sampler2D inputTexture;

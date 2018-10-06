@@ -608,9 +608,6 @@ private:
     // Clouds
     //
 
-    GameOpenGLShaderProgram mCloudShaderProgram;
-    GLint mCloudShaderAmbientLightIntensityParameter;
-
 #pragma pack(push)
     struct CloudElement
     {
@@ -648,10 +645,6 @@ private:
     // Land
     //
 
-    GameOpenGLShaderProgram mLandShaderProgram;
-    GLint mLandShaderAmbientLightIntensityParameter;
-    GLint mLandShaderOrthoMatrixParameter;
-
 #pragma pack(push)
     struct LandElement
     {
@@ -671,11 +664,6 @@ private:
     //
     // Sea water
     //
-
-    GameOpenGLShaderProgram mWaterShaderProgram;
-    GLint mWaterShaderAmbientLightIntensityParameter;
-    GLint mWaterShaderWaterTransparencyParameter;
-    GLint mWaterShaderOrthoMatrixParameter;
 
 #pragma pack(push)
     struct WaterElement
@@ -702,20 +690,6 @@ private:
 
     std::vector<std::unique_ptr<ShipRenderContext>> mShips;
     vec3f const mRopeColour;
-
-
-    //
-    // Multi-purpose shaders
-    //
-
-    GameOpenGLShaderProgram mMatteNdcShaderProgram;
-    GLint mMatteNdcShaderColorParameter;
-    GameOpenGLVBO mMatteNdcVBO;
-
-    GameOpenGLShaderProgram mMatteWorldShaderProgram;
-    GLint mMatteWorldShaderColorParameter;
-    GLint mMatteWorldShaderOrthoMatrixParameter;
-    GameOpenGLVBO mMatteWorldVBO;
 
 private:
 

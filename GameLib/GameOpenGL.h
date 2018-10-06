@@ -145,6 +145,12 @@ public:
         {
             throw std::runtime_error("This game requires at least OpenGL 2.0 support; the version currently supported by your computer is " + std::string(glVersion));
         }
+
+        //
+        // Get some constants
+        //
+
+        glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &MaxVertexAttributes);
     }
 
     static void CompileShader(
@@ -164,4 +170,8 @@ public:
     static void UploadMipmappedTexture(TextureFrame baseTexture);
 
     static void UploadMipmappedTexture(ImageData baseTexture);
+
+private:
+
+    static int MaxVertexAttributes;
 };

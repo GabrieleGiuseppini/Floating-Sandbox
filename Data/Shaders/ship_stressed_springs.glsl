@@ -1,10 +1,12 @@
 ###VERTEX
 
+#version 130
+
 // Inputs
-attribute vec2 inputPos;
+in vec2 inputPos;
 
 // Outputs        
-varying vec2 vertexTextureCoords;
+out vec2 vertexTextureCoords;
 
 // Params
 uniform mat4 paramOrthoMatrix;
@@ -17,8 +19,10 @@ void main()
 
 ###FRAGMENT
 
+#version 130
+
 // Inputs
-varying vec2 vertexTextureCoords;
+in vec2 vertexTextureCoords;
 
 // Input texture
 uniform sampler2D inputTexture;

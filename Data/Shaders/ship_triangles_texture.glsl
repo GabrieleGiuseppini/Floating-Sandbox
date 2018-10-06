@@ -1,15 +1,17 @@
 ###VERTEX
 
+#version 130
+
 // Inputs
-attribute vec2 inputPos;        
-attribute float inputLight;
-attribute float inputWater;
-attribute vec2 inputTextureCoords;
+in vec2 inputPos;        
+in float inputLight;
+in float inputWater;
+in vec2 inputTextureCoords;
 
 // Outputs        
-varying float vertexLight;
-varying float vertexWater;
-varying vec2 vertexTextureCoords;
+out float vertexLight;
+out float vertexWater;
+out vec2 vertexTextureCoords;
 
 // Params
 uniform mat4 paramOrthoMatrix;
@@ -25,10 +27,12 @@ void main()
 
 ###FRAGMENT
 
+#version 130
+
 // Inputs from previous shader        
-varying float vertexLight;
-varying float vertexWater;
-varying vec2 vertexTextureCoords;
+in float vertexLight;
+in float vertexWater;
+in vec2 vertexTextureCoords;
 
 // Input texture
 uniform sampler2D inputTexture;

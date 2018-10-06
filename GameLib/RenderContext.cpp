@@ -16,25 +16,16 @@ RenderContext::RenderContext(
     : mShaderManager()
     , mTextureRenderManager()
     // Clouds
-    , mCloudShaderProgram()
-    , mCloudShaderAmbientLightIntensityParameter(0)
     , mCloudBuffer()
     , mCloudBufferSize(0u)
     , mCloudBufferMaxSize(0u)    
     , mCloudVBO()
     // Land
-    , mLandShaderProgram()
-    , mLandShaderAmbientLightIntensityParameter(0)
-    , mLandShaderOrthoMatrixParameter(0)
     , mLandBuffer()
     , mLandBufferSize(0u)
     , mLandBufferMaxSize(0u)
     , mLandVBO()
     // Sea water
-    , mWaterShaderProgram()
-    , mWaterShaderAmbientLightIntensityParameter(0)
-    , mWaterShaderWaterTransparencyParameter(0)
-    , mWaterShaderOrthoMatrixParameter(0)
     , mWaterBuffer()
     , mWaterBufferSize(0u)
     , mWaterBufferMaxSize(0u)
@@ -42,14 +33,6 @@ RenderContext::RenderContext(
     // Ships
     , mShips()
     , mRopeColour(ropeColour)
-    // Multi-purpose shaders
-    , mMatteNdcShaderProgram()
-    , mMatteNdcShaderColorParameter(0)
-    , mMatteNdcVBO()
-    , mMatteWorldShaderProgram()
-    , mMatteWorldShaderColorParameter(0)
-    , mMatteWorldShaderOrthoMatrixParameter(0)
-    , mMatteWorldVBO()
     // Render parameters
     , mZoom(1.0f)
     , mCamX(0.0f)
@@ -110,68 +93,16 @@ RenderContext::RenderContext(
     // Clouds 
     //
 
-    mCloudTextureCount = textureDatabase.GetGroup(TextureGroupType::Cloud).GetFrameCount();
-
-    // Create program
-
-    mCloudShaderProgram = glCreateProgram();
-
-    char const * cloudVertexShaderSource = R"(
-
-        // Inputs
-        attribute vec2 inputPos;
-        attribute vec2 inputTexturePos;
-        
-        // Outputs
-        varying vec2 texturePos;
-
-        void main()
-        {
-            gl_Position = vec4(inputPos.xy, -1.0, 1.0);
-            texturePos = inputTexturePos;
-        }
-    )";
-
-    GameOpenGL::CompileShader(cloudVertexShaderSource, GL_VERTEX_SHADER, mCloudShaderProgram, "TODO");
-
-    char const * cloudFragmentShaderSource = R"(
-
-        // Inputs from previous shader
-        varying vec2 texturePos;
-
-        // The texture
-        uniform sampler2D inputTexture;
-
-        // Parameters        
-        uniform float paramAmbientLightIntensity;
-
-        void main()
-        {
-            gl_FragColor = texture2D(inputTexture, texturePos) * paramAmbientLightIntensity;
-        } 
-    )";
-
-    GameOpenGL::CompileShader(cloudFragmentShaderSource, GL_FRAGMENT_SHADER, mCloudShaderProgram, "TODO");
-
     // Bind attribute locations
-    glBindAttribLocation(*mCloudShaderProgram, 0, "inputPos");
-    glBindAttribLocation(*mCloudShaderProgram, 1, "inputTexturePos");
-
-    // Link
-    GameOpenGL::LinkShaderProgram(mCloudShaderProgram, "Cloud");
-
-    // Get uniform locations
-    mCloudShaderAmbientLightIntensityParameter = GameOpenGL::GetParameterLocation(mCloudShaderProgram, "paramAmbientLightIntensity");
-
+    mShaderManager->BindAttributeLocation<ShaderManager::ProgramType::Clouds>(0, "inputPos");
+    mShaderManager->BindAttributeLocation<ShaderManager::ProgramType::Clouds>(1, "inputTexturePos");
+    
     // Create VBO    
     glGenBuffers(1, &tmpGLuint);
     mCloudVBO = tmpGLuint;
 
-    // Set hardcoded parameters
-    glUseProgram(*mCloudShaderProgram);
-    glUseProgram(0);
-
     // Upload textures
+    mCloudTextureCount = textureDatabase.GetGroup(TextureGroupType::Cloud).GetFrameCount();
     mTextureRenderManager->UploadGroup(
         textureDatabase.GetGroup(TextureGroupType::Cloud),
         [&progressCallback](float progress, std::string const &)
@@ -184,73 +115,21 @@ RenderContext::RenderContext(
     // Land 
     //
 
-    // Create program
-
-    mLandShaderProgram = glCreateProgram();
-
-    char const * landVertexShaderSource = R"(
-
-        // Inputs
-        attribute vec2 inputPos;
-        
-        // Parameters
-        uniform mat4 paramOrthoMatrix;
-
-        // Outputs
-        varying vec2 texturePos;
-
-        void main()
-        {
-            gl_Position = paramOrthoMatrix * vec4(inputPos.xy, -1.0, 1.0);
-            texturePos = inputPos.xy;
-        }
-    )";
-
-    GameOpenGL::CompileShader(landVertexShaderSource, GL_VERTEX_SHADER, mLandShaderProgram, "TODO");
-
-    char const * landFragmentShaderSource = R"(
-
-        // Inputs from previous shader
-        varying vec2 texturePos;
-
-        // The texture
-        uniform sampler2D inputTexture;
-
-        // Parameters        
-        uniform float paramAmbientLightIntensity;
-        uniform vec2 paramTextureScaling;
-
-        void main()
-        {
-            gl_FragColor = texture2D(inputTexture, texturePos * paramTextureScaling) * paramAmbientLightIntensity;
-        } 
-    )";
-
-    GameOpenGL::CompileShader(landFragmentShaderSource, GL_FRAGMENT_SHADER, mLandShaderProgram, "TODO");
-
     // Bind attribute locations
-    glBindAttribLocation(*mLandShaderProgram, 0, "inputPos");
-
-    // Link
-    GameOpenGL::LinkShaderProgram(mLandShaderProgram, "Land");
-
-    // Get uniform locations
-    mLandShaderAmbientLightIntensityParameter = GameOpenGL::GetParameterLocation(mLandShaderProgram, "paramAmbientLightIntensity");
-    GLint landShaderTextureScalingParameter = GameOpenGL::GetParameterLocation(mLandShaderProgram, "paramTextureScaling");
-    mLandShaderOrthoMatrixParameter = GameOpenGL::GetParameterLocation(mLandShaderProgram, "paramOrthoMatrix");
+    mShaderManager->BindAttributeLocation<ShaderManager::ProgramType::Land>(0, "inputPos");
 
     // Create VBO    
     glGenBuffers(1, &tmpGLuint);
     mLandVBO = tmpGLuint;
 
     // Set hardcoded parameters
-    glUseProgram(*mLandShaderProgram);
     auto const & landTextureMetadata = textureDatabase.GetFrameMetadata(TextureGroupType::Land, 0);
-    glUniform2f(
-        landShaderTextureScalingParameter, 
-        1.0f / landTextureMetadata.WorldWidth,
-        1.0f / landTextureMetadata.WorldHeight);
-    glUseProgram(0);
+    mShaderManager->ActivateProgram<ShaderManager::ProgramType::Land>();
+    mShaderManager->SetDynamicParameter<
+        ShaderManager::ProgramType::Land,
+        ShaderManager::DynamicParameterType::TextureScaling>(
+            1.0f / landTextureMetadata.WorldWidth,
+            1.0f / landTextureMetadata.WorldHeight);
 
     // Upload textures
     mTextureRenderManager->UploadMipmappedGroup(
@@ -265,78 +144,22 @@ RenderContext::RenderContext(
     // Water 
     //
 
-    // Create program
-
-    mWaterShaderProgram = glCreateProgram();
-
-    char const * waterVertexShaderSource = R"(
-
-        // Inputs
-        attribute vec2 inputPos;
-        attribute float inputTextureY;
-
-        // Parameters
-        uniform mat4 paramOrthoMatrix;
-
-        // Outputs
-        varying vec2 texturePos;
-
-        void main()
-        {
-            gl_Position = paramOrthoMatrix * vec4(inputPos.xy, -1.0, 1.0);
-            texturePos = vec2(inputPos.x, inputTextureY);
-        }
-    )";
-
-    GameOpenGL::CompileShader(waterVertexShaderSource, GL_VERTEX_SHADER, mWaterShaderProgram, "TODO");
-
-    char const * waterFragmentShaderSource = R"(
-
-        // Inputs from previous shader
-        varying vec2 texturePos;
-
-        // The texture
-        uniform sampler2D inputTexture;
-
-        // Parameters        
-        uniform float paramAmbientLightIntensity;
-        uniform float paramWaterTransparency;
-        uniform vec2 paramTextureScaling;
-
-        void main()
-        {
-            vec4 textureColor = texture2D(inputTexture, texturePos * paramTextureScaling);
-            gl_FragColor = vec4(textureColor.xyz, 1.0 - paramWaterTransparency) * paramAmbientLightIntensity;
-        } 
-    )";
-
-    GameOpenGL::CompileShader(waterFragmentShaderSource, GL_FRAGMENT_SHADER, mWaterShaderProgram, "TODO");
-
     // Bind attribute locations
-    glBindAttribLocation(*mWaterShaderProgram, 0, "inputPos");
-    glBindAttribLocation(*mWaterShaderProgram, 1, "inputTextureY");
-
-    // Link
-    GameOpenGL::LinkShaderProgram(mWaterShaderProgram, "Water");
-
-    // Get uniform locations    
-    mWaterShaderAmbientLightIntensityParameter = GameOpenGL::GetParameterLocation(mWaterShaderProgram, "paramAmbientLightIntensity");
-    mWaterShaderWaterTransparencyParameter = GameOpenGL::GetParameterLocation(mWaterShaderProgram, "paramWaterTransparency");
-    GLint waterShaderTextureScalingParameter = GameOpenGL::GetParameterLocation(mWaterShaderProgram, "paramTextureScaling");
-    mWaterShaderOrthoMatrixParameter = GameOpenGL::GetParameterLocation(mWaterShaderProgram, "paramOrthoMatrix");
+    mShaderManager->BindAttributeLocation<ShaderManager::ProgramType::Water>(0, "inputPos");
+    mShaderManager->BindAttributeLocation<ShaderManager::ProgramType::Water>(1, "inputTextureY");
 
     // Create VBO
     glGenBuffers(1, &tmpGLuint);
     mWaterVBO = tmpGLuint;
 
     // Set hardcoded parameters
-    glUseProgram(*mWaterShaderProgram);
     auto const & waterTextureMetadata = textureDatabase.GetFrameMetadata(TextureGroupType::Water, 0);
-    glUniform2f(
-        waterShaderTextureScalingParameter,
-        1.0f / waterTextureMetadata.WorldWidth,
-        1.0f / waterTextureMetadata.WorldHeight);
-    glUseProgram(0);
+    mShaderManager->ActivateProgram<ShaderManager::ProgramType::Water>();
+    mShaderManager->SetDynamicParameter<
+        ShaderManager::ProgramType::Water, 
+        ShaderManager::DynamicParameterType::TextureScaling>(
+            1.0f / waterTextureMetadata.WorldWidth,
+            1.0f / waterTextureMetadata.WorldHeight);
 
     // Upload textures
     mTextureRenderManager->UploadGroup(
@@ -427,96 +250,16 @@ RenderContext::RenderContext(
     // Multi-purpose Matte NDC shader
     //
 
-    mMatteNdcShaderProgram = glCreateProgram();
-
-    char const * matteNdcShaderSource = R"(
-
-        // Inputs
-        attribute vec2 inputPos;
-
-        void main()
-        {
-            gl_Position = vec4(inputPos.xy, -1.0, 1.0);
-        }
-    )";
-
-    GameOpenGL::CompileShader(matteNdcShaderSource, GL_VERTEX_SHADER, mMatteNdcShaderProgram, "TODO");
-
-    char const * matteNdcFragmentShaderSource = R"(
-
-        // Params
-        uniform vec4 paramCol;
-
-        void main()
-        {
-            gl_FragColor = paramCol;
-        } 
-    )";
-
-    GameOpenGL::CompileShader(matteNdcFragmentShaderSource, GL_FRAGMENT_SHADER, mMatteNdcShaderProgram, "TODO");
-
     // Bind attribute locations
-    glBindAttribLocation(*mMatteNdcShaderProgram, 0, "inputPos");
-
-    // Link
-    GameOpenGL::LinkShaderProgram(mMatteNdcShaderProgram, "Matte NDC");
-
-    // Get uniform locations
-    mMatteNdcShaderColorParameter = GameOpenGL::GetParameterLocation(mMatteNdcShaderProgram, "paramCol");
-
-    // Create VBO
-    glGenBuffers(1, &tmpGLuint);
-    mMatteNdcVBO = tmpGLuint;
+    mShaderManager->BindAttributeLocation<ShaderManager::ProgramType::MatteNDC>(0, "inputPos");
 
 
     //
     // Multi-purpose Matte World shader
     //
 
-    mMatteWorldShaderProgram = glCreateProgram();
-
-    char const * matteWorldShaderSource = R"(
-
-        // Inputs
-        attribute vec2 inputPos;
-
-        // Params
-        uniform mat4 paramOrthoMatrix;
-
-        void main()
-        {
-            gl_Position = paramOrthoMatrix * vec4(inputPos.xy, -1.0, 1.0);
-        }
-    )";
-
-    GameOpenGL::CompileShader(matteWorldShaderSource, GL_VERTEX_SHADER, mMatteWorldShaderProgram, "TODO");
-
-    char const * matteWorldFragmentShaderSource = R"(
-
-        // Params
-        uniform vec4 paramCol;
-
-        void main()
-        {
-            gl_FragColor = paramCol;
-        } 
-    )";
-
-    GameOpenGL::CompileShader(matteWorldFragmentShaderSource, GL_FRAGMENT_SHADER, mMatteWorldShaderProgram, "TODO");
-
     // Bind attribute locations
-    glBindAttribLocation(*mMatteWorldShaderProgram, 0, "inputPos");
-
-    // Link
-    GameOpenGL::LinkShaderProgram(mMatteWorldShaderProgram, "Matte World");
-
-    // Get uniform locations
-    mMatteWorldShaderColorParameter = GameOpenGL::GetParameterLocation(mMatteWorldShaderProgram, "paramCol");
-    mMatteWorldShaderOrthoMatrixParameter = GameOpenGL::GetParameterLocation(mMatteWorldShaderProgram, "paramOrthoMatrix");
-
-    // Create VBO
-    glGenBuffers(1, &tmpGLuint);
-    mMatteWorldVBO = tmpGLuint;
+    mShaderManager->BindAttributeLocation<ShaderManager::ProgramType::Matte>(0, "inputPos");
 
 
     //
@@ -645,10 +388,12 @@ void RenderContext::RenderCloudsEnd()
     //
 
     // Use matte world program
-    glUseProgram(*mMatteWorldShaderProgram);
+    mShaderManager->ActivateProgram<ShaderManager::ProgramType::Matte>();
 
     // Set parameters
-    glUniform4f(mMatteWorldShaderColorParameter, 1.0f, 1.0f, 1.0f, 1.0f);
+    mShaderManager->SetDynamicParameter<
+        ShaderManager::ProgramType::Matte,
+        ShaderManager::DynamicParameterType::MatteColor>(1.0f, 1.0f, 1.0f, 1.0f);
 
     // Bind water buffer
     glBindBuffer(GL_ARRAY_BUFFER, *mWaterVBO);
@@ -674,8 +419,6 @@ void RenderContext::RenderCloudsEnd()
     // Re-enable writing to the color buffer
     glColorMask(true, true, true, true);
     
-    // Stop using program
-    glUseProgram(0);
 
 
 
@@ -686,12 +429,13 @@ void RenderContext::RenderCloudsEnd()
     assert(mCloudBufferSize == mCloudBufferMaxSize);
 
     // Use program
-    glUseProgram(*mCloudShaderProgram);
+    mShaderManager->ActivateProgram<ShaderManager::ProgramType::Clouds>();
 
     // Upload cloud buffer 
     glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
     glBufferData(GL_ARRAY_BUFFER, mCloudBufferSize * sizeof(CloudElement), mCloudBuffer.get(), GL_DYNAMIC_DRAW);
 
+    // TODO: should move this one above
     // Describe InputPos
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, (2 + 2) * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -721,9 +465,6 @@ void RenderContext::RenderCloudsEnd()
 
     // Disable stenciling - draw always
     glStencilFunc(GL_ALWAYS, 0, 0x00);
-
-    // Stop using program
-    glUseProgram(0);
 }
 
 void RenderContext::UploadLandAndWaterStart(size_t slices)
@@ -792,7 +533,7 @@ void RenderContext::UploadLandAndWaterEnd()
 void RenderContext::RenderLand()
 {
     // Use program
-    glUseProgram(*mLandShaderProgram);
+    mShaderManager->ActivateProgram<ShaderManager::ProgramType::Land>();
 
     // Bind texture
     glBindTexture(
@@ -819,7 +560,7 @@ void RenderContext::RenderLand()
 void RenderContext::RenderWater()
 {
     // Use program
-    glUseProgram(*mWaterShaderProgram);
+    mShaderManager->ActivateProgram<ShaderManager::ProgramType::Water>();
 
     // Bind texture
     glBindTexture(
@@ -876,14 +617,20 @@ void RenderContext::UpdateOrthoMatrix()
 
     // Set parameters in all programs
 
-    glUseProgram(*mMatteWorldShaderProgram);
-    glUniformMatrix4fv(mMatteWorldShaderOrthoMatrixParameter, 1, GL_FALSE, &(mOrthoMatrix[0][0]));
+    mShaderManager->ActivateProgram<ShaderManager::ProgramType::Land>();
+    mShaderManager->SetDynamicParameter<
+        ShaderManager::ProgramType::Land,
+        ShaderManager::DynamicParameterType::OrthoMatrix>(mOrthoMatrix);
 
-    glUseProgram(*mLandShaderProgram);
-    glUniformMatrix4fv(mLandShaderOrthoMatrixParameter, 1, GL_FALSE, &(mOrthoMatrix[0][0]));
+    mShaderManager->ActivateProgram<ShaderManager::ProgramType::Water>();
+    mShaderManager->SetDynamicParameter<
+        ShaderManager::ProgramType::Water,
+        ShaderManager::DynamicParameterType::OrthoMatrix>(mOrthoMatrix);
 
-    glUseProgram(*mWaterShaderProgram);
-    glUniformMatrix4fv(mWaterShaderOrthoMatrixParameter, 1, GL_FALSE, &(mOrthoMatrix[0][0]));
+    mShaderManager->ActivateProgram<ShaderManager::ProgramType::Matte>();
+    mShaderManager->SetDynamicParameter<
+        ShaderManager::ProgramType::Matte,
+        ShaderManager::DynamicParameterType::OrthoMatrix>(mOrthoMatrix);
 }
 
 void RenderContext::UpdateVisibleWorldCoordinates()
@@ -913,22 +660,30 @@ void RenderContext::UpdateAmbientLightIntensity()
 
     // Set parameters in all programs
 
-    glUseProgram(*mLandShaderProgram);
-    glUniform1f(mLandShaderAmbientLightIntensityParameter, mAmbientLightIntensity);
+    mShaderManager->ActivateProgram<ShaderManager::ProgramType::Clouds>();
+    mShaderManager->SetDynamicParameter<
+        ShaderManager::ProgramType::Clouds,
+        ShaderManager::DynamicParameterType::AmbientLightIntensity>(mAmbientLightIntensity);
 
-    glUseProgram(*mWaterShaderProgram);
-    glUniform1f(mWaterShaderAmbientLightIntensityParameter, mAmbientLightIntensity);
+    mShaderManager->ActivateProgram<ShaderManager::ProgramType::Land>();
+    mShaderManager->SetDynamicParameter<
+        ShaderManager::ProgramType::Land,
+        ShaderManager::DynamicParameterType::AmbientLightIntensity>(mAmbientLightIntensity);
 
-    glUseProgram(*mCloudShaderProgram);
-    glUniform1f(mCloudShaderAmbientLightIntensityParameter, mAmbientLightIntensity);
+    mShaderManager->ActivateProgram<ShaderManager::ProgramType::Water>();
+    mShaderManager->SetDynamicParameter<
+        ShaderManager::ProgramType::Water,
+        ShaderManager::DynamicParameterType::AmbientLightIntensity>(mAmbientLightIntensity);
 }
 
 void RenderContext::UpdateSeaWaterTransparency()
 {
     // Set parameter in all programs
 
-    glUseProgram(*mWaterShaderProgram);
-    glUniform1f(mWaterShaderWaterTransparencyParameter, mSeaWaterTransparency);
+    mShaderManager->ActivateProgram<ShaderManager::ProgramType::Water>();
+    mShaderManager->SetDynamicParameter<
+        ShaderManager::ProgramType::Water,
+        ShaderManager::DynamicParameterType::WaterTransparency>(mSeaWaterTransparency);
 }
 
 void RenderContext::UpdateWaterLevelOfDetail()

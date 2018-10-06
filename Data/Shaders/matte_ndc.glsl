@@ -1,7 +1,9 @@
 ###VERTEX
 
+#version 130
+
 // Inputs
-attribute vec2 inputPos;
+in vec2 inputPos;
 
 void main()
 {
@@ -10,6 +12,8 @@ void main()
 
 
 ###FRAGMENT
+
+#version 130
 
 // Params
 uniform vec4 paramMatteColor;

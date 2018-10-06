@@ -61,8 +61,15 @@ Current perf
 
 = ShaderManager
 	+ WetColor, LightColor: make them static hardcoded params
+	+ Use in and out, and 130
+	= Replace all shaders
+		= RenderContext
+			- See if can describe cloud buffers and the other buffers once and for all
+		- ShipContext
 	- Get rid of vector_arrows shader, use matte
 
+- World settings: number of clouds, wind
+	
 = Make collisions with sea floor more dramatic
 	= vel *= 0.5
 - Fix buoyancy
@@ -125,6 +132,7 @@ Current perf
 					+ Anchor at all frames of timer bomb
 					- Everything else:
 				- Move TextureRenderManager::AddRenderPolygon method to .h, and call it EmitRenderPolygon
+				- Move bind into TextureRenderManager, templated
 				+ Nuke old bombs/pinnedpoints at ShipRenderContext
 				- Commit
 		- Change the single shader to do *all the work* (for the "simple" textures, including rotation) for all ships and connected components

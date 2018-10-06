@@ -13,110 +13,6 @@
 
 static const std::string StaticParametersFilenameStem = "static_parameters";
 
-namespace /* anonymous */ {
-
-    ShaderManager::ProgramType StrToProgramType(std::string const & str)
-    {
-        std::string lstr = Utils::ToLower(str);
-        if (lstr == "clouds")
-            return ShaderManager::ProgramType::Clouds;
-        else if (lstr == "generic_textures")
-            return ShaderManager::ProgramType::GenericTextures;
-        else if (lstr == "land")
-            return ShaderManager::ProgramType::Land;
-        else if (lstr == "matte")
-            return ShaderManager::ProgramType::Matte;
-        else if (lstr == "matte_ndc")
-            return ShaderManager::ProgramType::MatteNDC;
-        else if (lstr == "ship_ropes")
-            return ShaderManager::ProgramType::ShipRopes;
-        else if (lstr == "ship_stressed_springs")
-            return ShaderManager::ProgramType::ShipStressedSprings;
-        else if (lstr == "ship_triangles_color")
-            return ShaderManager::ProgramType::ShipTrianglesColor;
-        else if (lstr == "ship_triangles_texture")
-            return ShaderManager::ProgramType::ShipTrianglesTexture;
-        else if (lstr == "vector_arrows")
-            return ShaderManager::ProgramType::VectorArrows;
-        else if (lstr == "water")
-            return ShaderManager::ProgramType::Water;
-        else
-            throw GameException("Unrecognized program \"" + str + "\"");
-    }
-
-    std::string ProgramTypeToStr(ShaderManager::ProgramType programType)
-    {
-        switch (programType)
-        {
-        case ShaderManager::ProgramType::Clouds:
-            return "Clouds";
-        case ShaderManager::ProgramType::GenericTextures:
-            return "GenericTextures";
-        case ShaderManager::ProgramType::Land:
-            return "Land";
-        case ShaderManager::ProgramType::Matte:
-            return "Matte";
-        case ShaderManager::ProgramType::MatteNDC:
-            return "MatteNDC";
-        case ShaderManager::ProgramType::ShipRopes:
-            return "ShipRopes";
-        case ShaderManager::ProgramType::ShipStressedSprings:
-            return "ShipStressedSprings";
-        case ShaderManager::ProgramType::ShipTrianglesColor:
-            return "ShipTrianglesColor";
-        case ShaderManager::ProgramType::ShipTrianglesTexture:
-            return "ShipTrianglesTexture";
-        case ShaderManager::ProgramType::VectorArrows:
-            return "VectorArrows";
-        case ShaderManager::ProgramType::Water:
-            return "Water";
-        default:
-            assert(false);
-            throw GameException("Unsupported ProgramType");
-        }
-    }
-
-    ShaderManager::DynamicParameterType StrToDynamicParameterType(std::string const & str)
-    {
-        if (str == "AmbientLightIntensity")
-            return ShaderManager::DynamicParameterType::AmbientLightIntensity;
-        else if (str == "MatteColor")
-            return ShaderManager::DynamicParameterType::MatteColor;
-        else if (str == "OrthoMatrix")
-            return ShaderManager::DynamicParameterType::OrthoMatrix;
-        else if (str == "TextureScaling")
-            return ShaderManager::DynamicParameterType::TextureScaling;
-        else if (str == "WaterLevelThreshold")
-            return ShaderManager::DynamicParameterType::WaterLevelThreshold;
-        else if (str == "WaterTransparency")
-            return ShaderManager::DynamicParameterType::WaterTransparency;
-        else
-            throw GameException("Unrecognized dynamic parameter \"" + str + "\"");
-    }
-
-    std::string DynamicParameterTypeToStr(ShaderManager::DynamicParameterType dynamicParameterType)
-    {
-        switch (dynamicParameterType)
-        {
-        case ShaderManager::DynamicParameterType::AmbientLightIntensity:
-            return "AmbientLightIntensity";
-        case ShaderManager::DynamicParameterType::MatteColor:
-            return "MatteColor";
-        case ShaderManager::DynamicParameterType::OrthoMatrix:
-            return "OrthoMatrix";
-        case ShaderManager::DynamicParameterType::TextureScaling:
-            return "TextureScaling";
-        case ShaderManager::DynamicParameterType::WaterLevelThreshold:
-            return "WaterLevelThreshold";
-        case ShaderManager::DynamicParameterType::WaterTransparency:
-            return "WaterTransparency";
-        default:
-            assert(false);
-            throw GameException("Unsupported DynamicParameterType");
-        }
-    }
-}
-
 std::unique_ptr<ShaderManager> ShaderManager::CreateInstance(
     ResourceLoader & resourceLoader,
     GlobalParameters const & globalParameters)
@@ -434,4 +330,107 @@ std::set<ShaderManager::DynamicParameterType> ShaderManager::ExtractDynamicParam
     }
 
     return dynamicParameters;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+ShaderManager::ProgramType ShaderManager::StrToProgramType(std::string const & str)
+{
+    std::string lstr = Utils::ToLower(str);
+    if (lstr == "clouds")
+        return ShaderManager::ProgramType::Clouds;
+    else if (lstr == "generic_textures")
+        return ShaderManager::ProgramType::GenericTextures;
+    else if (lstr == "land")
+        return ShaderManager::ProgramType::Land;
+    else if (lstr == "matte")
+        return ShaderManager::ProgramType::Matte;
+    else if (lstr == "matte_ndc")
+        return ShaderManager::ProgramType::MatteNDC;
+    else if (lstr == "ship_ropes")
+        return ShaderManager::ProgramType::ShipRopes;
+    else if (lstr == "ship_stressed_springs")
+        return ShaderManager::ProgramType::ShipStressedSprings;
+    else if (lstr == "ship_triangles_color")
+        return ShaderManager::ProgramType::ShipTrianglesColor;
+    else if (lstr == "ship_triangles_texture")
+        return ShaderManager::ProgramType::ShipTrianglesTexture;
+    else if (lstr == "vector_arrows")
+        return ShaderManager::ProgramType::VectorArrows;
+    else if (lstr == "water")
+        return ShaderManager::ProgramType::Water;
+    else
+        throw GameException("Unrecognized program \"" + str + "\"");
+}
+
+std::string ShaderManager::ProgramTypeToStr(ShaderManager::ProgramType programType)
+{
+    switch (programType)
+    {
+    case ShaderManager::ProgramType::Clouds:
+        return "Clouds";
+    case ShaderManager::ProgramType::GenericTextures:
+        return "GenericTextures";
+    case ShaderManager::ProgramType::Land:
+        return "Land";
+    case ShaderManager::ProgramType::Matte:
+        return "Matte";
+    case ShaderManager::ProgramType::MatteNDC:
+        return "MatteNDC";
+    case ShaderManager::ProgramType::ShipRopes:
+        return "ShipRopes";
+    case ShaderManager::ProgramType::ShipStressedSprings:
+        return "ShipStressedSprings";
+    case ShaderManager::ProgramType::ShipTrianglesColor:
+        return "ShipTrianglesColor";
+    case ShaderManager::ProgramType::ShipTrianglesTexture:
+        return "ShipTrianglesTexture";
+    case ShaderManager::ProgramType::VectorArrows:
+        return "VectorArrows";
+    case ShaderManager::ProgramType::Water:
+        return "Water";
+    default:
+        assert(false);
+        throw GameException("Unsupported ProgramType");
+    }
+}
+
+ShaderManager::DynamicParameterType ShaderManager::StrToDynamicParameterType(std::string const & str)
+{
+    if (str == "AmbientLightIntensity")
+        return ShaderManager::DynamicParameterType::AmbientLightIntensity;
+    else if (str == "MatteColor")
+        return ShaderManager::DynamicParameterType::MatteColor;
+    else if (str == "OrthoMatrix")
+        return ShaderManager::DynamicParameterType::OrthoMatrix;
+    else if (str == "TextureScaling")
+        return ShaderManager::DynamicParameterType::TextureScaling;
+    else if (str == "WaterLevelThreshold")
+        return ShaderManager::DynamicParameterType::WaterLevelThreshold;
+    else if (str == "WaterTransparency")
+        return ShaderManager::DynamicParameterType::WaterTransparency;
+    else
+        throw GameException("Unrecognized dynamic parameter \"" + str + "\"");
+}
+
+std::string ShaderManager::DynamicParameterTypeToStr(ShaderManager::DynamicParameterType dynamicParameterType)
+{
+    switch (dynamicParameterType)
+    {
+    case ShaderManager::DynamicParameterType::AmbientLightIntensity:
+        return "AmbientLightIntensity";
+    case ShaderManager::DynamicParameterType::MatteColor:
+        return "MatteColor";
+    case ShaderManager::DynamicParameterType::OrthoMatrix:
+        return "OrthoMatrix";
+    case ShaderManager::DynamicParameterType::TextureScaling:
+        return "TextureScaling";
+    case ShaderManager::DynamicParameterType::WaterLevelThreshold:
+        return "WaterLevelThreshold";
+    case ShaderManager::DynamicParameterType::WaterTransparency:
+        return "WaterTransparency";
+    default:
+        assert(false);
+        throw GameException("Unsupported DynamicParameterType");
+    }
 }

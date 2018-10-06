@@ -1,15 +1,17 @@
 ###VERTEX
 
+#version 130
+
 //
 // Clouds's inputs are directly in NDC coordinates
 //
 
 // Inputs
-attribute vec2 inputPos;
-attribute vec2 inputTexturePos;
+in vec2 inputPos;
+in vec2 inputTexturePos;
 
 // Outputs
-varying vec2 texturePos;
+out vec2 texturePos;
 
 void main()
 {
@@ -19,8 +21,10 @@ void main()
 
 ###FRAGMENT
 
+#version 130
+
 // Inputs from previous shader
-varying vec2 texturePos;
+in vec2 texturePos;
 
 // The texture
 uniform sampler2D inputTexture;

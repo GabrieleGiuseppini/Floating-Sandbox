@@ -10,6 +10,8 @@
 #include <algorithm>
 #include <memory>
 
+int GameOpenGL::MaxVertexAttributes = 0;
+
 void GameOpenGL::CompileShader(
     std::string const & shaderSource,
     GLenum shaderType,

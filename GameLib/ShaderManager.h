@@ -98,11 +98,22 @@ public:
         GlobalParameters const & globalParameters);
 
     template <ProgramType _ProgramType>
-    inline void ActivateProgram()
+    inline void BindAttributeLocation(
+        GLuint attributeLocationIndex,
+        std::string const & attributeName)
     {
-        uint32_t const programIndex = static_cast<uint32_t>(_ProgramType);
+        constexpr uint32_t programIndex = static_cast<uint32_t>(_ProgramType);
 
-        glUseProgram(*(mPrograms[programIndex].OpenGLHandle));
+        glBindAttribLocation(
+            *(mPrograms[programIndex].OpenGLHandle), 
+            attributeLocationIndex, 
+            attributeName.c_str());
+
+        GLenum glError = glGetError();
+        if (GL_NO_ERROR != glError)
+        {
+            throw GameException("Error binding attribute location \"" + attributeName + "\" for program \"" + ProgramTypeToStr(_ProgramType) + "\"");
+        }
     }
 
     template <ProgramType _ProgramType, DynamicParameterType _DynamicParameterType>
@@ -117,42 +128,42 @@ public:
     }
 
     template <ProgramType _ProgramType, DynamicParameterType _DynamicParameterType>
-    inline void SetDynamicParameter(vec2f const & value)
+    inline void SetDynamicParameter(float val1, float val2)
     {
         constexpr uint32_t programIndex = static_cast<uint32_t>(_ProgramType);
         constexpr uint32_t dynamicParameterIndex = static_cast<uint32_t>(_DynamicParameterType);
 
         glUniform2f(
             mPrograms[programIndex].UniformLocations[dynamicParameterIndex], 
-            value.x, 
-            value.y);
+            val1,
+            val2);
     }
 
     template <ProgramType _ProgramType, DynamicParameterType _DynamicParameterType>
-    inline void SetDynamicParameter(vec3f const & value)
+    inline void SetDynamicParameter(float val1, float val2, float val3)
     {
         constexpr uint32_t programIndex = static_cast<uint32_t>(_ProgramType);
         constexpr uint32_t dynamicParameterIndex = static_cast<uint32_t>(_DynamicParameterType);
 
         glUniform3f(
             mPrograms[programIndex].UniformLocations[dynamicParameterIndex], 
-            value.x, 
-            value.y, 
-            value.z);
+            val1, 
+            val2, 
+            val3);
     }
 
     template <ProgramType _ProgramType, DynamicParameterType _DynamicParameterType>
-    inline void SetDynamicParameter(vec4f const & value)
+    inline void SetDynamicParameter(float val1, float val2, float val3, float val4)
     {
         constexpr uint32_t programIndex = static_cast<uint32_t>(_ProgramType);
         constexpr uint32_t dynamicParameterIndex = static_cast<uint32_t>(_DynamicParameterType);
 
         glUniform4f(
-            mPrograms[programIndex].UniformLocations[dynamicParameterIndex], 
-            value.x, 
-            value.y, 
-            value.z, 
-            value.w);
+            mPrograms[programIndex].UniformLocations[dynamicParameterIndex],
+            val1,
+            val2,
+            val3,
+            val4);
     }
 
     template <ProgramType _ProgramType, DynamicParameterType _DynamicParameterType>
@@ -166,6 +177,14 @@ public:
             1,
             GL_FALSE,
             &(value[0][0]));
+    }
+
+    template <ProgramType _ProgramType>
+    inline void ActivateProgram()
+    {
+        uint32_t const programIndex = static_cast<uint32_t>(_ProgramType);
+
+        glUseProgram(*(mPrograms[programIndex].OpenGLHandle));
     }
 
 private:
@@ -189,6 +208,11 @@ private:
         std::map<std::string, std::string> const & staticParameters);
 
     static std::set<DynamicParameterType> ExtractDynamicParameters(std::string const & source);
+
+    static ShaderManager::ProgramType StrToProgramType(std::string const & str);
+    static std::string ProgramTypeToStr(ShaderManager::ProgramType programType);
+    static ShaderManager::DynamicParameterType StrToDynamicParameterType(std::string const & str);
+    static std::string DynamicParameterTypeToStr(ShaderManager::DynamicParameterType dynamicParameterType);
 
 private:
 

@@ -1,13 +1,15 @@
 ###VERTEX
 
+#version 130
+
 // Inputs
-attribute vec2 inputPos;        
-attribute float inputLight;
-attribute float inputWater;
+in vec2 inputPos;        
+in float inputLight;
+in float inputWater;
 
 // Outputs        
-varying float vertexLight;
-varying float vertexWater;
+out float vertexLight;
+out float vertexWater;
 
 // Params
 uniform mat4 paramOrthoMatrix;
@@ -22,9 +24,11 @@ void main()
 
 ###FRAGMENT
 
+#version 130
+
 // Inputs from previous shader        
-varying float vertexLight;
-varying float vertexWater;
+in float vertexLight;
+in float vertexWater;
 
 // Params
 uniform float paramAmbientLightIntensity;
