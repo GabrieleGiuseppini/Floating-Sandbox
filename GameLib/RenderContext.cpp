@@ -58,8 +58,6 @@ RenderContext::RenderContext(
 
     GameOpenGL::InitOpenGL();
 
-    // Activate texture unit 0
-    glActiveTexture(GL_TEXTURE0);
 
 
     //
@@ -72,6 +70,7 @@ RenderContext::RenderContext(
         ropeColour); 
 
     mShaderManager = ShaderManager::CreateInstance(resourceLoader, globalParameters);
+
 
 
     //
@@ -90,19 +89,14 @@ RenderContext::RenderContext(
 
 
     //
-    // Clouds 
+    // Upload textures
     //
 
-    // Bind attribute locations
-    mShaderManager->BindAttributeLocation<ShaderManager::ProgramType::Clouds>(0, "inputPos");
-    mShaderManager->BindAttributeLocation<ShaderManager::ProgramType::Clouds>(1, "inputTexturePos");
-    
-    // Create VBO    
-    glGenBuffers(1, &tmpGLuint);
-    mCloudVBO = tmpGLuint;
+    // Activate texture unit 0
+    glActiveTexture(GL_TEXTURE0);
 
-    // Upload textures
     mCloudTextureCount = textureDatabase.GetGroup(TextureGroupType::Cloud).GetFrameCount();
+
     mTextureRenderManager->UploadGroup(
         textureDatabase.GetGroup(TextureGroupType::Cloud),
         [&progressCallback](float progress, std::string const &)
@@ -110,28 +104,6 @@ RenderContext::RenderContext(
             progressCallback(0.5f + progress / (2.0f * TextureLoadSteps), "Loading textures...");
         });
 
-
-    //
-    // Land 
-    //
-
-    // Bind attribute locations
-    mShaderManager->BindAttributeLocation<ShaderManager::ProgramType::Land>(0, "inputPos");
-
-    // Create VBO    
-    glGenBuffers(1, &tmpGLuint);
-    mLandVBO = tmpGLuint;
-
-    // Set hardcoded parameters
-    auto const & landTextureMetadata = textureDatabase.GetFrameMetadata(TextureGroupType::Land, 0);
-    mShaderManager->ActivateProgram<ShaderManager::ProgramType::Land>();
-    mShaderManager->SetDynamicParameter<
-        ShaderManager::ProgramType::Land,
-        ShaderManager::DynamicParameterType::TextureScaling>(
-            1.0f / landTextureMetadata.WorldWidth,
-            1.0f / landTextureMetadata.WorldHeight);
-
-    // Upload textures
     mTextureRenderManager->UploadMipmappedGroup(
         textureDatabase.GetGroup(TextureGroupType::Land),
         [&progressCallback](float progress, std::string const &)
@@ -139,29 +111,6 @@ RenderContext::RenderContext(
             progressCallback(0.5f + (1.0f + progress) / (2.0f * TextureLoadSteps), "Loading textures...");
         });
 
-
-    //
-    // Water 
-    //
-
-    // Bind attribute locations
-    mShaderManager->BindAttributeLocation<ShaderManager::ProgramType::Water>(0, "inputPos");
-    mShaderManager->BindAttributeLocation<ShaderManager::ProgramType::Water>(1, "inputTextureY");
-
-    // Create VBO
-    glGenBuffers(1, &tmpGLuint);
-    mWaterVBO = tmpGLuint;
-
-    // Set hardcoded parameters
-    auto const & waterTextureMetadata = textureDatabase.GetFrameMetadata(TextureGroupType::Water, 0);
-    mShaderManager->ActivateProgram<ShaderManager::ProgramType::Water>();
-    mShaderManager->SetDynamicParameter<
-        ShaderManager::ProgramType::Water, 
-        ShaderManager::DynamicParameterType::TextureScaling>(
-            1.0f / waterTextureMetadata.WorldWidth,
-            1.0f / waterTextureMetadata.WorldHeight);
-
-    // Upload textures
     mTextureRenderManager->UploadGroup(
         textureDatabase.GetGroup(TextureGroupType::Water),
         [&progressCallback](float progress, std::string const &)
@@ -169,25 +118,12 @@ RenderContext::RenderContext(
             progressCallback(0.5f + (2.0f + progress) / (2.0f * TextureLoadSteps), "Loading textures...");
         });
 
-
-    //
-    // Pinned points
-    //
-
-    // Upload textures
     mTextureRenderManager->UploadMipmappedGroup(
         textureDatabase.GetGroup(TextureGroupType::PinnedPoint),
         [&progressCallback](float progress, std::string const &)
         {
             progressCallback(0.5f + (3.0f + progress) / (2.0f * TextureLoadSteps), "Loading textures...");
         });
-
-
-    //
-    // RC Bomb
-    //
-
-    // Upload textures
 
     mTextureRenderManager->UploadMipmappedGroup(
         textureDatabase.GetGroup(TextureGroupType::RcBomb),
@@ -209,14 +145,6 @@ RenderContext::RenderContext(
         {
             progressCallback(0.5f + (6.0f + progress) / (2.0f * TextureLoadSteps), "Loading textures...");
         });
-
-
-
-    //
-    // Timer Bomb
-    //
-
-    // Upload textures
 
     mTextureRenderManager->UploadMipmappedGroup(
         textureDatabase.GetGroup(TextureGroupType::TimerBomb),
@@ -245,6 +173,93 @@ RenderContext::RenderContext(
         {
             progressCallback(0.5f + (10.0f + progress) / (2.0f * TextureLoadSteps), "Loading textures...");
         });
+    
+
+    //
+    // Initialize clouds 
+    //
+
+    // Bind attribute locations
+    mShaderManager->BindAttributeLocation<ShaderManager::ProgramType::Clouds>(0, "inputPos");
+    mShaderManager->BindAttributeLocation<ShaderManager::ProgramType::Clouds>(1, "inputTexturePos");
+
+    // Create VBO    
+    glGenBuffers(1, &tmpGLuint);
+    mCloudVBO = tmpGLuint;
+
+    // Bind VBO
+    glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
+
+    // Enable vertex arrays
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+
+    // TODOTEST
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+
+
+    //
+    // Initialize land 
+    //
+
+    // Set hardcoded parameters
+    auto const & landTextureMetadata = textureDatabase.GetFrameMetadata(TextureGroupType::Land, 0);
+    mShaderManager->ActivateProgram<ShaderManager::ProgramType::Land>();
+    mShaderManager->SetDynamicParameter<
+        ShaderManager::ProgramType::Land,
+        ShaderManager::DynamicParameterType::TextureScaling>(
+            1.0f / landTextureMetadata.WorldWidth,
+            1.0f / landTextureMetadata.WorldHeight);
+
+    // Bind attribute locations
+    mShaderManager->BindAttributeLocation<ShaderManager::ProgramType::Land>(0, "inputPos");
+
+    // Create VBO    
+    glGenBuffers(1, &tmpGLuint);
+    mLandVBO = tmpGLuint;
+
+    // Bind VBO
+    glBindBuffer(GL_ARRAY_BUFFER, *mLandVBO);
+
+    // Enable vertex arrays
+    glEnableVertexAttribArray(0);
+
+    // TODOTEST
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+
+    //
+    // Initialize water
+    //
+
+    // Set hardcoded parameters
+    auto const & waterTextureMetadata = textureDatabase.GetFrameMetadata(TextureGroupType::Water, 0);
+    mShaderManager->ActivateProgram<ShaderManager::ProgramType::Water>();
+    mShaderManager->SetDynamicParameter<
+        ShaderManager::ProgramType::Water,
+        ShaderManager::DynamicParameterType::TextureScaling>(
+            1.0f / waterTextureMetadata.WorldWidth,
+            1.0f / waterTextureMetadata.WorldHeight);
+
+    // Bind attribute locations
+    mShaderManager->BindAttributeLocation<ShaderManager::ProgramType::Water>(0, "inputPos");
+    mShaderManager->BindAttributeLocation<ShaderManager::ProgramType::Water>(1, "inputTextureY");
+
+    // Create VBO
+    glGenBuffers(1, &tmpGLuint);
+    mWaterVBO = tmpGLuint;
+
+    // Bind VBO
+    glBindBuffer(GL_ARRAY_BUFFER, *mWaterVBO);
+
+    // Enable vertex arrays
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+
+    // TODOTEST
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
 
     //
     // Multi-purpose Matte NDC shader
@@ -384,7 +399,7 @@ void RenderContext::RenderCloudsStart(size_t clouds)
 void RenderContext::RenderCloudsEnd()
 {
     //
-    // Draw stencil
+    // Draw water stencil
     //
 
     // Use matte world program
@@ -395,13 +410,6 @@ void RenderContext::RenderCloudsEnd()
         ShaderManager::ProgramType::Matte,
         ShaderManager::DynamicParameterType::MatteColor>(1.0f, 1.0f, 1.0f, 1.0f);
 
-    // Bind water buffer
-    glBindBuffer(GL_ARRAY_BUFFER, *mWaterVBO);
-
-    // Describe InputPos
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
     // Disable writing to the color buffer
     glColorMask(false, false, false, false);
 
@@ -409,6 +417,14 @@ void RenderContext::RenderCloudsEnd()
     glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
     glStencilFunc(GL_ALWAYS, 1, 0xFF);
     glStencilMask(0xFF);
+
+    // Bind water VBO
+    glBindBuffer(GL_ARRAY_BUFFER, *mWaterVBO);
+
+    // TODOTEST
+    // Describe InputPos
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
 
     // Draw
     glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mWaterBufferSize));
@@ -419,6 +435,8 @@ void RenderContext::RenderCloudsEnd()
     // Re-enable writing to the color buffer
     glColorMask(true, true, true, true);
     
+    // TODOTEST
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 
 
@@ -431,18 +449,20 @@ void RenderContext::RenderCloudsEnd()
     // Use program
     mShaderManager->ActivateProgram<ShaderManager::ProgramType::Clouds>();
 
-    // Upload cloud buffer 
+    // Bind cloud VBO
     glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
+
+    // Upload cloud buffer     
     glBufferData(GL_ARRAY_BUFFER, mCloudBufferSize * sizeof(CloudElement), mCloudBuffer.get(), GL_DYNAMIC_DRAW);
 
-    // TODO: should move this one above
     // Describe InputPos
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, (2 + 2) * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
     // Describe InputTexturePos
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, (2 + 2) * sizeof(float), (void*)(2 * sizeof(float)));
+    // TODOTEST
+    glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
-
+    
     // Enable stenciling - only draw where there are no 1's
     glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 
@@ -458,10 +478,10 @@ void RenderContext::RenderCloudsEnd()
 
         // Draw
         glDrawArrays(GL_TRIANGLE_STRIP, static_cast<GLint>(4 * c), 4);
-
-        // Unbind texture
-        glBindTexture(GL_TEXTURE_2D, 0);
     }
+
+    // TODOTEST
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     // Disable stenciling - draw always
     glStencilFunc(GL_ALWAYS, 0, 0x00);
@@ -510,8 +530,14 @@ void RenderContext::UploadLandAndWaterEnd()
     // Upload land buffer
     glBufferData(GL_ARRAY_BUFFER, mLandBufferSize * sizeof(LandElement), mLandBuffer.get(), GL_DYNAMIC_DRAW);
 
-    // Unbind VBO
-    glBindBuffer(GL_ARRAY_BUFFER, 0u);
+    // Describe InputPos
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+
+    // TODOTEST
+    glEnableVertexAttribArray(0);
+
+    // TODOTEST
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 
     //
@@ -526,8 +552,17 @@ void RenderContext::UploadLandAndWaterEnd()
     // Upload water buffer
     glBufferData(GL_ARRAY_BUFFER, mWaterBufferSize * sizeof(WaterElement), mWaterBuffer.get(), GL_DYNAMIC_DRAW);
 
-    // Unbind VBO
-    glBindBuffer(GL_ARRAY_BUFFER, 0u);
+    // Describe InputPos
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void*)0);
+    // Describe InputTextureY
+    glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void*)(2 * sizeof(float)));
+
+    // TODOTEST
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+
+    // TODOTEST
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void RenderContext::RenderLand()
@@ -540,9 +575,10 @@ void RenderContext::RenderLand()
         GL_TEXTURE_2D,
         mTextureRenderManager->GetOpenGLHandle(TextureGroupType::Land, 0));
 
-    // Bind land VBO
+    // Bind VBO
     glBindBuffer(GL_ARRAY_BUFFER, *mLandVBO);
 
+    // TODOTEST: THIS IS THE NEEDED ONE
     // Describe InputPos
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -550,11 +586,8 @@ void RenderContext::RenderLand()
     // Draw
     glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mLandBufferSize));
 
-    // Unbind texture
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    // Stop using program
-    glUseProgram(0);
+    // TODOTEST
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void RenderContext::RenderWater()
@@ -567,25 +600,20 @@ void RenderContext::RenderWater()
         GL_TEXTURE_2D, 
         mTextureRenderManager->GetOpenGLHandle(TextureGroupType::Water, 0));
 
-    // Bind water VBO
+    // Bind VBO
     glBindBuffer(GL_ARRAY_BUFFER, *mWaterVBO);
 
+    // TODOTEST: needed
     // Describe InputPos
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
     // Describe InputTextureY
     glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void*)(2 * sizeof(float)));
-    glEnableVertexAttribArray(1);
 
     // Draw
     glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mWaterBufferSize));
 
-    // Unbind texture
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    // Stop using program
-    glUseProgram(0);
+    // TODOTEST
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void RenderContext::RenderEnd()
