@@ -116,6 +116,34 @@ public:
         }
     }
 
+    template <ProgramType _ProgramType>
+    void TODOTEST_Relink()
+    {
+        constexpr uint32_t programIndex = static_cast<uint32_t>(_ProgramType);
+        GameOpenGL::LinkShaderProgram(mPrograms[programIndex].OpenGLHandle, "TODO");
+
+        std::vector<GLint> newUniformLocations;
+        for (auto i = 0; i < mPrograms[programIndex].UniformLocations.size(); ++i)
+        {
+            if (static_cast<DynamicParameterType>(i) == DynamicParameterType::OrthoMatrix
+                || static_cast<DynamicParameterType>(i) == DynamicParameterType::TextureScaling
+                || static_cast<DynamicParameterType>(i) == DynamicParameterType::AmbientLightIntensity)
+            {
+                GLint ul = GameOpenGL::GetParameterLocation(
+                    mPrograms[programIndex].OpenGLHandle,
+                    "param" + DynamicParameterTypeToStr(static_cast<DynamicParameterType>(i)));
+
+                newUniformLocations.push_back(ul);
+            }
+            else
+            {
+                newUniformLocations.push_back(0);
+            }
+        }
+
+        mPrograms[programIndex].UniformLocations.swap(newUniformLocations);
+    }
+
     template <ProgramType _ProgramType, DynamicParameterType _DynamicParameterType>
     inline void SetDynamicParameter(float value)
     {
@@ -125,6 +153,8 @@ public:
         glUniform1f(
             mPrograms[programIndex].UniformLocations[dynamicParameterIndex], 
             value);
+
+        CheckUniformError<_ProgramType, _DynamicParameterType>();
     }
 
     template <ProgramType _ProgramType, DynamicParameterType _DynamicParameterType>
@@ -137,6 +167,8 @@ public:
             mPrograms[programIndex].UniformLocations[dynamicParameterIndex], 
             val1,
             val2);
+
+        CheckUniformError<_ProgramType, _DynamicParameterType>();
     }
 
     template <ProgramType _ProgramType, DynamicParameterType _DynamicParameterType>
@@ -150,6 +182,8 @@ public:
             val1, 
             val2, 
             val3);
+
+        CheckUniformError<_ProgramType, _DynamicParameterType>();
     }
 
     template <ProgramType _ProgramType, DynamicParameterType _DynamicParameterType>
@@ -164,6 +198,8 @@ public:
             val2,
             val3,
             val4);
+
+        CheckUniformError<_ProgramType, _DynamicParameterType>();
     }
 
     template <ProgramType _ProgramType, DynamicParameterType _DynamicParameterType>
@@ -177,6 +213,8 @@ public:
             1,
             GL_FALSE,
             &(value[0][0]));
+
+        CheckUniformError<_ProgramType, _DynamicParameterType>();
     }
 
     template <ProgramType _ProgramType>
@@ -185,6 +223,18 @@ public:
         uint32_t const programIndex = static_cast<uint32_t>(_ProgramType);
 
         glUseProgram(*(mPrograms[programIndex].OpenGLHandle));
+    }
+
+private:
+
+    template <ProgramType _ProgramType, DynamicParameterType _DynamicParameterType>
+    static void CheckUniformError()
+    {
+        GLenum glError = glGetError();
+        if (GL_NO_ERROR != glError)
+        {
+            throw GameException("Error setting uniform for parameter \"" + DynamicParameterTypeToStr(_DynamicParameterType) + "\" on program \"" + ProgramTypeToStr(_ProgramType) + "\"");
+        }
     }
 
 private:

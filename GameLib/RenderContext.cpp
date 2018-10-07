@@ -210,8 +210,6 @@ RenderContext::RenderContext(
             1.0f / landTextureMetadata.WorldWidth,
             1.0f / landTextureMetadata.WorldHeight);
 
-    // Bind attribute locations
-    mShaderManager->BindAttributeLocation<ShaderManager::ProgramType::Land>(0, "inputPos");
 
     // Create VBO    
     glGenBuffers(1, &tmpGLuint);
@@ -220,8 +218,23 @@ RenderContext::RenderContext(
     // Bind VBO
     glBindBuffer(GL_ARRAY_BUFFER, *mLandVBO);
 
+    // Bind attribute locations
+    // TODOTEST
+    //mShaderManager->BindAttributeLocation<ShaderManager::ProgramType::Land>(0, "inputPos");
+    mShaderManager->BindAttributeLocation<ShaderManager::ProgramType::Land>(13, "inputPos");
+    mShaderManager->TODOTEST_Relink<ShaderManager::ProgramType::Land>();
+
+    // TODOTEST
+    mShaderManager->SetDynamicParameter<
+        ShaderManager::ProgramType::Land,
+        ShaderManager::DynamicParameterType::TextureScaling>(
+            1.0f / landTextureMetadata.WorldWidth,
+            1.0f / landTextureMetadata.WorldHeight);
+
     // Enable vertex arrays
-    glEnableVertexAttribArray(0);
+    // TODOTEST
+    //glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(13);
 
 
 
@@ -541,10 +554,10 @@ void RenderContext::RenderLand()
 
     // Bind VBO
     glBindBuffer(GL_ARRAY_BUFFER, *mLandVBO);
-    
+
     // Describe InputPos
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(13, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(13);
 
     // Draw
     glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mLandBufferSize));
