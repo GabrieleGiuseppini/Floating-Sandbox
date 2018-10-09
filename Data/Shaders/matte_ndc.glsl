@@ -7,11 +7,11 @@
 //
 
 // Inputs
-in vec2 sharedPosition;
+in vec2 inSharedPosition;
 
 void main()
 {
-    gl_Position = vec4(sharedPosition.xy, -1.0, 1.0);
+    gl_Position = vec4(inSharedPosition.xy, -1.0, 1.0);
 }
 
 

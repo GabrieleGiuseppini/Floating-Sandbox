@@ -85,6 +85,23 @@ GLint GameOpenGL::GetParameterLocation(
     return parameterLocation;
 }
 
+void GameOpenGL::BindAttributeLocation(
+    GameOpenGLShaderProgram const & shaderProgram,
+    GLuint attributeIndex,
+    std::string const & attributeName)
+{
+    glBindAttribLocation(
+        *shaderProgram,
+        attributeIndex,
+        attributeName.c_str());
+
+    GLenum glError = glGetError();
+    if (GL_NO_ERROR != glError)
+    {
+        throw GameException("Error binding attribute location for attribute \"" + attributeName + "\"");
+    }
+}
+
 void GameOpenGL::UploadMipmappedTexture(TextureFrame baseTexture)
 {
     ImageData imageData(

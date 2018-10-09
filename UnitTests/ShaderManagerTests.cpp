@@ -225,32 +225,30 @@ uniform mat4 paramAmbientLightIntensity;
         GameException);
 }
 
-//TODOHERE
-
 TEST_F(ShaderManagerTests, ExtractsVertexAttributes_Single)
 {
-    std::string source = "  in vec4 cloudPosition;\n";
+    std::string source = "  in vec4 inShipPointColor;\n";
 
     auto result = TestShaderManager::ExtractVertexAttributes(source);
 
     ASSERT_EQ(1, result.size());
-    EXPECT_EQ(1, result.count(Render::VertexAttributeType::CloudPosition));
+    EXPECT_EQ(1, result.count(Render::VertexAttributeType::ShipPointColor));
 }
 
 TEST_F(ShaderManagerTests, ExtractsVertexAttributes_Multiple)
 {
     std::string source = R"!!!(
 uniform float paramAmbientLightIntensity;
-in matfoo lopo lopo cloudPosition;
+in matfoo lopo lopo inShipPointColor;
 foobar;
-in mat4 cloudTextureCoordinates;
+in mat4 inSharedTextureCoordinates;
 )!!!";
 
     auto result = TestShaderManager::ExtractVertexAttributes(source);
 
     ASSERT_EQ(2, result.size());
-    EXPECT_EQ(1, result.count(Render::VertexAttributeType::CloudPosition));
-    EXPECT_EQ(1, result.count(Render::VertexAttributeType::CloudTextureCoordinates));
+    EXPECT_EQ(1, result.count(Render::VertexAttributeType::ShipPointColor));
+    EXPECT_EQ(1, result.count(Render::VertexAttributeType::SharedTextureCoordinates));
 }
 
 TEST_F(ShaderManagerTests, ExtractsVertexAttributes_ErrorsOnUnrecognizedAttribute)
@@ -258,7 +256,7 @@ TEST_F(ShaderManagerTests, ExtractsVertexAttributes_ErrorsOnUnrecognizedAttribut
     std::string source = R"!!!(
 uniform float paramAmbientLightIntensity;
 foobar;
-in mat4 headPosition;
+in mat4 inHeadPosition;
 )!!!";
 
     EXPECT_THROW(
@@ -270,9 +268,9 @@ TEST_F(ShaderManagerTests, ExtractsVertexAttributes_ErrorsOnRedeclaredAttribute)
 {
     std::string source = R"!!!(
 uniform float paramAmbientLightIntensity;
-in mat4 cloudTextureCoordinates;
+in mat4 inShipPointColor;
 foobar;
-in mat4 cloudTextureCoordinates;
+in mat4 inShipPointColor;
 )!!!";
 
     EXPECT_THROW(

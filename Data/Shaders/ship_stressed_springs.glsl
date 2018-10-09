@@ -3,7 +3,7 @@
 #version 130
 
 // Inputs
-in vec2 shipPointPosition;
+in vec2 inShipPointPosition;
 
 // Outputs        
 out vec2 vertexTextureCoords;
@@ -13,8 +13,8 @@ uniform mat4 paramOrthoMatrix;
 
 void main()
 {
-    vertexTextureCoords = shipPointPosition; 
-    gl_Position = paramOrthoMatrix * vec4(shipPointPosition.xy, -1.0, 1.0);
+    vertexTextureCoords = inShipPointPosition; 
+    gl_Position = paramOrthoMatrix * vec4(inShipPointPosition.xy, -1.0, 1.0);
 }
 
 ###FRAGMENT

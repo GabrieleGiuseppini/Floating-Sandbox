@@ -3,8 +3,8 @@
 #version 130
 
 // Inputs
-in vec2 waterPosition;
-in float shared1XFloat; // texture coordinate Y;
+in vec2 inWaterPosition;
+in float inShared1XFloat; // texture coordinate Y;
 
 // Parameters
 uniform mat4 paramOrthoMatrix;
@@ -14,8 +14,8 @@ out vec2 texturePos;
 
 void main()
 {
-    gl_Position = paramOrthoMatrix * vec4(waterPosition.xy, -1.0, 1.0);
-    texturePos = vec2(waterPosition.x, shared1XFloat);
+    gl_Position = paramOrthoMatrix * vec4(inWaterPosition.xy, -1.0, 1.0);
+    texturePos = vec2(inWaterPosition.x, inShared1XFloat);
 }
 
 

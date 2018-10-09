@@ -571,7 +571,7 @@ ShipRenderContext::ShipRenderContext(
     // Bind VBO
     glBindBuffer(GL_ARRAY_BUFFER, *mGenericTextureRenderPolygonVertexVBO);
 
-    // Describe buffer
+    // Describe buffer    
     glVertexAttribPointer(GenericTexturePosVertexAttribute, 2, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)0);
     glEnableVertexAttribArray(GenericTexturePosVertexAttribute);
     glVertexAttribPointer(GenericTextureTextureCoordinatesVertexAttribute, 2, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)(2 * sizeof(float)));

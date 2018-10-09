@@ -64,7 +64,10 @@ Current perf
 	+ Use in and out, and 130
 	= Replace all shaders
 		= RenderContext
+			+ Use "in" as prefix of inputs
+			- glEnableVertexArrays: all at top, as they have nothing to do with VBOs
 		- ShipContext
+			- Make Vector shader use shared position
 			- Remove unnecessary bind's for VBO's that source dedicated attributes
 	- Get rid of vector_arrows shader, use matte
 		- Will need to re-bind attribute (GenericPosition or VectorPosition=0) to vectors VBO

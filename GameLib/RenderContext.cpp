@@ -191,7 +191,6 @@ RenderContext::RenderContext(
 
 
 
-
     //
     // Initialize land 
     //
@@ -202,7 +201,6 @@ RenderContext::RenderContext(
     mShaderManager->SetProgramParameter<Render::ProgramType::Land, Render::ProgramParameterType::TextureScaling>(
             1.0f / landTextureMetadata.WorldWidth,
             1.0f / landTextureMetadata.WorldHeight);
-
 
     // Create VBO    
     glGenBuffers(1, &tmpGLuint);
@@ -231,14 +229,14 @@ RenderContext::RenderContext(
     glGenBuffers(1, &tmpGLuint);
     mWaterVBO = tmpGLuint;
 
-    // TODOTEST: this is repeated down
     // Bind VBO
     glBindBuffer(GL_ARRAY_BUFFER, *mWaterVBO);
 
     // Associate WaterPosition vertex attribute with this VBO
+    // (the other attribute is shared, hence we'll associate it later)
     glVertexAttribPointer(static_cast<GLuint>(Render::VertexAttributeType::WaterPosition), 2, GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void*)0);
 
-    // Enable vertex arrays for this VBO
+    // Enable vertex arrays for this VBO    
     glEnableVertexAttribArray(static_cast<GLuint>(Render::VertexAttributeType::WaterPosition));
     glEnableVertexAttribArray(static_cast<GLuint>(Render::VertexAttributeType::Shared1XFloat));
 
@@ -295,9 +293,6 @@ void RenderContext::Reset()
 {
     // Clear ships
     mShips.clear();
-
-    // TODO: might also reset all the other render contextes, once we have refactored
-    // them out and stored them as uq_ptr's
 }
 
 void RenderContext::AddShip(
@@ -372,11 +367,6 @@ void RenderContext::RenderCloudsEnd()
     // Use matte water program
     mShaderManager->ActivateProgram<Render::ProgramType::MatteWater>();
 
-    // Set parameters
-    // TODO: move up
-    mShaderManager->SetProgramParameter<Render::ProgramType::MatteWater, Render::ProgramParameterType::MatteColor>(
-        1.0f, 1.0f, 1.0f, 1.0f);
-
     // Disable writing to the color buffer
     glColorMask(false, false, false, false);
 
@@ -385,15 +375,14 @@ void RenderContext::RenderCloudsEnd()
     glStencilFunc(GL_ALWAYS, 1, 0xFF);
     glStencilMask(0xFF);
 
-    ////// TODOTEST
-    ////// Bind VBO
-    ////glBindBuffer(GL_ARRAY_BUFFER, *mWaterVBO);
-    ////// Associate WaterPosition vertex attribute with this VBO
-    ////glVertexAttribPointer(static_cast<GLuint>(Render::VertexAttributeType::WaterPosition), 2, GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void*)0);
-    ////glEnableVertexAttribArray(static_cast<GLuint>(Render::VertexAttributeType::WaterPosition));
+    // Disable vertex attribute 0, as we don't use it
+    glDisableVertexAttribArray(0);
 
     // Draw
     glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mWaterBufferSize));
+
+    // Re-enable vertex attribute 0
+    glEnableVertexAttribArray(0);
 
     // Don't write anything to stencil buffer now
     glStencilMask(0x00);
@@ -538,8 +527,14 @@ void RenderContext::RenderWater()
     // Associate Shared1XFloat vertex attribute with this VBO
     glVertexAttribPointer(static_cast<GLuint>(Render::VertexAttributeType::Shared1XFloat), 1, GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void*)(2 * sizeof(float)));
 
+    // Disable vertex attribute 0, as we don't use it
+    glDisableVertexAttribArray(0);
+
     // Draw
     glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mWaterBufferSize));
+
+    // Re-enable vertex attribute 0
+    glEnableVertexAttribArray(0);
 }
 
 void RenderContext::RenderEnd()

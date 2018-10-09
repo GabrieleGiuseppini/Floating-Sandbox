@@ -3,7 +3,7 @@
 #version 130
 
 // Inputs
-in vec2 sharedPosition;
+in vec2 inSharedPosition;
 
 // Parameters
 uniform mat4 paramOrthoMatrix;
@@ -13,8 +13,8 @@ out vec2 texturePos;
 
 void main()
 {
-    gl_Position = paramOrthoMatrix * vec4(sharedPosition.xy, -1.0, 1.0);
-    texturePos = sharedPosition.xy;
+    gl_Position = paramOrthoMatrix * vec4(inSharedPosition.xy, -1.0, 1.0);
+    texturePos = inSharedPosition.xy;
 }
 
 ###FRAGMENT

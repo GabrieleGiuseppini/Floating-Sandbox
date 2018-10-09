@@ -73,11 +73,11 @@ void ShaderManager<Traits>::CompileShader(
     try
     {
         // Get the program type
-        Traits::ProgramType const programType = Traits::StrToProgramType(shaderFilepath.stem().string());
-        std::string const programName = Traits::ProgramTypeToStr(programType);
+        Traits::ProgramType const program = Traits::StrToProgramType(shaderFilepath.stem().string());
+        std::string const programName = Traits::ProgramTypeToStr(program);
 
         // Make sure we have room for it
-        size_t programIndex = static_cast<size_t>(programType);
+        size_t programIndex = static_cast<size_t>(program);
         if (programIndex + 1 > mPrograms.size())
         {
             mPrograms.resize(programIndex + 1);
@@ -127,18 +127,10 @@ void ShaderManager<Traits>::CompileShader(
 
         for (auto vertexAttribute : vertexAttributes)
         {
-            std::string vertexAttributeName = Traits::VertexAttributeTypeToStr(vertexAttribute);
-
-            glBindAttribLocation(
-                *(mPrograms[programIndex].OpenGLHandle),
+            GameOpenGL::BindAttributeLocation(
+                mPrograms[programIndex].OpenGLHandle,
                 static_cast<GLuint>(vertexAttribute),
-                vertexAttributeName.c_str());
-
-            GLenum glError = glGetError();
-            if (GL_NO_ERROR != glError)
-            {
-                throw GameException("Error binding attribute location for attribute \"" + vertexAttributeName + "\" in program \"" + programName + "\"");
-            }
+                "in" + Traits::VertexAttributeTypeToStr(vertexAttribute));
         }
 
 
@@ -350,7 +342,7 @@ std::set<typename Traits::ProgramParameterType> ShaderManager<Traits>::ExtractSh
 template<typename Traits>
 std::set<typename Traits::VertexAttributeType> ShaderManager<Traits>::ExtractVertexAttributes(std::string const & source)
 {
-    static std::regex AttributeNameRegex(R"!(\bin\s+.*?\s+([_a-zA-Z][_a-zA-Z0-9]*);)!");
+    static std::regex AttributeNameRegex(R"!(\bin\s+.*?\s+in([_a-zA-Z][_a-zA-Z0-9]*);)!");
 
     std::set<Traits::VertexAttributeType> attributeNames;
 

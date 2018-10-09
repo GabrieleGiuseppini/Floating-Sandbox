@@ -167,6 +167,11 @@ public:
         GameOpenGLShaderProgram const & shaderProgram,
         std::string const & parameterName);
 
+    static void BindAttributeLocation(
+        GameOpenGLShaderProgram const & shaderProgram,
+        GLuint attributeIndex,
+        std::string const & attributeName);
+
     static void UploadMipmappedTexture(TextureFrame baseTexture);
 
     static void UploadMipmappedTexture(ImageData baseTexture);
