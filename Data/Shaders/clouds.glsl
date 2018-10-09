@@ -7,16 +7,16 @@
 //
 
 // Inputs
-in vec2 inputPos;
-in vec2 inputTexturePos;
+in vec2 sharedPosition;
+in vec2 sharedTextureCoordinates;
 
 // Outputs
 out vec2 texturePos;
 
 void main()
 {
-    gl_Position = vec4(inputPos.xy, -1.0, 1.0);
-    texturePos = inputTexturePos;
+    gl_Position = vec4(sharedPosition.xy, -1.0, 1.0);
+    texturePos = sharedTextureCoordinates;
 }
 
 ###FRAGMENT

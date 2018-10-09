@@ -19,6 +19,7 @@
 #include <sstream>
 #include <vector>
 
+template <typename Traits>
 class ShaderManager
 {
 private:
@@ -38,33 +39,6 @@ private:
     }
 
 public:
-
-    enum class ProgramType : uint32_t
-    {
-        Clouds = 0,
-        GenericTextures,
-        Land,
-        Matte,
-        MatteNDC,
-        ShipRopes,
-        ShipStressedSprings,
-        ShipTrianglesColor,
-        ShipTrianglesTexture,
-        VectorArrows,
-        Water,
-
-        _Last = Water
-    };
-
-    enum class DynamicParameterType : uint32_t
-    {
-        AmbientLightIntensity = 0,
-        MatteColor,
-        OrthoMatrix,
-        TextureScaling,
-        WaterLevelThreshold,
-        WaterTransparency
-    };
 
     struct GlobalParameters
     {
@@ -91,149 +65,109 @@ public:
 
     static std::unique_ptr<ShaderManager> CreateInstance(
         ResourceLoader & resourceLoader,
-        GlobalParameters const & globalParameters);
+        GlobalParameters const & globalParameters)
+    {
+        return CreateInstance(resourceLoader.GetShadersRootPath(), globalParameters);
+    }
 
     static std::unique_ptr<ShaderManager> CreateInstance(
         std::filesystem::path const & shadersRoot,
-        GlobalParameters const & globalParameters);
-
-    template <ProgramType _ProgramType>
-    inline void BindAttributeLocation(
-        GLuint attributeLocationIndex,
-        std::string const & attributeName)
+        GlobalParameters const & globalParameters)
     {
-        constexpr uint32_t programIndex = static_cast<uint32_t>(_ProgramType);
-
-        glBindAttribLocation(
-            *(mPrograms[programIndex].OpenGLHandle), 
-            attributeLocationIndex, 
-            attributeName.c_str());
-
-        GLenum glError = glGetError();
-        if (GL_NO_ERROR != glError)
-        {
-            throw GameException("Error binding attribute location \"" + attributeName + "\" for program \"" + ProgramTypeToStr(_ProgramType) + "\"");
-        }
+        return std::unique_ptr<ShaderManager>(
+            new ShaderManager(shadersRoot, globalParameters));
     }
 
-    template <ProgramType _ProgramType>
-    void TODOTEST_Relink()
+    template <typename Traits::ProgramType Program, typename Traits::ProgramParameterType Parameter>
+    inline void SetProgramParameter(float value)
     {
-        constexpr uint32_t programIndex = static_cast<uint32_t>(_ProgramType);
-        GameOpenGL::LinkShaderProgram(mPrograms[programIndex].OpenGLHandle, "TODO");
-
-        std::vector<GLint> newUniformLocations;
-        for (auto i = 0; i < mPrograms[programIndex].UniformLocations.size(); ++i)
-        {
-            if (static_cast<DynamicParameterType>(i) == DynamicParameterType::OrthoMatrix
-                || static_cast<DynamicParameterType>(i) == DynamicParameterType::TextureScaling
-                || static_cast<DynamicParameterType>(i) == DynamicParameterType::AmbientLightIntensity)
-            {
-                GLint ul = GameOpenGL::GetParameterLocation(
-                    mPrograms[programIndex].OpenGLHandle,
-                    "param" + DynamicParameterTypeToStr(static_cast<DynamicParameterType>(i)));
-
-                newUniformLocations.push_back(ul);
-            }
-            else
-            {
-                newUniformLocations.push_back(0);
-            }
-        }
-
-        mPrograms[programIndex].UniformLocations.swap(newUniformLocations);
-    }
-
-    template <ProgramType _ProgramType, DynamicParameterType _DynamicParameterType>
-    inline void SetDynamicParameter(float value)
-    {
-        constexpr uint32_t programIndex = static_cast<uint32_t>(_ProgramType);
-        constexpr uint32_t dynamicParameterIndex = static_cast<uint32_t>(_DynamicParameterType);
+        constexpr uint32_t programIndex = static_cast<uint32_t>(Program);
+        constexpr uint32_t parameterIndex = static_cast<uint32_t>(Parameter);
 
         glUniform1f(
-            mPrograms[programIndex].UniformLocations[dynamicParameterIndex], 
+            mPrograms[programIndex].UniformLocations[parameterIndex],
             value);
 
-        CheckUniformError<_ProgramType, _DynamicParameterType>();
+        CheckUniformError<Program, Parameter>();
     }
 
-    template <ProgramType _ProgramType, DynamicParameterType _DynamicParameterType>
-    inline void SetDynamicParameter(float val1, float val2)
+    template <typename Traits::ProgramType Program, typename Traits::ProgramParameterType Parameter>
+    inline void SetProgramParameter(float val1, float val2)
     {
-        constexpr uint32_t programIndex = static_cast<uint32_t>(_ProgramType);
-        constexpr uint32_t dynamicParameterIndex = static_cast<uint32_t>(_DynamicParameterType);
+        constexpr uint32_t programIndex = static_cast<uint32_t>(Program);
+        constexpr uint32_t parameterIndex = static_cast<uint32_t>(Parameter);
 
         glUniform2f(
-            mPrograms[programIndex].UniformLocations[dynamicParameterIndex], 
+            mPrograms[programIndex].UniformLocations[parameterIndex], 
             val1,
             val2);
 
-        CheckUniformError<_ProgramType, _DynamicParameterType>();
+        CheckUniformError<Program, Parameter>();
     }
 
-    template <ProgramType _ProgramType, DynamicParameterType _DynamicParameterType>
-    inline void SetDynamicParameter(float val1, float val2, float val3)
+    template <typename Traits::ProgramType Program, typename Traits::ProgramParameterType Parameter>
+    inline void SetProgramParameter(float val1, float val2, float val3)
     {
-        constexpr uint32_t programIndex = static_cast<uint32_t>(_ProgramType);
-        constexpr uint32_t dynamicParameterIndex = static_cast<uint32_t>(_DynamicParameterType);
+        constexpr uint32_t programIndex = static_cast<uint32_t>(Program);
+        constexpr uint32_t parameterIndex = static_cast<uint32_t>(Parameter);
 
         glUniform3f(
-            mPrograms[programIndex].UniformLocations[dynamicParameterIndex], 
+            mPrograms[programIndex].UniformLocations[parameterIndex],
             val1, 
             val2, 
             val3);
 
-        CheckUniformError<_ProgramType, _DynamicParameterType>();
+        CheckUniformError<Program, Parameter>();
     }
 
-    template <ProgramType _ProgramType, DynamicParameterType _DynamicParameterType>
-    inline void SetDynamicParameter(float val1, float val2, float val3, float val4)
+    template <typename Traits::ProgramType Program, typename Traits::ProgramParameterType Parameter>
+    inline void SetProgramParameter(float val1, float val2, float val3, float val4)
     {
-        constexpr uint32_t programIndex = static_cast<uint32_t>(_ProgramType);
-        constexpr uint32_t dynamicParameterIndex = static_cast<uint32_t>(_DynamicParameterType);
+        constexpr uint32_t programIndex = static_cast<uint32_t>(Program);
+        constexpr uint32_t parameterIndex = static_cast<uint32_t>(Parameter);
 
         glUniform4f(
-            mPrograms[programIndex].UniformLocations[dynamicParameterIndex],
+            mPrograms[programIndex].UniformLocations[parameterIndex],
             val1,
             val2,
             val3,
             val4);
 
-        CheckUniformError<_ProgramType, _DynamicParameterType>();
+        CheckUniformError<Program, Parameter>();
     }
 
-    template <ProgramType _ProgramType, DynamicParameterType _DynamicParameterType>
-    inline void SetDynamicParameter(float const(&value)[4][4])
+    template <typename Traits::ProgramType Program, typename Traits::ProgramParameterType Parameter>
+    inline void SetProgramParameter(float const(&value)[4][4])
     {
-        constexpr uint32_t programIndex = static_cast<uint32_t>(_ProgramType);
-        constexpr uint32_t dynamicParameterIndex = static_cast<uint32_t>(_DynamicParameterType);
+        constexpr uint32_t programIndex = static_cast<uint32_t>(Program);
+        constexpr uint32_t parameterIndex = static_cast<uint32_t>(Parameter);
 
         glUniformMatrix4fv(
-            mPrograms[programIndex].UniformLocations[dynamicParameterIndex],
+            mPrograms[programIndex].UniformLocations[parameterIndex],
             1,
             GL_FALSE,
             &(value[0][0]));
 
-        CheckUniformError<_ProgramType, _DynamicParameterType>();
+        CheckUniformError<Program, Parameter>();
     }
 
-    template <ProgramType _ProgramType>
+    template <typename Traits::ProgramType Program>
     inline void ActivateProgram()
     {
-        uint32_t const programIndex = static_cast<uint32_t>(_ProgramType);
+        uint32_t const programIndex = static_cast<uint32_t>(Program);
 
         glUseProgram(*(mPrograms[programIndex].OpenGLHandle));
     }
 
 private:
 
-    template <ProgramType _ProgramType, DynamicParameterType _DynamicParameterType>
+    template <typename Traits::ProgramType Program, typename Traits::ProgramParameterType Parameter>
     static void CheckUniformError()
     {
         GLenum glError = glGetError();
         if (GL_NO_ERROR != glError)
         {
-            throw GameException("Error setting uniform for parameter \"" + DynamicParameterTypeToStr(_DynamicParameterType) + "\" on program \"" + ProgramTypeToStr(_ProgramType) + "\"");
+            throw GameException("Error setting uniform for parameter \"" + Traits::ProgramParameterTypeToStr(Parameter) + "\" on program \"" + Traits::ProgramTypeToStr(Program) + "\"");
         }
     }
 
@@ -257,12 +191,9 @@ private:
         std::string const & source,
         std::map<std::string, std::string> const & staticParameters);
 
-    static std::set<DynamicParameterType> ExtractDynamicParameters(std::string const & source);
+    static std::set<typename Traits::ProgramParameterType> ExtractShaderParameters(std::string const & source);
 
-    static ShaderManager::ProgramType StrToProgramType(std::string const & str);
-    static std::string ProgramTypeToStr(ShaderManager::ProgramType programType);
-    static ShaderManager::DynamicParameterType StrToDynamicParameterType(std::string const & str);
-    static std::string DynamicParameterTypeToStr(ShaderManager::DynamicParameterType dynamicParameterType);
+    static std::set<typename Traits::VertexAttributeType> ExtractVertexAttributes(std::string const & source);
 
 private:
 
@@ -271,7 +202,7 @@ private:
         // The OpenGL handle to the program
         GameOpenGLShaderProgram OpenGLHandle;
 
-        // The uniform locations, indexed by dynamic parameter type
+        // The uniform locations, indexed by shader parameter type
         std::vector<GLint> UniformLocations;
     };
 
@@ -296,9 +227,15 @@ private:
     friend class ShaderManagerTests_SubstitutesStaticParameters_Multiple_Repeated_Test;
     friend class ShaderManagerTests_SubstitutesStaticParameters_ErrorsOnUnrecognizedParameter_Test;
 
-    friend class ShaderManagerTests_ExtractsDynamicParameters_Single_Test;
-    friend class ShaderManagerTests_ExtractsDynamicParameters_Multiple_Test;
-    friend class ShaderManagerTests_ExtractsDynamicParameters_ErrorsOnUnrecognizedParameter_Test;
-    friend class ShaderManagerTests_ExtractsDynamicParameters_ErrorsOnRedefinedParameter_Test;
+    friend class ShaderManagerTests_ExtractsShaderParameters_Single_Test;
+    friend class ShaderManagerTests_ExtractsShaderParameters_Multiple_Test;
+    friend class ShaderManagerTests_ExtractsShaderParameters_ErrorsOnUnrecognizedParameter_Test;
+    friend class ShaderManagerTests_ExtractsShaderParameters_ErrorsOnRedefinedParameter_Test;
+
+    friend class ShaderManagerTests_ExtractsVertexAttributes_Single_Test;
+    friend class ShaderManagerTests_ExtractsVertexAttributes_Multiple_Test;
+    friend class ShaderManagerTests_ExtractsVertexAttributes_ErrorsOnUnrecognizedAttribute_Test;
+    friend class ShaderManagerTests_ExtractsVertexAttributes_ErrorsOnRedeclaredAttribute_Test;
 };
 
+#include "ShaderManager.cpp.inl"

@@ -3,10 +3,10 @@
 #version 130
 
 // Inputs
-in vec2 inputPos;        
-in float inputLight;
-in float inputWater;
-in vec3 inputCol;
+in vec2 shipPointPosition;
+in float shipPointLight;
+in float shipPointWater;
+in vec3 shipPointColor;
 
 // Outputs        
 out float vertexLight;
@@ -18,11 +18,11 @@ uniform mat4 paramOrthoMatrix;
 
 void main()
 {            
-    vertexLight = inputLight;
-    vertexWater = inputWater;
-    vertexCol = inputCol;
+    vertexLight = shipPointLight;
+    vertexWater = shipPointWater;
+    vertexCol = shipPointColor;
 
-    gl_Position = paramOrthoMatrix * vec4(inputPos.xy, -1.0, 1.0);
+    gl_Position = paramOrthoMatrix * vec4(shipPointPosition.xy, -1.0, 1.0);
 }
 
 ###FRAGMENT

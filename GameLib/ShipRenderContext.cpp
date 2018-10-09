@@ -12,7 +12,7 @@
 ShipRenderContext::ShipRenderContext(    
     std::optional<ImageData> texture,
     vec3f const & ropeColour,
-    ShaderManager & shaderManager,
+    ShaderManager<Render::ShaderManagerTraits> & shaderManager,
     TextureRenderManager const & textureRenderManager,
     float const(&orthoMatrix)[4][4],
     float visibleWorldHeight,
@@ -811,19 +811,19 @@ void ShipRenderContext::UploadPoints(
 
     // Upload positions
     glBindBuffer(GL_ARRAY_BUFFER, *mPointPositionVBO);
-    glBufferData(GL_ARRAY_BUFFER, count * sizeof(vec2f), position, GL_STREAM_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, count * sizeof(vec2f), position, GL_DYNAMIC_DRAW);
     glVertexAttribPointer(PointPosVertexAttribute, 2, GL_FLOAT, GL_FALSE, sizeof(vec2f), (void*)(0));
     glEnableVertexAttribArray(PointPosVertexAttribute);
 
     // Upload lights
     glBindBuffer(GL_ARRAY_BUFFER, *mPointLightVBO);
-    glBufferData(GL_ARRAY_BUFFER, count * sizeof(float), light, GL_STREAM_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, count * sizeof(float), light, GL_DYNAMIC_DRAW);
     glVertexAttribPointer(PointLightVertexAttribute, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)(0));
     glEnableVertexAttribArray(PointLightVertexAttribute);
 
     // Upload waters
     glBindBuffer(GL_ARRAY_BUFFER, *mPointWaterVBO);
-    glBufferData(GL_ARRAY_BUFFER, count * sizeof(float), water, GL_STREAM_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, count * sizeof(float), water, GL_DYNAMIC_DRAW);
     glVertexAttribPointer(PointWaterVertexAttribute, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)(0));
     glEnableVertexAttribArray(PointWaterVertexAttribute);
 
@@ -1049,7 +1049,7 @@ void ShipRenderContext::UploadVectors(
     //
 
     glBindBuffer(GL_ARRAY_BUFFER, *mVectorArrowPointPositionVBO);
-    glBufferData(GL_ARRAY_BUFFER, mVectorArrowPointPositionBuffer.size() * sizeof(vec2f), mVectorArrowPointPositionBuffer.data(), GL_STREAM_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, mVectorArrowPointPositionBuffer.size() * sizeof(vec2f), mVectorArrowPointPositionBuffer.data(), GL_DYNAMIC_DRAW);
     glVertexAttribPointer(VectorArrowPosVertexAttribute, 2, GL_FLOAT, GL_FALSE, sizeof(vec2f), (void*)(0));
     glEnableVertexAttribArray(VectorArrowPosVertexAttribute);
     glBindBuffer(GL_ARRAY_BUFFER, 0u);
@@ -1071,7 +1071,7 @@ void ShipRenderContext::RenderEnd()
     //
 
     glBindBuffer(GL_ARRAY_BUFFER, *mGenericTextureRenderPolygonVertexVBO);
-    glBufferData(GL_ARRAY_BUFFER, mGenericTextureRenderPolygonVertexBuffer.size() * sizeof(TextureRenderPolygonVertex), mGenericTextureRenderPolygonVertexBuffer.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, mGenericTextureRenderPolygonVertexBuffer.size() * sizeof(TextureRenderPolygonVertex), mGenericTextureRenderPolygonVertexBuffer.data(), GL_DYNAMIC_DRAW);
 
 
     //

@@ -74,7 +74,10 @@ GLint GameOpenGL::GetParameterLocation(
     std::string const & parameterName)
 {
     GLint parameterLocation = glGetUniformLocation(*shaderProgram, parameterName.c_str());
-    if (parameterLocation == -1)
+
+    GLenum glError = glGetError();
+    if (parameterLocation == -1
+        || GL_NO_ERROR != glError)
     {
         throw GameException("Cannot retrieve location of parameter \"" + parameterName + "\"");
     }

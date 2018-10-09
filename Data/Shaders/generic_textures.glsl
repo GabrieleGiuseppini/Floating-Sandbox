@@ -3,9 +3,9 @@
 #version 130
 
 // Inputs
-in vec2 inputPos;
-in vec2 inputTextureCoords;
-in float inputAmbientLightSensitivity;
+in vec2 genericTexturePosition;
+in vec2 genericTextureCoordinates;
+in float genericTextureAmbientLightSensitivity;
 
 // Outputs
 out vec2 vertexTextureCoords;
@@ -16,9 +16,9 @@ uniform mat4 paramOrthoMatrix;
 
 void main()
 {
-    vertexTextureCoords = inputTextureCoords; 
-    vertexAmbientLightSensitivity = inputAmbientLightSensitivity;
-    gl_Position = paramOrthoMatrix * vec4(inputPos.xy, -1.0, 1.0);
+    vertexTextureCoords = genericTextureCoordinates; 
+    vertexAmbientLightSensitivity = genericTextureAmbientLightSensitivity;
+    gl_Position = paramOrthoMatrix * vec4(genericTexturePosition.xy, -1.0, 1.0);
 }
 
 ###FRAGMENT

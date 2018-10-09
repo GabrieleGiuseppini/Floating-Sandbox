@@ -1,8 +1,11 @@
+#include <GameLib/RenderCore.h>
 #include <GameLib/ShaderManager.h>
 
 #include <GameLib/GameException.h>
 
 #include "gtest/gtest.h"
+
+using TestShaderManager = ShaderManager<Render::ShaderManagerTraits>;
 
 class ShaderManagerTests : public testing::Test
 {
@@ -26,7 +29,7 @@ vfoo
  fbar
 )";
 
-    auto [vertexSource, fragmentSource] = ShaderManager::SplitSource(source);
+    auto [vertexSource, fragmentSource] = TestShaderManager::SplitSource(source);
 
     EXPECT_EQ("vfoo\n", vertexSource);
     EXPECT_EQ(" fbar\n", fragmentSource);
@@ -41,7 +44,7 @@ fbar
     )";
 
     EXPECT_THROW(
-        ShaderManager::SplitSource(source),
+        TestShaderManager::SplitSource(source),
         GameException);
 }
 
@@ -50,7 +53,7 @@ TEST_F(ShaderManagerTests, SplitsShaders_ErrorsOnMissingVertexSection_EmptyFile)
     std::string source = "";
 
     EXPECT_THROW(
-        ShaderManager::SplitSource(source),
+        TestShaderManager::SplitSource(source),
         GameException);
 }
 
@@ -63,7 +66,7 @@ fbar
     )";
 
     EXPECT_THROW(
-        ShaderManager::SplitSource(source),
+        TestShaderManager::SplitSource(source),
         GameException);
 }
 
@@ -74,7 +77,7 @@ TEST_F(ShaderManagerTests, ParsesStaticParameters_Single)
    FOO=56.8)";
 
     std::map<std::string, std::string> params;
-    ShaderManager::ParseLocalStaticParameters(source, params);
+    TestShaderManager::ParseLocalStaticParameters(source, params);
 
     EXPECT_EQ(1, params.size());
 
@@ -86,18 +89,19 @@ TEST_F(ShaderManagerTests, ParsesStaticParameters_Single)
 TEST_F(ShaderManagerTests, ParsesStaticParameters_Multiple)
 {
     std::string source = R"(
-
-FOO = 67
+   
+FOO = 67, 87, 88   
+    
 BAR = 89)";
 
     std::map<std::string, std::string> params;
-    ShaderManager::ParseLocalStaticParameters(source, params);
+    TestShaderManager::ParseLocalStaticParameters(source, params);
 
     EXPECT_EQ(2, params.size());
 
     auto const & it1 = params.find("FOO");
     ASSERT_NE(it1, params.end());
-    EXPECT_EQ("67", it1->second);
+    EXPECT_EQ("67, 87, 88", it1->second);
 
     auto const & it2 = params.find("BAR");
     ASSERT_NE(it2, params.end());
@@ -115,7 +119,7 @@ FOO = 67
 
     std::map<std::string, std::string> params;
     EXPECT_THROW(
-        ShaderManager::ParseLocalStaticParameters(source, params),
+        TestShaderManager::ParseLocalStaticParameters(source, params),
         GameException);
 }
 
@@ -130,7 +134,7 @@ FOO = 67
 
     std::map<std::string, std::string> params;
     EXPECT_THROW(
-        ShaderManager::ParseLocalStaticParameters(source, params),
+        TestShaderManager::ParseLocalStaticParameters(source, params),
         GameException);
 }
 
@@ -138,7 +142,7 @@ TEST_F(ShaderManagerTests, SubstitutesStaticParameters_Single)
 {
     std::string source = "hello world %Z_DEPTH% bar";
 
-    auto result = ShaderManager::SubstituteStaticParameters(source, MakeStaticParameters());
+    auto result = TestShaderManager::SubstituteStaticParameters(source, MakeStaticParameters());
 
     EXPECT_EQ("hello world 2.5678 bar", result);
 }
@@ -147,7 +151,7 @@ TEST_F(ShaderManagerTests, SubstitutesStaticParameters_Multiple_Different)
 {
     std::string source = "hello world %Z_DEPTH% bar\n foo %FOO% hello";
 
-    auto result = ShaderManager::SubstituteStaticParameters(source, MakeStaticParameters());
+    auto result = TestShaderManager::SubstituteStaticParameters(source, MakeStaticParameters());
 
     EXPECT_EQ("hello world 2.5678 bar\n foo BAR hello", result);
 }
@@ -156,7 +160,7 @@ TEST_F(ShaderManagerTests, SubstitutesStaticParameters_Multiple_Repeated)
 {
     std::string source = "hello world %Z_DEPTH% bar\n foo %Z_DEPTH% hello";
 
-    auto result = ShaderManager::SubstituteStaticParameters(source, MakeStaticParameters());
+    auto result = TestShaderManager::SubstituteStaticParameters(source, MakeStaticParameters());
 
     EXPECT_EQ("hello world 2.5678 bar\n foo 2.5678 hello", result);
 }
@@ -166,21 +170,21 @@ TEST_F(ShaderManagerTests, SubstitutesStaticParameters_ErrorsOnUnrecognizedParam
     std::string source = "a %Z_BAR% b";
 
     EXPECT_THROW(
-        ShaderManager::SubstituteStaticParameters(source, MakeStaticParameters()),
+        TestShaderManager::SubstituteStaticParameters(source, MakeStaticParameters()),
         GameException);
 }
 
-TEST_F(ShaderManagerTests, ExtractsDynamicParameters_Single)
+TEST_F(ShaderManagerTests, ExtractsShaderParameters_Single)
 {
     std::string source = "  uniform float paramAmbientLightIntensity;\n";
 
-    auto result = ShaderManager::ExtractDynamicParameters(source);
+    auto result = TestShaderManager::ExtractShaderParameters(source);
 
     ASSERT_EQ(1, result.size());
-    EXPECT_EQ(1, result.count(ShaderManager::DynamicParameterType::AmbientLightIntensity));
+    EXPECT_EQ(1, result.count(Render::ProgramParameterType::AmbientLightIntensity));
 }
 
-TEST_F(ShaderManagerTests, ExtractsDynamicParameters_Multiple)
+TEST_F(ShaderManagerTests, ExtractsShaderParameters_Multiple)
 {
     std::string source = R"!!!(
 uniform float paramAmbientLightIntensity;
@@ -188,14 +192,14 @@ foobar;
 uniform mat4 paramOrthoMatrix;
 )!!!";
 
-    auto result = ShaderManager::ExtractDynamicParameters(source);
+    auto result = TestShaderManager::ExtractShaderParameters(source);
 
     ASSERT_EQ(2, result.size());
-    EXPECT_EQ(1, result.count(ShaderManager::DynamicParameterType::AmbientLightIntensity));
-    EXPECT_EQ(1, result.count(ShaderManager::DynamicParameterType::OrthoMatrix));
+    EXPECT_EQ(1, result.count(Render::ProgramParameterType::AmbientLightIntensity));
+    EXPECT_EQ(1, result.count(Render::ProgramParameterType::OrthoMatrix));
 }
 
-TEST_F(ShaderManagerTests, ExtractsDynamicParameters_ErrorsOnUnrecognizedParameter)
+TEST_F(ShaderManagerTests, ExtractsShaderParameters_ErrorsOnUnrecognizedParameter)
 {
     std::string source = R"!!!(
 uniform float paramAmbientLightIntensity;
@@ -204,11 +208,11 @@ uniform mat4 paramOrthoMatriz;
 )!!!";
 
     EXPECT_THROW(
-        ShaderManager::ExtractDynamicParameters(source),
+        TestShaderManager::ExtractShaderParameters(source),
         GameException);
 }
 
-TEST_F(ShaderManagerTests, ExtractsDynamicParameters_ErrorsOnRedefinedParameter)
+TEST_F(ShaderManagerTests, ExtractsShaderParameters_ErrorsOnRedefinedParameter)
 {
     std::string source = R"!!!(
 uniform float paramAmbientLightIntensity;
@@ -217,6 +221,61 @@ uniform mat4 paramAmbientLightIntensity;
 )!!!";
 
     EXPECT_THROW(
-        ShaderManager::ExtractDynamicParameters(source),
+        TestShaderManager::ExtractShaderParameters(source),
+        GameException);
+}
+
+//TODOHERE
+
+TEST_F(ShaderManagerTests, ExtractsVertexAttributes_Single)
+{
+    std::string source = "  in vec4 cloudPosition;\n";
+
+    auto result = TestShaderManager::ExtractVertexAttributes(source);
+
+    ASSERT_EQ(1, result.size());
+    EXPECT_EQ(1, result.count(Render::VertexAttributeType::CloudPosition));
+}
+
+TEST_F(ShaderManagerTests, ExtractsVertexAttributes_Multiple)
+{
+    std::string source = R"!!!(
+uniform float paramAmbientLightIntensity;
+in matfoo lopo lopo cloudPosition;
+foobar;
+in mat4 cloudTextureCoordinates;
+)!!!";
+
+    auto result = TestShaderManager::ExtractVertexAttributes(source);
+
+    ASSERT_EQ(2, result.size());
+    EXPECT_EQ(1, result.count(Render::VertexAttributeType::CloudPosition));
+    EXPECT_EQ(1, result.count(Render::VertexAttributeType::CloudTextureCoordinates));
+}
+
+TEST_F(ShaderManagerTests, ExtractsVertexAttributes_ErrorsOnUnrecognizedAttribute)
+{
+    std::string source = R"!!!(
+uniform float paramAmbientLightIntensity;
+foobar;
+in mat4 headPosition;
+)!!!";
+
+    EXPECT_THROW(
+        TestShaderManager::ExtractVertexAttributes(source),
+        GameException);
+}
+
+TEST_F(ShaderManagerTests, ExtractsVertexAttributes_ErrorsOnRedeclaredAttribute)
+{
+    std::string source = R"!!!(
+uniform float paramAmbientLightIntensity;
+in mat4 cloudTextureCoordinates;
+foobar;
+in mat4 cloudTextureCoordinates;
+)!!!";
+
+    EXPECT_THROW(
+        TestShaderManager::ExtractVertexAttributes(source),
         GameException);
 }

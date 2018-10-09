@@ -35,11 +35,13 @@ set  (GAME_SOURCES
 	ObjectIdGenerator.h
 	ProgressCallback.h
 	RenderContext.cpp
-	RenderContext.h	
+	RenderContext.h
+	RenderCore.cpp
+	RenderCore.h
 	ResourceLoader.cpp
 	ResourceLoader.h
 	RunningAverage.h
-	ShaderManager.cpp
+	ShaderManager.cpp.inl
 	ShaderManager.h
 	ShipBuilder.cpp
 	ShipBuilder.h

@@ -203,6 +203,16 @@ public:
     // String
     //
 
+    static std::string Trim(std::string const & str)
+    {
+        std::string str2 = str;
+        str2.erase(str2.begin(), std::find_if(str2.begin(), str2.end(), [](int ch) {
+            return !std::isspace(ch);
+        }));
+
+        return str2;
+    }
+
     static std::string ToLower(std::string const & str)
     {
         std::string lstr = str;
@@ -213,6 +223,18 @@ public:
             [](unsigned char c) { return static_cast<unsigned char>(std::tolower(c)); });
 
         return lstr;
+    }
+
+    static bool CaseInsensitiveEquals(std::string const & str1, std::string const & str2)
+    {
+        if (str1.length() != str2.length())
+            return false;
+
+        for (size_t i = 0; i < str1.length(); ++i)
+            if (std::tolower(str1[i]) != std::tolower(str2[i]))
+                return false;
+
+        return true;
     }
 
     template <typename TIterable>

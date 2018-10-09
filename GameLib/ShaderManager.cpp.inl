@@ -6,29 +6,14 @@
 #include "ShaderManager.h"
 
 #include "GameException.h"
-#include "ResourceLoader.h"
 #include "Utils.h"
 
 #include <regex>
 
 static const std::string StaticParametersFilenameStem = "static_parameters";
 
-std::unique_ptr<ShaderManager> ShaderManager::CreateInstance(
-    ResourceLoader & resourceLoader,
-    GlobalParameters const & globalParameters)
-{
-    return CreateInstance(resourceLoader.GetShadersRootPath(), globalParameters);
-}
-
-std::unique_ptr<ShaderManager> ShaderManager::CreateInstance(
-    std::filesystem::path const & shadersRoot,
-    GlobalParameters const & globalParameters)
-{
-    return std::unique_ptr<ShaderManager>(
-        new ShaderManager(shadersRoot, globalParameters));
-}
-
-ShaderManager::ShaderManager(
+template<typename Traits>
+ShaderManager<Traits>::ShaderManager(
     std::filesystem::path const & shadersRoot,
     GlobalParameters const & globalParameters)
 {
@@ -68,16 +53,17 @@ ShaderManager::ShaderManager(
     // Verify all programs have been loaded
     //
 
-    for (uint32_t i = 0; i <= static_cast<uint32_t>(ProgramType::_Last); ++i)
+    for (uint32_t i = 0; i <= static_cast<uint32_t>(Traits::ProgramType::_Last); ++i)
     {
         if (i >= mPrograms.size() || !(mPrograms[i].OpenGLHandle))
         {
-            throw GameException("Cannot find GLSL source file for program \"" + ProgramTypeToStr(static_cast<ProgramType>(i)) + "\"");
+            throw GameException("Cannot find GLSL source file for program \"" + Traits::ProgramTypeToStr(static_cast<Traits::ProgramType>(i)) + "\"");
         }
     }
 }
 
-void ShaderManager::CompileShader(
+template<typename Traits>
+void ShaderManager<Traits>::CompileShader(
     std::filesystem::path const & shaderFilepath,
     std::map<std::string, std::string> const & staticParameters)
 {
@@ -87,8 +73,8 @@ void ShaderManager::CompileShader(
     try
     {
         // Get the program type
-        ProgramType const programType = StrToProgramType(shaderFilepath.stem().string());
-        std::string const programName = ProgramTypeToStr(programType);
+        Traits::ProgramType const programType = Traits::StrToProgramType(shaderFilepath.stem().string());
+        std::string const programName = Traits::ProgramTypeToStr(programType);
 
         // Make sure we have room for it
         size_t programIndex = static_cast<size_t>(programType);
@@ -134,6 +120,29 @@ void ShaderManager::CompileShader(
 
 
         //
+        // Extract attribute names from vertex shader and bind them
+        //
+
+        std::set<typename Traits::VertexAttributeType> vertexAttributes = ExtractVertexAttributes(vertexShaderSource);
+
+        for (auto vertexAttribute : vertexAttributes)
+        {
+            std::string vertexAttributeName = Traits::VertexAttributeTypeToStr(vertexAttribute);
+
+            glBindAttribLocation(
+                *(mPrograms[programIndex].OpenGLHandle),
+                static_cast<GLuint>(vertexAttribute),
+                vertexAttributeName.c_str());
+
+            GLenum glError = glGetError();
+            if (GL_NO_ERROR != glError)
+            {
+                throw GameException("Error binding attribute location for attribute \"" + vertexAttributeName + "\" in program \"" + programName + "\"");
+            }
+        }
+
+
+        //
         // Link
         //
 
@@ -141,28 +150,28 @@ void ShaderManager::CompileShader(
 
 
         //
-        // Get uniform locations
+        // Extract uniform locations
         //
 
         std::vector<GLint> uniformLocations;
 
-        auto allDynamicParameters = ExtractDynamicParameters(vertexShaderSource);
-        auto fragmentDynamicParameters = ExtractDynamicParameters(fragmentShaderSource);
-        allDynamicParameters.merge(fragmentDynamicParameters);
+        auto allProgramParameters = ExtractShaderParameters(vertexShaderSource);
+        auto fragmentShaderParameters = ExtractShaderParameters(fragmentShaderSource);
+        allProgramParameters.merge(fragmentShaderParameters);
 
-        for (DynamicParameterType dynamicParameterType : allDynamicParameters)
+        for (Traits::ProgramParameterType programParameter : allProgramParameters)
         {
             // Make sure there is room
-            size_t dynamicParameterIndex = static_cast<size_t>(dynamicParameterType);
-            if (dynamicParameterIndex + 1 > mPrograms[programIndex].UniformLocations.size())
+            size_t programParameterIndex = static_cast<size_t>(programParameter);
+            if (programParameterIndex + 1 > mPrograms[programIndex].UniformLocations.size())
             {
-                mPrograms[programIndex].UniformLocations.resize(dynamicParameterIndex + 1);
+                mPrograms[programIndex].UniformLocations.resize(programParameterIndex + 1);
             }
 
             // Get and store
-            mPrograms[programIndex].UniformLocations[dynamicParameterIndex] = GameOpenGL::GetParameterLocation(
+            mPrograms[programIndex].UniformLocations[programParameterIndex] = GameOpenGL::GetParameterLocation(
                 mPrograms[programIndex].OpenGLHandle,
-                "param" + DynamicParameterTypeToStr(dynamicParameterType));
+                "param" + Traits::ProgramParameterTypeToStr(programParameter));
         }
     }
     catch (GameException const & ex)
@@ -171,7 +180,8 @@ void ShaderManager::CompileShader(
     }
 }
 
-std::tuple<std::string, std::string> ShaderManager::SplitSource(std::string const & source)
+template<typename Traits>
+std::tuple<std::string, std::string> ShaderManager<Traits>::SplitSource(std::string const & source)
 {
     static std::regex VertexHeaderRegex(R"!(\s*###VERTEX\s*)!");
     static std::regex FragmentHeaderRegex(R"!(\s*###FRAGMENT\s*)!");
@@ -232,16 +242,19 @@ std::tuple<std::string, std::string> ShaderManager::SplitSource(std::string cons
     return std::make_tuple(vertexShader.str(), fragmentShader.str());
 }
 
-void ShaderManager::ParseLocalStaticParameters(
+template<typename Traits>
+void ShaderManager<Traits>::ParseLocalStaticParameters(
     std::string const & localStaticParametersSource,
     std::map<std::string, std::string> & staticParameters)
 {
-    static std::regex StaticParamDefinitionRegex(R"!(^\s*([_a-zA-Z][_a-zA-Z0-9]*)\s*=(.*)$)!");
+    static std::regex StaticParamDefinitionRegex(R"!(^\s*([_a-zA-Z][_a-zA-Z0-9]*)\s*=\s*(.*?)\s*$)!");
 
     std::stringstream sSource(localStaticParametersSource);
     std::string line;
     while (std::getline(sSource, line))
     {
+        line = Utils::Trim(line);
+
         if (!line.empty())
         {
             std::smatch match;
@@ -269,7 +282,8 @@ void ShaderManager::ParseLocalStaticParameters(
     }
 }
 
-std::string ShaderManager::SubstituteStaticParameters(
+template<typename Traits>
+std::string ShaderManager<Traits>::SubstituteStaticParameters(
     std::string const & source,
     std::map<std::string, std::string> const & staticParameters)
 {
@@ -303,134 +317,62 @@ std::string ShaderManager::SubstituteStaticParameters(
     return sSubstitutedSource.str();
 }
 
-std::set<ShaderManager::DynamicParameterType> ShaderManager::ExtractDynamicParameters(std::string const & source)
+template<typename Traits>
+std::set<typename Traits::ProgramParameterType> ShaderManager<Traits>::ExtractShaderParameters(std::string const & source)
 {
-    static std::regex DynamicParamNameRegex(R"!(\buniform\s+.*?\s+param([_a-zA-Z0-9]*);)!");
+    static std::regex ShaderParamNameRegex(R"!(\buniform\s+.*?\s+param([_a-zA-Z0-9]*);)!");
 
-    std::set<ShaderManager::DynamicParameterType> dynamicParameters;
+    std::set<Traits::ProgramParameterType> shaderParameters;
 
     std::string remainingSource = source;
     std::smatch match;
-    while (std::regex_search(remainingSource, match, DynamicParamNameRegex))
+    while (std::regex_search(remainingSource, match, ShaderParamNameRegex))
     {
         assert(2 == match.size());
-        auto dynamicParameterName = match[1].str();
+        auto const & shaderParameterName = match[1].str();
 
         // Lookup the parameter
-        DynamicParameterType dynamicParameterType = StrToDynamicParameterType(dynamicParameterName);
+        Traits::ProgramParameterType shaderParameter = Traits::StrToProgramParameterType(shaderParameterName);
 
         // Store it, making sure it's not specified more than once
-        if (!dynamicParameters.insert(dynamicParameterType).second)
+        if (!shaderParameters.insert(shaderParameter).second)
         {
-            throw GameException("Dynamic parameter \"" + DynamicParameterTypeToStr(dynamicParameterType) + "\" is declared more than once");
+            throw GameException("Shader parameter \"" + shaderParameterName + "\" is declared more than once");
         }
 
         // Advance
         remainingSource = match.suffix();
     }
 
-    return dynamicParameters;
+    return shaderParameters;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////
-
-ShaderManager::ProgramType ShaderManager::StrToProgramType(std::string const & str)
+template<typename Traits>
+std::set<typename Traits::VertexAttributeType> ShaderManager<Traits>::ExtractVertexAttributes(std::string const & source)
 {
-    std::string lstr = Utils::ToLower(str);
-    if (lstr == "clouds")
-        return ShaderManager::ProgramType::Clouds;
-    else if (lstr == "generic_textures")
-        return ShaderManager::ProgramType::GenericTextures;
-    else if (lstr == "land")
-        return ShaderManager::ProgramType::Land;
-    else if (lstr == "matte")
-        return ShaderManager::ProgramType::Matte;
-    else if (lstr == "matte_ndc")
-        return ShaderManager::ProgramType::MatteNDC;
-    else if (lstr == "ship_ropes")
-        return ShaderManager::ProgramType::ShipRopes;
-    else if (lstr == "ship_stressed_springs")
-        return ShaderManager::ProgramType::ShipStressedSprings;
-    else if (lstr == "ship_triangles_color")
-        return ShaderManager::ProgramType::ShipTrianglesColor;
-    else if (lstr == "ship_triangles_texture")
-        return ShaderManager::ProgramType::ShipTrianglesTexture;
-    else if (lstr == "vector_arrows")
-        return ShaderManager::ProgramType::VectorArrows;
-    else if (lstr == "water")
-        return ShaderManager::ProgramType::Water;
-    else
-        throw GameException("Unrecognized program \"" + str + "\"");
-}
+    static std::regex AttributeNameRegex(R"!(\bin\s+.*?\s+([_a-zA-Z][_a-zA-Z0-9]*);)!");
 
-std::string ShaderManager::ProgramTypeToStr(ShaderManager::ProgramType programType)
-{
-    switch (programType)
+    std::set<Traits::VertexAttributeType> attributeNames;
+
+    std::string remainingSource = source;
+    std::smatch match;
+    while (std::regex_search(remainingSource, match, AttributeNameRegex))
     {
-    case ShaderManager::ProgramType::Clouds:
-        return "Clouds";
-    case ShaderManager::ProgramType::GenericTextures:
-        return "GenericTextures";
-    case ShaderManager::ProgramType::Land:
-        return "Land";
-    case ShaderManager::ProgramType::Matte:
-        return "Matte";
-    case ShaderManager::ProgramType::MatteNDC:
-        return "MatteNDC";
-    case ShaderManager::ProgramType::ShipRopes:
-        return "ShipRopes";
-    case ShaderManager::ProgramType::ShipStressedSprings:
-        return "ShipStressedSprings";
-    case ShaderManager::ProgramType::ShipTrianglesColor:
-        return "ShipTrianglesColor";
-    case ShaderManager::ProgramType::ShipTrianglesTexture:
-        return "ShipTrianglesTexture";
-    case ShaderManager::ProgramType::VectorArrows:
-        return "VectorArrows";
-    case ShaderManager::ProgramType::Water:
-        return "Water";
-    default:
-        assert(false);
-        throw GameException("Unsupported ProgramType");
-    }
-}
+        assert(2 == match.size());
+        auto const & attributeName = match[1].str();
 
-ShaderManager::DynamicParameterType ShaderManager::StrToDynamicParameterType(std::string const & str)
-{
-    if (str == "AmbientLightIntensity")
-        return ShaderManager::DynamicParameterType::AmbientLightIntensity;
-    else if (str == "MatteColor")
-        return ShaderManager::DynamicParameterType::MatteColor;
-    else if (str == "OrthoMatrix")
-        return ShaderManager::DynamicParameterType::OrthoMatrix;
-    else if (str == "TextureScaling")
-        return ShaderManager::DynamicParameterType::TextureScaling;
-    else if (str == "WaterLevelThreshold")
-        return ShaderManager::DynamicParameterType::WaterLevelThreshold;
-    else if (str == "WaterTransparency")
-        return ShaderManager::DynamicParameterType::WaterTransparency;
-    else
-        throw GameException("Unrecognized dynamic parameter \"" + str + "\"");
-}
+        // Lookup the attribute name
+        Traits::VertexAttributeType attribute = Traits::StrToVertexAttributeType(attributeName);
 
-std::string ShaderManager::DynamicParameterTypeToStr(ShaderManager::DynamicParameterType dynamicParameterType)
-{
-    switch (dynamicParameterType)
-    {
-    case ShaderManager::DynamicParameterType::AmbientLightIntensity:
-        return "AmbientLightIntensity";
-    case ShaderManager::DynamicParameterType::MatteColor:
-        return "MatteColor";
-    case ShaderManager::DynamicParameterType::OrthoMatrix:
-        return "OrthoMatrix";
-    case ShaderManager::DynamicParameterType::TextureScaling:
-        return "TextureScaling";
-    case ShaderManager::DynamicParameterType::WaterLevelThreshold:
-        return "WaterLevelThreshold";
-    case ShaderManager::DynamicParameterType::WaterTransparency:
-        return "WaterTransparency";
-    default:
-        assert(false);
-        throw GameException("Unsupported DynamicParameterType");
+        // Store it, making sure it's not specified more than once
+        if (!attributeNames.insert(attribute).second)
+        {
+            throw GameException("Attribute name \"" + attributeName + "\" is declared more than once");
+        }
+
+        // Advance
+        remainingSource = match.suffix();
     }
+
+    return attributeNames;
 }

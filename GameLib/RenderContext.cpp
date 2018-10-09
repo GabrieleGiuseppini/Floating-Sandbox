@@ -59,17 +59,16 @@ RenderContext::RenderContext(
     GameOpenGL::InitOpenGL();
 
 
-
     //
     // Load shader manager
     //
 
     progressCallback(0.0f, "Loading shaders...");
 
-    ShaderManager::GlobalParameters globalParameters(
+    ShaderManager<Render::ShaderManagerTraits>::GlobalParameters globalParameters(
         ropeColour); 
 
-    mShaderManager = ShaderManager::CreateInstance(resourceLoader, globalParameters);
+    mShaderManager = ShaderManager<Render::ShaderManagerTraits>::CreateInstance(resourceLoader, globalParameters);
 
 
 
@@ -179,10 +178,6 @@ RenderContext::RenderContext(
     // Initialize clouds 
     //
 
-    // Bind attribute locations
-    mShaderManager->BindAttributeLocation<ShaderManager::ProgramType::Clouds>(0, "inputPos");
-    mShaderManager->BindAttributeLocation<ShaderManager::ProgramType::Clouds>(1, "inputTexturePos");
-
     // Create VBO    
     glGenBuffers(1, &tmpGLuint);
     mCloudVBO = tmpGLuint;
@@ -190,9 +185,9 @@ RenderContext::RenderContext(
     // Bind VBO
     glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
 
-    // Enable vertex arrays
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
+    // Enable vertex arrays for this VBO
+    glEnableVertexAttribArray(static_cast<GLuint>(Render::VertexAttributeType::SharedPosition));
+    glEnableVertexAttribArray(static_cast<GLuint>(Render::VertexAttributeType::SharedTextureCoordinates));
 
 
 
@@ -203,10 +198,8 @@ RenderContext::RenderContext(
 
     // Set hardcoded parameters
     auto const & landTextureMetadata = textureDatabase.GetFrameMetadata(TextureGroupType::Land, 0);
-    mShaderManager->ActivateProgram<ShaderManager::ProgramType::Land>();
-    mShaderManager->SetDynamicParameter<
-        ShaderManager::ProgramType::Land,
-        ShaderManager::DynamicParameterType::TextureScaling>(
+    mShaderManager->ActivateProgram<Render::ProgramType::Land>();
+    mShaderManager->SetProgramParameter<Render::ProgramType::Land, Render::ProgramParameterType::TextureScaling>(
             1.0f / landTextureMetadata.WorldWidth,
             1.0f / landTextureMetadata.WorldHeight);
 
@@ -217,24 +210,9 @@ RenderContext::RenderContext(
 
     // Bind VBO
     glBindBuffer(GL_ARRAY_BUFFER, *mLandVBO);
-
-    // Bind attribute locations
-    // TODOTEST
-    //mShaderManager->BindAttributeLocation<ShaderManager::ProgramType::Land>(0, "inputPos");
-    mShaderManager->BindAttributeLocation<ShaderManager::ProgramType::Land>(13, "inputPos");
-    mShaderManager->TODOTEST_Relink<ShaderManager::ProgramType::Land>();
-
-    // TODOTEST
-    mShaderManager->SetDynamicParameter<
-        ShaderManager::ProgramType::Land,
-        ShaderManager::DynamicParameterType::TextureScaling>(
-            1.0f / landTextureMetadata.WorldWidth,
-            1.0f / landTextureMetadata.WorldHeight);
-
-    // Enable vertex arrays
-    // TODOTEST
-    //glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(13);
+    
+    // Enable vertex arrays for this VBO
+    glEnableVertexAttribArray(static_cast<GLuint>(Render::VertexAttributeType::SharedPosition));
 
 
 
@@ -244,44 +222,26 @@ RenderContext::RenderContext(
 
     // Set hardcoded parameters
     auto const & waterTextureMetadata = textureDatabase.GetFrameMetadata(TextureGroupType::Water, 0);
-    mShaderManager->ActivateProgram<ShaderManager::ProgramType::Water>();
-    mShaderManager->SetDynamicParameter<
-        ShaderManager::ProgramType::Water,
-        ShaderManager::DynamicParameterType::TextureScaling>(
+    mShaderManager->ActivateProgram<Render::ProgramType::Water>();
+    mShaderManager->SetProgramParameter<Render::ProgramType::Water, Render::ProgramParameterType::TextureScaling>(
             1.0f / waterTextureMetadata.WorldWidth,
             1.0f / waterTextureMetadata.WorldHeight);
-
-    // Bind attribute locations
-    mShaderManager->BindAttributeLocation<ShaderManager::ProgramType::Water>(0, "inputPos");
-    mShaderManager->BindAttributeLocation<ShaderManager::ProgramType::Water>(1, "inputTextureY");
 
     // Create VBO
     glGenBuffers(1, &tmpGLuint);
     mWaterVBO = tmpGLuint;
 
+    // TODOTEST: this is repeated down
     // Bind VBO
     glBindBuffer(GL_ARRAY_BUFFER, *mWaterVBO);
 
-    // Enable vertex arrays
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
+    // Associate WaterPosition vertex attribute with this VBO
+    glVertexAttribPointer(static_cast<GLuint>(Render::VertexAttributeType::WaterPosition), 2, GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void*)0);
 
+    // Enable vertex arrays for this VBO
+    glEnableVertexAttribArray(static_cast<GLuint>(Render::VertexAttributeType::WaterPosition));
+    glEnableVertexAttribArray(static_cast<GLuint>(Render::VertexAttributeType::Shared1XFloat));
 
-
-    //
-    // Multi-purpose Matte NDC shader
-    //
-
-    // Bind attribute locations
-    mShaderManager->BindAttributeLocation<ShaderManager::ProgramType::MatteNDC>(0, "inputPos");
-
-
-    //
-    // Multi-purpose Matte World shader
-    //
-
-    // Bind attribute locations
-    mShaderManager->BindAttributeLocation<ShaderManager::ProgramType::Matte>(0, "inputPos");
 
 
     //
@@ -409,13 +369,13 @@ void RenderContext::RenderCloudsEnd()
     // Draw water stencil
     //
 
-    // Use matte world program
-    mShaderManager->ActivateProgram<ShaderManager::ProgramType::Matte>();
+    // Use matte water program
+    mShaderManager->ActivateProgram<Render::ProgramType::MatteWater>();
 
     // Set parameters
-    mShaderManager->SetDynamicParameter<
-        ShaderManager::ProgramType::Matte,
-        ShaderManager::DynamicParameterType::MatteColor>(1.0f, 1.0f, 1.0f, 1.0f);
+    // TODO: move up
+    mShaderManager->SetProgramParameter<Render::ProgramType::MatteWater, Render::ProgramParameterType::MatteColor>(
+        1.0f, 1.0f, 1.0f, 1.0f);
 
     // Disable writing to the color buffer
     glColorMask(false, false, false, false);
@@ -425,11 +385,12 @@ void RenderContext::RenderCloudsEnd()
     glStencilFunc(GL_ALWAYS, 1, 0xFF);
     glStencilMask(0xFF);
 
-    // Bind water VBO
-    glBindBuffer(GL_ARRAY_BUFFER, *mWaterVBO);
-
-    // Describe InputPos
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void*)0);
+    ////// TODOTEST
+    ////// Bind VBO
+    ////glBindBuffer(GL_ARRAY_BUFFER, *mWaterVBO);
+    ////// Associate WaterPosition vertex attribute with this VBO
+    ////glVertexAttribPointer(static_cast<GLuint>(Render::VertexAttributeType::WaterPosition), 2, GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void*)0);
+    ////glEnableVertexAttribArray(static_cast<GLuint>(Render::VertexAttributeType::WaterPosition));
 
     // Draw
     glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mWaterBufferSize));
@@ -450,18 +411,17 @@ void RenderContext::RenderCloudsEnd()
     assert(mCloudBufferSize == mCloudBufferMaxSize);
 
     // Use program
-    mShaderManager->ActivateProgram<ShaderManager::ProgramType::Clouds>();
+    mShaderManager->ActivateProgram<Render::ProgramType::Clouds>();
 
     // Bind cloud VBO
     glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
 
+    // Describe buffer
+    glVertexAttribPointer(static_cast<GLuint>(Render::VertexAttributeType::SharedPosition), 2, GL_FLOAT, GL_FALSE, (2 + 2) * sizeof(float), (void*)0);
+    glVertexAttribPointer(static_cast<GLuint>(Render::VertexAttributeType::SharedTextureCoordinates), 2, GL_FLOAT, GL_FALSE, (2 + 2) * sizeof(float), (void*)(2 * sizeof(float)));
+
     // Upload cloud buffer     
     glBufferData(GL_ARRAY_BUFFER, mCloudBufferSize * sizeof(CloudElement), mCloudBuffer.get(), GL_DYNAMIC_DRAW);
-
-    // Describe InputPos
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, (2 + 2) * sizeof(float), (void*)0);
-    // Describe InputTexturePos
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, (2 + 2) * sizeof(float), (void*)(2 * sizeof(float)));
 
     // Enable stenciling - only draw where there are no 1's
     glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
@@ -545,7 +505,7 @@ void RenderContext::UploadLandAndWaterEnd()
 void RenderContext::RenderLand()
 {
     // Use program
-    mShaderManager->ActivateProgram<ShaderManager::ProgramType::Land>();
+    mShaderManager->ActivateProgram<Render::ProgramType::Land>();
 
     // Bind texture
     glBindTexture(
@@ -555,9 +515,8 @@ void RenderContext::RenderLand()
     // Bind VBO
     glBindBuffer(GL_ARRAY_BUFFER, *mLandVBO);
 
-    // Describe InputPos
-    glVertexAttribPointer(13, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(13);
+    // Describe buffer
+    glVertexAttribPointer(static_cast<GLuint>(Render::VertexAttributeType::SharedPosition), 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
 
     // Draw
     glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mLandBufferSize));
@@ -566,7 +525,7 @@ void RenderContext::RenderLand()
 void RenderContext::RenderWater()
 {
     // Use program
-    mShaderManager->ActivateProgram<ShaderManager::ProgramType::Water>();
+    mShaderManager->ActivateProgram<Render::ProgramType::Water>();
 
     // Bind texture
     glBindTexture(
@@ -575,11 +534,9 @@ void RenderContext::RenderWater()
 
     // Bind VBO
     glBindBuffer(GL_ARRAY_BUFFER, *mWaterVBO);
-    
-    // Describe InputPos
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void*)0);
-    // Describe InputTextureY
-    glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void*)(2 * sizeof(float)));
+
+    // Associate Shared1XFloat vertex attribute with this VBO
+    glVertexAttribPointer(static_cast<GLuint>(Render::VertexAttributeType::Shared1XFloat), 1, GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void*)(2 * sizeof(float)));
 
     // Draw
     glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mWaterBufferSize));
@@ -614,20 +571,21 @@ void RenderContext::UpdateOrthoMatrix()
 
     // Set parameters in all programs
 
-    mShaderManager->ActivateProgram<ShaderManager::ProgramType::Land>();
-    mShaderManager->SetDynamicParameter<
-        ShaderManager::ProgramType::Land,
-        ShaderManager::DynamicParameterType::OrthoMatrix>(mOrthoMatrix);
+    mShaderManager->ActivateProgram<Render::ProgramType::Land>();
+    mShaderManager->SetProgramParameter<Render::ProgramType::Land, Render::ProgramParameterType::OrthoMatrix>(
+        mOrthoMatrix);
 
-    mShaderManager->ActivateProgram<ShaderManager::ProgramType::Water>();
-    mShaderManager->SetDynamicParameter<
-        ShaderManager::ProgramType::Water,
-        ShaderManager::DynamicParameterType::OrthoMatrix>(mOrthoMatrix);
+    mShaderManager->ActivateProgram<Render::ProgramType::Water>();
+    mShaderManager->SetProgramParameter<Render::ProgramType::Water, Render::ProgramParameterType::OrthoMatrix>(
+        mOrthoMatrix);
 
-    mShaderManager->ActivateProgram<ShaderManager::ProgramType::Matte>();
-    mShaderManager->SetDynamicParameter<
-        ShaderManager::ProgramType::Matte,
-        ShaderManager::DynamicParameterType::OrthoMatrix>(mOrthoMatrix);
+    mShaderManager->ActivateProgram<Render::ProgramType::MatteWater>();
+    mShaderManager->SetProgramParameter<Render::ProgramType::MatteWater, Render::ProgramParameterType::OrthoMatrix>(
+        mOrthoMatrix);
+
+    mShaderManager->ActivateProgram<Render::ProgramType::Matte>();
+    mShaderManager->SetProgramParameter<Render::ProgramType::Matte, Render::ProgramParameterType::OrthoMatrix>(
+        mOrthoMatrix);
 }
 
 void RenderContext::UpdateVisibleWorldCoordinates()
@@ -657,30 +615,26 @@ void RenderContext::UpdateAmbientLightIntensity()
 
     // Set parameters in all programs
 
-    mShaderManager->ActivateProgram<ShaderManager::ProgramType::Clouds>();
-    mShaderManager->SetDynamicParameter<
-        ShaderManager::ProgramType::Clouds,
-        ShaderManager::DynamicParameterType::AmbientLightIntensity>(mAmbientLightIntensity);
+    mShaderManager->ActivateProgram<Render::ProgramType::Clouds>();
+    mShaderManager->SetProgramParameter<Render::ProgramType::Clouds, Render::ProgramParameterType::AmbientLightIntensity>(
+        mAmbientLightIntensity);
 
-    mShaderManager->ActivateProgram<ShaderManager::ProgramType::Land>();
-    mShaderManager->SetDynamicParameter<
-        ShaderManager::ProgramType::Land,
-        ShaderManager::DynamicParameterType::AmbientLightIntensity>(mAmbientLightIntensity);
+    mShaderManager->ActivateProgram<Render::ProgramType::Land>();
+    mShaderManager->SetProgramParameter<Render::ProgramType::Land, Render::ProgramParameterType::AmbientLightIntensity>(
+        mAmbientLightIntensity);
 
-    mShaderManager->ActivateProgram<ShaderManager::ProgramType::Water>();
-    mShaderManager->SetDynamicParameter<
-        ShaderManager::ProgramType::Water,
-        ShaderManager::DynamicParameterType::AmbientLightIntensity>(mAmbientLightIntensity);
+    mShaderManager->ActivateProgram<Render::ProgramType::Water>();
+    mShaderManager->SetProgramParameter<Render::ProgramType::Water, Render::ProgramParameterType::AmbientLightIntensity>(
+        mAmbientLightIntensity);
 }
 
 void RenderContext::UpdateSeaWaterTransparency()
 {
     // Set parameter in all programs
 
-    mShaderManager->ActivateProgram<ShaderManager::ProgramType::Water>();
-    mShaderManager->SetDynamicParameter<
-        ShaderManager::ProgramType::Water,
-        ShaderManager::DynamicParameterType::WaterTransparency>(mSeaWaterTransparency);
+    mShaderManager->ActivateProgram<Render::ProgramType::Water>();
+    mShaderManager->SetProgramParameter<Render::ProgramType::Water, Render::ProgramParameterType::WaterTransparency>(
+        mSeaWaterTransparency);
 }
 
 void RenderContext::UpdateWaterLevelOfDetail()

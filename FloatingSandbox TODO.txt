@@ -64,9 +64,12 @@ Current perf
 	+ Use in and out, and 130
 	= Replace all shaders
 		= RenderContext
-			- See if can describe cloud buffers and the other buffers once and for all
 		- ShipContext
+			- Remove unnecessary bind's for VBO's that source dedicated attributes
 	- Get rid of vector_arrows shader, use matte
+		- Will need to re-bind attribute (GenericPosition or VectorPosition=0) to vectors VBO
+	- Replace glBufferData with glBufferSubData when size does not change; at Ship only:
+		- TBD: figure out where
 
 - World settings: number of clouds, wind
 	
@@ -164,6 +167,9 @@ Current perf
 		+ INSTALL target for release
 		+ RelWithDebInfo: Inline any suitable (/Ob2)
 
+	- Move RenderContext et al into Render:: namespace and file group
+	- Render: coalesce all render parameter changes into one, and update only at Render() for each that is dirty
+
 	- Test: Ship::Render() should give its subordinates ShipRenderContext instead of RenderContext
 		- Can then get rid of forwards from RenderContext
 		- RenderContextBase: contains common static vars and helpers for both
@@ -255,10 +261,12 @@ Current perf
 	  larger than texture), then one sees parts of the springs
 		- It's a problem with rendering springs with the texture shader
 	- Optimizations:
+		- Try using GL_SHORT for Ship texture coordinates
+			- Passing NORMALIZE and 3 components to glVertexAttribPointer
 		- (Retry) Use CPU and GPU in parallel
 			- Finalize render (glFlush) before render step, not after
 				- Research glFlush()
-				- By inoking glFlush() and SwapBuffers() in MainFrame, before Render()
+				- By invoking glFlush() and SwapBuffers() in MainFrame, before Render()
 		- More connected components => slower (multiple batches); try
 		  to draw one single batch then, using Z buffer and depth test 
 			- Assign Z based on connected component ID
@@ -306,15 +314,20 @@ Current perf
 	- Bug: bombs et al fade more rapidly than ship when ambient light goes away
 
 - Dynamics:
-	- 3rd type of bomb: anti-matter bomb
-		- [Do after texture json]
-		- When it explodes: first sucks everything in, then evertyhing out
-			- Controllable also via ultra-violent mode
-		- Requires ExplosionType argument at Ship::BlastHandler
-			- Or see if easy to move BombBlaster inside bomb (i.e. explosion code is in bomb's state machine)
+	- Bombs:
+		- Bomb explosions: see if better done with "OneShotForce" (rename of "ToolForces")
+			- At each explosion frame: radial forces, centered at center, strongest at radius=f(expl frame)
 
-	- Bomb explosions: see if better done with forces
-		- At each explosion frame: radial forces, centered at center, strongest at radius=f(expl frame)
+		- 3rd type of bomb: anti-matter bomb
+			+ [Do after texture json]
+			- When it explodes: first sucks everything in, then evertyhing out
+				- Controllable also via ultra-violent mode
+				- Uses "OneShotForce" (rename of "ToolForces": applied at each iteration of UpdateMechanicalDynamics and then cleared)
+				  for suck-in
+			- Requires ExplosionType argument at Ship::BlastHandler, or new BlastHandler altogether
+				- Or see if easy to move BombBlaster inside bomb (i.e. explosion code is in bomb's state machine)
+				- Or another way
+
 	- Ephemeral Particles:
 		- Summary:
 			- Carve out room at tail of Points for ephemeral particles

@@ -2,18 +2,16 @@
 
 #version 130
 
-//
-// This shader's inputs are in NDC coordinates
-//
-
 // Inputs
-in vec2 sharedPosition;
+in vec2 waterPosition;
+
+// Params
+uniform mat4 paramOrthoMatrix;
 
 void main()
 {
-    gl_Position = vec4(sharedPosition.xy, -1.0, 1.0);
+    gl_Position = paramOrthoMatrix * vec4(waterPosition.xy, -1.0, 1.0);
 }
-
 
 ###FRAGMENT
 

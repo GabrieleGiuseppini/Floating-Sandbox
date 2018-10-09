@@ -9,6 +9,7 @@
 #include "GameTypes.h"
 #include "ImageData.h"
 #include "ProgressCallback.h"
+#include "RenderCore.h"
 #include "ResourceLoader.h"
 #include "ShaderManager.h"
 #include "ShipRenderContext.h"
@@ -601,7 +602,7 @@ private:
 
 private:
 
-    std::unique_ptr<ShaderManager> mShaderManager;
+    std::unique_ptr<ShaderManager<Render::ShaderManagerTraits>> mShaderManager;
     std::unique_ptr<TextureRenderManager> mTextureRenderManager;
 
     //

@@ -8,6 +8,7 @@
 #include "GameOpenGL.h"
 #include "GameTypes.h"
 #include "ImageData.h"
+#include "RenderCore.h"
 #include "ShaderManager.h"
 #include "SysSpecifics.h"
 #include "TextureRenderManager.h"
@@ -28,7 +29,7 @@ public:
     ShipRenderContext(
         std::optional<ImageData> texture,
         vec3f const & ropeColour,
-        ShaderManager & shaderManager,
+        ShaderManager<Render::ShaderManagerTraits> & shaderManager,
         TextureRenderManager const & textureRenderManager,
         float const(&orthoMatrix)[4][4],
         float visibleWorldHeight,
@@ -289,7 +290,7 @@ private:
 
 private:
 
-    ShaderManager & mShaderManager;
+    ShaderManager<Render::ShaderManagerTraits> & mShaderManager;
 
 
     //

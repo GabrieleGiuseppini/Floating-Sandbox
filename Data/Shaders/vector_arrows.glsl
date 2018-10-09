@@ -3,14 +3,14 @@
 #version 130
 
 // Inputs
-in vec2 inputPos;
+in vec2 shipVectorPosition;
 
 // Params
 uniform mat4 paramOrthoMatrix;
 
 void main()
 {
-    gl_Position = paramOrthoMatrix * vec4(inputPos.xy, -1.0, 1.0);            
+    gl_Position = paramOrthoMatrix * vec4(shipVectorPosition.xy, -1.0, 1.0);            
 }
 
 
