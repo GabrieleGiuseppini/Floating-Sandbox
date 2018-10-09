@@ -90,14 +90,17 @@ MainFrame::MainFrame(wxApp * mainApp)
         _T("Main Frame"));
 
     SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
+    Maximize();
+    Centre();
 
-    wxPanel* mainPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS);
+    Connect(this->GetId(), wxEVT_CLOSE_WINDOW, (wxObjectEventFunction)&MainFrame::OnMainFrameClose);
+    Connect(this->GetId(), wxEVT_PAINT, (wxObjectEventFunction)&MainFrame::OnPaint);
+
+    wxPanel* mainPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, -1), wxWANTS_CHARS);
     mainPanel->Bind(wxEVT_CHAR_HOOK, (wxObjectEventFunction)&MainFrame::OnKeyDown, this);
 
     mMainFrameSizer = new wxBoxSizer(wxVERTICAL);
 
-    Connect(this->GetId(), wxEVT_CLOSE_WINDOW, (wxObjectEventFunction)&MainFrame::OnMainFrameClose);
-    Connect(this->GetId(), wxEVT_PAINT, (wxObjectEventFunction)&MainFrame::OnPaint);
 
 
     //
@@ -125,7 +128,9 @@ MainFrame::MainFrame(wxApp * mainApp)
         ID_MAIN_CANVAS,
         mainGLCanvasAttributes,
         wxDefaultPosition,
-        wxSize(640, 480),
+        // TODOTEST
+        //wxSize(640, 480),
+        wxSize(-1, -1),
         0L,
         _T("Main GL Canvas"));  
 
@@ -309,7 +314,7 @@ MainFrame::MainFrame(wxApp * mainApp)
 
     mProbePanel = std::make_unique<ProbePanel>(mainPanel);
 
-    mMainFrameSizer->Add(mProbePanel.get(), 0, wxEXPAND);
+    mMainFrameSizer->Add(mProbePanel.get(), 1, wxEXPAND);
 
     mMainFrameSizer->Hide(mProbePanel.get());
 
@@ -331,9 +336,6 @@ MainFrame::MainFrame(wxApp * mainApp)
 
     mainPanel->SetSizerAndFit(mMainFrameSizer);
     
-    Maximize();
-    Centre();
-
 
     //
     // Initialize timers
