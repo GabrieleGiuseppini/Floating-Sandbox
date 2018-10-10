@@ -288,7 +288,6 @@ void RenderContext::AddShip(
     mShips.emplace_back(
         new ShipRenderContext(
             std::move(texture), 
-            mRopeColour,
             *mShaderManager,
             *mTextureRenderManager,
             mOrthoMatrix,
@@ -364,9 +363,6 @@ void RenderContext::RenderCloudsEnd()
     // Draw
     glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mWaterBufferSize));
 
-    // Re-enable vertex attribute 0
-    glEnableVertexAttribArray(0);
-
     // Don't write anything to stencil buffer now
     glStencilMask(0x00);
 
@@ -391,6 +387,9 @@ void RenderContext::RenderCloudsEnd()
     // Describe shared attribute indices
     glVertexAttribPointer(static_cast<GLuint>(Render::VertexAttributeType::SharedPosition), 2, GL_FLOAT, GL_FALSE, (2 + 2) * sizeof(float), (void*)0);
     glVertexAttribPointer(static_cast<GLuint>(Render::VertexAttributeType::SharedTextureCoordinates), 2, GL_FLOAT, GL_FALSE, (2 + 2) * sizeof(float), (void*)(2 * sizeof(float)));
+
+    // Enable vertex attribute 0
+    glEnableVertexAttribArray(0);
 
     // Upload cloud buffer     
     glBufferData(GL_ARRAY_BUFFER, mCloudBufferSize * sizeof(CloudElement), mCloudBuffer.get(), GL_DYNAMIC_DRAW);
@@ -490,6 +489,9 @@ void RenderContext::RenderLand()
     // Describe shared attribute indices
     glVertexAttribPointer(static_cast<GLuint>(Render::VertexAttributeType::SharedPosition), 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
 
+    // Enable vertex attribute 0
+    glEnableVertexAttribArray(0);
+
     // Draw
     glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mLandBufferSize));
 }
@@ -515,9 +517,6 @@ void RenderContext::RenderWater()
 
     // Draw
     glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mWaterBufferSize));
-
-    // Re-enable vertex attribute 0
-    glEnableVertexAttribArray(0);
 }
 
 void RenderContext::RenderEnd()

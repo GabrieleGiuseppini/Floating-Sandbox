@@ -28,7 +28,6 @@ public:
 
     ShipRenderContext(
         std::optional<ImageData> texture,
-        vec3f const & ropeColour,
         ShaderManager<Render::ShaderManagerTraits> & shaderManager,
         TextureRenderManager const & textureRenderManager,
         float const(&orthoMatrix)[4][4],
@@ -277,16 +276,17 @@ private:
 
 private:
 
-    // Vertex attribute indices
-    static constexpr GLuint PointPosVertexAttribute = 0;
-    static constexpr GLuint PointLightVertexAttribute = 1;
-    static constexpr GLuint PointWaterVertexAttribute = 2;
-    static constexpr GLuint PointColorVertexAttribute = 3;
-    static constexpr GLuint PointTextureCoordinatesVertexAttribute = 4;
-    static constexpr GLuint GenericTexturePosVertexAttribute = 5;
-    static constexpr GLuint GenericTextureTextureCoordinatesVertexAttribute = 6;
-    static constexpr GLuint GenericTextureAmbientLightSensitivityVertexAttribute = 7;
-    static constexpr GLuint VectorArrowPosVertexAttribute = 8;
+    // TODONUKE
+    ////// Vertex attribute indices
+    ////static constexpr GLuint PointPosVertexAttribute = 0;
+    ////static constexpr GLuint PointLightVertexAttribute = 1;
+    ////static constexpr GLuint PointWaterVertexAttribute = 2;
+    ////static constexpr GLuint PointColorVertexAttribute = 3;
+    ////static constexpr GLuint PointTextureCoordinatesVertexAttribute = 4;
+    ////static constexpr GLuint GenericTexturePosVertexAttribute = 5;
+    ////static constexpr GLuint GenericTextureTextureCoordinatesVertexAttribute = 6;
+    ////static constexpr GLuint GenericTextureAmbientLightSensitivityVertexAttribute = 7;
+    ////static constexpr GLuint VectorArrowPosVertexAttribute = 8;
 
 private:
 
@@ -313,28 +313,6 @@ private:
     GameOpenGLVBO mPointElementTextureCoordinatesVBO;
     
     //
-    // Elements (points, springs, ropes, triangles, stressed springs)
-    //
-
-    GameOpenGLShaderProgram mElementColorShaderProgram;
-    GLint mElementColorShaderOrthoMatrixParameter;
-    GLint mElementColorShaderAmbientLightIntensityParameter;
-    GLint mElementColorShaderWaterLevelThresholdParameter;
-
-    GameOpenGLShaderProgram mElementRopeShaderProgram;
-    GLint mElementRopeShaderOrthoMatrixParameter;
-    GLint mElementRopeShaderAmbientLightIntensityParameter;
-    GLint mElementRopeShaderWaterLevelThresholdParameter;
-    
-    GameOpenGLShaderProgram mElementShipTextureShaderProgram;
-    GLint mElementShipTextureShaderOrthoMatrixParameter;
-    GLint mElementShipTextureShaderAmbientLightIntensityParameter;
-    GLint mElementShipTextureShaderWaterLevelThresholdParameter;
-
-    GameOpenGLShaderProgram mElementStressedSpringShaderProgram;
-    GLint mElementStressedSpringShaderOrthoMatrixParameter;
-
-    //
     // Generic Textures
     //
 
@@ -357,9 +335,6 @@ private:
 
     std::vector<TextureRenderPolygonVertex> mGenericTextureRenderPolygonVertexBuffer;
     GameOpenGLVBO mGenericTextureRenderPolygonVertexVBO;
-    GameOpenGLShaderProgram mGenericTextureShaderProgram;
-    GLint mGenericTextureShaderOrthoMatrixParameter;
-    GLint mGenericTextureShaderAmbientLightIntensityParameter;
 
 
     //
@@ -473,7 +448,4 @@ private:
 
     std::vector<vec2f> mVectorArrowPointPositionBuffer;
     GameOpenGLVBO mVectorArrowPointPositionVBO;
-    GameOpenGLShaderProgram mVectorArrowShaderProgram;
-    GLint mVectorArrowShaderOrthoMatrixParameter;
-    GLint mVectorArrowShaderColorParameter;
 };

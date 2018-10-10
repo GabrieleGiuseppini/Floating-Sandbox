@@ -68,8 +68,8 @@ Current perf
 			+ glEnableVertexArrays: all at top, as they have nothing to do with VBOs
 				+ ShaderMgr enables all the used ones
 				+ Ship/RenderContext Code only disables zero when it's not used
-		- ShipContext
-			- Ship/RenderContext Code only disables zero when it's not used
+		= ShipContext
+			+ Ship/RenderContext code only disables zero when it's not used
 			- Make Vector shader use shared position
 			- Remove unnecessary bind's for VBO's that source dedicated attributes
 	- Get rid of vector_arrows shader, use matte
