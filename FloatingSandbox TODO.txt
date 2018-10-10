@@ -63,16 +63,20 @@ Current perf
 	+ WetColor, LightColor: make them static hardcoded params
 	+ Use in and out, and 130
 	= Replace all shaders
-		= RenderContext
+		+ RenderContext
 			+ Use "in" as prefix of inputs
-			- glEnableVertexArrays: all at top, as they have nothing to do with VBOs
+			+ glEnableVertexArrays: all at top, as they have nothing to do with VBOs
+				+ ShaderMgr enables all the used ones
+				+ Ship/RenderContext Code only disables zero when it's not used
 		- ShipContext
+			- Ship/RenderContext Code only disables zero when it's not used
 			- Make Vector shader use shared position
 			- Remove unnecessary bind's for VBO's that source dedicated attributes
 	- Get rid of vector_arrows shader, use matte
 		- Will need to re-bind attribute (GenericPosition or VectorPosition=0) to vectors VBO
 	- Replace glBufferData with glBufferSubData when size does not change; at Ship only:
-		- TBD: figure out where
+		- Point positions
+		- Check perf before and after
 
 - World settings: number of clouds, wind
 	
@@ -333,13 +337,8 @@ Current perf
 
 	- Ephemeral Particles:
 		- Summary:
-			- Carve out room at tail of Points for ephemeral particles
-				- Two different segments for two different "classes"
-					- Rethink
-				- Each segment is a circular buffer of particles all with same lifetime
-					- New particles are just taken from older ones
-					- Rethink
-				- No need to mark as deleted to hide them
+			- Carve out fixed-size room at tail of Points for ephemeral particles				
+				- Each has own lifetime
 			- Rendering: via:
 				- ShipRenderContext::UploadEphemeralParticlePoints (e.g. for points)
 					- Just indexes
@@ -356,6 +355,7 @@ Current perf
 					- See openGL functions to upload portion of buffer only
 			- Points::UpdateEphemeralParticles(clockNow):
 				- If expired:
+					- No need to mark as deleted to hide them
 					- Resets velocity and integration factor of expired particles to avoid drifting
 						- Rename Points::Pin/Unpin() to Freeze/Thaw()
 						- And also sets EphemeralType to None
@@ -385,7 +385,7 @@ Current perf
 				- SparkleXTODOX:
 					- TODO
 		- Points methods:
-			- TODO: createXYZ(); create has first overload that takes all the dynamics params, including Material and Color, and
+			- TODO: createXYZ(); create has first overload that takes all the dynamics params, including lifetime, Material and Color, and
 			  type-specific params
 			  - See if can do Points::CreateEphemeralParticle<Debris>(&&args)
 				- Requires Points::Debris to be public

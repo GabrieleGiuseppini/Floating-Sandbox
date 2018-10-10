@@ -182,13 +182,6 @@ RenderContext::RenderContext(
     glGenBuffers(1, &tmpGLuint);
     mCloudVBO = tmpGLuint;
 
-    // Bind VBO
-    glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
-
-    // Enable vertex arrays for this VBO
-    glEnableVertexAttribArray(static_cast<GLuint>(Render::VertexAttributeType::SharedPosition));
-    glEnableVertexAttribArray(static_cast<GLuint>(Render::VertexAttributeType::SharedTextureCoordinates));
-
 
 
     //
@@ -205,12 +198,6 @@ RenderContext::RenderContext(
     // Create VBO    
     glGenBuffers(1, &tmpGLuint);
     mLandVBO = tmpGLuint;
-
-    // Bind VBO
-    glBindBuffer(GL_ARRAY_BUFFER, *mLandVBO);
-    
-    // Enable vertex arrays for this VBO
-    glEnableVertexAttribArray(static_cast<GLuint>(Render::VertexAttributeType::SharedPosition));
 
 
 
@@ -235,10 +222,6 @@ RenderContext::RenderContext(
     // Associate WaterPosition vertex attribute with this VBO
     // (the other attribute is shared, hence we'll associate it later)
     glVertexAttribPointer(static_cast<GLuint>(Render::VertexAttributeType::WaterPosition), 2, GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void*)0);
-
-    // Enable vertex arrays for this VBO    
-    glEnableVertexAttribArray(static_cast<GLuint>(Render::VertexAttributeType::WaterPosition));
-    glEnableVertexAttribArray(static_cast<GLuint>(Render::VertexAttributeType::Shared1XFloat));
 
 
 
@@ -405,7 +388,7 @@ void RenderContext::RenderCloudsEnd()
     // Bind cloud VBO
     glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
 
-    // Describe buffer
+    // Describe shared attribute indices
     glVertexAttribPointer(static_cast<GLuint>(Render::VertexAttributeType::SharedPosition), 2, GL_FLOAT, GL_FALSE, (2 + 2) * sizeof(float), (void*)0);
     glVertexAttribPointer(static_cast<GLuint>(Render::VertexAttributeType::SharedTextureCoordinates), 2, GL_FLOAT, GL_FALSE, (2 + 2) * sizeof(float), (void*)(2 * sizeof(float)));
 
@@ -504,7 +487,7 @@ void RenderContext::RenderLand()
     // Bind VBO
     glBindBuffer(GL_ARRAY_BUFFER, *mLandVBO);
 
-    // Describe buffer
+    // Describe shared attribute indices
     glVertexAttribPointer(static_cast<GLuint>(Render::VertexAttributeType::SharedPosition), 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
 
     // Draw
@@ -524,7 +507,7 @@ void RenderContext::RenderWater()
     // Bind VBO
     glBindBuffer(GL_ARRAY_BUFFER, *mWaterVBO);
 
-    // Associate Shared1XFloat vertex attribute with this VBO
+    // Describe shared attribute indices
     glVertexAttribPointer(static_cast<GLuint>(Render::VertexAttributeType::Shared1XFloat), 1, GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void*)(2 * sizeof(float)));
 
     // Disable vertex attribute 0, as we don't use it
