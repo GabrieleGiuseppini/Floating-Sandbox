@@ -2,22 +2,21 @@
 Current perf
 =================================================
 - fps: 27.3 (Samsung: TBD-was 32.7 (Krafting)) (Mattia's: TBD (Krafting))
-- TODO
-- GameController::Update: 34.06%
-	- Ship::Update: 33.96%
-		- UpdateMechanicalDynamics: 24.74%
-			- UpdateSpringForces: 19.24%
-			- UpdatePointForces: 3.42%
-			- HandleCollisionsWithSeafloor: 2.28%
-			- IntegratePointForces: 0.95%
-		- UpdateWaterDynamics: 7.79%
-			- UpdateWaterVelocities: %
-			- UpdateWaterInflow: %
-		- UpdateStrains: 0.80%
-	- DiffuseLight: 0.66%
-- World::Render: 57.71%
-	- ShipRenderContext::RenderEnd: 52.34%
-	- RenderContext::RenderCloudsEnd: 2.94%
+- GameController::Update: 34.50%
+	- Ship::Update: 33.68%
+		- UpdateMechanicalDynamics: 25.18%
+			- UpdateSpringForces: 18.64%
+			- UpdatePointForces: 3.36%
+			- HandleCollisionsWithSeafloor: 2.26%
+			- IntegratePointForces: 0.92%
+		- UpdateWaterDynamics: 7.68%
+			- UpdateWaterVelocities: 7.58%
+			- UpdateWaterInflow: 0.05%
+		- UpdateStrains: 0.79%
+	- DiffuseLight: 0.70%
+- World::Render: 57.68%
+	- ShipRenderContext::RenderEnd: 52.41%
+	- RenderContext::RenderCloudsEnd: 2.84%
 
 =================================================
 1.3.0 perf
@@ -56,36 +55,18 @@ Current perf
 	- Warship
 	- See Moleskine
 
-= ShaderManager
-	+ WetColor, LightColor: make them static hardcoded params
-	+ Use in and out, and 130
-	+ Replace all shaders
-		+ RenderContext
-			+ Use "in" as prefix of inputs
-			+ glEnableVertexArrays: all at top, as they have nothing to do with VBOs
-				+ ShaderMgr enables all the used ones
-				+ Ship/RenderContext Code only disables zero when it's not used
-		+ ShipContext
-			+ Ship/RenderContext code only disables zero when it's not used
-			+ Remove unnecessary bind's for VBO's that source dedicated attributes
-	+ Get rid of vector_arrows shader, use matte
-		+ Will need to re-bind attribute (GenericPosition or VectorPosition=0) to vectors VBO
-		+ Deep cleanup
-			+ enums
-			+ shader
-	= Replace glBufferData with glBufferSubData when size does not change; at Ship only:
-		+ Point positions, color, water
-		= Check perf before and after:
-			+ Pre: 26.6
-			- Post: 
+TODOHERE
 
-= World settings: number of clouds, wind
-	
 = Make collisions with sea floor more dramatic
 	= vel *= 0.5
 
 - Fix buoyancy
 	- Double-think: hull wood should still float
+		+ Metal hulls are heavier than water, hence will sink regardless of quantity of water taken
+		- Wood hull is lighter than water, hence will sink only when it takes water
+			- i.e. it will never sink as hull does not take water
+			- this is why we have the dirty trick at buoyancy
+		- Wood non-hull is lighter than water, hence will sink only when it takes water
 
 - Technical Debt:
 	= Textures are json files, with world size, offset, and lighting boolean
@@ -494,8 +475,13 @@ Current perf
 
 
 - Controls:
+	+ World settings: number of clouds, wind
+
 	- SettingsDialog: also sound options
-		- Turn on/off sinking music
+		+ Turn on/off sinking music
+		- Stress sounds on/off
+		- Break sounds on/off
+
 	- SettingsDialog: save settings, and defaults
 		- JSON for both game & render params, assembled & saved by gamecontroller, who also loads it on startup if exists 
 		- GameParameters::ToJson()->picojson::value
@@ -1466,6 +1452,28 @@ IF WX:
 			+ Make vector field render mode changeable in SettingsDialog, Render tab
 			+ Add length adjustment as render parameter, multiplied by RenderContext before passing to ship
 				+ No dialog adjustment needed yet
+	+ ShaderManager
+		+ WetColor, LightColor: make them static hardcoded params
+		+ Use in and out, and 130
+		+ Replace all shaders
+			+ RenderContext
+				+ Use "in" as prefix of inputs
+				+ glEnableVertexArrays: all at top, as they have nothing to do with VBOs
+					+ ShaderMgr enables all the used ones
+					+ Ship/RenderContext Code only disables zero when it's not used
+			+ ShipContext
+				+ Ship/RenderContext code only disables zero when it's not used
+				+ Remove unnecessary bind's for VBO's that source dedicated attributes
+		+ Get rid of vector_arrows shader, use matte
+			+ Will need to re-bind attribute (GenericPosition or VectorPosition=0) to vectors VBO
+			+ Deep cleanup
+				+ enums
+				+ shader
+		+ Replace glBufferData with glBufferSubData when size does not change; at Ship only:
+			+ Point positions, color, water
+			+ Check perf before and after:
+				+ Pre: 26.6
+				+ Post: 27.3
 
 + Dynamics
 	+ Try half of the relaxation iterations
@@ -2347,27 +2355,3 @@ IF WX:
 			+ After FPS: 27.4
 			+ Verify leak is slower
 			+ Do also at RenderContext
-
-==============================================
-        // Inputs from previous shader
-        varying vec3 vertexCol;
-        varying float vertexLampDistance;
-
-        // Parameters        
-        uniform float paramLampLightIntensity;
-        uniform float paramLampLightDiffusionAdjustmentCoefficient;        
-        uniform float paramMultiplePassFraction;
-
-        void main()
-        {
-            vec3 lightPointColour = vec3(1.0, 1.0, 0.25);
-
-            float distance = max(1.0, vertexLampDistance * vertexLampDistance * paramLampLightDiffusionAdjustmentCoefficient);
-            float lightness = paramLampLightIntensity / distance;                        
-            vec3 col = (vertexCol * (1.0 - lightness) + lightPointColour * lightness) * paramMultiplePassFraction;
-            //vec3 multColor = lightPointColour * lightness + (vec3(1.0, 1.0, 1.0) * (1.0 - lightness));
-            //vertexCol = inputCol * multColor;
-
-            gl_FragColor = vec4(col.xyz, 1.0);
-        } 
-==============================================
