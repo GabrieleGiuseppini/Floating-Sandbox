@@ -106,30 +106,20 @@ MainFrame::MainFrame(wxApp * mainApp)
     //
     // Build main GL canvas
     //
+
+    wxGLAttributes mainGLCanvasAttributes;
+    mainGLCanvasAttributes
+        .RGBA()
+        .DoubleBuffer()
+        .Depth(16)
+        .Stencil(1)
+        .EndList();
     
-    int mainGLCanvasAttributes[] = 
-    {
-        WX_GL_RGBA,
-        WX_GL_DOUBLEBUFFER,
-        WX_GL_DEPTH_SIZE,      16,
-        WX_GL_STENCIL_SIZE,    1,
-
-        // We want to use OpenGL 3.3, Core Profile        
-        // TBD: Not now, my laptop does not support OpenGL 3 :-(
-        // WX_GL_CORE_PROFILE,
-        // WX_GL_MAJOR_VERSION,    3,
-        // WX_GL_MINOR_VERSION,    3,
-
-        0, 0 
-    };
-
     mMainGLCanvas = std::make_unique<wxGLCanvas>(
         mainPanel, 
-        ID_MAIN_CANVAS,
         mainGLCanvasAttributes,
+        ID_MAIN_CANVAS,
         wxDefaultPosition,
-        // TODOTEST
-        //wxSize(640, 480),
         wxSize(-1, -1),
         0L,
         _T("Main GL Canvas"));  
@@ -605,8 +595,8 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
         mLastFrameCount = 0u;
     }
     
-    // Make the timer for the next step start now
-    // TODO: see if should QueueEvent instead
+    // Note: on my laptop I can't get beyond 64 frames per second, hence I'm not
+    // setting a delay here
     mGameTimer->Start(0, true);
 
     // Update SHIFT key state
@@ -1051,9 +1041,8 @@ void MainFrame::RenderGame()
         // Render
         mGameController->Render();
 
-        // Flush all the draw operations and flip the back buffer onto the screen.  
+        // Flip the back buffer onto the screen
         mMainGLCanvas->SwapBuffers();
-        mMainGLCanvas->Refresh();
     }
 }
 

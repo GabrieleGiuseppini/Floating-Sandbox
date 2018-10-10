@@ -55,8 +55,6 @@ Current perf
 	- Warship
 	- See Moleskine
 
-TODOHERE
-
 = Make collisions with sea floor more dramatic
 	= vel *= 0.5
 
