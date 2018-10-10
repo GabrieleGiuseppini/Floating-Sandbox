@@ -236,6 +236,7 @@ public:
 
     void AddShip(
         int shipId,
+        size_t pointCount,
         std::optional<ImageData> texture);
 
 public:
@@ -386,21 +387,18 @@ public:
 
     void UploadShipPointImmutableGraphicalAttributes(
         int shipId,
-        size_t count,
         vec3f const * restrict color,
         vec2f const * restrict textureCoordinates)
     {
         assert(shipId < mShips.size());
 
         mShips[shipId]->UploadPointImmutableGraphicalAttributes(
-            count,
             color,
             textureCoordinates);
     }
 
     void UploadShipPoints(
         int shipId,
-        size_t count,
         vec2f const * restrict position,
         float const * restrict light,
         float const * restrict water)
@@ -408,7 +406,6 @@ public:
         assert(shipId < mShips.size());
 
         mShips[shipId]->UploadPoints(
-            count,
             position,
             light,
             water);

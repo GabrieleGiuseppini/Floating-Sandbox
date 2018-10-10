@@ -1,26 +1,23 @@
 =================================================
 Current perf
 =================================================
-- fps: 26.6 (Samsung: TBD-was 32.7 (Krafting)) (Mattia's: TBD (Krafting))
+- fps: 27.3 (Samsung: TBD-was 32.7 (Krafting)) (Mattia's: TBD (Krafting))
 - TODO
-- GameController::Update: 33.33%
-	- Ship::Update: 32.53%
-		- UpdateMechanicalDynamics: 26.15%
+- GameController::Update: 34.06%
+	- Ship::Update: 33.96%
+		- UpdateMechanicalDynamics: 24.74%
 			- UpdateSpringForces: 19.24%
 			- UpdatePointForces: 3.42%
 			- HandleCollisionsWithSeafloor: 2.28%
-			- Integrate: 1.20%
-		- UpdateWaterDynamics: 5.56%
-			- UpdateWaterVelocities: 5.48%
-			- UpdateWaterInflow: 0.04%
-		- UpdateStrains: 0.79%
+			- IntegratePointForces: 0.95%
+		- UpdateWaterDynamics: 7.79%
+			- UpdateWaterVelocities: %
+			- UpdateWaterInflow: %
+		- UpdateStrains: 0.80%
 	- DiffuseLight: 0.66%
-- MainFrame::RenderGame: 60.32%
-	- ShipRenderContext::Render: 53.35%
-		- ShipRenderContext::RenderSprings: 30.85%
-		- ShipRenderContext::RenderTriangles: 21.96%
-		- ShipRenderContext::RenderRopes: 0.47%
-	- RenderContext::RenderCloudsEnd: 2.92%
+- World::Render: 57.71%
+	- ShipRenderContext::RenderEnd: 52.34%
+	- RenderContext::RenderCloudsEnd: 2.94%
 
 =================================================
 1.3.0 perf
@@ -76,15 +73,19 @@ Current perf
 		+ Deep cleanup
 			+ enums
 			+ shader
-	- Replace glBufferData with glBufferSubData when size does not change; at Ship only:
-		- Point positions
-		- Check perf before and after
+	= Replace glBufferData with glBufferSubData when size does not change; at Ship only:
+		+ Point positions, color, water
+		= Check perf before and after:
+			+ Pre: 26.6
+			- Post: 
 
-- World settings: number of clouds, wind
+= World settings: number of clouds, wind
 	
 = Make collisions with sea floor more dramatic
 	= vel *= 0.5
+
 - Fix buoyancy
+	- Double-think: hull wood should still float
 
 - Technical Debt:
 	= Textures are json files, with world size, offset, and lighting boolean
@@ -142,9 +143,9 @@ Current perf
 				= Test
 					+ Double-check clouds's aspect ratio
 					+ Anchor at all frames of timer bomb
-					- Everything else:
-				- Move TextureRenderManager::AddRenderPolygon method to .h, and call it EmitRenderPolygon
-				- Move bind into TextureRenderManager, templated
+					- Rotation of bombs
+				+ Move TextureRenderManager::AddRenderPolygon method to .h, and call it EmitRenderPolygon
+				+ Move bind into TextureRenderManager, templated
 				+ Nuke old bombs/pinnedpoints at ShipRenderContext
 				- Commit
 		- Change the single shader to do *all the work* (for the "simple" textures, including rotation) for all ships and connected components

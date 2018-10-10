@@ -280,14 +280,18 @@ void SettingsDialog::ApplySettings()
     mGameController->SetWaveHeight(
         mWaveHeightSlider->GetValue());
 
-    mGameController->SetSeaWaterTransparency(
-        mSeaWaterTransparencySlider->GetValue());
+    mGameController->SetSeaDepth(
+        mSeaDepthSlider->GetValue());
+
+    mGameController->SetNumberOfClouds(
+        mNumberOfCloudsSlider->GetValue());
+
+    mGameController->SetWindSpeed(
+        mWindSpeedSlider->GetValue());
 
     mGameController->SetLightDiffusionAdjustment(
         mLightDiffusionSlider->GetValue());
 
-    mGameController->SetSeaDepth(
-        mSeaDepthSlider->GetValue());
 
     mGameController->SetDestroyRadius(
         mDestroyRadiusSlider->GetValue());
@@ -296,6 +300,9 @@ void SettingsDialog::ApplySettings()
         mBombBlastRadiusSlider->GetValue());
 
     mGameController->SetUltraViolentMode(mUltraViolentCheckBox->IsChecked());
+
+    mGameController->SetSeaWaterTransparency(
+        mSeaWaterTransparencySlider->GetValue());
 
     mGameController->SetShowShipThroughSeaWater(mSeeShipThroughSeaWaterCheckBox->IsChecked());
 
@@ -547,6 +554,44 @@ void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
 
     controlsSizer->Add(mSeaDepthSlider.get(), 1, wxALL, SliderBorder);
 
+    // Number of Clouds
+
+    mNumberOfCloudsSlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Number of Clouds",
+        mGameController->GetNumberOfClouds(),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<LinearSliderCore>(
+            mGameController->GetMinNumberOfClouds(),
+            mGameController->GetMaxNumberOfClouds()));
+
+    controlsSizer->Add(mNumberOfCloudsSlider.get(), 1, wxALL, SliderBorder);
+
+    // Wind Speed
+
+    mWindSpeedSlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Wind Speed",
+        mGameController->GetWindSpeed(),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<LinearSliderCore>(
+            mGameController->GetMinWindSpeed(),
+            mGameController->GetMaxWindSpeed()));
+
+    controlsSizer->Add(mWindSpeedSlider.get(), 1, wxALL, SliderBorder);
+
 
     // Light Diffusion
 
@@ -763,7 +808,11 @@ void SettingsDialog::ReadSettings()
     mLightDiffusionSlider->SetValue(mGameController->GetLightDiffusionAdjustment());
     
     mSeaDepthSlider->SetValue(mGameController->GetSeaDepth());
-    
+
+    mNumberOfCloudsSlider->SetValue(mGameController->GetNumberOfClouds());
+
+    mWindSpeedSlider->SetValue(mGameController->GetWindSpeed());
+
 
 
     mDestroyRadiusSlider->SetValue(mGameController->GetDestroyRadius());

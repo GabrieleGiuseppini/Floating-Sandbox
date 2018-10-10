@@ -53,6 +53,11 @@ int World::AddShip(
     return shipId;
 }
 
+size_t World::GetShipPointCount(int shipId) const
+{
+    return mAllShips[shipId]->GetPointCount();
+}
+
 void World::DestroyAt(
     vec2f const & targetPos, 
     float radius)
@@ -208,8 +213,6 @@ void World::Update(GameParameters const & gameParameters)
             mCurrentVisitSequenceNumber,
             gameParameters);
     }
-
-    //buildBVHTree(true, points, collisionTree);
 
     // Update clouds
     UpdateClouds(gameParameters);

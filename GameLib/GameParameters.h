@@ -120,8 +120,12 @@ struct GameParameters
     float LightDiffusionAdjustment;
 
     size_t NumberOfClouds;
+    static constexpr size_t MinNumberOfClouds = 0;
+    static constexpr size_t MaxNumberOfClouds = 500;
 
     float WindSpeed;
+    static constexpr float MinWindSpeed = 0.f;
+    static constexpr float MaxWindSpeed = 50.0f;
 
     bool IsUltraViolentMode;
 

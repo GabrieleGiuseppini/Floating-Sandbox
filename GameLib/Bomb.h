@@ -88,8 +88,10 @@ public:
             mRotationOffsetAxis = mShipSprings.GetPointBPosition(*mSpringIndex, mShipPoints)
                 - mShipSprings.GetPointAPosition(*mSpringIndex, mShipPoints);
 
-            assert(mShipPoints.GetConnectedComponentId(mShipSprings.GetPointAIndex(*mSpringIndex))
+            assert(
+                mShipPoints.GetConnectedComponentId(mShipSprings.GetPointAIndex(*mSpringIndex))
                 == mShipPoints.GetConnectedComponentId(mShipSprings.GetPointBIndex(*mSpringIndex)));
+
             mConnectedComponentId = mShipPoints.GetConnectedComponentId(mShipSprings.GetPointAIndex(*mSpringIndex));
 
             // Remember we don't have a spring index anymore

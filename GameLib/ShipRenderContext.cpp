@@ -9,7 +9,8 @@
 #include "GameMath.h"
 #include "GameParameters.h"
 
-ShipRenderContext::ShipRenderContext(    
+ShipRenderContext::ShipRenderContext(
+    size_t pointCount,
     std::optional<ImageData> texture,
     ShaderManager<Render::ShaderManagerTraits> & shaderManager,
     TextureRenderManager const & textureRenderManager,
@@ -34,7 +35,7 @@ ShipRenderContext::ShipRenderContext(
     , mElementShipTexture()
     , mElementStressedSpringTexture()
     // Points
-    , mPointCount(0u)
+    , mPointCount(pointCount)
     , mPointPositionVBO()
     , mPointLightVBO()
     , mPointWaterVBO()
@@ -66,28 +67,34 @@ ShipRenderContext::ShipRenderContext(
 
     GLuint pointVBOs[5];
     glGenBuffers(5, pointVBOs);
-
+    
     mPointPositionVBO = pointVBOs[0];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointPositionVBO);
+    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(vec2f), nullptr, GL_DYNAMIC_DRAW);
     glVertexAttribPointer(static_cast<GLuint>(Render::VertexAttributeType::ShipPointPosition), 2, GL_FLOAT, GL_FALSE, sizeof(vec2f), (void*)(0));
 
     mPointLightVBO = pointVBOs[1];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointLightVBO);
+    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
     glVertexAttribPointer(static_cast<GLuint>(Render::VertexAttributeType::ShipPointLight), 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)(0));
 
     mPointWaterVBO = pointVBOs[2];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointWaterVBO);
+    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
     glVertexAttribPointer(static_cast<GLuint>(Render::VertexAttributeType::ShipPointWater), 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)(0));
 
     mPointColorVBO = pointVBOs[3];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointColorVBO);
+    glBufferData(GL_ARRAY_BUFFER, mPointCount * sizeof(vec3f), nullptr, GL_STATIC_DRAW);
     glVertexAttribPointer(static_cast<GLuint>(Render::VertexAttributeType::ShipPointColor), 3, GL_FLOAT, GL_FALSE, sizeof(vec3f), (void*)(0));
 
     mPointElementTextureCoordinatesVBO = pointVBOs[4];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointElementTextureCoordinatesVBO);
+    glBufferData(GL_ARRAY_BUFFER, mPointCount * sizeof(vec2f), nullptr, GL_STATIC_DRAW);
     glVertexAttribPointer(static_cast<GLuint>(Render::VertexAttributeType::ShipPointTextureCoordinates), 2, GL_FLOAT, GL_FALSE, sizeof(vec2f), (void*)(0));
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+
 
 
     //
@@ -349,44 +356,37 @@ void ShipRenderContext::RenderStart(std::vector<std::size_t> const & connectedCo
 }
 
 void ShipRenderContext::UploadPointImmutableGraphicalAttributes(
-    size_t count,
     vec3f const * restrict color,
     vec2f const * restrict textureCoordinates)
 {
     // Upload colors
     glBindBuffer(GL_ARRAY_BUFFER, *mPointColorVBO);
-    glBufferData(GL_ARRAY_BUFFER, count * sizeof(vec3f), color, GL_STATIC_DRAW);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, mPointCount * sizeof(vec3f), color);
 
     if (!!mElementShipTexture)
     {
         // Upload texture coordinates
         glBindBuffer(GL_ARRAY_BUFFER, *mPointElementTextureCoordinatesVBO);
-        glBufferData(GL_ARRAY_BUFFER, count * sizeof(vec2f), textureCoordinates, GL_STATIC_DRAW);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, mPointCount * sizeof(vec2f), textureCoordinates);
     }    
-
-    // Store size (for later assert)
-    mPointCount = count;
 }
 
 void ShipRenderContext::UploadPoints(
-    size_t count,
     vec2f const * restrict position,
     float const * restrict light,
     float const * restrict water)
 {
-    assert(count == mPointCount);
-
     // Upload positions
     glBindBuffer(GL_ARRAY_BUFFER, *mPointPositionVBO);
-    glBufferData(GL_ARRAY_BUFFER, count * sizeof(vec2f), position, GL_DYNAMIC_DRAW);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, mPointCount * sizeof(vec2f), position);
 
-    // Upload lights
+    // Upload light
     glBindBuffer(GL_ARRAY_BUFFER, *mPointLightVBO);
-    glBufferData(GL_ARRAY_BUFFER, count * sizeof(float), light, GL_DYNAMIC_DRAW);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, mPointCount * sizeof(float), light);
 
-    // Upload waters
+    // Upload water
     glBindBuffer(GL_ARRAY_BUFFER, *mPointWaterVBO);
-    glBufferData(GL_ARRAY_BUFFER, count * sizeof(float), water, GL_DYNAMIC_DRAW);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, mPointCount * sizeof(float), water);
 }
 
 void ShipRenderContext::UploadElementsStart()
@@ -743,7 +743,8 @@ void ShipRenderContext::RenderPointElements(ConnectedComponentData const & conne
     glDisableVertexAttribArray(0);
 
     // Draw
-    glDrawElements(GL_POINTS, static_cast<GLsizei>(1 * connectedComponent.pointElementCount), GL_UNSIGNED_INT, 0);}
+    glDrawElements(GL_POINTS, static_cast<GLsizei>(1 * connectedComponent.pointElementCount), GL_UNSIGNED_INT, 0);
+}
 
 void ShipRenderContext::RenderSpringElements(
     ConnectedComponentData const & connectedComponent,
@@ -863,9 +864,7 @@ void ShipRenderContext::RenderGenericTextures(std::vector<GenericTextureInfo> co
         for (size_t c = 0; c < connectedComponent.size(); ++c)
         {
             // Bind texture
-            glBindTexture(
-                GL_TEXTURE_2D,
-                mTextureRenderManager.GetOpenGLHandle(connectedComponent[c].frameId));
+            mTextureRenderManager.BindTexture(connectedComponent[c].frameId);
 
             // Draw polygon
             glDrawArrays(

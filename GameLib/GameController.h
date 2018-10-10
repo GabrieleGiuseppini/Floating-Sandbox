@@ -116,6 +116,20 @@ public:
         mTargetZoom = mCurrentZoom = mRenderContext->GetZoom();
     }
 
+    vec2f ScreenToWorld(vec2f const & screenCoordinates) const
+    {
+        return mRenderContext->ScreenToWorld(screenCoordinates);
+    }
+
+    inline bool IsUnderwater(vec2f const & screenCoordinates) const
+    {
+        return mWorld->IsUnderwater(ScreenToWorld(screenCoordinates));
+    }
+
+    //
+    // Physics
+    //
+
     float GetStiffnessAdjustment() const { return mGameParameters.StiffnessAdjustment; }
     void SetStiffnessAdjustment(float value) { mGameParameters.StiffnessAdjustment = value; }
     float GetMinStiffnessAdjustment() const { return GameParameters::MinStiffnessAdjustment; }
@@ -172,6 +186,19 @@ public:
     bool GetUltraViolentMode() const { return mGameParameters.IsUltraViolentMode; }
     void SetUltraViolentMode(bool value) { mGameParameters.IsUltraViolentMode = value; }
 
+    size_t GetNumberOfClouds() const { return mGameParameters.NumberOfClouds; }
+    void SetNumberOfClouds(size_t value) { mGameParameters.NumberOfClouds = value; }
+    size_t GetMinNumberOfClouds() const { return GameParameters::MinNumberOfClouds; }
+    size_t GetMaxNumberOfClouds() const { return GameParameters::MaxNumberOfClouds; }
+
+    float GetWindSpeed() const { return mGameParameters.WindSpeed; }
+    void SetWindSpeed(float value) { mGameParameters.WindSpeed = value; }
+    float GetMinWindSpeed() const { return GameParameters::MinWindSpeed; }
+    float GetMaxWindSpeed() const { return GameParameters::MaxWindSpeed; }
+
+    //
+    // Render
+    //
 
     float GetAmbientLightIntensity() const { return mRenderContext->GetAmbientLightIntensity(); }
     void SetAmbientLightIntensity(float value) { mRenderContext->SetAmbientLightIntensity(value); }
@@ -195,16 +222,6 @@ public:
 
     bool GetShowShipStress() const { return mRenderContext->GetShowStressedSprings(); }
     void SetShowShipStress(bool value) { mRenderContext->SetShowStressedSprings(value); }
-
-    vec2f ScreenToWorld(vec2f const & screenCoordinates) const
-    {
-        return mRenderContext->ScreenToWorld(screenCoordinates);
-    }
-
-    inline bool IsUnderwater(vec2f const & screenCoordinates) const
-    {
-        return mWorld->IsUnderwater(ScreenToWorld(screenCoordinates));
-    }
 
 private:
 

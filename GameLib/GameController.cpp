@@ -300,7 +300,10 @@ void GameController::AddShip(ShipDefinition shipDefinition)
         mGameParameters);
 
     // Add ship to rendering engine
-    mRenderContext->AddShip(shipId, std::move(shipDefinition.TextureImage));
+    mRenderContext->AddShip(
+        shipId, 
+        mWorld->GetShipPointCount(shipId),
+        std::move(shipDefinition.TextureImage));
 
     // Notify
     mGameEventDispatcher->OnShipLoaded(shipId, shipDefinition.ShipName);

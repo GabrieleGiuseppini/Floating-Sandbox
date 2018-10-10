@@ -117,7 +117,6 @@ void Points::Upload(
     { 
         renderContext.UploadShipPointImmutableGraphicalAttributes(
             shipId,
-            mElementCount,
             mColorBuffer.data(),
             mTextureCoordinatesBuffer.data());
 
@@ -127,7 +126,6 @@ void Points::Upload(
     // Upload mutable attributes
     renderContext.UploadShipPoints(
         shipId,  
-        mElementCount,
         mPositionBuffer.data(),
         mLightBuffer.data(),
         mWaterBuffer.data());

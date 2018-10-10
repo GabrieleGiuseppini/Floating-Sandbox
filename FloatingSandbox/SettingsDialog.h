@@ -62,6 +62,8 @@ private:
     // World
     std::unique_ptr<SliderControl> mWaveHeightSlider;
     std::unique_ptr<SliderControl> mSeaDepthSlider;
+    std::unique_ptr<SliderControl> mNumberOfCloudsSlider;
+    std::unique_ptr<SliderControl> mWindSpeedSlider;
     std::unique_ptr<SliderControl> mLightDiffusionSlider;
 
     // Interactions

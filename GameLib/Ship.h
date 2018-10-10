@@ -41,6 +41,8 @@ public:
     World const & GetParentWorld() const { return mParentWorld; }
     World & GetParentWorld() { return mParentWorld; }
 
+    size_t GetPointCount() const { return mPoints.GetElementCount(); }
+
     auto const & GetPoints() const { return mPoints; }
     auto & GetPoints() { return mPoints; }
 

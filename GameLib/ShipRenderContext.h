@@ -27,6 +27,7 @@ class ShipRenderContext
 public:
 
     ShipRenderContext(
+        size_t pointCount,
         std::optional<ImageData> texture,
         ShaderManager<Render::ShaderManagerTraits> & shaderManager,
         TextureRenderManager const & textureRenderManager,
@@ -70,12 +71,10 @@ public:
     //
 
     void UploadPointImmutableGraphicalAttributes(
-        size_t count,
         vec3f const * restrict color,
         vec2f const * restrict textureCoordinates);
 
     void UploadPoints(
-        size_t count,
         vec2f const * restrict position,
         float const * restrict light,
         float const * restrict water);
@@ -216,7 +215,7 @@ public:
             textureFrameId);
 
         // Append vertices
-        mTextureRenderManager.AddRenderPolygon(
+        mTextureRenderManager.EmitRenderPolygon(
             textureFrameId,
             position,
             scale,
@@ -290,7 +289,7 @@ private:
     // Points
     //
     
-    size_t mPointCount;
+    size_t const mPointCount;
 
     GameOpenGLVBO mPointPositionVBO;
     GameOpenGLVBO mPointLightVBO;

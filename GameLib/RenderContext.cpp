@@ -280,6 +280,7 @@ void RenderContext::Reset()
 
 void RenderContext::AddShip(
     int shipId,
+    size_t pointCount,
     std::optional<ImageData> texture)
 {   
     assert(shipId == mShips.size());
@@ -287,6 +288,7 @@ void RenderContext::AddShip(
     // Add the ship    
     mShips.emplace_back(
         new ShipRenderContext(
+            pointCount,
             std::move(texture), 
             *mShaderManager,
             *mTextureRenderManager,

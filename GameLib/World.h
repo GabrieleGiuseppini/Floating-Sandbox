@@ -35,6 +35,8 @@ public:
         MaterialDatabase const & materials,
         GameParameters const & gameParameters);
 
+    size_t GetShipPointCount(int shipId) const;
+
     inline float GetWaterHeightAt(float x) const
     {
         return mWaterSurface.GetWaterHeightAt(x);
