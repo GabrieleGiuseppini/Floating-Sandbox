@@ -153,7 +153,7 @@ void Points::UploadVectors(
     int shipId,
     RenderContext & renderContext) const
 {
-    static constexpr vec3f VectorColor(0.5f, 0.1f, 0.f);
+    static constexpr vec4f VectorColor(0.5f, 0.1f, 0.f, 1.0f);
 
     if (renderContext.GetVectorFieldRenderMode() == VectorFieldRenderMode::PointVelocity)
     {

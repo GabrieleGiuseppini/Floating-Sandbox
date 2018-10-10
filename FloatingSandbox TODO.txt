@@ -62,17 +62,20 @@ Current perf
 = ShaderManager
 	+ WetColor, LightColor: make them static hardcoded params
 	+ Use in and out, and 130
-	= Replace all shaders
+	+ Replace all shaders
 		+ RenderContext
 			+ Use "in" as prefix of inputs
 			+ glEnableVertexArrays: all at top, as they have nothing to do with VBOs
 				+ ShaderMgr enables all the used ones
 				+ Ship/RenderContext Code only disables zero when it's not used
-		= ShipContext
+		+ ShipContext
 			+ Ship/RenderContext code only disables zero when it's not used
 			+ Remove unnecessary bind's for VBO's that source dedicated attributes
-	- Get rid of vector_arrows shader, use matte
-		- Will need to re-bind attribute (GenericPosition or VectorPosition=0) to vectors VBO
+	+ Get rid of vector_arrows shader, use matte
+		+ Will need to re-bind attribute (GenericPosition or VectorPosition=0) to vectors VBO
+		+ Deep cleanup
+			+ enums
+			+ shader
 	- Replace glBufferData with glBufferSubData when size does not change; at Ship only:
 		- Point positions
 		- Check perf before and after
@@ -162,6 +165,9 @@ Current perf
 					  with optional <ship ID, connected component ID> pair (not set -> main UI, on top of everything), 
 					  and eat the fact that ships don't take ShipRenderContext anymore but whole RenderContext
 
+	- Move RenderContext et al into Render:: namespace and file group
+	- Render: coalesce all render parameter changes into one, and update only at Render() for each that is dirty
+
 	- GameController rearc:
 		- GameController moves to FloatingSandbox, and contains SoundController and ToolController as well
 		- MainFrame talks exclusively to GameController, which in turn talks to the others
@@ -172,9 +178,6 @@ Current perf
 	+ CMake:
 		+ INSTALL target for release
 		+ RelWithDebInfo: Inline any suitable (/Ob2)
-
-	- Move RenderContext et al into Render:: namespace and file group
-	- Render: coalesce all render parameter changes into one, and update only at Render() for each that is dirty
 
 	- Test: Ship::Render() should give its subordinates ShipRenderContext instead of RenderContext
 		- Can then get rid of forwards from RenderContext

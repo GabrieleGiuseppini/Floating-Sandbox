@@ -562,7 +562,7 @@ public:
         vec2f const * restrict position,
         vec2f const * restrict vector,
         float lengthAdjustment,
-        vec3f const & color)
+        vec4f const & color)
     {
         assert(shipId < mShips.size());
 

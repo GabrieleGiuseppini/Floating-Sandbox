@@ -23,7 +23,6 @@ namespace Render {
         ShipStressedSprings,
         ShipTrianglesColor,
         ShipTrianglesTexture,
-        VectorArrows,
         Water,
 
         _Last = Water
@@ -73,8 +72,7 @@ namespace Render {
         ShipPointColor = 8,
         ShipPointLight = 9,
         ShipPointWater = 10,
-        ShipPointTextureCoordinates = 11,
-        ShipVectorPosition = 12
+        ShipPointTextureCoordinates = 11
     };
 
     VertexAttributeType StrToVertexAttributeType(std::string const & str);

@@ -51,6 +51,7 @@ ShipRenderContext::ShipRenderContext(
     // Vectors
     , mVectorArrowPointPositionBuffer()
     , mVectorArrowPointPositionVBO()
+    , mVectorArrowColor()
 {
     GLuint tmpGLuint;
     GLenum glError;
@@ -189,9 +190,8 @@ ShipRenderContext::ShipRenderContext(
     //
 
     // Create VBO
-    GLuint genericTextureRenderPolygonVertexVBO;
-    glGenBuffers(1, &genericTextureRenderPolygonVertexVBO);
-    mGenericTextureRenderPolygonVertexVBO = genericTextureRenderPolygonVertexVBO;
+    glGenBuffers(1, &tmpGLuint);
+    mGenericTextureRenderPolygonVertexVBO = tmpGLuint;
 
     // Bind VBO
     glBindBuffer(GL_ARRAY_BUFFER, *mGenericTextureRenderPolygonVertexVBO);
@@ -208,15 +208,9 @@ ShipRenderContext::ShipRenderContext(
     //
 
     // Create VBO
-    GLuint vectorArrowPointPositionVBO;
-    glGenBuffers(1, &vectorArrowPointPositionVBO);
-    mVectorArrowPointPositionVBO = vectorArrowPointPositionVBO;
+    glGenBuffers(1, &tmpGLuint);
+    mVectorArrowPointPositionVBO = tmpGLuint;
 
-    // Bind VBO
-    glBindBuffer(GL_ARRAY_BUFFER, *mVectorArrowPointPositionVBO);
-
-    // Describe buffers
-    glVertexAttribPointer(static_cast<GLuint>(Render::VertexAttributeType::ShipVectorPosition), 2, GL_FLOAT, GL_FALSE, sizeof(vec2f), (void*)(0));
 
 
     //
@@ -263,10 +257,6 @@ void ShipRenderContext::UpdateOrthoMatrix(float const(&orthoMatrix)[4][4])
 
     mShaderManager.ActivateProgram<Render::ProgramType::GenericTextures>();
     mShaderManager.SetProgramParameter<Render::ProgramType::GenericTextures, Render::ProgramParameterType::OrthoMatrix>(
-        orthoMatrix);
-
-    mShaderManager.ActivateProgram<Render::ProgramType::VectorArrows>();
-    mShaderManager.SetProgramParameter<Render::ProgramType::VectorArrows, Render::ProgramParameterType::OrthoMatrix>(
         orthoMatrix);
 }
 
@@ -575,7 +565,7 @@ void ShipRenderContext::UploadVectors(
     vec2f const * restrict position,
     vec2f const * restrict vector,
     float lengthAdjustment,
-    vec3f const & color)
+    vec4f const & color)
 {
     static float const CosAlphaLeftRight = cos(-2.f * Pi<float> / 8.f);
     static float const SinAlphaLeft = sin(-2.f * Pi<float> / 8.f);
@@ -621,14 +611,10 @@ void ShipRenderContext::UploadVectors(
 
 
     //
-    // Set color parameter
+    // Store color
     //
 
-    mShaderManager.ActivateProgram<Render::ProgramType::VectorArrows>();
-    mShaderManager.SetProgramParameter<Render::ProgramType::VectorArrows, Render::ProgramParameterType::MatteColor>(
-        color.x, 
-        color.y, 
-        color.z);
+    mVectorArrowColor = color;
 }
 
 void ShipRenderContext::RenderEnd()
@@ -845,6 +831,7 @@ void ShipRenderContext::RenderStressedSpringElements(ConnectedComponentData cons
     {
         // Use program
         mShaderManager.ActivateProgram<Render::ProgramType::ShipStressedSprings>();
+        
         // Set line size
         glLineWidth(0.1f * 2.0f * mCanvasToVisibleWorldHeightRatio);
 
@@ -891,14 +878,27 @@ void ShipRenderContext::RenderGenericTextures(std::vector<GenericTextureInfo> co
 
 void ShipRenderContext::RenderVectors()
 {
-    // Use vector arrow program
-    mShaderManager.ActivateProgram<Render::ProgramType::VectorArrows>();
+    // Use matte program
+    mShaderManager.ActivateProgram<Render::ProgramType::Matte>();
 
     // Set line size
     glLineWidth(0.5f);
 
-    // Disable vertex attribute 0, as we don't use it
-    glDisableVertexAttribArray(0);
+    // Set vector color
+    mShaderManager.SetProgramParameter<Render::ProgramType::Matte, Render::ProgramParameterType::MatteColor>(
+        mVectorArrowColor.x,
+        mVectorArrowColor.y,
+        mVectorArrowColor.z,
+        mVectorArrowColor.w);
+
+    // Bind VBO
+    glBindBuffer(GL_ARRAY_BUFFER, *mVectorArrowPointPositionVBO);
+
+    // Describe buffer
+    glVertexAttribPointer(static_cast<GLuint>(Render::VertexAttributeType::SharedPosition), 2, GL_FLOAT, GL_FALSE, sizeof(vec2f), (void*)(0));
+
+    // Enable vertex attribute 0
+    glEnableVertexAttribArray(0);
 
     // Draw
     glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(mVectorArrowPointPositionBuffer.size()));
