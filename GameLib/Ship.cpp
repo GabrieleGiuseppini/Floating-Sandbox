@@ -625,12 +625,15 @@ void Ship::HandleCollisionsWithSeaFloor()
             // (which is oriented upwards)
             vec2f bounceDisplacement = seaFloorNormal * (floorheight - mPoints.GetPosition(pointIndex).y);
 
-            // Move point back along normal
+            // Move point back along normal to ~basically floor level
             mPoints.GetPosition(pointIndex) += bounceDisplacement;
-            // TODOTEST
-            //mPoints.GetVelocity(pointIndex) = bounceDisplacement / GameParameters::MechanicalDynamicsSimulationStepTimeDuration<float>;
-            // Perfectly elastic impact
-            mPoints.GetVelocity(pointIndex) = seaFloorNormal * mPoints.GetVelocity(pointIndex).length();
+
+            // Simulate a perfectly elastic impact, bouncing along specular to sea floor normal:
+            // R = 2*n*dot_product(n,-V) + V
+            mPoints.GetVelocity(pointIndex) += 
+                seaFloorNormal
+                * -2.0f
+                * seaFloorNormal.dot(mPoints.GetVelocity(pointIndex));
         }
     }
 }

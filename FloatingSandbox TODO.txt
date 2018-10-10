@@ -1,7 +1,7 @@
 =================================================
 Current perf
 =================================================
-- fps: 27.3 (Samsung: TBD-was 32.7 (Krafting)) (Mattia's: TBD (Krafting))
+- fps: 26.8 (Samsung: TBD-was 32.7 (Krafting)) (Mattia's: TBD (Krafting))
 - GameController::Update: 34.50%
 	- Ship::Update: 33.68%
 		- UpdateMechanicalDynamics: 25.18%
@@ -55,8 +55,6 @@ Current perf
 	- Warship
 	- See Moleskine
 
-= Make collisions with sea floor more dramatic
-	= vel *= 0.5
 
 - Fix buoyancy
 	- Double-think: hull wood should still float
@@ -65,6 +63,11 @@ Current perf
 			- i.e. it will never sink as hull does not take water
 			- this is why we have the dirty trick at buoyancy
 		- Wood non-hull is lighter than water, hence will sink only when it takes water
+		- Proposal:
+			- Hullness of material only affects initial isLeaking determination and kinetic energy bounce; nothing else
+				- All springs and points are water permeable (so no WaterPermeability is needed anymore, it's implicitly 1)
+					- But now separators in ships would get wet!!!
+				- Points maintain IsHull getter for kinetic energy bounce
 
 - Technical Debt:
 	= Textures are json files, with world size, offset, and lighting boolean
@@ -303,6 +306,10 @@ Current perf
 	- Bug: bombs et al fade more rapidly than ship when ambient light goes away
 
 - Dynamics:
+
+	+ Make collisions with sea floor more dramatic
+		+ Bounce velocity with specular vector
+
 	- Bombs:
 		- Bomb explosions: see if better done with "OneShotForce" (rename of "ToolForces")
 			- At each explosion frame: radial forces, centered at center, strongest at radius=f(expl frame)
