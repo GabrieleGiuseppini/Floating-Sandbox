@@ -201,8 +201,6 @@ ShipRenderContext::ShipRenderContext(
     glVertexAttribPointer(static_cast<GLuint>(Render::VertexAttributeType::GenericTextureCoordinates), 2, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)(2 * sizeof(float)));
     glVertexAttribPointer(static_cast<GLuint>(Render::VertexAttributeType::GenericTextureAmbientLightSensitivity), 1, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)((2 + 2) * sizeof(float)));
 
-    // Unbind VBO
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 
     //
@@ -219,9 +217,6 @@ ShipRenderContext::ShipRenderContext(
 
     // Describe buffers
     glVertexAttribPointer(static_cast<GLuint>(Render::VertexAttributeType::ShipVectorPosition), 2, GL_FLOAT, GL_FALSE, sizeof(vec2f), (void*)(0));
-
-    // Unbind VBO
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 
     //
@@ -874,9 +869,6 @@ void ShipRenderContext::RenderGenericTextures(std::vector<GenericTextureInfo> co
         // Use program
         mShaderManager.ActivateProgram<Render::ProgramType::GenericTextures>();
 
-        // Bind VBO
-        glBindBuffer(GL_ARRAY_BUFFER, *mGenericTextureRenderPolygonVertexVBO);
-
         // Disable vertex attribute 0, as we don't use it
         glDisableVertexAttribArray(0);
 
@@ -904,9 +896,6 @@ void ShipRenderContext::RenderVectors()
 
     // Set line size
     glLineWidth(0.5f);
-
-    // Bind VBO
-    glBindBuffer(GL_ARRAY_BUFFER, *mVectorArrowPointPositionVBO);
 
     // Disable vertex attribute 0, as we don't use it
     glDisableVertexAttribArray(0);

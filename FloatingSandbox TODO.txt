@@ -70,8 +70,7 @@ Current perf
 				+ Ship/RenderContext Code only disables zero when it's not used
 		= ShipContext
 			+ Ship/RenderContext code only disables zero when it's not used
-			- Make Vector shader use shared position
-			- Remove unnecessary bind's for VBO's that source dedicated attributes
+			+ Remove unnecessary bind's for VBO's that source dedicated attributes
 	- Get rid of vector_arrows shader, use matte
 		- Will need to re-bind attribute (GenericPosition or VectorPosition=0) to vectors VBO
 	- Replace glBufferData with glBufferSubData when size does not change; at Ship only:
