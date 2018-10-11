@@ -304,7 +304,7 @@ MainFrame::MainFrame(wxApp * mainApp)
 
     mProbePanel = std::make_unique<ProbePanel>(mainPanel);
 
-    mMainFrameSizer->Add(mProbePanel.get(), 1, wxEXPAND);
+    mMainFrameSizer->Add(mProbePanel.get(), 0, wxEXPAND);
 
     mMainFrameSizer->Hide(mProbePanel.get());
 
