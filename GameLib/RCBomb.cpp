@@ -128,13 +128,11 @@ bool RCBomb::Update(
         }
 
         case State::Expired:
+        default:
         {
             return false;
         }
     }
-
-    assert(false);
-    return true;
 }
 
 void RCBomb::Upload(

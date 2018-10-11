@@ -133,9 +133,11 @@ bool TimerBomb::Update(
                 // Schedule next transition
                 mNextStateTransitionTimePoint = now + ExplosionProgressInterval;
             }
-
-            // Increment frame counter
-            ++mDetonationLeadInShapeFrameCounter;
+            else
+            {
+                // Increment frame counter
+                ++mDetonationLeadInShapeFrameCounter;
+            }
 
             return true;
         }
@@ -197,9 +199,14 @@ bool TimerBomb::Update(
         }
         
         case State::Defused:
-        default:
         {
             return true;
+        }
+
+        case State::Expired:
+        default:
+        {
+            return false;
         }
     }
 }
