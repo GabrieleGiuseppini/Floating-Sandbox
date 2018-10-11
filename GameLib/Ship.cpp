@@ -473,8 +473,11 @@ void Ship::UpdateSwirlForces(
 
 void Ship::UpdatePointForces(GameParameters const & gameParameters)
 {
-    // Water mass = 1000kg * adjustment
-    float const waterMass = 1000.0f * gameParameters.BuoyancyAdjustment;
+    // Water mass = 1000Kg
+    static constexpr float WaterMass = 1000.0f;
+
+    // Effective water mass that we want to use for buoyancy calculation
+    float const BuoyancyAdjustedWaterMass = WaterMass * gameParameters.BuoyancyAdjustment;
 
     // Underwater points feel this amount of water drag
     //
@@ -488,20 +491,25 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
 
         //
         // 1. Add gravity and buoyancy
-        //
-
-        // Hull points have buoyancy=0 so that there's no buoyancy (and they're always dry)
-        float const effectiveWaterMass = waterMass * mPoints.GetBuoyancy(pointIndex);
+        //        
 
         // Mass = own + contained water (clamped to 1)
-        // TODOHERE: should not include buoyancy adjustment here
-        mPoints.GetForce(pointIndex) += gameParameters.Gravity 
-            * (mPoints.GetMass(pointIndex) + std::min(mPoints.GetWater(pointIndex), 1.0f) * effectiveWaterMass);
-        
+        mPoints.GetForce(pointIndex) += gameParameters.Gravity
+            * (mPoints.GetMass(pointIndex) + std::min(mPoints.GetWater(pointIndex), 1.0f) * 1000.0f);
+
         if (mPoints.GetPosition(pointIndex).y < waterHeightAtThisPoint)
         {
+            //
             // Apply upward push of water mass (i.e. buoyancy!)
-            mPoints.GetForce(pointIndex) -= gameParameters.Gravity * effectiveWaterMass;
+            //
+            // We don't want hull points to feel buoyancy, otherwise hull points lighter than water (e.g. wood hull)
+            // would never sink as they don't get any water
+            //
+
+            mPoints.GetForce(pointIndex) -=
+                gameParameters.Gravity
+                * BuoyancyAdjustedWaterMass
+                * mPoints.GetBuoyancy(pointIndex);
         }
 
 
@@ -617,9 +625,10 @@ void Ship::HandleCollisionsWithSeaFloor()
         if (mPoints.GetPosition(pointIndex).y < floorheight)
         {
             // Calculate normal to sea floor
+            static constexpr float Dx = 0.01f;
             vec2f seaFloorNormal = vec2f(
-                floorheight - mParentWorld.GetOceanFloorHeightAt(mPoints.GetPosition(pointIndex).x + 0.01f),
-                0.01f).normalise();
+                floorheight - mParentWorld.GetOceanFloorHeightAt(mPoints.GetPosition(pointIndex).x + Dx),
+                Dx).normalise();
 
             // Calculate displacement to move point back to sea floor, along the normal to the floor 
             // (which is oriented upwards)
