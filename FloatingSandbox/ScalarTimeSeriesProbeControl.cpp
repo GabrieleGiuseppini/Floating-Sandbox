@@ -212,7 +212,7 @@ void ScalarTimeSeriesProbeControl::Render(wxDC & dc)
         std::stringstream ss;
         ss << std::fixed << std::setprecision(3) << *mSamples.begin() << " (" << mMaxValue << ")";
 
-        wxString testText(ss.str());
-        dc.DrawText(testText, 0, 1);
+        wxString labelText(ss.str());
+        dc.DrawText(labelText, 0, 1);
     }
 }

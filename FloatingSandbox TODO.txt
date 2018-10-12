@@ -55,7 +55,10 @@ Current perf
 	- Warship
 	- See Moleskine
 
-- Fix shaking of timer bomb
+= Fullscreen:
+	+ ESC to go out, menu option/F11 to fullscreen again
+	+ Add to changes
+	- Text at RenderContext
 
 - Technical Debt:
 	= Textures are json files, with world size, offset, and lighting boolean

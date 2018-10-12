@@ -62,6 +62,8 @@ private:
     wxMenuItem * mRCBombsDetonateMenuItem;
     wxMenuItem * mShowEventTickerMenuItem;
     wxMenuItem * mShowProbePanelMenuItem;
+    wxMenuItem * mFullScreenMenuItem;
+    wxMenuItem * mNormalScreenMenuItem;
     wxMenuItem * mMuteMenuItem;
     std::unique_ptr<EventTickerPanel> mEventTickerPanel;
     std::unique_ptr<ProbePanel> mProbePanel;
@@ -130,6 +132,8 @@ private:
     void OnOpenLogWindowMenuItemSelected(wxCommandEvent& event);
     void OnShowEventTickerMenuItemSelected(wxCommandEvent& event);
     void OnShowProbePanelMenuItemSelected(wxCommandEvent& event);
+    void OnFullScreenMenuItemSelected(wxCommandEvent& event);
+    void OnNormalScreenMenuItemSelected(wxCommandEvent& event);
     void OnMuteMenuItemSelected(wxCommandEvent& event);
     void OnHelpMenuItemSelected(wxCommandEvent& event);
     void OnAboutMenuItemSelected(wxCommandEvent& event);

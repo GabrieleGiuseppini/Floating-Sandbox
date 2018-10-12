@@ -51,6 +51,8 @@ const long ID_OPEN_SETTINGS_WINDOW_MENUITEM = wxNewId();
 const long ID_OPEN_LOG_WINDOW_MENUITEM = wxNewId();
 const long ID_SHOW_EVENT_TICKER_MENUITEM = wxNewId();
 const long ID_SHOW_PROBE_PANEL_MENUITEM = wxNewId();
+const long ID_FULL_SCREEN_MENUITEM = wxNewId();
+const long ID_NORMAL_SCREEN_MENUITEM = wxNewId();
 const long ID_MUTE_MENUITEM = wxNewId();
 
 const long ID_HELP_MENUITEM = wxNewId();
@@ -60,6 +62,7 @@ const long ID_POSTIINITIALIZE_TIMER = wxNewId();
 const long ID_GAME_TIMER = wxNewId();
 const long ID_LOW_FREQUENCY_TIMER = wxNewId();
 
+static constexpr bool StartInFullScreenMode = true;
 static constexpr int CursorStep = 30;
 static constexpr int PowerBarThickness = 2;
 
@@ -200,7 +203,7 @@ MainFrame::MainFrame(wxApp * mainApp)
 
     controlsMenu->Append(new wxMenuItem(controlsMenu, wxID_SEPARATOR));
 
-    wxMenuItem * resetViewMenuItem = new wxMenuItem(controlsMenu, ID_RESET_VIEW_MENUITEM, _("Reset View\tESC"), wxEmptyString, wxITEM_NORMAL);
+    wxMenuItem * resetViewMenuItem = new wxMenuItem(controlsMenu, ID_RESET_VIEW_MENUITEM, _("Reset View\tHOME"), wxEmptyString, wxITEM_NORMAL);
     controlsMenu->Append(resetViewMenuItem);
     Connect(ID_RESET_VIEW_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnResetViewMenuItemSelected);
 
@@ -270,6 +273,16 @@ MainFrame::MainFrame(wxApp * mainApp)
     optionsMenu->Append(mShowProbePanelMenuItem);
     mShowProbePanelMenuItem->Check(false);
     Connect(ID_SHOW_PROBE_PANEL_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnShowProbePanelMenuItemSelected);
+
+    mFullScreenMenuItem = new wxMenuItem(optionsMenu, ID_FULL_SCREEN_MENUITEM, _("Full Screen\tF11"), wxEmptyString, wxITEM_NORMAL);
+    optionsMenu->Append(mFullScreenMenuItem);
+    Connect(ID_FULL_SCREEN_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnFullScreenMenuItemSelected);
+    mFullScreenMenuItem->Enable(!StartInFullScreenMode);
+
+    mNormalScreenMenuItem = new wxMenuItem(optionsMenu, ID_NORMAL_SCREEN_MENUITEM, _("Normal Screen\tESC"), wxEmptyString, wxITEM_NORMAL);
+    optionsMenu->Append(mNormalScreenMenuItem);
+    Connect(ID_NORMAL_SCREEN_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnNormalScreenMenuItemSelected);
+    mNormalScreenMenuItem->Enable(StartInFullScreenMode);
 
     optionsMenu->Append(new wxMenuItem(optionsMenu, wxID_SEPARATOR));
 
@@ -514,7 +527,10 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     // Show ourselves now
     //
 
-    this->Show();
+    this->Show(true);
+
+    if (StartInFullScreenMode)
+        this->ShowFullScreen(true, wxFULLSCREEN_NOBORDER);
 }
 
 void MainFrame::OnMainFrameClose(wxCloseEvent & /*event*/)
@@ -555,11 +571,6 @@ void MainFrame::OnKeyDown(wxKeyEvent & event)
     {
         // Right
         mGameController->Pan(vec2f(20.0f, 0.0f));
-    }
-    else if (event.GetKeyCode() == WXK_DOWN)
-    {
-        // Down
-        mGameController->Pan(vec2f(0.0f, 20.0f));
     }
     else if (event.GetKeyCode() == WXK_DOWN)
     {
@@ -912,6 +923,22 @@ void MainFrame::OnShowProbePanelMenuItemSelected(wxCommandEvent & /*event*/)
     }
 
     mMainFrameSizer->Layout();
+}
+
+void MainFrame::OnFullScreenMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    mFullScreenMenuItem->Enable(false);
+    mNormalScreenMenuItem->Enable(true);
+
+    this->ShowFullScreen(true, wxFULLSCREEN_NOBORDER);
+}
+
+void MainFrame::OnNormalScreenMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    mFullScreenMenuItem->Enable(true);
+    mNormalScreenMenuItem->Enable(false);
+
+    this->ShowFullScreen(false);
 }
 
 void MainFrame::OnMuteMenuItemSelected(wxCommandEvent & /*event*/)

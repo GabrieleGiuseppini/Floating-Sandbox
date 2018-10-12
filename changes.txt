@@ -1,5 +1,7 @@
 1.6.0
 - Musical theme for this release: Blonde Redhead, "23"
+- Game now starts in full-screen mode, and added ability to switch back and forth between full-screen mode and
+  normal-screen mode
 - Paid off some considerable technical debt in the OpenGL domain
 
 1.5.0
