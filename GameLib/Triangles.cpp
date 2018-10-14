@@ -34,7 +34,7 @@ void Triangles::Destroy(ElementIndex triangleElementIndex)
 
 void Triangles::UploadElements(
     int shipId,
-    RenderContext & renderContext,
+    Render::RenderContext & renderContext,
     Points const & points) const
 {
     for (ElementIndex i : *this)

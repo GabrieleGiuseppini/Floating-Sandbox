@@ -220,7 +220,7 @@ void World::Update(GameParameters const & gameParameters)
 
 void World::Render( 
     GameParameters const & gameParameters,
-    RenderContext & renderContext) const
+    Render::RenderContext & renderContext) const
 {
     renderContext.RenderStart();
 
@@ -295,7 +295,7 @@ void World::UpdateClouds(GameParameters const & gameParameters)
     }
 }
 
-void World::RenderClouds(RenderContext & renderContext) const
+void World::RenderClouds(Render::RenderContext & renderContext) const
 {
     renderContext.RenderCloudsStart(mAllClouds.size());
 
@@ -312,7 +312,7 @@ void World::RenderClouds(RenderContext & renderContext) const
 
 void World::UploadLandAndWater(
     GameParameters const & gameParameters,
-    RenderContext & renderContext) const
+    Render::RenderContext & renderContext) const
 {
     static constexpr size_t SlicesCount = 500;
 

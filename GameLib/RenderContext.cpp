@@ -9,12 +9,15 @@
 
 #include <cstring>
 
+namespace Render {
+
 RenderContext::RenderContext(
     ResourceLoader & resourceLoader,
     vec3f const & ropeColour,
     ProgressCallback const & progressCallback)
     : mShaderManager()
     , mTextureRenderManager()
+    , mTextRenderContext()
     // Clouds
     , mCloudBuffer()
     , mCloudBufferSize(0u)
@@ -65,10 +68,25 @@ RenderContext::RenderContext(
 
     progressCallback(0.0f, "Loading shaders...");
 
-    ShaderManager<Render::ShaderManagerTraits>::GlobalParameters globalParameters(
+    ShaderManager<ShaderManagerTraits>::GlobalParameters globalParameters(
         ropeColour); 
 
-    mShaderManager = ShaderManager<Render::ShaderManagerTraits>::CreateInstance(resourceLoader, globalParameters);
+    mShaderManager = ShaderManager<ShaderManagerTraits>::CreateInstance(resourceLoader, globalParameters);
+
+
+    //
+    // Initialize text render context
+    //
+
+    mTextRenderContext = std::make_unique<TextRenderContext>(
+        resourceLoader,
+        *(mShaderManager.get()),
+        mCanvasWidth,
+        mCanvasHeight,
+        [&progressCallback](float progress, std::string const & message)
+        {
+            progressCallback(0.125f + 0.125f * progress, message);
+        });
 
 
 
@@ -85,6 +103,7 @@ RenderContext::RenderContext(
         });
 
     mTextureRenderManager = std::make_unique<TextureRenderManager>();
+
 
 
     //
@@ -190,8 +209,8 @@ RenderContext::RenderContext(
 
     // Set hardcoded parameters
     auto const & landTextureMetadata = textureDatabase.GetFrameMetadata(TextureGroupType::Land, 0);
-    mShaderManager->ActivateProgram<Render::ProgramType::Land>();
-    mShaderManager->SetProgramParameter<Render::ProgramType::Land, Render::ProgramParameterType::TextureScaling>(
+    mShaderManager->ActivateProgram<ProgramType::Land>();
+    mShaderManager->SetProgramParameter<ProgramType::Land, ProgramParameterType::TextureScaling>(
             1.0f / landTextureMetadata.WorldWidth,
             1.0f / landTextureMetadata.WorldHeight);
 
@@ -207,8 +226,8 @@ RenderContext::RenderContext(
 
     // Set hardcoded parameters
     auto const & waterTextureMetadata = textureDatabase.GetFrameMetadata(TextureGroupType::Water, 0);
-    mShaderManager->ActivateProgram<Render::ProgramType::Water>();
-    mShaderManager->SetProgramParameter<Render::ProgramType::Water, Render::ProgramParameterType::TextureScaling>(
+    mShaderManager->ActivateProgram<ProgramType::Water>();
+    mShaderManager->SetProgramParameter<ProgramType::Water, ProgramParameterType::TextureScaling>(
             1.0f / waterTextureMetadata.WorldWidth,
             1.0f / waterTextureMetadata.WorldHeight);
 
@@ -221,7 +240,7 @@ RenderContext::RenderContext(
 
     // Associate WaterPosition vertex attribute with this VBO
     // (the other attribute is shared, hence we'll associate it later)
-    glVertexAttribPointer(static_cast<GLuint>(Render::VertexAttributeType::WaterPosition), 2, GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void*)0);
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::WaterPosition), 2, GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void*)0);
 
 
 
@@ -284,6 +303,7 @@ void RenderContext::AddShip(
     std::optional<ImageData> texture)
 {   
     assert(shipId == mShips.size());
+    (void)shipId;
 
     // Add the ship    
     mShips.emplace_back(
@@ -313,6 +333,9 @@ void RenderContext::RenderStart()
     glEnable(GL_POLYGON_SMOOTH);
     glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
 
+    // Set polygon mode
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
     // Enable blend for alpha transparency
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -327,6 +350,9 @@ void RenderContext::RenderStart()
     glStencilMask(0xFF);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     glStencilMask(0x00);
+
+    // Communicate start to child contextes
+    mTextRenderContext->RenderStart();
 }
 
 void RenderContext::RenderCloudsStart(size_t clouds)
@@ -349,7 +375,7 @@ void RenderContext::RenderCloudsEnd()
     //
 
     // Use matte water program
-    mShaderManager->ActivateProgram<Render::ProgramType::MatteWater>();
+    mShaderManager->ActivateProgram<ProgramType::MatteWater>();
 
     // Disable writing to the color buffer
     glColorMask(false, false, false, false);
@@ -363,7 +389,7 @@ void RenderContext::RenderCloudsEnd()
     glDisableVertexAttribArray(0);
 
     // Draw
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mWaterBufferSize));
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mWaterBufferSize));    
 
     // Don't write anything to stencil buffer now
     glStencilMask(0x00);
@@ -381,20 +407,23 @@ void RenderContext::RenderCloudsEnd()
     assert(mCloudBufferSize == mCloudBufferMaxSize);
 
     // Use program
-    mShaderManager->ActivateProgram<Render::ProgramType::Clouds>();
+    mShaderManager->ActivateProgram<ProgramType::Clouds>();
 
     // Bind cloud VBO
     glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
+    CheckOpenGLError();
 
     // Describe shared attribute indices
-    glVertexAttribPointer(static_cast<GLuint>(Render::VertexAttributeType::SharedPosition), 2, GL_FLOAT, GL_FALSE, (2 + 2) * sizeof(float), (void*)0);
-    glVertexAttribPointer(static_cast<GLuint>(Render::VertexAttributeType::SharedTextureCoordinates), 2, GL_FLOAT, GL_FALSE, (2 + 2) * sizeof(float), (void*)(2 * sizeof(float)));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedPosition), 2, GL_FLOAT, GL_FALSE, (2 + 2) * sizeof(float), (void*)0);
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedTextureCoordinates), 2, GL_FLOAT, GL_FALSE, (2 + 2) * sizeof(float), (void*)(2 * sizeof(float)));
+    CheckOpenGLError();
 
     // Enable vertex attribute 0
     glEnableVertexAttribArray(0);
 
     // Upload cloud buffer     
     glBufferData(GL_ARRAY_BUFFER, mCloudBufferSize * sizeof(CloudElement), mCloudBuffer.get(), GL_DYNAMIC_DRAW);
+    CheckOpenGLError();
 
     // Enable stenciling - only draw where there are no 1's
     glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
@@ -408,6 +437,7 @@ void RenderContext::RenderCloudsEnd()
             mTextureRenderManager->GetOpenGLHandle(
                 TextureGroupType::Cloud, 
                 static_cast<TextureFrameIndex>(c % mCloudTextureCount)));
+        CheckOpenGLError();
 
         // Draw
         glDrawArrays(GL_TRIANGLE_STRIP, static_cast<GLint>(4 * c), 4);
@@ -456,10 +486,11 @@ void RenderContext::UploadLandAndWaterEnd()
 
     // Bind VBO
     glBindBuffer(GL_ARRAY_BUFFER, *mLandVBO);
+    CheckOpenGLError();
 
     // Upload land buffer
     glBufferData(GL_ARRAY_BUFFER, mLandBufferSize * sizeof(LandElement), mLandBuffer.get(), GL_DYNAMIC_DRAW);
-
+    CheckOpenGLError();
 
 
     //
@@ -470,26 +501,31 @@ void RenderContext::UploadLandAndWaterEnd()
 
     // Bind VBO
     glBindBuffer(GL_ARRAY_BUFFER, *mWaterVBO);
+    CheckOpenGLError();
 
     // Upload water buffer
     glBufferData(GL_ARRAY_BUFFER, mWaterBufferSize * sizeof(WaterElement), mWaterBuffer.get(), GL_DYNAMIC_DRAW);
+    CheckOpenGLError();
 }
 
 void RenderContext::RenderLand()
 {
     // Use program
-    mShaderManager->ActivateProgram<Render::ProgramType::Land>();
+    mShaderManager->ActivateProgram<ProgramType::Land>();
 
     // Bind texture
     glBindTexture(
         GL_TEXTURE_2D,
         mTextureRenderManager->GetOpenGLHandle(TextureGroupType::Land, 0));
+    CheckOpenGLError();
 
     // Bind VBO
     glBindBuffer(GL_ARRAY_BUFFER, *mLandVBO);
+    CheckOpenGLError();
 
     // Describe shared attribute indices
-    glVertexAttribPointer(static_cast<GLuint>(Render::VertexAttributeType::SharedPosition), 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedPosition), 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    CheckOpenGLError();
 
     // Enable vertex attribute 0
     glEnableVertexAttribArray(0);
@@ -501,18 +537,21 @@ void RenderContext::RenderLand()
 void RenderContext::RenderWater()
 {
     // Use program
-    mShaderManager->ActivateProgram<Render::ProgramType::Water>();
+    mShaderManager->ActivateProgram<ProgramType::Water>();
 
     // Bind texture
     glBindTexture(
         GL_TEXTURE_2D, 
         mTextureRenderManager->GetOpenGLHandle(TextureGroupType::Water, 0));
+    CheckOpenGLError();
 
     // Bind VBO
     glBindBuffer(GL_ARRAY_BUFFER, *mWaterVBO);
+    CheckOpenGLError();
 
     // Describe shared attribute indices
-    glVertexAttribPointer(static_cast<GLuint>(Render::VertexAttributeType::Shared1XFloat), 1, GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void*)(2 * sizeof(float)));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Shared1XFloat), 1, GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void*)(2 * sizeof(float)));
+    CheckOpenGLError();
 
     // Disable vertex attribute 0, as we don't use it
     glDisableVertexAttribArray(0);
@@ -523,6 +562,9 @@ void RenderContext::RenderWater()
 
 void RenderContext::RenderEnd()
 {
+    // Communicate end to child contextes
+    mTextRenderContext->RenderEnd();
+
     glFlush();
 }
 
@@ -550,20 +592,20 @@ void RenderContext::UpdateOrthoMatrix()
 
     // Set parameters in all programs
 
-    mShaderManager->ActivateProgram<Render::ProgramType::Land>();
-    mShaderManager->SetProgramParameter<Render::ProgramType::Land, Render::ProgramParameterType::OrthoMatrix>(
+    mShaderManager->ActivateProgram<ProgramType::Land>();
+    mShaderManager->SetProgramParameter<ProgramType::Land, ProgramParameterType::OrthoMatrix>(
         mOrthoMatrix);
 
-    mShaderManager->ActivateProgram<Render::ProgramType::Water>();
-    mShaderManager->SetProgramParameter<Render::ProgramType::Water, Render::ProgramParameterType::OrthoMatrix>(
+    mShaderManager->ActivateProgram<ProgramType::Water>();
+    mShaderManager->SetProgramParameter<ProgramType::Water, ProgramParameterType::OrthoMatrix>(
         mOrthoMatrix);
 
-    mShaderManager->ActivateProgram<Render::ProgramType::MatteWater>();
-    mShaderManager->SetProgramParameter<Render::ProgramType::MatteWater, Render::ProgramParameterType::OrthoMatrix>(
+    mShaderManager->ActivateProgram<ProgramType::MatteWater>();
+    mShaderManager->SetProgramParameter<ProgramType::MatteWater, ProgramParameterType::OrthoMatrix>(
         mOrthoMatrix);
 
-    mShaderManager->ActivateProgram<Render::ProgramType::Matte>();
-    mShaderManager->SetProgramParameter<Render::ProgramType::Matte, Render::ProgramParameterType::OrthoMatrix>(
+    mShaderManager->ActivateProgram<ProgramType::Matte>();
+    mShaderManager->SetProgramParameter<ProgramType::Matte, ProgramParameterType::OrthoMatrix>(
         mOrthoMatrix);
 }
 
@@ -594,16 +636,16 @@ void RenderContext::UpdateAmbientLightIntensity()
 
     // Set parameters in all programs
 
-    mShaderManager->ActivateProgram<Render::ProgramType::Clouds>();
-    mShaderManager->SetProgramParameter<Render::ProgramType::Clouds, Render::ProgramParameterType::AmbientLightIntensity>(
+    mShaderManager->ActivateProgram<ProgramType::Clouds>();
+    mShaderManager->SetProgramParameter<ProgramType::Clouds, ProgramParameterType::AmbientLightIntensity>(
         mAmbientLightIntensity);
 
-    mShaderManager->ActivateProgram<Render::ProgramType::Land>();
-    mShaderManager->SetProgramParameter<Render::ProgramType::Land, Render::ProgramParameterType::AmbientLightIntensity>(
+    mShaderManager->ActivateProgram<ProgramType::Land>();
+    mShaderManager->SetProgramParameter<ProgramType::Land, ProgramParameterType::AmbientLightIntensity>(
         mAmbientLightIntensity);
 
-    mShaderManager->ActivateProgram<Render::ProgramType::Water>();
-    mShaderManager->SetProgramParameter<Render::ProgramType::Water, Render::ProgramParameterType::AmbientLightIntensity>(
+    mShaderManager->ActivateProgram<ProgramType::Water>();
+    mShaderManager->SetProgramParameter<ProgramType::Water, ProgramParameterType::AmbientLightIntensity>(
         mAmbientLightIntensity);
 }
 
@@ -611,8 +653,8 @@ void RenderContext::UpdateSeaWaterTransparency()
 {
     // Set parameter in all programs
 
-    mShaderManager->ActivateProgram<Render::ProgramType::Water>();
-    mShaderManager->SetProgramParameter<Render::ProgramType::Water, Render::ProgramParameterType::WaterTransparency>(
+    mShaderManager->ActivateProgram<ProgramType::Water>();
+    mShaderManager->SetProgramParameter<ProgramType::Water, ProgramParameterType::WaterTransparency>(
         mSeaWaterTransparency);
 }
 
@@ -654,4 +696,6 @@ void RenderContext::UpdateShowStressedSprings()
     {
         s->UpdateShowStressedSprings(mShowStressedSprings);
     }
+}
+
 }

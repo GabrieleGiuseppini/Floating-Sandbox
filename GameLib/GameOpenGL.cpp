@@ -5,10 +5,10 @@
 ***************************************************************************************/
 #include "GameOpenGL.h"
 
-#include "GameException.h"
-
 #include <algorithm>
 #include <memory>
+
+namespace Render {
 
 int GameOpenGL::MaxVertexAttributes = 0;
 
@@ -122,7 +122,7 @@ void GameOpenGL::UploadMipmappedTexture(ImageData baseTexture)
     GLenum glError = glGetError();
     if (GL_NO_ERROR != glError)
     {
-        throw GameException("Error uploading ship texture onto GPU: " + std::to_string(glError));
+        throw GameException("Error uploading texture onto GPU: " + std::to_string(glError));
     }
 
 
@@ -203,11 +203,13 @@ void GameOpenGL::UploadMipmappedTexture(ImageData baseTexture)
         glError = glGetError();
         if (GL_NO_ERROR != glError)
         {
-            throw GameException("Error uploading minified ship texture onto GPU: " + std::to_string(glError));
+            throw GameException("Error uploading minified texture onto GPU: " + std::to_string(glError));
         }
 
         // Swap buffer
         readImageSize = ImageSize(width, height);
         readBuffer = std::move(writeBuffer);
     }
+}
+
 }

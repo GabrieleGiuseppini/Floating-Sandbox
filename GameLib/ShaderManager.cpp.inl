@@ -10,6 +10,8 @@
 
 #include <regex>
 
+namespace Render {
+
 static const std::string StaticParametersFilenameStem = "static_parameters";
 
 template<typename Traits>
@@ -73,7 +75,7 @@ void ShaderManager<Traits>::CompileShader(
     try
     {
         // Get the program type
-        Traits::ProgramType const program = Traits::StrToProgramType(shaderFilepath.stem().string());
+        Traits::ProgramType const program = Traits::ShaderFilenameToProgramType(shaderFilepath.stem().string());
         std::string const programName = Traits::ProgramTypeToStr(program);
 
         // Make sure we have room for it
@@ -91,6 +93,7 @@ void ShaderManager<Traits>::CompileShader(
 
         // Create program
         mPrograms[programIndex].OpenGLHandle = glCreateProgram();
+        CheckOpenGLError();
 
 
         //
@@ -134,6 +137,7 @@ void ShaderManager<Traits>::CompileShader(
 
             // Enable this attribute
             glEnableVertexAttribArray(static_cast<GLuint>(vertexAttribute));
+            CheckOpenGLError();
         }
 
 
@@ -370,4 +374,6 @@ std::set<typename Traits::VertexAttributeType> ShaderManager<Traits>::ExtractVer
     }
 
     return attributeNames;
+}
+
 }

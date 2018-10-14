@@ -12,6 +12,8 @@
 #include <map>
 #include <regex>
 
+namespace Render {
+
 TextureGroupType StrToTextureGroupType(std::string const & str)
 {
     if (str == "Cloud")
@@ -354,4 +356,6 @@ TextureDatabase TextureDatabase::Load(
     progressCallback(1.0f, "Loading textures...");
 
     return TextureDatabase(std::move(textureGroups));
+}
+
 }

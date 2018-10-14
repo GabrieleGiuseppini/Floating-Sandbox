@@ -90,17 +90,17 @@ public:
 
     void Render(        
         GameParameters const & gameParameters,
-        RenderContext & renderContext) const;
+        Render::RenderContext & renderContext) const;
 
 private:
 
     void UpdateClouds(GameParameters const & gameParameters);
 
-    void RenderClouds(RenderContext & renderContext) const;
+    void RenderClouds(Render::RenderContext & renderContext) const;
 
     void UploadLandAndWater(
         GameParameters const & gameParameters,
-        RenderContext & renderContext) const;
+        Render::RenderContext & renderContext) const;
 
 private:
 

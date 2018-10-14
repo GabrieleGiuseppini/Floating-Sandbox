@@ -24,4 +24,12 @@ public:
         , Data(std::move(data))
     {
     }
+
+    ImageData(
+        ImageSize size,
+        std::unique_ptr<unsigned char const[]> data)
+        : Size(size)
+        , Data(std::move(data))
+    {
+    }
 };

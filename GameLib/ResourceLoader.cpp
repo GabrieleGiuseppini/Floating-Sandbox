@@ -15,6 +15,7 @@
 #include <IL/il.h>
 #include <IL/ilu.h>
 
+#include <algorithm>
 #include <cstring>
 #include <regex>
 
@@ -111,11 +112,66 @@ std::filesystem::path ResourceLoader::GetDefaultShipDefinitionFilePath() const
 // Textures
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-TextureDatabase ResourceLoader::LoadTextureDatabase(ProgressCallback const & progressCallback) const
+Render::TextureDatabase ResourceLoader::LoadTextureDatabase(ProgressCallback const & progressCallback) const
 {
-    return TextureDatabase::Load(
+    return Render::TextureDatabase::Load(
         std::filesystem::path("Data") / "Textures",
         progressCallback);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// Fonts
+////////////////////////////////////////////////////////////////////////////////////////////
+
+std::vector<Render::Font> ResourceLoader::LoadFonts(ProgressCallback const & progressCallback) const
+{
+    //
+    // Get all font file paths
+    //
+
+    std::vector<std::filesystem::path> filepaths;
+
+    for (auto const & entryIt : std::filesystem::directory_iterator(std::filesystem::path("Data") / "Fonts"))
+    {
+        if (std::filesystem::is_regular_file(entryIt.path())
+            && entryIt.path().extension().string() == ".bff")
+        {
+            filepaths.push_back(entryIt.path());
+        }
+    }
+
+
+    //
+    // Sort paths
+    //
+
+    std::sort(
+        filepaths.begin(),
+        filepaths.end(),
+        [](auto const & fp1, auto const & fp2)
+        {
+            return fp1 < fp2;
+        });
+
+
+    //
+    // Load fonts
+    //
+
+    std::vector<Render::Font> fonts;
+
+    for (auto const & filepath : filepaths)
+    {
+        fonts.emplace_back(
+            std::move(
+                Render::Font::Load(filepath)));
+
+        progressCallback(
+            static_cast<float>(fonts.size()) / static_cast<float>(filepaths.size()),
+            "Loading fonts...");
+    }
+
+    return fonts;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////

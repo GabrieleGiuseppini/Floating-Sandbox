@@ -99,7 +99,7 @@ void Bombs::DetonateRCBombs()
 
 void Bombs::Upload(
     int shipId,
-    RenderContext & renderContext) const
+    Render::RenderContext & renderContext) const
 {
     for (auto & bomb : mCurrentBombs)
     {

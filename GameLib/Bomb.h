@@ -63,7 +63,7 @@ public:
      */
     virtual void Upload(
         int shipId,
-        RenderContext & renderContext) const = 0;
+        Render::RenderContext & renderContext) const = 0;
 
     /*
      * If the bomb is attached, saves its current position and detaches itself from the Springs container;

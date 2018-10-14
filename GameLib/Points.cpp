@@ -110,7 +110,7 @@ void Points::Breach(
 
 void Points::Upload(
     int shipId,
-    RenderContext & renderContext) const
+    Render::RenderContext & renderContext) const
 {
     // Upload immutable attributes, if we haven't uploaded them yet
     if (!mAreImmutableRenderAttributesUploaded)
@@ -133,7 +133,7 @@ void Points::Upload(
 
 void Points::UploadElements(
     int shipId,
-    RenderContext & renderContext) const
+    Render::RenderContext & renderContext) const
 {
     for (ElementIndex i : *this)
     {
@@ -149,7 +149,7 @@ void Points::UploadElements(
 
 void Points::UploadVectors(
     int shipId,
-    RenderContext & renderContext) const
+    Render::RenderContext & renderContext) const
 {
     static constexpr vec4f VectorColor(0.5f, 0.1f, 0.f, 1.0f);
 

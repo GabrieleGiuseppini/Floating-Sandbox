@@ -6,7 +6,6 @@
 #pragma once
 
 #include "Physics.h"
-#include "TextureTypes.h"
 
 #include <chrono>
 #include <cstdint>
@@ -56,7 +55,7 @@ public:
 
     virtual void Upload(
         int shipId,
-        RenderContext & renderContext) const override;
+        Render::RenderContext & renderContext) const override;
 
     void Detonate();
 

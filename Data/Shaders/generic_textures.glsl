@@ -8,7 +8,7 @@ in vec2 inGenericTextureCoordinates;
 in float inGenericTextureAmbientLightSensitivity;
 
 // Outputs
-out vec2 vertexTextureCoords;
+out vec2 vertexTextureCoordinates;
 out float vertexAmbientLightSensitivity;
 
 // Params
@@ -16,7 +16,7 @@ uniform mat4 paramOrthoMatrix;
 
 void main()
 {
-    vertexTextureCoords = inGenericTextureCoordinates; 
+    vertexTextureCoordinates = inGenericTextureCoordinates; 
     vertexAmbientLightSensitivity = inGenericTextureAmbientLightSensitivity;
     gl_Position = paramOrthoMatrix * vec4(inGenericTexturePosition.xy, -1.0, 1.0);
 }
@@ -26,7 +26,7 @@ void main()
 #version 130
 
 // Inputs from previous shader
-in vec2 vertexTextureCoords;
+in vec2 vertexTextureCoordinates;
 in float vertexAmbientLightSensitivity;
 
 // The texture
@@ -37,7 +37,7 @@ uniform float paramAmbientLightIntensity;
 
 void main()
 {
-    vec4 textureColor = texture2D(inputTexture, vertexTextureCoords);
+    vec4 textureColor = texture2D(inputTexture, vertexTextureCoordinates);
 
     float ambientLightIntensity = 
 	(1.0 - vertexAmbientLightSensitivity)

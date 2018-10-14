@@ -51,6 +51,7 @@ const long ID_OPEN_SETTINGS_WINDOW_MENUITEM = wxNewId();
 const long ID_OPEN_LOG_WINDOW_MENUITEM = wxNewId();
 const long ID_SHOW_EVENT_TICKER_MENUITEM = wxNewId();
 const long ID_SHOW_PROBE_PANEL_MENUITEM = wxNewId();
+const long ID_SHOW_STATUS_TEXT_MENUITEM = wxNewId();
 const long ID_FULL_SCREEN_MENUITEM = wxNewId();
 const long ID_NORMAL_SCREEN_MENUITEM = wxNewId();
 const long ID_MUTE_MENUITEM = wxNewId();
@@ -63,6 +64,7 @@ const long ID_GAME_TIMER = wxNewId();
 const long ID_LOW_FREQUENCY_TIMER = wxNewId();
 
 static constexpr bool StartInFullScreenMode = true;
+static constexpr bool StartWithStatusText = true;
 static constexpr int CursorStep = 30;
 static constexpr int PowerBarThickness = 2;
 
@@ -274,6 +276,13 @@ MainFrame::MainFrame(wxApp * mainApp)
     mShowProbePanelMenuItem->Check(false);
     Connect(ID_SHOW_PROBE_PANEL_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnShowProbePanelMenuItemSelected);
 
+    mShowStatusTextMenuItem = new wxMenuItem(optionsMenu, ID_SHOW_STATUS_TEXT_MENUITEM, _("Show Status Text\tCtrl+X"), wxEmptyString, wxITEM_CHECK);
+    optionsMenu->Append(mShowStatusTextMenuItem);
+    mShowStatusTextMenuItem->Check(StartWithStatusText);
+    Connect(ID_SHOW_STATUS_TEXT_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnShowStatusTextMenuItemSelected);
+
+    optionsMenu->Append(new wxMenuItem(optionsMenu, wxID_SEPARATOR));
+
     mFullScreenMenuItem = new wxMenuItem(optionsMenu, ID_FULL_SCREEN_MENUITEM, _("Full Screen\tF11"), wxEmptyString, wxITEM_NORMAL);
     optionsMenu->Append(mFullScreenMenuItem);
     Connect(ID_FULL_SCREEN_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnFullScreenMenuItemSelected);
@@ -408,6 +417,9 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
     this->mMainApp->Yield();
 
+    // Initialize game controller
+    mGameController->SetStatusTextEnabled(StartWithStatusText);
+
 
     //
     // Create Sound controller
@@ -527,6 +539,8 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     // Show ourselves now
     //
 
+    UpdateFrameTitle();
+
     this->Show(true);
 
     if (StartInFullScreenMode)
@@ -639,10 +653,10 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
 void MainFrame::OnLowFrequencyTimerTrigger(wxTimerEvent & /*event*/)
 {
     //
-    // Update fps in title
+    // Update status text
     //
 
-    SetFrameTitle();
+    UpdateStatusText();
 
 
     //
@@ -925,6 +939,12 @@ void MainFrame::OnShowProbePanelMenuItemSelected(wxCommandEvent & /*event*/)
     mMainFrameSizer->Layout();
 }
 
+void MainFrame::OnShowStatusTextMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mGameController);
+    mGameController->SetStatusTextEnabled(mShowStatusTextMenuItem->IsChecked());
+}
+
 void MainFrame::OnFullScreenMenuItemSelected(wxCommandEvent & /*event*/)
 {
     mFullScreenMenuItem->Enable(false);
@@ -981,7 +1001,28 @@ void MainFrame::ResetState()
     mRCBombsDetonateMenuItem->Enable(false);
 }
 
-void MainFrame::SetFrameTitle()
+void MainFrame::UpdateFrameTitle()
+{
+    //
+    // Build title
+    //
+
+    std::ostringstream ss;
+
+    ss.fill('0');
+
+    ss << GetVersionInfo(VersionFormat::Long);
+
+    if (!mCurrentShipNames.empty())
+    {
+        ss << " - "
+            << Utils::Join(mCurrentShipNames, " + ");
+    }
+
+    SetTitle(ss.str());
+}
+
+void MainFrame::UpdateStatusText()
 {
     //
     // Update fps and total (game) duration
@@ -992,34 +1033,17 @@ void MainFrame::SetFrameTitle()
     auto totalElapsedReal = std::chrono::duration<float>(nowReal - mStatsOriginTimestampReal);
     auto lastElapsedReal = std::chrono::duration<float>(nowReal - mStatsLastTimestampReal);
 
-
     float totalFps = static_cast<float>(mTotalFrameCount) / totalElapsedReal.count();
     float lastFps = static_cast<float>(mLastFrameCount) / lastElapsedReal.count();
 
-    auto totalElapsedGame = std::chrono::duration<float>(GameWallClock::GetInstance().Now() - mStatsOriginTimestampGame);
-    int totalElapsedSecondsGame = static_cast<int>(roundf(totalElapsedGame.count()));
-    int minutesGame = totalElapsedSecondsGame / 60;
-    int secondsGame = totalElapsedSecondsGame - (minutesGame * 60);
+    mGameController->SetStatusText(
+        lastFps,
+        totalFps,
+        std::chrono::duration<float>(GameWallClock::GetInstance().Now() - mStatsOriginTimestampGame));
 
     //
-    // Build title
+    // Reset stats
     //
-
-    std::ostringstream ss;
-
-    ss.fill('0');
-
-    ss << GetVersionInfo(VersionFormat::Long)
-        << "  FPS: " << std::fixed << std::setprecision(2) << totalFps << " (" << lastFps << ")"
-        << " " << std::setw(2) << minutesGame << ":" << std::setw(2) << secondsGame;
-
-    if (!mCurrentShipNames.empty())
-    {
-        ss << " - "
-            << Utils::Join(mCurrentShipNames, " + ");
-    }
-
-    SetTitle(ss.str());
 
     mLastFrameCount = 0u;
     mStatsLastTimestampReal = nowReal;

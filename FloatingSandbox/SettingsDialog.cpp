@@ -284,7 +284,7 @@ void SettingsDialog::ApplySettings()
         mSeaDepthSlider->GetValue());
 
     mGameController->SetNumberOfClouds(
-        mNumberOfCloudsSlider->GetValue());
+        static_cast<size_t>(mNumberOfCloudsSlider->GetValue()));
 
     mGameController->SetWindSpeed(
         mWindSpeedSlider->GetValue());
@@ -561,15 +561,15 @@ void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
         SliderWidth,
         SliderHeight,
         "Number of Clouds",
-        mGameController->GetNumberOfClouds(),
+        static_cast<float>(mGameController->GetNumberOfClouds()),
         [this](float /*value*/)
         {
             // Remember we're dirty now
             this->mApplyButton->Enable(true);
         },
         std::make_unique<LinearSliderCore>(
-            mGameController->GetMinNumberOfClouds(),
-            mGameController->GetMaxNumberOfClouds()));
+            static_cast<float>(mGameController->GetMinNumberOfClouds()),
+            static_cast<float>(mGameController->GetMaxNumberOfClouds())));
 
     controlsSizer->Add(mNumberOfCloudsSlider.get(), 1, wxALL, SliderBorder);
 
@@ -809,7 +809,7 @@ void SettingsDialog::ReadSettings()
     
     mSeaDepthSlider->SetValue(mGameController->GetSeaDepth());
 
-    mNumberOfCloudsSlider->SetValue(mGameController->GetNumberOfClouds());
+    mNumberOfCloudsSlider->SetValue(static_cast<float>(mGameController->GetNumberOfClouds()));
 
     mWindSpeedSlider->SetValue(mGameController->GetWindSpeed());
 

@@ -137,7 +137,7 @@ bool RCBomb::Update(
 
 void RCBomb::Upload(
     int shipId,
-    RenderContext & renderContext) const
+    Render::RenderContext & renderContext) const
 {
     switch (mState)
     {

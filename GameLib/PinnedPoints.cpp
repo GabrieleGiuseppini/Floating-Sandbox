@@ -58,7 +58,7 @@ void PinnedPoints::OnSpringDestroyed(ElementIndex springElementIndex)
 
 void PinnedPoints::Upload(
     int shipId,
-    RenderContext & renderContext) const
+    Render::RenderContext & renderContext) const
 {
     for (auto pinnedPointIndex : mCurrentPinnedPoints)
     {

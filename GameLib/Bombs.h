@@ -71,9 +71,13 @@ public:
 
     void DetonateRCBombs();
 
+    //
+    // Render
+    //
+
     void Upload(
         int shipId,
-        RenderContext & renderContext) const;
+        Render::RenderContext & renderContext) const;
 
 private:
 

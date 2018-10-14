@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "Font.h"
 #include "ImageData.h"
 #include "MaterialDatabase.h"
 #include "ProgressCallback.h"
@@ -39,7 +40,14 @@ public:
     // Textures
     //
 
-    TextureDatabase LoadTextureDatabase(ProgressCallback const & progressCallback) const;
+    Render::TextureDatabase LoadTextureDatabase(ProgressCallback const & progressCallback) const;
+
+
+    //
+    // Fonts
+    //
+
+    std::vector<Render::Font> LoadFonts(ProgressCallback const & progressCallback) const;
 
 
     //

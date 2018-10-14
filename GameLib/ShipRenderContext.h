@@ -12,7 +12,6 @@
 #include "ShaderManager.h"
 #include "SysSpecifics.h"
 #include "TextureRenderManager.h"
-#include "TextureTypes.h"
 #include "Vectors.h"
 
 #include <array>
@@ -22,6 +21,8 @@
 #include <string>
 #include <vector>
 
+namespace Render {
+
 class ShipRenderContext
 {
 public:
@@ -29,7 +30,7 @@ public:
     ShipRenderContext(
         size_t pointCount,
         std::optional<ImageData> texture,
-        ShaderManager<Render::ShaderManagerTraits> & shaderManager,
+        ShaderManager<ShaderManagerTraits> & shaderManager,
         TextureRenderManager const & textureRenderManager,
         float const(&orthoMatrix)[4][4],
         float visibleWorldHeight,
@@ -275,7 +276,7 @@ private:
 
 private:
 
-    ShaderManager<Render::ShaderManagerTraits> & mShaderManager;
+    ShaderManager<ShaderManagerTraits> & mShaderManager;
 
 
     //
@@ -435,3 +436,5 @@ private:
     GameOpenGLVBO mVectorArrowPointPositionVBO;
     vec4f mVectorArrowColor;
 };
+
+}

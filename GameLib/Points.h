@@ -135,17 +135,21 @@ public:
         ElementIndex pointElementIndex,
         Triangles & triangles);        
 
+    //
+    // Render
+    //
+
     void Upload(
         int shipId,
-        RenderContext & renderContext) const;
+        Render::RenderContext & renderContext) const;
 
     void UploadElements(
         int shipId,
-        RenderContext & renderContext) const;
+        Render::RenderContext & renderContext) const;
 
     void UploadVectors(
         int shipId,
-        RenderContext & renderContext) const;
+        Render::RenderContext & renderContext) const;
 
 public:
 

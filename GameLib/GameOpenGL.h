@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GameException.h"
 #include "ImageData.h"
 #include "TextureDatabase.h"
 
@@ -19,6 +20,8 @@
 #include <cstdio>
 #include <stdexcept>
 #include <string>
+
+namespace Render {
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Types
@@ -180,3 +183,50 @@ private:
 
     static int MaxVertexAttributes;
 };
+
+inline void _CheckOpenGLError(char const * file, int line)
+{
+    GLenum errorCode = glGetError();
+    if (errorCode != GL_NO_ERROR)
+    {
+        std::string errorCodeString;
+        switch (errorCode)
+        {
+            case GL_INVALID_ENUM:                  
+            {
+                errorCodeString = "INVALID_ENUM";
+                break;
+            }
+
+            case GL_INVALID_VALUE:
+            {
+                errorCodeString = "INVALID_VALUE";
+                break;
+            }
+
+            case GL_INVALID_OPERATION:
+            {
+                errorCodeString = "INVALID_OPERATION";
+                break;
+            }
+
+            case GL_OUT_OF_MEMORY:
+            {
+                errorCodeString = "OUT_OF_MEMORY";
+                break;
+            }
+
+            default:
+            {
+                errorCodeString = "Other (" + std::to_string(errorCode) + ")";
+                break;
+            }
+        }
+
+        throw GameException("OpenGL Error \"" + errorCodeString + "\" at file " + std::string(file) + ", line " + std::to_string(line));
+    }
+}
+
+#define CheckOpenGLError() _CheckOpenGLError(__FILE__, __LINE__) 
+
+}

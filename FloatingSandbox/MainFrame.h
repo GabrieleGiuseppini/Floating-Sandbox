@@ -62,6 +62,7 @@ private:
     wxMenuItem * mRCBombsDetonateMenuItem;
     wxMenuItem * mShowEventTickerMenuItem;
     wxMenuItem * mShowProbePanelMenuItem;
+    wxMenuItem * mShowStatusTextMenuItem;
     wxMenuItem * mFullScreenMenuItem;
     wxMenuItem * mNormalScreenMenuItem;
     wxMenuItem * mMuteMenuItem;
@@ -132,6 +133,7 @@ private:
     void OnOpenLogWindowMenuItemSelected(wxCommandEvent& event);
     void OnShowEventTickerMenuItemSelected(wxCommandEvent& event);
     void OnShowProbePanelMenuItemSelected(wxCommandEvent& event);
+    void OnShowStatusTextMenuItemSelected(wxCommandEvent& event);
     void OnFullScreenMenuItemSelected(wxCommandEvent& event);
     void OnNormalScreenMenuItemSelected(wxCommandEvent& event);
     void OnMuteMenuItemSelected(wxCommandEvent& event);
@@ -145,6 +147,7 @@ private:
     virtual void OnGameReset() override
     {
         mCurrentShipNames.clear();
+        UpdateFrameTitle();
     }
 
     virtual void OnShipLoaded(
@@ -152,6 +155,7 @@ private:
         std::string const & name) override
     {
         mCurrentShipNames.push_back(name);
+        UpdateFrameTitle();
     }
 
     virtual void OnBombPlaced(
@@ -182,7 +186,8 @@ private:
 private:
 
     void ResetState();
-    void SetFrameTitle();
+    void UpdateFrameTitle();
+    void UpdateStatusText();
     bool IsPaused();
     void DoGameStep();
     void RenderGame();

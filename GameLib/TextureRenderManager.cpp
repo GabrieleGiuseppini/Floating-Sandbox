@@ -7,6 +7,8 @@
 
 #include "GameException.h"
 
+namespace Render {
+
 void TextureRenderManager::UploadGroup(
     TextureGroup const & group,
     ProgressCallback const & progressCallback)
@@ -109,4 +111,6 @@ void TextureRenderManager::UploadMipmappedGroup(
             frameSpec.Metadata, 
             openGLHandle);
     }
+}
+
 }

@@ -5,6 +5,9 @@
 ***************************************************************************************/
 #pragma once
 
+#include <cstdint>
+
+#pragma pack(push)
 struct ImageSize
 {
 public:
@@ -20,3 +23,4 @@ public:
     {
     }
 };
+#pragma pack(pop)

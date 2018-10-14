@@ -90,9 +90,13 @@ public:
 
     void Destroy(ElementIndex triangleElementIndex);
 
+    //
+    // Render
+    //
+
     void UploadElements(
         int shipId,
-        RenderContext & renderContext,
+        Render::RenderContext & renderContext,
         Points const & points) const;
 
 public:

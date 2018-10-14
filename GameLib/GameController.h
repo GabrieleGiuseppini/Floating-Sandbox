@@ -13,6 +13,7 @@
 #include "ProgressCallback.h"
 #include "RenderContext.h"
 #include "ResourceLoader.h"
+#include "TextLayer.h"
 #include "Vectors.h"
 
 #include <cassert>
@@ -52,6 +53,12 @@ public:
     //
     // Interactions
     //
+
+    void SetStatusTextEnabled(bool isEnabled);
+    void SetStatusText(
+        float immediateFps,
+        float averageFps,
+        std::chrono::duration<float> elapsedGameSeconds);
 
     void DestroyAt(vec2f const & screenCoordinates, float radiusMultiplier);
     void SawThrough(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates);
@@ -211,8 +218,8 @@ public:
 
     float GetWaterLevelOfDetail() const { return mRenderContext->GetWaterLevelOfDetail(); }
     void SetWaterLevelOfDetail(float value) { mRenderContext->SetWaterLevelOfDetail(value); }
-    float GetMinWaterLevelOfDetail() const { return RenderContext::MinWaterLevelOfDetail; }
-    float GetMaxWaterLevelOfDetail() const { return RenderContext::MaxWaterLevelOfDetail; }
+    float GetMinWaterLevelOfDetail() const { return Render::RenderContext::MinWaterLevelOfDetail; }
+    float GetMaxWaterLevelOfDetail() const { return Render::RenderContext::MaxWaterLevelOfDetail; }
 
     ShipRenderMode GetShipRenderMode() const { return mRenderContext->GetShipRenderMode(); }
     void SetShipRenderMode(ShipRenderMode shipRenderMode) { mRenderContext->SetShipRenderMode(shipRenderMode); }
@@ -226,15 +233,17 @@ public:
 private:
 
     GameController(
-        std::unique_ptr<RenderContext> renderContext,
+        std::unique_ptr<Render::RenderContext> renderContext,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         std::shared_ptr<ResourceLoader> resourceLoader,
+        std::shared_ptr<TextLayer> textLayer,
         MaterialDatabase && materials)
         : mGameParameters()
         , mLastShipLoadedFilePath()
         , mRenderContext(std::move(renderContext))
         , mGameEventDispatcher(std::move(gameEventDispatcher))
         , mResourceLoader(std::move(resourceLoader))
+        , mTextLayer(std::move(textLayer))
         , mWorld(new Physics::World(
             mGameEventDispatcher,
             mGameParameters))
@@ -274,9 +283,10 @@ private:
     // The doers 
     //
 
-    std::unique_ptr<RenderContext> mRenderContext;
+    std::unique_ptr<Render::RenderContext> mRenderContext;
     std::shared_ptr<GameEventDispatcher> mGameEventDispatcher;
     std::shared_ptr<ResourceLoader> mResourceLoader;
+    std::shared_ptr<TextLayer> mTextLayer;
 
     //
     // The world

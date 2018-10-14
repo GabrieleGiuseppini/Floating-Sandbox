@@ -12,7 +12,7 @@
 
 namespace Render {
 
-ProgramType StrToProgramType(std::string const & str)
+ProgramType ShaderFilenameToProgramType(std::string const & str)
 {
     std::string lstr = Utils::ToLower(str);
     if (lstr == "clouds")
@@ -35,6 +35,8 @@ ProgramType StrToProgramType(std::string const & str)
         return ProgramType::ShipTrianglesColor;
     else if (lstr == "ship_triangles_texture")
         return ProgramType::ShipTrianglesTexture;
+    else if (lstr == "text_ndc")
+        return ProgramType::TextNDC;
     else if (lstr == "water")
         return ProgramType::Water;
     else
@@ -65,6 +67,8 @@ std::string ProgramTypeToStr(ProgramType program)
         return "ShipTrianglesColor";
     case ProgramType::ShipTrianglesTexture:
         return "ShipTrianglesTexture";
+    case ProgramType::TextNDC:
+        return "TextNDC";
     case ProgramType::Water:
         return "Water";
     default:

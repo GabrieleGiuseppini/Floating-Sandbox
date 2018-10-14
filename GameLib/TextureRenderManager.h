@@ -6,14 +6,17 @@
 #pragma once
 
 #include "GameOpenGL.h"
+#include "GameTypes.h"
 #include "ProgressCallback.h"
+#include "RenderCore.h"
 #include "TextureDatabase.h"
-#include "TextureTypes.h"
 #include "Vectors.h"
 
 #include <cassert>
 #include <optional>
 #include <vector>
+
+namespace Render {
 
 class TextureRenderManager
 {
@@ -141,7 +144,7 @@ public:
         assert(static_cast<size_t>(group) < mFrameData.size());
         assert(frameIndex < mFrameData[static_cast<size_t>(group)].size());
 
-        return mFrameData[static_cast<size_t>(group)][frameIndex].OpenGLHandle;
+        return *(mFrameData[static_cast<size_t>(group)][frameIndex].OpenGLHandle);
     }
 
 private:
@@ -149,7 +152,7 @@ private:
     struct FrameData
     {
         TextureFrameMetadata Metadata;
-        GLuint OpenGLHandle;
+        GameOpenGLTexture OpenGLHandle;
 
         FrameData(
             TextureFrameMetadata const & metadata,
@@ -161,3 +164,5 @@ private:
 
     std::vector<std::vector<FrameData>> mFrameData;
 };
+
+}

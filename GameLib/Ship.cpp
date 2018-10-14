@@ -282,7 +282,7 @@ void Ship::Update(
 
 void Ship::Render(
     GameParameters const & /*gameParameters*/,
-    RenderContext & renderContext) const
+    Render::RenderContext & renderContext) const
 {
     //
     // Initialize render

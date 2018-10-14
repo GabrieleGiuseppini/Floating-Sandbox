@@ -16,8 +16,6 @@ set  (GAME_SOURCES
 	GameEventDispatcher.h
 	GameException.h
 	GameMath.h
-	GameOpenGL.cpp
-	GameOpenGL.h
 	GameParameters.cpp
 	GameParameters.h	
 	GameRandomEngine.h
@@ -34,28 +32,17 @@ set  (GAME_SOURCES
 	MaterialDatabase.h
 	ObjectIdGenerator.h
 	ProgressCallback.h
-	RenderContext.cpp
-	RenderContext.h
-	RenderCore.cpp
-	RenderCore.h
 	ResourceLoader.cpp
 	ResourceLoader.h
 	RunningAverage.h
-	ShaderManager.cpp.inl
-	ShaderManager.h
 	ShipBuilder.cpp
 	ShipBuilder.h
 	ShipDefinition.h
 	ShipDefinitionFile.cpp
 	ShipDefinitionFile.h
-	ShipRenderContext.cpp
-	ShipRenderContext.h
 	SysSpecifics.h
-	TextureDatabase.cpp
-	TextureDatabase.h
-	TextureRenderManager.cpp
-	TextureRenderManager.h
-	TextureTypes.h
+	TextLayer.cpp
+	TextLayer.h
 	TupleKeys.h
 	Utils.cpp
 	Utils.h	
@@ -95,11 +82,32 @@ set  (PHYSICS_SOURCES
 	World.cpp
 	World.h)
 
+set  (RENDER_SOURCES
+	Font.cpp
+	Font.h
+	GameOpenGL.cpp
+	GameOpenGL.h
+	RenderContext.cpp
+	RenderContext.h
+	RenderCore.cpp
+	RenderCore.h
+	ShaderManager.cpp.inl
+	ShaderManager.h
+	ShipRenderContext.cpp
+	ShipRenderContext.h
+	TextRenderContext.cpp
+	TextRenderContext.h
+	TextureDatabase.cpp
+	TextureDatabase.h
+	TextureRenderManager.cpp
+	TextureRenderManager.h)
+
 source_group(" " FILES ${GAME_SOURCES})
 source_group("Geometry" FILES ${GEOMETRY_SOURCES})
 source_group("Physics" FILES ${PHYSICS_SOURCES})
+source_group("Render" FILES ${RENDER_SOURCES})
 
-add_library (GameLib ${GAME_SOURCES} ${GEOMETRY_SOURCES} ${PHYSICS_SOURCES})
+add_library (GameLib ${GAME_SOURCES} ${GEOMETRY_SOURCES} ${PHYSICS_SOURCES} ${RENDER_SOURCES})
 
 target_include_directories(GameLib PUBLIC ${LIBSIMDPP_INCLUDE_DIRS})
 target_include_directories(GameLib PUBLIC ${PICOJSON_INCLUDE_DIRS})

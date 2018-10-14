@@ -9,15 +9,17 @@
  * Object model for management of textures.
  */
 
+#include "GameTypes.h"
 #include "ImageSize.h"
 #include "ProgressCallback.h"
-#include "TextureTypes.h"
 
 #include <cassert>
 #include <cstdint>
 #include <filesystem>
 #include <memory>
 #include <vector>
+
+namespace Render {
 
 struct TextureFrameMetadata
 {
@@ -166,3 +168,5 @@ private:
 
     std::vector<TextureGroup> mGroups;
 };
+
+}

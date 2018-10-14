@@ -14,8 +14,8 @@
 #include "ShaderManager.h"
 #include "ShipRenderContext.h"
 #include "SysSpecifics.h"
+#include "TextRenderContext.h"
 #include "TextureRenderManager.h"
-#include "TextureTypes.h"
 #include "Vectors.h"
 
 #include <array>
@@ -23,6 +23,8 @@
 #include <memory>
 #include <string>
 #include <vector>
+
+namespace Render {
 
 class RenderContext
 {
@@ -98,6 +100,8 @@ public:
 
         glViewport(0, 0, mCanvasWidth, mCanvasHeight);
 
+        mTextRenderContext->UpdateCanvasSize(mCanvasWidth, mCanvasHeight);
+        
         UpdateVisibleWorldCoordinates();
         UpdateOrthoMatrix();
     }
@@ -578,6 +582,42 @@ public:
         mShips[shipId]->RenderEnd();
     }
 
+    //
+    // Text
+    //
+
+    RenderedTextHandle AddText(
+        std::string const & text,
+        TextPositionType position,
+        float alpha,
+        FontType font)
+    {
+        assert(!!mTextRenderContext);
+        return mTextRenderContext->AddText(
+            text,
+            position,
+            alpha,
+            font);
+    }
+
+    void UpdateText(
+        RenderedTextHandle textHandle,
+        std::string const & text,
+        float alpha)
+    {
+        assert(!!mTextRenderContext);
+        mTextRenderContext->UpdateText(
+            textHandle,
+            text,
+            alpha);
+    }
+
+    void ClearText(RenderedTextHandle textHandle)
+    {
+        assert(!!mTextRenderContext);
+        mTextRenderContext->ClearText(textHandle);
+    }
+
 
     //
     // Final
@@ -599,8 +639,9 @@ private:
 
 private:
 
-    std::unique_ptr<ShaderManager<Render::ShaderManagerTraits>> mShaderManager;
+    std::unique_ptr<ShaderManager<ShaderManagerTraits>> mShaderManager;
     std::unique_ptr<TextureRenderManager> mTextureRenderManager;
+    std::unique_ptr<TextRenderContext> mTextRenderContext;
 
     //
     // Clouds
@@ -719,3 +760,5 @@ private:
     float mVectorFieldLengthMultiplier;
     bool mShowStressedSprings;
 };
+
+}

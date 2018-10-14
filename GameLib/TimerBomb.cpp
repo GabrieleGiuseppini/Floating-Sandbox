@@ -242,7 +242,7 @@ void TimerBomb::OnNeighborhoodDisturbed()
 
 void TimerBomb::Upload(
     int shipId,
-    RenderContext & renderContext) const
+    Render::RenderContext & renderContext) const
 {
     switch (mState)
     {

@@ -165,15 +165,21 @@ public:
             points);
     }
 
+    //
+    // Render
+    //
+
     void UploadElements(
         int shipId,
-        RenderContext & renderContext,
+        Render::RenderContext & renderContext,
         Points const & points) const;
 
     void UploadStressedSpringElements(
         int shipId,
-        RenderContext & renderContext,
+        Render::RenderContext & renderContext,
         Points const & points) const;
+
+public:
 
     /*
      * Calculates the current strain - due to tension or compression - and acts depending on it.

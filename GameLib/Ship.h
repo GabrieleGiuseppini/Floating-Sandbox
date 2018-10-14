@@ -95,7 +95,7 @@ public:
 
     void Render(
         GameParameters const & gameParameters,
-        RenderContext & renderContext) const;
+        Render::RenderContext & renderContext) const;
 
 public:
 

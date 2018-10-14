@@ -19,7 +19,7 @@ std::unique_ptr<GameController> GameController::Create(
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher = std::make_shared<GameEventDispatcher>();
 
     // Create render context
-    std::unique_ptr<RenderContext> renderContext = std::make_unique<RenderContext>(
+    std::unique_ptr<Render::RenderContext> renderContext = std::make_unique<Render::RenderContext>(
         *resourceLoader,
         materials.GetRopeMaterial().RenderColour,
         [&progressCallback](float progress, std::string const & message)
@@ -27,6 +27,8 @@ std::unique_ptr<GameController> GameController::Create(
             progressCallback(0.9f * progress, message);
         });
 
+    // Create text layer
+    std::shared_ptr<TextLayer> textLayer = std::make_shared<TextLayer>();
 
     //
     // Create controller
@@ -37,6 +39,7 @@ std::unique_ptr<GameController> GameController::Create(
             std::move(renderContext),
             std::move(gameEventDispatcher),
             std::move(resourceLoader),
+            std::move(textLayer),
             std::move(materials)));
 }
 
@@ -85,6 +88,9 @@ void GameController::Update()
 	// Update world
 	assert(!!mWorld);
     mWorld->Update(mGameParameters);
+
+    // Update text layer
+    mTextLayer->Update();
 
     // Flush events
     mGameEventDispatcher->Flush();
@@ -135,11 +141,34 @@ void GameController::Render()
 
 	assert(!!mWorld);
     mWorld->Render(mGameParameters, *mRenderContext);
+
+    //
+    // Render text layer
+    //
+
+    assert(!!mTextLayer);
+    mTextLayer->Render(*mRenderContext);
 }
 
 /////////////////////////////////////////////////////////////
 // Interactions
 /////////////////////////////////////////////////////////////
+
+void GameController::SetStatusTextEnabled(bool isEnabled)
+{
+    mTextLayer->SetStatusTextEnabled(isEnabled);
+}
+
+void GameController::SetStatusText(
+    float immediateFps,
+    float averageFps,
+    std::chrono::duration<float> elapsedGameSeconds)
+{
+    mTextLayer->SetStatusText(
+        immediateFps,
+        averageFps,
+        elapsedGameSeconds);
+}
 
 void GameController::DestroyAt(
     vec2f const & screenCoordinates, 

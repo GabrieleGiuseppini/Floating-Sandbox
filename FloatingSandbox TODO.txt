@@ -58,9 +58,36 @@ Current perf
 = Fullscreen:
 	+ ESC to go out, menu option/F11 to fullscreen again
 	+ Add to changes
-	- Text at RenderContext
+	= Text at RenderContext
+		+ Do Render:: move
+		+ Render::Font
+			+ Loads itself like TextureDatabase, with IProgress
+			+ Owned by Render::TextRenderContext, created at cctor
+				+ Render::TextRenderContext owned by Render::RenderContext, which fw's all calls to it
+			+ Has method to calc pixel size given char* and size_t
+			+ Has method to append vertices given char* and size_t
+				+ Returns # of vertices appended
+		+ TextRenderContext
+		+ TextLayer:
+			+ Owned by GameController, which FW's to it
+			+ SetEnabled(bool)
+		+ Debug:
+			+ glCheckError macro at GameOpenGL.h
+				+ Make it inline
+				+ Use it at RenderContext and ShipRenderContext setup and rendering, instead of various checks
+		= Cleanup Font.h
+		- Change font
+		- See response to Toggle Status Text
+		- Update AboutBox and tell guy
+		- Check perf
+		- Perf optimizations:
+			- Precalcd stuff in FontMetadata, indexed by char
+
+- Check out that VS extension
 
 - Technical Debt:
+	- Delete shaders when not needed
+		- @ ShaderManager
 	= Textures are json files, with world size, offset, and lighting boolean
 		+ SEE MOLESKINE
 		+ Cleanup:
@@ -139,7 +166,11 @@ Current perf
 					  with optional <ship ID, connected component ID> pair (not set -> main UI, on top of everything), 
 					  and eat the fact that ships don't take ShipRenderContext anymore but whole RenderContext
 
-	- Move RenderContext et al into Render:: namespace and file group
+	+ Move RenderContext et al into Render:: namespace and file group
+			+ See if TextureTypes.h is still needed and whether it can be moved to GameTypes
+				+ After all, ShipRenderMode is in GameTypes
+				+ Polygon for now moves to that class that makes it
+
 	- Render: coalesce all render parameter changes into one, and update only at Render() for each that is dirty
 
 	- GameController rearc:
