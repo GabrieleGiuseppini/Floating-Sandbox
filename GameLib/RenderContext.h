@@ -284,10 +284,12 @@ public:
             TextureGroupType::Cloud,
             static_cast<TextureFrameIndex>(mCloudBufferSize % mCloudTextureCount));
 
+        float const aspectRatio = static_cast<float>(mCanvasWidth) / static_cast<float>(mCanvasHeight);
+
         float leftX = mappedX - scale * textureMetadata.AnchorWorldX;
         float rightX = mappedX + scale * (textureMetadata.WorldWidth - textureMetadata.AnchorWorldX);        
-        float topY = mappedY + scale * (textureMetadata.WorldHeight - textureMetadata.AnchorWorldY);
-        float bottomY = mappedY - scale * textureMetadata.AnchorWorldY;
+        float topY = mappedY + scale * (textureMetadata.WorldHeight - textureMetadata.AnchorWorldY) * aspectRatio;
+        float bottomY = mappedY - scale * textureMetadata.AnchorWorldY * aspectRatio;
         
         cloudElement->ndcXTopLeft = leftX;
         cloudElement->ndcYTopLeft = topY;
