@@ -14,6 +14,32 @@
 
 namespace Render {
 
+FontMetadata::FontMetadata(
+    ImageSize cellSize,
+    std::array<uint8_t, 256> glyphWidths,
+    int glyphsPerTextureRow,
+    float glyphTextureWidth,
+    float glyphTextureHeight)
+    : mCellSize(cellSize)
+    , mGlyphWidths(glyphWidths)
+    , mGlyphsPerTextureRow(glyphsPerTextureRow)
+    , mGlyphTextureWidth(glyphTextureWidth)
+    , mGlyphTextureHeight(glyphTextureHeight)
+{
+    // Pre-calculate texture origins (bottom-left)
+    for (int c = FontBaseCharacter; c < 256; ++c)
+    {
+        int const glyphTextureRow = (c - FontBaseCharacter) / mGlyphsPerTextureRow;
+        int const glyphTextureCol = (c - FontBaseCharacter) % mGlyphsPerTextureRow;
+
+        // Calculate texture coordinates of box
+        // Note: font texture is flipped vertically (top of character is at lower V coordinates)
+        float const textureULeft = mGlyphTextureWidth * glyphTextureCol;
+        float const textureVBottom = mGlyphTextureHeight * (glyphTextureRow + 1);
+        mGlyphTextureOrigins[c] = vec2f(textureULeft, textureVBottom);
+    }
+}
+
 Font Font::Load(std::filesystem::path const & filepath)
 {
     //

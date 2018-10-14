@@ -50,14 +50,9 @@ public:
 
         for (size_t c = 0; c < length; ++c)
         {
-            int const glyphTextureRow = (text[c] - FontBaseCharacter) / mGlyphsPerTextureRow;
-            int const glyphTextureCol = (text[c] - FontBaseCharacter) % mGlyphsPerTextureRow;
-
-            // Calculate texture coordinates of box
-            // Note: font texture is flipped vertically (top of character is at lower V coordinates)
-            float const textureULeft = mGlyphTextureWidth * glyphTextureCol;
+            float const textureULeft = mGlyphTextureOrigins[text[c]].x;
             float const textureURight = textureULeft + mGlyphTextureWidth;
-            float const textureVBottom = mGlyphTextureHeight * (glyphTextureRow + 1);
+            float const textureVBottom = mGlyphTextureOrigins[text[c]].y;
             float const textureVTop = textureVBottom - mGlyphTextureHeight;
 
             // Top-left
@@ -125,16 +120,11 @@ private:
         std::array<uint8_t, 256> glyphWidths,
         int glyphsPerTextureRow,
         float glyphTextureWidth,
-        float glyphTextureHeight)
-        : mCellSize(cellSize)
-        , mGlyphWidths(glyphWidths)
-        , mGlyphsPerTextureRow(glyphsPerTextureRow)
-        , mGlyphTextureWidth(glyphTextureWidth)
-        , mGlyphTextureHeight(glyphTextureHeight)
-    {}
+        float glyphTextureHeight);
 
     ImageSize mCellSize;
     std::array<uint8_t, 256> mGlyphWidths;
+    std::array<vec2f, 256> mGlyphTextureOrigins; // Bottom-left
     int mGlyphsPerTextureRow;
     float mGlyphTextureWidth;
     float mGlyphTextureHeight;

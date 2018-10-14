@@ -80,14 +80,16 @@ Current perf
 		+ See response to Toggle Status Text
 		+ Do better initial text (invoke at MainFrame cctor)
 		+ Update AboutBox and tell guy
-		- Check perf
-		- Perf optimizations:
-			- Precalcd stuff in FontMetadata, indexed by char
+		+ Check perf
+		+ Perf optimizations:
+			+ Precalcd stuff in FontMetadata, indexed by char
+
+- Fix clouds and canvas size
 
 - Check out that VS extension
 
 - Technical Debt:
-	- Delete shaders when not needed
+	- Delete shaders when not needed anymore
 		- @ ShaderManager
 	= Textures are json files, with world size, offset, and lighting boolean
 		+ SEE MOLESKINE
