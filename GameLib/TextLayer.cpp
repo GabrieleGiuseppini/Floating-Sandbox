@@ -11,7 +11,7 @@
 
 TextLayer::TextLayer()
     : mIsStatusTextEnabled(false)
-    , mStatusText("- (-) --:--")
+    , mStatusText("")
     , mStatusTextHandle(NoneRenderedTextHandle)
     , mIsStatusTextDirty(false)
 {

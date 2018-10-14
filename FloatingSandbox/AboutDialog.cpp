@@ -105,7 +105,8 @@ AboutDialog::AboutDialog(
         {"SFML:\t\t", "Copyright (c) Laurent Gomila - https://www.sfml-dev.org/"},
         {"DevIL:\t\t", "Denton Woods et al - http://openil.sourceforge.net/" },
         {"picojson:\t", "Copyright (c) 2009-2010 Cybozu Labs, Inc.; Copyright (c) 2011-2014 Kazuho Oku - https://github.com/kazuho/picojson"},
-        { "OpenGL tutorial:\t", "Joey de Vries - https://learnopengl.com/" }
+        {"Bitmap Font Generator:\t\t", "Copyright (c) 2005-2011 Karl Walsh (Codehead) - http://www.codehead.co.uk/cbfg/" },
+        {"OpenGL tutorial:\t", "Joey de Vries - https://learnopengl.com/" }
     };
 
     wxFont creditsTitleFont(wxFontInfo(8).Bold());

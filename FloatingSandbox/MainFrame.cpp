@@ -348,6 +348,7 @@ MainFrame::MainFrame(wxApp * mainApp)
 
     mainPanel->SetSizerAndFit(mMainFrameSizer);
     
+    
 
     //
     // Initialize timers
@@ -618,6 +619,9 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
 
         mTotalFrameCount = 0u;
         mLastFrameCount = 0u;
+
+        // Render initial status text
+        UpdateStatusText();
     }
     
     // Note: on my laptop I can't get beyond 64 frames per second, hence I'm not

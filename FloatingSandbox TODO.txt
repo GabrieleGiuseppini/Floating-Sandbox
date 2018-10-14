@@ -75,10 +75,11 @@ Current perf
 			+ glCheckError macro at GameOpenGL.h
 				+ Make it inline
 				+ Use it at RenderContext and ShipRenderContext setup and rendering, instead of various checks
-		= Cleanup Font.h
-		- Change font
-		- See response to Toggle Status Text
-		- Update AboutBox and tell guy
+		+ Cleanup Font.h
+		+ Add & change StatusText font
+		+ See response to Toggle Status Text
+		+ Do better initial text (invoke at MainFrame cctor)
+		+ Update AboutBox and tell guy
 		- Check perf
 		- Perf optimizations:
 			- Precalcd stuff in FontMetadata, indexed by char
