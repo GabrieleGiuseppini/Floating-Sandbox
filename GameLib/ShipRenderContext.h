@@ -215,13 +215,73 @@ public:
             mGenericTextureRenderPolygonVertexBuffer.size(),
             textureFrameId);
 
+        ////// TODOTEST
+        ////mTextureRenderManager.EmitRenderPolygon(
+        ////    textureFrameId,
+        ////    position,
+        ////    scale,
+        ////    orientation,
+        ////    mGenericTextureRenderPolygonVertexBuffer);
+
+        //
+        // TODOTEST
+        //
+
+        TextureFrameMetadata const & frameMetadata = mTextureRenderManager.GetFrameMetadata(textureFrameId);
+
+        float const leftX = -frameMetadata.AnchorWorldX;
+        float const rightX = frameMetadata.WorldWidth - frameMetadata.AnchorWorldX;
+        float const topY = frameMetadata.WorldHeight - frameMetadata.AnchorWorldY;
+        float const bottomY = -frameMetadata.AnchorWorldY;
+
+        float alpha = 0.0f;
+        if (!!orientation)
+            alpha = orientation->first.angle(orientation->second);
+
+        float const lightSensitivity =
+            frameMetadata.HasOwnAmbientLight ? 0.0f : 1.0f;
+
         // Append vertices
-        mTextureRenderManager.EmitRenderPolygon(
-            textureFrameId,
+
+        // Top-left
+        mGenericTextureRenderPolygonVertexBuffer.emplace_back(
             position,
+            vec2f(leftX, topY),
+            vec2f(0.0f, 1.0f),
+            alpha,
             scale,
-            orientation,
-            mGenericTextureRenderPolygonVertexBuffer);
+            1.0f,
+            lightSensitivity);
+
+        // Top-Right
+        mGenericTextureRenderPolygonVertexBuffer.emplace_back(
+            position,
+            vec2f(rightX, topY),
+            vec2f(1.0f, 1.0f),
+            alpha,
+            scale,
+            1.0f,
+            lightSensitivity);
+
+        // Bottom-left
+        mGenericTextureRenderPolygonVertexBuffer.emplace_back(
+            position,
+            vec2f(leftX, bottomY),
+            vec2f(0.0f, 0.0f),
+            alpha,
+            scale,
+            1.0f,
+            lightSensitivity);
+
+        // Bottom-right
+        mGenericTextureRenderPolygonVertexBuffer.emplace_back(
+            position,
+            vec2f(rightX, bottomY),
+            vec2f(1.0f, 0.0f),
+            alpha,
+            scale,
+            1.0f,
+            lightSensitivity);
     }
 
 
@@ -280,7 +340,7 @@ private:
 
 
     //
-    // Textures
+    // Ship textures
     //
 
     GameOpenGLTexture mElementShipTexture;
@@ -303,6 +363,37 @@ private:
     //
 
     TextureRenderManager const & mTextureRenderManager;
+
+#pragma pack(push)
+struct TextureRenderPolygonVertex
+{
+    vec2f centerPosition;
+    vec2f vertexOffset;
+    vec2f textureCoordinate;
+
+    float rotationAngle;
+    float scale;
+    float transparency;
+    float ambientLightSensitivity;
+
+    TextureRenderPolygonVertex(
+        vec2f _centerPosition,
+        vec2f _vertexOffset,
+        vec2f _textureCoordinate,
+        float _rotationAngle,
+        float _scale,
+        float _transparency,
+        float _ambientLightSensitivity)
+        : centerPosition(_centerPosition)
+        , vertexOffset(_vertexOffset)
+        , textureCoordinate(_textureCoordinate)
+        , rotationAngle(_rotationAngle)
+        , scale(_scale)
+        , transparency(_transparency)
+        , ambientLightSensitivity(_ambientLightSensitivity)
+    {}
+};
+#pragma pack(pop)
 
     struct GenericTextureInfo
     {

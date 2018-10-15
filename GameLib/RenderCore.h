@@ -75,9 +75,13 @@ enum class VertexAttributeType : GLuint
 
     WaterPosition = 3,
 
-    GenericTexturePosition = 4,
-    GenericTextureCoordinates = 5,
-    GenericTextureAmbientLightSensitivity = 6,
+    GenericTextureCenterPosition = 4,
+    GenericTextureVertexOffset = 5,
+    GenericTextureTextureCoordinates = 6,
+    GenericTextureRotationAngle = 12,
+    GenericTextureScale = 13,
+    GenericTextureTransparency = 14,
+    GenericTextureAmbientLightSensitivity = 15,
 
     // TODO: dedicated as long as we have one single ship and one VBO per ship
     ShipPointPosition = 7,
@@ -104,33 +108,6 @@ struct ShaderManagerTraits
     static constexpr auto StrToVertexAttributeType = Render::StrToVertexAttributeType;
     static constexpr auto VertexAttributeTypeToStr = Render::VertexAttributeTypeToStr;
 };
-
-//
-// Textures
-//
-
-/*
- * Describes a vertex of a texture, with all the information necessary to the shader.
- */
-#pragma pack(push)
-struct TextureRenderPolygonVertex
-{
-    vec2f position;
-    vec2f textureCoordinate;
-
-    // When 1.0, totally subject to ambient light; when 0.0, totally independent from it
-    float ambientLightSensitivity;
-
-    TextureRenderPolygonVertex(
-        vec2f _position,
-        vec2f _textureCoordinate,
-        float _ambientLightSensitivity)
-        : position(_position)
-        , textureCoordinate(_textureCoordinate)
-        , ambientLightSensitivity(_ambientLightSensitivity)
-    {}
-};
-#pragma pack(pop)
 
 
 //

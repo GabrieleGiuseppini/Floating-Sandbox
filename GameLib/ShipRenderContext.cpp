@@ -180,6 +180,8 @@ ShipRenderContext::ShipRenderContext(
     // Initialize generic textures
     //
 
+    mGenericTextureRenderPolygonVertexBuffer.reserve(1024);
+
     // Create VBO
     glGenBuffers(1, &tmpGLuint);
     mGenericTextureRenderPolygonVertexVBO = tmpGLuint;
@@ -189,9 +191,13 @@ ShipRenderContext::ShipRenderContext(
     CheckOpenGLError();
 
     // Describe buffers
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTexturePosition), 2, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)0);
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTextureCoordinates), 2, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)(2 * sizeof(float)));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTextureAmbientLightSensitivity), 1, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)((2 + 2) * sizeof(float)));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTextureCenterPosition), 2, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)0);
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTextureVertexOffset), 2, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)(2 * sizeof(float)));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTextureTextureCoordinates), 2, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)((2 + 2) * sizeof(float)));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTextureRotationAngle), 1, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)((2 + 2 + 2) * sizeof(float)));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTextureScale), 1, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)((2 + 2 + 2 + 1) * sizeof(float)));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTextureTransparency), 1, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)((2 + 2 + 2 + 1 + 1) * sizeof(float)));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTextureAmbientLightSensitivity), 1, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)((2 + 2 + 2 + 1 + 1 + 1) * sizeof(float)));
     CheckOpenGLError();
 
 
@@ -863,6 +869,7 @@ void ShipRenderContext::RenderGenericTextures(std::vector<GenericTextureInfo> co
         // Disable vertex attribute 0, as we don't use it
         glDisableVertexAttribArray(0);
 
+        // TODOTEST: Multiple batches
         // Draw all textures for this connected component
         for (size_t c = 0; c < connectedComponent.size(); ++c)
         {
@@ -875,6 +882,18 @@ void ShipRenderContext::RenderGenericTextures(std::vector<GenericTextureInfo> co
                 static_cast<GLint>(connectedComponent[c].polygonIndex),
                 4);
         }    
+
+
+        ////// TODOTEST: Single batch
+
+        ////// Bind texture
+        ////mTextureRenderManager.BindTexture(connectedComponent[0].frameId);
+
+        ////// Draw polygons
+        ////glDrawArrays(
+        ////    GL_TRIANGLE_STRIP,
+        ////    static_cast<GLint>(connectedComponent[0].polygonIndex),
+        ////    4 * connectedComponent.size());
     }
 }
 

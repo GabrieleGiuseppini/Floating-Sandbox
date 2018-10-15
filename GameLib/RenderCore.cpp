@@ -127,10 +127,18 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::Shared1XFloat;
     else if (Utils::CaseInsensitiveEquals(str, "WaterPosition"))
         return VertexAttributeType::WaterPosition;
-    else if (Utils::CaseInsensitiveEquals(str, "GenericTexturePosition"))
-        return VertexAttributeType::GenericTexturePosition;
-    else if (Utils::CaseInsensitiveEquals(str, "GenericTextureCoordinates"))
-        return VertexAttributeType::GenericTextureCoordinates;
+    else if (Utils::CaseInsensitiveEquals(str, "GenericTextureCenterPosition"))
+        return VertexAttributeType::GenericTextureCenterPosition;
+    else if (Utils::CaseInsensitiveEquals(str, "GenericTextureVertexOffset"))
+        return VertexAttributeType::GenericTextureVertexOffset;
+    else if (Utils::CaseInsensitiveEquals(str, "GenericTextureTextureCoordinates"))
+        return VertexAttributeType::GenericTextureTextureCoordinates;
+    else if (Utils::CaseInsensitiveEquals(str, "GenericTextureRotationAngle"))
+        return VertexAttributeType::GenericTextureRotationAngle;
+    else if (Utils::CaseInsensitiveEquals(str, "GenericTextureScale"))
+        return VertexAttributeType::GenericTextureScale;
+    else if (Utils::CaseInsensitiveEquals(str, "GenericTextureTransparency"))
+        return VertexAttributeType::GenericTextureTransparency;
     else if (Utils::CaseInsensitiveEquals(str, "GenericTextureAmbientLightSensitivity"))
         return VertexAttributeType::GenericTextureAmbientLightSensitivity;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointPosition"))
@@ -159,10 +167,18 @@ std::string VertexAttributeTypeToStr(VertexAttributeType vertexAttribute)
         return "Shared1XFloat";
     case VertexAttributeType::WaterPosition:
         return "WaterPosition";
-    case VertexAttributeType::GenericTexturePosition:
-        return "GenericTexturePosition";
-    case VertexAttributeType::GenericTextureCoordinates:
-        return "GenericTextureCoordinates";
+    case VertexAttributeType::GenericTextureCenterPosition:
+        return "GenericTextureCenterPosition";
+    case VertexAttributeType::GenericTextureVertexOffset:
+        return "GenericTextureVertexOffset";
+    case VertexAttributeType::GenericTextureTextureCoordinates:
+        return "GenericTextureTextureCoordinates";
+    case VertexAttributeType::GenericTextureRotationAngle:
+        return "GenericTextureRotationAngle";
+    case VertexAttributeType::GenericTextureScale:
+        return "GenericTextureScale";
+    case VertexAttributeType::GenericTextureTransparency:
+        return "GenericTextureTransparency";
     case VertexAttributeType::GenericTextureAmbientLightSensitivity:
         return "GenericTextureAmbientLightSensitivity";
     case VertexAttributeType::ShipPointPosition:
@@ -180,6 +196,5 @@ std::string VertexAttributeTypeToStr(VertexAttributeType vertexAttribute)
         throw GameException("Unsupported VertexAttributeType");
     }
 }
-
 
 }

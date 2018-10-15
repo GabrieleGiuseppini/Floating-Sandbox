@@ -3,12 +3,17 @@
 #version 130
 
 // Inputs
-in vec2 inGenericTexturePosition;
-in vec2 inGenericTextureCoordinates;
+in vec2 inGenericTextureCenterPosition;
+in vec2 inGenericTextureVertexOffset;
+in vec2 inGenericTextureTextureCoordinates;
+in float inGenericTextureRotationAngle;
+in float inGenericTextureScale;
+in float inGenericTextureTransparency;
 in float inGenericTextureAmbientLightSensitivity;
 
 // Outputs
 out vec2 vertexTextureCoordinates;
+out float vertexTransparency;
 out float vertexAmbientLightSensitivity;
 
 // Params
@@ -16,9 +21,19 @@ uniform mat4 paramOrthoMatrix;
 
 void main()
 {
-    vertexTextureCoordinates = inGenericTextureCoordinates; 
+    vertexTextureCoordinates = inGenericTextureTextureCoordinates; 
+    vertexTransparency = inGenericTextureTransparency;
     vertexAmbientLightSensitivity = inGenericTextureAmbientLightSensitivity;
-    gl_Position = paramOrthoMatrix * vec4(inGenericTexturePosition.xy, -1.0, 1.0);
+
+    mat2 rotationMatrix = mat2(
+	cos(inGenericTextureRotationAngle), -sin(inGenericTextureRotationAngle),
+	sin(inGenericTextureRotationAngle), cos(inGenericTextureRotationAngle));
+
+    vec2 position = 
+	inGenericTextureCenterPosition 
+	+ rotationMatrix * inGenericTextureVertexOffset * inGenericTextureScale;
+
+    gl_Position = paramOrthoMatrix * vec4(position.xy, -1.0, 1.0);
 }
 
 ###FRAGMENT
@@ -27,6 +42,7 @@ void main()
 
 // Inputs from previous shader
 in vec2 vertexTextureCoordinates;
+in float vertexTransparency;
 in float vertexAmbientLightSensitivity;
 
 // The texture
@@ -45,5 +61,5 @@ void main()
 
     gl_FragColor = vec4(
 	textureColor.xyz * ambientLightIntensity,
-	textureColor.w);
+	textureColor.w * vertexTransparency);
 } 
