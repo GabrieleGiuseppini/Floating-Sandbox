@@ -2,7 +2,7 @@
 Current perf
 =================================================
 - fps: 26.8 / 27.2 (Quiet Laptop) (Samsung: TBD-was 32.7 (Krafting)) (Mattia's: TBD (Krafting))
-	after texture rearc: 28.3 / 28.8 (Quiet Laptop)
+	after texture rearc: 28.3 / 28.8 (Quiet Laptop?)
 - GameController::Update: 34.50%
 	- Ship::Update: 33.68%
 		- UpdateMechanicalDynamics: 25.18%
@@ -178,29 +178,21 @@ Current perf
 				+ reorder RenderCore::VertexAttributes
 			+ Final test with game, real textures
 
-			- Pack vertex attributes @ other shaders:
+			= TODOHERE: Pack vertex attributes @ other shaders:
+				- clouds
+				- text_ndc
 				- Initial perf:
-					- FPS:
+					- FPS: 
 				- Final perf:
 					- FPS: 
-
-			- After Z: 
-				- Shader also takes ShipID, ConnectedComponentID for Z
-				- Invoke shader at one place (still for 1 texture at a time, waiting for atlas)
-					- Move this shader and RenderContext::UploadShipTextureRenderSpecification to protected
-					  member of RenderContextBase (not really, *1)
-					- ShipRenderContext::UploadTextureRenderSpecification (which exists because of ShipRenderContext being
-					  the only render context available to ships) simply forwards to this one
-					- TODO: (*1): figure better way; may be just have a single UploadTextureRenderSpecification on RenderContext,
-					  with optional <ship ID, connected component ID> pair (not set -> main UI, on top of everything), 
-					  and eat the fact that ships don't take ShipRenderContext anymore but whole RenderContext
 
 	+ Move RenderContext et al into Render:: namespace and file group
 			+ See if TextureTypes.h is still needed and whether it can be moved to GameTypes
 				+ After all, ShipRenderMode is in GameTypes
 				+ Polygon for now moves to that class that makes it
 
-	- Render: coalesce all render parameter changes into one, and update only at Render() for each that is dirty
+	- GameController: coalesce all render parameter changes into one, and update only at Render() for each that is dirty
+		- Check first with Log messages if it really happens
 		- Test all param changes:
 			- Zoom
 			- Pan
@@ -208,20 +200,22 @@ Current perf
 			- TBD
 
 	- GameController rearc:
+		- TODO: OPTION 1
 		- GameController moves to FloatingSandbox, and contains SoundController and ToolController as well
 		- MainFrame talks exclusively to GameController, which in turn talks to the others
 		- ToolController has SoundController, and tells the latter when to play and stop tools' sounds 
 			- IGameEventHandler events exist only for the world-generated noises (e.g. something really breaking), not
 			  for the tools
 			  - So Swirl, for example, should disappear from IGameEventHandler; some others as well
+		- TODO: OPTION 2
+			- ToolController has pointer to SoundController, and tells the latter when to play and stop tools' sounds 
+			- IGameEventHandler events then exist only for the world-generated noises (e.g. something really breaking), not
+			  for the tools
+			  - So Swirl, for example, should disappear from IGameEventHandler; some others as well
+
 	+ CMake:
 		+ INSTALL target for release
 		+ RelWithDebInfo: Inline any suitable (/Ob2)
-
-	- Test: Ship::Render() should give its subordinates ShipRenderContext instead of RenderContext
-		- Can then get rid of forwards from RenderContext
-		- RenderContextBase: contains common static vars and helpers for both
-		- TODO: (*1) Really? It's nice to keep ships separate anyway 
 
 - Optimizations:
 
@@ -329,6 +323,7 @@ Current perf
 		  to draw one single batch then, using Z buffer and depth test 
 			- Assign Z based on connected component ID
 			- Plan:
+				- TODO: review the below based off transparency sorting - see MOLESKINE
 				1 - Test perspective with hardcoded z=-800 at shader, and see if it makes any difference
 				2 - Ship assigns points' ConnectedComponentID as float in vector
 				3 - ShipRenderContext's shaders (Triangles, Springs) take Z and with ad-hoc OrthoMatrix
@@ -337,6 +332,13 @@ Current perf
 				5 - (Nice to have): sticky component IDs, by leveraging the fact that normally IDs are assigned from L,T to R,B
 			- See if drawing springs & triangles at separate depths also helps generally with render speed, even for one single
 			  connected component (for springs' fragment shader - may be it takes shortcuts if it knows it's behind)
+			- After Z is done:
+				- GenericTextureShader also takes ShipID, ConnectedComponentID for Z, and exists in one central place
+					- Invoke shader at one place (still for 1 texture at a time, waiting for atlas)
+						- Move this shader and all ShipRenderContext::UploadTextureRenderSpecification to 
+						  RenderContext
+						  - With optional <ship ID, connected component ID> pair (not set -> main UI, on top of everything)
+
 
 	- Draw better those parts that are only connected by ropes 
 		- Change connected component detection by not propagating from a "spring only" to a "body"
