@@ -865,7 +865,6 @@ void ShipRenderContext::RenderGenericTextures(std::vector<GenericTextureInfo> co
         // Disable vertex attribute 0, as we don't use it
         glDisableVertexAttribArray(0);
 
-        // TODOTEST: Multiple batches
         // Draw all textures for this connected component
         for (size_t c = 0; c < connectedComponent.size(); ++c)
         {
@@ -878,18 +877,6 @@ void ShipRenderContext::RenderGenericTextures(std::vector<GenericTextureInfo> co
                 static_cast<GLint>(connectedComponent[c].polygonIndex),
                 4);
         }    
-
-
-        ////// TODOTEST: Single batch
-
-        ////// Bind texture
-        ////mTextureRenderManager.BindTexture(connectedComponent[0].frameId);
-
-        ////// Draw polygons
-        ////glDrawArrays(
-        ////    GL_TRIANGLE_STRIP,
-        ////    static_cast<GLint>(connectedComponent[0].polygonIndex),
-        ////    4 * connectedComponent.size());
     }
 }
 

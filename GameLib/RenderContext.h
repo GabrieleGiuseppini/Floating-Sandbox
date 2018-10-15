@@ -543,7 +543,8 @@ public:
         TextureFrameId const & textureFrameId,
         vec2f const & position,
         float scale,
-        std::optional<std::pair<vec2f, vec2f>> const & orientation)
+        vec2f const & rotationBase,
+        vec2f const & rotationOffset)
     {
         assert(shipId < mShips.size());
 
@@ -552,7 +553,26 @@ public:
             textureFrameId,
             position,
             scale,
-            orientation);
+            rotationBase,
+            rotationOffset);
+    }
+
+    inline void UploadShipGenericTextureRenderSpecification(
+        int shipId,
+        ConnectedComponentId connectedComponentId,
+        TextureFrameId const & textureFrameId,
+        vec2f const & position,
+        float scale,
+        float angle)
+    {
+        assert(shipId < mShips.size());
+
+        mShips[shipId]->UploadGenericTextureRenderSpecification(
+            connectedComponentId,
+            textureFrameId,
+            position,
+            scale,
+            angle);
     }
 
     //

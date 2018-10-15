@@ -255,7 +255,8 @@ void TimerBomb::Upload(
                 TextureFrameId(TextureGroupType::TimerBomb, mFuseStepCounter / FuseFramesPerFuseLengthCount),
                 GetPosition(),
                 1.0,
-                std::make_pair(mRotationBaseAxis, GetRotationOffsetAxis()));
+                mRotationBaseAxis,
+                GetRotationOffsetAxis());
 
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
@@ -263,7 +264,8 @@ void TimerBomb::Upload(
                 TextureFrameId(TextureGroupType::TimerBombFuse, mFuseFlameFrameIndex),
                 GetPosition(),
                 1.0,
-                std::make_pair(mRotationBaseAxis, GetRotationOffsetAxis()));
+                mRotationBaseAxis,
+                GetRotationOffsetAxis());
 
             break;
         }
@@ -283,7 +285,8 @@ void TimerBomb::Upload(
                 TextureFrameId(TextureGroupType::TimerBomb, FuseLengthStepCount),
                 shakenPosition,
                 1.0,
-                std::make_pair(mRotationBaseAxis, GetRotationOffsetAxis()));
+                mRotationBaseAxis,
+                GetRotationOffsetAxis());
 
             break;
         }
@@ -298,7 +301,8 @@ void TimerBomb::Upload(
                 TextureFrameId(TextureGroupType::TimerBombExplosion, mExplodingStepCounter),
                 GetPosition(),
                 1.0f + static_cast<float>(mExplodingStepCounter + 1) / static_cast<float>(ExplosionStepsCount),
-                std::make_pair(mRotationBaseAxis, GetRotationOffsetAxis()));
+                mRotationBaseAxis,
+                GetRotationOffsetAxis());
 
             break;
         }
@@ -311,7 +315,8 @@ void TimerBomb::Upload(
                 TextureFrameId(TextureGroupType::TimerBomb, mFuseStepCounter / FuseFramesPerFuseLengthCount),
                 GetPosition(),
                 1.0f,
-                std::make_pair(mRotationBaseAxis, GetRotationOffsetAxis()));
+                mRotationBaseAxis,
+                GetRotationOffsetAxis());
 
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
@@ -319,7 +324,8 @@ void TimerBomb::Upload(
                 TextureFrameId(TextureGroupType::TimerBombDefuse, mDefuseStepCounter),
                 GetPosition(),
                 1.0f,
-                std::make_pair(mRotationBaseAxis, GetRotationOffsetAxis()));
+                mRotationBaseAxis,
+                GetRotationOffsetAxis());
 
             break;
         }
@@ -332,7 +338,8 @@ void TimerBomb::Upload(
                 TextureFrameId(TextureGroupType::TimerBomb, mFuseStepCounter / FuseFramesPerFuseLengthCount),
                 GetPosition(),
                 1.0f,
-                std::make_pair(mRotationBaseAxis, GetRotationOffsetAxis()));
+                mRotationBaseAxis, 
+                GetRotationOffsetAxis());
 
             break;
         }

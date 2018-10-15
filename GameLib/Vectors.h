@@ -20,18 +20,18 @@ public:
         return vec2f(); 
     }
 
-	inline vec2f operator+(vec2f const & rhs) const
+	inline vec2f operator+(vec2f const & other) const
 	{
 		return vec2f(
-			x + rhs.x, 
-			y + rhs.y);
+			x + other.x, 
+			y + other.y);
 	}
 
-	inline vec2f operator-(vec2f const & rhs) const
+	inline vec2f operator-(vec2f const & other) const
 	{
 		return vec2f(
-			x - rhs.x, 
-			y - rhs.y);
+			x - other.x, 
+			y - other.y);
 	}
 
     inline vec2f operator-() const
@@ -41,72 +41,72 @@ public:
             -y);
     }
 
-	inline vec2f operator*(float rhs) const
+	inline vec2f operator*(float other) const
 	{
 		return vec2f(
-			x * rhs,
-			y * rhs);
+			x * other,
+			y * other);
 	}
 
-	inline vec2f operator/(float rhs) const
+	inline vec2f operator/(float other) const
 	{
 		return vec2f(
-			x / rhs,
-			y / rhs);
+			x / other,
+			y / other);
 	}
 
-	inline vec2f & operator+=(vec2f const & rhs)
+	inline vec2f & operator+=(vec2f const & other)
 	{
-		x += rhs.x;
-		y += rhs.y;
+		x += other.x;
+		y += other.y;
 		return *this;
 	}
 
-	inline vec2f & operator-=(vec2f const & rhs)
+	inline vec2f & operator-=(vec2f const & other)
 	{
-		x -= rhs.x;
-		y -= rhs.y;
+		x -= other.x;
+		y -= other.y;
 		return *this;
 	}
 
-	inline vec2f & operator*=(float rhs)
+	inline vec2f & operator*=(float other)
 	{
-		x *= rhs;
-		y *= rhs;
+		x *= other;
+		y *= other;
 		return *this;
 	}
 
-	inline vec2f& operator/=(float rhs)
+	inline vec2f& operator/=(float other)
 	{
-		x /= rhs;
-		y /= rhs;
+		x /= other;
+		y /= other;
 		return *this;
 	}
 
-	inline bool operator==(vec2f const & rhs) const
+	inline bool operator==(vec2f const & other) const
 	{
-		return x == rhs.x && y == rhs.y;
+		return x == other.x && y == other.y;
 	}
 
-    inline bool operator!=(vec2f const & rhs) const
+    inline bool operator!=(vec2f const & other) const
     {
-        return !(*this == rhs);
+        return !(*this == other);
     }
 
 	// (lexicographic comparison only)
-	inline bool operator<(vec2f const & rhs) const
+	inline bool operator<(vec2f const & other) const
 	{
-		return x < rhs.x || (x == rhs.x && y < rhs.y);
+		return x < other.x || (x == other.x && y < other.y);
 	}
 
-	inline float dot(vec2f const & rhs) const
+	inline float dot(vec2f const & other) const
 	{
-		return x * rhs.x + y * rhs.y;
+		return x * other.x + y * other.y;
 	}
 
-    inline float cross(vec2f const & rhs) const
+    inline float cross(vec2f const & other) const
     {
-        return x * rhs.y - y * rhs.x;
+        return x * other.y - y * other.x;
     }
 
 	inline float length() const
@@ -144,11 +144,11 @@ public:
         }
     }
 
-    inline float angle(vec2f const & rhs) const
+    inline float angle(vec2f const & other) const
     {
         return -atan2f(
-            x * rhs.y - y * rhs.x,
-            x * rhs.x + y * rhs.y);
+            x * other.y - y * other.x,
+            x * other.x + y * other.y);
     }
 
     std::string toString() const;
@@ -182,20 +182,20 @@ public:
 
     static constexpr const vec3f zero() { return vec3f(); }
 
-	inline vec3f operator+(vec3f const & rhs) const
+	inline vec3f operator+(vec3f const & other) const
 	{
 		return vec3f(
-			x + rhs.x,
-			y + rhs.y,
-			z + rhs.z);
+			x + other.x,
+			y + other.y,
+			z + other.z);
 	}
 
-    inline vec3f operator-(vec3f const & rhs) const
+    inline vec3f operator-(vec3f const & other) const
 	{
 		return vec3f(
-			x - rhs.x,
-			y - rhs.y,
-			z - rhs.z);
+			x - other.x,
+			y - other.y,
+			z - other.z);
 	}
 
     inline vec3f operator-() const
@@ -206,73 +206,73 @@ public:
             -z);
     }
 
-	inline vec3f operator*(float rhs) const
+	inline vec3f operator*(float other) const
 	{
 		return vec3f(
-			x * rhs,
-			y * rhs,
-			z * rhs);
+			x * other,
+			y * other,
+			z * other);
 	}
 
-	inline vec3f operator/(float rhs) const
+	inline vec3f operator/(float other) const
 	{
 		return vec3f(
-			x / rhs,
-			y / rhs,
-			z / rhs);
+			x / other,
+			y / other,
+			z / other);
 	}
 
-	inline vec3f & operator+=(vec3f const & rhs)
+	inline vec3f & operator+=(vec3f const & other)
 	{
-		x += rhs.x;
-		y += rhs.y;
-		z += rhs.z;
+		x += other.x;
+		y += other.y;
+		z += other.z;
 		return *this;
 	}
 
-	inline vec3f & operator-=(vec3f const & rhs)
+	inline vec3f & operator-=(vec3f const & other)
 	{
-		x -= rhs.x;
-		y -= rhs.y;
-		z -= rhs.z;
+		x -= other.x;
+		y -= other.y;
+		z -= other.z;
 		return *this;
 	}
 
-	inline vec3f & operator*=(float rhs)
+	inline vec3f & operator*=(float other)
 	{
-		x *= rhs;
-		y *= rhs;
-		z *= rhs;
+		x *= other;
+		y *= other;
+		z *= other;
 		return *this;
 	}
 
-	inline vec3f & operator/=(float rhs)
+	inline vec3f & operator/=(float other)
 	{
-		x /= rhs;
-		y /= rhs;
-		z /= rhs;
+		x /= other;
+		y /= other;
+		z /= other;
 		return *this;
 	}
 
-	inline bool operator==(vec3f const & rhs) const
+	inline bool operator==(vec3f const & other) const
 	{
-		return x == rhs.x && y == rhs.y && z == rhs.z;
+		return x == other.x && y == other.y && z == other.z;
 	}
 
-    inline bool operator!=(vec3f const & rhs) const
+    inline bool operator!=(vec3f const & other) const
     {
-        return !(*this == rhs);
+        return !(*this == other);
     }
 
 	// (lexicographic comparison only)
-	inline bool operator<(vec3f const & rhs) const
+	inline bool operator<(vec3f const & other) const
 	{
-		return x < rhs.x || (x == rhs.x && (y < rhs.y || (y == rhs.y && z < rhs.z)));
+		return x < other.x || (x == other.x && (y < other.y || (y == other.y && z < other.z)));
 	}
     
-	float dot(vec3f const & rhs) const
+	float dot(vec3f const & other) const
 	{
-		return x * rhs.x + y * rhs.y + z * rhs.z;
+		return x * other.x + y * other.y + z * other.z;
 	}
     
 	float length() const
@@ -333,22 +333,22 @@ public:
 
     static constexpr const vec4f zero() { return vec4f(); }
 
-    inline vec4f operator+(vec4f const & rhs) const
+    inline vec4f operator+(vec4f const & other) const
     {
         return vec4f(
-            x + rhs.x,
-            y + rhs.y,
-            z + rhs.z,
-            w + rhs.w);
+            x + other.x,
+            y + other.y,
+            z + other.z,
+            w + other.w);
     }
 
-    inline vec4f operator-(vec4f const & rhs) const
+    inline vec4f operator-(vec4f const & other) const
     {
         return vec4f(
-            x - rhs.x,
-            y - rhs.y,
-            z - rhs.z,
-            w - rhs.w);
+            x - other.x,
+            y - other.y,
+            z - other.z,
+            w - other.w);
     }
 
     inline vec4f operator-() const
@@ -360,68 +360,68 @@ public:
             -w);
     }
 
-    inline vec4f operator*(float rhs) const
+    inline vec4f operator*(float other) const
     {
         return vec4f(
-            x * rhs,
-            y * rhs,
-            z * rhs,
-            w * rhs);
+            x * other,
+            y * other,
+            z * other,
+            w * other);
     }
 
-    inline vec4f operator/(float rhs) const
+    inline vec4f operator/(float other) const
     {
         return vec4f(
-            x / rhs,
-            y / rhs,
-            z / rhs,
-            w / rhs);
+            x / other,
+            y / other,
+            z / other,
+            w / other);
     }
 
-    inline vec4f & operator+=(vec4f const & rhs)
+    inline vec4f & operator+=(vec4f const & other)
     {
-        x += rhs.x;
-        y += rhs.y;
-        z += rhs.z;
-        w += rhs.w;
+        x += other.x;
+        y += other.y;
+        z += other.z;
+        w += other.w;
         return *this;
     }
 
-    inline vec4f & operator-=(vec4f const & rhs)
+    inline vec4f & operator-=(vec4f const & other)
     {
-        x -= rhs.x;
-        y -= rhs.y;
-        z -= rhs.z;
-        w -= rhs.w;
+        x -= other.x;
+        y -= other.y;
+        z -= other.z;
+        w -= other.w;
         return *this;
     }
 
-    inline vec4f & operator*=(float rhs)
+    inline vec4f & operator*=(float other)
     {
-        x *= rhs;
-        y *= rhs;
-        z *= rhs;
-        w *= rhs;
+        x *= other;
+        y *= other;
+        z *= other;
+        w *= other;
         return *this;
     }
 
-    inline vec4f & operator/=(float rhs)
+    inline vec4f & operator/=(float other)
     {
-        x /= rhs;
-        y /= rhs;
-        z /= rhs;
-        w /= rhs;
+        x /= other;
+        y /= other;
+        z /= other;
+        w /= other;
         return *this;
     }
 
-    inline bool operator==(vec4f const & rhs) const
+    inline bool operator==(vec4f const & other) const
     {
-        return x == rhs.x && y == rhs.y && z == rhs.z && w == rhs.w;
+        return x == other.x && y == other.y && z == other.z && w == other.w;
     }
 
-    inline bool operator!=(vec4f const & rhs) const
+    inline bool operator!=(vec4f const & other) const
     {
-        return !(*this == rhs);
+        return !(*this == other);
     }
     
     std::string toString() const;

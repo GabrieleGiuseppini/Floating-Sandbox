@@ -293,22 +293,6 @@ void Ship::Render(
         mConnectedComponentSizes);
 
 
-    // TODOTEST
-    for (int i = 0; i < 2000; ++i)
-    {
-        vec2f pos(static_cast<float>(i) / 50.0f - 10.0f, static_cast<float>(i) / 50.0f - 10.0f);
-        renderContext.UploadShipGenericTextureRenderSpecification(
-            mId,
-            1,
-            TextureFrameId(TextureGroupType::TimerBomb, 0),
-            pos,
-            1.0f,
-            std::make_pair(
-                vec2f(1.f, 0.f),
-                vec2f(0.5f, 0.5f)));
-    }
-
-
     //
     // Upload points's mutable attributes
     //

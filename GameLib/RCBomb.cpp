@@ -149,7 +149,8 @@ void RCBomb::Upload(
                 TextureFrameId(TextureGroupType::RcBomb, 0),
                 GetPosition(),
                 1.0,
-                std::make_pair(mRotationBaseAxis, GetRotationOffsetAxis()));
+                mRotationBaseAxis, 
+                GetRotationOffsetAxis());
 
             break;
         }
@@ -162,7 +163,8 @@ void RCBomb::Upload(
                 TextureFrameId(TextureGroupType::RcBomb, 0),
                 GetPosition(),
                 1.0,
-                std::make_pair(mRotationBaseAxis, GetRotationOffsetAxis()));
+                mRotationBaseAxis,
+                GetRotationOffsetAxis());
 
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
@@ -170,7 +172,8 @@ void RCBomb::Upload(
                 TextureFrameId(TextureGroupType::RcBombPing, (mPingOnStepCounter - 1) % PingFramesCount),
                 GetPosition(),
                 1.0,
-                std::make_pair(mRotationBaseAxis, GetRotationOffsetAxis()));
+                mRotationBaseAxis,
+                GetRotationOffsetAxis());
 
             break;
         }
@@ -183,7 +186,8 @@ void RCBomb::Upload(
                 TextureFrameId(TextureGroupType::RcBomb, 0),
                 GetPosition(),
                 1.0,
-                std::make_pair(mRotationBaseAxis, GetRotationOffsetAxis()));
+                mRotationBaseAxis,
+                GetRotationOffsetAxis());
 
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
@@ -191,7 +195,8 @@ void RCBomb::Upload(
                 TextureFrameId(TextureGroupType::RcBombPing, (mPingOnStepCounter - 1) % PingFramesCount),
                 GetPosition(),
                 1.0,
-                std::make_pair(mRotationBaseAxis, GetRotationOffsetAxis()));
+                mRotationBaseAxis,
+                GetRotationOffsetAxis());
 
             break;
         }
@@ -207,7 +212,8 @@ void RCBomb::Upload(
                 TextureFrameId(TextureGroupType::RcBombExplosion, mExplodingStepCounter - 1),
                 GetPosition(),
                 1.0f + static_cast<float>(mExplodingStepCounter) / static_cast<float>(ExplosionStepsCount),
-                std::make_pair(mRotationBaseAxis, GetRotationOffsetAxis()));
+                mRotationBaseAxis,
+                GetRotationOffsetAxis());
 
             break;
         }

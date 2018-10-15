@@ -2,6 +2,7 @@
 Current perf
 =================================================
 - fps: 26.8 / 27.2 (Quiet Laptop) (Samsung: TBD-was 32.7 (Krafting)) (Mattia's: TBD (Krafting))
+	after texture rearc: 28.3 / 28.8 (Quiet Laptop)
 - GameController::Update: 34.50%
 	- Ship::Update: 33.68%
 		- UpdateMechanicalDynamics: 25.18%
@@ -151,8 +152,8 @@ Current perf
 				+ Nuke TextureRenderManager::EmitRenderPolygon and do all at ShipRenderContext::UploadGenericTextureRenderSpecification
 				+ Move TextureRenderPolygonVertex out of RenderCore and make it private to ShipRenderContext
 
-			= Extra optimizations to test:
-				= vector (no test)
+			+ Extra optimizations to test:
+				+ vector (no test)
 				+ Use a vec4 for the four lonely floats
 					+ With multiple batches:
 						+ FPS: 16.4
@@ -161,19 +162,27 @@ Current perf
 				+ further packing: two vec2 as one vec4
 					+ With multiple batches:
 						+ FPS: 16.4
-				- Commit
-				- atan in shader 
-					- requires two extra vec2 or a vec4
-					- With multiple batches:
-						- FPS: 16.4
-					- With single batch:
-						- FPS: 12.29
+				+ Commit
+				+ atan in shader - REJECTED
+					+ requires two extra vec2 or a vec4
+					+ With multiple batches:
+						+ FPS: 16.2
+						+ ShipRenderContext::RenderGenericTextures: 31.50% 
+						+ ShipRenderContext::UploadGenericTexture...: 0.56%
+							+ vector: 0.56%
+			+ Final perf test:
+				+ FPS: 16.4
+			+ Text single texture rotating
+			+ Cleanup:
+				+ Ship's test upload
+				+ reorder RenderCore::VertexAttributes
+			+ Final test with game, real textures
 
-			- Cleanup:
-				- Ship's test upload
-				- reorder RenderCore::VertexAttributes
-
-			- Final test with real textures
+			- Pack vertex attributes @ other shaders:
+				- Initial perf:
+					- FPS:
+				- Final perf:
+					- FPS: 
 
 			- After Z: 
 				- Shader also takes ShipID, ConnectedComponentID for Z

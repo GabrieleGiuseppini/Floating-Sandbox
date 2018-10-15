@@ -196,7 +196,7 @@ public:
             textureFrameId,
             position,
             1.0f,
-            std::nullopt);
+            0.0f);
     }
 
     inline void UploadGenericTextureRenderSpecification(
@@ -204,7 +204,23 @@ public:
         TextureFrameId const & textureFrameId,
         vec2f const & position,
         float scale,
-        std::optional<std::pair<vec2f, vec2f>> const & orientation)
+        vec2f const & rotationBase,
+        vec2f const & rotationOffset)
+    {
+        UploadGenericTextureRenderSpecification(
+            connectedComponentId,
+            textureFrameId,
+            position,
+            scale,
+            rotationBase.angle(rotationOffset));
+    }
+
+    inline void UploadGenericTextureRenderSpecification(
+        ConnectedComponentId connectedComponentId,
+        TextureFrameId const & textureFrameId,
+        vec2f const & position,
+        float scale,
+        float angle)
     {
         size_t const connectedComponentIndex = connectedComponentId - 1;
 
@@ -215,16 +231,8 @@ public:
             mGenericTextureRenderPolygonVertexBuffer.size(),
             textureFrameId);
 
-        ////// TODOTEST
-        ////mTextureRenderManager.EmitRenderPolygon(
-        ////    textureFrameId,
-        ////    position,
-        ////    scale,
-        ////    orientation,
-        ////    mGenericTextureRenderPolygonVertexBuffer);
-
         //
-        // TODOTEST
+        // Populate the texture quad
         //
 
         TextureFrameMetadata const & frameMetadata = mTextureRenderManager.GetFrameMetadata(textureFrameId);
@@ -233,10 +241,6 @@ public:
         float const rightX = frameMetadata.WorldWidth - frameMetadata.AnchorWorldX;
         float const topY = frameMetadata.WorldHeight - frameMetadata.AnchorWorldY;
         float const bottomY = -frameMetadata.AnchorWorldY;
-
-        float alpha = 0.0f;
-        if (!!orientation)
-            alpha = orientation->first.angle(orientation->second);
 
         float const lightSensitivity =
             frameMetadata.HasOwnAmbientLight ? 0.0f : 1.0f;
@@ -248,8 +252,8 @@ public:
             position,
             vec2f(leftX, topY),
             vec2f(0.0f, 1.0f),
-            alpha,
             scale,
+            angle,
             1.0f,
             lightSensitivity);
 
@@ -258,8 +262,8 @@ public:
             position,
             vec2f(rightX, topY),
             vec2f(1.0f, 1.0f),
-            alpha,
             scale,
+            angle,
             1.0f,
             lightSensitivity);
 
@@ -268,8 +272,8 @@ public:
             position,
             vec2f(leftX, bottomY),
             vec2f(0.0f, 0.0f),
-            alpha,
             scale,
+            angle,
             1.0f,
             lightSensitivity);
 
@@ -278,8 +282,8 @@ public:
             position,
             vec2f(rightX, bottomY),
             vec2f(1.0f, 0.0f),
-            alpha,
             scale,
+            angle,
             1.0f,
             lightSensitivity);
     }
@@ -370,9 +374,9 @@ struct TextureRenderPolygonVertex
     vec2f centerPosition;
     vec2f vertexOffset;
     vec2f textureCoordinate;
-
-    float rotationAngle;
+    
     float scale;
+    float angle;
     float transparency;
     float ambientLightSensitivity;
 
@@ -380,15 +384,15 @@ struct TextureRenderPolygonVertex
         vec2f _centerPosition,
         vec2f _vertexOffset,
         vec2f _textureCoordinate,
-        float _rotationAngle,
         float _scale,
+        float _angle,
         float _transparency,
         float _ambientLightSensitivity)
         : centerPosition(_centerPosition)
         , vertexOffset(_vertexOffset)
         , textureCoordinate(_textureCoordinate)
-        , rotationAngle(_rotationAngle)
         , scale(_scale)
+        , angle(_angle)
         , transparency(_transparency)
         , ambientLightSensitivity(_ambientLightSensitivity)
     {}

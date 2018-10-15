@@ -5,7 +5,7 @@
 // Inputs
 in vec4 inGenericTexturePackedData1; // centerPosition, vertexOffset
 in vec2 inGenericTextureTextureCoordinates;
-in vec4 inGenericTexturePackedData2; // rotationAngle, scale, transparency, ambientLightSensitivity
+in vec4 inGenericTexturePackedData2; // scale, angle, transparency, ambientLightSensitivity
 
 // Outputs
 out vec2 vertexTextureCoordinates;
@@ -21,15 +21,18 @@ void main()
     vertexTransparency = inGenericTexturePackedData2.z;
     vertexAmbientLightSensitivity = inGenericTexturePackedData2.w;
 
+    float scale = inGenericTexturePackedData2.x;
+    float angle = inGenericTexturePackedData2.y;
+
     mat2 rotationMatrix = mat2(
-	cos(inGenericTexturePackedData2.x), -sin(inGenericTexturePackedData2.x),
-	sin(inGenericTexturePackedData2.x), cos(inGenericTexturePackedData2.x));
+	cos(angle), -sin(angle),
+	sin(angle), cos(angle));
 
-    vec2 position = 
+    vec2 worldPosition = 
 	inGenericTexturePackedData1.xy 
-	+ rotationMatrix * inGenericTexturePackedData1.zw * inGenericTexturePackedData2.y;
+	+ rotationMatrix * inGenericTexturePackedData1.zw * scale;
 
-    gl_Position = paramOrthoMatrix * vec4(position.xy, -1.0, 1.0);
+    gl_Position = paramOrthoMatrix * vec4(worldPosition.xy, -1.0, 1.0);
 }
 
 ###FRAGMENT
