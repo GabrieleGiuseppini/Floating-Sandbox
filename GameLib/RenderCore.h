@@ -78,10 +78,7 @@ enum class VertexAttributeType : GLuint
     GenericTextureCenterPosition = 4,
     GenericTextureVertexOffset = 5,
     GenericTextureTextureCoordinates = 6,
-    GenericTextureRotationAngle = 12,
-    GenericTextureScale = 13,
-    GenericTextureTransparency = 14,
-    GenericTextureAmbientLightSensitivity = 15,
+    GenericTexturePackedData = 12,    
 
     // TODO: dedicated as long as we have one single ship and one VBO per ship
     ShipPointPosition = 7,

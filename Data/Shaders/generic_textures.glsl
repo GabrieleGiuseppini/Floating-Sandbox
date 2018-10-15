@@ -6,10 +6,7 @@
 in vec2 inGenericTextureCenterPosition;
 in vec2 inGenericTextureVertexOffset;
 in vec2 inGenericTextureTextureCoordinates;
-in float inGenericTextureRotationAngle;
-in float inGenericTextureScale;
-in float inGenericTextureTransparency;
-in float inGenericTextureAmbientLightSensitivity;
+in vec4 inGenericTexturePackedData; // rotationAngle, scale, transparency, ambientLightSensitivity
 
 // Outputs
 out vec2 vertexTextureCoordinates;
@@ -22,16 +19,16 @@ uniform mat4 paramOrthoMatrix;
 void main()
 {
     vertexTextureCoordinates = inGenericTextureTextureCoordinates; 
-    vertexTransparency = inGenericTextureTransparency;
-    vertexAmbientLightSensitivity = inGenericTextureAmbientLightSensitivity;
+    vertexTransparency = inGenericTexturePackedData.z;
+    vertexAmbientLightSensitivity = inGenericTexturePackedData.w;
 
     mat2 rotationMatrix = mat2(
-	cos(inGenericTextureRotationAngle), -sin(inGenericTextureRotationAngle),
-	sin(inGenericTextureRotationAngle), cos(inGenericTextureRotationAngle));
+	cos(inGenericTexturePackedData.x), -sin(inGenericTexturePackedData.x),
+	sin(inGenericTexturePackedData.x), cos(inGenericTexturePackedData.x));
 
     vec2 position = 
 	inGenericTextureCenterPosition 
-	+ rotationMatrix * inGenericTextureVertexOffset * inGenericTextureScale;
+	+ rotationMatrix * inGenericTextureVertexOffset * inGenericTexturePackedData.y;
 
     gl_Position = paramOrthoMatrix * vec4(position.xy, -1.0, 1.0);
 }

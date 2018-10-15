@@ -133,14 +133,8 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::GenericTextureVertexOffset;
     else if (Utils::CaseInsensitiveEquals(str, "GenericTextureTextureCoordinates"))
         return VertexAttributeType::GenericTextureTextureCoordinates;
-    else if (Utils::CaseInsensitiveEquals(str, "GenericTextureRotationAngle"))
-        return VertexAttributeType::GenericTextureRotationAngle;
-    else if (Utils::CaseInsensitiveEquals(str, "GenericTextureScale"))
-        return VertexAttributeType::GenericTextureScale;
-    else if (Utils::CaseInsensitiveEquals(str, "GenericTextureTransparency"))
-        return VertexAttributeType::GenericTextureTransparency;
-    else if (Utils::CaseInsensitiveEquals(str, "GenericTextureAmbientLightSensitivity"))
-        return VertexAttributeType::GenericTextureAmbientLightSensitivity;
+    else if (Utils::CaseInsensitiveEquals(str, "GenericTexturePackedData"))
+        return VertexAttributeType::GenericTexturePackedData;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointPosition"))
         return VertexAttributeType::ShipPointPosition;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointColor"))
@@ -173,14 +167,8 @@ std::string VertexAttributeTypeToStr(VertexAttributeType vertexAttribute)
         return "GenericTextureVertexOffset";
     case VertexAttributeType::GenericTextureTextureCoordinates:
         return "GenericTextureTextureCoordinates";
-    case VertexAttributeType::GenericTextureRotationAngle:
-        return "GenericTextureRotationAngle";
-    case VertexAttributeType::GenericTextureScale:
-        return "GenericTextureScale";
-    case VertexAttributeType::GenericTextureTransparency:
-        return "GenericTextureTransparency";
-    case VertexAttributeType::GenericTextureAmbientLightSensitivity:
-        return "GenericTextureAmbientLightSensitivity";
+    case VertexAttributeType::GenericTexturePackedData:
+        return "GenericTexturePackedData";
     case VertexAttributeType::ShipPointPosition:
         return "ShipPointPosition";
     case VertexAttributeType::ShipPointColor:
