@@ -153,25 +153,27 @@ Current perf
 
 			= Extra optimizations to test:
 				= vector (no test)
-				- Use a vec4 for the four lonely floats
+				+ Use a vec4 for the four lonely floats
+					+ With multiple batches:
+						+ FPS: 16.4
+					+ With single batch:
+						+ FPS: 12.29
+				+ further packing: two vec2 as one vec4
+					+ With multiple batches:
+						+ FPS: 16.4
+				- Commit
+				- atan in shader 
+					- requires two extra vec2 or a vec4
 					- With multiple batches:
 						- FPS: 16.4
-						- ShipRenderContext::RenderGenericTextures: 32.23% 
-						- ShipRenderContext::UploadGenericTexture...: 0.56%
-							- atan2f: 0.14%
-							- vector: 0.10%
 					- With single batch:
 						- FPS: 12.29
-						- ShipRenderContext::RenderGenericTextures: 6.88%
-						- ShipRenderContext::UploadGenericTexture...: 0.75%
-							- atan2f: 0.21%
-							- vector: 0.08%
-
-				- atan in shader 
-					- after commit! NOT for ship though!
 
 			- Cleanup:
 				- Ship's test upload
+				- reorder RenderCore::VertexAttributes
+
+			- Final test with real textures
 
 			- After Z: 
 				- Shader also takes ShipID, ConnectedComponentID for Z

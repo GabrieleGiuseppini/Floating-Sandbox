@@ -127,14 +127,12 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::Shared1XFloat;
     else if (Utils::CaseInsensitiveEquals(str, "WaterPosition"))
         return VertexAttributeType::WaterPosition;
-    else if (Utils::CaseInsensitiveEquals(str, "GenericTextureCenterPosition"))
-        return VertexAttributeType::GenericTextureCenterPosition;
-    else if (Utils::CaseInsensitiveEquals(str, "GenericTextureVertexOffset"))
-        return VertexAttributeType::GenericTextureVertexOffset;
+    else if (Utils::CaseInsensitiveEquals(str, "GenericTexturePackedData1"))
+        return VertexAttributeType::GenericTexturePackedData1;
+    else if (Utils::CaseInsensitiveEquals(str, "GenericTexturePackedData2"))
+        return VertexAttributeType::GenericTexturePackedData2;
     else if (Utils::CaseInsensitiveEquals(str, "GenericTextureTextureCoordinates"))
         return VertexAttributeType::GenericTextureTextureCoordinates;
-    else if (Utils::CaseInsensitiveEquals(str, "GenericTexturePackedData"))
-        return VertexAttributeType::GenericTexturePackedData;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointPosition"))
         return VertexAttributeType::ShipPointPosition;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointColor"))
@@ -161,14 +159,12 @@ std::string VertexAttributeTypeToStr(VertexAttributeType vertexAttribute)
         return "Shared1XFloat";
     case VertexAttributeType::WaterPosition:
         return "WaterPosition";
-    case VertexAttributeType::GenericTextureCenterPosition:
-        return "GenericTextureCenterPosition";
-    case VertexAttributeType::GenericTextureVertexOffset:
-        return "GenericTextureVertexOffset";
+    case VertexAttributeType::GenericTexturePackedData1:
+        return "GenericTexturePackedData1";        
+    case VertexAttributeType::GenericTexturePackedData2:
+        return "GenericTexturePackedData2";
     case VertexAttributeType::GenericTextureTextureCoordinates:
         return "GenericTextureTextureCoordinates";
-    case VertexAttributeType::GenericTexturePackedData:
-        return "GenericTexturePackedData";
     case VertexAttributeType::ShipPointPosition:
         return "ShipPointPosition";
     case VertexAttributeType::ShipPointColor:

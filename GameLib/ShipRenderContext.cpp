@@ -191,10 +191,9 @@ ShipRenderContext::ShipRenderContext(
     CheckOpenGLError();
 
     // Describe buffers
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTextureCenterPosition), 2, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)0);
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTextureVertexOffset), 2, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)(2 * sizeof(float)));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTexturePackedData1), 4, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)0);
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTextureTextureCoordinates), 2, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)((2 + 2) * sizeof(float)));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTexturePackedData), 4, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)((2 + 2 + 2) * sizeof(float)));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTexturePackedData2), 4, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)((2 + 2 + 2) * sizeof(float)));
     CheckOpenGLError();
 
 
@@ -866,31 +865,31 @@ void ShipRenderContext::RenderGenericTextures(std::vector<GenericTextureInfo> co
         // Disable vertex attribute 0, as we don't use it
         glDisableVertexAttribArray(0);
 
-        ////// TODOTEST: Multiple batches
-        ////// Draw all textures for this connected component
-        ////for (size_t c = 0; c < connectedComponent.size(); ++c)
-        ////{
-        ////    // Bind texture
-        ////    mTextureRenderManager.BindTexture(connectedComponent[c].frameId);
+        // TODOTEST: Multiple batches
+        // Draw all textures for this connected component
+        for (size_t c = 0; c < connectedComponent.size(); ++c)
+        {
+            // Bind texture
+            mTextureRenderManager.BindTexture(connectedComponent[c].frameId);
 
-        ////    // Draw polygon
-        ////    glDrawArrays(
-        ////        GL_TRIANGLE_STRIP,
-        ////        static_cast<GLint>(connectedComponent[c].polygonIndex),
-        ////        4);
-        ////}    
+            // Draw polygon
+            glDrawArrays(
+                GL_TRIANGLE_STRIP,
+                static_cast<GLint>(connectedComponent[c].polygonIndex),
+                4);
+        }    
 
 
-        // TODOTEST: Single batch
+        ////// TODOTEST: Single batch
 
-        // Bind texture
-        mTextureRenderManager.BindTexture(connectedComponent[0].frameId);
+        ////// Bind texture
+        ////mTextureRenderManager.BindTexture(connectedComponent[0].frameId);
 
-        // Draw polygons
-        glDrawArrays(
-            GL_TRIANGLE_STRIP,
-            static_cast<GLint>(connectedComponent[0].polygonIndex),
-            4 * connectedComponent.size());
+        ////// Draw polygons
+        ////glDrawArrays(
+        ////    GL_TRIANGLE_STRIP,
+        ////    static_cast<GLint>(connectedComponent[0].polygonIndex),
+        ////    4 * connectedComponent.size());
     }
 }
 
