@@ -413,16 +413,16 @@ void RenderContext::RenderCloudsEnd()
     glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
     CheckOpenGLError();
 
+    // Upload cloud buffer     
+    glBufferData(GL_ARRAY_BUFFER, mCloudBufferSize * sizeof(CloudElement), mCloudBuffer.get(), GL_DYNAMIC_DRAW);
+    CheckOpenGLError();
+
     // Describe shared attribute indices
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedAttribute1), 4, GL_FLOAT, GL_FALSE, (2 + 2) * sizeof(float), (void*)0);
     CheckOpenGLError();
 
     // Enable vertex attribute 0
     glEnableVertexAttribArray(0);
-
-    // Upload cloud buffer     
-    glBufferData(GL_ARRAY_BUFFER, mCloudBufferSize * sizeof(CloudElement), mCloudBuffer.get(), GL_DYNAMIC_DRAW);
-    CheckOpenGLError();
 
     // Enable stenciling - only draw where there are no 1's
     glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
