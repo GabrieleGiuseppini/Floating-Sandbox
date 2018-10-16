@@ -995,6 +995,8 @@ void Ship::UpdateWaterVelocities(
                 // New momentum (old velocity + velocity gained) bounces back
                 // (and zeroes outgoing), assuming perfectly inelastic collision
                 //
+                // No changes to other endpoint
+                //
 
                 newPointWaterMomentumBufferData[pointIndex] -=
                     springOutboundWaterVelocities[s]
