@@ -80,34 +80,6 @@ void Points::Destroy(ElementIndex pointElementIndex)
     mWaterMomentumBuffer[pointElementIndex] = vec2f::zero();
 }
 
-void Points::Breach(
-    ElementIndex pointElementIndex,
-    Triangles & triangles)
-{
-    assert(pointElementIndex < mElementCount);
-
-    //
-    // Start leaking
-    //
-
-    mIsLeakingBuffer[pointElementIndex] = true;
-
-    //
-    // Destroy all of our connected triangles
-    //
-
-    // Note: we can't simply iterate and destroy, as destroying a triangle causes
-    // that triangle to be removed from the vector being iterated
-    auto & connectedTriangles = GetConnectedTriangles(pointElementIndex);
-    while (!connectedTriangles.empty())
-    {
-        assert(!triangles.IsDeleted(connectedTriangles.back()));
-        triangles.Destroy(connectedTriangles.back());
-    }
-
-    assert(GetConnectedTriangles(pointElementIndex).empty());
-}
-
 void Points::Upload(
     int shipId,
     Render::RenderContext & renderContext) const

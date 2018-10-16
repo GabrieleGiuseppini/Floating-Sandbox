@@ -131,10 +131,6 @@ public:
 
     void Destroy(ElementIndex pointElementIndex);
 
-    void Breach(
-        ElementIndex pointElementIndex,
-        Triangles & triangles);        
-
     //
     // Render
     //

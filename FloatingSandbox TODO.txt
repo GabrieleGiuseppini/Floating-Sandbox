@@ -72,143 +72,39 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 	- Warship
 	- See Moleskine
 
+= Gfx Optimizations:
+
+	+ Pack vertex attributes @ other shaders:
+		+ clouds
+		+ text_ndc
+		+ FPS: 28.2/28.4
+
+	= Reduce # of bind VBO calls by delaying upload of buffers we own until we bind the VBO for drawing
+		+ Land at RenderContext::UploadLandAndWaterEnd/RenderLand
+		+ Also disable vertex attribute index zero once
+		+ Test all ship shaders with 2 connected components
+		- FPS: TODOHERE
+
+	- Use MapBuffer when we know the sizes in advance, eventually re-allocating GPU buffer when the size changes
+		- Clouds
+		- Land, Water
+
 - Technical Debt:
-	= Textures are json files, with world size, offset, and lighting boolean
-		+ SEE MOLESKINE
-		+ Cleanup:
-			+ RenderContext:
-				+ Hook up IProgress to individual loads
-					+ Double-check total count adjustment				
-			+ Commit
-		+ Then:
-			+ (Ship)RenderContext: Do not store sizes but whole database instead
-				+ Database must be associated with GLuint's of textures
-				+ RenderContext stores (moves) database at cctor
-				+ Passes reference to ship
-				+ TextureDatabase::GetFrameMetadata(TextureFrameId)
-					+ TextureDatabase builds map of references at cctor
-			+ Remove hardcoded sizes and offsets and substitute with metadata lookups
-				+ Cloud size
-				+ Water size
-				+ Land size
-				+ Pinned point size
-				+ Bombs sizes and offsets
-			+ Test
-				+ Double-check clouds's aspect ratio
-				+ Anchor at all frames of timer bomb
-			+ Commit
-			+ ShipRenderContext: replace pinned points and bombs with Upload(Ship)TextureRenderSpecification:
-				+ PinnedPoints
-				+ Bombs:
-					+ Upload4Render() eventually invokes twice (lighted and unlighted)
-					+ Frame indices are TextureFrameIndex instead of uint32
-				+ Args:
-					+ ShipID (used only by RenderContext to dispatch)
-					+ ConnectedComponentID
-						+ Until Z-rearc: ShipRenderContext has one TextureRenderSpecification per-connected component
-						- After Z-rearc: put in buffer for shader to transform to Z
-					+ Position (vec2f)
-						+ Of anchor
-					+ Orientation (std::optional<vec2f, vec2f>)
-					+ TextureFrameId
-				+ ShipRenderContext gets TexturePolygon from TextureRenderManager::CalculateTexturePolygon
-					+ TexturePolygon is declared at RenderTexture.h, which includes other Texture render .h's
-					+ Contains 4X{pos,textureCoord, and AmbientLight adjustment}
-					+ For the time being it calculates also rotation
-					+ Nuke RotatedTextureRenderInfo.h
-				+ Use a single shader for these "simple" textures
-					+ Takes TexturePolygon, described to OpenGL
-				+ ShipRenderContext rearc:
-					+ Textures -> TBD Name="Generic"
-					+ Simplify alpha and beta with just beta, and beta is "ambientLightSensitivity"
-				+ ShipRenderContext: Detach textures from ConnectedComponentData
-					+ RenderContext::RenderShipStart(connected components)
-					+ RenderContext::RenderShipEnd()
-				+ Double-check cloud rectangle calc'n against TexturePolygon
-				+ Test
-					+ Double-check clouds's aspect ratio
-					+ Anchor at all frames of timer bomb
-					+ Rotation of bombs
-				+ Move TextureRenderManager::AddRenderPolygon method to .h, and call it EmitRenderPolygon
-				+ Move bind into TextureRenderManager, templated
-				+ Nuke old bombs/pinnedpoints at ShipRenderContext
-				+ Commit
-		= Change the single shader to do *all the work* (for the "simple" textures, including rotation) for all ships and connected components
-			+ Initially, runs on 1 texture at a time
-				+ After atlas and Z, runs on all textures (via atlas' per-frame texture coordinates)
-			+ Perf before moving rotation into shader (2000 textures, @ 30s):
-				+ With multiple batches:
-					+ FPS: 16.5
-					+ ShipRenderContext::RenderGenericTextures: 31.29% 
-					+ TextureRenderManager::EmitRenderPolygon: 0.53%
-						+ atan2f: 0.16%
-						+ sin+cos: 0.09%
-				+ With single batch:
-					+ FPS: 12.24
-					+ ShipRenderContext::RenderGenericTextures: 4.65%
-					+ TextureRenderManager::EmitRenderPolygon: 0.83%
-						+ atan2f: 0.28%
-						+ sin+cos: 0.16%
-			+ Move rotation et al into shader (without Z for now)
-				+ TexturePolygon is modified to also contain orientation
-			+ Perf after moving rotation into shader:
-				+ With multiple batches:
-					+ FPS: 16.4
-					+ ShipRenderContext::RenderGenericTextures: 32.23% 
-					+ ShipRenderContext::UploadGenericTexture...: 0.56%
-						- atan2f: 0.14%
-						- vector: 0.10%
-				+ With single batch:
-					+ FPS: 12.29
-					+ ShipRenderContext::RenderGenericTextures: 6.88%
-					+ ShipRenderContext::UploadGenericTexture...: 0.75%
-						- atan2f: 0.21%
-						- vector: 0.08%
-			+ If OK:
-				+ Nuke TextureRenderManager::EmitRenderPolygon and do all at ShipRenderContext::UploadGenericTextureRenderSpecification
-				+ Move TextureRenderPolygonVertex out of RenderCore and make it private to ShipRenderContext
 
-			+ Extra optimizations to test:
-				+ vector (no test)
-				+ Use a vec4 for the four lonely floats
-					+ With multiple batches:
-						+ FPS: 16.4
-					+ With single batch:
-						+ FPS: 12.29
-				+ further packing: two vec2 as one vec4
-					+ With multiple batches:
-						+ FPS: 16.4
-				+ Commit
-				+ atan in shader - REJECTED
-					+ requires two extra vec2 or a vec4
-					+ With multiple batches:
-						+ FPS: 16.2
-						+ ShipRenderContext::RenderGenericTextures: 31.50% 
-						+ ShipRenderContext::UploadGenericTexture...: 0.56%
-							+ vector: 0.56%
-			+ Final perf test:
-				+ FPS: 16.4
-			+ Text single texture rotating
-			+ Cleanup:
-				+ Ship's test upload
-				+ reorder RenderCore::VertexAttributes
-			+ Final test with game, real textures
-			+ Pack vertex attributes @ other shaders:
-				+ clouds
-				+ text_ndc
-				+ FPS: 28.2/28.4
+	= Fix issue with very fast rope sinking
+		+ How's a wet rope different than iron hull? Test with test_ship.png
+		+ It's because ropes get water (when broken) and gravity force is based off point_mass+water, while integration only uses point_mass
+			+ In fact it also applies to all light hulls that are broken
+		+ See if can apply buoyancy always, and thus get rid of Points::Buoyancy
+			+ Nope: too many hull materials would float
+		+ NOPE: Apply water mass at Integrate then? And what about springs - should use new mass there as well?
+		- Two possible fixes:
+			- Just don't consider water at gravity if buoyancy=0 (i.e. if hull)
+				- i.e. revert the buoyancy fix
+				- result is that wet hull points never feel water weight (and neither buoyancy)
+			- Or, buoyancy=0 points (i.e. hull points) never take water, period
+				- i.e. they are never set leaking
 
-			= Reduce # of bind VBO calls by delaying upload of buffers we own until we bind the VBO for drawing
-				+ Land at RenderContext::UploadLandAndWaterEnd/RenderLand
-				+ Also disable vertex attribute index zero once
-				+ Test all ship shaders with 2 connected components
-				- FPS: TODOHERE
-			- Use MapBuffer when we know the sizes in advance, eventually re-allocating when the size changes
-				- Clouds
-				- Land, Water
-
-	- Fix issue with very fast rope sinking
-		- How's a wet rope different than iron hull? Test with test_ship.png
 
 	+ Move RenderContext et al into Render:: namespace and file group
 			+ See if TextureTypes.h is still needed and whether it can be moved to GameTypes
@@ -305,49 +201,47 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 		- 2: see if can do semi-integer x-axis interpolation
 	- Cache sea depth from PointDynamics at first calculation (Points?), using lambda
 
+- Gfx optimizations:
+	- Try glMapBuffer for index buffers (triangles, springs, etc.)
+		- Only after Z
+			- Complications if no Z:
+				- Would need multiple buffers, one for each connected component, but sizes of each are not known yet, 
+				  thus we'd waste GPU ram
+		- ShipRenderContext::UploadElementsStart gets and stores the pointers to the N buffers
+		- ShipRenderContext::UploadElementsEnd calls glUnmapBuffer on each
+			- And also "forgets" pointers, for debugging
+			- No need to upload anymore
+		- ShipRenderContext::UploadXYZ write directly into buffer
+	- Try using GL_SHORT for Ship texture coordinates
+		- Passing NORMALIZE and 3 components to glVertexAttribPointer
+	- (Retry) Use CPU and GPU in parallel
+		- Finalize render (glFlush) before render step, not after
+			- Research glFlush()
+			- By invoking glFlush() and SwapBuffers() in MainFrame, before Render()
+	- More connected components => slower (multiple batches); try
+	  to draw one single batch then, using Z buffer and depth test 
+		- Assign Z based on connected component ID
+		- Plan:
+			- TODO: review the below based off transparency sorting - see MOLESKINE
+			1 - Test perspective with hardcoded z=-800 at shader, and see if it makes any difference
+			2 - Ship assigns points' ConnectedComponentID as float in vector
+			3 - ShipRenderContext's shaders (Triangles, Springs) take Z and with ad-hoc OrthoMatrix
+			    transform ConnectedComponentID to Z
+			4 - ShipRenderContext::UploadXYZElement() does not take anymore connected component ID
+			5 - (Nice to have): sticky component IDs, by leveraging the fact that normally IDs are assigned from L,T to R,B
+		- See if drawing springs & triangles at separate depths also helps generally with render speed, even for one single
+		  connected component (for springs' fragment shader - may be it takes shortcuts if it knows it's behind)
+		- After Z is done:
+			- GenericTextureShader also takes ShipID, ConnectedComponentID for Z, and exists in one central place
+				- Invoke shader at one place (still for 1 texture at a time, waiting for atlas)
+					- Move this shader and all ShipRenderContext::UploadTextureRenderSpecification to 
+					  RenderContext
+					  - With optional <ship ID, connected component ID> pair (not set -> main UI, on top of everything)
 
 - Gfx:
 	- Problem with texture over edges of structure: when texture is not reduced by structure (i.e. when structure is
 	  larger than texture), then one sees parts of the springs
 		- It's a problem with rendering springs with the texture shader
-	- Optimizations:
-		- Try glMapBuffer for index buffers (triangles, springs, etc.)
-			- Only after Z
-				- Complications if no Z:
-					- Would need multiple buffers, one for each connected component, but sizes of each are not known yet, 
-					  thus we'd waste GPU ram
-			- ShipRenderContext::UploadElementsStart gets and stores the pointers to the N buffers
-			- ShipRenderContext::UploadElementsEnd calls glUnmapBuffer on each
-				- And also "forgets" pointers, for debugging
-				- No need to upload anymore
-			- ShipRenderContext::UploadXYZ write directly into buffer
-		- Try using GL_SHORT for Ship texture coordinates
-			- Passing NORMALIZE and 3 components to glVertexAttribPointer
-		- (Retry) Use CPU and GPU in parallel
-			- Finalize render (glFlush) before render step, not after
-				- Research glFlush()
-				- By invoking glFlush() and SwapBuffers() in MainFrame, before Render()
-		- More connected components => slower (multiple batches); try
-		  to draw one single batch then, using Z buffer and depth test 
-			- Assign Z based on connected component ID
-			- Plan:
-				- TODO: review the below based off transparency sorting - see MOLESKINE
-				1 - Test perspective with hardcoded z=-800 at shader, and see if it makes any difference
-				2 - Ship assigns points' ConnectedComponentID as float in vector
-				3 - ShipRenderContext's shaders (Triangles, Springs) take Z and with ad-hoc OrthoMatrix
-				    transform ConnectedComponentID to Z
-				4 - ShipRenderContext::UploadXYZElement() does not take anymore connected component ID
-				5 - (Nice to have): sticky component IDs, by leveraging the fact that normally IDs are assigned from L,T to R,B
-			- See if drawing springs & triangles at separate depths also helps generally with render speed, even for one single
-			  connected component (for springs' fragment shader - may be it takes shortcuts if it knows it's behind)
-			- After Z is done:
-				- GenericTextureShader also takes ShipID, ConnectedComponentID for Z, and exists in one central place
-					- Invoke shader at one place (still for 1 texture at a time, waiting for atlas)
-						- Move this shader and all ShipRenderContext::UploadTextureRenderSpecification to 
-						  RenderContext
-						  - With optional <ship ID, connected component ID> pair (not set -> main UI, on top of everything)
-
-
 	- Draw better those parts that are only connected by ropes 
 		- Change connected component detection by not propagating from a "spring only" to a "body"
 			- In practice: flood the *edge* network, not the spring network, and don't propagate
@@ -2371,6 +2265,126 @@ IF WX:
 		+ Test assert's with Debug build
 	+ Move definition of ElementIndex et al into GameTypes.h
 	+ Move also pinned points to a PinnedPoints class, just like Bombs
+	+ Textures are json files, with world size, offset, and lighting boolean
+		+ SEE MOLESKINE
+		+ Cleanup:
+			+ RenderContext:
+				+ Hook up IProgress to individual loads
+					+ Double-check total count adjustment				
+			+ Commit
+		+ Then:
+			+ (Ship)RenderContext: Do not store sizes but whole database instead
+				+ Database must be associated with GLuint's of textures
+				+ RenderContext stores (moves) database at cctor
+				+ Passes reference to ship
+				+ TextureDatabase::GetFrameMetadata(TextureFrameId)
+					+ TextureDatabase builds map of references at cctor
+			+ Remove hardcoded sizes and offsets and substitute with metadata lookups
+				+ Cloud size
+				+ Water size
+				+ Land size
+				+ Pinned point size
+				+ Bombs sizes and offsets
+			+ Test
+				+ Double-check clouds's aspect ratio
+				+ Anchor at all frames of timer bomb
+			+ Commit
+			+ ShipRenderContext: replace pinned points and bombs with Upload(Ship)TextureRenderSpecification:
+				+ PinnedPoints
+				+ Bombs:
+					+ Upload4Render() eventually invokes twice (lighted and unlighted)
+					+ Frame indices are TextureFrameIndex instead of uint32
+				+ Args:
+					+ ShipID (used only by RenderContext to dispatch)
+					+ ConnectedComponentID
+						+ Until Z-rearc: ShipRenderContext has one TextureRenderSpecification per-connected component
+						- After Z-rearc: put in buffer for shader to transform to Z
+					+ Position (vec2f)
+						+ Of anchor
+					+ Orientation (std::optional<vec2f, vec2f>)
+					+ TextureFrameId
+				+ ShipRenderContext gets TexturePolygon from TextureRenderManager::CalculateTexturePolygon
+					+ TexturePolygon is declared at RenderTexture.h, which includes other Texture render .h's
+					+ Contains 4X{pos,textureCoord, and AmbientLight adjustment}
+					+ For the time being it calculates also rotation
+					+ Nuke RotatedTextureRenderInfo.h
+				+ Use a single shader for these "simple" textures
+					+ Takes TexturePolygon, described to OpenGL
+				+ ShipRenderContext rearc:
+					+ Textures -> TBD Name="Generic"
+					+ Simplify alpha and beta with just beta, and beta is "ambientLightSensitivity"
+				+ ShipRenderContext: Detach textures from ConnectedComponentData
+					+ RenderContext::RenderShipStart(connected components)
+					+ RenderContext::RenderShipEnd()
+				+ Double-check cloud rectangle calc'n against TexturePolygon
+				+ Test
+					+ Double-check clouds's aspect ratio
+					+ Anchor at all frames of timer bomb
+					+ Rotation of bombs
+				+ Move TextureRenderManager::AddRenderPolygon method to .h, and call it EmitRenderPolygon
+				+ Move bind into TextureRenderManager, templated
+				+ Nuke old bombs/pinnedpoints at ShipRenderContext
+				+ Commit
+		+ Change the single shader to do *all the work* (for the "simple" textures, including rotation) for all ships and connected components
+			+ Initially, runs on 1 texture at a time
+				+ After atlas and Z, runs on all textures (via atlas' per-frame texture coordinates)
+			+ Perf before moving rotation into shader (2000 textures, @ 30s):
+				+ With multiple batches:
+					+ FPS: 16.5
+					+ ShipRenderContext::RenderGenericTextures: 31.29% 
+					+ TextureRenderManager::EmitRenderPolygon: 0.53%
+						+ atan2f: 0.16%
+						+ sin+cos: 0.09%
+				+ With single batch:
+					+ FPS: 12.24
+					+ ShipRenderContext::RenderGenericTextures: 4.65%
+					+ TextureRenderManager::EmitRenderPolygon: 0.83%
+						+ atan2f: 0.28%
+						+ sin+cos: 0.16%
+			+ Move rotation et al into shader (without Z for now)
+				+ TexturePolygon is modified to also contain orientation
+			+ Perf after moving rotation into shader:
+				+ With multiple batches:
+					+ FPS: 16.4
+					+ ShipRenderContext::RenderGenericTextures: 32.23% 
+					+ ShipRenderContext::UploadGenericTexture...: 0.56%
+						- atan2f: 0.14%
+						- vector: 0.10%
+				+ With single batch:
+					+ FPS: 12.29
+					+ ShipRenderContext::RenderGenericTextures: 6.88%
+					+ ShipRenderContext::UploadGenericTexture...: 0.75%
+						- atan2f: 0.21%
+						- vector: 0.08%
+			+ If OK:
+				+ Nuke TextureRenderManager::EmitRenderPolygon and do all at ShipRenderContext::UploadGenericTextureRenderSpecification
+				+ Move TextureRenderPolygonVertex out of RenderCore and make it private to ShipRenderContext
+
+			+ Extra optimizations to test:
+				+ vector (no test)
+				+ Use a vec4 for the four lonely floats
+					+ With multiple batches:
+						+ FPS: 16.4
+					+ With single batch:
+						+ FPS: 12.29
+				+ further packing: two vec2 as one vec4
+					+ With multiple batches:
+						+ FPS: 16.4
+				+ Commit
+				+ atan in shader - REJECTED
+					+ requires two extra vec2 or a vec4
+					+ With multiple batches:
+						+ FPS: 16.2
+						+ ShipRenderContext::RenderGenericTextures: 31.50% 
+						+ ShipRenderContext::UploadGenericTexture...: 0.56%
+							+ vector: 0.56%
+			+ Final perf test:
+				+ FPS: 16.4
+			+ Text single texture rotating
+			+ Cleanup:
+				+ Ship's test upload
+				+ reorder RenderCore::VertexAttributes
+			+ Final test with game, real textures
 
 + Ships:
 	+ Titanic:
