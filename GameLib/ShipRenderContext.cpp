@@ -625,6 +625,14 @@ void ShipRenderContext::RenderEnd()
     glBufferData(GL_ARRAY_BUFFER, mGenericTextureRenderPolygonVertexBuffer.size() * sizeof(TextureRenderPolygonVertex), mGenericTextureRenderPolygonVertexBuffer.data(), GL_DYNAMIC_DRAW);
     CheckOpenGLError();
 
+
+    //
+    // Disable vertex attribute 0, as we won't use it in here (it's all dedicated)
+    //
+
+    glDisableVertexAttribArray(0);
+
+
     //
     // Process all connected components, from first to last, and draw all elements
     //
@@ -738,9 +746,6 @@ void ShipRenderContext::RenderPointElements(ConnectedComponentData const & conne
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *connectedComponent.pointElementVBO);
     CheckOpenGLError();
 
-    // Disable vertex attribute 0, as we don't use it
-    glDisableVertexAttribArray(0);
-
     // Draw
     glDrawElements(GL_POINTS, static_cast<GLsizei>(1 * connectedComponent.pointElementCount), GL_UNSIGNED_INT, 0);
 }
@@ -771,9 +776,6 @@ void ShipRenderContext::RenderSpringElements(
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *connectedComponent.springElementVBO);
     CheckOpenGLError();
 
-    // Disable vertex attribute 0, as we don't use it
-    glDisableVertexAttribArray(0);
-
     // Draw
     glDrawElements(GL_LINES, static_cast<GLsizei>(2 * connectedComponent.springElementCount), GL_UNSIGNED_INT, 0);
 }
@@ -791,9 +793,6 @@ void ShipRenderContext::RenderRopeElements(ConnectedComponentData const & connec
         // Bind VBO
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *connectedComponent.ropeElementVBO);
         CheckOpenGLError();
-
-        // Disable vertex attribute 0, as we don't use it
-        glDisableVertexAttribArray(0);
 
         // Draw
         glDrawElements(GL_LINES, static_cast<GLsizei>(2 * connectedComponent.ropeElementCount), GL_UNSIGNED_INT, 0);
@@ -822,9 +821,6 @@ void ShipRenderContext::RenderTriangleElements(
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *connectedComponent.triangleElementVBO);
     CheckOpenGLError();
 
-    // Disable vertex attribute 0, as we don't use it
-    glDisableVertexAttribArray(0);
-
     // Draw
     glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(3 * connectedComponent.triangleElementCount), GL_UNSIGNED_INT, 0);
 }
@@ -847,9 +843,6 @@ void ShipRenderContext::RenderStressedSpringElements(ConnectedComponentData cons
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *connectedComponent.stressedSpringElementVBO);
         CheckOpenGLError();
 
-        // Disable vertex attribute 0, as we don't use it
-        glDisableVertexAttribArray(0);
-
         // Draw
         glDrawElements(GL_LINES, static_cast<GLsizei>(2 * connectedComponent.stressedSpringElementCount), GL_UNSIGNED_INT, 0);
     }
@@ -861,9 +854,6 @@ void ShipRenderContext::RenderGenericTextures(std::vector<GenericTextureInfo> co
     {
         // Use program
         mShaderManager.ActivateProgram<ProgramType::GenericTextures>();
-
-        // Disable vertex attribute 0, as we don't use it
-        glDisableVertexAttribArray(0);
 
         // Draw all textures for this connected component
         for (size_t c = 0; c < connectedComponent.size(); ++c)

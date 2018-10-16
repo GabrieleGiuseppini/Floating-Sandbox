@@ -480,20 +480,8 @@ void RenderContext::UploadLandAndWaterStart(size_t slices)
 void RenderContext::UploadLandAndWaterEnd()
 {
     //
-    // Upload land buffer
-    //
-
-    // Bind VBO
-    glBindBuffer(GL_ARRAY_BUFFER, *mLandVBO);
-    CheckOpenGLError();
-
-    // Upload land buffer
-    glBufferData(GL_ARRAY_BUFFER, mLandBufferSize * sizeof(LandElement), mLandBuffer.get(), GL_DYNAMIC_DRAW);
-    CheckOpenGLError();
-
-
-    //
-    // Upload water buffer
+    // We upload the land buffer later, when we need it.
+    // However, we need the water buffer also for clouds, hence we upload it now
     //
 
     assert(mWaterBufferSize == mWaterBufferMaxSize);
@@ -520,6 +508,10 @@ void RenderContext::RenderLand()
 
     // Bind VBO
     glBindBuffer(GL_ARRAY_BUFFER, *mLandVBO);
+    CheckOpenGLError();
+
+    // Upload land buffer
+    glBufferData(GL_ARRAY_BUFFER, mLandBufferSize * sizeof(LandElement), mLandBuffer.get(), GL_DYNAMIC_DRAW);
     CheckOpenGLError();
 
     // Describe shared attribute indices

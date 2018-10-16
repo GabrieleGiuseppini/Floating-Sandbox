@@ -2,6 +2,24 @@
 Current perf
 =================================================
 - fps: 28.3 / 28.8 (Quiet Laptop) (Samsung: TBD-was 32.7 (Krafting)) (Mattia's: TBD (Krafting))
+- GameController::Update: TODO%
+	- Ship::Update: TODO%
+		- UpdateMechanicalDynamics: 25.18%
+			- UpdateSpringForces: 18.64%
+			- UpdatePointForces: 3.36%
+			- HandleCollisionsWithSeafloor: 2.26% / 2.32% (with new elastic impact)
+			- IntegratePointForces: 0.92%
+		- UpdateWaterDynamics: 7.68%
+			- UpdateWaterVelocities: 7.58%
+			- UpdateWaterInflow: 0.05%
+		- UpdateStrains: 0.79%
+	- DiffuseLight: TODO%
+- World::Render: TODO%
+	- ShipRenderContext::RenderEnd: TODO%
+	- RenderContext::RenderCloudsEnd: TODO%
+=================================================
+Right after 1.5.0 perf (before texture shader & shaders' optimizations)
+=================================================
 - GameController::Update: 34.50%
 	- Ship::Update: 33.68%
 		- UpdateMechanicalDynamics: 25.18%
@@ -17,7 +35,6 @@ Current perf
 - World::Render: 57.68%
 	- ShipRenderContext::RenderEnd: 52.41%
 	- RenderContext::RenderCloudsEnd: 2.84%
-
 =================================================
 1.3.0 perf
 =================================================
@@ -176,40 +193,33 @@ Current perf
 				+ Ship's test upload
 				+ reorder RenderCore::VertexAttributes
 			+ Final test with game, real textures
-
-			= Pack vertex attributes @ other shaders:
+			+ Pack vertex attributes @ other shaders:
 				+ clouds
 				+ text_ndc
-				+ Initial perf:
-					+ FPS: 28.3/28.8
-				= Final perf:
-					= FPS: 28.2/28.6
-				- Get rid of SharedAttribute3
-			- Reduce # of bind VBO calls by delaying upload of buffers we own until we bind the VBO for drawing
-				- Land at RenderContext::UploadLandAndWaterEnd/RenderLand
-				- Elements at ShipRenderContext::UploadElementsEnd/RenderXYZ
+				+ FPS: 28.2/28.4
+
+			= Reduce # of bind VBO calls by delaying upload of buffers we own until we bind the VBO for drawing
+				+ Land at RenderContext::UploadLandAndWaterEnd/RenderLand
+				+ Also disable vertex attribute index zero once
+				+ Test all ship shaders with 2 connected components
+				- FPS: TODOHERE
 			- Use MapBuffer when we know the sizes in advance, eventually re-allocating when the size changes
 				- Clouds
 				- Land, Water
+
+	- Fix issue with very fast rope sinking
+		- How's a wet rope different than iron hull? Test with test_ship.png
 
 	+ Move RenderContext et al into Render:: namespace and file group
 			+ See if TextureTypes.h is still needed and whether it can be moved to GameTypes
 				+ After all, ShipRenderMode is in GameTypes
 				+ Polygon for now moves to that class that makes it
 
-	- GameController rearc:
-		- TODO: OPTION 1
-		- GameController moves to FloatingSandbox, and contains SoundController and ToolController as well
-		- MainFrame talks exclusively to GameController, which in turn talks to the others
-		- ToolController has SoundController, and tells the latter when to play and stop tools' sounds 
-			- IGameEventHandler events exist only for the world-generated noises (e.g. something really breaking), not
-			  for the tools
-			  - So Swirl, for example, should disappear from IGameEventHandler; some others as well
-		- TODO: OPTION 2
-			- ToolController has pointer to SoundController, and tells the latter when to play and stop tools' sounds 
-			- IGameEventHandler events then exist only for the world-generated noises (e.g. something really breaking), not
-			  for the tools
-			  - So Swirl, for example, should disappear from IGameEventHandler; some others as well
+	- ToolController rearc:
+		- ToolController has pointer to SoundController, and tells the latter when to play and stop tools' sounds 
+		- IGameEventHandler events then exist only for the world-generated noises (e.g. something really breaking), not
+		  for the tools
+		  - So Swirl, for example, should disappear from IGameEventHandler; some others as well
 
 	+ CMake:
 		+ INSTALL target for release
