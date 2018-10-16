@@ -233,8 +233,13 @@ float Springs::CalculateStiffnessCoefficient(
     // The adjustment is both the material-specific adjustment and the global game adjustment.
     //       
 
-    float const massFactor = (points.GetMass(pointAIndex) * points.GetMass(pointBIndex)) / (points.GetMass(pointAIndex) + points.GetMass(pointBIndex));
-    static constexpr float dtSquared = GameParameters::MechanicalDynamicsSimulationStepTimeDuration<float> * GameParameters::MechanicalDynamicsSimulationStepTimeDuration<float>;
+    float const massFactor = 
+        (points.GetMass(pointAIndex) * points.GetMass(pointBIndex)) 
+        / (points.GetMass(pointAIndex) + points.GetMass(pointBIndex));
+
+    static constexpr float dtSquared = 
+        GameParameters::MechanicalDynamicsSimulationStepTimeDuration<float> 
+        * GameParameters::MechanicalDynamicsSimulationStepTimeDuration<float>;
 
     static constexpr float C = 0.4f;
 
