@@ -1,8 +1,7 @@
 =================================================
 Current perf
 =================================================
-- fps: 26.8 / 27.2 (Quiet Laptop) (Samsung: TBD-was 32.7 (Krafting)) (Mattia's: TBD (Krafting))
-	after texture rearc: 28.3 / 28.8 (Quiet Laptop?)
+- fps: 28.3 / 28.8 (Quiet Laptop) (Samsung: TBD-was 32.7 (Krafting)) (Mattia's: TBD (Krafting))
 - GameController::Update: 34.50%
 	- Ship::Update: 33.68%
 		- UpdateMechanicalDynamics: 25.18%
@@ -178,26 +177,25 @@ Current perf
 				+ reorder RenderCore::VertexAttributes
 			+ Final test with game, real textures
 
-			= TODOHERE: Pack vertex attributes @ other shaders:
-				- clouds
-				- text_ndc
-				- Initial perf:
-					- FPS: 
-				- Final perf:
-					- FPS: 
+			= Pack vertex attributes @ other shaders:
+				+ clouds
+				+ text_ndc
+				+ Initial perf:
+					+ FPS: 28.3/28.8
+				= Final perf:
+					= FPS: 28.2/28.6
+				- Get rid of SharedAttribute3
+			- Reduce # of bind VBO calls by delaying upload of buffers we own until we bind the VBO for drawing
+				- Land at RenderContext::UploadLandAndWaterEnd/RenderLand
+				- Elements at ShipRenderContext::UploadElementsEnd/RenderXYZ
+			- Use MapBuffer when we know the sizes in advance, eventually re-allocating when the size changes
+				- Clouds
+				- Land, Water
 
 	+ Move RenderContext et al into Render:: namespace and file group
 			+ See if TextureTypes.h is still needed and whether it can be moved to GameTypes
 				+ After all, ShipRenderMode is in GameTypes
 				+ Polygon for now moves to that class that makes it
-
-	- GameController: coalesce all render parameter changes into one, and update only at Render() for each that is dirty
-		- Check first with Log messages if it really happens
-		- Test all param changes:
-			- Zoom
-			- Pan
-			- AmbientLight
-			- TBD
 
 	- GameController rearc:
 		- TODO: OPTION 1

@@ -900,7 +900,7 @@ void ShipRenderContext::RenderVectors()
     CheckOpenGLError();
 
     // Describe buffer
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedPosition), 2, GL_FLOAT, GL_FALSE, sizeof(vec2f), (void*)(0));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedAttribute1), 2, GL_FLOAT, GL_FALSE, sizeof(vec2f), (void*)(0));
     CheckOpenGLError();
 
     // Enable vertex attribute 0

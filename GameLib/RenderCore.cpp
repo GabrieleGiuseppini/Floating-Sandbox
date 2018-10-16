@@ -119,12 +119,12 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
 
 VertexAttributeType StrToVertexAttributeType(std::string const & str)
 {
-    if (Utils::CaseInsensitiveEquals(str, "SharedPosition"))
-        return VertexAttributeType::SharedPosition;
-    else if (Utils::CaseInsensitiveEquals(str, "SharedTextureCoordinates"))
-        return VertexAttributeType::SharedTextureCoordinates;
-    else if (Utils::CaseInsensitiveEquals(str, "Shared1XFloat"))
-        return VertexAttributeType::Shared1XFloat;
+    if (Utils::CaseInsensitiveEquals(str, "SharedAttribute1"))
+        return VertexAttributeType::SharedAttribute1;
+    else if (Utils::CaseInsensitiveEquals(str, "SharedAttribute2"))
+        return VertexAttributeType::SharedAttribute2;
+    else if (Utils::CaseInsensitiveEquals(str, "SharedAttribute3"))
+        return VertexAttributeType::SharedAttribute3;
     else if (Utils::CaseInsensitiveEquals(str, "WaterPosition"))
         return VertexAttributeType::WaterPosition;
     else if (Utils::CaseInsensitiveEquals(str, "GenericTexturePackedData1"))
@@ -151,12 +151,12 @@ std::string VertexAttributeTypeToStr(VertexAttributeType vertexAttribute)
 {
     switch (vertexAttribute)
     {
-    case VertexAttributeType::SharedPosition:
-        return "SharedPosition";
-    case VertexAttributeType::SharedTextureCoordinates:
-        return "SharedTextureCoordinates";
-    case VertexAttributeType::Shared1XFloat:
-        return "Shared1XFloat";
+    case VertexAttributeType::SharedAttribute1:
+        return "SharedAttribute1";
+    case VertexAttributeType::SharedAttribute2:
+        return "SharedAttribute2";
+    case VertexAttributeType::SharedAttribute3:
+        return "SharedAttribute3";
     case VertexAttributeType::WaterPosition:
         return "WaterPosition";
     case VertexAttributeType::GenericTexturePackedData1:

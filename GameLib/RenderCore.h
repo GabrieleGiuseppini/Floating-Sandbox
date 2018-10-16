@@ -64,9 +64,9 @@ enum class VertexAttributeType : GLuint
     // Vertex attributes sourced from multiple VBO's
     //
 
-    SharedPosition = 0,
-    SharedTextureCoordinates = 1,
-    Shared1XFloat = 2,
+    SharedAttribute1 = 0,
+    SharedAttribute2 = 1,
+    SharedAttribute3 = 2,
 
 
     //

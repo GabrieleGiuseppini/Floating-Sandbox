@@ -7,16 +7,15 @@
 //
 
 // Inputs
-in vec2 inSharedPosition;
-in vec2 inSharedTextureCoordinates;
+in vec4 inSharedAttribute1; // Position (vec2), TextureCoordinates (vec2)
 
 // Outputs
 out vec2 texturePos;
 
 void main()
 {
-    gl_Position = vec4(inSharedPosition.xy, -1.0, 1.0);
-    texturePos = inSharedTextureCoordinates;
+    gl_Position = vec4(inSharedAttribute1.xy, -1.0, 1.0);
+    texturePos = inSharedAttribute1.zw;
 }
 
 ###FRAGMENT

@@ -400,7 +400,6 @@ void RenderContext::RenderCloudsEnd()
     
 
 
-
     //
     // Draw clouds
     //
@@ -415,8 +414,7 @@ void RenderContext::RenderCloudsEnd()
     CheckOpenGLError();
 
     // Describe shared attribute indices
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedPosition), 2, GL_FLOAT, GL_FALSE, (2 + 2) * sizeof(float), (void*)0);
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedTextureCoordinates), 2, GL_FLOAT, GL_FALSE, (2 + 2) * sizeof(float), (void*)(2 * sizeof(float)));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedAttribute1), 4, GL_FLOAT, GL_FALSE, (2 + 2) * sizeof(float), (void*)0);
     CheckOpenGLError();
 
     // Enable vertex attribute 0
@@ -525,7 +523,7 @@ void RenderContext::RenderLand()
     CheckOpenGLError();
 
     // Describe shared attribute indices
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedPosition), 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedAttribute1), 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
     CheckOpenGLError();
 
     // Enable vertex attribute 0
@@ -551,11 +549,11 @@ void RenderContext::RenderWater()
     CheckOpenGLError();
 
     // Describe shared attribute indices
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Shared1XFloat), 1, GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void*)(2 * sizeof(float)));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedAttribute1), 1, GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void*)(2 * sizeof(float)));
     CheckOpenGLError();
 
-    // Disable vertex attribute 0, as we don't use it
-    glDisableVertexAttribArray(0);
+    // Enable vertex attribute 0
+    glEnableVertexAttribArray(0);
 
     // Draw
     glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mWaterBufferSize));
