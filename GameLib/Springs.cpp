@@ -233,15 +233,15 @@ float Springs::CalculateStiffnessCoefficient(
     // The adjustment is both the material-specific adjustment and the global game adjustment.
     //       
 
+    static constexpr float C = 0.4f;
+
     float const massFactor = 
         (points.GetMass(pointAIndex) * points.GetMass(pointBIndex)) 
         / (points.GetMass(pointAIndex) + points.GetMass(pointBIndex));
 
     static constexpr float dtSquared = 
         GameParameters::MechanicalDynamicsSimulationStepTimeDuration<float> 
-        * GameParameters::MechanicalDynamicsSimulationStepTimeDuration<float>;
-
-    static constexpr float C = 0.4f;
+        * GameParameters::MechanicalDynamicsSimulationStepTimeDuration<float>;    
 
     return C * springStiffness * stiffnessAdjustment * massFactor / dtSquared;
 }
@@ -258,7 +258,10 @@ float Springs::CalculateDampingCoefficient(
     // - 0.8 makes everything explode
     static constexpr float C = 0.03f;
 
-    float const massFactor = (points.GetMass(pointAIndex) * points.GetMass(pointBIndex)) / (points.GetMass(pointAIndex) + points.GetMass(pointBIndex));
+    float const massFactor = 
+        (points.GetMass(pointAIndex) * points.GetMass(pointBIndex)) 
+        / (points.GetMass(pointAIndex) + points.GetMass(pointBIndex));
+
     static constexpr float dt = GameParameters::MechanicalDynamicsSimulationStepTimeDuration<float>;
 
     return C * massFactor / dt;
