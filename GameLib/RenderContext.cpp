@@ -6,6 +6,7 @@
 #include "RenderContext.h"
 
 #include "GameException.h"
+#include "Log.h"
 
 #include <cstring>
 
@@ -584,12 +585,6 @@ void RenderContext::UpdateOrthoMatrix()
     mOrthoMatrix[3][2] = -(zFar + zNear) / (zFar - zNear);
     mOrthoMatrix[3][3] = 1.0f;
 
-    // Update all ships
-    for (auto & ship : mShips)
-    {
-        ship->UpdateOrthoMatrix(mOrthoMatrix);
-    }
-
     // Set parameters in all programs
 
     mShaderManager->ActivateProgram<ProgramType::Land>();
@@ -607,6 +602,12 @@ void RenderContext::UpdateOrthoMatrix()
     mShaderManager->ActivateProgram<ProgramType::Matte>();
     mShaderManager->SetProgramParameter<ProgramType::Matte, ProgramParameterType::OrthoMatrix>(
         mOrthoMatrix);
+
+    // Update all ships
+    for (auto & ship : mShips)
+    {
+        ship->UpdateOrthoMatrix(mOrthoMatrix);
+    }
 }
 
 void RenderContext::UpdateVisibleWorldCoordinates()
@@ -628,12 +629,6 @@ void RenderContext::UpdateVisibleWorldCoordinates()
 
 void RenderContext::UpdateAmbientLightIntensity()
 {
-    // Update all ships
-    for (auto & ship : mShips)
-    {
-        ship->UpdateAmbientLightIntensity(mAmbientLightIntensity);
-    }
-
     // Set parameters in all programs
 
     mShaderManager->ActivateProgram<ProgramType::Clouds>();
@@ -647,6 +642,12 @@ void RenderContext::UpdateAmbientLightIntensity()
     mShaderManager->ActivateProgram<ProgramType::Water>();
     mShaderManager->SetProgramParameter<ProgramType::Water, ProgramParameterType::AmbientLightIntensity>(
         mAmbientLightIntensity);
+
+    // Update all ships
+    for (auto & ship : mShips)
+    {
+        ship->UpdateAmbientLightIntensity(mAmbientLightIntensity);
+    }
 }
 
 void RenderContext::UpdateSeaWaterTransparency()
