@@ -1,7 +1,7 @@
 /***************************************************************************************
-* Original Author:		Gabriele Giuseppini
-* Created:				2018-01-19
-* Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
+* Original Author:      Gabriele Giuseppini
+* Created:              2018-01-19
+* Copyright:            Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
 #include "GameController.h"
 
@@ -34,8 +34,8 @@ std::unique_ptr<GameController> GameController::Create(
     // Create controller
     //
 
-	return std::unique_ptr<GameController>(
-		new GameController(
+    return std::unique_ptr<GameController>(
+        new GameController(
             std::move(renderContext),
             std::move(gameEventDispatcher),
             std::move(resourceLoader),
@@ -57,7 +57,7 @@ void GameController::ResetAndLoadShip(std::filesystem::path const & filepath)
 
     AddShip(std::move(shipDefinition));
     
-	mLastShipLoadedFilePath = filepath;
+    mLastShipLoadedFilePath = filepath;
 }
 
 void GameController::AddShip(std::filesystem::path const & filepath)
@@ -66,15 +66,15 @@ void GameController::AddShip(std::filesystem::path const & filepath)
 
     AddShip(std::move(shipDefinition));
 
-	mLastShipLoadedFilePath = filepath;
+    mLastShipLoadedFilePath = filepath;
 }
 
 void GameController::ReloadLastShip()
 {
-	if (mLastShipLoadedFilePath.empty())
-	{
-		throw std::runtime_error("No ship has been loaded yet");
-	}
+    if (mLastShipLoadedFilePath.empty())
+    {
+        throw std::runtime_error("No ship has been loaded yet");
+    }
 
     auto shipDefinition = mResourceLoader->LoadShipDefinition(mLastShipLoadedFilePath);
 
@@ -85,8 +85,8 @@ void GameController::ReloadLastShip()
 
 void GameController::Update()
 {
-	// Update world
-	assert(!!mWorld);
+    // Update world
+    assert(!!mWorld);
     mWorld->Update(mGameParameters);
 
     // Update text layer
@@ -96,8 +96,47 @@ void GameController::Update()
     mGameEventDispatcher->Flush();
 }
 
+void GameController::LowFrequencyUpdate()
+{
+    //
+    // Publish stats
+    //
+
+    std::chrono::steady_clock::time_point nowReal = std::chrono::steady_clock::now();
+    PublishStats(nowReal);
+    
+    //
+    // Reset stats
+    //
+
+    mLastFrameCount = 0u;
+    mStatsLastTimestampReal = nowReal;
+}
+
 void GameController::Render()
 {
+    //
+    // Initialize stats, if needed
+    //
+
+    if (mStatsOriginTimestampReal == std::chrono::steady_clock::time_point::min())
+    {        
+        assert(mStatsLastTimestampReal == std::chrono::steady_clock::time_point::min());
+        assert(mStatsOriginTimestampGame == GameWallClock::time_point::min());
+
+        std::chrono::steady_clock::time_point nowReal = std::chrono::steady_clock::now();
+        mStatsOriginTimestampReal = nowReal;
+        mStatsLastTimestampReal = nowReal;
+        mStatsOriginTimestampGame = GameWallClock::GetInstance().Now();
+
+        mTotalFrameCount = 0u;
+        mLastFrameCount = 0u;
+
+        // Render initial status text
+        PublishStats(nowReal);
+    }
+
+
     //
     // Do zoom smoothing
     //
@@ -135,12 +174,14 @@ void GameController::Render()
         mRenderContext->SetCameraWorldPosition(mCurrentCameraPosition);
     }
 
+
     //
-	// Render world
+    // Render world
     //
 
-	assert(!!mWorld);
+    assert(!!mWorld);
     mWorld->Render(mGameParameters, *mRenderContext);
+
 
     //
     // Render text layer
@@ -148,6 +189,14 @@ void GameController::Render()
 
     assert(!!mTextLayer);
     mTextLayer->Render(*mRenderContext);
+
+
+    //
+    // Update stats
+    //
+
+    ++mTotalFrameCount;
+    ++mLastFrameCount;
 }
 
 /////////////////////////////////////////////////////////////
@@ -156,33 +205,23 @@ void GameController::Render()
 
 void GameController::SetStatusTextEnabled(bool isEnabled)
 {
+    assert(!!mTextLayer);
     mTextLayer->SetStatusTextEnabled(isEnabled);
-}
-
-void GameController::SetStatusText(
-    float immediateFps,
-    float averageFps,
-    std::chrono::duration<float> elapsedGameSeconds)
-{
-    mTextLayer->SetStatusText(
-        immediateFps,
-        averageFps,
-        elapsedGameSeconds);
 }
 
 void GameController::DestroyAt(
     vec2f const & screenCoordinates, 
     float radiusMultiplier)
 {
-	vec2f worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+    vec2f worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
     LogMessage("DestroyAt: ", worldCoordinates.toString(), " * ", radiusMultiplier);
 
-	// Apply action
-	assert(!!mWorld);
+    // Apply action
+    assert(!!mWorld);
     mWorld->DestroyAt(
-		worldCoordinates,
-		mGameParameters.DestroyRadius * radiusMultiplier);
+        worldCoordinates,
+        mGameParameters.DestroyRadius * radiusMultiplier);
 }
 
 void GameController::SawThrough(
@@ -201,14 +240,14 @@ void GameController::DrawTo(
     vec2f const & screenCoordinates,
     float strengthMultiplier)
 {
-	vec2f worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+    vec2f worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
     float strength = 1000.0f * strengthMultiplier;
     if (mGameParameters.IsUltraViolentMode)
         strength *= 20.0f;
 
-	// Apply action
-	assert(!!mWorld);
+    // Apply action
+    assert(!!mWorld);
     mWorld->DrawTo(
         worldCoordinates, 
         strength);
@@ -336,4 +375,35 @@ void GameController::AddShip(ShipDefinition shipDefinition)
 
     // Notify
     mGameEventDispatcher->OnShipLoaded(shipId, shipDefinition.ShipName);
+}
+
+void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
+{
+    //
+    // Calculate fps and total (game) duration
+    //    
+
+    auto totalElapsedReal = std::chrono::duration<float>(nowReal - mStatsOriginTimestampReal);
+    auto lastElapsedReal = std::chrono::duration<float>(nowReal - mStatsLastTimestampReal);
+
+    float totalFps =
+        totalElapsedReal.count() != 0.0f
+        ? static_cast<float>(mTotalFrameCount) / totalElapsedReal.count()
+        : 0.0f;
+
+    float lastFps = 
+        lastElapsedReal.count() != 0.0f
+        ? static_cast<float>(mLastFrameCount) / lastElapsedReal.count()
+        : 0.0f;
+
+    // Publish frame rate
+    assert(!!mGameEventDispatcher);
+    mGameEventDispatcher->OnFrameRateUpdated(lastFps, totalFps);
+
+    // Update status text
+    assert(!!mTextLayer);
+    mTextLayer->SetStatusText(
+        lastFps,
+        totalFps,
+        std::chrono::duration<float>(GameWallClock::GetInstance().Now() - mStatsOriginTimestampGame));
 }

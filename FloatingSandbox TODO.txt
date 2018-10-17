@@ -79,31 +79,33 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 		+ text_ndc
 		+ FPS: 28.2/28.4
 
-	= Reduce # of bind VBO calls by delaying upload of buffers we own until we bind the VBO for drawing
+	+ Reduce # of bind VBO calls by delaying upload of buffers we own until we bind the VBO for drawing
 		+ Land at RenderContext::UploadLandAndWaterEnd/RenderLand
 		+ Also disable vertex attribute index zero once
 		+ Test all ship shaders with 2 connected components
-		- FPS: TODOHERE
+		+ FPS: 28.5
 
-	- Use MapBuffer when we know the sizes in advance, eventually re-allocating GPU buffer when the size changes
+	- TODOHERE: Use MapBuffer when we know the sizes in advance, eventually re-allocating GPU buffer when the size changes
 		- Clouds
 		- Land, Water
+		- FPS:
 
 - Technical Debt:
 
-	= Fix issue with very fast rope sinking
+	+ Fix issue with very fast rope sinking
 		+ How's a wet rope different than iron hull? Test with test_ship.png
 		+ It's because ropes get water (when broken) and gravity force is based off point_mass+water, while integration only uses point_mass
 			+ In fact it also applies to all light hulls that are broken
 		+ See if can apply buoyancy always, and thus get rid of Points::Buoyancy
 			+ Nope: too many hull materials would float
 		+ NOPE: Apply water mass at Integrate then? And what about springs - should use new mass there as well?
-		- Two possible fixes:
-			- Just don't consider water at gravity if buoyancy=0 (i.e. if hull)
+		+ Two possible fixes:
+			+ Just don't consider water at gravity if buoyancy=0 (i.e. if hull)
 				- i.e. revert the buoyancy fix
 				- result is that wet hull points never feel water weight (and neither buoyancy)
-			- Or, buoyancy=0 points (i.e. hull points) never take water, period
-				- i.e. they are never set leaking
+			+ THIS ONE: Or, buoyancy=0 points (i.e. hull points) never take water, period
+				+ i.e. they are never set leaking upon spring destruction
+				+ First figure out how internal hull gets wet - if it does - IT DOES NOT!
 
 
 	+ Move RenderContext et al into Render:: namespace and file group

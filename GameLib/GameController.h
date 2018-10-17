@@ -8,6 +8,7 @@
 #include "GameEventDispatcher.h"
 #include "GameParameters.h"
 #include "GameTypes.h"
+#include "GameWallClock.h"
 #include "MaterialDatabase.h"
 #include "Physics.h"
 #include "ProgressCallback.h"
@@ -47,6 +48,7 @@ public:
     void ReloadLastShip();
 
     void Update();
+    void LowFrequencyUpdate();
     void Render();
 
 
@@ -55,10 +57,6 @@ public:
     //
 
     void SetStatusTextEnabled(bool isEnabled);
-    void SetStatusText(
-        float immediateFps,
-        float averageFps,
-        std::chrono::duration<float> elapsedGameSeconds);
 
     void DestroyAt(vec2f const & screenCoordinates, float radiusMultiplier);
     void SawThrough(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates);
@@ -257,6 +255,12 @@ private:
         , mTargetCameraPosition(mCurrentCameraPosition)
         , mStartingCameraPosition(mCurrentCameraPosition)
         , mStartCameraPositionTimestamp()
+        // Stats
+        , mTotalFrameCount(0u)
+        , mLastFrameCount(0u)
+        , mStatsOriginTimestampReal(std::chrono::steady_clock::time_point::min())
+        , mStatsLastTimestampReal(std::chrono::steady_clock::time_point::min())
+        , mStatsOriginTimestampGame(GameWallClock::time_point::min())
     {
     }
     
@@ -269,6 +273,8 @@ private:
     void Reset();
 
     void AddShip(ShipDefinition shipDefinition);
+
+    void PublishStats(std::chrono::steady_clock::time_point nowReal);
 
 private:
 
@@ -311,4 +317,15 @@ private:
     vec2f mTargetCameraPosition;
     vec2f mStartingCameraPosition;
     std::chrono::steady_clock::time_point mStartCameraPositionTimestamp;
+
+
+    //
+    // Stats
+    //
+
+    uint64_t mTotalFrameCount;
+    uint64_t mLastFrameCount;
+    std::chrono::steady_clock::time_point mStatsOriginTimestampReal;
+    std::chrono::steady_clock::time_point mStatsLastTimestampReal;
+    GameWallClock::time_point mStatsOriginTimestampGame;
 };

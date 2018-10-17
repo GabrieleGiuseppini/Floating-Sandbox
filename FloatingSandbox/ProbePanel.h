@@ -41,6 +41,10 @@ public:
         std::string const & name,
         float value) override;
 
+    virtual void OnFrameRateUpdated(
+        float immediateFps,
+        float averageFps) override;
+
 private:
 
     bool IsActive() const
@@ -54,6 +58,7 @@ private:
     // Probes
     //
 
+    std::unique_ptr<ScalarTimeSeriesProbeControl> mFrameRateProbe;
     std::unique_ptr<ScalarTimeSeriesProbeControl> mWaterTakenProbe;
     std::unique_ptr<ScalarTimeSeriesProbeControl> mWaterSplashProbe;
     std::unordered_map<std::string, std::unique_ptr<ScalarTimeSeriesProbeControl>> mCustomProbes;

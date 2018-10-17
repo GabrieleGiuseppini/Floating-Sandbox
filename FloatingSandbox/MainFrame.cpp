@@ -78,12 +78,6 @@ MainFrame::MainFrame(wxApp * mainApp)
     , mCurrentRCBombCount(0u)
     , mIsShiftKeyDown(false)
     , mIsNextFrameAllowedToStep(false)
-    // Stats
-    , mTotalFrameCount(0u)
-    , mLastFrameCount(0u)
-    , mStatsOriginTimestampReal(std::chrono::steady_clock::time_point::min())
-    , mStatsLastTimestampReal(std::chrono::steady_clock::time_point::min())
-    , mStatsOriginTimestampGame(GameWallClock::time_point::min())
 {
     Create(
         nullptr, 
@@ -605,25 +599,7 @@ void MainFrame::OnKeyDown(wxKeyEvent & event)
 }
 
 void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
-{
-    // Initialize stats, if needed
-    if (mStatsOriginTimestampReal == std::chrono::steady_clock::time_point::min())
-    { 
-        assert(mStatsLastTimestampReal == std::chrono::steady_clock::time_point::min());
-        assert(mStatsOriginTimestampGame == GameWallClock::time_point::min());
-
-        std::chrono::steady_clock::time_point nowReal = std::chrono::steady_clock::now();
-        mStatsOriginTimestampReal = nowReal;
-        mStatsLastTimestampReal = nowReal;
-        mStatsOriginTimestampGame = GameWallClock::GetInstance().Now();
-
-        mTotalFrameCount = 0u;
-        mLastFrameCount = 0u;
-
-        // Render initial status text
-        UpdateStatusText();
-    }
-    
+{   
     // Note: on my laptop I can't get beyond 64 frames per second, hence I'm not
     // setting a delay here
     mGameTimer->Start(0, true);
@@ -647,20 +623,17 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
     }
 
     // Run a game step (Update and Render)
-    DoGameStep();
-    
-    // Update stats
-    ++mTotalFrameCount;
-    ++mLastFrameCount;
+    DoGameStep();    
 }
 
 void MainFrame::OnLowFrequencyTimerTrigger(wxTimerEvent & /*event*/)
 {
     //
-    // Update status text
+    // Update game controller
     //
 
-    UpdateStatusText();
+    assert(!!mGameController);
+    mGameController->LowFrequencyUpdate();
 
 
     //
@@ -1026,33 +999,6 @@ void MainFrame::UpdateFrameTitle()
     SetTitle(ss.str());
 }
 
-void MainFrame::UpdateStatusText()
-{
-    //
-    // Update fps and total (game) duration
-    //
-
-    std::chrono::steady_clock::time_point nowReal = std::chrono::steady_clock::now();
-
-    auto totalElapsedReal = std::chrono::duration<float>(nowReal - mStatsOriginTimestampReal);
-    auto lastElapsedReal = std::chrono::duration<float>(nowReal - mStatsLastTimestampReal);
-
-    float totalFps = static_cast<float>(mTotalFrameCount) / totalElapsedReal.count();
-    float lastFps = static_cast<float>(mLastFrameCount) / lastElapsedReal.count();
-
-    mGameController->SetStatusText(
-        lastFps,
-        totalFps,
-        std::chrono::duration<float>(GameWallClock::GetInstance().Now() - mStatsOriginTimestampGame));
-
-    //
-    // Reset stats
-    //
-
-    mLastFrameCount = 0u;
-    mStatsLastTimestampReal = nowReal;
-}
-
 bool MainFrame::IsPaused()
 {
     return mPauseMenuItem->IsChecked();
@@ -1086,7 +1032,7 @@ void MainFrame::DoGameStep()
 
     // Update sound controller
     assert(!!mSoundController);
-    mSoundController->HighFrequencyUpdate();
+    mSoundController->Update();
 }
 
 void MainFrame::RenderGame()

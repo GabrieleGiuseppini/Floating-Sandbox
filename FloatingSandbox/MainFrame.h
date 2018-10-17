@@ -187,7 +187,6 @@ private:
 
     void ResetState();
     void UpdateFrameTitle();
-    void UpdateStatusText();
     bool IsPaused();
     void DoGameStep();
     void RenderGame();
@@ -215,15 +214,4 @@ private:
     size_t mCurrentRCBombCount;
     bool mIsShiftKeyDown;
     bool mIsNextFrameAllowedToStep;
-
-
-    //
-    // Stats
-    //
-
-    uint64_t mTotalFrameCount;  
-    uint64_t mLastFrameCount;
-    std::chrono::steady_clock::time_point mStatsOriginTimestampReal;
-    std::chrono::steady_clock::time_point mStatsLastTimestampReal;
-    GameWallClock::time_point mStatsOriginTimestampGame;
 };

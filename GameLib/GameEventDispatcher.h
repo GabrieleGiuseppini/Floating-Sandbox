@@ -157,6 +157,19 @@ public:
         }
     }
 
+    virtual void OnFrameRateUpdated(
+        float immediateFps,
+        float averageFps) override
+    {
+        // No need to aggregate this one
+        for (auto sink : mSinks)
+        {
+            sink->OnFrameRateUpdated(
+                immediateFps,
+                averageFps);
+        }
+    }
+
     //
     // Bombs
     //

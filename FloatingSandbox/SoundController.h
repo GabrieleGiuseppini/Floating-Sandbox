@@ -49,7 +49,7 @@ public:
     // Updating
     //
 
-    void HighFrequencyUpdate();
+    void Update();
 
     void LowFrequencyUpdate();
 

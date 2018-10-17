@@ -37,6 +37,20 @@ ProbePanel::ProbePanel(wxWindow* parent)
 
         sizer->AddSpacer(TopPadding);
 
+        mFrameRateProbe = std::make_unique<ScalarTimeSeriesProbeControl>(this, 200);
+        sizer->Add(mFrameRateProbe.get(), 1, wxALIGN_CENTRE, 0);
+
+        wxStaticText * label = new wxStaticText(this, wxID_ANY, "Frame Rate", wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
+        sizer->Add(label, 0, wxALIGN_CENTRE, 0);
+
+        probesSizer->Add(sizer, 1, wxLEFT | wxRIGHT, ProbePadding);
+    }
+
+    {
+        wxBoxSizer * sizer = new wxBoxSizer(wxVERTICAL);
+
+        sizer->AddSpacer(TopPadding);
+
         mWaterTakenProbe = std::make_unique<ScalarTimeSeriesProbeControl>(this, 120);
         sizer->Add(mWaterTakenProbe.get(), 1, wxALIGN_CENTRE, 0);        
 
@@ -79,6 +93,7 @@ void ProbePanel::Update()
 
     if (IsActive())
     {
+        mFrameRateProbe->Update();
         mWaterTakenProbe->Update();
         mWaterSplashProbe->Update();
     }
@@ -88,6 +103,8 @@ void ProbePanel::Update()
 
 void ProbePanel::OnGameReset()
 {
+    mFrameRateProbe->Reset();
+    mWaterTakenProbe->Reset();
     mWaterSplashProbe->Reset();
 }
 
@@ -106,4 +123,11 @@ void ProbePanel::OnCustomProbe(
     float value)
 {
     // TODO
+}
+
+void ProbePanel::OnFrameRateUpdated(
+    float immediateFps,
+    float averageFps)
+{
+    mFrameRateProbe->RegisterSample(immediateFps);
 }

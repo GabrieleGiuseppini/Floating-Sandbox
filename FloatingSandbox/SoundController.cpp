@@ -343,7 +343,7 @@ void SoundController::SetPlaySinkingMusic(bool playSinkingMusic)
     mPlaySinkingMusic = playSinkingMusic;
 }
 
-void SoundController::HighFrequencyUpdate()
+void SoundController::Update()
 {
 }
 

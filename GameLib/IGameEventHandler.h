@@ -112,6 +112,13 @@ public:
         // Default-implemented
     }
 
+    virtual void OnFrameRateUpdated(
+        float /*immediateFps*/,
+        float /*averageFps*/)
+    {
+        // Default-implemented
+    }
+
     //
     // Bombs
     //
