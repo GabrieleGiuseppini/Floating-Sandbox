@@ -322,6 +322,8 @@ void World::UploadLandAndWater(
 
     renderContext.UploadLandAndWaterStart(SlicesCount);    
 
+    // We do one extra iteration as the number of slices isthe number of quads, and the last vertical 
+    // quad side must be at the end of the width
     for (size_t i = 0; i <= SlicesCount; ++i, sliceX += sliceWidth)
     {
         renderContext.UploadLandAndWater(
