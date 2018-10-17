@@ -737,8 +737,14 @@ void Ship::UpdateWaterInflow(
 
                 if (newWater < 0.0f)
                 {
-                    // Make sure we don't over-drain the point in case of an outgoing flow
+                    // Outgoing water
+
+                    // Make sure we don't over-drain the point
                     newWater = -std::min(-newWater, mPoints.GetWater(pointIndex));
+
+                    // Simulate water "sticking" into material - after all, water that once entered
+                    // won't leave completely afterwards, something will stay behind
+                    newWater *= 0.95f;
                 }
 
                 // Adjust water
@@ -1433,9 +1439,6 @@ void Ship::SpringDestroyHandler(
     auto const pointAIndex = mSprings.GetPointAIndex(springElementIndex);
     auto const pointBIndex = mSprings.GetPointBIndex(springElementIndex);
 
-    // Make endpoints leak
-    mPoints.SetLeaking(pointAIndex);
-    mPoints.SetLeaking(pointBIndex);
 
     //
     // Destroy connected triangles
@@ -1449,6 +1452,7 @@ void Ship::SpringDestroyHandler(
     }
     else
     {
+        // We destroy only triangles connected to both endpoints
         DestroyConnectedTriangles(pointAIndex, pointBIndex);
     }
 
@@ -1459,6 +1463,17 @@ void Ship::SpringDestroyHandler(
 
     mPoints.RemoveConnectedSpring(pointAIndex, springElementIndex);
     mPoints.RemoveConnectedSpring(pointBIndex, springElementIndex);
+
+
+    //
+    // Make non-hull endpoints leak
+    //
+
+    if (!mPoints.IsHull(pointAIndex))
+        mPoints.SetLeaking(pointAIndex);
+
+    if (!mPoints.IsHull(pointBIndex))
+        mPoints.SetLeaking(pointBIndex);
 
 
     //
