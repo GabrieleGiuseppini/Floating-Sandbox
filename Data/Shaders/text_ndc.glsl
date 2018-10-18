@@ -7,8 +7,8 @@
 //
 
 // Inputs
-in vec4 inSharedAttribute1; // Position (vec2), TextureCoordinates (vec2)
-in float inSharedAttribute2; // alpha
+in vec4 inSharedAttribute0; // Position (vec2), TextureCoordinates (vec2)
+in float inSharedAttribute1; // alpha
 
 // Outputs
 out vec2 vertexTextureCoordinates;
@@ -16,9 +16,9 @@ out float vertexAlpha;
 
 void main()
 {
-    vertexTextureCoordinates = inSharedAttribute1.zw; 
-    vertexAlpha = inSharedAttribute2;
-    gl_Position = vec4(inSharedAttribute1.xy, -1.0, 1.0);
+    vertexTextureCoordinates = inSharedAttribute0.zw; 
+    vertexAlpha = inSharedAttribute1;
+    gl_Position = vec4(inSharedAttribute0.xy, -1.0, 1.0);
 }
 
 

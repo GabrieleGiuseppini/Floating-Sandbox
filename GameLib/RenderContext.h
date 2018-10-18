@@ -251,9 +251,9 @@ public:
     // Clouds
     //
 
-    void RenderCloudsStart(size_t clouds);
+    void RenderCloudsStart(size_t cloudCount);
 
-    inline void RenderCloud(
+    inline void UploadCloud(
         float virtualX,
         float virtualY,
         float scale)
@@ -277,12 +277,18 @@ public:
             rolledY += 2.0f;
         float mappedY = -1.0f + 2.0f * (rolledY - 0.5f);
 
-        assert(mCloudBufferSize + 1u <= mCloudBufferMaxSize);
-        CloudElement * cloudElement = &(mCloudBuffer[mCloudBufferSize]);        
+
+        //
+        // Populate entry in buffer
+        //
+
+        assert(!!mCloudMappedBuffer);
+        assert(mCurrentCloudCount + 1u <= mCloudCount);
+        CloudElement * cloudElement = &(reinterpret_cast<CloudElement *>(*mCloudMappedBuffer)[mCurrentCloudCount]);
 
         TextureFrameMetadata const & textureMetadata = mTextureRenderManager->GetFrameMetadata(
             TextureGroupType::Cloud,
-            static_cast<TextureFrameIndex>(mCloudBufferSize % mCloudTextureCount));
+            static_cast<TextureFrameIndex>(mCurrentCloudCount % mCloudTextureCount));
 
         float const aspectRatio = static_cast<float>(mCanvasWidth) / static_cast<float>(mCanvasHeight);
 
@@ -311,7 +317,7 @@ public:
         cloudElement->ndcTextureXBottomRight = 1.0f;
         cloudElement->ndcTextureYBottomRight = 0.0f;
 
-        ++mCloudBufferSize;
+        ++mCurrentCloudCount;
     }
 
     void RenderCloudsEnd();
@@ -694,9 +700,9 @@ private:
     };
 #pragma pack(pop)
 
-    std::unique_ptr<CloudElement[]> mCloudBuffer;
-    size_t mCloudBufferSize;
-    size_t mCloudBufferMaxSize;
+    GameOpenGLMappedBuffer<GL_ARRAY_BUFFER> mCloudMappedBuffer;
+    size_t mCurrentCloudCount;
+    size_t mCloudCount;
     
     GameOpenGLVBO mCloudVBO;
 

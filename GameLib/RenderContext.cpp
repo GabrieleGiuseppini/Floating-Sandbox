@@ -20,9 +20,9 @@ RenderContext::RenderContext(
     , mTextureRenderManager()
     , mTextRenderContext()
     // Clouds
-    , mCloudBuffer()
-    , mCloudBufferSize(0u)
-    , mCloudBufferMaxSize(0u)    
+    , mCloudMappedBuffer()
+    , mCurrentCloudCount(0u)
+    , mCloudCount(0u)    
     , mCloudVBO()
     // Land
     , mLandBuffer()
@@ -239,8 +239,8 @@ RenderContext::RenderContext(
     // Bind VBO
     glBindBuffer(GL_ARRAY_BUFFER, *mWaterVBO);
 
-    // Associate WaterPosition vertex attribute with this VBO
-    // (the other attribute is shared, hence we'll associate it later)
+    // Associate WaterPosition vertex attribute with this VBO and describe it
+    // (the other attribute is shared, hence we'll associate it and describe it later)
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::WaterPosition), 2, GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void*)0);
 
 
@@ -356,17 +356,26 @@ void RenderContext::RenderStart()
     mTextRenderContext->RenderStart();
 }
 
-void RenderContext::RenderCloudsStart(size_t clouds)
+void RenderContext::RenderCloudsStart(size_t cloudCount)
 {
-    if (clouds != mCloudBufferMaxSize)
+    // Bind VBO
+    glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
+    CheckOpenGLError();
+
+    if (cloudCount != mCloudCount)
     {
-        // Realloc
-        mCloudBuffer.reset();
-        mCloudBuffer.reset(new CloudElement[clouds]);
-        mCloudBufferMaxSize = clouds;
+        // Realloc GPU buffer
+        mCloudCount = cloudCount;
+        glBufferData(GL_ARRAY_BUFFER, mCloudCount * sizeof(CloudElement), nullptr, GL_DYNAMIC_DRAW);
+        CheckOpenGLError();
     }
 
-    mCloudBufferSize = 0u;
+    // Map buffer
+    assert(!mCloudMappedBuffer);
+    mCloudMappedBuffer = GameOpenGL::MapBuffer<GL_ARRAY_BUFFER>(GL_WRITE_ONLY);
+
+    // Reset current count of clouds
+    mCurrentCloudCount = 0u;
 }
 
 void RenderContext::RenderCloudsEnd()
@@ -404,21 +413,22 @@ void RenderContext::RenderCloudsEnd()
     // Draw clouds
     //
 
-    assert(mCloudBufferSize == mCloudBufferMaxSize);
+    assert(mCurrentCloudCount == mCloudCount);
 
     // Use program
     mShaderManager->ActivateProgram<ProgramType::Clouds>();
 
-    // Bind cloud VBO
+    // Bind VBO
     glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
     CheckOpenGLError();
 
-    // Upload cloud buffer     
-    glBufferData(GL_ARRAY_BUFFER, mCloudBufferSize * sizeof(CloudElement), mCloudBuffer.get(), GL_DYNAMIC_DRAW);
-    CheckOpenGLError();
+    // Unmap buffer
+    assert(!!mCloudMappedBuffer);
+    GameOpenGL::UnmapBuffer(std::move(mCloudMappedBuffer));
+    assert(!mCloudMappedBuffer);
 
-    // Describe shared attribute indices
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedAttribute1), 4, GL_FLOAT, GL_FALSE, (2 + 2) * sizeof(float), (void*)0);
+    // Describe vertex attribute 0
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedAttribute0), 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), nullptr);
     CheckOpenGLError();
 
     // Enable vertex attribute 0
@@ -428,13 +438,13 @@ void RenderContext::RenderCloudsEnd()
     glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 
     // Draw
-    for (size_t c = 0; c < mCloudBufferSize; ++c)
+    for (size_t c = 0; c < mCloudCount; ++c)
     {
         // Bind Texture
         glBindTexture(
             GL_TEXTURE_2D, 
             mTextureRenderManager->GetOpenGLHandle(
-                TextureGroupType::Cloud, 
+                TextureGroupType::Cloud,
                 static_cast<TextureFrameIndex>(c % mCloudTextureCount)));
         CheckOpenGLError();
 
@@ -514,8 +524,8 @@ void RenderContext::RenderLand()
     glBufferData(GL_ARRAY_BUFFER, mLandBufferSize * sizeof(LandElement), mLandBuffer.get(), GL_DYNAMIC_DRAW);
     CheckOpenGLError();
 
-    // Describe shared attribute indices
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedAttribute1), 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    // Describe vertex attribute 0
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedAttribute0), 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
     CheckOpenGLError();
 
     // Enable vertex attribute 0
@@ -540,8 +550,8 @@ void RenderContext::RenderWater()
     glBindBuffer(GL_ARRAY_BUFFER, *mWaterVBO);
     CheckOpenGLError();
 
-    // Describe shared attribute indices
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedAttribute1), 1, GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void*)(2 * sizeof(float)));
+    // Describe vertex attribute 0
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedAttribute0), 1, GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void*)(2 * sizeof(float)));
     CheckOpenGLError();
 
     // Enable vertex attribute 0

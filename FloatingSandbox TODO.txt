@@ -85,8 +85,10 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 		+ Test all ship shaders with 2 connected components
 		+ FPS: 28.5
 
-	- TODOHERE: Use MapBuffer when we know the sizes in advance, eventually re-allocating GPU buffer when the size changes
-		- Clouds
+	= Use MapBuffer when we know the sizes in advance, eventually re-allocating GPU buffer when the size changes
+		= Clouds
+			+ Rename middle "RenderCloud" as "UploadCloud"
+			+ Rename SharedAttribute1 as SharedAttribute0, et al
 		- Land, Water
 		- FPS:
 
@@ -191,13 +193,18 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 
 	- See if can avoid other IsDeleted checks, via zero'ing of coefficients
 	- UpdatePointForces:
+		- Substitute "if(y<waterHeight)" branches with "float isUnderwater (1.f/0.f)"
+			- Force compiler into not branching - "?" operator won't work
 		- Precalculate things that do not depend on position nor velocity
 			- Stored in buffers
+				- When possible, via template/lambda tricks
 			- Technically, would have to store separately effectiveMassMultiplier (*Mass) and effectiveBuoyancy (*Mass)
 				- Test: but could cheat and use water height based on initial positions only, in which case
-				  we store directly StaticForce == Gravity + Water Drag (?REALLY?)
-				  - StaticForce used directly in Integrate() added to Force
-					- Or better if added to Force at UpdatePointDynamics()?
+				  we store directly the result as FieldForce == Gravity + Buoyancy + Water Drag
+				  - FieldForce used directly in Integrate(), added to Force (-> "SpringForce")
+				  - This allows us to call UpdatePointForces only once
+				  - Also need to reset StaticForce buffer before UpdatePointForces, so:
+					- UpdatePointForces becomes CalculateFieldForces and take care of *filling* the buffer, overwriting it
 	- Water and Land interpolations:
 		- 1: see if it's better to store delta's and/or other pre-calculated things
 		- 2: see if can do semi-integer x-axis interpolation

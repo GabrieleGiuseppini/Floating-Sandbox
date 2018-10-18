@@ -301,7 +301,7 @@ void World::RenderClouds(Render::RenderContext & renderContext) const
 
     for (auto const & cloud : mAllClouds)
     {
-        renderContext.RenderCloud(
+        renderContext.UploadCloud(
             cloud->GetX(),
             cloud->GetY(),
             cloud->GetScale());

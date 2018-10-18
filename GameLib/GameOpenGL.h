@@ -18,7 +18,6 @@
 #include <glad/glad.h>
 
 #include <cstdio>
-#include <stdexcept>
 #include <string>
 
 namespace Render {
@@ -124,9 +123,26 @@ struct GameOpenGLTextureDeleter
     }
 };
 
+template <GLenum TTarget>
+struct GameOpenGLMappedBufferDeleter
+{
+    static void Delete(void * p)
+    {
+        using ptr = void *;
+        static_assert(ptr() == nullptr, "Default value is not nullptr, i.e. the OpenGL NULL");
+
+        if (p != nullptr)
+        {
+            glUnmapBuffer(TTarget);
+        }
+    }
+};
+
 using GameOpenGLShaderProgram = GameOpenGLObject<GLuint, GameOpenGLProgramDeleter>;
 using GameOpenGLVBO = GameOpenGLObject<GLuint, GameOpenGLVBODeleter>;
 using GameOpenGLTexture = GameOpenGLObject<GLuint, GameOpenGLTextureDeleter>;
+template <GLenum TTarget>
+using GameOpenGLMappedBuffer = GameOpenGLObject<void *, GameOpenGLMappedBufferDeleter<TTarget>>;
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // GameOpenGL
@@ -153,13 +169,13 @@ public:
         char const * glVersion = (char*)glGetString(GL_VERSION);
         if (nullptr == glVersion)
         {
-            throw std::runtime_error("OpenGL completely not supported");
+            throw GameException("OpenGL completely not supported");
         }
 
         sscanf(glVersion, "%d.%d", &versionMaj, &versionMin);
         if (versionMaj < 2)
         {
-            throw std::runtime_error("This game requires at least OpenGL 2.0 support; the version currently supported by your computer is " + std::string(glVersion));
+            throw GameException("This game requires at least OpenGL 2.0 support; the version currently supported by your computer is " + std::string(glVersion));
         }
 
         //
@@ -191,6 +207,32 @@ public:
     static void UploadMipmappedTexture(TextureFrame baseTexture);
 
     static void UploadMipmappedTexture(ImageData baseTexture);
+
+    template <GLenum TTarget>
+    static GameOpenGLMappedBuffer<TTarget> MapBuffer(GLenum access)
+    {
+        void * pointer = glMapBuffer(TTarget, access);
+        if (pointer == nullptr)
+        { 
+            throw GameException("Cannot map buffer");
+        }
+
+        return GameOpenGLMappedBuffer<TTarget>(pointer);
+    }
+
+    template <GLenum TTarget>
+    static void UnmapBuffer(GameOpenGLMappedBuffer<TTarget> buffer)
+    {
+        assert(!!buffer);
+
+        auto result = glUnmapBuffer(TTarget);
+        if (result == GL_FALSE)
+        {
+            throw GameException("Cannot unmap buffer");
+        }
+
+        buffer.release();
+    }
 
 private:
 
