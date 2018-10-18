@@ -267,12 +267,12 @@ public:
         // then take the central slice and map it into NDC ((-1,-1) X (1,1))
         //
 
-        float rolledX = fmodf(virtualX, 3.0f);
+        float rolledX = std::fmod(virtualX, 3.0f);
         if (rolledX < 0.0f)
             rolledX += 3.0f;
         float mappedX = -1.0f + 2.0f * (rolledX - 1.0f);
 
-        float rolledY = fmodf(virtualY, 2.0f);
+        float rolledY = std::fmod(virtualY, 2.0f);
         if (rolledY < 0.0f)
             rolledY += 2.0f;
         float mappedY = -1.0f + 2.0f * (rolledY - 0.5f);
