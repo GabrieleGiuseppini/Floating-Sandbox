@@ -33,7 +33,7 @@ class GameOpenGLObject
 public:
 
     GameOpenGLObject()
-        : mValue(0)
+        : mValue(T())
     {}
 
     GameOpenGLObject(T value)
@@ -50,7 +50,7 @@ public:
     GameOpenGLObject(GameOpenGLObject && other)
     {
         mValue = other.mValue;
-        other.mValue = 0;
+        other.mValue = T();
     }
 
     GameOpenGLObject & operator=(GameOpenGLObject const & other) = delete;
@@ -59,19 +59,26 @@ public:
     {
         TDeleter::Delete(mValue);
         mValue = other.mValue;
-        other.mValue = 0;
+        other.mValue = T();
 
         return *this;
     }
 
     bool operator !() const
     {
-        return mValue == 0;
+        return mValue == T();
     }
 
     T operator*() const
     {
         return mValue;
+    }
+
+    T release() noexcept
+    {
+        auto value = mValue;
+        mValue = T();
+        return value;
     }
 
 private:
@@ -82,6 +89,8 @@ struct GameOpenGLProgramDeleter
 {
     static void Delete(GLuint p)
     {
+        static_assert(GLuint() == 0, "Default value is not zero, i.e. the OpenGL NULL");
+
         if (p != 0)
         {
             glDeleteProgram(p);
@@ -93,6 +102,8 @@ struct GameOpenGLVBODeleter
 {
     static void Delete(GLuint p)
     {
+        static_assert(GLuint() == 0, "Default value is not zero, i.e. the OpenGL NULL");
+
         if (p != 0)
         {
             glDeleteBuffers(1, &p);
@@ -104,6 +115,8 @@ struct GameOpenGLTextureDeleter
 {
     static void Delete(GLuint p)
     {
+        static_assert(GLuint() == 0, "Default value is not zero, i.e. the OpenGL NULL");
+
         if (p != 0)
         {
             glDeleteTextures(1, &p);
