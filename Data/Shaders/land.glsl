@@ -3,7 +3,7 @@
 #version 130
 
 // Inputs
-in vec2 inSharedAttribute0;
+in vec2 inSharedAttribute0; // Position
 
 // Parameters
 uniform mat4 paramOrthoMatrix;

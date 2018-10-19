@@ -3,7 +3,7 @@
 #version 130
 
 // Inputs
-in vec2 inWaterPosition;
+in vec2 inWaterPosition;	// Position
 
 // Params
 uniform mat4 paramOrthoMatrix;

@@ -3,8 +3,8 @@
 #version 130
 
 // Inputs
-in vec2 inWaterPosition;
-in float inSharedAttribute0; // texture coordinate Y;
+in vec2 inWaterPosition;	// Position
+in float inSharedAttribute0;	// Texture coordinate Y
 
 // Parameters
 uniform mat4 paramOrthoMatrix;
