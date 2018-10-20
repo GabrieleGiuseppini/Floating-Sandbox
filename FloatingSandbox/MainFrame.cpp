@@ -623,7 +623,16 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
     }
 
     // Run a game step (Update and Render)
-    DoGameStep();    
+    try
+    {
+        DoGameStep();
+    }
+    catch (std::exception const & e)
+    {
+        Die("Error during game step: " + std::string(e.what()));
+
+        return;
+    }
 }
 
 void MainFrame::OnLowFrequencyTimerTrigger(wxTimerEvent & /*event*/)

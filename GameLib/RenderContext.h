@@ -344,15 +344,16 @@ public:
         // Store Land element
         //
 
-        assert(mLandBufferSize + 1u <= mLandBufferMaxSize);
-        LandElement * landElement = &(mLandBuffer[mLandBufferSize]);
+        assert(!!mLandElementMappedBuffer);
+        assert(mCurrentLandElementCount + 1u <= mLandElementCount);
+        LandElement * landElement = &(reinterpret_cast<LandElement *>(*mLandElementMappedBuffer)[mCurrentLandElementCount]);
 
         landElement->x1 = x;
         landElement->y1 = yLand;
         landElement->x2 = x;
         landElement->y2 = worldBottom;
 
-        ++mLandBufferSize;
+        ++mCurrentLandElementCount;
 
 
         //
@@ -723,9 +724,9 @@ private:
     };
 #pragma pack(pop)
 
-    std::unique_ptr<LandElement[]> mLandBuffer;
-    size_t mLandBufferSize;
-    size_t mLandBufferMaxSize;
+    GameOpenGLMappedBuffer<GL_ARRAY_BUFFER> mLandElementMappedBuffer;
+    size_t mCurrentLandElementCount;
+    size_t mLandElementCount;
 
     GameOpenGLVBO mLandVBO;    
 

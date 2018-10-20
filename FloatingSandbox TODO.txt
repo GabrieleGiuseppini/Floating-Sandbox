@@ -14,9 +14,15 @@ Current perf
 			- UpdateWaterInflow: 0.05%
 		- UpdateStrains: 0.79%
 	- DiffuseLight: TODO%
-- World::Render: TODO%
-	- ShipRenderContext::RenderEnd: TODO%
-	- RenderContext::RenderCloudsEnd: TODO%
+- World::Render: 56.64%
+	- ShipRenderContext::RenderEnd: 51.48%
+	- RenderContext::RenderCloudsEnd: 2.81%
+	- RenderContext::RenderStart: 0.42%
+	- RenderContext::RenderWater: 0.04%
+	- World::RenderClouds: 0.03%
+		- fmodf: 0.02
+	- RenderContext::RenderLand: 0.03%
+	- RenderContext::UploadLandAndWaterEnd: 0.02%
 =================================================
 Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 =================================================
@@ -86,11 +92,37 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 		+ FPS: 28.5
 
 	= Use MapBuffer when we know the sizes in advance, eventually re-allocating GPU buffer when the size changes
-		= Clouds
+		+ Clouds
 			+ Rename middle "RenderCloud" as "UploadCloud"
 			+ Rename SharedAttribute1 as SharedAttribute0, et al
-		- Land, Water
+		= Land, Water
+			= Also make clouds, land, and water use disjoint vertex attributes, so can bind once at each XYZStart()
+			  before mapping buffer (and subsequently describe, when needed)
+			  + Water, matte_water: use vec3 WaterAttribute
+				+ Shaders
+				+ RenderCore
+				+ Description, once at initialization
+				+ Disable 0 before running program
+			  + Clouds: use vec4 SharedAttribute0
+				+ Shaders
+				+ Bind, allocate, and map at RenderStart()
+				+ Description at Render() after unmapping buffer
+				+ Enable 0 before running program, after description as usual
+			  + Land: use vec2 SharedAttribute1
+				+ Shaders
+				+ Bind, allocate, and map at RenderStart()
+				+ Description of SharedAttribute1 at Render() after unmapping buffer
+				+ Disable 0 before running program
 		- FPS:
+	- Now, compare with replacing MapBuffer with BufferSubData
+		- Copy exe first
+		- Just this:
+			- Replace mXYZMappedBuffer with std::unique_ptr<XYZ[]>
+			- (Re)allocate buffer whenever we (re)allocated GPU buffer
+			- Remove MapBuffer call
+			- Replace UnmapBuffer call with BufferSubData
+		- FPS:
+	- Get full perf, including other boxes
 
 - Technical Debt:
 
@@ -120,6 +152,7 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 		- IGameEventHandler events then exist only for the world-generated noises (e.g. something really breaking), not
 		  for the tools
 		  - So Swirl, for example, should disappear from IGameEventHandler; some others as well
+		  - Tools don't invoke IGameEventHandler->OnSwirl(), for example
 
 	+ CMake:
 		+ INSTALL target for release
@@ -258,22 +291,44 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 	- Option to enable drawing of force vectors for each point
 		- Have to choose which iteration
 	- Texture atlas:
-		- Test first if with a single texture bind per ship (which will look crappy!) there's a significant
-		  performance difference
-			- Check the three boxes
 		- Spec:
 			- Atlas is built on-the-fly, completely independently from texture DB, via a separate
-			  component that is given multiple TextureFrame's and eventually spits out TextureAtlas
-				- See if we can go with all sizes being (possibly different) powers of two
+			  component (TextureAtlasBuilder) that is given multiple TextureFrame's and eventually spits out TextureAtlas
 			- TextureAtlas:
-				- unique_ptr<[]> Data
-				- vector<TextureAtlasFrameMetadata> / anything else addressable via TextureFrameId (see above)
-					- TextureAtlasFrameMetadata:
-						- box in atlas (i.e. texture coords, as 2xvec2f)
-						- TextureFrameMetadata
-			- Separate mipmapper helper in GameOpenGL takes whole TextureAtlas (by move)
+				- Contains:
+					- image: consumed by GameOpenGL helper for mipmapping
+					- metadata: used by GameOpenGL helper for mipmapping, owned by RenderContext (for clouds, land, and water) 
+					  and (by reference) by ShipRenderContext (for GenericTextures)
+				- Structure:
+					- ImageData Texture
+					- TextureAtlasMetadata Metadata:
+						- TextureAtlasFrameMetadata:
+							- box in atlas (i.e. texture coords, as 2xvec2f)
+							- TextureFrameMetadata
+						- vector<TextureAtlasFrameMetadata> / anything else addressable via TextureFrameId (see above)
+			- Separate mipmapper helper in GameOpenGL takes ImageData (by move) and TextureAtlasMetadata
+		- Impl:
+			- Resize all textures to powers of two
+			- RenderContext:
+				- Create at cctor
+				- Call GameOpenGL mipmap helper moving Texture and passing Metadata
+				- Store Metadata (by value)
+				- Pass Metadata and texture handle to ShipRenderContext
+			- ShipRenderContext must take from RenderContext:
+				- Atlas texture handle (&), for binding it at GenericTextures
+					- At least until we do Z and GenericTextures moves up to RenderContext
+				- metadata (&)
+			- RenderContext:
+				- bind at RenderContext::RenderStart(), for clouds, land, and water
+			- ShipRenderContext:
+				- bind at GenericTextures
+			- Use box in atlas at:
+				- Clouds
+				- Water
+				- Land
+				- Generic Textures
 		- After done:
-			- Modify GenericTexture shader to run once for all textures
+			- Modify GenericTexture to run once for all textures (still for each connected component until Z)
 
 	- AmbientLightIntensity:
 		+ Use also in RenderContext::RenderStart() for clear (sky) color
