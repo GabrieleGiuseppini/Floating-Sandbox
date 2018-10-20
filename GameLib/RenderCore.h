@@ -73,7 +73,7 @@ enum class VertexAttributeType : GLuint
     // Vertex attributes dedicated to a VBO
     //
 
-    WaterPosition = 3,
+    WaterAttribute = 3,
 
     GenericTexturePackedData1 = 4,
     GenericTextureTextureCoordinates = 5,

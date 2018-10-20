@@ -10,7 +10,7 @@
  */
 
 #include "GameTypes.h"
-#include "ImageSize.h"
+#include "ImageData.h"
 #include "ProgressCallback.h"
 
 #include <cassert>
@@ -66,13 +66,13 @@ struct TextureFrame
     TextureFrameMetadata Metadata;
 
     // The image itself
-    std::unique_ptr<unsigned char const[]> Data;
+    ImageData TextureData;
 
     TextureFrame(
         TextureFrameMetadata const & metadata,
-        std::unique_ptr<unsigned char const[]> data)
+        ImageData textureData)
         : Metadata(metadata)
-        , Data(std::move(data))
+        , TextureData(std::move(textureData))
     {}
 };
 

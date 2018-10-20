@@ -46,7 +46,7 @@ void TextureRenderManager::UploadGroup(
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         // Upload texture data
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, frame.Metadata.Size.Width, frame.Metadata.Size.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, frame.Data.get());
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, frame.Metadata.Size.Width, frame.Metadata.Size.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, frame.TextureData.Data.get());
         if (GL_NO_ERROR != glGetError())
         {
             throw GameException("Error uploading texture onto GPU");
@@ -55,7 +55,7 @@ void TextureRenderManager::UploadGroup(
         // Unbind texture
         glBindTexture(GL_TEXTURE_2D, 0);
 
-        // Store data
+        // Store metadata
         assert(frameSpec.Metadata.FrameId.FrameIndex == frameDataGroup.size());
         frameDataGroup.emplace_back(
             frameSpec.Metadata,
@@ -92,7 +92,7 @@ void TextureRenderManager::UploadMipmappedGroup(
         glBindTexture(GL_TEXTURE_2D, openGLHandle);
 
         // Upload texture
-        GameOpenGL::UploadMipmappedTexture(std::move(frame));
+        GameOpenGL::UploadMipmappedTexture(std::move(frame.TextureData));
 
         // Set repeat mode
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);

@@ -282,13 +282,13 @@ public:
         // Populate entry in buffer
         //
 
-        assert(!!mCloudMappedBuffer);
-        assert(mCurrentCloudCount + 1u <= mCloudCount);
-        CloudElement * cloudElement = &(reinterpret_cast<CloudElement *>(*mCloudMappedBuffer)[mCurrentCloudCount]);
+        assert(!!mCloudElementMappedBuffer);
+        assert(mCurrentCloudElementCount + 1u <= mCloudElementCount);
+        CloudElement * cloudElement = &(reinterpret_cast<CloudElement *>(*mCloudElementMappedBuffer)[mCurrentCloudElementCount]);
 
         TextureFrameMetadata const & textureMetadata = mTextureRenderManager->GetFrameMetadata(
             TextureGroupType::Cloud,
-            static_cast<TextureFrameIndex>(mCurrentCloudCount % mCloudTextureCount));
+            static_cast<TextureFrameIndex>(mCurrentCloudElementCount % mCloudTextureCount));
 
         float const aspectRatio = static_cast<float>(mCanvasWidth) / static_cast<float>(mCanvasHeight);
 
@@ -317,7 +317,7 @@ public:
         cloudElement->ndcTextureXBottomRight = 1.0f;
         cloudElement->ndcTextureYBottomRight = 0.0f;
 
-        ++mCurrentCloudCount;
+        ++mCurrentCloudElementCount;
     }
 
     void RenderCloudsEnd();
@@ -335,7 +335,7 @@ public:
         float yWater,
         float restWaterHeight)
     {
-        assert(mLandBufferMaxSize == mWaterBufferMaxSize);
+        assert(mLandBufferMaxSize == mWaterElementCount);
         assert(mLandBufferMaxSize > 0);
 
         float const worldBottom = mCamY - (mVisibleWorldHeight / 2.0f);
@@ -359,18 +359,19 @@ public:
         // Store water element
         //
 
-        assert(mWaterBufferSize + 1u <= mWaterBufferMaxSize);
-        WaterElement * waterElement = &(mWaterBuffer[mWaterBufferSize]);
+        assert(!!mWaterElementMappedBuffer);
+        assert(mCurrentWaterElementCount + 1u <= mWaterElementCount);
+        WaterElement * waterElement = &(reinterpret_cast<WaterElement *>(*mWaterElementMappedBuffer)[mCurrentWaterElementCount]);
 
         waterElement->x1 = x;
-        waterElement->y1 = yWater > yLand ? yWater : yLand; // Make sure that islands are not covered in water!
+        waterElement->y1 = yWater > yLand ? yWater : yLand; // Make sure islands are not covered in water!
         waterElement->textureY1 = restWaterHeight;
 
         waterElement->x2 = x;
         waterElement->y2 = yLand;
         waterElement->textureY2 = 0.0f;
 
-        ++mWaterBufferSize;
+        ++mCurrentWaterElementCount;
     }
 
     void UploadLandAndWaterEnd();
@@ -700,9 +701,9 @@ private:
     };
 #pragma pack(pop)
 
-    GameOpenGLMappedBuffer<GL_ARRAY_BUFFER> mCloudMappedBuffer;
-    size_t mCurrentCloudCount;
-    size_t mCloudCount;
+    GameOpenGLMappedBuffer<GL_ARRAY_BUFFER> mCloudElementMappedBuffer;
+    size_t mCurrentCloudElementCount;
+    size_t mCloudElementCount;
     
     GameOpenGLVBO mCloudVBO;
 
@@ -745,9 +746,9 @@ private:
     };
 #pragma pack(pop)
 
-    std::unique_ptr<WaterElement[]> mWaterBuffer;
-    size_t mWaterBufferSize;
-    size_t mWaterBufferMaxSize;
+    GameOpenGLMappedBuffer<GL_ARRAY_BUFFER> mWaterElementMappedBuffer;
+    size_t mCurrentWaterElementCount;
+    size_t mWaterElementCount;
 
     GameOpenGLVBO mWaterVBO;
 

@@ -7,7 +7,6 @@
 
 #include "GameException.h"
 #include "ImageData.h"
-#include "TextureDatabase.h"
 
 #ifdef WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -17,6 +16,7 @@
 
 #include <glad/glad.h>
 
+#include <cassert>
 #include <cstdio>
 #include <string>
 
@@ -203,8 +203,6 @@ public:
         GameOpenGLShaderProgram const & shaderProgram,
         GLuint attributeIndex,
         std::string const & attributeName);
-
-    static void UploadMipmappedTexture(TextureFrame baseTexture);
 
     static void UploadMipmappedTexture(ImageData baseTexture);
 

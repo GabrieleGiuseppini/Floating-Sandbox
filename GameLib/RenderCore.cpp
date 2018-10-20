@@ -125,8 +125,8 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::SharedAttribute1;
     else if (Utils::CaseInsensitiveEquals(str, "SharedAttribute2"))
         return VertexAttributeType::SharedAttribute2;
-    else if (Utils::CaseInsensitiveEquals(str, "WaterPosition"))
-        return VertexAttributeType::WaterPosition;
+    else if (Utils::CaseInsensitiveEquals(str, "WaterAttribute"))
+        return VertexAttributeType::WaterAttribute;
     else if (Utils::CaseInsensitiveEquals(str, "GenericTexturePackedData1"))
         return VertexAttributeType::GenericTexturePackedData1;
     else if (Utils::CaseInsensitiveEquals(str, "GenericTexturePackedData2"))
@@ -157,8 +157,8 @@ std::string VertexAttributeTypeToStr(VertexAttributeType vertexAttribute)
         return "SharedAttribute1";
     case VertexAttributeType::SharedAttribute2:
         return "SharedAttribute2";
-    case VertexAttributeType::WaterPosition:
-        return "WaterPosition";
+    case VertexAttributeType::WaterAttribute:
+        return "WaterAttribute";
     case VertexAttributeType::GenericTexturePackedData1:
         return "GenericTexturePackedData1";        
     case VertexAttributeType::GenericTexturePackedData2:

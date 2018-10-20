@@ -48,7 +48,7 @@ TextureFrame TextureFrameSpecification::LoadFrame() const
 
     return TextureFrame(
         Metadata,
-        std::move(imageData.Data));
+        std::move(imageData));
 }
 
 TextureDatabase TextureDatabase::Load(

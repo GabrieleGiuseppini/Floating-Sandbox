@@ -102,16 +102,6 @@ void GameOpenGL::BindAttributeLocation(
     }
 }
 
-void GameOpenGL::UploadMipmappedTexture(TextureFrame baseTexture)
-{
-    ImageData imageData(
-        baseTexture.Metadata.Size.Width,
-        baseTexture.Metadata.Size.Height,
-        std::move(baseTexture.Data));
-
-    UploadMipmappedTexture(std::move(imageData));
-}
-
 void GameOpenGL::UploadMipmappedTexture(ImageData baseTexture)
 {
     //
