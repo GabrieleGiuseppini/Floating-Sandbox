@@ -197,6 +197,7 @@ ShipRenderContext::ShipRenderContext(
     CheckOpenGLError();
 
 
+
     //
     // Initialize vector field
     //

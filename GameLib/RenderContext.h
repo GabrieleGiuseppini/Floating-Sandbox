@@ -335,8 +335,8 @@ public:
         float yWater,
         float restWaterHeight)
     {
-        assert(mLandBufferMaxSize == mWaterElementCount);
-        assert(mLandBufferMaxSize > 0);
+        assert(mLandElementCount == mWaterElementCount);
+        assert(mLandElementCount > 0);
 
         float const worldBottom = mCamY - (mVisibleWorldHeight / 2.0f);
 
