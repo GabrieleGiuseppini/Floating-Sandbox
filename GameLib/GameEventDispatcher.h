@@ -60,33 +60,6 @@ public:
         mDestroyEvents[std::make_tuple(material, isUnderwater)] += size;
     }
 
-    virtual void OnSaw(std::optional<bool> isUnderwater) override
-    {
-        // No need to aggregate this one
-        for (auto sink : mSinks)
-        {
-            sink->OnSaw(isUnderwater);
-        }
-    }
-
-    virtual void OnDraw(std::optional<bool> isUnderwater) override
-    {
-        // No need to aggregate this one
-        for (auto sink : mSinks)
-        {
-            sink->OnDraw(isUnderwater);
-        }
-    }
-
-    virtual void OnSwirl(std::optional<bool> isUnderwater) override
-    {
-        // No need to aggregate this one
-        for (auto sink : mSinks)
-        {
-            sink->OnSwirl(isUnderwater);
-        }
-    }
-
     virtual void OnPinToggled(
         bool isPinned,
         bool isUnderwater) override

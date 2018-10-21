@@ -7,7 +7,6 @@ class _MockHandler : public IGameEventHandler
 public:
     
     MOCK_METHOD3(OnDestroy, void(Material const * material, bool isUnderwater, unsigned int size));
-    MOCK_METHOD0(OnDraw, void());
     MOCK_METHOD3(OnBreak, void(Material const * material, bool isUnderwater, unsigned int size));
     MOCK_METHOD2(OnPinToggled, void(bool isPinned, bool isUnderwater));
     MOCK_METHOD3(OnStress, void(Material const * material, bool isUnderwater, unsigned int size));

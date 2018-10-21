@@ -44,21 +44,6 @@ public:
         // Default-implemented
     }
 
-    virtual void OnSaw(std::optional<bool> /*isUnderwater*/)
-    {
-        // Default-implemented
-    }
-
-    virtual void OnDraw(std::optional<bool> /*isUnderwater*/)
-    {
-        // Default-implemented
-    }
-
-    virtual void OnSwirl(std::optional<bool> /*isUnderwater*/)
-    {
-        // Default-implemented
-    }
-
     virtual void OnPinToggled(
         bool /*isPinned*/,
         bool /*isUnderwater*/)

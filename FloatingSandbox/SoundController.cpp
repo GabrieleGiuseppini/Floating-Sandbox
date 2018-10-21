@@ -343,6 +343,48 @@ void SoundController::SetPlaySinkingMusic(bool playSinkingMusic)
     mPlaySinkingMusic = playSinkingMusic;
 }
 
+void SoundController::PlayDrawSound(bool /*isUnderwater*/)
+{
+    // At the moment we ignore the water-ness
+    mDrawSound.Start();
+}
+
+void SoundController::StopDrawSound()
+{
+    mDrawSound.Stop();
+}
+
+void SoundController::PlaySawSound(bool isUnderwater)
+{
+    if (isUnderwater)
+    {
+        mSawUnderwaterSound.Start();
+        mSawAbovewaterSound.Stop();
+    }
+    else
+    {
+        mSawAbovewaterSound.Start();
+        mSawUnderwaterSound.Stop();
+    }
+}
+
+void SoundController::StopSawSound()
+{
+    mSawAbovewaterSound.Stop();
+    mSawUnderwaterSound.Stop();
+}
+
+void SoundController::PlaySwirlSound(bool /*isUnderwater*/)
+{
+    // At the moment we ignore the water-ness
+    mSwirlSound.Start();
+}
+
+void SoundController::StopSwirlSound()
+{
+    mSwirlSound.Stop();
+}
+
 void SoundController::Update()
 {
 }
@@ -411,54 +453,6 @@ void SoundController::OnDestroy(
         size, 
         isUnderwater,
         50.0f);
-}
-
-void SoundController::OnSaw(std::optional<bool> isUnderwater)
-{
-    if (!!isUnderwater)
-    {
-        if (*isUnderwater)
-        {
-            mSawUnderwaterSound.Start();
-            mSawAbovewaterSound.Stop();            
-        }
-        else
-        {
-            mSawAbovewaterSound.Start();
-            mSawUnderwaterSound.Stop();            
-        }
-    }
-    else
-    {
-        mSawAbovewaterSound.Stop();
-        mSawUnderwaterSound.Stop();
-    }
-}
-
-void SoundController::OnDraw(std::optional<bool> isUnderwater)
-{    
-    if (!!isUnderwater)    
-    {
-        // At the moment we ignore the water-ness
-        mDrawSound.Start();
-    }
-    else
-    {
-        mDrawSound.Stop();
-    }    
-}
-
-void SoundController::OnSwirl(std::optional<bool> isUnderwater)
-{
-    if (!!isUnderwater)
-    {
-        // At the moment we ignore the water-ness
-        mSwirlSound.Start();
-    }
-    else
-    {
-        mSwirlSound.Stop();
-    }
 }
 
 void SoundController::OnPinToggled(

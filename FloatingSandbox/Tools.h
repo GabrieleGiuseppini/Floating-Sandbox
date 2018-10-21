@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
+#include "SoundController.h"
+
 #include <GameLib/GameController.h>
 #include <GameLib/ResourceLoader.h>
 
@@ -86,14 +88,17 @@ protected:
     Tool(
         ToolType toolType,
         wxFrame * parentFrame,
-        std::shared_ptr<GameController> gameController)
+        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<SoundController> soundController)
         : mToolType(toolType)
         , mParentFrame(parentFrame)
         , mGameController(gameController)
+        , mSoundController(soundController)
     {}
 
     wxFrame * const mParentFrame;
     std::shared_ptr<GameController> const mGameController;
+    std::shared_ptr<SoundController> const mSoundController;
 
 private:
 
@@ -130,11 +135,13 @@ protected:
     OneShotTool(
         ToolType toolType,
         wxFrame * parentFrame,
-        std::shared_ptr<GameController> gameController)
+        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<SoundController> soundController)
         : Tool(
             toolType,
             parentFrame,
-            std::move(gameController))
+            std::move(gameController),
+            std::move(soundController))
         , mCurrentCursor(nullptr)
     {}
 
@@ -151,6 +158,14 @@ class ContinuousTool : public Tool
 public:
 
     virtual ~ContinuousTool() {}
+
+    virtual void Initialize(InputState const & inputState) override
+    {
+        // Initialize the continuous tool state
+        mPreviousMousePosition = inputState.MousePosition;
+        mPreviousTimestamp = std::chrono::steady_clock::now();
+        mCumulatedTime = std::chrono::microseconds(0);
+    }
 
     virtual void Update(InputState const & inputState) override;
 
@@ -180,11 +195,13 @@ protected:
     ContinuousTool(
         ToolType toolType,
         wxFrame * parentFrame,
-        std::shared_ptr<GameController> gameController)
+        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<SoundController> soundController)
         : Tool(
             toolType,
             parentFrame,
-            std::move(gameController))
+            std::move(gameController),
+            std::move(soundController))
         , mCurrentCursor(nullptr)
         , mPreviousMousePosition()
         , mPreviousTimestamp(std::chrono::steady_clock::now())
@@ -244,12 +261,15 @@ public:
     SmashTool(
         wxFrame * parentFrame,
         std::shared_ptr<GameController> gameController,
+        std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
 
 public:
 
     virtual void Initialize(InputState const & inputState) override
     {
+        ContinuousTool::Initialize(inputState);
+
         // Reset current cursor 
         if (inputState.IsLeftMouseDown)
         {
@@ -307,6 +327,7 @@ public:
     SawTool(
         wxFrame * parentFrame,
         std::shared_ptr<GameController> gameController,
+        std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
 
 public:
@@ -318,6 +339,9 @@ public:
             // Initialize state
             mPreviousMousePos = inputState.MousePosition;
             mIsUnderwater = mGameController->IsUnderwater(inputState.MousePosition);
+
+            // Start sound
+            mSoundController->PlaySawSound(mIsUnderwater);
 
             // Set current cursor to the current down cursor
             mCurrentCursor = (mDownCursorCounter % 2) ? mDownCursor2.get() : mDownCursor1.get();
@@ -334,8 +358,8 @@ public:
 
     virtual void Deinitialize(InputState const & /*inputState*/) override
     {
-        // Notify
-        mGameController->GetGameEventHandler()->OnSaw(std::nullopt);
+        // Stop sound
+        mSoundController->StopSawSound();
     }
 
     virtual void Update(InputState const & inputState) override
@@ -346,8 +370,8 @@ public:
             bool isUnderwater = mGameController->IsUnderwater(inputState.MousePosition);
             if (isUnderwater != mIsUnderwater)
             {
-                // Notify
-                mGameController->GetGameEventHandler()->OnSaw(isUnderwater);
+                // Update sound
+                mSoundController->PlaySawSound(isUnderwater);
 
                 // Update state
                 mIsUnderwater = isUnderwater;
@@ -382,8 +406,8 @@ public:
         mPreviousMousePos = inputState.MousePosition;
         mIsUnderwater = mGameController->IsUnderwater(inputState.MousePosition);
 
-        // Notify
-        mGameController->GetGameEventHandler()->OnSaw(mGameController->IsUnderwater(inputState.MousePosition));
+        // Start sound
+        mSoundController->PlaySawSound(mGameController->IsUnderwater(inputState.MousePosition));
 
         // Set current cursor to the current down cursor
         mCurrentCursor = (mDownCursorCounter % 2) ? mDownCursor2.get() : mDownCursor1.get();
@@ -395,8 +419,8 @@ public:
         // Reset state
         mPreviousMousePos = std::nullopt;
 
-        // Notify
-        mGameController->GetGameEventHandler()->OnSaw(std::nullopt);
+        // Stop sound
+        mSoundController->StopSawSound();
 
         // Set current cursor to the up cursor
         mCurrentCursor = mUpCursor.get();
@@ -445,27 +469,36 @@ public:
     GrabTool(
         wxFrame * parentFrame,
         std::shared_ptr<GameController> gameController,
+        std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
 
 public:
 
     virtual void Initialize(InputState const & inputState) override
     {
+        ContinuousTool::Initialize(inputState);
+
+        if (inputState.IsLeftMouseDown)
+        {
+            // Start sound
+            mSoundController->PlayDrawSound(mGameController->IsUnderwater(inputState.MousePosition));
+        }
+
         SetBasisCursor(inputState);
     }
 
     virtual void Deinitialize(InputState const & /*inputState*/) override
     {
-        // Notify
-        mGameController->GetGameEventHandler()->OnDraw(std::nullopt);
+        // Stop sound
+        mSoundController->StopDrawSound();
     }
 
     virtual void OnLeftMouseDown(InputState const & inputState) override
     {
         ContinuousTool::OnLeftMouseDown(inputState);
 
-        // Notify
-        mGameController->GetGameEventHandler()->OnDraw(mGameController->IsUnderwater(inputState.MousePosition));
+        // Start sound
+        mSoundController->PlayDrawSound(mGameController->IsUnderwater(inputState.MousePosition));
 
         // Change cursor
         SetBasisCursor(inputState);
@@ -474,8 +507,8 @@ public:
 
     virtual void OnLeftMouseUp(InputState const & inputState) override
     {
-        // Notify
-        mGameController->GetGameEventHandler()->OnDraw(std::nullopt);
+        // Stop sound
+        mSoundController->StopDrawSound();
 
         // Change cursor
         SetBasisCursor(inputState);
@@ -549,27 +582,36 @@ public:
     SwirlTool(
         wxFrame * parentFrame,
         std::shared_ptr<GameController> gameController,
+        std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
 
 public:
 
     virtual void Initialize(InputState const & inputState) override
     {
+        ContinuousTool::Initialize(inputState);
+
+        if (inputState.IsLeftMouseDown)
+        {
+            // Start sound
+            mSoundController->PlaySwirlSound(mGameController->IsUnderwater(inputState.MousePosition));
+        }
+
         SetBasisCursor(inputState);
     }
 
     virtual void Deinitialize(InputState const & /*inputState*/) override
     {
-        // Notify
-        mGameController->GetGameEventHandler()->OnSwirl(std::nullopt);
+        // Stop sound
+        mSoundController->StopSwirlSound();
     }
 
     virtual void OnLeftMouseDown(InputState const & inputState) override
     {
         ContinuousTool::OnLeftMouseDown(inputState);
 
-        // Notify
-        mGameController->GetGameEventHandler()->OnSwirl(mGameController->IsUnderwater(inputState.MousePosition));
+        // Start sound
+        mSoundController->PlaySwirlSound(mGameController->IsUnderwater(inputState.MousePosition));
 
         // Change cursor
         SetBasisCursor(inputState);
@@ -578,8 +620,8 @@ public:
 
     virtual void OnLeftMouseUp(InputState const & inputState) override
     {
-        // Notify
-        mGameController->GetGameEventHandler()->OnSwirl(std::nullopt);
+        // Stop sound
+        mSoundController->StopSwirlSound();
 
         // Change cursor
         SetBasisCursor(inputState);
@@ -653,6 +695,7 @@ public:
     PinTool(
         wxFrame * parentFrame,
         std::shared_ptr<GameController> gameController,
+        std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
 
 public:
@@ -684,6 +727,7 @@ public:
     TimerBombTool(
         wxFrame * parentFrame,
         std::shared_ptr<GameController> gameController,
+        std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
 
 public:
@@ -715,6 +759,7 @@ public:
     RCBombTool(
         wxFrame * parentFrame,
         std::shared_ptr<GameController> gameController,
+        std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
 
 public:

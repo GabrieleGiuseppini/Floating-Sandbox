@@ -456,6 +456,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
             initialToolType,
             this,
             mGameController,
+            mSoundController,
             *mResourceLoader);
     }
     catch (std::exception const & e)

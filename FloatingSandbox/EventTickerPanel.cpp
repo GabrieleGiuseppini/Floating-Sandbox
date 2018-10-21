@@ -105,21 +105,6 @@ void EventTickerPanel::OnDestroy(
     AppendFutureTickerText(ss.str());
 }
 
-void EventTickerPanel::OnSaw(std::optional<bool> /*isUnderwater*/)
-{
-    AppendFutureTickerText("Slicing!");
-}
-
-void EventTickerPanel::OnDraw(std::optional<bool> /*isUnderwater*/)
-{
-    AppendFutureTickerText("Drawing!");
-}
-
-void EventTickerPanel::OnSwirl(std::optional<bool> /*isUnderwater*/)
-{
-    AppendFutureTickerText("Swirling!");
-}
-
 void EventTickerPanel::OnStress(
     Material const * material,
     bool isUnderwater,

@@ -96,7 +96,7 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 			+ Rename middle "RenderCloud" as "UploadCloud"
 			+ Rename SharedAttribute1 as SharedAttribute0, et al
 		= Land, Water
-			= Also make clouds, land, and water use disjoint vertex attributes, so can bind once at each XYZStart()
+			+ Also make clouds, land, and water use disjoint vertex attributes, so can bind once at each XYZStart()
 			  before mapping buffer (and subsequently describe, when needed)
 			  + Water, matte_water: use vec3 WaterAttribute
 				+ Shaders
@@ -113,7 +113,7 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 				+ Bind, allocate, and map at RenderStart()
 				+ Description of SharedAttribute1 at Render() after unmapping buffer
 				+ Disable 0 before running program
-		- FPS:
+		- FPS: TODOHERE
 	- Now, compare with replacing MapBuffer with BufferSubData
 		- Copy exe first
 		- Just this:
@@ -122,41 +122,8 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 			- Remove MapBuffer call
 			- Replace UnmapBuffer call with BufferSubData
 		- FPS:
-	- Get full perf, including other boxes
+	- Get full perf, including other laptops
 
-- Technical Debt:
-
-	+ Fix issue with very fast rope sinking
-		+ How's a wet rope different than iron hull? Test with test_ship.png
-		+ It's because ropes get water (when broken) and gravity force is based off point_mass+water, while integration only uses point_mass
-			+ In fact it also applies to all light hulls that are broken
-		+ See if can apply buoyancy always, and thus get rid of Points::Buoyancy
-			+ Nope: too many hull materials would float
-		+ NOPE: Apply water mass at Integrate then? And what about springs - should use new mass there as well?
-		+ Two possible fixes:
-			+ Just don't consider water at gravity if buoyancy=0 (i.e. if hull)
-				- i.e. revert the buoyancy fix
-				- result is that wet hull points never feel water weight (and neither buoyancy)
-			+ THIS ONE: Or, buoyancy=0 points (i.e. hull points) never take water, period
-				+ i.e. they are never set leaking upon spring destruction
-				+ First figure out how internal hull gets wet - if it does - IT DOES NOT!
-
-
-	+ Move RenderContext et al into Render:: namespace and file group
-			+ See if TextureTypes.h is still needed and whether it can be moved to GameTypes
-				+ After all, ShipRenderMode is in GameTypes
-				+ Polygon for now moves to that class that makes it
-
-	- ToolController rearc:
-		- ToolController has pointer to SoundController, and tells the latter when to play and stop tools' sounds 
-		- IGameEventHandler events then exist only for the world-generated noises (e.g. something really breaking), not
-		  for the tools
-		  - So Swirl, for example, should disappear from IGameEventHandler; some others as well
-		  - Tools don't invoke IGameEventHandler->OnSwirl(), for example
-
-	+ CMake:
-		+ INSTALL target for release
-		+ RelWithDebInfo: Inline any suitable (/Ob2)
 
 - Optimizations:
 
@@ -244,52 +211,6 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 	- Cache sea depth from PointDynamics at first calculation (Points?), using lambda
 
 - Gfx optimizations:
-	- Try glMapBuffer for index buffers (triangles, springs, etc.)
-		- Only after Z
-			- Complications if no Z:
-				- Would need multiple buffers, one for each connected component, but sizes of each are not known yet, 
-				  thus we'd waste GPU ram
-		- ShipRenderContext::UploadElementsStart gets and stores the pointers to the N buffers
-		- ShipRenderContext::UploadElementsEnd calls glUnmapBuffer on each
-			- And also "forgets" pointers, for debugging
-			- No need to upload anymore
-		- ShipRenderContext::UploadXYZ write directly into buffer
-	- Try using GL_SHORT for Ship texture coordinates
-		- Passing NORMALIZE and 3 components to glVertexAttribPointer
-	- (Retry) Use CPU and GPU in parallel
-		- Finalize render (glFlush) before render step, not after
-			- Research glFlush()
-			- By invoking glFlush() and SwapBuffers() in MainFrame, before Render()
-	- More connected components => slower (multiple batches); try
-	  to draw one single batch then, using Z buffer and depth test 
-		- Assign Z based on connected component ID
-		- Plan:
-			- TODO: review the below based off transparency sorting - see MOLESKINE
-			1 - Test perspective with hardcoded z=-800 at shader, and see if it makes any difference
-			2 - Ship assigns points' ConnectedComponentID as float in vector
-			3 - ShipRenderContext's shaders (Triangles, Springs) take Z and with ad-hoc OrthoMatrix
-			    transform ConnectedComponentID to Z
-			4 - ShipRenderContext::UploadXYZElement() does not take anymore connected component ID
-			5 - (Nice to have): sticky component IDs, by leveraging the fact that normally IDs are assigned from L,T to R,B
-		- See if drawing springs & triangles at separate depths also helps generally with render speed, even for one single
-		  connected component (for springs' fragment shader - may be it takes shortcuts if it knows it's behind)
-		- After Z is done:
-			- GenericTextureShader also takes ShipID, ConnectedComponentID for Z, and exists in one central place
-				- Invoke shader at one place (still for 1 texture at a time, waiting for atlas)
-					- Move this shader and all ShipRenderContext::UploadTextureRenderSpecification to 
-					  RenderContext
-					  - With optional <ship ID, connected component ID> pair (not set -> main UI, on top of everything)
-
-- Gfx:
-	- Problem with texture over edges of structure: when texture is not reduced by structure (i.e. when structure is
-	  larger than texture), then one sees parts of the springs
-		- It's a problem with rendering springs with the texture shader
-	- Draw better those parts that are only connected by ropes 
-		- Change connected component detection by not propagating from a "spring only" to a "body"
-			- In practice: flood the *edge* network, not the spring network, and don't propagate
-			  if coming from edge with zero triangles to an edge with !=0 triangles
-	- Option to enable drawing of force vectors for each point
-		- Have to choose which iteration
 	- Texture atlas:
 		- Spec:
 			- Atlas is built on-the-fly, completely independently from texture DB, via a separate
@@ -330,6 +251,43 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 		- After done:
 			- Modify GenericTexture to run once for all textures (still for each connected component until Z)
 
+	- Try glMapBuffer also for index buffers (triangles, springs, etc.)
+	- Try using GL_SHORT for Ship texture coordinates
+		- Passing NORMALIZE and 3 components to glVertexAttribPointer
+	- (Retry) Use CPU and GPU in parallel
+		- Finalize render (glFlush) before render step, not after
+			- Research glFlush()
+			- By invoking glFlush() and SwapBuffers() in MainFrame, before Render()
+	- More connected components => slower (multiple batches); try
+	  to draw one single batch then, using Z buffer and depth test 
+		- Assign Z based on connected component ID
+		- Plan:
+			- TODO: review the below based off transparency sorting - see MOLESKINE
+			1 - Test perspective with hardcoded z=-800 at shader, and see if it makes any difference
+			2 - Ship assigns points' ConnectedComponentID as float in vector
+			3 - ShipRenderContext's shaders (Triangles, Springs) take Z and with ad-hoc OrthoMatrix
+			    transform ConnectedComponentID to Z
+			4 - ShipRenderContext::UploadXYZElement() does not take anymore connected component ID
+			5 - (Nice to have): sticky component IDs, by leveraging the fact that normally IDs are assigned from L,T to R,B
+		- See if drawing springs & triangles at separate depths also helps generally with render speed, even for one single
+		  connected component (for springs' fragment shader - may be it takes shortcuts if it knows it's behind)
+		- After Z is done:
+			- GenericTextureShader also takes ShipID, ConnectedComponentID for Z, and exists in one central place
+				- Invoke shader at one place (still for 1 texture at a time, waiting for atlas)
+					- Move this shader and all ShipRenderContext::UploadTextureRenderSpecification to 
+					  RenderContext
+					  - With optional <ship ID, connected component ID> pair (not set -> main UI, on top of everything)
+
+- Gfx:
+	- Problem with texture over edges of structure: when texture is not reduced by structure (i.e. when structure is
+	  larger than texture), then one sees parts of the springs
+		- It's a problem with rendering springs with the texture shader
+	- Draw better those parts that are only connected by ropes 
+		- Change connected component detection by not propagating from a "spring only" to a "body"
+			- In practice: flood the *edge* network, not the spring network, and don't propagate
+			  if coming from edge with zero triangles to an edge with !=0 triangles
+	- Option to enable drawing of force vectors for each point
+		- Have to choose which iteration
 	- AmbientLightIntensity:
 		+ Use also in RenderContext::RenderStart() for clear (sky) color
 		+ Phase 1: pgup/down
@@ -2449,6 +2407,41 @@ IF WX:
 				+ Ship's test upload
 				+ reorder RenderCore::VertexAttributes
 			+ Final test with game, real textures
+	+ Fix issue with very fast rope sinking
+		+ How's a wet rope different than iron hull? Test with test_ship.png
+		+ It's because ropes get water (when broken) and gravity force is based off point_mass+water, while integration only uses point_mass
+			+ In fact it also applies to all light hulls that are broken
+		+ See if can apply buoyancy always, and thus get rid of Points::Buoyancy
+			+ Nope: too many hull materials would float
+		+ NOPE: Apply water mass at Integrate then? And what about springs - should use new mass there as well?
+		+ Two possible fixes:
+			+ Just don't consider water at gravity if buoyancy=0 (i.e. if hull)
+				- i.e. revert the buoyancy fix
+				- result is that wet hull points never feel water weight (and neither buoyancy)
+			+ THIS ONE: Or, buoyancy=0 points (i.e. hull points) never take water, period
+				+ i.e. they are never set leaking upon spring destruction
+				+ First figure out how internal hull gets wet - if it does - IT DOES NOT!
+
+
+	+ Move RenderContext et al into Render:: namespace and file group
+			+ See if TextureTypes.h is still needed and whether it can be moved to GameTypes
+				+ After all, ShipRenderMode is in GameTypes
+				+ Polygon for now moves to that class that makes it
+
+	+ ToolController rearc:
+		+ ToolController has pointer to SoundController, and tells the latter when to play and stop tools' sounds 
+		+ IGameEventHandler events then exist only for the world-generated noises (e.g. something really breaking), not
+		  for the tools
+		  + So Swirl, for example, should disappear from IGameEventHandler; some others as well
+		  + Tools don't invoke IGameEventHandler->OnSwirl(), for example
+		  + Removed:
+			+ OnSaw
+			+ OnDraw
+			+ OnSwirl
+
+	+ CMake:
+		+ INSTALL target for release
+		+ RelWithDebInfo: Inline any suitable (/Ob2)
 
 + Ships:
 	+ Titanic:

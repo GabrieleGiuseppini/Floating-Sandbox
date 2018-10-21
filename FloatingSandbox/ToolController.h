@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "SoundController.h"
 #include "Tools.h"
 
 #include <GameLib/GameController.h>
@@ -23,6 +24,7 @@ public:
         ToolType initialToolType,
         wxFrame * parentFrame,
         std::shared_ptr<GameController> gameController,
+        std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
 
     void SetTool(ToolType toolType)
@@ -100,4 +102,5 @@ private:
     wxFrame * const mParentFrame;
     std::unique_ptr<wxCursor> mMoveCursor;
     std::shared_ptr<GameController> const mGameController;
+    std::shared_ptr<SoundController> const mSoundController;
 };

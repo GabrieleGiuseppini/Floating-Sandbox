@@ -150,11 +150,13 @@ void ContinuousTool::Update(InputState const & inputState)
 SmashTool::SmashTool(
     wxFrame * parentFrame,
     std::shared_ptr<GameController> gameController,
+    std::shared_ptr<SoundController> soundController,
     ResourceLoader & resourceLoader)
     : ContinuousTool(
         ToolType::Smash,
         parentFrame,
-        std::move(gameController))
+        std::move(gameController),
+        std::move(soundController))
     , mUpCursor(MakeCursor("smash_cursor_up", 6, 9, resourceLoader))
     , mDownCursors(MakeCursors("smash_cursor_down", 6, 9, resourceLoader))
 {
@@ -190,11 +192,13 @@ void SmashTool::ApplyTool(
 SawTool::SawTool(
     wxFrame * parentFrame,
     std::shared_ptr<GameController> gameController,
+    std::shared_ptr<SoundController> soundController,
     ResourceLoader & resourceLoader)
     : Tool(
         ToolType::Saw,
         parentFrame,
-        std::move(gameController))
+        std::move(gameController),
+        std::move(soundController))
     , mUpCursor(MakeCursor("chainsaw_cursor_up", 8, 20, resourceLoader))
     , mDownCursor1(MakeCursor("chainsaw_cursor_down_1", 8, 20, resourceLoader))
     , mDownCursor2(MakeCursor("chainsaw_cursor_down_2", 8, 20, resourceLoader))
@@ -212,11 +216,13 @@ SawTool::SawTool(
 GrabTool::GrabTool(
     wxFrame * parentFrame,
     std::shared_ptr<GameController> gameController,
+    std::shared_ptr<SoundController> soundController,
     ResourceLoader & resourceLoader)
     : ContinuousTool(
         ToolType::Grab,
         parentFrame,
-        std::move(gameController))
+        std::move(gameController),
+        std::move(soundController))
     , mUpPlusCursor(MakeCursor("drag_cursor_up_plus", 15, 15, resourceLoader))
     , mUpMinusCursor(MakeCursor("drag_cursor_up_minus", 15, 15, resourceLoader))
     , mDownPlusCursors(MakeCursors("drag_cursor_down_plus", 15, 15, resourceLoader))
@@ -260,11 +266,13 @@ void GrabTool::ApplyTool(
 SwirlTool::SwirlTool(
     wxFrame * parentFrame,
     std::shared_ptr<GameController> gameController,
+    std::shared_ptr<SoundController> soundController,
     ResourceLoader & resourceLoader)
     : ContinuousTool(
         ToolType::Grab,
         parentFrame,
-        std::move(gameController))
+        std::move(gameController),
+        std::move(soundController))
     , mUpPlusCursor(MakeCursor("swirl_cursor_up_cw", 15, 15, resourceLoader))
     , mUpMinusCursor(MakeCursor("swirl_cursor_up_ccw", 15, 15, resourceLoader))
     , mDownPlusCursors(MakeCursors("swirl_cursor_down_cw", 15, 15, resourceLoader))
@@ -308,11 +316,13 @@ void SwirlTool::ApplyTool(
 PinTool::PinTool(
     wxFrame * parentFrame,
     std::shared_ptr<GameController> gameController,
+    std::shared_ptr<SoundController> soundController,
     ResourceLoader & resourceLoader)
     : OneShotTool(
         ToolType::Pin,
         parentFrame,
-        std::move(gameController))
+        std::move(gameController),
+        std::move(soundController))
     , mCursor(MakeCursor("pin_cursor", 4, 27, resourceLoader))
 {
 }
@@ -324,11 +334,13 @@ PinTool::PinTool(
 TimerBombTool::TimerBombTool(
     wxFrame * parentFrame,
     std::shared_ptr<GameController> gameController,
+    std::shared_ptr<SoundController> soundController,
     ResourceLoader & resourceLoader)
     : OneShotTool(
         ToolType::TimerBomb,
         parentFrame,
-        std::move(gameController))
+        std::move(gameController),
+        std::move(soundController))
     , mCursor(MakeCursor("timer_bomb_cursor", 16, 19, resourceLoader))
 {
 }
@@ -340,11 +352,13 @@ TimerBombTool::TimerBombTool(
 RCBombTool::RCBombTool(
     wxFrame * parentFrame,
     std::shared_ptr<GameController> gameController,
+    std::shared_ptr<SoundController> soundController,
     ResourceLoader & resourceLoader)
     : OneShotTool(
         ToolType::RCBomb,
         parentFrame,
-        std::move(gameController))
+        std::move(gameController),
+        std::move(soundController))
     , mCursor(MakeCursor("rc_bomb_cursor", 16, 21, resourceLoader))
 {
 }

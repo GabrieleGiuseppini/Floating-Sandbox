@@ -127,7 +127,7 @@ void ProbePanel::OnCustomProbe(
 
 void ProbePanel::OnFrameRateUpdated(
     float immediateFps,
-    float averageFps)
+    float /*averageFps*/)
 {
     mFrameRateProbe->RegisterSample(immediateFps);
 }

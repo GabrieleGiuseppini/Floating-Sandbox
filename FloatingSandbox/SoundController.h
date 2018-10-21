@@ -45,6 +45,15 @@ public:
 
     void SetPlaySinkingMusic(bool playSinkingMusic);
 
+    void PlayDrawSound(bool isUnderwater);
+    void StopDrawSound();
+
+    void PlaySawSound(bool isUnderwater);
+    void StopSawSound();
+
+    void PlaySwirlSound(bool isUnderwater);
+    void StopSwirlSound();
+
     //
     // Updating
     //
@@ -65,13 +74,7 @@ public:
         Material const * material,
         bool isUnderwater,
         unsigned int size) override;
-
-    virtual void OnSaw(std::optional<bool> isUnderwater) override;
-
-    virtual void OnDraw(std::optional<bool> isUnderwater) override;
-
-    virtual void OnSwirl(std::optional<bool> isUnderwater) override;
-
+    
     virtual void OnPinToggled(
         bool isPinned,
         bool isUnderwater) override;

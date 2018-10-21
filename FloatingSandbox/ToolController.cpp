@@ -13,6 +13,7 @@ ToolController::ToolController(
     ToolType initialToolType,
     wxFrame * parentFrame,
     std::shared_ptr<GameController> gameController,
+    std::shared_ptr<SoundController> soundController,
     ResourceLoader & resourceLoader)
     : mInputState()
     , mCurrentTool(nullptr)
@@ -20,6 +21,7 @@ ToolController::ToolController(
     , mParentFrame(parentFrame)
     , mMoveCursor()
     , mGameController(gameController)
+    , mSoundController(soundController)
 {
     //
     // Initialize all tools
@@ -29,42 +31,49 @@ ToolController::ToolController(
         std::make_unique<SmashTool>(
             parentFrame,
             gameController,
+            soundController,
             resourceLoader));
 
     mAllTools.emplace_back(
         std::make_unique<SawTool>(
             parentFrame,
             gameController,
+            soundController,
             resourceLoader));
 
     mAllTools.emplace_back(
         std::make_unique<GrabTool>(
             parentFrame,
             gameController,
+            soundController,
             resourceLoader));
 
     mAllTools.emplace_back(
         std::make_unique<SwirlTool>(
             parentFrame,
             gameController,
+            soundController,
             resourceLoader));
 
     mAllTools.emplace_back(
         std::make_unique<PinTool>(
             parentFrame,
             gameController,
+            soundController,
             resourceLoader));
 
     mAllTools.emplace_back(
         std::make_unique<TimerBombTool>(
             parentFrame,
             gameController,
+            soundController,
             resourceLoader));
 
     mAllTools.emplace_back(
         std::make_unique<RCBombTool>(
             parentFrame,
             gameController,
+            soundController,
             resourceLoader));
 
     // Prepare own cursor(s)
