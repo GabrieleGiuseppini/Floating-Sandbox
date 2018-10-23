@@ -282,9 +282,9 @@ public:
         // Populate entry in buffer
         //
 
-        assert(!!mCloudElementMappedBuffer);
+        assert(!!mCloudElementBuffer);
         assert(mCurrentCloudElementCount + 1u <= mCloudElementCount);
-        CloudElement * cloudElement = &(reinterpret_cast<CloudElement *>(*mCloudElementMappedBuffer)[mCurrentCloudElementCount]);
+        CloudElement * cloudElement = &(mCloudElementBuffer[mCurrentCloudElementCount]);
 
         TextureFrameMetadata const & textureMetadata = mTextureRenderManager->GetFrameMetadata(
             TextureGroupType::Cloud,
@@ -346,7 +346,7 @@ public:
 
         assert(!!mLandElementMappedBuffer);
         assert(mCurrentLandElementCount + 1u <= mLandElementCount);
-        LandElement * landElement = &(reinterpret_cast<LandElement *>(*mLandElementMappedBuffer)[mCurrentLandElementCount]);
+        LandElement * landElement = &(mLandElementBuffer[mCurrentLandElementCount]);
 
         landElement->x1 = x;
         landElement->y1 = yLand;
@@ -362,7 +362,7 @@ public:
 
         assert(!!mWaterElementMappedBuffer);
         assert(mCurrentWaterElementCount + 1u <= mWaterElementCount);
-        WaterElement * waterElement = &(reinterpret_cast<WaterElement *>(*mWaterElementMappedBuffer)[mCurrentWaterElementCount]);
+        WaterElement * waterElement = &(mWaterElementBuffer[mCurrentWaterElementCount]);
 
         waterElement->x1 = x;
         waterElement->y1 = yWater > yLand ? yWater : yLand; // Make sure islands are not covered in water!
@@ -702,7 +702,7 @@ private:
     };
 #pragma pack(pop)
 
-    GameOpenGLMappedBuffer<GL_ARRAY_BUFFER> mCloudElementMappedBuffer;
+    std::unique_ptr<CloudElement[]> mCloudElementBuffer;
     size_t mCurrentCloudElementCount;
     size_t mCloudElementCount;
     
@@ -724,7 +724,7 @@ private:
     };
 #pragma pack(pop)
 
-    GameOpenGLMappedBuffer<GL_ARRAY_BUFFER> mLandElementMappedBuffer;
+    std::unique_ptr<LandElement[]> mLandElementBuffer;
     size_t mCurrentLandElementCount;
     size_t mLandElementCount;
 
@@ -747,7 +747,7 @@ private:
     };
 #pragma pack(pop)
 
-    GameOpenGLMappedBuffer<GL_ARRAY_BUFFER> mWaterElementMappedBuffer;
+    std::unique_ptr<WaterElement[]> mWaterElementBuffer;
     size_t mCurrentWaterElementCount;
     size_t mWaterElementCount;
 

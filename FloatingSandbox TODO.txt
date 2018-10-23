@@ -1,28 +1,31 @@
 =================================================
 Current perf
 =================================================
-- fps: 28.3 / 28.8 (Quiet Laptop) (Samsung: TBD-was 32.7 (Krafting)) (Mattia's: TBD (Krafting))
-- GameController::Update: TODO%
-	- Ship::Update: TODO%
-		- UpdateMechanicalDynamics: 25.18%
-			- UpdateSpringForces: 18.64%
-			- UpdatePointForces: 3.36%
-			- HandleCollisionsWithSeafloor: 2.26% / 2.32% (with new elastic impact)
-			- IntegratePointForces: 0.92%
-		- UpdateWaterDynamics: 7.68%
+- fps: 28.3 / 28.8 (Quiet Laptop) (Samsung: 31.5 (Krafting)) (Mattia's: TBD (Krafting))
+- GameController::Update: 34.16%
+	- Ship::Update: 33.38%
+		- UpdateMechanicalDynamics: 24.92%
+			- UpdateSpringForces: 18.47%
+			- UpdatePointForces: 3.21%
+			- HandleCollisionsWithSeafloor: 2.32%
+			- IntegratePointForces: 0.91%
+		- UpdateWaterDynamics: 7.69%
 			- UpdateWaterVelocities: 7.58%
-			- UpdateWaterInflow: 0.05%
-		- UpdateStrains: 0.79%
-	- DiffuseLight: TODO%
-- World::Render: 56.64%
-	- ShipRenderContext::RenderEnd: 51.48%
-	- RenderContext::RenderCloudsEnd: 2.81%
-	- RenderContext::RenderStart: 0.42%
-	- RenderContext::RenderWater: 0.04%
+			- UpdateWaterInflow: 0.04%
+		- UpdateStrains: 0.73%
+	- DiffuseLight: 0.64%
+- World::Render: 58.23%
+	- ShipRenderContext::RenderEnd: 52.82%
+	- RenderContext::RenderCloudsEnd: 2.97%
+	- RenderContext::RenderStart: 0.48%
+	- RenderContext::RenderEnd: 0.35%
+		- TextRenderContext::RenderEnd: 0.35%
+	- RenderContext::RenderWater: 0.03%
 	- World::RenderClouds: 0.03%
 		- fmodf: 0.02
-	- RenderContext::RenderLand: 0.03%
-	- RenderContext::UploadLandAndWaterEnd: 0.02%
+	- RenderContext::RenderLand: 0.00%
+	- RenderContext::UploadLandAndWaterEnd: 0.03%
+- wxGLCanvas::SwapBuffers: 1.0%
 =================================================
 Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 =================================================
@@ -77,53 +80,6 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 		- Need Z buffer work first
 	- Warship
 	- See Moleskine
-
-= Gfx Optimizations:
-
-	+ Pack vertex attributes @ other shaders:
-		+ clouds
-		+ text_ndc
-		+ FPS: 28.2/28.4
-
-	+ Reduce # of bind VBO calls by delaying upload of buffers we own until we bind the VBO for drawing
-		+ Land at RenderContext::UploadLandAndWaterEnd/RenderLand
-		+ Also disable vertex attribute index zero once
-		+ Test all ship shaders with 2 connected components
-		+ FPS: 28.5
-
-	+ Use MapBuffer when we know the sizes in advance, eventually re-allocating GPU buffer when the size changes
-		+ Clouds
-			+ Rename middle "RenderCloud" as "UploadCloud"
-			+ Rename SharedAttribute1 as SharedAttribute0, et al
-		+ Land, Water
-			+ Also make clouds, land, and water use disjoint vertex attributes, so can bind once at each XYZStart()
-			  before mapping buffer (and subsequently describe, when needed)
-			  + Water, matte_water: use vec3 WaterAttribute
-				+ Shaders
-				+ RenderCore
-				+ Description, once at initialization
-				+ Disable 0 before running program
-			  + Clouds: use vec4 SharedAttribute0
-				+ Shaders
-				+ Bind, allocate, and map at RenderStart()
-				+ Description at Render() after unmapping buffer
-				+ Enable 0 before running program, after description as usual
-			  + Land: use vec2 SharedAttribute1
-				+ Shaders
-				+ Bind, allocate, and map at RenderStart()
-				+ Description of SharedAttribute1 at Render() after unmapping buffer
-				+ Disable 0 before running program
-		+ FPS: 28.1/28.3/28.4
-	- Now, compare with replacing MapBuffer with BufferSubData
-		- Copy exe first
-		- Just this:
-			- Replace mXYZMappedBuffer with std::unique_ptr<XYZ[]>
-			- (Re)allocate buffer whenever we (re)allocated GPU buffer
-			- Remove MapBuffer call
-			- Replace UnmapBuffer call with BufferSubData
-		- FPS:
-	- Get full perf, including other laptops
-
 
 - Optimizations:
 
@@ -262,7 +218,6 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 		- After done:
 			- Modify GenericTexture to run once for all textures (still for each connected component until Z)
 
-	- Try glMapBuffer also for index buffers (triangles, springs, etc.)
 	- Try using GL_SHORT for Ship texture coordinates
 		- Passing NORMALIZE and 3 components to glVertexAttribPointer
 	- (Retry) Use CPU and GPU in parallel
@@ -1514,6 +1469,50 @@ IF WX:
 			+ Check perf
 			+ Perf optimizations:
 				+ Precalcd stuff in FontMetadata, indexed by char
+
+	+ Pack vertex attributes @ other shaders:
+		+ clouds
+		+ text_ndc
+		+ FPS: 28.2/28.4
+
+	+ Reduce # of bind VBO calls by delaying upload of buffers we own until we bind the VBO for drawing
+		+ Land at RenderContext::UploadLandAndWaterEnd/RenderLand
+		+ Also disable vertex attribute index zero once
+		+ Test all ship shaders with 2 connected components
+		+ FPS: 28.5
+
+	+ Use MapBuffer when we know the sizes in advance, eventually re-allocating GPU buffer when the size changes
+		+ Clouds
+			+ Rename middle "RenderCloud" as "UploadCloud"
+			+ Rename SharedAttribute1 as SharedAttribute0, et al
+		+ Land, Water
+			+ Also make clouds, land, and water use disjoint vertex attributes, so can bind once at each XYZStart()
+			  before mapping buffer (and subsequently describe, when needed)
+			  + Water, matte_water: use vec3 WaterAttribute
+				+ Shaders
+				+ RenderCore
+				+ Description, once at initialization
+				+ Disable 0 before running program
+			  + Clouds: use vec4 SharedAttribute0
+				+ Shaders
+				+ Bind, allocate, and map at RenderStart()
+				+ Description at Render() after unmapping buffer
+				+ Enable 0 before running program, after description as usual
+			  + Land: use vec2 SharedAttribute1
+				+ Shaders
+				+ Bind, allocate, and map at RenderStart()
+				+ Description of SharedAttribute1 at Render() after unmapping buffer
+				+ Disable 0 before running program
+		+ FPS: 28.1/28.3/28.4
+	+ Now, compare with replacing MapBuffer with BufferSubData
+		+ Copy exe first
+		+ Just this:
+			+ Replace mXYZMappedBuffer with std::unique_ptr<XYZ[]>
+			+ (Re)allocate buffer whenever we (re)allocated GPU buffer
+			+ Remove MapBuffer call
+			+ Replace UnmapBuffer call with BufferSubData
+		+ FPS: 28.2/28.3/28.4
+	+ Get full perf, including other laptops
 
 + Dynamics
 	+ Try half of the relaxation iterations

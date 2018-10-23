@@ -20,17 +20,17 @@ RenderContext::RenderContext(
     , mTextureRenderManager()
     , mTextRenderContext()
     // Clouds
-    , mCloudElementMappedBuffer()
+    , mCloudElementBuffer()
     , mCurrentCloudElementCount(0u)
     , mCloudElementCount(0u)    
     , mCloudVBO()
     // Land
-    , mLandElementMappedBuffer()
+    , mLandElementBuffer()
     , mCurrentLandElementCount(0u)
     , mLandElementCount(0u)
     , mLandVBO()
     // Sea water
-    , mWaterElementMappedBuffer()
+    , mWaterElementBuffer()
     , mCurrentWaterElementCount(0u)
     , mWaterElementCount(0u)
     , mWaterVBO()
@@ -358,21 +358,20 @@ void RenderContext::RenderStart()
 
 void RenderContext::RenderCloudsStart(size_t cloudCount)
 {
-    // Bind VBO
-    glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
-    CheckOpenGLError();
-
     if (cloudCount != mCloudElementCount)
     {
+        // Bind VBO
+        glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
+        CheckOpenGLError();
+
         // Realloc GPU buffer
         mCloudElementCount = cloudCount;
         glBufferData(GL_ARRAY_BUFFER, mCloudElementCount * sizeof(CloudElement), nullptr, GL_DYNAMIC_DRAW);
         CheckOpenGLError();
-    }
 
-    // Map buffer
-    assert(!mCloudElementMappedBuffer);
-    mCloudElementMappedBuffer = GameOpenGL::MapBuffer<GL_ARRAY_BUFFER>(GL_WRITE_ONLY);
+        // Realloc buffer
+        mCloudElementBuffer.reset(new CloudElement[mCloudElementCount]);
+    }
 
     // Reset current count of clouds
     mCurrentCloudElementCount = 0u;
@@ -422,11 +421,9 @@ void RenderContext::RenderCloudsEnd()
     glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
     CheckOpenGLError();
 
-    // Unmap buffer
-    assert(!!mCloudElementMappedBuffer);
-    GameOpenGL::UnmapBuffer(std::move(mCloudElementMappedBuffer));
-    assert(!mCloudElementMappedBuffer);
-
+    // Upload buffer
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(CloudElement) * mCloudElementCount, mCloudElementBuffer.get());
+    
     // Describe vertex attribute 0
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedAttribute0), 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), nullptr);
     CheckOpenGLError();
@@ -462,21 +459,20 @@ void RenderContext::UploadLandAndWaterStart(size_t slices)
     // Prepare land buffer
     //
 
-    // Bind VBO
-    glBindBuffer(GL_ARRAY_BUFFER, *mLandVBO);
-    CheckOpenGLError();
-
     if (slices + 1 != mLandElementCount)
     {
+        // Bind VBO
+        glBindBuffer(GL_ARRAY_BUFFER, *mLandVBO);
+        CheckOpenGLError();
+
         // Realloc GPU buffer
         mLandElementCount = slices + 1;
         glBufferData(GL_ARRAY_BUFFER, mLandElementCount * sizeof(LandElement), nullptr, GL_DYNAMIC_DRAW);
         CheckOpenGLError();
-    }
 
-    // Map buffer
-    assert(!mLandElementMappedBuffer);
-    mLandElementMappedBuffer = GameOpenGL::MapBuffer<GL_ARRAY_BUFFER>(GL_WRITE_ONLY);
+        // Realloc buffer
+        mLandElementBuffer.reset(new LandElement[mLandElementCount]);
+    }
 
     // Reset current count of land elements
     mCurrentLandElementCount = 0u;
@@ -486,21 +482,20 @@ void RenderContext::UploadLandAndWaterStart(size_t slices)
     // Prepare water buffer
     //
 
-    // Bind VBO
-    glBindBuffer(GL_ARRAY_BUFFER, *mWaterVBO);
-    CheckOpenGLError();
-
     if (slices + 1 != mWaterElementCount)
     {
+        // Bind VBO
+        glBindBuffer(GL_ARRAY_BUFFER, *mWaterVBO);
+        CheckOpenGLError();
+
         // Realloc GPU buffer
         mWaterElementCount = slices + 1;
         glBufferData(GL_ARRAY_BUFFER, mWaterElementCount * sizeof(WaterElement), nullptr, GL_DYNAMIC_DRAW);
         CheckOpenGLError();
-    }
 
-    // Map buffer
-    assert(!mWaterElementMappedBuffer);
-    mWaterElementMappedBuffer = GameOpenGL::MapBuffer<GL_ARRAY_BUFFER>(GL_WRITE_ONLY);
+        // Realloc buffer
+        mWaterElementBuffer.reset(new WaterElement[mWaterElementCount]);
+    }
 
     // Reset count of water elements
     mCurrentWaterElementCount = 0u;
@@ -512,10 +507,8 @@ void RenderContext::UploadLandAndWaterEnd()
     glBindBuffer(GL_ARRAY_BUFFER, *mLandVBO);
     CheckOpenGLError();
 
-    // Unmap buffer
-    assert(!!mLandElementMappedBuffer);
-    GameOpenGL::UnmapBuffer(std::move(mLandElementMappedBuffer));
-    assert(!mLandElementMappedBuffer);
+    // Upload buffer
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(LandElement) * mLandElementCount, mLandElementBuffer.get());
 
     // Describe vertex attribute 1
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedAttribute1), 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), nullptr);
@@ -526,12 +519,10 @@ void RenderContext::UploadLandAndWaterEnd()
     glBindBuffer(GL_ARRAY_BUFFER, *mWaterVBO);
     CheckOpenGLError();
 
-    // Unmap water buffer
-    assert(!!mWaterElementMappedBuffer);
-    GameOpenGL::UnmapBuffer(std::move(mWaterElementMappedBuffer));
-    assert(!mWaterElementMappedBuffer);
+    // Upload water buffer
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(WaterElement) * mWaterElementCount, mWaterElementBuffer.get());
 
-    // No need to describe water's vertex attribute as it is dedicated
+    // No need to describe water's vertex attribute as it is dedicated and we have described it already once and for all
 }
 
 void RenderContext::RenderLand()
