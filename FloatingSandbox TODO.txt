@@ -91,11 +91,11 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 		+ Test all ship shaders with 2 connected components
 		+ FPS: 28.5
 
-	= Use MapBuffer when we know the sizes in advance, eventually re-allocating GPU buffer when the size changes
+	+ Use MapBuffer when we know the sizes in advance, eventually re-allocating GPU buffer when the size changes
 		+ Clouds
 			+ Rename middle "RenderCloud" as "UploadCloud"
 			+ Rename SharedAttribute1 as SharedAttribute0, et al
-		= Land, Water
+		+ Land, Water
 			+ Also make clouds, land, and water use disjoint vertex attributes, so can bind once at each XYZStart()
 			  before mapping buffer (and subsequently describe, when needed)
 			  + Water, matte_water: use vec3 WaterAttribute
@@ -113,7 +113,7 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 				+ Bind, allocate, and map at RenderStart()
 				+ Description of SharedAttribute1 at Render() after unmapping buffer
 				+ Disable 0 before running program
-		- FPS: TODOHERE
+		+ FPS: 28.1/28.3/28.4
 	- Now, compare with replacing MapBuffer with BufferSubData
 		- Copy exe first
 		- Just this:
@@ -211,43 +211,54 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 	- Cache sea depth from PointDynamics at first calculation (Points?), using lambda
 
 - Gfx optimizations:
-	- Texture atlas:
-		- Spec:
-			- Atlas is built on-the-fly, completely independently from texture DB, via a separate
+	= Texture atlas:
+		+ Spec:
+			+ Atlas is built on-the-fly, completely independently from texture DB, via a separate
 			  component (TextureAtlasBuilder) that is given multiple TextureFrame's and eventually spits out TextureAtlas
-			- TextureAtlas:
-				- Contains:
-					- image: consumed by GameOpenGL helper for mipmapping
-					- metadata: used by GameOpenGL helper for mipmapping, owned by RenderContext (for clouds, land, and water) 
+			+ TextureAtlas:
+				+ Contains:
+					+ image: consumed by GameOpenGL helper for mipmapping
+					+ metadata: used by GameOpenGL helper for mipmapping, owned by RenderContext (for clouds, land, and water) 
 					  and (by reference) by ShipRenderContext (for GenericTextures)
-				- Structure:
-					- ImageData Texture
-					- TextureAtlasMetadata Metadata:
-						- TextureAtlasFrameMetadata:
-							- box in atlas (i.e. texture coords, as 2xvec2f)
-							- TextureFrameMetadata
-						- vector<TextureAtlasFrameMetadata> / anything else addressable via TextureFrameId (see above)
-			- Separate mipmapper helper in GameOpenGL takes ImageData (by move) and TextureAtlasMetadata
-		- Impl:
-			- Resize all textures to powers of two
-			- RenderContext:
-				- Create at cctor
-				- Call GameOpenGL mipmap helper moving Texture and passing Metadata
-				- Store Metadata (by value)
-				- Pass Metadata and texture handle to ShipRenderContext
-			- ShipRenderContext must take from RenderContext:
-				- Atlas texture handle (&), for binding it at GenericTextures
-					- At least until we do Z and GenericTextures moves up to RenderContext
-				- metadata (&)
-			- RenderContext:
-				- bind at RenderContext::RenderStart(), for clouds, land, and water
-			- ShipRenderContext:
-				- bind at GenericTextures
-			- Use box in atlas at:
-				- Clouds
-				- Water
-				- Land
-				- Generic Textures
+				+ Structure:
+					+ ImageData Texture
+					+ TextureAtlasMetadata Metadata:
+						+ TextureAtlasFrameMetadata:
+							+ box in atlas (i.e. texture coords, as 2xvec2f)
+							+ TextureFrameMetadata
+						+ vector<TextureAtlasFrameMetadata> / anything else addressable via TextureFrameId (see above)
+			+ Separate mipmapper helper in GameOpenGL takes ImageData (by move) and TextureAtlasMetadata
+		= Impl:
+			= Phase 1: Clouds
+				= TextureAtlas
+				+ ResourceLoader::SaveImage
+				- Resize all clouds to powers of two
+					- Test look & feel
+				- RenderContext: 
+					- Cctor: create atlas and add just Clouds
+					- Call GameOpenGL mipmap helper moving Texture and passing Metadata
+					- Store Metadata (by value)
+					- Use Atlas metadata at UploadClouds()
+				- Test
+			- Phase 2:
+				- Resize all remaining textures to powers of two
+					- Test look & feel
+				- RenderContext:
+					- Cctor: add entire database 
+					- Pass Metadata and texture handle to ShipRenderContext
+				- ShipRenderContext must take from RenderContext:
+					- Atlas texture handle (&), for binding it at GenericTextures
+						- At least until we do Z and GenericTextures moves up to RenderContext
+					- metadata (&)
+				- RenderContext:
+					- bind at RenderContext::RenderStart(), for clouds, land, and water
+				- ShipRenderContext:
+					- bind at GenericTextures
+				- Use box in atlas at:
+					- Clouds
+					- Water
+					- Land
+					- Generic Textures
 		- After done:
 			- Modify GenericTexture to run once for all textures (still for each connected component until Z)
 

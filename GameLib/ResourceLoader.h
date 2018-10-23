@@ -108,6 +108,10 @@ public:
     static ImageData LoadImageRgbUpperLeft(std::filesystem::path const & filepath);
     static ImageData LoadImageRgbLowerLeft(std::filesystem::path const & filepath);
 
+    static void SaveImage(
+        std::filesystem::path filepath,
+        ImageData const & image);
+
 private:
 
     static ImageData LoadImage(

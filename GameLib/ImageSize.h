@@ -22,5 +22,11 @@ public:
         , Height(height)
     {
     }
+
+    inline bool operator==(ImageSize const & other) const
+    {
+        return this->Width == other.Width
+            && this->Height == other.Height;
+    }
 };
 #pragma pack(pop)

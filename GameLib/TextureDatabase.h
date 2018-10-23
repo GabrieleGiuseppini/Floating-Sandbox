@@ -145,6 +145,11 @@ public:
         std::filesystem::path const & texturesRoot,
         ProgressCallback const & progressCallback);
 
+    auto const & GetGroups() const
+    {
+        return mGroups;
+    }
+
     TextureGroup const & GetGroup(TextureGroupType group) const
     {
         assert(static_cast<size_t>(group) < mGroups.size());

@@ -133,6 +133,12 @@ struct TextureFrameId
 
     TextureFrameId & operator=(TextureFrameId const & other) = default;
 
+    inline bool operator==(TextureFrameId const & other) const
+    {
+        return this->Group == other.Group
+            && this->FrameIndex == other.FrameIndex;
+    }
+
     inline bool operator<(TextureFrameId const & other) const
     {
         return this->Group < other.Group

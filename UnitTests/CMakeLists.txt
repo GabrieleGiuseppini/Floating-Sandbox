@@ -28,6 +28,7 @@ set (UNIT_TEST_SOURCES
 	SegmentTests.cpp
 	ShaderManagerTests.cpp
 	SliderCoreTests.cpp
+	TextureAtlasTests.cpp
 	TupleKeysTests.cpp
 	Utils.cpp
 	Utils.h

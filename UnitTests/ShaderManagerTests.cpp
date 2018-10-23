@@ -5,7 +5,9 @@
 
 #include "gtest/gtest.h"
 
-using TestShaderManager = ShaderManager<Render::ShaderManagerTraits>;
+namespace Render {
+
+using TestShaderManager = ShaderManager<ShaderManagerTraits>;
 
 class ShaderManagerTests : public testing::Test
 {
@@ -241,14 +243,14 @@ TEST_F(ShaderManagerTests, ExtractsVertexAttributes_Multiple)
 uniform float paramAmbientLightIntensity;
 in matfoo lopo lopo inShipPointColor;
 foobar;
-in mat4 inSharedTextureCoordinates;
+in mat4 inSharedAttribute1;
 )!!!";
 
     auto result = TestShaderManager::ExtractVertexAttributes(source);
 
     ASSERT_EQ(2, result.size());
     EXPECT_EQ(1, result.count(Render::VertexAttributeType::ShipPointColor));
-    EXPECT_EQ(1, result.count(Render::VertexAttributeType::SharedTextureCoordinates));
+    EXPECT_EQ(1, result.count(Render::VertexAttributeType::SharedAttribute1));
 }
 
 TEST_F(ShaderManagerTests, ExtractsVertexAttributes_ErrorsOnUnrecognizedAttribute)
@@ -276,4 +278,6 @@ in mat4 inShipPointColor;
     EXPECT_THROW(
         TestShaderManager::ExtractVertexAttributes(source),
         GameException);
+}
+
 }

@@ -97,6 +97,8 @@ set  (RENDER_SOURCES
 	ShipRenderContext.h
 	TextRenderContext.cpp
 	TextRenderContext.h
+	TextureAtlas.cpp
+	TextureAtlas.h
 	TextureDatabase.cpp
 	TextureDatabase.h
 	TextureRenderManager.cpp
