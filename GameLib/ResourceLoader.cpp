@@ -410,18 +410,16 @@ void ResourceLoader::SaveImage(
     ilGenImages(1, &imghandle);
     ilBindImage(imghandle);
 
-    ilSetInteger(IL_IMAGE_FORMAT, IL_RGBA);
-    ilSetInteger(IL_IMAGE_TYPE, IL_UNSIGNED_BYTE);
-    ilSetInteger(IL_IMAGE_ORIGIN, IL_ORIGIN_LOWER_LEFT);
-
-    ilSetInteger(IL_IMAGE_WIDTH, image.Size.Width);
-    ilSetInteger(IL_IMAGE_HEIGHT, image.Size.Height);
-    ilSetInteger(IL_IMAGE_BYTES_PER_PIXEL, 4);
-
-    ilSetData(reinterpret_cast<void *>(const_cast<unsigned char *>(image.Data.get())));
+    ilTexImage(
+        image.Size.Width,
+        image.Size.Height, 
+        1, 
+        4,
+        IL_RGBA,
+        IL_UNSIGNED_BYTE,
+        reinterpret_cast<void *>(const_cast<unsigned char *>(image.Data.get())));
 
     ilEnable(IL_FILE_OVERWRITE);
-
     ilSave(IL_PNG, filepath.string().c_str());
 
     ilDeleteImage(imghandle);

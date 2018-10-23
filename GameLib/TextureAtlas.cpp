@@ -273,9 +273,12 @@ void TextureAtlasBuilder::CopyImage(
     for (int y = 0; y < sourceImageSize.Height; ++y)
     {
         // From left to right
-        unsigned char const * sourceStart = &(sourceImage[y * sourceImageSize.Width]);
-        unsigned char * destStart = &(destImage[(destinationBottomY + y) * destImageSize.Width + destinationLeftX]);
-        std::copy_n(sourceStart, sourceImageSize.Width * 4, destStart);
+        size_t const srcIndex = y * sourceImageSize.Width;
+        size_t const dstIndex = (destinationBottomY + y) * destImageSize.Width + destinationLeftX;
+        std::copy_n(
+            &(sourceImage[srcIndex * 4]), 
+            sourceImageSize.Width * 4, 
+            &(destImage[dstIndex * 4]));
     }
 }
 

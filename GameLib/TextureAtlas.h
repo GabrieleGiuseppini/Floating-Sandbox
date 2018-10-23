@@ -103,21 +103,17 @@ class TextureAtlasBuilder
 {
 public:
 
-    TextureAtlasBuilder()
-    {
-    }
-
     /*
      * Builds an atlas with the specified group.
      */
-    TextureAtlas BuildAtlas(
+    static TextureAtlas BuildAtlas(
         TextureGroup const & group,
         ProgressCallback const & progressCallback);
 
     /*
      * Builds an atlas with the entire content of the specified database.
      */
-    TextureAtlas BuildAtlas(
+    static TextureAtlas BuildAtlas(
         TextureDatabase const & database,
         ProgressCallback const & progressCallback);
 
