@@ -344,7 +344,7 @@ public:
         // Store Land element
         //
 
-        assert(!!mLandElementMappedBuffer);
+        assert(!!mLandElementBuffer);
         assert(mCurrentLandElementCount + 1u <= mLandElementCount);
         LandElement * landElement = &(mLandElementBuffer[mCurrentLandElementCount]);
 
@@ -360,7 +360,7 @@ public:
         // Store water element
         //
 
-        assert(!!mWaterElementMappedBuffer);
+        assert(!!mWaterElementBuffer);
         assert(mCurrentWaterElementCount + 1u <= mWaterElementCount);
         WaterElement * waterElement = &(mWaterElementBuffer[mCurrentWaterElementCount]);
 

@@ -63,7 +63,7 @@ public:
                 mFrameMetadata.emplace_back();
             }
 
-            assert(static_cast<size_t>(frame.FrameMetadata.FrameId.FrameIndex) == mFrameMetadata.back()->size());
+            assert(static_cast<size_t>(frame.FrameMetadata.FrameId.FrameIndex) == mFrameMetadata.back().size());
             mFrameMetadata.back().emplace_back(frame);
         }
     }
@@ -142,15 +142,15 @@ private:
         {
             TextureFrameId FrameId;
             int FrameLeftX;
-            int FrameTopY;
+            int FrameBottomY;
 
             TexturePosition(
                 TextureFrameId frameId,
                 int frameLeftX,
-                int frameTopY)
+                int frameBottomY)
                 : FrameId(frameId)
                 , FrameLeftX(frameLeftX)
-                , FrameTopY(frameTopY)
+                , FrameBottomY(frameBottomY)
             {}
         };
 
@@ -182,12 +182,13 @@ private:
         unsigned char * destImage,
         ImageSize destImageSize,
         int destinationLeftX,
-        int destinationTopY);
+        int destinationBottomY);
 
 private:
 
     friend class TextureAtlasTests_OneTexture_Test;
-    friend class TextureAtlasTests_OptimalPlacement_Test;
+    friend class TextureAtlasTests_Placement1_Test;
+    friend class TextureAtlasTests_RoundsAtlasSize_Test;
 };
 
 }

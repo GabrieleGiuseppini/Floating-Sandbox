@@ -81,8 +81,10 @@ TextureAtlasBuilder::AtlasSpecification TextureAtlasBuilder::BuildAtlasSpecifica
         sortedTextureInfos.end(),
         [](TextureInfo const & a, TextureInfo const & b)
         {
-            return a.Size.Height > b.Size.Height;
+            return a.Size.Height > b.Size.Height
+                || (a.Size.Height == b.Size.Height && a.Size.Width > b.Size.Width);
         });
+
 
     //
     // Calculate size of atlas
@@ -91,19 +93,107 @@ TextureAtlasBuilder::AtlasSpecification TextureAtlasBuilder::BuildAtlasSpecifica
     uint64_t totalArea = 0;
     for (auto const & ti : sortedTextureInfos)
     {
-        totalArea += ti.Size.Width + ti.Size.Height;
+        totalArea += ti.Size.Width * ti.Size.Height;
     }
 
-    // Square root of area, ceil'd to next power of two
-    int const atlasSide = CeilPowerOfTwo(static_cast<int>(std::floor(std::sqrt(static_cast<float>(totalArea)))));
+    // Square root of area, floor'd to prev power of two
+    int const atlasSide = CeilPowerOfTwo(static_cast<int>(std::floor(std::sqrt(static_cast<float>(totalArea))))) / 2;
     int atlasWidth = atlasSide;
     int atlasHeight = atlasSide;
 
-    // TODOHERE
+
+    //
+    // Place tiles
+    //
+
+    std::vector<AtlasSpecification::TexturePosition> texturePositions;
+    texturePositions.reserve(inputTextureInfos.size());
+
+    struct Position
+    {
+        int x;
+        int y;
+
+        Position(
+            int _x,
+            int _y)
+            : x(_x)
+            , y(_y)
+        {}
+    };
+
+    std::vector<Position> positionStack;
+    positionStack.emplace_back(0, 0);
+
+    for (TextureInfo const & t : sortedTextureInfos)
+    {
+        while (true)
+        {
+            Position const currentPosition = positionStack.back();
+
+            if (currentPosition.x + t.Size.Width < atlasWidth   // Fits at current position
+                || positionStack.size() == 1                    // We can't backtrack
+                || (currentPosition.x + t.Size.Width - atlasWidth) >= (positionStack.front().y + t.Size.Height - atlasHeight)) // Extra W > Extra H
+            {
+                // Put it at the current location
+                texturePositions.emplace_back(
+                    t.FrameId,
+                    currentPosition.x,
+                    currentPosition.y);
+
+                if (positionStack.size() == 1
+                    || currentPosition.y + t.Size.Height < std::next(positionStack.rbegin())->y)
+                {
+                    // Move current location up to top
+                    positionStack.back().y += t.Size.Height;
+                }
+                else
+                {
+                    // Current location is completed
+                    assert(currentPosition.y + t.Size.Height == std::next(positionStack.rbegin())->y);
+
+                    // Pop it from stack
+                    positionStack.pop_back();
+                }
+
+                // Add new location to the right of this tile,
+                // if space allows
+                if (currentPosition.x + t.Size.Width <= atlasWidth)
+                {
+                    positionStack.emplace_back(currentPosition.x + t.Size.Width, currentPosition.y);
+                }
+
+                // Adjust atlas dimensions
+                atlasWidth = CeilPowerOfTwo(std::max(atlasWidth, currentPosition.x + t.Size.Width));
+                atlasHeight = CeilPowerOfTwo(std::max(atlasHeight, currentPosition.y + t.Size.Height));
+
+                // We are done with this tile
+                break;
+            }
+            else
+            {
+                // Backtrack
+                positionStack.pop_back();
+                assert(!positionStack.empty());
+            }
+        }
+    }
+
+
+    //
+    // Round final size
+    //
+
+    atlasWidth = CeilPowerOfTwo(atlasWidth);
+    atlasHeight = CeilPowerOfTwo(atlasHeight);
+
+
+    //
+    // Return atlas
+    //
+    
     return AtlasSpecification(
-        { 
-            { {TextureGroupType::Cloud, 4}, 242, 243 }
-        },
+        std::move(texturePositions),
         ImageSize(atlasWidth, atlasHeight));
 }
 
@@ -137,18 +227,18 @@ TextureAtlas TextureAtlasBuilder::BuildAtlas(
             atlasImage.get(),
             specification.AtlasSize,
             texturePosition.FrameLeftX,
-            texturePosition.FrameTopY);
+            texturePosition.FrameBottomY);
 
         // Store texture coordinates
         metadata.emplace_back(
             // Bottom-left
             vec2f(
                 static_cast<float>(texturePosition.FrameLeftX) / static_cast<float>(specification.AtlasSize.Width),
-                static_cast<float>(texturePosition.FrameTopY - textureFrame.TextureData.Size.Height) / static_cast<float>(specification.AtlasSize.Height)),
+                static_cast<float>(texturePosition.FrameBottomY) / static_cast<float>(specification.AtlasSize.Height)),
             // Top-right
             vec2f(
                 static_cast<float>(texturePosition.FrameLeftX + textureFrame.TextureData.Size.Width) / static_cast<float>(specification.AtlasSize.Width),
-                static_cast<float>(texturePosition.FrameTopY) / static_cast<float>(specification.AtlasSize.Height)),
+                static_cast<float>(texturePosition.FrameBottomY + textureFrame.TextureData.Size.Height) / static_cast<float>(specification.AtlasSize.Height)),
             textureFrame.Metadata);
     }
 
@@ -177,14 +267,14 @@ void TextureAtlasBuilder::CopyImage(
     unsigned char * destImage,
     ImageSize destImageSize,
     int destinationLeftX,
-    int destinationTopY)
+    int destinationBottomY)
 {
     // From bottom to top
     for (int y = 0; y < sourceImageSize.Height; ++y)
     {
         // From left to right
         unsigned char const * sourceStart = &(sourceImage[y * sourceImageSize.Width]);
-        unsigned char * destStart = &(destImage[(destinationTopY - sourceImageSize.Height + y) * destImageSize.Width + destinationLeftX]);
+        unsigned char * destStart = &(destImage[(destinationBottomY + y) * destImageSize.Width + destinationLeftX]);
         std::copy_n(sourceStart, sourceImageSize.Width * 4, destStart);
     }
 }
