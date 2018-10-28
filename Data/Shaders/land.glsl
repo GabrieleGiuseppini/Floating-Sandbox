@@ -33,5 +33,6 @@ uniform vec2 paramTextureScaling;
 
 void main()
 {
-    gl_FragColor = texture2D(inputTexture, texturePos * paramTextureScaling) * paramAmbientLightIntensity;
+    vec4 textureColor = texture2D(inputTexture, texturePos * paramTextureScaling);
+    gl_FragColor = textureColor * paramAmbientLightIntensity;
 } 

@@ -5,8 +5,11 @@
 ***************************************************************************************/
 #include "GameOpenGL.h"
 
+#include "GameMath.h"
+
 #include <algorithm>
 #include <memory>
+#include <numeric>
 
 namespace Render {
 
@@ -200,6 +203,113 @@ void GameOpenGL::UploadMipmappedTexture(ImageData baseTexture)
         readImageSize = ImageSize(width, height);
         readBuffer = std::move(writeBuffer);
     }
+}
+
+void GameOpenGL::UploadMipmappedTexture(
+    TextureAtlasMetadata textureAtlasMetadata,
+    ImageData atlasData)
+{
+    assert(atlasData.Size.Width == CeilPowerOfTwo(atlasData.Size.Width));
+    assert(atlasData.Size.Height == CeilPowerOfTwo(atlasData.Size.Height));
+
+    //
+    // Calculate max dimension
+    //
+
+    int maxDimension = std::accumulate(
+        textureAtlasMetadata.GetFrameMetadata().begin(),
+        textureAtlasMetadata.GetFrameMetadata().end(),
+        std::numeric_limits<int>::lowest(),
+        [](int minDimension, TextureAtlasFrameMetadata const & frameMd)
+        {
+            return std::max(
+                minDimension,
+                std::max(frameMd.FrameMetadata.Size.Width, frameMd.FrameMetadata.Size.Height));
+        });
+
+
+    //
+    // Upload base image
+    //
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, atlasData.Size.Width, atlasData.Size.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, atlasData.Data.get());
+    CheckOpenGLError();
+
+
+    //
+    // Create minified textures
+    //
+    
+    std::unique_ptr<unsigned char const[]> readBuffer(std::move(atlasData.Data));
+    std::unique_ptr<unsigned char[]> writeBuffer;
+
+    GLint lastUploadedTextureLevel = 0;
+    for (int divisor = 2; maxDimension / divisor >= 1; divisor *= 2)
+    {
+        // Calculate dimensions of new write buffer
+        int newWidth = std::max(1, atlasData.Size.Width / divisor);
+        int newHeight = std::max(1, atlasData.Size.Height / divisor);
+
+        // Allocate new write buffer
+        writeBuffer.reset(new unsigned char[newWidth * newHeight * 4]);
+
+        // Populate write buffer
+        unsigned char const * rp = readBuffer.get();
+        unsigned char * wp = writeBuffer.get();
+        for (int h = 0; h < newHeight; ++h)
+        {
+            size_t frameIndexInReadBuffer = (h * 2) * (newWidth * 2) * 4;
+            size_t frameIndexInWriteBuffer = (h) * (newWidth) * 4;
+
+            for (int w = 0; w < newWidth; ++w)
+            {
+                //
+                // Calculate and store average of the four neighboring pixels whose bottom-left corner is at (w*2, h*2)
+                //
+
+                float components[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+                for (int c = 0; c < 4; ++c)
+                {
+                    components[c] += static_cast<float>(rp[frameIndexInReadBuffer + w * 2 * 4 + c]);
+                }
+
+                for (int c = 0; c < 4; ++c)
+                {
+                    components[c] += static_cast<float>(rp[frameIndexInReadBuffer + w * 2 * 4 + c + 4]);
+                }
+
+                for (int c = 0; c < 4; ++c)
+                {
+                    components[c] += static_cast<float>(rp[frameIndexInReadBuffer + ((newWidth * 2) * 4) + w * 2 * 4 + c]);
+                }
+
+                for (int c = 0; c < 4; ++c)
+                {
+                    components[c] += static_cast<float>(rp[frameIndexInReadBuffer + ((newWidth * 2) * 4) + w * 2 * 4 + c + 4]);
+                }
+
+                // Store
+                for (int c = 0; c < 4; ++c)
+                {
+                    wp[frameIndexInWriteBuffer + w * 4 + c] =
+                        static_cast<unsigned char>(components[c] / 4.0f);
+                }
+            }
+        }
+
+        // Upload write buffer
+        ++lastUploadedTextureLevel;
+        glTexImage2D(GL_TEXTURE_2D, lastUploadedTextureLevel, GL_RGBA, newWidth, newHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, writeBuffer.get());
+        CheckOpenGLError();
+
+        // Swap buffer
+        readBuffer = std::move(writeBuffer);
+    }
+
+    // Set max mipmap level
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, lastUploadedTextureLevel);
+    CheckOpenGLError();
 }
 
 }

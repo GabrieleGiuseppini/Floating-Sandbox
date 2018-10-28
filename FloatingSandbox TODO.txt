@@ -1,7 +1,7 @@
 =================================================
 Current perf
 =================================================
-- fps: 28.3 / 28.8 (Quiet Laptop) (Samsung: 31.5 (Krafting)) (Mattia's: TBD (Krafting))
+- fps: 28.3 / 28.8 (Quiet Laptop) (Samsung: 31.5 (Krafting)) (Mattia's: 24.3 (Krafting))
 - GameController::Update: 34.16%
 	- Ship::Update: 33.38%
 		- UpdateMechanicalDynamics: 24.92%
@@ -69,10 +69,11 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 		- ShipRenderContext::RenderRopes: 0.45%
 		- Points::Upload: 0.14%
 	- RenderContext::RenderCloudsEnd: 2.87%
+
 ====================================================
 ====================================================
 ====================== Plan ========================
-
+====================================================
 ====================================================
 
 - New ships
@@ -185,39 +186,68 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 						+ vector<TextureAtlasFrameMetadata> / anything else addressable via TextureFrameId (see above)
 			+ Separate mipmapper helper in GameOpenGL takes ImageData (by move) and TextureAtlasMetadata
 		= Impl:
-			= Phase 1: Clouds
-				= TextureAtlas
+			+ Phase 1: Clouds
+				+ TextureAtlas
 				+ ResourceLoader::SaveImage
-				- Resize all clouds to powers of two
+				+ Resize all clouds to powers of two
+					+ Test look & feel
+				+ RenderContext: 
+					+ Cctor: create atlas and add just Clouds
+					+ Upload texture - w/no mipmap for the time being
+					+ Store Metadata (by value) and handle
+					+ Use Atlas metadata at UploadClouds()
+				+ Test 1
+				+ Get rid of need to use TextureRenderManager at RenderContext for clouds
+				+ Draw all clouds together at once
+					+ Need triangles
+				+ Test 2
+					+ FPS: 28.5/28.6/28.7
+			= Phase 1b: Test quad tessellation for land and water
+				= Commit mipmapping work
+				+ Do Wireframe mode
+					+ RenderContext: set line width based off wireframe mode
+					+ Pass on also to ShipRenderContext to turn off springs
+				- Do tessellation
+				- Do and check perf
+			- Phase 2: Mipmapping, land and water
+				- Resize land and water to powers of two
 					- Test look & feel
-				- RenderContext: 
-					- Cctor: create atlas and add just Clouds
-					- Call GameOpenGL mipmap helper moving Texture and passing Metadata
-					- Store Metadata (by value)
-					- Use Atlas metadata at UploadClouds()
-				- Test
-			- Phase 2:
+				= RenderContext:
+					= Call GameOpenGL mipmap helper moving Texture and passing Metadata
+				- RenderContext:
+					- bind texture atlas at RenderContext::RenderStart() (for clouds and land) and at RenderWater (for water)
+				- Use box in atlas at:
+					- Water
+					- Land
+				- Check mipmapping look & feel
+				- Cleanup RenderContext
+			- Phase 3: Generic Textures
 				- Resize all remaining textures to powers of two
 					- Test look & feel
 				- RenderContext:
-					- Cctor: add entire database 
+					- Cctor: add entire database to atlas
 					- Pass Metadata and texture handle to ShipRenderContext
 				- ShipRenderContext must take from RenderContext:
 					- Atlas texture handle (&), for binding it at GenericTextures
 						- At least until we do Z and GenericTextures moves up to RenderContext
 					- metadata (&)
-				- RenderContext:
-					- bind at RenderContext::RenderStart(), for clouds, land, and water
 				- ShipRenderContext:
 					- bind at GenericTextures
-				- Use box in atlas at:
-					- Clouds
-					- Water
-					- Land
-					- Generic Textures
+					- Use box in atlas at Generic Textures
+			- See if can get rid of TextureRenderManager now
 		- After done:
 			- Modify GenericTexture to run once for all textures (still for each connected component until Z)
-
+			- See if can unify land and water rendering
+				- Hmmm...aren't they anyway rendered at different times?
+	- All textures: test changing GL_LINEAR_MIPMAP_LINEAR to:
+		- GL_NEAREST_MIPMAP_NEAREST
+		- GL_LINEAR_MIPMAP_NEAREST
+		- GL_NEAREST_MIPMAP_LINEAR
+	- See if can unify springs and ropes rendering
+		- Just make sure that ropecolor is already in point color buffer
+		- RenderSprings + RenderRopes == new RenderSprings:
+			- Watch out: ropes can't ever use texture
+		- What about rendering phases?
 	- Try using GL_SHORT for Ship texture coordinates
 		- Passing NORMALIZE and 3 components to glVertexAttribPointer
 	- (Retry) Use CPU and GPU in parallel
@@ -471,6 +501,7 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 - Sounds:
 	- Should lower the volume of stress sounds?
 	- Revert light flicker sounds to higher (older) volume, and fix volume in SoundController instead, via const
+	- Sawing: do not publish destroy events when cutting springs, but new "Sawed" events with own metal/wood sounds
 
 -Probing:
 	- IProbe:

@@ -7,6 +7,7 @@
 
 #include <cstdint>
 #include <limits>
+#include <sstream>
 #include <string>
 
 /*
@@ -143,6 +144,15 @@ struct TextureFrameId
     {
         return this->Group < other.Group
             || (this->Group == other.Group && this->FrameIndex < other.FrameIndex);
+    }
+
+    std::string ToString() const
+    {
+        std::stringstream ss;
+
+        ss << static_cast<int>(Group) << ":" << static_cast<int>(FrameIndex);
+
+        return ss.str();
     }
 };
 

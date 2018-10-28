@@ -24,15 +24,17 @@ ShipRenderContext::ShipRenderContext(
     float waterLevelOfDetail,
     ShipRenderMode shipRenderMode,
     VectorFieldRenderMode vectorFieldRenderMode,
-    bool showStressedSprings)
+    bool showStressedSprings,
+    bool wireframeMode)
     : mShaderManager(shaderManager)
-    // Parameters    
+    // Parameters - all set at the end of the constructor
     , mCanvasToVisibleWorldHeightRatio(0)
-    , mAmbientLightIntensity(0.0f) // Set later
+    , mAmbientLightIntensity(0.0f)
     , mWaterLevelThreshold(0.0f)
     , mShipRenderMode(ShipRenderMode::Structure)
     , mVectorFieldRenderMode(VectorFieldRenderMode::None)
     , mShowStressedSprings(false)
+    , mWireframeMode(false)
     // Textures
     , mElementShipTexture()
     , mElementStressedSpringTexture()
@@ -222,6 +224,7 @@ ShipRenderContext::ShipRenderContext(
     UpdateShipRenderMode(shipRenderMode);
     UpdateVectorFieldRenderMode(vectorFieldRenderMode);
     UpdateShowStressedSprings(showStressedSprings);
+    UpdateWireframeMode(wireframeMode);
 }
 
 ShipRenderContext::~ShipRenderContext()
@@ -323,6 +326,11 @@ void ShipRenderContext::UpdateVectorFieldRenderMode(VectorFieldRenderMode vector
 void ShipRenderContext::UpdateShowStressedSprings(bool showStressedSprings)
 {
     mShowStressedSprings = showStressedSprings;
+}
+
+void ShipRenderContext::UpdateWireframeMode(bool wireframeMode)
+{
+    mWireframeMode = wireframeMode;
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -644,7 +652,8 @@ void ShipRenderContext::RenderEnd()
         // Draw points
         //
 
-        if (mShipRenderMode == ShipRenderMode::Points)
+        if (mShipRenderMode == ShipRenderMode::Points
+            && !mWireframeMode)
         {
             RenderPointElements(mConnectedComponents[c]);
         }
@@ -657,11 +666,13 @@ void ShipRenderContext::RenderEnd()
         // - RenderMode is springs ("X-Ray Mode"), in which case we use colors - so to show structural springs -, or
         // - RenderMode is structure (so to draw 1D chains), in which case we use colors, or
         // - RenderMode is texture (so to draw 1D chains), in which case we use texture iff it is present
+        // - AND: it's not wireframe mode
         //
 
-        if (mShipRenderMode == ShipRenderMode::Springs
+        if ((mShipRenderMode == ShipRenderMode::Springs
             || mShipRenderMode == ShipRenderMode::Structure
             || mShipRenderMode == ShipRenderMode::Texture)
+            && !mWireframeMode)
         {
             RenderSpringElements(
                 mConnectedComponents[c],
@@ -818,6 +829,9 @@ void ShipRenderContext::RenderTriangleElements(
         mShaderManager.ActivateProgram<ProgramType::ShipTrianglesColor>();
     }
 
+    if (mWireframeMode)
+        glLineWidth(0.1f);
+
     // Bind VBO
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *connectedComponent.triangleElementVBO);
     CheckOpenGLError();
@@ -855,6 +869,9 @@ void ShipRenderContext::RenderGenericTextures(std::vector<GenericTextureInfo> co
     {
         // Use program
         mShaderManager.ActivateProgram<ProgramType::GenericTextures>();
+
+        if (mWireframeMode)
+            glLineWidth(0.1f);
 
         // Draw all textures for this connected component
         for (size_t c = 0; c < connectedComponent.size(); ++c)

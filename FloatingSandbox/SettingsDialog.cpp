@@ -22,6 +22,7 @@ static constexpr int SliderBorder = 10;
 const long ID_ULTRA_VIOLENT_CHECKBOX = wxNewId();
 const long ID_SEE_SHIP_THROUGH_SEA_WATER_CHECKBOX = wxNewId();
 const long ID_SHOW_STRESS_CHECKBOX = wxNewId();
+const long ID_WIREFRAME_MODE_CHECKBOX = wxNewId();
 const long ID_PLAY_SINKING_MUSIC_CHECKBOX = wxNewId();
 
 SettingsDialog::SettingsDialog(
@@ -224,6 +225,14 @@ void SettingsDialog::OnShowStressCheckBoxClick(wxCommandEvent & /*event*/)
     mApplyButton->Enable(true);
 }
 
+void SettingsDialog::OnWireframeModeCheckBoxClick(wxCommandEvent & /*event*/)
+{
+    mShipRenderModeRadioBox->Enable(!mWireframeModeCheckBox->IsChecked());
+
+    // Remember we're dirty now
+    mApplyButton->Enable(true);
+}
+
 void SettingsDialog::OnPlaySinkingMusicCheckBoxClick(wxCommandEvent & /*event*/)
 {
     // Remember we're dirty now
@@ -345,6 +354,8 @@ void SettingsDialog::ApplySettings()
     }
 
     mGameController->SetShowShipStress(mShowStressCheckBox->IsChecked());
+
+    mGameController->SetWireframeMode(mWireframeModeCheckBox->IsChecked());
 
     mSoundController->SetPlaySinkingMusic(mPlaySinkingMusicCheckBox->IsChecked());
 }
@@ -751,6 +762,13 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
     
     checkboxesSizer->Add(mShowStressCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
 
+
+    mWireframeModeCheckBox = new wxCheckBox(panel, ID_WIREFRAME_MODE_CHECKBOX, _("Wireframe Mode"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Wireframe Mode Checkbox"));
+    Connect(ID_WIREFRAME_MODE_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnWireframeModeCheckBoxClick);
+
+    checkboxesSizer->Add(mWireframeModeCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
+
+
     controlsSizer->Add(checkboxesSizer, 0, wxALL, SliderBorder);
 
 
@@ -884,6 +902,9 @@ void SettingsDialog::ReadSettings()
     }
 
     mShowStressCheckBox->SetValue(mGameController->GetShowShipStress());
+
+    mWireframeModeCheckBox->SetValue(mGameController->GetWireframeMode());
+    mShipRenderModeRadioBox->Enable(!mGameController->GetWireframeMode());
 
     mPlaySinkingMusicCheckBox->SetValue(mSoundController->GetPlaySinkingMusic());
 }

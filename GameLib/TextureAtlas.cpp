@@ -93,6 +93,13 @@ TextureAtlasBuilder::AtlasSpecification TextureAtlasBuilder::BuildAtlasSpecifica
     uint64_t totalArea = 0;
     for (auto const & ti : sortedTextureInfos)
     {
+        // Verify tile dimensions are powers of two
+        if (ti.Size.Width != CeilPowerOfTwo(ti.Size.Width)
+            || ti.Size.Height != CeilPowerOfTwo(ti.Size.Height))
+        {
+            throw GameException("Dimensions of texture frame \"" + ti.FrameId.ToString() + "\" are not a power of two");
+        }
+
         totalArea += ti.Size.Width * ti.Size.Height;
     }
 
@@ -239,6 +246,8 @@ TextureAtlas TextureAtlasBuilder::BuildAtlas(
             vec2f(
                 static_cast<float>(texturePosition.FrameLeftX + textureFrame.TextureData.Size.Width) / static_cast<float>(specification.AtlasSize.Width),
                 static_cast<float>(texturePosition.FrameBottomY + textureFrame.TextureData.Size.Height) / static_cast<float>(specification.AtlasSize.Height)),
+            texturePosition.FrameLeftX,
+            texturePosition.FrameBottomY,
             textureFrame.Metadata);
     }
 

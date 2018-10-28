@@ -15,6 +15,7 @@
 #include "ShipRenderContext.h"
 #include "SysSpecifics.h"
 #include "TextRenderContext.h"
+#include "TextureAtlas.h"
 #include "TextureRenderManager.h"
 #include "Vectors.h"
 
@@ -215,6 +216,17 @@ public:
         UpdateShowStressedSprings();
     }
 
+    bool GetWireframeMode() const
+    {
+        return mWireframeMode;
+    }
+
+    void SetWireframeMode(bool wireframeMode)
+    {
+        mWireframeMode = wireframeMode;
+
+        UpdateWireframeMode();
+    }
 
     //
     // Screen <-> World transformations
@@ -286,36 +298,48 @@ public:
         assert(mCurrentCloudElementCount + 1u <= mCloudElementCount);
         CloudElement * cloudElement = &(mCloudElementBuffer[mCurrentCloudElementCount]);
 
-        TextureFrameMetadata const & textureMetadata = mTextureRenderManager->GetFrameMetadata(
+        size_t cloudTextureIndex = mCurrentCloudElementCount % mCloudTextureCount;
+
+        auto cloudAtlasFrameMetadata = mTextureAtlasMetadata->GetFrameMetadata(
             TextureGroupType::Cloud,
-            static_cast<TextureFrameIndex>(mCurrentCloudElementCount % mCloudTextureCount));
+            static_cast<TextureFrameIndex>(cloudTextureIndex));
 
         float const aspectRatio = static_cast<float>(mCanvasWidth) / static_cast<float>(mCanvasHeight);
 
-        float leftX = mappedX - scale * textureMetadata.AnchorWorldX;
-        float rightX = mappedX + scale * (textureMetadata.WorldWidth - textureMetadata.AnchorWorldX);        
-        float topY = mappedY + scale * (textureMetadata.WorldHeight - textureMetadata.AnchorWorldY) * aspectRatio;
-        float bottomY = mappedY - scale * textureMetadata.AnchorWorldY * aspectRatio;
+        float leftX = mappedX - scale * cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldX;
+        float rightX = mappedX + scale * (cloudAtlasFrameMetadata.FrameMetadata.WorldWidth - cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldX);
+        float topY = mappedY + scale * (cloudAtlasFrameMetadata.FrameMetadata.WorldHeight - cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldY) * aspectRatio;
+        float bottomY = mappedY - scale * cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldY * aspectRatio;
         
-        cloudElement->ndcXTopLeft = leftX;
-        cloudElement->ndcYTopLeft = topY;
-        cloudElement->ndcTextureXTopLeft = 0.0f;
-        cloudElement->ndcTextureYTopLeft = 1.0f;
+        cloudElement->ndcXTopLeft1 = leftX;
+        cloudElement->ndcYTopLeft1 = topY;
+        cloudElement->ndcTextureXTopLeft1 = cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x;
+        cloudElement->ndcTextureYTopLeft1 = cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y;
 
-        cloudElement->ndcXBottomLeft = leftX;
-        cloudElement->ndcYBottomLeft = bottomY;
-        cloudElement->ndcTextureXBottomLeft = 0.0f;
-        cloudElement->ndcTextureYBottomLeft = 0.0f;
+        cloudElement->ndcXBottomLeft1 = leftX;
+        cloudElement->ndcYBottomLeft1 = bottomY;
+        cloudElement->ndcTextureXBottomLeft1 = cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x;
+        cloudElement->ndcTextureYBottomLeft1 = cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y;
 
-        cloudElement->ndcXTopRight = rightX;
-        cloudElement->ndcYTopRight = topY;
-        cloudElement->ndcTextureXTopRight = 1.0f;
-        cloudElement->ndcTextureYTopRight = 1.0f;
+        cloudElement->ndcXTopRight1 = rightX;
+        cloudElement->ndcYTopRight1 = topY;
+        cloudElement->ndcTextureXTopRight1 = cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x;
+        cloudElement->ndcTextureYTopRight1 = cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y;
 
-        cloudElement->ndcXBottomRight = rightX;
-        cloudElement->ndcYBottomRight = bottomY;
-        cloudElement->ndcTextureXBottomRight = 1.0f;
-        cloudElement->ndcTextureYBottomRight = 0.0f;
+        cloudElement->ndcXBottomLeft2 = leftX;
+        cloudElement->ndcYBottomLeft2 = bottomY;
+        cloudElement->ndcTextureXBottomLeft2 = cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x;
+        cloudElement->ndcTextureYBottomLeft2 = cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y;
+
+        cloudElement->ndcXTopRight2 = rightX;
+        cloudElement->ndcYTopRight2 = topY;
+        cloudElement->ndcTextureXTopRight2 = cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x;
+        cloudElement->ndcTextureYTopRight2 = cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y;
+
+        cloudElement->ndcXBottomRight2 = rightX;
+        cloudElement->ndcYBottomRight2 = bottomY;
+        cloudElement->ndcTextureXBottomRight2 = cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x;
+        cloudElement->ndcTextureYBottomRight2 = cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y;
 
         ++mCurrentCloudElementCount;
     }
@@ -666,6 +690,7 @@ private:
     void UpdateShipRenderMode();
     void UpdateVectorFieldRenderMode();
     void UpdateShowStressedSprings();
+    void UpdateWireframeMode();
 
 private:
 
@@ -673,32 +698,46 @@ private:
     std::unique_ptr<TextureRenderManager> mTextureRenderManager;
     std::unique_ptr<TextRenderContext> mTextRenderContext;
 
+    GameOpenGLTexture mTextureAtlasOpenGLHandle;
+    std::unique_ptr<TextureAtlasMetadata> mTextureAtlasMetadata;
+
     //
     // Clouds
     //
 
 #pragma pack(push)
+    // Two triangles
     struct CloudElement
     {
-        float ndcXTopLeft;
-        float ndcYTopLeft;
-        float ndcTextureXTopLeft;
-        float ndcTextureYTopLeft;
+        float ndcXTopLeft1;
+        float ndcYTopLeft1;
+        float ndcTextureXTopLeft1;
+        float ndcTextureYTopLeft1;
 
-        float ndcXBottomLeft;
-        float ndcYBottomLeft;
-        float ndcTextureXBottomLeft;
-        float ndcTextureYBottomLeft;
+        float ndcXBottomLeft1;
+        float ndcYBottomLeft1;
+        float ndcTextureXBottomLeft1;
+        float ndcTextureYBottomLeft1;
 
-        float ndcXTopRight;
-        float ndcYTopRight;
-        float ndcTextureXTopRight;
-        float ndcTextureYTopRight;
+        float ndcXTopRight1;
+        float ndcYTopRight1;
+        float ndcTextureXTopRight1;
+        float ndcTextureYTopRight1;
 
-        float ndcXBottomRight;
-        float ndcYBottomRight;
-        float ndcTextureXBottomRight;
-        float ndcTextureYBottomRight;
+        float ndcXBottomLeft2;
+        float ndcYBottomLeft2;
+        float ndcTextureXBottomLeft2;
+        float ndcTextureYBottomLeft2;
+
+        float ndcXTopRight2;
+        float ndcYTopRight2;
+        float ndcTextureXTopRight2;
+        float ndcTextureYTopRight2;
+
+        float ndcXBottomRight2;
+        float ndcYBottomRight2;
+        float ndcTextureXBottomRight2;
+        float ndcTextureYBottomRight2;
     };
 #pragma pack(pop)
 
@@ -786,9 +825,10 @@ private:
     bool mShowShipThroughSeaWater;
     float mWaterLevelOfDetail;
     ShipRenderMode mShipRenderMode;
-    VectorFieldRenderMode mVectorFieldRenderMode;
+    VectorFieldRenderMode mVectorFieldRenderMode; 
     float mVectorFieldLengthMultiplier;
     bool mShowStressedSprings;
+    bool mWireframeMode;
 };
 
 }

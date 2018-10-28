@@ -19,6 +19,9 @@ RenderContext::RenderContext(
     : mShaderManager()
     , mTextureRenderManager()
     , mTextRenderContext()
+    // Texture Atlas
+    , mTextureAtlasOpenGLHandle()
+    , mTextureAtlasMetadata()
     // Clouds
     , mCloudElementBuffer()
     , mCurrentCloudElementCount(0u)
@@ -51,6 +54,7 @@ RenderContext::RenderContext(
     , mVectorFieldRenderMode(VectorFieldRenderMode::None)
     , mVectorFieldLengthMultiplier(1.0f)
     , mShowStressedSprings(false)
+    , mWireframeMode(false)
 {
     static constexpr float TextureLoadSteps = 11.0f;
 
@@ -61,6 +65,9 @@ RenderContext::RenderContext(
     //
 
     GameOpenGL::InitOpenGL();
+
+    // Activate texture unit 0
+    glActiveTexture(GL_TEXTURE0);
 
 
     //
@@ -103,7 +110,52 @@ RenderContext::RenderContext(
             progressCallback(0.25f + progress / 4.0f, "Loading textures...");
         });
 
+    // Remember number of cloud textures
+    mCloudTextureCount = textureDatabase.GetGroup(TextureGroupType::Cloud).GetFrameCount();
+
+    // Create texture render manager
     mTextureRenderManager = std::make_unique<TextureRenderManager>();
+
+
+
+    //
+    // Create texture atlas
+    //
+
+    // TODOTEST: temporary; will do whole database later
+    TextureAtlas textureAtlas = TextureAtlasBuilder::BuildAtlas(
+        textureDatabase.GetGroup(TextureGroupType::Cloud),
+        progressCallback);
+
+    // Create OpenGL handle
+    GLuint openGLHandle;
+    glGenTextures(1, &openGLHandle);
+    mTextureAtlasOpenGLHandle = openGLHandle;
+
+    // Bind texture
+    glBindTexture(GL_TEXTURE_2D, *mTextureAtlasOpenGLHandle);
+    CheckOpenGLError();
+
+    // Upload atlas texture
+    GameOpenGL::UploadMipmappedTexture(
+        textureAtlas.Metadata,
+        std::move(textureAtlas.AtlasData));
+
+    // Set repeat mode
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    CheckOpenGLError();
+
+    // Set texture filtering parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    CheckOpenGLError();
+
+    // Unbind texture
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    // Store metadata
+    mTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata>(textureAtlas.Metadata);
 
 
 
@@ -111,17 +163,12 @@ RenderContext::RenderContext(
     // Upload textures
     //
 
-    // Activate texture unit 0
-    glActiveTexture(GL_TEXTURE0);
-
-    mCloudTextureCount = textureDatabase.GetGroup(TextureGroupType::Cloud).GetFrameCount();
-
-    mTextureRenderManager->UploadGroup(
-        textureDatabase.GetGroup(TextureGroupType::Cloud),
-        [&progressCallback](float progress, std::string const &)
-        {
-            progressCallback(0.5f + progress / (2.0f * TextureLoadSteps), "Loading textures...");
-        });
+    ////mTextureRenderManager->UploadGroup(
+    ////    textureDatabase.GetGroup(TextureGroupType::Cloud),
+    ////    [&progressCallback](float progress, std::string const &)
+    ////    {
+    ////        progressCallback(0.5f + progress / (2.0f * TextureLoadSteps), "Loading textures...");
+    ////    });
 
     mTextureRenderManager->UploadMipmappedGroup(
         textureDatabase.GetGroup(TextureGroupType::Land),
@@ -321,7 +368,8 @@ void RenderContext::AddShip(
             mWaterLevelOfDetail,
             mShipRenderMode,
             mVectorFieldRenderMode,
-            mShowStressedSprings));
+            mShowStressedSprings,
+            mWireframeMode));
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -351,6 +399,9 @@ void RenderContext::RenderStart()
     glStencilMask(0xFF);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     glStencilMask(0x00);
+
+    if (mWireframeMode)
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     // Communicate start to child contextes
     mTextRenderContext->RenderStart();
@@ -397,6 +448,10 @@ void RenderContext::RenderCloudsEnd()
     // Disable vertex attribute 0, as we don't use it
     glDisableVertexAttribArray(0);
 
+    // Make sure polygons are filled in any case
+    if (mWireframeMode)
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
     // Draw
     glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mWaterElementCount));    
 
@@ -406,6 +461,9 @@ void RenderContext::RenderCloudsEnd()
     // Re-enable writing to the color buffer
     glColorMask(true, true, true, true);
     
+    // Reset wireframe mode, if enabled
+    if (mWireframeMode)
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 
     //
@@ -434,20 +492,15 @@ void RenderContext::RenderCloudsEnd()
     // Enable stenciling - only draw where there are no 1's
     glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 
-    // Draw
-    for (size_t c = 0; c < mCloudElementCount; ++c)
-    {
-        // Bind Texture
-        glBindTexture(
-            GL_TEXTURE_2D, 
-            mTextureRenderManager->GetOpenGLHandle(
-                TextureGroupType::Cloud,
-                static_cast<TextureFrameIndex>(c % mCloudTextureCount)));
-        CheckOpenGLError();
+    // Bind atlas texture
+    glBindTexture(GL_TEXTURE_2D, *mTextureAtlasOpenGLHandle);
+    CheckOpenGLError();
 
-        // Draw
-        glDrawArrays(GL_TRIANGLE_STRIP, static_cast<GLint>(4 * c), 4);
-    }
+    if (mWireframeMode)
+        glLineWidth(0.1f);
+
+    // Draw
+    glDrawArrays(GL_TRIANGLES, 0, static_cast<GLint>(6 * mCloudElementCount));
 
     // Disable stenciling - draw always
     glStencilFunc(GL_ALWAYS, 0, 0x00);
@@ -541,6 +594,9 @@ void RenderContext::RenderLand()
     // Disable vertex attribute 0
     glDisableVertexAttribArray(0);
 
+    if (mWireframeMode)
+        glLineWidth(0.1f);
+
     // Draw
     glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mLandElementCount));
 }
@@ -560,6 +616,9 @@ void RenderContext::RenderWater()
 
     // Disable vertex attribute 0
     glDisableVertexAttribArray(0);
+
+    if (mWireframeMode)
+        glLineWidth(0.1f);
 
     // Draw
     glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mWaterElementCount));
@@ -700,6 +759,16 @@ void RenderContext::UpdateShowStressedSprings()
     for (auto & s : mShips)
     {
         s->UpdateShowStressedSprings(mShowStressedSprings);
+    }
+}
+
+void RenderContext::UpdateWireframeMode()
+{
+    // Set parameter in all ships
+
+    for (auto & s : mShips)
+    {
+        s->UpdateWireframeMode(mWireframeMode);
     }
 }
 

@@ -228,6 +228,9 @@ public:
     bool GetShowShipStress() const { return mRenderContext->GetShowStressedSprings(); }
     void SetShowShipStress(bool value) { mRenderContext->SetShowStressedSprings(value); }
 
+    bool GetWireframeMode() const { return mRenderContext->GetWireframeMode(); }
+    void SetWireframeMode(bool wireframeMode) { mRenderContext->SetWireframeMode(wireframeMode); }
+
 private:
 
     GameController(

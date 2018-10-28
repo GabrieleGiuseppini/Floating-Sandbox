@@ -21,14 +21,21 @@ struct TextureAtlasFrameMetadata
     vec2f TextureCoordinatesBottomLeft;
     vec2f TextureCoordinatesTopRight;
 
+    int FrameLeftX;
+    int FrameBottomY;
+
     TextureFrameMetadata FrameMetadata;
 
     TextureAtlasFrameMetadata(
         vec2f textureCoordinatesBottomLeft,
         vec2f textureCoordinatesTopRight,
+        int frameLeftX,
+        int frameBottomY,
         TextureFrameMetadata frameMetadata)
         : TextureCoordinatesBottomLeft(textureCoordinatesBottomLeft)
         , TextureCoordinatesTopRight(textureCoordinatesTopRight)
+        , FrameLeftX(frameLeftX)
+        , FrameBottomY(frameBottomY)
         , FrameMetadata(frameMetadata)
     {}
 };
@@ -38,15 +45,16 @@ class TextureAtlasMetadata
 public:
 
     TextureAtlasMetadata(std::vector<TextureAtlasFrameMetadata> frames)
-        : mFrameMetadata()
+        : mFrameMetadata(frames)
+        , mFrameMetadataIndices()
     {
         //
-        // Store frames in vector of vectors, indexed by group and frame index
+        // Store frames indices in vector of vectors, indexed by group and frame index
         //
 
         std::sort(
-            frames.begin(),
-            frames.end(),
+            mFrameMetadata.begin(),
+            mFrameMetadata.end(),
             [](TextureAtlasFrameMetadata const & f1, TextureAtlasFrameMetadata const & f2)
             {
                 return f1.FrameMetadata.FrameId.Group < f2.FrameMetadata.FrameId.Group
@@ -54,17 +62,17 @@ public:
                         && f1.FrameMetadata.FrameId.FrameIndex < f2.FrameMetadata.FrameId.FrameIndex);
             });
 
-        for (auto const & frame : frames)
+        for (size_t frameIndex = 0; frameIndex < mFrameMetadata.size(); ++frameIndex)
         { 
-            size_t groupIndex = static_cast<size_t>(frame.FrameMetadata.FrameId.Group);
-            if (groupIndex >= mFrameMetadata.size())
+            size_t groupIndex = static_cast<size_t>(mFrameMetadata[frameIndex].FrameMetadata.FrameId.Group);
+            if (groupIndex >= mFrameMetadataIndices.size())
             {
-                assert(groupIndex == mFrameMetadata.size());
-                mFrameMetadata.emplace_back();
+                assert(groupIndex == mFrameMetadataIndices.size());
+                mFrameMetadataIndices.emplace_back();
             }
 
-            assert(static_cast<size_t>(frame.FrameMetadata.FrameId.FrameIndex) == mFrameMetadata.back().size());
-            mFrameMetadata.back().emplace_back(frame);
+            assert(static_cast<size_t>(mFrameMetadata[frameIndex].FrameMetadata.FrameId.FrameIndex) == mFrameMetadataIndices.back().size());
+            mFrameMetadataIndices.back().emplace_back(frameIndex);
         }
     }
 
@@ -72,15 +80,22 @@ public:
         TextureGroupType group,
         TextureFrameIndex frameIndex) const
     {
-        assert(static_cast<size_t>(group) < mFrameMetadata.size());
-        assert(frameIndex < mFrameMetadata[static_cast<size_t>(group)].size());
-        return mFrameMetadata[static_cast<size_t>(group)][frameIndex];
+        assert(static_cast<size_t>(group) < mFrameMetadataIndices.size());
+        assert(frameIndex < mFrameMetadataIndices[static_cast<size_t>(group)].size());
+        return mFrameMetadata[mFrameMetadataIndices[static_cast<size_t>(group)][frameIndex]];
+    }
+
+    std::vector<TextureAtlasFrameMetadata> const & GetFrameMetadata() const
+    {
+        return mFrameMetadata;
     }
 
 private:
 
+    std::vector<TextureAtlasFrameMetadata> mFrameMetadata;
+
     // Indexed by group first and frame index then
-    std::vector<std::vector<TextureAtlasFrameMetadata>> mFrameMetadata;
+    std::vector<std::vector<size_t>> mFrameMetadataIndices;
 };
 
 struct TextureAtlas

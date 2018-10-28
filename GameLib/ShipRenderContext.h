@@ -40,7 +40,8 @@ public:
         float waterLevelOfDetail,
         ShipRenderMode shipRenderMode,
         VectorFieldRenderMode vectorFieldRenderMode,
-        bool showStressedSprings);
+        bool showStressedSprings,
+        bool wireframeMode);
     
     ~ShipRenderContext();
 
@@ -62,6 +63,8 @@ public:
     void UpdateVectorFieldRenderMode(VectorFieldRenderMode vectorFieldRenderMode);
 
     void UpdateShowStressedSprings(bool showStressedSprings);
+
+    void UpdateWireframeMode(bool wireframeMode);
 
 public:
 
@@ -337,6 +340,7 @@ private:
     ShipRenderMode mShipRenderMode;
     VectorFieldRenderMode mVectorFieldRenderMode;
     bool mShowStressedSprings;
+    bool mWireframeMode;
 
 private:
 

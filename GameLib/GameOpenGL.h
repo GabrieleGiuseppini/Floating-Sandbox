@@ -7,6 +7,7 @@
 
 #include "GameException.h"
 #include "ImageData.h"
+#include "TextureAtlas.h"
 
 #ifdef WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -205,6 +206,10 @@ public:
         std::string const & attributeName);
 
     static void UploadMipmappedTexture(ImageData baseTexture);
+
+    static void UploadMipmappedTexture(
+        TextureAtlasMetadata textureAtlasMetadata,
+        ImageData atlasData);
 
     template <GLenum TTarget>
     static GameOpenGLMappedBuffer<TTarget> MapBuffer(GLenum access)

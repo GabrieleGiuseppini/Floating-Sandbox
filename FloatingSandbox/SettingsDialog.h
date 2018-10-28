@@ -38,6 +38,7 @@ private:
     void OnShipRenderModeRadioBox(wxCommandEvent & event);
     void OnVectorFieldRenderModeRadioBox(wxCommandEvent & event);
     void OnShowStressCheckBoxClick(wxCommandEvent & event);
+    void OnWireframeModeCheckBoxClick(wxCommandEvent & event);
     
     void OnPlaySinkingMusicCheckBoxClick(wxCommandEvent & event);
 
@@ -77,6 +78,7 @@ private:
     wxRadioBox * mShipRenderModeRadioBox;
     wxRadioBox * mVectorFieldRenderModeRadioBox;
     wxCheckBox* mShowStressCheckBox;
+    wxCheckBox* mWireframeModeCheckBox;
 
     // Sound
     wxCheckBox * mPlaySinkingMusicCheckBox;
