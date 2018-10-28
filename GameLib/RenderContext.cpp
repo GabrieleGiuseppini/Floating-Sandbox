@@ -393,10 +393,9 @@ void RenderContext::RenderStart()
     static const vec3f ClearColorBase(0.529f, 0.808f, 0.980f); // (cornflower blue)
     vec3f const clearColor = ClearColorBase * mAmbientLightIntensity;
     glClearColor(clearColor.x, clearColor.y, clearColor.z, 1.0f);
-    glEnable(GL_STENCIL_TEST);
+    glClearStencil(0x00);
     glStencilMask(0xFF);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-    glDisable(GL_STENCIL_TEST);
 
     if (mWireframeMode)
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -431,11 +430,9 @@ void RenderContext::RenderCloudsEnd()
     // Enable stencil test
     glEnable(GL_STENCIL_TEST);
 
-
-
-    //
+    ////////////////////////////////////////////////////
     // Draw water stencil
-    //
+    ////////////////////////////////////////////////////
 
     // Use matte water program
     mShaderManager->ActivateProgram<ProgramType::MatteWater>();
@@ -469,9 +466,9 @@ void RenderContext::RenderCloudsEnd()
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 
-    //
-    // Draw clouds
-    //
+    ////////////////////////////////////////////////////
+    // Draw clouds with stencil test
+    ////////////////////////////////////////////////////
 
     assert(mCurrentCloudElementCount == mCloudElementCount);
 
@@ -505,8 +502,7 @@ void RenderContext::RenderCloudsEnd()
     // Draw
     glDrawArrays(GL_TRIANGLES, 0, static_cast<GLint>(6 * mCloudElementCount));
 
-
-
+    ////////////////////////////////////////////////////
 
     // Disable stencil test
     glDisable(GL_STENCIL_TEST);
