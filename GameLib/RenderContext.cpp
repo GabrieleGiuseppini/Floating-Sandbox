@@ -389,16 +389,14 @@ void RenderContext::RenderStart()
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    // Enable stencil test    
-    glEnable(GL_STENCIL_TEST);    
-
-    // Clear canvas 
+    // Clear canvas - and stencil buffer
     static const vec3f ClearColorBase(0.529f, 0.808f, 0.980f); // (cornflower blue)
     vec3f const clearColor = ClearColorBase * mAmbientLightIntensity;
     glClearColor(clearColor.x, clearColor.y, clearColor.z, 1.0f);
+    glEnable(GL_STENCIL_TEST);
     glStencilMask(0xFF);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-    glStencilMask(0x00);
+    glDisable(GL_STENCIL_TEST);
 
     if (mWireframeMode)
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -430,6 +428,11 @@ void RenderContext::RenderCloudsStart(size_t cloudCount)
 
 void RenderContext::RenderCloudsEnd()
 {
+    // Enable stencil test
+    glEnable(GL_STENCIL_TEST);
+
+
+
     //
     // Draw water stencil
     //
@@ -502,8 +505,11 @@ void RenderContext::RenderCloudsEnd()
     // Draw
     glDrawArrays(GL_TRIANGLES, 0, static_cast<GLint>(6 * mCloudElementCount));
 
-    // Disable stenciling - draw always
-    glStencilFunc(GL_ALWAYS, 0, 0x00);
+
+
+
+    // Disable stencil test
+    glDisable(GL_STENCIL_TEST);
 }
 
 void RenderContext::UploadLandAndWaterStart(size_t slices)
