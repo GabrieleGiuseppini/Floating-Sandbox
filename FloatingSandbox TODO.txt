@@ -18,14 +18,34 @@ Current perf
 	- ShipRenderContext::RenderEnd: 52.82%
 	- RenderContext::RenderCloudsEnd: 2.97%
 	- RenderContext::RenderStart: 0.48%
-	- RenderContext::RenderEnd: 0.35%
-		- TextRenderContext::RenderEnd: 0.35%
 	- RenderContext::RenderWater: 0.03%
 	- World::RenderClouds: 0.03%
-		- fmodf: 0.02
+		- fmodf: 0.02%
 	- RenderContext::RenderLand: 0.00%
 	- RenderContext::UploadLandAndWaterEnd: 0.03%
+- RenderContext::RenderEnd: 0.35%
+	- TextRenderContext::RenderEnd: 0.35%
 - wxGLCanvas::SwapBuffers: 1.0%
+=================================================
+NoInline
+- World::Render: 53.36%
+	- ShipRenderContext::RenderEnd: 49.69%
+		- ig4: 49.22%
+		- RenderRopes: 0.43%
+		- ...
+	- RenderContext::RenderCloudsEnd: 1.37%
+	- RenderContext::RenderStart: 0.46%
+	- RenderContext::RenderWater: 0.04%
+	- World::RenderClouds: 0.02%
+		- fmodf: 0.01%
+	- Ship::Render (with uploads): 0.15%
+	- RenderContext::RenderLand: 0.01%
+	- RenderContext::UploadLandAndWaterEnd: 0.04%
+	- RenderContext::UploadLandAndWater: 0.03%
+- RenderContext::RenderEnd: 0.30%
+
+=================================================
+
 =================================================
 Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 =================================================
@@ -200,33 +220,32 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 				+ Get rid of need to use TextureRenderManager at RenderContext for clouds
 				+ Draw all clouds together at once
 					+ Need triangles
+				+ RenderContext:
+					+ Call GameOpenGL mipmap helper moving Texture and passing Metadata
 				+ Test 2
 					+ FPS: 28.5/28.6/28.7
-			= Phase 1b: Test quad tessellation for land and water
-				= Commit mipmapping work
-				+ Do Wireframe mode
-					+ RenderContext: set line width based off wireframe mode
-					+ Pass on also to ShipRenderContext to turn off springs
-				- Do tessellation
-				- Do and check perf
-			- Phase 2: Mipmapping, land and water
-				- Resize land and water to powers of two
-					- Test look & feel
-				= RenderContext:
-					= Call GameOpenGL mipmap helper moving Texture and passing Metadata
+			= Phase 2: Generic Textures
+				+ Resize all generic textures to powers of two
+					+ Pin
+					+ RC Bomb
+					+ RC Bomb Ping
+					+ Timer Bomb
+					+ Timer Bomb Defuse
+					+ Timer Bomb Explosion
+					+ Timer Bomb Fuse
+					+ RC Bomb Explosion
+					+ Timer Bomb Explosion
+					+ Test look & feel
+				- TODOHERE: Fix texture coordinates in atlas to be between 0.5/dim and 1-0.5/dim
+					- See Moleskine
+					- Verify TimerBomb doesn't show artifacts anymore
 				- RenderContext:
-					- bind texture atlas at RenderContext::RenderStart() (for clouds and land) and at RenderWater (for water)
-				- Use box in atlas at:
-					- Water
-					- Land
-				- Check mipmapping look & feel
-				- Cleanup RenderContext
-			- Phase 3: Generic Textures
-				- Resize all remaining textures to powers of two
-					- Test look & feel
-				- RenderContext:
-					- Cctor: add entire database to atlas
+					- Cctor: add entire database to atlas minus land and water
+						- Make builder stateful
 					- Pass Metadata and texture handle to ShipRenderContext
+					- Bind:
+						- Atlas before clouds
+						- Land, Water before land and water
 				- ShipRenderContext must take from RenderContext:
 					- Atlas texture handle (&), for binding it at GenericTextures
 						- At least until we do Z and GenericTextures moves up to RenderContext
@@ -234,15 +253,27 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 				- ShipRenderContext:
 					- bind at GenericTextures
 					- Use box in atlas at Generic Textures
+					- Modify GenericTexture to run once for all textures (still for each connected component until Z)
 			- See if can get rid of TextureRenderManager now
-		- After done:
-			- Modify GenericTexture to run once for all textures (still for each connected component until Z)
-			- See if can unify land and water rendering
-				- Hmmm...aren't they anyway rendered at different times?
+			- Perf:
+				+ Rif FPS: 29.0
+				- Final FPS:
+				- Do full perf analysis
+	+ Figure out what's most expensive with perf analysis and noinline
+		+ Only triangles: 42fps
+		+ Triangles and ropes: 42fps
+		+ Only springs: 32fps
+		+ Is it stenciling, flushed at Ship::RenderEnd()?
+			+ With no stenciling: FPS: 29.4/29.5
+	+ Enable stenciling only when needed
+		+ FPS: 29.0
 	- All textures: test changing GL_LINEAR_MIPMAP_LINEAR to:
-		- GL_NEAREST_MIPMAP_NEAREST
 		- GL_LINEAR_MIPMAP_NEAREST
 		- GL_NEAREST_MIPMAP_LINEAR
+		- GL_NEAREST_MIPMAP_NEAREST
+		- At:
+			- Land and Water
+			- Atlas
 	- See if can unify springs and ropes rendering
 		- Just make sure that ropecolor is already in point color buffer
 		- RenderSprings + RenderRopes == new RenderSprings:
