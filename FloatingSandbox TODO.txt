@@ -236,9 +236,11 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 					+ RC Bomb Explosion
 					+ Timer Bomb Explosion
 					+ Test look & feel
-				- TODOHERE: Fix texture coordinates in atlas to be between 0.5/dim and 1-0.5/dim
+					+ Fix timer bomb issue
+				= Fix texture coordinates in atlas to be between 0.5/dim and 1-0.5/dim
+					+ Test it first simply at current generic texture upload
 					- See Moleskine
-					- Verify TimerBomb doesn't show artifacts anymore
+					- Do in atlas UV coordinate generation
 				- RenderContext:
 					- Cctor: add entire database to atlas minus land and water
 						- Make builder stateful
@@ -267,6 +269,8 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 			+ With no stenciling: FPS: 29.4/29.5
 	+ Enable stenciling only when needed
 		+ FPS: 29.0
+	- Try Render1/Update1/Render2/Update2
+		- @ GameController and down
 	- All textures: test changing GL_LINEAR_MIPMAP_LINEAR to:
 		- GL_LINEAR_MIPMAP_NEAREST
 		- GL_NEAREST_MIPMAP_LINEAR

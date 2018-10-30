@@ -250,11 +250,14 @@ public:
 
         // Append vertices
 
+        float const dx = .5f / static_cast<float>(frameMetadata.Size.Width);
+        float const dy = .5f / static_cast<float>(frameMetadata.Size.Height);
+
         // Top-left
         mGenericTextureRenderPolygonVertexBuffer.emplace_back(
             position,
             vec2f(leftX, topY),
-            vec2f(0.0f, 1.0f),
+            vec2f(dx, 1.0f - dy),
             scale,
             angle,
             1.0f,
@@ -264,7 +267,7 @@ public:
         mGenericTextureRenderPolygonVertexBuffer.emplace_back(
             position,
             vec2f(rightX, topY),
-            vec2f(1.0f, 1.0f),
+            vec2f(1.0f - dx, 1.0f - dy),
             scale,
             angle,
             1.0f,
@@ -274,7 +277,7 @@ public:
         mGenericTextureRenderPolygonVertexBuffer.emplace_back(
             position,
             vec2f(leftX, bottomY),
-            vec2f(0.0f, 0.0f),
+            vec2f(dx, dy),
             scale,
             angle,
             1.0f,
@@ -284,7 +287,7 @@ public:
         mGenericTextureRenderPolygonVertexBuffer.emplace_back(
             position,
             vec2f(rightX, bottomY),
-            vec2f(1.0f, 0.0f),
+            vec2f(1.0f - dx, dy),
             scale,
             angle,
             1.0f,
