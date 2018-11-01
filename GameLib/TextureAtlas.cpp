@@ -20,12 +20,7 @@ TextureAtlas TextureAtlasBuilder::BuildAtlas(
 {
     // Build TextureInfo's
     std::vector<TextureInfo> textureInfos;
-    for (auto const & frame : group.GetFrameSpecifications())
-    {
-        textureInfos.emplace_back(
-            frame.Metadata.FrameId,
-            frame.Metadata.Size);
-    }
+    AddTextureInfos(group, textureInfos);
 
     // Build specification
     AtlasSpecification specification = BuildAtlasSpecification(textureInfos);
@@ -48,12 +43,7 @@ TextureAtlas TextureAtlasBuilder::BuildAtlas(
     std::vector<TextureInfo> textureInfos;
     for (auto const & group : database.GetGroups())
     {
-        for (auto const & frame : group.GetFrameSpecifications())
-        {
-            textureInfos.emplace_back(
-                frame.Metadata.FrameId,
-                frame.Metadata.Size);
-        }
+        AddTextureInfos(group, textureInfos);
     }
 
     // Build specification
@@ -68,6 +58,32 @@ TextureAtlas TextureAtlasBuilder::BuildAtlas(
         },
         progressCallback);
 }
+
+TextureAtlas TextureAtlasBuilder::BuildAtlas(ProgressCallback const & progressCallback)
+{
+    // Build TextureInfo's
+    std::vector<TextureInfo> textureInfos;
+    for (auto const & frameSpecification : mTextureFrameSpecifications)
+    {
+        textureInfos.emplace_back(
+            frameSpecification.second.Metadata.FrameId,
+            frameSpecification.second.Metadata.Size);
+    }
+
+    // Build specification
+    AtlasSpecification specification = BuildAtlasSpecification(textureInfos);
+
+    // Build atlas
+    return BuildAtlas(
+        specification,
+        [this](TextureFrameId const & frameId)
+        {
+            return this->mTextureFrameSpecifications.at(frameId).LoadFrame();
+        },
+        progressCallback);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
 
 TextureAtlasBuilder::AtlasSpecification TextureAtlasBuilder::BuildAtlasSpecification(std::vector<TextureInfo> const & inputTextureInfos)
 {
@@ -103,7 +119,7 @@ TextureAtlasBuilder::AtlasSpecification TextureAtlasBuilder::BuildAtlasSpecifica
         totalArea += ti.Size.Width * ti.Size.Height;
     }
 
-    // Square root of area, floor'd to prev power of two
+    // Square root of area, floor'd to next power of two, minimized
     int const atlasSide = CeilPowerOfTwo(static_cast<int>(std::floor(std::sqrt(static_cast<float>(totalArea))))) / 2;
     int atlasWidth = atlasSide;
     int atlasHeight = atlasSide;
@@ -140,7 +156,7 @@ TextureAtlasBuilder::AtlasSpecification TextureAtlasBuilder::BuildAtlasSpecifica
 
             if (currentPosition.x + t.Size.Width < atlasWidth   // Fits at current position
                 || positionStack.size() == 1                    // We can't backtrack
-                || (currentPosition.x + t.Size.Width - atlasWidth) >= (positionStack.front().y + t.Size.Height - atlasHeight)) // Extra W > Extra H
+                || (CeilPowerOfTwo(currentPosition.x + t.Size.Width) - atlasWidth) <= (CeilPowerOfTwo(positionStack.front().y + t.Size.Height) - atlasHeight)) // Extra W <= Extra H
             {
                 // Put it at the current location
                 texturePositions.emplace_back(
@@ -163,12 +179,8 @@ TextureAtlasBuilder::AtlasSpecification TextureAtlasBuilder::BuildAtlasSpecifica
                     positionStack.pop_back();
                 }
 
-                // Add new location to the right of this tile,
-                // if space allows
-                if (currentPosition.x + t.Size.Width <= atlasWidth)
-                {
-                    positionStack.emplace_back(currentPosition.x + t.Size.Width, currentPosition.y);
-                }
+                // Add new location to the right of this tile
+                positionStack.emplace_back(currentPosition.x + t.Size.Width, currentPosition.y);
 
                 // Adjust atlas dimensions
                 atlasWidth = CeilPowerOfTwo(std::max(atlasWidth, currentPosition.x + t.Size.Width));
@@ -209,6 +221,9 @@ TextureAtlas TextureAtlasBuilder::BuildAtlas(
     std::function<TextureFrame(TextureFrameId const &)> frameLoader,
     ProgressCallback const & progressCallback)
 {
+    float const dx = 0.5f / static_cast<float>(specification.AtlasSize.Width);
+    float const dy = 0.5f / static_cast<float>(specification.AtlasSize.Height);
+
     // Allocate image
     size_t const imageByteSize = specification.AtlasSize.Width * specification.AtlasSize.Height * 4;
     std::unique_ptr<unsigned char[]> atlasImage(new unsigned char[imageByteSize]);
@@ -240,12 +255,12 @@ TextureAtlas TextureAtlasBuilder::BuildAtlas(
         metadata.emplace_back(
             // Bottom-left
             vec2f(
-                static_cast<float>(texturePosition.FrameLeftX) / static_cast<float>(specification.AtlasSize.Width),
-                static_cast<float>(texturePosition.FrameBottomY) / static_cast<float>(specification.AtlasSize.Height)),
+                dx + static_cast<float>(texturePosition.FrameLeftX) / static_cast<float>(specification.AtlasSize.Width),
+                dy + static_cast<float>(texturePosition.FrameBottomY) / static_cast<float>(specification.AtlasSize.Height)),
             // Top-right
             vec2f(
-                static_cast<float>(texturePosition.FrameLeftX + textureFrame.TextureData.Size.Width) / static_cast<float>(specification.AtlasSize.Width),
-                static_cast<float>(texturePosition.FrameBottomY + textureFrame.TextureData.Size.Height) / static_cast<float>(specification.AtlasSize.Height)),
+                static_cast<float>(texturePosition.FrameLeftX + textureFrame.TextureData.Size.Width) / static_cast<float>(specification.AtlasSize.Width) - dx,
+                static_cast<float>(texturePosition.FrameBottomY + textureFrame.TextureData.Size.Height) / static_cast<float>(specification.AtlasSize.Height) - dy),
             texturePosition.FrameLeftX,
             texturePosition.FrameBottomY,
             textureFrame.Metadata);
@@ -258,11 +273,6 @@ TextureAtlas TextureAtlasBuilder::BuildAtlas(
     progressCallback(
         1.0f,
         "Building texture atlas...");
-
-    // TODOTEST
-    ResourceLoader::SaveImage(
-        "C:\\users\\neurodancer\\desktop\\texture_atlas.png",
-        atlasImageData);
 
     // Return atlas
     return TextureAtlas(

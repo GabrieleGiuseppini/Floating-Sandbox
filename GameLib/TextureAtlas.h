@@ -12,6 +12,7 @@
 
 #include <cassert>
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 namespace Render {
@@ -132,6 +133,31 @@ public:
         TextureDatabase const & database,
         ProgressCallback const & progressCallback);
 
+public:
+
+    TextureAtlasBuilder()
+        : mTextureFrameSpecifications()
+    {}
+
+    /*
+     * Adds a group to the set of groups that this instance can be used to build and atlas for.
+     */
+    void Add(TextureGroup const & group)
+    {
+        for (auto const & frameSpecification : group.GetFrameSpecifications())
+        {
+            mTextureFrameSpecifications.insert(
+                std::make_pair(
+                    frameSpecification.Metadata.FrameId,
+                    frameSpecification));
+        }
+    }
+
+    /*
+     * Builds an atlas for the groups added so far.
+     */
+    TextureAtlas BuildAtlas(ProgressCallback const & progressCallback);
+
 private:
 
     struct TextureInfo
@@ -195,11 +221,27 @@ private:
         int destinationLeftX,
         int destinationBottomY);
 
+    static void AddTextureInfos(
+        TextureGroup const & group,
+        std::vector<TextureInfo> & textureInfos)
+    {
+        for (auto const & frame : group.GetFrameSpecifications())
+        {
+            textureInfos.emplace_back(
+                frame.Metadata.FrameId,
+                frame.Metadata.Size);
+        }
+    }
+
 private:
 
     friend class TextureAtlasTests_OneTexture_Test;
     friend class TextureAtlasTests_Placement1_Test;
     friend class TextureAtlasTests_RoundsAtlasSize_Test;
+
+private:
+
+    std::unordered_map<TextureFrameId, TextureFrameSpecification> mTextureFrameSpecifications;
 };
 
 }

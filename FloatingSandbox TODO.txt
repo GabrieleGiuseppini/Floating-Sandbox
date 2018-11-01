@@ -237,26 +237,29 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 					+ Timer Bomb Explosion
 					+ Test look & feel
 					+ Fix timer bomb issue
-				= Fix texture coordinates in atlas to be between 0.5/dim and 1-0.5/dim
+				+ Fix texture coordinates in atlas to be between 0.5/dim and 1-0.5/dim
 					+ Test it first simply at current generic texture upload
-					- See Moleskine
-					- Do in atlas UV coordinate generation
-				- RenderContext:
-					- Cctor: add entire database to atlas minus land and water
-						- Make builder stateful
-					- Pass Metadata and texture handle to ShipRenderContext
-					- Bind:
-						- Atlas before clouds
-						- Land, Water before land and water
-				- ShipRenderContext must take from RenderContext:
-					- Atlas texture handle (&), for binding it at GenericTextures
-						- At least until we do Z and GenericTextures moves up to RenderContext
-					- metadata (&)
-				- ShipRenderContext:
-					- bind at GenericTextures
+					+ See Moleskine
+					+ Do in atlas UV coordinate generation
+				+ RenderContext:
+					+ Cctor: add entire database to atlas minus land and water
+						+ Make builder stateful
+					+ Pass Metadata and texture handle to ShipRenderContext
+					+ Bind:
+						+ Atlas before clouds
+						+ Land, Water before land and water
+				+ ShipRenderContext must take from RenderContext:
+					+ Atlas texture handle (&), for binding it at GenericTextures
+						+ At least until we do Z and GenericTextures moves up to RenderContext
+					+ metadata (&)
+				= ShipRenderContext:
+					- TODOHERE: bind at GenericTextures
 					- Use box in atlas at Generic Textures
 					- Modify GenericTexture to run once for all textures (still for each connected component until Z)
+					- Nuke TextureRenderManager member and cctor arg
+					- cleanup RenderContext's upload of textures				
 			- See if can get rid of TextureRenderManager now
+			+ Remove test saving of atlas
 			- Perf:
 				+ Rif FPS: 29.0
 				- Final FPS:

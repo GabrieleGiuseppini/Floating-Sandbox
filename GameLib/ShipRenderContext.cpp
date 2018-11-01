@@ -15,6 +15,8 @@ ShipRenderContext::ShipRenderContext(
     size_t pointCount,
     std::optional<ImageData> texture,
     ShaderManager<ShaderManagerTraits> & shaderManager,
+    GameOpenGLTexture & textureAtlasOpenGLHandle,
+    TextureAtlasMetadata const & textureAtlasMetadata,
     TextureRenderManager const & textureRenderManager,
     float const(&orthoMatrix)[4][4],
     float visibleWorldHeight,
@@ -46,6 +48,8 @@ ShipRenderContext::ShipRenderContext(
     , mPointColorVBO()
     , mPointElementTextureCoordinatesVBO()
     // Generic Textures
+    , mTextureAtlasOpenGLHandle(textureAtlasOpenGLHandle)
+    , mTextureAtlasMetadata(textureAtlasMetadata)
     , mTextureRenderManager(textureRenderManager)
     , mConnectedComponentGenericTextureInfos()
     , mGenericTextureRenderPolygonVertexBuffer()

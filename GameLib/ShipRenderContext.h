@@ -31,6 +31,8 @@ public:
         size_t pointCount,
         std::optional<ImageData> texture,
         ShaderManager<ShaderManagerTraits> & shaderManager,
+        GameOpenGLTexture & textureAtlasOpenGLHandle,
+        TextureAtlasMetadata const & textureAtlasMetadata,
         TextureRenderManager const & textureRenderManager,
         float const(&orthoMatrix)[4][4],
         float visibleWorldHeight,
@@ -373,6 +375,9 @@ private:
     // Generic Textures
     //
 
+    GameOpenGLTexture & mTextureAtlasOpenGLHandle;
+    TextureAtlasMetadata const & mTextureAtlasMetadata;
+    // TODO: nuke
     TextureRenderManager const & mTextureRenderManager;
 
 #pragma pack(push)

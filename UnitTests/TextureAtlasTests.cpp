@@ -23,6 +23,7 @@ TEST(TextureAtlasTests, OneTexture)
 
 TEST(TextureAtlasTests, Placement1)
 {
+    // Original guess: 256x256
     std::vector<TextureAtlasBuilder::TextureInfo> textureInfos{
         { {TextureGroupType::Cloud, 0}, {128, 64} },
         { {TextureGroupType::Cloud, 1}, {128, 64} },
@@ -35,9 +36,9 @@ TEST(TextureAtlasTests, Placement1)
     };
 
     auto atlasSpecification = TextureAtlasBuilder::BuildAtlasSpecification(textureInfos);
-
+    
     EXPECT_EQ(512, atlasSpecification.AtlasSize.Width);
-    EXPECT_EQ(512, atlasSpecification.AtlasSize.Height);
+    EXPECT_EQ(256, atlasSpecification.AtlasSize.Height);
 
     ASSERT_EQ(8, atlasSpecification.TexturePositions.size());
 
@@ -50,28 +51,28 @@ TEST(TextureAtlasTests, Placement1)
     EXPECT_EQ(0, atlasSpecification.TexturePositions[1].FrameBottomY);
 
     EXPECT_EQ(TextureFrameId(TextureGroupType::Cloud, 0), atlasSpecification.TexturePositions[2].FrameId);
-    EXPECT_EQ(256, atlasSpecification.TexturePositions[2].FrameLeftX);
-    EXPECT_EQ(128, atlasSpecification.TexturePositions[2].FrameBottomY);
+    EXPECT_EQ(256 + 128, atlasSpecification.TexturePositions[2].FrameLeftX);
+    EXPECT_EQ(0, atlasSpecification.TexturePositions[2].FrameBottomY);
 
     EXPECT_EQ(TextureFrameId(TextureGroupType::Cloud, 1), atlasSpecification.TexturePositions[3].FrameId);
-    EXPECT_EQ(256, atlasSpecification.TexturePositions[3].FrameLeftX);
-    EXPECT_EQ(128 + 64, atlasSpecification.TexturePositions[3].FrameBottomY);
+    EXPECT_EQ(256 + 128, atlasSpecification.TexturePositions[3].FrameLeftX);
+    EXPECT_EQ(64, atlasSpecification.TexturePositions[3].FrameBottomY);
 
     EXPECT_EQ(TextureFrameId(TextureGroupType::Cloud, 3), atlasSpecification.TexturePositions[4].FrameId);
-    EXPECT_EQ(256 + 128, atlasSpecification.TexturePositions[4].FrameLeftX);
-    EXPECT_EQ(128 + 64, atlasSpecification.TexturePositions[4].FrameBottomY);
+    EXPECT_EQ(256, atlasSpecification.TexturePositions[4].FrameLeftX);
+    EXPECT_EQ(128, atlasSpecification.TexturePositions[4].FrameBottomY);
 
     EXPECT_EQ(TextureFrameId(TextureGroupType::Cloud, 5), atlasSpecification.TexturePositions[5].FrameId);
-    EXPECT_EQ(0, atlasSpecification.TexturePositions[5].FrameLeftX);
-    EXPECT_EQ(256, atlasSpecification.TexturePositions[5].FrameBottomY);
+    EXPECT_EQ(256 + 64, atlasSpecification.TexturePositions[5].FrameLeftX);
+    EXPECT_EQ(128, atlasSpecification.TexturePositions[5].FrameBottomY);
 
     EXPECT_EQ(TextureFrameId(TextureGroupType::Cloud, 6), atlasSpecification.TexturePositions[6].FrameId);
-    EXPECT_EQ(64, atlasSpecification.TexturePositions[6].FrameLeftX);
-    EXPECT_EQ(256, atlasSpecification.TexturePositions[6].FrameBottomY);
+    EXPECT_EQ(256 + 64 + 64, atlasSpecification.TexturePositions[6].FrameLeftX);
+    EXPECT_EQ(128, atlasSpecification.TexturePositions[6].FrameBottomY);
 
     EXPECT_EQ(TextureFrameId(TextureGroupType::Cloud, 7), atlasSpecification.TexturePositions[7].FrameId);
-    EXPECT_EQ(64 + 64, atlasSpecification.TexturePositions[7].FrameLeftX);
-    EXPECT_EQ(256, atlasSpecification.TexturePositions[7].FrameBottomY);
+    EXPECT_EQ(256 + 64 + 64 + 64, atlasSpecification.TexturePositions[7].FrameLeftX);
+    EXPECT_EQ(128, atlasSpecification.TexturePositions[7].FrameBottomY);
 }
 
 TEST(TextureAtlasTests, RoundsAtlasSize)
@@ -83,7 +84,7 @@ TEST(TextureAtlasTests, RoundsAtlasSize)
 
     auto atlasSpecification = TextureAtlasBuilder::BuildAtlasSpecification(textureInfos);
 
-    EXPECT_EQ(256, atlasSpecification.AtlasSize.Width);
-    EXPECT_EQ(512, atlasSpecification.AtlasSize.Height);
+    EXPECT_EQ(512, atlasSpecification.AtlasSize.Width);
+    EXPECT_EQ(256, atlasSpecification.AtlasSize.Height);
 }
 }

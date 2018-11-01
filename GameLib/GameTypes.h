@@ -156,6 +156,20 @@ struct TextureFrameId
     }
 };
 
+namespace std {
+
+    template <>
+    struct hash<TextureFrameId>
+    {
+        std::size_t operator()(TextureFrameId const & frameId) const
+        {
+            return std::hash<uint16_t>()(static_cast<uint16_t>(frameId.Group)) 
+                ^ std::hash<TextureFrameIndex>()(frameId.FrameIndex);
+        }
+    };
+
+}
+
 /*
  * The different fonts available.
  */
