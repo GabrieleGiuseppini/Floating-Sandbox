@@ -268,7 +268,7 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 			+ Remove test saving of atlas
 			= Perf:
 				+ Rif FPS: 29.0
-				- Final FPS: 28.3/
+				= Final FPS: 28.3/
 				- Do full perf analysis
 	+ Figure out what's most expensive with perf analysis and noinline
 		+ Only triangles: 42fps
@@ -278,8 +278,9 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 			+ With no stenciling: FPS: 29.4/29.5
 	+ Enable stenciling only when needed
 		+ FPS: 29.0
-	- Try Render1/Update1/Render2/Update2
-		- @ GameController and down
+	+ Try Render1/Update1/Render2/Update2
+		+ @ GameController and down
+		+ No improvements
 	- All textures: test changing GL_LINEAR_MIPMAP_LINEAR to:
 		- GL_LINEAR_MIPMAP_NEAREST
 		- GL_NEAREST_MIPMAP_LINEAR
