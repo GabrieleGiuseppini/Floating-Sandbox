@@ -1,31 +1,33 @@
 =================================================
 Current perf
 =================================================
-- fps: 28.3 / 28.8 (Quiet Laptop) (Samsung: 31.5 (Krafting)) (Mattia's: 24.3 (Krafting))
-- GameController::Update: 34.16%
-	- Ship::Update: 33.38%
-		- UpdateMechanicalDynamics: 24.92%
-			- UpdateSpringForces: 18.47%
-			- UpdatePointForces: 3.21%
-			- HandleCollisionsWithSeafloor: 2.32%
-			- IntegratePointForces: 0.91%
-		- UpdateWaterDynamics: 7.69%
-			- UpdateWaterVelocities: 7.58%
-			- UpdateWaterInflow: 0.04%
-		- UpdateStrains: 0.73%
-	- DiffuseLight: 0.64%
-- World::Render: 58.23%
-	- ShipRenderContext::RenderEnd: 52.82%
-	- RenderContext::RenderCloudsEnd: 2.97%
-	- RenderContext::RenderStart: 0.48%
-	- RenderContext::RenderWater: 0.03%
-	- World::RenderClouds: 0.03%
+- fps: 28.5 / 28.8 (Samsung: TBD:31.5 (Krafting)) (Mattia's: TBD:25.1 (Krafting))
+- GameController::Update: 35.06%
+	- Ship::Update: 34.33%
+		- UpdateMechanicalDynamics: 25.70%
+			- UpdateSpringForces: 18.80%
+			- UpdatePointForces: 3.45%
+			- HandleCollisionsWithSeafloor: 2.45%
+			- IntegratePointForces: 1.00%
+		- UpdateWaterDynamics: 7.83%
+			- UpdateWaterVelocities: 7.73%
+			- UpdateWaterInflow: 0.05%
+		- UpdateStrains: 0.78%
+	- DiffuseLight: 0.58%
+	- WaterSurface::Update: 0.11%
+- World::Render: 57.00%
+	- ShipRenderContext::RenderEnd: 52.87%
+	- RenderContext::RenderCloudsEnd: 1.49%
+	- RenderContext::RenderStart: 0.50%
+	- Ship::Render: 0.14%
+		- UploadPoints: 0.12%
+	- RenderContext::RenderWater: 0.05%
+	- World::RenderClouds: 0.04%
 		- fmodf: 0.02%
-	- RenderContext::RenderLand: 0.00%
-	- RenderContext::UploadLandAndWaterEnd: 0.03%
+	- RenderContext::RenderLand: 0.01%
 - RenderContext::RenderEnd: 0.35%
 	- TextRenderContext::RenderEnd: 0.35%
-- wxGLCanvas::SwapBuffers: 1.0%
+- wxGLCanvas::SwapBuffers: 1.07%
 =================================================
 NoInline
 - World::Render: 53.36%
@@ -188,106 +190,6 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 	- Cache sea depth from PointDynamics at first calculation (Points?), using lambda
 
 - Gfx optimizations:
-	= Texture atlas:
-		+ Spec:
-			+ Atlas is built on-the-fly, completely independently from texture DB, via a separate
-			  component (TextureAtlasBuilder) that is given multiple TextureFrame's and eventually spits out TextureAtlas
-			+ TextureAtlas:
-				+ Contains:
-					+ image: consumed by GameOpenGL helper for mipmapping
-					+ metadata: used by GameOpenGL helper for mipmapping, owned by RenderContext (for clouds, land, and water) 
-					  and (by reference) by ShipRenderContext (for GenericTextures)
-				+ Structure:
-					+ ImageData Texture
-					+ TextureAtlasMetadata Metadata:
-						+ TextureAtlasFrameMetadata:
-							+ box in atlas (i.e. texture coords, as 2xvec2f)
-							+ TextureFrameMetadata
-						+ vector<TextureAtlasFrameMetadata> / anything else addressable via TextureFrameId (see above)
-			+ Separate mipmapper helper in GameOpenGL takes ImageData (by move) and TextureAtlasMetadata
-		= Impl:
-			+ Phase 1: Clouds
-				+ TextureAtlas
-				+ ResourceLoader::SaveImage
-				+ Resize all clouds to powers of two
-					+ Test look & feel
-				+ RenderContext: 
-					+ Cctor: create atlas and add just Clouds
-					+ Upload texture - w/no mipmap for the time being
-					+ Store Metadata (by value) and handle
-					+ Use Atlas metadata at UploadClouds()
-				+ Test 1
-				+ Get rid of need to use TextureRenderManager at RenderContext for clouds
-				+ Draw all clouds together at once
-					+ Need triangles
-				+ RenderContext:
-					+ Call GameOpenGL mipmap helper moving Texture and passing Metadata
-				+ Test 2
-					+ FPS: 28.5/28.6/28.7
-			= Phase 2: Generic Textures
-				+ Resize all generic textures to powers of two
-					+ Pin
-					+ RC Bomb
-					+ RC Bomb Ping
-					+ Timer Bomb
-					+ Timer Bomb Defuse
-					+ Timer Bomb Explosion
-					+ Timer Bomb Fuse
-					+ RC Bomb Explosion
-					+ Timer Bomb Explosion
-					+ Test look & feel
-					+ Fix timer bomb issue
-				+ Fix texture coordinates in atlas to be between 0.5/dim and 1-0.5/dim
-					+ Test it first simply at current generic texture upload
-					+ See Moleskine
-					+ Do in atlas UV coordinate generation
-				+ RenderContext:
-					+ Cctor: add entire database to atlas minus land and water
-						+ Make builder stateful
-					+ Pass Metadata and texture handle to ShipRenderContext
-					+ Bind:
-						+ Atlas before clouds
-						+ Land, Water before land and water
-				+ ShipRenderContext must take from RenderContext:
-					+ Atlas texture handle (&), for binding it at GenericTextures
-						+ At least until we do Z and GenericTextures moves up to RenderContext
-					+ metadata (&)
-				= ShipRenderContext:
-					+ Bind atlas at GenericTextures
-					+ Use box in atlas at Generic Textures upload
-					= Modify GenericTexture to run once for all textures (still for each connected component until Z)
-						+ Populate quads directly in connected component GenTexElement vector
-							+ Make room as needed (emplace_back)
-							+ Store max size among all connected components in SRC member
-						+ Upload connected component GenTexElement vector at RenderGenericTextures()
-							+ Realloc buffer if new max size != m allocated max size
-							+ Then always BufferSubData
-						+ Test with multiple connected components
-					+ Nuke TextureRenderManager member and cctor arg
-					+ Cleanup RenderContext's upload of textures				
-			+ Remove test saving of atlas
-			= Perf:
-				+ Rif FPS: 29.0
-				= Final FPS: 28.3/
-				- Do full perf analysis
-	+ Figure out what's most expensive with perf analysis and noinline
-		+ Only triangles: 42fps
-		+ Triangles and ropes: 42fps
-		+ Only springs: 32fps
-		+ Is it stenciling, flushed at Ship::RenderEnd()?
-			+ With no stenciling: FPS: 29.4/29.5
-	+ Enable stenciling only when needed
-		+ FPS: 29.0
-	+ Try Render1/Update1/Render2/Update2
-		+ @ GameController and down
-		+ No improvements
-	- All textures: test changing GL_LINEAR_MIPMAP_LINEAR to:
-		- GL_LINEAR_MIPMAP_NEAREST
-		- GL_NEAREST_MIPMAP_LINEAR
-		- GL_NEAREST_MIPMAP_NEAREST
-		- At:
-			- Land and Water
-			- Atlas
 	- See if can unify springs and ropes rendering
 		- Just make sure that ropecolor is already in point color buffer
 		- RenderSprings + RenderRopes == new RenderSprings:
@@ -1604,6 +1506,100 @@ IF WX:
 			+ Replace UnmapBuffer call with BufferSubData
 		+ FPS: 28.2/28.3/28.4
 	+ Get full perf, including other laptops
+	+ Texture atlas:
+		+ Spec:
+			+ Atlas is built on-the-fly, completely independently from texture DB, via a separate
+			  component (TextureAtlasBuilder) that is given multiple TextureFrame's and eventually spits out TextureAtlas
+			+ TextureAtlas:
+				+ Contains:
+					+ image: consumed by GameOpenGL helper for mipmapping
+					+ metadata: used by GameOpenGL helper for mipmapping, owned by RenderContext (for clouds, land, and water) 
+					  and (by reference) by ShipRenderContext (for GenericTextures)
+				+ Structure:
+					+ ImageData Texture
+					+ TextureAtlasMetadata Metadata:
+						+ TextureAtlasFrameMetadata:
+							+ box in atlas (i.e. texture coords, as 2xvec2f)
+							+ TextureFrameMetadata
+						+ vector<TextureAtlasFrameMetadata> / anything else addressable via TextureFrameId (see above)
+			+ Separate mipmapper helper in GameOpenGL takes ImageData (by move) and TextureAtlasMetadata
+		+ Impl:
+			+ Phase 1: Clouds
+				+ TextureAtlas
+				+ ResourceLoader::SaveImage
+				+ Resize all clouds to powers of two
+					+ Test look & feel
+				+ RenderContext: 
+					+ Cctor: create atlas and add just Clouds
+					+ Upload texture - w/no mipmap for the time being
+					+ Store Metadata (by value) and handle
+					+ Use Atlas metadata at UploadClouds()
+				+ Test 1
+				+ Get rid of need to use TextureRenderManager at RenderContext for clouds
+				+ Draw all clouds together at once
+					+ Need triangles
+				+ RenderContext:
+					+ Call GameOpenGL mipmap helper moving Texture and passing Metadata
+				+ Test 2
+					+ FPS: 28.5/28.6/28.7
+			+ Phase 2: Generic Textures
+				+ Resize all generic textures to powers of two
+					+ Pin
+					+ RC Bomb
+					+ RC Bomb Ping
+					+ Timer Bomb
+					+ Timer Bomb Defuse
+					+ Timer Bomb Explosion
+					+ Timer Bomb Fuse
+					+ RC Bomb Explosion
+					+ Timer Bomb Explosion
+					+ Test look & feel
+					+ Fix timer bomb issue
+				+ Fix texture coordinates in atlas to be between 0.5/dim and 1-0.5/dim
+					+ Test it first simply at current generic texture upload
+					+ See Moleskine
+					+ Do in atlas UV coordinate generation
+				+ RenderContext:
+					+ Cctor: add entire database to atlas minus land and water
+						+ Make builder stateful
+					+ Pass Metadata and texture handle to ShipRenderContext
+					+ Bind:
+						+ Atlas before clouds
+						+ Land, Water before land and water
+				+ ShipRenderContext must take from RenderContext:
+					+ Atlas texture handle (&), for binding it at GenericTextures
+						+ At least until we do Z and GenericTextures moves up to RenderContext
+					+ metadata (&)
+				+ ShipRenderContext:
+					+ Bind atlas at GenericTextures
+					+ Use box in atlas at Generic Textures upload
+					+ Modify GenericTexture to run once for all textures (still for each connected component until Z)
+						+ Populate quads directly in connected component GenTexElement vector
+							+ Make room as needed (emplace_back)
+							+ Store max size among all connected components in SRC member
+						+ Upload connected component GenTexElement vector at RenderGenericTextures()
+							+ Realloc buffer if new max size != m allocated max size
+							+ Then always BufferSubData
+						+ Test with multiple connected components
+					+ Nuke TextureRenderManager member and cctor arg
+					+ Cleanup RenderContext's upload of textures				
+			+ Remove test saving of atlas
+	+ Figure out what's most expensive with perf analysis and noinline
+		+ Only triangles: 42fps
+		+ Triangles and ropes: 42fps
+		+ Only springs: 32fps
+		+ Is it stenciling, flushed at Ship::RenderEnd()?
+			+ With no stenciling: FPS: 29.4/29.5
+	+ Enable stenciling only when needed
+		+ FPS: 29.0
+	+ Try Render1/Update1/Render2/Update2
+		+ @ GameController and down
+		+ No improvements
+	+ All textures: test changing GL_LINEAR_MIPMAP_LINEAR to:
+		+ GL_LINEAR_MIPMAP_NEAREST
+		+ At:
+			+ Land and Water
+			+ Atlas
 
 + Dynamics
 	+ Try half of the relaxation iterations

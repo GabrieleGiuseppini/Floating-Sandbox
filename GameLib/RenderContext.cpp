@@ -162,7 +162,7 @@ RenderContext::RenderContext(
     CheckOpenGLError();
 
     // Set texture filtering parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     CheckOpenGLError();
 
@@ -185,7 +185,7 @@ RenderContext::RenderContext(
             progressCallback((3.0f + TextureProgressSteps + progress) / TotalProgressSteps, "Loading textures...");
         });
 
-    mTextureRenderManager->UploadGroup(
+    mTextureRenderManager->UploadMipmappedGroup(
         textureDatabase.GetGroup(TextureGroupType::Water),
         [&progressCallback](float progress, std::string const &)
         {
