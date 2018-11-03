@@ -139,7 +139,7 @@ RenderContext::RenderContext(
     TextureAtlas textureAtlas = atlasBuilder.BuildAtlas(
         [&progressCallback](float progress, std::string const &)
         {
-            progressCallback((3.0f + progress) / TotalProgressSteps, "Loading textures...");
+            progressCallback((3.0f + progress * TextureProgressSteps) / TotalProgressSteps, "Loading textures...");
         });
 
     // Create OpenGL handle
