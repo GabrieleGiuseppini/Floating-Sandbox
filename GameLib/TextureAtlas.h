@@ -68,13 +68,17 @@ public:
             size_t groupIndex = static_cast<size_t>(mFrameMetadata[frameIndex].FrameMetadata.FrameId.Group);
             if (groupIndex >= mFrameMetadataIndices.size())
             {
-                assert(groupIndex == mFrameMetadataIndices.size());
-                mFrameMetadataIndices.emplace_back();
+                mFrameMetadataIndices.resize(groupIndex + 1);
             }
 
             assert(static_cast<size_t>(mFrameMetadata[frameIndex].FrameMetadata.FrameId.FrameIndex) == mFrameMetadataIndices.back().size());
             mFrameMetadataIndices.back().emplace_back(frameIndex);
         }
+    }
+
+    TextureAtlasFrameMetadata const & GetFrameMetadata(TextureFrameId const & textureFrameId) const
+    {
+        return GetFrameMetadata(textureFrameId.Group, textureFrameId.FrameIndex);
     }
 
     TextureAtlasFrameMetadata const & GetFrameMetadata(

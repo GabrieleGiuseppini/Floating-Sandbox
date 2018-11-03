@@ -191,64 +191,6 @@ RenderContext::RenderContext(
         {
             progressCallback((4.0f + TextureProgressSteps + progress) / TotalProgressSteps, "Loading textures...");
         });
-
-    // TODOHERE: Land and Water only - so nuke all below
-
-    mTextureRenderManager->UploadMipmappedGroup(
-        textureDatabase.GetGroup(TextureGroupType::PinnedPoint),
-        [&progressCallback](float progress, std::string const &)
-        {
-            progressCallback(progress, "Loading textures...");
-        });
-
-    mTextureRenderManager->UploadMipmappedGroup(
-        textureDatabase.GetGroup(TextureGroupType::RcBomb),
-        [&progressCallback](float progress, std::string const &)
-        {
-            progressCallback(progress, "Loading textures...");
-        });
-
-    mTextureRenderManager->UploadMipmappedGroup(
-        textureDatabase.GetGroup(TextureGroupType::RcBombExplosion),
-        [&progressCallback](float progress, std::string const &)
-        {
-            progressCallback(progress, "Loading textures...");
-        });
-
-    mTextureRenderManager->UploadMipmappedGroup(
-        textureDatabase.GetGroup(TextureGroupType::RcBombPing),
-        [&progressCallback](float progress, std::string const &)
-        {
-            progressCallback(progress, "Loading textures...");
-        });
-
-    mTextureRenderManager->UploadMipmappedGroup(
-        textureDatabase.GetGroup(TextureGroupType::TimerBomb),
-        [&progressCallback](float progress, std::string const &)
-        {
-            progressCallback(progress, "Loading textures...");
-        });
-
-    mTextureRenderManager->UploadMipmappedGroup(
-        textureDatabase.GetGroup(TextureGroupType::TimerBombDefuse),
-        [&progressCallback](float progress, std::string const &)
-        {
-            progressCallback(progress, "Loading textures...");
-        });
-
-    mTextureRenderManager->UploadMipmappedGroup(
-        textureDatabase.GetGroup(TextureGroupType::TimerBombExplosion),
-        [&progressCallback](float progress, std::string const &)
-        {
-            progressCallback(progress, "Loading textures...");
-        });
-
-    mTextureRenderManager->UploadMipmappedGroup(
-        textureDatabase.GetGroup(TextureGroupType::TimerBombFuse),
-        [&progressCallback](float progress, std::string const &)
-        {
-            progressCallback(progress, "Loading textures...");
-        });
     
 
     //
@@ -371,7 +313,6 @@ void RenderContext::AddShip(
             *mShaderManager,
             mTextureAtlasOpenGLHandle,
             *mTextureAtlasMetadata,
-            *mTextureRenderManager,
             mOrthoMatrix,
             mVisibleWorldHeight,
             mVisibleWorldWidth,

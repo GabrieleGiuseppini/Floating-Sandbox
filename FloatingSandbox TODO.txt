@@ -253,16 +253,22 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 						+ At least until we do Z and GenericTextures moves up to RenderContext
 					+ metadata (&)
 				= ShipRenderContext:
-					- TODOHERE: bind at GenericTextures
-					- Use box in atlas at Generic Textures
-					- Modify GenericTexture to run once for all textures (still for each connected component until Z)
-					- Nuke TextureRenderManager member and cctor arg
-					- cleanup RenderContext's upload of textures				
-			- See if can get rid of TextureRenderManager now
+					+ Bind atlas at GenericTextures
+					+ Use box in atlas at Generic Textures upload
+					= Modify GenericTexture to run once for all textures (still for each connected component until Z)
+						+ Populate quads directly in connected component GenTexElement vector
+							+ Make room as needed (emplace_back)
+							+ Store max size among all connected components in SRC member
+						+ Upload connected component GenTexElement vector at RenderGenericTextures()
+							+ Realloc buffer if new max size != m allocated max size
+							+ Then always BufferSubData
+						+ Test with multiple connected components
+					+ Nuke TextureRenderManager member and cctor arg
+					+ Cleanup RenderContext's upload of textures				
 			+ Remove test saving of atlas
-			- Perf:
+			= Perf:
 				+ Rif FPS: 29.0
-				- Final FPS:
+				- Final FPS: 28.3/
 				- Do full perf analysis
 	+ Figure out what's most expensive with perf analysis and noinline
 		+ Only triangles: 42fps
@@ -353,6 +359,21 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 			- Requires ExplosionType argument at Ship::BlastHandler, or new BlastHandler altogether
 				- Or see if easy to move BombBlaster inside bomb (i.e. explosion code is in bomb's state machine)
 				- Or another way
+			- Plan:
+				- Media:
+					- Sound: continuous (3 choir tones)
+					- Sound: implosion_one (FM)
+					- Sound: implosion_two (whirring, up)
+					- Sound: explosion (choir or TODO)
+					- Texture: armor (TODO)
+					- Texture: ball, empty
+					- Texture: ball, cloud content
+				- Texture DB:
+					- Textures.js
+					- New groups in enum
+				- Sound controller:
+					- New additive continuous sound (like fuse) with random choices and volumes for each
+					- TODOHERE
 
 	- Ephemeral Particles:
 		- Summary:

@@ -11,7 +11,6 @@
 #include "RenderCore.h"
 #include "ShaderManager.h"
 #include "SysSpecifics.h"
-#include "TextureRenderManager.h"
 #include "Vectors.h"
 
 #include <array>
@@ -33,7 +32,6 @@ public:
         ShaderManager<ShaderManagerTraits> & shaderManager,
         GameOpenGLTexture & textureAtlasOpenGLHandle,
         TextureAtlasMetadata const & textureAtlasMetadata,
-        TextureRenderManager const & textureRenderManager,
         float const(&orthoMatrix)[4][4],
         float visibleWorldHeight,
         float visibleWorldWidth,
@@ -228,72 +226,94 @@ public:
         float angle)
     {
         size_t const connectedComponentIndex = connectedComponentId - 1;
+        
+        assert(connectedComponentIndex < mGenericTextureConnectedComponents.size());
 
-        assert(connectedComponentIndex < mConnectedComponentGenericTextureInfos.size());
-
-        // Store <Index in TexturePolygonVertices, textureFrameId> in per-connected component data
-        mConnectedComponentGenericTextureInfos[connectedComponentIndex].emplace_back(
-            mGenericTextureRenderPolygonVertexBuffer.size(),
-            textureFrameId);
+        // Get this connected component's vertex buffer
+        auto & vertexBuffer = mGenericTextureConnectedComponents[connectedComponentIndex].VertexBuffer;
 
         //
         // Populate the texture quad
         //
+        
+        TextureAtlasFrameMetadata const & frame = mTextureAtlasMetadata.GetFrameMetadata(textureFrameId);
 
-        TextureFrameMetadata const & frameMetadata = mTextureRenderManager.GetFrameMetadata(textureFrameId);
-
-        float const leftX = -frameMetadata.AnchorWorldX;
-        float const rightX = frameMetadata.WorldWidth - frameMetadata.AnchorWorldX;
-        float const topY = frameMetadata.WorldHeight - frameMetadata.AnchorWorldY;
-        float const bottomY = -frameMetadata.AnchorWorldY;
+        float const leftX = -frame.FrameMetadata.AnchorWorldX;
+        float const rightX = frame.FrameMetadata.WorldWidth - frame.FrameMetadata.AnchorWorldX;
+        float const topY = frame.FrameMetadata.WorldHeight - frame.FrameMetadata.AnchorWorldY;
+        float const bottomY = -frame.FrameMetadata.AnchorWorldY;
 
         float const lightSensitivity =
-            frameMetadata.HasOwnAmbientLight ? 0.0f : 1.0f;
+            frame.FrameMetadata.HasOwnAmbientLight ? 0.0f : 1.0f;
 
-        // Append vertices
+        // Append vertices - two triangles
 
-        float const dx = .5f / static_cast<float>(frameMetadata.Size.Width);
-        float const dy = .5f / static_cast<float>(frameMetadata.Size.Height);
+        // Triangle 1
 
         // Top-left
-        mGenericTextureRenderPolygonVertexBuffer.emplace_back(
+        vertexBuffer.emplace_back(
             position,
-            vec2f(leftX, topY),
-            vec2f(dx, 1.0f - dy),
+            vec2f(leftX, topY),            
+            vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesTopRight.y),
             scale,
             angle,
             1.0f,
             lightSensitivity);
 
         // Top-Right
-        mGenericTextureRenderPolygonVertexBuffer.emplace_back(
+        vertexBuffer.emplace_back(
             position,
             vec2f(rightX, topY),
-            vec2f(1.0f - dx, 1.0f - dy),
+            frame.TextureCoordinatesTopRight,
             scale,
             angle,
             1.0f,
             lightSensitivity);
 
         // Bottom-left
-        mGenericTextureRenderPolygonVertexBuffer.emplace_back(
+        vertexBuffer.emplace_back(
             position,
             vec2f(leftX, bottomY),
-            vec2f(dx, dy),
+            frame.TextureCoordinatesBottomLeft,
+            scale,
+            angle,
+            1.0f,
+            lightSensitivity);
+
+        // Triangle 2
+
+        // Top-Right
+        vertexBuffer.emplace_back(
+            position,
+            vec2f(rightX, topY),
+            frame.TextureCoordinatesTopRight,
+            scale,
+            angle,
+            1.0f,
+            lightSensitivity);
+
+        // Bottom-left
+        vertexBuffer.emplace_back(
+            position,
+            vec2f(leftX, bottomY),
+            frame.TextureCoordinatesBottomLeft,
             scale,
             angle,
             1.0f,
             lightSensitivity);
 
         // Bottom-right
-        mGenericTextureRenderPolygonVertexBuffer.emplace_back(
+        vertexBuffer.emplace_back(
             position,
             vec2f(rightX, bottomY),
-            vec2f(1.0f - dx, dy),
+            vec2f(frame.TextureCoordinatesTopRight.x, frame.TextureCoordinatesBottomLeft.y),
             scale,
             angle,
             1.0f,
             lightSensitivity);
+
+        // Update max size among all connected components
+        mGenericTextureMaxVertexBufferSize = std::max(mGenericTextureMaxVertexBufferSize, vertexBuffer.size());
     }
 
 
@@ -313,7 +333,7 @@ public:
 private:
     
     struct ConnectedComponentData;
-    struct GenericTextureInfo;
+    struct GenericTextureConnectedComponentData;
 
     void RenderPointElements(ConnectedComponentData const & connectedComponent);
 
@@ -329,7 +349,7 @@ private:
 
     void RenderStressedSpringElements(ConnectedComponentData const & connectedComponent);
 
-    void RenderGenericTextures(std::vector<GenericTextureInfo> const & connectedComponent);
+    void RenderGenericTextures(GenericTextureConnectedComponentData const & connectedComponent);
 
     void RenderVectors();
 
@@ -377,8 +397,6 @@ private:
 
     GameOpenGLTexture & mTextureAtlasOpenGLHandle;
     TextureAtlasMetadata const & mTextureAtlasMetadata;
-    // TODO: nuke
-    TextureRenderManager const & mTextureRenderManager;
 
 #pragma pack(push)
 struct TextureRenderPolygonVertex
@@ -411,23 +429,17 @@ struct TextureRenderPolygonVertex
 };
 #pragma pack(pop)
 
-    struct GenericTextureInfo
+    struct GenericTextureConnectedComponentData
     {
-        size_t polygonIndex;
-        TextureFrameId frameId;
-
-        GenericTextureInfo(
-            size_t _polygonIndex,
-            TextureFrameId _frameId)
-            : polygonIndex(_polygonIndex)
-            , frameId(_frameId)
-        {}
+        std::vector<TextureRenderPolygonVertex> VertexBuffer;
     };
 
-    std::vector<std::vector<GenericTextureInfo>> mConnectedComponentGenericTextureInfos;
+    std::vector<GenericTextureConnectedComponentData> mGenericTextureConnectedComponents;
+    size_t mGenericTextureMaxVertexBufferSize;
+    size_t mGenericTextureAllocatedVertexBufferSize;
 
-    std::vector<TextureRenderPolygonVertex> mGenericTextureRenderPolygonVertexBuffer;
     GameOpenGLVBO mGenericTextureRenderPolygonVertexVBO;
+    
 
 
     //
