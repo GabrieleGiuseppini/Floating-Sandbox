@@ -300,7 +300,7 @@ public:
 
         size_t cloudTextureIndex = mCurrentCloudElementCount % mCloudTextureCount;
 
-        auto cloudAtlasFrameMetadata = mTextureAtlasMetadata->GetFrameMetadata(
+        auto cloudAtlasFrameMetadata = mCloudTextureAtlasMetadata->GetFrameMetadata(
             TextureGroupType::Cloud,
             static_cast<TextureFrameIndex>(cloudTextureIndex));
 
@@ -698,8 +698,11 @@ private:
     std::unique_ptr<TextureRenderManager> mTextureRenderManager;
     std::unique_ptr<TextRenderContext> mTextRenderContext;
 
-    GameOpenGLTexture mTextureAtlasOpenGLHandle;
-    std::unique_ptr<TextureAtlasMetadata> mTextureAtlasMetadata;
+    GameOpenGLTexture mCloudTextureAtlasOpenGLHandle;
+    std::unique_ptr<TextureAtlasMetadata> mCloudTextureAtlasMetadata;
+
+    GameOpenGLTexture mGenericTextureAtlasOpenGLHandle;
+    std::unique_ptr<TextureAtlasMetadata> mGenericTextureAtlasMetadata;
 
     //
     // Clouds

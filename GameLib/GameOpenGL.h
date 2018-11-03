@@ -205,6 +205,8 @@ public:
         GLuint attributeIndex,
         std::string const & attributeName);
 
+    static void UploadTexture(ImageData texture);
+
     static void UploadMipmappedTexture(ImageData baseTexture);
 
     static void UploadMipmappedTexture(

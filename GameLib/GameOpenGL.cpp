@@ -105,6 +105,16 @@ void GameOpenGL::BindAttributeLocation(
     }
 }
 
+void GameOpenGL::UploadTexture(ImageData texture)
+{
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.Size.Width, texture.Size.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.Data.get());
+    GLenum glError = glGetError();
+    if (GL_NO_ERROR != glError)
+    {
+        throw GameException("Error uploading texture onto GPU: " + std::to_string(glError));
+    }
+}
+
 void GameOpenGL::UploadMipmappedTexture(ImageData baseTexture)
 {
     //

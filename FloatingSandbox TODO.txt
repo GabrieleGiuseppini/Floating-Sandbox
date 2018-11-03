@@ -1,7 +1,7 @@
 =================================================
 Current perf
 =================================================
-- fps: 28.5 / 28.8 (Samsung: TBD:31.5 (Krafting)) (Mattia's: TBD:25.1 (Krafting))
+- fps: 28.8 (Samsung: TBD:31.5 (Krafting)) (Mattia's: 25.1 (Krafting))
 - GameController::Update: 35.06%
 	- Ship::Update: 34.33%
 		- UpdateMechanicalDynamics: 25.70%
