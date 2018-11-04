@@ -58,7 +58,7 @@ RenderContext::RenderContext(
     , mShowStressedSprings(false)
     , mWireframeMode(false)
 {
-    static constexpr float TextureProgressSteps = 1.0f /*cloud*/ + 5.0f;
+    static constexpr float TextureProgressSteps = 1.0f /*cloud*/ + 10.0f;
     static constexpr float TotalProgressSteps = 5.0f + TextureProgressSteps;
 
     GLuint tmpGLuint;

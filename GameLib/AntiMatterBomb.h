@@ -43,6 +43,9 @@ public:
             mGameEventHandler->OnAntiMatterBombContained(mId, false);
         }
 
+        // TODO: no removal if not in Contained
+        // i.e.: TODO: do not allow removal of bombs when bombs say so - CanBeRemove()->bool
+
         // Notify removal
         mGameEventHandler->OnBombRemoved(
             mId,

@@ -424,18 +424,18 @@ private:
 
         void StopSoundAlternativeForObject(ObjectId objectId)
         {
-            // Get alternative we have for this object
+            // Get alternative we had for this object
             assert(mAlternativesByObject.count(objectId) == 1);
             size_t alternative = mAlternativesByObject[objectId];
 
-            // Remember how many objects are playing this alternative
+            // Update number ofobjects that are playing this alternative
             --mSoundAlternativePlayCounts[alternative];
 
             // Remove object<->alternative mapping
             mAlternativesByObject.erase(objectId);
 
             // Update continuous sound
-            mSoundAlternatives[mLastChosenAlternative].AggregateUpdate(mSoundAlternativePlayCounts[alternative]);
+            mSoundAlternatives[alternative].AggregateUpdate(mSoundAlternativePlayCounts[alternative]);
         }
 
         void SetPaused(bool isPaused)

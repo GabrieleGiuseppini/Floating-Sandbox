@@ -276,8 +276,16 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 					+ Textures.js
 					+ New groups in enum
 				= Sound controller:
-					= New additive continuous sound (like fuse) with random choices and volumes for each
+					+ New additive continuous sound (like fuse) with random choices and volumes for each
 					= Others
+				- Bomb::IPhysicsHandler
+					- Implemented by Ship
+					- Passed to Bombs and stored as GameEventHandler (i.e. *)
+
+				- Misc:
+					- Prevent removal if not in containment (i.e. if detonated already)
+						- Bomb::MayBeRemoved()
+						- Test with all 3
 
 				- Cleanup:
 
