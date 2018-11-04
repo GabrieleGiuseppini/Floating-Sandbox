@@ -14,34 +14,6 @@
 
 namespace Render {
 
-TextureGroupType StrToTextureGroupType(std::string const & str)
-{
-    if (str == "Cloud")
-        return TextureGroupType::Cloud;
-    else if (str == "Land")
-        return TextureGroupType::Land;
-    else if (str == "PinnedPoint")
-        return TextureGroupType::PinnedPoint;
-    else if (str == "RCBomb")
-        return TextureGroupType::RcBomb;
-    else if (str == "RCBombExplosion")
-        return TextureGroupType::RcBombExplosion;
-    else if (str == "RCBombPing")
-        return TextureGroupType::RcBombPing;
-    else if (str == "TimerBomb")
-        return TextureGroupType::TimerBomb;
-    else if (str == "TimerBombDefuse")
-        return TextureGroupType::TimerBombDefuse;
-    else if (str == "TimerBombExplosion")
-        return TextureGroupType::TimerBombExplosion;
-    else if (str == "TimerBombFuse")
-        return TextureGroupType::TimerBombFuse;
-    else if (str == "Water")
-        return TextureGroupType::Water;
-    else
-        throw GameException("Unrecognized TextureGroupType \"" + str + "\"");
-}
-
 TextureFrame TextureFrameSpecification::LoadFrame() const
 {
     ImageData imageData = ResourceLoader::LoadImageRgbaLowerLeft(FilePath);

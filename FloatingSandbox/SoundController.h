@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include <GameLib/GameRandomEngine.h>
 #include <GameLib/IGameEventHandler.h>
 #include <GameLib/ResourceLoader.h>
 #include <GameLib/TupleKeys.h>
@@ -14,8 +15,10 @@
 
 #include <chrono>
 #include <memory>
+#include <limits>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 class SoundController : public IGameEventHandler
@@ -126,6 +129,14 @@ public:
         bool isUnderwater,
         unsigned int size) override;
 
+    virtual void OnAntiMatterBombContained(
+        ObjectId bombId,
+        bool isContained) override;
+
+    virtual void OnAntiMatterBombPreImploding() override;
+
+    virtual void OnAntiMatterBombImploding() override;
+
 private:
 
     enum class SoundType
@@ -147,51 +158,58 @@ private:
         TimerBombSlowFuse,
         TimerBombFastFuse,
         TimerBombDefused,
+        AntiMatterBombContained,
+        AntiMatterBombPreImplosion,
+        AntiMatterBombImplosion,
         Explosion,
         Wave
     };
 
     static SoundType StrToSoundType(std::string const & str)
     {
-        std::string lstr = Utils::ToLower(str);
-
-        if (lstr == "break")
+        if (Utils::CaseInsensitiveEquals(str, "Break"))
             return SoundType::Break;
-        else if (lstr == "destroy")
+        else if (Utils::CaseInsensitiveEquals(str, "Destroy"))
             return SoundType::Destroy;
-        else if (lstr == "draw")
+        else if (Utils::CaseInsensitiveEquals(str, "Draw"))
             return SoundType::Draw;
-        else if (lstr == "saw")
+        else if (Utils::CaseInsensitiveEquals(str, "Saw"))
             return SoundType::Saw;
-        else if (lstr == "swirl")
+        else if (Utils::CaseInsensitiveEquals(str, "Swirl"))
             return SoundType::Swirl;
-        else if (lstr == "pinpoint")
+        else if (Utils::CaseInsensitiveEquals(str, "PinPoint"))
             return SoundType::PinPoint;
-        else if (lstr == "unpinpoint")
+        else if (Utils::CaseInsensitiveEquals(str, "UnpinPoint"))
             return SoundType::UnpinPoint;
-        else if (lstr == "stress")
+        else if (Utils::CaseInsensitiveEquals(str, "Stress"))
             return SoundType::Stress;
-        else if (lstr == "lightflicker")
+        else if (Utils::CaseInsensitiveEquals(str, "LightFlicker"))
             return SoundType::LightFlicker;
-        else if (lstr == "waterrush")
+        else if (Utils::CaseInsensitiveEquals(str, "WaterRush"))
             return SoundType::WaterRush;
-        else if (lstr == "watersplash")
+        else if (Utils::CaseInsensitiveEquals(str, "WaterSplash"))
             return SoundType::WaterSplash;
-        else if (lstr == "bombattached")
+        else if (Utils::CaseInsensitiveEquals(str, "BombAttached"))
             return SoundType::BombAttached;
-        else if (lstr == "bombdetached")
+        else if (Utils::CaseInsensitiveEquals(str, "BombDetached"))
             return SoundType::BombDetached;
-        else if (lstr == "rcbombping")
+        else if (Utils::CaseInsensitiveEquals(str, "RCBombPing"))
             return SoundType::RCBombPing;
-        else if (lstr == "timerbombslowfuse")
+        else if (Utils::CaseInsensitiveEquals(str, "TimerBombSlowFuse"))
             return SoundType::TimerBombSlowFuse;
-        else if (lstr == "timerbombfastfuse")
+        else if (Utils::CaseInsensitiveEquals(str, "TimerBombFastFuse"))
             return SoundType::TimerBombFastFuse;
-        else if (lstr == "timerbombdefused")
+        else if (Utils::CaseInsensitiveEquals(str, "TimerBombDefused"))
             return SoundType::TimerBombDefused;
-        else if (lstr == "explosion")
+        else if (Utils::CaseInsensitiveEquals(str, "AntiMatterBombContained"))
+            return SoundType::AntiMatterBombContained;
+        else if (Utils::CaseInsensitiveEquals(str, "AntiMatterBombPreImplosion"))
+            return SoundType::AntiMatterBombPreImplosion;
+        else if (Utils::CaseInsensitiveEquals(str, "AntiMatterBombImplosion"))
+            return SoundType::AntiMatterBombImplosion;
+        else if (Utils::CaseInsensitiveEquals(str, "Explosion"))
             return SoundType::Explosion;
-        else if (lstr == "wave")
+        else if (Utils::CaseInsensitiveEquals(str, "Wave"))
             return SoundType::Wave;
         else
             throw GameException("Unrecognized SoundType \"" + str + "\"");
@@ -224,53 +242,20 @@ private:
 
 private:
 
-    struct MultipleSoundChoiceInfo
+    struct ContinuousSound
     {
-        std::vector<std::unique_ptr<sf::SoundBuffer>> SoundBuffers;
-        size_t LastPlayedSoundIndex;
-
-        MultipleSoundChoiceInfo()
-            : SoundBuffers()
-            , LastPlayedSoundIndex(0u)
-        {
-        }
-    };
-
-    struct SingleSoundInfo
-    {
-        std::unique_ptr<sf::SoundBuffer> SoundBuffer;
-
-        SingleSoundInfo()
-            : SoundBuffer()
-        {
-        }
-    };
-
-    struct PlayingSound
-    {
-        SoundType Type;
-        std::unique_ptr<sf::Sound> Sound;
-        std::chrono::steady_clock::time_point StartedTimestamp;
-
-        PlayingSound(
-            SoundType type,
-            std::unique_ptr<sf::Sound> sound,
-            std::chrono::steady_clock::time_point startedTimestamp)
-            : Type(type)
-            , Sound(std::move(sound))
-            , StartedTimestamp(startedTimestamp)
-        {
-        }
-    };
-
-    struct SingleContinuousSound
-    {
-        SingleContinuousSound()
+        ContinuousSound()
             : mSoundBuffer()
             , mSound()
             , mCurrentPauseState(false)
             , mDesiredPlayingState(false)
         {
+        }
+
+        explicit ContinuousSound(std::unique_ptr<sf::SoundBuffer> soundBuffer)
+            : ContinuousSound()
+        {
+            Initialize(std::move(soundBuffer));
         }
 
         void Initialize(std::unique_ptr<sf::SoundBuffer> soundBuffer)
@@ -340,6 +325,21 @@ private:
             mDesiredPlayingState = false;
         }
 
+        void AggregateUpdate(size_t count)
+        {
+            if (count == 0)
+            {
+                // Stop it
+                Stop();
+            }
+            else
+            {
+                float volume = 100.0f * (1.0f - exp(-0.3f * static_cast<float>(count)));
+                SetVolume(volume);
+                Start();
+            }
+        }
+
     private:
         std::unique_ptr<sf::SoundBuffer> mSoundBuffer;
         std::unique_ptr<sf::Sound> mSound;
@@ -353,36 +353,236 @@ private:
         bool mDesiredPlayingState;
     };
 
+    struct OneShotMultipleChoiceSound
+    {
+        std::vector<std::unique_ptr<sf::SoundBuffer>> SoundBuffers;
+        size_t LastPlayedSoundIndex;
+
+        OneShotMultipleChoiceSound()
+            : SoundBuffers()
+            , LastPlayedSoundIndex(0u)
+        {
+        }
+    };    
+
+    struct OneShotSingleChoiceSound
+    {
+        std::unique_ptr<sf::SoundBuffer> SoundBuffer;
+
+        OneShotSingleChoiceSound()
+            : SoundBuffer()
+        {
+        }
+    };
+
+    struct ContinuousMultipleChoiceSound
+    {
+    public:
+
+        ContinuousMultipleChoiceSound()
+            : mSoundAlternatives()
+            , mSoundAlternativePlayCounts()
+            , mAlternativesByObject()
+            , mLastChosenAlternative(std::numeric_limits<size_t>::max())
+        {}
+
+        void AddAlternative(std::unique_ptr<sf::SoundBuffer> soundBuffer)
+        {
+            mSoundAlternatives.emplace_back(std::move(soundBuffer));
+            mSoundAlternativePlayCounts.emplace_back(0);
+        }
+
+        void Reset()
+        {
+            Stop();
+
+            std::fill(
+                mSoundAlternativePlayCounts.begin(),
+                mSoundAlternativePlayCounts.end(),
+                0);
+
+            mAlternativesByObject.clear();
+        }
+
+        void StartSoundAlternativeForObject(ObjectId objectId)
+        {
+            // Choose alternative
+            mLastChosenAlternative = GameRandomEngine::GetInstance().ChooseNew(
+                mSoundAlternatives.size(),
+                mLastChosenAlternative);
+
+            // Remember how many objects are playing this alternative
+            ++mSoundAlternativePlayCounts[mLastChosenAlternative];
+
+            // Remember object<->alternative mapping
+            assert(mAlternativesByObject.count(objectId) == 0);
+            mAlternativesByObject[objectId] = mLastChosenAlternative;
+
+            // Update continuous sound
+            mSoundAlternatives[mLastChosenAlternative].AggregateUpdate(mSoundAlternativePlayCounts[mLastChosenAlternative]);
+        }
+
+        void StopSoundAlternativeForObject(ObjectId objectId)
+        {
+            // Get alternative we have for this object
+            assert(mAlternativesByObject.count(objectId) == 1);
+            size_t alternative = mAlternativesByObject[objectId];
+
+            // Remember how many objects are playing this alternative
+            --mSoundAlternativePlayCounts[alternative];
+
+            // Remove object<->alternative mapping
+            mAlternativesByObject.erase(objectId);
+
+            // Update continuous sound
+            mSoundAlternatives[mLastChosenAlternative].AggregateUpdate(mSoundAlternativePlayCounts[alternative]);
+        }
+
+        void SetPaused(bool isPaused)
+        {
+            std::for_each(
+                mSoundAlternatives.begin(),
+                mSoundAlternatives.end(),
+                [&isPaused](auto & s)
+                {
+                    s.SetPaused(isPaused);
+                });
+        }
+
+        void Stop()
+        {
+            std::for_each(
+                mSoundAlternatives.begin(),
+                mSoundAlternatives.end(),
+                [](auto & s)
+                {
+                    s.Stop();
+                });
+        }
+
+    private:
+
+        std::vector<ContinuousSound> mSoundAlternatives;
+        std::vector<size_t> mSoundAlternativePlayCounts;
+        std::unordered_map<ObjectId, size_t> mAlternativesByObject;
+        size_t mLastChosenAlternative;
+    };
+
+    struct ContinuousSingleChoiceSound
+    {
+        ContinuousSingleChoiceSound()
+            : mSound()
+            , mObjectsPlayingSound()
+        {}
+
+        void Initialize(std::unique_ptr<sf::SoundBuffer> soundBuffer)
+        {
+            mSound.Initialize(std::move(soundBuffer));
+        }
+
+        void Reset()
+        {
+            mSound.Stop();
+            mObjectsPlayingSound.clear();
+        }
+
+        void StartSoundForObject(ObjectId objectId)
+        {
+            // Remember that this object is playing this sound
+            assert(mObjectsPlayingSound.count(objectId) == 0);
+            mObjectsPlayingSound.insert(objectId);
+
+            // Update continuous sound
+            mSound.AggregateUpdate(mObjectsPlayingSound.size());
+        }
+
+        bool StopSoundForObject(ObjectId objectId)
+        {
+            // Remove the object tracking, if any
+            bool objectWasPlayingSound = (mObjectsPlayingSound.erase(objectId) != 0);
+
+            if (objectWasPlayingSound)
+            {
+                // Update continuous sound
+                mSound.AggregateUpdate(mObjectsPlayingSound.size());
+            }
+
+            return objectWasPlayingSound;
+        }
+
+        void SetVolume(float volume)
+        {
+            mSound.SetVolume(volume);
+        }
+
+        void Start()
+        {
+            mSound.Start();
+        }
+
+        void SetPaused(bool isPaused)
+        {
+            mSound.SetPaused(isPaused);
+        }
+
+        void Stop()
+        {
+            mSound.Stop();
+        }
+
+    private:
+
+        ContinuousSound mSound;
+        std::set<ObjectId> mObjectsPlayingSound;
+    };
+
+    struct PlayingSound
+    {
+        SoundType Type;
+        std::unique_ptr<sf::Sound> Sound;
+        std::chrono::steady_clock::time_point StartedTimestamp;
+
+        PlayingSound(
+            SoundType type,
+            std::unique_ptr<sf::Sound> sound,
+            std::chrono::steady_clock::time_point startedTimestamp)
+            : Type(type)
+            , Sound(std::move(sound))
+            , StartedTimestamp(startedTimestamp)
+        {
+        }
+    };
+
 private:
 
-    void PlayMSUSound(
+    void PlayMSUOneShotMultipleChoiceSound(
         SoundType soundType,
         Material const * material,
         unsigned int size,
         bool isUnderwater,
         float volume);
 
-    void PlayDslUSound(
+    void PlayDslUOneShotMultipleChoiceSound(
         SoundType soundType,
         DurationShortLongType duration,
         bool isUnderwater,
         float volume);
 
-    void PlayUSound(
+    void PlayUOneShotMultipleChoiceSound(
         SoundType soundType,
         bool isUnderwater,
         float volume);
 
-    void PlaySound(
+    void PlayOneShotMultipleChoiceSound(
         SoundType soundType,
         float volume);
 
-    void ChooseAndPlaySound(
+    void ChooseAndPlayOneShotMultipleChoiceSound(
         SoundType soundType,
-        MultipleSoundChoiceInfo & multipleSoundChoiceInfo,
+        OneShotMultipleChoiceSound & sound,
         float volume);
 
-    void PlaySound(        
+    void PlayOneShotSound(
         SoundType soundType,
         sf::SoundBuffer * soundBuffer,
         float volume);
@@ -390,10 +590,6 @@ private:
     void ScavengeStoppedSounds();
 
     void ScavengeOldestSound(SoundType soundType);    
-
-    void UpdateContinuousSound(
-        size_t count, 
-        SingleContinuousSound & sound);
 
 private:
 
@@ -410,10 +606,6 @@ private:
     float mLastWaterSplashed;
     float mCurrentWaterSplashedTrigger;
 
-    // Tracking which bombs are emitting which fuse sounds
-    std::set<ObjectId> mBombsEmittingSlowFuseSounds;
-    std::set<ObjectId> mBombsEmittingFastFuseSounds;
-
 
     //
     // One-Shot sounds
@@ -424,35 +616,36 @@ private:
 
     unordered_tuple_map<
         std::tuple<SoundType, Material::SoundProperties::SoundElementType, SizeType, bool>,
-        MultipleSoundChoiceInfo> mMSUSoundBuffers;
+        OneShotMultipleChoiceSound> mMSUOneShotMultipleChoiceSounds;
 
     unordered_tuple_map<
         std::tuple<SoundType, DurationShortLongType, bool>,
-        MultipleSoundChoiceInfo> mDslUSoundBuffers;
+        OneShotMultipleChoiceSound> mDslUOneShotMultipleChoiceSounds;
 
     unordered_tuple_map<
         std::tuple<SoundType, bool>,
-        MultipleSoundChoiceInfo> mUSoundBuffers;
+        OneShotMultipleChoiceSound> mUOneShotMultipleChoiceSounds;
 
     unordered_tuple_map<
         std::tuple<SoundType>,
-        MultipleSoundChoiceInfo> mSoundBuffers;
+        OneShotMultipleChoiceSound> mOneShotMultipleChoiceSounds;
 
-    std::vector<PlayingSound> mCurrentlyPlayingSounds;
+    std::vector<PlayingSound> mCurrentlyPlayingOneShotSounds;
 
     //
     // Continuous sounds
     //
 
-    SingleContinuousSound mSawAbovewaterSound;
-    SingleContinuousSound mSawUnderwaterSound;
-    SingleContinuousSound mDrawSound;
-    SingleContinuousSound mSwirlSound;
-    SingleContinuousSound mWaterRushSound;
-    SingleContinuousSound mWaterSplashSound;
-    SingleContinuousSound mTimerBombSlowFuseSound;
-    SingleContinuousSound mTimerBombFastFuseSound;
+    ContinuousSingleChoiceSound mSawAbovewaterSound;
+    ContinuousSingleChoiceSound mSawUnderwaterSound;
+    ContinuousSingleChoiceSound mDrawSound;
+    ContinuousSingleChoiceSound mSwirlSound;
 
+    ContinuousSingleChoiceSound mWaterRushSound;
+    ContinuousSingleChoiceSound mWaterSplashSound;
+    ContinuousSingleChoiceSound mTimerBombSlowFuseSound;
+    ContinuousSingleChoiceSound mTimerBombFastFuseSound;
+    ContinuousMultipleChoiceSound mAntiMatterBombContainedSounds;
 
     //
     // Music

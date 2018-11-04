@@ -83,7 +83,13 @@ public:
         vec2f const & targetPos,
         GameParameters const & gameParameters);
 
+    bool ToggleAntiMatterBombAt(
+        vec2f const & targetPos,
+        GameParameters const & gameParameters);
+
     void DetonateRCBombs();
+
+    void DetonateAntiMatterBombs();
 
     ElementIndex GetNearestPointIndexAt(
         vec2f const & targetPos,

@@ -38,7 +38,8 @@ enum class ToolType
     Swirl = 3,
     Pin = 4,
     TimerBomb = 5,
-    RCBomb = 6
+    RCBomb = 6,
+    AntiMatterBomb = 7
 };
 
 struct InputState
@@ -775,6 +776,38 @@ public:
     {
         // Toggle bomb
         mGameController->ToggleRCBombAt(inputState.MousePosition);
+    }
+
+    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+
+private:
+
+    std::unique_ptr<wxCursor> const mCursor;
+};
+
+class AntiMatterBombTool final : public OneShotTool
+{
+public:
+
+    AntiMatterBombTool(
+        wxFrame * parentFrame,
+        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<SoundController> soundController,
+        ResourceLoader & resourceLoader);
+
+public:
+
+    virtual void Initialize(InputState const & /*inputState*/) override
+    {
+        // Reset cursor
+        assert(!!mCursor);
+        mCurrentCursor = mCursor.get();
+    }
+
+    virtual void OnLeftMouseDown(InputState const & inputState) override
+    {
+        // Toggle bomb
+        mGameController->ToggleAntiMatterBombAt(inputState.MousePosition);
     }
 
     virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}

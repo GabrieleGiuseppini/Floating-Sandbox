@@ -576,7 +576,8 @@ public:
         vec2f const & position,
         float scale,
         vec2f const & rotationBase,
-        vec2f const & rotationOffset)
+        vec2f const & rotationOffset,
+        float alpha)
     {
         assert(shipId < mShips.size());
 
@@ -586,7 +587,8 @@ public:
             position,
             scale,
             rotationBase,
-            rotationOffset);
+            rotationOffset,
+            alpha);
     }
 
     inline void UploadShipGenericTextureRenderSpecification(
@@ -595,7 +597,8 @@ public:
         TextureFrameId const & textureFrameId,
         vec2f const & position,
         float scale,
-        float angle)
+        float angle,
+        float alpha)
     {
         assert(shipId < mShips.size());
 
@@ -604,7 +607,8 @@ public:
             textureFrameId,
             position,
             scale,
-            angle);
+            angle,
+            alpha);
     }
 
     //

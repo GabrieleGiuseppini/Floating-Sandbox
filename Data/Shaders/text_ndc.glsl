@@ -38,6 +38,6 @@ void main()
     vec4 textureColor = texture2D(inputTexture, vertexTextureCoordinates);
 
     gl_FragColor = vec4(
-	textureColor.xyz,
-	textureColor.w * vertexAlpha);
+        textureColor.xyz,
+        textureColor.w * vertexAlpha);
 } 

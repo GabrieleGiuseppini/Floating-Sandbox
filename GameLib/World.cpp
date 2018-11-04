@@ -160,11 +160,37 @@ void World::ToggleRCBombAt(
     }
 }
 
+void World::ToggleAntiMatterBombAt(
+    vec2f const & targetPos,
+    GameParameters const & gameParameters)
+{
+    // Stop at first ship that successfully places or removes a bomb
+    for (auto const & ship : mAllShips)
+    {
+        if (ship->ToggleAntiMatterBombAt(targetPos, gameParameters))
+        {
+            // Found!
+            return;
+        }
+
+        // No luck...
+        // search other ships
+    }
+}
+
 void World::DetonateRCBombs()
 {
     for (auto const & ship : mAllShips)
     {
         ship->DetonateRCBombs();
+    }
+}
+
+void World::DetonateAntiMatterBombs()
+{
+    for (auto const & ship : mAllShips)
+    {
+        ship->DetonateAntiMatterBombs();
     }
 }
 

@@ -69,7 +69,18 @@ public:
             gameParameters);
     }
 
+    bool ToggleAntiMatterBombAt(
+        vec2f const & targetPos,
+        GameParameters const & gameParameters)
+    {
+        return ToggleBombAt<AntiMatterBomb>(
+            targetPos,
+            gameParameters);
+    }
+
     void DetonateRCBombs();
+
+    void DetonateAntiMatterBombs();
 
     //
     // Render

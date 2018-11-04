@@ -6,10 +6,10 @@
 #include "SoundController.h"
 
 #include <GameLib/GameException.h>
-#include <GameLib/GameRandomEngine.h>
 #include <GameLib/Log.h>
 #include <GameLib/Material.h>
 
+#include <algorithm>
 #include <cassert>
 #include <limits>
 #include <regex>
@@ -26,14 +26,12 @@ SoundController::SoundController(
     , mPlaySinkingMusic(true)
     , mLastWaterSplashed(0.0f)
     , mCurrentWaterSplashedTrigger(WaveSplashTriggerSize)
-    , mBombsEmittingSlowFuseSounds()
-    , mBombsEmittingFastFuseSounds()
     // One-shot sounds
-    , mMSUSoundBuffers()
-    , mDslUSoundBuffers()
-    , mUSoundBuffers()
-    , mSoundBuffers()
-    , mCurrentlyPlayingSounds()
+    , mMSUOneShotMultipleChoiceSounds()
+    , mDslUOneShotMultipleChoiceSounds()
+    , mUOneShotMultipleChoiceSounds()
+    , mOneShotMultipleChoiceSounds()
+    , mCurrentlyPlayingOneShotSounds()
     // Continuous sounds
     , mSawAbovewaterSound()
     , mSawUnderwaterSound()
@@ -43,6 +41,7 @@ SoundController::SoundController(
     , mWaterSplashSound()
     , mTimerBombSlowFuseSound()
     , mTimerBombFastFuseSound()
+    , mAntiMatterBombContainedSounds()
     // Music
     , mSinkingMusic()
 {    
@@ -178,7 +177,7 @@ SoundController::SoundController(
             // Store sound buffer
             //
 
-            mMSUSoundBuffers[std::make_tuple(soundType, soundElementType, sizeType, isUnderwater)]
+            mMSUOneShotMultipleChoiceSounds[std::make_tuple(soundType, soundElementType, sizeType, isUnderwater)]
                 .SoundBuffers.emplace_back(std::move(soundBuffer));
         }
         else if (soundType == SoundType::LightFlicker)
@@ -216,13 +215,15 @@ SoundController::SoundController(
             // Store sound buffer
             //
 
-            mDslUSoundBuffers[std::make_tuple(soundType, durationType, isUnderwater)]
+            mDslUOneShotMultipleChoiceSounds[std::make_tuple(soundType, durationType, isUnderwater)]
                 .SoundBuffers.emplace_back(std::move(soundBuffer));
         }
-        else if (soundType == SoundType::Wave)
+        else if (soundType == SoundType::Wave
+                || soundType == SoundType::AntiMatterBombPreImplosion
+                || soundType == SoundType::AntiMatterBombImplosion)
         {
             //
-            // - sound
+            // - one-shot sound
             //
 
             std::regex sRegex(R"(([^_]+)_\d+)");
@@ -238,8 +239,29 @@ SoundController::SoundController(
             // Store sound buffer
             //
 
-            mSoundBuffers[std::make_tuple(soundType)]
+            mOneShotMultipleChoiceSounds[std::make_tuple(soundType)]
                 .SoundBuffers.emplace_back(std::move(soundBuffer));
+        }
+        else if (soundType == SoundType::AntiMatterBombContained)
+        {
+            //
+            // - continuous sound
+            //
+
+            std::regex sRegex(R"(([^_]+)_\d+)");
+            std::smatch sMatch;
+            if (!std::regex_match(soundName, sMatch, sRegex))
+            {
+                throw GameException("- sound filename \"" + soundName + "\" is not recognized");
+            }
+
+            assert(sMatch.size() == 1 + 1);
+
+            //
+            // Initialize continuous sound
+            //
+
+            mAntiMatterBombContainedSounds.AddAlternative(std::move(soundBuffer));
         }
         else
         {
@@ -273,7 +295,7 @@ SoundController::SoundController(
             // Store sound buffer
             //
 
-            mUSoundBuffers[std::make_tuple(soundType, isUnderwater)]
+            mUOneShotMultipleChoiceSounds[std::make_tuple(soundType, isUnderwater)]
                 .SoundBuffers.emplace_back(std::move(soundBuffer));
         }
     }
@@ -286,7 +308,7 @@ SoundController::~SoundController()
 
 void SoundController::SetPaused(bool isPaused)
 {
-    for (auto const & playingSound : mCurrentlyPlayingSounds)
+    for (auto const & playingSound : mCurrentlyPlayingOneShotSounds)
     {
         if (isPaused)
         {
@@ -306,6 +328,7 @@ void SoundController::SetPaused(bool isPaused)
     mWaterSplashSound.SetPaused(isPaused);
     mTimerBombSlowFuseSound.SetPaused(isPaused);
     mTimerBombFastFuseSound.SetPaused(isPaused);
+    mAntiMatterBombContainedSounds.SetPaused(isPaused);
 
     if (isPaused)
     {
@@ -404,7 +427,7 @@ void SoundController::Reset()
     // Stop and clear all sounds
     //
 
-    for (auto & playingSound : mCurrentlyPlayingSounds)
+    for (auto & playingSound : mCurrentlyPlayingOneShotSounds)
     {
         assert(!!playingSound.Sound);
         if (sf::Sound::Status::Playing == playingSound.Sound->getStatus())
@@ -413,16 +436,18 @@ void SoundController::Reset()
         }
     }
 
-    mCurrentlyPlayingSounds.clear();
+    mCurrentlyPlayingOneShotSounds.clear();
 
-    mSawAbovewaterSound.Stop();
-    mSawUnderwaterSound.Stop();
-    mDrawSound.Stop();
-    mSwirlSound.Stop();
-    mWaterRushSound.Stop();
-    mWaterSplashSound.Stop();
-    mTimerBombSlowFuseSound.Stop();
-    mTimerBombFastFuseSound.Stop();
+    mSawAbovewaterSound.Reset();
+    mSawUnderwaterSound.Reset();
+    mDrawSound.Reset();
+    mSwirlSound.Reset();
+
+    mWaterRushSound.Reset();
+    mWaterSplashSound.Reset();
+    mTimerBombSlowFuseSound.Reset();
+    mTimerBombFastFuseSound.Reset();
+    mAntiMatterBombContainedSounds.Reset();
 
     //
     // Stop music
@@ -434,8 +459,8 @@ void SoundController::Reset()
     // Reset state
     //
 
-    mBombsEmittingSlowFuseSounds.clear();
-    mBombsEmittingFastFuseSounds.clear();
+    mLastWaterSplashed = 0.0f;
+    mCurrentWaterSplashedTrigger = WaveSplashTriggerSize;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -447,7 +472,7 @@ void SoundController::OnDestroy(
 {
     assert(nullptr != material);
 
-    PlayMSUSound(
+    PlayMSUOneShotMultipleChoiceSound(
         SoundType::Destroy, 
         material, 
         size, 
@@ -459,7 +484,7 @@ void SoundController::OnPinToggled(
     bool isPinned,
     bool isUnderwater)
 {
-    PlayUSound(
+    PlayUOneShotMultipleChoiceSound(
         isPinned ? SoundType::PinPoint : SoundType::UnpinPoint, 
         isUnderwater,
         100.0f);
@@ -472,7 +497,7 @@ void SoundController::OnStress(
 {
     assert(nullptr != material);
 
-    PlayMSUSound(
+    PlayMSUOneShotMultipleChoiceSound(
         SoundType::Stress,
         material,
         size,
@@ -487,7 +512,7 @@ void SoundController::OnBreak(
 {
     assert(nullptr != material);
 
-    PlayMSUSound(
+    PlayMSUOneShotMultipleChoiceSound(
         SoundType::Break, 
         material, 
         size, 
@@ -511,7 +536,7 @@ void SoundController::OnLightFlicker(
     bool isUnderwater,
     unsigned int size)
 {
-    PlayDslUSound(
+    PlayDslUOneShotMultipleChoiceSound(
         SoundType::LightFlicker,
         duration,
         isUnderwater,
@@ -542,7 +567,7 @@ void SoundController::OnWaterSplashed(float waterSplashed)
             //   3: 13.0
             float waveVolume = 100.f * (-1.f / std::pow(1.8f, 0.08f * std::abs(waterSplashed)) + 1.f);
 
-            PlaySound(
+            PlayOneShotMultipleChoiceSound(
                 SoundType::Wave,
                 waveVolume);
 
@@ -573,7 +598,7 @@ void SoundController::OnBombPlaced(
     BombType /*bombType*/,
     bool isUnderwater) 
 {
-    PlayUSound(
+    PlayUOneShotMultipleChoiceSound(
         SoundType::BombAttached, 
         isUnderwater,
         100.0f);
@@ -586,7 +611,7 @@ void SoundController::OnBombRemoved(
 {
     if (!!isUnderwater)
     {
-        PlayUSound(
+        PlayUOneShotMultipleChoiceSound(
             SoundType::BombDetached,
             *isUnderwater,
             100.0f);
@@ -597,7 +622,7 @@ void SoundController::OnBombExplosion(
     bool isUnderwater,
     unsigned int size)
 {
-    PlayUSound(
+    PlayUOneShotMultipleChoiceSound(
         SoundType::Explosion, 
         isUnderwater,
         std::max(
@@ -609,7 +634,7 @@ void SoundController::OnRCBombPing(
     bool isUnderwater,
     unsigned int size)
 {
-    PlayUSound(
+    PlayUOneShotMultipleChoiceSound(
         SoundType::RCBombPing, 
         isUnderwater,
         std::max(
@@ -629,16 +654,10 @@ void SoundController::OnTimerBombFuse(
 
             // See if this bomb is emitting a slow fuse sound; if so, remove it 
             // and update slow fuse sound
-            if (mBombsEmittingSlowFuseSounds.erase(bombId) != 0)
-            {
-                UpdateContinuousSound(mBombsEmittingSlowFuseSounds.size(), mTimerBombSlowFuseSound);
-            }
+            mTimerBombSlowFuseSound.StopSoundForObject(bombId);
 
-            // Add bomb to set of timer bombs emitting fast fuse sound, and
-            // update fast fuse sound
-            assert(0 == mBombsEmittingFastFuseSounds.count(bombId));
-            mBombsEmittingFastFuseSounds.insert(bombId);
-            UpdateContinuousSound(mBombsEmittingFastFuseSounds.size(), mTimerBombFastFuseSound);
+            // Start fast fuse sound
+            mTimerBombFastFuseSound.StartSoundForObject(bombId);
         }
         else
         {
@@ -646,32 +665,17 @@ void SoundController::OnTimerBombFuse(
 
             // See if this bomb is emitting a fast fuse sound; if so, remove it 
             // and update fast fuse sound
-            if (mBombsEmittingFastFuseSounds.erase(bombId) != 0)
-            {
-                UpdateContinuousSound(mBombsEmittingFastFuseSounds.size(), mTimerBombFastFuseSound);
-            }
+            mTimerBombFastFuseSound.StopSoundForObject(bombId);
 
-            // Add bomb to set of timer bombs emitting slow fuse sound, and
-            // update slow fuse sound
-            assert(0 == mBombsEmittingSlowFuseSounds.count(bombId));
-            mBombsEmittingSlowFuseSounds.insert(bombId);
-            UpdateContinuousSound(mBombsEmittingSlowFuseSounds.size(), mTimerBombSlowFuseSound);
+            // Start slow fuse sound
+            mTimerBombSlowFuseSound.StartSoundForObject(bombId);
         }
     }
     else
     { 
-        // Stop the sound
-        if (mBombsEmittingSlowFuseSounds.erase(bombId) != 0)
-        {
-            UpdateContinuousSound(mBombsEmittingSlowFuseSounds.size(), mTimerBombSlowFuseSound);
-        }
-        else
-        {
-            if (mBombsEmittingFastFuseSounds.erase(bombId) != 0)
-            {
-                UpdateContinuousSound(mBombsEmittingFastFuseSounds.size(), mTimerBombFastFuseSound);
-            }
-        }
+        // Stop the sound, whichever it is
+        mTimerBombSlowFuseSound.StopSoundForObject(bombId);
+        mTimerBombFastFuseSound.StopSoundForObject(bombId);
     }
 }
 
@@ -679,7 +683,7 @@ void SoundController::OnTimerBombDefused(
     bool isUnderwater,
     unsigned int size)
 {
-    PlayUSound(
+    PlayUOneShotMultipleChoiceSound(
         SoundType::TimerBombDefused,
         isUnderwater,
         std::max(
@@ -687,9 +691,39 @@ void SoundController::OnTimerBombDefused(
             30.0f * size));
 }
 
+void SoundController::OnAntiMatterBombContained(
+    ObjectId bombId,
+    bool isContained)
+{
+    if (isContained)
+    {
+        // Start sound
+        mAntiMatterBombContainedSounds.StartSoundAlternativeForObject(bombId);
+    }
+    else
+    {
+        // Stop sound
+        mAntiMatterBombContainedSounds.StopSoundAlternativeForObject(bombId);
+    }
+}
+
+void SoundController::OnAntiMatterBombPreImploding()
+{
+    PlayOneShotMultipleChoiceSound(
+        SoundType::AntiMatterBombPreImplosion,
+        100.0f);
+}
+
+void SoundController::OnAntiMatterBombImploding()
+{
+    PlayOneShotMultipleChoiceSound(
+        SoundType::AntiMatterBombImplosion,
+        100.0f);
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////
 
-void SoundController::PlayMSUSound(
+void SoundController::PlayMSUOneShotMultipleChoiceSound(
     SoundType soundType,
     Material const * material,
     unsigned int size,
@@ -724,35 +758,34 @@ void SoundController::PlayMSUSound(
     // Find vector
     //
     
-    auto it = mMSUSoundBuffers.find(std::make_tuple(soundType, material->Sound->ElementType, sizeType, isUnderwater));
-
-    if (it == mMSUSoundBuffers.end())
+    auto it = mMSUOneShotMultipleChoiceSounds.find(std::make_tuple(soundType, material->Sound->ElementType, sizeType, isUnderwater));
+    if (it == mMSUOneShotMultipleChoiceSounds.end())
     {
         // Find a smaller one
         for (int s = static_cast<int>(sizeType) - 1; s >= static_cast<int>(SizeType::Min); --s)
         {
-            it = mMSUSoundBuffers.find(std::make_tuple(soundType, material->Sound->ElementType, static_cast<SizeType>(s), isUnderwater));
-            if (it != mMSUSoundBuffers.end())
+            it = mMSUOneShotMultipleChoiceSounds.find(std::make_tuple(soundType, material->Sound->ElementType, static_cast<SizeType>(s), isUnderwater));
+            if (it != mMSUOneShotMultipleChoiceSounds.end())
             {
                 break;
             }
         }
     }
 
-    if (it == mMSUSoundBuffers.end())
+    if (it == mMSUOneShotMultipleChoiceSounds.end())
     {
         // Find this or smaller size with different underwater
         for (int s = static_cast<int>(sizeType); s >= static_cast<int>(SizeType::Min); --s)
         {
-            it = mMSUSoundBuffers.find(std::make_tuple(soundType, material->Sound->ElementType, static_cast<SizeType>(s), !isUnderwater));
-            if (it != mMSUSoundBuffers.end())
+            it = mMSUOneShotMultipleChoiceSounds.find(std::make_tuple(soundType, material->Sound->ElementType, static_cast<SizeType>(s), !isUnderwater));
+            if (it != mMSUOneShotMultipleChoiceSounds.end())
             {
                 break;
             }
         }
     }
 
-    if (it == mMSUSoundBuffers.end())
+    if (it == mMSUOneShotMultipleChoiceSounds.end())
     {
         // No luck
         return;
@@ -763,13 +796,13 @@ void SoundController::PlayMSUSound(
     // Play sound
     //
 
-    ChooseAndPlaySound(
+    ChooseAndPlayOneShotMultipleChoiceSound(
         soundType,
         it->second,
         volume);
 }
 
-void SoundController::PlayDslUSound(
+void SoundController::PlayDslUOneShotMultipleChoiceSound(
     SoundType soundType,
     DurationShortLongType duration,
     bool isUnderwater,
@@ -787,8 +820,8 @@ void SoundController::PlayDslUSound(
     // Find vector
     //
 
-    auto it = mDslUSoundBuffers.find(std::make_tuple(soundType, duration, isUnderwater));
-    if (it == mDslUSoundBuffers.end())
+    auto it = mDslUOneShotMultipleChoiceSounds.find(std::make_tuple(soundType, duration, isUnderwater));
+    if (it == mDslUOneShotMultipleChoiceSounds.end())
     {
         // No luck
         return;
@@ -799,13 +832,13 @@ void SoundController::PlayDslUSound(
     // Play sound
     //
 
-    ChooseAndPlaySound(
+    ChooseAndPlayOneShotMultipleChoiceSound(
         soundType,
         it->second,
         volume);
 }
 
-void SoundController::PlayUSound(
+void SoundController::PlayUOneShotMultipleChoiceSound(
     SoundType soundType,
     bool isUnderwater,
     float volume)
@@ -820,14 +853,14 @@ void SoundController::PlayUSound(
     // Find vector
     //
 
-    auto it = mUSoundBuffers.find(std::make_tuple(soundType, isUnderwater));
-    if (it == mUSoundBuffers.end())
+    auto it = mUOneShotMultipleChoiceSounds.find(std::make_tuple(soundType, isUnderwater));
+    if (it == mUOneShotMultipleChoiceSounds.end())
     {
         // Find different underwater
-        it = mUSoundBuffers.find(std::make_tuple(soundType, !isUnderwater));
+        it = mUOneShotMultipleChoiceSounds.find(std::make_tuple(soundType, !isUnderwater));
     }
 
-    if (it == mUSoundBuffers.end())
+    if (it == mUOneShotMultipleChoiceSounds.end())
     {
         // No luck
         return;
@@ -838,13 +871,13 @@ void SoundController::PlayUSound(
     // Play sound
     //
 
-    ChooseAndPlaySound(
+    ChooseAndPlayOneShotMultipleChoiceSound(
         soundType,
         it->second,
         volume);
 }
 
-void SoundController::PlaySound(
+void SoundController::PlayOneShotMultipleChoiceSound(
     SoundType soundType,
     float volume)
 {
@@ -856,8 +889,8 @@ void SoundController::PlaySound(
     // Find vector
     //
 
-    auto it = mSoundBuffers.find(std::make_tuple(soundType));
-    if (it == mSoundBuffers.end())
+    auto it = mOneShotMultipleChoiceSounds.find(std::make_tuple(soundType));
+    if (it == mOneShotMultipleChoiceSounds.end())
     {
         // No luck
         return;
@@ -868,15 +901,15 @@ void SoundController::PlaySound(
     // Play sound
     //
 
-    ChooseAndPlaySound(
+    ChooseAndPlayOneShotMultipleChoiceSound(
         soundType,
         it->second,
         volume);
 }
 
-void SoundController::ChooseAndPlaySound(
+void SoundController::ChooseAndPlayOneShotMultipleChoiceSound(
     SoundType soundType,
-    MultipleSoundChoiceInfo & multipleSoundChoiceInfo,
+    OneShotMultipleChoiceSound & sound,
     float volume)
 {
     //
@@ -885,35 +918,35 @@ void SoundController::ChooseAndPlaySound(
 
     sf::SoundBuffer * chosenSoundBuffer = nullptr;
 
-    assert(!multipleSoundChoiceInfo.SoundBuffers.empty());
-    if (1 == multipleSoundChoiceInfo.SoundBuffers.size())
+    assert(!sound.SoundBuffers.empty());
+    if (1 == sound.SoundBuffers.size())
     {
         // Nothing to choose
-        chosenSoundBuffer = multipleSoundChoiceInfo.SoundBuffers[0].get();
+        chosenSoundBuffer = sound.SoundBuffers[0].get();
     }
     else
     {
-        assert(multipleSoundChoiceInfo.SoundBuffers.size() >= 2);
+        assert(sound.SoundBuffers.size() >= 2);
 
         // Choose randomly, but avoid choosing the last-chosen sound again
         size_t chosenSoundIndex = GameRandomEngine::GetInstance().ChooseNew(
-            multipleSoundChoiceInfo.SoundBuffers.size(),
-            multipleSoundChoiceInfo.LastPlayedSoundIndex);
+            sound.SoundBuffers.size(),
+            sound.LastPlayedSoundIndex);
 
-        chosenSoundBuffer = multipleSoundChoiceInfo.SoundBuffers[chosenSoundIndex].get();
+        chosenSoundBuffer = sound.SoundBuffers[chosenSoundIndex].get();
 
-        multipleSoundChoiceInfo.LastPlayedSoundIndex = chosenSoundIndex;
+        sound.LastPlayedSoundIndex = chosenSoundIndex;
     }
 
     assert(nullptr != chosenSoundBuffer);
 
-    PlaySound(
+    PlayOneShotSound(
         soundType,
         chosenSoundBuffer,        
         volume);
 }
 
-void SoundController::PlaySound(
+void SoundController::PlayOneShotSound(
     SoundType soundType,
     sf::SoundBuffer * soundBuffer,    
     float volume)
@@ -928,7 +961,7 @@ void SoundController::PlaySound(
 
     auto const now = std::chrono::steady_clock::now();
 
-    for (auto const & currentlyPlayingSound : mCurrentlyPlayingSounds)
+    for (auto const & currentlyPlayingSound : mCurrentlyPlayingOneShotSounds)
     {
         assert(!!currentlyPlayingSound.Sound);
         if (currentlyPlayingSound.Sound->getBuffer() == soundBuffer
@@ -948,18 +981,18 @@ void SoundController::PlaySound(
     // Make sure there's room for this sound
     //
 
-    if (mCurrentlyPlayingSounds.size() >= MaxPlayingSounds)
+    if (mCurrentlyPlayingOneShotSounds.size() >= MaxPlayingSounds)
     {
         ScavengeStoppedSounds();
 
-        if (mCurrentlyPlayingSounds.size() >= MaxPlayingSounds)
+        if (mCurrentlyPlayingOneShotSounds.size() >= MaxPlayingSounds)
         { 
             // Need to stop sound that's been playing for the longest
             ScavengeOldestSound(soundType);
         }
     }
 
-    assert(mCurrentlyPlayingSounds.size() < MaxPlayingSounds);
+    assert(mCurrentlyPlayingOneShotSounds.size() < MaxPlayingSounds);
 
 
 
@@ -973,7 +1006,7 @@ void SoundController::PlaySound(
     sound->setVolume(volume);
     sound->play();    
 
-    mCurrentlyPlayingSounds.emplace_back(
+    mCurrentlyPlayingOneShotSounds.emplace_back(
         soundType,
         std::move(sound),
         now);
@@ -981,13 +1014,13 @@ void SoundController::PlaySound(
 
 void SoundController::ScavengeStoppedSounds()
 {
-    for (size_t i = 0; i < mCurrentlyPlayingSounds.size(); /*incremented in loop*/)
+    for (size_t i = 0; i < mCurrentlyPlayingOneShotSounds.size(); /*incremented in loop*/)
     {
-        assert(!!mCurrentlyPlayingSounds[i].Sound);
-        if (sf::Sound::Status::Stopped == mCurrentlyPlayingSounds[i].Sound->getStatus())
+        assert(!!mCurrentlyPlayingOneShotSounds[i].Sound);
+        if (sf::Sound::Status::Stopped == mCurrentlyPlayingOneShotSounds[i].Sound->getStatus())
         {
             // Scavenge
-            mCurrentlyPlayingSounds.erase(mCurrentlyPlayingSounds.begin() + i);
+            mCurrentlyPlayingOneShotSounds.erase(mCurrentlyPlayingOneShotSounds.begin() + i);
         }
         else
         {
@@ -1004,19 +1037,19 @@ void SoundController::ScavengeOldestSound(SoundType soundType)
     auto oldestSoundStartTimestamp = std::chrono::steady_clock::time_point::max();
     size_t iOldestSoundForType = std::numeric_limits<size_t>::max();
     auto oldestSoundForTypeStartTimestamp = std::chrono::steady_clock::time_point::max();    
-    for (size_t i = 0; i < mCurrentlyPlayingSounds.size(); ++i)
+    for (size_t i = 0; i < mCurrentlyPlayingOneShotSounds.size(); ++i)
     {
-        if (mCurrentlyPlayingSounds[i].StartedTimestamp < oldestSoundStartTimestamp)
+        if (mCurrentlyPlayingOneShotSounds[i].StartedTimestamp < oldestSoundStartTimestamp)
         {
             iOldestSound = i;
-            oldestSoundStartTimestamp = mCurrentlyPlayingSounds[i].StartedTimestamp;
+            oldestSoundStartTimestamp = mCurrentlyPlayingOneShotSounds[i].StartedTimestamp;
         }
 
-        if (mCurrentlyPlayingSounds[i].StartedTimestamp < oldestSoundForTypeStartTimestamp
-            && mCurrentlyPlayingSounds[i].Type == soundType)
+        if (mCurrentlyPlayingOneShotSounds[i].StartedTimestamp < oldestSoundForTypeStartTimestamp
+            && mCurrentlyPlayingOneShotSounds[i].Type == soundType)
         {
             iOldestSoundForType = i;
-            oldestSoundForTypeStartTimestamp = mCurrentlyPlayingSounds[i].StartedTimestamp;
+            oldestSoundForTypeStartTimestamp = mCurrentlyPlayingOneShotSounds[i].StartedTimestamp;
         }
     }
 
@@ -1031,24 +1064,7 @@ void SoundController::ScavengeOldestSound(SoundType soundType)
         iStop = iOldestSound;
     }
 
-    assert(!!mCurrentlyPlayingSounds[iStop].Sound);
-    mCurrentlyPlayingSounds[iStop].Sound->stop();
-    mCurrentlyPlayingSounds.erase(mCurrentlyPlayingSounds.begin() + iStop);
-}
-
-void SoundController::UpdateContinuousSound(
-    size_t count,
-    SingleContinuousSound & sound)
-{
-    if (count == 0)
-    {
-        // Stop it
-        sound.Stop();
-    }
-    else
-    {
-        float volume = 100.0f * (1.0f - exp(-0.3f * static_cast<float>(count)));
-        sound.SetVolume(volume);
-        sound.Start();        
-    }
+    assert(!!mCurrentlyPlayingOneShotSounds[iStop].Sound);
+    mCurrentlyPlayingOneShotSounds[iStop].Sound->stop();
+    mCurrentlyPlayingOneShotSounds.erase(mCurrentlyPlayingOneShotSounds.begin() + iStop);
 }

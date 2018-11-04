@@ -151,4 +151,21 @@ public:
     {
         // Default-implemented
     }
+
+    virtual void OnAntiMatterBombContained(
+        ObjectId /*bombId*/,
+        bool /*isContained*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnAntiMatterBombPreImploding()
+    {
+        // Default-implemented
+    }
+
+    virtual void OnAntiMatterBombImploding()
+    {
+        // Default-implemented
+    }
 };

@@ -301,11 +301,29 @@ void GameController::ToggleRCBombAt(vec2f const & screenCoordinates)
         mGameParameters);
 }
 
+void GameController::ToggleAntiMatterBombAt(vec2f const & screenCoordinates)
+{
+    vec2f worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+
+    // Apply action
+    assert(!!mWorld);
+    mWorld->ToggleAntiMatterBombAt(
+        worldCoordinates,
+        mGameParameters);
+}
+
 void GameController::DetonateRCBombs()
 {
     // Apply action
     assert(!!mWorld);
     mWorld->DetonateRCBombs();
+}
+
+void GameController::DetonateAntiMatterBombs()
+{
+    // Apply action
+    assert(!!mWorld);
+    mWorld->DetonateAntiMatterBombs();
 }
 
 ElementIndex GameController::GetNearestPointAt(vec2f const & screenCoordinates) const

@@ -211,6 +211,37 @@ public:
         mTimerBombDefusedEvents[std::make_tuple(isUnderwater)] += size;
     }
 
+    virtual void OnAntiMatterBombContained(
+        ObjectId bombId,
+        bool isContained)
+    {
+        // No need to aggregate this one
+        for (auto sink : mSinks)
+        {
+            sink->OnAntiMatterBombContained(
+                bombId,
+                isContained);
+        }
+    }
+
+    virtual void OnAntiMatterBombPreImploding()
+    {
+        // No need to aggregate this one
+        for (auto sink : mSinks)
+        {
+            sink->OnAntiMatterBombPreImploding();
+        }
+    }
+
+    virtual void OnAntiMatterBombImploding()
+    {
+        // No need to aggregate this one
+        for (auto sink : mSinks)
+        {
+            sink->OnAntiMatterBombImploding();
+        }
+    }
+
 public:
 
     /*

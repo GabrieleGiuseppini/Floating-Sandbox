@@ -184,9 +184,23 @@ bool Ship::ToggleRCBombAt(
         gameParameters);
 }
 
+bool Ship::ToggleAntiMatterBombAt(
+    vec2f const & targetPos,
+    GameParameters const & gameParameters)
+{
+    return mBombs.ToggleAntiMatterBombAt(
+        targetPos,
+        gameParameters);
+}
+
 void Ship::DetonateRCBombs()
 {
     mBombs.DetonateRCBombs();
+}
+
+void Ship::DetonateAntiMatterBombs()
+{
+    mBombs.DetonateAntiMatterBombs();
 }
 
 ElementIndex Ship::GetNearestPointIndexAt(

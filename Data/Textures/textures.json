@@ -129,6 +129,42 @@
 },
 
 {
+	"groupName": "AntiMatterBombArmor",
+	"hasOwnAmbientLight": false,
+	"frames":[
+		{	
+			"worldWidth": 12.0,
+			"worldHeight": 12.0,
+			"filename": "am_bomb_armor_\\d+"
+		}
+	]
+},
+
+{
+	"groupName": "AntiMatterBombSphere",
+	"hasOwnAmbientLight": false,
+	"frames":[
+		{	
+			"worldWidth": 6.0,
+			"worldHeight": 6.0,
+			"filename": "am_bomb_sphere_\\d+"
+		}
+	]
+},
+
+{
+	"groupName": "AntiMatterBombSphereCloud",
+	"hasOwnAmbientLight": false,
+	"frames":[
+		{	
+			"worldWidth": 6.0,
+			"worldHeight": 6.0,
+			"filename": "am_bomb_sphere_cloud_\\d+"
+		}
+	]
+},
+
+{
 	"groupName": "Water",
 	"hasOwnAmbientLight": false,
 	"frames":[

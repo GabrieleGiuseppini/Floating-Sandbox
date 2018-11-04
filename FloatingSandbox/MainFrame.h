@@ -60,6 +60,7 @@ private:
     wxMenuItem * mStepMenuItem;
     wxMenu * mToolsMenu;
     wxMenuItem * mRCBombsDetonateMenuItem;
+    wxMenuItem * mAntiMatterBombsDetonateMenuItem;
     wxMenuItem * mShowEventTickerMenuItem;
     wxMenuItem * mShowProbePanelMenuItem;
     wxMenuItem * mShowStatusTextMenuItem;
@@ -128,7 +129,9 @@ private:
     void OnPinMenuItemSelected(wxCommandEvent& event);
     void OnTimerBombMenuItemSelected(wxCommandEvent& event);
     void OnRCBombMenuItemSelected(wxCommandEvent& event);
+    void OnAntiMatterBombMenuItemSelected(wxCommandEvent& event);
     void OnRCBombDetonateMenuItemSelected(wxCommandEvent& event);
+    void OnAntiMatterBombDetonateMenuItemSelected(wxCommandEvent& event);
     void OnOpenSettingsWindowMenuItemSelected(wxCommandEvent& event);
     void OnOpenLogWindowMenuItemSelected(wxCommandEvent& event);
     void OnShowEventTickerMenuItemSelected(wxCommandEvent& event);
@@ -168,6 +171,11 @@ private:
             ++mCurrentRCBombCount;
             mRCBombsDetonateMenuItem->Enable(mCurrentRCBombCount > 0);
         }
+        else if (BombType::AntiMatterBomb == bombType)
+        {
+            ++mCurrentAntiMatterBombCount;
+            mAntiMatterBombsDetonateMenuItem->Enable(mCurrentAntiMatterBombCount > 0);
+        }
     }
 
     virtual void OnBombRemoved(
@@ -180,6 +188,12 @@ private:
             assert(mCurrentRCBombCount > 0u);
             --mCurrentRCBombCount;
             mRCBombsDetonateMenuItem->Enable(mCurrentRCBombCount > 0);
+        }
+        else if (BombType::AntiMatterBomb == bombType)
+        {
+            assert(mCurrentAntiMatterBombCount > 0u);
+            --mCurrentAntiMatterBombCount;
+            mAntiMatterBombsDetonateMenuItem->Enable(mCurrentAntiMatterBombCount > 0);
         }
     }
 
@@ -212,6 +226,7 @@ private:
 
     std::vector<std::string> mCurrentShipNames;
     size_t mCurrentRCBombCount;
+    size_t mCurrentAntiMatterBombCount;
     bool mIsShiftKeyDown;
     bool mIsNextFrameAllowedToStep;
 };

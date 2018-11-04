@@ -150,7 +150,8 @@ void RCBomb::Upload(
                 GetPosition(),
                 1.0,
                 mRotationBaseAxis, 
-                GetRotationOffsetAxis());
+                GetRotationOffsetAxis(),
+                1.0f);
 
             break;
         }
@@ -164,7 +165,8 @@ void RCBomb::Upload(
                 GetPosition(),
                 1.0,
                 mRotationBaseAxis,
-                GetRotationOffsetAxis());
+                GetRotationOffsetAxis(),
+                1.0f);
 
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
@@ -173,7 +175,8 @@ void RCBomb::Upload(
                 GetPosition(),
                 1.0,
                 mRotationBaseAxis,
-                GetRotationOffsetAxis());
+                GetRotationOffsetAxis(),
+                1.0f);
 
             break;
         }
@@ -187,7 +190,8 @@ void RCBomb::Upload(
                 GetPosition(),
                 1.0,
                 mRotationBaseAxis,
-                GetRotationOffsetAxis());
+                GetRotationOffsetAxis(),
+                1.0f);
 
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
@@ -196,7 +200,8 @@ void RCBomb::Upload(
                 GetPosition(),
                 1.0,
                 mRotationBaseAxis,
-                GetRotationOffsetAxis());
+                GetRotationOffsetAxis(),
+                1.0f);
 
             break;
         }
@@ -213,7 +218,8 @@ void RCBomb::Upload(
                 GetPosition(),
                 1.0f + static_cast<float>(mExplodingStepCounter) / static_cast<float>(ExplosionStepsCount),
                 mRotationBaseAxis,
-                GetRotationOffsetAxis());
+                GetRotationOffsetAxis(),
+                1.0f);
 
             break;
         }

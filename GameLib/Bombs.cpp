@@ -97,6 +97,18 @@ void Bombs::DetonateRCBombs()
     }
 }
 
+void Bombs::DetonateAntiMatterBombs()
+{
+    for (auto & bomb : mCurrentBombs)
+    {
+        if (BombType::AntiMatterBomb == bomb->GetType())
+        {
+            AntiMatterBomb * amb = dynamic_cast<AntiMatterBomb *>(bomb.get());
+            amb->Detonate();
+        }
+    }
+}
+
 void Bombs::Upload(
     int shipId,
     Render::RenderContext & renderContext) const

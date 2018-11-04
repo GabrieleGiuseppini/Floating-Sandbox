@@ -76,6 +76,13 @@ ToolController::ToolController(
             soundController,
             resourceLoader));
 
+    mAllTools.emplace_back(
+        std::make_unique<AntiMatterBombTool>(
+            parentFrame,
+            gameController,
+            soundController,
+            resourceLoader));
+
     // Prepare own cursor(s)
     mMoveCursor = MakeCursor("move_cursor", 15, 15, resourceLoader);
 

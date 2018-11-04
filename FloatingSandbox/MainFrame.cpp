@@ -45,7 +45,9 @@ const long ID_SWIRL_MENUITEM = wxNewId();
 const long ID_PIN_MENUITEM = wxNewId();
 const long ID_TIMERBOMB_MENUITEM = wxNewId();
 const long ID_RCBOMB_MENUITEM = wxNewId();
+const long ID_ANTIMATTERBOMB_MENUITEM = wxNewId();
 const long ID_RCBOMBDETONATE_MENUITEM = wxNewId();
+const long ID_ANTIMATTERBOMBDETONATE_MENUITEM = wxNewId();
 
 const long ID_OPEN_SETTINGS_WINDOW_MENUITEM = wxNewId();
 const long ID_OPEN_LOG_WINDOW_MENUITEM = wxNewId();
@@ -76,6 +78,7 @@ MainFrame::MainFrame(wxApp * mainApp)
     , mToolController()
     , mCurrentShipNames()
     , mCurrentRCBombCount(0u)
+    , mCurrentAntiMatterBombCount(0u)
     , mIsShiftKeyDown(false)
     , mIsNextFrameAllowedToStep(false)
 {
@@ -238,13 +241,22 @@ MainFrame::MainFrame(wxApp * mainApp)
     mToolsMenu->Append(rcBombMenuItem);
     Connect(ID_RCBOMB_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnRCBombMenuItemSelected);
 
+    wxMenuItem * antiMatterBombMenuItem = new wxMenuItem(mToolsMenu, ID_ANTIMATTERBOMB_MENUITEM, _("Toggle Anti-Matter Bomb\tA"), wxEmptyString, wxITEM_RADIO);
+    mToolsMenu->Append(antiMatterBombMenuItem);
+    Connect(ID_ANTIMATTERBOMB_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAntiMatterBombMenuItemSelected);
+
     mToolsMenu->Append(new wxMenuItem(mToolsMenu, wxID_SEPARATOR));
 
     mRCBombsDetonateMenuItem = new wxMenuItem(mToolsMenu, ID_RCBOMBDETONATE_MENUITEM, _("Detonate RC Bombs\tD"), wxEmptyString, wxITEM_NORMAL);
     mToolsMenu->Append(mRCBombsDetonateMenuItem);
     Connect(ID_RCBOMBDETONATE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnRCBombDetonateMenuItemSelected);
     mRCBombsDetonateMenuItem->Enable(false);
-    
+
+    mAntiMatterBombsDetonateMenuItem = new wxMenuItem(mToolsMenu, ID_ANTIMATTERBOMBDETONATE_MENUITEM, _("Detonate Anti-Matter Bombs\tM"), wxEmptyString, wxITEM_NORMAL);
+    mToolsMenu->Append(mAntiMatterBombsDetonateMenuItem);
+    Connect(ID_ANTIMATTERBOMBDETONATE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAntiMatterBombDetonateMenuItemSelected);
+    mAntiMatterBombsDetonateMenuItem->Enable(false);
+
     mainMenuBar->Append(mToolsMenu, _("Tools"));
 
     
@@ -867,10 +879,22 @@ void MainFrame::OnRCBombMenuItemSelected(wxCommandEvent & /*event*/)
     mToolController->SetTool(ToolType::RCBomb);
 }
 
+void MainFrame::OnAntiMatterBombMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mToolController);
+    mToolController->SetTool(ToolType::AntiMatterBomb);
+}
+
 void MainFrame::OnRCBombDetonateMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mGameController);
     mGameController->DetonateRCBombs();
+}
+
+void MainFrame::OnAntiMatterBombDetonateMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mGameController);
+    mGameController->DetonateAntiMatterBombs();
 }
 
 void MainFrame::OnOpenSettingsWindowMenuItemSelected(wxCommandEvent & /*event*/)
@@ -986,6 +1010,7 @@ void MainFrame::ResetState()
     mSoundController->Reset();
 
     mRCBombsDetonateMenuItem->Enable(false);
+    mAntiMatterBombsDetonateMenuItem->Enable(false);
 }
 
 void MainFrame::UpdateFrameTitle()

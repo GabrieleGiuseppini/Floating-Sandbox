@@ -54,6 +54,8 @@ set  (GEOMETRY_SOURCES
 	Segment.h)
 
 set  (PHYSICS_SOURCES
+	AntiMatterBomb.h
+	AntiMatterBomb.cpp
 	Bomb.h
 	Bombs.cpp
 	Bombs.h

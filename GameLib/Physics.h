@@ -33,8 +33,9 @@ namespace Physics
 #include "Cloud.h"
 
 #include "Bomb.h"
-#include "TimerBomb.h"
+#include "AntiMatterBomb.h"
 #include "RCBomb.h"
+#include "TimerBomb.h"
 #include "Bombs.h"
 
 #include "PinnedPoints.h"

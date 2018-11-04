@@ -264,19 +264,22 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 				- Or another way
 			- Plan:
 				- Media:
-					- Sound: continuous (3 choir tones)
-					- Sound: implosion_one (FM)
-					- Sound: implosion_two (whirring, up)
+					+ Sound: continuous (3 choir tones)
+					+ Sound: implosion_one (FM)
+					+ Sound: implosion_two (whirring, up)
 					- Sound: explosion (choir or TODO)
-					- Texture: armor (TODO)
-					- Texture: ball, empty
-					- Texture: ball, cloud content
-				- Texture DB:
-					- Textures.js
-					- New groups in enum
-				- Sound controller:
-					- New additive continuous sound (like fuse) with random choices and volumes for each
-					- TODOHERE
+					= Texture: armor (TODO)
+					+ Texture: ball, empty
+					+ Texture: ball, cloud content
+					= Cursor
+				+ Texture DB:
+					+ Textures.js
+					+ New groups in enum
+				= Sound controller:
+					= New additive continuous sound (like fuse) with random choices and volumes for each
+					= Others
+
+				- Cleanup:
 
 	- Ephemeral Particles:
 		- Summary:

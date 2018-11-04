@@ -362,3 +362,21 @@ RCBombTool::RCBombTool(
     , mCursor(MakeCursor("rc_bomb_cursor", 16, 21, resourceLoader))
 {
 }
+
+////////////////////////////////////////////////////////////////////////
+// AntiMatterBomb
+////////////////////////////////////////////////////////////////////////
+
+AntiMatterBombTool::AntiMatterBombTool(
+    wxFrame * parentFrame,
+    std::shared_ptr<GameController> gameController,
+    std::shared_ptr<SoundController> soundController,
+    ResourceLoader & resourceLoader)
+    : OneShotTool(
+        ToolType::AntiMatterBomb,
+        parentFrame,
+        std::move(gameController),
+        std::move(soundController))
+    , mCursor(MakeCursor("am_bomb_cursor", 16, 21, resourceLoader))
+{
+}

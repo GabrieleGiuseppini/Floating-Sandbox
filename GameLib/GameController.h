@@ -65,7 +65,9 @@ public:
     void TogglePinAt(vec2f const & screenCoordinates);
     void ToggleTimerBombAt(vec2f const & screenCoordinates);
     void ToggleRCBombAt(vec2f const & screenCoordinates);
+    void ToggleAntiMatterBombAt(vec2f const & screenCoordinates);
     void DetonateRCBombs();
+    void DetonateAntiMatterBombs();
     ElementIndex GetNearestPointAt(vec2f const & screenCoordinates) const;
 
     void SetCanvasSize(int width, int height) { mRenderContext->SetCanvasSize(width, height); }

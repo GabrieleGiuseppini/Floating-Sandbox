@@ -199,7 +199,8 @@ public:
             textureFrameId,
             position,
             1.0f,
-            0.0f);
+            0.0f,
+            1.0f);
     }
 
     inline void UploadGenericTextureRenderSpecification(
@@ -208,14 +209,16 @@ public:
         vec2f const & position,
         float scale,
         vec2f const & rotationBase,
-        vec2f const & rotationOffset)
+        vec2f const & rotationOffset,
+        float alpha)
     {
         UploadGenericTextureRenderSpecification(
             connectedComponentId,
             textureFrameId,
             position,
             scale,
-            rotationBase.angle(rotationOffset));
+            rotationBase.angle(rotationOffset),
+            alpha);
     }
 
     inline void UploadGenericTextureRenderSpecification(
@@ -223,7 +226,8 @@ public:
         TextureFrameId const & textureFrameId,
         vec2f const & position,
         float scale,
-        float angle)
+        float angle,
+        float alpha)
     {
         size_t const connectedComponentIndex = connectedComponentId - 1;
         
@@ -257,7 +261,7 @@ public:
             vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesTopRight.y),
             scale,
             angle,
-            1.0f,
+            alpha,
             lightSensitivity);
 
         // Top-Right
@@ -267,7 +271,7 @@ public:
             frame.TextureCoordinatesTopRight,
             scale,
             angle,
-            1.0f,
+            alpha,
             lightSensitivity);
 
         // Bottom-left
@@ -277,7 +281,7 @@ public:
             frame.TextureCoordinatesBottomLeft,
             scale,
             angle,
-            1.0f,
+            alpha,
             lightSensitivity);
 
         // Triangle 2
@@ -289,7 +293,7 @@ public:
             frame.TextureCoordinatesTopRight,
             scale,
             angle,
-            1.0f,
+            alpha,
             lightSensitivity);
 
         // Bottom-left
@@ -299,7 +303,7 @@ public:
             frame.TextureCoordinatesBottomLeft,
             scale,
             angle,
-            1.0f,
+            alpha,
             lightSensitivity);
 
         // Bottom-right
@@ -309,7 +313,7 @@ public:
             vec2f(frame.TextureCoordinatesTopRight.x, frame.TextureCoordinatesBottomLeft.y),
             scale,
             angle,
-            1.0f,
+            alpha,
             lightSensitivity);
 
         // Update max size among all connected components
@@ -407,7 +411,7 @@ struct TextureRenderPolygonVertex
     
     float scale;
     float angle;
-    float transparency;
+    float alpha;
     float ambientLightSensitivity;
 
     TextureRenderPolygonVertex(
@@ -416,14 +420,14 @@ struct TextureRenderPolygonVertex
         vec2f _textureCoordinate,
         float _scale,
         float _angle,
-        float _transparency,
+        float _alpha,
         float _ambientLightSensitivity)
         : centerPosition(_centerPosition)
         , vertexOffset(_vertexOffset)
         , textureCoordinate(_textureCoordinate)
         , scale(_scale)
         , angle(_angle)
-        , transparency(_transparency)
+        , alpha(_alpha)
         , ambientLightSensitivity(_ambientLightSensitivity)
     {}
 };

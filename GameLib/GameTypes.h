@@ -51,7 +51,8 @@ static constexpr VisitSequenceNumber NoneVisitSequenceNumber = 0;
 enum class BombType
 {
     TimerBomb,
-    RCBomb
+    RCBomb,
+    AntiMatterBomb
 };
 
 /*
@@ -96,20 +97,25 @@ enum class VectorFieldRenderMode
  */
 enum class TextureGroupType : uint16_t
 {
-    Cloud = 0,
-    Land = 1,
-    PinnedPoint = 2,
-    RcBomb = 3,
-    RcBombExplosion = 4,
-    RcBombPing = 5,
-    TimerBomb = 6,
-    TimerBombDefuse = 7,
-    TimerBombExplosion = 8,
-    TimerBombFuse = 9,
-    Water = 10,
+    AntiMatterBombArmor = 0,
+    AntiMatterBombSphere = 1,
+    AntiMatterBombSphereCloud = 2,
+    Cloud = 3,
+    Land = 4,
+    PinnedPoint = 5,
+    RcBomb = 6,
+    RcBombExplosion = 7,
+    RcBombPing = 8,
+    TimerBomb = 9,
+    TimerBombDefuse = 10,
+    TimerBombExplosion = 11,
+    TimerBombFuse = 12,
+    Water = 13,
 
-    _Count = 11
+    _Count = 14
 };
+
+TextureGroupType StrToTextureGroupType(std::string const & str);
 
 /*
  * The type of an index in a group of textures.

@@ -34,7 +34,7 @@ TimerBomb::TimerBomb(
     , mDefuseStepCounter(0)
     , mDetonationLeadInShapeFrameCounter(0)
 {
-    // Start slow fuse
+    // Notify start slow fuse
     mGameEventHandler->OnTimerBombFuse(
         mId,
         false);
@@ -256,7 +256,8 @@ void TimerBomb::Upload(
                 GetPosition(),
                 1.0,
                 mRotationBaseAxis,
-                GetRotationOffsetAxis());
+                GetRotationOffsetAxis(),
+                1.0f);
 
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
@@ -265,7 +266,8 @@ void TimerBomb::Upload(
                 GetPosition(),
                 1.0,
                 mRotationBaseAxis,
-                GetRotationOffsetAxis());
+                GetRotationOffsetAxis(),
+                1.0f);
 
             break;
         }
@@ -286,7 +288,8 @@ void TimerBomb::Upload(
                 shakenPosition,
                 1.0,
                 mRotationBaseAxis,
-                GetRotationOffsetAxis());
+                GetRotationOffsetAxis(),
+                1.0f);
 
             break;
         }
@@ -302,7 +305,8 @@ void TimerBomb::Upload(
                 GetPosition(),
                 1.0f + static_cast<float>(mExplodingStepCounter + 1) / static_cast<float>(ExplosionStepsCount),
                 mRotationBaseAxis,
-                GetRotationOffsetAxis());
+                GetRotationOffsetAxis(),
+                1.0f);
 
             break;
         }
@@ -316,7 +320,8 @@ void TimerBomb::Upload(
                 GetPosition(),
                 1.0f,
                 mRotationBaseAxis,
-                GetRotationOffsetAxis());
+                GetRotationOffsetAxis(),
+                1.0f);
 
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
@@ -325,7 +330,8 @@ void TimerBomb::Upload(
                 GetPosition(),
                 1.0f,
                 mRotationBaseAxis,
-                GetRotationOffsetAxis());
+                GetRotationOffsetAxis(),
+                1.0f);
 
             break;
         }
@@ -339,7 +345,8 @@ void TimerBomb::Upload(
                 GetPosition(),
                 1.0f,
                 mRotationBaseAxis, 
-                GetRotationOffsetAxis());
+                GetRotationOffsetAxis(),
+                1.0f);
 
             break;
         }
