@@ -30,13 +30,19 @@ public:
         ElementIndex springIndex,
         World & parentWorld,
         std::shared_ptr<IGameEventHandler> gameEventHandler,
-        BlastHandler blastHandler,
+        IPhysicsHandler & physicsHandler,
         Points & shipPoints,
         Springs & shipSprings);
 
     virtual bool Update(
         GameWallClock::time_point now,
         GameParameters const & gameParameters) override;
+
+    virtual bool MayBeRemoved() const override
+    {
+        // We can always be removed
+        return true;
+    }
 
     virtual void OnBombRemoved() override
     {

@@ -14,7 +14,7 @@ AntiMatterBomb::AntiMatterBomb(
     ElementIndex springIndex,
     World & parentWorld,
     std::shared_ptr<IGameEventHandler> gameEventHandler,
-    BlastHandler blastHandler,
+    IPhysicsHandler & physicsHandler,
     Points & shipPoints,
     Springs & shipSprings)
     : Bomb(
@@ -23,7 +23,7 @@ AntiMatterBomb::AntiMatterBomb(
         springIndex,
         parentWorld,
         std::move(gameEventHandler),
-        blastHandler,
+        physicsHandler,
         shipPoints,
         shipSprings)
     , mState(State::Contained_1)
@@ -119,6 +119,7 @@ bool AntiMatterBomb::Update(
 
                 // Notify explosion
                 mGameEventHandler->OnBombExplosion(
+                    BombType::AntiMatterBomb,
                     mParentWorld.IsUnderwater(GetPosition()),
                     1);
 

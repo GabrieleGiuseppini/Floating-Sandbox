@@ -27,13 +27,19 @@ public:
         ElementIndex springIndex,
         World & parentWorld,
         std::shared_ptr<IGameEventHandler> gameEventHandler,
-        BlastHandler blastHandler,
+        IPhysicsHandler & physicsHandler,
         Points & shipPoints,
         Springs & shipSprings);
 
     virtual bool Update(
         GameWallClock::time_point now,
         GameParameters const & gameParameters) override;
+
+    virtual bool MayBeRemoved() const override
+    {
+        // We may only be removed if we're in the Contained state
+        return (State::Contained_1 == mState);
+    }
 
     virtual void OnBombRemoved() override
     {
@@ -44,7 +50,7 @@ public:
         }
 
         // TODO: no removal if not in Contained
-        // i.e.: TODO: do not allow removal of bombs when bombs say so - CanBeRemove()->bool
+        // i.e.: TODO: do not allow removal of bombs when bombs say so - CanBeRemoved()->bool
 
         // Notify removal
         mGameEventHandler->OnBombRemoved(

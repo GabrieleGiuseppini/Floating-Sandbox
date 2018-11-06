@@ -190,6 +190,9 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 	- Cache sea depth from PointDynamics at first calculation (Points?), using lambda
 
 - Gfx optimizations:
+	- See if can use multiple texture units
+		- Bind once atlas, land, and water at cctor, to each unit
+		- Change shaders
 	- See if can unify springs and ropes rendering
 		- Just make sure that ropecolor is already in point color buffer
 		- RenderSprings + RenderRopes == new RenderSprings:
@@ -257,8 +260,10 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 			+ [Do after texture json]
 			- When it explodes: first sucks everything in, then evertyhing out
 				- Controllable also via ultra-violent mode
-				- Uses "OneShotForce" (rename of "ToolForces": applied at each iteration of UpdateMechanicalDynamics and then cleared)
+				- Uses "ForceFields" (rename of "ToolForces": applied at each iteration of UpdateMechanicalDynamics and then cleared)
 				  for suck-in
+					- ForceFields.cpp/h
+					- Move swirl, grab, bomb explosion to this one
 			- Requires ExplosionType argument at Ship::BlastHandler, or new BlastHandler altogether
 				- Or see if easy to move BombBlaster inside bomb (i.e. explosion code is in bomb's state machine)
 				- Or another way
@@ -267,8 +272,11 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 					+ Sound: continuous (3 choir tones)
 					+ Sound: implosion_one (FM)
 					+ Sound: implosion_two (whirring, up)
-					- Sound: explosion (choir or TODO)
-					= Texture: armor (TODO)
+					= Sound: explosion
+						+ Choir with delayed repetitions
+						+ First choir is mixed with electronic thud
+					= Texture: armor
+						+ Diagonal arms as well?
 					+ Texture: ball, empty
 					+ Texture: ball, cloud content
 					= Cursor
@@ -278,14 +286,16 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 				= Sound controller:
 					+ New additive continuous sound (like fuse) with random choices and volumes for each
 					= Others
-				- Bomb::IPhysicsHandler
-					- Implemented by Ship
-					- Passed to Bombs and stored as GameEventHandler (i.e. *)
+				= Bomb::IPhysicsHandler
+					= Implemented by Ship
+					+ Passed to Bombs and stored as GameEventHandler (i.e. *)
+					+ Test 2 old bombs
 
 				- Misc:
-					- Prevent removal if not in containment (i.e. if detonated already)
-						- Bomb::MayBeRemoved()
-						- Test with all 3
+					+ Test fuse's (slow and fast) sounds for new ContinuousSound architecture
+					+ Prevent removal if not in containment (i.e. if detonated already)
+						+ Bomb::MayBeRemoved()
+						+ Test with all 3
 
 				- Cleanup:
 

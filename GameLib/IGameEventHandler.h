@@ -125,6 +125,7 @@ public:
     }
 
     virtual void OnBombExplosion(
+        BombType /*bombType*/,
         bool /*isUnderwater*/,
         unsigned int /*size*/)
     {

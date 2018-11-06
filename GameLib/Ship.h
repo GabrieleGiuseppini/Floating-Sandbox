@@ -20,7 +20,8 @@
 namespace Physics
 {
 
-class Ship
+class Ship 
+    : public Bomb::IPhysicsHandler
 {
 public:
 
@@ -161,13 +162,6 @@ private:
         ElementIndex pointAElementIndex,
         ElementIndex pointBElementIndex);
 
-    void BombBlastHandler(
-        vec2f const & blastPosition,
-        ConnectedComponentId connectedComponentId,
-        int blastSequenceNumber,
-        int blastSequenceCount,
-        GameParameters const & gameParameters);
-
     void PointDestroyHandler(ElementIndex pointElementIndex);
 
     void SpringDestroyHandler(
@@ -177,6 +171,33 @@ private:
     void TriangleDestroyHandler(ElementIndex triangleElementIndex);
 
     void ElectricalElementDestroyHandler(ElementIndex electricalElementIndex);
+
+private:
+
+    /////////////////////////////////////////////////////////////////////////
+    // Bomb::IPhysicsHandler
+    /////////////////////////////////////////////////////////////////////////
+
+    virtual void DoBombExplosion(
+        vec2f const & blastPosition,
+        ConnectedComponentId connectedComponentId,
+        float sequenceProgress,
+        GameParameters const & gameParameters) override;
+
+    virtual void DoAntiMatterBombPreimplosion(
+        vec2f const & centerPosition,
+        float sequenceProgress,
+        GameParameters const & gameParameters) override;
+
+    virtual void DoAntiMatterBombImplosion(
+        vec2f const & centerPosition,
+        float sequenceProgress,
+        GameParameters const & gameParameters) override;
+
+    virtual void DoAntiMatterBombExplosion(
+        vec2f const & centerPosition,
+        float sequenceProgress,
+        GameParameters const & gameParameters) override;
 
 private:
 

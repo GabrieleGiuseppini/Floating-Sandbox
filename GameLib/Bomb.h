@@ -29,12 +29,32 @@ class Bomb
 {
 public:
 
-    using BlastHandler = std::function<void(
-        vec2f const & blastPosition,
-        ConnectedComponentId connectedComponentId, 
-        int blastSequenceNumber,
-        int blastSequenceCount,
-        GameParameters const & gameParameters)>;
+    /*
+     * Interface required by bombs for acting on the physical world.
+     */
+    struct IPhysicsHandler
+    {
+        virtual void DoBombExplosion(
+            vec2f const & blastPosition,
+            ConnectedComponentId connectedComponentId,
+            float sequenceProgress,
+            GameParameters const & gameParameters) = 0;
+
+        virtual void DoAntiMatterBombPreimplosion(
+            vec2f const & centerPosition,
+            float sequenceProgress,
+            GameParameters const & gameParameters) = 0;
+
+        virtual void DoAntiMatterBombImplosion(
+            vec2f const & centerPosition,
+            float sequenceProgress,
+            GameParameters const & gameParameters) = 0;
+
+        virtual void DoAntiMatterBombExplosion(
+            vec2f const & centerPosition,
+            float sequenceProgress,
+            GameParameters const & gameParameters) = 0;
+    };
 
 public:
 
@@ -46,6 +66,11 @@ public:
     virtual bool Update(
         GameWallClock::time_point now,
         GameParameters const & gameParameters) = 0;
+
+    /*
+     * Checks whether the bomb is in a state that allows it to be removed.
+     */
+    virtual bool MayBeRemoved() const = 0;
 
     /*
      * Invoked when the bomb is removed by the user.
@@ -190,13 +215,13 @@ protected:
         ElementIndex springIndex,
         World & parentWorld,
         std::shared_ptr<IGameEventHandler> gameEventHandler,
-        BlastHandler blastHandler,
+        IPhysicsHandler & physicsHandler,
         Points & shipPoints,
         Springs & shipSprings)
         : mId(id)
         , mParentWorld(parentWorld)
         , mGameEventHandler(std::move(gameEventHandler))
-        , mBlastHandler(blastHandler)
+        , mPhysicsHandler(physicsHandler)
         , mShipPoints(shipPoints)
         , mShipSprings(shipSprings)
         , mRotationBaseAxis(shipPoints.GetPosition(shipSprings.GetPointBIndex(springIndex)) - shipPoints.GetPosition(shipSprings.GetPointAIndex(springIndex)))
@@ -217,8 +242,8 @@ protected:
     // The game event handler
     std::shared_ptr<IGameEventHandler> mGameEventHandler;
 
-    // The handler to invoke for each explosion
-    BlastHandler mBlastHandler;
+    // The handler to invoke for acting on the world
+    IPhysicsHandler & mPhysicsHandler;
 
     // The container of all the ship's points
     Points & mShipPoints;

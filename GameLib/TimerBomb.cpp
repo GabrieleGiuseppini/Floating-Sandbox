@@ -14,7 +14,7 @@ TimerBomb::TimerBomb(
     ElementIndex springIndex,
     World & parentWorld,
     std::shared_ptr<IGameEventHandler> gameEventHandler,
-    BlastHandler blastHandler,
+    IPhysicsHandler & physicsHandler,
     Points & shipPoints,
     Springs & shipSprings)
     : Bomb(
@@ -23,7 +23,7 @@ TimerBomb::TimerBomb(
         springIndex,
         parentWorld,
         std::move(gameEventHandler),
-        blastHandler,
+        physicsHandler,
         shipPoints,
         shipSprings)
     , mState(State::SlowFuseBurning)
@@ -113,20 +113,22 @@ bool TimerBomb::Update(
 
                 mState = State::Exploding;
 
+                assert(0 == mExplodingStepCounter);
+
                 // Detach self (or else explosion will move along with ship performing
                 // its blast)
                 DetachIfAttached();
 
-                // Invoke blast handler
-                mBlastHandler(
+                // Invoke explosion handler
+                mPhysicsHandler.DoBombExplosion(
                     GetPosition(),
                     GetConnectedComponentId(),
-                    mExplodingStepCounter,
-                    ExplosionStepsCount,
+                    static_cast<float>(mExplodingStepCounter) / static_cast<float>(ExplosionStepsCount - 1),
                     gameParameters);
 
                 // Notify explosion
                 mGameEventHandler->OnBombExplosion(
+                    BombType::TimerBomb,
                     mParentWorld.IsUnderwater(GetPosition()),
                     1);
 
@@ -158,12 +160,11 @@ bool TimerBomb::Update(
                 {
                     ++mExplodingStepCounter;
 
-                    // Invoke blast handler
-                    mBlastHandler(
+                    // Invoke explosion handler
+                    mPhysicsHandler.DoBombExplosion(
                         GetPosition(),
                         GetConnectedComponentId(),
-                        mExplodingStepCounter,
-                        ExplosionStepsCount,
+                        static_cast<float>(mExplodingStepCounter) / static_cast<float>(ExplosionStepsCount - 1),
                         gameParameters);
 
                     // Schedule next transition

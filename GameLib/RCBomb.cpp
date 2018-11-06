@@ -14,7 +14,7 @@ RCBomb::RCBomb(
     ElementIndex springIndex,
     World & parentWorld,
     std::shared_ptr<IGameEventHandler> gameEventHandler,
-    BlastHandler blastHandler,
+    IPhysicsHandler & physicsHandler,
     Points & shipPoints,
     Springs & shipSprings)
     : Bomb(
@@ -23,7 +23,7 @@ RCBomb::RCBomb(
         springIndex,
         parentWorld,
         std::move(gameEventHandler),
-        blastHandler,
+        physicsHandler,
         shipPoints,
         shipSprings)
     , mState(State::IdlePingOff)
@@ -98,6 +98,7 @@ bool RCBomb::Update(
 
                 // Notify explosion
                 mGameEventHandler->OnBombExplosion(
+                    BombType::RCBomb,
                     mParentWorld.IsUnderwater(GetPosition()),
                     1);
             }
@@ -208,13 +209,13 @@ void RCBomb::Upload(
 
         case State::Exploding:
         {
-            assert(mExplodingStepCounter >= 1);
-            assert(mExplodingStepCounter <= ExplosionStepsCount);
+            assert(mExplodingStepCounter >= 0);
+            assert(mExplodingStepCounter < ExplosionStepsCount);
 
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetConnectedComponentId(),
-                TextureFrameId(TextureGroupType::RcBombExplosion, mExplodingStepCounter - 1),
+                TextureFrameId(TextureGroupType::RcBombExplosion, mExplodingStepCounter),
                 GetPosition(),
                 1.0f + static_cast<float>(mExplodingStepCounter) / static_cast<float>(ExplosionStepsCount),
                 mRotationBaseAxis,

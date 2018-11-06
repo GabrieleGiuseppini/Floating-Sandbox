@@ -162,6 +162,7 @@ void EventTickerPanel::OnBombRemoved(
 }
 
 void EventTickerPanel::OnBombExplosion(
+    BombType /*bombType*/,
     bool /*isUnderwater*/,
     unsigned int size)
 {

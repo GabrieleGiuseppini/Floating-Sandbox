@@ -619,15 +619,18 @@ void SoundController::OnBombRemoved(
 }
 
 void SoundController::OnBombExplosion(
+    BombType bombType,
     bool isUnderwater,
     unsigned int size)
 {
     PlayUOneShotMultipleChoiceSound(
-        SoundType::Explosion, 
+        BombType::AntiMatterBomb == bombType
+            ? SoundType::AntiMatterBombExplosion
+            : SoundType::BombExplosion,
         isUnderwater,
         std::max(
             100.0f,
-            30.0f * size));
+            50.0f * size));
 }
 
 void SoundController::OnRCBombPing(

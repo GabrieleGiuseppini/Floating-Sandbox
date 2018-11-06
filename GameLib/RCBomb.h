@@ -27,13 +27,19 @@ public:
         ElementIndex springIndex,
         World & parentWorld,
         std::shared_ptr<IGameEventHandler> gameEventHandler,
-        BlastHandler blastHandler,
+        IPhysicsHandler & physicsHandler,
         Points & shipPoints,
         Springs & shipSprings);
 
     virtual bool Update(
         GameWallClock::time_point now,
         GameParameters const & gameParameters) override;
+
+    virtual bool MayBeRemoved() const override
+    {
+        // We can always be removed
+        return true;
+    }
 
     virtual void OnBombRemoved() override
     {
@@ -113,25 +119,25 @@ private:
     {
         mState = State::Exploding;        
 
-        assert(mExplodingStepCounter <= ExplosionStepsCount);
+        assert(mExplodingStepCounter < ExplosionStepsCount);
 
         // Check whether we're done        
-        if (mExplodingStepCounter == ExplosionStepsCount)
+        if (mExplodingStepCounter == ExplosionStepsCount - 1)
         {
             // Transition to expired
             mState = State::Expired;
         }
         else
-        {
-            ++mExplodingStepCounter;
-
+        {            
             // Invoke blast handler
-            mBlastHandler(
+            mPhysicsHandler.DoBombExplosion(
                 GetPosition(),
                 GetConnectedComponentId(),
-                mExplodingStepCounter - 1,
-                ExplosionStepsCount,
+                static_cast<float>(mExplodingStepCounter) / static_cast<float>(ExplosionStepsCount - 1),
                 gameParameters);
+
+            // Increment counter
+            ++mExplodingStepCounter;
 
             // Schedule next transition
             mNextStateTransitionTimePoint = now + ExplosionProgressInterval;
@@ -146,10 +152,9 @@ private:
     // The timestamp at which we'll explode while in detonation lead-in
     GameWallClock::time_point mExplosionTimePoint;
 
-    // The counters for the various states; set to one upon
-    // entering the state for the first time. Fine to rollover!
-    uint8_t mPingOnStepCounter;
-    uint8_t mExplodingStepCounter;
+    // The counters for the various states. Fine to rollover!
+    uint8_t mPingOnStepCounter;     // Set to one upon entering
+    uint8_t mExplodingStepCounter;  // Set to zero upon entering
 };
 
 }

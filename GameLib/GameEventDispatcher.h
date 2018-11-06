@@ -178,10 +178,11 @@ public:
     }
 
     virtual void OnBombExplosion(
+        BombType bombType,
         bool isUnderwater,
         unsigned int size) override
     {
-        mBombExplosionEvents[std::make_tuple(isUnderwater)] += size;
+        mBombExplosionEvents[std::make_tuple(bombType, isUnderwater)] += size;
     }
 
     virtual void OnRCBombPing(
@@ -284,7 +285,7 @@ public:
 
             for (auto const & entry : mBombExplosionEvents)
             {
-                sink->OnBombExplosion(std::get<0>(entry.first), entry.second);
+                sink->OnBombExplosion(std::get<0>(entry.first), std::get<1>(entry.first), entry.second);
             }
 
             for (auto const & entry : mRCBombPingEvents)
@@ -324,7 +325,7 @@ private:
     unordered_tuple_map<std::tuple<Material const *, bool>, unsigned int> mBreakEvents;
     std::vector<unsigned int> mSinkingBeginEvents;
     unordered_tuple_map<std::tuple<DurationShortLongType, bool>, unsigned int> mLightFlickerEvents;
-    unordered_tuple_map<std::tuple<bool>, unsigned int> mBombExplosionEvents;
+    unordered_tuple_map<std::tuple<BombType, bool>, unsigned int> mBombExplosionEvents;
     unordered_tuple_map<std::tuple<bool>, unsigned int> mRCBombPingEvents;
     unordered_tuple_map<std::tuple<bool>, unsigned int> mTimerBombDefusedEvents;
 

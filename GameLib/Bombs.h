@@ -33,12 +33,12 @@ public:
     Bombs(
         World & parentWorld,
         std::shared_ptr<IGameEventHandler> gameEventHandler,
-        Bomb::BlastHandler blastHandler,
+        Bomb::IPhysicsHandler & physicsHandler,
         Points & shipPoints,
         Springs & shipSprings)
         : mParentWorld(parentWorld)
         , mGameEventHandler(std::move(gameEventHandler))
-        , mBlastHandler(blastHandler)
+        , mPhysicsHandler(physicsHandler)
         , mShipPoints(shipPoints)
         , mShipSprings(shipSprings)
         , mCurrentBombs()
@@ -101,7 +101,7 @@ private:
 
         //
         // See first if there's a bomb within the search radius, most recent first;
-        // if so we remove it and we're done
+        // if so - and it allows us to remove it - then we remove it and we're done
         //
 
         for (auto it = mCurrentBombs.begin(); it != mCurrentBombs.end(); ++it)
@@ -111,11 +111,15 @@ private:
             {
                 // Found a bomb
 
-                // Tell it we're removing it
-                (*it)->OnBombRemoved();
+                // Check whether it's ok with being removed
+                if ((*it)->MayBeRemoved())
+                {
+                    // Tell it we're removing it
+                    (*it)->OnBombRemoved();
 
-                // Remove from set of bombs - forget about it
-                mCurrentBombs.erase(it);
+                    // Remove from set of bombs - forget about it
+                    mCurrentBombs.erase(it);
+                }
 
                 // We're done
                 return true;
@@ -162,7 +166,7 @@ private:
                     nearestUnarmedSpringIndex,
                     mParentWorld,
                     mGameEventHandler,
-                    mBlastHandler,
+                    mPhysicsHandler,
                     mShipPoints,
                     mShipSprings));
 
@@ -204,8 +208,8 @@ private:
     // The game event handler
     std::shared_ptr<IGameEventHandler> mGameEventHandler;
 
-    // The handler to invoke for each explosion
-    Bomb::BlastHandler const mBlastHandler;
+    // The handler to invoke for acting on the world
+    Bomb::IPhysicsHandler & mPhysicsHandler;
     
     // The container of all the ship's points
     Points & mShipPoints;

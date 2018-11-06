@@ -114,6 +114,7 @@ public:
         std::optional<bool> isUnderwater) override;
 
     virtual void OnBombExplosion(
+        BombType bombType,
         bool isUnderwater,
         unsigned int size) override;
 
@@ -154,6 +155,7 @@ private:
         WaterSplash,
         BombAttached,
         BombDetached,
+        BombExplosion,
         RCBombPing,
         TimerBombSlowFuse,
         TimerBombFastFuse,
@@ -161,7 +163,7 @@ private:
         AntiMatterBombContained,
         AntiMatterBombPreImplosion,
         AntiMatterBombImplosion,
-        Explosion,
+        AntiMatterBombExplosion,        
         Wave
     };
 
@@ -193,6 +195,8 @@ private:
             return SoundType::BombAttached;
         else if (Utils::CaseInsensitiveEquals(str, "BombDetached"))
             return SoundType::BombDetached;
+        else if (Utils::CaseInsensitiveEquals(str, "BombExplosion"))
+            return SoundType::BombExplosion;
         else if (Utils::CaseInsensitiveEquals(str, "RCBombPing"))
             return SoundType::RCBombPing;
         else if (Utils::CaseInsensitiveEquals(str, "TimerBombSlowFuse"))
@@ -207,8 +211,8 @@ private:
             return SoundType::AntiMatterBombPreImplosion;
         else if (Utils::CaseInsensitiveEquals(str, "AntiMatterBombImplosion"))
             return SoundType::AntiMatterBombImplosion;
-        else if (Utils::CaseInsensitiveEquals(str, "Explosion"))
-            return SoundType::Explosion;
+        else if (Utils::CaseInsensitiveEquals(str, "AntiMatterBombExplosion"))
+            return SoundType::AntiMatterBombExplosion;
         else if (Utils::CaseInsensitiveEquals(str, "Wave"))
             return SoundType::Wave;
         else

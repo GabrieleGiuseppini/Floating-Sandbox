@@ -62,6 +62,7 @@ public:
         std::optional<bool> isUnderwater) override;
 
     virtual void OnBombExplosion(
+        BombType bombType,
         bool isUnderwater,
         unsigned int size) override;
 
