@@ -131,9 +131,9 @@ private:
         {            
             // Invoke blast handler
             mPhysicsHandler.DoBombExplosion(
-                GetPosition(),
-                GetConnectedComponentId(),
+                GetPosition(),                
                 static_cast<float>(mExplodingStepCounter) / static_cast<float>(ExplosionStepsCount - 1),
+                GetConnectedComponentId(),
                 gameParameters);
 
             // Increment counter

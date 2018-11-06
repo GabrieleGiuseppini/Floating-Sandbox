@@ -61,7 +61,7 @@ Ship::Ship(
         *this,        
         mPoints,
         mSprings)
-    , mCurrentToolForce(std::nullopt)
+    , mCurrentForceFields()
 {
     // Set destroy handlers
     mPoints.RegisterDestroyHandler(std::bind(&Ship::PointDestroyHandler, this, std::placeholders::_1));
@@ -130,18 +130,22 @@ void Ship::DrawTo(
     vec2f const & targetPos,
     float strength)
 {
-    // Store the force
-    assert(!mCurrentToolForce);
-    mCurrentToolForce.emplace(targetPos, strength, false);
+    // Store the force field
+    mCurrentForceFields.emplace_back(
+        new DrawForceField(
+            targetPos,
+            strength));
 }
 
 void Ship::SwirlAt(
     vec2f const & targetPos,
     float strength)
 {
-    // Store the force
-    assert(!mCurrentToolForce);
-    mCurrentToolForce.emplace(targetPos, strength, true);
+    // Store the force field
+    mCurrentForceFields.emplace_back(
+        new SwirlForceField(
+            targetPos,
+            strength));
 }
 
 bool Ship::TogglePinAt(
@@ -411,17 +415,10 @@ void Ship::UpdateMechanicalDynamics(GameParameters const & gameParameters)
 {
     for (int iter = 0; iter < GameParameters::NumMechanicalDynamicsIterations<int>; ++iter)
     {
-        // Update tool forces, if we have any
-        if (!!mCurrentToolForce)
+        // Apply force fields - if we have any
+        for (auto const & forceField : mCurrentForceFields)
         {
-            if (mCurrentToolForce->IsRadial)
-                UpdateSwirlForces(
-                    mCurrentToolForce->Position,
-                    mCurrentToolForce->Strength);
-            else
-                UpdateDrawForces(
-                    mCurrentToolForce->Position,
-                    mCurrentToolForce->Strength);
+            forceField->Apply(mPoints);
         }
 
         // Update point forces
@@ -430,46 +427,15 @@ void Ship::UpdateMechanicalDynamics(GameParameters const & gameParameters)
         // Update springs forces
         UpdateSpringForces(gameParameters);
 
-        // Integrate
-        IntegratePointForces();
+        // Integrate and reset forces to zero
+        IntegrateAndResetPointForces();
 
         // Handle collisions with sea floor
         HandleCollisionsWithSeaFloor();
     }
 
-    //
-    // Reset tool force
-    //
-
-    mCurrentToolForce.reset();
-}
-
-void Ship::UpdateDrawForces(
-    vec2f const & position,
-    float forceStrength)
-{
-    for (auto pointIndex : mPoints)
-    {
-        // F = ForceStrength/sqrt(distance), along radius
-        vec2f displacement = (position - mPoints.GetPosition(pointIndex));
-        float forceMagnitude = forceStrength / sqrtf(0.1f + displacement.length());
-        mPoints.GetForce(pointIndex) += displacement.normalise() * forceMagnitude;
-    }
-}
-
-void Ship::UpdateSwirlForces(
-    vec2f const & position,
-    float forceStrength)
-{
-    for (auto pointIndex : mPoints)
-    {
-        // F = ForceStrength/sqrt(distance), perpendicular to radius
-        vec2f displacement = (position - mPoints.GetPosition(pointIndex));
-        float const displacementLength = displacement.length();
-        float forceMagnitude = forceStrength / sqrtf(0.1f + displacementLength);
-        displacement.normalise(displacementLength);
-        mPoints.GetForce(pointIndex) += vec2f(-displacement.y, displacement.x) * forceMagnitude;
-    }
+    // Consume force fields
+    mCurrentForceFields.clear();
 }
 
 void Ship::UpdatePointForces(GameParameters const & gameParameters)
@@ -579,7 +545,7 @@ void Ship::UpdateSpringForces(GameParameters const & /*gameParameters*/)
     }
 }
 
-void Ship::IntegratePointForces()
+void Ship::IntegrateAndResetPointForces()
 {
     static constexpr float dt = GameParameters::MechanicalDynamicsSimulationStepTimeDuration<float>;
 
@@ -1473,8 +1439,8 @@ void Ship::ElectricalElementDestroyHandler(ElementIndex /*electricalElementIndex
 
 void Ship::DoBombExplosion(
     vec2f const & blastPosition,
-    ConnectedComponentId connectedComponentId,
     float sequenceProgress,
+    ConnectedComponentId connectedComponentId,
     GameParameters const & gameParameters)
 {
     // 
@@ -1533,7 +1499,15 @@ void Ship::DoAntiMatterBombPreimplosion(
     float sequenceProgress,
     GameParameters const & gameParameters)
 {
-    // TODO
+    // Store the force field
+    mCurrentForceFields.emplace_back(
+        new RadialSpaceWarpForceField(
+            centerPosition,
+            7.0f + sequenceProgress * 100.0f,
+            10.0f,
+            100000.0f));
+
+    // TODO: use game parameters?
 }
 
 void Ship::DoAntiMatterBombImplosion(
@@ -1541,7 +1515,13 @@ void Ship::DoAntiMatterBombImplosion(
     float sequenceProgress,
     GameParameters const & gameParameters)
 {
-    // TODO
+    // Store the force field
+    mCurrentForceFields.emplace_back(
+        new ImplosionForceField(
+            centerPosition,
+            (sequenceProgress * sequenceProgress) * 30000.0f));
+
+    // TODO: use game parameters?
 }
 
 void Ship::DoAntiMatterBombExplosion(

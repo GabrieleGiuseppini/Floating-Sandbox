@@ -122,8 +122,8 @@ bool TimerBomb::Update(
                 // Invoke explosion handler
                 mPhysicsHandler.DoBombExplosion(
                     GetPosition(),
-                    GetConnectedComponentId(),
                     static_cast<float>(mExplodingStepCounter) / static_cast<float>(ExplosionStepsCount - 1),
+                    GetConnectedComponentId(),
                     gameParameters);
 
                 // Notify explosion
@@ -162,9 +162,9 @@ bool TimerBomb::Update(
 
                     // Invoke explosion handler
                     mPhysicsHandler.DoBombExplosion(
-                        GetPosition(),
-                        GetConnectedComponentId(),
+                        GetPosition(),                        
                         static_cast<float>(mExplodingStepCounter) / static_cast<float>(ExplosionStepsCount - 1),
+                        GetConnectedComponentId(),
                         gameParameters);
 
                     // Schedule next transition

@@ -49,9 +49,6 @@ public:
             mGameEventHandler->OnAntiMatterBombContained(mId, false);
         }
 
-        // TODO: no removal if not in Contained
-        // i.e.: TODO: do not allow removal of bombs when bombs say so - CanBeRemoved()->bool
-
         // Notify removal
         mGameEventHandler->OnBombRemoved(
             mId,
@@ -87,15 +84,16 @@ private:
 
         // Once detonated, the bomb goes through these states in sequence
         // before exploding
-        PreImploding_2,
-        Imploding_3,
+        TriggeringPreImploding_2,
+        PreImploding_3,
+        Imploding_4,
 
         // In this state we are exploding, and increment our counter to
-        // match the explosion animation until the animation is over
-        Exploding_4,
+        // match the explosion animation until the animation is over        
+        Exploding_5,
 
         // This is the final state; once this state is reached, we're expired
-        Expired_5
+        Expired_6
     };
 
     static constexpr auto ContainedRevolutionInterval = 1000ms;

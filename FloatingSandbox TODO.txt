@@ -253,7 +253,7 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 		+ Bounce velocity with specular vector
 
 	- Bombs:
-		- Bomb explosions: see if better done with "OneShotForce" (rename of "ToolForces")
+		- Bomb explosions: see if better done with force fields
 			- At each explosion frame: radial forces, centered at center, strongest at radius=f(expl frame)
 
 		- 3rd type of bomb: anti-matter bomb
@@ -279,6 +279,8 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 						+ Diagonal arms as well?
 					+ Texture: ball, empty
 					+ Texture: ball, cloud content
+					- Texture: ball, white (new frame)
+						- Transition slowly to it during pre-implosion
 					= Cursor
 				+ Texture DB:
 					+ Textures.js
@@ -290,14 +292,33 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 					= Implemented by Ship
 					+ Passed to Bombs and stored as GameEventHandler (i.e. *)
 					+ Test 2 old bombs
+					- Create force fields
+				= ForceFields
+					+ Move DrawTo and Swirl
+						+ Test
+						+ Clear ToolForce's
+					= Commit
+					- Test bomb explosions with force fields
+						- Mark TODO's on this list
+					+ PreImplosion
+					= Implosion
+						- Test with mass-independent accelerations (divide forces by mass)
+						- Test with progress moving along 1/(x-a)
+						- Make implosion longer?
+							- See effect for making sound longer
 
-				- Misc:
-					+ Test fuse's (slow and fast) sounds for new ContinuousSound architecture
-					+ Prevent removal if not in containment (i.e. if detonated already)
-						+ Bomb::MayBeRemoved()
-						+ Test with all 3
+					= Explosion
+						- Needed? Try it, adding to centrifugal
 
-				- Cleanup:
+			- See if should keep rotating clouds during implosion, just change ball color at implosion
+
+			- Misc:
+				+ Test fuse's (slow and fast) sounds for new ContinuousSound architecture
+				+ Prevent removal if not in containment (i.e. if detonated already)
+					+ Bomb::MayBeRemoved()
+					+ Test with all 3
+
+			- Cleanup:
 
 	- Ephemeral Particles:
 		- Summary:

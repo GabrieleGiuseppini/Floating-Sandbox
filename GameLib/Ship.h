@@ -114,19 +114,11 @@ public:
 
     void UpdateMechanicalDynamics(GameParameters const & gameParameters);
 
-    void UpdateDrawForces(
-        vec2f const & position,
-        float forceStrength);
-
-    void UpdateSwirlForces(
-        vec2f const & position,
-        float forceStrength);
-
     void UpdatePointForces(GameParameters const & gameParameters);
 
     void UpdateSpringForces(GameParameters const & gameParameters);    
 
-    void IntegratePointForces();
+    void IntegrateAndResetPointForces();
 
     void HandleCollisionsWithSeaFloor();
 
@@ -180,8 +172,8 @@ private:
 
     virtual void DoBombExplosion(
         vec2f const & blastPosition,
-        ConnectedComponentId connectedComponentId,
         float sequenceProgress,
+        ConnectedComponentId connectedComponentId,
         GameParameters const & gameParameters) override;
 
     virtual void DoAntiMatterBombPreimplosion(
@@ -233,28 +225,8 @@ private:
     // Bombs
     Bombs mBombs;
 
-
-    //
-    // Tool force to apply at next iteration
-    //
-
-    struct ToolForce
-    {
-        vec2f Position;
-        float Strength;
-        bool IsRadial;
-
-        ToolForce(
-            vec2f position,
-            float strength,
-            bool isRadial)
-            : Position(position)
-            , Strength(strength)
-            , IsRadial(isRadial)
-        {}
-    };
-
-    std::optional<ToolForce> mCurrentToolForce;
+    // Force fields to apply at next iteration
+    std::vector<std::unique_ptr<ForceField>> mCurrentForceFields;
 };
 
 }

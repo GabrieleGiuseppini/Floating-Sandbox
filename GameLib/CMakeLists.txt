@@ -62,6 +62,8 @@ set  (PHYSICS_SOURCES
 	Cloud.h
 	ElectricalElements.cpp
 	ElectricalElements.h
+	ForceFields.cpp
+	ForceFields.h
 	OceanFloor.cpp
 	OceanFloor.h
 	Physics.h

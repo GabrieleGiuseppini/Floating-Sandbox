@@ -38,7 +38,7 @@ AntiMatterBomb::AntiMatterBomb(
 
 bool AntiMatterBomb::Update(
     GameWallClock::time_point now,
-    GameParameters const & /*gameParameters*/)
+    GameParameters const & gameParameters)
 {
     switch (mState)
     {
@@ -62,7 +62,30 @@ bool AntiMatterBomb::Update(
             return true;
         }
 
-        case State::PreImploding_2:
+        case State::TriggeringPreImploding_2:
+        {
+            //
+            // Fake state, transition immediately to Pre-Imploding
+            //
+
+            mState = State::PreImploding_3;
+            mCurrentStateStartTimePoint = now;
+
+            // Invoke handler
+            mPhysicsHandler.DoAntiMatterBombPreimplosion(
+                GetPosition(),
+                0.0f,
+                gameParameters);
+
+            // Notify        
+            mGameEventHandler->OnAntiMatterBombPreImploding();
+            mGameEventHandler->OnAntiMatterBombContained(mId, false);
+
+            // Schedule next transition
+            mNextStateTransitionTimePoint = now + PreImplosionInterval;
+        }
+
+        case State::PreImploding_3:
         {
             if (now > mNextStateTransitionTimePoint)
             {
@@ -70,8 +93,18 @@ bool AntiMatterBomb::Update(
                 // Transition to imploding
                 //
 
-                mState = State::Imploding_3;
+                mState = State::Imploding_4;
                 mCurrentStateStartTimePoint = now;
+
+                // Detach self (or else bomb will move along with ship performing
+                // its implosion)
+                DetachIfAttached();
+
+                // Invoke handler
+                mPhysicsHandler.DoAntiMatterBombImplosion(
+                    GetPosition(),
+                    0.0f,
+                    gameParameters);
 
                 // Notify
                 mGameEventHandler->OnAntiMatterBombImploding();
@@ -91,12 +124,18 @@ bool AntiMatterBomb::Update(
                 mCurrentStateProgress =
                     static_cast<float>(millisInCurrentState)
                     / static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(PreImplosionInterval).count());
+
+                // Invoke handler
+                mPhysicsHandler.DoAntiMatterBombPreimplosion(
+                    GetPosition(),
+                    mCurrentStateProgress,
+                    gameParameters);
             }
 
             return true;
         }
 
-        case State::Imploding_3:
+        case State::Imploding_4:
         {
             if (now > mNextStateTransitionTimePoint)
             {
@@ -108,14 +147,11 @@ bool AntiMatterBomb::Update(
                 // its blast)
                 DetachIfAttached();
 
-                // Invoke blast handler
-                // TODO
-                ////mBlastHandler(
-                ////    GetPosition(),
-                ////    GetConnectedComponentId(),
-                ////    mExplodingStepCounter - 1,
-                ////    ExplosionStepsCount,
-                ////    gameParameters);
+                // Invoke explosion handler
+                mPhysicsHandler.DoAntiMatterBombExplosion(
+                    GetPosition(),
+                    0.0f,
+                    gameParameters);
 
                 // Notify explosion
                 mGameEventHandler->OnBombExplosion(
@@ -124,7 +160,7 @@ bool AntiMatterBomb::Update(
                     1);
 
                 // Transition state
-                mState = State::Exploding_4;
+                mState = State::Exploding_5;
                 mCurrentStateStartTimePoint = now;
 
                 // Schedule next transition
@@ -142,12 +178,18 @@ bool AntiMatterBomb::Update(
                 mCurrentStateProgress =
                     static_cast<float>(millisInCurrentState)
                     / static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(ImplosionInterval).count());
+
+                // Invoke handler
+                mPhysicsHandler.DoAntiMatterBombImplosion(
+                    GetPosition(),
+                    mCurrentStateProgress,
+                    gameParameters);
             }
 
             return true;
         }
 
-        case State::Exploding_4:
+        case State::Exploding_5:
         {
             if (now > mNextStateTransitionTimePoint)
             {
@@ -155,7 +197,7 @@ bool AntiMatterBomb::Update(
                 // Transition to next state
                 //
 
-                mState = State::Expired_5;
+                mState = State::Expired_6;
             }
             else
             {
@@ -171,22 +213,20 @@ bool AntiMatterBomb::Update(
                     / static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(ExplosionInterval).count());
 
                 //
-                // Invoke blast handler
+                // Invoke explosion handler
                 //
 
-                // TODO
-                ////mBlastHandler(
-                ////    GetPosition(),
-                ////    GetConnectedComponentId(),
-                ////    mExplodingStepCounter - 1,
-                ////    ExplosionStepsCount,
-                ////    gameParameters);
+                // Invoke explosion handler
+                mPhysicsHandler.DoAntiMatterBombExplosion(
+                    GetPosition(),
+                    mCurrentStateProgress,
+                    gameParameters);
             }
 
             return true;
         }
 
-        case State::Expired_5:
+        case State::Expired_6:
         default:
         {
             // Let us disappear
@@ -202,6 +242,7 @@ void AntiMatterBomb::Upload(
     switch (mState)
     {
         case State::Contained_1:
+        case State::TriggeringPreImploding_2:
         {
             // Armor
             renderContext.UploadShipGenericTextureRenderSpecification(
@@ -238,7 +279,7 @@ void AntiMatterBomb::Upload(
             break;
         }
 
-        case State::PreImploding_2:
+        case State::PreImploding_3:
         {
             float const alpha = std::max(0.0f, 1.0f - mCurrentStateProgress);
 
@@ -277,7 +318,7 @@ void AntiMatterBomb::Upload(
             break;
         }
 
-        case State::Imploding_3:
+        case State::Imploding_4:
         {
             // Sphere
             renderContext.UploadShipGenericTextureRenderSpecification(
@@ -293,13 +334,13 @@ void AntiMatterBomb::Upload(
             break;
         }
 
-        case State::Exploding_4:
+        case State::Exploding_5:
         {
             // TODOHERE
             break;
         }
 
-        case State::Expired_5:
+        case State::Expired_6:
         default:
         {
             // No drawing
@@ -312,21 +353,8 @@ void AntiMatterBomb::Detonate()
 {
     if (State::Contained_1 == mState)
     {
-        //
-        // Transition to Imploding state
-        //
-
-        auto const now = GameWallClock::GetInstance().Now();
-
-        mState = State::PreImploding_2;
-        mCurrentStateStartTimePoint = now;
-
-        // Notify        
-        mGameEventHandler->OnAntiMatterBombPreImploding();
-        mGameEventHandler->OnAntiMatterBombContained(mId, false);
-
-        // Schedule next transition
-        mNextStateTransitionTimePoint = now + PreImplosionInterval;
+        // Transition to fake Trigger-PreImploding state
+        mState = State::TriggeringPreImploding_2;
     }
 }
 

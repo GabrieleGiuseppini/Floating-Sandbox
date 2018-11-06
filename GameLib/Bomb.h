@@ -36,8 +36,8 @@ public:
     {
         virtual void DoBombExplosion(
             vec2f const & blastPosition,
-            ConnectedComponentId connectedComponentId,
             float sequenceProgress,
+            ConnectedComponentId connectedComponentId,
             GameParameters const & gameParameters) = 0;
 
         virtual void DoAntiMatterBombPreimplosion(
