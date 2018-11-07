@@ -477,7 +477,8 @@ void SoundController::OnDestroy(
         material, 
         size, 
         isUnderwater,
-        50.0f);
+        70.0f,
+        true);
 }
 
 void SoundController::OnPinToggled(
@@ -487,7 +488,8 @@ void SoundController::OnPinToggled(
     PlayUOneShotMultipleChoiceSound(
         isPinned ? SoundType::PinPoint : SoundType::UnpinPoint, 
         isUnderwater,
-        100.0f);
+        100.0f,
+        true);
 }
 
 void SoundController::OnStress(
@@ -502,7 +504,8 @@ void SoundController::OnStress(
         material,
         size,
         isUnderwater,
-        50.0f);
+        10.0f,
+        true);
 }
 
 void SoundController::OnBreak(
@@ -517,7 +520,8 @@ void SoundController::OnBreak(
         material, 
         size, 
         isUnderwater,
-        50.0f);
+        10.0f,
+        true);
 }
 
 void SoundController::OnSinkingBegin(unsigned int /*shipId*/)
@@ -542,7 +546,8 @@ void SoundController::OnLightFlicker(
         isUnderwater,
         std::max(
             100.0f,
-            30.0f * size));
+            30.0f * size),
+        true);
 }
 
 void SoundController::OnWaterTaken(float waterTaken)
@@ -565,11 +570,12 @@ void SoundController::OnWaterSplashed(float waterSplashed)
         {
             // 100 * (-1 / 1.8^(0.08 * x) + 1)
             //   3: 13.0
-            float waveVolume = 100.f * (-1.f / std::pow(1.8f, 0.08f * std::abs(waterSplashed)) + 1.f);
+            float waveVolume = 35.f * (-1.f / std::pow(1.8f, 0.08f * std::abs(waterSplashed)) + 1.f);
 
             PlayOneShotMultipleChoiceSound(
                 SoundType::Wave,
-                waveVolume);
+                waveVolume,
+                true);
 
             // Advance trigger
             mCurrentWaterSplashedTrigger = waterSplashed + WaveSplashTriggerSize;
@@ -588,7 +594,7 @@ void SoundController::OnWaterSplashed(float waterSplashed)
     // Adjust continuous splash sound
     //
 
-    float splashVolume = 100.f * (-1.f / std::pow(1.3f, 0.01f * std::abs(waterSplashed)) + 1.f);
+    float splashVolume = 20.f * (-1.f / std::pow(1.3f, 0.01f * std::abs(waterSplashed)) + 1.f);
     mWaterSplashSound.SetVolume(splashVolume);
     mWaterSplashSound.Start();
 }
@@ -601,7 +607,8 @@ void SoundController::OnBombPlaced(
     PlayUOneShotMultipleChoiceSound(
         SoundType::BombAttached, 
         isUnderwater,
-        100.0f);
+        100.0f,
+        true);
 }
 
 void SoundController::OnBombRemoved(
@@ -614,7 +621,8 @@ void SoundController::OnBombRemoved(
         PlayUOneShotMultipleChoiceSound(
             SoundType::BombDetached,
             *isUnderwater,
-            100.0f);
+            100.0f,
+            true);
     }
 }
 
@@ -630,7 +638,8 @@ void SoundController::OnBombExplosion(
         isUnderwater,
         std::max(
             100.0f,
-            50.0f * size));
+            50.0f * size),
+        true);
 }
 
 void SoundController::OnRCBombPing(
@@ -642,7 +651,8 @@ void SoundController::OnRCBombPing(
         isUnderwater,
         std::max(
             100.0f,
-            30.0f * size));
+            30.0f * size),
+        true);
 }
 
 void SoundController::OnTimerBombFuse(
@@ -691,7 +701,8 @@ void SoundController::OnTimerBombDefused(
         isUnderwater,
         std::max(
             100.0f,
-            30.0f * size));
+            30.0f * size),
+        true);
 }
 
 void SoundController::OnAntiMatterBombContained(
@@ -714,14 +725,16 @@ void SoundController::OnAntiMatterBombPreImploding()
 {
     PlayOneShotMultipleChoiceSound(
         SoundType::AntiMatterBombPreImplosion,
-        100.0f);
+        100.0f,
+        true);
 }
 
 void SoundController::OnAntiMatterBombImploding()
 {
     PlayOneShotMultipleChoiceSound(
         SoundType::AntiMatterBombImplosion,
-        100.0f);
+        100.0f,
+        false);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -731,7 +744,8 @@ void SoundController::PlayMSUOneShotMultipleChoiceSound(
     Material const * material,
     unsigned int size,
     bool isUnderwater,
-    float volume)
+    float volume,
+    bool isInterruptible)
 {
     assert(nullptr != material);
 
@@ -802,14 +816,16 @@ void SoundController::PlayMSUOneShotMultipleChoiceSound(
     ChooseAndPlayOneShotMultipleChoiceSound(
         soundType,
         it->second,
-        volume);
+        volume,
+        isInterruptible);
 }
 
 void SoundController::PlayDslUOneShotMultipleChoiceSound(
     SoundType soundType,
     DurationShortLongType duration,
     bool isUnderwater,
-    float volume)
+    float volume,
+    bool isInterruptible)
 {
     LogDebug("DslUSound: <",
         static_cast<int>(soundType),
@@ -838,13 +854,15 @@ void SoundController::PlayDslUOneShotMultipleChoiceSound(
     ChooseAndPlayOneShotMultipleChoiceSound(
         soundType,
         it->second,
-        volume);
+        volume,
+        isInterruptible);
 }
 
 void SoundController::PlayUOneShotMultipleChoiceSound(
     SoundType soundType,
     bool isUnderwater,
-    float volume)
+    float volume,
+    bool isInterruptible)
 {
     LogDebug("USound: <",
         static_cast<int>(soundType),
@@ -877,12 +895,14 @@ void SoundController::PlayUOneShotMultipleChoiceSound(
     ChooseAndPlayOneShotMultipleChoiceSound(
         soundType,
         it->second,
-        volume);
+        volume,
+        isInterruptible);
 }
 
 void SoundController::PlayOneShotMultipleChoiceSound(
     SoundType soundType,
-    float volume)
+    float volume,
+    bool isInterruptible)
 {
     LogDebug("Sound: <",
         static_cast<int>(soundType),
@@ -907,13 +927,15 @@ void SoundController::PlayOneShotMultipleChoiceSound(
     ChooseAndPlayOneShotMultipleChoiceSound(
         soundType,
         it->second,
-        volume);
+        volume,
+        isInterruptible);
 }
 
 void SoundController::ChooseAndPlayOneShotMultipleChoiceSound(
     SoundType soundType,
     OneShotMultipleChoiceSound & sound,
-    float volume)
+    float volume,
+    bool isInterruptible)
 {
     //
     // Choose sound buffer
@@ -946,13 +968,15 @@ void SoundController::ChooseAndPlayOneShotMultipleChoiceSound(
     PlayOneShotSound(
         soundType,
         chosenSoundBuffer,        
-        volume);
+        volume,
+        isInterruptible);
 }
 
 void SoundController::PlayOneShotSound(
     SoundType soundType,
     sf::SoundBuffer * soundBuffer,    
-    float volume)
+    float volume,
+    bool isInterruptible)
 {
     assert(nullptr != soundBuffer);
 
@@ -970,8 +994,9 @@ void SoundController::PlayOneShotSound(
         if (currentlyPlayingSound.Sound->getBuffer() == soundBuffer
             && std::chrono::duration_cast<std::chrono::milliseconds>(now - currentlyPlayingSound.StartedTimestamp) < MinDeltaTimeSound)
         {
+            // TODOHERE: not plain sum
             currentlyPlayingSound.Sound->setVolume(
-                std::max(
+                std::min(
                     100.0f,
                     currentlyPlayingSound.Sound->getVolume() + volume));
 
@@ -990,7 +1015,7 @@ void SoundController::PlayOneShotSound(
 
         if (mCurrentlyPlayingOneShotSounds.size() >= MaxPlayingSounds)
         { 
-            // Need to stop sound that's been playing for the longest
+            // Need to stop the (expendable) sound that's been playing for the longest
             ScavengeOldestSound(soundType);
         }
     }
@@ -1012,7 +1037,8 @@ void SoundController::PlayOneShotSound(
     mCurrentlyPlayingOneShotSounds.emplace_back(
         soundType,
         std::move(sound),
-        now);
+        now,
+        isInterruptible);
 }
 
 void SoundController::ScavengeStoppedSounds()
@@ -1036,8 +1062,16 @@ void SoundController::ScavengeOldestSound(SoundType soundType)
 {
     assert(!mCurrentlyPlayingSounds.empty());
 
+    //
+    // Three choices, in order of priority:
+    // 1) Same type
+    // 2) Another type, interruptible
+    // 3) Another type, non interruptible
+
     size_t iOldestSound = std::numeric_limits<size_t>::max();
     auto oldestSoundStartTimestamp = std::chrono::steady_clock::time_point::max();
+    size_t iOldestInterruptibleSound = std::numeric_limits<size_t>::max();
+    auto oldestInterruptibleSoundStartTimestamp = std::chrono::steady_clock::time_point::max();
     size_t iOldestSoundForType = std::numeric_limits<size_t>::max();
     auto oldestSoundForTypeStartTimestamp = std::chrono::steady_clock::time_point::max();    
     for (size_t i = 0; i < mCurrentlyPlayingOneShotSounds.size(); ++i)
@@ -1046,6 +1080,13 @@ void SoundController::ScavengeOldestSound(SoundType soundType)
         {
             iOldestSound = i;
             oldestSoundStartTimestamp = mCurrentlyPlayingOneShotSounds[i].StartedTimestamp;
+        }
+
+        if (mCurrentlyPlayingOneShotSounds[i].StartedTimestamp < oldestInterruptibleSoundStartTimestamp
+            && mCurrentlyPlayingOneShotSounds[i].IsInterruptible)
+        {
+            iOldestInterruptibleSound = i;
+            oldestInterruptibleSoundStartTimestamp = mCurrentlyPlayingOneShotSounds[i].StartedTimestamp;
         }
 
         if (mCurrentlyPlayingOneShotSounds[i].StartedTimestamp < oldestSoundForTypeStartTimestamp
@@ -1061,7 +1102,11 @@ void SoundController::ScavengeOldestSound(SoundType soundType)
     {
         iStop = iOldestSoundForType;
     }
-    else 
+    else if (oldestInterruptibleSoundStartTimestamp != std::chrono::steady_clock::time_point::max())
+    {
+        iStop = iOldestInterruptibleSound;
+    }
+    else
     {
         assert((oldestSoundStartTimestamp != std::chrono::steady_clock::time_point::max()));
         iStop = iOldestSound;

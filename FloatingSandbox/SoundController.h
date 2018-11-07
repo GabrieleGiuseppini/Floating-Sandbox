@@ -545,14 +545,17 @@ private:
         SoundType Type;
         std::unique_ptr<sf::Sound> Sound;
         std::chrono::steady_clock::time_point StartedTimestamp;
+        bool IsInterruptible;
 
         PlayingSound(
             SoundType type,
             std::unique_ptr<sf::Sound> sound,
-            std::chrono::steady_clock::time_point startedTimestamp)
+            std::chrono::steady_clock::time_point startedTimestamp,
+            bool isInterruptible)
             : Type(type)
             , Sound(std::move(sound))
             , StartedTimestamp(startedTimestamp)
+            , IsInterruptible(isInterruptible)
         {
         }
     };
@@ -564,32 +567,38 @@ private:
         Material const * material,
         unsigned int size,
         bool isUnderwater,
-        float volume);
+        float volume,
+        bool isInterruptible);
 
     void PlayDslUOneShotMultipleChoiceSound(
         SoundType soundType,
         DurationShortLongType duration,
         bool isUnderwater,
-        float volume);
+        float volume,
+        bool isInterruptible);
 
     void PlayUOneShotMultipleChoiceSound(
         SoundType soundType,
         bool isUnderwater,
-        float volume);
+        float volume,
+        bool isInterruptible);
 
     void PlayOneShotMultipleChoiceSound(
         SoundType soundType,
-        float volume);
+        float volume,
+        bool isInterruptible);
 
     void ChooseAndPlayOneShotMultipleChoiceSound(
         SoundType soundType,
         OneShotMultipleChoiceSound & sound,
-        float volume);
+        float volume,
+        bool isInterruptible);
 
     void PlayOneShotSound(
         SoundType soundType,
         sf::SoundBuffer * soundBuffer,
-        float volume);
+        float volume,
+        bool isInterruptible);
 
     void ScavengeStoppedSounds();
 

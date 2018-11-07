@@ -302,7 +302,10 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 						- Mark TODO's on this list
 					+ PreImplosion
 					= Implosion
-						- Test with mass-independent accelerations (divide forces by mass)
+						+ Trim sound and shorten state machine interval to match
+						= Test coriolis - angular F depending on V of point
+							- Test with angular F being stronger when closer to center
+						= Test with mass-independent accelerations (divide forces by mass)
 						- Test with progress moving along 1/(x-a)
 						- Make implosion longer?
 							- See effect for making sound longer
@@ -310,9 +313,14 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 					= Explosion
 						- Needed? Try it, adding to centrifugal
 
+			= Lower volume of all breaking/stress (passive) sounds 
+				- Find another version of volume sum, and raise again break 
+				+ Need to mark CurrentlyPlayingSounds as expendable or not
 			- See if should keep rotating clouds during implosion, just change ball color at implosion
+			- Explosion sound: more emphasys on initial explosion
 
 			- Misc:
+				- Can get rid of deletion checks in force fields?
 				+ Test fuse's (slow and fast) sounds for new ContinuousSound architecture
 				+ Prevent removal if not in containment (i.e. if detonated already)
 					+ Bomb::MayBeRemoved()
