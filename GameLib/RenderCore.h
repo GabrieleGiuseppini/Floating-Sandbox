@@ -25,6 +25,7 @@ namespace Render {
 enum class ProgramType
 {
     Clouds = 0,
+    CrossOfLight,
     GenericTextures,
     Land,
     Matte,
@@ -50,6 +51,7 @@ enum class ProgramParameterType
     MatteColor,
     OrthoMatrix,
     TextureScaling,
+    ViewportSize,
     WaterLevelThreshold,
     WaterTransparency
 };

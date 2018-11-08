@@ -49,7 +49,7 @@ AboutDialog::AboutDialog(
     mainSizer->AddSpacer(1);
 
     wxStaticText * title2Label = new wxStaticText(this, wxID_ANY, _(""), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
-    title2Label->SetLabelText("Original concept (c) Luke Wren 2013\n(c) Gabriele Giuseppini 2018\nThis version licensed to Mattia");
+    title2Label->SetLabelText("Original concept (c) Luke Wren, Francis Racicot (Pac0master) 2013\n(c) Gabriele Giuseppini 2018\nThis version licensed to Mattia");
     mainSizer->Add(title2Label, 0, wxALIGN_CENTRE);
 
     mainSizer->AddSpacer(5);

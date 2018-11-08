@@ -17,6 +17,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
     std::string lstr = Utils::ToLower(str);
     if (lstr == "clouds")
         return ProgramType::Clouds;
+    else if (lstr == "cross_of_light")
+        return ProgramType::CrossOfLight;
     else if (lstr == "generic_textures")
         return ProgramType::GenericTextures;
     else if (lstr == "land")
@@ -49,6 +51,8 @@ std::string ProgramTypeToStr(ProgramType program)
     {
     case ProgramType::Clouds:
         return "Clouds";
+    case ProgramType::CrossOfLight:
+        return "CrossOfLight";
     case ProgramType::GenericTextures:
         return "GenericTextures";
     case ProgramType::Land:
@@ -87,6 +91,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::OrthoMatrix;
     else if (str == "TextureScaling")
         return ProgramParameterType::TextureScaling;
+    else if (str == "ViewportSize")
+        return ProgramParameterType::ViewportSize;
     else if (str == "WaterLevelThreshold")
         return ProgramParameterType::WaterLevelThreshold;
     else if (str == "WaterTransparency")
@@ -107,6 +113,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "OrthoMatrix";
     case ProgramParameterType::TextureScaling:
         return "TextureScaling";
+    case ProgramParameterType::ViewportSize:
+        return "ViewportSize";
     case ProgramParameterType::WaterLevelThreshold:
         return "WaterLevelThreshold";
     case ProgramParameterType::WaterTransparency:
