@@ -1519,9 +1519,7 @@ void Ship::DoAntiMatterBombImplosion(
     mCurrentForceFields.emplace_back(
         new ImplosionForceField(
             centerPosition,
-            (sequenceProgress * sequenceProgress) * 30000.0f));
-
-    // TODO: use game parameters?
+            (sequenceProgress * sequenceProgress * sequenceProgress) * 30000.0f));
 }
 
 void Ship::DoAntiMatterBombExplosion(

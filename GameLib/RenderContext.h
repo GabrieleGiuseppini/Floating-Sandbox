@@ -40,6 +40,10 @@ public:
 
 public:
 
+    //
+    // World and view properties
+    //
+
     float GetZoom() const
     {
         return mZoom;
@@ -102,7 +106,8 @@ public:
         glViewport(0, 0, mCanvasWidth, mCanvasHeight);
 
         mTextRenderContext->UpdateCanvasSize(mCanvasWidth, mCanvasHeight);
-        
+
+        UpdateCanvasSize();
         UpdateVisibleWorldCoordinates();
         UpdateOrthoMatrix();
     }
@@ -167,7 +172,7 @@ public:
     static constexpr float MaxWaterLevelOfDetail = 1.0f;
 
     //
-    // Ship rendering
+    // Ship rendering properties
     //
 
     ShipRenderMode GetShipRenderMode() const
@@ -405,6 +410,51 @@ public:
 
     void RenderWater();
 
+
+    //
+    // Crosses of light
+    //
+
+    void UploadCrossOfLight(
+        vec2f const & centerPosition,
+        float progress)
+    {
+        // Triangle 1: left,bottom
+        mCrossOfLightBuffer.emplace_back(
+            vec2f(0.f, 0.f),
+            centerPosition,
+            progress);
+
+        // Triangle 1: left,top
+        mCrossOfLightBuffer.emplace_back(
+            vec2f(0.f, mVisibleWorldHeight),
+            centerPosition,
+            progress);
+
+        // Triangle 1: right,top
+        mCrossOfLightBuffer.emplace_back(
+            vec2f(mVisibleWorldWidth, mVisibleWorldHeight),
+            centerPosition,
+            progress);
+
+        // Triangle 2: left,top
+        mCrossOfLightBuffer.emplace_back(
+            vec2f(0.f, mVisibleWorldHeight),
+            centerPosition,
+            progress);
+
+        // Triangle 2: right,top
+        mCrossOfLightBuffer.emplace_back(
+            vec2f(mVisibleWorldWidth, mVisibleWorldHeight),
+            centerPosition,
+            progress);
+
+        // Triangle 2: right,bottom
+        mCrossOfLightBuffer.emplace_back(
+            vec2f(mVisibleWorldWidth, 0.0f),
+            centerPosition,
+            progress);
+    }
 
     /////////////////////////////////////////////////////////////////////////
     // Ships
@@ -685,8 +735,11 @@ public:
 
 
 private:
+
+    void RenderCrossesOfLight();
     
     void UpdateOrthoMatrix();
+    void UpdateCanvasSize();
     void UpdateVisibleWorldCoordinates();
     void UpdateAmbientLightIntensity();
     void UpdateSeaWaterTransparency();
@@ -805,6 +858,32 @@ private:
 
     std::vector<std::unique_ptr<ShipRenderContext>> mShips;
     vec3f const mRopeColour;
+
+    //
+    // Cross of light
+    //
+
+#pragma pack(push)
+    struct CrossOfLightElement
+    {
+        vec2f vertex;
+        vec2f centerPosition;
+        float progress;
+
+        CrossOfLightElement(
+            vec2f _vertex,
+            vec2f _centerPosition,
+            float _progress)
+            : vertex(_vertex)
+            , centerPosition(_centerPosition)
+            , progress(_progress)
+        {}
+    };
+#pragma pack(pop)
+
+    std::vector<CrossOfLightElement> mCrossOfLightBuffer;
+
+    GameOpenGLVBO mCrossOfLightVBO;
 
 private:
 

@@ -88,17 +88,21 @@ private:
         PreImploding_3,
         Imploding_4,
 
+        // Short pause before exploding, to show cross of light
+        PreExploding_5,
+
         // In this state we are exploding, and increment our counter to
         // match the explosion animation until the animation is over        
-        Exploding_5,
+        Exploding_6,
 
         // This is the final state; once this state is reached, we're expired
-        Expired_6
+        Expired_7
     };
 
     static constexpr auto ContainedRevolutionInterval = 1000ms;
     static constexpr auto PreImplosionInterval = 1000ms;
     static constexpr auto ImplosionInterval = 16000ms;
+    static constexpr auto PreExplosionInterval = 1000ms;
     static constexpr auto ExplosionInterval = 1000ms;
 
     State mState;

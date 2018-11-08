@@ -74,22 +74,7 @@ void ImplosionForceField::Apply(Points & points) const
             float const displacementLength = displacement.length();
             vec2f normalizedDisplacement = displacement.normalise(displacementLength);
 
-            // TODOTEST
-            ////// Angular - constant
-            ////points.GetForce(pointIndex) +=
-            ////    vec2f(-normalizedDisplacement.y, normalizedDisplacement.x)
-            ////    * mStrength
-            ////    / 2.0f
-            ////    ;
-
             float const massNormalization = points.GetMass(pointIndex) / 50.0f;
-
-            // Angular - Coriolis-like
-            ////points.GetForce(pointIndex) +=
-            ////    vec2f(points.GetVelocity(pointIndex).y, -points.GetVelocity(pointIndex).x)
-            ////    * mStrength
-            ////    / 30.0f
-            ////    * massNormalization;
 
             // Angular - constant
             points.GetForce(pointIndex) +=

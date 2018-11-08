@@ -42,6 +42,9 @@ RenderContext::RenderContext(
     // Ships
     , mShips()
     , mRopeColour(ropeColour)
+    // Cross of light
+    , mCrossOfLightBuffer()
+    , mCrossOfLightVBO()
     // Render parameters
     , mZoom(1.0f)
     , mCamX(0.0f)
@@ -286,6 +289,14 @@ RenderContext::RenderContext(
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::WaterAttribute), (2 + 1), GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void*)0);
 
 
+    //
+    // Initialize cross of light 
+    //
+
+    // Create VBO    
+    glGenBuffers(1, &tmpGLuint);
+    mCrossOfLightVBO = tmpGLuint;
+
 
     //
     // Initialize ortho matrix
@@ -305,6 +316,7 @@ RenderContext::RenderContext(
     //
 
     UpdateOrthoMatrix();
+    UpdateCanvasSize();
     UpdateVisibleWorldCoordinates();
     UpdateAmbientLightIntensity();
     UpdateSeaWaterTransparency();
@@ -395,6 +407,9 @@ void RenderContext::RenderStart()
 
     if (mWireframeMode)
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+    // Reset crosses of light
+    mCrossOfLightBuffer.clear();
 
     // Communicate start to child contextes
     mTextRenderContext->RenderStart();
@@ -624,10 +639,43 @@ void RenderContext::RenderWater()
 
 void RenderContext::RenderEnd()
 {
+    // Render crosses of light
+    RenderCrossesOfLight();
+
     // Communicate end to child contextes
     mTextRenderContext->RenderEnd();
 
     glFlush();
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+
+void RenderContext::RenderCrossesOfLight()
+{
+    // Use program
+    mShaderManager->ActivateProgram<ProgramType::CrossOfLight>();
+
+    // Bind VBO
+    glBindBuffer(GL_ARRAY_BUFFER, *mCrossOfLightVBO);
+    CheckOpenGLError();
+
+    // Upload buffer
+    glBufferData(
+        GL_ARRAY_BUFFER, 
+        sizeof(CrossOfLightElement) * mCrossOfLightBuffer.size(), 
+        mCrossOfLightBuffer.data(),
+        GL_DYNAMIC_DRAW);
+
+    // Describe vertex attributes 0 and 1
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedAttribute0), 4, GL_FLOAT, GL_FALSE, sizeof(CrossOfLightElement), (void*)0);
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedAttribute1), 1, GL_FLOAT, GL_FALSE, sizeof(CrossOfLightElement), (void*)((2 + 2) * sizeof(float)));
+
+    // Enable vertex attribute 0
+    glEnableVertexAttribArray(0);
+
+    // Draw
+    assert(0 == mCrossOfLightBuffer.size() % 6);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(mCrossOfLightBuffer.size() / 6));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -669,6 +717,16 @@ void RenderContext::UpdateOrthoMatrix()
     {
         ship->UpdateOrthoMatrix(mOrthoMatrix);
     }
+}
+
+void RenderContext::UpdateCanvasSize()
+{
+    // Set parameters in all programs
+
+    mShaderManager->ActivateProgram<ProgramType::CrossOfLight>();
+    mShaderManager->SetProgramParameter<ProgramType::CrossOfLight, ProgramParameterType::ViewportSize>(
+        mCanvasWidth,
+        mCanvasHeight);
 }
 
 void RenderContext::UpdateVisibleWorldCoordinates()
