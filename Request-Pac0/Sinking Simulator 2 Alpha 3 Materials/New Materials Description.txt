@@ -1,0 +1,38 @@
+"SKY"
+This material is meant to be completely invisible, and is used to support thin structures in order to avoid them either collapsing or bending too much.
+
+"Ground"
+this materials is fixed and isn't affected by physics.  It's not possible to break it either
+This is meant for people to Anchor their creation on the ground.  This way, we can build citiee, Oil rig, or even Bridges. 
+Since you already have a texture for the ground, I suggest you apply the same texture on top of it for a seamless transition. 
+
+"MASS"
+This material is to help balancing the creations... well it can also be used to sink or crush them.  
+A nice addition would be to have an option in the settings menu where we can change the Mass of this material.
+
+---------------------------------
+
+Floating sandbox has some very similar features as the one we've planned for Sinking Sim 2. here I will share them.
+
+I suggest all Electrical and possibly mechanical Logic/materials to be moved to a different layers
+For instance, Right now, it is part of the layer "Structural" and there's the layer "Texture" 
+I suggest a new layer called "Dynamics" where we will draw the layours of dynamics materials
+
+For instance, the Electrical grid including all types of lights and generators
+
+New addition would be Mechanical objects such as Watertight doors or Screw (propellers) 
+they could be bind to either a Key or their own section in the settings window
+
+Materials permeability, 
+This would be another "layer" where the ship would be completely black with shades of Grey
+Black colour would represent a material that blocks 100% of the water it touches
+White would be the opposite, so a hole that let 100% of the water through
+Following this logic, dark grey would let a little bit of water through.
+
+We had the idea to move to Textures as well, Almost identically as what you've done,
+Except we plan to add more layers and keep the ships in a Zip in order to avoid confusion.
+The zip will also allow for custom "Json" files 
+So when we load the ships, we only have to load the Zip directly. 
+
+
+
