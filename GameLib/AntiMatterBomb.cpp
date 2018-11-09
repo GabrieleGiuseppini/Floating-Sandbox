@@ -166,6 +166,10 @@ bool AntiMatterBomb::Update(
                 mCurrentStateStartTimePoint = now;
                 mCurrentStateProgress = 0.0f;
 
+                // Detach self (or else explosion will move along with ship performing
+                // its blast)
+                DetachIfAttached();
+
                 // Schedule next transition
                 mNextStateTransitionTimePoint = now + PreExplosionInterval;
             }
@@ -193,10 +197,6 @@ bool AntiMatterBomb::Update(
                 //
                 // Transition to exploding
                 //
-
-                // Detach self (or else explosion will move along with ship performing
-                // its blast)
-                DetachIfAttached();
 
                 // Invoke explosion handler
                 mPhysicsHandler.DoAntiMatterBombExplosion(
@@ -388,38 +388,6 @@ void AntiMatterBomb::Upload(
 
         case State::PreExploding_5:
         {
-            // Armor
-            renderContext.UploadShipGenericTextureRenderSpecification(
-                shipId,
-                GetConnectedComponentId(),
-                TextureFrameId(TextureGroupType::AntiMatterBombArmor, 0),
-                GetPosition(),
-                1.0f,
-                mRotationBaseAxis,
-                GetRotationOffsetAxis(),
-                1.0f);
-
-            // Sphere
-            renderContext.UploadShipGenericTextureRenderSpecification(
-                shipId,
-                GetConnectedComponentId(),
-                TextureFrameId(TextureGroupType::AntiMatterBombSphere, 0),
-                GetPosition(),
-                1.0f,
-                mRotationBaseAxis,
-                GetRotationOffsetAxis(),
-                1.0f);
-
-            // Rotating cloud
-            renderContext.UploadShipGenericTextureRenderSpecification(
-                shipId,
-                GetConnectedComponentId(),
-                TextureFrameId(TextureGroupType::AntiMatterBombSphereCloud, 0),
-                GetPosition(),
-                1.0f,
-                mCurrentCloudRotationAngle,
-                1.0f);
-
             // Cross-of-light
             renderContext.UploadCrossOfLight(
                 GetPosition(),

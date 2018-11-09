@@ -424,10 +424,24 @@ public:
         float const top = mVisibleWorldHeight / 2.0f;
         float const bottom = -mVisibleWorldHeight / 2.0f;
 
+        // Triangle 1
+
         mCrossOfLightBuffer.emplace_back(
             vec2f(left, bottom),
             centerPosition,
             progress);
+
+        mCrossOfLightBuffer.emplace_back(
+            vec2f(left, top),
+            centerPosition,
+            progress);
+
+        mCrossOfLightBuffer.emplace_back(
+            vec2f(right, bottom),
+            centerPosition,
+            progress);
+
+        // Triangle 2
 
         mCrossOfLightBuffer.emplace_back(
             vec2f(left, top),

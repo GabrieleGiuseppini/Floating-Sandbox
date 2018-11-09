@@ -602,10 +602,13 @@ void MainFrame::OnKeyDown(wxKeyEvent & event)
     else if (event.GetKeyCode() == '/')
     {
         // Query
-        auto pointIndex = mGameController->GetNearestPointAt(
-            mToolController->GetMouseScreenCoordinates());
 
-        LogMessage("Point: ", pointIndex);
+        vec2f screenCoords = mToolController->GetMouseScreenCoordinates();
+        vec2f worldCoords = mGameController->ScreenToWorld(screenCoords);
+
+        auto pointIndex = mGameController->GetNearestPointAt(screenCoords);
+
+        LogMessage("Point: ", pointIndex, " @ ", worldCoords.toString());
     }
     
     event.Skip();

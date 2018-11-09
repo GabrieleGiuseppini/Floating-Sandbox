@@ -395,7 +395,7 @@ void Ship::Render(
     mPoints.UploadVectors(
         mId,
         renderContext);
-    
+
     //
     // Finalize render
     //

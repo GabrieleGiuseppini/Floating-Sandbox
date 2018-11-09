@@ -640,7 +640,10 @@ void RenderContext::RenderWater()
 void RenderContext::RenderEnd()
 {
     // Render crosses of light
-    RenderCrossesOfLight();
+    if (!mCrossOfLightBuffer.empty())
+    {
+        RenderCrossesOfLight();
+    }
 
     // Communicate end to child contextes
     mTextRenderContext->RenderEnd();
@@ -651,7 +654,7 @@ void RenderContext::RenderEnd()
 ////////////////////////////////////////////////////////////////////////////////////
 
 void RenderContext::RenderCrossesOfLight()
-{
+{    
     // Use program
     mShaderManager->ActivateProgram<ProgramType::CrossOfLight>();
 
@@ -674,8 +677,8 @@ void RenderContext::RenderCrossesOfLight()
     glEnableVertexAttribArray(0);
 
     // Draw
-    assert(0 == mCrossOfLightBuffer.size() % 4);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(mCrossOfLightBuffer.size()));
+    assert(0 == mCrossOfLightBuffer.size() % 6);
+    glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mCrossOfLightBuffer.size()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
