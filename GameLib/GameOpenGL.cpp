@@ -323,4 +323,11 @@ void GameOpenGL::UploadMipmappedTexture(
     CheckOpenGLError();
 }
 
+void GameOpenGL::Flush()
+{
+    // We do it here to have this call in the stack, helping
+    // performance profiling
+    glFlush();
+}
+
 }

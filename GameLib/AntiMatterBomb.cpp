@@ -397,11 +397,6 @@ void AntiMatterBomb::Upload(
         }
 
         case State::Exploding_6:
-        {
-            // TODOHERE
-            break;
-        }
-
         case State::Expired_7:
         default:
         {

@@ -732,6 +732,8 @@ void Ship::UpdateWaterVelocities(
     // For each point, move each spring's outgoing water momentum to 
     // its destination point
     //
+    // Implementation of https://gabrielegiuseppini.wordpress.com/2018/09/08/momentum-based-simulation-of-water-flooding-2d-spaces/
+    //
 
     // Calculate water momenta
     mPoints.UpdateWaterMomentaFromVelocities();

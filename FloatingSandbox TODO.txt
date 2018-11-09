@@ -47,6 +47,11 @@ NoInline
 - RenderContext::RenderEnd: 0.30%
 
 =================================================
+Render:
+	- No Ship::RenderEnd: 64fps
+	- Only springs: 30fps
+	- Only triangles: 42fps
+=================================================
 
 =================================================
 Right after 1.5.0 perf (before texture shader & shaders' optimizations)
@@ -261,8 +266,8 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 
 		- 3rd type of bomb: anti-matter bomb
 			+ [Do after texture json]
-			- When it explodes: first sucks everything in, then evertyhing out
-				- Controllable also via ultra-violent mode
+			+ When it explodes: first sucks everything in, then evertyhing out
+				+ Controllable also via ultra-violent mode
 				+ Uses "ForceFields" (rename of "ToolForces": applied at each iteration of UpdateMechanicalDynamics and then cleared)
 				  for suck-in
 					+ ForceFields.cpp/h
@@ -271,14 +276,16 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 				+ Or see if easy to move BombBlaster inside bomb (i.e. explosion code is in bomb's state machine)
 				+ Or another way
 			= Plan:
-				- Media:
+				= Media:
 					+ Sound: continuous (3 choir tones)
 					+ Sound: implosion_one (FM)
 					+ Sound: implosion_two (whirring, up)
 					= Sound: explosion
 						+ Choir with delayed repetitions
 						+ First choir is mixed with electronic thud
-					= Texture: armor
+						- More emphasys on initial explosion
+						- Redo eventually, with long LFO
+					+ Texture: armor
 						+ Diagonal arms as well?
 					+ Texture: ball, empty
 					+ Texture: ball, cloud content
@@ -288,21 +295,19 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 				+ Texture DB:
 					+ Textures.js
 					+ New groups in enum
-				= Sound controller:
+				+ Sound controller:
 					+ New additive continuous sound (like fuse) with random choices and volumes for each
-					= Others
-				= Bomb::IPhysicsHandler
-					= Implemented by Ship
+					+ Others
+				+ Bomb::IPhysicsHandler
+					+ Implemented by Ship
 					+ Passed to Bombs and stored as GameEventHandler (i.e. *)
 					+ Test 2 old bombs
-					- Create force fields
+					+ Create force fields
 				= ForceFields
 					+ Move DrawTo and Swirl
 						+ Test
 						+ Clear ToolForce's
 					+ Commit
-					- Test bomb explosions with force fields
-						- Mark TODO's on this list
 					+ PreImplosion
 					= Implosion
 						+ Trim sound and shorten state machine interval to match
@@ -312,27 +317,28 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 						+ Test with progress moving along 1/(x-a)
 						- Make implosion longer?
 							- See effect for making sound longer
+						- Multiplier for ultra-violent mode
 						- Cleanup force field
-
 					= Explosion
-						- Needed? Try it, adding to centrifugal
+						- Add to centrifugal
 
 			= TODOHERE: Lower volume of all breaking/stress (passive) sounds 
 				- Find another version of volume sum
 				- Then raise again break 
-				+ Need to mark CurrentlyPlayingSounds as expendable or not
-			- Explosion sound: more emphasys on initial explosion
+				+ Need to mark CurrentlyPlayingSounds as expendable or not			
 
-			- Animation:
-				- Cloud rotation slows down during pre-implosion, down to a halt					
-				- Then starts slowly again from the other way around, with v=square of progress
-			= TODOHERE: Cross of light
+			+ Animation:
+				+ Cloud rotation slows down during pre-implosion, down to a halt					
+				+ Then starts slowly again from the other way around, with v=square of progress
+				+ Cross of light
 			- Misc:
 				- Can get rid of deletion checks in force fields?
 				+ Test fuse's (slow and fast) sounds for new ContinuousSound architecture
 				+ Prevent removal if not in containment (i.e. if detonated already)
 					+ Bomb::MayBeRemoved()
 					+ Test with all 3
+				- Test other bombs' explosions with force fields
+					- Mark TODO's on this list
 
 	- Ephemeral Particles:
 		- Summary:

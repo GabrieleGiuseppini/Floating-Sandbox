@@ -239,6 +239,8 @@ public:
         buffer.release();
     }
 
+    static void Flush();
+
 private:
 
     static int MaxVertexAttributes;

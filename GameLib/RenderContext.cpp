@@ -299,6 +299,21 @@ RenderContext::RenderContext(
 
 
     //
+    // Initialize global settings
+    //
+
+    // Set anti-aliasing for lines and polygons
+    glEnable(GL_LINE_SMOOTH);
+    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+    glEnable(GL_POLYGON_SMOOTH);
+    glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+
+    // Enable blend for alpha transparency
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+
+    //
     // Initialize ortho matrix
     //
 
@@ -384,18 +399,8 @@ void RenderContext::AddShip(
 
 void RenderContext::RenderStart()
 {
-    // Set anti-aliasing for lines and polygons
-    glEnable(GL_LINE_SMOOTH);
-    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-    glEnable(GL_POLYGON_SMOOTH);
-    glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
-
     // Set polygon mode
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-    // Enable blend for alpha transparency
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // Clear canvas - and stencil buffer
     static const vec3f ClearColorBase(0.529f, 0.808f, 0.980f); // (cornflower blue)
@@ -648,7 +653,8 @@ void RenderContext::RenderEnd()
     // Communicate end to child contextes
     mTextRenderContext->RenderEnd();
 
-    glFlush();
+    // Flush all pending commands (but not the GPU buffer)
+    GameOpenGL::Flush();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
