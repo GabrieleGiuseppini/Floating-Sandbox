@@ -15,7 +15,9 @@ uniform mat4 paramOrthoMatrix;
 
 void main()
 {
-    vertexCenterPosition = inSharedAttribute0.zw;
+    vertexCenterPosition = 
+        (paramOrthoMatrix * vec4(inSharedAttribute0.zw, -1.0, 1.0)).xy;
+
     vertexProgress = inSharedAttribute1;
 
     gl_Position = paramOrthoMatrix * vec4(inSharedAttribute0.xy, -1.0, 1.0);
@@ -30,25 +32,31 @@ in vec2 vertexCenterPosition;
 in float vertexProgress;
 
 // Parameters
-uniform vec2 viewportSize;
+uniform vec2 paramViewportSize;
 
 void main()
 {
     float progress = vertexProgress - 0.5; // (-0.5, 0.5]
-    float angle = 0.0; // TODO
+    //float angle = progress;
 
-    float minDimension = min(viewportSize.x, viewportSize.y);
-    vec2 ndc = vec2(
-        (gl_FragCoord.x - vertexCenterPosition.x), 
-        (vertexCenterPosition.y - gl_FragCoord.y)) * 2.0 / minDimension;
+    // Calculate fragment's coordinates in the NDC space
+    float minDimension = min(paramViewportSize.x, paramViewportSize.y);
+    vec2 centeredFragCoord = gl_FragCoord.xy - paramViewportSize.xy / 2.0;
+    vec2 ndc = centeredFragCoord * 2.0 / minDimension;
+
+    // Center
+    ndc = vec2(ndc.x - vertexCenterPosition.x, vertexCenterPosition.y - ndc.y);
 
     // ------------------    
     
+    /*
     mat2 rotationMatrix = mat2(
         cos(angle), -sin(angle),
         sin(angle), cos(angle));
     
     vec2 rotNdc = rotationMatrix * ndc;
+    */
+    vec2 rotNdc = ndc;
     
     progress = pow(progress, 3.0);
         
@@ -61,7 +69,5 @@ void main()
     float sy = max(0.0, (1.0-rotNdc.y * rotNdc.y * taperX));
     float alpha = sx + sy;
 
-    // TODO
-    // gl_FragColor = vec4(1.0, 1.0, 1.0, alpha);
-    gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+    gl_FragColor = vec4(1.0, 1.0, 1.0, alpha);
 }

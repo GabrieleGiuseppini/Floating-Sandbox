@@ -248,8 +248,6 @@ void World::Render(
     GameParameters const & gameParameters,
     Render::RenderContext & renderContext) const
 {
-    renderContext.RenderStart();
-
     // Upload land and water data
     UploadLandAndWater(gameParameters, renderContext);
 
@@ -278,8 +276,6 @@ void World::Render(
     {
         renderContext.RenderWater();
     }
-
-    renderContext.RenderEnd();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////

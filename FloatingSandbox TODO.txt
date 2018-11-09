@@ -104,6 +104,9 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 	- Warship
 	- See Moleskine
 
+- Bugs:
+	- Lights up/down: water becomes transparent
+
 - Optimizations:
 
 	+ BufferAllocator<Type:vec2f or float>
@@ -260,14 +263,14 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 			+ [Do after texture json]
 			- When it explodes: first sucks everything in, then evertyhing out
 				- Controllable also via ultra-violent mode
-				- Uses "ForceFields" (rename of "ToolForces": applied at each iteration of UpdateMechanicalDynamics and then cleared)
+				+ Uses "ForceFields" (rename of "ToolForces": applied at each iteration of UpdateMechanicalDynamics and then cleared)
 				  for suck-in
-					- ForceFields.cpp/h
-					- Move swirl, grab, bomb explosion to this one
-			- Requires ExplosionType argument at Ship::BlastHandler, or new BlastHandler altogether
-				- Or see if easy to move BombBlaster inside bomb (i.e. explosion code is in bomb's state machine)
-				- Or another way
-			- Plan:
+					+ ForceFields.cpp/h
+					+ Move swirl, grab, bomb explosion to this one
+			+ Requires ExplosionType argument at Ship::BlastHandler, or new BlastHandler altogether
+				+ Or see if easy to move BombBlaster inside bomb (i.e. explosion code is in bomb's state machine)
+				+ Or another way
+			= Plan:
 				- Media:
 					+ Sound: continuous (3 choir tones)
 					+ Sound: implosion_one (FM)
@@ -297,36 +300,39 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 					+ Move DrawTo and Swirl
 						+ Test
 						+ Clear ToolForce's
-					= Commit
+					+ Commit
 					- Test bomb explosions with force fields
 						- Mark TODO's on this list
 					+ PreImplosion
 					= Implosion
 						+ Trim sound and shorten state machine interval to match
-						= Test coriolis - angular F depending on V of point
-							- Test with angular F being stronger when closer to center
-						= Test with mass-independent accelerations (divide forces by mass)
-						- Test with progress moving along 1/(x-a)
+						+ Test coriolis - angular F depending on V of point
+						+ Test with angular F being stronger when closer to center
+						+ Test with mass-independent accelerations (divide forces by mass)
+						+ Test with progress moving along 1/(x-a)
 						- Make implosion longer?
 							- See effect for making sound longer
+						- Cleanup force field
 
 					= Explosion
 						- Needed? Try it, adding to centrifugal
 
-			= Lower volume of all breaking/stress (passive) sounds 
-				- Find another version of volume sum, and raise again break 
+			= TODOHERE: Lower volume of all breaking/stress (passive) sounds 
+				- Find another version of volume sum
+				- Then raise again break 
 				+ Need to mark CurrentlyPlayingSounds as expendable or not
-			- See if should keep rotating clouds during implosion, just change ball color at implosion
 			- Explosion sound: more emphasys on initial explosion
 
+			- Animation:
+				- Cloud rotation slows down during pre-implosion, down to a halt					
+				- Then starts slowly again from the other way around, with v=square of progress
+			= TODOHERE: Cross of light
 			- Misc:
 				- Can get rid of deletion checks in force fields?
 				+ Test fuse's (slow and fast) sounds for new ContinuousSound architecture
 				+ Prevent removal if not in containment (i.e. if detonated already)
 					+ Bomb::MayBeRemoved()
 					+ Test with all 3
-
-			- Cleanup:
 
 	- Ephemeral Particles:
 		- Summary:

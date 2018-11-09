@@ -99,19 +99,23 @@ private:
         Expired_7
     };
 
-    static constexpr auto ContainedRevolutionInterval = 1000ms;
+    static constexpr auto ContainedCloudRevolutionSpeed = -2.0f * Pi<float> / std::chrono::duration<float>(2.0f).count();
     static constexpr auto PreImplosionInterval = 1000ms;
     static constexpr auto ImplosionInterval = 16000ms;
+    static constexpr auto ImplosionCloudRevolutionSpeed = 2.0f * Pi<float> / std::chrono::duration<float>(0.5f).count();
     static constexpr auto PreExplosionInterval = 1000ms;
-    static constexpr auto ExplosionInterval = 1000ms;
+    static constexpr auto ExplosionInterval = 1000ms;    
 
     State mState;
+
+    // The timestamp of the last update
+    GameWallClock::time_point mLastUpdateTimePoint;
 
     // The next timestamp at which we'll automatically transition state
     GameWallClock::time_point mNextStateTransitionTimePoint;
 
     // The tracking of how long we've been at the current state; exact meaning
-    // depends on the state
+    // depends on the state    
     GameWallClock::time_point mCurrentStateStartTimePoint;
     float mCurrentStateProgress;
 

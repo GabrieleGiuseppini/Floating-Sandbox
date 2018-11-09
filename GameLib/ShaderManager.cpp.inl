@@ -162,9 +162,9 @@ void ShaderManager<Traits>::CompileShader(
         {
             // Make sure there is room
             size_t programParameterIndex = static_cast<size_t>(programParameter);
-            if (programParameterIndex + 1 > mPrograms[programIndex].UniformLocations.size())
+            while (mPrograms[programIndex].UniformLocations.size() <= programParameterIndex)
             {
-                mPrograms[programIndex].UniformLocations.resize(programParameterIndex + 1);
+                mPrograms[programIndex].UniformLocations.push_back(-1);
             }
 
             // Get and store

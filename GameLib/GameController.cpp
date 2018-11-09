@@ -176,6 +176,13 @@ void GameController::Render()
 
 
     //
+    // Start rendering
+    //
+
+    mRenderContext->RenderStart();
+
+
+    //
     // Render world
     //
 
@@ -189,6 +196,13 @@ void GameController::Render()
 
     assert(!!mTextLayer);
     mTextLayer->Render(*mRenderContext);
+
+
+    //
+    // Stop render
+    //
+
+    mRenderContext->RenderEnd();
 
 
     //

@@ -156,7 +156,7 @@
 
 {
 	"groupName": "AntiMatterBombSphereCloud",
-	"hasOwnAmbientLight": false,
+	"hasOwnAmbientLight": true,
 	"frames":[
 		{	
 			"worldWidth": 6.0,

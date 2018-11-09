@@ -419,39 +419,28 @@ public:
         vec2f const & centerPosition,
         float progress)
     {
-        // Triangle 1: left,bottom
+        float const left = -mVisibleWorldWidth / 2.0f;
+        float const right = mVisibleWorldWidth / 2.0f;
+        float const top = mVisibleWorldHeight / 2.0f;
+        float const bottom = -mVisibleWorldHeight / 2.0f;
+
         mCrossOfLightBuffer.emplace_back(
-            vec2f(0.f, 0.f),
+            vec2f(left, bottom),
             centerPosition,
             progress);
 
-        // Triangle 1: left,top
         mCrossOfLightBuffer.emplace_back(
-            vec2f(0.f, mVisibleWorldHeight),
+            vec2f(left, top),
             centerPosition,
             progress);
 
-        // Triangle 1: right,top
         mCrossOfLightBuffer.emplace_back(
-            vec2f(mVisibleWorldWidth, mVisibleWorldHeight),
+            vec2f(right, bottom),
             centerPosition,
             progress);
 
-        // Triangle 2: left,top
         mCrossOfLightBuffer.emplace_back(
-            vec2f(0.f, mVisibleWorldHeight),
-            centerPosition,
-            progress);
-
-        // Triangle 2: right,top
-        mCrossOfLightBuffer.emplace_back(
-            vec2f(mVisibleWorldWidth, mVisibleWorldHeight),
-            centerPosition,
-            progress);
-
-        // Triangle 2: right,bottom
-        mCrossOfLightBuffer.emplace_back(
-            vec2f(mVisibleWorldWidth, 0.0f),
+            vec2f(right, top),
             centerPosition,
             progress);
     }

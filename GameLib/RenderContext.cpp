@@ -674,8 +674,8 @@ void RenderContext::RenderCrossesOfLight()
     glEnableVertexAttribArray(0);
 
     // Draw
-    assert(0 == mCrossOfLightBuffer.size() % 6);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(mCrossOfLightBuffer.size() / 6));
+    assert(0 == mCrossOfLightBuffer.size() % 4);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(mCrossOfLightBuffer.size()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -712,6 +712,10 @@ void RenderContext::UpdateOrthoMatrix()
     mShaderManager->SetProgramParameter<ProgramType::Matte, ProgramParameterType::OrthoMatrix>(
         mOrthoMatrix);
 
+    mShaderManager->ActivateProgram<ProgramType::CrossOfLight>();
+    mShaderManager->SetProgramParameter<ProgramType::CrossOfLight, ProgramParameterType::OrthoMatrix>(
+        mOrthoMatrix);
+
     // Update all ships
     for (auto & ship : mShips)
     {
@@ -725,8 +729,8 @@ void RenderContext::UpdateCanvasSize()
 
     mShaderManager->ActivateProgram<ProgramType::CrossOfLight>();
     mShaderManager->SetProgramParameter<ProgramType::CrossOfLight, ProgramParameterType::ViewportSize>(
-        mCanvasWidth,
-        mCanvasHeight);
+        static_cast<float>(mCanvasWidth),
+        static_cast<float>(mCanvasHeight));
 }
 
 void RenderContext::UpdateVisibleWorldCoordinates()

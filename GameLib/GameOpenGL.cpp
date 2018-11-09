@@ -22,6 +22,7 @@ void GameOpenGL::CompileShader(
     std::string const & programName)
 {
     char const * shaderSourceCString = shaderSource.c_str();
+    std::string const shaderTypeName = (shaderType == GL_VERTEX_SHADER) ? "vertex" : "fragment";
 
     // Set source
     GLuint shader = glCreateShader(shaderType);
@@ -29,7 +30,7 @@ void GameOpenGL::CompileShader(
     GLenum glError = glGetError();
     if (GL_NO_ERROR != glError)
     {
-        throw GameException("Error setting shader source for program \"" + programName + "\"");
+        throw GameException("Error setting " + shaderTypeName + " shader source for program \"" + programName + "\"");
     }
 
     // Compile
@@ -40,7 +41,7 @@ void GameOpenGL::CompileShader(
     {
         char infoLog[1024];
         glGetShaderInfoLog(shader, sizeof(infoLog), NULL, infoLog);
-        throw GameException("Error compiling shader: " + std::string(infoLog));
+        throw GameException("Error compiling " + shaderTypeName + " shader: " + std::string(infoLog));
     }
 
     // Attach to program
@@ -48,7 +49,7 @@ void GameOpenGL::CompileShader(
     glError = glGetError();
     if (GL_NO_ERROR != glError)
     {
-        throw GameException("Error attaching compiled shader to program \"" + programName + "\"");
+        throw GameException("Error attaching compiled " + shaderTypeName + " shader to program \"" + programName + "\"");
     }
 
     // Delete shader

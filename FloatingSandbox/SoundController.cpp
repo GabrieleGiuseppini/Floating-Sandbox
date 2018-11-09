@@ -1060,7 +1060,7 @@ void SoundController::ScavengeStoppedSounds()
 
 void SoundController::ScavengeOldestSound(SoundType soundType)
 {
-    assert(!mCurrentlyPlayingSounds.empty());
+    assert(!mCurrentlyPlayingOneShotSounds.empty());
 
     //
     // Three choices, in order of priority:

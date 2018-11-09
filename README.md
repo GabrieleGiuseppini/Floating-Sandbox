@@ -81,7 +81,7 @@ Here's a rought list of the major remaining changes I want to do:
 - Add time-of-day (i.e. day light change during the game)
 - Water pumps and switches for pumps and lights (Mathias Garbe's idea)
 - A new ship file loader dialog with previews of ships
-- Ocean floor gets dents when an impact occurs (Louis 
+- Ocean floor gets dents when an impact occurs (Louis Benedict's idea)
 - Add multiple ships and collision detection
 
 # Building the Game
