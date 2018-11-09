@@ -36,5 +36,5 @@ uniform vec2 paramTextureScaling;
 void main()
 {
     vec4 textureColor = texture2D(inputTexture, texturePos * paramTextureScaling);
-    gl_FragColor = vec4(textureColor.xyz, 1.0 - paramWaterTransparency) * paramAmbientLightIntensity;
+    gl_FragColor = vec4(textureColor.xyz * paramAmbientLightIntensity, 1.0 - paramWaterTransparency);
 } 
