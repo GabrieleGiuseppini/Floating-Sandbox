@@ -1,3 +1,0 @@
-I've added a new "Cable hull" material I've also changed the strength to make it share the same proprieties as Steel.
-The goal is to avoid the ship from breaking in straight lines (peeling like a banana) 
-
