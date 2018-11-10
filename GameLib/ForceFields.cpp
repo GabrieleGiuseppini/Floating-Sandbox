@@ -44,22 +44,19 @@ void RadialSpaceWarpForceField::Apply(Points & points) const
 {
     for (auto pointIndex : points)
     {
-        if (!points.IsDeleted(pointIndex))
+        vec2f const pointRadius = points.GetPosition(pointIndex) - mCenterPosition;
+        float const pointDistanceFromRadius = pointRadius.length() - mRadius;
+        float const absolutePointDistanceFromRadius = std::abs(pointDistanceFromRadius);
+        if (absolutePointDistanceFromRadius <= mRadiusThickness)
         {
-            vec2f const pointRadius = points.GetPosition(pointIndex) - mCenterPosition;
-            float const pointDistanceFromRadius = pointRadius.length() - mRadius;
-            float const absolutePointDistanceFromRadius = std::abs(pointDistanceFromRadius);
-            if (absolutePointDistanceFromRadius <= mRadiusThickness)
-            {
-                float const direction = pointDistanceFromRadius >= 0.0f ? 1.0f : -1.0f;
+            float const direction = pointDistanceFromRadius >= 0.0f ? 1.0f : -1.0f;
 
-                float const strength = mStrength * (1.0f - absolutePointDistanceFromRadius / mRadiusThickness);
+            float const strength = mStrength * (1.0f - absolutePointDistanceFromRadius / mRadiusThickness);
 
-                points.GetForce(pointIndex) +=
-                    pointRadius.normalise()
-                    * strength
-                    * direction;
-            }
+            points.GetForce(pointIndex) +=
+                pointRadius.normalise()
+                * strength
+                * direction;
         }
     }
 }
@@ -68,29 +65,27 @@ void ImplosionForceField::Apply(Points & points) const
 {
     for (auto pointIndex : points)
     {
-        if (!points.IsDeleted(pointIndex))
-        {            
-            vec2f displacement = (mCenterPosition - points.GetPosition(pointIndex));
-            float const displacementLength = displacement.length();
-            vec2f normalizedDisplacement = displacement.normalise(displacementLength);
+        vec2f displacement = (mCenterPosition - points.GetPosition(pointIndex));
+        float const displacementLength = displacement.length();
+        vec2f normalizedDisplacement = displacement.normalise(displacementLength);
 
-            float const massNormalization = points.GetMass(pointIndex) / 50.0f;
+        // Make final acceleration independent from mass
+        float const massNormalization = points.GetMass(pointIndex) / 50.0f;
 
-            // Angular - constant
-            points.GetForce(pointIndex) +=
-                vec2f(-normalizedDisplacement.y, normalizedDisplacement.x)
-                * mStrength
-                / 10.0f
-                * massNormalization;
+        // Angular - constant
+        points.GetForce(pointIndex) +=
+            vec2f(-normalizedDisplacement.y, normalizedDisplacement.x)
+            * mStrength
+            / 10.0f
+            * massNormalization;
 
-            // Radial - stronger when closer
-            points.GetForce(pointIndex) += 
-                normalizedDisplacement 
-                * mStrength
-                / (0.2f + sqrt(displacementLength))
-                * 10.0f
-                * massNormalization;
-        }
+        // Radial - stronger when closer
+        points.GetForce(pointIndex) +=
+            normalizedDisplacement
+            * mStrength
+            / (0.2f + sqrt(displacementLength))
+            * 10.0f
+            * massNormalization;
     }
 }
 
@@ -98,14 +93,11 @@ void RadialExplosionForceField::Apply(Points & points) const
 {
     for (auto pointIndex : points)
     {
-        if (!points.IsDeleted(pointIndex))
-        {
-            // F = ForceStrength/sqrt(distance), along radius
-            vec2f displacement = (points.GetPosition(pointIndex) - mCenterPosition);
-            float forceMagnitude = mStrength / sqrtf(0.1f + displacement.length());
+        // F = ForceStrength/sqrt(distance), along radius
+        vec2f displacement = (points.GetPosition(pointIndex) - mCenterPosition);
+        float forceMagnitude = mStrength / sqrtf(0.1f + displacement.length());
 
-            points.GetForce(pointIndex) += displacement.normalise() * forceMagnitude;
-        }
+        points.GetForce(pointIndex) += displacement.normalise() * forceMagnitude;
     }
 }
 

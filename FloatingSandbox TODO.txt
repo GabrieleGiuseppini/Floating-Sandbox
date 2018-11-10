@@ -282,7 +282,7 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 			+ Requires ExplosionType argument at Ship::BlastHandler, or new BlastHandler altogether
 				+ Or see if easy to move BombBlaster inside bomb (i.e. explosion code is in bomb's state machine)
 				+ Or another way
-			= Plan:
+			+ Plan:
 				+ Media:
 					+ Sound: continuous (3 choir tones)
 					+ Sound: implosion_one (FM)
@@ -308,22 +308,22 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 					+ Passed to Bombs and stored as GameEventHandler (i.e. *)
 					+ Test 2 old bombs
 					+ Create force fields
-				= ForceFields
+				+ ForceFields
 					+ Move DrawTo and Swirl
 						+ Test
 						+ Clear ToolForce's
 					+ Commit
 					+ PreImplosion
-					= Implosion
+					+ Implosion
 						+ Trim sound and shorten state machine interval to match
 						+ Test coriolis - angular F depending on V of point
 						+ Test with angular F being stronger when closer to center
 						+ Test with mass-independent accelerations (divide forces by mass)
 						+ Test with progress moving along 1/(x-a)
 						+ Multiplier for ultra-violent mode
-						- Cleanup force field
-					= Explosion
-						= Add to centrifugal
+						+ Cleanup force field
+					+ Explosion
+						+ Add to centrifugal
 
 			= TODOHERE: Lower volume of all breaking/stress (passive) sounds 
 				- Find another version of volume sum
@@ -334,8 +334,8 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 				+ Cloud rotation slows down during pre-implosion, down to a halt					
 				+ Then starts slowly again from the other way around, with v=square of progress
 				+ Cross of light
-			- Misc:
-				- Can get rid of deletion checks in force fields?
+			= Misc:
+				+ Can get rid of deletion checks in force fields?
 				+ Test fuse's (slow and fast) sounds for new ContinuousSound architecture
 				+ Prevent removal if not in containment (i.e. if detonated already)
 					+ Bomb::MayBeRemoved()
