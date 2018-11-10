@@ -142,4 +142,26 @@ private:
     float const mStrength;
 };
 
+/*
+ * Force field that simulates a radial explosion from a center point.
+ */
+class RadialExplosionForceField final : public ForceField
+{
+public:
+
+    RadialExplosionForceField(
+        vec2f const & centerPosition,
+        float strength)
+        : mCenterPosition(centerPosition)
+        , mStrength(strength)
+    {}
+
+    virtual void Apply(Points & points) const override;
+
+private:
+
+    vec2f const mCenterPosition;
+    float const mStrength;
+};
+
 }

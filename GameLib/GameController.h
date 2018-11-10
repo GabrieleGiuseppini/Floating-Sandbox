@@ -187,6 +187,11 @@ public:
     float GetMinBombBlastRadius() const { return GameParameters::MinBombBlastRadius; }
     float GetMaxBombBlastRadius() const { return GameParameters::MaxBombBlastRadius; }
 
+    float GetAntiMatterBombImplosionStrength() const { return mGameParameters.AntiMatterBombImplosionStrength; }
+    void SetAntiMatterBombImplosionStrength(float value) { mGameParameters.AntiMatterBombImplosionStrength = value; }
+    float GetMinAntiMatterBombImplosionStrength() const { return GameParameters::MinAntiMatterBombImplosionStrength; }
+    float GetMaxAntiMatterBombImplosionStrength() const { return GameParameters::MaxAntiMatterBombImplosionStrength; }
+
     float GetLightDiffusionAdjustment() const { return mGameParameters.LightDiffusionAdjustment; }
     void SetLightDiffusionAdjustment(float value) { mGameParameters.LightDiffusionAdjustment = value; }
 

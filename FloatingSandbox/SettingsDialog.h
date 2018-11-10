@@ -70,6 +70,7 @@ private:
     // Interactions
     std::unique_ptr<SliderControl> mDestroyRadiusSlider;
     std::unique_ptr<SliderControl> mBombBlastRadiusSlider;
+    std::unique_ptr<SliderControl> mAntiMatterBombImplosionStrengthSlider;
     wxCheckBox * mUltraViolentCheckBox;
 
     // Rendering

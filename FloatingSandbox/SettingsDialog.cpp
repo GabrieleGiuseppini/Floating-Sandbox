@@ -308,6 +308,9 @@ void SettingsDialog::ApplySettings()
     mGameController->SetBombBlastRadius(
         mBombBlastRadiusSlider->GetValue());
 
+    mGameController->SetAntiMatterBombImplosionStrength(
+        mAntiMatterBombImplosionStrengthSlider->GetValue());
+
     mGameController->SetUltraViolentMode(mUltraViolentCheckBox->IsChecked());
 
     mGameController->SetSeaWaterTransparency(
@@ -672,6 +675,26 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
             mGameController->GetMaxBombBlastRadius()));
 
     controlsSizer->Add(mBombBlastRadiusSlider.get(), 1, wxALL, SliderBorder);
+    
+
+    // Anti-matter Bomb Implosion Strength
+
+    mAntiMatterBombImplosionStrengthSlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "AM Bomb Implosion Strength",
+        mGameController->GetAntiMatterBombImplosionStrength(),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<LinearSliderCore>(
+            mGameController->GetMinAntiMatterBombImplosionStrength(),
+            mGameController->GetMaxAntiMatterBombImplosionStrength()));
+
+    controlsSizer->Add(mAntiMatterBombImplosionStrengthSlider.get(), 1, wxALL, SliderBorder);
 
 
     // Check boxes
@@ -836,6 +859,8 @@ void SettingsDialog::ReadSettings()
     mDestroyRadiusSlider->SetValue(mGameController->GetDestroyRadius());
     
     mBombBlastRadiusSlider->SetValue(mGameController->GetBombBlastRadius());
+
+    mAntiMatterBombImplosionStrengthSlider->SetValue(mGameController->GetAntiMatterBombImplosionStrength());
 
     mUltraViolentCheckBox->SetValue(mGameController->GetUltraViolentMode());
 

@@ -109,6 +109,10 @@ struct GameParameters
     static constexpr float MinBombBlastRadius = 0.1f;
     static constexpr float MaxBombBlastRadius = 20.0f;
 
+    float AntiMatterBombImplosionStrength;
+    static constexpr float MinAntiMatterBombImplosionStrength = 0.1f;
+    static constexpr float MaxAntiMatterBombImplosionStrength = 10.0f;
+
     static constexpr float BombNeighborhoodRadius = 3.5f;
 
     std::chrono::seconds TimerBombInterval;

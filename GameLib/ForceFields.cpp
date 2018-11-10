@@ -94,4 +94,19 @@ void ImplosionForceField::Apply(Points & points) const
     }
 }
 
+void RadialExplosionForceField::Apply(Points & points) const
+{
+    for (auto pointIndex : points)
+    {
+        if (!points.IsDeleted(pointIndex))
+        {
+            // F = ForceStrength/sqrt(distance), along radius
+            vec2f displacement = (points.GetPosition(pointIndex) - mCenterPosition);
+            float forceMagnitude = mStrength / sqrtf(0.1f + displacement.length());
+
+            points.GetForce(pointIndex) += displacement.normalise() * forceMagnitude;
+        }
+    }
+}
+
 }

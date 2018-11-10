@@ -191,6 +191,12 @@ bool AntiMatterBomb::Update(
                 mCurrentStateProgress =
                     static_cast<float>(millisInCurrentState)
                     / static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(PreExplosionInterval).count());
+
+                // Invoke handler at max of implosion strength
+                mPhysicsHandler.DoAntiMatterBombImplosion(
+                    GetPosition(),
+                    1.0f,
+                    gameParameters);
             }
             else
             {
@@ -198,17 +204,17 @@ bool AntiMatterBomb::Update(
                 // Transition to exploding
                 //
 
-                // Invoke explosion handler
-                mPhysicsHandler.DoAntiMatterBombExplosion(
-                    GetPosition(),
-                    0.0f,
-                    gameParameters);
-
                 // Notify explosion
                 mGameEventHandler->OnBombExplosion(
                     BombType::AntiMatterBomb,
                     mParentWorld.IsUnderwater(GetPosition()),
                     1);
+
+                // Invoke explosion handler
+                mPhysicsHandler.DoAntiMatterBombExplosion(
+                    GetPosition(),
+                    0.0f,
+                    gameParameters);
 
                 // Transition state
                 mState = State::Exploding_6;

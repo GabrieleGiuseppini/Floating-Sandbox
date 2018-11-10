@@ -109,8 +109,15 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 	- Warship
 	- See Moleskine
 
+- Suggestions:
+	+ Lamp brightness even lower
+	- Do those sounds controls below
+	- Two volume controls for music and sounds (all but music)
+		- No mute for music anymore
 - Bugs:
-	- Lights up/down: water becomes transparent
+	+ Lights up/down: water becomes transparent
+	- Check those textures
+
 
 - Optimizations:
 
@@ -276,22 +283,20 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 				+ Or see if easy to move BombBlaster inside bomb (i.e. explosion code is in bomb's state machine)
 				+ Or another way
 			= Plan:
-				= Media:
+				+ Media:
 					+ Sound: continuous (3 choir tones)
 					+ Sound: implosion_one (FM)
 					+ Sound: implosion_two (whirring, up)
-					= Sound: explosion
+					+ Sound: explosion
 						+ Choir with delayed repetitions
 						+ First choir is mixed with electronic thud
-						- More emphasys on initial explosion
-						- Redo eventually, with long LFO
+						+ More emphasys on initial explosion
+						+ Redo eventually, with long LFO
 					+ Texture: armor
 						+ Diagonal arms as well?
 					+ Texture: ball, empty
 					+ Texture: ball, cloud content
-					- Texture: ball, white (new frame)
-						- Transition slowly to it during pre-implosion
-					= Cursor
+					+ Cursor
 				+ Texture DB:
 					+ Textures.js
 					+ New groups in enum
@@ -315,16 +320,14 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 						+ Test with angular F being stronger when closer to center
 						+ Test with mass-independent accelerations (divide forces by mass)
 						+ Test with progress moving along 1/(x-a)
-						- Make implosion longer?
-							- See effect for making sound longer
-						- Multiplier for ultra-violent mode
+						+ Multiplier for ultra-violent mode
 						- Cleanup force field
 					= Explosion
-						- Add to centrifugal
+						= Add to centrifugal
 
 			= TODOHERE: Lower volume of all breaking/stress (passive) sounds 
 				- Find another version of volume sum
-				- Then raise again break 
+				- Then test again break and stress sounds for volumne
 				+ Need to mark CurrentlyPlayingSounds as expendable or not			
 
 			+ Animation:
@@ -517,10 +520,11 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 		- Save Settings As: saves with filename, nothing else
 		- Load Settings: loads with filename, changes own settings
 		- Reset Settings: loads default_settings.json, changes own settings
+
 	- Revised FileDialog for loading ships: shows previews of ships
 		- Option 1: see if possible to hook into basic FileDialog's rendering of files
-		- Option 2: own FileDialog ("ShipFileDialog"), wit directory tree on the left and previous in main area
-			- Show also name, dimensions, and mass
+		- Option 2: custom FileDialog ("ShipFileDialog"), with directory tree on the left and preview in main area
+			- Show also name, dimensions, and total mass
 
 - Sounds:
 	- Should lower the volume of stress sounds?

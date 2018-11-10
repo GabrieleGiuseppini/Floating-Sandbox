@@ -1116,7 +1116,7 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
     //
 
     // Greater adjustment => underrated distance => wider diffusion
-    float const adjustmentCoefficient = powf(1.0f - gameParameters.LightDiffusionAdjustment, 2.0f);
+    float const adjustmentCoefficient = 10.0f * powf(1.0f - gameParameters.LightDiffusionAdjustment, 2.0f);
 
     // Zero-out light at all points first
     for (auto pointIndex : mPoints)
@@ -1501,15 +1501,17 @@ void Ship::DoAntiMatterBombPreimplosion(
     float sequenceProgress,
     GameParameters const & gameParameters)
 {
+    float const strength = 
+        100000.0f 
+        * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
+
     // Store the force field
     mCurrentForceFields.emplace_back(
         new RadialSpaceWarpForceField(
             centerPosition,
             7.0f + sequenceProgress * 100.0f,
             10.0f,
-            100000.0f));
-
-    // TODO: use game parameters?
+            strength));
 }
 
 void Ship::DoAntiMatterBombImplosion(
@@ -1517,11 +1519,17 @@ void Ship::DoAntiMatterBombImplosion(
     float sequenceProgress,
     GameParameters const & gameParameters)
 {
+    float const strength =
+        (sequenceProgress * sequenceProgress * sequenceProgress)
+        * gameParameters.AntiMatterBombImplosionStrength
+        * 10000.0f
+        * (gameParameters.IsUltraViolentMode ? 50.0f : 1.0f);
+        
     // Store the force field
     mCurrentForceFields.emplace_back(
         new ImplosionForceField(
             centerPosition,
-            (sequenceProgress * sequenceProgress * sequenceProgress) * 30000.0f));
+            strength));
 }
 
 void Ship::DoAntiMatterBombExplosion(
@@ -1529,7 +1537,22 @@ void Ship::DoAntiMatterBombExplosion(
     float sequenceProgress,
     GameParameters const & gameParameters)
 {
-    // TODO
+    //
+    // Single explosion peak at progress=0.0
+    //
+
+    if (0.0f == sequenceProgress)
+    {
+        float const strength = 
+            30000.0f
+            * (gameParameters.IsUltraViolentMode ? 50.0f : 1.0f);
+
+        // Store the force field
+        mCurrentForceFields.emplace_back(
+            new RadialExplosionForceField(
+                centerPosition,
+                strength));
+    }
 }
 
 }
