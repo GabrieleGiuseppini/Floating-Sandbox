@@ -40,6 +40,8 @@ private:
     void OnShowStressCheckBoxClick(wxCommandEvent & event);
     void OnWireframeModeCheckBoxClick(wxCommandEvent & event);
     
+    void OnPlayBreakSoundsCheckBoxClick(wxCommandEvent & event);
+    void OnPlayStressSoundsCheckBoxClick(wxCommandEvent & event);
     void OnPlaySinkingMusicCheckBoxClick(wxCommandEvent & event);
 
     void OnOkButton(wxCommandEvent & event);
@@ -82,6 +84,10 @@ private:
     wxCheckBox* mWireframeModeCheckBox;
 
     // Sound
+    std::unique_ptr<SliderControl> mEffectsVolumeSlider;
+    std::unique_ptr<SliderControl> mMusicVolumeSlider;
+    wxCheckBox * mPlayBreakSoundsCheckBox;
+    wxCheckBox * mPlayStressSoundsCheckBox;
     wxCheckBox * mPlaySinkingMusicCheckBox;
 
     wxButton * mOkButton;

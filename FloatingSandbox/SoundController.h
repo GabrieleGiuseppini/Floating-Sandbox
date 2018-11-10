@@ -37,9 +37,49 @@ public:
 
     void SetPaused(bool isPaused);
 
-    void SetMute(bool isMute);
+    void SetMuted(bool isMuted);
 
-    void SetVolume(float volume);
+    float GetMasterEffectsVolume() const
+    {
+        return mMasterEffectsVolume;
+    }
+
+    void SetMasterEffectsVolume(float volume);
+
+    float GetMasterMusicVolume() const
+    {
+        return mMasterMusicVolume;
+    }
+
+    void SetMasterMusicVolume(float volume);
+
+    bool GetMasterEffectsMuted() const
+    {
+        return mMasterEffectsMuted;
+    }
+
+    void SetMasterEffectsMuted(bool isMuted);
+
+    bool GetMasterMusicMuted() const
+    {
+        return mMasterMusicMuted;
+    }
+
+    void SetMasterMusicMuted(bool isMuted);
+
+    bool GetPlayBreakSounds() const
+    {
+        return mPlayBreakSounds;
+    }
+
+    void SetPlayBreakSounds(bool playBreakSounds);
+
+    bool GetPlayStressSounds() const
+    {
+        return mPlayStressSounds;
+    }
+
+    void SetPlayStressSounds(bool playStressSounds);
 
     bool GetPlaySinkingMusic() const
     {
@@ -246,6 +286,141 @@ private:
 
 private:
 
+    // Our wrapper for sf:Sound; provides volume control
+    class GameSound : public sf::Sound
+    {
+        public:
+
+            GameSound(
+                sf::SoundBuffer const & soundBuffer,
+                float volume,
+                float masterVolume,
+                bool isMuted)
+                : sf::Sound(soundBuffer)
+                , mVolume(volume)
+                , mMasterVolume(masterVolume)
+                , mIsMuted(isMuted)
+            {
+                InternalSetVolume();
+            }
+
+            void setVolume(float volume)
+            {
+                mVolume = volume;
+                InternalSetVolume();
+            }
+
+            void addVolume(float volume)
+            {
+                mVolume += volume;
+                InternalSetVolume();
+            }
+
+            void setMasterVolume(float masterVolume)
+            {
+                mMasterVolume = masterVolume;
+                InternalSetVolume();
+            }
+
+            void setMuted(bool isMuted)
+            {
+                mIsMuted = isMuted;
+                InternalSetVolume();
+            }
+
+            void setVolumes(
+                float volume,
+                float masterVolume,
+                bool isMuted)
+            {
+                mVolume = volume;
+                mMasterVolume = masterVolume;
+                mIsMuted = isMuted;
+                InternalSetVolume();
+            }
+
+        private:
+
+            void InternalSetVolume()
+            {
+                if (!mIsMuted)
+                {
+                    // 100*(1 - e^(-0.01*x))
+                    float localVolume = 1.0f - exp(-0.01f * mVolume);
+                    sf::Sound::setVolume(100.0f * localVolume * (mMasterVolume / 100.0f));
+                }
+                else
+                {
+                    sf::Sound::setVolume(0.0f);
+                }
+            }
+
+            float mVolume;
+            float mMasterVolume;
+            bool mIsMuted;
+    };
+
+    // Our wrapper for sf:Music; provides volume control
+    class GameMusic : public sf::Music
+    {
+    public:
+
+        GameMusic(
+            float volume,
+            float masterVolume,
+            bool isMuted)
+            : mVolume(volume)
+            , mMasterVolume(masterVolume)
+            , mIsMuted(isMuted)
+        {
+            InternalSetVolume();
+        }
+
+        void setVolume(float volume)
+        {
+            mVolume = volume;
+            InternalSetVolume();
+        }
+
+        void setMasterVolume(float masterVolume)
+        {
+            mMasterVolume = masterVolume;
+            InternalSetVolume();
+        }
+
+        void setMuted(bool isMuted)
+        {
+            mIsMuted = isMuted;
+            InternalSetVolume();
+        }
+
+        void setVolumes(
+            float volume,
+            float masterVolume,
+            bool isMuted)
+        {
+            mVolume = volume;
+            mMasterVolume = masterVolume;
+            mIsMuted = isMuted;
+            InternalSetVolume();
+        }
+
+    private:
+
+        void InternalSetVolume()
+        {
+            if (!mIsMuted)
+                sf::Music::setVolume(100.0f * (mVolume / 100.0f) * (mMasterVolume / 100.0f));
+            else
+                sf::Music::setVolume(0.0f);
+        }
+
+        float mVolume;
+        float mMasterVolume;
+        bool mIsMuted;
+    };
+
+
     struct ContinuousSound
     {
         ContinuousSound()
@@ -256,19 +431,34 @@ private:
         {
         }
 
-        explicit ContinuousSound(std::unique_ptr<sf::SoundBuffer> soundBuffer)
+        explicit ContinuousSound(
+            std::unique_ptr<sf::SoundBuffer> soundBuffer,
+            float volume,
+            float masterVolume,
+            bool isMuted)
             : ContinuousSound()
         {
-            Initialize(std::move(soundBuffer));
+            Initialize(
+                std::move(soundBuffer),
+                volume,
+                masterVolume,
+                isMuted);
         }
 
-        void Initialize(std::unique_ptr<sf::SoundBuffer> soundBuffer)
+        void Initialize(
+            std::unique_ptr<sf::SoundBuffer> soundBuffer,
+            float volume,
+            float masterVolume,
+            bool isMuted)
         {
             assert(!mSoundBuffer && !mSound);
 
             mSoundBuffer = std::move(soundBuffer);
-            mSound = std::make_unique<sf::Sound>();
-            mSound->setBuffer(*mSoundBuffer);
+            mSound = std::make_unique<GameSound>(
+                *mSoundBuffer,
+                volume,
+                masterVolume,
+                isMuted);
             mSound->setLoop(true);
         }
 
@@ -277,6 +467,22 @@ private:
             if (!!mSound)
             {
                 mSound->setVolume(volume);
+            }
+        }
+
+        void SetMasterVolume(float masterVolume)
+        {
+            if (!!mSound)
+            {
+                mSound->setMasterVolume(masterVolume);
+            }
+        }
+
+        void SetMuted(bool isMuted)
+        {
+            if (!!mSound)
+            {
+                mSound->setMuted(isMuted);
             }
         }
 
@@ -346,7 +552,7 @@ private:
 
     private:
         std::unique_ptr<sf::SoundBuffer> mSoundBuffer;
-        std::unique_ptr<sf::Sound> mSound;
+        std::unique_ptr<GameSound> mSound;
 
         // True/False if we are paused/not paused
         bool mCurrentPauseState;
@@ -390,9 +596,18 @@ private:
             , mLastChosenAlternative(std::numeric_limits<size_t>::max())
         {}
 
-        void AddAlternative(std::unique_ptr<sf::SoundBuffer> soundBuffer)
+        void AddAlternative(
+            std::unique_ptr<sf::SoundBuffer> soundBuffer,
+            float volume,
+            float masterVolume,
+            bool isMuted)
         {
-            mSoundAlternatives.emplace_back(std::move(soundBuffer));
+            mSoundAlternatives.emplace_back(
+                std::move(soundBuffer),
+                volume,
+                masterVolume,
+                isMuted);
+
             mSoundAlternativePlayCounts.emplace_back(0);
         }
 
@@ -442,6 +657,39 @@ private:
             mSoundAlternatives[alternative].AggregateUpdate(mSoundAlternativePlayCounts[alternative]);
         }
 
+        void SetVolume(float volume)
+        {
+            std::for_each(
+                mSoundAlternatives.begin(),
+                mSoundAlternatives.end(),
+                [&volume](auto & s)
+                {
+                    s.SetVolume(volume);
+                });
+        }
+
+        void SetMasterVolume(float masterVolume)
+        {
+            std::for_each(
+                mSoundAlternatives.begin(),
+                mSoundAlternatives.end(),
+                [&masterVolume](auto & s)
+                {
+                    s.SetMasterVolume(masterVolume);
+                });
+        }
+
+        void SetMuted(bool isMuted)
+        {
+            std::for_each(
+                mSoundAlternatives.begin(),
+                mSoundAlternatives.end(),
+                [&isMuted](auto & s)
+                {
+                    s.SetMuted(isMuted);
+                });
+        }
+
         void SetPaused(bool isPaused)
         {
             std::for_each(
@@ -479,9 +727,17 @@ private:
             , mObjectsPlayingSound()
         {}
 
-        void Initialize(std::unique_ptr<sf::SoundBuffer> soundBuffer)
+        void Initialize(
+            std::unique_ptr<sf::SoundBuffer> soundBuffer,
+            float volume,
+            float masterVolume,
+            bool isMuted)
         {
-            mSound.Initialize(std::move(soundBuffer));
+            mSound.Initialize(
+                std::move(soundBuffer),
+                volume,
+                masterVolume,
+                isMuted);
         }
 
         void Reset()
@@ -519,6 +775,16 @@ private:
             mSound.SetVolume(volume);
         }
 
+        void SetMasterVolume(float volume)
+        {
+            mSound.SetMasterVolume(volume);
+        }
+
+        void SetMuted(bool muted)
+        {
+            mSound.SetMuted(muted);
+        }
+
         void Start()
         {
             mSound.Start();
@@ -543,13 +809,13 @@ private:
     struct PlayingSound
     {
         SoundType Type;
-        std::unique_ptr<sf::Sound> Sound;
+        std::unique_ptr<GameSound> Sound;
         std::chrono::steady_clock::time_point StartedTimestamp;
         bool IsInterruptible;
 
         PlayingSound(
             SoundType type,
-            std::unique_ptr<sf::Sound> sound,
+            std::unique_ptr<GameSound> sound,
             std::chrono::steady_clock::time_point startedTimestamp,
             bool isInterruptible)
             : Type(type)
@@ -613,7 +879,13 @@ private:
     // State
     //
 
-    float mCurrentVolume;
+    float mMasterEffectsVolume;
+    float mMasterMusicVolume;
+    float mMasterEffectsMuted;
+    float mMasterMusicMuted;
+
+    bool mPlayBreakSounds;
+    bool mPlayStressSounds;
     bool mPlaySinkingMusic;
 
     float mLastWaterSplashed;
@@ -664,5 +936,5 @@ private:
     // Music
     //
 
-    sf::Music mSinkingMusic;
+    GameMusic mSinkingMusic;
 };

@@ -22,7 +22,12 @@ SoundController::SoundController(
     ProgressCallback const & progressCallback)
     : mResourceLoader(std::move(resourceLoader))
     // State
-    , mCurrentVolume(100.0f)
+    , mMasterEffectsVolume(100.0f)
+    , mMasterMusicVolume(100.0f)
+    , mMasterEffectsMuted(false)
+    , mMasterMusicMuted(false)
+    , mPlayBreakSounds(true)
+    , mPlayStressSounds(true)
     , mPlaySinkingMusic(true)
     , mLastWaterSplashed(0.0f)
     , mCurrentWaterSplashedTrigger(WaveSplashTriggerSize)
@@ -43,7 +48,7 @@ SoundController::SoundController(
     , mTimerBombFastFuseSound()
     , mAntiMatterBombContainedSounds()
     // Music
-    , mSinkingMusic()
+    , mSinkingMusic(SinkingMusicVolume, mMasterMusicVolume, mMasterMusicMuted)
 {    
     //
     // Initialize Music
@@ -55,7 +60,6 @@ SoundController::SoundController(
     }
 
     mSinkingMusic.setLoop(true);
-    mSinkingMusic.setVolume(SinkingMusicVolume);
 
 
     //
@@ -108,36 +112,68 @@ SoundController::SoundController(
             if (uMatch[2].matched)
             {
                 assert(uMatch[2].str() == "underwater");
-                mSawUnderwaterSound.Initialize(std::move(soundBuffer));
+                mSawUnderwaterSound.Initialize(
+                    std::move(soundBuffer),
+                    100.0f,
+                    mMasterEffectsVolume,
+                    mMasterEffectsMuted);
             }
             else
             {
-                mSawAbovewaterSound.Initialize(std::move(soundBuffer));
+                mSawAbovewaterSound.Initialize(
+                    std::move(soundBuffer),
+                    100.0f,
+                    mMasterEffectsVolume,
+                    mMasterEffectsMuted);
             }            
         }
         else if (soundType == SoundType::Draw)
         {
-            mDrawSound.Initialize(std::move(soundBuffer));
+            mDrawSound.Initialize(
+                std::move(soundBuffer),
+                100.0f,
+                mMasterEffectsVolume,
+                mMasterEffectsMuted);
         }
         else if (soundType == SoundType::Swirl)
         {
-            mSwirlSound.Initialize(std::move(soundBuffer));
+            mSwirlSound.Initialize(
+                std::move(soundBuffer),
+                100.0f,
+                mMasterEffectsVolume,
+                mMasterEffectsMuted);
         }
         else if (soundType == SoundType::WaterRush)
         {
-            mWaterRushSound.Initialize(std::move(soundBuffer));
+            mWaterRushSound.Initialize(
+                std::move(soundBuffer),
+                100.0f,
+                mMasterEffectsVolume,
+                mMasterEffectsMuted);
         }
         else if (soundType == SoundType::WaterSplash)
         {
-            mWaterSplashSound.Initialize(std::move(soundBuffer));
+            mWaterSplashSound.Initialize(
+                std::move(soundBuffer),
+                100.0f,
+                mMasterEffectsVolume,
+                mMasterEffectsMuted);
         }
         else if (soundType == SoundType::TimerBombSlowFuse)
         {
-            mTimerBombSlowFuseSound.Initialize(std::move(soundBuffer));
+            mTimerBombSlowFuseSound.Initialize(
+                std::move(soundBuffer),
+                100.0f,
+                mMasterEffectsVolume,
+                mMasterEffectsMuted);
         }
         else if (soundType == SoundType::TimerBombFastFuse)
         {
-            mTimerBombFastFuseSound.Initialize(std::move(soundBuffer));
+            mTimerBombFastFuseSound.Initialize(
+                std::move(soundBuffer),
+                100.0f,
+                mMasterEffectsVolume,
+                mMasterEffectsMuted);
         }
         else if (soundType == SoundType::Break || soundType == SoundType::Destroy || soundType == SoundType::Stress)
         {
@@ -261,7 +297,11 @@ SoundController::SoundController(
             // Initialize continuous sound
             //
 
-            mAntiMatterBombContainedSounds.AddAlternative(std::move(soundBuffer));
+            mAntiMatterBombContainedSounds.AddAlternative(
+                std::move(soundBuffer),
+                100.0f,
+                mMasterEffectsVolume,
+                mMasterEffectsMuted);
         }
         else
         {
@@ -342,28 +382,107 @@ void SoundController::SetPaused(bool isPaused)
     }
 }
 
-void SoundController::SetMute(bool isMute)
+void SoundController::SetMuted(bool isMuted)
 {
-    if (isMute)
-        sf::Listener::setGlobalVolume(0.0f);
-    else
-        sf::Listener::setGlobalVolume(mCurrentVolume);
+    sf::Listener::setGlobalVolume(isMuted ? 0.0f : 100.0f);
 }
 
-void SoundController::SetVolume(float volume)
+void SoundController::SetMasterEffectsVolume(float volume)
 {
-    mCurrentVolume = volume;
-    sf::Listener::setGlobalVolume(mCurrentVolume);
+    mMasterEffectsVolume = volume;
+
+    for (auto const & playingSound : mCurrentlyPlayingOneShotSounds)
+    {
+        playingSound.Sound->setMasterVolume(mMasterEffectsVolume);
+    }
+
+    mSawAbovewaterSound.SetMasterVolume(mMasterEffectsVolume);
+    mSawUnderwaterSound.SetMasterVolume(mMasterEffectsVolume);
+    mDrawSound.SetMasterVolume(mMasterEffectsVolume);
+    mSwirlSound.SetMasterVolume(mMasterEffectsVolume);
+
+    mWaterRushSound.SetMasterVolume(mMasterEffectsVolume);
+    mWaterSplashSound.SetMasterVolume(mMasterEffectsVolume);
+    mTimerBombSlowFuseSound.SetMasterVolume(mMasterEffectsVolume);
+    mTimerBombFastFuseSound.SetMasterVolume(mMasterEffectsVolume);
+    mAntiMatterBombContainedSounds.SetMasterVolume(mMasterEffectsVolume);
+}
+
+void SoundController::SetMasterMusicVolume(float volume)
+{
+    mMasterMusicVolume = volume;
+
+    mSinkingMusic.setMasterVolume(volume);
+}
+
+void SoundController::SetMasterEffectsMuted(bool isMuted)
+{
+    mMasterEffectsMuted = isMuted;
+
+    for (auto const & playingSound : mCurrentlyPlayingOneShotSounds)
+    {
+        playingSound.Sound->setMuted(mMasterEffectsMuted);
+    }
+
+    mSawAbovewaterSound.SetMuted(mMasterEffectsMuted);
+    mSawUnderwaterSound.SetMuted(mMasterEffectsMuted);
+    mDrawSound.SetMuted(mMasterEffectsMuted);;
+    mSwirlSound.SetMuted(mMasterEffectsMuted);;
+
+    mWaterRushSound.SetMuted(mMasterEffectsMuted);;
+    mWaterSplashSound.SetMuted(mMasterEffectsMuted);;
+    mTimerBombSlowFuseSound.SetMuted(mMasterEffectsMuted);;
+    mTimerBombFastFuseSound.SetMuted(mMasterEffectsMuted);;
+    mAntiMatterBombContainedSounds.SetMuted(mMasterEffectsMuted);;
+}
+
+void SoundController::SetMasterMusicMuted(bool isMuted)
+{
+    mMasterMusicMuted = isMuted;
+
+    mSinkingMusic.setMuted(mMasterMusicMuted);
+}
+
+void SoundController::SetPlayBreakSounds(bool playBreakSounds)
+{
+    mPlayBreakSounds = playBreakSounds;
+
+    if (!mPlayBreakSounds)
+    {
+        for (auto const & playingSound : mCurrentlyPlayingOneShotSounds)
+        {
+            if (SoundType::Break == playingSound.Type)
+            {
+                playingSound.Sound->stop();
+            }
+        }
+    }
+}
+
+void SoundController::SetPlayStressSounds(bool playStressSounds)
+{
+    mPlayStressSounds = playStressSounds;
+
+    if (!mPlayStressSounds)
+    {
+        for (auto const & playingSound : mCurrentlyPlayingOneShotSounds)
+        {
+            if (SoundType::Stress == playingSound.Type)
+            {
+                playingSound.Sound->stop();
+            }
+        }
+    }
 }
 
 void SoundController::SetPlaySinkingMusic(bool playSinkingMusic)
 {
-    if (playSinkingMusic)
-        mSinkingMusic.setVolume(SinkingMusicVolume);
-    else
-        mSinkingMusic.setVolume(0.0f);
-
     mPlaySinkingMusic = playSinkingMusic;
+
+    if (!mPlaySinkingMusic)
+    {
+        mSinkingMusic.stop();
+    }
 }
 
 void SoundController::PlayDrawSound(bool /*isUnderwater*/)
@@ -499,13 +618,16 @@ void SoundController::OnStress(
 {
     assert(nullptr != material);
 
-    PlayMSUOneShotMultipleChoiceSound(
-        SoundType::Stress,
-        material,
-        size,
-        isUnderwater,
-        10.0f,
-        true);
+    if (mPlayStressSounds)
+    {
+        PlayMSUOneShotMultipleChoiceSound(
+            SoundType::Stress,
+            material,
+            size,
+            isUnderwater,
+            10.0f,
+            true);
+    }
 }
 
 void SoundController::OnBreak(
@@ -515,13 +637,16 @@ void SoundController::OnBreak(
 {
     assert(nullptr != material);
 
-    PlayMSUOneShotMultipleChoiceSound(
-        SoundType::Break, 
-        material, 
-        size, 
-        isUnderwater,
-        10.0f,
-        true);
+    if (mPlayBreakSounds)
+    {
+        PlayMSUOneShotMultipleChoiceSound(
+            SoundType::Break,
+            material,
+            size,
+            isUnderwater,
+            10.0f,
+            true);
+    }
 }
 
 void SoundController::OnSinkingBegin(unsigned int /*shipId*/)
@@ -570,7 +695,7 @@ void SoundController::OnWaterSplashed(float waterSplashed)
         {
             // 100 * (-1 / 1.8^(0.08 * x) + 1)
             //   3: 13.0
-            float waveVolume = 35.f * (-1.f / std::pow(1.8f, 0.08f * std::abs(waterSplashed)) + 1.f);
+            float waveVolume = 20.f * (-1.f / std::pow(1.8f, 0.08f * std::abs(waterSplashed)) + 1.f);
 
             PlayOneShotMultipleChoiceSound(
                 SoundType::Wave,
@@ -594,7 +719,7 @@ void SoundController::OnWaterSplashed(float waterSplashed)
     // Adjust continuous splash sound
     //
 
-    float splashVolume = 20.f * (-1.f / std::pow(1.3f, 0.01f * std::abs(waterSplashed)) + 1.f);
+    float splashVolume = 15.f * (-1.f / std::pow(1.3f, 0.01f * std::abs(waterSplashed)) + 1.f);
     mWaterSplashSound.SetVolume(splashVolume);
     mWaterSplashSound.Start();
 }
@@ -994,11 +1119,7 @@ void SoundController::PlayOneShotSound(
         if (currentlyPlayingSound.Sound->getBuffer() == soundBuffer
             && std::chrono::duration_cast<std::chrono::milliseconds>(now - currentlyPlayingSound.StartedTimestamp) < MinDeltaTimeSound)
         {
-            // TODOHERE: not plain sum
-            currentlyPlayingSound.Sound->setVolume(
-                std::min(
-                    100.0f,
-                    currentlyPlayingSound.Sound->getVolume() + volume));
+            currentlyPlayingSound.Sound->addVolume(volume);
 
             return;
         }
@@ -1028,10 +1149,12 @@ void SoundController::PlayOneShotSound(
     // Create and play sound
     //
 
-    std::unique_ptr<sf::Sound> sound = std::make_unique<sf::Sound>();
-    sound->setBuffer(*soundBuffer);
-
-    sound->setVolume(volume);
+    std::unique_ptr<GameSound> sound = std::make_unique<GameSound>(
+        *soundBuffer,
+        volume,
+        mMasterEffectsVolume,
+        mMasterEffectsMuted);
+    
     sound->play();    
 
     mCurrentlyPlayingOneShotSounds.emplace_back(

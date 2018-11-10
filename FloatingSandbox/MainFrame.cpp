@@ -978,7 +978,7 @@ void MainFrame::OnNormalScreenMenuItemSelected(wxCommandEvent & /*event*/)
 void MainFrame::OnMuteMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mSoundController);
-    mSoundController->SetMute(mMuteMenuItem->IsChecked());
+    mSoundController->SetMuted(mMuteMenuItem->IsChecked());
 }
 
 void MainFrame::OnHelpMenuItemSelected(wxCommandEvent & /*event*/)

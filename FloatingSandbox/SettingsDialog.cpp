@@ -23,6 +23,8 @@ const long ID_ULTRA_VIOLENT_CHECKBOX = wxNewId();
 const long ID_SEE_SHIP_THROUGH_SEA_WATER_CHECKBOX = wxNewId();
 const long ID_SHOW_STRESS_CHECKBOX = wxNewId();
 const long ID_WIREFRAME_MODE_CHECKBOX = wxNewId();
+const long ID_PLAY_BREAK_SOUNDS_CHECKBOX = wxNewId();
+const long ID_PLAY_STRESS_SOUNDS_CHECKBOX = wxNewId();
 const long ID_PLAY_SINKING_MUSIC_CHECKBOX = wxNewId();
 
 SettingsDialog::SettingsDialog(
@@ -233,6 +235,18 @@ void SettingsDialog::OnWireframeModeCheckBoxClick(wxCommandEvent & /*event*/)
     mApplyButton->Enable(true);
 }
 
+void SettingsDialog::OnPlayBreakSoundsCheckBoxClick(wxCommandEvent & /*event*/)
+{
+    // Remember we're dirty now
+    mApplyButton->Enable(true);
+}
+
+void SettingsDialog::OnPlayStressSoundsCheckBoxClick(wxCommandEvent & /*event*/)
+{
+    // Remember we're dirty now
+    mApplyButton->Enable(true);
+}
+
 void SettingsDialog::OnPlaySinkingMusicCheckBoxClick(wxCommandEvent & /*event*/)
 {
     // Remember we're dirty now
@@ -359,6 +373,17 @@ void SettingsDialog::ApplySettings()
     mGameController->SetShowShipStress(mShowStressCheckBox->IsChecked());
 
     mGameController->SetWireframeMode(mWireframeModeCheckBox->IsChecked());
+
+
+    mSoundController->SetMasterEffectsVolume(
+        mEffectsVolumeSlider->GetValue());
+
+    mSoundController->SetMasterMusicVolume(
+        mMusicVolumeSlider->GetValue());
+
+    mSoundController->SetPlayBreakSounds(mPlayBreakSoundsCheckBox->IsChecked());
+
+    mSoundController->SetPlayStressSounds(mPlayStressSoundsCheckBox->IsChecked());
 
     mSoundController->SetPlaySinkingMusic(mPlaySinkingMusicCheckBox->IsChecked());
 }
@@ -804,14 +829,60 @@ void SettingsDialog::PopulateSoundPanel(wxPanel * panel)
 {
     wxBoxSizer* controlsSizer = new wxBoxSizer(wxHORIZONTAL);
 
+    // Effects volume
+
+    mEffectsVolumeSlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Effects Volume",
+        mSoundController->GetMasterEffectsVolume(),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<LinearSliderCore>(
+            0.0f,
+            100.0f));
+    
+    controlsSizer->Add(mEffectsVolumeSlider.get(), 1, wxALL, SliderBorder);
+
+
+    // Music volume
+
+    mMusicVolumeSlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Music Volume",
+        mSoundController->GetMasterMusicVolume(),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<LinearSliderCore>(
+            0.0f,
+            100.0f));
+    
+    controlsSizer->Add(mMusicVolumeSlider.get(), 1, wxALL, SliderBorder);
+
 
     // Check boxes
 
     wxStaticBoxSizer* checkboxesSizer = new wxStaticBoxSizer(wxVERTICAL, panel);
 
+    mPlayBreakSoundsCheckBox = new wxCheckBox(panel, ID_PLAY_BREAK_SOUNDS_CHECKBOX, _("Play Break Sounds"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Play Break Sounds Checkbox"));
+    Connect(ID_PLAY_BREAK_SOUNDS_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnPlayBreakSoundsCheckBoxClick);
+    checkboxesSizer->Add(mPlayBreakSoundsCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
+
+    mPlayStressSoundsCheckBox = new wxCheckBox(panel, ID_PLAY_STRESS_SOUNDS_CHECKBOX, _("Play Stress Sounds"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Play Stress Sounds Checkbox"));
+    Connect(ID_PLAY_STRESS_SOUNDS_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnPlayStressSoundsCheckBoxClick);
+    checkboxesSizer->Add(mPlayStressSoundsCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
+
     mPlaySinkingMusicCheckBox = new wxCheckBox(panel, ID_PLAY_SINKING_MUSIC_CHECKBOX, _("Play Farewell Music"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Play Sinking Music Checkbox"));
     Connect(ID_PLAY_SINKING_MUSIC_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnPlaySinkingMusicCheckBoxClick);
-
     checkboxesSizer->Add(mPlaySinkingMusicCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
 
     controlsSizer->Add(checkboxesSizer, 0, wxALL, SliderBorder);
@@ -825,6 +896,7 @@ void SettingsDialog::PopulateSoundPanel(wxPanel * panel)
 void SettingsDialog::ReadSettings()
 {
     assert(!!mGameController);
+
 
     mStiffnessSlider->SetValue(mGameController->GetStiffnessAdjustment());
     
@@ -930,6 +1002,15 @@ void SettingsDialog::ReadSettings()
 
     mWireframeModeCheckBox->SetValue(mGameController->GetWireframeMode());
     mShipRenderModeRadioBox->Enable(!mGameController->GetWireframeMode());
+
+
+    mEffectsVolumeSlider->SetValue(mSoundController->GetMasterEffectsVolume());
+
+    mMusicVolumeSlider->SetValue(mSoundController->GetMasterMusicVolume());
+
+    mPlayBreakSoundsCheckBox->SetValue(mSoundController->GetPlayBreakSounds());
+
+    mPlayStressSoundsCheckBox->SetValue(mSoundController->GetPlayStressSounds());
 
     mPlaySinkingMusicCheckBox->SetValue(mSoundController->GetPlaySinkingMusic());
 }

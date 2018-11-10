@@ -109,15 +109,10 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 	- Warship
 	- See Moleskine
 
-- Suggestions:
-	+ Lamp brightness even lower
-	- Do those sounds controls below
-	- Two volume controls for music and sounds (all but music)
-		- No mute for music anymore
-- Bugs:
-	+ Lights up/down: water becomes transparent
-	- Check those textures
+- Suggestions:	
 
+- Bugs:
+	- Check those textures
 
 - Optimizations:
 
@@ -325,7 +320,17 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 					+ Explosion
 						+ Add to centrifugal
 
-			= TODOHERE: Lower volume of all breaking/stress (passive) sounds 
+			= TODOHERE: Lower volume of all breaking/stress (passive) sounds
+				+ class GameSound : sf::Sound
+					+ setVolume
+					+ setMasterVolume
+					+ setMuted
+						+ each sets volume immediately, no checks
+					+ Test:
+						+ master volume changes only affects currently-playing category
+						+ master volume changes affect future sounds
+						+ play farewell sound affects currently playing
+						+ play farewell sound affects future music
 				- Find another version of volume sum
 				- Then test again break and stress sounds for volumne
 				+ Need to mark CurrentlyPlayingSounds as expendable or not			
@@ -501,10 +506,11 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 - Controls:
 	+ World settings: number of clouds, wind
 
-	- SettingsDialog: also sound options
+	+ SettingsDialog: also sound options
 		+ Turn on/off sinking music
-		- Stress sounds on/off
-		- Break sounds on/off
+		+ Stress sounds on/off
+		+ Break sounds on/off
+		+ Two volume controls for music and sounds (all but music)
 
 	- SettingsDialog: save settings, and defaults
 		- JSON for both game & render params, assembled & saved by gamecontroller, who also loads it on startup if exists 
