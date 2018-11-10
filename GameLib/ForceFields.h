@@ -78,9 +78,15 @@ public:
 
     BlastForceField(
         vec2f const & centerPosition,
-        float blastRadius)
+        float blastRadius,
+        float strength,
+        ConnectedComponentId connectedComponentId,
+        bool destroyPoint)
         : mCenterPosition(centerPosition)
         , mBlastRadius(blastRadius)
+        , mStrength(strength)
+        , mConnectedComponentId(connectedComponentId)
+        , mDestroyPoint(destroyPoint)
     {}
 
     virtual void Apply(Points & points) const override;
@@ -89,6 +95,9 @@ private:
 
     vec2f const mCenterPosition;
     float const mBlastRadius;
+    float const mStrength;
+    ConnectedComponentId const mConnectedComponentId;
+    bool const mDestroyPoint;
 };
 
 /*

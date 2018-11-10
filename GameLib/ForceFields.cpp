@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "Physics.h"
 
+#include <algorithm>
+
 namespace Physics {
 
 void DrawForceField::Apply(Points & points) const
@@ -34,9 +36,56 @@ void SwirlForceField::Apply(Points & points) const
 
 void BlastForceField::Apply(Points & points) const
 {
+    // 
+    // Go through all the connected component's points and, for each point in radius:
+    // - Keep closest to blast position, which we'll Destroy() later (if this is the fist frame of the 
+    //   blast sequence)
+    // - Flip over the point outside of the radius
+    //
+
+    float const squareBlastRadius = mBlastRadius * mBlastRadius;
+    constexpr float DtSquared = GameParameters::SimulationStepTimeDuration<float> * GameParameters::SimulationStepTimeDuration<float>;
+
+    float closestPointSquareDistance = std::numeric_limits<float>::max();
+    ElementIndex closestPointIndex = NoneElementIndex;
+
     for (auto pointIndex : points)
     {
-        // TODO
+        if (points.GetConnectedComponentId(pointIndex) == mConnectedComponentId)
+        {
+            vec2f pointRadius = points.GetPosition(pointIndex) - mCenterPosition;
+            float squarePointDistance = pointRadius.squareLength();
+            if (squarePointDistance < squareBlastRadius)
+            {
+                // Check whether this point is the closest
+                if (squarePointDistance < closestPointSquareDistance)
+                {
+                    closestPointSquareDistance = squarePointDistance;
+                    closestPointIndex = pointIndex;
+                }
+
+                // Create acceleration to flip the point
+                vec2f flippedRadius = pointRadius.normalise() * (mBlastRadius + (mBlastRadius - pointRadius.length()));
+                vec2f newPosition = mCenterPosition + flippedRadius;
+                points.GetForce(pointIndex) +=
+                    (newPosition - points.GetPosition(pointIndex)) 
+                    / DtSquared
+                    * mStrength
+                    * points.GetMass(pointIndex);
+            }
+        }
+    }
+
+
+    //
+    // Eventually destroy the closest point
+    //
+
+    if (mDestroyPoint
+        && NoneElementIndex != closestPointIndex)
+    {
+        // Destroy point
+        points.Destroy(closestPointIndex);
     }
 }
 

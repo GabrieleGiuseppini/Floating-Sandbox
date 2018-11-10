@@ -109,11 +109,6 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 	- Warship
 	- See Moleskine
 
-- Suggestions:	
-
-- Bugs:
-	- Check those textures
-
 - Optimizations:
 
 	+ BufferAllocator<Type:vec2f or float>
@@ -194,9 +189,10 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 				  - This allows us to call UpdatePointForces only once
 				  - Also need to reset StaticForce buffer before UpdatePointForces, so:
 					- UpdatePointForces becomes CalculateFieldForces and take care of *filling* the buffer, overwriting it
-	- Water and Land interpolations:
+	- TODOHERE: Water and Land interpolations:
 		- 1: see if it's better to store delta's and/or other pre-calculated things
 		- 2: see if can do semi-integer x-axis interpolation
+
 	- Cache sea depth from PointDynamics at first calculation (Points?), using lambda
 
 - Gfx optimizations:
@@ -259,95 +255,6 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 
 - Dynamics:
 
-	+ Make collisions with sea floor more dramatic
-		+ Bounce velocity with specular vector
-
-	- Bombs:
-		- Bomb explosions: see if better done with force fields
-			- At each explosion frame: radial forces, centered at center, strongest at radius=f(expl frame)
-
-		- 3rd type of bomb: anti-matter bomb
-			+ [Do after texture json]
-			+ When it explodes: first sucks everything in, then evertyhing out
-				+ Controllable also via ultra-violent mode
-				+ Uses "ForceFields" (rename of "ToolForces": applied at each iteration of UpdateMechanicalDynamics and then cleared)
-				  for suck-in
-					+ ForceFields.cpp/h
-					+ Move swirl, grab, bomb explosion to this one
-			+ Requires ExplosionType argument at Ship::BlastHandler, or new BlastHandler altogether
-				+ Or see if easy to move BombBlaster inside bomb (i.e. explosion code is in bomb's state machine)
-				+ Or another way
-			+ Plan:
-				+ Media:
-					+ Sound: continuous (3 choir tones)
-					+ Sound: implosion_one (FM)
-					+ Sound: implosion_two (whirring, up)
-					+ Sound: explosion
-						+ Choir with delayed repetitions
-						+ First choir is mixed with electronic thud
-						+ More emphasys on initial explosion
-						+ Redo eventually, with long LFO
-					+ Texture: armor
-						+ Diagonal arms as well?
-					+ Texture: ball, empty
-					+ Texture: ball, cloud content
-					+ Cursor
-				+ Texture DB:
-					+ Textures.js
-					+ New groups in enum
-				+ Sound controller:
-					+ New additive continuous sound (like fuse) with random choices and volumes for each
-					+ Others
-				+ Bomb::IPhysicsHandler
-					+ Implemented by Ship
-					+ Passed to Bombs and stored as GameEventHandler (i.e. *)
-					+ Test 2 old bombs
-					+ Create force fields
-				+ ForceFields
-					+ Move DrawTo and Swirl
-						+ Test
-						+ Clear ToolForce's
-					+ Commit
-					+ PreImplosion
-					+ Implosion
-						+ Trim sound and shorten state machine interval to match
-						+ Test coriolis - angular F depending on V of point
-						+ Test with angular F being stronger when closer to center
-						+ Test with mass-independent accelerations (divide forces by mass)
-						+ Test with progress moving along 1/(x-a)
-						+ Multiplier for ultra-violent mode
-						+ Cleanup force field
-					+ Explosion
-						+ Add to centrifugal
-
-			= TODOHERE: Lower volume of all breaking/stress (passive) sounds
-				+ class GameSound : sf::Sound
-					+ setVolume
-					+ setMasterVolume
-					+ setMuted
-						+ each sets volume immediately, no checks
-					+ Test:
-						+ master volume changes only affects currently-playing category
-						+ master volume changes affect future sounds
-						+ play farewell sound affects currently playing
-						+ play farewell sound affects future music
-				- Find another version of volume sum
-				- Then test again break and stress sounds for volumne
-				+ Need to mark CurrentlyPlayingSounds as expendable or not			
-
-			+ Animation:
-				+ Cloud rotation slows down during pre-implosion, down to a halt					
-				+ Then starts slowly again from the other way around, with v=square of progress
-				+ Cross of light
-			= Misc:
-				+ Can get rid of deletion checks in force fields?
-				+ Test fuse's (slow and fast) sounds for new ContinuousSound architecture
-				+ Prevent removal if not in containment (i.e. if detonated already)
-					+ Bomb::MayBeRemoved()
-					+ Test with all 3
-				- Test other bombs' explosions with force fields
-					- Mark TODO's on this list
-
 	- Ephemeral Particles:
 		- Summary:
 			- Carve out fixed-size room at tail of Points for ephemeral particles				
@@ -402,20 +309,22 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 			  type-specific params
 			  - See if can do Points::CreateEphemeralParticle<Debris>(&&args)
 				- Requires Points::Debris to be public
+
 	- Do debris each time a spring breaks
 		- At Ship::SpringDestroyHandler()
 		- Initial particle dynamics:
 			- TODO
+
 	- Do chainsaw sparkles with Ephemeral Particles
 		- At Ship::Chainsaw for each broken spring
 		- Initial particle dynamics:
 			- Position: midpoint of spring
 			- Velocity: radial vector, according to pseudo-Gaussian centered in the direction of sawing, with magnitude uniformly random
 			- Number: per Update step: uniform random centered around SparkleDensity (ratio over 10, initially) (from GameParameters, adjustable)
+
 	- Test:
 		- Self-adjustment of kSpring and kDamp based off paper's formula (H and L bounds)
 		- Debug to see if bounds ever exceeded
-	- See if can draw a bit more often
 	- Frontier:
 		- Only for non-rope points - rope points never take part in frontier
 		- Preliminaries:
@@ -447,9 +356,6 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 						- TODO
 	- Water drag 
 		- The one already there assumes velocity always normal to surface, but we should consider surface normal instead
-	- Experiment with:
-		- Runge-Kutta
-		- Semi-implicit Euler (https://www.scss.tcd.ie/Michael.Manzke/CS7057/cs7057-1516-14-MassSpringSystems-mm.pdf)
 	- DestroyAt:
 		- Test: Ship::SpringDestroyHandler() only destroys triangles that contain A-B
 			- Should definitely make both A and B leak, as they both now have an adjacent hole
@@ -513,19 +419,35 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 		+ Two volume controls for music and sounds (all but music)
 
 	- SettingsDialog: save settings, and defaults
-		- JSON for both game & render params, assembled & saved by gamecontroller, who also loads it on startup if exists 
-		- GameParameters::ToJson()->picojson::value
-		- GameParameters::FromJson(picojson::value) (sets own)
-		- Save Settings: saves current to personal_settings.json 
-			- where? see wxwidgets or portable way
-				- Standard paths: http://docs.wxwidgets.org/3.1/classwx_standard_paths.html#a4752213ef4d7bdc71170b9e5c3691f0f
-					- Call App::SetAppName() at startup
-					- Pass user folder path to GameController at startup, so latter doesn't have to deal with wxWidgets
-				+ https://softwareengineering.stackexchange.com/questions/3956/best-way-to-save-application-settings/3990#3990?newreg=bffd79f524c14afe84f2178cd3211a94
-			- personal_settings.json loaded at startup if exists, else default_settings.json
-		- Save Settings As: saves with filename, nothing else
-		- Load Settings: loads with filename, changes own settings
-		- Reset Settings: loads default_settings.json, changes own settings
+		- JSON for game, render, and sound params
+		- MainFrame: load on startup
+			- personal_settings.json loaded if exists, else default_settings.json
+		- SettingsManager (@FloatingSandbox) - all static
+			- public:
+				- LoadSettings(GameParams &, RenderContext &, SoundController &)
+					- From personal_settings.json if exists, else default_settings.json
+				- LoadSettings(filepath, GameParams &, RenderContext &, SoundController &)
+					- From path
+				- SaveSettings(GameParams &, RenderContext &, SoundController &)
+					- To personal_settings.json 
+				- SaveSettings(GameParams &, RenderContext &, SoundController &, filepath)
+					- To filepath
+			- private:
+				- Load(json_obj, GameParams &, RenderContext &, SoundController &)
+				- Save(GameParams &, RenderContext &, SoundController &, json_obj)
+			- Standard paths: http://docs.wxwidgets.org/3.1/classwx_standard_paths.html#a4752213ef4d7bdc71170b9e5c3691f0f
+				- MainApp: call App::SetAppName() at startup
+					- With app name from version.h
+				- SettingsManager can deal directly with wxWidgets
+			- Uses:
+				- XYZ::SettingsToJson()->picojson::value
+				- XYZ::SettingsFromJson(picojson::value) (sets own)
+
+		- Dialog:
+			- Save Settings: saves current to personal_settings.json 				
+			- Save Settings As: saves with filename, nothing else
+			- Load Settings: loads with filename, changes own settings
+			- Reset Settings: loads default_settings.json, changes own settings
 
 	- Revised FileDialog for loading ships: shows previews of ships
 		- Option 1: see if possible to hook into basic FileDialog's rendering of files
@@ -533,9 +455,9 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 			- Show also name, dimensions, and total mass
 
 - Sounds:
-	- Should lower the volume of stress sounds?
 	- Revert light flicker sounds to higher (older) volume, and fix volume in SoundController instead, via const
 	- Sawing: do not publish destroy events when cutting springs, but new "Sawed" events with own metal/wood sounds
+	- Volume of effects should depend on distance/zoom
 
 -Probing:
 	- IProbe:
@@ -2027,6 +1949,90 @@ IF WX:
 					+ N1 normal, N2 underwater
 				+ Bomb removed sounds
 					+ N1 normal, N2 underwater
+
+		+ Bomb explosions: see if better done with force fields
+			+ At each explosion frame: radial forces, centered at center, strongest at radius=f(expl frame)
+
+		+ 3rd type of bomb: anti-matter bomb
+			+ [Do after texture json]
+			+ When it explodes: first sucks everything in, then evertyhing out
+				+ Controllable also via ultra-violent mode
+				+ Uses "ForceFields" (rename of "ToolForces": applied at each iteration of UpdateMechanicalDynamics and then cleared)
+				  for suck-in
+					+ ForceFields.cpp/h
+					+ Move swirl, grab, bomb explosion to this one
+			+ Requires ExplosionType argument at Ship::BlastHandler, or new BlastHandler altogether
+				+ Or see if easy to move BombBlaster inside bomb (i.e. explosion code is in bomb's state machine)
+				+ Or another way
+			+ Plan:
+				+ Media:
+					+ Sound: continuous (3 choir tones)
+					+ Sound: implosion_one (FM)
+					+ Sound: implosion_two (whirring, up)
+					+ Sound: explosion
+						+ Choir with delayed repetitions
+						+ First choir is mixed with electronic thud
+						+ More emphasys on initial explosion
+						+ Redo eventually, with long LFO
+					+ Texture: armor
+						+ Diagonal arms as well?
+					+ Texture: ball, empty
+					+ Texture: ball, cloud content
+					+ Cursor
+				+ Texture DB:
+					+ Textures.js
+					+ New groups in enum
+				+ Sound controller:
+					+ New additive continuous sound (like fuse) with random choices and volumes for each
+					+ Others
+				+ Bomb::IPhysicsHandler
+					+ Implemented by Ship
+					+ Passed to Bombs and stored as GameEventHandler (i.e. *)
+					+ Test 2 old bombs
+					+ Create force fields
+				+ ForceFields
+					+ Move DrawTo and Swirl
+						+ Test
+						+ Clear ToolForce's
+					+ Commit
+					+ PreImplosion
+					+ Implosion
+						+ Trim sound and shorten state machine interval to match
+						+ Test coriolis - angular F depending on V of point
+						+ Test with angular F being stronger when closer to center
+						+ Test with mass-independent accelerations (divide forces by mass)
+						+ Test with progress moving along 1/(x-a)
+						+ Multiplier for ultra-violent mode
+						+ Cleanup force field
+					+ Explosion
+						+ Add to centrifugal
+
+			+ Lower volume of all breaking/stress (passive) sounds
+				+ class GameSound : sf::Sound
+					+ setVolume
+					+ setMasterVolume
+					+ setMuted
+						+ each sets volume immediately, no checks
+					+ Test:
+						+ master volume changes only affects currently-playing category
+						+ master volume changes affect future sounds
+						+ play farewell sound affects currently playing
+						+ play farewell sound affects future music
+				+ Find another version of volume sum
+				+ Then test again break and stress sounds for volumne
+				+ Need to mark CurrentlyPlayingSounds as expendable or not			
+
+			+ Animation:
+				+ Cloud rotation slows down during pre-implosion, down to a halt					
+				+ Then starts slowly again from the other way around, with v=square of progress
+				+ Cross of light
+			+ Misc:
+				+ Can get rid of deletion checks in force fields?
+				+ Test fuse's (slow and fast) sounds for new ContinuousSound architecture
+				+ Prevent removal if not in containment (i.e. if detonated already)
+					+ Bomb::MayBeRemoved()
+					+ Test with all 3
+
 	+ Swirl tool
 		+ Force applied is r * AngularForce; AngularForce==m*AngularAcceleration
 			+ CW; if Shift -> CCW
@@ -2128,6 +2134,9 @@ IF WX:
 		+ See perf (orig was 3.36%)
 		+ Cleanup old
 		+ Commit
+
+	+ Make collisions with sea floor more dramatic
+		+ Bounce velocity with specular vector
 
 + Water
 	+ Water

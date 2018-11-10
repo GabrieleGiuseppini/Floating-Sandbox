@@ -1445,55 +1445,17 @@ void Ship::DoBombExplosion(
     ConnectedComponentId connectedComponentId,
     GameParameters const & gameParameters)
 {
-    // 
-    // Go through all the connected component's points and, for each point in radius:
-    // - Keep closest to blast position, which we'll Destroy() later (if this is the fist frame of the 
-    //   blast sequence)
-    // - Flip over the point outside of the radius
-    //
-
     // Blast radius: lastSequenceNumber makes it from 0.6 to BombBlastRadius
-    float blastRadius = 0.6f + (std::max(gameParameters.BombBlastRadius - 0.6f, 0.0f)) * sequenceProgress;
-    float squareBlastRadius = blastRadius * blastRadius;
+    float const blastRadius = 0.6f + (std::max(gameParameters.BombBlastRadius - 0.6f, 0.0f)) * sequenceProgress;
 
-    float closestPointSquareDistance = std::numeric_limits<float>::max();
-    ElementIndex closestPointIndex = NoneElementIndex;
-
-    for (auto pointIndex : mPoints)
-    {
-        if (!mPoints.IsDeleted(pointIndex)
-            && mPoints.GetConnectedComponentId(pointIndex) == connectedComponentId)
-        {
-            vec2f pointRadius = mPoints.GetPosition(pointIndex) - blastPosition;
-            float squarePointDistance = pointRadius.squareLength();
-            if (squarePointDistance < squareBlastRadius)
-            {
-                // Check whether this point is the closest
-                if (squarePointDistance < closestPointSquareDistance)
-                {
-                    closestPointSquareDistance = squarePointDistance;
-                    closestPointIndex = pointIndex;
-                }
-
-                // Flip the point
-                vec2f flippedRadius = pointRadius.normalise() * (blastRadius + (blastRadius - pointRadius.length()));
-                vec2f newPosition = blastPosition + flippedRadius;
-                mPoints.GetVelocity(pointIndex) = (newPosition - mPoints.GetPosition(pointIndex)) / GameParameters::MechanicalDynamicsSimulationStepTimeDuration<float>;
-                mPoints.GetPosition(pointIndex) = newPosition;
-            }
-        }
-    }
-
-    //
-    // Eventually destroy the closest point
-    //
-
-    if (sequenceProgress == 0.0f
-        && NoneElementIndex != closestPointIndex)
-    {
-        // Destroy point
-        mPoints.Destroy(closestPointIndex);
-    }
+    // Store the force field
+    mCurrentForceFields.emplace_back(
+        new BlastForceField(
+            blastPosition,
+            blastRadius,
+            1000.0f * (gameParameters.IsUltraViolentMode ? 100.0f : 1.0f),
+            connectedComponentId,
+            sequenceProgress == 0.0f));
 }
 
 void Ship::DoAntiMatterBombPreimplosion(
