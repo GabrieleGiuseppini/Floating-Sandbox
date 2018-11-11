@@ -1,6 +1,0 @@
-{
-	"structure_image":"pac0's_ship_structure.png",
-	"texture_image":"pac0's_ship_texture.png",
-	"ship_name":"Pac0's Ship",
-	"offset":{"x":0.0, "y":-5.0}
-}

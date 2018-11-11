@@ -1,0 +1,6 @@
+{
+	"structure_image":"PM_Pacmaster_structure.png.dat",
+	"texture_image":"PM_Pacmaster_texture.png.dat",
+	"ship_name":"PM_Pacmaster",
+	"offset":{"x":0.0, "y":-7.0}
+}
