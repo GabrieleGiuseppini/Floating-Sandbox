@@ -1445,7 +1445,7 @@ void Ship::DoBombExplosion(
     ConnectedComponentId connectedComponentId,
     GameParameters const & gameParameters)
 {
-    // Blast radius: lastSequenceNumber makes it from 0.6 to BombBlastRadius
+    // Blast radius: from 0.6 to BombBlastRadius
     float const blastRadius = 0.6f + (std::max(gameParameters.BombBlastRadius - 0.6f, 0.0f)) * sequenceProgress;
 
     // Store the force field
