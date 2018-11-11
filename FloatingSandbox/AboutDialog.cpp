@@ -99,7 +99,13 @@ AboutDialog::AboutDialog(
     std::vector<std::pair<std::string, std::string>> credits
     {
         {"Cover art:\t", "Dimitar Katsarov - https://www.artstation.com/stukata/profile" },
+
         {"Ship art:\t\t", "OceanLinerOrca - https://www.deviantart.com/oceanlinerorca" },
+        {"\t\t\t\t", "TopHatLemons - https://discordapp.com/" },        
+        {"\t\t\t\t", "No Light - https://discordapp.com/" },
+        {"\t\t\t\t", "RetroGraczzPL - https://discordapp.com/" },
+        {"\t\t\t\t", "SS Nomadavid - https://discordapp.com/" },
+                
         {"Textures:\t", "Tune 'Prototstar' Katerungroch"},
         {"wxWidgets:\t", "Copyright (c) 1998-2005 Julian Smart, Robert Roebling et al - https://www.wxwidgets.org/"},
         {"SFML:\t\t", "Copyright (c) Laurent Gomila - https://www.sfml-dev.org/"},

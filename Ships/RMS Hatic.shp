@@ -1,0 +1,6 @@
+{
+	"structure_image":"rms_hatic_structure.png.dat",
+	"texture_image":"rms_hatic_texture.png.dat",
+	"ship_name":"RMS Hatic",
+	"offset":{"x":0.0, "y":-6.0}
+}
