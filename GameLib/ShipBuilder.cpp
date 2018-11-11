@@ -96,7 +96,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
 
             bool isRopeEndpoint = false;
 
-            Material const * material = materials.Get(rgbColour);
+            Material const * material = materials.Find(rgbColour);
             if (nullptr == material)
             {
                 // Check whether it's a rope endpoint (#000xxx)

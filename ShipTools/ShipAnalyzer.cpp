@@ -49,7 +49,7 @@ ShipAnalyzer::AnalysisInfo ShipAnalyzer::Analyze(
                 image.Data[pixelIndex + 1],
                 image.Data[pixelIndex + 2] };
 
-            Material const * material = materials.Get(rgbColour);
+            Material const * material = materials.Find(rgbColour);
             if (nullptr != material)
             {
                 analysisInfo.TotalMass += material->Mass;

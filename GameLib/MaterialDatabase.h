@@ -99,7 +99,7 @@ public:
             *ropeMaterial);
     }
 
-    Material const * Get(std::array<uint8_t, 3u> const & structuralColourRgb) const
+    Material const * Find(std::array<uint8_t, 3u> const & structuralColourRgb) const
     {
         auto srchIt = mMaterialsMap.find(structuralColourRgb);
         if (srchIt != mMaterialsMap.end())
