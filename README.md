@@ -22,7 +22,7 @@ There are lots of ideas that I'm currently working on; some of these are:
 - Sparkles when metal is sliced
 - Smoke and fire
 - Multiple ships and collision detection among parts of the ships
-- Water pumps controllable via electrical switches (Mathias Garbe's idea)
+- Water pumps and anti-flood walls controllable via electrical switches (Mathias Garbe's idea)
 
 These and other ideas will come out with frequent releases.
 
