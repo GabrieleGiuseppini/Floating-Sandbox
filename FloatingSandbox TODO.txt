@@ -1,7 +1,7 @@
 =================================================
 Current perf
 =================================================
-- fps: 28.8 (Samsung: TBD:31.5 (Krafting)) (Mattia's: 25.1 (Krafting))
+- fps: 29.6 (Samsung: TBD:31.5 (Krafting)) (Mattia's: TBD:25.1 (Krafting))
 - GameController::Update: 35.06%
 	- Ship::Update: 34.33%
 		- UpdateMechanicalDynamics: 25.70%
@@ -109,6 +109,11 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 	- Warship
 	- See Moleskine
 
+- Suggestions to spec:
+	- Different colored lights
+	- 
+
+
 - Optimizations:
 
 	+ BufferAllocator<Type:vec2f or float>
@@ -176,6 +181,7 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 			- Multiple because of need to normalize outgoing for each point
 
 	- See if can avoid other IsDeleted checks, via zero'ing of coefficients
+
 	- UpdatePointForces:
 		- Substitute "if(y<waterHeight)" branches with "float isUnderwater (1.f/0.f)"
 			- Force compiler into not branching - "?" operator won't work
@@ -189,9 +195,18 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 				  - This allows us to call UpdatePointForces only once
 				  - Also need to reset StaticForce buffer before UpdatePointForces, so:
 					- UpdatePointForces becomes CalculateFieldForces and take care of *filling* the buffer, overwriting it
-	- TODOHERE: Water and Land interpolations:
-		- 1: see if it's better to store delta's and/or other pre-calculated things
-		- 2: see if can do semi-integer x-axis interpolation
+	+ Water and Land interpolations:
+		+ Prepare first test bench (noinline)
+			+ GetWaterHeight: 2.23%
+			+ GetFloorHeight: 1.66%
+			+ Save assembly
+		+ 1: see if it's better to store delta's and/or other pre-calculated things
+		+ 2: see if can do semi-integer x-axis interpolation
+			+ GetWaterHeight: 1.25%
+			+ GetFloorHeight: 0.77%
+		+ Cleanup test bench
+		+ Final functional test
+		+ Final FPS test
 
 	- Cache sea depth from PointDynamics at first calculation (Points?), using lambda
 
@@ -310,6 +325,18 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 			  - See if can do Points::CreateEphemeralParticle<Debris>(&&args)
 				- Requires Points::Debris to be public
 
+	- Switches
+		- New electrical material type; color trick like ropes to have unique IDs for switches
+		- Ship json adds optional names for each ID
+		- ShipBuilder detects all switches and communicates those separately to ship at cctor time
+			- Each switch gets own ID == <ShipId, SwitchId>
+		- UI gets switches via AddShip event, which has new arg w/switches metadata
+			- TBD: controlling switches via UI:
+	- Pumps
+		- Current controls ~IsLeaking
+	- Anti-Flood doors
+		- Current controls ~WaterPermeability
+
 	- Do debris each time a spring breaks
 		- At Ship::SpringDestroyHandler()
 		- Initial particle dynamics:
@@ -325,6 +352,7 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 	- Test:
 		- Self-adjustment of kSpring and kDamp based off paper's formula (H and L bounds)
 		- Debug to see if bounds ever exceeded
+
 	- Frontier:
 		- Only for non-rope points - rope points never take part in frontier
 		- Preliminaries:
@@ -356,6 +384,7 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 						- TODO
 	- Water drag 
 		- The one already there assumes velocity always normal to surface, but we should consider surface normal instead
+
 	- DestroyAt:
 		- Test: Ship::SpringDestroyHandler() only destroys triangles that contain A-B
 			- Should definitely make both A and B leak, as they both now have an adjacent hole
@@ -370,7 +399,7 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 				- Only emit if Y above water line
 				- Material is water
 					- Hardcoded material added by MaterialDB from in-code list
-	- TODOOLD: Optimizations:
+	- OLD: Optimizations:
 		- GravitateWater:
 			- Calculate once and for all cos theta's at first iteration
 				- !!! Actually, calculate WaterGravityFactorA = dt*0.6*(1+cos_theta)/2, WaterGravityFactorB = -dt*0.6*(1-cos_theta)/2

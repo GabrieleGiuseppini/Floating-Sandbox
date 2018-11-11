@@ -24,18 +24,35 @@ public:
         float currentTime,
         GameParameters const & gameParameters);
 
-    float GetWaterHeightAt(float x) const
+   float GetWaterHeightAt(float x) const
     {
-        float const absoluteSampleIndex = floorf(x / Dx);
+        // Fractional absolute index in the (infinite) sample array
+        float const absoluteSampleIndexF = x / Dx;
 
-        int64_t index = static_cast<int64_t>(absoluteSampleIndex) % SamplesCount;
-        if (index < 0)
-            index += SamplesCount;
+        // Integral part
+        int32_t absoluteSampleIndexI = FastFloorInt32(absoluteSampleIndexF);
 
-        assert(index >= 0 && index < SamplesCount);
+        // Integral part - sample
+        int32_t sampleIndexI;
 
-        return mSamples[index]
-            + (mSamples[index + 1] - mSamples[index]) * ((x / Dx) - absoluteSampleIndex);
+        // Fractional part within sample index and the next sample index
+        float sampleIndexDx;
+
+        if (absoluteSampleIndexI >= 0)
+        {
+            sampleIndexI = absoluteSampleIndexI % SamplesCount;
+            sampleIndexDx = absoluteSampleIndexF - absoluteSampleIndexI;
+        }
+        else
+        {
+            sampleIndexI = (SamplesCount - 1) + (absoluteSampleIndexI % SamplesCount);
+            sampleIndexDx = 1.0f + absoluteSampleIndexF - absoluteSampleIndexI;
+        }
+
+        assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
+
+        return mSamples[sampleIndexI].SampleValue
+             + mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
     }
 
 private:
@@ -55,8 +72,15 @@ private:
     // The x step of the samples
     static constexpr float Dx = Period / static_cast<float>(SamplesCount);
 
+    // What we store for each sample
+    struct Sample
+    {
+        float SampleValue;
+        float SampleValuePlusOneMinusSampleValue;
+    };
+
     // The samples
-    std::unique_ptr<float[]> mSamples;    
+    std::unique_ptr<Sample[]> mSamples;    
 };
 
 }
