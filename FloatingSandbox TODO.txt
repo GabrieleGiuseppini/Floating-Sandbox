@@ -297,6 +297,7 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 					- None (set at non-ephemeral and at dead ephemerals)
 					- Debris
 					- Sparkle
+					- AirBubble
 					- Smoke
 				- EphemeralLifetime (std::chrono::milliseconds)
 				- EphemeralMaxLifetime (std::chrono::milliseconds)
@@ -304,6 +305,7 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 					- EphemeralState: union of public structs (much like ElectricalElements::ElementState)
 						- Debris: {}
 						- Sparkle: {}
+						- AirBubble: {}
 						- Smoke: {}
 					- Buffer<EphemeralState> mEphemeralStateBuffer;
 
@@ -364,14 +366,20 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 			- Points of the color of the spring's material
 				- Actually, points of the spring's material
 		- At Ship::SpringDestroyHandler()
-			- Choose 0, 1, or 2 debris
+			- Choose 0, 1, or 2 debris // Experiment
 			- For each:
 				- Material = spring's material
 				- Position = midpoint of spring
 				- Velocity = point on circle as:
-					- Radius: random in [1, 5] // Double-check
+					- Radius: random in [1, 5] // Experiment
 					- Angle: random in [0, 2PI]
 				- MaxLifetime = from GameParameters static const, plus random factor in [0.5-1.0]
+		- Debris:
+			- Update: 
+				- Update color's alpha based off remaining lifetime, linear
+				+ [will later do random walk]
+			- Upload: 
+				- Just store index in buffer
 
 	- Ephemeral particle emitters
 		- Implemented like electrical elements, i.e.:
