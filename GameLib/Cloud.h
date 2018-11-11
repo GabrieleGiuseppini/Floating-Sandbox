@@ -47,9 +47,11 @@ public:
         float t, 
         float windSpeed)
     {
-        mX = mOffsetX + (t * mSpeedX1 * windSpeed) + (mAmpX  * windSpeed * sinf(mSpeedX2 * t));
-        mY = mOffsetY + (mAmpY * sinf(mSpeedY * t));
-        mScale = mOffsetScale + (mAmpScale * sinf(mSpeedScale * t));
+        float const scaledSpeed = t * windSpeed;
+
+        mX = mOffsetX + (mSpeedX1 * scaledSpeed) + (mAmpX * sinf(mSpeedX2 * scaledSpeed));
+        mY = mOffsetY + (mAmpY * sinf(mSpeedY * scaledSpeed));
+        mScale = mOffsetScale + (mAmpScale * sinf(mSpeedScale * scaledSpeed));
     }
 
     float GetX() const
