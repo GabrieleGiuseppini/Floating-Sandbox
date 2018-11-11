@@ -211,9 +211,10 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 	- Cache sea depth from PointDynamics at first calculation (Points?), using lambda
 
 - Gfx optimizations:
-	- See if can use multiple texture units
+	- TODOHERE: See if can use multiple texture units
 		- Bind once atlas, land, and water at cctor, to each unit
 		- Change shaders
+
 	- See if can unify springs and ropes rendering
 		- Just make sure that ropecolor is already in point color buffer
 		- RenderSprings + RenderRopes == new RenderSprings:
@@ -266,81 +267,126 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 	- Save photos (opens SaveAs FileDialog)
 	- Text (for query tool):
 		- see https://github.com/wxWidgets/wxWidgets/blob/master/samples/opengl/pyramid/pyramid.cpp
-	- Bug: bombs et al fade more rapidly than ship when ambient light goes away
+	+ Bug: bombs et al fade more rapidly than ship when ambient light goes away
 
 - Dynamics:
 
 	- Ephemeral Particles:
-		- Summary:
+		- Spec:
 			- Carve out fixed-size room at tail of Points for ephemeral particles				
 				- Each has own lifetime
+			- Ephemeral particles cannot be deleted
 			- Rendering: via:
 				- ShipRenderContext::UploadEphemeralParticlePoints (e.g. for points)
 					- Just indexes
-					- Color/alpha portion of buffer has to be uploaded first, together with other
-					  properties which we already upload each time (position, connected component ID) 
-					  - (2*) Or just at UploadEphemeralParticlePoints, given it's portion specific to eph
+					- Color/alpha portion of buffer has to be uploaded first
 				- ShipRenderContext::UploadGenericTexture (e.g. for bubbles)
-					- Need to also support alphaTransparency
-			- Ephemeral particles are drawn with alpha going to transparent as lifetime increases
+					+ Need to also support alphaTransparency
+			- Ephemeral particles are drawn with own color, including alpha going to transparent as lifetime increases
 				- Test first perf impact of using vec4f for point colors
-					- If sucks, need new buffer just for ephemeral particles' alpha,
-				- In any case, ephemeral color buffer or ephemeral portion of entire points color buffer needs to
-				  be reloaded at each Upload() or UploadEphemeralParticles() (2*)
-					- See openGL functions to upload portion of buffer only
+					- If sucks a lot, will need new extra buffer just for points' alpha
+						- Also this buffer issegmented
+				- Ephemeral portion of entire points color buffer needs to be reloaded at each Upload() 
+				  or UploadEphemeralParticles() (2*)
+					- Use glSubBufferData
+					- If we go for separate alpha buffer: also do for ephemeral portion of alpha buffer
+		- Impl:
+
+			- Points has new buffers:
+				- EphemeralType (uint8 enum)
+					- None (set at non-ephemeral and at dead ephemerals)
+					- Debris
+					- Sparkle
+					- Smoke
+				- EphemeralLifetime (std::chrono::milliseconds)
+				- EphemeralMaxLifetime (std::chrono::milliseconds)
+				- private: 
+					- EphemeralState: union of public structs (much like ElectricalElements::ElementState)
+						- Debris: {}
+						- Sparkle: {}
+						- Smoke: {}
+					- Buffer<EphemeralState> mEphemeralStateBuffer;
+
+			- Ship: limit point range:
+				- @ destroy tool, @ bombs explosions, and @ anything else that destroys point: do not destroy ephemeral points
+				- @ toggle bombs: do not attach to ephemeral points
+				- For all of these: use Points::NonEphemeralPoints iterator, or check EphemeralType != None, depending on the case
+						
+			- Points methods:
+				- CreateEphemeralParticleDebris: 
+					- Args:
+						- Position, Velocity
+						- MaxLifetime
+						- Material *
+							- Requires MaterialDatabase to be handy at invoker of CreateEphemeralParticleDebris
+								- Ship must take a DB by value at cctor
+							- Though Debris uses spring's material
+					- Impl:
+						- Find first expired particle; if not found, pick the oldest
+						- Store Color, Position, Velocity
+						- Store Mass
+						- Do any other initializations that we do at Points::Add(...)
+						- Store MaxLifetime, and zero lifetime
+
 			- Points::UpdateEphemeralParticles(clockNow):
-				- If expired:
-					- No need to mark as deleted to hide them
-					- Resets velocity and integration factor of expired particles to avoid drifting
+				- If time has expired (now):
+					- No need to mark as deleted to hide them, EphemeralType==None suffices to prevent them from being rendered
+					- Reset velocity and integration factor of expired particles to avoid drifting
 						- Rename Points::Pin/Unpin() to Freeze/Thaw()
-						- And also sets EphemeralType to None
-				- Else:
+					- Set EphemeralType to None
+				- Else: do per-type state machine, with dispatch coded in method depending on type, invoking 
+				  per-type state machine method; for example:
 					- Those that are points:
 						- Calc remaining life
-						- Update alpha either in (portion of) color buffer or in (portion of) alpha
+						- Update alpha either in (portion of) color buffer or in (portion of) alpha buffer
 					- Those that are textures:
 						- Calc remaining life
-			- Points::UploadEphemeralParticles():
-				- If we do 2*: upload portion of color buffer specific to eph
-				- Only uploads those with non-zero lifetime
-				- Those that are points:
-					- Add point index to buffer
-				- Those that are textures:
-					- ShipRenderContext::UploadGenericTexture(...)
-				- At end:
-					- Upload index buffer
-					- Note: color buffer uploaded already (see 2*)
-		- Points has new buffers:
-			- EphemeralType (uint8 enum)
-				- None (set at non-ephemeral and at dead ephemerals)
-				- Debris
-				- Sparkle
-			- EphemeralLifetime (std::chrono::milliseconds)
-			- EphemeralXTODOX: union of structs
-				- SparkleXTODOX:
-					- TODO
-		- Points methods:
-			- TODO: createXYZ(); create has first overload that takes all the dynamics params, including lifetime, Material and Color, and
-			  type-specific params
-			  - See if can do Points::CreateEphemeralParticle<Debris>(&&args)
-				- Requires Points::Debris to be public
 
-	- Switches
-		- New electrical material type; color trick like ropes to have unique IDs for switches
-		- Ship json adds optional names for each ID
-		- ShipBuilder detects all switches and communicates those separately to ship at cctor time
-			- Each switch gets own ID == <ShipId, SwitchId>
-		- UI gets switches via AddShip event, which has new arg w/switches metadata
-			- TBD: controlling switches via UI:
-	- Pumps
-		- Current controls ~IsLeaking
-	- Anti-Flood doors
-		- Current controls ~WaterPermeability
+			- Points::UploadEphemeralParticles():
+				- 1) Upload portion of color buffer/alpha buffer specific to ephemeral particles
+				- 2) For all ephemeral points with EphemeralType != None: use dispatch coded in method depending on type, invoking 
+				     per-type upload method; for example:
+					- Those that are points:
+						- Add point index to a buffer
+					- Those that are textures:
+						- Call directly ShipRenderContext::UploadGenericTexture(...)
+				- At end:
+					- Upload point index buffer
+						- via ShipRenderContext::UploadEphemeralParticlePoints
+
+			- Ship::UpdateEphemeralParticles(clockNow):
+				- Calls Points::UpdateEphemeralParticles(clockNow)
+				- Emits ephemeral particles from emitters (e.g. smoke)
+					- For now empty
 
 	- Do debris each time a spring breaks
+		- Look'n'feel: 
+			- Points of the color of the spring's material
+				- Actually, points of the spring's material
 		- At Ship::SpringDestroyHandler()
-		- Initial particle dynamics:
-			- TODO
+			- Choose 0, 1, or 2 debris
+			- For each:
+				- Material = spring's material
+				- Position = midpoint of spring
+				- Velocity = point on circle as:
+					- Radius: random in [1, 5] // Double-check
+					- Angle: random in [0, 2PI]
+				- MaxLifetime = from GameParameters static const, plus random factor in [0.5-1.0]
+
+	- Ephemeral particle emitters
+		- Implemented like electrical elements, i.e.:
+			- EphemeralParticlesEmitters container, almost clone of ElectricalElements
+				- Contains point index and IEphemeralParticleEmitter
+					- IEphemeralParticleEmitter: 
+						- void Update(clockNow, Points &, MaterialDatabase const &)
+						- Impl knows its point index
+				- Passed already populated by ship builder
+		- Ship has EphemeralParticlesEmitters, passed already populated by ship builder
+			- Registers DestroyHandler, all identical to ElectricalElements
+		- Ship::UpdateEphemeralParticles: invokes EphemeralParticlesEmitters::Update(...)
+			- Which invokes IEphemeralParticleEmitter::Update(clockNow, mPoints) for each emitter
+
+	- Research particle motion - inject random walk			
 
 	- Do chainsaw sparkles with Ephemeral Particles
 		- At Ship::Chainsaw for each broken spring
@@ -348,6 +394,36 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 			- Position: midpoint of spring
 			- Velocity: radial vector, according to pseudo-Gaussian centered in the direction of sawing, with magnitude uniformly random
 			- Number: per Update step: uniform random centered around SparkleDensity (ratio over 10, initially) (from GameParameters, adjustable)
+	- Smoke:
+		- New material: smoke emitter
+			- Recognized by ship builder via "particle_emitter_properties" sub-object
+		- New material: smoke
+			- Lighter than air
+		- UpdatePointForces: if any point is above water, apply air buoyancy
+			- i.e. always end up applying one buoyancy, either water or air
+		- IEphemeralParticleEmitter implementation: SmokeEphemeralParticleEmitter
+
+
+	- Switches:
+		- New electrical material type; color trick like ropes to have unique IDs for switches
+		- Ship json adds optional names for each ID
+		- ShipBuilder detects all switches and communicates those separately to ship at cctor time
+			- Each switch gets own ID == <ShipId, SwitchId>
+		- UI gets switches via AddSwitch (and DeleteSwitch) event, with all metadata
+			- SwitchBoard panel
+				- Uses GameController (own shared ptr) :: SetSwitch(switchId, bool) to control switches
+		- Ship must invoke DeleteSwitch at switch deletion (@ Ship::ElectricalElementDestroyHandler)
+		- Electrical dynamics:
+			- ElectricalElement: rename "ConnectivityVisit" (sequence number, etc.) as "ElectricalPropagationVisit" (...)
+				- Ship::UpdateElectrical"Propagation"
+			- ElectricalElement has new "electrical conductance" buffer (0.0 or 1.0)
+				- Ship::UpdateElectricalConnectivity checks conductance first when deciding to follow a connected electrical element
+			- Ship::SetSwitch(switchId):
+				- Toggles electrical element's "electrical conductance"
+	- Pumps
+		- Current controls ~IsLeaking
+	- Anti-Flood doors
+		- Current controls ~WaterPermeability
 
 	- Test:
 		- Self-adjustment of kSpring and kDamp based off paper's formula (H and L bounds)
@@ -615,9 +691,6 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 			+ Doesn't improve look considerably, and still requires an if
 			
 	
-
-- Smoke
-	- Smoke-material points, using ephemeral particles
 
 - Multiple ships:
 	- Better done after collision detection
