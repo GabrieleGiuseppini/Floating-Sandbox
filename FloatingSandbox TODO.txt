@@ -375,8 +375,17 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 				+ Emits ephemeral particles from emitters (e.g. smoke)
 					+ For now empty
 
+		- Cleanup:
+			- Figure out what to do with connected components and ephemeral particles
+				- 
+			- Depending on the above:
+				- See if can piggyback the fact that Points is already uploading all (well, now non-ephemeral) point element indices
+				- ShipRenderContext: for each conn component, use a vector (w/reserve) rather than full MaxParticles
+					- Can then get rid of MaxCount, CurrentCount
+
 		- Tests:
 			- Pin ephemeral particle
+			- Many connected components
 
 	= Do debris each time a spring breaks
 		+ Look'n'feel: 
@@ -397,7 +406,7 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 			+ Upload: 
 				+ Just store index in buffer
 
-		- Test and finalize constants
+		- Test look'n'feel and finalize constants
 
 	- Ephemeral particle emitters
 		- Implemented like electrical elements, i.e.:

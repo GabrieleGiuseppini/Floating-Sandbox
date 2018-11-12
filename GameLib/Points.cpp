@@ -86,10 +86,10 @@ void Points::CreateEphemeralParticleDebris(
     mMaterialBuffer[pointIndex] = material;
     
     mBuoyancyBuffer[pointIndex] = 0.0f; // Debris is non-buoyant
-    assert(0.0f == mWaterBuffer[pointIndex]);
+    mWaterBuffer[pointIndex] = 0.0f;
     assert(false == mIsLeakingBuffer[pointIndex]);
 
-    assert(0.0f == mLightBuffer[pointIndex]);
+    mLightBuffer[pointIndex] = 0.0f;
 
     mEphemeralTypeBuffer[pointIndex] = EphemeralType::Debris;
     mEphemeralStartTimeBuffer[pointIndex] = now;
@@ -220,14 +220,14 @@ void Points::UploadElements(
     int shipId,
     Render::RenderContext & renderContext) const
 {
-    for (ElementIndex i : *this)
+    for (ElementIndex pointIndex : NonEphemeralPoints())
     {
-        if (!mIsDeletedBuffer[i])
+        if (!mIsDeletedBuffer[pointIndex])
         {
             renderContext.UploadShipElementPoint(
                 shipId,
-                i,
-                mConnectedComponentIdBuffer[i]);
+                pointIndex,
+                mConnectedComponentIdBuffer[pointIndex]);
         }
     }
 }
@@ -281,8 +281,8 @@ void Points::UploadEphemeralParticles(
     renderContext.UploadShipPointColorRange(
         shipId,
         mColorBuffer.data(),
-        mShipPoints,
-        mEphemeralPoints);
+        mShipPointCount,
+        mEphemeralPointCount);
 
 
     //
@@ -300,11 +300,17 @@ void Points::UploadEphemeralParticles(
         {
             case EphemeralType::Debris:
             {
-                renderContext.UploadShipElementEphemeralPoint(
-                    shipId,
-                    pointIndex,
-                    GetConnectedComponentId(pointIndex));
-                
+                // Don't upload point unless there's been a change
+                if (mAreEphemeralParticlesDirty)
+                {
+                    renderContext.UploadShipElementEphemeralPoint(
+                        shipId,
+                        pointIndex,
+                        1);
+                    // TODOTEST
+                    //GetConnectedComponentId(pointIndex));
+                }
+
                 break;
             }
 
@@ -372,8 +378,8 @@ ElementIndex Points::FindFreeEphemeralParticle(GameWallClock::time_point const &
     ElementIndex oldestParticle = NoneElementIndex;
     typename GameWallClock::duration oldestParticleLifetime = GameWallClock::duration::min();
 
-    assert(mFreeEphemeralParticleSearchStartIndex >= mShipPoints
-        && mFreeEphemeralParticleSearchStartIndex < mAllPoints);
+    assert(mFreeEphemeralParticleSearchStartIndex >= mShipPointCount
+        && mFreeEphemeralParticleSearchStartIndex < mAllPointCount);
 
     for (ElementIndex p = mFreeEphemeralParticleSearchStartIndex; ; )
     {
@@ -383,8 +389,8 @@ ElementIndex Points::FindFreeEphemeralParticle(GameWallClock::time_point const &
 
             // Remember to start after this one next time
             mFreeEphemeralParticleSearchStartIndex = p + 1;
-            if (mFreeEphemeralParticleSearchStartIndex >= mAllPoints)
-                mFreeEphemeralParticleSearchStartIndex = mShipPoints;
+            if (mFreeEphemeralParticleSearchStartIndex >= mAllPointCount)
+                mFreeEphemeralParticleSearchStartIndex = mShipPointCount;
 
             return p;
         }
@@ -399,8 +405,8 @@ ElementIndex Points::FindFreeEphemeralParticle(GameWallClock::time_point const &
 
         // Advance
         ++p;
-        if (p >= mAllPoints)
-            p = mShipPoints;
+        if (p >= mAllPointCount)
+            p = mShipPointCount;
 
         if (p == mFreeEphemeralParticleSearchStartIndex)
         {
@@ -413,12 +419,12 @@ ElementIndex Points::FindFreeEphemeralParticle(GameWallClock::time_point const &
     // No luck, have to steal the oldest
     //
 
-    assert(NoneElementIndex == oldestParticle);
+    assert(NoneElementIndex != oldestParticle);
 
     // Remember to start after this one next time
     mFreeEphemeralParticleSearchStartIndex = oldestParticle + 1;
-    if (mFreeEphemeralParticleSearchStartIndex >= mAllPoints)
-        mFreeEphemeralParticleSearchStartIndex = mShipPoints;
+    if (mFreeEphemeralParticleSearchStartIndex >= mAllPointCount)
+        mFreeEphemeralParticleSearchStartIndex = mShipPointCount;
 
     return oldestParticle;
 }

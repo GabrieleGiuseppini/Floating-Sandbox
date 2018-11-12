@@ -8,6 +8,7 @@
 #include "GameException.h"
 #include "GameMath.h"
 #include "GameParameters.h"
+#include "Log.h"
 
 namespace Render {
 
@@ -376,7 +377,7 @@ void ShipRenderContext::UploadShipPointColorRange(
     assert(startIndex + count <= mPointCount);
 
     glBindBuffer(GL_ARRAY_BUFFER, *mPointColorVBO);
-    glBufferSubData(GL_ARRAY_BUFFER, startIndex, count * sizeof(vec4f), color);
+    glBufferSubData(GL_ARRAY_BUFFER, startIndex * sizeof(vec4f), count * sizeof(vec4f), color);
     CheckOpenGLError();
 }
 

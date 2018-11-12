@@ -1213,8 +1213,8 @@ void Ship::DetectConnectedComponents(VisitSequenceNumber currentVisitSequenceNum
     ConnectedComponentId currentConnectedComponentId = 0;
     std::queue<ElementIndex> pointsToVisitForConnectedComponents;
 
-    // Visit all points
-    for (auto pointIndex : mPoints)
+    // Visit all non-ephemeral points, or we run the risk of creating a zillion connected components
+    for (auto pointIndex : mPoints.NonEphemeralPoints())
     {
         // Don't visit destroyed points, or we run the risk of creating a zillion connected components
         if (!mPoints.IsDeleted(pointIndex))
@@ -1469,13 +1469,14 @@ void Ship::SpringDestroyHandler(
     for (size_t d = 0; d < debrisCount; ++d)
     {
         // Choose a velocity vector: point on a circle with random radius and random angle
-        float const velocityMagnitude = GameRandomEngine::GetInstance().GenerateRandomReal(1.0f, 5.0f); // TODO: Experiment
+        float const velocityMagnitude = GameRandomEngine::GetInstance().GenerateRandomReal(50.0f, 100.0f); // TODO: Experiment
         float const velocityAngle = GameRandomEngine::GetInstance().GenerateRandomReal(0.0f, 2.0f * Pi<float>);
 
         // Choose a lifetime: randomize parameter 
         std::chrono::milliseconds const maxLifetime = std::chrono::milliseconds(
             static_cast<std::chrono::milliseconds::rep>(
                 static_cast<float>(GameParameters::DebrisLifetime.count())
+                * 5.0f // TODOTEST
                 * GameRandomEngine::GetInstance().GenerateRandomReal(0.5f, 1.0f)));
 
         mPoints.CreateEphemeralParticleDebris(
