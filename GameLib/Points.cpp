@@ -17,7 +17,7 @@ void Points::Add(
     bool isRope,
     ElementIndex electricalElementIndex,
     float buoyancy,
-    vec3f const & color,
+    vec4f const & color,
     vec2f const & textureCoordinates)
 {
     mIsDeletedBuffer.emplace_back(false);

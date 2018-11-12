@@ -75,7 +75,7 @@ public:
     //
 
     void UploadPointImmutableGraphicalAttributes(
-        vec3f const * restrict color,
+        vec4f const * restrict color,
         vec2f const * restrict textureCoordinates);
 
     void UploadPoints(

@@ -147,7 +147,7 @@ public:
         // Pinning
         , mIsPinnedBuffer(mBufferElementCount, mElementCount, false)
         // Immutable render attributes
-        , mColorBuffer(mBufferElementCount, mElementCount, vec3f::zero())
+        , mColorBuffer(mBufferElementCount, mElementCount, vec4f::zero())
         , mTextureCoordinatesBuffer(mBufferElementCount, mElementCount, vec2f::zero())
         //////////////////////////////////
         // Container
@@ -197,7 +197,7 @@ public:
         bool isRope,
         ElementIndex electricalElementIndex,
         float buoyancy,
-        vec3f const & color,
+        vec4f const & color,
         vec2f const & textureCoordinates);
 
     void Destroy(ElementIndex pointElementIndex);
@@ -654,7 +654,7 @@ private:
     // Immutable render attributes
     //
 
-    Buffer<vec3f> mColorBuffer;
+    Buffer<vec4f> mColorBuffer;
     Buffer<vec2f> mTextureCoordinatesBuffer;
 
 

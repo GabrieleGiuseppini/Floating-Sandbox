@@ -33,7 +33,7 @@ public:
 
     RenderContext(
         ResourceLoader & resourceLoader,
-        vec3f const & ropeColour,
+        vec4f const & ropeColour,
         ProgressCallback const & progressCallback);
     
     ~RenderContext();
@@ -478,7 +478,7 @@ public:
 
     void UploadShipPointImmutableGraphicalAttributes(
         int shipId,
-        vec3f const * restrict color,
+        vec4f const * restrict color,
         vec2f const * restrict textureCoordinates)
     {
         assert(shipId < mShips.size());
@@ -860,7 +860,7 @@ private:
     //
 
     std::vector<std::unique_ptr<ShipRenderContext>> mShips;
-    vec3f const mRopeColour;
+    vec4f const mRopeColour;
 
     //
     // Cross of light

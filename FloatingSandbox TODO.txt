@@ -291,10 +291,10 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 					- Use glSubBufferData
 					- If we go for separate alpha buffer: also do for ephemeral portion of alpha buffer
 		- Impl:
-			- TODOHERE: Test vec4f for colors
-				- Points
-				- ShipBuilder
-				- RenderContext/ShipRenderContext
+			= Test vec4f for colors
+				+ Points
+				+ ShipBuilder
+				+ RenderContext/ShipRenderContext
 				- Shaders
 			- Set max eph particles to 1024
 			+ Points allocs extra room

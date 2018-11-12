@@ -14,7 +14,7 @@ namespace Render {
 
 RenderContext::RenderContext(
     ResourceLoader & resourceLoader,
-    vec3f const & ropeColour,
+    vec4f const & ropeColour,
     ProgressCallback const & progressCallback)
     : mShaderManager()
     , mTextureRenderManager()

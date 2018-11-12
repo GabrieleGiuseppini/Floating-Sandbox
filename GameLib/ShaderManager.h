@@ -44,21 +44,21 @@ public:
 
     struct GlobalParameters
     {
-        vec3f RopeColor;
+        vec4f RopeColor;
 
         GlobalParameters(
-            vec3f ropeColor)
+            vec4f ropeColor)
             : RopeColor(ropeColor)
         {}
 
         void ToParameters(std::map<std::string, std::string> & parameters) const
         {
             std::stringstream ss;
-            ss << std::fixed << RopeColor.x << ", " << RopeColor.y << ", " << RopeColor.z;
+            ss << std::fixed << RopeColor.x << ", " << RopeColor.y << ", " << RopeColor.z << ", " << RopeColor.w;
 
             parameters.insert(
                 std::make_pair(
-                    "ROPE_COLOR_VEC3",
+                    "ROPE_COLOR_VEC4",
                     ss.str()));
         }
     };

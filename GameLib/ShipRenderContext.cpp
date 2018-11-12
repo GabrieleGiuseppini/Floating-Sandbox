@@ -94,8 +94,8 @@ ShipRenderContext::ShipRenderContext(
 
     mPointColorVBO = pointVBOs[3];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointColorVBO);
-    glBufferData(GL_ARRAY_BUFFER, mPointCount * sizeof(vec3f), nullptr, GL_STATIC_DRAW);
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointColor), 3, GL_FLOAT, GL_FALSE, sizeof(vec3f), (void*)(0));
+    glBufferData(GL_ARRAY_BUFFER, mPointCount * sizeof(vec4f), nullptr, GL_DYNAMIC_DRAW);
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointColor), 4, GL_FLOAT, GL_FALSE, sizeof(vec4f), (void*)(0));
     CheckOpenGLError();
 
     mPointElementTextureCoordinatesVBO = pointVBOs[4];
@@ -351,12 +351,12 @@ void ShipRenderContext::RenderStart(std::vector<std::size_t> const & connectedCo
 }
 
 void ShipRenderContext::UploadPointImmutableGraphicalAttributes(
-    vec3f const * restrict color,
+    vec4f const * restrict color,
     vec2f const * restrict textureCoordinates)
 {
     // Upload colors
     glBindBuffer(GL_ARRAY_BUFFER, *mPointColorVBO);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, mPointCount * sizeof(vec3f), color);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, mPointCount * sizeof(vec4f), color);
     CheckOpenGLError();
 
     if (!!mElementShipTexture)
