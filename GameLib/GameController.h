@@ -198,6 +198,9 @@ public:
     bool GetUltraViolentMode() const { return mGameParameters.IsUltraViolentMode; }
     void SetUltraViolentMode(bool value) { mGameParameters.IsUltraViolentMode = value; }
 
+    bool GetDoGenerateDebris() const { return mGameParameters.DoGenerateDebris; }
+    void SetDoGenerateDebris(bool value) { mGameParameters.DoGenerateDebris = value; }
+
     size_t GetNumberOfClouds() const { return mGameParameters.NumberOfClouds; }
     void SetNumberOfClouds(size_t value) { mGameParameters.NumberOfClouds = value; }
     size_t GetMinNumberOfClouds() const { return GameParameters::MinNumberOfClouds; }

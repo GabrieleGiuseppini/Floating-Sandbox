@@ -20,6 +20,7 @@ static constexpr int SliderHeight = 140;
 static constexpr int SliderBorder = 10;
 
 const long ID_ULTRA_VIOLENT_CHECKBOX = wxNewId();
+const long ID_GENERATE_DEBRIS_CHECKBOX = wxNewId();
 const long ID_SEE_SHIP_THROUGH_SEA_WATER_CHECKBOX = wxNewId();
 const long ID_SHOW_STRESS_CHECKBOX = wxNewId();
 const long ID_WIREFRAME_MODE_CHECKBOX = wxNewId();
@@ -209,6 +210,12 @@ void SettingsDialog::OnUltraViolentCheckBoxClick(wxCommandEvent & /*event*/)
     mApplyButton->Enable(true);
 }
 
+void SettingsDialog::OnGenerateDebrisCheckBoxClick(wxCommandEvent & /*event*/)
+{
+    // Remember we're dirty now
+    mApplyButton->Enable(true);
+}
+
 void SettingsDialog::OnShipRenderModeRadioBox(wxCommandEvent & /*event*/)
 {
     // Remember we're dirty now
@@ -326,6 +333,8 @@ void SettingsDialog::ApplySettings()
         mAntiMatterBombImplosionStrengthSlider->GetValue());
 
     mGameController->SetUltraViolentMode(mUltraViolentCheckBox->IsChecked());
+
+    mGameController->SetDoGenerateDebris(mGenerateDebrisCheckBox->IsChecked());
 
     mGameController->SetSeaWaterTransparency(
         mSeaWaterTransparencySlider->GetValue());
@@ -726,10 +735,13 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 
     wxStaticBoxSizer* checkboxesSizer = new wxStaticBoxSizer(wxVERTICAL, panel);
 
-    mUltraViolentCheckBox = new wxCheckBox(panel, ID_ULTRA_VIOLENT_CHECKBOX, _("Ultra-Violent Mode"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Ultra-Violent Checkbox"));
+    mUltraViolentCheckBox = new wxCheckBox(panel, ID_ULTRA_VIOLENT_CHECKBOX, _("Ultra-Violent Mode"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Ultra-Violent Mode Checkbox"));
     Connect(ID_ULTRA_VIOLENT_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnUltraViolentCheckBoxClick);
-
     checkboxesSizer->Add(mUltraViolentCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
+
+    mGenerateDebrisCheckBox = new wxCheckBox(panel, ID_GENERATE_DEBRIS_CHECKBOX, _("Generate Debris"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Generate Debris Checkbox"));
+    Connect(ID_GENERATE_DEBRIS_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnGenerateDebrisCheckBoxClick);
+    checkboxesSizer->Add(mGenerateDebrisCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
 
     controlsSizer->Add(checkboxesSizer, 0, wxALL, SliderBorder);
     
@@ -935,6 +947,8 @@ void SettingsDialog::ReadSettings()
     mAntiMatterBombImplosionStrengthSlider->SetValue(mGameController->GetAntiMatterBombImplosionStrength());
 
     mUltraViolentCheckBox->SetValue(mGameController->GetUltraViolentMode());
+
+    mGenerateDebrisCheckBox->SetValue(mGameController->GetDoGenerateDebris());
 
 
 

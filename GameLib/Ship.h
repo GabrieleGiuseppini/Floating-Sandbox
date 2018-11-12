@@ -59,11 +59,13 @@ public:
 
     void DestroyAt(
         vec2f const & targetPos,
-        float radius);
+        float radiusMultiplier,
+        GameParameters const & gameParameters);
 
     void SawThrough(
         vec2f const & startPos,
-        vec2f const & endPos);
+        vec2f const & endPos,
+        GameParameters const & gameParameters);
 
     void DrawTo(
         vec2f const & targetPos,
@@ -162,11 +164,14 @@ private:
         ElementIndex pointAElementIndex,
         ElementIndex pointBElementIndex);
 
-    void PointDestroyHandler(ElementIndex pointElementIndex);
+    void PointDestroyHandler(
+        ElementIndex pointElementIndex,
+        GameParameters const & gameParameters);
 
     void SpringDestroyHandler(
         ElementIndex springElementIndex,
-        bool destroyAllTriangles);
+        bool destroyAllTriangles,
+        GameParameters const & gameParameters);
 
     void TriangleDestroyHandler(ElementIndex triangleElementIndex);
 

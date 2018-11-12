@@ -42,7 +42,7 @@ public:
         Rope = 2     // Ropes are drawn differently
     };
 
-    using DestroyHandler = std::function<void(ElementIndex, bool)>;
+    using DestroyHandler = std::function<void(ElementIndex, bool, GameParameters const &)>;
 
 private:
 
@@ -145,6 +145,7 @@ public:
     void Destroy(
         ElementIndex springElementIndex,
         DestroyOptions destroyOptions,
+        GameParameters const & gameParameters,
         Points const & points);
 
     void UpdateGameParameters(

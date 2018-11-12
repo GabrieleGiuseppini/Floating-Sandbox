@@ -67,8 +67,8 @@ Ship::Ship(
     , mCurrentForceFields()
 {
     // Set destroy handlers
-    mPoints.RegisterDestroyHandler(std::bind(&Ship::PointDestroyHandler, this, std::placeholders::_1));
-    mSprings.RegisterDestroyHandler(std::bind(&Ship::SpringDestroyHandler, this, std::placeholders::_1, std::placeholders::_2));
+    mPoints.RegisterDestroyHandler(std::bind(&Ship::PointDestroyHandler, this, std::placeholders::_1, std::placeholders::_2));
+    mSprings.RegisterDestroyHandler(std::bind(&Ship::SpringDestroyHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     mTriangles.RegisterDestroyHandler(std::bind(&Ship::TriangleDestroyHandler, this, std::placeholders::_1));
     mElectricalElements.RegisterDestroyHandler(std::bind(&Ship::ElectricalElementDestroyHandler, this, std::placeholders::_1));
 
@@ -82,8 +82,10 @@ Ship::~Ship()
 
 void Ship::DestroyAt(
     vec2f const & targetPos, 
-    float radius)
+    float radiusMultiplier,
+    GameParameters const & gameParameters)
 {
+    float const radius = gameParameters.DestroyRadius * radiusMultiplier;
     float const squareRadius = radius * radius;
 
     // Destroy all (non-ephemeral) points within the radius
@@ -94,7 +96,9 @@ void Ship::DestroyAt(
             if ((mPoints.GetPosition(pointIndex) - targetPos).squareLength() < squareRadius)
             {
                 // Destroy point
-                mPoints.Destroy(pointIndex);
+                mPoints.Destroy(
+                    pointIndex,
+                    gameParameters);
             }
         }
     }
@@ -102,7 +106,8 @@ void Ship::DestroyAt(
 
 void Ship::SawThrough(
     vec2f const & startPos,
-    vec2f const & endPos)
+    vec2f const & endPos,
+    GameParameters const & gameParameters)
 {
     //
     // Find all springs that intersect the saw segment
@@ -123,6 +128,7 @@ void Ship::SawThrough(
                     springIndex,
                     Springs::DestroyOptions::FireBreakEvent
                     | Springs::DestroyOptions::DestroyOnlyConnectedTriangle,
+                    gameParameters,
                     mPoints);
             }
         }
@@ -445,7 +451,9 @@ void Ship::UpdateMechanicalDynamics(GameParameters const & gameParameters)
         // Apply force fields - if we have any
         for (auto const & forceField : mCurrentForceFields)
         {
-            forceField->Apply(mPoints);
+            forceField->Apply(
+                mPoints,
+                gameParameters);
         }
 
         // Update point forces
@@ -1328,7 +1336,9 @@ void Ship::DestroyConnectedTriangles(
     }
 }
 
-void Ship::PointDestroyHandler(ElementIndex pointElementIndex)
+void Ship::PointDestroyHandler(
+    ElementIndex pointElementIndex,
+    GameParameters const & gameParameters)
 {
     //
     // Destroy all springs attached to this point
@@ -1345,6 +1355,7 @@ void Ship::PointDestroyHandler(ElementIndex pointElementIndex)
             connectedSprings.back(),
             Springs::DestroyOptions::DoNotFireBreakEvent // We're already firing the Destroy event for the point
             | Springs::DestroyOptions::DestroyAllTriangles,
+            gameParameters,
             mPoints);
     }
 
@@ -1394,7 +1405,8 @@ void Ship::PointDestroyHandler(ElementIndex pointElementIndex)
 
 void Ship::SpringDestroyHandler(
     ElementIndex springElementIndex,
-    bool destroyAllTriangles)
+    bool destroyAllTriangles,
+    GameParameters const & gameParameters)
 {
     auto const pointAIndex = mSprings.GetPointAIndex(springElementIndex);
     auto const pointBIndex = mSprings.GetPointBIndex(springElementIndex);
@@ -1464,26 +1476,29 @@ void Ship::SpringDestroyHandler(
     mPinnedPoints.OnSpringDestroyed(springElementIndex);
 
     // Emit debris
-    vec2f const springMindpoint = (mPoints.GetPosition(pointAIndex) + mPoints.GetPosition(pointBIndex)) / 2.0f;
-    auto const debrisCount = GameRandomEngine::GetInstance().Choose(GameParameters::MaxDebrisParticlesPerEvent);
-    for (size_t d = 0; d < debrisCount; ++d)
+    if (gameParameters.DoGenerateDebris)
     {
-        // Choose a velocity vector: point on a circle with random radius and random angle
-        float const velocityMagnitude = GameRandomEngine::GetInstance().GenerateRandomReal(10.0f, 30.0f);
-        float const velocityAngle = GameRandomEngine::GetInstance().GenerateRandomReal(0.0f, 2.0f * Pi<float>);
+        vec2f const springMindpoint = (mPoints.GetPosition(pointAIndex) + mPoints.GetPosition(pointBIndex)) / 2.0f;
+        auto const debrisCount = GameRandomEngine::GetInstance().Choose(GameParameters::MaxDebrisParticlesPerEvent);
+        for (size_t d = 0; d < debrisCount; ++d)
+        {
+            // Choose a velocity vector: point on a circle with random radius and random angle
+            float const velocityMagnitude = GameRandomEngine::GetInstance().GenerateRandomReal(10.0f, 30.0f);
+            float const velocityAngle = GameRandomEngine::GetInstance().GenerateRandomReal(0.0f, 2.0f * Pi<float>);
 
-        // Choose a lifetime: randomize parameter 
-        std::chrono::milliseconds const maxLifetime = std::chrono::milliseconds(
-            static_cast<std::chrono::milliseconds::rep>(
-                static_cast<float>(GameParameters::DebrisLifetime.count())
-                * GameRandomEngine::GetInstance().GenerateRandomReal(0.5f, 1.0f)));
+            // Choose a lifetime: randomize parameter 
+            std::chrono::milliseconds const maxLifetime = std::chrono::milliseconds(
+                static_cast<std::chrono::milliseconds::rep>(
+                    static_cast<float>(GameParameters::DebrisLifetime.count())
+                    * GameRandomEngine::GetInstance().GenerateRandomReal(0.5f, 1.0f)));
 
-        mPoints.CreateEphemeralParticleDebris(
-            springMindpoint,
-            vec2f::fromPolar(velocityMagnitude, velocityAngle),
-            mSprings.GetBaseMaterial(springElementIndex),
-            maxLifetime,
-            mPoints.GetConnectedComponentId(pointAIndex));
+            mPoints.CreateEphemeralParticleDebris(
+                springMindpoint,
+                vec2f::fromPolar(velocityMagnitude, velocityAngle),
+                mSprings.GetBaseMaterial(springElementIndex),
+                maxLifetime,
+                mPoints.GetConnectedComponentId(pointAIndex));
+        }
     }
 
     // Remember our elements are now dirty

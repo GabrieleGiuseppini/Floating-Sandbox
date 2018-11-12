@@ -9,7 +9,9 @@
 
 namespace Physics {
 
-void DrawForceField::Apply(Points & points) const
+void DrawForceField::Apply(
+    Points & points,
+    GameParameters const & /*gameParameters*/) const
 {
     for (auto pointIndex : points)
     {
@@ -21,7 +23,9 @@ void DrawForceField::Apply(Points & points) const
     }
 }
 
-void SwirlForceField::Apply(Points & points) const
+void SwirlForceField::Apply(
+    Points & points,
+    GameParameters const & /*gameParameters*/) const
 {
     for (auto pointIndex : points)
     {
@@ -34,7 +38,9 @@ void SwirlForceField::Apply(Points & points) const
     }
 }
 
-void BlastForceField::Apply(Points & points) const
+void BlastForceField::Apply(
+    Points & points,
+    GameParameters const & gameParameters) const
 {
     // 
     // Go through all the connected component's points and, for each point in radius:
@@ -86,11 +92,15 @@ void BlastForceField::Apply(Points & points) const
         && NoneElementIndex != closestNonEphemeralPointIndex)
     {
         // Destroy point
-        points.Destroy(closestNonEphemeralPointIndex);
+        points.Destroy(
+            closestNonEphemeralPointIndex,
+            gameParameters);
     }
 }
 
-void RadialSpaceWarpForceField::Apply(Points & points) const
+void RadialSpaceWarpForceField::Apply(
+    Points & points,
+    GameParameters const & /*gameParameters*/) const
 {
     for (auto pointIndex : points)
     {
@@ -111,7 +121,9 @@ void RadialSpaceWarpForceField::Apply(Points & points) const
     }
 }
 
-void ImplosionForceField::Apply(Points & points) const
+void ImplosionForceField::Apply(
+    Points & points,
+    GameParameters const & /*gameParameters*/) const
 {
     for (auto pointIndex : points)
     {
@@ -139,7 +151,9 @@ void ImplosionForceField::Apply(Points & points) const
     }
 }
 
-void RadialExplosionForceField::Apply(Points & points) const
+void RadialExplosionForceField::Apply(
+    Points & points,
+    GameParameters const & /*gameParameters*/) const
 {
     for (auto pointIndex : points)
     {

@@ -235,7 +235,8 @@ void GameController::DestroyAt(
     assert(!!mWorld);
     mWorld->DestroyAt(
         worldCoordinates,
-        mGameParameters.DestroyRadius * radiusMultiplier);
+        radiusMultiplier,
+        mGameParameters);
 }
 
 void GameController::SawThrough(
@@ -247,7 +248,10 @@ void GameController::SawThrough(
 
     // Apply action
     assert(!!mWorld);
-    mWorld->SawThrough(startWorldCoordinates, endWorldCoordinates);
+    mWorld->SawThrough(
+        startWorldCoordinates, 
+        endWorldCoordinates,
+        mGameParameters);
 }
 
 void GameController::DrawTo(

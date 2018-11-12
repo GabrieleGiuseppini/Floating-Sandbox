@@ -106,7 +106,9 @@ void Points::CreateEphemeralParticleDebris(
     mAreEphemeralParticlesDirty = true;
 }
 
-void Points::Destroy(ElementIndex pointElementIndex)
+void Points::Destroy(
+    ElementIndex pointElementIndex,
+    GameParameters const & gameParameters)
 {
     assert(pointElementIndex < mElementCount);
     assert(!IsDeleted(pointElementIndex));
@@ -114,7 +116,9 @@ void Points::Destroy(ElementIndex pointElementIndex)
     // Invoke destroy handler
     if (!!mDestroyHandler)
     {
-        mDestroyHandler(pointElementIndex);
+        mDestroyHandler(
+            pointElementIndex,
+            gameParameters);
     }
 
     // Fire point destroy event

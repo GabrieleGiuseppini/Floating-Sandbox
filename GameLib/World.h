@@ -54,11 +54,13 @@ public:
 
     void DestroyAt(
         vec2f const & targetPos, 
-        float radius);
+        float radiusMultiplier,
+        GameParameters const & gameParameters);
 
     void SawThrough(
         vec2f const & startPos,
-        vec2f const & endPos);
+        vec2f const & endPos,
+        GameParameters const & gameParameters);
 
     void DrawTo(
         vec2f const & targetPos,

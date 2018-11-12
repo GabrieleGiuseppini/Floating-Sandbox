@@ -60,25 +60,29 @@ size_t World::GetShipPointCount(int shipId) const
 
 void World::DestroyAt(
     vec2f const & targetPos, 
-    float radius)
+    float radiusMultiplier,
+    GameParameters const & gameParameters)
 {
     for (auto & ship : mAllShips)
     {
         ship->DestroyAt(
             targetPos,
-            radius);
+            radiusMultiplier,
+            gameParameters);
     }
 }
 
 void World::SawThrough(
     vec2f const & startPos,
-    vec2f const & endPos)
+    vec2f const & endPos,
+    GameParameters const & gameParameters)
 {
     for (auto & ship : mAllShips)
     {
         ship->SawThrough(
             startPos,
-            endPos);
+            endPos,
+            gameParameters);
     }
 }
 

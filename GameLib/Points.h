@@ -31,7 +31,7 @@ class Points : public ElementContainer
 {
 public:
 
-    using DestroyHandler = std::function<void(ElementIndex)>;
+    using DestroyHandler = std::function<void(ElementIndex, GameParameters const &)>;
 
     enum class EphemeralType
     {
@@ -217,7 +217,9 @@ public:
         std::chrono::milliseconds maxLifetime,
         ConnectedComponentId connectedComponentId);
 
-    void Destroy(ElementIndex pointElementIndex);
+    void Destroy(
+        ElementIndex pointElementIndex,
+        GameParameters const & gameParameters);
 
     void UpdateEphemeralParticles(
         GameWallClock::time_point now,
