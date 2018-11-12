@@ -8,15 +8,18 @@
 #include "Buffer.h"
 #include "BufferAllocator.h"
 #include "ElementContainer.h"
+#include "ElementIndexRangeIterator.h"
 #include "FixedSizeVector.h"
 #include "GameParameters.h"
 #include "GameTypes.h"
+#include "GameWallClock.h"
 #include "IGameEventHandler.h"
 #include "Material.h"
 #include "RenderContext.h"
 #include "Vectors.h"
 
 #include <cassert>
+#include <chrono>
 #include <cstring>
 #include <functional>
 #include <vector>
@@ -30,7 +33,59 @@ public:
 
     using DestroyHandler = std::function<void(ElementIndex)>;
 
+    enum class EphemeralType
+    {
+        None,
+        Debris,
+        Sparkle,
+        AirBubble,
+        Smoke
+    };
+
 private:
+
+    /*
+     * The state of ephemeral particles.
+     */
+    union EphemeralState
+    {
+        struct DebrisState
+        {
+        };
+
+        struct SparkleState
+        {
+        };
+
+        struct AirBubbleState
+        {
+        };
+
+        struct SmokeState
+        {
+        };
+
+        DebrisState Debris;
+        SparkleState Sparkle;
+        AirBubbleState AirBubble;
+        SmokeState Smoke;
+
+        EphemeralState(DebrisState debris)
+            : Debris(debris)
+        {}
+
+        EphemeralState(SparkleState sparkle)
+            : Sparkle(sparkle)
+        {}
+
+        EphemeralState(AirBubbleState airBubble)
+            : AirBubble(airBubble)
+        {}
+
+        EphemeralState(SmokeState smoke)
+            : Smoke(smoke)
+        {}
+    };
 
     /*
      * The elements connected to a point.
@@ -50,10 +105,12 @@ private:
 public:
 
     Points(
-        ElementCount elementCount,
+        ElementCount shipPointCount,
         World & parentWorld,
         std::shared_ptr<IGameEventHandler> gameEventHandler)
-        : ElementContainer(elementCount)
+        : ElementContainer(shipPointCount + GameParameters::MaxEphemeralParticles)
+        , mShipPoints(shipPointCount)
+        , mEphemeralPoints(GameParameters::MaxEphemeralParticles)
         //////////////////////////////////
         // Buffers
         //////////////////////////////////
@@ -77,6 +134,11 @@ public:
         // Electrical dynamics
         , mElectricalElementBuffer(mBufferElementCount, mElementCount, NoneElementIndex)
         , mLightBuffer(mBufferElementCount, mElementCount, 0.0f)
+        // Ephemeral particles
+        , mEphemeralTypeBuffer(mBufferElementCount, mElementCount, EphemeralType::None)
+        , mEphemeralStartTimeBuffer(mBufferElementCount, mElementCount, GameWallClock::time_point::min())
+        , mEphemeralMaxLifetimeBuffer(mBufferElementCount, mElementCount, std::chrono::milliseconds::zero())
+        , mEphemeralStateBuffer(mBufferElementCount, mElementCount, EphemeralState::DebrisState())
         // Structure
         , mNetworkBuffer(mBufferElementCount, mElementCount, Network())
         // Connected component
@@ -100,6 +162,15 @@ public:
     }
 
     Points(Points && other) = default;
+
+    /*
+     * Returns an iterator for the non-ephemeral points only.
+     */
+
+    auto NonEphemeralPoints() const
+    {
+        return ElementIndexRangeIterator(0, mShipPoints);
+    }
     
     /*
      * Sets a (single) handler that is invoked whenever a point is destroyed.
@@ -366,6 +437,15 @@ public:
     }
 
     //
+    // Ephemeral Particles
+    //
+
+    EphemeralType GetEphemeralType(ElementIndex pointElementIndex) const
+    {
+        return mEphemeralTypeBuffer[pointElementIndex];
+    }
+
+    //
     // Network
     //
 
@@ -543,6 +623,15 @@ private:
     Buffer<float> mLightBuffer;
 
     //
+    // Ephemeral Particles
+    //
+
+    Buffer<EphemeralType> mEphemeralTypeBuffer;
+    Buffer<GameWallClock::time_point> mEphemeralStartTimeBuffer;
+    Buffer<std::chrono::milliseconds> mEphemeralMaxLifetimeBuffer;
+    Buffer<EphemeralState> mEphemeralStateBuffer;
+
+    //
     // Structure
     //
 
@@ -572,6 +661,12 @@ private:
     //////////////////////////////////////////////////////////
     // Container
     //////////////////////////////////////////////////////////
+
+    // Count of ship points; these are followed by ephemeral points
+    ElementCount const mShipPoints;
+
+    // Count of ephemeral points
+    ElementCount const mEphemeralPoints;
 
     World & mParentWorld;
     std::shared_ptr<IGameEventHandler> const mGameEventHandler;

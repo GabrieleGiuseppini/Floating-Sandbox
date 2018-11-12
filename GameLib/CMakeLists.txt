@@ -8,6 +8,7 @@ set  (GAME_SOURCES
 	BufferAllocator.h
 	CircularList.h
 	ElementContainer.h
+	ElementIndexRangeIterator.h
 	EnumFlags.h
 	FixedSizeVector.h
 	FloatingPoint.h
@@ -24,7 +25,7 @@ set  (GAME_SOURCES
 	GameWallClock.h
 	IGameEventHandler.h
 	ImageData.h
-	ImageSize.h
+	ImageSize.h	
 	Log.cpp
 	Log.h
 	Material.cpp

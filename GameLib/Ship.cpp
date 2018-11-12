@@ -83,8 +83,8 @@ void Ship::DestroyAt(
 {
     float const squareRadius = radius * radius;
 
-    // Destroy all points within the radius
-    for (auto pointIndex : mPoints)
+    // Destroy all (non-ephemeral) points within the radius
+    for (auto pointIndex : mPoints.NonEphemeralPoints())
     {
         if (!mPoints.IsDeleted(pointIndex))
         {

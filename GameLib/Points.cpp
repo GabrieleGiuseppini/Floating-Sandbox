@@ -38,9 +38,17 @@ void Points::Add(
     mWaterMomentumBuffer.emplace_back(vec2f::zero());
     mIsLeakingBuffer.emplace_back(false);    
 
+    // Electrical dynamics
     mElectricalElementBuffer.emplace_back(electricalElementIndex);
     mLightBuffer.emplace_back(0.0f);
 
+    // Ephemeral particles
+    mEphemeralTypeBuffer.emplace_back(EphemeralType::None);
+    mEphemeralStartTimeBuffer.emplace_back(GameWallClock::time_point::min());
+    mEphemeralMaxLifetimeBuffer.emplace_back(std::chrono::milliseconds::zero());
+    mEphemeralStateBuffer.emplace_back(EphemeralState::DebrisState());
+
+    // Structure
     mNetworkBuffer.emplace_back();
 
     mConnectedComponentIdBuffer.emplace_back(0u);

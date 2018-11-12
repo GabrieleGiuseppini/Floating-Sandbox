@@ -291,25 +291,32 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 					- Use glSubBufferData
 					- If we go for separate alpha buffer: also do for ephemeral portion of alpha buffer
 		- Impl:
+			- TODOHERE: Test vec4f for colors
+				- Points
+				- ShipBuilder
+				- RenderContext/ShipRenderContext
+				- Shaders
+			- Set max eph particles to 1024
+			+ Points allocs extra room
+				+ Also stores ship point count and start index
+			+ Points has new buffers:
+				+ EphemeralType (uint8 enum)
+					+ None (set at non-ephemeral and at dead ephemerals)
+					+ Debris
+					+ Sparkle
+					+ AirBubble
+					+ Smoke
+				+ EphemeralStartTime (clock point)
+				+ EphemeralMaxLifetime (std::chrono::milliseconds)
+				+ private: 
+					+ EphemeralState: union of public structs (much like ElectricalElements::ElementState)
+						+ Debris: {}
+						+ Sparkle: {}
+						+ AirBubble: {}
+						+ Smoke: {}
+					+ Buffer<EphemeralState> mEphemeralStateBuffer;
 
-			- Points has new buffers:
-				- EphemeralType (uint8 enum)
-					- None (set at non-ephemeral and at dead ephemerals)
-					- Debris
-					- Sparkle
-					- AirBubble
-					- Smoke
-				- EphemeralLifetime (std::chrono::milliseconds)
-				- EphemeralMaxLifetime (std::chrono::milliseconds)
-				- private: 
-					- EphemeralState: union of public structs (much like ElectricalElements::ElementState)
-						- Debris: {}
-						- Sparkle: {}
-						- AirBubble: {}
-						- Smoke: {}
-					- Buffer<EphemeralState> mEphemeralStateBuffer;
-
-			- Ship: limit point range:
+			= Ship: limit point range:
 				- @ destroy tool, @ bombs explosions, and @ anything else that destroys point: do not destroy ephemeral points
 				- @ toggle bombs: do not attach to ephemeral points
 				- For all of these: use Points::NonEphemeralPoints iterator, or check EphemeralType != None, depending on the case
@@ -325,12 +332,16 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 							- Though Debris uses spring's material
 					- Impl:
 						- Find first expired particle; if not found, pick the oldest
+							- Requires mFreeEphemeralParticleSearchStartIndex
+							- In private ElementIndex FindFreeEphemeralParticle()
+								- sets mFreeEphemeralParticleSearchStartIndex
 						- Store Color, Position, Velocity
 						- Store Mass
 						- Do any other initializations that we do at Points::Add(...)
 						- Store MaxLifetime, and zero lifetime
 
 			- Points::UpdateEphemeralParticles(clockNow):
+				- For each point, check lifetime vs max lifetime
 				- If time has expired (now):
 					- No need to mark as deleted to hide them, EphemeralType==None suffices to prevent them from being rendered
 					- Reset velocity and integration factor of expired particles to avoid drifting

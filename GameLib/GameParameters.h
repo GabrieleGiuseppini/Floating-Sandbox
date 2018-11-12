@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GameTypes.h"
 #include "Vectors.h"
 
 #include <chrono>
@@ -58,6 +59,7 @@ struct GameParameters
     static constexpr vec2f Gravity = vec2f(0.0f, -9.80f);
     static constexpr vec2f GravityNormalized = vec2f(0.0f, -1.0f);
     static constexpr float GravityMagnitude = 9.80f;
+
 
     //
     // Tunable parameters
@@ -148,4 +150,6 @@ struct GameParameters
     static constexpr size_t MaxSpringsPerPoint = 8u + 1u;
 
     static constexpr size_t MaxTrianglesPerPoint = 8u;
+
+    static constexpr ElementCount MaxEphemeralParticles = 0; // TODOTEST
 };
