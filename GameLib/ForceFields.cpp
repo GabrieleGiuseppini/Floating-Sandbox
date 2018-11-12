@@ -52,23 +52,26 @@ void BlastForceField::Apply(
     float const squareBlastRadius = mBlastRadius * mBlastRadius;
     constexpr float DtSquared = GameParameters::SimulationStepTimeDuration<float> * GameParameters::SimulationStepTimeDuration<float>;
 
-    float closestNonEphemeralPointSquareDistance = std::numeric_limits<float>::max();
-    ElementIndex closestNonEphemeralPointIndex = NoneElementIndex;
+    float closestPointSquareDistance = std::numeric_limits<float>::max();
+    ElementIndex closestPointIndex = NoneElementIndex;
 
-    for (auto pointIndex : points)
+    // Visit all (non-ephemeral) points (ephemerals would be blown immediately away otherwise)
+    for (auto pointIndex : points.NonEphemeralPoints())
     {
+        // Make sure this point belongs to the required connected component
         if (points.GetConnectedComponentId(pointIndex) == mConnectedComponentId)
         {
             vec2f pointRadius = points.GetPosition(pointIndex) - mCenterPosition;
             float squarePointDistance = pointRadius.squareLength();
             if (squarePointDistance < squareBlastRadius)
             {
-                // Check whether this point is the closest non-ephemeral point
-                if (squarePointDistance < closestNonEphemeralPointSquareDistance
-                    && Points::EphemeralType::None == points.GetEphemeralType(pointIndex))
+                // Check whether this point is the closest, non-deleted point
+                //  Wee don't want to waste destroy's on already-deleted points
+                if (squarePointDistance < closestPointSquareDistance
+                    && !points.IsDeleted(pointIndex))
                 {
-                    closestNonEphemeralPointSquareDistance = squarePointDistance;
-                    closestNonEphemeralPointIndex = pointIndex;
+                    closestPointSquareDistance = squarePointDistance;
+                    closestPointIndex = pointIndex;
                 }
 
                 // Create acceleration to flip the point
@@ -89,11 +92,11 @@ void BlastForceField::Apply(
     //
 
     if (mDestroyPoint
-        && NoneElementIndex != closestNonEphemeralPointIndex)
+        && NoneElementIndex != closestPointIndex)
     {
         // Destroy point
         points.Destroy(
-            closestNonEphemeralPointIndex,
+            closestPointIndex,
             gameParameters);
     }
 }
