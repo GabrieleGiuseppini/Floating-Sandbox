@@ -531,7 +531,7 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 				- But we lose details when we zoom out and then in again
 			- 3: Just cap zoom to reasonable max
 	- Breaking waves (Muller's paper)
-
+	- See if can use water's pressure to inflict stress on springs
 
 - Controls:
 	+ World settings: number of clouds, wind
@@ -579,8 +579,11 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 			- Show also name, dimensions, and total mass
 
 - Sounds:
-	- Revert light flicker sounds to higher (older) volume, and fix volume in SoundController instead, via const
 	- Sawing: do not publish destroy events when cutting springs, but new "Sawed" events with own metal/wood sounds
+	- Ship may come with custom sound(s) for horns
+		- Figure out how to play them, may be like switchboard or *via* switchboard
+	- Morse code sound when it's about to sink (early sink detection)
+		- Or at first drop of water
 	- Volume of effects should depend on distance/zoom
 
 -Probing:
