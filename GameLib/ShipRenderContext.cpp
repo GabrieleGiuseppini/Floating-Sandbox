@@ -926,7 +926,7 @@ void ShipRenderContext::RenderEphemeralPointElements(ConnectedComponentData cons
         mShaderManager.ActivateProgram<ProgramType::ShipTrianglesColor>();
 
         // Set point size
-        glPointSize(0.2f * 2.0f * mCanvasToVisibleWorldHeightRatio);
+        glPointSize(0.3f * mCanvasToVisibleWorldHeightRatio);
 
         // Bind VBO
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *connectedComponent.ephemeralPointElementVBO);

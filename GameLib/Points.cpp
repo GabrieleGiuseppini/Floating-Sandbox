@@ -177,7 +177,7 @@ void Points::UpdateEphemeralParticles(
                         float alpha = 1.0f -
                             static_cast<float>(elapsedLifetime.count())
                             / static_cast<float>(std::chrono::duration_cast<GameWallClock::duration>(mEphemeralMaxLifetimeBuffer[pointIndex]).count());
-
+                        
                         mColorBuffer[pointIndex].w = alpha;
 
                         break;
@@ -280,7 +280,7 @@ void Points::UploadEphemeralParticles(
 
     renderContext.UploadShipPointColorRange(
         shipId,
-        mColorBuffer.data(),
+        &(mColorBuffer.data()[mShipPointCount]),
         mShipPointCount,
         mEphemeralPointCount);
 
@@ -303,12 +303,16 @@ void Points::UploadEphemeralParticles(
                 // Don't upload point unless there's been a change
                 if (mAreEphemeralParticlesDirty)
                 {
+                    // TBD: at this moment we can't pass the point's connected component ID,
+                    // as the ShipRenderContext doesn't know how many connected components there are
+                    // (the number of connected components may vary depending on the connectivity visit,
+                    //  which is independent from ephemeral particles; the latter might insist on using
+                    //  a connected component ID that is well gone after a new connectivity visit)
+
                     renderContext.UploadShipElementEphemeralPoint(
                         shipId,
                         pointIndex,
-                        1);
-                    // TODOTEST
-                    //GetConnectedComponentId(pointIndex));
+                        1); // TBD: read above; should be GetConnectedComponentId(pointIndex)
                 }
 
                 break;

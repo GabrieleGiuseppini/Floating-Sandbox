@@ -29,5 +29,6 @@ GameParameters::GameParameters()
     , NumberOfClouds(50)
     , WindSpeed(3.0f)
     , IsUltraViolentMode(false)
+    , DoGenerateDebris(true)
 {
 }

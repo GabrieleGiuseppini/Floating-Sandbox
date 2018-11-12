@@ -1,5 +1,37 @@
 =================================================
-Current perf
+Current perf (ephemeral particles)
+=================================================
+- fps: 29.0 (Samsung: TBD (Krafting)) (Mattia's: TBD (Krafting))
+- GameController::Update: TBD 35.06%
+	- Ship::Update: 34.33%
+		- UpdateMechanicalDynamics: 25.70%
+			- UpdateSpringForces: 18.80%
+			- UpdatePointForces: 3.45%
+			- HandleCollisionsWithSeafloor: 2.45%
+			- IntegratePointForces: 1.00%
+		- UpdateWaterDynamics: 7.83%
+			- UpdateWaterVelocities: 7.73%
+			- UpdateWaterInflow: 0.05%
+		- UpdateStrains: 0.78%
+	- DiffuseLight: 0.58%
+	- WaterSurface::Update: 0.11%
+- World::Render: 57.00%
+	- ShipRenderContext::RenderEnd: 52.87%
+	- RenderContext::RenderCloudsEnd: 1.49%
+	- RenderContext::RenderStart: 0.50%
+	- Ship::Render: 0.14%
+		- UploadPoints: 0.12%
+	- RenderContext::RenderWater: 0.05%
+	- World::RenderClouds: 0.04%
+		- fmodf: 0.02%
+	- RenderContext::RenderLand: 0.01%
+- RenderContext::RenderEnd: 0.35%
+	- TextRenderContext::RenderEnd: 0.35%
+- wxGLCanvas::SwapBuffers: 1.07%
+=================================================
+
+=================================================
+1.6.0 perf
 =================================================
 - fps: 29.6 (Samsung: TBD:31.5 (Krafting)) (Mattia's: TBD:25.1 (Krafting))
 - GameController::Update: 35.06%
@@ -45,32 +77,11 @@ NoInline
 	- RenderContext::UploadLandAndWaterEnd: 0.04%
 	- RenderContext::UploadLandAndWater: 0.03%
 - RenderContext::RenderEnd: 0.30%
-
 =================================================
 Render:
 	- No Ship::RenderEnd: 64fps
 	- Only springs: 30fps
 	- Only triangles: 42fps
-=================================================
-
-=================================================
-Right after 1.5.0 perf (before texture shader & shaders' optimizations)
-=================================================
-- GameController::Update: 34.50%
-	- Ship::Update: 33.68%
-		- UpdateMechanicalDynamics: 25.18%
-			- UpdateSpringForces: 18.64%
-			- UpdatePointForces: 3.36%
-			- HandleCollisionsWithSeafloor: 2.26% / 2.32% (with new elastic impact)
-			- IntegratePointForces: 0.92%
-		- UpdateWaterDynamics: 7.68%
-			- UpdateWaterVelocities: 7.58%
-			- UpdateWaterInflow: 0.05%
-		- UpdateStrains: 0.79%
-	- DiffuseLight: 0.70%
-- World::Render: 57.68%
-	- ShipRenderContext::RenderEnd: 52.41%
-	- RenderContext::RenderCloudsEnd: 2.84%
 =================================================
 1.3.0 perf
 =================================================
@@ -376,18 +387,14 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 					+ For now empty
 
 		- Cleanup:
-			- Figure out what to do with connected components and ephemeral particles
-				- 
-			- Depending on the above:
-				- See if can piggyback the fact that Points is already uploading all (well, now non-ephemeral) point element indices
-				- ShipRenderContext: for each conn component, use a vector (w/reserve) rather than full MaxParticles
-					- Can then get rid of MaxCount, CurrentCount
+			- See if can control debris generation via GameParameters, which must be made available at 
+			  Ship::SpringDestroyHandler
 
-		- Tests:
-			- Pin ephemeral particle
-			- Many connected components
+		+ Tests:
+			+ Pin ephemeral particle
+			+ Many connected components
 
-	= Do debris each time a spring breaks
+	+ Do debris each time a spring breaks
 		+ Look'n'feel: 
 			+ Points of the color of the spring's material
 				+ Actually, points of the spring's material
@@ -406,7 +413,19 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 			+ Upload: 
 				+ Just store index in buffer
 
-		- Test look'n'feel and finalize constants
+		+ Test look'n'feel and finalize constants
+
+	- Figure out what to do with connected components and ephemeral particles
+		- Depending on the above:
+			- See if can piggyback the fact that Points is already uploading all (well, now non-ephemeral) point element indices
+			- ShipRenderContext: for each conn component, use a vector (w/reserve) rather than full MaxParticles
+				- Can then get rid of MaxCount, CurrentCount
+		- Possible solution # 1: wait for Z buffer; when it will be done everything will be for free:
+			- Assign provoking point's Connected Component ID 
+			- ConnectedComponent buffer is a proxy of points' Z, has no bearing to multiple buffers that need to be pre-allocated
+			- Ephemeral particles in ShipRenderContext are then a single NOT-per-connected-component single buffer of indices,
+			  exactly like normal points
+				- May be at this moment we can unify normal point uploading
 
 	- Ephemeral particle emitters
 		- Implemented like electrical elements, i.e.:
