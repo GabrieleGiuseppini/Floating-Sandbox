@@ -20,6 +20,15 @@ public:
         return vec2f(); 
     }
 
+    inline static vec2f fromPolar(
+        float magnitude,
+        float angle)
+    {
+        return vec2f(
+            magnitude * cos(angle),
+            magnitude * sin(angle));
+    }
+
 	inline vec2f operator+(vec2f const & other) const
 	{
 		return vec2f(

@@ -60,6 +60,52 @@ void Points::Add(
     mTextureCoordinatesBuffer.emplace_back(textureCoordinates);
 }
 
+void Points::CreateEphemeralParticleDebris(
+    vec2f const & position,
+    vec2f const & velocity,
+    Material const * material,
+    std::chrono::milliseconds maxLifetime,
+    ConnectedComponentId connectedComponentId)
+{
+    auto now = GameWallClock::GetInstance().Now();
+
+    // Get a free slot (or steal one)
+    auto pointIndex = FindFreeEphemeralParticle(now);
+
+    //
+    // Store attributes
+    //
+
+    assert(false == mIsDeletedBuffer[pointIndex]);
+
+    mPositionBuffer[pointIndex] = position;
+    mVelocityBuffer[pointIndex] = velocity;
+    mForceBuffer[pointIndex] = vec2f::zero();
+    mIntegrationFactorBuffer[pointIndex] = CalculateIntegrationFactor(material->Mass);
+    mMassBuffer[pointIndex] = material->Mass;
+    mMaterialBuffer[pointIndex] = material;
+    
+    mBuoyancyBuffer[pointIndex] = 0.0f; // Debris is non-buoyant
+    assert(0.0f == mWaterBuffer[pointIndex]);
+    assert(false == mIsLeakingBuffer[pointIndex]);
+
+    assert(0.0f == mLightBuffer[pointIndex]);
+
+    mEphemeralTypeBuffer[pointIndex] = EphemeralType::Debris;
+    mEphemeralStartTimeBuffer[pointIndex] = now;
+    mEphemeralMaxLifetimeBuffer[pointIndex] = maxLifetime;
+    mEphemeralStateBuffer[pointIndex] = EphemeralState::DebrisState();
+    mConnectedComponentIdBuffer[pointIndex] = connectedComponentId;
+
+    assert(false == mIsPinnedBuffer[pointIndex]);
+
+    mColorBuffer[pointIndex] = material->RenderColour;
+
+
+    // Remember we're dirty now
+    mAreEphemeralParticlesDirty = true;
+}
+
 void Points::Destroy(ElementIndex pointElementIndex)
 {
     assert(pointElementIndex < mElementCount);
@@ -86,6 +132,65 @@ void Points::Destroy(ElementIndex pointElementIndex)
     mIntegrationFactorBuffer[pointElementIndex] = vec2f::zero();
     mWaterVelocityBuffer[pointElementIndex] = vec2f::zero();
     mWaterMomentumBuffer[pointElementIndex] = vec2f::zero();
+}
+
+void Points::UpdateEphemeralParticles(
+    GameWallClock::time_point now,
+    GameParameters const & /*gameParameters*/)
+{
+    for (ElementIndex pointIndex : this->EphemeralPoints())
+    {
+        auto const ephemeralType = GetEphemeralType(pointIndex);
+        if (EphemeralType::None != ephemeralType)
+        {
+            // Check if expired
+            auto const elapsedLifetime = now - mEphemeralStartTimeBuffer[pointIndex];
+            if (elapsedLifetime >= mEphemeralMaxLifetimeBuffer[pointIndex])
+            {
+                // 
+                // Expire this particle
+                //
+
+                // Freeze the particle (just to prevent drifting)
+                Freeze(pointIndex);
+
+                // Hide this particle from ephemeral particles; this will prevent this particle from:
+                // - Being rendered
+                // - Being updates
+                mEphemeralTypeBuffer[pointIndex] = EphemeralType::None;
+
+                // Remember we're now dirty
+                mAreEphemeralParticlesDirty = true;
+            }
+            else
+            {
+                //
+                // Run this particle's state machine
+                //
+
+                switch (ephemeralType)
+                {
+                    case EphemeralType::Debris:
+                    {
+                        // Update alpha based off remaining time
+
+                        float alpha = 1.0f -
+                            static_cast<float>(elapsedLifetime.count())
+                            / static_cast<float>(std::chrono::duration_cast<GameWallClock::duration>(mEphemeralMaxLifetimeBuffer[pointIndex]).count());
+
+                        mColorBuffer[pointIndex].w = alpha;
+
+                        break;
+                    }
+                    
+                    default:
+                    {
+                        // Do nothing
+                    }
+                }
+            }
+        }
+    }
 }
 
 void Points::Upload(
@@ -165,6 +270,63 @@ void Points::UploadVectors(
     }    
 }
 
+void Points::UploadEphemeralParticles(
+    int shipId,
+    Render::RenderContext & renderContext) const
+{
+    //
+    // 1. Upload ephemeral-particle portion of point colors
+    //
+
+    renderContext.UploadShipPointColorRange(
+        shipId,
+        mColorBuffer.data(),
+        mShipPoints,
+        mEphemeralPoints);
+
+
+    //
+    // 2. Upload points and/or textures
+    //
+
+    if (mAreEphemeralParticlesDirty)
+    {
+        renderContext.UploadShipElementEphemeralPointsStart(shipId);
+    }
+
+    for (ElementIndex pointIndex : this->EphemeralPoints())
+    {
+        switch (GetEphemeralType(pointIndex))
+        {
+            case EphemeralType::Debris:
+            {
+                renderContext.UploadShipElementEphemeralPoint(
+                    shipId,
+                    pointIndex,
+                    GetConnectedComponentId(pointIndex));
+                
+                break;
+            }
+
+            //// FUTURE: Those that are textures: call directly ShipRenderContext::UploadGenericTexture(...)
+
+            case EphemeralType::None:
+            default:
+            {
+                // Ignore
+                break;
+            }
+        }
+    }
+
+    if (mAreEphemeralParticlesDirty)
+    {
+        renderContext.UploadShipElementEphemeralPointsEnd(shipId);
+
+        mAreEphemeralParticlesDirty = false;
+    }
+}
+
 void Points::SetMassToMaterialOffset(
     ElementIndex pointElementIndex,
     float offset,
@@ -184,6 +346,8 @@ void Points::SetMassToMaterialOffset(
     }
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
 vec2f Points::CalculateIntegrationFactor(float mass)
 {
     assert(mass > 0.0f);
@@ -196,6 +360,67 @@ vec2f Points::CalculateIntegrationFactor(float mass)
     static constexpr float dt = GameParameters::MechanicalDynamicsSimulationStepTimeDuration<float>;
     
     return vec2f(dt * dt / mass, dt * dt / mass);
+}
+
+ElementIndex Points::FindFreeEphemeralParticle(GameWallClock::time_point const & now)
+{
+    //
+    // Search for the firt free ephemeral particle; if a free one is not found, reuse the 
+    // oldest particle
+    //
+
+    ElementIndex oldestParticle = NoneElementIndex;
+    typename GameWallClock::duration oldestParticleLifetime = GameWallClock::duration::min();
+
+    assert(mFreeEphemeralParticleSearchStartIndex >= mShipPoints
+        && mFreeEphemeralParticleSearchStartIndex < mAllPoints);
+
+    for (ElementIndex p = mFreeEphemeralParticleSearchStartIndex; ; )
+    {
+        if (EphemeralType::None == GetEphemeralType(p))
+        {
+            // Found!
+
+            // Remember to start after this one next time
+            mFreeEphemeralParticleSearchStartIndex = p + 1;
+            if (mFreeEphemeralParticleSearchStartIndex >= mAllPoints)
+                mFreeEphemeralParticleSearchStartIndex = mShipPoints;
+
+            return p;
+        }
+
+        // Check whether it's the oldest
+        auto lifetime = now - mEphemeralStartTimeBuffer[p];
+        if (lifetime > oldestParticleLifetime)
+        {
+            oldestParticle = p;
+            oldestParticleLifetime = lifetime;
+        }
+
+        // Advance
+        ++p;
+        if (p >= mAllPoints)
+            p = mShipPoints;
+
+        if (p == mFreeEphemeralParticleSearchStartIndex)
+        {
+            // Went around
+            break;
+        }
+    }
+    
+    //
+    // No luck, have to steal the oldest
+    //
+
+    assert(NoneElementIndex == oldestParticle);
+
+    // Remember to start after this one next time
+    mFreeEphemeralParticleSearchStartIndex = oldestParticle + 1;
+    if (mFreeEphemeralParticleSearchStartIndex >= mAllPoints)
+        mFreeEphemeralParticleSearchStartIndex = mShipPoints;
+
+    return oldestParticle;
 }
 
 }

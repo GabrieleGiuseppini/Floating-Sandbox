@@ -47,7 +47,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     World & parentWorld,
     std::shared_ptr<IGameEventHandler> gameEventHandler,
     ShipDefinition const & shipDefinition,
-    MaterialDatabase const & materials,
+    std::shared_ptr<MaterialDatabase> materials,
     GameParameters const & /*gameParameters*/,
     VisitSequenceNumber currentVisitSequenceNumber)
 {
@@ -96,7 +96,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
 
             bool isRopeEndpoint = false;
 
-            Material const * material = materials.Find(rgbColour);
+            Material const * material = materials->Find(rgbColour);
             if (nullptr == material)
             {
                 // Check whether it's a rope endpoint (#000xxx)
@@ -124,7 +124,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
                     }
 
                     // Point to rope (#000000)
-                    material = &(materials.GetRopeMaterial());
+                    material = &(materials->GetRopeMaterial());
                 }
             }
 
@@ -161,7 +161,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     CreateRopeSegments(
         ropeSegments,
         shipDefinition.StructuralImage.Size,
-        materials.GetRopeMaterial(),
+        materials->GetRopeMaterial(),
         pointInfos,
         springInfos);
 
@@ -257,11 +257,12 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     return std::make_unique<Ship>(
         shipId, 
         parentWorld,
-        std::move(gameEventHandler),
+        gameEventHandler,
         std::move(points),
         std::move(springs),
         std::move(triangles),
         std::move(electricalElements),
+        materials,
         currentVisitSequenceNumber);
 }
 

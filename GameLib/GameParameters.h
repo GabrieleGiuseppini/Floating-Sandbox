@@ -135,6 +135,9 @@ struct GameParameters
 
     bool IsUltraViolentMode;
 
+    static constexpr size_t MaxDebrisParticlesPerEvent = 3;
+    static constexpr std::chrono::milliseconds DebrisLifetime = std::chrono::milliseconds(1000);
+
 
     //
     // Limits
@@ -151,5 +154,5 @@ struct GameParameters
 
     static constexpr size_t MaxTrianglesPerPoint = 8u;
 
-    static constexpr ElementCount MaxEphemeralParticles = 0; // TODOTEST
+    static constexpr ElementCount MaxEphemeralParticles = 512;
 };

@@ -70,6 +70,7 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
 }
 
 void ElectricalElements::Update(
+    GameWallClock::time_point now,
     VisitSequenceNumber currentConnectivityVisitSequenceNumber,
     Points const & points,
     GameParameters const & gameParameters)
@@ -84,6 +85,7 @@ void ElectricalElements::Update(
         {
             RunLampStateMachine(
                 iLamp,
+                now,
                 currentConnectivityVisitSequenceNumber,
                 points,
                 gameParameters);
@@ -97,6 +99,7 @@ void ElectricalElements::Update(
 
 void ElectricalElements::RunLampStateMachine(
     ElementIndex elementLampIndex,
+    GameWallClock::time_point now,
     VisitSequenceNumber currentConnectivityVisitSequenceNumber,
     Points const & points,
     GameParameters const & /*gameParameters*/)
@@ -114,8 +117,6 @@ void ElectricalElements::RunLampStateMachine(
         //
         // Normal lamp, only on if visited, and controlled by flicker state machine
         //
-
-        auto const now = GameWallClock::GetInstance().Now();
 
         switch (mElementStateBuffer[elementLampIndex].Lamp.State)
         {

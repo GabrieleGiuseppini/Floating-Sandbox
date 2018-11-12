@@ -21,7 +21,7 @@ class MaterialDatabase
 {
 public:
 
-    static MaterialDatabase Create(picojson::value const & root)
+    static std::unique_ptr<MaterialDatabase> Create(picojson::value const & root)
     {
         std::vector<std::unique_ptr<Material const>> materials;
 
@@ -44,7 +44,7 @@ public:
         return Create(std::move(materials));
     }
 
-    static MaterialDatabase Create(std::vector<std::unique_ptr<Material const>> materials)
+    static std::unique_ptr<MaterialDatabase> Create(std::vector<std::unique_ptr<Material const>> materials)
     {
         std::map<std::array<uint8_t, 3u>, std::unique_ptr<Material const>> materialsMap;
         Material const * ropeMaterial = nullptr;
@@ -94,9 +94,10 @@ public:
             throw GameException("No Rope material found in materials database");
         }
 
-        return MaterialDatabase(
-            std::move(materialsMap),
-            *ropeMaterial);
+        return std::unique_ptr<MaterialDatabase>(
+            new MaterialDatabase(
+                std::move(materialsMap),
+                *ropeMaterial));
     }
 
     Material const * Find(std::array<uint8_t, 3u> const & structuralColourRgb) const

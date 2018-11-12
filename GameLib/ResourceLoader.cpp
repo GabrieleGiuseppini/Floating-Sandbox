@@ -178,12 +178,12 @@ std::vector<Render::Font> ResourceLoader::LoadFonts(ProgressCallback const & pro
 // Materials
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-MaterialDatabase ResourceLoader::LoadMaterials()
+std::unique_ptr<MaterialDatabase> ResourceLoader::LoadMaterials()
 {
     return LoadMaterials(std::filesystem::path("Data") / "materials.json");
 }
 
-MaterialDatabase ResourceLoader::LoadMaterials(std::filesystem::path const & filePath)
+std::unique_ptr<MaterialDatabase> ResourceLoader::LoadMaterials(std::filesystem::path const & filePath)
 {
     picojson::value root = Utils::ParseJSONFile(filePath.string());
     return MaterialDatabase::Create(root);

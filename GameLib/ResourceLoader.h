@@ -54,9 +54,9 @@ public:
     // Materials
     //
 
-    MaterialDatabase LoadMaterials();
+    std::unique_ptr<MaterialDatabase> LoadMaterials();
 
-    static MaterialDatabase LoadMaterials(std::filesystem::path const & filePath);
+    static std::unique_ptr<MaterialDatabase> LoadMaterials(std::filesystem::path const & filePath);
 
 
     //

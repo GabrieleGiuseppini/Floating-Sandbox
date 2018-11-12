@@ -33,6 +33,7 @@ public:
         Springs && springs,
         Triangles && triangles,
         ElectricalElements && electricalElements,
+        std::shared_ptr<MaterialDatabase> materialDatabase,
         VisitSequenceNumber currentVisitSequenceNumber);
 
     ~Ship();
@@ -137,12 +138,19 @@ public:
     // Electrical 
 
     void UpdateElectricalDynamics(
+        GameWallClock::time_point now,
         VisitSequenceNumber currentVisitSequenceNumber,
         GameParameters const & gameParameters);
 
     void UpdateElectricalConnectivity(VisitSequenceNumber currentVisitSequenceNumber);
 
     void DiffuseLight(GameParameters const & gameParameters);
+
+    // Ephemeral particles
+
+    void UpdateEphemeralParticles(
+        GameWallClock::time_point now,
+        GameParameters const & gameParameters);
 
 private:
 
@@ -202,6 +210,9 @@ private:
     Springs mSprings;
     Triangles mTriangles;
     ElectricalElements mElectricalElements;
+
+    // The material database
+    std::shared_ptr<MaterialDatabase> const mMaterialDatabase;
 
     // Connected components metadata
     std::vector<std::size_t> mConnectedComponentSizes;

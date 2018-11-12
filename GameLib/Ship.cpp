@@ -5,6 +5,7 @@
  ***************************************************************************************/
 #include "Physics.h"
 
+#include "GameRandomEngine.h"
 #include "Log.h"
 #include "Segment.h"
 
@@ -37,6 +38,7 @@ Ship::Ship(
     Springs && springs,
     Triangles && triangles,
     ElectricalElements && electricalElements,
+    std::shared_ptr<MaterialDatabase> materialDatabase,
     VisitSequenceNumber currentVisitSequenceNumber)
     : mId(id)
     , mParentWorld(parentWorld)    
@@ -45,6 +47,7 @@ Ship::Ship(
     , mSprings(std::move(springs))
     , mTriangles(std::move(triangles))
     , mElectricalElements(std::move(electricalElements))
+    , mMaterialDatabase(std::move(materialDatabase))
     , mConnectedComponentSizes()
     , mAreElementsDirty(true)
     , mIsSinking(false)
@@ -223,6 +226,9 @@ void Ship::Update(
     VisitSequenceNumber currentVisitSequenceNumber,
     GameParameters const & gameParameters)
 {
+    auto const now = GameWallClock::GetInstance().Now();
+
+
     //
     // Process eventual parameter changes
     //
@@ -246,7 +252,9 @@ void Ship::Update(
     // (which would flag our elements as dirty)
     //
 
-    mBombs.Update(gameParameters);
+    mBombs.Update(
+        now,
+        gameParameters);
 
 
     //
@@ -281,7 +289,17 @@ void Ship::Update(
     //
 
     UpdateElectricalDynamics(
+        now,
         currentVisitSequenceNumber, 
+        gameParameters);
+
+
+    //
+    // Update ephemeral particles
+    //
+
+    UpdateEphemeralParticles(
+        now,
         gameParameters);
 }
 
@@ -366,6 +384,15 @@ void Ship::Render(
         }
 
         renderContext.UploadShipElementStressedSpringsEnd(mId);
+
+
+        //
+        // Upload ephemeral points
+        //
+
+        mPoints.UploadEphemeralParticles(
+            mId,
+            renderContext);
 
 
         mAreElementsDirty = false;
@@ -1034,6 +1061,7 @@ void Ship::UpdateWaterVelocities(
 ///////////////////////////////////////////////////////////////////////////////////
 
 void Ship::UpdateElectricalDynamics(
+    GameWallClock::time_point now,
     VisitSequenceNumber currentVisitSequenceNumber,
     GameParameters const & gameParameters)
 {
@@ -1041,6 +1069,7 @@ void Ship::UpdateElectricalDynamics(
     UpdateElectricalConnectivity(currentVisitSequenceNumber);
 
     mElectricalElements.Update(
+        now,
         currentVisitSequenceNumber,
         mPoints,
         gameParameters);
@@ -1151,6 +1180,26 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
             }
         }
     }
+}
+
+void Ship::UpdateEphemeralParticles(
+    GameWallClock::time_point now,
+    GameParameters const & gameParameters)
+{
+    //
+    // 1. Update existing particles
+    //
+
+    mPoints.UpdateEphemeralParticles(
+        now,
+        gameParameters);
+
+
+    //
+    // 2. Emit new particles
+    //
+
+    // FUTURE: when we have emitters
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -1413,6 +1462,29 @@ void Ship::SpringDestroyHandler(
 
     // Notify pinned points
     mPinnedPoints.OnSpringDestroyed(springElementIndex);
+
+    // Emit debris
+    vec2f const springMindpoint = (mPoints.GetPosition(pointAIndex) + mPoints.GetPosition(pointBIndex)) / 2.0f;
+    auto const debrisCount = GameRandomEngine::GetInstance().Choose(GameParameters::MaxDebrisParticlesPerEvent);
+    for (size_t d = 0; d < debrisCount; ++d)
+    {
+        // Choose a velocity vector: point on a circle with random radius and random angle
+        float const velocityMagnitude = GameRandomEngine::GetInstance().GenerateRandomReal(1.0f, 5.0f); // TODO: Experiment
+        float const velocityAngle = GameRandomEngine::GetInstance().GenerateRandomReal(0.0f, 2.0f * Pi<float>);
+
+        // Choose a lifetime: randomize parameter 
+        std::chrono::milliseconds const maxLifetime = std::chrono::milliseconds(
+            static_cast<std::chrono::milliseconds::rep>(
+                static_cast<float>(GameParameters::DebrisLifetime.count())
+                * GameRandomEngine::GetInstance().GenerateRandomReal(0.5f, 1.0f)));
+
+        mPoints.CreateEphemeralParticleDebris(
+            springMindpoint,
+            vec2f::fromPolar(velocityMagnitude, velocityAngle),
+            mSprings.GetBaseMaterial(springElementIndex),
+            maxLifetime,
+            mPoints.GetConnectedComponentId(pointAIndex));
+    }
 
     // Remember our elements are now dirty
     mAreElementsDirty = true;

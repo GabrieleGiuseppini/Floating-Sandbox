@@ -38,16 +38,16 @@ void BlastForceField::Apply(Points & points) const
 {
     // 
     // Go through all the connected component's points and, for each point in radius:
-    // - Keep closest to blast position, which we'll Destroy() later (if this is the fist frame of the 
-    //   blast sequence)
+    // - Keep non-ephemeral point that is closest to blast position; we'll Destroy() it later 
+    //   (if this is the fist frame of the blast sequence)
     // - Flip over the point outside of the radius
     //
 
     float const squareBlastRadius = mBlastRadius * mBlastRadius;
     constexpr float DtSquared = GameParameters::SimulationStepTimeDuration<float> * GameParameters::SimulationStepTimeDuration<float>;
 
-    float closestPointSquareDistance = std::numeric_limits<float>::max();
-    ElementIndex closestPointIndex = NoneElementIndex;
+    float closestNonEphemeralPointSquareDistance = std::numeric_limits<float>::max();
+    ElementIndex closestNonEphemeralPointIndex = NoneElementIndex;
 
     for (auto pointIndex : points)
     {
@@ -57,11 +57,12 @@ void BlastForceField::Apply(Points & points) const
             float squarePointDistance = pointRadius.squareLength();
             if (squarePointDistance < squareBlastRadius)
             {
-                // Check whether this point is the closest
-                if (squarePointDistance < closestPointSquareDistance)
+                // Check whether this point is the closest non-ephemeral point
+                if (squarePointDistance < closestNonEphemeralPointSquareDistance
+                    && Points::EphemeralType::None == points.GetEphemeralType(pointIndex))
                 {
-                    closestPointSquareDistance = squarePointDistance;
-                    closestPointIndex = pointIndex;
+                    closestNonEphemeralPointSquareDistance = squarePointDistance;
+                    closestNonEphemeralPointIndex = pointIndex;
                 }
 
                 // Create acceleration to flip the point
@@ -82,10 +83,10 @@ void BlastForceField::Apply(Points & points) const
     //
 
     if (mDestroyPoint
-        && NoneElementIndex != closestPointIndex)
+        && NoneElementIndex != closestNonEphemeralPointIndex)
     {
         // Destroy point
-        points.Destroy(closestPointIndex);
+        points.Destroy(closestNonEphemeralPointIndex);
     }
 }
 

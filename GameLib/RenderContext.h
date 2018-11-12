@@ -488,6 +488,20 @@ public:
             textureCoordinates);
     }
 
+    void UploadShipPointColorRange(
+        int shipId,
+        vec4f const * restrict color,
+        size_t startIndex,
+        size_t count)
+    {
+        assert(shipId < mShips.size());
+
+        mShips[shipId]->UploadShipPointColorRange(
+            color,
+            startIndex,
+            count);
+    }
+
     void UploadShipPoints(
         int shipId,
         vec2f const * restrict position,
@@ -604,6 +618,32 @@ public:
         mShips[shipId]->UploadElementStressedSpringsEnd();
     }
 
+    inline void UploadShipElementEphemeralPointsStart(int shipId)
+    {
+        assert(shipId < mShips.size());
+
+        mShips[shipId]->UploadElementEphemeralPointsStart();
+    }
+
+    inline void UploadShipElementEphemeralPoint(
+        int shipId,
+        int pointIndex,
+        ConnectedComponentId connectedComponentId)
+    {
+        assert(shipId < mShips.size());
+
+        mShips[shipId]->UploadElementEphemeralPoint(
+            pointIndex,
+            connectedComponentId);
+    }
+
+    void UploadShipElementEphemeralPointsEnd(int shipId)
+    {
+        assert(shipId < mShips.size());
+
+        mShips[shipId]->UploadElementEphemeralPointsEnd();
+    }
+
     //
     // Generic textures
     //
@@ -692,6 +732,7 @@ public:
 
         mShips[shipId]->RenderEnd();
     }
+
 
     //
     // Text

@@ -111,6 +111,7 @@ public:
         : ElementContainer(shipPointCount + GameParameters::MaxEphemeralParticles)
         , mShipPoints(shipPointCount)
         , mEphemeralPoints(GameParameters::MaxEphemeralParticles)
+        , mAllPoints(mShipPoints + mEphemeralPoints)
         //////////////////////////////////
         // Buffers
         //////////////////////////////////
@@ -158,6 +159,8 @@ public:
         , mAreImmutableRenderAttributesUploaded(false)
         , mFloatBufferAllocator(mBufferElementCount)
         , mVec2fBufferAllocator(mBufferElementCount)
+        , mFreeEphemeralParticleSearchStartIndex(mShipPoints)
+        , mAreEphemeralParticlesDirty(false)
     {
     }
 
@@ -166,12 +169,19 @@ public:
     /*
      * Returns an iterator for the non-ephemeral points only.
      */
-
     auto NonEphemeralPoints() const
     {
         return ElementIndexRangeIterator(0, mShipPoints);
     }
-    
+
+    /*
+     * Returns an iterator for the ephemeral points only.
+     */
+    auto EphemeralPoints() const
+    {
+        return ElementIndexRangeIterator(mShipPoints, mShipPoints + mEphemeralPoints);
+    }
+
     /*
      * Sets a (single) handler that is invoked whenever a point is destroyed.
      *
@@ -200,7 +210,19 @@ public:
         vec4f const & color,
         vec2f const & textureCoordinates);
 
+    void CreateEphemeralParticleDebris(
+        vec2f const & position,
+        vec2f const & velocity,
+        Material const * material,
+        std::chrono::milliseconds maxLifetime,
+        ConnectedComponentId connectedComponentId);
+
     void Destroy(ElementIndex pointElementIndex);
+
+    void UpdateEphemeralParticles(
+        GameWallClock::time_point now,
+        GameParameters const & gameParameters);    
+    
 
     //
     // Render
@@ -215,6 +237,10 @@ public:
         Render::RenderContext & renderContext) const;
 
     void UploadVectors(
+        int shipId,
+        Render::RenderContext & renderContext) const;
+
+    void UploadEphemeralParticles(
         int shipId,
         Render::RenderContext & renderContext) const;
 
@@ -316,6 +342,22 @@ public:
         ElementIndex pointElementIndex,
         float offset,
         Springs & springs);
+
+    // Changes the point's dynamics so that it freezes in place
+    // and becomes oblivious to forces
+    void Freeze(ElementIndex pointElementIndex)
+    {
+        // Zero-out integration factor and velocity, freezing point
+        mIntegrationFactorBuffer[pointElementIndex] = vec2f(0.0f, 0.0f);
+        mVelocityBuffer[pointElementIndex] = vec2f(0.0f, 0.0f);
+    }
+
+    // Changes the point's dynamics so that the point reacts again to forces
+    void Thaw(ElementIndex pointElementIndex)
+    {
+        // Re-populate its integration factor, thawing point
+        mIntegrationFactorBuffer[pointElementIndex] = CalculateIntegrationFactor(mMassBuffer[pointElementIndex]);
+    }
 
     //
     // Water dynamics
@@ -508,9 +550,7 @@ public:
     
         mIsPinnedBuffer[pointElementIndex] = true;
 
-        // Zero-out integration factor and velocity, freezing point
-        mIntegrationFactorBuffer[pointElementIndex] = vec2f(0.0f, 0.0f);
-        mVelocityBuffer[pointElementIndex] = vec2f(0.0f, 0.0f);
+        Freeze(pointElementIndex);
     }
 
     void Unpin(ElementIndex pointElementIndex)
@@ -519,8 +559,7 @@ public:
     
         mIsPinnedBuffer[pointElementIndex] = false;
 
-        // Re-populate its integration factor, thawing point
-        mIntegrationFactorBuffer[pointElementIndex] = CalculateIntegrationFactor(mMassBuffer[pointElementIndex]);
+        Thaw(pointElementIndex);
     }
 
     //
@@ -569,6 +608,8 @@ public:
 private:
 
     static vec2f CalculateIntegrationFactor(float mass);
+
+    ElementIndex FindFreeEphemeralParticle(GameWallClock::time_point const & now);
 
 private:
 
@@ -668,6 +709,9 @@ private:
     // Count of ephemeral points
     ElementCount const mEphemeralPoints;
 
+    // Count of all points
+    ElementCount const mAllPoints;
+
     World & mParentWorld;
     std::shared_ptr<IGameEventHandler> const mGameEventHandler;
 
@@ -681,6 +725,15 @@ private:
     // Allocators for work buffers
     BufferAllocator<float> mFloatBufferAllocator;
     BufferAllocator<vec2f> mVec2fBufferAllocator;
+
+    // The index at which to start searching for free ephemeral particles
+    // (just an optimization over restarting from zero each time)
+    ElementIndex mFreeEphemeralParticleSearchStartIndex;
+
+    // Flag remembering whether the set of ephemeral particles is dirty
+    // (i.e. whether there are more or less particles than previously
+    // reported to the rendering engine)
+    bool mutable mAreEphemeralParticlesDirty;
 };
 
 }

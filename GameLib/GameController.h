@@ -242,10 +242,10 @@ private:
 
     GameController(
         std::unique_ptr<Render::RenderContext> renderContext,
-        std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-        std::shared_ptr<ResourceLoader> resourceLoader,
-        std::shared_ptr<TextLayer> textLayer,
-        MaterialDatabase && materials)
+        std::unique_ptr<GameEventDispatcher> gameEventDispatcher,        
+        std::unique_ptr<TextLayer> textLayer,
+        std::unique_ptr<MaterialDatabase> materials,
+        std::shared_ptr<ResourceLoader> resourceLoader)
         : mGameParameters()
         , mLastShipLoadedFilePath()
         , mRenderContext(std::move(renderContext))
@@ -309,7 +309,8 @@ private:
     //
 
     std::unique_ptr<Physics::World> mWorld;
-    MaterialDatabase mMaterials;
+
+    std::shared_ptr<MaterialDatabase> mMaterials;
         
 
     //

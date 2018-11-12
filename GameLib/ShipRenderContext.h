@@ -78,6 +78,11 @@ public:
         vec4f const * restrict color,
         vec2f const * restrict textureCoordinates);
 
+    void UploadShipPointColorRange(
+        vec4f const * restrict color,
+        size_t startIndex,
+        size_t count);
+
     void UploadPoints(
         vec2f const * restrict position,
         float const * restrict light,
@@ -184,6 +189,26 @@ public:
     }
 
     void UploadElementStressedSpringsEnd();
+
+    void UploadElementEphemeralPointsStart();
+
+    inline void UploadElementEphemeralPoint(
+        int pointIndex,
+        ConnectedComponentId connectedComponentId)
+    {
+        size_t const connectedComponentIndex = connectedComponentId - 1;
+
+        assert(connectedComponentIndex < mConnectedComponents.size());
+        assert(mConnectedComponents[connectedComponentIndex].ephemeralPointElementCount + 1u <= mConnectedComponents[connectedComponentIndex].ephemeralPointElementMaxCount);
+
+        PointElement * const ephemeralPointElement = &(mConnectedComponents[connectedComponentIndex].ephemeralPointElementBuffer[mConnectedComponents[connectedComponentIndex].ephemeralPointElementCount]);
+
+        ephemeralPointElement->pointIndex = pointIndex;
+
+        ++(mConnectedComponents[connectedComponentIndex].ephemeralPointElementCount);
+    }
+
+    void UploadElementEphemeralPointsEnd();
 
     //
     // Generic textures
@@ -352,6 +377,8 @@ private:
         bool withTexture);
 
     void RenderStressedSpringElements(ConnectedComponentData const & connectedComponent);
+
+    void RenderEphemeralPointElements(ConnectedComponentData const & connectedComponent);
 
     void RenderGenericTextures(GenericTextureConnectedComponentData const & connectedComponent);
 
@@ -524,6 +551,11 @@ struct TextureRenderPolygonVertex
         std::unique_ptr<StressedSpringElement[]> stressedSpringElementBuffer;
         GameOpenGLVBO stressedSpringElementVBO;
 
+        size_t ephemeralPointElementCount;
+        size_t ephemeralPointElementMaxCount;
+        std::unique_ptr<PointElement[]> ephemeralPointElementBuffer;
+        GameOpenGLVBO ephemeralPointElementVBO;
+
         ConnectedComponentData()
             : pointElementCount(0)
             , pointElementMaxCount(0)
@@ -545,6 +577,10 @@ struct TextureRenderPolygonVertex
             , stressedSpringElementMaxCount(0)
             , stressedSpringElementBuffer()
             , stressedSpringElementVBO()
+            , ephemeralPointElementCount(0)
+            , ephemeralPointElementMaxCount(0)
+            , ephemeralPointElementBuffer()
+            , ephemeralPointElementVBO()
         {}
     };
 

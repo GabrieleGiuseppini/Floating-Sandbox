@@ -1,3 +1,7 @@
+1.7.0
+- Musical theme for this release: Chemical Brothers, "We Are the Night"
+- Added ephemeral particles sub-system, and used it for debris
+
 1.6.0
 - Musical theme for this release: Blonde Redhead, "23"
 - Added anti-matter bomb
