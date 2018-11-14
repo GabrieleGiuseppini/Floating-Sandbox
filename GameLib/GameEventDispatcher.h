@@ -43,12 +43,13 @@ public:
 
     virtual void OnShipLoaded(
         unsigned int id,
-        std::string const & name) override
+        std::string const & name,
+        std::optional<std::string> const & author) override
     {
         // No need to aggregate this one
         for (auto sink : mSinks)
         {
-            sink->OnShipLoaded(id, name);
+            sink->OnShipLoaded(id, name, author);
         }
     }
 

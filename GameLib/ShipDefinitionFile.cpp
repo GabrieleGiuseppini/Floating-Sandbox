@@ -23,6 +23,10 @@ ShipDefinitionFile ShipDefinitionFile::Create(picojson::object const & definitio
         "ship_name",
         "");
 
+    std::optional<std::string> author = Utils::GetOptionalJsonMember<std::string>(
+        definitionJson,
+        "created_by");
+
     vec2f offset(0.0f, 0.0f);
     std::optional<picojson::object> offsetObject = Utils::GetOptionalJsonObject(definitionJson, "offset");
     if (!!offsetObject)
@@ -35,5 +39,6 @@ ShipDefinitionFile ShipDefinitionFile::Create(picojson::object const & definitio
         structuralImageFilePath,
         textureImageFilePath,
         shipName,
+        author,
         offset);
 }

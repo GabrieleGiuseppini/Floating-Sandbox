@@ -31,6 +31,9 @@ public:
     // The name of the ship
     std::string const ShipName;
 
+    // The name of the ship
+    std::optional<std::string> const Author;
+
     // The offset between the images and the world
     vec2f const Offset;
 
@@ -45,10 +48,12 @@ public:
         std::string structuralImageFilePath,
         std::optional<std::string> textureImageFilePath,
         std::string shipName,
+        std::optional<std::string> author,
         vec2f offset)
         : StructuralImageFilePath(std::move(structuralImageFilePath))
         , TextureImageFilePath(std::move(textureImageFilePath))
         , ShipName(std::move(shipName))
+        , Author(std::move(author))
         , Offset(std::move(offset))
     {
     }

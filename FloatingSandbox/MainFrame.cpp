@@ -76,7 +76,7 @@ MainFrame::MainFrame(wxApp * mainApp)
     , mGameController()
     , mSoundController()
     , mToolController()
-    , mCurrentShipNames()
+    , mCurrentShipTitles()
     , mCurrentRCBombCount(0u)
     , mCurrentAntiMatterBombCount(0u)
     , mIsShiftKeyDown(false)
@@ -1028,10 +1028,10 @@ void MainFrame::UpdateFrameTitle()
 
     ss << GetVersionInfo(VersionFormat::Long);
 
-    if (!mCurrentShipNames.empty())
+    if (!mCurrentShipTitles.empty())
     {
         ss << " - "
-            << Utils::Join(mCurrentShipNames, " + ");
+            << Utils::Join(mCurrentShipTitles, " + ");
     }
 
     SetTitle(ss.str());

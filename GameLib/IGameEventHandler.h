@@ -31,7 +31,8 @@ public:
 
     virtual void OnShipLoaded(
         unsigned int /*id*/,
-        std::string const & /*name*/)
+        std::string const & /*name*/,
+        std::optional<std::string> const & /*author*/)
     {
         // Default-implemented
     }
