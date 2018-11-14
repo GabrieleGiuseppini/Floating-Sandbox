@@ -2030,8 +2030,8 @@
     {
         "name": "Glass Hull",
 	"template": {
-		"row": "100|Glass Hull",
-		"column": 1
+		"row": "100|Glass",
+		"column": "1|Glass Hull"
 	},
         "strength": 0.1,
 	"mass": {
@@ -2040,8 +2040,8 @@
 	},  
 	"is_hull": true,
 	"stiffness": 1,
-        "structural_colour": "#D5EFEF",
-	"render_colour": "#D5EFEF",
+        "structural_colour": "#C1FFFF",
+	"render_colour": "#C1FFFF",
 	"sound_properties": {
 		"element_type": "Glass"
 	}
@@ -2051,7 +2051,7 @@
         "name": "Glass",
 	"template": {
 		"row": "100|Glass",
-		"column": 2
+		"column": "2|Glass"
 	},
         "strength": 0.1,
 	"mass": {
@@ -2137,12 +2137,35 @@
 	}
     },
     {
+        "name": "Electrical Cable Hull",	
+	"template": {
+		"row": "100|Electrical",
+		"column": "6|Cable Hull"
+	},
+        "strength": 0.092,
+	"mass": {
+		"nominal_mass": 30,
+		"density": 0.5
+	},  
+	"is_hull": true,
+	"stiffness": 1,
+        "structural_colour": "#4C0000",
+	"render_colour": "#4C0000",
+	"electrical_properties": {
+		"element_type": "Cable",
+		"is_self_powered": false
+	},
+	"sound_properties": {
+		"element_type": "ElectricalCable"
+	}
+    },
+    {
         "name": "Electrical Cable",	
 	"template": {
 		"row": "100|Electrical",
-		"column": "6|Cable"
+		"column": "7|Cable"
 	},
-        "strength": 0.8,
+        "strength": 0.09,
 	"mass": {
 		"nominal_mass": 30,
 		"density": 0.5

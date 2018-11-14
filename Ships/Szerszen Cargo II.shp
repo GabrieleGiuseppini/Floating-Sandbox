@@ -2,5 +2,6 @@
 	"structure_image":"szerszen_structure.png.dat",
 	"texture_image":"szerszen_texture.png.dat",
 	"ship_name":"Szerszen Cargo II",
-	"offset":{"x":0.0, "y":-5.0}
+	"offset":{"x":0.0, "y":-5.0},
+	"created_by":"RetroGraczzPL"
 }
