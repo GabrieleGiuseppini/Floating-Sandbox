@@ -11,6 +11,7 @@
 #include "EnumFlags.h"
 #include "FixedSizeVector.h"
 #include "GameParameters.h"
+#include "GameWallClock.h"
 #include "IGameEventHandler.h"
 #include "Material.h"
 #include "RenderContext.h"
@@ -42,7 +43,7 @@ public:
         Rope = 2     // Ropes are drawn differently
     };
 
-    using DestroyHandler = std::function<void(ElementIndex, bool, GameParameters const &)>;
+    using DestroyHandler = std::function<void(ElementIndex, bool, GameWallClock::time_point, GameParameters const &)>;
 
 private:
 
@@ -145,6 +146,7 @@ public:
     void Destroy(
         ElementIndex springElementIndex,
         DestroyOptions destroyOptions,
+        GameWallClock::time_point now,
         GameParameters const & gameParameters,
         Points const & points);
 
@@ -166,6 +168,16 @@ public:
             points);
     }
 
+    /*
+     * Calculates the current strain - due to tension or compression - and acts depending on it.
+     *
+     * Returns true if the spring got broken.
+     */
+    bool UpdateStrains(
+        GameWallClock::time_point now,
+        GameParameters const & gameParameters,        
+        Points & points);
+
     //
     // Render
     //
@@ -179,17 +191,6 @@ public:
         int shipId,
         Render::RenderContext & renderContext,
         Points const & points) const;
-
-public:
-
-    /*
-     * Calculates the current strain - due to tension or compression - and acts depending on it.
-     *
-     * Returns true if the spring got broken.
-     */
-    bool UpdateStrains(
-        GameParameters const & gameParameters,
-        Points & points);
 
 public:
 

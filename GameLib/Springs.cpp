@@ -50,6 +50,7 @@ void Springs::Add(
 void Springs::Destroy(
     ElementIndex springElementIndex,
     DestroyOptions destroyOptions,
+    GameWallClock::time_point now,
     GameParameters const & gameParameters,
     Points const & points)
 {
@@ -62,6 +63,7 @@ void Springs::Destroy(
         mDestroyHandler(
             springElementIndex, 
             !!(destroyOptions & Springs::DestroyOptions::DestroyAllTriangles),
+            now,
             gameParameters);
     }
 
@@ -165,7 +167,8 @@ void Springs::UploadStressedSpringElements(
 }
 
 bool Springs::UpdateStrains(
-    GameParameters const & gameParameters,
+    GameWallClock::time_point now,
+    GameParameters const & gameParameters,    
     Points & points)
 {
     bool isAtLeastOneBroken = false;
@@ -190,6 +193,7 @@ bool Springs::UpdateStrains(
                     i,
                     DestroyOptions::FireBreakEvent // Notify Break
                     | DestroyOptions::DestroyAllTriangles,
+                    now,
                     gameParameters,
                     points);
 

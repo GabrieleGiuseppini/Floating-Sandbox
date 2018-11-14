@@ -115,7 +115,9 @@ public:
 
     // Mechanical
 
-    void UpdateMechanicalDynamics(GameParameters const & gameParameters);
+    void UpdateMechanicalDynamics(
+        GameWallClock::time_point now,
+        GameParameters const & gameParameters);
 
     void UpdatePointForces(GameParameters const & gameParameters);
 
@@ -166,11 +168,13 @@ private:
 
     void PointDestroyHandler(
         ElementIndex pointElementIndex,
+        GameWallClock::time_point now,
         GameParameters const & gameParameters);
 
     void SpringDestroyHandler(
         ElementIndex springElementIndex,
         bool destroyAllTriangles,
+        GameWallClock::time_point now,
         GameParameters const & gameParameters);
 
     void TriangleDestroyHandler(ElementIndex triangleElementIndex);

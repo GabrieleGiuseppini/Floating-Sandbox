@@ -88,6 +88,7 @@ public:
         float const * restrict light,
         float const * restrict water);
 
+
     //
     // Elements
     //
@@ -190,25 +191,6 @@ public:
 
     void UploadElementStressedSpringsEnd();
 
-    void UploadElementEphemeralPointsStart();
-
-    inline void UploadElementEphemeralPoint(
-        int pointIndex,
-        ConnectedComponentId connectedComponentId)
-    {
-        size_t const connectedComponentIndex = connectedComponentId - 1;
-
-        assert(connectedComponentIndex < mConnectedComponents.size());
-        assert(mConnectedComponents[connectedComponentIndex].ephemeralPointElementCount + 1u <= mConnectedComponents[connectedComponentIndex].ephemeralPointElementMaxCount);
-
-        PointElement * const ephemeralPointElement = &(mConnectedComponents[connectedComponentIndex].ephemeralPointElementBuffer[mConnectedComponents[connectedComponentIndex].ephemeralPointElementCount]);
-
-        ephemeralPointElement->pointIndex = pointIndex;
-
-        ++(mConnectedComponents[connectedComponentIndex].ephemeralPointElementCount);
-    }
-
-    void UploadElementEphemeralPointsEnd();
 
     //
     // Generic textures
@@ -346,6 +328,23 @@ public:
     }
 
 
+    // 
+    // Ephemeral points
+    //
+
+    void UploadEphemeralPointsStart();
+
+    inline void UploadEphemeralPoint(
+        int pointIndex)
+    {
+        mEphemeralPoints.emplace_back();
+
+        mEphemeralPoints.back().pointIndex = pointIndex;
+    }
+
+    void UploadEphemeralPointsEnd();
+
+
     //
     // Vectors
     //
@@ -376,11 +375,11 @@ private:
         ConnectedComponentData const & connectedComponent,
         bool withTexture);
 
-    void RenderStressedSpringElements(ConnectedComponentData const & connectedComponent);
-
-    void RenderEphemeralPointElements(ConnectedComponentData const & connectedComponent);
+    void RenderStressedSpringElements(ConnectedComponentData const & connectedComponent);    
 
     void RenderGenericTextures(GenericTextureConnectedComponentData const & connectedComponent);
+
+    void RenderEphemeralPoints();
 
     void RenderVectors();
 
@@ -551,11 +550,6 @@ struct TextureRenderPolygonVertex
         std::unique_ptr<StressedSpringElement[]> stressedSpringElementBuffer;
         GameOpenGLVBO stressedSpringElementVBO;
 
-        size_t ephemeralPointElementCount;
-        size_t ephemeralPointElementMaxCount;
-        std::unique_ptr<PointElement[]> ephemeralPointElementBuffer;
-        GameOpenGLVBO ephemeralPointElementVBO;
-
         ConnectedComponentData()
             : pointElementCount(0)
             , pointElementMaxCount(0)
@@ -577,14 +571,19 @@ struct TextureRenderPolygonVertex
             , stressedSpringElementMaxCount(0)
             , stressedSpringElementBuffer()
             , stressedSpringElementVBO()
-            , ephemeralPointElementCount(0)
-            , ephemeralPointElementMaxCount(0)
-            , ephemeralPointElementBuffer()
-            , ephemeralPointElementVBO()
         {}
     };
 
     std::vector<ConnectedComponentData> mConnectedComponents;
+
+
+    //
+    // Ephemeral points
+    //
+
+    std::vector<PointElement> mEphemeralPoints;
+
+    GameOpenGLVBO mEphemeralPointVBO;
 
 
     //

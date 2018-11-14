@@ -67,8 +67,8 @@ Ship::Ship(
     , mCurrentForceFields()
 {
     // Set destroy handlers
-    mPoints.RegisterDestroyHandler(std::bind(&Ship::PointDestroyHandler, this, std::placeholders::_1, std::placeholders::_2));
-    mSprings.RegisterDestroyHandler(std::bind(&Ship::SpringDestroyHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+    mPoints.RegisterDestroyHandler(std::bind(&Ship::PointDestroyHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+    mSprings.RegisterDestroyHandler(std::bind(&Ship::SpringDestroyHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
     mTriangles.RegisterDestroyHandler(std::bind(&Ship::TriangleDestroyHandler, this, std::placeholders::_1));
     mElectricalElements.RegisterDestroyHandler(std::bind(&Ship::ElectricalElementDestroyHandler, this, std::placeholders::_1));
 
@@ -98,6 +98,7 @@ void Ship::DestroyAt(
                 // Destroy point
                 mPoints.Destroy(
                     pointIndex,
+                    GameWallClock::GetInstance().Now(),
                     gameParameters);
             }
         }
@@ -128,6 +129,7 @@ void Ship::SawThrough(
                     springIndex,
                     Springs::DestroyOptions::FireBreakEvent
                     | Springs::DestroyOptions::DestroyOnlyConnectedTriangle,
+                    GameWallClock::GetInstance().Now(),
                     gameParameters,
                     mPoints);
             }
@@ -248,7 +250,9 @@ void Ship::Update(
     // Update mechanical dynamics
     //
 
-    UpdateMechanicalDynamics(gameParameters);
+    UpdateMechanicalDynamics(
+        now,
+        gameParameters);
 
 
     //
@@ -269,6 +273,7 @@ void Ship::Update(
     //
 
     mSprings.UpdateStrains(
+        now,
         gameParameters,
         mPoints);
 
@@ -391,16 +396,6 @@ void Ship::Render(
 
         renderContext.UploadShipElementStressedSpringsEnd(mId);
 
-
-        //
-        // Upload ephemeral points
-        //
-
-        mPoints.UploadEphemeralParticles(
-            mId,
-            renderContext);
-
-
         mAreElementsDirty = false;
     }        
 
@@ -418,6 +413,14 @@ void Ship::Render(
     //
 
     mPinnedPoints.Upload(
+        mId,
+        renderContext);
+
+    //
+    // Upload ephemeral points
+    //
+
+    mPoints.UploadEphemeralParticles(
         mId,
         renderContext);
 
@@ -444,7 +447,9 @@ void Ship::Render(
 // Mechanical Dynamics
 ///////////////////////////////////////////////////////////////////////////////////
 
-void Ship::UpdateMechanicalDynamics(GameParameters const & gameParameters)
+void Ship::UpdateMechanicalDynamics(
+    GameWallClock::time_point now,
+    GameParameters const & gameParameters)
 {
     for (int iter = 0; iter < GameParameters::NumMechanicalDynamicsIterations<int>; ++iter)
     {
@@ -453,6 +458,7 @@ void Ship::UpdateMechanicalDynamics(GameParameters const & gameParameters)
         {
             forceField->Apply(
                 mPoints,
+                now,
                 gameParameters);
         }
 
@@ -1338,6 +1344,7 @@ void Ship::DestroyConnectedTriangles(
 
 void Ship::PointDestroyHandler(
     ElementIndex pointElementIndex,
+    GameWallClock::time_point now,
     GameParameters const & gameParameters)
 {
     //
@@ -1355,6 +1362,7 @@ void Ship::PointDestroyHandler(
             connectedSprings.back(),
             Springs::DestroyOptions::DoNotFireBreakEvent // We're already firing the Destroy event for the point
             | Springs::DestroyOptions::DestroyAllTriangles,
+            now,
             gameParameters,
             mPoints);
     }
@@ -1399,6 +1407,36 @@ void Ship::PointDestroyHandler(
     // Notify pinned points
     mPinnedPoints.OnPointDestroyed(pointElementIndex);
 
+    // Emit debris
+    if (gameParameters.DoGenerateDebris)
+    {
+        // TODOTEST
+        //auto const debrisCount = GameRandomEngine::GetInstance().Choose(GameParameters::MaxDebrisParticlesPerEvent);
+        auto const debrisCount = GameRandomEngine::GetInstance().GenerateRandomInteger(5, 10);
+        for (size_t d = 0; d < debrisCount; ++d)
+        {
+            // Choose a velocity vector: point on a circle with random radius and random angle
+            // TODOTEST
+            //float const velocityMagnitude = GameRandomEngine::GetInstance().GenerateRandomReal(10.0f, 30.0f);
+            float const velocityMagnitude = GameRandomEngine::GetInstance().GenerateRandomReal(20.0f, 30.0f);
+            float const velocityAngle = GameRandomEngine::GetInstance().GenerateRandomReal(0.0f, 2.0f * Pi<float>);
+
+            // Choose a lifetime: randomize parameter 
+            std::chrono::milliseconds const maxLifetime = std::chrono::milliseconds(
+                static_cast<std::chrono::milliseconds::rep>(
+                    static_cast<float>(GameParameters::DebrisLifetime.count())
+                    * GameRandomEngine::GetInstance().GenerateRandomReal(0.3f, 0.7f)));
+
+            mPoints.CreateEphemeralParticleDebris(
+                mPoints.GetPosition(pointElementIndex),
+                vec2f::fromPolar(velocityMagnitude, velocityAngle),
+                mPoints.GetMaterial(pointElementIndex),
+                now,
+                maxLifetime,
+                mPoints.GetConnectedComponentId(pointElementIndex));
+        }
+    }
+
     // Remember our elements are now dirty
     mAreElementsDirty = true;
 }
@@ -1406,6 +1444,7 @@ void Ship::PointDestroyHandler(
 void Ship::SpringDestroyHandler(
     ElementIndex springElementIndex,
     bool destroyAllTriangles,
+    GameWallClock::time_point now,
     GameParameters const & gameParameters)
 {
     auto const pointAIndex = mSprings.GetPointAIndex(springElementIndex);
@@ -1474,32 +1513,6 @@ void Ship::SpringDestroyHandler(
 
     // Notify pinned points
     mPinnedPoints.OnSpringDestroyed(springElementIndex);
-
-    // Emit debris
-    if (gameParameters.DoGenerateDebris)
-    {
-        vec2f const springMindpoint = (mPoints.GetPosition(pointAIndex) + mPoints.GetPosition(pointBIndex)) / 2.0f;
-        auto const debrisCount = GameRandomEngine::GetInstance().Choose(GameParameters::MaxDebrisParticlesPerEvent);
-        for (size_t d = 0; d < debrisCount; ++d)
-        {
-            // Choose a velocity vector: point on a circle with random radius and random angle
-            float const velocityMagnitude = GameRandomEngine::GetInstance().GenerateRandomReal(10.0f, 30.0f);
-            float const velocityAngle = GameRandomEngine::GetInstance().GenerateRandomReal(0.0f, 2.0f * Pi<float>);
-
-            // Choose a lifetime: randomize parameter 
-            std::chrono::milliseconds const maxLifetime = std::chrono::milliseconds(
-                static_cast<std::chrono::milliseconds::rep>(
-                    static_cast<float>(GameParameters::DebrisLifetime.count())
-                    * GameRandomEngine::GetInstance().GenerateRandomReal(0.5f, 1.0f)));
-
-            mPoints.CreateEphemeralParticleDebris(
-                springMindpoint,
-                vec2f::fromPolar(velocityMagnitude, velocityAngle),
-                mSprings.GetBaseMaterial(springElementIndex),
-                maxLifetime,
-                mPoints.GetConnectedComponentId(pointAIndex));
-        }
-    }
 
     // Remember our elements are now dirty
     mAreElementsDirty = true;

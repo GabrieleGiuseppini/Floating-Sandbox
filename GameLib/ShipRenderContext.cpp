@@ -57,6 +57,9 @@ ShipRenderContext::ShipRenderContext(
     // Connected components
     , mConnectedComponentsMaxSizes()
     , mConnectedComponents()
+    // Ephemeral points
+    , mEphemeralPoints()
+    , mEphemeralPointVBO()
     // Vectors
     , mVectorArrowPointPositionBuffer()
     , mVectorArrowPointPositionVBO()
@@ -199,6 +202,17 @@ ShipRenderContext::ShipRenderContext(
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTextureTextureCoordinates), 2, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)((2 + 2) * sizeof(float)));
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTexturePackedData2), 4, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)((2 + 2 + 2) * sizeof(float)));
     CheckOpenGLError();
+
+
+    //
+    // Initialize ephemeral points
+    //
+
+    mEphemeralPoints.reserve(GameParameters::MaxEphemeralParticles);
+
+    // Create VBO
+    glGenBuffers(1, &tmpGLuint);
+    mEphemeralPointVBO = tmpGLuint;
 
 
 
@@ -522,35 +536,13 @@ void ShipRenderContext::UploadElementsStart()
             glGenBuffers(1, &elementVBO);
             mConnectedComponents[c].stressedSpringElementVBO = elementVBO;
         }        
-
-        //
-        // Prepare ephemeral point elements
-        //
-
-        // Max # of ephemeral points = max number of ephemeral points
-        size_t maxConnectedComponentEphemeralPoints = GameParameters::MaxEphemeralParticles;
-        if (mConnectedComponents[c].ephemeralPointElementMaxCount != maxConnectedComponentEphemeralPoints)
-        {
-            // A change in the max size of this connected component
-            mConnectedComponents[c].ephemeralPointElementBuffer.reset();
-            mConnectedComponents[c].ephemeralPointElementBuffer.reset(new PointElement[maxConnectedComponentEphemeralPoints]);
-            mConnectedComponents[c].ephemeralPointElementMaxCount = maxConnectedComponentEphemeralPoints;
-        }
-
-        mConnectedComponents[c].ephemeralPointElementCount = 0;
-
-        if (!mConnectedComponents[c].ephemeralPointElementVBO)
-        {
-            glGenBuffers(1, &elementVBO);
-            mConnectedComponents[c].ephemeralPointElementVBO = elementVBO;
-        }
     }
 }
 
 void ShipRenderContext::UploadElementsEnd()
 {
     //
-    // Upload all elements, except for stressed springs and ephemeral points
+    // Upload all elements, except for stressed springs
     //
 
     for (size_t c = 0; c < mConnectedComponents.size(); ++c)
@@ -600,27 +592,20 @@ void ShipRenderContext::UploadElementStressedSpringsEnd()
     }
 }
 
-void ShipRenderContext::UploadElementEphemeralPointsStart()
+void ShipRenderContext::UploadEphemeralPointsStart()
 {
-    for (size_t c = 0; c < mConnectedComponents.size(); ++c)
-    {
-        // Zero-out count of ephemeral points
-        mConnectedComponents[c].ephemeralPointElementCount = 0;
-    }
+    mEphemeralPoints.clear();
 }
 
-void ShipRenderContext::UploadElementEphemeralPointsEnd()
+void ShipRenderContext::UploadEphemeralPointsEnd()
 {
     //
-    // Upload ephemeral point elements
+    // Upload ephemeral points
     //
 
-    for (size_t c = 0; c < mConnectedComponents.size(); ++c)
-    {
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mConnectedComponents[c].ephemeralPointElementVBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, mConnectedComponents[c].ephemeralPointElementCount * sizeof(PointElement), mConnectedComponents[c].ephemeralPointElementBuffer.get(), GL_DYNAMIC_DRAW);
-        CheckOpenGLError();
-    }
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mEphemeralPointVBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mEphemeralPoints.size() * sizeof(PointElement), mEphemeralPoints.data(), GL_STATIC_DRAW);
+    CheckOpenGLError();
 }
 
 void ShipRenderContext::UploadVectors(
@@ -775,18 +760,18 @@ void ShipRenderContext::RenderEnd()
 
 
         //
-        // Draw ephemeral points
-        //
-
-        RenderEphemeralPointElements(mConnectedComponents[c]);
-
-
-        //
         // Draw Generic textures
         //
 
         RenderGenericTextures(mGenericTextureConnectedComponents[c]);
     }
+
+
+    //
+    // Render ephemeral points
+    //
+
+    RenderEphemeralPoints();
 
 
     //
@@ -918,25 +903,6 @@ void ShipRenderContext::RenderStressedSpringElements(ConnectedComponentData cons
     }
 }
 
-void ShipRenderContext::RenderEphemeralPointElements(ConnectedComponentData const & connectedComponent)
-{
-    if (connectedComponent.ephemeralPointElementCount > 0)
-    {
-        // Use color program
-        mShaderManager.ActivateProgram<ProgramType::ShipTrianglesColor>();
-
-        // Set point size
-        glPointSize(0.3f * mCanvasToVisibleWorldHeightRatio);
-
-        // Bind VBO
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *connectedComponent.ephemeralPointElementVBO);
-        CheckOpenGLError();
-
-        // Draw
-        glDrawElements(GL_POINTS, static_cast<GLsizei>(1 * connectedComponent.ephemeralPointElementCount), GL_UNSIGNED_INT, 0);
-    }
-}
-
 void ShipRenderContext::RenderGenericTextures(GenericTextureConnectedComponentData const & connectedComponent)
 {
     if (!connectedComponent.VertexBuffer.empty())
@@ -976,6 +942,25 @@ void ShipRenderContext::RenderGenericTextures(GenericTextureConnectedComponentDa
 
         // Draw polygons
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(connectedComponent.VertexBuffer.size()));
+    }
+}
+
+void ShipRenderContext::RenderEphemeralPoints()
+{
+    if (!mEphemeralPoints.empty())
+    {
+        // Use color program
+        mShaderManager.ActivateProgram<ProgramType::ShipTrianglesColor>();
+
+        // Set point size
+        glPointSize(0.3f * mCanvasToVisibleWorldHeightRatio);
+
+        // Bind VBO
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mEphemeralPointVBO);
+        CheckOpenGLError();
+
+        // Draw
+        glDrawElements(GL_POINTS, static_cast<GLsizei>(mEphemeralPoints.size()), GL_UNSIGNED_INT, 0);
     }
 }
 

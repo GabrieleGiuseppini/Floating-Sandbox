@@ -11,11 +11,15 @@ namespace Physics {
 
 void DrawForceField::Apply(
     Points & points,
+    GameWallClock::time_point /*now*/,
     GameParameters const & /*gameParameters*/) const
 {
+    //
+    // F = ForceStrength/sqrt(distance), along radius
+    //
+
     for (auto pointIndex : points)
     {
-        // F = ForceStrength/sqrt(distance), along radius
         vec2f displacement = (mCenterPosition - points.GetPosition(pointIndex));
         float forceMagnitude = mStrength / sqrtf(0.1f + displacement.length());
 
@@ -25,11 +29,15 @@ void DrawForceField::Apply(
 
 void SwirlForceField::Apply(
     Points & points,
+    GameWallClock::time_point /*now*/,
     GameParameters const & /*gameParameters*/) const
 {
+    //
+    // F = ForceStrength*radius/sqrt(distance), perpendicular to radius
+    //
+
     for (auto pointIndex : points)
     {
-        // F = ForceStrength/sqrt(distance), perpendicular to radius
         vec2f displacement = (mCenterPosition - points.GetPosition(pointIndex));
         float const displacementLength = displacement.length();
         float forceMagnitude = mStrength / sqrtf(0.1f + displacementLength);
@@ -40,6 +48,7 @@ void SwirlForceField::Apply(
 
 void BlastForceField::Apply(
     Points & points,
+    GameWallClock::time_point now,
     GameParameters const & gameParameters) const
 {
     // 
@@ -97,12 +106,14 @@ void BlastForceField::Apply(
         // Destroy point
         points.Destroy(
             closestPointIndex,
+            now,
             gameParameters);
     }
 }
 
 void RadialSpaceWarpForceField::Apply(
     Points & points,
+    GameWallClock::time_point /*now*/,
     GameParameters const & /*gameParameters*/) const
 {
     for (auto pointIndex : points)
@@ -126,6 +137,7 @@ void RadialSpaceWarpForceField::Apply(
 
 void ImplosionForceField::Apply(
     Points & points,
+    GameWallClock::time_point /*now*/,
     GameParameters const & /*gameParameters*/) const
 {
     for (auto pointIndex : points)
@@ -156,11 +168,15 @@ void ImplosionForceField::Apply(
 
 void RadialExplosionForceField::Apply(
     Points & points,
+    GameWallClock::time_point /*now*/,
     GameParameters const & /*gameParameters*/) const
 {
+    //
+    // F = ForceStrength/sqrt(distance), along radius
+    //
+
     for (auto pointIndex : points)
-    {
-        // F = ForceStrength/sqrt(distance), along radius
+    {        
         vec2f displacement = (points.GetPosition(pointIndex) - mCenterPosition);
         float forceMagnitude = mStrength / sqrtf(0.1f + displacement.length());
 

@@ -64,11 +64,10 @@ void Points::CreateEphemeralParticleDebris(
     vec2f const & position,
     vec2f const & velocity,
     Material const * material,
+    GameWallClock::time_point now,
     std::chrono::milliseconds maxLifetime,
     ConnectedComponentId connectedComponentId)
 {
-    auto now = GameWallClock::GetInstance().Now();
-
     // Get a free slot (or steal one)
     auto pointIndex = FindFreeEphemeralParticle(now);
 
@@ -108,6 +107,7 @@ void Points::CreateEphemeralParticleDebris(
 
 void Points::Destroy(
     ElementIndex pointElementIndex,
+    GameWallClock::time_point now,
     GameParameters const & gameParameters)
 {
     assert(pointElementIndex < mElementCount);
@@ -118,6 +118,7 @@ void Points::Destroy(
     {
         mDestroyHandler(
             pointElementIndex,
+            now,
             gameParameters);
     }
 
@@ -295,7 +296,7 @@ void Points::UploadEphemeralParticles(
 
     if (mAreEphemeralParticlesDirty)
     {
-        renderContext.UploadShipElementEphemeralPointsStart(shipId);
+        renderContext.UploadShipEphemeralPointsStart(shipId);
     }
 
     for (ElementIndex pointIndex : this->EphemeralPoints())
@@ -311,12 +312,17 @@ void Points::UploadEphemeralParticles(
                     // as the ShipRenderContext doesn't know how many connected components there are
                     // (the number of connected components may vary depending on the connectivity visit,
                     //  which is independent from ephemeral particles; the latter might insist on using
-                    //  a connected component ID that is well gone after a new connectivity visit)
+                    //  a connected component ID that is well gone after a new connectivity visit).
+                    // This will be fixed with the Z buffer work - at that moment points will already
+                    // have an associated ConnectedComponent buffer, and the shader will automagically
+                    // draw ephemeral points at the right Z for their point's connected component ID.
+                    // Remember to make sure Ship always tracks the max connected component ID it has
+                    // ever seen, and that it specifies it at RenderContext::RenderShipStart() via an
+                    // additional, new argument.
 
-                    renderContext.UploadShipElementEphemeralPoint(
+                    renderContext.UploadShipEphemeralPoint(
                         shipId,
-                        pointIndex,
-                        1); // TBD: read above; should be GetConnectedComponentId(pointIndex)
+                        pointIndex);
                 }
 
                 break;
@@ -335,7 +341,7 @@ void Points::UploadEphemeralParticles(
 
     if (mAreEphemeralParticlesDirty)
     {
-        renderContext.UploadShipElementEphemeralPointsEnd(shipId);
+        renderContext.UploadShipEphemeralPointsEnd(shipId);
 
         mAreEphemeralParticlesDirty = false;
     }

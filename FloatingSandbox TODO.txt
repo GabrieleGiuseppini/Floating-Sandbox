@@ -280,10 +280,13 @@ Render:
 
 - Dynamics:
 
-	- TODOHERE: Fix ephemeral particles
-		- Pass also "now" all over the place
-			- End put back UpdateEphemeralParticles where it was
-		- Just single vector of PointIndex, no connected components
+	= Fix ephemeral particles
+		+ Pass also "now" all over the place
+			+ End put back UpdateEphemeralParticles where it was
+		+ Just single vector of PointIndex, no connected components
+		- Make ephemeral particles' update based on simulation clock, not wall clock
+			- "now" passed everywhere really has to become a "simulationNow" float
+		- Test
 
 
 	- Figure out what to do with connected components and ephemeral particles
@@ -333,20 +336,25 @@ Render:
 
 	- Switches:
 		- New electrical material type; color trick like ropes to have unique IDs for switches
+			- One structural color for initially on and one for initially off
 		- Ship json adds optional names for each ID
 		- ShipBuilder detects all switches and communicates those separately to ship at cctor time
 			- Each switch gets own ID == <ShipId, SwitchId>
-		- UI gets switches via AddSwitch (and DeleteSwitch) event, with all metadata
+		- UI gets switches via AddSwitch (and DeleteSwitch) event, with all metadata (name, state)
+			- From Ship::cctor
 			- SwitchBoard panel
+				- Registers as event listener at cctor
 				- Uses GameController (own shared ptr) :: SetSwitch(switchId, bool) to control switches
+		- MainFrame also registers for AddSwitch and shows SwitchBoard on first add
+			- Hides it again only at Reset()
 		- Ship must invoke DeleteSwitch at switch deletion (@ Ship::ElectricalElementDestroyHandler)
 		- Electrical dynamics:
 			- ElectricalElement: rename "ConnectivityVisit" (sequence number, etc.) as "ElectricalPropagationVisit" (...)
 				- Ship::UpdateElectrical"Propagation"
-			- ElectricalElement has new "electrical conductance" buffer (0.0 or 1.0)
+			- ElectricalElement has new "doesConductElectricity" bool buffer
 				- Ship::UpdateElectricalConnectivity checks conductance first when deciding to follow a connected electrical element
-			- Ship::SetSwitch(switchId):
-				- Toggles electrical element's "electrical conductance"
+			- Ship::SetSwitch(switchId, bool):
+				- Toggles electrical element's "doesConductElectricity", via ElectricalElements::SetSwitch(switchId, bool)
 	- Pumps
 		- Current controls ~IsLeaking
 	- Anti-Flood doors

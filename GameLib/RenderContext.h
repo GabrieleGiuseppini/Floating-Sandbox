@@ -618,32 +618,6 @@ public:
         mShips[shipId]->UploadElementStressedSpringsEnd();
     }
 
-    inline void UploadShipElementEphemeralPointsStart(int shipId)
-    {
-        assert(shipId < mShips.size());
-
-        mShips[shipId]->UploadElementEphemeralPointsStart();
-    }
-
-    inline void UploadShipElementEphemeralPoint(
-        int shipId,
-        int pointIndex,
-        ConnectedComponentId connectedComponentId)
-    {
-        assert(shipId < mShips.size());
-
-        mShips[shipId]->UploadElementEphemeralPoint(
-            pointIndex,
-            connectedComponentId);
-    }
-
-    void UploadShipElementEphemeralPointsEnd(int shipId)
-    {
-        assert(shipId < mShips.size());
-
-        mShips[shipId]->UploadElementEphemeralPointsEnd();
-    }
-
     //
     // Generic textures
     //
@@ -703,6 +677,35 @@ public:
             angle,
             alpha);
     }
+
+    //
+    // Ephemeral points
+    //
+
+    inline void UploadShipEphemeralPointsStart(int shipId)
+    {
+        assert(shipId < mShips.size());
+
+        mShips[shipId]->UploadEphemeralPointsStart();
+    }
+
+    inline void UploadShipEphemeralPoint(
+        int shipId,
+        int pointIndex)
+    {
+        assert(shipId < mShips.size());
+
+        mShips[shipId]->UploadEphemeralPoint(
+            pointIndex);
+    }
+
+    void UploadShipEphemeralPointsEnd(int shipId)
+    {
+        assert(shipId < mShips.size());
+
+        mShips[shipId]->UploadEphemeralPointsEnd();
+    }
+
 
     //
     // Vectors

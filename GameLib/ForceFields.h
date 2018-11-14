@@ -6,6 +6,7 @@
 #pragma once
 
 #include "GameParameters.h"
+#include "GameWallClock.h"
 #include "Physics.h"
 #include "Vectors.h"
 
@@ -24,6 +25,7 @@ public:
 
     virtual void Apply(
         Points & points,
+        GameWallClock::time_point now,
         GameParameters const & gameParameters) const = 0;
 };
 
@@ -43,6 +45,7 @@ public:
 
     virtual void Apply(
         Points & points,
+        GameWallClock::time_point now,
         GameParameters const & gameParameters) const override;
 
 private:
@@ -67,6 +70,7 @@ public:
 
     virtual void Apply(
         Points & points,
+        GameWallClock::time_point now,
         GameParameters const & gameParameters) const override;
 
 private:
@@ -97,6 +101,7 @@ public:
 
     virtual void Apply(
         Points & points,
+        GameWallClock::time_point now,
         GameParameters const & gameParameters) const override;
 
 private:
@@ -128,6 +133,7 @@ public:
 
     virtual void Apply(
         Points & points,
+        GameWallClock::time_point now,
         GameParameters const & gameParameters) const override;
 
 private:
@@ -155,6 +161,7 @@ public:
 
     virtual void Apply(
         Points & points,
+        GameWallClock::time_point now,
         GameParameters const & gameParameters) const override;
 
 private:
@@ -179,6 +186,7 @@ public:
 
     virtual void Apply(
         Points & points,
+        GameWallClock::time_point now,
         GameParameters const & gameParameters) const override;
 
 private:
