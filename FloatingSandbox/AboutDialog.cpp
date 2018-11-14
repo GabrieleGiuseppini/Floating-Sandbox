@@ -105,6 +105,7 @@ AboutDialog::AboutDialog(
         {"\t\t\t\t", "No Light - https://discordapp.com/" },
         {"\t\t\t\t", "RetroGraczzPL - https://discordapp.com/" },
         {"\t\t\t\t", "SS Nomadavid - https://discordapp.com/" },
+        {"\t\t\t\t", "Wreno - https://discordapp.com/" },
         // TODO: re-enable once a ship is fixed
         //{"\t\t\t\t", "Pac0master - https://discordapp.com/" },
                 
