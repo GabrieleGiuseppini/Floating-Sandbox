@@ -1,5 +1,5 @@
 {
-	"structure_image":"trellis_structure.png",
+	"structure_image":"trellis_structure.png.dat",
 	"ship_name":"Trellis",
 	"offset":{"x":0.0, "y":-20.0},
 	"created_by":"Pac0master"

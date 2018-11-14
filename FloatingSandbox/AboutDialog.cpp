@@ -106,8 +106,7 @@ AboutDialog::AboutDialog(
         {"\t\t\t\t", "RetroGraczzPL - https://discordapp.com/" },
         {"\t\t\t\t", "SS Nomadavid - https://discordapp.com/" },
         {"\t\t\t\t", "Wreno - https://discordapp.com/" },
-        // TODO: re-enable once a ship is fixed
-        //{"\t\t\t\t", "Pac0master - https://discordapp.com/" },
+        {"\t\t\t\t", "Pac0master - https://discordapp.com/" },
                 
         {"Textures:\t", "Tune 'Prototstar' Katerungroch"},
         {"wxWidgets:\t", "Copyright (c) 1998-2005 Julian Smart, Robert Roebling et al - https://www.wxwidgets.org/"},
