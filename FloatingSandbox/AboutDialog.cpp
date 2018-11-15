@@ -102,7 +102,7 @@ AboutDialog::AboutDialog(
 
         {"Ship art:\t\t", "OceanLinerOrca - https://www.deviantart.com/oceanlinerorca" },
         {"\t\t\t\t", "TopHatLemons - https://discordapp.com/" },        
-        {"\t\t\t\t", "No Light - https://discordapp.com/" },
+        {"\t\t\t\t", "Truce#3326 - https://discordapp.com/" },
         {"\t\t\t\t", "RetroGraczzPL - https://discordapp.com/" },
         {"\t\t\t\t", "SS Nomadavid - https://discordapp.com/" },
         {"\t\t\t\t", "Wreno - https://discordapp.com/" },
