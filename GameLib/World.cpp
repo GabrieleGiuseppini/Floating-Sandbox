@@ -20,7 +20,7 @@ World::World(
     , mAllClouds()
     , mWaterSurface()
     , mOceanFloor()
-    , mCurrentTime(0.0f)
+    , mCurrentSimulationTime(0.0f)
     , mCurrentVisitSequenceNumber(1u)
     , mGameEventHandler(std::move(gameEventHandler))
 {
@@ -28,7 +28,7 @@ World::World(
     UpdateClouds(gameParameters);
 
     // Initialize water and ocean
-    mWaterSurface.Update(mCurrentTime, gameParameters);
+    mWaterSurface.Update(mCurrentSimulationTime, gameParameters);
     mOceanFloor.Update(gameParameters);
 }
 
@@ -68,6 +68,7 @@ void World::DestroyAt(
         ship->DestroyAt(
             targetPos,
             radiusMultiplier,
+            mCurrentSimulationTime,
             gameParameters);
     }
 }
@@ -82,6 +83,7 @@ void World::SawThrough(
         ship->SawThrough(
             startPos,
             endPos,
+            mCurrentSimulationTime,
             gameParameters);
     }
 }
@@ -225,7 +227,7 @@ ElementIndex World::GetNearestPointAt(
 void World::Update(GameParameters const & gameParameters)
 {
     // Update current time
-    mCurrentTime += GameParameters::SimulationStepTimeDuration<float>;
+    mCurrentSimulationTime += GameParameters::SimulationStepTimeDuration<float>;
 
     // Generate a new visit sequence number
     ++mCurrentVisitSequenceNumber;
@@ -233,13 +235,14 @@ void World::Update(GameParameters const & gameParameters)
         mCurrentVisitSequenceNumber = 1u;
 
     // Update water surface and ocean floor
-    mWaterSurface.Update(mCurrentTime, gameParameters);
+    mWaterSurface.Update(mCurrentSimulationTime, gameParameters);
     mOceanFloor.Update(gameParameters);
 
     // Update all ships
     for (auto & ship : mAllShips)
     {
         ship->Update(
+            mCurrentSimulationTime,
             mCurrentVisitSequenceNumber,
             gameParameters);
     }
@@ -316,7 +319,7 @@ void World::UpdateClouds(GameParameters const & gameParameters)
     for (auto & cloud : mAllClouds)
     {
         cloud->Update(
-            mCurrentTime,
+            mCurrentSimulationTime,
             gameParameters.WindSpeed);
     }
 }

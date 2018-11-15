@@ -11,7 +11,7 @@ namespace Physics {
 
 void DrawForceField::Apply(
     Points & points,
-    GameWallClock::time_point /*now*/,
+    float /*currentSimulationTime*/,
     GameParameters const & /*gameParameters*/) const
 {
     //
@@ -29,7 +29,7 @@ void DrawForceField::Apply(
 
 void SwirlForceField::Apply(
     Points & points,
-    GameWallClock::time_point /*now*/,
+    float /*currentSimulationTime*/,
     GameParameters const & /*gameParameters*/) const
 {
     //
@@ -48,7 +48,7 @@ void SwirlForceField::Apply(
 
 void BlastForceField::Apply(
     Points & points,
-    GameWallClock::time_point now,
+    float currentSimulationTime,
     GameParameters const & gameParameters) const
 {
     // 
@@ -106,14 +106,14 @@ void BlastForceField::Apply(
         // Destroy point
         points.Destroy(
             closestPointIndex,
-            now,
+            currentSimulationTime,
             gameParameters);
     }
 }
 
 void RadialSpaceWarpForceField::Apply(
     Points & points,
-    GameWallClock::time_point /*now*/,
+    float /*currentSimulationTime*/,
     GameParameters const & /*gameParameters*/) const
 {
     for (auto pointIndex : points)
@@ -137,7 +137,7 @@ void RadialSpaceWarpForceField::Apply(
 
 void ImplosionForceField::Apply(
     Points & points,
-    GameWallClock::time_point /*now*/,
+    float /*currentSimulationTime*/,
     GameParameters const & /*gameParameters*/) const
 {
     for (auto pointIndex : points)
@@ -168,7 +168,7 @@ void ImplosionForceField::Apply(
 
 void RadialExplosionForceField::Apply(
     Points & points,
-    GameWallClock::time_point /*now*/,
+    float /*currentSimulationTime*/,
     GameParameters const & /*gameParameters*/) const
 {
     //

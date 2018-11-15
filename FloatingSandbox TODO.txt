@@ -272,10 +272,6 @@ Render:
 	- Magnifying glass
 		- https://www.opengl.org/discussion_boards/showthread.php/154811-magnifying-glass-effect
 		- https://www.shadertoy.com/view/4tdXDl
-	- Ocean depth bitmaps
-	- Save photos (opens SaveAs FileDialog)
-	- Text (for query tool):
-		- see https://github.com/wxWidgets/wxWidgets/blob/master/samples/opengl/pyramid/pyramid.cpp
 	+ Bug: bombs et al fade more rapidly than ship when ambient light goes away
 
 - Dynamics:
@@ -284,8 +280,8 @@ Render:
 		+ Pass also "now" all over the place
 			+ End put back UpdateEphemeralParticles where it was
 		+ Just single vector of PointIndex, no connected components
-		- Make ephemeral particles' update based on simulation clock, not wall clock
-			- "now" passed everywhere really has to become a "simulationNow" float
+		+ Make ephemeral particles' update based on simulation clock, not wall clock
+			+ "now" passed everywhere really has to become a "simulationNow" float
 		- Test
 
 
@@ -400,6 +396,9 @@ Render:
 		- Test: Ship::SpringDestroyHandler() only destroys triangles that contain A-B
 			- Should definitely make both A and B leak, as they both now have an adjacent hole
 
+	- Ocean depth bitmaps
+	- Save photos (opens SaveAs FileDialog)
+
 - Water:
 	-Do water bubbles (at intake) and water drops (at outtake)
 		- Ephemeral particles emitted at UpdateWaterIntake()
@@ -450,6 +449,20 @@ Render:
 	- See if can use water's pressure to inflict stress on springs
 
 - Controls:
+	
+	- Ship definition: multiple layers
+		- We want to maintain BW compat for ease of one-layer ship making
+		- JSON: "extra_layers: ["rms_titanic_whatever.png.dat", ...]
+		- Material: becomes collection of N pointers: Structural (or "physical") (includes Sound), Electrical, Emitter, etc.
+		- ShipBuilder:
+			- Each extra layer provides to corresponding point in structural layer only electrical, emitting, etc. attributes
+				- PointInfo has separate Material::Physical/Electrical/EtcCharacteristics
+				- Points::Add takes additional Material::Electrical/EtcCharacteristics *'s, these are
+				  the ones used (if present) instead of plain material's
+			- Error if a non-zero layer provides:
+				- 1) data for point non-existing in zero layer
+				- 2) data that already exists (e.g. ElectricalChar's)
+
 	+ World settings: number of clouds, wind
 
 	+ SettingsDialog: also sound options

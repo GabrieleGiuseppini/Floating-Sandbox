@@ -60,11 +60,13 @@ public:
     void DestroyAt(
         vec2f const & targetPos,
         float radiusMultiplier,
+        float currentSimulationTime,
         GameParameters const & gameParameters);
 
     void SawThrough(
         vec2f const & startPos,
         vec2f const & endPos,
+        float currentSimulationTime,
         GameParameters const & gameParameters);
 
     void DrawTo(
@@ -100,6 +102,7 @@ public:
         float radius) const;
 
     void Update(
+        float currentSimulationTime,
         VisitSequenceNumber currentVisitSequenceNumber,
         GameParameters const & gameParameters);
 
@@ -116,7 +119,7 @@ public:
     // Mechanical
 
     void UpdateMechanicalDynamics(
-        GameWallClock::time_point now,
+        float currentSimulationTime,
         GameParameters const & gameParameters);
 
     void UpdatePointForces(GameParameters const & gameParameters);
@@ -142,7 +145,7 @@ public:
     // Electrical 
 
     void UpdateElectricalDynamics(
-        GameWallClock::time_point now,
+        GameWallClock::time_point currentWallclockTime,
         VisitSequenceNumber currentVisitSequenceNumber,
         GameParameters const & gameParameters);
 
@@ -153,7 +156,7 @@ public:
     // Ephemeral particles
 
     void UpdateEphemeralParticles(
-        GameWallClock::time_point now,
+        float currentSimulationTime,
         GameParameters const & gameParameters);
 
 private:
@@ -168,13 +171,13 @@ private:
 
     void PointDestroyHandler(
         ElementIndex pointElementIndex,
-        GameWallClock::time_point now,
+        float currentSimulationTime,
         GameParameters const & gameParameters);
 
     void SpringDestroyHandler(
         ElementIndex springElementIndex,
         bool destroyAllTriangles,
-        GameWallClock::time_point now,
+        float currentSimulationTime,
         GameParameters const & gameParameters);
 
     void TriangleDestroyHandler(ElementIndex triangleElementIndex);

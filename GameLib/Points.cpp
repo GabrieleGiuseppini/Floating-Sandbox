@@ -44,8 +44,8 @@ void Points::Add(
 
     // Ephemeral particles
     mEphemeralTypeBuffer.emplace_back(EphemeralType::None);
-    mEphemeralStartTimeBuffer.emplace_back(GameWallClock::time_point::min());
-    mEphemeralMaxLifetimeBuffer.emplace_back(std::chrono::milliseconds::zero());
+    mEphemeralStartTimeBuffer.emplace_back(0.0f);
+    mEphemeralMaxLifetimeBuffer.emplace_back(0.0f);
     mEphemeralStateBuffer.emplace_back(EphemeralState::DebrisState());
 
     // Structure
@@ -64,12 +64,12 @@ void Points::CreateEphemeralParticleDebris(
     vec2f const & position,
     vec2f const & velocity,
     Material const * material,
-    GameWallClock::time_point now,
+    float currentSimulationTime,
     std::chrono::milliseconds maxLifetime,
     ConnectedComponentId connectedComponentId)
 {
     // Get a free slot (or steal one)
-    auto pointIndex = FindFreeEphemeralParticle(now);
+    auto pointIndex = FindFreeEphemeralParticle(currentSimulationTime);
 
     //
     // Store attributes
@@ -91,8 +91,8 @@ void Points::CreateEphemeralParticleDebris(
     mLightBuffer[pointIndex] = 0.0f;
 
     mEphemeralTypeBuffer[pointIndex] = EphemeralType::Debris;
-    mEphemeralStartTimeBuffer[pointIndex] = now;
-    mEphemeralMaxLifetimeBuffer[pointIndex] = maxLifetime;
+    mEphemeralStartTimeBuffer[pointIndex] = currentSimulationTime;
+    mEphemeralMaxLifetimeBuffer[pointIndex] = std::chrono::duration_cast<std::chrono::duration<float>>(maxLifetime).count();
     mEphemeralStateBuffer[pointIndex] = EphemeralState::DebrisState();
     mConnectedComponentIdBuffer[pointIndex] = connectedComponentId;
 
@@ -107,7 +107,7 @@ void Points::CreateEphemeralParticleDebris(
 
 void Points::Destroy(
     ElementIndex pointElementIndex,
-    GameWallClock::time_point now,
+    float currentSimulationTime,
     GameParameters const & gameParameters)
 {
     assert(pointElementIndex < mElementCount);
@@ -118,7 +118,7 @@ void Points::Destroy(
     {
         mDestroyHandler(
             pointElementIndex,
-            now,
+            currentSimulationTime,
             gameParameters);
     }
 
@@ -140,7 +140,7 @@ void Points::Destroy(
 }
 
 void Points::UpdateEphemeralParticles(
-    GameWallClock::time_point now,
+    float currentSimulationTime,
     GameParameters const & /*gameParameters*/)
 {
     for (ElementIndex pointIndex : this->EphemeralPoints())
@@ -149,7 +149,7 @@ void Points::UpdateEphemeralParticles(
         if (EphemeralType::None != ephemeralType)
         {
             // Check if expired
-            auto const elapsedLifetime = now - mEphemeralStartTimeBuffer[pointIndex];
+            auto const elapsedLifetime = currentSimulationTime - mEphemeralStartTimeBuffer[pointIndex];
             if (elapsedLifetime >= mEphemeralMaxLifetimeBuffer[pointIndex])
             {
                 // 
@@ -180,8 +180,7 @@ void Points::UpdateEphemeralParticles(
                         // Update alpha based off remaining time
 
                         float alpha = 1.0f -
-                            static_cast<float>(elapsedLifetime.count())
-                            / static_cast<float>(std::chrono::duration_cast<GameWallClock::duration>(mEphemeralMaxLifetimeBuffer[pointIndex]).count());
+                            currentSimulationTime / mEphemeralMaxLifetimeBuffer[pointIndex];
                         
                         mColorBuffer[pointIndex].w = alpha;
 
@@ -382,7 +381,7 @@ vec2f Points::CalculateIntegrationFactor(float mass)
     return vec2f(dt * dt / mass, dt * dt / mass);
 }
 
-ElementIndex Points::FindFreeEphemeralParticle(GameWallClock::time_point const & now)
+ElementIndex Points::FindFreeEphemeralParticle(float currentSimulationTime)
 {
     //
     // Search for the firt free ephemeral particle; if a free one is not found, reuse the 
@@ -390,7 +389,7 @@ ElementIndex Points::FindFreeEphemeralParticle(GameWallClock::time_point const &
     //
 
     ElementIndex oldestParticle = NoneElementIndex;
-    typename GameWallClock::duration oldestParticleLifetime = GameWallClock::duration::min();
+    float oldestParticleLifetime = 0.0f;
 
     assert(mFreeEphemeralParticleSearchStartIndex >= mShipPointCount
         && mFreeEphemeralParticleSearchStartIndex < mAllPointCount);
@@ -410,8 +409,8 @@ ElementIndex Points::FindFreeEphemeralParticle(GameWallClock::time_point const &
         }
 
         // Check whether it's the oldest
-        auto lifetime = now - mEphemeralStartTimeBuffer[p];
-        if (lifetime > oldestParticleLifetime)
+        auto lifetime = currentSimulationTime - mEphemeralStartTimeBuffer[p];
+        if (lifetime >= oldestParticleLifetime)
         {
             oldestParticle = p;
             oldestParticleLifetime = lifetime;

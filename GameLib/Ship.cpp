@@ -83,6 +83,7 @@ Ship::~Ship()
 void Ship::DestroyAt(
     vec2f const & targetPos, 
     float radiusMultiplier,
+    float currentSimulationTime,
     GameParameters const & gameParameters)
 {
     float const radius = gameParameters.DestroyRadius * radiusMultiplier;
@@ -98,7 +99,7 @@ void Ship::DestroyAt(
                 // Destroy point
                 mPoints.Destroy(
                     pointIndex,
-                    GameWallClock::GetInstance().Now(),
+                    currentSimulationTime,
                     gameParameters);
             }
         }
@@ -108,6 +109,7 @@ void Ship::DestroyAt(
 void Ship::SawThrough(
     vec2f const & startPos,
     vec2f const & endPos,
+    float currentSimulationTime,
     GameParameters const & gameParameters)
 {
     //
@@ -129,7 +131,7 @@ void Ship::SawThrough(
                     springIndex,
                     Springs::DestroyOptions::FireBreakEvent
                     | Springs::DestroyOptions::DestroyOnlyConnectedTriangle,
-                    GameWallClock::GetInstance().Now(),
+                    currentSimulationTime,
                     gameParameters,
                     mPoints);
             }
@@ -231,10 +233,11 @@ ElementIndex Ship::GetNearestPointIndexAt(
 }
 
 void Ship::Update(
+    float currentSimulationTime,
     VisitSequenceNumber currentVisitSequenceNumber,
     GameParameters const & gameParameters)
 {
-    auto const now = GameWallClock::GetInstance().Now();
+    auto const currentWallClockTime = GameWallClock::GetInstance().Now();
 
 
     //
@@ -251,7 +254,7 @@ void Ship::Update(
     //
 
     UpdateMechanicalDynamics(
-        now,
+        currentSimulationTime,
         gameParameters);
 
 
@@ -263,7 +266,7 @@ void Ship::Update(
     //
 
     mBombs.Update(
-        now,
+        currentWallClockTime,
         gameParameters);
 
 
@@ -273,7 +276,7 @@ void Ship::Update(
     //
 
     mSprings.UpdateStrains(
-        now,
+        currentSimulationTime,
         gameParameters,
         mPoints);
 
@@ -300,7 +303,7 @@ void Ship::Update(
     //
 
     UpdateElectricalDynamics(
-        now,
+        currentWallClockTime,
         currentVisitSequenceNumber, 
         gameParameters);
 
@@ -310,7 +313,7 @@ void Ship::Update(
     //
 
     UpdateEphemeralParticles(
-        now,
+        currentSimulationTime,
         gameParameters);
 }
 
@@ -448,7 +451,7 @@ void Ship::Render(
 ///////////////////////////////////////////////////////////////////////////////////
 
 void Ship::UpdateMechanicalDynamics(
-    GameWallClock::time_point now,
+    float currentSimulationTime,
     GameParameters const & gameParameters)
 {
     for (int iter = 0; iter < GameParameters::NumMechanicalDynamicsIterations<int>; ++iter)
@@ -458,7 +461,7 @@ void Ship::UpdateMechanicalDynamics(
         {
             forceField->Apply(
                 mPoints,
-                now,
+                currentSimulationTime,
                 gameParameters);
         }
 
@@ -1075,7 +1078,7 @@ void Ship::UpdateWaterVelocities(
 ///////////////////////////////////////////////////////////////////////////////////
 
 void Ship::UpdateElectricalDynamics(
-    GameWallClock::time_point now,
+    GameWallClock::time_point currentWallclockTime,
     VisitSequenceNumber currentVisitSequenceNumber,
     GameParameters const & gameParameters)
 {
@@ -1083,7 +1086,7 @@ void Ship::UpdateElectricalDynamics(
     UpdateElectricalConnectivity(currentVisitSequenceNumber);
 
     mElectricalElements.Update(
-        now,
+        currentWallclockTime,
         currentVisitSequenceNumber,
         mPoints,
         gameParameters);
@@ -1197,7 +1200,7 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
 }
 
 void Ship::UpdateEphemeralParticles(
-    GameWallClock::time_point now,
+    float currentSimulationTime,
     GameParameters const & gameParameters)
 {
     //
@@ -1205,7 +1208,7 @@ void Ship::UpdateEphemeralParticles(
     //
 
     mPoints.UpdateEphemeralParticles(
-        now,
+        currentSimulationTime,
         gameParameters);
 
 
@@ -1344,7 +1347,7 @@ void Ship::DestroyConnectedTriangles(
 
 void Ship::PointDestroyHandler(
     ElementIndex pointElementIndex,
-    GameWallClock::time_point now,
+    float currentSimulationTime,
     GameParameters const & gameParameters)
 {
     //
@@ -1362,7 +1365,7 @@ void Ship::PointDestroyHandler(
             connectedSprings.back(),
             Springs::DestroyOptions::DoNotFireBreakEvent // We're already firing the Destroy event for the point
             | Springs::DestroyOptions::DestroyAllTriangles,
-            now,
+            currentSimulationTime,
             gameParameters,
             mPoints);
     }
@@ -1431,7 +1434,7 @@ void Ship::PointDestroyHandler(
                 mPoints.GetPosition(pointElementIndex),
                 vec2f::fromPolar(velocityMagnitude, velocityAngle),
                 mPoints.GetMaterial(pointElementIndex),
-                now,
+                currentSimulationTime,
                 maxLifetime,
                 mPoints.GetConnectedComponentId(pointElementIndex));
         }
@@ -1444,8 +1447,8 @@ void Ship::PointDestroyHandler(
 void Ship::SpringDestroyHandler(
     ElementIndex springElementIndex,
     bool destroyAllTriangles,
-    GameWallClock::time_point now,
-    GameParameters const & gameParameters)
+    float /*currentSimulationTime*/,
+    GameParameters const & /*gameParameters*/)
 {
     auto const pointAIndex = mSprings.GetPointAIndex(springElementIndex);
     auto const pointBIndex = mSprings.GetPointBIndex(springElementIndex);

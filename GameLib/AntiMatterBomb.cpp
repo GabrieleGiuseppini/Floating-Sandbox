@@ -38,11 +38,11 @@ AntiMatterBomb::AntiMatterBomb(
 }
 
 bool AntiMatterBomb::Update(
-    GameWallClock::time_point now,
+    GameWallClock::time_point currentWallClockTime,
     GameParameters const & gameParameters)
 {
-    auto const elapsed = std::chrono::duration<float>(now - mLastUpdateTimePoint);
-    mLastUpdateTimePoint = now;
+    auto const elapsed = std::chrono::duration<float>(currentWallClockTime - mLastUpdateTimePoint);
+    mLastUpdateTimePoint = currentWallClockTime;
 
     switch (mState)
     {
@@ -61,7 +61,7 @@ bool AntiMatterBomb::Update(
             //
 
             mState = State::PreImploding_3;
-            mCurrentStateStartTimePoint = now;
+            mCurrentStateStartTimePoint = currentWallClockTime;
             mCurrentStateProgress = 0.0f;
 
             // Invoke handler
@@ -75,18 +75,18 @@ bool AntiMatterBomb::Update(
             mGameEventHandler->OnAntiMatterBombContained(mId, false);
 
             // Schedule next transition
-            mNextStateTransitionTimePoint = now + PreImplosionInterval;
+            mNextStateTransitionTimePoint = currentWallClockTime + PreImplosionInterval;
         }
 
         case State::PreImploding_3:
         {
-            if (now <= mNextStateTransitionTimePoint)
+            if (currentWallClockTime <= mNextStateTransitionTimePoint)
             {
                 //
                 // Update current progress
                 //
 
-                auto const millisInCurrentState = std::chrono::duration_cast<std::chrono::milliseconds>(now - mCurrentStateStartTimePoint)
+                auto const millisInCurrentState = std::chrono::duration_cast<std::chrono::milliseconds>(currentWallClockTime - mCurrentStateStartTimePoint)
                     .count();
 
                 mCurrentStateProgress =
@@ -109,7 +109,7 @@ bool AntiMatterBomb::Update(
                 //
 
                 mState = State::Imploding_4;
-                mCurrentStateStartTimePoint = now;
+                mCurrentStateStartTimePoint = currentWallClockTime;
                 mCurrentStateProgress = 0.0f;
 
                 // Detach self (or else bomb will move along with ship performing
@@ -126,7 +126,7 @@ bool AntiMatterBomb::Update(
                 mGameEventHandler->OnAntiMatterBombImploding();
 
                 // Schedule next transition
-                mNextStateTransitionTimePoint = now + ImplosionInterval;
+                mNextStateTransitionTimePoint = currentWallClockTime + ImplosionInterval;
             }
 
             return true;
@@ -134,13 +134,13 @@ bool AntiMatterBomb::Update(
 
         case State::Imploding_4:
         {
-            if (now <= mNextStateTransitionTimePoint)
+            if (currentWallClockTime <= mNextStateTransitionTimePoint)
             {
                 //
                 // Update current progress
                 //
 
-                auto const millisInCurrentState = std::chrono::duration_cast<std::chrono::milliseconds>(now - mCurrentStateStartTimePoint)
+                auto const millisInCurrentState = std::chrono::duration_cast<std::chrono::milliseconds>(currentWallClockTime - mCurrentStateStartTimePoint)
                     .count();
 
                 mCurrentStateProgress =
@@ -163,7 +163,7 @@ bool AntiMatterBomb::Update(
                 //
 
                 mState = State::PreExploding_5;
-                mCurrentStateStartTimePoint = now;
+                mCurrentStateStartTimePoint = currentWallClockTime;
                 mCurrentStateProgress = 0.0f;
 
                 // Detach self (or else explosion will move along with ship performing
@@ -171,7 +171,7 @@ bool AntiMatterBomb::Update(
                 DetachIfAttached();
 
                 // Schedule next transition
-                mNextStateTransitionTimePoint = now + PreExplosionInterval;
+                mNextStateTransitionTimePoint = currentWallClockTime + PreExplosionInterval;
             }
 
             return true;
@@ -179,13 +179,13 @@ bool AntiMatterBomb::Update(
 
         case State::PreExploding_5:
         {
-            if (now <= mNextStateTransitionTimePoint)
+            if (currentWallClockTime <= mNextStateTransitionTimePoint)
             {
                 //
                 // Update current progress
                 //
 
-                auto const millisInCurrentState = std::chrono::duration_cast<std::chrono::milliseconds>(now - mCurrentStateStartTimePoint)
+                auto const millisInCurrentState = std::chrono::duration_cast<std::chrono::milliseconds>(currentWallClockTime - mCurrentStateStartTimePoint)
                     .count();
 
                 mCurrentStateProgress =
@@ -218,11 +218,11 @@ bool AntiMatterBomb::Update(
 
                 // Transition state
                 mState = State::Exploding_6;
-                mCurrentStateStartTimePoint = now;
+                mCurrentStateStartTimePoint = currentWallClockTime;
                 mCurrentStateProgress = 0.0f;
 
                 // Schedule next transition
-                mNextStateTransitionTimePoint = now + ExplosionInterval;
+                mNextStateTransitionTimePoint = currentWallClockTime + ExplosionInterval;
             }
 
             return true;
@@ -230,13 +230,13 @@ bool AntiMatterBomb::Update(
 
         case State::Exploding_6:
         {
-            if (now <= mNextStateTransitionTimePoint)
+            if (currentWallClockTime <= mNextStateTransitionTimePoint)
             {
                 //
                 // Update current progress
                 //
 
-                auto const millisInCurrentState = std::chrono::duration_cast<std::chrono::milliseconds>(now - mCurrentStateStartTimePoint)
+                auto const millisInCurrentState = std::chrono::duration_cast<std::chrono::milliseconds>(currentWallClockTime - mCurrentStateStartTimePoint)
                     .count();
 
                 mCurrentStateProgress =

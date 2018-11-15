@@ -46,7 +46,7 @@ public:
     }
 
     void Update(
-        GameWallClock::time_point now,
+        GameWallClock::time_point currentWallClockTime,
         GameParameters const & gameParameters);
 
     void OnPointDestroyed(ElementIndex pointElementIndex);

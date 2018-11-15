@@ -32,7 +32,7 @@ public:
         Springs & shipSprings);
 
     virtual bool Update(
-        GameWallClock::time_point now,
+        GameWallClock::time_point currentWallClockTime,
         GameParameters const & gameParameters) override;
 
     virtual bool MayBeRemoved() const override

@@ -11,7 +11,6 @@
 #include "EnumFlags.h"
 #include "FixedSizeVector.h"
 #include "GameParameters.h"
-#include "GameWallClock.h"
 #include "IGameEventHandler.h"
 #include "Material.h"
 #include "RenderContext.h"
@@ -43,7 +42,11 @@ public:
         Rope = 2     // Ropes are drawn differently
     };
 
-    using DestroyHandler = std::function<void(ElementIndex, bool, GameWallClock::time_point, GameParameters const &)>;
+    using DestroyHandler = std::function<void(
+        ElementIndex, 
+        bool /*destroyTriangles*/, 
+        float /*currentSimulationTime*/, 
+        GameParameters const &)>;
 
 private:
 
@@ -146,7 +149,7 @@ public:
     void Destroy(
         ElementIndex springElementIndex,
         DestroyOptions destroyOptions,
-        GameWallClock::time_point now,
+        float currentSimulationTime,
         GameParameters const & gameParameters,
         Points const & points);
 
@@ -174,7 +177,7 @@ public:
      * Returns true if the spring got broken.
      */
     bool UpdateStrains(
-        GameWallClock::time_point now,
+        float currentSimulationTime,
         GameParameters const & gameParameters,        
         Points & points);
 

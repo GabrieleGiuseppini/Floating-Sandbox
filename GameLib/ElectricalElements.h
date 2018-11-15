@@ -83,7 +83,7 @@ public:
     void Destroy(ElementIndex electricalElementIndex);
 
     void Update(
-        GameWallClock::time_point now,
+        GameWallClock::time_point currentWallclockTime,
         VisitSequenceNumber currentConnectivityVisitSequenceNumber,
         Points const & points,
         GameParameters const & gameParameters);
@@ -249,7 +249,7 @@ private:
 
     void RunLampStateMachine(        
         ElementIndex elementLampIndex,
-        GameWallClock::time_point now,
+        GameWallClock::time_point currentWallclockTime,
         VisitSequenceNumber currentConnectivityVisitSequenceNumber,
         Points const & points,
         GameParameters const & gameParameters);

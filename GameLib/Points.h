@@ -12,7 +12,6 @@
 #include "FixedSizeVector.h"
 #include "GameParameters.h"
 #include "GameTypes.h"
-#include "GameWallClock.h"
 #include "IGameEventHandler.h"
 #include "Material.h"
 #include "RenderContext.h"
@@ -31,7 +30,10 @@ class Points : public ElementContainer
 {
 public:
 
-    using DestroyHandler = std::function<void(ElementIndex, GameWallClock::time_point, GameParameters const &)>;
+    using DestroyHandler = std::function<void(
+        ElementIndex, 
+        float /*currentSimulationTime*/, 
+        GameParameters const &)>;
 
     enum class EphemeralType
     {
@@ -134,8 +136,8 @@ public:
         , mLightBuffer(mBufferElementCount, shipPointCount, 0.0f)
         // Ephemeral particles
         , mEphemeralTypeBuffer(mBufferElementCount, shipPointCount, EphemeralType::None)
-        , mEphemeralStartTimeBuffer(mBufferElementCount, shipPointCount, GameWallClock::time_point::min())
-        , mEphemeralMaxLifetimeBuffer(mBufferElementCount, shipPointCount, std::chrono::milliseconds::zero())
+        , mEphemeralStartTimeBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mEphemeralMaxLifetimeBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mEphemeralStateBuffer(mBufferElementCount, shipPointCount, EphemeralState::DebrisState())
         // Structure
         , mNetworkBuffer(mBufferElementCount, shipPointCount, Network())
@@ -214,17 +216,17 @@ public:
         vec2f const & position,
         vec2f const & velocity,
         Material const * material,
-        GameWallClock::time_point now,
+        float currentSimulationTime,
         std::chrono::milliseconds maxLifetime,
         ConnectedComponentId connectedComponentId);
 
     void Destroy(
         ElementIndex pointElementIndex,
-        GameWallClock::time_point now,
+        float currentSimulationTime,
         GameParameters const & gameParameters);
 
     void UpdateEphemeralParticles(
-        GameWallClock::time_point now,
+        float currentSimulationTime,
         GameParameters const & gameParameters);    
     
 
@@ -613,7 +615,7 @@ private:
 
     static vec2f CalculateIntegrationFactor(float mass);
 
-    ElementIndex FindFreeEphemeralParticle(GameWallClock::time_point const & now);
+    ElementIndex FindFreeEphemeralParticle(float currentSimulationTime);
 
 private:
 
@@ -672,8 +674,8 @@ private:
     //
 
     Buffer<EphemeralType> mEphemeralTypeBuffer;
-    Buffer<GameWallClock::time_point> mEphemeralStartTimeBuffer;
-    Buffer<std::chrono::milliseconds> mEphemeralMaxLifetimeBuffer;
+    Buffer<float> mEphemeralStartTimeBuffer;
+    Buffer<float> mEphemeralMaxLifetimeBuffer;
     Buffer<EphemeralState> mEphemeralStateBuffer;
 
     //
