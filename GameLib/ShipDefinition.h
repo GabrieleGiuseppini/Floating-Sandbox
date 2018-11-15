@@ -25,16 +25,20 @@ public:
 
     std::string const ShipName;
 
+    std::optional<std::string> const Author;
+
     vec2f const Offset;
 
     ShipDefinition(
         ImageData structuralImage,
         std::optional<ImageData> textureImage,
         std::string shipName,
+        std::optional<std::string> author,
         vec2f offset)
         : StructuralImage(std::move(structuralImage))
         , TextureImage(std::move(textureImage))
         , ShipName(std::move(shipName))
+        , Author(author)
         , Offset(std::move(offset))
     {
     }

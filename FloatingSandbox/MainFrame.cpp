@@ -543,6 +543,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     mLowFrequencyTimer->Start(1000, false);
 
 
+
     //
     // Show ourselves now
     //
@@ -572,6 +573,8 @@ void MainFrame::OnQuit(wxCommandEvent & /*event*/)
 
 void MainFrame::OnPaint(wxPaintEvent & event)
 {
+    // This happens sparingly, mostly when the window is resized and when it's shown
+
     RenderGame();
 
     event.Skip();
@@ -667,6 +670,10 @@ void MainFrame::OnLowFrequencyTimerTrigger(wxTimerEvent & /*event*/)
 
     assert(!!mSoundController);
     mSoundController->LowFrequencyUpdate();
+}
+
+void MainFrame::OnIdle(wxIdleEvent & event)
+{
 }
 
 //

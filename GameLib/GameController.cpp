@@ -410,7 +410,10 @@ void GameController::AddShip(ShipDefinition shipDefinition)
         std::move(shipDefinition.TextureImage));
 
     // Notify
-    mGameEventDispatcher->OnShipLoaded(shipId, shipDefinition.ShipName);
+    mGameEventDispatcher->OnShipLoaded(
+        shipId, 
+        shipDefinition.ShipName,
+        shipDefinition.Author);
 }
 
 void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)

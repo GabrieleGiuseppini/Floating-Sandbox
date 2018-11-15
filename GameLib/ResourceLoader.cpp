@@ -79,6 +79,7 @@ ShipDefinition ResourceLoader::LoadShipDefinition(std::filesystem::path const & 
             sdf.ShipName.empty() 
                 ? std ::filesystem::path(filepath).stem().string() 
                 : sdf.ShipName,
+            sdf.Author,
             sdf.Offset);
     }
     else
@@ -93,6 +94,7 @@ ShipDefinition ResourceLoader::LoadShipDefinition(std::filesystem::path const & 
             std::move(imageData),
             std::nullopt,
             std::filesystem::path(filepath).stem().string(),
+            std::nullopt,
             vec2f(0.0f, 0.0f));
     }
 }

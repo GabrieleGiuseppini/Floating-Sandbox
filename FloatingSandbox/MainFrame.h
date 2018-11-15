@@ -104,6 +104,7 @@ private:
     void OnKeyDown(wxKeyEvent& event);
     void OnGameTimerTrigger(wxTimerEvent& event);
     void OnLowFrequencyTimerTrigger(wxTimerEvent& event);
+    void OnIdle(wxIdleEvent& event);
 
     // Main GL canvas
     void OnMainGLCanvasResize(wxSizeEvent& event);

@@ -179,8 +179,9 @@ void Points::UpdateEphemeralParticles(
                     {
                         // Update alpha based off remaining time
 
-                        float alpha = 1.0f -
-                            currentSimulationTime / mEphemeralMaxLifetimeBuffer[pointIndex];
+                        float alpha = std::max(
+                            1.0f - elapsedLifetime / mEphemeralMaxLifetimeBuffer[pointIndex],
+                            0.0f);
                         
                         mColorBuffer[pointIndex].w = alpha;
 

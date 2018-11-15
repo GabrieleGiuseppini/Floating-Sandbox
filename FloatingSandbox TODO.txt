@@ -123,6 +123,9 @@ Render:
 - Suggestions to spec:
 	- Different colored lights
 
+- Technical debt
+	- Replace ShipDefinitionFile's metadata with ShipDefinition
+
 - Optimizations:
 
 	+ BufferAllocator<Type:vec2f or float>
@@ -282,6 +285,9 @@ Render:
 		+ Just single vector of PointIndex, no connected components
 		+ Make ephemeral particles' update based on simulation clock, not wall clock
 			+ "now" passed everywhere really has to become a "simulationNow" float
+		- Invoke GenerateDebris (new ship private) not directly from within point destroy handler, but from:
+			- Destroy tool - once
+			- ForceField - once (like now though)
 		- Test
 
 
