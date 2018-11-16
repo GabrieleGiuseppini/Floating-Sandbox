@@ -279,6 +279,10 @@ Render:
 
 - Dynamics:
 
+	- Slider for "simulation quality"
+		- Integer slider, from 0 to 10
+		- See moleskine
+
 	= Fix ephemeral particles
 		+ Pass also "now" all over the place
 			+ End put back UpdateEphemeralParticles where it was
@@ -288,6 +292,8 @@ Render:
 		- Invoke GenerateDebris (new ship private) not directly from within point destroy handler, but from:
 			- Destroy tool - once
 			- ForceField - once (like now though)
+				- As a matter of fact, Ship does, in Blast handler
+		- Fix Nolight at ships' created_by (master)
 		- Test
 
 
@@ -546,109 +552,6 @@ Render:
 			- Histogram pointWaterHistogram
 			- ...
 
-- Lights
-	+ need Optional()
-	+ Material:
-		+ use picojson
-		+ Material.ElectricalProperties (optional)
-			+ type (Material::ElectricalProperties::ElectricalElementType=lamp, cable, generator)
-			+ flat list of all electrical properties, some apply some don't
-	+ class Lamp()
-		+ points to Point and Point points optionally to ElectricalElement (base abstract of Lamp, Cable, Generator)
-			+ ElectricalElement::GetType(){return mType;}: non-virtual, it's optimized by compiler
-	+ Move electrical components to ElectricalElements class, an ElementContainer but also like bombs, with update and state machines
-	  (but no render)
-		+ GameEventHandler and points members
-		+ Buffers (type, connected electrical elements, etc.)
-		+ AddCable/Lamp/...()		
-		+ Destroy
-			+ Removes self from connected
-				+ OR NOT: If Ship::PointDestroyHandler deletes point's connected springs before point's electrical element,
-				  then we can assert that electrical element has no connected points anymore already
-		+ Getters ("subset" section) for Lamps and Generators
-		+ Update()
-			+ Invoked by Ship
-			+ For each lamp: runs its state machine 
-				+ Via RunLampStateMachine(LampState &)
-				+ Outcome: AvailableCurrent
-	+ Materials: self-powered lamp
-		+ Just boolean property in JSON
-			+ Current light material is self-powered
-			+ New light material is not
-		+ ElectricalElements: store boolean at LampState (const, passed via cctor)
-	+ Point has ElectricalElementIndex (or None), passed at cctor
-	+ ShipBuilder:
-		+ Create ElectricalElements via ElectricalElements::Add
-		+ Give point/elec element index to each other
-		+ Add connected electrical elements to each other
-			+ See how it's done for points, springs, etc.
-	+ Nuke ElectricalElement, Cable, Generator, Lamp
-	+ Nuke unused Material electrical properties
-	+ Ship::PointDestroyHandler:
-		+ Destroy point's ElectricalElement, if any
-		+ Do this after deleting springs, so that ElectricalElement::Destroy does not have to remove self from connected elements (see above)
-	+ Ship::SpringDestroyHandler:
-		+ Remove each endpoint's ElectricalElement (if any - both must be elec elems) from each other's ElectricalElement
-	+ Move StrToDuration and includes to GameTypes.cpp
-	+ Move ElectricalElementIndex at Points to own buffer
-	+ @Ship::Update():
-		+ New "inline" electrical section:
-			+ UpdateCurrentConnectivity():
-				+ Invoke regardless of dirty elements, as generators might become wet
-				+ From generators to all reachable points, just propagates visit seq num
-			+ ElectricalElements::Update()
-			+ DiffuseLight()
-				+ For each ElectricalElement::Lamp: 
-					+ Use its AvailableCurrent and set mLight 
-	+ Implement full lamp state machine @ ElectricalElements::RunLampStateMachine
-		+ EventHandler: OnLightFlicker(size, length, isUnderwater)
-		+ Update() takes Points (for underwater)
-		+ Implement
-		+ SoundController
-			+ Add new sound for electrical cable
-				+ 2 X random, X 2 underwater
-			+ Find 2 sounds ("electrical discharge" or "electric arc")
-				+ And make them also underwater
-				+ Lower volume of overwater ones
-	+ Optimizations:		
-		+ Take perf analysis of circuit test 1 (2 mins Circuit Test 1)
-			- World::Update: 30.15%
-				- UpdateElectricalConn: 0.06%
-					- Deque::new: 0.01%
-					- Deque::~: 0.01%
-				- ElectricalElements::Update: 0.05%
-				- DiffuseLight: 0.43%
-		+ Ship::DiffuseLight: see inverting nested loops (for each lamp: for each point)
-			+ Need test ship with many more lamps
-			+ Before perf analysis: DiffuseLight: 35.83% == ~30,000 samples; fps=22.10
-			+ Switch loops:
-				+ Requires first point light zeroing!
-				+ After perf analysis: DiffuseLight: 30.63%; fps=24.x
-		+ Do perf analysis with complex graph
-			+ Need circuit test 3
-			+ Impact negligible: Ship::UpdateElectricalConnectivity: 0.21%
-
-	+ Diffusion:
-		+ Can test it by itself, by using light material and by cheating with current!
-		+ After current propagation:
-			+ Zero out mLight of each point (use generation sequence number? useful for other Point properties?)
-				+ No, easier and probably faster to do it in same pass as LeakWater - LeakWaterAndZeroLight()
-		+ Diffusion: propagate mLight to adjacent points (incl. other lamps),
-		  inv. proportional to distance^2, with a graph flood stopping at max distance
-		+ Point.GetColour() takes also into account mLight (from itself, not from lamp) 
-                  and makes alpha blend just like water
-		+ Need "off" color to use at lamp point when Lamp is off (different than structural color),
-		  used when rendering point in springs/triangles/points
-			+ Not used when using textures, of course
-			+ Needs material's Color to split in StructuralColor and RenderColor (set to the same except for lamps)
-	+ Diffusion improvement: see if can simply add light (rather than max'ing it)
-		+ Need to ensure sum is always < 1.0
-		+ Or just set to max(1.0, cur+new)
-			+ Best when done in point->lamp loop: add up in inner loop, then assign to point as max
-			+ Doesn't improve look considerably, and still requires an if
-			
-	
-
 - Multiple ships:
 	- Better done after collision detection
 	- When ship loaded (added):
@@ -672,7 +575,7 @@ Render:
 
 
 - Floor breaking up upon impact
-	- Does not need full particle-zation, can get away with triangles
+	- Layer on top of floor samples, with hash buckets and lists of heights per-bucket
 
 ==============================================================================
 ==============================================================================
@@ -2881,6 +2784,106 @@ IF WX:
 	+ Post to forum
 	+ Add to gamejolt
 
++ Lights
+	+ need Optional()
+	+ Material:
+		+ use picojson
+		+ Material.ElectricalProperties (optional)
+			+ type (Material::ElectricalProperties::ElectricalElementType=lamp, cable, generator)
+			+ flat list of all electrical properties, some apply some don't
+	+ class Lamp()
+		+ points to Point and Point points optionally to ElectricalElement (base abstract of Lamp, Cable, Generator)
+			+ ElectricalElement::GetType(){return mType;}: non-virtual, it's optimized by compiler
+	+ Move electrical components to ElectricalElements class, an ElementContainer but also like bombs, with update and state machines
+	  (but no render)
+		+ GameEventHandler and points members
+		+ Buffers (type, connected electrical elements, etc.)
+		+ AddCable/Lamp/...()		
+		+ Destroy
+			+ Removes self from connected
+				+ OR NOT: If Ship::PointDestroyHandler deletes point's connected springs before point's electrical element,
+				  then we can assert that electrical element has no connected points anymore already
+		+ Getters ("subset" section) for Lamps and Generators
+		+ Update()
+			+ Invoked by Ship
+			+ For each lamp: runs its state machine 
+				+ Via RunLampStateMachine(LampState &)
+				+ Outcome: AvailableCurrent
+	+ Materials: self-powered lamp
+		+ Just boolean property in JSON
+			+ Current light material is self-powered
+			+ New light material is not
+		+ ElectricalElements: store boolean at LampState (const, passed via cctor)
+	+ Point has ElectricalElementIndex (or None), passed at cctor
+	+ ShipBuilder:
+		+ Create ElectricalElements via ElectricalElements::Add
+		+ Give point/elec element index to each other
+		+ Add connected electrical elements to each other
+			+ See how it's done for points, springs, etc.
+	+ Nuke ElectricalElement, Cable, Generator, Lamp
+	+ Nuke unused Material electrical properties
+	+ Ship::PointDestroyHandler:
+		+ Destroy point's ElectricalElement, if any
+		+ Do this after deleting springs, so that ElectricalElement::Destroy does not have to remove self from connected elements (see above)
+	+ Ship::SpringDestroyHandler:
+		+ Remove each endpoint's ElectricalElement (if any - both must be elec elems) from each other's ElectricalElement
+	+ Move StrToDuration and includes to GameTypes.cpp
+	+ Move ElectricalElementIndex at Points to own buffer
+	+ @Ship::Update():
+		+ New "inline" electrical section:
+			+ UpdateCurrentConnectivity():
+				+ Invoke regardless of dirty elements, as generators might become wet
+				+ From generators to all reachable points, just propagates visit seq num
+			+ ElectricalElements::Update()
+			+ DiffuseLight()
+				+ For each ElectricalElement::Lamp: 
+					+ Use its AvailableCurrent and set mLight 
+	+ Implement full lamp state machine @ ElectricalElements::RunLampStateMachine
+		+ EventHandler: OnLightFlicker(size, length, isUnderwater)
+		+ Update() takes Points (for underwater)
+		+ Implement
+		+ SoundController
+			+ Add new sound for electrical cable
+				+ 2 X random, X 2 underwater
+			+ Find 2 sounds ("electrical discharge" or "electric arc")
+				+ And make them also underwater
+				+ Lower volume of overwater ones
+	+ Optimizations:		
+		+ Take perf analysis of circuit test 1 (2 mins Circuit Test 1)
+			- World::Update: 30.15%
+				- UpdateElectricalConn: 0.06%
+					- Deque::new: 0.01%
+					- Deque::~: 0.01%
+				- ElectricalElements::Update: 0.05%
+				- DiffuseLight: 0.43%
+		+ Ship::DiffuseLight: see inverting nested loops (for each lamp: for each point)
+			+ Need test ship with many more lamps
+			+ Before perf analysis: DiffuseLight: 35.83% == ~30,000 samples; fps=22.10
+			+ Switch loops:
+				+ Requires first point light zeroing!
+				+ After perf analysis: DiffuseLight: 30.63%; fps=24.x
+		+ Do perf analysis with complex graph
+			+ Need circuit test 3
+			+ Impact negligible: Ship::UpdateElectricalConnectivity: 0.21%
+
+	+ Diffusion:
+		+ Can test it by itself, by using light material and by cheating with current!
+		+ After current propagation:
+			+ Zero out mLight of each point (use generation sequence number? useful for other Point properties?)
+				+ No, easier and probably faster to do it in same pass as LeakWater - LeakWaterAndZeroLight()
+		+ Diffusion: propagate mLight to adjacent points (incl. other lamps),
+		  inv. proportional to distance^2, with a graph flood stopping at max distance
+		+ Point.GetColour() takes also into account mLight (from itself, not from lamp) 
+                  and makes alpha blend just like water
+		+ Need "off" color to use at lamp point when Lamp is off (different than structural color),
+		  used when rendering point in springs/triangles/points
+			+ Not used when using textures, of course
+			+ Needs material's Color to split in StructuralColor and RenderColor (set to the same except for lamps)
+	+ Diffusion improvement: see if can simply add light (rather than max'ing it)
+		+ Need to ensure sum is always < 1.0
+		+ Or just set to max(1.0, cur+new)
+			+ Best when done in point->lamp loop: add up in inner loop, then assign to point as max
+			+ Doesn't improve look considerably, and still requires an if
 
 + Bugs: 
 	+ Ship::Render: when there are no changes to elements and we keep uploading stressed springs, we don't reset the count
