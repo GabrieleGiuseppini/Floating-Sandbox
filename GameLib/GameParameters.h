@@ -93,6 +93,27 @@ struct GameParameters
     static constexpr float MinWaterQuickness = 0.001f;
     static constexpr float MaxWaterQuickness = 1.0f;
 
+    // Ephemeral particles
+
+    static constexpr ElementCount MaxEphemeralParticles = 512;
+
+    bool DoGenerateDebris;
+    static constexpr size_t MinDebrisParticlesPerEvent = 4;
+    static constexpr size_t MaxDebrisParticlesPerEvent = 9;
+    static constexpr float MinDebrisParticlesVelocity = 25.0f;
+    static constexpr float MaxDebrisParticlesVelocity = 40.0f;
+    static constexpr std::chrono::milliseconds MinDebrisParticlesLifetime = std::chrono::milliseconds(200);
+    static constexpr std::chrono::milliseconds MaxDebrisParticlesLifetime = std::chrono::milliseconds(500);
+
+    bool DoGenerateSparkles;
+    static constexpr size_t MinSparkleParticlesPerEvent = 10;
+    static constexpr size_t MaxSparkleParticlesPerEvent = 20;
+    static constexpr float MinSparkleParticlesVelocity = 25.0f;
+    static constexpr float MaxSparkleParticlesVelocity = 40.0f;
+    static constexpr std::chrono::milliseconds MinSparkleParticlesLifetime = std::chrono::milliseconds(200);
+    static constexpr std::chrono::milliseconds MaxSparkleParticlesLifetime = std::chrono::milliseconds(500);
+
+
     // Misc
 
 	float WaveHeight;
@@ -135,14 +156,6 @@ struct GameParameters
 
     bool IsUltraViolentMode;
 
-    bool DoGenerateDebris;
-    static constexpr size_t MinDebrisParticlesPerEvent = 4;
-    static constexpr size_t MaxDebrisParticlesPerEvent = 9;
-    static constexpr float MinDebrisParticlesVelocity = 25.0f;
-    static constexpr float MaxDebrisParticlesVelocity = 40.0f;
-    static constexpr std::chrono::milliseconds MinDebrisParticlesLifetime = std::chrono::milliseconds(200);
-    static constexpr std::chrono::milliseconds MaxDebrisParticlesLifetime = std::chrono::milliseconds(500);
-
 
     //
     // Limits
@@ -157,7 +170,5 @@ struct GameParameters
     // 8 neighbours and 1 rope spring, when this is a rope endpoint
     static constexpr size_t MaxSpringsPerPoint = 8u + 1u;
 
-    static constexpr size_t MaxTrianglesPerPoint = 8u;
-
-    static constexpr ElementCount MaxEphemeralParticles = 512;
+    static constexpr size_t MaxTrianglesPerPoint = 8u;    
 };

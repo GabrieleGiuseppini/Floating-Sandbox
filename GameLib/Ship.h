@@ -184,6 +184,18 @@ private:
 
     void ElectricalElementDestroyHandler(ElementIndex electricalElementIndex);
 
+    void GenerateDebris(
+        ElementIndex pointElementIndex,
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
+
+    void GenerateSparkles(
+        ElementIndex springElementIndex,
+        vec2f const & cutDirectionStartPos,
+        vec2f const & cutDirectionEndPos,
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
+
 private:
 
     /////////////////////////////////////////////////////////////////////////

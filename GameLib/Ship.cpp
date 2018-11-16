@@ -134,6 +134,17 @@ void Ship::SawThrough(
                     currentSimulationTime,
                     gameParameters,
                     mPoints);
+
+                if (!mSprings.IsRope(springIndex))
+                {
+                    // Emit sparkles
+                    GenerateSparkles(
+                        springIndex,
+                        startPos,
+                        endPos,
+                        currentSimulationTime,
+                        gameParameters);
+                }
             }
         }
     }
@@ -1416,33 +1427,10 @@ void Ship::PointDestroyHandler(
     mPinnedPoints.OnPointDestroyed(pointElementIndex);
 
     // Emit debris
-    if (gameParameters.DoGenerateDebris)
-    {
-        auto const debrisParticleCount = GameRandomEngine::GetInstance().GenerateRandomInteger(
-            GameParameters::MinDebrisParticlesPerEvent, GameParameters::MaxDebrisParticlesPerEvent);
-
-        for (size_t d = 0; d < debrisParticleCount; ++d)
-        {
-            // Choose a velocity vector: point on a circle with random radius and random angle
-            float const velocityMagnitude = GameRandomEngine::GetInstance().GenerateRandomReal(
-                GameParameters::MinDebrisParticlesVelocity, GameParameters::MaxDebrisParticlesVelocity);
-            float const velocityAngle = GameRandomEngine::GetInstance().GenerateRandomReal(0.0f, 2.0f * Pi<float>);
-
-            // Choose a lifetime
-            std::chrono::milliseconds const maxLifetime = std::chrono::milliseconds(
-                GameRandomEngine::GetInstance().GenerateRandomInteger(
-                    GameParameters::MinDebrisParticlesLifetime.count(),
-                    GameParameters::MaxDebrisParticlesLifetime.count()));
-
-            mPoints.CreateEphemeralParticleDebris(
-                mPoints.GetPosition(pointElementIndex),
-                vec2f::fromPolar(velocityMagnitude, velocityAngle),
-                mPoints.GetMaterial(pointElementIndex),
-                currentSimulationTime,
-                maxLifetime,
-                mPoints.GetConnectedComponentId(pointElementIndex));
-        }
-    }
+    GenerateDebris(
+        pointElementIndex,
+        currentSimulationTime,
+        gameParameters);
 
     // Remember our elements are now dirty
     mAreElementsDirty = true;
@@ -1540,6 +1528,125 @@ void Ship::ElectricalElementDestroyHandler(ElementIndex /*electricalElementIndex
 {
     // Remember our elements are now dirty
     mAreElementsDirty = true;
+}
+
+void Ship::GenerateDebris(
+    ElementIndex pointElementIndex,
+    float currentSimulationTime,
+    GameParameters const & gameParameters)
+{
+    if (gameParameters.DoGenerateDebris)
+    {
+        auto const debrisParticleCount = GameRandomEngine::GetInstance().GenerateRandomInteger(
+            GameParameters::MinDebrisParticlesPerEvent, GameParameters::MaxDebrisParticlesPerEvent);
+
+        for (size_t d = 0; d < debrisParticleCount; ++d)
+        {
+            // Choose a velocity vector: point on a circle with random radius and random angle
+            float const velocityMagnitude = GameRandomEngine::GetInstance().GenerateRandomReal(
+                GameParameters::MinDebrisParticlesVelocity, GameParameters::MaxDebrisParticlesVelocity);
+            float const velocityAngle = GameRandomEngine::GetInstance().GenerateRandomReal(0.0f, 2.0f * Pi<float>);
+
+            // Choose a lifetime
+            std::chrono::milliseconds const maxLifetime = std::chrono::milliseconds(
+                GameRandomEngine::GetInstance().GenerateRandomInteger(
+                    GameParameters::MinDebrisParticlesLifetime.count(),
+                    GameParameters::MaxDebrisParticlesLifetime.count()));
+
+            mPoints.CreateEphemeralParticleDebris(
+                mPoints.GetPosition(pointElementIndex),
+                vec2f::fromPolar(velocityMagnitude, velocityAngle),
+                mPoints.GetMaterial(pointElementIndex),
+                currentSimulationTime,
+                maxLifetime,
+                mPoints.GetConnectedComponentId(pointElementIndex));
+        }
+    }
+}
+
+void Ship::GenerateSparkles(
+    ElementIndex springElementIndex,
+    vec2f const & cutDirectionStartPos,
+    vec2f const & cutDirectionEndPos,
+    float currentSimulationTime,
+    GameParameters const & gameParameters)
+{
+    if (gameParameters.DoGenerateSparkles)
+    {
+        //
+        // Choose number of particles
+        //
+
+        auto const sparkleParticleCount = GameRandomEngine::GetInstance().GenerateRandomInteger<size_t>(
+            // TODOTEST
+            //GameParameters::MinSparkleParticlesPerEvent, GameParameters::MaxSparkleParticlesPerEvent);
+            2, 8);
+
+
+        //
+        // Choose start and end colors
+        //
+
+        vec4f startColor;
+        vec4f endColor;
+        Material const * material = mSprings.GetBaseMaterial(springElementIndex);
+        if (!!(material->Sound)
+            && Material::SoundProperties::SoundElementType::Metal == material->Sound->ElementType)
+        {
+            startColor = vec4f(1.0f, 0.2f, 0.2f, 1.0f); // Opaque
+            endColor = vec4f(0.55f, 0.1f, 0.1f, 0.0f); // Transparent
+        }
+        else
+        {
+            startColor = endColor = material->RenderColour;
+        }
+
+
+        //
+        // Choose velocity angle distribution: butterfly perpendicular to cut direction
+        //
+
+        vec2f const perpendicularCutVector = (cutDirectionEndPos - cutDirectionStartPos).normalise().to_perpendicular();
+        float const axisAngle = perpendicularCutVector.angle(vec2f(1.0f, 0.0f));
+        float constexpr AxisAngleWidth = Pi<float> / 4.0f;
+        float const startAngle = axisAngle - AxisAngleWidth;
+        float const endAngle = axisAngle + AxisAngleWidth;
+
+
+        //
+        // Create particles
+        //
+
+        for (size_t d = 0; d < sparkleParticleCount; ++d)
+        {
+            // Velocity magnitude
+            float const velocityMagnitude = GameRandomEngine::GetInstance().GenerateRandomReal(
+                // TODOHERE
+                //GameParameters::MinSparkleParticlesVelocity, GameParameters::MaxSparkleParticlesVelocity);
+                30.0f, 50.0f);
+
+            // Velocity angle: butterfly perpendicular to *direction of sawing*, not spring
+            float const velocityAngle =
+                GameRandomEngine::GetInstance().GenerateRandomReal(startAngle, endAngle)
+                + (GameRandomEngine::GetInstance().Choose(2) == 0 ? Pi<float> : 0.0f);
+
+            // Choose a lifetime
+            std::chrono::milliseconds const maxLifetime = std::chrono::milliseconds(
+                GameRandomEngine::GetInstance().GenerateRandomInteger(
+                    GameParameters::MinSparkleParticlesLifetime.count(),
+                    GameParameters::MaxSparkleParticlesLifetime.count()));
+
+            mPoints.CreateEphemeralParticleSparkle(
+                mSprings.GetMidpointPosition(springElementIndex, mPoints),
+                vec2f::fromPolar(velocityMagnitude, velocityAngle),
+                mSprings.GetBaseMaterial(springElementIndex),
+                currentSimulationTime,
+                maxLifetime,
+                startColor,
+                endColor,
+                mSprings.GetConnectedComponentId(springElementIndex, mPoints));
+        }
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////

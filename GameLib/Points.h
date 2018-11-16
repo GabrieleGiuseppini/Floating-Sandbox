@@ -57,6 +57,18 @@ private:
 
         struct SparkleState
         {
+            vec4f StartColor;
+            vec4f DeltaColor;
+
+            SparkleState()
+            {}
+
+            SparkleState(
+                vec4f const & startColor,
+                vec4f const & endColor)
+                : StartColor(startColor)
+                , DeltaColor(endColor - startColor)
+            {}
         };
 
         struct AirBubbleState
@@ -218,6 +230,16 @@ public:
         Material const * material,
         float currentSimulationTime,
         std::chrono::milliseconds maxLifetime,
+        ConnectedComponentId connectedComponentId);
+
+    void CreateEphemeralParticleSparkle(
+        vec2f const & position,
+        vec2f const & velocity,
+        Material const * material,
+        float currentSimulationTime,
+        std::chrono::milliseconds maxLifetime,
+        vec4f const & startColor,
+        vec4f const & endColor,
         ConnectedComponentId connectedComponentId);
 
     void Destroy(

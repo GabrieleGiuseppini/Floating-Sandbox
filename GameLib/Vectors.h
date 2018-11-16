@@ -160,6 +160,14 @@ public:
             x * other.x + y * other.y);
     }
 
+    /*
+     * Returns the vector rotated by PI/2.
+     */
+    inline vec2f to_perpendicular() const
+    {
+        return vec2f(-y, x);
+    }
+
     std::string toString() const;
 
     inline constexpr vec2f()

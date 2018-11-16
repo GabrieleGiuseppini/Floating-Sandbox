@@ -267,6 +267,16 @@ public:
             + GetPointBPosition(springElementIndex, points)) / 2.0f;
     }
 
+    ConnectedComponentId GetConnectedComponentId(
+        ElementIndex springElementIndex,
+        Points const & points) const
+    {
+        assert(points.GetConnectedComponentId(GetPointAIndex(springElementIndex)) 
+            == points.GetConnectedComponentId(GetPointBIndex(springElementIndex)));
+
+        return points.GetConnectedComponentId(GetPointAIndex(springElementIndex));
+    }
+
     //
     // Physical
     //

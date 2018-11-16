@@ -346,13 +346,19 @@ Render:
 		- @ Smoke
 		- @ Air bubbles
 
-	- Do chainsaw sparkles with Ephemeral Particles
-		- At Ship::Chainsaw for each broken spring
-		- White becoming bright red
-		- Initial particle dynamics:
-			- Position: midpoint of spring
-			- Velocity: radial vector, according to pseudo-Gaussian centered in the direction of sawing, with magnitude uniformly random
-			- Number: per Update step: uniform random centered around SparkleDensity (ratio over 10, initially) (from GameParameters, adjustable)
+	= Do chainsaw sparkles with Ephemeral Particles
+		+ At Ship::Chainsaw for each broken spring
+		= Initial particle dynamics:
+			+ Position: midpoint of spring
+			= Velocity: radial vector:
+				= Butterfly perpendicular to *direction of sawing*, not spring
+				+ Magnitude: uniformly random in range
+			+ Number: per Update step: uniform random centered around SparkleDensity (ratio over 10, initially) (from GameParameters, adjustable)
+			+ Color:
+				+ Metal: brightest red to bright red
+				+ Else: base material's render color
+			- Finalize parameters
+
 	- Smoke:
 		- New material: smoke emitter
 			- Recognized by ship builder via "particle_emitter_properties" sub-object
@@ -365,12 +371,17 @@ Render:
 
 	- Switches:
 		- New electrical material type; color trick like ropes to have unique IDs for switches
-			- One structural color for initially on and one for initially off
+			- One material (base structural color) for initially on and another one for initially off
+			- New electrical property: ConductsElectricity, bool
 		- Ship json adds optional names for each ID
-		- ShipBuilder detects all switches and communicates those separately to ship at cctor time
-			- Each switch gets own ID == <ShipId, SwitchId>
-		- UI gets switches via AddSwitch (and DeleteSwitch) event, with all metadata (name, state)
-			- From Ship::cctor
+			- as vector<tuple<GlobalSwitchId, std::string>>>
+		- ShipBuilder detects all switches as electrical elements
+			- Each switch gets own GlobalSwitchId == <ShipId, ShipSwitchId>, as part of Electrical Elements data
+				- GlobalSwitchId is new GameType
+				- ShipSwitchId is just element index of switch in ElectricalElements
+			- ShipBuilder also communicates IDs and names (vector, by move) separately to ship at cctor time
+		- UI gets switches via AddSwitch (and DeleteSwitch) event, with all metadata (ID, name, state)
+			- From Ship::cctor, visiting cctor-provided vector of IDs and names (and state in electrical elements)
 			- SwitchBoard panel
 				- Registers as event listener at cctor
 				- Uses GameController (own shared ptr) :: SetSwitch(switchId, bool) to control switches
@@ -380,7 +391,8 @@ Render:
 		- Electrical dynamics:
 			- ElectricalElement: rename "ConnectivityVisit" (sequence number, etc.) as "ElectricalPropagationVisit" (...)
 				- Ship::UpdateElectrical"Propagation"
-			- ElectricalElement has new "doesConductElectricity" bool buffer
+			- ElectricalElement has new "conductsElectricity" bool buffer
+				- Init'd with material's
 				- Ship::UpdateElectricalConnectivity checks conductance first when deciding to follow a connected electrical element
 			- Ship::SetSwitch(switchId, bool):
 				- Toggles electrical element's "doesConductElectricity", via ElectricalElements::SetSwitch(switchId, bool)
