@@ -170,6 +170,7 @@ RenderContext::RenderContext(
     //
     // Atlas-ize all textures EXCEPT the following:
     // - Land, Water: we need these to be wrapping
+    // - Clouds: we keep these separate, we have to rebind anyway
     //
 
     TextureAtlasBuilder genericTextureAtlasBuilder;

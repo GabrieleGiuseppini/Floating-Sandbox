@@ -38,7 +38,8 @@ ShipDefinitionFile ShipDefinitionFile::Create(picojson::object const & definitio
     return ShipDefinitionFile(
         structuralImageFilePath,
         textureImageFilePath,
-        shipName,
-        author,
-        offset);
+        ShipMetadata(
+            shipName,
+            author,
+            offset));
 }

@@ -505,8 +505,13 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
         //        
 
         // Mass = own + contained water (clamped to 1)
-        mPoints.GetForce(pointIndex) += gameParameters.Gravity
-            * (mPoints.GetMass(pointIndex) + std::min(mPoints.GetWater(pointIndex), 1.0f) * 1000.0f);
+        float const totalPointMass =
+            mPoints.GetMass(pointIndex)
+            + std::min(mPoints.GetWater(pointIndex), 1.0f) * WaterMass;
+
+        mPoints.GetForce(pointIndex) += 
+            gameParameters.Gravity
+            * totalPointMass;
 
         if (mPoints.GetPosition(pointIndex).y < waterHeightAtThisPoint)
         {

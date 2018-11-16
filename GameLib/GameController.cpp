@@ -412,8 +412,8 @@ void GameController::AddShip(ShipDefinition shipDefinition)
     // Notify
     mGameEventDispatcher->OnShipLoaded(
         shipId, 
-        shipDefinition.ShipName,
-        shipDefinition.Author);
+        shipDefinition.Metadata.ShipName,
+        shipDefinition.Metadata.Author);
 }
 
 void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)

@@ -92,6 +92,7 @@ Here's a rought list of the major remaining changes I want to do:
 - Persistent settings
 - Multiple layers for ship building
 - Morse code sound before sinking
+- Auto-zoom when a ship is loaded
 
 # Building the Game
 I build this game with Visual Studio 2017 (update 15.8, hence with std::filesystem).

@@ -122,9 +122,10 @@ Render:
 
 - Suggestions to spec:
 	- Different colored lights
+	- Lights with different chances of turning off
 
 - Technical debt
-	- Replace ShipDefinitionFile's metadata with ShipDefinition
+	+ Replace ShipDefinitionFile's metadata with ShipDefinition
 
 - Optimizations:
 
@@ -279,9 +280,23 @@ Render:
 
 - Dynamics:
 
+	- Extended status text
+		- Shows:
+			- Current zoom
+		- Multi-row:
+			- Text layer splits/gets it split & gives vector to TextRenderContext
+
+	- Auto-adjust zoom at ship load
+		- If enabled: GameController calcs required zoom, compares with current, and eventually adjusts
+
+	- Slider for "Mass Adjustment"
+
 	- Slider for "simulation quality"
 		- Integer slider, from 0 to 10
-		- See moleskine
+			- 0 = half
+			- 1 = current
+			- 2 = 2x
+			- ...
 
 	= Fix ephemeral particles
 		+ Pass also "now" all over the place

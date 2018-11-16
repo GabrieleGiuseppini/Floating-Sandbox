@@ -70,17 +70,25 @@ ShipDefinition ResourceLoader::LoadShipDefinition(std::filesystem::path const & 
 
 
         //
+        // Fill-in defaults
+        //
+
+        std::string shipName = sdf.Metadata.ShipName.empty()
+            ? std::filesystem::path(filepath).stem().string()
+            : sdf.Metadata.ShipName;
+
+
+        //
         // Load
         //
 
         return ShipDefinition(
             LoadImage(absoluteStructuralImageFilePath.string(), IL_RGB, IL_ORIGIN_UPPER_LEFT),
             std::move(textureImage),
-            sdf.ShipName.empty() 
-                ? std ::filesystem::path(filepath).stem().string() 
-                : sdf.ShipName,
-            sdf.Author,
-            sdf.Offset);
+            ShipMetadata(
+                shipName,
+                sdf.Metadata.Author,
+                sdf.Metadata.Offset));
     }
     else
     {
@@ -93,9 +101,10 @@ ShipDefinition ResourceLoader::LoadShipDefinition(std::filesystem::path const & 
         return ShipDefinition(
             std::move(imageData),
             std::nullopt,
-            std::filesystem::path(filepath).stem().string(),
-            std::nullopt,
-            vec2f(0.0f, 0.0f));
+            ShipMetadata(
+                std::filesystem::path(filepath).stem().string(),
+                std::nullopt,
+                vec2f(0.0f, 0.0f)));
     }
 }
 

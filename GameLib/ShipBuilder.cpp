@@ -140,7 +140,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
                     vec2f(
                         static_cast<float>(x) - halfWidth,
                         static_cast<float>(y))
-                        + shipDefinition.Offset,
+                        + shipDefinition.Metadata.Offset,
                     vec2f(
                         static_cast<float>(x) / static_cast<float>(structureWidth),
                         static_cast<float>(y) / static_cast<float>(structureHeight)),

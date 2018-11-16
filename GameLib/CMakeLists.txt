@@ -41,6 +41,7 @@ set  (GAME_SOURCES
 	ShipDefinition.h
 	ShipDefinitionFile.cpp
 	ShipDefinitionFile.h
+	ShipMetadata.h
 	SysSpecifics.h
 	TextLayer.cpp
 	TextLayer.h
