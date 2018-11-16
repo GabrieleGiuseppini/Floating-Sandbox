@@ -1420,11 +1420,14 @@ void Ship::PointDestroyHandler(
     {
         // TODOTEST
         //auto const debrisCount = GameRandomEngine::GetInstance().Choose(GameParameters::MaxDebrisParticlesPerEvent);
-        auto const debrisCount = GameRandomEngine::GetInstance().GenerateRandomInteger(5, 10);
+        auto const debrisCount = GameRandomEngine::GetInstance().GenerateRandomInteger(4, 9);
         for (size_t d = 0; d < debrisCount; ++d)
         {
             // Choose a velocity vector: point on a circle with random radius and random angle
-            float const velocityMagnitude = GameRandomEngine::GetInstance().GenerateRandomReal(20.0f, 30.0f);
+            // TODO: this is good, just testing more
+            //float const velocityMagnitude = GameRandomEngine::GetInstance().GenerateRandomReal(20.0f, 30.0f);
+            //float const velocityMagnitude = GameRandomEngine::GetInstance().GenerateRandomReal(30.0f, 50.0f);
+            float const velocityMagnitude = GameRandomEngine::GetInstance().GenerateRandomReal(25.0f, 40.0f);
             float const velocityAngle = GameRandomEngine::GetInstance().GenerateRandomReal(0.0f, 2.0f * Pi<float>);
 
             // Choose a lifetime: randomize parameter 
@@ -1432,8 +1435,7 @@ void Ship::PointDestroyHandler(
                 static_cast<std::chrono::milliseconds::rep>(
                     // TODOTEST
                     //static_cast<float>(GameParameters::DebrisLifetime.count())
-                    static_cast<float>(1000)
-                    * GameRandomEngine::GetInstance().GenerateRandomReal(0.3f, 0.7f)));
+                    GameRandomEngine::GetInstance().GenerateRandomReal(200.0f, 500.0f)));
 
             mPoints.CreateEphemeralParticleDebris(
                 mPoints.GetPosition(pointElementIndex),

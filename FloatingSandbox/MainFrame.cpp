@@ -1084,11 +1084,11 @@ void MainFrame::RenderGame()
 {
     if (!!mGameController)
     {
+        // Flip the (previous) back buffer onto the screen
+        mMainGLCanvas->SwapBuffers();
+
         // Render
         mGameController->Render();
-
-        // Flip the back buffer onto the screen
-        mMainGLCanvas->SwapBuffers();
     }
 }
 

@@ -114,6 +114,11 @@ Render:
 ====================================================
 ====================================================
 
+- Release:
+	- Fix Nolight at ships' created_by (master)
+	- Add buoyancy to change list
+	- Add revised bomb explosion dynamics to change list
+
 - New ships
 	= USS Shark
 		- Need Z buffer work first
@@ -224,6 +229,7 @@ Render:
 	- Cache sea depth from PointDynamics at first calculation (Points?), using lambda
 
 - Gfx optimizations:
+
 	- TODOHERE: See if can use multiple texture units
 		- Bind once atlas, land, and water at cctor, to each unit
 		- Change shaders
@@ -263,8 +269,10 @@ Render:
 	- Problem with texture over edges of structure: when texture is not reduced by structure (i.e. when structure is
 	  larger than texture), then one sees parts of the springs
 		- It's a problem with rendering springs with the texture shader
-	- Draw better those parts that are only connected by ropes 
-		- Change connected component detection by not propagating from a "spring only" to a "body"
+		- However, these springs give an anti-aliasing effect
+	- Draw better (depth-wise) those parts that are only connected by ropes 
+		- Change connected component detection by not propagating from a "spring only" to a "body", so that two bodies connected
+		  only by springs or ropes are considered separate, and spring/rope belongs to first one only
 			- In practice: flood the *edge* network, not the spring network, and don't propagate
 			  if coming from edge with zero triangles to an edge with !=0 triangles
 	- Option to enable drawing of force vectors for each point
@@ -290,8 +298,9 @@ Render:
 		- If enabled: GameController calcs required zoom, compares with current, and eventually adjusts
 
 	- Slider for "Mass Adjustment"
+		- Need to consider adjustment each time a mass is used
 
-	- Slider for "simulation quality"
+	- Slider for "simulation quality", affecting num of mechanical simulation iterations
 		- Integer slider, from 0 to 10
 			- 0 = half
 			- 1 = current
@@ -304,12 +313,8 @@ Render:
 		+ Just single vector of PointIndex, no connected components
 		+ Make ephemeral particles' update based on simulation clock, not wall clock
 			+ "now" passed everywhere really has to become a "simulationNow" float
-		- Invoke GenerateDebris (new ship private) not directly from within point destroy handler, but from:
-			- Destroy tool - once
-			- ForceField - once (like now though)
-				- As a matter of fact, Ship does, in Blast handler
-		- Fix Nolight at ships' created_by (master)
-		- Test
+		+ Test
+		= Finalize constants
 
 
 	- Figure out what to do with connected components and ephemeral particles
