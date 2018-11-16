@@ -307,14 +307,14 @@ Render:
 			- 2 = 2x
 			- ...
 
-	= Fix ephemeral particles
+	+ Fix ephemeral particles
 		+ Pass also "now" all over the place
 			+ End put back UpdateEphemeralParticles where it was
 		+ Just single vector of PointIndex, no connected components
 		+ Make ephemeral particles' update based on simulation clock, not wall clock
 			+ "now" passed everywhere really has to become a "simulationNow" float
 		+ Test
-		= Finalize constants
+		+ Finalize constants
 
 
 	- Figure out what to do with connected components and ephemeral particles
@@ -348,6 +348,7 @@ Render:
 
 	- Do chainsaw sparkles with Ephemeral Particles
 		- At Ship::Chainsaw for each broken spring
+		- White becoming bright red
 		- Initial particle dynamics:
 			- Position: midpoint of spring
 			- Velocity: radial vector, according to pseudo-Gaussian centered in the direction of sawing, with magnitude uniformly random

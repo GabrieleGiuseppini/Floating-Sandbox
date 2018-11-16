@@ -136,8 +136,12 @@ struct GameParameters
     bool IsUltraViolentMode;
 
     bool DoGenerateDebris;
-    static constexpr size_t MaxDebrisParticlesPerEvent = 3;
-    static constexpr std::chrono::milliseconds DebrisLifetime = std::chrono::milliseconds(1500);
+    static constexpr size_t MinDebrisParticlesPerEvent = 4;
+    static constexpr size_t MaxDebrisParticlesPerEvent = 9;
+    static constexpr float MinDebrisParticlesVelocity = 25.0f;
+    static constexpr float MaxDebrisParticlesVelocity = 40.0f;
+    static constexpr std::chrono::milliseconds MinDebrisParticlesLifetime = std::chrono::milliseconds(200);
+    static constexpr std::chrono::milliseconds MaxDebrisParticlesLifetime = std::chrono::milliseconds(500);
 
 
     //

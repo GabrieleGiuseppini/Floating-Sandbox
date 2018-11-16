@@ -1418,24 +1418,21 @@ void Ship::PointDestroyHandler(
     // Emit debris
     if (gameParameters.DoGenerateDebris)
     {
-        // TODOTEST
-        //auto const debrisCount = GameRandomEngine::GetInstance().Choose(GameParameters::MaxDebrisParticlesPerEvent);
-        auto const debrisCount = GameRandomEngine::GetInstance().GenerateRandomInteger(4, 9);
-        for (size_t d = 0; d < debrisCount; ++d)
+        auto const debrisParticleCount = GameRandomEngine::GetInstance().GenerateRandomInteger(
+            GameParameters::MinDebrisParticlesPerEvent, GameParameters::MaxDebrisParticlesPerEvent);
+
+        for (size_t d = 0; d < debrisParticleCount; ++d)
         {
             // Choose a velocity vector: point on a circle with random radius and random angle
-            // TODO: this is good, just testing more
-            //float const velocityMagnitude = GameRandomEngine::GetInstance().GenerateRandomReal(20.0f, 30.0f);
-            //float const velocityMagnitude = GameRandomEngine::GetInstance().GenerateRandomReal(30.0f, 50.0f);
-            float const velocityMagnitude = GameRandomEngine::GetInstance().GenerateRandomReal(25.0f, 40.0f);
+            float const velocityMagnitude = GameRandomEngine::GetInstance().GenerateRandomReal(
+                GameParameters::MinDebrisParticlesVelocity, GameParameters::MaxDebrisParticlesVelocity);
             float const velocityAngle = GameRandomEngine::GetInstance().GenerateRandomReal(0.0f, 2.0f * Pi<float>);
 
-            // Choose a lifetime: randomize parameter 
+            // Choose a lifetime
             std::chrono::milliseconds const maxLifetime = std::chrono::milliseconds(
-                static_cast<std::chrono::milliseconds::rep>(
-                    // TODOTEST
-                    //static_cast<float>(GameParameters::DebrisLifetime.count())
-                    GameRandomEngine::GetInstance().GenerateRandomReal(200.0f, 500.0f)));
+                GameRandomEngine::GetInstance().GenerateRandomInteger(
+                    GameParameters::MinDebrisParticlesLifetime.count(),
+                    GameParameters::MaxDebrisParticlesLifetime.count()));
 
             mPoints.CreateEphemeralParticleDebris(
                 mPoints.GetPosition(pointElementIndex),
