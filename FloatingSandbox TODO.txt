@@ -346,19 +346,19 @@ Render:
 		- @ Smoke
 		- @ Air bubbles
 
-	= Do chainsaw sparkles with Ephemeral Particles
+	+ Do chainsaw sparkles with Ephemeral Particles
 		+ At Ship::Chainsaw for each broken spring
-		= Initial particle dynamics:
+		+ Initial particle dynamics:
 			+ Position: midpoint of spring
-			= Velocity: radial vector:
-				= Butterfly perpendicular to *direction of sawing*, not spring
+			+ Velocity: radial vector:
+				+ Butterfly perpendicular to *direction of sawing*, not spring
 				+ Magnitude: uniformly random in range
 			+ Number: per Update step: uniform random centered around SparkleDensity (ratio over 10, initially) (from GameParameters, adjustable)
 			+ Color:
 				+ Metal: brightest red to bright red
 				+ Else: base material's render color
 			+ Finalize parameters
-			- Final test
+			+ Final test
 
 	- Smoke:
 		- New material: smoke emitter
