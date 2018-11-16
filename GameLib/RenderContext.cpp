@@ -19,16 +19,13 @@ RenderContext::RenderContext(
     : mShaderManager()
     , mTextureRenderManager()
     , mTextRenderContext()
-    // Texture Atlases
-    , mCloudTextureAtlasOpenGLHandle()
-    , mCloudTextureAtlasMetadata()
-    , mGenericTextureAtlasOpenGLHandle()
-    , mGenericTextureAtlasMetadata()
     // Clouds
     , mCloudElementBuffer()
     , mCurrentCloudElementCount(0u)
     , mCloudElementCount(0u)    
     , mCloudVBO()
+    , mCloudTextureAtlasOpenGLHandle()
+    , mCloudTextureAtlasMetadata()
     // Land
     , mLandElementBuffer()
     , mCurrentLandElementCount(0u)
@@ -42,6 +39,8 @@ RenderContext::RenderContext(
     // Ships
     , mShips()
     , mRopeColour(ropeColour)
+    , mGenericTextureAtlasOpenGLHandle()
+    , mGenericTextureAtlasMetadata()
     // Cross of light
     , mCrossOfLightBuffer()
     , mCrossOfLightVBO()
@@ -115,9 +114,6 @@ RenderContext::RenderContext(
         {
             progressCallback((2.0f + progress) / TotalProgressSteps, "Loading textures...");
         });
-
-    // Remember number of cloud textures
-    mCloudTextureCount = textureDatabase.GetGroup(TextureGroupType::Cloud).GetFrameCount();
 
     // Create texture render manager
     mTextureRenderManager = std::make_unique<TextureRenderManager>();

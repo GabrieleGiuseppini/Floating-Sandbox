@@ -303,7 +303,7 @@ public:
         assert(mCurrentCloudElementCount + 1u <= mCloudElementCount);
         CloudElement * cloudElement = &(mCloudElementBuffer[mCurrentCloudElementCount]);
 
-        size_t cloudTextureIndex = mCurrentCloudElementCount % mCloudTextureCount;
+        size_t cloudTextureIndex = mCurrentCloudElementCount % mCloudTextureAtlasMetadata->GetFrameMetadata().size();
 
         auto cloudAtlasFrameMetadata = mCloudTextureAtlasMetadata->GetFrameMetadata(
             TextureGroupType::Cloud,
@@ -802,11 +802,6 @@ private:
     std::unique_ptr<TextureRenderManager> mTextureRenderManager;
     std::unique_ptr<TextRenderContext> mTextRenderContext;
 
-    GameOpenGLTexture mCloudTextureAtlasOpenGLHandle;
-    std::unique_ptr<TextureAtlasMetadata> mCloudTextureAtlasMetadata;
-
-    GameOpenGLTexture mGenericTextureAtlasOpenGLHandle;
-    std::unique_ptr<TextureAtlasMetadata> mGenericTextureAtlasMetadata;
 
     //
     // Clouds
@@ -854,7 +849,8 @@ private:
     
     GameOpenGLVBO mCloudVBO;
 
-    size_t mCloudTextureCount;
+    GameOpenGLTexture mCloudTextureAtlasOpenGLHandle;
+    std::unique_ptr<TextureAtlasMetadata> mCloudTextureAtlasMetadata;
 
     //
     // Land
@@ -905,6 +901,9 @@ private:
 
     std::vector<std::unique_ptr<ShipRenderContext>> mShips;
     vec4f const mRopeColour;
+
+    GameOpenGLTexture mGenericTextureAtlasOpenGLHandle;
+    std::unique_ptr<TextureAtlasMetadata> mGenericTextureAtlasMetadata;
 
     //
     // Cross of light

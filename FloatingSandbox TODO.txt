@@ -232,7 +232,7 @@ Render:
 
 	- TODOHERE: See if can use multiple texture units
 		- Bind once atlas, land, and water at cctor, to each unit
-		- Change shaders
+		- Change shaders to have multiple dummy textures
 
 	- See if can unify springs and ropes rendering
 		- Just make sure that ropecolor is already in point color buffer
