@@ -186,6 +186,8 @@ RenderContext::RenderContext(
             progressCallback((3.0f + 1.0f + progress * (TextureProgressSteps - 1.0f)) / TotalProgressSteps, "Loading textures...");
         });
 
+    LogMessage("Generic texture atlas size: ", genericTextureAtlas.AtlasData.Size.Width, "x", genericTextureAtlas.AtlasData.Size.Height);
+
     // Create OpenGL handle
     glGenTextures(1, &openGLHandle);
     mGenericTextureAtlasOpenGLHandle = openGLHandle;
