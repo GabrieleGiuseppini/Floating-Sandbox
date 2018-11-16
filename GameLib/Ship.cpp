@@ -1578,9 +1578,7 @@ void Ship::GenerateSparkles(
         //
 
         auto const sparkleParticleCount = GameRandomEngine::GetInstance().GenerateRandomInteger<size_t>(
-            // TODOTEST
-            //GameParameters::MinSparkleParticlesPerEvent, GameParameters::MaxSparkleParticlesPerEvent);
-            2, 8);
+            GameParameters::MinSparkleParticlesPerEvent, GameParameters::MaxSparkleParticlesPerEvent);
 
 
         //
@@ -1593,7 +1591,7 @@ void Ship::GenerateSparkles(
         if (!!(material->Sound)
             && Material::SoundProperties::SoundElementType::Metal == material->Sound->ElementType)
         {
-            startColor = vec4f(1.0f, 0.2f, 0.2f, 1.0f); // Opaque
+            startColor = vec4f(1.0f, 0.95f, 0.09f, 1.0f); // Opaque
             endColor = vec4f(0.55f, 0.1f, 0.1f, 0.0f); // Transparent
         }
         else
@@ -1621,9 +1619,7 @@ void Ship::GenerateSparkles(
         {
             // Velocity magnitude
             float const velocityMagnitude = GameRandomEngine::GetInstance().GenerateRandomReal(
-                // TODOHERE
-                //GameParameters::MinSparkleParticlesVelocity, GameParameters::MaxSparkleParticlesVelocity);
-                30.0f, 50.0f);
+                GameParameters::MinSparkleParticlesVelocity, GameParameters::MaxSparkleParticlesVelocity);
 
             // Velocity angle: butterfly perpendicular to *direction of sawing*, not spring
             float const velocityAngle =

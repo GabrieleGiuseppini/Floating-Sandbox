@@ -357,7 +357,8 @@ Render:
 			+ Color:
 				+ Metal: brightest red to bright red
 				+ Else: base material's render color
-			- Finalize parameters
+			+ Finalize parameters
+			- Final test
 
 	- Smoke:
 		- New material: smoke emitter
