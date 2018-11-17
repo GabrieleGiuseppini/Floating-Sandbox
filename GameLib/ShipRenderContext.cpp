@@ -122,6 +122,7 @@ ShipRenderContext::ShipRenderContext(
         mElementShipTexture = tmpGLuint;
 
         // Bind texture
+        mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
         glBindTexture(GL_TEXTURE_2D, *mElementShipTexture);
         CheckOpenGLError();
 
@@ -156,6 +157,7 @@ ShipRenderContext::ShipRenderContext(
     mElementStressedSpringTexture = tmpGLuint;
 
     // Bind texture
+    mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
     glBindTexture(GL_TEXTURE_2D, *mElementStressedSpringTexture);
     CheckOpenGLError();
 
@@ -812,6 +814,7 @@ void ShipRenderContext::RenderSpringElements(
         mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTexture>();
         
         // Bind texture
+        mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
         glBindTexture(GL_TEXTURE_2D, *mElementShipTexture);
         CheckOpenGLError();
     }
@@ -861,6 +864,7 @@ void ShipRenderContext::RenderTriangleElements(
         mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTexture>();
 
         // Bind texture
+        mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
         glBindTexture(GL_TEXTURE_2D, *mElementShipTexture);
     }
     else
@@ -891,6 +895,7 @@ void ShipRenderContext::RenderStressedSpringElements(ConnectedComponentData cons
         glLineWidth(0.1f * 2.0f * mCanvasToVisibleWorldHeightRatio);
 
         // Bind texture
+        mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
         glBindTexture(GL_TEXTURE_2D, *mElementStressedSpringTexture);
         CheckOpenGLError();
 
@@ -935,10 +940,6 @@ void ShipRenderContext::RenderGenericTextures(GenericTextureConnectedComponentDa
 
         if (mWireframeMode)
             glLineWidth(0.1f);
-
-        // Bind atlas
-        glBindTexture(GL_TEXTURE_2D, *mTextureAtlasOpenGLHandle);
-        CheckOpenGLError();
 
         // Draw polygons
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(connectedComponent.VertexBuffer.size()));

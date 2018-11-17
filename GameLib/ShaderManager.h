@@ -80,6 +80,35 @@ public:
             new ShaderManager(shadersRoot, globalParameters));
     }
 
+    template <typename Traits::ProgramType Program>
+    inline void SetTextureParameters()
+    {
+        size_t programIndex = static_cast<size_t>(Program);
+
+        // Find all texture parameters
+        for (auto parameterIndex = 0; parameterIndex < mPrograms[programIndex].UniformLocations.size(); ++parameterIndex)
+        {
+            Traits::ProgramParameterType parameter = static_cast<Traits::ProgramParameterType>(parameterIndex);
+
+            // See if it's a texture/sampler parameter
+            if (parameter >= Traits::ProgramParameterType::_FirstTexture
+                && parameter <= Traits::ProgramParameterType::_LastTexture)
+            {
+                //
+                // Set it
+                //
+
+                auto const textureUnitIndex = static_cast<uint8_t>(parameter) - static_cast<uint8_t>(Traits::ProgramParameterType::_FirstTexture);
+
+                glUniform1i(
+                    mPrograms[programIndex].UniformLocations[parameterIndex],
+                    textureUnitIndex);
+
+                CheckUniformError(Program, parameter);
+            }
+        }
+    }
+
     template <typename Traits::ProgramType Program, typename Traits::ProgramParameterType Parameter>
     inline void SetProgramParameter(float value)
     {
@@ -161,6 +190,14 @@ public:
         glUseProgram(*(mPrograms[programIndex].OpenGLHandle));
     }
 
+    template <typename Traits::ProgramParameterType Parameter>
+    inline void ActivateTexture()
+    {
+        GLenum textureUnit = static_cast<GLenum>(Parameter) - static_cast<GLenum>(Traits::ProgramParameterType::_FirstTexture);
+        glActiveTexture(GL_TEXTURE0 + textureUnit);
+        CheckOpenGLError();
+    }
+
 private:
 
     template <typename Traits::ProgramType Program, typename Traits::ProgramParameterType Parameter>
@@ -170,6 +207,17 @@ private:
         if (GL_NO_ERROR != glError)
         {
             throw GameException("Error setting uniform for parameter \"" + Traits::ProgramParameterTypeToStr(Parameter) + "\" on program \"" + Traits::ProgramTypeToStr(Program) + "\"");
+        }
+    }
+
+    static void CheckUniformError(
+        typename Traits::ProgramType program,
+        typename Traits::ProgramParameterType parameter)
+    {
+        GLenum glError = glGetError();
+        if (GL_NO_ERROR != glError)
+        {
+            throw GameException("Error setting uniform for parameter \"" + Traits::ProgramParameterTypeToStr(parameter) + "\" on program \"" + Traits::ProgramTypeToStr(program) + "\"");
         }
     }
 

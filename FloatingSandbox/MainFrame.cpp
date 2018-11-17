@@ -672,7 +672,7 @@ void MainFrame::OnLowFrequencyTimerTrigger(wxTimerEvent & /*event*/)
     mSoundController->LowFrequencyUpdate();
 }
 
-void MainFrame::OnIdle(wxIdleEvent & event)
+void MainFrame::OnIdle(wxIdleEvent & /*event*/)
 {
 }
 

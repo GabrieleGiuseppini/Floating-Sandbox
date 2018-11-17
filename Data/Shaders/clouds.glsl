@@ -26,12 +26,12 @@ void main()
 in vec2 texturePos;
 
 // The texture
-uniform sampler2D inputTexture;
+uniform sampler2D paramCloudTexture;
 
 // Parameters        
 uniform float paramAmbientLightIntensity;
 
 void main()
 {
-    gl_FragColor = texture2D(inputTexture, texturePos) * paramAmbientLightIntensity;
+    gl_FragColor = texture2D(paramCloudTexture, texturePos) * paramAmbientLightIntensity;
 } 

@@ -31,11 +31,11 @@ in vec2 vertexTextureCoordinates;
 in float vertexAlpha;
 
 // The texture
-uniform sampler2D inputTexture;
+uniform sampler2D sharedSpringTexture;
 
 void main()
 {
-    vec4 textureColor = texture2D(inputTexture, vertexTextureCoordinates);
+    vec4 textureColor = texture2D(sharedSpringTexture, vertexTextureCoordinates);
 
     gl_FragColor = vec4(
         textureColor.xyz,

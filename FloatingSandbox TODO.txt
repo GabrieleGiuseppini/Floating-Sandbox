@@ -119,6 +119,14 @@ Render:
 	- Add buoyancy to change list
 	- Add revised bomb explosion dynamics to change list
 
+- Do:
+	- Texture units test
+	- Git: Merge
+	- Saw sounds
+	- Bubbles
+
+
+
 - New ships
 	= USS Shark
 		- Need Z buffer work first
@@ -230,21 +238,36 @@ Render:
 
 - Gfx optimizations:
 
-	- TODOHERE: See if can use multiple texture units
-		- Bind once atlas, land, and water at cctor, to each unit
-		- Change shaders to have multiple dummy textures
+	= See if can use multiple texture units
+		+ Bind once atlas, land, and water at cctor, to each unit
+		+ Change shaders to have one single texture sampler param, and set uniform locations to texture unit
+		+ Do only for clouds, generic texture, land, and water
+			+ Revert RenderContext.cpp, ShipRenderContext.cpp, TextRenderContext.cpp
+			+ Fonts and ship stay as before, they use texture unit 0 - SharedTexture
+			+ Shaders
+			+ Remember to activate texture unit 0 before binding, at:
+				+ Ship texture, stressed spring texture, font
+		+ Fix: land, generic
+		+ : test
+		+ Replace calls to glActiveTexture with ShaderManager::ActivateTexture(parameter)
+		- Fix/Recheck progress bar
+		- Redo perf FPS measurement
+
 
 	- See if can unify springs and ropes rendering
 		- Just make sure that ropecolor is already in point color buffer
 		- RenderSprings + RenderRopes == new RenderSprings:
 			- Watch out: ropes can't ever use texture
 		- What about rendering phases?
+
 	- Try using GL_SHORT for Ship texture coordinates
 		- Passing NORMALIZE and 3 components to glVertexAttribPointer
-	- (Retry) Use CPU and GPU in parallel
-		- Finalize render (glFlush) before render step, not after
-			- Research glFlush()
-			- By invoking glFlush() and SwapBuffers() in MainFrame, before Render()
+
+	+ (Retry) Use CPU and GPU in parallel
+		+ Finalize render (glFlush) before render step, not after
+			+ Research glFlush()
+			+ By invoking glFlush() and SwapBuffers() in MainFrame, before Render()
+
 	- More connected components => slower (multiple batches); try
 	  to draw one single batch then, using Z buffer and depth test 
 		- Assign Z based on connected component ID
@@ -345,8 +368,12 @@ Render:
 			- Which invokes IEphemeralParticleEmitter::Update(clockNow, mPoints) for each emitter
 
 	- Research particle motion - inject random walk
+		- https://core.ac.uk/download/pdf/337937.pdf !!!
+		- http://orbit.dtu.dk/files/3706687/Visser6.pdf
 		- @ Smoke
+			- http://matthias-mueller-fischer.ch/publications/sca03.pdf
 		- @ Air bubbles
+		
 
 	+ Do chainsaw sparkles with Ephemeral Particles
 		+ At Ship::Chainsaw for each broken spring
@@ -557,6 +584,10 @@ Render:
 
 - Sounds:
 	- Sawing: do not publish destroy events when cutting springs, but new "Sawed" events with own metal/wood sounds
+		- Two new continuous sounds: metal and wood saw
+		- OnSawed is invoked with Type and size - size=0 means nothing
+		- Event handler sets continuous sound's volume up/down (when size=0), and eventually starts it
+		- Stopping continuous saw sound also sets volume of these two to zero
 	- Ship may come with custom sound(s) for horns
 		- Figure out how to play them, may be like switchboard or *via* switchboard
 	- Morse code sound when it's about to sink (early sink detection)
@@ -613,6 +644,8 @@ Render:
 - Floor breaking up upon impact
 	- Layer on top of floor samples, with hash buckets and lists of heights per-bucket
 
+- Collision detection - for multiple ships
+	- http://www.cs.umd.edu/~mount/ANN/
 ==============================================================================
 ==============================================================================
 ==============================================================================

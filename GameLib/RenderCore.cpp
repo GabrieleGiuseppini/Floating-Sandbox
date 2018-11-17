@@ -97,6 +97,17 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::WaterLevelThreshold;
     else if (str == "WaterTransparency")
         return ProgramParameterType::WaterTransparency;
+    // Textures
+    else if (str == "SharedTexture")
+        return ProgramParameterType::SharedTexture;
+    else if (str == "CloudTexture")
+        return ProgramParameterType::CloudTexture;
+    else if (str == "GenericTexturesAtlasTexture")
+        return ProgramParameterType::GenericTexturesAtlasTexture;
+    else if (str == "LandTexture")
+        return ProgramParameterType::LandTexture;
+    else if (str == "WaterTexture")
+        return ProgramParameterType::WaterTexture;
     else
         throw GameException("Unrecognized program parameter \"" + str + "\"");
 }
@@ -119,6 +130,17 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "WaterLevelThreshold";
     case ProgramParameterType::WaterTransparency:
         return "WaterTransparency";
+    // Textures
+    case ProgramParameterType::SharedTexture:
+        return "SharedTexture";
+    case ProgramParameterType::CloudTexture:
+        return "CloudTexture";
+    case ProgramParameterType::GenericTexturesAtlasTexture:
+        return "GenericTexturesAtlasTexture";
+    case ProgramParameterType::LandTexture:
+        return "LandTexture";
+    case ProgramParameterType::WaterTexture:
+        return "WaterTexture";
     default:
         assert(false);
         throw GameException("Unsupported ProgramParameterType");

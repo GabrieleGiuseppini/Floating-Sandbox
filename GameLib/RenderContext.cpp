@@ -64,6 +64,7 @@ RenderContext::RenderContext(
     static constexpr float TotalProgressSteps = 5.0f + TextureProgressSteps;
 
     GLuint tmpGLuint;
+    
 
     //
     // Init OpenGL
@@ -71,8 +72,8 @@ RenderContext::RenderContext(
 
     GameOpenGL::InitOpenGL();
 
-    // Activate texture unit 0
-    glActiveTexture(GL_TEXTURE0);
+    // Activate shared texture unit
+    mShaderManager->ActivateTexture<ProgramParameterType::SharedTexture>();
 
 
     //
@@ -119,47 +120,6 @@ RenderContext::RenderContext(
     mTextureRenderManager = std::make_unique<TextureRenderManager>();
 
 
-    //
-    // Create cloud texture atlas
-    //
-
-    TextureAtlasBuilder cloudAtlasBuilder;
-    cloudAtlasBuilder.Add(textureDatabase.GetGroup(TextureGroupType::Cloud));
-
-    TextureAtlas cloudTextureAtlas = cloudAtlasBuilder.BuildAtlas(
-        [&progressCallback](float progress, std::string const &)
-        {
-            progressCallback((3.0f + progress) / TotalProgressSteps, "Loading textures...");
-        });
-
-    // Create OpenGL handle
-    GLuint openGLHandle;
-    glGenTextures(1, &openGLHandle);
-    mCloudTextureAtlasOpenGLHandle = openGLHandle;
-
-    // Bind texture
-    glBindTexture(GL_TEXTURE_2D, *mCloudTextureAtlasOpenGLHandle);
-    CheckOpenGLError();
-
-    // Upload atlas texture
-    GameOpenGL::UploadTexture(std::move(cloudTextureAtlas.AtlasData));
-
-    // Set repeat mode
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    CheckOpenGLError();
-
-    // Set texture filtering parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    CheckOpenGLError();
-
-    // Unbind texture
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    // Store metadata
-    mCloudTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata>(cloudTextureAtlas.Metadata);
-
 
     //
     // Create generic texture atlas
@@ -168,6 +128,8 @@ RenderContext::RenderContext(
     // - Land, Water: we need these to be wrapping
     // - Clouds: we keep these separate, we have to rebind anyway
     //
+
+    mShaderManager->ActivateTexture<ProgramParameterType::GenericTexturesAtlasTexture>();
 
     TextureAtlasBuilder genericTextureAtlasBuilder;
     for (auto const & group : textureDatabase.GetGroups())
@@ -188,11 +150,11 @@ RenderContext::RenderContext(
 
     LogMessage("Generic texture atlas size: ", genericTextureAtlas.AtlasData.Size.Width, "x", genericTextureAtlas.AtlasData.Size.Height);
 
-    // Create OpenGL handle
-    glGenTextures(1, &openGLHandle);
-    mGenericTextureAtlasOpenGLHandle = openGLHandle;
+    // Create texture OpenGL handle
+    glGenTextures(1, &tmpGLuint);
+    mGenericTextureAtlasOpenGLHandle = tmpGLuint;
 
-    // Bind texture
+    // Bind texture    
     glBindTexture(GL_TEXTURE_2D, *mGenericTextureAtlasOpenGLHandle);
     CheckOpenGLError();
 
@@ -211,17 +173,67 @@ RenderContext::RenderContext(
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     CheckOpenGLError();
 
-    // Unbind texture
-    glBindTexture(GL_TEXTURE_2D, 0);
-
     // Store metadata
     mGenericTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata>(genericTextureAtlas.Metadata);
 
+    // Set hardcoded parameters
+    mShaderManager->ActivateProgram<ProgramType::GenericTextures>();
+    mShaderManager->SetTextureParameters<ProgramType::GenericTextures>();
+    
+
+    //
+    // Initialize clouds 
+    //
+
+    mShaderManager->ActivateTexture<ProgramParameterType::CloudTexture>();
+
+    TextureAtlasBuilder cloudAtlasBuilder;
+    cloudAtlasBuilder.Add(textureDatabase.GetGroup(TextureGroupType::Cloud));
+
+    TextureAtlas cloudTextureAtlas = cloudAtlasBuilder.BuildAtlas(
+        [&progressCallback](float progress, std::string const &)
+        {
+            progressCallback((3.0f + progress * TextureProgressSteps) / TotalProgressSteps, "Loading textures...");
+        });
+
+    // Create OpenGL handle    
+    glGenTextures(1, &tmpGLuint);
+    mCloudTextureAtlasOpenGLHandle = tmpGLuint;
+
+    // Bind texture    
+    glBindTexture(GL_TEXTURE_2D, *mCloudTextureAtlasOpenGLHandle);
+    CheckOpenGLError();
+
+    // Upload atlas texture
+    GameOpenGL::UploadTexture(std::move(cloudTextureAtlas.AtlasData));
+
+    // Set repeat mode
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    CheckOpenGLError();
+
+    // Set texture filtering parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    CheckOpenGLError();
+
+    // Store metadata
+    mCloudTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata>(cloudTextureAtlas.Metadata);
+
+    // Set hardcoded parameters
+    mShaderManager->ActivateProgram<ProgramType::Clouds>();
+    mShaderManager->SetTextureParameters<ProgramType::Clouds>();
+
+    // Create VBO    
+    glGenBuffers(1, &tmpGLuint);
+    mCloudVBO = tmpGLuint;
 
 
     //
-    // Upload non-atlas textures
-    //    
+    // Initialize land 
+    //
+
+    mShaderManager->ActivateTexture<ProgramParameterType::LandTexture>();
 
     mTextureRenderManager->UploadMipmappedGroup(
         textureDatabase.GetGroup(TextureGroupType::Land),
@@ -230,27 +242,9 @@ RenderContext::RenderContext(
             progressCallback((3.0f + TextureProgressSteps + progress) / TotalProgressSteps, "Loading textures...");
         });
 
-    mTextureRenderManager->UploadMipmappedGroup(
-        textureDatabase.GetGroup(TextureGroupType::Water),
-        [&progressCallback](float progress, std::string const &)
-        {
-            progressCallback((4.0f + TextureProgressSteps + progress) / TotalProgressSteps, "Loading textures...");
-        });
-    
-
-    //
-    // Initialize clouds 
-    //
-
-    // Create VBO    
-    glGenBuffers(1, &tmpGLuint);
-    mCloudVBO = tmpGLuint;
-
-
-
-    //
-    // Initialize land 
-    //
+    // Bind texture
+    glBindTexture(GL_TEXTURE_2D, mTextureRenderManager->GetOpenGLHandle(TextureGroupType::Land, 0));
+    CheckOpenGLError();
 
     // Set hardcoded parameters
     auto const & landTextureMetadata = textureDatabase.GetFrameMetadata(TextureGroupType::Land, 0);
@@ -258,6 +252,7 @@ RenderContext::RenderContext(
     mShaderManager->SetProgramParameter<ProgramType::Land, ProgramParameterType::TextureScaling>(
             1.0f / landTextureMetadata.WorldWidth,
             1.0f / landTextureMetadata.WorldHeight);
+    mShaderManager->SetTextureParameters<ProgramType::Land>();
 
     // Create VBO    
     glGenBuffers(1, &tmpGLuint);
@@ -269,12 +264,26 @@ RenderContext::RenderContext(
     // Initialize water
     //
 
+    mShaderManager->ActivateTexture<ProgramParameterType::WaterTexture>();
+
+    mTextureRenderManager->UploadMipmappedGroup(
+        textureDatabase.GetGroup(TextureGroupType::Water),
+        [&progressCallback](float progress, std::string const &)
+        {
+            progressCallback((4.0f + TextureProgressSteps + progress) / TotalProgressSteps, "Loading textures...");
+        });
+
+    // Bind texture
+    glBindTexture(GL_TEXTURE_2D, mTextureRenderManager->GetOpenGLHandle(TextureGroupType::Water, 0));
+    CheckOpenGLError();
+
     // Set hardcoded parameters
     auto const & waterTextureMetadata = textureDatabase.GetFrameMetadata(TextureGroupType::Water, 0);
     mShaderManager->ActivateProgram<ProgramType::Water>();
     mShaderManager->SetProgramParameter<ProgramType::Water, ProgramParameterType::TextureScaling>(
             1.0f / waterTextureMetadata.WorldWidth,
             1.0f / waterTextureMetadata.WorldHeight);
+    mShaderManager->SetTextureParameters<ProgramType::Water>();
 
     // Create VBO
     glGenBuffers(1, &tmpGLuint);
@@ -343,7 +352,7 @@ RenderContext::RenderContext(
     // Flush all pending operations
     //
 
-    glFlush();
+    glFinish();
 
 
     //
@@ -507,10 +516,6 @@ void RenderContext::RenderCloudsEnd()
     // Enable stenciling - only draw where there are no 1's
     glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 
-    // Bind atlas texture
-    glBindTexture(GL_TEXTURE_2D, *mCloudTextureAtlasOpenGLHandle);
-    CheckOpenGLError();
-
     if (mWireframeMode)
         glLineWidth(0.1f);
 
@@ -602,12 +607,6 @@ void RenderContext::RenderLand()
     // Use program
     mShaderManager->ActivateProgram<ProgramType::Land>();
 
-    // Bind texture
-    glBindTexture(
-        GL_TEXTURE_2D,
-        mTextureRenderManager->GetOpenGLHandle(TextureGroupType::Land, 0));
-    CheckOpenGLError();
-
     // Disable vertex attribute 0
     glDisableVertexAttribArray(0);
 
@@ -624,12 +623,6 @@ void RenderContext::RenderWater()
 
     // Use program
     mShaderManager->ActivateProgram<ProgramType::Water>();
-
-    // Bind texture
-    glBindTexture(
-        GL_TEXTURE_2D, 
-        mTextureRenderManager->GetOpenGLHandle(TextureGroupType::Water, 0));
-    CheckOpenGLError();
 
     // Disable vertex attribute 0
     glDisableVertexAttribArray(0);

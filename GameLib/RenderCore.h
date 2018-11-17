@@ -45,7 +45,7 @@ ProgramType ShaderFilenameToProgramType(std::string const & str);
 
 std::string ProgramTypeToStr(ProgramType program);
 
-enum class ProgramParameterType
+enum class ProgramParameterType : uint8_t
 {
     AmbientLightIntensity = 0,
     MatteColor,
@@ -53,7 +53,17 @@ enum class ProgramParameterType
     TextureScaling,
     ViewportSize,
     WaterLevelThreshold,
-    WaterTransparency
+    WaterTransparency,
+
+    // Textures
+    SharedTexture,                  // 0
+    CloudTexture,                   // 1
+    GenericTexturesAtlasTexture,    // 2
+    LandTexture,                    // 3
+    WaterTexture,                   // 4
+
+    _FirstTexture = SharedTexture,
+    _LastTexture = WaterTexture
 };
 
 ProgramParameterType StrToProgramParameterType(std::string const & str);
