@@ -201,6 +201,9 @@ public:
     bool GetDoGenerateDebris() const { return mGameParameters.DoGenerateDebris; }
     void SetDoGenerateDebris(bool value) { mGameParameters.DoGenerateDebris = value; }
 
+    bool GetDoGenerateSparkles() const { return mGameParameters.DoGenerateSparkles; }
+    void SetDoGenerateSparkles(bool value) { mGameParameters.DoGenerateSparkles = value; }
+
     size_t GetNumberOfClouds() const { return mGameParameters.NumberOfClouds; }
     void SetNumberOfClouds(size_t value) { mGameParameters.NumberOfClouds = value; }
     size_t GetMinNumberOfClouds() const { return GameParameters::MinNumberOfClouds; }

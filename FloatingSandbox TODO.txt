@@ -298,7 +298,8 @@ Render:
 		- If enabled: GameController calcs required zoom, compares with current, and eventually adjusts
 
 	- Slider for "Mass Adjustment"
-		- Need to consider adjustment each time a mass is used
+		- Recalcs Point's mass things, including mass itself
+		- Also used at bombs - how?
 
 	- Slider for "simulation quality", affecting num of mechanical simulation iterations
 		- Integer slider, from 0 to 10
@@ -306,6 +307,7 @@ Render:
 			- 1 = current
 			- 2 = 2x
 			- ...
+		- Points might have to recalc things on changes
 
 	+ Fix ephemeral particles
 		+ Pass also "now" all over the place
