@@ -114,13 +114,14 @@ Render:
 ====================================================
 ====================================================
 
-- TODOHERE:
+- Current roadmap:
 	- Git: Merge
 	- Saw sounds
 	- Bubbles
 
 
 - New ships
+	- Fix contributions
 	= USS Shark
 		- Need Z buffer work first
 	- Warship
