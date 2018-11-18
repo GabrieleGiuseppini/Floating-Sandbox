@@ -109,22 +109,32 @@ MainFrame::MainFrame(wxApp * mainApp)
     // Build main GL canvas
     //
 
-    wxGLAttributes mainGLCanvasAttributes;
-    mainGLCanvasAttributes
-        .RGBA()
-        .DoubleBuffer()
-        .Depth(16)
-        .Stencil(1)
-        .EndList();
-    
+    // Note: Using the wxWidgets 3.1 style does not work on OpenGL 4 drivers; it forces a 1.1.0 context
+
+    int mainGLCanvasAttributes[] =
+    {
+        WX_GL_RGBA,
+        WX_GL_DOUBLEBUFFER,
+        WX_GL_DEPTH_SIZE,      16,
+        WX_GL_STENCIL_SIZE,    1,
+
+        // We want to use OpenGL 3.3, Core Profile
+        // TBD: Not now, my laptop does not support OpenGL 3 :-(
+        // WX_GL_CORE_PROFILE,
+        // WX_GL_MAJOR_VERSION,    3,
+        // WX_GL_MINOR_VERSION,    3,
+
+        0, 0
+    };
+
     mMainGLCanvas = std::make_unique<wxGLCanvas>(
-        mainPanel, 
-        mainGLCanvasAttributes,
+        mainPanel,
         ID_MAIN_CANVAS,
+        mainGLCanvasAttributes,
         wxDefaultPosition,
-        wxSize(-1, -1),
+        wxSize(640, 480),
         0L,
-        _T("Main GL Canvas"));  
+        _T("Main GL Canvas"));
 
     mMainGLCanvas->Connect(wxEVT_SIZE, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasResize, 0, this);
     mMainGLCanvas->Connect(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasLeftDown, 0, this);
@@ -143,6 +153,7 @@ MainFrame::MainFrame(wxApp * mainApp)
     // Take context for this canvas
     mMainGLCanvasContext = std::make_unique<wxGLContext>(mMainGLCanvas.get());
     mMainGLCanvasContext->SetCurrent(*mMainGLCanvas);
+
 
     //
     // Build menu
