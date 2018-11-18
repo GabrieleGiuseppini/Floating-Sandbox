@@ -117,6 +117,7 @@ Render:
 - Current roadmap:
 	- Git: Merge
 	- Saw sounds
+	- Settings manager
 	- Bubbles
 
 
@@ -130,15 +131,15 @@ Render:
 - Suggestions to spec:
 	- Fix ambient light increments
 		- See if can do curve
+	- Changing the height of the bumps of the ground
+		- Allow the minimum seabed height to be 0
+	- Changing the width of the waves up to at least 10x the current size
+
+	- A toggle-able shader for the sea - so it gets darker the further down you go; it would be affected by the ambient lighting		
 	- Different colored lights
 	- Lights with different chances of turning off
-	- Tool to flood ship
-	- Changing the width of the waves  up to at least 10x the current size
-	- Changing the height of the bumps of the ground and their width.
-	- A toggle-able shader for the sea - so it gets darker the further down you go; it would be affected by the ambient lighting
+	- Tool to flood ship	
 	- Being able to drop the sea floor much further down than 500m or so too, like 10km
-	- Calc and display rendering vs simulation percentages
-	- Allow the minimum seabed height to be 0
 	- Morse code: text-to-morse encoder
 	- Custom sky colour - if possible a RGB picker in the settings
 		- I would do the same for the water in the ship
@@ -321,6 +322,7 @@ Render:
 	- Extended status text
 		- Shows:
 			- Current zoom
+			- Rendering vs simulation percentages
 		- Multi-row:
 			- Text layer splits/gets it split & gives vector to TextRenderContext
 
@@ -555,35 +557,71 @@ Render:
 		+ Two volume controls for music and sounds (all but music)
 
 	- SettingsDialog: save settings, and defaults
-		- JSON for game, render, and sound params
-		- MainFrame: load on startup
-			- personal_settings.json loaded if exists, else default_settings.json
-		- SettingsManager (@FloatingSandbox) - all static
-			- public:
-				- LoadSettings(GameParams &, RenderContext &, SoundController &)
-					- From personal_settings.json if exists, else default_settings.json
-				- LoadSettings(filepath, GameParams &, RenderContext &, SoundController &)
-					- From path
-				- SaveSettings(GameParams &, RenderContext &, SoundController &)
-					- To personal_settings.json 
-				- SaveSettings(GameParams &, RenderContext &, SoundController &, filepath)
-					- To filepath
-			- private:
-				- Load(json_obj, GameParams &, RenderContext &, SoundController &)
-				- Save(GameParams &, RenderContext &, SoundController &, json_obj)
+		- SettingsManager (@FloatingSandbox):
+			- Has GameController, SoundController, etc.
+			- Defines struct with all customizable setting members
+			- Maintains two structs:
+				- Defaults
+				- Current (ephemeral)
+			- Manages saving and loading customizable settings to and from json
+			- Created by MainFrame on startup
+			- Exposes getters and setters for all customizable properties, used by SettingsDialog
+				- get(): from Current
+				- set(): sets Current
+			- cctor (actually, CreateInstance()->uq_ptr which MainFrame makes shared):
+				- Stores defaults (in Defaults), asking members for their (compile-time default) values
+				- Then copies Defaults to Current
+				- Then loads personal_settings.json, if exists; if exists:
+					- Reads settings to Current
+					- Then applies settings - invokes SyncToGame()
+			- SyncFromGame()
+				- Reads Current from GameController, SoundController, etc.
+			- SyncToGame()
+				- Applies Current to GameController, SoundController, etc.
+			- Load(filepath)
+				- Loads from path - sets Current
+				- Does not apply
+			- Save()
+				- Saves Current to personal_settings.json 
+			- Save(filepath)
+				- Saves Current to filepath
+			- Reset()
+				- Copies Defaults to Current
+				- Does not apply
+		- Impl:
 			- Standard paths: http://docs.wxwidgets.org/3.1/classwx_standard_paths.html#a4752213ef4d7bdc71170b9e5c3691f0f
 				- MainApp: call App::SetAppName() at startup
 					- With app name from version.h
 				- SettingsManager can deal directly with wxWidgets
-			- Uses:
-				- XYZ::SettingsToJson()->picojson::value
-				- XYZ::SettingsFromJson(picojson::value) (sets own)
-
 		- Dialog:
-			- Save Settings: saves current to personal_settings.json 				
-			- Save Settings As: saves with filename, nothing else
+			- Control values are meant to always be in sync with SettingsManager::Current;
+			  however, for simplicity we only sync between the two when needed
+			- OnShow():
+				- Calls SettingsManager::SyncFromGame() (Current)
+				- Reads all control values from SettingsManager
+				- Does not mark as dirty
+			- Apply: applies settings
+				- Writes all control values to SettingsManager (Current)
+				- Calls SettingsManager::SyncToGame()
+				- Clears dirty
+			- Save Settings: saves current to personal_settings.json
+				- Writes all control values to SettingsManager (Current)
+				- Calls SettingsManager::Save()
+				- Stays dirty if it was dirty
+			- Save Settings As: saves with filename
+				- Writes all control values to SettingsManager (Current)
+				- Calls SettingsManager::Save(filepath)
+				- Stays dirty if it was dirty
 			- Load Settings: loads with filename, changes own settings
-			- Reset Settings: loads default_settings.json, changes own settings
+				- Calls SettingsManager::Load(filepath) (Current)
+				- No apply
+				- Reads all control values from SettingsManager
+				- Marks self as dirty
+			- Reset Settings: 
+				- Calls SettingsManager::Reset() (Current)
+				- No apply
+				- Reads all control values from SettingsManager
+				- Marks self as dirty
 
 	- Revised FileDialog for loading ships: shows previews of ships
 		- Option 1: see if possible to hook into basic FileDialog's rendering of files
