@@ -114,20 +114,10 @@ Render:
 ====================================================
 ====================================================
 
-- Release:
-	- Fix Nolight at ships' created_by (master)
-	- Add buoyancy to change list
-	- Add revised bomb explosion dynamics to change list
-	- Fix cross of light
-	- See if there are ship updates
-	- Fix Pac0master
-
-- Do:
-	- Texture units test
+- TODOHERE:
 	- Git: Merge
 	- Saw sounds
 	- Bubbles
-
 
 
 - New ships
@@ -137,8 +127,21 @@ Render:
 	- See Moleskine
 
 - Suggestions to spec:
+	- Fix ambient light increments
+		- See if can do curve
 	- Different colored lights
 	- Lights with different chances of turning off
+	- Tool to flood ship
+	- Changing the width of the waves  up to at least 10x the current size
+	- Changing the height of the bumps of the ground and their width.
+	- A toggle-able shader for the sea - so it gets darker the further down you go; it would be affected by the ambient lighting
+	- Being able to drop the sea floor much further down than 500m or so too, like 10km
+	- Calc and display rendering vs simulation percentages
+	- Allow the minimum seabed height to be 0
+	- Morse code: text-to-morse encoder
+	- Custom sky colour - if possible a RGB picker in the settings
+		- I would do the same for the water in the ship
+	- Stars at night would be pretty cool too
 
 - Technical debt
 	+ Replace ShipDefinitionFile's metadata with ShipDefinition
@@ -326,6 +329,7 @@ Render:
 	- Slider for "Mass Adjustment"
 		- Recalcs Point's mass things, including mass itself
 		- Also used at bombs - how?
+		- When done, re-enable buoyancy fix
 
 	- Slider for "simulation quality", affecting num of mechanical simulation iterations
 		- Integer slider, from 0 to 10
