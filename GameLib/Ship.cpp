@@ -462,7 +462,10 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
 
         // Mass = own + contained water (clamped to 1)
         mPoints.GetForce(pointIndex) += gameParameters.Gravity
-            * (mPoints.GetMass(pointIndex) + std::min(mPoints.GetWater(pointIndex), 1.0f) * 1000.0f);
+            // FUTURE: revert to the line below (physically correct) once we also have a mass adjustment;
+            // without a mass adjustment, it'd be hard to sink ships when using a higher buoyancy adjustment
+            //* (mPoints.GetMass(pointIndex) + std::min(mPoints.GetWater(pointIndex), 1.0f) * 1000.0f);
+            * (mPoints.GetMass(pointIndex) + std::min(mPoints.GetWater(pointIndex), 1.0f) * BuoyancyAdjustedWaterMass);
 
         if (mPoints.GetPosition(pointIndex).y < waterHeightAtThisPoint)
         {

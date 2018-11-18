@@ -7,7 +7,6 @@
 - Paid off considerably technical debt in the OpenGL domain,
   with 20% performance improvement in the rendering subsystem
 - Another 10% performance improvement in the water and land contour interpolation
-- Fixed fault with buoyancy simulation
 - Revised bomb blast simulations
 - Lots of new ships, thanks to many contributors
 
