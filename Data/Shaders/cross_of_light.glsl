@@ -59,16 +59,16 @@ void main()
     */
     vec2 rotNdc = ndc;
     
-    progress = pow(progress, 3.0);
+    progress = pow(abs(progress), 3.0);
         
     // Calculate tapering along each arm
-    float taperX = pow(100000.0 * rotNdc.x, 1.6) * progress;
-    float taperY = pow(100000.0 * rotNdc.y, 1.6) * progress;
+    float taperX = pow(100000.0 * abs(rotNdc.x), 1.6) * progress;
+    float taperY = pow(100000.0 * abs(rotNdc.y), 1.6) * progress;
     
     // Calculate width along arm
     float sx = max(0.0, (1.0-rotNdc.x * rotNdc.x * taperY));
     float sy = max(0.0, (1.0-rotNdc.y * rotNdc.y * taperX));
-    float alpha = sx + sy;
+    float alpha = (sx + sy) / 2.0;
 
     gl_FragColor = vec4(1.0, 1.0, 1.0, alpha);
 }
