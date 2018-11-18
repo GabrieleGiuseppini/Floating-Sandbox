@@ -1,7 +1,7 @@
 =================================================
 Current perf (ephemeral particles)
 =================================================
-- fps: 29.0 (Samsung: TBD (Krafting)) (Mattia's: TBD (Krafting))
+- fps: 28.8/29.0 (Samsung: TBD (Krafting)) (Mattia's: TBD (Krafting))
 - GameController::Update: TBD 35.06%
 	- Ship::Update: 34.33%
 		- UpdateMechanicalDynamics: 25.70%
@@ -118,6 +118,9 @@ Render:
 	- Fix Nolight at ships' created_by (master)
 	- Add buoyancy to change list
 	- Add revised bomb explosion dynamics to change list
+	- Fix cross of light
+	- See if there are ship updates
+	- Fix Pac0master
 
 - Do:
 	- Texture units test
@@ -238,7 +241,7 @@ Render:
 
 - Gfx optimizations:
 
-	= See if can use multiple texture units
+	+ See if can use multiple texture units
 		+ Bind once atlas, land, and water at cctor, to each unit
 		+ Change shaders to have one single texture sampler param, and set uniform locations to texture unit
 		+ Do only for clouds, generic texture, land, and water
@@ -250,8 +253,8 @@ Render:
 		+ Fix: land, generic
 		+ : test
 		+ Replace calls to glActiveTexture with ShaderManager::ActivateTexture(parameter)
-		- Fix/Recheck progress bar
-		- Redo perf FPS measurement
+		+ Fix/Recheck progress bar
+		+ Redo perf FPS measurement
 
 
 	- See if can unify springs and ropes rendering
@@ -583,7 +586,7 @@ Render:
 			- Show also name, dimensions, and total mass
 
 - Sounds:
-	- Sawing: do not publish destroy events when cutting springs, but new "Sawed" events with own metal/wood sounds
+	- TODOHERE: Sawing: do not publish destroy events when cutting springs, but new "Sawed" events with own metal/wood sounds
 		- Two new continuous sounds: metal and wood saw
 		- OnSawed is invoked with Type and size - size=0 means nothing
 		- Event handler sets continuous sound's volume up/down (when size=0), and eventually starts it
