@@ -35,14 +35,14 @@ RCBomb::RCBomb(
 }
 
 bool RCBomb::Update(
-    GameWallClock::time_point now,
+    GameWallClock::time_point currentWallClockTime,
     GameParameters const & gameParameters)
 {
     switch (mState)
     {
         case State::IdlePingOff:
         {
-            if (now > mNextStateTransitionTimePoint)
+            if (currentWallClockTime > mNextStateTransitionTimePoint)
             {
                 //
                 // Transition to PingOn state
@@ -57,7 +57,7 @@ bool RCBomb::Update(
                     1);
                
                 // Schedule next transition
-                mNextStateTransitionTimePoint = now + SlowPingOnInterval;
+                mNextStateTransitionTimePoint = currentWallClockTime + SlowPingOnInterval;
             }
 
             return true;
@@ -65,7 +65,7 @@ bool RCBomb::Update(
 
         case State::IdlePingOn:
         {
-            if (now > mNextStateTransitionTimePoint)
+            if (currentWallClockTime > mNextStateTransitionTimePoint)
             {
                 //
                 // Transition to PingOff state
@@ -74,7 +74,7 @@ bool RCBomb::Update(
                 mState = State::IdlePingOff;
 
                 // Schedule next transition
-                mNextStateTransitionTimePoint = now + SlowPingOffInterval;
+                mNextStateTransitionTimePoint = currentWallClockTime + SlowPingOffInterval;
             }
 
             return true;
@@ -83,7 +83,7 @@ bool RCBomb::Update(
         case State::DetonationLeadIn:
         {
             // Check if time to explode
-            if (now > mExplosionTimePoint)
+            if (currentWallClockTime > mExplosionTimePoint)
             {
                 //
                 // Transition to Exploding state
@@ -94,7 +94,7 @@ bool RCBomb::Update(
                 DetachIfAttached();
 
                 // Transition
-                TransitionToExploding(now, gameParameters);
+                TransitionToExploding(currentWallClockTime, gameParameters);
 
                 // Notify explosion
                 mGameEventHandler->OnBombExplosion(
@@ -102,13 +102,13 @@ bool RCBomb::Update(
                     mParentWorld.IsUnderwater(GetPosition()),
                     1);
             }
-            else if (now > mNextStateTransitionTimePoint)
+            else if (currentWallClockTime > mNextStateTransitionTimePoint)
             {
                 //
                 // Transition to DetonationLeadIn state
                 //
 
-                TransitionToDetonationLeadIn(now);
+                TransitionToDetonationLeadIn(currentWallClockTime);
             }
 
             return true;
@@ -116,13 +116,13 @@ bool RCBomb::Update(
 
         case State::Exploding:
         {
-            if (now > mNextStateTransitionTimePoint)
+            if (currentWallClockTime > mNextStateTransitionTimePoint)
             {
                 //
                 // Transition to Exploding state
                 //
 
-                TransitionToExploding(now, gameParameters);
+                TransitionToExploding(currentWallClockTime, gameParameters);
             }
 
             return true;
@@ -242,12 +242,12 @@ void RCBomb::Detonate()
         // Transition to DetonationLeadIn state
         //
 
-        auto now = GameWallClock::GetInstance().Now();
+        auto const currentWallClockTime = GameWallClock::GetInstance().Now();
 
-        TransitionToDetonationLeadIn(now);
+        TransitionToDetonationLeadIn(currentWallClockTime);
 
         // Schedule explosion
-        mExplosionTimePoint = now + DetonationLeadInToExplosionInterval;
+        mExplosionTimePoint = currentWallClockTime + DetonationLeadInToExplosionInterval;
     }
 }
 

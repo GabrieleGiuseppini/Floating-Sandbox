@@ -40,13 +40,15 @@ TextRenderContext::TextRenderContext(
     // Initialize render machinery
     //
 
+    mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
+
     for (Font & font : fonts)
     {
         // Create OpenGL handle for the texture
         GLuint textureOpenGLHandle;
         glGenTextures(1, &textureOpenGLHandle);
 
-        // Bind texture
+        // Bind texture        
         glBindTexture(GL_TEXTURE_2D, textureOpenGLHandle);
         CheckOpenGLError();
 
@@ -213,6 +215,7 @@ void TextRenderContext::RenderEnd()
             CheckOpenGLError();
 
             // Bind texture
+            mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
             glBindTexture(GL_TEXTURE_2D, fontRenderInfo.GetFontTextureHandle());
             CheckOpenGLError();
 

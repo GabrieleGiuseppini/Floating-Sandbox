@@ -8,6 +8,7 @@
 #include "GameException.h"
 #include "GameMath.h"
 #include "GameParameters.h"
+#include "Log.h"
 
 namespace Render {
 
@@ -56,6 +57,9 @@ ShipRenderContext::ShipRenderContext(
     // Connected components
     , mConnectedComponentsMaxSizes()
     , mConnectedComponents()
+    // Ephemeral points
+    , mEphemeralPoints()
+    , mEphemeralPointVBO()
     // Vectors
     , mVectorArrowPointPositionBuffer()
     , mVectorArrowPointPositionVBO()
@@ -94,8 +98,8 @@ ShipRenderContext::ShipRenderContext(
 
     mPointColorVBO = pointVBOs[3];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointColorVBO);
-    glBufferData(GL_ARRAY_BUFFER, mPointCount * sizeof(vec3f), nullptr, GL_STATIC_DRAW);
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointColor), 3, GL_FLOAT, GL_FALSE, sizeof(vec3f), (void*)(0));
+    glBufferData(GL_ARRAY_BUFFER, mPointCount * sizeof(vec4f), nullptr, GL_DYNAMIC_DRAW);
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointColor), 4, GL_FLOAT, GL_FALSE, sizeof(vec4f), (void*)(0));
     CheckOpenGLError();
 
     mPointElementTextureCoordinatesVBO = pointVBOs[4];
@@ -118,6 +122,7 @@ ShipRenderContext::ShipRenderContext(
         mElementShipTexture = tmpGLuint;
 
         // Bind texture
+        mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
         glBindTexture(GL_TEXTURE_2D, *mElementShipTexture);
         CheckOpenGLError();
 
@@ -152,6 +157,7 @@ ShipRenderContext::ShipRenderContext(
     mElementStressedSpringTexture = tmpGLuint;
 
     // Bind texture
+    mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
     glBindTexture(GL_TEXTURE_2D, *mElementStressedSpringTexture);
     CheckOpenGLError();
 
@@ -198,6 +204,17 @@ ShipRenderContext::ShipRenderContext(
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTextureTextureCoordinates), 2, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)((2 + 2) * sizeof(float)));
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTexturePackedData2), 4, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)((2 + 2 + 2) * sizeof(float)));
     CheckOpenGLError();
+
+
+    //
+    // Initialize ephemeral points
+    //
+
+    mEphemeralPoints.reserve(GameParameters::MaxEphemeralParticles);
+
+    // Create VBO
+    glGenBuffers(1, &tmpGLuint);
+    mEphemeralPointVBO = tmpGLuint;
 
 
 
@@ -351,12 +368,12 @@ void ShipRenderContext::RenderStart(std::vector<std::size_t> const & connectedCo
 }
 
 void ShipRenderContext::UploadPointImmutableGraphicalAttributes(
-    vec3f const * restrict color,
+    vec4f const * restrict color,
     vec2f const * restrict textureCoordinates)
 {
     // Upload colors
     glBindBuffer(GL_ARRAY_BUFFER, *mPointColorVBO);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, mPointCount * sizeof(vec3f), color);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, mPointCount * sizeof(vec4f), color);
     CheckOpenGLError();
 
     if (!!mElementShipTexture)
@@ -366,6 +383,18 @@ void ShipRenderContext::UploadPointImmutableGraphicalAttributes(
         glBufferSubData(GL_ARRAY_BUFFER, 0, mPointCount * sizeof(vec2f), textureCoordinates);
         CheckOpenGLError();
     }    
+}
+
+void ShipRenderContext::UploadShipPointColorRange(
+    vec4f const * restrict color,
+    size_t startIndex,
+    size_t count)
+{
+    assert(startIndex + count <= mPointCount);
+
+    glBindBuffer(GL_ARRAY_BUFFER, *mPointColorVBO);
+    glBufferSubData(GL_ARRAY_BUFFER, startIndex * sizeof(vec4f), count * sizeof(vec4f), color);
+    CheckOpenGLError();
 }
 
 void ShipRenderContext::UploadPoints(
@@ -565,6 +594,22 @@ void ShipRenderContext::UploadElementStressedSpringsEnd()
     }
 }
 
+void ShipRenderContext::UploadEphemeralPointsStart()
+{
+    mEphemeralPoints.clear();
+}
+
+void ShipRenderContext::UploadEphemeralPointsEnd()
+{
+    //
+    // Upload ephemeral points
+    //
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mEphemeralPointVBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mEphemeralPoints.size() * sizeof(PointElement), mEphemeralPoints.data(), GL_STATIC_DRAW);
+    CheckOpenGLError();
+}
+
 void ShipRenderContext::UploadVectors(
     size_t count,
     vec2f const * restrict position,
@@ -725,6 +770,13 @@ void ShipRenderContext::RenderEnd()
 
 
     //
+    // Render ephemeral points
+    //
+
+    RenderEphemeralPoints();
+
+
+    //
     // Render vectors, if we're asked to
     //
 
@@ -762,6 +814,7 @@ void ShipRenderContext::RenderSpringElements(
         mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTexture>();
         
         // Bind texture
+        mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
         glBindTexture(GL_TEXTURE_2D, *mElementShipTexture);
         CheckOpenGLError();
     }
@@ -811,6 +864,7 @@ void ShipRenderContext::RenderTriangleElements(
         mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTexture>();
 
         // Bind texture
+        mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
         glBindTexture(GL_TEXTURE_2D, *mElementShipTexture);
     }
     else
@@ -841,6 +895,7 @@ void ShipRenderContext::RenderStressedSpringElements(ConnectedComponentData cons
         glLineWidth(0.1f * 2.0f * mCanvasToVisibleWorldHeightRatio);
 
         // Bind texture
+        mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
         glBindTexture(GL_TEXTURE_2D, *mElementStressedSpringTexture);
         CheckOpenGLError();
 
@@ -886,12 +941,27 @@ void ShipRenderContext::RenderGenericTextures(GenericTextureConnectedComponentDa
         if (mWireframeMode)
             glLineWidth(0.1f);
 
-        // Bind atlas
-        glBindTexture(GL_TEXTURE_2D, *mTextureAtlasOpenGLHandle);
-        CheckOpenGLError();
-
         // Draw polygons
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(connectedComponent.VertexBuffer.size()));
+    }
+}
+
+void ShipRenderContext::RenderEphemeralPoints()
+{
+    if (!mEphemeralPoints.empty())
+    {
+        // Use color program
+        mShaderManager.ActivateProgram<ProgramType::ShipTrianglesColor>();
+
+        // Set point size
+        glPointSize(0.3f * mCanvasToVisibleWorldHeightRatio);
+
+        // Bind VBO
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mEphemeralPointVBO);
+        CheckOpenGLError();
+
+        // Draw
+        glDrawElements(GL_POINTS, static_cast<GLsizei>(mEphemeralPoints.size()), GL_UNSIGNED_INT, 0);
     }
 }
 

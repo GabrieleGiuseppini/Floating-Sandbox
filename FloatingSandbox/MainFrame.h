@@ -34,7 +34,9 @@
 /*
  * The main window of the game's GUI.
  */
-class MainFrame : public wxFrame, public IGameEventHandler
+class MainFrame 
+    : public wxFrame
+    , public IGameEventHandler
 {
 public:
 
@@ -102,6 +104,7 @@ private:
     void OnKeyDown(wxKeyEvent& event);
     void OnGameTimerTrigger(wxTimerEvent& event);
     void OnLowFrequencyTimerTrigger(wxTimerEvent& event);
+    void OnIdle(wxIdleEvent& event);
 
     // Main GL canvas
     void OnMainGLCanvasResize(wxSizeEvent& event);
@@ -149,15 +152,22 @@ private:
 
     virtual void OnGameReset() override
     {
-        mCurrentShipNames.clear();
+        mCurrentShipTitles.clear();
+
         UpdateFrameTitle();
     }
 
     virtual void OnShipLoaded(
         unsigned int /*id*/,
-        std::string const & name) override
+        std::string const & name,
+        std::optional<std::string> const & author) override
     {
-        mCurrentShipNames.push_back(name);
+        std::string shipTitle = name;
+        if (!!author)
+            shipTitle += " - by " + *author;
+
+        mCurrentShipTitles.push_back(shipTitle);
+
         UpdateFrameTitle();
     }
 
@@ -224,7 +234,7 @@ private:
     // State
     //
 
-    std::vector<std::string> mCurrentShipNames;
+    std::vector<std::string> mCurrentShipTitles;
     size_t mCurrentRCBombCount;
     size_t mCurrentAntiMatterBombCount;
     bool mIsShiftKeyDown;

@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GameTypes.h"
 #include "Vectors.h"
 
 #include <chrono>
@@ -59,6 +60,7 @@ struct GameParameters
     static constexpr vec2f GravityNormalized = vec2f(0.0f, -1.0f);
     static constexpr float GravityMagnitude = 9.80f;
 
+
     //
     // Tunable parameters
     //
@@ -90,6 +92,27 @@ struct GameParameters
     float WaterQuickness;
     static constexpr float MinWaterQuickness = 0.001f;
     static constexpr float MaxWaterQuickness = 1.0f;
+
+    // Ephemeral particles
+
+    static constexpr ElementCount MaxEphemeralParticles = 512;
+
+    bool DoGenerateDebris;
+    static constexpr size_t MinDebrisParticlesPerEvent = 4;
+    static constexpr size_t MaxDebrisParticlesPerEvent = 9;
+    static constexpr float MinDebrisParticlesVelocity = 25.0f;
+    static constexpr float MaxDebrisParticlesVelocity = 40.0f;
+    static constexpr std::chrono::milliseconds MinDebrisParticlesLifetime = std::chrono::milliseconds(200);
+    static constexpr std::chrono::milliseconds MaxDebrisParticlesLifetime = std::chrono::milliseconds(500);
+
+    bool DoGenerateSparkles;
+    static constexpr size_t MinSparkleParticlesPerEvent = 2;
+    static constexpr size_t MaxSparkleParticlesPerEvent = 8;
+    static constexpr float MinSparkleParticlesVelocity = 30.0f;
+    static constexpr float MaxSparkleParticlesVelocity = 50.0f;
+    static constexpr std::chrono::milliseconds MinSparkleParticlesLifetime = std::chrono::milliseconds(200);
+    static constexpr std::chrono::milliseconds MaxSparkleParticlesLifetime = std::chrono::milliseconds(500);
+
 
     // Misc
 
@@ -147,5 +170,5 @@ struct GameParameters
     // 8 neighbours and 1 rope spring, when this is a rope endpoint
     static constexpr size_t MaxSpringsPerPoint = 8u + 1u;
 
-    static constexpr size_t MaxTrianglesPerPoint = 8u;
+    static constexpr size_t MaxTrianglesPerPoint = 8u;    
 };

@@ -13,10 +13,10 @@ WaterSurface::WaterSurface()
 }
 
 void WaterSurface::Update(
-    float currentTime,
+    float currentSimulationTime,
     GameParameters const & gameParameters)
 {
-    float const scaledTime = currentTime * gameParameters.WindSpeed / 3.0f;
+    float const scaledTime = currentSimulationTime * gameParameters.WindSpeed / 3.0f;
 
     //
     // We fill-in an extra sample, so we can avoid having to wrap around

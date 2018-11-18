@@ -50,6 +50,8 @@ void Springs::Add(
 void Springs::Destroy(
     ElementIndex springElementIndex,
     DestroyOptions destroyOptions,
+    float currentSimulationTime,
+    GameParameters const & gameParameters,
     Points const & points)
 {
     assert(springElementIndex < mElementCount);
@@ -60,7 +62,9 @@ void Springs::Destroy(
     {
         mDestroyHandler(
             springElementIndex, 
-            !!(destroyOptions & Springs::DestroyOptions::DestroyAllTriangles));
+            !!(destroyOptions & Springs::DestroyOptions::DestroyAllTriangles),
+            currentSimulationTime,
+            gameParameters);
     }
 
     // Fire spring break event, unless told otherwise
@@ -163,7 +167,8 @@ void Springs::UploadStressedSpringElements(
 }
 
 bool Springs::UpdateStrains(
-    GameParameters const & gameParameters,
+    float currentSimulationTime,
+    GameParameters const & gameParameters,    
     Points & points)
 {
     bool isAtLeastOneBroken = false;
@@ -188,6 +193,8 @@ bool Springs::UpdateStrains(
                     i,
                     DestroyOptions::FireBreakEvent // Notify Break
                     | DestroyOptions::DestroyAllTriangles,
+                    currentSimulationTime,
+                    gameParameters,
                     points);
 
                 isAtLeastOneBroken = true;

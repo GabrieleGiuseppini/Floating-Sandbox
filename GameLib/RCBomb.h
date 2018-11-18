@@ -32,7 +32,7 @@ public:
         Springs & shipSprings);
 
     virtual bool Update(
-        GameWallClock::time_point now,
+        GameWallClock::time_point currentWallClockTime,
         GameParameters const & gameParameters) override;
 
     virtual bool MayBeRemoved() const override
@@ -99,7 +99,7 @@ private:
     static constexpr uint8_t ExplosionStepsCount = 9;
     static constexpr int PingFramesCount = 4;
 
-    inline void TransitionToDetonationLeadIn(GameWallClock::time_point now)
+    inline void TransitionToDetonationLeadIn(GameWallClock::time_point currentWallClockTime)
     {
         mState = State::DetonationLeadIn;
 
@@ -110,11 +110,11 @@ private:
             1);
 
         // Schedule next transition
-        mNextStateTransitionTimePoint = now + FastPingInterval;
+        mNextStateTransitionTimePoint = currentWallClockTime + FastPingInterval;
     }
 
     inline void TransitionToExploding(
-        GameWallClock::time_point now,
+        GameWallClock::time_point currentWallClockTime,
         GameParameters const & gameParameters)
     {
         mState = State::Exploding;        
@@ -140,7 +140,7 @@ private:
             ++mExplodingStepCounter;
 
             // Schedule next transition
-            mNextStateTransitionTimePoint = now + ExplosionProgressInterval;
+            mNextStateTransitionTimePoint = currentWallClockTime + ExplosionProgressInterval;
         }
     }
 

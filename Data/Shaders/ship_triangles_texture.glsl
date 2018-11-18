@@ -35,7 +35,7 @@ in float vertexWater;
 in vec2 vertexTextureCoords;
 
 // Input texture
-uniform sampler2D inputTexture;
+uniform sampler2D sharedSpringTexture;
 
 // Params
 uniform float paramAmbientLightIntensity;
@@ -43,7 +43,7 @@ uniform float paramWaterLevelThreshold;
 
 void main()
 {
-    vec4 vertexCol = texture2D(inputTexture, vertexTextureCoords);
+    vec4 vertexCol = texture2D(sharedSpringTexture, vertexTextureCoords);
 
     // Apply point water
     float colorWetness = min(vertexWater, paramWaterLevelThreshold) * 0.7 / paramWaterLevelThreshold;

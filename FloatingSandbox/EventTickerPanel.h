@@ -32,7 +32,8 @@ public:
 
     virtual void OnShipLoaded(
         unsigned int id,
-        std::string const & name) override;
+        std::string const & name,
+        std::optional<std::string> const & author) override;
 
     virtual void OnDestroy(
         Material const * material,

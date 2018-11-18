@@ -6,6 +6,7 @@
 #pragma once
 
 #include "ImageData.h"
+#include "ShipMetadata.h"
 #include "Vectors.h"
 
 #include <memory>
@@ -23,19 +24,15 @@ public:
 
     std::optional<ImageData> TextureImage;
 
-    std::string const ShipName;
-
-    vec2f const Offset;
+    ShipMetadata const Metadata;
 
     ShipDefinition(
         ImageData structuralImage,
         std::optional<ImageData> textureImage,
-        std::string shipName,
-        vec2f offset)
+        ShipMetadata const metadata)
         : StructuralImage(std::move(structuralImage))
         , TextureImage(std::move(textureImage))
-        , ShipName(std::move(shipName))
-        , Offset(std::move(offset))
+        , Metadata(std::move(metadata))
     {
     }
 };

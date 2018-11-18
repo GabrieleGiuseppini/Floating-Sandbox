@@ -25,7 +25,7 @@ void main()
 in vec2 texturePos;
 
 // The texture
-uniform sampler2D inputTexture;
+uniform sampler2D paramLandTexture;
 
 // Parameters        
 uniform float paramAmbientLightIntensity;
@@ -33,6 +33,6 @@ uniform vec2 paramTextureScaling;
 
 void main()
 {
-    vec4 textureColor = texture2D(inputTexture, texturePos * paramTextureScaling);
+    vec4 textureColor = texture2D(paramLandTexture, texturePos * paramTextureScaling);
     gl_FragColor = vec4(textureColor.xyz * paramAmbientLightIntensity, 1.0);
 } 

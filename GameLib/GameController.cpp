@@ -13,22 +13,22 @@ std::unique_ptr<GameController> GameController::Create(
     ProgressCallback const & progressCallback)
 {
     // Load materials
-    auto materials = resourceLoader->LoadMaterials();
+    std::unique_ptr<MaterialDatabase> materials = resourceLoader->LoadMaterials();
 
     // Create game dispatcher
-    std::shared_ptr<GameEventDispatcher> gameEventDispatcher = std::make_shared<GameEventDispatcher>();
+    std::unique_ptr<GameEventDispatcher> gameEventDispatcher = std::make_unique<GameEventDispatcher>();
 
     // Create render context
     std::unique_ptr<Render::RenderContext> renderContext = std::make_unique<Render::RenderContext>(
         *resourceLoader,
-        materials.GetRopeMaterial().RenderColour,
+        materials->GetRopeMaterial().RenderColour,
         [&progressCallback](float progress, std::string const & message)
         {
             progressCallback(0.9f * progress, message);
         });
 
     // Create text layer
-    std::shared_ptr<TextLayer> textLayer = std::make_shared<TextLayer>();
+    std::unique_ptr<TextLayer> textLayer = std::make_unique<TextLayer>();
 
     //
     // Create controller
@@ -37,10 +37,10 @@ std::unique_ptr<GameController> GameController::Create(
     return std::unique_ptr<GameController>(
         new GameController(
             std::move(renderContext),
-            std::move(gameEventDispatcher),
-            std::move(resourceLoader),
+            std::move(gameEventDispatcher),            
             std::move(textLayer),
-            std::move(materials)));
+            std::move(materials),
+            resourceLoader));
 }
 
 void GameController::RegisterGameEventHandler(IGameEventHandler * gameEventHandler)
@@ -235,7 +235,8 @@ void GameController::DestroyAt(
     assert(!!mWorld);
     mWorld->DestroyAt(
         worldCoordinates,
-        mGameParameters.DestroyRadius * radiusMultiplier);
+        radiusMultiplier,
+        mGameParameters);
 }
 
 void GameController::SawThrough(
@@ -247,7 +248,10 @@ void GameController::SawThrough(
 
     // Apply action
     assert(!!mWorld);
-    mWorld->SawThrough(startWorldCoordinates, endWorldCoordinates);
+    mWorld->SawThrough(
+        startWorldCoordinates, 
+        endWorldCoordinates,
+        mGameParameters);
 }
 
 void GameController::DrawTo(
@@ -406,7 +410,10 @@ void GameController::AddShip(ShipDefinition shipDefinition)
         std::move(shipDefinition.TextureImage));
 
     // Notify
-    mGameEventDispatcher->OnShipLoaded(shipId, shipDefinition.ShipName);
+    mGameEventDispatcher->OnShipLoaded(
+        shipId, 
+        shipDefinition.Metadata.ShipName,
+        shipDefinition.Metadata.Author);
 }
 
 void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)

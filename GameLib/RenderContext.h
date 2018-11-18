@@ -33,7 +33,7 @@ public:
 
     RenderContext(
         ResourceLoader & resourceLoader,
-        vec3f const & ropeColour,
+        vec4f const & ropeColour,
         ProgressCallback const & progressCallback);
     
     ~RenderContext();
@@ -303,7 +303,7 @@ public:
         assert(mCurrentCloudElementCount + 1u <= mCloudElementCount);
         CloudElement * cloudElement = &(mCloudElementBuffer[mCurrentCloudElementCount]);
 
-        size_t cloudTextureIndex = mCurrentCloudElementCount % mCloudTextureCount;
+        size_t cloudTextureIndex = mCurrentCloudElementCount % mCloudTextureAtlasMetadata->GetFrameMetadata().size();
 
         auto cloudAtlasFrameMetadata = mCloudTextureAtlasMetadata->GetFrameMetadata(
             TextureGroupType::Cloud,
@@ -478,7 +478,7 @@ public:
 
     void UploadShipPointImmutableGraphicalAttributes(
         int shipId,
-        vec3f const * restrict color,
+        vec4f const * restrict color,
         vec2f const * restrict textureCoordinates)
     {
         assert(shipId < mShips.size());
@@ -486,6 +486,20 @@ public:
         mShips[shipId]->UploadPointImmutableGraphicalAttributes(
             color,
             textureCoordinates);
+    }
+
+    void UploadShipPointColorRange(
+        int shipId,
+        vec4f const * restrict color,
+        size_t startIndex,
+        size_t count)
+    {
+        assert(shipId < mShips.size());
+
+        mShips[shipId]->UploadShipPointColorRange(
+            color,
+            startIndex,
+            count);
     }
 
     void UploadShipPoints(
@@ -665,6 +679,35 @@ public:
     }
 
     //
+    // Ephemeral points
+    //
+
+    inline void UploadShipEphemeralPointsStart(int shipId)
+    {
+        assert(shipId < mShips.size());
+
+        mShips[shipId]->UploadEphemeralPointsStart();
+    }
+
+    inline void UploadShipEphemeralPoint(
+        int shipId,
+        int pointIndex)
+    {
+        assert(shipId < mShips.size());
+
+        mShips[shipId]->UploadEphemeralPoint(
+            pointIndex);
+    }
+
+    void UploadShipEphemeralPointsEnd(int shipId)
+    {
+        assert(shipId < mShips.size());
+
+        mShips[shipId]->UploadEphemeralPointsEnd();
+    }
+
+
+    //
     // Vectors
     //
 
@@ -692,6 +735,7 @@ public:
 
         mShips[shipId]->RenderEnd();
     }
+
 
     //
     // Text
@@ -758,11 +802,6 @@ private:
     std::unique_ptr<TextureRenderManager> mTextureRenderManager;
     std::unique_ptr<TextRenderContext> mTextRenderContext;
 
-    GameOpenGLTexture mCloudTextureAtlasOpenGLHandle;
-    std::unique_ptr<TextureAtlasMetadata> mCloudTextureAtlasMetadata;
-
-    GameOpenGLTexture mGenericTextureAtlasOpenGLHandle;
-    std::unique_ptr<TextureAtlasMetadata> mGenericTextureAtlasMetadata;
 
     //
     // Clouds
@@ -810,7 +849,8 @@ private:
     
     GameOpenGLVBO mCloudVBO;
 
-    size_t mCloudTextureCount;
+    GameOpenGLTexture mCloudTextureAtlasOpenGLHandle;
+    std::unique_ptr<TextureAtlasMetadata> mCloudTextureAtlasMetadata;
 
     //
     // Land
@@ -860,7 +900,10 @@ private:
     //
 
     std::vector<std::unique_ptr<ShipRenderContext>> mShips;
-    vec3f const mRopeColour;
+    vec4f const mRopeColour;
+
+    GameOpenGLTexture mGenericTextureAtlasOpenGLHandle;
+    std::unique_ptr<TextureAtlasMetadata> mGenericTextureAtlasMetadata;
 
     //
     // Cross of light

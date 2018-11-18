@@ -28,7 +28,7 @@ struct Material
     float const Stiffness;
     vec3f const StructuralColour;
     std::array<uint8_t, 3u> StructuralColourRgb;
-    vec3f const RenderColour;    
+    vec4f const RenderColour;    
     bool const IsHull;
     bool const IsRope;
 
@@ -128,7 +128,7 @@ public:
         float mass,
         float stiffness,
         std::array<uint8_t, 3u> structuralColourRgb,
-        std::array<uint8_t, 3u> renderColourRgb,
+        std::array<uint8_t, 4u> renderColourRgba,
 		bool isHull,
         bool isRope,
 		std::optional<ElectricalProperties> electricalProperties,
@@ -139,7 +139,7 @@ public:
         , Stiffness(stiffness)
 		, StructuralColour(Utils::RgbToVec(structuralColourRgb))
         , StructuralColourRgb(structuralColourRgb)
-        , RenderColour(Utils::RgbToVec(renderColourRgb))
+        , RenderColour(Utils::RgbaToVec(renderColourRgba))
 		, IsHull(isHull)
         , IsRope(isRope)
 		, Electrical(std::move(electricalProperties))

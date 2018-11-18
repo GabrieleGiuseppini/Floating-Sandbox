@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "ShipMetadata.h"
 #include "SysSpecifics.h"
 #include "Utils.h"
 #include "Vectors.h"
@@ -16,7 +17,7 @@
 #include <string>
 
 /*
- * The content of a ship definition file (.shp)
+ * The content of a ship definition file (.shp).
  */
 struct ShipDefinitionFile
 {
@@ -28,11 +29,8 @@ public:
     // Absolute or relative path
     std::optional<std::string> const TextureImageFilePath;
 
-    // The name of the ship
-    std::string const ShipName;
-
-    // The offset between the images and the world
-    vec2f const Offset;
+    // The ship's metadata
+    ShipMetadata const Metadata;
 
     static ShipDefinitionFile Create(picojson::object const & definitionJson);
 
@@ -44,12 +42,10 @@ public:
     ShipDefinitionFile(
         std::string structuralImageFilePath,
         std::optional<std::string> textureImageFilePath,
-        std::string shipName,
-        vec2f offset)
+        ShipMetadata shipMetadata)
         : StructuralImageFilePath(std::move(structuralImageFilePath))
         , TextureImageFilePath(std::move(textureImageFilePath))
-        , ShipName(std::move(shipName))
-        , Offset(std::move(offset))
+        , Metadata(std::move(shipMetadata))
     {
     }
 };

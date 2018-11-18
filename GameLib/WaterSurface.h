@@ -21,7 +21,7 @@ public:
     WaterSurface();
 
     void Update(
-        float currentTime,
+        float currentSimulationTime,
         GameParameters const & gameParameters);
 
    float GetWaterHeightAt(float x) const

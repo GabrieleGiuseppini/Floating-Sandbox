@@ -42,7 +42,11 @@ public:
         Rope = 2     // Ropes are drawn differently
     };
 
-    using DestroyHandler = std::function<void(ElementIndex, bool)>;
+    using DestroyHandler = std::function<void(
+        ElementIndex, 
+        bool /*destroyTriangles*/, 
+        float /*currentSimulationTime*/, 
+        GameParameters const &)>;
 
 private:
 
@@ -145,6 +149,8 @@ public:
     void Destroy(
         ElementIndex springElementIndex,
         DestroyOptions destroyOptions,
+        float currentSimulationTime,
+        GameParameters const & gameParameters,
         Points const & points);
 
     void UpdateGameParameters(
@@ -165,6 +171,16 @@ public:
             points);
     }
 
+    /*
+     * Calculates the current strain - due to tension or compression - and acts depending on it.
+     *
+     * Returns true if the spring got broken.
+     */
+    bool UpdateStrains(
+        float currentSimulationTime,
+        GameParameters const & gameParameters,        
+        Points & points);
+
     //
     // Render
     //
@@ -178,17 +194,6 @@ public:
         int shipId,
         Render::RenderContext & renderContext,
         Points const & points) const;
-
-public:
-
-    /*
-     * Calculates the current strain - due to tension or compression - and acts depending on it.
-     *
-     * Returns true if the spring got broken.
-     */
-    bool UpdateStrains(
-        GameParameters const & gameParameters,
-        Points & points);
 
 public:
 
@@ -260,6 +265,16 @@ public:
     {
         return (GetPointAPosition(springElementIndex, points)
             + GetPointBPosition(springElementIndex, points)) / 2.0f;
+    }
+
+    ConnectedComponentId GetConnectedComponentId(
+        ElementIndex springElementIndex,
+        Points const & points) const
+    {
+        assert(points.GetConnectedComponentId(GetPointAIndex(springElementIndex)) 
+            == points.GetConnectedComponentId(GetPointBIndex(springElementIndex)));
+
+        return points.GetConnectedComponentId(GetPointAIndex(springElementIndex));
     }
 
     //

@@ -41,7 +41,7 @@ TimerBomb::TimerBomb(
 }
 
 bool TimerBomb::Update(
-    GameWallClock::time_point now,
+    GameWallClock::time_point currentWallClockTime,
     GameParameters const & gameParameters)
 {
     switch (mState)
@@ -63,9 +63,9 @@ bool TimerBomb::Update(
                 mGameEventHandler->OnTimerBombDefused(true, 1);
 
                 // Schedule next transition
-                mNextStateTransitionTimePoint = now + DefusingInterval / DefuseStepsCount;
+                mNextStateTransitionTimePoint = currentWallClockTime + DefusingInterval / DefuseStepsCount;
             }
-            else if (now > mNextStateTransitionTimePoint)
+            else if (currentWallClockTime > mNextStateTransitionTimePoint)
             {
                 // Check if we're done
                 if (mFuseStepCounter == FuseStepCount - 1)
@@ -79,7 +79,7 @@ bool TimerBomb::Update(
                     mGameEventHandler->OnTimerBombFuse(mId, std::nullopt);
 
                     // Schedule next transition
-                    mNextStateTransitionTimePoint = now + DetonationLeadInToExplosionInterval;
+                    mNextStateTransitionTimePoint = currentWallClockTime + DetonationLeadInToExplosionInterval;
                 }
                 else
                 {
@@ -88,9 +88,9 @@ bool TimerBomb::Update(
 
                     // Schedule next transition
                     if (State::SlowFuseBurning == mState)
-                        mNextStateTransitionTimePoint = now + SlowFuseToDetonationLeadInInterval / FuseStepCount;
+                        mNextStateTransitionTimePoint = currentWallClockTime + SlowFuseToDetonationLeadInInterval / FuseStepCount;
                     else
-                        mNextStateTransitionTimePoint = now + FastFuseToDetonationLeadInInterval / FuseStepCount;
+                        mNextStateTransitionTimePoint = currentWallClockTime + FastFuseToDetonationLeadInInterval / FuseStepCount;
                 }
             }
 
@@ -105,7 +105,7 @@ bool TimerBomb::Update(
 
         case State::DetonationLeadIn:
         {
-            if (now > mNextStateTransitionTimePoint)
+            if (currentWallClockTime > mNextStateTransitionTimePoint)
             {
                 //
                 // Transition to Exploding state
@@ -133,7 +133,7 @@ bool TimerBomb::Update(
                     1);
 
                 // Schedule next transition
-                mNextStateTransitionTimePoint = now + ExplosionProgressInterval;
+                mNextStateTransitionTimePoint = currentWallClockTime + ExplosionProgressInterval;
             }
             else
             {
@@ -146,7 +146,7 @@ bool TimerBomb::Update(
 
         case State::Exploding:
         {
-            if (now > mNextStateTransitionTimePoint)
+            if (currentWallClockTime > mNextStateTransitionTimePoint)
             {
                 assert(mExplodingStepCounter < ExplosionStepsCount);
 
@@ -168,7 +168,7 @@ bool TimerBomb::Update(
                         gameParameters);
 
                     // Schedule next transition
-                    mNextStateTransitionTimePoint = now + ExplosionProgressInterval;
+                    mNextStateTransitionTimePoint = currentWallClockTime + ExplosionProgressInterval;
                 }
             }
 
@@ -177,7 +177,7 @@ bool TimerBomb::Update(
 
         case State::Defusing:
         {
-            if (now > mNextStateTransitionTimePoint)
+            if (currentWallClockTime > mNextStateTransitionTimePoint)
             {
                 assert(mDefuseStepCounter < DefuseStepsCount);
 
@@ -193,7 +193,7 @@ bool TimerBomb::Update(
                 }
 
                 // Schedule next transition
-                mNextStateTransitionTimePoint = now + DefusingInterval / DefuseStepsCount;
+                mNextStateTransitionTimePoint = currentWallClockTime + DefusingInterval / DefuseStepsCount;
             }
             
             return true;

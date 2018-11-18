@@ -45,14 +45,14 @@ in float vertexAlpha;
 in float vertexAmbientLightSensitivity;
 
 // The texture
-uniform sampler2D inputTexture;
+uniform sampler2D paramGenericTexturesAtlasTexture;
 
 // Parameters        
 uniform float paramAmbientLightIntensity;
 
 void main()
 {
-    vec4 textureColor = texture2D(inputTexture, vertexTextureCoordinates);
+    vec4 textureColor = texture2D(paramGenericTexturesAtlasTexture, vertexTextureCoordinates);
 
     float ambientLightIntensity = 
         (1.0 - vertexAmbientLightSensitivity)

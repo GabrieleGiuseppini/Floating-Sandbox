@@ -22,7 +22,10 @@ public:
     virtual ~ForceField()
     {}
 
-    virtual void Apply(Points & points) const = 0;
+    virtual void Apply(
+        Points & points,
+        float currentSimulationTime,
+        GameParameters const & gameParameters) const = 0;
 };
 
 /*
@@ -39,7 +42,10 @@ public:
         , mStrength(strength)
     {}
 
-    virtual void Apply(Points & points) const override;
+    virtual void Apply(
+        Points & points,
+        float currentSimulationTime,
+        GameParameters const & gameParameters) const override;
 
 private:
 
@@ -61,7 +67,10 @@ public:
         , mStrength(strength)
     {}
 
-    virtual void Apply(Points & points) const override;
+    virtual void Apply(
+        Points & points,
+        float currentSimulationTime,
+        GameParameters const & gameParameters) const override;
 
 private:
 
@@ -89,7 +98,10 @@ public:
         , mDestroyPoint(destroyPoint)
     {}
 
-    virtual void Apply(Points & points) const override;
+    virtual void Apply(
+        Points & points,
+        float currentSimulationTime,
+        GameParameters const & gameParameters) const override;
 
 private:
 
@@ -118,7 +130,10 @@ public:
         , mStrength(strength)
     {}
 
-    virtual void Apply(Points & points) const override;
+    virtual void Apply(
+        Points & points,
+        float currentSimulationTime,
+        GameParameters const & gameParameters) const override;
 
 private:
 
@@ -143,7 +158,10 @@ public:
         , mStrength(strength)
     {}
 
-    virtual void Apply(Points & points) const override;
+    virtual void Apply(
+        Points & points,
+        float currentSimulationTime,
+        GameParameters const & gameParameters) const override;
 
 private:
 
@@ -165,7 +183,10 @@ public:
         , mStrength(strength)
     {}
 
-    virtual void Apply(Points & points) const override;
+    virtual void Apply(
+        Points & points,
+        float currentSimulationTime,
+        GameParameters const & gameParameters) const override;
 
 private:
 

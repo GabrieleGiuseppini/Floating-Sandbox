@@ -85,6 +85,13 @@ public:
         return mRandomNormalDistribution(mRandomEngine);
     }
 
+    inline float GenerateRandomReal(
+        float minValue,
+        float maxValue)
+    {
+        return minValue + mRandomNormalDistribution(mRandomEngine) * (maxValue - minValue);
+    }
+
 private:
 
     GameRandomEngine()

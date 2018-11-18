@@ -32,7 +32,7 @@ public:
 
     int AddShip(
         ShipDefinition const & shipDefinition,
-        MaterialDatabase const & materials,
+        std::shared_ptr<MaterialDatabase> materials,
         GameParameters const & gameParameters);
 
     size_t GetShipPointCount(int shipId) const;
@@ -54,11 +54,13 @@ public:
 
     void DestroyAt(
         vec2f const & targetPos, 
-        float radius);
+        float radiusMultiplier,
+        GameParameters const & gameParameters);
 
     void SawThrough(
         vec2f const & startPos,
-        vec2f const & endPos);
+        vec2f const & endPos,
+        GameParameters const & gameParameters);
 
     void DrawTo(
         vec2f const & targetPos,
@@ -116,8 +118,8 @@ private:
     WaterSurface mWaterSurface;
     OceanFloor mOceanFloor;
 
-    // The current time 
-    float mCurrentTime;
+    // The current simulation time 
+    float mCurrentSimulationTime;
 
     // The current step sequence number; used to avoid zero-ing out things.
     // Guaranteed to never be zero, but expected to rollover

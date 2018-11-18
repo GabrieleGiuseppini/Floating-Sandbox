@@ -33,6 +33,7 @@ public:
         Springs && springs,
         Triangles && triangles,
         ElectricalElements && electricalElements,
+        std::shared_ptr<MaterialDatabase> materialDatabase,
         VisitSequenceNumber currentVisitSequenceNumber);
 
     ~Ship();
@@ -58,11 +59,15 @@ public:
 
     void DestroyAt(
         vec2f const & targetPos,
-        float radius);
+        float radiusMultiplier,
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
 
     void SawThrough(
         vec2f const & startPos,
-        vec2f const & endPos);
+        vec2f const & endPos,
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
 
     void DrawTo(
         vec2f const & targetPos,
@@ -97,6 +102,7 @@ public:
         float radius) const;
 
     void Update(
+        float currentSimulationTime,
         VisitSequenceNumber currentVisitSequenceNumber,
         GameParameters const & gameParameters);
 
@@ -112,7 +118,9 @@ public:
 
     // Mechanical
 
-    void UpdateMechanicalDynamics(GameParameters const & gameParameters);
+    void UpdateMechanicalDynamics(
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
 
     void UpdatePointForces(GameParameters const & gameParameters);
 
@@ -137,12 +145,19 @@ public:
     // Electrical 
 
     void UpdateElectricalDynamics(
+        GameWallClock::time_point currentWallclockTime,
         VisitSequenceNumber currentVisitSequenceNumber,
         GameParameters const & gameParameters);
 
     void UpdateElectricalConnectivity(VisitSequenceNumber currentVisitSequenceNumber);
 
     void DiffuseLight(GameParameters const & gameParameters);
+
+    // Ephemeral particles
+
+    void UpdateEphemeralParticles(
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
 
 private:
 
@@ -154,15 +169,32 @@ private:
         ElementIndex pointAElementIndex,
         ElementIndex pointBElementIndex);
 
-    void PointDestroyHandler(ElementIndex pointElementIndex);
+    void PointDestroyHandler(
+        ElementIndex pointElementIndex,
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
 
     void SpringDestroyHandler(
         ElementIndex springElementIndex,
-        bool destroyAllTriangles);
+        bool destroyAllTriangles,
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
 
     void TriangleDestroyHandler(ElementIndex triangleElementIndex);
 
     void ElectricalElementDestroyHandler(ElementIndex electricalElementIndex);
+
+    void GenerateDebris(
+        ElementIndex pointElementIndex,
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
+
+    void GenerateSparkles(
+        ElementIndex springElementIndex,
+        vec2f const & cutDirectionStartPos,
+        vec2f const & cutDirectionEndPos,
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
 
 private:
 
@@ -202,6 +234,9 @@ private:
     Springs mSprings;
     Triangles mTriangles;
     ElectricalElements mElectricalElements;
+
+    // The material database
+    std::shared_ptr<MaterialDatabase> const mMaterialDatabase;
 
     // Connected components metadata
     std::vector<std::size_t> mConnectedComponentSizes;

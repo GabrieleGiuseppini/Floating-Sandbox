@@ -20,6 +20,8 @@ std::unique_ptr<Material> Material::Create(picojson::object const & materialJson
 	
     std::array<uint8_t, 3u> structuralColourRgb = Utils::Hex2RgbColour(Utils::GetMandatoryJsonMember<std::string>(materialJson, "structural_colour"));
     std::array<uint8_t, 3u> renderColourRgb = Utils::Hex2RgbColour(Utils::GetMandatoryJsonMember<std::string>(materialJson, "render_colour"));
+    std::array<uint8_t, 4u> renderColourRgba{ renderColourRgb[0], renderColourRgb[1], renderColourRgb[2], 255};
+
 	bool isHull = Utils::GetMandatoryJsonMember<bool>(materialJson, "is_hull");
     bool isRope = Utils::GetOptionalJsonMember<bool>(materialJson, "is_rope", false);
 
@@ -55,7 +57,7 @@ std::unique_ptr<Material> Material::Create(picojson::object const & materialJson
 			mass,
             stiffness,
             structuralColourRgb,
-            renderColourRgb,
+            renderColourRgba,
 			isHull,
             isRope,
 			electricalProperties,

@@ -8,6 +8,7 @@
 #include "Buffer.h"
 #include "BufferAllocator.h"
 #include "ElementContainer.h"
+#include "ElementIndexRangeIterator.h"
 #include "FixedSizeVector.h"
 #include "GameParameters.h"
 #include "GameTypes.h"
@@ -17,6 +18,7 @@
 #include "Vectors.h"
 
 #include <cassert>
+#include <chrono>
 #include <cstring>
 #include <functional>
 #include <vector>
@@ -28,9 +30,76 @@ class Points : public ElementContainer
 {
 public:
 
-    using DestroyHandler = std::function<void(ElementIndex)>;
+    using DestroyHandler = std::function<void(
+        ElementIndex, 
+        float /*currentSimulationTime*/, 
+        GameParameters const &)>;
+
+    enum class EphemeralType
+    {
+        None,
+        Debris,
+        Sparkle,
+        AirBubble,
+        Smoke
+    };
 
 private:
+
+    /*
+     * The state of ephemeral particles.
+     */
+    union EphemeralState
+    {
+        struct DebrisState
+        {
+        };
+
+        struct SparkleState
+        {
+            vec4f StartColor;
+            vec4f DeltaColor;
+
+            SparkleState()
+            {}
+
+            SparkleState(
+                vec4f const & startColor,
+                vec4f const & endColor)
+                : StartColor(startColor)
+                , DeltaColor(endColor - startColor)
+            {}
+        };
+
+        struct AirBubbleState
+        {
+        };
+
+        struct SmokeState
+        {
+        };
+
+        DebrisState Debris;
+        SparkleState Sparkle;
+        AirBubbleState AirBubble;
+        SmokeState Smoke;
+
+        EphemeralState(DebrisState debris)
+            : Debris(debris)
+        {}
+
+        EphemeralState(SparkleState sparkle)
+            : Sparkle(sparkle)
+        {}
+
+        EphemeralState(AirBubbleState airBubble)
+            : AirBubble(airBubble)
+        {}
+
+        EphemeralState(SmokeState smoke)
+            : Smoke(smoke)
+        {}
+    };
 
     /*
      * The elements connected to a point.
@@ -50,57 +119,83 @@ private:
 public:
 
     Points(
-        ElementCount elementCount,
+        ElementCount shipPointCount,
         World & parentWorld,
         std::shared_ptr<IGameEventHandler> gameEventHandler)
-        : ElementContainer(elementCount)
+        : ElementContainer(shipPointCount + GameParameters::MaxEphemeralParticles)
         //////////////////////////////////
         // Buffers
         //////////////////////////////////
-        , mIsDeletedBuffer(mBufferElementCount, mElementCount, true)
+        , mIsDeletedBuffer(mBufferElementCount, shipPointCount, false)
         // Material
-        , mMaterialBuffer(mBufferElementCount, mElementCount, nullptr)
-        , mIsHullBuffer(mBufferElementCount, mElementCount, false)
-        , mIsRopeBuffer(mBufferElementCount, mElementCount, false)
+        , mMaterialBuffer(mBufferElementCount, shipPointCount, nullptr)
+        , mIsHullBuffer(mBufferElementCount, shipPointCount, false)
+        , mIsRopeBuffer(mBufferElementCount, shipPointCount, false)
         // Mechanical dynamics
-        , mPositionBuffer(mBufferElementCount, mElementCount, vec2f::zero())
-        , mVelocityBuffer(mBufferElementCount, mElementCount, vec2f::zero())
-        , mForceBuffer(mBufferElementCount, mElementCount, vec2f::zero())
-        , mIntegrationFactorBuffer(mBufferElementCount, mElementCount, vec2f::zero())
-        , mMassBuffer(mBufferElementCount, mElementCount, 1.0f)
+        , mPositionBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
+        , mVelocityBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
+        , mForceBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
+        , mIntegrationFactorBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
+        , mMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
         // Water dynamics
-        , mBuoyancyBuffer(mBufferElementCount, mElementCount, 0.0f)
-        , mWaterBuffer(mBufferElementCount, mElementCount, 0.0f)
-        , mWaterVelocityBuffer(mBufferElementCount, mElementCount, vec2f::zero())
-        , mWaterMomentumBuffer(mBufferElementCount, mElementCount, vec2f::zero())
-        , mIsLeakingBuffer(mBufferElementCount, mElementCount, false)
+        , mBuoyancyBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mWaterBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mWaterVelocityBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
+        , mWaterMomentumBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
+        , mIsLeakingBuffer(mBufferElementCount, shipPointCount, false)
         // Electrical dynamics
-        , mElectricalElementBuffer(mBufferElementCount, mElementCount, NoneElementIndex)
-        , mLightBuffer(mBufferElementCount, mElementCount, 0.0f)
+        , mElectricalElementBuffer(mBufferElementCount, shipPointCount, NoneElementIndex)
+        , mLightBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        // Ephemeral particles
+        , mEphemeralTypeBuffer(mBufferElementCount, shipPointCount, EphemeralType::None)
+        , mEphemeralStartTimeBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mEphemeralMaxLifetimeBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mEphemeralStateBuffer(mBufferElementCount, shipPointCount, EphemeralState::DebrisState())
         // Structure
-        , mNetworkBuffer(mBufferElementCount, mElementCount, Network())
+        , mNetworkBuffer(mBufferElementCount, shipPointCount, Network())
         // Connected component
-        , mConnectedComponentIdBuffer(mBufferElementCount, mElementCount, NoneElementIndex)
-        , mCurrentConnectedComponentDetectionVisitSequenceNumberBuffer(mBufferElementCount, mElementCount, NoneElementIndex)
+        , mConnectedComponentIdBuffer(mBufferElementCount, shipPointCount, NoneElementIndex)
+        , mCurrentConnectedComponentDetectionVisitSequenceNumberBuffer(mBufferElementCount, shipPointCount, NoneElementIndex)
         // Pinning
-        , mIsPinnedBuffer(mBufferElementCount, mElementCount, false)
+        , mIsPinnedBuffer(mBufferElementCount, shipPointCount, false)
         // Immutable render attributes
-        , mColorBuffer(mBufferElementCount, mElementCount, vec3f::zero())
-        , mTextureCoordinatesBuffer(mBufferElementCount, mElementCount, vec2f::zero())
+        , mColorBuffer(mBufferElementCount, shipPointCount, vec4f::zero())
+        , mTextureCoordinatesBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         //////////////////////////////////
         // Container
         //////////////////////////////////
+        , mShipPointCount(shipPointCount)
+        , mEphemeralPointCount(GameParameters::MaxEphemeralParticles)
+        , mAllPointCount(shipPointCount + mEphemeralPointCount)
         , mParentWorld(parentWorld)
         , mGameEventHandler(std::move(gameEventHandler))
         , mDestroyHandler()
         , mAreImmutableRenderAttributesUploaded(false)
         , mFloatBufferAllocator(mBufferElementCount)
         , mVec2fBufferAllocator(mBufferElementCount)
+        , mFreeEphemeralParticleSearchStartIndex(mShipPointCount)
+        , mAreEphemeralParticlesDirty(false)
     {
     }
 
     Points(Points && other) = default;
-    
+
+    /*
+     * Returns an iterator for the non-ephemeral points only.
+     */
+    auto NonEphemeralPoints() const
+    {
+        return ElementIndexRangeIterator(0, mShipPointCount);
+    }
+
+    /*
+     * Returns an iterator for the ephemeral points only.
+     */
+    auto EphemeralPoints() const
+    {
+        return ElementIndexRangeIterator(mShipPointCount, mAllPointCount);
+    }
+
     /*
      * Sets a (single) handler that is invoked whenever a point is destroyed.
      *
@@ -126,10 +221,36 @@ public:
         bool isRope,
         ElementIndex electricalElementIndex,
         float buoyancy,
-        vec3f const & color,
+        vec4f const & color,
         vec2f const & textureCoordinates);
 
-    void Destroy(ElementIndex pointElementIndex);
+    void CreateEphemeralParticleDebris(
+        vec2f const & position,
+        vec2f const & velocity,
+        Material const * material,
+        float currentSimulationTime,
+        std::chrono::milliseconds maxLifetime,
+        ConnectedComponentId connectedComponentId);
+
+    void CreateEphemeralParticleSparkle(
+        vec2f const & position,
+        vec2f const & velocity,
+        Material const * material,
+        float currentSimulationTime,
+        std::chrono::milliseconds maxLifetime,
+        vec4f const & startColor,
+        vec4f const & endColor,
+        ConnectedComponentId connectedComponentId);
+
+    void Destroy(
+        ElementIndex pointElementIndex,
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
+
+    void UpdateEphemeralParticles(
+        float currentSimulationTime,
+        GameParameters const & gameParameters);    
+    
 
     //
     // Render
@@ -144,6 +265,10 @@ public:
         Render::RenderContext & renderContext) const;
 
     void UploadVectors(
+        int shipId,
+        Render::RenderContext & renderContext) const;
+
+    void UploadEphemeralParticles(
         int shipId,
         Render::RenderContext & renderContext) const;
 
@@ -245,6 +370,22 @@ public:
         ElementIndex pointElementIndex,
         float offset,
         Springs & springs);
+
+    // Changes the point's dynamics so that it freezes in place
+    // and becomes oblivious to forces
+    void Freeze(ElementIndex pointElementIndex)
+    {
+        // Zero-out integration factor and velocity, freezing point
+        mIntegrationFactorBuffer[pointElementIndex] = vec2f(0.0f, 0.0f);
+        mVelocityBuffer[pointElementIndex] = vec2f(0.0f, 0.0f);
+    }
+
+    // Changes the point's dynamics so that the point reacts again to forces
+    void Thaw(ElementIndex pointElementIndex)
+    {
+        // Re-populate its integration factor, thawing point
+        mIntegrationFactorBuffer[pointElementIndex] = CalculateIntegrationFactor(mMassBuffer[pointElementIndex]);
+    }
 
     //
     // Water dynamics
@@ -366,6 +507,15 @@ public:
     }
 
     //
+    // Ephemeral Particles
+    //
+
+    EphemeralType GetEphemeralType(ElementIndex pointElementIndex) const
+    {
+        return mEphemeralTypeBuffer[pointElementIndex];
+    }
+
+    //
     // Network
     //
 
@@ -428,9 +578,7 @@ public:
     
         mIsPinnedBuffer[pointElementIndex] = true;
 
-        // Zero-out integration factor and velocity, freezing point
-        mIntegrationFactorBuffer[pointElementIndex] = vec2f(0.0f, 0.0f);
-        mVelocityBuffer[pointElementIndex] = vec2f(0.0f, 0.0f);
+        Freeze(pointElementIndex);
     }
 
     void Unpin(ElementIndex pointElementIndex)
@@ -439,8 +587,7 @@ public:
     
         mIsPinnedBuffer[pointElementIndex] = false;
 
-        // Re-populate its integration factor, thawing point
-        mIntegrationFactorBuffer[pointElementIndex] = CalculateIntegrationFactor(mMassBuffer[pointElementIndex]);
+        Thaw(pointElementIndex);
     }
 
     //
@@ -489,6 +636,8 @@ public:
 private:
 
     static vec2f CalculateIntegrationFactor(float mass);
+
+    ElementIndex FindFreeEphemeralParticle(float currentSimulationTime);
 
 private:
 
@@ -543,6 +692,15 @@ private:
     Buffer<float> mLightBuffer;
 
     //
+    // Ephemeral Particles
+    //
+
+    Buffer<EphemeralType> mEphemeralTypeBuffer;
+    Buffer<float> mEphemeralStartTimeBuffer;
+    Buffer<float> mEphemeralMaxLifetimeBuffer;
+    Buffer<EphemeralState> mEphemeralStateBuffer;
+
+    //
     // Structure
     //
 
@@ -565,13 +723,22 @@ private:
     // Immutable render attributes
     //
 
-    Buffer<vec3f> mColorBuffer;
+    Buffer<vec4f> mColorBuffer;
     Buffer<vec2f> mTextureCoordinatesBuffer;
 
 
     //////////////////////////////////////////////////////////
     // Container
     //////////////////////////////////////////////////////////
+
+    // Count of ship points; these are followed by ephemeral points
+    ElementCount const mShipPointCount;
+
+    // Count of ephemeral points
+    ElementCount const mEphemeralPointCount;
+
+    // Count of all points
+    ElementCount const mAllPointCount;
 
     World & mParentWorld;
     std::shared_ptr<IGameEventHandler> const mGameEventHandler;
@@ -586,6 +753,15 @@ private:
     // Allocators for work buffers
     BufferAllocator<float> mFloatBufferAllocator;
     BufferAllocator<vec2f> mVec2fBufferAllocator;
+
+    // The index at which to start searching for free ephemeral particles
+    // (just an optimization over restarting from zero each time)
+    ElementIndex mFreeEphemeralParticleSearchStartIndex;
+
+    // Flag remembering whether the set of ephemeral particles is dirty
+    // (i.e. whether there are more or less particles than previously
+    // reported to the rendering engine)
+    bool mutable mAreEphemeralParticlesDirty;
 };
 
 }

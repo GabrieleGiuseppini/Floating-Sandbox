@@ -34,8 +34,9 @@ void TextureRenderManager::UploadGroup(
         GLuint openGLHandle;
         glGenTextures(1, &openGLHandle);
 
-        // Bind texture
+        // Bind texture        
         glBindTexture(GL_TEXTURE_2D, openGLHandle);
+        CheckOpenGLError();
 
         // Set repeat mode
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);

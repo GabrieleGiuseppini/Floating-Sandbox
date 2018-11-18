@@ -20,7 +20,7 @@ World::World(
     , mAllClouds()
     , mWaterSurface()
     , mOceanFloor()
-    , mCurrentTime(0.0f)
+    , mCurrentSimulationTime(0.0f)
     , mCurrentVisitSequenceNumber(1u)
     , mGameEventHandler(std::move(gameEventHandler))
 {
@@ -28,13 +28,13 @@ World::World(
     UpdateClouds(gameParameters);
 
     // Initialize water and ocean
-    mWaterSurface.Update(mCurrentTime, gameParameters);
+    mWaterSurface.Update(mCurrentSimulationTime, gameParameters);
     mOceanFloor.Update(gameParameters);
 }
 
 int World::AddShip(
     ShipDefinition const & shipDefinition,
-    MaterialDatabase const & materials,
+    std::shared_ptr<MaterialDatabase> materials,
     GameParameters const & gameParameters)
 {
     int shipId = static_cast<int>(mAllShips.size());
@@ -60,25 +60,31 @@ size_t World::GetShipPointCount(int shipId) const
 
 void World::DestroyAt(
     vec2f const & targetPos, 
-    float radius)
+    float radiusMultiplier,
+    GameParameters const & gameParameters)
 {
     for (auto & ship : mAllShips)
     {
         ship->DestroyAt(
             targetPos,
-            radius);
+            radiusMultiplier,
+            mCurrentSimulationTime,
+            gameParameters);
     }
 }
 
 void World::SawThrough(
     vec2f const & startPos,
-    vec2f const & endPos)
+    vec2f const & endPos,
+    GameParameters const & gameParameters)
 {
     for (auto & ship : mAllShips)
     {
         ship->SawThrough(
             startPos,
-            endPos);
+            endPos,
+            mCurrentSimulationTime,
+            gameParameters);
     }
 }
 
@@ -221,7 +227,7 @@ ElementIndex World::GetNearestPointAt(
 void World::Update(GameParameters const & gameParameters)
 {
     // Update current time
-    mCurrentTime += GameParameters::SimulationStepTimeDuration<float>;
+    mCurrentSimulationTime += GameParameters::SimulationStepTimeDuration<float>;
 
     // Generate a new visit sequence number
     ++mCurrentVisitSequenceNumber;
@@ -229,13 +235,14 @@ void World::Update(GameParameters const & gameParameters)
         mCurrentVisitSequenceNumber = 1u;
 
     // Update water surface and ocean floor
-    mWaterSurface.Update(mCurrentTime, gameParameters);
+    mWaterSurface.Update(mCurrentSimulationTime, gameParameters);
     mOceanFloor.Update(gameParameters);
 
     // Update all ships
     for (auto & ship : mAllShips)
     {
         ship->Update(
+            mCurrentSimulationTime,
             mCurrentVisitSequenceNumber,
             gameParameters);
     }
@@ -312,7 +319,7 @@ void World::UpdateClouds(GameParameters const & gameParameters)
     for (auto & cloud : mAllClouds)
     {
         cloud->Update(
-            mCurrentTime,
+            mCurrentSimulationTime,
             gameParameters.WindSpeed);
     }
 }

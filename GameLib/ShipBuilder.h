@@ -30,7 +30,7 @@ public:
         Physics::World & parentWorld,
         std::shared_ptr<IGameEventHandler> gameEventHandler,
         ShipDefinition const & shipDefinition,
-        MaterialDatabase const & materials,
+        std::shared_ptr<MaterialDatabase> materials,
         GameParameters const & gameParameters,
         VisitSequenceNumber currentVisitSequenceNumber);
 

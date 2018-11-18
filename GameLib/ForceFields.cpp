@@ -9,11 +9,17 @@
 
 namespace Physics {
 
-void DrawForceField::Apply(Points & points) const
+void DrawForceField::Apply(
+    Points & points,
+    float /*currentSimulationTime*/,
+    GameParameters const & /*gameParameters*/) const
 {
+    //
+    // F = ForceStrength/sqrt(distance), along radius
+    //
+
     for (auto pointIndex : points)
     {
-        // F = ForceStrength/sqrt(distance), along radius
         vec2f displacement = (mCenterPosition - points.GetPosition(pointIndex));
         float forceMagnitude = mStrength / sqrtf(0.1f + displacement.length());
 
@@ -21,11 +27,17 @@ void DrawForceField::Apply(Points & points) const
     }
 }
 
-void SwirlForceField::Apply(Points & points) const
+void SwirlForceField::Apply(
+    Points & points,
+    float /*currentSimulationTime*/,
+    GameParameters const & /*gameParameters*/) const
 {
+    //
+    // F = ForceStrength*radius/sqrt(distance), perpendicular to radius
+    //
+
     for (auto pointIndex : points)
     {
-        // F = ForceStrength/sqrt(distance), perpendicular to radius
         vec2f displacement = (mCenterPosition - points.GetPosition(pointIndex));
         float const displacementLength = displacement.length();
         float forceMagnitude = mStrength / sqrtf(0.1f + displacementLength);
@@ -34,12 +46,15 @@ void SwirlForceField::Apply(Points & points) const
     }
 }
 
-void BlastForceField::Apply(Points & points) const
+void BlastForceField::Apply(
+    Points & points,
+    float currentSimulationTime,
+    GameParameters const & gameParameters) const
 {
     // 
     // Go through all the connected component's points and, for each point in radius:
-    // - Keep closest to blast position, which we'll Destroy() later (if this is the fist frame of the 
-    //   blast sequence)
+    // - Keep non-ephemeral point that is closest to blast position; we'll Destroy() it later 
+    //   (if this is the fist frame of the blast sequence)
     // - Flip over the point outside of the radius
     //
 
@@ -49,16 +64,20 @@ void BlastForceField::Apply(Points & points) const
     float closestPointSquareDistance = std::numeric_limits<float>::max();
     ElementIndex closestPointIndex = NoneElementIndex;
 
-    for (auto pointIndex : points)
+    // Visit all (non-ephemeral) points (ephemerals would be blown immediately away otherwise)
+    for (auto pointIndex : points.NonEphemeralPoints())
     {
+        // Make sure this point belongs to the required connected component
         if (points.GetConnectedComponentId(pointIndex) == mConnectedComponentId)
         {
             vec2f pointRadius = points.GetPosition(pointIndex) - mCenterPosition;
             float squarePointDistance = pointRadius.squareLength();
             if (squarePointDistance < squareBlastRadius)
             {
-                // Check whether this point is the closest
-                if (squarePointDistance < closestPointSquareDistance)
+                // Check whether this point is the closest, non-deleted point
+                //  Wee don't want to waste destroy's on already-deleted points
+                if (squarePointDistance < closestPointSquareDistance
+                    && !points.IsDeleted(pointIndex))
                 {
                     closestPointSquareDistance = squarePointDistance;
                     closestPointIndex = pointIndex;
@@ -85,11 +104,17 @@ void BlastForceField::Apply(Points & points) const
         && NoneElementIndex != closestPointIndex)
     {
         // Destroy point
-        points.Destroy(closestPointIndex);
+        points.Destroy(
+            closestPointIndex,
+            currentSimulationTime,
+            gameParameters);
     }
 }
 
-void RadialSpaceWarpForceField::Apply(Points & points) const
+void RadialSpaceWarpForceField::Apply(
+    Points & points,
+    float /*currentSimulationTime*/,
+    GameParameters const & /*gameParameters*/) const
 {
     for (auto pointIndex : points)
     {
@@ -110,7 +135,10 @@ void RadialSpaceWarpForceField::Apply(Points & points) const
     }
 }
 
-void ImplosionForceField::Apply(Points & points) const
+void ImplosionForceField::Apply(
+    Points & points,
+    float /*currentSimulationTime*/,
+    GameParameters const & /*gameParameters*/) const
 {
     for (auto pointIndex : points)
     {
@@ -138,11 +166,17 @@ void ImplosionForceField::Apply(Points & points) const
     }
 }
 
-void RadialExplosionForceField::Apply(Points & points) const
+void RadialExplosionForceField::Apply(
+    Points & points,
+    float /*currentSimulationTime*/,
+    GameParameters const & /*gameParameters*/) const
 {
+    //
+    // F = ForceStrength/sqrt(distance), along radius
+    //
+
     for (auto pointIndex : points)
-    {
-        // F = ForceStrength/sqrt(distance), along radius
+    {        
         vec2f displacement = (points.GetPosition(pointIndex) - mCenterPosition);
         float forceMagnitude = mStrength / sqrtf(0.1f + displacement.length());
 

@@ -75,13 +75,19 @@ public:
     //
 
     void UploadPointImmutableGraphicalAttributes(
-        vec3f const * restrict color,
+        vec4f const * restrict color,
         vec2f const * restrict textureCoordinates);
+
+    void UploadShipPointColorRange(
+        vec4f const * restrict color,
+        size_t startIndex,
+        size_t count);
 
     void UploadPoints(
         vec2f const * restrict position,
         float const * restrict light,
         float const * restrict water);
+
 
     //
     // Elements
@@ -184,6 +190,7 @@ public:
     }
 
     void UploadElementStressedSpringsEnd();
+
 
     //
     // Generic textures
@@ -321,6 +328,23 @@ public:
     }
 
 
+    // 
+    // Ephemeral points
+    //
+
+    void UploadEphemeralPointsStart();
+
+    inline void UploadEphemeralPoint(
+        int pointIndex)
+    {
+        mEphemeralPoints.emplace_back();
+
+        mEphemeralPoints.back().pointIndex = pointIndex;
+    }
+
+    void UploadEphemeralPointsEnd();
+
+
     //
     // Vectors
     //
@@ -351,9 +375,11 @@ private:
         ConnectedComponentData const & connectedComponent,
         bool withTexture);
 
-    void RenderStressedSpringElements(ConnectedComponentData const & connectedComponent);
+    void RenderStressedSpringElements(ConnectedComponentData const & connectedComponent);    
 
     void RenderGenericTextures(GenericTextureConnectedComponentData const & connectedComponent);
+
+    void RenderEphemeralPoints();
 
     void RenderVectors();
 
@@ -549,6 +575,15 @@ struct TextureRenderPolygonVertex
     };
 
     std::vector<ConnectedComponentData> mConnectedComponents;
+
+
+    //
+    // Ephemeral points
+    //
+
+    std::vector<PointElement> mEphemeralPoints;
+
+    GameOpenGLVBO mEphemeralPointVBO;
 
 
     //

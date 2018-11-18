@@ -20,6 +20,15 @@ public:
         return vec2f(); 
     }
 
+    inline static vec2f fromPolar(
+        float magnitude,
+        float angle)
+    {
+        return vec2f(
+            magnitude * cos(angle),
+            magnitude * sin(angle));
+    }
+
 	inline vec2f operator+(vec2f const & other) const
 	{
 		return vec2f(
@@ -149,6 +158,14 @@ public:
         return -atan2f(
             x * other.y - y * other.x,
             x * other.x + y * other.y);
+    }
+
+    /*
+     * Returns the vector rotated by PI/2.
+     */
+    inline vec2f to_perpendicular() const
+    {
+        return vec2f(-y, x);
     }
 
     std::string toString() const;

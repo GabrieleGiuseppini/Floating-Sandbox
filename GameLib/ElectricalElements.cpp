@@ -70,6 +70,7 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
 }
 
 void ElectricalElements::Update(
+    GameWallClock::time_point currentWallclockTime,
     VisitSequenceNumber currentConnectivityVisitSequenceNumber,
     Points const & points,
     GameParameters const & gameParameters)
@@ -84,6 +85,7 @@ void ElectricalElements::Update(
         {
             RunLampStateMachine(
                 iLamp,
+                currentWallclockTime,
                 currentConnectivityVisitSequenceNumber,
                 points,
                 gameParameters);
@@ -97,6 +99,7 @@ void ElectricalElements::Update(
 
 void ElectricalElements::RunLampStateMachine(
     ElementIndex elementLampIndex,
+    GameWallClock::time_point currentWallclockTime,
     VisitSequenceNumber currentConnectivityVisitSequenceNumber,
     Points const & points,
     GameParameters const & /*gameParameters*/)
@@ -114,8 +117,6 @@ void ElectricalElements::RunLampStateMachine(
         //
         // Normal lamp, only on if visited, and controlled by flicker state machine
         //
-
-        auto const now = GameWallClock::GetInstance().Now();
 
         switch (mElementStateBuffer[elementLampIndex].Lamp.State)
         {
@@ -151,7 +152,7 @@ void ElectricalElements::RunLampStateMachine(
 
                     // Transition state, choose whether to A or B
                     mElementStateBuffer[elementLampIndex].Lamp.FlickerCounter = 0u;
-                    mElementStateBuffer[elementLampIndex].Lamp.NextStateTransitionTimePoint = now + ElementState::LampState::FlickerStartInterval;
+                    mElementStateBuffer[elementLampIndex].Lamp.NextStateTransitionTimePoint = currentWallclockTime + ElementState::LampState::FlickerStartInterval;
                     if (GameRandomEngine::GetInstance().Choose(2) == 0)
                         mElementStateBuffer[elementLampIndex].Lamp.State = ElementState::LampState::StateType::FlickerA;
                     else
@@ -171,7 +172,7 @@ void ElectricalElements::RunLampStateMachine(
                     // Transition state
                     mElementStateBuffer[elementLampIndex].Lamp.State = ElementState::LampState::StateType::LightOn;
                 }
-                else if (now > mElementStateBuffer[elementLampIndex].Lamp.NextStateTransitionTimePoint)
+                else if (currentWallclockTime > mElementStateBuffer[elementLampIndex].Lamp.NextStateTransitionTimePoint)
                 {
                     ++mElementStateBuffer[elementLampIndex].Lamp.FlickerCounter;
 
@@ -187,7 +188,7 @@ void ElectricalElements::RunLampStateMachine(
                             mParentWorld.IsUnderwater(GetPosition(elementLampIndex, points)),
                             1);
 
-                        mElementStateBuffer[elementLampIndex].Lamp.NextStateTransitionTimePoint = now + ElementState::LampState::FlickerAInterval;
+                        mElementStateBuffer[elementLampIndex].Lamp.NextStateTransitionTimePoint = currentWallclockTime + ElementState::LampState::FlickerAInterval;
                     }
                     else if (2 == mElementStateBuffer[elementLampIndex].Lamp.FlickerCounter)
                     {
@@ -195,7 +196,7 @@ void ElectricalElements::RunLampStateMachine(
 
                         mAvailableCurrentBuffer[elementLampIndex] = 0.f;
 
-                        mElementStateBuffer[elementLampIndex].Lamp.NextStateTransitionTimePoint = now + ElementState::LampState::FlickerAInterval;
+                        mElementStateBuffer[elementLampIndex].Lamp.NextStateTransitionTimePoint = currentWallclockTime + ElementState::LampState::FlickerAInterval;
                     }
                     else
                     {
@@ -220,7 +221,7 @@ void ElectricalElements::RunLampStateMachine(
                     // Transition state
                     mElementStateBuffer[elementLampIndex].Lamp.State = ElementState::LampState::StateType::LightOn;
                 }
-                else if (now > mElementStateBuffer[elementLampIndex].Lamp.NextStateTransitionTimePoint)
+                else if (currentWallclockTime > mElementStateBuffer[elementLampIndex].Lamp.NextStateTransitionTimePoint)
                 {
                     ++mElementStateBuffer[elementLampIndex].Lamp.FlickerCounter;
 
@@ -236,7 +237,7 @@ void ElectricalElements::RunLampStateMachine(
                             mParentWorld.IsUnderwater(GetPosition(elementLampIndex, points)),
                             1);
 
-                        mElementStateBuffer[elementLampIndex].Lamp.NextStateTransitionTimePoint = now + ElementState::LampState::FlickerBInterval;
+                        mElementStateBuffer[elementLampIndex].Lamp.NextStateTransitionTimePoint = currentWallclockTime + ElementState::LampState::FlickerBInterval;
                     }
                     else if (2 == mElementStateBuffer[elementLampIndex].Lamp.FlickerCounter
                             || 4 == mElementStateBuffer[elementLampIndex].Lamp.FlickerCounter)
@@ -245,7 +246,7 @@ void ElectricalElements::RunLampStateMachine(
 
                         mAvailableCurrentBuffer[elementLampIndex] = 0.f;
 
-                        mElementStateBuffer[elementLampIndex].Lamp.NextStateTransitionTimePoint = now + ElementState::LampState::FlickerBInterval;
+                        mElementStateBuffer[elementLampIndex].Lamp.NextStateTransitionTimePoint = currentWallclockTime + ElementState::LampState::FlickerBInterval;
                     }
                     else if (3 == mElementStateBuffer[elementLampIndex].Lamp.FlickerCounter)
                     {
@@ -258,7 +259,7 @@ void ElectricalElements::RunLampStateMachine(
                             mParentWorld.IsUnderwater(GetPosition(elementLampIndex, points)),
                             1);
 
-                        mElementStateBuffer[elementLampIndex].Lamp.NextStateTransitionTimePoint = now + 2 * ElementState::LampState::FlickerBInterval;
+                        mElementStateBuffer[elementLampIndex].Lamp.NextStateTransitionTimePoint = currentWallclockTime + 2 * ElementState::LampState::FlickerBInterval;
                     }
                     else
                     {

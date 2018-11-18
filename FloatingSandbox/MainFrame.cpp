@@ -76,7 +76,7 @@ MainFrame::MainFrame(wxApp * mainApp)
     , mGameController()
     , mSoundController()
     , mToolController()
-    , mCurrentShipNames()
+    , mCurrentShipTitles()
     , mCurrentRCBombCount(0u)
     , mCurrentAntiMatterBombCount(0u)
     , mIsShiftKeyDown(false)
@@ -554,6 +554,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     mLowFrequencyTimer->Start(1000, false);
 
 
+
     //
     // Show ourselves now
     //
@@ -583,6 +584,8 @@ void MainFrame::OnQuit(wxCommandEvent & /*event*/)
 
 void MainFrame::OnPaint(wxPaintEvent & event)
 {
+    // This happens sparingly, mostly when the window is resized and when it's shown
+
     RenderGame();
 
     event.Skip();
@@ -678,6 +681,10 @@ void MainFrame::OnLowFrequencyTimerTrigger(wxTimerEvent & /*event*/)
 
     assert(!!mSoundController);
     mSoundController->LowFrequencyUpdate();
+}
+
+void MainFrame::OnIdle(wxIdleEvent & /*event*/)
+{
 }
 
 //
@@ -1039,10 +1046,10 @@ void MainFrame::UpdateFrameTitle()
 
     ss << GetVersionInfo(VersionFormat::Long);
 
-    if (!mCurrentShipNames.empty())
+    if (!mCurrentShipTitles.empty())
     {
         ss << " - "
-            << Utils::Join(mCurrentShipNames, " + ");
+            << Utils::Join(mCurrentShipTitles, " + ");
     }
 
     SetTitle(ss.str());
@@ -1088,11 +1095,11 @@ void MainFrame::RenderGame()
 {
     if (!!mGameController)
     {
+        // Flip the (previous) back buffer onto the screen
+        mMainGLCanvas->SwapBuffers();
+
         // Render
         mGameController->Render();
-
-        // Flip the back buffer onto the screen
-        mMainGLCanvas->SwapBuffers();
     }
 }
 

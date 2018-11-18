@@ -5,6 +5,7 @@
  ***************************************************************************************/
 #include "Physics.h"
 
+#include "GameRandomEngine.h"
 #include "Log.h"
 #include "Segment.h"
 
@@ -37,6 +38,7 @@ Ship::Ship(
     Springs && springs,
     Triangles && triangles,
     ElectricalElements && electricalElements,
+    std::shared_ptr<MaterialDatabase> materialDatabase,
     VisitSequenceNumber currentVisitSequenceNumber)
     : mId(id)
     , mParentWorld(parentWorld)    
@@ -45,6 +47,7 @@ Ship::Ship(
     , mSprings(std::move(springs))
     , mTriangles(std::move(triangles))
     , mElectricalElements(std::move(electricalElements))
+    , mMaterialDatabase(std::move(materialDatabase))
     , mConnectedComponentSizes()
     , mAreElementsDirty(true)
     , mIsSinking(false)
@@ -64,8 +67,8 @@ Ship::Ship(
     , mCurrentForceFields()
 {
     // Set destroy handlers
-    mPoints.RegisterDestroyHandler(std::bind(&Ship::PointDestroyHandler, this, std::placeholders::_1));
-    mSprings.RegisterDestroyHandler(std::bind(&Ship::SpringDestroyHandler, this, std::placeholders::_1, std::placeholders::_2));
+    mPoints.RegisterDestroyHandler(std::bind(&Ship::PointDestroyHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+    mSprings.RegisterDestroyHandler(std::bind(&Ship::SpringDestroyHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
     mTriangles.RegisterDestroyHandler(std::bind(&Ship::TriangleDestroyHandler, this, std::placeholders::_1));
     mElectricalElements.RegisterDestroyHandler(std::bind(&Ship::ElectricalElementDestroyHandler, this, std::placeholders::_1));
 
@@ -79,19 +82,25 @@ Ship::~Ship()
 
 void Ship::DestroyAt(
     vec2f const & targetPos, 
-    float radius)
+    float radiusMultiplier,
+    float currentSimulationTime,
+    GameParameters const & gameParameters)
 {
+    float const radius = gameParameters.DestroyRadius * radiusMultiplier;
     float const squareRadius = radius * radius;
 
-    // Destroy all points within the radius
-    for (auto pointIndex : mPoints)
+    // Destroy all (non-ephemeral) points within the radius
+    for (auto pointIndex : mPoints.NonEphemeralPoints())
     {
         if (!mPoints.IsDeleted(pointIndex))
         {
             if ((mPoints.GetPosition(pointIndex) - targetPos).squareLength() < squareRadius)
             {
                 // Destroy point
-                mPoints.Destroy(pointIndex);
+                mPoints.Destroy(
+                    pointIndex,
+                    currentSimulationTime,
+                    gameParameters);
             }
         }
     }
@@ -99,7 +108,9 @@ void Ship::DestroyAt(
 
 void Ship::SawThrough(
     vec2f const & startPos,
-    vec2f const & endPos)
+    vec2f const & endPos,
+    float currentSimulationTime,
+    GameParameters const & gameParameters)
 {
     //
     // Find all springs that intersect the saw segment
@@ -120,7 +131,20 @@ void Ship::SawThrough(
                     springIndex,
                     Springs::DestroyOptions::FireBreakEvent
                     | Springs::DestroyOptions::DestroyOnlyConnectedTriangle,
+                    currentSimulationTime,
+                    gameParameters,
                     mPoints);
+
+                if (!mSprings.IsRope(springIndex))
+                {
+                    // Emit sparkles
+                    GenerateSparkles(
+                        springIndex,
+                        startPos,
+                        endPos,
+                        currentSimulationTime,
+                        gameParameters);
+                }
             }
         }
     }
@@ -220,9 +244,13 @@ ElementIndex Ship::GetNearestPointIndexAt(
 }
 
 void Ship::Update(
+    float currentSimulationTime,
     VisitSequenceNumber currentVisitSequenceNumber,
     GameParameters const & gameParameters)
 {
+    auto const currentWallClockTime = GameWallClock::GetInstance().Now();
+
+
     //
     // Process eventual parameter changes
     //
@@ -236,7 +264,9 @@ void Ship::Update(
     // Update mechanical dynamics
     //
 
-    UpdateMechanicalDynamics(gameParameters);
+    UpdateMechanicalDynamics(
+        currentSimulationTime,
+        gameParameters);
 
 
     //
@@ -246,7 +276,9 @@ void Ship::Update(
     // (which would flag our elements as dirty)
     //
 
-    mBombs.Update(gameParameters);
+    mBombs.Update(
+        currentWallClockTime,
+        gameParameters);
 
 
     //
@@ -255,6 +287,7 @@ void Ship::Update(
     //
 
     mSprings.UpdateStrains(
+        currentSimulationTime,
         gameParameters,
         mPoints);
 
@@ -281,7 +314,17 @@ void Ship::Update(
     //
 
     UpdateElectricalDynamics(
+        currentWallClockTime,
         currentVisitSequenceNumber, 
+        gameParameters);
+
+
+    //
+    // Update ephemeral particles
+    //
+
+    UpdateEphemeralParticles(
+        currentSimulationTime,
         gameParameters);
 }
 
@@ -367,7 +410,6 @@ void Ship::Render(
 
         renderContext.UploadShipElementStressedSpringsEnd(mId);
 
-
         mAreElementsDirty = false;
     }        
 
@@ -385,6 +427,14 @@ void Ship::Render(
     //
 
     mPinnedPoints.Upload(
+        mId,
+        renderContext);
+
+    //
+    // Upload ephemeral points
+    //
+
+    mPoints.UploadEphemeralParticles(
         mId,
         renderContext);
 
@@ -411,14 +461,19 @@ void Ship::Render(
 // Mechanical Dynamics
 ///////////////////////////////////////////////////////////////////////////////////
 
-void Ship::UpdateMechanicalDynamics(GameParameters const & gameParameters)
+void Ship::UpdateMechanicalDynamics(
+    float currentSimulationTime,
+    GameParameters const & gameParameters)
 {
     for (int iter = 0; iter < GameParameters::NumMechanicalDynamicsIterations<int>; ++iter)
     {
         // Apply force fields - if we have any
         for (auto const & forceField : mCurrentForceFields)
         {
-            forceField->Apply(mPoints);
+            forceField->Apply(
+                mPoints,
+                currentSimulationTime,
+                gameParameters);
         }
 
         // Update point forces
@@ -461,11 +516,16 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
         //        
 
         // Mass = own + contained water (clamped to 1)
-        mPoints.GetForce(pointIndex) += gameParameters.Gravity
+        float const totalPointMass =
+            mPoints.GetMass(pointIndex)
             // FUTURE: revert to the line below (physically correct) once we also have a mass adjustment;
             // without a mass adjustment, it'd be hard to sink ships when using a higher buoyancy adjustment
-            //* (mPoints.GetMass(pointIndex) + std::min(mPoints.GetWater(pointIndex), 1.0f) * 1000.0f);
-            * (mPoints.GetMass(pointIndex) + std::min(mPoints.GetWater(pointIndex), 1.0f) * BuoyancyAdjustedWaterMass);
+            //+ std::min(mPoints.GetWater(pointIndex), 1.0f) * WaterMass;
+			+ std::min(mPoints.GetWater(pointIndex), 1.0f) * BuoyancyAdjustedWaterMass;
+
+        mPoints.GetForce(pointIndex) += 
+            gameParameters.Gravity
+            * totalPointMass;
 
         if (mPoints.GetPosition(pointIndex).y < waterHeightAtThisPoint)
         {
@@ -1037,6 +1097,7 @@ void Ship::UpdateWaterVelocities(
 ///////////////////////////////////////////////////////////////////////////////////
 
 void Ship::UpdateElectricalDynamics(
+    GameWallClock::time_point currentWallclockTime,
     VisitSequenceNumber currentVisitSequenceNumber,
     GameParameters const & gameParameters)
 {
@@ -1044,6 +1105,7 @@ void Ship::UpdateElectricalDynamics(
     UpdateElectricalConnectivity(currentVisitSequenceNumber);
 
     mElectricalElements.Update(
+        currentWallclockTime,
         currentVisitSequenceNumber,
         mPoints,
         gameParameters);
@@ -1156,6 +1218,26 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
     }
 }
 
+void Ship::UpdateEphemeralParticles(
+    float currentSimulationTime,
+    GameParameters const & gameParameters)
+{
+    //
+    // 1. Update existing particles
+    //
+
+    mPoints.UpdateEphemeralParticles(
+        currentSimulationTime,
+        gameParameters);
+
+
+    //
+    // 2. Emit new particles
+    //
+
+    // FUTURE: when we have emitters
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // Private helpers
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -1167,8 +1249,8 @@ void Ship::DetectConnectedComponents(VisitSequenceNumber currentVisitSequenceNum
     ConnectedComponentId currentConnectedComponentId = 0;
     std::queue<ElementIndex> pointsToVisitForConnectedComponents;
 
-    // Visit all points
-    for (auto pointIndex : mPoints)
+    // Visit all non-ephemeral points, or we run the risk of creating a zillion connected components
+    for (auto pointIndex : mPoints.NonEphemeralPoints())
     {
         // Don't visit destroyed points, or we run the risk of creating a zillion connected components
         if (!mPoints.IsDeleted(pointIndex))
@@ -1282,7 +1364,10 @@ void Ship::DestroyConnectedTriangles(
     }
 }
 
-void Ship::PointDestroyHandler(ElementIndex pointElementIndex)
+void Ship::PointDestroyHandler(
+    ElementIndex pointElementIndex,
+    float currentSimulationTime,
+    GameParameters const & gameParameters)
 {
     //
     // Destroy all springs attached to this point
@@ -1299,6 +1384,8 @@ void Ship::PointDestroyHandler(ElementIndex pointElementIndex)
             connectedSprings.back(),
             Springs::DestroyOptions::DoNotFireBreakEvent // We're already firing the Destroy event for the point
             | Springs::DestroyOptions::DestroyAllTriangles,
+            currentSimulationTime,
+            gameParameters,
             mPoints);
     }
 
@@ -1342,13 +1429,21 @@ void Ship::PointDestroyHandler(ElementIndex pointElementIndex)
     // Notify pinned points
     mPinnedPoints.OnPointDestroyed(pointElementIndex);
 
+    // Emit debris
+    GenerateDebris(
+        pointElementIndex,
+        currentSimulationTime,
+        gameParameters);
+
     // Remember our elements are now dirty
     mAreElementsDirty = true;
 }
 
 void Ship::SpringDestroyHandler(
     ElementIndex springElementIndex,
-    bool destroyAllTriangles)
+    bool destroyAllTriangles,
+    float /*currentSimulationTime*/,
+    GameParameters const & /*gameParameters*/)
 {
     auto const pointAIndex = mSprings.GetPointAIndex(springElementIndex);
     auto const pointBIndex = mSprings.GetPointBIndex(springElementIndex);
@@ -1436,6 +1531,121 @@ void Ship::ElectricalElementDestroyHandler(ElementIndex /*electricalElementIndex
 {
     // Remember our elements are now dirty
     mAreElementsDirty = true;
+}
+
+void Ship::GenerateDebris(
+    ElementIndex pointElementIndex,
+    float currentSimulationTime,
+    GameParameters const & gameParameters)
+{
+    if (gameParameters.DoGenerateDebris)
+    {
+        auto const debrisParticleCount = GameRandomEngine::GetInstance().GenerateRandomInteger(
+            GameParameters::MinDebrisParticlesPerEvent, GameParameters::MaxDebrisParticlesPerEvent);
+
+        for (size_t d = 0; d < debrisParticleCount; ++d)
+        {
+            // Choose a velocity vector: point on a circle with random radius and random angle
+            float const velocityMagnitude = GameRandomEngine::GetInstance().GenerateRandomReal(
+                GameParameters::MinDebrisParticlesVelocity, GameParameters::MaxDebrisParticlesVelocity);
+            float const velocityAngle = GameRandomEngine::GetInstance().GenerateRandomReal(0.0f, 2.0f * Pi<float>);
+
+            // Choose a lifetime
+            std::chrono::milliseconds const maxLifetime = std::chrono::milliseconds(
+                GameRandomEngine::GetInstance().GenerateRandomInteger(
+                    GameParameters::MinDebrisParticlesLifetime.count(),
+                    GameParameters::MaxDebrisParticlesLifetime.count()));
+
+            mPoints.CreateEphemeralParticleDebris(
+                mPoints.GetPosition(pointElementIndex),
+                vec2f::fromPolar(velocityMagnitude, velocityAngle),
+                mPoints.GetMaterial(pointElementIndex),
+                currentSimulationTime,
+                maxLifetime,
+                mPoints.GetConnectedComponentId(pointElementIndex));
+        }
+    }
+}
+
+void Ship::GenerateSparkles(
+    ElementIndex springElementIndex,
+    vec2f const & cutDirectionStartPos,
+    vec2f const & cutDirectionEndPos,
+    float currentSimulationTime,
+    GameParameters const & gameParameters)
+{
+    if (gameParameters.DoGenerateSparkles)
+    {
+        //
+        // Choose number of particles
+        //
+
+        auto const sparkleParticleCount = GameRandomEngine::GetInstance().GenerateRandomInteger<size_t>(
+            GameParameters::MinSparkleParticlesPerEvent, GameParameters::MaxSparkleParticlesPerEvent);
+
+
+        //
+        // Choose start and end colors
+        //
+
+        vec4f startColor;
+        vec4f endColor;
+        Material const * material = mSprings.GetBaseMaterial(springElementIndex);
+        if (!!(material->Sound)
+            && Material::SoundProperties::SoundElementType::Metal == material->Sound->ElementType)
+        {
+            startColor = vec4f(1.0f, 0.95f, 0.09f, 1.0f); // Opaque
+            endColor = vec4f(0.55f, 0.1f, 0.1f, 0.0f); // Transparent
+        }
+        else
+        {
+            startColor = endColor = material->RenderColour;
+        }
+
+
+        //
+        // Choose velocity angle distribution: butterfly perpendicular to cut direction
+        //
+
+        vec2f const perpendicularCutVector = (cutDirectionEndPos - cutDirectionStartPos).normalise().to_perpendicular();
+        float const axisAngle = perpendicularCutVector.angle(vec2f(1.0f, 0.0f));
+        float constexpr AxisAngleWidth = Pi<float> / 4.0f;
+        float const startAngle = axisAngle - AxisAngleWidth;
+        float const endAngle = axisAngle + AxisAngleWidth;
+
+
+        //
+        // Create particles
+        //
+
+        for (size_t d = 0; d < sparkleParticleCount; ++d)
+        {
+            // Velocity magnitude
+            float const velocityMagnitude = GameRandomEngine::GetInstance().GenerateRandomReal(
+                GameParameters::MinSparkleParticlesVelocity, GameParameters::MaxSparkleParticlesVelocity);
+
+            // Velocity angle: butterfly perpendicular to *direction of sawing*, not spring
+            float const velocityAngle =
+                GameRandomEngine::GetInstance().GenerateRandomReal(startAngle, endAngle)
+                + (GameRandomEngine::GetInstance().Choose(2) == 0 ? Pi<float> : 0.0f);
+
+            // Choose a lifetime
+            std::chrono::milliseconds const maxLifetime = std::chrono::milliseconds(
+                GameRandomEngine::GetInstance().GenerateRandomInteger(
+                    GameParameters::MinSparkleParticlesLifetime.count(),
+                    GameParameters::MaxSparkleParticlesLifetime.count()));
+
+            mPoints.CreateEphemeralParticleSparkle(
+                mSprings.GetMidpointPosition(springElementIndex, mPoints),
+                vec2f::fromPolar(velocityMagnitude, velocityAngle),
+                mSprings.GetBaseMaterial(springElementIndex),
+                currentSimulationTime,
+                maxLifetime,
+                startColor,
+                endColor,
+                mSprings.GetConnectedComponentId(springElementIndex, mPoints));
+        }
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////

@@ -70,16 +70,25 @@ ShipDefinition ResourceLoader::LoadShipDefinition(std::filesystem::path const & 
 
 
         //
+        // Fill-in defaults
+        //
+
+        std::string shipName = sdf.Metadata.ShipName.empty()
+            ? std::filesystem::path(filepath).stem().string()
+            : sdf.Metadata.ShipName;
+
+
+        //
         // Load
         //
 
         return ShipDefinition(
             LoadImage(absoluteStructuralImageFilePath.string(), IL_RGB, IL_ORIGIN_UPPER_LEFT),
             std::move(textureImage),
-            sdf.ShipName.empty() 
-                ? std ::filesystem::path(filepath).stem().string() 
-                : sdf.ShipName,
-            sdf.Offset);
+            ShipMetadata(
+                shipName,
+                sdf.Metadata.Author,
+                sdf.Metadata.Offset));
     }
     else
     {
@@ -92,8 +101,10 @@ ShipDefinition ResourceLoader::LoadShipDefinition(std::filesystem::path const & 
         return ShipDefinition(
             std::move(imageData),
             std::nullopt,
-            std::filesystem::path(filepath).stem().string(),
-            vec2f(0.0f, 0.0f));
+            ShipMetadata(
+                std::filesystem::path(filepath).stem().string(),
+                std::nullopt,
+                vec2f(0.0f, 0.0f)));
     }
 }
 
@@ -178,12 +189,12 @@ std::vector<Render::Font> ResourceLoader::LoadFonts(ProgressCallback const & pro
 // Materials
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-MaterialDatabase ResourceLoader::LoadMaterials()
+std::unique_ptr<MaterialDatabase> ResourceLoader::LoadMaterials()
 {
     return LoadMaterials(std::filesystem::path("Data") / "materials.json");
 }
 
-MaterialDatabase ResourceLoader::LoadMaterials(std::filesystem::path const & filePath)
+std::unique_ptr<MaterialDatabase> ResourceLoader::LoadMaterials(std::filesystem::path const & filePath)
 {
     picojson::value root = Utils::ParseJSONFile(filePath.string());
     return MaterialDatabase::Create(root);

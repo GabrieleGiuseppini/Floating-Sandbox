@@ -64,7 +64,7 @@ public:
      * Returns false when the bomb has "expired" and thus can be deleted.
      */
     virtual bool Update(
-        GameWallClock::time_point now,
+        GameWallClock::time_point currentWallClockTime,
         GameParameters const & gameParameters) = 0;
 
     /*

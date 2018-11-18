@@ -301,6 +301,15 @@ public:
             rgbColour[2] / 255.f);
     }
 
+    static vec4f RgbaToVec(std::array<uint8_t, 4u> const & rgbaColour)
+    {
+        return vec4f(
+            rgbaColour[0] / 255.f,
+            rgbaColour[1] / 255.f,
+            rgbaColour[2] / 255.f,
+            rgbaColour[3] / 255.f);
+    }
+
     //
     // Text files
     //

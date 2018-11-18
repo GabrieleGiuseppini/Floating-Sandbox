@@ -16,6 +16,9 @@ GameParameters::GameParameters()
     , WaterIntakeAdjustment(1.0f)
     , WaterCrazyness(1.0f)
     , WaterQuickness(0.5f)
+    // Ephemeral particles
+    , DoGenerateDebris(true)
+    , DoGenerateSparkles(true)
     // Misc
     , WaveHeight(2.5f)
     , SeaDepth(200.0f)

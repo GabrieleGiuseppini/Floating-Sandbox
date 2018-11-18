@@ -1,5 +1,37 @@
 =================================================
-Current perf
+Current perf (ephemeral particles)
+=================================================
+- fps: 28.8/29.0 (Samsung: TBD (Krafting)) (Mattia's: TBD (Krafting))
+- GameController::Update: TBD 35.06%
+	- Ship::Update: 34.33%
+		- UpdateMechanicalDynamics: 25.70%
+			- UpdateSpringForces: 18.80%
+			- UpdatePointForces: 3.45%
+			- HandleCollisionsWithSeafloor: 2.45%
+			- IntegratePointForces: 1.00%
+		- UpdateWaterDynamics: 7.83%
+			- UpdateWaterVelocities: 7.73%
+			- UpdateWaterInflow: 0.05%
+		- UpdateStrains: 0.78%
+	- DiffuseLight: 0.58%
+	- WaterSurface::Update: 0.11%
+- World::Render: 57.00%
+	- ShipRenderContext::RenderEnd: 52.87%
+	- RenderContext::RenderCloudsEnd: 1.49%
+	- RenderContext::RenderStart: 0.50%
+	- Ship::Render: 0.14%
+		- UploadPoints: 0.12%
+	- RenderContext::RenderWater: 0.05%
+	- World::RenderClouds: 0.04%
+		- fmodf: 0.02%
+	- RenderContext::RenderLand: 0.01%
+- RenderContext::RenderEnd: 0.35%
+	- TextRenderContext::RenderEnd: 0.35%
+- wxGLCanvas::SwapBuffers: 1.07%
+=================================================
+
+=================================================
+1.6.0 perf
 =================================================
 - fps: 29.6 (Samsung: TBD:31.5 (Krafting)) (Mattia's: TBD:25.1 (Krafting))
 - GameController::Update: 35.06%
@@ -45,32 +77,11 @@ NoInline
 	- RenderContext::UploadLandAndWaterEnd: 0.04%
 	- RenderContext::UploadLandAndWater: 0.03%
 - RenderContext::RenderEnd: 0.30%
-
 =================================================
 Render:
 	- No Ship::RenderEnd: 64fps
 	- Only springs: 30fps
 	- Only triangles: 42fps
-=================================================
-
-=================================================
-Right after 1.5.0 perf (before texture shader & shaders' optimizations)
-=================================================
-- GameController::Update: 34.50%
-	- Ship::Update: 33.68%
-		- UpdateMechanicalDynamics: 25.18%
-			- UpdateSpringForces: 18.64%
-			- UpdatePointForces: 3.36%
-			- HandleCollisionsWithSeafloor: 2.26% / 2.32% (with new elastic impact)
-			- IntegratePointForces: 0.92%
-		- UpdateWaterDynamics: 7.68%
-			- UpdateWaterVelocities: 7.58%
-			- UpdateWaterInflow: 0.05%
-		- UpdateStrains: 0.79%
-	- DiffuseLight: 0.70%
-- World::Render: 57.68%
-	- ShipRenderContext::RenderEnd: 52.41%
-	- RenderContext::RenderCloudsEnd: 2.84%
 =================================================
 1.3.0 perf
 =================================================
@@ -103,16 +114,39 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 ====================================================
 ====================================================
 
+- Current roadmap:
+	- Git: Merge
+	- Saw sounds
+	- Settings manager
+	- Bubbles
+
+
 - New ships
+	- Fix contributions
 	= USS Shark
 		- Need Z buffer work first
 	- Warship
 	- See Moleskine
 
 - Suggestions to spec:
-	- Different colored lights
-	- 
+	- Fix ambient light increments
+		- See if can do curve
+	- Changing the height of the bumps of the ground
+		- Allow the minimum seabed height to be 0
+	- Changing the width of the waves up to at least 10x the current size
 
+	- A toggle-able shader for the sea - so it gets darker the further down you go; it would be affected by the ambient lighting		
+	- Different colored lights
+	- Lights with different chances of turning off
+	- Tool to flood ship	
+	- Being able to drop the sea floor much further down than 500m or so too, like 10km
+	- Morse code: text-to-morse encoder
+	- Custom sky colour - if possible a RGB picker in the settings
+		- I would do the same for the water in the ship
+	- Stars at night would be pretty cool too
+
+- Technical debt
+	+ Replace ShipDefinitionFile's metadata with ShipDefinition
 
 - Optimizations:
 
@@ -211,21 +245,37 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 	- Cache sea depth from PointDynamics at first calculation (Points?), using lambda
 
 - Gfx optimizations:
-	- TODOHERE: See if can use multiple texture units
-		- Bind once atlas, land, and water at cctor, to each unit
-		- Change shaders
+
+	+ See if can use multiple texture units
+		+ Bind once atlas, land, and water at cctor, to each unit
+		+ Change shaders to have one single texture sampler param, and set uniform locations to texture unit
+		+ Do only for clouds, generic texture, land, and water
+			+ Revert RenderContext.cpp, ShipRenderContext.cpp, TextRenderContext.cpp
+			+ Fonts and ship stay as before, they use texture unit 0 - SharedTexture
+			+ Shaders
+			+ Remember to activate texture unit 0 before binding, at:
+				+ Ship texture, stressed spring texture, font
+		+ Fix: land, generic
+		+ : test
+		+ Replace calls to glActiveTexture with ShaderManager::ActivateTexture(parameter)
+		+ Fix/Recheck progress bar
+		+ Redo perf FPS measurement
+
 
 	- See if can unify springs and ropes rendering
 		- Just make sure that ropecolor is already in point color buffer
 		- RenderSprings + RenderRopes == new RenderSprings:
 			- Watch out: ropes can't ever use texture
 		- What about rendering phases?
+
 	- Try using GL_SHORT for Ship texture coordinates
 		- Passing NORMALIZE and 3 components to glVertexAttribPointer
-	- (Retry) Use CPU and GPU in parallel
-		- Finalize render (glFlush) before render step, not after
-			- Research glFlush()
-			- By invoking glFlush() and SwapBuffers() in MainFrame, before Render()
+
+	+ (Retry) Use CPU and GPU in parallel
+		+ Finalize render (glFlush) before render step, not after
+			+ Research glFlush()
+			+ By invoking glFlush() and SwapBuffers() in MainFrame, before Render()
+
 	- More connected components => slower (multiple batches); try
 	  to draw one single batch then, using Z buffer and depth test 
 		- Assign Z based on connected component ID
@@ -250,8 +300,10 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 	- Problem with texture over edges of structure: when texture is not reduced by structure (i.e. when structure is
 	  larger than texture), then one sees parts of the springs
 		- It's a problem with rendering springs with the texture shader
-	- Draw better those parts that are only connected by ropes 
-		- Change connected component detection by not propagating from a "spring only" to a "body"
+		- However, these springs give an anti-aliasing effect
+	- Draw better (depth-wise) those parts that are only connected by ropes 
+		- Change connected component detection by not propagating from a "spring only" to a "body", so that two bodies connected
+		  only by springs or ropes are considered separate, and spring/rope belongs to first one only
 			- In practice: flood the *edge* network, not the spring network, and don't propagate
 			  if coming from edge with zero triangles to an edge with !=0 triangles
 	- Option to enable drawing of force vectors for each point
@@ -263,123 +315,54 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 	- Magnifying glass
 		- https://www.opengl.org/discussion_boards/showthread.php/154811-magnifying-glass-effect
 		- https://www.shadertoy.com/view/4tdXDl
-	- Ocean depth bitmaps
-	- Save photos (opens SaveAs FileDialog)
-	- Text (for query tool):
-		- see https://github.com/wxWidgets/wxWidgets/blob/master/samples/opengl/pyramid/pyramid.cpp
 	+ Bug: bombs et al fade more rapidly than ship when ambient light goes away
 
 - Dynamics:
 
-	- Ephemeral Particles:
-		- Spec:
-			- Carve out fixed-size room at tail of Points for ephemeral particles				
-				- Each has own lifetime
-			- Ephemeral particles cannot be deleted
-			- Rendering: via:
-				- ShipRenderContext::UploadEphemeralParticlePoints (e.g. for points)
-					- Just indexes
-					- Color/alpha portion of buffer has to be uploaded first
-				- ShipRenderContext::UploadGenericTexture (e.g. for bubbles)
-					+ Need to also support alphaTransparency
-			- Ephemeral particles are drawn with own color, including alpha going to transparent as lifetime increases
-				- Test first perf impact of using vec4f for point colors
-					- If sucks a lot, will need new extra buffer just for points' alpha
-						- Also this buffer issegmented
-				- Ephemeral portion of entire points color buffer needs to be reloaded at each Upload() 
-				  or UploadEphemeralParticles() (2*)
-					- Use glSubBufferData
-					- If we go for separate alpha buffer: also do for ephemeral portion of alpha buffer
-		- Impl:
+	- Extended status text
+		- Shows:
+			- Current zoom
+			- Rendering vs simulation percentages
+		- Multi-row:
+			- Text layer splits/gets it split & gives vector to TextRenderContext
 
-			- Points has new buffers:
-				- EphemeralType (uint8 enum)
-					- None (set at non-ephemeral and at dead ephemerals)
-					- Debris
-					- Sparkle
-					- AirBubble
-					- Smoke
-				- EphemeralLifetime (std::chrono::milliseconds)
-				- EphemeralMaxLifetime (std::chrono::milliseconds)
-				- private: 
-					- EphemeralState: union of public structs (much like ElectricalElements::ElementState)
-						- Debris: {}
-						- Sparkle: {}
-						- AirBubble: {}
-						- Smoke: {}
-					- Buffer<EphemeralState> mEphemeralStateBuffer;
+	- Auto-adjust zoom at ship load
+		- If enabled: GameController calcs required zoom, compares with current, and eventually adjusts
 
-			- Ship: limit point range:
-				- @ destroy tool, @ bombs explosions, and @ anything else that destroys point: do not destroy ephemeral points
-				- @ toggle bombs: do not attach to ephemeral points
-				- For all of these: use Points::NonEphemeralPoints iterator, or check EphemeralType != None, depending on the case
-						
-			- Points methods:
-				- CreateEphemeralParticleDebris: 
-					- Args:
-						- Position, Velocity
-						- MaxLifetime
-						- Material *
-							- Requires MaterialDatabase to be handy at invoker of CreateEphemeralParticleDebris
-								- Ship must take a DB by value at cctor
-							- Though Debris uses spring's material
-					- Impl:
-						- Find first expired particle; if not found, pick the oldest
-						- Store Color, Position, Velocity
-						- Store Mass
-						- Do any other initializations that we do at Points::Add(...)
-						- Store MaxLifetime, and zero lifetime
+	- Slider for "Mass Adjustment"
+		- Recalcs Point's mass things, including mass itself
+		- Also used at bombs - how?
+		- When done, re-enable buoyancy fix
 
-			- Points::UpdateEphemeralParticles(clockNow):
-				- If time has expired (now):
-					- No need to mark as deleted to hide them, EphemeralType==None suffices to prevent them from being rendered
-					- Reset velocity and integration factor of expired particles to avoid drifting
-						- Rename Points::Pin/Unpin() to Freeze/Thaw()
-					- Set EphemeralType to None
-				- Else: do per-type state machine, with dispatch coded in method depending on type, invoking 
-				  per-type state machine method; for example:
-					- Those that are points:
-						- Calc remaining life
-						- Update alpha either in (portion of) color buffer or in (portion of) alpha buffer
-					- Those that are textures:
-						- Calc remaining life
+	- Slider for "simulation quality", affecting num of mechanical simulation iterations
+		- Integer slider, from 0 to 10
+			- 0 = half
+			- 1 = current
+			- 2 = 2x
+			- ...
+		- Points might have to recalc things on changes
 
-			- Points::UploadEphemeralParticles():
-				- 1) Upload portion of color buffer/alpha buffer specific to ephemeral particles
-				- 2) For all ephemeral points with EphemeralType != None: use dispatch coded in method depending on type, invoking 
-				     per-type upload method; for example:
-					- Those that are points:
-						- Add point index to a buffer
-					- Those that are textures:
-						- Call directly ShipRenderContext::UploadGenericTexture(...)
-				- At end:
-					- Upload point index buffer
-						- via ShipRenderContext::UploadEphemeralParticlePoints
+	+ Fix ephemeral particles
+		+ Pass also "now" all over the place
+			+ End put back UpdateEphemeralParticles where it was
+		+ Just single vector of PointIndex, no connected components
+		+ Make ephemeral particles' update based on simulation clock, not wall clock
+			+ "now" passed everywhere really has to become a "simulationNow" float
+		+ Test
+		+ Finalize constants
 
-			- Ship::UpdateEphemeralParticles(clockNow):
-				- Calls Points::UpdateEphemeralParticles(clockNow)
-				- Emits ephemeral particles from emitters (e.g. smoke)
-					- For now empty
 
-	- Do debris each time a spring breaks
-		- Look'n'feel: 
-			- Points of the color of the spring's material
-				- Actually, points of the spring's material
-		- At Ship::SpringDestroyHandler()
-			- Choose 0, 1, or 2 debris // Experiment
-			- For each:
-				- Material = spring's material
-				- Position = midpoint of spring
-				- Velocity = point on circle as:
-					- Radius: random in [1, 5] // Experiment
-					- Angle: random in [0, 2PI]
-				- MaxLifetime = from GameParameters static const, plus random factor in [0.5-1.0]
-		- Debris:
-			- Update: 
-				- Update color's alpha based off remaining lifetime, linear
-				+ [will later do random walk]
-			- Upload: 
-				- Just store index in buffer
+	- Figure out what to do with connected components and ephemeral particles
+		- Depending on the above:
+			- See if can piggyback the fact that Points is already uploading all (well, now non-ephemeral) point element indices
+			- ShipRenderContext: for each conn component, use a vector (w/reserve) rather than full MaxParticles
+				- Can then get rid of MaxCount, CurrentCount
+		- Possible solution # 1: wait for Z buffer; when it will be done everything will be for free:
+			- Assign provoking point's Connected Component ID 
+			- ConnectedComponent buffer is a proxy of points' Z, has no bearing to multiple buffers that need to be pre-allocated
+			- Ephemeral particles in ShipRenderContext are then a single NOT-per-connected-component single buffer of indices,
+			  exactly like normal points
+				- May be at this moment we can unify normal point uploading
 
 	- Ephemeral particle emitters
 		- Implemented like electrical elements, i.e.:
@@ -394,14 +377,28 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 		- Ship::UpdateEphemeralParticles: invokes EphemeralParticlesEmitters::Update(...)
 			- Which invokes IEphemeralParticleEmitter::Update(clockNow, mPoints) for each emitter
 
-	- Research particle motion - inject random walk			
+	- Research particle motion - inject random walk
+		- https://core.ac.uk/download/pdf/337937.pdf !!!
+		- http://orbit.dtu.dk/files/3706687/Visser6.pdf
+		- @ Smoke
+			- http://matthias-mueller-fischer.ch/publications/sca03.pdf
+		- @ Air bubbles
+		
 
-	- Do chainsaw sparkles with Ephemeral Particles
-		- At Ship::Chainsaw for each broken spring
-		- Initial particle dynamics:
-			- Position: midpoint of spring
-			- Velocity: radial vector, according to pseudo-Gaussian centered in the direction of sawing, with magnitude uniformly random
-			- Number: per Update step: uniform random centered around SparkleDensity (ratio over 10, initially) (from GameParameters, adjustable)
+	+ Do chainsaw sparkles with Ephemeral Particles
+		+ At Ship::Chainsaw for each broken spring
+		+ Initial particle dynamics:
+			+ Position: midpoint of spring
+			+ Velocity: radial vector:
+				+ Butterfly perpendicular to *direction of sawing*, not spring
+				+ Magnitude: uniformly random in range
+			+ Number: per Update step: uniform random centered around SparkleDensity (ratio over 10, initially) (from GameParameters, adjustable)
+			+ Color:
+				+ Metal: brightest red to bright red
+				+ Else: base material's render color
+			+ Finalize parameters
+			+ Final test
+
 	- Smoke:
 		- New material: smoke emitter
 			- Recognized by ship builder via "particle_emitter_properties" sub-object
@@ -414,20 +411,31 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 
 	- Switches:
 		- New electrical material type; color trick like ropes to have unique IDs for switches
+			- One material (base structural color) for initially on and another one for initially off
+			- New electrical property: ConductsElectricity, bool
 		- Ship json adds optional names for each ID
-		- ShipBuilder detects all switches and communicates those separately to ship at cctor time
-			- Each switch gets own ID == <ShipId, SwitchId>
-		- UI gets switches via AddSwitch (and DeleteSwitch) event, with all metadata
+			- as vector<tuple<GlobalSwitchId, std::string>>>
+		- ShipBuilder detects all switches as electrical elements
+			- Each switch gets own GlobalSwitchId == <ShipId, ShipSwitchId>, as part of Electrical Elements data
+				- GlobalSwitchId is new GameType
+				- ShipSwitchId is just element index of switch in ElectricalElements
+			- ShipBuilder also communicates IDs and names (vector, by move) separately to ship at cctor time
+		- UI gets switches via AddSwitch (and DeleteSwitch) event, with all metadata (ID, name, state)
+			- From Ship::cctor, visiting cctor-provided vector of IDs and names (and state in electrical elements)
 			- SwitchBoard panel
+				- Registers as event listener at cctor
 				- Uses GameController (own shared ptr) :: SetSwitch(switchId, bool) to control switches
+		- MainFrame also registers for AddSwitch and shows SwitchBoard on first add
+			- Hides it again only at Reset()
 		- Ship must invoke DeleteSwitch at switch deletion (@ Ship::ElectricalElementDestroyHandler)
 		- Electrical dynamics:
 			- ElectricalElement: rename "ConnectivityVisit" (sequence number, etc.) as "ElectricalPropagationVisit" (...)
 				- Ship::UpdateElectrical"Propagation"
-			- ElectricalElement has new "electrical conductance" buffer (0.0 or 1.0)
+			- ElectricalElement has new "conductsElectricity" bool buffer
+				- Init'd with material's
 				- Ship::UpdateElectricalConnectivity checks conductance first when deciding to follow a connected electrical element
-			- Ship::SetSwitch(switchId):
-				- Toggles electrical element's "electrical conductance"
+			- Ship::SetSwitch(switchId, bool):
+				- Toggles electrical element's "doesConductElectricity", via ElectricalElements::SetSwitch(switchId, bool)
 	- Pumps
 		- Current controls ~IsLeaking
 	- Anti-Flood doors
@@ -472,6 +480,9 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 	- DestroyAt:
 		- Test: Ship::SpringDestroyHandler() only destroys triangles that contain A-B
 			- Should definitely make both A and B leak, as they both now have an adjacent hole
+
+	- Ocean depth bitmaps
+	- Save photos (opens SaveAs FileDialog)
 
 - Water:
 	-Do water bubbles (at intake) and water drops (at outtake)
@@ -520,9 +531,23 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 				- But we lose details when we zoom out and then in again
 			- 3: Just cap zoom to reasonable max
 	- Breaking waves (Muller's paper)
-
+	- See if can use water's pressure to inflict stress on springs
 
 - Controls:
+	
+	- Ship definition: multiple layers
+		- We want to maintain BW compat for ease of one-layer ship making
+		- JSON: "extra_layers: ["rms_titanic_whatever.png.dat", ...]
+		- Material: becomes collection of N pointers: Structural (or "physical") (includes Sound), Electrical, Emitter, etc.
+		- ShipBuilder:
+			- Each extra layer provides to corresponding point in structural layer only electrical, emitting, etc. attributes
+				- PointInfo has separate Material::Physical/Electrical/EtcCharacteristics
+				- Points::Add takes additional Material::Electrical/EtcCharacteristics *'s, these are
+				  the ones used (if present) instead of plain material's
+			- Error if a non-zero layer provides:
+				- 1) data for point non-existing in zero layer
+				- 2) data that already exists (e.g. ElectricalChar's)
+
 	+ World settings: number of clouds, wind
 
 	+ SettingsDialog: also sound options
@@ -532,35 +557,71 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 		+ Two volume controls for music and sounds (all but music)
 
 	- SettingsDialog: save settings, and defaults
-		- JSON for game, render, and sound params
-		- MainFrame: load on startup
-			- personal_settings.json loaded if exists, else default_settings.json
-		- SettingsManager (@FloatingSandbox) - all static
-			- public:
-				- LoadSettings(GameParams &, RenderContext &, SoundController &)
-					- From personal_settings.json if exists, else default_settings.json
-				- LoadSettings(filepath, GameParams &, RenderContext &, SoundController &)
-					- From path
-				- SaveSettings(GameParams &, RenderContext &, SoundController &)
-					- To personal_settings.json 
-				- SaveSettings(GameParams &, RenderContext &, SoundController &, filepath)
-					- To filepath
-			- private:
-				- Load(json_obj, GameParams &, RenderContext &, SoundController &)
-				- Save(GameParams &, RenderContext &, SoundController &, json_obj)
+		- SettingsManager (@FloatingSandbox):
+			- Has GameController, SoundController, etc.
+			- Defines struct with all customizable setting members
+			- Maintains two structs:
+				- Defaults
+				- Current (ephemeral)
+			- Manages saving and loading customizable settings to and from json
+			- Created by MainFrame on startup
+			- Exposes getters and setters for all customizable properties, used by SettingsDialog
+				- get(): from Current
+				- set(): sets Current
+			- cctor (actually, CreateInstance()->uq_ptr which MainFrame makes shared):
+				- Stores defaults (in Defaults), asking members for their (compile-time default) values
+				- Then copies Defaults to Current
+				- Then loads personal_settings.json, if exists; if exists:
+					- Reads settings to Current
+					- Then applies settings - invokes SyncToGame()
+			- SyncFromGame()
+				- Reads Current from GameController, SoundController, etc.
+			- SyncToGame()
+				- Applies Current to GameController, SoundController, etc.
+			- Load(filepath)
+				- Loads from path - sets Current
+				- Does not apply
+			- Save()
+				- Saves Current to personal_settings.json 
+			- Save(filepath)
+				- Saves Current to filepath
+			- Reset()
+				- Copies Defaults to Current
+				- Does not apply
+		- Impl:
 			- Standard paths: http://docs.wxwidgets.org/3.1/classwx_standard_paths.html#a4752213ef4d7bdc71170b9e5c3691f0f
 				- MainApp: call App::SetAppName() at startup
 					- With app name from version.h
 				- SettingsManager can deal directly with wxWidgets
-			- Uses:
-				- XYZ::SettingsToJson()->picojson::value
-				- XYZ::SettingsFromJson(picojson::value) (sets own)
-
 		- Dialog:
-			- Save Settings: saves current to personal_settings.json 				
-			- Save Settings As: saves with filename, nothing else
+			- Control values are meant to always be in sync with SettingsManager::Current;
+			  however, for simplicity we only sync between the two when needed
+			- OnShow():
+				- Calls SettingsManager::SyncFromGame() (Current)
+				- Reads all control values from SettingsManager
+				- Does not mark as dirty
+			- Apply: applies settings
+				- Writes all control values to SettingsManager (Current)
+				- Calls SettingsManager::SyncToGame()
+				- Clears dirty
+			- Save Settings: saves current to personal_settings.json
+				- Writes all control values to SettingsManager (Current)
+				- Calls SettingsManager::Save()
+				- Stays dirty if it was dirty
+			- Save Settings As: saves with filename
+				- Writes all control values to SettingsManager (Current)
+				- Calls SettingsManager::Save(filepath)
+				- Stays dirty if it was dirty
 			- Load Settings: loads with filename, changes own settings
-			- Reset Settings: loads default_settings.json, changes own settings
+				- Calls SettingsManager::Load(filepath) (Current)
+				- No apply
+				- Reads all control values from SettingsManager
+				- Marks self as dirty
+			- Reset Settings: 
+				- Calls SettingsManager::Reset() (Current)
+				- No apply
+				- Reads all control values from SettingsManager
+				- Marks self as dirty
 
 	- Revised FileDialog for loading ships: shows previews of ships
 		- Option 1: see if possible to hook into basic FileDialog's rendering of files
@@ -568,8 +629,15 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 			- Show also name, dimensions, and total mass
 
 - Sounds:
-	- Revert light flicker sounds to higher (older) volume, and fix volume in SoundController instead, via const
-	- Sawing: do not publish destroy events when cutting springs, but new "Sawed" events with own metal/wood sounds
+	- TODOHERE: Sawing: do not publish destroy events when cutting springs, but new "Sawed" events with own metal/wood sounds
+		- Two new continuous sounds: metal and wood saw
+		- OnSawed is invoked with Type and size - size=0 means nothing
+		- Event handler sets continuous sound's volume up/down (when size=0), and eventually starts it
+		- Stopping continuous saw sound also sets volume of these two to zero
+	- Ship may come with custom sound(s) for horns
+		- Figure out how to play them, may be like switchboard or *via* switchboard
+	- Morse code sound when it's about to sink (early sink detection)
+		- Or at first drop of water
 	- Volume of effects should depend on distance/zoom
 
 -Probing:
@@ -597,109 +665,6 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 			- Histogram pointWaterHistogram
 			- ...
 
-- Lights
-	+ need Optional()
-	+ Material:
-		+ use picojson
-		+ Material.ElectricalProperties (optional)
-			+ type (Material::ElectricalProperties::ElectricalElementType=lamp, cable, generator)
-			+ flat list of all electrical properties, some apply some don't
-	+ class Lamp()
-		+ points to Point and Point points optionally to ElectricalElement (base abstract of Lamp, Cable, Generator)
-			+ ElectricalElement::GetType(){return mType;}: non-virtual, it's optimized by compiler
-	+ Move electrical components to ElectricalElements class, an ElementContainer but also like bombs, with update and state machines
-	  (but no render)
-		+ GameEventHandler and points members
-		+ Buffers (type, connected electrical elements, etc.)
-		+ AddCable/Lamp/...()		
-		+ Destroy
-			+ Removes self from connected
-				+ OR NOT: If Ship::PointDestroyHandler deletes point's connected springs before point's electrical element,
-				  then we can assert that electrical element has no connected points anymore already
-		+ Getters ("subset" section) for Lamps and Generators
-		+ Update()
-			+ Invoked by Ship
-			+ For each lamp: runs its state machine 
-				+ Via RunLampStateMachine(LampState &)
-				+ Outcome: AvailableCurrent
-	+ Materials: self-powered lamp
-		+ Just boolean property in JSON
-			+ Current light material is self-powered
-			+ New light material is not
-		+ ElectricalElements: store boolean at LampState (const, passed via cctor)
-	+ Point has ElectricalElementIndex (or None), passed at cctor
-	+ ShipBuilder:
-		+ Create ElectricalElements via ElectricalElements::Add
-		+ Give point/elec element index to each other
-		+ Add connected electrical elements to each other
-			+ See how it's done for points, springs, etc.
-	+ Nuke ElectricalElement, Cable, Generator, Lamp
-	+ Nuke unused Material electrical properties
-	+ Ship::PointDestroyHandler:
-		+ Destroy point's ElectricalElement, if any
-		+ Do this after deleting springs, so that ElectricalElement::Destroy does not have to remove self from connected elements (see above)
-	+ Ship::SpringDestroyHandler:
-		+ Remove each endpoint's ElectricalElement (if any - both must be elec elems) from each other's ElectricalElement
-	+ Move StrToDuration and includes to GameTypes.cpp
-	+ Move ElectricalElementIndex at Points to own buffer
-	+ @Ship::Update():
-		+ New "inline" electrical section:
-			+ UpdateCurrentConnectivity():
-				+ Invoke regardless of dirty elements, as generators might become wet
-				+ From generators to all reachable points, just propagates visit seq num
-			+ ElectricalElements::Update()
-			+ DiffuseLight()
-				+ For each ElectricalElement::Lamp: 
-					+ Use its AvailableCurrent and set mLight 
-	+ Implement full lamp state machine @ ElectricalElements::RunLampStateMachine
-		+ EventHandler: OnLightFlicker(size, length, isUnderwater)
-		+ Update() takes Points (for underwater)
-		+ Implement
-		+ SoundController
-			+ Add new sound for electrical cable
-				+ 2 X random, X 2 underwater
-			+ Find 2 sounds ("electrical discharge" or "electric arc")
-				+ And make them also underwater
-				+ Lower volume of overwater ones
-	+ Optimizations:		
-		+ Take perf analysis of circuit test 1 (2 mins Circuit Test 1)
-			- World::Update: 30.15%
-				- UpdateElectricalConn: 0.06%
-					- Deque::new: 0.01%
-					- Deque::~: 0.01%
-				- ElectricalElements::Update: 0.05%
-				- DiffuseLight: 0.43%
-		+ Ship::DiffuseLight: see inverting nested loops (for each lamp: for each point)
-			+ Need test ship with many more lamps
-			+ Before perf analysis: DiffuseLight: 35.83% == ~30,000 samples; fps=22.10
-			+ Switch loops:
-				+ Requires first point light zeroing!
-				+ After perf analysis: DiffuseLight: 30.63%; fps=24.x
-		+ Do perf analysis with complex graph
-			+ Need circuit test 3
-			+ Impact negligible: Ship::UpdateElectricalConnectivity: 0.21%
-
-	+ Diffusion:
-		+ Can test it by itself, by using light material and by cheating with current!
-		+ After current propagation:
-			+ Zero out mLight of each point (use generation sequence number? useful for other Point properties?)
-				+ No, easier and probably faster to do it in same pass as LeakWater - LeakWaterAndZeroLight()
-		+ Diffusion: propagate mLight to adjacent points (incl. other lamps),
-		  inv. proportional to distance^2, with a graph flood stopping at max distance
-		+ Point.GetColour() takes also into account mLight (from itself, not from lamp) 
-                  and makes alpha blend just like water
-		+ Need "off" color to use at lamp point when Lamp is off (different than structural color),
-		  used when rendering point in springs/triangles/points
-			+ Not used when using textures, of course
-			+ Needs material's Color to split in StructuralColor and RenderColor (set to the same except for lamps)
-	+ Diffusion improvement: see if can simply add light (rather than max'ing it)
-		+ Need to ensure sum is always < 1.0
-		+ Or just set to max(1.0, cur+new)
-			+ Best when done in point->lamp loop: add up in inner loop, then assign to point as max
-			+ Doesn't improve look considerably, and still requires an if
-			
-	
-
 - Multiple ships:
 	- Better done after collision detection
 	- When ship loaded (added):
@@ -723,8 +688,10 @@ Right after 1.5.0 perf (before texture shader & shaders' optimizations)
 
 
 - Floor breaking up upon impact
-	- Does not need full particle-zation, can get away with triangles
+	- Layer on top of floor samples, with hash buckets and lists of heights per-bucket
 
+- Collision detection - for multiple ships
+	- http://www.cs.umd.edu/~mount/ANN/
 ==============================================================================
 ==============================================================================
 ==============================================================================
@@ -2248,6 +2215,139 @@ IF WX:
 	+ Make collisions with sea floor more dramatic
 		+ Bounce velocity with specular vector
 
+	+ Ephemeral Particles:
+		+ Spec:
+			+ Carve out fixed-size room at tail of Points for ephemeral particles				
+				+ Each has own lifetime
+			+ Ephemeral particles cannot be deleted
+			+ Rendering: via:
+				+ ShipRenderContext::UploadEphemeralParticlePoints (e.g. for points)
+					+ Just indexes
+					+ Color/alpha portion of buffer has to be uploaded first
+				+ ShipRenderContext::UploadGenericTexture (e.g. for bubbles)
+					+ Need to also support alphaTransparency
+			+ Ephemeral particles are drawn with own color, including alpha going to transparent as lifetime increases
+				+ Test first perf impact of using vec4f for point colors
+					+ If sucks a lot, will need new extra buffer just for points' alpha
+						+ Also this buffer is segmented
+				+ Ephemeral portion of entire points color buffer needs to be reloaded at each Upload() 
+				  or UploadEphemeralParticles() (2*)
+					+ Use glSubBufferData
+					+ If we go for separate alpha buffer: also do for ephemeral portion of alpha buffer
+		+ Impl:
+			+ Test vec4f for colors
+				+ Points
+				+ ShipBuilder
+				+ RenderContext/ShipRenderContext
+				+ Shaders
+			+ Set max eph particles to 1024
+			+ Points allocs extra room
+				+ Also stores ship point count and start index
+			+ Points has new buffers:
+				+ EphemeralType (uint8 enum)
+					+ None (set at non-ephemeral and at dead ephemerals)
+					+ Debris
+					+ Sparkle
+					+ AirBubble
+					+ Smoke
+				+ EphemeralStartTime (clock point)
+				+ EphemeralMaxLifetime (std::chrono::milliseconds)
+				+ private: 
+					+ EphemeralState: union of public structs (much like ElectricalElements::ElementState)
+						+ Debris: {}
+						+ Sparkle: {}
+						+ AirBubble: {}
+						+ Smoke: {}
+					+ Buffer<EphemeralState> mEphemeralStateBuffer;
+
+			+ Ship: limit point range:
+				+ @ destroy tool, @ bombs explosions, and @ anything else that destroys point: do not destroy ephemeral points
+				+ @ toggle bombs: do not attach to ephemeral points
+				+ For all of these: use Points::NonEphemeralPoints iterator, or check EphemeralType != None, depending on the case
+						
+			+ Points::CreateEphemeralParticleDebris: 
+				+ Args:
+					+ Position, Velocity
+					+ MaxLifetime
+					+ Material *
+						+ Requires MaterialDatabase to be handy at invoker of CreateEphemeralParticleDebris
+							+ Ship must take a DB by value at cctor
+						+ Though Debris uses spring's material
+				+ Impl:
+					+ Find first expired particle; if not found, pick the oldest
+						+ Requires mFreeEphemeralParticleSearchStartIndex
+						+ In private ElementIndex FindFreeEphemeralParticle()
+							+ sets mFreeEphemeralParticleSearchStartIndex
+					+ Store Color, Position, Velocity
+					+ Store Mass
+					+ Do any other initializations that we do at Points::Add(...)
+					+ Store MaxLifetime, and zero lifetime
+					+ Set mAreEphemeralParticlesDirty = true
+
+			+ Points::UpdateEphemeralParticles(clockNow):
+				+ For each point, check lifetime vs max lifetime
+				+ If time has expired (now):
+					+ No need to mark as deleted to hide them, EphemeralType==None suffices to prevent them from being rendered
+					+ Reset velocity and integration factor of expired particles to avoid drifting
+						+ Rename Points::Pin/Unpin() to Freeze/Thaw()
+					+ Set EphemeralType to None
+					+ Set mAreEphemeralParticlesDirty = true
+				+ Else: do per-type state machine, with dispatch coded in method depending on type, invoking 
+				  per-type state machine method; for example:
+					+ Those that are points:
+						+ Calc remaining life
+						+ Update alpha either in (portion of) color buffer or in (portion of) alpha buffer
+					+ Those that are textures:
+						+ Calc remaining life
+
+			+ Points::UploadEphemeralParticles():
+				+ 1) Upload portion of color buffer/alpha buffer specific to ephemeral particles
+				+ 2) If mAreEphemeralParticlesDirty:
+					+ RenderContext::EphemeralPointUploadStart()
+				+ 3) For all ephemeral points with EphemeralType != None: use dispatch coded in method depending on type, invoking 
+				     per-type upload method; for example:
+					+ Those that are points:
+						+ Add point index to a buffer
+					+ Those that are textures:
+						+ Call directly ShipRenderContext::UploadGenericTexture(...)
+				+ 4) If mAreEphemeralParticlesDirty:
+					+ RenderContext::EphemeralPointUploadEnd()
+					+ Set mAreEphemeralParticlesDirty = false
+
+			+ Ship::UpdateEphemeralParticles(clockNow):
+				+ Calls Points::UpdateEphemeralParticles(clockNow)
+				+ Emits ephemeral particles from emitters (e.g. smoke)
+					+ For now empty
+
+		+ Cleanup:
+			+ See if can control debris generation via GameParameters, which must be made available at 
+			  Ship::SpringDestroyHandler
+
+		+ Tests:
+			+ Pin ephemeral particle
+			+ Many connected components
+
+	+ Do debris each time a spring breaks
+		+ Look'n'feel: 
+			+ Points of the color of the spring's material
+				+ Actually, points of the spring's material
+		+ At Ship::SpringDestroyHandler()
+			+ Choose 0, 1, or 2 debris // Experiment
+			+ For each:
+				+ Material = spring's material
+				+ Position = midpoint of spring
+				+ Velocity = point on circle as:
+					+ Radius: random in [1, 5] // Experiment
+					+ Angle: random in [0, 2PI]
+				+ MaxLifetime = from GameParameters static const, plus random factor in [0.5-1.0]
+		+ Debris:
+			+ Update: 
+				+ Update color's alpha based off remaining lifetime, linear
+			+ Upload: 
+				+ Just store index in buffer
+
+		+ Test look'n'feel and finalize constants
+
 + Water
 	+ Water
 		+ Ship::LeakWater:
@@ -2799,6 +2899,106 @@ IF WX:
 	+ Post to forum
 	+ Add to gamejolt
 
++ Lights
+	+ need Optional()
+	+ Material:
+		+ use picojson
+		+ Material.ElectricalProperties (optional)
+			+ type (Material::ElectricalProperties::ElectricalElementType=lamp, cable, generator)
+			+ flat list of all electrical properties, some apply some don't
+	+ class Lamp()
+		+ points to Point and Point points optionally to ElectricalElement (base abstract of Lamp, Cable, Generator)
+			+ ElectricalElement::GetType(){return mType;}: non-virtual, it's optimized by compiler
+	+ Move electrical components to ElectricalElements class, an ElementContainer but also like bombs, with update and state machines
+	  (but no render)
+		+ GameEventHandler and points members
+		+ Buffers (type, connected electrical elements, etc.)
+		+ AddCable/Lamp/...()		
+		+ Destroy
+			+ Removes self from connected
+				+ OR NOT: If Ship::PointDestroyHandler deletes point's connected springs before point's electrical element,
+				  then we can assert that electrical element has no connected points anymore already
+		+ Getters ("subset" section) for Lamps and Generators
+		+ Update()
+			+ Invoked by Ship
+			+ For each lamp: runs its state machine 
+				+ Via RunLampStateMachine(LampState &)
+				+ Outcome: AvailableCurrent
+	+ Materials: self-powered lamp
+		+ Just boolean property in JSON
+			+ Current light material is self-powered
+			+ New light material is not
+		+ ElectricalElements: store boolean at LampState (const, passed via cctor)
+	+ Point has ElectricalElementIndex (or None), passed at cctor
+	+ ShipBuilder:
+		+ Create ElectricalElements via ElectricalElements::Add
+		+ Give point/elec element index to each other
+		+ Add connected electrical elements to each other
+			+ See how it's done for points, springs, etc.
+	+ Nuke ElectricalElement, Cable, Generator, Lamp
+	+ Nuke unused Material electrical properties
+	+ Ship::PointDestroyHandler:
+		+ Destroy point's ElectricalElement, if any
+		+ Do this after deleting springs, so that ElectricalElement::Destroy does not have to remove self from connected elements (see above)
+	+ Ship::SpringDestroyHandler:
+		+ Remove each endpoint's ElectricalElement (if any - both must be elec elems) from each other's ElectricalElement
+	+ Move StrToDuration and includes to GameTypes.cpp
+	+ Move ElectricalElementIndex at Points to own buffer
+	+ @Ship::Update():
+		+ New "inline" electrical section:
+			+ UpdateCurrentConnectivity():
+				+ Invoke regardless of dirty elements, as generators might become wet
+				+ From generators to all reachable points, just propagates visit seq num
+			+ ElectricalElements::Update()
+			+ DiffuseLight()
+				+ For each ElectricalElement::Lamp: 
+					+ Use its AvailableCurrent and set mLight 
+	+ Implement full lamp state machine @ ElectricalElements::RunLampStateMachine
+		+ EventHandler: OnLightFlicker(size, length, isUnderwater)
+		+ Update() takes Points (for underwater)
+		+ Implement
+		+ SoundController
+			+ Add new sound for electrical cable
+				+ 2 X random, X 2 underwater
+			+ Find 2 sounds ("electrical discharge" or "electric arc")
+				+ And make them also underwater
+				+ Lower volume of overwater ones
+	+ Optimizations:		
+		+ Take perf analysis of circuit test 1 (2 mins Circuit Test 1)
+			- World::Update: 30.15%
+				- UpdateElectricalConn: 0.06%
+					- Deque::new: 0.01%
+					- Deque::~: 0.01%
+				- ElectricalElements::Update: 0.05%
+				- DiffuseLight: 0.43%
+		+ Ship::DiffuseLight: see inverting nested loops (for each lamp: for each point)
+			+ Need test ship with many more lamps
+			+ Before perf analysis: DiffuseLight: 35.83% == ~30,000 samples; fps=22.10
+			+ Switch loops:
+				+ Requires first point light zeroing!
+				+ After perf analysis: DiffuseLight: 30.63%; fps=24.x
+		+ Do perf analysis with complex graph
+			+ Need circuit test 3
+			+ Impact negligible: Ship::UpdateElectricalConnectivity: 0.21%
+
+	+ Diffusion:
+		+ Can test it by itself, by using light material and by cheating with current!
+		+ After current propagation:
+			+ Zero out mLight of each point (use generation sequence number? useful for other Point properties?)
+				+ No, easier and probably faster to do it in same pass as LeakWater - LeakWaterAndZeroLight()
+		+ Diffusion: propagate mLight to adjacent points (incl. other lamps),
+		  inv. proportional to distance^2, with a graph flood stopping at max distance
+		+ Point.GetColour() takes also into account mLight (from itself, not from lamp) 
+                  and makes alpha blend just like water
+		+ Need "off" color to use at lamp point when Lamp is off (different than structural color),
+		  used when rendering point in springs/triangles/points
+			+ Not used when using textures, of course
+			+ Needs material's Color to split in StructuralColor and RenderColor (set to the same except for lamps)
+	+ Diffusion improvement: see if can simply add light (rather than max'ing it)
+		+ Need to ensure sum is always < 1.0
+		+ Or just set to max(1.0, cur+new)
+			+ Best when done in point->lamp loop: add up in inner loop, then assign to point as max
+			+ Doesn't improve look considerably, and still requires an if
 
 + Bugs: 
 	+ Ship::Render: when there are no changes to elements and we keep uploading stressed springs, we don't reset the count
