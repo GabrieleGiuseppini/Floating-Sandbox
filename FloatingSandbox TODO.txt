@@ -115,7 +115,9 @@ Render:
 ====================================================
 
 - Current roadmap:
-	- Git: Merge
+	+ Git: Merge
+	+ Test sparkles with half lifetime and double velocity
+		+ Test also debris
 	- Saw sounds
 	- Settings manager
 	- Bubbles
@@ -323,6 +325,7 @@ Render:
 		- Shows:
 			- Current zoom
 			- Rendering vs simulation percentages
+				- GameController continuously updates, same way as FPS
 		- Multi-row:
 			- Text layer splits/gets it split & gives vector to TextRenderContext
 
