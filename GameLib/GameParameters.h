@@ -1,7 +1,7 @@
 /***************************************************************************************
-* Original Author:		Gabriele Giuseppini
-* Created:				2018-01-19
-* Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
+* Original Author:      Gabriele Giuseppini
+* Created:              2018-01-19
+* Copyright:            Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
 #pragma once
 
@@ -71,13 +71,13 @@ struct GameParameters
     static constexpr float MinStiffnessAdjustment = 0.001f;
     static constexpr float MaxStiffnessAdjustment = 2.4f;
 
-	float StrengthAdjustment;
-	static constexpr float MinStrengthAdjustment = 0.001f;
-	static constexpr float MaxStrengthAdjustment = 20.0f;
+    float StrengthAdjustment;
+    static constexpr float MinStrengthAdjustment = 0.001f;
+    static constexpr float MaxStrengthAdjustment = 20.0f;
 
-	float BuoyancyAdjustment;
-	static constexpr float MinBuoyancyAdjustment = 0.0f;
-	static constexpr float MaxBuoyancyAdjustment = 4.0f;
+    float BuoyancyAdjustment;
+    static constexpr float MinBuoyancyAdjustment = 0.0f;
+    static constexpr float MaxBuoyancyAdjustment = 4.0f;
 
     // Water
 
@@ -116,21 +116,21 @@ struct GameParameters
 
     // Misc
 
-	float WaveHeight;
-	static constexpr float MinWaveHeight = 0.0f;
-	static constexpr float MaxWaveHeight = 30.0f;
+    float WaveHeight;
+    static constexpr float MinWaveHeight = 0.0f;
+    static constexpr float MaxWaveHeight = 30.0f;
 
-	float SeaDepth;
-	static constexpr float MinSeaDepth = 20.0f;
-	static constexpr float MaxSeaDepth = 10000.0f;
+    float SeaDepth;
+    static constexpr float MinSeaDepth = 20.0f;
+    static constexpr float MaxSeaDepth = 10000.0f;
 
     float OceanFloorBumpiness;
     static constexpr float MinOceanFloorBumpiness = 0.0f;
     static constexpr float MaxOceanFloorBumpiness = 6.0f;
 
-	float DestroyRadius;
-	static constexpr float MinDestroyRadius = 0.1f;
-	static constexpr float MaxDestroyRadius = 10.0f;
+    float DestroyRadius;
+    static constexpr float MinDestroyRadius = 0.1f;
+    static constexpr float MaxDestroyRadius = 10.0f;
 
     float BombBlastRadius;
     static constexpr float MinBombBlastRadius = 0.1f;

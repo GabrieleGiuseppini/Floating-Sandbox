@@ -608,11 +608,13 @@ void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
             // Remember we're dirty now
             this->mApplyButton->Enable(true);
         },
-        std::make_unique<LinearSliderCore>(
+        std::make_unique<ExponentialSliderCore>(
             mGameController->GetMinSeaDepth(),
+            500.0f,
             mGameController->GetMaxSeaDepth()));
 
     controlsSizer->Add(mSeaDepthSlider.get(), 1, wxALL, SliderBorder);
+
 
     // Ocean Floor Bumpiness
 
@@ -632,6 +634,7 @@ void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
             mGameController->GetMaxOceanFloorBumpiness()));
 
     controlsSizer->Add(mOceanFloorBumpinessSlider.get(), 1, wxALL, SliderBorder);
+
 
     // Number of Clouds
 
