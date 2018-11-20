@@ -981,9 +981,9 @@ private:
         float volume,
         bool isInterruptible);
 
-    void ScavengeStoppedSounds();
+    void ScavengeStoppedSounds(std::vector<PlayingSound> & playingSounds);
 
-    void ScavengeOldestSound(SoundType soundType);    
+    void ScavengeOldestSound(std::vector<PlayingSound> & playingSounds);
 
 private:
 
@@ -1011,7 +1011,7 @@ private:
     // One-Shot sounds
     //
 
-    static constexpr size_t MaxPlayingSounds{ 100 };
+    static constexpr size_t MaxPlayingSoundsPerType{ 20 };
     static constexpr std::chrono::milliseconds MinDeltaTimeSound{ 100 };
 
     unordered_tuple_map<
@@ -1030,7 +1030,7 @@ private:
         std::tuple<SoundType>,
         OneShotMultipleChoiceSound> mOneShotMultipleChoiceSounds;
 
-    std::vector<PlayingSound> mCurrentlyPlayingOneShotSounds;
+    std::unordered_map<SoundType, std::vector<PlayingSound>> mCurrentlyPlayingOneShotSounds;
 
     //
     // Continuous sounds

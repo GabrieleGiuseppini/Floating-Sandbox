@@ -16,6 +16,7 @@
 
 constexpr float SawVolume = 50.0f;
 constexpr float SawedVolume = 80.0f;
+constexpr float StressSoundVolume = 20.0f;
 constexpr std::chrono::milliseconds SawedInertiaDuration = std::chrono::milliseconds(200);
 constexpr float SinkingMusicVolume = 20.0f;
 constexpr float WaveSplashTriggerSize = 0.5f;
@@ -382,18 +383,20 @@ SoundController::~SoundController()
 
 void SoundController::SetPaused(bool isPaused)
 {
-    for (auto const & playingSound : mCurrentlyPlayingOneShotSounds)
+    for (auto const & playingSoundIt : mCurrentlyPlayingOneShotSounds)
     {
-        if (isPaused)
+        for (auto & playingSound : playingSoundIt.second)
         {
-            if (sf::Sound::Status::Playing == playingSound.Sound->getStatus()
-                && playingSound.Type != SoundType::Destroy) // TODOHERE
-                playingSound.Sound->pause();
-        }
-        else
-        {
-            if (sf::Sound::Status::Paused == playingSound.Sound->getStatus())
-                playingSound.Sound->play();
+            if (isPaused)
+            {
+                if (sf::Sound::Status::Playing == playingSound.Sound->getStatus())
+                    playingSound.Sound->pause();
+            }
+            else
+            {
+                if (sf::Sound::Status::Paused == playingSound.Sound->getStatus())
+                    playingSound.Sound->play();
+            }
         }
     }
 
@@ -426,9 +429,12 @@ void SoundController::SetMasterEffectsVolume(float volume)
 {
     mMasterEffectsVolume = volume;
 
-    for (auto const & playingSound : mCurrentlyPlayingOneShotSounds)
+    for (auto const & playingSoundIt : mCurrentlyPlayingOneShotSounds)
     {
-        playingSound.Sound->setMasterVolume(mMasterEffectsVolume);
+        for (auto & playingSound : playingSoundIt.second)
+        {
+            playingSound.Sound->setMasterVolume(mMasterEffectsVolume);
+        }
     }
 
     mSawedMetalSound.SetMasterVolume(mMasterEffectsVolume);
@@ -456,9 +462,12 @@ void SoundController::SetMasterEffectsMuted(bool isMuted)
 {
     mMasterEffectsMuted = isMuted;
 
-    for (auto const & playingSound : mCurrentlyPlayingOneShotSounds)
+    for (auto const & playingSoundIt : mCurrentlyPlayingOneShotSounds)
     {
-        playingSound.Sound->setMuted(mMasterEffectsMuted);
+        for (auto & playingSound : playingSoundIt.second)
+        {
+            playingSound.Sound->setMuted(mMasterEffectsMuted);
+        }
     }
 
     mSawedMetalSound.SetMuted(mMasterEffectsMuted);
@@ -488,11 +497,14 @@ void SoundController::SetPlayBreakSounds(bool playBreakSounds)
 
     if (!mPlayBreakSounds)
     {
-        for (auto const & playingSound : mCurrentlyPlayingOneShotSounds)
+        for (auto const & playingSoundIt : mCurrentlyPlayingOneShotSounds)
         {
-            if (SoundType::Break == playingSound.Type)
+            for (auto & playingSound : playingSoundIt.second)
             {
-                playingSound.Sound->stop();
+                if (SoundType::Break == playingSound.Type)
+                {
+                    playingSound.Sound->stop();
+                }
             }
         }
     }
@@ -504,11 +516,14 @@ void SoundController::SetPlayStressSounds(bool playStressSounds)
 
     if (!mPlayStressSounds)
     {
-        for (auto const & playingSound : mCurrentlyPlayingOneShotSounds)
+        for (auto const & playingSoundIt : mCurrentlyPlayingOneShotSounds)
         {
-            if (SoundType::Stress == playingSound.Type)
+            for (auto & playingSound : playingSoundIt.second)
             {
-                playingSound.Sound->stop();
+                if (SoundType::Stress == playingSound.Type)
+                {
+                    playingSound.Sound->stop();
+                }
             }
         }
     }
@@ -582,11 +597,6 @@ void SoundController::Update()
 
 void SoundController::LowFrequencyUpdate()
 {
-    //
-    // Scavenge stopped sounds
-    //
-
-    ScavengeStoppedSounds();
 }
 
 void SoundController::Reset()
@@ -595,12 +605,15 @@ void SoundController::Reset()
     // Stop and clear all sounds
     //
 
-    for (auto & playingSound : mCurrentlyPlayingOneShotSounds)
+    for (auto const & playingSoundIt : mCurrentlyPlayingOneShotSounds)
     {
-        assert(!!playingSound.Sound);
-        if (sf::Sound::Status::Playing == playingSound.Sound->getStatus())
+        for (auto & playingSound : playingSoundIt.second)
         {
-            playingSound.Sound->stop();
+            assert(!!playingSound.Sound);
+            if (sf::Sound::Status::Playing == playingSound.Sound->getStatus())
+            {
+                playingSound.Sound->stop();
+            }
         }
     }
 
@@ -686,7 +699,7 @@ void SoundController::OnStress(
             material,
             size,
             isUnderwater,
-            10.0f,
+            StressSoundVolume,
             true);
     }
 }
@@ -1172,15 +1185,17 @@ void SoundController::PlayOneShotSound(
     // if there is, adjust its volume
     //
 
+    auto & thisTypeCurrentlyPlayingSounds = mCurrentlyPlayingOneShotSounds[soundType];
+
     auto const now = std::chrono::steady_clock::now();
 
-    for (auto const & currentlyPlayingSound : mCurrentlyPlayingOneShotSounds)
+    for (auto & playingSound : thisTypeCurrentlyPlayingSounds)
     {
-        assert(!!currentlyPlayingSound.Sound);
-        if (currentlyPlayingSound.Sound->getBuffer() == soundBuffer
-            && std::chrono::duration_cast<std::chrono::milliseconds>(now - currentlyPlayingSound.StartedTimestamp) < MinDeltaTimeSound)
+        assert(!!playingSound.Sound);
+        if (playingSound.Sound->getBuffer() == soundBuffer
+            && std::chrono::duration_cast<std::chrono::milliseconds>(now - playingSound.StartedTimestamp) < MinDeltaTimeSound)
         {
-            currentlyPlayingSound.Sound->addVolume(volume);
+            playingSound.Sound->addVolume(volume);
 
             return;
         }
@@ -1191,18 +1206,18 @@ void SoundController::PlayOneShotSound(
     // Make sure there's room for this sound
     //
 
-    if (mCurrentlyPlayingOneShotSounds.size() >= MaxPlayingSounds)
+    if (thisTypeCurrentlyPlayingSounds.size() >= MaxPlayingSoundsPerType)
     {
-        ScavengeStoppedSounds();
+        ScavengeStoppedSounds(thisTypeCurrentlyPlayingSounds);
 
-        if (mCurrentlyPlayingOneShotSounds.size() >= MaxPlayingSounds)
+        if (thisTypeCurrentlyPlayingSounds.size() >= MaxPlayingSoundsPerType)
         { 
             // Need to stop the (expendable) sound that's been playing for the longest
-            ScavengeOldestSound(soundType);
+            ScavengeOldestSound(thisTypeCurrentlyPlayingSounds);
         }
     }
 
-    assert(mCurrentlyPlayingOneShotSounds.size() < MaxPlayingSounds);
+    assert(thisTypeCurrentlyPlayingSounds.size() < MaxPlayingSounds);
 
 
 
@@ -1218,85 +1233,72 @@ void SoundController::PlayOneShotSound(
     
     sound->play();    
 
-    mCurrentlyPlayingOneShotSounds.emplace_back(
+    thisTypeCurrentlyPlayingSounds.emplace_back(
         soundType,
         std::move(sound),
         now,
         isInterruptible);
 }
 
-void SoundController::ScavengeStoppedSounds()
+void SoundController::ScavengeStoppedSounds(std::vector<PlayingSound> & playingSounds)
 {
-    for (size_t i = 0; i < mCurrentlyPlayingOneShotSounds.size(); /*incremented in loop*/)
+    for (auto it = playingSounds.begin(); it != playingSounds.end(); /*incremented in loop*/)
     {
-        assert(!!mCurrentlyPlayingOneShotSounds[i].Sound);
-        if (sf::Sound::Status::Stopped == mCurrentlyPlayingOneShotSounds[i].Sound->getStatus())
+        assert(!!it->Sound);
+        if (sf::Sound::Status::Stopped == it->Sound->getStatus())
         {
             // Scavenge
-            mCurrentlyPlayingOneShotSounds.erase(mCurrentlyPlayingOneShotSounds.begin() + i);
+            it = playingSounds.erase(it);
         }
         else
         {
-            ++i;
+            ++it;
         }
     }
 }
 
-void SoundController::ScavengeOldestSound(SoundType soundType)
+void SoundController::ScavengeOldestSound(std::vector<PlayingSound> & playingSounds)
 {
-    assert(!mCurrentlyPlayingOneShotSounds.empty());
+    assert(!playingSounds.empty());
 
     //
-    // Three choices, in order of priority:
-    // 1) Same type
-    // 2) Another type, interruptible
-    // 3) Another type, non interruptible
+    // Two choices, in order of priority:
+    // 1) Interruptible
+    // 2) Non interruptible
+    //
 
-    size_t iOldestSound = std::numeric_limits<size_t>::max();
-    auto oldestSoundStartTimestamp = std::chrono::steady_clock::time_point::max();
     size_t iOldestInterruptibleSound = std::numeric_limits<size_t>::max();
     auto oldestInterruptibleSoundStartTimestamp = std::chrono::steady_clock::time_point::max();
-    size_t iOldestSoundForType = std::numeric_limits<size_t>::max();
-    auto oldestSoundForTypeStartTimestamp = std::chrono::steady_clock::time_point::max();    
-    for (size_t i = 0; i < mCurrentlyPlayingOneShotSounds.size(); ++i)
+    size_t iOldestNonInterruptibleSound = std::numeric_limits<size_t>::max();
+    auto oldestNonInterruptibleSoundStartTimestamp = std::chrono::steady_clock::time_point::max();
+    for (size_t i = 0; i < playingSounds.size(); ++i)
     {
-        if (mCurrentlyPlayingOneShotSounds[i].StartedTimestamp < oldestSoundStartTimestamp)
+        if (playingSounds[i].StartedTimestamp < oldestNonInterruptibleSoundStartTimestamp)
         {
-            iOldestSound = i;
-            oldestSoundStartTimestamp = mCurrentlyPlayingOneShotSounds[i].StartedTimestamp;
+            iOldestNonInterruptibleSound = i;
+            oldestNonInterruptibleSoundStartTimestamp = playingSounds[i].StartedTimestamp;
         }
 
-        if (mCurrentlyPlayingOneShotSounds[i].StartedTimestamp < oldestInterruptibleSoundStartTimestamp
-            && mCurrentlyPlayingOneShotSounds[i].IsInterruptible)
+        if (playingSounds[i].StartedTimestamp < oldestInterruptibleSoundStartTimestamp
+            && playingSounds[i].IsInterruptible)
         {
             iOldestInterruptibleSound = i;
-            oldestInterruptibleSoundStartTimestamp = mCurrentlyPlayingOneShotSounds[i].StartedTimestamp;
-        }
-
-        if (mCurrentlyPlayingOneShotSounds[i].StartedTimestamp < oldestSoundForTypeStartTimestamp
-            && mCurrentlyPlayingOneShotSounds[i].Type == soundType)
-        {
-            iOldestSoundForType = i;
-            oldestSoundForTypeStartTimestamp = mCurrentlyPlayingOneShotSounds[i].StartedTimestamp;
+            oldestInterruptibleSoundStartTimestamp = playingSounds[i].StartedTimestamp;
         }
     }
 
-    size_t iStop;
-    if (oldestSoundForTypeStartTimestamp != std::chrono::steady_clock::time_point::max())
+    size_t iSoundToStop;
+    if (oldestInterruptibleSoundStartTimestamp != std::chrono::steady_clock::time_point::max())
     {
-        iStop = iOldestSoundForType;
-    }
-    else if (oldestInterruptibleSoundStartTimestamp != std::chrono::steady_clock::time_point::max())
-    {
-        iStop = iOldestInterruptibleSound;
+        iSoundToStop = iOldestInterruptibleSound;
     }
     else
     {
-        assert((oldestSoundStartTimestamp != std::chrono::steady_clock::time_point::max()));
-        iStop = iOldestSound;
+        assert((oldestNonInterruptibleSoundStartTimestamp != std::chrono::steady_clock::time_point::max()));
+        iSoundToStop = iOldestNonInterruptibleSound;
     }
 
-    assert(!!mCurrentlyPlayingOneShotSounds[iStop].Sound);
-    mCurrentlyPlayingOneShotSounds[iStop].Sound->stop();
-    mCurrentlyPlayingOneShotSounds.erase(mCurrentlyPlayingOneShotSounds.begin() + iStop);
+    assert(!!playingSounds[iSoundToStop].Sound);
+    playingSounds[iSoundToStop].Sound->stop();
+    playingSounds.erase(playingSounds.begin() + iSoundToStop);
 }

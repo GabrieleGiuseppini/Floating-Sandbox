@@ -17,10 +17,7 @@ class GameEventDispatcher : public IGameEventHandler
 public:
 
     GameEventDispatcher()
-        : mDestroyEvents()
-        , mSawedEvents()
-        , mPinToggledEvents()
-        , mStressEvents()
+        : mStressEvents()
         , mBreakEvents()
         , mSinkingBeginEvents()
         , mLightFlickerEvents()
@@ -59,21 +56,33 @@ public:
         bool isUnderwater,
         unsigned int size) override
     {
-        mDestroyEvents[std::make_tuple(material, isUnderwater)] += size;
+        // No need to aggregate this one
+        for (auto sink : mSinks)
+        {
+            sink->OnDestroy(material, isUnderwater, size);
+        }
     }
 
     virtual void OnSawed(
         bool isMetal,
         unsigned int size) override
     {
-        mSawedEvents[std::make_tuple(isMetal)] += size;
+        // No need to aggregate this one
+        for (auto sink : mSinks)
+        {
+            sink->OnSawed(isMetal, size);
+        }
     }
 
     virtual void OnPinToggled(
         bool isPinned,
         bool isUnderwater) override
     {
-        mPinToggledEvents.insert(std::make_tuple(isPinned, isUnderwater));
+        // No need to aggregate this one
+        for (auto sink : mSinks)
+        {
+            sink->OnPinToggled(isPinned, isUnderwater);
+        }
     }
 
     virtual void OnStress(
@@ -262,21 +271,6 @@ public:
         // Publish aggregations
         for (IGameEventHandler * sink : mSinks)
         {
-            for (auto const & entry : mDestroyEvents)
-            {
-                sink->OnDestroy(std::get<0>(entry.first), std::get<1>(entry.first), entry.second);
-            }
-
-            for (auto const & entry : mSawedEvents)
-            {
-                sink->OnSawed(std::get<0>(entry.first), entry.second);
-            }
-
-            for (auto const & entry : mPinToggledEvents)
-            {
-                sink->OnPinToggled(std::get<0>(entry), std::get<1>(entry));
-            }
-
             for (auto const & entry : mStressEvents)
             {
                 sink->OnStress(std::get<0>(entry.first), std::get<1>(entry.first), entry.second);
@@ -314,9 +308,6 @@ public:
         }
 
         // Clear collections
-        mDestroyEvents.clear();
-        mSawedEvents.clear();
-        mPinToggledEvents.clear();
         mStressEvents.clear();
         mBreakEvents.clear();
         mSinkingBeginEvents.clear();
@@ -334,9 +325,6 @@ public:
 private:
 
     // The current events being aggregated
-    unordered_tuple_map<std::tuple<Material const *, bool>, unsigned int> mDestroyEvents;
-    unordered_tuple_map<std::tuple<bool>, unsigned int> mSawedEvents;
-    unordered_tuple_set<std::tuple<bool, bool>> mPinToggledEvents;
     unordered_tuple_map<std::tuple<Material const *, bool>, unsigned int> mStressEvents;
     unordered_tuple_map<std::tuple<Material const *, bool>, unsigned int> mBreakEvents;
     std::vector<unsigned int> mSinkingBeginEvents;

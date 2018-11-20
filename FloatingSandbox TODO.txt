@@ -644,11 +644,11 @@ Render:
 			- Show also name, dimensions, and total mass
 
 - Sounds:
-	- TODOHERE: Sawing: do not publish destroy events when cutting springs, but new "Sawed" events with own metal/wood sounds
-		- Two new continuous sounds: metal and wood saw
-		- OnSawed is invoked with Type and size - size=0 means nothing
-		- Event handler sets continuous sound's volume up/down (when size=0), and eventually starts it
-		- Stopping continuous saw sound also sets volume of these two to zero
+	+ Sawing: do not publish destroy events when cutting springs, but new "Sawed" events with own metal/wood sounds
+		+ Two new continuous sounds: metal and wood saw
+		+ OnSawed is invoked with Type and size - size=0 means nothing
+		+ Event handler sets continuous sound's volume up/down (when size=0), and eventually starts it
+		+ Stopping continuous saw sound also sets volume of these two to zero
 	- Ship may come with custom sound(s) for horns
 		- Figure out how to play them, may be like switchboard or *via* switchboard
 	- Morse code sound when it's about to sink (early sink detection)
