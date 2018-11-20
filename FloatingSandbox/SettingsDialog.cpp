@@ -320,6 +320,9 @@ void SettingsDialog::ApplySettings()
     mGameController->SetSeaDepth(
         mSeaDepthSlider->GetValue());
 
+    mGameController->SetOceanFloorBumpiness(
+        mOceanFloorBumpinessSlider->GetValue());
+
     mGameController->SetNumberOfClouds(
         static_cast<size_t>(mNumberOfCloudsSlider->GetValue()));
 
@@ -610,6 +613,25 @@ void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
             mGameController->GetMaxSeaDepth()));
 
     controlsSizer->Add(mSeaDepthSlider.get(), 1, wxALL, SliderBorder);
+
+    // Ocean Floor Bumpiness
+
+    mOceanFloorBumpinessSlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Ocean Floor Bumpiness",
+        mGameController->GetOceanFloorBumpiness(),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<LinearSliderCore>(
+            mGameController->GetMinOceanFloorBumpiness(),
+            mGameController->GetMaxOceanFloorBumpiness()));
+
+    controlsSizer->Add(mOceanFloorBumpinessSlider.get(), 1, wxALL, SliderBorder);
 
     // Number of Clouds
 
@@ -946,6 +968,8 @@ void SettingsDialog::ReadSettings()
     mLightDiffusionSlider->SetValue(mGameController->GetLightDiffusionAdjustment());
     
     mSeaDepthSlider->SetValue(mGameController->GetSeaDepth());
+
+    mOceanFloorBumpinessSlider->SetValue(mGameController->GetOceanFloorBumpiness());
 
     mNumberOfCloudsSlider->SetValue(static_cast<float>(mGameController->GetNumberOfClouds()));
 

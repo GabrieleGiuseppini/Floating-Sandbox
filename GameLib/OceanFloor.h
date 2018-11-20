@@ -81,8 +81,9 @@ private:
     // The samples
     std::unique_ptr<Sample[]> mSamples;    
 
-    // The sea depth for which we're current
+    // The game parameters for which we're current
     float mCurrentSeaDepth;
+    float mCurrentOceanFloorBumpiness;
 };
 
 }

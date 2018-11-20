@@ -122,7 +122,11 @@ struct GameParameters
 
 	float SeaDepth;
 	static constexpr float MinSeaDepth = 20.0f;
-	static constexpr float MaxSeaDepth = 500.0f;
+	static constexpr float MaxSeaDepth = 10000.0f;
+
+    float OceanFloorBumpiness;
+    static constexpr float MinOceanFloorBumpiness = 0.0f;
+    static constexpr float MaxOceanFloorBumpiness = 6.0f;
 
 	float DestroyRadius;
 	static constexpr float MinDestroyRadius = 0.1f;

@@ -123,13 +123,13 @@ Render:
 	+ Git: Merge
 	+ Test sparkles with half lifetime and double velocity
 		+ Test also debris
-	= Saw sounds
-	- Pac0's fix 
-	- Generic texture filter
-	- Settings manager
-	- Bubbles
+	+ Saw sounds
+	= Pac0's fix 
+	- GenericTexture filtering: back to linear-linear, see if AM bomb improves
 	- Iterations slider
 		- Requires extended status text w/measurements
+	- Settings manager
+	- Bubbles
 
 
 - New ships
@@ -141,22 +141,23 @@ Render:
 
 - Suggestions to spec:
 	+ Fix ambient light increments
-	
-	- Changing the height of the bumps of the ground
-		- Allow the minimum seabed height to be 0
-
-	- Changing the width of the waves up to at least 10x the current size
 	+ When wind is zero waves don't move - need to change wave height and phase separately
-	- A toggle-able shader for the sea - so it gets darker the further down you go; it would be affected by the ambient lighting		
+	
+	= Changing the height of the bumps of the ground
+		= Allow the minimum seabed height to be 0
+	= Being able to drop the sea floor much further down than 500m or so too, like 10km
+
+	- Separate sound control for tools
+	- A toggle-able shader for the sea - so it gets darker the further down you go; it would be affected by the ambient lighting
+		- Need new scalar vertex attrib for depthBrightness - between 1.0 (top) and 0.0 (at 10km - or at max?)
+			- depthBrightness is always 1.0 if "modulate sea depth brightness" (new boolean GameParam) is not set
 	- Different colored lights
 	- Lights with different chances of turning off
 	- Tool to flood ship	
-	- Being able to drop the sea floor much further down than 500m or so too, like 10km
 	- Morse code: text-to-morse encoder
 	- Custom sky colour - if possible a RGB picker in the settings
 		- I would do the same for the water in the ship
-	- Stars at night would be pretty cool too
-	- Separate sound control for tools
+	- Stars at night would be pretty cool too	
 
 - Technical debt
 	+ Replace ShipDefinitionFile's metadata with ShipDefinition
@@ -548,7 +549,11 @@ Render:
 	- Breaking waves (Muller's paper)
 	- See if can use water's pressure to inflict stress on springs
 
+
 - Controls:
+
+	- Changing the width of the waves up to at least 10x the current size
+		- Requires re-calculation of period (if adjustment is x-multiplier N, then period is N times basic period)
 	
 	- Ship definition: multiple layers
 		- We want to maintain BW compat for ease of one-layer ship making

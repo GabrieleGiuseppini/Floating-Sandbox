@@ -22,6 +22,7 @@ GameParameters::GameParameters()
     // Misc
     , WaveHeight(2.5f)
     , SeaDepth(200.0f)
+    , OceanFloorBumpiness(1.0f)
     , DestroyRadius(0.75f)
     , BombBlastRadius(2.5f)
     , AntiMatterBombImplosionStrength(3.0f)

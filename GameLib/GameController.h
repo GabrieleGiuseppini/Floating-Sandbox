@@ -177,6 +177,11 @@ public:
     float GetMinSeaDepth() const { return GameParameters::MinSeaDepth; }
     float GetMaxSeaDepth() const { return GameParameters::MaxSeaDepth; }
 
+    float GetOceanFloorBumpiness() const { return mGameParameters.OceanFloorBumpiness; }
+    void SetOceanFloorBumpiness(float value) { mGameParameters.OceanFloorBumpiness = value; }
+    float GetMinOceanFloorBumpiness() const { return GameParameters::MinOceanFloorBumpiness; }
+    float GetMaxOceanFloorBumpiness() const { return GameParameters::MaxOceanFloorBumpiness; }
+
     float GetDestroyRadius() const { return mGameParameters.DestroyRadius; }
     void SetDestroyRadius(float value) { mGameParameters.DestroyRadius = value; }
     float GetMinDestroyRadius() const { return GameParameters::MinDestroyRadius; }
