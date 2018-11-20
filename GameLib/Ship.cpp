@@ -116,6 +116,9 @@ void Ship::SawThrough(
     // Find all springs that intersect the saw segment
     //
 
+    unsigned int metalsSawed = 0;
+    unsigned int nonMetalsSawed = 0;
+
     for (auto springIndex : mSprings)
     {
         if (!mSprings.IsDeleted(springIndex))
@@ -144,10 +147,21 @@ void Ship::SawThrough(
                         endPos,
                         currentSimulationTime,
                         gameParameters);
+
+                    // Remember we have sawed this material
+                    if (!!mSprings.GetBaseMaterial(springIndex)->Sound
+                        && Material::SoundProperties::SoundElementType::Metal == mSprings.GetBaseMaterial(springIndex)->Sound->ElementType)
+                        metalsSawed++;
+                    else
+                        nonMetalsSawed++;
                 }
             }
         }
     }
+
+    // Notify (including zero)
+    mGameEventHandler->OnSawed(true, metalsSawed);
+    mGameEventHandler->OnSawed(false, nonMetalsSawed);
 }
 
 void Ship::DrawTo(

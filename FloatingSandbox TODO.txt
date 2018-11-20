@@ -114,13 +114,22 @@ Render:
 ====================================================
 ====================================================
 
+- Marketing:
+	- "Attention to details / physics"
+		- Readme 
+		- GameJolt
+
 - Current roadmap:
 	+ Git: Merge
 	+ Test sparkles with half lifetime and double velocity
 		+ Test also debris
-	- Saw sounds
+	= Saw sounds
+	- Pac0's fix 
+	- Generic texture filter
 	- Settings manager
 	- Bubbles
+	- Iterations slider
+		- Requires extended status text w/measurements
 
 
 - New ships
@@ -137,6 +146,7 @@ Render:
 		- Allow the minimum seabed height to be 0
 	- Changing the width of the waves up to at least 10x the current size
 
+	- When wind is zero waves don't move - need to change wave height and phase separately
 	- A toggle-able shader for the sea - so it gets darker the further down you go; it would be affected by the ambient lighting		
 	- Different colored lights
 	- Lights with different chances of turning off
@@ -146,6 +156,7 @@ Render:
 	- Custom sky colour - if possible a RGB picker in the settings
 		- I would do the same for the water in the ship
 	- Stars at night would be pretty cool too
+	- Separate sound control for tools
 
 - Technical debt
 	+ Replace ShipDefinitionFile's metadata with ShipDefinition
@@ -326,6 +337,7 @@ Render:
 			- Current zoom
 			- Rendering vs simulation percentages
 				- GameController continuously updates, same way as FPS
+			- If paused
 		- Multi-row:
 			- Text layer splits/gets it split & gives vector to TextRenderContext
 

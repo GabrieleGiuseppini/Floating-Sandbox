@@ -14,8 +14,11 @@
 #include <limits>
 #include <regex>
 
-static constexpr float SinkingMusicVolume = 20.0f;
-static constexpr float WaveSplashTriggerSize = 0.5f;
+constexpr float SawVolume = 50.0f;
+constexpr float SawedVolume = 80.0f;
+constexpr std::chrono::milliseconds SawedInertiaDuration = std::chrono::milliseconds(200);
+constexpr float SinkingMusicVolume = 20.0f;
+constexpr float WaveSplashTriggerSize = 0.5f;
 
 SoundController::SoundController(
     std::shared_ptr<ResourceLoader> resourceLoader,
@@ -38,6 +41,8 @@ SoundController::SoundController(
     , mOneShotMultipleChoiceSounds()
     , mCurrentlyPlayingOneShotSounds()
     // Continuous sounds
+    , mSawedMetalSound(SawedInertiaDuration)
+    , mSawedWoodSound(SawedInertiaDuration)
     , mSawAbovewaterSound()
     , mSawUnderwaterSound()
     , mDrawSound()
@@ -114,7 +119,7 @@ SoundController::SoundController(
                 assert(uMatch[2].str() == "underwater");
                 mSawUnderwaterSound.Initialize(
                     std::move(soundBuffer),
-                    100.0f,
+                    SawVolume,
                     mMasterEffectsVolume,
                     mMasterEffectsMuted);
             }
@@ -122,7 +127,7 @@ SoundController::SoundController(
             {
                 mSawAbovewaterSound.Initialize(
                     std::move(soundBuffer),
-                    100.0f,
+                    SawVolume,
                     mMasterEffectsVolume,
                     mMasterEffectsMuted);
             }            
@@ -134,6 +139,35 @@ SoundController::SoundController(
                 100.0f,
                 mMasterEffectsVolume,
                 mMasterEffectsMuted);
+        }
+        else if (soundType == SoundType::Sawed)
+        {
+            std::regex mRegex(R"(([^_]+)_([^_]+))");
+            std::smatch mMatch;
+            if (!std::regex_match(soundName, mMatch, mRegex))
+            {
+                throw GameException("M sound filename \"" + soundName + "\" is not recognized");
+            }
+
+            assert(mMatch.size() == 1 + 2);
+
+            // Parse SoundElementType
+            Material::SoundProperties::SoundElementType soundElementType = Material::SoundProperties::StrToSoundElementType(mMatch[2].str());
+
+            if (Material::SoundProperties::SoundElementType::Metal == soundElementType)
+            {
+                mSawedMetalSound.Initialize(
+                    std::move(soundBuffer),
+                    mMasterEffectsVolume,
+                    mMasterEffectsMuted);
+            }
+            else
+            {
+                mSawedWoodSound.Initialize(
+                    std::move(soundBuffer),
+                    mMasterEffectsVolume,
+                    mMasterEffectsMuted);
+            }
         }
         else if (soundType == SoundType::Swirl)
         {
@@ -352,7 +386,8 @@ void SoundController::SetPaused(bool isPaused)
     {
         if (isPaused)
         {
-            if (sf::Sound::Status::Playing == playingSound.Sound->getStatus())
+            if (sf::Sound::Status::Playing == playingSound.Sound->getStatus()
+                && playingSound.Type != SoundType::Destroy) // TODOHERE
                 playingSound.Sound->pause();
         }
         else
@@ -396,6 +431,8 @@ void SoundController::SetMasterEffectsVolume(float volume)
         playingSound.Sound->setMasterVolume(mMasterEffectsVolume);
     }
 
+    mSawedMetalSound.SetMasterVolume(mMasterEffectsVolume);
+    mSawedWoodSound.SetMasterVolume(mMasterEffectsVolume);
     mSawAbovewaterSound.SetMasterVolume(mMasterEffectsVolume);
     mSawUnderwaterSound.SetMasterVolume(mMasterEffectsVolume);
     mDrawSound.SetMasterVolume(mMasterEffectsVolume);
@@ -424,6 +461,8 @@ void SoundController::SetMasterEffectsMuted(bool isMuted)
         playingSound.Sound->setMuted(mMasterEffectsMuted);
     }
 
+    mSawedMetalSound.SetMuted(mMasterEffectsMuted);
+    mSawedWoodSound.SetMuted(mMasterEffectsMuted);
     mSawAbovewaterSound.SetMuted(mMasterEffectsMuted);
     mSawUnderwaterSound.SetMuted(mMasterEffectsMuted);
     mDrawSound.SetMuted(mMasterEffectsMuted);;
@@ -508,10 +547,16 @@ void SoundController::PlaySawSound(bool isUnderwater)
         mSawAbovewaterSound.Start();
         mSawUnderwaterSound.Stop();
     }
+
+    mSawedMetalSound.Start();
+    mSawedWoodSound.Start();
 }
 
 void SoundController::StopSawSound()
 {
+    mSawedMetalSound.Stop();
+    mSawedWoodSound.Stop();
+
     mSawAbovewaterSound.Stop();
     mSawUnderwaterSound.Stop();
 }
@@ -529,6 +574,10 @@ void SoundController::StopSwirlSound()
 
 void SoundController::Update()
 {
+    // Silence the sawed sounds - this will be a nop in case 
+    // they've just been started or will be started really soon
+    mSawedMetalSound.SetVolume(0.0f);
+    mSawedWoodSound.SetVolume(0.0f);
 }
 
 void SoundController::LowFrequencyUpdate()
@@ -557,6 +606,8 @@ void SoundController::Reset()
 
     mCurrentlyPlayingOneShotSounds.clear();
 
+    mSawedMetalSound.Reset();
+    mSawedWoodSound.Reset();
     mSawAbovewaterSound.Reset();
     mSawUnderwaterSound.Reset();
     mDrawSound.Reset();
@@ -598,6 +649,16 @@ void SoundController::OnDestroy(
         isUnderwater,
         70.0f,
         true);
+}
+
+void SoundController::OnSawed(
+    bool isMetal,
+    unsigned int size)
+{    
+    if (isMetal)
+        mSawedMetalSound.SetVolume(size > 0 ? SawedVolume : 0.0f);
+    else
+        mSawedWoodSound.SetVolume(size > 0 ? SawedVolume : 0.0f);
 }
 
 void SoundController::OnPinToggled(

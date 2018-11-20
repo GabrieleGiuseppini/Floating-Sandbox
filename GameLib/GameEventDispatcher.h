@@ -18,6 +18,7 @@ public:
 
     GameEventDispatcher()
         : mDestroyEvents()
+        , mSawedEvents()
         , mPinToggledEvents()
         , mStressEvents()
         , mBreakEvents()
@@ -59,6 +60,13 @@ public:
         unsigned int size) override
     {
         mDestroyEvents[std::make_tuple(material, isUnderwater)] += size;
+    }
+
+    virtual void OnSawed(
+        bool isMetal,
+        unsigned int size) override
+    {
+        mSawedEvents[std::make_tuple(isMetal)] += size;
     }
 
     virtual void OnPinToggled(
@@ -259,6 +267,11 @@ public:
                 sink->OnDestroy(std::get<0>(entry.first), std::get<1>(entry.first), entry.second);
             }
 
+            for (auto const & entry : mSawedEvents)
+            {
+                sink->OnSawed(std::get<0>(entry.first), entry.second);
+            }
+
             for (auto const & entry : mPinToggledEvents)
             {
                 sink->OnPinToggled(std::get<0>(entry), std::get<1>(entry));
@@ -302,6 +315,7 @@ public:
 
         // Clear collections
         mDestroyEvents.clear();
+        mSawedEvents.clear();
         mPinToggledEvents.clear();
         mStressEvents.clear();
         mBreakEvents.clear();
@@ -321,6 +335,7 @@ private:
 
     // The current events being aggregated
     unordered_tuple_map<std::tuple<Material const *, bool>, unsigned int> mDestroyEvents;
+    unordered_tuple_map<std::tuple<bool>, unsigned int> mSawedEvents;
     unordered_tuple_set<std::tuple<bool, bool>> mPinToggledEvents;
     unordered_tuple_map<std::tuple<Material const *, bool>, unsigned int> mStressEvents;
     unordered_tuple_map<std::tuple<Material const *, bool>, unsigned int> mBreakEvents;

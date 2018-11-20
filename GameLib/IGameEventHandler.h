@@ -45,6 +45,13 @@ public:
         // Default-implemented
     }
 
+    virtual void OnSawed(
+        bool /*isMetal*/,
+        unsigned int /*size*/)
+    {
+        // Default-implemented
+    }
+
     virtual void OnPinToggled(
         bool /*isPinned*/,
         bool /*isUnderwater*/)

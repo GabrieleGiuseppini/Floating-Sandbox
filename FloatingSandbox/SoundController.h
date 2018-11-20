@@ -117,7 +117,11 @@ public:
         Material const * material,
         bool isUnderwater,
         unsigned int size) override;
-    
+
+    virtual void OnSawed(
+        bool isMetal,
+        unsigned int size) override;
+
     virtual void OnPinToggled(
         bool isPinned,
         bool isUnderwater) override;
@@ -182,10 +186,11 @@ private:
 
     enum class SoundType
     {
-        Break,
-        Destroy,
+        Break,        
+        Destroy,        
         Draw,
         Saw,
+        Sawed,
         Swirl,
         PinPoint,
         UnpinPoint,
@@ -217,6 +222,8 @@ private:
             return SoundType::Draw;
         else if (Utils::CaseInsensitiveEquals(str, "Saw"))
             return SoundType::Saw;
+        else if (Utils::CaseInsensitiveEquals(str, "Sawed"))
+            return SoundType::Sawed;
         else if (Utils::CaseInsensitiveEquals(str, "Swirl"))
             return SoundType::Swirl;
         else if (Utils::CaseInsensitiveEquals(str, "PinPoint"))
@@ -420,7 +427,6 @@ private:
         bool mIsMuted;
     };
 
-
     struct ContinuousSound
     {
         ContinuousSound()
@@ -561,6 +567,115 @@ private:
         // - true: we want to play
         // - false: we want to stop
         bool mDesiredPlayingState;
+    };
+
+    struct ContinuousInertialSound
+    {
+        ContinuousInertialSound(std::chrono::milliseconds inertiaDuration)
+            : mContinuousSound()
+            , mInertiaDuration(inertiaDuration)
+            , mHearableLastTime()
+        {
+        }
+
+        explicit ContinuousInertialSound(
+            std::chrono::milliseconds inertiaDuration,
+            std::unique_ptr<sf::SoundBuffer> soundBuffer,
+            float masterVolume,
+            bool isMuted)
+            : mContinuousSound()
+            , mInertiaDuration(inertiaDuration)
+            , mHearableLastTime()
+        {
+            Initialize(
+                std::move(soundBuffer),
+                masterVolume,
+                isMuted);
+        }
+
+        void Initialize(
+            std::unique_ptr<sf::SoundBuffer> soundBuffer,
+            float masterVolume,
+            bool isMuted)
+        {
+            mContinuousSound.Initialize(
+                std::move(soundBuffer),
+                0.0f,
+                masterVolume,
+                isMuted);
+
+            mHearableLastTime.reset();
+        }
+
+        void Reset()
+        {
+            Stop();
+        }
+
+        void SetVolume(float volume)
+        {
+            auto now = std::chrono::steady_clock::now();
+
+            if (volume > 0.0f)
+            {
+                mContinuousSound.SetVolume(volume);
+
+                // Remember the last time at which we heard this sound
+                mHearableLastTime = now;
+
+                return;
+            }
+            else if (!mHearableLastTime
+                || now - *mHearableLastTime < mInertiaDuration)
+            {
+                // Been playing for too little - Nothing to do
+                return;
+            }
+            else
+            {
+                // We can mute it now
+                mContinuousSound.SetVolume(0.0f);
+                mHearableLastTime.reset();
+            }
+        }
+
+        void SetMasterVolume(float masterVolume)
+        {
+            mContinuousSound.SetMasterVolume(masterVolume);
+        }
+
+        void SetMuted(bool isMuted)
+        {
+            mContinuousSound.SetMuted(isMuted);
+        }
+
+        void Start()
+        {
+            mContinuousSound.SetVolume(0.0f);
+            mContinuousSound.Start();
+
+            mHearableLastTime.reset();
+        }
+
+        void SetPaused(bool isPaused)
+        {
+            mContinuousSound.SetPaused(isPaused);
+        }
+
+        void Stop()
+        {
+            mContinuousSound.Stop();
+            mContinuousSound.SetVolume(0.0f);
+
+            mHearableLastTime.reset();
+        }
+
+    private:
+
+        ContinuousSound mContinuousSound;
+
+        std::chrono::milliseconds const mInertiaDuration;
+        std::optional<std::chrono::steady_clock::time_point> mHearableLastTime;
     };
 
     struct OneShotMultipleChoiceSound
@@ -920,6 +1035,9 @@ private:
     //
     // Continuous sounds
     //
+
+    ContinuousInertialSound mSawedMetalSound;
+    ContinuousInertialSound mSawedWoodSound;
 
     ContinuousSingleChoiceSound mSawAbovewaterSound;
     ContinuousSingleChoiceSound mSawUnderwaterSound;
