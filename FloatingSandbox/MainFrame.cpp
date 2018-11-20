@@ -846,7 +846,7 @@ void MainFrame::OnAmbientLightUpMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mGameController);
 
-    float newAmbientLight = std::min(1.0f, mGameController->GetAmbientLightIntensity() * 1.05f);
+    float newAmbientLight = std::min(1.0f, mGameController->GetAmbientLightIntensity() * 1.02f);
     mGameController->SetAmbientLightIntensity(newAmbientLight);
 }
 
@@ -854,7 +854,7 @@ void MainFrame::OnAmbientLightDownMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mGameController);
 
-    float newAmbientLight = mGameController->GetAmbientLightIntensity() * 0.95f;
+    float newAmbientLight = mGameController->GetAmbientLightIntensity() / 1.02f;
     mGameController->SetAmbientLightIntensity(newAmbientLight);
 }
 

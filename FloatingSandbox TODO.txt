@@ -140,13 +140,13 @@ Render:
 	- See Moleskine
 
 - Suggestions to spec:
-	- Fix ambient light increments
-		- See if can do curve
+	+ Fix ambient light increments
+	
 	- Changing the height of the bumps of the ground
 		- Allow the minimum seabed height to be 0
-	- Changing the width of the waves up to at least 10x the current size
 
-	- When wind is zero waves don't move - need to change wave height and phase separately
+	- Changing the width of the waves up to at least 10x the current size
+	+ When wind is zero waves don't move - need to change wave height and phase separately
 	- A toggle-able shader for the sea - so it gets darker the further down you go; it would be affected by the ambient lighting		
 	- Different colored lights
 	- Lights with different chances of turning off
