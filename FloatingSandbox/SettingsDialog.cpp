@@ -89,6 +89,19 @@ SettingsDialog::SettingsDialog(
 
 
     //
+    // Sky
+    //
+
+    wxPanel * skyPanel = new wxPanel(notebook);
+
+    skyPanel->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
+
+    PopulateSkyPanel(skyPanel);
+
+    notebook->AddPage(skyPanel, "Sky");
+
+
+    //
     // World
     //
 
@@ -314,6 +327,19 @@ void SettingsDialog::ApplySettings()
     mGameController->SetWaterLevelOfDetail(
         mWaterLevelOfDetailSlider->GetValue());
 
+
+
+    mGameController->SetNumberOfStars(
+        static_cast<size_t>(mNumberOfStarsSlider->GetValue()));
+
+    mGameController->SetNumberOfClouds(
+        static_cast<size_t>(mNumberOfCloudsSlider->GetValue()));
+
+    mGameController->SetWindSpeed(
+        mWindSpeedSlider->GetValue());
+
+
+
     mGameController->SetWaveHeight(
         mWaveHeightSlider->GetValue());
 
@@ -323,14 +349,9 @@ void SettingsDialog::ApplySettings()
     mGameController->SetOceanFloorBumpiness(
         mOceanFloorBumpinessSlider->GetValue());
 
-    mGameController->SetNumberOfClouds(
-        static_cast<size_t>(mNumberOfCloudsSlider->GetValue()));
-
-    mGameController->SetWindSpeed(
-        mWindSpeedSlider->GetValue());
-
     mGameController->SetLightDiffusionAdjustment(
         mLightDiffusionSlider->GetValue());
+
 
 
     mGameController->SetDestroyRadius(
@@ -570,6 +591,77 @@ void SettingsDialog::PopulateFluidsPanel(wxPanel * panel)
     panel->SetSizerAndFit(controlsSizer);
 }
 
+void SettingsDialog::PopulateSkyPanel(wxPanel * panel)
+{
+    wxBoxSizer* controlsSizer = new wxBoxSizer(wxHORIZONTAL);
+
+
+    // Number of Stars
+
+    mNumberOfStarsSlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Number of Stars",
+        static_cast<float>(mGameController->GetNumberOfStars()),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<LinearSliderCore>(
+            static_cast<float>(mGameController->GetMinNumberOfStars()),
+            static_cast<float>(mGameController->GetMaxNumberOfStars())));
+
+    controlsSizer->Add(mNumberOfStarsSlider.get(), 1, wxALL, SliderBorder);
+
+
+    // Number of Clouds
+
+    mNumberOfCloudsSlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Number of Clouds",
+        static_cast<float>(mGameController->GetNumberOfClouds()),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<LinearSliderCore>(
+            static_cast<float>(mGameController->GetMinNumberOfClouds()),
+            static_cast<float>(mGameController->GetMaxNumberOfClouds())));
+
+    controlsSizer->Add(mNumberOfCloudsSlider.get(), 1, wxALL, SliderBorder);
+
+
+    // Wind Speed
+
+    mWindSpeedSlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Wind Speed",
+        mGameController->GetWindSpeed(),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<LinearSliderCore>(
+            mGameController->GetMinWindSpeed(),
+            mGameController->GetMaxWindSpeed()));
+
+    controlsSizer->Add(mWindSpeedSlider.get(), 1, wxALL, SliderBorder);
+
+
+
+    // Finalize panel
+
+    panel->SetSizerAndFit(controlsSizer);
+}
+
 void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
 {
     wxBoxSizer* controlsSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -634,45 +726,6 @@ void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
             mGameController->GetMaxOceanFloorBumpiness()));
 
     controlsSizer->Add(mOceanFloorBumpinessSlider.get(), 1, wxALL, SliderBorder);
-
-
-    // Number of Clouds
-
-    mNumberOfCloudsSlider = std::make_unique<SliderControl>(
-        panel,
-        SliderWidth,
-        SliderHeight,
-        "Number of Clouds",
-        static_cast<float>(mGameController->GetNumberOfClouds()),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            static_cast<float>(mGameController->GetMinNumberOfClouds()),
-            static_cast<float>(mGameController->GetMaxNumberOfClouds())));
-
-    controlsSizer->Add(mNumberOfCloudsSlider.get(), 1, wxALL, SliderBorder);
-
-    // Wind Speed
-
-    mWindSpeedSlider = std::make_unique<SliderControl>(
-        panel,
-        SliderWidth,
-        SliderHeight,
-        "Wind Speed",
-        mGameController->GetWindSpeed(),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            mGameController->GetMinWindSpeed(),
-            mGameController->GetMaxWindSpeed()));
-
-    controlsSizer->Add(mWindSpeedSlider.get(), 1, wxALL, SliderBorder);
 
 
     // Light Diffusion
@@ -963,7 +1016,15 @@ void SettingsDialog::ReadSettings()
     mWaterQuicknessSlider->SetValue(mGameController->GetWaterQuickness());
 
     mWaterLevelOfDetailSlider->SetValue(mGameController->GetWaterLevelOfDetail());
-    
+
+
+
+    mNumberOfStarsSlider->SetValue(static_cast<float>(mGameController->GetNumberOfStars()));
+
+    mNumberOfCloudsSlider->SetValue(static_cast<float>(mGameController->GetNumberOfClouds()));
+
+    mWindSpeedSlider->SetValue(mGameController->GetWindSpeed());
+
 
 
     mWaveHeightSlider->SetValue(mGameController->GetWaveHeight());
@@ -973,10 +1034,6 @@ void SettingsDialog::ReadSettings()
     mSeaDepthSlider->SetValue(mGameController->GetSeaDepth());
 
     mOceanFloorBumpinessSlider->SetValue(mGameController->GetOceanFloorBumpiness());
-
-    mNumberOfCloudsSlider->SetValue(static_cast<float>(mGameController->GetNumberOfClouds()));
-
-    mWindSpeedSlider->SetValue(mGameController->GetWindSpeed());
 
 
 

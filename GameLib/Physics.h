@@ -7,14 +7,15 @@
 
 namespace Physics
 {
-    class Cloud;
-    class ElectricalElements;
     class Bombs;
+    class Clouds;
+    class ElectricalElements;    
     class OceanFloor;
     class PinnedPoints;
 	class Points;
 	class Ship;
 	class Springs;
+    class Stars;
 	class Triangles;
     class WaterSurface;
 	class World;
@@ -27,10 +28,11 @@ namespace Physics
 #include "Triangles.h"
 #include "ElectricalElements.h"
 
+#include "Clouds.h"
+#include "Stars.h"
 #include "OceanFloor.h"
 #include "WaterSurface.h"
 #include "World.h"
-#include "Cloud.h"
 
 #include "Bomb.h"
 #include "AntiMatterBomb.h"

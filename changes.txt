@@ -2,6 +2,7 @@
 - Musical theme for this release: Chemical Brothers, "We Are the Night"
 - Added ephemeral particles sub-system, and used it for debris and sparkles from the chainsaw
 - Added ability to control ocean floor bumpiness (collisions with islands!), and extended range of sea depth to 10Km
+- Fixed bug with line artifacts on textures
 
 1.6.0
 - Musical theme for this release: Blonde Redhead, "23"

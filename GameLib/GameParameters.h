@@ -150,6 +150,10 @@ struct GameParameters
 
     float LightDiffusionAdjustment;
 
+    size_t NumberOfStars;
+    static constexpr size_t MinNumberOfStars = 0;
+    static constexpr size_t MaxNumberOfStars = 10000;
+
     size_t NumberOfClouds;
     static constexpr size_t MinNumberOfClouds = 0;
     static constexpr size_t MaxNumberOfClouds = 500;

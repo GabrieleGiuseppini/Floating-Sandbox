@@ -61,7 +61,8 @@ set  (PHYSICS_SOURCES
 	Bomb.h
 	Bombs.cpp
 	Bombs.h
-	Cloud.h
+	Clouds.cpp
+	Clouds.h
 	ElectricalElements.cpp
 	ElectricalElements.h
 	ForceFields.cpp
@@ -79,6 +80,8 @@ set  (PHYSICS_SOURCES
 	Ship.h
 	Springs.cpp
 	Springs.h
+	Stars.cpp
+	Stars.h
 	TimerBomb.cpp
 	TimerBomb.h
 	Triangles.cpp

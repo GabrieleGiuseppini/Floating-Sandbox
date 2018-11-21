@@ -37,6 +37,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::ShipTrianglesColor;
     else if (lstr == "ship_triangles_texture")
         return ProgramType::ShipTrianglesTexture;
+    else if (lstr == "stars")
+        return ProgramType::Stars;
     else if (lstr == "text_ndc")
         return ProgramType::TextNDC;
     else if (lstr == "water")
@@ -71,6 +73,8 @@ std::string ProgramTypeToStr(ProgramType program)
         return "ShipTrianglesColor";
     case ProgramType::ShipTrianglesTexture:
         return "ShipTrianglesTexture";
+    case ProgramType::Stars:
+        return "Stars";
     case ProgramType::TextNDC:
         return "TextNDC";
     case ProgramType::Water:
@@ -89,6 +93,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::MatteColor;
     else if (str == "OrthoMatrix")
         return ProgramParameterType::OrthoMatrix;
+    else if (str == "StarTransparency")
+        return ProgramParameterType::StarTransparency;
     else if (str == "TextureScaling")
         return ProgramParameterType::TextureScaling;
     else if (str == "ViewportSize")
@@ -122,6 +128,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "MatteColor";
     case ProgramParameterType::OrthoMatrix:
         return "OrthoMatrix";
+    case ProgramParameterType::StarTransparency:
+        return "StarTransparency";
     case ProgramParameterType::TextureScaling:
         return "TextureScaling";
     case ProgramParameterType::ViewportSize:

@@ -209,6 +209,11 @@ public:
     bool GetDoGenerateSparkles() const { return mGameParameters.DoGenerateSparkles; }
     void SetDoGenerateSparkles(bool value) { mGameParameters.DoGenerateSparkles = value; }
 
+    size_t GetNumberOfStars() const { return mGameParameters.NumberOfStars; }
+    void SetNumberOfStars(size_t value) { mGameParameters.NumberOfStars = value; }
+    size_t GetMinNumberOfStars() const { return GameParameters::MinNumberOfStars; }
+    size_t GetMaxNumberOfStars() const { return GameParameters::MaxNumberOfStars; }
+
     size_t GetNumberOfClouds() const { return mGameParameters.NumberOfClouds; }
     void SetNumberOfClouds(size_t value) { mGameParameters.NumberOfClouds = value; }
     size_t GetMinNumberOfClouds() const { return GameParameters::MinNumberOfClouds; }

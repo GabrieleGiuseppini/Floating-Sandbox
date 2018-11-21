@@ -125,12 +125,23 @@ Render:
 		+ Test also debris
 	+ Saw sounds
 	= Pac0's fix 
-	- GenericTexture filtering: back to linear-linear, see if AM bomb improves
-	- Iterations slider
-		- Requires extended status text w/measurements
-	- Settings manager
-	- Bubbles
-
+	- GenericTexture filtering: back to linear-linear, see if AM bomb improves		
+	= TODOHERE: Stars at night would be pretty cool too
+		+ Render:
+			+ Need to be done at clouds, w/water stencil
+		+ Physics::Stars
+			+ Update(GameParams) -- recalcs if # changed
+			+ Upload(RenderContext)
+			+ Managed by world
+		- Test ambient light -> transparency curve
+		+ Test customizability
+		- Check performance
+			- FPS: 28.4
+			- PerfAnalysis: 
+		- Decide on CSV 
+			- python script to cut down
+	- Turning down a bit the very high pitch stress noise
+		- Do it on flac - on all high-pitched ones (same amplitude)
 
 - New ships
 	- Fix contributions
@@ -140,24 +151,15 @@ Render:
 	- See Moleskine
 
 - Suggestions to spec:
-	+ Fix ambient light increments
-	+ When wind is zero waves don't move - need to change wave height and phase separately
-	
-	= Changing the height of the bumps of the ground
-		= Allow the minimum seabed height to be 0
-	= Being able to drop the sea floor much further down than 500m or so too, like 10km
-
-	- Separate sound control for tools
 	- A toggle-able shader for the sea - so it gets darker the further down you go; it would be affected by the ambient lighting
-		- Need new scalar vertex attrib for depthBrightness - between 1.0 (top) and 0.0 (at 10km - or at max?)
+		- Need new scalar vertex attrib for depthBrightness - between 1.0 (top) and 0.0 (at greater of 1000m and sea depth)
 			- depthBrightness is always 1.0 if "modulate sea depth brightness" (new boolean GameParam) is not set
 	- Different colored lights
 	- Lights with different chances of turning off
-	- Tool to flood ship	
 	- Morse code: text-to-morse encoder
 	- Custom sky colour - if possible a RGB picker in the settings
 		- I would do the same for the water in the ship
-	- Stars at night would be pretty cool too	
+	- Black hole
 
 - Technical debt
 	+ Replace ShipDefinitionFile's metadata with ShipDefinition
@@ -349,14 +351,17 @@ Render:
 		- Recalcs Point's mass things, including mass itself
 		- Also used at bombs - how?
 		- When done, re-enable buoyancy fix
-
-	- Slider for "simulation quality", affecting num of mechanical simulation iterations
+	
+	- TODOHERE: Slider for "simulation quality", affecting num of mechanical simulation iterations
 		- Integer slider, from 0 to 10
 			- 0 = half
 			- 1 = current
 			- 2 = 2x
 			- ...
 		- Points might have to recalc things on changes
+		- Requires extended status text w/measurements
+
+	- TODOHERE: Try textures for sparkles
 
 	+ Fix ephemeral particles
 		+ Pass also "now" all over the place
@@ -426,9 +431,9 @@ Render:
 
 
 	- Switches:
-		- New electrical material type; color trick like ropes to have unique IDs for switches
+		- New electrical material type; color trick like ropes to have unique and deterministic IDs for switches
 			- One material (base structural color) for initially on and another one for initially off
-			- New electrical property: ConductsElectricity, bool
+			- New electrical property: ConductsElectricity, bool - used at connectivity visit
 		- Ship json adds optional names for each ID
 			- as vector<tuple<GlobalSwitchId, std::string>>>
 		- ShipBuilder detects all switches as electrical elements
@@ -453,9 +458,21 @@ Render:
 			- Ship::SetSwitch(switchId, bool):
 				- Toggles electrical element's "doesConductElectricity", via ElectricalElements::SetSwitch(switchId, bool)
 	- Pumps
-		- Current controls ~IsLeaking
+		- New electrical element
+		- @Update: if powered && under water level -> Adds or removes point's water
+
 	- Anti-Flood doors
-		- Current controls ~WaterPermeability
+		- New electrical element
+		- @Update: if powered state change => Become Hull/NotHull, with all consequences:
+			- Point::IsHull
+			- All connected springs: visit all to see if WaterPermeability is 1 or 0
+			- No real need to also change Point::Buoyancy
+
+
+	- Propulsion
+		- New electrical element
+		- Electrical current controls force
+		- At ElectricalElements::Update(): if powered, apply force to point (4 materials for 4 directions)
 
 	- Test:
 		- Self-adjustment of kSpring and kDamp based off paper's formula (H and L bounds)
@@ -552,6 +569,21 @@ Render:
 
 - Controls:
 
+	- Tool to flood ship
+		- Name: Flood
+		- Icon: bottle
+		- New ToolController/Tool
+			- Continuous, like Destroy
+		- World->Ship::OnFloodAt(x,y,strength)
+			- Find closest (very small radius)
+			- Add water quantity to point
+			- Emit event
+		- Sound: continuous as long as ship takes water
+			- So, like sawed
+				- Update() attempts to stop it
+				
+
+
 	- Changing the width of the waves up to at least 10x the current size
 		- Requires re-calculation of period (if adjustment is x-multiplier N, then period is N times basic period)
 	
@@ -568,15 +600,7 @@ Render:
 				- 1) data for point non-existing in zero layer
 				- 2) data that already exists (e.g. ElectricalChar's)
 
-	+ World settings: number of clouds, wind
-
-	+ SettingsDialog: also sound options
-		+ Turn on/off sinking music
-		+ Stress sounds on/off
-		+ Break sounds on/off
-		+ Two volume controls for music and sounds (all but music)
-
-	- SettingsDialog: save settings, and defaults
+	- TODOHERE: SettingsDialog: save settings, and defaults
 		- SettingsManager (@FloatingSandbox):
 			- Has GameController, SoundController, etc.
 			- Defines struct with all customizable setting members
@@ -649,13 +673,15 @@ Render:
 			- Show also name, dimensions, and total mass
 
 - Sounds:
+	- TODOHERE: Separate sound control for tools
+
 	+ Sawing: do not publish destroy events when cutting springs, but new "Sawed" events with own metal/wood sounds
 		+ Two new continuous sounds: metal and wood saw
 		+ OnSawed is invoked with Type and size - size=0 means nothing
 		+ Event handler sets continuous sound's volume up/down (when size=0), and eventually starts it
 		+ Stopping continuous saw sound also sets volume of these two to zero
 	- Ship may come with custom sound(s) for horns
-		- Figure out how to play them, may be like switchboard or *via* switchboard
+		- Figure out how to play them, may be like switchboard or *via* switchboard, or with just one horn sound
 	- Morse code sound when it's about to sink (early sink detection)
 		- Or at first drop of water
 	- Volume of effects should depend on distance/zoom
@@ -1281,6 +1307,18 @@ IF WX:
 		+ Problem with ocean depth: value on exit looks like current - min == 180
 		+ First of all, need to set slider ticks based on current values upon opening of dialog
 		+ Then, see if floor at linear control should be round
+	+ Fix ambient light increments
+	+ When wind is zero waves don't move - need to change wave height and phase separately	
+	+ Changing the height of the bumps of the ground
+		+ Allow the minimum seabed height to be 0
+	+ Being able to drop the sea floor much further down than 500m or so too, like 10km
+	+ World settings: number of clouds, wind
+
+	+ SettingsDialog: also sound options
+		+ Turn on/off sinking music
+		+ Stress sounds on/off
+		+ Break sounds on/off
+		+ Two volume controls for music and sounds (all but music)
 
 + Gfx:
 	+ Do ropes with two endpoints (000xxx)

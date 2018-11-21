@@ -265,6 +265,23 @@ public:
     void RenderStart();
 
     //
+    // Stars
+    //
+
+    void UploadStarsStart(size_t starCount);
+
+    inline void UploadStar(
+        float ndcX,
+        float ndcY,
+        float brightness)
+    {
+        mStarElementBuffer.emplace_back(ndcX, ndcY, brightness);
+    }
+
+    void UploadStarsEnd();
+
+
+    //
     // Clouds
     //
 
@@ -783,7 +800,7 @@ public:
 
 private:
 
-    void RenderCrossesOfLight();
+    void RenderCrossesOfLight();    
     
     void UpdateOrthoMatrix();
     void UpdateCanvasSize();
@@ -801,6 +818,32 @@ private:
     std::unique_ptr<ShaderManager<ShaderManagerTraits>> mShaderManager;
     std::unique_ptr<TextureRenderManager> mTextureRenderManager;
     std::unique_ptr<TextRenderContext> mTextRenderContext;
+
+    //
+    // Stars
+    //
+
+#pragma pack(push)
+    struct StarElement
+    {
+        float ndcX;
+        float ndcY;
+        float brightness;
+
+        StarElement(
+            float _ndcX,
+            float _ndcY,
+            float _brightness)
+            : ndcX(_ndcX)
+            , ndcY(_ndcY)
+            , brightness(_brightness)
+        {}
+    };
+#pragma pack(pop)
+
+    std::vector<StarElement> mStarElementBuffer;
+
+    GameOpenGLVBO mStarVBO;
 
 
     //

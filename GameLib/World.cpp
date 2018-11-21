@@ -17,17 +17,17 @@ World::World(
     std::shared_ptr<IGameEventHandler> gameEventHandler,
     GameParameters const & gameParameters)
     : mAllShips()
-    , mAllClouds()
+    , mStars()
+    , mClouds()
     , mWaterSurface()
-    , mOceanFloor()
+    , mOceanFloor()    
     , mCurrentSimulationTime(0.0f)
     , mCurrentVisitSequenceNumber(1u)
     , mGameEventHandler(std::move(gameEventHandler))
 {
-    // Initialize clouds
-    UpdateClouds(gameParameters);
-
-    // Initialize water and ocean
+    // Initialize world pieces
+    mStars.Update(gameParameters);
+    mClouds.Update(mCurrentSimulationTime, gameParameters);
     mWaterSurface.Update(mCurrentSimulationTime, gameParameters);
     mOceanFloor.Update(gameParameters);
 }
@@ -234,10 +234,12 @@ void World::Update(GameParameters const & gameParameters)
     if (NoneVisitSequenceNumber == mCurrentVisitSequenceNumber)
         mCurrentVisitSequenceNumber = 1u;
 
-    // Update water surface and ocean floor
+    // Update world parts
+    mStars.Update(gameParameters);
+    mClouds.Update(mCurrentSimulationTime, gameParameters);
     mWaterSurface.Update(mCurrentSimulationTime, gameParameters);
     mOceanFloor.Update(gameParameters);
-
+    
     // Update all ships
     for (auto & ship : mAllShips)
     {
@@ -246,20 +248,21 @@ void World::Update(GameParameters const & gameParameters)
             mCurrentVisitSequenceNumber,
             gameParameters);
     }
-
-    // Update clouds
-    UpdateClouds(gameParameters);
 }
 
 void World::Render( 
     GameParameters const & gameParameters,
     Render::RenderContext & renderContext) const
 {
-    // Upload land and water data
+    // Upload stars
+    mStars.Upload(renderContext);
+
+    // Upload land and water data (before clouds and stars are rendered, as the latters
+    // need the water stencil)
     UploadLandAndWater(gameParameters, renderContext);
 
-    // Render the clouds
-    RenderClouds(renderContext);
+    // Render the clouds (and stars)
+    mClouds.Render(renderContext);
 
     // Render the ocean floor
     renderContext.RenderLand();
@@ -288,56 +291,6 @@ void World::Render(
 ///////////////////////////////////////////////////////////////////////////////////
 // Private Helpers
 ///////////////////////////////////////////////////////////////////////////////////
-
-void World::UpdateClouds(GameParameters const & gameParameters)
-{
-    // Resize clouds vector
-    if (gameParameters.NumberOfClouds < mAllClouds.size())
-    {
-        mAllClouds.resize(gameParameters.NumberOfClouds);
-    }
-    else
-    {
-        for (size_t c = mAllClouds.size(); c < gameParameters.NumberOfClouds; ++c)
-        {
-            mAllClouds.emplace_back(
-                new Cloud(
-                    GameRandomEngine::GetInstance().GenerateRandomNormalReal() * 100.0f,    // OffsetX
-                    GameRandomEngine::GetInstance().GenerateRandomNormalReal() * 0.01f,     // SpeedX1
-                    GameRandomEngine::GetInstance().GenerateRandomNormalReal() * 0.04f,     // AmpX
-                    GameRandomEngine::GetInstance().GenerateRandomNormalReal() * 0.01f,     // SpeedX2
-                    GameRandomEngine::GetInstance().GenerateRandomNormalReal() * 100.0f,    // OffsetY
-                    GameRandomEngine::GetInstance().GenerateRandomNormalReal() * 0.001f,    // AmpY
-                    GameRandomEngine::GetInstance().GenerateRandomNormalReal() * 0.005f,    // SpeedY
-                    0.2f + static_cast<float>(c) / static_cast<float>(c + 3), // OffsetScale - the earlier clouds are smaller
-                    GameRandomEngine::GetInstance().GenerateRandomNormalReal() * 0.05f,     // AmpScale
-                    GameRandomEngine::GetInstance().GenerateRandomNormalReal() * 0.005f));  // SpeedScale
-        }
-    }
-
-    // Update clouds
-    for (auto & cloud : mAllClouds)
-    {
-        cloud->Update(
-            mCurrentSimulationTime,
-            gameParameters.WindSpeed);
-    }
-}
-
-void World::RenderClouds(Render::RenderContext & renderContext) const
-{
-    renderContext.RenderCloudsStart(mAllClouds.size());
-
-    for (auto const & cloud : mAllClouds)
-    {
-        renderContext.UploadCloud(
-            cloud->GetX(),
-            cloud->GetY(),
-            cloud->GetScale());
-    }
-
-    renderContext.RenderCloudsEnd();
-}
 
 void World::UploadLandAndWater(
     GameParameters const & gameParameters,

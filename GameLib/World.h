@@ -102,10 +102,6 @@ public:
 
 private:
 
-    void UpdateClouds(GameParameters const & gameParameters);
-
-    void RenderClouds(Render::RenderContext & renderContext) const;
-
     void UploadLandAndWater(
         GameParameters const & gameParameters,
         Render::RenderContext & renderContext) const;
@@ -113,8 +109,9 @@ private:
 private:
 
     // Repository
-    std::vector<std::unique_ptr<Ship>> mAllShips;
-    std::vector<std::unique_ptr<Cloud>> mAllClouds;
+    std::vector<std::unique_ptr<Ship>> mAllShips;    
+    Stars mStars;
+    Clouds mClouds;    
     WaterSurface mWaterSurface;
     OceanFloor mOceanFloor;
 

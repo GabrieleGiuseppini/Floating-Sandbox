@@ -35,6 +35,7 @@ enum class ProgramType
     ShipStressedSprings,
     ShipTrianglesColor,
     ShipTrianglesTexture,
+    Stars,
     TextNDC,
     Water,
 
@@ -50,6 +51,7 @@ enum class ProgramParameterType : uint8_t
     AmbientLightIntensity = 0,
     MatteColor,
     OrthoMatrix,
+    StarTransparency,
     TextureScaling,
     ViewportSize,
     WaterLevelThreshold,

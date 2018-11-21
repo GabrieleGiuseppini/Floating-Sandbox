@@ -33,5 +33,6 @@ uniform float paramAmbientLightIntensity;
 
 void main()
 {
-    gl_FragColor = texture2D(paramCloudTexture, texturePos) * paramAmbientLightIntensity;
+    vec4 textureColor = texture2D(paramCloudTexture, texturePos);
+    gl_FragColor = vec4(textureColor.xyz * paramAmbientLightIntensity, textureColor.w);
 } 

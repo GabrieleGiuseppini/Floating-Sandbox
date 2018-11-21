@@ -64,12 +64,15 @@ private:
     std::unique_ptr<SliderControl> mWaterQuicknessSlider;
     std::unique_ptr<SliderControl> mWaterLevelOfDetailSlider;
 
+    // Sky
+    std::unique_ptr<SliderControl> mNumberOfStarsSlider;
+    std::unique_ptr<SliderControl> mNumberOfCloudsSlider;
+    std::unique_ptr<SliderControl> mWindSpeedSlider;
+
     // World
     std::unique_ptr<SliderControl> mWaveHeightSlider;
     std::unique_ptr<SliderControl> mSeaDepthSlider;
     std::unique_ptr<SliderControl> mOceanFloorBumpinessSlider;
-    std::unique_ptr<SliderControl> mNumberOfCloudsSlider;
-    std::unique_ptr<SliderControl> mWindSpeedSlider;
     std::unique_ptr<SliderControl> mLightDiffusionSlider;
 
     // Interactions
@@ -103,6 +106,7 @@ private:
 
     void PopulateMechanicsPanel(wxPanel * panel);
     void PopulateFluidsPanel(wxPanel * panel);
+    void PopulateSkyPanel(wxPanel * panel);
     void PopulateWorldPanel(wxPanel * panel);
     void PopulateInteractionsPanel(wxPanel * panel);    
     void PopulateRenderingPanel(wxPanel * panel);

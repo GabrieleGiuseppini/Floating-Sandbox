@@ -19,6 +19,9 @@ RenderContext::RenderContext(
     : mShaderManager()
     , mTextureRenderManager()
     , mTextRenderContext()
+    // Stars
+    , mStarElementBuffer()
+    , mStarVBO()
     // Clouds
     , mCloudElementBuffer()
     , mCurrentCloudElementCount(0u)
@@ -180,6 +183,15 @@ RenderContext::RenderContext(
     mShaderManager->ActivateProgram<ProgramType::GenericTextures>();
     mShaderManager->SetTextureParameters<ProgramType::GenericTextures>();
     
+
+    //
+    // Initialize stars
+    //
+
+    // Create VBO    
+    glGenBuffers(1, &tmpGLuint);
+    mStarVBO = tmpGLuint;
+
 
     //
     // Initialize clouds 
@@ -426,6 +438,23 @@ void RenderContext::RenderStart()
     mTextRenderContext->RenderStart();
 }
 
+void RenderContext::UploadStarsStart(size_t starCount)
+{
+    mStarElementBuffer.clear();
+    mStarElementBuffer.reserve(starCount);
+}
+
+void RenderContext::UploadStarsEnd()
+{
+    // Bind VBO
+    glBindBuffer(GL_ARRAY_BUFFER, *mStarVBO);
+    CheckOpenGLError();
+
+    // Upload buffer
+    glBufferData(GL_ARRAY_BUFFER, mStarElementBuffer.size() * sizeof(StarElement), mStarElementBuffer.data(), GL_STATIC_DRAW);
+    CheckOpenGLError();
+}
+
 void RenderContext::RenderCloudsStart(size_t cloudCount)
 {
     if (cloudCount != mCloudElementCount)
@@ -487,6 +516,32 @@ void RenderContext::RenderCloudsEnd()
     if (mWireframeMode)
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+    // Enable stenciling - only draw where there are no 1's
+    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+
+    ////////////////////////////////////////////////////
+    // Draw stars with stencil test
+    ////////////////////////////////////////////////////
+
+    // Use program
+    mShaderManager->ActivateProgram<ProgramType::Stars>();
+
+    // Bind VBO
+    glBindBuffer(GL_ARRAY_BUFFER, *mStarVBO);
+    CheckOpenGLError();
+
+    // Describe vertex attribute 0
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedAttribute0), (2 + 1), GL_FLOAT, GL_FALSE, (2 + 1), (void*)0);
+    CheckOpenGLError();
+
+    // Enable vertex attribute 0
+    glEnableVertexAttribArray(0);
+
+    // Set point size
+    glPointSize(1.0f);
+
+    // Draw
+    glDrawArrays(GL_POINTS, 0, static_cast<GLsizei>(mStarElementBuffer.size()));
 
     ////////////////////////////////////////////////////
     // Draw clouds with stencil test
@@ -503,16 +558,11 @@ void RenderContext::RenderCloudsEnd()
 
     // Upload buffer
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(CloudElement) * mCloudElementCount, mCloudElementBuffer.get());
-    
+    CheckOpenGLError();
+
     // Describe vertex attribute 0
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedAttribute0), 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), nullptr);
     CheckOpenGLError();
-
-    // Enable vertex attribute 0
-    glEnableVertexAttribArray(0);
-
-    // Enable stenciling - only draw where there are no 1's
-    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 
     if (mWireframeMode)
         glLineWidth(0.1f);
@@ -584,8 +634,10 @@ void RenderContext::UploadLandAndWaterEnd()
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(LandElement) * mLandElementCount, mLandElementBuffer.get());
 
     // Describe vertex attribute 1
+    // (we know we'll be using it next, so we can describe it now and avoid a bind later)
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedAttribute1), 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), nullptr);
     CheckOpenGLError();
+
 
 
     // Bind water VBO
@@ -604,6 +656,9 @@ void RenderContext::RenderLand()
 
     // Use program
     mShaderManager->ActivateProgram<ProgramType::Land>();
+
+    // No need to bind VBO - we've done that at UploadLandAndWaterEnd(),
+    // and we know nothing's been intervening
 
     // Disable vertex attribute 0
     glDisableVertexAttribArray(0);
@@ -752,6 +807,10 @@ void RenderContext::UpdateVisibleWorldCoordinates()
 void RenderContext::UpdateAmbientLightIntensity()
 {
     // Set parameters in all programs
+
+    mShaderManager->ActivateProgram<ProgramType::Stars>();
+    mShaderManager->SetProgramParameter<ProgramType::Stars, ProgramParameterType::StarTransparency>(
+        pow(std::max(0.0f, 1.0f - mAmbientLightIntensity), 3.0f));
 
     mShaderManager->ActivateProgram<ProgramType::Clouds>();
     mShaderManager->SetProgramParameter<ProgramType::Clouds, ProgramParameterType::AmbientLightIntensity>(
