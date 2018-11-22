@@ -538,7 +538,7 @@ void RenderContext::RenderCloudsEnd()
     glEnableVertexAttribArray(0);
 
     // Set point size
-    glPointSize(1.0f);
+    glPointSize(0.5f);
 
     // Draw
     glDrawArrays(GL_POINTS, 0, static_cast<GLsizei>(mStarElementBuffer.size()));
