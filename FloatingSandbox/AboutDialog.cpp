@@ -26,7 +26,7 @@ AboutDialog::AboutDialog(
         wxID_ANY,
         _("About " + GetVersionInfo(VersionFormat::Long)),
         wxDefaultPosition, 
-        wxSize(760, 450),
+        wxSize(780, 450),
         wxCAPTION | wxCLOSE_BOX | wxFRAME_SHAPED | wxSTAY_ON_TOP,
         _T("About Window"));
 

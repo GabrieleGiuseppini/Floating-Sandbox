@@ -100,13 +100,6 @@ Render:
 		- Readme 
 		- GameJolt
 
-- Current plan:
-	= Finish ocean floor bumps
-		- See + vs *
-		= Do y coordinates, not normalized
-			= Param: "OceanDetail" -> "OceanDetailAmplification"
-		= Make ridge in default one
-
 - New ships
 	- Fix contributions
 		- Pac0master
@@ -121,9 +114,9 @@ Render:
 			- depthBrightness is always 1.0 if "modulate sea depth brightness" (new boolean GameParam) is not set
 	- Different colored lights
 	- Lights with different chances of turning off
+		- Need longer-living lights?
 	- Morse code: text-to-morse encoder
 	- Custom sky colour - if possible a RGB picker in the settings
-		- I would do the same for the water in the ship
 	- Black hole
 
 - Technical debt
@@ -331,12 +324,12 @@ Render:
 
 - Dynamics:
 
-	= Ocean floor bump map
+	+ Ocean floor bump map
 		+ OceanFloor cctor takes ResourceLoader
 		+ ResourceLoader used by ocean floor to load image
 		+ OceanFloor translates image into float[] with raw pixel y's
 		+ At update, raw pixel y's are normalized/enhanced with new GameParameters constant
-		- Test
+		+ Test
 
 	- Extended status text
 		- Shows:
@@ -671,6 +664,9 @@ Render:
 		- Option 1: see if possible to hook into basic FileDialog's rendering of files
 		- Option 2: custom FileDialog ("ShipFileDialog"), with directory tree on the left and preview in main area
 			- Show also name, dimensions, and total mass
+
+	- Control incisiveness of water color for water in ship
+		- New uniform
 
 - Sounds:
 	- Ship may come with custom sound(s) for horns

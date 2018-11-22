@@ -670,7 +670,7 @@ void SettingsDialog::PopulateSkyPanel(wxPanel * panel)
 
 void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
 {
-    wxBoxSizer* controlsSizer = new wxBoxSizer(wxHORIZONTAL);
+    wxGridSizer* gridSizer = new wxGridSizer(2, 4, 0, 0);
 
 
     // Wave Height
@@ -690,7 +690,7 @@ void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
             mGameController->GetMinWaveHeight(),
             mGameController->GetMaxWaveHeight()));
 
-    controlsSizer->Add(mWaveHeightSlider.get(), 1, wxALL, SliderBorder);
+    gridSizer->Add(mWaveHeightSlider.get(), 1, wxALL, SliderBorder);
 
 
     // Sea Depth
@@ -711,7 +711,7 @@ void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
             200.0f,
             mGameController->GetMaxSeaDepth()));
 
-    controlsSizer->Add(mSeaDepthSlider.get(), 1, wxALL, SliderBorder);
+    gridSizer->Add(mSeaDepthSlider.get(), 1, wxALL, SliderBorder);
 
 
     // Ocean Floor Bumpiness
@@ -731,7 +731,7 @@ void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
             mGameController->GetMinOceanFloorBumpiness(),
             mGameController->GetMaxOceanFloorBumpiness()));
 
-    controlsSizer->Add(mOceanFloorBumpinessSlider.get(), 1, wxALL, SliderBorder);
+    gridSizer->Add(mOceanFloorBumpinessSlider.get(), 1, wxALL, SliderBorder);
 
 
     // Ocean Floor Detail Amplification
@@ -740,7 +740,7 @@ void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
         panel,
         SliderWidth,
         SliderHeight,
-        "Ocean Floor Detail Amplification",
+        "Ocean Floor Detail",
         mGameController->GetOceanFloorDetailAmplification(),
         [this](float /*value*/)
         {
@@ -752,7 +752,10 @@ void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
             10.0f,
             mGameController->GetMaxOceanFloorDetailAmplification()));
 
-    controlsSizer->Add(mOceanFloorDetailAmplificationSlider.get(), 1, wxALL, SliderBorder);
+    gridSizer->Add(mOceanFloorDetailAmplificationSlider.get(), 1, wxALL, SliderBorder);
+
+
+    wxBoxSizer* col2Sizer = new wxBoxSizer(wxHORIZONTAL);
 
 
     // Light Diffusion
@@ -772,12 +775,12 @@ void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
             0.0f,
             1.0f));
 
-    controlsSizer->Add(mLightDiffusionSlider.get(), 1, wxALL, SliderBorder);
+    gridSizer->Add(mLightDiffusionSlider.get(), 1, wxALL, SliderBorder);
 
 
     // Finalize panel
 
-    panel->SetSizerAndFit(controlsSizer);
+    panel->SetSizerAndFit(gridSizer);
 }
 
 void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
