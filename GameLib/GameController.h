@@ -182,6 +182,11 @@ public:
     float GetMinOceanFloorBumpiness() const { return GameParameters::MinOceanFloorBumpiness; }
     float GetMaxOceanFloorBumpiness() const { return GameParameters::MaxOceanFloorBumpiness; }
 
+    float GetOceanFloorDetail() const { return mGameParameters.OceanFloorDetail; }
+    void SetOceanFloorDetail(float value) { mGameParameters.OceanFloorDetail = value; }
+    float GetMinOceanFloorDetail() const { return GameParameters::MinOceanFloorDetail; }
+    float GetMaxOceanFloorDetail() const { return GameParameters::MaxOceanFloorDetail; }
+
     float GetDestroyRadius() const { return mGameParameters.DestroyRadius; }
     void SetDestroyRadius(float value) { mGameParameters.DestroyRadius = value; }
     float GetMinDestroyRadius() const { return GameParameters::MinDestroyRadius; }
@@ -270,7 +275,8 @@ private:
         , mTextLayer(std::move(textLayer))
         , mWorld(new Physics::World(
             mGameEventDispatcher,
-            mGameParameters))
+            mGameParameters,
+            *mResourceLoader))
         , mMaterials(std::move(materials))        
          // Smoothing
         , mCurrentZoom(mRenderContext->GetZoom())

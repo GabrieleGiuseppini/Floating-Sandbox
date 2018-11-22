@@ -11,6 +11,7 @@
 #include "MaterialDatabase.h"
 #include "Physics.h"
 #include "RenderContext.h"
+#include "ResourceLoader.h"
 #include "ShipDefinition.h"
 #include "Vectors.h"
 
@@ -28,7 +29,8 @@ public:
 
     World(
         std::shared_ptr<IGameEventHandler> gameEventHandler,
-        GameParameters const & gameParameters);
+        GameParameters const & gameParameters,
+        ResourceLoader & resourceLoader);
 
     int AddShip(
         ShipDefinition const & shipDefinition,

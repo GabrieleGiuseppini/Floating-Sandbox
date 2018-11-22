@@ -15,12 +15,13 @@ namespace Physics {
 
 World::World(
     std::shared_ptr<IGameEventHandler> gameEventHandler,
-    GameParameters const & gameParameters)
+    GameParameters const & gameParameters,
+    ResourceLoader & resourceLoader)
     : mAllShips()
     , mStars()
     , mClouds()
     , mWaterSurface()
-    , mOceanFloor()    
+    , mOceanFloor(resourceLoader)    
     , mCurrentSimulationTime(0.0f)
     , mCurrentVisitSequenceNumber(1u)
     , mGameEventHandler(std::move(gameEventHandler))

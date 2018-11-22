@@ -5,9 +5,11 @@
 ***************************************************************************************/
 #pragma once
 
+#include "Physics.h"
+
 #include "GameMath.h"
 #include "GameParameters.h"
-#include "Physics.h"
+#include "ResourceLoader.h"
 
 #include <memory>
 
@@ -18,7 +20,7 @@ class OceanFloor
 {
 public:
 
-    OceanFloor();
+    OceanFloor(ResourceLoader & resourceLoader);
 
     void Update(GameParameters const & gameParameters);
 
@@ -78,12 +80,16 @@ private:
         float SampleValuePlusOneMinusSampleValue;
     };
 
-    // The samples
-    std::unique_ptr<Sample[]> mSamples;    
+    // The current samples
+    std::unique_ptr<Sample[]> mSamples;
+
+    // The bump map samples - between -1.0 and 1.0
+    std::unique_ptr<float[]> const mBumpMapSamples;
 
     // The game parameters for which we're current
     float mCurrentSeaDepth;
     float mCurrentOceanFloorBumpiness;
+    float mCurrentOceanFloorDetail;
 };
 
 }

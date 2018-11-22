@@ -91,16 +91,16 @@ public:
         return dis(mRandomEngine);
     }
 
-    inline float GenerateRandomNormalReal()
+    inline float GenerateRandomNormalizedReal()
     {        
-        return mRandomNormalDistribution(mRandomEngine);
+        return mRandomUniformDistribution(mRandomEngine);
     }
 
     inline float GenerateRandomReal(
         float minValue,
         float maxValue)
     {
-        return minValue + mRandomNormalDistribution(mRandomEngine) * (maxValue - minValue);
+        return minValue + mRandomUniformDistribution(mRandomEngine) * (maxValue - minValue);
     }
 
 private:
@@ -109,9 +109,9 @@ private:
     {
         std::seed_seq seed_seq({ 1, 242, 19730528 });
         mRandomEngine = std::ranlux48_base(seed_seq);
-        mRandomNormalDistribution = std::uniform_real_distribution<float>(0.0f, 1.0f);
+        mRandomUniformDistribution = std::uniform_real_distribution<float>(0.0f, 1.0f);
     }
 
     std::ranlux48_base mRandomEngine;
-    std::uniform_real_distribution<float> mRandomNormalDistribution;
+    std::uniform_real_distribution<float> mRandomUniformDistribution;
 };

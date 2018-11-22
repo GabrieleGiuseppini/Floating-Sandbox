@@ -385,7 +385,11 @@ void GameController::Reset()
 {
     // Reset world
     assert(!!mWorld);
-    mWorld.reset(new Physics::World(mGameEventDispatcher, mGameParameters));
+    mWorld.reset(
+        new Physics::World(
+            mGameEventDispatcher, 
+            mGameParameters, 
+            *mResourceLoader));
 
     // Reset rendering engine
     assert(!!mRenderContext);

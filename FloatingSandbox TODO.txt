@@ -100,6 +100,11 @@ Render:
 		- Readme 
 		- GameJolt
 
+- Current plan:
+	- Finish ocean floor bumps
+		- See + vs *
+		- Do y coordinates, not normalized
+
 - New ships
 	- Fix contributions
 	= USS Shark
@@ -221,6 +226,21 @@ Render:
 
 	- TODOHERE: In texture or structure mode, draw only springs that are visible
 		- i.e. springs with # of triangles < 2
+		- Impl:
+			- Springs:
+				- New buffer: TBDTrianglesCount - type: ElementCount
+					- Publicly exposed
+					- Populated via argument at Springs:Add
+						- Calc'd by ShipBuilder
+					- Decremented via Springs::RemoveTBDTriangle() // no args
+			- Triangles:
+				- New buffer: ComponentSprings - type: FixedArrayBuffer<ElementIndex>[3]
+					- Publicly exposed
+					- Populated via argument at Springs:Add
+						- Calc'd by ShipBuilder
+					+ Never changed
+					- Used by Ship::TrianglesDestroyHandler() to decrement count for each component spring
+			- Ship: upload springs: only springs with # of triangles < 2
 
 	+ See if can use multiple texture units
 		+ Bind once atlas, land, and water at cctor, to each unit
@@ -308,11 +328,12 @@ Render:
 
 - Dynamics:
 
-	- TODOHERE: Ocean floor bump map
-		- OceanFloor cctor takes ResourceLoader
-		- ResourceLoader used by ocean floor to load image
-		- OceanFloor translates image into float[] with raw pixel y's
-		- At update, raw pixel y's are normalized/enhanced with new GameParameters constant
+	= Ocean floor bump map
+		+ OceanFloor cctor takes ResourceLoader
+		+ ResourceLoader used by ocean floor to load image
+		+ OceanFloor translates image into float[] with raw pixel y's
+		+ At update, raw pixel y's are normalized/enhanced with new GameParameters constant
+		- Test
 
 	- Extended status text
 		- Shows:

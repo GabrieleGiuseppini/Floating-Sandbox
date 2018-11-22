@@ -85,10 +85,18 @@ public:
 
 
     //
+    // Misc
+    //
+
+    std::filesystem::path GetOceanFloorBumpMapFilepath() const;
+
+
+    //
     // Help
     //
 
     std::filesystem::path GetHelpFilepath() const;
+
 
     //
     // Shaders

@@ -113,7 +113,6 @@ struct GameParameters
     static constexpr std::chrono::milliseconds MinSparkleParticlesLifetime = std::chrono::milliseconds(200);
     static constexpr std::chrono::milliseconds MaxSparkleParticlesLifetime = std::chrono::milliseconds(500);
 
-
     // Misc
 
     float WaveHeight;
@@ -127,6 +126,10 @@ struct GameParameters
     float OceanFloorBumpiness;
     static constexpr float MinOceanFloorBumpiness = 0.0f;
     static constexpr float MaxOceanFloorBumpiness = 6.0f;
+
+    float OceanFloorDetail;
+    static constexpr float MinOceanFloorDetail = 0.0f;
+    static constexpr float MaxOceanFloorDetail = 1000.0f;
 
     float DestroyRadius;
     static constexpr float MinDestroyRadius = 0.1f;

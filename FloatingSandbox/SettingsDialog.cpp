@@ -349,6 +349,9 @@ void SettingsDialog::ApplySettings()
     mGameController->SetOceanFloorBumpiness(
         mOceanFloorBumpinessSlider->GetValue());
 
+    mGameController->SetOceanFloorDetail(
+        mOceanFloorDetailSlider->GetValue());
+
     mGameController->SetLightDiffusionAdjustment(
         mLightDiffusionSlider->GetValue());
 
@@ -731,6 +734,27 @@ void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
     controlsSizer->Add(mOceanFloorBumpinessSlider.get(), 1, wxALL, SliderBorder);
 
 
+    // Ocean Floor Detail
+
+    mOceanFloorDetailSlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Ocean Floor Detail",
+        mGameController->GetOceanFloorDetail(),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<ExponentialSliderCore>(
+            mGameController->GetMinOceanFloorDetail(),
+            20.0f,
+            mGameController->GetMaxOceanFloorDetail()));
+
+    controlsSizer->Add(mOceanFloorDetailSlider.get(), 1, wxALL, SliderBorder);
+
+
     // Light Diffusion
 
     mLightDiffusionSlider = std::make_unique<SliderControl>(
@@ -1057,6 +1081,8 @@ void SettingsDialog::ReadSettings()
     mSeaDepthSlider->SetValue(mGameController->GetSeaDepth());
 
     mOceanFloorBumpinessSlider->SetValue(mGameController->GetOceanFloorBumpiness());
+
+    mOceanFloorDetailSlider->SetValue(mGameController->GetOceanFloorDetail());
 
 
 
