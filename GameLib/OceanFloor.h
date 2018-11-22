@@ -83,13 +83,13 @@ private:
     // The current samples
     std::unique_ptr<Sample[]> mSamples;
 
-    // The bump map samples - between -1.0 and 1.0
+    // The bump map samples - between -H/2 and H/2
     std::unique_ptr<float[]> const mBumpMapSamples;
 
     // The game parameters for which we're current
     float mCurrentSeaDepth;
     float mCurrentOceanFloorBumpiness;
-    float mCurrentOceanFloorDetail;
+    float mCurrentOceanFloorDetailAmplification;
 };
 
 }

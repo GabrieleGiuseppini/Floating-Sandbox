@@ -73,7 +73,7 @@ private:
     std::unique_ptr<SliderControl> mWaveHeightSlider;
     std::unique_ptr<SliderControl> mSeaDepthSlider;
     std::unique_ptr<SliderControl> mOceanFloorBumpinessSlider;
-    std::unique_ptr<SliderControl> mOceanFloorDetailSlider;
+    std::unique_ptr<SliderControl> mOceanFloorDetailAmplificationSlider;
     std::unique_ptr<SliderControl> mLightDiffusionSlider;
 
     // Interactions

@@ -182,10 +182,10 @@ public:
     float GetMinOceanFloorBumpiness() const { return GameParameters::MinOceanFloorBumpiness; }
     float GetMaxOceanFloorBumpiness() const { return GameParameters::MaxOceanFloorBumpiness; }
 
-    float GetOceanFloorDetail() const { return mGameParameters.OceanFloorDetail; }
-    void SetOceanFloorDetail(float value) { mGameParameters.OceanFloorDetail = value; }
-    float GetMinOceanFloorDetail() const { return GameParameters::MinOceanFloorDetail; }
-    float GetMaxOceanFloorDetail() const { return GameParameters::MaxOceanFloorDetail; }
+    float GetOceanFloorDetailAmplification() const { return mGameParameters.OceanFloorDetailAmplification; }
+    void SetOceanFloorDetailAmplification(float value) { mGameParameters.OceanFloorDetailAmplification = value; }
+    float GetMinOceanFloorDetailAmplification() const { return GameParameters::MinOceanFloorDetailAmplification; }
+    float GetMaxOceanFloorDetailAmplification() const { return GameParameters::MaxOceanFloorDetailAmplification; }
 
     float GetDestroyRadius() const { return mGameParameters.DestroyRadius; }
     void SetDestroyRadius(float value) { mGameParameters.DestroyRadius = value; }

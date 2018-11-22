@@ -12,17 +12,18 @@ OceanFloor::OceanFloor(ResourceLoader & resourceLoader)
     , mBumpMapSamples(new float[SamplesCount + 1])
     , mCurrentSeaDepth(std::numeric_limits<float>::lowest())
     , mCurrentOceanFloorBumpiness(std::numeric_limits<float>::lowest())
-    , mCurrentOceanFloorDetail(std::numeric_limits<float>::lowest())
+    , mCurrentOceanFloorDetailAmplification(std::numeric_limits<float>::lowest())
 {
     //
     // Pre-process bump map:
     // - Load bump map image
-    // - Convert each (topmost) y of the map into a Y coordinate, between +1.0 (top) and -1.0 (bottom)
+    // - Convert each (topmost) y of the map into a Y coordinate, between H/2 (top) and -H/2 (bottom)
     //
 
     ImageData bumpMapImage = ResourceLoader::LoadImageRgbUpperLeft(resourceLoader.GetOceanFloorBumpMapFilepath());
 
     float const sampleIndexToX = static_cast<float>(bumpMapImage.Size.Width) / static_cast<float>(SamplesCount);
+    float const halfHeight = static_cast<float>(bumpMapImage.Size.Height / 2);
     
     for (size_t s = 0; s < SamplesCount; ++s)
     { 
@@ -42,9 +43,8 @@ OceanFloor::OceanFloor(ResourceLoader & resourceLoader)
             {
                 // Found it!
                 bumpMapSampleValue = 
-                    2.0f 
-                    * static_cast<float>((bumpMapImage.Size.Height - imageY - 1) - bumpMapImage.Size.Height / 2) 
-                    / static_cast<float>(bumpMapImage.Size.Height);
+                    static_cast<float>(bumpMapImage.Size.Height - imageY) 
+                    - halfHeight;
 
                 break;
             }
@@ -62,11 +62,11 @@ void OceanFloor::Update(GameParameters const & gameParameters)
 {
     if (gameParameters.SeaDepth != mCurrentSeaDepth
         || gameParameters.OceanFloorBumpiness != mCurrentOceanFloorBumpiness
-        || gameParameters.OceanFloorDetail != mCurrentOceanFloorDetail)
+        || gameParameters.OceanFloorDetailAmplification != mCurrentOceanFloorDetailAmplification)
     {
         float const seaDepth = gameParameters.SeaDepth;
         float const oceanFloorBumpiness = gameParameters.OceanFloorBumpiness;
-        float const oceanFloorDetail = gameParameters.OceanFloorDetail;
+        float const oceanFloorDetailAmplification = gameParameters.OceanFloorDetailAmplification;
         
         // sample index = 0 
         float previousSampleValue;
@@ -74,7 +74,7 @@ void OceanFloor::Update(GameParameters const & gameParameters)
             previousSampleValue = 
                 -seaDepth 
                 + 0.0f
-                + mBumpMapSamples[0] * oceanFloorDetail;
+                + mBumpMapSamples[0] * oceanFloorDetailAmplification;
 
             mSamples[0].SampleValue = previousSampleValue;
         }
@@ -91,7 +91,7 @@ void OceanFloor::Update(GameParameters const & gameParameters)
             float const sampleValue =
                 -seaDepth
                 + (c1 + c2 - c3) * oceanFloorBumpiness
-                + mBumpMapSamples[i] * oceanFloorDetail;
+                + mBumpMapSamples[i] * oceanFloorDetailAmplification;
 
             mSamples[i].SampleValue = sampleValue;
             mSamples[i - 1].SampleValuePlusOneMinusSampleValue = sampleValue - previousSampleValue;
@@ -105,7 +105,7 @@ void OceanFloor::Update(GameParameters const & gameParameters)
         // Remember current game parameters
         mCurrentSeaDepth = gameParameters.SeaDepth;
         mCurrentOceanFloorBumpiness = gameParameters.OceanFloorBumpiness;
-        mCurrentOceanFloorDetail = gameParameters.OceanFloorDetail;
+        mCurrentOceanFloorDetailAmplification = gameParameters.OceanFloorDetailAmplification;
     }
 }
 

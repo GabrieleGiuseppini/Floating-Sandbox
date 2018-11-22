@@ -101,12 +101,15 @@ Render:
 		- GameJolt
 
 - Current plan:
-	- Finish ocean floor bumps
+	= Finish ocean floor bumps
 		- See + vs *
-		- Do y coordinates, not normalized
+		= Do y coordinates, not normalized
+			= Param: "OceanDetail" -> "OceanDetailAmplification"
+		= Make ridge in default one
 
 - New ships
 	- Fix contributions
+		- Pac0master
 	= USS Shark
 		- Need Z buffer work first
 	- Warship
