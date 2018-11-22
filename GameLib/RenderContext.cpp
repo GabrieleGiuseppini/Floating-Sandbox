@@ -533,7 +533,7 @@ void RenderContext::RenderCloudsEnd()
     CheckOpenGLError();
 
     // Describe vertex attribute 0
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedAttribute0), (2 + 1), GL_FLOAT, GL_FALSE, (2 + 1), (void*)0);
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedAttribute0), (2 + 1), GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void*)0);
     CheckOpenGLError();
 
     // Enable vertex attribute 0

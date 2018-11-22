@@ -1275,7 +1275,7 @@ void SoundController::PlayOneShotSound(
         }
     }
 
-    assert(thisTypeCurrentlyPlayingSounds.size() < MaxPlayingSounds);
+    assert(thisTypeCurrentlyPlayingSounds.size() < MaxPlayingSoundsPerType);
 
 
 

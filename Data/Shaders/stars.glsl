@@ -31,5 +31,9 @@ uniform float paramStarTransparency;
 
 void main()
 {
-    gl_FragColor = vec4(vertexBrightness, vertexBrightness, vertexBrightness, vertexBrightness * paramStarTransparency);
+    gl_FragColor = vec4(
+        vertexBrightness, 
+        vertexBrightness, 
+        vertexBrightness, 
+        vertexBrightness * paramStarTransparency);
 } 
