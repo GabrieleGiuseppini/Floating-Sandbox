@@ -98,21 +98,22 @@ enum class VectorFieldRenderMode
 enum class TextureGroupType : uint16_t
 {
     AntiMatterBombArmor = 0,
-    AntiMatterBombSphere = 1,
-    AntiMatterBombSphereCloud = 2,
-    Cloud = 3,
-    Land = 4,
-    PinnedPoint = 5,
-    RcBomb = 6,
-    RcBombExplosion = 7,
-    RcBombPing = 8,
-    TimerBomb = 9,
-    TimerBombDefuse = 10,
-    TimerBombExplosion = 11,
-    TimerBombFuse = 12,
-    Water = 13,
+    AntiMatterBombSphere,
+    AntiMatterBombSphereCloud,
+    Cloud,
+    Land,
+    PinnedPoint,
+    RcBomb,
+    RcBombExplosion,
+    RcBombPing,
+    SawSparkle,
+    TimerBomb,
+    TimerBombDefuse,
+    TimerBombExplosion,
+    TimerBombFuse,
+    Water,
 
-    _Count = 14
+    _Last = Water
 };
 
 TextureGroupType StrToTextureGroupType(std::string const & str);

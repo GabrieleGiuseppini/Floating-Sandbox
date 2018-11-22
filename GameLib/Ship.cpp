@@ -138,7 +138,11 @@ void Ship::SawThrough(
                     gameParameters,
                     mPoints);
 
-                if (!mSprings.IsRope(springIndex))
+                bool const isMetal =
+                    !!mSprings.GetBaseMaterial(springIndex)->Sound
+                    && Material::SoundProperties::SoundElementType::Metal == mSprings.GetBaseMaterial(springIndex)->Sound->ElementType;
+
+                if (isMetal)
                 {
                     // Emit sparkles
                     GenerateSparkles(
@@ -147,14 +151,13 @@ void Ship::SawThrough(
                         endPos,
                         currentSimulationTime,
                         gameParameters);
-
-                    // Remember we have sawed this material
-                    if (!!mSprings.GetBaseMaterial(springIndex)->Sound
-                        && Material::SoundProperties::SoundElementType::Metal == mSprings.GetBaseMaterial(springIndex)->Sound->ElementType)
-                        metalsSawed++;
-                    else
-                        nonMetalsSawed++;
                 }
+
+                // Remember we have sawed this material
+                if (isMetal)
+                    metalsSawed++;
+                else
+                    nonMetalsSawed++;
             }
         }
     }
@@ -1016,7 +1019,7 @@ void Ship::UpdateWaterVelocities(
                 // splintered water colliding with whole other endpoint
                 //
 
-                // TODO: get rid of this re-calculation once we pre-calculate all spring normalized vectors
+                // FUTURE: get rid of this re-calculation once we pre-calculate all spring normalized vectors
                 vec2f const springNormalizedVector = (mPoints.GetPosition(otherEndpointIndex) - mPoints.GetPosition(pointIndex)).normalise();
 
                 float ma = springOutboundQuantityOfWater;

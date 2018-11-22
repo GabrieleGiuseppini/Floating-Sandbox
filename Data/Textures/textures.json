@@ -1,6 +1,44 @@
 [
 
 {
+	"groupName": "AntiMatterBombArmor",
+	"hasOwnAmbientLight": false,
+	"frames":[
+		{	
+			"worldWidth": 12.0,
+			"worldHeight": 12.0,
+			"anchorOffsetX": 0,
+			"anchorOffsetY": 0,
+			"filename": "am_bomb_armor_\\d+"
+		}
+	]
+},
+
+{
+	"groupName": "AntiMatterBombSphere",
+	"hasOwnAmbientLight": false,
+	"frames":[
+		{	
+			"worldWidth": 6.0,
+			"worldHeight": 6.0,
+			"filename": "am_bomb_sphere_\\d+"
+		}
+	]
+},
+
+{
+	"groupName": "AntiMatterBombSphereCloud",
+	"hasOwnAmbientLight": true,
+	"frames":[
+		{	
+			"worldWidth": 6.0,
+			"worldHeight": 6.0,
+			"filename": "am_bomb_sphere_cloud_\\d+"
+		}
+	]
+},
+
+{
 	"groupName": "Cloud",
 	"comment": "World sizes are in NDC coordinates and are calculated as image sizes divided by 1280x1024; in other words, a texture this size would fill the entire screen",
 	"hasOwnAmbientLight": false,
@@ -75,6 +113,18 @@
 },
 
 {
+	"groupName": "SawSparkle",
+	"hasOwnAmbientLight": true,
+	"frames":[
+		{	
+			"worldWidth": 1.5,
+			"worldHeight": 1.5,
+			"filename": "saw_sparkle_\\d+"
+		}
+	]
+},
+
+{
 	"groupName": "TimerBomb",
 	"hasOwnAmbientLight": false,
 	"frames":[
@@ -124,44 +174,6 @@
 			"anchorOffsetX": -1,
 			"anchorOffsetY": 57,
 			"filename": "timer_bomb_fuse_\\d+"
-		}
-	]
-},
-
-{
-	"groupName": "AntiMatterBombArmor",
-	"hasOwnAmbientLight": false,
-	"frames":[
-		{	
-			"worldWidth": 12.0,
-			"worldHeight": 12.0,
-			"anchorOffsetX": 0,
-			"anchorOffsetY": 0,
-			"filename": "am_bomb_armor_\\d+"
-		}
-	]
-},
-
-{
-	"groupName": "AntiMatterBombSphere",
-	"hasOwnAmbientLight": false,
-	"frames":[
-		{	
-			"worldWidth": 6.0,
-			"worldHeight": 6.0,
-			"filename": "am_bomb_sphere_\\d+"
-		}
-	]
-},
-
-{
-	"groupName": "AntiMatterBombSphereCloud",
-	"hasOwnAmbientLight": true,
-	"frames":[
-		{	
-			"worldWidth": 6.0,
-			"worldHeight": 6.0,
-			"filename": "am_bomb_sphere_cloud_\\d+"
 		}
 	]
 },

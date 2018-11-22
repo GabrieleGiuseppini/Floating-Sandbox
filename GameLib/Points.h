@@ -59,15 +59,21 @@ private:
         {
             vec4f StartColor;
             vec4f DeltaColor;
+            TextureFrameIndex FrameIndex;
+
+            float Progress;
 
             SparkleState()
             {}
 
             SparkleState(
                 vec4f const & startColor,
-                vec4f const & endColor)
+                vec4f const & endColor,
+                TextureFrameIndex frameIndex)
                 : StartColor(startColor)
                 , DeltaColor(endColor - startColor)
+                , FrameIndex(frameIndex)
+                , Progress(0.0f)
             {}
         };
 

@@ -337,8 +337,6 @@ Render:
 		- Points might have to recalc things on changes
 		- Requires extended status text w/measurements
 
-	- TODOHERE: Try textures for sparkles
-
 	+ Fix ephemeral particles
 		+ Pass also "now" all over the place
 			+ End put back UpdateEphemeralParticles where it was

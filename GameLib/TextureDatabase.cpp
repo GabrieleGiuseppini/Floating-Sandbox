@@ -306,7 +306,7 @@ TextureDatabase TextureDatabase::Load(
     });
 
     // Make sure all group indices are found
-    for (uint16_t expectedIndex = 0; expectedIndex < static_cast<uint16_t>(TextureGroupType::_Count); ++expectedIndex)
+    for (uint16_t expectedIndex = 0; expectedIndex <= static_cast<uint16_t>(TextureGroupType::_Last); ++expectedIndex)
     {
         if (static_cast<uint16_t>(textureGroups[expectedIndex].Group) < expectedIndex)
         {

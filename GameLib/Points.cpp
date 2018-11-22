@@ -5,6 +5,9 @@
 ***************************************************************************************/
 #include "Physics.h"
 
+
+#include "GameRandomEngine.h"
+
 #include <cmath>
 #include <limits>
 
@@ -141,7 +144,8 @@ void Points::CreateEphemeralParticleSparkle(
     mEphemeralMaxLifetimeBuffer[pointIndex] = std::chrono::duration_cast<std::chrono::duration<float>>(maxLifetime).count();
     mEphemeralStateBuffer[pointIndex] = EphemeralState::SparkleState(
         startColor,
-        endColor);
+        endColor,
+        GameRandomEngine::GetInstance().Choose<TextureFrameIndex>(4));
     mConnectedComponentIdBuffer[pointIndex] = connectedComponentId;
 
     assert(false == mIsPinnedBuffer[pointIndex]);
@@ -237,12 +241,10 @@ void Points::UpdateEphemeralParticles(
 
                     case EphemeralType::Sparkle:
                     {
-                        // Update color based off remaining time
+                        // Update progress based off remaining time
 
-                        mColorBuffer[pointIndex] =
-                            mEphemeralStateBuffer[pointIndex].Sparkle.StartColor
-                            + mEphemeralStateBuffer[pointIndex].Sparkle.DeltaColor
-                            * elapsedLifetime / mEphemeralMaxLifetimeBuffer[pointIndex];
+                        mEphemeralStateBuffer[pointIndex].Sparkle.Progress = 
+                            elapsedLifetime / mEphemeralMaxLifetimeBuffer[pointIndex];
 
                         break;
                     }
@@ -353,6 +355,19 @@ void Points::UploadEphemeralParticles(
     // 2. Upload points and/or textures
     //
 
+
+    // TBD: at this moment we can't pass the point's connected component ID,
+    // as the ShipRenderContext doesn't know how many connected components there are
+    // (the number of connected components may vary depending on the connectivity visit,
+    //  which is independent from ephemeral particles; the latter might insist on using
+    //  a connected component ID that is well gone after a new connectivity visit).
+    // This will be fixed with the Z buffer work - at that moment points will already
+    // have an associated ConnectedComponent buffer, and the shader will automagically
+    // draw ephemeral points at the right Z for their point's connected component ID.
+    // Remember to make sure Ship always tracks the max connected component ID it has
+    // ever seen, and that it specifies it at RenderContext::RenderShipStart() via an
+    // additional, new argument.
+
     if (mAreEphemeralParticlesDirty)
     {
         renderContext.UploadShipEphemeralPointsStart(shipId);
@@ -367,18 +382,6 @@ void Points::UploadEphemeralParticles(
                 // Don't upload point unless there's been a change
                 if (mAreEphemeralParticlesDirty)
                 {
-                    // TBD: at this moment we can't pass the point's connected component ID,
-                    // as the ShipRenderContext doesn't know how many connected components there are
-                    // (the number of connected components may vary depending on the connectivity visit,
-                    //  which is independent from ephemeral particles; the latter might insist on using
-                    //  a connected component ID that is well gone after a new connectivity visit).
-                    // This will be fixed with the Z buffer work - at that moment points will already
-                    // have an associated ConnectedComponent buffer, and the shader will automagically
-                    // draw ephemeral points at the right Z for their point's connected component ID.
-                    // Remember to make sure Ship always tracks the max connected component ID it has
-                    // ever seen, and that it specifies it at RenderContext::RenderShipStart() via an
-                    // additional, new argument.
-
                     renderContext.UploadShipEphemeralPoint(
                         shipId,
                         pointIndex);
@@ -389,25 +392,14 @@ void Points::UploadEphemeralParticles(
 
             case EphemeralType::Sparkle:
             {
-                // Don't upload point unless there's been a change
-                if (mAreEphemeralParticlesDirty)
-                {
-                    // TBD: at this moment we can't pass the point's connected component ID,
-                    // as the ShipRenderContext doesn't know how many connected components there are
-                    // (the number of connected components may vary depending on the connectivity visit,
-                    //  which is independent from ephemeral particles; the latter might insist on using
-                    //  a connected component ID that is well gone after a new connectivity visit).
-                    // This will be fixed with the Z buffer work - at that moment points will already
-                    // have an associated ConnectedComponent buffer, and the shader will automagically
-                    // draw ephemeral points at the right Z for their point's connected component ID.
-                    // Remember to make sure Ship always tracks the max connected component ID it has
-                    // ever seen, and that it specifies it at RenderContext::RenderShipStart() via an
-                    // additional, new argument.
-
-                    renderContext.UploadShipEphemeralPoint(
-                        shipId,
-                        pointIndex);
-                }
+                renderContext.UploadShipGenericTextureRenderSpecification(
+                    shipId,
+                    1, // Connected component ID - see note above
+                    TextureFrameId(TextureGroupType::SawSparkle, mEphemeralStateBuffer[pointIndex].Sparkle.FrameIndex),
+                    GetPosition(pointIndex),
+                    1.0f,
+                    4.0f * mEphemeralStateBuffer[pointIndex].Sparkle.Progress,
+                    1.0f - mEphemeralStateBuffer[pointIndex].Sparkle.Progress);
 
                 break;
             }
