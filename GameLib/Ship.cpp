@@ -1602,25 +1602,6 @@ void Ship::GenerateSparkles(
 
 
         //
-        // Choose start and end colors
-        //
-
-        vec4f startColor;
-        vec4f endColor;
-        Material const * material = mSprings.GetBaseMaterial(springElementIndex);
-        if (!!(material->Sound)
-            && Material::SoundProperties::SoundElementType::Metal == material->Sound->ElementType)
-        {
-            startColor = vec4f(1.0f, 0.95f, 0.09f, 1.0f); // Opaque
-            endColor = vec4f(0.55f, 0.1f, 0.1f, 0.0f); // Transparent
-        }
-        else
-        {
-            startColor = endColor = material->RenderColour;
-        }
-
-
-        //
         // Choose velocity angle distribution: butterfly perpendicular to cut direction
         //
 
@@ -1658,8 +1639,6 @@ void Ship::GenerateSparkles(
                 mSprings.GetBaseMaterial(springElementIndex),
                 currentSimulationTime,
                 maxLifetime,
-                startColor,
-                endColor,
                 mSprings.GetConnectedComponentId(springElementIndex, mPoints));
         }
     }

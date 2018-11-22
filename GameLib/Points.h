@@ -57,22 +57,15 @@ private:
 
         struct SparkleState
         {
-            vec4f StartColor;
-            vec4f DeltaColor;
             TextureFrameIndex FrameIndex;
-
             float Progress;
 
             SparkleState()
             {}
 
             SparkleState(
-                vec4f const & startColor,
-                vec4f const & endColor,
                 TextureFrameIndex frameIndex)
-                : StartColor(startColor)
-                , DeltaColor(endColor - startColor)
-                , FrameIndex(frameIndex)
+                : FrameIndex(frameIndex)
                 , Progress(0.0f)
             {}
         };
@@ -244,8 +237,6 @@ public:
         Material const * material,
         float currentSimulationTime,
         std::chrono::milliseconds maxLifetime,
-        vec4f const & startColor,
-        vec4f const & endColor,
         ConnectedComponentId connectedComponentId);
 
     void Destroy(

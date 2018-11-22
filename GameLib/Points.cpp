@@ -113,8 +113,6 @@ void Points::CreateEphemeralParticleSparkle(
     Material const * material,
     float currentSimulationTime,
     std::chrono::milliseconds maxLifetime,
-    vec4f const & startColor,
-    vec4f const & endColor,
     ConnectedComponentId connectedComponentId)
 {
     // Get a free slot (or steal one)
@@ -143,14 +141,10 @@ void Points::CreateEphemeralParticleSparkle(
     mEphemeralStartTimeBuffer[pointIndex] = currentSimulationTime;
     mEphemeralMaxLifetimeBuffer[pointIndex] = std::chrono::duration_cast<std::chrono::duration<float>>(maxLifetime).count();
     mEphemeralStateBuffer[pointIndex] = EphemeralState::SparkleState(
-        startColor,
-        endColor,
         GameRandomEngine::GetInstance().Choose<TextureFrameIndex>(4));
     mConnectedComponentIdBuffer[pointIndex] = connectedComponentId;
 
     assert(false == mIsPinnedBuffer[pointIndex]);
-
-    mColorBuffer[pointIndex] = startColor; // Redundant
 
     // Remember we're dirty now
     mAreEphemeralParticlesDirty = true;

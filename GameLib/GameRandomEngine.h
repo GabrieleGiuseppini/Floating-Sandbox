@@ -27,12 +27,19 @@ public:
         return *instance;
     }
 
+    /*
+     * Returns a value between 0 and count - 1, included.
+     */
     template <typename T>
     inline T Choose(T count)
     {
         return GenerateRandomInteger<T>(0, count - 1);
     }
 
+    /*
+     * Returns a value between 0 and count - 1, included, with the exclusion of
+     * previous.
+     */
     template <typename T>
     inline T ChooseNew(
         T count,
@@ -48,6 +55,10 @@ public:
         return chosen;
     }
 
+    /*
+     * Returns a value between first and last, included, with the exclusion of
+     * previous, if the latter is in the first-last range.
+     */
     template <typename T>
     inline T ChooseNew(
         T first,
