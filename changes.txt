@@ -1,8 +1,9 @@
 1.7.0
 - Musical theme for this release: Chemical Brothers, "We Are the Night"
 - Added ephemeral particles sub-system, and used it for debris and sparkles from the chainsaw
-- Added stars - visible only in the night sky
+- Added stars - visible only in the night sky (thanks Pac0master!)
 - Added ability to control ocean floor bumpiness (collisions with islands!), and extended range of sea depth to 10Km
+- Added separate volume control for tools' sounds
 - Fixed bug with line artifacts on textures
 
 1.6.0
@@ -30,7 +31,7 @@
 - Added sound of water rushing in the ship
 - Improved smoothing of panning and zooming
 - Added help with basic instructions
-- Added new ship - "SS Queen of Unova" (thanks to OceanLinerOrca!)
+- Added new ship - "SS Queen of Unova" (thanks OceanLinerOrca!)
 
 1.3.0
 - Completely redesigned the physics of buoyancy, and as a consequence overhauled the material system

@@ -27,8 +27,10 @@ SoundController::SoundController(
     : mResourceLoader(std::move(resourceLoader))
     // State
     , mMasterEffectsVolume(100.0f)
-    , mMasterMusicVolume(100.0f)
     , mMasterEffectsMuted(false)
+    , mMasterToolsVolume(100.0f)
+    , mMasterToolsMuted(false)
+    , mMasterMusicVolume(100.0f)    
     , mMasterMusicMuted(false)
     , mPlayBreakSounds(true)
     , mPlayStressSounds(true)
@@ -121,16 +123,16 @@ SoundController::SoundController(
                 mSawUnderwaterSound.Initialize(
                     std::move(soundBuffer),
                     SawVolume,
-                    mMasterEffectsVolume,
-                    mMasterEffectsMuted);
+                    mMasterToolsVolume,
+                    mMasterToolsMuted);
             }
             else
             {
                 mSawAbovewaterSound.Initialize(
                     std::move(soundBuffer),
                     SawVolume,
-                    mMasterEffectsVolume,
-                    mMasterEffectsMuted);
+                    mMasterToolsVolume,
+                    mMasterToolsMuted);
             }            
         }
         else if (soundType == SoundType::Draw)
@@ -138,8 +140,8 @@ SoundController::SoundController(
             mDrawSound.Initialize(
                 std::move(soundBuffer),
                 100.0f,
-                mMasterEffectsVolume,
-                mMasterEffectsMuted);
+                mMasterToolsVolume,
+                mMasterToolsMuted);
         }
         else if (soundType == SoundType::Sawed)
         {
@@ -175,8 +177,8 @@ SoundController::SoundController(
             mSwirlSound.Initialize(
                 std::move(soundBuffer),
                 100.0f,
-                mMasterEffectsVolume,
-                mMasterEffectsMuted);
+                mMasterToolsVolume,
+                mMasterToolsMuted);
         }
         else if (soundType == SoundType::WaterRush)
         {
@@ -425,24 +427,27 @@ void SoundController::SetMuted(bool isMuted)
     sf::Listener::setGlobalVolume(isMuted ? 0.0f : 100.0f);
 }
 
+// Master effects
+
 void SoundController::SetMasterEffectsVolume(float volume)
 {
     mMasterEffectsVolume = volume;
 
     for (auto const & playingSoundIt : mCurrentlyPlayingOneShotSounds)
     {
-        for (auto & playingSound : playingSoundIt.second)
+        if (playingSoundIt.first != SoundType::Draw
+            && playingSoundIt.first != SoundType::Saw
+            && playingSoundIt.first != SoundType::Swirl)
         {
-            playingSound.Sound->setMasterVolume(mMasterEffectsVolume);
+            for (auto & playingSound : playingSoundIt.second)
+            {
+                playingSound.Sound->setMasterVolume(mMasterEffectsVolume);
+            }
         }
     }
 
     mSawedMetalSound.SetMasterVolume(mMasterEffectsVolume);
     mSawedWoodSound.SetMasterVolume(mMasterEffectsVolume);
-    mSawAbovewaterSound.SetMasterVolume(mMasterEffectsVolume);
-    mSawUnderwaterSound.SetMasterVolume(mMasterEffectsVolume);
-    mDrawSound.SetMasterVolume(mMasterEffectsVolume);
-    mSwirlSound.SetMasterVolume(mMasterEffectsVolume);
 
     mWaterRushSound.SetMasterVolume(mMasterEffectsVolume);
     mWaterSplashSound.SetMasterVolume(mMasterEffectsVolume);
@@ -451,37 +456,88 @@ void SoundController::SetMasterEffectsVolume(float volume)
     mAntiMatterBombContainedSounds.SetMasterVolume(mMasterEffectsVolume);
 }
 
-void SoundController::SetMasterMusicVolume(float volume)
-{
-    mMasterMusicVolume = volume;
-
-    mSinkingMusic.setMasterVolume(volume);
-}
-
 void SoundController::SetMasterEffectsMuted(bool isMuted)
 {
     mMasterEffectsMuted = isMuted;
 
     for (auto const & playingSoundIt : mCurrentlyPlayingOneShotSounds)
     {
-        for (auto & playingSound : playingSoundIt.second)
+        if (playingSoundIt.first != SoundType::Draw
+            && playingSoundIt.first != SoundType::Saw
+            && playingSoundIt.first != SoundType::Swirl)
         {
-            playingSound.Sound->setMuted(mMasterEffectsMuted);
+            for (auto & playingSound : playingSoundIt.second)
+            {
+                playingSound.Sound->setMuted(mMasterEffectsMuted);
+            }
         }
     }
 
     mSawedMetalSound.SetMuted(mMasterEffectsMuted);
     mSawedWoodSound.SetMuted(mMasterEffectsMuted);
-    mSawAbovewaterSound.SetMuted(mMasterEffectsMuted);
-    mSawUnderwaterSound.SetMuted(mMasterEffectsMuted);
-    mDrawSound.SetMuted(mMasterEffectsMuted);;
-    mSwirlSound.SetMuted(mMasterEffectsMuted);;
 
-    mWaterRushSound.SetMuted(mMasterEffectsMuted);;
-    mWaterSplashSound.SetMuted(mMasterEffectsMuted);;
-    mTimerBombSlowFuseSound.SetMuted(mMasterEffectsMuted);;
-    mTimerBombFastFuseSound.SetMuted(mMasterEffectsMuted);;
-    mAntiMatterBombContainedSounds.SetMuted(mMasterEffectsMuted);;
+    mWaterRushSound.SetMuted(mMasterEffectsMuted);
+    mWaterSplashSound.SetMuted(mMasterEffectsMuted);
+    mTimerBombSlowFuseSound.SetMuted(mMasterEffectsMuted);
+    mTimerBombFastFuseSound.SetMuted(mMasterEffectsMuted);
+    mAntiMatterBombContainedSounds.SetMuted(mMasterEffectsMuted);
+}
+
+// Master tools
+
+void SoundController::SetMasterToolsVolume(float volume)
+{
+    mMasterToolsVolume = volume;
+
+    for (auto const & playingSoundIt : mCurrentlyPlayingOneShotSounds)
+    {
+        if (playingSoundIt.first == SoundType::Draw
+            || playingSoundIt.first == SoundType::Saw
+            || playingSoundIt.first == SoundType::Swirl)
+        {
+            for (auto & playingSound : playingSoundIt.second)
+            {
+                playingSound.Sound->setMasterVolume(mMasterToolsVolume);
+            }
+        }
+    }
+
+    mSawAbovewaterSound.SetMasterVolume(mMasterToolsVolume);
+    mSawUnderwaterSound.SetMasterVolume(mMasterToolsVolume);
+    mDrawSound.SetMasterVolume(mMasterToolsVolume);
+    mSwirlSound.SetMasterVolume(mMasterToolsVolume);
+}
+
+void SoundController::SetMasterToolsMuted(bool isMuted)
+{
+    mMasterToolsMuted = isMuted;
+
+    for (auto const & playingSoundIt : mCurrentlyPlayingOneShotSounds)
+    {
+        if (playingSoundIt.first == SoundType::Draw
+            || playingSoundIt.first == SoundType::Saw
+            || playingSoundIt.first == SoundType::Swirl)
+        {
+            for (auto & playingSound : playingSoundIt.second)
+            {
+                playingSound.Sound->setMuted(mMasterToolsMuted);
+            }
+        }
+    }
+
+    mSawAbovewaterSound.SetMuted(mMasterToolsMuted);
+    mSawUnderwaterSound.SetMuted(mMasterToolsMuted);
+    mDrawSound.SetMuted(mMasterToolsMuted);
+    mSwirlSound.SetMuted(mMasterToolsMuted);
+}
+
+// Master music
+
+void SoundController::SetMasterMusicVolume(float volume)
+{
+    mMasterMusicVolume = volume;
+
+    mSinkingMusic.setMasterVolume(volume);
 }
 
 void SoundController::SetMasterMusicMuted(bool isMuted)
@@ -509,6 +565,8 @@ void SoundController::SetPlayBreakSounds(bool playBreakSounds)
         }
     }
 }
+
+// Misc
 
 void SoundController::SetPlayStressSounds(bool playStressSounds)
 {

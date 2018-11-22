@@ -649,16 +649,6 @@ Render:
 			- Show also name, dimensions, and total mass
 
 - Sounds:
-	- TODOHERE: Separate sound control for tools
-
-	+ Saw sound
-	+ Turning down a bit the very high pitch stress noise
-		+ Do it on flac - on all high-pitched ones (same amplitude)
-	+ Sawing: do not publish destroy events when cutting springs, but new "Sawed" events with own metal/wood sounds
-		+ Two new continuous sounds: metal and wood saw
-		+ OnSawed is invoked with Type and size - size=0 means nothing
-		+ Event handler sets continuous sound's volume up/down (when size=0), and eventually starts it
-		+ Stopping continuous saw sound also sets volume of these two to zero
 	- Ship may come with custom sound(s) for horns
 		- Figure out how to play them, may be like switchboard or *via* switchboard, or with just one horn sound
 	- Morse code sound when it's about to sink (early sink detection)
@@ -2622,6 +2612,15 @@ IF WX:
 				+ mTotalWater updated afterwards with +
 			+ Volume = 100 * ( -1/(Qw+1) + 1 )
 				+ Qw = some scaled version of total_water_quantity (1.0f might suffice)
+	+ Separate sound control for tools
+	+ Saw sound
+	+ Turning down a bit the very high pitch stress noise
+		+ Do it on flac - on all high-pitched ones (same amplitude)
+	+ Sawing: do not publish destroy events when cutting springs, but new "Sawed" events with own metal/wood sounds
+		+ Two new continuous sounds: metal and wood saw
+		+ OnSawed is invoked with Type and size - size=0 means nothing
+		+ Event handler sets continuous sound's volume up/down (when size=0), and eventually starts it
+		+ Stopping continuous saw sound also sets volume of these two to zero
 
 + Put credits
 	+ Splash: https://www.artstation.com/stukata/profile, contact the guy

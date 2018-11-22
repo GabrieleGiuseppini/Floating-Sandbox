@@ -93,6 +93,7 @@ private:
 
     // Sound
     std::unique_ptr<SliderControl> mEffectsVolumeSlider;
+    std::unique_ptr<SliderControl> mToolsVolumeSlider;
     std::unique_ptr<SliderControl> mMusicVolumeSlider;
     wxCheckBox * mPlayBreakSoundsCheckBox;
     wxCheckBox * mPlayStressSoundsCheckBox;

@@ -39,19 +39,14 @@ public:
 
     void SetMuted(bool isMuted);
 
+    // Master effects
+
     float GetMasterEffectsVolume() const
     {
         return mMasterEffectsVolume;
     }
 
     void SetMasterEffectsVolume(float volume);
-
-    float GetMasterMusicVolume() const
-    {
-        return mMasterMusicVolume;
-    }
-
-    void SetMasterMusicVolume(float volume);
 
     bool GetMasterEffectsMuted() const
     {
@@ -60,12 +55,39 @@ public:
 
     void SetMasterEffectsMuted(bool isMuted);
 
+    // Master tools
+
+    float GetMasterToolsVolume() const
+    {
+        return mMasterToolsVolume;
+    }
+
+    void SetMasterToolsVolume(float volume);
+
+    bool GetMasterToolsMuted() const
+    {
+        return mMasterToolsMuted;
+    }
+
+    void SetMasterToolsMuted(bool isMuted);
+
+    // Master Music
+
+    float GetMasterMusicVolume() const
+    {
+        return mMasterMusicVolume;
+    }
+
+    void SetMasterMusicVolume(float volume);
+
     bool GetMasterMusicMuted() const
     {
         return mMasterMusicMuted;
     }
 
     void SetMasterMusicMuted(bool isMuted);
+
+    // Misc
 
     bool GetPlayBreakSounds() const
     {
@@ -995,9 +1017,11 @@ private:
     //
 
     float mMasterEffectsVolume;
-    float mMasterMusicVolume;
-    float mMasterEffectsMuted;
-    float mMasterMusicMuted;
+    bool mMasterEffectsMuted;
+    float mMasterToolsVolume;
+    bool mMasterToolsMuted;
+    float mMasterMusicVolume;    
+    bool mMasterMusicMuted;
 
     bool mPlayBreakSounds;
     bool mPlayStressSounds;

@@ -420,6 +420,9 @@ void SettingsDialog::ApplySettings()
     mSoundController->SetMasterEffectsVolume(
         mEffectsVolumeSlider->GetValue());
 
+    mSoundController->SetMasterToolsVolume(
+        mToolsVolumeSlider->GetValue());
+
     mSoundController->SetMasterMusicVolume(
         mMusicVolumeSlider->GetValue());
 
@@ -952,6 +955,26 @@ void SettingsDialog::PopulateSoundPanel(wxPanel * panel)
     controlsSizer->Add(mEffectsVolumeSlider.get(), 1, wxALL, SliderBorder);
 
 
+    // Tools volume
+
+    mToolsVolumeSlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Tools Volume",
+        mSoundController->GetMasterToolsVolume(),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<LinearSliderCore>(
+            0.0f,
+            100.0f));
+
+    controlsSizer->Add(mToolsVolumeSlider.get(), 1, wxALL, SliderBorder);
+
+
     // Music volume
 
     mMusicVolumeSlider = std::make_unique<SliderControl>(
@@ -1118,6 +1141,8 @@ void SettingsDialog::ReadSettings()
 
 
     mEffectsVolumeSlider->SetValue(mSoundController->GetMasterEffectsVolume());
+
+    mToolsVolumeSlider->SetValue(mSoundController->GetMasterToolsVolume());
 
     mMusicVolumeSlider->SetValue(mSoundController->GetMasterMusicVolume());
 
