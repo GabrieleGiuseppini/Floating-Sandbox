@@ -672,6 +672,9 @@ void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
 {
     wxGridSizer* gridSizer = new wxGridSizer(2, 4, 0, 0);
 
+    //
+    // Row 1
+    //
 
     // Wave Height
 
@@ -755,8 +758,9 @@ void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
     gridSizer->Add(mOceanFloorDetailAmplificationSlider.get(), 1, wxALL, SliderBorder);
 
 
-    wxBoxSizer* col2Sizer = new wxBoxSizer(wxHORIZONTAL);
-
+    //
+    // Row 2
+    //
 
     // Light Diffusion
 

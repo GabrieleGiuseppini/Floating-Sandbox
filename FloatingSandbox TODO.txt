@@ -100,6 +100,9 @@ Render:
 		- Readme 
 		- GameJolt
 
+- Roadmap:
+	- Decide land/island/water thing
+
 - New ships
 	- Fix contributions
 		- Pac0master
@@ -114,8 +117,7 @@ Render:
 			- depthBrightness is always 1.0 if "modulate sea depth brightness" (new boolean GameParam) is not set
 	- Different colored lights
 	- Lights with different chances of turning off
-		- Need longer-living lights?
-	- Morse code: text-to-morse encoder
+		- Do they need longer-living lights?
 	- Custom sky colour - if possible a RGB picker in the settings
 	- Black hole
 
@@ -324,7 +326,7 @@ Render:
 
 - Dynamics:
 
-	+ Ocean floor bump map
+	+ Ocean depth bitmaps
 		+ OceanFloor cctor takes ResourceLoader
 		+ ResourceLoader used by ocean floor to load image
 		+ OceanFloor translates image into float[] with raw pixel y's
@@ -391,7 +393,7 @@ Render:
 		- Ship::UpdateEphemeralParticles: invokes EphemeralParticlesEmitters::Update(...)
 			- Which invokes IEphemeralParticleEmitter::Update(clockNow, mPoints) for each emitter
 
-	- Research particle motion - inject random walk
+	- Research particle motion - inject random walk in smoke and bubbles
 		- https://core.ac.uk/download/pdf/337937.pdf !!!
 		- http://orbit.dtu.dk/files/3706687/Visser6.pdf
 		- @ Smoke
@@ -506,9 +508,9 @@ Render:
 	- DestroyAt:
 		- Test: Ship::SpringDestroyHandler() only destroys triangles that contain A-B
 			- Should definitely make both A and B leak, as they both now have an adjacent hole
-
-	- Ocean depth bitmaps
-	- Save photos (opens SaveAs FileDialog)
+	
+	- See if can use external water's pressure to inflict stress on springs
+		- Have to visit frontier points and, if underwater, do force perpendicular towards interior
 
 - Water:
 	-Do water bubbles (at intake) and water drops (at outtake)
@@ -557,8 +559,6 @@ Render:
 				- But we lose details when we zoom out and then in again
 			- 3: Just cap zoom to reasonable max
 	- Breaking waves (Muller's paper)
-	- See if can use water's pressure to inflict stress on springs
-
 
 - Controls:
 
@@ -664,15 +664,17 @@ Render:
 		- Option 1: see if possible to hook into basic FileDialog's rendering of files
 		- Option 2: custom FileDialog ("ShipFileDialog"), with directory tree on the left and preview in main area
 			- Show also name, dimensions, and total mass
-
 	- Control incisiveness of water color for water in ship
 		- New uniform
+	- Save photos (opens SaveAs FileDialog)
 
 - Sounds:
 	- Ship may come with custom sound(s) for horns
 		- Figure out how to play them, may be like switchboard or *via* switchboard, or with just one horn sound
 	- Morse code sound when it's about to sink (early sink detection)
 		- Or at first drop of water
+		- Morse code: text-to-morse encoder would be cool
+			- Default "S.O.S.", also customizable via ship property
 	- Volume of effects should depend on distance/zoom
 
 -Probing:
