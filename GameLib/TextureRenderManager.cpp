@@ -66,6 +66,7 @@ void TextureRenderManager::UploadGroup(
 
 void TextureRenderManager::UploadMipmappedGroup(
     TextureGroup const & group,
+    GLint minFilter,
     ProgressCallback const & progressCallback)
 {
     // Make sure we have room for this group
@@ -100,7 +101,7 @@ void TextureRenderManager::UploadMipmappedGroup(
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
         // Set texture filtering parameters
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         // Unbind texture

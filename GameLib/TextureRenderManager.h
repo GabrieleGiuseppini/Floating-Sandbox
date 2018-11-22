@@ -28,6 +28,7 @@ public:
 
     void UploadMipmappedGroup(
         TextureGroup const & group,
+        GLint minFilter,
         ProgressCallback const & progressCallback);
 
     inline TextureFrameMetadata const & GetFrameMetadata(TextureFrameId const & frameId) const

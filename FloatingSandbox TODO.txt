@@ -100,18 +100,6 @@ Render:
 		- Readme 
 		- GameJolt
 
-- Current roadmap:
-	+ Git: Merge
-	+ Test sparkles with half lifetime and double velocity
-		+ Test also debris
-	+ Saw sounds
-	+ Pac0's fix 
-	- TODOHERE: GenericTexture filtering: back to linear-linear
-		- See if AM bomb improves (test old first)
-		- See perf impact
-	- Turning down a bit the very high pitch stress noise
-		- Do it on flac - on all high-pitched ones (same amplitude)
-
 - New ships
 	- Fix contributions
 	= USS Shark
@@ -231,7 +219,7 @@ Render:
 
 - Gfx optimizations:
 
-	- In texture or structure mode, draw only springs that are visible
+	- TODOHERE: In texture or structure mode, draw only springs that are visible
 		- i.e. springs with # of triangles < 2
 
 	+ See if can use multiple texture units
@@ -320,6 +308,9 @@ Render:
 
 - Dynamics:
 
+	- TODOHERE: Ocean floor bump map
+		- OceanFloor cctor takes ResourceLoader
+
 	- Extended status text
 		- Shows:
 			- Current zoom
@@ -334,7 +325,7 @@ Render:
 
 	- Slider for "Mass Adjustment"
 		- Recalcs Point's mass things, including mass itself
-		- Also used at bombs - how?
+		- Also used at bombs for bombs' mass - how?
 		- When done, re-enable buoyancy fix
 	
 	- TODOHERE: Slider for "simulation quality", affecting num of mechanical simulation iterations
@@ -660,6 +651,9 @@ Render:
 - Sounds:
 	- TODOHERE: Separate sound control for tools
 
+	+ Saw sound
+	+ Turning down a bit the very high pitch stress noise
+		+ Do it on flac - on all high-pitched ones (same amplitude)
 	+ Sawing: do not publish destroy events when cutting springs, but new "Sawed" events with own metal/wood sounds
 		+ Two new continuous sounds: metal and wood saw
 		+ OnSawed is invoked with Type and size - size=0 means nothing
