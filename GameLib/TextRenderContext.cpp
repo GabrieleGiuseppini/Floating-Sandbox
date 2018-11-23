@@ -114,10 +114,25 @@ void TextRenderContext::RenderEnd()
 
                 float constexpr MarginScreen = 10.0f;
                 float constexpr MarginTopScreen = MarginScreen + 25.0f; // Consider menu bar
+                int constexpr MarginLine = 0; // Pixels
 
-                ImageSize textExtent = fontMetadata.CalculateTextExtent(
-                    mTextSlots[slot].Text.c_str(),
-                    mTextSlots[slot].Text.length());
+                ImageSize textExtent = ImageSize::Zero();
+                int lineHeightIncrement = 0;
+                for (auto const & line : mTextSlots[slot].TextLines)
+                {
+                    auto const lineExtent = fontMetadata.CalculateTextExtent(
+                        line.c_str(),
+                        line.length());
+
+                    textExtent = ImageSize(
+                        std::max(textExtent.Width, lineExtent.Width),
+                        (textExtent.Height != 0 ? MarginLine : 0)
+                        + textExtent.Height + lineExtent.Height);
+
+                    lineHeightIncrement = std::max(lineHeightIncrement, lineExtent.Height + MarginLine);
+                }
+
+                float const lineHeightIncrementNdc = lineHeightIncrement * mScreenToNdcY;
 
                 vec2f cursorPositionNdc; // Top-left
                 switch (mTextSlots[slot].Position)
@@ -159,14 +174,22 @@ void TextRenderContext::RenderEnd()
                     }
                 }
 
-                fontMetadata.EmitQuadVertices(
-                    mTextSlots[slot].Text.c_str(),
-                    mTextSlots[slot].Text.size(),
-                    cursorPositionNdc,
-                    mTextSlots[slot].Alpha,
-                    mScreenToNdcX,
-                    mScreenToNdcY,
-                    fontRenderInfo.GetVertexBuffer());
+                float lineOffsetNdc = 0.0f;
+                for (std::string const & line : mTextSlots[slot].TextLines)
+                {
+                    fontMetadata.EmitQuadVertices(
+                        line.c_str(),
+                        line.size(),
+                        vec2f(
+                            cursorPositionNdc.x,
+                            cursorPositionNdc.y - lineOffsetNdc),
+                        mTextSlots[slot].Alpha,
+                        mScreenToNdcX,
+                        mScreenToNdcY,
+                        fontRenderInfo.GetVertexBuffer());
+
+                    lineOffsetNdc += lineHeightIncrementNdc;
+                }
             }
         }
 

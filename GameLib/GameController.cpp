@@ -9,6 +9,8 @@
 #include "Log.h"
 
 std::unique_ptr<GameController> GameController::Create(
+    bool isStatusTextEnabled,
+    bool isExtendedStatusTextEnabled,
     std::shared_ptr<ResourceLoader> resourceLoader,
     ProgressCallback const & progressCallback)
 {
@@ -28,7 +30,9 @@ std::unique_ptr<GameController> GameController::Create(
         });
 
     // Create text layer
-    std::unique_ptr<TextLayer> textLayer = std::make_unique<TextLayer>();
+    std::unique_ptr<TextLayer> textLayer = std::make_unique<TextLayer>(
+        isStatusTextEnabled,
+        isExtendedStatusTextEnabled);
 
     //
     // Create controller
@@ -85,6 +89,8 @@ void GameController::ReloadLastShip()
 
 void GameController::Update()
 {
+    auto const startTime = std::chrono::steady_clock::now();
+
     // Update world
     assert(!!mWorld);
     mWorld->Update(mGameParameters);
@@ -94,6 +100,10 @@ void GameController::Update()
 
     // Flush events
     mGameEventDispatcher->Flush();
+
+    // Update stats
+    auto const endTime = std::chrono::steady_clock::now();
+    mTotalUpdateDuration += endTime - startTime;
 }
 
 void GameController::LowFrequencyUpdate()
@@ -110,27 +120,32 @@ void GameController::LowFrequencyUpdate()
     //
 
     mLastFrameCount = 0u;
-    mStatsLastTimestampReal = nowReal;
+    mRenderStatsLastTimestampReal = nowReal;
+    mLastTotalUpdateDuration = mTotalUpdateDuration;
+    mLastTotalRenderDuration = mTotalRenderDuration;
 }
 
 void GameController::Render()
 {
+    auto const startTime = std::chrono::steady_clock::now();
+
     //
-    // Initialize stats, if needed
+    // Initialize render stats, if needed
     //
 
-    if (mStatsOriginTimestampReal == std::chrono::steady_clock::time_point::min())
-    {        
-        assert(mStatsLastTimestampReal == std::chrono::steady_clock::time_point::min());
-        assert(mStatsOriginTimestampGame == GameWallClock::time_point::min());
+    if (mRenderStatsOriginTimestampReal == std::chrono::steady_clock::time_point::min())
+    {
+        assert(mRenderStatsLastTimestampReal == std::chrono::steady_clock::time_point::min());
 
         std::chrono::steady_clock::time_point nowReal = std::chrono::steady_clock::now();
-        mStatsOriginTimestampReal = nowReal;
-        mStatsLastTimestampReal = nowReal;
-        mStatsOriginTimestampGame = GameWallClock::GetInstance().Now();
+        mRenderStatsOriginTimestampReal = nowReal;
+        mRenderStatsLastTimestampReal = nowReal;
 
         mTotalFrameCount = 0u;
         mLastFrameCount = 0u;
+
+        // In order to start from zero at first render, take global origin here
+        mOriginTimestampGame = nowReal;
 
         // Render initial status text
         PublishStats(nowReal);
@@ -211,16 +226,31 @@ void GameController::Render()
 
     ++mTotalFrameCount;
     ++mLastFrameCount;
+
+    // Update stats
+    auto const endTime = std::chrono::steady_clock::now();
+    mTotalRenderDuration += endTime - startTime;
 }
 
 /////////////////////////////////////////////////////////////
 // Interactions
 /////////////////////////////////////////////////////////////
 
+void GameController::SetPaused(bool isPaused)
+{
+    mIsPaused = isPaused;
+}
+
 void GameController::SetStatusTextEnabled(bool isEnabled)
 {
     assert(!!mTextLayer);
     mTextLayer->SetStatusTextEnabled(isEnabled);
+}
+
+void GameController::SetExtendedStatusTextEnabled(bool isEnabled)
+{
+    assert(!!mTextLayer);
+    mTextLayer->SetExtendedStatusTextEnabled(isEnabled);
 }
 
 void GameController::DestroyAt(
@@ -426,8 +456,8 @@ void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
     // Calculate fps and total (game) duration
     //    
 
-    auto totalElapsedReal = std::chrono::duration<float>(nowReal - mStatsOriginTimestampReal);
-    auto lastElapsedReal = std::chrono::duration<float>(nowReal - mStatsLastTimestampReal);
+    auto totalElapsedReal = std::chrono::duration<float>(nowReal - mRenderStatsOriginTimestampReal);
+    auto lastElapsedReal = std::chrono::duration<float>(nowReal - mRenderStatsLastTimestampReal);
 
     float totalFps =
         totalElapsedReal.count() != 0.0f
@@ -445,8 +475,20 @@ void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
 
     // Update status text
     assert(!!mTextLayer);
+    auto totalUpdateDurationNs = std::chrono::duration_cast<std::chrono::nanoseconds>(mTotalUpdateDuration);
+    auto totalRenderDurationNs = std::chrono::duration_cast<std::chrono::nanoseconds>(mTotalRenderDuration);
+    auto lastUpdateDurationNs = std::chrono::duration_cast<std::chrono::nanoseconds>(mTotalUpdateDuration - mLastTotalUpdateDuration);
+    auto lastRenderDurationNs = std::chrono::duration_cast<std::chrono::nanoseconds>(mTotalRenderDuration - mLastTotalRenderDuration);
     mTextLayer->SetStatusText(
         lastFps,
         totalFps,
-        std::chrono::duration<float>(GameWallClock::GetInstance().Now() - mStatsOriginTimestampGame));
+        std::chrono::duration<float>(GameWallClock::GetInstance().Now() - mOriginTimestampGame),
+        mIsPaused,
+        mRenderContext->GetZoom(),
+        totalRenderDurationNs.count() != 0
+            ? static_cast<float>(totalUpdateDurationNs.count()) / static_cast<float>(totalRenderDurationNs.count())
+            : 0.0f,
+        lastRenderDurationNs.count() != 0
+            ? static_cast<float>(lastUpdateDurationNs.count()) / static_cast<float>(lastRenderDurationNs.count())
+            : 0.0f);
 }

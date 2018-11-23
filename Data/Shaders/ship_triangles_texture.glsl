@@ -39,6 +39,7 @@ uniform sampler2D sharedSpringTexture;
 
 // Params
 uniform float paramAmbientLightIntensity;
+uniform float paramWaterContrast;
 uniform float paramWaterLevelThreshold;
 
 void main()
@@ -46,7 +47,7 @@ void main()
     vec4 vertexCol = texture2D(sharedSpringTexture, vertexTextureCoords);
 
     // Apply point water
-    float colorWetness = min(vertexWater, paramWaterLevelThreshold) * 0.7 / paramWaterLevelThreshold;
+    float colorWetness = min(vertexWater, paramWaterLevelThreshold) / paramWaterLevelThreshold * paramWaterContrast;
     vec4 fragColour = vertexCol * (1.0 - colorWetness) + vec4(%WET_COLOR_VEC4%) * colorWetness;
 
     // Apply ambient light

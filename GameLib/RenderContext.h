@@ -156,6 +156,18 @@ public:
         mShowShipThroughSeaWater = showShipThroughSeaWater;
     }
 
+    float GetWaterContrast() const
+    {
+        return mWaterContrast;
+    }
+
+    void SetWaterContrast(float contrast)
+    {
+        mWaterContrast = contrast;
+
+        UpdateWaterContrast();
+    }
+
     float GetWaterLevelOfDetail() const
     {
         return mWaterLevelOfDetail;
@@ -759,14 +771,14 @@ public:
     //
 
     RenderedTextHandle AddText(
-        std::string const & text,
+        std::vector<std::string> const & textLines,
         TextPositionType position,
         float alpha,
         FontType font)
     {
         assert(!!mTextRenderContext);
         return mTextRenderContext->AddText(
-            text,
+            textLines,
             position,
             alpha,
             font);
@@ -774,13 +786,13 @@ public:
 
     void UpdateText(
         RenderedTextHandle textHandle,
-        std::string const & text,
+        std::vector<std::string> const & textLines,
         float alpha)
     {
         assert(!!mTextRenderContext);
         mTextRenderContext->UpdateText(
             textHandle,
-            text,
+            textLines,
             alpha);
     }
 
@@ -807,6 +819,7 @@ private:
     void UpdateVisibleWorldCoordinates();
     void UpdateAmbientLightIntensity();
     void UpdateSeaWaterTransparency();
+    void UpdateWaterContrast();
     void UpdateWaterLevelOfDetail();
     void UpdateShipRenderMode();
     void UpdateVectorFieldRenderMode();
@@ -998,6 +1011,7 @@ private:
     float mAmbientLightIntensity;
     float mSeaWaterTransparency;    
     bool mShowShipThroughSeaWater;
+    float mWaterContrast;
     float mWaterLevelOfDetail;
     ShipRenderMode mShipRenderMode;
     VectorFieldRenderMode mVectorFieldRenderMode; 

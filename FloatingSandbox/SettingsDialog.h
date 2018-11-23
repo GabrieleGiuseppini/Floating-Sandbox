@@ -86,6 +86,7 @@ private:
 
     // Rendering
     std::unique_ptr<SliderControl> mSeaWaterTransparencySlider;
+    std::unique_ptr<SliderControl> mWaterContrastSlider;
     wxCheckBox * mSeeShipThroughSeaWaterCheckBox;
     wxRadioBox * mShipRenderModeRadioBox;
     wxRadioBox * mVectorFieldRenderModeRadioBox;

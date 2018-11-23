@@ -37,6 +37,7 @@ public:
         float visibleWorldWidth,
         float canvasToVisibleWorldHeightRatio,
         float ambientLightIntensity,
+        float waterContrast,
         float waterLevelOfDetail,
         ShipRenderMode shipRenderMode,
         VectorFieldRenderMode vectorFieldRenderMode,
@@ -55,6 +56,8 @@ public:
         float canvasToVisibleWorldHeightRatio);
 
     void UpdateAmbientLightIntensity(float ambientLightIntensity);
+
+    void UpdateWaterContrast(float waterConstrast);
 
     void UpdateWaterLevelThreshold(float waterLevelOfDetail);
 
@@ -391,6 +394,7 @@ private:
 
     float mCanvasToVisibleWorldHeightRatio;
     float mAmbientLightIntensity;
+    float mWaterContrast;
     float mWaterLevelThreshold;
     ShipRenderMode mShipRenderMode;
     VectorFieldRenderMode mVectorFieldRenderMode;

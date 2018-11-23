@@ -36,12 +36,13 @@ in vec4 vertexCol;
 
 // Params
 uniform float paramAmbientLightIntensity;
+uniform float paramWaterContrast;
 uniform float paramWaterLevelThreshold;
 
 void main()
 {
     // Apply point water
-    float colorWetness = min(vertexWater, paramWaterLevelThreshold) * 0.7 / paramWaterLevelThreshold;
+    float colorWetness = min(vertexWater, paramWaterLevelThreshold) / paramWaterLevelThreshold * paramWaterContrast;
     vec3 fragColour = vertexCol.xyz * (1.0 - colorWetness) + vec3(%WET_COLOR_VEC3%) * colorWetness;
 
      // Apply ambient light

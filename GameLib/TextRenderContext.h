@@ -12,6 +12,7 @@
 
 #include <array>
 #include <string>
+#include <vector>
 
 namespace Render
 {
@@ -39,7 +40,7 @@ public:
     void RenderStart();
 
     RenderedTextHandle AddText(
-        std::string const & text,
+        std::vector<std::string> const & textLines,
         TextPositionType position,
         float alpha,
         FontType font)
@@ -57,7 +58,7 @@ public:
         }
 
         // Store info
-        mTextSlots[oldestSlotIndex].Text = text;
+        mTextSlots[oldestSlotIndex].TextLines = textLines;
         mTextSlots[oldestSlotIndex].Position = position;
         mTextSlots[oldestSlotIndex].Alpha = alpha;
         mTextSlots[oldestSlotIndex].Font = font;
@@ -71,12 +72,12 @@ public:
 
     void UpdateText(
         RenderedTextHandle textHandle,
-        std::string const & text,
+        std::vector<std::string> const & textLines,
         float alpha)
     {
         assert(textHandle < mTextSlots.size());
 
-        mTextSlots[textHandle].Text = text;
+        mTextSlots[textHandle].TextLines = textLines;
         mTextSlots[textHandle].Alpha = alpha;
 
         // Remember we're dirty now
@@ -111,7 +112,7 @@ private:
     {
         uint64_t Generation;
 
-        std::string Text;
+        std::vector<std::string> TextLines;
         TextPositionType Position;
         float Alpha;
         FontType Font;        

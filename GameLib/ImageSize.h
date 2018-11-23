@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include <algorithm>
 #include <cstdint>
 
 #pragma pack(push)
@@ -23,10 +24,22 @@ public:
     {
     }
 
+    inline static ImageSize Zero()
+    {
+        return ImageSize(0, 0);
+    }
+
     inline bool operator==(ImageSize const & other) const
     {
         return this->Width == other.Width
             && this->Height == other.Height;
+    }
+
+    inline ImageSize Union(ImageSize const & other) const
+    {
+        return ImageSize(
+            std::max(this->Width, other.Width),
+            std::max(this->Height, other.Height));
     }
 };
 #pragma pack(pop)

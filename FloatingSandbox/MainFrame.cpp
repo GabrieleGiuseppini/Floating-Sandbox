@@ -54,6 +54,7 @@ const long ID_OPEN_LOG_WINDOW_MENUITEM = wxNewId();
 const long ID_SHOW_EVENT_TICKER_MENUITEM = wxNewId();
 const long ID_SHOW_PROBE_PANEL_MENUITEM = wxNewId();
 const long ID_SHOW_STATUS_TEXT_MENUITEM = wxNewId();
+const long ID_SHOW_EXTENDED_STATUS_TEXT_MENUITEM = wxNewId();
 const long ID_FULL_SCREEN_MENUITEM = wxNewId();
 const long ID_NORMAL_SCREEN_MENUITEM = wxNewId();
 const long ID_MUTE_MENUITEM = wxNewId();
@@ -67,6 +68,7 @@ const long ID_LOW_FREQUENCY_TIMER = wxNewId();
 
 static constexpr bool StartInFullScreenMode = true;
 static constexpr bool StartWithStatusText = true;
+static constexpr bool StartWithExtendedStatusText = false;
 static constexpr int CursorStep = 30;
 static constexpr int PowerBarThickness = 2;
 
@@ -283,7 +285,7 @@ MainFrame::MainFrame(wxApp * mainApp)
     optionsMenu->Append(openLogWindowMenuItem);
     Connect(ID_OPEN_LOG_WINDOW_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnOpenLogWindowMenuItemSelected);
 
-    mShowEventTickerMenuItem = new wxMenuItem(optionsMenu, ID_SHOW_EVENT_TICKER_MENUITEM, _("Show Event Ticker\tCtrl+T"), wxEmptyString, wxITEM_CHECK);
+    mShowEventTickerMenuItem = new wxMenuItem(optionsMenu, ID_SHOW_EVENT_TICKER_MENUITEM, _("Show Event Ticker\tCtrl+E"), wxEmptyString, wxITEM_CHECK);
     optionsMenu->Append(mShowEventTickerMenuItem);
     mShowEventTickerMenuItem->Check(false);
     Connect(ID_SHOW_EVENT_TICKER_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnShowEventTickerMenuItemSelected);
@@ -293,10 +295,15 @@ MainFrame::MainFrame(wxApp * mainApp)
     mShowProbePanelMenuItem->Check(false);
     Connect(ID_SHOW_PROBE_PANEL_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnShowProbePanelMenuItemSelected);
 
-    mShowStatusTextMenuItem = new wxMenuItem(optionsMenu, ID_SHOW_STATUS_TEXT_MENUITEM, _("Show Status Text\tCtrl+X"), wxEmptyString, wxITEM_CHECK);
+    mShowStatusTextMenuItem = new wxMenuItem(optionsMenu, ID_SHOW_STATUS_TEXT_MENUITEM, _("Show Status Text\tCtrl+T"), wxEmptyString, wxITEM_CHECK);
     optionsMenu->Append(mShowStatusTextMenuItem);
     mShowStatusTextMenuItem->Check(StartWithStatusText);
     Connect(ID_SHOW_STATUS_TEXT_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnShowStatusTextMenuItemSelected);
+
+    mShowExtendedStatusTextMenuItem = new wxMenuItem(optionsMenu, ID_SHOW_EXTENDED_STATUS_TEXT_MENUITEM, _("Show Extended Status Text\tCtrl+X"), wxEmptyString, wxITEM_CHECK);
+    optionsMenu->Append(mShowExtendedStatusTextMenuItem);
+    mShowExtendedStatusTextMenuItem->Check(StartWithExtendedStatusText);
+    Connect(ID_SHOW_EXTENDED_STATUS_TEXT_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnShowExtendedStatusTextMenuItemSelected);
 
     optionsMenu->Append(new wxMenuItem(optionsMenu, wxID_SEPARATOR));
 
@@ -417,6 +424,8 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     try
     {
         mGameController = GameController::Create(
+            StartWithStatusText,
+            StartWithExtendedStatusText,
             mResourceLoader,
             [&splash, this](float progress, std::string const & message)
             {
@@ -434,9 +443,6 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     }
 
     this->mMainApp->Yield();
-
-    // Initialize game controller
-    mGameController->SetStatusTextEnabled(StartWithStatusText);
 
 
     //
@@ -800,6 +806,9 @@ void MainFrame::OnPauseMenuItemSelected(wxCommandEvent & /*event*/)
     {
         GameWallClock::GetInstance().Pause();
 
+        if (!!mGameController)
+            mGameController->SetPaused(true);
+
         if (!!mSoundController)
             mSoundController->SetPaused(true);
 
@@ -808,6 +817,9 @@ void MainFrame::OnPauseMenuItemSelected(wxCommandEvent & /*event*/)
     else
     { 
         GameWallClock::GetInstance().Resume();
+
+        if (!!mGameController)
+            mGameController->SetPaused(false);
 
         if (!!mSoundController)
             mSoundController->SetPaused(false);
@@ -975,6 +987,12 @@ void MainFrame::OnShowStatusTextMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mGameController);
     mGameController->SetStatusTextEnabled(mShowStatusTextMenuItem->IsChecked());
+}
+
+void MainFrame::OnShowExtendedStatusTextMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mGameController);
+    mGameController->SetExtendedStatusTextEnabled(mShowExtendedStatusTextMenuItem->IsChecked());
 }
 
 void MainFrame::OnFullScreenMenuItemSelected(wxCommandEvent & /*event*/)

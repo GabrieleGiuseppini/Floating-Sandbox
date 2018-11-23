@@ -32,6 +32,8 @@ class GameController
 public:
 
     static std::unique_ptr<GameController> Create(
+        bool isStatusTextEnabled,
+        bool isExtendedStatusTextEnabled,
         std::shared_ptr<ResourceLoader> resourceLoader,
         ProgressCallback const & progressCallback);
 
@@ -56,7 +58,9 @@ public:
     // Interactions
     //
 
+    void SetPaused(bool isPaused);
     void SetStatusTextEnabled(bool isEnabled);
+    void SetExtendedStatusTextEnabled(bool isEnabled);
 
     void DestroyAt(vec2f const & screenCoordinates, float radiusMultiplier);
     void SawThrough(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates);
@@ -236,6 +240,9 @@ public:
     float GetAmbientLightIntensity() const { return mRenderContext->GetAmbientLightIntensity(); }
     void SetAmbientLightIntensity(float value) { mRenderContext->SetAmbientLightIntensity(value); }
 
+    float GetWaterContrast() const { return mRenderContext->GetWaterContrast(); }
+    void SetWaterContrast(float value) { mRenderContext->SetWaterContrast(value); }
+
     float GetSeaWaterTransparency() const { return mRenderContext->GetSeaWaterTransparency(); }
     void SetSeaWaterTransparency(float value) { mRenderContext->SetSeaWaterTransparency(value); }
 
@@ -269,6 +276,8 @@ private:
         std::shared_ptr<ResourceLoader> resourceLoader)
         : mGameParameters()
         , mLastShipLoadedFilePath()
+        , mIsPaused(false)
+        // Doers
         , mRenderContext(std::move(renderContext))
         , mGameEventDispatcher(std::move(gameEventDispatcher))
         , mResourceLoader(std::move(resourceLoader))
@@ -290,9 +299,13 @@ private:
         // Stats
         , mTotalFrameCount(0u)
         , mLastFrameCount(0u)
-        , mStatsOriginTimestampReal(std::chrono::steady_clock::time_point::min())
-        , mStatsLastTimestampReal(std::chrono::steady_clock::time_point::min())
-        , mStatsOriginTimestampGame(GameWallClock::time_point::min())
+        , mRenderStatsOriginTimestampReal(std::chrono::steady_clock::time_point::min())
+        , mRenderStatsLastTimestampReal(std::chrono::steady_clock::time_point::min())
+        , mTotalUpdateDuration(std::chrono::steady_clock::duration::zero())
+        , mLastTotalUpdateDuration(std::chrono::steady_clock::duration::zero())
+        , mTotalRenderDuration(std::chrono::steady_clock::duration::zero())
+        , mLastTotalRenderDuration(std::chrono::steady_clock::duration::zero())
+        , mOriginTimestampGame(GameWallClock::time_point::min())
     {
     }
     
@@ -316,6 +329,8 @@ private:
 
     GameParameters mGameParameters;
     std::filesystem::path mLastShipLoadedFilePath;
+    bool mIsPaused;
+
 
     //
     // The doers 
@@ -331,7 +346,6 @@ private:
     //
 
     std::unique_ptr<Physics::World> mWorld;
-
     std::shared_ptr<MaterialDatabase> mMaterials;
         
 
@@ -358,7 +372,11 @@ private:
 
     uint64_t mTotalFrameCount;
     uint64_t mLastFrameCount;
-    std::chrono::steady_clock::time_point mStatsOriginTimestampReal;
-    std::chrono::steady_clock::time_point mStatsLastTimestampReal;
-    GameWallClock::time_point mStatsOriginTimestampGame;
+    std::chrono::steady_clock::time_point mRenderStatsOriginTimestampReal;
+    std::chrono::steady_clock::time_point mRenderStatsLastTimestampReal;
+    std::chrono::steady_clock::duration mTotalUpdateDuration;
+    std::chrono::steady_clock::duration mLastTotalUpdateDuration;
+    std::chrono::steady_clock::duration mTotalRenderDuration;
+    std::chrono::steady_clock::duration mLastTotalRenderDuration;
+    GameWallClock::time_point mOriginTimestampGame;
 };

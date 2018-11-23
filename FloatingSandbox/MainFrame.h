@@ -66,6 +66,7 @@ private:
     wxMenuItem * mShowEventTickerMenuItem;
     wxMenuItem * mShowProbePanelMenuItem;
     wxMenuItem * mShowStatusTextMenuItem;
+    wxMenuItem * mShowExtendedStatusTextMenuItem;
     wxMenuItem * mFullScreenMenuItem;
     wxMenuItem * mNormalScreenMenuItem;
     wxMenuItem * mMuteMenuItem;
@@ -140,6 +141,7 @@ private:
     void OnShowEventTickerMenuItemSelected(wxCommandEvent& event);
     void OnShowProbePanelMenuItemSelected(wxCommandEvent& event);
     void OnShowStatusTextMenuItemSelected(wxCommandEvent& event);
+    void OnShowExtendedStatusTextMenuItemSelected(wxCommandEvent& event);
     void OnFullScreenMenuItemSelected(wxCommandEvent& event);
     void OnNormalScreenMenuItemSelected(wxCommandEvent& event);
     void OnMuteMenuItemSelected(wxCommandEvent& event);

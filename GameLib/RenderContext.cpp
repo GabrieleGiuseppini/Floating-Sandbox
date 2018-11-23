@@ -56,6 +56,7 @@ RenderContext::RenderContext(
     , mAmbientLightIntensity(1.0f)
     , mSeaWaterTransparency(0.8125f)
     , mShowShipThroughSeaWater(false)
+    , mWaterContrast(0.6875f)
     , mWaterLevelOfDetail(0.6875f)
     , mShipRenderMode(ShipRenderMode::Texture)
     , mVectorFieldRenderMode(VectorFieldRenderMode::None)
@@ -358,6 +359,7 @@ RenderContext::RenderContext(
     UpdateVisibleWorldCoordinates();
     UpdateAmbientLightIntensity();
     UpdateSeaWaterTransparency();
+    UpdateWaterContrast();
     UpdateWaterLevelOfDetail();
     UpdateShipRenderMode();
     UpdateVectorFieldRenderMode();
@@ -411,6 +413,7 @@ void RenderContext::AddShip(
             mVisibleWorldWidth,
             mCanvasToVisibleWorldHeightRatio,
             mAmbientLightIntensity,
+            mWaterContrast,
             mWaterLevelOfDetail,
             mShipRenderMode,
             mVectorFieldRenderMode,
@@ -844,6 +847,16 @@ void RenderContext::UpdateSeaWaterTransparency()
     mShaderManager->ActivateProgram<ProgramType::Water>();
     mShaderManager->SetProgramParameter<ProgramType::Water, ProgramParameterType::WaterTransparency>(
         mSeaWaterTransparency);
+}
+
+void RenderContext::UpdateWaterContrast()
+{
+    // Set parameter in all ships
+
+    for (auto & s : mShips)
+    {
+        s->UpdateWaterContrast(mWaterContrast);
+    }
 }
 
 void RenderContext::UpdateWaterLevelOfDetail()

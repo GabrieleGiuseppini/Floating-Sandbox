@@ -372,6 +372,11 @@ void SettingsDialog::ApplySettings()
 
     mGameController->SetDoGenerateSparkles(mGenerateSparklesCheckBox->IsChecked());
 
+
+
+    mGameController->SetWaterContrast(
+        mWaterContrastSlider->GetValue());
+
     mGameController->SetSeaWaterTransparency(
         mSeaWaterTransparencySlider->GetValue());
 
@@ -881,6 +886,26 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
     wxBoxSizer* controlsSizer = new wxBoxSizer(wxHORIZONTAL);
 
 
+    // Water Contrast
+
+    mWaterContrastSlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Water Contrast",
+        mGameController->GetWaterContrast(),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<LinearSliderCore>(
+            0.0f,
+            1.0f));
+
+    controlsSizer->Add(mWaterContrastSlider.get(), 1, wxALL, SliderBorder);
+
+
     // Sea Water Transparency
 
     mSeaWaterTransparencySlider = std::make_unique<SliderControl>(
@@ -1106,6 +1131,8 @@ void SettingsDialog::ReadSettings()
     mGenerateSparklesCheckBox->SetValue(mGameController->GetDoGenerateSparkles());
 
 
+
+    mWaterContrastSlider->SetValue(mGameController->GetWaterContrast());
 
     mSeaWaterTransparencySlider->SetValue(mGameController->GetSeaWaterTransparency());
 

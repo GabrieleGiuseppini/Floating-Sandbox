@@ -104,7 +104,8 @@ Render:
 
 - Roadmap:
 	= 1.7.0
-		- Water contrast (*)
+		= Extended Status Text (*)
+		- Simulation Quality (*)
 	- 1.8.0
 		- Settings Manager (*)
 		- Resource Packs (Moleskine)
@@ -340,17 +341,19 @@ Render:
 		+ At update, raw pixel y's are normalized/enhanced with new GameParameters constant
 		+ Test
 
-	- Extended status text
-		- Shows:
-			- Current zoom
-			- Rendering vs simulation percentages
-				- GameController continuously updates, same way as FPS
-			- If paused
-		- Multi-row:
-			- Text layer splits/gets it split & gives vector to TextRenderContext
+	+ Extended status text
+		+ Shows:
+			+ Current zoom
+			+ Rendering vs simulation percentages
+				+ GameController continuously updates, same way as FPS
+			+ If paused
+				+ Actually, this is from StatusText
+		+ Multi-row:
+			+ Text layer gets it split & gives vector to TextRenderContext
 
 	- Auto-adjust zoom at ship load
-		- If enabled: GameController calcs required zoom, compares with current, and eventually adjusts
+		- Use preferred zoom from .shp file
+		- Configured by GameController
 
 	- Slider for "Mass Adjustment"
 		- Recalcs Point's mass things, including mass itself
@@ -436,10 +439,16 @@ Render:
 		- New electrical material type; color trick like ropes to have unique and deterministic IDs for switches
 			- One material (base structural color) for initially on and another one for initially off
 			- New electrical property: ConductsElectricity, bool - used at connectivity visit
+		- ObjectId overhaul:
+			- TODO: local ID should be possible to be sequential - need another level of uniqueness
+			- ObjectId is globally unique, and has transparent ShipId (so World can route efficiently)
+			- ObjectId == <ShipId (new GameType alias, uint32_t w/ None), LocalObjectId (new GameType alias, uint32_t)>
 		- Ship json adds optional names for each ID
-			- as vector<tuple<GlobalSwitchId, std::string>>>
+			- as vector<tuple<local switch ID, std::string>>>
+				- local switch ID is ID from color code
 		- ShipBuilder detects all switches as electrical elements
-			- Each switch gets own GlobalSwitchId == <ShipId, ShipSwitchId>, as part of Electrical Elements data
+			- Generates an ObjectId using ObjectIdGenerator.Generate(ShipId)
+			- Each switch gets own ObjectId == <ShipId, ShipSwitchId>, as part of Electrical Elements data
 				- GlobalSwitchId is new GameType
 				- ShipSwitchId is just element index of switch in ElectricalElements
 			- ShipBuilder also communicates IDs and names (vector, by move) separately to ship at cctor time
@@ -671,9 +680,10 @@ Render:
 		- Option 1: see if possible to hook into basic FileDialog's rendering of files
 		- Option 2: custom FileDialog ("ShipFileDialog"), with directory tree on the left and preview in main area
 			- Show also name, dimensions, and total mass
-	- Control incisiveness of water color for water in ship
-		- New uniform
-	- Save photos (opens SaveAs FileDialog)
+	+ Control incisiveness (contrast) of water color for water in ship
+		+ New uniform
+	- Save screenshots/photos 
+		- Saves automatically in custom folder
 
 - Sounds:
 	- Ship may come with custom sound(s) for horns

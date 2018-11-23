@@ -23,6 +23,7 @@ ShipRenderContext::ShipRenderContext(
     float visibleWorldWidth,
     float canvasToVisibleWorldHeightRatio,
     float ambientLightIntensity,
+    float waterContrast,
     float waterLevelOfDetail,
     ShipRenderMode shipRenderMode,
     VectorFieldRenderMode vectorFieldRenderMode,
@@ -32,6 +33,7 @@ ShipRenderContext::ShipRenderContext(
     // Parameters - all set at the end of the constructor
     , mCanvasToVisibleWorldHeightRatio(0)
     , mAmbientLightIntensity(0.0f)
+    , mWaterContrast(0.0f)
     , mWaterLevelThreshold(0.0f)
     , mShipRenderMode(ShipRenderMode::Structure)
     , mVectorFieldRenderMode(VectorFieldRenderMode::None)
@@ -238,6 +240,7 @@ ShipRenderContext::ShipRenderContext(
         visibleWorldWidth,
         canvasToVisibleWorldHeightRatio);
     UpdateAmbientLightIntensity(ambientLightIntensity);
+    UpdateWaterContrast(waterContrast);
     UpdateWaterLevelThreshold(waterLevelOfDetail);
     UpdateShipRenderMode(shipRenderMode);
     UpdateVectorFieldRenderMode(vectorFieldRenderMode);
@@ -307,6 +310,27 @@ void ShipRenderContext::UpdateAmbientLightIntensity(float ambientLightIntensity)
     mShaderManager.ActivateProgram<ProgramType::GenericTextures>();
     mShaderManager.SetProgramParameter<ProgramType::GenericTextures, ProgramParameterType::AmbientLightIntensity>(
         ambientLightIntensity);
+}
+
+void ShipRenderContext::UpdateWaterContrast(float waterContrast)
+{
+    mWaterContrast = waterContrast;
+
+    //
+    // Set parameter in all programs
+    //
+
+    mShaderManager.ActivateProgram<ProgramType::ShipTrianglesColor>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesColor, ProgramParameterType::WaterContrast>(
+        mWaterContrast);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTexture>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesTexture, ProgramParameterType::WaterContrast>(
+        mWaterContrast);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipRopes>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipRopes, ProgramParameterType::WaterContrast>(
+        mWaterContrast);
 }
 
 void ShipRenderContext::UpdateWaterLevelThreshold(float waterLevelOfDetail)
