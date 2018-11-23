@@ -63,8 +63,11 @@ RenderContext::RenderContext(
     , mShowStressedSprings(false)
     , mWireframeMode(false)
 {
-    static constexpr float TextureProgressSteps = 1.0f /*cloud*/ + 10.0f;
-    static constexpr float TotalProgressSteps = 5.0f + TextureProgressSteps;
+    static constexpr float GenericTextureProgressSteps = 10.0f;
+    static constexpr float CloudTextureProgressSteps = 4.0f;
+    
+    // Shaders, TextRenderContext, TextureDatabase, GenericTextureAtlas, Clouds, Land, Water
+    static constexpr float TotalProgressSteps = 3.0f + GenericTextureProgressSteps + CloudTextureProgressSteps + 2.0f;
 
     GLuint tmpGLuint;
     
@@ -148,7 +151,7 @@ RenderContext::RenderContext(
     TextureAtlas genericTextureAtlas = genericTextureAtlasBuilder.BuildAtlas(
         [&progressCallback](float progress, std::string const &)
         {
-            progressCallback((3.0f + 1.0f + progress * (TextureProgressSteps - 1.0f)) / TotalProgressSteps, "Loading textures...");
+            progressCallback((3.0f + progress * GenericTextureProgressSteps) / TotalProgressSteps, "Loading textures...");
         });
 
     LogMessage("Generic texture atlas size: ", genericTextureAtlas.AtlasData.Size.Width, "x", genericTextureAtlas.AtlasData.Size.Height);
@@ -205,7 +208,7 @@ RenderContext::RenderContext(
     TextureAtlas cloudTextureAtlas = cloudAtlasBuilder.BuildAtlas(
         [&progressCallback](float progress, std::string const &)
         {
-            progressCallback((3.0f + progress * TextureProgressSteps) / TotalProgressSteps, "Loading textures...");
+            progressCallback((3.0f + GenericTextureProgressSteps + progress * CloudTextureProgressSteps) / TotalProgressSteps, "Loading textures...");
         });
 
     // Create OpenGL handle    
@@ -252,7 +255,7 @@ RenderContext::RenderContext(
         GL_LINEAR_MIPMAP_NEAREST,
         [&progressCallback](float progress, std::string const &)
         {
-            progressCallback((3.0f + TextureProgressSteps + progress) / TotalProgressSteps, "Loading textures...");
+            progressCallback((3.0f + GenericTextureProgressSteps + CloudTextureProgressSteps + progress) / TotalProgressSteps, "Loading textures...");
         });
 
     // Bind texture
@@ -284,7 +287,7 @@ RenderContext::RenderContext(
         GL_LINEAR_MIPMAP_NEAREST,
         [&progressCallback](float progress, std::string const &)
         {
-            progressCallback((4.0f + TextureProgressSteps + progress) / TotalProgressSteps, "Loading textures...");
+            progressCallback((3.0f + GenericTextureProgressSteps + CloudTextureProgressSteps + 1.0f + progress) / TotalProgressSteps, "Loading textures...");
         });
 
     // Bind texture

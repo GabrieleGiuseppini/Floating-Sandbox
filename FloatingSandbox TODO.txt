@@ -100,14 +100,14 @@ Render:
 		- @ Readme 
 		- @ GameJolt
 	- Video of Titanic under Mariannes' Trench
-		- After water incisiveness
+		- After water contrast
 
 - Roadmap:
 	= 1.7.0
-		- Water incisiveness
+		- Water contrast (*)
 	- 1.8.0
-		- Settings Manager
-		- Resource Packs
+		- Settings Manager (*)
+		- Resource Packs (Moleskine)
 
 - New ships
 	- Fix contributions
