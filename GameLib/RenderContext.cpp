@@ -636,7 +636,8 @@ void RenderContext::UploadLandAndWaterEnd()
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(LandElement) * mLandElementCount, mLandElementBuffer.get());
 
     // Describe vertex attribute 1
-    // (we know we'll be using it next, so we can describe it now and avoid a bind later)
+    // (we know we'll be using before CrossOfLight - which is the only subsequent user of this attribute,
+    //  so we can describe it now and avoid a bind later)
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedAttribute1), 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), nullptr);
     CheckOpenGLError();
 

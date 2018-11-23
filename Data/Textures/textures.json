@@ -117,8 +117,8 @@
 	"hasOwnAmbientLight": true,
 	"frames":[
 		{	
-			"worldWidth": 1.5,
-			"worldHeight": 1.5,
+			"worldWidth": 2.0,
+			"worldHeight": 2.0,
 			"filename": "saw_sparkle_\\d+"
 		}
 	]

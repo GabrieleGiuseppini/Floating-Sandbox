@@ -97,12 +97,13 @@ Render:
 
 - Marketing:
 	- "Attention to details / physics"
-		- Readme 
-		- GameJolt
+		- @ Readme 
+		- @ GameJolt
+	- Video of Titanic under Mariannes' Trench
+		- After water incisiveness
 
 - Roadmap:
-	- 1.7.0
-		- Test land/island/water thing
+	= 1.7.0
 		- Water incisiveness
 	- 1.8.0
 		- Settings Manager

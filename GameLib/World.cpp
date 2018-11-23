@@ -265,9 +265,6 @@ void World::Render(
     // Render the clouds (and stars)
     mClouds.Render(renderContext);
 
-    // Render the ocean floor
-    renderContext.RenderLand();
-
     // Render the water now, if we want to see the ship through the water
     if (renderContext.GetShowShipThroughSeaWater())
     {
@@ -287,6 +284,9 @@ void World::Render(
     {
         renderContext.RenderWater();
     }
+
+    // Render the ocean floor
+    renderContext.RenderLand();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
