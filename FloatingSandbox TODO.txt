@@ -101,7 +101,12 @@ Render:
 		- GameJolt
 
 - Roadmap:
-	- Decide land/island/water thing
+	- 1.7.0
+		- Test land/island/water thing
+		- Water incisiveness
+	- 1.8.0
+		- Settings Manager
+		- Resource Packs
 
 - New ships
 	- Fix contributions
@@ -112,9 +117,6 @@ Render:
 	- See Moleskine
 
 - Suggestions to spec:
-	- A toggle-able shader for the sea - so it gets darker the further down you go; it would be affected by the ambient lighting
-		- Need new scalar vertex attrib for depthBrightness - between 1.0 (top) and 0.0 (at greater of 1000m and sea depth)
-			- depthBrightness is always 1.0 if "modulate sea depth brightness" (new boolean GameParam) is not set
 	- Different colored lights
 	- Lights with different chances of turning off
 		- Do they need longer-living lights?
@@ -291,6 +293,10 @@ Render:
 					  - With optional <ship ID, connected component ID> pair (not set -> main UI, on top of everything)
 
 - Gfx:
+	- A toggle-able shader for the sea - so it gets darker the further down you go; it would be affected by the ambient lighting
+		- Need new scalar vertex attrib for depthBrightness - between 1.0 (top) and 0.0 (at greater of 1000m and sea depth)
+			- depthBrightness is always 1.0 if "modulate sea depth brightness" (new boolean GameParam) is not set
+
 	- Problem with texture over edges of structure: when texture is not reduced by structure (i.e. when structure is
 	  larger than texture), then one sees parts of the springs
 		- It's a problem with rendering springs with the texture shader
