@@ -886,8 +886,8 @@ void Ship::UpdateWaterVelocities(
             // Normalized spring vector, oriented point -> other endpoint
             vec2f const springNormalizedVector = (mPoints.GetPosition(otherEndpointIndex) - mPoints.GetPosition(pointIndex)).normalise();
 
-            // Component of the point's own velocity along the spring
-            float const pointVelocityAlongSpring =
+            // Component of the point's own water velocity along the spring
+            float const pointWaterVelocityAlongSpring =
                 oldPointWaterVelocityBufferData[pointIndex]
                 .dot(springNormalizedVector);
 
@@ -918,12 +918,12 @@ void Ship::UpdateWaterVelocities(
             }
 
             // Resultant scalar velocity along spring; outbound only, as
-            // if this were inbound it wouldn't result in any water movement
-            // between these two springs. Morevoer, Bernoulli's velocity injected
+            // if this were inbound it wouldn't result in any movement of the point's 
+            // water between these two springs. Morevoer, Bernoulli's velocity injected
             // along this spring will be picked up later also by the other endpoint,
             // and at that time it would move water if it agrees with its velocity
             float const springOutboundScalarWaterVelocity = std::max(
-                pointVelocityAlongSpring + bernoulliVelocityAlongSpring * alphaCrazyness,
+                pointWaterVelocityAlongSpring + bernoulliVelocityAlongSpring * alphaCrazyness,
                 0.0f);
 
             // Store weight along spring, scaling for the greater distance traveled along
