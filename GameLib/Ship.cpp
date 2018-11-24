@@ -863,6 +863,8 @@ void Ship::UpdateWaterVelocities(
         // A higher crazyness gives more emphasys to bernoulli's velocity, as if pressures
         // and gravity were exaggerated
         //
+        // WV[t] = WV[t-1] + alpha * Bernoulli
+        //
         // WaterCrazyness=0   -> alpha=1
         // WaterCrazyness=0.5 -> alpha=0.5 + 0.5*Wh
         // WaterCrazyness=1   -> alpha=Wh

@@ -112,6 +112,12 @@ public:
         // Default-implemented
     }
 
+    virtual void OnUpdateToRenderRatioUpdated(
+        float /*immediateURRatio*/)
+    {
+        // Default-implemented
+    }
+
     //
     // Bombs
     //

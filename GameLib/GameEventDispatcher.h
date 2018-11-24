@@ -161,6 +161,17 @@ public:
         }
     }
 
+    virtual void OnUpdateToRenderRatioUpdated(
+        float immediateURRatio)
+    {
+        // No need to aggregate this one
+        for (auto sink : mSinks)
+        {
+            sink->OnUpdateToRenderRatioUpdated(
+                immediateURRatio);
+        }
+    }
+
     //
     // Bombs
     //

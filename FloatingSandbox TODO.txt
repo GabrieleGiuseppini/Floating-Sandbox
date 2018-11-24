@@ -96,17 +96,17 @@ Render:
 ====================================================
 
 - Marketing:
-	- "Attention to details / physics"
-		- @ Readme 
-		- @ GameJolt
 	- Video of Titanic under Mariannes' Trench
 		+ After water contrast
 
 - Roadmap:
 	= 1.7.0
+		- Emit RU @ GameController
+		- Buoyancy adj -> Water density adj
 		- Simulation Quality (*)
 		- Magic spring optimization (*)
 	- 1.8.0
+		- Batisphere with pumps and propulsion
 		- Settings Manager (*)
 		- Resource Packs (Moleskine)
 
@@ -440,23 +440,23 @@ Render:
 			- One material (base structural color) for initially on and another one for initially off
 			- New electrical property: ConductsElectricity, bool - used at connectivity visit
 		- ObjectId overhaul:
-			- TODO: local ID should be possible to be sequential - need another level of uniqueness
-			- ObjectId is globally unique, and has transparent ShipId (so World can route efficiently)
+			- ObjectId is unique only in the context in which it's used (e.g. bombs vs switches)
 			- ObjectId == <ShipId (new GameType alias, uint32_t w/ None), LocalObjectId (new GameType alias, uint32_t)>
+				- LocalObjectId is provided by caller
+				- ObjectIdGenerator only provides helper for globally unique - with no guarantees - or should go
 		- Ship json adds optional names for each ID
 			- as vector<tuple<local switch ID, std::string>>>
 				- local switch ID is ID from color code
 		- ShipBuilder detects all switches as electrical elements
-			- Generates an ObjectId using ObjectIdGenerator.Generate(ShipId)
-			- Each switch gets own ObjectId == <ShipId, ShipSwitchId>, as part of Electrical Elements data
-				- GlobalSwitchId is new GameType
-				- ShipSwitchId is just element index of switch in ElectricalElements
-			- ShipBuilder also communicates IDs and names (vector, by move) separately to ship at cctor time
+			- Generates an ObjectId using ship ID and index of switch
+			- Each switch gets own ObjectId, as part of Electrical Elements data communicated to ship
+				- LocalObjectId is just element index of switch in ElectricalElements
+				- Also name goes into Electrical Elements
 		- UI gets switches via AddSwitch (and DeleteSwitch) event, with all metadata (ID, name, state)
-			- From Ship::cctor, visiting cctor-provided vector of IDs and names (and state in electrical elements)
+			- From Ship::cctor, visiting switches among ElectricalElements
 			- SwitchBoard panel
 				- Registers as event listener at cctor
-				- Uses GameController (own shared ptr) :: SetSwitch(switchId, bool) to control switches
+				- Uses GameController (own shared ptr) :: SetSwitch(ObjectId switchId, bool state) to control switches
 		- MainFrame also registers for AddSwitch and shows SwitchBoard on first add
 			- Hides it again only at Reset()
 		- Ship must invoke DeleteSwitch at switch deletion (@ Ship::ElectricalElementDestroyHandler)
@@ -520,6 +520,11 @@ Render:
 						- TODO
 	- Water drag 
 		- The one already there assumes velocity always normal to surface, but we should consider surface normal instead
+
+	- Move tool
+		- With move tool enabled:
+			- Click on ship -> GameController returns point index (as ObjectId) or None -> if not None, tool is engaged (save cur screen pos)
+			- Moving tool tells GameController delta (offset) screen 
 
 	- DestroyAt:
 		- Test: Ship::SpringDestroyHandler() only destroys triangles that contain A-B

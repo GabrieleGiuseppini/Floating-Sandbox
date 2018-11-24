@@ -452,9 +452,7 @@ void GameController::AddShip(ShipDefinition shipDefinition)
 
 void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
 {
-    //
-    // Calculate fps and total (game) duration
-    //    
+    // Calculate fps 
 
     auto totalElapsedReal = std::chrono::duration<float>(nowReal - mRenderStatsOriginTimestampReal);
     auto lastElapsedReal = std::chrono::duration<float>(nowReal - mRenderStatsLastTimestampReal);
@@ -469,26 +467,38 @@ void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
         ? static_cast<float>(mLastFrameCount) / lastElapsedReal.count()
         : 0.0f;
 
-    // Publish frame rate
-    assert(!!mGameEventDispatcher);
-    mGameEventDispatcher->OnFrameRateUpdated(lastFps, totalFps);
+    // Calculate UR ratio
 
-    // Update status text
-    assert(!!mTextLayer);
     auto totalUpdateDurationNs = std::chrono::duration_cast<std::chrono::nanoseconds>(mTotalUpdateDuration);
     auto totalRenderDurationNs = std::chrono::duration_cast<std::chrono::nanoseconds>(mTotalRenderDuration);
     auto lastUpdateDurationNs = std::chrono::duration_cast<std::chrono::nanoseconds>(mTotalUpdateDuration - mLastTotalUpdateDuration);
     auto lastRenderDurationNs = std::chrono::duration_cast<std::chrono::nanoseconds>(mTotalRenderDuration - mLastTotalRenderDuration);
+
+    float totalURRatio = totalRenderDurationNs.count() != 0
+        ? static_cast<float>(totalUpdateDurationNs.count()) / static_cast<float>(totalRenderDurationNs.count())
+        : 0.0f;
+
+    float lastURRatio = lastRenderDurationNs.count() != 0
+        ? static_cast<float>(lastUpdateDurationNs.count()) / static_cast<float>(lastRenderDurationNs.count())
+        : 0.0f;
+
+
+    // Publish frame rate
+    assert(!!mGameEventDispatcher);
+    mGameEventDispatcher->OnFrameRateUpdated(lastFps, totalFps);
+
+    // Publish UR ratio
+    assert(!!mGameEventDispatcher);
+    mGameEventDispatcher->OnFrameRateUpdated(lastURRatio);
+
+    // Update status text
+    assert(!!mTextLayer);
     mTextLayer->SetStatusText(
         lastFps,
         totalFps,
         std::chrono::duration<float>(GameWallClock::GetInstance().Now() - mOriginTimestampGame),
         mIsPaused,
         mRenderContext->GetZoom(),
-        totalRenderDurationNs.count() != 0
-            ? static_cast<float>(totalUpdateDurationNs.count()) / static_cast<float>(totalRenderDurationNs.count())
-            : 0.0f,
-        lastRenderDurationNs.count() != 0
-            ? static_cast<float>(lastUpdateDurationNs.count()) / static_cast<float>(lastRenderDurationNs.count())
-            : 0.0f);
+        totalURRatio,
+        lastURRatio);
 }
