@@ -41,7 +41,7 @@ private:
     void OnVectorFieldRenderModeRadioBox(wxCommandEvent & event);
     void OnShowStressCheckBoxClick(wxCommandEvent & event);
     void OnWireframeModeCheckBoxClick(wxCommandEvent & event);
-    
+
     void OnPlayBreakSoundsCheckBoxClick(wxCommandEvent & event);
     void OnPlayStressSoundsCheckBoxClick(wxCommandEvent & event);
     void OnPlaySinkingMusicCheckBoxClick(wxCommandEvent & event);
@@ -54,8 +54,9 @@ private:
     // Controls
 
     // Mechanics
+    std::unique_ptr<SliderControl> mMechanicalQualitySlider;
     std::unique_ptr<SliderControl> mStiffnessSlider;
-    std::unique_ptr<SliderControl> mStrengthSlider;    
+    std::unique_ptr<SliderControl> mStrengthSlider;
 
     // Fluids
     std::unique_ptr<SliderControl> mWaterDensitySlider;
@@ -111,7 +112,7 @@ private:
     void PopulateFluidsPanel(wxPanel * panel);
     void PopulateSkyPanel(wxPanel * panel);
     void PopulateWorldPanel(wxPanel * panel);
-    void PopulateInteractionsPanel(wxPanel * panel);    
+    void PopulateInteractionsPanel(wxPanel * panel);
     void PopulateRenderingPanel(wxPanel * panel);
     void PopulateSoundPanel(wxPanel * panel);
 

@@ -48,7 +48,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     std::shared_ptr<IGameEventHandler> gameEventHandler,
     ShipDefinition const & shipDefinition,
     std::shared_ptr<MaterialDatabase> materials,
-    GameParameters const & /*gameParameters*/,
+    GameParameters const & gameParameters,
     VisitSequenceNumber currentVisitSequenceNumber)
 {
     int const structureWidth = shipDefinition.StructuralImage.Size.Width;
@@ -73,7 +73,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     // - Identify all points, and create PointInfo's for them
     // - Build a 2D matrix containing indices to the points above
     // - Identify rope endpoints, and create RopeSegment's for them
-    //    
+    //
 
     // Matrix of points - we allocate 2 extra dummy rows and cols to avoid checking for boundaries
     std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> pointIndexMatrix(new std::unique_ptr<std::optional<ElementIndex>[]>[structureWidth + 2]);
@@ -105,7 +105,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
                 {
                     // It's a rope endpoint
                     isRopeEndpoint = true;
-                    
+
                     // Store in RopeSegments
                     RopeSegment & ropeSegment = ropeSegments[rgbColour];
                     if (NoneElementIndex == ropeSegment.PointAIndex)
@@ -156,7 +156,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     // Process all identified rope endpoints and:
     // - Fill-in points between the endpoints, creating additional PointInfo's for them
     // - Fill-in springs between each pair of points in the rope, creating SpringInfo's for them
-    //    
+    //
 
     CreateRopeSegments(
         ropeSegments,
@@ -173,7 +173,8 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     Points points = CreatePoints(
         pointInfos,
         parentWorld,
-        gameEventHandler);
+        gameEventHandler,
+        gameParameters);
 
 
     //
@@ -220,12 +221,13 @@ std::unique_ptr<Ship> ShipBuilder::Create(
         springInfos,
         points,
         parentWorld,
-        gameEventHandler);
+        gameEventHandler,
+        gameParameters);
 
 
     //
     // Create Triangles for all TriangleInfo's except those whose vertices
-    // are all rope points, of which at least one is connected exclusively 
+    // are all rope points, of which at least one is connected exclusively
     // to rope points (these would be knots "sticking out" of the structure)
     //
 
@@ -255,7 +257,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
         electricalElements.GetElementCount(), " electrical elements.");
 
     return std::make_unique<Ship>(
-        shipId, 
+        shipId,
         parentWorld,
         gameEventHandler,
         std::move(points),
@@ -280,7 +282,7 @@ void ShipBuilder::CreateRopeSegments(
     //
     // - Fill-in points between each pair of endpoints, creating additional PointInfo's for them
     // - Fill-in springs between each pair of points in the rope, creating SpringInfo's for them
-    //    
+    //
 
     // Visit all RopeSegment's
     for (auto const & ropeSegmentEntry : ropeSegments)
@@ -384,12 +386,14 @@ void ShipBuilder::CreateRopeSegments(
 Points ShipBuilder::CreatePoints(
     std::vector<PointInfo> const & pointInfos,
     World & parentWorld,
-    std::shared_ptr<IGameEventHandler> gameEventHandler)
+    std::shared_ptr<IGameEventHandler> gameEventHandler,
+    GameParameters const & gameParameters)
 {
     Physics::Points points(
         static_cast<ElementIndex>(pointInfos.size()),
         parentWorld,
-        std::move(gameEventHandler));
+        std::move(gameEventHandler),
+        gameParameters);
 
     ElementIndex electricalElementCounter = 0;
     for (size_t p = 0; p < pointInfos.size(); ++p)
@@ -519,7 +523,7 @@ void ShipBuilder::CreateShipElementInfos(
 
                         //
                         // Create SpringInfo
-                        // 
+                        //
 
                         springInfos.emplace_back(
                             pointIndex,
@@ -543,7 +547,7 @@ void ShipBuilder::CreateShipElementInfos(
 
                             //
                             // Create TriangleInfo
-                            // 
+                            //
 
                             triangleInfos.emplace_back(
                                 pointIndex,
@@ -551,7 +555,7 @@ void ShipBuilder::CreateShipElementInfos(
                                 *pointIndexMatrix[adjx2][adjy2]);
                         }
 
-                        // Now, we also want to check whether the single "irregular" triangle from this point exists, 
+                        // Now, we also want to check whether the single "irregular" triangle from this point exists,
                         // i.e. the triangle between this point, the point at its E, and the point at its
                         // S, in case there is no point at SE.
                         // We do this so that we can forget the entire W side for inner points and yet ensure
@@ -565,7 +569,7 @@ void ShipBuilder::CreateShipElementInfos(
 
                             //
                             // Create TriangleInfo
-                            // 
+                            //
 
                             triangleInfos.emplace_back(
                                 pointIndex,
@@ -595,23 +599,25 @@ Physics::Springs ShipBuilder::CreateSprings(
     std::vector<SpringInfo> const & springInfos,
     Physics::Points & points,
     World & parentWorld,
-    std::shared_ptr<IGameEventHandler> gameEventHandler)
+    std::shared_ptr<IGameEventHandler> gameEventHandler,
+    GameParameters const & gameParameters)
 {
     Physics::Springs springs(
         static_cast<ElementIndex>(springInfos.size()),
         parentWorld,
-        std::move(gameEventHandler));
+        std::move(gameEventHandler),
+        gameParameters);
 
     for (ElementIndex s = 0; s < springInfos.size(); ++s)
     {
         int characteristics = 0;
 
-        // The spring is hull if at least one node is hull 
+        // The spring is hull if at least one node is hull
         // (we don't propagate water along a hull spring)
         if (points.IsHull(springInfos[s].PointAIndex) || points.IsHull(springInfos[s].PointBIndex))
             characteristics |= static_cast<int>(Springs::Characteristics::Hull);
 
-        // If both nodes are rope, then the spring is rope 
+        // If both nodes are rope, then the spring is rope
         // (non-rope <-> rope springs are "connections" and not to be treated as ropes)
         if (points.IsRope(springInfos[s].PointAIndex) && points.IsRope(springInfos[s].PointBIndex))
             characteristics |= static_cast<int>(Springs::Characteristics::Rope);
@@ -1064,7 +1070,7 @@ float ShipBuilder::CalculateVertexScore(VertexData const & vertexData)
     static constexpr float FindVertexScore_CacheDecayPower = 1.5f;
     static constexpr float FindVertexScore_LastElementScore = 0.75f;
     static constexpr float FindVertexScore_ValenceBoostScale = 2.0f;
-    static constexpr float FindVertexScore_ValenceBoostPower = 0.5f;        
+    static constexpr float FindVertexScore_ValenceBoostPower = 0.5f;
 
     if (vertexData.RemainingElementIndices.size() == 0)
     {
@@ -1097,7 +1103,7 @@ float ShipBuilder::CalculateVertexScore(VertexData const & vertexData)
         }
     }
 
-    // Bonus points for having a low number of elements still 
+    // Bonus points for having a low number of elements still
     // using this vertex, so we get rid of lone vertices quickly
     float valenceBoost = powf(
         static_cast<float>(vertexData.RemainingElementIndices.size()),

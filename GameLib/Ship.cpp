@@ -29,7 +29,6 @@ namespace Physics {
 // SS   SS  H     H     I     P
 //   SSS    H     H  IIIIIII  P
 
-
 Ship::Ship(
     int id,
     World & parentWorld,
@@ -41,7 +40,7 @@ Ship::Ship(
     std::shared_ptr<MaterialDatabase> materialDatabase,
     VisitSequenceNumber currentVisitSequenceNumber)
     : mId(id)
-    , mParentWorld(parentWorld)    
+    , mParentWorld(parentWorld)
     , mGameEventHandler(std::move(gameEventHandler))
     , mPoints(std::move(points))
     , mSprings(std::move(springs))
@@ -61,7 +60,7 @@ Ship::Ship(
     , mBombs(
         mParentWorld,
         mGameEventHandler,
-        *this,        
+        *this,
         mPoints,
         mSprings)
     , mCurrentForceFields()
@@ -72,7 +71,7 @@ Ship::Ship(
     mTriangles.RegisterDestroyHandler(std::bind(&Ship::TriangleDestroyHandler, this, std::placeholders::_1));
     mElectricalElements.RegisterDestroyHandler(std::bind(&Ship::ElectricalElementDestroyHandler, this, std::placeholders::_1));
 
-    // Do a first connected component detection pass 
+    // Do a first connected component detection pass
     DetectConnectedComponents(currentVisitSequenceNumber);
 }
 
@@ -81,7 +80,7 @@ Ship::~Ship()
 }
 
 void Ship::DestroyAt(
-    vec2f const & targetPos, 
+    vec2f const & targetPos,
     float radiusMultiplier,
     float currentSimulationTime,
     GameParameters const & gameParameters)
@@ -236,7 +235,7 @@ void Ship::DetonateAntiMatterBombs()
 }
 
 ElementIndex Ship::GetNearestPointIndexAt(
-    vec2f const & targetPos, 
+    vec2f const & targetPos,
     float radius) const
 {
     float const squareRadius = radius * radius;
@@ -273,7 +272,7 @@ void Ship::Update(
     //
 
     mSprings.UpdateGameParameters(
-        gameParameters, 
+        gameParameters,
         mPoints);
 
 
@@ -332,7 +331,7 @@ void Ship::Update(
 
     UpdateElectricalDynamics(
         currentWallClockTime,
-        currentVisitSequenceNumber, 
+        currentVisitSequenceNumber,
         gameParameters);
 
 
@@ -369,7 +368,7 @@ void Ship::Render(
 
     //
     // Upload elements
-    //    
+    //
 
     if (!mConnectedComponentSizes.empty())
     {
@@ -407,7 +406,7 @@ void Ship::Render(
                 renderContext,
                 mPoints);
 
-            renderContext.UploadShipElementsEnd(mId);            
+            renderContext.UploadShipElementsEnd(mId);
         }
 
 
@@ -418,7 +417,7 @@ void Ship::Render(
         renderContext.UploadShipElementStressedSpringsStart(mId);
 
         if (renderContext.GetShowStressedSprings())
-        {        
+        {
             mSprings.UploadStressedSpringElements(
                 mId,
                 renderContext,
@@ -428,7 +427,7 @@ void Ship::Render(
         renderContext.UploadShipElementStressedSpringsEnd(mId);
 
         mAreElementsDirty = false;
-    }        
+    }
 
 
     //
@@ -482,7 +481,9 @@ void Ship::UpdateMechanicalDynamics(
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
-    for (int iter = 0; iter < GameParameters::NumMechanicalDynamicsIterations<int>; ++iter)
+    int const numMechanicalDynamicsIterations = gameParameters.NumMechanicalDynamicsIterations<int>();
+
+    for (int iter = 0; iter < numMechanicalDynamicsIterations; ++iter)
     {
         // Apply force fields - if we have any
         for (auto const & forceField : mCurrentForceFields)
@@ -500,7 +501,7 @@ void Ship::UpdateMechanicalDynamics(
         UpdateSpringForces(gameParameters);
 
         // Integrate and reset forces to zero
-        IntegrateAndResetPointForces();
+        IntegrateAndResetPointForces(gameParameters);
 
         // Handle collisions with sea floor
         HandleCollisionsWithSeaFloor();
@@ -512,15 +513,13 @@ void Ship::UpdateMechanicalDynamics(
 
 void Ship::UpdatePointForces(GameParameters const & gameParameters)
 {
-    // Water mass = 1000Kg
-    static constexpr float WaterMass = 1000.0f;
-    float const DensityAdjustedWaterMass = WaterMass * gameParameters.WaterDensityAdjustment;
+    float const densityAdjustedWaterMass = GameParameters::WaterMass * gameParameters.WaterDensityAdjustment;
 
     // Underwater points feel this amount of water drag
     //
     // The higher the value, the more viscous the water looks when a body moves through it
     constexpr float WaterDragCoefficient = 0.020f; // ~= 1.0f - powf(0.6f, 0.02f)
-    
+
     for (auto pointIndex : mPoints)
     {
         // Get height of water at this point
@@ -528,14 +527,14 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
 
         //
         // 1. Add gravity and buoyancy
-        //        
+        //
 
         // Mass = own + contained water (clamped to 1)
         float const totalPointMass =
             mPoints.GetMass(pointIndex)
-			+ std::min(mPoints.GetWater(pointIndex), 1.0f) * DensityAdjustedWaterMass;
+			+ std::min(mPoints.GetWater(pointIndex), 1.0f) * densityAdjustedWaterMass;
 
-        mPoints.GetForce(pointIndex) += 
+        mPoints.GetForce(pointIndex) +=
             gameParameters.Gravity
             * totalPointMass;
 
@@ -550,7 +549,7 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
 
             mPoints.GetForce(pointIndex) -=
                 gameParameters.Gravity
-                * DensityAdjustedWaterMass
+                * densityAdjustedWaterMass
                 * mPoints.GetBuoyancy(pointIndex);
         }
 
@@ -558,7 +557,7 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
         //
         // 2. Apply water drag
         //
-        // FUTURE: should replace with directional water drag, which acts on frontier points only, 
+        // FUTURE: should replace with directional water drag, which acts on frontier points only,
         // proportional to angle between velocity and normal to surface at this point;
         // this would ensure that masses would also have a horizontal velocity component when sinking,
         // providing a "gliding" effect
@@ -590,9 +589,9 @@ void Ship::UpdateSpringForces(GameParameters const & /*gameParameters*/)
         //
 
         // Calculate spring force on point A
-        vec2f const fSpringA = 
-            springDir 
-            * (displacementLength - mSprings.GetRestLength(springIndex)) 
+        vec2f const fSpringA =
+            springDir
+            * (displacementLength - mSprings.GetRestLength(springIndex))
             * mSprings.GetStiffnessCoefficient(springIndex);
 
 
@@ -605,9 +604,9 @@ void Ship::UpdateSpringForces(GameParameters const & /*gameParameters*/)
 
         // Calculate damp force on point A
         vec2f const relVelocity = mPoints.GetVelocity(pointBIndex) - mPoints.GetVelocity(pointAIndex);
-        vec2f const fDampA = 
-            springDir 
-            * relVelocity.dot(springDir) 
+        vec2f const fDampA =
+            springDir
+            * relVelocity.dot(springDir)
             * mSprings.GetDampingCoefficient(springIndex);
 
 
@@ -620,14 +619,27 @@ void Ship::UpdateSpringForces(GameParameters const & /*gameParameters*/)
     }
 }
 
-void Ship::IntegrateAndResetPointForces()
+void Ship::IntegrateAndResetPointForces(GameParameters const & gameParameters)
 {
-    static constexpr float dt = GameParameters::MechanicalDynamicsSimulationStepTimeDuration<float>;
+    float const dt =
+        GameParameters::SimulationStepTimeDuration<float>
+        / gameParameters.NumMechanicalDynamicsIterations<float>();
 
     // Global damp - lowers velocity uniformly, damping oscillations originating between gravity and buoyancy
-    // Note: it's extremely sensitive, big difference between 0.9995 and 0.9998
-    // Note: technically it's not a drag force, it's just a dimensionless deceleration
-    float constexpr GlobalDampCoefficient = 0.9996f;
+    //
+    // Considering that:
+    //
+    //  v1 = d*v0
+    //  v2 = d*v1 =d^2*v0
+    //  ...
+    //  vN = d^N*v0
+    //
+    // ...the more the number of iterations, the more damped the initial velocity would be.
+    // We want damping to be independent from the number of iterations though, so we need to find the value
+    // d such that after N iterations the damping is the same as our reference value, which is 0.9996 with
+    // 12 (basis) iterations. For example, double the number of iterations requires square root (1/2) of
+    // this value.
+    float const globalDampCoefficient = pow(0.9996f, 1.0f / gameParameters.NumMechanicalDynamicsIterationsAdjustment);
 
     //
     // Take the four buffers that we need as restrict pointers, so that the compiler
@@ -651,7 +663,7 @@ void Ship::IntegrateAndResetPointForces()
 
         float const deltaPos = velocityBuffer[i] * dt + forceBuffer[i] * integrationFactorBuffer[i];
         positionBuffer[i] += deltaPos;
-        velocityBuffer[i] = deltaPos * GlobalDampCoefficient / dt;
+        velocityBuffer[i] = deltaPos * globalDampCoefficient / dt;
 
         // Zero out force now that we've integrated it
         forceBuffer[i] = 0.0f;
@@ -672,7 +684,7 @@ void Ship::HandleCollisionsWithSeaFloor()
                 floorheight - mParentWorld.GetOceanFloorHeightAt(mPoints.GetPosition(pointIndex).x + Dx),
                 Dx).normalise();
 
-            // Calculate displacement to move point back to sea floor, along the normal to the floor 
+            // Calculate displacement to move point back to sea floor, along the normal to the floor
             // (which is oriented upwards)
             vec2f bounceDisplacement = seaFloorNormal * (floorheight - mPoints.GetPosition(pointIndex).y);
 
@@ -681,7 +693,7 @@ void Ship::HandleCollisionsWithSeaFloor()
 
             // Simulate a perfectly elastic impact, bouncing along specular to sea floor normal:
             // R = 2*n*dot_product(n,-V) + V
-            mPoints.GetVelocity(pointIndex) += 
+            mPoints.GetVelocity(pointIndex) +=
                 seaFloorNormal
                 * -2.0f
                 * seaFloorNormal.dot(mPoints.GetVelocity(pointIndex));
@@ -695,21 +707,32 @@ void Ship::HandleCollisionsWithSeaFloor()
 
 void Ship::UpdateWaterDynamics(GameParameters const & gameParameters)
 {
+    //
+    // Update intake of water
+    //
+
     float waterTakenInStep = 0.f;
-    float waterSplashedInStep = 0.f;
+    UpdateWaterInflow(gameParameters, waterTakenInStep);
 
-    for (int i = 0; i < GameParameters::NumWaterDynamicsIterations<int>; ++i)
-    {
-        UpdateWaterInflow(gameParameters, waterTakenInStep);
-
-        UpdateWaterVelocities(gameParameters, waterSplashedInStep);
-    }
-
-    // Notify waters
+    // Notify
     mGameEventHandler->OnWaterTaken(waterTakenInStep);
+
+
+    //
+    // Diffuse water
+    //
+
+    float waterSplashedInStep = 0.f;
+    UpdateWaterVelocities(gameParameters, waterSplashedInStep);
+
+    // Notify
     mGameEventHandler->OnWaterSplashed(waterSplashedInStep);
 
+
+    //
     // Update total water taken and check whether we've started sinking
+    //
+
     mTotalWater += waterTakenInStep;
     if (!mIsSinking
         && mTotalWater > static_cast<float>(mPoints.GetElementCount()) / 1.5f)
@@ -740,9 +763,9 @@ void Ship::UpdateWaterInflow(
                 //  v**2/2 + p/density = c (assuming y of incoming water does not change along the intake)
                 //      With: p = pressure of water at point = d*wh*g (d = water density, wh = water height in point)
                 //
-                // Considering that at equilibrium we have v=0 and p=external_pressure, 
+                // Considering that at equilibrium we have v=0 and p=external_pressure,
                 // then c=external_pressure/density;
-                // external_pressure is height_of_water_at_y*g*density, then c=height_of_water_at_y*g; 
+                // external_pressure is height_of_water_at_y*g*density, then c=height_of_water_at_y*g;
                 // hence, the velocity of water incoming at point p, when the "water height" in the point is already
                 // wh and the external water pressure is d*height_of_water_at_y*g, is:
                 //  v = +/- sqrt(2*g*|height_of_water_at_y-wh|)
@@ -774,7 +797,7 @@ void Ship::UpdateWaterInflow(
 
                 float newWater =
                     incomingWaterVelocity
-                    * GameParameters::WaterDynamicsSimulationStepTimeDuration<float>
+                    * GameParameters::SimulationStepTimeDuration<float>
                     * gameParameters.WaterIntakeAdjustment;
 
                 if (newWater < 0.0f)
@@ -804,7 +827,7 @@ void Ship::UpdateWaterVelocities(
     float & waterSplashed)
 {
     //
-    // For each point, move each spring's outgoing water momentum to 
+    // For each point, move each spring's outgoing water momentum to
     // its destination point
     //
     // Implementation of https://gabrielegiuseppini.wordpress.com/2018/09/08/momentum-based-simulation-of-water-flooding-2d-spaces/
@@ -821,7 +844,7 @@ void Ship::UpdateWaterVelocities(
     vec2f * restrict newPointWaterMomentumBufferData = mPoints.GetWaterMomentumBufferAsVec2f();
 
     // Weights of outbound water flows along each spring, including impermeable ones;
-    // set to zero for springs whose resultant scalar water velocities are 
+    // set to zero for springs whose resultant scalar water velocities are
     // directed towards the point being visited
     std::array<float, GameParameters::MaxSpringsPerPoint> springOutboundWaterFlowWeights;
 
@@ -840,7 +863,7 @@ void Ship::UpdateWaterVelocities(
     float * restrict pointFreenessFactorBufferData = pointFreenessFactorBuffer->data();
     for (auto pointIndex : mPoints)
     {
-        pointFreenessFactorBufferData[pointIndex] = 
+        pointFreenessFactorBufferData[pointIndex] =
             exp(-oldPointWaterBufferData[pointIndex] * 10.0f);
     }
 
@@ -848,7 +871,7 @@ void Ship::UpdateWaterVelocities(
     //
     // Visit all points and move water and its momenta
     //
-    
+
     for (auto pointIndex : mPoints)
     {
         //
@@ -867,7 +890,7 @@ void Ship::UpdateWaterVelocities(
 
         // Kinetic energy lost at this point
         float pointKineticEnergyLoss = 0.0f;
-        
+
         // Count of non-hull free and drowned neighbor points
         float pointSplashNeighbors = 0.0f;
         float pointSplashFreeNeighbors = 0.0f;
@@ -889,7 +912,7 @@ void Ship::UpdateWaterVelocities(
                 .dot(springNormalizedVector);
 
             //
-            // Calulate Bernoulli's velocity gained along this spring, from this point to 
+            // Calulate Bernoulli's velocity gained along this spring, from this point to
             // the other endpoint
             //
 
@@ -915,7 +938,7 @@ void Ship::UpdateWaterVelocities(
             }
 
             // Resultant scalar velocity along spring; outbound only, as
-            // if this were inbound it wouldn't result in any movement of the point's 
+            // if this were inbound it wouldn't result in any movement of the point's
             // water between these two springs. Morevoer, Bernoulli's velocity injected
             // along this spring will be picked up later also by the other endpoint,
             // and at that time it would move water if it agrees with its velocity
@@ -925,7 +948,7 @@ void Ship::UpdateWaterVelocities(
 
             // Store weight along spring, scaling for the greater distance traveled along
             // diagonalsprings
-            springOutboundWaterFlowWeights[s] = 
+            springOutboundWaterFlowWeights[s] =
                 springOutboundScalarWaterVelocity
                 / mSprings.GetRestLength(springIndex);
 
@@ -962,7 +985,7 @@ void Ship::UpdateWaterVelocities(
 
         float waterQuantityNormalizationFactor = 0.0f;
         if (totalOutboundWaterFlowWeight != 0.0f)
-        { 
+        {
             waterQuantityNormalizationFactor =
                 oldPointWaterBufferData[pointIndex]
                 * gameParameters.WaterQuickness
@@ -971,7 +994,7 @@ void Ship::UpdateWaterVelocities(
 
 
         //
-        // 3) Move water along all springs according to their flows, 
+        // 3) Move water along all springs according to their flows,
         //    and update destination's momenta accordingly
         //
 
@@ -1076,7 +1099,7 @@ void Ship::UpdateWaterVelocities(
         //
         // 4) Update water splash
         //
-        
+
         if (pointSplashNeighbors != 0.0f)
         {
             // Water splashed is proportional to kinetic energy loss that took
@@ -1137,7 +1160,7 @@ void Ship::UpdateElectricalConnectivity(VisitSequenceNumber currentVisitSequence
     std::queue<ElementIndex> electricalElementsToVisit;
 
     for (auto generatorIndex : mElectricalElements.GetGenerators())
-    {   
+    {
         // Do not visit deleted generators
         if (!mElectricalElements.IsDeleted(generatorIndex))
         {
@@ -1211,7 +1234,7 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
         float const lampLight = mElectricalElements.GetAvailableCurrent(lampIndex);
         auto const lampPointIndex = mElectricalElements.GetPointIndex(lampIndex);
         vec2f const & lampPosition = mPoints.GetPosition(lampPointIndex);
-        ConnectedComponentId const lampConnectedComponentId = mPoints.GetConnectedComponentId(lampPointIndex);        
+        ConnectedComponentId const lampConnectedComponentId = mPoints.GetConnectedComponentId(lampPointIndex);
 
         // Visit all points (including deleted ones) in the same connected component
         for (auto pointIndex : mPoints)
@@ -1333,7 +1356,7 @@ void Ship::DetectConnectedComponents(VisitSequenceNumber currentVisitSequenceNum
 
 void Ship::DestroyConnectedTriangles(ElementIndex pointElementIndex)
 {
-    // 
+    //
     // Destroy all triangles connected to the point
     //
 
@@ -1368,7 +1391,7 @@ void Ship::DestroyConnectedTriangles(
                 || mTriangles.GetPointBIndex(connectedTriangles[t]) == pointBElementIndex
                 || mTriangles.GetPointCIndex(connectedTriangles[t]) == pointBElementIndex)
             {
-                // Erase it                
+                // Erase it
                 mTriangles.Destroy(connectedTriangles[t]);
             }
 
@@ -1404,7 +1427,7 @@ void Ship::PointDestroyHandler(
     }
 
     assert(mPoints.GetConnectedSprings(pointElementIndex).empty());
-    
+
 
     //
     // Destroy all triangles connected to this point
@@ -1513,7 +1536,7 @@ void Ship::SpringDestroyHandler(
             mElectricalElements.RemoveConnectedElectricalElement(
                 electricalElementAIndex,
                 electricalElementBIndex);
-            
+
             mElectricalElements.RemoveConnectedElectricalElement(
                 electricalElementBIndex,
                 electricalElementAIndex);
@@ -1669,8 +1692,8 @@ void Ship::DoAntiMatterBombPreimplosion(
     float sequenceProgress,
     GameParameters const & gameParameters)
 {
-    float const strength = 
-        100000.0f 
+    float const strength =
+        100000.0f
         * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
 
     // Store the force field
@@ -1692,7 +1715,7 @@ void Ship::DoAntiMatterBombImplosion(
         * gameParameters.AntiMatterBombImplosionStrength
         * 10000.0f
         * (gameParameters.IsUltraViolentMode ? 50.0f : 1.0f);
-        
+
     // Store the force field
     mCurrentForceFields.emplace_back(
         new ImplosionForceField(
@@ -1711,7 +1734,7 @@ void Ship::DoAntiMatterBombExplosion(
 
     if (0.0f == sequenceProgress)
     {
-        float const strength = 
+        float const strength =
             30000.0f
             * (gameParameters.IsUltraViolentMode ? 50.0f : 1.0f);
 

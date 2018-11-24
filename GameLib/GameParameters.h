@@ -26,39 +26,17 @@ struct GameParameters
 
 
     //
-    // The number of iterations we run in the various dynamics updates for
-    // each simulation step
-    //
-    // The number of mechanical iterations dictates how stiff bodies are:
-    // - Less iterations => softer (jelly) body
-    // - More iterations => hard body (never breaks though) 
+    // Physical Constants
     //
 
-    template <typename T>
-    static constexpr T NumMechanicalDynamicsIterations = 12;
-
-    template <typename T>
-    static constexpr T NumWaterDynamicsIterations = 1;
-
-
-    //
-    // The dt of each iteration in the dynamics updates
-    //
-
-    template <typename T>
-    static constexpr T MechanicalDynamicsSimulationStepTimeDuration = SimulationStepTimeDuration<T> / NumMechanicalDynamicsIterations<T>;
-
-    template <typename T>
-    static constexpr T WaterDynamicsSimulationStepTimeDuration = SimulationStepTimeDuration<T> / NumWaterDynamicsIterations<T>;
-
-
-    //
     // Gravity
-    //
-
     static constexpr vec2f Gravity = vec2f(0.0f, -9.80f);
     static constexpr vec2f GravityNormalized = vec2f(0.0f, -1.0f);
     static constexpr float GravityMagnitude = 9.80f;
+
+    // Water mass
+    static constexpr float WaterMass = 1000.0f;
+
 
 
     //
@@ -66,6 +44,18 @@ struct GameParameters
     //
 
     // Dynamics
+
+    float NumMechanicalDynamicsIterationsAdjustment;
+    static constexpr float MinNumMechanicalDynamicsIterationsAdjustment = 0.5f;
+    static constexpr float MaxNumMechanicalDynamicsIterationsAdjustment = 20.0f;
+
+    template <typename T>
+    inline T NumMechanicalDynamicsIterations() const
+    {
+        return static_cast<T>(
+            static_cast<float>(BasisNumMechanicalDynamicsIterations)
+            * NumMechanicalDynamicsIterationsAdjustment);
+    }
 
     float StiffnessAdjustment;
     static constexpr float MinStiffnessAdjustment = 0.001f;
@@ -176,10 +166,27 @@ struct GameParameters
     static constexpr float MaxZoom = 2000.0f;
 
     static constexpr size_t MaxBombs = 64u;
-    static constexpr size_t MaxPinnedPoints = 64u;    
+    static constexpr size_t MaxPinnedPoints = 64u;
 
     // 8 neighbours and 1 rope spring, when this is a rope endpoint
     static constexpr size_t MaxSpringsPerPoint = 8u + 1u;
 
-    static constexpr size_t MaxTrianglesPerPoint = 8u;    
+    static constexpr size_t MaxTrianglesPerPoint = 8u;
+
+
+private:
+
+    //
+    // The basis number of iterations we run in the mechanical dynamics update for
+    // each simulation step.
+    //
+    // The actual number of iterations is the product of this value with
+    // MechanicalIterationsAdjust.
+    //
+    // The number of mechanical iterations dictates how stiff bodies are:
+    // - Less iterations => softer (jelly) body
+    // - More iterations => hard body (never breaks though)
+    //
+
+    static constexpr size_t BasisNumMechanicalDynamicsIterations = 12;
 };

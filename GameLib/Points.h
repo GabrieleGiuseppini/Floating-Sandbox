@@ -31,8 +31,8 @@ class Points : public ElementContainer
 public:
 
     using DestroyHandler = std::function<void(
-        ElementIndex, 
-        float /*currentSimulationTime*/, 
+        ElementIndex,
+        float /*currentSimulationTime*/,
         GameParameters const &)>;
 
     enum class EphemeralType
@@ -104,8 +104,8 @@ private:
      * The elements connected to a point.
      */
     struct Network
-    {        
-        FixedSizeVector<ElementIndex, GameParameters::MaxSpringsPerPoint> ConnectedSprings; 
+    {
+        FixedSizeVector<ElementIndex, GameParameters::MaxSpringsPerPoint> ConnectedSprings;
 
         FixedSizeVector<ElementIndex, GameParameters::MaxTrianglesPerPoint> ConnectedTriangles;
 
@@ -120,7 +120,8 @@ public:
     Points(
         ElementCount shipPointCount,
         World & parentWorld,
-        std::shared_ptr<IGameEventHandler> gameEventHandler)
+        std::shared_ptr<IGameEventHandler> gameEventHandler,
+        GameParameters const & gameParameters)
         : ElementContainer(shipPointCount + GameParameters::MaxEphemeralParticles)
         //////////////////////////////////
         // Buffers
@@ -169,6 +170,7 @@ public:
         , mParentWorld(parentWorld)
         , mGameEventHandler(std::move(gameEventHandler))
         , mDestroyHandler()
+        , mCurrentNumMechanicalDynamicsIterations(gameParameters.NumMechanicalDynamicsIterations<float>())
         , mAreImmutableRenderAttributesUploaded(false)
         , mFloatBufferAllocator(mBufferElementCount)
         , mVec2fBufferAllocator(mBufferElementCount)
@@ -202,7 +204,7 @@ public:
      * other elements connected to the soon-to-be-deleted point might already have been
      * deleted.
      *
-     * The handler is not re-entrant: destroying other points from it is not supported 
+     * The handler is not re-entrant: destroying other points from it is not supported
      * and leads to undefined behavior.
      *
      * Setting more than one handler is not supported and leads to undefined behavior.
@@ -244,10 +246,12 @@ public:
         float currentSimulationTime,
         GameParameters const & gameParameters);
 
+    void UpdateGameParameters(GameParameters const & gameParameters);
+
     void UpdateEphemeralParticles(
         float currentSimulationTime,
-        GameParameters const & gameParameters);    
-    
+        GameParameters const & gameParameters);
+
 
     //
     // Render
@@ -308,7 +312,7 @@ public:
         return mPositionBuffer[pointElementIndex];
     }
 
-    vec2f & GetPosition(ElementIndex pointElementIndex) 
+    vec2f & GetPosition(ElementIndex pointElementIndex)
     {
         return mPositionBuffer[pointElementIndex];
     }
@@ -381,7 +385,9 @@ public:
     void Thaw(ElementIndex pointElementIndex)
     {
         // Re-populate its integration factor, thawing point
-        mIntegrationFactorBuffer[pointElementIndex] = CalculateIntegrationFactor(mMassBuffer[pointElementIndex]);
+        mIntegrationFactorBuffer[pointElementIndex] = CalculateIntegrationFactor(
+            mMassBuffer[pointElementIndex],
+            mCurrentNumMechanicalDynamicsIterations);
     }
 
     //
@@ -457,7 +463,7 @@ public:
         float * const restrict waterBuffer = mWaterBuffer.data();
         vec2f * restrict waterVelocityBuffer = mWaterVelocityBuffer.data();
         vec2f * const restrict waterMomentumBuffer = mWaterMomentumBuffer.data();
-        
+
         for (ElementIndex p = 0; p < mBufferElementCount; ++p)
         {
             if (waterBuffer[p] != 0.0f)
@@ -569,10 +575,10 @@ public:
         return mIsPinnedBuffer[pointElementIndex];
     }
 
-    void Pin(ElementIndex pointElementIndex) 
+    void Pin(ElementIndex pointElementIndex)
     {
         assert(false == mIsPinnedBuffer[pointElementIndex]);
-    
+
         mIsPinnedBuffer[pointElementIndex] = true;
 
         Freeze(pointElementIndex);
@@ -581,7 +587,7 @@ public:
     void Unpin(ElementIndex pointElementIndex)
     {
         assert(true == mIsPinnedBuffer[pointElementIndex]);
-    
+
         mIsPinnedBuffer[pointElementIndex] = false;
 
         Thaw(pointElementIndex);
@@ -599,7 +605,7 @@ public:
     void SetConnectedComponentId(
         ElementIndex pointElementIndex,
         ConnectedComponentId connectedComponentId)
-    { 
+    {
         mConnectedComponentIdBuffer[pointElementIndex] = connectedComponentId;
     }
 
@@ -611,7 +617,7 @@ public:
     void SetCurrentConnectedComponentDetectionVisitSequenceNumber(
         ElementIndex pointElementIndex,
         VisitSequenceNumber connectedComponentDetectionVisitSequenceNumber)
-    { 
+    {
         mCurrentConnectedComponentDetectionVisitSequenceNumberBuffer[pointElementIndex] =
             connectedComponentDetectionVisitSequenceNumber;
     }
@@ -632,7 +638,9 @@ public:
 
 private:
 
-    static vec2f CalculateIntegrationFactor(float mass);
+    static vec2f CalculateIntegrationFactor(
+        float mass,
+        float numMechanicalDynamicsIterations);
 
     ElementIndex FindFreeEphemeralParticle(float currentSimulationTime);
 
@@ -665,7 +673,7 @@ private:
     //
 
     Buffer<float> mBuoyancyBuffer;
-    
+
     // Height of a 1m2 column of water which provides a pressure equivalent to the pressure at
     // this point. Quantity of water is max(water, 1.0)
     Buffer<float> mWaterBuffer;
@@ -707,7 +715,7 @@ private:
     // Connected component
     //
 
-    Buffer<ConnectedComponentId> mConnectedComponentIdBuffer; 
+    Buffer<ConnectedComponentId> mConnectedComponentIdBuffer;
     Buffer<VisitSequenceNumber> mCurrentConnectedComponentDetectionVisitSequenceNumberBuffer;
 
     //
@@ -742,6 +750,11 @@ private:
 
     // The handler registered for point deletions
     DestroyHandler mDestroyHandler;
+
+    // The game parameter values that we are current with; changes
+    // in the values of these parameters will trigger a re-calculation
+    // of pre-calculated coefficients
+    float mCurrentNumMechanicalDynamicsIterations;
 
     // Flag remembering whether or not we've already uploaded
     // the immutable render attributes

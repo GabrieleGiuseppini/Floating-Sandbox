@@ -124,9 +124,9 @@ public:
 
     void UpdatePointForces(GameParameters const & gameParameters);
 
-    void UpdateSpringForces(GameParameters const & gameParameters);    
+    void UpdateSpringForces(GameParameters const & gameParameters);
 
-    void IntegrateAndResetPointForces();
+    void IntegrateAndResetPointForces(GameParameters const & gameParameters);
 
     void HandleCollisionsWithSeaFloor();
 

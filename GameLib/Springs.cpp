@@ -28,8 +28,18 @@ void Springs::Add(
 
     mRestLengthBuffer.emplace_back((points.GetPosition(pointAIndex) - points.GetPosition(pointBIndex)).length());
     mCoefficientsBuffer.emplace_back(
-        CalculateStiffnessCoefficient(pointAIndex, pointBIndex, stiffness, 1.0f, points),
-        CalculateDampingCoefficient(pointAIndex, pointBIndex, points));
+        CalculateStiffnessCoefficient(
+            pointAIndex,
+            pointBIndex,
+            stiffness,
+            mCurrentStiffnessAdjustment,
+            mCurrentNumMechanicalDynamicsIterations,
+            points),
+        CalculateDampingCoefficient(
+            pointAIndex,
+            pointBIndex,
+            mCurrentNumMechanicalDynamicsIterations,
+            points));
     mCharacteristicsBuffer.emplace_back(characteristics);
 
     // Base material is arbitrarily the weakest of the two;
@@ -61,7 +71,7 @@ void Springs::Destroy(
     if (!!mDestroyHandler)
     {
         mDestroyHandler(
-            springElementIndex, 
+            springElementIndex,
             !!(destroyOptions & Springs::DestroyOptions::DestroyAllTriangles),
             currentSimulationTime,
             gameParameters);
@@ -77,8 +87,8 @@ void Springs::Destroy(
     }
 
 
-    // Zero out our coefficients, so that we can still calculate Hooke's 
-    // and damping forces for this spring without running the risk of 
+    // Zero out our coefficients, so that we can still calculate Hooke's
+    // and damping forces for this spring without running the risk of
     // affecting non-deleted points
     mCoefficientsBuffer[springElementIndex].StiffnessCoefficient = 0.0f;
     mCoefficientsBuffer[springElementIndex].DampingCoefficient = 0.0f;
@@ -91,8 +101,10 @@ void Springs::UpdateGameParameters(
     GameParameters const & gameParameters,
     Points const & points)
 {
-    if (gameParameters.StiffnessAdjustment != mCurrentStiffnessAdjustment)
-    {       
+    float const numMechanicalDynamicsIterations = gameParameters.NumMechanicalDynamicsIterations<float>();
+    if (numMechanicalDynamicsIterations != mCurrentNumMechanicalDynamicsIterations
+        || gameParameters.StiffnessAdjustment != mCurrentStiffnessAdjustment)
+    {
         // Recalc coefficients
         for (ElementIndex i : *this)
         {
@@ -103,11 +115,19 @@ void Springs::UpdateGameParameters(
                     GetPointBIndex(i),
                     GetStiffness(i),
                     gameParameters.StiffnessAdjustment,
+                    numMechanicalDynamicsIterations,
+                    points);
+
+                mCoefficientsBuffer[i].DampingCoefficient = CalculateDampingCoefficient(
+                    GetPointAIndex(i),
+                    GetPointBIndex(i),
+                    numMechanicalDynamicsIterations,
                     points);
             }
         }
 
-        // Remember the new stiffness
+        // Remember the new values
+        mCurrentNumMechanicalDynamicsIterations = numMechanicalDynamicsIterations;
         mCurrentStiffnessAdjustment = gameParameters.StiffnessAdjustment;
     }
 }
@@ -155,7 +175,7 @@ void Springs::UploadStressedSpringElements(
             if (mIsStressedBuffer[i])
             {
                 assert(points.GetConnectedComponentId(GetPointAIndex(i)) == points.GetConnectedComponentId(GetPointBIndex(i)));
-                
+
                 renderContext.UploadShipElementStressedSpring(
                     shipId,
                     GetPointAIndex(i),
@@ -168,11 +188,11 @@ void Springs::UploadStressedSpringElements(
 
 bool Springs::UpdateStrains(
     float currentSimulationTime,
-    GameParameters const & gameParameters,    
+    GameParameters const & gameParameters,
     Points & points)
 {
     bool isAtLeastOneBroken = false;
-    
+
     for (ElementIndex i : *this)
     {
         // Avoid breaking deleted springs
@@ -224,11 +244,12 @@ bool Springs::UpdateStrains(
     return isAtLeastOneBroken;
 }
 
-float Springs::CalculateStiffnessCoefficient(    
+float Springs::CalculateStiffnessCoefficient(
     ElementIndex pointAIndex,
     ElementIndex pointBIndex,
     float springStiffness,
     float stiffnessAdjustment,
+    float numMechanicalDynamicsIterations,
     Points const & points)
 {
     //
@@ -239,24 +260,25 @@ float Springs::CalculateStiffnessCoefficient(
     // displacement by a quantity equal to C * adjustment, in the time interval of the dynamics simulation.
     //
     // The adjustment is both the material-specific adjustment and the global game adjustment.
-    //       
+    //
 
     static constexpr float C = 0.4f;
 
-    float const massFactor = 
-        (points.GetMass(pointAIndex) * points.GetMass(pointBIndex)) 
+    float const massFactor =
+        (points.GetMass(pointAIndex) * points.GetMass(pointBIndex))
         / (points.GetMass(pointAIndex) + points.GetMass(pointBIndex));
 
-    static constexpr float dtSquared = 
-        GameParameters::MechanicalDynamicsSimulationStepTimeDuration<float> 
-        * GameParameters::MechanicalDynamicsSimulationStepTimeDuration<float>;    
+    float const dtSquared =
+        (GameParameters::SimulationStepTimeDuration<float> / numMechanicalDynamicsIterations)
+        * (GameParameters::SimulationStepTimeDuration<float> / numMechanicalDynamicsIterations);
 
     return C * springStiffness * stiffnessAdjustment * massFactor / dtSquared;
 }
 
-float Springs::CalculateDampingCoefficient(    
+float Springs::CalculateDampingCoefficient(
     ElementIndex pointAIndex,
     ElementIndex pointBIndex,
+    float numMechanicalDynamicsIterations,
     Points const & points)
 {
     // The empirically-determined constant for the spring damping
@@ -266,11 +288,11 @@ float Springs::CalculateDampingCoefficient(
     // - 0.8 makes everything explode
     static constexpr float C = 0.03f;
 
-    float const massFactor = 
-        (points.GetMass(pointAIndex) * points.GetMass(pointBIndex)) 
+    float const massFactor =
+        (points.GetMass(pointAIndex) * points.GetMass(pointBIndex))
         / (points.GetMass(pointAIndex) + points.GetMass(pointBIndex));
 
-    static constexpr float dt = GameParameters::MechanicalDynamicsSimulationStepTimeDuration<float>;
+    float const dt = GameParameters::SimulationStepTimeDuration<float> / numMechanicalDynamicsIterations;
 
     return C * massFactor / dt;
 }

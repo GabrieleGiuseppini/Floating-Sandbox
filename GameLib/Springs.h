@@ -43,9 +43,9 @@ public:
     };
 
     using DestroyHandler = std::function<void(
-        ElementIndex, 
-        bool /*destroyTriangles*/, 
-        float /*currentSimulationTime*/, 
+        ElementIndex,
+        bool /*destroyTriangles*/,
+        float /*currentSimulationTime*/,
         GameParameters const &)>;
 
 private:
@@ -57,7 +57,7 @@ private:
     {
         ElementIndex PointAIndex;
         ElementIndex PointBIndex;
-        
+
         Endpoints(
             ElementIndex pointAIndex,
             ElementIndex pointBIndex)
@@ -73,7 +73,7 @@ private:
     {
         float StiffnessCoefficient;
         float DampingCoefficient;
-        
+
         Coefficients(
             float stiffnessCoefficient,
             float dampingCoefficient)
@@ -87,7 +87,8 @@ public:
     Springs(
         ElementCount elementCount,
         World & parentWorld,
-        std::shared_ptr<IGameEventHandler> gameEventHandler)
+        std::shared_ptr<IGameEventHandler> gameEventHandler,
+        GameParameters const & gameParameters)
         : ElementContainer(elementCount)
         //////////////////////////////////
         // Buffers
@@ -114,7 +115,8 @@ public:
         , mParentWorld(parentWorld)
         , mGameEventHandler(std::move(gameEventHandler))
         , mDestroyHandler()
-        , mCurrentStiffnessAdjustment(std::numeric_limits<float>::lowest())
+        , mCurrentNumMechanicalDynamicsIterations(gameParameters.NumMechanicalDynamicsIterations<float>())
+        , mCurrentStiffnessAdjustment(gameParameters.StiffnessAdjustment)
         , mFloatBufferAllocator(mBufferElementCount)
         , mVec2fBufferAllocator(mBufferElementCount)
     {
@@ -129,7 +131,7 @@ public:
      * other elements connected to the soon-to-be-deleted spring might already have been
      * deleted.
      *
-     * The handler is not re-entrant: destroying other springs from it is not supported 
+     * The handler is not re-entrant: destroying other springs from it is not supported
      * and leads to undefined behavior.
      *
      * Setting more than one handler is not supported and leads to undefined behavior.
@@ -168,6 +170,7 @@ public:
             mEndpointsBuffer[springElementIndex].PointBIndex,
             mStiffnessBuffer[springElementIndex],
             mCurrentStiffnessAdjustment,
+            mCurrentNumMechanicalDynamicsIterations,
             points);
     }
 
@@ -178,7 +181,7 @@ public:
      */
     bool UpdateStrains(
         float currentSimulationTime,
-        GameParameters const & gameParameters,        
+        GameParameters const & gameParameters,
         Points & points);
 
     //
@@ -271,7 +274,7 @@ public:
         ElementIndex springElementIndex,
         Points const & points) const
     {
-        assert(points.GetConnectedComponentId(GetPointAIndex(springElementIndex)) 
+        assert(points.GetConnectedComponentId(GetPointAIndex(springElementIndex))
             == points.GetConnectedComponentId(GetPointBIndex(springElementIndex)));
 
         return points.GetConnectedComponentId(GetPointAIndex(springElementIndex));
@@ -322,7 +325,7 @@ public:
     {
         return mWaterPermeabilityBuffer[springElementIndex];
     }
-    
+
     //
     // Bombs
     //
@@ -344,12 +347,12 @@ public:
         // Augment mass of endpoints due to bomb
 
         points.SetMassToMaterialOffset(
-            mEndpointsBuffer[springElementIndex].PointAIndex, 
+            mEndpointsBuffer[springElementIndex].PointAIndex,
             gameParameters.BombMass,
             *this);
 
         points.SetMassToMaterialOffset(
-            mEndpointsBuffer[springElementIndex].PointBIndex, 
+            mEndpointsBuffer[springElementIndex].PointBIndex,
             gameParameters.BombMass,
             *this);
     }
@@ -362,7 +365,7 @@ public:
 
         mIsBombAttachedBuffer[springElementIndex] = false;
 
-        // Reset mass of endpoints 
+        // Reset mass of endpoints
         points.SetMassToMaterialOffset(mEndpointsBuffer[springElementIndex].PointAIndex, 0.0f, *this);
         points.SetMassToMaterialOffset(mEndpointsBuffer[springElementIndex].PointBIndex, 0.0f, *this);
     }
@@ -383,16 +386,18 @@ public:
 
 private:
 
-    static float CalculateStiffnessCoefficient(        
+    static float CalculateStiffnessCoefficient(
         ElementIndex pointAIndex,
         ElementIndex pointBIndex,
         float springStiffness,
         float stiffnessAdjustment,
+        float numMechanicalDynamicsIterations,
         Points const & points);
 
-    static float CalculateDampingCoefficient(        
+    static float CalculateDampingCoefficient(
         ElementIndex pointAIndex,
         ElementIndex pointBIndex,
+        float numMechanicalDynamicsIterations,
         Points const & points);
 
 private:
@@ -440,7 +445,7 @@ private:
     Buffer<bool> mIsBombAttachedBuffer;
 
     //////////////////////////////////////////////////////////
-    // Container 
+    // Container
     //////////////////////////////////////////////////////////
 
     World & mParentWorld;
@@ -449,7 +454,10 @@ private:
     // The handler registered for spring deletions
     DestroyHandler mDestroyHandler;
 
-    // The current stiffness adjustment
+    // The game parameter values that we are current with; changes
+    // in the values of these parameters will trigger a re-calculation
+    // of pre-calculated coefficients
+    float mCurrentNumMechanicalDynamicsIterations;
     float mCurrentStiffnessAdjustment;
 
     // Allocators for work buffers

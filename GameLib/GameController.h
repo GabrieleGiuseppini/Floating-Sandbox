@@ -102,8 +102,8 @@ public:
         mTargetCameraPosition = mCurrentCameraPosition = mRenderContext->GetCameraWorldPosition();
     }
 
-    void AdjustZoom(float amount) 
-    { 
+    void AdjustZoom(float amount)
+    {
         float newTargetZoom = mTargetZoom * amount;
         if (newTargetZoom < GameParameters::MinZoom)
             newTargetZoom = GameParameters::MinZoom;
@@ -120,9 +120,9 @@ public:
         }
     }
 
-    void ResetZoom() 
-    { 
-        mRenderContext->SetZoom(1.0); 
+    void ResetZoom()
+    {
+        mRenderContext->SetZoom(1.0);
 
         mTargetZoom = mCurrentZoom = mRenderContext->GetZoom();
     }
@@ -140,6 +140,11 @@ public:
     //
     // Physics
     //
+
+    float GetNumMechanicalDynamicsIterationsAdjustment() const { return mGameParameters.NumMechanicalDynamicsIterationsAdjustment; }
+    void SetNumMechanicalDynamicsIterationsAdjustment(float value) { mGameParameters.NumMechanicalDynamicsIterationsAdjustment = value; }
+    float GetMinNumMechanicalDynamicsIterationsAdjustment() const { return GameParameters::MinNumMechanicalDynamicsIterationsAdjustment; }
+    float GetMaxNumMechanicalDynamicsIterationsAdjustment() const { return GameParameters::MaxNumMechanicalDynamicsIterationsAdjustment; }
 
     float GetStiffnessAdjustment() const { return mGameParameters.StiffnessAdjustment; }
     void SetStiffnessAdjustment(float value) { mGameParameters.StiffnessAdjustment = value; }
@@ -270,7 +275,7 @@ private:
 
     GameController(
         std::unique_ptr<Render::RenderContext> renderContext,
-        std::unique_ptr<GameEventDispatcher> gameEventDispatcher,        
+        std::unique_ptr<GameEventDispatcher> gameEventDispatcher,
         std::unique_ptr<TextLayer> textLayer,
         std::unique_ptr<MaterialDatabase> materials,
         std::shared_ptr<ResourceLoader> resourceLoader)
@@ -286,7 +291,7 @@ private:
             mGameEventDispatcher,
             mGameParameters,
             *mResourceLoader))
-        , mMaterials(std::move(materials))        
+        , mMaterials(std::move(materials))
          // Smoothing
         , mCurrentZoom(mRenderContext->GetZoom())
         , mTargetZoom(mCurrentZoom)
@@ -308,7 +313,7 @@ private:
         , mOriginTimestampGame(GameWallClock::time_point::min())
     {
     }
-    
+
     static void SmoothToTarget(
         float & currentValue,
         float startingValue,
@@ -333,7 +338,7 @@ private:
 
 
     //
-    // The doers 
+    // The doers
     //
 
     std::unique_ptr<Render::RenderContext> mRenderContext;
@@ -347,7 +352,7 @@ private:
 
     std::unique_ptr<Physics::World> mWorld;
     std::shared_ptr<MaterialDatabase> mMaterials;
-        
+
 
     //
     // The current render parameters that we're smoothing to

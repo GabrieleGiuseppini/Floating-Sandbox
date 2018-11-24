@@ -101,8 +101,6 @@ Render:
 
 - Roadmap:
 	= 1.7.0
-		= Emit RU @ GameController
-		= Buoyancy adj -> Water density adj
 		- Simulation Quality (*)
 		- Magic spring optimization (*)
 	- 1.8.0
@@ -360,15 +358,13 @@ Render:
 		- Also used at bombs for bombs' mass - how?
 		- When done, re-enable buoyancy fix
 	
-	- TODOHERE: Slider for "simulation quality", affecting num of mechanical simulation iterations
-		- Under mechanics tab
-		- Integer slider, from 0 to 10
-			- 0 = half
-			- 1 = current
-			- 2 = 2x
-			- ...
-		- Points might have to recalc things on changes
-		- Requires extended status text w/measurements
+	= TODOHERE: Slider for "simulation quality", affecting num of mechanical simulation iterations
+		= Update GameParameters - Points and Springs might have to recalc things on changes
+			= Ship
+			- Points
+			- Springs
+		- SettingsDialog: under mechanics tab
+		+ Requires extended status text w/measurements
 
 	+ Fix ephemeral particles
 		+ Pass also "now" all over the place
@@ -524,7 +520,7 @@ Render:
 
 	- Move tool
 		- With move tool enabled:
-			- Click on ship -> GameController returns point index (as ObjectId) or None -> if not None, tool is engaged (save cur screen pos)
+			- Click on ship -> GameController returns point index (as ShipAnnotatedElementIndex) or None -> if not None, tool is engaged (save cur screen pos)
 			- Moving tool tells GameController delta (offset) screen 
 
 	- DestroyAt:

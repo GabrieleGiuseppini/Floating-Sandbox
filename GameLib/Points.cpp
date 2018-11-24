@@ -32,14 +32,17 @@ void Points::Add(
     mPositionBuffer.emplace_back(position);
     mVelocityBuffer.emplace_back(vec2f::zero());
     mForceBuffer.emplace_back(vec2f::zero());
-    mIntegrationFactorBuffer.emplace_back(CalculateIntegrationFactor(material->Mass));
+    mIntegrationFactorBuffer.emplace_back(
+        CalculateIntegrationFactor(
+            material->Mass,
+            mCurrentNumMechanicalDynamicsIterations));
     mMassBuffer.emplace_back(material->Mass);
 
     mBuoyancyBuffer.emplace_back(buoyancy);
     mWaterBuffer.emplace_back(0.0f);
     mWaterVelocityBuffer.emplace_back(vec2f::zero());
     mWaterMomentumBuffer.emplace_back(vec2f::zero());
-    mIsLeakingBuffer.emplace_back(false);    
+    mIsLeakingBuffer.emplace_back(false);
 
     // Electrical dynamics
     mElectricalElementBuffer.emplace_back(electricalElementIndex);
@@ -83,10 +86,10 @@ void Points::CreateEphemeralParticleDebris(
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
     mForceBuffer[pointIndex] = vec2f::zero();
-    mIntegrationFactorBuffer[pointIndex] = CalculateIntegrationFactor(material->Mass);
+    mIntegrationFactorBuffer[pointIndex] = CalculateIntegrationFactor(material->Mass, mCurrentNumMechanicalDynamicsIterations);
     mMassBuffer[pointIndex] = material->Mass;
     mMaterialBuffer[pointIndex] = material;
-    
+
     mBuoyancyBuffer[pointIndex] = 0.0f; // Debris is non-buoyant
     mWaterBuffer[pointIndex] = 0.0f;
     assert(false == mIsLeakingBuffer[pointIndex]);
@@ -127,7 +130,7 @@ void Points::CreateEphemeralParticleSparkle(
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
     mForceBuffer[pointIndex] = vec2f::zero();
-    mIntegrationFactorBuffer[pointIndex] = CalculateIntegrationFactor(material->Mass);
+    mIntegrationFactorBuffer[pointIndex] = CalculateIntegrationFactor(material->Mass, mCurrentNumMechanicalDynamicsIterations);
     mMassBuffer[pointIndex] = material->Mass;
     mMaterialBuffer[pointIndex] = material;
 
@@ -184,6 +187,27 @@ void Points::Destroy(
     mWaterMomentumBuffer[pointElementIndex] = vec2f::zero();
 }
 
+void Points::UpdateGameParameters(GameParameters const & gameParameters)
+{
+    float const numMechanicalDynamicsIterations = gameParameters.NumMechanicalDynamicsIterations<float>();
+    if (numMechanicalDynamicsIterations != mCurrentNumMechanicalDynamicsIterations)
+    {
+        // Recalc integration factors
+        for (ElementIndex i : *this)
+        {
+            if (!IsDeleted(i))
+            {
+                mIntegrationFactorBuffer[i] = CalculateIntegrationFactor(
+                    mMassBuffer[i],
+                    numMechanicalDynamicsIterations);
+            }
+        }
+
+        // Remember the new values
+        mCurrentNumMechanicalDynamicsIterations = numMechanicalDynamicsIterations;
+    }
+}
+
 void Points::UpdateEphemeralParticles(
     float currentSimulationTime,
     GameParameters const & /*gameParameters*/)
@@ -197,7 +221,7 @@ void Points::UpdateEphemeralParticles(
             auto const elapsedLifetime = currentSimulationTime - mEphemeralStartTimeBuffer[pointIndex];
             if (elapsedLifetime >= mEphemeralMaxLifetimeBuffer[pointIndex])
             {
-                // 
+                //
                 // Expire this particle
                 //
 
@@ -227,7 +251,7 @@ void Points::UpdateEphemeralParticles(
                         float alpha = std::max(
                             1.0f - elapsedLifetime / mEphemeralMaxLifetimeBuffer[pointIndex],
                             0.0f);
-                        
+
                         mColorBuffer[pointIndex].w = alpha;
 
                         break;
@@ -237,12 +261,12 @@ void Points::UpdateEphemeralParticles(
                     {
                         // Update progress based off remaining time
 
-                        mEphemeralStateBuffer[pointIndex].Sparkle.Progress = 
+                        mEphemeralStateBuffer[pointIndex].Sparkle.Progress =
                             elapsedLifetime / mEphemeralMaxLifetimeBuffer[pointIndex];
 
                         break;
                     }
-                    
+
                     default:
                     {
                         // Do nothing
@@ -259,7 +283,7 @@ void Points::Upload(
 {
     // Upload immutable attributes, if we haven't uploaded them yet
     if (!mAreImmutableRenderAttributesUploaded)
-    { 
+    {
         renderContext.UploadShipPointImmutableGraphicalAttributes(
             shipId,
             mColorBuffer.data(),
@@ -270,7 +294,7 @@ void Points::Upload(
 
     // Upload mutable attributes
     renderContext.UploadShipPoints(
-        shipId,  
+        shipId,
         mPositionBuffer.data(),
         mLightBuffer.data(),
         mWaterBuffer.data());
@@ -327,7 +351,7 @@ void Points::UploadVectors(
             mWaterMomentumBuffer.data(),
             0.4f,
             VectorColor);
-    }    
+    }
 }
 
 void Points::UploadEphemeralParticles(
@@ -398,8 +422,6 @@ void Points::UploadEphemeralParticles(
                 break;
             }
 
-            //// FUTURE: Those that are textures: call directly ShipRenderContext::UploadGenericTexture(...)
-
             case EphemeralType::None:
             default:
             {
@@ -427,7 +449,9 @@ void Points::SetMassToMaterialOffset(
     mMassBuffer[pointElementIndex] = mMaterialBuffer[pointElementIndex]->Mass + offset;
 
     // Update integration factor
-    mIntegrationFactorBuffer[pointElementIndex] = CalculateIntegrationFactor(mMassBuffer[pointElementIndex]);
+    mIntegrationFactorBuffer[pointElementIndex] = CalculateIntegrationFactor(
+        mMassBuffer[pointElementIndex],
+        mCurrentNumMechanicalDynamicsIterations);
 
     // Notify all springs
     for (auto springIndex : mNetworkBuffer[pointElementIndex].ConnectedSprings)
@@ -438,24 +462,27 @@ void Points::SetMassToMaterialOffset(
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-vec2f Points::CalculateIntegrationFactor(float mass)
+vec2f Points::CalculateIntegrationFactor(
+    float mass,
+    float numMechanicalDynamicsIterations)
 {
     assert(mass > 0.0f);
+    assert(numMechanicalDynamicsIterations > 0.0f);
 
     //
     // The integration factor is the quantity which, once multiplied with the force on the point,
-    // yields the change in position, during a time interval equal to the dynamics simulation step.
+    // yields the change in position that occurs during a time interval equal to the dynamics simulation step.
     //
 
-    static constexpr float dt = GameParameters::MechanicalDynamicsSimulationStepTimeDuration<float>;
-    
+    float const dt = GameParameters::SimulationStepTimeDuration<float> / numMechanicalDynamicsIterations;
+
     return vec2f(dt * dt / mass, dt * dt / mass);
 }
 
 ElementIndex Points::FindFreeEphemeralParticle(float currentSimulationTime)
 {
     //
-    // Search for the firt free ephemeral particle; if a free one is not found, reuse the 
+    // Search for the firt free ephemeral particle; if a free one is not found, reuse the
     // oldest particle
     //
 
@@ -498,7 +525,7 @@ ElementIndex Points::FindFreeEphemeralParticle(float currentSimulationTime)
             break;
         }
     }
-    
+
     //
     // No luck, have to steal the oldest
     //

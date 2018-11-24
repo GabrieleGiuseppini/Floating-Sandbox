@@ -7,6 +7,7 @@
 
 #include <GameLib/Log.h>
 #include <UILib/ExponentialSliderCore.h>
+#include <UILib/FixedTickSliderCore.h>
 #include <UILib/LinearSliderCore.h>
 
 #include <wx/intl.h>
@@ -38,12 +39,12 @@ SettingsDialog::SettingsDialog(
     , mSoundController(std::move(soundController))
 {
     Create(
-        mParent, 
-        wxID_ANY, 
-        _("Settings"), 
-        wxDefaultPosition, 
+        mParent,
+        wxID_ANY,
+        _("Settings"),
+        wxDefaultPosition,
         wxSize(400, 200),
-        wxCAPTION | wxCLOSE_BOX | wxMINIMIZE_BOX | wxFRAME_SHAPED, 
+        wxCAPTION | wxCLOSE_BOX | wxMINIMIZE_BOX | wxFRAME_SHAPED,
         _T("Settings Window"));
 
 
@@ -60,7 +61,7 @@ SettingsDialog::SettingsDialog(
         wxPoint(-1, -1),
         wxSize(-1, -1),
         wxNB_TOP);
-    
+
 
     //
     // Mechanics
@@ -180,11 +181,11 @@ SettingsDialog::SettingsDialog(
     mApplyButton->Enable(false);
     Connect(wxID_APPLY, wxEVT_BUTTON, (wxObjectEventFunction)&SettingsDialog::OnApplyButton);
     buttonsSizer->Add(mApplyButton, 0);
-    
+
     buttonsSizer->AddSpacer(20);
 
     dialogVSizer->Add(buttonsSizer, 0, wxALIGN_RIGHT);
-    
+
     dialogVSizer->AddSpacer(20);
 
 
@@ -307,6 +308,8 @@ void SettingsDialog::ApplySettings()
     assert(!!mGameController);
 
 
+    mGameController->SetNumMechanicalDynamicsIterationsAdjustment(
+        mMechanicalQualitySlider->GetValue());
 
     mGameController->SetStiffnessAdjustment(
         mStiffnessSlider->GetValue());
@@ -450,6 +453,27 @@ void SettingsDialog::PopulateMechanicsPanel(wxPanel * panel)
     wxBoxSizer* controlsSizer = new wxBoxSizer(wxHORIZONTAL);
 
 
+    // Mechanical quality
+
+    mMechanicalQualitySlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Simulation Quality",
+        mGameController->GetNumMechanicalDynamicsIterationsAdjustment(),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<FixedTickSliderCore>(
+            0.5f,
+            mGameController->GetMinNumMechanicalDynamicsIterationsAdjustment(),
+            mGameController->GetMaxNumMechanicalDynamicsIterationsAdjustment()));
+
+    controlsSizer->Add(mMechanicalQualitySlider.get(), 1, wxALL, SliderBorder);
+
+
     // Stiffness
 
     mStiffnessSlider = std::make_unique<SliderControl>(
@@ -525,7 +549,7 @@ void SettingsDialog::PopulateFluidsPanel(wxPanel * panel)
     gridSizer->Add(mWaterDensitySlider.get(), 1, wxALL, SliderBorder);
 
 
-    // Water Intake 
+    // Water Intake
 
     mWaterIntakeSlider = std::make_unique<SliderControl>(
         panel,
@@ -827,7 +851,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
             mGameController->GetMaxDestroyRadius()));
 
     controlsSizer->Add(mDestroyRadiusSlider.get(), 1, wxALL, SliderBorder);
-    
+
 
     // Bomb Blast Radius
 
@@ -847,7 +871,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
             mGameController->GetMaxBombBlastRadius()));
 
     controlsSizer->Add(mBombBlastRadiusSlider.get(), 1, wxALL, SliderBorder);
-    
+
 
     // Anti-matter Bomb Implosion Strength
 
@@ -886,7 +910,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
     checkboxesSizer->Add(mGenerateSparklesCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
 
     controlsSizer->Add(checkboxesSizer, 0, wxALL, SliderBorder);
-    
+
 
     // Finalize panel
 
@@ -934,7 +958,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
         std::make_unique<LinearSliderCore>(
             0.0f,
             1.0f));
-    
+
     controlsSizer->Add(mSeaWaterTransparencySlider.get(), 1, wxALL, SliderBorder);
 
 
@@ -960,7 +984,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
     mShipRenderModeRadioBox = new wxRadioBox(panel, wxID_ANY, _("Ship Draw Options"), wxDefaultPosition, wxDefaultSize,
         WXSIZEOF(shipRenderModeChoices), shipRenderModeChoices, 1, wxRA_SPECIFY_COLS);
     Connect(mShipRenderModeRadioBox->GetId(), wxEVT_RADIOBOX, (wxObjectEventFunction)&SettingsDialog::OnShipRenderModeRadioBox);
-    
+
     checkboxesSizer->Add(mShipRenderModeRadioBox, 0, wxALL | wxALIGN_LEFT, 5);
 
 
@@ -981,7 +1005,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
     mShowStressCheckBox = new wxCheckBox(panel, ID_SHOW_STRESS_CHECKBOX, _("Show Stress"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Show Stress Checkbox"));
     Connect(ID_SHOW_STRESS_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnShowStressCheckBoxClick);
-    
+
     checkboxesSizer->Add(mShowStressCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
 
 
@@ -1019,7 +1043,7 @@ void SettingsDialog::PopulateSoundPanel(wxPanel * panel)
         std::make_unique<LinearSliderCore>(
             0.0f,
             100.0f));
-    
+
     controlsSizer->Add(mEffectsVolumeSlider.get(), 1, wxALL, SliderBorder);
 
 
@@ -1059,7 +1083,7 @@ void SettingsDialog::PopulateSoundPanel(wxPanel * panel)
         std::make_unique<LinearSliderCore>(
             0.0f,
             100.0f));
-    
+
     controlsSizer->Add(mMusicVolumeSlider.get(), 1, wxALL, SliderBorder);
 
 
@@ -1080,7 +1104,7 @@ void SettingsDialog::PopulateSoundPanel(wxPanel * panel)
     checkboxesSizer->Add(mPlaySinkingMusicCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
 
     controlsSizer->Add(checkboxesSizer, 0, wxALL, SliderBorder);
-    
+
 
     // Finalize panel
 
@@ -1092,14 +1116,16 @@ void SettingsDialog::ReadSettings()
     assert(!!mGameController);
 
 
+    mMechanicalQualitySlider->SetValue(mGameController->GetNumMechanicalDynamicsIterationsAdjustment());
+
     mStiffnessSlider->SetValue(mGameController->GetStiffnessAdjustment());
-    
+
     mStrengthSlider->SetValue(mGameController->GetStrengthAdjustment());
 
 
 
     mWaterDensitySlider->SetValue(mGameController->GetWaterDensityAdjustment());
-    
+
     mWaterIntakeSlider->SetValue(mGameController->GetWaterIntakeAdjustment());
 
     mWaterCrazynessSlider->SetValue(mGameController->GetWaterCrazyness());
@@ -1119,9 +1145,9 @@ void SettingsDialog::ReadSettings()
 
 
     mWaveHeightSlider->SetValue(mGameController->GetWaveHeight());
-        
+
     mLightDiffusionSlider->SetValue(mGameController->GetLightDiffusionAdjustment());
-    
+
     mSeaDepthSlider->SetValue(mGameController->GetSeaDepth());
 
     mOceanFloorBumpinessSlider->SetValue(mGameController->GetOceanFloorBumpiness());
@@ -1131,7 +1157,7 @@ void SettingsDialog::ReadSettings()
 
 
     mDestroyRadiusSlider->SetValue(mGameController->GetDestroyRadius());
-    
+
     mBombBlastRadiusSlider->SetValue(mGameController->GetBombBlastRadius());
 
     mAntiMatterBombImplosionStrengthSlider->SetValue(mGameController->GetAntiMatterBombImplosionStrength());
@@ -1224,4 +1250,3 @@ void SettingsDialog::ReadSettings()
 
     mPlaySinkingMusicCheckBox->SetValue(mSoundController->GetPlaySinkingMusic());
 }
-

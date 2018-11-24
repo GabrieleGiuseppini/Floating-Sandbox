@@ -1,6 +1,8 @@
 set  (UI_LIB_SOURCES
 	ExponentialSliderCore.cpp
 	ExponentialSliderCore.h
+	FixedTickSliderCore.cpp
+	FixedTickSliderCore.h
 	ISliderCore.h
 	LinearSliderCore.cpp
 	LinearSliderCore.h

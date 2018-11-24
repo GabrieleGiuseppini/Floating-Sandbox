@@ -26,7 +26,7 @@ class ShipBuilder
 public:
 
     static std::unique_ptr<Physics::Ship> Create(
-        int shipId,        
+        int shipId,
         Physics::World & parentWorld,
         std::shared_ptr<IGameEventHandler> gameEventHandler,
         ShipDefinition const & shipDefinition,
@@ -108,14 +108,15 @@ private:
     static void CreateRopeSegments(
         std::map<std::array<uint8_t, 3u>, RopeSegment> const & ropeSegments,
         ImageSize const & structureImageSize,
-        Material const & ropeMaterial,        
+        Material const & ropeMaterial,
         std::vector<PointInfo> & pointInfos,
         std::vector<SpringInfo> & springInfos);
 
     static Physics::Points CreatePoints(
         std::vector<PointInfo> const & pointInfos,
         Physics::World & parentWorld,
-        std::shared_ptr<IGameEventHandler> gameEventHandler);
+        std::shared_ptr<IGameEventHandler> gameEventHandler,
+        GameParameters const & gameParameters);
 
     static void CreateShipElementInfos(
         std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
@@ -129,7 +130,8 @@ private:
         std::vector<SpringInfo> const & springInfos,
         Physics::Points & points,
         Physics::World & parentWorld,
-        std::shared_ptr<IGameEventHandler> gameEventHandler);
+        std::shared_ptr<IGameEventHandler> gameEventHandler,
+        GameParameters const & gameParameters);
 
     static Physics::Triangles CreateTriangles(
         std::vector<TriangleInfo> const & triangleInfos,
@@ -218,5 +220,5 @@ private:
     private:
 
         std::list<size_t> mEntries;
-    };    
+    };
 };
