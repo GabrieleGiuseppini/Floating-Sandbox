@@ -11,6 +11,8 @@ You can create your own physical objects by drawing images using colors that cor
 
 If you want, you can also apply a higher-resolution image to be used as a more realistic texture for the object. Once you load your object, watch it float and explore how it behaves under stress!
 
+For the physics in the simulation I'm trying to shy away from "tricks" that exist solely for the purposes of eye-candy; every bit is grounded as close as possible into real physics, and the material system has been put together using physical attributes of real-world materials.
+
 The game currently comes with a few example objects - mostly ships - and I'm always busy making new ships and objects. Anyone is encouraged to make their own objects, and if you'd like them to be included in the game, just get in touch with me - you'll get proper recognition in the About dialog, of course.
 
 The original idea for the game is from Luke Wren, who wrote a Sinking Ship Simulator to simulate sinking ships. I have adopted his idea, completely reimplemented his simulator, and revamped its feature set; at this moment it is really a generic physics simulator that can be used to simulate just about any floating rigid body under stress.
@@ -39,7 +41,7 @@ At any given moment, the forces acting on a point are:
 - Gravity and buoyance forces, proportional to the mass and "wetness" of the points
 - Forces deriving from the interactions with the user, who can apply radial or angular forces, generate explosions, and so on
 
-Water that enters the body moves following gravitation and pressure gradients, and it adds to the mass of each "wet" point rendering parts of the body heavier.
+Water that enters the body moves following gravity and pressure gradients, and it adds to the mass of each "wet" point rendering parts of the body heavier.
 
 Bodies are loaded from *png* images; each pixel in the image becomes a point in the simulated world, and springs connect each point to all of its neighbours. The color of the pixel in the original image determines the material of the corresponding point, based on a dictionary containing tens of materials; the material of a point in turn determines the physical properties of the point (e.g. mass, water permeability, electrical conductivity) and of the springs attached to it (e.g. stiffness, strength).
 
