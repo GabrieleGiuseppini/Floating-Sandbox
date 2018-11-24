@@ -55,10 +55,10 @@ private:
 
     // Mechanics
     std::unique_ptr<SliderControl> mStiffnessSlider;
-    std::unique_ptr<SliderControl> mStrengthSlider;
-    std::unique_ptr<SliderControl> mBuoyancySlider;
+    std::unique_ptr<SliderControl> mStrengthSlider;    
 
     // Fluids
+    std::unique_ptr<SliderControl> mWaterDensitySlider;
     std::unique_ptr<SliderControl> mWaterIntakeSlider;
     std::unique_ptr<SliderControl> mWaterCrazynessSlider;
     std::unique_ptr<SliderControl> mWaterQuicknessSlider;

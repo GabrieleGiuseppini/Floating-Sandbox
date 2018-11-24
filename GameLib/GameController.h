@@ -151,10 +151,10 @@ public:
     float GetMinStrengthAdjustment() const { return GameParameters::MinStrengthAdjustment;  }
     float GetMaxStrengthAdjustment() const { return GameParameters::MaxStrengthAdjustment; }
 
-    float GetBuoyancyAdjustment() const { return mGameParameters.BuoyancyAdjustment; }
-    void SetBuoyancyAdjustment(float value) { mGameParameters.BuoyancyAdjustment = value; }
-    float GetMinBuoyancyAdjustment() const { return GameParameters::MinBuoyancyAdjustment; }
-    float GetMaxBuoyancyAdjustment() const { return GameParameters::MaxBuoyancyAdjustment; }
+    float GetWaterDensityAdjustment() const { return mGameParameters.WaterDensityAdjustment; }
+    void SetWaterDensityAdjustment(float value) { mGameParameters.WaterDensityAdjustment = value; }
+    float GetMinWaterDensityAdjustment() const { return GameParameters::MinWaterDensityAdjustment; }
+    float GetMaxWaterDensityAdjustment() const { return GameParameters::MaxWaterDensityAdjustment; }
 
     float GetWaterIntakeAdjustment() const { return mGameParameters.WaterIntakeAdjustment; }
     void SetWaterIntakeAdjustment(float value) { mGameParameters.WaterIntakeAdjustment = value; }

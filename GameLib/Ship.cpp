@@ -514,9 +514,7 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
 {
     // Water mass = 1000Kg
     static constexpr float WaterMass = 1000.0f;
-
-    // Effective water mass that we want to use for buoyancy calculation
-    float const BuoyancyAdjustedWaterMass = WaterMass * gameParameters.BuoyancyAdjustment;
+    float const DensityAdjustedWaterMass = WaterMass * gameParameters.WaterDensityAdjustment;
 
     // Underwater points feel this amount of water drag
     //
@@ -535,10 +533,7 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
         // Mass = own + contained water (clamped to 1)
         float const totalPointMass =
             mPoints.GetMass(pointIndex)
-            // FUTURE: revert to the line below (physically correct) once we also have a mass adjustment;
-            // without a mass adjustment, it'd be hard to sink ships when using a higher buoyancy adjustment
-            //+ std::min(mPoints.GetWater(pointIndex), 1.0f) * WaterMass;
-			+ std::min(mPoints.GetWater(pointIndex), 1.0f) * BuoyancyAdjustedWaterMass;
+			+ std::min(mPoints.GetWater(pointIndex), 1.0f) * DensityAdjustedWaterMass;
 
         mPoints.GetForce(pointIndex) += 
             gameParameters.Gravity
@@ -555,7 +550,7 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
 
             mPoints.GetForce(pointIndex) -=
                 gameParameters.Gravity
-                * BuoyancyAdjustedWaterMass
+                * DensityAdjustedWaterMass
                 * mPoints.GetBuoyancy(pointIndex);
         }
 

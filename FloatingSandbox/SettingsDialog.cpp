@@ -306,14 +306,18 @@ void SettingsDialog::ApplySettings()
 {
     assert(!!mGameController);
 
+
+
     mGameController->SetStiffnessAdjustment(
         mStiffnessSlider->GetValue());
 
     mGameController->SetStrengthAdjustment(
         mStrengthSlider->GetValue());
 
-    mGameController->SetBuoyancyAdjustment(
-        mBuoyancySlider->GetValue());
+
+
+    mGameController->SetWaterDensityAdjustment(
+        mWaterDensitySlider->GetValue());
 
     mGameController->SetWaterIntakeAdjustment(
         mWaterIntakeSlider->GetValue());
@@ -487,25 +491,6 @@ void SettingsDialog::PopulateMechanicsPanel(wxPanel * panel)
     controlsSizer->Add(mStrengthSlider.get(), 1, wxALL, SliderBorder);
 
 
-    // Buoyancy
-
-    mBuoyancySlider = std::make_unique<SliderControl>(
-        panel,
-        SliderWidth,
-        SliderHeight,
-        "Buoyancy Adjust",
-        mGameController->GetBuoyancyAdjustment(),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            mGameController->GetMinBuoyancyAdjustment(),
-            mGameController->GetMaxBuoyancyAdjustment()));
-
-    controlsSizer->Add(mBuoyancySlider.get(), 1, wxALL, SliderBorder);
-
 
     // Finalize panel
 
@@ -514,7 +499,30 @@ void SettingsDialog::PopulateMechanicsPanel(wxPanel * panel)
 
 void SettingsDialog::PopulateFluidsPanel(wxPanel * panel)
 {
-    wxBoxSizer* controlsSizer = new wxBoxSizer(wxHORIZONTAL);
+    wxGridSizer* gridSizer = new wxGridSizer(2, 4, 0, 0);
+
+    //
+    // Row 1
+    //
+
+    // Water Density
+
+    mWaterDensitySlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Water Density Adjust",
+        mGameController->GetWaterDensityAdjustment(),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<LinearSliderCore>(
+            mGameController->GetMinWaterDensityAdjustment(),
+            mGameController->GetMaxWaterDensityAdjustment()));
+
+    gridSizer->Add(mWaterDensitySlider.get(), 1, wxALL, SliderBorder);
 
 
     // Water Intake 
@@ -534,7 +542,7 @@ void SettingsDialog::PopulateFluidsPanel(wxPanel * panel)
             mGameController->GetMinWaterIntakeAdjustment(),
             mGameController->GetMaxWaterIntakeAdjustment()));
 
-    controlsSizer->Add(mWaterIntakeSlider.get(), 1, wxALL, SliderBorder);
+    gridSizer->Add(mWaterIntakeSlider.get(), 1, wxALL, SliderBorder);
 
 
     // Water Crazyness
@@ -554,7 +562,7 @@ void SettingsDialog::PopulateFluidsPanel(wxPanel * panel)
             mGameController->GetMinWaterCrazyness(),
             mGameController->GetMaxWaterCrazyness()));
 
-    controlsSizer->Add(mWaterCrazynessSlider.get(), 1, wxALL, SliderBorder);
+    gridSizer->Add(mWaterCrazynessSlider.get(), 1, wxALL, SliderBorder);
 
 
     // Water Quickness
@@ -574,8 +582,12 @@ void SettingsDialog::PopulateFluidsPanel(wxPanel * panel)
             mGameController->GetMinWaterQuickness(),
             mGameController->GetMaxWaterQuickness()));
 
-    controlsSizer->Add(mWaterQuicknessSlider.get(), 1, wxALL, SliderBorder);
+    gridSizer->Add(mWaterQuicknessSlider.get(), 1, wxALL, SliderBorder);
 
+
+    //
+    // Row 2
+    //
 
     // Water Level of Detail
 
@@ -594,12 +606,12 @@ void SettingsDialog::PopulateFluidsPanel(wxPanel * panel)
             mGameController->GetMinWaterLevelOfDetail(),
             mGameController->GetMaxWaterLevelOfDetail()));
 
-    controlsSizer->Add(mWaterLevelOfDetailSlider.get(), 1, wxALL, SliderBorder);
+    gridSizer->Add(mWaterLevelOfDetailSlider.get(), 1, wxALL, SliderBorder);
 
 
     // Finalize panel
 
-    panel->SetSizerAndFit(controlsSizer);
+    panel->SetSizerAndFit(gridSizer);
 }
 
 void SettingsDialog::PopulateSkyPanel(wxPanel * panel)
@@ -1083,11 +1095,11 @@ void SettingsDialog::ReadSettings()
     mStiffnessSlider->SetValue(mGameController->GetStiffnessAdjustment());
     
     mStrengthSlider->SetValue(mGameController->GetStrengthAdjustment());
-    
-    mBuoyancySlider->SetValue(mGameController->GetBuoyancyAdjustment());
-    
 
 
+
+    mWaterDensitySlider->SetValue(mGameController->GetWaterDensityAdjustment());
+    
     mWaterIntakeSlider->SetValue(mGameController->GetWaterIntakeAdjustment());
 
     mWaterCrazynessSlider->SetValue(mGameController->GetWaterCrazyness());

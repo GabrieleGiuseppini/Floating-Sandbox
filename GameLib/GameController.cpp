@@ -489,7 +489,7 @@ void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
 
     // Publish UR ratio
     assert(!!mGameEventDispatcher);
-    mGameEventDispatcher->OnFrameRateUpdated(lastURRatio);
+    mGameEventDispatcher->OnUpdateToRenderRatioUpdated(lastURRatio);
 
     // Update status text
     assert(!!mTextLayer);

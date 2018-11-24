@@ -11,8 +11,8 @@ GameParameters::GameParameters()
     // Dynamics
     : StiffnessAdjustment(1.0f)
     , StrengthAdjustment(1.0f)
-    , BuoyancyAdjustment(1.0f)
     // Water
+    , WaterDensityAdjustment(1.0f)
     , WaterIntakeAdjustment(1.0f)
     , WaterCrazyness(1.0f)
     , WaterQuickness(0.5f)
