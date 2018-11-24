@@ -11,7 +11,7 @@ You can create your own physical objects by drawing images using colors that cor
 
 If you want, you can also apply a higher-resolution image to be used as a more realistic texture for the object. Once you load your object, watch it float and explore how it behaves under stress!
 
-For the physics in the simulation I'm trying to shy away from "tricks" that exist solely for the purposes of eye-candy; every bit is grounded as close as possible into real physics, and the material system has been put together using physical attributes of real-world materials.
+For the physics in the simulation I'm trying to shy away from tricks that exist solely for the purpose of delivering an eye-candy; every bit is grounded as close as possible into real physics, and the material system has been put together using physical attributes of real-world materials. This makes it sometimes hard to build structures that sustain their own weight or float easily - as it is in reality, after all - but the reward is a realistic world-in-a-sandbox where every action and corresponding reaction are not pre-programmed but, rather, are generated automatically by the physics engine calculations.
 
 The game currently comes with a few example objects - mostly ships - and I'm always busy making new ships and objects. Anyone is encouraged to make their own objects, and if you'd like them to be included in the game, just get in touch with me - you'll get proper recognition in the About dialog, of course.
 
