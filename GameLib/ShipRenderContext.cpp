@@ -79,7 +79,7 @@ ShipRenderContext::ShipRenderContext(
 
     GLuint pointVBOs[5];
     glGenBuffers(5, pointVBOs);
-    
+
     mPointPositionVBO = pointVBOs[0];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointPositionVBO);
     glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(vec2f), nullptr, GL_DYNAMIC_DRAW);
@@ -383,7 +383,7 @@ void ShipRenderContext::RenderStart(std::vector<std::size_t> const & connectedCo
     mConnectedComponentsMaxSizes = connectedComponentsMaxSizes;
 
     //
-    // Reset generic textures 
+    // Reset generic textures
     //
 
     mGenericTextureConnectedComponents.clear();
@@ -406,7 +406,7 @@ void ShipRenderContext::UploadPointImmutableGraphicalAttributes(
         glBindBuffer(GL_ARRAY_BUFFER, *mPointElementTextureCoordinatesVBO);
         glBufferSubData(GL_ARRAY_BUFFER, 0, mPointCount * sizeof(vec2f), textureCoordinates);
         CheckOpenGLError();
-    }    
+    }
 }
 
 void ShipRenderContext::UploadShipPointColorRange(
@@ -452,7 +452,7 @@ void ShipRenderContext::UploadElementsStart()
         mConnectedComponents.clear();
         mConnectedComponents.resize(mConnectedComponentsMaxSizes.size());
     }
-    
+
     for (size_t c = 0; c < mConnectedComponentsMaxSizes.size(); ++c)
     {
         //
@@ -476,7 +476,7 @@ void ShipRenderContext::UploadElementsStart()
             glGenBuffers(1, &elementVBO);
             mConnectedComponents[c].pointElementVBO = elementVBO;
         }
-        
+
         //
         // Prepare spring elements
         //
@@ -561,7 +561,7 @@ void ShipRenderContext::UploadElementsStart()
         {
             glGenBuffers(1, &elementVBO);
             mConnectedComponents[c].stressedSpringElementVBO = elementVBO;
-        }        
+        }
     }
 }
 
@@ -789,7 +789,10 @@ void ShipRenderContext::RenderEnd()
         // Draw Generic textures
         //
 
-        RenderGenericTextures(mGenericTextureConnectedComponents[c]);
+        if (c < mGenericTextureConnectedComponents.size())
+        {
+            RenderGenericTextures(mGenericTextureConnectedComponents[c]);
+        }
     }
 
 
@@ -836,7 +839,7 @@ void ShipRenderContext::RenderSpringElements(
     {
         // Use texture program
         mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTexture>();
-        
+
         // Bind texture
         mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
         glBindTexture(GL_TEXTURE_2D, *mElementShipTexture);
@@ -914,7 +917,7 @@ void ShipRenderContext::RenderStressedSpringElements(ConnectedComponentData cons
     {
         // Use program
         mShaderManager.ActivateProgram<ProgramType::ShipStressedSprings>();
-        
+
         // Set line size
         glLineWidth(0.1f * 2.0f * mCanvasToVisibleWorldHeightRatio);
 
