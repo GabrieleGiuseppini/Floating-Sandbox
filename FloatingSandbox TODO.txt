@@ -101,7 +101,6 @@ Render:
 
 - Roadmap:
 	= 1.7.0
-		= Move tool (*)
 		- Magic spring optimization (*)
 			- Then decide whether to double the number of basis iterations
 	- 1.8.0
@@ -481,14 +480,14 @@ Render:
 	- Water drag 
 		- The one already there assumes velocity always normal to surface, but we should consider surface normal instead
 
-	= Move tool
+	+ Move tool
 		+ Rename current "move" as "Pan"
 		+ ShipId type (see around here)
 		+ ObjectId type (see around here)
-		= With move tool enabled:
+		+ With move tool enabled:
 			+ Click on ship -> GameController returns std::optional<ShipId> -> if not None, tool is engaged (save cur screen pos)
 				+ Works like pan 
-			- Moving tool tells GameController delta (offset) screen 
+			+ Moving tool tells GameController delta (offset) screen 
 
 	- DestroyAt:
 		- Test: Ship::SpringDestroyHandler() only destroys triangles that contain A-B
@@ -496,6 +495,9 @@ Render:
 	
 	- See if can use external water's pressure to inflict stress on springs
 		- Have to visit frontier points and, if underwater, do force perpendicular towards interior
+
+	- Ocean floor breaking up upon impact
+		- Layer on top of floor samples, with hash buckets and lists of heights per-bucket
 
 - Water:
 	-Do water bubbles (at intake) and water drops (at outtake)
@@ -560,10 +562,9 @@ Render:
 			- So, like sawed
 				- Update() attempts to stop it
 				
-
-
 	- Changing the width of the waves up to at least 10x the current size
 		- Requires re-calculation of period (if adjustment is x-multiplier N, then period is N times basic period)
+		- Resolution stays the same
 	
 	- Ship definition: multiple layers
 		- We want to maintain BW compat for ease of one-layer ship making
@@ -710,11 +711,9 @@ Render:
 				- Stop PendingShipPlace tool
 
 
-- Floor breaking up upon impact
-	- Layer on top of floor samples, with hash buckets and lists of heights per-bucket
-
 - Collision detection - for multiple ships
 	- http://www.cs.umd.edu/~mount/ANN/
+
 ==============================================================================
 ==============================================================================
 ==============================================================================
