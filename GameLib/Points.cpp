@@ -144,7 +144,7 @@ void Points::CreateEphemeralParticleSparkle(
     mEphemeralStartTimeBuffer[pointIndex] = currentSimulationTime;
     mEphemeralMaxLifetimeBuffer[pointIndex] = std::chrono::duration_cast<std::chrono::duration<float>>(maxLifetime).count();
     mEphemeralStateBuffer[pointIndex] = EphemeralState::SparkleState(
-        GameRandomEngine::GetInstance().Choose<TextureFrameIndex>(4));
+        GameRandomEngine::GetInstance().Choose<TextureFrameIndex>(2));
     mConnectedComponentIdBuffer[pointIndex] = connectedComponentId;
 
     assert(false == mIsPinnedBuffer[pointIndex]);

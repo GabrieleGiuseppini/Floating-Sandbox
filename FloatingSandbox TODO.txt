@@ -101,9 +101,6 @@ Render:
 
 - Roadmap:
 	= 1.7.0
-		- Simulation Quality (*)
-		- Review sparkles' textures
-			- Try with yellow overcas
 		- Move tool (*)
 		- Magic spring optimization (*)
 			- Then decide whether to start game at 2X
@@ -336,27 +333,10 @@ Render:
 
 - Dynamics:
 
-	+ Ocean depth bitmaps
-		+ OceanFloor cctor takes ResourceLoader
-		+ ResourceLoader used by ocean floor to load image
-		+ OceanFloor translates image into float[] with raw pixel y's
-		+ At update, raw pixel y's are normalized/enhanced with new GameParameters constant
-		+ Test
-
 	- OceanFloor:
 		- Make number of samples be bump map width
 		- Still check width is power of two
 		- Still calculate bit stuff for fast mod
-
-	+ Extended status text
-		+ Shows:
-			+ Current zoom
-			+ Rendering vs simulation percentages
-				+ GameController continuously updates, same way as FPS
-			+ If paused
-				+ Actually, this is from StatusText
-		+ Multi-row:
-			+ Text layer gets it split & gives vector to TextRenderContext
 
 	- Auto-adjust zoom at ship load
 		- Use preferred zoom from .shp file
@@ -366,25 +346,8 @@ Render:
 		- Recalcs Point's mass things, including mass itself
 		- Also used at bombs for bombs' mass - how?
 		- When done, re-enable buoyancy fix
-	
-	= TODOHERE: Slider for "simulation quality", affecting num of mechanical simulation iterations
-		= Update GameParameters - Points and Springs might have to recalc things on changes
-			= Ship
-			= Points
-			= Springs
-		+ Fix: invoke points.updategameparams
-		+ SettingsDialog: under mechanics tab
-		+ Requires extended status text w/measurements
-		- See what to do with stiffness setting: max 1.0f?
+		- TODO: really worth doing? If water mass is also adjusted, then nothing really changes
 
-	+ Fix ephemeral particles
-		+ Pass also "now" all over the place
-			+ End put back UpdateEphemeralParticles where it was
-		+ Just single vector of PointIndex, no connected components
-		+ Make ephemeral particles' update based on simulation clock, not wall clock
-			+ "now" passed everywhere really has to become a "simulationNow" float
-		+ Test
-		+ Finalize constants
 
 	- Figure out what to do with connected components and ephemeral particles
 		- Depending on the above:
@@ -418,21 +381,6 @@ Render:
 			- http://matthias-mueller-fischer.ch/publications/sca03.pdf
 		- @ Air bubbles
 		
-
-	+ Do chainsaw sparkles with Ephemeral Particles
-		+ At Ship::Chainsaw for each broken spring
-		+ Initial particle dynamics:
-			+ Position: midpoint of spring
-			+ Velocity: radial vector:
-				+ Butterfly perpendicular to *direction of sawing*, not spring
-				+ Magnitude: uniformly random in range
-			+ Number: per Update step: uniform random centered around SparkleDensity (ratio over 10, initially) (from GameParameters, adjustable)
-			+ Color:
-				+ Metal: brightest red to bright red
-				+ Else: base material's render color
-			+ Finalize parameters
-			+ Final test
-
 	- Smoke:
 		- New material: smoke emitter
 			- Recognized by ship builder via "particle_emitter_properties" sub-object
@@ -2428,6 +2376,56 @@ IF WX:
 				+ Just store index in buffer
 
 		+ Test look'n'feel and finalize constants
+
+	+ Ocean depth bitmaps
+		+ OceanFloor cctor takes ResourceLoader
+		+ ResourceLoader used by ocean floor to load image
+		+ OceanFloor translates image into float[] with raw pixel y's
+		+ At update, raw pixel y's are normalized/enhanced with new GameParameters constant
+		+ Test
+
+	+ Extended status text
+		+ Shows:
+			+ Current zoom
+			+ Rendering vs simulation percentages
+				+ GameController continuously updates, same way as FPS
+			+ If paused
+				+ Actually, this is from StatusText
+		+ Multi-row:
+			+ Text layer gets it split & gives vector to TextRenderContext
+	
+	+ Slider for "simulation quality", affecting num of mechanical simulation iterations
+		+ Update GameParameters - Points and Springs might have to recalc things on changes
+			+ Ship
+			+ Points
+			+ Springs
+		+ Fix: invoke points.updategameparams
+		+ SettingsDialog: under mechanics tab
+		+ Requires extended status text w/measurements
+		+ See what to do with stiffness setting: max 1.0f? Leave it
+
+	+ Fix ephemeral particles
+		+ Pass also "now" all over the place
+			+ End put back UpdateEphemeralParticles where it was
+		+ Just single vector of PointIndex, no connected components
+		+ Make ephemeral particles' update based on simulation clock, not wall clock
+			+ "now" passed everywhere really has to become a "simulationNow" float
+		+ Test
+		+ Finalize constants
+
+	+ Do chainsaw sparkles with Ephemeral Particles
+		+ At Ship::Chainsaw for each broken spring
+		+ Initial particle dynamics:
+			+ Position: midpoint of spring
+			+ Velocity: radial vector:
+				+ Butterfly perpendicular to *direction of sawing*, not spring
+				+ Magnitude: uniformly random in range
+			+ Number: per Update step: uniform random centered around SparkleDensity (ratio over 10, initially) (from GameParameters, adjustable)
+			+ Color:
+				+ Metal: brightest red to bright red
+				+ Else: base material's render color
+			+ Finalize parameters
+			+ Final test
 
 + Water
 	+ Water
