@@ -19,7 +19,7 @@ ToolController::ToolController(
     , mCurrentTool(nullptr)
     , mAllTools()
     , mParentFrame(parentFrame)
-    , mMoveCursor()
+    , mPanCursor()
     , mGameController(gameController)
     , mSoundController(soundController)
 {
@@ -84,7 +84,7 @@ ToolController::ToolController(
             resourceLoader));
 
     // Prepare own cursor(s)
-    mMoveCursor = MakeCursor("move_cursor", 15, 15, resourceLoader);
+    mPanCursor = MakeCursor("pan_cursor", 15, 15, resourceLoader);
 
     // Set current tool
     this->SetTool(initialToolType);
@@ -97,11 +97,11 @@ void ToolController::OnMouseMove(
     // Update input state
     mInputState.PreviousMousePosition = mInputState.MousePosition;
     mInputState.MousePosition = vec2f(x, y);
-    
+
     // Perform action
     if (mInputState.IsRightMouseDown)
     {
-        // Perform our move tool
+        // Perform our pan tool
 
         // Pan (opposite direction)
         vec2f screenOffset = mInputState.PreviousMousePosition - mInputState.MousePosition;
@@ -146,8 +146,8 @@ void ToolController::OnRightMouseDown()
     // Update input state
     mInputState.IsRightMouseDown = true;
 
-    // Show our move cursor 
-    mParentFrame->SetCursor(*mMoveCursor);
+    // Show our pan cursor
+    mParentFrame->SetCursor(*mPanCursor);
 }
 
 void ToolController::OnRightMouseUp()
@@ -156,8 +156,8 @@ void ToolController::OnRightMouseUp()
     mInputState.IsRightMouseDown = false;
 
     if (nullptr != mCurrentTool)
-    {        
-        // Show tool's cursor again, since we moved out of Move
+    {
+        // Show tool's cursor again, since we moved out of Pan
         mCurrentTool->ShowCurrentCursor();
     }
 }

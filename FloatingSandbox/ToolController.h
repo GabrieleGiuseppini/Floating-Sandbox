@@ -98,9 +98,9 @@ private:
     std::vector<std::unique_ptr<Tool>> mAllTools; // Indexed by enum
 
 private:
-    
+
     wxFrame * const mParentFrame;
-    std::unique_ptr<wxCursor> mMoveCursor;
+    std::unique_ptr<wxCursor> mPanCursor;
     std::shared_ptr<GameController> const mGameController;
     std::shared_ptr<SoundController> const mSoundController;
 };
