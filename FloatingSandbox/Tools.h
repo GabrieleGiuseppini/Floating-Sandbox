@@ -32,14 +32,15 @@ std::unique_ptr<wxCursor> MakeCursor(
 
 enum class ToolType
 {
-    Smash = 0,
-    Saw = 1,
-    Grab = 2,
-    Swirl = 3,
-    Pin = 4,
-    TimerBomb = 5,
-    RCBomb = 6,
-    AntiMatterBomb = 7
+    Move = 0,
+    Smash = 1,
+    Saw = 2,
+    Grab = 3,
+    Swirl = 4,
+    Pin = 5,
+    TimerBomb = 6,
+    RCBomb = 7,
+    AntiMatterBomb = 8
 };
 
 struct InputState
@@ -62,7 +63,7 @@ struct InputState
 
 /*
  * Base abstract class of all tools.
- */ 
+ */
 class Tool
 {
 public:
@@ -171,7 +172,7 @@ public:
     virtual void Update(InputState const & inputState) override;
 
     virtual void OnMouseMove(InputState const & /*inputState*/) override {}
-    
+
     virtual void OnLeftMouseDown(InputState const & inputState) override
     {
         // Initialize the continuous tool state
@@ -255,6 +256,80 @@ private:
 // Tools
 //////////////////////////////////////////////////////////////////////////////////////////
 
+class MoveTool final : public OneShotTool
+{
+public:
+
+    MoveTool(
+        wxFrame * parentFrame,
+        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<SoundController> soundController,
+        ResourceLoader & resourceLoader);
+
+public:
+
+    virtual void Initialize(InputState const & /*inputState*/) override
+    {
+        // Reset state
+        mEngagedShipId.reset();
+
+        // Reset cursor
+        assert(!!mUpCursor);
+        mCurrentCursor = mUpCursor.get();
+    }
+
+    virtual void OnMouseMove(InputState const & inputState) override
+    {
+        if (!!mEngagedShipId)
+        {
+            // Tell GameController
+            vec2f screenOffset = inputState.MousePosition - inputState.PreviousMousePosition;
+            mGameController->MoveBy(*mEngagedShipId, screenOffset);
+        }
+    }
+
+    virtual void OnLeftMouseDown(InputState const & inputState) override
+    {
+        // Check with game controller
+        auto pointId = mGameController->GetNearestPointAt(inputState.MousePosition);
+        if (!!pointId)
+        {
+            // Engaged
+            mEngagedShipId = pointId->GetShipId();
+
+            // Set cursor
+            assert(!!mDownCursor);
+            mCurrentCursor = mDownCursor.get();
+            ShowCurrentCursor();
+        }
+    }
+
+    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override
+    {
+        if (!!mEngagedShipId)
+        {
+            // Disengage
+            mEngagedShipId.reset();
+
+            // Set cursor
+            assert(!!mUpCursor);
+            mCurrentCursor = mUpCursor.get();
+            ShowCurrentCursor();
+        }
+    }
+
+private:
+
+    // When engaged, the ID of the ship we're currently moving
+    std::optional<ShipId> mEngagedShipId;
+
+    // The up cursor
+    std::unique_ptr<wxCursor> const mUpCursor;
+
+    // The down cursor
+    std::unique_ptr<wxCursor> const mDownCursor;
+};
+
 class SmashTool final : public ContinuousTool
 {
 public:
@@ -271,7 +346,7 @@ public:
     {
         ContinuousTool::Initialize(inputState);
 
-        // Reset current cursor 
+        // Reset current cursor
         if (inputState.IsLeftMouseDown)
         {
             // Down
@@ -354,7 +429,7 @@ public:
 
             // Set current cursor to the up cursor
             mCurrentCursor = mUpCursor.get();
-        }        
+        }
     }
 
     virtual void Deinitialize(InputState const & /*inputState*/) override

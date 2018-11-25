@@ -13,7 +13,7 @@
 using namespace std::chrono_literals;
 
 namespace Physics
-{   
+{
 
 /*
  * Bomb specialization for spectacular anti-matter bombs.
@@ -66,7 +66,7 @@ public:
     }
 
     virtual void Upload(
-        int shipId,
+        ShipId shipId,
         Render::RenderContext & renderContext) const override;
 
     void Detonate();
@@ -92,7 +92,7 @@ private:
         PreExploding_5,
 
         // In this state we are exploding, and increment our counter to
-        // match the explosion animation until the animation is over        
+        // match the explosion animation until the animation is over
         Exploding_6,
 
         // This is the final state; once this state is reached, we're expired
@@ -104,7 +104,7 @@ private:
     static constexpr auto ImplosionInterval = 16000ms;
     static constexpr auto ImplosionCloudRevolutionSpeed = 2.0f * Pi<float> / std::chrono::duration<float>(0.5f).count();
     static constexpr auto PreExplosionInterval = 1000ms;
-    static constexpr auto ExplosionInterval = 1000ms;    
+    static constexpr auto ExplosionInterval = 1000ms;
 
     State mState;
 
@@ -115,7 +115,7 @@ private:
     GameWallClock::time_point mNextStateTransitionTimePoint;
 
     // The tracking of how long we've been at the current state; exact meaning
-    // depends on the state    
+    // depends on the state
     GameWallClock::time_point mCurrentStateStartTimePoint;
     float mCurrentStateProgress;
 

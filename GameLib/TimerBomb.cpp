@@ -150,7 +150,7 @@ bool TimerBomb::Update(
             {
                 assert(mExplodingStepCounter < ExplosionStepsCount);
 
-                // Check whether we're done        
+                // Check whether we're done
                 if (mExplodingStepCounter == ExplosionStepsCount - 1)
                 {
                     // Transition to expired
@@ -162,7 +162,7 @@ bool TimerBomb::Update(
 
                     // Invoke explosion handler
                     mPhysicsHandler.DoBombExplosion(
-                        GetPosition(),                        
+                        GetPosition(),
                         static_cast<float>(mExplodingStepCounter) / static_cast<float>(ExplosionStepsCount - 1),
                         GetConnectedComponentId(),
                         gameParameters);
@@ -181,7 +181,7 @@ bool TimerBomb::Update(
             {
                 assert(mDefuseStepCounter < DefuseStepsCount);
 
-                // Check whether we're done        
+                // Check whether we're done
                 if (mDefuseStepCounter == DefuseStepsCount - 1)
                 {
                     // Transition to defused
@@ -195,10 +195,10 @@ bool TimerBomb::Update(
                 // Schedule next transition
                 mNextStateTransitionTimePoint = currentWallClockTime + DefusingInterval / DefuseStepsCount;
             }
-            
+
             return true;
         }
-        
+
         case State::Defused:
         {
             return true;
@@ -236,13 +236,13 @@ void TimerBomb::OnNeighborhoodDisturbed()
             true);
 
         // Schedule next transition
-        mNextStateTransitionTimePoint = GameWallClock::GetInstance().Now() 
+        mNextStateTransitionTimePoint = GameWallClock::GetInstance().Now()
             + FastFuseToDetonationLeadInInterval / FuseStepCount;
     }
 }
 
 void TimerBomb::Upload(
-    int shipId,
+    ShipId shipId,
     Render::RenderContext & renderContext) const
 {
     switch (mState)
@@ -276,10 +276,10 @@ void TimerBomb::Upload(
         case State::DetonationLeadIn:
         {
             static constexpr float ShakeOffset = 0.3f;
-            vec2f shakenPosition = 
+            vec2f shakenPosition =
                 GetPosition()
-                + (0 == (mDetonationLeadInShapeFrameCounter % 2) 
-                    ? vec2f(-ShakeOffset, 0.0f) 
+                + (0 == (mDetonationLeadInShapeFrameCounter % 2)
+                    ? vec2f(-ShakeOffset, 0.0f)
                     : vec2f(ShakeOffset, 0.0f));
 
             renderContext.UploadShipGenericTextureRenderSpecification(
@@ -345,7 +345,7 @@ void TimerBomb::Upload(
                 TextureFrameId(TextureGroupType::TimerBomb, mFuseStepCounter / FuseFramesPerFuseLengthCount),
                 GetPosition(),
                 1.0f,
-                mRotationBaseAxis, 
+                mRotationBaseAxis,
                 GetRotationOffsetAxis(),
                 1.0f);
 

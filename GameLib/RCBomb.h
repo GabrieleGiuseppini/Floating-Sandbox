@@ -13,7 +13,7 @@
 using namespace std::chrono_literals;
 
 namespace Physics
-{   
+{
 
 /*
  * Bomb specialization for bombs that explode when a remote control is triggered.
@@ -60,7 +60,7 @@ public:
     }
 
     virtual void Upload(
-        int shipId,
+        ShipId shipId,
         Render::RenderContext & renderContext) const override;
 
     void Detonate();
@@ -104,7 +104,7 @@ private:
         mState = State::DetonationLeadIn;
 
         ++mPingOnStepCounter;
-        
+
         mGameEventHandler->OnRCBombPing(
             mParentWorld.IsUnderwater(GetPosition()),
             1);
@@ -117,21 +117,21 @@ private:
         GameWallClock::time_point currentWallClockTime,
         GameParameters const & gameParameters)
     {
-        mState = State::Exploding;        
+        mState = State::Exploding;
 
         assert(mExplodingStepCounter < ExplosionStepsCount);
 
-        // Check whether we're done        
+        // Check whether we're done
         if (mExplodingStepCounter == ExplosionStepsCount - 1)
         {
             // Transition to expired
             mState = State::Expired;
         }
         else
-        {            
+        {
             // Invoke blast handler
             mPhysicsHandler.DoBombExplosion(
-                GetPosition(),                
+                GetPosition(),
                 static_cast<float>(mExplodingStepCounter) / static_cast<float>(ExplosionStepsCount - 1),
                 GetConnectedComponentId(),
                 gameParameters);

@@ -25,7 +25,7 @@ RenderContext::RenderContext(
     // Clouds
     , mCloudElementBuffer()
     , mCurrentCloudElementCount(0u)
-    , mCloudElementCount(0u)    
+    , mCloudElementCount(0u)
     , mCloudVBO()
     , mCloudTextureAtlasOpenGLHandle()
     , mCloudTextureAtlasMetadata()
@@ -66,12 +66,12 @@ RenderContext::RenderContext(
 {
     static constexpr float GenericTextureProgressSteps = 10.0f;
     static constexpr float CloudTextureProgressSteps = 4.0f;
-    
+
     // Shaders, TextRenderContext, TextureDatabase, GenericTextureAtlas, Clouds, Land, Water
     static constexpr float TotalProgressSteps = 3.0f + GenericTextureProgressSteps + CloudTextureProgressSteps + 2.0f;
 
     GLuint tmpGLuint;
-    
+
 
     //
     // Init OpenGL
@@ -90,7 +90,7 @@ RenderContext::RenderContext(
     progressCallback(0.0f, "Loading shaders...");
 
     ShaderManager<ShaderManagerTraits>::GlobalParameters globalParameters(
-        ropeColour); 
+        ropeColour);
 
     mShaderManager = ShaderManager<ShaderManagerTraits>::CreateInstance(resourceLoader, globalParameters);
 
@@ -140,7 +140,7 @@ RenderContext::RenderContext(
 
     TextureAtlasBuilder genericTextureAtlasBuilder;
     for (auto const & group : textureDatabase.GetGroups())
-    { 
+    {
         if (TextureGroupType::Land != group.Group
             && TextureGroupType::Water != group.Group
             && TextureGroupType::Cloud != group.Group)
@@ -161,7 +161,7 @@ RenderContext::RenderContext(
     glGenTextures(1, &tmpGLuint);
     mGenericTextureAtlasOpenGLHandle = tmpGLuint;
 
-    // Bind texture    
+    // Bind texture
     glBindTexture(GL_TEXTURE_2D, *mGenericTextureAtlasOpenGLHandle);
     CheckOpenGLError();
 
@@ -186,19 +186,19 @@ RenderContext::RenderContext(
     // Set hardcoded parameters
     mShaderManager->ActivateProgram<ProgramType::GenericTextures>();
     mShaderManager->SetTextureParameters<ProgramType::GenericTextures>();
-    
+
 
     //
     // Initialize stars
     //
 
-    // Create VBO    
+    // Create VBO
     glGenBuffers(1, &tmpGLuint);
     mStarVBO = tmpGLuint;
 
 
     //
-    // Initialize clouds 
+    // Initialize clouds
     //
 
     mShaderManager->ActivateTexture<ProgramParameterType::CloudTexture>();
@@ -212,11 +212,11 @@ RenderContext::RenderContext(
             progressCallback((3.0f + GenericTextureProgressSteps + progress * CloudTextureProgressSteps) / TotalProgressSteps, "Loading textures...");
         });
 
-    // Create OpenGL handle    
+    // Create OpenGL handle
     glGenTextures(1, &tmpGLuint);
     mCloudTextureAtlasOpenGLHandle = tmpGLuint;
 
-    // Bind texture    
+    // Bind texture
     glBindTexture(GL_TEXTURE_2D, *mCloudTextureAtlasOpenGLHandle);
     CheckOpenGLError();
 
@@ -240,13 +240,13 @@ RenderContext::RenderContext(
     mShaderManager->ActivateProgram<ProgramType::Clouds>();
     mShaderManager->SetTextureParameters<ProgramType::Clouds>();
 
-    // Create VBO    
+    // Create VBO
     glGenBuffers(1, &tmpGLuint);
     mCloudVBO = tmpGLuint;
 
 
     //
-    // Initialize land 
+    // Initialize land
     //
 
     mShaderManager->ActivateTexture<ProgramParameterType::LandTexture>();
@@ -271,7 +271,7 @@ RenderContext::RenderContext(
             1.0f / landTextureMetadata.WorldHeight);
     mShaderManager->SetTextureParameters<ProgramType::Land>();
 
-    // Create VBO    
+    // Create VBO
     glGenBuffers(1, &tmpGLuint);
     mLandVBO = tmpGLuint;
 
@@ -316,10 +316,10 @@ RenderContext::RenderContext(
 
 
     //
-    // Initialize cross of light 
+    // Initialize cross of light
     //
 
-    // Create VBO    
+    // Create VBO
     glGenBuffers(1, &tmpGLuint);
     mCrossOfLightVBO = tmpGLuint;
 
@@ -393,18 +393,18 @@ void RenderContext::Reset()
 }
 
 void RenderContext::AddShip(
-    int shipId,
+    ShipId shipId,
     size_t pointCount,
     std::optional<ImageData> texture)
-{   
+{
     assert(shipId == mShips.size());
     (void)shipId;
 
-    // Add the ship    
+    // Add the ship
     mShips.emplace_back(
         new ShipRenderContext(
             pointCount,
-            std::move(texture), 
+            std::move(texture),
             *mShaderManager,
             mGenericTextureAtlasOpenGLHandle,
             *mGenericTextureAtlasMetadata,
@@ -512,14 +512,14 @@ void RenderContext::RenderCloudsEnd()
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     // Draw
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mWaterElementCount));    
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mWaterElementCount));
 
     // Don't write anything to stencil buffer now
     glStencilMask(0x00);
 
     // Re-enable writing to the color buffer
     glColorMask(true, true, true, true);
-    
+
     // Reset wireframe mode, if enabled
     if (mWireframeMode)
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -714,7 +714,7 @@ void RenderContext::RenderEnd()
 ////////////////////////////////////////////////////////////////////////////////////
 
 void RenderContext::RenderCrossesOfLight()
-{    
+{
     // Use program
     mShaderManager->ActivateProgram<ProgramType::CrossOfLight>();
 
@@ -724,8 +724,8 @@ void RenderContext::RenderCrossesOfLight()
 
     // Upload buffer
     glBufferData(
-        GL_ARRAY_BUFFER, 
-        sizeof(CrossOfLightElement) * mCrossOfLightBuffer.size(), 
+        GL_ARRAY_BUFFER,
+        sizeof(CrossOfLightElement) * mCrossOfLightBuffer.size(),
         mCrossOfLightBuffer.data(),
         GL_DYNAMIC_DRAW);
 

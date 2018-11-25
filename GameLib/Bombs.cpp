@@ -110,7 +110,7 @@ void Bombs::DetonateAntiMatterBombs()
 }
 
 void Bombs::Upload(
-    int shipId,
+    ShipId shipId,
     Render::RenderContext & renderContext) const
 {
     for (auto & bomb : mCurrentBombs)

@@ -20,13 +20,13 @@
 namespace Physics
 {
 
-class Ship 
+class Ship
     : public Bomb::IPhysicsHandler
 {
 public:
 
     Ship(
-        int id,
+        ShipId id,
         World & parentWorld,
         std::shared_ptr<IGameEventHandler> gameEventHandler,
         Points && points,
@@ -38,7 +38,7 @@ public:
 
     ~Ship();
 
-    unsigned int GetId() const { return mId; }
+    ShipId GetId() const { return mId; }
 
     World const & GetParentWorld() const { return mParentWorld; }
     World & GetParentWorld() { return mParentWorld; }
@@ -56,6 +56,9 @@ public:
 
     auto const & GetElectricalElements() const { return mElectricalElements; }
     auto & GetElectricalElements() { return mElectricalElements; }
+
+    void MoveBy(
+        vec2f const & offset);
 
     void DestroyAt(
         vec2f const & targetPos,
@@ -142,7 +145,7 @@ public:
         GameParameters const & gameParameters,
         float & waterSplashed);
 
-    // Electrical 
+    // Electrical
 
     void UpdateElectricalDynamics(
         GameWallClock::time_point currentWallclockTime,
@@ -225,7 +228,7 @@ private:
 
 private:
 
-    unsigned int const mId;
+    ShipId const mId;
     World & mParentWorld;
     std::shared_ptr<IGameEventHandler> mGameEventHandler;
 

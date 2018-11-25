@@ -41,7 +41,7 @@ std::unique_ptr<GameController> GameController::Create(
     return std::unique_ptr<GameController>(
         new GameController(
             std::move(renderContext),
-            std::move(gameEventDispatcher),            
+            std::move(gameEventDispatcher),
             std::move(textLayer),
             std::move(materials),
             resourceLoader));
@@ -60,7 +60,7 @@ void GameController::ResetAndLoadShip(std::filesystem::path const & filepath)
     Reset();
 
     AddShip(std::move(shipDefinition));
-    
+
     mLastShipLoadedFilePath = filepath;
 }
 
@@ -114,7 +114,7 @@ void GameController::LowFrequencyUpdate()
 
     std::chrono::steady_clock::time_point nowReal = std::chrono::steady_clock::now();
     PublishStats(nowReal);
-    
+
     //
     // Reset stats
     //
@@ -253,8 +253,21 @@ void GameController::SetExtendedStatusTextEnabled(bool isEnabled)
     mTextLayer->SetExtendedStatusTextEnabled(isEnabled);
 }
 
+void GameController::MoveBy(
+    ShipId shipId,
+    vec2f const & screenOffset)
+{
+    vec2f worldOffset = mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
+
+    // Apply action
+    assert(!!mWorld);
+    mWorld->MoveBy(
+        shipId,
+        screenOffset);
+}
+
 void GameController::DestroyAt(
-    vec2f const & screenCoordinates, 
+    vec2f const & screenCoordinates,
     float radiusMultiplier)
 {
     vec2f worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
@@ -279,7 +292,7 @@ void GameController::SawThrough(
     // Apply action
     assert(!!mWorld);
     mWorld->SawThrough(
-        startWorldCoordinates, 
+        startWorldCoordinates,
         endWorldCoordinates,
         mGameParameters);
 }
@@ -297,7 +310,7 @@ void GameController::DrawTo(
     // Apply action
     assert(!!mWorld);
     mWorld->DrawTo(
-        worldCoordinates, 
+        worldCoordinates,
         strength);
 }
 
@@ -374,7 +387,7 @@ void GameController::DetonateAntiMatterBombs()
     mWorld->DetonateAntiMatterBombs();
 }
 
-ElementIndex GameController::GetNearestPointAt(vec2f const & screenCoordinates) const
+std::optional<ObjectId> GameController::GetNearestPointAt(vec2f const & screenCoordinates) const
 {
     vec2f worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -417,8 +430,8 @@ void GameController::Reset()
     assert(!!mWorld);
     mWorld.reset(
         new Physics::World(
-            mGameEventDispatcher, 
-            mGameParameters, 
+            mGameEventDispatcher,
+            mGameParameters,
             *mResourceLoader));
 
     // Reset rendering engine
@@ -433,26 +446,26 @@ void GameController::AddShip(ShipDefinition shipDefinition)
 {
     // Add ship to world
     int shipId = mWorld->AddShip(
-        shipDefinition, 
+        shipDefinition,
         mMaterials,
         mGameParameters);
 
     // Add ship to rendering engine
     mRenderContext->AddShip(
-        shipId, 
+        shipId,
         mWorld->GetShipPointCount(shipId),
         std::move(shipDefinition.TextureImage));
 
     // Notify
     mGameEventDispatcher->OnShipLoaded(
-        shipId, 
+        shipId,
         shipDefinition.Metadata.ShipName,
         shipDefinition.Metadata.Author);
 }
 
 void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
 {
-    // Calculate fps 
+    // Calculate fps
 
     auto totalElapsedReal = std::chrono::duration<float>(nowReal - mRenderStatsOriginTimestampReal);
     auto lastElapsedReal = std::chrono::duration<float>(nowReal - mRenderStatsLastTimestampReal);
@@ -462,7 +475,7 @@ void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
         ? static_cast<float>(mTotalFrameCount) / totalElapsedReal.count()
         : 0.0f;
 
-    float lastFps = 
+    float lastFps =
         lastElapsedReal.count() != 0.0f
         ? static_cast<float>(mLastFrameCount) / lastElapsedReal.count()
         : 0.0f;

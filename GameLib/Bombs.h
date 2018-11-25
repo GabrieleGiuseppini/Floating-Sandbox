@@ -8,7 +8,6 @@
 #include "CircularList.h"
 #include "GameParameters.h"
 #include "IGameEventHandler.h"
-#include "ObjectIdGenerator.h"
 #include "Physics.h"
 #include "RenderContext.h"
 #include "Vectors.h"
@@ -17,7 +16,7 @@
 #include <memory>
 
 namespace Physics
-{	
+{
 
 /*
  * This class manages a set of bombs.
@@ -32,16 +31,19 @@ public:
 
     Bombs(
         World & parentWorld,
+        ShipId shipId,
         std::shared_ptr<IGameEventHandler> gameEventHandler,
         Bomb::IPhysicsHandler & physicsHandler,
         Points & shipPoints,
         Springs & shipSprings)
         : mParentWorld(parentWorld)
+        , mShipId(shipId)
         , mGameEventHandler(std::move(gameEventHandler))
         , mPhysicsHandler(physicsHandler)
         , mShipPoints(shipPoints)
         , mShipSprings(shipSprings)
         , mCurrentBombs()
+        , mNextLocalObjectId(0)
     {
     }
 
@@ -89,7 +91,7 @@ public:
     //
 
     void Upload(
-        int shipId,
+        ShipId shipId,
         Render::RenderContext & renderContext) const;
 
 private:
@@ -164,7 +166,7 @@ private:
             // Create bomb
             std::unique_ptr<Bomb> bomb(
                 new TBomb(
-                    ObjectIdGenerator::GetInstance().Generate(),
+                    ObjectId(mShipId, mNextLocalObjectId++),
                     nearestUnarmedSpringIndex,
                     mParentWorld,
                     mGameEventHandler,
@@ -185,7 +187,7 @@ private:
                 mParentWorld.IsUnderwater(
                     bomb->GetPosition()));
 
-            // Add new bomb to set of bombs, removing eventual bombs that might get purged 
+            // Add new bomb to set of bombs, removing eventual bombs that might get purged
             mCurrentBombs.emplace(
                 [this, &gameParameters](std::unique_ptr<Bomb> const & purgedBomb)
                 {
@@ -207,12 +209,15 @@ private:
     // Our parent world
     World & mParentWorld;
 
+    // The ID of the ship we belong to
+    ShipId const mShipId;
+
     // The game event handler
     std::shared_ptr<IGameEventHandler> mGameEventHandler;
 
     // The handler to invoke for acting on the world
     Bomb::IPhysicsHandler & mPhysicsHandler;
-    
+
     // The container of all the ship's points
     Points & mShipPoints;
 
@@ -221,6 +226,9 @@ private:
 
     // The current set of bombs
     CircularList<std::unique_ptr<Bomb>, GameParameters::MaxBombs> mCurrentBombs;
+
+    // The next bomb ID value
+    typename ObjectId::LocalObjectId mNextLocalObjectId;
 };
 
 }

@@ -21,7 +21,7 @@ World::World(
     , mStars()
     , mClouds()
     , mWaterSurface()
-    , mOceanFloor(resourceLoader)    
+    , mOceanFloor(resourceLoader)
     , mCurrentSimulationTime(0.0f)
     , mCurrentVisitSequenceNumber(1u)
     , mGameEventHandler(std::move(gameEventHandler))
@@ -33,12 +33,12 @@ World::World(
     mOceanFloor.Update(gameParameters);
 }
 
-int World::AddShip(
+ShipId World::AddShip(
     ShipDefinition const & shipDefinition,
     std::shared_ptr<MaterialDatabase> materials,
     GameParameters const & gameParameters)
 {
-    int shipId = static_cast<int>(mAllShips.size());
+    ShipId shipId = static_cast<ShipId>(mAllShips.size());
 
     auto newShip = ShipBuilder::Create(
         shipId,
@@ -54,13 +54,21 @@ int World::AddShip(
     return shipId;
 }
 
-size_t World::GetShipPointCount(int shipId) const
+size_t World::GetShipPointCount(ShipId shipId) const
 {
     return mAllShips[shipId]->GetPointCount();
 }
 
+void World::MoveBy(
+    ShipId shipId,
+    vec2f const & offset)
+{
+    assert(shipId < mAllShips.size());
+    mAllShips[shipId]->MoveBy(offset);
+}
+
 void World::DestroyAt(
-    vec2f const & targetPos, 
+    vec2f const & targetPos,
     float radiusMultiplier,
     GameParameters const & gameParameters)
 {
@@ -201,11 +209,11 @@ void World::DetonateAntiMatterBombs()
     }
 }
 
-ElementIndex World::GetNearestPointAt(
+std::optional<ObjectId> World::GetNearestPointAt(
     vec2f const & targetPos,
     float radius) const
 {
-    ElementIndex bestPointIndex = NoneElementIndex;
+    std::optional<ObjectId> bestPointId;
     float bestSquareDistance = std::numeric_limits<float>::max();
 
     for (auto const & ship : mAllShips)
@@ -216,13 +224,13 @@ ElementIndex World::GetNearestPointAt(
             float squareDistance = (ship->GetPoints().GetPosition(shipBestPointIndex) - targetPos).squareLength();
             if (squareDistance < bestSquareDistance)
             {
-                bestPointIndex = shipBestPointIndex;
+                bestPointId = ObjectId(ship->GetId(), shipBestPointIndex);
                 bestSquareDistance = squareDistance;
             }
         }
     }
 
-    return bestPointIndex;
+    return bestPointId;
 }
 
 void World::Update(GameParameters const & gameParameters)
@@ -240,7 +248,7 @@ void World::Update(GameParameters const & gameParameters)
     mClouds.Update(mCurrentSimulationTime, gameParameters);
     mWaterSurface.Update(mCurrentSimulationTime, gameParameters);
     mOceanFloor.Update(gameParameters);
-    
+
     // Update all ships
     for (auto & ship : mAllShips)
     {
@@ -251,7 +259,7 @@ void World::Update(GameParameters const & gameParameters)
     }
 }
 
-void World::Render( 
+void World::Render(
     GameParameters const & gameParameters,
     Render::RenderContext & renderContext) const
 {
@@ -303,9 +311,9 @@ void World::UploadLandAndWater(
     float const sliceWidth = visibleWorldWidth / static_cast<float>(SlicesCount);
     float sliceX = renderContext.GetCameraWorldPosition().x - (visibleWorldWidth / 2.0f);
 
-    renderContext.UploadLandAndWaterStart(SlicesCount);    
+    renderContext.UploadLandAndWaterStart(SlicesCount);
 
-    // We do one extra iteration as the number of slices isthe number of quads, and the last vertical 
+    // We do one extra iteration as the number of slices isthe number of quads, and the last vertical
     // quad side must be at the end of the width
     for (size_t i = 0; i <= SlicesCount; ++i, sliceX += sliceWidth)
     {

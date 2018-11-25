@@ -55,7 +55,7 @@ bool RCBomb::Update(
                 mGameEventHandler->OnRCBombPing(
                     mParentWorld.IsUnderwater(GetPosition()),
                     1);
-               
+
                 // Schedule next transition
                 mNextStateTransitionTimePoint = currentWallClockTime + SlowPingOnInterval;
             }
@@ -137,7 +137,7 @@ bool RCBomb::Update(
 }
 
 void RCBomb::Upload(
-    int shipId,
+    ShipId shipId,
     Render::RenderContext & renderContext) const
 {
     switch (mState)
@@ -150,7 +150,7 @@ void RCBomb::Upload(
                 TextureFrameId(TextureGroupType::RcBomb, 0),
                 GetPosition(),
                 1.0,
-                mRotationBaseAxis, 
+                mRotationBaseAxis,
                 GetRotationOffsetAxis(),
                 1.0f);
 

@@ -19,7 +19,7 @@
 #include <optional>
 
 namespace Physics
-{   
+{
 
 /*
  * Base class of all bombs. Each bomb type has a specialization that takes care
@@ -87,7 +87,7 @@ public:
      * Uploads rendering information to the render context.
      */
     virtual void Upload(
-        int shipId,
+        ShipId shipId,
         Render::RenderContext & renderContext) const = 0;
 
     /*
@@ -263,11 +263,11 @@ private:
     // when the bomb has been detached
     std::optional<ElementIndex> mSpringIndex;
 
-    // The position of the midpoint of the spring of this bomb, if the bomb has been detached from its spring; 
+    // The position of the midpoint of the spring of this bomb, if the bomb has been detached from its spring;
     // otherwise, none
     std::optional<vec2f> mMidpointPosition;
 
-    // The last rotation axis of the spring of this bomb, if the bomb has been detached from its spring; 
+    // The last rotation axis of the spring of this bomb, if the bomb has been detached from its spring;
     // otherwise, none
     std::optional<vec2f> mRotationOffsetAxis;
 

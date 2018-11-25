@@ -158,7 +158,7 @@ public:
         bool isUnderwater,
         unsigned int size) override;
 
-    virtual void OnSinkingBegin(unsigned int shipId) override;
+    virtual void OnSinkingBegin(ShipId shipId) override;
 
     virtual void OnLightFlicker(
         DurationShortLongType duration,
@@ -208,8 +208,8 @@ private:
 
     enum class SoundType
     {
-        Break,        
-        Destroy,        
+        Break,
+        Destroy,
         Draw,
         Saw,
         Sawed,
@@ -230,7 +230,7 @@ private:
         AntiMatterBombContained,
         AntiMatterBombPreImplosion,
         AntiMatterBombImplosion,
-        AntiMatterBombExplosion,        
+        AntiMatterBombExplosion,
         Wave
     };
 
@@ -710,7 +710,7 @@ private:
             , LastPlayedSoundIndex(0u)
         {
         }
-    };    
+    };
 
     struct OneShotSingleChoiceSound
     {
@@ -1020,7 +1020,7 @@ private:
     bool mMasterEffectsMuted;
     float mMasterToolsVolume;
     bool mMasterToolsMuted;
-    float mMasterMusicVolume;    
+    float mMasterMusicVolume;
     bool mMasterMusicMuted;
 
     bool mPlayBreakSounds;

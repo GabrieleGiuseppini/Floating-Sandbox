@@ -64,7 +64,7 @@ public:
     }
 
     Triangles(Triangles && other) = default;
-    
+
     /*
      * Sets a (single) handler that is invoked whenever a triangle is destroyed.
      *
@@ -72,7 +72,7 @@ public:
      * other elements connected to the soon-to-be-deleted triangle might already have been
      * deleted.
      *
-     * The handler is not re-entrant: destroying other triangles from it is not supported 
+     * The handler is not re-entrant: destroying other triangles from it is not supported
      * and leads to undefined behavior.
      *
      * Setting more than one handler is not supported and leads to undefined behavior.
@@ -95,7 +95,7 @@ public:
     //
 
     void UploadElements(
-        int shipId,
+        ShipId shipId,
         Render::RenderContext & renderContext,
         Points const & points) const;
 
@@ -142,7 +142,7 @@ private:
     Buffer<Endpoints> mEndpointsBuffer;
 
     //////////////////////////////////////////////////////////
-    // Container 
+    // Container
     //////////////////////////////////////////////////////////
 
     // The handler registered for triangle deletions

@@ -38,6 +38,7 @@ const long ID_PAUSE_MENUITEM = wxNewId();
 const long ID_STEP_MENUITEM = wxNewId();
 const long ID_RESET_VIEW_MENUITEM = wxNewId();
 
+const long ID_MOVE_MENUITEM = wxNewId();
 const long ID_SMASH_MENUITEM = wxNewId();
 const long ID_SLICE_MENUITEM = wxNewId();
 const long ID_GRAB_MENUITEM = wxNewId();
@@ -85,12 +86,12 @@ MainFrame::MainFrame(wxApp * mainApp)
     , mIsNextFrameAllowedToStep(false)
 {
     Create(
-        nullptr, 
+        nullptr,
         wxID_ANY,
         GetVersionInfo(VersionFormat::Long),
-        wxDefaultPosition, 
-        wxDefaultSize, 
-        wxDEFAULT_FRAME_STYLE, 
+        wxDefaultPosition,
+        wxDefaultSize,
+        wxDEFAULT_FRAME_STYLE,
         _T("Main Frame"));
 
     SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
@@ -145,12 +146,12 @@ MainFrame::MainFrame(wxApp * mainApp)
     mMainGLCanvas->Connect(wxEVT_RIGHT_UP, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasRightUp, 0, this);
     mMainGLCanvas->Connect(wxEVT_MOTION, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasMouseMove, 0, this);
     mMainGLCanvas->Connect(wxEVT_MOUSEWHEEL, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasMouseWheel, 0, this);
-    
+
     mMainFrameSizer->Add(
         mMainGLCanvas.get(),
         1,                  // Proportion
         wxALL | wxEXPAND,   // Flags
-        0);                 // Border   
+        0);                 // Border
 
     // Take context for this canvas
     mMainGLCanvasContext = std::make_unique<wxGLContext>(mMainGLCanvas.get());
@@ -162,12 +163,12 @@ MainFrame::MainFrame(wxApp * mainApp)
     //
 
     wxMenuBar * mainMenuBar = new wxMenuBar();
-    
+
 
     // File
 
     wxMenu * fileMenu = new wxMenu();
-    
+
     wxMenuItem * loadShipMenuItem = new wxMenuItem(fileMenu, ID_LOAD_SHIP_MENUITEM, _("Load Ship\tCtrl+O"), wxEmptyString, wxITEM_NORMAL);
     fileMenu->Append(loadShipMenuItem);
     Connect(ID_LOAD_SHIP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnLoadShipMenuItemSelected);
@@ -195,7 +196,7 @@ MainFrame::MainFrame(wxApp * mainApp)
     controlsMenu->Append(zoomOutMenuItem);
     Connect(ID_ZOOM_OUT_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnZoomOutMenuItemSelected);
 
-    wxMenuItem * amblientLightUpMenuItem = new wxMenuItem(controlsMenu, ID_AMBIENT_LIGHT_UP_MENUITEM, _("Bright Ambient Light\tPgUp"), wxEmptyString, wxITEM_NORMAL);    
+    wxMenuItem * amblientLightUpMenuItem = new wxMenuItem(controlsMenu, ID_AMBIENT_LIGHT_UP_MENUITEM, _("Bright Ambient Light\tPgUp"), wxEmptyString, wxITEM_NORMAL);
     controlsMenu->Append(amblientLightUpMenuItem);
     Connect(ID_AMBIENT_LIGHT_UP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAmbientLightUpMenuItemSelected);
 
@@ -225,6 +226,10 @@ MainFrame::MainFrame(wxApp * mainApp)
     // Tools
 
     mToolsMenu = new wxMenu();
+
+    wxMenuItem * moveMenuItem = new wxMenuItem(mToolsMenu, ID_MOVE_MENUITEM, _("Move\tM"), wxEmptyString, wxITEM_RADIO);
+    mToolsMenu->Append(moveMenuItem);
+    Connect(ID_MOVE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnMoveMenuItemSelected);
 
     wxMenuItem * smashMenuItem = new wxMenuItem(mToolsMenu, ID_SMASH_MENUITEM, _("Smash\tS"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(smashMenuItem);
@@ -265,19 +270,19 @@ MainFrame::MainFrame(wxApp * mainApp)
     Connect(ID_RCBOMBDETONATE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnRCBombDetonateMenuItemSelected);
     mRCBombsDetonateMenuItem->Enable(false);
 
-    mAntiMatterBombsDetonateMenuItem = new wxMenuItem(mToolsMenu, ID_ANTIMATTERBOMBDETONATE_MENUITEM, _("Detonate Anti-Matter Bombs\tM"), wxEmptyString, wxITEM_NORMAL);
+    mAntiMatterBombsDetonateMenuItem = new wxMenuItem(mToolsMenu, ID_ANTIMATTERBOMBDETONATE_MENUITEM, _("Detonate Anti-Matter Bombs\tN"), wxEmptyString, wxITEM_NORMAL);
     mToolsMenu->Append(mAntiMatterBombsDetonateMenuItem);
     Connect(ID_ANTIMATTERBOMBDETONATE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAntiMatterBombDetonateMenuItemSelected);
     mAntiMatterBombsDetonateMenuItem->Enable(false);
 
     mainMenuBar->Append(mToolsMenu, _("Tools"));
 
-    
+
     // Options
 
     wxMenu * optionsMenu = new wxMenu();
 
-    wxMenuItem * openSettingsWindowMenuItem = new wxMenuItem(optionsMenu, ID_OPEN_SETTINGS_WINDOW_MENUITEM, _("Open Settings Window\tCtrl+S"), wxEmptyString, wxITEM_NORMAL);   
+    wxMenuItem * openSettingsWindowMenuItem = new wxMenuItem(optionsMenu, ID_OPEN_SETTINGS_WINDOW_MENUITEM, _("Open Settings Window\tCtrl+S"), wxEmptyString, wxITEM_NORMAL);
     optionsMenu->Append(openSettingsWindowMenuItem);
     Connect(ID_OPEN_SETTINGS_WINDOW_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnOpenSettingsWindowMenuItemSelected);
 
@@ -360,7 +365,7 @@ MainFrame::MainFrame(wxApp * mainApp)
     //
 
     mEventTickerPanel = std::make_unique<EventTickerPanel>(mainPanel);
-    
+
     mMainFrameSizer->Add(mEventTickerPanel.get(), 0, wxEXPAND);
 
     mMainFrameSizer->Hide(mEventTickerPanel.get());
@@ -371,8 +376,8 @@ MainFrame::MainFrame(wxApp * mainApp)
     //
 
     mainPanel->SetSizerAndFit(mMainFrameSizer);
-    
-    
+
+
 
     //
     // Initialize timers
@@ -626,16 +631,16 @@ void MainFrame::OnKeyDown(wxKeyEvent & event)
         vec2f screenCoords = mToolController->GetMouseScreenCoordinates();
         vec2f worldCoords = mGameController->ScreenToWorld(screenCoords);
 
-        auto pointIndex = mGameController->GetNearestPointAt(screenCoords);
-
-        LogMessage("Point: ", pointIndex, " @ ", worldCoords.toString());
+        auto pointId = mGameController->GetNearestPointAt(screenCoords);
+        if (!!pointId)
+            LogMessage("Point: ", pointId->ToString(), " @ ", worldCoords.toString());
     }
-    
+
     event.Skip();
 }
 
 void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
-{   
+{
     // Note: on my laptop I can't get beyond 64 frames per second, hence I'm not
     // setting a delay here
     mGameTimer->Start(0, true);
@@ -754,14 +759,14 @@ void MainFrame::OnLoadShipMenuItemSelected(wxCommandEvent & /*event*/)
     if (!mFileOpenDialog)
     {
         mFileOpenDialog = std::make_unique<wxFileDialog>(
-            this, 
-            L"Select Ship", 
-            wxEmptyString, 
-            wxEmptyString, 
+            this,
+            L"Select Ship",
+            wxEmptyString,
+            wxEmptyString,
             L"Ship files (*.shp; *.png)|*.shp; *.png",
-            wxFD_OPEN | wxFD_FILE_MUST_EXIST, 
-            wxDefaultPosition, 
-            wxDefaultSize, 
+            wxFD_OPEN | wxFD_FILE_MUST_EXIST,
+            wxDefaultPosition,
+            wxDefaultSize,
             _T("File Open Dialog"));
     }
 
@@ -779,7 +784,7 @@ void MainFrame::OnLoadShipMenuItemSelected(wxCommandEvent & /*event*/)
             mGameController->ResetAndLoadShip(filename);
         }
         catch (std::exception const & ex)
-        { 
+        {
             Die(ex.what());
         }
     }
@@ -815,7 +820,7 @@ void MainFrame::OnPauseMenuItemSelected(wxCommandEvent & /*event*/)
         mStepMenuItem->Enable(true);
     }
     else
-    { 
+    {
         GameWallClock::GetInstance().Resume();
 
         if (!!mGameController)
@@ -868,6 +873,12 @@ void MainFrame::OnAmbientLightDownMenuItemSelected(wxCommandEvent & /*event*/)
 
     float newAmbientLight = mGameController->GetAmbientLightIntensity() / 1.02f;
     mGameController->SetAmbientLightIntensity(newAmbientLight);
+}
+
+void MainFrame::OnMoveMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mToolController);
+    mToolController->SetTool(ToolType::Move);
 }
 
 void MainFrame::OnSmashMenuItemSelected(wxCommandEvent & /*event*/)

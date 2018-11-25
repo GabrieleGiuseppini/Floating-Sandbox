@@ -15,7 +15,7 @@
 #include <memory>
 
 namespace Physics
-{	
+{
 
 /*
  * This class manages the set of points that has been pinned.
@@ -28,14 +28,17 @@ public:
 
     PinnedPoints(
         World & parentWorld,
+        ShipId shipId,
         std::shared_ptr<IGameEventHandler> gameEventHandler,
         Points & shipPoints,
         Springs & shipSprings)
         : mParentWorld(parentWorld)
+        , mShipId(shipId)
         , mGameEventHandler(std::move(gameEventHandler))
         , mShipPoints(shipPoints)
         , mShipSprings(shipSprings)
         , mCurrentPinnedPoints()
+        , mNextLocalObjectId(0)
     {
     }
 
@@ -116,7 +119,7 @@ public:
             // Pin it
             mShipPoints.Pin(nearestUnpinnedPointIndex);
 
-            // Add to set of pinned points, unpinning eventual pins that might get purged 
+            // Add to set of pinned points, unpinning eventual pins that might get purged
             mCurrentPinnedPoints.emplace(
                 [this](auto purgedPinnedPointIndex)
                 {
@@ -142,7 +145,7 @@ public:
     //
 
     void Upload(
-        int shipId,
+        ShipId shipId,
         Render::RenderContext & renderContext) const;
 
 private:
@@ -213,7 +216,7 @@ private:
             // Create bomb
             std::unique_ptr<Bomb> bomb(
                 new TBomb(
-                    ObjectIdGenerator::GetInstance().Generate(),
+                    ObjectId(mShipId, mNextLocalObjectId++),
                     nearestUnarmedSpringIndex,
                     mParentWorld,
                     mGameEventHandler,
@@ -234,7 +237,7 @@ private:
                 mParentWorld.IsUnderwater(
                     bomb->GetPosition()));
 
-            // Add new bomb to set of bombs, removing eventual bombs that might get purged 
+            // Add new bomb to set of bombs, removing eventual bombs that might get purged
             mCurrentBombs.emplace(
                 [this, &gameParameters](std::unique_ptr<Bomb> const & purgedBomb)
                 {
@@ -256,9 +259,12 @@ private:
     // Our parent world
     World & mParentWorld;
 
+    // The ID of the ship we belong to
+    ShipId const mShipId;
+
     // The game event handler
     std::shared_ptr<IGameEventHandler> mGameEventHandler;
-    
+
     // The container of all the ship's points
     Points & mShipPoints;
 
@@ -267,6 +273,9 @@ private:
 
     // The current set of pinned points
     CircularList<ElementIndex, GameParameters::MaxPinnedPoints> mCurrentPinnedPoints;
+
+    // The next pinned point ID value
+    typename ObjectId::LocalObjectId mNextLocalObjectId;
 };
 
 }

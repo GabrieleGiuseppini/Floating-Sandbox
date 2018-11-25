@@ -101,7 +101,7 @@ public:
         mBreakEvents[std::make_tuple(material, isUnderwater)] += size;
     }
 
-    virtual void OnSinkingBegin(unsigned int shipId) override
+    virtual void OnSinkingBegin(ShipId shipId) override
     {
         if (mSinkingBeginEvents.end() == std::find(mSinkingBeginEvents.begin(), mSinkingBeginEvents.end(), shipId))
         {
@@ -338,7 +338,7 @@ private:
     // The current events being aggregated
     unordered_tuple_map<std::tuple<Material const *, bool>, unsigned int> mStressEvents;
     unordered_tuple_map<std::tuple<Material const *, bool>, unsigned int> mBreakEvents;
-    std::vector<unsigned int> mSinkingBeginEvents;
+    std::vector<ShipId> mSinkingBeginEvents;
     unordered_tuple_map<std::tuple<DurationShortLongType, bool>, unsigned int> mLightFlickerEvents;
     unordered_tuple_map<std::tuple<BombType, bool>, unsigned int> mBombExplosionEvents;
     unordered_tuple_map<std::tuple<bool>, unsigned int> mRCBombPingEvents;

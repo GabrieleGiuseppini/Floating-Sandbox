@@ -62,6 +62,7 @@ public:
     void SetStatusTextEnabled(bool isEnabled);
     void SetExtendedStatusTextEnabled(bool isEnabled);
 
+    void MoveBy(ShipId shipId, vec2f const & screenOffset);
     void DestroyAt(vec2f const & screenCoordinates, float radiusMultiplier);
     void SawThrough(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates);
     void DrawTo(vec2f const & screenCoordinates, float strengthMultiplier);
@@ -72,7 +73,7 @@ public:
     void ToggleAntiMatterBombAt(vec2f const & screenCoordinates);
     void DetonateRCBombs();
     void DetonateAntiMatterBombs();
-    ElementIndex GetNearestPointAt(vec2f const & screenCoordinates) const;
+    std::optional<ObjectId> GetNearestPointAt(vec2f const & screenCoordinates) const;
 
     void SetCanvasSize(int width, int height) { mRenderContext->SetCanvasSize(width, height); }
 

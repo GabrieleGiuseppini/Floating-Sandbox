@@ -101,9 +101,9 @@ Render:
 
 - Roadmap:
 	= 1.7.0
-		- Move tool (*)
+		= Move tool (*)
 		- Magic spring optimization (*)
-			- Then decide whether to start game at 2X
+			- Then decide whether to double the number of basis iterations
 	- 1.8.0
 		- Batisphere with pumps and propulsion
 		- Settings Manager (*)
@@ -395,11 +395,13 @@ Render:
 		- New electrical material type; color trick like ropes to have unique and deterministic IDs for switches
 			- One material (base structural color) for initially on and another one for initially off
 			- New electrical property: ConductsElectricity, bool - used at connectivity visit
-		- ObjectId overhaul:
-			- ObjectId is unique only in the context in which it's used (e.g. bombs vs switches)
-			- ObjectId == <ShipId (new GameType alias, uint32_t w/ None), LocalObjectId (new GameType alias, uint32_t)>
-				- LocalObjectId is provided by caller
-				- ObjectIdGenerator only provides helper for globally unique - with no guarantees - or should go
+		+ ObjectId overhaul:
+			+ ObjectId is unique only in the context in which it's used (e.g. bombs vs switches)
+			+ ObjectId == <ShipId (new GameType alias, uint32_t w/ None), LocalObjectId (uint32_t)>
+				+ LocalObjectId is provided by caller
+				+ ObjectIdGenerator only provides helper for globally unique - with no guarantees - or should go
+			+ All ship ID ints become ShipId
+			+ All object ID ints become ObjectId
 		- Ship json adds optional names for each ID
 			- as vector<tuple<local switch ID, std::string>>>
 				- local switch ID is ID from color code
@@ -477,11 +479,13 @@ Render:
 	- Water drag 
 		- The one already there assumes velocity always normal to surface, but we should consider surface normal instead
 
-	- Move tool
-		- Rename current "move" as "Pan"
-		- With move tool enabled:
-			- Click on ship -> GameController returns std::optional<ShipId> -> if not None, tool is engaged (save cur screen pos)
-				- Works like pan 
+	= Move tool
+		+ Rename current "move" as "Pan"
+		+ ShipId type (see around here)
+		+ ObjectId type (see around here)
+		= With move tool enabled:
+			+ Click on ship -> GameController returns std::optional<ShipId> -> if not None, tool is engaged (save cur screen pos)
+				+ Works like pan 
 			- Moving tool tells GameController delta (offset) screen 
 
 	- DestroyAt:
@@ -3122,3 +3126,4 @@ IF WX:
 			+ Verify leak is slower
 			+ Do also at RenderContext
 	+ Fix issue with clouds and canvas size (wrong aspect ratio)
+	

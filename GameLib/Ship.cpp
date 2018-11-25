@@ -30,7 +30,7 @@ namespace Physics {
 //   SSS    H     H  IIIIIII  P
 
 Ship::Ship(
-    int id,
+    ShipId id,
     World & parentWorld,
     std::shared_ptr<IGameEventHandler> gameEventHandler,
     Points && points,
@@ -54,11 +54,13 @@ Ship::Ship(
     , mWaterSplashedRunningAverage()
     , mPinnedPoints(
         mParentWorld,
+        mId,
         mGameEventHandler,
         mPoints,
         mSprings)
     , mBombs(
         mParentWorld,
+        mId,
         mGameEventHandler,
         *this,
         mPoints,
@@ -77,6 +79,12 @@ Ship::Ship(
 
 Ship::~Ship()
 {
+}
+
+void Ship::MoveBy(
+    vec2f const & offset)
+{
+    // TODOHERE
 }
 
 void Ship::DestroyAt(

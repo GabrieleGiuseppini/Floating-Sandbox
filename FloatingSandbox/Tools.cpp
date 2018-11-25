@@ -63,7 +63,7 @@ std::vector<std::unique_ptr<wxCursor>> MakeCursors(
 
             // Red   = 0xDB0F0F
             // Green = 0x039B0A (final)
-            
+
             float const targetR = ((c == CursorStep) ? 0x03 : 0xDB) / 255.0f;
             float const targetG = ((c == CursorStep) ? 0x9B : 0x0F) / 255.0f;
             float const targetB = ((c == CursorStep) ? 0x0A : 0x0F) / 255.0f;
@@ -144,6 +144,26 @@ void ContinuousTool::Update(InputState const & inputState)
 }
 
 ////////////////////////////////////////////////////////////////////////
+// Move
+////////////////////////////////////////////////////////////////////////
+
+MoveTool::MoveTool(
+    wxFrame * parentFrame,
+    std::shared_ptr<GameController> gameController,
+    std::shared_ptr<SoundController> soundController,
+    ResourceLoader & resourceLoader)
+    : OneShotTool(
+        ToolType::Move,
+        parentFrame,
+        std::move(gameController),
+        std::move(soundController))
+    , mEngagedShipId(std::nullopt)
+    , mUpCursor(MakeCursor("move_cursor_up", 13, 5, resourceLoader))
+    , mDownCursor(MakeCursor("move_cursor_down", 13, 5, resourceLoader))
+{
+}
+
+////////////////////////////////////////////////////////////////////////
 // Smash
 ////////////////////////////////////////////////////////////////////////
 
@@ -181,7 +201,7 @@ void SmashTool::ApplyTool(
 
     // Destroy
     mGameController->DestroyAt(
-        inputState.MousePosition, 
+        inputState.MousePosition,
         radiusMultiplier);
 }
 
@@ -246,9 +266,9 @@ void GrabTool::ApplyTool(
 
     // Modulate down cursor
     ModulateCursor(
-        inputState.IsShiftKeyDown ? mDownMinusCursors : mDownPlusCursors, 
-        strengthMultiplier, 
-        1.0f, 
+        inputState.IsShiftKeyDown ? mDownMinusCursors : mDownPlusCursors,
+        strengthMultiplier,
+        1.0f,
         MaxMultiplier);
 
     // Draw

@@ -13,7 +13,7 @@
 /*
  * This interface defines the methods that game event handlers must implement.
  *
- * The methods are default-implemented to facilitate implementation of handlers that 
+ * The methods are default-implemented to facilitate implementation of handlers that
  * only care about a subset of the events.
  */
 class IGameEventHandler
@@ -75,7 +75,7 @@ public:
         // Default-implemented
     }
 
-    virtual void OnSinkingBegin(unsigned int /*shipId*/)
+    virtual void OnSinkingBegin(ShipId /*shipId*/)
     {
         // Default-implemented
     }

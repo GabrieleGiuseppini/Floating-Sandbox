@@ -14,7 +14,7 @@ EventTickerPanel::EventTickerPanel(wxWindow* parent)
     : wxPanel(
         parent,
         wxID_ANY,
-        wxDefaultPosition, 
+        wxDefaultPosition,
         wxDefaultSize,
         wxBORDER_SIMPLE)
     , mBufferedDCBitmap()
@@ -76,7 +76,7 @@ void EventTickerPanel::Update()
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-void EventTickerPanel::OnGameReset() 
+void EventTickerPanel::OnGameReset()
 {
     mCurrentTickerText = std::string(TickerTextSize, ' ');
     mFutureTickerText.clear();
@@ -135,7 +135,7 @@ void EventTickerPanel::OnBreak(
     AppendFutureTickerText(ss.str());
 }
 
-void EventTickerPanel::OnSinkingBegin(unsigned int shipId)
+void EventTickerPanel::OnSinkingBegin(ShipId shipId)
 {
     std::stringstream ss;
     ss << "SHIP " << shipId << " IS SINKING!";

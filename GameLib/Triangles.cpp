@@ -33,7 +33,7 @@ void Triangles::Destroy(ElementIndex triangleElementIndex)
 }
 
 void Triangles::UploadElements(
-    int shipId,
+    ShipId shipId,
     Render::RenderContext & renderContext,
     Points const & points) const
 {

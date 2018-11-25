@@ -17,7 +17,7 @@ class EventTickerPanel : public wxPanel, public IGameEventHandler
 public:
 
     EventTickerPanel(wxWindow* parent);
-	
+
 	virtual ~EventTickerPanel();
 
     void Update();
@@ -50,7 +50,7 @@ public:
         bool isUnderwater,
         unsigned int size) override;
 
-    virtual void OnSinkingBegin(unsigned int shipId) override;
+    virtual void OnSinkingBegin(ShipId shipId) override;
 
     virtual void OnBombPlaced(
         ObjectId bombId,

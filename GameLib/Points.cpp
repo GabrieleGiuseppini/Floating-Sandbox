@@ -5,7 +5,6 @@
 ***************************************************************************************/
 #include "Physics.h"
 
-
 #include "GameRandomEngine.h"
 
 #include <cmath>
@@ -278,7 +277,7 @@ void Points::UpdateEphemeralParticles(
 }
 
 void Points::Upload(
-    int shipId,
+    ShipId shipId,
     Render::RenderContext & renderContext) const
 {
     // Upload immutable attributes, if we haven't uploaded them yet
@@ -301,7 +300,7 @@ void Points::Upload(
 }
 
 void Points::UploadElements(
-    int shipId,
+    ShipId shipId,
     Render::RenderContext & renderContext) const
 {
     for (ElementIndex pointIndex : NonEphemeralPoints())
@@ -317,7 +316,7 @@ void Points::UploadElements(
 }
 
 void Points::UploadVectors(
-    int shipId,
+    ShipId shipId,
     Render::RenderContext & renderContext) const
 {
     static constexpr vec4f VectorColor(0.5f, 0.1f, 0.f, 1.0f);
@@ -355,7 +354,7 @@ void Points::UploadVectors(
 }
 
 void Points::UploadEphemeralParticles(
-    int shipId,
+    ShipId shipId,
     Render::RenderContext & renderContext) const
 {
     //

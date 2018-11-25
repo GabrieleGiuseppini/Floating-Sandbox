@@ -35,7 +35,7 @@ public:
         ResourceLoader & resourceLoader,
         vec4f const & ropeColour,
         ProgressCallback const & progressCallback);
-    
+
     ~RenderContext();
 
 public:
@@ -54,7 +54,7 @@ public:
         mZoom = zoom;
 
         UpdateVisibleWorldCoordinates();
-        UpdateOrthoMatrix();        
+        UpdateOrthoMatrix();
     }
 
     void AdjustZoom(float amount)
@@ -192,7 +192,7 @@ public:
         return mShipRenderMode;
     }
 
-    void SetShipRenderMode(ShipRenderMode shipRenderMode) 
+    void SetShipRenderMode(ShipRenderMode shipRenderMode)
     {
         mShipRenderMode = shipRenderMode;
 
@@ -268,7 +268,7 @@ public:
     void Reset();
 
     void AddShip(
-        int shipId,
+        ShipId shipId,
         size_t pointCount,
         std::optional<ImageData> texture);
 
@@ -344,7 +344,7 @@ public:
         float rightX = mappedX + scale * (cloudAtlasFrameMetadata.FrameMetadata.WorldWidth - cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldX);
         float topY = mappedY + scale * (cloudAtlasFrameMetadata.FrameMetadata.WorldHeight - cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldY) * aspectRatio;
         float bottomY = mappedY - scale * cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldY * aspectRatio;
-        
+
         cloudElement->ndcXTopLeft1 = leftX;
         cloudElement->ndcYTopLeft1 = topY;
         cloudElement->ndcTextureXTopLeft1 = cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x;
@@ -493,7 +493,7 @@ public:
     /////////////////////////////////////////////////////////////////////////
 
     void RenderShipStart(
-        int shipId,
+        ShipId shipId,
         std::vector<std::size_t> const & connectedComponentsMaxSizes)
     {
         assert(shipId < mShips.size());
@@ -506,7 +506,7 @@ public:
     //
 
     void UploadShipPointImmutableGraphicalAttributes(
-        int shipId,
+        ShipId shipId,
         vec4f const * restrict color,
         vec2f const * restrict textureCoordinates)
     {
@@ -518,7 +518,7 @@ public:
     }
 
     void UploadShipPointColorRange(
-        int shipId,
+        ShipId shipId,
         vec4f const * restrict color,
         size_t startIndex,
         size_t count)
@@ -532,7 +532,7 @@ public:
     }
 
     void UploadShipPoints(
-        int shipId,
+        ShipId shipId,
         vec2f const * restrict position,
         float const * restrict light,
         float const * restrict water)
@@ -549,7 +549,7 @@ public:
     // Ship elements (points, springs, ropes, and triangles)
     //
 
-    inline void UploadShipElementsStart(int shipId)
+    inline void UploadShipElementsStart(ShipId shipId)
     {
         assert(shipId < mShips.size());
 
@@ -557,7 +557,7 @@ public:
     }
 
     inline void UploadShipElementPoint(
-        int shipId,
+        ShipId shipId,
         int shipPointIndex,
         ConnectedComponentId connectedComponentId)
     {
@@ -569,7 +569,7 @@ public:
     }
 
     inline void UploadShipElementSpring(
-        int shipId,
+        ShipId shipId,
         int shipPointIndex1,
         int shipPointIndex2,
         ConnectedComponentId connectedComponentId)
@@ -583,7 +583,7 @@ public:
     }
 
     inline void UploadShipElementRope(
-        int shipId,
+        ShipId shipId,
         int shipPointIndex1,
         int shipPointIndex2,
         ConnectedComponentId connectedComponentId)
@@ -597,7 +597,7 @@ public:
     }
 
     inline void UploadShipElementTriangle(
-        int shipId,
+        ShipId shipId,
         int shipPointIndex1,
         int shipPointIndex2,
         int shipPointIndex3,
@@ -612,14 +612,14 @@ public:
             connectedComponentId);
     }
 
-    inline void UploadShipElementsEnd(int shipId)
+    inline void UploadShipElementsEnd(ShipId shipId)
     {
         assert(shipId < mShips.size());
 
         mShips[shipId]->UploadElementsEnd();
     }
 
-    inline void UploadShipElementStressedSpringsStart(int shipId)
+    inline void UploadShipElementStressedSpringsStart(ShipId shipId)
     {
         assert(shipId < mShips.size());
 
@@ -627,7 +627,7 @@ public:
     }
 
     inline void UploadShipElementStressedSpring(
-        int shipId,
+        ShipId shipId,
         int shipPointIndex1,
         int shipPointIndex2,
         ConnectedComponentId connectedComponentId)
@@ -640,7 +640,7 @@ public:
             connectedComponentId);
     }
 
-    void UploadShipElementStressedSpringsEnd(int shipId)
+    void UploadShipElementStressedSpringsEnd(ShipId shipId)
     {
         assert(shipId < mShips.size());
 
@@ -652,7 +652,7 @@ public:
     //
 
     inline void UploadShipGenericTextureRenderSpecification(
-        int shipId,
+        ShipId shipId,
         ConnectedComponentId connectedComponentId,
         TextureFrameId const & textureFrameId,
         vec2f const & position)
@@ -666,7 +666,7 @@ public:
     }
 
     inline void UploadShipGenericTextureRenderSpecification(
-        int shipId,
+        ShipId shipId,
         ConnectedComponentId connectedComponentId,
         TextureFrameId const & textureFrameId,
         vec2f const & position,
@@ -688,7 +688,7 @@ public:
     }
 
     inline void UploadShipGenericTextureRenderSpecification(
-        int shipId,
+        ShipId shipId,
         ConnectedComponentId connectedComponentId,
         TextureFrameId const & textureFrameId,
         vec2f const & position,
@@ -711,7 +711,7 @@ public:
     // Ephemeral points
     //
 
-    inline void UploadShipEphemeralPointsStart(int shipId)
+    inline void UploadShipEphemeralPointsStart(ShipId shipId)
     {
         assert(shipId < mShips.size());
 
@@ -719,7 +719,7 @@ public:
     }
 
     inline void UploadShipEphemeralPoint(
-        int shipId,
+        ShipId shipId,
         int pointIndex)
     {
         assert(shipId < mShips.size());
@@ -728,7 +728,7 @@ public:
             pointIndex);
     }
 
-    void UploadShipEphemeralPointsEnd(int shipId)
+    void UploadShipEphemeralPointsEnd(ShipId shipId)
     {
         assert(shipId < mShips.size());
 
@@ -741,7 +741,7 @@ public:
     //
 
     void UploadShipVectors(
-        int shipId,
+        ShipId shipId,
         size_t count,
         vec2f const * restrict position,
         vec2f const * restrict vector,
@@ -758,7 +758,7 @@ public:
             color);
     }
 
-    void RenderShipEnd(int shipId)
+    void RenderShipEnd(ShipId shipId)
     {
         assert(shipId < mShips.size());
 
@@ -812,8 +812,8 @@ public:
 
 private:
 
-    void RenderCrossesOfLight();    
-    
+    void RenderCrossesOfLight();
+
     void UpdateOrthoMatrix();
     void UpdateCanvasSize();
     void UpdateVisibleWorldCoordinates();
@@ -902,7 +902,7 @@ private:
     std::unique_ptr<CloudElement[]> mCloudElementBuffer;
     size_t mCurrentCloudElementCount;
     size_t mCloudElementCount;
-    
+
     GameOpenGLVBO mCloudVBO;
 
     GameOpenGLTexture mCloudTextureAtlasOpenGLHandle;
@@ -926,7 +926,7 @@ private:
     size_t mCurrentLandElementCount;
     size_t mLandElementCount;
 
-    GameOpenGLVBO mLandVBO;    
+    GameOpenGLVBO mLandVBO;
 
     //
     // Sea water
@@ -938,7 +938,7 @@ private:
         float x1;
         float y1;
         float textureY1;
-        
+
         float x2;
         float y2;
         float textureY2;
@@ -1009,12 +1009,12 @@ private:
     int mCanvasHeight;
 
     float mAmbientLightIntensity;
-    float mSeaWaterTransparency;    
+    float mSeaWaterTransparency;
     bool mShowShipThroughSeaWater;
     float mWaterContrast;
     float mWaterLevelOfDetail;
     ShipRenderMode mShipRenderMode;
-    VectorFieldRenderMode mVectorFieldRenderMode; 
+    VectorFieldRenderMode mVectorFieldRenderMode;
     float mVectorFieldLengthMultiplier;
     bool mShowStressedSprings;
     bool mWireframeMode;

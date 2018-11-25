@@ -258,19 +258,19 @@ public:
     //
 
     void Upload(
-        int shipId,
+        ShipId shipId,
         Render::RenderContext & renderContext) const;
 
     void UploadElements(
-        int shipId,
+        ShipId shipId,
         Render::RenderContext & renderContext) const;
 
     void UploadVectors(
-        int shipId,
+        ShipId shipId,
         Render::RenderContext & renderContext) const;
 
     void UploadEphemeralParticles(
-        int shipId,
+        ShipId shipId,
         Render::RenderContext & renderContext) const;
 
 public:

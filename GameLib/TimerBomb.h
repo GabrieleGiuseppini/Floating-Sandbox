@@ -16,7 +16,7 @@
 using namespace std::chrono_literals;
 
 namespace Physics
-{   
+{
 
 /*
  * Bomb specialization for bombs that explode after a time interval.
@@ -67,7 +67,7 @@ public:
     virtual void OnNeighborhoodDisturbed() override;
 
     virtual void Upload(
-        int shipId,
+        ShipId shipId,
         Render::RenderContext & renderContext) const override;
 
 private:
@@ -109,7 +109,7 @@ private:
     static constexpr int FuseStepCount = 16;
     static constexpr int FuseLengthStepCount = 4;
     static constexpr int FuseFramesPerFuseLengthCount = FuseStepCount / FuseLengthStepCount;
-    
+
     static constexpr auto DetonationLeadInToExplosionInterval = 1500ms;
 
     static constexpr auto ExplosionProgressInterval = 20ms;

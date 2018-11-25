@@ -28,7 +28,7 @@ void PinnedPoints::OnPointDestroyed(ElementIndex pointElementIndex)
 void PinnedPoints::OnSpringDestroyed(ElementIndex springElementIndex)
 {
     //
-    // If an endpoint was pinned and it has now lost all of its springs, then make 
+    // If an endpoint was pinned and it has now lost all of its springs, then make
     // it unpinned
     //
 
@@ -57,7 +57,7 @@ void PinnedPoints::OnSpringDestroyed(ElementIndex springElementIndex)
 }
 
 void PinnedPoints::Upload(
-    int shipId,
+    ShipId shipId,
     Render::RenderContext & renderContext) const
 {
     for (auto pinnedPointIndex : mCurrentPinnedPoints)

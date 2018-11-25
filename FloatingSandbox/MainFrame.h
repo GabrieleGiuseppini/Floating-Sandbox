@@ -34,7 +34,7 @@
 /*
  * The main window of the game's GUI.
  */
-class MainFrame 
+class MainFrame
     : public wxFrame
     , public IGameEventHandler
 {
@@ -123,13 +123,14 @@ private:
     void OnAmbientLightDownMenuItemSelected(wxCommandEvent& event);
     void OnPauseMenuItemSelected(wxCommandEvent& event);
     void OnStepMenuItemSelected(wxCommandEvent& event);
-    void OnResetViewMenuItemSelected(wxCommandEvent& event);    
+    void OnResetViewMenuItemSelected(wxCommandEvent& event);
     void OnLoadShipMenuItemSelected(wxCommandEvent& event);
     void OnReloadLastShipMenuItemSelected(wxCommandEvent& event);
+    void OnMoveMenuItemSelected(wxCommandEvent& event);
     void OnSmashMenuItemSelected(wxCommandEvent& event);
     void OnSliceMenuItemSelected(wxCommandEvent& event);
     void OnGrabMenuItemSelected(wxCommandEvent& event);
-    void OnSwirlMenuItemSelected(wxCommandEvent& event);    
+    void OnSwirlMenuItemSelected(wxCommandEvent& event);
     void OnPinMenuItemSelected(wxCommandEvent& event);
     void OnTimerBombMenuItemSelected(wxCommandEvent& event);
     void OnRCBombMenuItemSelected(wxCommandEvent& event);

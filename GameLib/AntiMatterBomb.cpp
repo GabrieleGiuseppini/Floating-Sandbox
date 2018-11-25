@@ -50,7 +50,7 @@ bool AntiMatterBomb::Update(
         {
             // Update cloud rotation angle
             mCurrentCloudRotationAngle += ContainedCloudRevolutionSpeed * elapsed.count();
-                            
+
             return true;
         }
 
@@ -70,7 +70,7 @@ bool AntiMatterBomb::Update(
                 0.0f,
                 gameParameters);
 
-            // Notify        
+            // Notify
             mGameEventHandler->OnAntiMatterBombPreImploding();
             mGameEventHandler->OnAntiMatterBombContained(mId, false);
 
@@ -149,7 +149,7 @@ bool AntiMatterBomb::Update(
 
                 // Update cloud rotation angle: going to max with progress
                 mCurrentCloudRotationAngle += ImplosionCloudRevolutionSpeed * mCurrentStateProgress * elapsed.count();
-                
+
                 // Invoke handler
                 mPhysicsHandler.DoAntiMatterBombImplosion(
                     GetPosition(),
@@ -275,7 +275,7 @@ bool AntiMatterBomb::Update(
 }
 
 void AntiMatterBomb::Upload(
-    int shipId,
+    ShipId shipId,
     Render::RenderContext & renderContext) const
 {
     switch (mState)
@@ -290,7 +290,7 @@ void AntiMatterBomb::Upload(
                 TextureFrameId(TextureGroupType::AntiMatterBombArmor, 0),
                 GetPosition(),
                 1.0f,
-                mRotationBaseAxis, 
+                mRotationBaseAxis,
                 GetRotationOffsetAxis(),
                 1.0f);
 

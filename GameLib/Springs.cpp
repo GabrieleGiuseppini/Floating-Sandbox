@@ -133,7 +133,7 @@ void Springs::UpdateGameParameters(
 }
 
 void Springs::UploadElements(
-    int shipId,
+    ShipId shipId,
     Render::RenderContext & renderContext,
     Points const & points) const
 {
@@ -164,7 +164,7 @@ void Springs::UploadElements(
 }
 
 void Springs::UploadStressedSpringElements(
-    int shipId,
+    ShipId shipId,
     Render::RenderContext & renderContext,
     Points const & points) const
 {

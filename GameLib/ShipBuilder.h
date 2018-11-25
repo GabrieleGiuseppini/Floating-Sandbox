@@ -26,7 +26,7 @@ class ShipBuilder
 public:
 
     static std::unique_ptr<Physics::Ship> Create(
-        int shipId,
+        ShipId shipId,
         Physics::World & parentWorld,
         std::shared_ptr<IGameEventHandler> gameEventHandler,
         ShipDefinition const & shipDefinition,

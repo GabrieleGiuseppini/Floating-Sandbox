@@ -31,7 +31,6 @@ set  (GAME_SOURCES
 	Material.cpp
 	Material.h
 	MaterialDatabase.h
-	ObjectIdGenerator.h
 	ProgressCallback.h
 	ResourceLoader.cpp
 	ResourceLoader.h

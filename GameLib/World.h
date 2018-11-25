@@ -32,12 +32,12 @@ public:
         GameParameters const & gameParameters,
         ResourceLoader & resourceLoader);
 
-    int AddShip(
+    ShipId AddShip(
         ShipDefinition const & shipDefinition,
         std::shared_ptr<MaterialDatabase> materials,
         GameParameters const & gameParameters);
 
-    size_t GetShipPointCount(int shipId) const;
+    size_t GetShipPointCount(ShipId shipId) const;
 
     inline float GetWaterHeightAt(float x) const
     {
@@ -48,14 +48,18 @@ public:
     {
         return position.y < GetWaterHeightAt(position.x);
     }
-    
+
     inline float GetOceanFloorHeightAt(float x) const
     {
         return mOceanFloor.GetFloorHeightAt(x);
     }
 
+    void MoveBy(
+        ShipId shipId,
+        vec2f const & offset);
+
     void DestroyAt(
-        vec2f const & targetPos, 
+        vec2f const & targetPos,
         float radiusMultiplier,
         GameParameters const & gameParameters);
 
@@ -92,13 +96,13 @@ public:
 
     void DetonateAntiMatterBombs();
 
-    ElementIndex GetNearestPointAt(
+    std::optional<ObjectId> GetNearestPointAt(
         vec2f const & targetPos,
         float radius) const;
 
     void Update(GameParameters const & gameParameters);
 
-    void Render(        
+    void Render(
         GameParameters const & gameParameters,
         Render::RenderContext & renderContext) const;
 
@@ -111,13 +115,13 @@ private:
 private:
 
     // Repository
-    std::vector<std::unique_ptr<Ship>> mAllShips;    
+    std::vector<std::unique_ptr<Ship>> mAllShips;
     Stars mStars;
-    Clouds mClouds;    
+    Clouds mClouds;
     WaterSurface mWaterSurface;
     OceanFloor mOceanFloor;
 
-    // The current simulation time 
+    // The current simulation time
     float mCurrentSimulationTime;
 
     // The current step sequence number; used to avoid zero-ing out things.

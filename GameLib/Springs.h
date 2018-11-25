@@ -189,12 +189,12 @@ public:
     //
 
     void UploadElements(
-        int shipId,
+        ShipId shipId,
         Render::RenderContext & renderContext,
         Points const & points) const;
 
     void UploadStressedSpringElements(
-        int shipId,
+        ShipId shipId,
         Render::RenderContext & renderContext,
         Points const & points) const;
 
