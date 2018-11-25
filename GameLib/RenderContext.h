@@ -260,7 +260,7 @@ public:
     {
         return vec2f(
             screenOffset.x / static_cast<float>(mCanvasWidth) * mVisibleWorldWidth,
-            screenOffset.y / static_cast<float>(mCanvasHeight) * -mVisibleWorldHeight);
+            - screenOffset.y / static_cast<float>(mCanvasHeight) * mVisibleWorldHeight);
     }
 
 public:

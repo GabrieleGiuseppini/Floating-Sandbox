@@ -229,19 +229,19 @@ Render:
 		- i.e. springs with # of triangles < 2
 		- Impl:
 			- Springs:
-				- New buffer: TBDTrianglesCount - type: ElementCount
+				- New buffer: SuperTrianglesCount - type: ElementCount
 					- Publicly exposed
 					- Populated via argument at Springs:Add
 						- Calc'd by ShipBuilder
-					- Decremented via Springs::RemoveTBDTriangle() // no args
+					- Decremented via Springs::RemoveSuperTriangle() // no args
 			- Triangles:
 				- New buffer: ComponentSprings - type: FixedArrayBuffer<ElementIndex>[3]
 					- Publicly exposed
-					- Populated via argument at Springs:Add
+					- Populated via argument (of type FixedArrayBuffer<ElementIndex>[3]) at Triangles:Add
 						- Calc'd by ShipBuilder
 					+ Never changed
 					- Used by Ship::TrianglesDestroyHandler() to decrement count for each component spring
-			- Ship: upload springs: only springs with # of triangles < 2
+			- Ship: upload springs: only springs with # of super triangles < 2
 
 	+ See if can use multiple texture units
 		+ Bind once atlas, land, and water at cctor, to each unit
@@ -308,7 +308,9 @@ Render:
 			- In practice: flood the *edge* network, not the spring network, and don't propagate
 			  if coming from edge with zero triangles to an edge with !=0 triangles
 	- Option to enable drawing of force vectors for each point
-		- Have to choose which iteration
+		- Ship::Update() takes also RenderContext const &, so can check if need to save force buffer
+			- Points::SaveForceBufferForVectorRender()
+		- Copied right before integration
 	- AmbientLightIntensity:
 		+ Use also in RenderContext::RenderStart() for clear (sky) color
 		+ Phase 1: pgup/down
@@ -580,7 +582,7 @@ Render:
 		- SettingsManager (@FloatingSandbox):
 			- Has GameController, SoundController, etc.
 			- Defines struct with all customizable setting members
-			- Maintains two structs:
+			- Maintains two copies of struct:
 				- Defaults
 				- Current (ephemeral)
 			- Manages saving and loading customizable settings to and from json

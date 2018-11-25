@@ -317,6 +317,11 @@ public:
         return mPositionBuffer[pointElementIndex];
     }
 
+    vec2f * restrict GetPositionBufferAsVec2()
+    {
+        return mPositionBuffer.data();
+    }
+
     float * restrict GetPositionBufferAsFloat()
     {
         return reinterpret_cast<float *>(mPositionBuffer.data());

@@ -84,7 +84,12 @@ Ship::~Ship()
 void Ship::MoveBy(
     vec2f const & offset)
 {
-    // TODOHERE
+    vec2f * restrict positionBuffer = mPoints.GetPositionBufferAsVec2();
+    size_t const count = mPoints.GetBufferElementCount();
+    for (size_t p = 0; p < count; ++p)
+    {
+        positionBuffer[p] += offset;
+    }
 }
 
 void Ship::DestroyAt(
@@ -665,8 +670,8 @@ void Ship::IntegrateAndResetPointForces(GameParameters const & gameParameters)
     float * restrict forceBuffer = mPoints.GetForceBufferAsFloat();
     float * restrict integrationFactorBuffer = mPoints.GetIntegrationFactorBufferAsFloat();
 
-    size_t const numIterations = mPoints.GetBufferElementCount() * 2; // Two components per vector
-    for (size_t i = 0; i < numIterations; ++i)
+    size_t const count = mPoints.GetBufferElementCount() * 2; // Two components per vector
+    for (size_t i = 0; i < count; ++i)
     {
         //
         // Verlet integration (fourth order, with velocity being first order)
