@@ -102,7 +102,11 @@ Render:
 - Roadmap:
 	= 1.7.0
 		- Simulation Quality (*)
+		- Review sparkles' textures
+			- Try with yellow overcas
+		- Move tool (*)
 		- Magic spring optimization (*)
+			- Then decide whether to start game at 2X
 	- 1.8.0
 		- Batisphere with pumps and propulsion
 		- Settings Manager (*)
@@ -339,6 +343,11 @@ Render:
 		+ At update, raw pixel y's are normalized/enhanced with new GameParameters constant
 		+ Test
 
+	- OceanFloor:
+		- Make number of samples be bump map width
+		- Still check width is power of two
+		- Still calculate bit stuff for fast mod
+
 	+ Extended status text
 		+ Shows:
 			+ Current zoom
@@ -361,10 +370,12 @@ Render:
 	= TODOHERE: Slider for "simulation quality", affecting num of mechanical simulation iterations
 		= Update GameParameters - Points and Springs might have to recalc things on changes
 			= Ship
-			- Points
-			- Springs
-		- SettingsDialog: under mechanics tab
+			= Points
+			= Springs
+		+ Fix: invoke points.updategameparams
+		+ SettingsDialog: under mechanics tab
 		+ Requires extended status text w/measurements
+		- See what to do with stiffness setting: max 1.0f?
 
 	+ Fix ephemeral particles
 		+ Pass also "now" all over the place
@@ -519,8 +530,10 @@ Render:
 		- The one already there assumes velocity always normal to surface, but we should consider surface normal instead
 
 	- Move tool
+		- Rename current "move" as "Pan"
 		- With move tool enabled:
-			- Click on ship -> GameController returns point index (as ShipAnnotatedElementIndex) or None -> if not None, tool is engaged (save cur screen pos)
+			- Click on ship -> GameController returns std::optional<ShipId> -> if not None, tool is engaged (save cur screen pos)
+				- Works like pan 
 			- Moving tool tells GameController delta (offset) screen 
 
 	- DestroyAt:

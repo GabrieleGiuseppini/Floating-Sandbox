@@ -420,14 +420,14 @@ public:
     std::shared_ptr<Buffer<float>> MakeWaterBufferCopy()
     {
         auto waterBufferCopy = mFloatBufferAllocator.Allocate();
-        waterBufferCopy->copy(mWaterBuffer);
+        waterBufferCopy->copy_from(mWaterBuffer);
 
         return waterBufferCopy;
     }
 
     void UpdateWaterBuffer(std::shared_ptr<Buffer<float>> newWaterBuffer)
     {
-        mWaterBuffer.copy(*newWaterBuffer);
+        mWaterBuffer.copy_from(*newWaterBuffer);
     }
 
     vec2f * restrict GetWaterVelocityBufferAsVec2()

@@ -65,7 +65,7 @@ public:
     }
 
     /*
-     * Gets the current number of elements populated in the buffer via emplace_back(); 
+     * Gets the current number of elements populated in the buffer via emplace_back();
      * less than or equal the declared buffer size.
      */
     size_t GetCurrentPopulatedSize() const
@@ -105,7 +105,7 @@ public:
      *
      * The sizes of the buffers must match.
      */
-    void copy(Buffer<TElement> const & other)
+    void copy_from(Buffer<TElement> const & other)
     {
         assert(mSize == other.mSize);
 
@@ -134,7 +134,7 @@ public:
         assert(index < mSize);
 
         return mBuffer[index];
-    }   
+    }
 
     /*
      * Gets the buffer.
@@ -148,7 +148,7 @@ public:
     inline TElement * data()
     {
         return mBuffer;
-    }   
+    }
 
 private:
 

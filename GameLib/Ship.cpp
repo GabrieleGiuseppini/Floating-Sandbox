@@ -271,6 +271,9 @@ void Ship::Update(
     // Process eventual parameter changes
     //
 
+    mPoints.UpdateGameParameters(
+        gameParameters);
+
     mSprings.UpdateGameParameters(
         gameParameters,
         mPoints);
