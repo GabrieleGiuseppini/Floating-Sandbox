@@ -64,7 +64,7 @@ void TextLayer::SetStatusText(
 
         mStatusTextLines.emplace_back(ss.str());
     }
-    
+
     if (mIsExtendedStatusTextEnabled)
     {
         std::ostringstream ss;
@@ -72,7 +72,7 @@ void TextLayer::SetStatusText(
         ss.fill('0');
 
         ss << std::fixed << std::setprecision(2)
-            << "U/R:" << (100.0f * totalUpdateToRenderDurationRatio) << "% (" << (100.0f * lastUpdateToRenderDurationRatio) << ")"
+            << "U/R:" << (100.0f * totalUpdateToRenderDurationRatio) << "% (" << (100.0f * lastUpdateToRenderDurationRatio) << "%)"
             << " ZOOM:" << zoom;
 
         mStatusTextLines.emplace_back(ss.str());
@@ -84,7 +84,7 @@ void TextLayer::SetStatusText(
 void TextLayer::Update()
 {
     // Nop for the moment; this will change text properties when
-    // we'll have animated text   
+    // we'll have animated text
 }
 
 void TextLayer::Render(Render::RenderContext & renderContext)
