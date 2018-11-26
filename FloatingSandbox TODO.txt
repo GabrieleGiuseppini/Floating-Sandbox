@@ -111,8 +111,11 @@ Render:
 
 - Roadmap:
 	= 1.7.0
+		- Move tool fix (MOLESKINE)
 		- Magic spring optimization (*)
-			- Then decide whether to double the number of basis iterations
+			- Then decide whether to increase the number of basis iterations
+				- SQ: 1.5 => Basis = 18
+				- Strength: TBD (lower strength adjust to maintain auto-break of Titanic)
 	- 1.8.0
 		- Batisphere with pumps and propulsion
 		- Settings Manager (*)
@@ -120,7 +123,7 @@ Render:
 
 - New ships
 	- Fix contributions
-		- Pac0master
+		- PacMaster
 	= USS Shark
 		- Need Z buffer work first
 	- Warship
@@ -167,6 +170,7 @@ Render:
 				UpdateSpringForces_Naive_mean                     566158909 ns  553803550 ns          1
 				UpdateSpringForces_Naive_median                   564963849 ns  561603600 ns          1
 				UpdateSpringForces_Naive_stddev                     4619531 ns   18596554 ns          1
+				-
 				UpdateSpringForces_LibSimdPpAndIntrinsics_mean    431502311 ns  409502625 ns          2
 				UpdateSpringForces_LibSimdPpAndIntrinsics_median  415921334 ns  409502625 ns          2
 				UpdateSpringForces_LibSimdPpAndIntrinsics_stddev   35247735 ns   18160977 ns          2
@@ -184,6 +188,9 @@ Render:
 				UpdateSpringForces_LibSimdPpAndIntrinsics_stddev    9809876 ns    9628195 ns          2
 			- Try rearranging instructions for cache
 		- Use at IntegratePointDynamics, to guarantee SSE2
+			- Verify with asm
+			- Add to credits
+		- Use at Ship::MoveBy(), to guarantee SSE2
 			- Verify with asm
 			- Add to credits
 		+ Avoiding if's for divisor==0

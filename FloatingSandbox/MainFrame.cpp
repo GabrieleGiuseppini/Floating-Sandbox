@@ -381,6 +381,15 @@ MainFrame::MainFrame(wxApp * mainApp)
 
 
     //
+    // Initialize tooltips
+    //
+
+    wxToolTip::Enable(true);
+    wxToolTip::SetDelay(200);
+
+
+
+    //
     // Initialize timers
     //
 
@@ -398,14 +407,6 @@ MainFrame::MainFrame(wxApp * mainApp)
     mPostInitializeTimer = std::make_unique<wxTimer>(this, ID_POSTIINITIALIZE_TIMER);
     Connect(ID_POSTIINITIALIZE_TIMER, wxEVT_TIMER, (wxObjectEventFunction)&MainFrame::OnPostInitializeTrigger);
     mPostInitializeTimer->Start(0, true);
-
-
-    //
-    // Initialize tooltips
-    //
-
-    wxToolTip::Enable(true);
-    wxToolTip::SetDelay(200);
 }
 
 MainFrame::~MainFrame()
