@@ -18,6 +18,7 @@
 #include <wx/settings.h>
 #include <wx/sizer.h>
 #include <wx/string.h>
+#include <wx/tooltip.h>
 
 #include <cassert>
 #include <iomanip>
@@ -397,6 +398,14 @@ MainFrame::MainFrame(wxApp * mainApp)
     mPostInitializeTimer = std::make_unique<wxTimer>(this, ID_POSTIINITIALIZE_TIMER);
     Connect(ID_POSTIINITIALIZE_TIMER, wxEVT_TIMER, (wxObjectEventFunction)&MainFrame::OnPostInitializeTrigger);
     mPostInitializeTimer->Start(0, true);
+
+
+    //
+    // Initialize tooltips
+    //
+
+    wxToolTip::Enable(true);
+    wxToolTip::SetDelay(200);
 }
 
 MainFrame::~MainFrame()
@@ -948,7 +957,8 @@ void MainFrame::OnOpenSettingsWindowMenuItemSelected(wxCommandEvent & /*event*/)
         mSettingsDialog = std::make_unique<SettingsDialog>(
             this,
             mGameController,
-            mSoundController);
+            mSoundController,
+            *mResourceLoader);
     }
 
     mSettingsDialog->Open();

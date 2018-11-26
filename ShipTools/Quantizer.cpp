@@ -40,7 +40,7 @@ void Quantizer::Quantize(
     }
 
     // Convert format
-    if (ilGetInteger(IL_IMAGE_FORMAT) != IL_RGB 
+    if (ilGetInteger(IL_IMAGE_FORMAT) != IL_RGB
         || ilGetInteger(IL_IMAGE_TYPE) != IL_UNSIGNED_BYTE)
     {
         if (!ilConvertImage(IL_RGB, IL_UNSIGNED_BYTE))
@@ -59,13 +59,13 @@ void Quantizer::Quantize(
     // Create set of colors to quantize to
     //
 
-    MaterialDatabase materials = ResourceLoader::LoadMaterials(materialsFile);
+    auto materials = ResourceLoader::LoadMaterials(materialsFile);
 
     std::vector<std::pair<vec3f, std::array<uint8_t, 3u>>> gameColors;
 
-    for (size_t m = 0; m < materials.GetMaterialCount(); ++m)
+    for (size_t m = 0; m < materials->GetMaterialCount(); ++m)
     {
-        Material const & material = materials.GetMaterialAt(m);
+        Material const & material = materials->GetMaterialAt(m);
 
         if ( (!material.IsRope || doKeepRopes)
             && (material.Name != "Glass" || doKeepGlass))
@@ -98,7 +98,7 @@ void Quantizer::Quantize(
     //
     // Quantize image
     //
-    
+
     for (int r = 0; r < height; ++r)
     {
         size_t index = r * width * 3;

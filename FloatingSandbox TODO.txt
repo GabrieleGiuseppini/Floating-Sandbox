@@ -5,6 +5,16 @@ Current perf (stars)
 - GameController::Update: 30.62%
 - World::Render: 55.43%
 	- RenderContext::RenderCloudsEnd: 3.98%
+
+=================================================
+Pac0's Sim Quality rates:
+	- 0.5: FPS=49.23 U/R=2561.62%
+	- 1: FPS=50.38 U/R=3908.67%
+	- 2: FPS=50.01 U/R=6123.34%
+	- 4: FPS=49 U/R=1091.96%
+	- 6: FPS=50.54 U/R=1098.55%
+
+
 =================================================
 Past perf (ephemeral particles)
 =================================================
@@ -499,6 +509,9 @@ Render:
 	- Ocean floor breaking up upon impact
 		- Layer on top of floor samples, with hash buckets and lists of heights per-bucket
 
+	- Stars with database
+		- python script to generate binary maps for N and S emispheres
+
 - Water:
 	-Do water bubbles (at intake) and water drops (at outtake)
 		- Ephemeral particles emitted at UpdateWaterIntake()
@@ -547,6 +560,7 @@ Render:
 			- 3: Just cap zoom to reasonable max
 	- Breaking waves (Muller's paper)
 
+
 - Controls:
 
 	- Tool to flood ship
@@ -578,6 +592,18 @@ Render:
 			- Error if a non-zero layer provides:
 				- 1) data for point non-existing in zero layer
 				- 2) data that already exists (e.g. ElectricalChar's)
+
+	+ Control incisiveness (contrast) of water color for water in ship
+		+ New uniform
+
+- UI:
+	+ SettingsDialog: tooltips at Simulation Quality (tradeoff) and Stiffness (instability)
+		+ Use "Attention" icon
+		+ wxToolTip
+		+ SQ: Higher values improve the rigidity of simulated structures, at the expense of longer computation times
+		+ S:  Higher values cause physical instability but provide for a nice effect!
+		+ See if global settings are really needed
+			
 
 	- TODOHERE: SettingsDialog: save settings, and defaults
 		- SettingsManager (@FloatingSandbox):
@@ -650,10 +676,13 @@ Render:
 		- Option 1: see if possible to hook into basic FileDialog's rendering of files
 		- Option 2: custom FileDialog ("ShipFileDialog"), with directory tree on the left and preview in main area
 			- Show also name, dimensions, and total mass
-	+ Control incisiveness (contrast) of water color for water in ship
-		+ New uniform
+
 	- Save screenshots/photos 
 		- Saves automatically in custom folder
+		- Code (at RenderContext::TakeScreenshot() -> returns ImageData)
+		    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+		    glReadBuffer(GL_FRONT);
+		    glReadPixels(0, 0, windowWidth, windowHeight, GL_BGR_EXT, GL_UNSIGNED_BYTE, pixels);
 
 - Sounds:
 	- Ship may come with custom sound(s) for horns
@@ -710,9 +739,20 @@ Render:
 						- SoundController: play sound
 				- Stop PendingShipPlace tool
 
+- Passengers:
+	- Separate layer provides floors, ladders, and obstacles
+	- Ship has number of passengers
+	- Can get away at beginning with pacman-like figures
+	- For more realistic version:
+		- Skeleton with 10 parts (8 limbs, body, head)
+		- Need to make these actions:
+			- Walk
+			- Fall
+			- Climb
+			- Swim
 
 - Collision detection - for multiple ships
-	- http://www.cs.umd.edu/~mount/ANN/
+	- Nearest neighbor: http://www.cs.umd.edu/~mount/ANN/
 
 ==============================================================================
 ==============================================================================

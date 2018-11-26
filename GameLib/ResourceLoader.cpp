@@ -31,10 +31,10 @@ ResourceLoader::ResourceLoader()
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 ShipDefinition ResourceLoader::LoadShipDefinition(std::filesystem::path const & filepath)
-{    
+{
     if (ShipDefinitionFile::IsShipDefinitionFile(filepath))
     {
-        // 
+        //
         // Load full definition
         //
 
@@ -58,7 +58,7 @@ ShipDefinition ResourceLoader::LoadShipDefinition(std::filesystem::path const & 
         std::optional<ImageData> textureImage;
         if (!!sdf.TextureImageFilePath)
         {
-            std::filesystem::path absoluteTextureImageFilePath = 
+            std::filesystem::path absoluteTextureImageFilePath =
                 basePath / std::filesystem::path(*sdf.TextureImageFilePath);
 
             textureImage.emplace(std::move(
@@ -95,7 +95,7 @@ ShipDefinition ResourceLoader::LoadShipDefinition(std::filesystem::path const & 
         //
         // Assume it's just a structural image
         //
-        
+
         auto imageData = LoadImage(filepath, IL_RGB, IL_ORIGIN_UPPER_LEFT);
 
         return ShipDefinition(
@@ -242,6 +242,12 @@ std::filesystem::path ResourceLoader::GetSoundFilepath(std::string const & sound
 std::filesystem::path ResourceLoader::GetCursorFilepath(std::string const & cursorName) const
 {
     std::filesystem::path localPath = std::filesystem::path("Data") / "Resources" / (cursorName + ".png");
+    return std::filesystem::absolute(localPath);
+}
+
+std::filesystem::path ResourceLoader::GetIconFilepath(std::string const & iconName) const
+{
+    std::filesystem::path localPath = std::filesystem::path("Data") / "Resources" / (iconName + ".png");
     return std::filesystem::absolute(localPath);
 }
 
@@ -418,8 +424,8 @@ ImageData ResourceLoader::LoadImage(
     ilDeleteImage(imghandle);
 
     return ImageData(
-        width, 
-        height, 
+        width,
+        height,
         std::move(data));
 }
 
@@ -433,8 +439,8 @@ void ResourceLoader::SaveImage(
 
     ilTexImage(
         image.Size.Width,
-        image.Size.Height, 
-        1, 
+        image.Size.Height,
+        1,
         4,
         IL_RGBA,
         IL_UNSIGNED_BYTE,

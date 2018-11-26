@@ -7,16 +7,19 @@
 
 #include <UILib/ISliderCore.h>
 
+#include <wx/bitmap.h>
 #include <wx/slider.h>
 #include <wx/textctrl.h>
+#include <wx/tooltip.h>
 #include <wx/wx.h>
 
 #include <functional>
 #include <memory>
+#include <optional>
 #include <string>
 
 /*
- * This control incorporates a slider and a textbox that shows the 
+ * This control incorporates a slider and a textbox that shows the
  * current mapped float value of the slider.
  *
  * The control takes a core that provides the logic that maps
@@ -34,7 +37,18 @@ public:
         float currentValue,
         std::function<void(float)> onValueChanged,
         std::unique_ptr<ISliderCore> sliderCore);
-    
+
+    SliderControl(
+        wxWindow * parent,
+        int width,
+        int height,
+        std::string const & label,
+        float currentValue,
+        std::function<void(float)> onValueChanged,
+        std::unique_ptr<ISliderCore> sliderCore,
+        wxBitmap const & toolTipIcon,
+        std::string const & toolTipText);
+
     virtual ~SliderControl();
 
     float GetValue() const
@@ -49,6 +63,16 @@ public:
     }
 
 private:
+
+    SliderControl(
+        wxWindow * parent,
+        int width,
+        int height,
+        std::string const & label,
+        float currentValue,
+        std::function<void(float)> onValueChanged,
+        std::unique_ptr<ISliderCore> sliderCore,
+        std::optional<std::tuple<wxBitmap const &, std::string const &>> toolTipInfo);
 
     void OnSliderScroll(wxScrollEvent & event);
 

@@ -27,7 +27,7 @@ ShipAnalyzer::AnalysisInfo ShipAnalyzer::Analyze(
     float const halfWidth = static_cast<float>(image.Size.Width) / 2.0f;
 
     // Load materials
-    MaterialDatabase materials = ResourceLoader::LoadMaterials(materialsFile);
+    auto materials = ResourceLoader::LoadMaterials(materialsFile);
 
     // Visit all points
     ShipAnalyzer::AnalysisInfo analysisInfo;
@@ -49,7 +49,7 @@ ShipAnalyzer::AnalysisInfo ShipAnalyzer::Analyze(
                 image.Data[pixelIndex + 1],
                 image.Data[pixelIndex + 2] };
 
-            Material const * material = materials.Find(rgbColour);
+            Material const * material = materials->Find(rgbColour);
             if (nullptr != material)
             {
                 analysisInfo.TotalMass += material->Mass;

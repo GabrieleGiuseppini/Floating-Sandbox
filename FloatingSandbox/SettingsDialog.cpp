@@ -33,7 +33,8 @@ const long ID_PLAY_SINKING_MUSIC_CHECKBOX = wxNewId();
 SettingsDialog::SettingsDialog(
     wxWindow* parent,
     std::shared_ptr<GameController> gameController,
-    std::shared_ptr<SoundController> soundController)
+    std::shared_ptr<SoundController> soundController,
+    ResourceLoader const & resourceLoader)
     : mParent(parent)
     , mGameController(std::move(gameController))
     , mSoundController(std::move(soundController))
@@ -46,6 +47,16 @@ SettingsDialog::SettingsDialog(
         wxSize(400, 200),
         wxCAPTION | wxCLOSE_BOX | wxMINIMIZE_BOX | wxFRAME_SHAPED,
         _T("Settings Window"));
+
+
+    //
+    // Load icons
+    //
+
+    mWarningIcon = std::make_unique<wxBitmap>(
+        resourceLoader.GetIconFilepath("warning_icon").string(),
+        wxBITMAP_TYPE_PNG);
+
 
 
     //
@@ -469,7 +480,9 @@ void SettingsDialog::PopulateMechanicsPanel(wxPanel * panel)
         std::make_unique<FixedTickSliderCore>(
             0.5f,
             mGameController->GetMinNumMechanicalDynamicsIterationsAdjustment(),
-            mGameController->GetMaxNumMechanicalDynamicsIterationsAdjustment()));
+            mGameController->GetMaxNumMechanicalDynamicsIterationsAdjustment()),
+        *mWarningIcon,
+        "Higher values improve the rigidity of simulated structures, at the expense of longer computation times");
 
     controlsSizer->Add(mMechanicalQualitySlider.get(), 1, wxALL, SliderBorder);
 
@@ -489,7 +502,9 @@ void SettingsDialog::PopulateMechanicsPanel(wxPanel * panel)
         },
         std::make_unique<LinearSliderCore>(
             mGameController->GetMinStiffnessAdjustment(),
-            mGameController->GetMaxStiffnessAdjustment()));
+            mGameController->GetMaxStiffnessAdjustment()),
+        *mWarningIcon,
+        "Higher values cause physical instability, but provide for a nice effect!");
 
     controlsSizer->Add(mStiffnessSlider.get(), 1, wxALL, SliderBorder);
 

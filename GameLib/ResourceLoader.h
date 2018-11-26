@@ -81,6 +81,8 @@ public:
 
     std::filesystem::path GetCursorFilepath(std::string const & cursorName) const;
 
+    std::filesystem::path GetIconFilepath(std::string const & iconName) const;
+
     std::filesystem::path GetArtFilepath(std::string const & artName) const;
 
 

@@ -9,7 +9,9 @@
 #include "SoundController.h"
 
 #include <GameLib/GameController.h>
+#include <GameLib/ResourceLoader.h>
 
+#include <wx/bitmap.h>
 #include <wx/button.h>
 #include <wx/checkbox.h>
 #include <wx/dialog.h>
@@ -24,7 +26,8 @@ public:
     SettingsDialog(
         wxWindow * parent,
         std::shared_ptr<GameController> gameController,
-        std::shared_ptr<SoundController> soundController);
+        std::shared_ptr<SoundController> soundController,
+        ResourceLoader const & resourceLoader);
 
     virtual ~SettingsDialog();
 
@@ -105,6 +108,9 @@ private:
     wxButton * mOkButton;
     wxButton * mCancelButton;
     wxButton * mApplyButton;
+
+    // Icons
+    std::unique_ptr<wxBitmap> mWarningIcon;
 
 private:
 
