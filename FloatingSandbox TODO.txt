@@ -1,7 +1,7 @@
 =================================================
 Current perf (stars)
 =================================================
-- fps: 28.9 (Samsung: TBD (Krafting)) (Mattia's: TBD (Krafting))
+- fps: 28.9/29.0 (Samsung: TBD (Krafting)) (Mattia's: TBD (Krafting))
 - GameController::Update: 30.62%
 - World::Render: 55.43%
 	- RenderContext::RenderCloudsEnd: 3.98%
@@ -111,7 +111,6 @@ Render:
 
 - Roadmap:
 	= 1.7.0
-		- Move tool fix (MOLESKINE)
 		- Magic spring optimization (*)
 			- Then decide whether to increase the number of basis iterations
 				- SQ: 1.5 => Basis = 18

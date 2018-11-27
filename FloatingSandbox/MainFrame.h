@@ -214,9 +214,6 @@ private:
 
     void ResetState();
     void UpdateFrameTitle();
-    bool IsPaused();
-    void DoGameStep();
-    void RenderGame();
     void Die(std::string const & message);
 
 private:
@@ -241,5 +238,4 @@ private:
     size_t mCurrentRCBombCount;
     size_t mCurrentAntiMatterBombCount;
     bool mIsShiftKeyDown;
-    bool mIsNextFrameAllowedToStep;
 };

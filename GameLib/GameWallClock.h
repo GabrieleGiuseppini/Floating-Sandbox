@@ -25,7 +25,7 @@ public:
     static GameWallClock & GetInstance()
     {
         static GameWallClock * instance = new GameWallClock();
-        
+
         return *instance;
     }
 
@@ -48,20 +48,22 @@ public:
         return Now() - previousTimePoint;
     }
 
-    void Pause()
+    void SetPaused(bool isPaused)
     {
-        if (!!mLastResumeTime)
+        if (isPaused)
         {
-            mLastPauseTime = Now();
-            mLastResumeTime.reset();
+            if (!!mLastResumeTime)
+            {
+                mLastPauseTime = Now();
+                mLastResumeTime.reset();
+            }
         }
-    }
-
-    void Resume()
-    {
-        if (!mLastResumeTime)
+        else
         {
-            mLastResumeTime = std::chrono::steady_clock::now();
+            if (!mLastResumeTime)
+            {
+                mLastResumeTime = std::chrono::steady_clock::now();
+            }
         }
     }
 

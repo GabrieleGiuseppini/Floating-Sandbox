@@ -20,6 +20,7 @@
 #include <cassert>
 #include <chrono>
 #include <filesystem>
+#include <functional>
 #include <memory>
 #include <string>
 
@@ -34,6 +35,7 @@ public:
     static std::unique_ptr<GameController> Create(
         bool isStatusTextEnabled,
         bool isExtendedStatusTextEnabled,
+        std::function<void()> swapRenderBuffersFunction,
         std::shared_ptr<ResourceLoader> resourceLoader,
         ProgressCallback const & progressCallback);
 
@@ -49,8 +51,10 @@ public:
     void AddShip(std::filesystem::path const & filepath);
     void ReloadLastShip();
 
-    void Update();
+    void RunGameIteration();
     void LowFrequencyUpdate();
+
+    void Update();
     void Render();
 
 
@@ -59,6 +63,7 @@ public:
     //
 
     void SetPaused(bool isPaused);
+    void SetMoveToolEngaged(bool isEngaged);
     void SetStatusTextEnabled(bool isEnabled);
     void SetExtendedStatusTextEnabled(bool isEnabled);
 
@@ -276,6 +281,7 @@ private:
 
     GameController(
         std::unique_ptr<Render::RenderContext> renderContext,
+        std::function<void()> swapRenderBuffersFunction,
         std::unique_ptr<GameEventDispatcher> gameEventDispatcher,
         std::unique_ptr<TextLayer> textLayer,
         std::unique_ptr<MaterialDatabase> materials,
@@ -283,8 +289,10 @@ private:
         : mGameParameters()
         , mLastShipLoadedFilePath()
         , mIsPaused(false)
+        , mIsMoveToolEngaged(false)
         // Doers
         , mRenderContext(std::move(renderContext))
+        , mSwapRenderBuffersFunction(std::move(swapRenderBuffersFunction))
         , mGameEventDispatcher(std::move(gameEventDispatcher))
         , mResourceLoader(std::move(resourceLoader))
         , mTextLayer(std::move(textLayer))
@@ -315,6 +323,10 @@ private:
     {
     }
 
+    void InternalUpdate();
+
+    void InternalRender();
+
     static void SmoothToTarget(
         float & currentValue,
         float startingValue,
@@ -336,6 +348,7 @@ private:
     GameParameters mGameParameters;
     std::filesystem::path mLastShipLoadedFilePath;
     bool mIsPaused;
+    bool mIsMoveToolEngaged;
 
 
     //
@@ -343,6 +356,7 @@ private:
     //
 
     std::unique_ptr<Render::RenderContext> mRenderContext;
+    std::function<void()> const mSwapRenderBuffersFunction;
     std::shared_ptr<GameEventDispatcher> mGameEventDispatcher;
     std::shared_ptr<ResourceLoader> mResourceLoader;
     std::shared_ptr<TextLayer> mTextLayer;

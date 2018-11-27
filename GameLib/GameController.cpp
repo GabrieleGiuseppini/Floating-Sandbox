@@ -11,6 +11,7 @@
 std::unique_ptr<GameController> GameController::Create(
     bool isStatusTextEnabled,
     bool isExtendedStatusTextEnabled,
+    std::function<void()> swapRenderBuffersFunction,
     std::shared_ptr<ResourceLoader> resourceLoader,
     ProgressCallback const & progressCallback)
 {
@@ -41,6 +42,7 @@ std::unique_ptr<GameController> GameController::Create(
     return std::unique_ptr<GameController>(
         new GameController(
             std::move(renderContext),
+            std::move(swapRenderBuffersFunction),
             std::move(gameEventDispatcher),
             std::move(textLayer),
             std::move(materials),
@@ -87,47 +89,27 @@ void GameController::ReloadLastShip()
     AddShip(std::move(shipDefinition));
 }
 
-void GameController::Update()
+void GameController::RunGameIteration()
 {
-    auto const startTime = std::chrono::steady_clock::now();
+    ///////////////////////////////////////////////////////////
+    // Update simulation
+    ///////////////////////////////////////////////////////////
 
-    // Update world
-    assert(!!mWorld);
-    mWorld->Update(mGameParameters);
+    // Make sure we're not paused
+    if (!mIsPaused && !mIsMoveToolEngaged)
+    {
+        auto const startTime = std::chrono::steady_clock::now();
 
-    // Update text layer
-    mTextLayer->Update();
+        InternalUpdate();
 
-    // Flush events
-    mGameEventDispatcher->Flush();
+        auto const endTime = std::chrono::steady_clock::now();
+        mTotalUpdateDuration += endTime - startTime;
+    }
 
-    // Update stats
-    auto const endTime = std::chrono::steady_clock::now();
-    mTotalUpdateDuration += endTime - startTime;
-}
 
-void GameController::LowFrequencyUpdate()
-{
-    //
-    // Publish stats
-    //
-
-    std::chrono::steady_clock::time_point nowReal = std::chrono::steady_clock::now();
-    PublishStats(nowReal);
-
-    //
-    // Reset stats
-    //
-
-    mLastFrameCount = 0u;
-    mRenderStatsLastTimestampReal = nowReal;
-    mLastTotalUpdateDuration = mTotalUpdateDuration;
-    mLastTotalRenderDuration = mTotalRenderDuration;
-}
-
-void GameController::Render()
-{
-    auto const startTime = std::chrono::steady_clock::now();
+    ///////////////////////////////////////////////////////////
+    // Render
+    ///////////////////////////////////////////////////////////
 
     //
     // Initialize render stats, if needed
@@ -153,71 +135,19 @@ void GameController::Render()
 
 
     //
-    // Do zoom smoothing
+    // Render
     //
 
-    if (mCurrentZoom != mTargetZoom)
-    {
-        SmoothToTarget(
-            mCurrentZoom,
-            mStartingZoom,
-            mTargetZoom,
-            mStartZoomTimestamp);
+    auto const startTime = std::chrono::steady_clock::now();
 
-        mRenderContext->SetZoom(mCurrentZoom);
-    }
+    // Flip the (previous) back buffer onto the screen
+    mSwapRenderBuffersFunction();
 
+    // Render
+    InternalRender();
 
-    //
-    // Do camera smoothing
-    //
-
-    if (mCurrentCameraPosition != mTargetCameraPosition)
-    {
-        SmoothToTarget(
-            mCurrentCameraPosition.x,
-            mStartingCameraPosition.x,
-            mTargetCameraPosition.x,
-            mStartCameraPositionTimestamp);
-
-        SmoothToTarget(
-            mCurrentCameraPosition.y,
-            mStartingCameraPosition.y,
-            mTargetCameraPosition.y,
-            mStartCameraPositionTimestamp);
-
-        mRenderContext->SetCameraWorldPosition(mCurrentCameraPosition);
-    }
-
-
-    //
-    // Start rendering
-    //
-
-    mRenderContext->RenderStart();
-
-
-    //
-    // Render world
-    //
-
-    assert(!!mWorld);
-    mWorld->Render(mGameParameters, *mRenderContext);
-
-
-    //
-    // Render text layer
-    //
-
-    assert(!!mTextLayer);
-    mTextLayer->Render(*mRenderContext);
-
-
-    //
-    // Stop render
-    //
-
-    mRenderContext->RenderEnd();
+    auto const endTime = std::chrono::steady_clock::now();
+    mTotalRenderDuration += endTime - startTime;
 
 
     //
@@ -226,10 +156,35 @@ void GameController::Render()
 
     ++mTotalFrameCount;
     ++mLastFrameCount;
+}
 
-    // Update stats
-    auto const endTime = std::chrono::steady_clock::now();
-    mTotalRenderDuration += endTime - startTime;
+void GameController::LowFrequencyUpdate()
+{
+    //
+    // Publish stats
+    //
+
+    std::chrono::steady_clock::time_point nowReal = std::chrono::steady_clock::now();
+    PublishStats(nowReal);
+
+    //
+    // Reset stats
+    //
+
+    mLastFrameCount = 0u;
+    mRenderStatsLastTimestampReal = nowReal;
+    mLastTotalUpdateDuration = mTotalUpdateDuration;
+    mLastTotalRenderDuration = mTotalRenderDuration;
+}
+
+void GameController::Update()
+{
+    InternalUpdate();
+}
+
+void GameController::Render()
+{
+    InternalRender();
 }
 
 /////////////////////////////////////////////////////////////
@@ -239,6 +194,11 @@ void GameController::Render()
 void GameController::SetPaused(bool isPaused)
 {
     mIsPaused = isPaused;
+}
+
+void GameController::SetMoveToolEngaged(bool isEngaged)
+{
+    mIsMoveToolEngaged = isEngaged;
 }
 
 void GameController::SetStatusTextEnabled(bool isEnabled)
@@ -396,6 +356,89 @@ std::optional<ObjectId> GameController::GetNearestPointAt(vec2f const & screenCo
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
+
+void GameController::InternalUpdate()
+{
+    // Update world
+    assert(!!mWorld);
+    mWorld->Update(mGameParameters);
+
+    // Update text layer
+    mTextLayer->Update();
+
+    // Flush events
+    mGameEventDispatcher->Flush();
+}
+
+void GameController::InternalRender()
+{
+    //
+    // Do zoom smoothing
+    //
+
+    if (mCurrentZoom != mTargetZoom)
+    {
+        SmoothToTarget(
+            mCurrentZoom,
+            mStartingZoom,
+            mTargetZoom,
+            mStartZoomTimestamp);
+
+        mRenderContext->SetZoom(mCurrentZoom);
+    }
+
+
+    //
+    // Do camera smoothing
+    //
+
+    if (mCurrentCameraPosition != mTargetCameraPosition)
+    {
+        SmoothToTarget(
+            mCurrentCameraPosition.x,
+            mStartingCameraPosition.x,
+            mTargetCameraPosition.x,
+            mStartCameraPositionTimestamp);
+
+        SmoothToTarget(
+            mCurrentCameraPosition.y,
+            mStartingCameraPosition.y,
+            mTargetCameraPosition.y,
+            mStartCameraPositionTimestamp);
+
+        mRenderContext->SetCameraWorldPosition(mCurrentCameraPosition);
+    }
+
+
+    //
+    // Start rendering
+    //
+
+    mRenderContext->RenderStart();
+
+
+    //
+    // Render world
+    //
+
+    assert(!!mWorld);
+    mWorld->Render(mGameParameters, *mRenderContext);
+
+
+    //
+    // Render text layer
+    //
+
+    assert(!!mTextLayer);
+    mTextLayer->Render(*mRenderContext);
+
+
+    //
+    // Finish rendering
+    //
+
+    mRenderContext->RenderEnd();
+}
 
 void GameController::SmoothToTarget(
     float & currentValue,

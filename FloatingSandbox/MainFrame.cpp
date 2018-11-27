@@ -84,7 +84,6 @@ MainFrame::MainFrame(wxApp * mainApp)
     , mCurrentRCBombCount(0u)
     , mCurrentAntiMatterBombCount(0u)
     , mIsShiftKeyDown(false)
-    , mIsNextFrameAllowedToStep(false)
 {
     Create(
         nullptr,
@@ -441,6 +440,10 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
         mGameController = GameController::Create(
             StartWithStatusText,
             StartWithExtendedStatusText,
+            [this]()
+            {
+                mMainGLCanvas->SwapBuffers();
+            },
             mResourceLoader,
             [&splash, this](float progress, std::string const & message)
             {
@@ -607,7 +610,10 @@ void MainFrame::OnPaint(wxPaintEvent & event)
 {
     // This happens sparingly, mostly when the window is resized and when it's shown
 
-    RenderGame();
+    if (!!mGameController)
+    {
+        mGameController->Render();
+    }
 
     event.Skip();
 }
@@ -673,10 +679,28 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
         }
     }
 
-    // Run a game step (Update and Render)
+    // Run a game step
     try
     {
-        DoGameStep();
+        // Update tool controller
+        assert(!!mToolController);
+        mToolController->Update();
+
+        // Run a game step
+        assert(!!mGameController);
+        mGameController->RunGameIteration();
+
+        // Update event ticker
+        assert(!!mEventTickerPanel);
+        mEventTickerPanel->Update();
+
+        // Update probe panel
+        assert(!!mProbePanel);
+        mProbePanel->Update();
+
+        // Update sound controller
+        assert(!!mSoundController);
+        mSoundController->Update();
     }
     catch (std::exception const & e)
     {
@@ -817,9 +841,9 @@ void MainFrame::OnReloadLastShipMenuItemSelected(wxCommandEvent & /*event*/)
 
 void MainFrame::OnPauseMenuItemSelected(wxCommandEvent & /*event*/)
 {
-    if (IsPaused())
+    if (mPauseMenuItem->IsChecked())
     {
-        GameWallClock::GetInstance().Pause();
+        GameWallClock::GetInstance().SetPaused(true);
 
         if (!!mGameController)
             mGameController->SetPaused(true);
@@ -831,7 +855,7 @@ void MainFrame::OnPauseMenuItemSelected(wxCommandEvent & /*event*/)
     }
     else
     {
-        GameWallClock::GetInstance().Resume();
+        GameWallClock::GetInstance().SetPaused(false);
 
         if (!!mGameController)
             mGameController->SetPaused(false);
@@ -845,7 +869,8 @@ void MainFrame::OnPauseMenuItemSelected(wxCommandEvent & /*event*/)
 
 void MainFrame::OnStepMenuItemSelected(wxCommandEvent & /*event*/)
 {
-    mIsNextFrameAllowedToStep = true;
+    assert(!!mGameController);
+    mGameController->Update();
 }
 
 void MainFrame::OnResetViewMenuItemSelected(wxCommandEvent & /*event*/)
@@ -1093,54 +1118,6 @@ void MainFrame::UpdateFrameTitle()
     }
 
     SetTitle(ss.str());
-}
-
-bool MainFrame::IsPaused()
-{
-    return mPauseMenuItem->IsChecked();
-}
-
-void MainFrame::DoGameStep()
-{
-    // Update tool controller
-    assert(!!mToolController);
-    mToolController->Update();
-
-    // Do a simulation step
-    if (!IsPaused() || mIsNextFrameAllowedToStep)
-    {
-        mIsNextFrameAllowedToStep = false;
-
-        assert(!!mGameController);
-        mGameController->Update();
-    }
-
-    // Render
-    RenderGame();
-
-    // Update event ticker
-    assert(!!mEventTickerPanel);
-    mEventTickerPanel->Update();
-
-    // Update probe panel
-    assert(!!mProbePanel);
-    mProbePanel->Update();
-
-    // Update sound controller
-    assert(!!mSoundController);
-    mSoundController->Update();
-}
-
-void MainFrame::RenderGame()
-{
-    if (!!mGameController)
-    {
-        // Flip the (previous) back buffer onto the screen
-        mMainGLCanvas->SwapBuffers();
-
-        // Render
-        mGameController->Render();
-    }
 }
 
 void MainFrame::Die(std::string const & message)

@@ -276,6 +276,9 @@ public:
         // Reset cursor
         assert(!!mUpCursor);
         mCurrentCursor = mUpCursor.get();
+
+        // Tell GameController
+        mGameController->SetMoveToolEngaged(false);
     }
 
     virtual void OnMouseMove(InputState const & inputState) override
@@ -301,6 +304,9 @@ public:
             assert(!!mDownCursor);
             mCurrentCursor = mDownCursor.get();
             ShowCurrentCursor();
+
+            // Tell GameController
+            mGameController->SetMoveToolEngaged(true);
         }
     }
 
@@ -315,6 +321,9 @@ public:
             assert(!!mUpCursor);
             mCurrentCursor = mUpCursor.get();
             ShowCurrentCursor();
+
+            // Tell GameController
+            mGameController->SetMoveToolEngaged(false);
         }
     }
 
