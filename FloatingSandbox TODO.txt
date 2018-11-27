@@ -355,6 +355,23 @@ Render:
 		- Still check width is power of two
 		- Still calculate bit stuff for fast mod
 
+	- Ocean floor breaking up upon impact
+		- Layer on top of floor samples, with hash buckets and lists of heights per-bucket
+		- Spec:
+			- Ocean floor has "height overrides" for bumps, etc.
+				- Addressed via "quantized X", i.e. buckets of X
+					- BucketSize ~= "default/initial visible world width" divided by ~ number of slices (512)
+						- Or dictated by will to re-use sample index @ sampling
+				- Fast lookup of X:
+					- Hash table w/hash=periodic bucketized X (same used for curve interpolation),
+					  & value=list of actual "quantized X" with corresponding H
+					- Hash table is array<vector<x, h>, # of buckets>
+			- @ Ocean floor collision:
+				- Upon point entering floor:
+					- Points goes back by displacement * FloorHardness
+					- Ocean floor's H goes back by displacement * (1 - FloorHardness)
+
+
 	- Auto-adjust zoom at ship load
 		- Use preferred zoom from .shp file
 		- Configured by GameController
@@ -511,9 +528,6 @@ Render:
 	
 	- See if can use external water's pressure to inflict stress on springs
 		- Have to visit frontier points and, if underwater, do force perpendicular towards interior
-
-	- Ocean floor breaking up upon impact
-		- Layer on top of floor samples, with hash buckets and lists of heights per-bucket
 
 	- Stars with database
 		- python script to generate binary maps for N and S emispheres
