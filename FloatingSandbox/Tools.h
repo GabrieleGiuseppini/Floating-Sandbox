@@ -276,9 +276,15 @@ public:
         // Reset cursor
         assert(!!mUpCursor);
         mCurrentCursor = mUpCursor.get();
+    }
 
-        // Tell GameController
-        mGameController->SetMoveToolEngaged(false);
+    virtual void Deinitialize(InputState const & /*inputState*/) override
+    {
+        if (!!mEngagedShipId)
+        {
+            // Tell GameController
+            mGameController->SetMoveToolEngaged(false);
+        }
     }
 
     virtual void OnMouseMove(InputState const & inputState) override
