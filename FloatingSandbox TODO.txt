@@ -14,6 +14,11 @@ Pac0's Sim Quality rates:
 	- 4: FPS=49 U/R=1091.96%
 	- 6: FPS=50.54 U/R=1098.55%
 
+	- 1:  59, 1070
+	- 2:  59, 2672
+	- 4:  45, 819
+	- 20: 13, 4587%
+
 
 =================================================
 Past perf (ephemeral particles)
@@ -116,11 +121,13 @@ Render:
 				- SQ: 1.5 => Basis = 18
 				- Strength: TBD (lower strength adjust to maintain auto-break of Titanic)
 	- 1.8.0
-		- Batisphere with pumps and propulsion
+		- Libsimdpp spring relaxation (*)
+		- Batisphere with pumps and propulsion (*)
 		- Settings Manager (*)
 		- Resource Packs (Moleskine)
 
 - New ships
+	- Roma
 	- Fix contributions
 		- PacMaster
 	= USS Shark
@@ -240,19 +247,19 @@ Render:
 
 - Gfx optimizations:
 
-	- TODOHERE: In texture or structure mode, draw only springs that are visible
+	= In texture or structure mode, draw only springs that are visible
 		- i.e. springs with # of triangles < 2
-		- Impl:
-			- Springs:
-				- New buffer: SuperTrianglesCount - type: ElementCount
+		= Impl:
+			= Springs:
+				= New buffer: SuperTrianglesCount - type: ElementCount
+					+ Publicly exposed
+					= Populated via argument at Springs:Add
+						- Calc'd by ShipBuilder via Triangles below, during component springs discovery
+					+ Decremented via Springs::RemoveSuperTriangle() // no args
+			= Triangles:
+				= New buffer: ComponentSprings - type: std::array<ElementIndex, 3>
 					- Publicly exposed
-					- Populated via argument at Springs:Add
-						- Calc'd by ShipBuilder
-					- Decremented via Springs::RemoveSuperTriangle() // no args
-			- Triangles:
-				- New buffer: ComponentSprings - type: FixedArrayBuffer<ElementIndex>[3]
-					- Publicly exposed
-					- Populated via argument (of type FixedArrayBuffer<ElementIndex>[3]) at Triangles:Add
+					= Populated via argument (of type std::array<ElementIndex, 3>) at Triangles:Add
 						- Calc'd by ShipBuilder
 					+ Never changed
 					- Used by Ship::TrianglesDestroyHandler() to decrement count for each component spring
@@ -329,7 +336,8 @@ Render:
 	- AmbientLightIntensity:
 		+ Use also in RenderContext::RenderStart() for clear (sky) color
 		+ Phase 1: pgup/down
-		- Phase 2: with clock - TBD
+		- Phase 2: with clock / time-of-day
+			- Sky should also have crepuscolar gradient
 	- Magnifying glass
 		- https://www.opengl.org/discussion_boards/showthread.php/154811-magnifying-glass-effect
 		- https://www.shadertoy.com/view/4tdXDl
@@ -461,15 +469,48 @@ Render:
 			- Ship::SetSwitch(switchId, bool):
 				- Toggles electrical element's "doesConductElectricity", via ElectricalElements::SetSwitch(switchId, bool)
 	- Pumps
-		- New electrical element
-		- @Update: if powered && under water level -> Adds or removes point's water
+		- Spec:
+			- New electrical element
+			- Two types: "in" or "out" (a bool electrical property)
+			- Water is taken @ ElectricalElements::Update()
+			- Point that pump is attached to may or may not be hull, and may or may not be leaking; regardless, when powered,
+			  water is sucked in our out
+			- Continuous sound when pumping
+		- Impl:
+			- ElectricalElements::Update():
+				- For each pump element (own separate list, for perf):
+					- If powered: // eventually have state machine for lead-in/lead-out
+						- If type is "in" && y < waterLevel && point.water < external pressure:
+							- Take in water - with quantity from GameParameters
+						- Else if type is "out" && point.water > 0:
+							- Take out water - same quantity from GameParameters
+			- @ power state changes: emit event, for continuous sound - much like TimerBomb's fuse
+				- Need object ID
 
-	- Anti-Flood doors
-		- New electrical element
-		- @Update: if powered state change => Become Hull/NotHull, with all consequences:
-			- Point::IsHull
-			- All connected springs: visit all to see if WaterPermeability is 1 or 0
-			- No real need to also change Point::Buoyancy
+	- Flood doors
+		- Spec:		
+			- New electrical element
+			- Point that flood door is attached to may or may not be leaking
+			- Plays one-shot sound @ when open or closed - much like TimerBomb's defuse
+				+ No ObjectID needed thus
+			- Power connectivity state changes cause modifications of water propagation coefficient of spring (i.e. WaterPermeability)
+		- Impl:
+			- ElectricalElements::Update():
+				- For each flood door element (own separate list, for perf):
+					- Run state machine (including eventual lead-in/lead-out's)
+					- @ state changes:
+						- For all connected springs: one of the following, depending on connectivity state:
+							- Springs::SetWaterPermeability(idx, val) 
+								- See if can use fractional values for half-open/half-closed
+							- Springs::SetDefaultWaterPermeability(idx)
+								- Uses private CalculateWaterPermeability(), also used by cctor
+						- Anything else? See water momenta algo
+			+ No real need to also change Point::Buoyancy
+			+ No real need to also change Point::IsHull
+				+ Points' hullness is only used to decide whether or not to make a point Leak when an attached spring breaks; we
+				  leave this determined by underlying structural material
+			+ Springs::IsHull should be gone by now
+
 
 
 	- Propulsion
