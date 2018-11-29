@@ -1035,8 +1035,30 @@ private:
     // One-Shot sounds
     //
 
-    static constexpr size_t MaxPlayingSoundsPerType{ 20 };
-    static constexpr std::chrono::milliseconds MinDeltaTimeSound{ 100 };
+    static constexpr size_t GetMaxPlayingSoundsForType(SoundType soundType)
+    {
+        switch (soundType)
+        {
+            case SoundType::Break:
+                return 45;
+            case SoundType::Stress:
+                return 30;
+            default:
+                return 15;
+        }
+    }
+
+    static constexpr std::chrono::milliseconds GetMinDeltaTimeSoundForType(SoundType soundType)
+    {
+        switch (soundType)
+        {
+            case SoundType::Break:
+            case SoundType::Stress:
+                return std::chrono::milliseconds(100);
+            default:
+                return std::chrono::milliseconds(75);
+        }
+    }
 
     unordered_tuple_map<
         std::tuple<SoundType, Material::SoundProperties::SoundElementType, SizeType, bool>,

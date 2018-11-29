@@ -810,7 +810,7 @@ void SoundController::OnLightFlicker(
 void SoundController::OnWaterTaken(float waterTaken)
 {
     // 50 * (-1 / 2.4^(0.3 * x) + 1)
-    float rushVolume = 50.f * (-1.f / std::pow(2.4f, 0.3f * std::abs(waterTaken)) + 1.f);
+    float rushVolume = 40.f * (-1.f / std::pow(2.4f, 0.3f * std::abs(waterTaken)) + 1.f);
     mWaterRushSound.SetVolume(rushVolume);
     mWaterRushSound.Start();
 }
@@ -825,9 +825,8 @@ void SoundController::OnWaterSplashed(float waterSplashed)
     {
         if (waterSplashed > mCurrentWaterSplashedTrigger)
         {
-            // 100 * (-1 / 1.8^(0.08 * x) + 1)
-            //   3: 13.0
-            float waveVolume = 20.f * (-1.f / std::pow(1.8f, 0.08f * std::abs(waterSplashed)) + 1.f);
+            // 12 * (-1 / 1.8^(0.08 * x) + 1)
+            float waveVolume = 12.f * (-1.f / std::pow(1.8f, 0.08f * std::abs(waterSplashed)) + 1.f);
 
             PlayOneShotMultipleChoiceSound(
                 SoundType::Wave,
@@ -851,7 +850,8 @@ void SoundController::OnWaterSplashed(float waterSplashed)
     // Adjust continuous splash sound
     //
 
-    float splashVolume = 15.f * (-1.f / std::pow(1.3f, 0.01f * std::abs(waterSplashed)) + 1.f);
+    // 12 * (-1 / 1.3^(0.01*x) + 1)
+    float splashVolume = 12.f * (-1.f / std::pow(1.3f, 0.01f * std::abs(waterSplashed)) + 1.f);
     mWaterSplashSound.SetVolume(splashVolume);
     mWaterSplashSound.Start();
 }
@@ -1246,12 +1246,13 @@ void SoundController::PlayOneShotSound(
     auto & thisTypeCurrentlyPlayingSounds = mCurrentlyPlayingOneShotSounds[soundType];
 
     auto const now = std::chrono::steady_clock::now();
+    auto const minDeltaTimeSoundForType = GetMinDeltaTimeSoundForType(soundType);
 
     for (auto & playingSound : thisTypeCurrentlyPlayingSounds)
     {
         assert(!!playingSound.Sound);
         if (playingSound.Sound->getBuffer() == soundBuffer
-            && std::chrono::duration_cast<std::chrono::milliseconds>(now - playingSound.StartedTimestamp) < MinDeltaTimeSound)
+            && std::chrono::duration_cast<std::chrono::milliseconds>(now - playingSound.StartedTimestamp) < minDeltaTimeSoundForType)
         {
             playingSound.Sound->addVolume(volume);
 
@@ -1264,18 +1265,20 @@ void SoundController::PlayOneShotSound(
     // Make sure there's room for this sound
     //
 
-    if (thisTypeCurrentlyPlayingSounds.size() >= MaxPlayingSoundsPerType)
+    auto const maxPlayingSoundsForThisType = GetMaxPlayingSoundsForType(soundType);
+
+    if (thisTypeCurrentlyPlayingSounds.size() >= maxPlayingSoundsForThisType)
     {
         ScavengeStoppedSounds(thisTypeCurrentlyPlayingSounds);
 
-        if (thisTypeCurrentlyPlayingSounds.size() >= MaxPlayingSoundsPerType)
+        if (thisTypeCurrentlyPlayingSounds.size() >= maxPlayingSoundsForThisType)
         {
             // Need to stop the (expendable) sound that's been playing for the longest
             ScavengeOldestSound(thisTypeCurrentlyPlayingSounds);
         }
     }
 
-    assert(thisTypeCurrentlyPlayingSounds.size() < MaxPlayingSoundsPerType);
+    assert(thisTypeCurrentlyPlayingSounds.size() < maxPlayingSoundsForThisType);
 
 
 

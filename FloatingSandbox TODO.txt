@@ -117,11 +117,21 @@ Render:
 - Roadmap:
 	= 1.7.0
 		= Magic spring optimization (*)
-			- Then decide whether to increase the number of basis iterations, and whether to adjust strength
-				- SQ: 1.5 => Basis = 18
-				- SQ: 2.0 => Basis = 24
-				- Strength: TBD (lower strength adjust to maintain auto-break of Titanic)
-		- Make sure warning_icon.png gets in the install package
+			= Then decide whether to increase the number of basis iterations, and whether to adjust strength
+				+ SQ: 2.0 => Basis = 24
+				= Strength to maintain Titanic auto-break: <= 0.397928
+					= Change max strength to 10 and see again value: 0.403352
+				+ Tune bombs
+				+ See pin
+				- Fix crash
+				+ Change ocean floor bump - remove center chasm and move it right
+				+ Fix sound quantity
+				+ Adjust volume of those two high-pitched sounds
+				+ Adjust container ship
+				- Bomb blast radius: 2.0
+				= Fix missing RC bomb pings 
+					- verify break & stress sounds are still good
+		= Test collisions with seafloor being less destructive
 	- 1.8.0
 		- Libsimdpp spring relaxation (*)
 		- Batisphere with pumps and propulsion (*)

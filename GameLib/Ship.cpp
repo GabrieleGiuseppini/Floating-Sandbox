@@ -664,7 +664,7 @@ void Ship::IntegrateAndResetPointForces(GameParameters const & gameParameters)
     // d such that after N iterations the damping is the same as our reference value, which is 0.9996 with
     // 12 (basis) iterations. For example, double the number of iterations requires square root (1/2) of
     // this value.
-    float const globalDampCoefficient = pow(0.9996f, 1.0f / gameParameters.NumMechanicalDynamicsIterationsAdjustment);
+    float const globalDampCoefficient = pow(0.9996f, 12.0f / gameParameters.NumMechanicalDynamicsIterations<float>());
 
     //
     // Take the four buffers that we need as restrict pointers, so that the compiler
@@ -713,8 +713,8 @@ void Ship::HandleCollisionsWithSeaFloor()
             // (which is oriented upwards)
             vec2f bounceDisplacement = seaFloorNormal * (floorheight - mPoints.GetPosition(pointIndex).y);
 
-            // Move point back along normal to ~basically floor level
-            mPoints.GetPosition(pointIndex) += bounceDisplacement;
+            // Reflect point back along normal
+            mPoints.GetPosition(pointIndex) += bounceDisplacement * 2.0f;
 
             // Simulate a perfectly elastic impact, bouncing along specular to sea floor normal:
             // R = 2*n*dot_product(n,-V) + V
@@ -1721,12 +1721,16 @@ void Ship::DoBombExplosion(
     // Blast radius: from 0.6 to BombBlastRadius
     float const blastRadius = 0.6f + (std::max(gameParameters.BombBlastRadius - 0.6f, 0.0f)) * sequenceProgress;
 
+    float const strength =
+        750.0f
+        * (gameParameters.IsUltraViolentMode ? 100.0f : 1.0f);
+
     // Store the force field
     mCurrentForceFields.emplace_back(
         new BlastForceField(
             blastPosition,
             blastRadius,
-            1000.0f * (gameParameters.IsUltraViolentMode ? 100.0f : 1.0f),
+            strength,
             connectedComponentId,
             sequenceProgress == 0.0f));
 }

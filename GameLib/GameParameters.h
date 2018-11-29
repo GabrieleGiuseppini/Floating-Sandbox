@@ -62,8 +62,8 @@ struct GameParameters
     static constexpr float MaxStiffnessAdjustment = 2.4f;
 
     float StrengthAdjustment;
-    static constexpr float MinStrengthAdjustment = 0.001f;
-    static constexpr float MaxStrengthAdjustment = 20.0f;
+    static constexpr float MinStrengthAdjustment = 0.01f;
+    static constexpr float MaxStrengthAdjustment = 10.0f;
 
     // Water
 
@@ -188,5 +188,5 @@ private:
     // - More iterations => hard body (never breaks though)
     //
 
-    static constexpr size_t BasisNumMechanicalDynamicsIterations = 12;
+    static constexpr size_t BasisNumMechanicalDynamicsIterations = 24;
 };
