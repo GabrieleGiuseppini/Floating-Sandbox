@@ -270,14 +270,20 @@ Render:
 			+ ShipBuilder:
 				+ Adjust to new
 				+ Also take care of traverse springs
-			- New ShipRenderMode: EdgeSprings only
-				- ShipRenderContext: treated exactly like SpringsOnly
-				- Springs::Render: used to decide what to upload
-			= Springs::UploadElements: in all modes except SpringsOnly, upload only springs with # of super triangles < 2
-				- Re-enable TODOTEST code
-			- Ship::Render() has to remember what ShipRenderMode was used last time, so to consider elements dirty
+			+ New ShipRenderMode: EdgeSprings only
+				+ ShipRenderContext: treated exactly like SpringsOnly
+				+ Springs::Render: used to decide what to upload
+			+ Springs::UploadElements: in all modes except SpringsOnly, upload only springs with # of super triangles < 2
+				+ Re-enable TODOTEST code
+			+ Ship::Render() has to remember what ShipRenderMode was used last time, so to consider elements dirty
 			  also when ShipRenderMode has changed
-			- Settings dialog: do not grey out ShipRenderMode when Wireframe mode is enabled
+			- Extended status: take stats from RenderContext
+				- RenderContext::Stats:
+					- LastRenderedShipSprings
+					- LastRenderedShipTriangles
+					- LastRenderedGenericTextureTriangles
+					----
+					- Reset stats at each RenderContext::RenderStart()
 
 	+ See if can use multiple texture units
 		+ Bind once atlas, land, and water at cctor, to each unit

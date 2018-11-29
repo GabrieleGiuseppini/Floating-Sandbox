@@ -411,11 +411,15 @@ void SettingsDialog::ApplySettings()
     }
     else if (2 == selectedShipRenderMode)
     {
+        mGameController->SetShipRenderMode(ShipRenderMode::EdgeSprings);
+    }
+    else if (3 == selectedShipRenderMode)
+    {
         mGameController->SetShipRenderMode(ShipRenderMode::Structure);
     }
     else
     {
-        assert(3 == selectedShipRenderMode);
+        assert(4 == selectedShipRenderMode);
         mGameController->SetShipRenderMode(ShipRenderMode::Texture);
     }
 
@@ -992,6 +996,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
     {
         _("Draw Only Points"),
         _("Draw Only Springs"),
+        _("Draw Only Edge Springs"),
         _("Draw Structure"),
         _("Draw Image")
     };
@@ -1206,15 +1211,21 @@ void SettingsDialog::ReadSettings()
             break;
         }
 
-        case ShipRenderMode::Structure:
+        case ShipRenderMode::EdgeSprings:
         {
             mShipRenderModeRadioBox->SetSelection(2);
             break;
         }
 
-        case ShipRenderMode::Texture:
+        case ShipRenderMode::Structure:
         {
             mShipRenderModeRadioBox->SetSelection(3);
+            break;
+        }
+
+        case ShipRenderMode::Texture:
+        {
+            mShipRenderModeRadioBox->SetSelection(4);
             break;
         }
     }
@@ -1222,7 +1233,7 @@ void SettingsDialog::ReadSettings()
     auto vectorFieldRenderMode = mGameController->GetVectorFieldRenderMode();
     switch (vectorFieldRenderMode)
     {
-    case VectorFieldRenderMode::None:
+        case VectorFieldRenderMode::None:
         {
             mVectorFieldRenderModeRadioBox->SetSelection(0);
             break;

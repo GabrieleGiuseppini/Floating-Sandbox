@@ -111,7 +111,7 @@ public:
 
     void Render(
         GameParameters const & gameParameters,
-        Render::RenderContext & renderContext) const;
+        Render::RenderContext & renderContext);
 
 public:
 
@@ -248,7 +248,11 @@ private:
     // since the last step.
     // When this flag is set, we'll re-detect connected components and re-upload elements
     // to the rendering context
-    bool mutable mAreElementsDirty;
+    bool mAreElementsDirty;
+
+    // The ship render mode that was in effect the last time we've uploaded elements;
+    // used to detect changes and eventually re-upload
+    std::optional<ShipRenderMode> mLastShipRenderMode;
 
     // Sinking detection
     bool mIsSinking;

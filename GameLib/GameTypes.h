@@ -150,6 +150,7 @@ enum class ShipRenderMode
 {
     Points,
     Springs,
+    EdgeSprings,
     Structure,
     Texture
 };

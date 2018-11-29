@@ -722,13 +722,14 @@ void ShipRenderContext::RenderEnd()
         // Draw springs
         //
         // We draw springs when:
-        // - RenderMode is springs ("X-Ray Mode"), in which case we use colors - so to show structural springs -, or
+        // - RenderMode is springs|edgeSprings ("X-Ray Mode"), in which case we use colors - so to show
+        //   structural springs -, or
         // - RenderMode is structure (so to draw 1D chains), in which case we use colors, or
         // - RenderMode is texture (so to draw 1D chains), in which case we use texture iff it is present
-        // - AND: it's not wireframe mode
         //
 
         if ((mShipRenderMode == ShipRenderMode::Springs
+            || mShipRenderMode == ShipRenderMode::EdgeSprings
             || mShipRenderMode == ShipRenderMode::Structure
             || mShipRenderMode == ShipRenderMode::Texture)
             && !mWireframeMode)
@@ -743,10 +744,13 @@ void ShipRenderContext::RenderEnd()
         // Draw ropes now if RenderMode is:
         // - Springs
         // - Texture (so rope endpoints are hidden behind texture, looks better)
+        // - AND: it's not wireframe mode
         //
 
-        if (mShipRenderMode == ShipRenderMode::Springs
+        if ((mShipRenderMode == ShipRenderMode::Springs
+            || mShipRenderMode == ShipRenderMode::EdgeSprings
             || mShipRenderMode == ShipRenderMode::Texture)
+            && !mWireframeMode)
         {
             RenderRopeElements(mConnectedComponents[c]);
         }
@@ -757,7 +761,8 @@ void ShipRenderContext::RenderEnd()
         //
 
         if (mShipRenderMode == ShipRenderMode::Structure
-            || mShipRenderMode == ShipRenderMode::Texture)
+            || mShipRenderMode == ShipRenderMode::Texture
+            || mWireframeMode)
         {
             RenderTriangleElements(
                 mConnectedComponents[c],
@@ -769,7 +774,8 @@ void ShipRenderContext::RenderEnd()
         // Draw ropes now if RenderMode is Structure (so rope endpoints on the structure are visible)
         //
 
-        if (mShipRenderMode == ShipRenderMode::Structure)
+        if (mShipRenderMode == ShipRenderMode::Structure
+            && !mWireframeMode)
         {
             RenderRopeElements(mConnectedComponents[c]);
         }
@@ -779,7 +785,8 @@ void ShipRenderContext::RenderEnd()
         // Draw stressed springs
         //
 
-        if (mShowStressedSprings)
+        if (mShowStressedSprings
+            && !mWireframeMode)
         {
             RenderStressedSpringElements(mConnectedComponents[c]);
         }

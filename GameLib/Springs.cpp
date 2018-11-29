@@ -142,15 +142,13 @@ void Springs::UploadElements(
     Render::RenderContext & renderContext,
     Points const & points) const
 {
-    bool const isSpringsRenderMode = (ShipRenderMode::Springs == renderContext.GetShipRenderMode());
+    bool const doUploadAllSprings = (ShipRenderMode::Springs == renderContext.GetShipRenderMode());
 
     for (ElementIndex i : *this)
     {
-        // Only upload non-deleted springs that are not covered by two super-triangles
-        if (!mIsDeletedBuffer[i]
-            // TODOTEST
-            //&& (mSuperTrianglesBuffer[i].size() < 2 || isSpringsRenderMode))
-            && mSuperTrianglesBuffer[i].size() < 2)
+        // Only upload non-deleted springs that are not covered by two super-triangles, unless
+        // we are in springs render mode
+        if (!mIsDeletedBuffer[i])
         {
             assert(points.GetConnectedComponentId(GetPointAIndex(i)) == points.GetConnectedComponentId(GetPointBIndex(i)));
 
@@ -162,7 +160,7 @@ void Springs::UploadElements(
                     GetPointBIndex(i),
                     points.GetConnectedComponentId(GetPointAIndex(i)));
             }
-            else
+            else if (mSuperTrianglesBuffer[i].size() < 2 || doUploadAllSprings)
             {
                 renderContext.UploadShipElementSpring(
                     shipId,

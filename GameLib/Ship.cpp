@@ -49,6 +49,7 @@ Ship::Ship(
     , mMaterialDatabase(std::move(materialDatabase))
     , mConnectedComponentSizes()
     , mAreElementsDirty(true)
+    , mLastShipRenderMode()
     , mIsSinking(false)
     , mTotalWater(0.0)
     , mWaterSplashedRunningAverage()
@@ -362,7 +363,7 @@ void Ship::Update(
 
 void Ship::Render(
     GameParameters const & /*gameParameters*/,
-    Render::RenderContext & renderContext) const
+    Render::RenderContext & renderContext)
 {
     //
     // Initialize render
@@ -390,9 +391,12 @@ void Ship::Render(
     {
         //
         // Upload elements (point (elements), springs, ropes, triangles), iff dirty
+        // or the ship render mode has changed
         //
 
-        if (mAreElementsDirty)
+        if (mAreElementsDirty
+            || !mLastShipRenderMode
+            || *mLastShipRenderMode != renderContext.GetShipRenderMode())
         {
             renderContext.UploadShipElementsStart(mId);
 
@@ -429,6 +433,9 @@ void Ship::Render(
         //
         // Upload stressed springs
         //
+        // We do this regardless of whether or not elements are dirty,
+        // as the set of stressed springs is bound to change from frame to frame
+        //
 
         renderContext.UploadShipElementStressedSpringsStart(mId);
 
@@ -442,7 +449,9 @@ void Ship::Render(
 
         renderContext.UploadShipElementStressedSpringsEnd(mId);
 
+        // Reset state
         mAreElementsDirty = false;
+        mLastShipRenderMode = renderContext.GetShipRenderMode();
     }
 
 
