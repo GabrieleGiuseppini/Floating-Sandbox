@@ -1571,6 +1571,12 @@ void Ship::SpringDestroyHandler(
 
 void Ship::TriangleDestroyHandler(ElementIndex triangleElementIndex)
 {
+    // Decrement count of super triangles from its component springs
+    for (ElementIndex componentSpringIndex : mTriangles.GetComponentSpringIndexes(triangleElementIndex))
+    {
+        mSprings.RemoveOneSuperTriangle(componentSpringIndex);
+    }
+
     // Remove triangle from its endpoints
     mPoints.RemoveConnectedTriangle(mTriangles.GetPointAIndex(triangleElementIndex), triangleElementIndex);
     mPoints.RemoveConnectedTriangle(mTriangles.GetPointBIndex(triangleElementIndex), triangleElementIndex);

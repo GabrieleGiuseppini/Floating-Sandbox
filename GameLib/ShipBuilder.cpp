@@ -12,6 +12,8 @@
 #include <algorithm>
 #include <cassert>
 #include <limits>
+#include <unordered_map>
+#include <utility>
 
 using namespace Physics;
 
@@ -211,6 +213,15 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     // Note: we don't optimize triangles, as tests indicate that performance gets (marginally) worse,
     // and at the same time, it makes sense to use the natural order of the triangles as it ensures
     // that higher elements in the ship cover lower elements when they are semi-detached
+
+
+    //
+    // Associate all triangles with the springs that make up their edges
+    //
+
+    ConnectSpringsAndTriangles(
+        springInfos,
+        triangleInfos);
 
 
     //
@@ -550,9 +561,12 @@ void ShipBuilder::CreateShipElementInfos(
                             //
 
                             triangleInfos.emplace_back(
-                                pointIndex,
-                                *pointIndexMatrix[adjx1][adjy1],
-                                *pointIndexMatrix[adjx2][adjy2]);
+                                std::array<ElementIndex, 3>(
+                                    {
+                                        pointIndex,
+                                        *pointIndexMatrix[adjx1][adjy1],
+                                        *pointIndexMatrix[adjx2][adjy2]
+                                    }));
                         }
 
                         // Now, we also want to check whether the single "irregular" triangle from this point exists,
@@ -572,9 +586,12 @@ void ShipBuilder::CreateShipElementInfos(
                             //
 
                             triangleInfos.emplace_back(
-                                pointIndex,
-                                *pointIndexMatrix[x + Directions[0][0]][y + Directions[0][1]],
-                                *pointIndexMatrix[x + Directions[2][0]][y + Directions[2][1]]);
+                                std::array<ElementIndex, 3>(
+                                    {
+                                        pointIndex,
+                                        *pointIndexMatrix[x + Directions[0][0]][y + Directions[0][1]],
+                                        *pointIndexMatrix[x + Directions[2][0]][y + Directions[2][1]]
+                                    }));
                         }
                     }
                 }
@@ -595,6 +612,83 @@ void ShipBuilder::CreateShipElementInfos(
     }
 }
 
+void ShipBuilder::ConnectSpringsAndTriangles(
+    std::vector<SpringInfo> & springInfos,
+    std::vector<TriangleInfo> & triangleInfos)
+{
+    //
+    // 1. Build Point -> Spring table
+    //
+    // - Index is min point of spring
+    // - Value is set of <other point, spring>
+    //
+
+    struct SpringPointInfo
+    {
+        ElementIndex OtherEndpointIndex;
+        ElementIndex SpringIndex;
+
+        SpringPointInfo(
+            ElementIndex otherEndpointIndex,
+            ElementIndex springIndex)
+            : OtherEndpointIndex(otherEndpointIndex)
+            , SpringIndex(springIndex)
+        {}
+    };
+
+    std::unordered_multimap<ElementIndex, SpringPointInfo> pointToSpringMap;
+
+    for (ElementIndex s = 0; s < springInfos.size(); ++s)
+    {
+        ElementIndex const endpointIndex = std::min(springInfos[s].PointAIndex, springInfos[s].PointBIndex);
+        ElementIndex const otherEndpointIndex = std::max(springInfos[s].PointAIndex, springInfos[s].PointBIndex);
+
+        pointToSpringMap.emplace(
+            std::piecewise_construct,
+            std::forward_as_tuple(endpointIndex),
+            std::forward_as_tuple(otherEndpointIndex, s));
+    }
+
+
+    //
+    // 2. Visit all triangles and connect it to its springs
+    //
+
+    for (ElementIndex t = 0; t < triangleInfos.size(); ++t)
+    {
+        for (size_t p = 0; p < triangleInfos[t].PointIndices.size(); ++p)
+        {
+            ElementIndex const endpointIndex = triangleInfos[t].PointIndices[p];
+
+            ElementIndex const nextEndpointIndex =
+                p < triangleInfos[t].PointIndices.size() - 1
+                ? triangleInfos[t].PointIndices[p + 1]
+                : triangleInfos[t].PointIndices[0];
+
+            // Get info's for this endpoint
+            auto const range = pointToSpringMap.equal_range(std::min(endpointIndex, nextEndpointIndex));
+            assert(range.first != range.second);
+
+            // Find info for the other endpoint
+            ElementIndex const otherEndpointIndex = std::max(endpointIndex, nextEndpointIndex);
+            auto const spInfoIt = std::find_if(
+                range.first,
+                range.second,
+                [otherEndpointIndex](auto const & entry)
+                {
+                    return entry.second.OtherEndpointIndex == otherEndpointIndex;
+                });
+
+            // Tell this spring that it has an extra super triangle
+            ++springInfos[spInfoIt->second.SpringIndex].SuperTrianglesCount;
+            assert(springInfos[spInfoIt->second.SpringIndex].SuperTrianglesCount <= 2);
+
+            // Tell the triangle about this component spring
+            assert(triangleInfos[t].ComponentSpringIndices.size() == p);
+            triangleInfos[t].ComponentSpringIndices.push_back(spInfoIt->second.SpringIndex);
+        }
+    }
+}
 Physics::Springs ShipBuilder::CreateSprings(
     std::vector<SpringInfo> const & springInfos,
     Physics::Points & points,
@@ -626,6 +720,7 @@ Physics::Springs ShipBuilder::CreateSprings(
         springs.Add(
             springInfos[s].PointAIndex,
             springInfos[s].PointBIndex,
+            springInfos[s].SuperTrianglesCount,
             static_cast<Springs::Characteristics>(characteristics),
             points);
 
@@ -651,14 +746,14 @@ Physics::Triangles ShipBuilder::CreateTriangles(
 
     for (ElementIndex t = 0; t < triangleInfos.size(); ++t)
     {
-        if (points.IsRope(triangleInfos[t].PointAIndex)
-            && points.IsRope(triangleInfos[t].PointBIndex)
-            && points.IsRope(triangleInfos[t].PointCIndex))
+        if (points.IsRope(triangleInfos[t].PointIndices[0])
+            && points.IsRope(triangleInfos[t].PointIndices[1])
+            && points.IsRope(triangleInfos[t].PointIndices[2]))
         {
             // Do not add triangle if at least one vertex is connected to rope points only
-            if (!IsConnectedToNonRopePoints(triangleInfos[t].PointAIndex, points, springs)
-                || !IsConnectedToNonRopePoints(triangleInfos[t].PointBIndex, points, springs)
-                || !IsConnectedToNonRopePoints(triangleInfos[t].PointCIndex, points, springs))
+            if (!IsConnectedToNonRopePoints(triangleInfos[t].PointIndices[0], points, springs)
+                || !IsConnectedToNonRopePoints(triangleInfos[t].PointIndices[1], points, springs)
+                || !IsConnectedToNonRopePoints(triangleInfos[t].PointIndices[2], points, springs))
             {
                 continue;
             }
@@ -678,16 +773,26 @@ Physics::Triangles ShipBuilder::CreateTriangles(
     {
         auto triangleIndex = triangleIndices[t];
 
+        // Create array of component spring indices
+        assert(triangleInfos[triangleIndex].ComponentSpringIndices.size() == 3);
+        std::array<ElementIndex, 3> componentSpringIndices
+        {
+            triangleInfos[triangleIndex].ComponentSpringIndices[0],
+            triangleInfos[triangleIndex].ComponentSpringIndices[1],
+            triangleInfos[triangleIndex].ComponentSpringIndices[2]
+        };
+
         // Create triangle
         triangles.Add(
-            triangleInfos[triangleIndex].PointAIndex,
-            triangleInfos[triangleIndex].PointBIndex,
-            triangleInfos[triangleIndex].PointCIndex);
+            triangleInfos[triangleIndex].PointIndices[0],
+            triangleInfos[triangleIndex].PointIndices[1],
+            triangleInfos[triangleIndex].PointIndices[2],
+            componentSpringIndices);
 
         // Add triangle to its endpoints
-        points.AddConnectedTriangle(triangleInfos[triangleIndex].PointAIndex, t);
-        points.AddConnectedTriangle(triangleInfos[triangleIndex].PointBIndex, t);
-        points.AddConnectedTriangle(triangleInfos[triangleIndex].PointCIndex, t);
+        points.AddConnectedTriangle(triangleInfos[triangleIndex].PointIndices[0], t);
+        points.AddConnectedTriangle(triangleInfos[triangleIndex].PointIndices[1], t);
+        points.AddConnectedTriangle(triangleInfos[triangleIndex].PointIndices[2], t);
     }
 
     return triangles;
@@ -814,13 +919,13 @@ std::vector<ShipBuilder::TriangleInfo> ShipBuilder::ReorderOptimally(
     // Fill-in cross-references between vertices and triangles
     for (size_t t = 0; t < triangleInfos.size(); ++t)
     {
-        vertexData[triangleInfos[t].PointAIndex].RemainingElementIndices.push_back(t);
-        vertexData[triangleInfos[t].PointBIndex].RemainingElementIndices.push_back(t);
-        vertexData[triangleInfos[t].PointCIndex].RemainingElementIndices.push_back(t);
+        vertexData[triangleInfos[t].PointIndices[0]].RemainingElementIndices.push_back(t);
+        vertexData[triangleInfos[t].PointIndices[1]].RemainingElementIndices.push_back(t);
+        vertexData[triangleInfos[t].PointIndices[2]].RemainingElementIndices.push_back(t);
 
-        elementData[t].VertexIndices.push_back(static_cast<size_t>(triangleInfos[t].PointAIndex));
-        elementData[t].VertexIndices.push_back(static_cast<size_t>(triangleInfos[t].PointBIndex));
-        elementData[t].VertexIndices.push_back(static_cast<size_t>(triangleInfos[t].PointCIndex));
+        elementData[t].VertexIndices.push_back(static_cast<size_t>(triangleInfos[t].PointIndices[0]));
+        elementData[t].VertexIndices.push_back(static_cast<size_t>(triangleInfos[t].PointIndices[1]));
+        elementData[t].VertexIndices.push_back(static_cast<size_t>(triangleInfos[t].PointIndices[2]));
     }
 
     // Get optimal indices
@@ -1017,17 +1122,17 @@ float ShipBuilder::CalculateACMR(std::vector<TriangleInfo> const & triangleInfos
 
     for (auto const & triangleInfo : triangleInfos)
     {
-        if (!cache.UseVertex(triangleInfo.PointAIndex))
+        if (!cache.UseVertex(triangleInfo.PointIndices[0]))
         {
             cacheMisses += 1.0f;
         }
 
-        if (!cache.UseVertex(triangleInfo.PointBIndex))
+        if (!cache.UseVertex(triangleInfo.PointIndices[1]))
         {
             cacheMisses += 1.0f;
         }
 
-        if (!cache.UseVertex(triangleInfo.PointCIndex))
+        if (!cache.UseVertex(triangleInfo.PointIndices[2]))
         {
             cacheMisses += 1.0f;
         }

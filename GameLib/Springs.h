@@ -96,6 +96,8 @@ public:
         , mIsDeletedBuffer(mBufferElementCount, mElementCount, true)
         // Endpoints
         , mEndpointsBuffer(mBufferElementCount, mElementCount, Endpoints(NoneElementIndex, NoneElementIndex))
+        // Super triangles count
+        , mSuperTrianglesCountBuffer(mBufferElementCount, mElementCount, 0)
         // Physical
         , mStrengthBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mStiffnessBuffer(mBufferElementCount, mElementCount, 0.0f)
@@ -145,6 +147,7 @@ public:
     void Add(
         ElementIndex pointAIndex,
         ElementIndex pointBIndex,
+        ElementCount superTrianglesCount,
         Characteristics characteristics,
         Points const & points);
 
@@ -281,6 +284,21 @@ public:
     }
 
     //
+    // Super triangles count
+    //
+
+    ElementCount GetSuperTrianglesCount(ElementIndex springElementIndex) const
+    {
+        return mSuperTrianglesCountBuffer[springElementIndex];
+    }
+
+    void RemoveOneSuperTriangle(ElementIndex springElementIndex)
+    {
+        assert(mSuperTrianglesCountBuffer[springElementIndex] > 0);
+        --mSuperTrianglesCountBuffer[springElementIndex];
+    }
+
+    //
     // Physical
     //
 
@@ -314,7 +332,9 @@ public:
         return mBaseMaterialBuffer[springElementIndex];
     }
 
-    inline bool IsHull(ElementIndex springElementIndex) const;
+    // TODOTEST: NEEDED?
+    //inline bool IsHull(ElementIndex springElementIndex) const;
+
     inline bool IsRope(ElementIndex springElementIndex) const;
 
     //
@@ -412,6 +432,10 @@ private:
     // Endpoints
     Buffer<Endpoints> mEndpointsBuffer;
 
+    // Super triangles count - number of triangles that have this spring
+    // connecting the endpoints of one of their edges
+    Buffer<ElementCount> mSuperTrianglesCountBuffer;
+
     //
     // Physical
     //
@@ -470,12 +494,13 @@ private:
 template <> struct is_flag<Physics::Springs::DestroyOptions> : std::true_type {};
 template <> struct is_flag<Physics::Springs::Characteristics> : std::true_type {};
 
-inline bool Physics::Springs::IsHull(ElementIndex springElementIndex) const
-{
-    assert(springElementIndex < mElementCount);
-
-    return !!(mCharacteristicsBuffer[springElementIndex] & Physics::Springs::Characteristics::Hull);
-}
+// TODOTEST: NEEDED?
+////inline bool Physics::Springs::IsHull(ElementIndex springElementIndex) const
+////{
+////    assert(springElementIndex < mElementCount);
+////
+////    return !!(mCharacteristicsBuffer[springElementIndex] & Physics::Springs::Characteristics::Hull);
+////}
 
 inline bool Physics::Springs::IsRope(ElementIndex springElementIndex) const
 {

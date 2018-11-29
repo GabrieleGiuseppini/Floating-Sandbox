@@ -12,12 +12,15 @@ namespace Physics {
 void Springs::Add(
     ElementIndex pointAIndex,
     ElementIndex pointBIndex,
+    ElementCount superTrianglesCount,
     Characteristics characteristics,
     Points const & points)
 {
     mIsDeletedBuffer.emplace_back(false);
 
     mEndpointsBuffer.emplace_back(pointAIndex, pointBIndex);
+
+    mSuperTrianglesCountBuffer.emplace_back(superTrianglesCount);
 
     // Strength is average
     mStrengthBuffer.emplace_back((points.GetMaterial(pointAIndex)->Strength + points.GetMaterial(pointBIndex)->Strength) / 2.0f);
@@ -50,7 +53,10 @@ void Springs::Add(
         : points.GetMaterial(pointBIndex));
 
     // Spring is impermeable if it's a hull spring (i.e. if at least one endpoint is hull)
-    mWaterPermeabilityBuffer.emplace_back(Characteristics::None != (characteristics & Characteristics::Hull) ? 0.0f : 1.0f);
+    mWaterPermeabilityBuffer.emplace_back(
+        Characteristics::None != (characteristics & Characteristics::Hull)
+        ? 0.0f
+        : 1.0f);
 
     mIsStressedBuffer.emplace_back(false);
 
@@ -137,9 +143,16 @@ void Springs::UploadElements(
     Render::RenderContext & renderContext,
     Points const & points) const
 {
+    bool const isSpringsRenderMode = (ShipRenderMode::Springs == renderContext.GetShipRenderMode());
+
     for (ElementIndex i : *this)
     {
-        if (!mIsDeletedBuffer[i])
+        // Only upload non-deleted springs that are not enclosed between two triangles
+        // (springs that are enclosed between two triangles would not be visible in non-springs mode)
+        if (!mIsDeletedBuffer[i]
+            // TODOTEST
+            //&& (mSuperTrianglesCountBuffer[i] < 2 || isSpringsRenderMode))
+            && mSuperTrianglesCountBuffer[i] < 2)
         {
             assert(points.GetConnectedComponentId(GetPointAIndex(i)) == points.GetConnectedComponentId(GetPointBIndex(i)));
 

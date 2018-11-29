@@ -10,11 +10,14 @@ namespace Physics {
 void Triangles::Add(
     ElementIndex pointAIndex,
     ElementIndex pointBIndex,
-    ElementIndex pointCIndex)
+    ElementIndex pointCIndex,
+    std::array<ElementIndex, 3u> componentSpringIndexes)
 {
     mIsDeletedBuffer.emplace_back(false);
 
     mEndpointsBuffer.emplace_back(pointAIndex, pointBIndex, pointCIndex);
+
+    mComponentSpringIndexesBuffer.emplace_back(componentSpringIndexes);
 }
 
 void Triangles::Destroy(ElementIndex triangleElementIndex)

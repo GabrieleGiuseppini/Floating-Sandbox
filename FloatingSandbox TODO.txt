@@ -120,6 +120,7 @@ Render:
 			- Then decide whether to increase the number of basis iterations
 				- SQ: 1.5 => Basis = 18
 				- Strength: TBD (lower strength adjust to maintain auto-break of Titanic)
+		- Make sure warning_icon.png gets in the install package
 	- 1.8.0
 		- Libsimdpp spring relaxation (*)
 		- Batisphere with pumps and propulsion (*)
@@ -248,22 +249,25 @@ Render:
 - Gfx optimizations:
 
 	= In texture or structure mode, draw only springs that are visible
-		- i.e. springs with # of triangles < 2
+		+ i.e. springs with # of triangles < 2
 		= Impl:
-			= Springs:
-				= New buffer: SuperTrianglesCount - type: ElementCount
+			+ Springs:
+				+ New buffer: SuperTrianglesCount - type: ElementCount
 					+ Publicly exposed
-					= Populated via argument at Springs:Add
-						- Calc'd by ShipBuilder via Triangles below, during component springs discovery
+					+ Populated via argument at Springs:Add
+						+ Calc'd by ShipBuilder via Triangles below, during component springs discovery
 					+ Decremented via Springs::RemoveSuperTriangle() // no args
-			= Triangles:
-				= New buffer: ComponentSprings - type: std::array<ElementIndex, 3>
-					- Publicly exposed
-					= Populated via argument (of type std::array<ElementIndex, 3>) at Triangles:Add
-						- Calc'd by ShipBuilder
+			+ Triangles:
+				+ New buffer: ComponentSprings - type: std::array<ElementIndex, 3>
+					+ Publicly exposed
+					+ Populated via argument (of type std::array<ElementIndex, 3>) at Triangles:Add
+						+ Calc'd by ShipBuilder
 					+ Never changed
-					- Used by Ship::TrianglesDestroyHandler() to decrement count for each component spring
-			- Ship: upload springs: only springs with # of super triangles < 2
+					+ Used by Ship::TrianglesDestroyHandler() to decrement count for each component spring
+			= Ship: upload springs: only springs with # of super triangles < 2
+				- Re-enable TODOTEST code
+			- Ship::Render() has to remember what ShipRenderMode was used last time, so to consider elements dirty
+			  also when ShipRenderMode has changed
 
 	+ See if can use multiple texture units
 		+ Bind once atlas, land, and water at cctor, to each unit
@@ -573,6 +577,9 @@ Render:
 	- Stars with database
 		- python script to generate binary maps for N and S emispheres
 
+	- Random noise that lowers strength to inject visual "cracks"
+		- Random walk across pairs of points on opposide sides of ships
+
 - Water:
 	-Do water bubbles (at intake) and water drops (at outtake)
 		- Ephemeral particles emitted at UpdateWaterIntake()
@@ -653,6 +660,9 @@ Render:
 			- Error if a non-zero layer provides:
 				- 1) data for point non-existing in zero layer
 				- 2) data that already exists (e.g. ElectricalChar's)
+
+	- Ship definition: "instructions"
+		- If present, at the first load of a ship spawns a text box (if enabled in settings)
 
 	+ Control incisiveness (contrast) of water color for water in ship
 		+ New uniform

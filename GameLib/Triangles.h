@@ -12,6 +12,7 @@
 #include "Material.h"
 #include "RenderContext.h"
 
+#include <array>
 #include <cassert>
 #include <functional>
 
@@ -56,6 +57,8 @@ public:
         , mIsDeletedBuffer(mBufferElementCount, mElementCount, true)
         // Endpoints
         , mEndpointsBuffer(mBufferElementCount, mElementCount, Endpoints(NoneElementIndex, NoneElementIndex, NoneElementIndex))
+        // Component spring indexes
+        , mComponentSpringIndexesBuffer(mBufferElementCount, mElementCount, {NoneElementIndex, NoneElementIndex, NoneElementIndex})
         //////////////////////////////////
         // Container
         //////////////////////////////////
@@ -86,7 +89,8 @@ public:
     void Add(
         ElementIndex pointAIndex,
         ElementIndex pointBIndex,
-        ElementIndex pointCIndex);
+        ElementIndex pointCIndex,
+        std::array<ElementIndex, 3u> componentSpringIndexes);
 
     void Destroy(ElementIndex triangleElementIndex);
 
@@ -129,6 +133,15 @@ public:
         return mEndpointsBuffer[triangleElementIndex].PointCIndex;
     }
 
+    //
+    // Component springs
+    //
+
+    inline std::array<ElementIndex, 3u> const & GetComponentSpringIndexes(ElementIndex triangleElementIndex) const
+    {
+        return mComponentSpringIndexesBuffer[triangleElementIndex];
+    }
+
 private:
 
     //////////////////////////////////////////////////////////
@@ -140,6 +153,9 @@ private:
 
     // Endpoints
     Buffer<Endpoints> mEndpointsBuffer;
+
+    // Component springs
+    Buffer<std::array<ElementIndex, 3u>> mComponentSpringIndexesBuffer;
 
     //////////////////////////////////////////////////////////
     // Container

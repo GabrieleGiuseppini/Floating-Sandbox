@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "FixedSizeVector.h"
 #include "GameParameters.h"
 #include "ImageSize.h"
 #include "MaterialDatabase.h"
@@ -73,28 +74,28 @@ private:
         ElementIndex PointAIndex;
         ElementIndex PointBIndex;
 
+        ElementCount SuperTrianglesCount;
+
         SpringInfo(
             ElementIndex pointAIndex,
             ElementIndex pointBIndex)
             : PointAIndex(pointAIndex)
             , PointBIndex(pointBIndex)
+            , SuperTrianglesCount(0)
         {
         }
     };
 
     struct TriangleInfo
     {
-        ElementIndex PointAIndex;
-        ElementIndex PointBIndex;
-        ElementIndex PointCIndex;
+        std::array<ElementIndex, 3> PointIndices;
+
+        FixedSizeVector<ElementIndex, 3> ComponentSpringIndices;
 
         TriangleInfo(
-            ElementIndex pointAIndex,
-            ElementIndex pointBIndex,
-            ElementIndex pointCIndex)
-            : PointAIndex(pointAIndex)
-            , PointBIndex(pointBIndex)
-            , PointCIndex(pointCIndex)
+            std::array<ElementIndex, 3> const & pointIndices)
+            : PointIndices(pointIndices)
+            , ComponentSpringIndices()
         {
         }
     };
@@ -125,6 +126,10 @@ private:
         std::vector<SpringInfo> & springInfos,
         std::vector<TriangleInfo> & triangleInfos,
         size_t & leakingPointsCount);
+
+    static void ConnectSpringsAndTriangles(
+        std::vector<SpringInfo> & springInfos,
+        std::vector<TriangleInfo> & triangleInfos);
 
     static Physics::Springs CreateSprings(
         std::vector<SpringInfo> const & springInfos,
