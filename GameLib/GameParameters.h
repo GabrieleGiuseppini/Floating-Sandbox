@@ -121,10 +121,6 @@ struct GameParameters
     static constexpr float MinOceanFloorDetailAmplification = 0.0f;
     static constexpr float MaxOceanFloorDetailAmplification = 200.0f;
 
-    float DestroyRadius;
-    static constexpr float MinDestroyRadius = 0.1f;
-    static constexpr float MaxDestroyRadius = 10.0f;
-
     float BombBlastRadius;
     static constexpr float MinBombBlastRadius = 0.1f;
     static constexpr float MaxBombBlastRadius = 20.0f;
@@ -138,8 +134,6 @@ struct GameParameters
     std::chrono::seconds TimerBombInterval;
 
     float BombMass;
-
-    float ToolSearchRadius;
 
     float LightDiffusionAdjustment;
 
@@ -155,8 +149,19 @@ struct GameParameters
     static constexpr float MinWindSpeed = 0.f;
     static constexpr float MaxWindSpeed = 50.0f;
 
+    //
+    // Interactions
+    //
+
+    float ToolSearchRadius;
+
+    float DestroyRadius;
+    static constexpr float MinDestroyRadius = 0.1f;
+    static constexpr float MaxDestroyRadius = 10.0f;
+
     bool IsUltraViolentMode;
 
+    float MoveToolInertia;
 
     //
     // Limits

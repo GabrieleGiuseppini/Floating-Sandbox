@@ -117,26 +117,38 @@ Render:
 - Roadmap:
 	= 1.7.0
 		= Magic spring optimization (*)
-			= Then decide whether to increase the number of basis iterations, and whether to adjust strength
+			+ Then decide whether to increase the number of basis iterations, and whether to adjust strength
 				+ SQ: 2.0 => Basis = 24
-				= Strength to maintain Titanic auto-break: <= 0.397928
-					= Change max strength to 10 and see again value: 0.403352
+				+ Strength to maintain Titanic auto-break: <= 0.397928
+					+ Change max strength to 10 and see again value: 0.403352
 				+ Tune bombs
-				+ See pin
-				- Fix crash
+				+ See pin				
 				+ Change ocean floor bump - remove center chasm and move it right
 				+ Fix sound quantity
 				+ Adjust volume of those two high-pitched sounds
 				+ Adjust container ship
-				- Bomb blast radius: 2.0
-				= Fix missing RC bomb pings 
-					- verify break & stress sounds are still good
-		= Test collisions with seafloor being less destructive
+				+ Bomb blast radius: 2.0
+				+ Fix missing RC bomb pings 
+					+ verify break & stress sounds are still good
+		+ Test collisions with seafloor being less destructive
+		= Fix crash
+			- Springs and Triangles cctors: pass default-ccted FixedSizeBuffer() there, not {}
+				- See first if can sure repro
+			- Then revert floor collision
+		= Double-check floor collisions visually
+			- Up strength a bit: 0.605356
+			- Check if Titanic still cracks
 	- 1.8.0
+		- Redo full perf analysis
 		- Libsimdpp spring relaxation (*)
 		- Batisphere with pumps and propulsion (*)
+		- Z Buffer (*)
 		- Settings Manager (*)
 		- Resource Packs (Moleskine)
+	-1.9.0
+		- Bubbles
+		- Smoke
+		- Frontier
 
 - New ships
 	- Roma
@@ -603,8 +615,10 @@ Render:
 	- Stars with database
 		- python script to generate binary maps for N and S emispheres
 
-	- Random noise that lowers strength to inject visual "cracks"
+	- Random noise that lowers strength to inject "cracks" when the ship is under stress
 		- Random walk across pairs of points on opposide sides of ships
+
+	- Friction on ocean floor, adjustable
 
 - Water:
 	-Do water bubbles (at intake) and water drops (at outtake)
@@ -673,6 +687,8 @@ Render:
 	- Changing the width of the waves up to at least 10x the current size
 		- Requires re-calculation of period (if adjustment is x-multiplier N, then period is N times basic period)
 		- Resolution stays the same
+
+	- Allow ocean floor bump map to be loaded
 	
 	- Ship definition: multiple layers
 		- We want to maintain BW compat for ease of one-layer ship making

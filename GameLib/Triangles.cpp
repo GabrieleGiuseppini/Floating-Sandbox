@@ -11,7 +11,7 @@ void Triangles::Add(
     ElementIndex pointAIndex,
     ElementIndex pointBIndex,
     ElementIndex pointCIndex,
-    FixedSizeVector<ElementIndex, 4u> const & subSprings)
+    SubSpringsVector const & subSprings)
 {
     mIsDeletedBuffer.emplace_back(false);
 

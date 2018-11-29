@@ -45,6 +45,7 @@ private:
         {}
     };
 
+    using SubSpringsVector = FixedSizeVector<ElementIndex, 4u>;
 
 public:
 
@@ -57,7 +58,7 @@ public:
         // Endpoints
         , mEndpointsBuffer(mBufferElementCount, mElementCount, Endpoints(NoneElementIndex, NoneElementIndex, NoneElementIndex))
         // Sub springs
-        , mSubSpringsBuffer(mBufferElementCount, mElementCount, {})
+        , mSubSpringsBuffer(mBufferElementCount, mElementCount, SubSpringsVector())
         //////////////////////////////////
         // Container
         //////////////////////////////////
@@ -89,7 +90,7 @@ public:
         ElementIndex pointAIndex,
         ElementIndex pointBIndex,
         ElementIndex pointCIndex,
-        FixedSizeVector<ElementIndex, 4u> const & subSprings);
+        SubSpringsVector const & subSprings);
 
     void Destroy(ElementIndex triangleElementIndex);
 
@@ -173,7 +174,7 @@ private:
     // Sub springs - the springs that have this triangle among their super-triangles.
     // This is the three springs along the edges, plus the eventual "traverse" spring (i.e. the non-edge diagonal
     // in a two-triangle square)
-    Buffer<FixedSizeVector<ElementIndex, 4u>> mSubSpringsBuffer;
+    Buffer<SubSpringsVector> mSubSpringsBuffer;
 
     //////////////////////////////////////////////////////////
     // Container

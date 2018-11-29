@@ -66,6 +66,8 @@ private:
         {}
     };
 
+    using SuperTrianglesVector = FixedSizeVector<ElementIndex, 2>;
+
     /*
      * The coefficients used for the spring dynamics.
      */
@@ -97,7 +99,7 @@ public:
         // Endpoints
         , mEndpointsBuffer(mBufferElementCount, mElementCount, Endpoints(NoneElementIndex, NoneElementIndex))
         // Super triangles
-        , mSuperTrianglesBuffer(mBufferElementCount, mElementCount, {})
+        , mSuperTrianglesBuffer(mBufferElementCount, mElementCount, SuperTrianglesVector())
         // Physical
         , mStrengthBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mStiffnessBuffer(mBufferElementCount, mElementCount, 0.0f)
@@ -147,7 +149,7 @@ public:
     void Add(
         ElementIndex pointAIndex,
         ElementIndex pointBIndex,
-        FixedSizeVector<ElementIndex, 2u> const & superTriangles,
+        SuperTrianglesVector const & superTriangles,
         Characteristics characteristics,
         Points const & points);
 
@@ -448,7 +450,7 @@ private:
     // have this spring as one of their edges, or triangles that (partially) cover this spring
     // (i.e. when this spring is the non-edge diagonal of a two-triangle square).
     // In any case, a spring may have between 0 and at most 2 super triangles.
-    Buffer<FixedSizeVector<ElementIndex, 2>> mSuperTrianglesBuffer;
+    Buffer<SuperTrianglesVector> mSuperTrianglesBuffer;
 
     //
     // Physical

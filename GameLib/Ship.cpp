@@ -83,13 +83,17 @@ Ship::~Ship()
 }
 
 void Ship::MoveBy(
-    vec2f const & offset)
+    vec2f const & offset,
+    GameParameters const & gameParameters)
 {
+    vec2f const velocity = offset * gameParameters.MoveToolInertia;
     vec2f * restrict positionBuffer = mPoints.GetPositionBufferAsVec2();
+    vec2f * restrict velocityBuffer = mPoints.GetVelocityBufferAsVec2();
     size_t const count = mPoints.GetBufferElementCount();
     for (size_t p = 0; p < count; ++p)
     {
         positionBuffer[p] += offset;
+        velocityBuffer[p] = velocity;
     }
 }
 
@@ -718,6 +722,9 @@ void Ship::HandleCollisionsWithSeaFloor()
 
             // Simulate a perfectly elastic impact, bouncing along specular to sea floor normal:
             // R = 2*n*dot_product(n,-V) + V
+            //
+            // Note: assuming that point has velocity *into* floor, or else it wouldn't be here;
+            // could get here via move tool though
             mPoints.GetVelocity(pointIndex) +=
                 seaFloorNormal
                 * -2.0f
@@ -1516,6 +1523,10 @@ void Ship::SpringDestroyHandler(
 
     for (auto superTriangleIndex : mSprings.GetSuperTriangles(springElementIndex))
     {
+        //TODOTEST
+        ////if (mTriangles.GetSubSprings(superTriangleIndex).size() > 4)
+        ////    throw GameException("HERE3");
+
         mTriangles.RemoveSubSpring(superTriangleIndex, springElementIndex);
     }
 

@@ -56,7 +56,8 @@ public:
 
     void MoveBy(
         ShipId shipId,
-        vec2f const & offset);
+        vec2f const & offset,
+        GameParameters const & gameParameters);
 
     void DestroyAt(
         vec2f const & targetPos,

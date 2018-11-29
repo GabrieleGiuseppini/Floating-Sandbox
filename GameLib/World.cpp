@@ -61,10 +61,13 @@ size_t World::GetShipPointCount(ShipId shipId) const
 
 void World::MoveBy(
     ShipId shipId,
-    vec2f const & offset)
+    vec2f const & offset,
+    GameParameters const & gameParameters)
 {
     assert(shipId < mAllShips.size());
-    mAllShips[shipId]->MoveBy(offset);
+    mAllShips[shipId]->MoveBy(
+        offset,
+        gameParameters);
 }
 
 void World::DestroyAt(

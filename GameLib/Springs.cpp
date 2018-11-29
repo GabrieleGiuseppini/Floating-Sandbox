@@ -12,7 +12,7 @@ namespace Physics {
 void Springs::Add(
     ElementIndex pointAIndex,
     ElementIndex pointBIndex,
-    FixedSizeVector<ElementIndex, 2u> const & superTriangles,
+    SuperTrianglesVector const & superTriangles,
     Characteristics characteristics,
     Points const & points)
 {

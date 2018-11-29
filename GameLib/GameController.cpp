@@ -223,7 +223,8 @@ void GameController::MoveBy(
     assert(!!mWorld);
     mWorld->MoveBy(
         shipId,
-        worldOffset);
+        worldOffset,
+        mGameParameters);
 }
 
 void GameController::DestroyAt(

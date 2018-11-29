@@ -337,6 +337,11 @@ public:
         return mVelocityBuffer[pointElementIndex];
     }
 
+    vec2f * restrict GetVelocityBufferAsVec2()
+    {
+        return mVelocityBuffer.data();
+    }
+
     float * restrict GetVelocityBufferAsFloat()
     {
         return reinterpret_cast<float *>(mVelocityBuffer.data());

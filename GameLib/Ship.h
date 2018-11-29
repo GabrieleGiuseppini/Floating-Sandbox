@@ -58,7 +58,8 @@ public:
     auto & GetElectricalElements() { return mElectricalElements; }
 
     void MoveBy(
-        vec2f const & offset);
+        vec2f const & offset,
+        GameParameters const & gameParameters);
 
     void DestroyAt(
         vec2f const & targetPos,

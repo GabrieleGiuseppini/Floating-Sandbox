@@ -287,6 +287,15 @@ public:
         }
     }
 
+    virtual void Update(InputState const & /*inputState*/) override
+    {
+        if (!!mEngagedShipId)
+        {
+            // Tell GameController we want to move by zero (for inertia)
+            mGameController->MoveBy(*mEngagedShipId, vec2f::zero());
+        }
+    }
+
     virtual void OnMouseMove(InputState const & inputState) override
     {
         if (!!mEngagedShipId)
