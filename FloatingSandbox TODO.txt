@@ -116,9 +116,10 @@ Render:
 
 - Roadmap:
 	= 1.7.0
-		- Magic spring optimization (*)
-			- Then decide whether to increase the number of basis iterations
+		= Magic spring optimization (*)
+			- Then decide whether to increase the number of basis iterations, and whether to adjust strength
 				- SQ: 1.5 => Basis = 18
+				- SQ: 2.0 => Basis = 24
 				- Strength: TBD (lower strength adjust to maintain auto-break of Titanic)
 		- Make sure warning_icon.png gets in the install package
 	- 1.8.0
@@ -264,10 +265,19 @@ Render:
 						+ Calc'd by ShipBuilder
 					+ Never changed
 					+ Used by Ship::TrianglesDestroyHandler() to decrement count for each component spring
-			= Ship: upload springs: only springs with # of super triangles < 2
+			+ Triangle destroy: remove self from springs
+			+ Springs destroy: remove self from super triangles
+			+ ShipBuilder:
+				+ Adjust to new
+				+ Also take care of traverse springs
+			- New ShipRenderMode: EdgeSprings only
+				- ShipRenderContext: treated exactly like SpringsOnly
+				- Springs::Render: used to decide what to upload
+			= Springs::UploadElements: in all modes except SpringsOnly, upload only springs with # of super triangles < 2
 				- Re-enable TODOTEST code
 			- Ship::Render() has to remember what ShipRenderMode was used last time, so to consider elements dirty
 			  also when ShipRenderMode has changed
+			- Settings dialog: do not grey out ShipRenderMode when Wireframe mode is enabled
 
 	+ See if can use multiple texture units
 		+ Bind once atlas, land, and water at cctor, to each unit

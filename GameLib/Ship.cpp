@@ -1501,9 +1501,22 @@ void Ship::SpringDestroyHandler(
     auto const pointAIndex = mSprings.GetPointAIndex(springElementIndex);
     auto const pointBIndex = mSprings.GetPointBIndex(springElementIndex);
 
+    //
+    // Remove spring from set of sub springs at each super-triangle
+    //
+
+    for (auto superTriangleIndex : mSprings.GetSuperTriangles(springElementIndex))
+    {
+        mTriangles.RemoveSubSpring(superTriangleIndex, springElementIndex);
+    }
+
 
     //
     // Destroy connected triangles
+    //
+    // These are not only the triangles that have this spring as an edge;
+    // they also include triangles that have this spring as traverse (i.e.
+    // the non-edge diagonal of a two-triangle square)
     //
 
     if (destroyAllTriangles)
@@ -1571,10 +1584,10 @@ void Ship::SpringDestroyHandler(
 
 void Ship::TriangleDestroyHandler(ElementIndex triangleElementIndex)
 {
-    // Decrement count of super triangles from its component springs
-    for (ElementIndex componentSpringIndex : mTriangles.GetComponentSpringIndexes(triangleElementIndex))
+    // Remove triangle from set of super triangles of its sub springs
+    for (ElementIndex subSpringIndex : mTriangles.GetSubSprings(triangleElementIndex))
     {
-        mSprings.RemoveOneSuperTriangle(componentSpringIndex);
+        mSprings.RemoveSuperTriangle(subSpringIndex, triangleElementIndex);
     }
 
     // Remove triangle from its endpoints

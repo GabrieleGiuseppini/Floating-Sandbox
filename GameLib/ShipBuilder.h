@@ -74,14 +74,14 @@ private:
         ElementIndex PointAIndex;
         ElementIndex PointBIndex;
 
-        ElementCount SuperTrianglesCount;
+        FixedSizeVector<ElementIndex, 2> SuperTriangles;
 
         SpringInfo(
             ElementIndex pointAIndex,
             ElementIndex pointBIndex)
             : PointAIndex(pointAIndex)
             , PointBIndex(pointBIndex)
-            , SuperTrianglesCount(0)
+            , SuperTriangles()
         {
         }
     };
@@ -90,12 +90,12 @@ private:
     {
         std::array<ElementIndex, 3> PointIndices;
 
-        FixedSizeVector<ElementIndex, 3> ComponentSpringIndices;
+        FixedSizeVector<ElementIndex, 4> SubSprings;
 
         TriangleInfo(
             std::array<ElementIndex, 3> const & pointIndices)
             : PointIndices(pointIndices)
-            , ComponentSpringIndices()
+            , SubSprings()
         {
         }
     };

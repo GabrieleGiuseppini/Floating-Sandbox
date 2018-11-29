@@ -96,8 +96,8 @@ public:
         , mIsDeletedBuffer(mBufferElementCount, mElementCount, true)
         // Endpoints
         , mEndpointsBuffer(mBufferElementCount, mElementCount, Endpoints(NoneElementIndex, NoneElementIndex))
-        // Super triangles count
-        , mSuperTrianglesCountBuffer(mBufferElementCount, mElementCount, 0)
+        // Super triangles
+        , mSuperTrianglesBuffer(mBufferElementCount, mElementCount, {})
         // Physical
         , mStrengthBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mStiffnessBuffer(mBufferElementCount, mElementCount, 0.0f)
@@ -147,7 +147,7 @@ public:
     void Add(
         ElementIndex pointAIndex,
         ElementIndex pointBIndex,
-        ElementCount superTrianglesCount,
+        FixedSizeVector<ElementIndex, 2u> const & superTriangles,
         Characteristics characteristics,
         Points const & points);
 
@@ -284,18 +284,29 @@ public:
     }
 
     //
-    // Super triangles count
+    // Super triangles
     //
 
-    ElementCount GetSuperTrianglesCount(ElementIndex springElementIndex) const
+    inline auto const & GetSuperTriangles(ElementIndex springElementIndex) const
     {
-        return mSuperTrianglesCountBuffer[springElementIndex];
+        return mSuperTrianglesBuffer[springElementIndex];
     }
 
-    void RemoveOneSuperTriangle(ElementIndex springElementIndex)
+    inline void AddSuperTriangle(
+        ElementIndex springElementIndex,
+        ElementIndex superTriangleElementIndex)
     {
-        assert(mSuperTrianglesCountBuffer[springElementIndex] > 0);
-        --mSuperTrianglesCountBuffer[springElementIndex];
+        mSuperTrianglesBuffer[springElementIndex].push_back(superTriangleElementIndex);
+    }
+
+    inline void RemoveSuperTriangle(
+        ElementIndex springElementIndex,
+        ElementIndex superTriangleElementIndex)
+    {
+        bool found = mSuperTrianglesBuffer[springElementIndex].erase_first(superTriangleElementIndex);
+
+        assert(found);
+        (void)found;
     }
 
     //
@@ -432,9 +443,12 @@ private:
     // Endpoints
     Buffer<Endpoints> mEndpointsBuffer;
 
-    // Super triangles count - number of triangles that have this spring
-    // connecting the endpoints of one of their edges
-    Buffer<ElementCount> mSuperTrianglesCountBuffer;
+    // Indexes of the super triangles covering this spring.
+    // "Super triangles" are triangles that "cover" this spring when they're rendered - it's either triangles that
+    // have this spring as one of their edges, or triangles that (partially) cover this spring
+    // (i.e. when this spring is the non-edge diagonal of a two-triangle square).
+    // In any case, a spring may have between 0 and at most 2 super triangles.
+    Buffer<FixedSizeVector<ElementIndex, 2>> mSuperTrianglesBuffer;
 
     //
     // Physical

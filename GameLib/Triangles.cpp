@@ -11,13 +11,13 @@ void Triangles::Add(
     ElementIndex pointAIndex,
     ElementIndex pointBIndex,
     ElementIndex pointCIndex,
-    std::array<ElementIndex, 3u> componentSpringIndexes)
+    FixedSizeVector<ElementIndex, 4u> const & subSprings)
 {
     mIsDeletedBuffer.emplace_back(false);
 
     mEndpointsBuffer.emplace_back(pointAIndex, pointBIndex, pointCIndex);
 
-    mComponentSpringIndexesBuffer.emplace_back(componentSpringIndexes);
+    mSubSpringsBuffer.emplace_back(subSprings);
 }
 
 void Triangles::Destroy(ElementIndex triangleElementIndex)

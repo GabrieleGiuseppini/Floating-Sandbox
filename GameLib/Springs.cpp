@@ -12,7 +12,7 @@ namespace Physics {
 void Springs::Add(
     ElementIndex pointAIndex,
     ElementIndex pointBIndex,
-    ElementCount superTrianglesCount,
+    FixedSizeVector<ElementIndex, 2u> const & superTriangles,
     Characteristics characteristics,
     Points const & points)
 {
@@ -20,7 +20,7 @@ void Springs::Add(
 
     mEndpointsBuffer.emplace_back(pointAIndex, pointBIndex);
 
-    mSuperTrianglesCountBuffer.emplace_back(superTrianglesCount);
+    mSuperTrianglesBuffer.emplace_back(superTriangles);
 
     // Strength is average
     mStrengthBuffer.emplace_back((points.GetMaterial(pointAIndex)->Strength + points.GetMaterial(pointBIndex)->Strength) / 2.0f);
@@ -92,7 +92,6 @@ void Springs::Destroy(
             1);
     }
 
-
     // Zero out our coefficients, so that we can still calculate Hooke's
     // and damping forces for this spring without running the risk of
     // affecting non-deleted points
@@ -147,12 +146,11 @@ void Springs::UploadElements(
 
     for (ElementIndex i : *this)
     {
-        // Only upload non-deleted springs that are not enclosed between two triangles
-        // (springs that are enclosed between two triangles would not be visible in non-springs mode)
+        // Only upload non-deleted springs that are not covered by two super-triangles
         if (!mIsDeletedBuffer[i]
             // TODOTEST
-            //&& (mSuperTrianglesCountBuffer[i] < 2 || isSpringsRenderMode))
-            && mSuperTrianglesCountBuffer[i] < 2)
+            //&& (mSuperTrianglesBuffer[i].size() < 2 || isSpringsRenderMode))
+            && mSuperTrianglesBuffer[i].size() < 2)
         {
             assert(points.GetConnectedComponentId(GetPointAIndex(i)) == points.GetConnectedComponentId(GetPointBIndex(i)));
 

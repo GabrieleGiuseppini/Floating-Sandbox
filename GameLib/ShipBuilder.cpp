@@ -216,7 +216,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
 
 
     //
-    // Associate all triangles with the springs that make up their edges
+    // Associate all springs with the triangles that cover them
     //
 
     ConnectSpringsAndTriangles(
@@ -617,41 +617,50 @@ void ShipBuilder::ConnectSpringsAndTriangles(
     std::vector<TriangleInfo> & triangleInfos)
 {
     //
-    // 1. Build Point -> Spring table
-    //
-    // - Index is min point of spring
-    // - Value is set of <other point, spring>
+    // 1. Build Edge -> Spring table
     //
 
-    struct SpringPointInfo
+    struct Edge
     {
-        ElementIndex OtherEndpointIndex;
-        ElementIndex SpringIndex;
+        ElementIndex Endpoint1Index;
+        ElementIndex Endpoint2Index;
 
-        SpringPointInfo(
-            ElementIndex otherEndpointIndex,
-            ElementIndex springIndex)
-            : OtherEndpointIndex(otherEndpointIndex)
-            , SpringIndex(springIndex)
+        Edge(
+            ElementIndex endpoint1Index,
+            ElementIndex endpoint2Index)
+            : Endpoint1Index(std::min(endpoint1Index, endpoint2Index))
+            , Endpoint2Index(std::max(endpoint1Index, endpoint2Index))
         {}
+
+        bool operator==(Edge const & other) const
+        {
+            return this->Endpoint1Index == other.Endpoint1Index
+                && this->Endpoint2Index == other.Endpoint2Index;
+        }
+
+        struct Hasher
+        {
+            size_t operator()(Edge const & edge) const
+            {
+                return edge.Endpoint1Index * 23
+                    + edge.Endpoint2Index;
+            }
+        };
     };
 
-    std::unordered_multimap<ElementIndex, SpringPointInfo> pointToSpringMap;
+    std::unordered_map<Edge, ElementIndex, Edge::Hasher> pointToSpringMap;
 
     for (ElementIndex s = 0; s < springInfos.size(); ++s)
     {
-        ElementIndex const endpointIndex = std::min(springInfos[s].PointAIndex, springInfos[s].PointBIndex);
-        ElementIndex const otherEndpointIndex = std::max(springInfos[s].PointAIndex, springInfos[s].PointBIndex);
-
         pointToSpringMap.emplace(
             std::piecewise_construct,
-            std::forward_as_tuple(endpointIndex),
-            std::forward_as_tuple(otherEndpointIndex, s));
+            std::forward_as_tuple(springInfos[s].PointAIndex, springInfos[s].PointBIndex),
+            std::forward_as_tuple(s));
     }
 
 
     //
-    // 2. Visit all triangles and connect it to its springs
+    // 2. Visit all triangles and connect them to their springs
     //
 
     for (ElementIndex t = 0; t < triangleInfos.size(); ++t)
@@ -665,30 +674,101 @@ void ShipBuilder::ConnectSpringsAndTriangles(
                 ? triangleInfos[t].PointIndices[p + 1]
                 : triangleInfos[t].PointIndices[0];
 
-            // Get info's for this endpoint
-            auto const range = pointToSpringMap.equal_range(std::min(endpointIndex, nextEndpointIndex));
-            assert(range.first != range.second);
-
-            // Find info for the other endpoint
-            ElementIndex const otherEndpointIndex = std::max(endpointIndex, nextEndpointIndex);
-            auto const spInfoIt = std::find_if(
-                range.first,
-                range.second,
-                [otherEndpointIndex](auto const & entry)
-                {
-                    return entry.second.OtherEndpointIndex == otherEndpointIndex;
-                });
+            // Lookup spring for this edge
+            auto const springIt = pointToSpringMap.find({ endpointIndex, nextEndpointIndex });
+            assert(springIt != pointToSpringMap.end());
 
             // Tell this spring that it has an extra super triangle
-            ++springInfos[spInfoIt->second.SpringIndex].SuperTrianglesCount;
-            assert(springInfos[spInfoIt->second.SpringIndex].SuperTrianglesCount <= 2);
+            springInfos[springIt->second].SuperTriangles.push_back(t);
+            assert(springInfos[springIt->second].SuperTriangles.size() <= 2);
 
-            // Tell the triangle about this component spring
-            assert(triangleInfos[t].ComponentSpringIndices.size() == p);
-            triangleInfos[t].ComponentSpringIndices.push_back(spInfoIt->second.SpringIndex);
+            // Tell the triangle about this sub spring
+            assert(triangleInfos[t].SubSprings.size() == p);
+            triangleInfos[t].SubSprings.push_back(springIt->second);
+        }
+    }
+
+
+    //
+    // 3. Now find "traverse" springs - i.e. springs that are not edges of any triangles
+    // (because of our tessellation algorithm) - and see whether they're fully covered by two triangles;
+    // if they are, consider these springs as sub-springs of those two triangles.
+    //
+    // A "traverse" spring would be a B-C spring in the following tessellation neighborhood:
+    //
+    //   A     B
+    //    *---*
+    //    |\  |
+    //    | \ |
+    //    |  \|
+    //    *---*
+    //   C     D
+    //
+
+    for (ElementIndex s = 0; s < springInfos.size(); ++s)
+    {
+        if (2 == springInfos[s].SuperTriangles.size())
+        {
+            // This spring is the common edge between two triangles
+            // (A-D above)
+
+            //
+            // Find the B and C endpoints
+            //
+
+            ElementIndex endpoint1Index = NoneElementIndex;
+            TriangleInfo & triangle1 = triangleInfos[springInfos[s].SuperTriangles[0]];
+            for (ElementIndex triangleVertex : triangle1.PointIndices)
+            {
+                if (triangleVertex != springInfos[s].PointAIndex
+                    && triangleVertex != springInfos[s].PointBIndex)
+                {
+                    endpoint1Index = triangleVertex;
+                    break;
+                }
+            }
+
+            assert(NoneElementIndex != endpoint1Index);
+
+            ElementIndex endpoint2Index = NoneElementIndex;
+            TriangleInfo & triangle2 = triangleInfos[springInfos[s].SuperTriangles[1]];
+            for (ElementIndex triangleVertex : triangle2.PointIndices)
+            {
+                if (triangleVertex != springInfos[s].PointAIndex
+                    && triangleVertex != springInfos[s].PointBIndex)
+                {
+                    endpoint2Index = triangleVertex;
+                    break;
+                }
+            }
+
+            assert(NoneElementIndex != endpoint2Index);
+
+
+            //
+            // See if there's a B-C spring
+            //
+
+            auto const traverseSpringIt = pointToSpringMap.find({ endpoint1Index, endpoint2Index });
+            if (traverseSpringIt != pointToSpringMap.end())
+            {
+                // We have a traverse spring
+
+                assert(0 == springInfos[traverseSpringIt->second].SuperTriangles.size());
+
+                // Tell the traverse spring that it has these super triangles
+                springInfos[traverseSpringIt->second].SuperTriangles.push_back(springInfos[s].SuperTriangles[0]);
+                springInfos[traverseSpringIt->second].SuperTriangles.push_back(springInfos[s].SuperTriangles[1]);
+                assert(springInfos[traverseSpringIt->second].SuperTriangles.size() == 2);
+
+                // Tell the triangles about this new sub spring of theirs
+                triangle1.SubSprings.push_back(traverseSpringIt->second);
+                triangle2.SubSprings.push_back(traverseSpringIt->second);
+            }
         }
     }
 }
+
 Physics::Springs ShipBuilder::CreateSprings(
     std::vector<SpringInfo> const & springInfos,
     Physics::Points & points,
@@ -720,7 +800,7 @@ Physics::Springs ShipBuilder::CreateSprings(
         springs.Add(
             springInfos[s].PointAIndex,
             springInfos[s].PointBIndex,
-            springInfos[s].SuperTrianglesCount,
+            springInfos[s].SuperTriangles,
             static_cast<Springs::Characteristics>(characteristics),
             points);
 
@@ -773,21 +853,12 @@ Physics::Triangles ShipBuilder::CreateTriangles(
     {
         auto triangleIndex = triangleIndices[t];
 
-        // Create array of component spring indices
-        assert(triangleInfos[triangleIndex].ComponentSpringIndices.size() == 3);
-        std::array<ElementIndex, 3> componentSpringIndices
-        {
-            triangleInfos[triangleIndex].ComponentSpringIndices[0],
-            triangleInfos[triangleIndex].ComponentSpringIndices[1],
-            triangleInfos[triangleIndex].ComponentSpringIndices[2]
-        };
-
         // Create triangle
         triangles.Add(
             triangleInfos[triangleIndex].PointIndices[0],
             triangleInfos[triangleIndex].PointIndices[1],
             triangleInfos[triangleIndex].PointIndices[2],
-            componentSpringIndices);
+            triangleInfos[triangleIndex].SubSprings);
 
         // Add triangle to its endpoints
         points.AddConnectedTriangle(triangleInfos[triangleIndex].PointIndices[0], t);

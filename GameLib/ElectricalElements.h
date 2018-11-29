@@ -40,7 +40,7 @@ public:
         , mIsDeletedBuffer(mBufferElementCount, mElementCount, true)
         , mPointIndexBuffer(mBufferElementCount, mElementCount, NoneElementIndex)
         , mTypeBuffer(mBufferElementCount, mElementCount, Material::ElectricalProperties::ElectricalElementType::Cable)
-        , mConnectedElectricalElementsBuffer(mBufferElementCount, mElementCount, FixedSizeVector<ElementIndex, 8u>())
+        , mConnectedElectricalElementsBuffer(mBufferElementCount, mElementCount, {})
         , mElementStateBuffer(mBufferElementCount, mElementCount, ElementState::CableState())
         , mAvailableCurrentBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mCurrentConnectivityVisitSequenceNumberBuffer(mBufferElementCount, mElementCount, NoneVisitSequenceNumber)
@@ -64,7 +64,7 @@ public:
      * other elements connected to the soon-to-be-deleted electrical element might already have been
      * deleted.
      *
-     * The handler is not re-entrant: destroying other electrical elements from it is not supported 
+     * The handler is not re-entrant: destroying other electrical elements from it is not supported
      * and leads to undefined behavior.
      *
      * Setting more than one handler is not supported and leads to undefined behavior.
@@ -219,7 +219,7 @@ private:
             StateType State;
             std::uint8_t FlickerCounter;
             GameWallClock::time_point NextStateTransitionTimePoint;
-           
+
             LampState(bool isSelfPowered)
                 : IsSelfPowered(isSelfPowered)
                 , State(StateType::Initial)
@@ -247,7 +247,7 @@ private:
 
 private:
 
-    void RunLampStateMachine(        
+    void RunLampStateMachine(
         ElementIndex elementLampIndex,
         GameWallClock::time_point currentWallclockTime,
         VisitSequenceNumber currentConnectivityVisitSequenceNumber,
@@ -289,7 +289,7 @@ private:
     Buffer<VisitSequenceNumber> mCurrentConnectivityVisitSequenceNumberBuffer;
 
     //////////////////////////////////////////////////////////
-    // Container 
+    // Container
     //////////////////////////////////////////////////////////
 
     World & mParentWorld;

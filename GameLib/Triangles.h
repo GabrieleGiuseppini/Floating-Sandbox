@@ -12,7 +12,6 @@
 #include "Material.h"
 #include "RenderContext.h"
 
-#include <array>
 #include <cassert>
 #include <functional>
 
@@ -57,8 +56,8 @@ public:
         , mIsDeletedBuffer(mBufferElementCount, mElementCount, true)
         // Endpoints
         , mEndpointsBuffer(mBufferElementCount, mElementCount, Endpoints(NoneElementIndex, NoneElementIndex, NoneElementIndex))
-        // Component spring indexes
-        , mComponentSpringIndexesBuffer(mBufferElementCount, mElementCount, {NoneElementIndex, NoneElementIndex, NoneElementIndex})
+        // Sub springs
+        , mSubSpringsBuffer(mBufferElementCount, mElementCount, {})
         //////////////////////////////////
         // Container
         //////////////////////////////////
@@ -90,7 +89,7 @@ public:
         ElementIndex pointAIndex,
         ElementIndex pointBIndex,
         ElementIndex pointCIndex,
-        std::array<ElementIndex, 3u> componentSpringIndexes);
+        FixedSizeVector<ElementIndex, 4u> const & subSprings);
 
     void Destroy(ElementIndex triangleElementIndex);
 
@@ -134,12 +133,29 @@ public:
     }
 
     //
-    // Component springs
+    // Sub springs
     //
 
-    inline std::array<ElementIndex, 3u> const & GetComponentSpringIndexes(ElementIndex triangleElementIndex) const
+    auto const & GetSubSprings(ElementIndex triangleElementIndex) const
     {
-        return mComponentSpringIndexesBuffer[triangleElementIndex];
+        return mSubSpringsBuffer[triangleElementIndex];
+    }
+
+    inline void AddSubSpring(
+        ElementIndex triangleElementIndex,
+        ElementIndex subSpringElementIndex)
+    {
+        mSubSpringsBuffer[triangleElementIndex].push_back(subSpringElementIndex);
+    }
+
+    inline void RemoveSubSpring(
+        ElementIndex triangleElementIndex,
+        ElementIndex subSpringElementIndex)
+    {
+        bool found = mSubSpringsBuffer[triangleElementIndex].erase_first(subSpringElementIndex);
+
+        assert(found);
+        (void)found;
     }
 
 private:
@@ -154,8 +170,10 @@ private:
     // Endpoints
     Buffer<Endpoints> mEndpointsBuffer;
 
-    // Component springs
-    Buffer<std::array<ElementIndex, 3u>> mComponentSpringIndexesBuffer;
+    // Sub springs - the springs that have this triangle among their super-triangles.
+    // This is the three springs along the edges, plus the eventual "traverse" spring (i.e. the non-edge diagonal
+    // in a two-triangle square)
+    Buffer<FixedSizeVector<ElementIndex, 4u>> mSubSpringsBuffer;
 
     //////////////////////////////////////////////////////////
     // Container
