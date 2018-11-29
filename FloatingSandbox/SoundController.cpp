@@ -810,7 +810,7 @@ void SoundController::OnLightFlicker(
 void SoundController::OnWaterTaken(float waterTaken)
 {
     // 50 * (-1 / 2.4^(0.3 * x) + 1)
-    float rushVolume = 40.f * (-1.f / std::pow(2.4f, 0.3f * std::abs(waterTaken)) + 1.f);
+    float rushVolume = 40.f * (-1.f / std::pow(2.4f, std::min(90.0f, 0.3f * std::abs(waterTaken))) + 1.f);
     mWaterRushSound.SetVolume(rushVolume);
     mWaterRushSound.Start();
 }
@@ -826,7 +826,7 @@ void SoundController::OnWaterSplashed(float waterSplashed)
         if (waterSplashed > mCurrentWaterSplashedTrigger)
         {
             // 12 * (-1 / 1.8^(0.08 * x) + 1)
-            float waveVolume = 12.f * (-1.f / std::pow(1.8f, 0.08f * std::abs(waterSplashed)) + 1.f);
+            float waveVolume = 12.f * (-1.f / std::pow(1.8f, 0.08f * std::min(1800.0f, std::abs(waterSplashed))) + 1.f);
 
             PlayOneShotMultipleChoiceSound(
                 SoundType::Wave,
