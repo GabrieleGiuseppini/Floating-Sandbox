@@ -70,6 +70,19 @@ void World::MoveBy(
         gameParameters);
 }
 
+void World::RotateBy(
+    ShipId shipId,
+    float angle,
+    vec2f const & center,
+    GameParameters const & gameParameters)
+{
+    assert(shipId < mAllShips.size());
+    mAllShips[shipId]->RotateBy(
+        angle,
+        center,
+        gameParameters);
+}
+
 void World::DestroyAt(
     vec2f const & targetPos,
     float radiusMultiplier,

@@ -333,6 +333,9 @@ void SettingsDialog::ApplySettings()
     mGameController->SetWaterDensityAdjustment(
         mWaterDensitySlider->GetValue());
 
+    mGameController->SetWaterDragAdjustment(
+        mWaterDragSlider->GetValue());
+
     mGameController->SetWaterIntakeAdjustment(
         mWaterIntakeSlider->GetValue());
 
@@ -568,6 +571,27 @@ void SettingsDialog::PopulateFluidsPanel(wxPanel * panel)
     gridSizer->Add(mWaterDensitySlider.get(), 1, wxALL, SliderBorder);
 
 
+    // Water Drag
+
+    mWaterDragSlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Water Drag Adjust",
+        mGameController->GetWaterDragAdjustment(),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<ExponentialSliderCore>(
+            mGameController->GetMinWaterDragAdjustment(),
+            1.0f,
+            mGameController->GetMaxWaterDragAdjustment()));
+
+    gridSizer->Add(mWaterDragSlider.get(), 1, wxALL, SliderBorder);
+
+
     // Water Intake
 
     mWaterIntakeSlider = std::make_unique<SliderControl>(
@@ -608,6 +632,11 @@ void SettingsDialog::PopulateFluidsPanel(wxPanel * panel)
     gridSizer->Add(mWaterCrazynessSlider.get(), 1, wxALL, SliderBorder);
 
 
+
+    //
+    // Row 2
+    //
+
     // Water Quickness
 
     mWaterQuicknessSlider = std::make_unique<SliderControl>(
@@ -627,10 +656,6 @@ void SettingsDialog::PopulateFluidsPanel(wxPanel * panel)
 
     gridSizer->Add(mWaterQuicknessSlider.get(), 1, wxALL, SliderBorder);
 
-
-    //
-    // Row 2
-    //
 
     // Water Level of Detail
 
@@ -771,7 +796,7 @@ void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
         },
         std::make_unique<ExponentialSliderCore>(
             mGameController->GetMinSeaDepth(),
-            200.0f,
+            300.0f,
             mGameController->GetMaxSeaDepth()));
 
     gridSizer->Add(mSeaDepthSlider.get(), 1, wxALL, SliderBorder);
@@ -1145,6 +1170,8 @@ void SettingsDialog::ReadSettings()
 
 
     mWaterDensitySlider->SetValue(mGameController->GetWaterDensityAdjustment());
+
+    mWaterDragSlider->SetValue(mGameController->GetWaterDragAdjustment());
 
     mWaterIntakeSlider->SetValue(mGameController->GetWaterIntakeAdjustment());
 

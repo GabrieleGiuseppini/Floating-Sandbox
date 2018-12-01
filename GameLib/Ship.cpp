@@ -5,6 +5,7 @@
  ***************************************************************************************/
 #include "Physics.h"
 
+#include "GameDebug.h"
 #include "GameRandomEngine.h"
 #include "Log.h"
 #include "Segment.h"
@@ -86,14 +87,38 @@ void Ship::MoveBy(
     vec2f const & offset,
     GameParameters const & gameParameters)
 {
-    vec2f const velocity = offset * gameParameters.MoveToolInertia;
+    vec2f const velocity =
+        offset
+        * gameParameters.MoveToolInertia
+        * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
+
     vec2f * restrict positionBuffer = mPoints.GetPositionBufferAsVec2();
     vec2f * restrict velocityBuffer = mPoints.GetVelocityBufferAsVec2();
+
     size_t const count = mPoints.GetBufferElementCount();
     for (size_t p = 0; p < count; ++p)
     {
         positionBuffer[p] += offset;
         velocityBuffer[p] = velocity;
+    }
+}
+
+void Ship::RotateBy(
+    float angle,
+    vec2f const & center,
+    GameParameters const & /*gameParameters*/)
+{
+    vec2f const rotX(cos(angle), sin(angle));
+    vec2f const rotY(-sin(angle), cos(angle));
+
+    vec2f * restrict positionBuffer = mPoints.GetPositionBufferAsVec2();
+
+    size_t const count = mPoints.GetBufferElementCount();
+    for (size_t p = 0; p < count; ++p)
+    {
+        vec2f pos = positionBuffer[p] - center;
+        pos = vec2f(pos.dot(rotX), pos.dot(rotY));
+        positionBuffer[p] = pos + center;
     }
 }
 
@@ -284,6 +309,9 @@ void Ship::Update(
 {
     auto const currentWallClockTime = GameWallClock::GetInstance().Now();
 
+#ifdef _DEBUG
+    VerifyInvariants();
+#endif
 
     //
     // Process eventual parameter changes
@@ -363,6 +391,10 @@ void Ship::Update(
     UpdateEphemeralParticles(
         currentSimulationTime,
         gameParameters);
+
+#ifdef _DEBUG
+    VerifyInvariants();
+#endif
 }
 
 void Ship::Render(
@@ -547,7 +579,9 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
     // Underwater points feel this amount of water drag
     //
     // The higher the value, the more viscous the water looks when a body moves through it
-    constexpr float WaterDragCoefficient = 0.020f; // ~= 1.0f - powf(0.6f, 0.02f)
+    float const waterDragCoefficient =
+        0.020f // ~= 1.0f - powf(0.6f, 0.02f)
+        * gameParameters.WaterDragAdjustment;
 
     for (auto pointIndex : mPoints)
     {
@@ -594,7 +628,9 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
 
         if (mPoints.GetPosition(pointIndex).y < waterHeightAtThisPoint)
         {
-            mPoints.GetForce(pointIndex) += mPoints.GetVelocity(pointIndex) * (-WaterDragCoefficient);
+            mPoints.GetForce(pointIndex) +=
+                mPoints.GetVelocity(pointIndex).square()
+                * (-waterDragCoefficient);
         }
     }
 }
@@ -1523,12 +1559,11 @@ void Ship::SpringDestroyHandler(
 
     for (auto superTriangleIndex : mSprings.GetSuperTriangles(springElementIndex))
     {
-        //TODOTEST
-        ////if (mTriangles.GetSubSprings(superTriangleIndex).size() > 4)
-        ////    throw GameException("HERE3");
-
         mTriangles.RemoveSubSpring(superTriangleIndex, springElementIndex);
     }
+
+    // Let's be neat
+    mSprings.ClearSuperTriangles(springElementIndex);
 
 
     //
@@ -1609,6 +1644,9 @@ void Ship::TriangleDestroyHandler(ElementIndex triangleElementIndex)
     {
         mSprings.RemoveSuperTriangle(subSpringIndex, triangleElementIndex);
     }
+
+    // Let's be neat
+    mTriangles.ClearSubSprings(triangleElementIndex);
 
     // Remove triangle from its endpoints
     mPoints.RemoveConnectedTriangle(mTriangles.GetPointAIndex(triangleElementIndex), triangleElementIndex);
@@ -1805,4 +1843,47 @@ void Ship::DoAntiMatterBombExplosion(
     }
 }
 
+#ifdef _DEBUG
+void Ship::VerifyInvariants()
+{
+    //
+    // Triangles and points
+    //
+
+    for (auto t : mTriangles)
+    {
+        if (!mTriangles.IsDeleted(t))
+        {
+            Verify(mPoints.GetConnectedTriangles(mTriangles.GetPointAIndex(t)).contains(t));
+            Verify(mPoints.GetConnectedTriangles(mTriangles.GetPointBIndex(t)).contains(t));
+            Verify(mPoints.GetConnectedTriangles(mTriangles.GetPointCIndex(t)).contains(t));
+        }
+    }
+
+
+    //
+    // SuperTriangles and SubSprings
+    //
+
+    for (auto s : mSprings)
+    {
+        Verify(mSprings.GetSuperTriangles(s).size() <= 2);
+
+        for (auto superTriangle : mSprings.GetSuperTriangles(s))
+        {
+            Verify(mTriangles.GetSubSprings(superTriangle).contains(s));
+        }
+    }
+
+    for (auto t : mTriangles)
+    {
+        Verify(mTriangles.GetSubSprings(t).size() <= 4);
+
+        for (auto subSpring : mTriangles.GetSubSprings(t))
+        {
+            Verify(mSprings.GetSuperTriangles(subSpring).contains(t));
+        }
+    }
+}
+#endif
 }

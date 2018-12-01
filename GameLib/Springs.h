@@ -311,6 +311,11 @@ public:
         (void)found;
     }
 
+    inline void ClearSuperTriangles(ElementIndex springElementIndex)
+    {
+        mSuperTrianglesBuffer[springElementIndex].clear();
+    }
+
     //
     // Physical
     //

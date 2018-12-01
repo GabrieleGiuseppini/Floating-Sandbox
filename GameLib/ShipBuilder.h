@@ -106,6 +106,25 @@ private:
     // Building helpers
     /////////////////////////////////////////////////////////////////
 
+    static bool IsConnectedToNonRopePoints(
+        ElementIndex pointIndex,
+        Physics::Points const & points,
+        std::vector<SpringInfo> const & springInfos)
+    {
+        assert(points.GetMaterial(pointIndex)->IsRope);
+
+        for (auto springIndex : points.GetConnectedSprings(pointIndex))
+        {
+            if (!points.IsRope(springInfos[springIndex].PointAIndex)
+                || !points.IsRope(springInfos[springIndex].PointBIndex))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     static void CreateRopeSegments(
         std::map<std::array<uint8_t, 3u>, RopeSegment> const & ropeSegments,
         ImageSize const & structureImageSize,
@@ -127,6 +146,11 @@ private:
         std::vector<TriangleInfo> & triangleInfos,
         size_t & leakingPointsCount);
 
+    static std::vector<TriangleInfo> FilterOutRedundantTriangles(
+        std::vector<TriangleInfo> const & triangleInfos,
+        Physics::Points & points,
+        std::vector<SpringInfo> const & springInfos);
+
     static void ConnectSpringsAndTriangles(
         std::vector<SpringInfo> & springInfos,
         std::vector<TriangleInfo> & triangleInfos);
@@ -140,8 +164,7 @@ private:
 
     static Physics::Triangles CreateTriangles(
         std::vector<TriangleInfo> const & triangleInfos,
-        Physics::Points & points,
-        Physics::Springs & springs);
+        Physics::Points & points);
 
     static Physics::ElectricalElements CreateElectricalElements(
         Physics::Points const & points,

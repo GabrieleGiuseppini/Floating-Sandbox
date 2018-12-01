@@ -61,6 +61,11 @@ public:
         vec2f const & offset,
         GameParameters const & gameParameters);
 
+    void RotateBy(
+        float angle,
+        vec2f const & center,
+        GameParameters const & gameParameters);
+
     void DestroyAt(
         vec2f const & targetPos,
         float radiusMultiplier,
@@ -226,6 +231,12 @@ private:
         vec2f const & centerPosition,
         float sequenceProgress,
         GameParameters const & gameParameters) override;
+
+private:
+
+#ifdef _DEBUG
+    void VerifyInvariants();
+#endif
 
 private:
 

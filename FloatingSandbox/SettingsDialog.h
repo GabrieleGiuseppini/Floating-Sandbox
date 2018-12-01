@@ -63,6 +63,7 @@ private:
 
     // Fluids
     std::unique_ptr<SliderControl> mWaterDensitySlider;
+    std::unique_ptr<SliderControl> mWaterDragSlider;
     std::unique_ptr<SliderControl> mWaterIntakeSlider;
     std::unique_ptr<SliderControl> mWaterCrazynessSlider;
     std::unique_ptr<SliderControl> mWaterQuicknessSlider;

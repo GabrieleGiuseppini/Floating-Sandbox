@@ -217,7 +217,7 @@ void GameController::MoveBy(
     ShipId shipId,
     vec2f const & screenOffset)
 {
-    vec2f worldOffset = mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
+    vec2f const worldOffset = mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
 
     // Apply action
     assert(!!mWorld);
@@ -227,11 +227,32 @@ void GameController::MoveBy(
         mGameParameters);
 }
 
+void GameController::RotateBy(
+    ShipId shipId,
+    float screenDeltaY,
+    vec2f const & screenCenter)
+{
+    float const angle =
+        2.0f * Pi<float>
+        / static_cast<float>(mRenderContext->GetCanvasSizeHeight())
+        * screenDeltaY;
+
+    vec2f const worldCenter = mRenderContext->ScreenToWorld(screenCenter);
+
+    // Apply action
+    assert(!!mWorld);
+    mWorld->RotateBy(
+        shipId,
+        angle,
+        worldCenter,
+        mGameParameters);
+}
+
 void GameController::DestroyAt(
     vec2f const & screenCoordinates,
     float radiusMultiplier)
 {
-    vec2f worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
     LogMessage("DestroyAt: ", worldCoordinates.toString(), " * ", radiusMultiplier);
 
@@ -247,8 +268,8 @@ void GameController::SawThrough(
     vec2f const & startScreenCoordinates,
     vec2f const & endScreenCoordinates)
 {
-    vec2f startWorldCoordinates = mRenderContext->ScreenToWorld(startScreenCoordinates);
-    vec2f endWorldCoordinates = mRenderContext->ScreenToWorld(endScreenCoordinates);
+    vec2f const startWorldCoordinates = mRenderContext->ScreenToWorld(startScreenCoordinates);
+    vec2f const endWorldCoordinates = mRenderContext->ScreenToWorld(endScreenCoordinates);
 
     // Apply action
     assert(!!mWorld);
@@ -262,7 +283,7 @@ void GameController::DrawTo(
     vec2f const & screenCoordinates,
     float strengthMultiplier)
 {
-    vec2f worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
     float strength = 1000.0f * strengthMultiplier;
     if (mGameParameters.IsUltraViolentMode)
@@ -279,7 +300,7 @@ void GameController::SwirlAt(
     vec2f const & screenCoordinates,
     float strengthMultiplier)
 {
-    vec2f worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
     float strength = 30.0f * strengthMultiplier;
     if (mGameParameters.IsUltraViolentMode)
@@ -292,7 +313,7 @@ void GameController::SwirlAt(
 
 void GameController::TogglePinAt(vec2f const & screenCoordinates)
 {
-    vec2f worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
     // Apply action
     assert(!!mWorld);
@@ -303,7 +324,7 @@ void GameController::TogglePinAt(vec2f const & screenCoordinates)
 
 void GameController::ToggleTimerBombAt(vec2f const & screenCoordinates)
 {
-    vec2f worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
     // Apply action
     assert(!!mWorld);
@@ -314,7 +335,7 @@ void GameController::ToggleTimerBombAt(vec2f const & screenCoordinates)
 
 void GameController::ToggleRCBombAt(vec2f const & screenCoordinates)
 {
-    vec2f worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
     // Apply action
     assert(!!mWorld);
@@ -325,7 +346,7 @@ void GameController::ToggleRCBombAt(vec2f const & screenCoordinates)
 
 void GameController::ToggleAntiMatterBombAt(vec2f const & screenCoordinates)
 {
-    vec2f worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
     // Apply action
     assert(!!mWorld);
@@ -350,7 +371,7 @@ void GameController::DetonateAntiMatterBombs()
 
 std::optional<ObjectId> GameController::GetNearestPointAt(vec2f const & screenCoordinates) const
 {
-    vec2f worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
     assert(!!mWorld);
     return mWorld->GetNearestPointAt(worldCoordinates, 1.0f);

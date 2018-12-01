@@ -12,12 +12,12 @@
 struct vec2f
 {
 public:
-	
+
     float x, y;
 
-    static constexpr const vec2f zero() 
-    { 
-        return vec2f(); 
+    static constexpr const vec2f zero()
+    {
+        return vec2f();
     }
 
     inline static vec2f fromPolar(
@@ -32,14 +32,14 @@ public:
 	inline vec2f operator+(vec2f const & other) const
 	{
 		return vec2f(
-			x + other.x, 
+			x + other.x,
 			y + other.y);
 	}
 
 	inline vec2f operator-(vec2f const & other) const
 	{
 		return vec2f(
-			x - other.x, 
+			x - other.x,
 			y - other.y);
 	}
 
@@ -153,6 +153,12 @@ public:
         }
     }
 
+    inline vec2f square() const
+    {
+        // |vector|^2 * normal
+        return (*this) * this->length();
+    }
+
     inline float angle(vec2f const & other) const
     {
         return -atan2f(
@@ -194,7 +200,7 @@ static_assert(sizeof(vec2f) == 2 * sizeof(float));
 struct vec3f
 {
 public:
-	
+
     float x, y, z;
 
     static constexpr const vec3f zero() { return vec3f(); }
@@ -286,12 +292,12 @@ public:
 	{
 		return x < other.x || (x == other.x && (y < other.y || (y == other.y && z < other.z)));
 	}
-    
+
 	float dot(vec3f const & other) const
 	{
 		return x * other.x + y * other.y + z * other.z;
 	}
-    
+
 	float length() const
 	{
 		return sqrtf(x * x + y * y + z * z);
@@ -440,7 +446,7 @@ public:
     {
         return !(*this == other);
     }
-    
+
     std::string toString() const;
 
     inline constexpr vec4f()

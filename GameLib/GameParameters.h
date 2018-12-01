@@ -71,6 +71,10 @@ struct GameParameters
     static constexpr float MinWaterDensityAdjustment = 0.0f;
     static constexpr float MaxWaterDensityAdjustment = 4.0f;
 
+    float WaterDragAdjustment;
+    static constexpr float MinWaterDragAdjustment = 0.0f;
+    static constexpr float MaxWaterDragAdjustment = 10000.0f;
+
     float WaterIntakeAdjustment;
     static constexpr float MinWaterIntakeAdjustment = 0.1f;
     static constexpr float MaxWaterIntakeAdjustment = 10.0f;

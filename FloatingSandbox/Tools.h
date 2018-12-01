@@ -268,14 +268,14 @@ public:
 
 public:
 
-    virtual void Initialize(InputState const & /*inputState*/) override
+    virtual void Initialize(InputState const & inputState) override
     {
         // Reset state
         mEngagedShipId.reset();
+        mRotationCenter.reset();
 
-        // Reset cursor
-        assert(!!mUpCursor);
-        mCurrentCursor = mUpCursor.get();
+        // Initialize state
+        ProcessInputStateChange(inputState);
     }
 
     virtual void Deinitialize(InputState const & /*inputState*/) override
@@ -287,71 +287,176 @@ public:
         }
     }
 
-    virtual void Update(InputState const & /*inputState*/) override
-    {
-        if (!!mEngagedShipId)
-        {
-            // Tell GameController we want to move by zero (for inertia)
-            mGameController->MoveBy(*mEngagedShipId, vec2f::zero());
-        }
-    }
-
     virtual void OnMouseMove(InputState const & inputState) override
     {
         if (!!mEngagedShipId)
         {
             // Tell GameController
-            vec2f screenOffset = inputState.MousePosition - inputState.PreviousMousePosition;
-            mGameController->MoveBy(*mEngagedShipId, screenOffset);
+            if (!mRotationCenter)
+            {
+                // Move
+                vec2f screenOffset = inputState.MousePosition - inputState.PreviousMousePosition;
+                mGameController->MoveBy(*mEngagedShipId, screenOffset);
+            }
+            else
+            {
+                // Rotate
+                float screenDeltaY = inputState.MousePosition.y - inputState.PreviousMousePosition.y;
+                mGameController->RotateBy(
+                    *mEngagedShipId,
+                    screenDeltaY,
+                    *mRotationCenter);
+            }
         }
     }
 
     virtual void OnLeftMouseDown(InputState const & inputState) override
     {
-        // Check with game controller
-        auto pointId = mGameController->GetNearestPointAt(inputState.MousePosition);
-        if (!!pointId)
-        {
-            // Engaged
-            mEngagedShipId = pointId->GetShipId();
-
-            // Set cursor
-            assert(!!mDownCursor);
-            mCurrentCursor = mDownCursor.get();
-            ShowCurrentCursor();
-
-            // Tell GameController
-            mGameController->SetMoveToolEngaged(true);
-        }
+        ProcessInputStateChange(inputState);
+        ShowCurrentCursor();
     }
 
-    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override
+    virtual void OnLeftMouseUp(InputState const & inputState) override
     {
-        if (!!mEngagedShipId)
-        {
-            // Disengage
-            mEngagedShipId.reset();
+        ProcessInputStateChange(inputState);
+        ShowCurrentCursor();
+    }
 
-            // Set cursor
-            assert(!!mUpCursor);
-            mCurrentCursor = mUpCursor.get();
-            ShowCurrentCursor();
+    virtual void OnShiftKeyDown(InputState const & inputState) override
+    {
+        ProcessInputStateChange(inputState);
+        ShowCurrentCursor();
+    }
 
-            // Tell GameController
-            mGameController->SetMoveToolEngaged(false);
-        }
+    virtual void OnShiftKeyUp(InputState const & inputState) override
+    {
+        ProcessInputStateChange(inputState);
+        ShowCurrentCursor();
     }
 
 private:
 
+    void ProcessInputStateChange(InputState const & inputState)
+    {
+        //
+        // Update state
+        //
+
+        if (inputState.IsLeftMouseDown)
+        {
+            // Left mouse down
+
+            if (!mEngagedShipId)
+            {
+                //
+                // We're currently not engaged
+                //
+
+                // Check with game controller
+                auto pointId = mGameController->GetNearestPointAt(inputState.MousePosition);
+                if (!!pointId)
+                {
+                    // Engaged
+                    mEngagedShipId = pointId->GetShipId();
+
+                    // Tell GameController
+                    mGameController->SetMoveToolEngaged(true);
+                }
+            }
+        }
+        else
+        {
+            // Left mouse up
+
+            if (!!mEngagedShipId)
+            {
+                //
+                // We're currently engaged
+                //
+
+                // Check if we should shut down inertia
+                if (!mRotationCenter
+                    && inputState.MousePosition == inputState.PreviousMousePosition)
+                {
+                    mGameController->MoveBy(*mEngagedShipId, vec2f::zero());
+                }
+
+                // Disengage
+                mEngagedShipId.reset();
+
+                // Tell GameController
+                mGameController->SetMoveToolEngaged(false);
+            }
+        }
+
+        if (inputState.IsShiftKeyDown)
+        {
+            // Shift key down
+
+            if (!mRotationCenter)
+            {
+                //
+                // We're not in rotation mode yet
+                //
+
+                // Start rotation mode
+                mRotationCenter = inputState.MousePosition;
+            }
+        }
+        else
+        {
+            // Shift key up
+
+            if (!!mRotationCenter)
+            {
+                //
+                // We are in rotation mode
+                //
+
+                // Stop rotation mode
+                mRotationCenter.reset();
+            }
+        }
+
+        //
+        // Update cursor
+        //
+
+        if (!mEngagedShipId)
+        {
+            if (!mRotationCenter)
+            {
+                mCurrentCursor = mUpCursor.get();
+            }
+            else
+            {
+                mCurrentCursor = mRotateUpCursor.get();
+            }
+        }
+        else
+        {
+            if (!mRotationCenter)
+            {
+                mCurrentCursor = mDownCursor.get();
+            }
+            else
+            {
+                mCurrentCursor = mRotateDownCursor.get();
+            }
+        }
+    }
+
     // When engaged, the ID of the ship we're currently moving
     std::optional<ShipId> mEngagedShipId;
 
-    // The up cursor
-    std::unique_ptr<wxCursor> const mUpCursor;
+    // When set, we're rotating
+    std::optional<vec2f> mRotationCenter;
 
-    // The down cursor
+    // The cursors
+    std::unique_ptr<wxCursor> const mUpCursor;
     std::unique_ptr<wxCursor> const mDownCursor;
+    std::unique_ptr<wxCursor> const mRotateUpCursor;
+    std::unique_ptr<wxCursor> const mRotateDownCursor;
 };
 
 class SmashTool final : public ContinuousTool

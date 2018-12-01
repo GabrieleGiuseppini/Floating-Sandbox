@@ -26,7 +26,7 @@ private:
      * Our iterator.
      */
     template <
-        typename TIterated, 
+        typename TIterated,
         typename TIteratedPointer>
     struct _iterator
     {
@@ -71,9 +71,9 @@ private:
 public:
 
     typedef _iterator<TElement, TElement *> iterator;
-    
+
     typedef _iterator<TElement const, TElement const *> const_iterator;
-    
+
 public:
 
     FixedSizeVector()
@@ -81,7 +81,7 @@ public:
     {
     }
 
-    
+
     FixedSizeVector(FixedSizeVector const & other) = default;
     FixedSizeVector & operator=(FixedSizeVector const & other) = default;
 
@@ -144,7 +144,7 @@ public:
         return mCurrentSize == 0u;
     }
 
-    inline bool is_in(TElement const & element) const noexcept
+    inline bool contains(TElement const & element) const noexcept
     {
         for (size_t i = 0; i < mCurrentSize; ++i)
         {
@@ -163,7 +163,7 @@ public:
     {
         if (mCurrentSize < MaxSize)
         {
-            assert(false == is_in(element));
+            assert(false == contains(element));
             mArray[mCurrentSize++] = element;
         }
         else

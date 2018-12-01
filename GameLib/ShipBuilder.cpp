@@ -19,31 +19,6 @@ using namespace Physics;
 
 //////////////////////////////////////////////////////////////////////////////
 
-namespace /* anonymous */ {
-
-    bool IsConnectedToNonRopePoints(
-        ElementIndex pointIndex,
-        Points const & points,
-        Springs const & springs)
-    {
-        assert(points.GetMaterial(pointIndex)->IsRope);
-
-        for (auto springIndex : points.GetConnectedSprings(pointIndex))
-        {
-            if (!points.IsRope(springs.GetPointAIndex(springIndex))
-                || !points.IsRope(springs.GetPointBIndex(springIndex)))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-}
-
-//////////////////////////////////////////////////////////////////////////////
-
 std::unique_ptr<Ship> ShipBuilder::Create(
     ShipId shipId,
     World & parentWorld,
@@ -198,6 +173,16 @@ std::unique_ptr<Ship> ShipBuilder::Create(
 
 
     //
+    // Filter out redundant triangles
+    //
+
+    triangleInfos = FilterOutRedundantTriangles(
+        triangleInfos,
+        points,
+        springInfos);
+
+
+    //
     // Optimize order of SpringInfo's to minimize cache misses
     //
 
@@ -237,15 +222,12 @@ std::unique_ptr<Ship> ShipBuilder::Create(
 
 
     //
-    // Create Triangles for all TriangleInfo's except those whose vertices
-    // are all rope points, of which at least one is connected exclusively
-    // to rope points (these would be knots "sticking out" of the structure)
+    // Create Triangles for all (filtered out) TriangleInfo's
     //
 
     Triangles triangles = CreateTriangles(
         triangleInfos,
-        points,
-        springs);
+        points);
 
 
     //
@@ -451,6 +433,57 @@ Points ShipBuilder::CreatePoints(
     }
 
     return points;
+}
+
+std::vector<ShipBuilder::TriangleInfo> ShipBuilder::FilterOutRedundantTriangles(
+    std::vector<TriangleInfo> const & triangleInfos,
+    Physics::Points & points,
+    std::vector<SpringInfo> const & springInfos)
+{
+    //
+    // First pass: collect indices of those that need to stay
+    //
+    // Remove:
+    //  - those whose vertices are all rope points, of which at least one is connected exclusively
+    //    to rope points (these would be knots "sticking out" of the structure)
+    //
+
+    std::vector<ElementIndex> triangleIndices;
+    triangleIndices.reserve(triangleInfos.size());
+
+    for (ElementIndex t = 0; t < triangleInfos.size(); ++t)
+    {
+        if (points.IsRope(triangleInfos[t].PointIndices[0])
+            && points.IsRope(triangleInfos[t].PointIndices[1])
+            && points.IsRope(triangleInfos[t].PointIndices[2]))
+        {
+            // Do not add triangle if at least one vertex is connected to rope points only
+            if (!IsConnectedToNonRopePoints(triangleInfos[t].PointIndices[0], points, springInfos)
+                || !IsConnectedToNonRopePoints(triangleInfos[t].PointIndices[1], points, springInfos)
+                || !IsConnectedToNonRopePoints(triangleInfos[t].PointIndices[2], points, springInfos))
+            {
+                continue;
+            }
+        }
+
+        // Remember to create this triangle
+        triangleIndices.push_back(t);
+    }
+
+    //
+    // Second pass: create new list of triangle info's
+    //
+
+    std::vector<TriangleInfo> newTriangleInfos;
+    newTriangleInfos.reserve(triangleIndices.size());
+
+    for (ElementIndex t = 0; t < triangleIndices.size(); ++t)
+    {
+        newTriangleInfos.push_back(
+            triangleInfos[triangleIndices[t]]);
+    }
+
+    return newTriangleInfos;
 }
 
 void ShipBuilder::CreateShipElementInfos(
@@ -678,13 +711,15 @@ void ShipBuilder::ConnectSpringsAndTriangles(
             auto const springIt = pointToSpringMap.find({ endpointIndex, nextEndpointIndex });
             assert(springIt != pointToSpringMap.end());
 
+            ElementIndex const springIndex = springIt->second;
+
             // Tell this spring that it has an extra super triangle
-            springInfos[springIt->second].SuperTriangles.push_back(t);
-            assert(springInfos[springIt->second].SuperTriangles.size() <= 2);
+            springInfos[springIndex].SuperTriangles.push_back(t);
+            assert(springInfos[springIndex].SuperTriangles.size() <= 2);
 
             // Tell the triangle about this sub spring
-            assert(triangleInfos[t].SubSprings.size() == p);
-            triangleInfos[t].SubSprings.push_back(springIt->second);
+            assert(!triangleInfos[t].SubSprings.contains(springIndex));
+            triangleInfos[t].SubSprings.push_back(springIndex);
         }
     }
 
@@ -814,56 +849,23 @@ Physics::Springs ShipBuilder::CreateSprings(
 
 Physics::Triangles ShipBuilder::CreateTriangles(
     std::vector<TriangleInfo> const & triangleInfos,
-    Physics::Points & points,
-    Physics::Springs & springs)
+    Physics::Points & points)
 {
-    //
-    // First pass: filter out triangles and keep indices of those that need to be created
-    //
-
-    std::vector<ElementIndex> triangleIndices;
-    triangleIndices.reserve(triangleInfos.size());
+    Physics::Triangles triangles(static_cast<ElementIndex>(triangleInfos.size()));
 
     for (ElementIndex t = 0; t < triangleInfos.size(); ++t)
     {
-        if (points.IsRope(triangleInfos[t].PointIndices[0])
-            && points.IsRope(triangleInfos[t].PointIndices[1])
-            && points.IsRope(triangleInfos[t].PointIndices[2]))
-        {
-            // Do not add triangle if at least one vertex is connected to rope points only
-            if (!IsConnectedToNonRopePoints(triangleInfos[t].PointIndices[0], points, springs)
-                || !IsConnectedToNonRopePoints(triangleInfos[t].PointIndices[1], points, springs)
-                || !IsConnectedToNonRopePoints(triangleInfos[t].PointIndices[2], points, springs))
-            {
-                continue;
-            }
-        }
-
-        // Remember to create this triangle
-        triangleIndices.push_back(t);
-    }
-
-    //
-    // Second pass: create actual triangles
-    //
-
-    Physics::Triangles triangles(static_cast<ElementIndex>(triangleIndices.size()));
-
-    for (ElementIndex t = 0; t < triangleIndices.size(); ++t)
-    {
-        auto triangleIndex = triangleIndices[t];
-
         // Create triangle
         triangles.Add(
-            triangleInfos[triangleIndex].PointIndices[0],
-            triangleInfos[triangleIndex].PointIndices[1],
-            triangleInfos[triangleIndex].PointIndices[2],
-            triangleInfos[triangleIndex].SubSprings);
+            triangleInfos[t].PointIndices[0],
+            triangleInfos[t].PointIndices[1],
+            triangleInfos[t].PointIndices[2],
+            triangleInfos[t].SubSprings);
 
         // Add triangle to its endpoints
-        points.AddConnectedTriangle(triangleInfos[triangleIndex].PointIndices[0], t);
-        points.AddConnectedTriangle(triangleInfos[triangleIndex].PointIndices[1], t);
-        points.AddConnectedTriangle(triangleInfos[triangleIndex].PointIndices[2], t);
+        points.AddConnectedTriangle(triangleInfos[t].PointIndices[0], t);
+        points.AddConnectedTriangle(triangleInfos[t].PointIndices[1], t);
+        points.AddConnectedTriangle(triangleInfos[t].PointIndices[2], t);
     }
 
     return triangles;

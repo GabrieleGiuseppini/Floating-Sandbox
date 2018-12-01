@@ -159,6 +159,11 @@ public:
         (void)found;
     }
 
+    void ClearSubSprings(ElementIndex triangleElementIndex)
+    {
+        mSubSpringsBuffer[triangleElementIndex].clear();
+    }
+
 private:
 
     //////////////////////////////////////////////////////////

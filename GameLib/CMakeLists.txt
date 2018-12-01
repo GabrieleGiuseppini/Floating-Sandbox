@@ -14,6 +14,7 @@ set  (GAME_SOURCES
 	FloatingPoint.h
 	GameController.cpp
 	GameController.h
+	GameDebug.h
 	GameEventDispatcher.h
 	GameException.h
 	GameMath.h

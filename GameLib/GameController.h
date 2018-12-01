@@ -68,6 +68,7 @@ public:
     void SetExtendedStatusTextEnabled(bool isEnabled);
 
     void MoveBy(ShipId shipId, vec2f const & screenOffset);
+    void RotateBy(ShipId shipId, float screenDeltaY, vec2f const & screenCenter);
     void DestroyAt(vec2f const & screenCoordinates, float radiusMultiplier);
     void SawThrough(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates);
     void DrawTo(vec2f const & screenCoordinates, float strengthMultiplier);
@@ -166,6 +167,11 @@ public:
     void SetWaterDensityAdjustment(float value) { mGameParameters.WaterDensityAdjustment = value; }
     float GetMinWaterDensityAdjustment() const { return GameParameters::MinWaterDensityAdjustment; }
     float GetMaxWaterDensityAdjustment() const { return GameParameters::MaxWaterDensityAdjustment; }
+
+    float GetWaterDragAdjustment() const { return mGameParameters.WaterDragAdjustment; }
+    void SetWaterDragAdjustment(float value) { mGameParameters.WaterDragAdjustment = value; }
+    float GetMinWaterDragAdjustment() const { return GameParameters::MinWaterDragAdjustment; }
+    float GetMaxWaterDragAdjustment() const { return GameParameters::MaxWaterDragAdjustment; }
 
     float GetWaterIntakeAdjustment() const { return mGameParameters.WaterIntakeAdjustment; }
     void SetWaterIntakeAdjustment(float value) { mGameParameters.WaterIntakeAdjustment = value; }

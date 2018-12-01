@@ -59,6 +59,12 @@ public:
         vec2f const & offset,
         GameParameters const & gameParameters);
 
+    void RotateBy(
+        ShipId shipId,
+        float angle,
+        vec2f const & center,
+        GameParameters const & gameParameters);
+
     void DestroyAt(
         vec2f const & targetPos,
         float radiusMultiplier,

@@ -1,9 +1,11 @@
 1.7.0
 - Musical theme for this release: Chemical Brothers, "We Are the Night"
 - Added ephemeral particles sub-system, and used it for debris and sparkles from the chainsaw
+- Improved quality of the rigidity simulation - bodies are now stiffer
+- Added tool to move and rotate bodies
 - Added stars - visible only in the night sky (thanks Pac0master!)
-- Added ability to control ocean floor bumpiness (collisions with islands!), added an ocean floor bump map, and extended range of sea depth to 10Km
-- Added ability to control the contrast of water taken in by a ship
+- Added ocean floor bump maps
+- Many more physical and graphical parameters are now adjustable
 - Added separate volume control for tools' sounds
 - Fixed bug with line artifacts on textures under some GPUs
 

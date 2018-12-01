@@ -1,24 +1,10 @@
 =================================================
-Current perf (stars)
+Current perf (spring optimization + double spring iterations)
 =================================================
-- fps: 28.9/29.0 (Samsung: TBD (Krafting)) (Mattia's: TBD (Krafting))
+- fps: 30.8 (Samsung: TBD (Krafting)) (Mattia's: TBD (Krafting))
 - GameController::Update: 30.62%
 - World::Render: 55.43%
 	- RenderContext::RenderCloudsEnd: 3.98%
-
-=================================================
-Pac0's Sim Quality rates:
-	- 0.5: FPS=49.23 U/R=2561.62%
-	- 1: FPS=50.38 U/R=3908.67%
-	- 2: FPS=50.01 U/R=6123.34%
-	- 4: FPS=49 U/R=1091.96%
-	- 6: FPS=50.54 U/R=1098.55%
-
-	- 1:  59, 1070
-	- 2:  59, 2672
-	- 4:  45, 819
-	- 20: 13, 4587%
-
 
 =================================================
 Past perf (ephemeral particles)
@@ -116,7 +102,7 @@ Render:
 
 - Roadmap:
 	= 1.7.0
-		= Magic spring optimization (*)
+		+ Magic spring optimization (*)
 			+ Then decide whether to increase the number of basis iterations, and whether to adjust strength
 				+ SQ: 2.0 => Basis = 24
 				+ Strength to maintain Titanic auto-break: <= 0.397928
@@ -131,13 +117,34 @@ Render:
 				+ Fix missing RC bomb pings 
 					+ verify break & stress sounds are still good
 		+ Test collisions with seafloor being less destructive
-		= Fix crash
-			- Springs and Triangles cctors: pass default-ccted FixedSizeBuffer() there, not {}
-				- See first if can sure repro
-			- Then revert floor collision
-		= Double-check floor collisions visually
-			- Up strength a bit: 0.605356
-			- Check if Titanic still cracks
+		+ Fix crash
+			+ Springs and Triangles cctors: pass default-ccted FixedSizeBuffer() there, not {}
+			+ Then revert floor collision
+			+ Remove TODO's with checks at: 
+				- Ship.cpp
+			+ Clear super/sub buffers in destroy handlers
+
+		+ Move inertia & ultra-violent mode
+		+ Move tool extension: rotate
+			+ Shift: up ccw, down cw
+				+ Make it relative to prev pos
+			+ Change icon
+
+		= Slider for water drag adjust
+			- Test with water drag depending on v^2
+
+		- Update help:
+			- Anti-Matter bombs
+			- Move tool
+
+		- Extended status: take stats from RenderContext
+			- RenderContext::Stats:
+				- LastRenderedShipSprings
+				- LastRenderedShipTriangles
+				- LastRenderedGenericTextureTriangles
+				----
+				- Reset stats at each RenderContext::RenderStart()
+
 	- 1.8.0
 		- Redo full perf analysis
 		- Libsimdpp spring relaxation (*)
@@ -178,13 +185,14 @@ Render:
 		+ Opposite for Commit() (as "UpdateWaterBuffer")
 
 	= Do SSE with libsimdpp:
+		- First check out alternative: https://xsimd.readthedocs.io/en/latest/
 		- Prepare sources:
 			- GameLib/LibSimdPp.h
 				- Defines macro for SSE3 and includes simd.h
 					- So that we have a single place for the macro
-				- Then defines VECTORIZATION_FLOAT32_SIZE as SIMDPP_FAST_FLOAT32_SIZE, and VECTORIZATION_INT32_SIZE as ...
-					- Allowing us to change it once to experiment with loop unrolling
-				- SSE code will use VECTORIZATION_FLOAT32_SIZE as the batch size
+				- Then defines VECTORIZATION_FLOAT32_SIZE as SIMDPP_FAST_FLOAT32_SIZE, and VECTORIZATION_INT32_SIZE as ...INT32...
+					- Allowing us to change it in one place to experiment with loop unrolling
+				- SSE code will use VECTORIZATION_FLOAT32_SIZE as the batch size, via SysSpecifics.h (see below)
 
 				- #define SIMDPP_NO_DISPATCHER
 				- CMake:
@@ -217,12 +225,15 @@ Render:
 				UpdateSpringForces_LibSimdPpAndIntrinsics_median  410967797 ns  397802550 ns          2
 				UpdateSpringForces_LibSimdPpAndIntrinsics_stddev    9809876 ns    9628195 ns          2
 			- Try rearranging instructions for cache
+
 		- Use at IntegratePointDynamics, to guarantee SSE2
 			- Verify with asm
 			- Add to credits
+
 		- Use at Ship::MoveBy(), to guarantee SSE2
 			- Verify with asm
 			- Add to credits
+
 		+ Avoiding if's for divisor==0
 			+ No 0.0 checks for divisions, but + 0.00001
 				+ Verify behavior of float::max/float::min
@@ -230,7 +241,6 @@ Render:
 				+ Conclusion: should be used only for SSE vectorization, and when dividend has same
 				  magnitude as divisor (e.g. for normalized vector, len==0 <-> x==0 && y==0)
 			+ Should investigate masking at the same time, might be faster
-
 		+ Try with different cache optimization heuristics
 			+ Starting point: Spring ACMR: original=0.516807, optimized=0.325156
 			+ Choose springs with largest numbers of points in cache
@@ -270,58 +280,6 @@ Render:
 	- Cache sea depth from PointDynamics at first calculation (Points?), using lambda
 
 - Gfx optimizations:
-
-	= In texture or structure mode, draw only springs that are visible
-		+ i.e. springs with # of triangles < 2
-		= Impl:
-			+ Springs:
-				+ New buffer: SuperTrianglesCount - type: ElementCount
-					+ Publicly exposed
-					+ Populated via argument at Springs:Add
-						+ Calc'd by ShipBuilder via Triangles below, during component springs discovery
-					+ Decremented via Springs::RemoveSuperTriangle() // no args
-			+ Triangles:
-				+ New buffer: ComponentSprings - type: std::array<ElementIndex, 3>
-					+ Publicly exposed
-					+ Populated via argument (of type std::array<ElementIndex, 3>) at Triangles:Add
-						+ Calc'd by ShipBuilder
-					+ Never changed
-					+ Used by Ship::TrianglesDestroyHandler() to decrement count for each component spring
-			+ Triangle destroy: remove self from springs
-			+ Springs destroy: remove self from super triangles
-			+ ShipBuilder:
-				+ Adjust to new
-				+ Also take care of traverse springs
-			+ New ShipRenderMode: EdgeSprings only
-				+ ShipRenderContext: treated exactly like SpringsOnly
-				+ Springs::Render: used to decide what to upload
-			+ Springs::UploadElements: in all modes except SpringsOnly, upload only springs with # of super triangles < 2
-				+ Re-enable TODOTEST code
-			+ Ship::Render() has to remember what ShipRenderMode was used last time, so to consider elements dirty
-			  also when ShipRenderMode has changed
-			- Extended status: take stats from RenderContext
-				- RenderContext::Stats:
-					- LastRenderedShipSprings
-					- LastRenderedShipTriangles
-					- LastRenderedGenericTextureTriangles
-					----
-					- Reset stats at each RenderContext::RenderStart()
-
-	+ See if can use multiple texture units
-		+ Bind once atlas, land, and water at cctor, to each unit
-		+ Change shaders to have one single texture sampler param, and set uniform locations to texture unit
-		+ Do only for clouds, generic texture, land, and water
-			+ Revert RenderContext.cpp, ShipRenderContext.cpp, TextRenderContext.cpp
-			+ Fonts and ship stay as before, they use texture unit 0 - SharedTexture
-			+ Shaders
-			+ Remember to activate texture unit 0 before binding, at:
-				+ Ship texture, stressed spring texture, font
-		+ Fix: land, generic
-		+ : test
-		+ Replace calls to glActiveTexture with ShaderManager::ActivateTexture(parameter)
-		+ Fix/Recheck progress bar
-		+ Redo perf FPS measurement
-
 
 	- See if can unify springs and ropes rendering
 		- Just make sure that ropecolor is already in point color buffer
@@ -1576,66 +1534,6 @@ IF WX:
 				+ Y offset for initial drop
 				+ Remove one layer of hull from bottom, but see how much it bends afterwards
 
-	+ OpenGL optimizations:
-		+ Try without buffer population: 			
-			+ Point has vec2f * const mPosition and vec2f * const mColour, pointing into two fixed buffers
-				+ vectors are packed (static_assert on contiguous 2 or 3)
-				+ Point does not live in PointerContainer but in std::uq_ptr<Point>[]
-					+ Delete does nothing (Destroy does relationships though), just marks it
-			+ Point also has mElementIndex, queried by springs and triangles when rendering themselves
-				+ Can make Ship::Render const again, then
-			+ Pointers to fixed buffers (as arrays of vectors) are owned by Ship and
-			  are given by Ship to RenderContext at each Render via 
-			  RenderContext::UploadVertices(vec2f*, vec3f*, count)
-			+ RenderContext usage of two buffers at each DrawElements:
-				glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-				glVertexAttribPointer(vertexPositionAttribute, 3,  GL_FLOAT, false, 0, 0);
-				glEnableVertexAttribArray(vertexPositionAttribute);
-				glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
-				glVertexAttribPointer(vertexColorAttribute, 4, GL_FLOAT, false, 0, 0);
-				glEnableVertexAttribArray(vertexColorAttribute);
-			+ Point's vector pointers are populated by Point::Rebase(buf1, buf2),
-			  invoked by Ship at construction
-				+ Rebase() uses mPointIndex (rename of mElementIndex) to calc pointers
-			+ Try: could also use buffer with mLight and mWater (uploaded each time to GPU as well) to be used by V->F shader 
-			  to blend fragColor with two fixed colors (water blended before ambient light, light after)
-				+ F shader needs to start doing ambient light now, rather than point
-				+ Need Point::CalculateWaterColorIntensity() (clamps and copies mWater to buffer), 
-				  and a dummy Point::FinalizeLightColorIntensity() (dummy because mLight is already finalized)
-				  + or do clamp in shader, so use mWater and mLight straight from buffer, no CalculateX() needed
-				+ If we put light and water in shader, then we don't need to reupload color buffer each time
-			+ Bonus: also test GPU interpolation of mLight and mWater by emitting them at vertex
-		+ Plan:
-			+ 0: Test with additional mLight and mWater uploaded to RenderContext (same Point struct), and fragment shader doing math
-				+ F Shader needs params: ambientLightIntensity; constants: waterColor, lightColor
-				+ Remove point color calculation
-				+ Check perf:
-					+ Before: 16
-					+ After: 14.1
-					+ Keep in mind that we're adding to the buffer, while later we'll remove the colors
-				+ Also test bonus: GPU interpolation of mLight and mWater by emitting them at vertex				
-			+ 1: if OK: PointCore struct (@GameLib) with {position, light, water}, based into Point
-				+ Separate color buffer: 
-					+ Color struct (vec3f) has static_assert's for alignments
-					+ Created by Ship::Create(), moved into Ship member (ElementRepository<vec3f>)
-					+ Uploaded one-shot at first Ship::Render()
-						+ via RenderContext::UploadShipPointColors(vec3f *, size_t elementCount):
-							+ Uploads to GPU right away, with GL_STATIC_DRAW
-							+ Stores size (mShipElementCount) for later assert
-				+ Check perf: 14.2
-				+ Commit 
-				+ Separate PointCore buffer:
-					+ PointCore struct has static_assert's for alignments
-					+ Created by Ship::Create(), moved into Ship member (ElementRepository)
-						+ Points have already been based, at cctor by Ship::Create()
-					+ Uploaded at each Ship::Render()
-						+ via RenderContext::UploadShipPoints(PointCore *, size_t elementCount):
-							+ Asserts size same as color buffer (mShipElementCount)
-							+ Then uploads to GPU right away, with GL_STREAMING_DRAW
-			+ Final:
-				+ Nuke Point::CalculateColour
-				+ Also do light/water color blending at ship *point* fragment shader
-		+ Only keep separate color buffer and water/light done in F shader; point disembodiment was not a good idea
 	+ Draw stressed springs with their own hardcoded texture (1D, 3 pixels: red, red/white, red) of a reddish line with "hot" centre
 		+ https://stackoverflow.com/questions/17866308/texture-a-line-in-opengl
 		+ Make it a 2D with semicircle around T,L corner
@@ -1720,6 +1618,68 @@ IF WX:
 			+ Check perf
 			+ Perf optimizations:
 				+ Precalcd stuff in FontMetadata, indexed by char
+
++ Gfx Optimizations
+
+	+ Try without buffer population: 			
+		+ Point has vec2f * const mPosition and vec2f * const mColour, pointing into two fixed buffers
+			+ vectors are packed (static_assert on contiguous 2 or 3)
+			+ Point does not live in PointerContainer but in std::uq_ptr<Point>[]
+				+ Delete does nothing (Destroy does relationships though), just marks it
+		+ Point also has mElementIndex, queried by springs and triangles when rendering themselves
+			+ Can make Ship::Render const again, then
+		+ Pointers to fixed buffers (as arrays of vectors) are owned by Ship and
+		  are given by Ship to RenderContext at each Render via 
+		  RenderContext::UploadVertices(vec2f*, vec3f*, count)
+		+ RenderContext usage of two buffers at each DrawElements:
+			glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+			glVertexAttribPointer(vertexPositionAttribute, 3,  GL_FLOAT, false, 0, 0);
+			glEnableVertexAttribArray(vertexPositionAttribute);
+			glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
+			glVertexAttribPointer(vertexColorAttribute, 4, GL_FLOAT, false, 0, 0);
+			glEnableVertexAttribArray(vertexColorAttribute);
+		+ Point's vector pointers are populated by Point::Rebase(buf1, buf2),
+		  invoked by Ship at construction
+			+ Rebase() uses mPointIndex (rename of mElementIndex) to calc pointers
+		+ Try: could also use buffer with mLight and mWater (uploaded each time to GPU as well) to be used by V->F shader 
+		  to blend fragColor with two fixed colors (water blended before ambient light, light after)
+			+ F shader needs to start doing ambient light now, rather than point
+			+ Need Point::CalculateWaterColorIntensity() (clamps and copies mWater to buffer), 
+			  and a dummy Point::FinalizeLightColorIntensity() (dummy because mLight is already finalized)
+			  + or do clamp in shader, so use mWater and mLight straight from buffer, no CalculateX() needed
+			+ If we put light and water in shader, then we don't need to reupload color buffer each time
+		+ Bonus: also test GPU interpolation of mLight and mWater by emitting them at vertex
+	+ Plan:
+		+ 0: Test with additional mLight and mWater uploaded to RenderContext (same Point struct), and fragment shader doing math
+			+ F Shader needs params: ambientLightIntensity; constants: waterColor, lightColor
+			+ Remove point color calculation
+			+ Check perf:
+				+ Before: 16
+				+ After: 14.1
+				+ Keep in mind that we're adding to the buffer, while later we'll remove the colors
+			+ Also test bonus: GPU interpolation of mLight and mWater by emitting them at vertex				
+		+ 1: if OK: PointCore struct (@GameLib) with {position, light, water}, based into Point
+			+ Separate color buffer: 
+				+ Color struct (vec3f) has static_assert's for alignments
+				+ Created by Ship::Create(), moved into Ship member (ElementRepository<vec3f>)
+				+ Uploaded one-shot at first Ship::Render()
+					+ via RenderContext::UploadShipPointColors(vec3f *, size_t elementCount):
+						+ Uploads to GPU right away, with GL_STATIC_DRAW
+						+ Stores size (mShipElementCount) for later assert
+			+ Check perf: 14.2
+			+ Commit 
+			+ Separate PointCore buffer:
+				+ PointCore struct has static_assert's for alignments
+				+ Created by Ship::Create(), moved into Ship member (ElementRepository)
+					+ Points have already been based, at cctor by Ship::Create()
+				+ Uploaded at each Ship::Render()
+					+ via RenderContext::UploadShipPoints(PointCore *, size_t elementCount):
+						+ Asserts size same as color buffer (mShipElementCount)
+						+ Then uploads to GPU right away, with GL_STREAMING_DRAW
+		+ Final:
+			+ Nuke Point::CalculateColour
+			+ Also do light/water color blending at ship *point* fragment shader
+	+ Only keep separate color buffer and water/light done in F shader; point disembodiment was not a good idea
 
 	+ Pack vertex attributes @ other shaders:
 		+ clouds
@@ -1842,6 +1802,7 @@ IF WX:
 					+ Nuke TextureRenderManager member and cctor arg
 					+ Cleanup RenderContext's upload of textures				
 			+ Remove test saving of atlas
+
 	+ Figure out what's most expensive with perf analysis and noinline
 		+ Only triangles: 42fps
 		+ Triangles and ropes: 42fps
@@ -1858,6 +1819,52 @@ IF WX:
 		+ At:
 			+ Land and Water
 			+ Atlas
+	+ In texture or structure mode, draw only springs that are visible
+		+ i.e. springs with # of triangles < 2
+		+ Impl:
+			+ Springs:
+				+ New buffer: SuperTrianglesCount - type: ElementCount
+					+ Publicly exposed
+					+ Populated via argument at Springs:Add
+						+ Calc'd by ShipBuilder via Triangles below, during component springs discovery
+					+ Decremented via Springs::RemoveSuperTriangle() // no args
+			+ Triangles:
+				+ New buffer: ComponentSprings - type: std::array<ElementIndex, 3>
+					+ Publicly exposed
+					+ Populated via argument (of type std::array<ElementIndex, 3>) at Triangles:Add
+						+ Calc'd by ShipBuilder
+					+ Never changed
+					+ Used by Ship::TrianglesDestroyHandler() to decrement count for each component spring
+			+ Triangle destroy: remove self from springs
+			+ Springs destroy: remove self from super triangles
+			+ ShipBuilder:
+				+ Adjust to new
+				+ Also take care of traverse springs
+			+ New ShipRenderMode: EdgeSprings only
+				+ ShipRenderContext: treated exactly like SpringsOnly
+				+ Springs::Render: used to decide what to upload
+			+ Springs::UploadElements: in all modes except SpringsOnly, upload only springs with # of super triangles < 2
+				+ Re-enable TODOTEST code
+			+ Ship::Render() has to remember what ShipRenderMode was used last time, so to consider elements dirty
+			  also when ShipRenderMode has changed
+
+	+ See if can use multiple texture units
+		+ Bind once atlas, land, and water at cctor, to each unit
+		+ Change shaders to have one single texture sampler param, and set uniform locations to texture unit
+		+ Do only for clouds, generic texture, land, and water
+			+ Revert RenderContext.cpp, ShipRenderContext.cpp, TextRenderContext.cpp
+			+ Fonts and ship stay as before, they use texture unit 0 - SharedTexture
+			+ Shaders
+			+ Remember to activate texture unit 0 before binding, at:
+				+ Ship texture, stressed spring texture, font
+		+ Fix: land, generic
+		+ : test
+		+ Replace calls to glActiveTexture with ShaderManager::ActivateTexture(parameter)
+		+ Fix/Recheck progress bar
+		+ Redo perf FPS measurement
+
+
+
 
 + Dynamics
 	+ Try half of the relaxation iterations
