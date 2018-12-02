@@ -106,19 +106,26 @@ void Ship::MoveBy(
 void Ship::RotateBy(
     float angle,
     vec2f const & center,
-    GameParameters const & /*gameParameters*/)
+    GameParameters const & gameParameters)
 {
+    float const inertia =
+        gameParameters.MoveToolInertia
+        * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
+
     vec2f const rotX(cos(angle), sin(angle));
     vec2f const rotY(-sin(angle), cos(angle));
 
     vec2f * restrict positionBuffer = mPoints.GetPositionBufferAsVec2();
+    vec2f * restrict velocityBuffer = mPoints.GetVelocityBufferAsVec2();
 
     size_t const count = mPoints.GetBufferElementCount();
     for (size_t p = 0; p < count; ++p)
     {
         vec2f pos = positionBuffer[p] - center;
-        pos = vec2f(pos.dot(rotX), pos.dot(rotY));
-        positionBuffer[p] = pos + center;
+        pos = vec2f(pos.dot(rotX), pos.dot(rotY)) + center;
+
+        velocityBuffer[p] = (pos - positionBuffer[p]) * inertia;
+        positionBuffer[p] = pos;
     }
 }
 
