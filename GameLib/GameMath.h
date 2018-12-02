@@ -34,3 +34,13 @@ inline int32_t FastFloorInt32(float value) noexcept
 {
     return _mm_cvtt_ss2si(_mm_load_ss(&value));
 }
+
+/*
+ * Converts the floating-point value to a 64-bit integer.
+ *
+ * Assumes the result fits a 64-bit value. The behavior is undefined if it doesn't.
+ */
+inline int64_t FastFloorInt64(float value) noexcept
+{
+    return _mm_cvttss_si64(_mm_load_ss(&value));
+}

@@ -29,10 +29,10 @@ public:
         float const absoluteSampleIndexF = x / Dx;
 
         // Integral part
-        int32_t absoluteSampleIndexI = FastFloorInt32(absoluteSampleIndexF);
+        int64_t absoluteSampleIndexI = FastFloorInt64(absoluteSampleIndexF);
 
         // Integral part - sample
-        int32_t sampleIndexI;
+        int64_t sampleIndexI;
 
         // Fractional part within sample index and the next sample index
         float sampleIndexDx;
@@ -79,7 +79,7 @@ private:
     };
 
     // The samples
-    std::unique_ptr<Sample[]> mSamples;    
+    std::unique_ptr<Sample[]> mSamples;
 };
 
 }
