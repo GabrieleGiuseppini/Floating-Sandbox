@@ -1,7 +1,7 @@
 =================================================
 Current perf (spring optimization + double spring iterations)
 =================================================
-- fps: 30.8 (Samsung: TBD (Krafting)) (Mattia's: TBD (Krafting))
+- fps: 30.8 (Samsung: 20.3 (Krafting)) (Mattia's: 15.5 (Krafting))
 - World::Update: 57.05%
 	- Ship::Update: 56.89%
 		- UpdateMechanicalDynamics: 47.56%
@@ -110,11 +110,18 @@ Render:
 
 - Roadmap:
 	- 1.8.0
+		- Fix starting folder for ships
 		- Libsimdpp spring relaxation (*)
 		- Batisphere with pumps and propulsion (*)
-		- Bubbles
-		- Smoke
+			- Multi-layer ship definition files (*)
+			- Switches (*)
+			- Pumps (*)
+			- Propulsion (*)
+			- Batisphere
+		- Bubbles (*)
+		- Smoke (*)
 	- 1.9.0
+		- Flood tool (*)
 		- Z Buffer (*)
 		- Settings Manager (*)
 	- 1.10.0
@@ -609,10 +616,11 @@ Render:
 		- Requires re-calculation of period (if adjustment is x-multiplier N, then period is N times basic period)
 		- Resolution stays the same
 
-	- Allow ocean floor bump map to be loaded
+	- Allow ocean floor bump map to be loaded at runtime
 	
 	- Ship definition: multiple layers
 		- We want to maintain BW compat for ease of one-layer ship making
+		- TODOHERE: see Moleskine
 		- JSON: "extra_layers: ["rms_titanic_whatever.png.dat", ...]
 		- Material: becomes collection of N pointers: Structural (or "physical") (includes Sound), Electrical, Emitter, etc.
 		- ShipBuilder:
