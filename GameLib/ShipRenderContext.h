@@ -32,6 +32,7 @@ public:
         ShaderManager<ShaderManagerTraits> & shaderManager,
         GameOpenGLTexture & textureAtlasOpenGLHandle,
         TextureAtlasMetadata const & textureAtlasMetadata,
+        RenderStatistics & renderStatistics,
         float const(&orthoMatrix)[4][4],
         float visibleWorldHeight,
         float visibleWorldWidth,
@@ -43,7 +44,7 @@ public:
         VectorFieldRenderMode vectorFieldRenderMode,
         bool showStressedSprings,
         bool wireframeMode);
-    
+
     ~ShipRenderContext();
 
 public:
@@ -171,7 +172,7 @@ public:
     }
 
     void UploadElementsEnd();
-    
+
     void UploadElementStressedSpringsStart();
 
     inline void UploadElementStressedSpring(
@@ -240,7 +241,7 @@ public:
         float alpha)
     {
         size_t const connectedComponentIndex = connectedComponentId - 1;
-        
+
         assert(connectedComponentIndex < mGenericTextureConnectedComponents.size());
 
         // Get this connected component's vertex buffer
@@ -249,7 +250,7 @@ public:
         //
         // Populate the texture quad
         //
-        
+
         TextureAtlasFrameMetadata const & frame = mTextureAtlasMetadata.GetFrameMetadata(textureFrameId);
 
         float const leftX = -frame.FrameMetadata.AnchorWorldX;
@@ -267,7 +268,7 @@ public:
         // Top-left
         vertexBuffer.emplace_back(
             position,
-            vec2f(leftX, topY),            
+            vec2f(leftX, topY),
             vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesTopRight.y),
             scale,
             angle,
@@ -331,7 +332,7 @@ public:
     }
 
 
-    // 
+    //
     // Ephemeral points
     //
 
@@ -357,12 +358,12 @@ public:
         vec2f const * restrict position,
         vec2f const * restrict vector,
         float lengthAdjustment,
-        vec4f const & color);    
+        vec4f const & color);
 
     void RenderEnd();
 
 private:
-    
+
     struct ConnectedComponentData;
     struct GenericTextureConnectedComponentData;
 
@@ -378,7 +379,7 @@ private:
         ConnectedComponentData const & connectedComponent,
         bool withTexture);
 
-    void RenderStressedSpringElements(ConnectedComponentData const & connectedComponent);    
+    void RenderStressedSpringElements(ConnectedComponentData const & connectedComponent);
 
     void RenderGenericTextures(GenericTextureConnectedComponentData const & connectedComponent);
 
@@ -405,6 +406,8 @@ private:
 
     ShaderManager<ShaderManagerTraits> & mShaderManager;
 
+    RenderStatistics & mRenderStatistics;
+
 
     //
     // Ship textures
@@ -416,7 +419,7 @@ private:
     //
     // Points
     //
-    
+
     size_t const mPointCount;
 
     GameOpenGLVBO mPointPositionVBO;
@@ -424,7 +427,7 @@ private:
     GameOpenGLVBO mPointWaterVBO;
     GameOpenGLVBO mPointColorVBO;
     GameOpenGLVBO mPointElementTextureCoordinatesVBO;
-    
+
     //
     // Generic Textures
     //
@@ -438,7 +441,7 @@ struct TextureRenderPolygonVertex
     vec2f centerPosition;
     vec2f vertexOffset;
     vec2f textureCoordinate;
-    
+
     float scale;
     float angle;
     float alpha;
@@ -473,7 +476,7 @@ struct TextureRenderPolygonVertex
     size_t mGenericTextureAllocatedVertexBufferSize;
 
     GameOpenGLVBO mGenericTextureRenderPolygonVertexVBO;
-    
+
 
 
     //
@@ -522,7 +525,7 @@ struct TextureRenderPolygonVertex
     };
 #pragma pack(pop)
 
-    
+
     //
     // All the data that belongs to a single connected component
     //

@@ -26,12 +26,13 @@ public:
 
     void SetStatusText(
         float immediateFps,
-        float averageFps,        
+        float averageFps,
         std::chrono::duration<float> elapsedGameSeconds,
         bool isPaused,
         float zoom,
         float totalUpdateToRenderDurationRatio,
-        float lastUpdateToRenderDurationRatio);
+        float lastUpdateToRenderDurationRatio,
+        Render::RenderStatistics const & renderStatistics);
 
     void Update();
 

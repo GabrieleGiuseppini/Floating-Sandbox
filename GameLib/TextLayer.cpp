@@ -37,7 +37,8 @@ void TextLayer::SetStatusText(
     bool isPaused,
     float zoom,
     float totalUpdateToRenderDurationRatio,
-    float lastUpdateToRenderDurationRatio)
+    float lastUpdateToRenderDurationRatio,
+    Render::RenderStatistics const & renderStatistics)
 {
     int elapsedSecondsGameInt = static_cast<int>(roundf(elapsedGameSeconds.count()));
     int minutesGame = elapsedSecondsGameInt / 60;
@@ -74,6 +75,17 @@ void TextLayer::SetStatusText(
         ss << std::fixed << std::setprecision(2)
             << "U/R:" << (100.0f * totalUpdateToRenderDurationRatio) << "% (" << (100.0f * lastUpdateToRenderDurationRatio) << "%)"
             << " ZOOM:" << zoom;
+
+        mStatusTextLines.emplace_back(ss.str());
+
+        ss.str("");
+
+        ss
+            << "SPR:" << renderStatistics.LastRenderedShipSprings
+            << " TRI:" << renderStatistics.LastRenderedShipTriangles
+            << " CC:" << renderStatistics.LastRenderedShipConnectedComponents
+            << " GENTEX:" << renderStatistics.LastRenderedGenericTextures
+            << " EPH:" << renderStatistics.LastRenderedEphemeralPoints;
 
         mStatusTextLines.emplace_back(ss.str());
     }

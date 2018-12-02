@@ -152,4 +152,32 @@ struct TextQuadVertex
 };
 #pragma pack(pop)
 
+
+//
+// Statistics
+//
+
+struct RenderStatistics
+{
+    std::uint64_t LastRenderedShipSprings;
+    std::uint64_t LastRenderedShipTriangles;
+    std::uint64_t LastRenderedShipConnectedComponents;
+    std::uint64_t LastRenderedGenericTextures;
+    std::uint64_t LastRenderedEphemeralPoints;
+
+    RenderStatistics()
+    {
+        Reset();
+    }
+
+    void Reset()
+    {
+        LastRenderedShipSprings = 0;
+        LastRenderedShipTriangles = 0;
+        LastRenderedShipConnectedComponents = 0;
+        LastRenderedGenericTextures = 0;
+        LastRenderedEphemeralPoints = 0;
+    }
+};
+
 }

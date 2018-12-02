@@ -63,6 +63,8 @@ RenderContext::RenderContext(
     , mVectorFieldLengthMultiplier(1.0f)
     , mShowStressedSprings(false)
     , mWireframeMode(false)
+    // Statistics
+    , mRenderStatistics()
 {
     static constexpr float GenericTextureProgressSteps = 10.0f;
     static constexpr float CloudTextureProgressSteps = 4.0f;
@@ -408,6 +410,7 @@ void RenderContext::AddShip(
             *mShaderManager,
             mGenericTextureAtlasOpenGLHandle,
             *mGenericTextureAtlasMetadata,
+            mRenderStatistics,
             mOrthoMatrix,
             mVisibleWorldHeight,
             mVisibleWorldWidth,
@@ -444,6 +447,9 @@ void RenderContext::RenderStart()
 
     // Communicate start to child contextes
     mTextRenderContext->RenderStart();
+
+    // Reset stats
+    mRenderStatistics.Reset();
 }
 
 void RenderContext::UploadStarsStart(size_t starCount)

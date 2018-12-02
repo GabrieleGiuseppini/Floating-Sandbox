@@ -153,22 +153,19 @@ Render:
 			+ 100: OK,but not really "draggy"
 			+ 10,000: awesome
 
-		= Adjust restitution coefficient at collisions
-			- Try again with normal, but displacement being delta P instead of delta Y
-
 		- Recheck L'n'F' for current collision handling
 		- Recheck L'n'F' for strength
 
-		- Extended status: take stats from RenderContext
-			- RenderContext::Stats:
-				- LastRenderedShipSprings
-				- LastRenderedShipTriangles
-				- LastRenderedGenericTextureTriangles
-				- LastRenderedConnectedComponents
+		= Extended status: take stats from RenderContext
+			+ RenderContext::Stats:
+				+ LastRenderedShipSprings
+				+ LastRenderedShipTriangles
+				+ LastRenderedGenericTextureTriangles
+				+ LastRenderedConnectedComponents
 				----
-				- Reset stats at each RenderContext::RenderStart()
+				+ Reset stats at each RenderContext::RenderStart()
 
-		= Redo full perf analysis
+		+ Redo full perf analysis
 
 	- 1.8.0
 		- Libsimdpp spring relaxation (*)

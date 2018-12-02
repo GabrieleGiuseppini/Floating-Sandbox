@@ -18,6 +18,7 @@ ShipRenderContext::ShipRenderContext(
     ShaderManager<ShaderManagerTraits> & shaderManager,
     GameOpenGLTexture & textureAtlasOpenGLHandle,
     TextureAtlasMetadata const & textureAtlasMetadata,
+    RenderStatistics & renderStatistics,
     float const(&orthoMatrix)[4][4],
     float visibleWorldHeight,
     float visibleWorldWidth,
@@ -30,6 +31,7 @@ ShipRenderContext::ShipRenderContext(
     bool showStressedSprings,
     bool wireframeMode)
     : mShaderManager(shaderManager)
+    , mRenderStatistics(renderStatistics)
     // Parameters - all set at the end of the constructor
     , mCanvasToVisibleWorldHeightRatio(0)
     , mAmbientLightIntensity(0.0f)
@@ -802,6 +804,9 @@ void ShipRenderContext::RenderEnd()
         }
     }
 
+    // Update stats
+    mRenderStatistics.LastRenderedShipConnectedComponents += mConnectedComponents.size();
+
 
     //
     // Render ephemeral points
@@ -867,6 +872,9 @@ void ShipRenderContext::RenderSpringElements(
 
     // Draw
     glDrawElements(GL_LINES, static_cast<GLsizei>(2 * connectedComponent.springElementCount), GL_UNSIGNED_INT, 0);
+
+    // Update stats
+    mRenderStatistics.LastRenderedShipSprings += connectedComponent.springElementCount;
 }
 
 void ShipRenderContext::RenderRopeElements(ConnectedComponentData const & connectedComponent)
@@ -916,6 +924,9 @@ void ShipRenderContext::RenderTriangleElements(
 
     // Draw
     glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(3 * connectedComponent.triangleElementCount), GL_UNSIGNED_INT, 0);
+
+    // Update stats
+    mRenderStatistics.LastRenderedShipTriangles += connectedComponent.triangleElementCount;
 }
 
 void ShipRenderContext::RenderStressedSpringElements(ConnectedComponentData const & connectedComponent)
@@ -977,6 +988,9 @@ void ShipRenderContext::RenderGenericTextures(GenericTextureConnectedComponentDa
 
         // Draw polygons
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(connectedComponent.VertexBuffer.size()));
+
+        // Update stats
+        mRenderStatistics.LastRenderedGenericTextures += connectedComponent.VertexBuffer.size() / 6;
     }
 }
 
@@ -996,6 +1010,9 @@ void ShipRenderContext::RenderEphemeralPoints()
 
         // Draw
         glDrawElements(GL_POINTS, static_cast<GLsizei>(mEphemeralPoints.size()), GL_UNSIGNED_INT, 0);
+
+        // Update stats
+        mRenderStatistics.LastRenderedEphemeralPoints += mEphemeralPoints.size();
     }
 }
 

@@ -263,6 +263,15 @@ public:
             - screenOffset.y / static_cast<float>(mCanvasHeight) * mVisibleWorldHeight);
     }
 
+    //
+    // Statistics
+    //
+
+    RenderStatistics const & GetStatistics() const
+    {
+        return mRenderStatistics;
+    }
+
 public:
 
     void Reset();
@@ -809,7 +818,6 @@ public:
 
     void RenderEnd();
 
-
 private:
 
     void RenderCrossesOfLight();
@@ -1018,6 +1026,12 @@ private:
     float mVectorFieldLengthMultiplier;
     bool mShowStressedSprings;
     bool mWireframeMode;
+
+    //
+    // Statistics
+    //
+
+    RenderStatistics mRenderStatistics;
 };
 
 }

@@ -635,6 +635,7 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
 
         if (mPoints.GetPosition(pointIndex).y < waterHeightAtThisPoint)
         {
+            // Drag force = -C*V^2*Vn
             mPoints.GetForce(pointIndex) +=
                 mPoints.GetVelocity(pointIndex).square()
                 * (-waterDragCoefficient);
@@ -693,9 +694,7 @@ void Ship::UpdateSpringForces(GameParameters const & /*gameParameters*/)
 
 void Ship::IntegrateAndResetPointForces(GameParameters const & gameParameters)
 {
-    float const dt =
-        GameParameters::SimulationStepTimeDuration<float>
-        / gameParameters.NumMechanicalDynamicsIterations<float>();
+    float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
 
     // Global damp - lowers velocity uniformly, damping oscillations originating between gravity and buoyancy
     //
@@ -746,18 +745,22 @@ void Ship::HandleCollisionsWithSeaFloor(GameParameters const & gameParameters)
 {
     //
     // We handle collisions really simplistically: we move back points to where they were
-    // at the last update, when they were NOT under the ocean floor.
+    // at the last update, when they were NOT under the ocean floor, and fully bounce velocity back.
     //
-    // Ideally we would have to find the mid-point - between the position at t-1 and t - at which
-    // we really entered the sea floor, and then move the point there. We could find the midpoint
-    // with successive approximations, but this might not work when the floor is really rugged.
+    // Regarding calculating the post-collision position: ideally we would have to find the
+    // mid-point - between the position at t-1 and t - at which we really entered the sea floor,
+    // and then move the point there. We could find the midpoint with successive approximations,
+    // but this might not work when the floor is really rugged.
+    //
+    // Regarding calculating the post-collision velocity: ideally we would mirror velocity around
+    // the sea floor normal, but if we did this together with moving the point at the previous position,
+    // that point would start oscillating up and down, as the new position would allow it to gather
+    // momentum and come crashing down again.
     //
     // Hence we're gonna stick with this simple algorithm.
     //
 
-    float const dt =
-        GameParameters::SimulationStepTimeDuration<float>
-        / gameParameters.NumMechanicalDynamicsIterations<float>();
+    float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
 
     for (auto pointIndex : mPoints)
     {
@@ -765,11 +768,11 @@ void Ship::HandleCollisionsWithSeaFloor(GameParameters const & gameParameters)
         float const floorheight = mParentWorld.GetOceanFloorHeightAt(mPoints.GetPosition(pointIndex).x);
         if (mPoints.GetPosition(pointIndex).y < floorheight)
         {
-            // Move point back where it was
+            // Move point back to where it was
             mPoints.GetPosition(pointIndex) -= mPoints.GetVelocity(pointIndex) * dt;
 
-            // Simulate a perfectly elastic collision
-            mPoints.GetVelocity(pointIndex) *= -1.0f;
+            // Bounce velocity (naively)
+            mPoints.GetVelocity(pointIndex) = -mPoints.GetVelocity(pointIndex);
         }
     }
 }

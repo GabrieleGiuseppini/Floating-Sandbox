@@ -24,6 +24,13 @@ struct GameParameters
     template <typename T>
     static constexpr T SimulationStepTimeDuration = 0.02f;
 
+    template <typename T>
+    inline T MechanicalSimulationStepTimeDuration() const
+    {
+        return SimulationStepTimeDuration<T>
+            / NumMechanicalDynamicsIterations<T>();
+    }
+
 
     //
     // Physical Constants

@@ -578,5 +578,6 @@ void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
         mIsPaused,
         mRenderContext->GetZoom(),
         totalURRatio,
-        lastURRatio);
+        lastURRatio,
+        mRenderContext->GetStatistics());
 }
