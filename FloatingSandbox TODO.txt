@@ -109,74 +109,17 @@ Render:
 		+ After water contrast
 
 - Roadmap:
-	= 1.7.0
-		+ Magic spring optimization (*)
-			+ Then decide whether to increase the number of basis iterations, and whether to adjust strength
-				+ SQ: 2.0 => Basis = 24
-				+ Strength to maintain Titanic auto-break: <= 0.397928
-					+ Change max strength to 10 and see again value: 0.403352
-				+ Tune bombs
-				+ See pin				
-				+ Change ocean floor bump - remove center chasm and move it right
-				+ Fix sound quantity
-				+ Adjust volume of those two high-pitched sounds
-				+ Adjust container ship
-				+ Bomb blast radius: 2.0
-				+ Fix missing RC bomb pings 
-					+ verify break & stress sounds are still good
-		+ Test collisions with seafloor being less destructive
-		+ Fix crash
-			+ Springs and Triangles cctors: pass default-ccted FixedSizeBuffer() there, not {}
-			+ Then revert floor collision
-			+ Remove TODO's with checks at: 
-				- Ship.cpp
-			+ Clear super/sub buffers in destroy handlers
-
-		+ Move inertia & ultra-violent mode
-		+ Move tool extension: rotate
-			+ Shift: up ccw, down cw
-				+ Make it relative to prev pos
-			+ Change icon
-		+ Slider for water drag adjust
-			+ Test with water drag depending on v^2
-		+ Update help:
-			+ Anti-Matter bombs
-			+ Move tool
-
-		+ See collisions' bug
-			+ Move tools always update velocity
-				+ Checl L'n'F'
-
-		+ Strength adjust at 1.0
-
-		+ Decide max water drag: 
-			+ 100: OK,but not really "draggy"
-			+ 10,000: awesome
-
-		- Recheck L'n'F' for current collision handling
-		- Recheck L'n'F' for strength
-
-		= Extended status: take stats from RenderContext
-			+ RenderContext::Stats:
-				+ LastRenderedShipSprings
-				+ LastRenderedShipTriangles
-				+ LastRenderedGenericTextureTriangles
-				+ LastRenderedConnectedComponents
-				----
-				+ Reset stats at each RenderContext::RenderStart()
-
-		+ Redo full perf analysis
-
 	- 1.8.0
 		- Libsimdpp spring relaxation (*)
 		- Batisphere with pumps and propulsion (*)
-		- Z Buffer (*)
-		- Settings Manager (*)
-		- Resource Packs (Moleskine)
-	-1.9.0
 		- Bubbles
 		- Smoke
+	- 1.9.0
+		- Z Buffer (*)
+		- Settings Manager (*)
+	- 1.10.0
 		- Frontier
+		- Resource Packs (Moleskine)
 
 - New ships
 	- Roma
@@ -195,9 +138,8 @@ Render:
 	- Black hole
 
 - Technical debt
-	+ Replace ShipDefinitionFile's metadata with ShipDefinition
 
-- Optimizations:
+- Simulation Optimizations:
 
 	+ BufferAllocator<Type:vec2f or float>
 		+ cctor takes ElementCount
@@ -986,7 +928,7 @@ IF WX:
 				+ All getters and setters (when needed)
 		+ vec
 
-+ Perf optimizations:
++ Simulation Optimizations:
 	+ Move back to baseline
 	+ Take profile X 2
 	+ set these flags and see impact (on Release)
@@ -3105,6 +3047,8 @@ IF WX:
 		+ INSTALL target for release
 		+ RelWithDebInfo: Inline any suitable (/Ob2)
 
+	+ Replace ShipDefinitionFile's metadata with ShipDefinition
+
 + Ships:
 	+ Titanic:
 		+ Introduce weak metal
@@ -3309,3 +3253,61 @@ IF WX:
 			+ Do also at RenderContext
 	+ Fix issue with clouds and canvas size (wrong aspect ratio)
 	
++ Roadmap:
+	+ 1.7.0
+		+ Magic spring optimization (*)
+			+ Then decide whether to increase the number of basis iterations, and whether to adjust strength
+				+ SQ: 2.0 => Basis = 24
+				+ Strength to maintain Titanic auto-break: <= 0.397928
+					+ Change max strength to 10 and see again value: 0.403352
+				+ Tune bombs
+				+ See pin				
+				+ Change ocean floor bump - remove center chasm and move it right
+				+ Fix sound quantity
+				+ Adjust volume of those two high-pitched sounds
+				+ Adjust container ship
+				+ Bomb blast radius: 2.0
+				+ Fix missing RC bomb pings 
+					+ verify break & stress sounds are still good
+		+ Test collisions with seafloor being less destructive
+		+ Fix crash
+			+ Springs and Triangles cctors: pass default-ccted FixedSizeBuffer() there, not {}
+			+ Then revert floor collision
+			+ Remove TODO's with checks at: 
+				- Ship.cpp
+			+ Clear super/sub buffers in destroy handlers
+
+		+ Move inertia & ultra-violent mode
+		+ Move tool extension: rotate
+			+ Shift: up ccw, down cw
+				+ Make it relative to prev pos
+			+ Change icon
+		+ Slider for water drag adjust
+			+ Test with water drag depending on v^2
+		+ Update help:
+			+ Anti-Matter bombs
+			+ Move tool
+
+		+ See collisions' bug
+			+ Move tools always update velocity
+				+ Checl L'n'F'
+
+		+ Strength adjust at 1.0
+
+		+ Decide max water drag: 
+			+ 100: OK,but not really "draggy"
+			+ 10,000: awesome
+
+		+ Extended status: take stats from RenderContext
+			+ RenderContext::Stats:
+				+ LastRenderedShipSprings
+				+ LastRenderedShipTriangles
+				+ LastRenderedGenericTextureTriangles
+				+ LastRenderedConnectedComponents
+				----
+				+ Reset stats at each RenderContext::RenderStart()
+
+		+ Redo full perf analysis
+
+		+ Recheck L'n'F' for current collision handling
+		+ Recheck L'n'F' for strength

@@ -2,6 +2,7 @@
 - Musical theme for this release: Chemical Brothers, "We Are the Night"
 - Added ephemeral particles sub-system, and used it for debris and sparkles from the chainsaw
 - Improved quality of the rigidity simulation - bodies are now stiffer
+- Revisited simulations of water drag (now correctly proportional to *square* of particle velocity) and collisions with ocean floor
 - Added tool to move and rotate bodies
 - Added stars - visible only in the night sky (thanks Pac0master!)
 - Added ocean floor bump maps

@@ -285,7 +285,7 @@ void GameController::DrawTo(
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
-    float strength = 1000.0f * strengthMultiplier;
+    float strength = 2000.0f * strengthMultiplier;
     if (mGameParameters.IsUltraViolentMode)
         strength *= 20.0f;
 
