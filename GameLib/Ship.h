@@ -137,7 +137,7 @@ public:
 
     void IntegrateAndResetPointForces(GameParameters const & gameParameters);
 
-    void HandleCollisionsWithSeaFloor();
+    void HandleCollisionsWithSeaFloor(GameParameters const & gameParameters);
 
     // Water
 

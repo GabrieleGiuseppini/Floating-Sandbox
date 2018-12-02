@@ -572,7 +572,7 @@ void Ship::UpdateMechanicalDynamics(
         IntegrateAndResetPointForces(gameParameters);
 
         // Handle collisions with sea floor
-        HandleCollisionsWithSeaFloor();
+        HandleCollisionsWithSeaFloor(gameParameters);
     }
 
     // Consume force fields
@@ -742,36 +742,45 @@ void Ship::IntegrateAndResetPointForces(GameParameters const & gameParameters)
     }
 }
 
-void Ship::HandleCollisionsWithSeaFloor()
+void Ship::HandleCollisionsWithSeaFloor(GameParameters const & gameParameters)
 {
+    float const dt =
+        GameParameters::SimulationStepTimeDuration<float>
+        / gameParameters.NumMechanicalDynamicsIterations<float>();
+
     for (auto pointIndex : mPoints)
     {
         // Check if point is now below the sea floor
         float const floorheight = mParentWorld.GetOceanFloorHeightAt(mPoints.GetPosition(pointIndex).x);
         if (mPoints.GetPosition(pointIndex).y < floorheight)
         {
-            // Calculate normal to sea floor
-            static constexpr float Dx = 0.01f;
-            vec2f seaFloorNormal = vec2f(
-                floorheight - mParentWorld.GetOceanFloorHeightAt(mPoints.GetPosition(pointIndex).x + Dx),
-                Dx).normalise();
+            // TODOTEST
+            ////// Calculate normal to sea floor
+            ////static constexpr float Dx = 0.01f;
+            ////vec2f seaFloorNormal = vec2f(
+            ////    floorheight - mParentWorld.GetOceanFloorHeightAt(mPoints.GetPosition(pointIndex).x + Dx),
+            ////    Dx).normalise();
 
-            // Calculate displacement to move point back to sea floor, along the normal to the floor
-            // (which is oriented upwards)
-            vec2f bounceDisplacement = seaFloorNormal * (floorheight - mPoints.GetPosition(pointIndex).y);
+            ////// Calculate displacement to move point back to sea floor, along the normal to the floor
+            ////// (which is oriented upwards)
+            ////vec2f bounceDisplacement = seaFloorNormal * (floorheight - mPoints.GetPosition(pointIndex).y);
 
-            // Reflect point back along normal
-            mPoints.GetPosition(pointIndex) += bounceDisplacement * 2.0f;
+            ////// Reflect point back along normal
+            ////mPoints.GetPosition(pointIndex) += bounceDisplacement * 2.0f;
 
-            // Simulate a perfectly elastic impact, bouncing along specular to sea floor normal:
-            // R = 2*n*dot_product(n,-V) + V
-            //
-            // Note: assuming that point has velocity *into* floor, or else it wouldn't be here;
-            // could get here via move tool though
-            mPoints.GetVelocity(pointIndex) +=
-                seaFloorNormal
-                * -2.0f
-                * seaFloorNormal.dot(mPoints.GetVelocity(pointIndex));
+            ////// Simulate a perfectly elastic impact, bouncing along specular to sea floor normal:
+            ////// R = 2*n*dot_product(n,-V) + V
+            //////
+            ////// Note: assuming that point has velocity *into* floor, or else it wouldn't be here;
+            ////// could get here via move tool though
+            ////mPoints.GetVelocity(pointIndex) +=
+            ////    seaFloorNormal
+            ////    * -2.0f
+            ////    * seaFloorNormal.dot(mPoints.GetVelocity(pointIndex));
+
+            mPoints.GetPosition(pointIndex) -= mPoints.GetVelocity(pointIndex) * dt;
+            // TODO: make restitution coefficient
+            mPoints.GetVelocity(pointIndex) *= -0.5f;
         }
     }
 }
