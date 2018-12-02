@@ -2,8 +2,16 @@
 Current perf (spring optimization + double spring iterations)
 =================================================
 - fps: 30.8 (Samsung: TBD (Krafting)) (Mattia's: TBD (Krafting))
-- GameController::Update: 30.62%
-- World::Render: 55.43%
+- World::Update: 57.05%
+	- Ship::Update: 56.89%
+		- UpdateMechanicalDynamics: 47.56%
+			- UpdateSpringForces: 37.08%
+			- UpdatePointForces: 5.30%
+			- HandleCollisionsWithSeafFloor: 2.92%
+			- IntegrateAndResetPointForces: 2.26%
+		- UpdateWaterDynamics: 7.83%
+			- UpdateWaterVelocities: 7.72%
+- World::Render: 28.15%
 	- RenderContext::RenderCloudsEnd: 3.98%
 
 =================================================
@@ -129,24 +137,40 @@ Render:
 			+ Shift: up ccw, down cw
 				+ Make it relative to prev pos
 			+ Change icon
+		+ Slider for water drag adjust
+			+ Test with water drag depending on v^2
+		+ Update help:
+			+ Anti-Matter bombs
+			+ Move tool
 
-		= Slider for water drag adjust
-			- Test with water drag depending on v^2
+		+ See collisions' bug
+			+ Move tools always update velocity
+				+ Checl L'n'F'
 
-		- Update help:
-			- Anti-Matter bombs
-			- Move tool
+		+ Strength adjust at 1.0
+
+		+ Decide max water drag: 
+			+ 100: OK,but not really "draggy"
+			+ 10,000: awesome
+
+		= Adjust restitution coefficient at collisions
+			- Try again with normal, but displacement being delta P instead of delta Y
+
+		- Recheck L'n'F' for current collision handling
+		- Recheck L'n'F' for strength
 
 		- Extended status: take stats from RenderContext
 			- RenderContext::Stats:
 				- LastRenderedShipSprings
 				- LastRenderedShipTriangles
 				- LastRenderedGenericTextureTriangles
+				- LastRenderedConnectedComponents
 				----
 				- Reset stats at each RenderContext::RenderStart()
 
+		= Redo full perf analysis
+
 	- 1.8.0
-		- Redo full perf analysis
 		- Libsimdpp spring relaxation (*)
 		- Batisphere with pumps and propulsion (*)
 		- Z Buffer (*)

@@ -744,6 +744,17 @@ void Ship::IntegrateAndResetPointForces(GameParameters const & gameParameters)
 
 void Ship::HandleCollisionsWithSeaFloor(GameParameters const & gameParameters)
 {
+    //
+    // We handle collisions really simplistically: we move back points to where they were
+    // at the last update, when they were NOT under the ocean floor.
+    //
+    // Ideally we would have to find the mid-point - between the position at t-1 and t - at which
+    // we really entered the sea floor, and then move the point there. We could find the midpoint
+    // with successive approximations, but this might not work when the floor is really rugged.
+    //
+    // Hence we're gonna stick with this simple algorithm.
+    //
+
     float const dt =
         GameParameters::SimulationStepTimeDuration<float>
         / gameParameters.NumMechanicalDynamicsIterations<float>();
@@ -754,33 +765,11 @@ void Ship::HandleCollisionsWithSeaFloor(GameParameters const & gameParameters)
         float const floorheight = mParentWorld.GetOceanFloorHeightAt(mPoints.GetPosition(pointIndex).x);
         if (mPoints.GetPosition(pointIndex).y < floorheight)
         {
-            // TODOTEST
-            ////// Calculate normal to sea floor
-            ////static constexpr float Dx = 0.01f;
-            ////vec2f seaFloorNormal = vec2f(
-            ////    floorheight - mParentWorld.GetOceanFloorHeightAt(mPoints.GetPosition(pointIndex).x + Dx),
-            ////    Dx).normalise();
-
-            ////// Calculate displacement to move point back to sea floor, along the normal to the floor
-            ////// (which is oriented upwards)
-            ////vec2f bounceDisplacement = seaFloorNormal * (floorheight - mPoints.GetPosition(pointIndex).y);
-
-            ////// Reflect point back along normal
-            ////mPoints.GetPosition(pointIndex) += bounceDisplacement * 2.0f;
-
-            ////// Simulate a perfectly elastic impact, bouncing along specular to sea floor normal:
-            ////// R = 2*n*dot_product(n,-V) + V
-            //////
-            ////// Note: assuming that point has velocity *into* floor, or else it wouldn't be here;
-            ////// could get here via move tool though
-            ////mPoints.GetVelocity(pointIndex) +=
-            ////    seaFloorNormal
-            ////    * -2.0f
-            ////    * seaFloorNormal.dot(mPoints.GetVelocity(pointIndex));
-
+            // Move point back where it was
             mPoints.GetPosition(pointIndex) -= mPoints.GetVelocity(pointIndex) * dt;
-            // TODO: make restitution coefficient
-            mPoints.GetVelocity(pointIndex) *= -0.5f;
+
+            // Simulate a perfectly elastic collision
+            mPoints.GetVelocity(pointIndex) *= -1.0f;
         }
     }
 }
