@@ -25,7 +25,7 @@ AboutDialog::AboutDialog(
         mParent,
         wxID_ANY,
         _("About " + GetVersionInfo(VersionFormat::Long)),
-        wxDefaultPosition, 
+        wxDefaultPosition,
         wxSize(780, 450),
         wxCAPTION | wxCLOSE_BOX | wxFRAME_SHAPED | wxSTAY_ON_TOP,
         _T("About Window"));
@@ -101,13 +101,14 @@ AboutDialog::AboutDialog(
         {"Cover art:\t", "Dimitar Katsarov - https://www.artstation.com/stukata/profile" },
 
         {"Ship art:\t\t", "OceanLinerOrca - https://www.deviantart.com/oceanlinerorca" },
-        {"\t\t\t\t", "TopHatLemons - https://discordapp.com/" },        
+        {"\t\t\t\t", "TopHatLemons - https://discordapp.com/" },
         {"\t\t\t\t", "Truce#3326 - https://discordapp.com/" },
         {"\t\t\t\t", "RetroGraczzPL - https://discordapp.com/" },
         {"\t\t\t\t", "SS Nomadavid - https://discordapp.com/" },
         {"\t\t\t\t", "Wreno - https://discordapp.com/" },
         {"\t\t\t\t", "Pac0master - https://discordapp.com/" },
-                
+        {"\t\t\t\t", "mrpasta444 - https://discordapp.com/" },
+
         {"Textures:\t", "Tune 'Prototstar' Katerungroch"},
         {"wxWidgets:\t", "Copyright (c) 1998-2005 Julian Smart, Robert Roebling et al - https://www.wxwidgets.org/"},
         {"SFML:\t\t", "Copyright (c) Laurent Gomila - https://www.sfml-dev.org/"},
@@ -134,7 +135,7 @@ AboutDialog::AboutDialog(
         wxStaticText * credits2Label = new wxStaticText(mCreditsPanel, wxID_ANY, credit.second, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
         credits2Label->SetFont(creditsContentFont);
         creditsSizer->Add(credits2Label, 1, wxALIGN_LEFT);
-    }    
+    }
 
     mCreditsPanel->SetSizer(creditsSizer);
     mCreditsPanel->FitInside();
@@ -169,4 +170,3 @@ void AboutDialog::OnClose(wxCloseEvent & event)
 {
     event.Skip();
 }
-
