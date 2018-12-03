@@ -9,10 +9,10 @@
 
 /*
  * This slider is two exponentials, meeting at the center (number of ticks=beta).
- * The upper exponential starts slowly from beta and reaches the maximum with an increasing slope. 
+ * The upper exponential starts slowly from beta and reaches the maximum with an increasing slope.
  * Its definition is:
  *     value = a*exp(b * (tick - beta))
- * The lower exponential goes down from beta slowly and reaches the minimum with an increasing slope. 
+ * The lower exponential goes down from beta slowly and reaches the minimum with an increasing slope.
  * Its definition is:
  *     value = a - b*exp(gamma * (beta - tick))
  */
@@ -37,7 +37,7 @@ ExponentialSliderCore::ExponentialSliderCore(
     , mLowerB((zeroValue - minValue) / (exp(Gamma * Beta<float>) - 1.0f))
     , mUpperA(zeroValue)
     , mUpperB(logf(maxValue / zeroValue) / Beta<float>)
-{    
+{
 }
 
 int ExponentialSliderCore::GetNumberOfTicks() const
@@ -55,7 +55,10 @@ float ExponentialSliderCore::TickToValue(int tick) const
     else
     {
         // Upper part
-        return mUpperA * exp(mUpperB * (static_cast<float>(tick) - NumberOfTicks<float> / 2.0f));
+        if (tick == NumberOfTicks<int>)
+            return mMaxValue;
+        else
+            return mUpperA * exp(mUpperB * (static_cast<float>(tick) - NumberOfTicks<float> / 2.0f));
     }
 }
 

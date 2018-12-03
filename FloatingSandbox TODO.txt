@@ -116,6 +116,7 @@ Render:
 - Roadmap:
 	- 1.8.0
 		- Zbuffer (*)
+		- Oprhaned points (*)
 		- Libsimdpp spring relaxation (*)
 		- Batisphere with pumps and propulsion (*)
 			- Multi-layer ship definition files (*)
@@ -133,9 +134,11 @@ Render:
 		- Resource Packs (Moleskine)
 
 - New ships
-	- Roma
+	- Lighten up the Titanic
 	- Fix contributions
 		- PacMaster
+		- Roma
+		- Others
 	= USS Shark
 		- Need Z buffer work first
 	- Warship
@@ -289,8 +292,10 @@ Render:
 	  to draw one single batch then, using Z buffer and depth test 
 		- Assign Z based on connected component ID
 		- Plan:
+			- Do test image (check problematic # of CC's first)
+			- Test perspective with hardcoded z=-800 at shader, and see if it makes any difference
+
 			- TODO: review the below based off transparency sorting - see MOLESKINE
-			1 - Test perspective with hardcoded z=-800 at shader, and see if it makes any difference
 			2 - Ship assigns points' ConnectedComponentID as float in vector
 			3 - ShipRenderContext's shaders (Triangles, Springs) take Z and with ad-hoc OrthoMatrix
 			    transform ConnectedComponentID to Z
