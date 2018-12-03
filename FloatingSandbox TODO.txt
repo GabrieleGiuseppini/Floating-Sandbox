@@ -152,6 +152,20 @@ Render:
 
 - Simulation Optimizations:
 
+	- Forces rearc:
+		- Rationale: multiple spring iterations are really artificial; in reality, changes due to spring position changes in-between 
+		  iterations shouldn't impact physical world (e.g. buoyancy/drag) yet
+		- Points has two Force buffers: SpringForces and PointForces
+		- UpdateMechanicalDynamics:
+			- First resets PointForces (or not, may reorder the below to do a first "set" loop rather than "add")
+			- Then populates PointForces with force fields
+			- Then populates PointForces with gravity/buoyancy/water drag
+			- Then does spring loop:
+				- Spring forces
+				- Integrate - and reset spring forces
+				- HandleCollisionsWithSeaFloor
+		- Test final L'n'F'
+
 	+ BufferAllocator<Type:vec2f or float>
 		+ cctor takes ElementCount
 		+ Allocate() returns std::unique_ptr<Buffer<Type>>, with deleter invoking mAllocator->Release(Buffer<type>*)
@@ -299,7 +313,31 @@ Render:
 		- If so, we should somehow unify the uploading of orphaned points and the uploading of ephemeral points
 			- Connected component ID/Z buffer is enough to keep them on separate planes
 		- Also, ShipRenderMode::Points should only be consumed by Points::Upload, who is the only one who decides what gets uploaded
-			- ShipRenderContext always renders point elements
+		- Orphaned points go into their own single plane, above all connected components
+			- Assigned directly by ConnectivityVisit by checking if point has no connected springs (and it's not deleted)
+				- Since we're doing this, we might as well fill-in vector of Point indices for UploadPoints:
+					- Ship has own vector<ElementIndex>, appropriately reserved to mPoints.total_size
+					- Ship::ConnectivityVisit:
+						- Clears vector - after all, we run ConnectivityVisit if we're dirty
+						- For each point: 
+							- If ShipRenderMode is Points OR point is orphan: appends it
+						- Remembers size of vector at this moment, as mShipPointElementsCount (see below)
+					- Then passes it to Points::UploadEphemeralParticles(), who appends to it
+						- Instead, when we're not dirty, Ship truncates it to mShipPointElementsCount
+						  before passing it to UploadEphemeralParticles() (which now takes no RenderContext anymore)
+		- Ship::Render(): new dirty/ephemeral algo:
+			- With Z buffer we don't need anymore to worry about ShipRenderElementsStart() to allocate all connected components
+			- Ship uploads own point element index vector when:
+				- old: mAreElementsDirty => new: mArePointElementIndicesDirty
+					- mArePointElementIndicesDirty is set when:
+						- ConnectivityVisit runs
+							- ConnectivityVisit sets it itself at end
+						- Points::UploadEphemeralParticles() returns true (because it remembers it is dirty)
+							- Optimize here: if only UploadEphemeralParticles() returns true, then
+							  may upload only sub-portion after mShipPointElementsCount
+		- ShipRenderContext always renders point elements	
+			- Even when ShipRenderMode is Springs
+				- Test L'n'F'
 
 		- Test L'n'F'
 
