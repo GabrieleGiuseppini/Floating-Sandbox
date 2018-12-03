@@ -43,6 +43,7 @@ private:
         vec2f TextureCoordinates;
         Material const * Mtl;
         bool IsRopeEndpoint;
+        bool IsLeaking;
 
         PointInfo(
             vec2f position,
@@ -53,6 +54,7 @@ private:
             , TextureCoordinates(textureCoordinates)
             , Mtl(mtl)
             , IsRopeEndpoint(isRopeEndpoint)
+            , IsLeaking(false)
         {
         }
     };
@@ -132,23 +134,23 @@ private:
         std::vector<PointInfo> & pointInfos,
         std::vector<SpringInfo> & springInfos);
 
+    static void CreateShipElementInfos(
+        std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
+        ImageSize const & structureImageSize,
+        std::vector<PointInfo> & pointInfos,
+        std::vector<SpringInfo> & springInfos,
+        std::vector<TriangleInfo> & triangleInfos,
+        size_t & leakingPointsCount);
+
     static Physics::Points CreatePoints(
         std::vector<PointInfo> const & pointInfos,
         Physics::World & parentWorld,
         std::shared_ptr<IGameEventHandler> gameEventHandler,
         GameParameters const & gameParameters);
 
-    static void CreateShipElementInfos(
-        std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
-        ImageSize const & structureImageSize,
-        Physics::Points & points,
-        std::vector<SpringInfo> & springInfos,
-        std::vector<TriangleInfo> & triangleInfos,
-        size_t & leakingPointsCount);
-
     static std::vector<TriangleInfo> FilterOutRedundantTriangles(
         std::vector<TriangleInfo> const & triangleInfos,
-        Physics::Points & points,
+        Physics::Points const & points,
         std::vector<SpringInfo> const & springInfos);
 
     static void ConnectSpringsAndTriangles(
@@ -218,6 +220,7 @@ private:
     static std::vector<TriangleInfo> ReorderOptimally(
         std::vector<TriangleInfo> & triangleInfos,
         size_t vertexCount);
+
 
     template <size_t VerticesInElement>
     static std::vector<size_t> ReorderOptimally(

@@ -1,7 +1,7 @@
 =================================================
 Current perf (spring optimization + double spring iterations)
 =================================================
-- fps: 30.8 (Samsung: 20.3 (Krafting)) (Mattia's: 15.5 (Krafting))
+- fps: 31.3 (Samsung: 20.3 (Krafting)) (Mattia's: 15.5 (Krafting))
 - World::Update: 57.05%
 	- Ship::Update: 56.89%
 		- UpdateMechanicalDynamics: 47.56%
@@ -110,7 +110,6 @@ Render:
 
 - Roadmap:
 	- 1.8.0
-		- Fix starting folder for ships
 		- Libsimdpp spring relaxation (*)
 		- Batisphere with pumps and propulsion (*)
 			- Multi-layer ship definition files (*)
@@ -129,6 +128,7 @@ Render:
 		- Resource Packs (Moleskine)
 
 - New ships
+	- Titanic B
 	- Roma
 	- Fix contributions
 		- PacMaster
@@ -286,6 +286,11 @@ Render:
 					  - With optional <ship ID, connected component ID> pair (not set -> main UI, on top of everything)
 
 - Gfx:
+	- Should we always draw orphaned points - those that come after destruction?
+		- If so, ShipRenderMode::Points is only consumed by Points::Upload, who is the only one who decides what gets uploaded
+			- ShipRenderContext always renders point elements
+		- Test L'n'F'
+
 	- A toggle-able shader for the sea - so it gets darker the further down you go; it would be affected by the ambient lighting
 		- Need new scalar vertex attrib for depthBrightness - between 1.0 (top) and 0.0 (at greater of 1000m and sea depth)
 			- depthBrightness is always 1.0 if "modulate sea depth brightness" (new boolean GameParam) is not set
@@ -437,7 +442,7 @@ Render:
 				- Init'd with material's
 				- Ship::UpdateElectricalConnectivity checks conductance first when deciding to follow a connected electrical element
 			- Ship::SetSwitch(switchId, bool):
-				- Toggles electrical element's "doesConductElectricity", via ElectricalElements::SetSwitch(switchId, bool)
+				- Toggles electrical element's "conductsElectricity", via ElectricalElements::SetSwitch(switchId, bool)
 	- Pumps
 		- Spec:
 			- New electrical element
@@ -487,6 +492,8 @@ Render:
 		- New electrical element
 		- Electrical current controls force
 		- At ElectricalElements::Update(): if powered, apply force to point (4 materials for 4 directions)
+			- Requires forces rearc, with separate "Mechanical" and "Other" force buffers
+				- And smarter zeroing of Mechanical
 
 	- Test:
 		- Self-adjustment of kSpring and kDamp based off paper's formula (H and L bounds)

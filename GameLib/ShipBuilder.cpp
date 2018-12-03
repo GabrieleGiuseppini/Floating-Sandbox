@@ -144,19 +144,8 @@ std::unique_ptr<Ship> ShipBuilder::Create(
 
 
     //
-    // Visit all PointInfo's and create Points, i.e. the entire set of points
-    //
-
-    Points points = CreatePoints(
-        pointInfos,
-        parentWorld,
-        gameEventHandler,
-        gameParameters);
-
-
-    //
     // Visit point matrix and:
-    //  - Set non-fully-surrounded Points as "leaking"
+    //  - Set non-fully-surrounded PointInfo's as "leaking"
     //  - Detect springs and create SpringInfo's for them (additional to ropes)
     //  - Do tessellation and create TriangleInfo's
     //
@@ -166,20 +155,11 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     CreateShipElementInfos(
         pointIndexMatrix,
         shipDefinition.StructuralImage.Size,
-        points,
+        pointInfos,
         springInfos,
         triangleInfos,
         leakingPointsCount);
 
-
-    //
-    // Filter out redundant triangles
-    //
-
-    triangleInfos = FilterOutRedundantTriangles(
-        triangleInfos,
-        points,
-        springInfos);
 
 
     //
@@ -199,6 +179,25 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     // and at the same time, it makes sense to use the natural order of the triangles as it ensures
     // that higher elements in the ship cover lower elements when they are semi-detached
 
+
+    //
+    // Visit all PointInfo's and create Points, i.e. the entire set of points
+    //
+
+    Points points = CreatePoints(
+        pointInfos,
+        parentWorld,
+        gameEventHandler,
+        gameParameters);
+
+    //
+    // Filter out redundant triangles
+    //
+
+    triangleInfos = FilterOutRedundantTriangles(
+        triangleInfos,
+        points,
+        springInfos);
 
     //
     // Associate all springs with the triangles that cover them
@@ -376,127 +375,17 @@ void ShipBuilder::CreateRopeSegments(
     }
 }
 
-Points ShipBuilder::CreatePoints(
-    std::vector<PointInfo> const & pointInfos,
-    World & parentWorld,
-    std::shared_ptr<IGameEventHandler> gameEventHandler,
-    GameParameters const & gameParameters)
-{
-    Physics::Points points(
-        static_cast<ElementIndex>(pointInfos.size()),
-        parentWorld,
-        std::move(gameEventHandler),
-        gameParameters);
-
-    ElementIndex electricalElementCounter = 0;
-    for (size_t p = 0; p < pointInfos.size(); ++p)
-    {
-        PointInfo const & pointInfo = pointInfos[p];
-
-        Material const * mtl = pointInfo.Mtl;
-
-        // Make point non-hull if it's endpoint of a rope, otherwise springs connected
-        // to this point would be hull and thus this point would never catch water
-        bool isHull;
-        if (pointInfo.IsRopeEndpoint)
-        {
-            isHull = false;
-        }
-        else
-        {
-            isHull = mtl->IsHull;
-        }
-
-        ElementIndex electricalElementIndex = NoneElementIndex;
-        if (!!mtl->Electrical)
-        {
-            // This point has an associated electrical element
-            electricalElementIndex = electricalElementCounter;
-            ++electricalElementCounter;
-        }
-
-        float buoyancy = mtl->IsHull ? 0.0f : 1.0f; // No buoyancy if it's a hull material, as it can't get water
-
-        //
-        // Create point
-        //
-
-        points.Add(
-            pointInfo.Position,
-            mtl,
-            isHull,
-            mtl->IsRope,
-            electricalElementIndex,
-            buoyancy,
-            mtl->RenderColour,
-            pointInfo.TextureCoordinates);
-    }
-
-    return points;
-}
-
-std::vector<ShipBuilder::TriangleInfo> ShipBuilder::FilterOutRedundantTriangles(
-    std::vector<TriangleInfo> const & triangleInfos,
-    Physics::Points & points,
-    std::vector<SpringInfo> const & springInfos)
-{
-    //
-    // First pass: collect indices of those that need to stay
-    //
-    // Remove:
-    //  - those whose vertices are all rope points, of which at least one is connected exclusively
-    //    to rope points (these would be knots "sticking out" of the structure)
-    //
-
-    std::vector<ElementIndex> triangleIndices;
-    triangleIndices.reserve(triangleInfos.size());
-
-    for (ElementIndex t = 0; t < triangleInfos.size(); ++t)
-    {
-        if (points.IsRope(triangleInfos[t].PointIndices[0])
-            && points.IsRope(triangleInfos[t].PointIndices[1])
-            && points.IsRope(triangleInfos[t].PointIndices[2]))
-        {
-            // Do not add triangle if at least one vertex is connected to rope points only
-            if (!IsConnectedToNonRopePoints(triangleInfos[t].PointIndices[0], points, springInfos)
-                || !IsConnectedToNonRopePoints(triangleInfos[t].PointIndices[1], points, springInfos)
-                || !IsConnectedToNonRopePoints(triangleInfos[t].PointIndices[2], points, springInfos))
-            {
-                continue;
-            }
-        }
-
-        // Remember to create this triangle
-        triangleIndices.push_back(t);
-    }
-
-    //
-    // Second pass: create new list of triangle info's
-    //
-
-    std::vector<TriangleInfo> newTriangleInfos;
-    newTriangleInfos.reserve(triangleIndices.size());
-
-    for (ElementIndex t = 0; t < triangleIndices.size(); ++t)
-    {
-        newTriangleInfos.push_back(
-            triangleInfos[triangleIndices[t]]);
-    }
-
-    return newTriangleInfos;
-}
-
 void ShipBuilder::CreateShipElementInfos(
     std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
     ImageSize const & structureImageSize,
-    Physics::Points & points,
+    std::vector<PointInfo> & pointInfos,
     std::vector<SpringInfo> & springInfos,
     std::vector<TriangleInfo> & triangleInfos,
     size_t & leakingPointsCount)
 {
     //
     // Visit point matrix and:
-    //  - Set non-fully-surrounded Points as "leaking"
+    //  - Set non-fully-surrounded PointInfos as "leaking"
     //  - Detect springs and create SpringInfo's for them (additional to ropes)
     //  - Do tessellation and create TriangleInfo's
     //
@@ -536,15 +425,14 @@ void ShipBuilder::CreateShipElementInfos(
                 // Check if a is leaking; a is leaking if:
                 // - a is not hull, AND
                 // - there is at least a hole at E, S, W, N
-                if (!points.GetMaterial(pointIndex)->IsHull)
+                if (!pointInfos[pointIndex].Mtl->IsHull)
                 {
                     if (!pointIndexMatrix[x + 1][y]
                         || !pointIndexMatrix[x][y + 1]
                         || !pointIndexMatrix[x - 1][y]
                         || !pointIndexMatrix[x][y - 1])
                     {
-                        points.SetLeaking(pointIndex);
-
+                        pointInfos[pointIndex].IsLeaking = true;
                         ++leakingPointsCount;
                     }
                 }
@@ -643,6 +531,117 @@ void ShipBuilder::CreateShipElementInfos(
             }
         }
     }
+}
+
+Points ShipBuilder::CreatePoints(
+    std::vector<PointInfo> const & pointInfos,
+    World & parentWorld,
+    std::shared_ptr<IGameEventHandler> gameEventHandler,
+    GameParameters const & gameParameters)
+{
+    Physics::Points points(
+        static_cast<ElementIndex>(pointInfos.size()),
+        parentWorld,
+        std::move(gameEventHandler),
+        gameParameters);
+
+    ElementIndex electricalElementCounter = 0;
+    for (size_t p = 0; p < pointInfos.size(); ++p)
+    {
+        PointInfo const & pointInfo = pointInfos[p];
+
+        Material const * mtl = pointInfo.Mtl;
+
+        // Make point non-hull if it's endpoint of a rope, otherwise springs connected
+        // to this point would be hull and thus this point would never catch water
+        bool isHull;
+        if (pointInfo.IsRopeEndpoint)
+        {
+            isHull = false;
+        }
+        else
+        {
+            isHull = mtl->IsHull;
+        }
+
+        ElementIndex electricalElementIndex = NoneElementIndex;
+        if (!!mtl->Electrical)
+        {
+            // This point has an associated electrical element
+            electricalElementIndex = electricalElementCounter;
+            ++electricalElementCounter;
+        }
+
+        float buoyancy = mtl->IsHull ? 0.0f : 1.0f; // No buoyancy if it's a hull material, as it can't get water
+
+        //
+        // Create point
+        //
+
+        points.Add(
+            pointInfo.Position,
+            mtl,
+            isHull,
+            mtl->IsRope,
+            electricalElementIndex,
+            pointInfo.IsLeaking,
+            buoyancy,
+            mtl->RenderColour,
+            pointInfo.TextureCoordinates);
+    }
+
+    return points;
+}
+
+std::vector<ShipBuilder::TriangleInfo> ShipBuilder::FilterOutRedundantTriangles(
+    std::vector<TriangleInfo> const & triangleInfos,
+    Physics::Points const & points,
+    std::vector<SpringInfo> const & springInfos)
+{
+    //
+    // First pass: collect indices of those that need to stay
+    //
+    // Remove:
+    //  - those whose vertices are all rope points, of which at least one is connected exclusively
+    //    to rope points (these would be knots "sticking out" of the structure)
+    //
+
+    std::vector<ElementIndex> triangleIndices;
+    triangleIndices.reserve(triangleInfos.size());
+
+    for (ElementIndex t = 0; t < triangleInfos.size(); ++t)
+    {
+        if (points.IsRope(triangleInfos[t].PointIndices[0])
+            && points.IsRope(triangleInfos[t].PointIndices[1])
+            && points.IsRope(triangleInfos[t].PointIndices[2]))
+        {
+            // Do not add triangle if at least one vertex is connected to rope points only
+            if (!IsConnectedToNonRopePoints(triangleInfos[t].PointIndices[0], points, springInfos)
+                || !IsConnectedToNonRopePoints(triangleInfos[t].PointIndices[1], points, springInfos)
+                || !IsConnectedToNonRopePoints(triangleInfos[t].PointIndices[2], points, springInfos))
+            {
+                continue;
+            }
+        }
+
+        // Remember to create this triangle
+        triangleIndices.push_back(t);
+    }
+
+    //
+    // Second pass: create new list of triangle info's
+    //
+
+    std::vector<TriangleInfo> newTriangleInfos;
+    newTriangleInfos.reserve(triangleIndices.size());
+
+    for (ElementIndex t = 0; t < triangleIndices.size(); ++t)
+    {
+        newTriangleInfos.push_back(
+            triangleInfos[triangleIndices[t]]);
+    }
+
+    return newTriangleInfos;
 }
 
 void ShipBuilder::ConnectSpringsAndTriangles(

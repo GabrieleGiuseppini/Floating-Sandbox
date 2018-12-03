@@ -18,6 +18,7 @@ void Points::Add(
     bool isHull,
     bool isRope,
     ElementIndex electricalElementIndex,
+    bool isLeaking,
     float buoyancy,
     vec4f const & color,
     vec2f const & textureCoordinates)
@@ -41,7 +42,7 @@ void Points::Add(
     mWaterBuffer.emplace_back(0.0f);
     mWaterVelocityBuffer.emplace_back(vec2f::zero());
     mWaterMomentumBuffer.emplace_back(vec2f::zero());
-    mIsLeakingBuffer.emplace_back(false);
+    mIsLeakingBuffer.emplace_back(isLeaking);
 
     // Electrical dynamics
     mElectricalElementBuffer.emplace_back(electricalElementIndex);
