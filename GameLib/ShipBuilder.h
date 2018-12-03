@@ -111,14 +111,15 @@ private:
     static bool IsConnectedToNonRopePoints(
         ElementIndex pointIndex,
         Physics::Points const & points,
+        std::vector<ElementIndex> const & pointIndexRemap,
         std::vector<SpringInfo> const & springInfos)
     {
         assert(points.GetMaterial(pointIndex)->IsRope);
 
         for (auto springIndex : points.GetConnectedSprings(pointIndex))
         {
-            if (!points.IsRope(springInfos[springIndex].PointAIndex)
-                || !points.IsRope(springInfos[springIndex].PointBIndex))
+            if (!points.IsRope(pointIndexRemap[springInfos[springIndex].PointAIndex])
+                || !points.IsRope(pointIndexRemap[springInfos[springIndex].PointBIndex]))
             {
                 return true;
             }
@@ -142,6 +143,11 @@ private:
         std::vector<TriangleInfo> & triangleInfos,
         size_t & leakingPointsCount);
 
+    static std::vector<PointInfo> ReorderOptimally(
+        std::vector<PointInfo> const & pointInfos,
+        std::vector<SpringInfo> const & springInfos,
+        std::vector<ElementIndex> & pointIndexRemap);
+
     static Physics::Points CreatePoints(
         std::vector<PointInfo> const & pointInfos,
         Physics::World & parentWorld,
@@ -151,6 +157,7 @@ private:
     static std::vector<TriangleInfo> FilterOutRedundantTriangles(
         std::vector<TriangleInfo> const & triangleInfos,
         Physics::Points const & points,
+        std::vector<ElementIndex> const & pointIndexRemap,
         std::vector<SpringInfo> const & springInfos);
 
     static void ConnectSpringsAndTriangles(
@@ -160,13 +167,15 @@ private:
     static Physics::Springs CreateSprings(
         std::vector<SpringInfo> const & springInfos,
         Physics::Points & points,
+        std::vector<ElementIndex> const & pointIndexRemap,
         Physics::World & parentWorld,
         std::shared_ptr<IGameEventHandler> gameEventHandler,
         GameParameters const & gameParameters);
 
     static Physics::Triangles CreateTriangles(
         std::vector<TriangleInfo> const & triangleInfos,
-        Physics::Points & points);
+        Physics::Points & points,
+        std::vector<ElementIndex> const & pointIndexRemap);
 
     static Physics::ElectricalElements CreateElectricalElements(
         Physics::Points const & points,

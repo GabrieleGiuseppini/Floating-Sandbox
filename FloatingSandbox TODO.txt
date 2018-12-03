@@ -22,6 +22,7 @@ Past perf (ephemeral particles)
 1.7.0 perf from users
 	- Titanic: 50
 	- Titanic: 55
+	- Titanic: 48.3
 
 
 =================================================
@@ -114,6 +115,7 @@ Render:
 
 - Roadmap:
 	- 1.8.0
+		- Zbuffer (*)
 		- Libsimdpp spring relaxation (*)
 		- Batisphere with pumps and propulsion (*)
 			- Multi-layer ship definition files (*)
@@ -125,14 +127,12 @@ Render:
 		- Smoke (*)
 	- 1.9.0
 		- Flood tool (*)
-		- Z Buffer (*)
 		- Settings Manager (*)
 	- 1.10.0
 		- Frontier
 		- Resource Packs (Moleskine)
 
 - New ships
-	- Titanic B
 	- Roma
 	- Fix contributions
 		- PacMaster
@@ -157,6 +157,8 @@ Render:
 		+ Allocate() returns std::unique_ptr<Buffer<Type>>, with deleter invoking mAllocator->Release(Buffer<type>*)
 		+ Points::CheckoutWaterBufferTmp (as "AllocateWaterBufferCopy()") borrows one, copies it in, and returns it as std::unique_ptr<Buffer<float>>
 		+ Opposite for Commit() (as "UpdateWaterBuffer")
+
+	- See if reordering springs according to small tiles helps, instead of according to cache heuristics
 
 	= Do SSE with libsimdpp:
 		- First check out alternative: https://xsimd.readthedocs.io/en/latest/
@@ -293,8 +295,12 @@ Render:
 	+ Make font white inversely to ambient light
 
 	- Should we always draw orphaned points - those that come after destruction?
-		- If so, ShipRenderMode::Points is only consumed by Points::Upload, who is the only one who decides what gets uploaded
+		+ Orphaned point == points with 0 connected springs
+		- If so, we should somehow unify the uploading of orphaned points and the uploading of ephemeral points
+			- Connected component ID/Z buffer is enough to keep them on separate planes
+		- Also, ShipRenderMode::Points should only be consumed by Points::Upload, who is the only one who decides what gets uploaded
 			- ShipRenderContext always renders point elements
+
 		- Test L'n'F'
 
 	- A toggle-able shader for the sea - so it gets darker the further down you go; it would be affected by the ambient lighting

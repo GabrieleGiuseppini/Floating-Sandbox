@@ -13,6 +13,7 @@
 #include <cassert>
 #include <limits>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 
 using namespace Physics;
@@ -181,6 +182,18 @@ std::unique_ptr<Ship> ShipBuilder::Create(
 
 
     //
+    // Now reorder points to improve data locality when visiting springs
+    //
+
+    std::vector<ElementIndex> pointIndexRemap;
+
+    pointInfos = ReorderOptimally(
+        pointInfos,
+        springInfos,
+        pointIndexRemap);
+
+
+    //
     // Visit all PointInfo's and create Points, i.e. the entire set of points
     //
 
@@ -197,6 +210,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     triangleInfos = FilterOutRedundantTriangles(
         triangleInfos,
         points,
+        pointIndexRemap,
         springInfos);
 
     //
@@ -215,6 +229,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     Springs springs = CreateSprings(
         springInfos,
         points,
+        pointIndexRemap,
         parentWorld,
         gameEventHandler,
         gameParameters);
@@ -226,7 +241,8 @@ std::unique_ptr<Ship> ShipBuilder::Create(
 
     Triangles triangles = CreateTriangles(
         triangleInfos,
-        points);
+        points,
+        pointIndexRemap);
 
 
     //
@@ -533,6 +549,56 @@ void ShipBuilder::CreateShipElementInfos(
     }
 }
 
+std::vector<ShipBuilder::PointInfo> ShipBuilder::ReorderOptimally(
+    std::vector<ShipBuilder::PointInfo> const & pointInfos,
+    std::vector<ShipBuilder::SpringInfo> const & springInfos,
+    std::vector<ElementIndex> & pointIndexRemap)
+{
+    //
+    // Order points in the order they first appear when visiting springs linearly
+    //
+    // a.k.a. Bas van den Berg's optimization!
+    //
+
+    std::vector<PointInfo> newPointInfos;
+    pointIndexRemap.resize(pointInfos.size());
+
+    std::unordered_set<ElementIndex> visitedPoints;
+
+    for (auto const & springInfo : springInfos)
+    {
+        if (visitedPoints.insert(springInfo.PointAIndex).second)
+        {
+            pointIndexRemap[springInfo.PointAIndex] = static_cast<ElementIndex>(newPointInfos.size());
+            newPointInfos.push_back(pointInfos[springInfo.PointAIndex]);
+        }
+
+        if (visitedPoints.insert(springInfo.PointBIndex).second)
+        {
+            pointIndexRemap[springInfo.PointBIndex] = static_cast<ElementIndex>(newPointInfos.size());
+            newPointInfos.push_back(pointInfos[springInfo.PointBIndex]);
+        }
+    }
+
+
+    //
+    // Add missing points
+    //
+
+    for (ElementIndex p = 0; p < pointInfos.size(); ++p)
+    {
+        if (0 == visitedPoints.count(p))
+        {
+            pointIndexRemap[p] = static_cast<ElementIndex>(newPointInfos.size());
+            newPointInfos.push_back(pointInfos[p]);
+        }
+    }
+
+    assert(newPointInfos.size() == pointInfos.size());
+
+    return newPointInfos;
+}
+
 Points ShipBuilder::CreatePoints(
     std::vector<PointInfo> const & pointInfos,
     World & parentWorld,
@@ -596,6 +662,7 @@ Points ShipBuilder::CreatePoints(
 std::vector<ShipBuilder::TriangleInfo> ShipBuilder::FilterOutRedundantTriangles(
     std::vector<TriangleInfo> const & triangleInfos,
     Physics::Points const & points,
+    std::vector<ElementIndex> const & pointIndexRemap,
     std::vector<SpringInfo> const & springInfos)
 {
     //
@@ -611,14 +678,14 @@ std::vector<ShipBuilder::TriangleInfo> ShipBuilder::FilterOutRedundantTriangles(
 
     for (ElementIndex t = 0; t < triangleInfos.size(); ++t)
     {
-        if (points.IsRope(triangleInfos[t].PointIndices[0])
-            && points.IsRope(triangleInfos[t].PointIndices[1])
-            && points.IsRope(triangleInfos[t].PointIndices[2]))
+        if (points.IsRope(pointIndexRemap[triangleInfos[t].PointIndices[0]])
+            && points.IsRope(pointIndexRemap[triangleInfos[t].PointIndices[1]])
+            && points.IsRope(pointIndexRemap[triangleInfos[t].PointIndices[2]]))
         {
             // Do not add triangle if at least one vertex is connected to rope points only
-            if (!IsConnectedToNonRopePoints(triangleInfos[t].PointIndices[0], points, springInfos)
-                || !IsConnectedToNonRopePoints(triangleInfos[t].PointIndices[1], points, springInfos)
-                || !IsConnectedToNonRopePoints(triangleInfos[t].PointIndices[2], points, springInfos))
+            if (!IsConnectedToNonRopePoints(pointIndexRemap[triangleInfos[t].PointIndices[0]], points, pointIndexRemap, springInfos)
+                || !IsConnectedToNonRopePoints(pointIndexRemap[triangleInfos[t].PointIndices[1]], points, pointIndexRemap, springInfos)
+                || !IsConnectedToNonRopePoints(pointIndexRemap[triangleInfos[t].PointIndices[2]], points, pointIndexRemap, springInfos))
             {
                 continue;
             }
@@ -806,6 +873,7 @@ void ShipBuilder::ConnectSpringsAndTriangles(
 Physics::Springs ShipBuilder::CreateSprings(
     std::vector<SpringInfo> const & springInfos,
     Physics::Points & points,
+    std::vector<ElementIndex> const & pointIndexRemap,
     World & parentWorld,
     std::shared_ptr<IGameEventHandler> gameEventHandler,
     GameParameters const & gameParameters)
@@ -822,25 +890,27 @@ Physics::Springs ShipBuilder::CreateSprings(
 
         // The spring is hull if at least one node is hull
         // (we don't propagate water along a hull spring)
-        if (points.IsHull(springInfos[s].PointAIndex) || points.IsHull(springInfos[s].PointBIndex))
+        if (points.IsHull(pointIndexRemap[springInfos[s].PointAIndex])
+            || points.IsHull(pointIndexRemap[springInfos[s].PointBIndex]))
             characteristics |= static_cast<int>(Springs::Characteristics::Hull);
 
         // If both nodes are rope, then the spring is rope
         // (non-rope <-> rope springs are "connections" and not to be treated as ropes)
-        if (points.IsRope(springInfos[s].PointAIndex) && points.IsRope(springInfos[s].PointBIndex))
+        if (points.IsRope(pointIndexRemap[springInfos[s].PointAIndex])
+            && points.IsRope(pointIndexRemap[springInfos[s].PointBIndex]))
             characteristics |= static_cast<int>(Springs::Characteristics::Rope);
 
         // Create spring
         springs.Add(
-            springInfos[s].PointAIndex,
-            springInfos[s].PointBIndex,
+            pointIndexRemap[springInfos[s].PointAIndex],
+            pointIndexRemap[springInfos[s].PointBIndex],
             springInfos[s].SuperTriangles,
             static_cast<Springs::Characteristics>(characteristics),
             points);
 
         // Add spring to its endpoints
-        points.AddConnectedSpring(springInfos[s].PointAIndex, s);
-        points.AddConnectedSpring(springInfos[s].PointBIndex, s);
+        points.AddConnectedSpring(pointIndexRemap[springInfos[s].PointAIndex], s);
+        points.AddConnectedSpring(pointIndexRemap[springInfos[s].PointBIndex], s);
     }
 
     return springs;
@@ -848,7 +918,8 @@ Physics::Springs ShipBuilder::CreateSprings(
 
 Physics::Triangles ShipBuilder::CreateTriangles(
     std::vector<TriangleInfo> const & triangleInfos,
-    Physics::Points & points)
+    Physics::Points & points,
+    std::vector<ElementIndex> const & pointIndexRemap)
 {
     Physics::Triangles triangles(static_cast<ElementIndex>(triangleInfos.size()));
 
@@ -856,15 +927,15 @@ Physics::Triangles ShipBuilder::CreateTriangles(
     {
         // Create triangle
         triangles.Add(
-            triangleInfos[t].PointIndices[0],
-            triangleInfos[t].PointIndices[1],
-            triangleInfos[t].PointIndices[2],
+            pointIndexRemap[triangleInfos[t].PointIndices[0]],
+            pointIndexRemap[triangleInfos[t].PointIndices[1]],
+            pointIndexRemap[triangleInfos[t].PointIndices[2]],
             triangleInfos[t].SubSprings);
 
         // Add triangle to its endpoints
-        points.AddConnectedTriangle(triangleInfos[t].PointIndices[0], t);
-        points.AddConnectedTriangle(triangleInfos[t].PointIndices[1], t);
-        points.AddConnectedTriangle(triangleInfos[t].PointIndices[2], t);
+        points.AddConnectedTriangle(pointIndexRemap[triangleInfos[t].PointIndices[0]], t);
+        points.AddConnectedTriangle(pointIndexRemap[triangleInfos[t].PointIndices[1]], t);
+        points.AddConnectedTriangle(pointIndexRemap[triangleInfos[t].PointIndices[2]], t);
     }
 
     return triangles;
