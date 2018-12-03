@@ -30,6 +30,9 @@ void main()
 in vec2 vertexTextureCoordinates;
 in float vertexAlpha;
 
+// Params
+uniform float paramAmbientLightIntensity;
+
 // The texture
 uniform sampler2D sharedSpringTexture;
 
@@ -37,7 +40,15 @@ void main()
 {
     vec4 textureColor = texture2D(sharedSpringTexture, vertexTextureCoordinates);
 
+    //vec3 textColor =
+    //    textureColor.xyz * sqrt(paramAmbientLightIntensity)
+    //    + vec3(1.0, 1.0, 1.0) * (1.0 - sqrt(paramAmbientLightIntensity));
+
+    vec3 textColor =
+        textureColor.xyz * step(0.5, paramAmbientLightIntensity)
+        + vec3(1.0, 1.0, 1.0) * (1.0 - step(0.5, paramAmbientLightIntensity));
+
     gl_FragColor = vec4(
-        textureColor.xyz,
+        textColor,
         textureColor.w * vertexAlpha);
 } 

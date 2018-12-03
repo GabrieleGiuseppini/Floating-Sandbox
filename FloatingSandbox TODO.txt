@@ -19,6 +19,10 @@ Past perf (ephemeral particles)
 =================================================
 - fps: 28.8/29.0 (Samsung: TBD (Krafting)) (Mattia's: TBD (Krafting))
 =================================================
+1.7.0 perf from users
+	- Titanic: 50
+	- Titanic: 55
+
 
 =================================================
 1.6.0 perf
@@ -286,6 +290,8 @@ Render:
 					  - With optional <ship ID, connected component ID> pair (not set -> main UI, on top of everything)
 
 - Gfx:
+	+ Make font white inversely to ambient light
+
 	- Should we always draw orphaned points - those that come after destruction?
 		- If so, ShipRenderMode::Points is only consumed by Points::Upload, who is the only one who decides what gets uploaded
 			- ShipRenderContext always renders point elements
@@ -624,6 +630,9 @@ Render:
 		- Resolution stays the same
 
 	- Allow ocean floor bump map to be loaded at runtime
+
+	- Adjustment for global damp
+		- Or - make it air damp
 	
 	- Ship definition: multiple layers
 		- We want to maintain BW compat for ease of one-layer ship making

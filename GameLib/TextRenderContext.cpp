@@ -12,10 +12,12 @@ TextRenderContext::TextRenderContext(
     ShaderManager<ShaderManagerTraits> & shaderManager,
     int canvasWidth,
     int canvasHeight,
+    float ambientLightIntensity,
     ProgressCallback const & progressCallback)
     : mShaderManager(shaderManager)
     , mScreenToNdcX(2.0f / static_cast<float>(canvasWidth))
     , mScreenToNdcY(2.0f / static_cast<float>(canvasHeight))
+    , mAmbientLightIntensity(0.0f) // Set later
     , mTextSlots()
     , mCurrentTextSlotGeneration(0)
     , mAreTextSlotsDirty(false)
@@ -48,7 +50,7 @@ TextRenderContext::TextRenderContext(
         GLuint textureOpenGLHandle;
         glGenTextures(1, &textureOpenGLHandle);
 
-        // Bind texture        
+        // Bind texture
         glBindTexture(GL_TEXTURE_2D, textureOpenGLHandle);
         CheckOpenGLError();
 
@@ -76,6 +78,23 @@ TextRenderContext::TextRenderContext(
             textureOpenGLHandle,
             vertexBufferVBOHandle);
     }
+
+
+    //
+    // Update parameters
+    //
+
+    UpdateAmbientLightIntensity(mAmbientLightIntensity);
+}
+
+void TextRenderContext::UpdateAmbientLightIntensity(float ambientLightIntensity)
+{
+    mAmbientLightIntensity = ambientLightIntensity;
+
+    // Set parameter
+    mShaderManager.ActivateProgram<ProgramType::TextNDC>();
+    mShaderManager.SetProgramParameter<ProgramType::TextNDC, ProgramParameterType::AmbientLightIntensity>(
+        ambientLightIntensity);
 }
 
 void TextRenderContext::RenderStart()
@@ -140,7 +159,7 @@ void TextRenderContext::RenderEnd()
                     case TextPositionType::BottomLeft:
                     {
                         cursorPositionNdc = vec2f(
-                            -1.f + MarginScreen * mScreenToNdcX, 
+                            -1.f + MarginScreen * mScreenToNdcX,
                             -1.f + (MarginScreen + static_cast<float>(textExtent.Height)) * mScreenToNdcY);
 
                         break;
@@ -160,7 +179,7 @@ void TextRenderContext::RenderEnd()
                         cursorPositionNdc = vec2f(
                             -1.f + MarginScreen * mScreenToNdcX,
                             1.f - MarginTopScreen * mScreenToNdcY);
-                        
+
                         break;
                     }
 
@@ -169,7 +188,7 @@ void TextRenderContext::RenderEnd()
                         cursorPositionNdc = vec2f(
                             1.f - (MarginScreen + static_cast<float>(textExtent.Width)) * mScreenToNdcX,
                             1.f - MarginTopScreen * mScreenToNdcY);
-                        
+
                         break;
                     }
                 }
@@ -202,7 +221,7 @@ void TextRenderContext::RenderEnd()
     // Render vertices
     //
 
-    bool isProgramActivated = false;    
+    bool isProgramActivated = false;
 
     for (auto const & fontRenderInfo : mFontRenderInfos)
     {
@@ -231,7 +250,7 @@ void TextRenderContext::RenderEnd()
 
             // Upload vertex buffer
             glBufferData(
-                GL_ARRAY_BUFFER, 
+                GL_ARRAY_BUFFER,
                 vertexBuffer.size() * sizeof(TextQuadVertex),
                 vertexBuffer.data(),
                 GL_STATIC_DRAW);

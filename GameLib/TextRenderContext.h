@@ -26,6 +26,7 @@ public:
         ShaderManager<ShaderManagerTraits> & shaderManager,
         int canvasWidth,
         int canvasHeight,
+        float ambientLightIntensity,
         ProgressCallback const & progressCallback);
 
     void UpdateCanvasSize(int width, int height)
@@ -36,6 +37,8 @@ public:
         // Re-render text next time
         mAreTextSlotsDirty = true;
     }
+
+    void UpdateAmbientLightIntensity(float ambientLightIntensity);
 
     void RenderStart();
 
@@ -81,7 +84,7 @@ public:
         mTextSlots[textHandle].Alpha = alpha;
 
         // Remember we're dirty now
-        mAreTextSlotsDirty = true;    
+        mAreTextSlotsDirty = true;
     }
 
     void ClearText(RenderedTextHandle textHandle)
@@ -103,6 +106,8 @@ private:
     float mScreenToNdcX;
     float mScreenToNdcY;
 
+    float mAmbientLightIntensity;
+
 
     //
     // Text state slots
@@ -115,7 +120,7 @@ private:
         std::vector<std::string> TextLines;
         TextPositionType Position;
         float Alpha;
-        FontType Font;        
+        FontType Font;
     };
 
     std::array<TextSlot, 8> mTextSlots;

@@ -106,6 +106,7 @@ RenderContext::RenderContext(
         *(mShaderManager.get()),
         mCanvasWidth,
         mCanvasHeight,
+        mAmbientLightIntensity,
         [&progressCallback](float progress, std::string const & message)
         {
             progressCallback((1.0f + progress) / TotalProgressSteps, message);
@@ -844,6 +845,9 @@ void RenderContext::UpdateAmbientLightIntensity()
     {
         ship->UpdateAmbientLightIntensity(mAmbientLightIntensity);
     }
+
+    // Update text context
+    mTextRenderContext->UpdateAmbientLightIntensity(mAmbientLightIntensity);
 }
 
 void RenderContext::UpdateSeaWaterTransparency()
