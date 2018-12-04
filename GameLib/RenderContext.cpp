@@ -400,7 +400,7 @@ void RenderContext::AddShip(
     size_t pointCount,
     std::optional<ImageData> texture)
 {
-    assert(shipId == mShips.size());
+    assert(shipId == mShips.size() + 1);
     (void)shipId;
 
     // Add the ship

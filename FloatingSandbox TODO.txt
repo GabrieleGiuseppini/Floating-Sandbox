@@ -153,7 +153,7 @@ Render:
 
 - Technical Debt:
 	+ Global damp as game parameter
-	- Ships start from 1
+	+ Ships start from 1
 
 - Simulation Optimizations:
 
@@ -305,16 +305,29 @@ Render:
 	- More connected components => slower (multiple batches); try
 	  to draw one single batch then, using Z buffer and depth test 
 		- Spec:
-			- Assign Z based on connected component ID
+			- Assign Z based on connected component ID (now named "Plane ID")
+				- We assign Z after orthomatrix, hence positive is far, and must be in the range between 1.0 (far) and 0.0 (nearest)
 			- We only enable Z test and writing to Z buffer at RenderContext before doing ships
 				- And later, if we move GenericTexture to RenderContext, also when we do generic textures
+		+ Figure out range of Z:
+			+ After matrix it's NDC: [-1, +1]
+			+ When given to fragment, it's [0,+1], but we don't care!
 		- Plan:
 			- Branch
-			- Do test image (check problematic # of CC's first)
-			- Test perspective with hardcoded z=-10000 at shaders, and see if it makes any difference
-				- Adjust OrthoMatrix for new ZNear, ZFar
-				- Ship triangles, etc. at -10000, textures at -1
+			- Test perspective with hardcoded z=-1 at triangle shaders and z=+1 at springs, and see if it makes any difference
+			- Do test images:
+				- Get problematic # of CC's first, with AM bomb on Titanic:
+				- ConnectedComponentsTestShip1: those CC's
+				- ConnectedComponentsTestShip2: one CC, same # of points
 			- "ConnectedComponentID" -> "PlaneID"
+				- GameTypes
+				- Ship
+				- Points
+			- Enable Z test and writing to Z buffer at RenderContext before doing ships, and disable all afterwards
+				+ Also clear Z buffer at canvas clear
+				- glEnable(GL_DEPTH_TEST);
+				- glDepthMask(GL_TRUE); // This at initialization
+				- glDepthFunc(GL_LESS); // This at initialization
 			
 			- TODO: review the below based off transparency sorting - see MOLESKINE
 			2 - Ship assigns points' ConnectedComponentID as float in vector
@@ -331,6 +344,8 @@ Render:
 					- Move this shader and all ShipRenderContext::UploadTextureRenderSpecification to 
 					  RenderContext
 					  - ShipId = None => topmost plane (still with PlaneID Z variations)
+				- Also enable/disable Z depth for this step after it has moved to RenderContext
+					- Optimize: do this immediately after ships
 
 - Gfx:
 	+ Make font white inversely to ambient light
