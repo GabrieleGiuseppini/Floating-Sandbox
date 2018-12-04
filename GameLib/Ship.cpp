@@ -701,16 +701,20 @@ void Ship::IntegrateAndResetPointForces(GameParameters const & gameParameters)
     // Considering that:
     //
     //  v1 = d*v0
-    //  v2 = d*v1 =d^2*v0
+    //  v2 = d*v1 =(d^2)*v0
     //  ...
-    //  vN = d^N*v0
+    //  vN = (d^N)*v0
     //
     // ...the more the number of iterations, the more damped the initial velocity would be.
     // We want damping to be independent from the number of iterations though, so we need to find the value
     // d such that after N iterations the damping is the same as our reference value, which is 0.9996 with
     // 12 (basis) iterations. For example, double the number of iterations requires square root (1/2) of
     // this value.
-    float const globalDampCoefficient = pow(0.9996f, 12.0f / gameParameters.NumMechanicalDynamicsIterations<float>());
+    //
+    // We've shipped 1.7.0 with 0.9996, but drag seemed a bit too much, so now it's 0.9997.
+    //
+
+    float const globalDampCoefficient = pow(0.9997f, 12.0f / gameParameters.NumMechanicalDynamicsIterations<float>());
 
     //
     // Take the four buffers that we need as restrict pointers, so that the compiler
