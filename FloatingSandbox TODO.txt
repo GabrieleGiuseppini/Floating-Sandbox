@@ -152,6 +152,8 @@ Render:
 	- Black hole
 
 - Technical Debt:
+	+ Global damp as game parameter
+	- Ships start from 1
 
 - Simulation Optimizations:
 
@@ -169,10 +171,12 @@ Render:
 		- Rationale: multiple spring iterations are really artificial; in reality, changes due to spring position changes in-between 
 		  iterations shouldn't impact physical world (e.g. buoyancy/drag) yet
 		- Points has two Force buffers: SpringForces and PointForces
+		- Assumption: no deletions take place during mech loop
 		- UpdateMechanicalDynamics:
 			- First resets PointForces (or not, may reorder the below to do a first "set" loop rather than "add")
 			- Then populates PointForces with force fields
-			- Then populates PointForces with gravity/buoyancy/water drag
+			- Then populates PointForces with gravity/buoyancy/water drag (this one might "set" rather than "add")
+			- Then ...propulsion, etc..... all PointForces
 			- Then does spring loop:
 				- Spring forces
 				- Integrate - and reset spring forces
@@ -300,26 +304,33 @@ Render:
 
 	- More connected components => slower (multiple batches); try
 	  to draw one single batch then, using Z buffer and depth test 
-		- Assign Z based on connected component ID
+		- Spec:
+			- Assign Z based on connected component ID
+			- We only enable Z test and writing to Z buffer at RenderContext before doing ships
+				- And later, if we move GenericTexture to RenderContext, also when we do generic textures
 		- Plan:
-			- Make branch
+			- Branch
 			- Do test image (check problematic # of CC's first)
-			- Test perspective with hardcoded z=-800 at shader, and see if it makes any difference
-
+			- Test perspective with hardcoded z=-10000 at shaders, and see if it makes any difference
+				- Adjust OrthoMatrix for new ZNear, ZFar
+				- Ship triangles, etc. at -10000, textures at -1
+			- "ConnectedComponentID" -> "PlaneID"
+			
 			- TODO: review the below based off transparency sorting - see MOLESKINE
 			2 - Ship assigns points' ConnectedComponentID as float in vector
 			3 - ShipRenderContext's shaders (Triangles, Springs) take Z and with ad-hoc OrthoMatrix
 			    transform ConnectedComponentID to Z
 			4 - ShipRenderContext::UploadXYZElement() does not take anymore connected component ID
 			5 - (Nice to have): sticky component IDs, by leveraging the fact that normally IDs are assigned from L,T to R,B
+
 		- See if drawing springs & triangles at separate depths also helps generally with render speed, even for one single
 		  connected component (for springs' fragment shader - may be it takes shortcuts if it knows it's behind)
 		- After Z is done:
-			- GenericTextureShader also takes ShipID, ConnectedComponentID for Z, and exists in one central place
-				- Invoke shader at one place (still for 1 texture at a time, waiting for atlas)
+			- GenericTextureShader also takes ShipID and PlaneID for Z, and exists in one central place
+				- Invoke shader at one place
 					- Move this shader and all ShipRenderContext::UploadTextureRenderSpecification to 
 					  RenderContext
-					  - With optional <ship ID, connected component ID> pair (not set -> main UI, on top of everything)
+					  - ShipId = None => topmost plane (still with PlaneID Z variations)
 
 - Gfx:
 	+ Make font white inversely to ambient light
@@ -663,6 +674,10 @@ Render:
 
 
 - Game Interactions and Controls:
+
+	- New "Impact" Bomb
+		- Only explodes when spring is destroyed
+		- State machine only for explosion
 
 	- Tool to flood ship
 		- Name: Flood

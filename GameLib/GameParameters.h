@@ -72,6 +72,8 @@ struct GameParameters
     static constexpr float MinStrengthAdjustment = 0.01f;
     static constexpr float MaxStrengthAdjustment = 10.0f;
 
+    static constexpr float GlobalDamp = 0.9997f; // // We've shipped 1.7.0 with 0.9996, but drag seemed a bit too much
+
     // Water
 
     float WaterDensityAdjustment;

@@ -37,6 +37,7 @@ static constexpr ShipId NoneShip = std::numeric_limits<ShipId>::max();
  * Comparable and ordered. Start from 1.
  */
 using ConnectedComponentId = std::uint32_t;
+static constexpr ConnectedComponentId NoneConnectedComponentId = 0;
 
 /*
  * Object ID's, identifying objects of ships across ships.
