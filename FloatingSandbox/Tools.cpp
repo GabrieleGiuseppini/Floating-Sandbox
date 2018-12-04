@@ -158,6 +158,7 @@ MoveTool::MoveTool(
         std::move(gameController),
         std::move(soundController))
     , mEngagedShipId(std::nullopt)
+    , mCurrentTrajectory(std::nullopt)
     , mRotationCenter(std::nullopt)
     , mUpCursor(MakeCursor("move_cursor_up", 13, 5, resourceLoader))
     , mDownCursor(MakeCursor("move_cursor_down", 13, 5, resourceLoader))

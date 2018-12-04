@@ -151,9 +151,19 @@ Render:
 	- Custom sky colour - if possible a RGB picker in the settings
 	- Black hole
 
-- Technical debt
+- Technical Debt:
 
 - Simulation Optimizations:
+
+	- Array merging:
+		+ Springs: RestLength with Coefficients
+			+ Pre:  31.7  32.03  31.5  31.6
+			+ Post: 31.5  31.7   31.4  31.6
+			* With pad:
+			+ Pre:  31.1  31.5   31.6  31.7  32.0
+			+ Post: 31.3  31.38  31.3  31.3  31.9
+		- Points: Position with Velocity and Force
+			- Affects Integrate and Rendering
 
 	- Forces rearc:
 		- Rationale: multiple spring iterations are really artificial; in reality, changes due to spring position changes in-between 
@@ -292,6 +302,7 @@ Render:
 	  to draw one single batch then, using Z buffer and depth test 
 		- Assign Z based on connected component ID
 		- Plan:
+			- Make branch
 			- Do test image (check problematic # of CC's first)
 			- Test perspective with hardcoded z=-800 at shader, and see if it makes any difference
 
@@ -585,15 +596,7 @@ Render:
 						- TODO
 	- Water drag 
 		- The one already there assumes velocity always normal to surface, but we should consider surface normal instead
-
-	+ Move tool
-		+ Rename current "move" as "Pan"
-		+ ShipId type (see around here)
-		+ ObjectId type (see around here)
-		+ With move tool enabled:
-			+ Click on ship -> GameController returns std::optional<ShipId> -> if not None, tool is engaged (save cur screen pos)
-				+ Works like pan 
-			+ Moving tool tells GameController delta (offset) screen 
+			- Requires frontier
 
 	- DestroyAt:
 		- Test: Ship::SpringDestroyHandler() only destroys triangles that contain A-B
@@ -659,11 +662,12 @@ Render:
 	- Breaking waves (Muller's paper)
 
 
-- Controls:
+- Game Interactions and Controls:
 
 	- Tool to flood ship
 		- Name: Flood
-		- Icon: bottle
+		- Shift: un-floods
+		- Icon: bottle (flood), syphon/dropper (unflood)
 		- New ToolController/Tool
 			- Continuous, like Destroy
 		- World->Ship::OnFloodAt(x,y,strength)
@@ -681,7 +685,7 @@ Render:
 	- Allow ocean floor bump map to be loaded at runtime
 
 	- Adjustment for global damp
-		- Or - make it air damp
+		- Or - just make it lower
 	
 	- Ship definition: multiple layers
 		- We want to maintain BW compat for ease of one-layer ship making
@@ -2757,7 +2761,7 @@ IF WX:
 				- DetectConnectedComponents: 3.02%
 + Fix multiple clouds
 
-+ Game interactions:
++ Game Interactions and Controls:
 	+ IGameEventHandler: individual methods, including parameter changes, all default-implemented
 		+ OnDestroy(Material const *, size) // size=1 for each destroy, but Dispatcher aggregates assuming size=anything
 		+ OnBreak(Material const *, size) // size=1 for each break, but Dispatcher aggregates assuming size=anything
@@ -2779,6 +2783,14 @@ IF WX:
 		+ Complete event handlers
 		+ Do ship sinking event notify in ship (mWater > 1/3 points)
 	+ Increase max grab force
+	+ Move tool
+		+ Rename current "move" as "Pan"
+		+ ShipId type (see around here)
+		+ ObjectId type (see around here)
+		+ With move tool enabled:
+			+ Click on ship -> GameController returns std::optional<ShipId> -> if not None, tool is engaged (save cur screen pos)
+				+ Works like pan 
+			+ Moving tool tells GameController delta (offset) screen 
 
 + Sound:
 	+ SFML:

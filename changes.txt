@@ -1,3 +1,7 @@
+1.8.0
+- Improved move-n'-rotate tool - it's easier to impart inertia now!
+- Lowered global damp
+
 1.7.0
 - Musical theme for this release: Chemical Brothers, "We Are the Night"
 - Added ephemeral particles sub-system, and used it for debris and sparkles from the chainsaw

@@ -8,6 +8,7 @@
 #include "SoundController.h"
 
 #include <GameLib/GameController.h>
+#include <GameLib/GameWallClock.h>
 #include <GameLib/ResourceLoader.h>
 
 #include <wx/cursor.h>
@@ -272,6 +273,7 @@ public:
     {
         // Reset state
         mEngagedShipId.reset();
+        mCurrentTrajectory.reset();
         mRotationCenter.reset();
 
         // Initialize state
@@ -287,26 +289,105 @@ public:
         }
     }
 
+    virtual void Update(InputState const & /*inputState*/) override
+    {
+        if (!!mCurrentTrajectory)
+        {
+            //
+            // We're following a trajectory
+            //
+
+            auto const now = GameWallClock::GetInstance().Now();
+
+            if (now < mCurrentTrajectory->EndTimestamp)
+            {
+                //
+                // Smooth current position
+                //
+
+                float progress =
+                    static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(now - mCurrentTrajectory->StartTimestamp).count())
+                    / static_cast<float>(TrajectoryLag.count());
+
+                // ((x+0.2)^2-0.04)/1.4
+                progress = (pow(progress + 0.2f, 2.0f) - 0.04f) / 1.4f;
+
+                vec2f const newCurrentPosition =
+                    mCurrentTrajectory->StartPosition
+                    + (mCurrentTrajectory->EndPosition - mCurrentTrajectory->StartPosition) * progress;
+
+                // Tell GameController
+                if (!mCurrentTrajectory->RotationCenter)
+                {
+                    // Move
+                    mGameController->MoveBy(
+                        mCurrentTrajectory->EngagedShipId,
+                        newCurrentPosition - mCurrentTrajectory->CurrentPosition);
+                }
+                else
+                {
+                    // Rotate
+                    mGameController->RotateBy(
+                        mCurrentTrajectory->EngagedShipId,
+                        newCurrentPosition.y - mCurrentTrajectory->CurrentPosition.y,
+                        *mCurrentTrajectory->RotationCenter);
+                }
+
+                mCurrentTrajectory->CurrentPosition = newCurrentPosition;
+            }
+            else
+            {
+                //
+                // Close trajectory
+                //
+
+                if (!!mEngagedShipId)
+                {
+                    // Tell game controller to stop inertia
+                    if (!mCurrentTrajectory->RotationCenter)
+                    {
+                        // Move
+                        mGameController->MoveBy(
+                            mCurrentTrajectory->EngagedShipId,
+                            vec2f::zero());
+                    }
+                    else
+                    {
+                        // Rotate
+                        mGameController->RotateBy(
+                            mCurrentTrajectory->EngagedShipId,
+                            0.0f,
+                            *mCurrentTrajectory->RotationCenter);
+                    }
+                }
+
+                // Reset trajectory
+                mCurrentTrajectory.reset();
+            }
+        }
+    }
+
     virtual void OnMouseMove(InputState const & inputState) override
     {
         if (!!mEngagedShipId)
         {
-            // Tell GameController
-            if (!mRotationCenter)
+            if (!!mCurrentTrajectory)
             {
-                // Move
-                vec2f screenOffset = inputState.MousePosition - inputState.PreviousMousePosition;
-                mGameController->MoveBy(*mEngagedShipId, screenOffset);
+                // Restart from here
+                mCurrentTrajectory->StartPosition = mCurrentTrajectory->CurrentPosition;
             }
             else
             {
-                // Rotate
-                float screenDeltaY = inputState.MousePosition.y - inputState.PreviousMousePosition.y;
-                mGameController->RotateBy(
-                    *mEngagedShipId,
-                    screenDeltaY,
-                    *mRotationCenter);
+                mCurrentTrajectory = Trajectory();
+                mCurrentTrajectory->EngagedShipId = *mEngagedShipId;
+                mCurrentTrajectory->RotationCenter = mRotationCenter;
+                mCurrentTrajectory->StartPosition = inputState.PreviousMousePosition;
+                mCurrentTrajectory->CurrentPosition = mCurrentTrajectory->StartPosition;
             }
+
+            mCurrentTrajectory->EndPosition = inputState.MousePosition;
+            mCurrentTrajectory->StartTimestamp = GameWallClock::GetInstance().Now();
+            mCurrentTrajectory->EndTimestamp = mCurrentTrajectory->StartTimestamp + TrajectoryLag;
         }
     }
 
@@ -374,29 +455,27 @@ private:
                 // We're currently engaged
                 //
 
-                // Check if we should shut down inertia
-                if (!mRotationCenter
-                    && inputState.MousePosition == inputState.PreviousMousePosition)
-                {
-                    mGameController->MoveBy(*mEngagedShipId, vec2f::zero());
-                }
-
                 // Disengage
                 mEngagedShipId.reset();
+
+                // Leave the trajectory running
 
                 // Tell GameController
                 mGameController->SetMoveToolEngaged(false);
             }
+
+            // Reset rotation in any case
+            mRotationCenter.reset();
         }
 
         if (inputState.IsShiftKeyDown)
         {
             // Shift key down
 
-            if (!mRotationCenter)
+            if (!mRotationCenter && !!mEngagedShipId)
             {
                 //
-                // We're not in rotation mode yet
+                // We're engaged and not in rotation mode yet
                 //
 
                 // Start rotation mode
@@ -446,8 +525,28 @@ private:
         }
     }
 
+private:
+
     // When engaged, the ID of the ship we're currently moving
     std::optional<ShipId> mEngagedShipId;
+
+    struct Trajectory
+    {
+        ShipId EngagedShipId;
+        std::optional<vec2f> RotationCenter;
+
+        vec2f StartPosition;
+        vec2f CurrentPosition;
+        vec2f EndPosition;
+
+        GameWallClock::time_point StartTimestamp;
+        GameWallClock::time_point EndTimestamp;
+    };
+
+    static constexpr std::chrono::milliseconds TrajectoryLag = std::chrono::milliseconds(300);
+
+    // When set, we're smoothing the mouse position along a trajectory
+    std::optional<Trajectory> mCurrentTrajectory;
 
     // When set, we're rotating
     std::optional<vec2f> mRotationCenter;
