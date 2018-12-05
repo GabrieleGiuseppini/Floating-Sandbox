@@ -375,13 +375,11 @@ void ShipBuilder::CreateRopeSegments(
                 newPosition = vec2f(curN, curW);
             }
 
-            auto nexPointIndex = static_cast<ElementIndex>(pointInfos.size());
+            auto newPointIndex = static_cast<ElementIndex>(pointInfos.size());
 
             // Add SpringInfo
-            springInfos.emplace_back(curStartPointIndex, nexPointIndex);
-
-            // Advance
-            curStartPointIndex = nexPointIndex;
+            ElementIndex const springIndex = static_cast<ElementIndex>(springInfos.size());
+            springInfos.emplace_back(curStartPointIndex, newPointIndex);
 
             // Add PointInfo
             pointInfos.emplace_back(
@@ -391,10 +389,22 @@ void ShipBuilder::CreateRopeSegments(
                     newPosition.y / static_cast<float>(structureImageSize.Height)),
                 &ropeMaterial,
                 false);
+
+            // Connect points to spring
+            pointInfos[curStartPointIndex].AddConnectedSpring(springIndex);
+            pointInfos[newPointIndex].AddConnectedSpring(springIndex);
+
+            // Advance
+            curStartPointIndex = newPointIndex;
         }
 
         // Add last SpringInfo (no PointInfo as the endpoint has already a PointInfo)
+        ElementIndex const lastSpringIndex = static_cast<ElementIndex>(springInfos.size());
         springInfos.emplace_back(curStartPointIndex, ropeSegment.PointBIndex);
+
+        // Connect points to spring
+        pointInfos[curStartPointIndex].AddConnectedSpring(lastSpringIndex);
+        pointInfos[ropeSegment.PointBIndex].AddConnectedSpring(lastSpringIndex);
     }
 }
 
@@ -489,10 +499,8 @@ void ShipBuilder::CreateShipElementInfos(
                             otherEndpointIndex);
 
                         // Add the spring to its endpoints
-                        assert(std::find(pointInfos[pointIndex].ConnectedSprings.begin(), pointInfos[pointIndex].ConnectedSprings.end(), springIndex) == pointInfos[pointIndex].ConnectedSprings.end());
-                        pointInfos[pointIndex].ConnectedSprings.push_back(springIndex);
-                        assert(std::find(pointInfos[otherEndpointIndex].ConnectedSprings.begin(), pointInfos[otherEndpointIndex].ConnectedSprings.end(), springIndex) == pointInfos[otherEndpointIndex].ConnectedSprings.end());
-                        pointInfos[otherEndpointIndex].ConnectedSprings.push_back(springIndex);
+                        pointInfos[pointIndex].AddConnectedSpring(springIndex);
+                        pointInfos[otherEndpointIndex].AddConnectedSpring(springIndex);
 
 
                         //
@@ -574,7 +582,7 @@ std::vector<ShipBuilder::SpringInfo> ShipBuilder::ReorderSpringsOptimally_Tiling
     std::vector<PointInfo> const & pointInfos)
 {
     //
-    // Visit the point matrix in 2x2 blocks, and add all springs connected to any
+    // 1. Visit the point matrix in 2x2 blocks, and add all springs connected to any
     // of the included points (0..4 points), except for already-added ones
     //
 
@@ -610,6 +618,16 @@ std::vector<ShipBuilder::SpringInfo> ShipBuilder::ReorderSpringsOptimally_Tiling
                 }
             }
         }
+    }
+
+    //
+    // 2. Add all remaining springs
+    //
+
+    for (size_t s = 0; s < springInfos.size(); ++s)
+    {
+        if (!addedSprings[s])
+            newSpringInfos.push_back(springInfos[s]);
     }
 
     assert(newSpringInfos.size() == springInfos.size());

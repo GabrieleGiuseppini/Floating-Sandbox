@@ -12,6 +12,7 @@
 #include "Physics.h"
 #include "ShipDefinition.h"
 
+#include <algorithm>
 #include <cstdint>
 #include <list>
 #include <map>
@@ -59,6 +60,21 @@ private:
             , IsLeaking(false)
             , ConnectedSprings()
         {
+        }
+
+        bool ContainsConnectedSpring(ElementIndex springIndex)
+        {
+            return std::find(
+                ConnectedSprings.begin(),
+                ConnectedSprings.end(),
+                springIndex)
+                != ConnectedSprings.end();
+        }
+
+        void AddConnectedSpring(ElementIndex springIndex)
+        {
+            assert(!ContainsConnectedSpring(springIndex));
+            ConnectedSprings.push_back(springIndex);
         }
     };
 
