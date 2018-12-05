@@ -1,4 +1,9 @@
 =================================================
+Current perf:
+=================================================
+- fps: 31.5/31.7
+
+=================================================
 Current perf (spring optimization + double spring iterations)
 =================================================
 - fps: 31.3 (Samsung: 20.3 (Krafting)) (Mattia's: 15.5 (Krafting))
@@ -23,7 +28,6 @@ Past perf (ephemeral particles)
 	- Titanic: 50
 	- Titanic: 55
 	- Titanic: 48.3
-
 
 =================================================
 1.6.0 perf
@@ -183,14 +187,6 @@ Render:
 				- HandleCollisionsWithSeaFloor
 		- Test final L'n'F'
 
-	+ BufferAllocator<Type:vec2f or float>
-		+ cctor takes ElementCount
-		+ Allocate() returns std::unique_ptr<Buffer<Type>>, with deleter invoking mAllocator->Release(Buffer<type>*)
-		+ Points::CheckoutWaterBufferTmp (as "AllocateWaterBufferCopy()") borrows one, copies it in, and returns it as std::unique_ptr<Buffer<float>>
-		+ Opposite for Commit() (as "UpdateWaterBuffer")
-
-	- See if reordering springs according to small tiles helps, instead of according to cache heuristics
-
 	= Do SSE with libsimdpp:
 		- First check out alternative: https://xsimd.readthedocs.io/en/latest/
 		- Prepare sources:
@@ -306,17 +302,21 @@ Render:
 	  to draw one single batch then, using Z buffer and depth test 
 		- Spec:
 			- Assign Z based on connected component ID (now named "Plane ID")
-				- We assign Z after orthomatrix, hence positive is far, and must be in the range between 1.0 (far) and 0.0 (nearest)
+				- We assign Z after orthomatrix - in NDC - and positive is near
 			- We only enable Z test and writing to Z buffer at RenderContext before doing ships
 				- And later, if we move GenericTexture to RenderContext, also when we do generic textures
 		+ Figure out range of Z:
-			+ After matrix it's NDC: [-1, +1]
+			+ After matrix it's NDC: [-1, +1] (far, near)
 			+ When given to fragment, it's [0,+1], but we don't care!
+		- Mapping of <ShipId, PlaneId> to Z in NDC:
+			- ShipId=0 and PlaneId=0 must be closest => +1
+			- But then, larger ship IDs and plane IDs are nearer
+			- TODOHERE
 		- Plan:
 			- Branch
 			- Test perspective with hardcoded z=-1 at triangle shaders and z=+1 at springs, and see if it makes any difference
 			- Do test images:
-				- Get problematic # of CC's first, with AM bomb on Titanic:
+				+ Get problematic # of CC's first, with AM bomb on Titanic: 6,000
 				- ConnectedComponentsTestShip1: those CC's
 				- ConnectedComponentsTestShip2: one CC, same # of points
 			- "ConnectedComponentID" -> "PlaneID"
@@ -1227,6 +1227,19 @@ IF WX:
 		+ Phase 3:
 			+ Beginning FPS=26.3/26.5
 			+ Ending FPS=26.6/26.8/26.9/27.0
+	+ BufferAllocator<Type:vec2f or float>
+		+ cctor takes ElementCount
+		+ Allocate() returns std::unique_ptr<Buffer<Type>>, with deleter invoking mAllocator->Release(Buffer<type>*)
+		+ Points::CheckoutWaterBufferTmp (as "AllocateWaterBufferCopy()") borrows one, copies it in, and returns it as std::unique_ptr<Buffer<float>>
+		+ Opposite for Commit() (as "UpdateWaterBuffer")
+
+	+ See if reordering springs according to small tiles helps, instead of according to cache heuristics
+		+ Visit point matrix as 2X2 blocks
+		+ Add all springs connected to any of the included points (0..4 points), except for already-added ones
+			+ Use vector<bool> to remember indices of springs already added
+			+ Need un_map<point index->[spring index]>
+				+ See if [spring index] could be member of PointInfo
+			+ Done like this, it favors springs extending to the right and down
 
 
 + Fix 4 BPP images

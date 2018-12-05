@@ -146,6 +146,7 @@ private:
         std::vector<TriangleInfo> & triangleInfos,
         size_t & leakingPointsCount);
 
+    template <int BlockSize>
     static std::vector<SpringInfo> ReorderSpringsOptimally_Tiling(
         std::vector<SpringInfo> const & springInfos,
         std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
@@ -155,6 +156,10 @@ private:
     static std::vector<PointInfo> ReorderPointsOptimally_FollowingSprings(
         std::vector<PointInfo> const & pointInfos,
         std::vector<SpringInfo> const & springInfos,
+        std::vector<ElementIndex> & pointIndexRemap);
+
+    static std::vector<PointInfo> ReorderPointsOptimally_Idempotent(
+        std::vector<PointInfo> const & pointInfos,
         std::vector<ElementIndex> & pointIndexRemap);
 
     static Physics::Points CreatePoints(

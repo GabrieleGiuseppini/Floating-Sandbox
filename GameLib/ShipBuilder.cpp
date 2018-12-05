@@ -169,11 +169,8 @@ std::unique_ptr<Ship> ShipBuilder::Create(
 
     float originalSpringACMR = CalculateACMR(springInfos);
 
-    // Tom Forsyth's algorithm
-    //springInfos = ReorderSpringsOptimally_TomForsyth(springInfos, pointInfos.size());
-
     // Tiling algorithm
-    springInfos = ReorderSpringsOptimally_Tiling(
+    springInfos = ReorderSpringsOptimally_Tiling<2>(
         springInfos,
         pointIndexMatrix,
         shipDefinition.StructuralImage.Size,
@@ -211,6 +208,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
         gameEventHandler,
         gameParameters);
 
+
     //
     // Filter out redundant triangles
     //
@@ -220,6 +218,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
         points,
         pointIndexRemap,
         springInfos);
+
 
     //
     // Associate all springs with the triangles that cover them
@@ -567,6 +566,7 @@ void ShipBuilder::CreateShipElementInfos(
     }
 }
 
+template <int BlockSize>
 std::vector<ShipBuilder::SpringInfo> ShipBuilder::ReorderSpringsOptimally_Tiling(
     std::vector<SpringInfo> const & springInfos,
     std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
@@ -574,7 +574,7 @@ std::vector<ShipBuilder::SpringInfo> ShipBuilder::ReorderSpringsOptimally_Tiling
     std::vector<PointInfo> const & pointInfos)
 {
     //
-    //Visit the point matrix in 2x2 blocks, and add all springs connected to any
+    // Visit the point matrix in 2x2 blocks, and add all springs connected to any
     // of the included points (0..4 points), except for already-added ones
     //
 
@@ -585,13 +585,13 @@ std::vector<ShipBuilder::SpringInfo> ShipBuilder::ReorderSpringsOptimally_Tiling
     addedSprings.resize(springInfos.size(), false);
 
     // From bottom to top
-    for (int y = 1; y <= structureImageSize.Height; y += 2)
+    for (int y = 1; y <= structureImageSize.Height; y += BlockSize)
     {
-        for (int x = 1; x <= structureImageSize.Width; x += 2)
+        for (int x = 1; x <= structureImageSize.Width; x += BlockSize)
         {
-            for (int y2 = 0; y2 < 2 && y + y2 <= structureImageSize.Height; ++y2)
+            for (int y2 = 0; y2 < BlockSize && y + y2 <= structureImageSize.Height; ++y2)
             {
-                for (int x2 = 0; x2 < 2 && x + x2 <= structureImageSize.Width; ++x2)
+                for (int x2 = 0; x2 < BlockSize && x + x2 <= structureImageSize.Width; ++x2)
                 {
                     if (!!pointIndexMatrix[x + x2][y + y2])
                     {
@@ -665,6 +665,20 @@ std::vector<ShipBuilder::PointInfo> ShipBuilder::ReorderPointsOptimally_Followin
     assert(newPointInfos.size() == pointInfos.size());
 
     return newPointInfos;
+}
+
+std::vector<ShipBuilder::PointInfo> ShipBuilder::ReorderPointsOptimally_Idempotent(
+    std::vector<ShipBuilder::PointInfo> const & pointInfos,
+    std::vector<ElementIndex> & pointIndexRemap)
+{
+    pointIndexRemap.reserve(pointInfos.size());
+
+    for (ElementIndex p = 0; p < pointInfos.size(); ++p)
+    {
+        pointIndexRemap.push_back(p);
+    }
+
+    return pointInfos;
 }
 
 Points ShipBuilder::CreatePoints(
