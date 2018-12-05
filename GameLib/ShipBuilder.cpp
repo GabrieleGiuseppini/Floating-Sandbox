@@ -169,7 +169,15 @@ std::unique_ptr<Ship> ShipBuilder::Create(
 
     float originalSpringACMR = CalculateACMR(springInfos);
 
-    springInfos = ReorderOptimally(springInfos, pointInfos.size());
+    // Tom Forsyth's algorithm
+    //springInfos = ReorderSpringsOptimally_TomForsyth(springInfos, pointInfos.size());
+
+    // Tiling algorithm
+    springInfos = ReorderSpringsOptimally_Tiling(
+        springInfos,
+        pointIndexMatrix,
+        shipDefinition.StructuralImage.Size,
+        pointInfos);
 
     float optimizedSpringACMR = CalculateACMR(springInfos);
 
@@ -187,7 +195,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
 
     std::vector<ElementIndex> pointIndexRemap;
 
-    pointInfos = ReorderOptimally(
+    pointInfos = ReorderPointsOptimally_FollowingSprings(
         pointInfos,
         springInfos,
         pointIndexRemap);
@@ -473,9 +481,19 @@ void ShipBuilder::CreateShipElementInfos(
                         // Create SpringInfo
                         //
 
+                        ElementIndex const otherEndpointIndex = *pointIndexMatrix[adjx1][adjy1];
+
+                        ElementIndex const springIndex = static_cast<ElementIndex>(springInfos.size());
+
                         springInfos.emplace_back(
                             pointIndex,
-                            *pointIndexMatrix[adjx1][adjy1]);
+                            otherEndpointIndex);
+
+                        // Add the spring to its endpoints
+                        assert(std::find(pointInfos[pointIndex].ConnectedSprings.begin(), pointInfos[pointIndex].ConnectedSprings.end(), springIndex) == pointInfos[pointIndex].ConnectedSprings.end());
+                        pointInfos[pointIndex].ConnectedSprings.push_back(springIndex);
+                        assert(std::find(pointInfos[otherEndpointIndex].ConnectedSprings.begin(), pointInfos[otherEndpointIndex].ConnectedSprings.end(), springIndex) == pointInfos[otherEndpointIndex].ConnectedSprings.end());
+                        pointInfos[otherEndpointIndex].ConnectedSprings.push_back(springIndex);
 
 
                         //
@@ -501,7 +519,7 @@ void ShipBuilder::CreateShipElementInfos(
                                 std::array<ElementIndex, 3>(
                                     {
                                         pointIndex,
-                                        *pointIndexMatrix[adjx1][adjy1],
+                                        otherEndpointIndex,
                                         *pointIndexMatrix[adjx2][adjy2]
                                     }));
                         }
@@ -549,7 +567,57 @@ void ShipBuilder::CreateShipElementInfos(
     }
 }
 
-std::vector<ShipBuilder::PointInfo> ShipBuilder::ReorderOptimally(
+std::vector<ShipBuilder::SpringInfo> ShipBuilder::ReorderSpringsOptimally_Tiling(
+    std::vector<SpringInfo> const & springInfos,
+    std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
+    ImageSize const & structureImageSize,
+    std::vector<PointInfo> const & pointInfos)
+{
+    //
+    //Visit the point matrix in 2x2 blocks, and add all springs connected to any
+    // of the included points (0..4 points), except for already-added ones
+    //
+
+    std::vector<SpringInfo> newSpringInfos;
+    newSpringInfos.reserve(springInfos.size());
+
+    std::vector<bool> addedSprings;
+    addedSprings.resize(springInfos.size(), false);
+
+    // From bottom to top
+    for (int y = 1; y <= structureImageSize.Height; y += 2)
+    {
+        for (int x = 1; x <= structureImageSize.Width; x += 2)
+        {
+            for (int y2 = 0; y2 < 2 && y + y2 <= structureImageSize.Height; ++y2)
+            {
+                for (int x2 = 0; x2 < 2 && x + x2 <= structureImageSize.Width; ++x2)
+                {
+                    if (!!pointIndexMatrix[x + x2][y + y2])
+                    {
+                        ElementIndex pointIndex = *(pointIndexMatrix[x + x2][y + y2]);
+
+                        // Add all springs connected to this point
+                        for (auto connectedSpringIndex : pointInfos[pointIndex].ConnectedSprings)
+                        {
+                            if (!addedSprings[connectedSpringIndex])
+                            {
+                                newSpringInfos.push_back(springInfos[connectedSpringIndex]);
+                                addedSprings[connectedSpringIndex] = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    assert(newSpringInfos.size() == springInfos.size());
+
+    return newSpringInfos;
+}
+
+std::vector<ShipBuilder::PointInfo> ShipBuilder::ReorderPointsOptimally_FollowingSprings(
     std::vector<ShipBuilder::PointInfo> const & pointInfos,
     std::vector<ShipBuilder::SpringInfo> const & springInfos,
     std::vector<ElementIndex> & pointIndexRemap)
@@ -669,7 +737,7 @@ std::vector<ShipBuilder::TriangleInfo> ShipBuilder::FilterOutRedundantTriangles(
     // First pass: collect indices of those that need to stay
     //
     // Remove:
-    //  - those whose vertices are all rope points, of which at least one is connected exclusively
+    //  - Those whose vertices are all rope points, of which at least one is connected exclusively
     //    to rope points (these would be knots "sticking out" of the structure)
     //
 
@@ -1019,7 +1087,7 @@ ElectricalElements ShipBuilder::CreateElectricalElements(
 // Vertex cache optimization
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-std::vector<ShipBuilder::SpringInfo> ShipBuilder::ReorderOptimally(
+std::vector<ShipBuilder::SpringInfo> ShipBuilder::ReorderSpringsOptimally_TomForsyth(
     std::vector<SpringInfo> & springInfos,
     size_t vertexCount)
 {
@@ -1052,7 +1120,7 @@ std::vector<ShipBuilder::SpringInfo> ShipBuilder::ReorderOptimally(
     return newSpringInfos;
 }
 
-std::vector<ShipBuilder::TriangleInfo> ShipBuilder::ReorderOptimally(
+std::vector<ShipBuilder::TriangleInfo> ShipBuilder::ReorderTrianglesSpringsOptimally_TomForsyth(
     std::vector<TriangleInfo> & triangleInfos,
     size_t vertexCount)
 {

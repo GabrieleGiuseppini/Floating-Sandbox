@@ -45,6 +45,8 @@ private:
         bool IsRopeEndpoint;
         bool IsLeaking;
 
+        std::vector<ElementIndex> ConnectedSprings;
+
         PointInfo(
             vec2f position,
             vec2f textureCoordinates,
@@ -55,6 +57,7 @@ private:
             , Mtl(mtl)
             , IsRopeEndpoint(isRopeEndpoint)
             , IsLeaking(false)
+            , ConnectedSprings()
         {
         }
     };
@@ -143,7 +146,13 @@ private:
         std::vector<TriangleInfo> & triangleInfos,
         size_t & leakingPointsCount);
 
-    static std::vector<PointInfo> ReorderOptimally(
+    static std::vector<SpringInfo> ReorderSpringsOptimally_Tiling(
+        std::vector<SpringInfo> const & springInfos,
+        std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
+        ImageSize const & structureImageSize,
+        std::vector<PointInfo> const & pointInfos);
+
+    static std::vector<PointInfo> ReorderPointsOptimally_FollowingSprings(
         std::vector<PointInfo> const & pointInfos,
         std::vector<SpringInfo> const & springInfos,
         std::vector<ElementIndex> & pointIndexRemap);
@@ -222,11 +231,11 @@ private:
         }
     };
 
-    static std::vector<SpringInfo> ReorderOptimally(
+    static std::vector<SpringInfo> ReorderSpringsOptimally_TomForsyth(
         std::vector<SpringInfo> & springInfos,
         size_t vertexCount);
 
-    static std::vector<TriangleInfo> ReorderOptimally(
+    static std::vector<TriangleInfo> ReorderTrianglesSpringsOptimally_TomForsyth(
         std::vector<TriangleInfo> & triangleInfos,
         size_t vertexCount);
 
