@@ -614,7 +614,8 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
             // Apply upward push of water mass (i.e. buoyancy!)
             //
             // We don't want hull points to feel buoyancy, otherwise hull points lighter than water (e.g. wood hull)
-            // would never sink as they don't get any water
+            // would never sink as they don't get any water. This is to compensate for the fact that, in reality,
+            // even hull cubes would take some water - massive wood does sink after all.
             //
 
             mPoints.GetForce(pointIndex) -=

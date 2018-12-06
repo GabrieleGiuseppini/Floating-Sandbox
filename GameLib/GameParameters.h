@@ -52,6 +52,16 @@ struct GameParameters
 
     // Dynamics
 
+    // Fraction of a spring displacement that is removed during a spring relaxation
+    // iteration. The remaining spring displacement is (1.0 - this fraction).
+    static constexpr float SpringReductionFraction = 0.4f;
+
+    //
+    // The number of mechanical iterations dictates how stiff bodies are:
+    // - Less iterations => softer (jelly) body
+    // - More iterations => hard body (never breaks though)
+    //
+
     float NumMechanicalDynamicsIterationsAdjustment;
     static constexpr float MinNumMechanicalDynamicsIterationsAdjustment = 0.5f;
     static constexpr float MaxNumMechanicalDynamicsIterationsAdjustment = 20.0f;
@@ -200,10 +210,6 @@ private:
     //
     // The actual number of iterations is the product of this value with
     // MechanicalIterationsAdjust.
-    //
-    // The number of mechanical iterations dictates how stiff bodies are:
-    // - Less iterations => softer (jelly) body
-    // - More iterations => hard body (never breaks though)
     //
 
     static constexpr size_t BasisNumMechanicalDynamicsIterations = 24;

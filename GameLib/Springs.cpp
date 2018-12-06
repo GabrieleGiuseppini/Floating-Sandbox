@@ -200,26 +200,51 @@ bool Springs::UpdateStrains(
     GameParameters const & gameParameters,
     Points & points)
 {
+    // We need to adjust the strength - i.e. the displacement tolerance or spring breaking point - based
+    // on the actual number of mechanics iterations we'll be performing.
+    //
+    // After one iteration the spring displacement dL is reduced to:
+    //  dL * (1-SRF)
+    // where SRF is the value of the SpringReductionFraction parameter. After N iterations this would be:
+    //  dL * (1-SRF)^N
+    //
+    // This formula suggests a simple exponential relationship, but empirical data (e.g. explosions on the Titanic)
+    // suggests the following relationship:
+    //
+    //  s' = s * 4 / (1 + 3*(R^1.3))
+    //
+    // Where R is the N'/N ratio.
+
+    float const iterationsAdjustmentFactor =
+        4.0f
+        / (1.0f + 3.0f * pow(gameParameters.NumMechanicalDynamicsIterationsAdjustment, 1.3f));
+
+    float const effectiveStrengthAdjustment =
+        iterationsAdjustmentFactor
+        * gameParameters.StrengthAdjustment;
+
+    // Flag remembering whether at least one spring broke
     bool isAtLeastOneBroken = false;
 
-    for (ElementIndex i : *this)
+    // Visit all springs
+    for (ElementIndex s : *this)
     {
         // Avoid breaking deleted springs
-        if (!mIsDeletedBuffer[i])
+        if (!mIsDeletedBuffer[s])
         {
             // Calculate strain
-            float dx = (points.GetPosition(mEndpointsBuffer[i].PointAIndex) - points.GetPosition(mEndpointsBuffer[i].PointBIndex)).length();
-            float const strain = fabs(mRestLengthBuffer[i] - dx) / mRestLengthBuffer[i];
+            float dx = (points.GetPosition(mEndpointsBuffer[s].PointAIndex) - points.GetPosition(mEndpointsBuffer[s].PointBIndex)).length();
+            float const strain = fabs(mRestLengthBuffer[s] - dx) / mRestLengthBuffer[s];
 
             // Check against strength
-            float const effectiveStrength = gameParameters.StrengthAdjustment * mStrengthBuffer[i];
+            float const effectiveStrength = effectiveStrengthAdjustment * mStrengthBuffer[s];
             if (strain > effectiveStrength)
             {
                 // It's broken!
 
                 // Destroy this spring
                 this->Destroy(
-                    i,
+                    s,
                     DestroyOptions::FireBreakEvent // Notify Break
                     | DestroyOptions::DestroyAllTriangles,
                     currentSimulationTime,
@@ -231,21 +256,21 @@ bool Springs::UpdateStrains(
             else if (strain > 0.5f * effectiveStrength)
             {
                 // It's stressed!
-                if (!mIsStressedBuffer[i])
+                if (!mIsStressedBuffer[s])
                 {
-                    mIsStressedBuffer[i] = true;
+                    mIsStressedBuffer[s] = true;
 
                     // Notify stress
                     mGameEventHandler->OnStress(
-                        mBaseMaterialBuffer[i],
-                        mParentWorld.IsUnderwater(points.GetPosition(mEndpointsBuffer[i].PointAIndex)),
+                        mBaseMaterialBuffer[s],
+                        mParentWorld.IsUnderwater(points.GetPosition(mEndpointsBuffer[s].PointAIndex)),
                         1);
                 }
             }
             else
             {
                 // Just fine
-                mIsStressedBuffer[i] = false;
+                mIsStressedBuffer[s] = false;
             }
         }
     }
@@ -265,13 +290,12 @@ float Springs::CalculateStiffnessCoefficient(
     // The "stiffness coefficient" is the factor which, once multiplied with the spring displacement,
     // yields the spring force, according to Hooke's law.
     //
-    // We calculate the coefficient so that the two forces applied to each of the masses reduce the spring
-    // displacement by a quantity equal to C * adjustment, in the time interval of the dynamics simulation.
+    // We calculate the coefficient so that the two forces applied to each of the two masses produce a resulting
+    // change in position equal to a fraction SpringReductionFraction * adjustment of the spring displacement,
+    // in the time interval of a single mechanical dynamics simulation.
     //
     // The adjustment is both the material-specific adjustment and the global game adjustment.
     //
-
-    static constexpr float C = 0.4f;
 
     float const massFactor =
         (points.GetMass(pointAIndex) * points.GetMass(pointBIndex))
@@ -281,7 +305,11 @@ float Springs::CalculateStiffnessCoefficient(
         (GameParameters::SimulationStepTimeDuration<float> / numMechanicalDynamicsIterations)
         * (GameParameters::SimulationStepTimeDuration<float> / numMechanicalDynamicsIterations);
 
-    return C * springStiffness * stiffnessAdjustment * massFactor / dtSquared;
+    return GameParameters::SpringReductionFraction
+        * springStiffness
+        * stiffnessAdjustment
+        * massFactor
+        / dtSquared;
 }
 
 float Springs::CalculateDampingCoefficient(
