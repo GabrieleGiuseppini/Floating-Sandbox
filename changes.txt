@@ -1,6 +1,8 @@
 1.8.0
 - Improved move-n'-rotate tool - it's easier to impart inertia now!
 - Lowered global damp
+- Global strength now auto-adjusts based on simulation quality
+- Fixed bug with alignment of texture and structure in multi-layer ships
 
 1.7.0
 - Musical theme for this release: Chemical Brothers, "We Are the Night"

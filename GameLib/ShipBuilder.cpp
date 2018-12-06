@@ -48,10 +48,13 @@ std::unique_ptr<Ship> ShipBuilder::Create(
 
     //
     // Process image points and:
-    // - Identify all points, and create PointInfo's for them
+    // - Identify all points, calculate texture coordinaties, and create PointInfo's for them
     // - Build a 2D matrix containing indices to the points above
     // - Identify rope endpoints, and create RopeSegment's for them
     //
+
+    float const textureDx = 0.5f / static_cast<float>(structureWidth);
+    float const textureDy = 0.5f / static_cast<float>(structureHeight);
 
     // Matrix of points - we allocate 2 extra dummy rows and cols to avoid checking for boundaries
     std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> pointIndexMatrix(new std::unique_ptr<std::optional<ElementIndex>[]>[structureWidth + 2]);
@@ -120,8 +123,8 @@ std::unique_ptr<Ship> ShipBuilder::Create(
                         static_cast<float>(y))
                         + shipDefinition.Metadata.Offset,
                     vec2f(
-                        static_cast<float>(x) / static_cast<float>(structureWidth),
-                        static_cast<float>(y) / static_cast<float>(structureHeight)),
+                        textureDx + static_cast<float>(x) / static_cast<float>(structureWidth),
+                        textureDy + static_cast<float>(y) / static_cast<float>(structureHeight)),
                     material,
                     isRopeEndpoint);
             }
@@ -299,6 +302,9 @@ void ShipBuilder::CreateRopeSegments(
     // - Fill-in springs between each pair of points in the rope, creating SpringInfo's for them
     //
 
+    float const textureDx = 0.5f / static_cast<float>(structureImageSize.Width);
+    float const textureDy = 0.5f / static_cast<float>(structureImageSize.Height);
+
     // Visit all RopeSegment's
     for (auto const & ropeSegmentEntry : ropeSegments)
     {
@@ -385,8 +391,8 @@ void ShipBuilder::CreateRopeSegments(
             pointInfos.emplace_back(
                 newPosition,
                 vec2f(
-                    newPosition.x / static_cast<float>(structureImageSize.Width),
-                    newPosition.y / static_cast<float>(structureImageSize.Height)),
+                    textureDx + newPosition.x / static_cast<float>(structureImageSize.Width),
+                    textureDy + newPosition.y / static_cast<float>(structureImageSize.Height)),
                 &ropeMaterial,
                 false);
 
