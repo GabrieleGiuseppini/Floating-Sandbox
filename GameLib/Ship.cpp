@@ -1774,6 +1774,7 @@ void Ship::GenerateSparkles(
                     GameParameters::MinSparkleParticlesLifetime.count(),
                     GameParameters::MaxSparkleParticlesLifetime.count()));
 
+            // Create sparkle
             mPoints.CreateEphemeralParticleSparkle(
                 mSprings.GetMidpointPosition(springElementIndex, mPoints),
                 vec2f::fromPolar(velocityMagnitude, velocityAngle),

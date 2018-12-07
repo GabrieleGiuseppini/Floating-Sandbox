@@ -124,9 +124,10 @@ Render:
 			+ See old ships
 			- See Roma: work on it and see L'n'F'
 			- If OK:
-				- Base: a bit heavier (lower center of mass) - make it stiffer in the process
-				- Cruise vessel: lower Y offset
-				- Container ship: make it heavier, containers are too light
+				- Fix ships:
+					- Base: a bit heavier (lower center of mass) - make it stiffer in the process
+					- Cruise vessel: lower Y offset
+					- Container ship: make it heavier, containers are too light and ship won't sink
 				- Python script for materials
 					- except for double-bottom's
 					- cardboard hull?
@@ -140,8 +141,8 @@ Render:
 			+ Fix Queen of Unova
 				+ Fix ropes: offset -1L, +1B
 				+ Fix eaten things
-		= Reduce sparkles' angle
-		= Impact bomb (*)
+		+ Reduce sparkles' angle
+		+ Impact bomb (*)
 	
 		- Zbuffer (*)
 		- Oprhaned points (*)
@@ -717,13 +718,13 @@ Render:
 
 - Game Interactions and Controls:
 
-	= New "Impact" Bomb
+	+ New "Impact" Bomb
 		+ Only explodes when spring is destroyed
 		+ State machine only for explosion
-		= See why huge explosion
+		+ See why huge explosion
 		+ See why texture weird
 		+ Center texture
-		= Help
+		+ Help
 
 
 	- Tool to flood ship
