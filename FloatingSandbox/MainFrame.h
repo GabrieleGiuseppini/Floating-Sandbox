@@ -134,6 +134,7 @@ private:
     void OnPinMenuItemSelected(wxCommandEvent& event);
     void OnTimerBombMenuItemSelected(wxCommandEvent& event);
     void OnRCBombMenuItemSelected(wxCommandEvent& event);
+    void OnImpactBombMenuItemSelected(wxCommandEvent& event);
     void OnAntiMatterBombMenuItemSelected(wxCommandEvent& event);
     void OnRCBombDetonateMenuItemSelected(wxCommandEvent& event);
     void OnAntiMatterBombDetonateMenuItemSelected(wxCommandEvent& event);

@@ -51,6 +51,18 @@
 },
 
 {
+	"groupName": "ImpactBomb",
+	"hasOwnAmbientLight": false,
+	"frames":[
+		{	
+			"worldWidth": 6.0,
+			"worldHeight": 6.0,
+			"filename": "impact_bomb_.*"
+		}
+	]
+},
+
+{
 	"groupName": "Land",
 	"hasOwnAmbientLight": false,
 	"frames":[

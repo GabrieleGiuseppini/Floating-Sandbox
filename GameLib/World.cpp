@@ -119,25 +119,29 @@ void World::SawThrough(
 
 void World::DrawTo(
     vec2f const & targetPos,
-    float strength)
+    float strength,
+    GameParameters const & gameParameters)
 {
     for (auto & ship : mAllShips)
     {
         ship->DrawTo(
             targetPos,
-            strength);
+            strength,
+            gameParameters);
     }
 }
 
 void World::SwirlAt(
     vec2f const & targetPos,
-    float strength)
+    float strength,
+    GameParameters const & gameParameters)
 {
     for (auto & ship : mAllShips)
     {
         ship->SwirlAt(
             targetPos,
-            strength);
+            strength,
+            gameParameters);
     }
 }
 
@@ -159,14 +163,32 @@ void World::TogglePinAt(
     }
 }
 
-void World::ToggleTimerBombAt(
+void World::ToggleAntiMatterBombAt(
     vec2f const & targetPos,
     GameParameters const & gameParameters)
 {
     // Stop at first ship that successfully places or removes a bomb
     for (auto const & ship : mAllShips)
     {
-        if (ship->ToggleTimerBombAt(targetPos, gameParameters))
+        if (ship->ToggleAntiMatterBombAt(targetPos, gameParameters))
+        {
+            // Found!
+            return;
+        }
+
+        // No luck...
+        // search other ships
+    }
+}
+
+void World::ToggleImpactBombAt(
+    vec2f const & targetPos,
+    GameParameters const & gameParameters)
+{
+    // Stop at first ship that successfully places or removes a bomb
+    for (auto const & ship : mAllShips)
+    {
+        if (ship->ToggleImpactBombAt(targetPos, gameParameters))
         {
             // Found!
             return;
@@ -195,14 +217,14 @@ void World::ToggleRCBombAt(
     }
 }
 
-void World::ToggleAntiMatterBombAt(
+void World::ToggleTimerBombAt(
     vec2f const & targetPos,
     GameParameters const & gameParameters)
 {
     // Stop at first ship that successfully places or removes a bomb
     for (auto const & ship : mAllShips)
     {
-        if (ship->ToggleAntiMatterBombAt(targetPos, gameParameters))
+        if (ship->ToggleTimerBombAt(targetPos, gameParameters))
         {
             // Found!
             return;

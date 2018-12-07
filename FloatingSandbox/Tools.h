@@ -39,9 +39,10 @@ enum class ToolType
     Grab = 3,
     Swirl = 4,
     Pin = 5,
-    TimerBomb = 6,
-    RCBomb = 7,
-    AntiMatterBomb = 8
+    AntiMatterBomb = 6,
+    ImpactBomb = 7,
+    RCBomb = 8,
+    TimerBomb = 9
 };
 
 struct InputState
@@ -1024,11 +1025,11 @@ private:
     std::unique_ptr<wxCursor> const mCursor;
 };
 
-class TimerBombTool final : public OneShotTool
+class AntiMatterBombTool final : public OneShotTool
 {
 public:
 
-    TimerBombTool(
+    AntiMatterBombTool(
         wxFrame * parentFrame,
         std::shared_ptr<GameController> gameController,
         std::shared_ptr<SoundController> soundController,
@@ -1046,7 +1047,39 @@ public:
     virtual void OnLeftMouseDown(InputState const & inputState) override
     {
         // Toggle bomb
-        mGameController->ToggleTimerBombAt(inputState.MousePosition);
+        mGameController->ToggleAntiMatterBombAt(inputState.MousePosition);
+    }
+
+    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+
+private:
+
+    std::unique_ptr<wxCursor> const mCursor;
+};
+
+class ImpactBombTool final : public OneShotTool
+{
+public:
+
+    ImpactBombTool(
+        wxFrame * parentFrame,
+        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<SoundController> soundController,
+        ResourceLoader & resourceLoader);
+
+public:
+
+    virtual void Initialize(InputState const & /*inputState*/) override
+    {
+        // Reset cursor
+        assert(!!mCursor);
+        mCurrentCursor = mCursor.get();
+    }
+
+    virtual void OnLeftMouseDown(InputState const & inputState) override
+    {
+        // Toggle bomb
+        mGameController->ToggleImpactBombAt(inputState.MousePosition);
     }
 
     virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
@@ -1088,11 +1121,11 @@ private:
     std::unique_ptr<wxCursor> const mCursor;
 };
 
-class AntiMatterBombTool final : public OneShotTool
+class TimerBombTool final : public OneShotTool
 {
 public:
 
-    AntiMatterBombTool(
+    TimerBombTool(
         wxFrame * parentFrame,
         std::shared_ptr<GameController> gameController,
         std::shared_ptr<SoundController> soundController,
@@ -1110,7 +1143,7 @@ public:
     virtual void OnLeftMouseDown(InputState const & inputState) override
     {
         // Toggle bomb
-        mGameController->ToggleAntiMatterBombAt(inputState.MousePosition);
+        mGameController->ToggleTimerBombAt(inputState.MousePosition);
     }
 
     virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}

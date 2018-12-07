@@ -9,7 +9,7 @@ namespace Physics
 {
     class Bombs;
     class Clouds;
-    class ElectricalElements;    
+    class ElectricalElements;
     class OceanFloor;
     class PinnedPoints;
 	class Points;
@@ -36,6 +36,7 @@ namespace Physics
 
 #include "Bomb.h"
 #include "AntiMatterBomb.h"
+#include "ImpactBomb.h"
 #include "RCBomb.h"
 #include "TimerBomb.h"
 #include "Bombs.h"

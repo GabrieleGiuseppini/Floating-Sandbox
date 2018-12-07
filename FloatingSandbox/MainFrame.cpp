@@ -47,6 +47,7 @@ const long ID_SWIRL_MENUITEM = wxNewId();
 const long ID_PIN_MENUITEM = wxNewId();
 const long ID_TIMERBOMB_MENUITEM = wxNewId();
 const long ID_RCBOMB_MENUITEM = wxNewId();
+const long ID_IMPACTBOMB_MENUITEM = wxNewId();
 const long ID_ANTIMATTERBOMB_MENUITEM = wxNewId();
 const long ID_RCBOMBDETONATE_MENUITEM = wxNewId();
 const long ID_ANTIMATTERBOMBDETONATE_MENUITEM = wxNewId();
@@ -258,6 +259,10 @@ MainFrame::MainFrame(wxApp * mainApp)
     wxMenuItem * rcBombMenuItem = new wxMenuItem(mToolsMenu, ID_RCBOMB_MENUITEM, _("Toggle RC Bomb\tR"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(rcBombMenuItem);
     Connect(ID_RCBOMB_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnRCBombMenuItemSelected);
+
+    wxMenuItem * impactBombMenuItem = new wxMenuItem(mToolsMenu, ID_IMPACTBOMB_MENUITEM, _("Toggle Impact Bomb\tI"), wxEmptyString, wxITEM_RADIO);
+    mToolsMenu->Append(impactBombMenuItem);
+    Connect(ID_IMPACTBOMB_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnImpactBombMenuItemSelected);
 
     wxMenuItem * antiMatterBombMenuItem = new wxMenuItem(mToolsMenu, ID_ANTIMATTERBOMB_MENUITEM, _("Toggle Anti-Matter Bomb\tA"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(antiMatterBombMenuItem);
@@ -956,6 +961,12 @@ void MainFrame::OnRCBombMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
     mToolController->SetTool(ToolType::RCBomb);
+}
+
+void MainFrame::OnImpactBombMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mToolController);
+    mToolController->SetTool(ToolType::ImpactBomb);
 }
 
 void MainFrame::OnAntiMatterBombMenuItemSelected(wxCommandEvent & /*event*/)

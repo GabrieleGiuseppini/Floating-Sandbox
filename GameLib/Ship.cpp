@@ -135,7 +135,11 @@ void Ship::DestroyAt(
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
-    float const radius = gameParameters.DestroyRadius * radiusMultiplier;
+    float const radius =
+        gameParameters.DestroyRadius
+        * radiusMultiplier
+        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
     float const squareRadius = radius * radius;
 
     // Destroy all (non-ephemeral) points within the radius
@@ -218,24 +222,26 @@ void Ship::SawThrough(
 
 void Ship::DrawTo(
     vec2f const & targetPos,
-    float strength)
+    float strength,
+    GameParameters const & gameParameters)
 {
     // Store the force field
     mCurrentForceFields.emplace_back(
         new DrawForceField(
             targetPos,
-            strength));
+            strength * (gameParameters.IsUltraViolentMode ? 20.0f : 1.0f)));
 }
 
 void Ship::SwirlAt(
     vec2f const & targetPos,
-    float strength)
+    float strength,
+    GameParameters const & gameParameters)
 {
     // Store the force field
     mCurrentForceFields.emplace_back(
         new SwirlForceField(
             targetPos,
-            strength));
+            strength * (gameParameters.IsUltraViolentMode ? 40.0f : 1.0f)));
 }
 
 bool Ship::TogglePinAt(
@@ -247,11 +253,20 @@ bool Ship::TogglePinAt(
         gameParameters);
 }
 
-bool Ship::ToggleTimerBombAt(
+bool Ship::ToggleAntiMatterBombAt(
     vec2f const & targetPos,
     GameParameters const & gameParameters)
 {
-    return mBombs.ToggleTimerBombAt(
+    return mBombs.ToggleAntiMatterBombAt(
+        targetPos,
+        gameParameters);
+}
+
+bool Ship::ToggleImpactBombAt(
+    vec2f const & targetPos,
+    GameParameters const & gameParameters)
+{
+    return mBombs.ToggleImpactBombAt(
         targetPos,
         gameParameters);
 }
@@ -265,11 +280,11 @@ bool Ship::ToggleRCBombAt(
         gameParameters);
 }
 
-bool Ship::ToggleAntiMatterBombAt(
+bool Ship::ToggleTimerBombAt(
     vec2f const & targetPos,
     GameParameters const & gameParameters)
 {
-    return mBombs.ToggleAntiMatterBombAt(
+    return mBombs.ToggleTimerBombAt(
         targetPos,
         gameParameters);
 }
@@ -1733,7 +1748,7 @@ void Ship::GenerateSparkles(
 
         vec2f const perpendicularCutVector = (cutDirectionEndPos - cutDirectionStartPos).normalise().to_perpendicular();
         float const axisAngle = perpendicularCutVector.angle(vec2f(1.0f, 0.0f));
-        float constexpr AxisAngleWidth = Pi<float> / 4.0f;
+        float constexpr AxisAngleWidth = Pi<float> / 7.0f;
         float const startAngle = axisAngle - AxisAngleWidth;
         float const endAngle = axisAngle + AxisAngleWidth;
 

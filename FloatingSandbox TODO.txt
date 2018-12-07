@@ -119,6 +119,30 @@ Render:
 
 - Roadmap:
 	- 1.8.0
+		= Test a density adjustment to make ships float more easily without affecting bending
+			= 0.65
+			+ See old ships
+			- See Roma: work on it and see L'n'F'
+			- If OK:
+				- Base: a bit heavier (lower center of mass) - make it stiffer in the process
+				- Cruise vessel: lower Y offset
+				- Container ship: make it heavier, containers are too light
+				- Python script for materials
+					- except for double-bottom's
+					- cardboard hull?
+				- Redo materials template
+				- Remove hack at Materials.cpp
+		+ Figure out strength adjustment based off # of simulations
+		+ Check structure/texture alignment issue
+			+ Fix
+			+ Fix Titanic
+				+ Fix ropes: offset -1L, +1B
+			+ Fix Queen of Unova
+				+ Fix ropes: offset -1L, +1B
+				+ Fix eaten things
+		= Reduce sparkles' angle
+		= Impact bomb (*)
+	
 		- Zbuffer (*)
 		- Oprhaned points (*)
 		- Libsimdpp spring relaxation (*)
@@ -160,6 +184,8 @@ Render:
 	+ Ships start from 1
 
 - Simulation Optimizations:
+
+	- Retry triangles cache optimization, now that layouts are different
 
 	- Array merging:
 		+ Springs: RestLength with Coefficients
@@ -253,6 +279,7 @@ Render:
 			- Multiple because of need to normalize outgoing for each point
 
 	- See if can avoid other IsDeleted checks, via zero'ing of coefficients
+		+ UpdateSpringForces()
 
 	- UpdatePointForces:
 		- Substitute "if(y<waterHeight)" branches with "float isUnderwater (1.f/0.f)"
@@ -690,9 +717,14 @@ Render:
 
 - Game Interactions and Controls:
 
-	- New "Impact" Bomb
-		- Only explodes when spring is destroyed
-		- State machine only for explosion
+	= New "Impact" Bomb
+		+ Only explodes when spring is destroyed
+		+ State machine only for explosion
+		= See why huge explosion
+		+ See why texture weird
+		+ Center texture
+		= Help
+
 
 	- Tool to flood ship
 		- Name: Flood

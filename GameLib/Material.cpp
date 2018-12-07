@@ -15,9 +15,12 @@ std::unique_ptr<Material> Material::Create(picojson::object const & materialJson
     float mass = static_cast<float>(Utils::GetMandatoryJsonMember<double>(massJson, "nominal_mass"))
                * static_cast<float>(Utils::GetMandatoryJsonMember<double>(massJson, "density"));
 
+    // TODOTEST
+    mass *= 0.65f;
+
     float strength = static_cast<float>(Utils::GetOptionalJsonMember<double>(materialJson, "strength", 1.0));
     float stiffness = static_cast<float>(Utils::GetOptionalJsonMember<double>(materialJson, "stiffness", 1.0));
-	
+
     std::array<uint8_t, 3u> structuralColourRgb = Utils::Hex2RgbColour(Utils::GetMandatoryJsonMember<std::string>(materialJson, "structural_colour"));
     std::array<uint8_t, 3u> renderColourRgb = Utils::Hex2RgbColour(Utils::GetMandatoryJsonMember<std::string>(materialJson, "render_colour"));
     std::array<uint8_t, 4u> renderColourRgba{ renderColourRgb[0], renderColourRgb[1], renderColourRgb[2], 255};
@@ -42,7 +45,7 @@ std::unique_ptr<Material> Material::Create(picojson::object const & materialJson
     std::optional<SoundProperties> soundProperties;
     std::optional<picojson::object> soundPropertiesJson = Utils::GetOptionalJsonObject(materialJson, "sound_properties");
     if (!!soundPropertiesJson)
-    {        
+    {
         std::string elementTypeStr = Utils::GetMandatoryJsonMember<std::string>(*soundPropertiesJson, "element_type");
         SoundProperties::SoundElementType elementType = SoundProperties::StrToSoundElementType(elementTypeStr);
 

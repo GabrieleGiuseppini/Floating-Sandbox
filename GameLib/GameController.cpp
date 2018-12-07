@@ -286,14 +286,13 @@ void GameController::DrawTo(
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
     float strength = 2000.0f * strengthMultiplier;
-    if (mGameParameters.IsUltraViolentMode)
-        strength *= 20.0f;
 
     // Apply action
     assert(!!mWorld);
     mWorld->DrawTo(
         worldCoordinates,
-        strength);
+        strength,
+        mGameParameters);
 }
 
 void GameController::SwirlAt(
@@ -303,12 +302,13 @@ void GameController::SwirlAt(
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
     float strength = 30.0f * strengthMultiplier;
-    if (mGameParameters.IsUltraViolentMode)
-        strength *= 40.0f;
 
     // Apply action
     assert(!!mWorld);
-    mWorld->SwirlAt(worldCoordinates, strength);
+    mWorld->SwirlAt(
+        worldCoordinates,
+        strength,
+        mGameParameters);
 }
 
 void GameController::TogglePinAt(vec2f const & screenCoordinates)
@@ -322,13 +322,24 @@ void GameController::TogglePinAt(vec2f const & screenCoordinates)
         mGameParameters);
 }
 
-void GameController::ToggleTimerBombAt(vec2f const & screenCoordinates)
+void GameController::ToggleAntiMatterBombAt(vec2f const & screenCoordinates)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
     // Apply action
     assert(!!mWorld);
-    mWorld->ToggleTimerBombAt(
+    mWorld->ToggleAntiMatterBombAt(
+        worldCoordinates,
+        mGameParameters);
+}
+
+void GameController::ToggleImpactBombAt(vec2f const & screenCoordinates)
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+
+    // Apply action
+    assert(!!mWorld);
+    mWorld->ToggleImpactBombAt(
         worldCoordinates,
         mGameParameters);
 }
@@ -344,13 +355,13 @@ void GameController::ToggleRCBombAt(vec2f const & screenCoordinates)
         mGameParameters);
 }
 
-void GameController::ToggleAntiMatterBombAt(vec2f const & screenCoordinates)
+void GameController::ToggleTimerBombAt(vec2f const & screenCoordinates)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
     // Apply action
     assert(!!mWorld);
-    mWorld->ToggleAntiMatterBombAt(
+    mWorld->ToggleTimerBombAt(
         worldCoordinates,
         mGameParameters);
 }

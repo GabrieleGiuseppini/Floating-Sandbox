@@ -352,20 +352,38 @@ PinTool::PinTool(
 }
 
 ////////////////////////////////////////////////////////////////////////
-// TimerBomb
+// AntiMatterBomb
 ////////////////////////////////////////////////////////////////////////
 
-TimerBombTool::TimerBombTool(
+AntiMatterBombTool::AntiMatterBombTool(
     wxFrame * parentFrame,
     std::shared_ptr<GameController> gameController,
     std::shared_ptr<SoundController> soundController,
     ResourceLoader & resourceLoader)
     : OneShotTool(
-        ToolType::TimerBomb,
+        ToolType::AntiMatterBomb,
         parentFrame,
         std::move(gameController),
         std::move(soundController))
-    , mCursor(MakeCursor("timer_bomb_cursor", 16, 19, resourceLoader))
+    , mCursor(MakeCursor("am_bomb_cursor", 16, 21, resourceLoader))
+{
+}
+
+////////////////////////////////////////////////////////////////////////
+// ImpactBomb
+////////////////////////////////////////////////////////////////////////
+
+ImpactBombTool::ImpactBombTool(
+    wxFrame * parentFrame,
+    std::shared_ptr<GameController> gameController,
+    std::shared_ptr<SoundController> soundController,
+    ResourceLoader & resourceLoader)
+    : OneShotTool(
+        ToolType::ImpactBomb,
+        parentFrame,
+        std::move(gameController),
+        std::move(soundController))
+    , mCursor(MakeCursor("impact_bomb_cursor", 18, 10, resourceLoader))
 {
 }
 
@@ -388,19 +406,19 @@ RCBombTool::RCBombTool(
 }
 
 ////////////////////////////////////////////////////////////////////////
-// AntiMatterBomb
+// TimerBomb
 ////////////////////////////////////////////////////////////////////////
 
-AntiMatterBombTool::AntiMatterBombTool(
+TimerBombTool::TimerBombTool(
     wxFrame * parentFrame,
     std::shared_ptr<GameController> gameController,
     std::shared_ptr<SoundController> soundController,
     ResourceLoader & resourceLoader)
     : OneShotTool(
-        ToolType::AntiMatterBomb,
+        ToolType::TimerBomb,
         parentFrame,
         std::move(gameController),
         std::move(soundController))
-    , mCursor(MakeCursor("am_bomb_cursor", 16, 21, resourceLoader))
+    , mCursor(MakeCursor("timer_bomb_cursor", 16, 19, resourceLoader))
 {
 }

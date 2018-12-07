@@ -55,11 +55,20 @@ public:
 
     void OnSpringDestroyed(ElementIndex springElementIndex);
 
-    bool ToggleTimerBombAt(
+    bool ToggleAntiMatterBombAt(
         vec2f const & targetPos,
         GameParameters const & gameParameters)
     {
-        return ToggleBombAt<TimerBomb>(
+        return ToggleBombAt<AntiMatterBomb>(
+            targetPos,
+            gameParameters);
+    }
+
+    bool ToggleImpactBombAt(
+        vec2f const & targetPos,
+        GameParameters const & gameParameters)
+    {
+        return ToggleBombAt<ImpactBomb>(
             targetPos,
             gameParameters);
     }
@@ -73,11 +82,11 @@ public:
             gameParameters);
     }
 
-    bool ToggleAntiMatterBombAt(
+    bool ToggleTimerBombAt(
         vec2f const & targetPos,
         GameParameters const & gameParameters)
     {
-        return ToggleBombAt<AntiMatterBomb>(
+        return ToggleBombAt<TimerBomb>(
             targetPos,
             gameParameters);
     }

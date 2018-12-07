@@ -124,9 +124,10 @@ static constexpr VisitSequenceNumber NoneVisitSequenceNumber = 0;
  */
 enum class BombType
 {
-    TimerBomb,
+    AntiMatterBomb,
+    ImpactBomb,
     RCBomb,
-    AntiMatterBomb
+    TimerBomb
 };
 
 /*
@@ -176,6 +177,7 @@ enum class TextureGroupType : uint16_t
     AntiMatterBombSphere,
     AntiMatterBombSphereCloud,
     Cloud,
+    ImpactBomb,
     Land,
     PinnedPoint,
     RcBomb,

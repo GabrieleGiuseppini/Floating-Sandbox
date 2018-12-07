@@ -19,7 +19,7 @@ DurationShortLongType StrToDurationShortLongType(std::string const & str)
 }
 
 TextureGroupType StrToTextureGroupType(std::string const & str)
-{    
+{
     if (Utils::CaseInsensitiveEquals(str, "AntiMatterBombArmor"))
         return TextureGroupType::AntiMatterBombArmor;
     else if (Utils::CaseInsensitiveEquals(str, "AntiMatterBombSphereCloud"))
@@ -28,6 +28,8 @@ TextureGroupType StrToTextureGroupType(std::string const & str)
         return TextureGroupType::AntiMatterBombSphere;
     else if (Utils::CaseInsensitiveEquals(str, "Cloud"))
         return TextureGroupType::Cloud;
+    else if (Utils::CaseInsensitiveEquals(str, "ImpactBomb"))
+        return TextureGroupType::ImpactBomb;
     else if (Utils::CaseInsensitiveEquals(str, "Land"))
         return TextureGroupType::Land;
     else if (Utils::CaseInsensitiveEquals(str, "PinnedPoint"))

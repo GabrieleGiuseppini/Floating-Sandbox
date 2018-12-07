@@ -77,17 +77,23 @@ public:
 
     void DrawTo(
         vec2f const & targetPos,
-        float strength);
+        float strength,
+        GameParameters const & gameParameters);
 
     void SwirlAt(
         vec2f const & targetPos,
-        float strength);
+        float strength,
+        GameParameters const & gameParameters);
 
     void TogglePinAt(
         vec2f const & targetPos,
         GameParameters const & gameParameters);
 
-    void ToggleTimerBombAt(
+    void ToggleAntiMatterBombAt(
+        vec2f const & targetPos,
+        GameParameters const & gameParameters);
+
+    void ToggleImpactBombAt(
         vec2f const & targetPos,
         GameParameters const & gameParameters);
 
@@ -95,7 +101,7 @@ public:
         vec2f const & targetPos,
         GameParameters const & gameParameters);
 
-    void ToggleAntiMatterBombAt(
+    void ToggleTimerBombAt(
         vec2f const & targetPos,
         GameParameters const & gameParameters);
 

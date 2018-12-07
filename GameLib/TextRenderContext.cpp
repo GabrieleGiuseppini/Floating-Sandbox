@@ -17,7 +17,7 @@ TextRenderContext::TextRenderContext(
     : mShaderManager(shaderManager)
     , mScreenToNdcX(2.0f / static_cast<float>(canvasWidth))
     , mScreenToNdcY(2.0f / static_cast<float>(canvasHeight))
-    , mAmbientLightIntensity(0.0f) // Set later
+    , mAmbientLightIntensity(ambientLightIntensity)
     , mTextSlots()
     , mCurrentTextSlotGeneration(0)
     , mAreTextSlotsDirty(false)

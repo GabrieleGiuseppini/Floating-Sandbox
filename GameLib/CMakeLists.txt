@@ -26,7 +26,7 @@ set  (GAME_SOURCES
 	GameWallClock.h
 	IGameEventHandler.h
 	ImageData.h
-	ImageSize.h	
+	ImageSize.h
 	Log.cpp
 	Log.h
 	Material.cpp
@@ -67,6 +67,8 @@ set  (PHYSICS_SOURCES
 	ElectricalElements.h
 	ForceFields.cpp
 	ForceFields.h
+	ImpactBomb.cpp
+	ImpactBomb.h
 	OceanFloor.cpp
 	OceanFloor.h
 	Physics.h

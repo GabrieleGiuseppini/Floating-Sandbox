@@ -1,4 +1,5 @@
-1.8.0
+1.7.5
+- Added impact bomb - now can trigger explosions on collisions!
 - Improved move-n'-rotate tool - it's easier to impart inertia now!
 - Lowered global damp
 - Global strength now auto-adjusts based on simulation quality
@@ -20,17 +21,14 @@
 - Musical theme for this release: Blonde Redhead, "23"
 - Added anti-matter bomb
 - Added more control over sound effects and music
-- Game now starts in full-screen mode, and user can switch back and forth between full-screen mode and
-  normal-screen mode
-- Paid off considerably technical debt in the OpenGL domain,
-  with 20% performance improvement in the rendering subsystem
+- Game now starts in full-screen mode, and user can switch back and forth between full-screen mode and normal-screen mode
+- Paid off considerably technical debt in the OpenGL domain, with 20% performance improvement in the rendering subsystem
 - Another 10% performance improvement in the water and land contour interpolation
 - Revised bomb blast simulations
 - Lots of new ships, thanks to many contributors
 
 1.5.0
-- Completely redesigned water flooding, and added splash sounds
-  when waves break inside a physical body
+- Completely redesigned water flooding, and added splash sounds when waves break inside a physical body
 - Added ability to draw vector fields
 - Added probes, to display real-time scalar time series
 - Redesigned settings dialog

@@ -70,7 +70,14 @@ ToolController::ToolController(
             resourceLoader));
 
     mAllTools.emplace_back(
-        std::make_unique<TimerBombTool>(
+        std::make_unique<AntiMatterBombTool>(
+            parentFrame,
+            gameController,
+            soundController,
+            resourceLoader));
+
+    mAllTools.emplace_back(
+        std::make_unique<ImpactBombTool>(
             parentFrame,
             gameController,
             soundController,
@@ -84,7 +91,7 @@ ToolController::ToolController(
             resourceLoader));
 
     mAllTools.emplace_back(
-        std::make_unique<AntiMatterBombTool>(
+        std::make_unique<TimerBombTool>(
             parentFrame,
             gameController,
             soundController,
