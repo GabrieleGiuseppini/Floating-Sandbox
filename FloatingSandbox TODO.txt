@@ -120,19 +120,29 @@ Render:
 - Roadmap:
 	- 1.8.0
 		= Test a density adjustment to make ships float more easily without affecting bending
-			= 0.65
+			+ 0.55
+			+ See real weight of steel H-beam: 151 Kg
 			+ See old ships
-			- See Roma: work on it and see L'n'F'
-			- If OK:
-				- Fix ships:
-					- Base: a bit heavier (lower center of mass) - make it stiffer in the process
-					- Cruise vessel: lower Y offset
-					- Container ship: make it heavier, containers are too light and ship won't sink
-				- Python script for materials
-					- except for double-bottom's
-					- cardboard hull?
-				- Redo materials template
-				- Remove hack at Materials.cpp
+			+ See Roma: work on it and see L'n'F'
+			+ If OK:
+				+ Fix ships:
+					+ Base: a bit heavier (lower center of mass) - make it stiffer in the process
+					+ Container ship: make it heavier, containers are too light and ship won't sink
+						+ Rename .dat's
+					+ Submarine
+				+ Adjust materials.json
+					+ Python script for materials
+					+ except for double-bottom's
+				+ Remove hack at Materials.cpp				
+				+ Recheck all ships
+					+ Fix Submarine
+				+ Redo materials template
+		- See if can make Titanic not take water all up quickly
+		- See if now some TODO ships are buoyant
+		- .dat renames:
+			- Roma
+
+		- Test auto-texture
 		+ Figure out strength adjustment based off # of simulations
 		+ Check structure/texture alignment issue
 			+ Fix
@@ -145,7 +155,7 @@ Render:
 		+ Impact bomb (*)
 	
 		- Zbuffer (*)
-		- Oprhaned points (*)
+		- Orphaned points (*)
 		- Libsimdpp spring relaxation (*)
 		- Batisphere with pumps and propulsion (*)
 			- Multi-layer ship definition files (*)
@@ -166,7 +176,7 @@ Render:
 	- Lighten up the Titanic
 	- Fix contributions
 		- PacMaster
-		- Roma
+		= Roma
 		- Others
 	= USS Shark
 		- Need Z buffer work first
@@ -174,6 +184,7 @@ Render:
 	- See Moleskine
 
 - Suggestions to spec:
+	- Auto-draw structure as texture when to texture is given
 	- Different colored lights
 	- Lights with different chances of turning off
 		- Do they need longer-living lights?
@@ -651,6 +662,7 @@ Render:
 	- Water drag 
 		- The one already there assumes velocity always normal to surface, but we should consider surface normal instead
 			- Requires frontier
+		- The new directional drag could make parts of the ship break off
 
 	- DestroyAt:
 		- Test: Ship::SpringDestroyHandler() only destroys triangles that contain A-B
