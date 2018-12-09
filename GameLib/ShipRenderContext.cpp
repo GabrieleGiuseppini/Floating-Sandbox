@@ -14,7 +14,8 @@ namespace Render {
 
 ShipRenderContext::ShipRenderContext(
     size_t pointCount,
-    std::optional<ImageData> texture,
+    ImageData texture,
+    ShipDefinition::TextureOriginType /*textureOrigin*/,
     ShaderManager<ShaderManagerTraits> & shaderManager,
     GameOpenGLTexture & textureAtlasOpenGLHandle,
     TextureAtlasMetadata const & textureAtlasMetadata,
@@ -117,39 +118,32 @@ ShipRenderContext::ShipRenderContext(
 
 
     //
-    // Create and upload ship texture, if present
+    // Create and upload ship texture
     //
 
-    if (!!texture)
-    {
-        glGenTextures(1, &tmpGLuint);
-        mElementShipTexture = tmpGLuint;
+    glGenTextures(1, &tmpGLuint);
+    mElementShipTexture = tmpGLuint;
 
-        // Bind texture
-        mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
-        glBindTexture(GL_TEXTURE_2D, *mElementShipTexture);
-        CheckOpenGLError();
+    // Bind texture
+    mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
+    glBindTexture(GL_TEXTURE_2D, *mElementShipTexture);
+    CheckOpenGLError();
 
-        // Upload texture
-        GameOpenGL::UploadMipmappedTexture(std::move(*texture));
+    // Upload texture
+    GameOpenGL::UploadMipmappedTexture(std::move(texture));
 
-        //
-        // Configure texture
-        //
+    // Set repeat mode
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    CheckOpenGLError();
 
-        // Set repeat mode
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        CheckOpenGLError();
+    // Set filtering
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    CheckOpenGLError();
 
-        // Set filtering
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        CheckOpenGLError();
-
-        // Unbind texture
-        glBindTexture(GL_TEXTURE_2D, 0);
-    }
+    // Unbind texture
+    glBindTexture(GL_TEXTURE_2D, 0);
 
 
     //

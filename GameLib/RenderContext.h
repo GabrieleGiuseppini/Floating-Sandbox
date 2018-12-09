@@ -12,6 +12,7 @@
 #include "RenderCore.h"
 #include "ResourceLoader.h"
 #include "ShaderManager.h"
+#include "ShipDefinition.h"
 #include "ShipRenderContext.h"
 #include "SysSpecifics.h"
 #include "TextRenderContext.h"
@@ -279,7 +280,8 @@ public:
     void AddShip(
         ShipId shipId,
         size_t pointCount,
-        std::optional<ImageData> texture);
+        ImageData texture,
+        ShipDefinition::TextureOriginType textureOrigin);
 
 public:
 

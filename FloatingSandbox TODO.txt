@@ -119,44 +119,11 @@ Render:
 
 - Roadmap:
 	- 1.8.0
-		= Test a density adjustment to make ships float more easily without affecting bending
-			+ 0.55
-			+ See real weight of steel H-beam: 151 Kg
-			+ See old ships
-			+ See Roma: work on it and see L'n'F'
-			+ If OK:
-				+ Fix ships:
-					+ Base: a bit heavier (lower center of mass) - make it stiffer in the process
-					+ Container ship: make it heavier, containers are too light and ship won't sink
-						+ Rename .dat's
-					+ Submarine
-				+ Adjust materials.json
-					+ Python script for materials
-					+ except for double-bottom's
-				+ Remove hack at Materials.cpp				
-				+ Recheck all ships
-					+ Fix Submarine
-				+ Redo materials template
-		- See if can make Titanic not take water all up quickly
-		- See if now some TODO ships are buoyant
-		- .dat renames:
-			- Roma
-
-		- Test auto-texture
-		+ Figure out strength adjustment based off # of simulations
-		+ Check structure/texture alignment issue
-			+ Fix
-			+ Fix Titanic
-				+ Fix ropes: offset -1L, +1B
-			+ Fix Queen of Unova
-				+ Fix ropes: offset -1L, +1B
-				+ Fix eaten things
-		+ Reduce sparkles' angle
-		+ Impact bomb (*)
-	
+		- Screenshots
 		- Zbuffer (*)
 		- Orphaned points (*)
 		- Libsimdpp spring relaxation (*)
+
 		- Batisphere with pumps and propulsion (*)
 			- Multi-layer ship definition files (*)
 			- Switches (*)
@@ -738,7 +705,6 @@ Render:
 		+ Center texture
 		+ Help
 
-
 	- Tool to flood ship
 		- Name: Flood
 		- Shift: un-floods
@@ -789,74 +755,99 @@ Render:
 		+ SQ: Higher values improve the rigidity of simulated structures, at the expense of longer computation times
 		+ S:  Higher values cause physical instability but provide for a nice effect!
 		+ See if global settings are really needed
-			
 
-	- TODOHERE: SettingsDialog: save settings, and defaults
+	- SettingsDialog: save settings, defaults, and real-time changes
 		- SettingsManager (@FloatingSandbox):
 			- Has GameController, SoundController, etc.
 			- Defines struct with all customizable setting members
 			- Maintains two copies of struct:
 				- Defaults
-				- Current (ephemeral)
+				- Last
+			- Currently-enforced settings live at their place, i.e. at GameController, SoundController, etc.
 			- Manages saving and loading customizable settings to and from json
 			- Created by MainFrame on startup
+				- Initializes here
 			- Exposes getters and setters for all customizable properties, used by SettingsDialog
-				- get(): from Current
-				- set(): sets Current
+				- get(): from their place
+				- set(): to their place
 			- cctor (actually, CreateInstance()->uq_ptr which MainFrame makes shared):
-				- Stores defaults (in Defaults), asking members for their (compile-time default) values
-				- Then copies Defaults to Current
-				- Then loads personal_settings.json, if exists; if exists:
-					- Reads settings to Current
-					- Then applies settings - invokes SyncToGame()
-			- SyncFromGame()
-				- Reads Current from GameController, SoundController, etc.
-			- SyncToGame()
-				- Applies Current to GameController, SoundController, etc.
+				- Makes defaults (in Defaults), asking members for their (compile-time default) values
+				- Then if personal_settings.json exists:
+					- Loads it to temp struct - via Load(filepath)->temp struct
+					- Then applies temp struct - via ApplyToGame(temp struct)
+			- CreateCheckpoint():
+				- Makes Last by reading from GameController, SoundController, etc.
 			- Load(filepath)
-				- Loads from path - sets Current
-				- Does not apply
+				- Loads from path into temp struct - via Load(filepath)->temp struct
+				- Then applies temp struct via ApplyToGame(temp struct)
 			- Save()
-				- Saves Current to personal_settings.json 
+				- Save(path of personal_settings.json)
 			- Save(filepath)
-				- Saves Current to filepath
-			- Reset()
-				- Copies Defaults to Current
-				- Does not apply
+				- Reads current from their place into temp struct - via ReadFromGame()->temp struct
+				- Saves temp struct to filepath
+			- RevertToCheckpoint()
+				- Applies Last
+			- RestoreDefaults():
+				- Applies Default
+			- RestorePersonalSettings():
+				- Load(path of personal_settings.json)
+			- Internal helpers:
+				- ApplyToGame(struct)
+					- Applies struct to GameController, SoundController, etc.
+				- ReadFromGame()->struct
+					- Reads all from GameController, SoundController, etc. into struct
+						- struct cctor has all vals
+				- Save(struct, filepath)
+				- Load(filepath) -> struct
 		- Impl:
 			- Standard paths: http://docs.wxwidgets.org/3.1/classwx_standard_paths.html#a4752213ef4d7bdc71170b9e5c3691f0f
 				- MainApp: call App::SetAppName() at startup
 					- With app name from version.h
 				- SettingsManager can deal directly with wxWidgets
 		- Dialog:
-			- Control values are meant to always be in sync with SettingsManager::Current;
-			  however, for simplicity we only sync between the two when needed
+			- Control values are meant to always be in sync with real game params
+				- Handlers write value directly to SettingsManager
+				- Then mark dialog as dirty
+					- Dirty means there have been changes, which might get wiped (by restoring Last) if Cancel is pressed
+			- UI:
+				- Remove Apply 
+				- Buttons: OK, Revert Changes (iff dirty), Cancel (iff dirty)
+				- File Menu: Save As Defaults, Save Preferences..., Load Preferences..., Restore Defaults, Restore Factory Defaults
 			- OnShow():
-				- Calls SettingsManager::SyncFromGame() (Current)
+				- Calls SettingsManager::CreateCheckpoint()
 				- Reads all control values from SettingsManager
-				- Does not mark as dirty
-			- Apply: applies settings
-				- Writes all control values to SettingsManager (Current)
-				- Calls SettingsManager::SyncToGame()
-				- Clears dirty
-			- Save Settings: saves current to personal_settings.json
-				- Writes all control values to SettingsManager (Current)
+				- Does not mark self as dirty
+			- SaveAsDefaults: saves current to personal_settings.json
 				- Calls SettingsManager::Save()
 				- Stays dirty if it was dirty
-			- Save Settings As: saves with filename
-				- Writes all control values to SettingsManager (Current)
+			- SavePreferences: saves with filename
 				- Calls SettingsManager::Save(filepath)
 				- Stays dirty if it was dirty
-			- Load Settings: loads with filename, changes own settings
-				- Calls SettingsManager::Load(filepath) (Current)
-				- No apply
+			- LoadPreferences: loads with filename, changes settings
+				- Calls SettingsManager::Load(filepath)
 				- Reads all control values from SettingsManager
 				- Marks self as dirty
-			- Reset Settings: 
-				- Calls SettingsManager::Reset() (Current)
-				- No apply
+			- RestoreDefaults: we set everything to personal_settings, but don't commit - allow Revert
+				- Calls SettingsManager::RestorePersonalSettings()
 				- Reads all control values from SettingsManager
-				- Marks self as dirty
+				- Sets dirty
+			- RestoreFactoryDefaults: we set everything to default, but don't commit - allow Revert
+				- Calls SettingsManager::RestoreDefaults()
+				- Reads all control values from SettingsManager
+				- Sets dirty
+			- OK:
+				- Close dialog
+			- Revert Changes: 
+				- Calls SettingsManager::RevertToCheckpoint()
+				- Reads all control values from SettingsManager
+				- Cleans dirty - via MarkAsDirty(bool)
+			- Cancel (only shown if dirty)/Close
+				- Calls SettingsManager::RevertToCheckpoint()
+				- Close dialog
+			- Helpers:
+				- MarkAsDirty(bool)
+					- Stores flag
+					- Enables/Disabled buttons and menus
 
 	- Revised FileDialog for loading ships: shows previews of ships
 		- Option 1: see if possible to hook into basic FileDialog's rendering of files
@@ -865,6 +856,8 @@ Render:
 
 	- Save screenshots/photos 
 		- Saves automatically in custom folder
+			- New settings provider: UserInterfaceSettings
+				- Managed normally by SettingsManager, and thus tweaked via SettingsDialog
 		- Code (at RenderContext::TakeScreenshot() -> returns ImageData)
 		    glPixelStorei(GL_PACK_ALIGNMENT, 1);
 		    glReadBuffer(GL_FRONT);
@@ -3484,3 +3477,41 @@ IF WX:
 
 		+ Recheck L'n'F' for current collision handling
 		+ Recheck L'n'F' for strength
+	+ 1.7.5
+		+ Test a density adjustment to make ships float more easily without affecting bending
+			+ 0.55
+			+ See real weight of steel H-beam: 151 Kg
+			+ See old ships
+			+ See Roma: work on it and see L'n'F'
+			+ If OK:
+				+ Fix ships:
+					+ Base: a bit heavier (lower center of mass) - make it stiffer in the process
+					+ Container ship: make it heavier, containers are too light and ship won't sink
+						+ Rename .dat's
+					+ Submarine
+				+ Adjust materials.json
+					+ Python script for materials
+					+ except for double-bottom's
+				+ Remove hack at Materials.cpp				
+				+ Recheck all ships
+					+ Fix Submarine
+				+ Redo materials template
+		+ See if can make Titanic not take water all up quickly
+		+ See if now some TODO ships are buoyant
+		+ .dat renames:
+			+ Ship 0: PM_Oasis
+		+ Try out auto-texture
+			+ Awful
+			+ See with nn_mipmap_linear
+			+ See with custom upsize
+		+ Figure out strength adjustment based off # of simulations
+		+ Check structure/texture alignment issue
+			+ Fix
+			+ Fix Titanic
+				+ Fix ropes: offset -1L, +1B
+			+ Fix Queen of Unova
+				+ Fix ropes: offset -1L, +1B
+				+ Fix eaten things
+		+ Reduce sparkles' angle
+		+ Impact bomb (*)
+

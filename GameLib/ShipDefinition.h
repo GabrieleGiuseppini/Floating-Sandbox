@@ -20,18 +20,31 @@ struct ShipDefinition
 {
 public:
 
+    enum class TextureOriginType
+    {
+        // The texture comes from the proper texture layer
+        Texture,
+
+        // The texture is a fallback to the structural image
+        StructuralImage
+    };
+
     ImageData StructuralImage;
 
-    std::optional<ImageData> TextureImage;
+    ImageData TextureImage;
+
+    TextureOriginType TextureOrigin;
 
     ShipMetadata const Metadata;
 
     ShipDefinition(
         ImageData structuralImage,
-        std::optional<ImageData> textureImage,
+        ImageData textureImage,
+        TextureOriginType textureOrigin,
         ShipMetadata const metadata)
         : StructuralImage(std::move(structuralImage))
         , TextureImage(std::move(textureImage))
+        , TextureOrigin(textureOrigin)
         , Metadata(std::move(metadata))
     {
     }

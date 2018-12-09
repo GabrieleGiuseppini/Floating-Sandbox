@@ -32,6 +32,11 @@ ResourceLoader::ResourceLoader()
 
 ShipDefinition ResourceLoader::LoadShipDefinition(std::filesystem::path const & filepath)
 {
+    std::filesystem::path absoluteStructuralImageFilePath;
+    std::filesystem::path absoluteTextureImageFilePath;
+    ShipDefinition::TextureOriginType textureOrigin;
+    std::optional<ShipMetadata> shipMetadata;
+
     if (ShipDefinitionFile::IsShipDefinitionFile(filepath))
     {
         //
@@ -52,43 +57,39 @@ ShipDefinition ResourceLoader::LoadShipDefinition(std::filesystem::path const & 
 
         std::filesystem::path basePath = filepath.parent_path();
 
-        std::filesystem::path absoluteStructuralImageFilePath =
+        absoluteStructuralImageFilePath =
             basePath / std::filesystem::path(sdf.StructuralImageFilePath);
 
-        std::optional<ImageData> textureImage;
         if (!!sdf.TextureImageFilePath)
         {
-            std::filesystem::path absoluteTextureImageFilePath =
-                basePath / std::filesystem::path(*sdf.TextureImageFilePath);
+            // Texture image is as specified
 
-            textureImage.emplace(std::move(
-                LoadImage(
-                    absoluteTextureImageFilePath.string(),
-                    IL_RGBA,
-                    IL_ORIGIN_LOWER_LEFT)));
+            absoluteTextureImageFilePath = basePath / std::filesystem::path(*sdf.TextureImageFilePath);
+
+            textureOrigin = ShipDefinition::TextureOriginType::Texture;
+        }
+        else
+        {
+            // Texture image is the structural image
+
+            absoluteTextureImageFilePath = absoluteStructuralImageFilePath;
+
+            textureOrigin = ShipDefinition::TextureOriginType::StructuralImage;
         }
 
 
         //
-        // Fill-in defaults
+        // Make metadata
         //
 
         std::string shipName = sdf.Metadata.ShipName.empty()
             ? std::filesystem::path(filepath).stem().string()
             : sdf.Metadata.ShipName;
 
-
-        //
-        // Load
-        //
-
-        return ShipDefinition(
-            LoadImage(absoluteStructuralImageFilePath.string(), IL_RGB, IL_ORIGIN_UPPER_LEFT),
-            std::move(textureImage),
-            ShipMetadata(
-                shipName,
-                sdf.Metadata.Author,
-                sdf.Metadata.Offset));
+        shipMetadata.emplace(
+            shipName,
+            sdf.Metadata.Author,
+            sdf.Metadata.Offset);
     }
     else
     {
@@ -96,16 +97,62 @@ ShipDefinition ResourceLoader::LoadShipDefinition(std::filesystem::path const & 
         // Assume it's just a structural image
         //
 
-        auto imageData = LoadImage(filepath, IL_RGB, IL_ORIGIN_UPPER_LEFT);
+        absoluteStructuralImageFilePath = filepath;
+        absoluteTextureImageFilePath = absoluteStructuralImageFilePath;
+        textureOrigin = ShipDefinition::TextureOriginType::StructuralImage;
 
-        return ShipDefinition(
-            std::move(imageData),
+        shipMetadata.emplace(
+            std::filesystem::path(filepath).stem().string(),
             std::nullopt,
-            ShipMetadata(
-                std::filesystem::path(filepath).stem().string(),
-                std::nullopt,
-                vec2f(0.0f, 0.0f)));
+            vec2f(0.0f, 0.0f));
     }
+
+    assert(!!shipMetadata);
+
+    //
+    // Load texture image
+    //
+
+    std::optional<ImageData> textureImage;
+
+    switch (textureOrigin)
+    {
+        case ShipDefinition::TextureOriginType::Texture:
+        {
+            // Just load as-is
+
+            textureImage.emplace(
+                ResourceLoader::LoadImage(
+                    absoluteTextureImageFilePath.string(),
+                    IL_RGBA,
+                    IL_ORIGIN_LOWER_LEFT,
+                    ResizeType::None));
+
+            break;
+        }
+
+        case ShipDefinition::TextureOriginType::StructuralImage:
+        {
+            // Resize it up
+
+            textureImage.emplace(
+                ResourceLoader::LoadImage(
+                    absoluteTextureImageFilePath.string(),
+                    IL_RGBA,
+                    IL_ORIGIN_LOWER_LEFT,
+                    ResizeType::ResizeUpNearestAndLinear));
+
+            break;
+        }
+    }
+
+    assert(!!textureImage);
+
+    return ShipDefinition(
+        ResourceLoader::LoadImage(absoluteStructuralImageFilePath.string(), IL_RGB, IL_ORIGIN_UPPER_LEFT, ResizeType::None),
+        std::move(*textureImage),
+        textureOrigin,
+        *shipMetadata);
 }
 
 std::filesystem::path ResourceLoader::GetDefaultShipDefinitionFilePath() const
@@ -332,7 +379,8 @@ ImageData ResourceLoader::LoadImageRgbaUpperLeft(std::filesystem::path const & f
     return LoadImage(
         filepath,
         IL_RGBA,
-        IL_ORIGIN_UPPER_LEFT);
+        IL_ORIGIN_UPPER_LEFT,
+        ResizeType::None);
 }
 
 ImageData ResourceLoader::LoadImageRgbaLowerLeft(std::filesystem::path const & filepath)
@@ -340,7 +388,8 @@ ImageData ResourceLoader::LoadImageRgbaLowerLeft(std::filesystem::path const & f
     return LoadImage(
         filepath,
         IL_RGBA,
-        IL_ORIGIN_LOWER_LEFT);
+        IL_ORIGIN_LOWER_LEFT,
+        ResizeType::None);
 }
 
 ImageData ResourceLoader::LoadImageRgbUpperLeft(std::filesystem::path const & filepath)
@@ -348,7 +397,8 @@ ImageData ResourceLoader::LoadImageRgbUpperLeft(std::filesystem::path const & fi
     return LoadImage(
         filepath,
         IL_RGB,
-        IL_ORIGIN_UPPER_LEFT);
+        IL_ORIGIN_UPPER_LEFT,
+        ResizeType::None);
 }
 
 ImageData ResourceLoader::LoadImageRgbLowerLeft(std::filesystem::path const & filepath)
@@ -356,13 +406,15 @@ ImageData ResourceLoader::LoadImageRgbLowerLeft(std::filesystem::path const & fi
     return LoadImage(
         filepath,
         IL_RGB,
-        IL_ORIGIN_LOWER_LEFT);
+        IL_ORIGIN_LOWER_LEFT,
+        ResizeType::None);
 }
 
 ImageData ResourceLoader::LoadImage(
     std::filesystem::path const & filepath,
     int targetFormat,
-    int targetOrigin)
+    int targetOrigin,
+    ResizeType resizeType)
 {
     //
     // Load image
@@ -405,14 +457,72 @@ ImageData ResourceLoader::LoadImage(
 
 
     //
+    // Get metadata
+    //
+
+    int width = ilGetInteger(IL_IMAGE_WIDTH);
+    int height = ilGetInteger(IL_IMAGE_HEIGHT);
+    int const depth = ilGetInteger(IL_IMAGE_DEPTH);
+    int const bpp = ilGetInteger(IL_IMAGE_BYTES_PER_PIXEL);
+
+
+
+    //
+    // Resize it
+    //
+
+    switch (resizeType)
+    {
+        case ResizeType::ResizeUpNearestAndLinear:
+        {
+            //
+            // Resize 4X with nearest
+            //
+
+            iluImageParameter(ILU_FILTER, ILU_NEAREST);
+
+            if (!iluScale(width * 4, height * 4, depth))
+            {
+                ILint devilError = ilGetError();
+                std::string devilErrorMessage(iluErrorString(devilError));
+                throw GameException("Could not resize image: " + devilErrorMessage);
+            }
+
+            width *= 4;
+            height *= 4;
+
+            //
+            // Resize 2X with linear
+            //
+
+            iluImageParameter(ILU_FILTER, ILU_LINEAR);
+
+            if (!iluScale(width * 2, height * 2, depth))
+            {
+                ILint devilError = ilGetError();
+                std::string devilErrorMessage(iluErrorString(devilError));
+                throw GameException("Could not resize image: " + devilErrorMessage);
+            }
+
+            width *= 2;
+            height *= 2;
+
+            break;
+        }
+
+        case ResizeType::None:
+        {
+            // No resize
+            break;
+        }
+    }
+
+
+    //
     // Create data
     //
 
     ILubyte const * imageData = ilGetData();
-    int const width = ilGetInteger(IL_IMAGE_WIDTH);
-    int const height = ilGetInteger(IL_IMAGE_HEIGHT);
-    int const bpp = ilGetInteger(IL_IMAGE_BYTES_PER_PIXEL);
-
     auto data = std::make_unique<unsigned char []>(width * height * bpp);
     std::memcpy(data.get(), imageData, width * height * bpp);
 

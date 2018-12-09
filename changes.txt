@@ -1,8 +1,10 @@
 1.7.5
 - Added impact bomb - now can trigger explosions on collisions!
 - Improved move-n'-rotate tool - it's easier to impart inertia now!
+- Lowered weight of most materials - making floating structures is now simpler
 - Lowered global damp
 - Global strength now auto-adjusts based on simulation quality
+- Improved rendering of structure-only ships
 - Fixed bug with alignment of texture and structure in multi-layer ships
 
 1.7.0

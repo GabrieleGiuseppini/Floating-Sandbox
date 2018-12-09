@@ -530,7 +530,8 @@ void GameController::AddShip(ShipDefinition shipDefinition)
     mRenderContext->AddShip(
         shipId,
         mWorld->GetShipPointCount(shipId),
-        std::move(shipDefinition.TextureImage));
+        std::move(shipDefinition.TextureImage),
+        shipDefinition.TextureOrigin);
 
     // Notify
     mGameEventDispatcher->OnShipLoaded(

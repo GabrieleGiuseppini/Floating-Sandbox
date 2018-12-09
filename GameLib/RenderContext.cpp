@@ -398,7 +398,8 @@ void RenderContext::Reset()
 void RenderContext::AddShip(
     ShipId shipId,
     size_t pointCount,
-    std::optional<ImageData> texture)
+    ImageData texture,
+    ShipDefinition::TextureOriginType textureOrigin)
 {
     assert(shipId == mShips.size() + 1);
     (void)shipId;
@@ -408,6 +409,7 @@ void RenderContext::AddShip(
         new ShipRenderContext(
             pointCount,
             std::move(texture),
+            textureOrigin,
             *mShaderManager,
             mGenericTextureAtlasOpenGLHandle,
             *mGenericTextureAtlasMetadata,

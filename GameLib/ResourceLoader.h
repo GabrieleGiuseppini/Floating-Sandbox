@@ -124,8 +124,21 @@ public:
 
 private:
 
+    enum class ResizeType
+    {
+        // No resize
+        None,
+
+        // Resize up as follows:
+        // - 4X using nearest filter
+        // - 2X using linear, so that transitions are smoothed, but only across two pixels
+        //   (if transitions were smoothed across all eight pixels, the image would look too blurry)
+        ResizeUpNearestAndLinear
+    };
+
     static ImageData LoadImage(
         std::filesystem::path const & filepath,
         int targetFormat,
-        int targetOrigin);
+        int targetOrigin,
+        ResizeType resizeType);
 };

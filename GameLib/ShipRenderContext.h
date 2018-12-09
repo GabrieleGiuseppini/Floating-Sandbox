@@ -10,6 +10,7 @@
 #include "ImageData.h"
 #include "RenderCore.h"
 #include "ShaderManager.h"
+#include "ShipDefinition.h"
 #include "SysSpecifics.h"
 #include "Vectors.h"
 
@@ -28,7 +29,8 @@ public:
 
     ShipRenderContext(
         size_t pointCount,
-        std::optional<ImageData> texture,
+        ImageData texture,
+        ShipDefinition::TextureOriginType textureOrigin,
         ShaderManager<ShaderManagerTraits> & shaderManager,
         GameOpenGLTexture & textureAtlasOpenGLHandle,
         TextureAtlasMetadata const & textureAtlasMetadata,
@@ -410,7 +412,7 @@ private:
 
 
     //
-    // Ship textures
+    // Textures
     //
 
     GameOpenGLTexture mElementShipTexture;
