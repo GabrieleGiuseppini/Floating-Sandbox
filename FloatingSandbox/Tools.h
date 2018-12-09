@@ -310,8 +310,8 @@ public:
                     static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(now - mCurrentTrajectory->StartTimestamp).count())
                     / static_cast<float>(TrajectoryLag.count());
 
-                // ((x+0.2)^2-0.04)/1.4
-                progress = (pow(progress + 0.2f, 2.0f) - 0.04f) / 1.4f;
+                // ((x+0.4)^2-0.16)/1.8
+                progress = (pow(progress + 0.4f, 2.0f) - 0.16f) / 1.8f;
 
                 vec2f const newCurrentPosition =
                     mCurrentTrajectory->StartPosition

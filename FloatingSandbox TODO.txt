@@ -119,9 +119,9 @@ Render:
 
 - Roadmap:
 	- 1.8.0
-		- Screenshots
 		- Zbuffer (*)
 		- Orphaned points (*)
+
 		- Libsimdpp spring relaxation (*)
 
 		- Batisphere with pumps and propulsion (*)
@@ -133,16 +133,15 @@ Render:
 		- Bubbles (*)
 		- Smoke (*)
 	- 1.9.0
-		- Flood tool (*)
 		- Settings Manager (*)
+		- Screenshots (*)
+		- Flood tool (*)
 	- 1.10.0
 		- Frontier
 		- Resource Packs (Moleskine)
 
 - New ships
-	- Lighten up the Titanic
 	- Fix contributions
-		- PacMaster
 		= Roma
 		- Others
 	= USS Shark
