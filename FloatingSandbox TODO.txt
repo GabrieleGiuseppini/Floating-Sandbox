@@ -119,6 +119,8 @@ Render:
 
 - Roadmap:
 	- 1.8.0
+		- Multi-layer ships
+
 		- Zbuffer (*)
 		- Orphaned points (*)
 
@@ -156,6 +158,7 @@ Render:
 		- Do they need longer-living lights?
 	- Custom sky colour - if possible a RGB picker in the settings
 	- Black hole
+	- Tool to increase or lower mass under the cursor
 
 - Technical Debt:
 	+ Global damp as game parameter
@@ -400,7 +403,11 @@ Render:
 		- Change connected component detection by not propagating from a "spring only" to a "body", so that two bodies connected
 		  only by springs or ropes are considered separate, and spring/rope belongs to first one only
 			- In practice: flood the *edge* network, not the spring network, and don't propagate
-			  if coming from edge with zero triangles to an edge with !=0 triangles
+			  if coming from edge with zero triangles to an edge with >0 triangles
+			- Could also do it now with spring's connected triangles: don't propagate if coming from #connected_triangles=0 to
+			  #connected_triangles>0
+				- Though we must still propagate through rope triangles, so maintain "coming from #connected_triangles=0"
+				  when propagating from a rope point to a rope point - regardless of connected triangles
 	- Option to enable drawing of force vectors for each point
 		- Ship::Update() takes also RenderContext const &, so can check if need to save force buffer
 			- Points::SaveForceBufferForVectorRender()
@@ -730,6 +737,7 @@ Render:
 	- Ship definition: multiple layers
 		- We want to maintain BW compat for ease of one-layer ship making
 		- TODOHERE: see Moleskine
+			- Add: other layer's properties propagate through half of each rope
 		- JSON: "extra_layers: ["rms_titanic_whatever.png.dat", ...]
 		- Material: becomes collection of N pointers: Structural (or "physical") (includes Sound), Electrical, Emitter, etc.
 		- ShipBuilder:

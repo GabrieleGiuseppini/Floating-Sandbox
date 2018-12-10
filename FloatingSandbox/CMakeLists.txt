@@ -147,6 +147,6 @@ install(FILES "${CMAKE_SOURCE_DIR}/Ships/IKC Krafting.shp"
 	DESTINATION Ships
 	RENAME "default_ship.shp")
 
-# License
-install(FILES "${CMAKE_SOURCE_DIR}/license.txt"
+# License et al
+install(FILES "${CMAKE_SOURCE_DIR}/license.txt" "${CMAKE_SOURCE_DIR}/changes.txt" "${CMAKE_SOURCE_DIR}/README.md"
 	DESTINATION .)
