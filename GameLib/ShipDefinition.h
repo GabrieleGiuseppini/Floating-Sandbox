@@ -20,6 +20,14 @@ struct ShipDefinition
 {
 public:
 
+    ImageData StructuralLayerImage;
+
+    std::optional<ImageData> RopeLayerImage;
+
+    std::optional<ImageData> ElectricalLayerImage;
+
+    ImageData TextureLayerImage;
+
     enum class TextureOriginType
     {
         // The texture comes from the proper texture layer
@@ -29,21 +37,21 @@ public:
         StructuralImage
     };
 
-    ImageData StructuralImage;
-
-    ImageData TextureImage;
-
     TextureOriginType TextureOrigin;
 
     ShipMetadata const Metadata;
 
     ShipDefinition(
-        ImageData structuralImage,
-        ImageData textureImage,
+        ImageData structuralLayerImage,
+        std::optional<ImageData> ropeLayerImage,
+        std::optional<ImageData> electricalLayerImage,
+        ImageData textureLayerImage,
         TextureOriginType textureOrigin,
         ShipMetadata const metadata)
-        : StructuralImage(std::move(structuralImage))
-        , TextureImage(std::move(textureImage))
+        : StructuralLayerImage(std::move(structuralLayerImage))
+        , RopeLayerImage(std::move(ropeLayerImage))
+        , ElectricalLayerImage(std::move(electricalLayerImage))
+        , TextureLayerImage(std::move(textureLayerImage))
         , TextureOrigin(textureOrigin)
         , Metadata(std::move(metadata))
     {

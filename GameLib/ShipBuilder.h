@@ -32,7 +32,7 @@ public:
         Physics::World & parentWorld,
         std::shared_ptr<IGameEventHandler> gameEventHandler,
         ShipDefinition const & shipDefinition,
-        std::shared_ptr<MaterialDatabase> materials,
+        MaterialDatabase const & materialDatabase,
         GameParameters const & gameParameters,
         VisitSequenceNumber currentVisitSequenceNumber);
 
@@ -42,81 +42,112 @@ private:
     {
         vec2f Position;
         vec2f TextureCoordinates;
-        Material const * Mtl;
+        vec4f RenderColor;
+        StructuralMaterial const & StructuralMtl;
         bool IsRopeEndpoint;
         bool IsLeaking;
 
-        std::vector<ElementIndex> ConnectedSprings;
+        ElectricalMaterial const * ElectricalMtl;
+        std::vector<ElementIndex> ConnectedSprings1;
 
         PointInfo(
             vec2f position,
             vec2f textureCoordinates,
-            Material const * mtl,
+            vec4f renderColor,
+            StructuralMaterial const & structuralMtl,
             bool isRopeEndpoint)
             : Position(position)
             , TextureCoordinates(textureCoordinates)
-            , Mtl(mtl)
+            , RenderColor(renderColor)
+            , StructuralMtl(structuralMtl)
             , IsRopeEndpoint(isRopeEndpoint)
             , IsLeaking(false)
-            , ConnectedSprings()
+            , ElectricalMtl(nullptr)
+            , ConnectedSprings1()
         {
         }
 
-        bool ContainsConnectedSpring(ElementIndex springIndex)
+        bool ContainsConnectedSpring(ElementIndex springIndex1)
         {
             return std::find(
-                ConnectedSprings.begin(),
-                ConnectedSprings.end(),
-                springIndex)
-                != ConnectedSprings.end();
+                ConnectedSprings1.begin(),
+                ConnectedSprings1.end(),
+                springIndex1)
+                != ConnectedSprings1.end();
         }
 
-        void AddConnectedSpring(ElementIndex springIndex)
+        void AddConnectedSpring(ElementIndex springIndex1)
         {
-            assert(!ContainsConnectedSpring(springIndex));
-            ConnectedSprings.push_back(springIndex);
+            assert(!ContainsConnectedSpring(springIndex1));
+            ConnectedSprings1.push_back(springIndex1);
         }
     };
 
     struct RopeSegment
     {
-        ElementIndex PointAIndex;
-        ElementIndex PointBIndex;
+        ElementIndex PointAIndex1;
+        ElementIndex PointBIndex1;
+
+        MaterialDatabase::ColorKey RopeColorKey;
 
         RopeSegment()
-            : PointAIndex(NoneElementIndex)
-            , PointBIndex(NoneElementIndex)
+            : PointAIndex1(NoneElementIndex)
+            , PointBIndex1(NoneElementIndex)
+            , RopeColorKey()
         {
+        }
+
+        bool SetEndpoint(
+            ElementIndex pointIndex1,
+            MaterialDatabase::ColorKey ropeColorKey)
+        {
+            if (NoneElementIndex == PointAIndex1)
+            {
+                PointAIndex1 = pointIndex1;
+                RopeColorKey = ropeColorKey;
+                return true;
+            }
+            else if (NoneElementIndex == PointBIndex1)
+            {
+                PointBIndex1 = pointIndex1;
+                assert(RopeColorKey == ropeColorKey);
+                return true;
+            }
+            else
+            {
+                // Too many
+                return false;
+            }
         }
     };
 
     struct SpringInfo
     {
-        ElementIndex PointAIndex;
-        ElementIndex PointBIndex;
+        ElementIndex PointAIndex1;
+        ElementIndex PointBIndex1;
 
-        FixedSizeVector<ElementIndex, 2> SuperTriangles;
+        FixedSizeVector<ElementIndex, 2> SuperTriangles2;
 
         SpringInfo(
-            ElementIndex pointAIndex,
-            ElementIndex pointBIndex)
-            : PointAIndex(pointAIndex)
-            , PointBIndex(pointBIndex)
-            , SuperTriangles()
+            ElementIndex pointAIndex1,
+            ElementIndex pointBIndex1)
+            : PointAIndex1(pointAIndex1)
+            , PointBIndex1(pointBIndex1)
+            , SuperTriangles2()
         {
         }
     };
 
     struct TriangleInfo
     {
-        std::array<ElementIndex, 3> PointIndices;
+        std::array<ElementIndex, 3> PointIndices1;
 
-        FixedSizeVector<ElementIndex, 4> SubSprings;
+        FixedSizeVector<ElementIndex, 4> SubSprings2;
 
         TriangleInfo(
-            std::array<ElementIndex, 3> const & pointIndices)
-            : PointIndices(pointIndices)
-            , SubSprings()
+            std::array<ElementIndex, 3> const & pointIndices1)
+            : PointIndices1(pointIndices1)
+            , SubSprings2()
         {
         }
     };
@@ -133,12 +164,12 @@ private:
         std::vector<ElementIndex> const & pointIndexRemap,
         std::vector<SpringInfo> const & springInfos)
     {
-        assert(points.GetMaterial(pointIndex)->IsRope);
+        assert(points.GetStructuralMaterial(pointIndex).IsRope);
 
         for (auto springIndex : points.GetConnectedSprings(pointIndex))
         {
-            if (!points.IsRope(pointIndexRemap[springInfos[springIndex].PointAIndex])
-                || !points.IsRope(pointIndexRemap[springInfos[springIndex].PointBIndex]))
+            if (!points.IsRope(pointIndexRemap[springInfos[springIndex].PointAIndex1])
+                || !points.IsRope(pointIndexRemap[springInfos[springIndex].PointBIndex1]))
             {
                 return true;
             }
@@ -147,55 +178,67 @@ private:
         return false;
     }
 
-    static void CreateRopeSegments(
-        std::map<std::array<uint8_t, 3u>, RopeSegment> const & ropeSegments,
+    static void AppendRopeSegments(
+        ImageData const & ropeLayerImage,
+        std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
+        std::map<MaterialDatabase::ColorKey, RopeSegment> & ropeSegments);
+
+    static void DecoratePointsWithElectricalMaterials(
+        ImageData const & layerImage,
+        std::vector<PointInfo> & pointInfos1,
+        bool isDedicatedElectricalLayer,
+        std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
+        MaterialDatabase const & materialDatabase);
+
+    static void AppendRopes(
+        std::map<MaterialDatabase::ColorKey, RopeSegment> const & ropeSegments,
         ImageSize const & structureImageSize,
-        Material const & ropeMaterial,
-        std::vector<PointInfo> & pointInfos,
-        std::vector<SpringInfo> & springInfos);
+        StructuralMaterial const & ropeMaterial,
+        std::vector<PointInfo> & pointInfos1,
+        std::vector<SpringInfo> & springInfos1);
 
     static void CreateShipElementInfos(
         std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
         ImageSize const & structureImageSize,
-        std::vector<PointInfo> & pointInfos,
-        std::vector<SpringInfo> & springInfos,
-        std::vector<TriangleInfo> & triangleInfos,
+        std::vector<PointInfo> & pointInfos1,
+        std::vector<SpringInfo> & springInfos1,
+        std::vector<TriangleInfo> & triangleInfos1,
         size_t & leakingPointsCount);
 
     template <int BlockSize>
     static std::vector<SpringInfo> ReorderSpringsOptimally_Tiling(
-        std::vector<SpringInfo> const & springInfos,
+        std::vector<SpringInfo> const & springInfos1,
         std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
         ImageSize const & structureImageSize,
-        std::vector<PointInfo> const & pointInfos);
+        std::vector<PointInfo> const & pointInfos1);
 
     static std::vector<PointInfo> ReorderPointsOptimally_FollowingSprings(
-        std::vector<PointInfo> const & pointInfos,
-        std::vector<SpringInfo> const & springInfos,
+        std::vector<PointInfo> const & pointInfos1,
+        std::vector<SpringInfo> const & springInfos2,
         std::vector<ElementIndex> & pointIndexRemap);
 
     static std::vector<PointInfo> ReorderPointsOptimally_Idempotent(
-        std::vector<PointInfo> const & pointInfos,
+        std::vector<PointInfo> const & pointInfos1,
         std::vector<ElementIndex> & pointIndexRemap);
 
     static Physics::Points CreatePoints(
-        std::vector<PointInfo> const & pointInfos,
+        std::vector<PointInfo> const & pointInfos2,
         Physics::World & parentWorld,
         std::shared_ptr<IGameEventHandler> gameEventHandler,
         GameParameters const & gameParameters);
 
     static std::vector<TriangleInfo> FilterOutRedundantTriangles(
-        std::vector<TriangleInfo> const & triangleInfos,
+        std::vector<TriangleInfo> const & triangleInfos2,
         Physics::Points const & points,
         std::vector<ElementIndex> const & pointIndexRemap,
-        std::vector<SpringInfo> const & springInfos);
+        std::vector<SpringInfo> const & springInfos2);
 
     static void ConnectSpringsAndTriangles(
-        std::vector<SpringInfo> & springInfos,
-        std::vector<TriangleInfo> & triangleInfos);
+        std::vector<SpringInfo> & springInfos2,
+        std::vector<TriangleInfo> & triangleInfos2);
 
     static Physics::Springs CreateSprings(
-        std::vector<SpringInfo> const & springInfos,
+        std::vector<SpringInfo> const & springInfos2,
         Physics::Points & points,
         std::vector<ElementIndex> const & pointIndexRemap,
         Physics::World & parentWorld,
@@ -203,7 +246,7 @@ private:
         GameParameters const & gameParameters);
 
     static Physics::Triangles CreateTriangles(
-        std::vector<TriangleInfo> const & triangleInfos,
+        std::vector<TriangleInfo> const & triangleInfos2,
         Physics::Points & points,
         std::vector<ElementIndex> const & pointIndexRemap);
 
@@ -253,11 +296,11 @@ private:
     };
 
     static std::vector<SpringInfo> ReorderSpringsOptimally_TomForsyth(
-        std::vector<SpringInfo> & springInfos,
+        std::vector<SpringInfo> & springInfos1,
         size_t vertexCount);
 
     static std::vector<TriangleInfo> ReorderTrianglesSpringsOptimally_TomForsyth(
-        std::vector<TriangleInfo> & triangleInfos,
+        std::vector<TriangleInfo> & triangleInfos1,
         size_t vertexCount);
 
 

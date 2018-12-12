@@ -6,140 +6,212 @@
 #pragma once
 
 #include "GameException.h"
-#include "Material.h"
+#include "Materials.h"
 #include "Utils.h"
 
 #include <picojson/picojson.h>
 
 #include <array>
 #include <cassert>
+#include <cstdint>
 #include <map>
-#include <memory>
-#include <vector>
+#include <optional>
 
 class MaterialDatabase
 {
 public:
 
-    static std::unique_ptr<MaterialDatabase> Create(picojson::value const & root)
-    {
-        std::vector<std::unique_ptr<Material const>> materials;
+    using ColorKey = std::array<uint8_t, 3>;
 
-        if (!root.is<picojson::array>())
+    static MaterialDatabase Create(
+        picojson::value const & structuralMaterialsRoot,
+        picojson::value const & electricalMaterialsRoot)
+    {
+        //
+        // Structural
+        //
+
+        std::map<ColorKey, StructuralMaterial> structuralMaterialsMap;
+
+        if (!structuralMaterialsRoot.is<picojson::array>())
         {
-            throw GameException("Materials database is not a JSON array");
+            throw GameException("Structural materials definition is not a JSON array");
         }
 
-        picojson::array rootArray = root.get<picojson::array>();
-        for (auto const & rootElem : rootArray)
+        picojson::array structuralMaterialsRootArray = structuralMaterialsRoot.get<picojson::array>();
+        std::optional<ColorKey> ropeMaterialColorKey;
+        for (auto const & materialElem : structuralMaterialsRootArray)
         {
-            if (!rootElem.is<picojson::object>())
+            if (!materialElem.is<picojson::object>())
             {
-                throw GameException("Found a non-object in materials database");
+                throw GameException("Found a non-object in structural materials definition");
             }
 
-            materials.emplace_back(Material::Create(rootElem.get<picojson::object>()));
-        }
+            picojson::object const & materialObject = materialElem.get<picojson::object>();
 
-        return Create(std::move(materials));
-    }
+            ColorKey colorKey = Utils::Hex2RgbColor(
+                Utils::GetMandatoryJsonMember<std::string>(materialObject, "color_key"));
 
-    static std::unique_ptr<MaterialDatabase> Create(std::vector<std::unique_ptr<Material const>> materials)
-    {
-        std::map<std::array<uint8_t, 3u>, std::unique_ptr<Material const>> materialsMap;
-        Material const * ropeMaterial = nullptr;
+            StructuralMaterial material = StructuralMaterial::Create(materialObject);
 
-        for (auto & material : materials)
-        {
-            if (material->IsRope)
+            // Make sure there are no dupes
+            if (structuralMaterialsMap.count(colorKey) != 0)
             {
-                // Make sure we've only got one rope material
-                if (nullptr != ropeMaterial)
+                throw GameException("Structural material \"" + material.Name + "\" has a duplicate color key");
+            }
+
+            // Check whether this is *the* rope material
+            if (material.IsRope)
+            {
+                if (!!ropeMaterialColorKey)
                 {
-                    throw GameException("More than one Rope material found in materials database");
+                    throw GameException("More than one Rope material found in structural materials definition");
                 }
 
-                // Make sure structural color is black
-                static std::array<uint8_t, 3u> BlackColour = { 0x00, 0x00, 0x00 };
-                if (material->StructuralColourRgb != BlackColour)
-                {
-                    throw GameException("Rope material must have black as its structural colour");
-                }
-
-                ropeMaterial = material.get();
-            }
-            else
-            {
-                // Make sure no clash with Indexed Rope colours
-                if (0x00 == material->StructuralColourRgb[0]
-                    && 0 == (material->StructuralColourRgb[1] & 0xF0))
-                {
-                    throw GameException("Material \"" + material->Name + "\" has a structural colour that is reserved for ropes and rope endpoints");
-                }
+                ropeMaterialColorKey.emplace(colorKey);
             }
 
-            // Add to map
-            auto result = materialsMap.emplace(material->StructuralColourRgb, std::move(material));
-
-            // Make sure no duplicate colour
-            if (!result.second)
-            {
-                throw GameException("Material \"" + material->Name + "\" has a duplicate structural colour");
-            }
+            structuralMaterialsMap.emplace(
+                std::make_pair(
+                    colorKey,
+                    material));
         }
 
-        // Make sure we've got one rope material
-        if (nullptr == ropeMaterial)
+        // Make sure we did find the rope material
+        if (!ropeMaterialColorKey)
         {
-            throw GameException("No Rope material found in materials database");
+            throw GameException("No Rope material found in structural materials definition");
         }
 
-        return std::unique_ptr<MaterialDatabase>(
-            new MaterialDatabase(
-                std::move(materialsMap),
-                *ropeMaterial));
+        // Make sure there are no clashes with indexed rope colors
+        for (auto const & entry : structuralMaterialsMap)
+        {
+            if (!entry.second.IsRope
+                && (*ropeMaterialColorKey)[0] == entry.first[0]
+                && ((*ropeMaterialColorKey)[1] & 0xF0) == (entry.first[1] & 0xF0))
+            {
+                throw GameException("Structural material \"" + entry.second.Name + "\" has a color key that is reserved for ropes and rope endpoints");
+            }
+        }
+
+
+        //
+        // Electrical materials
+        //
+
+        std::map<ColorKey, ElectricalMaterial> electricalMaterialsMap;
+
+        if (!electricalMaterialsRoot.is<picojson::array>())
+        {
+            throw GameException("Electrical materials definition is not a JSON array");
+        }
+
+        picojson::array electricalMaterialsRootArray = electricalMaterialsRoot.get<picojson::array>();
+        for (auto const & materialElem : electricalMaterialsRootArray)
+        {
+            if (!materialElem.is<picojson::object>())
+            {
+                throw GameException("Found a non-object in electrical materials definition");
+            }
+
+            picojson::object const & materialObject = materialElem.get<picojson::object>();
+
+            ColorKey colorKey = Utils::Hex2RgbColor(
+                Utils::GetMandatoryJsonMember<std::string>(materialObject, "color_key"));
+
+            ElectricalMaterial material = ElectricalMaterial::Create(materialObject);
+
+            // Make sure there are no dupes
+            if (electricalMaterialsMap.count(colorKey) != 0)
+            {
+                throw GameException("Electrical material \"" + material.Name + "\" has a duplicate color key");
+            }
+
+            electricalMaterialsMap.emplace(
+                std::make_pair(
+                    colorKey,
+                    material));
+        }
+
+        return MaterialDatabase(
+            std::move(structuralMaterialsMap),
+            std::move(electricalMaterialsMap));
     }
 
-    Material const * Find(std::array<uint8_t, 3u> const & structuralColourRgb) const
+    StructuralMaterial const * FindStructuralMaterial(ColorKey const & colorKey) const
     {
-        auto srchIt = mMaterialsMap.find(structuralColourRgb);
-        if (srchIt != mMaterialsMap.end())
+        auto srchIt = mStructuralMaterialMap.find(colorKey);
+        if (srchIt != mStructuralMaterialMap.end())
         {
-            return srchIt->second.get();
+            return &(srchIt->second);
         }
-        else
+
+        // Check whether it's a rope endpoint
+        if (colorKey[0] == mRopeMaterialBaseColorKey[0]
+            && ((colorKey[1] & 0xF0) == (mRopeMaterialBaseColorKey[1] & 0xF0)))
         {
-            return nullptr;
+            return &mRopeMaterial;
         }
+
+        // No luck
+        return nullptr;
     }
 
-    Material const & GetRopeMaterial() const
+    ElectricalMaterial const * FindElectricalMaterial(ColorKey const & colorKey) const
+    {
+        auto srchIt = mElectricalMaterialMap.find(colorKey);
+        if (srchIt != mElectricalMaterialMap.end())
+        {
+            return &(srchIt->second);
+        }
+
+        // No luck
+        return nullptr;
+    }
+
+    StructuralMaterial const & GetRopeMaterial() const
     {
         return mRopeMaterial;
-    }
-
-    size_t GetMaterialCount() const
-    {
-        return mMaterialsMap.size();
-    }
-
-    Material const & GetMaterialAt(size_t index) const
-    {
-        auto it = mMaterialsMap.begin();
-        std::advance(it, index);
-        return *(it->second);
     }
 
 private:
 
     MaterialDatabase(
-        std::map<std::array<uint8_t, 3u>, std::unique_ptr<Material const>> && materialsMap,
-        Material const & ropeMaterial)
-        : mMaterialsMap(std::move(materialsMap))
-        , mRopeMaterial(ropeMaterial)
+        std::map<ColorKey, StructuralMaterial> structuralMaterialMap,
+        std::map<ColorKey, ElectricalMaterial> electricalMaterialMap)
+        : mStructuralMaterialMap(std::move(structuralMaterialMap))
+        , mElectricalMaterialMap(std::move(electricalMaterialMap))
+        , mRopeMaterialBaseColorKey(GetRopeMaterialColorKey(mStructuralMaterialMap))
+        , mRopeMaterial(GetRopeMaterial(mStructuralMaterialMap))
     {
     }
 
-    std::map<std::array<uint8_t, 3u>, std::unique_ptr<Material const>> mMaterialsMap;
-    Material const & mRopeMaterial;
+    static ColorKey const & GetRopeMaterialColorKey(std::map<ColorKey, StructuralMaterial> const & structuralMaterialMap)
+    {
+        for (auto const & entry : structuralMaterialMap)
+        {
+            if (entry.second.IsRope)
+                return entry.first;
+        }
+
+        assert(false);
+        throw GameException("Shouldn't be here!");
+    }
+
+    static StructuralMaterial const & GetRopeMaterial(std::map<ColorKey, StructuralMaterial> const & structuralMaterialMap)
+    {
+        for (auto const & entry : structuralMaterialMap)
+        {
+            if (entry.second.IsRope)
+                return entry.second;
+        }
+
+        assert(false);
+        throw GameException("Shouldn't be here!");
+    }
+
+    std::map<ColorKey, StructuralMaterial> mStructuralMaterialMap;
+    std::map<ColorKey, ElectricalMaterial> mElectricalMaterialMap;
+    ColorKey const mRopeMaterialBaseColorKey;
+    StructuralMaterial const & mRopeMaterial;
 };

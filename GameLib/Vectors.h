@@ -29,6 +29,20 @@ public:
             magnitude * sin(angle));
     }
 
+    inline constexpr vec2f()
+        : x(0.0f)
+        , y(0.0f)
+    {
+    }
+
+    inline constexpr vec2f(
+        float _x,
+        float _y)
+        : x(_x)
+        , y(_y)
+    {
+    }
+
 	inline vec2f operator+(vec2f const & other) const
 	{
 		return vec2f(
@@ -175,20 +189,6 @@ public:
     }
 
     std::string toString() const;
-
-    inline constexpr vec2f()
-        : x(0.0f)
-        , y(0.0f)
-    {
-    }
-
-	inline constexpr vec2f(
-		float _x,
-		float _y)
-		: x(_x)
-		, y(_y)
-	{
-	}
 };
 
 static_assert(offsetof(vec2f, x) == 0);
@@ -204,6 +204,23 @@ public:
     float x, y, z;
 
     static constexpr const vec3f zero() { return vec3f(); }
+
+    inline constexpr vec3f()
+        : x(0.0f)
+        , y(0.0f)
+        , z(0.0f)
+    {
+    }
+
+    inline constexpr vec3f(
+        float _x,
+        float _y,
+        float _z)
+        : x(_x)
+        , y(_y)
+        , z(_z)
+    {
+    }
 
 	inline vec3f operator+(vec3f const & other) const
 	{
@@ -322,23 +339,6 @@ public:
 	}
 
     std::string toString() const;
-
-    inline constexpr vec3f()
-        : x(0.0f)
-        , y(0.0f)
-        , z(0.0f)
-    {
-    }
-
-	inline constexpr vec3f(
-		float _x,
-		float _y,
-		float _z)
-		: x(_x)
-		, y(_y)
-		, z(_z)
-	{
-	}
 };
 
 static_assert(offsetof(vec3f, x) == 0);
@@ -355,6 +355,36 @@ public:
     float x, y, z, w;
 
     static constexpr const vec4f zero() { return vec4f(); }
+
+    inline constexpr vec4f()
+        : x(0.0f)
+        , y(0.0f)
+        , z(0.0f)
+        , w(0.0f)
+    {
+    }
+
+    inline constexpr vec4f(
+        float _x,
+        float _y,
+        float _z,
+        float _w)
+        : x(_x)
+        , y(_y)
+        , z(_z)
+        , w(_w)
+    {
+    }
+
+    inline constexpr vec4f(
+        vec3f const & _xyz,
+        float _w)
+        : x(_xyz.x)
+        , y(_xyz.y)
+        , z(_xyz.z)
+        , w(_w)
+    {
+    }
 
     inline vec4f operator+(vec4f const & other) const
     {
@@ -448,26 +478,6 @@ public:
     }
 
     std::string toString() const;
-
-    inline constexpr vec4f()
-        : x(0.0f)
-        , y(0.0f)
-        , z(0.0f)
-        , w(0.0f)
-    {
-    }
-
-    inline constexpr vec4f(
-        float _x,
-        float _y,
-        float _z,
-        float _w)
-        : x(_x)
-        , y(_y)
-        , z(_z)
-        , w(_w)
-    {
-    }
 };
 
 static_assert(offsetof(vec4f, x) == 0);

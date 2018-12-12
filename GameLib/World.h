@@ -34,7 +34,7 @@ public:
 
     ShipId AddShip(
         ShipDefinition const & shipDefinition,
-        std::shared_ptr<MaterialDatabase> materials,
+        MaterialDatabase const & materialDatabase,
         GameParameters const & gameParameters);
 
     size_t GetShipPointCount(ShipId shipId) const;

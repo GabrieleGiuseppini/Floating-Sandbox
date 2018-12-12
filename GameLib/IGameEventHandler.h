@@ -6,7 +6,7 @@
 #pragma once
 
 #include "GameTypes.h"
-#include "Material.h"
+#include "Materials.h"
 
 #include <optional>
 
@@ -38,7 +38,7 @@ public:
     }
 
     virtual void OnDestroy(
-        Material const * /*material*/,
+        StructuralMaterial const & /*structuralMaterial*/,
         bool /*isUnderwater*/,
         unsigned int /*size*/)
     {
@@ -60,7 +60,7 @@ public:
     }
 
     virtual void OnStress(
-        Material const * /*material*/,
+        StructuralMaterial const & /*structuralMaterial*/,
         bool /*isUnderwater*/,
         unsigned int /*size*/)
     {
@@ -68,7 +68,7 @@ public:
     }
 
     virtual void OnBreak(
-        Material const * /*material*/,
+        StructuralMaterial const & /*structuralMaterial*/,
         bool /*isUnderwater*/,
         unsigned int /*size*/)
     {

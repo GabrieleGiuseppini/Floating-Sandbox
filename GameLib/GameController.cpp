@@ -16,7 +16,7 @@ std::unique_ptr<GameController> GameController::Create(
     ProgressCallback const & progressCallback)
 {
     // Load materials
-    std::unique_ptr<MaterialDatabase> materials = resourceLoader->LoadMaterials();
+    MaterialDatabase materialDatabase = resourceLoader->LoadMaterialDatabase();
 
     // Create game dispatcher
     std::unique_ptr<GameEventDispatcher> gameEventDispatcher = std::make_unique<GameEventDispatcher>();
@@ -24,7 +24,7 @@ std::unique_ptr<GameController> GameController::Create(
     // Create render context
     std::unique_ptr<Render::RenderContext> renderContext = std::make_unique<Render::RenderContext>(
         *resourceLoader,
-        materials->GetRopeMaterial().RenderColour,
+        materialDatabase.GetRopeMaterial().RenderColor,
         [&progressCallback](float progress, std::string const & message)
         {
             progressCallback(0.9f * progress, message);
@@ -45,7 +45,7 @@ std::unique_ptr<GameController> GameController::Create(
             std::move(swapRenderBuffersFunction),
             std::move(gameEventDispatcher),
             std::move(textLayer),
-            std::move(materials),
+            std::move(materialDatabase),
             resourceLoader));
 }
 
@@ -523,14 +523,14 @@ void GameController::AddShip(ShipDefinition shipDefinition)
     // Add ship to world
     int shipId = mWorld->AddShip(
         shipDefinition,
-        mMaterials,
+        mMaterialDatabase,
         mGameParameters);
 
     // Add ship to rendering engine
     mRenderContext->AddShip(
         shipId,
         mWorld->GetShipPointCount(shipId),
-        std::move(shipDefinition.TextureImage),
+        std::move(shipDefinition.TextureLayerImage),
         shipDefinition.TextureOrigin);
 
     // Notify

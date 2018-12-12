@@ -35,7 +35,7 @@ World::World(
 
 ShipId World::AddShip(
     ShipDefinition const & shipDefinition,
-    std::shared_ptr<MaterialDatabase> materials,
+    MaterialDatabase const & materialDatabase,
     GameParameters const & gameParameters)
 {
     ShipId shipId = static_cast<ShipId>(mAllShips.size() + 1);
@@ -45,7 +45,7 @@ ShipId World::AddShip(
         *this,
         mGameEventHandler,
         shipDefinition,
-        materials,
+        materialDatabase,
         gameParameters,
         mCurrentVisitSequenceNumber);
 

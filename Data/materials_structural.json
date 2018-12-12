@@ -11,12 +11,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 1,
-        "structural_colour": "#404050",
-	"render_colour": "#404050",
+        "color_key": "#404050",
+	"render_color": "#404050",
         "is_hull": true,
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+	"sound_type": "Metal"
     },
     {
         "name": "Structural Iron",
@@ -30,12 +28,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 1,
-        "structural_colour": "#303040",
-	"render_colour": "#303040",
+        "color_key": "#303040",
+	"render_color": "#303040",
         "is_hull": false,
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+	"sound_type": "Metal"
     },
 
     {
@@ -51,11 +47,9 @@
 	},   
         "is_hull": false,
 	"stiffness": 1,
-        "structural_colour": "#808090",
-	"render_colour": "#808090",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#808090",
+	"render_color": "#808090",
+	"sound_type": "Metal"
     },
     {
         "name": "Steel Hull",
@@ -70,11 +64,9 @@
 	},        
 	"stiffness": 1,
         "is_hull": true,
-        "structural_colour": "#A0A0A0",
-        "render_colour": "#A0A0A0",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#A0A0A0",
+        "render_color": "#A0A0A0",
+	"sound_type": "Metal"
     },
     {
         "name": "Structural Steel",
@@ -89,11 +81,9 @@
 	},        
 	"stiffness": 1,
         "is_hull": false,
-        "structural_colour": "#909090", 
-        "render_colour": "#909090",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#909090", 
+        "render_color": "#909090",
+	"sound_type": "Metal"
     },
     {
         "name": "Steel",
@@ -108,11 +98,9 @@
 	},   
         "is_hull": false,
 	"stiffness": 1,
-        "structural_colour": "#D8D8D8",
-	"render_colour": "#D8D8D8",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#D8D8D8",
+	"render_color": "#D8D8D8",
+	"sound_type": "Metal"
     },
     {
         "name": "Titanium Hull",
@@ -126,12 +114,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 1,
-        "structural_colour": "#565663",
-	"render_colour": "#565663",
+        "color_key": "#565663",
+	"render_color": "#565663",
         "is_hull": true,
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+	"sound_type": "Metal"
     },
     {
         "name": "Titanium",
@@ -146,11 +132,9 @@
 	},   
         "is_hull": false,
 	"stiffness": 1,
-        "structural_colour": "#787896",
-	"render_colour": "#787896",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#787896",
+	"render_color": "#787896",
+	"sound_type": "Metal"
     },
     {
         "name": "Aluminium Hull",
@@ -165,11 +149,9 @@
 	},   
         "is_hull": true,
 	"stiffness": 1.0,
-        "structural_colour": "#E0E0E0", 
-	"render_colour": "#E0E0E0",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#E0E0E0", 
+	"render_color": "#E0E0E0",
+	"sound_type": "Metal"
     },
     {
         "name": "Structural Aluminium",
@@ -184,11 +166,9 @@
 	},   
         "is_hull": false,
 	"stiffness": 1.0,
-        "structural_colour": "#C8C8C8", 
-	"render_colour": "#C8C8C8",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#C8C8C8", 
+	"render_color": "#C8C8C8",
+	"sound_type": "Metal"
     },
     {
         "name": "Aluminium",
@@ -203,11 +183,9 @@
 	},   
         "is_hull": false,
 	"stiffness": 1.0,
-        "structural_colour": "#EFEFEF",
-	"render_colour": "#EFEFEF",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#EFEFEF",
+	"render_color": "#EFEFEF",
+	"sound_type": "Metal"
     },
     {
         "name": "Aluminium Hull Red",
@@ -222,11 +200,9 @@
 	},   
         "is_hull": true,
 	"stiffness": 1.0,
-        "structural_colour": "#A42E10", 
-	"render_colour": "#A42E10",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#A42E10", 
+	"render_color": "#A42E10",
+	"sound_type": "Metal"
     },
     {
         "name": "Aluminium Red",
@@ -241,11 +217,9 @@
 	},   
         "is_hull": false,
 	"stiffness": 1.0,
-        "structural_colour": "#B22212",
-	"render_colour": "#B22212",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#B22212",
+	"render_color": "#B22212",
+	"sound_type": "Metal"
     },
     {
         "name": "Aluminium Hull Yellow",
@@ -260,11 +234,9 @@
 	},   
         "is_hull": true,
 	"stiffness": 1.0,
-        "structural_colour": "#A29A10", 
-	"render_colour": "#A29A10",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#A29A10", 
+	"render_color": "#A29A10",
+	"sound_type": "Metal"
     },
     {
         "name": "Aluminium Yellow",
@@ -279,11 +251,9 @@
 	},   
         "is_hull": false,
 	"stiffness": 1.0,
-        "structural_colour": "#B2A012",
-	"render_colour": "#B2A012",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#B2A012",
+	"render_color": "#B2A012",
+	"sound_type": "Metal"
     },
     {
         "name": "Aluminium Hull Green",
@@ -298,11 +268,9 @@
 	},   
         "is_hull": true,
 	"stiffness": 1.0,
-        "structural_colour": "#76B210", 
-	"render_colour": "#76B210",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#76B210", 
+	"render_color": "#76B210",
+	"sound_type": "Metal"
     },
     {
         "name": "Aluminium Green",
@@ -317,11 +285,9 @@
 	},   
         "is_hull": false,
 	"stiffness": 1.0,
-        "structural_colour": "#88B810",
-	"render_colour": "#88B810", 
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#88B810",
+	"render_color": "#88B810", 
+	"sound_type": "Metal"
     },
     {
         "name": "Aluminium Hull Blue",
@@ -336,11 +302,9 @@
 	},   
         "is_hull": true,
 	"stiffness": 1.0,
-        "structural_colour": "#10A29A", 
-	"render_colour": "#10A29A",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#10A29A", 
+	"render_color": "#10A29A",
+	"sound_type": "Metal"
     },
     {
         "name": "Aluminium Blue",
@@ -355,11 +319,9 @@
 	},   
         "is_hull": false,
 	"stiffness": 1.0,
-        "structural_colour": "#10B2A0",
-	"render_colour": "#10B2A0",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#10B2A0",
+	"render_color": "#10B2A0",
+	"sound_type": "Metal"
     },
     {
         "name": "Aluminium Hull Blue2",
@@ -374,11 +336,9 @@
 	},   
         "is_hull": true,
 	"stiffness": 1.0,
-        "structural_colour": "#204060", 
-	"render_colour": "#204060",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#204060", 
+	"render_color": "#204060",
+	"sound_type": "Metal"
     },
     {
         "name": "Aluminium Blue2",
@@ -393,11 +353,9 @@
 	},   
         "is_hull": false,
 	"stiffness": 1.0,
-        "structural_colour": "#305878",
-	"render_colour": "#305878",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#305878",
+	"render_color": "#305878",
+	"sound_type": "Metal"
     },
 
 
@@ -415,11 +373,9 @@
 	},   
         "is_hull": true,
 	"stiffness": 2.0,
-        "structural_colour": "#757575", 
-	"render_colour": "#757575",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#757575", 
+	"render_color": "#757575",
+	"sound_type": "Metal"
     },
     {
         "name": "Aluminium Stiff",
@@ -434,11 +390,9 @@
 	},   
         "is_hull": false,
 	"stiffness": 2.2,
-        "structural_colour": "#989898",
-	"render_colour": "#989898",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#989898",
+	"render_color": "#989898",
+	"sound_type": "Metal"
     },
 
     {
@@ -453,12 +407,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 1,
-        "structural_colour": "#905020",
-	"render_colour": "#905020",
+        "color_key": "#905020",
+	"render_color": "#905020",
         "is_hull": true,
-	"sound_properties": {
-		"element_type": "Wood"
-	}
+	"sound_type": "Wood"
     },
     {
         "name": "Wood",
@@ -473,11 +425,9 @@
 	},  
 	"is_hull": false,
 	"stiffness": 1,
-        "structural_colour": "#E0D8C0",
-	"render_colour": "#E0D8C0",
-	"sound_properties": {
-		"element_type": "Wood"
-	}
+        "color_key": "#E0D8C0",
+	"render_color": "#E0D8C0",
+	"sound_type": "Wood"
     },
     {
         "name": "Carbon Hull",
@@ -491,12 +441,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 1,
-        "structural_colour": "#1A1A1A",
-	"render_colour": "#1A1A1A",
+        "color_key": "#1A1A1A",
+	"render_color": "#1A1A1A",
         "is_hull": true,
-	"sound_properties": {
-		"element_type": "Wood"
-	}
+	"sound_type": "Wood"
     },
     {
         "name": "Carbon",
@@ -511,11 +459,9 @@
 	},  
 	"is_hull": false,
 	"stiffness": 1,
-        "structural_colour": "#232323",
-	"render_colour": "#232323",
-	"sound_properties": {
-		"element_type": "Wood"
-	}
+        "color_key": "#232323",
+	"render_color": "#232323",
+	"sound_type": "Wood"
     },
     {
         "name": "Aluminium Sheet Hull",
@@ -530,11 +476,9 @@
 	},   
         "is_hull": true,
 	"stiffness": 0.5,
-        "structural_colour": "#C0C0C0",
-	"render_colour": "#C0C0C0",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#C0C0C0",
+	"render_color": "#C0C0C0",
+	"sound_type": "Metal"
     },
     {
         "name": "Aluminium Sheet",
@@ -549,11 +493,9 @@
 	},   
         "is_hull": false,
 	"stiffness": 0.5,
-        "structural_colour": "#D0D0D0",
-	"render_colour": "#D0D0D0",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#D0D0D0",
+	"render_color": "#D0D0D0",
+	"sound_type": "Metal"
     },
     {
         "name": "Cardboard Hull",
@@ -568,11 +510,9 @@
 	},
 	"is_hull": true,
 	"stiffness": 1,
-        "structural_colour": "#A88848",
-        "render_colour": "#A88848",
-	"sound_properties": {
-		"element_type": "Wood"
-	}
+        "color_key": "#A88848",
+        "render_color": "#A88848",
+	"sound_type": "Wood"
     },
     {
         "name": "Cardboard",
@@ -587,11 +527,9 @@
 	},  
 	"is_hull": false,
 	"stiffness": 1,
-        "structural_colour": "#C1A46A",
-	"render_colour": "#C1A46A",
-	"sound_properties": {
-		"element_type": "Wood"
-	}
+        "color_key": "#C1A46A",
+	"render_color": "#C1A46A",
+	"sound_type": "Wood"
     },
     {
         "name": "Rope",
@@ -605,13 +543,11 @@
 		"density": 0.0935
 	},
 	"stiffness": 0.8,
-        "structural_colour": "#000000",
-	"render_colour": "#000000",
+        "color_key": "#000000",
+	"render_color": "#000000",
         "is_hull": true,
 	"is_rope": true,
-	"sound_properties": {
-		"element_type": "Cable"
-	}
+	"sound_type": "Cable"
     },
     {
         "name": "Steel Hull Red",
@@ -625,12 +561,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 1,
-        "structural_colour": "#A71000",
-	"render_colour": "#A71000",
+        "color_key": "#A71000",
+	"render_color": "#A71000",
         "is_hull": true,
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+	"sound_type": "Metal"
     },
     {
         "name": "Structural Steel Red",
@@ -644,12 +578,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 1,
-        "structural_colour": "#950000",
-	"render_colour": "#950000",
+        "color_key": "#950000",
+	"render_color": "#950000",
         "is_hull": false,
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+	"sound_type": "Metal"
     },
 
     {
@@ -665,11 +597,9 @@
 	},   
         "is_hull": false,
 	"stiffness": 1,
-        "structural_colour": "#D80E00",
-	"render_colour": "#D80E00",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#D80E00",
+	"render_color": "#D80E00",
+	"sound_type": "Metal"
     },
     {
         "name": "Iron Hull Red",
@@ -683,12 +613,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 1,
-        "structural_colour": "#840E00",
-	"render_colour": "#840E00",
+        "color_key": "#840E00",
+	"render_color": "#840E00",
         "is_hull": true,
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+	"sound_type": "Metal"
     },
     {
         "name": "Structural Iron Red",
@@ -702,12 +630,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 1,
-        "structural_colour": "#740200", 
-	"render_colour": "#740200",
+        "color_key": "#740200", 
+	"render_color": "#740200",
         "is_hull": false,
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+	"sound_type": "Metal"
     },
 
     {
@@ -723,11 +649,9 @@
 	},   
         "is_hull": false,
 	"stiffness": 1,
-        "structural_colour": "#9E0F00",
-	"render_colour": "#9E0F00",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#9E0F00",
+	"render_color": "#9E0F00",
+	"sound_type": "Metal"
     },
     {
         "name": "Wood Hull Red",
@@ -741,12 +665,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 1,
-        "structural_colour": "#9E2E0C",
-	"render_colour": "#9E2E0C",
+        "color_key": "#9E2E0C",
+	"render_color": "#9E2E0C",
         "is_hull": true,
-	"sound_properties": {
-		"element_type": "Wood"
-	}
+	"sound_type": "Wood"
     },
     {
         "name": "Wood Red",
@@ -761,11 +683,9 @@
 	},  
 	"is_hull": false,
 	"stiffness": 1,
-        "structural_colour": "#B51B1B",
-	"render_colour": "#B51B1B",
-	"sound_properties": {
-		"element_type": "Wood"
-	}
+        "color_key": "#B51B1B",
+	"render_color": "#B51B1B",
+	"sound_type": "Wood"
     },
     {
         "name": "Titanium Hull Red",
@@ -779,12 +699,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 1,
-        "structural_colour": "#8F1F00",
-	"render_colour": "#8F1F00",
+        "color_key": "#8F1F00",
+	"render_color": "#8F1F00",
         "is_hull": true,
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+	"sound_type": "Metal"
     },
     {
         "name": "Titanum Red",
@@ -799,11 +717,9 @@
 	},   
         "is_hull": false,
 	"stiffness": 1,
-        "structural_colour": "#BE1400",
-	"render_colour": "#BE1400",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#BE1400",
+	"render_color": "#BE1400",
+	"sound_type": "Metal"
     },
     {
         "name": "Steel Hull Yellow",
@@ -817,12 +733,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 1,
-        "structural_colour": "#A27A00",
-	"render_colour": "#A27A00",
+        "color_key": "#A27A00",
+	"render_color": "#A27A00",
         "is_hull": true,
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+	"sound_type": "Metal"
     },
     {
         "name": "Structural Steel Yellow",
@@ -836,12 +750,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 1,
-        "structural_colour": "#926A00",
-	"render_colour": "#926A00",
+        "color_key": "#926A00",
+	"render_color": "#926A00",
         "is_hull": false,
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+	"sound_type": "Metal"
     },
     {
         "name": "Steel Yellow",
@@ -856,11 +768,9 @@
 	},   
         "is_hull": false,
 	"stiffness": 1, 
-        "structural_colour": "#D29800",
-	"render_colour": "#D29800",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#D29800",
+	"render_color": "#D29800",
+	"sound_type": "Metal"
     },
     {
         "name": "Iron Hull Yellow",
@@ -874,12 +784,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 1,
-        "structural_colour": "#806200",
-	"render_colour": "#806200",
+        "color_key": "#806200",
+	"render_color": "#806200",
         "is_hull": true,
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+	"sound_type": "Metal"
     },
     {
         "name": "Structural Iron Yellow",
@@ -893,12 +801,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 1,
-        "structural_colour": "#705200",
-	"render_colour": "#705200",
+        "color_key": "#705200",
+	"render_color": "#705200",
         "is_hull": false,
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+	"sound_type": "Metal"
     },
 
     {
@@ -914,11 +820,9 @@
 	},   
         "is_hull": false,
 	"stiffness": 1,
-        "structural_colour": "#997200",
-	"render_colour": "#997200",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#997200",
+	"render_color": "#997200",
+	"sound_type": "Metal"
     },
     {
         "name": "Wood Hull Yellow",
@@ -932,12 +836,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 1,
-        "structural_colour": "#998B0A",
-	"render_colour": "#998B0A",
+        "color_key": "#998B0A",
+	"render_color": "#998B0A",
         "is_hull": true,
-	"sound_properties": {
-		"element_type": "Wood"
-	}
+	"sound_type": "Wood"
     },
     {
         "name": "Wood Yellow",
@@ -952,12 +854,9 @@
 	},  
 	"is_hull": false,
 	"stiffness": 1,
-        "structural_colour": "#AF7C18",
-	"render_colour": "#AF7C18",
-	"sound_properties": {
-		"element_type": "Wood"
-	}
-    },
+        "color_key": "#AF7C18",
+	"render_color": "#AF7C18",
+	"sound_type": "Wood"    },
     {
         "name": "Titanium Hull Yellow",
 	"template": {
@@ -970,12 +869,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 1,
-        "structural_colour": "#8B7A00",
-	"render_colour": "#8B7A00",
+        "color_key": "#8B7A00",
+	"render_color": "#8B7A00",
         "is_hull": true,
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+	"sound_type": "Metal"
     },
     {
         "name": "Titanium Yellow",
@@ -990,11 +887,9 @@
 	},   
         "is_hull": false,
 	"stiffness": 1,
-        "structural_colour": "#B88D00",
-	"render_colour": "#B88D00",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#B88D00",
+	"render_color": "#B88D00",
+	"sound_type": "Metal"
     },
     {
         "name": "Steel Hull Green",
@@ -1008,12 +903,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 1,
-        "structural_colour": "#5A9B00",
-	"render_colour": "#5A9B00",
+        "color_key": "#5A9B00",
+	"render_color": "#5A9B00",
         "is_hull": true,
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+	"sound_type": "Metal"
     },
     {
         "name": "Steel Green",
@@ -1028,11 +921,9 @@
 	},   
         "is_hull": false,
 	"stiffness": 1,
-        "structural_colour": "#7BC800",
-	"render_colour": "#7BC800",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#7BC800",
+	"render_color": "#7BC800",
+	"sound_type": "Metal"
     },
     {
         "name": "Iron Hull Green",
@@ -1046,12 +937,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 1,
-        "structural_colour": "#467B00",
-	"render_colour": "#467B00",
+        "color_key": "#467B00",
+	"render_color": "#467B00",
         "is_hull": true,
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+	"sound_type": "Metal"
     },
     {
         "name": "Iron Green",
@@ -1066,11 +955,9 @@
 	},   
         "is_hull": false,
 	"stiffness": 1,
-        "structural_colour": "#569200",
-	"render_colour": "#569200",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#569200",
+	"render_color": "#569200",
+	"sound_type": "Metal"
     },
     {
         "name": "Wood Hull Green",
@@ -1084,12 +971,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 1,
-        "structural_colour": "#439206",
-	"render_colour": "#439206",
+        "color_key": "#439206",
+	"render_color": "#439206",
         "is_hull": true,
-	"sound_properties": {
-		"element_type": "Wood"
-	}
+	"sound_type": "Wood"
     },
     {
         "name": "Wood Green",
@@ -1104,11 +989,9 @@
 	},  
 	"is_hull": false,
 	"stiffness": 1,
-        "structural_colour": "#78A814",
-	"render_colour": "#78A814",
-	"sound_properties": {
-		"element_type": "Wood"
-	}
+        "color_key": "#78A814",
+	"render_color": "#78A814",
+	"sound_type": "Wood"
     },
     {
         "name": "Titanium Hull Green",
@@ -1122,12 +1005,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 1,
-        "structural_colour": "#3C8400",
-	"render_colour": "#3C8400",
+        "color_key": "#3C8400",
+	"render_color": "#3C8400",
         "is_hull": true,
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+	"sound_type": "Metal"
     },
     {
         "name": "Titanium Green",
@@ -1142,11 +1023,9 @@
 	},   
         "is_hull": false,
 	"stiffness": 1,
-        "structural_colour": "#66B100",
-	"render_colour": "#66B100",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#66B100",
+	"render_color": "#66B100",
+	"sound_type": "Metal"
     },
     {
         "name": "Steel Hull Blue",	
@@ -1160,12 +1039,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 1,
-        "structural_colour": "#008A95",
-	"render_colour": "#008A95",
+        "color_key": "#008A95",
+	"render_color": "#008A95",
         "is_hull": true,
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+	"sound_type": "Metal"
     },
     {
         "name": "Steel Blue",	
@@ -1180,11 +1057,9 @@
 	},   
         "is_hull": false,
 	"stiffness": 1,
-        "structural_colour": "#00B6BF",
-	"render_colour": "#00B6BF",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#00B6BF",
+	"render_color": "#00B6BF",
+	"sound_type": "Metal"
     },
     {
         "name": "Iron Hull Blue",	
@@ -1198,12 +1073,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 1,
-        "structural_colour": "#006A76",
-	"render_colour": "#006A76",
+        "color_key": "#006A76",
+	"render_color": "#006A76",
         "is_hull": true,
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+	"sound_type": "Metal"
     },
     {
         "name": "Iron Blue",	
@@ -1218,11 +1091,9 @@
 	},   
         "is_hull": false,
 	"stiffness": 1,
-        "structural_colour": "#00818C",
-	"render_colour": "#00818C",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#00818C",
+	"render_color": "#00818C",
+	"sound_type": "Metal"
     },
     {
         "name": "Wood Hull Blue",	
@@ -1236,12 +1107,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 1,
-        "structural_colour": "#036E8C",
-	"render_colour": "#036E8C",
+        "color_key": "#036E8C",
+	"render_color": "#036E8C",
         "is_hull": true,
-	"sound_properties": {
-		"element_type": "Wood"
-	}
+	"sound_type": "Wood"
     },
     {
         "name": "Wood Blue",	
@@ -1256,11 +1125,9 @@
 	},  
 	"is_hull": false,
 	"stiffness": 1,
-        "structural_colour": "#10A19D",
-	"render_colour": "#10A19D",
-	"sound_properties": {
-		"element_type": "Wood"
-	}
+        "color_key": "#10A19D",
+	"render_color": "#10A19D",
+	"sound_type": "Wood"
     },
     {
         "name": "Titanium Hull Blue",	
@@ -1274,12 +1141,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 1,
-        "structural_colour": "#00657E",
-	"render_colour": "#00657E",
+        "color_key": "#00657E",
+	"render_color": "#00657E",
         "is_hull": true,
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+	"sound_type": "Metal"
     },
     {
         "name": "Titanium Blue",	
@@ -1294,11 +1159,9 @@
 	},   
         "is_hull": false,
 	"stiffness": 1,
-        "structural_colour": "#009BA9",
-	"render_colour": "#009BA9",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#009BA9",
+	"render_color": "#009BA9",
+	"sound_type": "Metal"
     },
     {
         "name": "Steel Hull Blue2",
@@ -1312,12 +1175,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 1,
-        "structural_colour": "#22437B",
-	"render_colour": "#22437B",
+        "color_key": "#22437B",
+	"render_color": "#22437B",
         "is_hull": true,
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+	"sound_type": "Metal"
     },
     {
         "name": "Steel Blue2",
@@ -1332,11 +1193,9 @@
 	},   
         "is_hull": false,
 	"stiffness": 1,
-        "structural_colour": "#2D58A0",
-	"render_colour": "#2D58A0",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#2D58A0",
+	"render_color": "#2D58A0",
+	"sound_type": "Metal"
     },
     {
         "name": "Iron Hull Blue2",
@@ -1350,12 +1209,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 1,
-        "structural_colour": "#1B3261",
-	"render_colour": "#1B3261",
+        "color_key": "#1B3261",
+	"render_color": "#1B3261",
         "is_hull": true,
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+	"sound_type": "Metal"
     },
     {
         "name": "Iron Blue2",
@@ -1370,11 +1227,9 @@
 	},   
         "is_hull": false,
 	"stiffness": 1,
-        "structural_colour": "#203E74",
-	"render_colour": "#203E74",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#203E74",
+	"render_color": "#203E74",
+	"sound_type": "Metal"
     },
     {
         "name": "Wood Hull Blue2",
@@ -1388,12 +1243,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 1,
-        "structural_colour": "#1E3070",
-	"render_colour": "#1E3070",
+        "color_key": "#1E3070",
+	"render_color": "#1E3070",
         "is_hull": true,
-	"sound_properties": {
-		"element_type": "Wood"
-	}
+	"sound_type": "Wood"
     },
     {
         "name": "Wood Blue2",
@@ -1408,11 +1261,9 @@
 	},  
 	"is_hull": false,
 	"stiffness": 1,
-        "structural_colour": "#325989",
-	"render_colour": "#325989",
-	"sound_properties": {
-		"element_type": "Wood"
-	}
+        "color_key": "#325989",
+	"render_color": "#325989",
+	"sound_type": "Wood"
     },
     {
         "name": "Titanium Hull Blue2",
@@ -1426,12 +1277,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 1,
-        "structural_colour": "#1A2C66",
-	"render_colour": "#1A2C66",
+        "color_key": "#1A2C66",
+	"render_color": "#1A2C66",
         "is_hull": true,
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+	"sound_type": "Metal"
     },
     {
         "name": "Titanium Blue2",
@@ -1446,11 +1295,9 @@
 	},   
         "is_hull": false,
 	"stiffness": 1,
-        "structural_colour": "#26498C",
-	"render_colour": "#26498C",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#26498C",
+	"render_color": "#26498C",
+	"sound_type": "Metal"
     },
     {
         "name": "Steel Hull Pink",
@@ -1464,12 +1311,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 1,
-        "structural_colour": "#A900A7",
-	"render_colour": "#A900A7",
+        "color_key": "#A900A7",
+	"render_color": "#A900A7",
         "is_hull": true,
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+	"sound_type": "Metal"
     },
     {
         "name": "Steel Pink",
@@ -1484,11 +1329,9 @@
 	},   
         "is_hull": false,
 	"stiffness": 1,
-        "structural_colour": "#D100D6",
-	"render_colour": "#D100D6",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#D100D6",
+	"render_color": "#D100D6",
+	"sound_type": "Metal"
     },
     {
         "name": "Iron Hull Pink",
@@ -1502,12 +1345,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 1,
-        "structural_colour": "#860080",
-	"render_colour": "#860080",
+        "color_key": "#860080",
+	"render_color": "#860080",
         "is_hull": true,
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+	"sound_type": "Metal"
     },
     {
         "name": "Iron Pink",
@@ -1522,11 +1363,9 @@
 	},   
         "is_hull": false,
 	"stiffness": 1,
-        "structural_colour": "#9F009C",
-	"render_colour": "#9F009C",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#9F009C",
+	"render_color": "#9F009C",
+	"sound_type": "Metal"
     },
     {
         "name": "Wood Hull Pink",
@@ -1540,12 +1379,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 1,
-        "structural_colour": "#A30085",
-        "render_colour": "#A30085",
+        "color_key": "#A30085",
+        "render_color": "#A30085",
         "is_hull": true,
-	"sound_properties": {
-		"element_type": "Wood"
-	}
+	"sound_type": "Wood"
     },
     {
         "name": "Wood Pink",
@@ -1560,11 +1397,9 @@
 	},  
 	"is_hull": false,
 	"stiffness": 1,
-        "structural_colour": "#9B00AF",
-	"render_colour": "#9B00AF",
-	"sound_properties": {
-		"element_type": "Wood"
-	}
+        "color_key": "#9B00AF",
+	"render_color": "#9B00AF",
+	"sound_type": "Wood"
     },
     {
         "name": "Titanium Hull Pink",
@@ -1578,12 +1413,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 1,
-        "structural_colour": "#93007B",
-	"render_colour": "#93007B",
+        "color_key": "#93007B",
+	"render_color": "#93007B",
         "is_hull": true,
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+	"sound_type": "Metal"
     },
     {
         "name": "Titanium Pink",
@@ -1598,11 +1431,9 @@
 	},   
         "is_hull": false,
 	"stiffness": 1,
-        "structural_colour": "#BF00BA",
-	"render_colour": "#BF00BA",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#BF00BA",
+	"render_color": "#BF00BA",
+	"sound_type": "Metal"
     },
     {
         "name": "Steel Hull Orange",	
@@ -1616,12 +1447,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 1,
-        "structural_colour": "#D45B00",
-        "render_colour": "#D45B00",
+        "color_key": "#D45B00",
+        "render_color": "#D45B00",
         "is_hull": true,
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+	"sound_type": "Metal"
     },
     {
         "name": "Steel Orange",	
@@ -1636,11 +1465,9 @@
 	},   
         "is_hull": false,
 	"stiffness": 1,
-        "structural_colour": "#F26500",
-	"render_colour": "#F26500",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#F26500",
+	"render_color": "#F26500",
+	"sound_type": "Metal"
     },
     {
         "name": "Iron Hull Orange",	
@@ -1654,12 +1481,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 1,
-        "structural_colour": "#A84F00",
-	"render_colour": "#A84F00",
+        "color_key": "#A84F00",
+	"render_color": "#A84F00",
         "is_hull": true,
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+	"sound_type": "Metal"
     },
     {
         "name": "Iron Orange",	
@@ -1674,11 +1499,9 @@
 	},   
         "is_hull": false,
 	"stiffness": 1,
-        "structural_colour": "#C85800",
-	"render_colour": "#C85800",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#C85800",
+	"render_color": "#C85800",
+	"sound_type": "Metal"
     },
     {
         "name": "Wood Hull Orange",	
@@ -1692,12 +1515,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 1,
-        "structural_colour": "#CE8100",
-	"render_colour": "#CE8100",
+        "color_key": "#CE8100",
+	"render_color": "#CE8100",
         "is_hull": true,
-	"sound_properties": {
-		"element_type": "Wood"
-	}
+	"sound_type": "Wood"
     },
     {
         "name": "Wood Orange",	
@@ -1712,11 +1533,9 @@
 	},  
 	"is_hull": false,
 	"stiffness": 1,
-        "structural_colour": "#DE4000",
-	"render_colour": "#DE4000",
-	"sound_properties": {
-		"element_type": "Wood"
-	}
+        "color_key": "#DE4000",
+	"render_color": "#DE4000",
+	"sound_type": "Wood"
     },
     {
         "name": "Titanium Hull Orange",	
@@ -1730,12 +1549,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 1,
-        "structural_colour": "#BA7100",
-	"render_colour": "#BA7100",
+        "color_key": "#BA7100",
+	"render_color": "#BA7100",
         "is_hull": true,
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+	"sound_type": "Metal"
     },
     {
         "name": "Titanium Orange",	
@@ -1750,11 +1567,9 @@
 	},   
         "is_hull": false,
 	"stiffness": 1,
-        "structural_colour": "#EF6B00",
-	"render_colour": "#EF6B00",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#EF6B00",
+	"render_color": "#EF6B00",
+	"sound_type": "Metal"
     },
     {
         "name": "Iron Hull Stiff",
@@ -1768,12 +1583,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 2,
-        "structural_colour": "#111111",
-	"render_colour": "#111111",
+        "color_key": "#111111",
+	"render_color": "#111111",
         "is_hull": true,
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+	"sound_type": "Metal"
     },
     {
         "name": "Iron Stiff",
@@ -1788,11 +1601,9 @@
 	},   
         "is_hull": false,
 	"stiffness": 2.2,
-        "structural_colour": "#222222",
-	"render_colour": "#222222",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#222222",
+	"render_color": "#222222",
+	"sound_type": "Metal"
     },
 
     {
@@ -1807,12 +1618,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 2,
-        "structural_colour": "#333333",
-	"render_colour": "#333333",
+        "color_key": "#333333",
+	"render_color": "#333333",
         "is_hull": true,
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+	"sound_type": "Metal"
     },
     {
         "name": "Steel Stiff",
@@ -1827,11 +1636,9 @@
 	},   
         "is_hull": false,
 	"stiffness": 2.2,
-        "structural_colour": "#444444",
-	"render_colour": "#444444",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#444444",
+	"render_color": "#444444",
+	"sound_type": "Metal"
     },
     {
         "name": "Black Steel",
@@ -1846,11 +1653,9 @@
 	},   
         "is_hull": false,
 	"stiffness": 1,
-        "structural_colour": "#262626",
-	"render_colour": "#262626",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#262626",
+	"render_color": "#262626",
+	"sound_type": "Metal"
     },
     {
         "name": "Titanium Hull Stiff",	
@@ -1864,12 +1669,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 2,
-        "structural_colour": "#555555",
-	"render_colour": "#555555",
+        "color_key": "#555555",
+	"render_color": "#555555",
 	"is_hull": true,
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+	"sound_type": "Metal"
     },
     {
         "name": "Titanium Stiff",	
@@ -1884,11 +1687,9 @@
 	},  
 	"is_hull": false,
 	"stiffness": 2.2,
-        "structural_colour": "#666666",
-	"render_colour": "#666666",
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#666666",
+	"render_color": "#666666",
+	"sound_type": "Metal"
     },
     {
         "name": "Wood Hull Stiff",	
@@ -1902,12 +1703,10 @@
 		"density": 0.0935
 	},
 	"stiffness": 2,
-        "structural_colour": "#777777",
-	"render_colour": "#777777",
+        "color_key": "#777777",
+	"render_color": "#777777",
 	"is_hull": true,
-	"sound_properties": {
-		"element_type": "Wood"
-	}
+	"sound_type": "Wood"
     },
     {
         "name": "Wood Stiff",	
@@ -1922,11 +1721,9 @@
 	},  
 	"is_hull": false,
 	"stiffness": 2.4,
-        "structural_colour": "#888888",
-	"render_colour": "#888888",
-	"sound_properties": {
-		"element_type": "Wood"
-	}
+        "color_key": "#888888",
+	"render_color": "#888888",
+	"sound_type": "Wood"
     },
     {
         "name": "Double-Bottom Steel Red",
@@ -1940,12 +1737,10 @@
 		"density": 0.17
 	},
 	"stiffness": 1,
-        "structural_colour": "#A21000",
-	"render_colour": "#A21000",
+        "color_key": "#A21000",
+	"render_color": "#A21000",
         "is_hull": true,
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+	"sound_type": "Metal"
     },
     {
         "name": "Double-Bottom Titanium Red",
@@ -1959,12 +1754,10 @@
 		"density": 0.17
 	},
 	"stiffness": 1,
-        "structural_colour": "#842005",
-	"render_colour": "#842005",
+        "color_key": "#842005",
+	"render_color": "#842005",
         "is_hull": true,
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+	"sound_type": "Metal"
     },
     {
         "name": "Double-Bottom Iron Red",
@@ -1978,12 +1771,10 @@
 		"density": 0.17
 	},
 	"stiffness": 1,
-        "structural_colour": "#7E0C00",
-	"render_colour": "#7E0C00",
+        "color_key": "#7E0C00",
+	"render_color": "#7E0C00",
         "is_hull": true,
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+	"sound_type": "Metal"
     },
     {
         "name": "Double-Bottom Wood Red",
@@ -1997,17 +1788,15 @@
 		"density": 0.17
 	},
 	"stiffness": 1,
-        "structural_colour": "#9B3012",
-	"render_colour": "#9B3012",
+        "color_key": "#9B3012",
+	"render_color": "#9B3012",
         "is_hull": true,
-	"sound_properties": {
-		"element_type": "Wood"
-	}
+	"sound_type": "Wood"
     },
 
     {
         "name": "Nails",
-	"description": "The most fragile material of them all",
+	"description": "The most fragile material of them all.",
 	"template": {
 		"row": "90|Nails",
 		"column": "4|Nails"
@@ -2018,12 +1807,10 @@
 		"density": 0.0417
 	},
 	"stiffness": 1,
-        "structural_colour": "#545454",
-	"render_colour": "#545454",
+        "color_key": "#545454",
+	"render_color": "#545454",
         "is_hull": false,
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+	"sound_type": "Metal"
     },
 
 
@@ -2040,11 +1827,9 @@
 	},  
 	"is_hull": true,
 	"stiffness": 1,
-        "structural_colour": "#C1FFFF",
-	"render_colour": "#C1FFFF",
-	"sound_properties": {
-		"element_type": "Glass"
-	}
+        "color_key": "#C1FFFF",
+	"render_color": "#C1FFFF",
+	"sound_type": "Glass"
     },
 
     {
@@ -2060,15 +1845,17 @@
 	},  
 	"is_hull": false,
 	"stiffness": 1,
-        "structural_colour": "#E5FFFF",
-	"render_colour": "#E5FFFF",
-	"sound_properties": {
-		"element_type": "Glass"
-	}
+        "color_key": "#E5FFFF",
+	"render_color": "#E5FFFF",
+	"sound_type": "Glass"
     },
 
+
+
+
     {
-        "name": "Self-Powered Lamp",	
+        "name": "Self-Powered Lamp",
+	"description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.",
 	"template": {
 		"row": "100|Electrical",
 		"column": "3|Self-Powered Lamp"
@@ -2080,18 +1867,13 @@
 	},  
 	"is_hull": false,
 	"stiffness": 1,
-        "structural_colour": "#FFFF00",
-	"render_colour": "#404040",
-	"electrical_properties": {
-		"element_type": "Lamp",
-		"is_self_powered": true
-	},
-	"sound_properties": {
-		"element_type": "Glass"
-	}
+        "color_key": "#FFFF00",
+	"render_color": "#404040",
+	"sound_type": "Glass"
     },
     {
         "name": "Lamp",	
+	"description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.",
 	"template": {
 		"row": "100|Electrical",
 		"column": "4|Lamp"
@@ -2103,18 +1885,13 @@
 	},  
 	"is_hull": false,
 	"stiffness": 1,
-        "structural_colour": "#FFE010",
-	"render_colour": "#404040",
-	"electrical_properties": {
-		"element_type": "Lamp",
-		"is_self_powered": false
-	},
-	"sound_properties": {
-		"element_type": "Glass"
-	}
+        "color_key": "#FFE010",
+	"render_color": "#404040",
+	"sound_type": "Glass"
     },
     {
         "name": "Generator",	
+	"description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.",
 	"template": {
 		"row": "100|Electrical",
 		"column": "5|Generator"
@@ -2126,18 +1903,13 @@
 	},   
         "is_hull": false,
 	"stiffness": 1,
-        "structural_colour": "#FC0808",
-	"render_colour": "#FC0808",
-	"electrical_properties": {
-		"element_type": "Generator",
-		"is_self_powered": false
-	},
-	"sound_properties": {
-		"element_type": "Metal"
-	}
+        "color_key": "#FC0808",
+	"render_color": "#FC0808",
+	"sound_type": "Metal"
     },
     {
-        "name": "Electrical Cable Hull",	
+        "name": "Electrical Cable Hull",
+	"description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.",
 	"template": {
 		"row": "100|Electrical",
 		"column": "6|Cable Hull"
@@ -2149,18 +1921,13 @@
 	},  
 	"is_hull": true,
 	"stiffness": 1,
-        "structural_colour": "#4C0000",
-	"render_colour": "#4C0000",
-	"electrical_properties": {
-		"element_type": "Cable",
-		"is_self_powered": false
-	},
-	"sound_properties": {
-		"element_type": "ElectricalCable"
-	}
+        "color_key": "#4C0000",
+	"render_color": "#4C0000",
+	"sound_type": "Cable"
     },
     {
-        "name": "Electrical Cable",	
+        "name": "Electrical Cable",
+	"description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.",
 	"template": {
 		"row": "100|Electrical",
 		"column": "7|Cable"
@@ -2172,14 +1939,8 @@
 	},  
 	"is_hull": false,
 	"stiffness": 1,
-        "structural_colour": "#700000",
-	"render_colour": "#700000",
-	"electrical_properties": {
-		"element_type": "Cable",
-		"is_self_powered": false
-	},
-	"sound_properties": {
-		"element_type": "ElectricalCable"
-	}
+        "color_key": "#700000",
+	"render_color": "#700000",
+	"sound_type": "Cable"
     }
 ]

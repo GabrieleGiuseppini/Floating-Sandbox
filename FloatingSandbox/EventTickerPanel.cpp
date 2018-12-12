@@ -97,40 +97,34 @@ void EventTickerPanel::OnShipLoaded(
 }
 
 void EventTickerPanel::OnDestroy(
-    Material const * material,
+    StructuralMaterial const & structuralMaterial,
     bool isUnderwater,
     unsigned int size)
 {
-    assert(nullptr != material);
-
     std::stringstream ss;
-    ss << "Destroyed " << size << "x" << material->Name << (isUnderwater ? " underwater" : "") << "!";
+    ss << "Destroyed " << size << "x" << structuralMaterial.Name << (isUnderwater ? " underwater" : "") << "!";
 
     AppendFutureTickerText(ss.str());
 }
 
 void EventTickerPanel::OnStress(
-    Material const * material,
+    StructuralMaterial const & structuralMaterial,
     bool isUnderwater,
     unsigned int size)
 {
-    assert(nullptr != material);
-
     std::stringstream ss;
-    ss << "Stressed " << size << "x" << material->Name << (isUnderwater ? " underwater" : "") << "!";
+    ss << "Stressed " << size << "x" << structuralMaterial.Name << (isUnderwater ? " underwater" : "") << "!";
 
     AppendFutureTickerText(ss.str());
 }
 
 void EventTickerPanel::OnBreak(
-    Material const * material,
+    StructuralMaterial const & structuralMaterial,
     bool isUnderwater,
     unsigned int size)
 {
-    assert(nullptr != material);
-
     std::stringstream ss;
-    ss << "Broken " << size << "x" << material->Name << (isUnderwater ? " underwater" : "") << "!";
+    ss << "Broken " << size << "x" << structuralMaterial.Name << (isUnderwater ? " underwater" : "") << "!";
 
     AppendFutureTickerText(ss.str());
 }

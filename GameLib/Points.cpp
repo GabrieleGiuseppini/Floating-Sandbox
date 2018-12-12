@@ -14,18 +14,18 @@ namespace Physics {
 
 void Points::Add(
     vec2f const & position,
-    Material const * material,
+    StructuralMaterial const & structuralMaterial,
+    ElectricalMaterial const * electricalMaterial,
     bool isHull,
     bool isRope,
     ElementIndex electricalElementIndex,
     bool isLeaking,
-    float buoyancy,
     vec4f const & color,
     vec2f const & textureCoordinates)
 {
     mIsDeletedBuffer.emplace_back(false);
 
-    mMaterialBuffer.emplace_back(material);
+    mMaterialsBuffer.emplace_back(&structuralMaterial, electricalMaterial);
     mIsHullBuffer.emplace_back(isHull);
     mIsRopeBuffer.emplace_back(isRope);
 
@@ -34,11 +34,14 @@ void Points::Add(
     mForceBuffer.emplace_back(vec2f::zero());
     mIntegrationFactorBuffer.emplace_back(
         CalculateIntegrationFactor(
-            material->Mass,
+            structuralMaterial.Mass,
             mCurrentNumMechanicalDynamicsIterations));
-    mMassBuffer.emplace_back(material->Mass);
+    mMassBuffer.emplace_back(structuralMaterial.Mass);
 
-    mBuoyancyBuffer.emplace_back(buoyancy);
+    // No buoyancy if it's a hull material, as it can't get water and thus if lighter than water
+    // it'll float forever
+    mBuoyancyBuffer.emplace_back(structuralMaterial.IsHull ? 0.0f : 1.0f);
+
     mWaterBuffer.emplace_back(0.0f);
     mWaterVelocityBuffer.emplace_back(vec2f::zero());
     mWaterMomentumBuffer.emplace_back(vec2f::zero());
@@ -69,7 +72,7 @@ void Points::Add(
 void Points::CreateEphemeralParticleDebris(
     vec2f const & position,
     vec2f const & velocity,
-    Material const * material,
+    StructuralMaterial const & structuralMaterial,
     float currentSimulationTime,
     std::chrono::milliseconds maxLifetime,
     ConnectedComponentId connectedComponentId)
@@ -86,9 +89,9 @@ void Points::CreateEphemeralParticleDebris(
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
     mForceBuffer[pointIndex] = vec2f::zero();
-    mIntegrationFactorBuffer[pointIndex] = CalculateIntegrationFactor(material->Mass, mCurrentNumMechanicalDynamicsIterations);
-    mMassBuffer[pointIndex] = material->Mass;
-    mMaterialBuffer[pointIndex] = material;
+    mIntegrationFactorBuffer[pointIndex] = CalculateIntegrationFactor(structuralMaterial.Mass, mCurrentNumMechanicalDynamicsIterations);
+    mMassBuffer[pointIndex] = structuralMaterial.Mass;
+    mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
 
     mBuoyancyBuffer[pointIndex] = 0.0f; // Debris is non-buoyant
     mWaterBuffer[pointIndex] = 0.0f;
@@ -104,7 +107,7 @@ void Points::CreateEphemeralParticleDebris(
 
     assert(false == mIsPinnedBuffer[pointIndex]);
 
-    mColorBuffer[pointIndex] = material->RenderColour;
+    mColorBuffer[pointIndex] = structuralMaterial.RenderColor;
 
     // Remember we're dirty now
     mAreEphemeralParticlesDirty = true;
@@ -113,7 +116,7 @@ void Points::CreateEphemeralParticleDebris(
 void Points::CreateEphemeralParticleSparkle(
     vec2f const & position,
     vec2f const & velocity,
-    Material const * material,
+    StructuralMaterial const & structuralMaterial,
     float currentSimulationTime,
     std::chrono::milliseconds maxLifetime,
     ConnectedComponentId connectedComponentId)
@@ -130,9 +133,9 @@ void Points::CreateEphemeralParticleSparkle(
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
     mForceBuffer[pointIndex] = vec2f::zero();
-    mIntegrationFactorBuffer[pointIndex] = CalculateIntegrationFactor(material->Mass, mCurrentNumMechanicalDynamicsIterations);
-    mMassBuffer[pointIndex] = material->Mass;
-    mMaterialBuffer[pointIndex] = material;
+    mIntegrationFactorBuffer[pointIndex] = CalculateIntegrationFactor(structuralMaterial.Mass, mCurrentNumMechanicalDynamicsIterations);
+    mMassBuffer[pointIndex] = structuralMaterial.Mass;
+    mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
 
     mBuoyancyBuffer[pointIndex] = 0.0f; // Sparkles are non-buoyant
     mWaterBuffer[pointIndex] = 0.0f;
@@ -172,7 +175,7 @@ void Points::Destroy(
 
     // Fire point destroy event
     mGameEventHandler->OnDestroy(
-        GetMaterial(pointElementIndex),
+        GetStructuralMaterial(pointElementIndex),
         mParentWorld.IsUnderwater(GetPosition(pointElementIndex)),
         1u);
 
@@ -439,14 +442,14 @@ void Points::UploadEphemeralParticles(
     }
 }
 
-void Points::SetMassToMaterialOffset(
+void Points::SetMassToStructuralMaterialOffset(
     ElementIndex pointElementIndex,
     float offset,
     Springs & springs)
 {
     assert(pointElementIndex < mElementCount);
 
-    mMassBuffer[pointElementIndex] = mMaterialBuffer[pointElementIndex]->Mass + offset;
+    mMassBuffer[pointElementIndex] = GetStructuralMaterial(pointElementIndex).Mass + offset;
 
     // Update integration factor
     mIntegrationFactorBuffer[pointElementIndex] = CalculateIntegrationFactor(

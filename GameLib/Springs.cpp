@@ -23,13 +23,18 @@ void Springs::Add(
     mSuperTrianglesBuffer.emplace_back(superTriangles);
 
     // Strength is average
-    mStrengthBuffer.emplace_back((points.GetMaterial(pointAIndex)->Strength + points.GetMaterial(pointBIndex)->Strength) / 2.0f);
+    mStrengthBuffer.emplace_back(
+        (points.GetStructuralMaterial(pointAIndex).Strength + points.GetStructuralMaterial(pointBIndex).Strength)
+        / 2.0f);
 
     // Stiffness is average
-    float stiffness = (points.GetMaterial(pointAIndex)->Stiffness + points.GetMaterial(pointBIndex)->Stiffness) / 2.0f;
+    float stiffness =
+        (points.GetStructuralMaterial(pointAIndex).Stiffness + points.GetStructuralMaterial(pointBIndex).Stiffness)
+        / 2.0f;
     mStiffnessBuffer.emplace_back(stiffness);
 
     mRestLengthBuffer.emplace_back((points.GetPosition(pointAIndex) - points.GetPosition(pointBIndex)).length());
+
     mCoefficientsBuffer.emplace_back(
         CalculateStiffnessCoefficient(
             pointAIndex,
@@ -43,14 +48,15 @@ void Springs::Add(
             pointBIndex,
             mCurrentNumMechanicalDynamicsIterations,
             points));
+
     mCharacteristicsBuffer.emplace_back(characteristics);
 
-    // Base material is arbitrarily the weakest of the two;
+    // Base structural material is arbitrarily the weakest of the two;
     // only affects sound and name
-    mBaseMaterialBuffer.emplace_back(
-        points.GetMaterial(pointAIndex)->Strength < points.GetMaterial(pointBIndex)->Strength
-        ? points.GetMaterial(pointAIndex)
-        : points.GetMaterial(pointBIndex));
+    mBaseStructuralMaterialBuffer.emplace_back(
+        points.GetStructuralMaterial(pointAIndex).Strength < points.GetStructuralMaterial(pointBIndex).Strength
+        ? &points.GetStructuralMaterial(pointAIndex)
+        : &points.GetStructuralMaterial(pointBIndex));
 
     // Spring is impermeable if it's a hull spring (i.e. if at least one endpoint is hull)
     mWaterPermeabilityBuffer.emplace_back(
@@ -87,7 +93,7 @@ void Springs::Destroy(
     if (!!(destroyOptions & Springs::DestroyOptions::FireBreakEvent))
     {
         mGameEventHandler->OnBreak(
-            GetBaseMaterial(springElementIndex),
+            GetBaseStructuralMaterial(springElementIndex),
             mParentWorld.IsUnderwater(GetPointAPosition(springElementIndex, points)), // Arbitrary
             1);
     }
@@ -262,7 +268,7 @@ bool Springs::UpdateStrains(
 
                     // Notify stress
                     mGameEventHandler->OnStress(
-                        mBaseMaterialBuffer[s],
+                        GetBaseStructuralMaterial(s),
                         mParentWorld.IsUnderwater(points.GetPosition(mEndpointsBuffer[s].PointAIndex)),
                         1);
                 }

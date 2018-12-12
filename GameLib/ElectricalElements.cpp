@@ -11,38 +11,38 @@ namespace Physics {
 
 void ElectricalElements::Add(
     ElementIndex pointElementIndex,
-    Material::ElectricalProperties::ElectricalElementType elementType,
+    ElectricalMaterial::ElectricalElementType type,
     bool isSelfPowered)
 {
     mIsDeletedBuffer.emplace_back(false);
     mPointIndexBuffer.emplace_back(pointElementIndex);
-    mTypeBuffer.emplace_back(elementType);
+    mTypeBuffer.emplace_back(type);
     mConnectedElectricalElementsBuffer.emplace_back();
     mAvailableCurrentBuffer.emplace_back(0.f);
 
-    switch (elementType)
+    switch (type)
     {
-        case Material::ElectricalProperties::ElectricalElementType::Cable:
+        case ElectricalMaterial::ElectricalElementType::Cable:
         {
             mElementStateBuffer.emplace_back(ElementState::CableState());
             break;
         }
 
-        case Material::ElectricalProperties::ElectricalElementType::Generator:
+        case ElectricalMaterial::ElectricalElementType::Generator:
         {
             mGenerators.emplace_back(static_cast<ElementIndex>(mElementStateBuffer.GetCurrentPopulatedSize()));
             mElementStateBuffer.emplace_back(ElementState::GeneratorState());
             break;
         }
 
-        case Material::ElectricalProperties::ElectricalElementType::Lamp:
+        case ElectricalMaterial::ElectricalElementType::Lamp:
         {
             mLamps.emplace_back(static_cast<ElementIndex>(mElementStateBuffer.GetCurrentPopulatedSize()));
             mElementStateBuffer.emplace_back(ElementState::LampState(isSelfPowered));
             break;
         }
     }
-    
+
     mCurrentConnectivityVisitSequenceNumberBuffer.emplace_back(NoneVisitSequenceNumber);
 }
 
@@ -79,7 +79,7 @@ void ElectricalElements::Update(
     // Visit all lamps and run their state machine
     //
 
-    for (auto iLamp : mLamps)
+    for (auto iLamp : Lamps())
     {
         if (!mIsDeletedBuffer[iLamp])
         {
@@ -156,7 +156,7 @@ void ElectricalElements::RunLampStateMachine(
                     if (GameRandomEngine::GetInstance().Choose(2) == 0)
                         mElementStateBuffer[elementLampIndex].Lamp.State = ElementState::LampState::StateType::FlickerA;
                     else
-                        mElementStateBuffer[elementLampIndex].Lamp.State = ElementState::LampState::StateType::FlickerB;                            
+                        mElementStateBuffer[elementLampIndex].Lamp.State = ElementState::LampState::StateType::FlickerB;
                 }
 
                 break;
@@ -178,7 +178,7 @@ void ElectricalElements::RunLampStateMachine(
 
                     if (1 == mElementStateBuffer[elementLampIndex].Lamp.FlickerCounter
                         || 3 == mElementStateBuffer[elementLampIndex].Lamp.FlickerCounter)
-                    { 
+                    {
                         // Flicker to on, for a short time
 
                         mAvailableCurrentBuffer[elementLampIndex] = 1.f;

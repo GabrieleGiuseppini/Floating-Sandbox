@@ -136,7 +136,7 @@ public:
     //
 
     virtual void OnDestroy(
-        Material const * material,
+        StructuralMaterial const & structuralMaterial,
         bool isUnderwater,
         unsigned int size) override;
 
@@ -149,12 +149,12 @@ public:
         bool isUnderwater) override;
 
     virtual void OnStress(
-        Material const * material,
+        StructuralMaterial const & structuralMaterial,
         bool isUnderwater,
         unsigned int size) override;
 
     virtual void OnBreak(
-        Material const * material,
+        StructuralMaterial const & structuralMaterial,
         bool isUnderwater,
         unsigned int size) override;
 
@@ -967,7 +967,7 @@ private:
 
     void PlayMSUOneShotMultipleChoiceSound(
         SoundType soundType,
-        Material const * material,
+        StructuralMaterial::SoundElementType structuralSoundType,
         unsigned int size,
         bool isUnderwater,
         float volume,
@@ -1061,7 +1061,7 @@ private:
     }
 
     unordered_tuple_map<
-        std::tuple<SoundType, Material::SoundProperties::SoundElementType, SizeType, bool>,
+        std::tuple<SoundType, StructuralMaterial::SoundElementType, SizeType, bool>,
         OneShotMultipleChoiceSound> mMSUOneShotMultipleChoiceSounds;
 
     unordered_tuple_map<

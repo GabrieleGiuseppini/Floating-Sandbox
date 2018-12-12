@@ -52,14 +52,14 @@ public:
     }
 
     virtual void OnDestroy(
-        Material const * material,
+        StructuralMaterial const & structuralMaterial,
         bool isUnderwater,
         unsigned int size) override
     {
         // No need to aggregate this one
         for (auto sink : mSinks)
         {
-            sink->OnDestroy(material, isUnderwater, size);
+            sink->OnDestroy(structuralMaterial, isUnderwater, size);
         }
     }
 
@@ -86,19 +86,19 @@ public:
     }
 
     virtual void OnStress(
-        Material const * material,
+        StructuralMaterial const & structuralMaterial,
         bool isUnderwater,
         unsigned int size) override
     {
-        mStressEvents[std::make_tuple(material, isUnderwater)] += size;
+        mStressEvents[std::make_tuple(&structuralMaterial, isUnderwater)] += size;
     }
 
     virtual void OnBreak(
-        Material const * material,
+        StructuralMaterial const & structuralMaterial,
         bool isUnderwater,
         unsigned int size) override
     {
-        mBreakEvents[std::make_tuple(material, isUnderwater)] += size;
+        mBreakEvents[std::make_tuple(&structuralMaterial, isUnderwater)] += size;
     }
 
     virtual void OnSinkingBegin(ShipId shipId) override
@@ -284,12 +284,12 @@ public:
         {
             for (auto const & entry : mStressEvents)
             {
-                sink->OnStress(std::get<0>(entry.first), std::get<1>(entry.first), entry.second);
+                sink->OnStress(*(std::get<0>(entry.first)), std::get<1>(entry.first), entry.second);
             }
 
             for (auto const & entry : mBreakEvents)
             {
-                sink->OnBreak(std::get<0>(entry.first), std::get<1>(entry.first), entry.second);
+                sink->OnBreak(*(std::get<0>(entry.first)), std::get<1>(entry.first), entry.second);
             }
 
             for (auto const & shipId : mSinkingBeginEvents)
@@ -336,8 +336,8 @@ public:
 private:
 
     // The current events being aggregated
-    unordered_tuple_map<std::tuple<Material const *, bool>, unsigned int> mStressEvents;
-    unordered_tuple_map<std::tuple<Material const *, bool>, unsigned int> mBreakEvents;
+    unordered_tuple_map<std::tuple<StructuralMaterial const *, bool>, unsigned int> mStressEvents;
+    unordered_tuple_map<std::tuple<StructuralMaterial const *, bool>, unsigned int> mBreakEvents;
     std::vector<ShipId> mSinkingBeginEvents;
     unordered_tuple_map<std::tuple<DurationShortLongType, bool>, unsigned int> mLightFlickerEvents;
     unordered_tuple_map<std::tuple<BombType, bool>, unsigned int> mBombExplosionEvents;

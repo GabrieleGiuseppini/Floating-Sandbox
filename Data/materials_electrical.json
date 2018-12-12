@@ -1,0 +1,50 @@
+[
+    {
+        "name": "Self-Powered Lamp",	
+	"template": {
+		"row": "0|Lamps",
+		"column": "0|Self-Powered Lamp"
+	},
+        "color_key": "#FFFF00",
+	"electrical_type": "Lamp",
+	"is_self_powered": true
+    },
+    {
+        "name": "Lamp",	
+	"template": {
+		"row": "0|Lamps",
+		"column": "1|Lamp"
+	},
+        "color_key": "#FFE010",
+	"electrical_type": "Lamp",
+	"is_self_powered": false
+    },
+    {
+        "name": "Generator",	
+	"template": {
+		"row": "1|Generators",
+		"column": "0|Generator"
+	},
+        "color_key": "#FC0808",
+	"electrical_type": "Generator"
+    },
+    {
+        "name": "Electrical Cable Hull",
+	"description": "This material is here exclusively to ease development of one-layer ships; the proper way to make hull electrical structures is to provide electrical properties in the electrical layer corresponding to hull points in the structural layer.",
+	"template": {
+		"row": "2|Cables",
+		"column": "0|Cable Hull"
+	},
+        "color_key": "#4C0000",
+	"electrical_type": "Cable"
+    },
+    {
+        "name": "Electrical Cable",	
+	"template": {
+		"row": "2|Cables",
+		"column": "1|Cable"
+	},
+        "color_key": "#700000",
+	"electrical_type": "Cable"
+    }
+]

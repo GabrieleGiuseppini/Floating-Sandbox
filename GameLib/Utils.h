@@ -23,7 +23,7 @@
 #include <sstream>
 #include <string>
 
-class Utils 
+class Utils
 {
 public:
 
@@ -272,42 +272,42 @@ public:
         return ss.str();
     }
 
-    static std::array<uint8_t, 3u> Hex2RgbColour(std::string str)
+    static std::array<uint8_t, 3u> Hex2RgbColor(std::string str)
     {
         if (str[0] == '#')
             str = str.substr(1);
 
         if (str.length() != 6)
-            throw GameException("Error: badly formed hex colour value \"" + str + "\"");
+            throw GameException("Error: badly formed hex color value \"" + str + "\"");
 
-        std::array<uint8_t, 3u> rgbColour;
-        rgbColour[0] = Hex2Byte(str.substr(0, 2));
-        rgbColour[1] = Hex2Byte(str.substr(2, 2));
-        rgbColour[2] = Hex2Byte(str.substr(4, 2));
+        std::array<uint8_t, 3u> rgbColor;
+        rgbColor[0] = Hex2Byte(str.substr(0, 2));
+        rgbColor[1] = Hex2Byte(str.substr(2, 2));
+        rgbColor[2] = Hex2Byte(str.substr(4, 2));
 
-        return rgbColour;
+        return rgbColor;
     }
 
-    static std::string RgbColour2Hex(std::array<uint8_t, 3u> const & rgbColour)
+    static std::string RgbColor2Hex(std::array<uint8_t, 3u> const & rgbColor)
     {
-        return std::string("#") + Byte2Hex(rgbColour[0]) + Byte2Hex(rgbColour[1]) + Byte2Hex(rgbColour[2]);
+        return std::string("#") + Byte2Hex(rgbColor[0]) + Byte2Hex(rgbColor[1]) + Byte2Hex(rgbColor[2]);
     }
 
-    static vec3f RgbToVec(std::array<uint8_t, 3u> const & rgbColour)
+    static vec3f RgbToVec(std::array<uint8_t, 3u> const & rgbColor)
     {
         return vec3f(
-            rgbColour[0] / 255.f,
-            rgbColour[1] / 255.f,
-            rgbColour[2] / 255.f);
+            rgbColor[0] / 255.f,
+            rgbColor[1] / 255.f,
+            rgbColor[2] / 255.f);
     }
 
-    static vec4f RgbaToVec(std::array<uint8_t, 4u> const & rgbaColour)
+    static vec4f RgbaToVec(std::array<uint8_t, 4u> const & rgbColor)
     {
         return vec4f(
-            rgbaColour[0] / 255.f,
-            rgbaColour[1] / 255.f,
-            rgbaColour[2] / 255.f,
-            rgbaColour[3] / 255.f);
+            rgbColor[0] / 255.f,
+            rgbColor[1] / 255.f,
+            rgbColor[2] / 255.f,
+            rgbColor[3] / 255.f);
     }
 
     //

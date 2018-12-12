@@ -291,7 +291,7 @@ private:
         std::function<void()> swapRenderBuffersFunction,
         std::unique_ptr<GameEventDispatcher> gameEventDispatcher,
         std::unique_ptr<TextLayer> textLayer,
-        std::unique_ptr<MaterialDatabase> materials,
+        MaterialDatabase materialDatabase,
         std::shared_ptr<ResourceLoader> resourceLoader)
         : mGameParameters()
         , mLastShipLoadedFilePath()
@@ -307,7 +307,7 @@ private:
             mGameEventDispatcher,
             mGameParameters,
             *mResourceLoader))
-        , mMaterials(std::move(materials))
+        , mMaterialDatabase(std::move(materialDatabase))
          // Smoothing
         , mCurrentZoom(mRenderContext->GetZoom())
         , mTargetZoom(mCurrentZoom)
@@ -373,7 +373,7 @@ private:
     //
 
     std::unique_ptr<Physics::World> mWorld;
-    std::shared_ptr<MaterialDatabase> mMaterials;
+    MaterialDatabase mMaterialDatabase;
 
 
     //

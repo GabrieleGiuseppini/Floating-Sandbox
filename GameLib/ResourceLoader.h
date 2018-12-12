@@ -15,7 +15,6 @@
 
 #include <cstdint>
 #include <filesystem>
-#include <memory>
 #include <string>
 #include <vector>
 
@@ -54,9 +53,7 @@ public:
     // Materials
     //
 
-    std::unique_ptr<MaterialDatabase> LoadMaterials();
-
-    static std::unique_ptr<MaterialDatabase> LoadMaterials(std::filesystem::path const & filePath);
+    MaterialDatabase LoadMaterialDatabase() const;
 
 
     //
