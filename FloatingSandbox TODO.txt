@@ -818,7 +818,7 @@ Render:
 	
 	= TODOHERE: Ship definition: multiple layers
 		+ We want to maintain BW compat for ease of one-layer ship making
-		= Impl:
+		+ Impl:
 			+ json:
 				+ "structural_colour" -> "color_key"
 				+ "colour"->"color"
@@ -847,7 +847,7 @@ Render:
 				+ StructuralMaterial::MaterialSoundType MaterialSound
 			+ GameController
 			+ Fix issue with rope endpoints
-			- Fix issue with rope buoyancy
+			+ Fix issue with rope buoyancy
 			+ Rope shader: use color from point color buffer
 				+ And then get rid of rope color passed to RenderContext
 		= Test:

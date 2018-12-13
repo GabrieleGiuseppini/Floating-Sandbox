@@ -45,6 +45,7 @@ private:
         vec4f RenderColor;
         StructuralMaterial const & StructuralMtl;
         bool IsRope;
+        bool IsHull;
         bool IsLeaking;
 
         ElectricalMaterial const * ElectricalMtl;
@@ -54,13 +55,13 @@ private:
             vec2f position,
             vec2f textureCoordinates,
             vec4f renderColor,
-            StructuralMaterial const & structuralMtl,
-            bool isRope)
+            StructuralMaterial const & structuralMtl)
             : Position(position)
             , TextureCoordinates(textureCoordinates)
             , RenderColor(renderColor)
             , StructuralMtl(structuralMtl)
-            , IsRope(isRope)
+            , IsRope(structuralMtl.IsRope)
+            , IsHull(structuralMtl.IsHull)
             , IsLeaking(false)
             , ElectricalMtl(nullptr)
             , ConnectedSprings1()

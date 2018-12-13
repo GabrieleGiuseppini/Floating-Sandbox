@@ -95,8 +95,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
                         textureDx + static_cast<float>(x) / static_cast<float>(structureWidth),
                         textureDy + static_cast<float>(y) / static_cast<float>(structureHeight)),
                     structuralMaterial->RenderColor,
-                    *structuralMaterial,
-                    structuralMaterial->IsRope);
+                    *structuralMaterial);
 
                 //
                 // Check if it's a (custom) rope endpoint
@@ -390,7 +389,8 @@ void ShipBuilder::AppendRopeEndpoints(
                         + std::to_string(x) + "," + std::to_string(height - y - 1) + ") in the rope layer image");
                 }
 
-                // Change endpoint's color and make it a rope point, or else rope looks weird
+                // Change endpoint's color to match the rope's - or else the spring will look bad,
+                // and make it a rope point so that the first spring segment is a rope spring
                 pointInfos1[pointIndex].RenderColor = vec4f(Utils::RgbToVec(colorKey), 1.0f);
                 pointInfos1[pointIndex].IsRope = true;
             }
@@ -570,8 +570,7 @@ void ShipBuilder::AppendRopes(
                     textureDx + newPosition.x / static_cast<float>(structureImageSize.Width),
                     textureDy + newPosition.y / static_cast<float>(structureImageSize.Height)),
                 vec4f(Utils::RgbToVec(ropeSegment.RopeColorKey), 1.0f),
-                ropeMaterial,
-                true); // isRope
+                ropeMaterial);
 
             // Set electrical material
             pointInfos1.back().ElectricalMtl =
@@ -905,9 +904,6 @@ Points ShipBuilder::CreatePoints(
     {
         PointInfo const & pointInfo = pointInfos2[p];
 
-        // Make point hull if it's rope, otherwise it'll float forever
-        bool isHull = pointInfo.StructuralMtl.IsHull || pointInfo.IsRope;
-
         ElementIndex electricalElementIndex = NoneElementIndex;
         if (nullptr != pointInfo.ElectricalMtl)
         {
@@ -924,7 +920,7 @@ Points ShipBuilder::CreatePoints(
             pointInfo.Position,
             pointInfo.StructuralMtl,
             pointInfo.ElectricalMtl,
-            isHull,
+            pointInfo.IsHull,
             pointInfo.IsRope,
             electricalElementIndex,
             pointInfo.IsLeaking,
