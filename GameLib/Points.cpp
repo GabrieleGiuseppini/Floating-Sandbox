@@ -38,9 +38,9 @@ void Points::Add(
             mCurrentNumMechanicalDynamicsIterations));
     mMassBuffer.emplace_back(structuralMaterial.Mass);
 
-    // No buoyancy if it's a hull material, as it can't get water and thus if lighter than water
+    // No buoyancy if it's hull, as it can't get water and thus if lighter than water
     // it'll float forever
-    mBuoyancyBuffer.emplace_back(structuralMaterial.IsHull ? 0.0f : 1.0f);
+    mBuoyancyBuffer.emplace_back(isHull ? 0.0f : 1.0f);
 
     mWaterBuffer.emplace_back(0.0f);
     mWaterVelocityBuffer.emplace_back(vec2f::zero());

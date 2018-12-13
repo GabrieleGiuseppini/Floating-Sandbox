@@ -571,7 +571,7 @@ void ShipBuilder::AppendRopes(
                     textureDy + newPosition.y / static_cast<float>(structureImageSize.Height)),
                 vec4f(Utils::RgbToVec(ropeSegment.RopeColorKey), 1.0f),
                 ropeMaterial,
-                true);
+                true); // isRope
 
             // Set electrical material
             pointInfos1.back().ElectricalMtl =
@@ -905,17 +905,8 @@ Points ShipBuilder::CreatePoints(
     {
         PointInfo const & pointInfo = pointInfos2[p];
 
-        // Make point non-hull if it's endpoint of a rope, otherwise springs connected
-        // to this point would be hull and thus this point would never catch water
-        bool isHull;
-        if (pointInfo.IsRope)
-        {
-            isHull = false;
-        }
-        else
-        {
-            isHull = pointInfo.StructuralMtl.IsHull;
-        }
+        // Make point hull if it's rope, otherwise it'll float forever
+        bool isHull = pointInfo.StructuralMtl.IsHull || pointInfo.IsRope;
 
         ElementIndex electricalElementIndex = NoneElementIndex;
         if (nullptr != pointInfo.ElectricalMtl)
