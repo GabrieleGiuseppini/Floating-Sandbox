@@ -14,9 +14,9 @@ ShipDefinitionFile ShipDefinitionFile::Create(picojson::object const & definitio
         definitionJson,
         "structure_image");
 
-    std::optional<std::string> ropeLayerImageFilePath = Utils::GetOptionalJsonMember<std::string>(
+    std::optional<std::string> ropesLayerImageFilePath = Utils::GetOptionalJsonMember<std::string>(
         definitionJson,
-        "rope_image");
+        "ropes_image");
 
     std::optional<std::string> electricalLayerImageFilePath = Utils::GetOptionalJsonMember<std::string>(
         definitionJson,
@@ -45,7 +45,7 @@ ShipDefinitionFile ShipDefinitionFile::Create(picojson::object const & definitio
 
     return ShipDefinitionFile(
         structuralLayerImageFilePath,
-        ropeLayerImageFilePath,
+        ropesLayerImageFilePath,
         electricalLayerImageFilePath,
         textureLayerImageFilePath,
         ShipMetadata(

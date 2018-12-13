@@ -29,8 +29,8 @@ StructuralMaterial StructuralMaterial::Create(picojson::object const & structura
         bool isHull = Utils::GetMandatoryJsonMember<bool>(structuralMaterialJson, "is_hull");
         bool isRope = Utils::GetOptionalJsonMember<bool>(structuralMaterialJson, "is_rope", false);
 
-        std::string soundTypeStr = Utils::GetMandatoryJsonMember<std::string>(structuralMaterialJson, "sound_type");
-        SoundElementType soundType = StrToSoundElementType(soundTypeStr);
+        std::string materialSoundStr = Utils::GetMandatoryJsonMember<std::string>(structuralMaterialJson, "sound_type");
+        MaterialSoundType materialSound = StrToMaterialSoundType(materialSoundStr);
 
         return StructuralMaterial(
             name,
@@ -40,7 +40,7 @@ StructuralMaterial StructuralMaterial::Create(picojson::object const & structura
             renderColor,
             isHull,
             isRope,
-            soundType);
+            materialSound);
     }
     catch (GameException const & ex)
     {
@@ -48,20 +48,20 @@ StructuralMaterial StructuralMaterial::Create(picojson::object const & structura
     }
 }
 
-StructuralMaterial::SoundElementType StructuralMaterial::StrToSoundElementType(std::string const & str)
+StructuralMaterial::MaterialSoundType StructuralMaterial::StrToMaterialSoundType(std::string const & str)
 {
     std::string lstr = Utils::ToLower(str);
 
     if (lstr == "cable")
-        return SoundElementType::Cable;
+        return MaterialSoundType::Cable;
     else if (lstr == "glass")
-        return SoundElementType::Glass;
+        return MaterialSoundType::Glass;
     else if (lstr == "metal")
-        return SoundElementType::Metal;
+        return MaterialSoundType::Metal;
     else if (lstr == "wood")
-        return SoundElementType::Wood;
+        return MaterialSoundType::Wood;
     else
-        throw GameException("Unrecognized SoundElementType \"" + str + "\"");
+        throw GameException("Unrecognized MaterialSoundType \"" + str + "\"");
 }
 
 ElectricalMaterial ElectricalMaterial::Create(picojson::object const & electricalMaterialJson)

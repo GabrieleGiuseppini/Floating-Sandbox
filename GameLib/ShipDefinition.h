@@ -22,7 +22,7 @@ public:
 
     ImageData StructuralLayerImage;
 
-    std::optional<ImageData> RopeLayerImage;
+    std::optional<ImageData> RopesLayerImage;
 
     std::optional<ImageData> ElectricalLayerImage;
 
@@ -43,13 +43,13 @@ public:
 
     ShipDefinition(
         ImageData structuralLayerImage,
-        std::optional<ImageData> ropeLayerImage,
+        std::optional<ImageData> ropesLayerImage,
         std::optional<ImageData> electricalLayerImage,
         ImageData textureLayerImage,
         TextureOriginType textureOrigin,
         ShipMetadata const metadata)
         : StructuralLayerImage(std::move(structuralLayerImage))
-        , RopeLayerImage(std::move(ropeLayerImage))
+        , RopesLayerImage(std::move(ropesLayerImage))
         , ElectricalLayerImage(std::move(electricalLayerImage))
         , TextureLayerImage(std::move(textureLayerImage))
         , TextureOrigin(textureOrigin)

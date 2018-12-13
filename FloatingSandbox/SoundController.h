@@ -967,7 +967,7 @@ private:
 
     void PlayMSUOneShotMultipleChoiceSound(
         SoundType soundType,
-        StructuralMaterial::SoundElementType structuralSoundType,
+        StructuralMaterial::MaterialSoundType materialSound,
         unsigned int size,
         bool isUnderwater,
         float volume,
@@ -1061,7 +1061,7 @@ private:
     }
 
     unordered_tuple_map<
-        std::tuple<SoundType, StructuralMaterial::SoundElementType, SizeType, bool>,
+        std::tuple<SoundType, StructuralMaterial::MaterialSoundType, SizeType, bool>,
         OneShotMultipleChoiceSound> mMSUOneShotMultipleChoiceSounds;
 
     unordered_tuple_map<

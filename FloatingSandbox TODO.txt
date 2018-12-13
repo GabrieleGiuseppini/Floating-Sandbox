@@ -22,7 +22,7 @@ Current perf (spring optimization + double spring iterations)
 =================================================
 Past perf (ephemeral particles)
 =================================================
-- fps: 28.8/29.0 (Samsung: TBD (Krafting)) (Mattia's: TBD (Krafting))
+- fps: 28.8/29.0
 =================================================
 1.7.0 perf from users
 	- Titanic: 50
@@ -84,7 +84,7 @@ Render:
 =================================================
 1.3.0 perf
 =================================================
-- fps: 27.3 (Samsung: TODO (Krafting)) (Mattia's: TODO (Krafting))
+- fps: 27.3
 - GameController::DoStep: 33.06%
 	- Ship::Update: 32.07%
 		- UpdateDynamics: 25.53%
@@ -122,6 +122,7 @@ Render:
 		= Multi-layer ships
 
 		- Lower strength of double-bottom
+		- Initial GL canvas size issue (*)
 
 		- Test simpler resize
 		- Improve light diffusion (*)
@@ -373,21 +374,28 @@ Render:
 					- Change ShipId, ConnectedComponentId, PlaneId to start from zero and have None=max (see @Spec above)
 				- Points: new buffer
 				- All the other things that currently require a ConnectedComponentId for rendering purposes:
-					- Bombs
-					- PinnedPoints
-					- No springs nor triangles, as all points now have PlaneId
+					- Bombs: substitute ConnCompId with PlaneId
+					- PinnedPoints: substitute ConnCompId with PlaneId
+					- Triangles: no ConnCompId nor PlaneId
+					- Spring: no ConnCompId, PlaneId returns min
+						- Cache @ caller, e.g. bomb
 			- Connectivity visit:
 				- New PlaneId propagation (see @Spec above)
 					- Has own counter
 				- Change ConnectedComponentId propagation to match frontier style
 			- Light diffusion algo now follows PlaneIds (see @Spec above)
 			- Uploading of PlaneId's:
-				- TODO
+				- Ship, when mAreElementsDirty, causes Points to upload PlaneIds
+					- See role of current Upload() - Rename: we have 3+ roles: immutable, (continuously) mutable, ad-hoc
+					  (UploadEphParticles, UploadPlaneIds, etc.)
+					- Ship must take charge of immutable attributes state - 2 state variables (immutable dirty and mutable dirty)
 			- Enable Z test and writing to Z buffer at RenderContext before doing ships, and disable all afterwards
 				+ Also clear Z buffer at canvas clear
 				- glEnable(GL_DEPTH_TEST);
 				- glDepthMask(GL_TRUE); // This at initialization
 				- glDepthFunc(GL_LESS); // This at initialization
+			- Ship/RenderContext:
+				- 
 			
 			- TODO: review the below based off transparency sorting - see MOLESKINE
 			2 - Ship assigns points' ConnectedComponentID as float in vector
@@ -835,30 +843,33 @@ Render:
 			+ ShipBuilder
 			+ Event publishing
 			+ Event handlers
-			- Sound renames
-				- StructuralMaterial::MaterialSoundType MaterialSound
+			+ Sound renames
+				+ StructuralMaterial::MaterialSoundType MaterialSound
 			+ GameController
+			- Fix issue with rope endpoints
 			- Rope shader: use color from point color buffer
 				- And then get rid of rope color passed to RenderContext
-		- Test:
-			- BW compat old ships
-				- Electrical
-				- Ropes
+		= Test:
+			= BW compat old ships
+				+ Electrical
+				+ Ropes
 				- All
-		- Renew ships:
-			- .shp files: new layer names
-			- Make SS queen of unova use layers
+		= Renew ships:
+			+ Make SS queen of unova use layers
+				+ Fix structure as well
+			- Make Szersen cargo use layers
+				- Also test propagation of electrical (cable, in this case) along ropes
 				- Also test different colors for ropes
-			- Make Szersen cargo use layers, with cable ropes
-
 		- Cleanup:
-			- Do two new material template images and nuke old one
+			- Do two new material template screenshots and nuke old one
 			- Redo materials.md
 
 		- Add "Low-Dimmed Lights" and "High-"
 			- Rename other as "Standard-" or use its val as "High-" or dim existing ones
 			- New Electrical Property ("Luminescence") at ElectricalMaterial
-			- New property at ElectricalElements, consumed by DiffuseLight
+			- New property at ElectricalElements
+				- Consumed by DiffuseLight
+			- Use at Queen of Unova
 
 	- Ship definition: "instructions"
 		- If present, at the first load of a ship spawns a text box (if enabled in settings)
@@ -867,6 +878,9 @@ Render:
 		+ New uniform
 
 - UI:
+	- Suppress initial white trace of glCanvas in MainFrame:
+		- Create canvas and context at PostInitialize, after resize
+
 	+ SettingsDialog: tooltips at Simulation Quality (tradeoff) and Stiffness (instability)
 		+ Use "Attention" icon
 		+ wxToolTip

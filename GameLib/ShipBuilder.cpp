@@ -99,10 +99,11 @@ std::unique_ptr<Ship> ShipBuilder::Create(
                     structuralMaterial->IsRope);
 
                 //
-                // Check if it's a rope endpoint
+                // Check if it's a (custom) rope endpoint
                 //
 
-                if (structuralMaterial->IsRope)
+                if (structuralMaterial->IsRope
+                    && colorKey != materialDatabase.GetRopeMaterialBaseColorKey())
                 {
                     // Store in RopeSegments, using the color key as the color of the rope
                     RopeSegment & ropeSegment = ropeSegments[colorKey];
@@ -126,17 +127,17 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     // Process the rope layer - if any - and append rope endpoints
     //
 
-    if (!!(shipDefinition.RopeLayerImage))
+    if (!!(shipDefinition.RopesLayerImage))
     {
         // Make sure dimensions match
-        if (shipDefinition.RopeLayerImage->Size != shipDefinition.StructuralLayerImage.Size)
+        if (shipDefinition.RopesLayerImage->Size != shipDefinition.StructuralLayerImage.Size)
         {
-            throw GameException("The size of the image used for the rope layer must match the size of the image used for the structural layer");
+            throw GameException("The size of the image used for the ropes layer must match the size of the image used for the structural layer");
         }
 
         // Append rope endpoints
         AppendRopeSegments(
-            *(shipDefinition.RopeLayerImage),
+            *(shipDefinition.RopesLayerImage),
             pointIndexMatrix,
             ropeSegments);
     }
@@ -444,6 +445,7 @@ void ShipBuilder::DecoratePointsWithElectricalMaterials(
 
                 // Store electrical material
                 auto const pointIndex = *(pointIndexMatrix[x + 1][y + 1]);
+                assert(nullptr == pointInfos1[pointIndex].ElectricalMtl);
                 pointInfos1[pointIndex].ElectricalMtl = electricalMaterial;
             }
         }
@@ -476,7 +478,8 @@ void ShipBuilder::AppendRopes(
         {
             throw GameException(
                 std::string("Only one rope endpoint found with color key <")
-                + Utils::RgbColor2Hex(ropeSegmentEntry.first));
+                + Utils::RgbColor2Hex(ropeSegmentEntry.first)
+                + ">");
         }
 
         // Get endpoint positions

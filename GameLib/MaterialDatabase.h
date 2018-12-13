@@ -169,6 +169,11 @@ public:
         return nullptr;
     }
 
+    ColorKey const & GetRopeMaterialBaseColorKey() const
+    {
+        return mRopeMaterialBaseColorKey;
+    }
+
     StructuralMaterial const & GetRopeMaterial() const
     {
         return mRopeMaterial;

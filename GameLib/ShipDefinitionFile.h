@@ -25,7 +25,7 @@ public:
 
     std::filesystem::path const StructuralLayerImageFilePath;
 
-    std::optional<std::filesystem::path> const RopeLayerImageFilePath;
+    std::optional<std::filesystem::path> const RopesLayerImageFilePath;
 
     std::optional<std::filesystem::path> const ElectricalLayerImageFilePath;
 
@@ -43,12 +43,12 @@ public:
 
     ShipDefinitionFile(
         std::filesystem::path const & structuralLayerImageFilePath,
-        std::optional<std::filesystem::path> const & ropeLayerImageFilePath,
+        std::optional<std::filesystem::path> const & ropesLayerImageFilePath,
         std::optional<std::filesystem::path> const & electricalLayerImageFilePath,
         std::optional<std::filesystem::path> const & textureLayerImageFilePath,
         ShipMetadata shipMetadata)
         : StructuralLayerImageFilePath(structuralLayerImageFilePath)
-        , RopeLayerImageFilePath(ropeLayerImageFilePath)
+        , RopesLayerImageFilePath(ropesLayerImageFilePath)
         , ElectricalLayerImageFilePath(electricalLayerImageFilePath)
         , TextureLayerImageFilePath(std::move(textureLayerImageFilePath))
         , Metadata(std::move(shipMetadata))

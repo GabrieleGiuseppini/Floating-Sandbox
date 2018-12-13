@@ -22,7 +22,7 @@ struct StructuralMaterial
     bool IsHull;
     bool IsRope;
 
-    enum class SoundElementType
+    enum class MaterialSoundType
     {
         Cable,
         Glass,
@@ -30,7 +30,7 @@ struct StructuralMaterial
         Wood,
     };
 
-    SoundElementType SoundType;
+    MaterialSoundType MaterialSound;
 
     StructuralMaterial(
         std::string name,
@@ -40,7 +40,7 @@ struct StructuralMaterial
         vec4f renderColor,
         bool isHull,
         bool isRope,
-        SoundElementType soundType)
+        MaterialSoundType materialSound)
         : Name(name)
         , Strength(strength)
         , Mass(mass)
@@ -48,12 +48,12 @@ struct StructuralMaterial
         , RenderColor(renderColor)
         , IsHull(isHull)
         , IsRope(isRope)
-        , SoundType(soundType)
+        , MaterialSound(materialSound)
     {}
 
     static StructuralMaterial Create(picojson::object const & structuralMaterialJson);
 
-    static SoundElementType StrToSoundElementType(std::string const & str);
+    static MaterialSoundType StrToMaterialSoundType(std::string const & str);
 };
 
 struct ElectricalMaterial

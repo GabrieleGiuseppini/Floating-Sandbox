@@ -33,7 +33,7 @@ ResourceLoader::ResourceLoader()
 ShipDefinition ResourceLoader::LoadShipDefinition(std::filesystem::path const & filepath)
 {
     std::filesystem::path absoluteStructuralLayerImageFilePath;
-    std::optional<ImageData> ropeLayerImage;
+    std::optional<ImageData> ropesLayerImage;
     std::optional<ImageData> electricalLayerImage;
     std::filesystem::path absoluteTextureLayerImageFilePath;
     ShipDefinition::TextureOriginType textureOrigin;
@@ -62,11 +62,11 @@ ShipDefinition ResourceLoader::LoadShipDefinition(std::filesystem::path const & 
         absoluteStructuralLayerImageFilePath =
             basePath /sdf.StructuralLayerImageFilePath;
 
-        if (!!sdf.RopeLayerImageFilePath)
+        if (!!sdf.RopesLayerImageFilePath)
         {
-            ropeLayerImage.emplace(
+            ropesLayerImage.emplace(
                 ResourceLoader::LoadImage(
-                    (basePath / *sdf.RopeLayerImageFilePath).string(),
+                    (basePath / *sdf.RopesLayerImageFilePath).string(),
                     IL_RGB,
                     IL_ORIGIN_UPPER_LEFT,
                     ResizeType::None));
@@ -176,7 +176,7 @@ ShipDefinition ResourceLoader::LoadShipDefinition(std::filesystem::path const & 
             IL_RGB,
             IL_ORIGIN_UPPER_LEFT,
             ResizeType::None),
-        std::move(ropeLayerImage),
+        std::move(ropesLayerImage),
         std::move(electricalLayerImage),
         std::move(*textureImage),
         textureOrigin,

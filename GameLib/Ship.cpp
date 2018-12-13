@@ -191,7 +191,7 @@ void Ship::SawThrough(
                     mPoints);
 
                 bool const isMetal =
-                    mSprings.GetBaseStructuralMaterial(springIndex).SoundType == StructuralMaterial::SoundElementType::Metal;
+                    mSprings.GetBaseStructuralMaterial(springIndex).MaterialSound == StructuralMaterial::MaterialSoundType::Metal;
 
                 if (isMetal)
                 {

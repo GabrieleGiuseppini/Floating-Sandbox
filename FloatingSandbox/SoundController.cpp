@@ -155,9 +155,9 @@ SoundController::SoundController(
             assert(mMatch.size() == 1 + 2);
 
             // Parse SoundElementType
-            StructuralMaterial::SoundElementType structuralSoundType = StructuralMaterial::StrToSoundElementType(mMatch[2].str());
+            StructuralMaterial::MaterialSoundType materialSound = StructuralMaterial::StrToMaterialSoundType(mMatch[2].str());
 
-            if (StructuralMaterial::SoundElementType::Metal == structuralSoundType)
+            if (StructuralMaterial::MaterialSoundType::Metal == materialSound)
             {
                 mSawedMetalSound.Initialize(
                     std::move(soundBuffer),
@@ -227,8 +227,8 @@ SoundController::SoundController(
 
             assert(msuMatch.size() == 1 + 4);
 
-            // 1. Parse SoundElementType
-            StructuralMaterial::SoundElementType structuralSoundType = StructuralMaterial::StrToSoundElementType(msuMatch[2].str());
+            // 1. Parse MaterialSoundType
+            StructuralMaterial::MaterialSoundType materialSound = StructuralMaterial::StrToMaterialSoundType(msuMatch[2].str());
 
             // 2. Parse Size
             SizeType sizeType = StrToSizeType(msuMatch[3].str());
@@ -250,7 +250,7 @@ SoundController::SoundController(
             // Store sound buffer
             //
 
-            mMSUOneShotMultipleChoiceSounds[std::make_tuple(soundType, structuralSoundType, sizeType, isUnderwater)]
+            mMSUOneShotMultipleChoiceSounds[std::make_tuple(soundType, materialSound, sizeType, isUnderwater)]
                 .SoundBuffers.emplace_back(std::move(soundBuffer));
         }
         else if (soundType == SoundType::LightFlicker)
@@ -713,7 +713,7 @@ void SoundController::OnDestroy(
 {
     PlayMSUOneShotMultipleChoiceSound(
         SoundType::Destroy,
-        structuralMaterial.SoundType,
+        structuralMaterial.MaterialSound,
         size,
         isUnderwater,
         70.0f,
@@ -750,7 +750,7 @@ void SoundController::OnStress(
     {
         PlayMSUOneShotMultipleChoiceSound(
             SoundType::Stress,
-            structuralMaterial.SoundType,
+            structuralMaterial.MaterialSound,
             size,
             isUnderwater,
             StressSoundVolume,
@@ -767,7 +767,7 @@ void SoundController::OnBreak(
     {
         PlayMSUOneShotMultipleChoiceSound(
             SoundType::Break,
-            structuralMaterial.SoundType,
+            structuralMaterial.MaterialSound,
             size,
             isUnderwater,
             10.0f,
@@ -992,7 +992,7 @@ void SoundController::OnAntiMatterBombImploding()
 
 void SoundController::PlayMSUOneShotMultipleChoiceSound(
     SoundType soundType,
-    StructuralMaterial::SoundElementType structuralSoundType,
+    StructuralMaterial::MaterialSoundType materialSound,
     unsigned int size,
     bool isUnderwater,
     float volume,
@@ -1010,7 +1010,7 @@ void SoundController::PlayMSUOneShotMultipleChoiceSound(
     LogDebug("MSUSound: <",
         static_cast<int>(soundType),
         ",",
-        static_cast<int>(structuralSoundType),
+        static_cast<int>(materialSound),
         ",",
         static_cast<int>(sizeType),
         ",",
@@ -1021,13 +1021,13 @@ void SoundController::PlayMSUOneShotMultipleChoiceSound(
     // Find vector
     //
 
-    auto it = mMSUOneShotMultipleChoiceSounds.find(std::make_tuple(soundType, structuralSoundType, sizeType, isUnderwater));
+    auto it = mMSUOneShotMultipleChoiceSounds.find(std::make_tuple(soundType, materialSound, sizeType, isUnderwater));
     if (it == mMSUOneShotMultipleChoiceSounds.end())
     {
         // Find a smaller one
         for (int s = static_cast<int>(sizeType) - 1; s >= static_cast<int>(SizeType::Min); --s)
         {
-            it = mMSUOneShotMultipleChoiceSounds.find(std::make_tuple(soundType, structuralSoundType, static_cast<SizeType>(s), isUnderwater));
+            it = mMSUOneShotMultipleChoiceSounds.find(std::make_tuple(soundType, materialSound, static_cast<SizeType>(s), isUnderwater));
             if (it != mMSUOneShotMultipleChoiceSounds.end())
             {
                 break;
@@ -1040,7 +1040,7 @@ void SoundController::PlayMSUOneShotMultipleChoiceSound(
         // Find this or smaller size with different underwater
         for (int s = static_cast<int>(sizeType); s >= static_cast<int>(SizeType::Min); --s)
         {
-            it = mMSUOneShotMultipleChoiceSounds.find(std::make_tuple(soundType, structuralSoundType, static_cast<SizeType>(s), !isUnderwater));
+            it = mMSUOneShotMultipleChoiceSounds.find(std::make_tuple(soundType, materialSound, static_cast<SizeType>(s), !isUnderwater));
             if (it != mMSUOneShotMultipleChoiceSounds.end())
             {
                 break;
