@@ -147,6 +147,7 @@ MainFrame::MainFrame(wxApp * mainApp)
     mMainGLCanvas->Connect(wxEVT_RIGHT_UP, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasRightUp, 0, this);
     mMainGLCanvas->Connect(wxEVT_MOTION, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasMouseMove, 0, this);
     mMainGLCanvas->Connect(wxEVT_MOUSEWHEEL, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasMouseWheel, 0, this);
+    mMainGLCanvas->Connect(wxEVT_MOUSE_CAPTURE_LOST, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasCaptureMouseLost, 0, this);
 
     mMainFrameSizer->Add(
         mMainGLCanvas.get(),
@@ -755,10 +756,16 @@ void MainFrame::OnMainGLCanvasLeftDown(wxMouseEvent & /*event*/)
 {
     assert(!!mToolController);
     mToolController->OnLeftMouseDown();
+
+    // Hang on to the mouse for as long as the button is pressed
+    mMainGLCanvas->CaptureMouse();
 }
 
 void MainFrame::OnMainGLCanvasLeftUp(wxMouseEvent & /*event*/)
 {
+    // We can now release the mouse
+    mMainGLCanvas->ReleaseMouse();
+
     assert(!!mToolController);
     mToolController->OnLeftMouseUp();
 }
@@ -767,10 +774,16 @@ void MainFrame::OnMainGLCanvasRightDown(wxMouseEvent & /*event*/)
 {
     assert(!!mToolController);
     mToolController->OnRightMouseDown();
+
+    // Hang on to the mouse for as long as the button is pressed
+    mMainGLCanvas->CaptureMouse();
 }
 
 void MainFrame::OnMainGLCanvasRightUp(wxMouseEvent & /*event*/)
 {
+    // We can now release the mouse
+    mMainGLCanvas->ReleaseMouse();
+
     assert(!!mToolController);
     mToolController->OnRightMouseUp();
 }
@@ -788,6 +801,11 @@ void MainFrame::OnMainGLCanvasMouseWheel(wxMouseEvent& event)
     mGameController->AdjustZoom(powf(1.002f, event.GetWheelRotation()));
 }
 
+void MainFrame::OnMainGLCanvasCaptureMouseLost(wxCloseEvent & /*event*/)
+{
+    assert(!!mToolController);
+    mToolController->UnsetTool();
+}
 
 //
 // Menu event handlers

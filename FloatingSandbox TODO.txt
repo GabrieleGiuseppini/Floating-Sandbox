@@ -121,6 +121,7 @@ Render:
 	= 1.8.0
 		= Multi-layer ships
 
+		= Focus kill/tools issue
 		- Lower strength of double-bottom
 		- Initial GL canvas size issue (*)
 
@@ -158,7 +159,6 @@ Render:
 	- See Moleskine
 
 - Suggestions to spec:
-	- Auto-draw structure as texture when to texture is given
 	- Different colored lights
 	- Lights with different chances of turning off
 		- Do they need longer-living lights?
@@ -418,6 +418,7 @@ Render:
 
 - Gfx:
 	+ Make font white inversely to ambient light
+	- Make water texture scroll with wind speed
 
 	- Should we always draw orphaned points - those that come after destruction?
 		+ Orphaned point == points with 0 connected springs
@@ -504,16 +505,22 @@ Render:
 
 - Dynamics:
 
-	- Add water absorption to structural material
-		- Default is the constant we use @ UpdateWaterInflow()
-		- Used @ UpdateWaterInflow() to decide outgoing water
-		- Make rope material high assorption and not hull
-		- Test that it floats a bit then sinks
+	+ Add water absorption to structural material
+		+ Default is the constant we use @ UpdateWaterInflow()
+		+ Used @ UpdateWaterInflow() to decide outgoing water
+		+ Make rope material high assorption and not hull
+		+ Test that it floats a bit then sinks: NO! Can't take enough water
 
 	- Add cloth material
-		- All colors
-		- High absorption
-		- Make ship with Dutch and Italian flags
+		- Test, basically rope-like but no rope
+			- Test with artificially high absorption
+		- If fine:
+			- Reintroduce water absorption
+			- High absorption
+			- Make it for all colors
+			- Make ship with Dutch and Italian flags
+			
+
 
 	- See if can improve light diffusion
 		- Square at shader?
