@@ -1,3 +1,7 @@
+1.8.0
+- Added ability to specify ships' characteristics with multiple layers (structural, electrical, ropes)
+	- Electrical properties can now be specified on top of any material - no more weak electrical cables!
+
 1.7.5
 - Added impact bomb - now can trigger explosions on collisions!
 - Improved move-n'-rotate tool - it's easier to impart inertia now!

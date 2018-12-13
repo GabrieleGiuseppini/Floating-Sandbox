@@ -504,6 +504,16 @@ Render:
 
 - Dynamics:
 
+	- Add water absorption to structural material
+		- Default is the constant we use @ UpdateWaterInflow()
+		- Used @ UpdateWaterInflow() to decide outgoing water
+		- Make rope material high assorption and not hull
+		- Test that it floats a bit then sinks
+
+	- Add cloth material
+		- All colors
+		- High absorption
+
 	- See if can improve light diffusion
 		- Square at shader?
 
@@ -850,6 +860,8 @@ Render:
 			+ Fix issue with rope buoyancy
 			+ Rope shader: use color from point color buffer
 				+ And then get rid of rope color passed to RenderContext
+		- Get rid of IsRope from structural material
+			- also json
 		= Test:
 			= BW compat old ships
 				+ Electrical

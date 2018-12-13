@@ -920,7 +920,6 @@ Points ShipBuilder::CreatePoints(
             pointInfo.Position,
             pointInfo.StructuralMtl,
             pointInfo.ElectricalMtl,
-            pointInfo.IsHull,
             pointInfo.IsRope,
             electricalElementIndex,
             pointInfo.IsLeaking,
@@ -943,6 +942,7 @@ std::vector<ShipBuilder::TriangleInfo> ShipBuilder::FilterOutRedundantTriangles(
     // Remove:
     //  - Those whose vertices are all rope points, of which at least one is connected exclusively
     //    to rope points (these would be knots "sticking out" of the structure)
+    //      - This happens when two or more rope endpoints - from the structural layer - are next to each other
     //
 
     std::vector<ElementIndex> triangleIndices;

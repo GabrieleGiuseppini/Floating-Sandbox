@@ -16,7 +16,6 @@ void Points::Add(
     vec2f const & position,
     StructuralMaterial const & structuralMaterial,
     ElectricalMaterial const * electricalMaterial,
-    bool isHull,
     bool isRope,
     ElementIndex electricalElementIndex,
     bool isLeaking,
@@ -26,7 +25,7 @@ void Points::Add(
     mIsDeletedBuffer.emplace_back(false);
 
     mMaterialsBuffer.emplace_back(&structuralMaterial, electricalMaterial);
-    mIsHullBuffer.emplace_back(isHull);
+    mIsHullBuffer.emplace_back(structuralMaterial.IsHull);
     mIsRopeBuffer.emplace_back(isRope);
 
     mPositionBuffer.emplace_back(position);
@@ -40,7 +39,7 @@ void Points::Add(
 
     // No buoyancy if it's hull, as it can't get water and thus if lighter than water
     // it'll float forever
-    mBuoyancyBuffer.emplace_back(isHull ? 0.0f : 1.0f);
+    mBuoyancyBuffer.emplace_back(structuralMaterial.IsHull ? 0.0f : 1.0f);
 
     mWaterBuffer.emplace_back(0.0f);
     mWaterVelocityBuffer.emplace_back(vec2f::zero());

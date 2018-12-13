@@ -45,7 +45,6 @@ private:
         vec4f RenderColor;
         StructuralMaterial const & StructuralMtl;
         bool IsRope;
-        bool IsHull;
         bool IsLeaking;
 
         ElectricalMaterial const * ElectricalMtl;
@@ -61,7 +60,6 @@ private:
             , RenderColor(renderColor)
             , StructuralMtl(structuralMtl)
             , IsRope(structuralMtl.IsRope)
-            , IsHull(structuralMtl.IsHull)
             , IsLeaking(false)
             , ElectricalMtl(nullptr)
             , ConnectedSprings1()

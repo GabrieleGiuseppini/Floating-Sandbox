@@ -235,7 +235,6 @@ public:
         vec2f const & position,
         StructuralMaterial const & structuralMaterial,
         ElectricalMaterial const * electricalMaterial,
-        bool isHull,
         bool isRope,
         ElementIndex electricalElementIndex,
         bool isLeaking,
