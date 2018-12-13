@@ -78,6 +78,9 @@ std::unique_ptr<Ship> ShipBuilder::Create(
             StructuralMaterial const * structuralMaterial = materialDatabase.FindStructuralMaterial(colorKey);
             if (nullptr != structuralMaterial)
             {
+                // Check if it's rope material
+                bool const isRopeMaterial = materialDatabase.IsRopeMaterial(*structuralMaterial);
+
                 //
                 // Make a point
                 //
@@ -95,14 +98,15 @@ std::unique_ptr<Ship> ShipBuilder::Create(
                         textureDx + static_cast<float>(x) / static_cast<float>(structureWidth),
                         textureDy + static_cast<float>(y) / static_cast<float>(structureHeight)),
                     structuralMaterial->RenderColor,
-                    *structuralMaterial);
+                    *structuralMaterial,
+                    isRopeMaterial);
 
                 //
                 // Check if it's a (custom) rope endpoint
                 //
 
-                if (structuralMaterial->IsRope
-                    && colorKey != materialDatabase.GetRopeMaterialBaseColorKey())
+                if (isRopeMaterial
+                    && !MaterialDatabase::IsRopeMaterialColorKey(colorKey))
                 {
                     // Store in RopeSegments, using the color key as the color of the rope
                     RopeSegment & ropeSegment = ropeSegments[colorKey];
@@ -570,7 +574,8 @@ void ShipBuilder::AppendRopes(
                     textureDx + newPosition.x / static_cast<float>(structureImageSize.Width),
                     textureDy + newPosition.y / static_cast<float>(structureImageSize.Height)),
                 vec4f(Utils::RgbToVec(ropeSegment.RopeColorKey), 1.0f),
-                ropeMaterial);
+                ropeMaterial,
+                true);
 
             // Set electrical material
             pointInfos1.back().ElectricalMtl =

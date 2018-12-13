@@ -513,6 +513,7 @@ Render:
 	- Add cloth material
 		- All colors
 		- High absorption
+		- Make ship with Dutch and Italian flags
 
 	- See if can improve light diffusion
 		- Square at shader?
@@ -860,8 +861,8 @@ Render:
 			+ Fix issue with rope buoyancy
 			+ Rope shader: use color from point color buffer
 				+ And then get rid of rope color passed to RenderContext
-		- Get rid of IsRope from structural material
-			- also json
+		+ Get rid of IsRope from structural material
+			+ Also from json
 		= Test:
 			= BW compat old ships
 				+ Electrical

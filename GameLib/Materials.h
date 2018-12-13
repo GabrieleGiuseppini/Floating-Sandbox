@@ -20,7 +20,6 @@ struct StructuralMaterial
     float Stiffness;
     vec4f RenderColor;
     bool IsHull;
-    bool IsRope;
 
     enum class MaterialSoundType
     {
@@ -32,6 +31,12 @@ struct StructuralMaterial
 
     MaterialSoundType MaterialSound;
 
+    static StructuralMaterial Create(picojson::object const & structuralMaterialJson);
+
+    static MaterialSoundType StrToMaterialSoundType(std::string const & str);
+
+private:
+
     StructuralMaterial(
         std::string name,
         float strength,
@@ -39,7 +44,6 @@ struct StructuralMaterial
         float stiffness,
         vec4f renderColor,
         bool isHull,
-        bool isRope,
         MaterialSoundType materialSound)
         : Name(name)
         , Strength(strength)
@@ -47,13 +51,8 @@ struct StructuralMaterial
         , Stiffness(stiffness)
         , RenderColor(renderColor)
         , IsHull(isHull)
-        , IsRope(isRope)
         , MaterialSound(materialSound)
     {}
-
-    static StructuralMaterial Create(picojson::object const & structuralMaterialJson);
-
-    static MaterialSoundType StrToMaterialSoundType(std::string const & str);
 };
 
 struct ElectricalMaterial
@@ -71,6 +70,12 @@ struct ElectricalMaterial
 
     bool IsSelfPowered;
 
+    static ElectricalMaterial Create(picojson::object const & electricalMaterialJson);
+
+    static ElectricalElementType StrToElectricalElementType(std::string const & str);
+
+private:
+
     ElectricalMaterial(
         std::string name,
         ElectricalElementType electricalType,
@@ -80,8 +85,4 @@ struct ElectricalMaterial
         , IsSelfPowered(isSelfPowered)
     {
     }
-
-    static ElectricalMaterial Create(picojson::object const & electricalMaterialJson);
-
-    static ElectricalElementType StrToElectricalElementType(std::string const & str);
 };

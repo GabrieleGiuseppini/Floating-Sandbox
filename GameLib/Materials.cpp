@@ -27,7 +27,6 @@ StructuralMaterial StructuralMaterial::Create(picojson::object const & structura
         vec4f renderColor = Utils::RgbaToVec({ renderColorRgb[0], renderColorRgb[1], renderColorRgb[2], 255 });
 
         bool isHull = Utils::GetMandatoryJsonMember<bool>(structuralMaterialJson, "is_hull");
-        bool isRope = Utils::GetOptionalJsonMember<bool>(structuralMaterialJson, "is_rope", false);
 
         std::string materialSoundStr = Utils::GetMandatoryJsonMember<std::string>(structuralMaterialJson, "sound_type");
         MaterialSoundType materialSound = StrToMaterialSoundType(materialSoundStr);
@@ -39,7 +38,6 @@ StructuralMaterial StructuralMaterial::Create(picojson::object const & structura
             stiffness,
             renderColor,
             isHull,
-            isRope,
             materialSound);
     }
     catch (GameException const & ex)
