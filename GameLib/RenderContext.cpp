@@ -14,7 +14,6 @@ namespace Render {
 
 RenderContext::RenderContext(
     ResourceLoader & resourceLoader,
-    vec4f const & ropeColour,
     ProgressCallback const & progressCallback)
     : mShaderManager()
     , mTextureRenderManager()
@@ -41,7 +40,6 @@ RenderContext::RenderContext(
     , mWaterVBO()
     // Ships
     , mShips()
-    , mRopeColour(ropeColour)
     , mGenericTextureAtlasOpenGLHandle()
     , mGenericTextureAtlasMetadata()
     // Cross of light
@@ -91,8 +89,7 @@ RenderContext::RenderContext(
 
     progressCallback(0.0f, "Loading shaders...");
 
-    ShaderManager<ShaderManagerTraits>::GlobalParameters globalParameters(
-        ropeColour);
+    ShaderManager<ShaderManagerTraits>::GlobalParameters globalParameters;
 
     mShaderManager = ShaderManager<ShaderManagerTraits>::CreateInstance(resourceLoader, globalParameters);
 

@@ -846,9 +846,10 @@ Render:
 			+ Sound renames
 				+ StructuralMaterial::MaterialSoundType MaterialSound
 			+ GameController
-			- Fix issue with rope endpoints
-			- Rope shader: use color from point color buffer
-				- And then get rid of rope color passed to RenderContext
+			+ Fix issue with rope endpoints
+			- Fix issue with rope weight
+			+ Rope shader: use color from point color buffer
+				+ And then get rid of rope color passed to RenderContext
 		= Test:
 			= BW compat old ships
 				+ Electrical

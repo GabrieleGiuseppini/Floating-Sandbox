@@ -44,7 +44,7 @@ private:
         vec2f TextureCoordinates;
         vec4f RenderColor;
         StructuralMaterial const & StructuralMtl;
-        bool IsRopeEndpoint;
+        bool IsRope;
         bool IsLeaking;
 
         ElectricalMaterial const * ElectricalMtl;
@@ -55,12 +55,12 @@ private:
             vec2f textureCoordinates,
             vec4f renderColor,
             StructuralMaterial const & structuralMtl,
-            bool isRopeEndpoint)
+            bool isRope)
             : Position(position)
             , TextureCoordinates(textureCoordinates)
             , RenderColor(renderColor)
             , StructuralMtl(structuralMtl)
-            , IsRopeEndpoint(isRopeEndpoint)
+            , IsRope(isRope)
             , IsLeaking(false)
             , ElectricalMtl(nullptr)
             , ConnectedSprings1()
@@ -178,10 +178,11 @@ private:
         return false;
     }
 
-    static void AppendRopeSegments(
+    static void AppendRopeEndpoints(
         ImageData const & ropeLayerImage,
-        std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
-        std::map<MaterialDatabase::ColorKey, RopeSegment> & ropeSegments);
+        std::map<MaterialDatabase::ColorKey, RopeSegment> & ropeSegments,
+        std::vector<PointInfo> & pointInfos1,
+        std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix);
 
     static void DecoratePointsWithElectricalMaterials(
         ImageData const & layerImage,

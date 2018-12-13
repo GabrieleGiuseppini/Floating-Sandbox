@@ -90,7 +90,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
                     vec2f(
                         static_cast<float>(x) - halfWidth,
                         static_cast<float>(y))
-                    + shipDefinition.Metadata.Offset,
+                        + shipDefinition.Metadata.Offset,
                     vec2f(
                         textureDx + static_cast<float>(x) / static_cast<float>(structureWidth),
                         textureDy + static_cast<float>(y) / static_cast<float>(structureHeight)),
@@ -136,10 +136,11 @@ std::unique_ptr<Ship> ShipBuilder::Create(
         }
 
         // Append rope endpoints
-        AppendRopeSegments(
+        AppendRopeEndpoints(
             *(shipDefinition.RopesLayerImage),
-            pointIndexMatrix,
-            ropeSegments);
+            ropeSegments,
+            pointInfos,
+            pointIndexMatrix);
     }
 
 
@@ -331,10 +332,11 @@ std::unique_ptr<Ship> ShipBuilder::Create(
 // Building helpers
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-void ShipBuilder::AppendRopeSegments(
+void ShipBuilder::AppendRopeEndpoints(
     ImageData const & ropeLayerImage,
-    std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
-    std::map<MaterialDatabase::ColorKey, RopeSegment> & ropeSegments)
+    std::map<MaterialDatabase::ColorKey, RopeSegment> & ropeSegments,
+    std::vector<PointInfo> & pointInfos1,
+    std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix)
 {
     int const width = ropeLayerImage.Size.Width;
     int const height = ropeLayerImage.Size.Height;
@@ -387,6 +389,10 @@ void ShipBuilder::AppendRopeSegments(
                         std::string("More than two \"" + Utils::RgbColor2Hex(colorKey) + "\" rope endpoints found at (")
                         + std::to_string(x) + "," + std::to_string(height - y - 1) + ") in the rope layer image");
                 }
+
+                // Change endpoint's color and make it a rope point, or else rope looks weird
+                pointInfos1[pointIndex].RenderColor = vec4f(Utils::RgbToVec(colorKey), 1.0f);
+                pointInfos1[pointIndex].IsRope = true;
             }
         }
     }
@@ -565,7 +571,7 @@ void ShipBuilder::AppendRopes(
                     textureDy + newPosition.y / static_cast<float>(structureImageSize.Height)),
                 vec4f(Utils::RgbToVec(ropeSegment.RopeColorKey), 1.0f),
                 ropeMaterial,
-                false);
+                true);
 
             // Set electrical material
             pointInfos1.back().ElectricalMtl =
@@ -902,7 +908,7 @@ Points ShipBuilder::CreatePoints(
         // Make point non-hull if it's endpoint of a rope, otherwise springs connected
         // to this point would be hull and thus this point would never catch water
         bool isHull;
-        if (pointInfo.IsRopeEndpoint)
+        if (pointInfo.IsRope)
         {
             isHull = false;
         }
@@ -928,7 +934,7 @@ Points ShipBuilder::CreatePoints(
             pointInfo.StructuralMtl,
             pointInfo.ElectricalMtl,
             isHull,
-            pointInfo.StructuralMtl.IsRope,
+            pointInfo.IsRope,
             electricalElementIndex,
             pointInfo.IsLeaking,
             pointInfo.RenderColor,

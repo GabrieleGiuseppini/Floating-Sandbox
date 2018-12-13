@@ -24,7 +24,6 @@ std::unique_ptr<GameController> GameController::Create(
     // Create render context
     std::unique_ptr<Render::RenderContext> renderContext = std::make_unique<Render::RenderContext>(
         *resourceLoader,
-        materialDatabase.GetRopeMaterial().RenderColor,
         [&progressCallback](float progress, std::string const & message)
         {
             progressCallback(0.9f * progress, message);

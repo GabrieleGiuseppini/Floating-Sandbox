@@ -101,9 +101,9 @@ if (MSVC)
 	#endif(${CMAKE_CXX_FLAGS_RELWITHDEBINFO} MATCHES "/Ob1")
 	#set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /Ob2")
 
-	# Disable incremental linking in Release and ReleaseWithDebInfo
+	# Disable incremental linking in Release
 	foreach(flag_var
-		CMAKE_EXE_LINKER_FLAGS_RELEASE CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO)
+		CMAKE_EXE_LINKER_FLAGS_RELEASE)
 		if(${flag_var} MATCHES "/INCREMENTAL")
 			string(REGEX REPLACE "/INCREMENTAL:NO" "" ${flag_var} "${${flag_var}}")
 			string(REGEX REPLACE "/INCREMENTAL" "" ${flag_var} "${${flag_var}}")
