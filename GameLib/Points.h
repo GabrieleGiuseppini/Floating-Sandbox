@@ -145,7 +145,6 @@ public:
         , mIsDeletedBuffer(mBufferElementCount, shipPointCount, false)
         // Materials
         , mMaterialsBuffer(mBufferElementCount, shipPointCount, Materials(nullptr, nullptr))
-        , mIsHullBuffer(mBufferElementCount, shipPointCount, false)
         , mIsRopeBuffer(mBufferElementCount, shipPointCount, false)
         // Mechanical dynamics
         , mPositionBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
@@ -154,6 +153,7 @@ public:
         , mIntegrationFactorBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
         // Water dynamics
+        , mIsHullBuffer(mBufferElementCount, shipPointCount, false)
         , mBuoyancyBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mWaterBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mWaterVelocityBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
@@ -316,11 +316,6 @@ public:
         return mMaterialsBuffer[pointElementIndex].Electrical;
     }
 
-    bool IsHull(ElementIndex pointElementIndex) const
-    {
-        return mIsHullBuffer[pointElementIndex];
-    }
-
     bool IsRope(ElementIndex pointElementIndex) const
     {
         return mIsRopeBuffer[pointElementIndex];
@@ -426,6 +421,11 @@ public:
     //
     // Water dynamics
     //
+
+    bool IsHull(ElementIndex pointElementIndex) const
+    {
+        return mIsHullBuffer[pointElementIndex];
+    }
 
     float GetBuoyancy(ElementIndex pointElementIndex) const
     {

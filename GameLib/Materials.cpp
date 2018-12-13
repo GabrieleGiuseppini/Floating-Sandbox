@@ -19,7 +19,7 @@ StructuralMaterial StructuralMaterial::Create(picojson::object const & structura
         float mass = static_cast<float>(Utils::GetMandatoryJsonMember<double>(massJson, "nominal_mass"))
             * static_cast<float>(Utils::GetMandatoryJsonMember<double>(massJson, "density"));
 
-        float strength = static_cast<float>(Utils::GetOptionalJsonMember<double>(structuralMaterialJson, "strength", 1.0));
+        float strength = static_cast<float>(Utils::GetMandatoryJsonMember<double>(structuralMaterialJson, "strength"));
         float stiffness = static_cast<float>(Utils::GetOptionalJsonMember<double>(structuralMaterialJson, "stiffness", 1.0));
 
         std::array<uint8_t, 3u> renderColorRgb = Utils::Hex2RgbColor(

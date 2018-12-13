@@ -533,7 +533,7 @@
     },
     {
         "name": "Rope",
-	"description": "The color key of ropes is constrained to be pure black (#000000)."
+	"description": "The color key of ropes is constrained to be pure black (#000000).",
 	"template": {
 		"row": "100|Rope",
 		"column": 0

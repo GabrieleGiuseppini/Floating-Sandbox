@@ -25,7 +25,6 @@ void Points::Add(
     mIsDeletedBuffer.emplace_back(false);
 
     mMaterialsBuffer.emplace_back(&structuralMaterial, electricalMaterial);
-    mIsHullBuffer.emplace_back(structuralMaterial.IsHull);
     mIsRopeBuffer.emplace_back(isRope);
 
     mPositionBuffer.emplace_back(position);
@@ -36,6 +35,8 @@ void Points::Add(
             structuralMaterial.Mass,
             mCurrentNumMechanicalDynamicsIterations));
     mMassBuffer.emplace_back(structuralMaterial.Mass);
+
+    mIsHullBuffer.emplace_back(structuralMaterial.IsHull);
 
     // No buoyancy if it's hull, as it can't get water and thus if lighter than water
     // it'll float forever
