@@ -1311,8 +1311,10 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
     // inversely-proportional to the square of the distance
     //
 
-    // Greater adjustment => underrated distance => wider diffusion
-    float const adjustmentCoefficient = 10.0f * powf(1.0f - gameParameters.LightDiffusionAdjustment, 2.0f);
+    // 1 => 5.0
+    // 0.5 => 2.5
+    // 0 => 0
+    float const diffusionAdjustmentFactor = 5.0f * gameParameters.LightDiffusionAdjustment;
 
     // Zero-out light at all points first
     for (auto pointIndex : mPoints)
@@ -1325,7 +1327,10 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
     // can safely visit deleted lamps as their current will always be zero
     for (auto lampIndex : mElectricalElements.Lamps())
     {
-        float const lampLight = mElectricalElements.GetAvailableCurrent(lampIndex);
+        float const effectiveLampLight =
+            mElectricalElements.GetAvailableCurrent(lampIndex)
+            * diffusionAdjustmentFactor;
+
         auto const lampPointIndex = mElectricalElements.GetPointIndex(lampIndex);
         vec2f const & lampPosition = mPoints.GetPosition(lampPointIndex);
         ConnectedComponentId const lampConnectedComponentId = mPoints.GetConnectedComponentId(lampPointIndex);
@@ -1335,13 +1340,8 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
         {
             if (mPoints.GetConnectedComponentId(pointIndex) == lampConnectedComponentId)
             {
-                float squareDistance = std::max(
-                    1.0f,
-                    (mPoints.GetPosition(pointIndex) - lampPosition).squareLength() * adjustmentCoefficient);
-
-                assert(squareDistance >= 1.0f);
-
-                float newLight = lampLight / squareDistance;
+                float const distance = (mPoints.GetPosition(pointIndex) - lampPosition).length();
+                float newLight = effectiveLampLight / (1.0f + distance);
                 if (newLight > mPoints.GetLight(pointIndex))
                     mPoints.GetLight(pointIndex) = newLight;
             }

@@ -1,6 +1,8 @@
 =================================================
 Current perf:
 =================================================
+- fps: 30.8/31.0/31.3
+Before diffusion improvement:
 - fps: 31.5/31.7
 
 =================================================
@@ -123,8 +125,12 @@ Render:
 		+ Initial GL canvas size issue
 		+ Focus kill/tools issue
 		+ Add cloth material (*)
+		+ Improve light diffusion (*)
+
+		- See if can undo ShipId kung-fu now that we create a new world
 
 		- Test double-fix for rope/buoyancy/hull unhack and fast-falling wet rope/cloth
+			- First of all, test with Integrate taking into account max(water, 1.0)
 			- Rope/buoyancy/hull unhack:
 				- New Buoyancy property at material
 					- Optional, def=1.0
@@ -143,21 +149,15 @@ Render:
 				- High absorption at ropes and cloth
 				- Low buoyancy at rope and cloth
 
-
+		- Lower strength of double-bottom
+		- Make Titanic more breakable
 		- Add low/medium/high-dimmed lights (*)
 
-		- See shader compilation issue
+		- See shader compilation issue/precision
 			- https://www.khronos.org/registry/OpenGL/specs/es/2.0/GLSL_ES_Specification_1.00.pdf
 			- https://www.khronos.org/opengl/wiki/Type_Qualifier_(GLSL)#Precision_qualifiers
 			- https://www.khronos.org/bugzilla/show_bug.cgi?id=1218
-		
-		- Lower strength of double-bottom
-		- Make Titanic more breakable
-		
 
-		- OpenGL/precision bug
-
-		- Improve light diffusion (*)
 
 		- Zbuffer (*)
 		- Orphaned points (*)
@@ -546,14 +546,16 @@ Render:
 		+ Make rope material high assorption and not hull
 		+ Test that it floats a bit then sinks: NO! Can't take enough water
 
+	+ Improve light diffusion
+		+ Use real distance
+		+ No more non-linear behavior
+
 	- Add "Low-Dimmed Lights" and "Medium-"
 		- Rename other as "High-"
 		- New Electrical Property ("Luminescence") at ElectricalMaterial
 		- New property at ElectricalElements
 			- Consumed by DiffuseLight
-		- Use at Queen of Unova			
-	- See if can improve light diffusion
-		- Square at shader?
+		- Use at Queen of Unova
 
 	- OceanFloor:
 		- Make number of samples be bump map width
