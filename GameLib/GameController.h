@@ -340,9 +340,11 @@ private:
         float targetValue,
         std::chrono::steady_clock::time_point startingTime);
 
-    void Reset();
+    void Reset(std::unique_ptr<Physics::World> newWorld);
 
-    void AddShip(ShipDefinition shipDefinition);
+    void AddShip(
+        std::unique_ptr<Physics::Ship> ship,
+        ShipDefinition shipDefinition);
 
     void PublishStats(std::chrono::steady_clock::time_point nowReal);
 

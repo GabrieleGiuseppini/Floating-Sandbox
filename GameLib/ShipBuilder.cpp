@@ -53,9 +53,6 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     // - Identify rope endpoints on structural layer, and create RopeSegment's for them
     //
 
-    float const textureDx = 0.5f / static_cast<float>(structureWidth);
-    float const textureDy = 0.5f / static_cast<float>(structureHeight);
-
     // Matrix of points - we allocate 2 extra dummy rows and cols to avoid checking for boundaries
     std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> pointIndexMatrix(new std::unique_ptr<std::optional<ElementIndex>[]>[structureWidth + 2]);
     for (int c = 0; c < structureWidth + 2; ++c)
@@ -94,9 +91,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
                         static_cast<float>(x) - halfWidth,
                         static_cast<float>(y))
                         + shipDefinition.Metadata.Offset,
-                    vec2f(
-                        textureDx + static_cast<float>(x) / static_cast<float>(structureWidth),
-                        textureDy + static_cast<float>(y) / static_cast<float>(structureHeight)),
+                    MakeTextureCoordinates(x, y, shipDefinition.StructuralLayerImage.Size),
                     structuralMaterial->RenderColor,
                     *structuralMaterial,
                     isRopeMaterial);
@@ -143,7 +138,9 @@ std::unique_ptr<Ship> ShipBuilder::Create(
             *(shipDefinition.RopesLayerImage),
             ropeSegments,
             pointInfos,
-            pointIndexMatrix);
+            pointIndexMatrix,
+            materialDatabase,
+            shipDefinition.Metadata.Offset);
     }
 
 
@@ -339,9 +336,12 @@ void ShipBuilder::AppendRopeEndpoints(
     ImageData const & ropeLayerImage,
     std::map<MaterialDatabase::ColorKey, RopeSegment> & ropeSegments,
     std::vector<PointInfo> & pointInfos1,
-    std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix)
+    std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> & pointIndexMatrix,
+    MaterialDatabase const & materialDatabase,
+    vec2f const & shipOffset)
 {
     int const width = ropeLayerImage.Size.Width;
+    float const halfWidth = static_cast<float>(width) / 2.0f;
     int const height = ropeLayerImage.Size.Height;
 
     constexpr MaterialDatabase::ColorKey BackgroundColorKey = { 0xff, 0xff, 0xff };
@@ -361,16 +361,28 @@ void ShipBuilder::AppendRopeEndpoints(
             // Check if background
             if (colorKey != BackgroundColorKey)
             {
-                // Make sure we have a structural point here
+                // Check whether we have a structural point here
+                ElementIndex pointIndex;
                 if (!pointIndexMatrix[x + 1][y + 1])
                 {
-                    throw GameException(
-                        std::string("The rope layer image specifies an endpoint at (")
-                        + std::to_string(x) + "," + std::to_string(height - y - 1)
-                        + "), but no pixel may be found at those coordinates in the structural layer image");
-                }
+                    // Make a point
+                    pointIndex = static_cast<ElementIndex>(pointInfos1.size());
+                    pointInfos1.emplace_back(
+                        vec2f(
+                            static_cast<float>(x) - halfWidth,
+                            static_cast<float>(y))
+                            + shipOffset,
+                        MakeTextureCoordinates(x, y, ropeLayerImage.Size),
+                        vec4f(Utils::RgbToVec(colorKey), 1.0f),
+                        materialDatabase.GetRopeMaterial(),
+                        true);
 
-                auto const pointIndex = *(pointIndexMatrix[x + 1][y + 1]);
+                    pointIndexMatrix[x + 1][y + 1] = pointIndex;
+                }
+                else
+                {
+                    pointIndex = *(pointIndexMatrix[x + 1][y + 1]);
+                }
 
                 // Make sure we don't have a rope already with an endpoint here
                 for (auto const & [srchColorKey, srchRopeSegment] : ropeSegments)
@@ -474,9 +486,6 @@ void ShipBuilder::AppendRopes(
     // - Fill-in springs between each pair of points in the rope, creating SpringInfo's for them
     //
 
-    float const textureDx = 0.5f / static_cast<float>(structureImageSize.Width);
-    float const textureDy = 0.5f / static_cast<float>(structureImageSize.Height);
-
     // Visit all RopeSegment's
     for (auto const & ropeSegmentEntry : ropeSegments)
     {
@@ -570,9 +579,7 @@ void ShipBuilder::AppendRopes(
             // Add PointInfo
             pointInfos1.emplace_back(
                 newPosition,
-                vec2f(
-                    textureDx + newPosition.x / static_cast<float>(structureImageSize.Width),
-                    textureDy + newPosition.y / static_cast<float>(structureImageSize.Height)),
+                MakeTextureCoordinates(newPosition.x, newPosition.y, structureImageSize),
                 vec4f(Utils::RgbToVec(ropeSegment.RopeColorKey), 1.0f),
                 ropeMaterial,
                 true);

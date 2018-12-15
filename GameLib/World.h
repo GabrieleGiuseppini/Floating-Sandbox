@@ -32,10 +32,15 @@ public:
         GameParameters const & gameParameters,
         ResourceLoader & resourceLoader);
 
-    ShipId AddShip(
+    std::unique_ptr<Ship> CreateShip(
+        ShipId shipId,
         ShipDefinition const & shipDefinition,
         MaterialDatabase const & materialDatabase,
         GameParameters const & gameParameters);
+
+    void AddShip(std::unique_ptr<Ship> ship);
+
+    size_t GetShipCount() const;
 
     size_t GetShipPointCount(ShipId shipId) const;
 

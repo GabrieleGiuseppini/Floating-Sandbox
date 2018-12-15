@@ -33,14 +33,13 @@ World::World(
     mOceanFloor.Update(gameParameters);
 }
 
-ShipId World::AddShip(
+std::unique_ptr<Ship> World::CreateShip(
+    ShipId shipId,
     ShipDefinition const & shipDefinition,
     MaterialDatabase const & materialDatabase,
     GameParameters const & gameParameters)
 {
-    ShipId shipId = static_cast<ShipId>(mAllShips.size() + 1);
-
-    auto newShip = ShipBuilder::Create(
+    return ShipBuilder::Create(
         shipId,
         *this,
         mGameEventHandler,
@@ -48,10 +47,16 @@ ShipId World::AddShip(
         materialDatabase,
         gameParameters,
         mCurrentVisitSequenceNumber);
+}
 
-    mAllShips.push_back(std::move(newShip));
+void World::AddShip(std::unique_ptr<Ship> ship)
+{
+    mAllShips.push_back(std::move(ship));
+}
 
-    return shipId;
+size_t World::GetShipCount() const
+{
+    return mAllShips.size();
 }
 
 size_t World::GetShipPointCount(ShipId shipId) const

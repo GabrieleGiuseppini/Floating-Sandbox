@@ -119,13 +119,31 @@ Render:
 
 - Roadmap:
 	= 1.8.0
-		= Multi-layer ships
+		+ Multi-layer ships
 
-		= Focus kill/tools issue
+		- Test ligher ropes
+		- Test cloth (*)
+		- Add low-dimmed lights (*)
+
+		- Rope/buoyancy/hull unhack:
+			- Spring has low buoyancy
+			- Not hull anymore
+		- Fast-falling wet rope fix:
+			- ApplyPointForces: add water to gravity only when underwater
+
+		- See shader compilation issue
+			- https://www.khronos.org/registry/OpenGL/specs/es/2.0/GLSL_ES_Specification_1.00.pdf
+			- https://www.khronos.org/opengl/wiki/Type_Qualifier_(GLSL)#Precision_qualifiers
+			- https://www.khronos.org/bugzilla/show_bug.cgi?id=1218
+
+		+ Focus kill/tools issue
 		- Lower strength of double-bottom
 		- Initial GL canvas size issue (*)
+		- Make Titanic more breakable
+		- Test simpler resize of texture made off structure
 
-		- Test simpler resize
+		- OpenGL/precision bug
+
 		- Improve light diffusion (*)
 
 		- Zbuffer (*)
@@ -519,6 +537,13 @@ Render:
 			- High absorption
 			- Make it for all colors
 			- Make ship with Dutch and Italian flags
+
+	- Add "Low-Dimmed Lights" and "High-"
+		- Rename other as "Standard-" or use its val as "High-" or dim existing ones
+		- New Electrical Property ("Luminescence") at ElectricalMaterial
+		- New property at ElectricalElements
+			- Consumed by DiffuseLight
+		- Use at Queen of Unova
 			
 
 
@@ -830,67 +855,6 @@ Render:
 		- Resolution stays the same
 
 	- Allow ocean floor bump map to be loaded at runtime
-
-	- Adjustment for global damp
-		- Or - just make it lower
-	
-	= TODOHERE: Ship definition: multiple layers
-		+ We want to maintain BW compat for ease of one-layer ship making
-		+ Impl:
-			+ json:
-				+ "structural_colour" -> "color_key"
-				+ "colour"->"color"
-				+ Copy & rename
-				+ Structural:				
-					+ Refactor sound_type for all structural elements
-					+ Remove electrical properties
-				+ Electrical:
-					+ Remove non-electrical materials
-					+ Refactor materials
-			+ Breakup material class
-			+ MaterialDatabase
-				+ Restructure 
-				+ Find: fallback to rope
-			+ ResourceLoader::LoadMaterialDatabase()
-			+ IGameEventHandler events take now StructuralMaterial
-			+ Points::new struct for materials
-			+ Springs, Triangles
-			+ ElectricalElements
-			+ Ship
-			+ ShipDefinition/File: new layers, plus bw-compat
-			+ ShipBuilder
-			+ Event publishing
-			+ Event handlers
-			+ Sound renames
-				+ StructuralMaterial::MaterialSoundType MaterialSound
-			+ GameController
-			+ Fix issue with rope endpoints
-			+ Fix issue with rope buoyancy
-			+ Rope shader: use color from point color buffer
-				+ And then get rid of rope color passed to RenderContext
-		+ Get rid of IsRope from structural material
-			+ Also from json
-		= Test:
-			= BW compat old ships
-				+ Electrical
-				+ Ropes
-				- All
-		= Renew ships:
-			+ Make SS queen of unova use layers
-				+ Fix structure as well
-			- Make Szersen cargo use layers
-				- Also test propagation of electrical (cable, in this case) along ropes
-				- Also test different colors for ropes
-		- Cleanup:
-			- Do two new material template screenshots and nuke old one
-			- Redo materials.md
-
-		- Add "Low-Dimmed Lights" and "High-"
-			- Rename other as "Standard-" or use its val as "High-" or dim existing ones
-			- New Electrical Property ("Luminescence") at ElectricalMaterial
-			- New property at ElectricalElements
-				- Consumed by DiffuseLight
-			- Use at Queen of Unova
 
 	- Ship definition: "instructions"
 		- If present, at the first load of a ship spawns a text box (if enabled in settings)
@@ -3025,6 +2989,56 @@ IF WX:
 			+ Click on ship -> GameController returns std::optional<ShipId> -> if not None, tool is engaged (save cur screen pos)
 				+ Works like pan 
 			+ Moving tool tells GameController delta (offset) screen 
+	+ Ship definition: multiple layers
+		+ We want to maintain BW compat for ease of one-layer ship making
+		+ Impl:
+			+ json:
+				+ "structural_colour" -> "color_key"
+				+ "colour"->"color"
+				+ Copy & rename
+				+ Structural:				
+					+ Refactor sound_type for all structural elements
+					+ Remove electrical properties
+				+ Electrical:
+					+ Remove non-electrical materials
+					+ Refactor materials
+			+ Breakup material class
+			+ MaterialDatabase
+				+ Restructure 
+				+ Find: fallback to rope
+			+ ResourceLoader::LoadMaterialDatabase()
+			+ IGameEventHandler events take now StructuralMaterial
+			+ Points::new struct for materials
+			+ Springs, Triangles
+			+ ElectricalElements
+			+ Ship
+			+ ShipDefinition/File: new layers, plus bw-compat
+			+ ShipBuilder
+			+ Event publishing
+			+ Event handlers
+			+ Sound renames
+				+ StructuralMaterial::MaterialSoundType MaterialSound
+			+ GameController
+			+ Fix issue with rope endpoints
+			+ Fix issue with rope buoyancy
+			+ Rope shader: use color from point color buffer
+				+ And then get rid of rope color passed to RenderContext
+		+ Get rid of IsRope from structural material
+			+ Also from json
+		+ Test:
+			+ BW compat old ships
+				+ Electrical
+				+ Ropes
+				+ All
+		+ Renew ships:
+			+ Make SS queen of unova use layers
+				+ Fix structure as well
+			+ Make Szersen cargo use layers
+				+ Also test propagation of electrical (cable, in this case) along ropes
+				+ Also test different colors for ropes
+		+ Cleanup:
+			+ Do two new material template screenshots and nuke old one
+			+ Redo materials.md
 
 + Sound:
 	+ SFML:

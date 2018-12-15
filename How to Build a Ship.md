@@ -15,6 +15,9 @@ The more advanced method consists of providing multiple png images, each providi
 - Yet another image provides the "ropes layer", which contains endpoints of ropes that are conveniently automatically completed by Floating Sandbox;
 - A final image provides the "texture layer", which is the image that is visible during the game.
 
+An advantage of using a separate electrical layer, for example, is that you may build a complex circuitry without having to also cramm the structure 
+of the ship with weak materials such as cables and lamps.
+
 The only mandatory layer is the "structural layer", and this is the layer that Floating Sandbox implicitly assumes it's loading when importing 
 a simple png. In order to work with multiple layers instead, you would craft a simple JSON file that specifies the names of the image files
 providing the individual layers. Also in this case the only mandatory layer is the "structural layer", with all the other layers being optional.
@@ -24,6 +27,8 @@ TODO
 
 # Electrical Layer
 TODO
+- For every pixel in the electrical layer, there must exist a corresponding pixel either in the structural layer or in the ropes layer.
+
 
 # Ropes Layer
 A ropes layer image is an image that contains pairs of pixels with the same color; for each such a pair, Floating Sandbox will automagically fill-in 
@@ -31,10 +36,9 @@ a segment (the "rope") between the two points corresponding to the pixels, each 
 These are the rules to follow when drawing an image for the ropes layer of a ship:
 - The size of the ropes layer image must match the size of the structural layer image.
 - A rope is specified via a pair of pixels with matching colors; the coordinates of the pixels will be used as the coordinates of the endpoints 
- of the rope.
+ of the rope, while the color will be used as the color of the endpoints and of the ropes.
 -- It follows that there may only exist two pixels with the same color. Having only one pixel with a given color will cause an error, as will having
    three or more pixels with the same color.
-- For every rope endpoint pixel in the rope layer, there must exist a corresponding pixel in the structural layer.
 - The background must be full white (#FFFFFF). Non-white pixels will be assumed to be part of a rope endpoint pair.
 
 Note that it is also possible to create ropes without a separate ropes layer image: you may in fact draw the rope endpoints directly in the

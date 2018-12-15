@@ -12,12 +12,16 @@
 #include <vector>
 
 namespace Physics
-{	
+{
 
 class Clouds
 {
 
 public:
+
+    Clouds()
+        : mClouds()
+    {}
 
     void Update(
         float currentSimulationTime,

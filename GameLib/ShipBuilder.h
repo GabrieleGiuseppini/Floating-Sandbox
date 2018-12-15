@@ -164,8 +164,6 @@ private:
         std::vector<ElementIndex> const & pointIndexRemap,
         std::vector<SpringInfo> const & springInfos)
     {
-        assert(points.GetStructuralMaterial(pointIndex).IsRope);
-
         for (auto springIndex : points.GetConnectedSprings(pointIndex))
         {
             if (!points.IsRope(pointIndexRemap[springInfos[springIndex].PointAIndex1])
@@ -178,11 +176,27 @@ private:
         return false;
     }
 
+    template <typename CoordType>
+    static vec2f MakeTextureCoordinates(
+        CoordType x,
+        CoordType y,
+        ImageSize const & imageSize)
+    {
+        float const textureDx = 0.5f / static_cast<float>(imageSize.Width);
+        float const textureDy = 0.5f / static_cast<float>(imageSize.Height);
+
+        return vec2f(
+            textureDx + static_cast<float>(x) / static_cast<float>(imageSize.Width),
+            textureDy + static_cast<float>(y) / static_cast<float>(imageSize.Height));
+    }
+
     static void AppendRopeEndpoints(
         ImageData const & ropeLayerImage,
         std::map<MaterialDatabase::ColorKey, RopeSegment> & ropeSegments,
         std::vector<PointInfo> & pointInfos1,
-        std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix);
+        std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> & pointIndexMatrix,
+        MaterialDatabase const & materialDatabase,
+        vec2f const & shipOffset);
 
     static void DecoratePointsWithElectricalMaterials(
         ImageData const & layerImage,

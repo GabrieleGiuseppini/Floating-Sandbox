@@ -216,7 +216,9 @@ private:
 
     void ResetState();
     void UpdateFrameTitle();
-    void Die(std::string const & message);
+    void OnError(
+        std::string const & message,
+        bool die);
 
 private:
 

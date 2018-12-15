@@ -4,12 +4,15 @@ import sys
 
 def main():
     
-    if len(sys.argv) != 2:
-        print("Usage: generate_materials_template.py <path_to_materials_json>")
+    if len(sys.argv) != 3 or (sys.argv[2] != "s" and sys.argv[2] != "e"):
+        print("Usage: generate_materials_template.py <path_to_materials_json> s|e")
         sys.exit(-1)
 
     with open(sys.argv[1]) as f:
         data = json.load(f)
+
+    is_structural = (sys.argv[2] == "s")
+
 
     #
     # Prepare data
@@ -90,7 +93,7 @@ def main():
                     # Title
                     html += "<td valign='middle' align='right' style='padding-right:5px;font-size:10px;'>" + c + "</td>"
                 else:
-                    html += "<td bgcolor='" + c[3]["structural_colour"] + "'class='border_top' style='width: 50px;'>&nbsp;</td>"
+                    html += "<td bgcolor='" + c[3]["color_key"] + "'class='border_top' style='width: 50px;'>&nbsp;</td>"
             else:
                 html += "<td style='width: 50px;'>&nbsp;</td>"
 
@@ -114,7 +117,8 @@ def main():
                     html += "<td/>"
                 else:
                     html += "<td style='font-size:8px;'>"
-                    html += str(c[3]["mass"]["nominal_mass"] * c[3]["mass"]["density"]) + "|" + str(c[3]["strength"]) + "|" + str(c[3]["stiffness"])
+                    if is_structural:
+                        html += str(c[3]["mass"]["nominal_mass"] * c[3]["mass"]["density"]) + "|" + str(c[3]["strength"]) + "|" + str(c[3]["stiffness"])
                     html += "</td>"
             else:
                 html += "<td/>"
