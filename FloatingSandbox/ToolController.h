@@ -43,6 +43,16 @@ public:
         ShowCurrentCursor();
     }
 
+    void UnsetTool()
+    {
+        // Notify old tool
+        if (nullptr != mCurrentTool)
+        {
+            mCurrentTool->Deinitialize(mInputState);
+            mCurrentTool->ShowCurrentCursor();
+        }
+    }
+
     void ShowCurrentCursor()
     {
         if (nullptr != mCurrentTool)

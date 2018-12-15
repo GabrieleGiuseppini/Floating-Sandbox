@@ -1,5 +1,7 @@
 {
-	"structure_image":"szerszen_structure.png.dat",
+	"structure_image":"szerszen_structural.png.dat",
+	"electrical_image":"szerszen_electrical.png.dat",
+	"ropes_image":"szerszen_ropes.png.dat",
 	"texture_image":"szerszen_texture.png.dat",
 	"ship_name":"Szerszen Cargo II",
 	"offset":{"x":0.0, "y":-5.0},

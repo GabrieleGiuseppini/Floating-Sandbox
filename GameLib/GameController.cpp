@@ -16,7 +16,7 @@ std::unique_ptr<GameController> GameController::Create(
     ProgressCallback const & progressCallback)
 {
     // Load materials
-    std::unique_ptr<MaterialDatabase> materials = resourceLoader->LoadMaterials();
+    MaterialDatabase materialDatabase = resourceLoader->LoadMaterialDatabase();
 
     // Create game dispatcher
     std::unique_ptr<GameEventDispatcher> gameEventDispatcher = std::make_unique<GameEventDispatcher>();
@@ -24,7 +24,6 @@ std::unique_ptr<GameController> GameController::Create(
     // Create render context
     std::unique_ptr<Render::RenderContext> renderContext = std::make_unique<Render::RenderContext>(
         *resourceLoader,
-        materials->GetRopeMaterial().RenderColour,
         [&progressCallback](float progress, std::string const & message)
         {
             progressCallback(0.9f * progress, message);
@@ -45,7 +44,7 @@ std::unique_ptr<GameController> GameController::Create(
             std::move(swapRenderBuffersFunction),
             std::move(gameEventDispatcher),
             std::move(textLayer),
-            std::move(materials),
+            std::move(materialDatabase),
             resourceLoader));
 }
 
@@ -57,26 +56,71 @@ void GameController::RegisterGameEventHandler(IGameEventHandler * gameEventHandl
 
 void GameController::ResetAndLoadShip(std::filesystem::path const & filepath)
 {
+    // Create a new world
+    auto newWorld = std::make_unique<Physics::World>(
+        mGameEventDispatcher,
+        mGameParameters,
+        *mResourceLoader);
+
+    // Load ship definition
     auto shipDefinition = mResourceLoader->LoadShipDefinition(filepath);
 
-    Reset();
+    // Load ship
+    auto ship = newWorld->CreateShip(
+        1,
+        shipDefinition,
+        mMaterialDatabase,
+        mGameParameters);
 
-    AddShip(std::move(shipDefinition));
+    //
+    // No errors, so we may continue
+    //
+
+    Reset(std::move(newWorld));
+
+    AddShip(
+        std::move(ship),
+        std::move(shipDefinition));
 
     mLastShipLoadedFilePath = filepath;
 }
 
 void GameController::AddShip(std::filesystem::path const & filepath)
 {
+    // Calculate new ship ID
+    ShipId shipId = static_cast<ShipId>(mWorld->GetShipCount()) + 1;
+
+    // Load ship definition
     auto shipDefinition = mResourceLoader->LoadShipDefinition(filepath);
 
-    AddShip(std::move(shipDefinition));
+    // Load ship
+    auto ship = mWorld->CreateShip(
+        shipId,
+        shipDefinition,
+        mMaterialDatabase,
+        mGameParameters);
+
+    //
+    // No errors, so we may continue
+    //
+
+    AddShip(
+        std::move(ship),
+        std::move(shipDefinition));
 
     mLastShipLoadedFilePath = filepath;
 }
 
 void GameController::ReloadLastShip()
 {
+    // Create a new world
+    auto newWorld = std::make_unique<Physics::World>(
+        mGameEventDispatcher,
+        mGameParameters,
+        *mResourceLoader);
+
+    // Load ship definition
+
     if (mLastShipLoadedFilePath.empty())
     {
         throw std::runtime_error("No ship has been loaded yet");
@@ -84,9 +128,22 @@ void GameController::ReloadLastShip()
 
     auto shipDefinition = mResourceLoader->LoadShipDefinition(mLastShipLoadedFilePath);
 
-    Reset();
+    // Load ship
+    auto ship = newWorld->CreateShip(
+        1, // We're going to reset, hence this will be the first ship
+        shipDefinition,
+        mMaterialDatabase,
+        mGameParameters);
 
-    AddShip(std::move(shipDefinition));
+    //
+    // No errors, so we may continue
+    //
+
+    Reset(std::move(newWorld));
+
+    AddShip(
+        std::move(ship),
+        std::move(shipDefinition));
 }
 
 void GameController::RunGameIteration()
@@ -500,15 +557,11 @@ void GameController::SmoothToTarget(
     }
 }
 
-void GameController::Reset()
+void GameController::Reset(std::unique_ptr<Physics::World> newWorld)
 {
     // Reset world
     assert(!!mWorld);
-    mWorld.reset(
-        new Physics::World(
-            mGameEventDispatcher,
-            mGameParameters,
-            *mResourceLoader));
+    mWorld = std::move(newWorld);
 
     // Reset rendering engine
     assert(!!mRenderContext);
@@ -518,19 +571,20 @@ void GameController::Reset()
     mGameEventDispatcher->OnGameReset();
 }
 
-void GameController::AddShip(ShipDefinition shipDefinition)
+void GameController::AddShip(
+    std::unique_ptr<Physics::Ship> ship,
+    ShipDefinition shipDefinition)
 {
+    auto shipId = ship->GetId();
+
     // Add ship to world
-    int shipId = mWorld->AddShip(
-        shipDefinition,
-        mMaterials,
-        mGameParameters);
+    mWorld->AddShip(std::move(ship));
 
     // Add ship to rendering engine
     mRenderContext->AddShip(
         shipId,
         mWorld->GetShipPointCount(shipId),
-        std::move(shipDefinition.TextureImage),
+        std::move(shipDefinition.TextureLayerImage),
         shipDefinition.TextureOrigin);
 
     // Notify

@@ -32,8 +32,10 @@ ResourceLoader::ResourceLoader()
 
 ShipDefinition ResourceLoader::LoadShipDefinition(std::filesystem::path const & filepath)
 {
-    std::filesystem::path absoluteStructuralImageFilePath;
-    std::filesystem::path absoluteTextureImageFilePath;
+    std::filesystem::path absoluteStructuralLayerImageFilePath;
+    std::optional<ImageData> ropesLayerImage;
+    std::optional<ImageData> electricalLayerImage;
+    std::filesystem::path absoluteTextureLayerImageFilePath;
     ShipDefinition::TextureOriginType textureOrigin;
     std::optional<ShipMetadata> shipMetadata;
 
@@ -57,14 +59,34 @@ ShipDefinition ResourceLoader::LoadShipDefinition(std::filesystem::path const & 
 
         std::filesystem::path basePath = filepath.parent_path();
 
-        absoluteStructuralImageFilePath =
-            basePath / std::filesystem::path(sdf.StructuralImageFilePath);
+        absoluteStructuralLayerImageFilePath =
+            basePath /sdf.StructuralLayerImageFilePath;
 
-        if (!!sdf.TextureImageFilePath)
+        if (!!sdf.RopesLayerImageFilePath)
+        {
+            ropesLayerImage.emplace(
+                ResourceLoader::LoadImage(
+                    (basePath / *sdf.RopesLayerImageFilePath).string(),
+                    IL_RGB,
+                    IL_ORIGIN_UPPER_LEFT,
+                    ResizeType::None));
+        }
+
+        if (!!sdf.ElectricalLayerImageFilePath)
+        {
+            electricalLayerImage.emplace(
+                ResourceLoader::LoadImage(
+                (basePath / *sdf.ElectricalLayerImageFilePath).string(),
+                    IL_RGB,
+                    IL_ORIGIN_UPPER_LEFT,
+                    ResizeType::None));
+        }
+
+        if (!!sdf.TextureLayerImageFilePath)
         {
             // Texture image is as specified
 
-            absoluteTextureImageFilePath = basePath / std::filesystem::path(*sdf.TextureImageFilePath);
+            absoluteTextureLayerImageFilePath = basePath / *sdf.TextureLayerImageFilePath;
 
             textureOrigin = ShipDefinition::TextureOriginType::Texture;
         }
@@ -72,7 +94,7 @@ ShipDefinition ResourceLoader::LoadShipDefinition(std::filesystem::path const & 
         {
             // Texture image is the structural image
 
-            absoluteTextureImageFilePath = absoluteStructuralImageFilePath;
+            absoluteTextureLayerImageFilePath = absoluteStructuralLayerImageFilePath;
 
             textureOrigin = ShipDefinition::TextureOriginType::StructuralImage;
         }
@@ -97,8 +119,8 @@ ShipDefinition ResourceLoader::LoadShipDefinition(std::filesystem::path const & 
         // Assume it's just a structural image
         //
 
-        absoluteStructuralImageFilePath = filepath;
-        absoluteTextureImageFilePath = absoluteStructuralImageFilePath;
+        absoluteStructuralLayerImageFilePath = filepath;
+        absoluteTextureLayerImageFilePath = absoluteStructuralLayerImageFilePath;
         textureOrigin = ShipDefinition::TextureOriginType::StructuralImage;
 
         shipMetadata.emplace(
@@ -123,7 +145,7 @@ ShipDefinition ResourceLoader::LoadShipDefinition(std::filesystem::path const & 
 
             textureImage.emplace(
                 ResourceLoader::LoadImage(
-                    absoluteTextureImageFilePath.string(),
+                    absoluteTextureLayerImageFilePath.string(),
                     IL_RGBA,
                     IL_ORIGIN_LOWER_LEFT,
                     ResizeType::None));
@@ -137,7 +159,7 @@ ShipDefinition ResourceLoader::LoadShipDefinition(std::filesystem::path const & 
 
             textureImage.emplace(
                 ResourceLoader::LoadImage(
-                    absoluteTextureImageFilePath.string(),
+                    absoluteTextureLayerImageFilePath.string(),
                     IL_RGBA,
                     IL_ORIGIN_LOWER_LEFT,
                     ResizeType::ResizeUpNearestAndLinear));
@@ -149,7 +171,13 @@ ShipDefinition ResourceLoader::LoadShipDefinition(std::filesystem::path const & 
     assert(!!textureImage);
 
     return ShipDefinition(
-        ResourceLoader::LoadImage(absoluteStructuralImageFilePath.string(), IL_RGB, IL_ORIGIN_UPPER_LEFT, ResizeType::None),
+        ResourceLoader::LoadImage(
+            absoluteStructuralLayerImageFilePath.string(),
+            IL_RGB,
+            IL_ORIGIN_UPPER_LEFT,
+            ResizeType::None),
+        std::move(ropesLayerImage),
+        std::move(electricalLayerImage),
         std::move(*textureImage),
         textureOrigin,
         *shipMetadata);
@@ -236,15 +264,17 @@ std::vector<Render::Font> ResourceLoader::LoadFonts(ProgressCallback const & pro
 // Materials
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-std::unique_ptr<MaterialDatabase> ResourceLoader::LoadMaterials()
+MaterialDatabase ResourceLoader::LoadMaterialDatabase() const
 {
-    return LoadMaterials(std::filesystem::path("Data") / "materials.json");
-}
+    std::filesystem::path const structuralMaterialsFilepath = std::filesystem::path("Data") / "materials_structural.json";
+    picojson::value structuralMaterialsRoot = Utils::ParseJSONFile(structuralMaterialsFilepath.string());
 
-std::unique_ptr<MaterialDatabase> ResourceLoader::LoadMaterials(std::filesystem::path const & filePath)
-{
-    picojson::value root = Utils::ParseJSONFile(filePath.string());
-    return MaterialDatabase::Create(root);
+    std::filesystem::path const electricalMaterialsFilepath = std::filesystem::path("Data") / "materials_electrical.json";
+    picojson::value electricalMaterialsRoot = Utils::ParseJSONFile(electricalMaterialsFilepath.string());
+
+    return MaterialDatabase::Create(
+        structuralMaterialsRoot,
+        electricalMaterialsRoot);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////

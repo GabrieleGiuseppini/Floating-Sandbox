@@ -44,22 +44,18 @@ public:
 
     struct GlobalParameters
     {
-        vec4f RopeColor;
-
-        GlobalParameters(
-            vec4f ropeColor)
-            : RopeColor(ropeColor)
+        GlobalParameters()
         {}
 
-        void ToParameters(std::map<std::string, std::string> & parameters) const
+        void ToParameters(std::map<std::string, std::string> & /*parameters*/) const
         {
-            std::stringstream ss;
-            ss << std::fixed << RopeColor.x << ", " << RopeColor.y << ", " << RopeColor.z << ", " << RopeColor.w;
+            ////std::stringstream ss;
+            ////ss << std::fixed << RopeColor.x << ", " << RopeColor.y << ", " << RopeColor.z << ", " << RopeColor.w;
 
-            parameters.insert(
-                std::make_pair(
-                    "ROPE_COLOR_VEC4",
-                    ss.str()));
+            ////parameters.insert(
+            ////    std::make_pair(
+            ////        "ROPE_COLOR_VEC4",
+            ////        ss.str()));
         }
     };
 
@@ -129,7 +125,7 @@ public:
         constexpr uint32_t parameterIndex = static_cast<uint32_t>(Parameter);
 
         glUniform2f(
-            mPrograms[programIndex].UniformLocations[parameterIndex], 
+            mPrograms[programIndex].UniformLocations[parameterIndex],
             val1,
             val2);
 
@@ -144,8 +140,8 @@ public:
 
         glUniform3f(
             mPrograms[programIndex].UniformLocations[parameterIndex],
-            val1, 
-            val2, 
+            val1,
+            val2,
             val3);
 
         CheckUniformError<Program, Parameter>();

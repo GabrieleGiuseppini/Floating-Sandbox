@@ -8,7 +8,7 @@
 #include "Buffer.h"
 #include "ElementContainer.h"
 #include "GameWallClock.h"
-#include "Material.h"
+#include "Materials.h"
 
 #include <cassert>
 #include <chrono>
@@ -39,7 +39,7 @@ public:
         //////////////////////////////////
         , mIsDeletedBuffer(mBufferElementCount, mElementCount, true)
         , mPointIndexBuffer(mBufferElementCount, mElementCount, NoneElementIndex)
-        , mTypeBuffer(mBufferElementCount, mElementCount, Material::ElectricalProperties::ElectricalElementType::Cable)
+        , mTypeBuffer(mBufferElementCount, mElementCount, ElectricalMaterial::ElectricalElementType::Cable)
         , mConnectedElectricalElementsBuffer(mBufferElementCount, mElementCount, {})
         , mElementStateBuffer(mBufferElementCount, mElementCount, ElementState::CableState())
         , mAvailableCurrentBuffer(mBufferElementCount, mElementCount, 0.0f)
@@ -56,6 +56,22 @@ public:
     }
 
     ElectricalElements(ElectricalElements && other) = default;
+
+    /*
+     * Returns an iterator for the generator elements only.
+     */
+    inline auto const & Generators() const
+    {
+        return mGenerators;
+    }
+
+    /*
+     * Returns an iterator for the lamp elements only.
+     */
+    inline auto const & Lamps() const
+    {
+        return mLamps;
+    }
 
     /*
      * Sets a (single) handler that is invoked whenever an electrical element is destroyed.
@@ -77,7 +93,7 @@ public:
 
     void Add(
         ElementIndex pointElementIndex,
-        Material::ElectricalProperties::ElectricalElementType elementType,
+        ElectricalMaterial::ElectricalElementType type,
         bool isSelfPowered);
 
     void Destroy(ElementIndex electricalElementIndex);
@@ -112,7 +128,7 @@ public:
     // Type
     //
 
-    inline Material::ElectricalProperties::ElectricalElementType GetType(ElementIndex electricalElementIndex) const
+    inline ElectricalMaterial::ElectricalElementType GetType(ElementIndex electricalElementIndex) const
     {
         return mTypeBuffer[electricalElementIndex];
     }
@@ -171,20 +187,6 @@ public:
     {
         mCurrentConnectivityVisitSequenceNumberBuffer[electricalElementIndex] =
             connectivityVisitSequenceNumber;
-    }
-
-    //
-    // Subsets
-    //
-
-    inline auto const & GetGenerators() const
-    {
-        return mGenerators;
-    }
-
-    inline auto const & GetLamps() const
-    {
-        return mLamps;
     }
 
 private:
@@ -274,7 +276,7 @@ private:
     Buffer<ElementIndex> mPointIndexBuffer;
 
     // Type
-    Buffer<Material::ElectricalProperties::ElectricalElementType> mTypeBuffer;
+    Buffer<ElectricalMaterial::ElectricalElementType> mTypeBuffer;
 
     // Connected elements
     Buffer<FixedSizeVector<ElementIndex, 8U>> mConnectedElectricalElementsBuffer;

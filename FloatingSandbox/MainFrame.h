@@ -115,6 +115,7 @@ private:
     void OnMainGLCanvasRightUp(wxMouseEvent& event);
     void OnMainGLCanvasMouseMove(wxMouseEvent& event);
     void OnMainGLCanvasMouseWheel(wxMouseEvent& event);
+    void OnMainGLCanvasCaptureMouseLost(wxCloseEvent& event);
 
     // Menu
     void OnZoomInMenuItemSelected(wxCommandEvent& event);
@@ -215,7 +216,9 @@ private:
 
     void ResetState();
     void UpdateFrameTitle();
-    void Die(std::string const & message);
+    void OnError(
+        std::string const & message,
+        bool die);
 
 private:
 

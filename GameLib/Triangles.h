@@ -9,7 +9,6 @@
 #include "ElementContainer.h"
 #include "FixedSizeVector.h"
 #include "GameParameters.h"
-#include "Material.h"
 #include "RenderContext.h"
 
 #include <cassert>

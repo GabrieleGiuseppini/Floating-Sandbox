@@ -195,8 +195,8 @@
 	"hasOwnAmbientLight": false,
 	"frames":[
 		{	
-			"worldWidth": 128.0,
-			"worldHeight": 128.0,
+			"worldWidth": 64.0,
+			"worldHeight": 64.0,
 			"filename": "water_.*"
 		}
 	]

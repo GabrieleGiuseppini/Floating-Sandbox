@@ -35,6 +35,11 @@ public:
             && this->Height == other.Height;
     }
 
+    inline bool operator!=(ImageSize const & other) const
+    {
+        return !(*this == other);
+    }
+
     inline ImageSize Union(ImageSize const & other) const
     {
         return ImageSize(

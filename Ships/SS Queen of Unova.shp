@@ -1,13 +1,9 @@
 {
 	"structure_image":"ss_queen_of_unova_structure.png.dat",
+	"electrical_image":"ss_queen_of_unova_electrical.png.dat",
+	"ropes_image":"ss_queen_of_unova_ropes.png.dat",
 	"texture_image":"ss_queen_of_unova_texture.png.dat",
 	"ship_name":"S.S. Queen of Unova",
 	"offset":{"x":0.0, "y":-14.0},
-	"credits":{
-		"texture":{
-			"artist":"OceanLinerOrca",
-			"link":"https://www.deviantart.com/oceanlinerorca"
-		},
-		"created_by":"Gabriele Giuseppini"
-	}
+	"created_by":"OceanLinerOrca; Gabriele Giuseppini"
 }

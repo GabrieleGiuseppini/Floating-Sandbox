@@ -29,8 +29,8 @@ set  (GAME_SOURCES
 	ImageSize.h
 	Log.cpp
 	Log.h
-	Material.cpp
-	Material.h
+	Materials.cpp
+	Materials.h
 	MaterialDatabase.h
 	ProgressCallback.h
 	ResourceLoader.cpp

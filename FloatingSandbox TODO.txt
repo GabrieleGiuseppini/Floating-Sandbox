@@ -22,7 +22,7 @@ Current perf (spring optimization + double spring iterations)
 =================================================
 Past perf (ephemeral particles)
 =================================================
-- fps: 28.8/29.0 (Samsung: TBD (Krafting)) (Mattia's: TBD (Krafting))
+- fps: 28.8/29.0
 =================================================
 1.7.0 perf from users
 	- Titanic: 50
@@ -84,7 +84,7 @@ Render:
 =================================================
 1.3.0 perf
 =================================================
-- fps: 27.3 (Samsung: TODO (Krafting)) (Mattia's: TODO (Krafting))
+- fps: 27.3
 - GameController::DoStep: 33.06%
 	- Ship::Update: 32.07%
 		- UpdateDynamics: 25.53%
@@ -118,8 +118,33 @@ Render:
 		+ After water contrast
 
 - Roadmap:
-	- 1.8.0
-		- Multi-layer ships
+	= 1.8.0
+		+ Multi-layer ships
+
+		- Test ligher ropes
+		- Test cloth (*)
+		- Add low-dimmed lights (*)
+
+		- Rope/buoyancy/hull unhack:
+			- Spring has low buoyancy
+			- Not hull anymore
+		- Fast-falling wet rope fix:
+			- ApplyPointForces: add water to gravity only when underwater
+
+		- See shader compilation issue
+			- https://www.khronos.org/registry/OpenGL/specs/es/2.0/GLSL_ES_Specification_1.00.pdf
+			- https://www.khronos.org/opengl/wiki/Type_Qualifier_(GLSL)#Precision_qualifiers
+			- https://www.khronos.org/bugzilla/show_bug.cgi?id=1218
+
+		+ Focus kill/tools issue
+		- Lower strength of double-bottom
+		- Initial GL canvas size issue (*)
+		- Make Titanic more breakable
+		- Test simpler resize of texture made off structure
+
+		- OpenGL/precision bug
+
+		- Improve light diffusion (*)
 
 		- Zbuffer (*)
 		- Orphaned points (*)
@@ -152,7 +177,6 @@ Render:
 	- See Moleskine
 
 - Suggestions to spec:
-	- Auto-draw structure as texture when to texture is given
 	- Different colored lights
 	- Lights with different chances of turning off
 		- Do they need longer-living lights?
@@ -306,11 +330,42 @@ Render:
 			+ Research glFlush()
 			+ By invoking glFlush() and SwapBuffers() in MainFrame, before Render()
 
-	- More connected components => slower (multiple batches); try
-	  to draw one single batch then, using Z buffer and depth test 
+	- Z buffer:
+		- Rationale: more connected components => slower (multiple batches); try to draw one single batch then, using Z buffer and depth test 
 		- Spec:
-			- Assign Z based on connected component ID (now named "Plane ID")
-				- We assign Z after orthomatrix - in NDC - and positive is near
+			- Assign Z based on cousin of connected component ID (named "Plane ID", uint32_t)
+				- All points have PlaneId
+					- Can we revert ShipId and ConnectedComponentId to start from zero and having None=max? 
+						- Yes, no one used NoneConnectedComponentId
+						- When we need stuff on top we can always use member variable with max conn comp ID, or the total 
+						  count of ships 
+						 - If so, Plane ID starts from zero
+					- Own buffer (it'll have to be uploaded to GPU)
+				- Points that belong to a connected component also have ConnectedComponentId
+					+ What doesn't have a ConnectedComponentId?
+						+ ConnectedComponentId is used for:
+							+ Frontier (possibly?)
+								+ In this case we don't want to assign them to "cables" (0-triangle edges a.k.a. 
+								  0-SuperTriangle springs), nor to standalone points
+							+ ForceFields that spring from a point
+								+ But we can get rid of this and just explode all over the place, after all
+								  explosions travel through air
+							+ Not by light diffusion algo, see below
+					- We keep ConnectedComponentIds for future use, but do the frontier-type propagation, i.e.
+					  we don't propagate them through "cables" nor assign them to standalone points; all of these 
+					  won't have a ConnectedComponentId at all
+					- So, what doesn't have a ConnectedComponentId?
+						- "cables"
+						- standalone points
+				- Assignment of PlaneId is done via the same connectivity visit used for assigning ConnectedComponentId's,
+				  but we assign "single-spring paths" to the origin's PlaneId and don't propagate to solid body again
+					- So we draw as separate two pieces that are connected solely by a "cable" (**)
+					- Also rope triangles must be assigned to the origin's PlaneId
+					- Propagation algo: don't propagate if coming from a spring with zero SuperTriangles to a spring
+					  with >0 SuperTriangles, unless these are all rope triangles
+						- New "IsRope" property of Triangle, pop'd by ShipBuilder; new buffer
+				- Light diffusion algo follows PlaneId's, instead of ConnectedComponentId's, as it's really about planes
+				- We assign Z after orthomatrix - in NDC - and thus positive is near
 			- We only enable Z test and writing to Z buffer at RenderContext before doing ships
 				- And later, if we move GenericTexture to RenderContext, also when we do generic textures
 		+ Figure out range of Z:
@@ -318,24 +373,47 @@ Render:
 			+ When given to fragment, it's [0,+1], but we don't care!
 		- Mapping of <ShipId, PlaneId> to Z in NDC:
 			- ShipId=0 and PlaneId=0 must be closest => +1
-			- But then, larger ship IDs and plane IDs are nearer
-			- TODOHERE
+				- TODO: see above, likely we don't need this at all
+			- But then, larger ship IDs and plane IDs must also be nearer
+			- TODOHERE: figure this out
 		- Plan:
+			- Preliminaries:
+				- Test explosions without connected component ID constraint; if ok, eradicate connected component IDs
+				  from ForceFields
 			- Branch
 			- Test perspective with hardcoded z=-1 at triangle shaders and z=+1 at springs, and see if it makes any difference
 			- Do test images:
 				+ Get problematic # of CC's first, with AM bomb on Titanic: 6,000
 				- ConnectedComponentsTestShip1: those CC's
 				- ConnectedComponentsTestShip2: one CC, same # of points
-			- "ConnectedComponentID" -> "PlaneID"
-				- GameTypes
-				- Ship
-				- Points
+			- Add "PlaneID"
+				- GameType
+					- Same integral type as ConnectedComponentId
+					- Change ShipId, ConnectedComponentId, PlaneId to start from zero and have None=max (see @Spec above)
+				- Points: new buffer
+				- All the other things that currently require a ConnectedComponentId for rendering purposes:
+					- Bombs: substitute ConnCompId with PlaneId
+					- PinnedPoints: substitute ConnCompId with PlaneId
+					- Triangles: no ConnCompId nor PlaneId
+					- Spring: no ConnCompId, PlaneId returns min
+						- Cache @ caller, e.g. bomb
+			- Connectivity visit:
+				- New PlaneId propagation (see @Spec above)
+					- Has own counter
+				- Change ConnectedComponentId propagation to match frontier style
+			- Light diffusion algo now follows PlaneIds (see @Spec above)
+			- Uploading of PlaneId's:
+				- Ship, when mAreElementsDirty, causes Points to upload PlaneIds
+					- See role of current Upload() - Rename: we have 3+ roles: immutable, (continuously) mutable, ad-hoc
+					  (UploadEphParticles, UploadPlaneIds, etc.)
+					- Ship must take charge of immutable attributes state - 2 state variables (immutable dirty and mutable dirty)
 			- Enable Z test and writing to Z buffer at RenderContext before doing ships, and disable all afterwards
 				+ Also clear Z buffer at canvas clear
 				- glEnable(GL_DEPTH_TEST);
 				- glDepthMask(GL_TRUE); // This at initialization
 				- glDepthFunc(GL_LESS); // This at initialization
+			- Ship/RenderContext:
+				- 
 			
 			- TODO: review the below based off transparency sorting - see MOLESKINE
 			2 - Ship assigns points' ConnectedComponentID as float in vector
@@ -343,6 +421,7 @@ Render:
 			    transform ConnectedComponentID to Z
 			4 - ShipRenderContext::UploadXYZElement() does not take anymore connected component ID
 			5 - (Nice to have): sticky component IDs, by leveraging the fact that normally IDs are assigned from L,T to R,B
+
 
 		- See if drawing springs & triangles at separate depths also helps generally with render speed, even for one single
 		  connected component (for springs' fragment shader - may be it takes shortcuts if it knows it's behind)
@@ -357,10 +436,13 @@ Render:
 
 - Gfx:
 	+ Make font white inversely to ambient light
+	- Make water texture scroll with wind speed
 
 	- Should we always draw orphaned points - those that come after destruction?
 		+ Orphaned point == points with 0 connected springs
-		- If so, we should somehow unify the uploading of orphaned points and the uploading of ephemeral points
+		- We must first stop deleting points just because springs are deleted
+			- Though should still delete them as Destroy() and Bomb(), for example
+		- We should somehow unify the uploading of orphaned points and the uploading of ephemeral points
 			- Connected component ID/Z buffer is enough to keep them on separate planes
 		- Also, ShipRenderMode::Points should only be consumed by Points::Upload, who is the only one who decides what gets uploaded
 		- Orphaned points go into their own single plane, above all connected components
@@ -395,11 +477,15 @@ Render:
 		- Need new scalar vertex attrib for depthBrightness - between 1.0 (top) and 0.0 (at greater of 1000m and sea depth)
 			- depthBrightness is always 1.0 if "modulate sea depth brightness" (new boolean GameParam) is not set
 
+	- A toggle-able shader for the sky - twilight
+
 	- Problem with texture over edges of structure: when texture is not reduced by structure (i.e. when structure is
 	  larger than texture), then one sees parts of the springs
 		- It's a problem with rendering springs with the texture shader
 		- However, these springs give an anti-aliasing effect
-	- Draw better (depth-wise) those parts that are only connected by ropes 
+	- Draw better (depth-wise) those parts that are only connected by ropes (**)
+		- TODO: this is taken care of by Z-buffer work, by carefully propagating plane IDs 
+			- This in reality has nothing to do with ConnectedComponentIds
 		- Change connected component detection by not propagating from a "spring only" to a "body", so that two bodies connected
 		  only by springs or ropes are considered separate, and spring/rope belongs to first one only
 			- In practice: flood the *edge* network, not the spring network, and don't propagate
@@ -436,6 +522,33 @@ Render:
 			+ PerfAnalysis
 
 - Dynamics:
+
+	+ Add water absorption to structural material
+		+ Default is the constant we use @ UpdateWaterInflow()
+		+ Used @ UpdateWaterInflow() to decide outgoing water
+		+ Make rope material high assorption and not hull
+		+ Test that it floats a bit then sinks: NO! Can't take enough water
+
+	- Add cloth material
+		- Test, basically rope-like but no rope
+			- Test with artificially high absorption
+		- If fine:
+			- Reintroduce water absorption
+			- High absorption
+			- Make it for all colors
+			- Make ship with Dutch and Italian flags
+
+	- Add "Low-Dimmed Lights" and "High-"
+		- Rename other as "Standard-" or use its val as "High-" or dim existing ones
+		- New Electrical Property ("Luminescence") at ElectricalMaterial
+		- New property at ElectricalElements
+			- Consumed by DiffuseLight
+		- Use at Queen of Unova
+			
+
+
+	- See if can improve light diffusion
+		- Square at shader?
 
 	- OceanFloor:
 		- Make number of samples be bump map width
@@ -607,14 +720,26 @@ Render:
 		- Only for non-rope points - rope points never take part in frontier
 		- Preliminaries:
 			- Make sure endpoints in triangle are always in CW order
-			- In order to correctly draw dangling (i.e. same connected component) parts on top of all of the connected component's 
-			  frontiers, we'd need to have the dangling parts disconnected from the connected component, which means that we should
-			  not follow ropes during connected component detection
-				- Still vulnerable to dangling parts not connected via ropes (e.g. masts) though: frontier would be drawn on top of it
-				- Might get away with drawing frontiers - *enlarged* - before all of the rest? The enlarged part would be visible
-				  only through holes and around external frontiers
-		
-		- TODO: all the following might have to be revisited
+			- Problem with rendering frontier in "Render Frontier" mode:
+				- In order to correctly draw dangling (i.e. same connected component) parts on top of all of the connected component's 
+				  frontiers, we'd need to have the dangling parts disconnected from the connected component, which means that we should
+				  not follow ropes _at_all_ (no matter the transition type) during connected component detection, and allow those 
+				  ropes to belong to the next connected component
+					- Still vulnerable to dangling parts not connected via ropes (e.g. masts) though: 
+					  frontier would still be drawn on top of it
+				- Might get away with drawing frontiers - *enlarged* - before all of the rest? What is left of the enlarged part 
+				  would be the rendered frontier, as it would be visible only around external frontiers (and through holes)
+		- Plan:
+			- Structures
+			- Initial frontier at ShipBuilder
+			- Render frontier: 
+				- New render setting 
+				- New ship upload 
+				- New shader (red with 0.5 alpha, thick line width)
+		- Conclusions:
+			- Revisit need to have SuperTriangles and SubSprings, as we might now use edges
+				- We would now only upload springs that have 0 or 1 edges
+		- TODOOLD
 		- Realize that a node can belong to up to 4 frontiers (center of 4 holes)
 			- And a point deletion might cause a merge of the four
 		- Frontier is set of points, marked as frontier, and connected to each other via 
@@ -731,24 +856,6 @@ Render:
 
 	- Allow ocean floor bump map to be loaded at runtime
 
-	- Adjustment for global damp
-		- Or - just make it lower
-	
-	- Ship definition: multiple layers
-		- We want to maintain BW compat for ease of one-layer ship making
-		- TODOHERE: see Moleskine
-			- Add: other layer's properties propagate through half of each rope
-		- JSON: "extra_layers: ["rms_titanic_whatever.png.dat", ...]
-		- Material: becomes collection of N pointers: Structural (or "physical") (includes Sound), Electrical, Emitter, etc.
-		- ShipBuilder:
-			- Each extra layer provides to corresponding point in structural layer only electrical, emitting, etc. attributes
-				- PointInfo has separate Material::Physical/Electrical/EtcCharacteristics
-				- Points::Add takes additional Material::Electrical/EtcCharacteristics *'s, these are
-				  the ones used (if present) instead of plain material's
-			- Error if a non-zero layer provides:
-				- 1) data for point non-existing in zero layer
-				- 2) data that already exists (e.g. ElectricalChar's)
-
 	- Ship definition: "instructions"
 		- If present, at the first load of a ship spawns a text box (if enabled in settings)
 
@@ -756,6 +863,9 @@ Render:
 		+ New uniform
 
 - UI:
+	- Suppress initial white trace of glCanvas in MainFrame:
+		- Create canvas and context at PostInitialize, after resize
+
 	+ SettingsDialog: tooltips at Simulation Quality (tradeoff) and Stiffness (instability)
 		+ Use "Attention" icon
 		+ wxToolTip
@@ -863,7 +973,7 @@ Render:
 
 	- Save screenshots/photos 
 		- Saves automatically in custom folder
-			- New settings provider: UserInterfaceSettings
+			- New settings provider: ApplicationSettings
 				- Managed normally by SettingsManager, and thus tweaked via SettingsDialog
 		- Code (at RenderContext::TakeScreenshot() -> returns ImageData)
 		    glPixelStorei(GL_PACK_ALIGNMENT, 1);
@@ -2879,6 +2989,56 @@ IF WX:
 			+ Click on ship -> GameController returns std::optional<ShipId> -> if not None, tool is engaged (save cur screen pos)
 				+ Works like pan 
 			+ Moving tool tells GameController delta (offset) screen 
+	+ Ship definition: multiple layers
+		+ We want to maintain BW compat for ease of one-layer ship making
+		+ Impl:
+			+ json:
+				+ "structural_colour" -> "color_key"
+				+ "colour"->"color"
+				+ Copy & rename
+				+ Structural:				
+					+ Refactor sound_type for all structural elements
+					+ Remove electrical properties
+				+ Electrical:
+					+ Remove non-electrical materials
+					+ Refactor materials
+			+ Breakup material class
+			+ MaterialDatabase
+				+ Restructure 
+				+ Find: fallback to rope
+			+ ResourceLoader::LoadMaterialDatabase()
+			+ IGameEventHandler events take now StructuralMaterial
+			+ Points::new struct for materials
+			+ Springs, Triangles
+			+ ElectricalElements
+			+ Ship
+			+ ShipDefinition/File: new layers, plus bw-compat
+			+ ShipBuilder
+			+ Event publishing
+			+ Event handlers
+			+ Sound renames
+				+ StructuralMaterial::MaterialSoundType MaterialSound
+			+ GameController
+			+ Fix issue with rope endpoints
+			+ Fix issue with rope buoyancy
+			+ Rope shader: use color from point color buffer
+				+ And then get rid of rope color passed to RenderContext
+		+ Get rid of IsRope from structural material
+			+ Also from json
+		+ Test:
+			+ BW compat old ships
+				+ Electrical
+				+ Ropes
+				+ All
+		+ Renew ships:
+			+ Make SS queen of unova use layers
+				+ Fix structure as well
+			+ Make Szersen cargo use layers
+				+ Also test propagation of electrical (cable, in this case) along ropes
+				+ Also test different colors for ropes
+		+ Cleanup:
+			+ Do two new material template screenshots and nuke old one
+			+ Redo materials.md
 
 + Sound:
 	+ SFML:

@@ -8,7 +8,7 @@
 #include <cassert>
 #include <string>
 
-#define VERSION "1.7.5"
+#define VERSION "1.8.0"
 
 enum class VersionFormat
 {

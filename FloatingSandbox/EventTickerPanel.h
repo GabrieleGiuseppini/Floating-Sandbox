@@ -36,17 +36,17 @@ public:
         std::optional<std::string> const & author) override;
 
     virtual void OnDestroy(
-        Material const * material,
+        StructuralMaterial const & structuralMaterial,
         bool isUnderwater,
         unsigned int size) override;
 
     virtual void OnStress(
-        Material const * material,
+        StructuralMaterial const & structuralMaterial,
         bool isUnderwater,
         unsigned int size) override;
 
     virtual void OnBreak(
-        Material const * material,
+        StructuralMaterial const & structuralMaterial,
         bool isUnderwater,
         unsigned int size) override;
 

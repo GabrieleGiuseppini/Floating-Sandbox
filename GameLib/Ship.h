@@ -7,7 +7,6 @@
 
 #include "GameParameters.h"
 #include "GameTypes.h"
-#include "MaterialDatabase.h"
 #include "Physics.h"
 #include "RenderContext.h"
 #include "RunningAverage.h"
@@ -33,7 +32,6 @@ public:
         Springs && springs,
         Triangles && triangles,
         ElectricalElements && electricalElements,
-        std::shared_ptr<MaterialDatabase> materialDatabase,
         VisitSequenceNumber currentVisitSequenceNumber);
 
     ~Ship();
@@ -255,9 +253,6 @@ private:
     Springs mSprings;
     Triangles mTriangles;
     ElectricalElements mElectricalElements;
-
-    // The material database
-    std::shared_ptr<MaterialDatabase> const mMaterialDatabase;
 
     // Connected components metadata
     std::vector<std::size_t> mConnectedComponentSizes;

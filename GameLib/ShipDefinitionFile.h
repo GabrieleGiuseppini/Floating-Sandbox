@@ -23,11 +23,13 @@ struct ShipDefinitionFile
 {
 public:
 
-    // Absolute or relative path
-    std::string const StructuralImageFilePath;
+    std::filesystem::path const StructuralLayerImageFilePath;
 
-    // Absolute or relative path
-    std::optional<std::string> const TextureImageFilePath;
+    std::optional<std::filesystem::path> const RopesLayerImageFilePath;
+
+    std::optional<std::filesystem::path> const ElectricalLayerImageFilePath;
+
+    std::optional<std::filesystem::path> const TextureLayerImageFilePath;
 
     // The ship's metadata
     ShipMetadata const Metadata;
@@ -40,11 +42,15 @@ public:
     }
 
     ShipDefinitionFile(
-        std::string structuralImageFilePath,
-        std::optional<std::string> textureImageFilePath,
+        std::filesystem::path const & structuralLayerImageFilePath,
+        std::optional<std::filesystem::path> const & ropesLayerImageFilePath,
+        std::optional<std::filesystem::path> const & electricalLayerImageFilePath,
+        std::optional<std::filesystem::path> const & textureLayerImageFilePath,
         ShipMetadata shipMetadata)
-        : StructuralImageFilePath(std::move(structuralImageFilePath))
-        , TextureImageFilePath(std::move(textureImageFilePath))
+        : StructuralLayerImageFilePath(structuralLayerImageFilePath)
+        , RopesLayerImageFilePath(ropesLayerImageFilePath)
+        , ElectricalLayerImageFilePath(electricalLayerImageFilePath)
+        , TextureLayerImageFilePath(std::move(textureLayerImageFilePath))
         , Metadata(std::move(shipMetadata))
     {
     }

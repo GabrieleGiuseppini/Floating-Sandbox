@@ -13,7 +13,7 @@
 #include "GameParameters.h"
 #include "GameTypes.h"
 #include "IGameEventHandler.h"
-#include "Material.h"
+#include "Materials.h"
 #include "RenderContext.h"
 #include "Vectors.h"
 
@@ -115,6 +115,22 @@ private:
         {}
     };
 
+    /*
+     * The materials of this point.
+     */
+    struct Materials
+    {
+        StructuralMaterial const * Structural; // The only reason this is a pointer is that placeholders have no material
+        ElectricalMaterial const * Electrical;
+
+        Materials(
+            StructuralMaterial const * structural,
+            ElectricalMaterial const * electrical)
+            : Structural(structural)
+            , Electrical(electrical)
+        {}
+    };
+
 public:
 
     Points(
@@ -127,9 +143,8 @@ public:
         // Buffers
         //////////////////////////////////
         , mIsDeletedBuffer(mBufferElementCount, shipPointCount, false)
-        // Material
-        , mMaterialBuffer(mBufferElementCount, shipPointCount, nullptr)
-        , mIsHullBuffer(mBufferElementCount, shipPointCount, false)
+        // Materials
+        , mMaterialsBuffer(mBufferElementCount, shipPointCount, Materials(nullptr, nullptr))
         , mIsRopeBuffer(mBufferElementCount, shipPointCount, false)
         // Mechanical dynamics
         , mPositionBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
@@ -138,6 +153,7 @@ public:
         , mIntegrationFactorBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
         // Water dynamics
+        , mIsHullBuffer(mBufferElementCount, shipPointCount, false)
         , mBuoyancyBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mWaterBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mWaterVelocityBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
@@ -184,7 +200,7 @@ public:
     /*
      * Returns an iterator for the non-ephemeral points only.
      */
-    auto NonEphemeralPoints() const
+    inline auto const NonEphemeralPoints() const
     {
         return ElementIndexRangeIterator(0, mShipPointCount);
     }
@@ -192,7 +208,7 @@ public:
     /*
      * Returns an iterator for the ephemeral points only.
      */
-    auto EphemeralPoints() const
+    inline auto const EphemeralPoints() const
     {
         return ElementIndexRangeIterator(mShipPointCount, mAllPointCount);
     }
@@ -217,19 +233,18 @@ public:
 
     void Add(
         vec2f const & position,
-        Material const * material,
-        bool isHull,
+        StructuralMaterial const & structuralMaterial,
+        ElectricalMaterial const * electricalMaterial,
         bool isRope,
         ElementIndex electricalElementIndex,
         bool isLeaking,
-        float buoyancy,
         vec4f const & color,
         vec2f const & textureCoordinates);
 
     void CreateEphemeralParticleDebris(
         vec2f const & position,
         vec2f const & velocity,
-        Material const * material,
+        StructuralMaterial const & structuralMaterial,
         float currentSimulationTime,
         std::chrono::milliseconds maxLifetime,
         ConnectedComponentId connectedComponentId);
@@ -237,7 +252,7 @@ public:
     void CreateEphemeralParticleSparkle(
         vec2f const & position,
         vec2f const & velocity,
-        Material const * material,
+        StructuralMaterial const & structuralMaterial,
         float currentSimulationTime,
         std::chrono::milliseconds maxLifetime,
         ConnectedComponentId connectedComponentId);
@@ -286,17 +301,19 @@ public:
     }
 
     //
-    // Material
+    // Materials
     //
 
-    Material const * GetMaterial(ElementIndex pointElementIndex) const
+    StructuralMaterial const & GetStructuralMaterial(ElementIndex pointElementIndex) const
     {
-        return mMaterialBuffer[pointElementIndex];
+        // If this method is invoked, this is not a placeholder
+        assert(nullptr != mMaterialsBuffer[pointElementIndex].Structural);
+        return *(mMaterialsBuffer[pointElementIndex].Structural);
     }
 
-    bool IsHull(ElementIndex pointElementIndex) const
+    ElectricalMaterial const * GetElectricalMaterial(ElementIndex pointElementIndex) const
     {
-        return mIsHullBuffer[pointElementIndex];
+        return mMaterialsBuffer[pointElementIndex].Electrical;
     }
 
     bool IsRope(ElementIndex pointElementIndex) const
@@ -378,7 +395,7 @@ public:
         return mMassBuffer[pointElementIndex];
     }
 
-    void SetMassToMaterialOffset(
+    void SetMassToStructuralMaterialOffset(
         ElementIndex pointElementIndex,
         float offset,
         Springs & springs);
@@ -404,6 +421,11 @@ public:
     //
     // Water dynamics
     //
+
+    bool IsHull(ElementIndex pointElementIndex) const
+    {
+        return mIsHullBuffer[pointElementIndex];
+    }
 
     float GetBuoyancy(ElementIndex pointElementIndex) const
     {
@@ -664,8 +686,8 @@ private:
     // Deletion
     Buffer<bool> mIsDeletedBuffer;
 
-    // Material
-    Buffer<Material const *> mMaterialBuffer;
+    // Materials
+    Buffer<Materials> mMaterialsBuffer;
     Buffer<bool> mIsHullBuffer;
     Buffer<bool> mIsRopeBuffer;
 

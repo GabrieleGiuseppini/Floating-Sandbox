@@ -8,6 +8,7 @@
 #include "GameDebug.h"
 #include "GameRandomEngine.h"
 #include "Log.h"
+#include "Materials.h"
 #include "Segment.h"
 
 #include <algorithm>
@@ -38,7 +39,6 @@ Ship::Ship(
     Springs && springs,
     Triangles && triangles,
     ElectricalElements && electricalElements,
-    std::shared_ptr<MaterialDatabase> materialDatabase,
     VisitSequenceNumber currentVisitSequenceNumber)
     : mId(id)
     , mParentWorld(parentWorld)
@@ -47,7 +47,6 @@ Ship::Ship(
     , mSprings(std::move(springs))
     , mTriangles(std::move(triangles))
     , mElectricalElements(std::move(electricalElements))
-    , mMaterialDatabase(std::move(materialDatabase))
     , mConnectedComponentSizes()
     , mAreElementsDirty(true)
     , mLastShipRenderMode()
@@ -192,8 +191,7 @@ void Ship::SawThrough(
                     mPoints);
 
                 bool const isMetal =
-                    !!mSprings.GetBaseMaterial(springIndex)->Sound
-                    && Material::SoundProperties::SoundElementType::Metal == mSprings.GetBaseMaterial(springIndex)->Sound->ElementType;
+                    mSprings.GetBaseStructuralMaterial(springIndex).MaterialSound == StructuralMaterial::MaterialSoundType::Metal;
 
                 if (isMetal)
                 {
@@ -1255,7 +1253,7 @@ void Ship::UpdateElectricalConnectivity(VisitSequenceNumber currentVisitSequence
 
     std::queue<ElementIndex> electricalElementsToVisit;
 
-    for (auto generatorIndex : mElectricalElements.GetGenerators())
+    for (auto generatorIndex : mElectricalElements.Generators())
     {
         // Do not visit deleted generators
         if (!mElectricalElements.IsDeleted(generatorIndex))
@@ -1325,7 +1323,7 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
 
     // Go through all lamps;
     // can safely visit deleted lamps as their current will always be zero
-    for (auto lampIndex : mElectricalElements.GetLamps())
+    for (auto lampIndex : mElectricalElements.Lamps())
     {
         float const lampLight = mElectricalElements.GetAvailableCurrent(lampIndex);
         auto const lampPointIndex = mElectricalElements.GetPointIndex(lampIndex);
@@ -1717,7 +1715,7 @@ void Ship::GenerateDebris(
             mPoints.CreateEphemeralParticleDebris(
                 mPoints.GetPosition(pointElementIndex),
                 vec2f::fromPolar(velocityMagnitude, velocityAngle),
-                mPoints.GetMaterial(pointElementIndex),
+                mPoints.GetStructuralMaterial(pointElementIndex),
                 currentSimulationTime,
                 maxLifetime,
                 mPoints.GetConnectedComponentId(pointElementIndex));
@@ -1778,7 +1776,7 @@ void Ship::GenerateSparkles(
             mPoints.CreateEphemeralParticleSparkle(
                 mSprings.GetMidpointPosition(springElementIndex, mPoints),
                 vec2f::fromPolar(velocityMagnitude, velocityAngle),
-                mSprings.GetBaseMaterial(springElementIndex),
+                mSprings.GetBaseStructuralMaterial(springElementIndex),
                 currentSimulationTime,
                 maxLifetime,
                 mSprings.GetConnectedComponentId(springElementIndex, mPoints));

@@ -12,7 +12,7 @@
 #include "FixedSizeVector.h"
 #include "GameParameters.h"
 #include "IGameEventHandler.h"
-#include "Material.h"
+#include "Materials.h"
 #include "RenderContext.h"
 
 #include <cassert>
@@ -106,7 +106,7 @@ public:
         , mRestLengthBuffer(mBufferElementCount, mElementCount, 1.0f)
         , mCoefficientsBuffer(mBufferElementCount, mElementCount, Coefficients(0.0f, 0.0f))
         , mCharacteristicsBuffer(mBufferElementCount, mElementCount, Characteristics::None)
-        , mBaseMaterialBuffer(mBufferElementCount, mElementCount, nullptr)
+        , mBaseStructuralMaterialBuffer(mBufferElementCount, mElementCount, nullptr)
         // Water
         , mWaterPermeabilityBuffer(mBufferElementCount, mElementCount, 0.0f)
         // Stress
@@ -345,13 +345,12 @@ public:
         return mCoefficientsBuffer[springElementIndex].DampingCoefficient;
     }
 
-    Material const * GetBaseMaterial(ElementIndex springElementIndex) const
+    StructuralMaterial const & GetBaseStructuralMaterial(ElementIndex springElementIndex) const
     {
-        return mBaseMaterialBuffer[springElementIndex];
+        // If this method is invoked, this is not a placeholder
+        assert(nullptr != mBaseStructuralMaterialBuffer[springElementIndex]);
+        return *(mBaseStructuralMaterialBuffer[springElementIndex]);
     }
-
-    // TODOTEST: NEEDED?
-    //inline bool IsHull(ElementIndex springElementIndex) const;
 
     inline bool IsRope(ElementIndex springElementIndex) const;
 
@@ -378,18 +377,19 @@ public:
         Points & points,
         GameParameters const & gameParameters)
     {
+        assert(false == mIsDeletedBuffer[springElementIndex]);
         assert(false == mIsBombAttachedBuffer[springElementIndex]);
 
         mIsBombAttachedBuffer[springElementIndex] = true;
 
         // Augment mass of endpoints due to bomb
 
-        points.SetMassToMaterialOffset(
+        points.SetMassToStructuralMaterialOffset(
             mEndpointsBuffer[springElementIndex].PointAIndex,
             gameParameters.BombMass,
             *this);
 
-        points.SetMassToMaterialOffset(
+        points.SetMassToStructuralMaterialOffset(
             mEndpointsBuffer[springElementIndex].PointBIndex,
             gameParameters.BombMass,
             *this);
@@ -399,13 +399,22 @@ public:
         ElementIndex springElementIndex,
         Points & points)
     {
+        assert(false == mIsDeletedBuffer[springElementIndex]);
         assert(true == mIsBombAttachedBuffer[springElementIndex]);
 
         mIsBombAttachedBuffer[springElementIndex] = false;
 
         // Reset mass of endpoints
-        points.SetMassToMaterialOffset(mEndpointsBuffer[springElementIndex].PointAIndex, 0.0f, *this);
-        points.SetMassToMaterialOffset(mEndpointsBuffer[springElementIndex].PointBIndex, 0.0f, *this);
+
+        points.SetMassToStructuralMaterialOffset(
+            mEndpointsBuffer[springElementIndex].PointAIndex,
+            0.0f,
+            *this);
+
+        points.SetMassToStructuralMaterialOffset(
+            mEndpointsBuffer[springElementIndex].PointBIndex,
+            0.0f,
+            *this);
     }
 
     //
@@ -466,7 +475,7 @@ private:
     Buffer<float> mRestLengthBuffer;
     Buffer<Coefficients> mCoefficientsBuffer;
     Buffer<Characteristics> mCharacteristicsBuffer;
-    Buffer<Material const *> mBaseMaterialBuffer;
+    Buffer<StructuralMaterial const *> mBaseStructuralMaterialBuffer;
 
     //
     // Water
@@ -514,14 +523,6 @@ private:
 
 template <> struct is_flag<Physics::Springs::DestroyOptions> : std::true_type {};
 template <> struct is_flag<Physics::Springs::Characteristics> : std::true_type {};
-
-// TODOTEST: NEEDED?
-////inline bool Physics::Springs::IsHull(ElementIndex springElementIndex) const
-////{
-////    assert(springElementIndex < mElementCount);
-////
-////    return !!(mCharacteristicsBuffer[springElementIndex] & Physics::Springs::Characteristics::Hull);
-////}
 
 inline bool Physics::Springs::IsRope(ElementIndex springElementIndex) const
 {

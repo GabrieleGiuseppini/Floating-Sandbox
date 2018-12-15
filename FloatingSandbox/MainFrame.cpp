@@ -147,6 +147,7 @@ MainFrame::MainFrame(wxApp * mainApp)
     mMainGLCanvas->Connect(wxEVT_RIGHT_UP, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasRightUp, 0, this);
     mMainGLCanvas->Connect(wxEVT_MOTION, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasMouseMove, 0, this);
     mMainGLCanvas->Connect(wxEVT_MOUSEWHEEL, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasMouseWheel, 0, this);
+    mMainGLCanvas->Connect(wxEVT_MOUSE_CAPTURE_LOST, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasCaptureMouseLost, 0, this);
 
     mMainFrameSizer->Add(
         mMainGLCanvas.get(),
@@ -460,7 +461,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     }
     catch (std::exception const & e)
     {
-        Die("Error during initialization of game controller: " + std::string(e.what()));
+        OnError("Error during initialization of game controller: " + std::string(e.what()), true);
 
         return;
     }
@@ -486,7 +487,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     }
     catch (std::exception const & e)
     {
-        Die("Error during initialization of sound controller: " + std::string(e.what()));
+        OnError("Error during initialization of sound controller: " + std::string(e.what()), true);
 
         return;
     }
@@ -513,7 +514,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     }
     catch (std::exception const & e)
     {
-        Die("Error during initialization of tool controller: " + std::string(e.what()));
+        OnError("Error during initialization of tool controller: " + std::string(e.what()), true);
 
         return;
     }
@@ -543,7 +544,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     }
     catch (std::exception const & e)
     {
-        Die("Error during initialization: " + std::string(e.what()));
+        OnError("Error during initialization: " + std::string(e.what()), true);
 
         return;
     }
@@ -709,7 +710,7 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
     }
     catch (std::exception const & e)
     {
-        Die("Error during game step: " + std::string(e.what()));
+        OnError("Error during game step: " + std::string(e.what()), true);
 
         return;
     }
@@ -755,10 +756,16 @@ void MainFrame::OnMainGLCanvasLeftDown(wxMouseEvent & /*event*/)
 {
     assert(!!mToolController);
     mToolController->OnLeftMouseDown();
+
+    // Hang on to the mouse for as long as the button is pressed
+    mMainGLCanvas->CaptureMouse();
 }
 
 void MainFrame::OnMainGLCanvasLeftUp(wxMouseEvent & /*event*/)
 {
+    // We can now release the mouse
+    mMainGLCanvas->ReleaseMouse();
+
     assert(!!mToolController);
     mToolController->OnLeftMouseUp();
 }
@@ -767,10 +774,16 @@ void MainFrame::OnMainGLCanvasRightDown(wxMouseEvent & /*event*/)
 {
     assert(!!mToolController);
     mToolController->OnRightMouseDown();
+
+    // Hang on to the mouse for as long as the button is pressed
+    mMainGLCanvas->CaptureMouse();
 }
 
 void MainFrame::OnMainGLCanvasRightUp(wxMouseEvent & /*event*/)
 {
+    // We can now release the mouse
+    mMainGLCanvas->ReleaseMouse();
+
     assert(!!mToolController);
     mToolController->OnRightMouseUp();
 }
@@ -788,6 +801,11 @@ void MainFrame::OnMainGLCanvasMouseWheel(wxMouseEvent& event)
     mGameController->AdjustZoom(powf(1.002f, event.GetWheelRotation()));
 }
 
+void MainFrame::OnMainGLCanvasCaptureMouseLost(wxCloseEvent & /*event*/)
+{
+    assert(!!mToolController);
+    mToolController->UnsetTool();
+}
 
 //
 // Menu event handlers
@@ -824,7 +842,7 @@ void MainFrame::OnLoadShipMenuItemSelected(wxCommandEvent & /*event*/)
         }
         catch (std::exception const & ex)
         {
-            Die(ex.what());
+            OnError(ex.what(), false);
         }
     }
 }
@@ -840,7 +858,7 @@ void MainFrame::OnReloadLastShipMenuItemSelected(wxCommandEvent & /*event*/)
     }
     catch (std::exception const & ex)
     {
-        Die(ex.what());
+        OnError(ex.what(), false);
     }
 }
 
@@ -1131,22 +1149,27 @@ void MainFrame::UpdateFrameTitle()
     SetTitle(ss.str());
 }
 
-void MainFrame::Die(std::string const & message)
+void MainFrame::OnError(
+    std::string const & message,
+    bool die)
 {
-    //
-    // Stop timers first
-    //
-
-    if (!!mGameTimer)
+    if (die)
     {
-        mGameTimer->Stop();
-        mGameTimer.reset();
-    }
+        //
+        // Stop timers first
+        //
 
-    if (!!mLowFrequencyTimer)
-    {
-        mLowFrequencyTimer->Stop();
-        mLowFrequencyTimer.reset();
+        if (!!mGameTimer)
+        {
+            mGameTimer->Stop();
+            mGameTimer.reset();
+        }
+
+        if (!!mLowFrequencyTimer)
+        {
+            mLowFrequencyTimer->Stop();
+            mLowFrequencyTimer.reset();
+        }
     }
 
 
@@ -1156,10 +1179,12 @@ void MainFrame::Die(std::string const & message)
 
     wxMessageBox(message, wxT("Maritime Disaster"), wxICON_ERROR);
 
+    if (die)
+    {
+        //
+        // Exit
+        //
 
-    //
-    // Exit
-    //
-
-    this->Destroy();
+        this->Destroy();
+    }
 }

@@ -34,7 +34,6 @@ public:
 
     RenderContext(
         ResourceLoader & resourceLoader,
-        vec4f const & ropeColour,
         ProgressCallback const & progressCallback);
 
     ~RenderContext();
@@ -966,7 +965,6 @@ private:
     //
 
     std::vector<std::unique_ptr<ShipRenderContext>> mShips;
-    vec4f const mRopeColour;
 
     GameOpenGLTexture mGenericTextureAtlasOpenGLHandle;
     std::unique_ptr<TextureAtlasMetadata> mGenericTextureAtlasMetadata;
