@@ -24,6 +24,7 @@ struct StructuralMaterial
     enum class MaterialSoundType
     {
         Cable,
+        Cloth,
         Glass,
         Metal,
         Wood,

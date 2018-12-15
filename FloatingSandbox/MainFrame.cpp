@@ -69,18 +69,13 @@ const long ID_POSTIINITIALIZE_TIMER = wxNewId();
 const long ID_GAME_TIMER = wxNewId();
 const long ID_LOW_FREQUENCY_TIMER = wxNewId();
 
-static constexpr bool StartInFullScreenMode = true;
-static constexpr bool StartWithStatusText = true;
-static constexpr bool StartWithExtendedStatusText = false;
-static constexpr int CursorStep = 30;
-static constexpr int PowerBarThickness = 2;
-
 MainFrame::MainFrame(wxApp * mainApp)
     : mMainApp(mainApp)
     , mResourceLoader(new ResourceLoader())
     , mGameController()
     , mSoundController()
     , mToolController()
+    , mHasWindowBeenShown(false)
     , mCurrentShipTitles()
     , mCurrentRCBombCount(0u)
     , mCurrentAntiMatterBombCount(0u)
@@ -136,7 +131,7 @@ MainFrame::MainFrame(wxApp * mainApp)
         ID_MAIN_CANVAS,
         mainGLCanvasAttributes,
         wxDefaultPosition,
-        wxSize(640, 480),
+        wxSize(1, 1),
         0L,
         _T("Main GL Canvas"));
 
@@ -448,6 +443,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
             StartWithExtendedStatusText,
             [this]()
             {
+                assert(!!mMainGLCanvas);
                 mMainGLCanvas->SwapBuffers();
             },
             mResourceLoader,
@@ -584,17 +580,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     mLowFrequencyTimer->Start(1000, false);
 
 
-
-    //
-    // Show ourselves now
-    //
-
     UpdateFrameTitle();
-
-    this->Show(true);
-
-    if (StartInFullScreenMode)
-        this->ShowFullScreen(true, wxFULLSCREEN_NOBORDER);
 }
 
 void MainFrame::OnMainFrameClose(wxCloseEvent & /*event*/)
@@ -619,6 +605,8 @@ void MainFrame::OnPaint(wxPaintEvent & event)
     if (!!mGameController)
     {
         mGameController->Render();
+
+        PostGameRender();
     }
 
     event.Skip();
@@ -692,7 +680,7 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
         assert(!!mToolController);
         mToolController->Update();
 
-        // Run a game step
+        // Update game
         assert(!!mGameController);
         mGameController->RunGameIteration();
 
@@ -707,6 +695,8 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
         // Update sound controller
         assert(!!mSoundController);
         mSoundController->Update();
+
+        PostGameRender();
     }
     catch (std::exception const & e)
     {

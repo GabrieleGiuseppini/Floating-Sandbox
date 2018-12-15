@@ -52,6 +52,8 @@ StructuralMaterial::MaterialSoundType StructuralMaterial::StrToMaterialSoundType
 
     if (lstr == "cable")
         return MaterialSoundType::Cable;
+    else if (lstr == "cloth")
+        return MaterialSoundType::Cloth;
     else if (lstr == "glass")
         return MaterialSoundType::Glass;
     else if (lstr == "metal")

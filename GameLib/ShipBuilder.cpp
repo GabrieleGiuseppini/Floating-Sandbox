@@ -446,7 +446,8 @@ void ShipBuilder::DecoratePointsWithElectricalMaterials(
                     && colorKey != BackgroundColorKey)
                 {
                     throw GameException(
-                        std::string("Cannot find electrical material for color key \"" + Utils::RgbColor2Hex(colorKey) + "\" of pixel found at (")
+                        std::string("Cannot find electrical material for color key \"" + Utils::RgbColor2Hex(colorKey)
+                        + "\" of pixel found at (")
                         + std::to_string(x) + "," + std::to_string(height - y - 1) + ") in the "
                         + (isDedicatedElectricalLayer ? "electrical" : "structural")
                         + " layer image");

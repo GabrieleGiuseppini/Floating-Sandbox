@@ -531,24 +531,7 @@
 	"render_color": "#C1A46A",
 	"sound_type": "Wood"
     },
-    {
-        "name": "Rope",
-	"description": "The color key of ropes is constrained to be pure black (#000000).",
-	"template": {
-		"row": "100|Rope",
-		"column": 0
-	},
-        "strength": 0.8,
-	"mass": {
-		"nominal_mass": 30,
-		"density": 0.0935
-	},
-	"stiffness": 0.8,
-        "color_key": "#000000",
-	"render_color": "#000000",
-        "is_hull": true,
-	"sound_type": "Cable"
-    },
+
     {
         "name": "Steel Hull Red",
 	"template": {
@@ -1849,6 +1832,82 @@
 	"render_color": "#E5FFFF",
 	"sound_type": "Glass"
     },
+
+
+
+    {
+        "name": "Rope",
+	"description": "The color key of ropes is constrained to be pure black (#000000).",
+	"template": {
+		"row": "70|Rope",
+		"column": "1|Rope"
+	},
+        "strength": 0.8,
+	"mass": {
+		"nominal_mass": 30,
+		"density": 0.0935
+	},
+	"stiffness": 0.8,
+        "color_key": "#000000",
+	"render_color": "#000000",
+        "is_hull": true,
+	"sound_type": "Cable"
+    },
+
+    {
+        "name": "Cloth Red",
+	"template": {
+		"row": "70|Cloth",
+		"column": "2|Cloth"
+	},
+        "strength": 1.9,
+	"mass": {
+		"nominal_mass": 30,
+		"density": 0.0935
+	},
+	"is_hull": true,
+	"stiffness": 0.005,
+        "color_key": "#DD4523",
+        "render_color": "#DD4523",
+	"sound_type": "Cloth"
+    },
+
+    {
+        "name": "Cloth Green",
+	"template": {
+		"row": "70|Cloth",
+		"column": 3
+	},
+        "strength": 1.9,
+	"mass": {
+		"nominal_mass": 30,
+		"density": 0.0935
+	},
+	"is_hull": true,
+	"stiffness": 0.005,
+        "color_key": "#054C00",
+        "render_color": "#054C00",
+	"sound_type": "Cloth"
+    },
+
+    {
+        "name": "Cloth Blue",
+	"template": {
+		"row": "70|Cloth",
+		"column": 4
+	},
+        "strength": 1.9,
+	"mass": {
+		"nominal_mass": 30,
+		"density": 0.0935
+	},
+	"is_hull": true,
+	"stiffness": 0.005,
+        "color_key": "#0C20D1",
+        "render_color": "#0C20D1",
+	"sound_type": "Cloth"
+    },
+
 
 
 

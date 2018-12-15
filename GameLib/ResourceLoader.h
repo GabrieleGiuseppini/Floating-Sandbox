@@ -126,11 +126,8 @@ private:
         // No resize
         None,
 
-        // Resize up as follows:
-        // - 4X using nearest filter
-        // - 2X using linear, so that transitions are smoothed, but only across two pixels
-        //   (if transitions were smoothed across all eight pixels, the image would look too blurry)
-        ResizeUpNearestAndLinear
+        // Resize up 8 using nearest filter
+        ResizeUp8Nearest
     };
 
     static ImageData LoadImage(

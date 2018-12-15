@@ -1,0 +1,6 @@
+{
+	"structure_image":"flagship_structural.png.dat",
+	"texture_image":"flagship_texture.png.dat",
+	"ship_name":"Flagship",
+	"offset":{"x":0.0, "y":-5.0}
+}

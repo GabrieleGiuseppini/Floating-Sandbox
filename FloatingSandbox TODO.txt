@@ -120,27 +120,39 @@ Render:
 - Roadmap:
 	= 1.8.0
 		+ Multi-layer ships
+		+ Initial GL canvas size issue
+		+ Focus kill/tools issue
+		+ Add cloth material (*)
 
-		- Test ligher ropes
-		- Test cloth (*)
-		- Add low-dimmed lights (*)
+		- Test double-fix for rope/buoyancy/hull unhack and fast-falling wet rope/cloth
+			- Rope/buoyancy/hull unhack:
+				- New Buoyancy property at material
+					- Optional, def=1.0
+					- Points::Add():
+						- If hull -> zero (like now) (temporary)
+						- Else -> from material
+				- Rope material:
+					- Not hull anymore
+					- Low buoyancy					
+			- Fix for fast-falling wet rope/cloth:
+				- ApplyPointForces: add water to gravity only when underwater
+				- Test if OK on normal ships
+			- If OK:
+				- Materials: rope and cloth are not hull anymore
+				- Reintroduce water absorption
+				- High absorption at ropes and cloth
 
-		- Rope/buoyancy/hull unhack:
-			- Spring has low buoyancy
-			- Not hull anymore
-		- Fast-falling wet rope fix:
-			- ApplyPointForces: add water to gravity only when underwater
+
+		- Add low/medium/high-dimmed lights (*)
 
 		- See shader compilation issue
 			- https://www.khronos.org/registry/OpenGL/specs/es/2.0/GLSL_ES_Specification_1.00.pdf
 			- https://www.khronos.org/opengl/wiki/Type_Qualifier_(GLSL)#Precision_qualifiers
 			- https://www.khronos.org/bugzilla/show_bug.cgi?id=1218
-
-		+ Focus kill/tools issue
+		
 		- Lower strength of double-bottom
-		- Initial GL canvas size issue (*)
 		- Make Titanic more breakable
-		- Test simpler resize of texture made off structure
+		
 
 		- OpenGL/precision bug
 
@@ -523,30 +535,19 @@ Render:
 
 - Dynamics:
 
+	- TODO: resee this one with unhackX2
 	+ Add water absorption to structural material
 		+ Default is the constant we use @ UpdateWaterInflow()
 		+ Used @ UpdateWaterInflow() to decide outgoing water
 		+ Make rope material high assorption and not hull
 		+ Test that it floats a bit then sinks: NO! Can't take enough water
 
-	- Add cloth material
-		- Test, basically rope-like but no rope
-			- Test with artificially high absorption
-		- If fine:
-			- Reintroduce water absorption
-			- High absorption
-			- Make it for all colors
-			- Make ship with Dutch and Italian flags
-
-	- Add "Low-Dimmed Lights" and "High-"
-		- Rename other as "Standard-" or use its val as "High-" or dim existing ones
+	- Add "Low-Dimmed Lights" and "Medium-"
+		- Rename other as "High-"
 		- New Electrical Property ("Luminescence") at ElectricalMaterial
 		- New property at ElectricalElements
 			- Consumed by DiffuseLight
-		- Use at Queen of Unova
-			
-
-
+		- Use at Queen of Unova			
 	- See if can improve light diffusion
 		- Square at shader?
 
@@ -863,9 +864,6 @@ Render:
 		+ New uniform
 
 - UI:
-	- Suppress initial white trace of glCanvas in MainFrame:
-		- Create canvas and context at PostInitialize, after resize
-
 	+ SettingsDialog: tooltips at Simulation Quality (tradeoff) and Stiffness (instability)
 		+ Use "Attention" icon
 		+ wxToolTip
@@ -2786,16 +2784,6 @@ IF WX:
 		+ OceanFloor translates image into float[] with raw pixel y's
 		+ At update, raw pixel y's are normalized/enhanced with new GameParameters constant
 		+ Test
-
-	+ Extended status text
-		+ Shows:
-			+ Current zoom
-			+ Rendering vs simulation percentages
-				+ GameController continuously updates, same way as FPS
-			+ If paused
-				+ Actually, this is from StatusText
-		+ Multi-row:
-			+ Text layer gets it split & gives vector to TextRenderContext
 	
 	+ Slider for "simulation quality", affecting num of mechanical simulation iterations
 		+ Update GameParameters - Points and Springs might have to recalc things on changes
@@ -2829,6 +2817,17 @@ IF WX:
 				+ Else: base material's render color
 			+ Finalize parameters
 			+ Final test
+
+	+ Add cloth material
+		+ Test, basically rope-like but no rope
+			+ Low stiffness, hight strength
+		+ If fine:
+			+ Make it for all basic colors
+			+ Structural Template:
+				+ Cloth and Rope on same row
+				- Redo
+			+ Cloth sound			
+			+ Make ship with Dutch and Italian flags
 
 + Water
 	+ Water
@@ -2981,6 +2980,15 @@ IF WX:
 		+ Complete event handlers
 		+ Do ship sinking event notify in ship (mWater > 1/3 points)
 	+ Increase max grab force
+	+ Extended status text
+		+ Shows:
+			+ Current zoom
+			+ Rendering vs simulation percentages
+				+ GameController continuously updates, same way as FPS
+			+ If paused
+				+ Actually, this is from StatusText
+		+ Multi-row:
+			+ Text layer gets it split & gives vector to TextRenderContext
 	+ Move tool
 		+ Rename current "move" as "Pan"
 		+ ShipId type (see around here)

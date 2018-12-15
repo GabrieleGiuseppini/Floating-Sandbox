@@ -40,6 +40,14 @@ class MainFrame
 {
 public:
 
+    static constexpr bool StartInFullScreenMode = true;
+    static constexpr bool StartWithStatusText = true;
+    static constexpr bool StartWithExtendedStatusText = false;
+    static constexpr int CursorStep = 30;
+    static constexpr int PowerBarThickness = 2;
+
+public:
+
     MainFrame(wxApp * mainApp);
 
     virtual ~MainFrame();
@@ -214,6 +222,19 @@ private:
 
 private:
 
+    inline void PostGameRender()
+    {
+        if (!mHasWindowBeenShown)
+        {
+            this->Show(true);
+
+            if (StartInFullScreenMode)
+                this->ShowFullScreen(true, wxFULLSCREEN_NOBORDER);
+
+            mHasWindowBeenShown = true;
+        }
+    }
+
     void ResetState();
     void UpdateFrameTitle();
     void OnError(
@@ -238,6 +259,7 @@ private:
     // State
     //
 
+    bool mHasWindowBeenShown;
     std::vector<std::string> mCurrentShipTitles;
     size_t mCurrentRCBombCount;
     size_t mCurrentAntiMatterBombCount;

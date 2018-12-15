@@ -162,7 +162,7 @@ ShipDefinition ResourceLoader::LoadShipDefinition(std::filesystem::path const & 
                     absoluteTextureLayerImageFilePath.string(),
                     IL_RGBA,
                     IL_ORIGIN_LOWER_LEFT,
-                    ResizeType::ResizeUpNearestAndLinear));
+                    ResizeType::ResizeUp8Nearest));
 
             break;
         }
@@ -503,39 +503,23 @@ ImageData ResourceLoader::LoadImage(
 
     switch (resizeType)
     {
-        case ResizeType::ResizeUpNearestAndLinear:
+        case ResizeType::ResizeUp8Nearest:
         {
             //
-            // Resize 4X with nearest
+            // Resize 8X with nearest
             //
 
             iluImageParameter(ILU_FILTER, ILU_NEAREST);
 
-            if (!iluScale(width * 4, height * 4, depth))
+            if (!iluScale(width * 8, height * 8, depth))
             {
                 ILint devilError = ilGetError();
                 std::string devilErrorMessage(iluErrorString(devilError));
                 throw GameException("Could not resize image: " + devilErrorMessage);
             }
 
-            width *= 4;
-            height *= 4;
-
-            //
-            // Resize 2X with linear
-            //
-
-            iluImageParameter(ILU_FILTER, ILU_LINEAR);
-
-            if (!iluScale(width * 2, height * 2, depth))
-            {
-                ILint devilError = ilGetError();
-                std::string devilErrorMessage(iluErrorString(devilError));
-                throw GameException("Could not resize image: " + devilErrorMessage);
-            }
-
-            width *= 2;
-            height *= 2;
+            width *= 8;
+            height *= 8;
 
             break;
         }
