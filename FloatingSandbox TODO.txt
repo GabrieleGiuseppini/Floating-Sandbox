@@ -141,6 +141,7 @@ Render:
 				- Materials: rope and cloth are not hull anymore
 				- Reintroduce water absorption
 				- High absorption at ropes and cloth
+				- Low buoyancy at rope and cloth
 
 
 		- Add low/medium/high-dimmed lights (*)
@@ -171,6 +172,9 @@ Render:
 			- Batisphere
 		- Bubbles (*)
 		- Smoke (*)
+
+		- Complete "How to Build a Ship" guide
+
 	- 1.9.0
 		- Settings Manager (*)
 		- Screenshots (*)
