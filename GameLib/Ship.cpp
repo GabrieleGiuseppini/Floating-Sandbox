@@ -615,7 +615,7 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
         // Mass = own + contained water (clamped to 1)
         float const totalPointMass =
             mPoints.GetMass(pointIndex)
-			+ std::min(mPoints.GetWater(pointIndex), 1.0f) * densityAdjustedWaterMass;
+			+ std::min(mPoints.GetWater(pointIndex), mPoints.GetWaterVolumeFill(pointIndex)) * densityAdjustedWaterMass;
 
         mPoints.GetForce(pointIndex) +=
             gameParameters.Gravity
@@ -626,15 +626,11 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
             //
             // Apply upward push of water mass (i.e. buoyancy!)
             //
-            // We don't want hull points to feel buoyancy, otherwise hull points lighter than water (e.g. wood hull)
-            // would never sink as they don't get any water. This is to compensate for the fact that, in reality,
-            // even hull cubes would take some water - massive wood does sink after all.
-            //
 
             mPoints.GetForce(pointIndex) -=
                 gameParameters.Gravity
-                * densityAdjustedWaterMass
-                * mPoints.GetBuoyancy(pointIndex);
+                * mPoints.GetWaterVolumeFill(pointIndex)
+                * densityAdjustedWaterMass;
         }
 
 
@@ -657,7 +653,7 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
     }
 }
 
-void Ship::UpdateSpringForces(GameParameters const & /*gameParameters*/)
+void Ship::UpdateSpringForces(GameParameters const & gameParameters)
 {
     for (auto springIndex : mSprings)
     {
@@ -704,6 +700,89 @@ void Ship::UpdateSpringForces(GameParameters const & /*gameParameters*/)
         mPoints.GetForce(pointAIndex) += fSpringA + fDampA;
         mPoints.GetForce(pointBIndex) -= fSpringA + fDampA;
     }
+
+
+
+    ////// TODOTEST: NEW
+
+    ////float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
+
+    ////float const dtSquared = dt * dt;
+
+    ////float const magicAlphaStiffness =
+    ////    GameParameters::SpringReductionFraction
+    ////    * gameParameters.StiffnessAdjustment
+    ////    / dtSquared;
+
+    ////float const densityAdjustedWaterMass = GameParameters::WaterMass * gameParameters.WaterDensityAdjustment;
+
+    ////for (auto springIndex : mSprings)
+    ////{
+    ////    if (!mSprings.IsDeleted(springIndex))
+    ////    {
+    ////        auto const pointAIndex = mSprings.GetPointAIndex(springIndex);
+    ////        auto const pointBIndex = mSprings.GetPointBIndex(springIndex);
+
+    ////        float const totalPointAMass =
+    ////            mPoints.GetMass(pointAIndex)
+    ////            + std::min(mPoints.GetWater(pointAIndex), 1.0f) * densityAdjustedWaterMass;
+
+    ////        float const totalPointBMass =
+    ////            mPoints.GetMass(pointBIndex)
+    ////            + std::min(mPoints.GetWater(pointBIndex), 1.0f) * densityAdjustedWaterMass;
+
+    ////        float const massFactor =
+    ////            (totalPointAMass * totalPointBMass)
+    ////            / (totalPointAMass + totalPointBMass);
+
+    ////        vec2f const displacement = mPoints.GetPosition(pointBIndex) - mPoints.GetPosition(pointAIndex);
+    ////        float const displacementLength = displacement.length();
+    ////        vec2f const springDir = displacement.normalise(displacementLength);
+
+    ////        //
+    ////        // 1. Hooke's law
+    ////        //
+
+    ////        float stiffnessCoefficient =
+    ////            magicAlphaStiffness
+    ////            * mSprings.GetStiffness(springIndex)
+    ////            * massFactor;
+
+    ////        // Calculate spring force on point A
+    ////        vec2f const fSpringA =
+    ////            springDir
+    ////            * (displacementLength - mSprings.GetRestLength(springIndex))
+    ////            * stiffnessCoefficient;
+
+
+    ////        //
+    ////        // 2. Damper forces
+    ////        //
+    ////        // Damp the velocities of the two points, as if the points were also connected by a damper
+    ////        // along the same direction as the spring
+    ////        //
+
+    ////        float const dampingCoefficient =
+    ////            0.03f
+    ////            * massFactor
+    ////            / dt;
+
+    ////        // Calculate damp force on point A
+    ////        vec2f const relVelocity = mPoints.GetVelocity(pointBIndex) - mPoints.GetVelocity(pointAIndex);
+    ////        vec2f const fDampA =
+    ////            springDir
+    ////            * relVelocity.dot(springDir)
+    ////            * dampingCoefficient;
+
+
+    ////        //
+    ////        // Apply forces
+    ////        //
+
+    ////        mPoints.GetForce(pointAIndex) += fSpringA + fDampA;
+    ////        mPoints.GetForce(pointBIndex) -= fSpringA + fDampA;
+    ////    }
+    ////}
 }
 
 void Ship::IntegrateAndResetPointForces(GameParameters const & gameParameters)
@@ -738,24 +817,52 @@ void Ship::IntegrateAndResetPointForces(GameParameters const & gameParameters)
     // integrating two points at each iteration
     //
 
-    float * restrict positionBuffer = mPoints.GetPositionBufferAsFloat();
-    float * restrict velocityBuffer = mPoints.GetVelocityBufferAsFloat();
-    float * restrict forceBuffer = mPoints.GetForceBufferAsFloat();
-    float * restrict integrationFactorBuffer = mPoints.GetIntegrationFactorBufferAsFloat();
+    // TODOTEST
+    ////float * restrict positionBuffer = mPoints.GetPositionBufferAsFloat();
+    ////float * restrict velocityBuffer = mPoints.GetVelocityBufferAsFloat();
+    ////float * restrict forceBuffer = mPoints.GetForceBufferAsFloat();
+    ////float * restrict integrationFactorBuffer = mPoints.GetIntegrationFactorBufferAsFloat();
 
-    size_t const count = mPoints.GetBufferElementCount() * 2; // Two components per vector
-    for (size_t i = 0; i < count; ++i)
+    ////size_t const count = mPoints.GetBufferElementCount() * 2; // Two components per vector
+    ////for (size_t i = 0; i < count; ++i)
+    ////{
+    ////    //
+    ////    // Verlet integration (fourth order, with velocity being first order)
+    ////    //
+
+    ////    float const deltaPos = velocityBuffer[i] * dt + forceBuffer[i] * integrationFactorBuffer[i];
+    ////    positionBuffer[i] += deltaPos;
+    ////    velocityBuffer[i] = deltaPos * globalDampCoefficient / dt;
+
+    ////    // Zero out force now that we've integrated it
+    ////    forceBuffer[i] = 0.0f;
+    ////}
+
+    // TODOTEST
+    float const densityAdjustedWaterMass = GameParameters::WaterMass * gameParameters.WaterDensityAdjustment;
+    for (auto p : mPoints)
     {
         //
         // Verlet integration (fourth order, with velocity being first order)
         //
 
-        float const deltaPos = velocityBuffer[i] * dt + forceBuffer[i] * integrationFactorBuffer[i];
-        positionBuffer[i] += deltaPos;
-        velocityBuffer[i] = deltaPos * globalDampCoefficient / dt;
+        if (!mPoints.IsDeleted(p))
+        {
+            // Mass = own + contained water (clamped to 1)
+            float const totalPointMass =
+                mPoints.GetMass(p)
+                + std::min(mPoints.GetWater(p), mPoints.GetWaterVolumeFill(p)) * densityAdjustedWaterMass;
+
+            vec2f const deltaPos =
+                mPoints.GetVelocity(p) * dt
+                + mPoints.GetForce(p) * dt * dt / totalPointMass;
+
+            mPoints.GetPosition(p) += deltaPos;
+            mPoints.GetVelocity(p) = deltaPos * globalDampCoefficient / dt;
+        }
 
         // Zero out force now that we've integrated it
-        forceBuffer[i] = 0.0f;
+        mPoints.GetForce(p) = vec2f::zero();
     }
 }
 
@@ -901,9 +1008,8 @@ void Ship::UpdateWaterInflow(
                     // Make sure we don't over-drain the point
                     newWater = -std::min(-newWater, mPoints.GetWater(pointIndex));
 
-                    // Simulate water "sticking" into material - after all, water that once entered
-                    // won't leave completely afterwards, something will stay behind
-                    newWater *= 0.95f;
+                    // Honor the water retention of this material
+                    newWater *= mPoints.GetWaterRestitution(pointIndex);
                 }
 
                 // Adjust water

@@ -576,8 +576,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     // Start timers
     //
 
-    mGameTimer->Start(0, true);
-    mLowFrequencyTimer->Start(1000, false);
+    StartTimers();
 
 
     UpdateFrameTitle();
@@ -1143,23 +1142,18 @@ void MainFrame::OnError(
     std::string const & message,
     bool die)
 {
-    if (die)
+    //
+    // Stop timers first
+    //
+
+    if (!!mGameTimer)
     {
-        //
-        // Stop timers first
-        //
+        mGameTimer->Stop();
+    }
 
-        if (!!mGameTimer)
-        {
-            mGameTimer->Stop();
-            mGameTimer.reset();
-        }
-
-        if (!!mLowFrequencyTimer)
-        {
-            mLowFrequencyTimer->Stop();
-            mLowFrequencyTimer.reset();
-        }
+    if (!!mLowFrequencyTimer)
+    {
+        mLowFrequencyTimer->Stop();
     }
 
 
@@ -1177,4 +1171,15 @@ void MainFrame::OnError(
 
         this->Destroy();
     }
+    else
+    {
+        // Restart timers
+        StartTimers();
+    }
+}
+
+void MainFrame::StartTimers()
+{
+    mGameTimer->Start(0, true);
+    mLowFrequencyTimer->Start(1000, false);
 }

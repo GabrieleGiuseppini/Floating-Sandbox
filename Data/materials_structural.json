@@ -10,11 +10,13 @@
 		"nominal_mass": 7950,
 		"density": 0.0935
 	},
-	"stiffness": 1,
+	"water_volume_fill": 0.0,
+	"stiffness": 1.0,
         "color_key": "#404050",
 	"render_color": "#404050",
         "is_hull": true,
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Structural Iron",
@@ -27,11 +29,13 @@
 		"nominal_mass": 7950,
 		"density": 0.0935
 	},
-	"stiffness": 1,
+	"water_volume_fill": 1.0,
+	"stiffness": 1.0,
         "color_key": "#303040",
 	"render_color": "#303040",
         "is_hull": false,
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
 
     {
@@ -45,11 +49,13 @@
 		"nominal_mass": 7850,
 		"density": 0.00935
 	},   
+	"water_volume_fill": 1.0,
         "is_hull": false,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#808090",
 	"render_color": "#808090",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Steel Hull",
@@ -61,12 +67,14 @@
 	"mass": {
 		"nominal_mass": 7580,
 		"density": 0.0935
-	},        
-	"stiffness": 1,
+	},
+	"water_volume_fill": 0.0,
+	"stiffness": 1.0,
         "is_hull": true,
         "color_key": "#A0A0A0",
         "render_color": "#A0A0A0",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Structural Steel",
@@ -78,12 +86,14 @@
 	"mass": {
 		"nominal_mass": 7580,
 		"density": 0.0935
-	},        
-	"stiffness": 1,
+	},
+	"water_volume_fill": 1.0,	
+	"stiffness": 1.0,
         "is_hull": false,
         "color_key": "#909090", 
         "render_color": "#909090",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Steel",
@@ -95,12 +105,14 @@
 	"mass": {
 		"nominal_mass": 7480,
 		"density": 0.00935
-	},   
+	},
+	"water_volume_fill": 1.0,
         "is_hull": false,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#D8D8D8",
 	"render_color": "#D8D8D8",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Titanium Hull",
@@ -113,11 +125,13 @@
 		"nominal_mass": 4600,
 		"density": 0.0935
 	},
-	"stiffness": 1,
+	"water_volume_fill": 0.0,
+	"stiffness": 1.0,
         "color_key": "#565663",
 	"render_color": "#565663",
         "is_hull": true,
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Titanium",
@@ -129,12 +143,14 @@
 	"mass": {
 		"nominal_mass": 4500,
 		"density": 0.00935
-	},   
+	},
+	"water_volume_fill": 1.0,
         "is_hull": false,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#787896",
 	"render_color": "#787896",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Aluminium Hull",
@@ -146,12 +162,14 @@
 	"mass": {
 		"nominal_mass": 2710,
 		"density": 0.0935
-	},   
+	},
+	"water_volume_fill": 0.0,
         "is_hull": true,
 	"stiffness": 1.0,
         "color_key": "#E0E0E0", 
 	"render_color": "#E0E0E0",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Structural Aluminium",
@@ -163,12 +181,14 @@
 	"mass": {
 		"nominal_mass": 2710,
 		"density": 0.0935
-	},   
+	},
+	"water_volume_fill": 1.0,
         "is_hull": false,
 	"stiffness": 1.0,
         "color_key": "#C8C8C8", 
 	"render_color": "#C8C8C8",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Aluminium",
@@ -180,12 +200,14 @@
 	"mass": {
 		"nominal_mass": 2710,
 		"density": 0.00935
-	},   
+	},
+	"water_volume_fill": 1.0,
         "is_hull": false,
 	"stiffness": 1.0,
         "color_key": "#EFEFEF",
 	"render_color": "#EFEFEF",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Aluminium Hull Red",
@@ -197,12 +219,14 @@
 	"mass": {
 		"nominal_mass": 2710,
 		"density": 0.0935
-	},   
+	},
+	"water_volume_fill": 0.0,
         "is_hull": true,
 	"stiffness": 1.0,
         "color_key": "#A42E10", 
 	"render_color": "#A42E10",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Aluminium Red",
@@ -214,12 +238,14 @@
 	"mass": {
 		"nominal_mass": 2710,
 		"density": 0.00935
-	},   
+	},
+	"water_volume_fill": 1.0,
         "is_hull": false,
 	"stiffness": 1.0,
         "color_key": "#B22212",
 	"render_color": "#B22212",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Aluminium Hull Yellow",
@@ -231,12 +257,14 @@
 	"mass": {
 		"nominal_mass": 2710,
 		"density": 0.0935
-	},   
+	},
+	"water_volume_fill": 0.0,
         "is_hull": true,
 	"stiffness": 1.0,
         "color_key": "#A29A10", 
 	"render_color": "#A29A10",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Aluminium Yellow",
@@ -248,12 +276,14 @@
 	"mass": {
 		"nominal_mass": 2710,
 		"density": 0.00935
-	},   
+	},
+	"water_volume_fill": 1.0,
         "is_hull": false,
 	"stiffness": 1.0,
         "color_key": "#B2A012",
 	"render_color": "#B2A012",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Aluminium Hull Green",
@@ -265,12 +295,14 @@
 	"mass": {
 		"nominal_mass": 2710,
 		"density": 0.0935
-	},   
+	},
+	"water_volume_fill": 0.0,
         "is_hull": true,
 	"stiffness": 1.0,
         "color_key": "#76B210", 
 	"render_color": "#76B210",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Aluminium Green",
@@ -282,12 +314,14 @@
 	"mass": {
 		"nominal_mass": 2710,
 		"density": 0.00935
-	},   
+	},
+	"water_volume_fill": 1.0,
         "is_hull": false,
 	"stiffness": 1.0,
         "color_key": "#88B810",
 	"render_color": "#88B810", 
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Aluminium Hull Blue",
@@ -299,12 +333,14 @@
 	"mass": {
 		"nominal_mass": 2710,
 		"density": 0.0935
-	},   
+	},
+	"water_volume_fill": 0.0,
         "is_hull": true,
 	"stiffness": 1.0,
         "color_key": "#10A29A", 
 	"render_color": "#10A29A",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Aluminium Blue",
@@ -316,12 +352,14 @@
 	"mass": {
 		"nominal_mass": 2710,
 		"density": 0.00935
-	},   
+	},
+	"water_volume_fill": 1.0,
         "is_hull": false,
 	"stiffness": 1.0,
         "color_key": "#10B2A0",
 	"render_color": "#10B2A0",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Aluminium Hull Blue2",
@@ -333,12 +371,14 @@
 	"mass": {
 		"nominal_mass": 2710,
 		"density": 0.0935
-	},   
+	},
+	"water_volume_fill": 0.0,
         "is_hull": true,
 	"stiffness": 1.0,
         "color_key": "#204060", 
 	"render_color": "#204060",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Aluminium Blue2",
@@ -350,12 +390,14 @@
 	"mass": {
 		"nominal_mass": 2710,
 		"density": 0.00935
-	},   
+	},
+	"water_volume_fill": 1.0,
         "is_hull": false,
 	"stiffness": 1.0,
         "color_key": "#305878",
 	"render_color": "#305878",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
 
 
@@ -370,12 +412,14 @@
 	"mass": {
 		"nominal_mass": 2710,
 		"density": 0.0935
-	},   
+	},
+	"water_volume_fill": 0.0,
         "is_hull": true,
 	"stiffness": 2.0,
         "color_key": "#757575", 
 	"render_color": "#757575",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Aluminium Stiff",
@@ -387,12 +431,14 @@
 	"mass": {
 		"nominal_mass": 2710,
 		"density": 0.00935
-	},   
+	},
+	"water_volume_fill": 1.0,
         "is_hull": false,
 	"stiffness": 2.2,
         "color_key": "#989898",
 	"render_color": "#989898",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
 
     {
@@ -406,11 +452,13 @@
 		"nominal_mass": 1000,
 		"density": 0.0935
 	},
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#905020",
 	"render_color": "#905020",
+	"water_volume_fill": 0.0,
         "is_hull": true,
-	"sound_type": "Wood"
+	"sound_type": "Wood",
+	"water_retention": 0.05
     },
     {
         "name": "Wood",
@@ -422,12 +470,14 @@
 	"mass": {
 		"nominal_mass": 800,
 		"density": 0.022935
-	},  
+	},
+	"water_volume_fill": 1.0,
 	"is_hull": false,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#E0D8C0",
 	"render_color": "#E0D8C0",
-	"sound_type": "Wood"
+	"sound_type": "Wood",
+	"water_retention": 0.05
     },
     {
         "name": "Carbon Hull",
@@ -440,11 +490,13 @@
 		"nominal_mass": 758,
 		"density": 0.0935
 	},
-	"stiffness": 1,
+	"water_volume_fill": 0.0,
+	"stiffness": 1.0,
         "color_key": "#1A1A1A",
 	"render_color": "#1A1A1A",
         "is_hull": true,
-	"sound_type": "Wood"
+	"sound_type": "Wood",
+	"water_retention": 0.05
     },
     {
         "name": "Carbon",
@@ -456,12 +508,14 @@
 	"mass": {
 		"nominal_mass": 758,
 		"density": 0.022935
-	},  
+	},
+	"water_volume_fill": 1.0,
 	"is_hull": false,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#232323",
 	"render_color": "#232323",
-	"sound_type": "Wood"
+	"sound_type": "Wood",
+	"water_retention": 0.05
     },
     {
         "name": "Aluminium Sheet Hull",
@@ -473,12 +527,14 @@
 	"mass": {
 		"nominal_mass": 2710,
 		"density": 0.01045
-	},   
+	},
+	"water_volume_fill": 0.0,
         "is_hull": true,
 	"stiffness": 0.5,
         "color_key": "#C0C0C0",
 	"render_color": "#C0C0C0",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Aluminium Sheet",
@@ -490,12 +546,14 @@
 	"mass": {
 		"nominal_mass": 2710,
 		"density": 0.001045
-	},   
+	},
+	"water_volume_fill": 1.0,
         "is_hull": false,
 	"stiffness": 0.5,
         "color_key": "#D0D0D0",
 	"render_color": "#D0D0D0",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Cardboard Hull",
@@ -508,11 +566,13 @@
 		"nominal_mass": 30,
 		"density": 0.0935
 	},
+	"water_volume_fill": 0.0,
 	"is_hull": true,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#A88848",
         "render_color": "#A88848",
-	"sound_type": "Wood"
+	"sound_type": "Wood",
+	"water_retention": 0.05
     },
     {
         "name": "Cardboard",
@@ -524,12 +584,14 @@
         "mass": {
 		"nominal_mass": 20,
 		"density": 0.022935
-	},  
+	},
+	"water_volume_fill": 1.0,
 	"is_hull": false,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#C1A46A",
 	"render_color": "#C1A46A",
-	"sound_type": "Wood"
+	"sound_type": "Wood",
+	"water_retention": 0.05
     },
 
     {
@@ -543,11 +605,13 @@
 		"nominal_mass": 7580,
 		"density": 0.0935
 	},
-	"stiffness": 1,
+	"water_volume_fill": 0.0,
+	"stiffness": 1.0,
         "color_key": "#A71000",
 	"render_color": "#A71000",
         "is_hull": true,
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Structural Steel Red",
@@ -560,11 +624,13 @@
 		"nominal_mass": 7580,
 		"density": 0.0935
 	},
-	"stiffness": 1,
+	"water_volume_fill": 1.0,
+	"stiffness": 1.0,
         "color_key": "#950000",
 	"render_color": "#950000",
         "is_hull": false,
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
 
     {
@@ -577,12 +643,14 @@
 	"mass": {
 		"nominal_mass": 7480,
 		"density": 0.00935
-	},   
+	},
+	"water_volume_fill": 1.0,
         "is_hull": false,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#D80E00",
 	"render_color": "#D80E00",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Iron Hull Red",
@@ -595,11 +663,13 @@
 		"nominal_mass": 7950,
 		"density": 0.0935
 	},
-	"stiffness": 1,
+	"water_volume_fill": 0.0,
+	"stiffness": 1.0,
         "color_key": "#840E00",
 	"render_color": "#840E00",
         "is_hull": true,
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Structural Iron Red",
@@ -612,11 +682,13 @@
 		"nominal_mass": 7950,
 		"density": 0.0935
 	},
-	"stiffness": 1,
+	"water_volume_fill": 1.0,
+	"stiffness": 1.0,
         "color_key": "#740200", 
 	"render_color": "#740200",
         "is_hull": false,
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
 
     {
@@ -629,12 +701,14 @@
 	"mass": {
 		"nominal_mass": 7850,
 		"density": 0.00935
-	},   
+	},
+	"water_volume_fill": 1.0,
         "is_hull": false,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#9E0F00",
 	"render_color": "#9E0F00",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Wood Hull Red",
@@ -647,11 +721,13 @@
 		"nominal_mass": 1000,
 		"density": 0.0935
 	},
-	"stiffness": 1,
+	"water_volume_fill": 0.0,
+	"stiffness": 1.0,
         "color_key": "#9E2E0C",
 	"render_color": "#9E2E0C",
         "is_hull": true,
-	"sound_type": "Wood"
+	"sound_type": "Wood",
+	"water_retention": 0.05
     },
     {
         "name": "Wood Red",
@@ -663,12 +739,14 @@
         "mass": {
 		"nominal_mass": 800,
 		"density": 0.022935
-	},  
+	},
+	"water_volume_fill": 1.0,
 	"is_hull": false,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#B51B1B",
 	"render_color": "#B51B1B",
-	"sound_type": "Wood"
+	"sound_type": "Wood",
+	"water_retention": 0.05
     },
     {
         "name": "Titanium Hull Red",
@@ -681,11 +759,13 @@
 		"nominal_mass": 4600,
 		"density": 0.0935
 	},
-	"stiffness": 1,
+	"water_volume_fill": 0.0,
+	"stiffness": 1.0,
         "color_key": "#8F1F00",
 	"render_color": "#8F1F00",
         "is_hull": true,
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Titanum Red",
@@ -697,12 +777,14 @@
 	"mass": {
 		"nominal_mass": 4500,
 		"density": 0.00935
-	},   
+	},
+	"water_volume_fill": 1.0,
         "is_hull": false,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#BE1400",
 	"render_color": "#BE1400",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Steel Hull Yellow",
@@ -715,11 +797,13 @@
 		"nominal_mass": 7580,
 		"density": 0.0935
 	},
-	"stiffness": 1,
+	"water_volume_fill": 0.0,
+	"stiffness": 1.0,
         "color_key": "#A27A00",
 	"render_color": "#A27A00",
         "is_hull": true,
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Structural Steel Yellow",
@@ -732,11 +816,13 @@
 		"nominal_mass": 7580,
 		"density": 0.0935
 	},
-	"stiffness": 1,
+	"water_volume_fill": 1.0,
+	"stiffness": 1.0,
         "color_key": "#926A00",
 	"render_color": "#926A00",
         "is_hull": false,
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Steel Yellow",
@@ -748,12 +834,14 @@
 	"mass": {
 		"nominal_mass": 7480,
 		"density": 0.00935
-	},   
+	},
+	"water_volume_fill": 1.0,
         "is_hull": false,
-	"stiffness": 1, 
+	"stiffness": 1.0, 
         "color_key": "#D29800",
 	"render_color": "#D29800",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Iron Hull Yellow",
@@ -766,11 +854,13 @@
 		"nominal_mass": 7950,
 		"density": 0.0935
 	},
-	"stiffness": 1,
+	"water_volume_fill": 0.0,
+	"stiffness": 1.0,
         "color_key": "#806200",
 	"render_color": "#806200",
         "is_hull": true,
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Structural Iron Yellow",
@@ -783,11 +873,13 @@
 		"nominal_mass": 7950,
 		"density": 0.0935
 	},
-	"stiffness": 1,
+	"water_volume_fill": 1.0,
+	"stiffness": 1.0,
         "color_key": "#705200",
 	"render_color": "#705200",
         "is_hull": false,
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
 
     {
@@ -800,12 +892,14 @@
 	"mass": {
 		"nominal_mass": 7850,
 		"density": 0.00935
-	},   
+	},
+	"water_volume_fill": 1.0,
         "is_hull": false,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#997200",
 	"render_color": "#997200",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Wood Hull Yellow",
@@ -818,11 +912,13 @@
 		"nominal_mass": 1000,
 		"density": 0.0935
 	},
-	"stiffness": 1,
+	"water_volume_fill": 0.0,
+	"stiffness": 1.0,
         "color_key": "#998B0A",
 	"render_color": "#998B0A",
         "is_hull": true,
-	"sound_type": "Wood"
+	"sound_type": "Wood",
+	"water_retention": 0.05
     },
     {
         "name": "Wood Yellow",
@@ -834,12 +930,14 @@
         "mass": {
 		"nominal_mass": 800,
 		"density": 0.022935
-	},  
+	},
+	"water_volume_fill": 1.0,
 	"is_hull": false,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#AF7C18",
 	"render_color": "#AF7C18",
-	"sound_type": "Wood"    },
+	"sound_type": "Wood",
+	"water_retention": 0.05    },
     {
         "name": "Titanium Hull Yellow",
 	"template": {
@@ -851,11 +949,13 @@
 		"nominal_mass": 4600,
 		"density": 0.0935
 	},
-	"stiffness": 1,
+	"water_volume_fill": 0.0,
+	"stiffness": 1.0,
         "color_key": "#8B7A00",
 	"render_color": "#8B7A00",
         "is_hull": true,
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Titanium Yellow",
@@ -867,12 +967,14 @@
 	"mass": {
 		"nominal_mass": 4500,
 		"density": 0.00935
-	},   
+	},
+	"water_volume_fill": 1.0,
         "is_hull": false,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#B88D00",
 	"render_color": "#B88D00",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Steel Hull Green",
@@ -885,11 +987,13 @@
 		"nominal_mass": 7580,
 		"density": 0.0935
 	},
-	"stiffness": 1,
+	"water_volume_fill": 0.0,
+	"stiffness": 1.0,
         "color_key": "#5A9B00",
 	"render_color": "#5A9B00",
         "is_hull": true,
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Steel Green",
@@ -901,12 +1005,14 @@
 	"mass": {
 		"nominal_mass": 7480,
 		"density": 0.00935
-	},   
+	},
+	"water_volume_fill": 1.0,
         "is_hull": false,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#7BC800",
 	"render_color": "#7BC800",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Iron Hull Green",
@@ -919,11 +1025,13 @@
 		"nominal_mass": 7950,
 		"density": 0.0935
 	},
-	"stiffness": 1,
+	"water_volume_fill": 0.0,
+	"stiffness": 1.0,
         "color_key": "#467B00",
 	"render_color": "#467B00",
         "is_hull": true,
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Iron Green",
@@ -935,12 +1043,14 @@
 	"mass": {
 		"nominal_mass": 7850,
 		"density": 0.00935
-	},   
+	},
+	"water_volume_fill": 1.0,
         "is_hull": false,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#569200",
 	"render_color": "#569200",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Wood Hull Green",
@@ -953,11 +1063,13 @@
 		"nominal_mass": 1000,
 		"density": 0.0935
 	},
-	"stiffness": 1,
+	"water_volume_fill": 0.0,
+	"stiffness": 1.0,
         "color_key": "#439206",
 	"render_color": "#439206",
         "is_hull": true,
-	"sound_type": "Wood"
+	"sound_type": "Wood",
+	"water_retention": 0.05
     },
     {
         "name": "Wood Green",
@@ -969,12 +1081,14 @@
         "mass": {
 		"nominal_mass": 800,
 		"density": 0.022935
-	},  
+	},
+	"water_volume_fill": 1.0,
 	"is_hull": false,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#78A814",
 	"render_color": "#78A814",
-	"sound_type": "Wood"
+	"sound_type": "Wood",
+	"water_retention": 0.05
     },
     {
         "name": "Titanium Hull Green",
@@ -987,11 +1101,13 @@
 		"nominal_mass": 4600,
 		"density": 0.0935
 	},
-	"stiffness": 1,
+	"water_volume_fill": 0.0,
+	"stiffness": 1.0,
         "color_key": "#3C8400",
 	"render_color": "#3C8400",
         "is_hull": true,
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Titanium Green",
@@ -1003,12 +1119,14 @@
 	"mass": {
 		"nominal_mass": 4500,
 		"density": 0.00935
-	},   
+	},
+	"water_volume_fill": 1.0,
         "is_hull": false,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#66B100",
 	"render_color": "#66B100",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Steel Hull Blue",	
@@ -1021,11 +1139,13 @@
 		"nominal_mass": 7580,
 		"density": 0.0935
 	},
-	"stiffness": 1,
+	"water_volume_fill": 0.0,
+	"stiffness": 1.0,
         "color_key": "#008A95",
 	"render_color": "#008A95",
         "is_hull": true,
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Steel Blue",	
@@ -1037,12 +1157,14 @@
 	"mass": {
 		"nominal_mass": 7480,
 		"density": 0.00935
-	},   
+	},
+	"water_volume_fill": 1.0,
         "is_hull": false,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#00B6BF",
 	"render_color": "#00B6BF",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Iron Hull Blue",	
@@ -1055,11 +1177,13 @@
 		"nominal_mass": 7950,
 		"density": 0.0935
 	},
-	"stiffness": 1,
+	"water_volume_fill": 0.0,
+	"stiffness": 1.0,
         "color_key": "#006A76",
 	"render_color": "#006A76",
         "is_hull": true,
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Iron Blue",	
@@ -1071,12 +1195,14 @@
 	"mass": {
 		"nominal_mass": 7850,
 		"density": 0.00935
-	},   
+	},
+	"water_volume_fill": 1.0,
         "is_hull": false,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#00818C",
 	"render_color": "#00818C",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Wood Hull Blue",	
@@ -1089,11 +1215,13 @@
 		"nominal_mass": 1000,
 		"density": 0.0935
 	},
-	"stiffness": 1,
+	"water_volume_fill": 0.0,
+	"stiffness": 1.0,
         "color_key": "#036E8C",
 	"render_color": "#036E8C",
         "is_hull": true,
-	"sound_type": "Wood"
+	"sound_type": "Wood",
+	"water_retention": 0.05
     },
     {
         "name": "Wood Blue",	
@@ -1105,12 +1233,14 @@
         "mass": {
 		"nominal_mass": 800,
 		"density": 0.022935
-	},  
+	},
+	"water_volume_fill": 1.0,
 	"is_hull": false,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#10A19D",
 	"render_color": "#10A19D",
-	"sound_type": "Wood"
+	"sound_type": "Wood",
+	"water_retention": 0.05
     },
     {
         "name": "Titanium Hull Blue",	
@@ -1123,11 +1253,13 @@
 		"nominal_mass": 4600,
 		"density": 0.0935
 	},
-	"stiffness": 1,
+	"water_volume_fill": 0.0,
+	"stiffness": 1.0,
         "color_key": "#00657E",
 	"render_color": "#00657E",
         "is_hull": true,
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Titanium Blue",	
@@ -1139,12 +1271,14 @@
 	"mass": {
 		"nominal_mass": 4500,
 		"density": 0.00935
-	},   
+	},
+	"water_volume_fill": 1.0,
         "is_hull": false,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#009BA9",
 	"render_color": "#009BA9",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Steel Hull Blue2",
@@ -1157,11 +1291,13 @@
 		"nominal_mass": 7580,
 		"density": 0.0935
 	},
-	"stiffness": 1,
+	"water_volume_fill": 0.0,
+	"stiffness": 1.0,
         "color_key": "#22437B",
 	"render_color": "#22437B",
         "is_hull": true,
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Steel Blue2",
@@ -1173,12 +1309,14 @@
 	"mass": {
 		"nominal_mass": 7480,
 		"density": 0.00935
-	},   
+	},
+	"water_volume_fill": 1.0,
         "is_hull": false,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#2D58A0",
 	"render_color": "#2D58A0",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Iron Hull Blue2",
@@ -1191,11 +1329,13 @@
 		"nominal_mass": 7950,
 		"density": 0.0935
 	},
-	"stiffness": 1,
+	"water_volume_fill": 0.0,
+	"stiffness": 1.0,
         "color_key": "#1B3261",
 	"render_color": "#1B3261",
         "is_hull": true,
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Iron Blue2",
@@ -1207,12 +1347,14 @@
 	"mass": {
 		"nominal_mass": 7850,
 		"density": 0.00935
-	},   
+	},
+	"water_volume_fill": 1.0,
         "is_hull": false,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#203E74",
 	"render_color": "#203E74",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Wood Hull Blue2",
@@ -1225,11 +1367,13 @@
 		"nominal_mass": 1000,
 		"density": 0.0935
 	},
-	"stiffness": 1,
+	"water_volume_fill": 0.0,
+	"stiffness": 1.0,
         "color_key": "#1E3070",
 	"render_color": "#1E3070",
         "is_hull": true,
-	"sound_type": "Wood"
+	"sound_type": "Wood",
+	"water_retention": 0.05
     },
     {
         "name": "Wood Blue2",
@@ -1241,12 +1385,14 @@
         "mass": {
 		"nominal_mass": 800,
 		"density": 0.022935
-	},  
+	},
+	"water_volume_fill": 1.0,
 	"is_hull": false,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#325989",
 	"render_color": "#325989",
-	"sound_type": "Wood"
+	"sound_type": "Wood",
+	"water_retention": 0.05
     },
     {
         "name": "Titanium Hull Blue2",
@@ -1259,11 +1405,13 @@
 		"nominal_mass": 4600,
 		"density": 0.0935
 	},
-	"stiffness": 1,
+	"water_volume_fill": 0.0,
+	"stiffness": 1.0,
         "color_key": "#1A2C66",
 	"render_color": "#1A2C66",
         "is_hull": true,
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Titanium Blue2",
@@ -1275,12 +1423,14 @@
 	"mass": {
 		"nominal_mass": 4500,
 		"density": 0.00935
-	},   
+	},
+	"water_volume_fill": 1.0,
         "is_hull": false,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#26498C",
 	"render_color": "#26498C",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Steel Hull Pink",
@@ -1293,11 +1443,13 @@
 		"nominal_mass": 7580,
 		"density": 0.0935
 	},
-	"stiffness": 1,
+	"water_volume_fill": 0.0,
+	"stiffness": 1.0,
         "color_key": "#A900A7",
 	"render_color": "#A900A7",
         "is_hull": true,
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Steel Pink",
@@ -1309,12 +1461,14 @@
 	"mass": {
 		"nominal_mass": 7480,
 		"density": 0.00935
-	},   
+	},
+	"water_volume_fill": 1.0,
         "is_hull": false,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#D100D6",
 	"render_color": "#D100D6",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Iron Hull Pink",
@@ -1327,11 +1481,13 @@
 		"nominal_mass": 7950,
 		"density": 0.0935
 	},
-	"stiffness": 1,
+	"water_volume_fill": 0.0,
+	"stiffness": 1.0,
         "color_key": "#860080",
 	"render_color": "#860080",
         "is_hull": true,
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Iron Pink",
@@ -1343,12 +1499,14 @@
 	"mass": {
 		"nominal_mass": 7850,
 		"density": 0.00935
-	},   
+	},
+	"water_volume_fill": 1.0,
         "is_hull": false,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#9F009C",
 	"render_color": "#9F009C",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Wood Hull Pink",
@@ -1361,11 +1519,13 @@
 		"nominal_mass": 1000,
 		"density": 0.0935
 	},
-	"stiffness": 1,
+	"water_volume_fill": 0.0,
+	"stiffness": 1.0,
         "color_key": "#A30085",
         "render_color": "#A30085",
         "is_hull": true,
-	"sound_type": "Wood"
+	"sound_type": "Wood",
+	"water_retention": 0.05
     },
     {
         "name": "Wood Pink",
@@ -1377,12 +1537,14 @@
         "mass": {
 		"nominal_mass": 800,
 		"density": 0.022935
-	},  
+	},
+	"water_volume_fill": 1.0,
 	"is_hull": false,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#9B00AF",
 	"render_color": "#9B00AF",
-	"sound_type": "Wood"
+	"sound_type": "Wood",
+	"water_retention": 0.05
     },
     {
         "name": "Titanium Hull Pink",
@@ -1395,11 +1557,13 @@
 		"nominal_mass": 4600,
 		"density": 0.0935
 	},
-	"stiffness": 1,
+	"water_volume_fill": 0.0,
+	"stiffness": 1.0,
         "color_key": "#93007B",
 	"render_color": "#93007B",
         "is_hull": true,
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Titanium Pink",
@@ -1411,12 +1575,14 @@
 	"mass": {
 		"nominal_mass": 4500,
 		"density": 0.00935
-	},   
+	},
+	"water_volume_fill": 1.0,
         "is_hull": false,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#BF00BA",
 	"render_color": "#BF00BA",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Steel Hull Orange",	
@@ -1429,11 +1595,13 @@
 		"nominal_mass": 7580,
 		"density": 0.0935
 	},
-	"stiffness": 1,
+	"water_volume_fill": 0.0,
+	"stiffness": 1.0,
         "color_key": "#D45B00",
         "render_color": "#D45B00",
         "is_hull": true,
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Steel Orange",	
@@ -1445,12 +1613,14 @@
 	"mass": {
 		"nominal_mass": 7480,
 		"density": 0.00935
-	},   
+	},
+	"water_volume_fill": 1.0,
         "is_hull": false,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#F26500",
 	"render_color": "#F26500",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Iron Hull Orange",	
@@ -1463,11 +1633,13 @@
 		"nominal_mass": 7950,
 		"density": 0.0935
 	},
-	"stiffness": 1,
+	"water_volume_fill": 0.0,
+	"stiffness": 1.0,
         "color_key": "#A84F00",
 	"render_color": "#A84F00",
         "is_hull": true,
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Iron Orange",	
@@ -1479,12 +1651,14 @@
 	"mass": {
 		"nominal_mass": 7850,
 		"density": 0.00935
-	},   
+	},
+	"water_volume_fill": 1.0,
         "is_hull": false,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#C85800",
 	"render_color": "#C85800",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Wood Hull Orange",	
@@ -1497,11 +1671,13 @@
 		"nominal_mass": 1000,
 		"density": 0.0935
 	},
-	"stiffness": 1,
+	"water_volume_fill": 0.0,
+	"stiffness": 1.0,
         "color_key": "#CE8100",
 	"render_color": "#CE8100",
         "is_hull": true,
-	"sound_type": "Wood"
+	"sound_type": "Wood",
+	"water_retention": 0.05
     },
     {
         "name": "Wood Orange",	
@@ -1513,12 +1689,14 @@
         "mass": {
 		"nominal_mass": 800,
 		"density": 0.022935
-	},  
+	},
+	"water_volume_fill": 1.0,
 	"is_hull": false,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#DE4000",
 	"render_color": "#DE4000",
-	"sound_type": "Wood"
+	"sound_type": "Wood",
+	"water_retention": 0.05
     },
     {
         "name": "Titanium Hull Orange",	
@@ -1531,11 +1709,13 @@
 		"nominal_mass": 4600,
 		"density": 0.0935
 	},
-	"stiffness": 1,
+	"water_volume_fill": 0.0,
+	"stiffness": 1.0,
         "color_key": "#BA7100",
 	"render_color": "#BA7100",
         "is_hull": true,
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Titanium Orange",	
@@ -1547,12 +1727,14 @@
 	"mass": {
 		"nominal_mass": 4500,
 		"density": 0.00935
-	},   
+	},
+	"water_volume_fill": 1.0,
         "is_hull": false,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#EF6B00",
 	"render_color": "#EF6B00",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Iron Hull Stiff",
@@ -1565,11 +1747,13 @@
 		"nominal_mass": 7950,
 		"density": 0.0935
 	},
+	"water_volume_fill": 0.0,
 	"stiffness": 2,
         "color_key": "#111111",
 	"render_color": "#111111",
         "is_hull": true,
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Iron Stiff",
@@ -1581,12 +1765,14 @@
 	"mass": {
 		"nominal_mass": 7850,
 		"density": 0.00935
-	},   
+	},
+	"water_volume_fill": 1.0,
         "is_hull": false,
 	"stiffness": 2.2,
         "color_key": "#222222",
 	"render_color": "#222222",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
 
     {
@@ -1600,11 +1786,13 @@
 		"nominal_mass": 7580,
 		"density": 0.0935
 	},
+	"water_volume_fill": 0.0,
 	"stiffness": 2,
         "color_key": "#333333",
 	"render_color": "#333333",
         "is_hull": true,
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Steel Stiff",
@@ -1616,12 +1804,14 @@
 	"mass": {
 		"nominal_mass": 7480,
 		"density": 0.00935
-	},   
+	},
+	"water_volume_fill": 1.0,
         "is_hull": false,
 	"stiffness": 2.2,
         "color_key": "#444444",
 	"render_color": "#444444",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Black Steel",
@@ -1633,12 +1823,14 @@
 	"mass": {
 		"nominal_mass": 7480,
 		"density": 0.00935
-	},   
+	},
+	"water_volume_fill": 1.0,
         "is_hull": false,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#262626",
 	"render_color": "#262626",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Titanium Hull Stiff",	
@@ -1651,11 +1843,13 @@
 		"nominal_mass": 4600,
 		"density": 0.0935
 	},
-	"stiffness": 2,
+	"water_volume_fill": 0.0,
+	"stiffness": 2.0,
         "color_key": "#555555",
 	"render_color": "#555555",
 	"is_hull": true,
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Titanium Stiff",	
@@ -1667,12 +1861,14 @@
 	"mass": {
 		"nominal_mass": 4500,
 		"density": 0.00935
-	},  
+	},
+	"water_volume_fill": 1.0,
 	"is_hull": false,
 	"stiffness": 2.2,
         "color_key": "#666666",
 	"render_color": "#666666",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Wood Hull Stiff",	
@@ -1685,11 +1881,13 @@
 		"nominal_mass": 1000,
 		"density": 0.0935
 	},
-	"stiffness": 2,
+	"water_volume_fill": 0.0,
+	"stiffness": 2.0,
         "color_key": "#777777",
 	"render_color": "#777777",
 	"is_hull": true,
-	"sound_type": "Wood"
+	"sound_type": "Wood",
+	"water_retention": 0.05
     },
     {
         "name": "Wood Stiff",	
@@ -1701,12 +1899,14 @@
         "mass": {
 		"nominal_mass": 800,
 		"density": 0.022935
-	},  
+	},
+	"water_volume_fill": 1.0,
 	"is_hull": false,
 	"stiffness": 2.4,
         "color_key": "#888888",
 	"render_color": "#888888",
-	"sound_type": "Wood"
+	"sound_type": "Wood",
+	"water_retention": 0.05
     },
     {
         "name": "Double-Bottom Steel Red",
@@ -1719,11 +1919,13 @@
 		"nominal_mass": 6500,
 		"density": 0.17
 	},
-	"stiffness": 1,
+	"water_volume_fill": 0.0,
+	"stiffness": 1.0,
         "color_key": "#A21000",
 	"render_color": "#A21000",
         "is_hull": true,
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Double-Bottom Titanium Red",
@@ -1736,11 +1938,13 @@
 		"nominal_mass": 5000,
 		"density": 0.17
 	},
-	"stiffness": 1,
+	"water_volume_fill": 0.0,
+	"stiffness": 1.0,
         "color_key": "#842005",
 	"render_color": "#842005",
         "is_hull": true,
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Double-Bottom Iron Red",
@@ -1753,11 +1957,13 @@
 		"nominal_mass": 7500,
 		"density": 0.17
 	},
-	"stiffness": 1,
+	"water_volume_fill": 0.0,
+	"stiffness": 1.0,
         "color_key": "#7E0C00",
 	"render_color": "#7E0C00",
         "is_hull": true,
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Double-Bottom Wood Red",
@@ -1770,11 +1976,13 @@
 		"nominal_mass": 1600,
 		"density": 0.17
 	},
-	"stiffness": 1,
+	"water_volume_fill": 0.0,
+	"stiffness": 1.0,
         "color_key": "#9B3012",
 	"render_color": "#9B3012",
         "is_hull": true,
-	"sound_type": "Wood"
+	"sound_type": "Wood",
+	"water_retention": 0.05
     },
 
     {
@@ -1789,11 +1997,13 @@
 		"nominal_mass": 20,
 		"density": 0.0417
 	},
-	"stiffness": 1,
+	"water_volume_fill": 1.0,
+	"stiffness": 1.0,
         "color_key": "#545454",
 	"render_color": "#545454",
         "is_hull": false,
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
 
 
@@ -1807,12 +2017,14 @@
 	"mass": {
 		"nominal_mass": 1000,
 		"density": 0.0935
-	},  
+	},
+	"water_volume_fill": 0.0,
 	"is_hull": true,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#C1FFFF",
 	"render_color": "#C1FFFF",
-	"sound_type": "Glass"
+	"sound_type": "Glass",
+	"water_retention": 0.0
     },
 
     {
@@ -1825,12 +2037,14 @@
 	"mass": {
 		"nominal_mass": 1000,
 		"density": 0.022935
-	},  
+	},
+	"water_volume_fill": 1.0,
 	"is_hull": false,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#E5FFFF",
 	"render_color": "#E5FFFF",
-	"sound_type": "Glass"
+	"sound_type": "Glass",
+	"water_retention": 0.0
     },
 
 
@@ -1847,11 +2061,13 @@
 		"nominal_mass": 30,
 		"density": 0.0935
 	},
+	"water_volume_fill": 0.3,
 	"stiffness": 0.8,
         "color_key": "#000000",
 	"render_color": "#000000",
-        "is_hull": true,
-	"sound_type": "Cable"
+        "is_hull": false,
+	"sound_type": "Cable",
+	"water_retention": 0.5
     },
 
     {
@@ -1865,11 +2081,13 @@
 		"nominal_mass": 30,
 		"density": 0.0935
 	},
-	"is_hull": true,
+	"water_volume_fill": 0.05,
+	"is_hull": false,
 	"stiffness": 0.005,
         "color_key": "#DD4523",
         "render_color": "#DD4523",
-	"sound_type": "Cloth"
+	"sound_type": "Cloth",
+	"water_retention": 0.5
     },
 
     {
@@ -1883,11 +2101,13 @@
 		"nominal_mass": 30,
 		"density": 0.0935
 	},
-	"is_hull": true,
+	"water_volume_fill": 0.05,
+	"is_hull": false,
 	"stiffness": 0.005,
         "color_key": "#054C00",
         "render_color": "#054C00",
-	"sound_type": "Cloth"
+	"sound_type": "Cloth",
+	"water_retention": 0.5
     },
 
     {
@@ -1896,16 +2116,18 @@
 		"row": "70|Cloth",
 		"column": 4
 	},
+	"water_volume_fill": 0.05,
         "strength": 1.9,
 	"mass": {
 		"nominal_mass": 30,
 		"density": 0.0935
 	},
-	"is_hull": true,
+	"is_hull": false,
 	"stiffness": 0.005,
         "color_key": "#0C20D1",
         "render_color": "#0C20D1",
-	"sound_type": "Cloth"
+	"sound_type": "Cloth",
+	"water_retention": 0.5
     },
 
 
@@ -1923,12 +2145,14 @@
 	"mass": {
 		"nominal_mass": 30,
 		"density": 0.275
-	},  
+	},
+	"water_volume_fill": 1.0,
 	"is_hull": false,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#FFFF00",
 	"render_color": "#404040",
-	"sound_type": "Glass"
+	"sound_type": "Glass",
+	"water_retention": 0.0
     },
     {
         "name": "Lamp",	
@@ -1941,12 +2165,14 @@
 	"mass": {
 		"nominal_mass": 30,
 		"density": 0.275
-	},  
+	},
+	"water_volume_fill": 1.0,
 	"is_hull": false,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#FFE010",
 	"render_color": "#404040",
-	"sound_type": "Glass"
+	"sound_type": "Glass",
+	"water_retention": 0.0
     },
     {
         "name": "Generator",	
@@ -1959,12 +2185,14 @@
 	"mass": {
 		"nominal_mass": 900,
 		"density": 0.275
-	},   
+	},
+	"water_volume_fill": 1.0,
         "is_hull": false,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#FC0808",
 	"render_color": "#FC0808",
-	"sound_type": "Metal"
+	"sound_type": "Metal",
+	"water_retention": 0.05
     },
     {
         "name": "Electrical Cable Hull",
@@ -1977,12 +2205,14 @@
 	"mass": {
 		"nominal_mass": 30,
 		"density": 0.275
-	},  
+	},
+	"water_volume_fill": 0.0,
 	"is_hull": true,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#4C0000",
 	"render_color": "#4C0000",
-	"sound_type": "Cable"
+	"sound_type": "Cable",
+	"water_retention": 0.05
     },
     {
         "name": "Electrical Cable",
@@ -1995,11 +2225,13 @@
 	"mass": {
 		"nominal_mass": 30,
 		"density": 0.275
-	},  
+	},
+	"water_volume_fill": 1.0,
 	"is_hull": false,
-	"stiffness": 1,
+	"stiffness": 1.0,
         "color_key": "#700000",
 	"render_color": "#700000",
-	"sound_type": "Cable"
+	"sound_type": "Cable",
+	"water_retention": 0.05
     }
 ]

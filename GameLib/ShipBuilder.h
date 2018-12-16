@@ -61,7 +61,7 @@ private:
             , RenderColor(renderColor)
             , StructuralMtl(structuralMtl)
             , IsRope(isRope)
-            , IsLeaking(false)
+            , IsLeaking(isRope ? true : false) // Ropes leak by default
             , ElectricalMtl(nullptr)
             , ConnectedSprings1()
         {

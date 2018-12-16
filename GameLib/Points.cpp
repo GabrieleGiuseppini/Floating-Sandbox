@@ -37,10 +37,8 @@ void Points::Add(
     mMassBuffer.emplace_back(structuralMaterial.Mass);
 
     mIsHullBuffer.emplace_back(structuralMaterial.IsHull);
-
-    // No buoyancy if it's hull, as it can't get water and thus if lighter than water
-    // it'll float forever
-    mBuoyancyBuffer.emplace_back(structuralMaterial.IsHull ? 0.0f : 1.0f);
+    mWaterVolumeFillBuffer.emplace_back(structuralMaterial.WaterVolumeFill);
+    mWaterRestitutionBuffer.emplace_back(1.0f - structuralMaterial.WaterRetention);
 
     mWaterBuffer.emplace_back(0.0f);
     mWaterVelocityBuffer.emplace_back(vec2f::zero());
@@ -93,7 +91,7 @@ void Points::CreateEphemeralParticleDebris(
     mMassBuffer[pointIndex] = structuralMaterial.Mass;
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
 
-    mBuoyancyBuffer[pointIndex] = 0.0f; // Debris is non-buoyant
+    mWaterVolumeFillBuffer[pointIndex] = 0.0f;
     mWaterBuffer[pointIndex] = 0.0f;
     assert(false == mIsLeakingBuffer[pointIndex]);
 
@@ -137,7 +135,7 @@ void Points::CreateEphemeralParticleSparkle(
     mMassBuffer[pointIndex] = structuralMaterial.Mass;
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
 
-    mBuoyancyBuffer[pointIndex] = 0.0f; // Sparkles are non-buoyant
+    mWaterVolumeFillBuffer[pointIndex] = 0.0f;
     mWaterBuffer[pointIndex] = 0.0f;
     assert(false == mIsLeakingBuffer[pointIndex]);
 

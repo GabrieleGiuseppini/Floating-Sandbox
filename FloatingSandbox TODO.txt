@@ -127,28 +127,69 @@ Render:
 		+ Add cloth material (*)
 		+ Improve light diffusion (*)
 
-		= See if can undo ShipId kung-fu now that we create a new world
+		= Test double-fix for rope/buoyancy/hull unhack and fast-falling wet rope/cloth
+			+ First of all, test with Integrate taking into account max(water, 1.0) for mass
+				+ At integrate
+				+ At spring relaxation, for spring masses
+					+ NOPE: here it hurts; wet springs really don't break at all
+				+ Check reality-ness
+					+ Problem: ship sinks very slowly
+						+ Due to: mp>>Mw: v=g*dt; mp<<Mw: v=0
+			+ Introduce volumetric fill: fraction of 1m3 that is filled by material
+				+ Also: fraction of 1m3 that may be filled with water
+				+ Also: volume of displaced water
+				+ Default: 1.0
+				+ Explicitly set to low value at:
+					+ Rope, Cloth
+					+ All Hull's (zero)
+				+ Remove Points::Buoyancy
+				+ Use volumetric fill at:
+					+ UpdatePointForces()
+					+ Integrate() (temporarily - becomes IntegrationFactor again, but re-calc'd explicitly at each step)
 
-		- Test double-fix for rope/buoyancy/hull unhack and fast-falling wet rope/cloth
-			- First of all, test with Integrate taking into account max(water, 1.0) for mass
-				- Check reality
+			+ Reintroduce water absorption
+				+ High absorption at ropes and cloth
+				+ Points buffer
+				+ Use it at UpdateWaterIntake
+
+			= Test look'n'feel
+				- Existing ships:
+					- See if might need to make materials heavier again
+				+ Rope
+					+ WaterRestitution
+					+ Fast-falling-when-wet bug
+					+ Buoyancy/sinking
+				+ Cloth
+					+ WaterRestitution
+					+ Fast-falling-when-wet bug
+					+ Buoyancy/sinking
 				- Especially:
 					- Behavior of springs when part of ship is wet
 					- Draw, Swirl on wet
 					- Explosion on wet
 					- AM Bomb on wet
+
+			- Now, optimize:
+				- Explicit step at beginning of Ship::UpdateMechanicalDynamics, which calculates:
+					- (New) IntegrationFactor
+					- Total mass for each point
+					- ...tbd...: check Integrate, UpdatePointForces
+				- Then, undo changes at Integrate()
+
+			- Cleanup TODO's at Ship (SpringForces attempt)
+			- Update materials.md with new properties
+			- Update ShipAnalyzer for correct buoyancy-adjusted mass:
+
+			- OLD:
 			- Rope/buoyancy/hull unhack:
 				- New Buoyancy property at material
 					- Optional, def=1.0
 					- Points::Add():
-						- If hull -> zero (like now) (temporary)
+						- If hull -> zero (like now)
 						- Else -> from material
 				- Rope material:
 					- Not hull anymore
 					- Low buoyancy					
-			- Fix for fast-falling wet rope/cloth:
-				- ApplyPointForces: add water to gravity only when underwater
-				- Test if OK on normal ships
 			- If OK:
 				- Materials: rope and cloth are not hull anymore
 				- Reintroduce water absorption
@@ -156,8 +197,11 @@ Render:
 				- Low buoyancy at rope and cloth
 
 		- Lower strength of double-bottom
+			- Test with submarine
 		- Make Titanic more breakable
 		- Add low/medium/high-dimmed lights (*)
+
+		- Ship loading: resize of texture must depend on actual image size (don't get huge)
 
 		- See shader compilation issue/precision
 			- https://www.khronos.org/registry/OpenGL/specs/es/2.0/GLSL_ES_Specification_1.00.pdf
@@ -637,6 +681,12 @@ Render:
 			- i.e. always end up applying one buoyancy, either water or air
 		- IEphemeralParticleEmitter implementation: SmokeEphemeralParticleEmitter
 
+	- Fire
+		- Materials have flammability
+		- TBD: how to ignite?
+		- Once ignited, it spreads
+		- Water sets fire off, of course
+		- After some time burning, a point breaks
 
 	- Switches:
 		- New electrical material type; color trick like ropes to have unique and deterministic IDs for switches

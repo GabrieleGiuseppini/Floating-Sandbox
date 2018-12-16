@@ -154,7 +154,8 @@ public:
         , mMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
         // Water dynamics
         , mIsHullBuffer(mBufferElementCount, shipPointCount, false)
-        , mBuoyancyBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mWaterVolumeFillBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mWaterRestitutionBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mWaterBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mWaterVelocityBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mWaterMomentumBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
@@ -427,9 +428,14 @@ public:
         return mIsHullBuffer[pointElementIndex];
     }
 
-    float GetBuoyancy(ElementIndex pointElementIndex) const
+    float GetWaterVolumeFill(ElementIndex pointElementIndex) const
     {
-        return mBuoyancyBuffer[pointElementIndex];
+        return mWaterVolumeFillBuffer[pointElementIndex];
+    }
+
+    float GetWaterRestitution(ElementIndex pointElementIndex) const
+    {
+        return mWaterRestitutionBuffer[pointElementIndex];
     }
 
     float * restrict GetWaterBufferAsFloat()
@@ -688,7 +694,6 @@ private:
 
     // Materials
     Buffer<Materials> mMaterialsBuffer;
-    Buffer<bool> mIsHullBuffer;
     Buffer<bool> mIsRopeBuffer;
 
     //
@@ -705,7 +710,9 @@ private:
     // Water dynamics
     //
 
-    Buffer<float> mBuoyancyBuffer;
+    Buffer<bool> mIsHullBuffer;
+    Buffer<float> mWaterVolumeFillBuffer;
+    Buffer<float> mWaterRestitutionBuffer;
 
     // Height of a 1m2 column of water which provides a pressure equivalent to the pressure at
     // this point. Quantity of water is max(water, 1.0)
