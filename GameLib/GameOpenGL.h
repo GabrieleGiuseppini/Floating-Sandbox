@@ -7,6 +7,7 @@
 
 #include "GameException.h"
 #include "ImageData.h"
+#include "Log.h"
 #include "TextureAtlas.h"
 
 #ifdef WIN32
@@ -153,38 +154,7 @@ class GameOpenGL
 {
 public:
 
-    static void InitOpenGL()
-    {
-        int status = gladLoadGL();
-        if (!status)
-        {
-            throw std::runtime_error("Failed to initialize GLAD");
-        }
-
-        //
-        // Check OpenGL version
-        //
-
-        int versionMaj = 0;
-        int versionMin = 0;
-        char const * glVersion = (char*)glGetString(GL_VERSION);
-        if (nullptr == glVersion)
-        {
-            throw GameException("OpenGL completely not supported");
-        }
-
-        sscanf(glVersion, "%d.%d", &versionMaj, &versionMin);
-        if (versionMaj < 2)
-        {
-            throw GameException("This game requires at least OpenGL 2.0 support; the version currently supported by your computer is " + std::string(glVersion));
-        }
-
-        //
-        // Get some constants
-        //
-
-        glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &MaxVertexAttributes);
-    }
+    static void InitOpenGL();
 
     static void CompileShader(
         std::string const & shaderSource,
@@ -218,7 +188,7 @@ public:
     {
         void * pointer = glMapBuffer(TTarget, access);
         if (pointer == nullptr)
-        { 
+        {
             throw GameException("Cannot map buffer");
         }
 
@@ -254,7 +224,7 @@ inline void _CheckOpenGLError(char const * file, int line)
         std::string errorCodeString;
         switch (errorCode)
         {
-            case GL_INVALID_ENUM:                  
+            case GL_INVALID_ENUM:
             {
                 errorCodeString = "INVALID_ENUM";
                 break;
@@ -289,6 +259,6 @@ inline void _CheckOpenGLError(char const * file, int line)
     }
 }
 
-#define CheckOpenGLError() _CheckOpenGLError(__FILE__, __LINE__) 
+#define CheckOpenGLError() _CheckOpenGLError(__FILE__, __LINE__)
 
 }

@@ -47,8 +47,8 @@ public:
 
     void RegisterGameEventHandler(IGameEventHandler * gameEventHandler);
 
-    void ResetAndLoadShip(std::filesystem::path const & filepath);
-    void AddShip(std::filesystem::path const & filepath);
+    void ResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath);
+    void AddShip(std::filesystem::path const & shipDefinitionFilepath);
     void ReloadLastShip();
 
     void RunGameIteration();
@@ -294,7 +294,7 @@ private:
         MaterialDatabase materialDatabase,
         std::shared_ptr<ResourceLoader> resourceLoader)
         : mGameParameters()
-        , mLastShipLoadedFilePath()
+        , mLastShipLoadedFilepath()
         , mIsPaused(false)
         , mIsMoveToolEngaged(false)
         // Doers
@@ -342,9 +342,10 @@ private:
 
     void Reset(std::unique_ptr<Physics::World> newWorld);
 
-    void AddShip(
-        std::unique_ptr<Physics::Ship> ship,
-        ShipDefinition shipDefinition);
+    void OnShipAdded(
+        ShipDefinition shipDefinition,
+        std::filesystem::path const & shipDefinitionFilepath,
+        ShipId shipId);
 
     void PublishStats(std::chrono::steady_clock::time_point nowReal);
 
@@ -355,7 +356,7 @@ private:
     //
 
     GameParameters mGameParameters;
-    std::filesystem::path mLastShipLoadedFilePath;
+    std::filesystem::path mLastShipLoadedFilepath;
     bool mIsPaused;
     bool mIsMoveToolEngaged;
 

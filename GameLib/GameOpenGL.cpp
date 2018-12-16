@@ -15,6 +15,41 @@ namespace Render {
 
 int GameOpenGL::MaxVertexAttributes = 0;
 
+void GameOpenGL::InitOpenGL()
+{
+    int status = gladLoadGL();
+    if (!status)
+    {
+        throw std::runtime_error("Failed to initialize GLAD");
+    }
+
+    //
+    // Check OpenGL version
+    //
+
+    int versionMaj = 0;
+    int versionMin = 0;
+    char const * glVersion = (char*)glGetString(GL_VERSION);
+    if (nullptr == glVersion)
+    {
+        throw GameException("Sorry, but OpenGL is completely unsupported on your computer. This game cannot play...");
+    }
+
+    LogMessage("OpenGL version: ", glVersion);
+
+    sscanf(glVersion, "%d.%d", &versionMaj, &versionMin);
+    if (versionMaj < 2)
+    {
+        throw GameException("Sorry, but this game requires at least OpenGL 2.0, while the version currently supported by your computer is " + std::string(glVersion));
+    }
+
+    //
+    // Get some constants
+    //
+
+    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &MaxVertexAttributes);
+}
+
 void GameOpenGL::CompileShader(
     std::string const & shaderSource,
     GLenum shaderType,
@@ -138,7 +173,7 @@ void GameOpenGL::UploadMipmappedTexture(ImageData baseTexture)
 
     std::unique_ptr<unsigned char const []> readBuffer(std::move(baseTexture.Data));
     std::unique_ptr<unsigned char []> writeBuffer;
-    
+
     for (GLint textureLevel = 1; ; ++textureLevel)
     {
         if (readImageSize.Width == 1 && readImageSize.Height == 1)
@@ -198,9 +233,9 @@ void GameOpenGL::UploadMipmappedTexture(ImageData baseTexture)
 
 
                     wp[wIndex + comp] = static_cast<unsigned char>(sum / count);
-                }                                   
+                }
             }
-        }        
+        }
 
         // Upload write buffer
         glTexImage2D(GL_TEXTURE_2D, textureLevel, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, writeBuffer.get());
@@ -250,7 +285,7 @@ void GameOpenGL::UploadMipmappedTexture(
     //
     // Create minified textures
     //
-    
+
     std::unique_ptr<unsigned char const[]> readBuffer(std::move(atlasData.Data));
     std::unique_ptr<unsigned char[]> writeBuffer;
 

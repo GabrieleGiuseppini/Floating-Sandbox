@@ -54,7 +54,7 @@ void GameController::RegisterGameEventHandler(IGameEventHandler * gameEventHandl
     mGameEventDispatcher->RegisterSink(gameEventHandler);
 }
 
-void GameController::ResetAndLoadShip(std::filesystem::path const & filepath)
+void GameController::ResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath)
 {
     // Create a new world
     auto newWorld = std::make_unique<Physics::World>(
@@ -63,11 +63,10 @@ void GameController::ResetAndLoadShip(std::filesystem::path const & filepath)
         *mResourceLoader);
 
     // Load ship definition
-    auto shipDefinition = mResourceLoader->LoadShipDefinition(filepath);
+    auto shipDefinition = mResourceLoader->LoadShipDefinition(shipDefinitionFilepath);
 
-    // Load ship
-    auto ship = newWorld->CreateShip(
-        1,
+    // Add ship to new world
+    ShipId shipId = newWorld->AddShip(
         shipDefinition,
         mMaterialDatabase,
         mGameParameters);
@@ -78,24 +77,19 @@ void GameController::ResetAndLoadShip(std::filesystem::path const & filepath)
 
     Reset(std::move(newWorld));
 
-    AddShip(
-        std::move(ship),
-        std::move(shipDefinition));
-
-    mLastShipLoadedFilePath = filepath;
+    OnShipAdded(
+        std::move(shipDefinition),
+        shipDefinitionFilepath,
+        shipId);
 }
 
-void GameController::AddShip(std::filesystem::path const & filepath)
+void GameController::AddShip(std::filesystem::path const & shipDefinitionFilepath)
 {
-    // Calculate new ship ID
-    ShipId shipId = static_cast<ShipId>(mWorld->GetShipCount()) + 1;
-
     // Load ship definition
-    auto shipDefinition = mResourceLoader->LoadShipDefinition(filepath);
+    auto shipDefinition = mResourceLoader->LoadShipDefinition(shipDefinitionFilepath);
 
-    // Load ship
-    auto ship = mWorld->CreateShip(
-        shipId,
+    // Load ship into current world
+    ShipId shipId = mWorld->AddShip(
         shipDefinition,
         mMaterialDatabase,
         mGameParameters);
@@ -104,11 +98,10 @@ void GameController::AddShip(std::filesystem::path const & filepath)
     // No errors, so we may continue
     //
 
-    AddShip(
-        std::move(ship),
-        std::move(shipDefinition));
-
-    mLastShipLoadedFilePath = filepath;
+    OnShipAdded(
+        std::move(shipDefinition),
+        shipDefinitionFilepath,
+        shipId);
 }
 
 void GameController::ReloadLastShip()
@@ -121,16 +114,15 @@ void GameController::ReloadLastShip()
 
     // Load ship definition
 
-    if (mLastShipLoadedFilePath.empty())
+    if (mLastShipLoadedFilepath.empty())
     {
         throw std::runtime_error("No ship has been loaded yet");
     }
 
-    auto shipDefinition = mResourceLoader->LoadShipDefinition(mLastShipLoadedFilePath);
+    auto shipDefinition = mResourceLoader->LoadShipDefinition(mLastShipLoadedFilepath);
 
-    // Load ship
-    auto ship = newWorld->CreateShip(
-        1, // We're going to reset, hence this will be the first ship
+    // Load ship into new world
+    ShipId shipId = newWorld->AddShip(
         shipDefinition,
         mMaterialDatabase,
         mGameParameters);
@@ -141,9 +133,10 @@ void GameController::ReloadLastShip()
 
     Reset(std::move(newWorld));
 
-    AddShip(
-        std::move(ship),
-        std::move(shipDefinition));
+    OnShipAdded(
+        std::move(shipDefinition),
+        mLastShipLoadedFilepath,
+        shipId);
 }
 
 void GameController::RunGameIteration()
@@ -310,8 +303,6 @@ void GameController::DestroyAt(
     float radiusMultiplier)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
-
-    LogMessage("DestroyAt: ", worldCoordinates.toString(), " * ", radiusMultiplier);
 
     // Apply action
     assert(!!mWorld);
@@ -571,15 +562,11 @@ void GameController::Reset(std::unique_ptr<Physics::World> newWorld)
     mGameEventDispatcher->OnGameReset();
 }
 
-void GameController::AddShip(
-    std::unique_ptr<Physics::Ship> ship,
-    ShipDefinition shipDefinition)
+void GameController::OnShipAdded(
+    ShipDefinition shipDefinition,
+    std::filesystem::path const & shipDefinitionFilepath,
+    ShipId shipId)
 {
-    auto shipId = ship->GetId();
-
-    // Add ship to world
-    mWorld->AddShip(std::move(ship));
-
     // Add ship to rendering engine
     mRenderContext->AddShip(
         shipId,
@@ -592,6 +579,9 @@ void GameController::AddShip(
         shipId,
         shipDefinition.Metadata.ShipName,
         shipDefinition.Metadata.Author);
+
+    // Remember last loaded ship
+    mLastShipLoadedFilepath = shipDefinitionFilepath;
 }
 
 void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)

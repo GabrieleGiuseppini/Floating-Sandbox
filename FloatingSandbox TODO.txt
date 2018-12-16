@@ -127,10 +127,16 @@ Render:
 		+ Add cloth material (*)
 		+ Improve light diffusion (*)
 
-		- See if can undo ShipId kung-fu now that we create a new world
+		= See if can undo ShipId kung-fu now that we create a new world
 
 		- Test double-fix for rope/buoyancy/hull unhack and fast-falling wet rope/cloth
-			- First of all, test with Integrate taking into account max(water, 1.0)
+			- First of all, test with Integrate taking into account max(water, 1.0) for mass
+				- Check reality
+				- Especially:
+					- Behavior of springs when part of ship is wet
+					- Draw, Swirl on wet
+					- Explosion on wet
+					- AM Bomb on wet
 			- Rope/buoyancy/hull unhack:
 				- New Buoyancy property at material
 					- Optional, def=1.0
@@ -552,8 +558,8 @@ Render:
 
 	- Add "Low-Dimmed Lights" and "Medium-"
 		- Rename other as "High-"
-		- New Electrical Property ("Luminescence") at ElectricalMaterial
-		- New property at ElectricalElements
+		- New Electrical Property of Lamp ("Luminescence") at ElectricalMaterial
+		- New Lamp property at ElectricalElements
 			- Consumed by DiffuseLight
 		- Use at Queen of Unova
 
