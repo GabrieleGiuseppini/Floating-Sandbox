@@ -153,8 +153,10 @@ Render:
 				+ Use it at UpdateWaterIntake
 
 			= Test look'n'feel
-				- Existing ships:
-					- See if might need to make materials heavier again
+				+ Test for less bouncy crashes: springs using wet mass, again
+					+ No, worse
+				- Existing ships
+					- Pay attention to crashes onto sea floor
 				+ Rope
 					+ WaterRestitution
 					+ Fast-falling-when-wet bug
@@ -163,42 +165,25 @@ Render:
 					+ WaterRestitution
 					+ Fast-falling-when-wet bug
 					+ Buoyancy/sinking
-				- Especially:
-					- Behavior of springs when part of ship is wet
-					- Draw, Swirl on wet
-					- Explosion on wet
-					- AM Bomb on wet
 
 			- Now, optimize:
 				- Explicit step at beginning of Ship::UpdateMechanicalDynamics, which calculates:
-					- (New) IntegrationFactor
-					- Total mass for each point
+					- (New) IntegrationFactor (vec2)
 					- ...tbd...: check Integrate, UpdatePointForces
 				- Then, undo changes at Integrate()
 
 			- Cleanup TODO's at Ship (SpringForces attempt)
 			- Update materials.md with new properties
-			- Update ShipAnalyzer for correct buoyancy-adjusted mass:
+			- Update ShipAnalyzer for correct buoyancy-adjusted mass
 
-			- OLD:
-			- Rope/buoyancy/hull unhack:
-				- New Buoyancy property at material
-					- Optional, def=1.0
-					- Points::Add():
-						- If hull -> zero (like now)
-						- Else -> from material
-				- Rope material:
-					- Not hull anymore
-					- Low buoyancy					
-			- If OK:
-				- Materials: rope and cloth are not hull anymore
-				- Reintroduce water absorption
-				- High absorption at ropes and cloth
-				- Low buoyancy at rope and cloth
+		- See if need to bump up again global damp
+			- Test: bomb on Titanic; splinter springs tend to dance a tad too much
 
 		- Lower strength of double-bottom
 			- Test with submarine
-		- Make Titanic more breakable
+		- Make these ships more breakable:
+			- Titanic
+			- Krafting
 		- Add low/medium/high-dimmed lights (*)
 
 		- Ship loading: resize of texture must depend on actual image size (don't get huge)
@@ -687,6 +672,10 @@ Render:
 		- Once ignited, it spreads
 		- Water sets fire off, of course
 		- After some time burning, a point breaks
+
+	- Fireworks
+		- New emitter material, much like smoke emitters
+		- Fires when wet for the first time
 
 	- Switches:
 		- New electrical material type; color trick like ropes to have unique and deterministic IDs for switches

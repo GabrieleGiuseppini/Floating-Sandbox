@@ -166,6 +166,11 @@ public:
         return nullptr;
     }
 
+    auto const & GetStructuralMaterials() const
+    {
+        return mStructuralMaterialMap;
+    }
+
     ElectricalMaterial const * FindElectricalMaterial(ColorKey const & colorKey) const
     {
         auto srchIt = mElectricalMaterialMap.find(colorKey);

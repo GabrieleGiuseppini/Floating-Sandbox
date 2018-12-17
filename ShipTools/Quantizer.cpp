@@ -19,7 +19,7 @@
 void Quantizer::Quantize(
     std::string const & inputFile,
     std::string const & outputFile,
-    std::string const & materialsFile,
+    std::string const & materialsDir,
     bool doKeepRopes,
     bool doKeepGlass,
     std::optional<std::array<uint8_t, 3u>> targetFixedColor)
@@ -59,29 +59,27 @@ void Quantizer::Quantize(
     // Create set of colors to quantize to
     //
 
-    auto materials = ResourceLoader::LoadMaterials(materialsFile);
+    auto materials = ResourceLoader::LoadMaterialDatabase(materialsDir);
 
     std::vector<std::pair<vec3f, std::array<uint8_t, 3u>>> gameColors;
 
-    for (size_t m = 0; m < materials->GetMaterialCount(); ++m)
+    for (auto const & entry : materials.GetStructuralMaterials())
     {
-        Material const & material = materials->GetMaterialAt(m);
-
-        if ( (!material.IsRope || doKeepRopes)
-            && (material.Name != "Glass" || doKeepGlass))
+        if ( (!materials.IsRopeMaterial(entry.second) || doKeepRopes)
+            && (entry.second.Name != "Glass" || doKeepGlass))
         {
             if (!targetFixedColor)
             {
                 gameColors.emplace_back(
                     std::make_pair(
-                        material.StructuralColour,
-                        material.StructuralColourRgb));
+                        Utils::RgbToVec(entry.first),
+                        entry.first));
             }
             else
             {
                 gameColors.emplace_back(
                     std::make_pair(
-                        material.StructuralColour,
+                        Utils::RgbToVec(entry.first),
                         *targetFixedColor));
             }
         }

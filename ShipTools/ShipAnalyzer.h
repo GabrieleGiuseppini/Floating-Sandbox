@@ -31,5 +31,5 @@ public:
 
     static AnalysisInfo Analyze(
         std::string const & inputFile,
-        std::string const & materialsFile);
+        std::string const & materialsDir);
 };
