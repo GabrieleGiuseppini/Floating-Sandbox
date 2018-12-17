@@ -1,31 +1,26 @@
-import re
+import json
 import sys
 
+from collections import OrderedDict
+ 
+def adjust(material):
 
-def adjust_density(factor, input_file, output_file):
-
-    print "adjust_density: {}".format(factor)
-
-    def replace_density(m):
-        density = float(m.group(1))
-        density *= factor
-        return "\"density\": " + str(density)
-
-    for line in input_file:
-        new_line = re.sub("\"density\":\s+(\d*\.\d+)", replace_density, line)
-        output_file.write(new_line)
+    pass
 
 
 def main():
     
-    if len(sys.argv) != 5 or sys.argv[1] != "density":
-        print("Usage: adjust_materials.py density <alpha> <input_json> <output_json>")
+    if len(sys.argv) != 3:
+        print("Usage: adjust_materials.py <input_json> <output_json>")
         sys.exit(-1)
 
-    alpha = float(sys.argv[2])
+    with open(sys.argv[1], "r") as in_file:
+        json_obj = json.load(in_file)
 
-    with open(sys.argv[3], "r") as inFile:
-        with open(sys.argv[4], "w") as outFile:
-            adjust_density(alpha, inFile, outFile)
+    for m in json_obj:
+        adjust_material(m)
+
+    with open(sys.argv[2], "w") as out_file:
+        out_file.write(json.dumps(json_obj, indent=4, sort_keys=True))
 
 main()
