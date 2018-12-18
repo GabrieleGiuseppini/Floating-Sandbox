@@ -325,7 +325,8 @@ ElementIndex Ship::GetNearestPointIndexAt(
 void Ship::Update(
     float currentSimulationTime,
     VisitSequenceNumber currentVisitSequenceNumber,
-    GameParameters const & gameParameters)
+    GameParameters const & gameParameters,
+    Render::RenderContext const & renderContext)
 {
     auto const currentWallClockTime = GameWallClock::GetInstance().Now();
 
@@ -351,7 +352,8 @@ void Ship::Update(
 
     UpdateMechanicalDynamics(
         currentSimulationTime,
-        gameParameters);
+        gameParameters,
+        renderContext);
 
 
     //
@@ -560,7 +562,8 @@ void Ship::Render(
 
 void Ship::UpdateMechanicalDynamics(
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    GameParameters const & gameParameters,
+    Render::RenderContext const & renderContext)
 {
     int const numMechanicalDynamicsIterations = gameParameters.NumMechanicalDynamicsIterations<int>();
 
@@ -580,6 +583,13 @@ void Ship::UpdateMechanicalDynamics(
 
         // Update springs forces
         UpdateSpringForces(gameParameters);
+
+        // Check whether we need to save the last force buffer before we zero it out
+        if (iter == numMechanicalDynamicsIterations - 1
+            && VectorFieldRenderMode::PointForce == renderContext.GetVectorFieldRenderMode())
+        {
+            mPoints.CopyForceBufferToForceRenderBuffer();
+        }
 
         // Integrate and reset forces to zero
         IntegrateAndResetPointForces(gameParameters);
@@ -1178,7 +1188,7 @@ void Ship::UpdateWaterVelocities(
         // 2) Calculate normalization factor for water flows:
         //    the quantity of water along a spring is proportional to the weight of the spring
         //    (resultant velocity along that spring), and the sum of all outbound water flows must
-        //    match the water currently at the point times the quickness fractio
+        //    match the water currently at the point times the quickness fraction
         //
 
         assert(totalOutboundWaterFlowWeight >= 0.0f);

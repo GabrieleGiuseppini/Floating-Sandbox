@@ -150,6 +150,7 @@ public:
         , mPositionBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mVelocityBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mForceBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
+        , mForceRenderBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mIntegrationFactorBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
         // Water dynamics
@@ -379,6 +380,11 @@ public:
     float * restrict GetForceBufferAsFloat()
     {
         return reinterpret_cast<float *>(mForceBuffer.data());
+    }
+
+    void CopyForceBufferToForceRenderBuffer()
+    {
+        mForceRenderBuffer.copy_from(mForceBuffer);
     }
 
     vec2f const & GetIntegrationFactor(ElementIndex pointElementIndex) const
@@ -703,6 +709,7 @@ private:
     Buffer<vec2f> mPositionBuffer;
     Buffer<vec2f> mVelocityBuffer;
     Buffer<vec2f> mForceBuffer;
+    Buffer<vec2f> mForceRenderBuffer;
     Buffer<vec2f> mIntegrationFactorBuffer;
     Buffer<float> mMassBuffer;
 

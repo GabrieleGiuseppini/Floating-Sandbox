@@ -30,6 +30,7 @@ void Points::Add(
     mPositionBuffer.emplace_back(position);
     mVelocityBuffer.emplace_back(vec2f::zero());
     mForceBuffer.emplace_back(vec2f::zero());
+    mForceRenderBuffer.emplace_back(vec2f::zero());
     mIntegrationFactorBuffer.emplace_back(
         CalculateIntegrationFactor(
             structuralMaterial.Mass,
@@ -331,6 +332,16 @@ void Points::UploadVectors(
             mPositionBuffer.data(),
             mVelocityBuffer.data(),
             0.25f,
+            VectorColor);
+    }
+    else if (renderContext.GetVectorFieldRenderMode() == VectorFieldRenderMode::PointForce)
+    {
+        renderContext.UploadShipVectors(
+            shipId,
+            mElementCount,
+            mPositionBuffer.data(),
+            mForceRenderBuffer.data(),
+            0.0005f,
             VectorColor);
     }
     else if (renderContext.GetVectorFieldRenderMode() == VectorFieldRenderMode::PointWaterVelocity)

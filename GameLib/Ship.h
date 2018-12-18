@@ -117,7 +117,8 @@ public:
     void Update(
         float currentSimulationTime,
         VisitSequenceNumber currentVisitSequenceNumber,
-        GameParameters const & gameParameters);
+        GameParameters const & gameParameters,
+        Render::RenderContext const & renderContext);
 
     void Render(
         GameParameters const & gameParameters,
@@ -133,7 +134,8 @@ public:
 
     void UpdateMechanicalDynamics(
         float currentSimulationTime,
-        GameParameters const & gameParameters);
+        GameParameters const & gameParameters,
+        Render::RenderContext const & renderContext);
 
     void UpdatePointForces(GameParameters const & gameParameters);
 

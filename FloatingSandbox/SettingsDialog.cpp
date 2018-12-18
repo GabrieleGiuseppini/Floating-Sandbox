@@ -427,22 +427,38 @@ void SettingsDialog::ApplySettings()
     }
 
     auto selectedVectorFieldRenderMode = mVectorFieldRenderModeRadioBox->GetSelection();
-    if (0 == selectedVectorFieldRenderMode)
+    switch (selectedVectorFieldRenderMode)
     {
-        mGameController->SetVectorFieldRenderMode(VectorFieldRenderMode::None);
-    }
-    else if (1 == selectedVectorFieldRenderMode)
-    {
-        mGameController->SetVectorFieldRenderMode(VectorFieldRenderMode::PointVelocity);
-    }
-    else if (2 == selectedVectorFieldRenderMode)
-    {
-        mGameController->SetVectorFieldRenderMode(VectorFieldRenderMode::PointWaterVelocity);
-    }
-    else
-    {
-        assert(3 == selectedVectorFieldRenderMode);
-        mGameController->SetVectorFieldRenderMode(VectorFieldRenderMode::PointWaterMomentum);
+        case 0:
+        {
+            mGameController->SetVectorFieldRenderMode(VectorFieldRenderMode::None);
+            break;
+        }
+
+        case 1:
+        {
+            mGameController->SetVectorFieldRenderMode(VectorFieldRenderMode::PointVelocity);
+            break;
+        }
+
+        case 2:
+        {
+            mGameController->SetVectorFieldRenderMode(VectorFieldRenderMode::PointForce);
+            break;
+        }
+
+        case 3:
+        {
+            mGameController->SetVectorFieldRenderMode(VectorFieldRenderMode::PointWaterVelocity);
+            break;
+        }
+
+        default:
+        {
+            assert(4 == selectedVectorFieldRenderMode);
+            mGameController->SetVectorFieldRenderMode(VectorFieldRenderMode::PointWaterMomentum);
+            break;
+        }
     }
 
     mGameController->SetShowShipStress(mShowStressCheckBox->IsChecked());
@@ -1037,6 +1053,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
     {
         _("None"),
         _("Point Velocities"),
+        _("Point Forces"),
         _("Point Water Velocities"),
         _("Point Water Momenta")
     };
@@ -1272,15 +1289,22 @@ void SettingsDialog::ReadSettings()
             break;
         }
 
-        case VectorFieldRenderMode::PointWaterVelocity:
+        case VectorFieldRenderMode::PointForce:
         {
             mVectorFieldRenderModeRadioBox->SetSelection(2);
             break;
         }
 
-        case VectorFieldRenderMode::PointWaterMomentum:
+        case VectorFieldRenderMode::PointWaterVelocity:
         {
             mVectorFieldRenderModeRadioBox->SetSelection(3);
+            break;
+        }
+
+        default:
+        {
+            assert(vectorFieldRenderMode == VectorFieldRenderMode::PointWaterMomentum);
+            mVectorFieldRenderModeRadioBox->SetSelection(4);
             break;
         }
     }
