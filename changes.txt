@@ -1,6 +1,7 @@
 1.8.0
 - Added ability to specify ships' characteristics with multiple layers (structural, electrical, ropes)
 	- Electrical properties can now be specified on top of any material - no more weak electrical cables!
+- Redesigned entire buoyancy simulation
 - Added cloth material
 - Improved light diffusion
 - Fixed bug when mouse moves out of the game window while a tool is engaged

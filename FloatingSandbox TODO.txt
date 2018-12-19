@@ -126,63 +126,9 @@ Render:
 		+ Focus kill/tools issue
 		+ Add cloth material (*)
 		+ Improve light diffusion (*)
+		+ Buoyancy rearc (*)
 
-		= Test double-fix for rope/buoyancy/hull unhack and fast-falling wet rope/cloth
-			+ First of all, test with Integrate taking into account max(water, 1.0) for mass
-				+ At integrate
-				+ At spring relaxation, for spring masses
-					+ NOPE: here it hurts; wet springs really don't break at all
-				+ Check reality-ness
-					+ Problem: ship sinks very slowly
-						+ Due to: mp>>Mw: v=g*dt; mp<<Mw: v=0
-			+ Introduce volumetric fill: fraction of 1m3 that is filled by material
-				+ Also: fraction of 1m3 that may be filled with water
-				+ Also: volume of displaced water
-				+ Default: 1.0
-				+ Explicitly set to low value at:
-					+ Rope, Cloth
-					+ All Hull's (zero)
-				+ Remove Points::Buoyancy
-				+ Use volumetric fill at:
-					+ UpdatePointForces()
-					+ Integrate() (temporarily - becomes IntegrationFactor again, but re-calc'd explicitly at each step)
-
-			+ Reintroduce water absorption
-				+ High absorption at ropes and cloth
-				+ Points buffer
-				+ Use it at UpdateWaterIntake
-
-			+ Test look'n'feel
-				+ Test for less bouncy crashes: springs using wet mass, again
-					+ No, worse
-				+ Existing ships
-					+ Pay attention to crashes onto sea floor
-				+ Rope
-					+ WaterRestitution
-					+ Fast-falling-when-wet bug
-					+ Buoyancy/sinking
-				+ Cloth
-					+ WaterRestitution
-					+ Fast-falling-when-wet bug
-					+ Buoyancy/sinking
-
-			+ Now, optimize:
-				+ Points::UpdateTotalMass(): calculates:
-					+ (New) IntegrationFactor (vec2)
-					+ TotalMass (for UpdatePointForces())
-				+ Invoke at Ship::UpdateMechanicalDynamics before all
-				+ Then, undo changes at Integrate()
-				+ Then, use new quantities at UpdatePointForces()
-				+ Test:
-					+ Changes to Simulation Quality are picked up
-					+ Bombs' extra mass
-
-			- Cleanup TODO's at Ship (SpringForces attempt)
-			+ Points::UploadForceBuffer: decide length
-			+ Update materials.md docs with new properties, including water
-			+ Update ShipAnalyzer for correct buoyancy-adjusted mass
-
-		= Crazy ropes:
+		+ Crazy ropes:
 			+ Don't touch water retention
 			+ Add new "water diffusion speed" - value=0.5
 				+ Materials system
@@ -197,7 +143,7 @@ Render:
 				+ Flags/Cloth
 					+ Also with move
 				+ Settings Dialog
-				- Perf (after optimization above)
+				+ Perf (after optimization above)
 
 		- Light:
 			- Add low/medium/high-dimmed lights (*)
@@ -612,12 +558,61 @@ Render:
 
 - Dynamics:
 
-	- TODO: resee this one with unhackX2
-	+ Add water absorption to structural material
-		+ Default is the constant we use @ UpdateWaterInflow()
-		+ Used @ UpdateWaterInflow() to decide outgoing water
-		+ Make rope material high assorption and not hull
-		+ Test that it floats a bit then sinks: NO! Can't take enough water
+	+ Buoyancy rearc
+		+ Double-fix for rope/buoyancy/hull unhack and fast-falling wet rope/cloth
+		+ First of all, test with Integrate taking into account max(water, 1.0) for mass
+			+ At integrate
+			+ At spring relaxation, for spring masses
+				+ NOPE: here it hurts; wet springs really don't break at all
+			+ Check reality-ness
+				+ Problem: ship sinks very slowly
+					+ Due to: mp>>Mw: v=g*dt; mp<<Mw: v=0
+		+ Introduce volumetric fill: fraction of 1m3 that is filled by material
+			+ Also: fraction of 1m3 that may be filled with water
+			+ Also: volume of displaced water
+			+ Default: 1.0
+			+ Explicitly set to low value at:
+				+ Rope, Cloth
+				+ All Hull's (zero)
+			+ Remove Points::Buoyancy
+			+ Use volumetric fill at:
+				+ UpdatePointForces()
+				+ Integrate() (temporarily - becomes IntegrationFactor again, but re-calc'd explicitly at each step)
+
+		+ Reintroduce water absorption
+			+ High absorption at ropes and cloth
+			+ Points buffer
+			+ Use it at UpdateWaterIntake
+
+		+ Test look'n'feel
+			+ Test for less bouncy crashes: springs using wet mass, again
+				+ No, worse
+			+ Existing ships
+				+ Pay attention to crashes onto sea floor
+			+ Rope
+				+ WaterRestitution
+				+ Fast-falling-when-wet bug
+				+ Buoyancy/sinking
+			+ Cloth
+				+ WaterRestitution
+				+ Fast-falling-when-wet bug
+				+ Buoyancy/sinking
+
+		+ Now, optimize:
+			+ Points::UpdateTotalMass(): calculates:
+				+ (New) IntegrationFactor (vec2)
+				+ TotalMass (for UpdatePointForces())
+			+ Invoke at Ship::UpdateMechanicalDynamics before all
+			+ Then, undo changes at Integrate()
+			+ Then, use new quantities at UpdatePointForces()
+			+ Test:
+				+ Changes to Simulation Quality are picked up
+				+ Bombs' extra mass
+
+		+ Cleanup TODO's at Ship (SpringForces attempt)
+		+ Points::UploadForceBuffer: decide length
+		+ Update materials.md docs with new properties, including water
+		+ Update ShipAnalyzer for correct buoyancy-adjusted mass
 
 	+ Improve light diffusion
 		+ Use real distance
