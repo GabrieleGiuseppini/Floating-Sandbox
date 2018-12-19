@@ -1,0 +1,7 @@
+{
+	"structure_image":"roma_structure.png.dat",
+	"texture_image":"roma_texture.png.dat",
+	"ship_name":"Roma",
+	"offset":{"x":0.0, "y":-12.0},
+	"created_by":"Wreno"
+}
