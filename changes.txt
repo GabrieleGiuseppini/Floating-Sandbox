@@ -3,7 +3,7 @@
 	- Electrical properties can now be specified on top of any material - no more weak electrical cables!
 - Redesigned entire buoyancy simulation
 - Added cloth material
-- Improved light diffusion
+- Improved light diffusion and added more light types
 - Fixed bug when mouse moves out of the game window while a tool is engaged
 
 1.7.5
