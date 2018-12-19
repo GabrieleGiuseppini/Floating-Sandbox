@@ -27,10 +27,14 @@ struct GameParameters
     template <typename T>
     inline T MechanicalSimulationStepTimeDuration() const
     {
-        return SimulationStepTimeDuration<T>
-            / NumMechanicalDynamicsIterations<T>();
+        return MechanicalSimulationStepTimeDuration(NumMechanicalDynamicsIterations<T>());
     }
 
+    template <typename T>
+    static inline T MechanicalSimulationStepTimeDuration(T numMechanicalDynamicsIterations)
+    {
+        return SimulationStepTimeDuration<T> / numMechanicalDynamicsIterations;
+    }
 
     //
     // Physical Constants

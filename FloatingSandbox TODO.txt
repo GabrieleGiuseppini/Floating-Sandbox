@@ -152,11 +152,11 @@ Render:
 				+ Points buffer
 				+ Use it at UpdateWaterIntake
 
-			= Test look'n'feel
+			+ Test look'n'feel
 				+ Test for less bouncy crashes: springs using wet mass, again
 					+ No, worse
-				- Existing ships
-					- Pay attention to crashes onto sea floor
+				+ Existing ships
+					+ Pay attention to crashes onto sea floor
 				+ Rope
 					+ WaterRestitution
 					+ Fast-falling-when-wet bug
@@ -166,25 +166,64 @@ Render:
 					+ Fast-falling-when-wet bug
 					+ Buoyancy/sinking
 
-			- Now, optimize:
-				- Explicit step at beginning of Ship::UpdateMechanicalDynamics, which calculates:
-					- (New) IntegrationFactor (vec2)
-					- ...tbd...: check Integrate, UpdatePointForces
-				- Then, undo changes at Integrate()
+			+ Now, optimize:
+				+ Points::UpdateTotalMass(): calculates:
+					+ (New) IntegrationFactor (vec2)
+					+ TotalMass (for UpdatePointForces())
+				+ Invoke at Ship::UpdateMechanicalDynamics before all
+				+ Then, undo changes at Integrate()
+				+ Then, use new quantities at UpdatePointForces()
+				+ Test:
+					+ Changes to Simulation Quality are picked up
+					+ Bombs' extra mass
 
 			- Cleanup TODO's at Ship (SpringForces attempt)
-			- Update materials.md with new properties
-			- Update ShipAnalyzer for correct buoyancy-adjusted mass
+			+ Points::UploadForceBuffer: decide length
+			+ Update materials.md docs with new properties, including water
+			+ Update ShipAnalyzer for correct buoyancy-adjusted mass
+
+		= Crazy ropes:
+			+ Don't touch water retention
+			+ Add new "water diffusion speed" - value=0.5
+				+ Materials system
+				+ Points buffer
+				+ Use at UpdateWaterVelocities
+				+ Rope: 0.015
+
+			+ Make water quickness a "water quickness adjust", between 0.0 and 2.0, default = 1.0
+				+ Also @ setting dialog
+			+ Test:
+				+ Ropes @ ATest
+				+ Flags/Cloth
+					+ Also with move
+				+ Settings Dialog
+				- Perf (after optimization above)
+
+		- Light:
+			- Add low/medium/high-dimmed lights (*)
+			- Add Portholes, with own formula
+				- Try different exponent instead - "aperture" param
+					- See perf with full formula and with approx
+				- If not, different electrical element type, and different list visited at runtime
+
+		+ See if cloths should be lighter - to not break ropes
 
 		- See if need to bump up again global damp
 			- Test: bomb on Titanic; splinter springs tend to dance a tad too much
 
+		- Bubbles (*)
+
 		- Lower strength of double-bottom
 			- Test with submarine
+			- Redo Submarine - thicker to avoid bending
+
+		- Add Roma
+
 		- Make these ships more breakable:
 			- Titanic
 			- Krafting
-		- Add low/medium/high-dimmed lights (*)
+
+		- Move all guides to own folder "Docs"
 
 		- Ship loading: resize of texture must depend on actual image size (don't get huge)
 
@@ -205,7 +244,6 @@ Render:
 			- Pumps (*)
 			- Propulsion (*)
 			- Batisphere
-		- Bubbles (*)
 		- Smoke (*)
 
 		- Complete "How to Build a Ship" guide
@@ -833,12 +871,13 @@ Render:
 	-Do water bubbles (at intake) and water drops (at outtake)
 		- Ephemeral particles emitted at UpdateWaterIntake()
 			- Intake:
-				- Material ("Air") with zero weight so rises up automagically
-					- Hardcoded material added by MaterialDB from in-code list
-			- Outtake:
+				- Material ("Air") with (ver low) air weight so rises up automagically
+					- Hardcoded material added by MaterialDB from in-code list - WHY?
+				- Size is logarithmic with amount of water taken
+			- Outtake: (TODO: test, but might look bad)
 				- Only emit if Y above water line
 				- Material is water
-					- Hardcoded material added by MaterialDB from in-code list
+					- Hardcoded material added by MaterialDB from in-code list - WHY?
 	- OLD: Optimizations:
 		- GravitateWater:
 			- Calculate once and for all cos theta's at first iteration

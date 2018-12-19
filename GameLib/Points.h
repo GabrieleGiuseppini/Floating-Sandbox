@@ -150,9 +150,11 @@ public:
         , mPositionBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mVelocityBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mForceBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
-        , mForceRenderBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
-        , mIntegrationFactorBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
+        , mIntegrationFactorTimeCoefficientBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mTotalMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
+        , mIntegrationFactorBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
+        , mForceRenderBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         // Water dynamics
         , mIsHullBuffer(mBufferElementCount, shipPointCount, false)
         , mWaterVolumeFillBuffer(mBufferElementCount, shipPointCount, 0.0f)
@@ -388,16 +390,6 @@ public:
         mForceRenderBuffer.copy_from(mForceBuffer);
     }
 
-    vec2f const & GetIntegrationFactor(ElementIndex pointElementIndex) const
-    {
-        return mIntegrationFactorBuffer[pointElementIndex];
-    }
-
-    float * restrict GetIntegrationFactorBufferAsFloat()
-    {
-        return reinterpret_cast<float *>(mIntegrationFactorBuffer.data());
-    }
-
     float GetMass(ElementIndex pointElementIndex) const
     {
         return mMassBuffer[pointElementIndex];
@@ -408,22 +400,46 @@ public:
         float offset,
         Springs & springs);
 
+    /*
+     * Return's the total mass of the point, which equals the point's material's mass with
+     * all modifiers (offsets, water, etc.).
+     *
+     * Only valid after a call to UpdateTotalMasses() and when
+     * neither water quantities nor masses have changed since then.
+     */
+    float GetTotalMass(ElementIndex pointElementIndex)
+    {
+        return mTotalMassBuffer[pointElementIndex];
+    }
+
+    /*
+     * The integration factor is the quantity which, when multiplied with the force on the point,
+     * yields the change in position that occurs during a time interval equal to the dynamics simulation step.
+     *
+     * Only valid after a call to UpdateTotalMasses() and when
+     * neither water quantities nor masses have changed since then.
+     */
+    float * restrict GetIntegrationFactorBufferAsFloat()
+    {
+        return reinterpret_cast<float *>(mIntegrationFactorBuffer.data());
+    }
+
+    void UpdateTotalMasses(GameParameters const & gameParameters);
+
     // Changes the point's dynamics so that it freezes in place
     // and becomes oblivious to forces
     void Freeze(ElementIndex pointElementIndex)
     {
-        // Zero-out integration factor and velocity, freezing point
-        mIntegrationFactorBuffer[pointElementIndex] = vec2f(0.0f, 0.0f);
+        // Zero-out integration factor time coefficient and velocity, freezing point
+        mIntegrationFactorTimeCoefficientBuffer[pointElementIndex] = 0.0f;
         mVelocityBuffer[pointElementIndex] = vec2f(0.0f, 0.0f);
     }
 
     // Changes the point's dynamics so that the point reacts again to forces
     void Thaw(ElementIndex pointElementIndex)
     {
-        // Re-populate its integration factor, thawing point
-        mIntegrationFactorBuffer[pointElementIndex] = CalculateIntegrationFactor(
-            mMassBuffer[pointElementIndex],
-            mCurrentNumMechanicalDynamicsIterations);
+        // Re-populate its integration factor time coefficient, thawing point
+        mIntegrationFactorTimeCoefficientBuffer[pointElementIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations);
     }
 
     //
@@ -689,9 +705,11 @@ public:
 
 private:
 
-    static vec2f CalculateIntegrationFactor(
-        float mass,
-        float numMechanicalDynamicsIterations);
+    static float CalculateIntegrationFactorTimeCoefficient(float numMechanicalDynamicsIterations)
+    {
+        return GameParameters::MechanicalSimulationStepTimeDuration<float>(numMechanicalDynamicsIterations)
+            * GameParameters::MechanicalSimulationStepTimeDuration<float>(numMechanicalDynamicsIterations);
+    }
 
     ElementIndex FindFreeEphemeralParticle(float currentSimulationTime);
 
@@ -715,9 +733,13 @@ private:
     Buffer<vec2f> mPositionBuffer;
     Buffer<vec2f> mVelocityBuffer;
     Buffer<vec2f> mForceBuffer;
-    Buffer<vec2f> mForceRenderBuffer;
-    Buffer<vec2f> mIntegrationFactorBuffer;
     Buffer<float> mMassBuffer;
+    Buffer<float> mIntegrationFactorTimeCoefficientBuffer; // dt^2 or zero when the point is frozen
+
+    // Calculated values
+    Buffer<float> mTotalMassBuffer;
+    Buffer<vec2f> mIntegrationFactorBuffer;
+    Buffer<vec2f> mForceRenderBuffer;
 
     //
     // Water dynamics
