@@ -24,6 +24,7 @@ set (UNIT_TEST_SOURCES
 	EnumFlagsTests.cpp
 	FixedSizeVectorTests.cpp
 	GameEventDispatcherTests.cpp
+	GameMathTests.cpp
 	LibSimdPpTests.cpp
 	SegmentTests.cpp
 	ShaderManagerTests.cpp

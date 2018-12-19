@@ -6,10 +6,10 @@ class _MockHandler : public IGameEventHandler
 {
 public:
 
-    MOCK_METHOD3(OnDestroy, void(Material const * material, bool isUnderwater, unsigned int size));
-    MOCK_METHOD3(OnBreak, void(Material const * material, bool isUnderwater, unsigned int size));
+    MOCK_METHOD3(OnDestroy, void(StructuralMaterial const & material, bool isUnderwater, unsigned int size));
+    MOCK_METHOD3(OnBreak, void(StructuralMaterial const & material, bool isUnderwater, unsigned int size));
     MOCK_METHOD2(OnPinToggled, void(bool isPinned, bool isUnderwater));
-    MOCK_METHOD3(OnStress, void(Material const * material, bool isUnderwater, unsigned int size));
+    MOCK_METHOD3(OnStress, void(StructuralMaterial const & material, bool isUnderwater, unsigned int size));
     MOCK_METHOD1(OnSinkingBegin, void(ShipId shipId));
 };
 
@@ -26,7 +26,7 @@ TEST(GameEventDispatcherTests, Aggregates_OnDestroy)
     GameEventDispatcher dispatcher;
     dispatcher.RegisterSink(&handler);
 
-    Material * pm1 = reinterpret_cast<Material *>(7);
+    StructuralMaterial const & pm1 = *(reinterpret_cast<StructuralMaterial *>(7));
 
     EXPECT_CALL(handler, OnDestroy(_, _, _)).Times(0);
 
@@ -35,7 +35,7 @@ TEST(GameEventDispatcherTests, Aggregates_OnDestroy)
 
     Mock::VerifyAndClear(&handler);
 
-    EXPECT_CALL(handler, OnDestroy(pm1, true, 5)).Times(1);
+    EXPECT_CALL(handler, OnDestroy(_, true, 5)).Times(1);
 
     dispatcher.Flush();
 
@@ -49,78 +49,24 @@ TEST(GameEventDispatcherTests, Aggregates_OnDestroy_MultipleKeys)
     GameEventDispatcher dispatcher;
     dispatcher.RegisterSink(&handler);
 
-    Material * pm1 = reinterpret_cast<Material *>(7);
-    Material * pm2 = reinterpret_cast<Material *>(21);
+    StructuralMaterial * pm1 = reinterpret_cast<StructuralMaterial *>(7);
+    StructuralMaterial * pm2 = reinterpret_cast<StructuralMaterial *>(21);
 
     EXPECT_CALL(handler, OnDestroy(_, _, _)).Times(0);
 
-    dispatcher.OnDestroy(pm2, false, 1);
-    dispatcher.OnDestroy(pm1, false, 3);
-    dispatcher.OnDestroy(pm2, false, 2);
-    dispatcher.OnDestroy(pm1, false, 9);
-    dispatcher.OnDestroy(pm1, false, 1);
-    dispatcher.OnDestroy(pm2, true, 2);
-    dispatcher.OnDestroy(pm2, true, 2);
+    dispatcher.OnDestroy(*pm2, false, 1);
+    dispatcher.OnDestroy(*pm1, false, 3);
+    dispatcher.OnDestroy(*pm2, false, 2);
+    dispatcher.OnDestroy(*pm1, false, 9);
+    dispatcher.OnDestroy(*pm1, false, 1);
+    dispatcher.OnDestroy(*pm2, true, 2);
+    dispatcher.OnDestroy(*pm2, true, 2);
 
     Mock::VerifyAndClear(&handler);
 
-    EXPECT_CALL(handler, OnDestroy(pm1, false, 13)).Times(1);
-    EXPECT_CALL(handler, OnDestroy(pm2, false, 3)).Times(1);
-    EXPECT_CALL(handler, OnDestroy(pm2, true, 4)).Times(1);
-
-    dispatcher.Flush();
-
-    Mock::VerifyAndClear(&handler);
-}
-
-TEST(GameEventDispatcherTests, Aggregates_OnBreak)
-{
-    MockHandler handler;
-
-    GameEventDispatcher dispatcher;
-    dispatcher.RegisterSink(&handler);
-
-    Material * pm1 = reinterpret_cast<Material *>(7);
-
-    EXPECT_CALL(handler, OnBreak(_, _, _)).Times(0);
-
-    dispatcher.OnBreak(pm1, false, 3);
-    dispatcher.OnBreak(pm1, false, 2);
-
-    Mock::VerifyAndClear(&handler);
-
-    EXPECT_CALL(handler, OnBreak(pm1, false, 5)).Times(1);
-
-    dispatcher.Flush();
-
-    Mock::VerifyAndClear(&handler);
-}
-
-TEST(GameEventDispatcherTests, Aggregates_OnBreak_MultipleKeys)
-{
-    MockHandler handler;
-
-    GameEventDispatcher dispatcher;
-    dispatcher.RegisterSink(&handler);
-
-    Material * pm1 = reinterpret_cast<Material *>(7);
-    Material * pm2 = reinterpret_cast<Material *>(21);
-
-    EXPECT_CALL(handler, OnBreak(_, _, _)).Times(0);
-
-    dispatcher.OnBreak(pm2, false, 1);
-    dispatcher.OnBreak(pm1, false, 3);
-    dispatcher.OnBreak(pm2, false, 2);
-    dispatcher.OnBreak(pm2, true, 2);
-    dispatcher.OnBreak(pm1, false, 9);
-    dispatcher.OnBreak(pm1, false, 1);
-    dispatcher.OnBreak(pm2, true, 2);
-
-    Mock::VerifyAndClear(&handler);
-
-    EXPECT_CALL(handler, OnBreak(pm1, false, 13)).Times(1);
-    EXPECT_CALL(handler, OnBreak(pm2, false, 3)).Times(1);
-    EXPECT_CALL(handler, OnBreak(pm2, true, 4)).Times(1);
+    EXPECT_CALL(handler, OnDestroy(_, false, 13)).Times(1);
+    EXPECT_CALL(handler, OnDestroy(_, false, 3)).Times(1);
+    EXPECT_CALL(handler, OnDestroy(_, true, 4)).Times(1);
 
     dispatcher.Flush();
 
@@ -223,16 +169,16 @@ TEST(GameEventDispatcherTests, ClearsStateAtUpdate)
     GameEventDispatcher dispatcher;
     dispatcher.RegisterSink(&handler);
 
-    Material * pm1 = reinterpret_cast<Material *>(7);
+    StructuralMaterial * pm1 = reinterpret_cast<StructuralMaterial *>(7);
 
     EXPECT_CALL(handler, OnDestroy(_, _, _)).Times(0);
 
-    dispatcher.OnDestroy(pm1, false, 3);
-    dispatcher.OnDestroy(pm1, false, 2);
+    dispatcher.OnDestroy(*pm1, false, 3);
+    dispatcher.OnDestroy(*pm1, false, 2);
 
     Mock::VerifyAndClear(&handler);
 
-    EXPECT_CALL(handler, OnDestroy(pm1, false, 5)).Times(1);
+    EXPECT_CALL(handler, OnDestroy(_, false, 5)).Times(1);
 
     dispatcher.Flush();
 

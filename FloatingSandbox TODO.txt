@@ -2,6 +2,22 @@
 Current perf:
 =================================================
 - fps: 30.8/31.0/31.3
+
+Before exp optimization:
+- fps: 30.8/31.0/31.3
+- World::Update: 58.48%
+		- UpdateMechanicalDynamics: 48.44%
+			- UpdateSpringForces: 38.25%
+			- UpdatePointForces: 4.47%
+			- HandleCollisionsWithSeafFloor: 3.43%
+			- IntegrateAndResetPointForces: 2.10%
+			- UpdateTotalMasses: 0.19%
+		- UpdateWaterDynamics: 7.79%
+			- UpdateWaterVelocities: 7.64%
+		- DiffuseLight: 1.31%
+- World::Render: 28.15%
+	- RenderContext::RenderCloudsEnd: 3.98%
+
 Before diffusion improvement:
 - fps: 31.5/31.7
 
@@ -145,6 +161,12 @@ Render:
 				+ Settings Dialog
 				+ Perf (after optimization above)
 
+		+ See if need to bump up again global damp
+			+ Test: bomb on Titanic; splinter springs tend to dance a tad too much
+		
+		+ Add Roma
+			- .dat renames
+
 		- Light:
 			- Add low/medium/high-dimmed lights (*)
 			- Add Portholes, with own formula
@@ -154,16 +176,11 @@ Render:
 
 		+ See if cloths should be lighter - to not break ropes
 
-		- See if need to bump up again global damp
-			- Test: bomb on Titanic; splinter springs tend to dance a tad too much
-
 		- Bubbles (*)
 
 		- Lower strength of double-bottom
 			- Test with submarine
 			- Redo Submarine - thicker to avoid bending
-
-		- Add Roma
 
 		- Make these ships more breakable:
 			- Titanic
