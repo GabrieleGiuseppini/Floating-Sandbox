@@ -82,15 +82,21 @@ ElectricalMaterial ElectricalMaterial::Create(picojson::object const & electrica
 
         // Lamps properties
         bool isSelfPowered = false;
+        float luminiscence = 0.0f;
+        float lightSpread = 0.0f;
         if (ElectricalElementType::Lamp == electricalType)
         {
             isSelfPowered = Utils::GetMandatoryJsonMember<bool>(electricalMaterialJson, "is_self_powered");
+            luminiscence = static_cast<float>(Utils::GetMandatoryJsonMember<double>(electricalMaterialJson, "luminiscence"));
+            lightSpread = static_cast<float>(Utils::GetMandatoryJsonMember<double>(electricalMaterialJson, "light_spread"));
         }
 
         return ElectricalMaterial(
             name,
             electricalType,
-            isSelfPowered);
+            isSelfPowered,
+            luminiscence,
+            lightSpread);
     }
     catch (GameException const & ex)
     {

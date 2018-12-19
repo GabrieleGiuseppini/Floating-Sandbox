@@ -1,38 +1,102 @@
 [
     {
-        "name": "Self-Powered Lamp",	
+        "name": "High Lamp",	
 	"template": {
 		"row": "0|Lamps",
-		"column": "0|Self-Powered Lamp"
-	},
-        "color_key": "#FFFF00",
-	"electrical_type": "Lamp",
-	"is_self_powered": true
-    },
-    {
-        "name": "Lamp",	
-	"template": {
-		"row": "0|Lamps",
-		"column": "1|Lamp"
+		"column": "0|High Lamp"
 	},
         "color_key": "#FFE010",
 	"electrical_type": "Lamp",
-	"is_self_powered": false
+	"is_self_powered": false,
+	"luminiscence": 2.0,
+	"light_spread": 1.0
     },
+
+    {
+        "name": "Low Lamp",	
+	"template": {
+		"row": "0|Lamps",
+		"column": "1|Low Lamp"
+	},
+        "color_key": "#DFE010",
+	"electrical_type": "Lamp",
+	"is_self_powered": false,
+	"luminiscence": 1.0,
+	"light_spread": 1.0
+    },
+
+    {
+        "name": "Porthole",	
+	"template": {
+		"row": "0|Lamps",
+		"column": "2|Porthole"
+	},
+        "color_key": "#EFE010",
+	"electrical_type": "Lamp",
+	"is_self_powered": false,
+	"luminiscence": 0.5,
+	"light_spread": 5.0
+    },
+
+
+
+
+    {
+        "name": "Self-Powered High Lamp",	
+	"template": {
+		"row": "1|Self-Powered Lamps",
+		"column": "0|High Lamp"
+	},
+        "color_key": "#FFFF00",
+	"electrical_type": "Lamp",
+	"is_self_powered": true,
+	"luminiscence": 2.0,
+	"light_spread": 1.0
+    },
+    {
+        "name": "Self-Powered Low Lamp",	
+	"template": {
+		"row": "1|Self-Powered Lamps",
+		"column": "1|Low Lamp"
+	},
+        "color_key": "#DFFF00",
+	"electrical_type": "Lamp",
+	"is_self_powered": true,
+	"luminiscence": 1.0,
+	"light_spread": 1.0
+    },
+    {
+        "name": "Self-Powered Porthole",	
+	"template": {
+		"row": "1|Self-Powered Lamps",
+		"column": "2|Porthole"
+	},
+        "color_key": "#EFFF00",
+	"electrical_type": "Lamp",
+	"is_self_powered": true,
+	"luminiscence": 0.5,
+	"light_spread": 5.0
+    },
+
+
+
+
     {
         "name": "Generator",	
 	"template": {
-		"row": "1|Generators",
+		"row": "5|Generators",
 		"column": "0|Generator"
 	},
         "color_key": "#FC0808",
 	"electrical_type": "Generator"
     },
+
+
     {
         "name": "Electrical Cable Hull",
 	"description": "This material is here exclusively to ease development of one-layer ships; the proper way to make hull electrical structures is to provide electrical properties in the electrical layer corresponding to hull points in the structural layer.",
 	"template": {
-		"row": "2|Cables",
+		"row": "6|Cables",
 		"column": "0|Cable Hull"
 	},
         "color_key": "#4C0000",
@@ -41,7 +105,7 @@
     {
         "name": "Electrical Cable",	
 	"template": {
-		"row": "2|Cables",
+		"row": "6|Cables",
 		"column": "1|Cable"
 	},
         "color_key": "#700000",

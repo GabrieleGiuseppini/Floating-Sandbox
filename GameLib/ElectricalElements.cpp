@@ -11,16 +11,17 @@ namespace Physics {
 
 void ElectricalElements::Add(
     ElementIndex pointElementIndex,
-    ElectricalMaterial::ElectricalElementType type,
-    bool isSelfPowered)
+    ElectricalMaterial const & electricalMaterial)
 {
     mIsDeletedBuffer.emplace_back(false);
     mPointIndexBuffer.emplace_back(pointElementIndex);
-    mTypeBuffer.emplace_back(type);
+    mTypeBuffer.emplace_back(electricalMaterial.ElectricalType);
+    mLuminiscenceBuffer.emplace_back(electricalMaterial.Luminiscence);
+    mLightSpreadBuffer.emplace_back(electricalMaterial.LightSpread);
     mConnectedElectricalElementsBuffer.emplace_back();
     mAvailableCurrentBuffer.emplace_back(0.f);
 
-    switch (type)
+    switch (electricalMaterial.ElectricalType)
     {
         case ElectricalMaterial::ElectricalElementType::Cable:
         {
@@ -38,7 +39,7 @@ void ElectricalElements::Add(
         case ElectricalMaterial::ElectricalElementType::Lamp:
         {
             mLamps.emplace_back(static_cast<ElementIndex>(mElementStateBuffer.GetCurrentPopulatedSize()));
-            mElementStateBuffer.emplace_back(ElementState::LampState(isSelfPowered));
+            mElementStateBuffer.emplace_back(ElementState::LampState(electricalMaterial.IsSelfPowered));
             break;
         }
     }

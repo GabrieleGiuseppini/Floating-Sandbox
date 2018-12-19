@@ -66,7 +66,7 @@ private:
     std::unique_ptr<SliderControl> mWaterDragSlider;
     std::unique_ptr<SliderControl> mWaterIntakeSlider;
     std::unique_ptr<SliderControl> mWaterCrazynessSlider;
-    std::unique_ptr<SliderControl> mWaterDiffusionSpeedAdjustmentSlider;
+    std::unique_ptr<SliderControl> mWaterDiffusionSpeedSlider;
     std::unique_ptr<SliderControl> mWaterLevelOfDetailSlider;
 
     // Sky
@@ -79,7 +79,8 @@ private:
     std::unique_ptr<SliderControl> mSeaDepthSlider;
     std::unique_ptr<SliderControl> mOceanFloorBumpinessSlider;
     std::unique_ptr<SliderControl> mOceanFloorDetailAmplificationSlider;
-    std::unique_ptr<SliderControl> mLightDiffusionSlider;
+    std::unique_ptr<SliderControl> mLuminiscenceSlider;
+    std::unique_ptr<SliderControl> mLightSpreadSlider;
 
     // Interactions
     std::unique_ptr<SliderControl> mDestroyRadiusSlider;

@@ -86,7 +86,7 @@ struct GameParameters
     static constexpr float MinStrengthAdjustment = 0.01f;
     static constexpr float MaxStrengthAdjustment = 10.0f;
 
-    static constexpr float GlobalDamp = 0.9997f; // // We've shipped 1.7.0 with 0.9996, but drag seemed a bit too much
+    static constexpr float GlobalDamp = 0.9996f; // // We've shipped 1.7.5 with 0.9997, but splinter springs danced for too long
 
     // Water
 
@@ -162,7 +162,13 @@ struct GameParameters
 
     float BombMass;
 
-    float LightDiffusionAdjustment;
+    float LuminiscenceAdjustment;
+    static constexpr float MinLuminiscenceAdjustment = 0.0f;
+    static constexpr float MaxLuminiscenceAdjustment = 10.0f;
+
+    float LightSpreadAdjustment;
+    static constexpr float MinLightSpreadAdjustment = 0.0f;
+    static constexpr float MaxLightSpreadAdjustment = 5.0f;
 
     size_t NumberOfStars;
     static constexpr size_t MinNumberOfStars = 0;

@@ -1258,8 +1258,7 @@ ElectricalElements ShipBuilder::CreateElectricalElements(
     {
         electricalElements.Add(
             pointIndex,
-            points.GetElectricalMaterial(pointIndex)->ElectricalType,
-            points.GetElectricalMaterial(pointIndex)->IsSelfPowered);
+            *points.GetElectricalMaterial(pointIndex));
     }
 
 

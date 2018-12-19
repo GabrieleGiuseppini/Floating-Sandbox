@@ -40,6 +40,8 @@ public:
         , mIsDeletedBuffer(mBufferElementCount, mElementCount, true)
         , mPointIndexBuffer(mBufferElementCount, mElementCount, NoneElementIndex)
         , mTypeBuffer(mBufferElementCount, mElementCount, ElectricalMaterial::ElectricalElementType::Cable)
+        , mLuminiscenceBuffer(mBufferElementCount, mElementCount, 0.0f)
+        , mLightSpreadBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mConnectedElectricalElementsBuffer(mBufferElementCount, mElementCount, {})
         , mElementStateBuffer(mBufferElementCount, mElementCount, ElementState::CableState())
         , mAvailableCurrentBuffer(mBufferElementCount, mElementCount, 0.0f)
@@ -93,8 +95,7 @@ public:
 
     void Add(
         ElementIndex pointElementIndex,
-        ElectricalMaterial::ElectricalElementType type,
-        bool isSelfPowered);
+        ElectricalMaterial const & electricalMaterial);
 
     void Destroy(ElementIndex electricalElementIndex);
 
@@ -131,6 +132,22 @@ public:
     inline ElectricalMaterial::ElectricalElementType GetType(ElementIndex electricalElementIndex) const
     {
         return mTypeBuffer[electricalElementIndex];
+    }
+
+    //
+    // Light
+    //
+
+    inline float GetLuminiscence(ElementIndex electricalElementIndex) const
+    {
+        assert(ElectricalMaterial::ElectricalElementType::Lamp == GetType(electricalElementIndex));
+        return mLuminiscenceBuffer[electricalElementIndex];
+    }
+
+    inline float GetLightSpread(ElementIndex electricalElementIndex) const
+    {
+        assert(ElectricalMaterial::ElectricalElementType::Lamp == GetType(electricalElementIndex));
+        return mLightSpreadBuffer[electricalElementIndex];
     }
 
     //
@@ -204,6 +221,8 @@ private:
         struct LampState
         {
             bool IsSelfPowered;
+            float Luminiscence;
+            float LightSpread;
 
             enum class StateType
             {
@@ -277,6 +296,10 @@ private:
 
     // Type
     Buffer<ElectricalMaterial::ElectricalElementType> mTypeBuffer;
+
+    // Light
+    Buffer<float> mLuminiscenceBuffer;
+    Buffer<float> mLightSpreadBuffer;
 
     // Connected elements
     Buffer<FixedSizeVector<ElementIndex, 8U>> mConnectedElectricalElementsBuffer;

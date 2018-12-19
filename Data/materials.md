@@ -75,14 +75,16 @@ Here's an explanation of the elements:
 Each material is as follows:
     
     {
-        "name": "Self-Powered Lamp",	
+        "name": "High Lamp",	
 	"template": {
 		"row": "0|Lamps",
-		"column": "0|Self-Powered Lamp"
+		"column": "0|High Lamp"
 	},
-        "color_key": "#FFFF00",
+        "color_key": "#FFE010",
 	"electrical_type": "Lamp",
-	"is_self_powered": true
+	"is_self_powered": false,
+	"luminiscence": 2.0,
+	"light_spread": 1.0
     },
     
 Here's an explanation of the elements:
@@ -95,3 +97,5 @@ Here's an explanation of the elements:
 	- "Cable": propagates an electrical current through its endpoints.
 	- "Lamp": emits light.
 - _is self powered_: whether a lamp emits light on its own (when *true*) or only when it's powered by an electrical current (when *false*).
+- _luminiscence_: the amount of light emitted by a lamp.
+- _light spread_: the spread of light emitted by a lamp. Higher values make for a narrower focus, while lower values make for a broader focus.

@@ -6,6 +6,7 @@
 #include "Physics.h"
 
 #include "GameDebug.h"
+#include "GameMath.h"
 #include "GameRandomEngine.h"
 #include "Log.h"
 #include "Materials.h"
@@ -668,7 +669,7 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
     }
 }
 
-void Ship::UpdateSpringForces(GameParameters const & gameParameters)
+void Ship::UpdateSpringForces(GameParameters const & /*gameParameters*/)
 {
     for (auto springIndex : mSprings)
     {
@@ -968,7 +969,7 @@ void Ship::UpdateWaterVelocities(
     for (auto pointIndex : mPoints)
     {
         pointFreenessFactorBufferData[pointIndex] =
-            exp(-oldPointWaterBufferData[pointIndex] * 10.0f);
+            FastExp(-oldPointWaterBufferData[pointIndex] * 10.0f);
     }
 
 
@@ -1318,14 +1319,9 @@ void Ship::UpdateElectricalConnectivity(VisitSequenceNumber currentVisitSequence
 void Ship::DiffuseLight(GameParameters const & gameParameters)
 {
     //
-    // Diffuse light from each lamp to the closest adjacent (i.e. spring-connected) points,
-    // inversely-proportional to the square of the distance
+    // Diffuse light from each lamp to all connected (i.e. spring-connected) points,
+    // inverse-proportionally to the nth power of the distance, where n is the spread
     //
-
-    // 1 => 5.0
-    // 0.5 => 2.5
-    // 0 => 0
-    float const diffusionAdjustmentFactor = 5.0f * gameParameters.LightDiffusionAdjustment;
 
     // Zero-out light at all points first
     for (auto pointIndex : mPoints)
@@ -1340,7 +1336,13 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
     {
         float const effectiveLampLight =
             mElectricalElements.GetAvailableCurrent(lampIndex)
-            * diffusionAdjustmentFactor;
+            * mElectricalElements.GetLuminiscence(lampIndex)
+            * gameParameters.LuminiscenceAdjustment;
+
+        float const effectiveExponent =
+            mElectricalElements.GetLightSpread(lampIndex)
+            * gameParameters.LightSpreadAdjustment
+            / 2.0f; // We piggyback on the power to avoid taking a sqrt for distance
 
         auto const lampPointIndex = mElectricalElements.GetPointIndex(lampIndex);
         vec2f const & lampPosition = mPoints.GetPosition(lampPointIndex);
@@ -1351,8 +1353,12 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
         {
             if (mPoints.GetConnectedComponentId(pointIndex) == lampConnectedComponentId)
             {
-                float const distance = (mPoints.GetPosition(pointIndex) - lampPosition).length();
-                float newLight = effectiveLampLight / (1.0f + distance);
+                float const squareDistance = (mPoints.GetPosition(pointIndex) - lampPosition).squareLength();
+
+                float const newLight =
+                    effectiveLampLight
+                    / (1.0f + FastPow(squareDistance, effectiveExponent));
+
                 if (newLight > mPoints.GetLight(pointIndex))
                     mPoints.GetLight(pointIndex) = newLight;
             }

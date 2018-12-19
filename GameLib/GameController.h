@@ -224,8 +224,15 @@ public:
     float GetMinAntiMatterBombImplosionStrength() const { return GameParameters::MinAntiMatterBombImplosionStrength; }
     float GetMaxAntiMatterBombImplosionStrength() const { return GameParameters::MaxAntiMatterBombImplosionStrength; }
 
-    float GetLightDiffusionAdjustment() const { return mGameParameters.LightDiffusionAdjustment; }
-    void SetLightDiffusionAdjustment(float value) { mGameParameters.LightDiffusionAdjustment = value; }
+    float GetLuminiscenceAdjustment() const { return mGameParameters.LuminiscenceAdjustment; }
+    void SetLuminiscenceAdjustment(float value) { mGameParameters.LuminiscenceAdjustment = value; }
+    float GetMinLuminiscenceAdjustment() const { return GameParameters::MinLuminiscenceAdjustment; }
+    float GetMaxLuminiscenceAdjustment() const { return GameParameters::MaxLuminiscenceAdjustment; }
+
+    float GetLightSpreadAdjustment() const { return mGameParameters.LightSpreadAdjustment; }
+    void SetLightSpreadAdjustment(float value) { mGameParameters.LightSpreadAdjustment = value; }
+    float GetMinLightSpreadAdjustment() const { return GameParameters::MinLightSpreadAdjustment; }
+    float GetMaxLightSpreadAdjustment() const { return GameParameters::MaxLightSpreadAdjustment; }
 
     bool GetUltraViolentMode() const { return mGameParameters.IsUltraViolentMode; }
     void SetUltraViolentMode(bool value) { mGameParameters.IsUltraViolentMode = value; }

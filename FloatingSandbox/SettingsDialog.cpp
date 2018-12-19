@@ -343,7 +343,7 @@ void SettingsDialog::ApplySettings()
         mWaterCrazynessSlider->GetValue());
 
     mGameController->SetWaterDiffusionSpeedAdjustment(
-        mWaterDiffusionSpeedAdjustmentSlider->GetValue());
+        mWaterDiffusionSpeedSlider->GetValue());
 
     mGameController->SetWaterLevelOfDetail(
         mWaterLevelOfDetailSlider->GetValue());
@@ -373,8 +373,11 @@ void SettingsDialog::ApplySettings()
     mGameController->SetOceanFloorDetailAmplification(
         mOceanFloorDetailAmplificationSlider->GetValue());
 
-    mGameController->SetLightDiffusionAdjustment(
-        mLightDiffusionSlider->GetValue());
+    mGameController->SetLuminiscenceAdjustment(
+        mLuminiscenceSlider->GetValue());
+
+    mGameController->SetLightSpreadAdjustment(
+        mLightSpreadSlider->GetValue());
 
 
 
@@ -655,7 +658,7 @@ void SettingsDialog::PopulateFluidsPanel(wxPanel * panel)
 
     // Water Diffusion Speed
 
-    mWaterDiffusionSpeedAdjustmentSlider = std::make_unique<SliderControl>(
+    mWaterDiffusionSpeedSlider = std::make_unique<SliderControl>(
         panel,
         SliderWidth,
         SliderHeight,
@@ -670,7 +673,7 @@ void SettingsDialog::PopulateFluidsPanel(wxPanel * panel)
             mGameController->GetMinWaterDiffusionSpeedAdjustment(),
             mGameController->GetMaxWaterDiffusionSpeedAdjustment()));
 
-    gridSizer->Add(mWaterDiffusionSpeedAdjustmentSlider.get(), 1, wxALL, SliderBorder);
+    gridSizer->Add(mWaterDiffusionSpeedSlider.get(), 1, wxALL, SliderBorder);
 
 
     // Water Level of Detail
@@ -863,24 +866,43 @@ void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
     // Row 2
     //
 
-    // Light Diffusion
+    // Luminiscence
 
-    mLightDiffusionSlider = std::make_unique<SliderControl>(
+    mLuminiscenceSlider = std::make_unique<SliderControl>(
         panel,
         SliderWidth,
         SliderHeight,
-        "Light Diffusion Adjust",
-        mGameController->GetLightDiffusionAdjustment(),
+        "Luminiscence Adjust",
+        mGameController->GetLuminiscenceAdjustment(),
         [this](float /*value*/)
         {
             // Remember we're dirty now
             this->mApplyButton->Enable(true);
         },
         std::make_unique<LinearSliderCore>(
-            0.0f,
-            1.0f));
+            mGameController->GetMinLuminiscenceAdjustment(),
+            mGameController->GetMaxLuminiscenceAdjustment()));
 
-    gridSizer->Add(mLightDiffusionSlider.get(), 1, wxALL, SliderBorder);
+    gridSizer->Add(mLuminiscenceSlider.get(), 1, wxALL, SliderBorder);
+
+    // Light Spread
+
+    mLightSpreadSlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Light Spread Adjust",
+        mGameController->GetLightSpreadAdjustment(),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<LinearSliderCore>(
+            mGameController->GetMinLightSpreadAdjustment(),
+            mGameController->GetMaxLightSpreadAdjustment()));
+
+    gridSizer->Add(mLightSpreadSlider.get(), 1, wxALL, SliderBorder);
 
 
     // Finalize panel
@@ -1194,7 +1216,7 @@ void SettingsDialog::ReadSettings()
 
     mWaterCrazynessSlider->SetValue(mGameController->GetWaterCrazyness());
 
-    mWaterDiffusionSpeedAdjustmentSlider->SetValue(mGameController->GetWaterDiffusionSpeedAdjustment());
+    mWaterDiffusionSpeedSlider->SetValue(mGameController->GetWaterDiffusionSpeedAdjustment());
 
     mWaterLevelOfDetailSlider->SetValue(mGameController->GetWaterLevelOfDetail());
 
@@ -1210,7 +1232,9 @@ void SettingsDialog::ReadSettings()
 
     mWaveHeightSlider->SetValue(mGameController->GetWaveHeight());
 
-    mLightDiffusionSlider->SetValue(mGameController->GetLightDiffusionAdjustment());
+    mLuminiscenceSlider->SetValue(mGameController->GetLuminiscenceAdjustment());
+
+    mLightSpreadSlider->SetValue(mGameController->GetLightSpreadAdjustment());
 
     mSeaDepthSlider->SetValue(mGameController->GetSeaDepth());
 

@@ -165,14 +165,10 @@ Render:
 			+ Test: bomb on Titanic; splinter springs tend to dance a tad too much
 		
 		+ Add Roma
-			- .dat renames
+			+ .dat renames
 
-		- Light:
-			- Add low/medium/high-dimmed lights (*)
-			- Add Portholes, with own formula
-				- Try different exponent instead - "aperture" param
-					- See perf with full formula and with approx
-				- If not, different electrical element type, and different list visited at runtime
+		+ Light:
+			+ Add low/medium/high-dimmed lights and portholes (*)
 
 		+ See if cloths should be lighter - to not break ropes
 
@@ -635,12 +631,11 @@ Render:
 		+ Use real distance
 		+ No more non-linear behavior
 
-	- Add "Low-Dimmed Lights" and "Medium-"
-		- Rename other as "High-"
-		- New Electrical Property of Lamp ("Luminescence") at ElectricalMaterial
-		- New Lamp property at ElectricalElements
-			- Consumed by DiffuseLight
-		- Use at Queen of Unova
+	+ Add "Low-Dimmed Lights" and "Medium-", and "Portholes"
+		+ New Electrical Property of Lamp ("Luminescence") at ElectricalMaterial
+		+ New Lamp property at ElectricalElements
+			+ Consumed by DiffuseLight
+		+ Use at Queen of Unova
 
 	- OceanFloor:
 		- Make number of samples be bump map width

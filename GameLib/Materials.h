@@ -81,6 +81,10 @@ struct ElectricalMaterial
 
     bool IsSelfPowered;
 
+    // Light
+    float Luminiscence;
+    float LightSpread;
+
     static ElectricalMaterial Create(picojson::object const & electricalMaterialJson);
 
     static ElectricalElementType StrToElectricalElementType(std::string const & str);
@@ -90,10 +94,14 @@ private:
     ElectricalMaterial(
         std::string name,
         ElectricalElementType electricalType,
-        bool isSelfPowered)
+        bool isSelfPowered,
+        float luminiscence,
+        float lightSpread)
         : Name(name)
         , ElectricalType(electricalType)
         , IsSelfPowered(isSelfPowered)
+        , Luminiscence(luminiscence)
+        , LightSpread(lightSpread)
     {
     }
 };
