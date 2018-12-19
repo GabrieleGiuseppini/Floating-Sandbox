@@ -115,7 +115,9 @@ public:
         vec2f const & targetPos,
         float radius) const;
 
-    void Update(GameParameters const & gameParameters);
+    void Update(
+        GameParameters const & gameParameters,
+        Render::RenderContext const & renderContext);
 
     void Render(
         GameParameters const & gameParameters,

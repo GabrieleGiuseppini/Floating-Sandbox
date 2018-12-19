@@ -280,7 +280,9 @@ std::optional<ObjectId> World::GetNearestPointAt(
     return bestPointId;
 }
 
-void World::Update(GameParameters const & gameParameters)
+void World::Update(
+    GameParameters const & gameParameters,
+    Render::RenderContext const & renderContext)
 {
     // Update current time
     mCurrentSimulationTime += GameParameters::SimulationStepTimeDuration<float>;
@@ -302,7 +304,8 @@ void World::Update(GameParameters const & gameParameters)
         ship->Update(
             mCurrentSimulationTime,
             mCurrentVisitSequenceNumber,
-            gameParameters);
+            gameParameters,
+            renderContext);
     }
 }
 

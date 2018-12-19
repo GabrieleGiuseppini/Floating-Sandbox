@@ -30,17 +30,18 @@ void Points::Add(
     mPositionBuffer.emplace_back(position);
     mVelocityBuffer.emplace_back(vec2f::zero());
     mForceBuffer.emplace_back(vec2f::zero());
-    mIntegrationFactorBuffer.emplace_back(
-        CalculateIntegrationFactor(
-            structuralMaterial.Mass,
-            mCurrentNumMechanicalDynamicsIterations));
     mMassBuffer.emplace_back(structuralMaterial.Mass);
+    mIntegrationFactorTimeCoefficientBuffer.emplace_back(CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations));
+
+    // These will be recalculated each time
+    mTotalMassBuffer.emplace_back(0.0f);
+    mIntegrationFactorBuffer.emplace_back(vec2f::zero());
+    mForceRenderBuffer.emplace_back(vec2f::zero());
 
     mIsHullBuffer.emplace_back(structuralMaterial.IsHull);
-
-    // No buoyancy if it's hull, as it can't get water and thus if lighter than water
-    // it'll float forever
-    mBuoyancyBuffer.emplace_back(structuralMaterial.IsHull ? 0.0f : 1.0f);
+    mWaterVolumeFillBuffer.emplace_back(structuralMaterial.WaterVolumeFill);
+    mWaterRestitutionBuffer.emplace_back(1.0f - structuralMaterial.WaterRetention);
+    mWaterDiffusionSpeedBuffer.emplace_back(structuralMaterial.WaterDiffusionSpeed);
 
     mWaterBuffer.emplace_back(0.0f);
     mWaterVelocityBuffer.emplace_back(vec2f::zero());
@@ -89,11 +90,10 @@ void Points::CreateEphemeralParticleDebris(
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
     mForceBuffer[pointIndex] = vec2f::zero();
-    mIntegrationFactorBuffer[pointIndex] = CalculateIntegrationFactor(structuralMaterial.Mass, mCurrentNumMechanicalDynamicsIterations);
     mMassBuffer[pointIndex] = structuralMaterial.Mass;
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
 
-    mBuoyancyBuffer[pointIndex] = 0.0f; // Debris is non-buoyant
+    mWaterVolumeFillBuffer[pointIndex] = 0.0f;
     mWaterBuffer[pointIndex] = 0.0f;
     assert(false == mIsLeakingBuffer[pointIndex]);
 
@@ -133,11 +133,10 @@ void Points::CreateEphemeralParticleSparkle(
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
     mForceBuffer[pointIndex] = vec2f::zero();
-    mIntegrationFactorBuffer[pointIndex] = CalculateIntegrationFactor(structuralMaterial.Mass, mCurrentNumMechanicalDynamicsIterations);
     mMassBuffer[pointIndex] = structuralMaterial.Mass;
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
 
-    mBuoyancyBuffer[pointIndex] = 0.0f; // Sparkles are non-buoyant
+    mWaterVolumeFillBuffer[pointIndex] = 0.0f;
     mWaterBuffer[pointIndex] = 0.0f;
     assert(false == mIsLeakingBuffer[pointIndex]);
 
@@ -185,7 +184,7 @@ void Points::Destroy(
     // Let the physical world forget about us
     mPositionBuffer[pointElementIndex] = vec2f::zero();
     mVelocityBuffer[pointElementIndex] = vec2f::zero();
-    mIntegrationFactorBuffer[pointElementIndex] = vec2f::zero();
+    mIntegrationFactorTimeCoefficientBuffer[pointElementIndex] = 0.0f;
     mWaterVelocityBuffer[pointElementIndex] = vec2f::zero();
     mWaterMomentumBuffer[pointElementIndex] = vec2f::zero();
 }
@@ -195,14 +194,16 @@ void Points::UpdateGameParameters(GameParameters const & gameParameters)
     float const numMechanicalDynamicsIterations = gameParameters.NumMechanicalDynamicsIterations<float>();
     if (numMechanicalDynamicsIterations != mCurrentNumMechanicalDynamicsIterations)
     {
-        // Recalc integration factors
+        // Recalc integration factor time coefficients
         for (ElementIndex i : *this)
         {
             if (!IsDeleted(i))
             {
-                mIntegrationFactorBuffer[i] = CalculateIntegrationFactor(
-                    mMassBuffer[i],
-                    numMechanicalDynamicsIterations);
+                mIntegrationFactorTimeCoefficientBuffer[i] = CalculateIntegrationFactorTimeCoefficient(numMechanicalDynamicsIterations);
+            }
+            else
+            {
+                assert(mIntegrationFactorTimeCoefficientBuffer[i] = 0.0f);
             }
         }
 
@@ -335,6 +336,16 @@ void Points::UploadVectors(
             0.25f,
             VectorColor);
     }
+    else if (renderContext.GetVectorFieldRenderMode() == VectorFieldRenderMode::PointForce)
+    {
+        renderContext.UploadShipVectors(
+            shipId,
+            mElementCount,
+            mPositionBuffer.data(),
+            mForceRenderBuffer.data(),
+            0.0005f,
+            VectorColor);
+    }
     else if (renderContext.GetVectorFieldRenderMode() == VectorFieldRenderMode::PointWaterVelocity)
     {
         renderContext.UploadShipVectors(
@@ -451,11 +462,6 @@ void Points::SetMassToStructuralMaterialOffset(
 
     mMassBuffer[pointElementIndex] = GetStructuralMaterial(pointElementIndex).Mass + offset;
 
-    // Update integration factor
-    mIntegrationFactorBuffer[pointElementIndex] = CalculateIntegrationFactor(
-        mMassBuffer[pointElementIndex],
-        mCurrentNumMechanicalDynamicsIterations);
-
     // Notify all springs
     for (auto springIndex : mNetworkBuffer[pointElementIndex].ConnectedSprings)
     {
@@ -463,24 +469,33 @@ void Points::SetMassToStructuralMaterialOffset(
     }
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////
-
-vec2f Points::CalculateIntegrationFactor(
-    float mass,
-    float numMechanicalDynamicsIterations)
+void Points::UpdateTotalMasses(GameParameters const & gameParameters)
 {
-    assert(mass > 0.0f);
-    assert(numMechanicalDynamicsIterations > 0.0f);
-
     //
-    // The integration factor is the quantity which, once multiplied with the force on the point,
-    // yields the change in position that occurs during a time interval equal to the dynamics simulation step.
+    // Update:
+    //  - TotalMass: material's mass + point's water mass
+    //  - Integration factor: integration factor time coefficient / total mass
     //
 
-    float const dt = GameParameters::SimulationStepTimeDuration<float> / numMechanicalDynamicsIterations;
+    float const densityAdjustedWaterMass = GameParameters::WaterMass * gameParameters.WaterDensityAdjustment;
 
-    return vec2f(dt * dt / mass, dt * dt / mass);
+    for (ElementIndex i : *this)
+    {
+        float const totalMass =
+            mMassBuffer[i]
+            + std::min(GetWater(i), GetWaterVolumeFill(i)) * densityAdjustedWaterMass;
+
+        assert(totalMass > 0.0f);
+
+        mTotalMassBuffer[i] = totalMass;
+
+        mIntegrationFactorBuffer[i] = vec2f(
+            mIntegrationFactorTimeCoefficientBuffer[i] / totalMass,
+            mIntegrationFactorTimeCoefficientBuffer[i] / totalMass);
+    }
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
 
 ElementIndex Points::FindFreeEphemeralParticle(float currentSimulationTime)
 {

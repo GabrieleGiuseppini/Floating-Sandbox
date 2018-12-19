@@ -27,10 +27,14 @@ struct GameParameters
     template <typename T>
     inline T MechanicalSimulationStepTimeDuration() const
     {
-        return SimulationStepTimeDuration<T>
-            / NumMechanicalDynamicsIterations<T>();
+        return MechanicalSimulationStepTimeDuration(NumMechanicalDynamicsIterations<T>());
     }
 
+    template <typename T>
+    static inline T MechanicalSimulationStepTimeDuration(T numMechanicalDynamicsIterations)
+    {
+        return SimulationStepTimeDuration<T> / numMechanicalDynamicsIterations;
+    }
 
     //
     // Physical Constants
@@ -98,13 +102,13 @@ struct GameParameters
     static constexpr float MinWaterIntakeAdjustment = 0.1f;
     static constexpr float MaxWaterIntakeAdjustment = 10.0f;
 
+    float WaterDiffusionSpeedAdjustment;
+    static constexpr float MinWaterDiffusionSpeedAdjustment = 0.001f;
+    static constexpr float MaxWaterDiffusionSpeedAdjustment = 2.0f;
+
     float WaterCrazyness;
     static constexpr float MinWaterCrazyness = 0.0f;
     static constexpr float MaxWaterCrazyness = 2.0f;
-
-    float WaterQuickness;
-    static constexpr float MinWaterQuickness = 0.001f;
-    static constexpr float MaxWaterQuickness = 1.0f;
 
     // Ephemeral particles
 

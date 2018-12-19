@@ -325,7 +325,8 @@ ElementIndex Ship::GetNearestPointIndexAt(
 void Ship::Update(
     float currentSimulationTime,
     VisitSequenceNumber currentVisitSequenceNumber,
-    GameParameters const & gameParameters)
+    GameParameters const & gameParameters,
+    Render::RenderContext const & renderContext)
 {
     auto const currentWallClockTime = GameWallClock::GetInstance().Now();
 
@@ -351,7 +352,8 @@ void Ship::Update(
 
     UpdateMechanicalDynamics(
         currentSimulationTime,
-        gameParameters);
+        gameParameters,
+        renderContext);
 
 
     //
@@ -560,8 +562,19 @@ void Ship::Render(
 
 void Ship::UpdateMechanicalDynamics(
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    GameParameters const & gameParameters,
+    Render::RenderContext const & renderContext)
 {
+    //
+    // 1. Recalculate total masses and everything else that derives from them, once and for all
+    //
+
+    mPoints.UpdateTotalMasses(gameParameters);
+
+    //
+    // 2. Run iterations
+    //
+
     int const numMechanicalDynamicsIterations = gameParameters.NumMechanicalDynamicsIterations<int>();
 
     for (int iter = 0; iter < numMechanicalDynamicsIterations; ++iter)
@@ -580,6 +593,13 @@ void Ship::UpdateMechanicalDynamics(
 
         // Update springs forces
         UpdateSpringForces(gameParameters);
+
+        // Check whether we need to save the last force buffer before we zero it out
+        if (iter == numMechanicalDynamicsIterations - 1
+            && VectorFieldRenderMode::PointForce == renderContext.GetVectorFieldRenderMode())
+        {
+            mPoints.CopyForceBufferToForceRenderBuffer();
+        }
 
         // Integrate and reset forces to zero
         IntegrateAndResetPointForces(gameParameters);
@@ -612,29 +632,20 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
         // 1. Add gravity and buoyancy
         //
 
-        // Mass = own + contained water (clamped to 1)
-        float const totalPointMass =
-            mPoints.GetMass(pointIndex)
-			+ std::min(mPoints.GetWater(pointIndex), 1.0f) * densityAdjustedWaterMass;
-
         mPoints.GetForce(pointIndex) +=
             gameParameters.Gravity
-            * totalPointMass;
+            * mPoints.GetTotalMass(pointIndex);
 
         if (mPoints.GetPosition(pointIndex).y < waterHeightAtThisPoint)
         {
             //
             // Apply upward push of water mass (i.e. buoyancy!)
             //
-            // We don't want hull points to feel buoyancy, otherwise hull points lighter than water (e.g. wood hull)
-            // would never sink as they don't get any water. This is to compensate for the fact that, in reality,
-            // even hull cubes would take some water - massive wood does sink after all.
-            //
 
             mPoints.GetForce(pointIndex) -=
                 gameParameters.Gravity
-                * densityAdjustedWaterMass
-                * mPoints.GetBuoyancy(pointIndex);
+                * mPoints.GetWaterVolumeFill(pointIndex)
+                * densityAdjustedWaterMass;
         }
 
 
@@ -657,7 +668,7 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
     }
 }
 
-void Ship::UpdateSpringForces(GameParameters const & /*gameParameters*/)
+void Ship::UpdateSpringForces(GameParameters const & gameParameters)
 {
     for (auto springIndex : mSprings)
     {
@@ -901,9 +912,8 @@ void Ship::UpdateWaterInflow(
                     // Make sure we don't over-drain the point
                     newWater = -std::min(-newWater, mPoints.GetWater(pointIndex));
 
-                    // Simulate water "sticking" into material - after all, water that once entered
-                    // won't leave completely afterwards, something will stay behind
-                    newWater *= 0.95f;
+                    // Honor the water retention of this material
+                    newWater *= mPoints.GetWaterRestitution(pointIndex);
                 }
 
                 // Adjust water
@@ -1072,7 +1082,7 @@ void Ship::UpdateWaterVelocities(
         // 2) Calculate normalization factor for water flows:
         //    the quantity of water along a spring is proportional to the weight of the spring
         //    (resultant velocity along that spring), and the sum of all outbound water flows must
-        //    match the water currently at the point times the quickness fractio
+        //    match the water currently at the point times the water speed fraction and the adjustment
         //
 
         assert(totalOutboundWaterFlowWeight >= 0.0f);
@@ -1082,7 +1092,8 @@ void Ship::UpdateWaterVelocities(
         {
             waterQuantityNormalizationFactor =
                 oldPointWaterBufferData[pointIndex]
-                * gameParameters.WaterQuickness
+                * mPoints.GetWaterDiffusionSpeed(pointIndex)
+                * gameParameters.WaterDiffusionSpeedAdjustment
                 / totalOutboundWaterFlowWeight;
         }
 

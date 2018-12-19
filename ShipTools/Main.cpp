@@ -73,9 +73,9 @@ int DoQuantize(int argc, char ** argv)
         return 0;
     }
 
-    std::string materialsFile(argv[2]);
+    std::string materialsDirectory(argv[2]);
     std::string inputFile(argv[3]);
-    std::string outputFile(argv[4]);    
+    std::string outputFile(argv[4]);
 
     bool doKeepRopes = false;
     bool doKeepGlass = false;
@@ -101,7 +101,7 @@ int DoQuantize(int argc, char ** argv)
             }
 
             targetFixedColorStr = argv[i];
-            targetFixedColor = Utils::Hex2RgbColour(targetFixedColorStr);
+            targetFixedColor = Utils::Hex2RgbColor(targetFixedColorStr);
         }
         else
         {
@@ -113,17 +113,17 @@ int DoQuantize(int argc, char ** argv)
     std::cout << "Running quantize:" << std::endl;
     std::cout << "  input file    : " << inputFile << std::endl;
     std::cout << "  output file   : " << outputFile << std::endl;
-    std::cout << "  materials file: " << materialsFile << std::endl;
+    std::cout << "  materials dir : " << materialsDirectory << std::endl;
     std::cout << "  keep ropes    : " << doKeepRopes << std::endl;
     std::cout << "  keep glass    : " << doKeepGlass << std::endl;
     if (!!targetFixedColor)
         std::cout << "  target color  : " << targetFixedColorStr << std::endl;
 
     Quantizer::Quantize(
-        inputFile, 
-        outputFile, 
-        materialsFile, 
-        doKeepRopes, 
+        inputFile,
+        outputFile,
+        materialsDirectory,
+        doKeepRopes,
         doKeepGlass,
         targetFixedColor);
 
@@ -165,10 +165,10 @@ int DoAnalyzeShip(int argc, char ** argv)
         return 0;
     }
 
-    std::string materialsFile(argv[2]);
-    std::string inputFile(argv[3]);    
+    std::string materialsDirectory(argv[2]);
+    std::string inputFile(argv[3]);
 
-    auto analysisInfo = ShipAnalyzer::Analyze(inputFile, materialsFile);
+    auto analysisInfo = ShipAnalyzer::Analyze(inputFile, materialsDirectory);
 
     std::cout << std::fixed;
 
@@ -184,8 +184,8 @@ void PrintUsage()
 {
     std::cout << std::endl;
     std::cout << "Usage:" << std::endl;
-    std::cout << " quantize <materials_file> <in_file> <out_png> [-c <target_fixed_color>]" << std::endl;
+    std::cout << " quantize <materials_dir> <in_file> <out_png> [-c <target_fixed_color>]" << std::endl;
     std::cout << "          -r, --keep_ropes] [-g, --keep_glass]" << std::endl;
     std::cout << " resize <in_file> <out_png> <width>" << std::endl;
-    std::cout << " analyze <materials_file> <in_file>" << std::endl;
+    std::cout << " analyze <materials_dir> <in_file>" << std::endl;
 }

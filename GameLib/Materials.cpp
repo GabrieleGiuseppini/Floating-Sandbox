@@ -15,11 +15,12 @@ StructuralMaterial StructuralMaterial::Create(picojson::object const & structura
 
     try
     {
+        float strength = static_cast<float>(Utils::GetMandatoryJsonMember<double>(structuralMaterialJson, "strength"));
+
         picojson::object massJson = Utils::GetMandatoryJsonObject(structuralMaterialJson, "mass");
         float mass = static_cast<float>(Utils::GetMandatoryJsonMember<double>(massJson, "nominal_mass"))
             * static_cast<float>(Utils::GetMandatoryJsonMember<double>(massJson, "density"));
 
-        float strength = static_cast<float>(Utils::GetMandatoryJsonMember<double>(structuralMaterialJson, "strength"));
         float stiffness = static_cast<float>(Utils::GetOptionalJsonMember<double>(structuralMaterialJson, "stiffness", 1.0));
 
         std::array<uint8_t, 3u> renderColorRgb = Utils::Hex2RgbColor(
@@ -27,6 +28,9 @@ StructuralMaterial StructuralMaterial::Create(picojson::object const & structura
         vec4f renderColor = Utils::RgbaToVec({ renderColorRgb[0], renderColorRgb[1], renderColorRgb[2], 255 });
 
         bool isHull = Utils::GetMandatoryJsonMember<bool>(structuralMaterialJson, "is_hull");
+        float waterVolumeFill = static_cast<float>(Utils::GetMandatoryJsonMember<double>(structuralMaterialJson, "water_volume_fill"));
+        float waterDiffusionSpeed = static_cast<float>(Utils::GetMandatoryJsonMember<double>(structuralMaterialJson, "water_diffusion_speed"));
+        float waterRetention = static_cast<float>(Utils::GetMandatoryJsonMember<double>(structuralMaterialJson, "water_retention"));
 
         std::string materialSoundStr = Utils::GetMandatoryJsonMember<std::string>(structuralMaterialJson, "sound_type");
         MaterialSoundType materialSound = StrToMaterialSoundType(materialSoundStr);
@@ -38,6 +42,9 @@ StructuralMaterial StructuralMaterial::Create(picojson::object const & structura
             stiffness,
             renderColor,
             isHull,
+            waterVolumeFill,
+            waterDiffusionSpeed,
+            waterRetention,
             materialSound);
     }
     catch (GameException const & ex)

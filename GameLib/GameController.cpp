@@ -442,7 +442,9 @@ void GameController::InternalUpdate()
 {
     // Update world
     assert(!!mWorld);
-    mWorld->Update(mGameParameters);
+    mWorld->Update(
+        mGameParameters,
+        *mRenderContext);
 
     // Update text layer
     mTextLayer->Update();

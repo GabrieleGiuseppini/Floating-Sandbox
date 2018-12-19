@@ -15,7 +15,7 @@ public:
     static void Quantize(
         std::string const & inputFile,
         std::string const & outputFile,
-        std::string const & materialsFile,
+        std::string const & materialsDir,
         bool doKeepRopes,
         bool doKeepGlass,
         std::optional<std::array<uint8_t, 3u>> targetFixedColor);

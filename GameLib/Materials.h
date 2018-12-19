@@ -19,7 +19,11 @@ struct StructuralMaterial
     float Mass;
     float Stiffness;
     vec4f RenderColor;
+
     bool IsHull;
+    float WaterVolumeFill;
+    float WaterDiffusionSpeed;
+    float WaterRetention;
 
     enum class MaterialSoundType
     {
@@ -45,6 +49,9 @@ private:
         float stiffness,
         vec4f renderColor,
         bool isHull,
+        float waterVolumeFill,
+        float waterDiffusionSpeed,
+        float waterRetention,
         MaterialSoundType materialSound)
         : Name(name)
         , Strength(strength)
@@ -52,6 +59,9 @@ private:
         , Stiffness(stiffness)
         , RenderColor(renderColor)
         , IsHull(isHull)
+        , WaterVolumeFill(waterVolumeFill)
+        , WaterDiffusionSpeed(waterDiffusionSpeed)
+        , WaterRetention(waterRetention)
         , MaterialSound(materialSound)
     {}
 };

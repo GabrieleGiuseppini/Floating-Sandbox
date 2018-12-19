@@ -240,6 +240,7 @@ private:
     void OnError(
         std::string const & message,
         bool die);
+    void StartTimers();
 
 private:
 

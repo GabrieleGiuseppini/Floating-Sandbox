@@ -583,7 +583,7 @@ void ShipBuilder::AppendRopes(
                 MakeTextureCoordinates(newPosition.x, newPosition.y, structureImageSize),
                 vec4f(Utils::RgbToVec(ropeSegment.RopeColorKey), 1.0f),
                 ropeMaterial,
-                true);
+                true); // IsRope
 
             // Set electrical material
             pointInfos1.back().ElectricalMtl =

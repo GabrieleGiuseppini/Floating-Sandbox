@@ -55,6 +55,8 @@ public:
 
     MaterialDatabase LoadMaterialDatabase() const;
 
+    static MaterialDatabase LoadMaterialDatabase(std::filesystem::path materialsDirectory);
+
 
     //
     // Music

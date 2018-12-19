@@ -266,10 +266,15 @@ std::vector<Render::Font> ResourceLoader::LoadFonts(ProgressCallback const & pro
 
 MaterialDatabase ResourceLoader::LoadMaterialDatabase() const
 {
-    std::filesystem::path const structuralMaterialsFilepath = std::filesystem::path("Data") / "materials_structural.json";
+    return LoadMaterialDatabase(std::filesystem::path("Data"));
+}
+
+MaterialDatabase ResourceLoader::LoadMaterialDatabase(std::filesystem::path materialsDirectory)
+{
+    std::filesystem::path const structuralMaterialsFilepath = materialsDirectory / "materials_structural.json";
     picojson::value structuralMaterialsRoot = Utils::ParseJSONFile(structuralMaterialsFilepath.string());
 
-    std::filesystem::path const electricalMaterialsFilepath = std::filesystem::path("Data") / "materials_electrical.json";
+    std::filesystem::path const electricalMaterialsFilepath = materialsDirectory / "materials_electrical.json";
     picojson::value electricalMaterialsRoot = Utils::ParseJSONFile(electricalMaterialsFilepath.string());
 
     return MaterialDatabase::Create(

@@ -5,6 +5,7 @@
  ***************************************************************************************/
 #include "ShipAnalyzer.h"
 
+#include <GameLib/GameParameters.h>
 #include <GameLib/MaterialDatabase.h>
 #include <GameLib/ResourceLoader.h>
 #include <GameLib/Vectors.h>
@@ -19,7 +20,7 @@
 
 ShipAnalyzer::AnalysisInfo ShipAnalyzer::Analyze(
     std::string const & inputFile,
-    std::string const & materialsFile)
+    std::string const & materialsDir)
 {
     // Load image
     auto image = ResourceLoader::LoadImageRgbUpperLeft(std::filesystem::path(inputFile));
@@ -27,12 +28,13 @@ ShipAnalyzer::AnalysisInfo ShipAnalyzer::Analyze(
     float const halfWidth = static_cast<float>(image.Size.Width) / 2.0f;
 
     // Load materials
-    auto materials = ResourceLoader::LoadMaterials(materialsFile);
+    auto materials = ResourceLoader::LoadMaterialDatabase(materialsDir);
 
     // Visit all points
     ShipAnalyzer::AnalysisInfo analysisInfo;
+    float totalMass = 0.0f;
+    float buoyantMass = 0.0f;
     float numPoints = 0.0f;
-    float numBuoyantPoints = 0.0f;
     for (int x = 0; x < image.Size.Width; ++x)
     {
         float worldX = static_cast<float>(x) - halfWidth;
@@ -49,30 +51,30 @@ ShipAnalyzer::AnalysisInfo ShipAnalyzer::Analyze(
                 image.Data[pixelIndex + 1],
                 image.Data[pixelIndex + 2] };
 
-            Material const * material = materials->Find(rgbColour);
-            if (nullptr != material)
+            StructuralMaterial const * structuralMaterial = materials.FindStructuralMaterial(rgbColour);
+            if (nullptr != structuralMaterial)
             {
-                analysisInfo.TotalMass += material->Mass;
-
                 numPoints += 1.0f;
 
-                if (!material->IsHull)
-                    numBuoyantPoints += 1.0f;
+                totalMass += structuralMaterial->Mass;
 
-                analysisInfo.BaricentricX += worldX * material->Mass;
-                analysisInfo.BaricentricY += worldY * material->Mass;
+                buoyantMass +=
+                    structuralMaterial->Mass
+                    - (structuralMaterial->WaterVolumeFill * GameParameters::WaterMass);
+
+                // Update center of mass
+                analysisInfo.BaricentricX += worldX * structuralMaterial->Mass;
+                analysisInfo.BaricentricY += worldY * structuralMaterial->Mass;
             }
         }
     }
 
+    analysisInfo.TotalMass = totalMass;
+
     if (numPoints != 0.0f)
     {
-        analysisInfo.MassPerPoint = analysisInfo.TotalMass / numPoints;
-    }
-
-    if (numBuoyantPoints != 0.0f)
-    {
-        analysisInfo.BuoyantMassPerPoint = analysisInfo.TotalMass / numBuoyantPoints;
+        analysisInfo.MassPerPoint = totalMass / numPoints;
+        analysisInfo.BuoyantMassPerPoint = buoyantMass / numPoints;
     }
 
     if (analysisInfo.TotalMass != 0.0f)
