@@ -27,12 +27,14 @@ The structural layer is the most important layer in Floating Sandbox; it provide
 
 The color of each pixel in the structural layer image is looked up among the color "keys" of the _materials structural_ materials database, and if a match is found, the ship gets a particle with those coordinates (in metres), and of the material corresponding to the color key. As an example, a grey pixel with the "#303040" color becomes a particle made of "Structural Iron", with the mass, strength, sound, and all the other properties that are  specified for the "Structural Iron" material.
 
-Note that you may also specify ropes in the structural layer; TODO
-
 # Electrical Layer
-TODO
+An electrical layer image provides the electical components of a ship. The color of each pixel in the electrical layer image must correspond to a color in the _materials electrical_ materials database, and the ship particle at that location acquires the electrical properties of the electrical material corresponding to the color. As an example, an electrical layer image pixel with the "#DFE010" color make the particle at the same location acquire the electrical properties of the "Low Lamp" electrical material.
+These are the rules to follow when drawing an image for the electrical layer of a ship:
+- The size of the electrical layer image must match the size of the structural layer image.
 - For every pixel in the electrical layer, there must exist a corresponding pixel either in the structural layer or in the ropes layer.
+- The background must be full white (#FFFFFF). An error is generated if a non-white pixel is found whose color cannot be found among the colors in the _materials electrical_ materials database.
 
+Note that it is also possible to specify electrical properties without a separate electrical layer image: you may in fact draw (some) electrical elements directly in the structural layer image, and the corresponding particles will acquire the electrical properties from the same colors in the _materials electrical_ materials database. In this case you may only use the few colors that are present in both the _materials structural_ and _materials electrical_ materials database (e.g. "High Lamp", "Generator", and a few others), as opposed to all the electrical materials available in the _materials electrical_ materials database.
 
 # Ropes Layer
 A ropes layer image is an image that contains pairs of pixels with the same color; for each such a pair, Floating Sandbox will automagically fill-in 
