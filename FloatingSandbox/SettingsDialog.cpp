@@ -342,8 +342,8 @@ void SettingsDialog::ApplySettings()
     mGameController->SetWaterCrazyness(
         mWaterCrazynessSlider->GetValue());
 
-    mGameController->SetWaterQuickness(
-        mWaterQuicknessSlider->GetValue());
+    mGameController->SetWaterDiffusionSpeedAdjustment(
+        mWaterDiffusionSpeedAdjustmentSlider->GetValue());
 
     mGameController->SetWaterLevelOfDetail(
         mWaterLevelOfDetailSlider->GetValue());
@@ -653,24 +653,24 @@ void SettingsDialog::PopulateFluidsPanel(wxPanel * panel)
     // Row 2
     //
 
-    // Water Quickness
+    // Water Diffusion Speed
 
-    mWaterQuicknessSlider = std::make_unique<SliderControl>(
+    mWaterDiffusionSpeedAdjustmentSlider = std::make_unique<SliderControl>(
         panel,
         SliderWidth,
         SliderHeight,
-        "Water Quickness",
-        mGameController->GetWaterQuickness(),
+        "Water Diffusion Speed",
+        mGameController->GetWaterDiffusionSpeedAdjustment(),
         [this](float /*value*/)
         {
             // Remember we're dirty now
             this->mApplyButton->Enable(true);
         },
         std::make_unique<LinearSliderCore>(
-            mGameController->GetMinWaterQuickness(),
-            mGameController->GetMaxWaterQuickness()));
+            mGameController->GetMinWaterDiffusionSpeedAdjustment(),
+            mGameController->GetMaxWaterDiffusionSpeedAdjustment()));
 
-    gridSizer->Add(mWaterQuicknessSlider.get(), 1, wxALL, SliderBorder);
+    gridSizer->Add(mWaterDiffusionSpeedAdjustmentSlider.get(), 1, wxALL, SliderBorder);
 
 
     // Water Level of Detail
@@ -1194,7 +1194,7 @@ void SettingsDialog::ReadSettings()
 
     mWaterCrazynessSlider->SetValue(mGameController->GetWaterCrazyness());
 
-    mWaterQuicknessSlider->SetValue(mGameController->GetWaterQuickness());
+    mWaterDiffusionSpeedAdjustmentSlider->SetValue(mGameController->GetWaterDiffusionSpeedAdjustment());
 
     mWaterLevelOfDetailSlider->SetValue(mGameController->GetWaterLevelOfDetail());
 

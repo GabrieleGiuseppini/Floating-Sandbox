@@ -1,2237 +1,2329 @@
 [
     {
-        "name": "Iron Hull",
-	"template": {
-		"row": "0|Iron Hull",
-		"column": 0
-	},
-        "strength": 0.055,
-	"mass": {
-		"nominal_mass": 7950,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 1.0,
-        "color_key": "#404050",
-	"render_color": "#404050",
-        "is_hull": true,
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
+        "color_key": "#404050", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 7950
+        }, 
+        "name": "Iron Hull", 
+        "render_color": "#404050", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.055, 
+        "template": {
+            "column": 0, 
+            "row": "0|Iron Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
     {
-        "name": "Structural Iron",
-	"template": {
-		"row": "1|Structural Iron",
-		"column": 0
-	},
-        "strength": 0.055,
-	"mass": {
-		"nominal_mass": 7950,
-		"density": 0.0935
-	},
-	"water_volume_fill": 1.0,
-	"stiffness": 1.0,
-        "color_key": "#303040",
-	"render_color": "#303040",
-        "is_hull": false,
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-
+        "color_key": "#303040", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 7950
+        }, 
+        "name": "Structural Iron", 
+        "render_color": "#303040", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.055, 
+        "template": {
+            "column": 0, 
+            "row": "1|Structural Iron"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
     {
-        "name": "Iron",
-	"template": {
-		"row": "2|Iron",
-		"column": 0
-	},
-        "strength": 0.051,
-	"mass": {
-		"nominal_mass": 7850,
-		"density": 0.00935
-	},   
-	"water_volume_fill": 1.0,
-        "is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#808090",
-	"render_color": "#808090",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
+        "color_key": "#808090", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.00935, 
+            "nominal_mass": 7850
+        }, 
+        "name": "Iron", 
+        "render_color": "#808090", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.051, 
+        "template": {
+            "column": 0, 
+            "row": "2|Iron"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
     {
-        "name": "Steel Hull",
-	"template": {
-		"row": "10|Steel Hull",
-		"column": 0
-	},
-        "strength": 0.092,
-	"mass": {
-		"nominal_mass": 7580,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 1.0,
-        "is_hull": true,
-        "color_key": "#A0A0A0",
-        "render_color": "#A0A0A0",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
+        "color_key": "#A0A0A0", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 7580
+        }, 
+        "name": "Steel Hull", 
+        "render_color": "#A0A0A0", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.092, 
+        "template": {
+            "column": 0, 
+            "row": "10|Steel Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
     {
-        "name": "Structural Steel",
-	"template": {
-		"row": "11|Structural Steel",
-		"column": 0
-	},
-        "strength": 0.092,
-	"mass": {
-		"nominal_mass": 7580,
-		"density": 0.0935
-	},
-	"water_volume_fill": 1.0,	
-	"stiffness": 1.0,
-        "is_hull": false,
         "color_key": "#909090", 
-        "render_color": "#909090",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
+        "is_hull": false, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 7580
+        }, 
+        "name": "Structural Steel", 
+        "render_color": "#909090", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.092, 
+        "template": {
+            "column": 0, 
+            "row": "11|Structural Steel"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
     {
-        "name": "Steel",
-	"template": {
-		"row": "12|Steel",
-		"column": 0
-	},
-        "strength": 0.0856,
-	"mass": {
-		"nominal_mass": 7480,
-		"density": 0.00935
-	},
-	"water_volume_fill": 1.0,
-        "is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#D8D8D8",
-	"render_color": "#D8D8D8",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
+        "color_key": "#D8D8D8", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.00935, 
+            "nominal_mass": 7480
+        }, 
+        "name": "Steel", 
+        "render_color": "#D8D8D8", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.0856, 
+        "template": {
+            "column": 0, 
+            "row": "12|Steel"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
     {
-        "name": "Titanium Hull",
-	"template": {
-		"row": "20|Titanium Hull",
-		"column": 0
-	},
-        "strength": 0.13,
-	"mass": {
-		"nominal_mass": 4600,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 1.0,
-        "color_key": "#565663",
-	"render_color": "#565663",
-        "is_hull": true,
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
+        "color_key": "#565663", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 4600
+        }, 
+        "name": "Titanium Hull", 
+        "render_color": "#565663", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.13, 
+        "template": {
+            "column": 0, 
+            "row": "20|Titanium Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
     {
-        "name": "Titanium",
-	"template": {
-		"row": "22|Titanium",
-		"column": 0
-	},
-        "strength": 0.125,
-	"mass": {
-		"nominal_mass": 4500,
-		"density": 0.00935
-	},
-	"water_volume_fill": 1.0,
-        "is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#787896",
-	"render_color": "#787896",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
+        "color_key": "#787896", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.00935, 
+            "nominal_mass": 4500
+        }, 
+        "name": "Titanium", 
+        "render_color": "#787896", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.125, 
+        "template": {
+            "column": 0, 
+            "row": "22|Titanium"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
     {
-        "name": "Aluminium Hull",
-	"template": {
-		"row": "30|Aluminium Hull",
-		"column": 0
-	},
-        "strength": 0.10,
-	"mass": {
-		"nominal_mass": 2710,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-        "is_hull": true,
-	"stiffness": 1.0,
         "color_key": "#E0E0E0", 
-	"render_color": "#E0E0E0",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 2710
+        }, 
+        "name": "Aluminium Hull", 
+        "render_color": "#E0E0E0", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.1, 
+        "template": {
+            "column": 0, 
+            "row": "30|Aluminium Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
     {
-        "name": "Structural Aluminium",
-	"template": {
-		"row": "31|Structural Aluminium",
-		"column": 0
-	},
-        "strength": 0.10,
-	"mass": {
-		"nominal_mass": 2710,
-		"density": 0.0935
-	},
-	"water_volume_fill": 1.0,
-        "is_hull": false,
-	"stiffness": 1.0,
         "color_key": "#C8C8C8", 
-	"render_color": "#C8C8C8",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
+        "is_hull": false, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 2710
+        }, 
+        "name": "Structural Aluminium", 
+        "render_color": "#C8C8C8", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.1, 
+        "template": {
+            "column": 0, 
+            "row": "31|Structural Aluminium"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
     {
-        "name": "Aluminium",
-	"template": {
-		"row": "32|Aluminium",
-		"column": 0
-	},
-        "strength": 0.09,
-	"mass": {
-		"nominal_mass": 2710,
-		"density": 0.00935
-	},
-	"water_volume_fill": 1.0,
-        "is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#EFEFEF",
-	"render_color": "#EFEFEF",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
+        "color_key": "#EFEFEF", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.00935, 
+            "nominal_mass": 2710
+        }, 
+        "name": "Aluminium", 
+        "render_color": "#EFEFEF", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.09, 
+        "template": {
+            "column": 0, 
+            "row": "32|Aluminium"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
     {
-        "name": "Aluminium Hull Red",
-	"template": {
-		"row": "30|Aluminium Hull",
-		"column": 1
-	},
-        "strength": 0.10,
-	"mass": {
-		"nominal_mass": 2710,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-        "is_hull": true,
-	"stiffness": 1.0,
         "color_key": "#A42E10", 
-	"render_color": "#A42E10",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 2710
+        }, 
+        "name": "Aluminium Hull Red", 
+        "render_color": "#A42E10", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.1, 
+        "template": {
+            "column": 1, 
+            "row": "30|Aluminium Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
     {
-        "name": "Aluminium Red",
-	"template": {
-		"row": "32|Aluminium",
-		"column": 1
-	},
-        "strength": 0.09,
-	"mass": {
-		"nominal_mass": 2710,
-		"density": 0.00935
-	},
-	"water_volume_fill": 1.0,
-        "is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#B22212",
-	"render_color": "#B22212",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
+        "color_key": "#B22212", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.00935, 
+            "nominal_mass": 2710
+        }, 
+        "name": "Aluminium Red", 
+        "render_color": "#B22212", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.09, 
+        "template": {
+            "column": 1, 
+            "row": "32|Aluminium"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
     {
-        "name": "Aluminium Hull Yellow",
-	"template": {
-		"row": "30|Aluminium Hull",
-		"column": 2
-	},
-        "strength": 0.10,
-	"mass": {
-		"nominal_mass": 2710,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-        "is_hull": true,
-	"stiffness": 1.0,
         "color_key": "#A29A10", 
-	"render_color": "#A29A10",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 2710
+        }, 
+        "name": "Aluminium Hull Yellow", 
+        "render_color": "#A29A10", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.1, 
+        "template": {
+            "column": 2, 
+            "row": "30|Aluminium Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
     {
-        "name": "Aluminium Yellow",
-	"template": {
-		"row": "32|Aluminium",
-		"column": 2
-	},
-        "strength": 0.09,
-	"mass": {
-		"nominal_mass": 2710,
-		"density": 0.00935
-	},
-	"water_volume_fill": 1.0,
-        "is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#B2A012",
-	"render_color": "#B2A012",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
+        "color_key": "#B2A012", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.00935, 
+            "nominal_mass": 2710
+        }, 
+        "name": "Aluminium Yellow", 
+        "render_color": "#B2A012", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.09, 
+        "template": {
+            "column": 2, 
+            "row": "32|Aluminium"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
     {
-        "name": "Aluminium Hull Green",
-	"template": {
-		"row": "30|Aluminium Hull",
-		"column": 3
-	},
-        "strength": 0.10,
-	"mass": {
-		"nominal_mass": 2710,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-        "is_hull": true,
-	"stiffness": 1.0,
         "color_key": "#76B210", 
-	"render_color": "#76B210",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 2710
+        }, 
+        "name": "Aluminium Hull Green", 
+        "render_color": "#76B210", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.1, 
+        "template": {
+            "column": 3, 
+            "row": "30|Aluminium Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
     {
-        "name": "Aluminium Green",
-	"template": {
-		"row": "32|Aluminium",
-		"column": 3
-	},
-        "strength": 0.09,
-	"mass": {
-		"nominal_mass": 2710,
-		"density": 0.00935
-	},
-	"water_volume_fill": 1.0,
-        "is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#88B810",
-	"render_color": "#88B810", 
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
+        "color_key": "#88B810", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.00935, 
+            "nominal_mass": 2710
+        }, 
+        "name": "Aluminium Green", 
+        "render_color": "#88B810", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.09, 
+        "template": {
+            "column": 3, 
+            "row": "32|Aluminium"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
     {
-        "name": "Aluminium Hull Blue",
-	"template": {
-		"row": "30|Aluminium Hull",
-		"column": 4
-	},
-        "strength": 0.10,
-	"mass": {
-		"nominal_mass": 2710,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-        "is_hull": true,
-	"stiffness": 1.0,
         "color_key": "#10A29A", 
-	"render_color": "#10A29A",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 2710
+        }, 
+        "name": "Aluminium Hull Blue", 
+        "render_color": "#10A29A", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.1, 
+        "template": {
+            "column": 4, 
+            "row": "30|Aluminium Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
     {
-        "name": "Aluminium Blue",
-	"template": {
-		"row": "32|Aluminium",
-		"column": 4
-	},
-        "strength": 0.09,
-	"mass": {
-		"nominal_mass": 2710,
-		"density": 0.00935
-	},
-	"water_volume_fill": 1.0,
-        "is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#10B2A0",
-	"render_color": "#10B2A0",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
+        "color_key": "#10B2A0", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.00935, 
+            "nominal_mass": 2710
+        }, 
+        "name": "Aluminium Blue", 
+        "render_color": "#10B2A0", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.09, 
+        "template": {
+            "column": 4, 
+            "row": "32|Aluminium"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
     {
-        "name": "Aluminium Hull Blue2",
-	"template": {
-		"row": "30|Aluminium Hull",
-		"column": 5
-	},
-        "strength": 0.10,
-	"mass": {
-		"nominal_mass": 2710,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-        "is_hull": true,
-	"stiffness": 1.0,
         "color_key": "#204060", 
-	"render_color": "#204060",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 2710
+        }, 
+        "name": "Aluminium Hull Blue2", 
+        "render_color": "#204060", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.1, 
+        "template": {
+            "column": 5, 
+            "row": "30|Aluminium Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
     {
-        "name": "Aluminium Blue2",
-	"template": {
-		"row": "32|Aluminium",
-		"column": 5
-	},
-        "strength": 0.09,
-	"mass": {
-		"nominal_mass": 2710,
-		"density": 0.00935
-	},
-	"water_volume_fill": 1.0,
-        "is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#305878",
-	"render_color": "#305878",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-
-
-
+        "color_key": "#305878", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.00935, 
+            "nominal_mass": 2710
+        }, 
+        "name": "Aluminium Blue2", 
+        "render_color": "#305878", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.09, 
+        "template": {
+            "column": 5, 
+            "row": "32|Aluminium"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
     {
-        "name": "Aluminium Hull Stiff",
-	"template": {
-		"row": "30|Aluminium Hull",
-		"column": 8
-	},
-        "strength": 0.10,
-	"mass": {
-		"nominal_mass": 2710,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-        "is_hull": true,
-	"stiffness": 2.0,
         "color_key": "#757575", 
-	"render_color": "#757575",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Aluminium Stiff",
-	"template": {
-		"row": "32|Aluminium",
-		"column": 8
-	},
-        "strength": 0.09,
-	"mass": {
-		"nominal_mass": 2710,
-		"density": 0.00935
-	},
-	"water_volume_fill": 1.0,
-        "is_hull": false,
-	"stiffness": 2.2,
-        "color_key": "#989898",
-	"render_color": "#989898",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-
-    {
-        "name": "Wooden Hull",
-	"template": {
-		"row": "40|Wood Hull",
-		"column": 0
-	},
-        "strength": 0.2,
-	"mass": {
-		"nominal_mass": 1000,
-		"density": 0.0935
-	},
-	"stiffness": 1.0,
-        "color_key": "#905020",
-	"render_color": "#905020",
-	"water_volume_fill": 0.0,
-        "is_hull": true,
-	"sound_type": "Wood",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Wood",
-	"template": {
-		"row": "42|Wood",
-		"column": 0
-	},
-        "strength": 0.15,
-	"mass": {
-		"nominal_mass": 800,
-		"density": 0.022935
-	},
-	"water_volume_fill": 1.0,
-	"is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#E0D8C0",
-	"render_color": "#E0D8C0",
-	"sound_type": "Wood",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Carbon Hull",
-	"template": {
-		"row": "50|Carbon Hull",
-		"column": 0
-	},
-        "strength": 3.166,
-	"mass": {
-		"nominal_mass": 758,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 1.0,
-        "color_key": "#1A1A1A",
-	"render_color": "#1A1A1A",
-        "is_hull": true,
-	"sound_type": "Wood",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Carbon",
-	"template": {
-		"row": "52|Carbon",
-		"column": 0
-	},
-        "strength": 3.166,
-	"mass": {
-		"nominal_mass": 758,
-		"density": 0.022935
-	},
-	"water_volume_fill": 1.0,
-	"is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#232323",
-	"render_color": "#232323",
-	"sound_type": "Wood",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Aluminium Sheet Hull",
-	"template": {
-		"row": "60|Aluminium Sheet Hull",
-		"column": 0
-	},
-        "strength": 0.53,
-	"mass": {
-		"nominal_mass": 2710,
-		"density": 0.01045
-	},
-	"water_volume_fill": 0.0,
-        "is_hull": true,
-	"stiffness": 0.5,
-        "color_key": "#C0C0C0",
-	"render_color": "#C0C0C0",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Aluminium Sheet",
-	"template": {
-		"row": "62|Aluminium Sheet",
-		"column": 0
-	},
-        "strength": 0.267,
-	"mass": {
-		"nominal_mass": 2710,
-		"density": 0.001045
-	},
-	"water_volume_fill": 1.0,
-        "is_hull": false,
-	"stiffness": 0.5,
-        "color_key": "#D0D0D0",
-	"render_color": "#D0D0D0",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Cardboard Hull",
-	"template": {
-		"row": "70|Cardboard Hull",
-		"column": 0
-	},
-        "strength": 0.67,
-	"mass": {
-		"nominal_mass": 30,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-	"is_hull": true,
-	"stiffness": 1.0,
-        "color_key": "#A88848",
-        "render_color": "#A88848",
-	"sound_type": "Wood",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Cardboard",
-	"template": {
-		"row": "72|Cardboard",
-		"column": 0
-	},
-        "strength": 0.6,
+        "is_hull": true, 
         "mass": {
-		"nominal_mass": 20,
-		"density": 0.022935
-	},
-	"water_volume_fill": 1.0,
-	"is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#C1A46A",
-	"render_color": "#C1A46A",
-	"sound_type": "Wood",
-	"water_retention": 0.05
-    },
-
+            "density": 0.0935, 
+            "nominal_mass": 2710
+        }, 
+        "name": "Aluminium Hull Stiff", 
+        "render_color": "#757575", 
+        "sound_type": "Metal", 
+        "stiffness": 2.0, 
+        "strength": 0.1, 
+        "template": {
+            "column": 8, 
+            "row": "30|Aluminium Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
     {
-        "name": "Steel Hull Red",
-	"template": {
-		"row": "10|Steel Hull",
-		"column": 1
-	},
-        "strength": 0.092,
-	"mass": {
-		"nominal_mass": 7580,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 1.0,
-        "color_key": "#A71000",
-	"render_color": "#A71000",
-        "is_hull": true,
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
+        "color_key": "#989898", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.00935, 
+            "nominal_mass": 2710
+        }, 
+        "name": "Aluminium Stiff", 
+        "render_color": "#989898", 
+        "sound_type": "Metal", 
+        "stiffness": 2.2, 
+        "strength": 0.09, 
+        "template": {
+            "column": 8, 
+            "row": "32|Aluminium"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
     {
-        "name": "Structural Steel Red",
-	"template": {
-		"row": "11|Structural Steel",
-		"column": 1
-	},
-        "strength": 0.092,
-	"mass": {
-		"nominal_mass": 7580,
-		"density": 0.0935
-	},
-	"water_volume_fill": 1.0,
-	"stiffness": 1.0,
-        "color_key": "#950000",
-	"render_color": "#950000",
-        "is_hull": false,
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-
+        "color_key": "#905020", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 1000
+        }, 
+        "name": "Wooden Hull", 
+        "render_color": "#905020", 
+        "sound_type": "Wood", 
+        "stiffness": 1.0, 
+        "strength": 0.2, 
+        "template": {
+            "column": 0, 
+            "row": "40|Wood Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
     {
-        "name": "Steel Red",
-	"template": {
-		"row": "12|Steel",
-		"column": 1
-	},
-        "strength": 0.0856,
-	"mass": {
-		"nominal_mass": 7480,
-		"density": 0.00935
-	},
-	"water_volume_fill": 1.0,
-        "is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#D80E00",
-	"render_color": "#D80E00",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
+        "color_key": "#E0D8C0", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.022935, 
+            "nominal_mass": 800
+        }, 
+        "name": "Wood", 
+        "render_color": "#E0D8C0", 
+        "sound_type": "Wood", 
+        "stiffness": 1.0, 
+        "strength": 0.15, 
+        "template": {
+            "column": 0, 
+            "row": "42|Wood"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
     {
-        "name": "Iron Hull Red",
-	"template": {
-		"row": "0|Iron Hull",
-		"column": 1
-	},
-        "strength": 0.055,
-	"mass": {
-		"nominal_mass": 7950,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 1.0,
-        "color_key": "#840E00",
-	"render_color": "#840E00",
-        "is_hull": true,
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
+        "color_key": "#1A1A1A", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 758
+        }, 
+        "name": "Carbon Hull", 
+        "render_color": "#1A1A1A", 
+        "sound_type": "Wood", 
+        "stiffness": 1.0, 
+        "strength": 3.166, 
+        "template": {
+            "column": 0, 
+            "row": "50|Carbon Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
     {
-        "name": "Structural Iron Red",
-	"template": {
-		"row": "1|Structural Iron",
-		"column": 1
-	},
-        "strength": 0.055,
-	"mass": {
-		"nominal_mass": 7950,
-		"density": 0.0935
-	},
-	"water_volume_fill": 1.0,
-	"stiffness": 1.0,
+        "color_key": "#232323", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.022935, 
+            "nominal_mass": 758
+        }, 
+        "name": "Carbon", 
+        "render_color": "#232323", 
+        "sound_type": "Wood", 
+        "stiffness": 1.0, 
+        "strength": 3.166, 
+        "template": {
+            "column": 0, 
+            "row": "52|Carbon"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#C0C0C0", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.01045, 
+            "nominal_mass": 2710
+        }, 
+        "name": "Aluminium Sheet Hull", 
+        "render_color": "#C0C0C0", 
+        "sound_type": "Metal", 
+        "stiffness": 0.5, 
+        "strength": 0.53, 
+        "template": {
+            "column": 0, 
+            "row": "60|Aluminium Sheet Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+    {
+        "color_key": "#D0D0D0", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.001045, 
+            "nominal_mass": 2710
+        }, 
+        "name": "Aluminium Sheet", 
+        "render_color": "#D0D0D0", 
+        "sound_type": "Metal", 
+        "stiffness": 0.5, 
+        "strength": 0.267, 
+        "template": {
+            "column": 0, 
+            "row": "62|Aluminium Sheet"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#A88848", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 30
+        }, 
+        "name": "Cardboard Hull", 
+        "render_color": "#A88848", 
+        "sound_type": "Wood", 
+        "stiffness": 1.0, 
+        "strength": 0.67, 
+        "template": {
+            "column": 0, 
+            "row": "70|Cardboard Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+    {
+        "color_key": "#C1A46A", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.022935, 
+            "nominal_mass": 20
+        }, 
+        "name": "Cardboard", 
+        "render_color": "#C1A46A", 
+        "sound_type": "Wood", 
+        "stiffness": 1.0, 
+        "strength": 0.6, 
+        "template": {
+            "column": 0, 
+            "row": "72|Cardboard"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#A71000", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 7580
+        }, 
+        "name": "Steel Hull Red", 
+        "render_color": "#A71000", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.092, 
+        "template": {
+            "column": 1, 
+            "row": "10|Steel Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+    {
+        "color_key": "#950000", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 7580
+        }, 
+        "name": "Structural Steel Red", 
+        "render_color": "#950000", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.092, 
+        "template": {
+            "column": 1, 
+            "row": "11|Structural Steel"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#D80E00", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.00935, 
+            "nominal_mass": 7480
+        }, 
+        "name": "Steel Red", 
+        "render_color": "#D80E00", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.0856, 
+        "template": {
+            "column": 1, 
+            "row": "12|Steel"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#840E00", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 7950
+        }, 
+        "name": "Iron Hull Red", 
+        "render_color": "#840E00", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.055, 
+        "template": {
+            "column": 1, 
+            "row": "0|Iron Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+    {
         "color_key": "#740200", 
-	"render_color": "#740200",
-        "is_hull": false,
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-
-    {
-        "name": "Iron Red",
-	"template": {
-		"row": "2|Iron",
-		"column": 1
-	},
-        "strength": 0.051,
-	"mass": {
-		"nominal_mass": 7850,
-		"density": 0.00935
-	},
-	"water_volume_fill": 1.0,
-        "is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#9E0F00",
-	"render_color": "#9E0F00",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Wood Hull Red",
-	"template": {
-		"row": "40|Wood Hull",
-		"column": 1
-	},
-        "strength": 0.2,
-	"mass": {
-		"nominal_mass": 1000,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 1.0,
-        "color_key": "#9E2E0C",
-	"render_color": "#9E2E0C",
-        "is_hull": true,
-	"sound_type": "Wood",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Wood Red",
-	"template": {
-		"row": "42|Wood",
-		"column": 1
-	},
-        "strength": 0.15,
+        "is_hull": false, 
         "mass": {
-		"nominal_mass": 800,
-		"density": 0.022935
-	},
-	"water_volume_fill": 1.0,
-	"is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#B51B1B",
-	"render_color": "#B51B1B",
-	"sound_type": "Wood",
-	"water_retention": 0.05
-    },
+            "density": 0.0935, 
+            "nominal_mass": 7950
+        }, 
+        "name": "Structural Iron Red", 
+        "render_color": "#740200", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.055, 
+        "template": {
+            "column": 1, 
+            "row": "1|Structural Iron"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
     {
-        "name": "Titanium Hull Red",
-	"template": {
-		"row": "20|Titanium Hull",
-		"column": 1
-	},
-        "strength": 0.13,
-	"mass": {
-		"nominal_mass": 4600,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 1.0,
-        "color_key": "#8F1F00",
-	"render_color": "#8F1F00",
-        "is_hull": true,
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Titanum Red",
-	"template": {
-		"row": "22|Titanium",
-		"column": 1
-	},
-        "strength": 0.125,
-	"mass": {
-		"nominal_mass": 4500,
-		"density": 0.00935
-	},
-	"water_volume_fill": 1.0,
-        "is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#BE1400",
-	"render_color": "#BE1400",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Steel Hull Yellow",
-	"template": {
-		"row": "10|Steel Hull",
-		"column": 2
-	},
-        "strength": 0.092,
-	"mass": {
-		"nominal_mass": 7580,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 1.0,
-        "color_key": "#A27A00",
-	"render_color": "#A27A00",
-        "is_hull": true,
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Structural Steel Yellow",
-	"template": {
-		"row": "11|Structural Steel",
-		"column": 2
-	},
-        "strength": 0.092,
-	"mass": {
-		"nominal_mass": 7580,
-		"density": 0.0935
-	},
-	"water_volume_fill": 1.0,
-	"stiffness": 1.0,
-        "color_key": "#926A00",
-	"render_color": "#926A00",
-        "is_hull": false,
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Steel Yellow",
-	"template": {
-		"row": "12|Steel",
-		"column": 2
-	},
-        "strength": 0.0856,
-	"mass": {
-		"nominal_mass": 7480,
-		"density": 0.00935
-	},
-	"water_volume_fill": 1.0,
-        "is_hull": false,
-	"stiffness": 1.0, 
-        "color_key": "#D29800",
-	"render_color": "#D29800",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Iron Hull Yellow",
-	"template": {
-		"row": "0|Iron Hull",
-		"column": 2
-	},
-        "strength": 0.055,
-	"mass": {
-		"nominal_mass": 7950,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 1.0,
-        "color_key": "#806200",
-	"render_color": "#806200",
-        "is_hull": true,
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Structural Iron Yellow",
-	"template": {
-		"row": "1|Structural Iron",
-		"column": 2
-	},
-        "strength": 0.055,
-	"mass": {
-		"nominal_mass": 7950,
-		"density": 0.0935
-	},
-	"water_volume_fill": 1.0,
-	"stiffness": 1.0,
-        "color_key": "#705200",
-	"render_color": "#705200",
-        "is_hull": false,
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-
-    {
-        "name": "Iron Yellow",
-	"template": {
-		"row": "2|Iron",
-		"column": 2
-	},
-        "strength": 0.051,
-	"mass": {
-		"nominal_mass": 7850,
-		"density": 0.00935
-	},
-	"water_volume_fill": 1.0,
-        "is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#997200",
-	"render_color": "#997200",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Wood Hull Yellow",
-	"template": {
-		"row": "40|Wood Hull",
-		"column": 2
-	},
-        "strength": 0.2,
-	"mass": {
-		"nominal_mass": 1000,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 1.0,
-        "color_key": "#998B0A",
-	"render_color": "#998B0A",
-        "is_hull": true,
-	"sound_type": "Wood",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Wood Yellow",
-	"template": {
-		"row": "42|Wood",
-		"column": 2
-	},
-        "strength": 0.15,
+        "color_key": "#9E0F00", 
+        "is_hull": false, 
         "mass": {
-		"nominal_mass": 800,
-		"density": 0.022935
-	},
-	"water_volume_fill": 1.0,
-	"is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#AF7C18",
-	"render_color": "#AF7C18",
-	"sound_type": "Wood",
-	"water_retention": 0.05    },
+            "density": 0.00935, 
+            "nominal_mass": 7850
+        }, 
+        "name": "Iron Red", 
+        "render_color": "#9E0F00", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.051, 
+        "template": {
+            "column": 1, 
+            "row": "2|Iron"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
     {
-        "name": "Titanium Hull Yellow",
-	"template": {
-		"row": "20|Titanium Hull",
-		"column": 2
-	},
-        "strength": 0.13,
-	"mass": {
-		"nominal_mass": 4600,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 1.0,
-        "color_key": "#8B7A00",
-	"render_color": "#8B7A00",
-        "is_hull": true,
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Titanium Yellow",
-	"template": {
-		"row": "22|Titanium",
-		"column": 2
-	},
-        "strength": 0.125,
-	"mass": {
-		"nominal_mass": 4500,
-		"density": 0.00935
-	},
-	"water_volume_fill": 1.0,
-        "is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#B88D00",
-	"render_color": "#B88D00",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Steel Hull Green",
-	"template": {
-		"row": "10|Steel Hull",
-		"column": 3
-	},
-        "strength": 0.092,
-	"mass": {
-		"nominal_mass": 7580,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 1.0,
-        "color_key": "#5A9B00",
-	"render_color": "#5A9B00",
-        "is_hull": true,
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Steel Green",
-	"template": {
-		"row": "12|Steel",
-		"column": 3
-	},
-        "strength": 0.0856,
-	"mass": {
-		"nominal_mass": 7480,
-		"density": 0.00935
-	},
-	"water_volume_fill": 1.0,
-        "is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#7BC800",
-	"render_color": "#7BC800",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Iron Hull Green",
-	"template": {
-		"row": "0|Iron Hull",
-		"column": 3
-	},
-        "strength": 0.055,
-	"mass": {
-		"nominal_mass": 7950,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 1.0,
-        "color_key": "#467B00",
-	"render_color": "#467B00",
-        "is_hull": true,
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Iron Green",
-	"template": {
-		"row": "2|Iron",
-		"column": 3
-	},
-        "strength": 0.051,
-	"mass": {
-		"nominal_mass": 7850,
-		"density": 0.00935
-	},
-	"water_volume_fill": 1.0,
-        "is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#569200",
-	"render_color": "#569200",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Wood Hull Green",
-	"template": {
-		"row": "40|Wood Hull",
-		"column": 3
-	},
-        "strength": 0.2,
-	"mass": {
-		"nominal_mass": 1000,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 1.0,
-        "color_key": "#439206",
-	"render_color": "#439206",
-        "is_hull": true,
-	"sound_type": "Wood",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Wood Green",
-	"template": {
-		"row": "42|Wood",
-		"column": 3
-	},
-        "strength": 0.15,
+        "color_key": "#9E2E0C", 
+        "is_hull": true, 
         "mass": {
-		"nominal_mass": 800,
-		"density": 0.022935
-	},
-	"water_volume_fill": 1.0,
-	"is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#78A814",
-	"render_color": "#78A814",
-	"sound_type": "Wood",
-	"water_retention": 0.05
-    },
+            "density": 0.0935, 
+            "nominal_mass": 1000
+        }, 
+        "name": "Wood Hull Red", 
+        "render_color": "#9E2E0C", 
+        "sound_type": "Wood", 
+        "stiffness": 1.0, 
+        "strength": 0.2, 
+        "template": {
+            "column": 1, 
+            "row": "40|Wood Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
     {
-        "name": "Titanium Hull Green",
-	"template": {
-		"row": "20|Titanium Hull",
-		"column": 3
-	},
-        "strength": 0.13,
-	"mass": {
-		"nominal_mass": 4600,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 1.0,
-        "color_key": "#3C8400",
-	"render_color": "#3C8400",
-        "is_hull": true,
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Titanium Green",
-	"template": {
-		"row": "22|Titanium",
-		"column": 3
-	},
-        "strength": 0.125,
-	"mass": {
-		"nominal_mass": 4500,
-		"density": 0.00935
-	},
-	"water_volume_fill": 1.0,
-        "is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#66B100",
-	"render_color": "#66B100",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Steel Hull Blue",	
-	"template": {
-		"row": "10|Steel Hull",
-		"column": 4
-	},
-        "strength": 0.092,
-	"mass": {
-		"nominal_mass": 7580,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 1.0,
-        "color_key": "#008A95",
-	"render_color": "#008A95",
-        "is_hull": true,
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Steel Blue",	
-	"template": {
-		"row": "12|Steel",
-		"column": 4
-	},
-        "strength": 0.0856,
-	"mass": {
-		"nominal_mass": 7480,
-		"density": 0.00935
-	},
-	"water_volume_fill": 1.0,
-        "is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#00B6BF",
-	"render_color": "#00B6BF",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Iron Hull Blue",	
-	"template": {
-		"row": "0|Iron Hull",
-		"column": 4
-	},
-        "strength": 0.055,
-	"mass": {
-		"nominal_mass": 7950,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 1.0,
-        "color_key": "#006A76",
-	"render_color": "#006A76",
-        "is_hull": true,
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Iron Blue",	
-	"template": {
-		"row": "2|Iron",
-		"column": 4
-	},
-        "strength": 0.051,
-	"mass": {
-		"nominal_mass": 7850,
-		"density": 0.00935
-	},
-	"water_volume_fill": 1.0,
-        "is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#00818C",
-	"render_color": "#00818C",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Wood Hull Blue",	
-	"template": {
-		"row": "40|Wood Hull",
-		"column": 4
-	},
-        "strength": 0.2,
-	"mass": {
-		"nominal_mass": 1000,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 1.0,
-        "color_key": "#036E8C",
-	"render_color": "#036E8C",
-        "is_hull": true,
-	"sound_type": "Wood",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Wood Blue",	
-	"template": {
-		"row": "42|Wood",
-		"column": 4
-	},
-        "strength": 0.15,
+        "color_key": "#B51B1B", 
+        "is_hull": false, 
         "mass": {
-		"nominal_mass": 800,
-		"density": 0.022935
-	},
-	"water_volume_fill": 1.0,
-	"is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#10A19D",
-	"render_color": "#10A19D",
-	"sound_type": "Wood",
-	"water_retention": 0.05
-    },
+            "density": 0.022935, 
+            "nominal_mass": 800
+        }, 
+        "name": "Wood Red", 
+        "render_color": "#B51B1B", 
+        "sound_type": "Wood", 
+        "stiffness": 1.0, 
+        "strength": 0.15, 
+        "template": {
+            "column": 1, 
+            "row": "42|Wood"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
     {
-        "name": "Titanium Hull Blue",	
-	"template": {
-		"row": "20|Titanium Hull",
-		"column": 4
-	},
-        "strength": 0.13,
-	"mass": {
-		"nominal_mass": 4600,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 1.0,
-        "color_key": "#00657E",
-	"render_color": "#00657E",
-        "is_hull": true,
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Titanium Blue",	
-	"template": {
-		"row": "22|Titanium",
-		"column": 4
-	},
-        "strength": 0.125,
-	"mass": {
-		"nominal_mass": 4500,
-		"density": 0.00935
-	},
-	"water_volume_fill": 1.0,
-        "is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#009BA9",
-	"render_color": "#009BA9",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Steel Hull Blue2",
-	"template": {
-		"row": "10|Steel Hull",
-		"column": 5
-	},
-        "strength": 0.092,
-	"mass": {
-		"nominal_mass": 7580,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 1.0,
-        "color_key": "#22437B",
-	"render_color": "#22437B",
-        "is_hull": true,
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Steel Blue2",
-	"template": {
-		"row": "12|Steel",
-		"column": 5
-	},
-        "strength": 0.0856,
-	"mass": {
-		"nominal_mass": 7480,
-		"density": 0.00935
-	},
-	"water_volume_fill": 1.0,
-        "is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#2D58A0",
-	"render_color": "#2D58A0",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Iron Hull Blue2",
-	"template": {
-		"row": "0|Iron Hull",
-		"column": 5
-	},
-        "strength": 0.055,
-	"mass": {
-		"nominal_mass": 7950,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 1.0,
-        "color_key": "#1B3261",
-	"render_color": "#1B3261",
-        "is_hull": true,
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Iron Blue2",
-	"template": {
-		"row": "2|Iron",
-		"column": 5
-	},
-        "strength": 0.051,
-	"mass": {
-		"nominal_mass": 7850,
-		"density": 0.00935
-	},
-	"water_volume_fill": 1.0,
-        "is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#203E74",
-	"render_color": "#203E74",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Wood Hull Blue2",
-	"template": {
-		"row": "40|Wood Hull",
-		"column": 5
-	},
-        "strength": 0.2,
-	"mass": {
-		"nominal_mass": 1000,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 1.0,
-        "color_key": "#1E3070",
-	"render_color": "#1E3070",
-        "is_hull": true,
-	"sound_type": "Wood",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Wood Blue2",
-	"template": {
-		"row": "42|Wood",
-		"column": 5
-	},
-        "strength": 0.15,
+        "color_key": "#8F1F00", 
+        "is_hull": true, 
         "mass": {
-		"nominal_mass": 800,
-		"density": 0.022935
-	},
-	"water_volume_fill": 1.0,
-	"is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#325989",
-	"render_color": "#325989",
-	"sound_type": "Wood",
-	"water_retention": 0.05
-    },
+            "density": 0.0935, 
+            "nominal_mass": 4600
+        }, 
+        "name": "Titanium Hull Red", 
+        "render_color": "#8F1F00", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.13, 
+        "template": {
+            "column": 1, 
+            "row": "20|Titanium Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
     {
-        "name": "Titanium Hull Blue2",
-	"template": {
-		"row": "20|Titanium Hull",
-		"column": 5
-	},
-        "strength": 0.13,
-	"mass": {
-		"nominal_mass": 4600,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 1.0,
-        "color_key": "#1A2C66",
-	"render_color": "#1A2C66",
-        "is_hull": true,
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Titanium Blue2",
-	"template": {
-		"row": "22|Titanium",
-		"column": 5
-	},
-        "strength": 0.125,
-	"mass": {
-		"nominal_mass": 4500,
-		"density": 0.00935
-	},
-	"water_volume_fill": 1.0,
-        "is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#26498C",
-	"render_color": "#26498C",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Steel Hull Pink",
-	"template": {
-		"row": "10|Steel Hull",
-		"column": 6
-	},
-        "strength": 0.092,
-	"mass": {
-		"nominal_mass": 7580,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 1.0,
-        "color_key": "#A900A7",
-	"render_color": "#A900A7",
-        "is_hull": true,
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Steel Pink",
-	"template": {
-		"row": "12|Steel",
-		"column": 6
-	},
-        "strength": 0.0856,
-	"mass": {
-		"nominal_mass": 7480,
-		"density": 0.00935
-	},
-	"water_volume_fill": 1.0,
-        "is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#D100D6",
-	"render_color": "#D100D6",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Iron Hull Pink",
-	"template": {
-		"row": "0|Iron Hull",
-		"column": 6
-	},
-        "strength": 0.055,
-	"mass": {
-		"nominal_mass": 7950,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 1.0,
-        "color_key": "#860080",
-	"render_color": "#860080",
-        "is_hull": true,
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Iron Pink",
-	"template": {
-		"row": "2|Iron",
-		"column": 6
-	},
-        "strength": 0.051,
-	"mass": {
-		"nominal_mass": 7850,
-		"density": 0.00935
-	},
-	"water_volume_fill": 1.0,
-        "is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#9F009C",
-	"render_color": "#9F009C",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Wood Hull Pink",
-	"template": {
-		"row": "40|Wood Hull",
-		"column": 6
-	},
-        "strength": 0.2,
-	"mass": {
-		"nominal_mass": 1000,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 1.0,
-        "color_key": "#A30085",
-        "render_color": "#A30085",
-        "is_hull": true,
-	"sound_type": "Wood",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Wood Pink",
-	"template": {
-		"row": "42|Wood",
-		"column": 6
-	},
-        "strength": 0.15,
+        "color_key": "#BE1400", 
+        "is_hull": false, 
         "mass": {
-		"nominal_mass": 800,
-		"density": 0.022935
-	},
-	"water_volume_fill": 1.0,
-	"is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#9B00AF",
-	"render_color": "#9B00AF",
-	"sound_type": "Wood",
-	"water_retention": 0.05
-    },
+            "density": 0.00935, 
+            "nominal_mass": 4500
+        }, 
+        "name": "Titanum Red", 
+        "render_color": "#BE1400", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.125, 
+        "template": {
+            "column": 1, 
+            "row": "22|Titanium"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
     {
-        "name": "Titanium Hull Pink",
-	"template": {
-		"row": "20|Titanium Hull",
-		"column": 6
-	},
-        "strength": 0.13,
-	"mass": {
-		"nominal_mass": 4600,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 1.0,
-        "color_key": "#93007B",
-	"render_color": "#93007B",
-        "is_hull": true,
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Titanium Pink",
-	"template": {
-		"row": "22|Titanium",
-		"column": 6
-	},
-        "strength": 0.125,
-	"mass": {
-		"nominal_mass": 4500,
-		"density": 0.00935
-	},
-	"water_volume_fill": 1.0,
-        "is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#BF00BA",
-	"render_color": "#BF00BA",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Steel Hull Orange",	
-	"template": {
-		"row": "10|Steel Hull",
-		"column": 7
-	},
-        "strength": 0.092,
-	"mass": {
-		"nominal_mass": 7580,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 1.0,
-        "color_key": "#D45B00",
-        "render_color": "#D45B00",
-        "is_hull": true,
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Steel Orange",	
-	"template": {
-		"row": "12|Steel",
-		"column": 7
-	},
-        "strength": 0.0856,
-	"mass": {
-		"nominal_mass": 7480,
-		"density": 0.00935
-	},
-	"water_volume_fill": 1.0,
-        "is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#F26500",
-	"render_color": "#F26500",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Iron Hull Orange",	
-	"template": {
-		"row": "0|Iron Hull",
-		"column": 7
-	},
-        "strength": 0.055,
-	"mass": {
-		"nominal_mass": 7950,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 1.0,
-        "color_key": "#A84F00",
-	"render_color": "#A84F00",
-        "is_hull": true,
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Iron Orange",	
-	"template": {
-		"row": "2|Iron",
-		"column": 7
-	},
-        "strength": 0.051,
-	"mass": {
-		"nominal_mass": 7850,
-		"density": 0.00935
-	},
-	"water_volume_fill": 1.0,
-        "is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#C85800",
-	"render_color": "#C85800",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Wood Hull Orange",	
-	"template": {
-		"row": "40|Wood Hull",
-		"column": 7
-	},
-        "strength": 0.2,
-	"mass": {
-		"nominal_mass": 1000,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 1.0,
-        "color_key": "#CE8100",
-	"render_color": "#CE8100",
-        "is_hull": true,
-	"sound_type": "Wood",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Wood Orange",	
-	"template": {
-		"row": "42|Wood",
-		"column": 7
-	},
-        "strength": 0.15,
+        "color_key": "#A27A00", 
+        "is_hull": true, 
         "mass": {
-		"nominal_mass": 800,
-		"density": 0.022935
-	},
-	"water_volume_fill": 1.0,
-	"is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#DE4000",
-	"render_color": "#DE4000",
-	"sound_type": "Wood",
-	"water_retention": 0.05
-    },
+            "density": 0.0935, 
+            "nominal_mass": 7580
+        }, 
+        "name": "Steel Hull Yellow", 
+        "render_color": "#A27A00", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.092, 
+        "template": {
+            "column": 2, 
+            "row": "10|Steel Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
     {
-        "name": "Titanium Hull Orange",	
-	"template": {
-		"row": "20|Titanium Hull",
-		"column": 7
-	},
-        "strength": 0.13,
-	"mass": {
-		"nominal_mass": 4600,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 1.0,
-        "color_key": "#BA7100",
-	"render_color": "#BA7100",
-        "is_hull": true,
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Titanium Orange",	
-	"template": {
-		"row": "22|Titanium",
-		"column": 7
-	},
-        "strength": 0.125,
-	"mass": {
-		"nominal_mass": 4500,
-		"density": 0.00935
-	},
-	"water_volume_fill": 1.0,
-        "is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#EF6B00",
-	"render_color": "#EF6B00",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Iron Hull Stiff",
-	"template": {
-		"row": "0|Iron Hull",
-		"column": 8
-	},
-        "strength": 0.055,
-	"mass": {
-		"nominal_mass": 7950,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 2,
-        "color_key": "#111111",
-	"render_color": "#111111",
-        "is_hull": true,
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Iron Stiff",
-	"template": {
-		"row": "2|Iron",
-		"column": 8
-	},
-        "strength": 0.051,
-	"mass": {
-		"nominal_mass": 7850,
-		"density": 0.00935
-	},
-	"water_volume_fill": 1.0,
-        "is_hull": false,
-	"stiffness": 2.2,
-        "color_key": "#222222",
-	"render_color": "#222222",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-
-    {
-        "name": "Steel Hull Stiff",
-	"template": {
-		"row": "10|Steel Hull",
-		"column": 8
-	},
-        "strength": 0.092,
-	"mass": {
-		"nominal_mass": 7580,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 2,
-        "color_key": "#333333",
-	"render_color": "#333333",
-        "is_hull": true,
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Steel Stiff",
-	"template": {
-		"row": "12|Steel",
-		"column": 8
-	},
-        "strength": 0.0856,
-	"mass": {
-		"nominal_mass": 7480,
-		"density": 0.00935
-	},
-	"water_volume_fill": 1.0,
-        "is_hull": false,
-	"stiffness": 2.2,
-        "color_key": "#444444",
-	"render_color": "#444444",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Black Steel",
-	"template": {
-		"row": "12|Steel",
-		"column": 9
-	},
-        "strength": 0.0856,
-	"mass": {
-		"nominal_mass": 7480,
-		"density": 0.00935
-	},
-	"water_volume_fill": 1.0,
-        "is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#262626",
-	"render_color": "#262626",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Titanium Hull Stiff",	
-	"template": {
-		"row": "20|Titanium Hull",
-		"column": 8
-	},
-        "strength": 0.13,
-	"mass": {
-		"nominal_mass": 4600,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 2.0,
-        "color_key": "#555555",
-	"render_color": "#555555",
-	"is_hull": true,
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Titanium Stiff",	
-	"template": {
-		"row": "22|Titanium",
-		"column": 8
-	},
-        "strength": 0.125,
-	"mass": {
-		"nominal_mass": 4500,
-		"density": 0.00935
-	},
-	"water_volume_fill": 1.0,
-	"is_hull": false,
-	"stiffness": 2.2,
-        "color_key": "#666666",
-	"render_color": "#666666",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Wood Hull Stiff",	
-	"template": {
-		"row": "40|Wood Hull",
-		"column": 8
-	},
-        "strength": 0.2,
-	"mass": {
-		"nominal_mass": 1000,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 2.0,
-        "color_key": "#777777",
-	"render_color": "#777777",
-	"is_hull": true,
-	"sound_type": "Wood",
-	"water_retention": 0.05
-    },
-    {
-        "name": "Wood Stiff",	
-	"template": {
-		"row": "42|Wood",
-		"column": 8
-	},
-        "strength": 0.15,
+        "color_key": "#926A00", 
+        "is_hull": false, 
         "mass": {
-		"nominal_mass": 800,
-		"density": 0.022935
-	},
-	"water_volume_fill": 1.0,
-	"is_hull": false,
-	"stiffness": 2.4,
-        "color_key": "#888888",
-	"render_color": "#888888",
-	"sound_type": "Wood",
-	"water_retention": 0.05
-    },
+            "density": 0.0935, 
+            "nominal_mass": 7580
+        }, 
+        "name": "Structural Steel Yellow", 
+        "render_color": "#926A00", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.092, 
+        "template": {
+            "column": 2, 
+            "row": "11|Structural Steel"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
     {
-        "name": "Double-Bottom Steel Red",
-	"template": {
-		"row": "90|Double-Bottom",
-		"column": "0|Double-Bottom Steel"
-	},
-        "strength": 0.197,
-	"mass": {
-		"nominal_mass": 6500,
-		"density": 0.17
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 1.0,
-        "color_key": "#A21000",
-	"render_color": "#A21000",
-        "is_hull": true,
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
+        "color_key": "#D29800", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.00935, 
+            "nominal_mass": 7480
+        }, 
+        "name": "Steel Yellow", 
+        "render_color": "#D29800", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.0856, 
+        "template": {
+            "column": 2, 
+            "row": "12|Steel"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
     {
-        "name": "Double-Bottom Titanium Red",
-	"template": {
-		"row": "90|Double-Bottom",
-		"column": "1|Double-Bottom Titanium"
-	},
-        "strength": 0.247,
-	"mass": {
-		"nominal_mass": 5000,
-		"density": 0.17
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 1.0,
-        "color_key": "#842005",
-	"render_color": "#842005",
-        "is_hull": true,
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
+        "color_key": "#806200", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 7950
+        }, 
+        "name": "Iron Hull Yellow", 
+        "render_color": "#806200", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.055, 
+        "template": {
+            "column": 2, 
+            "row": "0|Iron Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
     {
-        "name": "Double-Bottom Iron Red",
-	"template": {
-		"row": "90|Double-Bottom",
-		"column": "2|Double-Bottom Iron"
-	},
-        "strength": 0.134,
-	"mass": {
-		"nominal_mass": 7500,
-		"density": 0.17
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 1.0,
-        "color_key": "#7E0C00",
-	"render_color": "#7E0C00",
-        "is_hull": true,
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
+        "color_key": "#705200", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 7950
+        }, 
+        "name": "Structural Iron Yellow", 
+        "render_color": "#705200", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.055, 
+        "template": {
+            "column": 2, 
+            "row": "1|Structural Iron"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
     {
-        "name": "Double-Bottom Wood Red",
-	"template": {
-		"row": "90|Double-Bottom",
-		"column": "3|Double-Bottom Wood"
-	},
-        "strength": 0.5,
-	"mass": {
-		"nominal_mass": 1600,
-		"density": 0.17
-	},
-	"water_volume_fill": 0.0,
-	"stiffness": 1.0,
-        "color_key": "#9B3012",
-	"render_color": "#9B3012",
-        "is_hull": true,
-	"sound_type": "Wood",
-	"water_retention": 0.05
-    },
-
+        "color_key": "#997200", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.00935, 
+            "nominal_mass": 7850
+        }, 
+        "name": "Iron Yellow", 
+        "render_color": "#997200", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.051, 
+        "template": {
+            "column": 2, 
+            "row": "2|Iron"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
     {
-        "name": "Nails",
-	"description": "The most fragile material of them all.",
-	"template": {
-		"row": "90|Nails",
-		"column": "4|Nails"
-	},
-        "strength": 0.08,
-	"mass": {
-		"nominal_mass": 20,
-		"density": 0.0417
-	},
-	"water_volume_fill": 1.0,
-	"stiffness": 1.0,
-        "color_key": "#545454",
-	"render_color": "#545454",
-        "is_hull": false,
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
-
-
+        "color_key": "#998B0A", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 1000
+        }, 
+        "name": "Wood Hull Yellow", 
+        "render_color": "#998B0A", 
+        "sound_type": "Wood", 
+        "stiffness": 1.0, 
+        "strength": 0.2, 
+        "template": {
+            "column": 2, 
+            "row": "40|Wood Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
     {
-        "name": "Glass Hull",
-	"template": {
-		"row": "100|Glass",
-		"column": "1|Glass Hull"
-	},
-        "strength": 0.1,
-	"mass": {
-		"nominal_mass": 1000,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.0,
-	"is_hull": true,
-	"stiffness": 1.0,
-        "color_key": "#C1FFFF",
-	"render_color": "#C1FFFF",
-	"sound_type": "Glass",
-	"water_retention": 0.0
-    },
-
+        "color_key": "#AF7C18", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.022935, 
+            "nominal_mass": 800
+        }, 
+        "name": "Wood Yellow", 
+        "render_color": "#AF7C18", 
+        "sound_type": "Wood", 
+        "stiffness": 1.0, 
+        "strength": 0.15, 
+        "template": {
+            "column": 2, 
+            "row": "42|Wood"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
     {
-        "name": "Glass",
-	"template": {
-		"row": "100|Glass",
-		"column": "2|Glass"
-	},
-        "strength": 0.1,
-	"mass": {
-		"nominal_mass": 1000,
-		"density": 0.022935
-	},
-	"water_volume_fill": 1.0,
-	"is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#E5FFFF",
-	"render_color": "#E5FFFF",
-	"sound_type": "Glass",
-	"water_retention": 0.0
-    },
-
-
-
+        "color_key": "#8B7A00", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 4600
+        }, 
+        "name": "Titanium Hull Yellow", 
+        "render_color": "#8B7A00", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.13, 
+        "template": {
+            "column": 2, 
+            "row": "20|Titanium Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
     {
-        "name": "Rope",
-	"description": "The color key of ropes is constrained to be pure black (#000000).",
-	"template": {
-		"row": "70|Rope",
-		"column": "1|Rope"
-	},
-        "strength": 0.8,
-	"mass": {
-		"nominal_mass": 30,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.3,
-	"stiffness": 0.8,
-        "color_key": "#000000",
-	"render_color": "#000000",
-        "is_hull": false,
-	"sound_type": "Cable",
-	"water_retention": 0.5
-    },
-
+        "color_key": "#B88D00", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.00935, 
+            "nominal_mass": 4500
+        }, 
+        "name": "Titanium Yellow", 
+        "render_color": "#B88D00", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.125, 
+        "template": {
+            "column": 2, 
+            "row": "22|Titanium"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
     {
-        "name": "Cloth Red",
-	"template": {
-		"row": "70|Cloth",
-		"column": "2|Cloth"
-	},
-        "strength": 1.9,
-	"mass": {
-		"nominal_mass": 30,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.05,
-	"is_hull": false,
-	"stiffness": 0.005,
-        "color_key": "#DD4523",
-        "render_color": "#DD4523",
-	"sound_type": "Cloth",
-	"water_retention": 0.5
-    },
-
+        "color_key": "#5A9B00", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 7580
+        }, 
+        "name": "Steel Hull Green", 
+        "render_color": "#5A9B00", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.092, 
+        "template": {
+            "column": 3, 
+            "row": "10|Steel Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
     {
-        "name": "Cloth Green",
-	"template": {
-		"row": "70|Cloth",
-		"column": 3
-	},
-        "strength": 1.9,
-	"mass": {
-		"nominal_mass": 30,
-		"density": 0.0935
-	},
-	"water_volume_fill": 0.05,
-	"is_hull": false,
-	"stiffness": 0.005,
-        "color_key": "#054C00",
-        "render_color": "#054C00",
-	"sound_type": "Cloth",
-	"water_retention": 0.5
-    },
-
+        "color_key": "#7BC800", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.00935, 
+            "nominal_mass": 7480
+        }, 
+        "name": "Steel Green", 
+        "render_color": "#7BC800", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.0856, 
+        "template": {
+            "column": 3, 
+            "row": "12|Steel"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
     {
-        "name": "Cloth Blue",
-	"template": {
-		"row": "70|Cloth",
-		"column": 4
-	},
-	"water_volume_fill": 0.05,
-        "strength": 1.9,
-	"mass": {
-		"nominal_mass": 30,
-		"density": 0.0935
-	},
-	"is_hull": false,
-	"stiffness": 0.005,
-        "color_key": "#0C20D1",
-        "render_color": "#0C20D1",
-	"sound_type": "Cloth",
-	"water_retention": 0.5
-    },
-
-
-
-
-
+        "color_key": "#467B00", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 7950
+        }, 
+        "name": "Iron Hull Green", 
+        "render_color": "#467B00", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.055, 
+        "template": {
+            "column": 3, 
+            "row": "0|Iron Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
     {
-        "name": "Self-Powered Lamp",
-	"description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.",
-	"template": {
-		"row": "100|Electrical",
-		"column": "3|Self-Powered Lamp"
-	},
-        "strength": 0.1,
-	"mass": {
-		"nominal_mass": 30,
-		"density": 0.275
-	},
-	"water_volume_fill": 1.0,
-	"is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#FFFF00",
-	"render_color": "#404040",
-	"sound_type": "Glass",
-	"water_retention": 0.0
-    },
+        "color_key": "#569200", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.00935, 
+            "nominal_mass": 7850
+        }, 
+        "name": "Iron Green", 
+        "render_color": "#569200", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.051, 
+        "template": {
+            "column": 3, 
+            "row": "2|Iron"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
     {
-        "name": "Lamp",	
-	"description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.",
-	"template": {
-		"row": "100|Electrical",
-		"column": "4|Lamp"
-	},
-        "strength": 0.1,
-	"mass": {
-		"nominal_mass": 30,
-		"density": 0.275
-	},
-	"water_volume_fill": 1.0,
-	"is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#FFE010",
-	"render_color": "#404040",
-	"sound_type": "Glass",
-	"water_retention": 0.0
-    },
+        "color_key": "#439206", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 1000
+        }, 
+        "name": "Wood Hull Green", 
+        "render_color": "#439206", 
+        "sound_type": "Wood", 
+        "stiffness": 1.0, 
+        "strength": 0.2, 
+        "template": {
+            "column": 3, 
+            "row": "40|Wood Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
     {
-        "name": "Generator",	
-	"description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.",
-	"template": {
-		"row": "100|Electrical",
-		"column": "5|Generator"
-	},
-        "strength": 0.089,
-	"mass": {
-		"nominal_mass": 900,
-		"density": 0.275
-	},
-	"water_volume_fill": 1.0,
-        "is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#FC0808",
-	"render_color": "#FC0808",
-	"sound_type": "Metal",
-	"water_retention": 0.05
-    },
+        "color_key": "#78A814", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.022935, 
+            "nominal_mass": 800
+        }, 
+        "name": "Wood Green", 
+        "render_color": "#78A814", 
+        "sound_type": "Wood", 
+        "stiffness": 1.0, 
+        "strength": 0.15, 
+        "template": {
+            "column": 3, 
+            "row": "42|Wood"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
     {
-        "name": "Electrical Cable Hull",
-	"description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.",
-	"template": {
-		"row": "100|Electrical",
-		"column": "6|Cable Hull"
-	},
-        "strength": 0.092,
-	"mass": {
-		"nominal_mass": 30,
-		"density": 0.275
-	},
-	"water_volume_fill": 0.0,
-	"is_hull": true,
-	"stiffness": 1.0,
-        "color_key": "#4C0000",
-	"render_color": "#4C0000",
-	"sound_type": "Cable",
-	"water_retention": 0.05
-    },
+        "color_key": "#3C8400", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 4600
+        }, 
+        "name": "Titanium Hull Green", 
+        "render_color": "#3C8400", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.13, 
+        "template": {
+            "column": 3, 
+            "row": "20|Titanium Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
     {
-        "name": "Electrical Cable",
-	"description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.",
-	"template": {
-		"row": "100|Electrical",
-		"column": "7|Cable"
-	},
-        "strength": 0.09,
-	"mass": {
-		"nominal_mass": 30,
-		"density": 0.275
-	},
-	"water_volume_fill": 1.0,
-	"is_hull": false,
-	"stiffness": 1.0,
-        "color_key": "#700000",
-	"render_color": "#700000",
-	"sound_type": "Cable",
-	"water_retention": 0.05
+        "color_key": "#66B100", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.00935, 
+            "nominal_mass": 4500
+        }, 
+        "name": "Titanium Green", 
+        "render_color": "#66B100", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.125, 
+        "template": {
+            "column": 3, 
+            "row": "22|Titanium"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#008A95", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 7580
+        }, 
+        "name": "Steel Hull Blue", 
+        "render_color": "#008A95", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.092, 
+        "template": {
+            "column": 4, 
+            "row": "10|Steel Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+    {
+        "color_key": "#00B6BF", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.00935, 
+            "nominal_mass": 7480
+        }, 
+        "name": "Steel Blue", 
+        "render_color": "#00B6BF", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.0856, 
+        "template": {
+            "column": 4, 
+            "row": "12|Steel"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#006A76", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 7950
+        }, 
+        "name": "Iron Hull Blue", 
+        "render_color": "#006A76", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.055, 
+        "template": {
+            "column": 4, 
+            "row": "0|Iron Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+    {
+        "color_key": "#00818C", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.00935, 
+            "nominal_mass": 7850
+        }, 
+        "name": "Iron Blue", 
+        "render_color": "#00818C", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.051, 
+        "template": {
+            "column": 4, 
+            "row": "2|Iron"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#036E8C", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 1000
+        }, 
+        "name": "Wood Hull Blue", 
+        "render_color": "#036E8C", 
+        "sound_type": "Wood", 
+        "stiffness": 1.0, 
+        "strength": 0.2, 
+        "template": {
+            "column": 4, 
+            "row": "40|Wood Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+    {
+        "color_key": "#10A19D", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.022935, 
+            "nominal_mass": 800
+        }, 
+        "name": "Wood Blue", 
+        "render_color": "#10A19D", 
+        "sound_type": "Wood", 
+        "stiffness": 1.0, 
+        "strength": 0.15, 
+        "template": {
+            "column": 4, 
+            "row": "42|Wood"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#00657E", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 4600
+        }, 
+        "name": "Titanium Hull Blue", 
+        "render_color": "#00657E", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.13, 
+        "template": {
+            "column": 4, 
+            "row": "20|Titanium Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+    {
+        "color_key": "#009BA9", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.00935, 
+            "nominal_mass": 4500
+        }, 
+        "name": "Titanium Blue", 
+        "render_color": "#009BA9", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.125, 
+        "template": {
+            "column": 4, 
+            "row": "22|Titanium"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#22437B", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 7580
+        }, 
+        "name": "Steel Hull Blue2", 
+        "render_color": "#22437B", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.092, 
+        "template": {
+            "column": 5, 
+            "row": "10|Steel Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+    {
+        "color_key": "#2D58A0", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.00935, 
+            "nominal_mass": 7480
+        }, 
+        "name": "Steel Blue2", 
+        "render_color": "#2D58A0", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.0856, 
+        "template": {
+            "column": 5, 
+            "row": "12|Steel"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#1B3261", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 7950
+        }, 
+        "name": "Iron Hull Blue2", 
+        "render_color": "#1B3261", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.055, 
+        "template": {
+            "column": 5, 
+            "row": "0|Iron Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+    {
+        "color_key": "#203E74", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.00935, 
+            "nominal_mass": 7850
+        }, 
+        "name": "Iron Blue2", 
+        "render_color": "#203E74", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.051, 
+        "template": {
+            "column": 5, 
+            "row": "2|Iron"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#1E3070", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 1000
+        }, 
+        "name": "Wood Hull Blue2", 
+        "render_color": "#1E3070", 
+        "sound_type": "Wood", 
+        "stiffness": 1.0, 
+        "strength": 0.2, 
+        "template": {
+            "column": 5, 
+            "row": "40|Wood Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+    {
+        "color_key": "#325989", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.022935, 
+            "nominal_mass": 800
+        }, 
+        "name": "Wood Blue2", 
+        "render_color": "#325989", 
+        "sound_type": "Wood", 
+        "stiffness": 1.0, 
+        "strength": 0.15, 
+        "template": {
+            "column": 5, 
+            "row": "42|Wood"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#1A2C66", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 4600
+        }, 
+        "name": "Titanium Hull Blue2", 
+        "render_color": "#1A2C66", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.13, 
+        "template": {
+            "column": 5, 
+            "row": "20|Titanium Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+    {
+        "color_key": "#26498C", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.00935, 
+            "nominal_mass": 4500
+        }, 
+        "name": "Titanium Blue2", 
+        "render_color": "#26498C", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.125, 
+        "template": {
+            "column": 5, 
+            "row": "22|Titanium"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#A900A7", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 7580
+        }, 
+        "name": "Steel Hull Pink", 
+        "render_color": "#A900A7", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.092, 
+        "template": {
+            "column": 6, 
+            "row": "10|Steel Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+    {
+        "color_key": "#D100D6", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.00935, 
+            "nominal_mass": 7480
+        }, 
+        "name": "Steel Pink", 
+        "render_color": "#D100D6", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.0856, 
+        "template": {
+            "column": 6, 
+            "row": "12|Steel"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#860080", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 7950
+        }, 
+        "name": "Iron Hull Pink", 
+        "render_color": "#860080", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.055, 
+        "template": {
+            "column": 6, 
+            "row": "0|Iron Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+    {
+        "color_key": "#9F009C", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.00935, 
+            "nominal_mass": 7850
+        }, 
+        "name": "Iron Pink", 
+        "render_color": "#9F009C", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.051, 
+        "template": {
+            "column": 6, 
+            "row": "2|Iron"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#A30085", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 1000
+        }, 
+        "name": "Wood Hull Pink", 
+        "render_color": "#A30085", 
+        "sound_type": "Wood", 
+        "stiffness": 1.0, 
+        "strength": 0.2, 
+        "template": {
+            "column": 6, 
+            "row": "40|Wood Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+    {
+        "color_key": "#9B00AF", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.022935, 
+            "nominal_mass": 800
+        }, 
+        "name": "Wood Pink", 
+        "render_color": "#9B00AF", 
+        "sound_type": "Wood", 
+        "stiffness": 1.0, 
+        "strength": 0.15, 
+        "template": {
+            "column": 6, 
+            "row": "42|Wood"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#93007B", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 4600
+        }, 
+        "name": "Titanium Hull Pink", 
+        "render_color": "#93007B", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.13, 
+        "template": {
+            "column": 6, 
+            "row": "20|Titanium Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+    {
+        "color_key": "#BF00BA", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.00935, 
+            "nominal_mass": 4500
+        }, 
+        "name": "Titanium Pink", 
+        "render_color": "#BF00BA", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.125, 
+        "template": {
+            "column": 6, 
+            "row": "22|Titanium"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#D45B00", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 7580
+        }, 
+        "name": "Steel Hull Orange", 
+        "render_color": "#D45B00", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.092, 
+        "template": {
+            "column": 7, 
+            "row": "10|Steel Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+    {
+        "color_key": "#F26500", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.00935, 
+            "nominal_mass": 7480
+        }, 
+        "name": "Steel Orange", 
+        "render_color": "#F26500", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.0856, 
+        "template": {
+            "column": 7, 
+            "row": "12|Steel"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#A84F00", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 7950
+        }, 
+        "name": "Iron Hull Orange", 
+        "render_color": "#A84F00", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.055, 
+        "template": {
+            "column": 7, 
+            "row": "0|Iron Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+    {
+        "color_key": "#C85800", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.00935, 
+            "nominal_mass": 7850
+        }, 
+        "name": "Iron Orange", 
+        "render_color": "#C85800", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.051, 
+        "template": {
+            "column": 7, 
+            "row": "2|Iron"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#CE8100", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 1000
+        }, 
+        "name": "Wood Hull Orange", 
+        "render_color": "#CE8100", 
+        "sound_type": "Wood", 
+        "stiffness": 1.0, 
+        "strength": 0.2, 
+        "template": {
+            "column": 7, 
+            "row": "40|Wood Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+    {
+        "color_key": "#DE4000", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.022935, 
+            "nominal_mass": 800
+        }, 
+        "name": "Wood Orange", 
+        "render_color": "#DE4000", 
+        "sound_type": "Wood", 
+        "stiffness": 1.0, 
+        "strength": 0.15, 
+        "template": {
+            "column": 7, 
+            "row": "42|Wood"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#BA7100", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 4600
+        }, 
+        "name": "Titanium Hull Orange", 
+        "render_color": "#BA7100", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.13, 
+        "template": {
+            "column": 7, 
+            "row": "20|Titanium Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+    {
+        "color_key": "#EF6B00", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.00935, 
+            "nominal_mass": 4500
+        }, 
+        "name": "Titanium Orange", 
+        "render_color": "#EF6B00", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.125, 
+        "template": {
+            "column": 7, 
+            "row": "22|Titanium"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#111111", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 7950
+        }, 
+        "name": "Iron Hull Stiff", 
+        "render_color": "#111111", 
+        "sound_type": "Metal", 
+        "stiffness": 2, 
+        "strength": 0.055, 
+        "template": {
+            "column": 8, 
+            "row": "0|Iron Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+    {
+        "color_key": "#222222", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.00935, 
+            "nominal_mass": 7850
+        }, 
+        "name": "Iron Stiff", 
+        "render_color": "#222222", 
+        "sound_type": "Metal", 
+        "stiffness": 2.2, 
+        "strength": 0.051, 
+        "template": {
+            "column": 8, 
+            "row": "2|Iron"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#333333", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 7580
+        }, 
+        "name": "Steel Hull Stiff", 
+        "render_color": "#333333", 
+        "sound_type": "Metal", 
+        "stiffness": 2, 
+        "strength": 0.092, 
+        "template": {
+            "column": 8, 
+            "row": "10|Steel Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+    {
+        "color_key": "#444444", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.00935, 
+            "nominal_mass": 7480
+        }, 
+        "name": "Steel Stiff", 
+        "render_color": "#444444", 
+        "sound_type": "Metal", 
+        "stiffness": 2.2, 
+        "strength": 0.0856, 
+        "template": {
+            "column": 8, 
+            "row": "12|Steel"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#262626", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.00935, 
+            "nominal_mass": 7480
+        }, 
+        "name": "Black Steel", 
+        "render_color": "#262626", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.0856, 
+        "template": {
+            "column": 9, 
+            "row": "12|Steel"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#555555", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 4600
+        }, 
+        "name": "Titanium Hull Stiff", 
+        "render_color": "#555555", 
+        "sound_type": "Metal", 
+        "stiffness": 2.0, 
+        "strength": 0.13, 
+        "template": {
+            "column": 8, 
+            "row": "20|Titanium Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+    {
+        "color_key": "#666666", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.00935, 
+            "nominal_mass": 4500
+        }, 
+        "name": "Titanium Stiff", 
+        "render_color": "#666666", 
+        "sound_type": "Metal", 
+        "stiffness": 2.2, 
+        "strength": 0.125, 
+        "template": {
+            "column": 8, 
+            "row": "22|Titanium"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#777777", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 1000
+        }, 
+        "name": "Wood Hull Stiff", 
+        "render_color": "#777777", 
+        "sound_type": "Wood", 
+        "stiffness": 2.0, 
+        "strength": 0.2, 
+        "template": {
+            "column": 8, 
+            "row": "40|Wood Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+    {
+        "color_key": "#888888", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.022935, 
+            "nominal_mass": 800
+        }, 
+        "name": "Wood Stiff", 
+        "render_color": "#888888", 
+        "sound_type": "Wood", 
+        "stiffness": 2.4, 
+        "strength": 0.15, 
+        "template": {
+            "column": 8, 
+            "row": "42|Wood"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#A21000", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.17, 
+            "nominal_mass": 6500
+        }, 
+        "name": "Double-Bottom Steel Red", 
+        "render_color": "#A21000", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.197, 
+        "template": {
+            "column": "0|Double-Bottom Steel", 
+            "row": "90|Double-Bottom"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+    {
+        "color_key": "#842005", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.17, 
+            "nominal_mass": 5000
+        }, 
+        "name": "Double-Bottom Titanium Red", 
+        "render_color": "#842005", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.247, 
+        "template": {
+            "column": "1|Double-Bottom Titanium", 
+            "row": "90|Double-Bottom"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+    {
+        "color_key": "#7E0C00", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.17, 
+            "nominal_mass": 7500
+        }, 
+        "name": "Double-Bottom Iron Red", 
+        "render_color": "#7E0C00", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.134, 
+        "template": {
+            "column": "2|Double-Bottom Iron", 
+            "row": "90|Double-Bottom"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+    {
+        "color_key": "#9B3012", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.17, 
+            "nominal_mass": 1600
+        }, 
+        "name": "Double-Bottom Wood Red", 
+        "render_color": "#9B3012", 
+        "sound_type": "Wood", 
+        "stiffness": 1.0, 
+        "strength": 0.5, 
+        "template": {
+            "column": "3|Double-Bottom Wood", 
+            "row": "90|Double-Bottom"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+    {
+        "color_key": "#545454", 
+        "description": "The most fragile material of them all.", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.0417, 
+            "nominal_mass": 20
+        }, 
+        "name": "Nails", 
+        "render_color": "#545454", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.08, 
+        "template": {
+            "column": "4|Nails", 
+            "row": "90|Nails"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#C1FFFF", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 1000
+        }, 
+        "name": "Glass Hull", 
+        "render_color": "#C1FFFF", 
+        "sound_type": "Glass", 
+        "stiffness": 1.0, 
+        "strength": 0.1, 
+        "template": {
+            "column": "1|Glass Hull", 
+            "row": "100|Glass"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.0, 
+        "water_volume_fill": 0.0
+    }, 
+    {
+        "color_key": "#E5FFFF", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.022935, 
+            "nominal_mass": 1000
+        }, 
+        "name": "Glass", 
+        "render_color": "#E5FFFF", 
+        "sound_type": "Glass", 
+        "stiffness": 1.0, 
+        "strength": 0.1, 
+        "template": {
+            "column": "2|Glass", 
+            "row": "100|Glass"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.0, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#000000", 
+        "description": "The color key of ropes is constrained to be pure black (#000000).", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 30
+        }, 
+        "name": "Rope", 
+        "render_color": "#000000", 
+        "sound_type": "Cable", 
+        "stiffness": 0.8, 
+        "strength": 0.8, 
+        "template": {
+            "column": "1|Rope", 
+            "row": "70|Rope"
+        }, 
+        "water_diffusion_speed": 0.015, 
+        "water_retention": 0.5, 
+        "water_volume_fill": 0.3
+    }, 
+    {
+        "color_key": "#DD4523", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 30
+        }, 
+        "name": "Cloth Red", 
+        "render_color": "#DD4523", 
+        "sound_type": "Cloth", 
+        "stiffness": 0.005, 
+        "strength": 1.9, 
+        "template": {
+            "column": "2|Cloth", 
+            "row": "70|Cloth"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.5, 
+        "water_volume_fill": 0.05
+    }, 
+    {
+        "color_key": "#054C00", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 30
+        }, 
+        "name": "Cloth Green", 
+        "render_color": "#054C00", 
+        "sound_type": "Cloth", 
+        "stiffness": 0.005, 
+        "strength": 1.9, 
+        "template": {
+            "column": 3, 
+            "row": "70|Cloth"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.5, 
+        "water_volume_fill": 0.05
+    }, 
+    {
+        "color_key": "#0C20D1", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 30
+        }, 
+        "name": "Cloth Blue", 
+        "render_color": "#0C20D1", 
+        "sound_type": "Cloth", 
+        "stiffness": 0.005, 
+        "strength": 1.9, 
+        "template": {
+            "column": 4, 
+            "row": "70|Cloth"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.5, 
+        "water_volume_fill": 0.05
+    }, 
+    {
+        "color_key": "#FFFF00", 
+        "description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.275, 
+            "nominal_mass": 30
+        }, 
+        "name": "Self-Powered Lamp", 
+        "render_color": "#404040", 
+        "sound_type": "Glass", 
+        "stiffness": 1.0, 
+        "strength": 0.1, 
+        "template": {
+            "column": "3|Self-Powered Lamp", 
+            "row": "100|Electrical"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.0, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#FFE010", 
+        "description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.275, 
+            "nominal_mass": 30
+        }, 
+        "name": "Lamp", 
+        "render_color": "#404040", 
+        "sound_type": "Glass", 
+        "stiffness": 1.0, 
+        "strength": 0.1, 
+        "template": {
+            "column": "4|Lamp", 
+            "row": "100|Electrical"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.0, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#FC0808", 
+        "description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.275, 
+            "nominal_mass": 900
+        }, 
+        "name": "Generator", 
+        "render_color": "#FC0808", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.089, 
+        "template": {
+            "column": "5|Generator", 
+            "row": "100|Electrical"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#4C0000", 
+        "description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.275, 
+            "nominal_mass": 30
+        }, 
+        "name": "Electrical Cable Hull", 
+        "render_color": "#4C0000", 
+        "sound_type": "Cable", 
+        "stiffness": 1.0, 
+        "strength": 0.092, 
+        "template": {
+            "column": "6|Cable Hull", 
+            "row": "100|Electrical"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+    {
+        "color_key": "#700000", 
+        "description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.275, 
+            "nominal_mass": 30
+        }, 
+        "name": "Electrical Cable", 
+        "render_color": "#700000", 
+        "sound_type": "Cable", 
+        "stiffness": 1.0, 
+        "strength": 0.09, 
+        "template": {
+            "column": "7|Cable", 
+            "row": "100|Electrical"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
     }
 ]

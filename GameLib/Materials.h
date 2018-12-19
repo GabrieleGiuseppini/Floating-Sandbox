@@ -22,6 +22,7 @@ struct StructuralMaterial
 
     bool IsHull;
     float WaterVolumeFill;
+    float WaterDiffusionSpeed;
     float WaterRetention;
 
     enum class MaterialSoundType
@@ -49,6 +50,7 @@ private:
         vec4f renderColor,
         bool isHull,
         float waterVolumeFill,
+        float waterDiffusionSpeed,
         float waterRetention,
         MaterialSoundType materialSound)
         : Name(name)
@@ -58,6 +60,7 @@ private:
         , RenderColor(renderColor)
         , IsHull(isHull)
         , WaterVolumeFill(waterVolumeFill)
+        , WaterDiffusionSpeed(waterDiffusionSpeed)
         , WaterRetention(waterRetention)
         , MaterialSound(materialSound)
     {}

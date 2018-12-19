@@ -184,10 +184,10 @@ public:
     float GetMinWaterCrazyness() const { return GameParameters::MinWaterCrazyness; }
     float GetMaxWaterCrazyness() const { return GameParameters::MaxWaterCrazyness; }
 
-    float GetWaterQuickness() const { return mGameParameters.WaterQuickness; }
-    void SetWaterQuickness(float value) { mGameParameters.WaterQuickness = value; }
-    float GetMinWaterQuickness() const { return GameParameters::MinWaterQuickness; }
-    float GetMaxWaterQuickness() const { return GameParameters::MaxWaterQuickness; }
+    float GetWaterDiffusionSpeedAdjustment() const { return mGameParameters.WaterDiffusionSpeedAdjustment; }
+    void SetWaterDiffusionSpeedAdjustment(float value) { mGameParameters.WaterDiffusionSpeedAdjustment = value; }
+    float GetMinWaterDiffusionSpeedAdjustment() const { return GameParameters::MinWaterDiffusionSpeedAdjustment; }
+    float GetMaxWaterDiffusionSpeedAdjustment() const { return GameParameters::MaxWaterDiffusionSpeedAdjustment; }
 
     float GetWaveHeight() const { return mGameParameters.WaveHeight; }
     void SetWaveHeight(float value) { mGameParameters.WaveHeight = value; }

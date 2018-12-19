@@ -40,6 +40,7 @@ void Points::Add(
     mIsHullBuffer.emplace_back(structuralMaterial.IsHull);
     mWaterVolumeFillBuffer.emplace_back(structuralMaterial.WaterVolumeFill);
     mWaterRestitutionBuffer.emplace_back(1.0f - structuralMaterial.WaterRetention);
+    mWaterDiffusionSpeedBuffer.emplace_back(structuralMaterial.WaterDiffusionSpeed);
 
     mWaterBuffer.emplace_back(0.0f);
     mWaterVelocityBuffer.emplace_back(vec2f::zero());

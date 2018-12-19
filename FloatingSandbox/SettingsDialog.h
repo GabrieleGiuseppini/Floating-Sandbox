@@ -66,7 +66,7 @@ private:
     std::unique_ptr<SliderControl> mWaterDragSlider;
     std::unique_ptr<SliderControl> mWaterIntakeSlider;
     std::unique_ptr<SliderControl> mWaterCrazynessSlider;
-    std::unique_ptr<SliderControl> mWaterQuicknessSlider;
+    std::unique_ptr<SliderControl> mWaterDiffusionSpeedAdjustmentSlider;
     std::unique_ptr<SliderControl> mWaterLevelOfDetailSlider;
 
     // Sky

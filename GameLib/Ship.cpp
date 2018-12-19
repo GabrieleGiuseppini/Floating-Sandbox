@@ -1188,7 +1188,7 @@ void Ship::UpdateWaterVelocities(
         // 2) Calculate normalization factor for water flows:
         //    the quantity of water along a spring is proportional to the weight of the spring
         //    (resultant velocity along that spring), and the sum of all outbound water flows must
-        //    match the water currently at the point times the quickness fraction
+        //    match the water currently at the point times the water speed fraction and the adjustment
         //
 
         assert(totalOutboundWaterFlowWeight >= 0.0f);
@@ -1198,7 +1198,8 @@ void Ship::UpdateWaterVelocities(
         {
             waterQuantityNormalizationFactor =
                 oldPointWaterBufferData[pointIndex]
-                * gameParameters.WaterQuickness
+                * mPoints.GetWaterDiffusionSpeed(pointIndex)
+                * gameParameters.WaterDiffusionSpeedAdjustment
                 / totalOutboundWaterFlowWeight;
         }
 

@@ -3,7 +3,9 @@ import sys
 
 from collections import OrderedDict
  
-def adjust(material):
+def adjust_material(material):
+
+    material["water_diffusion_speed"] = 0.5
 
     pass
 
@@ -17,8 +19,8 @@ def main():
     with open(sys.argv[1], "r") as in_file:
         json_obj = json.load(in_file)
 
-    for m in json_obj:
-        adjust_material(m)
+    for material in json_obj:
+        adjust_material(material)
 
     with open(sys.argv[2], "w") as out_file:
         out_file.write(json.dumps(json_obj, indent=4, sort_keys=True))

@@ -157,6 +157,7 @@ public:
         , mIsHullBuffer(mBufferElementCount, shipPointCount, false)
         , mWaterVolumeFillBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mWaterRestitutionBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mWaterDiffusionSpeedBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mWaterBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mWaterVelocityBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mWaterMomentumBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
@@ -444,6 +445,11 @@ public:
         return mWaterRestitutionBuffer[pointElementIndex];
     }
 
+    float GetWaterDiffusionSpeed(ElementIndex pointElementIndex) const
+    {
+        return mWaterDiffusionSpeedBuffer[pointElementIndex];
+    }
+
     float * restrict GetWaterBufferAsFloat()
     {
         return mWaterBuffer.data();
@@ -720,6 +726,7 @@ private:
     Buffer<bool> mIsHullBuffer;
     Buffer<float> mWaterVolumeFillBuffer;
     Buffer<float> mWaterRestitutionBuffer;
+    Buffer<float> mWaterDiffusionSpeedBuffer;
 
     // Height of a 1m2 column of water which provides a pressure equivalent to the pressure at
     // this point. Quantity of water is max(water, 1.0)

@@ -52,7 +52,7 @@ Here's an explanation of the elements:
 - _template_: coordinates of the material in the automatically-generated materials template.
 - _strength_: the maximum relative stretch (length difference wrt rest length, over rest length) before a spring of this material breaks. 
             For example: 0.01 means that a spring will break after it gets shorter or longer by 1% of its rest length.
-- _mass_: the mass of the material. The mass is really the product of its nominal mass (the real physical mass of the material) with its density (how much of that material is a in a cubic meter). 
+- _mass_: the mass of the material, in Kg. The mass is really the product of its nominal mass (the real physical mass of the material) with its density (how much of that material is a in a cubic meter). 
         For example, iron has a mass of 7950 Kg/m3, but the "Iron Hull" material does not represent a cubic meter of iron (that would be insane), but rather some *structure* made of iron (think, a truss or a beam)	which only uses 17% of the cubic meter.
 - _is hull_: whether or not a point or a spring of this material is permeable to water
 - _stiffness_: how strongly a spring of this material wants to return to its original length. This is not really free, as values higher than 1.2 tend to make springs explode. Lower values will though make the spring quite soft.
