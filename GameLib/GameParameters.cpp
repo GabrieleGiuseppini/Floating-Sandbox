@@ -21,6 +21,7 @@ GameParameters::GameParameters()
     // Ephemeral particles
     , DoGenerateDebris(true)
     , DoGenerateSparkles(true)
+    , DoGenerateAirBubbles(true)
     // Misc
     , WaveHeight(2.5f)
     , SeaDepth(300.0f)

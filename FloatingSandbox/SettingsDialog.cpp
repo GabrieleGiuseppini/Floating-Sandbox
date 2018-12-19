@@ -23,6 +23,7 @@ static constexpr int SliderBorder = 10;
 const long ID_ULTRA_VIOLENT_CHECKBOX = wxNewId();
 const long ID_GENERATE_DEBRIS_CHECKBOX = wxNewId();
 const long ID_GENERATE_SPARKLES_CHECKBOX = wxNewId();
+const long ID_GENERATE_AIR_BUBBLES_CHECKBOX = wxNewId();
 const long ID_SEE_SHIP_THROUGH_SEA_WATER_CHECKBOX = wxNewId();
 const long ID_SHOW_STRESS_CHECKBOX = wxNewId();
 const long ID_WIREFRAME_MODE_CHECKBOX = wxNewId();
@@ -248,6 +249,12 @@ void SettingsDialog::OnGenerateSparklesCheckBoxClick(wxCommandEvent & /*event*/)
     mApplyButton->Enable(true);
 }
 
+void SettingsDialog::OnGenerateAirBubblesCheckBoxClick(wxCommandEvent & /*event*/)
+{
+    // Remember we're dirty now
+    mApplyButton->Enable(true);
+}
+
 void SettingsDialog::OnShipRenderModeRadioBox(wxCommandEvent & /*event*/)
 {
     // Remember we're dirty now
@@ -395,6 +402,8 @@ void SettingsDialog::ApplySettings()
     mGameController->SetDoGenerateDebris(mGenerateDebrisCheckBox->IsChecked());
 
     mGameController->SetDoGenerateSparkles(mGenerateSparklesCheckBox->IsChecked());
+
+    mGameController->SetDoGenerateAirBubbles(mGenerateAirBubblesCheckBox->IsChecked());
 
 
 
@@ -991,6 +1000,10 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
     Connect(ID_GENERATE_SPARKLES_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnGenerateSparklesCheckBoxClick);
     checkboxesSizer->Add(mGenerateSparklesCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
 
+    mGenerateAirBubblesCheckBox = new wxCheckBox(panel, ID_GENERATE_AIR_BUBBLES_CHECKBOX, _("Generate Air Bubbles"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Generate Air Bubbles Checkbox"));
+    Connect(ID_GENERATE_AIR_BUBBLES_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnGenerateAirBubblesCheckBoxClick);
+    checkboxesSizer->Add(mGenerateAirBubblesCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
+
     controlsSizer->Add(checkboxesSizer, 0, wxALL, SliderBorder);
 
 
@@ -1255,6 +1268,8 @@ void SettingsDialog::ReadSettings()
     mGenerateDebrisCheckBox->SetValue(mGameController->GetDoGenerateDebris());
 
     mGenerateSparklesCheckBox->SetValue(mGameController->GetDoGenerateSparkles());
+
+    mGenerateAirBubblesCheckBox->SetValue(mGameController->GetDoGenerateAirBubbles());
 
 
 

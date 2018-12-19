@@ -38,10 +38,10 @@ public:
     enum class EphemeralType
     {
         None,
-        Debris,
-        Sparkle,
         AirBubble,
-        Smoke
+        Debris,
+        Smoke,
+        Sparkle
     };
 
 private:
@@ -51,7 +51,29 @@ private:
      */
     union EphemeralState
     {
+        struct AirBubbleState
+        {
+            TextureFrameIndex FrameIndex;
+            float InitialSize;
+            float Solidity;
+
+            AirBubbleState()
+            {}
+
+            AirBubbleState(
+                TextureFrameIndex frameIndex,
+                float initialSize)
+                : FrameIndex(frameIndex)
+                , InitialSize(initialSize)
+                , Solidity(1.0f)
+            {}
+        };
+
         struct DebrisState
+        {
+        };
+
+        struct SmokeState
         {
         };
 
@@ -70,33 +92,25 @@ private:
             {}
         };
 
-        struct AirBubbleState
-        {
-        };
-
-        struct SmokeState
-        {
-        };
-
-        DebrisState Debris;
-        SparkleState Sparkle;
         AirBubbleState AirBubble;
+        DebrisState Debris;
         SmokeState Smoke;
-
-        EphemeralState(DebrisState debris)
-            : Debris(debris)
-        {}
-
-        EphemeralState(SparkleState sparkle)
-            : Sparkle(sparkle)
-        {}
+        SparkleState Sparkle;
 
         EphemeralState(AirBubbleState airBubble)
             : AirBubble(airBubble)
         {}
 
+        EphemeralState(DebrisState debris)
+            : Debris(debris)
+        {}
+
         EphemeralState(SmokeState smoke)
             : Smoke(smoke)
+        {}
+
+        EphemeralState(SparkleState sparkle)
+            : Sparkle(sparkle)
         {}
     };
 
@@ -245,6 +259,12 @@ public:
         bool isLeaking,
         vec4f const & color,
         vec2f const & textureCoordinates);
+
+    void CreateEphemeralParticleAirBubble(
+        vec2f const & position,
+        float initialSize,
+        StructuralMaterial const & structuralMaterial,
+        float currentSimulationTime);
 
     void CreateEphemeralParticleDebris(
         vec2f const & position,

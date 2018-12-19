@@ -7,12 +7,14 @@
 
 #include "GameParameters.h"
 #include "GameTypes.h"
+#include "MaterialDatabase.h"
 #include "Physics.h"
 #include "RenderContext.h"
 #include "RunningAverage.h"
 #include "ShipDefinition.h"
 #include "Vectors.h"
 
+#include <memory>
 #include <optional>
 #include <vector>
 
@@ -28,6 +30,7 @@ public:
         ShipId id,
         World & parentWorld,
         std::shared_ptr<IGameEventHandler> gameEventHandler,
+        MaterialDatabase const & materialDatabase,
         Points && points,
         Springs && springs,
         Triangles && triangles,
@@ -147,9 +150,12 @@ public:
 
     // Water
 
-    void UpdateWaterDynamics(GameParameters const & gameParameters);
+    void UpdateWaterDynamics(
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
 
     void UpdateWaterInflow(
+        float currentSimulationTime,
         GameParameters const & gameParameters,
         float & waterTaken);
 
@@ -211,6 +217,12 @@ private:
         float currentSimulationTime,
         GameParameters const & gameParameters);
 
+    void GenerateAirBubbles(
+        ElementIndex pointElementIndex,
+        float size,
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
+
 private:
 
     /////////////////////////////////////////////////////////////////////////
@@ -249,6 +261,7 @@ private:
     ShipId const mId;
     World & mParentWorld;
     std::shared_ptr<IGameEventHandler> mGameEventHandler;
+    MaterialDatabase const & mMaterialDatabase;
 
     // All the ship elements - never removed, the repositories maintain their own size forever
     Points mPoints;

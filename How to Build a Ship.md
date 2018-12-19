@@ -53,7 +53,9 @@ in the range from #000000 to #000FFF, and the structural material of the endpoin
 being whatever structural material specified by the structural layer.
 
 # Texture Layer
-The texture layer image is a TODO.
+The texture layer image provides the visible aspect of a ship. TODO
+- TODO: Any size
+- TODO: Only portions covered by structure are shown
 
 # .shp File
 TODO

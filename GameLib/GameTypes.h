@@ -174,7 +174,8 @@ enum class VectorFieldRenderMode
  */
 enum class TextureGroupType : uint16_t
 {
-    AntiMatterBombArmor = 0,
+    AirBubble = 0,
+    AntiMatterBombArmor,
     AntiMatterBombSphere,
     AntiMatterBombSphereCloud,
     Cloud,

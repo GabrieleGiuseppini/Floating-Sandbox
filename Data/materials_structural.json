@@ -2142,7 +2142,6 @@
     }, 
     {
         "color_key": "#000000", 
-        "description": "The color key of ropes is constrained to be pure black (#000000).", 
         "is_hull": false, 
         "mass": {
             "density": 0.0935, 
@@ -2221,6 +2220,27 @@
         "water_retention": 0.5, 
         "water_volume_fill": 0.05
     }, 
+
+
+    {
+        "color_key": "#F0F0F0", 
+        "is_hull": true, 
+        "mass": {
+            "density": 1.0,
+            "nominal_mass": 1.2754
+        }, 
+        "name": "Air", 
+        "render_color": "#F0F0F0",
+	"sound_type": "AirBubble",
+        "stiffness": 1.0, 
+        "strength": 1.0, 
+        "water_diffusion_speed": 0.0,
+        "water_retention": 0.0, 
+        "water_volume_fill": 1.0
+    },
+
+
+
     {
         "color_key": "#FFFF00", 
         "description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.", 

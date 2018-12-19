@@ -38,6 +38,7 @@ private:
     void OnUltraViolentCheckBoxClick(wxCommandEvent & event);
     void OnGenerateDebrisCheckBoxClick(wxCommandEvent & event);
     void OnGenerateSparklesCheckBoxClick(wxCommandEvent & event);
+    void OnGenerateAirBubblesCheckBoxClick(wxCommandEvent & event);
 
     void OnSeeShipThroughSeaWaterCheckBoxClick(wxCommandEvent & event);
     void OnShipRenderModeRadioBox(wxCommandEvent & event);
@@ -89,6 +90,7 @@ private:
     wxCheckBox * mUltraViolentCheckBox;
     wxCheckBox * mGenerateDebrisCheckBox;
     wxCheckBox * mGenerateSparklesCheckBox;
+    wxCheckBox * mGenerateAirBubblesCheckBox;
 
     // Rendering
     std::unique_ptr<SliderControl> mSeaWaterTransparencySlider;

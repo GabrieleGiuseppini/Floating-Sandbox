@@ -32,8 +32,16 @@ StructuralMaterial StructuralMaterial::Create(picojson::object const & structura
         float waterDiffusionSpeed = static_cast<float>(Utils::GetMandatoryJsonMember<double>(structuralMaterialJson, "water_diffusion_speed"));
         float waterRetention = static_cast<float>(Utils::GetMandatoryJsonMember<double>(structuralMaterialJson, "water_retention"));
 
-        std::string materialSoundStr = Utils::GetMandatoryJsonMember<std::string>(structuralMaterialJson, "sound_type");
-        MaterialSoundType materialSound = StrToMaterialSoundType(materialSoundStr);
+        std::optional<MaterialUniqueType> uniqueType;
+        if (name == "Air")
+            uniqueType = MaterialUniqueType::Air;
+        else if (name == "Rope")
+            uniqueType = MaterialUniqueType::Rope;
+
+        std::optional<std::string> materialSoundStr = Utils::GetOptionalJsonMember<std::string>(structuralMaterialJson, "sound_type");
+        std::optional<MaterialSoundType> materialSound;
+        if (!!materialSoundStr)
+            materialSound = StrToMaterialSoundType(*materialSoundStr);
 
         return StructuralMaterial(
             name,
@@ -45,6 +53,7 @@ StructuralMaterial StructuralMaterial::Create(picojson::object const & structura
             waterVolumeFill,
             waterDiffusionSpeed,
             waterRetention,
+            uniqueType,
             materialSound);
     }
     catch (GameException const & ex)
@@ -57,7 +66,9 @@ StructuralMaterial::MaterialSoundType StructuralMaterial::StrToMaterialSoundType
 {
     std::string lstr = Utils::ToLower(str);
 
-    if (lstr == "cable")
+    if (lstr == "airbubble")
+        return MaterialSoundType::AirBubble;
+    else if (lstr == "cable")
         return MaterialSoundType::Cable;
     else if (lstr == "cloth")
         return MaterialSoundType::Cloth;

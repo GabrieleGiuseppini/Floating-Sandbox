@@ -711,13 +711,16 @@ void SoundController::OnDestroy(
     bool isUnderwater,
     unsigned int size)
 {
-    PlayMSUOneShotMultipleChoiceSound(
-        SoundType::Destroy,
-        structuralMaterial.MaterialSound,
-        size,
-        isUnderwater,
-        70.0f,
-        true);
+    if (!!(structuralMaterial.MaterialSound))
+    {
+        PlayMSUOneShotMultipleChoiceSound(
+            SoundType::Destroy,
+            *(structuralMaterial.MaterialSound),
+            size,
+            isUnderwater,
+            70.0f,
+            true);
+    }
 }
 
 void SoundController::OnSawed(
@@ -746,11 +749,12 @@ void SoundController::OnStress(
     bool isUnderwater,
     unsigned int size)
 {
-    if (mPlayStressSounds)
+    if (mPlayStressSounds
+        && !!(structuralMaterial.MaterialSound))
     {
         PlayMSUOneShotMultipleChoiceSound(
             SoundType::Stress,
-            structuralMaterial.MaterialSound,
+            *(structuralMaterial.MaterialSound),
             size,
             isUnderwater,
             StressSoundVolume,
@@ -763,11 +767,12 @@ void SoundController::OnBreak(
     bool isUnderwater,
     unsigned int size)
 {
-    if (mPlayBreakSounds)
+    if (mPlayBreakSounds
+        && !!(structuralMaterial.MaterialSound))
     {
         PlayMSUOneShotMultipleChoiceSound(
             SoundType::Break,
-            structuralMaterial.MaterialSound,
+            *(structuralMaterial.MaterialSound),
             size,
             isUnderwater,
             10.0f,

@@ -10,6 +10,7 @@
 
 #include <picojson/picojson.h>
 
+#include <optional>
 #include <string>
 
 struct StructuralMaterial
@@ -25,8 +26,19 @@ struct StructuralMaterial
     float WaterDiffusionSpeed;
     float WaterRetention;
 
+    enum class MaterialUniqueType : size_t
+    {
+        Air = 0,
+        Rope = 1,
+
+        _Last = Rope
+    };
+
+    std::optional<MaterialUniqueType> UniqueType;
+
     enum class MaterialSoundType
     {
+        AirBubble,
         Cable,
         Cloth,
         Glass,
@@ -34,11 +46,18 @@ struct StructuralMaterial
         Wood,
     };
 
-    MaterialSoundType MaterialSound;
+    std::optional<MaterialSoundType> MaterialSound;
+
+public:
 
     static StructuralMaterial Create(picojson::object const & structuralMaterialJson);
 
     static MaterialSoundType StrToMaterialSoundType(std::string const & str);
+
+    bool IsUniqueType(MaterialUniqueType uniqueType) const
+    {
+        return !!UniqueType && *UniqueType == uniqueType;
+    }
 
 private:
 
@@ -52,7 +71,8 @@ private:
         float waterVolumeFill,
         float waterDiffusionSpeed,
         float waterRetention,
-        MaterialSoundType materialSound)
+        std::optional<MaterialUniqueType> uniqueType,
+        std::optional<MaterialSoundType> materialSound)
         : Name(name)
         , Strength(strength)
         , Mass(mass)
@@ -62,6 +82,7 @@ private:
         , WaterVolumeFill(waterVolumeFill)
         , WaterDiffusionSpeed(waterDiffusionSpeed)
         , WaterRetention(waterRetention)
+        , UniqueType(uniqueType)
         , MaterialSound(materialSound)
     {}
 };

@@ -36,6 +36,7 @@ Ship::Ship(
     ShipId id,
     World & parentWorld,
     std::shared_ptr<IGameEventHandler> gameEventHandler,
+    MaterialDatabase const & materialDatabase,
     Points && points,
     Springs && springs,
     Triangles && triangles,
@@ -44,6 +45,7 @@ Ship::Ship(
     : mId(id)
     , mParentWorld(parentWorld)
     , mGameEventHandler(std::move(gameEventHandler))
+    , mMaterialDatabase(materialDatabase)
     , mPoints(std::move(points))
     , mSprings(std::move(springs))
     , mTriangles(std::move(triangles))
@@ -394,7 +396,9 @@ void Ship::Update(
     // Update water dynamics
     //
 
-    UpdateWaterDynamics(gameParameters);
+    UpdateWaterDynamics(
+        currentSimulationTime,
+        gameParameters);
 
 
     //
@@ -811,14 +815,20 @@ void Ship::HandleCollisionsWithSeaFloor(GameParameters const & gameParameters)
 // Water Dynamics
 ///////////////////////////////////////////////////////////////////////////////////
 
-void Ship::UpdateWaterDynamics(GameParameters const & gameParameters)
+void Ship::UpdateWaterDynamics(
+    float currentSimulationTime,
+    GameParameters const & gameParameters)
 {
     //
     // Update intake of water
     //
 
     float waterTakenInStep = 0.f;
-    UpdateWaterInflow(gameParameters, waterTakenInStep);
+
+    UpdateWaterInflow(
+        currentSimulationTime,
+        gameParameters,
+        waterTakenInStep);
 
     // Notify
     mGameEventHandler->OnWaterTaken(waterTakenInStep);
@@ -850,6 +860,7 @@ void Ship::UpdateWaterDynamics(GameParameters const & gameParameters)
 }
 
 void Ship::UpdateWaterInflow(
+    float currentSimulationTime,
     GameParameters const & gameParameters,
     float & waterTaken)
 {
@@ -906,7 +917,19 @@ void Ship::UpdateWaterInflow(
                     * GameParameters::SimulationStepTimeDuration<float>
                     * gameParameters.WaterIntakeAdjustment;
 
-                if (newWater < 0.0f)
+                if (newWater > 0.0f)
+                {
+                    // Incoming water
+
+                    // Generate air bubbles
+                    float size = FastLog2(newWater); // TODOTEST
+                    GenerateAirBubbles(
+                        pointIndex,
+                        size,
+                        currentSimulationTime,
+                        gameParameters);
+                }
+                else
                 {
                     // Outgoing water
 
@@ -1798,6 +1821,22 @@ void Ship::GenerateSparkles(
                 maxLifetime,
                 mSprings.GetConnectedComponentId(springElementIndex, mPoints));
         }
+    }
+}
+
+void Ship::GenerateAirBubbles(
+    ElementIndex pointElementIndex,
+    float size,
+    float currentSimulationTime,
+    GameParameters const & gameParameters)
+{
+    if (gameParameters.DoGenerateAirBubbles)
+    {
+        mPoints.CreateEphemeralParticleAirBubble(
+            mPoints.GetPosition(pointElementIndex),
+            size,
+            mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Air),
+            currentSimulationTime);
     }
 }
 

@@ -75,9 +75,6 @@ std::unique_ptr<Ship> ShipBuilder::Create(
             StructuralMaterial const * structuralMaterial = materialDatabase.FindStructuralMaterial(colorKey);
             if (nullptr != structuralMaterial)
             {
-                // Check if it's rope material
-                bool const isRopeMaterial = materialDatabase.IsRopeMaterial(*structuralMaterial);
-
                 //
                 // Make a point
                 //
@@ -94,14 +91,14 @@ std::unique_ptr<Ship> ShipBuilder::Create(
                     MakeTextureCoordinates(x, y, shipDefinition.StructuralLayerImage.Size),
                     structuralMaterial->RenderColor,
                     *structuralMaterial,
-                    isRopeMaterial);
+                    structuralMaterial->IsUniqueType(StructuralMaterial::MaterialUniqueType::Rope));
 
                 //
                 // Check if it's a (custom) rope endpoint
                 //
 
-                if (isRopeMaterial
-                    && !MaterialDatabase::IsRopeMaterialColorKey(colorKey))
+                if (structuralMaterial->IsUniqueType(StructuralMaterial::MaterialUniqueType::Rope)
+                    && !materialDatabase.IsUniqueStructuralMaterialColorKey(StructuralMaterial::MaterialUniqueType::Rope, colorKey))
                 {
                     // Store in RopeSegments, using the color key as the color of the rope
                     RopeSegment & ropeSegment = ropeSegments[colorKey];
@@ -185,7 +182,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     AppendRopes(
         ropeSegments,
         shipDefinition.StructuralLayerImage.Size,
-        materialDatabase.GetRopeMaterial(),
+        materialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Rope),
         pointInfos,
         springInfos);
 
@@ -321,6 +318,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
         shipId,
         parentWorld,
         gameEventHandler,
+        materialDatabase,
         std::move(points),
         std::move(springs),
         std::move(triangles),
@@ -374,7 +372,7 @@ void ShipBuilder::AppendRopeEndpoints(
                             + shipOffset,
                         MakeTextureCoordinates(x, y, ropeLayerImage.Size),
                         vec4f(Utils::RgbToVec(colorKey), 1.0f),
-                        materialDatabase.GetRopeMaterial(),
+                        materialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Rope),
                         true);
 
                     pointIndexMatrix[x + 1][y + 1] = pointIndex;

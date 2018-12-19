@@ -243,6 +243,9 @@ public:
     bool GetDoGenerateSparkles() const { return mGameParameters.DoGenerateSparkles; }
     void SetDoGenerateSparkles(bool value) { mGameParameters.DoGenerateSparkles = value; }
 
+    bool GetDoGenerateAirBubbles() const { return mGameParameters.DoGenerateAirBubbles; }
+    void SetDoGenerateAirBubbles(bool value) { mGameParameters.DoGenerateAirBubbles = value; }
+
     size_t GetNumberOfStars() const { return mGameParameters.NumberOfStars; }
     void SetNumberOfStars(size_t value) { mGameParameters.NumberOfStars = value; }
     size_t GetMinNumberOfStars() const { return GameParameters::MinNumberOfStars; }

@@ -70,6 +70,51 @@ void Points::Add(
     mTextureCoordinatesBuffer.emplace_back(textureCoordinates);
 }
 
+void Points::CreateEphemeralParticleAirBubble(
+    vec2f const & position,
+    float initialSize,
+    StructuralMaterial const & structuralMaterial,
+    float currentSimulationTime)
+{
+    // Get a free slot (or steal one)
+    auto pointIndex = FindFreeEphemeralParticle(currentSimulationTime);
+
+    //
+    // Store attributes
+    //
+
+    assert(false == mIsDeletedBuffer[pointIndex]);
+
+    mPositionBuffer[pointIndex] = position;
+    mVelocityBuffer[pointIndex] = vec2f::zero();
+    mForceBuffer[pointIndex] = vec2f::zero();
+    mMassBuffer[pointIndex] = structuralMaterial.Mass;
+    mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
+
+    mWaterVolumeFillBuffer[pointIndex] = structuralMaterial.WaterVolumeFill;
+    mWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
+    mWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
+    mWaterBuffer[pointIndex] = 0.0f;
+    assert(false == mIsLeakingBuffer[pointIndex]);
+
+    mLightBuffer[pointIndex] = 0.0f;
+
+    mEphemeralTypeBuffer[pointIndex] = EphemeralType::AirBubble;
+    mEphemeralStartTimeBuffer[pointIndex] = currentSimulationTime;
+    mEphemeralMaxLifetimeBuffer[pointIndex] = std::numeric_limits<float>::max();
+    mEphemeralStateBuffer[pointIndex] = EphemeralState::AirBubbleState(
+        GameRandomEngine::GetInstance().Choose<TextureFrameIndex>(2),
+        initialSize);
+    mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
+
+    assert(false == mIsPinnedBuffer[pointIndex]);
+
+    mColorBuffer[pointIndex] = structuralMaterial.RenderColor;
+
+    // Remember we're dirty now
+    mAreEphemeralParticlesDirty = true;
+}
+
 void Points::CreateEphemeralParticleDebris(
     vec2f const & position,
     vec2f const & velocity,
@@ -93,7 +138,9 @@ void Points::CreateEphemeralParticleDebris(
     mMassBuffer[pointIndex] = structuralMaterial.Mass;
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
 
-    mWaterVolumeFillBuffer[pointIndex] = 0.0f;
+    mWaterVolumeFillBuffer[pointIndex] = structuralMaterial.WaterVolumeFill;
+    mWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
+    mWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
     mWaterBuffer[pointIndex] = 0.0f;
     assert(false == mIsLeakingBuffer[pointIndex]);
 
@@ -136,7 +183,9 @@ void Points::CreateEphemeralParticleSparkle(
     mMassBuffer[pointIndex] = structuralMaterial.Mass;
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
 
-    mWaterVolumeFillBuffer[pointIndex] = 0.0f;
+    mWaterVolumeFillBuffer[pointIndex] = structuralMaterial.WaterVolumeFill;
+    mWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
+    mWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
     mWaterBuffer[pointIndex] = 0.0f;
     assert(false == mIsLeakingBuffer[pointIndex]);
 
@@ -222,6 +271,7 @@ void Points::UpdateEphemeralParticles(
         if (EphemeralType::None != ephemeralType)
         {
             // Check if expired
+            // TODO: this has to become specific to type
             auto const elapsedLifetime = currentSimulationTime - mEphemeralStartTimeBuffer[pointIndex];
             if (elapsedLifetime >= mEphemeralMaxLifetimeBuffer[pointIndex])
             {
@@ -248,6 +298,37 @@ void Points::UpdateEphemeralParticles(
 
                 switch (ephemeralType)
                 {
+                    case EphemeralType::AirBubble:
+                    {
+                        float const deltaY =
+                            mParentWorld.GetWaterHeightAt(GetPosition(pointIndex).x)
+                             - GetPosition(pointIndex).y;
+
+                        if (deltaY <= 0.0f)
+                        {
+                            // Expire
+
+                            // Freeze the particle (just to prevent drifting)
+                            Freeze(pointIndex);
+
+                            // Hide this particle from ephemeral particles; this will prevent this particle from:
+                            // - Being rendered
+                            // - Being updates
+                            mEphemeralTypeBuffer[pointIndex] = EphemeralType::None;
+
+                            // Remember we're now dirty
+                            mAreEphemeralParticlesDirty = true;
+                        }
+                        else
+                        {
+                            // Update solidity based off remaining y
+                            mEphemeralStateBuffer[pointIndex].AirBubble.Solidity =
+                                std::min(deltaY, 4.0f) / 4.0f; // TODOTEST
+                        }
+
+                        break;
+                    }
+
                     case EphemeralType::Debris:
                     {
                         // Update alpha based off remaining time
@@ -409,6 +490,21 @@ void Points::UploadEphemeralParticles(
     {
         switch (GetEphemeralType(pointIndex))
         {
+            case EphemeralType::AirBubble:
+            {
+                renderContext.UploadShipGenericTextureRenderSpecification(
+                    shipId,
+                    1, // Connected component ID - see note above
+                    TextureFrameId(TextureGroupType::AirBubble, mEphemeralStateBuffer[pointIndex].AirBubble.FrameIndex),
+                    GetPosition(pointIndex),
+                    mEphemeralStateBuffer[pointIndex].AirBubble.InitialSize
+                        + (1.0f - mEphemeralStateBuffer[pointIndex].AirBubble.Solidity), // Scale
+                    0.0f,   // Angle
+                    0.5f * mEphemeralStateBuffer[pointIndex].AirBubble.Solidity); // Alpha
+
+                break;
+            }
+
             case EphemeralType::Debris:
             {
                 // Don't upload point unless there's been a change

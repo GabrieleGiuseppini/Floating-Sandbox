@@ -143,7 +143,6 @@ Render:
 		+ Add cloth material (*)
 		+ Improve light diffusion (*)
 		+ Buoyancy rearc (*)
-
 		+ Crazy ropes:
 			+ Don't touch water retention
 			+ Add new "water diffusion speed" - value=0.5
@@ -160,19 +159,15 @@ Render:
 					+ Also with move
 				+ Settings Dialog
 				+ Perf (after optimization above)
-
 		+ See if need to bump up again global damp
-			+ Test: bomb on Titanic; splinter springs tend to dance a tad too much
-		
+			+ Test: bomb on Titanic; splinter springs tend to dance a tad too much		
 		+ Add Roma
 			+ .dat renames
-
 		+ Light:
 			+ Add low/medium/high-dimmed lights and portholes (*)
-
 		+ See if cloths should be lighter - to not break ropes
 
-		- Bubbles (*)
+		= Bubbles (*)
 
 		- Lower strength of double-bottom
 			- Test with submarine
@@ -231,6 +226,9 @@ Render:
 	- Custom sky colour - if possible a RGB picker in the settings
 	- Black hole
 	- Tool to increase or lower mass under the cursor
+	- Lights breaking under pressure
+		- Just Y after which they break, with some randomness
+		- When broken, break-glass event, and no more light
 
 - Technical Debt:
 	+ Global damp as game parameter
@@ -875,16 +873,28 @@ Render:
 	- Friction on ocean floor, adjustable
 
 - Water:
-	-Do water bubbles (at intake) and water drops (at outtake)
-		- Ephemeral particles emitted at UpdateWaterIntake()
-			- Intake:
-				- Material ("Air") with (ver low) air weight so rises up automagically
-					- Hardcoded material added by MaterialDB from in-code list - WHY?
-				- Size is logarithmic with amount of water taken
+	=Do water bubbles (at intake) and water drops (at outtake) (*)
+		= Ephemeral particles emitted at UpdateWaterIntake()
+			= Intake:
+				+ Material ("Air") with (very low) weight (real air weight) and full buoyancy so rises up automagically
+					+ MaterialDatabase: special getter for it
+						+ Mechanism for detecting this and Ropes: unique_type
+						+ SoundType needs to become optional
+						+ IsRope has to go/ColorKey comment has to go
+				+ Ship must take MaterialDatabase 
+				= Emit
+					= InitialSize is logarithmic with amount of water taken
+				+ Points::Ephemeral support
+				- Sounds:
+					- Destroy-AirBubble
+				+ Expose DoGenerateAirBubbles to SettingsDialog
 			- Outtake: (TODO: test, but might look bad)
 				- Only emit if Y above water line
 				- Material is water
-					- Hardcoded material added by MaterialDB from in-code list - WHY?
+					- New unique material
+		- Cleanup: Points::Ephemeral maxlifetime expiration is per-type, not global
+			+ But buffer stays, useful for finding free slots
+
 	- OLD: Optimizations:
 		- GravitateWater:
 			- Calculate once and for all cos theta's at first iteration

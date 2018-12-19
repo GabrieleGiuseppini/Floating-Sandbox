@@ -23,8 +23,11 @@ public:
 
     using ColorKey = std::array<uint8_t, 3>;
 
-    // The (single) structural material with this color is assumed to be Rope
-    static constexpr ColorKey RopeMaterialBaseColorKey{ 0x00, 0x00, 0x00 };
+private:
+
+    using UniqueMaterialsArray = std::array<std::pair<ColorKey, StructuralMaterial const *>, static_cast<size_t>(StructuralMaterial::MaterialUniqueType::_Last) + 1>;
+
+    static constexpr auto RopeUniqueMaterialIndex = static_cast<size_t>(StructuralMaterial::MaterialUniqueType::Rope);
 
 public:
 
@@ -37,6 +40,7 @@ public:
         //
 
         std::map<ColorKey, StructuralMaterial> structuralMaterialsMap;
+        UniqueMaterialsArray uniqueStructuralMaterials;
 
         if (!structuralMaterialsRoot.is<picojson::array>())
         {
@@ -44,7 +48,6 @@ public:
         }
 
         picojson::array structuralMaterialsRootArray = structuralMaterialsRoot.get<picojson::array>();
-        StructuralMaterial const * ropeMaterial = nullptr;
         for (auto const & materialElem : structuralMaterialsRootArray)
         {
             if (!materialElem.is<picojson::object>())
@@ -66,35 +69,41 @@ public:
             }
 
             // Store
-            auto const entry = structuralMaterialsMap.emplace(
+            auto const storedEntry = structuralMaterialsMap.emplace(
                 std::make_pair(
                     colorKey,
                     material));
 
-            // Check whether this is *the* rope material
-            if (colorKey == RopeMaterialBaseColorKey)
+            // Check if it's unique, and if so, check for dupes and store it
+            if (!!material.UniqueType)
             {
-                if (nullptr != ropeMaterial)
+                size_t uniqueTypeIndex = static_cast<size_t>(*(material.UniqueType));
+                if (nullptr != uniqueStructuralMaterials[uniqueTypeIndex].second)
                 {
-                    throw GameException("More than one Rope material found in structural materials definition");
+                    throw GameException("More than one unique material of type \"" + std::to_string(uniqueTypeIndex) + "\" found in structural materials definition");
                 }
 
-                ropeMaterial = &(entry.first->second);
+                uniqueStructuralMaterials[uniqueTypeIndex] = std::make_pair(
+                    colorKey,
+                    &(storedEntry.first->second));
             }
         }
 
-        // Make sure we did find the rope material
-        if (nullptr == ropeMaterial)
+        // Make sure we did find all the unique materials
+        for (size_t i = 0; i < uniqueStructuralMaterials.size(); ++i)
         {
-            throw GameException("No Rope material found in structural materials definition");
+            if (nullptr == uniqueStructuralMaterials[i].second)
+            {
+                throw GameException("No material found in structural materials definition for unique type \"" + std::to_string(i) + "\"");
+            }
         }
 
         // Make sure there are no clashes with indexed rope colors
         for (auto const & entry : structuralMaterialsMap)
         {
-            if (!IsRopeMaterialColorKey(entry.first)
-                && entry.first[0] == RopeMaterialBaseColorKey[0]
-                && (entry.first[1] & 0xF0) == (RopeMaterialBaseColorKey[1] & 0xF0))
+            if ((!entry.second.UniqueType || StructuralMaterial::MaterialUniqueType::Rope != *(entry.second.UniqueType))
+                && entry.first[0] == uniqueStructuralMaterials[RopeUniqueMaterialIndex].first[0]
+                && (entry.first[1] & 0xF0) == (uniqueStructuralMaterials[RopeUniqueMaterialIndex].first[1] & 0xF0))
             {
                 throw GameException("Structural material \"" + entry.second.Name + "\" has a color key that is reserved for ropes and rope endpoints");
             }
@@ -144,7 +153,7 @@ public:
         return MaterialDatabase(
             std::move(structuralMaterialsMap),
             std::move(electricalMaterialsMap),
-            *ropeMaterial);
+            uniqueStructuralMaterials);
     }
 
     StructuralMaterial const * FindStructuralMaterial(ColorKey const & colorKey) const
@@ -156,10 +165,10 @@ public:
         }
 
         // Check whether it's a rope endpoint
-        if (colorKey[0] == RopeMaterialBaseColorKey[0]
-            && ((colorKey[1] & 0xF0) == (RopeMaterialBaseColorKey[1] & 0xF0)))
+        if (colorKey[0] == mUniqueStructuralMaterials[RopeUniqueMaterialIndex].first[0]
+            && ((colorKey[1] & 0xF0) == (mUniqueStructuralMaterials[RopeUniqueMaterialIndex].first[1] & 0xF0)))
         {
-            return &mRopeMaterial;
+            return mUniqueStructuralMaterials[RopeUniqueMaterialIndex].second;
         }
 
         // No luck
@@ -183,19 +192,22 @@ public:
         return nullptr;
     }
 
-    StructuralMaterial const & GetRopeMaterial() const
+    StructuralMaterial const & GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType uniqueType) const
     {
-        return mRopeMaterial;
+        assert(static_cast<size_t>(uniqueType) < mUniqueStructuralMaterials.size());
+        assert(nullptr != mUniqueStructuralMaterials[static_cast<size_t>(uniqueType)]);
+
+        return *(mUniqueStructuralMaterials[static_cast<size_t>(uniqueType)].second);
     }
 
-    static bool IsRopeMaterialColorKey(ColorKey const & colorKey)
+    bool IsUniqueStructuralMaterialColorKey(
+        StructuralMaterial::MaterialUniqueType uniqueType,
+        ColorKey const & colorKey) const
     {
-        return colorKey == RopeMaterialBaseColorKey;
-    }
+        assert(static_cast<size_t>(uniqueType) < mUniqueStructuralMaterials.size());
+        assert(nullptr != mUniqueStructuralMaterials[static_cast<size_t>(uniqueType)]);
 
-    bool IsRopeMaterial(StructuralMaterial const & material) const
-    {
-        return (&material) == (&mRopeMaterial);
+        return colorKey == mUniqueStructuralMaterials[static_cast<size_t>(uniqueType)].first;
     }
 
 private:
@@ -203,14 +215,14 @@ private:
     MaterialDatabase(
         std::map<ColorKey, StructuralMaterial> structuralMaterialMap,
         std::map<ColorKey, ElectricalMaterial> electricalMaterialMap,
-        StructuralMaterial const & ropeMaterial)
+        UniqueMaterialsArray uniqueStructuralMaterials)
         : mStructuralMaterialMap(std::move(structuralMaterialMap))
         , mElectricalMaterialMap(std::move(electricalMaterialMap))
-        , mRopeMaterial(ropeMaterial)
+        , mUniqueStructuralMaterials(uniqueStructuralMaterials)
     {
     }
 
     std::map<ColorKey, StructuralMaterial> mStructuralMaterialMap;
     std::map<ColorKey, ElectricalMaterial> mElectricalMaterialMap;
-    StructuralMaterial const & mRopeMaterial;
+    UniqueMaterialsArray mUniqueStructuralMaterials;
 };
