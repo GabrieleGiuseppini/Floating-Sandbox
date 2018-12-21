@@ -891,6 +891,11 @@ Render:
 				- Sounds:
 					- Destroy-AirBubble
 				+ Expose DoGenerateAirBubbles to SettingsDialog
+				- Air Bubbles Tool:
+					- Continuous Tool
+					= Cursor
+					- Continuous Sound
+					- Clean Destroy() doing air bubbles
 			- Outtake: (TODO: test, but might look bad)
 				- Only emit if Y above water line
 				- Material is water
