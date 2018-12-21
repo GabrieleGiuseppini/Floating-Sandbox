@@ -265,7 +265,7 @@ std::optional<ObjectId> World::GetNearestPointAt(
 
     for (auto const & ship : mAllShips)
     {
-        auto shipBestPointIndex = ship->GetNearestPointIndexAt(targetPos, radius);
+        auto shipBestPointIndex = ship->GetNearestPointAt(targetPos, radius);
         if (NoneElementIndex != shipBestPointIndex)
         {
             float squareDistance = (ship->GetPoints().GetPosition(shipBestPointIndex) - targetPos).squareLength();
@@ -278,6 +278,17 @@ std::optional<ObjectId> World::GetNearestPointAt(
     }
 
     return bestPointId;
+}
+
+void World::QueryNearestPointAt(
+    vec2f const & targetPos,
+    float radius) const
+{
+    for (auto const & ship : mAllShips)
+    {
+        if (ship->QueryNearestPointAt(targetPos, radius))
+            return;
+    }
 }
 
 void World::Update(

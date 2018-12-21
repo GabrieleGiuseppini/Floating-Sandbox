@@ -640,9 +640,7 @@ void MainFrame::OnKeyDown(wxKeyEvent & event)
         vec2f screenCoords = mToolController->GetMouseScreenCoordinates();
         vec2f worldCoords = mGameController->ScreenToWorld(screenCoords);
 
-        auto pointId = mGameController->GetNearestPointAt(screenCoords);
-        if (!!pointId)
-            LogMessage("Point: ", pointId->ToString(), " @ ", worldCoords.toString());
+        mGameController->QueryNearestPointAt(screenCoords);
     }
 
     event.Skip();

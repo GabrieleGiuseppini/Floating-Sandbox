@@ -6,6 +6,7 @@
 #include "Physics.h"
 
 #include "GameRandomEngine.h"
+#include "Log.h"
 
 #include <cmath>
 #include <limits>
@@ -89,6 +90,7 @@ void Points::CreateEphemeralParticleAirBubble(
     mVelocityBuffer[pointIndex] = vec2f::zero();
     mForceBuffer[pointIndex] = vec2f::zero();
     mMassBuffer[pointIndex] = structuralMaterial.Mass;
+    mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations);
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
 
     mWaterVolumeFillBuffer[pointIndex] = structuralMaterial.WaterVolumeFill;
@@ -136,6 +138,7 @@ void Points::CreateEphemeralParticleDebris(
     mVelocityBuffer[pointIndex] = velocity;
     mForceBuffer[pointIndex] = vec2f::zero();
     mMassBuffer[pointIndex] = structuralMaterial.Mass;
+    mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations);
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
 
     mWaterVolumeFillBuffer[pointIndex] = structuralMaterial.WaterVolumeFill;
@@ -181,6 +184,7 @@ void Points::CreateEphemeralParticleSparkle(
     mVelocityBuffer[pointIndex] = velocity;
     mForceBuffer[pointIndex] = vec2f::zero();
     mMassBuffer[pointIndex] = structuralMaterial.Mass;
+    mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations);
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
 
     mWaterVolumeFillBuffer[pointIndex] = structuralMaterial.WaterVolumeFill;
@@ -362,6 +366,15 @@ void Points::UpdateEphemeralParticles(
     }
 }
 
+void Points::Query(ElementIndex pointElementIndex) const
+{
+    LogMessage("PointIndex: ", pointElementIndex);
+    LogMessage("Position: ", mPositionBuffer[pointElementIndex].toString());
+    LogMessage("Velocity: ", mVelocityBuffer[pointElementIndex].toString());
+    LogMessage("IntegrationFactorTimeCoefficient: ", mIntegrationFactorTimeCoefficientBuffer[pointElementIndex]);
+    LogMessage("Water: ", mWaterBuffer[pointElementIndex]);
+}
+
 void Points::Upload(
     ShipId shipId,
     Render::RenderContext & renderContext) const
@@ -492,15 +505,24 @@ void Points::UploadEphemeralParticles(
         {
             case EphemeralType::AirBubble:
             {
-                renderContext.UploadShipGenericTextureRenderSpecification(
-                    shipId,
-                    1, // Connected component ID - see note above
-                    TextureFrameId(TextureGroupType::AirBubble, mEphemeralStateBuffer[pointIndex].AirBubble.FrameIndex),
-                    GetPosition(pointIndex),
-                    mEphemeralStateBuffer[pointIndex].AirBubble.InitialSize
-                        + (1.0f - mEphemeralStateBuffer[pointIndex].AirBubble.Solidity), // Scale
-                    0.0f,   // Angle
-                    0.5f * mEphemeralStateBuffer[pointIndex].AirBubble.Solidity); // Alpha
+                // TODOTEST
+                ////renderContext.UploadShipGenericTextureRenderSpecification(
+                ////    shipId,
+                ////    1, // Connected component ID - see note above
+                ////    TextureFrameId(TextureGroupType::AirBubble, mEphemeralStateBuffer[pointIndex].AirBubble.FrameIndex),
+                ////    GetPosition(pointIndex),
+                ////    mEphemeralStateBuffer[pointIndex].AirBubble.InitialSize
+                ////        + (1.0f - mEphemeralStateBuffer[pointIndex].AirBubble.Solidity), // Scale
+                ////    0.0f,   // Angle
+                ////    0.5f * mEphemeralStateBuffer[pointIndex].AirBubble.Solidity); // Alpha
+
+                // Don't upload point unless there's been a change
+                if (mAreEphemeralParticlesDirty)
+                {
+                    renderContext.UploadShipEphemeralPoint(
+                        shipId,
+                        pointIndex);
+                }
 
                 break;
             }
@@ -606,7 +628,7 @@ ElementIndex Points::FindFreeEphemeralParticle(float currentSimulationTime)
     assert(mFreeEphemeralParticleSearchStartIndex >= mShipPointCount
         && mFreeEphemeralParticleSearchStartIndex < mAllPointCount);
 
-    for (ElementIndex p = mFreeEphemeralParticleSearchStartIndex; ; )
+    for (ElementIndex p = mFreeEphemeralParticleSearchStartIndex; ; /*incremented in loop*/)
     {
         if (EphemeralType::None == GetEphemeralType(p))
         {

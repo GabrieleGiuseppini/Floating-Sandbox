@@ -2236,7 +2236,7 @@
         "strength": 1.0, 
         "water_diffusion_speed": 0.0,
         "water_retention": 0.0, 
-        "water_volume_fill": 1.0
+        "water_volume_fill": 0.003
     },
 
 

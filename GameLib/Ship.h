@@ -113,7 +113,11 @@ public:
 
     void DetonateAntiMatterBombs();
 
-    ElementIndex GetNearestPointIndexAt(
+    ElementIndex GetNearestPointAt(
+        vec2f const & targetPos,
+        float radius) const;
+
+    bool QueryNearestPointAt(
         vec2f const & targetPos,
         float radius) const;
 
@@ -205,6 +209,12 @@ private:
 
     void ElectricalElementDestroyHandler(ElementIndex electricalElementIndex);
 
+    void GenerateAirBubbles(
+        vec2f const & position,
+        float size,
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
+
     void GenerateDebris(
         ElementIndex pointElementIndex,
         float currentSimulationTime,
@@ -214,12 +224,6 @@ private:
         ElementIndex springElementIndex,
         vec2f const & cutDirectionStartPos,
         vec2f const & cutDirectionEndPos,
-        float currentSimulationTime,
-        GameParameters const & gameParameters);
-
-    void GenerateAirBubbles(
-        ElementIndex pointElementIndex,
-        float size,
         float currentSimulationTime,
         GameParameters const & gameParameters);
 

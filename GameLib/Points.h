@@ -293,6 +293,7 @@ public:
         float currentSimulationTime,
         GameParameters const & gameParameters);
 
+    void Query(ElementIndex pointElementIndex) const;
 
     //
     // Render

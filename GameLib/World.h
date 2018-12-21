@@ -115,6 +115,10 @@ public:
         vec2f const & targetPos,
         float radius) const;
 
+    void QueryNearestPointAt(
+        vec2f const & targetPos,
+        float radius) const;
+
     void Update(
         GameParameters const & gameParameters,
         Render::RenderContext const & renderContext);

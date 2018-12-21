@@ -81,6 +81,7 @@ public:
     void DetonateRCBombs();
     void DetonateAntiMatterBombs();
     std::optional<ObjectId> GetNearestPointAt(vec2f const & screenCoordinates) const;
+    void QueryNearestPointAt(vec2f const & screenCoordinates) const;
 
     void SetCanvasSize(int width, int height) { mRenderContext->SetCanvasSize(width, height); }
 

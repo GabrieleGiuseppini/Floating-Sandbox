@@ -169,6 +169,8 @@ Render:
 
 		= Bubbles (*)
 
+		- Test if debris (and sparkles?) really fly out of water
+
 		- Lower strength of double-bottom
 			- Test with submarine
 			- Redo Submarine - thicker to avoid bending
@@ -715,6 +717,7 @@ Render:
 		- Once ignited, it spreads
 		- Water sets fire off, of course
 		- After some time burning, a point breaks
+		- While burning, changes material so that buoyancy goes down?
 
 	- Fireworks
 		- New emitter material, much like smoke emitters
@@ -957,6 +960,11 @@ Render:
 		- Sound: continuous as long as ship takes water
 			- So, like sawed
 				- Update() attempts to stop it
+
+	- Move tool: ability to move individual connected components
+		- After connected component has been overhauled
+		- Current tool is "Move All"
+		- New tool gets also connected component ID from GameController and passes it to MoveTo()/RotateTo()
 				
 	- Changing the width of the waves up to at least 10x the current size
 		- Requires re-calculation of period (if adjustment is x-multiplier N, then period is N times basic period)

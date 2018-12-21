@@ -137,6 +137,10 @@ void Ship::DestroyAt(
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
+    // TODOTEST
+    GenerateAirBubbles(targetPos, 1.0f, currentSimulationTime, gameParameters);
+    return;
+
     float const radius =
         gameParameters.DestroyRadius
         * radiusMultiplier
@@ -300,7 +304,7 @@ void Ship::DetonateAntiMatterBombs()
     mBombs.DetonateAntiMatterBombs();
 }
 
-ElementIndex Ship::GetNearestPointIndexAt(
+ElementIndex Ship::GetNearestPointAt(
     vec2f const & targetPos,
     float radius) const
 {
@@ -323,6 +327,37 @@ ElementIndex Ship::GetNearestPointIndexAt(
     }
 
     return bestPointIndex;
+}
+
+bool Ship::QueryNearestPointAt(
+    vec2f const & targetPos,
+    float radius) const
+{
+    float const squareRadius = radius * radius;
+
+    ElementIndex bestPointIndex = NoneElementIndex;
+    float bestSquareDistance = std::numeric_limits<float>::max();
+
+    for (auto pointIndex : mPoints)
+    {
+        if (!mPoints.IsDeleted(pointIndex))
+        {
+            float squareDistance = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
+            if (squareDistance < squareRadius && squareDistance < bestSquareDistance)
+            {
+                bestPointIndex = pointIndex;
+                bestSquareDistance = squareDistance;
+            }
+        }
+    }
+
+    if (NoneElementIndex != bestPointIndex)
+    {
+        mPoints.Query(bestPointIndex);
+        return true;
+    }
+
+    return false;
 }
 
 void Ship::Update(
@@ -924,12 +959,12 @@ void Ship::UpdateWaterInflow(
                     // Generate air bubbles
                     float size = FastLog2(newWater); // TODOTEST
                     GenerateAirBubbles(
-                        pointIndex,
+                        mPoints.GetPosition(pointIndex),
                         size,
                         currentSimulationTime,
                         gameParameters);
                 }
-                else
+                else if (newWater < 0.0f)
                 {
                     // Outgoing water
 
@@ -1729,6 +1764,22 @@ void Ship::ElectricalElementDestroyHandler(ElementIndex /*electricalElementIndex
     mAreElementsDirty = true;
 }
 
+void Ship::GenerateAirBubbles(
+    vec2f const & position,
+    float size,
+    float currentSimulationTime,
+    GameParameters const & gameParameters)
+{
+    if (gameParameters.DoGenerateAirBubbles)
+    {
+        mPoints.CreateEphemeralParticleAirBubble(
+            position,
+            size,
+            mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Air),
+            currentSimulationTime);
+    }
+}
+
 void Ship::GenerateDebris(
     ElementIndex pointElementIndex,
     float currentSimulationTime,
@@ -1821,22 +1872,6 @@ void Ship::GenerateSparkles(
                 maxLifetime,
                 mSprings.GetConnectedComponentId(springElementIndex, mPoints));
         }
-    }
-}
-
-void Ship::GenerateAirBubbles(
-    ElementIndex pointElementIndex,
-    float size,
-    float currentSimulationTime,
-    GameParameters const & gameParameters)
-{
-    if (gameParameters.DoGenerateAirBubbles)
-    {
-        mPoints.CreateEphemeralParticleAirBubble(
-            mPoints.GetPosition(pointElementIndex),
-            size,
-            mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Air),
-            currentSimulationTime);
     }
 }
 

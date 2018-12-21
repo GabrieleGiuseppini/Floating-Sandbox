@@ -436,6 +436,14 @@ std::optional<ObjectId> GameController::GetNearestPointAt(vec2f const & screenCo
     return mWorld->GetNearestPointAt(worldCoordinates, 1.0f);
 }
 
+void GameController::QueryNearestPointAt(vec2f const & screenCoordinates) const
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+
+    assert(!!mWorld);
+    mWorld->QueryNearestPointAt(worldCoordinates, 1.0f);
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////
 
 void GameController::InternalUpdate()
