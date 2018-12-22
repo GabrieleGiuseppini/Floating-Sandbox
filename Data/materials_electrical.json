@@ -22,7 +22,7 @@
 	"electrical_type": "Lamp",
 	"is_self_powered": false,
 	"luminiscence": 1.0,
-	"light_spread": 1.0
+	"light_spread": 0.5
     },
 
     {
@@ -35,7 +35,7 @@
 	"electrical_type": "Lamp",
 	"is_self_powered": false,
 	"luminiscence": 0.5,
-	"light_spread": 5.0
+	"light_spread": 0.0
     },
 
 
@@ -63,7 +63,7 @@
 	"electrical_type": "Lamp",
 	"is_self_powered": true,
 	"luminiscence": 1.0,
-	"light_spread": 1.0
+	"light_spread": 0.5
     },
     {
         "name": "Self-Powered Porthole",	
@@ -75,7 +75,7 @@
 	"electrical_type": "Lamp",
 	"is_self_powered": true,
 	"luminiscence": 0.5,
-	"light_spread": 5.0
+	"light_spread": 0.0
     },
 
 

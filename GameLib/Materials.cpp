@@ -100,6 +100,8 @@ ElectricalMaterial ElectricalMaterial::Create(picojson::object const & electrica
             isSelfPowered = Utils::GetMandatoryJsonMember<bool>(electricalMaterialJson, "is_self_powered");
             luminiscence = static_cast<float>(Utils::GetMandatoryJsonMember<double>(electricalMaterialJson, "luminiscence"));
             lightSpread = static_cast<float>(Utils::GetMandatoryJsonMember<double>(electricalMaterialJson, "light_spread"));
+            if (lightSpread < 0.0f)
+                throw GameException("Error loading electrical material \"" + name + "\": the value of the light_spread parameter must be greater than or equal 0.0");
         }
 
         return ElectricalMaterial(

@@ -1412,33 +1412,44 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
     // can safely visit deleted lamps as their current will always be zero
     for (auto lampIndex : mElectricalElements.Lamps())
     {
+        auto const lampPointIndex = mElectricalElements.GetPointIndex(lampIndex);
+
         float const effectiveLampLight =
             mElectricalElements.GetAvailableCurrent(lampIndex)
             * mElectricalElements.GetLuminiscence(lampIndex)
             * gameParameters.LuminiscenceAdjustment;
 
-        float const effectiveExponent =
-            mElectricalElements.GetLightSpread(lampIndex)
-            * gameParameters.LightSpreadAdjustment
-            / 2.0f; // We piggyback on the power to avoid taking a sqrt for distance
-
-        auto const lampPointIndex = mElectricalElements.GetPointIndex(lampIndex);
-        vec2f const & lampPosition = mPoints.GetPosition(lampPointIndex);
-        ConnectedComponentId const lampConnectedComponentId = mPoints.GetConnectedComponentId(lampPointIndex);
-
-        // Visit all points (including deleted ones) in the same connected component
-        for (auto pointIndex : mPoints)
+        float const lampLightSpread = mElectricalElements.GetLightSpread(lampIndex);
+        if (lampLightSpread == 0.0f)
         {
-            if (mPoints.GetConnectedComponentId(pointIndex) == lampConnectedComponentId)
+            // No spread, just the lamp point itself
+            mPoints.GetLight(lampPointIndex) = effectiveLampLight;
+        }
+        else
+        {
+            // Spread light to all the points in the same connected component
+
+            float const effectiveExponent =
+                (1.0f / lampLightSpread)
+                * gameParameters.LightSpreadAdjustment
+                / 2.0f; // We piggyback on the power to avoid taking a sqrt for distance
+
+            vec2f const & lampPosition = mPoints.GetPosition(lampPointIndex);
+            ConnectedComponentId const lampConnectedComponentId = mPoints.GetConnectedComponentId(lampPointIndex);
+
+            for (auto pointIndex : mPoints)
             {
-                float const squareDistance = (mPoints.GetPosition(pointIndex) - lampPosition).squareLength();
+                if (mPoints.GetConnectedComponentId(pointIndex) == lampConnectedComponentId)
+                {
+                    float const squareDistance = (mPoints.GetPosition(pointIndex) - lampPosition).squareLength();
 
-                float const newLight =
-                    effectiveLampLight
-                    / (1.0f + FastPow(squareDistance, effectiveExponent));
+                    float const newLight =
+                        effectiveLampLight
+                        / (1.0f + FastPow(squareDistance, effectiveExponent));
 
-                if (newLight > mPoints.GetLight(pointIndex))
-                    mPoints.GetLight(pointIndex) = newLight;
+                    if (newLight > mPoints.GetLight(pointIndex))
+                        mPoints.GetLight(pointIndex) = newLight;
+                }
             }
         }
     }
