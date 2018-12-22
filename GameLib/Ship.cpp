@@ -977,7 +977,7 @@ void Ship::UpdateWaterInflow(
                     // Incoming water
 
                     // Generate air bubbles
-                    float size = FastLog(newWater); // TODOTEST
+                    float size = newWater; // TODO: figure this out
                     GenerateAirBubbles(
                         mPoints.GetPosition(pointIndex),
                         size,

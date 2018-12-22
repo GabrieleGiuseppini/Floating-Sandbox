@@ -59,6 +59,7 @@ private:
             float VortexAmplitude;
             float VortexFrequency;
 
+            float CurrentDeltaY;
             float Progress;
             float LastVortexValue;
 
@@ -76,6 +77,7 @@ private:
                 , InitialSize(initialSize)
                 , VortexAmplitude(vortexAmplitude)
                 , VortexFrequency(vortexFrequency)
+                , CurrentDeltaY(0.0f)
                 , Progress(0.0f)
                 , LastVortexValue(0.0f)
             {}

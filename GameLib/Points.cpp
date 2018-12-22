@@ -301,6 +301,8 @@ void Points::UpdateEphemeralParticles(
                         // Update progress based off remaining y
                         //
 
+                        mEphemeralStateBuffer[pointIndex].AirBubble.CurrentDeltaY = deltaY;
+
                         mEphemeralStateBuffer[pointIndex].AirBubble.Progress = 1.0f -
                             deltaY
                             / (waterHeight - mEphemeralStateBuffer[pointIndex].AirBubble.InitialY);
@@ -527,7 +529,7 @@ void Points::UploadEphemeralParticles(
                         + mEphemeralStateBuffer[pointIndex].AirBubble.Progress, // Scale
                     mEphemeralStateBuffer[pointIndex].AirBubble.VortexAmplitude
                         + mEphemeralStateBuffer[pointIndex].AirBubble.Progress, // Angle
-                    1.0f * (1.0f - mEphemeralStateBuffer[pointIndex].AirBubble.Progress)); // Alpha
+                    std::min(1.0f, mEphemeralStateBuffer[pointIndex].AirBubble.CurrentDeltaY / 5.0f)); // Alpha
 
                 break;
             }
