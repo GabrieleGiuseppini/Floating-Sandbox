@@ -119,6 +119,9 @@ public:
     void PlaySwirlSound(bool isUnderwater);
     void StopSwirlSound();
 
+    void PlayAirBubblesSound();
+    void StopAirBubblesSound();
+
     //
     // Updating
     //
@@ -216,6 +219,7 @@ private:
         Swirl,
         PinPoint,
         UnpinPoint,
+        AirBubbles,
         Stress,
         LightFlicker,
         WaterRush,
@@ -252,6 +256,8 @@ private:
             return SoundType::PinPoint;
         else if (Utils::CaseInsensitiveEquals(str, "UnpinPoint"))
             return SoundType::UnpinPoint;
+        else if (Utils::CaseInsensitiveEquals(str, "AirBubbles"))
+            return SoundType::AirBubbles;
         else if (Utils::CaseInsensitiveEquals(str, "Stress"))
             return SoundType::Stress;
         else if (Utils::CaseInsensitiveEquals(str, "LightFlicker"))
@@ -1089,6 +1095,7 @@ private:
     ContinuousSingleChoiceSound mSawUnderwaterSound;
     ContinuousSingleChoiceSound mDrawSound;
     ContinuousSingleChoiceSound mSwirlSound;
+    ContinuousSingleChoiceSound mAirBubblesSound;
 
     ContinuousSingleChoiceSound mWaterRushSound;
     ContinuousSingleChoiceSound mWaterSplashSound;

@@ -93,6 +93,11 @@ public:
         vec2f const & targetPos,
         GameParameters const & gameParameters);
 
+    bool InjectBubblesAt(
+        vec2f const & targetPos,
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
+
     bool ToggleAntiMatterBombAt(
         vec2f const & targetPos,
         GameParameters const & gameParameters);

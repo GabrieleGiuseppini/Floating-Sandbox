@@ -137,10 +137,6 @@ void Ship::DestroyAt(
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
-    // TODOTEST
-    GenerateAirBubbles(targetPos, 1.0f, currentSimulationTime, gameParameters);
-    return;
-
     float const radius =
         gameParameters.DestroyRadius
         * radiusMultiplier
@@ -148,10 +144,13 @@ void Ship::DestroyAt(
 
     float const squareRadius = radius * radius;
 
-    // Destroy all (non-ephemeral) points within the radius
-    for (auto pointIndex : mPoints.NonEphemeralPoints())
+    // Destroy all points within the radius
+    for (auto pointIndex : mPoints)
     {
-        if (!mPoints.IsDeleted(pointIndex))
+        // The only ephemeral points we allow to delete are air bubbles
+        if (!mPoints.IsDeleted(pointIndex)
+            && (Points::EphemeralType::None == mPoints.GetEphemeralType(pointIndex)
+                   || Points::EphemeralType::AirBubble == mPoints.GetEphemeralType(pointIndex)))
         {
             if ((mPoints.GetPosition(pointIndex) - targetPos).squareLength() < squareRadius)
             {
@@ -256,6 +255,27 @@ bool Ship::TogglePinAt(
     return mPinnedPoints.ToggleAt(
         targetPos,
         gameParameters);
+}
+
+bool Ship::InjectBubblesAt(
+    vec2f const & targetPos,
+    float currentSimulationTime,
+    GameParameters const & gameParameters)
+{
+    if (targetPos.y < mParentWorld.GetWaterHeightAt(targetPos.x))
+    {
+        GenerateAirBubbles(
+            targetPos,
+            0.5f,
+            currentSimulationTime,
+            gameParameters);
+
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 bool Ship::ToggleAntiMatterBombAt(
@@ -957,7 +977,7 @@ void Ship::UpdateWaterInflow(
                     // Incoming water
 
                     // Generate air bubbles
-                    float size = FastLog2(newWater); // TODOTEST
+                    float size = FastLog(newWater); // TODOTEST
                     GenerateAirBubbles(
                         mPoints.GetPosition(pointIndex),
                         size,
@@ -1772,9 +1792,15 @@ void Ship::GenerateAirBubbles(
 {
     if (gameParameters.DoGenerateAirBubbles)
     {
+        // TODO: make these GameParameters
+        float vortexAmplitude = GameRandomEngine::GetInstance().GenerateRandomReal(0.05f, 2.0f);
+        float vortexFrequency = 1.0f / GameRandomEngine::GetInstance().GenerateRandomReal(1.0f, 2.5f);
+
         mPoints.CreateEphemeralParticleAirBubble(
             position,
             size,
+            vortexAmplitude,
+            vortexFrequency,
             mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Air),
             currentSimulationTime);
     }

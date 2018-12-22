@@ -70,6 +70,13 @@ ToolController::ToolController(
             resourceLoader));
 
     mAllTools.emplace_back(
+        std::make_unique<InjectAirBubblesTool>(
+            parentFrame,
+            gameController,
+            soundController,
+            resourceLoader));
+
+    mAllTools.emplace_back(
         std::make_unique<AntiMatterBombTool>(
             parentFrame,
             gameController,

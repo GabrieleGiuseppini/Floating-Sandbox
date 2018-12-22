@@ -352,6 +352,26 @@ PinTool::PinTool(
 }
 
 ////////////////////////////////////////////////////////////////////////
+// InjectAirBubbles
+////////////////////////////////////////////////////////////////////////
+
+InjectAirBubblesTool::InjectAirBubblesTool(
+    wxFrame * parentFrame,
+    std::shared_ptr<GameController> gameController,
+    std::shared_ptr<SoundController> soundController,
+    ResourceLoader & resourceLoader)
+    : Tool(
+        ToolType::InjectAirBubbles,
+        parentFrame,
+        std::move(gameController),
+        std::move(soundController))
+    , mIsEngaged(false)
+    , mUpCursor(MakeCursor("air_tank_cursor_up", 12, 1, resourceLoader))
+    , mDownCursor(MakeCursor("air_tank_cursor_down", 12, 1, resourceLoader))
+{
+}
+
+////////////////////////////////////////////////////////////////////////
 // AntiMatterBomb
 ////////////////////////////////////////////////////////////////////////
 

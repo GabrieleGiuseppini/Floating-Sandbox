@@ -74,6 +74,8 @@ void Points::Add(
 void Points::CreateEphemeralParticleAirBubble(
     vec2f const & position,
     float initialSize,
+    float vortexAmplitude,
+    float vortexFrequency,
     StructuralMaterial const & structuralMaterial,
     float currentSimulationTime)
 {
@@ -106,7 +108,10 @@ void Points::CreateEphemeralParticleAirBubble(
     mEphemeralMaxLifetimeBuffer[pointIndex] = std::numeric_limits<float>::max();
     mEphemeralStateBuffer[pointIndex] = EphemeralState::AirBubbleState(
         GameRandomEngine::GetInstance().Choose<TextureFrameIndex>(2),
-        initialSize);
+        position.y,
+        initialSize,
+        vortexAmplitude,
+        vortexFrequency);
     mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
 
     assert(false == mIsPinnedBuffer[pointIndex]);
@@ -141,7 +146,7 @@ void Points::CreateEphemeralParticleDebris(
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations);
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
 
-    mWaterVolumeFillBuffer[pointIndex] = structuralMaterial.WaterVolumeFill;
+    mWaterVolumeFillBuffer[pointIndex] = 0.0f; // No buoyancy
     mWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
     mWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
     mWaterBuffer[pointIndex] = 0.0f;
@@ -187,7 +192,7 @@ void Points::CreateEphemeralParticleSparkle(
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations);
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
 
-    mWaterVolumeFillBuffer[pointIndex] = structuralMaterial.WaterVolumeFill;
+    mWaterVolumeFillBuffer[pointIndex] = 0.0f; // No buoyancy
     mWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
     mWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
     mWaterBuffer[pointIndex] = 0.0f;
@@ -267,73 +272,72 @@ void Points::UpdateGameParameters(GameParameters const & gameParameters)
 
 void Points::UpdateEphemeralParticles(
     float currentSimulationTime,
-    GameParameters const & /*gameParameters*/)
+    GameParameters const & gameParameters)
 {
     for (ElementIndex pointIndex : this->EphemeralPoints())
     {
         auto const ephemeralType = GetEphemeralType(pointIndex);
         if (EphemeralType::None != ephemeralType)
         {
-            // Check if expired
-            // TODO: this has to become specific to type
-            auto const elapsedLifetime = currentSimulationTime - mEphemeralStartTimeBuffer[pointIndex];
-            if (elapsedLifetime >= mEphemeralMaxLifetimeBuffer[pointIndex])
+            //
+            // Run this particle's state machine
+            //
+
+            switch (ephemeralType)
             {
-                //
-                // Expire this particle
-                //
-
-                // Freeze the particle (just to prevent drifting)
-                Freeze(pointIndex);
-
-                // Hide this particle from ephemeral particles; this will prevent this particle from:
-                // - Being rendered
-                // - Being updates
-                mEphemeralTypeBuffer[pointIndex] = EphemeralType::None;
-
-                // Remember we're now dirty
-                mAreEphemeralParticlesDirty = true;
-            }
-            else
-            {
-                //
-                // Run this particle's state machine
-                //
-
-                switch (ephemeralType)
+                case EphemeralType::AirBubble:
                 {
-                    case EphemeralType::AirBubble:
+                    float const waterHeight = mParentWorld.GetWaterHeightAt(GetPosition(pointIndex).x);
+                    float const deltaY = waterHeight - GetPosition(pointIndex).y;
+
+                    if (deltaY <= 0.0f)
                     {
-                        float const deltaY =
-                            mParentWorld.GetWaterHeightAt(GetPosition(pointIndex).x)
-                             - GetPosition(pointIndex).y;
+                        // Expire
+                        ExpireEphemeralParticle(pointIndex);
+                    }
+                    else
+                    {
+                        //
+                        // Update progress based off remaining y
+                        //
 
-                        if (deltaY <= 0.0f)
-                        {
-                            // Expire
+                        mEphemeralStateBuffer[pointIndex].AirBubble.Progress = 1.0f -
+                            deltaY
+                            / (waterHeight - mEphemeralStateBuffer[pointIndex].AirBubble.InitialY);
 
-                            // Freeze the particle (just to prevent drifting)
-                            Freeze(pointIndex);
+                        //
+                        // Update vortex
+                        //
 
-                            // Hide this particle from ephemeral particles; this will prevent this particle from:
-                            // - Being rendered
-                            // - Being updates
-                            mEphemeralTypeBuffer[pointIndex] = EphemeralType::None;
+                        float const lifetime = currentSimulationTime - mEphemeralStartTimeBuffer[pointIndex];
 
-                            // Remember we're now dirty
-                            mAreEphemeralParticlesDirty = true;
-                        }
-                        else
-                        {
-                            // Update solidity based off remaining y
-                            mEphemeralStateBuffer[pointIndex].AirBubble.Solidity =
-                                std::min(deltaY, 4.0f) / 4.0f; // TODOTEST
-                        }
+                        float const vortexAmplitude =
+                            mEphemeralStateBuffer[pointIndex].AirBubble.VortexAmplitude
+                            + mEphemeralStateBuffer[pointIndex].AirBubble.Progress;
 
-                        break;
+                        float vortexValue =
+                            vortexAmplitude
+                            * sin(lifetime * mEphemeralStateBuffer[pointIndex].AirBubble.VortexFrequency);
+
+                        // Update position
+                        mPositionBuffer[pointIndex].x +=
+                            vortexValue - mEphemeralStateBuffer[pointIndex].AirBubble.LastVortexValue;
+
+                        mEphemeralStateBuffer[pointIndex].AirBubble.LastVortexValue = vortexValue;
                     }
 
-                    case EphemeralType::Debris:
+                    break;
+                }
+
+                case EphemeralType::Debris:
+                {
+                    // Check if expired
+                    auto const elapsedLifetime = currentSimulationTime - mEphemeralStartTimeBuffer[pointIndex];
+                    if (elapsedLifetime >= mEphemeralMaxLifetimeBuffer[pointIndex])
+                    {
+                        ExpireEphemeralParticle(pointIndex);
+                    }
+                    else
                     {
                         // Update alpha based off remaining time
 
@@ -342,24 +346,33 @@ void Points::UpdateEphemeralParticles(
                             0.0f);
 
                         mColorBuffer[pointIndex].w = alpha;
-
-                        break;
                     }
 
-                    case EphemeralType::Sparkle:
+                    break;
+                }
+
+                case EphemeralType::Sparkle:
+                {
+                    // Check if expired
+                    auto const elapsedLifetime = currentSimulationTime - mEphemeralStartTimeBuffer[pointIndex];
+                    if (elapsedLifetime >= mEphemeralMaxLifetimeBuffer[pointIndex])
+                    {
+                        ExpireEphemeralParticle(pointIndex);
+                    }
+                    else
                     {
                         // Update progress based off remaining time
 
                         mEphemeralStateBuffer[pointIndex].Sparkle.Progress =
                             elapsedLifetime / mEphemeralMaxLifetimeBuffer[pointIndex];
-
-                        break;
                     }
 
-                    default:
-                    {
-                        // Do nothing
-                    }
+                    break;
+                }
+
+                default:
+                {
+                    // Do nothing
                 }
             }
         }
@@ -505,24 +518,16 @@ void Points::UploadEphemeralParticles(
         {
             case EphemeralType::AirBubble:
             {
-                // TODOTEST
-                ////renderContext.UploadShipGenericTextureRenderSpecification(
-                ////    shipId,
-                ////    1, // Connected component ID - see note above
-                ////    TextureFrameId(TextureGroupType::AirBubble, mEphemeralStateBuffer[pointIndex].AirBubble.FrameIndex),
-                ////    GetPosition(pointIndex),
-                ////    mEphemeralStateBuffer[pointIndex].AirBubble.InitialSize
-                ////        + (1.0f - mEphemeralStateBuffer[pointIndex].AirBubble.Solidity), // Scale
-                ////    0.0f,   // Angle
-                ////    0.5f * mEphemeralStateBuffer[pointIndex].AirBubble.Solidity); // Alpha
-
-                // Don't upload point unless there's been a change
-                if (mAreEphemeralParticlesDirty)
-                {
-                    renderContext.UploadShipEphemeralPoint(
-                        shipId,
-                        pointIndex);
-                }
+                renderContext.UploadShipGenericTextureRenderSpecification(
+                    shipId,
+                    1, // Connected component ID - see note above
+                    TextureFrameId(TextureGroupType::AirBubble, mEphemeralStateBuffer[pointIndex].AirBubble.FrameIndex),
+                    GetPosition(pointIndex),
+                    mEphemeralStateBuffer[pointIndex].AirBubble.InitialSize
+                        + mEphemeralStateBuffer[pointIndex].AirBubble.Progress, // Scale
+                    mEphemeralStateBuffer[pointIndex].AirBubble.VortexAmplitude
+                        + mEphemeralStateBuffer[pointIndex].AirBubble.Progress, // Angle
+                    1.0f * (1.0f - mEphemeralStateBuffer[pointIndex].AirBubble.Progress)); // Alpha
 
                 break;
             }

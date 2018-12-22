@@ -370,6 +370,17 @@ void GameController::TogglePinAt(vec2f const & screenCoordinates)
         mGameParameters);
 }
 
+bool GameController::InjectBubblesAt(vec2f const & screenCoordinates)
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+
+    // Apply action
+    assert(!!mWorld);
+    return mWorld->InjectBubblesAt(
+        worldCoordinates,
+        mGameParameters);
+}
+
 void GameController::ToggleAntiMatterBombAt(vec2f const & screenCoordinates)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);

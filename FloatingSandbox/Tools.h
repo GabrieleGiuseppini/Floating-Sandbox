@@ -39,10 +39,11 @@ enum class ToolType
     Grab = 3,
     Swirl = 4,
     Pin = 5,
-    AntiMatterBomb = 6,
-    ImpactBomb = 7,
-    RCBomb = 8,
-    TimerBomb = 9
+    InjectAirBubbles = 6,
+    AntiMatterBomb = 7,
+    ImpactBomb = 8,
+    RCBomb = 9,
+    TimerBomb = 10
 };
 
 struct InputState
@@ -1023,6 +1024,102 @@ public:
 private:
 
     std::unique_ptr<wxCursor> const mCursor;
+};
+
+class InjectAirBubblesTool final : public Tool
+{
+public:
+
+    InjectAirBubblesTool(
+        wxFrame * parentFrame,
+        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<SoundController> soundController,
+        ResourceLoader & resourceLoader);
+
+public:
+
+    virtual void Initialize(InputState const & inputState) override
+    {
+        if (inputState.IsLeftMouseDown)
+        {
+            mIsEngaged = mGameController->InjectBubblesAt(inputState.MousePosition);
+        }
+        else
+        {
+            mIsEngaged = false;
+        }
+    }
+
+    virtual void Deinitialize(InputState const & /*inputState*/) override
+    {
+        // Stop sound
+        mSoundController->StopAirBubblesSound();
+    }
+
+    virtual void Update(InputState const & inputState) override
+    {
+        bool isEngaged;
+        if (inputState.IsLeftMouseDown)
+        {
+            isEngaged = mGameController->InjectBubblesAt(inputState.MousePosition);
+        }
+        else
+        {
+            isEngaged = false;
+        }
+
+        if (isEngaged)
+        {
+            if (!mIsEngaged)
+            {
+                // State change
+                mIsEngaged = true;
+
+                // Start sound
+                mSoundController->PlayAirBubblesSound();
+
+                // Update cursor
+                ShowCurrentCursor();
+            }
+        }
+        else
+        {
+            if (mIsEngaged)
+            {
+                // State change
+                mIsEngaged = false;
+
+                // Stop sound
+                mSoundController->StopAirBubblesSound();
+
+                // Update cursor
+                ShowCurrentCursor();
+            }
+        }
+    }
+
+    virtual void OnMouseMove(InputState const & /*inputState*/) override {}
+    virtual void OnLeftMouseDown(InputState const & /*inputState*/) override {}
+    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+    virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+    virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+
+    virtual void ShowCurrentCursor() override
+    {
+        assert(nullptr != mParentFrame);
+        assert(nullptr != mCurrentCursor);
+
+        mParentFrame->SetCursor(mIsEngaged ? *mDownCursor : *mUpCursor);
+    }
+
+private:
+
+    // Our state
+    bool mIsEngaged;
+
+    // The cursors
+    std::unique_ptr<wxCursor> const mUpCursor;
+    std::unique_ptr<wxCursor> const mDownCursor;
 };
 
 class AntiMatterBombTool final : public OneShotTool

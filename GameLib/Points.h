@@ -54,18 +54,30 @@ private:
         struct AirBubbleState
         {
             TextureFrameIndex FrameIndex;
+            float InitialY;
             float InitialSize;
-            float Solidity;
+            float VortexAmplitude;
+            float VortexFrequency;
+
+            float Progress;
+            float LastVortexValue;
 
             AirBubbleState()
             {}
 
             AirBubbleState(
                 TextureFrameIndex frameIndex,
-                float initialSize)
+                float initialY,
+                float initialSize,
+                float vortexAmplitude,
+                float vortexFrequency)
                 : FrameIndex(frameIndex)
+                , InitialY(initialY)
                 , InitialSize(initialSize)
-                , Solidity(1.0f)
+                , VortexAmplitude(vortexAmplitude)
+                , VortexFrequency(vortexFrequency)
+                , Progress(0.0f)
+                , LastVortexValue(0.0f)
             {}
         };
 
@@ -263,6 +275,8 @@ public:
     void CreateEphemeralParticleAirBubble(
         vec2f const & position,
         float initialSize,
+        float vortexAmplitude,
+        float vortexFrequency,
         StructuralMaterial const & structuralMaterial,
         float currentSimulationTime);
 
@@ -733,6 +747,20 @@ private:
     }
 
     ElementIndex FindFreeEphemeralParticle(float currentSimulationTime);
+
+    inline void ExpireEphemeralParticle(ElementIndex pointElementIndex)
+    {
+        // Freeze the particle (just to prevent drifting)
+        Freeze(pointElementIndex);
+
+        // Hide this particle from ephemeral particles; this will prevent this particle from:
+        // - Being rendered
+        // - Being updated
+        mEphemeralTypeBuffer[pointElementIndex] = EphemeralType::None;
+
+        // Remember we're now dirty
+        mAreEphemeralParticlesDirty = true;
+    }
 
 private:
 

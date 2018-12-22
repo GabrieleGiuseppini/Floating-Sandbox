@@ -25,10 +25,10 @@ providing the individual layers. Also in this case the only mandatory layer is t
 # Structural Layer
 The structural layer is the most important layer in Floating Sandbox; it provides the locations and the materials of the actual particles that will make up the ship and, if it's the only layer, also the _colors_ used for the ship. Is it the only layer that is mandatory.
 
-The color of each pixel in the structural layer image is looked up among the color "keys" of the _materials structural_ materials database, and if a match is found, the ship gets a particle with those coordinates (in metres), and of the material corresponding to the color key. As an example, a grey pixel with the "#303040" color becomes a particle made of "Structural Iron", with the mass, strength, sound, and all the other properties that are  specified for the "Structural Iron" material.
+The color of each pixel in the structural layer image is looked up among the color "keys" of the _materials structural_ materials database (see Data\Misc\TODO for the full palette), and if a match is found, the ship gets a particle with those coordinates (in metres), and of the material corresponding to the color key. As an example, a grey pixel with the "#303040" color becomes a particle made of "Structural Iron", with the mass, strength, sound, and all the other properties that are  specified for the "Structural Iron" material.
 
 # Electrical Layer
-An electrical layer image provides the electical components of a ship. The color of each pixel in the electrical layer image must correspond to a color in the _materials electrical_ materials database, and the ship particle at that location acquires the electrical properties of the electrical material corresponding to the color. As an example, an electrical layer image pixel with the "#DFE010" color make the particle at the same location acquire the electrical properties of the "Low Lamp" electrical material.
+An electrical layer image provides the electical components of a ship. The color of each pixel in the electrical layer image must correspond to a color in the _materials electrical_ materials database (see Data\Misc\TODO for the full palette), and the ship particle at that location acquires the electrical properties of the electrical material corresponding to the color. As an example, an electrical layer image pixel with the "#DFE010" color make the particle at the same location acquire the electrical properties of the "Low Lamp" electrical material.
 These are the rules to follow when drawing an image for the electrical layer of a ship:
 - The size of the electrical layer image must match the size of the structural layer image.
 - For every pixel in the electrical layer, there must exist a corresponding pixel either in the structural layer or in the ropes layer.
@@ -53,10 +53,29 @@ in the range from #000000 to #000FFF, and the structural material of the endpoin
 being whatever structural material specified by the structural layer.
 
 # Texture Layer
-The texture layer image provides the visible aspect of a ship. TODO
-- TODO: Any size
-- TODO: Only portions covered by structure are shown
+The texture layer image provides the visible aspect of a ship. Using a texture layer allows the ship to look any way you want regardless of the materials  used in the structural layer.
+Images used in the texture layer can be of any size - they are not constrained to match the size of the structural layer; for best results, however, the aspect ratios should fully match.
+
+One thing to keep in mind when building a texture layer is that the portions of a texture that will be visible are those that correspond to the structure from the structural material. For example, a large rectangular texture over a small circular structure will be clipped to that circle, and only that circular portion of the texture will be visible.
+Another thing to keep in mind is that portions of a structure that have no corresponding texture pixels (e.g. because the texture pixels are transparent) will *not* appear in the ship, causing the structure to look as if it were invisible - it will physically exist and all, but it just won't be drawn.
+Testing for both of these constraints is simple: resize the layer image to the dimensions of the structural image, and verify that for each pixel in the texture layer there is a corresponding pixel in the structural layer, and viceversa.
 
 # .shp File
-TODO
+Whenever a ship consists of two or more layers, you must create a _shp_ file to tie all of the layers together. _shp_ files are simply text files containing json like the following:
+
+{
+	"structure_image":"ss_queen_of_unova_structure.png.dat",
+	"electrical_image":"ss_queen_of_unova_electrical.png.dat",
+	"ropes_image":"ss_queen_of_unova_ropes.png.dat",
+	"texture_image":"ss_queen_of_unova_texture.png.dat",
+	"ship_name":"S.S. Queen of Unova",
+	"offset":{"x":0.0, "y":-14.0},
+	"created_by":"OceanLinerOrca; Gabriele Giuseppini"
+}
+
+Here's an explanation of the elements:
+TODOHERE
+
 TODO: note on .dat rename to hide from ship file dialog
+
+Note that you may also create _shp_ files for single-layer ship; the advantage in this case over a _png_ ship is that you may customize ship metadata such as its initial offset and the ship name, among others.

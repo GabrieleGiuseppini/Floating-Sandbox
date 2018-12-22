@@ -168,6 +168,29 @@ void World::TogglePinAt(
     }
 }
 
+bool World::InjectBubblesAt(
+    vec2f const & targetPos,
+    GameParameters const & gameParameters)
+{
+    // Stop at first ship that successfully injects
+    for (auto const & ship : mAllShips)
+    {
+        if (ship->InjectBubblesAt(
+            targetPos,
+            mCurrentSimulationTime,
+            gameParameters))
+        {
+            // Found!
+            return true;
+        }
+
+        // No luck...
+        // search other ships
+    }
+
+    return false;
+}
+
 void World::ToggleAntiMatterBombAt(
     vec2f const & targetPos,
     GameParameters const & gameParameters)

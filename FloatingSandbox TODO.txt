@@ -876,7 +876,7 @@ Render:
 	- Friction on ocean floor, adjustable
 
 - Water:
-	=Do water bubbles (at intake) and water drops (at outtake) (*)
+	= Do water bubbles (at intake) and water drops (at outtake) (*)
 		= Ephemeral particles emitted at UpdateWaterIntake()
 			= Intake:
 				+ Material ("Air") with (very low) weight (real air weight) and full buoyancy so rises up automagically
@@ -887,21 +887,27 @@ Render:
 				+ Ship must take MaterialDatabase 
 				= Emit
 					= InitialSize is logarithmic with amount of water taken
+					- Need to coalesce multiple emissions into one
 				+ Points::Ephemeral support
-				- Sounds:
-					- Destroy-AirBubble
+				+ Sounds:
+					+ Destroy-AirBubble
 				+ Expose DoGenerateAirBubbles to SettingsDialog
-				- Air Bubbles Tool:
-					- Continuous Tool
-					= Cursor
-					- Continuous Sound
-					- Clean Destroy() doing air bubbles
+				+ Air Bubbles Tool:
+					+ ~Continuous Tool
+					+ Cursor
+					+ Continuous Sound
+					+ Clean Destroy() doing air bubbles
 			- Outtake: (TODO: test, but might look bad)
 				- Only emit if Y above water line
 				- Material is water
 					- New unique material
-		- Cleanup: Points::Ephemeral maxlifetime expiration is per-type, not global
-			+ But buffer stays, useful for finding free slots
+			- json comments
+				- Stripped out at Utils
+				- Add comment to air bubble water volume fill
+		- Cleanup: 
+			+ Points::Ephemeral maxlifetime expiration is per-type, not global
+				+ But buffer stays, useful for finding free slots
+			- Make vortex parameters GameParameters
 
 	- OLD: Optimizations:
 		- GravitateWater:
