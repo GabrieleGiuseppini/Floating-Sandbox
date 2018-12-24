@@ -208,9 +208,6 @@ Render:
 		- Resource Packs (Moleskine)
 
 - New ships
-	- Fix contributions
-		= Roma
-		- Others
 	= USS Shark
 		- Need Z buffer work first
 	- Warship
