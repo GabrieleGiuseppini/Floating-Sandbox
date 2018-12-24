@@ -2,6 +2,7 @@
 - Added ability to specify ships' characteristics with multiple layers (structural, electrical, ropes)
 	- Electrical properties can now be specified on top of any material - no more weak electrical cables!
 - Redesigned entire buoyancy simulation (see https://gabrielegiuseppini.wordpress.com/2018/12/22/a-physics-puzzle/)
+- Added air bubbles from leaking parts of the ship
 - Added flood tool
 - Added cloth material
 - Improved light diffusion and added more light types

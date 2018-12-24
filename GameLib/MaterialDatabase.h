@@ -148,8 +148,6 @@ public:
                     material));
         }
 
-        assert(nullptr != ropeMaterial);
-
         return MaterialDatabase(
             std::move(structuralMaterialsMap),
             std::move(electricalMaterialsMap),
@@ -195,7 +193,7 @@ public:
     StructuralMaterial const & GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType uniqueType) const
     {
         assert(static_cast<size_t>(uniqueType) < mUniqueStructuralMaterials.size());
-        assert(nullptr != mUniqueStructuralMaterials[static_cast<size_t>(uniqueType)]);
+        assert(nullptr != mUniqueStructuralMaterials[static_cast<size_t>(uniqueType)].second);
 
         return *(mUniqueStructuralMaterials[static_cast<size_t>(uniqueType)].second);
     }
@@ -205,7 +203,7 @@ public:
         ColorKey const & colorKey) const
     {
         assert(static_cast<size_t>(uniqueType) < mUniqueStructuralMaterials.size());
-        assert(nullptr != mUniqueStructuralMaterials[static_cast<size_t>(uniqueType)]);
+        assert(nullptr != mUniqueStructuralMaterials[static_cast<size_t>(uniqueType)].second);
 
         return colorKey == mUniqueStructuralMaterials[static_cast<size_t>(uniqueType)].first;
     }

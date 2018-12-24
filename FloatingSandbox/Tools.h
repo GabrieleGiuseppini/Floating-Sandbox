@@ -1108,7 +1108,6 @@ public:
     virtual void ShowCurrentCursor() override
     {
         assert(nullptr != mParentFrame);
-        assert(nullptr != mCurrentCursor);
 
         mParentFrame->SetCursor(mIsEngaged ? *mDownCursor : *mUpCursor);
     }
@@ -1213,7 +1212,6 @@ public:
     virtual void ShowCurrentCursor() override
     {
         assert(nullptr != mParentFrame);
-        assert(nullptr != mCurrentCursor);
 
         mParentFrame->SetCursor(
             mIsEngaged

@@ -166,19 +166,14 @@ Render:
 		+ Light:
 			+ Add low/medium/high-dimmed lights and portholes (*)
 		+ See if cloths should be lighter - to not break ropes
-
-		= Bubbles (*)
-
-		+ Flood tool (*)
-
+		+ Bubbles
+		+ Flood tool
 		+ Test if debris (and sparkles?) really fly out of water
 
-		- Lower strength of double-bottom
-			- Test with submarine
-			- Redo Submarine - thicker to avoid bending
+		- Redo Submarine - thicker to avoid bending
 
-		- Make these ships more breakable:
-			- Titanic
+		= Make these ships more breakable:
+			+ Titanic
 			- Krafting
 
 		- Ship loading: resize of texture must depend on actual image size (don't get huge)
@@ -870,43 +865,11 @@ Render:
 	- Friction on ocean floor, adjustable
 
 - Water:
-	= Do water bubbles (at intake) and water drops (at outtake) (*)
-		= Ephemeral particles emitted at UpdateWaterIntake()
-			= Intake:
-				+ Material ("Air") with (very low) weight (real air weight) and full buoyancy so rises up automagically
-					+ MaterialDatabase: special getter for it
-						+ Mechanism for detecting this and Ropes: unique_type
-						+ SoundType needs to become optional
-						+ IsRope has to go/ColorKey comment has to go
-				+ Ship must take MaterialDatabase 
-				= Emit
-					= InitialSize is logarithmic with amount of water taken
-					- Need to coalesce multiple emissions into one
-				+ Points::Ephemeral support
-				+ Sounds:
-					+ Destroy-AirBubble
-				+ Expose DoGenerateAirBubbles to SettingsDialog
-				+ Air Bubbles Tool:
-					+ ~Continuous Tool
-					+ Cursor
-					+ Continuous Sound
-					+ Clean Destroy() doing air bubbles
-				- Things to test:
-					- Air bubbles only at leaking that became so because they have been broken
-						- "IsLeaking"->"LeakingType":None, Leaking, LeakingBroken
-					- Don't steal ephemeral particle for air bubbles
-					- Increase # of ephemeral particles
-			- Outtake: (TODO: test, but might look bad)
-				- Only emit if Y above water line
-				- Material is water
-					- New unique material
-			- json comments
-				- Stripped out at Utils
-				- Add comment to air bubble water volume fill
-		- Cleanup: 
-			+ Points::Ephemeral maxlifetime expiration is per-type, not global
-				+ But buffer stays, useful for finding free slots
-			- Make vortex parameters GameParameters
+	- If we don't have enough particles for air bubbles, test the following::
+		- Air bubbles only at leaking that became so because they have been broken
+			- "IsLeaking" -> "LeakingType": None, Leaking, LeakingDamaged
+		- Increase # of ephemeral particles
+
 
 	- OLD: Optimizations:
 		- GravitateWater:
@@ -948,29 +911,6 @@ Render:
 
 
 - Game Interactions and Controls:
-
-	+ New "Impact" Bomb
-		+ Only explodes when spring is destroyed
-		+ State machine only for explosion
-		+ See why huge explosion
-		+ See why texture weird
-		+ Center texture
-		+ Help
-
-	+ Tool to flood ship
-		+ Name: Flood
-		+ Shift: un-floods
-		+ Icon: bottle (flood), syphon/dropper (unflood)
-		+ New ToolController/Tool
-			+ Continuous, like Destroy
-		+ World->Ship::OnFloodAt(x,y,strength)
-			+ Find closest (very small radius)
-			+ Add water quantity to point
-			+ Emit event
-		+ Sound: continuous as long as ship takes water
-			+ So, like sawed
-				+ Update() attempts to stop it
-
 	- Move tool: ability to move individual connected components
 		- After connected component has been overhauled
 		- Current tool is "Move All"
@@ -984,9 +924,6 @@ Render:
 
 	- Ship definition: "instructions"
 		- If present, at the first load of a ship spawns a text box (if enabled in settings)
-
-	+ Control incisiveness (contrast) of water color for water in ship
-		+ New uniform
 
 - UI:
 	+ SettingsDialog: tooltips at Simulation Quality (tradeoff) and Stiffness (instability)
@@ -3066,6 +3003,35 @@ IF WX:
 					+ Post: 26.8/26.9
 					+ NOT WORTH IT
 			+ Should replace water rushing in - decide
+	+ Do water bubbles (at intake) and water drops (at outtake)
+		+ Ephemeral particles emitted at UpdateWaterIntake()
+			+ Intake:
+				+ Material ("Air") with (very low) weight (real air weight) and full buoyancy so rises up automagically
+					+ MaterialDatabase: special getter for it
+						+ Mechanism for detecting this and Ropes: unique_type
+						+ SoundType needs to become optional
+						+ IsRope has to go/ColorKey comment has to go
+				+ Ship must take MaterialDatabase 
+				+ Emit
+					+ Need to coalesce multiple emissions into one
+				+ Points::Ephemeral support
+				+ Sounds:
+					+ Destroy-AirBubble
+				+ Expose DoGenerateAirBubbles to SettingsDialog
+				+ Air Bubbles Tool:
+					+ ~Continuous Tool
+					+ Cursor
+					+ Continuous Sound
+					+ Clean Destroy() doing air bubbles
+				+ Don't steal ephemeral particle for air bubbles
+					
+			+ json comments
+				+ Stripped out at Utils
+				+ Add comment to air bubble water volume fill
+		+ Cleanup: 
+			+ Points::Ephemeral maxlifetime expiration is per-type, not global
+				+ But buffer stays, useful for finding free slots
+			+ Make vortex parameters GameParameters
 
 
 + Debug light/drag issue
@@ -3172,6 +3138,28 @@ IF WX:
 		+ Cleanup:
 			+ Do two new material template screenshots and nuke old one
 			+ Redo materials.md
+	+ New "Impact" Bomb
+		+ Only explodes when spring is destroyed
+		+ State machine only for explosion
+		+ See why huge explosion
+		+ See why texture weird
+		+ Center texture
+		+ Help
+	+ Tool to flood ship
+		+ Name: Flood
+		+ Shift: un-floods
+		+ Icon: bottle (flood), syphon/dropper (unflood)
+		+ New ToolController/Tool
+			+ Continuous, like Destroy
+		+ World->Ship::OnFloodAt(x,y,strength)
+			+ Find closest (very small radius)
+			+ Add water quantity to point
+			+ Emit event
+		+ Sound: continuous as long as ship takes water
+			+ So, like sawed
+				+ Update() attempts to stop i
+	+ Control incisiveness (contrast) of water color for water in ship
+		+ New uniform
 
 + Sound:
 	+ SFML:
