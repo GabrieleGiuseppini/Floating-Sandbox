@@ -47,6 +47,7 @@ void Points::Add(
     mWaterBuffer.emplace_back(0.0f);
     mWaterVelocityBuffer.emplace_back(vec2f::zero());
     mWaterMomentumBuffer.emplace_back(vec2f::zero());
+    mCumulatedIntakenWater.emplace_back(0.0f);
     mIsLeakingBuffer.emplace_back(isLeaking);
 
     // Electrical dynamics
@@ -77,10 +78,13 @@ void Points::CreateEphemeralParticleAirBubble(
     float vortexAmplitude,
     float vortexFrequency,
     StructuralMaterial const & structuralMaterial,
-    float currentSimulationTime)
+    float currentSimulationTime,
+    ConnectedComponentId connectedComponentId)
 {
-    // Get a free slot (or steal one)
-    auto pointIndex = FindFreeEphemeralParticle(currentSimulationTime);
+    // Get a free slot (but don't steal one)
+    auto pointIndex = FindFreeEphemeralParticle(currentSimulationTime, false);
+    if (NoneElementIndex == pointIndex)
+        return; // No luck
 
     //
     // Store attributes
@@ -112,7 +116,7 @@ void Points::CreateEphemeralParticleAirBubble(
         initialSize,
         vortexAmplitude,
         vortexFrequency);
-    mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
+    mConnectedComponentIdBuffer[pointIndex] = connectedComponentId;
 
     assert(false == mIsPinnedBuffer[pointIndex]);
 
@@ -131,7 +135,8 @@ void Points::CreateEphemeralParticleDebris(
     ConnectedComponentId connectedComponentId)
 {
     // Get a free slot (or steal one)
-    auto pointIndex = FindFreeEphemeralParticle(currentSimulationTime);
+    auto pointIndex = FindFreeEphemeralParticle(currentSimulationTime, true);
+    assert(NoneElementIndex != pointIndex);
 
     //
     // Store attributes
@@ -177,7 +182,8 @@ void Points::CreateEphemeralParticleSparkle(
     ConnectedComponentId connectedComponentId)
 {
     // Get a free slot (or steal one)
-    auto pointIndex = FindFreeEphemeralParticle(currentSimulationTime);
+    auto pointIndex = FindFreeEphemeralParticle(currentSimulationTime, true);
+    assert(NoneElementIndex != pointIndex);
 
     //
     // Store attributes
@@ -525,11 +531,10 @@ void Points::UploadEphemeralParticles(
                     1, // Connected component ID - see note above
                     TextureFrameId(TextureGroupType::AirBubble, mEphemeralStateBuffer[pointIndex].AirBubble.FrameIndex),
                     GetPosition(pointIndex),
-                    mEphemeralStateBuffer[pointIndex].AirBubble.InitialSize
-                        + mEphemeralStateBuffer[pointIndex].AirBubble.Progress, // Scale
+                    mEphemeralStateBuffer[pointIndex].AirBubble.InitialSize, // Scale
                     mEphemeralStateBuffer[pointIndex].AirBubble.VortexAmplitude
                         + mEphemeralStateBuffer[pointIndex].AirBubble.Progress, // Angle
-                    std::min(1.0f, mEphemeralStateBuffer[pointIndex].AirBubble.CurrentDeltaY / 5.0f)); // Alpha
+                    std::min(1.0f, mEphemeralStateBuffer[pointIndex].AirBubble.CurrentDeltaY / 4.0f)); // Alpha
 
                 break;
             }
@@ -622,7 +627,9 @@ void Points::UpdateTotalMasses(GameParameters const & gameParameters)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-ElementIndex Points::FindFreeEphemeralParticle(float currentSimulationTime)
+ElementIndex Points::FindFreeEphemeralParticle(
+    float currentSimulationTime,
+    bool force)
 {
     //
     // Search for the firt free ephemeral particle; if a free one is not found, reuse the
@@ -670,7 +677,15 @@ ElementIndex Points::FindFreeEphemeralParticle(float currentSimulationTime)
     }
 
     //
-    // No luck, have to steal the oldest
+    // No luck
+    //
+
+    if (!force)
+        return NoneElementIndex;
+
+
+    //
+    // Steal the oldest
     //
 
     assert(NoneElementIndex != oldestParticle);

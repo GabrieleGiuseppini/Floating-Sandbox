@@ -268,6 +268,7 @@ bool Ship::InjectBubblesAt(
             targetPos,
             0.5f,
             currentSimulationTime,
+            NoneConnectedComponentId, // FUTURE: use mMaxConnectedComponentId/ZPlane
             gameParameters);
 
         return true;
@@ -972,19 +973,7 @@ void Ship::UpdateWaterInflow(
                     * GameParameters::SimulationStepTimeDuration<float>
                     * gameParameters.WaterIntakeAdjustment;
 
-                if (newWater > 0.0f)
-                {
-                    // Incoming water
-
-                    // Generate air bubbles
-                    float size = newWater; // TODO: figure this out
-                    GenerateAirBubbles(
-                        mPoints.GetPosition(pointIndex),
-                        size,
-                        currentSimulationTime,
-                        gameParameters);
-                }
-                else if (newWater < 0.0f)
+                if (newWater < 0.0f)
                 {
                     // Outgoing water
 
@@ -996,7 +985,31 @@ void Ship::UpdateWaterInflow(
                 }
 
                 // Adjust water
-                mPoints.AddWater(pointIndex, newWater);
+                mPoints.GetWater(pointIndex) += newWater;
+
+                // Adjust totale cumulated intaken water at this point
+                mPoints.GetCumulatedIntakenWater(pointIndex) += newWater;
+
+                // Check if it's time to produce air bubbles
+                if (mPoints.GetCumulatedIntakenWater(pointIndex) > 8.0f) // TODO: make it a game param
+                {
+                    // Generate air bubbles - but not on ropes as that looks awful
+                    if (gameParameters.DoGenerateAirBubbles
+                        && !mPoints.IsRope(pointIndex))
+                    {
+                        // TODO: make GameParam
+                        float const size = 0.3f;
+                        GenerateAirBubbles(
+                            mPoints.GetPosition(pointIndex),
+                            size,
+                            currentSimulationTime,
+                            mPoints.GetConnectedComponentId(pointIndex),
+                            gameParameters);
+                    }
+
+                    // Consume all cumulated water
+                    mPoints.GetCumulatedIntakenWater(pointIndex) = 0.0f;
+                }
 
                 // Adjust total water taken during step
                 waterTaken += newWater;
@@ -1799,22 +1812,21 @@ void Ship::GenerateAirBubbles(
     vec2f const & position,
     float size,
     float currentSimulationTime,
+    ConnectedComponentId connectedComponentId,
     GameParameters const & gameParameters)
 {
-    if (gameParameters.DoGenerateAirBubbles)
-    {
-        // TODO: make these GameParameters
-        float vortexAmplitude = GameRandomEngine::GetInstance().GenerateRandomReal(0.05f, 2.0f);
-        float vortexFrequency = 1.0f / GameRandomEngine::GetInstance().GenerateRandomReal(1.0f, 2.5f);
+    // TODO: make these GameParameters
+    float vortexAmplitude = GameRandomEngine::GetInstance().GenerateRandomReal(0.05f, 2.0f);
+    float vortexFrequency = 1.0f / GameRandomEngine::GetInstance().GenerateRandomReal(1.0f, 2.5f);
 
-        mPoints.CreateEphemeralParticleAirBubble(
-            position,
-            size,
-            vortexAmplitude,
-            vortexFrequency,
-            mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Air),
-            currentSimulationTime);
-    }
+    mPoints.CreateEphemeralParticleAirBubble(
+        position,
+        size,
+        vortexAmplitude,
+        vortexFrequency,
+        mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Air),
+        currentSimulationTime,
+        connectedComponentId);
 }
 
 void Ship::GenerateDebris(

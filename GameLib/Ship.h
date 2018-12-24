@@ -218,6 +218,7 @@ private:
         vec2f const & position,
         float size,
         float currentSimulationTime,
+        ConnectedComponentId connectedComponentId,
         GameParameters const & gameParameters);
 
     void GenerateDebris(

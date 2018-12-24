@@ -191,6 +191,7 @@ public:
         , mWaterBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mWaterVelocityBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mWaterMomentumBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
+        , mCumulatedIntakenWater(mBufferElementCount, shipPointCount, 0.0f)
         , mIsLeakingBuffer(mBufferElementCount, shipPointCount, false)
         // Electrical dynamics
         , mElectricalElementBuffer(mBufferElementCount, shipPointCount, NoneElementIndex)
@@ -280,7 +281,8 @@ public:
         float vortexAmplitude,
         float vortexFrequency,
         StructuralMaterial const & structuralMaterial,
-        float currentSimulationTime);
+        float currentSimulationTime,
+        ConnectedComponentId connectedComponentId);
 
     void CreateEphemeralParticleDebris(
         vec2f const & position,
@@ -513,12 +515,9 @@ public:
         return mWaterBuffer[pointElementIndex];
     }
 
-    void AddWater(
-        ElementIndex pointElementIndex,
-        float water)
+    float & GetWater(ElementIndex pointElementIndex)
     {
-        mWaterBuffer[pointElementIndex] += water;
-        assert(mWaterBuffer[pointElementIndex] >= 0.0f);
+        return mWaterBuffer[pointElementIndex];
     }
 
     std::shared_ptr<Buffer<float>> MakeWaterBufferCopy()
@@ -582,6 +581,16 @@ public:
                 waterVelocityBuffer[p] = vec2f::zero();
             }
         }
+    }
+
+    float GetCumulatedIntakenWater(ElementIndex pointElementIndex) const
+    {
+        return mCumulatedIntakenWater[pointElementIndex];
+    }
+
+    float & GetCumulatedIntakenWater(ElementIndex pointElementIndex)
+    {
+        return mCumulatedIntakenWater[pointElementIndex];
     }
 
     bool IsLeaking(ElementIndex pointElementIndex) const
@@ -748,7 +757,9 @@ private:
             * GameParameters::MechanicalSimulationStepTimeDuration<float>(numMechanicalDynamicsIterations);
     }
 
-    ElementIndex FindFreeEphemeralParticle(float currentSimulationTime);
+    ElementIndex FindFreeEphemeralParticle(
+        float currentSimulationTime,
+        bool force);
 
     inline void ExpireEphemeralParticle(ElementIndex pointElementIndex)
     {
@@ -810,6 +821,10 @@ private:
 
     // Total momentum of the water at this point
     Buffer<vec2f> mWaterMomentumBuffer;
+
+    // Total amount of water in/out taken which has not yet been
+    // utilized for air bubbles
+    Buffer<float> mCumulatedIntakenWater;
 
     Buffer<bool> mIsLeakingBuffer;
 

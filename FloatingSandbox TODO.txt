@@ -169,7 +169,9 @@ Render:
 
 		= Bubbles (*)
 
-		- Test if debris (and sparkles?) really fly out of water
+		+ Test if debris (and sparkles?) really fly out of water
+
+		- Portholes: don't do graph flooding for them
 
 		- Lower strength of double-bottom
 			- Test with submarine
@@ -179,15 +181,7 @@ Render:
 			- Titanic
 			- Krafting
 
-		- Move all guides to own folder "Docs"
-
 		- Ship loading: resize of texture must depend on actual image size (don't get huge)
-
-		- See shader compilation issue/precision
-			- https://www.khronos.org/registry/OpenGL/specs/es/2.0/GLSL_ES_Specification_1.00.pdf
-			- https://www.khronos.org/opengl/wiki/Type_Qualifier_(GLSL)#Precision_qualifiers
-			- https://www.khronos.org/bugzilla/show_bug.cgi?id=1218
-
 
 		- Zbuffer (*)
 		- Orphaned points (*)
@@ -203,6 +197,7 @@ Render:
 		- Smoke (*)
 
 		- Complete "How to Build a Ship" guide
+		- Move all guides to own folder "Docs"
 
 	- 1.9.0
 		- Settings Manager (*)
@@ -231,6 +226,8 @@ Render:
 	- Lights breaking under pressure
 		- Just Y after which they break, with some randomness
 		- When broken, break-glass event, and no more light
+	- I wonder if you can add the "Ground" material, which is a material that cannot move.
+	  No physics calculation. Plus, you're using texture, so it would be neat if the same texture as the ground can be applied to it
 
 - Technical Debt:
 	+ Global damp as game parameter
@@ -363,6 +360,10 @@ Render:
 	- Cache sea depth from PointDynamics at first calculation (Points?), using lambda
 
 - Gfx optimizations:
+
+	- Lights in the GPU with instanced drawing
+		- Lamp coords, spread, and luminiscence in uniform buffer
+		- Loop as many times necessary to avoid going beyond uniform limit of the GPU
 
 	- See if can unify springs and ropes rendering
 		- Just make sure that ropecolor is already in point color buffer
@@ -897,6 +898,11 @@ Render:
 					+ Cursor
 					+ Continuous Sound
 					+ Clean Destroy() doing air bubbles
+				- Things to test:
+					- Air bubbles only at leaking that became so because they have been broken
+						- "IsLeaking"->"LeakingType":None, Leaking, LeakingBroken
+					- Don't steal ephemeral particle for air bubbles
+					- Increase # of ephemeral particles
 			- Outtake: (TODO: test, but might look bad)
 				- Only emit if Y above water line
 				- Material is water
