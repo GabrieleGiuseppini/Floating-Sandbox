@@ -46,6 +46,7 @@ const long ID_GRAB_MENUITEM = wxNewId();
 const long ID_SWIRL_MENUITEM = wxNewId();
 const long ID_PIN_MENUITEM = wxNewId();
 const long ID_INJECT_AIR_BUBBLES_MENUITEM = wxNewId();
+const long ID_FLOOD_HOSE_MENUITEM = wxNewId();
 const long ID_TIMERBOMB_MENUITEM = wxNewId();
 const long ID_RCBOMB_MENUITEM = wxNewId();
 const long ID_IMPACTBOMB_MENUITEM = wxNewId();
@@ -252,6 +253,10 @@ MainFrame::MainFrame(wxApp * mainApp)
     wxMenuItem * injectAirBubblesMenuItem = new wxMenuItem(mToolsMenu, ID_INJECT_AIR_BUBBLES_MENUITEM, _("Inject Air Bubbles\tB"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(injectAirBubblesMenuItem);
     Connect(ID_INJECT_AIR_BUBBLES_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnInjectAirBubblesMenuItemSelected);
+
+    wxMenuItem * floodHoseMenuItem = new wxMenuItem(mToolsMenu, ID_FLOOD_HOSE_MENUITEM, _("Flood\tF"), wxEmptyString, wxITEM_RADIO);
+    mToolsMenu->Append(floodHoseMenuItem);
+    Connect(ID_FLOOD_HOSE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnFloodHoseMenuItemSelected);
 
     wxMenuItem * timerBombMenuItem = new wxMenuItem(mToolsMenu, ID_TIMERBOMB_MENUITEM, _("Toggle Timer Bomb\tT"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(timerBombMenuItem);
@@ -965,6 +970,12 @@ void MainFrame::OnInjectAirBubblesMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
     mToolController->SetTool(ToolType::InjectAirBubbles);
+}
+
+void MainFrame::OnFloodHoseMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mToolController);
+    mToolController->SetTool(ToolType::FloodHose);
 }
 
 void MainFrame::OnTimerBombMenuItemSelected(wxCommandEvent & /*event*/)

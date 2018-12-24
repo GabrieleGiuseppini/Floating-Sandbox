@@ -75,6 +75,7 @@ public:
     void SwirlAt(vec2f const & screenCoordinates, float strengthMultiplier);
     void TogglePinAt(vec2f const & screenCoordinates);
     bool InjectBubblesAt(vec2f const & screenCoordinates);
+    bool FloodAt(vec2f const & screenCoordinates, float waterQuantityMultiplier);
     void ToggleAntiMatterBombAt(vec2f const & screenCoordinates);
     void ToggleImpactBombAt(vec2f const & screenCoordinates);
     void ToggleRCBombAt(vec2f const & screenCoordinates);

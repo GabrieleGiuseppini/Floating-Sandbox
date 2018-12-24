@@ -22,6 +22,7 @@ GameParameters::GameParameters()
     , DoGenerateDebris(true)
     , DoGenerateSparkles(true)
     , DoGenerateAirBubbles(true)
+    , CumulatedIntakenWaterThresholdForAirBubbles(8.0f)
     // Misc
     , WaveHeight(2.5f)
     , SeaDepth(300.0f)
@@ -39,6 +40,7 @@ GameParameters::GameParameters()
     // Interactions
     , ToolSearchRadius(2.0f)
     , DestroyRadius(0.75f)
+    , FloodQuantityOfWater(1.0f)
     , IsUltraViolentMode(false)
     , MoveToolInertia(8.0f)
 {

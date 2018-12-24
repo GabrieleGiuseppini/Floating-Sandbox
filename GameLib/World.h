@@ -95,6 +95,12 @@ public:
         vec2f const & targetPos,
         GameParameters const & gameParameters);
 
+    bool FloodAt(
+        vec2f const & targetPos,
+        float waterQuantityMultiplier,
+        float searchRadius,
+        GameParameters const & gameParameters);
+
     void ToggleAntiMatterBombAt(
         vec2f const & targetPos,
         GameParameters const & gameParameters);

@@ -142,6 +142,7 @@ private:
     void OnSwirlMenuItemSelected(wxCommandEvent& event);
     void OnPinMenuItemSelected(wxCommandEvent& event);
     void OnInjectAirBubblesMenuItemSelected(wxCommandEvent& event);
+    void OnFloodHoseMenuItemSelected(wxCommandEvent& event);
     void OnTimerBombMenuItemSelected(wxCommandEvent& event);
     void OnRCBombMenuItemSelected(wxCommandEvent& event);
     void OnImpactBombMenuItemSelected(wxCommandEvent& event);

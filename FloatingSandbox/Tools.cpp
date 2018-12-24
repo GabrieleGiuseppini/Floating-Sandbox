@@ -372,6 +372,27 @@ InjectAirBubblesTool::InjectAirBubblesTool(
 }
 
 ////////////////////////////////////////////////////////////////////////
+// FloodHose
+////////////////////////////////////////////////////////////////////////
+
+FloodHoseTool::FloodHoseTool(
+    wxFrame * parentFrame,
+    std::shared_ptr<GameController> gameController,
+    std::shared_ptr<SoundController> soundController,
+    ResourceLoader & resourceLoader)
+    : Tool(
+        ToolType::FloodHose,
+        parentFrame,
+        std::move(gameController),
+        std::move(soundController))
+    , mIsEngaged(false)
+    , mUpCursor(MakeCursor("flood_cursor_up", 20, 0, resourceLoader))
+    , mDownCursor1(MakeCursor("flood_cursor_down_1", 20, 0, resourceLoader))
+    , mDownCursor2(MakeCursor("flood_cursor_down_2", 20, 0, resourceLoader))
+{
+}
+
+////////////////////////////////////////////////////////////////////////
 // AntiMatterBomb
 ////////////////////////////////////////////////////////////////////////
 

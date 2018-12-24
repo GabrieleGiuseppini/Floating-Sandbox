@@ -131,6 +131,11 @@ struct GameParameters
     static constexpr std::chrono::milliseconds MaxSparkleParticlesLifetime = std::chrono::milliseconds(500);
 
     bool DoGenerateAirBubbles;
+    float CumulatedIntakenWaterThresholdForAirBubbles;
+    static constexpr float MinAirBubblesVortexAmplitude = 0.05f;
+    static constexpr float MaxAirBubblesVortexAmplitude = 2.0f;
+    static constexpr float MinAirBubblesVortexFrequency = 1.0f;
+    static constexpr float MaxAirBubblesVortexFrequency = 2.5f;
 
     // Misc
 
@@ -193,6 +198,8 @@ struct GameParameters
     float DestroyRadius;
     static constexpr float MinDestroyRadius = 0.1f;
     static constexpr float MaxDestroyRadius = 10.0f;
+
+    float FloodQuantityOfWater;
 
     bool IsUltraViolentMode;
 

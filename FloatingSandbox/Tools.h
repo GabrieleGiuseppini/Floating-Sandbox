@@ -40,10 +40,11 @@ enum class ToolType
     Swirl = 4,
     Pin = 5,
     InjectAirBubbles = 6,
-    AntiMatterBomb = 7,
-    ImpactBomb = 8,
-    RCBomb = 9,
-    TimerBomb = 10
+    FloodHose = 7,
+    AntiMatterBomb = 8,
+    ImpactBomb = 9,
+    RCBomb = 10,
+    TimerBomb = 11
 };
 
 struct InputState
@@ -1120,6 +1121,118 @@ private:
     // The cursors
     std::unique_ptr<wxCursor> const mUpCursor;
     std::unique_ptr<wxCursor> const mDownCursor;
+};
+
+class FloodHoseTool final : public Tool
+{
+public:
+
+    FloodHoseTool(
+        wxFrame * parentFrame,
+        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<SoundController> soundController,
+        ResourceLoader & resourceLoader);
+
+public:
+
+    virtual void Initialize(InputState const & inputState) override
+    {
+        if (inputState.IsLeftMouseDown)
+        {
+            mIsEngaged = mGameController->FloodAt(
+                inputState.MousePosition,
+                inputState.IsShiftKeyDown ? -1.0f : 1.0f);
+        }
+        else
+        {
+            mIsEngaged = false;
+        }
+    }
+
+    virtual void Deinitialize(InputState const & /*inputState*/) override
+    {
+        // Stop sound
+        mSoundController->StopFloodHoseSound();
+    }
+
+    virtual void Update(InputState const & inputState) override
+    {
+        bool isEngaged;
+        if (inputState.IsLeftMouseDown)
+        {
+            isEngaged = mGameController->FloodAt(
+                inputState.MousePosition,
+                inputState.IsShiftKeyDown ? -1.0f : 1.0f);
+        }
+        else
+        {
+            isEngaged = false;
+        }
+
+        if (isEngaged)
+        {
+            if (!mIsEngaged)
+            {
+                // State change
+                mIsEngaged = true;
+
+                // Start sound
+                mSoundController->PlayFloodHoseSound();
+            }
+            else
+            {
+                // Update down cursor
+                ++mDownCursorCounter;
+            }
+
+            // Update cursor
+            ShowCurrentCursor();
+        }
+        else
+        {
+            if (mIsEngaged)
+            {
+                // State change
+                mIsEngaged = false;
+
+                // Stop sound
+                mSoundController->StopFloodHoseSound();
+
+                // Update cursor
+                ShowCurrentCursor();
+            }
+        }
+    }
+
+    virtual void OnMouseMove(InputState const & /*inputState*/) override {}
+    virtual void OnLeftMouseDown(InputState const & /*inputState*/) override {}
+    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+    virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+    virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+
+    virtual void ShowCurrentCursor() override
+    {
+        assert(nullptr != mParentFrame);
+        assert(nullptr != mCurrentCursor);
+
+        mParentFrame->SetCursor(
+            mIsEngaged
+            ? ((mDownCursorCounter % 2) ? *mDownCursor2 : *mDownCursor1)
+            : *mUpCursor);
+    }
+
+private:
+
+    // Our state
+    bool mIsEngaged;
+
+    // The cursors
+    std::unique_ptr<wxCursor> const mUpCursor;
+    std::unique_ptr<wxCursor> const mDownCursor1;
+    std::unique_ptr<wxCursor> const mDownCursor2;
+
+    // The current counter for the down cursors
+    uint8_t mDownCursorCounter;
 };
 
 class AntiMatterBombTool final : public OneShotTool

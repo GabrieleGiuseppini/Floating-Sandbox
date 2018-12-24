@@ -51,6 +51,7 @@ SoundController::SoundController(
     , mDrawSound()
     , mSwirlSound()
     , mAirBubblesSound()
+    , mFloodHoseSound()
     , mWaterRushSound()
     , mWaterSplashSound()
     , mTimerBombSlowFuseSound()
@@ -184,6 +185,14 @@ SoundController::SoundController(
         else if (soundType == SoundType::AirBubbles)
         {
             mAirBubblesSound.Initialize(
+                std::move(soundBuffer),
+                100.0f,
+                mMasterToolsVolume,
+                mMasterToolsMuted);
+        }
+        else if (soundType == SoundType::FloodHose)
+        {
+            mFloodHoseSound.Initialize(
                 std::move(soundBuffer),
                 100.0f,
                 mMasterToolsVolume,
@@ -447,7 +456,8 @@ void SoundController::SetMasterEffectsVolume(float volume)
         if (playingSoundIt.first != SoundType::Draw
             && playingSoundIt.first != SoundType::Saw
             && playingSoundIt.first != SoundType::Swirl
-            && playingSoundIt.first != SoundType::AirBubbles)
+            && playingSoundIt.first != SoundType::AirBubbles
+            && playingSoundIt.first != SoundType::FloodHose)
         {
             for (auto & playingSound : playingSoundIt.second)
             {
@@ -475,7 +485,8 @@ void SoundController::SetMasterEffectsMuted(bool isMuted)
         if (playingSoundIt.first != SoundType::Draw
             && playingSoundIt.first != SoundType::Saw
             && playingSoundIt.first != SoundType::Swirl
-            && playingSoundIt.first != SoundType::AirBubbles)
+            && playingSoundIt.first != SoundType::AirBubbles
+            && playingSoundIt.first != SoundType::FloodHose)
         {
             for (auto & playingSound : playingSoundIt.second)
             {
@@ -505,7 +516,8 @@ void SoundController::SetMasterToolsVolume(float volume)
         if (playingSoundIt.first == SoundType::Draw
             || playingSoundIt.first == SoundType::Saw
             || playingSoundIt.first == SoundType::Swirl
-            || playingSoundIt.first == SoundType::AirBubbles)
+            || playingSoundIt.first == SoundType::AirBubbles
+            || playingSoundIt.first == SoundType::FloodHose)
         {
             for (auto & playingSound : playingSoundIt.second)
             {
@@ -519,6 +531,7 @@ void SoundController::SetMasterToolsVolume(float volume)
     mDrawSound.SetMasterVolume(mMasterToolsVolume);
     mSwirlSound.SetMasterVolume(mMasterToolsVolume);
     mAirBubblesSound.SetMasterVolume(mMasterToolsVolume);
+    mFloodHoseSound.SetMasterVolume(mMasterToolsVolume);
 }
 
 void SoundController::SetMasterToolsMuted(bool isMuted)
@@ -530,7 +543,8 @@ void SoundController::SetMasterToolsMuted(bool isMuted)
         if (playingSoundIt.first == SoundType::Draw
             || playingSoundIt.first == SoundType::Saw
             || playingSoundIt.first == SoundType::Swirl
-            || playingSoundIt.first == SoundType::AirBubbles)
+            || playingSoundIt.first == SoundType::AirBubbles
+            || playingSoundIt.first == SoundType::FloodHose)
         {
             for (auto & playingSound : playingSoundIt.second)
             {
@@ -544,6 +558,7 @@ void SoundController::SetMasterToolsMuted(bool isMuted)
     mDrawSound.SetMuted(mMasterToolsMuted);
     mSwirlSound.SetMuted(mMasterToolsMuted);
     mAirBubblesSound.SetMuted(mMasterToolsMuted);
+    mFloodHoseSound.SetMuted(mMasterToolsMuted);
 }
 
 // Master music
@@ -670,6 +685,16 @@ void SoundController::StopAirBubblesSound()
     mAirBubblesSound.Stop();
 }
 
+void SoundController::PlayFloodHoseSound()
+{
+    mFloodHoseSound.Start();
+}
+
+void SoundController::StopFloodHoseSound()
+{
+    mFloodHoseSound.Stop();
+}
+
 void SoundController::Update()
 {
     // Silence the sawed sounds - this will be a nop in case
@@ -709,6 +734,7 @@ void SoundController::Reset()
     mDrawSound.Reset();
     mSwirlSound.Reset();
     mAirBubblesSound.Reset();
+    mFloodHoseSound.Reset();
 
     mWaterRushSound.Reset();
     mWaterSplashSound.Reset();

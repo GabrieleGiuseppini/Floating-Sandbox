@@ -122,6 +122,9 @@ public:
     void PlayAirBubblesSound();
     void StopAirBubblesSound();
 
+    void PlayFloodHoseSound();
+    void StopFloodHoseSound();
+
     //
     // Updating
     //
@@ -220,6 +223,7 @@ private:
         PinPoint,
         UnpinPoint,
         AirBubbles,
+        FloodHose,
         Stress,
         LightFlicker,
         WaterRush,
@@ -258,6 +262,8 @@ private:
             return SoundType::UnpinPoint;
         else if (Utils::CaseInsensitiveEquals(str, "AirBubbles"))
             return SoundType::AirBubbles;
+        else if (Utils::CaseInsensitiveEquals(str, "FloodHose"))
+            return SoundType::FloodHose;
         else if (Utils::CaseInsensitiveEquals(str, "Stress"))
             return SoundType::Stress;
         else if (Utils::CaseInsensitiveEquals(str, "LightFlicker"))
@@ -1096,6 +1102,7 @@ private:
     ContinuousSingleChoiceSound mDrawSound;
     ContinuousSingleChoiceSound mSwirlSound;
     ContinuousSingleChoiceSound mAirBubblesSound;
+    ContinuousSingleChoiceSound mFloodHoseSound;
 
     ContinuousSingleChoiceSound mWaterRushSound;
     ContinuousSingleChoiceSound mWaterSplashSound;

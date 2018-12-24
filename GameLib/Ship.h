@@ -98,6 +98,12 @@ public:
         float currentSimulationTime,
         GameParameters const & gameParameters);
 
+    bool FloodAt(
+        vec2f const & targetPos,
+        float waterQuantityMultiplier,
+        float searchRadius,
+        GameParameters const & gameParameters);
+
     bool ToggleAntiMatterBombAt(
         vec2f const & targetPos,
         GameParameters const & gameParameters);
@@ -216,7 +222,6 @@ private:
 
     void GenerateAirBubbles(
         vec2f const & position,
-        float size,
         float currentSimulationTime,
         ConnectedComponentId connectedComponentId,
         GameParameters const & gameParameters);

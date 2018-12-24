@@ -381,6 +381,21 @@ bool GameController::InjectBubblesAt(vec2f const & screenCoordinates)
         mGameParameters);
 }
 
+bool GameController::FloodAt(
+    vec2f const & screenCoordinates,
+    float waterQuantityMultiplier)
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+
+    // Apply action
+    assert(!!mWorld);
+    return mWorld->FloodAt(
+        worldCoordinates,
+        waterQuantityMultiplier,
+        1.0f,
+        mGameParameters);
+}
+
 void GameController::ToggleAntiMatterBombAt(vec2f const & screenCoordinates)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);

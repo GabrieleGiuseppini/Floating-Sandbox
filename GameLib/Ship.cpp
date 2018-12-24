@@ -266,7 +266,6 @@ bool Ship::InjectBubblesAt(
     {
         GenerateAirBubbles(
             targetPos,
-            0.5f,
             currentSimulationTime,
             NoneConnectedComponentId, // FUTURE: use mMaxConnectedComponentId/ZPlane
             gameParameters);
@@ -275,6 +274,52 @@ bool Ship::InjectBubblesAt(
     }
     else
     {
+        return false;
+    }
+}
+
+bool Ship::FloodAt(
+    vec2f const & targetPos,
+    float waterQuantityMultiplier,
+    float searchRadius,
+    GameParameters const & gameParameters)
+{
+    float const quantityOfWater =
+        gameParameters.FloodQuantityOfWater
+        * waterQuantityMultiplier
+        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
+    // Find the closest point
+    float const searchSquareRadius = searchRadius * searchRadius;
+    ElementIndex bestPointIndex = NoneElementIndex;
+    float bestSquareDistance = std::numeric_limits<float>::max();
+
+    for (auto pointIndex : mPoints.NonEphemeralPoints())
+    {
+        if (!mPoints.IsDeleted(pointIndex)
+            && !mPoints.IsHull(pointIndex))
+        {
+            float squareDistance = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
+            if (squareDistance < searchSquareRadius && squareDistance < bestSquareDistance)
+            {
+                bestPointIndex = pointIndex;
+                bestSquareDistance = squareDistance;
+            }
+        }
+    }
+
+    if (NoneElementIndex != bestPointIndex)
+    {
+        if (quantityOfWater >= 0.0f)
+            mPoints.GetWater(bestPointIndex) += quantityOfWater;
+        else
+            mPoints.GetWater(bestPointIndex) -= std::min(-quantityOfWater, mPoints.GetWater(bestPointIndex));
+
+        return true;
+    }
+    else
+    {
+        // No luck
         return false;
     }
 }
@@ -987,21 +1032,18 @@ void Ship::UpdateWaterInflow(
                 // Adjust water
                 mPoints.GetWater(pointIndex) += newWater;
 
-                // Adjust totale cumulated intaken water at this point
+                // Adjust total cumulated intaken water at this point
                 mPoints.GetCumulatedIntakenWater(pointIndex) += newWater;
 
                 // Check if it's time to produce air bubbles
-                if (mPoints.GetCumulatedIntakenWater(pointIndex) > 8.0f) // TODO: make it a game param
+                if (mPoints.GetCumulatedIntakenWater(pointIndex) > gameParameters.CumulatedIntakenWaterThresholdForAirBubbles)
                 {
                     // Generate air bubbles - but not on ropes as that looks awful
                     if (gameParameters.DoGenerateAirBubbles
                         && !mPoints.IsRope(pointIndex))
                     {
-                        // TODO: make GameParam
-                        float const size = 0.3f;
                         GenerateAirBubbles(
                             mPoints.GetPosition(pointIndex),
-                            size,
                             currentSimulationTime,
                             mPoints.GetConnectedComponentId(pointIndex),
                             gameParameters);
@@ -1810,18 +1852,18 @@ void Ship::ElectricalElementDestroyHandler(ElementIndex /*electricalElementIndex
 
 void Ship::GenerateAirBubbles(
     vec2f const & position,
-    float size,
     float currentSimulationTime,
     ConnectedComponentId connectedComponentId,
-    GameParameters const & gameParameters)
+    GameParameters const & /*gameParameters*/)
 {
-    // TODO: make these GameParameters
-    float vortexAmplitude = GameRandomEngine::GetInstance().GenerateRandomReal(0.05f, 2.0f);
-    float vortexFrequency = 1.0f / GameRandomEngine::GetInstance().GenerateRandomReal(1.0f, 2.5f);
+    float vortexAmplitude = GameRandomEngine::GetInstance().GenerateRandomReal(
+        GameParameters::MinAirBubblesVortexAmplitude, GameParameters::MaxAirBubblesVortexAmplitude);
+    float vortexFrequency = 1.0f / GameRandomEngine::GetInstance().GenerateRandomReal(
+        GameParameters::MinAirBubblesVortexFrequency, GameParameters::MaxAirBubblesVortexFrequency);
 
     mPoints.CreateEphemeralParticleAirBubble(
         position,
-        size,
+        0.3f,
         vortexAmplitude,
         vortexFrequency,
         mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Air),
