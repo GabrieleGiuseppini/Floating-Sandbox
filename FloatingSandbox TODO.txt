@@ -169,8 +169,7 @@ Render:
 		+ Bubbles
 		+ Flood tool
 		+ Test if debris (and sparkles?) really fly out of water
-
-		- Redo Submarine - thicker to avoid bending
+		+ Redo Submarine - thicker to avoid bending
 
 		= Make these ships more breakable:
 			+ Titanic
