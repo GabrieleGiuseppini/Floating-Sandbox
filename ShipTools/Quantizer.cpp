@@ -65,7 +65,7 @@ void Quantizer::Quantize(
 
     for (auto const & entry : materials.GetStructuralMaterials())
     {
-        if ( (!materials.IsRopeMaterial(entry.second) || doKeepRopes)
+        if ( (!entry.second.IsUniqueType(StructuralMaterial::MaterialUniqueType::Rope) || doKeepRopes)
             && (entry.second.Name != "Glass" || doKeepGlass))
         {
             if (!targetFixedColor)

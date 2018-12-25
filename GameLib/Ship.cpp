@@ -908,6 +908,12 @@ void Ship::HandleCollisionsWithSeaFloor(GameParameters const & gameParameters)
 
             // Bounce velocity (naively)
             mPoints.GetVelocity(pointIndex) = -mPoints.GetVelocity(pointIndex);
+
+            // Add a small normal component, so to have some non-infinite friction
+            vec2f seaFloorNormal = vec2f(
+                floorheight - mParentWorld.GetOceanFloorHeightAt(mPoints.GetPosition(pointIndex).x + 0.01f),
+                0.01f).normalise();
+            mPoints.GetVelocity(pointIndex) += seaFloorNormal * 0.5f;
         }
     }
 }

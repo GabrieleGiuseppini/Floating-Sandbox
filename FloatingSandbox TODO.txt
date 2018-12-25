@@ -352,8 +352,11 @@ Render:
 - Gfx optimizations:
 
 	- Lights in the GPU with instanced drawing
-		- Lamp coords, spread, and luminiscence in uniform buffer
+		- Figure out whether at vertex or fragment shader
+		- Lamp coords, spread, and luminiscence in uniform array
+			- Which then have to be set individually
 		- Loop as many times necessary to avoid going beyond uniform limit of the GPU
+			- Figure out max (for right shader: v or f) at startup
 
 	- See if can unify springs and ropes rendering
 		- Just make sure that ropecolor is already in point color buffer
