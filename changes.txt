@@ -6,6 +6,7 @@
 - Added flood tool
 - Added cloth material
 - Improved light diffusion and added more light types
+- Lowered friction of ships on the sea floor
 - Fixed bug when mouse moves out of the game window while a tool is engaged
 
 1.7.5

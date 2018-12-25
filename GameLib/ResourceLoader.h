@@ -123,18 +123,9 @@ public:
 
 private:
 
-    enum class ResizeType
-    {
-        // No resize
-        None,
-
-        // Resize up 8 using nearest filter
-        ResizeUp8Nearest
-    };
-
     static ImageData LoadImage(
         std::filesystem::path const & filepath,
         int targetFormat,
         int targetOrigin,
-        ResizeType resizeType);
+        int resize);
 };

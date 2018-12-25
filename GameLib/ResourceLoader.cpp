@@ -69,7 +69,7 @@ ShipDefinition ResourceLoader::LoadShipDefinition(std::filesystem::path const & 
                     (basePath / *sdf.RopesLayerImageFilePath).string(),
                     IL_RGB,
                     IL_ORIGIN_UPPER_LEFT,
-                    ResizeType::None));
+                    1));
         }
 
         if (!!sdf.ElectricalLayerImageFilePath)
@@ -79,7 +79,7 @@ ShipDefinition ResourceLoader::LoadShipDefinition(std::filesystem::path const & 
                 (basePath / *sdf.ElectricalLayerImageFilePath).string(),
                     IL_RGB,
                     IL_ORIGIN_UPPER_LEFT,
-                    ResizeType::None));
+                    1));
         }
 
         if (!!sdf.TextureLayerImageFilePath)
@@ -132,6 +132,16 @@ ShipDefinition ResourceLoader::LoadShipDefinition(std::filesystem::path const & 
     assert(!!shipMetadata);
 
     //
+    // Load structural image
+    //
+
+    ImageData structuralImage = ResourceLoader::LoadImage(
+        absoluteStructuralLayerImageFilePath.string(),
+        IL_RGB,
+        IL_ORIGIN_UPPER_LEFT,
+        1);
+
+    //
     // Load texture image
     //
 
@@ -148,21 +158,26 @@ ShipDefinition ResourceLoader::LoadShipDefinition(std::filesystem::path const & 
                     absoluteTextureLayerImageFilePath.string(),
                     IL_RGBA,
                     IL_ORIGIN_LOWER_LEFT,
-                    ResizeType::None));
+                    1));
 
             break;
         }
 
         case ShipDefinition::TextureOriginType::StructuralImage:
         {
-            // Resize it up
+            // Resize it up - ideally by 8, but don't exceed 4096 in any dimension
+
+            int maxDimension = std::max(structuralImage.Size.Width, structuralImage.Size.Height);
+            int resize = 8;
+            while (maxDimension * resize > 4096 && resize > 1)
+                resize /= 2;
 
             textureImage.emplace(
                 ResourceLoader::LoadImage(
                     absoluteTextureLayerImageFilePath.string(),
                     IL_RGBA,
                     IL_ORIGIN_LOWER_LEFT,
-                    ResizeType::ResizeUp8Nearest));
+                    resize));
 
             break;
         }
@@ -171,11 +186,7 @@ ShipDefinition ResourceLoader::LoadShipDefinition(std::filesystem::path const & 
     assert(!!textureImage);
 
     return ShipDefinition(
-        ResourceLoader::LoadImage(
-            absoluteStructuralLayerImageFilePath.string(),
-            IL_RGB,
-            IL_ORIGIN_UPPER_LEFT,
-            ResizeType::None),
+        std::move(structuralImage),
         std::move(ropesLayerImage),
         std::move(electricalLayerImage),
         std::move(*textureImage),
@@ -415,7 +426,7 @@ ImageData ResourceLoader::LoadImageRgbaUpperLeft(std::filesystem::path const & f
         filepath,
         IL_RGBA,
         IL_ORIGIN_UPPER_LEFT,
-        ResizeType::None);
+        1);
 }
 
 ImageData ResourceLoader::LoadImageRgbaLowerLeft(std::filesystem::path const & filepath)
@@ -424,7 +435,7 @@ ImageData ResourceLoader::LoadImageRgbaLowerLeft(std::filesystem::path const & f
         filepath,
         IL_RGBA,
         IL_ORIGIN_LOWER_LEFT,
-        ResizeType::None);
+        1);
 }
 
 ImageData ResourceLoader::LoadImageRgbUpperLeft(std::filesystem::path const & filepath)
@@ -433,7 +444,7 @@ ImageData ResourceLoader::LoadImageRgbUpperLeft(std::filesystem::path const & fi
         filepath,
         IL_RGB,
         IL_ORIGIN_UPPER_LEFT,
-        ResizeType::None);
+        1);
 }
 
 ImageData ResourceLoader::LoadImageRgbLowerLeft(std::filesystem::path const & filepath)
@@ -442,14 +453,14 @@ ImageData ResourceLoader::LoadImageRgbLowerLeft(std::filesystem::path const & fi
         filepath,
         IL_RGB,
         IL_ORIGIN_LOWER_LEFT,
-        ResizeType::None);
+        1);
 }
 
 ImageData ResourceLoader::LoadImage(
     std::filesystem::path const & filepath,
     int targetFormat,
     int targetOrigin,
-    ResizeType resizeType)
+    int resize)
 {
     //
     // Load image
@@ -506,34 +517,23 @@ ImageData ResourceLoader::LoadImage(
     // Resize it
     //
 
-    switch (resizeType)
+    if (resize != 1)
     {
-        case ResizeType::ResizeUp8Nearest:
+        //
+        // Resize with nearest
+        //
+
+        iluImageParameter(ILU_FILTER, ILU_NEAREST);
+
+        if (!iluScale(width * resize, height * resize, depth))
         {
-            //
-            // Resize 8X with nearest
-            //
-
-            iluImageParameter(ILU_FILTER, ILU_NEAREST);
-
-            if (!iluScale(width * 8, height * 8, depth))
-            {
-                ILint devilError = ilGetError();
-                std::string devilErrorMessage(iluErrorString(devilError));
-                throw GameException("Could not resize image: " + devilErrorMessage);
-            }
-
-            width *= 8;
-            height *= 8;
-
-            break;
+            ILint devilError = ilGetError();
+            std::string devilErrorMessage(iluErrorString(devilError));
+            throw GameException("Could not resize image: " + devilErrorMessage);
         }
 
-        case ResizeType::None:
-        {
-            // No resize
-            break;
-        }
+        width *= resize;
+        height *= resize;
     }
 
 

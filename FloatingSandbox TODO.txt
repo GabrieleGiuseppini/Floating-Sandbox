@@ -176,7 +176,7 @@ Render:
 			+ Titanic
 			- Krafting
 
-		- Ship loading: resize of texture must depend on actual image size (don't get huge)
+		+ Ship loading: resize of texture must depend on actual image size (don't get huge)
 
 		- Zbuffer (*)
 		- Orphaned points (*)
