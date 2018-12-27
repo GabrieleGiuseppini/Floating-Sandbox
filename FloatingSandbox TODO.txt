@@ -170,10 +170,9 @@ Render:
 		+ Flood tool
 		+ Test if debris (and sparkles?) really fly out of water
 		+ Redo Submarine - thicker to avoid bending
-
-		= Lights with different chances of turning off when wet
-			= Do test ship
-			- Do
+		+ Lights with different chances of turning off when wet
+			+ Do test ship
+			+ Do
 
 		- Trawler with cloth
 		= Make these ships more breakable:

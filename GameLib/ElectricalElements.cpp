@@ -286,61 +286,6 @@ void ElectricalElements::RunLampStateMachine(
             break;
         }
 
-        case ElementState::LampState::StateType::FlickerC:
-        {
-            // 0-1-0-1-0-1-Off
-
-            // Check if we should become ON again
-            if ((currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[elementLampIndex]
-                || lamp.IsSelfPowered)
-                && !points.IsWet(GetPointIndex(elementLampIndex), LampWetFailureWaterThreshold))
-            {
-                mAvailableCurrentBuffer[elementLampIndex] = 1.f;
-
-                // Transition state
-                lamp.State = ElementState::LampState::StateType::LightOn;
-            }
-            else if (currentWallclockTime > lamp.NextStateTransitionTimePoint)
-            {
-                ++lamp.FlickerCounter;
-
-                if (1 == lamp.FlickerCounter
-                    || 3 == lamp.FlickerCounter
-                    || 5 == lamp.FlickerCounter)
-                {
-                    // Flicker to on, for a short time
-
-                    mAvailableCurrentBuffer[elementLampIndex] = 1.f;
-
-                    mGameEventHandler->OnLightFlicker(
-                        DurationShortLongType::Short,
-                        mParentWorld.IsUnderwater(GetPosition(elementLampIndex, points)),
-                        1);
-
-                    lamp.NextStateTransitionTimePoint = currentWallclockTime + ElementState::LampState::FlickerCInterval;
-                }
-                else if (2 == lamp.FlickerCounter
-                    || 4 == lamp.FlickerCounter)
-                {
-                    // Flicker to off, for a short time
-
-                    mAvailableCurrentBuffer[elementLampIndex] = 0.f;
-
-                    lamp.NextStateTransitionTimePoint = currentWallclockTime + ElementState::LampState::FlickerCInterval;
-                }
-                else
-                {
-                    assert(6 == lamp.FlickerCounter);
-
-                    // Transition to off for good
-                    mAvailableCurrentBuffer[elementLampIndex] = 0.f;
-                    lamp.State = ElementState::LampState::StateType::LightOff;
-                }
-            }
-
-            break;
-        }
-
         case ElementState::LampState::StateType::LightOff:
         {
             assert(mAvailableCurrentBuffer[elementLampIndex] == 0.f);
