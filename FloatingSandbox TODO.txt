@@ -173,13 +173,12 @@ Render:
 		+ Lights with different chances of turning off when wet
 			+ Do test ship
 			+ Do
+		+ Trawler with cloth
+		+ Ship loading: resize of texture must depend on actual image size (don't get huge)
 
-		- Trawler with cloth
 		= Make these ships more breakable:
 			+ Titanic
 			- Krafting
-
-		+ Ship loading: resize of texture must depend on actual image size (don't get huge)
 
 		- Zbuffer (*)
 		- Orphaned points (*)

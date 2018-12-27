@@ -1,6 +1,9 @@
 import json
 from operator import itemgetter
+import re
 import sys
+
+
 
 def main():
     
@@ -8,8 +11,13 @@ def main():
         print("Usage: generate_materials_template.py <path_to_materials_json> s|e")
         sys.exit(-1)
 
+    json_content = ""
+    comment_re = re.compile(r"^(.*?)(//.+)?$")
     with open(sys.argv[1]) as f:
-        data = json.load(f)
+        for line in f:
+            json_content += comment_re.sub(r"\1", line)
+
+    data = json.loads(json_content)
 
     is_structural = (sys.argv[2] == "s")
 
