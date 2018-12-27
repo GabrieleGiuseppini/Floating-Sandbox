@@ -99,3 +99,5 @@ Here's an explanation of the elements:
 - _is self powered_: whether a lamp emits light on its own (when *true*) or only when it's powered by an electrical current (when *false*).
 - _luminiscence_: the amount of light emitted by a lamp.
 - _light spread_: the spread of light emitted by a lamp. Higher values make for a narrower focus, while lower values make for a broader focus.
+- _wet failure rate_: the average number of lamps of this material that will fail in a minute when wet.
+            For example, 2.0 means that a wet lamp will most likely turn off after 30 seconds of becoming wet.

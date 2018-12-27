@@ -171,6 +171,11 @@ Render:
 		+ Test if debris (and sparkles?) really fly out of water
 		+ Redo Submarine - thicker to avoid bending
 
+		= Lights with different chances of turning off when wet
+			= Do test ship
+			- Do
+
+		- Trawler with cloth
 		= Make these ships more breakable:
 			+ Titanic
 			- Krafting
@@ -207,14 +212,9 @@ Render:
 
 - Suggestions to spec:
 	- Different colored lights
-	- Lights with different chances of turning off
-		- Do they need longer-living lights?
 	- Custom sky colour - if possible a RGB picker in the settings
 	- Black hole
 	- Tool to increase or lower mass under the cursor
-	- Lights breaking under pressure
-		- Just Y after which they break, with some randomness
-		- When broken, break-glass event, and no more light
 	- I wonder if you can add the "Ground" material, which is a material that cannot move.
 	  No physics calculation. Plus, you're using texture, so it would be neat if the same texture as the ground can be applied to it
 
@@ -564,71 +564,14 @@ Render:
 
 - Dynamics:
 
-	+ Buoyancy rearc
-		+ Double-fix for rope/buoyancy/hull unhack and fast-falling wet rope/cloth
-		+ First of all, test with Integrate taking into account max(water, 1.0) for mass
-			+ At integrate
-			+ At spring relaxation, for spring masses
-				+ NOPE: here it hurts; wet springs really don't break at all
-			+ Check reality-ness
-				+ Problem: ship sinks very slowly
-					+ Due to: mp>>Mw: v=g*dt; mp<<Mw: v=0
-		+ Introduce volumetric fill: fraction of 1m3 that is filled by material
-			+ Also: fraction of 1m3 that may be filled with water
-			+ Also: volume of displaced water
-			+ Default: 1.0
-			+ Explicitly set to low value at:
-				+ Rope, Cloth
-				+ All Hull's (zero)
-			+ Remove Points::Buoyancy
-			+ Use volumetric fill at:
-				+ UpdatePointForces()
-				+ Integrate() (temporarily - becomes IntegrationFactor again, but re-calc'd explicitly at each step)
-
-		+ Reintroduce water absorption
-			+ High absorption at ropes and cloth
-			+ Points buffer
-			+ Use it at UpdateWaterIntake
-
-		+ Test look'n'feel
-			+ Test for less bouncy crashes: springs using wet mass, again
-				+ No, worse
-			+ Existing ships
-				+ Pay attention to crashes onto sea floor
-			+ Rope
-				+ WaterRestitution
-				+ Fast-falling-when-wet bug
-				+ Buoyancy/sinking
-			+ Cloth
-				+ WaterRestitution
-				+ Fast-falling-when-wet bug
-				+ Buoyancy/sinking
-
-		+ Now, optimize:
-			+ Points::UpdateTotalMass(): calculates:
-				+ (New) IntegrationFactor (vec2)
-				+ TotalMass (for UpdatePointForces())
-			+ Invoke at Ship::UpdateMechanicalDynamics before all
-			+ Then, undo changes at Integrate()
-			+ Then, use new quantities at UpdatePointForces()
-			+ Test:
-				+ Changes to Simulation Quality are picked up
-				+ Bombs' extra mass
-
-		+ Cleanup TODO's at Ship (SpringForces attempt)
-		+ Points::UploadForceBuffer: decide length
-		+ Update materials.md docs with new properties, including water
-		+ Update ShipAnalyzer for correct buoyancy-adjusted mass
-
-	+ Improve light diffusion
-		+ Use real distance
-		+ No more non-linear behavior
-
-	+ Add "Low-Dimmed Lights" and "Medium-", and "Portholes"
-		+ New Electrical Property of Lamp ("Luminescence") at ElectricalMaterial
-		+ New Lamp property at ElectricalElements
-			+ Consumed by DiffuseLight
-		+ Use at Queen of Unova
+	- Lights breaking under pressure
+		- Idea:
+			- Just Y after which they break, with some randomness
+			- When broken, break-glass event, and no more light
+		- Applies to all structural materials; they have a max depth after which they break autonomously
+			- Glass has low values; everything else has huge values (i.e. default, almost +INF)
+			- TODO: how to inject randomness? Need some probability growing in a band around max depth
+		- All points visited and checked at some step in UpdateMechanicalDynamics()
 
 	- OceanFloor:
 		- Make number of samples be bump map width
@@ -2892,6 +2835,71 @@ IF WX:
 				- Redo
 			+ Cloth sound			
 			+ Make ship with Dutch and Italian flags
+	+ Buoyancy rearc
+		+ Double-fix for rope/buoyancy/hull unhack and fast-falling wet rope/cloth
+		+ First of all, test with Integrate taking into account max(water, 1.0) for mass
+			+ At integrate
+			+ At spring relaxation, for spring masses
+				+ NOPE: here it hurts; wet springs really don't break at all
+			+ Check reality-ness
+				+ Problem: ship sinks very slowly
+					+ Due to: mp>>Mw: v=g*dt; mp<<Mw: v=0
+		+ Introduce volumetric fill: fraction of 1m3 that is filled by material
+			+ Also: fraction of 1m3 that may be filled with water
+			+ Also: volume of displaced water
+			+ Default: 1.0
+			+ Explicitly set to low value at:
+				+ Rope, Cloth
+				+ All Hull's (zero)
+			+ Remove Points::Buoyancy
+			+ Use volumetric fill at:
+				+ UpdatePointForces()
+				+ Integrate() (temporarily - becomes IntegrationFactor again, but re-calc'd explicitly at each step)
+
+		+ Reintroduce water absorption
+			+ High absorption at ropes and cloth
+			+ Points buffer
+			+ Use it at UpdateWaterIntake
+
+		+ Test look'n'feel
+			+ Test for less bouncy crashes: springs using wet mass, again
+				+ No, worse
+			+ Existing ships
+				+ Pay attention to crashes onto sea floor
+			+ Rope
+				+ WaterRestitution
+				+ Fast-falling-when-wet bug
+				+ Buoyancy/sinking
+			+ Cloth
+				+ WaterRestitution
+				+ Fast-falling-when-wet bug
+				+ Buoyancy/sinking
+
+		+ Now, optimize:
+			+ Points::UpdateTotalMass(): calculates:
+				+ (New) IntegrationFactor (vec2)
+				+ TotalMass (for UpdatePointForces())
+			+ Invoke at Ship::UpdateMechanicalDynamics before all
+			+ Then, undo changes at Integrate()
+			+ Then, use new quantities at UpdatePointForces()
+			+ Test:
+				+ Changes to Simulation Quality are picked up
+				+ Bombs' extra mass
+
+		+ Cleanup TODO's at Ship (SpringForces attempt)
+		+ Points::UploadForceBuffer: decide length
+		+ Update materials.md docs with new properties, including water
+		+ Update ShipAnalyzer for correct buoyancy-adjusted mass
+
+	+ Improve light diffusion
+		+ Use real distance
+		+ No more non-linear behavior
+
+	+ Add "Low-Dimmed Lights" and "Medium-", and "Portholes"
+		+ New Electrical Property of Lamp ("Luminescence") at ElectricalMaterial
+		+ New Lamp property at ElectricalElements
+			+ Consumed by DiffuseLight
+		+ Use at Queen of Unova
 
 + Water
 	+ Water

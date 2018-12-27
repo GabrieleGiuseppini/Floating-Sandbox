@@ -520,6 +520,13 @@ public:
         return mWaterBuffer[pointElementIndex];
     }
 
+    bool IsWet(
+        ElementIndex pointElementIndex,
+        float threshold) const
+    {
+        return mWaterBuffer[pointElementIndex] > threshold;
+    }
+
     std::shared_ptr<Buffer<float>> MakeWaterBufferCopy()
     {
         auto waterBufferCopy = mFloatBufferAllocator.Allocate();

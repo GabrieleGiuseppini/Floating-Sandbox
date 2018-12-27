@@ -57,7 +57,12 @@ def main():
     html += "<style>tr.border_top td { border-top:1pt solid black;}</style>"
     html += "</head><body>"
 
-    html += "<table style='border: 1px solid black' cellpadding=0 cellspacing=0>"
+    if is_structural:
+        spacing = 0
+    else:
+        spacing = 1
+
+    html += "<table style='border: 1px solid black' cellpadding=0 cellspacing={}>".format(spacing)
 
     # Visit all rows
     for k in sorted(d.iterkeys()):

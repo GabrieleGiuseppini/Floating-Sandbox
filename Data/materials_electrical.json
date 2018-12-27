@@ -1,81 +1,168 @@
 [
     {
-        "name": "High Lamp",	
+        "name": "High Lamp Watertight",	
 	"template": {
 		"row": "0|Lamps",
-		"column": "0|High Lamp"
+		"column": "0|High Lamp WT"
 	},
         "color_key": "#FFE010",
 	"electrical_type": "Lamp",
 	"is_self_powered": false,
 	"luminiscence": 2.0,
-	"light_spread": 1.0
+	"light_spread": 1.0,
+	"wet_failure_rate": 0.0
+    },
+    {
+        "name": "High Lamp",	
+	"template": {
+		"row": "0|Lamps",
+		"column": "1|High Lamp"
+	},
+        "color_key": "#FFE011", 
+	"electrical_type": "Lamp",
+	"is_self_powered": false,
+	"luminiscence": 2.0,
+	"light_spread": 1.0,
+	"wet_failure_rate": 4.5
     },
 
     {
-        "name": "Low Lamp",	
+        "name": "Low Lamp Watertight",
 	"template": {
 		"row": "0|Lamps",
-		"column": "1|Low Lamp"
+		"column": "2|Low Lamp WT"
 	},
         "color_key": "#DFE010",
 	"electrical_type": "Lamp",
 	"is_self_powered": false,
 	"luminiscence": 1.0,
-	"light_spread": 0.5
+	"light_spread": 0.5,
+	"wet_failure_rate": 0.0
+    },
+    {
+        "name": "Low Lamp",
+	"template": {
+		"row": "0|Lamps",
+		"column": "3|Low Lamp"
+	},
+        "color_key": "#DFE011",
+	"electrical_type": "Lamp",
+	"is_self_powered": false,
+	"luminiscence": 1.0,
+	"light_spread": 0.5,
+	"wet_failure_rate": 3.0
     },
 
     {
-        "name": "Porthole",	
+        "name": "Porthole Watertight",
 	"template": {
 		"row": "0|Lamps",
-		"column": "2|Porthole"
+		"column": "4|Porthole WT"
 	},
         "color_key": "#EFE010",
 	"electrical_type": "Lamp",
 	"is_self_powered": false,
 	"luminiscence": 0.5,
-	"light_spread": 0.0
+	"light_spread": 0.0,
+	"wet_failure_rate": 0.0
+    },
+    {
+        "name": "Porthole",
+	"template": {
+		"row": "0|Lamps",
+		"column": "5|Porthole"
+	},
+        "color_key": "#EFE011",
+	"electrical_type": "Lamp",
+	"is_self_powered": false,
+	"luminiscence": 0.5,
+	"light_spread": 0.0,
+	"wet_failure_rate": 6.0
     },
 
 
 
 
     {
-        "name": "Self-Powered High Lamp",	
+        "name": "Self-Powered High Lamp Watertight",
 	"template": {
 		"row": "1|Self-Powered Lamps",
-		"column": "0|High Lamp"
+		"column": "0|High Lamp WT"
 	},
         "color_key": "#FFFF00",
 	"electrical_type": "Lamp",
 	"is_self_powered": true,
 	"luminiscence": 2.0,
-	"light_spread": 1.0
+	"light_spread": 1.0,
+	"wet_failure_rate": 0.0
     },
     {
-        "name": "Self-Powered Low Lamp",	
+        "name": "Self-Powered High Lamp",
 	"template": {
 		"row": "1|Self-Powered Lamps",
-		"column": "1|Low Lamp"
+		"column": "1|High Lamp"
+	},
+        "color_key": "#FFFF01",
+	"electrical_type": "Lamp",
+	"is_self_powered": true,
+	"luminiscence": 2.0,
+	"light_spread": 1.0,
+	"wet_failure_rate": 4.5
+    },
+
+    {
+        "name": "Self-Powered Low Lamp Watertight",
+	"template": {
+		"row": "1|Self-Powered Lamps",
+		"column": "2|Low Lamp WT"
 	},
         "color_key": "#DFFF00",
 	"electrical_type": "Lamp",
 	"is_self_powered": true,
 	"luminiscence": 1.0,
-	"light_spread": 0.5
+	"light_spread": 0.5,
+	"wet_failure_rate": 0.0
     },
     {
-        "name": "Self-Powered Porthole",	
+        "name": "Self-Powered Low Lamp",
 	"template": {
 		"row": "1|Self-Powered Lamps",
-		"column": "2|Porthole"
+		"column": "3|Low Lamp"
+	},
+        "color_key": "#DFFF01",
+	"electrical_type": "Lamp",
+	"is_self_powered": true,
+	"luminiscence": 1.0,
+	"light_spread": 0.5,
+	"wet_failure_rate": 3.0
+    },
+
+
+    {
+        "name": "Self-Powered Porthole Watertight",	
+	"template": {
+		"row": "1|Self-Powered Lamps",
+		"column": "4|Porthole WT"
 	},
         "color_key": "#EFFF00",
 	"electrical_type": "Lamp",
 	"is_self_powered": true,
 	"luminiscence": 0.5,
-	"light_spread": 0.0
+	"light_spread": 0.0,
+	"wet_failure_rate": 0.0
+    },
+    {
+        "name": "Self-Powered Porthole",
+	"template": {
+		"row": "1|Self-Powered Lamps",
+		"column": "5|Porthole"
+	},
+        "color_key": "#EFFF01",
+	"electrical_type": "Lamp",
+	"is_self_powered": true,
+	"luminiscence": 0.5,
+	"light_spread": 0.0,
+	"wet_failure_rate": 6.0
     },
 
 

@@ -221,8 +221,9 @@ private:
         struct LampState
         {
             bool IsSelfPowered;
-            float Luminiscence;
-            float LightSpread;
+
+            // Probability that light fails within 1 second
+            float WetFailureRateCdf;
 
             enum class StateType
             {
@@ -230,22 +231,29 @@ private:
                 LightOn,
                 FlickerA,
                 FlickerB,
+                FlickerC,
                 LightOff
             };
 
             static constexpr auto FlickerStartInterval = 100ms;
             static constexpr auto FlickerAInterval = 150ms;
             static constexpr auto FlickerBInterval = 100ms;
+            static constexpr auto FlickerCInterval = 40ms;
 
             StateType State;
             std::uint8_t FlickerCounter;
             GameWallClock::time_point NextStateTransitionTimePoint;
+            GameWallClock::time_point NextWetFailureCheckTimePoint;
 
-            LampState(bool isSelfPowered)
+            LampState(
+                bool isSelfPowered,
+                float wetFailureRate)
                 : IsSelfPowered(isSelfPowered)
+                , WetFailureRateCdf(1.0f - exp(-wetFailureRate/60.0f))
                 , State(StateType::Initial)
                 , FlickerCounter(0u)
                 , NextStateTransitionTimePoint()
+                , NextWetFailureCheckTimePoint()
             {}
         };
 
@@ -274,6 +282,10 @@ private:
         VisitSequenceNumber currentConnectivityVisitSequenceNumber,
         Points const & points,
         GameParameters const & gameParameters);
+
+    bool CheckWetFailureTime(
+        ElementState::LampState & lamp,
+        GameWallClock::time_point currentWallclockTime);
 
     inline vec2f const & GetPosition(
         ElementIndex elementLampIndex,

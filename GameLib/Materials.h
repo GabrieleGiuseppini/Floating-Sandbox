@@ -105,6 +105,7 @@ struct ElectricalMaterial
     // Light
     float Luminiscence;
     float LightSpread;
+    float WetFailureRate; // Number of lamp failures per minute
 
     static ElectricalMaterial Create(picojson::object const & electricalMaterialJson);
 
@@ -117,12 +118,14 @@ private:
         ElectricalElementType electricalType,
         bool isSelfPowered,
         float luminiscence,
-        float lightSpread)
+        float lightSpread,
+        float wetFailureRate)
         : Name(name)
         , ElectricalType(electricalType)
         , IsSelfPowered(isSelfPowered)
         , Luminiscence(luminiscence)
         , LightSpread(lightSpread)
+        , WetFailureRate(wetFailureRate)
     {
     }
 };

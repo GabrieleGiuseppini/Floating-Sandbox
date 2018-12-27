@@ -1418,7 +1418,7 @@ void Ship::UpdateElectricalConnectivity(VisitSequenceNumber currentVisitSequence
                     currentVisitSequenceNumber);
 
                 // Check if dry enough
-                if (mPoints.GetWater(mElectricalElements.GetPointIndex(generatorIndex)) < 0.3f)
+                if (!mPoints.IsWet(mElectricalElements.GetPointIndex(generatorIndex), 0.3f))
                 {
                     // Add generator to queue
                     assert(electricalElementsToVisit.empty());
