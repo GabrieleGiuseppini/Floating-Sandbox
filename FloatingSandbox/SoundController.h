@@ -1066,7 +1066,7 @@ private:
         {
             case SoundType::Break:
             case SoundType::Stress:
-                return std::chrono::milliseconds(100);
+                return std::chrono::milliseconds(20);
             default:
                 return std::chrono::milliseconds(75);
         }
