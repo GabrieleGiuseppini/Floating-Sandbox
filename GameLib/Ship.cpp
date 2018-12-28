@@ -1045,8 +1045,12 @@ void Ship::UpdateWaterInflow(
                 if (mPoints.GetCumulatedIntakenWater(pointIndex) > gameParameters.CumulatedIntakenWaterThresholdForAirBubbles)
                 {
                     // Generate air bubbles - but not on ropes as that looks awful
+                    //
+                    // FUTURE: and for the time being, also not on orphaned points as those are not visible
+                    // at the moment; this may be removed later when orphaned points will be visible
                     if (gameParameters.DoGenerateAirBubbles
-                        && !mPoints.IsRope(pointIndex))
+                        && !mPoints.IsRope(pointIndex)
+                        && mPoints.GetConnectedSprings(pointIndex).size() > 0)
                     {
                         GenerateAirBubbles(
                             mPoints.GetPosition(pointIndex),
