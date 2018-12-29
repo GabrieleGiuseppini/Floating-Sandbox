@@ -175,10 +175,9 @@ Render:
 			+ Do
 		+ Trawler with cloth
 		+ Ship loading: resize of texture must depend on actual image size (don't get huge)
-
-		= Make these ships more breakable:
+		+ Make these ships more breakable:
 			+ Titanic
-			- Krafting
+			+ Krafting
 
 		- Zbuffer (*)
 		- Orphaned points (*)
@@ -564,12 +563,11 @@ Render:
 
 	- Lights breaking under pressure
 		- Idea:
-			- Just Y after which they break, with some randomness
-			- When broken, break-glass event, and no more light
-		- Applies to all structural materials; they have a max depth after which they break autonomously
-			- Glass has low values; everything else has huge values (i.e. default, almost +INF)
-			- TODO: how to inject randomness? Need some probability growing in a band around max depth
-		- All points visited and checked at some step in UpdateMechanicalDynamics()
+			- All structural materials have max pressure delta after which they break, with some randomness
+		- Impl:
+			- All points visited and checked at some step in UpdateMechanicalDynamics()
+				- Pressure delta between current water at point and external Y
+				- With probability growing in a band around max pressure delta
 
 	- OceanFloor:
 		- Make number of samples be bump map width
@@ -596,13 +594,6 @@ Render:
 	- Auto-adjust zoom at ship load
 		- Use preferred zoom from .shp file
 		- Configured by GameController
-
-	- Slider for "Mass Adjustment"
-		- Recalcs Point's mass things, including mass itself
-		- Also used at bombs for bombs' mass - how?
-		- When done, re-enable buoyancy fix
-		- TODO: really worth doing? If water mass is also adjusted, then nothing really changes
-
 
 	- Figure out what to do with connected components and ephemeral particles
 		- Depending on the above:
@@ -805,7 +796,10 @@ Render:
 	- Random noise that lowers strength to inject "cracks" when the ship is under stress
 		- Random walk across pairs of points on opposide sides of ships
 
-	- Friction on ocean floor, adjustable
+	- Torpedoes
+		- Requires collision detection
+		- Might either have own propulsion or follow a vector specified with click-and-drag
+		- Also other objects might be launched with click-and-drag
 
 - Water:
 	- If we don't have enough particles for air bubbles, test the following::
@@ -839,17 +833,22 @@ Render:
 				  avenues of change (LeakWater, BalancePressure, etc.)
 					- Need Points::mIsWetBuffer and mWetPointsCount, both set/incrd automagically when Points::AddWater is called
 				- Needs multiple ifs - one at each change - vs. a single if at Option1
+
 	+ Did original game propagate water also through hull springs? YES. How did hull thin dividers work? THEY DIDN'T WORK
 	+ Add Point::Hull Characteristic, and don't leak/propagate(incl. gravitate) water if at least one of the two points is hull			
 		+ Alternatively: just make a spring hull if one point is hull; test it
+
 	- Make waves with Shallow Water Equations 
 		- And if frontier works, change height when frontier touches water for the first time
-		- Problem with extent of heightfield (X segment): needs to look good when zooming out; 3 alternatives:
+		- Problem with extent of heightfield: needs to look good when zooming out; 3 alternatives:
 			- 1: Find a way to stitch X segment to required world X
+				- i.e. still "periodic"
 				- Note that can't mirror segments or else waves would have different directions
 			- 2: Upsample and downsample depending on zoom
 				- But we lose details when we zoom out and then in again
 			- 3: Just cap zoom to reasonable max
+	- Rogue waves
+		- After cracking periodic repetition puzzle
 	- Breaking waves (Muller's paper)
 
 

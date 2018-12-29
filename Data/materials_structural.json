@@ -2010,7 +2010,7 @@
         "render_color": "#A21000", 
         "sound_type": "Metal", 
         "stiffness": 1.0, 
-        "strength": 0.1,
+        "strength": 0.07,
         "template": {
             "column": "0|Double-Bottom Steel", 
             "row": "90|Double-Bottom"
@@ -2030,7 +2030,7 @@
         "render_color": "#842005", 
         "sound_type": "Metal", 
         "stiffness": 1.0, 
-        "strength": 0.14, 
+        "strength": 0.11, 
         "template": {
             "column": "1|Double-Bottom Titanium", 
             "row": "90|Double-Bottom"
