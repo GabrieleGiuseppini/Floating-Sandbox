@@ -156,10 +156,12 @@ endif(MSVC)
 
 add_subdirectory(Benchmarks)
 add_subdirectory(FloatingSandbox)
-add_subdirectory(GameLib)
+add_subdirectory(Game)
+add_subdirectory(GameCore)
+add_subdirectory(GameOpenGL)
 add_subdirectory(Glad)
+add_subdirectory(GPUCalc)
 add_subdirectory(ShipTools)
-add_subdirectory(UILib)
 add_subdirectory(UnitTests)
 
 

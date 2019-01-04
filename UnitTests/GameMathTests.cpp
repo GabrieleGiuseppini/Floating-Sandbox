@@ -1,4 +1,4 @@
-#include <GameLib/GameMath.h>
+#include <GameCore/GameMath.h>
 
 #include "gtest/gtest.h"
 
@@ -121,8 +121,8 @@ INSTANTIATE_TEST_CASE_P(
         std::make_tuple(1.0f, 0.001f),
         std::make_tuple(1.001f, 0.001f),
         std::make_tuple(1.1f, 0.001f),
-        std::make_tuple(4.0f, 0.001f),
-        std::make_tuple(5.0f, 0.001f)
+        std::make_tuple(4.0f, 0.01f),
+        std::make_tuple(5.0f, 0.01f)
     ));
 
 TEST_P(FastExpTest, FastExpTest)

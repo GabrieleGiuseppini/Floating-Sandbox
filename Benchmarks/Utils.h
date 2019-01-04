@@ -1,5 +1,5 @@
-#include <GameLib/GameTypes.h>
-#include <GameLib/Vectors.h>
+#include <GameCore/GameTypes.h>
+#include <GameCore/Vectors.h>
 
 #include <vector>
 

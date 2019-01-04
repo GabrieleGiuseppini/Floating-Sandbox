@@ -1,4 +1,4 @@
-#include <GameLib/CircularList.h>
+#include <GameCore/CircularList.h>
 
 #include "gtest/gtest.h"
 
@@ -341,7 +341,7 @@ TEST(CircularListTests, Erase_TailHead_Head)
 }
 
 TEST(CircularListTests, Erase_TailHead_HeadMinusOne)
-{    
+{
     std::vector<int> vals;
 
     CircularList<int, 4> cl;

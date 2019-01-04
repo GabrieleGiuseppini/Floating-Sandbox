@@ -43,8 +43,9 @@ add_test (UnitTests UnitTests)
 target_include_directories(UnitTests PRIVATE SYSTEM ${LIBSIMDPP_INCLUDE_DIRS})
 
 target_link_libraries (UnitTests
+	GameCoreLib
 	GameLib
-	UILib
+	GPUCalcLib
 	${OPENGL_LIBRARIES}
 	gmock
 	gtest_main

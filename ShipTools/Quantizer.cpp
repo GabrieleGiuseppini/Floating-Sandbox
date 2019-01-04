@@ -5,9 +5,10 @@
  ***************************************************************************************/
 #include "Quantizer.h"
 
-#include <GameLib/MaterialDatabase.h>
-#include <GameLib/ResourceLoader.h>
-#include <GameLib/Vectors.h>
+#include <Game/MaterialDatabase.h>
+
+#include <GameCore/ResourceLoader.h>
+#include <GameCore/Vectors.h>
 
 #include <IL/il.h>
 #include <IL/ilu.h>
@@ -59,7 +60,7 @@ void Quantizer::Quantize(
     // Create set of colors to quantize to
     //
 
-    auto materials = ResourceLoader::LoadMaterialDatabase(materialsDir);
+    auto materials = MaterialDatabase::Load(materialsDir);
 
     std::vector<std::pair<vec3f, std::array<uint8_t, 3u>>> gameColors;
 

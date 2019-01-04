@@ -7,9 +7,10 @@
 
 #include "SoundController.h"
 
-#include <GameLib/GameController.h>
-#include <GameLib/GameWallClock.h>
-#include <GameLib/ResourceLoader.h>
+#include <Game/GameController.h>
+
+#include <GameCore/GameWallClock.h>
+#include <GameCore/ResourceLoader.h>
 
 #include <wx/cursor.h>
 #include <wx/frame.h>

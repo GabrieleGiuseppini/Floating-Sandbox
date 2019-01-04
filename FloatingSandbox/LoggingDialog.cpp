@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "LoggingDialog.h"
 
-#include <GameLib/Log.h>
+#include <GameCore/Log.h>
 
 #include <wx/clipbrd.h>
 #include <wx/settings.h>
@@ -22,8 +22,8 @@ LoggingDialog::LoggingDialog(wxWindow * parent)
 	Create(
 		mParent,
 		wxID_ANY,
-		_("Logging"), 
-		wxDefaultPosition, 
+		_("Logging"),
+		wxDefaultPosition,
         wxSize(800, 250),
 		wxCAPTION | wxCLOSE_BOX | wxRESIZE_BORDER | wxMINIMIZE_BOX | wxFRAME_SHAPED,
 		_T("Logging Window"));
@@ -35,11 +35,11 @@ LoggingDialog::LoggingDialog(wxWindow * parent)
 	//
 
 	mTextCtrl = new wxTextCtrl(
-		this, 
-		wxID_ANY, 
-		wxEmptyString, 
+		this,
+		wxID_ANY,
+		wxEmptyString,
 		wxDefaultPosition,
-		wxSize(200, 200), 
+		wxSize(200, 200),
 		wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH | wxVSCROLL | wxHSCROLL | wxBORDER_NONE);
 
 	wxFont font(10, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
@@ -94,4 +94,3 @@ void LoggingDialog::OnClose(wxCloseEvent & event)
 
 	event.Skip();
 }
-

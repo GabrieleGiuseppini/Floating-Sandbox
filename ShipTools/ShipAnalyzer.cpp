@@ -5,10 +5,11 @@
  ***************************************************************************************/
 #include "ShipAnalyzer.h"
 
-#include <GameLib/GameParameters.h>
-#include <GameLib/MaterialDatabase.h>
-#include <GameLib/ResourceLoader.h>
-#include <GameLib/Vectors.h>
+#include <Game/GameParameters.h>
+#include <Game/MaterialDatabase.h>
+
+#include <GameCore/ResourceLoader.h>
+#include <GameCore/Vectors.h>
 
 #include <IL/il.h>
 #include <IL/ilu.h>
@@ -28,7 +29,7 @@ ShipAnalyzer::AnalysisInfo ShipAnalyzer::Analyze(
     float const halfWidth = static_cast<float>(image.Size.Width) / 2.0f;
 
     // Load materials
-    auto materials = ResourceLoader::LoadMaterialDatabase(materialsDir);
+    auto materials = MaterialDatabase::Load(materialsDir);
 
     // Visit all points
     ShipAnalyzer::AnalysisInfo analysisInfo;

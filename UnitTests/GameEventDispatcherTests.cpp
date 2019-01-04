@@ -1,4 +1,4 @@
-#include <GameLib/GameEventDispatcher.h>
+#include <Game/GameEventDispatcher.h>
 
 #include "gmock/gmock.h"
 
@@ -19,100 +19,88 @@ using MockHandler = StrictMock<_MockHandler>;
 
 /////////////////////////////////////////////////////////////////
 
-TEST(GameEventDispatcherTests, Aggregates_OnDestroy)
+TEST(GameEventDispatcherTests, Aggregates_OnStress)
 {
     MockHandler handler;
 
     GameEventDispatcher dispatcher;
     dispatcher.RegisterSink(&handler);
 
-    StructuralMaterial const & pm1 = *(reinterpret_cast<StructuralMaterial *>(7));
+    StructuralMaterial sm(
+        "Foo",
+        1.0f,
+        1.0f,
+        1.0f,
+        vec4f::zero(),
+        false,
+        1.0f,
+        1.0f,
+        1.0f,
+        std::nullopt,
+        std::nullopt);
 
-    EXPECT_CALL(handler, OnDestroy(_, _, _)).Times(0);
+    EXPECT_CALL(handler, OnStress(_, _, _)).Times(0);
 
-    dispatcher.OnDestroy(pm1, true, 3);
-    dispatcher.OnDestroy(pm1, true, 2);
+    dispatcher.OnStress(sm, true, 3);
+    dispatcher.OnStress(sm, true, 2);
 
     Mock::VerifyAndClear(&handler);
 
-    EXPECT_CALL(handler, OnDestroy(_, true, 5)).Times(1);
+    EXPECT_CALL(handler, OnStress(Field(&StructuralMaterial::Name, "Foo"), true, 5)).Times(1);
 
     dispatcher.Flush();
 
     Mock::VerifyAndClear(&handler);
 }
 
-TEST(GameEventDispatcherTests, Aggregates_OnDestroy_MultipleKeys)
+TEST(GameEventDispatcherTests, Aggregates_OnStress_MultipleKeys)
 {
     MockHandler handler;
 
     GameEventDispatcher dispatcher;
     dispatcher.RegisterSink(&handler);
 
-    StructuralMaterial * pm1 = reinterpret_cast<StructuralMaterial *>(7);
-    StructuralMaterial * pm2 = reinterpret_cast<StructuralMaterial *>(21);
+    StructuralMaterial sm1(
+        "Foo1",
+        1.0f,
+        1.0f,
+        1.0f,
+        vec4f::zero(),
+        false,
+        1.0f,
+        1.0f,
+        1.0f,
+        std::nullopt,
+        std::nullopt);
 
-    EXPECT_CALL(handler, OnDestroy(_, _, _)).Times(0);
+    StructuralMaterial sm2(
+        "Foo2",
+        1.0f,
+        1.0f,
+        1.0f,
+        vec4f::zero(),
+        false,
+        1.0f,
+        1.0f,
+        1.0f,
+        std::nullopt,
+        std::nullopt);
 
-    dispatcher.OnDestroy(*pm2, false, 1);
-    dispatcher.OnDestroy(*pm1, false, 3);
-    dispatcher.OnDestroy(*pm2, false, 2);
-    dispatcher.OnDestroy(*pm1, false, 9);
-    dispatcher.OnDestroy(*pm1, false, 1);
-    dispatcher.OnDestroy(*pm2, true, 2);
-    dispatcher.OnDestroy(*pm2, true, 2);
+    EXPECT_CALL(handler, OnStress(_, _, _)).Times(0);
 
-    Mock::VerifyAndClear(&handler);
-
-    EXPECT_CALL(handler, OnDestroy(_, false, 13)).Times(1);
-    EXPECT_CALL(handler, OnDestroy(_, false, 3)).Times(1);
-    EXPECT_CALL(handler, OnDestroy(_, true, 4)).Times(1);
-
-    dispatcher.Flush();
-
-    Mock::VerifyAndClear(&handler);
-}
-
-TEST(GameEventDispatcherTests, Aggregates_OnPinToggled)
-{
-    MockHandler handler;
-
-    GameEventDispatcher dispatcher;
-    dispatcher.RegisterSink(&handler);
-
-    EXPECT_CALL(handler, OnPinToggled(_, _)).Times(0);
-
-    dispatcher.OnPinToggled(true, false);
-    dispatcher.OnPinToggled(true, false);
-
-    Mock::VerifyAndClear(&handler);
-
-    EXPECT_CALL(handler, OnPinToggled(true, false)).Times(1);
-
-    dispatcher.Flush();
-
-    Mock::VerifyAndClear(&handler);
-}
-
-TEST(GameEventDispatcherTests, Aggregates_OnPinToggled_MultipleKeys)
-{
-    MockHandler handler;
-
-    GameEventDispatcher dispatcher;
-    dispatcher.RegisterSink(&handler);
-
-    EXPECT_CALL(handler, OnPinToggled(_, _)).Times(0);
-
-    dispatcher.OnPinToggled(true, false);
-    dispatcher.OnPinToggled(true, false);
-    dispatcher.OnPinToggled(false, false);
-    dispatcher.OnPinToggled(true, true);
+    dispatcher.OnStress(sm2, false, 1);
+    dispatcher.OnStress(sm1, false, 3);
+    dispatcher.OnStress(sm2, false, 2);
+    dispatcher.OnStress(sm1, false, 9);
+    dispatcher.OnStress(sm1, false, 1);
+    dispatcher.OnStress(sm2, true, 2);
+    dispatcher.OnStress(sm2, true, 2);
 
     Mock::VerifyAndClear(&handler);
 
-    EXPECT_CALL(handler, OnPinToggled(true, false)).Times(1);
-    EXPECT_CALL(handler, OnPinToggled(false, false)).Times(1);
-    EXPECT_CALL(handler, OnPinToggled(true, true)).Times(1);
+    EXPECT_CALL(handler, OnStress(Field(&StructuralMaterial::Name, "Foo1"), false, 13)).Times(1);
+    EXPECT_CALL(handler, OnStress(Field(&StructuralMaterial::Name, "Foo2"), false, 3)).Times(1);
+    EXPECT_CALL(handler, OnStress(Field(&StructuralMaterial::Name, "Foo2"), true, 4)).Times(1);
 
     dispatcher.Flush();
 
@@ -169,22 +157,33 @@ TEST(GameEventDispatcherTests, ClearsStateAtUpdate)
     GameEventDispatcher dispatcher;
     dispatcher.RegisterSink(&handler);
 
-    StructuralMaterial * pm1 = reinterpret_cast<StructuralMaterial *>(7);
+    StructuralMaterial sm(
+        "Foo",
+        1.0f,
+        1.0f,
+        1.0f,
+        vec4f::zero(),
+        false,
+        1.0f,
+        1.0f,
+        1.0f,
+        std::nullopt,
+        std::nullopt);
 
-    EXPECT_CALL(handler, OnDestroy(_, _, _)).Times(0);
+    EXPECT_CALL(handler, OnStress(_, _, _)).Times(0);
 
-    dispatcher.OnDestroy(*pm1, false, 3);
-    dispatcher.OnDestroy(*pm1, false, 2);
+    dispatcher.OnStress(sm, false, 3);
+    dispatcher.OnStress(sm, false, 2);
 
     Mock::VerifyAndClear(&handler);
 
-    EXPECT_CALL(handler, OnDestroy(_, false, 5)).Times(1);
+    EXPECT_CALL(handler, OnStress(Field(&StructuralMaterial::Name, "Foo"), false, 5)).Times(1);
 
     dispatcher.Flush();
 
     Mock::VerifyAndClear(&handler);
 
-    EXPECT_CALL(handler, OnDestroy(_, _, _)).Times(0);
+    EXPECT_CALL(handler, OnStress(_, _, _)).Times(0);
 
     dispatcher.Flush();
 

@@ -1,6 +1,6 @@
 #include "Utils.h"
 
-#include <GameLib/SysSpecifics.h>
+#include <GameCore/SysSpecifics.h>
 
 // TODO: move to GameLib's LibSimdPp.h
 #define SIMDPP_ARCH_X86_SSSE3
@@ -25,7 +25,7 @@ static void UpdateSpringForces_Naive(benchmark::State& state)
     std::vector<float> springsDamperCoefficient;
     std::vector<float> springsRestLength;
 
-    MakeGraph2(size, pointsPosition, pointsVelocity, pointsForce, 
+    MakeGraph2(size, pointsPosition, pointsVelocity, pointsForce,
         springsEndpoints, springsStiffnessCoefficient, springsDamperCoefficient, springsRestLength);
 
     for (auto _ : state)
@@ -110,7 +110,7 @@ static void UpdateSpringForces_LibSimdPpAndIntrinsics(benchmark::State& state)
         {
             //
             // s0..3
-            // s0.pA.pos.x      
+            // s0.pA.pos.x
             //
 
             auto const s0_pA_index = springsEndpointsData[s].PointAIndex;
@@ -263,4 +263,3 @@ static void UpdateSpringForces_LibSimdPpAndIntrinsics(benchmark::State& state)
     benchmark::DoNotOptimize(pointsForce);
 }
 BENCHMARK(UpdateSpringForces_LibSimdPpAndIntrinsics);
-

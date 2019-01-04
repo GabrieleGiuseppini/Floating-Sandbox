@@ -14,10 +14,10 @@
 #include "SoundController.h"
 #include "ToolController.h"
 
-#include <GameLib/GameController.h>
-#include <GameLib/GameWallClock.h>
-#include <GameLib/IGameEventHandler.h>
-#include <GameLib/ResourceLoader.h>
+#include <GameCore/ResourceLoader.h>
+
+#include <Game/GameController.h>
+#include <Game/IGameEventHandler.h>
 
 #include <wx/filedlg.h>
 #include <wx/frame.h>

@@ -1,4 +1,4 @@
-#include <GameLib/EnumFlags.h>
+#include <GameCore/EnumFlags.h>
 
 #include "gtest/gtest.h"
 

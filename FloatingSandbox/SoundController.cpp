@@ -5,9 +5,10 @@
 ***************************************************************************************/
 #include "SoundController.h"
 
-#include <GameLib/GameException.h>
-#include <GameLib/Log.h>
-#include <GameLib/Materials.h>
+#include <Game/Materials.h>
+
+#include <GameCore/GameException.h>
+#include <GameCore/Log.h>
 
 #include <algorithm>
 #include <cassert>

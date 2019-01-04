@@ -8,9 +8,9 @@
 #include "SplashScreenDialog.h"
 #include "Version.h"
 
-#include <GameLib/GameException.h>
-#include <GameLib/Log.h>
-#include <GameLib/Utils.h>
+#include <GameCore/GameException.h>
+#include <GameCore/Log.h>
+#include <GameCore/Utils.h>
 
 #include <wx/intl.h>
 #include <wx/msgdlg.h>

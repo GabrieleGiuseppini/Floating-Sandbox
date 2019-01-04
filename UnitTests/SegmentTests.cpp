@@ -1,4 +1,4 @@
-#include <GameLib/Segment.h>
+#include <GameCore/Segment.h>
 
 #include "gtest/gtest.h"
 

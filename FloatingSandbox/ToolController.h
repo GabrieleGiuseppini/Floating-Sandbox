@@ -8,8 +8,9 @@
 #include "SoundController.h"
 #include "Tools.h"
 
-#include <GameLib/GameController.h>
-#include <GameLib/ResourceLoader.h>
+#include <Game/GameController.h>
+
+#include <GameCore/ResourceLoader.h>
 
 #include <wx/frame.h>
 

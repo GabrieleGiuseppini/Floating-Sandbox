@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include <GameLib/IGameEventHandler.h>
+#include <Game/IGameEventHandler.h>
 
 #include <wx/wx.h>
 

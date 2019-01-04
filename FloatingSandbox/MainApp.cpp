@@ -8,7 +8,7 @@
 // The main application. This journey begins from here.
 //
 
-#include <GameLib/FloatingPoint.h>
+#include <GameCore/FloatingPoint.h>
 
 #include "MainFrame.h"
 

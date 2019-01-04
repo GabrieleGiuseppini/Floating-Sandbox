@@ -1,4 +1,4 @@
-#include <GameLib/TupleKeys.h>
+#include <GameCore/TupleKeys.h>
 
 #include <unordered_map>
 
@@ -73,7 +73,7 @@ TEST(TupleKeysTests, UnorderedMap)
     map[t2] = 2;
     map[t3] = 3;
     map[t4] = 4;
-    
+
     EXPECT_EQ(4, map[t1]);
     EXPECT_EQ(2, map[t2]);
     EXPECT_EQ(3, map[t3]);
