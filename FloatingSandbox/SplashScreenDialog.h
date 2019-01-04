@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include <GameLib/ResourceLoader.h>
+#include <GameCore/ResourceLoader.h>
 
 #include <wx/dialog.h>
 #include <wx/gauge.h>
@@ -19,7 +19,7 @@ class SplashScreenDialog : public wxDialog
 public:
 
     SplashScreenDialog(ResourceLoader const & resourceLoader);
-	
+
 	virtual ~SplashScreenDialog();
 
 	void UpdateProgress(

@@ -5,10 +5,10 @@
  ***************************************************************************************/
 #include "SettingsDialog.h"
 
-#include <GameLib/Log.h>
-#include <UILib/ExponentialSliderCore.h>
-#include <UILib/FixedTickSliderCore.h>
-#include <UILib/LinearSliderCore.h>
+#include <GameCore/ExponentialSliderCore.h>
+#include <GameCore/FixedTickSliderCore.h>
+#include <GameCore/LinearSliderCore.h>
+#include <GameCore/Log.h>
 
 #include <wx/intl.h>
 #include <wx/notebook.h>

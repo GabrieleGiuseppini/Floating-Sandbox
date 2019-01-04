@@ -1,8 +1,8 @@
 #include "Utils.h"
 
-#include <GameLib/GameTypes.h>
-#include <GameLib/SysSpecifics.h>
-#include <GameLib/Vectors.h>
+#include <GameCore/GameTypes.h>
+#include <GameCore/SysSpecifics.h>
+#include <GameCore/Vectors.h>
 
 // TODO: move to GameLib's LibSimdPp.h
 //#define SIMDPP_ARCH_X86_SSSE3
@@ -41,7 +41,7 @@ TEST(LibSimdPpTests, MulConstant)
         simdpp::float32v block = simdpp::load(vectorsData + i);
         block = block * simdpp::make_float<simdpp::float32v>(2.0f);
         simdpp::store(resultsData + i, block);
-    }    
+    }
 
     EXPECT_EQ(vec2f(0.0f, 0.0f), results[0]);
     EXPECT_EQ(vec2f(2.0f, 2.0f), results[1]);
@@ -150,7 +150,7 @@ TEST(LibSimdPpTests, VectorNormalization)
     ////
     ////simdpp::float32<4> v02 = v0123 * v0123;
 
-    ////std::cout 
+    ////std::cout
     ////        << simdpp::extract<0>(v0123) << ","
     ////        << simdpp::extract<1>(v0123) << ","
     ////        << simdpp::extract<2>(v0123) << ","
@@ -214,7 +214,7 @@ TEST(LibSimdPpTests, VectorNormalization)
 
 
         simdpp::float32<4> const springLength = simdpp::sqrt(displacementX * displacementX + displacementY * displacementY);
-        
+
         displacementX = displacementX / springLength;
         displacementY = displacementY / springLength;
 
@@ -432,7 +432,7 @@ TEST(LibSimdPpTests, UpdateSpringForces)
     {
         //
         // s0..3
-        // s0.pA.pos.x      
+        // s0.pA.pos.x
         //
 
         auto const s0_pA_index = springsEndpointsData[s].PointAIndex;
@@ -458,7 +458,7 @@ TEST(LibSimdPpTests, UpdateSpringForces)
         __m128 s2s3_pA_pos = _mm_movelh_ps(s2_pA_pos, s3_pA_pos); // x2,y2,x3,y3
         __m128 s0s1_pB_pos = _mm_movelh_ps(s0_pB_pos, s1_pB_pos); // x0,y0,x1,y1
         __m128 s2s3_pB_pos = _mm_movelh_ps(s2_pB_pos, s3_pB_pos); // x2,y2,x3,y3
-        
+
         simdpp::float32<4> s0s1_deltaPos = simdpp::float32<4>(s0s1_pB_pos) - simdpp::float32<4>(s0s1_pA_pos); // x0,y0,x1,y1
         simdpp::float32<4> s2s3_deltaPos = simdpp::float32<4>(s2s3_pB_pos) - simdpp::float32<4>(s2s3_pA_pos); // x2,y2,x3,y3
 
@@ -480,7 +480,7 @@ TEST(LibSimdPpTests, UpdateSpringForces)
             (springLength - simdpp::load<simdpp::float32<4>>(&(springsRestLengthData[s])))
             * simdpp::load<simdpp::float32<4>>(&(springsStiffnessCoefficientData[s]));
 
-    
+
 
         //
         // 2. Damper forces

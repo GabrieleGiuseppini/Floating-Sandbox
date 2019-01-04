@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "Tools.h"
 
-#include <GameLib/GameException.h>
+#include <GameCore/GameException.h>
 
 #include <wx/bitmap.h>
 #include <wx/image.h>

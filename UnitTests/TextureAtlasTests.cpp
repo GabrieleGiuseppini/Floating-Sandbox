@@ -1,4 +1,4 @@
-#include <GameLib/TextureAtlas.h>
+#include <Game/TextureAtlas.h>
 
 #include "gtest/gtest.h"
 
@@ -36,7 +36,7 @@ TEST(TextureAtlasTests, Placement1)
     };
 
     auto atlasSpecification = TextureAtlasBuilder::BuildAtlasSpecification(textureInfos);
-    
+
     EXPECT_EQ(512, atlasSpecification.AtlasSize.Width);
     EXPECT_EQ(256, atlasSpecification.AtlasSize.Height);
 

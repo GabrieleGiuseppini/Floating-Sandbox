@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include <UILib/ISliderCore.h>
+#include <GameCore/ISliderCore.h>
 
 #include <wx/bitmap.h>
 #include <wx/slider.h>

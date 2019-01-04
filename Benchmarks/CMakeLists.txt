@@ -12,8 +12,9 @@ source_group(" " FILES ${BENCHMARK_SOURCES})
 add_executable (Benchmarks ${BENCHMARK_SOURCES})
 
 target_link_libraries (Benchmarks
+	GameCoreLib
 	GameLib
-	UILib
+	GPUCalcLib
 	${OPENGL_LIBRARIES}
 	benchmark::benchmark
 	benchmark::benchmark_main

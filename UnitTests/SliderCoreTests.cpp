@@ -1,4 +1,4 @@
-#include <UILib/LinearSliderCore.h>
+#include <GameCore/LinearSliderCore.h>
 
 #include "gtest/gtest.h"
 
@@ -79,7 +79,7 @@ TEST_F(LinearSliderCoreTest, TwentyToFiveHundred)
 
     EXPECT_EQ(core.TickToValue(1), 24.0f);
     EXPECT_EQ(core.ValueToTick(24.f), 1);
-    
+
     EXPECT_EQ(core.TickToValue(59), 488.f);
     EXPECT_EQ(core.ValueToTick(488.f), 59);
 

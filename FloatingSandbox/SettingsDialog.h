@@ -8,8 +8,9 @@
 #include "SliderControl.h"
 #include "SoundController.h"
 
-#include <GameLib/GameController.h>
-#include <GameLib/ResourceLoader.h>
+#include <Game/GameController.h>
+
+#include <GameCore/ResourceLoader.h>
 
 #include <wx/bitmap.h>
 #include <wx/button.h>

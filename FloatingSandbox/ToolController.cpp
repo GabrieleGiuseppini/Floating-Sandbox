@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "ToolController.h"
 
-#include <GameLib/Vectors.h>
+#include <GameCore/Vectors.h>
 
 #include <cassert>
 

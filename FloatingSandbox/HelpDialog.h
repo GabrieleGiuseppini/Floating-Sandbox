@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include <GameLib/ResourceLoader.h>
+#include <GameCore/ResourceLoader.h>
 
 #include <wx/dialog.h>
 
@@ -16,6 +16,6 @@ public:
     HelpDialog(
         wxWindow* parent,
         ResourceLoader const & resourceLoader);
-	
+
 	virtual ~HelpDialog();
 };

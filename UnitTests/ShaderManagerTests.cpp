@@ -1,7 +1,8 @@
-#include <GameLib/RenderCore.h>
-#include <GameLib/ShaderManager.h>
+#include <Game/RenderCore.h>
 
-#include <GameLib/GameException.h>
+#include <GameOpenGL/ShaderManager.h>
+
+#include <GameCore/GameException.h>
 
 #include "gtest/gtest.h"
 
@@ -91,9 +92,9 @@ TEST_F(ShaderManagerTests, ParsesStaticParameters_Single)
 TEST_F(ShaderManagerTests, ParsesStaticParameters_Multiple)
 {
     std::string source = R"(
-   
-FOO = 67, 87, 88   
-    
+
+FOO = 67, 87, 88
+
 BAR = 89)";
 
     std::map<std::string, std::string> params;

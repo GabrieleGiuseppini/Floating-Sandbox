@@ -1,6 +1,6 @@
 #include "Utils.h"
 
-#include <GameLib/GameMath.h>
+#include <GameCore/GameMath.h>
 
 #include <benchmark/benchmark.h>
 

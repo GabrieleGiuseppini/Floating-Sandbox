@@ -1,6 +1,6 @@
 #include "Utils.h"
 
-#include <GameLib/SysSpecifics.h>
+#include <GameCore/SysSpecifics.h>
 
 #include <benchmark/benchmark.h>
 
@@ -9,7 +9,7 @@
 
 static constexpr size_t SampleSize = 20000000;
 
-static void VectorNormalization_Naive_NoLength(benchmark::State& state) 
+static void VectorNormalization_Naive_NoLength(benchmark::State& state)
 {
     auto const size = MakeSize(SampleSize);
 
@@ -19,7 +19,7 @@ static void VectorNormalization_Naive_NoLength(benchmark::State& state)
 
     std::vector<vec2f> results;
     results.resize(size);
-    
+
     for (auto _ : state)
     {
         for (size_t i = 0; i < size; ++i)

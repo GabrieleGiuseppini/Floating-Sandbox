@@ -7,7 +7,7 @@
 
 #include "ScalarTimeSeriesProbeControl.h"
 
-#include <GameLib/IGameEventHandler.h>
+#include <Game/IGameEventHandler.h>
 
 #include <wx/wx.h>
 
@@ -20,7 +20,7 @@ class ProbePanel : public wxPanel, public IGameEventHandler
 public:
 
     ProbePanel(wxWindow* parent);
-    
+
     virtual ~ProbePanel();
 
     void Update();

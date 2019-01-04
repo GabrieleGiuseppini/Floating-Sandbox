@@ -8,7 +8,7 @@
 #include "Resizer.h"
 #include "ShipAnalyzer.h"
 
-#include <GameLib/Utils.h>
+#include <GameCore/Utils.h>
 
 #include <IL/il.h>
 #include <IL/ilu.h>

@@ -1,4 +1,4 @@
-#include <GameLib/Vectors.h>
+#include <GameCore/Vectors.h>
 
 #include "gtest/gtest.h"
 

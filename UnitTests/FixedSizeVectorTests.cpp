@@ -1,4 +1,4 @@
-#include <GameLib/FixedSizeVector.h>
+#include <GameCore/FixedSizeVector.h>
 
 #include <vector>
 
@@ -170,7 +170,7 @@ TEST(FixedSizeVectorTests, ThrowsExceptionOnMaxSize)
 
     EXPECT_THROW(
         vec.push_back(1),
-        std::runtime_error);    
+        std::runtime_error);
 }
 
 TEST(FixedSizeVectorTests, Erase_BecomesEmpty)

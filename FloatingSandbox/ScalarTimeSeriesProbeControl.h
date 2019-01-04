@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include <GameLib/CircularList.h>
+#include <GameCore/CircularList.h>
 
 #include <wx/wx.h>
 
@@ -18,7 +18,7 @@ public:
     ScalarTimeSeriesProbeControl(
         wxWindow * parent,
         int width);
-    
+
     virtual ~ScalarTimeSeriesProbeControl();
 
     void RegisterSample(float value);

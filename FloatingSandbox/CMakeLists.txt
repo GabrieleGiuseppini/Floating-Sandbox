@@ -15,6 +15,8 @@ set  (FLOATING_SANDBOX_SOURCES
 	MainApp.cpp
 	MainFrame.cpp
 	MainFrame.h
+	OpenGLContext.cpp
+	OpenGLContext.h
 	ProbePanel.cpp
 	ProbePanel.h
 	ScalarTimeSeriesProbeControl.cpp
@@ -48,9 +50,10 @@ target_include_directories(FloatingSandbox PRIVATE ${SFML_INCLUDE_DIR})
 target_include_directories(FloatingSandbox PRIVATE ${wxWidgets_INCLUDE_DIRS})
 target_compile_definitions(FloatingSandbox PRIVATE "${wxWidgets_DEFINITIONS}")
 target_link_libraries (FloatingSandbox
+	GameCoreLib
 	GameLib
-	GladLib
-	UILib
+	GameOpenGLLib
+	GPUCalcLib
 	${OPENGL_LIBRARIES}
 	${SFML_LIBRARIES}
 	${wxWidgets_LIBRARIES}

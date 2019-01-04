@@ -5,14 +5,16 @@
 ***************************************************************************************/
 #pragma once
 
-#include <GameLib/GameRandomEngine.h>
-#include <GameLib/IGameEventHandler.h>
-#include <GameLib/ResourceLoader.h>
-#include <GameLib/TupleKeys.h>
-#include <GameLib/Utils.h>
+#include <Game/IGameEventHandler.h>
+
+#include <GameCore/GameRandomEngine.h>
+#include <GameCore/ResourceLoader.h>
+#include <GameCore/TupleKeys.h>
+#include <GameCore/Utils.h>
 
 #include <SFML/Audio.hpp>
 
+#include <cassert>
 #include <chrono>
 #include <memory>
 #include <limits>
