@@ -11,8 +11,6 @@
 #include <memory>
 #include <numeric>
 
-namespace Render {
-
 int GameOpenGL::MaxVertexAttributes = 0;
 
 void GameOpenGL::InitOpenGL()
@@ -358,6 +356,4 @@ void GameOpenGL::Flush()
     // We do it here to have this call in the stack, helping
     // performance profiling
     glFlush();
-}
-
 }

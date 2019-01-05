@@ -10,8 +10,6 @@
 
 #include <regex>
 
-namespace Render {
-
 static const std::string StaticParametersFilenameStem = "static_parameters";
 
 template<typename Traits>
@@ -374,6 +372,4 @@ std::set<typename Traits::VertexAttributeType> ShaderManager<Traits>::ExtractVer
     }
 
     return attributeNames;
-}
-
 }

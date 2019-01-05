@@ -23,6 +23,7 @@
 #include <wx/frame.h>
 #include <wx/glcanvas.h>
 #include <wx/menu.h>
+#include <wx/sizer.h>
 #include <wx/timer.h>
 
 #include <chrono>

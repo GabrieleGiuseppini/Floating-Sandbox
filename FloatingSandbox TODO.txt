@@ -179,6 +179,10 @@ Render:
 			+ Titanic
 			+ Krafting
 		- Porthole: "wet_failure_rate": 3.0
+		- Bubble tool: make it dry ship 
+			- Tool is engaged if:
+				- It's on ship => suck water out (just like inverse flood)
+				- Else (no ship): if it's underwater (like now)
 
 		- Zbuffer (*)
 		- Orphaned points (*)
@@ -224,7 +228,14 @@ Render:
 
 - Simulation Optimizations:
 
-	- Points::ConnectedSprings is of struct { SpringIndex, OtherEdnpointIndex }
+	= GPUCalc:
+		+ 1: Simple OpenGLContext
+		+ 2: Multiple OpenGLContextes
+		- 3: RenderBuffer
+			- Glad initialization
+			- Use to draw something and get buffer back
+
+	- Points::ConnectedSprings is of struct { SpringIndex, OtherEndpointIndex }
 		- Init's @ShipBuilder
 		- Maintained at SpringDestroyHandler
 		- Used at:

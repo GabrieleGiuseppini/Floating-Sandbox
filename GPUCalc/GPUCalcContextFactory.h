@@ -6,6 +6,8 @@
 #pragma once
 
 #include "GPUCalcContext.h"
+#include "IOpenGLContext.h"
+#include "TestGPUCalcContext.h"
 
 #include <cassert>
 #include <functional>
@@ -22,18 +24,26 @@ public:
         return *instance;
     }
 
-    void RegisterOpenGLContextFactory(std::function<void()> openGLContextFactory)
+    void RegisterOpenGLContextFactory(std::function<std::unique_ptr<IOpenGLContext>()> openGLContextFactory)
     {
         assert(!mOpenGLContextFactory);
         mOpenGLContextFactory = std::move(openGLContextFactory);
     }
 
-    std::unique_ptr<GPUCalcContext> CreateContext();
+    std::unique_ptr<TestGPUCalcContext> CreateTestContext(size_t dataPoints)
+    {
+        assert(!!mOpenGLContextFactory);
+
+        return std::unique_ptr<TestGPUCalcContext>(
+            new TestGPUCalcContext(
+                mOpenGLContextFactory(),
+                dataPoints));
+    }
 
 private:
 
     GPUCalcContextFactory()
     {}
 
-    std::function<void()> mOpenGLContextFactory;
+    std::function<std::unique_ptr<IOpenGLContext>()> mOpenGLContextFactory;
 };

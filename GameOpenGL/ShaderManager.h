@@ -5,10 +5,9 @@
 ***************************************************************************************/
 #pragma once
 
-#include <GameCore/ResourceLoader.h>
-
 #include <GameOpenGL/GameOpenGL.h>
 
+#include <GameCore/ResourceLoader.h>
 #include <GameCore/Vectors.h>
 
 #include <cassert>
@@ -20,8 +19,6 @@
 #include <set>
 #include <sstream>
 #include <vector>
-
-namespace Render {
 
 template <typename Traits>
 class ShaderManager
@@ -285,7 +282,5 @@ private:
     friend class ShaderManagerTests_ExtractsVertexAttributes_ErrorsOnUnrecognizedAttribute_Test;
     friend class ShaderManagerTests_ExtractsVertexAttributes_ErrorsOnRedeclaredAttribute_Test;
 };
-
-}
 
 #include "ShaderManager.cpp.inl"
