@@ -5,11 +5,13 @@
 ***************************************************************************************/
 #pragma once
 
-#include "GPUCalcContext.h"
+#include "GPUCalculator.h"
 
 #include <GameCore/Vectors.h>
 
-class TestGPUCalcContext : public GPUCalcContext
+#include <filesystem>
+
+class TestGPUCalculator : public GPUCalculator
 {
 public:
 
@@ -20,10 +22,11 @@ public:
 
 private:
 
-    friend class GPUCalcContextFactory;
+    friend class GPUCalculatorFactory;
 
-    TestGPUCalcContext(
+    TestGPUCalculator(
         std::unique_ptr<IOpenGLContext> openGLContext,
+        std::filesystem::path const & shadersRootDirectory,
         size_t dataPoints);
 
 private:

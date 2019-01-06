@@ -14,19 +14,18 @@ static const std::string StaticParametersFilenameStem = "static_parameters";
 
 template<typename Traits>
 ShaderManager<Traits>::ShaderManager(
-    std::filesystem::path const & shadersRoot,
-    GlobalParameters const & globalParameters)
+    std::filesystem::path const & shadersRoot)
 {
+    if (!std::filesystem::exists(shadersRoot))
+        throw GameException("Shaders root path \"" + shadersRoot.string() + "\" does not exist");
+
     //
     // Make static parameters
     //
 
     std::map<std::string, std::string> staticParameters;
 
-    // 1) From global parameters
-    globalParameters.ToParameters(staticParameters);
-
-    // 2) From file
+    // 1) From file
     std::filesystem::path localStaticParametersFilepath = shadersRoot / (StaticParametersFilenameStem + ".glsl");
     if (std::filesystem::exists(localStaticParametersFilepath))
     {
@@ -317,7 +316,7 @@ std::string ShaderManager<Traits>::SubstituteStaticParameters(
 template<typename Traits>
 std::set<typename Traits::ProgramParameterType> ShaderManager<Traits>::ExtractShaderParameters(std::string const & source)
 {
-    static std::regex ShaderParamNameRegex(R"!(\buniform\s+.*?\s+param([_a-zA-Z0-9]*);)!");
+    static std::regex ShaderParamNameRegex(R"!((//\s*)?\buniform\s+.*?\s+param([_a-zA-Z0-9]*);)!");
 
     std::set<Traits::ProgramParameterType> shaderParameters;
 
@@ -325,16 +324,19 @@ std::set<typename Traits::ProgramParameterType> ShaderManager<Traits>::ExtractSh
     std::smatch match;
     while (std::regex_search(remainingSource, match, ShaderParamNameRegex))
     {
-        assert(2 == match.size());
-        auto const & shaderParameterName = match[1].str();
-
-        // Lookup the parameter
-        Traits::ProgramParameterType shaderParameter = Traits::StrToProgramParameterType(shaderParameterName);
-
-        // Store it, making sure it's not specified more than once
-        if (!shaderParameters.insert(shaderParameter).second)
+        assert(3 == match.size());
+        if (!match[1].matched)
         {
-            throw GameException("Shader parameter \"" + shaderParameterName + "\" is declared more than once");
+            auto const & shaderParameterName = match[2].str();
+
+            // Lookup the parameter
+            Traits::ProgramParameterType shaderParameter = Traits::StrToProgramParameterType(shaderParameterName);
+
+            // Store it, making sure it's not specified more than once
+            if (!shaderParameters.insert(shaderParameter).second)
+            {
+                throw GameException("Shader parameter \"" + shaderParameterName + "\" is declared more than once");
+            }
         }
 
         // Advance

@@ -5,7 +5,7 @@
  ***************************************************************************************/
 #pragma once
 
-#include <GPUCalc/TestGPUCalcContext.h>
+#include <GPUCalc/TestGPUCalculator.h>
 
 #include <wx/app.h>
 #include <wx/frame.h>
@@ -55,7 +55,7 @@ private:
 
     wxApp * const mMainApp;
 
-    std::unique_ptr<TestGPUCalcContext> mTestGPUCalcContext;
+    std::unique_ptr<TestGPUCalculator> mTestGPUCalculator;
 
-    std::unique_ptr<TestGPUCalcContext> mTestGPUCalcContext2;
+    std::unique_ptr<TestGPUCalculator> mTestGPUCalculator2;
 };

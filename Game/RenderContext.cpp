@@ -89,9 +89,7 @@ RenderContext::RenderContext(
 
     progressCallback(0.0f, "Loading shaders...");
 
-    ShaderManager<ShaderManagerTraits>::GlobalParameters globalParameters;
-
-    mShaderManager = ShaderManager<ShaderManagerTraits>::CreateInstance(resourceLoader, globalParameters);
+    mShaderManager = ShaderManager<ShaderManagerTraits>::CreateInstance(resourceLoader.GetRenderShadersRootPath());
 
 
     //

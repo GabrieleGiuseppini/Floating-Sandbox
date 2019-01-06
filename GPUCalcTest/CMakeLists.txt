@@ -51,7 +51,14 @@ endif (MSVC)
 # Copy files
 #
 
-message (STATUS "Copying runtime files...")
+message (STATUS "Copying data files and runtime files...")
+
+file(COPY "${CMAKE_SOURCE_DIR}/Data/Shaders"
+	DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/Debug/Data")
+file(COPY "${CMAKE_SOURCE_DIR}/Data"
+	DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/Release/Data")
+file(COPY "${CMAKE_SOURCE_DIR}/Data"
+	DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/RelWithDebInfo/Data")
 
 if (WIN32)
 	file(COPY ${DEVIL_RUNTIME_LIBRARIES}

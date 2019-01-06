@@ -29,7 +29,7 @@ set (UNIT_TEST_SOURCES
 	SegmentTests.cpp
 	ShaderManagerTests.cpp
 	SliderCoreTests.cpp
-	TestGPUCalcContextTests.cpp
+	TestGPUCalculatorTests.cpp
 	TextureAtlasTests.cpp
 	TupleKeysTests.cpp
 	Utils.cpp

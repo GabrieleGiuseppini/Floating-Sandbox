@@ -6,18 +6,24 @@
 #pragma once
 
 #include "IOpenGLContext.h"
+#include "ShaderTraits.h"
+
+#include <GameOpenGL/ShaderManager.h>
 
 #include <cassert>
+#include <filesystem>
 #include <memory>
 
 /*
- * Base class of task-specific contextes that perform calculations on the GPU.
+ * Base class of task-specific calculators that perform calculations on the GPU.
  */
-class GPUCalcContext
+class GPUCalculator
 {
 protected:
 
-    GPUCalcContext(std::unique_ptr<IOpenGLContext> openGLContext);
+    GPUCalculator(
+        std::unique_ptr<IOpenGLContext> openGLContext,
+        std::filesystem::path const & shadersRootDirectory);
 
     void ActivateOpenGLContext()
     {
@@ -26,7 +32,14 @@ protected:
         mOpenGLContext->Activate();
     }
 
+    ShaderManager<GPUCalcShaderManagerTraits> & GetShaderManager()
+    {
+        return *mShaderManager;
+    }
+
 private:
 
     std::unique_ptr<IOpenGLContext> const mOpenGLContext;
+
+    std::unique_ptr<ShaderManager<GPUCalcShaderManagerTraits>> mShaderManager;
 };

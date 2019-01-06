@@ -3,11 +3,13 @@
 * Created:              2018-12-29
 * Copyright:            Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
-#include "GPUCalcContext.h"
+#include "GPUCalculator.h"
 
 #include <GameOpenGL/GameOpenGL.h>
 
-GPUCalcContext::GPUCalcContext(std::unique_ptr<IOpenGLContext> openGLContext)
+GPUCalculator::GPUCalculator(
+    std::unique_ptr<IOpenGLContext> openGLContext,
+    std::filesystem::path const & shadersRootDirectory)
     : mOpenGLContext(std::move(openGLContext))
 {
     //
@@ -17,4 +19,10 @@ GPUCalcContext::GPUCalcContext(std::unique_ptr<IOpenGLContext> openGLContext)
     ActivateOpenGLContext();
 
     GameOpenGL::InitOpenGL();
+
+    //
+    // Initialize shader manager
+    //
+
+    mShaderManager = ShaderManager<GPUCalcShaderManagerTraits>::CreateInstance(shadersRootDirectory);
 }

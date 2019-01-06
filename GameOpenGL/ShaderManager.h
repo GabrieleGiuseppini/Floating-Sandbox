@@ -41,38 +41,10 @@ private:
 
 public:
 
-    struct GlobalParameters
-    {
-        GlobalParameters()
-        {}
-
-        void ToParameters(std::map<std::string, std::string> & /*parameters*/) const
-        {
-            ////std::stringstream ss;
-            ////ss << std::fixed << RopeColor.x << ", " << RopeColor.y << ", " << RopeColor.z << ", " << RopeColor.w;
-
-            ////parameters.insert(
-            ////    std::make_pair(
-            ////        "ROPE_COLOR_VEC4",
-            ////        ss.str()));
-        }
-    };
-
-public:
-
-    static std::unique_ptr<ShaderManager> CreateInstance(
-        ResourceLoader & resourceLoader,
-        GlobalParameters const & globalParameters)
-    {
-        return CreateInstance(resourceLoader.GetShadersRootPath(), globalParameters);
-    }
-
-    static std::unique_ptr<ShaderManager> CreateInstance(
-        std::filesystem::path const & shadersRoot,
-        GlobalParameters const & globalParameters)
+    static std::unique_ptr<ShaderManager> CreateInstance(std::filesystem::path const & shadersRoot)
     {
         return std::unique_ptr<ShaderManager>(
-            new ShaderManager(shadersRoot, globalParameters));
+            new ShaderManager(shadersRoot));
     }
 
     template <typename Traits::ProgramType Program>
@@ -219,8 +191,7 @@ private:
 private:
 
     ShaderManager(
-        std::filesystem::path const & shadersRoot,
-        GlobalParameters const & globalParameters);
+        std::filesystem::path const & shadersRoot);
 
     void CompileShader(
         std::filesystem::path const & shaderFilepath,
@@ -274,6 +245,7 @@ private:
 
     friend class ShaderManagerTests_ExtractsShaderParameters_Single_Test;
     friend class ShaderManagerTests_ExtractsShaderParameters_Multiple_Test;
+    friend class ShaderManagerTests_ExtractsShaderParameters_IgnoresCommentedOutParameters_Test;
     friend class ShaderManagerTests_ExtractsShaderParameters_ErrorsOnUnrecognizedParameter_Test;
     friend class ShaderManagerTests_ExtractsShaderParameters_ErrorsOnRedefinedParameter_Test;
 

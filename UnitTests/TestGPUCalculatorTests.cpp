@@ -1,9 +1,9 @@
-#include <GPUCalc/GPUCalcContextFactory.h>
-#include <GPUCalc/TestGPUCalcContext.h>
+#include <GPUCalc/GPUCalculatorFactory.h>
+#include <GPUCalc/TestGPUCalculator.h>
 
 #include "gtest/gtest.h"
 
-TEST(TestGPUCalcContextTests, Validate_Basic)
+TEST(TestGPUCalculatorTests, Validate_Basic)
 {
     vec2f a[5] = {
         {1.0f, 1.0f},
@@ -41,9 +41,9 @@ TEST(TestGPUCalcContextTests, Validate_Basic)
     // Create calc context and calculate
     //
 
-    auto calcContext = GPUCalcContextFactory::GetInstance().CreateTestContext(5);
+    auto calculator = GPUCalculatorFactory::GetInstance().CreateTestCalculator(5);
 
-    calcContext->Add(a, b, result);
+    calculator->Add(a, b, result);
 
 
     //

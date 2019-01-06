@@ -3,14 +3,17 @@
 * Created:              2018-12-29
 * Copyright:            Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
-#include "TestGPUCalcContext.h"
+#include "TestGPUCalculator.h"
 
 #include <GameOpenGL/GameOpenGL.h>
 
-TestGPUCalcContext::TestGPUCalcContext(
+TestGPUCalculator::TestGPUCalculator(
     std::unique_ptr<IOpenGLContext> openGLContext,
+    std::filesystem::path const & shadersRootDirectory,
     size_t dataPoints)
-    : GPUCalcContext(std::move(openGLContext))
+    : GPUCalculator(
+        std::move(openGLContext),
+        shadersRootDirectory)
     , mDataPoints(dataPoints)
 {
     //
@@ -30,7 +33,7 @@ TestGPUCalcContext::TestGPUCalcContext(
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
 
-void TestGPUCalcContext::Add(
+void TestGPUCalculator::Add(
     vec2f const * a,
     vec2f const * b,
     vec2f * result)

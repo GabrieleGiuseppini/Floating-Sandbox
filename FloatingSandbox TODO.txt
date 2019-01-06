@@ -231,9 +231,14 @@ Render:
 	= GPUCalc:
 		+ 1: Simple OpenGLContext
 		+ 2: Multiple OpenGLContextes
-		- 3: RenderBuffer
+		+ 3: Integrate ShaderManager
+		- 4: Run fragment shader to fill-in with frag coords
+			- Base: vertex shader
+		- 5: RenderBuffer
 			- Glad initialization
 			- Use to draw something and get buffer back
+		-
+		- ?: Verify works with hidden wxFrame, and verify frame is not visible, neither on the taskbar
 
 	- Points::ConnectedSprings is of struct { SpringIndex, OtherEndpointIndex }
 		- Init's @ShipBuilder

@@ -95,7 +95,9 @@ public:
     // Shaders
     //
 
-    std::filesystem::path GetShadersRootPath() const;
+    std::filesystem::path GetRenderShadersRootPath() const;
+
+    static std::filesystem::path GetGPUCalcShadersRootPath();
 
 
     //

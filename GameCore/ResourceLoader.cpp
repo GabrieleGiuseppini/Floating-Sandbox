@@ -159,9 +159,16 @@ std::filesystem::path ResourceLoader::GetHelpFilepath() const
 // Shaders
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-std::filesystem::path ResourceLoader::GetShadersRootPath() const
+std::filesystem::path ResourceLoader::GetRenderShadersRootPath() const
 {
-    std::filesystem::path localPath = std::filesystem::path("Data") / "Shaders";
+    std::filesystem::path localPath = std::filesystem::path("Data") / "Shaders" / "Render";
+    return std::filesystem::absolute(localPath);
+}
+
+
+std::filesystem::path ResourceLoader::GetGPUCalcShadersRootPath()
+{
+    std::filesystem::path localPath = std::filesystem::path("Data") / "Shaders" / "GPUCalc";
     return std::filesystem::absolute(localPath);
 }
 
