@@ -232,13 +232,36 @@ Render:
 		+ 1: Simple OpenGLContext
 		+ 2: Multiple OpenGLContextes
 		+ 3: Integrate ShaderManager
-		- 4: Run fragment shader to fill-in with frag coords
-			- Base: vertex shader
-		- 5: RenderBuffer
-			- Glad initialization
-			- Use to draw something and get buffer back
-		-
+		+ 4: Run fragment shader to fill-in with frag coords
+		+ 5: RenderBuffer
+		+ 6: Read pixels back 
+			+ Nail down clamping
+			+ Nail down viewport dimensions/renderbuffer dimensions
+				+ Fragment shader runs according to window sizes
+				+ Try glViewport to set dimensions (40x40)
+		- 7: Move OpenGL initialization to global
+		- 8: Specific to TestCalculator: textures with input buffers
+			- RenderBuffer and textures all have same dimensions
+				- Based off max width of texture from OpenGL
+					- min of GL_MAX_VIEWPORT_DIMS and MAX_TEXTURE_SIZE 
+			- Fragment shader gets texture coords from vertex shader
+
+		- 9: Do two calculators with different sizes
+			- Verify viewport is per-context
+
 		- ?: Verify works with hidden wxFrame, and verify frame is not visible, neither on the taskbar
+
+		- Cleanup:
+			- Ditch EXT's and find a way to either load core or ARBs or EXTs
+
+		- Follow-up's:
+			- Optimize ReadPixels
+				- Use correct format: query for GL_READ_PIXELS_FORMAT, GL_READ_PIXELS_TYPE
+					- See https://www.khronos.org/opengl/wiki/Image_Format
+				- Consider using pixel buffer objects to asynchronously read from render buffer
+					- See https://stackoverflow.com/questions/12157646/how-to-render-offscreen-on-opengl
+
+	- Use VAO's
 
 	- Points::ConnectedSprings is of struct { SpringIndex, OtherEndpointIndex }
 		- Init's @ShipBuilder

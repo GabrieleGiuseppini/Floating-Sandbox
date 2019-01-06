@@ -32,4 +32,8 @@ private:
 private:
 
     size_t const mDataPoints;
+
+    GameOpenGLVBO mVertexVBO;
+    GameOpenGLFramebuffer mFramebuffer;
+    GameOpenGLRenderbuffer mColorRenderbuffer;
 };

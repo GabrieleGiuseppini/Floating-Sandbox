@@ -92,9 +92,9 @@ MainFrame::MainFrame(wxApp * mainApp)
 
         mTestGPUCalculator->Add(a, b, result);
 
-        // TODOTEST
-        mTestGPUCalculator2 = GPUCalculatorFactory::GetInstance().CreateTestCalculator(5);
-        mTestGPUCalculator2->Add(a, b, result);
+        ////// TODOTEST
+        ////mTestGPUCalculator2 = GPUCalculatorFactory::GetInstance().CreateTestCalculator(5);
+        ////mTestGPUCalculator2->Add(a, b, result);
 
         // TODOHERE: verify
     }

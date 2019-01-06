@@ -16,7 +16,7 @@ OpenGLContext::OpenGLContext()
     //
 
     mFrame = std::make_unique<wxFrame>(
-        nullptr,
+        nullptr, // No parent
         wxID_ANY,
         "OpenGLContext Dummy Frame",
         wxDefaultPosition,

@@ -137,11 +137,39 @@ struct GameOpenGLMappedBufferDeleter
     }
 };
 
+struct GameOpenGLFramebufferDeleter
+{
+    static void Delete(GLuint p)
+    {
+        static_assert(GLuint() == 0, "Default value is not zero, i.e. the OpenGL NULL");
+
+        if (p != 0)
+        {
+            glDeleteFramebuffersEXT(1, &p);
+        }
+    }
+};
+
+struct GameOpenGLRenderbufferDeleter
+{
+    static void Delete(GLuint p)
+    {
+        static_assert(GLuint() == 0, "Default value is not zero, i.e. the OpenGL NULL");
+
+        if (p != 0)
+        {
+            glDeleteRenderbuffersEXT(1, &p);
+        }
+    }
+};
+
 using GameOpenGLShaderProgram = GameOpenGLObject<GLuint, GameOpenGLProgramDeleter>;
 using GameOpenGLVBO = GameOpenGLObject<GLuint, GameOpenGLVBODeleter>;
 using GameOpenGLTexture = GameOpenGLObject<GLuint, GameOpenGLTextureDeleter>;
 template <GLenum TTarget>
 using GameOpenGLMappedBuffer = GameOpenGLObject<void *, GameOpenGLMappedBufferDeleter<TTarget>>;
+using GameOpenGLFramebuffer = GameOpenGLObject<GLuint, GameOpenGLFramebufferDeleter>;
+using GameOpenGLRenderbuffer = GameOpenGLObject<GLuint, GameOpenGLRenderbufferDeleter>;
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // GameOpenGL
