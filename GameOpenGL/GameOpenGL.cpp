@@ -18,7 +18,7 @@ void GameOpenGL::InitOpenGL()
     int status = gladLoadGL();
     if (!status)
     {
-        throw std::runtime_error("Failed to initialize GLAD");
+        throw std::runtime_error("Sorry, but this game requires OpenGL and it seems your computer does not support it; the error is: failed to initialize GLAD");
     }
 
     //

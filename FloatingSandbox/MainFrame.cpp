@@ -109,7 +109,7 @@ MainFrame::MainFrame(wxApp * mainApp)
 
 
     //
-    // Build main GL canvas
+    // Build main GL canvas and activate GL context
     //
 
     // Note: Using the wxWidgets 3.1 style does not work on OpenGL 4 drivers; it forces a 1.1.0 context
@@ -160,6 +160,20 @@ MainFrame::MainFrame(wxApp * mainApp)
 
     // Activate context
     mMainGLCanvasContext->SetCurrent(*mMainGLCanvas);
+
+
+    //
+    // Initialize OpenGL
+    //
+
+    try
+    {
+        GameOpenGL::InitOpenGL();
+    }
+    catch (std::exception const & e)
+    {
+        throw std::runtime_error("Error during OpenGL initialization: " + std::string(e.what()));
+    }
 
 
     //
@@ -434,23 +448,6 @@ MainFrame::~MainFrame()
 
 void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 {
-    //
-    // Initialize OpenGL
-    //
-
-    try
-    {
-        GameOpenGL::InitOpenGL();
-    }
-    catch (std::exception const & e)
-    {
-        OnError("Error during OpenGL initialization: " + std::string(e.what()), true);
-
-        return;
-    }
-
-
-
     //
     // Create splash screen
     //

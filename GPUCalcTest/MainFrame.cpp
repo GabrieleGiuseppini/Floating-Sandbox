@@ -80,9 +80,7 @@ MainFrame::MainFrame(wxApp * mainApp)
     }
     catch (std::exception const & e)
     {
-        OnError("Error during OpenGL initialization: " + std::string(e.what()), true);
-
-        return;
+        throw std::runtime_error("Error during OpenGL initialization: " + std::string(e.what()));
     }
 
 

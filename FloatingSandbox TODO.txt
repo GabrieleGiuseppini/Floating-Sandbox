@@ -239,20 +239,28 @@ Render:
 			+ Nail down viewport dimensions/renderbuffer dimensions
 				+ Fragment shader runs according to window sizes
 				+ Try glViewport to set dimensions (40x40)
-		= 7: Make OpenGL initialization once per thread, after first context creation
+		+ 7: Make OpenGL initialization once per thread, after first context creation
 			+ Test first at FloatingSandbox: do init at MainFrame after context creation
 				+ Export required OpenGL version from GameOpenGL
 				+ If ok, move ctx creation et al at postinitialize trigger
 					+ Test openGL failure
 				+ Cleanup comments (3.3.) and TODOTEST's
 			+ Do also at GPUCalcText, also at MainFrame after a first dummy context creation
-			- Commit
+			+ Commit
+			+ MainFrame:
+				+ Move OpenGL initialization at cctor, rethrow, and catch at MainApp
+					+ Test failure
+				+ Same identical at GPUCalcTest
+				+ Commit
 		- Fix shaders: 120
 			- Test with FloatingSandbox
 			- Send to guy
+
 		- 8: TODO: see moleskine: Redo Glad with max profile (max of FrameBuffers and InstancedDrawing) and ARB's and EXT's
 
 		- 9: Restructure GPUCalcTest
+			- Window for OpenGL capabilities
+				- Get std::vector<str> from GameOpenGL, same used by LogCapabilities
 			- Log window, buttons for tests, button for "All tests"
 			- Call LogCapabilities() on startup, after registering log listener
 			- Tests:

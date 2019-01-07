@@ -9,6 +9,7 @@
 #include "MainFrame.h"
 
 #include <wx/app.h>
+#include <wx/msgdlg.h>
 
 #ifdef _DEBUG
 #ifdef _MSC_VER
@@ -76,9 +77,18 @@ bool MainApp::OnInit()
     // Create frame and start
     //
 
-    MainFrame* frame = new MainFrame(this);
-    frame->Show();
-    SetTopWindow(frame);
+    try
+    {
+        MainFrame* frame = new MainFrame(this);
+        frame->Show();
+        SetTopWindow(frame);
 
-    return true;
+        return true;
+    }
+    catch (std::exception const & e)
+    {
+        wxMessageBox(std::string(e.what()), wxT("Error"), wxICON_ERROR);
+
+        return false;
+    }
 }
