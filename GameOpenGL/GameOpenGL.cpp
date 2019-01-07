@@ -25,20 +25,14 @@ void GameOpenGL::InitOpenGL()
     // Check OpenGL version
     //
 
-    int versionMaj = 0;
-    int versionMin = 0;
-    char const * glVersion = (char*)glGetString(GL_VERSION);
-    if (nullptr == glVersion)
+    if (GLVersion.major < MinOpenGLVersionMaj
+        || (GLVersion.major == MinOpenGLVersionMaj && GLVersion.minor < MinOpenGLVersionMin))
     {
-        throw GameException("Sorry, but OpenGL is completely unsupported on your computer. This game cannot play...");
-    }
-
-    LogMessage("OpenGL version: ", glVersion);
-
-    sscanf(glVersion, "%d.%d", &versionMaj, &versionMin);
-    if (versionMaj < 2)
-    {
-        throw GameException("Sorry, but this game requires at least OpenGL 2.0, while the version currently supported by your computer is " + std::string(glVersion));
+        throw GameException(
+            std::string("Sorry, but this game requires at least OpenGL ")
+            + std::to_string(MinOpenGLVersionMaj) + "." + std::to_string(MinOpenGLVersionMin)
+            + ", while the version currently supported by your computer is "
+            + std::to_string(GLVersion.major) + "." + std::to_string(GLVersion.minor));
     }
 
     //
@@ -46,6 +40,18 @@ void GameOpenGL::InitOpenGL()
     //
 
     glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &MaxVertexAttributes);
+
+
+    //
+    // Log capabilities
+    //
+
+    LogCapabilities();
+}
+
+void GameOpenGL::LogCapabilities()
+{
+    LogMessage("OpenGL version: ", GLVersion.major, ".", GLVersion.minor);
 }
 
 void GameOpenGL::CompileShader(

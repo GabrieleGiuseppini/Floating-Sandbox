@@ -7,6 +7,8 @@
 
 #include "OpenGLContext.h"
 
+#include <GameOpenGL/GameOpenGL.h>
+
 #include <GameCore/GameException.h>
 #include <GameCore/Log.h>
 #include <GameCore/ResourceLoader.h>
@@ -45,6 +47,46 @@ MainFrame::MainFrame(wxApp * mainApp)
     mMainFrameSizer = new wxBoxSizer(wxVERTICAL);
     // ...
     SetSizerAndFit(mMainFrameSizer);
+
+
+    //
+    // Initialize OpenGL, creating dummy OpenGL context just for initialization
+    //
+
+    int glCanvasAttributes[] =
+    {
+        WX_GL_RGBA,
+        WX_GL_DEPTH_SIZE,      16,
+        WX_GL_STENCIL_SIZE,    1,
+        0, 0
+    };
+
+    mDummyGLCanvas = std::make_unique<wxGLCanvas>(
+        this,
+        wxID_ANY,
+        glCanvasAttributes,
+        wxDefaultPosition,
+        wxSize(1, 1),
+        0L,
+        _T("Dummy GL Canvas"));
+
+    mDummyGLContext = std::make_unique<wxGLContext>(mDummyGLCanvas.get());
+
+    mDummyGLContext->SetCurrent(*mDummyGLCanvas);
+
+    try
+    {
+        GameOpenGL::InitOpenGL();
+    }
+    catch (std::exception const & e)
+    {
+        OnError("Error during OpenGL initialization: " + std::string(e.what()), true);
+
+        return;
+    }
+
+
+    // TODOHERE
 
     try
     {

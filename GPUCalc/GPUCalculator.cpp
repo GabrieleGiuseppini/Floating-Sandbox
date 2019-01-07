@@ -5,20 +5,12 @@
 ***************************************************************************************/
 #include "GPUCalculator.h"
 
-#include <GameOpenGL/GameOpenGL.h>
-
 GPUCalculator::GPUCalculator(
     std::unique_ptr<IOpenGLContext> openGLContext,
     std::filesystem::path const & shadersRootDirectory)
     : mOpenGLContext(std::move(openGLContext))
 {
-    //
-    // Initialize OpenGL for this context
-    //
-
     ActivateOpenGLContext();
-
-    GameOpenGL::InitOpenGL();
 
     //
     // Initialize shader manager

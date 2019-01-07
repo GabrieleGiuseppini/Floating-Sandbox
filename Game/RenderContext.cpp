@@ -74,10 +74,8 @@ RenderContext::RenderContext(
 
 
     //
-    // Init OpenGL
+    // Setup OpenGL context
     //
-
-    GameOpenGL::InitOpenGL();
 
     // Activate shared texture unit
     mShaderManager->ActivateTexture<ProgramParameterType::SharedTexture>();

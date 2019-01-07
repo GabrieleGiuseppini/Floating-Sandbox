@@ -179,7 +179,14 @@ class GameOpenGL
 {
 public:
 
+    static constexpr int MinOpenGLVersionMaj = 2;
+    static constexpr int MinOpenGLVersionMin = 0;
+
+public:
+
     static void InitOpenGL();
+
+    static void LogCapabilities();
 
     static void CompileShader(
         std::string const & shaderSource,

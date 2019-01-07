@@ -9,6 +9,7 @@
 
 #include <wx/app.h>
 #include <wx/frame.h>
+#include <wx/glcanvas.h>
 #include <wx/sizer.h>
 #include <wx/timer.h>
 
@@ -54,6 +55,9 @@ private:
 private:
 
     wxApp * const mMainApp;
+
+    std::unique_ptr<wxGLCanvas> mDummyGLCanvas;
+    std::unique_ptr<wxGLContext> mDummyGLContext;
 
     std::unique_ptr<TestGPUCalculator> mTestGPUCalculator;
 
