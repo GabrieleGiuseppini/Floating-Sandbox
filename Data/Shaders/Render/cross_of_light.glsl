@@ -1,6 +1,10 @@
 ###VERTEX
 
-#version 130
+#version 120
+
+#define in attribute
+#define out varying
+
 
 // Inputs
 in vec4 inSharedAttribute0;  // Position, CenterPosition
@@ -25,7 +29,9 @@ void main()
 
 ###FRAGMENT
 
-#version 130
+#version 120
+
+#define in varying
 
 // Inputs from previous shader
 in vec2 vertexCenterPosition;

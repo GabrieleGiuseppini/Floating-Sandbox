@@ -1,6 +1,9 @@
 ###VERTEX
 
-#version 130
+#version 120
+
+#define in attribute
+#define out varying
 
 // Inputs
 in vec2 inVertexCoords;
@@ -13,7 +16,10 @@ void main()
 
 ###FRAGMENT
 
-#version 130
+#version 120
+
+#define in varying
+
 
 // Params
 //uniform vec4 paramMatteColor;
