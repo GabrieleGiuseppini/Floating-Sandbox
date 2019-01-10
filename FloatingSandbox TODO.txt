@@ -261,6 +261,7 @@ Render:
 			+ Framebuffer
 			+ Instanced Drawing
 			+ VAOs
+			+ Texture Float
 			- Build all and commit and push
 
 		- 9: Restructure GPUCalcTest

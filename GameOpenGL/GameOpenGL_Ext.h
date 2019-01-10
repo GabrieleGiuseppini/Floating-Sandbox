@@ -326,6 +326,37 @@ struct OpenGLExt_VertexArray_Core
 
 extern std::unique_ptr<OpenGLExt_VertexArray_Core const> gglVertexArray_Core;
 
+//////////////////////////////////////////////////////////////////////////
+// Texture Float
+//////////////////////////////////////////////////////////////////////////
+
+struct OpenGLExt_TextureFloat_Core
+{
+    //
+    // Enumerants
+    //
+
+    static constexpr GLenum RGBA32F = 0x8814;
+    static constexpr GLenum RGB32F = 0x8815;
+    static constexpr GLenum RGBA16F = 0x881a;
+    static constexpr GLenum RGB16F = 0x881b;
+};
+
+extern std::unique_ptr<OpenGLExt_TextureFloat_Core const> gglTextureFloat_Core;
+
+struct OpenGLExt_TextureFloat_ARB
+{
+    //
+    // Enumerants
+    //
+
+    static constexpr GLenum RGBA32F_ARB = 0x8814;
+    static constexpr GLenum RGB32F_ARB = 0x8815;
+    static constexpr GLenum RGBA16F_ARB = 0x881a;
+    static constexpr GLenum RGB16F_ARB = 0x881b;
+};
+
+extern std::unique_ptr<OpenGLExt_TextureFloat_ARB const> gglTextureFloat_ARB;
 
 //////////////////////////////////////////////////////////////////////////
 // Init

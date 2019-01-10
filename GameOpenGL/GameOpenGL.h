@@ -147,7 +147,15 @@ struct GameOpenGLFramebufferDeleter
 
         if (p != 0)
         {
-            glDeleteFramebuffersEXT(1, &p);
+            if (!!gglFramebuffer_Core)
+            {
+                gglFramebuffer_Core->DeleteFramebuffers(1, &p);
+            }
+            else
+            {
+                assert(!!gglFramebuffer_EXT);
+                gglFramebuffer_EXT->DeleteFramebuffersEXT(1, &p);
+            }
         }
     }
 };
@@ -160,7 +168,15 @@ struct GameOpenGLRenderbufferDeleter
 
         if (p != 0)
         {
-            glDeleteRenderbuffersEXT(1, &p);
+            if (!!gglFramebuffer_Core)
+            {
+                gglFramebuffer_Core->DeleteRenderbuffers(1, &p);
+            }
+            else
+            {
+                assert(!!gglFramebuffer_EXT);
+                gglFramebuffer_EXT->DeleteRenderbuffersEXT(1, &p);
+            }
         }
     }
 };
