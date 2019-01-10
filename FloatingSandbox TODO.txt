@@ -261,6 +261,7 @@ Render:
 			+ Framebuffer
 			+ Instanced Drawing
 			+ VAOs
+			- Build all and commit and push
 
 		- 9: Restructure GPUCalcTest
 			- Window for OpenGL capabilities

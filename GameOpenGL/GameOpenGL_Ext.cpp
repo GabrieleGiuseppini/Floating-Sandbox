@@ -141,6 +141,7 @@ void InitOpenGLExt_DrawInstanced(GLADloadproc load)
             delete ps;
     }
 
+    if (HasExtEx("GL_EXT_draw_instanced"))
     {
         // EXT
 
