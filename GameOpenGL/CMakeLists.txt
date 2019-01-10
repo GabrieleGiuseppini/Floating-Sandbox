@@ -6,6 +6,8 @@
 set  (SOURCES
 	GameOpenGL.cpp
 	GameOpenGL.h
+	GameOpenGL_Ext.cpp
+	GameOpenGL_Ext.h
 	ShaderManager.cpp.inl
 	ShaderManager.h)
 

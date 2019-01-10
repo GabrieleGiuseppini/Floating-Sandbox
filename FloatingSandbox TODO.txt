@@ -252,11 +252,15 @@ Render:
 					+ Test failure
 				+ Same identical at GPUCalcTest
 				+ Commit
-		- Fix shaders: 120
-			- Test with FloatingSandbox
-			- Send to guy
+		+ Fix shaders: 120			
+			+ Test with FloatingSandbox
+			+ Send to guy
+			+ Commit after confirmation
 
-		- 8: TODO: see moleskine: Redo Glad with max profile (max of FrameBuffers and InstancedDrawing) and ARB's and EXT's
+		= 8: Redo Glad with 2.0 profile, and manual ARB's and EXT's for:
+			+ Framebuffer
+			+ Instanced Drawing
+			+ VAOs
 
 		- 9: Restructure GPUCalcTest
 			- Window for OpenGL capabilities
@@ -264,19 +268,24 @@ Render:
 			- Log window, buttons for tests, button for "All tests"
 			- Call LogCapabilities() on startup, after registering log listener
 			- Tests:
-				- Reusing test calculator (member)
-				- With new test calculator each time
-		- 10: Specific to TestCalculator: textures with input buffers
+				- (all tests create own calculator)
+				- PixelCoords
+				- Sum
+				- Sum reused
+				- Sum size1 and Sum size2 (2 calculators)
+					- Verify viewport is per-context
+		- 9b: Sum test:
 			- RenderBuffer and textures all have same dimensions
 				- Based off max width of texture from OpenGL
 					- min of GL_MAX_VIEWPORT_DIMS and MAX_TEXTURE_SIZE, taken @ GameOpenGL::Init()
 			- Fragment shader gets texture coords from vertex shader
-		- 11: Specific to TestCalculator: validate sums are correct
-		- 12: Do two calculators with different sizes
-			- Verify viewport is per-context
+		
 
-		- ?: Verify works with hidden wxFrame, and verify frame is not visible, neither on the taskbar
-		- ?: Test on two other laptops
+		- x: Verify works with hidden wxFrame, and verify frame is not visible, neither on the taskbar
+		- x: Test on two other laptops
+
+		- Cleanup:
+			- Set endianness same as platform (x86)
 
 		- Follow-up's:
 			- Optimize ReadPixels

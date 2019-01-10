@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GameOpenGL_Ext.h"
+
 #include <GameCore/GameException.h>
 #include <GameCore/ImageData.h>
 #include <GameCore/Log.h>

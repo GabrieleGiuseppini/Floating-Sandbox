@@ -30,7 +30,7 @@
 #include <string.h>
 #include "glad.h"
 
-static void* get_proc(const char *namez);
+void* get_proc(const char *namez);
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #include <windows.h>
@@ -56,7 +56,6 @@ static PFNWGLGETPROCADDRESSPROC_PRIVATE gladGetProcAddressPtr;
   #endif
 #endif
 
-static
 int open_gl(void) {
 #ifndef IS_UWP
     libGL = LoadLibraryW(L"opengl32.dll");
@@ -71,7 +70,6 @@ int open_gl(void) {
     return 0;
 }
 
-static
 void close_gl(void) {
     if(libGL != NULL) {
         FreeLibrary((HMODULE) libGL);
@@ -87,7 +85,6 @@ typedef void* (APIENTRYP PFNGLXGETPROCADDRESSPROC_PRIVATE)(const char*);
 static PFNGLXGETPROCADDRESSPROC_PRIVATE gladGetProcAddressPtr;
 #endif
 
-static
 int open_gl(void) {
 #ifdef __APPLE__
     static const char *NAMES[] = {
@@ -118,7 +115,6 @@ int open_gl(void) {
     return 0;
 }
 
-static
 void close_gl(void) {
     if(libGL != NULL) {
         dlclose(libGL);
@@ -127,7 +123,6 @@ void close_gl(void) {
 }
 #endif
 
-static
 void* get_proc(const char *namez) {
     void* result = NULL;
     if(libGL == NULL) return NULL;
@@ -172,7 +167,7 @@ static const char *exts = NULL;
 static int num_exts_i = 0;
 static char **exts_i = NULL;
 
-static int get_exts(void) {
+int get_exts(void) {
 #ifdef _GLAD_IS_SOME_NEW_VERSION
     if(max_loaded_major < 3) {
 #endif
@@ -210,7 +205,7 @@ static int get_exts(void) {
     return 1;
 }
 
-static void free_exts(void) {
+void free_exts(void) {
     if (exts_i != NULL) {
         int index;
         for(index = 0; index < num_exts_i; index++) {
@@ -221,7 +216,7 @@ static void free_exts(void) {
     }
 }
 
-static int has_ext(const char *ext) {
+int has_ext(const char *ext) {
 #ifdef _GLAD_IS_SOME_NEW_VERSION
     if(max_loaded_major < 3) {
 #endif
@@ -848,4 +843,3 @@ int gladLoadGLLoader(GLADloadproc load) {
 	load_GL_EXT_framebuffer_object(load);
 	return GLVersion.major != 0 || GLVersion.minor != 0;
 }
-

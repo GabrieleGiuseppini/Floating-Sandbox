@@ -1,7 +1,9 @@
 set  (GLAD_SOURCES
 	glad.c
-	glad.h
-	khrplatform.h)
+	glad.h	
+	khrplatform.h
+	# Our own
+	g_glad.h)
 
 source_group(" " FILES ${GLAD_SOURCES})
 

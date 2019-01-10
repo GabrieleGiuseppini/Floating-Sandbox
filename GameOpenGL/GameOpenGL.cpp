@@ -25,6 +25,8 @@ void GameOpenGL::InitOpenGL()
     // Check OpenGL version
     //
 
+    LogMessage("OpenGL version: ", GLVersion.major, ".", GLVersion.minor);
+
     if (GLVersion.major < MinOpenGLVersionMaj
         || (GLVersion.major == MinOpenGLVersionMaj && GLVersion.minor < MinOpenGLVersionMin))
     {
@@ -35,18 +37,20 @@ void GameOpenGL::InitOpenGL()
             + std::to_string(GLVersion.major) + "." + std::to_string(GLVersion.minor));
     }
 
+
+    //
+    // Init our extensions
+    //
+
+    InitOpenGLExt();
+
+
     //
     // Get some constants
     //
 
     glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &MaxVertexAttributes);
-
-
-    //
-    // Log capabilities
-    //
-
-    LogCapabilities();
+    LogMessage("GL_MAX_VERTEX_ATTRIBS=", MaxVertexAttributes);
 }
 
 void GameOpenGL::LogCapabilities()
