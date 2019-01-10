@@ -46,83 +46,40 @@ TestGPUCalculator::TestGPUCalculator(
     // Create framebuffer and bind it
     //
 
-    if (!!gglFramebuffer_Core)
+    // Create frame buffer
+    glGenFramebuffers(1, &tmpGLuint);
+    mFramebuffer = tmpGLuint;
+
+    // Bind frame buffer
+    glBindFramebuffer(GL_FRAMEBUFFER, *mFramebuffer);
+    CheckOpenGLError();
+
+    //
+    // Create color render buffer
+    //
+
+    glGenRenderbuffers(1, &tmpGLuint);
+    mColorRenderbuffer = tmpGLuint;
+
+    glBindRenderbuffer(GL_RENDERBUFFER, *mColorRenderbuffer);
+    CheckOpenGLError();
+
+    // Allocate render buffer with 32-bit float RGBA format
+    glRenderbufferStorage(
+        GL_RENDERBUFFER,
+        GL_RGBA32F,
+        Width,
+        Height);
+    CheckOpenGLError();
+
+    // Attach color buffer to FBO
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, *mColorRenderbuffer);
+    CheckOpenGLError();
+
+    // Verify framebuffer is complete
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     {
-        // Create frame buffer
-        gglFramebuffer_Core->GenFramebuffers(1, &tmpGLuint);
-        mFramebuffer = tmpGLuint;
-
-        // Bind frame buffer
-        gglFramebuffer_Core->BindFramebuffer(gglFramebuffer_Core->FRAMEBUFFER, *mFramebuffer);
-        CheckOpenGLError();
-
-        //
-        // Create color render buffer
-        //
-
-        gglFramebuffer_Core->GenRenderbuffers(1, &tmpGLuint);
-        mColorRenderbuffer = tmpGLuint;
-
-        gglFramebuffer_Core->BindRenderbuffer(gglFramebuffer_Core->RENDERBUFFER, *mColorRenderbuffer);
-        CheckOpenGLError();
-
-        // Allocate render buffer with 32-bit float RGBA format
-        gglFramebuffer_Core->RenderbufferStorage(
-            gglFramebuffer_Core->RENDERBUFFER,
-            !!gglTextureFloat_Core ? gglTextureFloat_Core->RGBA32F : gglTextureFloat_ARB->RGBA32F_ARB,
-            Width,
-            Height);
-        CheckOpenGLError();
-
-        // Attach color buffer to FBO
-        gglFramebuffer_Core->FramebufferRenderbuffer(gglFramebuffer_Core->FRAMEBUFFER, gglFramebuffer_Core->COLOR_ATTACHMENT0, gglFramebuffer_Core->RENDERBUFFER, *mColorRenderbuffer);
-        CheckOpenGLError();
-
-        // Verify framebuffer is complete
-        if (gglFramebuffer_Core->CheckFramebufferStatus(gglFramebuffer_Core->FRAMEBUFFER) != gglFramebuffer_Core->FRAMEBUFFER_COMPLETE)
-        {
-            throw GameException("Framebuffer is not complete");
-        }
-    }
-    else
-    {
-        assert(!!gglFramebuffer_EXT);
-
-        // Create frame buffer
-        gglFramebuffer_EXT->GenFramebuffersEXT(1, &tmpGLuint);
-        mFramebuffer = tmpGLuint;
-
-        // Bind frame buffer
-        gglFramebuffer_EXT->BindFramebufferEXT(gglFramebuffer_EXT->FRAMEBUFFER_EXT, *mFramebuffer);
-        CheckOpenGLError();
-
-        //
-        // Create color render buffer
-        //
-
-        gglFramebuffer_EXT->GenRenderbuffersEXT(1, &tmpGLuint);
-        mColorRenderbuffer = tmpGLuint;
-
-        gglFramebuffer_EXT->BindRenderbufferEXT(gglFramebuffer_EXT->RENDERBUFFER_EXT, *mColorRenderbuffer);
-        CheckOpenGLError();
-
-        // Allocate render buffer with 32-bit float RGBA format
-        gglFramebuffer_EXT->RenderbufferStorageEXT(
-            gglFramebuffer_EXT->RENDERBUFFER_EXT,
-            !!gglTextureFloat_Core ? gglTextureFloat_Core->RGBA32F : gglTextureFloat_ARB->RGBA32F_ARB,
-            Width,
-            Height);
-        CheckOpenGLError();
-
-        // Attach color buffer to FBO
-        gglFramebuffer_EXT->FramebufferRenderbufferEXT(gglFramebuffer_EXT->FRAMEBUFFER_EXT, gglFramebuffer_EXT->COLOR_ATTACHMENT0_EXT, gglFramebuffer_EXT->RENDERBUFFER_EXT, *mColorRenderbuffer);
-        CheckOpenGLError();
-
-        // Verify framebuffer is complete
-        if (gglFramebuffer_EXT->CheckFramebufferStatusEXT(gglFramebuffer_EXT->FRAMEBUFFER_EXT) != gglFramebuffer_EXT->FRAMEBUFFER_COMPLETE_EXT)
-        {
-            throw GameException("Framebuffer is not complete");
-        }
+        throw GameException("Framebuffer is not complete");
     }
 
     // Clear canvas

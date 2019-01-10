@@ -11,13 +11,13 @@
 #include <GameCore/ImageData.h>
 #include <GameCore/Log.h>
 
+// Bring-in the total glad environment
 #ifdef WIN32
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
 #endif
-
-#include <glad/glad.h>
+#include "glad/glad.h"
 
 #include <cassert>
 #include <cstdio>
@@ -147,15 +147,7 @@ struct GameOpenGLFramebufferDeleter
 
         if (p != 0)
         {
-            if (!!gglFramebuffer_Core)
-            {
-                gglFramebuffer_Core->DeleteFramebuffers(1, &p);
-            }
-            else
-            {
-                assert(!!gglFramebuffer_EXT);
-                gglFramebuffer_EXT->DeleteFramebuffersEXT(1, &p);
-            }
+            glDeleteFramebuffers(1, &p);
         }
     }
 };
@@ -168,15 +160,7 @@ struct GameOpenGLRenderbufferDeleter
 
         if (p != 0)
         {
-            if (!!gglFramebuffer_Core)
-            {
-                gglFramebuffer_Core->DeleteRenderbuffers(1, &p);
-            }
-            else
-            {
-                assert(!!gglFramebuffer_EXT);
-                gglFramebuffer_EXT->DeleteRenderbuffersEXT(1, &p);
-            }
+            glDeleteRenderbuffers(1, &p);
         }
     }
 };

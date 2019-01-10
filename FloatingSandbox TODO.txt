@@ -257,18 +257,31 @@ Render:
 			+ Send to guy
 			+ Commit after confirmation
 
-		= 8: Redo Glad with 2.0 profile, and manual ARB's and EXT's for:
+		+ 8: Redo Glad with 2.0 profile, and manual ARB's and EXT's for:
 			+ Framebuffer
 			+ Instanced Drawing
 			+ VAOs
 			+ Texture Float
-			- Build all and commit and push
+			+ Restructure: 
+				+ Each feature is a "min"
+				+ Merge GladLib into GameOpenGLLib
+					+ g_glad.h stays
+				+ GameOpenGL_Ext stays
+					+ h:
+						+ global vars with API and enumerants
+							+ validate all enumerants the same across core/arb/ext
+					+ .cpp:
+						+ Various Init():
+							+ Load only one set based off version/ext, with LoadAndVerify
+					+ LoadAndVerify
+			+ Build all and commit and push
 
 		- 9: Restructure GPUCalcTest
-			- Window for OpenGL capabilities
-				- Get std::vector<str> from GameOpenGL, same used by LogCapabilities
-			- Log window, buttons for tests, button for "All tests"
-			- Call LogCapabilities() on startup, after registering log listener
+			- Log window, clear button
+			- Button for "Init OpenGL"
+				- Clears log first
+			- Buttons for tests, button for "All tests"
+				- Each button clears log first
 			- Tests:
 				- (all tests create own calculator)
 				- PixelCoords

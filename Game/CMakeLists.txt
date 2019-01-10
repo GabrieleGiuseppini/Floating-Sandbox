@@ -92,7 +92,6 @@ target_include_directories(GameLib INTERFACE ..)
 target_link_libraries (GameLib
 	GameCoreLib
 	GameOpenGLLib
-	GladLib
 	GPUCalcLib
 	${OPENGL_LIBRARIES}
 	${ADDITIONAL_LIBRARIES})

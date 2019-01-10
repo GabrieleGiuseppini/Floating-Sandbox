@@ -18,7 +18,7 @@ void GameOpenGL::InitOpenGL()
     int status = gladLoadGL();
     if (!status)
     {
-        throw std::runtime_error("Sorry, but this game requires OpenGL and it seems your computer does not support it; the error is: failed to initialize GLAD");
+        throw GameException("We are sorry, but this game requires OpenGL and it seems your graphics drivers does not support it; the error is: failed to initialize GLAD");
     }
 
     //
@@ -31,9 +31,9 @@ void GameOpenGL::InitOpenGL()
         || (GLVersion.major == MinOpenGLVersionMaj && GLVersion.minor < MinOpenGLVersionMin))
     {
         throw GameException(
-            std::string("Sorry, but this game requires at least OpenGL ")
+            std::string("We are sorry, but this game requires at least OpenGL ")
             + std::to_string(MinOpenGLVersionMaj) + "." + std::to_string(MinOpenGLVersionMin)
-            + ", while the version currently supported by your computer is "
+            + ", while the version currently supported by your graphics driver is "
             + std::to_string(GLVersion.major) + "." + std::to_string(GLVersion.minor));
     }
 
@@ -51,11 +51,6 @@ void GameOpenGL::InitOpenGL()
 
     glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &MaxVertexAttributes);
     LogMessage("GL_MAX_VERTEX_ATTRIBS=", MaxVertexAttributes);
-}
-
-void GameOpenGL::LogCapabilities()
-{
-    LogMessage("OpenGL version: ", GLVersion.major, ".", GLVersion.minor);
 }
 
 void GameOpenGL::CompileShader(
