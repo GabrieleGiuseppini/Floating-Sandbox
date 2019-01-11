@@ -35,13 +35,6 @@ OpenGLContext::OpenGLContext()
         WX_GL_RGBA,
         WX_GL_DEPTH_SIZE,      16,
         WX_GL_STENCIL_SIZE,    1,
-
-        // We want to use OpenGL 3.3, Core Profile
-        // TBD: Not now, my laptop does not support OpenGL 3 :-(
-        // WX_GL_CORE_PROFILE,
-        // WX_GL_MAJOR_VERSION,    3,
-        // WX_GL_MINOR_VERSION,    3,
-
         0, 0
     };
 
@@ -58,7 +51,7 @@ OpenGLContext::OpenGLContext()
     mGLContext = std::make_unique<wxGLContext>(mGLCanvas.get());
 
     // TODOTEST
-    mFrame->Show();
+    //mFrame->Show();
 }
 
 OpenGLContext::~OpenGLContext()

@@ -11,6 +11,7 @@
 #include <wx/frame.h>
 #include <wx/glcanvas.h>
 #include <wx/sizer.h>
+#include <wx/textctrl.h>
 #include <wx/timer.h>
 
 #include <chrono>
@@ -52,9 +53,20 @@ private:
         std::string const & message,
         bool die);
 
+    void OnLogMessage(std::string const & message);
+    void ClearLog();
+
+    void RunOpenGLTest();
+    void RunPixelCoordsTest();
+    void RunAllTests();
+
 private:
 
     wxApp * const mMainApp;
+
+    wxTextCtrl * mLogTextCtrl;
+
+private:
 
     std::unique_ptr<wxGLCanvas> mDummyGLCanvas;
     std::unique_ptr<wxGLContext> mDummyGLContext;

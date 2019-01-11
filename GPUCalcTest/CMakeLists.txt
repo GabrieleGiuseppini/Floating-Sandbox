@@ -4,7 +4,11 @@ set  (GPU_CALC_TEST_SOURCES
 	MainFrame.h
 	OpenGLContext.cpp
 	OpenGLContext.h
-	)
+	OpenGLInitTest.h
+	PixelCoordsTest.cpp
+	PixelCoordsTest.h	
+	TestCase.h
+	TestRun.h)
 
 source_group(" " FILES ${GPU_CALC_TEST_SOURCES})
 

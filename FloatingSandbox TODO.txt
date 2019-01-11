@@ -276,25 +276,36 @@ Render:
 					+ LoadAndVerify
 			+ Build all and commit and push
 
-		- 9: Restructure GPUCalcTest
-			- Log window, clear button
-			- Button for "Init OpenGL"
-				- Clears log first
-			- Buttons for tests, button for "All tests"
-				- Each button clears log first
+		= 9: Restructure GPUCalcTest
+			+ Log window, clear button
+				+ RichText: green/red for TEST_PASS: .../TEST_FAIL: ...
+			= Testcase class:
+				= .h:
+					- Macros that call "this"->OnFail(__LINE__....)
+				+ void Run() final;
+					+ Inits state
+					+ Logs start/end
+					+ global pass/fail state
+				+ virtual void InternalRun() = 0;
+			+ Button for "Init OpenGL"
+				+ Clears log first
+				+ Own test
+			+ Buttons for tests, button for "All tests"
+				+ Each button clears log first
 			- Tests:
 				- (all tests create own calculator)
 				- PixelCoords
-				- Sum
-				- Sum reused
-				- Sum size1 and Sum size2 (2 calculators)
-					- Verify viewport is per-context
+				- Commit
 		- 9b: Sum test:
 			- RenderBuffer and textures all have same dimensions
 				- Based off max width of texture from OpenGL
 					- min of GL_MAX_VIEWPORT_DIMS and MAX_TEXTURE_SIZE, taken @ GameOpenGL::Init()
 			- Fragment shader gets texture coords from vertex shader
 		
+		- Other tests:
+			- Sum reused
+			- Sum size1 and Sum size2 (2 calculators)
+				- Verify viewport is per-context
 
 		- x: Verify works with hidden wxFrame, and verify frame is not visible, neither on the taskbar
 		- x: Test on two other laptops
