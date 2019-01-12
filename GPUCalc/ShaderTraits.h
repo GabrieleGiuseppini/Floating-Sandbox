@@ -12,9 +12,9 @@
 
 enum class GPUCalcProgramType
 {
-    Test = 0,
+    PixelCoords = 0,
 
-    _Last = Test
+    _Last = PixelCoords
 };
 
 GPUCalcProgramType ShaderFilenameToGPUCalcProgramType(std::string const & str);

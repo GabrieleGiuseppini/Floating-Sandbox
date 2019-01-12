@@ -11,14 +11,12 @@
 #include "OpenGLInitTest.h"
 #include "PixelCoordsTest.h"
 
-#include <GameOpenGL/GameOpenGL.h>
+#include <GPUCalc/GPUCalculatorFactory.h>
 
 #include <GameCore/GameException.h>
 #include <GameCore/Log.h>
 #include <GameCore/ResourceLoader.h>
 #include <GameCore/Utils.h>
-
-#include <GPUCalc/GPUCalculatorFactory.h>
 
 #include <wx/button.h>
 #include <wx/clipbrd.h>
@@ -69,15 +67,25 @@ MainFrame::MainFrame(wxApp * mainApp)
         });
     buttonCol1Sizer->Add(initOpenglButton, 1, wxEXPAND);
 
-    auto pixelCoordsTestButton = new wxButton(this, wxID_ANY, "Run PixelCoords Test");
-    pixelCoordsTestButton->SetMaxSize(wxSize(-1, 20));
-    pixelCoordsTestButton->Bind(
+    auto pixelCoords5TestButton = new wxButton(this, wxID_ANY, "Run PixelCoords(5) Test");
+    pixelCoords5TestButton->SetMaxSize(wxSize(-1, 20));
+    pixelCoords5TestButton->Bind(
         wxEVT_BUTTON,
         [this](wxEvent & /*event*/)
         {
-            this->RunPixelCoordsTest();
+            this->RunPixelCoordsTest(5);
         });
-    buttonCol1Sizer->Add(pixelCoordsTestButton, 1, wxEXPAND);
+    buttonCol1Sizer->Add(pixelCoords5TestButton, 1, wxEXPAND);
+
+    auto pixelCoords65536TestButton = new wxButton(this, wxID_ANY, "Run PixelCoords(65536) Test");
+    pixelCoords65536TestButton->SetMaxSize(wxSize(-1, 20));
+    pixelCoords65536TestButton->Bind(
+        wxEVT_BUTTON,
+        [this](wxEvent & /*event*/)
+        {
+            this->RunPixelCoordsTest(65536);
+        });
+    buttonCol1Sizer->Add(pixelCoords65536TestButton, 1, wxEXPAND);
 
     auto allTestsButton = new wxButton(this, wxID_ANY, "Run All Tests");
     allTestsButton->SetMaxSize(wxSize(-1, 20));
@@ -193,65 +201,13 @@ MainFrame::MainFrame(wxApp * mainApp)
         throw std::runtime_error("Error during OpenGL initialization: " + std::string(e.what()));
     }
 
-
-    // TODOHERE
-
-    try
-    {
-        //
-        // Create Test GPUCalculator
-        //
-
-        GPUCalculatorFactory::GetInstance().Initialize(
-            [this]() -> std::unique_ptr<IOpenGLContext>
-            {
-                return std::make_unique<OpenGLContext>();
-            },
-            ResourceLoader::GetGPUCalcShadersRootPath());
-
-        mTestGPUCalculator = GPUCalculatorFactory::GetInstance().CreateTestCalculator(5);
-
-
-        //
-        // Do test
-        //
-
-        vec2f a[5] = {
-            {1.0f, 1.0f},
-            {2.0f, 1.0f},
-            {3.0f, 1.0f},
-            {4.0f, 1.0f},
-            {5.0f, 1.0f}
-        };
-
-        vec2f b[5] = {
-            {0.1f, 10.0f},
-            {0.2f, 20.0f},
-            {0.4f, 30.0f},
-            {0.8f, 40.0f},
-            {1.0f, 50.0f}
-        };
-
-        vec2f result[5] = {
-            {0.0f, 0.0f},
-            {0.0f, 0.0f},
-            {0.0f, 0.0f},
-            {0.0f, 0.0f},
-            {0.0f, 0.0f}
-        };
-
-        mTestGPUCalculator->Add(a, b, result);
-
-        ////// TODOTEST
-        ////mTestGPUCalculator2 = GPUCalculatorFactory::GetInstance().CreateTestCalculator(5);
-        ////mTestGPUCalculator2->Add(a, b, result);
-
-        // TODOHERE: verify
-    }
-    catch (std::exception const & ex)
-    {
-        OnError(ex.what(), true);
-    }
+    // Register OpenGL context factory
+    GPUCalculatorFactory::GetInstance().Initialize(
+        [this]() -> std::unique_ptr<IOpenGLContext>
+        {
+            return std::make_unique<OpenGLContext>();
+        },
+        ResourceLoader::GetGPUCalcShadersRootPath());
 }
 
 MainFrame::~MainFrame()
@@ -305,14 +261,16 @@ void MainFrame::OnLogMessage(std::string const & message)
 {
     static const std::string TestPassPrefix1 = "TEST_END: PASS";
     static const std::string TestPassPrefix2 = "TEST_RUN_END: PASS";
-    static const std::string TestFailPrefix1 = "TEST_END: FAIL";
-    static const std::string TestFailPrefix2 = "TEST_RUN_END: FAIL";
+    static const std::string TestFailPrefix1 = "TEST_FAIL:";
+    static const std::string TestFailPrefix2 = "TEST_END: FAIL";
+    static const std::string TestFailPrefix3 = "TEST_RUN_END: FAIL";
 
     if (message.substr(0, TestPassPrefix1.size()) == TestPassPrefix1
         || message.substr(0, TestPassPrefix2.size()) == TestPassPrefix2)
         mLogTextCtrl->SetDefaultStyle(wxTextAttr(wxColor(0, 160, 20)));
     else if (message.substr(0, TestFailPrefix1.size()) == TestFailPrefix1
-        || message.substr(0, TestFailPrefix2.size()) == TestFailPrefix2)
+            || message.substr(0, TestFailPrefix2.size()) == TestFailPrefix2
+            || message.substr(0, TestFailPrefix3.size()) == TestFailPrefix3)
         mLogTextCtrl->SetDefaultStyle(wxTextAttr(wxColor(165, 0, 0)));
     else
         mLogTextCtrl->SetDefaultStyle(wxTextAttr(*wxBLACK));
@@ -337,13 +295,14 @@ void MainFrame::RunOpenGLTest()
     test.Run();
 }
 
-void MainFrame::RunPixelCoordsTest()
+void MainFrame::RunPixelCoordsTest(size_t dataPoints)
 {
     ClearLog();
 
     ScopedTestRun testRun;
 
-    // TODO
+    PixelCoordsTest test(dataPoints);
+    test.Run();
 }
 
 void MainFrame::RunAllTests()
@@ -352,8 +311,20 @@ void MainFrame::RunAllTests()
 
     ScopedTestRun testRun;
 
-    OpenGLInitTest test;
-    test.Run();
+    {
+        OpenGLInitTest test;
+        test.Run();
+    }
 
-    // TODO
+    {
+        PixelCoordsTest test(5);
+        test.Run();
+    }
+
+    {
+        PixelCoordsTest test(65536);
+        test.Run();
+    }
+
+    // TODO: all other tests
 }

@@ -9,10 +9,11 @@ set  (SOURCES
 	GPUCalculatorFactory.cpp
 	GPUCalculatorFactory.h
 	IOpenGLContext.h
+	PixelCoordsGPUCalculator.cpp
+	PixelCoordsGPUCalculator.h
 	ShaderTraits.cpp
 	ShaderTraits.h
-	TestGPUCalculator.cpp
-	TestGPUCalculator.h)
+	)
 
 source_group(" " FILES ${SOURCES})
 

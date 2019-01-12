@@ -11,14 +11,6 @@
 #include <GameCore/ImageData.h>
 #include <GameCore/Log.h>
 
-// Bring-in the total glad environment
-#ifdef WIN32
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
-#include <windows.h>
-#endif
-#include "glad/glad.h"
-
 #include <cassert>
 #include <cstdio>
 #include <string>
@@ -186,9 +178,15 @@ public:
 
 public:
 
-    static void InitOpenGL();
+    static int MaxVertexAttributes;
+    static int MaxViewportWidth;
+    static int MaxViewportHeight;
+    static int MaxTextureSize;
+    static int MaxRenderbufferSize;
 
-    static void LogCapabilities();
+public:
+
+    static void InitOpenGL();
 
     static void CompileShader(
         std::string const & shaderSource,
@@ -244,10 +242,6 @@ public:
     }
 
     static void Flush();
-
-private:
-
-    static int MaxVertexAttributes;
 };
 
 inline void _CheckOpenGLError(char const * file, int line)

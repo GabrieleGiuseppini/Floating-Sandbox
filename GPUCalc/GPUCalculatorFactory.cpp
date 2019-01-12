@@ -18,12 +18,12 @@ void GPUCalculatorFactory::Initialize(
     mOpenGLContextFactory = std::move(openGLContextFactory);
 }
 
-std::unique_ptr<TestGPUCalculator> GPUCalculatorFactory::CreateTestCalculator(size_t dataPoints)
+std::unique_ptr<PixelCoordsGPUCalculator> GPUCalculatorFactory::CreatePixelCoordsCalculator(size_t dataPoints)
 {
     CheckInitialized();
 
-    return std::unique_ptr<TestGPUCalculator>(
-        new TestGPUCalculator(
+    return std::unique_ptr<PixelCoordsGPUCalculator>(
+        new PixelCoordsGPUCalculator(
             mOpenGLContextFactory(),
             mShadersRootDirectory,
             dataPoints));

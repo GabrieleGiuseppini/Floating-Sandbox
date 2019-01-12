@@ -11,20 +11,27 @@
 
 #include <filesystem>
 
-class TestGPUCalculator : public GPUCalculator
+/*
+ * Simple calculator that outputs the fragment coordinates passed to the fragment shader.
+ *
+ * For test purposes.
+ */
+class PixelCoordsGPUCalculator : public GPUCalculator
 {
 public:
 
-    void Add(
-        vec2f const * a,
-        vec2f const * b,
-        vec2f * result);
+    void Run(vec4f * result);
+
+    ImageSize const & GetFrameSize() const
+    {
+        return mFrameSize;
+    }
 
 private:
 
     friend class GPUCalculatorFactory;
 
-    TestGPUCalculator(
+    PixelCoordsGPUCalculator(
         std::unique_ptr<IOpenGLContext> openGLContext,
         std::filesystem::path const & shadersRootDirectory,
         size_t dataPoints);
@@ -32,6 +39,7 @@ private:
 private:
 
     size_t const mDataPoints;
+    ImageSize const mFrameSize;
 
     GameOpenGLVBO mVertexVBO;
     GameOpenGLFramebuffer mFramebuffer;

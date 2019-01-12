@@ -5,7 +5,9 @@
  ***************************************************************************************/
 #pragma once
 
-#include <GPUCalc/TestGPUCalculator.h>
+// Bring-in our glad GL environment, before any of the
+// WX OpenGL includes redefines it
+#include <GameOpenGL/GameOpenGL.h>
 
 #include <wx/app.h>
 #include <wx/frame.h>
@@ -57,7 +59,7 @@ private:
     void ClearLog();
 
     void RunOpenGLTest();
-    void RunPixelCoordsTest();
+    void RunPixelCoordsTest(size_t dataPoints);
     void RunAllTests();
 
 private:
@@ -70,8 +72,4 @@ private:
 
     std::unique_ptr<wxGLCanvas> mDummyGLCanvas;
     std::unique_ptr<wxGLContext> mDummyGLContext;
-
-    std::unique_ptr<TestGPUCalculator> mTestGPUCalculator;
-
-    std::unique_ptr<TestGPUCalculator> mTestGPUCalculator2;
 };

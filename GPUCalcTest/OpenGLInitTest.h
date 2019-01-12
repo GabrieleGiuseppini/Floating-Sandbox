@@ -5,6 +5,7 @@
  ***************************************************************************************/
 #pragma once
 
+#include "OpenGLContext.h"
 #include "TestCase.h"
 
 #include <GameOpenGL/GameOpenGL.h>
@@ -21,6 +22,9 @@ protected:
 
     virtual void InternalRun() override
     {
+        auto ctx = OpenGLContext();
+        ctx.Activate();
+
         GameOpenGL::InitOpenGL();
     }
 };

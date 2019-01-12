@@ -5,3 +5,24 @@
  ***************************************************************************************/
 #pragma once
 
+#include "TestCase.h"
+
+#include <string>
+
+class PixelCoordsTest : public TestCase
+{
+public:
+
+    PixelCoordsTest(size_t dataPoints)
+        : TestCase("PixelCoords " + std::to_string(dataPoints))
+        , mDataPoints(dataPoints)
+    {}
+
+protected:
+
+    virtual void InternalRun() override;
+
+private:
+
+    size_t const mDataPoints;
+};

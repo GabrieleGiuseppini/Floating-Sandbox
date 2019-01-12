@@ -10,6 +10,8 @@
 
 #include <GameOpenGL/ShaderManager.h>
 
+#include <GameCore/ImageSize.h>
+
 #include <cassert>
 #include <filesystem>
 #include <memory>
@@ -24,6 +26,9 @@ protected:
     GPUCalculator(
         std::unique_ptr<IOpenGLContext> openGLContext,
         std::filesystem::path const & shadersRootDirectory);
+
+    static ImageSize CalculateRequiredRenderBufferSize(size_t pixels);
+    static ImageSize CalculateRequiredTextureSize(size_t pixels);
 
     void ActivateOpenGLContext()
     {

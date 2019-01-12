@@ -12,6 +12,10 @@
 #include <numeric>
 
 int GameOpenGL::MaxVertexAttributes = 0;
+int GameOpenGL::MaxViewportWidth = 0;
+int GameOpenGL::MaxViewportHeight = 0;
+int GameOpenGL::MaxTextureSize = 0;
+int GameOpenGL::MaxRenderbufferSize = 0;
 
 void GameOpenGL::InitOpenGL()
 {
@@ -49,8 +53,25 @@ void GameOpenGL::InitOpenGL()
     // Get some constants
     //
 
-    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &MaxVertexAttributes);
+    GLint tmpConstant;
+
+    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &tmpConstant);
+    MaxVertexAttributes = tmpConstant;
     LogMessage("GL_MAX_VERTEX_ATTRIBS=", MaxVertexAttributes);
+
+    GLint maxViewportDims[2];
+    glGetIntegerv(GL_MAX_VIEWPORT_DIMS, &(maxViewportDims[0]));
+    MaxViewportWidth = maxViewportDims[0];
+    MaxViewportHeight = maxViewportDims[1];
+    LogMessage("GL_MAX_VIEWPORT_DIMS=", MaxViewportWidth, "x", MaxViewportHeight);
+
+    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &tmpConstant);
+    MaxTextureSize = tmpConstant;
+    LogMessage("GL_MAX_TEXTURE_SIZE=", MaxTextureSize);
+
+    glGetIntegerv(GL_MAX_RENDERBUFFER_SIZE, &tmpConstant);
+    MaxRenderbufferSize = tmpConstant;
+    LogMessage("GL_MAX_RENDERBUFFER_SIZE=", MaxRenderbufferSize);
 }
 
 void GameOpenGL::CompileShader(

@@ -13,8 +13,8 @@
 GPUCalcProgramType ShaderFilenameToGPUCalcProgramType(std::string const & str)
 {
     std::string lstr = Utils::ToLower(str);
-    if (lstr == "test")
-        return GPUCalcProgramType::Test;
+    if (lstr == "pixel_coords")
+        return GPUCalcProgramType::PixelCoords;
     else
         throw GameException("Unrecognized program \"" + str + "\"");
 }
@@ -23,8 +23,8 @@ std::string GPUCalcProgramTypeToStr(GPUCalcProgramType program)
 {
     switch (program)
     {
-        case GPUCalcProgramType::Test:
-            return "Test";
+        case GPUCalcProgramType::PixelCoords:
+            return "PixelCoords";
         default:
             assert(false);
             throw GameException("Unsupported GPUCalcProgramType");

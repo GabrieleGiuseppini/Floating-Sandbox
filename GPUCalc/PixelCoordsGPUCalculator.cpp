@@ -3,15 +3,13 @@
 * Created:              2018-12-29
 * Copyright:            Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
-#include "TestGPUCalculator.h"
+#include "PixelCoordsGPUCalculator.h"
 
 #include <GameOpenGL/GameOpenGL.h>
 
-// TODOTEST
-constexpr int Width = 40;
-constexpr int Height = 40;
+#include <GameCore/Log.h>
 
-TestGPUCalculator::TestGPUCalculator(
+PixelCoordsGPUCalculator::PixelCoordsGPUCalculator(
     std::unique_ptr<IOpenGLContext> openGLContext,
     std::filesystem::path const & shadersRootDirectory,
     size_t dataPoints)
@@ -19,8 +17,12 @@ TestGPUCalculator::TestGPUCalculator(
         std::move(openGLContext),
         shadersRootDirectory)
     , mDataPoints(dataPoints)
+    , mFrameSize(CalculateRequiredRenderBufferSize(dataPoints))
 {
+    LogMessage("PixelCoordsGPUCalculator: FrameSize=", mFrameSize.Width, "x", mFrameSize.Height);
+
     GLuint tmpGLuint;
+
 
     //
     // Initialize this context
@@ -29,7 +31,8 @@ TestGPUCalculator::TestGPUCalculator(
     this->ActivateOpenGLContext();
 
     // Set viewport size
-    glViewport(0, 0, Width, Height);
+    glViewport(0, 0, mFrameSize.Width, mFrameSize.Height);
+    CheckOpenGLError();
 
     // Set polygon mode
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -68,8 +71,8 @@ TestGPUCalculator::TestGPUCalculator(
     glRenderbufferStorage(
         GL_RENDERBUFFER,
         GL_RGBA32F,
-        Width,
-        Height);
+        mFrameSize.Width,
+        mFrameSize.Height);
     CheckOpenGLError();
 
     // Attach color buffer to FBO
@@ -83,8 +86,7 @@ TestGPUCalculator::TestGPUCalculator(
     }
 
     // Clear canvas
-    // TODOTEST
-    glClearColor(0.123f, 0.0f, 0.0f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
 
@@ -97,7 +99,7 @@ TestGPUCalculator::TestGPUCalculator(
     mVertexVBO = tmpGLuint;
 
     // Use program
-    GetShaderManager().ActivateProgram<GPUCalcProgramType::Test>();
+    GetShaderManager().ActivateProgram<GPUCalcProgramType::PixelCoords>();
 
     // Bind VBO
     glBindBuffer(GL_ARRAY_BUFFER, *mVertexVBO);
@@ -131,32 +133,39 @@ TestGPUCalculator::TestGPUCalculator(
 
     // Enable vertex attribute
     glEnableVertexAttribArray(static_cast<GLuint>(GPUCalcVertexAttributeType::VertexCoords));
-
 }
 
-void TestGPUCalculator::Add(
-    vec2f const * a,
-    vec2f const * b,
-    vec2f * result)
+void PixelCoordsGPUCalculator::Run(vec4f * result)
 {
-    assert(nullptr != a);
-    assert(nullptr != b);
     assert(nullptr != result);
 
     this->ActivateOpenGLContext();
 
+    //
     // Draw
+    //
+
     glDrawArrays(GL_TRIANGLES, 0, 6);
     CheckOpenGLError();
 
-    // Read
-    // TODOTEST
-    //GLubyte pixels[4 * 256 * 256];
-    //glReadPixels(0, 0, 256, 256, GL_BGRA, GL_UNSIGNED_BYTE, pixels);
-    std::unique_ptr<float[]> pixels = std::make_unique<float[]>(4 * Width * Height);
-    glReadPixels(0, 0, Width, Height, GL_BGRA, GL_FLOAT, pixels.get());
-    CheckOpenGLError();
 
-    // Flush all pending commands
+    //
+    // Read
+    //
+
+    int wholeRows = static_cast<int>(mDataPoints) / mFrameSize.Width;
+    if (wholeRows > 0)
+    {
+        glReadPixels(0, 0, mFrameSize.Width, wholeRows, GL_RGBA, GL_FLOAT, result);
+        CheckOpenGLError();
+    }
+
+    int reminderCols = static_cast<int>(mDataPoints) % mFrameSize.Width;
+    if (reminderCols > 0)
+    {
+        glReadPixels(0, wholeRows, reminderCols, 1, GL_BGRA, GL_FLOAT, result + sizeof(vec4f) * wholeRows * mFrameSize.Width);
+        CheckOpenGLError();
+    }
+
     glFlush();
 }
