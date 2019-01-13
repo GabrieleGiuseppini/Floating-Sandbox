@@ -15,7 +15,6 @@
 
 #include <GameCore/GameException.h>
 #include <GameCore/Log.h>
-#include <GameCore/ResourceLoader.h>
 #include <GameCore/Utils.h>
 
 #include <wx/button.h>
@@ -207,7 +206,7 @@ MainFrame::MainFrame(wxApp * mainApp)
         {
             return std::make_unique<OpenGLContext>();
         },
-        ResourceLoader::GetGPUCalcShadersRootPath());
+        "Shaders/GPUCalc");
 }
 
 MainFrame::~MainFrame()

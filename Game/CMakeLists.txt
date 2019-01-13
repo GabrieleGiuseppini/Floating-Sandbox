@@ -13,6 +13,8 @@ set  (GAME_SOURCES
 	Materials.cpp
 	Materials.h
 	MaterialDatabase.h
+	ResourceLoader.cpp
+	ResourceLoader.h
 	ShipBuilder.cpp
 	ShipBuilder.h
 	ShipDefinition.cpp
@@ -85,6 +87,7 @@ source_group("Render" FILES ${RENDER_SOURCES})
 
 add_library (GameLib ${GAME_SOURCES} ${PHYSICS_SOURCES} ${RENDER_SOURCES})
 
+target_include_directories(GameLib PRIVATE ${IL_INCLUDE_DIR})
 target_include_directories(GameLib PUBLIC ${LIBSIMDPP_INCLUDE_DIRS})
 target_include_directories(GameLib PUBLIC ${PICOJSON_INCLUDE_DIRS})
 target_include_directories(GameLib INTERFACE ..)
@@ -93,5 +96,8 @@ target_link_libraries (GameLib
 	GameCoreLib
 	GameOpenGLLib
 	GPUCalcLib
+	${IL_LIBRARIES}
+	${ILU_LIBRARIES}
+	${ILUT_LIBRARIES}
 	${OPENGL_LIBRARIES}
 	${ADDITIONAL_LIBRARIES})

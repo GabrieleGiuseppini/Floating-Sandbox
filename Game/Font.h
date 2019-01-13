@@ -6,10 +6,10 @@
 #pragma once
 
 #include "RenderCore.h"
+#include "ResourceLoader.h"
 
 #include <GameCore/ImageData.h>
 #include <GameCore/ProgressCallback.h>
-#include <GameCore/ResourceLoader.h>
 #include <GameCore/Vectors.h>
 
 #include <array>

@@ -6,11 +6,11 @@
 #pragma once
 
 #include "Physics.h"
+#include "ResourceLoader.h"
 
 #include "GameParameters.h"
 
 #include <GameCore/GameMath.h>
-#include <GameCore/ResourceLoader.h>
 
 #include <memory>
 

@@ -32,7 +32,7 @@ ImageSize GPUCalculator::CalculateRequiredRenderBufferSize(size_t pixels)
     if (numberOfRows == 0)
     {
         // Less than one row
-        return ImageSize(pixels, 1);
+        return ImageSize(static_cast<int>(pixels), 1);
     }
     else
     {
@@ -49,7 +49,7 @@ ImageSize GPUCalculator::CalculateRequiredTextureSize(size_t pixels)
     if (numberOfRows == 0)
     {
         // Less than one row
-        return ImageSize(pixels, 1);
+        return ImageSize(static_cast<int>(pixels), 1);
     }
     else
     {

@@ -9,8 +9,7 @@
 #include "Tools.h"
 
 #include <Game/GameController.h>
-
-#include <GameCore/ResourceLoader.h>
+#include <Game/ResourceLoader.h>
 
 #include <wx/frame.h>
 

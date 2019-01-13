@@ -14,10 +14,9 @@
 #include "SoundController.h"
 #include "ToolController.h"
 
-#include <GameCore/ResourceLoader.h>
-
 #include <Game/GameController.h>
 #include <Game/IGameEventHandler.h>
+#include <Game/ResourceLoader.h>
 
 #include <wx/filedlg.h>
 #include <wx/frame.h>

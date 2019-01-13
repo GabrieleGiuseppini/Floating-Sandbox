@@ -7,12 +7,12 @@
 
 #include "Font.h"
 #include "RenderCore.h"
+#include "ResourceLoader.h"
 
 #include <GameOpenGL/ShaderManager.h>
 
 #include <GameCore/GameTypes.h>
 #include <GameCore/ProgressCallback.h>
-#include <GameCore/ResourceLoader.h>
 
 #include <array>
 #include <string>

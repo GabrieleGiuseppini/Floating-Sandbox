@@ -7,7 +7,6 @@
 
 #include <GameOpenGL/GameOpenGL.h>
 
-#include <GameCore/ResourceLoader.h>
 #include <GameCore/Vectors.h>
 
 #include <cassert>

@@ -7,9 +7,9 @@
 
 #include "ResourceLoader.h"
 
-#include "GameException.h"
-#include "Log.h"
-#include "Utils.h"
+#include <GameCore/GameException.h>
+#include <GameCore/Log.h>
+#include <GameCore/Utils.h>
 
 #include <IL/il.h>
 #include <IL/ilu.h>

@@ -5,9 +5,9 @@
 ***************************************************************************************/
 #pragma once
 
-#include "ImageData.h"
-#include "ProgressCallback.h"
-#include "SysSpecifics.h"
+#include <GameCore/ImageData.h>
+#include <GameCore/ProgressCallback.h>
+#include <GameCore/SysSpecifics.h>
 
 #include <cstdint>
 #include <filesystem>

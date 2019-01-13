@@ -8,9 +8,9 @@
 #include "SoundController.h"
 
 #include <Game/GameController.h>
+#include <Game/ResourceLoader.h>
 
 #include <GameCore/GameWallClock.h>
-#include <GameCore/ResourceLoader.h>
 
 #include <wx/cursor.h>
 #include <wx/frame.h>
