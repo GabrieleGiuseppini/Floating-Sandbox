@@ -7,6 +7,7 @@
 
 #include "TestRun.h"
 
+#include <GameCore/FloatingPoint.h>
 #include <GameCore/Log.h>
 
 #include <stdexcept>
@@ -19,6 +20,17 @@
 #define TEST_VERIFY(expr)                                               \
     if (!(expr))                                                        \
         this->OnVerifyFail(std::string("Failure at " __FILE__ ", line ") + std::to_string(__LINE__) + ": " + std::string(#expr));
+
+#define TEST_VERIFY_EQ(a, b)                                                    \
+    if (!((a) == (b)))                                                          \
+        this->OnVerifyFail(std::string("Failure at " __FILE__ ", line ") + std::to_string(__LINE__) + ": value \"" + std::to_string((a)) + "\" does not match \"" + std::to_string((b)) + "\"");
+
+#define TEST_VERIFY_FLOAT_EQ(a, b)                                              \
+    {                                                                           \
+        const FloatingPoint _a(a), _b(b);                                       \
+        if (!_a.AlmostEquals(_b))                                               \
+            this->OnVerifyFail(std::string("Failure at " __FILE__ ", line ") + std::to_string(__LINE__) + ": value \"" + std::to_string((a)) + "\" does not match \"" + std::to_string((b)) + "\"");\
+    }
 
 struct TestCaseFailException : std::exception
 {};

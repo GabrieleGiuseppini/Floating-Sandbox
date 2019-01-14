@@ -124,7 +124,7 @@ PixelCoordsGPUCalculator::PixelCoordsGPUCalculator(
 
     // Describe vertex attribute
     glVertexAttribPointer(
-        static_cast<GLuint>(GPUCalcVertexAttributeType::VertexCoords),
+        static_cast<GLuint>(GPUCalcVertexAttributeType::VertexShaderInput0),
         2,
         GL_FLOAT,
         GL_FALSE,
@@ -132,7 +132,7 @@ PixelCoordsGPUCalculator::PixelCoordsGPUCalculator(
         (void*)0);
 
     // Enable vertex attribute
-    glEnableVertexAttribArray(static_cast<GLuint>(GPUCalcVertexAttributeType::VertexCoords));
+    glEnableVertexAttribArray(static_cast<GLuint>(GPUCalcVertexAttributeType::VertexShaderInput0));
 }
 
 void PixelCoordsGPUCalculator::Run(vec4f * result)
@@ -163,7 +163,7 @@ void PixelCoordsGPUCalculator::Run(vec4f * result)
     int reminderCols = static_cast<int>(mDataPoints) % mFrameSize.Width;
     if (reminderCols > 0)
     {
-        glReadPixels(0, wholeRows, reminderCols, 1, GL_BGRA, GL_FLOAT, result + sizeof(vec4f) * wholeRows * mFrameSize.Width);
+        glReadPixels(0, wholeRows, reminderCols, 1, GL_RGBA, GL_FLOAT, result + sizeof(vec4f) * wholeRows * mFrameSize.Width);
         CheckOpenGLError();
     }
 

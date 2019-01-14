@@ -145,7 +145,7 @@ PFNGLISVERTEXARRAYPROC glIsVertexArray = NULL;
 void InitOpenGLExt_VertexArray(GLADloadproc load)
 {
     if (GLVersion.major >= 3 // Core in 3.0
-        || HasExt("GL_ARB_draw_instanced"))
+        || HasExt("GL_ARB_vertex_array_object"))
     {
         // Core or ARB - maintains name
 

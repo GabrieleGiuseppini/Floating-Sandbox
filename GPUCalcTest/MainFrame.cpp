@@ -8,6 +8,7 @@
 #include "OpenGLContext.h"
 #include "TestRun.h"
 
+#include "AddTest.h"
 #include "OpenGLInitTest.h"
 #include "PixelCoordsTest.h"
 
@@ -85,6 +86,26 @@ MainFrame::MainFrame(wxApp * mainApp)
             this->RunPixelCoordsTest(65536);
         });
     buttonCol1Sizer->Add(pixelCoords65536TestButton, 1, wxEXPAND);
+
+    auto Add5TestButton = new wxButton(this, wxID_ANY, "Run Add(5) Test");
+    Add5TestButton->SetMaxSize(wxSize(-1, 20));
+    Add5TestButton->Bind(
+        wxEVT_BUTTON,
+        [this](wxEvent & /*event*/)
+        {
+            this->RunAddTest(5);
+        });
+    buttonCol1Sizer->Add(Add5TestButton, 1, wxEXPAND);
+
+    auto Add65536TestButton = new wxButton(this, wxID_ANY, "Run Add(65536) Test");
+    Add65536TestButton->SetMaxSize(wxSize(-1, 20));
+    Add65536TestButton->Bind(
+        wxEVT_BUTTON,
+        [this](wxEvent & /*event*/)
+        {
+            this->RunAddTest(65536);
+        });
+    buttonCol1Sizer->Add(Add65536TestButton, 1, wxEXPAND);
 
     auto allTestsButton = new wxButton(this, wxID_ANY, "Run All Tests");
     allTestsButton->SetMaxSize(wxSize(-1, 20));
@@ -304,6 +325,16 @@ void MainFrame::RunPixelCoordsTest(size_t dataPoints)
     test.Run();
 }
 
+void MainFrame::RunAddTest(size_t dataPoints)
+{
+    ClearLog();
+
+    ScopedTestRun testRun;
+
+    AddTest test(dataPoints);
+    test.Run();
+}
+
 void MainFrame::RunAllTests()
 {
     ClearLog();
@@ -322,6 +353,16 @@ void MainFrame::RunAllTests()
 
     {
         PixelCoordsTest test(65536);
+        test.Run();
+    }
+
+    {
+        AddTest test(5);
+        test.Run();
+    }
+
+    {
+        AddTest test(65536);
         test.Run();
     }
 

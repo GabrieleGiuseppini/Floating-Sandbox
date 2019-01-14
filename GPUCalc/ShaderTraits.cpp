@@ -15,6 +15,8 @@ GPUCalcProgramType ShaderFilenameToGPUCalcProgramType(std::string const & str)
     std::string lstr = Utils::ToLower(str);
     if (lstr == "pixel_coords")
         return GPUCalcProgramType::PixelCoords;
+    else if (lstr == "add")
+        return GPUCalcProgramType::Add;
     else
         throw GameException("Unrecognized program \"" + str + "\"");
 }
@@ -25,6 +27,8 @@ std::string GPUCalcProgramTypeToStr(GPUCalcProgramType program)
     {
         case GPUCalcProgramType::PixelCoords:
             return "PixelCoords";
+        case GPUCalcProgramType::Add:
+            return "Add";
         default:
             assert(false);
             throw GameException("Unsupported GPUCalcProgramType");
@@ -33,8 +37,10 @@ std::string GPUCalcProgramTypeToStr(GPUCalcProgramType program)
 
 GPUCalcProgramParameterType StrToGPUCalcProgramParameterType(std::string const & str)
 {
-    if (str == "TODO")
-        return GPUCalcProgramParameterType::TODO;
+    if (str == "TextureInput0")
+        return GPUCalcProgramParameterType::TextureInput0;
+    else if (str == "TextureInput1")
+        return GPUCalcProgramParameterType::TextureInput1;
     else
         throw GameException("Unrecognized program parameter \"" + str + "\"");
 }
@@ -43,8 +49,10 @@ std::string GPUCalcProgramParameterTypeToStr(GPUCalcProgramParameterType program
 {
     switch (programParameter)
     {
-        case GPUCalcProgramParameterType::TODO:
-            return "TODO";
+        case GPUCalcProgramParameterType::TextureInput0:
+            return "TextureInput0";
+        case GPUCalcProgramParameterType::TextureInput1:
+            return "TextureInput1";
         default:
             assert(false);
             throw GameException("Unsupported GPUCalcProgramParameterType");
@@ -53,8 +61,8 @@ std::string GPUCalcProgramParameterTypeToStr(GPUCalcProgramParameterType program
 
 GPUCalcVertexAttributeType StrToGPUCalcVertexAttributeType(std::string const & str)
 {
-    if (Utils::CaseInsensitiveEquals(str, "VertexCoords"))
-        return GPUCalcVertexAttributeType::VertexCoords;
+    if (Utils::CaseInsensitiveEquals(str, "VertexShaderInput0"))
+        return GPUCalcVertexAttributeType::VertexShaderInput0;
     else
         throw GameException("Unrecognized vertex attribute \"" + str + "\"");
 }
@@ -63,8 +71,8 @@ std::string GPUCalcVertexAttributeTypeToStr(GPUCalcVertexAttributeType vertexAtt
 {
     switch (vertexAttribute)
     {
-        case GPUCalcVertexAttributeType::VertexCoords:
-            return "VertexCoords";
+        case GPUCalcVertexAttributeType::VertexShaderInput0:
+            return "VertexShaderInput0";
         default:
             assert(false);
             throw GameException("Unsupported GPUCalcVertexAttributeType");

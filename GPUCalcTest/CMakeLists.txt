@@ -1,4 +1,6 @@
 set  (GPU_CALC_TEST_SOURCES
+	AddTest.cpp
+	AddTest.h
 	MainApp.cpp
 	MainFrame.cpp
 	MainFrame.h

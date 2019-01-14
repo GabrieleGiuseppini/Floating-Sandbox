@@ -29,6 +29,17 @@ std::unique_ptr<PixelCoordsGPUCalculator> GPUCalculatorFactory::CreatePixelCoord
             dataPoints));
 }
 
+std::unique_ptr<AddGPUCalculator> GPUCalculatorFactory::CreateAddCalculator(size_t dataPoints)
+{
+    CheckInitialized();
+
+    return std::unique_ptr<AddGPUCalculator>(
+        new AddGPUCalculator(
+            mOpenGLContextFactory(),
+            mShadersRootDirectory,
+            dataPoints));
+}
+
 void GPUCalculatorFactory::CheckInitialized()
 {
     if (!mOpenGLContextFactory)

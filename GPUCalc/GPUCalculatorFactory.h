@@ -9,6 +9,7 @@
 #include "IOpenGLContext.h"
 #include "ShaderTraits.h"
 
+#include "AddGPUCalculator.h"
 #include "PixelCoordsGPUCalculator.h"
 
 #include <cassert>
@@ -32,6 +33,8 @@ public:
         std::filesystem::path const & shadersRootDirectory);
 
     std::unique_ptr<PixelCoordsGPUCalculator> CreatePixelCoordsCalculator(size_t dataPoints);
+
+    std::unique_ptr<AddGPUCalculator> CreateAddCalculator(size_t dataPoints);
 
 private:
 

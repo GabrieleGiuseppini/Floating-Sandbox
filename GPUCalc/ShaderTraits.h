@@ -13,8 +13,9 @@
 enum class GPUCalcProgramType
 {
     PixelCoords = 0,
+    Add = 1,
 
-    _Last = PixelCoords
+    _Last = Add
 };
 
 GPUCalcProgramType ShaderFilenameToGPUCalcProgramType(std::string const & str);
@@ -23,7 +24,12 @@ std::string GPUCalcProgramTypeToStr(GPUCalcProgramType program);
 
 enum class GPUCalcProgramParameterType : uint8_t
 {
-    TODO = 0,
+    // Textures
+    TextureInput0,                  // 0
+    TextureInput1,                  // 1
+
+    _FirstTexture = TextureInput0,
+    _LastTexture = TextureInput1
 };
 
 GPUCalcProgramParameterType StrToGPUCalcProgramParameterType(std::string const & str);
@@ -32,7 +38,7 @@ std::string GPUCalcProgramParameterTypeToStr(GPUCalcProgramParameterType program
 
 enum class GPUCalcVertexAttributeType : GLuint
 {
-    VertexCoords = 0,
+    VertexShaderInput0 = 0,
 };
 
 GPUCalcVertexAttributeType StrToGPUCalcVertexAttributeType(std::string const & str);

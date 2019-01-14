@@ -5,26 +5,26 @@
  ***************************************************************************************/
 #include "Vectors.h"
 
+#include <iomanip>
 #include <sstream>
 
 std::string vec2f::toString() const
 {
     std::stringstream ss;
-    ss << "(" << x << ", " << y << ")";
+    ss << std::setprecision(12) << "(" << x << ", " << y << ")";
     return ss.str();
 }
 
 std::string vec3f::toString() const
 {
     std::stringstream ss;
-    ss << "(" << x << ", " << y << ", " << z << ")";
+    ss << std::setprecision(12) << "(" << x << ", " << y << ", " << z << ")";
     return ss.str();
 }
 
 std::string vec4f::toString() const
 {
     std::stringstream ss;
-    ss << "(" << x << ", " << y << ", " << z << ", " << w << ")";
+    ss << std::setprecision(12) << "(" << x << ", " << y << ", " << z << ", " << w << ")";
     return ss.str();
 }
-

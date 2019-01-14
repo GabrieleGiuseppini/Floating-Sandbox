@@ -4,6 +4,8 @@
 #
 
 set  (SOURCES
+	AddGPUCalculator.cpp
+	AddGPUCalculator.h
 	GPUCalculator.cpp
 	GPUCalculator.h
 	GPUCalculatorFactory.cpp

@@ -60,6 +60,7 @@ private:
 
     void RunOpenGLTest();
     void RunPixelCoordsTest(size_t dataPoints);
+    void RunAddTest(size_t dataPoints);
     void RunAllTests();
 
 private:

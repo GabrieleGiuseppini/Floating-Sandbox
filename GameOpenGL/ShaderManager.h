@@ -46,6 +46,7 @@ public:
             new ShaderManager(shadersRoot));
     }
 
+    // TODOTEST: OLD
     template <typename Traits::ProgramType Program>
     inline void SetTextureParameters()
     {
@@ -73,6 +74,26 @@ public:
                 CheckUniformError(Program, parameter);
             }
         }
+    }
+
+    // TODOTEST: NEW:
+    template <typename Traits::ProgramType Program, typename Traits::ProgramParameterType Parameter>
+    inline void SetTextureParameter()
+    {
+        static_assert(
+            Parameter >= Traits::ProgramParameterType::_FirstTexture  && Parameter <= Traits::ProgramParameterType::_LastTexture,
+            "The parameter is not a texture parameter");
+
+        size_t const programIndex = static_cast<size_t>(Program);
+
+        auto const parameterIndex = static_cast<uint8_t>(Parameter);
+        auto const textureUnitIndex = static_cast<uint8_t>(Parameter) - static_cast<uint8_t>(Traits::ProgramParameterType::_FirstTexture);
+
+        glUniform1i(
+            mPrograms[programIndex].UniformLocations[parameterIndex],
+            textureUnitIndex);
+
+        CheckUniformError(Program, Parameter);
     }
 
     template <typename Traits::ProgramType Program, typename Traits::ProgramParameterType Parameter>

@@ -6,11 +6,11 @@
 #define out varying
 
 // Inputs
-in vec2 inVertexCoords;
+in vec2 inVertexShaderInput0;
 
 void main()
 {
-    gl_Position = vec4(inVertexCoords.xy, -1.0, 1.0);
+    gl_Position = vec4(inVertexShaderInput0.xy, -1.0, 1.0);
 }
 
 
@@ -19,10 +19,6 @@ void main()
 #version 120
 
 #define in varying
-
-
-// Params
-//uniform vec4 paramMatteColor;
 
 void main()
 {
