@@ -307,9 +307,9 @@ Render:
 				+ FrameSize this time is calc'd based off min of the three limits
 			+ Fragment shader gets texture coords from vertex shader
 				+ Interpolation is fine
-			- Cleanup:
-				- See if need to replace ShaderMgr::SetTextureParams with new one
-			- Commit
+			+ Cleanup:
+				+ See if need to replace ShaderMgr::SetTextureParams with new one
+			- Commit & push
 		
 		- Other tests:
 			- Sum w/calculator reused twice

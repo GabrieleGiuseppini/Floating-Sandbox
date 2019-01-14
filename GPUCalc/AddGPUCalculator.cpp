@@ -86,6 +86,8 @@ AddGPUCalculator::AddGPUCalculator(
 
     GetShaderManager().ActivateProgram<GPUCalcProgramType::Add>();
 
+    GetShaderManager().SetTextureParameters<GPUCalcProgramType::Add>();
+
 
     //
     // Prepare input texture 0
@@ -109,8 +111,6 @@ AddGPUCalculator::AddGPUCalculator(
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     CheckOpenGLError();
 
-    // Set texture unit in program
-    GetShaderManager().SetTextureParameter<GPUCalcProgramType::Add, GPUCalcProgramParameterType::TextureInput0>();
 
     //
     // Prepare input texture 1
@@ -133,8 +133,6 @@ AddGPUCalculator::AddGPUCalculator(
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     CheckOpenGLError();
 
-    // Set texture unit in program
-    GetShaderManager().SetTextureParameter<GPUCalcProgramType::Add, GPUCalcProgramParameterType::TextureInput1>();
 
 
     //
