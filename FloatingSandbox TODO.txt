@@ -954,6 +954,24 @@ Render:
 				- New render setting 
 				- New ship upload 
 				- New shader (red with 0.5 alpha, thick line width)
+		- Impl:
+			- Jumpstart algo:
+				-	5	6	7
+					4	*	0
+					3	2	1
+				- For each scan line:
+					- For each flip point (0->1 or 1->0) from left p0 such that p0 does not belong to any frontiers:
+						- fId = new frontier ID
+						- p = p0; k = 4|0 (depending on flip type)
+						- do:
+							- Find p' from k+1 to k-1 (CW, %8)
+								- If not found: it's an isolated point, go to next flip
+							- Lookup <p, p'> in edge map
+								- edge map is a purpose-built map, with <p, p'> being a lexicographically ordered key
+								- assert is found, unless this is a "pure spring"
+							- Make edge belong to frontier fId
+							- if p' == p0: break
+						- continue to next flip point on same scan line
 		- Conclusions:
 			- Revisit need to have SuperTriangles and SubSprings, as we might now use edges
 				- We would now only upload springs that have 0 or 1 edges
