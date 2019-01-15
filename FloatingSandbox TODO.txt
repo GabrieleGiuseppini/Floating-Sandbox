@@ -178,20 +178,23 @@ Render:
 		+ Make these ships more breakable:
 			+ Titanic
 			+ Krafting
-		- Porthole: "wet_failure_rate": 3.0
+		+ Porthole: "wet_failure_rate": 3.0
+
 		- Bubble tool: make it dry ship 
 			- Tool is engaged if:
 				- It's on ship => suck water out (just like inverse flood)
 				- Else (no ship): if it's underwater (like now)
+		- Extended move tool (*)
+		- Interior layer (*)
 
 		- Zbuffer (*)
 		- Orphaned points (*)
 
 		- Libsimdpp spring relaxation (*)
 
-		- Complete "How to Build a Ship" guide
-		- Move all guides to own folder "Docs"
-			- Also material_template's
+		+ Complete "How to Build a Ship" guide
+		+ Move all guides to own folder "Docs"
+			+ Also material_template's
 
 	- 1.9.0
 		- Batisphere with pumps and propulsion (*)

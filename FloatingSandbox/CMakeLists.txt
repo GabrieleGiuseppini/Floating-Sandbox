@@ -142,6 +142,10 @@ endif (WIN32)
 install(DIRECTORY "${CMAKE_SOURCE_DIR}/Data" 
 	DESTINATION .)
 
+# Guides
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/Guides"
+	DESTINATION .)
+
 # Ships
 install(DIRECTORY "${CMAKE_SOURCE_DIR}/Ships" 
 	DESTINATION .
