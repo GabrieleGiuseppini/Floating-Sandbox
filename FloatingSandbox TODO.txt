@@ -191,10 +191,10 @@ Render:
 
 		- Complete "How to Build a Ship" guide
 		- Move all guides to own folder "Docs"
+			- Also material_template's
 
 	- 1.9.0
 		- Batisphere with pumps and propulsion (*)
-			- Multi-layer ship definition files (*)
 			- Switches (*)
 			- Pumps (*)
 			- Propulsion (*)
@@ -204,7 +204,7 @@ Render:
 		- Screenshots (*)
 	- 1.10.0
 		- Frontier
-		- Resource Packs (Moleskine)
+		- Resource Packs (*)
 
 - New ships
 	= USS Shark
@@ -302,14 +302,14 @@ Render:
 				+ ShaderMgr takes absolute folder path
 			+ CMake adjustments to not need DevIL
 			+ Commit
-		= 10: Sum test:
+		+ 10: Sum test:
 			+ RenderBuffer and textures all have same dimensions
 				+ FrameSize this time is calc'd based off min of the three limits
 			+ Fragment shader gets texture coords from vertex shader
 				+ Interpolation is fine
 			+ Cleanup:
 				+ See if need to replace ShaderMgr::SetTextureParams with new one
-			- Commit & push
+			+ Commit & push
 		
 		- Other tests:
 			- Sum w/calculator reused twice
@@ -464,6 +464,38 @@ Render:
 
 	- Cache sea depth from PointDynamics at first calculation (Points?), using lambda
 
+- Resource Packs (*)
+	- Resource pack contains:
+		- Subset of textures
+		- Subset of shaders
+		- Subset of settings
+		- Subset of materials, and new materials
+	- Impl:
+		- Data\Resources\{Default, <Pack name>}\
+			- Textures\
+			- Shaders\
+			- settings.json
+			- materials_structural.json
+			- materials_electrical.json
+			- metadata.json
+				- author, description, name
+			- Misc\
+				- For ocean bumps
+		- ResourceLoader:
+			- Static methods only for default paths
+				- e.g.: GetDefaultTextureDatabaseFilepath()
+			- 1 static method to get list of non-default ResourcePackMetadata's 
+			- cctor takes optional pack name
+			- Instance methods for *optional* pack-override paths
+				- e.g.: GetOverrideTextureDatabaseFilepath()
+			- Each "DB"'s Create(...) takes a ResourceLoader const &
+				- Own responsibility to check if override exists and, if so, to load override and reconciliate
+			- No more methods that load DB's
+		- Switching:
+			- Ad-hoc MainFrame dialog showing ResourcePackMetadata's 
+				- Chosen one goes to ApplicationSettings (see elsewhere in this roadmap)
+				- Checkbox for "Set as default" => ApplicationSettings::Save()
+
 - Gfx optimizations:
 
 	- Lights in the GPU with instanced drawing
@@ -594,6 +626,21 @@ Render:
 - Gfx:
 	+ Make font white inversely to ambient light
 	- Make water texture scroll with wind speed
+
+	- Electrical view
+		- New flag (not in ShipRenderMode)
+			- Settable at SettingsDialog
+				- Ideally, enabled only if there are electrical elements, but how to figure it out?
+		- When enabled, draws lines and electrical current (color) on top of ship
+			- Ship uploads <EPIndex1, EPIndex2, float current>
+		- Better if this is done after Z buffer rearc
+			- So no need to mess with ShipRenderContext::ConnectedComponentData
+		- Generation of buffer done at (new, see elsewhere in this roadmap) UpdateElectricalConnectivity
+			- If flag is enabled, UpdateElectricalConnectivity also stores data in buffer 
+				- Exactly like we plan to do for triangles, but always done, regardless of dirty-ness
+				- Test: buffer storage controlled via argument lambda
+					- Check asm
+				- Current of a spring == current of EP1 * current of EP2
 
 	- Should we always draw orphaned points - those that come after destruction?
 		+ Orphaned point == points with 0 connected springs
@@ -784,14 +831,16 @@ Render:
 			- Each switch gets own ObjectId, as part of Electrical Elements data communicated to ship
 				- LocalObjectId is just element index of switch in ElectricalElements
 				- Also name goes into Electrical Elements
+		- Create and Destroy events:
+			- Ship::cctor visits switches among ElectricalElements and fires AddSwitch(ID, name, state)
+			- Ship::ElectricalElementDestroyHandler fires DeleteSwitch(ID) if deleting a switch
 		- UI gets switches via AddSwitch (and DeleteSwitch) event, with all metadata (ID, name, state)
 			- From Ship::cctor, visiting switches among ElectricalElements
-			- SwitchBoard panel
+			- SwitchBoard panel (see below)
 				- Registers as event listener at cctor
 				- Uses GameController (own shared ptr) :: SetSwitch(ObjectId switchId, bool state) to control switches
 		- MainFrame also registers for AddSwitch and shows SwitchBoard on first add
 			- Hides it again only at Reset()
-		- Ship must invoke DeleteSwitch at switch deletion (@ Ship::ElectricalElementDestroyHandler)
 		- Electrical dynamics:
 			- ElectricalElement: rename "ConnectivityVisit" (sequence number, etc.) as "ElectricalPropagationVisit" (...)
 				- Ship::UpdateElectrical"Propagation"
@@ -800,6 +849,35 @@ Render:
 				- Ship::UpdateElectricalConnectivity checks conductance first when deciding to follow a connected electrical element
 			- Ship::SetSwitch(switchId, bool):
 				- Toggles electrical element's "conductsElectricity", via ElectricalElements::SetSwitch(switchId, bool)
+		- SwitchboardPanel:
+			- SwitchControl: much like slider, button (w/two switch images) with label below
+				- Switch event is via lambda
+				- Media:
+					- 2 images
+					- 2 sounds
+			- Panel: much like ProbePanel
+				- Has:
+					- ResourceLoader const & (used @ cctor only for button images)
+					- GameController (see others for shared_ptr or &)
+					- SoundController (see others for shared_ptr or &)
+				- Registers as event listener
+					- Processes IGameEventHandler::OnSwitchCreate/Delete
+					- Processes Reset() to delete all
+				- Has unordered_map<ObjectId, uq_ptr<SwitchControl>>
+				- OnSwitchCreate:
+					- Create uq_ptr<SwitchControl>
+					- Add to map
+					- Add to panel - left-aligned
+				- OnSwitchDelete:
+					- Remove from panel
+					- Remove from map
+				- Gets key events from MainFrame when MainFrame does not recognize
+					- XYZKeyEvent: returns bool for processed/not processed, so MainFrame can chain
+			- Switch event lambda:
+				- GameController->SetSwitch(ObjectId switchId, bool state)
+				- SoundController->PlaySwitchOn/OffSound()
+				
+
 	- Pumps
 		- Spec:
 			- New electrical element
@@ -972,6 +1050,7 @@ Render:
 
 
 - Game Interactions and Controls:
+
 	- Move tool: ability to move individual connected components
 		- After connected component has been overhauled
 		- Current tool is "Move All"
@@ -986,8 +1065,31 @@ Render:
 	- Ship definition: 
 		- "instructions"
 			- If present, at the first load of a ship spawns a text box (if enabled in settings)
-		- "interior layer"
-			- Drawable if present
+		- Interior layer:
+			- New layer @ ShipDefinitionFile and ShipDefinition
+			- New flag @
+				- ShipRenderMode
+				- SettingsDialog
+			- RenderMode rearc:
+				- ShipDefinition:
+					- std::optional<ImageData> TextureImageData
+					- std::optional<ImageData> InteriorImageData
+					- ImageData StructureImageData
+					- std::optional<ImageData> FallbackImageData
+						- i.e. the 8X structural
+				- RenderContext:
+					- Exposes "HasShipTextureImages()" and "HasShipInteriorImages()"
+						- Updated @ AddShip (via OR) and @ Reset()
+				- SettingsDialog:
+					- Enable options conditionally 
+					- Refresh by MainFrame upon AddShip/Reset/...
+				- New RenderMode: DrawPrimitives
+					- Takes the place of the current "Draw Structure"
+				- ShipRenderContext:
+					- When not drawing primitives, texture used is:
+						- If "Texture" -> Texture OR Fallback
+						- If "Structure" -> Structure
+						- If "Interior" -> Interior OR Fallback
 
 - UI:
 	+ SettingsDialog: tooltips at Simulation Quality (tradeoff) and Stiffness (instability)
