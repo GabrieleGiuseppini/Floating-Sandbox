@@ -210,21 +210,39 @@ void GameController::RunGameIteration()
 
 void GameController::LowFrequencyUpdate()
 {
-    //
-    // Publish stats
-    //
-
     std::chrono::steady_clock::time_point nowReal = std::chrono::steady_clock::now();
-    PublishStats(nowReal);
 
-    //
-    // Reset stats
-    //
+    if (mSkippedFirstStatPublishes >= 1)
+    {
+        //
+        // Publish stats
+        //
 
-    mLastFrameCount = 0u;
+
+        PublishStats(nowReal);
+
+        //
+        // Reset stats
+        //
+
+        mLastFrameCount = 0u;
+        mLastTotalUpdateDuration = mTotalUpdateDuration;
+        mLastTotalRenderDuration = mTotalRenderDuration;
+    }
+    else
+    {
+        //
+        // Skip the first few publish as rates are too polluted
+        //
+
+        mTotalFrameCount = 0u;
+        mLastFrameCount = 0u;
+        mRenderStatsOriginTimestampReal = nowReal;
+
+        ++mSkippedFirstStatPublishes;
+    }
+
     mRenderStatsLastTimestampReal = nowReal;
-    mLastTotalUpdateDuration = mTotalUpdateDuration;
-    mLastTotalRenderDuration = mTotalRenderDuration;
 }
 
 void GameController::Update()
@@ -627,12 +645,12 @@ void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
     auto totalElapsedReal = std::chrono::duration<float>(nowReal - mRenderStatsOriginTimestampReal);
     auto lastElapsedReal = std::chrono::duration<float>(nowReal - mRenderStatsLastTimestampReal);
 
-    float totalFps =
+    float const totalFps =
         totalElapsedReal.count() != 0.0f
         ? static_cast<float>(mTotalFrameCount) / totalElapsedReal.count()
         : 0.0f;
 
-    float lastFps =
+    float const lastFps =
         lastElapsedReal.count() != 0.0f
         ? static_cast<float>(mLastFrameCount) / lastElapsedReal.count()
         : 0.0f;
@@ -644,11 +662,11 @@ void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
     auto lastUpdateDurationNs = std::chrono::duration_cast<std::chrono::nanoseconds>(mTotalUpdateDuration - mLastTotalUpdateDuration);
     auto lastRenderDurationNs = std::chrono::duration_cast<std::chrono::nanoseconds>(mTotalRenderDuration - mLastTotalRenderDuration);
 
-    float totalURRatio = totalRenderDurationNs.count() != 0
+    float const totalURRatio = totalRenderDurationNs.count() != 0
         ? static_cast<float>(totalUpdateDurationNs.count()) / static_cast<float>(totalRenderDurationNs.count())
         : 0.0f;
 
-    float lastURRatio = lastRenderDurationNs.count() != 0
+    float const lastURRatio = lastRenderDurationNs.count() != 0
         ? static_cast<float>(lastUpdateDurationNs.count()) / static_cast<float>(lastRenderDurationNs.count())
         : 0.0f;
 

@@ -341,6 +341,7 @@ private:
         , mTotalRenderDuration(std::chrono::steady_clock::duration::zero())
         , mLastTotalRenderDuration(std::chrono::steady_clock::duration::zero())
         , mOriginTimestampGame(GameWallClock::time_point::min())
+        , mSkippedFirstStatPublishes(0)
     {
     }
 
@@ -423,4 +424,5 @@ private:
     std::chrono::steady_clock::duration mTotalRenderDuration;
     std::chrono::steady_clock::duration mLastTotalRenderDuration;
     GameWallClock::time_point mOriginTimestampGame;
+    int mSkippedFirstStatPublishes;
 };

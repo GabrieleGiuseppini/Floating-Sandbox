@@ -180,6 +180,8 @@ Render:
 			+ Krafting
 		+ Porthole: "wet_failure_rate": 3.0
 
+		- Wind and cloth (*)
+
 		- Bubble tool: make it dry ship 
 			- Tool is engaged if:
 				- It's on ship => suck water out (just like inverse flood)
@@ -467,37 +469,6 @@ Render:
 
 	- Cache sea depth from PointDynamics at first calculation (Points?), using lambda
 
-- Resource Packs (*)
-	- Resource pack contains:
-		- Subset of textures
-		- Subset of shaders
-		- Subset of settings
-		- Subset of materials, and new materials
-	- Impl:
-		- Data\Resources\{Default, <Pack name>}\
-			- Textures\
-			- Shaders\
-			- settings.json
-			- materials_structural.json
-			- materials_electrical.json
-			- metadata.json
-				- author, description, name
-			- Misc\
-				- For ocean bumps
-		- ResourceLoader:
-			- Static methods only for default paths
-				- e.g.: GetDefaultTextureDatabaseFilepath()
-			- 1 static method to get list of non-default ResourcePackMetadata's 
-			- cctor takes optional pack name
-			- Instance methods for *optional* pack-override paths
-				- e.g.: GetOverrideTextureDatabaseFilepath()
-			- Each "DB"'s Create(...) takes a ResourceLoader const &
-				- Own responsibility to check if override exists and, if so, to load override and reconciliate
-			- No more methods that load DB's
-		- Switching:
-			- Ad-hoc MainFrame dialog showing ResourcePackMetadata's 
-				- Chosen one goes to ApplicationSettings (see elsewhere in this roadmap)
-				- Checkbox for "Set as default" => ApplicationSettings::Save()
 
 - Gfx optimizations:
 
@@ -730,11 +701,25 @@ Render:
 
 - Dynamics:
 
+	- Wind and cloth (*)
+		- Step 1: Points has WindReceptivity buffer, for now set at Add(.) to 1.0 if material is one of cloth
+		- UpdatePointForces:
+			- Add wind force vector (precalc'd, using also const vector from GameParameters) to
+			  overwater points, multiplied by WindReceptivity
+		- Step 2: new StructuralMaterial property: WindReceptivity
+			- Optional in json (default=0.0), only set for cloth
+			- Update guide
+		- Step 3: erratic behavior of wind
+			- GameParameters::WindSpeed becomes WindSpeedBase
+			- World maintains WindSpeed, accessed by everyone via mParentWorld.GetWindSpeed()
+			- World::UpdateWind(): implements state machine and calcs current wind
+				- TODOHERE
+
 	- Lights breaking under pressure
 		- Idea:
 			- All structural materials have max pressure delta after which they break, with some randomness
 		- Impl:
-			- All points visited and checked at some step in UpdateMechanicalDynamics()
+			- All points visited and checked at some step in UpdateMechanicalDynamics(), before UpdateWaterIntake()
 				- Pressure delta between current water at point and external Y
 				- With probability growing in a band around max pressure delta
 
@@ -816,8 +801,12 @@ Render:
 		- Fires when wet for the first time
 
 	- Switches:
-		- New electrical material type; color trick like ropes to have unique and deterministic IDs for switches
-			- One material (base structural color) for initially on and another one for initially off
+		- New electrical material type
+			- Color trick like ropes to have unique and deterministic IDs for switches
+				- One material (base structural color) for initially on and another one for initially off
+			- Or 30 different materials (Switch 1, ...)
+				- New electrical material property: switch_id
+					- Must be > 0 and <= 30 for all switch materials, checked at load
 			- New electrical property: ConductsElectricity, bool - used at connectivity visit
 		+ ObjectId overhaul:
 			+ ObjectId is unique only in the context in which it's used (e.g. bombs vs switches)
@@ -876,9 +865,11 @@ Render:
 					- Remove from map
 				- Gets key events from MainFrame when MainFrame does not recognize
 					- XYZKeyEvent: returns bool for processed/not processed, so MainFrame can chain
+					- Shift and Alt do +10, +20
 			- Switch event lambda:
 				- GameController->SetSwitch(ObjectId switchId, bool state)
 				- SoundController->PlaySwitchOn/OffSound()
+		- Do not propagate switch characteristics through ropes
 				
 
 	- Pumps
@@ -1260,6 +1251,39 @@ Render:
 		- class Statistics (various Histograms, etc.)
 			- Histogram pointWaterHistogram
 			- ...
+
+- Resource Packs (*)
+
+	- Resource pack contains:
+		- Subset of textures
+		- Subset of shaders
+		- Subset of settings
+		- Subset of materials, and new materials
+	- Impl:
+		- Data\Resources\{Default, <Pack name>}\
+			- Textures\
+			- Shaders\
+			- settings.json
+			- materials_structural.json
+			- materials_electrical.json
+			- metadata.json
+				- author, description, name
+			- Misc\
+				- For ocean bumps
+		- ResourceLoader:
+			- Static methods only for default paths
+				- e.g.: GetDefaultTextureDatabaseFilepath()
+			- 1 static method to get list of non-default ResourcePackMetadata's 
+			- cctor takes optional pack name
+			- Instance methods for *optional* pack-override paths
+				- e.g.: GetOverrideTextureDatabaseFilepath()
+			- Each "DB"'s Create(...) takes a ResourceLoader const &
+				- Own responsibility to check if override exists and, if so, to load override and reconciliate
+			- No more methods that load DB's
+		- Switching:
+			- Ad-hoc MainFrame dialog showing ResourcePackMetadata's 
+				- Chosen one goes to ApplicationSettings (see elsewhere in this roadmap)
+				- Checkbox for "Set as default" => ApplicationSettings::Save()
 
 - Multiple ships:
 	- Better done after collision detection
