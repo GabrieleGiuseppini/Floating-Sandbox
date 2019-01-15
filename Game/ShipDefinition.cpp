@@ -5,9 +5,9 @@
 ***************************************************************************************/
 #include "ShipDefinition.h"
 
+#include "ResourceLoader.h"
 #include "ShipDefinitionFile.h"
 
-#include <GameCore/ResourceLoader.h>
 #include <GameCore/Utils.h>
 
 #include <cassert>

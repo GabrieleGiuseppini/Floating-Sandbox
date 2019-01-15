@@ -9,10 +9,11 @@
  * Object model for management of textures.
  */
 
+#include "ResourceLoader.h"
+
 #include <GameCore/GameTypes.h>
 #include <GameCore/ImageData.h>
 #include <GameCore/ProgressCallback.h>
-#include <GameCore/ResourceLoader.h>
 
 #include <cassert>
 #include <cstdint>

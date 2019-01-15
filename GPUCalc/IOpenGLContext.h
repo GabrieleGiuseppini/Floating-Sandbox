@@ -11,4 +11,6 @@ public:
 
     virtual ~IOpenGLContext()
     {}
+
+    virtual void Activate() = 0;
 };

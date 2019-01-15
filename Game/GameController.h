@@ -10,12 +10,12 @@
 #include "MaterialDatabase.h"
 #include "Physics.h"
 #include "RenderContext.h"
+#include "ResourceLoader.h"
 #include "TextLayer.h"
 
 #include <GameCore/GameTypes.h>
 #include <GameCore/GameWallClock.h>
 #include <GameCore/ProgressCallback.h>
-#include <GameCore/ResourceLoader.h>
 #include <GameCore/Vectors.h>
 
 #include <cassert>

@@ -4,13 +4,18 @@
 #
 
 set  (SOURCES
-	GPUCalcContext.cpp
-	GPUCalcContext.h
-	GPUCalcContextFactory.cpp
-	GPUCalcContextFactory.h
+	AddGPUCalculator.cpp
+	AddGPUCalculator.h
+	GPUCalculator.cpp
+	GPUCalculator.h
+	GPUCalculatorFactory.cpp
+	GPUCalculatorFactory.h
 	IOpenGLContext.h
-	TestGPUCalcContext.cpp
-	TestGPUCalcContext.h)
+	PixelCoordsGPUCalculator.cpp
+	PixelCoordsGPUCalculator.h
+	ShaderTraits.cpp
+	ShaderTraits.h
+	)
 
 source_group(" " FILES ${SOURCES})
 

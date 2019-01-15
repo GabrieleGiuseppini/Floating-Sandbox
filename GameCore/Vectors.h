@@ -7,6 +7,7 @@
 
 #include <cmath>
 #include <cstddef>
+#include <ostream>
 #include <string>
 
 struct vec2f
@@ -195,7 +196,11 @@ static_assert(offsetof(vec2f, x) == 0);
 static_assert(offsetof(vec2f, y) == sizeof(float));
 static_assert(sizeof(vec2f) == 2 * sizeof(float));
 
-
+inline std::basic_ostream<char> & operator<<(std::basic_ostream<char>& os, vec2f const & v)
+{
+    os << v.toString();
+    return os;
+}
 
 struct vec3f
 {
@@ -346,7 +351,11 @@ static_assert(offsetof(vec3f, y) == sizeof(float));
 static_assert(offsetof(vec3f, z) == 2 * sizeof(float));
 static_assert(sizeof(vec3f) == 3 * sizeof(float));
 
-
+inline std::basic_ostream<char> & operator<<(std::basic_ostream<char>& os, vec3f const & v)
+{
+    os << v.toString();
+    return os;
+}
 
 struct vec4f
 {
@@ -485,3 +494,9 @@ static_assert(offsetof(vec4f, y) == sizeof(float));
 static_assert(offsetof(vec4f, z) == 2 * sizeof(float));
 static_assert(offsetof(vec4f, w) == 3 * sizeof(float));
 static_assert(sizeof(vec4f) == 4 * sizeof(float));
+
+inline std::basic_ostream<char> & operator<<(std::basic_ostream<char>& os, vec4f const & v)
+{
+    os << v.toString();
+    return os;
+}

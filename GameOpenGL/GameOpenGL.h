@@ -5,23 +5,15 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GameOpenGL_Ext.h"
+
 #include <GameCore/GameException.h>
 #include <GameCore/ImageData.h>
 #include <GameCore/Log.h>
 
-#ifdef WIN32
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
-#include <windows.h>
-#endif
-
-#include <glad/glad.h>
-
 #include <cassert>
 #include <cstdio>
 #include <string>
-
-namespace Render {
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Types
@@ -139,11 +131,39 @@ struct GameOpenGLMappedBufferDeleter
     }
 };
 
+struct GameOpenGLFramebufferDeleter
+{
+    static void Delete(GLuint p)
+    {
+        static_assert(GLuint() == 0, "Default value is not zero, i.e. the OpenGL NULL");
+
+        if (p != 0)
+        {
+            glDeleteFramebuffers(1, &p);
+        }
+    }
+};
+
+struct GameOpenGLRenderbufferDeleter
+{
+    static void Delete(GLuint p)
+    {
+        static_assert(GLuint() == 0, "Default value is not zero, i.e. the OpenGL NULL");
+
+        if (p != 0)
+        {
+            glDeleteRenderbuffers(1, &p);
+        }
+    }
+};
+
 using GameOpenGLShaderProgram = GameOpenGLObject<GLuint, GameOpenGLProgramDeleter>;
 using GameOpenGLVBO = GameOpenGLObject<GLuint, GameOpenGLVBODeleter>;
 using GameOpenGLTexture = GameOpenGLObject<GLuint, GameOpenGLTextureDeleter>;
 template <GLenum TTarget>
 using GameOpenGLMappedBuffer = GameOpenGLObject<void *, GameOpenGLMappedBufferDeleter<TTarget>>;
+using GameOpenGLFramebuffer = GameOpenGLObject<GLuint, GameOpenGLFramebufferDeleter>;
+using GameOpenGLRenderbuffer = GameOpenGLObject<GLuint, GameOpenGLRenderbufferDeleter>;
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // GameOpenGL
@@ -151,6 +171,19 @@ using GameOpenGLMappedBuffer = GameOpenGLObject<void *, GameOpenGLMappedBufferDe
 
 class GameOpenGL
 {
+public:
+
+    static constexpr int MinOpenGLVersionMaj = 2;
+    static constexpr int MinOpenGLVersionMin = 0;
+
+public:
+
+    static int MaxVertexAttributes;
+    static int MaxViewportWidth;
+    static int MaxViewportHeight;
+    static int MaxTextureSize;
+    static int MaxRenderbufferSize;
+
 public:
 
     static void InitOpenGL();
@@ -209,10 +242,6 @@ public:
     }
 
     static void Flush();
-
-private:
-
-    static int MaxVertexAttributes;
 };
 
 inline void _CheckOpenGLError(char const * file, int line)
@@ -259,5 +288,3 @@ inline void _CheckOpenGLError(char const * file, int line)
 }
 
 #define CheckOpenGLError() _CheckOpenGLError(__FILE__, __LINE__)
-
-}

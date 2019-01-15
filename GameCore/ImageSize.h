@@ -24,6 +24,12 @@ public:
     {
     }
 
+    ImageSize(ImageSize const & other)
+        : Width(other.Width)
+        , Height(other.Height)
+    {
+    }
+
     inline static ImageSize Zero()
     {
         return ImageSize(0, 0);

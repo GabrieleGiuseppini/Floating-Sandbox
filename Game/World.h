@@ -10,10 +10,10 @@
 #include "MaterialDatabase.h"
 #include "Physics.h"
 #include "RenderContext.h"
+#include "ResourceLoader.h"
 #include "ShipDefinition.h"
 
 #include <GameCore/AABB.h>
-#include <GameCore/ResourceLoader.h>
 #include <GameCore/Vectors.h>
 
 #include <cstdint>

@@ -6,9 +6,9 @@
 #pragma once
 
 #include <Game/IGameEventHandler.h>
+#include <Game/ResourceLoader.h>
 
 #include <GameCore/GameRandomEngine.h>
-#include <GameCore/ResourceLoader.h>
 #include <GameCore/TupleKeys.h>
 #include <GameCore/Utils.h>
 

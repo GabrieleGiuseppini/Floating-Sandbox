@@ -11,43 +11,67 @@
 #include <memory>
 #include <numeric>
 
-namespace Render {
-
 int GameOpenGL::MaxVertexAttributes = 0;
+int GameOpenGL::MaxViewportWidth = 0;
+int GameOpenGL::MaxViewportHeight = 0;
+int GameOpenGL::MaxTextureSize = 0;
+int GameOpenGL::MaxRenderbufferSize = 0;
 
 void GameOpenGL::InitOpenGL()
 {
     int status = gladLoadGL();
     if (!status)
     {
-        throw std::runtime_error("Failed to initialize GLAD");
+        throw GameException("We are sorry, but this game requires OpenGL and it seems your graphics drivers does not support it; the error is: failed to initialize GLAD");
     }
 
     //
     // Check OpenGL version
     //
 
-    int versionMaj = 0;
-    int versionMin = 0;
-    char const * glVersion = (char*)glGetString(GL_VERSION);
-    if (nullptr == glVersion)
+    LogMessage("OpenGL version: ", GLVersion.major, ".", GLVersion.minor);
+
+    if (GLVersion.major < MinOpenGLVersionMaj
+        || (GLVersion.major == MinOpenGLVersionMaj && GLVersion.minor < MinOpenGLVersionMin))
     {
-        throw GameException("Sorry, but OpenGL is completely unsupported on your computer. This game cannot play...");
+        throw GameException(
+            std::string("We are sorry, but this game requires at least OpenGL ")
+            + std::to_string(MinOpenGLVersionMaj) + "." + std::to_string(MinOpenGLVersionMin)
+            + ", while the version currently supported by your graphics driver is "
+            + std::to_string(GLVersion.major) + "." + std::to_string(GLVersion.minor));
     }
 
-    LogMessage("OpenGL version: ", glVersion);
 
-    sscanf(glVersion, "%d.%d", &versionMaj, &versionMin);
-    if (versionMaj < 2)
-    {
-        throw GameException("Sorry, but this game requires at least OpenGL 2.0, while the version currently supported by your computer is " + std::string(glVersion));
-    }
+    //
+    // Init our extensions
+    //
+
+    InitOpenGLExt();
+
 
     //
     // Get some constants
     //
 
-    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &MaxVertexAttributes);
+    GLint tmpConstant;
+
+    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &tmpConstant);
+    MaxVertexAttributes = tmpConstant;
+    LogMessage("GL_MAX_VERTEX_ATTRIBS=", MaxVertexAttributes);
+
+    GLint maxViewportDims[2];
+    glGetIntegerv(GL_MAX_VIEWPORT_DIMS, &(maxViewportDims[0]));
+    MaxViewportWidth = maxViewportDims[0];
+    MaxViewportHeight = maxViewportDims[1];
+    LogMessage("GL_MAX_VIEWPORT_DIMS=", MaxViewportWidth, "x", MaxViewportHeight);
+
+    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &tmpConstant);
+    MaxTextureSize = tmpConstant;
+    LogMessage("GL_MAX_TEXTURE_SIZE=", MaxTextureSize);
+
+    glGetIntegerv(GL_MAX_RENDERBUFFER_SIZE, &tmpConstant);
+    MaxRenderbufferSize = tmpConstant;
+    LogMessage("GL_MAX_RENDERBUFFER_SIZE=", MaxRenderbufferSize);
 }
 
 void GameOpenGL::CompileShader(
@@ -358,6 +382,4 @@ void GameOpenGL::Flush()
     // We do it here to have this call in the stack, helping
     // performance profiling
     glFlush();
-}
-
 }

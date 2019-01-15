@@ -74,10 +74,8 @@ RenderContext::RenderContext(
 
 
     //
-    // Init OpenGL
+    // Setup OpenGL context
     //
-
-    GameOpenGL::InitOpenGL();
 
     // Activate shared texture unit
     mShaderManager->ActivateTexture<ProgramParameterType::SharedTexture>();
@@ -89,9 +87,7 @@ RenderContext::RenderContext(
 
     progressCallback(0.0f, "Loading shaders...");
 
-    ShaderManager<ShaderManagerTraits>::GlobalParameters globalParameters;
-
-    mShaderManager = ShaderManager<ShaderManagerTraits>::CreateInstance(resourceLoader, globalParameters);
+    mShaderManager = ShaderManager<ShaderManagerTraits>::CreateInstance(resourceLoader.GetRenderShadersRootPath());
 
 
     //

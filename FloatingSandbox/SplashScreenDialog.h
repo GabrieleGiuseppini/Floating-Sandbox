@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include <GameCore/ResourceLoader.h>
+#include <Game/ResourceLoader.h>
 
 #include <wx/dialog.h>
 #include <wx/gauge.h>

@@ -6,9 +6,9 @@
 #pragma once
 
 #include "Materials.h"
+#include "ResourceLoader.h"
 
 #include <GameCore/GameException.h>
-#include <GameCore/ResourceLoader.h>
 #include <GameCore/Utils.h>
 
 #include <picojson/picojson.h>

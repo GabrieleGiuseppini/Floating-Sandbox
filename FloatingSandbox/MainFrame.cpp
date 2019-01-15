@@ -8,6 +8,8 @@
 #include "SplashScreenDialog.h"
 #include "Version.h"
 
+#include <GameOpenGL/GameOpenGL.h>
+
 #include <GameCore/GameException.h>
 #include <GameCore/Log.h>
 #include <GameCore/Utils.h>
@@ -107,7 +109,7 @@ MainFrame::MainFrame(wxApp * mainApp)
 
 
     //
-    // Build main GL canvas
+    // Build main GL canvas and activate GL context
     //
 
     // Note: Using the wxWidgets 3.1 style does not work on OpenGL 4 drivers; it forces a 1.1.0 context
@@ -119,11 +121,12 @@ MainFrame::MainFrame(wxApp * mainApp)
         WX_GL_DEPTH_SIZE,      16,
         WX_GL_STENCIL_SIZE,    1,
 
-        // We want to use OpenGL 3.3, Core Profile
-        // TBD: Not now, my laptop does not support OpenGL 3 :-(
-        // WX_GL_CORE_PROFILE,
-        // WX_GL_MAJOR_VERSION,    3,
-        // WX_GL_MINOR_VERSION,    3,
+        // Cannot specify CORE_PROFILE or else wx tries OpenGL 3.0 and fails if it's not supported
+        //WX_GL_CORE_PROFILE,
+
+        // Useless to specify version as Glad will always take the max
+        //WX_GL_MAJOR_VERSION,    GameOpenGL::MinOpenGLVersionMaj,
+        //WX_GL_MINOR_VERSION,    GameOpenGL::MinOpenGLVersionMin,
 
         0, 0
     };
@@ -154,7 +157,23 @@ MainFrame::MainFrame(wxApp * mainApp)
 
     // Take context for this canvas
     mMainGLCanvasContext = std::make_unique<wxGLContext>(mMainGLCanvas.get());
+
+    // Activate context
     mMainGLCanvasContext->SetCurrent(*mMainGLCanvas);
+
+
+    //
+    // Initialize OpenGL
+    //
+
+    try
+    {
+        GameOpenGL::InitOpenGL();
+    }
+    catch (std::exception const & e)
+    {
+        throw std::runtime_error("Error during OpenGL initialization: " + std::string(e.what()));
+    }
 
 
     //
@@ -434,12 +453,13 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     //
 
     std::unique_ptr<SplashScreenDialog> splash = std::make_unique<SplashScreenDialog>(*mResourceLoader);
-    mMainApp->Yield();
 
 #ifdef _DEBUG
     // The guy is pesky while debugging
     splash->Hide();
 #endif
+
+    mMainApp->Yield();
 
 
     //

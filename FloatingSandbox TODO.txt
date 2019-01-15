@@ -179,6 +179,10 @@ Render:
 			+ Titanic
 			+ Krafting
 		- Porthole: "wet_failure_rate": 3.0
+		- Bubble tool: make it dry ship 
+			- Tool is engaged if:
+				- It's on ship => suck water out (just like inverse flood)
+				- Else (no ship): if it's underwater (like now)
 
 		- Zbuffer (*)
 		- Orphaned points (*)
@@ -187,10 +191,10 @@ Render:
 
 		- Complete "How to Build a Ship" guide
 		- Move all guides to own folder "Docs"
+			- Also material_template's
 
 	- 1.9.0
 		- Batisphere with pumps and propulsion (*)
-			- Multi-layer ship definition files (*)
 			- Switches (*)
 			- Pumps (*)
 			- Propulsion (*)
@@ -200,7 +204,7 @@ Render:
 		- Screenshots (*)
 	- 1.10.0
 		- Frontier
-		- Resource Packs (Moleskine)
+		- Resource Packs (*)
 
 - New ships
 	= USS Shark
@@ -224,7 +228,111 @@ Render:
 
 - Simulation Optimizations:
 
-	- Points::ConnectedSprings is of struct { SpringIndex, OtherEdnpointIndex }
+	= GPUCalc:
+		+ 1: Simple OpenGLContext
+		+ 2: Multiple OpenGLContextes
+		+ 3: Integrate ShaderManager
+		+ 4: Run fragment shader to fill-in with frag coords
+		+ 5: RenderBuffer
+		+ 6: Read pixels back 
+			+ Nail down clamping
+			+ Nail down viewport dimensions/renderbuffer dimensions
+				+ Fragment shader runs according to window sizes
+				+ Try glViewport to set dimensions (40x40)
+		+ 7: Make OpenGL initialization once per thread, after first context creation
+			+ Test first at FloatingSandbox: do init at MainFrame after context creation
+				+ Export required OpenGL version from GameOpenGL
+				+ If ok, move ctx creation et al at postinitialize trigger
+					+ Test openGL failure
+				+ Cleanup comments (3.3.) and TODOTEST's
+			+ Do also at GPUCalcText, also at MainFrame after a first dummy context creation
+			+ Commit
+			+ MainFrame:
+				+ Move OpenGL initialization at cctor, rethrow, and catch at MainApp
+					+ Test failure
+				+ Same identical at GPUCalcTest
+				+ Commit
+		+ Fix shaders: 120			
+			+ Test with FloatingSandbox
+			+ Send to guy
+			+ Commit after confirmation
+
+		+ 8: Redo Glad with 2.0 profile, and manual ARB's and EXT's for:
+			+ Framebuffer
+			+ Instanced Drawing
+			+ VAOs
+			+ Texture Float
+			+ Restructure: 
+				+ Each feature is a "min"
+				+ Merge GladLib into GameOpenGLLib
+					+ g_glad.h stays
+				+ GameOpenGL_Ext stays
+					+ h:
+						+ global vars with API and enumerants
+							+ validate all enumerants the same across core/arb/ext
+					+ .cpp:
+						+ Various Init():
+							+ Load only one set based off version/ext, with LoadAndVerify
+					+ LoadAndVerify
+			+ Build all and commit and push
+
+		+ 9: Restructure GPUCalcTest
+			+ Log window, clear button
+				+ RichText: green/red for TEST_PASS: .../TEST_FAIL: ...
+			+ Testcase class:
+				+ .h:
+					+ Macros that call "this"->OnFail(__LINE__....)
+				+ void Run() final;
+					+ Inits state
+					+ Logs start/end
+					+ global pass/fail state
+				+ virtual void InternalRun() = 0;
+			+ Button for "Init OpenGL"
+				+ Clears log first
+				+ Own test
+			+ Buttons for tests, button for "All tests"
+				+ Each button clears log first
+			+ Tests:
+				+ (all tests create own calculator)
+				+ PixelCoords
+				+ Commit
+		+ 9b: GPUCalcTest: independent from DevIL
+			+ Verify GameCore and GameOpenGL are independent from DevIL
+			+ ResourceLoader back to GameLib
+				+ ShaderMgr takes absolute folder path
+			+ CMake adjustments to not need DevIL
+			+ Commit
+		+ 10: Sum test:
+			+ RenderBuffer and textures all have same dimensions
+				+ FrameSize this time is calc'd based off min of the three limits
+			+ Fragment shader gets texture coords from vertex shader
+				+ Interpolation is fine
+			+ Cleanup:
+				+ See if need to replace ShaderMgr::SetTextureParams with new one
+			+ Commit & push
+		
+		- Other tests:
+			- Sum w/calculator reused twice
+			- Sum size1 and Sum size2 (2 calculators), one after the other
+				- Verify viewport is per-context
+
+		+ x: Verify works with hidden wxFrame, and verify frame is not visible, neither on the taskbar
+		- x: Test on two other laptops
+
+		- Cleanup:
+			- Set endianness same as platform (x86)
+			- See how to force texture sizes to be POT
+
+		- Follow-up's:
+			- Optimize ReadPixels
+				- Use correct format: query for GL_READ_PIXELS_FORMAT, GL_READ_PIXELS_TYPE
+					- See https://www.khronos.org/opengl/wiki/Image_Format
+				- Consider using pixel buffer objects to asynchronously read from render buffer
+					- See https://stackoverflow.com/questions/12157646/how-to-render-offscreen-on-opengl
+
+	- Use VAO's
+
+	- Points::ConnectedSprings is of struct { SpringIndex, OtherEndpointIndex }
 		- Init's @ShipBuilder
 		- Maintained at SpringDestroyHandler
 		- Used at:
@@ -356,6 +464,38 @@ Render:
 
 	- Cache sea depth from PointDynamics at first calculation (Points?), using lambda
 
+- Resource Packs (*)
+	- Resource pack contains:
+		- Subset of textures
+		- Subset of shaders
+		- Subset of settings
+		- Subset of materials, and new materials
+	- Impl:
+		- Data\Resources\{Default, <Pack name>}\
+			- Textures\
+			- Shaders\
+			- settings.json
+			- materials_structural.json
+			- materials_electrical.json
+			- metadata.json
+				- author, description, name
+			- Misc\
+				- For ocean bumps
+		- ResourceLoader:
+			- Static methods only for default paths
+				- e.g.: GetDefaultTextureDatabaseFilepath()
+			- 1 static method to get list of non-default ResourcePackMetadata's 
+			- cctor takes optional pack name
+			- Instance methods for *optional* pack-override paths
+				- e.g.: GetOverrideTextureDatabaseFilepath()
+			- Each "DB"'s Create(...) takes a ResourceLoader const &
+				- Own responsibility to check if override exists and, if so, to load override and reconciliate
+			- No more methods that load DB's
+		- Switching:
+			- Ad-hoc MainFrame dialog showing ResourcePackMetadata's 
+				- Chosen one goes to ApplicationSettings (see elsewhere in this roadmap)
+				- Checkbox for "Set as default" => ApplicationSettings::Save()
+
 - Gfx optimizations:
 
 	- Lights in the GPU with instanced drawing
@@ -363,7 +503,7 @@ Render:
 		- Lamp coords, spread, and luminiscence in uniform array
 			- Which then have to be set individually
 		- Loop as many times necessary to avoid going beyond uniform limit of the GPU
-			- Figure out max (for right shader: v or f) at startup
+			- Figure out max (for right shader: v or f) at OpenGLInit
 
 	- See if can unify springs and ropes rendering
 		- Just make sure that ropecolor is already in point color buffer
@@ -486,6 +626,21 @@ Render:
 - Gfx:
 	+ Make font white inversely to ambient light
 	- Make water texture scroll with wind speed
+
+	- Electrical view
+		- New flag (not in ShipRenderMode)
+			- Settable at SettingsDialog
+				- Ideally, enabled only if there are electrical elements, but how to figure it out?
+		- When enabled, draws lines and electrical current (color) on top of ship
+			- Ship uploads <EPIndex1, EPIndex2, float current>
+		- Better if this is done after Z buffer rearc
+			- So no need to mess with ShipRenderContext::ConnectedComponentData
+		- Generation of buffer done at (new, see elsewhere in this roadmap) UpdateElectricalConnectivity
+			- If flag is enabled, UpdateElectricalConnectivity also stores data in buffer 
+				- Exactly like we plan to do for triangles, but always done, regardless of dirty-ness
+				- Test: buffer storage controlled via argument lambda
+					- Check asm
+				- Current of a spring == current of EP1 * current of EP2
 
 	- Should we always draw orphaned points - those that come after destruction?
 		+ Orphaned point == points with 0 connected springs
@@ -676,14 +831,16 @@ Render:
 			- Each switch gets own ObjectId, as part of Electrical Elements data communicated to ship
 				- LocalObjectId is just element index of switch in ElectricalElements
 				- Also name goes into Electrical Elements
+		- Create and Destroy events:
+			- Ship::cctor visits switches among ElectricalElements and fires AddSwitch(ID, name, state)
+			- Ship::ElectricalElementDestroyHandler fires DeleteSwitch(ID) if deleting a switch
 		- UI gets switches via AddSwitch (and DeleteSwitch) event, with all metadata (ID, name, state)
 			- From Ship::cctor, visiting switches among ElectricalElements
-			- SwitchBoard panel
+			- SwitchBoard panel (see below)
 				- Registers as event listener at cctor
 				- Uses GameController (own shared ptr) :: SetSwitch(ObjectId switchId, bool state) to control switches
 		- MainFrame also registers for AddSwitch and shows SwitchBoard on first add
 			- Hides it again only at Reset()
-		- Ship must invoke DeleteSwitch at switch deletion (@ Ship::ElectricalElementDestroyHandler)
 		- Electrical dynamics:
 			- ElectricalElement: rename "ConnectivityVisit" (sequence number, etc.) as "ElectricalPropagationVisit" (...)
 				- Ship::UpdateElectrical"Propagation"
@@ -692,6 +849,35 @@ Render:
 				- Ship::UpdateElectricalConnectivity checks conductance first when deciding to follow a connected electrical element
 			- Ship::SetSwitch(switchId, bool):
 				- Toggles electrical element's "conductsElectricity", via ElectricalElements::SetSwitch(switchId, bool)
+		- SwitchboardPanel:
+			- SwitchControl: much like slider, button (w/two switch images) with label below
+				- Switch event is via lambda
+				- Media:
+					- 2 images
+					- 2 sounds
+			- Panel: much like ProbePanel
+				- Has:
+					- ResourceLoader const & (used @ cctor only for button images)
+					- GameController (see others for shared_ptr or &)
+					- SoundController (see others for shared_ptr or &)
+				- Registers as event listener
+					- Processes IGameEventHandler::OnSwitchCreate/Delete
+					- Processes Reset() to delete all
+				- Has unordered_map<ObjectId, uq_ptr<SwitchControl>>
+				- OnSwitchCreate:
+					- Create uq_ptr<SwitchControl>
+					- Add to map
+					- Add to panel - left-aligned
+				- OnSwitchDelete:
+					- Remove from panel
+					- Remove from map
+				- Gets key events from MainFrame when MainFrame does not recognize
+					- XYZKeyEvent: returns bool for processed/not processed, so MainFrame can chain
+			- Switch event lambda:
+				- GameController->SetSwitch(ObjectId switchId, bool state)
+				- SoundController->PlaySwitchOn/OffSound()
+				
+
 	- Pumps
 		- Spec:
 			- New electrical element
@@ -768,6 +954,24 @@ Render:
 				- New render setting 
 				- New ship upload 
 				- New shader (red with 0.5 alpha, thick line width)
+		- Impl:
+			- Jumpstart algo:
+				-	5	6	7
+					4	*	0
+					3	2	1
+				- For each scan line:
+					- For each flip point (0->1 or 1->0) from left p0 such that p0 does not belong to any frontiers:
+						- fId = new frontier ID
+						- p = p0; k = 4|0 (depending on flip type)
+						- do:
+							- Find p' from k+1 to k-1 (CW, %8)
+								- If not found: it's an isolated point, go to next flip
+							- Lookup <p, p'> in edge map
+								- edge map is a purpose-built map, with <p, p'> being a lexicographically ordered key
+								- assert is found, unless this is a "pure spring"
+							- Make edge belong to frontier fId
+							- if p' == p0: break
+						- continue to next flip point on same scan line
 		- Conclusions:
 			- Revisit need to have SuperTriangles and SubSprings, as we might now use edges
 				- We would now only upload springs that have 0 or 1 edges
@@ -864,6 +1068,7 @@ Render:
 
 
 - Game Interactions and Controls:
+
 	- Move tool: ability to move individual connected components
 		- After connected component has been overhauled
 		- Current tool is "Move All"
@@ -875,8 +1080,34 @@ Render:
 
 	- Allow ocean floor bump map to be loaded at runtime
 
-	- Ship definition: "instructions"
-		- If present, at the first load of a ship spawns a text box (if enabled in settings)
+	- Ship definition: 
+		- "instructions"
+			- If present, at the first load of a ship spawns a text box (if enabled in settings)
+		- Interior layer:
+			- New layer @ ShipDefinitionFile and ShipDefinition
+			- New flag @
+				- ShipRenderMode
+				- SettingsDialog
+			- RenderMode rearc:
+				- ShipDefinition:
+					- std::optional<ImageData> TextureImageData
+					- std::optional<ImageData> InteriorImageData
+					- ImageData StructureImageData
+					- std::optional<ImageData> FallbackImageData
+						- i.e. the 8X structural
+				- RenderContext:
+					- Exposes "HasShipTextureImages()" and "HasShipInteriorImages()"
+						- Updated @ AddShip (via OR) and @ Reset()
+				- SettingsDialog:
+					- Enable options conditionally 
+					- Refresh by MainFrame upon AddShip/Reset/...
+				- New RenderMode: DrawPrimitives
+					- Takes the place of the current "Draw Structure"
+				- ShipRenderContext:
+					- When not drawing primitives, texture used is:
+						- If "Texture" -> Texture OR Fallback
+						- If "Structure" -> Structure
+						- If "Interior" -> Interior OR Fallback
 
 - UI:
 	+ SettingsDialog: tooltips at Simulation Quality (tradeoff) and Stiffness (instability)

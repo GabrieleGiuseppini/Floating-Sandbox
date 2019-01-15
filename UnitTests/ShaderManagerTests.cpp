@@ -6,9 +6,7 @@
 
 #include "gtest/gtest.h"
 
-namespace Render {
-
-using TestShaderManager = ShaderManager<ShaderManagerTraits>;
+using TestShaderManager = ShaderManager<Render::ShaderManagerTraits>;
 
 class ShaderManagerTests : public testing::Test
 {
@@ -202,6 +200,20 @@ uniform mat4 paramOrthoMatrix;
     EXPECT_EQ(1, result.count(Render::ProgramParameterType::OrthoMatrix));
 }
 
+TEST_F(ShaderManagerTests, ExtractsShaderParameters_IgnoresCommentedOutParameters)
+{
+    std::string source = R"!!!(
+uniform float paramAmbientLightIntensity;
+foobar;
+//uniform mat4 paramOrthoMatrix;
+)!!!";
+
+    auto result = TestShaderManager::ExtractShaderParameters(source);
+
+    ASSERT_EQ(1, result.size());
+    EXPECT_EQ(1, result.count(Render::ProgramParameterType::AmbientLightIntensity));
+}
+
 TEST_F(ShaderManagerTests, ExtractsShaderParameters_ErrorsOnUnrecognizedParameter)
 {
     std::string source = R"!!!(
@@ -279,6 +291,4 @@ in mat4 inShipPointColor;
     EXPECT_THROW(
         TestShaderManager::ExtractVertexAttributes(source),
         GameException);
-}
-
 }

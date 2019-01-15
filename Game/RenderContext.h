@@ -6,6 +6,7 @@
 #pragma once
 
 #include "RenderCore.h"
+#include "ResourceLoader.h"
 #include "ShipDefinition.h"
 #include "ShipRenderContext.h"
 #include "TextRenderContext.h"
@@ -18,7 +19,7 @@
 #include <GameCore/GameTypes.h>
 #include <GameCore/ImageData.h>
 #include <GameCore/ProgressCallback.h>
-#include <GameCore/ResourceLoader.h>
+
 #include <GameCore/SysSpecifics.h>
 #include <GameCore/Vectors.h>
 
