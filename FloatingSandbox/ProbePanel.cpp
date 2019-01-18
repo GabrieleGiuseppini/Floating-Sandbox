@@ -5,7 +5,6 @@
 ***************************************************************************************/
 #include "ProbePanel.h"
 
-#include <wx/sizer.h>
 #include <wx/stattext.h>
 
 #include <cassert>
@@ -30,83 +29,21 @@ ProbePanel::ProbePanel(wxWindow* parent)
     // Create probes
     //
 
-    wxBoxSizer * probesSizer = new wxBoxSizer(wxHORIZONTAL);
+    mProbesSizer = new wxBoxSizer(wxHORIZONTAL);
 
-    {
-        wxBoxSizer * sizer = new wxBoxSizer(wxVERTICAL);
+    mFrameRateProbe = AddScalarTimeSeriesProbe("Frame Rate", 200);
+    mURRatioProbe = AddScalarTimeSeriesProbe("U/R Ratio", 200);
 
-        sizer->AddSpacer(TopPadding);
+    mWaterTakenProbe = AddScalarTimeSeriesProbe("Water Inflow", 120);
+    mWaterSplashProbe = AddScalarTimeSeriesProbe("Water Splash", 200);
 
-        mFrameRateProbe = std::make_unique<ScalarTimeSeriesProbeControl>(this, 200);
-        sizer->Add(mFrameRateProbe.get(), 1, wxALIGN_CENTRE, 0);
-
-        wxStaticText * label = new wxStaticText(this, wxID_ANY, "Frame Rate", wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
-        sizer->Add(label, 0, wxALIGN_CENTRE, 0);
-
-        probesSizer->Add(sizer, 1, wxLEFT | wxRIGHT, ProbePadding);
-    }
-
-    {
-        wxBoxSizer * sizer = new wxBoxSizer(wxVERTICAL);
-
-        sizer->AddSpacer(TopPadding);
-
-        mURRatioProbe = std::make_unique<ScalarTimeSeriesProbeControl>(this, 200);
-        sizer->Add(mURRatioProbe.get(), 1, wxALIGN_CENTRE, 0);
-
-        wxStaticText * label = new wxStaticText(this, wxID_ANY, "U/R Ratio", wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
-        sizer->Add(label, 0, wxALIGN_CENTRE, 0);
-
-        probesSizer->Add(sizer, 1, wxLEFT | wxRIGHT, ProbePadding);
-    }
-
-    {
-        wxBoxSizer * sizer = new wxBoxSizer(wxVERTICAL);
-
-        sizer->AddSpacer(TopPadding);
-
-        mWaterTakenProbe = std::make_unique<ScalarTimeSeriesProbeControl>(this, 120);
-        sizer->Add(mWaterTakenProbe.get(), 1, wxALIGN_CENTRE, 0);
-
-        wxStaticText * label = new wxStaticText(this, wxID_ANY, "Water Inflow", wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
-        sizer->Add(label, 0, wxALIGN_CENTRE, 0);
-
-        probesSizer->Add(sizer, 1, wxLEFT | wxRIGHT, ProbePadding);
-    }
-
-    {
-        wxBoxSizer * sizer = new wxBoxSizer(wxVERTICAL);
-
-        sizer->AddSpacer(TopPadding);
-
-        mWaterSplashProbe = std::make_unique<ScalarTimeSeriesProbeControl>(this, 200);
-        sizer->Add(mWaterSplashProbe.get(), 1, wxALIGN_CENTRE, 0);
-
-        wxStaticText * label = new wxStaticText(this, wxID_ANY, "Water Splash", wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
-        sizer->Add(label, 0, wxALIGN_CENTRE, 0);
-
-        probesSizer->Add(sizer, 1, wxLEFT | wxRIGHT, ProbePadding);
-    }
-
-    {
-        wxBoxSizer * sizer = new wxBoxSizer(wxVERTICAL);
-
-        sizer->AddSpacer(TopPadding);
-
-        mWindForceProbe = std::make_unique<ScalarTimeSeriesProbeControl>(this, 200);
-        sizer->Add(mWindForceProbe.get(), 1, wxALIGN_CENTRE, 0);
-
-        wxStaticText * label = new wxStaticText(this, wxID_ANY, "Wind Force", wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
-        sizer->Add(label, 0, wxALIGN_CENTRE, 0);
-
-        probesSizer->Add(sizer, 1, wxLEFT | wxRIGHT, ProbePadding);
-    }
+    mWindForceProbe = AddScalarTimeSeriesProbe("Wind Force", 200);
 
     //
     // Finalize
     //
 
-    SetSizerAndFit(probesSizer);
+    SetSizerAndFit(mProbesSizer);
 }
 
 ProbePanel::~ProbePanel()
@@ -126,7 +63,31 @@ void ProbePanel::Update()
         mWaterTakenProbe->Update();
         mWaterSplashProbe->Update();
         mWindForceProbe->Update();
+
+        for (auto const & p : mCustomProbes)
+        {
+            p.second->Update();
+        }
     }
+}
+
+std::unique_ptr<ScalarTimeSeriesProbeControl> ProbePanel::AddScalarTimeSeriesProbe(
+    std::string const & name,
+    int sampleCount)
+{
+    wxBoxSizer * sizer = new wxBoxSizer(wxVERTICAL);
+
+    sizer->AddSpacer(TopPadding);
+
+    auto probe = std::make_unique<ScalarTimeSeriesProbeControl>(this, sampleCount);
+    sizer->Add(probe.get(), 1, wxALIGN_CENTRE, 0);
+
+    wxStaticText * label = new wxStaticText(this, wxID_ANY, name, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
+    sizer->Add(label, 0, wxALIGN_CENTRE, 0);
+
+    mProbesSizer->Add(sizer, 1, wxLEFT | wxRIGHT, ProbePadding);
+
+    return probe;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -138,6 +99,11 @@ void ProbePanel::OnGameReset()
     mWaterTakenProbe->Reset();
     mWaterSplashProbe->Reset();
     mWindForceProbe->Reset();
+
+    for (auto const & p : mCustomProbes)
+    {
+        p.second->Reset();
+    }
 }
 
 void ProbePanel::OnWaterTaken(float waterTaken)
@@ -164,7 +130,14 @@ void ProbePanel::OnCustomProbe(
     std::string const & name,
     float value)
 {
-    // TODO
+    auto & probe = mCustomProbes[name];
+    if (!probe)
+    {
+        probe = AddScalarTimeSeriesProbe(name, 100);
+        mProbesSizer->Layout();
+    }
+
+    probe->RegisterSample(value);
 }
 
 void ProbePanel::OnFrameRateUpdated(

@@ -9,6 +9,7 @@
 
 #include <Game/IGameEventHandler.h>
 
+#include <wx/sizer.h>
 #include <wx/wx.h>
 
 #include <memory>
@@ -62,11 +63,17 @@ private:
         return this->IsShown();
     }
 
+    std::unique_ptr<ScalarTimeSeriesProbeControl> AddScalarTimeSeriesProbe(
+        std::string const & name,
+        int sampleCount);
+
 private:
 
     //
     // Probes
     //
+
+    wxBoxSizer * mProbesSizer;
 
     std::unique_ptr<ScalarTimeSeriesProbeControl> mFrameRateProbe;
     std::unique_ptr<ScalarTimeSeriesProbeControl> mURRatioProbe;

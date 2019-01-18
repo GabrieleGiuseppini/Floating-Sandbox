@@ -503,6 +503,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     {
         mSoundController = std::make_shared<SoundController>(
             mResourceLoader,
+            mGameController->GetGameEventHandler(),
             [&splash, this](float progress, std::string const & message)
             {
                 splash->UpdateProgress(0.5f + progress / 2.0f, message);

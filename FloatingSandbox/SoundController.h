@@ -9,6 +9,7 @@
 #include <Game/ResourceLoader.h>
 
 #include <GameCore/GameRandomEngine.h>
+#include <GameCore/RunningAverage.h>
 #include <GameCore/TupleKeys.h>
 #include <GameCore/Utils.h>
 
@@ -29,6 +30,7 @@ public:
 
     SoundController(
         std::shared_ptr<ResourceLoader> resourceLoader,
+        std::shared_ptr<IGameEventHandler> gameEventHandler,
         ProgressCallback const & progressCallback);
 
 	virtual ~SoundController();
@@ -105,6 +107,13 @@ public:
 
     void SetPlayStressSounds(bool playStressSounds);
 
+    bool GetPlayWindSound() const
+    {
+        return mPlayWindSound;
+    }
+
+    void SetPlayWindSound(bool playWindSound);
+
     bool GetPlaySinkingMusic() const
     {
         return mPlaySinkingMusic;
@@ -177,6 +186,13 @@ public:
 
     virtual void OnWaterSplashed(float waterSplashed) override;
 
+    virtual void OnWindForceUpdated(
+        float const zeroMagnitude,
+        float const baseMagnitude,
+        float const preMaxMagnitude,
+        float const maxMagnitude,
+        vec2f const & windForce) override;
+
     virtual void OnBombPlaced(
         ObjectId bombId,
         BombType bombType,
@@ -230,6 +246,8 @@ private:
         LightFlicker,
         WaterRush,
         WaterSplash,
+        Wind,
+        WindGust,
         BombAttached,
         BombDetached,
         BombExplosion,
@@ -274,6 +292,10 @@ private:
             return SoundType::WaterRush;
         else if (Utils::CaseInsensitiveEquals(str, "WaterSplash"))
             return SoundType::WaterSplash;
+        else if (Utils::CaseInsensitiveEquals(str, "Wind"))
+            return SoundType::Wind;
+        else if (Utils::CaseInsensitiveEquals(str, "WindGust"))
+            return SoundType::WindGust;
         else if (Utils::CaseInsensitiveEquals(str, "BombAttached"))
             return SoundType::BombAttached;
         else if (Utils::CaseInsensitiveEquals(str, "BombDetached"))
@@ -349,8 +371,11 @@ private:
 
             void setVolume(float volume)
             {
-                mVolume = volume;
-                InternalSetVolume();
+                if (volume != mVolume)
+                {
+                    mVolume = volume;
+                    InternalSetVolume();
+                }
             }
 
             void addVolume(float volume)
@@ -1024,6 +1049,7 @@ private:
 private:
 
     std::shared_ptr<ResourceLoader> mResourceLoader;
+    std::shared_ptr<IGameEventHandler> mGameEventHandler; // Useful for debugging with probes
 
 
     //
@@ -1039,10 +1065,14 @@ private:
 
     bool mPlayBreakSounds;
     bool mPlayStressSounds;
+    bool mPlayWindSound;
     bool mPlaySinkingMusic;
 
     float mLastWaterSplashed;
     float mCurrentWaterSplashedTrigger;
+    float mLastWindForceAbsoluteMagnitude;
+    RunningAverage<70> mWindVolumeRunningAverage;
+
 
 
     //
@@ -1108,6 +1138,8 @@ private:
 
     ContinuousSingleChoiceSound mWaterRushSound;
     ContinuousSingleChoiceSound mWaterSplashSound;
+    ContinuousSingleChoiceSound mWindSound;
+
     ContinuousSingleChoiceSound mTimerBombSlowFuseSound;
     ContinuousSingleChoiceSound mTimerBombFastFuseSound;
     ContinuousMultipleChoiceSound mAntiMatterBombContainedSounds;

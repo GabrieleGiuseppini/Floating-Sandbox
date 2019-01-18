@@ -24,8 +24,10 @@ constexpr float WaveSplashTriggerSize = 0.5f;
 
 SoundController::SoundController(
     std::shared_ptr<ResourceLoader> resourceLoader,
+    std::shared_ptr<IGameEventHandler> gameEventHandler,
     ProgressCallback const & progressCallback)
     : mResourceLoader(std::move(resourceLoader))
+    , mGameEventHandler(std::move(gameEventHandler))
     // State
     , mMasterEffectsVolume(100.0f)
     , mMasterEffectsMuted(false)
@@ -35,9 +37,12 @@ SoundController::SoundController(
     , mMasterMusicMuted(false)
     , mPlayBreakSounds(true)
     , mPlayStressSounds(true)
+    , mPlayWindSound(true)
     , mPlaySinkingMusic(true)
     , mLastWaterSplashed(0.0f)
     , mCurrentWaterSplashedTrigger(WaveSplashTriggerSize)
+    , mLastWindForceAbsoluteMagnitude(0.0f)
+    , mWindVolumeRunningAverage()
     // One-shot sounds
     , mMSUOneShotMultipleChoiceSounds()
     , mDslUOneShotMultipleChoiceSounds()
@@ -55,6 +60,7 @@ SoundController::SoundController(
     , mFloodHoseSound()
     , mWaterRushSound()
     , mWaterSplashSound()
+    , mWindSound()
     , mTimerBombSlowFuseSound()
     , mTimerBombFastFuseSound()
     , mAntiMatterBombContainedSounds()
@@ -215,6 +221,14 @@ SoundController::SoundController(
                 mMasterEffectsVolume,
                 mMasterEffectsMuted);
         }
+        else if (soundType == SoundType::Wind)
+        {
+            mWindSound.Initialize(
+                std::move(soundBuffer),
+                100.0f,
+                mMasterEffectsVolume,
+                mMasterEffectsMuted);
+        }
         else if (soundType == SoundType::TimerBombSlowFuse)
         {
             mTimerBombSlowFuseSound.Initialize(
@@ -311,6 +325,7 @@ SoundController::SoundController(
                 .SoundBuffers.emplace_back(std::move(soundBuffer));
         }
         else if (soundType == SoundType::Wave
+                || soundType == SoundType::WindGust
                 || soundType == SoundType::AntiMatterBombPreImplosion
                 || soundType == SoundType::AntiMatterBombImplosion)
         {
@@ -425,6 +440,7 @@ void SoundController::SetPaused(bool isPaused)
 
     mWaterRushSound.SetPaused(isPaused);
     mWaterSplashSound.SetPaused(isPaused);
+    mWindSound.SetPaused(isPaused);
     mTimerBombSlowFuseSound.SetPaused(isPaused);
     mTimerBombFastFuseSound.SetPaused(isPaused);
     mAntiMatterBombContainedSounds.SetPaused(isPaused);
@@ -472,6 +488,7 @@ void SoundController::SetMasterEffectsVolume(float volume)
 
     mWaterRushSound.SetMasterVolume(mMasterEffectsVolume);
     mWaterSplashSound.SetMasterVolume(mMasterEffectsVolume);
+    mWindSound.SetMasterVolume(mMasterEffectsVolume);
     mTimerBombSlowFuseSound.SetMasterVolume(mMasterEffectsVolume);
     mTimerBombFastFuseSound.SetMasterVolume(mMasterEffectsVolume);
     mAntiMatterBombContainedSounds.SetMasterVolume(mMasterEffectsVolume);
@@ -501,6 +518,7 @@ void SoundController::SetMasterEffectsMuted(bool isMuted)
 
     mWaterRushSound.SetMuted(mMasterEffectsMuted);
     mWaterSplashSound.SetMuted(mMasterEffectsMuted);
+    mWindSound.SetMuted(mMasterEffectsMuted);
     mTimerBombSlowFuseSound.SetMuted(mMasterEffectsMuted);
     mTimerBombFastFuseSound.SetMuted(mMasterEffectsMuted);
     mAntiMatterBombContainedSounds.SetMuted(mMasterEffectsMuted);
@@ -597,8 +615,6 @@ void SoundController::SetPlayBreakSounds(bool playBreakSounds)
     }
 }
 
-// Misc
-
 void SoundController::SetPlayStressSounds(bool playStressSounds)
 {
     mPlayStressSounds = playStressSounds;
@@ -618,6 +634,31 @@ void SoundController::SetPlayStressSounds(bool playStressSounds)
     }
 }
 
+void SoundController::SetPlayWindSound(bool playWindSound)
+{
+    mPlayWindSound = playWindSound;
+
+    if (!mPlayWindSound)
+    {
+        mWindSound.SetMuted(true);
+
+        for (auto const & playingSoundIt : mCurrentlyPlayingOneShotSounds)
+        {
+            for (auto & playingSound : playingSoundIt.second)
+            {
+                if (SoundType::WindGust == playingSound.Type)
+                {
+                    playingSound.Sound->stop();
+                }
+            }
+        }
+    }
+    else
+    {
+        mWindSound.SetMuted(false);
+    }
+}
+
 void SoundController::SetPlaySinkingMusic(bool playSinkingMusic)
 {
     mPlaySinkingMusic = playSinkingMusic;
@@ -627,6 +668,8 @@ void SoundController::SetPlaySinkingMusic(bool playSinkingMusic)
         mSinkingMusic.stop();
     }
 }
+
+// Misc
 
 void SoundController::PlayDrawSound(bool /*isUnderwater*/)
 {
@@ -739,6 +782,7 @@ void SoundController::Reset()
 
     mWaterRushSound.Reset();
     mWaterSplashSound.Reset();
+    mWindSound.Reset();
     mTimerBombSlowFuseSound.Reset();
     mTimerBombFastFuseSound.Reset();
     mAntiMatterBombContainedSounds.Reset();
@@ -755,6 +799,8 @@ void SoundController::Reset()
 
     mLastWaterSplashed = 0.0f;
     mCurrentWaterSplashedTrigger = WaveSplashTriggerSize;
+    mLastWindForceAbsoluteMagnitude = 0.0f;
+    mWindVolumeRunningAverage.Reset();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -906,6 +952,60 @@ void SoundController::OnWaterSplashed(float waterSplashed)
     float splashVolume = 12.f * (-1.f / std::pow(1.3f, 0.01f * std::abs(waterSplashed)) + 1.f);
     mWaterSplashSound.SetVolume(splashVolume);
     mWaterSplashSound.Start();
+}
+
+void SoundController::OnWindForceUpdated(
+    float const /*zeroMagnitude*/,
+    float const baseMagnitude,
+    float const /*preMaxMagnitude*/,
+    float const maxMagnitude,
+    vec2f const & windForce)
+{
+    float const windForceAbsoluteMagnitude = windForce.length();
+
+    //
+    // 1. Calculate volume of continuous sound
+    //
+
+    float windVolume;
+    if (windForceAbsoluteMagnitude >= abs(baseMagnitude))
+    {
+        // 100 * (-1 / 1.1^(0.6 * x) + 1)
+        windVolume = 100.f * (-1.f / std::pow(1.1f, 0.6f * (windForceAbsoluteMagnitude - abs(baseMagnitude))) + 1.f);
+    }
+    else
+    {
+        // Raise volume only if goes up
+        float const deltaUp = std::max(0.0f, windForceAbsoluteMagnitude - mLastWindForceAbsoluteMagnitude);
+
+        // 100 * (-1 / 1.8^(1.1 * x) + 1)
+        windVolume = 100.f * (-1.f / std::pow(1.8f, 1.1f * deltaUp) + 1.f);
+    }
+
+    // Smooth the volume
+    float const smoothedWindVolume = mWindVolumeRunningAverage.Update(windVolume);
+
+    mWindSound.SetVolume(smoothedWindVolume);
+    mWindSound.Start();
+
+    // TODOTEST
+    mGameEventHandler->OnCustomProbe("Wind Volume", smoothedWindVolume);
+
+
+    //
+    // 2. Decide if time to fire a gust
+    //
+
+    if (windForceAbsoluteMagnitude > mLastWindForceAbsoluteMagnitude
+        && abs(maxMagnitude) - windForceAbsoluteMagnitude < 0.001f)
+    {
+        PlayOneShotMultipleChoiceSound(
+            SoundType::WindGust,
+            smoothedWindVolume,
+            true);
+    }
+
+    mLastWindForceAbsoluteMagnitude = windForceAbsoluteMagnitude;
 }
 
 void SoundController::OnBombPlaced(
