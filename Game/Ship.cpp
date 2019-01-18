@@ -723,6 +723,8 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
 {
     float const densityAdjustedWaterMass = GameParameters::WaterMass * gameParameters.WaterDensityAdjustment;
 
+    vec2f const windForce = mParentWorld.GetCurrentWindForce();
+
     // Underwater points feel this amount of water drag
     //
     // The higher the value, the more viscous the water looks when a body moves through it
@@ -764,13 +766,22 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
         // this would ensure that masses would also have a horizontal velocity component when sinking,
         // providing a "gliding" effect
         //
+        // 3. Apply wind force
+        //
 
-        if (mPoints.GetPosition(pointIndex).y < waterHeightAtThisPoint)
+        if (mPoints.GetPosition(pointIndex).y <= waterHeightAtThisPoint)
         {
-            // Drag force = -C*V^2*Vn
+            // Drag force = -C * (V^2*Vn)
             mPoints.GetForce(pointIndex) +=
                 mPoints.GetVelocity(pointIndex).square()
                 * (-waterDragCoefficient);
+        }
+        else
+        {
+            // Wind force
+            mPoints.GetForce(pointIndex) +=
+                windForce
+                * mPoints.GetWindReceptivity(pointIndex);
         }
     }
 }

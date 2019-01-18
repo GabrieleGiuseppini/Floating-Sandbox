@@ -54,6 +54,9 @@ void Points::Add(
     mElectricalElementBuffer.emplace_back(electricalElementIndex);
     mLightBuffer.emplace_back(0.0f);
 
+    // Wind dynamics
+    mWindReceptivityBuffer.emplace_back(structuralMaterial.WindReceptivity);
+
     // Ephemeral particles
     mEphemeralTypeBuffer.emplace_back(EphemeralType::None);
     mEphemeralStartTimeBuffer.emplace_back(0.0f);
@@ -107,6 +110,8 @@ void Points::CreateEphemeralParticleAirBubble(
 
     mLightBuffer[pointIndex] = 0.0f;
 
+    mWindReceptivityBuffer[pointIndex] = 0.0f;
+
     mEphemeralTypeBuffer[pointIndex] = EphemeralType::AirBubble;
     mEphemeralStartTimeBuffer[pointIndex] = currentSimulationTime;
     mEphemeralMaxLifetimeBuffer[pointIndex] = std::numeric_limits<float>::max();
@@ -159,6 +164,8 @@ void Points::CreateEphemeralParticleDebris(
 
     mLightBuffer[pointIndex] = 0.0f;
 
+    mWindReceptivityBuffer[pointIndex] = 0.0f;
+
     mEphemeralTypeBuffer[pointIndex] = EphemeralType::Debris;
     mEphemeralStartTimeBuffer[pointIndex] = currentSimulationTime;
     mEphemeralMaxLifetimeBuffer[pointIndex] = std::chrono::duration_cast<std::chrono::duration<float>>(maxLifetime).count();
@@ -205,6 +212,8 @@ void Points::CreateEphemeralParticleSparkle(
     assert(false == mIsLeakingBuffer[pointIndex]);
 
     mLightBuffer[pointIndex] = 0.0f;
+
+    mWindReceptivityBuffer[pointIndex] = 0.0f;
 
     mEphemeralTypeBuffer[pointIndex] = EphemeralType::Sparkle;
     mEphemeralStartTimeBuffer[pointIndex] = currentSimulationTime;

@@ -48,6 +48,9 @@ struct GameParameters
     // Water mass
     static constexpr float WaterMass = 1000.0f;
 
+    // Wind
+    static constexpr vec2f WindDirection = vec2f(1.0f, 0.0f);
+
 
 
     //
@@ -137,6 +140,20 @@ struct GameParameters
     static constexpr float MinAirBubblesVortexFrequency = 1.0f;
     static constexpr float MaxAirBubblesVortexFrequency = 2.5f;
 
+    // Wind
+
+    float WindSpeedBase;        // Beaufort scale, km/h
+    static constexpr float MinWindSpeedBase = -100.f;
+    static constexpr float MaxWindSpeedBase = 100.0f;
+
+    float WindSpeedMaxFactor;   // Multiplier on base
+    static constexpr float MinWindSpeedMaxFactor = 1.f;
+    static constexpr float MaxWindSpeedMaxFactor = 10.0f;
+
+    float WindGustFrequencyAdjustment;
+    static constexpr float MinWindGustFrequencyAdjustment = 0.1f;
+    static constexpr float MaxWindGustFrequencyAdjustment = 10.0f;
+
     // Misc
 
     float WaveHeight;
@@ -184,10 +201,6 @@ struct GameParameters
     size_t NumberOfClouds;
     static constexpr size_t MinNumberOfClouds = 0;
     static constexpr size_t MaxNumberOfClouds = 500;
-
-    float WindSpeed;
-    static constexpr float MinWindSpeed = 0.f;
-    static constexpr float MaxWindSpeed = 50.0f;
 
     //
     // Interactions

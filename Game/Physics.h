@@ -18,6 +18,7 @@ namespace Physics
     class Stars;
 	class Triangles;
     class WaterSurface;
+    class Wind;
 	class World;
 }
 
@@ -32,6 +33,7 @@ namespace Physics
 #include "Stars.h"
 #include "OceanFloor.h"
 #include "WaterSurface.h"
+#include "Wind.h"
 #include "World.h"
 
 #include "Bomb.h"

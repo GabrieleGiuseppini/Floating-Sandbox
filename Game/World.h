@@ -57,6 +57,11 @@ public:
         return mOceanFloor.GetFloorHeightAt(x);
     }
 
+    inline vec2f const & GetCurrentWindForce() const
+    {
+        return mWind.GetCurrentWindForce();
+    }
+
     void MoveBy(
         ShipId shipId,
         vec2f const & offset,
@@ -152,6 +157,7 @@ private:
     Clouds mClouds;
     WaterSurface mWaterSurface;
     OceanFloor mOceanFloor;
+    Wind mWind;
 
     // The current simulation time
     float mCurrentSimulationTime;

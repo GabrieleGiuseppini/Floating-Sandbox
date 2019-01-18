@@ -260,10 +260,10 @@ public:
     size_t GetMinNumberOfClouds() const { return GameParameters::MinNumberOfClouds; }
     size_t GetMaxNumberOfClouds() const { return GameParameters::MaxNumberOfClouds; }
 
-    float GetWindSpeed() const { return mGameParameters.WindSpeed; }
-    void SetWindSpeed(float value) { mGameParameters.WindSpeed = value; }
-    float GetMinWindSpeed() const { return GameParameters::MinWindSpeed; }
-    float GetMaxWindSpeed() const { return GameParameters::MaxWindSpeed; }
+    float GetWindSpeedBase() const { return mGameParameters.WindSpeedBase; }
+    void SetWindSpeedBase(float value) { mGameParameters.WindSpeedBase = value; }
+    float GetMinWindSpeedBase() const { return GameParameters::MinWindSpeedBase; }
+    float GetMaxWindSpeedBase() const { return GameParameters::MaxWindSpeedBase; }
 
     //
     // Render

@@ -50,7 +50,8 @@ Structural materials are as follows:
         }, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "water_volume_fill": 0.0,
+	"wind_receptivity": 0.0
     }, 
 ```
 
@@ -71,6 +72,7 @@ Here's an explanation of the elements:
 - _water retention_: the amount of water that will remain in this particle when the particle is leaking and finds itself at a pressure point lower than the pressure of the water it contains.
 - _water volume fill_: the fraction of 1m3 that may be filled-in by water, and at the same time, the fraction of 1m3 of water that this particle displaces when submerged. This parameter basically controls buoyancy.
    - For example, 0.5 means that this particle may take in up to half a cubic meter, and that this particle also displaces half a cubic meter of water when submerged.
+- _wind receptivity_: the amount of wind force that this material feels when it is over the water line; when not set, assumed to be 0.0.
 
 # Electrical Materials
 

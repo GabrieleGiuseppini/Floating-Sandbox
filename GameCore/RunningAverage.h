@@ -42,6 +42,11 @@ public:
         return mCurrentAverage;
     }
 
+    inline float GetCurrentAverage() const
+    {
+        return mCurrentAverage;
+    }
+
     void Reset()
     {
         mSamples.fill(0.0f);

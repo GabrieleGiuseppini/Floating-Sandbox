@@ -73,7 +73,7 @@ private:
     // Sky
     std::unique_ptr<SliderControl> mNumberOfStarsSlider;
     std::unique_ptr<SliderControl> mNumberOfCloudsSlider;
-    std::unique_ptr<SliderControl> mWindSpeedSlider;
+    std::unique_ptr<SliderControl> mWindSpeedBaseSlider;
 
     // World
     std::unique_ptr<SliderControl> mWaveHeightSlider;

@@ -23,6 +23,10 @@ GameParameters::GameParameters()
     , DoGenerateSparkles(true)
     , DoGenerateAirBubbles(true)
     , CumulatedIntakenWaterThresholdForAirBubbles(8.0f)
+    // Wind
+    , WindSpeedBase(24.0f)
+    , WindSpeedMaxFactor(1.8f)
+    , WindGustFrequencyAdjustment(1.0f)
     // Misc
     , WaveHeight(2.5f)
     , SeaDepth(300.0f)
@@ -36,7 +40,6 @@ GameParameters::GameParameters()
     , LightSpreadAdjustment(1.0f)
     , NumberOfStars(1536)
     , NumberOfClouds(50)
-    , WindSpeed(3.0f)
     // Interactions
     , ToolSearchRadius(2.0f)
     , DestroyRadius(0.75f)

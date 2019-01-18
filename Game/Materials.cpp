@@ -32,6 +32,8 @@ StructuralMaterial StructuralMaterial::Create(picojson::object const & structura
         float waterDiffusionSpeed = static_cast<float>(Utils::GetMandatoryJsonMember<double>(structuralMaterialJson, "water_diffusion_speed"));
         float waterRetention = static_cast<float>(Utils::GetMandatoryJsonMember<double>(structuralMaterialJson, "water_retention"));
 
+        float windReceptivity = static_cast<float>(Utils::GetOptionalJsonMember<double>(structuralMaterialJson, "wind_receptivity", 0.0));
+
         std::optional<MaterialUniqueType> uniqueType;
         if (name == "Air")
             uniqueType = MaterialUniqueType::Air;
@@ -53,6 +55,7 @@ StructuralMaterial StructuralMaterial::Create(picojson::object const & structura
             waterVolumeFill,
             waterDiffusionSpeed,
             waterRetention,
+            windReceptivity,
             uniqueType,
             materialSound);
     }

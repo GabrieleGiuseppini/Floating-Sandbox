@@ -197,6 +197,8 @@ public:
         // Electrical dynamics
         , mElectricalElementBuffer(mBufferElementCount, shipPointCount, NoneElementIndex)
         , mLightBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        // Wind dynamics
+        , mWindReceptivityBuffer(mBufferElementCount, shipPointCount, 0.0f)
         // Ephemeral particles
         , mEphemeralTypeBuffer(mBufferElementCount, shipPointCount, EphemeralType::None)
         , mEphemeralStartTimeBuffer(mBufferElementCount, shipPointCount, 0.0f)
@@ -631,6 +633,15 @@ public:
     }
 
     //
+    // Wind dynamics
+    //
+
+    float GetWindReceptivity(ElementIndex pointElementIndex) const
+    {
+        return mWindReceptivityBuffer[pointElementIndex];
+    }
+
+    //
     // Ephemeral Particles
     //
 
@@ -845,6 +856,12 @@ private:
 
     // Total illumination, 0.0->1.0
     Buffer<float> mLightBuffer;
+
+    //
+    // Wind dynamics
+    //
+
+    Buffer<float> mWindReceptivityBuffer;
 
     //
     // Ephemeral Particles

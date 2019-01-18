@@ -136,6 +136,25 @@ public:
         }
     }
 
+    virtual void OnWindForceUpdated(
+        float const zeroMagnitude,
+        float const baseMagnitude,
+        float const preMaxMagnitude,
+        float const maxMagnitude,
+        vec2f const & windForce) override
+    {
+        // No need to aggregate this one
+        for (auto sink : mSinks)
+        {
+            sink->OnWindForceUpdated(
+                zeroMagnitude,
+                baseMagnitude,
+                preMaxMagnitude,
+                maxMagnitude,
+                windForce);
+        }
+    }
+
     virtual void OnCustomProbe(
         std::string const & name,
         float value) override

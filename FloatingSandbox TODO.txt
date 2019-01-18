@@ -180,17 +180,25 @@ Render:
 			+ Krafting
 		+ Porthole: "wet_failure_rate": 3.0
 
-		- Wind and cloth (*)
+		= Wind and cloth (*)
 
 		- Bubble tool: make it dry ship 
 			- Tool is engaged if:
 				- It's on ship => suck water out (just like inverse flood)
 				- Else (no ship): if it's underwater (like now)
+
+		- Terrain adjust tool
+			- Managed by World via OceanFloor
+
 		- Extended move tool (*)
 		- Interior layer (*)
 
 		- Zbuffer (*)
 		- Orphaned points (*)
+
+		- ConnectedSprings/OtherEndpoint Optimization (*)
+		- 
+		- Increase ephemeral particles
 
 		- Libsimdpp spring relaxation (*)
 
@@ -335,8 +343,6 @@ Render:
 				- Consider using pixel buffer objects to asynchronously read from render buffer
 					- See https://stackoverflow.com/questions/12157646/how-to-render-offscreen-on-opengl
 
-	- Use VAO's
-
 	- Points::ConnectedSprings is of struct { SpringIndex, OtherEndpointIndex }
 		- Init's @ShipBuilder
 		- Maintained at SpringDestroyHandler
@@ -472,6 +478,8 @@ Render:
 
 - Gfx optimizations:
 
+	- Use VAO's
+
 	- Lights in the GPU with instanced drawing
 		- Figure out whether at vertex or fragment shader
 		- Lamp coords, spread, and luminiscence in uniform array
@@ -496,11 +504,20 @@ Render:
 	- Z buffer:
 		- Rationale: more connected components => slower (multiple batches); try to draw one single batch then, using Z buffer and depth test 
 		- Spec:
+			- TODO: incorporate in this:
+				- Remember in connected component visit to visit from right and also assign plane ID backwards
+					- Because of rope-follow algo - we want ropes (who are assigned to plane ID of entering (first) point)
+					  to always have the closest plane of the two
+					- See below latest rope-follow algo to see if this is still needed
+				- Might not need to sort generic textures if we upload bombs with plane ID of attached spring
+					- Does not work for bubbles though, but might be irrelevant
+				- Assignment of PlaneID to triangles based off owner point - see MOLESKINE
+				- Generation of triangles for rendering purposes - see MOLESKINE
 			- Assign Z based on cousin of connected component ID (named "Plane ID", uint32_t)
 				- All points have PlaneId
 					- Can we revert ShipId and ConnectedComponentId to start from zero and having None=max? 
 						- Yes, no one used NoneConnectedComponentId
-						- When we need stuff on top we can always use member variable with max conn comp ID, or the total 
+						- When we need stuff on top we can always use member variable with max plane ID, or the total 
 						  count of ships 
 						 - If so, Plane ID starts from zero
 					- Own buffer (it'll have to be uploaded to GPU)
@@ -539,6 +556,7 @@ Render:
 				- TODO: see above, likely we don't need this at all
 			- But then, larger ship IDs and plane IDs must also be nearer
 			- TODOHERE: figure this out
+				- Might just use max's
 		- Plan:
 			- Preliminaries:
 				- Test explosions without connected component ID constraint; if ok, eradicate connected component IDs
@@ -701,19 +719,41 @@ Render:
 
 - Dynamics:
 
-	- Wind and cloth (*)
-		- Step 1: Points has WindReceptivity buffer, for now set at Add(.) to 1.0 if material is one of cloth
-		- UpdatePointForces:
-			- Add wind force vector (precalc'd, using also const vector from GameParameters) to
-			  overwater points, multiplied by WindReceptivity
-		- Step 2: new StructuralMaterial property: WindReceptivity
-			- Optional in json (default=0.0), only set for cloth
-			- Update guide
-		- Step 3: erratic behavior of wind
-			- GameParameters::WindSpeed becomes WindSpeedBase
-			- World maintains WindSpeed, accessed by everyone via mParentWorld.GetWindSpeed()
-			- World::UpdateWind(): implements state machine and calcs current wind
-				- TODOHERE
+	= Wind and cloth (*)
+		+ Step 1: Points has WindReceptivity buffer, for now set at Add(.) to 1.0 if material is one of cloth
+		+ UpdatePointForces:
+			+ Add wind force vector to overwater points, multiplied by WindReceptivity
+				+ From mParentWorld.GetCurrentWindForce()
+					+ Step 1: GameParameters.WindDirection * GameParameters.WindSpeed
+					+ Will become erratic later on			  
+		+ Test with new flag (Iceland) attached to FlagShip
+		+ Step 2: new StructuralMaterial property: WindReceptivity
+			+ Optional in json (default=0.0), only set for cloth
+			+ Update guide
+		= Step 3: erratic behavior of wind
+			+ GameParameters::WindSpeed becomes WindSpeedBase
+			= World::UpdateWind(): implements state machine and calcs current wind force
+				+ Incorporate gust adjustment
+				= See if we need to up force a bit for fater response
+					= See first w/64 fps first if more respondent - skinnier test ship 
+				+ Use short running average to smooth transitions (minimally)
+					+ Make it 4
+					+ Get rid of intermediate states
+				- Superimpose sine?
+		- Add all wind settings to SettingsDialog
+		- Sound:
+			- Layered like waves:
+				- 1 continuous sound
+					- Triggered by abs threshold, 30
+				- 1 one-shot sound (Gust)
+					- Triggered by abs threshold && force > .9*Max
+			- IEventHandlers::OnWindForce...(zero, base, max)
+		+ Add probe for wind force
+		- Try: Debris and Sparkles created with WindReceptivity=1.0
+		= Test: 
+			+ SettingsDialog dealing with negative wind
+			- SettingsDialog: gust adjustment
+		- Do SailShip 2
 
 	- Lights breaking under pressure
 		- Idea:

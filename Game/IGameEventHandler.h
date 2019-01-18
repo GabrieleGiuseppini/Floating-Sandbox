@@ -99,6 +99,16 @@ public:
         // Default-implemented
     }
 
+    virtual void OnWindForceUpdated(
+        float const /*zeroMagnitude*/,
+        float const /*baseMagnitude*/,
+        float const /*preMaxMagnitude*/,
+        float const /*maxMagnitude*/,
+        vec2f const & /*windForce*/)
+    {
+        // Default-implemented
+    }
+
     virtual void OnCustomProbe(
         std::string const & /*name*/,
         float /*value*/)

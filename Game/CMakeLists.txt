@@ -60,6 +60,8 @@ set  (PHYSICS_SOURCES
 	Triangles.h
 	WaterSurface.cpp
 	WaterSurface.h
+	Wind.cpp
+	Wind.h
 	World.cpp
 	World.h)
 

@@ -38,11 +38,12 @@ void Clouds::Update(
     }
 
     // Update clouds
+    float const cloudSpeed = gameParameters.WindSpeedBase / 8.0f; // Clouds move slower than wind
     for (auto & cloud : mClouds)
     {
         cloud->Update(
             currentSimulationTime,
-            gameParameters.WindSpeed);
+            cloudSpeed);
     }
 
 }

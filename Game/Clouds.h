@@ -64,9 +64,9 @@ private:
 
         inline void Update(
             float currentSimulationTime,
-            float windSpeed)
+            float cloudSpeed)
         {
-            float const scaledSpeed = currentSimulationTime * windSpeed;
+            float const scaledSpeed = currentSimulationTime * cloudSpeed;
 
             mX = mOffsetX + (mSpeedX1 * scaledSpeed) + (mAmpX * sinf(mSpeedX2 * scaledSpeed));
             mY = mOffsetY + (mAmpY * sinf(mSpeedY * scaledSpeed));

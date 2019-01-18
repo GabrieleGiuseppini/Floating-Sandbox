@@ -23,6 +23,7 @@ World::World(
     , mClouds()
     , mWaterSurface()
     , mOceanFloor(resourceLoader)
+    , mWind(gameEventHandler)
     , mCurrentSimulationTime(0.0f)
     , mCurrentVisitSequenceNumber(1u)
     , mGameEventHandler(std::move(gameEventHandler))
@@ -32,6 +33,7 @@ World::World(
     mClouds.Update(mCurrentSimulationTime, gameParameters);
     mWaterSurface.Update(mCurrentSimulationTime, gameParameters);
     mOceanFloor.Update(gameParameters);
+    mWind.Update(mCurrentSimulationTime, gameParameters);
 }
 
 ShipId World::AddShip(
@@ -358,6 +360,7 @@ void World::Update(
     mClouds.Update(mCurrentSimulationTime, gameParameters);
     mWaterSurface.Update(mCurrentSimulationTime, gameParameters);
     mOceanFloor.Update(gameParameters);
+    mWind.Update(mCurrentSimulationTime, gameParameters);
 
     // Update all ships
     for (auto & ship : mAllShips)

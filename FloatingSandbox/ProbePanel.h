@@ -37,6 +37,13 @@ public:
 
     virtual void OnWaterSplashed(float waterSplashed) override;
 
+    virtual void OnWindForceUpdated(
+        float const zeroMagnitude,
+        float const baseMagnitude,
+        float const preMaxMagnitude,
+        float const maxMagnitude,
+        vec2f const & windForce) override;
+
     virtual void OnCustomProbe(
         std::string const & name,
         float value) override;
@@ -65,5 +72,6 @@ private:
     std::unique_ptr<ScalarTimeSeriesProbeControl> mURRatioProbe;
     std::unique_ptr<ScalarTimeSeriesProbeControl> mWaterTakenProbe;
     std::unique_ptr<ScalarTimeSeriesProbeControl> mWaterSplashProbe;
+    std::unique_ptr<ScalarTimeSeriesProbeControl> mWindForceProbe;
     std::unordered_map<std::string, std::unique_ptr<ScalarTimeSeriesProbeControl>> mCustomProbes;
 };

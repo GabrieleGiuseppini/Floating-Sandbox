@@ -363,8 +363,8 @@ void SettingsDialog::ApplySettings()
     mGameController->SetNumberOfClouds(
         static_cast<size_t>(mNumberOfCloudsSlider->GetValue()));
 
-    mGameController->SetWindSpeed(
-        mWindSpeedSlider->GetValue());
+    mGameController->SetWindSpeedBase(
+        mWindSpeedBaseSlider->GetValue());
 
 
 
@@ -755,24 +755,24 @@ void SettingsDialog::PopulateSkyPanel(wxPanel * panel)
     controlsSizer->Add(mNumberOfCloudsSlider.get(), 1, wxALL, SliderBorder);
 
 
-    // Wind Speed
+    // Wind Speed Base
 
-    mWindSpeedSlider = std::make_unique<SliderControl>(
+    mWindSpeedBaseSlider = std::make_unique<SliderControl>(
         panel,
         SliderWidth,
         SliderHeight,
-        "Wind Speed",
-        mGameController->GetWindSpeed(),
+        "Wind Speed Base",
+        mGameController->GetWindSpeedBase(),
         [this](float /*value*/)
         {
             // Remember we're dirty now
             this->mApplyButton->Enable(true);
         },
         std::make_unique<LinearSliderCore>(
-            mGameController->GetMinWindSpeed(),
-            mGameController->GetMaxWindSpeed()));
+            mGameController->GetMinWindSpeedBase(),
+            mGameController->GetMaxWindSpeedBase()));
 
-    controlsSizer->Add(mWindSpeedSlider.get(), 1, wxALL, SliderBorder);
+    controlsSizer->Add(mWindSpeedBaseSlider.get(), 1, wxALL, SliderBorder);
 
 
 
@@ -1239,7 +1239,7 @@ void SettingsDialog::ReadSettings()
 
     mNumberOfCloudsSlider->SetValue(static_cast<float>(mGameController->GetNumberOfClouds()));
 
-    mWindSpeedSlider->SetValue(mGameController->GetWindSpeed());
+    mWindSpeedBaseSlider->SetValue(mGameController->GetWindSpeedBase());
 
 
 

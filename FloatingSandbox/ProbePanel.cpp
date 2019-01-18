@@ -17,14 +17,14 @@ ProbePanel::ProbePanel(wxWindow* parent)
     : wxPanel(
         parent,
         wxID_ANY,
-        wxDefaultPosition, 
+        wxDefaultPosition,
         wxDefaultSize,
         wxBORDER_SIMPLE | wxCLIP_CHILDREN)
 {
     SetDoubleBuffered(true);
 
     SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
-    
+
 
     //
     // Create probes
@@ -66,7 +66,7 @@ ProbePanel::ProbePanel(wxWindow* parent)
         sizer->AddSpacer(TopPadding);
 
         mWaterTakenProbe = std::make_unique<ScalarTimeSeriesProbeControl>(this, 120);
-        sizer->Add(mWaterTakenProbe.get(), 1, wxALIGN_CENTRE, 0);        
+        sizer->Add(mWaterTakenProbe.get(), 1, wxALIGN_CENTRE, 0);
 
         wxStaticText * label = new wxStaticText(this, wxID_ANY, "Water Inflow", wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
         sizer->Add(label, 0, wxALIGN_CENTRE, 0);
@@ -83,6 +83,20 @@ ProbePanel::ProbePanel(wxWindow* parent)
         sizer->Add(mWaterSplashProbe.get(), 1, wxALIGN_CENTRE, 0);
 
         wxStaticText * label = new wxStaticText(this, wxID_ANY, "Water Splash", wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
+        sizer->Add(label, 0, wxALIGN_CENTRE, 0);
+
+        probesSizer->Add(sizer, 1, wxLEFT | wxRIGHT, ProbePadding);
+    }
+
+    {
+        wxBoxSizer * sizer = new wxBoxSizer(wxVERTICAL);
+
+        sizer->AddSpacer(TopPadding);
+
+        mWindForceProbe = std::make_unique<ScalarTimeSeriesProbeControl>(this, 200);
+        sizer->Add(mWindForceProbe.get(), 1, wxALIGN_CENTRE, 0);
+
+        wxStaticText * label = new wxStaticText(this, wxID_ANY, "Wind Force", wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
         sizer->Add(label, 0, wxALIGN_CENTRE, 0);
 
         probesSizer->Add(sizer, 1, wxLEFT | wxRIGHT, ProbePadding);
@@ -111,6 +125,7 @@ void ProbePanel::Update()
         mURRatioProbe->Update();
         mWaterTakenProbe->Update();
         mWaterSplashProbe->Update();
+        mWindForceProbe->Update();
     }
 }
 
@@ -122,6 +137,7 @@ void ProbePanel::OnGameReset()
     mURRatioProbe->Reset();
     mWaterTakenProbe->Reset();
     mWaterSplashProbe->Reset();
+    mWindForceProbe->Reset();
 }
 
 void ProbePanel::OnWaterTaken(float waterTaken)
@@ -132,6 +148,16 @@ void ProbePanel::OnWaterTaken(float waterTaken)
 void ProbePanel::OnWaterSplashed(float waterSplashed)
 {
     mWaterSplashProbe->RegisterSample(waterSplashed);
+}
+
+void ProbePanel::OnWindForceUpdated(
+    float const /*zeroMagnitude*/,
+    float const /*baseMagnitude*/,
+    float const /*preMaxMagnitude*/,
+    float const /*maxMagnitude*/,
+    vec2f const & windForce)
+{
+    mWindForceProbe->RegisterSample(windForce.length());
 }
 
 void ProbePanel::OnCustomProbe(
