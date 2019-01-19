@@ -24,9 +24,9 @@ OceanFloor::OceanFloor(ResourceLoader & resourceLoader)
 
     float const sampleIndexToX = static_cast<float>(bumpMapImage.Size.Width) / static_cast<float>(SamplesCount);
     float const halfHeight = static_cast<float>(bumpMapImage.Size.Height / 2);
-    
+
     for (size_t s = 0; s < SamplesCount; ++s)
-    { 
+    {
         // Worst case, sample is zero
         float bumpMapSampleValue = 0.0f;
 
@@ -42,8 +42,8 @@ OceanFloor::OceanFloor(ResourceLoader & resourceLoader)
                 || bumpMapImage.Data[pointIndex + 2] != 0x00)
             {
                 // Found it!
-                bumpMapSampleValue = 
-                    static_cast<float>(bumpMapImage.Size.Height - imageY) 
+                bumpMapSampleValue =
+                    static_cast<float>(bumpMapImage.Size.Height - imageY)
                     - halfHeight;
 
                 break;
@@ -58,6 +58,24 @@ OceanFloor::OceanFloor(ResourceLoader & resourceLoader)
     mBumpMapSamples[SamplesCount] = mBumpMapSamples[SamplesCount - 1];
 }
 
+void OceanFloor::AdjustTo(
+    float x,
+    float targetY)
+{
+    int64_t sampleIndex = GetSampleIndex(x);
+
+    // Update sample value
+    mSamples[sampleIndex].SampleValue = targetY;
+
+    // Update previous sample's delta
+    int64_t previousSampleIndex = (sampleIndex == 0) ? SamplesCount - 1 : sampleIndex - 1;
+    mSamples[previousSampleIndex].SampleValuePlusOneMinusSampleValue = targetY - mSamples[previousSampleIndex].SampleValue;
+
+    // Update this sample's delta
+    int64_t nextSampleIndex = (sampleIndex == SamplesCount - 1) ? 0 : sampleIndex + 1;
+    mSamples[sampleIndex].SampleValuePlusOneMinusSampleValue = mSamples[nextSampleIndex].SampleValue - targetY;
+}
+
 void OceanFloor::Update(GameParameters const & gameParameters)
 {
     if (gameParameters.SeaDepth != mCurrentSeaDepth
@@ -67,12 +85,12 @@ void OceanFloor::Update(GameParameters const & gameParameters)
         float const seaDepth = gameParameters.SeaDepth;
         float const oceanFloorBumpiness = gameParameters.OceanFloorBumpiness;
         float const oceanFloorDetailAmplification = gameParameters.OceanFloorDetailAmplification;
-        
-        // sample index = 0 
+
+        // sample index = 0
         float previousSampleValue;
         {
-            previousSampleValue = 
-                -seaDepth 
+            previousSampleValue =
+                -seaDepth
                 + 0.0f
                 + mBumpMapSamples[0] * oceanFloorDetailAmplification;
 

@@ -127,6 +127,10 @@ public:
 
     void DetonateAntiMatterBombs();
 
+    void AdjustOceanFloorTo(
+        float x,
+        float targetY);
+
     std::optional<ObjectId> GetNearestPointAt(
         vec2f const & targetPos,
         float radius) const;

@@ -23,6 +23,10 @@ public:
 
     OceanFloor(ResourceLoader & resourceLoader);
 
+    void AdjustTo(
+        float x,
+        float targetY);
+
     void Update(GameParameters const & gameParameters);
 
     float GetFloorHeightAt(float x) const
@@ -54,6 +58,30 @@ public:
 
         return mSamples[sampleIndexI].SampleValue
             + mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
+    }
+
+private:
+
+    static int64_t GetSampleIndex(float x)
+    {
+        // Fractional absolute index in the (infinite) sample array
+        float const absoluteSampleIndexF = x / Dx;
+
+        // Integral part
+        int64_t absoluteSampleIndexI = FastFloorInt64(absoluteSampleIndexF);
+
+        int64_t sampleIndex;
+        if (absoluteSampleIndexI >= 0)
+        {
+            sampleIndex = absoluteSampleIndexI % SamplesCount;
+        }
+        else
+        {
+            sampleIndex = (SamplesCount - 1) + (absoluteSampleIndexI % SamplesCount);
+        }
+
+        assert(sampleIndex >= 0 && sampleIndex < SamplesCount);
+        return sampleIndex;
     }
 
 private:

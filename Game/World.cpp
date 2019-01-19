@@ -308,6 +308,13 @@ void World::DetonateAntiMatterBombs()
     }
 }
 
+void World::AdjustOceanFloorTo(
+    float x,
+    float targetY)
+{
+    mOceanFloor.AdjustTo(x, targetY);
+}
+
 std::optional<ObjectId> World::GetNearestPointAt(
     vec2f const & targetPos,
     float radius) const

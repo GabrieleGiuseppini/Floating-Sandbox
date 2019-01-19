@@ -472,6 +472,14 @@ void GameController::DetonateAntiMatterBombs()
     mWorld->DetonateAntiMatterBombs();
 }
 
+void GameController::AdjustOceanFloorTo(vec2f const & screenCoordinates)
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+
+    assert(!!mWorld);
+    return mWorld->AdjustOceanFloorTo(worldCoordinates.x, worldCoordinates.y);
+}
+
 std::optional<ObjectId> GameController::GetNearestPointAt(vec2f const & screenCoordinates) const
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
