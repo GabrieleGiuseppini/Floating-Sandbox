@@ -11,6 +11,7 @@
 #include "IGameEventHandler.h"
 
 #include <GameCore/GameMath.h>
+#include <GameCore/GameWallClock.h>
 #include <GameCore/RunningAverage.h>
 
 namespace Physics
@@ -22,9 +23,7 @@ public:
 
     Wind(std::shared_ptr<IGameEventHandler> gameEventHandler);
 
-    void Update(
-        float currentSimulationTime,
-        GameParameters const & gameParameters);
+    void Update(GameParameters const & gameParameters);
 
     inline vec2f const & GetCurrentWindForce() const
     {
@@ -33,23 +32,24 @@ public:
 
 private:
 
+    static GameWallClock::duration ChooseDuration(float minSeconds, float maxSeconds);
+
     void RecalculateParameters(GameParameters const & gameParameters);
 
 private:
 
     std::shared_ptr<IGameEventHandler> mGameEventHandler;
 
+    //
     // Pre-calculated parameters
+    //
+
     float mZeroMagnitude;
     float mBaseMagnitude;
     float mPreMaxMagnitude;
     float mMaxMagnitude;
-    float mDownFromBaseCdf;
-    float mUpFromBaseCdf;
-    float mUpFromPreMaxCdf;
-    float mDownFromPreMaxCdf;
-    float mUpFromZeroCdf;
-    float mDownFromMaxCdf;
+
+    float mGustCdf;
 
     // The last parameter values our pre-calculated values are current with
     float mCurrentSpeedBaseParameter;
@@ -64,21 +64,45 @@ private:
     {
         Initial,
 
-        Max,
-        PreMax,
-        Base,
+        EnterBase1,
+        Base1,
+
+        EnterPreGusting,
+        PreGusting,
+
+        EnterGusting,
+        Gusting,
+
+        EnterGust,
+        Gust,
+
+        EnterPostGusting,
+        PostGusting,
+
+        EnterBase2,
+        Base2,
+
+        EnterZero,
         Zero
     };
 
     State mCurrentState;
 
-    // The next (simulation) time at which we should sample the poisson distribution
-    float mNextPoissonSampleSimulationTime;
+    // The timestamp of the next state transition
+    GameWallClock::time_point mNextStateTransitionTimestamp;
+
+    // The next time at which we should sample the poisson distribution
+    GameWallClock::time_point mNextPoissonSampleTimestamp;
+
+    // The next time at which the current gust should end
+    GameWallClock::time_point mCurrentGustTransitionTimestamp;
 
     // The current wind force magnitude, before averaging
     float mCurrentRawWindForceMagnitude;
 
     // The (short) running average of the wind force magnitude
+    //
+    // We average it just to prevent big impulses
     RunningAverage<4> mCurrentWindForceMagnitudeRunningAverage;
 
     // The current wind force

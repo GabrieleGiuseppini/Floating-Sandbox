@@ -16,12 +16,7 @@ constexpr float PoissonSampleRate = 4.0f;
 constexpr float PoissonSampleDeltaT = 1.0f / PoissonSampleRate;
 
 // The event rates for transitions, in 1/second
-constexpr float DownFromBaseLambda = 1.0f / 6.0f;
-constexpr float UpFromBaseLambda = 1.0f / 1.0f;
-constexpr float UpFromPreMaxLambda = 1.0f / 1.0f;
-constexpr float DownFromPreMaxLambda = 1.0f / 5.0f;
-constexpr float UpFromZeroLambda = 1.0f / 1.7f;
-constexpr float DownFromMaxLambda = 1.0f / 0.5f;
+constexpr float GustLambda = 1.0f / 1.0f;
 
 Wind::Wind(std::shared_ptr<IGameEventHandler> gameEventHandler)
     : mGameEventHandler(std::move(gameEventHandler))
@@ -30,29 +25,27 @@ Wind::Wind(std::shared_ptr<IGameEventHandler> gameEventHandler)
     , mBaseMagnitude(0.0f)
     , mPreMaxMagnitude(0.0f)
     , mMaxMagnitude(0.0f)
-    , mDownFromBaseCdf(0.0f)
-    , mUpFromBaseCdf(0.0f)
-    , mUpFromPreMaxCdf(0.0f)
-    , mDownFromPreMaxCdf(0.0f)
-    , mUpFromZeroCdf(0.0f)
-    , mDownFromMaxCdf(0.0f)
+    , mGustCdf(0.0f)
     , mCurrentSpeedBaseParameter(std::numeric_limits<float>::lowest())
     , mCurrentSpeedMaxFactorParameter(std::numeric_limits<float>::lowest())
     , mCurrentGustFrequencyAdjustmentParameter(std::numeric_limits<float>::lowest())
     // State
     , mCurrentState(State::Initial)
-    , mNextPoissonSampleSimulationTime()
+    , mNextStateTransitionTimestamp()
+    , mNextPoissonSampleTimestamp()
+    , mCurrentGustTransitionTimestamp()
     , mCurrentRawWindForceMagnitude(0.0f)
     , mCurrentWindForceMagnitudeRunningAverage()
     , mCurrentWindForce(vec2f::zero())
 {
 }
 
-void Wind::Update(
-    float currentSimulationTime,
-    GameParameters const & gameParameters)
+void Wind::Update(GameParameters const & gameParameters)
 {
+    //
     // Check whether parameters have changed
+    //
+
     if (gameParameters.WindSpeedBase != mCurrentSpeedBaseParameter
         || gameParameters.WindSpeedMaxFactor != mCurrentSpeedMaxFactorParameter
         || gameParameters.WindGustFrequencyAdjustment != mCurrentGustFrequencyAdjustmentParameter)
@@ -64,121 +57,205 @@ void Wind::Update(
         mCurrentGustFrequencyAdjustmentParameter = gameParameters.WindGustFrequencyAdjustment;
     }
 
+
+    //
+    // Run state machine
+    //
+
+    auto now = GameWallClock::GetInstance().Now();
+
     switch (mCurrentState)
     {
         case State::Initial:
         {
-            // Transition to base
-            mCurrentState = State::Base;
+            mCurrentState = State::EnterBase1;
+
+            [[fallthrough]];
+        }
+
+        case State::EnterBase1:
+        {
+            // Transition
+            mCurrentState = State::Base1;
             mCurrentRawWindForceMagnitude = mBaseMagnitude;
+            mNextStateTransitionTimestamp = now + ChooseDuration(10.0, 20.0f);
+
+            [[fallthrough]];
+        }
+
+        case State::Base1:
+        {
+            // Check if it's time to transition
+            if (now > mNextStateTransitionTimestamp)
+            {
+                // Transition
+                mCurrentState = State::EnterPreGusting;
+            }
+
+            break;
+        }
+
+        case State::EnterPreGusting:
+        {
+            // Transition
+            mCurrentState = State::PreGusting;
+            mCurrentRawWindForceMagnitude = mPreMaxMagnitude;
+            mNextStateTransitionTimestamp = now + ChooseDuration(5.0, 10.0f);
+
+            [[fallthrough]];
+        }
+
+        case State::PreGusting:
+        {
+            // Check if it's time to transition
+            if (now > mNextStateTransitionTimestamp)
+            {
+                // Transition
+                mCurrentState = State::EnterGusting;
+            }
+
+            break;
+        }
+
+        case State::EnterGusting:
+        {
+            // Transition
+            mCurrentState = State::Gusting;
+            mCurrentRawWindForceMagnitude = mPreMaxMagnitude;
+            mNextStateTransitionTimestamp = now + ChooseDuration(10.0, 20.0f);
 
             // Schedule next poisson sampling
-            mNextPoissonSampleSimulationTime = currentSimulationTime + PoissonSampleDeltaT;
+            mNextPoissonSampleTimestamp =
+                now
+                + std::chrono::duration_cast<GameWallClock::duration>(std::chrono::duration<float>(PoissonSampleDeltaT));
 
-            break;
+            [[fallthrough]];
         }
 
-        case State::Max:
+        case State::Gusting:
         {
-            // Check if it's time to sample poisson
-            if (currentSimulationTime >= mNextPoissonSampleSimulationTime)
+            // Check if it's time to transition
+            if (now > mNextStateTransitionTimestamp)
             {
-                // Draw random number
-                float const sample = GameRandomEngine::GetInstance().GenerateRandomNormalizedReal();
-
-                // Check if we can transition
-                if (sample < mDownFromMaxCdf)
+                // Transition
+                mCurrentState = State::EnterPostGusting;
+            }
+            else
+            {
+                // Check if it's time to sample poisson
+                if (now >= mNextPoissonSampleTimestamp)
                 {
-                    // Transition to PreMax
-                    mCurrentState = State::PreMax;
-                    mCurrentRawWindForceMagnitude = mPreMaxMagnitude;
-                }
+                    // Draw random number
+                    float const sample = GameRandomEngine::GetInstance().GenerateRandomNormalizedReal();
 
-                // Schedule next poisson sampling
-                mNextPoissonSampleSimulationTime = currentSimulationTime + PoissonSampleDeltaT;
+                    // Check if we should gust
+                    if (sample < mGustCdf)
+                    {
+                        // Transition to EnterGust
+                        mCurrentState = State::EnterGust;
+                    }
+                    else
+                    {
+                        // Schedule next poisson sampling
+                        mNextPoissonSampleTimestamp =
+                            now
+                            + std::chrono::duration_cast<GameWallClock::duration>(std::chrono::duration<float>(PoissonSampleDeltaT));
+                    }
+                }
             }
 
             break;
         }
 
-        case State::PreMax:
+        case State::EnterGust:
         {
-            // Check if it's time to sample poisson
-            if (currentSimulationTime >= mNextPoissonSampleSimulationTime)
-            {
-                // Draw random number
-                float const sample = GameRandomEngine::GetInstance().GenerateRandomNormalizedReal();
+            // Transition to Gust and choose gust duration
+            mCurrentState = State::Gust;
+            mCurrentRawWindForceMagnitude = mMaxMagnitude;
+            mCurrentGustTransitionTimestamp = now + ChooseDuration(0.5f, 1.0f);
 
-                // Check if we can transition
-                assert(mDownFromPreMaxCdf < mUpFromPreMaxCdf);
-                if (sample < mDownFromPreMaxCdf)
-                {
-                    // Transition to Base
-                    mCurrentState = State::Base;
-                    mCurrentRawWindForceMagnitude = mBaseMagnitude;
-                }
-                else if (sample < mUpFromPreMaxCdf)
-                {
-                    // Transition to Max
-                    mCurrentState = State::Max;
-                    mCurrentRawWindForceMagnitude = mMaxMagnitude;
-                }
+            [[fallthrough]];
+        }
+
+        case State::Gust:
+        {
+            // Check if it's time to transition
+            if (now > mCurrentGustTransitionTimestamp)
+            {
+                // Transition back
+                mCurrentState = State::Gusting;
+                mCurrentRawWindForceMagnitude = mPreMaxMagnitude;
 
                 // Schedule next poisson sampling
-                mNextPoissonSampleSimulationTime = currentSimulationTime + PoissonSampleDeltaT;
+                mNextPoissonSampleTimestamp =
+                    now
+                    + std::chrono::duration_cast<GameWallClock::duration>(std::chrono::duration<float>(PoissonSampleDeltaT));
             }
 
             break;
         }
 
-        case State::Base:
+        case State::EnterPostGusting:
         {
-            // Check if it's time to sample poisson
-            if (currentSimulationTime >= mNextPoissonSampleSimulationTime)
+            // Transition
+            mCurrentState = State::PostGusting;
+            mCurrentRawWindForceMagnitude = mPreMaxMagnitude;
+            mNextStateTransitionTimestamp = now + ChooseDuration(5.0, 10.0f);
+
+            [[fallthrough]];
+        }
+
+        case State::PostGusting:
+        {
+            // Check if it's time to transition
+            if (now > mNextStateTransitionTimestamp)
             {
-                // Draw random number
-                float const sample = GameRandomEngine::GetInstance().GenerateRandomNormalizedReal();
-
-                // Check if we can transition
-                assert(mDownFromBaseCdf < mUpFromBaseCdf);
-                if (sample < mDownFromBaseCdf)
-                {
-                    // Transition to Zero
-                    mCurrentState = State::Zero;
-                    mCurrentRawWindForceMagnitude = mZeroMagnitude;
-                }
-                else if (sample < mUpFromBaseCdf)
-                {
-                    // Transition to PreMax
-                    mCurrentState = State::PreMax;
-                    mCurrentRawWindForceMagnitude = mPreMaxMagnitude;
-                }
-
-                // Schedule next poisson sampling
-                mNextPoissonSampleSimulationTime = currentSimulationTime + PoissonSampleDeltaT;
+                // Transition
+                mCurrentState = State::EnterBase2;
             }
 
             break;
+        }
+
+        case State::EnterBase2:
+        {
+            // Transition
+            mCurrentState = State::Base2;
+            mCurrentRawWindForceMagnitude = mBaseMagnitude;
+            mNextStateTransitionTimestamp = now + ChooseDuration(3.0, 10.0f);
+
+            [[fallthrough]];
+        }
+
+        case State::Base2:
+        {
+            // Check if it's time to transition
+            if (now > mNextStateTransitionTimestamp)
+            {
+                // Transition
+                mCurrentState = State::EnterZero;
+            }
+
+            break;
+        }
+
+        case State::EnterZero:
+        {
+            // Transition
+            mCurrentState = State::Zero;
+            mCurrentRawWindForceMagnitude = mZeroMagnitude;
+            mNextStateTransitionTimestamp = now + ChooseDuration(5.0, 15.0f);
+
+            [[fallthrough]];
         }
 
         case State::Zero:
         {
-            // Check if it's time to sample poisson
-            if (currentSimulationTime >= mNextPoissonSampleSimulationTime)
+            // Check if it's time to transition
+            if (now > mNextStateTransitionTimestamp)
             {
-                // Draw random number
-                float const sample = GameRandomEngine::GetInstance().GenerateRandomNormalizedReal();
-
-                // Check if we can transition
-                if (sample < mUpFromZeroCdf)
-                {
-                    // Transition to Base
-                    mCurrentState = State::Base;
-                    mCurrentRawWindForceMagnitude = mBaseMagnitude;
-                }
-
-                // Schedule next poisson sampling
-                mNextPoissonSampleSimulationTime = currentSimulationTime + PoissonSampleDeltaT;
+                // Transition
+                mCurrentState = State::EnterBase1;
             }
 
             break;
@@ -199,6 +276,12 @@ void Wind::Update(
         mCurrentWindForce);
 }
 
+GameWallClock::duration Wind::ChooseDuration(float minSeconds, float maxSeconds)
+{
+    float chosenSeconds = GameRandomEngine::GetInstance().GenerateRandomReal(minSeconds, maxSeconds);
+    return std::chrono::duration_cast<GameWallClock::duration>(std::chrono::duration<float>(chosenSeconds));
+}
+
 void Wind::RecalculateParameters(GameParameters const & gameParameters)
 {
     mZeroMagnitude = 0.0f;
@@ -206,12 +289,7 @@ void Wind::RecalculateParameters(GameParameters const & gameParameters)
     mMaxMagnitude = gameParameters.WindSpeedBase * gameParameters.WindSpeedMaxFactor;
     mPreMaxMagnitude = mBaseMagnitude + (mMaxMagnitude - mBaseMagnitude) / 8.0f;
 
-    mDownFromBaseCdf = 1.0f - exp(-DownFromBaseLambda / (PoissonSampleRate * gameParameters.WindGustFrequencyAdjustment));
-    mUpFromBaseCdf = 1.0f - exp(-UpFromBaseLambda / (PoissonSampleRate * gameParameters.WindGustFrequencyAdjustment));
-    mUpFromPreMaxCdf = 1.0f - exp(-UpFromPreMaxLambda / (PoissonSampleRate * gameParameters.WindGustFrequencyAdjustment));
-    mDownFromPreMaxCdf = 1.0f - exp(-DownFromPreMaxLambda / (PoissonSampleRate * gameParameters.WindGustFrequencyAdjustment));
-    mUpFromZeroCdf = 1.0f - exp(-UpFromZeroLambda / (PoissonSampleRate * gameParameters.WindGustFrequencyAdjustment));
-    mDownFromMaxCdf = 1.0f - exp(-DownFromMaxLambda / (PoissonSampleRate * gameParameters.WindGustFrequencyAdjustment));
+    mGustCdf = 1.0f - exp(-GustLambda / (PoissonSampleRate * gameParameters.WindGustFrequencyAdjustment));
 }
 
 }

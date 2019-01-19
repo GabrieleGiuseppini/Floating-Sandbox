@@ -985,11 +985,9 @@ void SoundController::OnWindForceUpdated(
     // Smooth the volume
     float const smoothedWindVolume = mWindVolumeRunningAverage.Update(windVolume);
 
+    // Set the volume
     mWindSound.SetVolume(smoothedWindVolume);
     mWindSound.Start();
-
-    // TODOTEST
-    mGameEventHandler->OnCustomProbe("Wind Volume", smoothedWindVolume);
 
 
     //

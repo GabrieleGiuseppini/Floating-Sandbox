@@ -132,6 +132,7 @@ Render:
 ====================================================
 
 - Marketing:
+	- Youtube channel
 	- Video of Titanic under Mariannes' Trench
 		+ After water contrast
 
@@ -189,15 +190,22 @@ Render:
 
 		- Terrain adjust tool
 			- Managed by World via OceanFloor
+			- In Options menu
+				- Separator before "show..."
 
 		- Extended move tool (*)
 		- Interior layer (*)
+
+		- WiX Installer
+
+		- Release
+
 
 		- Zbuffer (*)
 		- Orphaned points (*)
 
 		- ConnectedSprings/OtherEndpoint Optimization (*)
-		- 
+		- TODO: other optimization we thought about?
 		- Increase ephemeral particles
 
 		- Libsimdpp spring relaxation (*)
@@ -730,24 +738,36 @@ Render:
 		+ Step 2: new StructuralMaterial property: WindReceptivity
 			+ Optional in json (default=0.0), only set for cloth
 			+ Update guide
-		= Step 3: erratic behavior of wind
+		+ Step 3: erratic behavior of wind
 			+ GameParameters::WindSpeed becomes WindSpeedBase
-			= World::UpdateWind(): implements state machine and calcs current wind force
+			+ World::UpdateWind(): implements state machine and calcs current wind force
 				+ Incorporate gust adjustment
-				= See if we need to up force a bit for fater response
-					= See first w/64 fps first if more respondent - skinnier test ship 
+				+ See if we need to up force a bit for fater response
+					+ See first w/64 fps first if more respondent - skinnier test ship 
 				+ Use short running average to smooth transitions (minimally)
 					+ Make it 4
 					+ Get rid of intermediate states
+				+ Do piecewise state machine, w/various prob types
+					+ Gust transitions are still poisson, but not their duration
 				- Superimpose sine?
+		- Step 4:
+			- See interaction of wind on waves
+				- Hi-freq sine whose amplitude is normally zero unless wind force over base
 		- Add all wind settings to SettingsDialog
-		- Sound:
-			- Layered like waves:
-				- 1 continuous sound
-					- Triggered by abs threshold, 30
-				- 1 one-shot sound (Gust)
-					- Triggered by abs threshold && force > .9*Max
-			- IEventHandlers::OnWindForce...(zero, base, max)
+		= Sound:
+			+ Layered like waves:
+				+ 1 continuous sound
+					+ Triggered by abs threshold, 30
+				+ 1 one-shot sound (Gust)
+					+ Triggered by abs threshold && force > .9*Max
+			+ IEventHandlers::OnWindForce...(zero, base, max)
+			+ Do more gusts
+			- Fix initial ramp up
+				- Verify first the "2..." is e-0x
+				- RunningAverage::Fill(float)
+				- SoundController::Reset takes GameParameters, so we can use base
+			- Remove probe
+			+ Make sound's volume change inertial
 		+ Add probe for wind force
 		- Try: Debris and Sparkles created with WindReceptivity=1.0
 		= Test: 
