@@ -366,6 +366,9 @@ void SettingsDialog::ApplySettings()
     mGameController->SetWindSpeedBase(
         mWindSpeedBaseSlider->GetValue());
 
+    mGameController->SetWindSpeedMaxFactor(
+        mWindGustAmplitudeSlider->GetValue());
+
 
 
     mGameController->SetWaveHeight(
@@ -774,6 +777,25 @@ void SettingsDialog::PopulateSkyPanel(wxPanel * panel)
 
     controlsSizer->Add(mWindSpeedBaseSlider.get(), 1, wxALL, SliderBorder);
 
+
+    // Wind Gust Amplitude
+
+    mWindGustAmplitudeSlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Wind Gust Amplitude",
+        mGameController->GetWindSpeedMaxFactor(),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<LinearSliderCore>(
+            mGameController->GetMinWindSpeedMaxFactor(),
+            mGameController->GetMaxWindSpeedMaxFactor()));
+
+    controlsSizer->Add(mWindGustAmplitudeSlider.get(), 1, wxALL, SliderBorder);
 
 
     // Finalize panel
@@ -1240,6 +1262,8 @@ void SettingsDialog::ReadSettings()
     mNumberOfCloudsSlider->SetValue(static_cast<float>(mGameController->GetNumberOfClouds()));
 
     mWindSpeedBaseSlider->SetValue(mGameController->GetWindSpeedBase());
+
+    mWindGustAmplitudeSlider->SetValue(mGameController->GetWindSpeedMaxFactor());
 
 
 

@@ -25,7 +25,17 @@ public:
 
     void Update(GameParameters const & gameParameters);
 
-    inline vec2f const & GetCurrentWindForce() const
+    float GetBaseMagnitude() const
+    {
+        return mBaseMagnitude;
+    }
+
+    float GetMaxMagnitude() const
+    {
+        return mMaxMagnitude;
+    }
+
+    vec2f const & GetCurrentWindForce() const
     {
         return mCurrentWindForce;
     }

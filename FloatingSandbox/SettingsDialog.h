@@ -74,6 +74,7 @@ private:
     std::unique_ptr<SliderControl> mNumberOfStarsSlider;
     std::unique_ptr<SliderControl> mNumberOfCloudsSlider;
     std::unique_ptr<SliderControl> mWindSpeedBaseSlider;
+    std::unique_ptr<SliderControl> mWindGustAmplitudeSlider;
 
     // World
     std::unique_ptr<SliderControl> mWaveHeightSlider;

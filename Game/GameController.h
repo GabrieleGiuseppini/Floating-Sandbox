@@ -198,6 +198,16 @@ public:
     float GetMinWaveHeight() const { return GameParameters::MinWaveHeight; }
     float GetMaxWaveHeight() const { return GameParameters::MaxWaveHeight; }
 
+    float GetWindSpeedBase() const { return mGameParameters.WindSpeedBase; }
+    void SetWindSpeedBase(float value) { mGameParameters.WindSpeedBase = value; }
+    float GetMinWindSpeedBase() const { return GameParameters::MinWindSpeedBase; }
+    float GetMaxWindSpeedBase() const { return GameParameters::MaxWindSpeedBase; }
+
+    float GetWindSpeedMaxFactor() const { return mGameParameters.WindSpeedMaxFactor; }
+    void SetWindSpeedMaxFactor(float value) { mGameParameters.WindSpeedMaxFactor = value; }
+    float GetMinWindSpeedMaxFactor() const { return GameParameters::MinWindSpeedMaxFactor; }
+    float GetMaxWindSpeedMaxFactor() const { return GameParameters::MaxWindSpeedMaxFactor; }
+
     float GetSeaDepth() const { return mGameParameters.SeaDepth; }
     void SetSeaDepth(float value) { mGameParameters.SeaDepth = value; }
     float GetMinSeaDepth() const { return GameParameters::MinSeaDepth; }
@@ -259,11 +269,6 @@ public:
     void SetNumberOfClouds(size_t value) { mGameParameters.NumberOfClouds = value; }
     size_t GetMinNumberOfClouds() const { return GameParameters::MinNumberOfClouds; }
     size_t GetMaxNumberOfClouds() const { return GameParameters::MaxNumberOfClouds; }
-
-    float GetWindSpeedBase() const { return mGameParameters.WindSpeedBase; }
-    void SetWindSpeedBase(float value) { mGameParameters.WindSpeedBase = value; }
-    float GetMinWindSpeedBase() const { return GameParameters::MinWindSpeedBase; }
-    float GetMaxWindSpeedBase() const { return GameParameters::MaxWindSpeedBase; }
 
     //
     // Render

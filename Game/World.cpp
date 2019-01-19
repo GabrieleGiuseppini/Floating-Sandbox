@@ -30,10 +30,10 @@ World::World(
 {
     // Initialize world pieces
     mStars.Update(gameParameters);
-    mClouds.Update(mCurrentSimulationTime, gameParameters);
-    mWaterSurface.Update(mCurrentSimulationTime, gameParameters);
-    mOceanFloor.Update(gameParameters);
     mWind.Update(gameParameters);
+    mClouds.Update(mCurrentSimulationTime, gameParameters);
+    mWaterSurface.Update(mCurrentSimulationTime, mWind, gameParameters);
+    mOceanFloor.Update(gameParameters);
 }
 
 ShipId World::AddShip(
@@ -357,10 +357,10 @@ void World::Update(
 
     // Update world parts
     mStars.Update(gameParameters);
-    mClouds.Update(mCurrentSimulationTime, gameParameters);
-    mWaterSurface.Update(mCurrentSimulationTime, gameParameters);
-    mOceanFloor.Update(gameParameters);
     mWind.Update(gameParameters);
+    mClouds.Update(mCurrentSimulationTime, gameParameters);
+    mWaterSurface.Update(mCurrentSimulationTime, mWind, gameParameters);
+    mOceanFloor.Update(gameParameters);
 
     // Update all ships
     for (auto & ship : mAllShips)

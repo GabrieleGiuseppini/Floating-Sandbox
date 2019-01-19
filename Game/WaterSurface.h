@@ -8,6 +8,7 @@
 #include "GameParameters.h"
 
 #include <GameCore/GameMath.h>
+#include <GameCore/RunningAverage.h>
 
 #include <memory>
 
@@ -22,6 +23,7 @@ public:
 
     void Update(
         float currentSimulationTime,
+        Wind const & wind,
         GameParameters const & gameParameters);
 
    float GetWaterHeightAt(float x) const
@@ -60,9 +62,13 @@ private:
     // Frequencies of the wave components
     static constexpr float Frequency1 = 0.1f;
     static constexpr float Frequency2 = 0.3f;
+    static constexpr float Frequency3 = 0.5f; // Wind component
 
     // Period of the sum of the frequency components
     static constexpr float Period = 20.0f * Pi<float>;
+
+    // Smoothing of wind incisiveness
+    RunningAverage<15> mWindIncisivenessRunningAverage;
 
     // The number of samples;
     // a higher value means more resolution at the expense of the cost of Update().
