@@ -1003,13 +1003,16 @@ void SoundController::OnWindForceUpdated(
     // 2. Decide if time to fire a gust
     //
 
-    if (windForceAbsoluteMagnitude > mLastWindForceAbsoluteMagnitude
-        && abs(maxMagnitude) - windForceAbsoluteMagnitude < 0.001f)
+    if (mPlayWindSound)
     {
-        PlayOneShotMultipleChoiceSound(
-            SoundType::WindGust,
-            smoothedWindVolume,
-            true);
+        if (windForceAbsoluteMagnitude > mLastWindForceAbsoluteMagnitude
+            && abs(maxMagnitude) - windForceAbsoluteMagnitude < 0.001f)
+        {
+            PlayOneShotMultipleChoiceSound(
+                SoundType::WindGust,
+                smoothedWindVolume,
+                true);
+        }
     }
 
     mLastWindForceAbsoluteMagnitude = windForceAbsoluteMagnitude;

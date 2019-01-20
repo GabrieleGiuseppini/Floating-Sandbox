@@ -17,18 +17,26 @@ void WaterSurface::Update(
     Wind const & wind,
     GameParameters const & gameParameters)
 {
+    // Waves
+
     float const waveSpeed = gameParameters.WindSpeedBase / 8.0f; // Water moves slower than wind
     float const scaledTime = currentSimulationTime * (0.5f + waveSpeed) / 3.0f;
-
     float const waveHeight = gameParameters.WaveHeight;
 
-    float const windForceAbsoluteMagnitude = wind.GetCurrentWindForce().length();
-    float const rawWindNormalizedIncisiveness =
-        std::max(0.0f, windForceAbsoluteMagnitude - abs(wind.GetBaseMagnitude()))
-        / abs(wind.GetMaxMagnitude() - wind.GetBaseMagnitude());
-    float const smoothedWindNormalizedIncisiveness = mWindIncisivenessRunningAverage.Update(rawWindNormalizedIncisiveness);
+    // Ripples
 
-    float const windRipplesFrequency = 128.0f * gameParameters.WindSpeedBase / 24.0f;
+    float const windForceAbsoluteMagnitude = wind.GetCurrentWindForce().length();
+    float const windForceGustRelativeAmplitude = wind.GetMaxMagnitude() - wind.GetBaseMagnitude();
+    float const rawWindNormalizedIncisiveness = (windForceGustRelativeAmplitude == 0.0f)
+        ? 0.0f
+        : std::max(0.0f, windForceAbsoluteMagnitude - abs(wind.GetBaseMagnitude()))
+          / abs(windForceGustRelativeAmplitude);
+
+    float const windRipplesFrequency = (gameParameters.WindSpeedBase >= 0.0f)
+        ? 128.0f
+        : -128.0f;
+
+    float const smoothedWindNormalizedIncisiveness = mWindIncisivenessRunningAverage.Update(rawWindNormalizedIncisiveness);
     float const windRipplesWaveHeight = 0.7f * smoothedWindNormalizedIncisiveness;
 
     // sample index = 0

@@ -86,7 +86,6 @@ void Wind::Update(GameParameters const & gameParameters)
             {
                 // Transition
                 mCurrentState = State::Base1;
-                mCurrentRawWindForceMagnitude = mBaseMagnitude;
                 mNextStateTransitionTimestamp = now + ChooseDuration(10.0, 20.0f);
 
                 [[fallthrough]];
@@ -94,6 +93,8 @@ void Wind::Update(GameParameters const & gameParameters)
 
             case State::Base1:
             {
+                mCurrentRawWindForceMagnitude = mBaseMagnitude;
+
                 // Check if it's time to transition
                 if (now > mNextStateTransitionTimestamp)
                 {
@@ -108,7 +109,6 @@ void Wind::Update(GameParameters const & gameParameters)
             {
                 // Transition
                 mCurrentState = State::PreGusting;
-                mCurrentRawWindForceMagnitude = mPreMaxMagnitude;
                 mNextStateTransitionTimestamp = now + ChooseDuration(5.0, 10.0f);
 
                 [[fallthrough]];
@@ -116,6 +116,8 @@ void Wind::Update(GameParameters const & gameParameters)
 
             case State::PreGusting:
             {
+                mCurrentRawWindForceMagnitude = mPreMaxMagnitude;
+
                 // Check if it's time to transition
                 if (now > mNextStateTransitionTimestamp)
                 {
@@ -130,7 +132,6 @@ void Wind::Update(GameParameters const & gameParameters)
             {
                 // Transition
                 mCurrentState = State::Gusting;
-                mCurrentRawWindForceMagnitude = mPreMaxMagnitude;
                 mNextStateTransitionTimestamp = now + ChooseDuration(10.0, 20.0f);
 
                 // Schedule next poisson sampling
@@ -143,6 +144,8 @@ void Wind::Update(GameParameters const & gameParameters)
 
             case State::Gusting:
             {
+                mCurrentRawWindForceMagnitude = mPreMaxMagnitude;
+
                 // Check if it's time to transition
                 if (now > mNextStateTransitionTimestamp)
                 {
@@ -180,7 +183,6 @@ void Wind::Update(GameParameters const & gameParameters)
             {
                 // Transition to Gust and choose gust duration
                 mCurrentState = State::Gust;
-                mCurrentRawWindForceMagnitude = mMaxMagnitude;
                 mCurrentGustTransitionTimestamp = now + ChooseDuration(0.5f, 1.0f);
 
                 [[fallthrough]];
@@ -188,6 +190,8 @@ void Wind::Update(GameParameters const & gameParameters)
 
             case State::Gust:
             {
+                mCurrentRawWindForceMagnitude = mMaxMagnitude;
+
                 // Check if it's time to transition
                 if (now > mCurrentGustTransitionTimestamp)
                 {
@@ -208,7 +212,6 @@ void Wind::Update(GameParameters const & gameParameters)
             {
                 // Transition
                 mCurrentState = State::PostGusting;
-                mCurrentRawWindForceMagnitude = mPreMaxMagnitude;
                 mNextStateTransitionTimestamp = now + ChooseDuration(5.0, 10.0f);
 
                 [[fallthrough]];
@@ -216,6 +219,8 @@ void Wind::Update(GameParameters const & gameParameters)
 
             case State::PostGusting:
             {
+                mCurrentRawWindForceMagnitude = mPreMaxMagnitude;
+
                 // Check if it's time to transition
                 if (now > mNextStateTransitionTimestamp)
                 {
@@ -230,7 +235,6 @@ void Wind::Update(GameParameters const & gameParameters)
             {
                 // Transition
                 mCurrentState = State::Base2;
-                mCurrentRawWindForceMagnitude = mBaseMagnitude;
                 mNextStateTransitionTimestamp = now + ChooseDuration(3.0, 10.0f);
 
                 [[fallthrough]];
@@ -238,6 +242,8 @@ void Wind::Update(GameParameters const & gameParameters)
 
             case State::Base2:
             {
+                mCurrentRawWindForceMagnitude = mBaseMagnitude;
+
                 // Check if it's time to transition
                 if (now > mNextStateTransitionTimestamp)
                 {
@@ -252,7 +258,6 @@ void Wind::Update(GameParameters const & gameParameters)
             {
                 // Transition
                 mCurrentState = State::Zero;
-                mCurrentRawWindForceMagnitude = mZeroMagnitude;
                 mNextStateTransitionTimestamp = now + ChooseDuration(5.0, 15.0f);
 
                 [[fallthrough]];
@@ -260,6 +265,8 @@ void Wind::Update(GameParameters const & gameParameters)
 
             case State::Zero:
             {
+                mCurrentRawWindForceMagnitude = mZeroMagnitude;
+
                 // Check if it's time to transition
                 if (now > mNextStateTransitionTimestamp)
                 {

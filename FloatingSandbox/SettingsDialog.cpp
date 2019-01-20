@@ -30,6 +30,7 @@ const long ID_SHOW_STRESS_CHECKBOX = wxNewId();
 const long ID_WIREFRAME_MODE_CHECKBOX = wxNewId();
 const long ID_PLAY_BREAK_SOUNDS_CHECKBOX = wxNewId();
 const long ID_PLAY_STRESS_SOUNDS_CHECKBOX = wxNewId();
+const long ID_PLAY_WIND_SOUND_CHECKBOX = wxNewId();
 const long ID_PLAY_SINKING_MUSIC_CHECKBOX = wxNewId();
 
 SettingsDialog::SettingsDialog(
@@ -302,6 +303,12 @@ void SettingsDialog::OnPlayStressSoundsCheckBoxClick(wxCommandEvent & /*event*/)
     mApplyButton->Enable(true);
 }
 
+void SettingsDialog::OnPlayWindSoundCheckBoxClick(wxCommandEvent & /*event*/)
+{
+    // Remember we're dirty now
+    mApplyButton->Enable(true);
+}
+
 void SettingsDialog::OnPlaySinkingMusicCheckBoxClick(wxCommandEvent & /*event*/)
 {
     // Remember we're dirty now
@@ -504,6 +511,8 @@ void SettingsDialog::ApplySettings()
     mSoundController->SetPlayBreakSounds(mPlayBreakSoundsCheckBox->IsChecked());
 
     mSoundController->SetPlayStressSounds(mPlayStressSoundsCheckBox->IsChecked());
+
+    mSoundController->SetPlayWindSound(mPlayWindSoundCheckBox->IsChecked());
 
     mSoundController->SetPlaySinkingMusic(mPlaySinkingMusicCheckBox->IsChecked());
 }
@@ -1248,6 +1257,10 @@ void SettingsDialog::PopulateSoundPanel(wxPanel * panel)
     Connect(ID_PLAY_STRESS_SOUNDS_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnPlayStressSoundsCheckBoxClick);
     checkboxesSizer->Add(mPlayStressSoundsCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
 
+    mPlayWindSoundCheckBox = new wxCheckBox(panel, ID_PLAY_WIND_SOUND_CHECKBOX, _("Play Wind Sound"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Play Wind Sound Checkbox"));
+    Connect(ID_PLAY_WIND_SOUND_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnPlayWindSoundCheckBoxClick);
+    checkboxesSizer->Add(mPlayWindSoundCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
+
     mPlaySinkingMusicCheckBox = new wxCheckBox(panel, ID_PLAY_SINKING_MUSIC_CHECKBOX, _("Play Farewell Music"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Play Sinking Music Checkbox"));
     Connect(ID_PLAY_SINKING_MUSIC_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnPlaySinkingMusicCheckBoxClick);
     checkboxesSizer->Add(mPlaySinkingMusicCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
@@ -1421,6 +1434,8 @@ void SettingsDialog::ReadSettings()
     mPlayBreakSoundsCheckBox->SetValue(mSoundController->GetPlayBreakSounds());
 
     mPlayStressSoundsCheckBox->SetValue(mSoundController->GetPlayStressSounds());
+
+    mPlayWindSoundCheckBox->SetValue(mSoundController->GetPlayWindSound());
 
     mPlaySinkingMusicCheckBox->SetValue(mSoundController->GetPlaySinkingMusic());
 }

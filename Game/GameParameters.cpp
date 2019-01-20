@@ -26,7 +26,7 @@ GameParameters::GameParameters()
     // Wind
     , DoModulateWind(true)
     , WindSpeedBase(24.0f)
-    , WindSpeedMaxFactor(2.2f)
+    , WindSpeedMaxFactor(2.25f)
     , WindGustFrequencyAdjustment(1.0f)
     // Misc
     , WaveHeight(2.5f)
@@ -40,7 +40,7 @@ GameParameters::GameParameters()
     , LuminiscenceAdjustment(1.0f)
     , LightSpreadAdjustment(1.0f)
     , NumberOfStars(1536)
-    , NumberOfClouds(50)
+    , NumberOfClouds(48)
     // Interactions
     , ToolSearchRadius(2.0f)
     , DestroyRadius(0.75f)

@@ -49,6 +49,7 @@ private:
 
     void OnPlayBreakSoundsCheckBoxClick(wxCommandEvent & event);
     void OnPlayStressSoundsCheckBoxClick(wxCommandEvent & event);
+    void OnPlayWindSoundCheckBoxClick(wxCommandEvent & event);
     void OnPlaySinkingMusicCheckBoxClick(wxCommandEvent & event);
 
     void OnOkButton(wxCommandEvent & event);
@@ -110,6 +111,7 @@ private:
     std::unique_ptr<SliderControl> mMusicVolumeSlider;
     wxCheckBox * mPlayBreakSoundsCheckBox;
     wxCheckBox * mPlayStressSoundsCheckBox;
+    wxCheckBox * mPlayWindSoundCheckBox;
     wxCheckBox * mPlaySinkingMusicCheckBox;
 
     wxButton * mOkButton;
