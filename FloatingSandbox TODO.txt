@@ -774,15 +774,19 @@ Render:
 			+ Make sound's volume change inertial
 		+ Add probe for wind force
 		- Step 5: implications of low wind settings
+			- With low wind, we want:
+				- Little, if any, water ripples
+				- 
 			- TBD
 		= Test: 
 			- SettingsDialog: 
 				+ Dealing with negative wind
 				- Gust adjustment
 				- Modulation off
-		= Try: 
-			- Debris and Sparkles created with WindReceptivity=1.0
+		+ Try: 
+			+ Debris and Sparkles created with WindReceptivity=1.0
 			+ Rope has small WindReceptivity
+
 		- Do SailShip 2
 		- Changelist
 
