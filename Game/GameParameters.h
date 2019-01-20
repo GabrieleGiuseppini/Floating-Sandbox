@@ -142,6 +142,8 @@ struct GameParameters
 
     // Wind
 
+    bool DoModulateWind;
+
     float WindSpeedBase;        // Beaufort scale, km/h
     static constexpr float MinWindSpeedBase = -100.f;
     static constexpr float MaxWindSpeedBase = 100.0f;

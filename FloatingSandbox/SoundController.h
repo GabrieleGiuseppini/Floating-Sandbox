@@ -136,6 +136,8 @@ public:
     void PlayFloodHoseSound();
     void StopFloodHoseSound();
 
+    void PlayTerrainAdjustSound();
+
     //
     // Updating
     //
@@ -246,6 +248,7 @@ private:
         LightFlicker,
         WaterRush,
         WaterSplash,
+        Wave,
         Wind,
         WindGust,
         BombAttached,
@@ -259,7 +262,7 @@ private:
         AntiMatterBombPreImplosion,
         AntiMatterBombImplosion,
         AntiMatterBombExplosion,
-        Wave
+        TerrainAdjust
     };
 
     static SoundType StrToSoundType(std::string const & str)
@@ -292,6 +295,8 @@ private:
             return SoundType::WaterRush;
         else if (Utils::CaseInsensitiveEquals(str, "WaterSplash"))
             return SoundType::WaterSplash;
+        else if (Utils::CaseInsensitiveEquals(str, "Wave"))
+            return SoundType::Wave;
         else if (Utils::CaseInsensitiveEquals(str, "Wind"))
             return SoundType::Wind;
         else if (Utils::CaseInsensitiveEquals(str, "WindGust"))
@@ -318,8 +323,8 @@ private:
             return SoundType::AntiMatterBombImplosion;
         else if (Utils::CaseInsensitiveEquals(str, "AntiMatterBombExplosion"))
             return SoundType::AntiMatterBombExplosion;
-        else if (Utils::CaseInsensitiveEquals(str, "Wave"))
-            return SoundType::Wave;
+        else if (Utils::CaseInsensitiveEquals(str, "TerrainAdjust"))
+            return SoundType::TerrainAdjust;
         else
             throw GameException("Unrecognized SoundType \"" + str + "\"");
     }
@@ -351,7 +356,11 @@ private:
 
 private:
 
-    // Our wrapper for sf:Sound; provides volume control
+    /*
+     * Our wrapper for sf::Sound.
+     *
+     * Provides volume control based on a master volume and a local volume.
+     */
     class GameSound : public sf::Sound
     {
         public:
@@ -428,7 +437,11 @@ private:
             bool mIsMuted;
     };
 
-    // Our wrapper for sf:Music; provides volume control
+    /*
+     * Our wrapper for sf::Music.
+     *
+     * Provides volume control based on a master volume and a local volume.
+     */
     class GameMusic : public sf::Music
     {
     public:
@@ -488,6 +501,12 @@ private:
         bool mIsMuted;
     };
 
+    /*
+     * A sound that plays continuously, until stopped.
+     *
+     * Remembers playing state across pauses, and is capable of adjusting its volume
+     * based on "number of triggers".
+     */
     struct ContinuousSound
     {
         ContinuousSound()
@@ -630,6 +649,11 @@ private:
         bool mDesiredPlayingState;
     };
 
+    /*
+     * A simple continuously-playing sound.
+     *
+     * The sound may only be shut up after at least a certain time has elapsed since the sound was last heard.
+     */
     struct ContinuousInertialSound
     {
         ContinuousInertialSound(std::chrono::milliseconds inertiaDuration)

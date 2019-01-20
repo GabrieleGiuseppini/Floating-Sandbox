@@ -8,8 +8,8 @@
 namespace Physics {
 
 OceanFloor::OceanFloor(ResourceLoader & resourceLoader)
-    : mSamples(new Sample[SamplesCount + 1])
-    , mBumpMapSamples(new float[SamplesCount + 1])
+    : mSamples(new Sample[SamplesCount])
+    , mBumpMapSamples(new float[SamplesCount])
     , mCurrentSeaDepth(std::numeric_limits<float>::lowest())
     , mCurrentOceanFloorBumpiness(std::numeric_limits<float>::lowest())
     , mCurrentOceanFloorDetailAmplification(std::numeric_limits<float>::lowest())
@@ -53,16 +53,35 @@ OceanFloor::OceanFloor(ResourceLoader & resourceLoader)
         // Store sample
         mBumpMapSamples[s] = bumpMapSampleValue;
     }
-
-    // Store extra sample
-    mBumpMapSamples[SamplesCount] = mBumpMapSamples[SamplesCount - 1];
 }
 
-void OceanFloor::AdjustTo(
+bool OceanFloor::AdjustTo(
     float x,
     float targetY)
 {
-    int64_t sampleIndex = GetSampleIndex(x);
+    //
+    // Calculate sample index, minimizing error
+    //
+
+    float const absoluteSampleIndexF = x / Dx;
+    int64_t absoluteSampleIndexI =
+        (absoluteSampleIndexF >= 0.0f)
+        ? FastFloorInt64(absoluteSampleIndexF + 0.5f)
+        : FastFloorInt64(absoluteSampleIndexF - 0.5f);
+    int64_t sampleIndex = absoluteSampleIndexI % SamplesCount;
+    if (sampleIndex < 0)
+    {
+        sampleIndex += SamplesCount;
+    }
+
+    assert(sampleIndex >= 0 && sampleIndex < SamplesCount);
+
+
+    //
+    // Update values
+    //
+
+    float const oldValue = mSamples[sampleIndex].SampleValue;
 
     // Update sample value
     mSamples[sampleIndex].SampleValue = targetY;
@@ -74,6 +93,8 @@ void OceanFloor::AdjustTo(
     // Update this sample's delta
     int64_t nextSampleIndex = (sampleIndex == SamplesCount - 1) ? 0 : sampleIndex + 1;
     mSamples[sampleIndex].SampleValuePlusOneMinusSampleValue = mSamples[nextSampleIndex].SampleValue - targetY;
+
+    return abs(targetY - oldValue) > 0.2f;
 }
 
 void OceanFloor::Update(GameParameters const & gameParameters)
@@ -98,10 +119,9 @@ void OceanFloor::Update(GameParameters const & gameParameters)
         }
 
         // Calulate samples = world y of ocean floor at the sample's x
-        // sample index = 1...SamplesCount
-        // Note: we fill-in an extra sample, so we can avoid having to wrap around
+        // sample index = 1...SamplesCount-1
         float x = Dx;
-        for (int64_t i = 1; i <= SamplesCount; i++, x += Dx)
+        for (int64_t i = 1; i < SamplesCount; i++, x += Dx)
         {
             float const c1 = sinf(x * Frequency1) * 10.f;
             float const c2 = sinf(x * Frequency2) * 6.f;
@@ -118,7 +138,7 @@ void OceanFloor::Update(GameParameters const & gameParameters)
         }
 
         // sample index = SamplesCount
-        mSamples[SamplesCount].SampleValuePlusOneMinusSampleValue = mSamples[0].SampleValue - previousSampleValue;
+        mSamples[SamplesCount - 1].SampleValuePlusOneMinusSampleValue = mSamples[0].SampleValue - previousSampleValue;
 
         // Remember current game parameters
         mCurrentSeaDepth = gameParameters.SeaDepth;

@@ -308,11 +308,11 @@ void World::DetonateAntiMatterBombs()
     }
 }
 
-void World::AdjustOceanFloorTo(
+bool World::AdjustOceanFloorTo(
     float x,
     float targetY)
 {
-    mOceanFloor.AdjustTo(x, targetY);
+    return mOceanFloor.AdjustTo(x, targetY);
 }
 
 std::optional<ObjectId> World::GetNearestPointAt(
@@ -426,7 +426,7 @@ void World::UploadLandAndWater(
     GameParameters const & gameParameters,
     Render::RenderContext & renderContext) const
 {
-    static constexpr size_t SlicesCount = 500;
+    size_t constexpr SlicesCount = 500;
 
     float const visibleWorldWidth = renderContext.GetVisibleWorldWidth();
     float const sliceWidth = visibleWorldWidth / static_cast<float>(SlicesCount);
@@ -434,7 +434,7 @@ void World::UploadLandAndWater(
 
     renderContext.UploadLandAndWaterStart(SlicesCount);
 
-    // We do one extra iteration as the number of slices isthe number of quads, and the last vertical
+    // We do one extra iteration as the number of slices is the number of quads, and the last vertical
     // quad side must be at the end of the width
     for (size_t i = 0; i <= SlicesCount; ++i, sliceX += sliceWidth)
     {

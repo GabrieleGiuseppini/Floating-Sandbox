@@ -127,7 +127,7 @@ public:
 
     void DetonateAntiMatterBombs();
 
-    void AdjustOceanFloorTo(
+    bool AdjustOceanFloorTo(
         float x,
         float targetY);
 

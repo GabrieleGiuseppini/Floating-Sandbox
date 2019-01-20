@@ -463,3 +463,22 @@ TimerBombTool::TimerBombTool(
     , mCursor(MakeCursor("timer_bomb_cursor", 16, 19, resourceLoader))
 {
 }
+
+////////////////////////////////////////////////////////////////////////
+// TerrainAdjust
+////////////////////////////////////////////////////////////////////////
+
+TerrainAdjustTool::TerrainAdjustTool(
+    wxFrame * parentFrame,
+    std::shared_ptr<GameController> gameController,
+    std::shared_ptr<SoundController> soundController,
+    ResourceLoader & resourceLoader)
+    : Tool(
+        ToolType::TerrainAdjust,
+        parentFrame,
+        std::move(gameController),
+        std::move(soundController))
+    , mUpCursor(MakeCursor("terrain_adjust_cursor_up", 15, 15, resourceLoader))
+    , mDownCursor(MakeCursor("terrain_adjust_cursor_down", 15, 15, resourceLoader))
+{
+}

@@ -55,6 +55,7 @@ const long ID_IMPACTBOMB_MENUITEM = wxNewId();
 const long ID_ANTIMATTERBOMB_MENUITEM = wxNewId();
 const long ID_RCBOMBDETONATE_MENUITEM = wxNewId();
 const long ID_ANTIMATTERBOMBDETONATE_MENUITEM = wxNewId();
+const long ID_ADJUSTTERRAIN_MENUITEM = wxNewId();
 
 const long ID_OPEN_SETTINGS_WINDOW_MENUITEM = wxNewId();
 const long ID_OPEN_LOG_WINDOW_MENUITEM = wxNewId();
@@ -293,6 +294,10 @@ MainFrame::MainFrame(wxApp * mainApp)
     mToolsMenu->Append(antiMatterBombMenuItem);
     Connect(ID_ANTIMATTERBOMB_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAntiMatterBombMenuItemSelected);
 
+    wxMenuItem * adjustTerrainMenuItem = new wxMenuItem(mToolsMenu, ID_ADJUSTTERRAIN_MENUITEM, _("Adjust Terrain\tJ"), wxEmptyString, wxITEM_RADIO);
+    mToolsMenu->Append(adjustTerrainMenuItem);
+    Connect(ID_ADJUSTTERRAIN_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAdjustTerrainMenuItemSelected);
+
     mToolsMenu->Append(new wxMenuItem(mToolsMenu, wxID_SEPARATOR));
 
     mRCBombsDetonateMenuItem = new wxMenuItem(mToolsMenu, ID_RCBOMBDETONATE_MENUITEM, _("Detonate RC Bombs\tD"), wxEmptyString, wxITEM_NORMAL);
@@ -304,6 +309,10 @@ MainFrame::MainFrame(wxApp * mainApp)
     mToolsMenu->Append(mAntiMatterBombsDetonateMenuItem);
     Connect(ID_ANTIMATTERBOMBDETONATE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAntiMatterBombDetonateMenuItemSelected);
     mAntiMatterBombsDetonateMenuItem->Enable(false);
+
+    mToolsMenu->Append(new wxMenuItem(mToolsMenu, wxID_SEPARATOR));
+
+
 
     mainMenuBar->Append(mToolsMenu, _("Tools"));
 
@@ -1034,6 +1043,14 @@ void MainFrame::OnAntiMatterBombDetonateMenuItemSelected(wxCommandEvent & /*even
     assert(!!mGameController);
     mGameController->DetonateAntiMatterBombs();
 }
+
+void MainFrame::OnAdjustTerrainMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mToolController);
+    mToolController->SetTool(ToolType::TerrainAdjust);
+}
+
+//////////
 
 void MainFrame::OnOpenSettingsWindowMenuItemSelected(wxCommandEvent & /*event*/)
 {

@@ -40,6 +40,8 @@ inline std::int32_t FastFloorInt32(float value) noexcept
  * Converts the floating-point value to a 64-bit integer.
  *
  * Assumes the result fits a 64-bit value. The behavior is undefined if it doesn't.
+ *
+ * As one would expect, FastFloorInt64(-7.6) == -7.
  */
 inline std::int64_t FastFloorInt64(float value) noexcept
 {

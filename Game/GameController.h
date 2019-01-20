@@ -83,7 +83,7 @@ public:
     void ToggleTimerBombAt(vec2f const & screenCoordinates);
     void DetonateRCBombs();
     void DetonateAntiMatterBombs();
-    void AdjustOceanFloorTo(vec2f const & screenCoordinates);
+    bool AdjustOceanFloorTo(vec2f const & screenCoordinates);
     std::optional<ObjectId> GetNearestPointAt(vec2f const & screenCoordinates) const;
     void QueryNearestPointAt(vec2f const & screenCoordinates) const;
 

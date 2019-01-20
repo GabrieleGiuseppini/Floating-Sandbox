@@ -327,7 +327,8 @@ SoundController::SoundController(
         else if (soundType == SoundType::Wave
                 || soundType == SoundType::WindGust
                 || soundType == SoundType::AntiMatterBombPreImplosion
-                || soundType == SoundType::AntiMatterBombImplosion)
+                || soundType == SoundType::AntiMatterBombImplosion
+                || soundType == SoundType::TerrainAdjust)
         {
             //
             // - one-shot sound
@@ -737,6 +738,14 @@ void SoundController::PlayFloodHoseSound()
 void SoundController::StopFloodHoseSound()
 {
     mFloodHoseSound.Stop();
+}
+
+void SoundController::PlayTerrainAdjustSound()
+{
+    PlayOneShotMultipleChoiceSound(
+        SoundType::TerrainAdjust,
+        100.0f,
+        true);
 }
 
 void SoundController::Update()

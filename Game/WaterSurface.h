@@ -26,7 +26,12 @@ public:
         Wind const & wind,
         GameParameters const & gameParameters);
 
-   float GetWaterHeightAt(float x) const
+    size_t GetSamplesCount() const
+    {
+        return SamplesCount;
+    }
+
+    float GetWaterHeightAt(float x) const
     {
         // Fractional absolute index in the (infinite) sample array
         float const absoluteSampleIndexF = x / Dx;
@@ -35,23 +40,20 @@ public:
         int64_t absoluteSampleIndexI = FastFloorInt64(absoluteSampleIndexF);
 
         // Integral part - sample
-        int64_t sampleIndexI;
+        int64_t sampleIndexI = absoluteSampleIndexI % SamplesCount;
 
         // Fractional part within sample index and the next sample index
-        float sampleIndexDx;
+        float sampleIndexDx= absoluteSampleIndexF - absoluteSampleIndexI;
 
-        if (absoluteSampleIndexI >= 0)
+        if (x < 0.0f)
         {
-            sampleIndexI = absoluteSampleIndexI % SamplesCount;
-            sampleIndexDx = absoluteSampleIndexF - absoluteSampleIndexI;
-        }
-        else
-        {
-            sampleIndexI = (SamplesCount - 1) + (absoluteSampleIndexI % SamplesCount);
-            sampleIndexDx = 1.0f + absoluteSampleIndexF - absoluteSampleIndexI;
+            // Wrap around and anchor to the left sample
+            sampleIndexI += SamplesCount - 1; // Includes shift to left
+            sampleIndexDx += 1.0f;
         }
 
         assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
+        assert(sampleIndexDx >= 0.0f && sampleIndexDx <= 1.0f);
 
         return mSamples[sampleIndexI].SampleValue
              + mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue * sampleIndexDx;

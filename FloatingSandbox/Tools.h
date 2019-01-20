@@ -45,7 +45,8 @@ enum class ToolType
     AntiMatterBomb = 8,
     ImpactBomb = 9,
     RCBomb = 10,
-    TimerBomb = 11
+    TimerBomb = 11,
+    TerrainAdjust = 12
 };
 
 struct InputState
@@ -1360,4 +1361,77 @@ public:
 private:
 
     std::unique_ptr<wxCursor> const mCursor;
+};
+
+class TerrainAdjustTool final : public Tool
+{
+public:
+
+    TerrainAdjustTool(
+        wxFrame * parentFrame,
+        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<SoundController> soundController,
+        ResourceLoader & resourceLoader);
+
+public:
+
+    virtual void Initialize(InputState const & inputState) override
+    {
+        mIsEngaged = inputState.IsLeftMouseDown;
+    }
+
+    virtual void Deinitialize(InputState const & /*inputState*/) override
+    {
+    }
+
+    virtual void Update(InputState const & inputState) override
+    {
+        bool isEngaged;
+        if (inputState.IsLeftMouseDown)
+        {
+            bool isAdjusted = mGameController->AdjustOceanFloorTo(inputState.MousePosition);
+
+            if (isAdjusted)
+            {
+                mSoundController->PlayTerrainAdjustSound();
+            }
+
+            isEngaged = true;
+        }
+        else
+        {
+            isEngaged = false;
+        }
+
+        if (isEngaged != mIsEngaged)
+        {
+            // State change
+            mIsEngaged = isEngaged;
+
+            // Update cursor
+            ShowCurrentCursor();
+        }
+    }
+
+    virtual void OnMouseMove(InputState const & /*inputState*/) override {}
+    virtual void OnLeftMouseDown(InputState const & /*inputState*/) override {}
+    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+    virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+    virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+
+    virtual void ShowCurrentCursor() override
+    {
+        assert(nullptr != mParentFrame);
+
+        mParentFrame->SetCursor(mIsEngaged ? *mDownCursor : *mUpCursor);
+    }
+
+private:
+
+    // Our state
+    bool mIsEngaged;
+
+    // The cursors
+    std::unique_ptr<wxCursor> const mUpCursor;
+    std::unique_ptr<wxCursor> const mDownCursor;
 };

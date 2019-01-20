@@ -472,7 +472,7 @@ void GameController::DetonateAntiMatterBombs()
     mWorld->DetonateAntiMatterBombs();
 }
 
-void GameController::AdjustOceanFloorTo(vec2f const & screenCoordinates)
+bool GameController::AdjustOceanFloorTo(vec2f const & screenCoordinates)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 

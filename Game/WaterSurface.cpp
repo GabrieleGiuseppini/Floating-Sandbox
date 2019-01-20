@@ -8,7 +8,7 @@
 namespace Physics {
 
 WaterSurface::WaterSurface()
-    : mSamples(new Sample[SamplesCount + 1])
+    : mSamples(new Sample[SamplesCount])
 {
 }
 
@@ -31,10 +31,6 @@ void WaterSurface::Update(
     float const windRipplesFrequency = 128.0f * gameParameters.WindSpeedBase / 24.0f;
     float const windRipplesWaveHeight = 0.7f * smoothedWindNormalizedIncisiveness;
 
-    //
-    // We fill-in an extra sample, so we can avoid having to wrap around
-    //
-
     // sample index = 0
     float previousSampleValue;
     {
@@ -45,9 +41,9 @@ void WaterSurface::Update(
         mSamples[0].SampleValue = previousSampleValue;
     }
 
-    // sample index = 1...SamplesCount
+    // sample index = 1...SamplesCount - 1
     float x = Dx;
-    for (int64_t i = 1; i <= SamplesCount; i++, x += Dx)
+    for (int64_t i = 1; i < SamplesCount; i++, x += Dx)
     {
         float const c1 = sinf(x * Frequency1 + scaledTime) * 0.5f;
         float const c2 = sinf(x * Frequency2 - scaledTime * 1.1f) * 0.3f;
@@ -60,7 +56,7 @@ void WaterSurface::Update(
     }
 
     // sample index = SamplesCount
-    mSamples[SamplesCount].SampleValuePlusOneMinusSampleValue = mSamples[0].SampleValue - previousSampleValue;
+    mSamples[SamplesCount - 1].SampleValuePlusOneMinusSampleValue = mSamples[0].SampleValue - previousSampleValue;
 }
 
 }

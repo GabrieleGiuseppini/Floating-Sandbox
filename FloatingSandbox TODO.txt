@@ -189,9 +189,13 @@ Render:
 				- Else (no ship): if it's underwater (like now)
 
 		- Terrain adjust tool
-			- Managed by World via OceanFloor
-			- In Options menu
-				- Separator before "show..."
+			+ Managed by World via OceanFloor
+			= See if can get rid of extra sample
+				= Also at Water
+			= Fix zero-index
+			+ Undo 500 samples
+			- Test multiple destruction sound w/delay being 50ms
+			= Sound (hammer)
 
 		- Extended move tool (*)
 		- Interior layer (*)
@@ -749,11 +753,13 @@ Render:
 					+ Get rid of intermediate states
 				+ Do piecewise state machine, w/various prob types
 					+ Gust transitions are still poisson, but not their duration
-				- Superimpose sine?
-		- Step 4:
-			- See interaction of wind on waves
-				- Hi-freq sine whose amplitude is normally zero unless wind force over base
+		= Step 4:
+			= See interaction of wind on waves
+				= Hi-freq sine whose amplitude is normally zero unless wind force over base
 		- Add all wind settings to SettingsDialog
+			- Include global flag
+		- Step 5: implications of low wind settings
+			- TBD
 		= Sound:
 			+ Layered like waves:
 				+ 1 continuous sound
@@ -766,7 +772,7 @@ Render:
 				- Verify first the "2..." is e-0x
 				- RunningAverage::Fill(float)
 				- SoundController::Reset takes GameParameters, so we can use base
-			- Remove probe
+			+ Remove probe
 			+ Make sound's volume change inertial
 		+ Add probe for wind force
 		- Try: Debris and Sparkles created with WindReceptivity=1.0
