@@ -180,6 +180,16 @@ Render:
 			+ Titanic
 			+ Krafting
 		+ Porthole: "wet_failure_rate": 3.0
+		+ Terrain adjust tool
+			+ Managed by World via OceanFloor
+			+ See if can get rid of extra sample
+				+ Also at Water
+			+ Fix zero-index
+			+ Undo 500 samples
+			+ Test multiple destruction sound w/delay being 50ms
+			+ Sound (hammer)
+			+ Changelist
+
 
 		= Wind and cloth (*)
 
@@ -187,15 +197,6 @@ Render:
 			- Tool is engaged if:
 				- It's on ship => suck water out (just like inverse flood)
 				- Else (no ship): if it's underwater (like now)
-
-		- Terrain adjust tool
-			+ Managed by World via OceanFloor
-			= See if can get rid of extra sample
-				= Also at Water
-			= Fix zero-index
-			+ Undo 500 samples
-			- Test multiple destruction sound w/delay being 50ms
-			= Sound (hammer)
 
 		- Extended move tool (*)
 		- Interior layer (*)
@@ -775,11 +776,14 @@ Render:
 			+ Remove probe
 			+ Make sound's volume change inertial
 		+ Add probe for wind force
-		- Try: Debris and Sparkles created with WindReceptivity=1.0
+		- Try: 
+			- Debris and Sparkles created with WindReceptivity=1.0
+			- Rope has small WindReceptivity
 		= Test: 
 			+ SettingsDialog dealing with negative wind
 			- SettingsDialog: gust adjustment
 		- Do SailShip 2
+		- Changelist
 
 	- Lights breaking under pressure
 		- Idea:

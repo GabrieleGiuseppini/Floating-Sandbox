@@ -27,6 +27,8 @@ set  (FLOATING_SANDBOX_SOURCES
 	SliderControl.h
 	SoundController.cpp
 	SoundController.h
+	Sounds.cpp
+	Sounds.h
 	SplashScreenDialog.cpp
 	SplashScreenDialog.h
 	ToolController.cpp
