@@ -754,14 +754,12 @@ Render:
 					+ Get rid of intermediate states
 				+ Do piecewise state machine, w/various prob types
 					+ Gust transitions are still poisson, but not their duration
-		= Step 4:
-			= See interaction of wind on waves
-				= Hi-freq sine whose amplitude is normally zero unless wind force over base
-		- Add all wind settings to SettingsDialog
-			- Include global flag
-		- Step 5: implications of low wind settings
-			- TBD
-		= Sound:
+		+ Step 4:
+			+ See interaction of wind on waves
+				+ Hi-freq sine whose amplitude is normally zero unless wind force over base
+		+ Add all wind settings to SettingsDialog
+			+ Include global flag
+		+ Sound:
 			+ Layered like waves:
 				+ 1 continuous sound
 					+ Triggered by abs threshold, 30
@@ -769,19 +767,22 @@ Render:
 					+ Triggered by abs threshold && force > .9*Max
 			+ IEventHandlers::OnWindForce...(zero, base, max)
 			+ Do more gusts
-			- Fix initial ramp up
-				- Verify first the "2..." is e-0x
-				- RunningAverage::Fill(float)
-				- SoundController::Reset takes GameParameters, so we can use base
+			+ Fix initial ramp up
+				+ RunningAverage::Fill(float)
+				+ Remove log message @ SoundController
 			+ Remove probe
 			+ Make sound's volume change inertial
 		+ Add probe for wind force
-		- Try: 
-			- Debris and Sparkles created with WindReceptivity=1.0
-			- Rope has small WindReceptivity
+		- Step 5: implications of low wind settings
+			- TBD
 		= Test: 
-			+ SettingsDialog dealing with negative wind
-			- SettingsDialog: gust adjustment
+			- SettingsDialog: 
+				+ Dealing with negative wind
+				- Gust adjustment
+				- Modulation off
+		= Try: 
+			- Debris and Sparkles created with WindReceptivity=1.0
+			+ Rope has small WindReceptivity
 		- Do SailShip 2
 		- Changelist
 

@@ -2158,7 +2158,8 @@
         }, 
         "water_diffusion_speed": 0.015, 
         "water_retention": 0.5, 
-        "water_volume_fill": 0.3
+        "water_volume_fill": 0.3,
+	"wind_receptivity": 0.8
     }, 
     {
         "color_key": "#D2D2D2", 

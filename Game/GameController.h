@@ -199,6 +199,9 @@ public:
     float GetMinWaveHeight() const { return GameParameters::MinWaveHeight; }
     float GetMaxWaveHeight() const { return GameParameters::MaxWaveHeight; }
 
+    bool GetDoModulateWind() const { return mGameParameters.DoModulateWind; }
+    void SetDoModulateWind(bool value) { mGameParameters.DoModulateWind = value; }
+
     float GetWindSpeedBase() const { return mGameParameters.WindSpeedBase; }
     void SetWindSpeedBase(float value) { mGameParameters.WindSpeedBase = value; }
     float GetMinWindSpeedBase() const { return GameParameters::MinWindSpeedBase; }

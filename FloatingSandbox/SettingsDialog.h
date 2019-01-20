@@ -39,6 +39,7 @@ private:
     void OnGenerateDebrisCheckBoxClick(wxCommandEvent & event);
     void OnGenerateSparklesCheckBoxClick(wxCommandEvent & event);
     void OnGenerateAirBubblesCheckBoxClick(wxCommandEvent & event);
+    void OnModulateWindCheckBoxClick(wxCommandEvent & event);
 
     void OnSeeShipThroughSeaWaterCheckBoxClick(wxCommandEvent & event);
     void OnShipRenderModeRadioBox(wxCommandEvent & event);
@@ -74,6 +75,7 @@ private:
     std::unique_ptr<SliderControl> mNumberOfStarsSlider;
     std::unique_ptr<SliderControl> mNumberOfCloudsSlider;
     std::unique_ptr<SliderControl> mWindSpeedBaseSlider;
+    wxCheckBox* mModulateWindCheckBox;
     std::unique_ptr<SliderControl> mWindGustAmplitudeSlider;
 
     // World

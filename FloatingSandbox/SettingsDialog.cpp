@@ -24,6 +24,7 @@ const long ID_ULTRA_VIOLENT_CHECKBOX = wxNewId();
 const long ID_GENERATE_DEBRIS_CHECKBOX = wxNewId();
 const long ID_GENERATE_SPARKLES_CHECKBOX = wxNewId();
 const long ID_GENERATE_AIR_BUBBLES_CHECKBOX = wxNewId();
+const long ID_MODULATE_WIND_CHECKBOX = wxNewId();
 const long ID_SEE_SHIP_THROUGH_SEA_WATER_CHECKBOX = wxNewId();
 const long ID_SHOW_STRESS_CHECKBOX = wxNewId();
 const long ID_WIREFRAME_MODE_CHECKBOX = wxNewId();
@@ -255,6 +256,14 @@ void SettingsDialog::OnGenerateAirBubblesCheckBoxClick(wxCommandEvent & /*event*
     mApplyButton->Enable(true);
 }
 
+void SettingsDialog::OnModulateWindCheckBoxClick(wxCommandEvent & /*event*/)
+{
+    mWindGustAmplitudeSlider->Enable(mModulateWindCheckBox->IsChecked());
+
+    // Remember we're dirty now
+    mApplyButton->Enable(true);
+}
+
 void SettingsDialog::OnShipRenderModeRadioBox(wxCommandEvent & /*event*/)
 {
     // Remember we're dirty now
@@ -365,6 +374,8 @@ void SettingsDialog::ApplySettings()
 
     mGameController->SetWindSpeedBase(
         mWindSpeedBaseSlider->GetValue());
+
+    mGameController->SetDoModulateWind(mModulateWindCheckBox->IsChecked());
 
     mGameController->SetWindSpeedMaxFactor(
         mWindGustAmplitudeSlider->GetValue());
@@ -715,7 +726,11 @@ void SettingsDialog::PopulateFluidsPanel(wxPanel * panel)
 
 void SettingsDialog::PopulateSkyPanel(wxPanel * panel)
 {
-    wxBoxSizer* controlsSizer = new wxBoxSizer(wxHORIZONTAL);
+    wxGridSizer* gridSizer = new wxGridSizer(2, 4, 0, 0);
+
+    //
+    // Row 1
+    //
 
 
     // Number of Stars
@@ -735,7 +750,7 @@ void SettingsDialog::PopulateSkyPanel(wxPanel * panel)
             static_cast<float>(mGameController->GetMinNumberOfStars()),
             static_cast<float>(mGameController->GetMaxNumberOfStars())));
 
-    controlsSizer->Add(mNumberOfStarsSlider.get(), 1, wxALL, SliderBorder);
+    gridSizer->Add(mNumberOfStarsSlider.get(), 1, wxALL, SliderBorder);
 
 
     // Number of Clouds
@@ -755,7 +770,7 @@ void SettingsDialog::PopulateSkyPanel(wxPanel * panel)
             static_cast<float>(mGameController->GetMinNumberOfClouds()),
             static_cast<float>(mGameController->GetMaxNumberOfClouds())));
 
-    controlsSizer->Add(mNumberOfCloudsSlider.get(), 1, wxALL, SliderBorder);
+    gridSizer->Add(mNumberOfCloudsSlider.get(), 1, wxALL, SliderBorder);
 
 
     // Wind Speed Base
@@ -775,7 +790,7 @@ void SettingsDialog::PopulateSkyPanel(wxPanel * panel)
             mGameController->GetMinWindSpeedBase(),
             mGameController->GetMaxWindSpeedBase()));
 
-    controlsSizer->Add(mWindSpeedBaseSlider.get(), 1, wxALL, SliderBorder);
+    gridSizer->Add(mWindSpeedBaseSlider.get(), 1, wxALL, SliderBorder);
 
 
     // Wind Gust Amplitude
@@ -795,12 +810,27 @@ void SettingsDialog::PopulateSkyPanel(wxPanel * panel)
             mGameController->GetMinWindSpeedMaxFactor(),
             mGameController->GetMaxWindSpeedMaxFactor()));
 
-    controlsSizer->Add(mWindGustAmplitudeSlider.get(), 1, wxALL, SliderBorder);
+    gridSizer->Add(mWindGustAmplitudeSlider.get(), 1, wxALL, SliderBorder);
+
+
+    //
+    // Row 2
+    //
+
+    gridSizer->AddSpacer(0);
+    gridSizer->AddSpacer(0);
+    gridSizer->AddSpacer(0);
+
+    mModulateWindCheckBox = new wxCheckBox(panel, ID_MODULATE_WIND_CHECKBOX, _("Modulate Wind"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Modulate Wind Checkbox"));
+    Connect(ID_MODULATE_WIND_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnModulateWindCheckBoxClick);
+
+    gridSizer->Add(mModulateWindCheckBox, 0, wxALL | wxALIGN_TOP, 0);
+
 
 
     // Finalize panel
 
-    panel->SetSizerAndFit(controlsSizer);
+    panel->SetSizerAndFit(gridSizer);
 }
 
 void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
@@ -1263,7 +1293,10 @@ void SettingsDialog::ReadSettings()
 
     mWindSpeedBaseSlider->SetValue(mGameController->GetWindSpeedBase());
 
+    mModulateWindCheckBox->SetValue(mGameController->GetDoModulateWind());
+
     mWindGustAmplitudeSlider->SetValue(mGameController->GetWindSpeedMaxFactor());
+    mWindGustAmplitudeSlider->Enable(mGameController->GetDoModulateWind());
 
 
 
@@ -1337,6 +1370,8 @@ void SettingsDialog::ReadSettings()
         }
     }
 
+    mShipRenderModeRadioBox->Enable(!mGameController->GetWireframeMode());
+
     auto vectorFieldRenderMode = mGameController->GetVectorFieldRenderMode();
     switch (vectorFieldRenderMode)
     {
@@ -1375,7 +1410,6 @@ void SettingsDialog::ReadSettings()
     mShowStressCheckBox->SetValue(mGameController->GetShowShipStress());
 
     mWireframeModeCheckBox->SetValue(mGameController->GetWireframeMode());
-    mShipRenderModeRadioBox->Enable(!mGameController->GetWireframeMode());
 
 
     mEffectsVolumeSlider->SetValue(mSoundController->GetMasterEffectsVolume());

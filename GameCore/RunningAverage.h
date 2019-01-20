@@ -17,9 +17,9 @@ class RunningAverage
 
 public:
 
-    RunningAverage()
+    RunningAverage(float initialValue = 0.0f)
     {
-        Reset();
+        Reset(initialValue);
     }
 
     // Make sure we don't introduce unnecessary copies inadvertently
@@ -47,11 +47,16 @@ public:
         return mCurrentAverage;
     }
 
-    void Reset()
+    void Reset(float initialValue = 0.0f)
     {
-        mSamples.fill(0.0f);
+        Fill(initialValue);
         mCurrentSampleHead = 0;
-        mCurrentAverage = 0.0f;
+    }
+
+    void Fill(float value)
+    {
+        mSamples.fill(value / NumSamples);
+        mCurrentAverage = value;
     }
 
 private:

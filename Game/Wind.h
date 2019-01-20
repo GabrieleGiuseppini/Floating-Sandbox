@@ -62,6 +62,7 @@ private:
     float mGustCdf;
 
     // The last parameter values our pre-calculated values are current with
+    bool mCurrentDoModulateWindParameter;
     float mCurrentSpeedBaseParameter;
     float mCurrentSpeedMaxFactorParameter;
     float mCurrentGustFrequencyAdjustmentParameter;
