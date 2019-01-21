@@ -784,6 +784,21 @@ Render:
 			+ Debris and Sparkles created with WindReceptivity=1.0
 			+ Rope has small WindReceptivity
 
+		+ SettingsDialog: expose "Play Wind Sound"
+			+ Test
+
+		= Re-dimension wind force
+			+ Try default being -24
+				+ Flip Flagship
+			- Say it's km/sec and transform to F (m/sec, w/air mass) in ApplyForce
+				
+		- Test perf
+
+		+ Check with wind speed = 0 - divisions by zero!
+			+ Wind
+			+ Water
+			+ Sound?
+
 		- Do SailShip 2
 		- Changelist
 
@@ -1379,16 +1394,19 @@ Render:
 				- Stop PendingShipPlace tool
 
 - Passengers:
-	- Separate layer provides floors, ladders, and obstacles
 	- Ship has number of passengers
-	- Can get away at beginning with pacman-like figures
-	- For more realistic version:
-		- Skeleton with 10 parts (8 limbs, body, head)
-		- Need to make these actions:
-			- Walk
-			- Fall
-			- Climb
-			- Swim
+		- "like how many people would be aboard & as the ship sinks it like shows how many people are alive, escaped via life boat or died"
+
+	- Moving passengers
+		- Separate layer provides floors, ladders, and obstacles
+		- Can get away at beginning with pacman-like figures
+		- For more realistic version:
+			- Skeleton with 10 parts (8 limbs, body, head)
+			- Need to make these actions:
+				- Walk
+				- Fall
+				- Climb
+				- Swim
 
 - Collision detection - for multiple ships
 	- Nearest neighbor: http://www.cs.umd.edu/~mount/ANN/
