@@ -787,17 +787,23 @@ Render:
 		+ SettingsDialog: expose "Play Wind Sound"
 			+ Test
 
-		= Re-dimension wind force
+		+ Re-dimension wind force
 			+ Try default being -24
 				+ Flip Flagship
-			- Say it's km/sec and transform to F (m/sec, w/air mass) in ApplyForce
-				
-		- Test perf
+			+ Say it's km/sec and transform to F (m/sec, w/air mass) in ApplyForce
+			+ Eventually adjust receptivity of cloth and rope
+			+ If ok:
+				+ Also change receptivity of sparkles and debris
+				+ Test 
+			+ Test Sailship 1
+			+ Increase strength of cloth to avoid stress at Flagship
 
 		+ Check with wind speed = 0 - divisions by zero!
 			+ Wind
 			+ Water
 			+ Sound?
+				
+		- Test perf
 
 		- Do SailShip 2
 		- Changelist

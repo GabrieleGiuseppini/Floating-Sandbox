@@ -45,6 +45,9 @@ struct GameParameters
     static constexpr vec2f GravityNormalized = vec2f(0.0f, -1.0f);
     static constexpr float GravityMagnitude = 9.80f;
 
+    // Air mass
+    static constexpr float AirMass = 1.2754f;
+
     // Water mass
     static constexpr float WaterMass = 1000.0f;
 

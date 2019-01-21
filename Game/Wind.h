@@ -25,16 +25,31 @@ public:
 
     void Update(GameParameters const & gameParameters);
 
+    /*
+     * Returns the (signed) base magnitude, i.e. the magnitude of the unmodulated wind force.
+     *
+     * N.
+     */
     float GetBaseMagnitude() const
     {
         return mBaseMagnitude;
     }
 
+    /*
+     * Returns the (signed) maximum magnitude, i.e. the full magnitude of the force of a gust.
+     *
+     * N.
+     */
     float GetMaxMagnitude() const
     {
         return mMaxMagnitude;
     }
 
+    /*
+     * Returns the current modulated wind force.
+     *
+     * N.
+     */
     vec2f const & GetCurrentWindForce() const
     {
         return mCurrentWindForce;

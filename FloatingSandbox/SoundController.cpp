@@ -979,16 +979,16 @@ void SoundController::OnWindForceUpdated(
     float windVolume;
     if (windForceAbsoluteMagnitude >= abs(baseMagnitude))
     {
-        // 100 * (-1 / 1.1^(0.6 * x) + 1)
-        windVolume = 100.f * (-1.f / std::pow(1.1f, 0.6f * (windForceAbsoluteMagnitude - abs(baseMagnitude))) + 1.f);
+        // 100 * (-1 / 1.1^(1.69 * x) + 1)
+        windVolume = 100.f * (-1.f / std::pow(1.1f, 1.69f * (windForceAbsoluteMagnitude - abs(baseMagnitude))) + 1.f);
     }
     else
     {
         // Raise volume only if goes up
         float const deltaUp = std::max(0.0f, windForceAbsoluteMagnitude - mLastWindForceAbsoluteMagnitude);
 
-        // 100 * (-1 / 1.1^(0.6 * x) + 1)
-        windVolume = 100.f * (-1.f / std::pow(1.1f, 0.6f * deltaUp) + 1.f);
+        // 100 * (-1 / 1.1^(1.69 * x) + 1)
+        windVolume = 100.f * (-1.f / std::pow(1.1f, 1.69f * deltaUp) + 1.f);
     }
 
     // Smooth the volume

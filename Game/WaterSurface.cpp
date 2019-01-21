@@ -20,7 +20,7 @@ void WaterSurface::Update(
     // Waves
 
     float const waveSpeed = gameParameters.WindSpeedBase / 8.0f; // Water moves slower than wind
-    float const scaledTime = currentSimulationTime * (0.5f + waveSpeed) / 3.0f;
+    float const waveTheta = currentSimulationTime * (0.5f + waveSpeed) / 3.0f;
     float const waveHeight = gameParameters.WaveHeight;
 
     // Ripples
@@ -32,7 +32,7 @@ void WaterSurface::Update(
         : std::max(0.0f, windForceAbsoluteMagnitude - abs(wind.GetBaseMagnitude()))
           / abs(windForceGustRelativeAmplitude);
 
-    float const windRipplesFrequency = (gameParameters.WindSpeedBase >= 0.0f)
+    float const windRipplesTimeFrequency = (gameParameters.WindSpeedBase >= 0.0f)
         ? 128.0f
         : -128.0f;
 
@@ -42,9 +42,9 @@ void WaterSurface::Update(
     // sample index = 0
     float previousSampleValue;
     {
-        float const c1 = sinf(scaledTime) * 0.5f;
-        float const c2 = sinf(-scaledTime * 1.1f) * 0.3f;
-        float const c3 = sinf(-currentSimulationTime * windRipplesFrequency);
+        float const c1 = sinf(waveTheta) * 0.5f;
+        float const c2 = sinf(-waveTheta * 1.1f) * 0.3f;
+        float const c3 = sinf(-currentSimulationTime * windRipplesTimeFrequency);
         previousSampleValue = (c1 + c2) * waveHeight + c3 * windRipplesWaveHeight;
         mSamples[0].SampleValue = previousSampleValue;
     }
@@ -53,9 +53,9 @@ void WaterSurface::Update(
     float x = Dx;
     for (int64_t i = 1; i < SamplesCount; i++, x += Dx)
     {
-        float const c1 = sinf(x * Frequency1 + scaledTime) * 0.5f;
-        float const c2 = sinf(x * Frequency2 - scaledTime * 1.1f) * 0.3f;
-        float const c3 = sinf(x * Frequency3 - currentSimulationTime * windRipplesFrequency);
+        float const c1 = sinf(x * SpatialFrequency1 + waveTheta) * 0.5f;
+        float const c2 = sinf(x * SpatialFrequency2 - waveTheta * 1.1f) * 0.3f;
+        float const c3 = sinf(x * SpatialFrequency3 - currentSimulationTime * windRipplesTimeFrequency);
         float const sampleValue = (c1 + c2) * waveHeight + c3 * windRipplesWaveHeight;
         mSamples[i].SampleValue = sampleValue;
         mSamples[i - 1].SampleValuePlusOneMinusSampleValue = sampleValue - previousSampleValue;

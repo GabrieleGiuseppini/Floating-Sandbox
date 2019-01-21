@@ -1,8 +1,8 @@
 # Floating Sandbox
-Two-dimensional mass-spring network in C++, simulating physical bodies floating in water and sinking.
+Two-dimensional particle system in C++, simulating physical bodies floating in water and sinking.
 
 # Overview
-This game is a realistic two-dimensional mass-spring network, which simulates physical bodies (such as ships) floating in water. You can punch holes in an object, slice it, apply forces to it, and smash it with bomb explosions. Once water starts rushing inside the object, it will start sinking and, if you're lucky enough, it will start breaking up!
+This game is a realistic two-dimensional particle system, which uses mass-spring networks to simulate rigid bodies (such as ships) floating in water. You can punch holes in an object, slice it, apply forces to it, and smash it with bomb explosions. Once water starts rushing inside the object, it will start sinking and, if you're lucky enough, it will start breaking up!
 
 <img src="https://i.imgur.com/c8fTsgY.png">
 <img src="https://i.imgur.com/kovxCty.png">
@@ -52,7 +52,8 @@ Users can interact with a body in different ways:
 - Slice the body in pieces
 - Apply radial forces and angular forces
 - Deploy bombs
-- Pin individual points of the body so that their position (and velocity) become frozen
+- Pin individual points of the body so that their position (and velocity) becomes frozen
+- Add or remove water to and from the body
 
 <img src="https://i.imgur.com/WUk7qGv.png">
 

@@ -164,7 +164,7 @@ void Points::CreateEphemeralParticleDebris(
 
     mLightBuffer[pointIndex] = 0.0f;
 
-    mWindReceptivityBuffer[pointIndex] = 1.0f;
+    mWindReceptivityBuffer[pointIndex] = 3.0f;
 
     mEphemeralTypeBuffer[pointIndex] = EphemeralType::Debris;
     mEphemeralStartTimeBuffer[pointIndex] = currentSimulationTime;
@@ -213,7 +213,7 @@ void Points::CreateEphemeralParticleSparkle(
 
     mLightBuffer[pointIndex] = 0.0f;
 
-    mWindReceptivityBuffer[pointIndex] = 1.0f;
+    mWindReceptivityBuffer[pointIndex] = 3.0f;
 
     mEphemeralTypeBuffer[pointIndex] = EphemeralType::Sparkle;
     mEphemeralStartTimeBuffer[pointIndex] = currentSimulationTime;

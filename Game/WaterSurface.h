@@ -61,12 +61,12 @@ public:
 
 private:
 
-    // Frequencies of the wave components
-    static constexpr float Frequency1 = 0.1f;
-    static constexpr float Frequency2 = 0.3f;
-    static constexpr float Frequency3 = 0.5f; // Wind component
+    // Spatial frequencies of the wave components
+    static constexpr float SpatialFrequency1 = 0.1f;
+    static constexpr float SpatialFrequency2 = 0.3f;
+    static constexpr float SpatialFrequency3 = 0.5f; // Wind component
 
-    // Period of the sum of the frequency components
+    // Period of the sum of the spatial frequency components
     static constexpr float Period = 20.0f * Pi<float>;
 
     // Smoothing of wind incisiveness
