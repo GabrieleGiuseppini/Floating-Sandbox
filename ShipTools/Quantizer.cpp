@@ -41,10 +41,10 @@ void Quantizer::Quantize(
     }
 
     // Convert format
-    if (ilGetInteger(IL_IMAGE_FORMAT) != IL_RGB
+    if (ilGetInteger(IL_IMAGE_FORMAT) != IL_RGBA
         || ilGetInteger(IL_IMAGE_TYPE) != IL_UNSIGNED_BYTE)
     {
-        if (!ilConvertImage(IL_RGB, IL_UNSIGNED_BYTE))
+        if (!ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE))
         {
             ILint devilError = ilGetError();
             std::string devilErrorMessage(iluErrorString(devilError));
@@ -69,20 +69,10 @@ void Quantizer::Quantize(
         if ( (!entry.second.IsUniqueType(StructuralMaterial::MaterialUniqueType::Rope) || doKeepRopes)
             && (entry.second.Name != "Glass" || doKeepGlass))
         {
-            if (!targetFixedColor)
-            {
-                gameColors.emplace_back(
-                    std::make_pair(
-                        Utils::RgbToVec(entry.first),
-                        entry.first));
-            }
-            else
-            {
-                gameColors.emplace_back(
-                    std::make_pair(
-                        Utils::RgbToVec(entry.first),
-                        *targetFixedColor));
-            }
+            gameColors.emplace_back(
+                std::make_pair(
+                    Utils::RgbToVec(entry.first),
+                    entry.first));
         }
     }
 
@@ -100,34 +90,60 @@ void Quantizer::Quantize(
 
     for (int r = 0; r < height; ++r)
     {
-        size_t index = r * width * 3;
+        size_t index = r * width * 4;
 
-        for (int c = 0; c < width; ++c, index += 3)
+        for (int c = 0; c < width; ++c, index += 4)
         {
             vec3f imgColor = vec3f(
                 static_cast<float>(imageData[index]) / 255.0f,
                 static_cast<float>(imageData[index + 1]) / 255.0f,
                 static_cast<float>(imageData[index + 2]) / 255.0f);
 
-            // Find closest color
-            std::optional<size_t> bestGameColorIndex;
-            float bestColorSquareDistance = std::numeric_limits<float>::max();
-            for (size_t gameColor = 0; gameColor < gameColors.size(); ++gameColor)
+            std::optional<std::array<uint8_t, 3u>> bestColor;
+
+            if (!targetFixedColor)
             {
-                float colorSquareDistance = (imgColor - gameColors[gameColor].first).squareLength();
-                if (colorSquareDistance < bestColorSquareDistance)
+                // Find closest color
+                std::optional<size_t> bestGameColorIndex;
+                float bestColorSquareDistance = std::numeric_limits<float>::max();
+                for (size_t gameColor = 0; gameColor < gameColors.size(); ++gameColor)
                 {
-                    bestGameColorIndex = gameColor;
-                    bestColorSquareDistance = colorSquareDistance;
+                    float colorSquareDistance = (imgColor - gameColors[gameColor].first).squareLength();
+                    if (colorSquareDistance < bestColorSquareDistance)
+                    {
+                        bestGameColorIndex = gameColor;
+                        bestColorSquareDistance = colorSquareDistance;
+                    }
+                }
+
+                // Store color
+                assert(!!bestGameColorIndex);
+                bestColor = gameColors[*bestGameColorIndex].second;
+            }
+            else
+            {
+                // Assign a color only if not transparent
+                if (imageData[index + 3] != 0)
+                {
+                    bestColor = *targetFixedColor;
                 }
             }
 
-            // Store color
-            assert(!!bestGameColorIndex);
-            auto const & bestGameColor = gameColors[*bestGameColorIndex].second;
-            imageData[index] = bestGameColor[0];
-            imageData[index + 1] = bestGameColor[1];
-            imageData[index + 2] = bestGameColor[2];
+            if (!!bestColor)
+            {
+                imageData[index] = (*bestColor)[0];
+                imageData[index + 1] = (*bestColor)[1];
+                imageData[index + 2] = (*bestColor)[2];
+                imageData[index + 3] = 255;
+            }
+            else
+            {
+                // Full white
+                imageData[index] = PureWhite[0];
+                imageData[index + 1] = PureWhite[1];
+                imageData[index + 2] = PureWhite[2];
+                imageData[index + 3] = 255;
+            }
         }
     }
 

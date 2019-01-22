@@ -802,8 +802,12 @@ Render:
 			+ Wind
 			+ Water
 			+ Sound?
+
+		- Test another re-dimension:
+			- Fw = 1/2 rho v2 A  
 				
 		- Test perf
+			- Do perf analysis to rule out sound
 
 		- Do SailShip 2
 		- Changelist
@@ -1304,12 +1308,18 @@ Render:
 
 	- Save screenshots/photos 
 		- Saves automatically in custom folder
-			- New settings provider: ApplicationSettings
+			- New settings provider: UISettings
 				- Managed normally by SettingsManager, and thus tweaked via SettingsDialog
 		- Code (at RenderContext::TakeScreenshot() -> returns ImageData)
 		    glPixelStorei(GL_PACK_ALIGNMENT, 1);
 		    glReadBuffer(GL_FRONT);
 		    glReadPixels(0, 0, windowWidth, windowHeight, GL_BGR_EXT, GL_UNSIGNED_BYTE, pixels);
+		- MainFrame does the saving, via GameLib/ImageTools
+			- Move load functions from ResourceLoader to ImageTools
+			- All static methods
+			- MainFrame responsible for finding unique filenames like smartphone, with micro's portion
+
+		   
 
 - Sounds:
 	- Ship may come with custom sound(s) for horns
@@ -1377,6 +1387,7 @@ Render:
 			- Ad-hoc MainFrame dialog showing ResourcePackMetadata's 
 				- Chosen one goes to ApplicationSettings (see elsewhere in this roadmap)
 				- Checkbox for "Set as default" => ApplicationSettings::Save()
+				- At Save, before saving - notify that a reload is necessary
 
 - Multiple ships:
 	- Better done after collision detection
