@@ -2165,14 +2165,14 @@
         "color_key": "#D2D2D2", 
         "is_hull": false, 
         "mass": {
-            "density": 0.0435,
+            "density": 0.0215,
             "nominal_mass": 30
         }, 
         "name": "Cloth Grey", 
         "render_color": "#D2D2D2", 
         "sound_type": "Cloth", 
         "stiffness": 0.012, 
-        "strength": 2.4, 
+        "strength": 3.8, 
         "template": {
             "column": 2, 
             "row": "70|Cloth"
@@ -2186,14 +2186,14 @@
         "color_key": "#DD4523", 
         "is_hull": false, 
         "mass": {
-            "density": 0.0435,
+            "density": 0.0215,
             "nominal_mass": 30
         }, 
         "name": "Cloth Red", 
         "render_color": "#DD4523", 
         "sound_type": "Cloth", 
         "stiffness": 0.012, 
-        "strength": 2.4, 
+        "strength": 3.8, 
         "template": {
             "column": 3, 
             "row": "70|Cloth"
@@ -2207,14 +2207,14 @@
         "color_key": "#054C00", 
         "is_hull": false, 
         "mass": {
-            "density": 0.0435, 
+            "density": 0.0215, 
             "nominal_mass": 30
         }, 
         "name": "Cloth Green", 
         "render_color": "#054C00", 
         "sound_type": "Cloth", 
         "stiffness": 0.012, 
-        "strength": 2.4, 
+        "strength": 3.8, 
         "template": {
             "column": 4, 
             "row": "70|Cloth"
@@ -2228,14 +2228,14 @@
         "color_key": "#0C20D1", 
         "is_hull": false, 
         "mass": {
-            "density": 0.0435,
+            "density": 0.0215,
             "nominal_mass": 30
         }, 
         "name": "Cloth Blue", 
         "render_color": "#0C20D1", 
         "sound_type": "Cloth", 
         "stiffness": 0.012, 
-        "strength": 2.4, 
+        "strength": 3.8,
         "template": {
             "column": 5, 
             "row": "70|Cloth"
