@@ -1,6 +1,9 @@
 =================================================
 Current perf:
 =================================================
+- fps: 30.2/30.6/31.2
+
+Before wind:
 - fps: 30.8/31.0/31.3
 
 Before exp optimization:
@@ -192,6 +195,14 @@ Render:
 
 
 		= Wind and cloth (*)
+
+		- Do we still need render color in material?
+			- We might still want to use it before making texture
+				- Just color replacement with (structural) materials database
+					- Ship loader needs MaterialDatabase
+			- If not:
+				- Nuke from code
+				- Nuke from both materials' json's
 
 		- Bubble tool: make it dry ship 
 			- Tool is engaged if:
@@ -802,14 +813,25 @@ Render:
 			+ Wind
 			+ Water
 			+ Sound?
-
 		+ Test another re-dimension:
-			+ Fw = 1/2 rho v2 A  
-				
-		- Test perf
-			- Do perf analysis to rule out sound
+			+ Fw = 1/2 rho v2 A  				
+		+ Test perf
+			+ Do perf analysis to rule out sound
+		+ Rearc: Wind exports speed (vector & magnitudes), in km/h
+			+ Ship calcs force
+			+ Calc & adjust sound factors
+			+ Test:
+				+ Force on cloth
+					+ Lower receptivity
+				+ Force on Titanic's cables
+				+ Sound
+					+ Lower curve
+				+ Waves
+					+ Make them faster
+				+ Clouds
+				+ Max settings
 
-		- Do SailShip 2
+		= Do SailShip 2
 		- Changelist
 
 	- Lights breaking under pressure
@@ -1318,8 +1340,7 @@ Render:
 			- Move load functions from ResourceLoader to ImageTools
 			- All static methods
 			- MainFrame responsible for finding unique filenames like smartphone, with micro's portion
-
-		   
+			- Fires snapshot sound		   
 
 - Sounds:
 	- Ship may come with custom sound(s) for horns

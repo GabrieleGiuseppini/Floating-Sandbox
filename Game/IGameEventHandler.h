@@ -99,12 +99,12 @@ public:
         // Default-implemented
     }
 
-    virtual void OnWindForceUpdated(
-        float const /*zeroMagnitude*/,
-        float const /*baseMagnitude*/,
-        float const /*preMaxMagnitude*/,
-        float const /*maxMagnitude*/,
-        vec2f const & /*windForce*/)
+    virtual void OnWindSpeedUpdated(
+        float const /*zeroSpeedMagnitude*/,
+        float const /*baseSpeedMagnitude*/,
+        float const /*preMaxSpeedMagnitude*/,
+        float const /*maxSpeedMagnitude*/,
+        vec2f const & /*windSpeed*/)
     {
         // Default-implemented
     }

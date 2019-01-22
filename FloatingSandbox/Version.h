@@ -10,6 +10,8 @@
 
 #define VERSION "1.8.0"
 
+inline std::string ApplicationName = "Floating Sandbox";
+
 enum class VersionFormat
 {
     Short,
@@ -28,12 +30,12 @@ inline std::string GetVersionInfo(VersionFormat versionFormat)
 
         case VersionFormat::Long:
         {
-            return std::string("Floating Sandbox v" VERSION);
+            return std::string(ApplicationName + " v" VERSION);
         }
 
         case VersionFormat::LongWithDate:
         {
-            return std::string("Floating Sandbox v" VERSION " (" __DATE__ ")");
+            return std::string(ApplicationName + " v" VERSION " (" __DATE__ ")");
         }
 
         default:

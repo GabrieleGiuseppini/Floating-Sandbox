@@ -57,9 +57,9 @@ public:
         return mOceanFloor.GetFloorHeightAt(x);
     }
 
-    inline vec2f const & GetCurrentWindForce() const
+    inline vec2f const & GetCurrentWindSpeed() const
     {
-        return mWind.GetCurrentWindForce();
+        return mWind.GetCurrentWindSpeed();
     }
 
     void MoveBy(

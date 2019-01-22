@@ -21,10 +21,10 @@ constexpr float GustLambda = 1.0f / 1.0f;
 Wind::Wind(std::shared_ptr<IGameEventHandler> gameEventHandler)
     : mGameEventHandler(std::move(gameEventHandler))
     // Pre-calculated parameters
-    , mZeroMagnitude(0.0f)
-    , mBaseMagnitude(0.0f)
-    , mPreMaxMagnitude(0.0f)
-    , mMaxMagnitude(0.0f)
+    , mZeroSpeedMagnitude(0.0f)
+    , mBaseSpeedMagnitude(0.0f)
+    , mPreMaxSpeedMagnitude(0.0f)
+    , mMaxSpeedMagnitude(0.0f)
     , mGustCdf(0.0f)
     , mCurrentDoModulateWindParameter(false)
     , mCurrentSpeedBaseParameter(std::numeric_limits<float>::lowest())
@@ -35,9 +35,9 @@ Wind::Wind(std::shared_ptr<IGameEventHandler> gameEventHandler)
     , mNextStateTransitionTimestamp()
     , mNextPoissonSampleTimestamp()
     , mCurrentGustTransitionTimestamp()
-    , mCurrentRawWindForceMagnitude(0.0f)
-    , mCurrentWindForceMagnitudeRunningAverage()
-    , mCurrentWindForce(vec2f::zero())
+    , mCurrentRawWindSpeedMagnitude(0.0f)
+    , mCurrentWindSpeedMagnitudeRunningAverage()
+    , mCurrentWindSpeed(vec2f::zero())
 {
 }
 
@@ -62,7 +62,7 @@ void Wind::Update(GameParameters const & gameParameters)
 
     if (!mCurrentDoModulateWindParameter)
     {
-        mCurrentRawWindForceMagnitude = mBaseMagnitude;
+        mCurrentRawWindSpeedMagnitude = mBaseSpeedMagnitude;
     }
     else
     {
@@ -77,7 +77,7 @@ void Wind::Update(GameParameters const & gameParameters)
             case State::Initial:
             {
                 mCurrentState = State::EnterBase1;
-                mCurrentWindForceMagnitudeRunningAverage.Fill(mBaseMagnitude);
+                mCurrentWindSpeedMagnitudeRunningAverage.Fill(mBaseSpeedMagnitude);
 
                 [[fallthrough]];
             }
@@ -93,7 +93,7 @@ void Wind::Update(GameParameters const & gameParameters)
 
             case State::Base1:
             {
-                mCurrentRawWindForceMagnitude = mBaseMagnitude;
+                mCurrentRawWindSpeedMagnitude = mBaseSpeedMagnitude;
 
                 // Check if it's time to transition
                 if (now > mNextStateTransitionTimestamp)
@@ -116,7 +116,7 @@ void Wind::Update(GameParameters const & gameParameters)
 
             case State::PreGusting:
             {
-                mCurrentRawWindForceMagnitude = mPreMaxMagnitude;
+                mCurrentRawWindSpeedMagnitude = mPreMaxSpeedMagnitude;
 
                 // Check if it's time to transition
                 if (now > mNextStateTransitionTimestamp)
@@ -144,7 +144,7 @@ void Wind::Update(GameParameters const & gameParameters)
 
             case State::Gusting:
             {
-                mCurrentRawWindForceMagnitude = mPreMaxMagnitude;
+                mCurrentRawWindSpeedMagnitude = mPreMaxSpeedMagnitude;
 
                 // Check if it's time to transition
                 if (now > mNextStateTransitionTimestamp)
@@ -190,14 +190,14 @@ void Wind::Update(GameParameters const & gameParameters)
 
             case State::Gust:
             {
-                mCurrentRawWindForceMagnitude = mMaxMagnitude;
+                mCurrentRawWindSpeedMagnitude = mMaxSpeedMagnitude;
 
                 // Check if it's time to transition
                 if (now > mCurrentGustTransitionTimestamp)
                 {
                     // Transition back
                     mCurrentState = State::Gusting;
-                    mCurrentRawWindForceMagnitude = mPreMaxMagnitude;
+                    mCurrentRawWindSpeedMagnitude = mPreMaxSpeedMagnitude;
 
                     // Schedule next poisson sampling
                     mNextPoissonSampleTimestamp =
@@ -219,7 +219,7 @@ void Wind::Update(GameParameters const & gameParameters)
 
             case State::PostGusting:
             {
-                mCurrentRawWindForceMagnitude = mPreMaxMagnitude;
+                mCurrentRawWindSpeedMagnitude = mPreMaxSpeedMagnitude;
 
                 // Check if it's time to transition
                 if (now > mNextStateTransitionTimestamp)
@@ -242,7 +242,7 @@ void Wind::Update(GameParameters const & gameParameters)
 
             case State::Base2:
             {
-                mCurrentRawWindForceMagnitude = mBaseMagnitude;
+                mCurrentRawWindSpeedMagnitude = mBaseSpeedMagnitude;
 
                 // Check if it's time to transition
                 if (now > mNextStateTransitionTimestamp)
@@ -265,7 +265,7 @@ void Wind::Update(GameParameters const & gameParameters)
 
             case State::Zero:
             {
-                mCurrentRawWindForceMagnitude = mZeroMagnitude;
+                mCurrentRawWindSpeedMagnitude = mZeroSpeedMagnitude;
 
                 // Check if it's time to transition
                 if (now > mNextStateTransitionTimestamp)
@@ -279,18 +279,18 @@ void Wind::Update(GameParameters const & gameParameters)
         }
     }
 
-    // Update average and store current force
-    mCurrentWindForce =
+    // Update average and store current speed
+    mCurrentWindSpeed =
         GameParameters::WindDirection
-        * mCurrentWindForceMagnitudeRunningAverage.Update(mCurrentRawWindForceMagnitude);
+        * mCurrentWindSpeedMagnitudeRunningAverage.Update(mCurrentRawWindSpeedMagnitude);
 
     // Publish interesting quantities for probes
-    mGameEventHandler->OnWindForceUpdated(
-        mZeroMagnitude,
-        mBaseMagnitude,
-        mPreMaxMagnitude,
-        mMaxMagnitude,
-        mCurrentWindForce);
+    mGameEventHandler->OnWindSpeedUpdated(
+        mZeroSpeedMagnitude,
+        mBaseSpeedMagnitude,
+        mPreMaxSpeedMagnitude,
+        mMaxSpeedMagnitude,
+        mCurrentWindSpeed);
 }
 
 GameWallClock::duration Wind::ChooseDuration(float minSeconds, float maxSeconds)
@@ -301,24 +301,10 @@ GameWallClock::duration Wind::ChooseDuration(float minSeconds, float maxSeconds)
 
 void Wind::RecalculateParameters(GameParameters const & gameParameters)
 {
-    //
-    // Km/h -> Newton: F = 1/2 rho v**2 A
-    //
-
-    mZeroMagnitude = 0.0f;
-
-    float const BaseSpeed = gameParameters.WindSpeedBase * 1000.0f / 3600.0f;
-    float const Direction = gameParameters.WindSpeedBase < 0.0f ? -1.0f : 1.0f;
-    mBaseMagnitude =
-        0.5f
-        * GameParameters::AirMass
-        * BaseSpeed
-        * BaseSpeed
-        * Direction;
-
-    mMaxMagnitude = mBaseMagnitude * gameParameters.WindSpeedMaxFactor;
-
-    mPreMaxMagnitude = mBaseMagnitude + (mMaxMagnitude - mBaseMagnitude) / 8.0f;
+    mZeroSpeedMagnitude = 0.0f;
+    mBaseSpeedMagnitude = gameParameters.WindSpeedBase;
+    mMaxSpeedMagnitude = mBaseSpeedMagnitude * gameParameters.WindSpeedMaxFactor;
+    mPreMaxSpeedMagnitude = mBaseSpeedMagnitude + (mMaxSpeedMagnitude - mBaseSpeedMagnitude) / 8.0f;
 
     mGustCdf = 1.0f - exp(-GustLambda / (PoissonSampleRate * gameParameters.WindGustFrequencyAdjustment));
 }

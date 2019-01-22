@@ -41,7 +41,7 @@ SoundController::SoundController(
     , mPlaySinkingMusic(true)
     , mLastWaterSplashed(0.0f)
     , mCurrentWaterSplashedTrigger(WaveSplashTriggerSize)
-    , mLastWindForceAbsoluteMagnitude(0.0f)
+    , mLastWindSpeedAbsoluteMagnitude(0.0f)
     , mWindVolumeRunningAverage()
     // One-shot sounds
     , mMSUOneShotMultipleChoiceSounds()
@@ -808,7 +808,7 @@ void SoundController::Reset()
 
     mLastWaterSplashed = 0.0f;
     mCurrentWaterSplashedTrigger = WaveSplashTriggerSize;
-    mLastWindForceAbsoluteMagnitude = 0.0f;
+    mLastWindSpeedAbsoluteMagnitude = 0.0f;
     mWindVolumeRunningAverage.Reset();
 }
 
@@ -963,32 +963,33 @@ void SoundController::OnWaterSplashed(float waterSplashed)
     mWaterSplashSound.Start();
 }
 
-void SoundController::OnWindForceUpdated(
-    float const /*zeroMagnitude*/,
-    float const baseMagnitude,
-    float const /*preMaxMagnitude*/,
-    float const maxMagnitude,
-    vec2f const & windForce)
+void SoundController::OnWindSpeedUpdated(
+    float const /*zeroSpeedMagnitude*/,
+    float const baseSpeedMagnitude,
+    float const /*preMaxSpeedMagnitude*/,
+    float const maxSpeedMagnitude,
+    vec2f const & windSpeed)
 {
-    float const windForceAbsoluteMagnitude = windForce.length();
+    float const windSpeedAbsoluteMagnitude = windSpeed.length();
 
     //
     // 1. Calculate volume of continuous sound
     //
 
     float windVolume;
-    if (windForceAbsoluteMagnitude >= abs(baseMagnitude))
+    if (windSpeedAbsoluteMagnitude >= abs(baseSpeedMagnitude))
     {
-        // 100 * (-1 / 1.1^(1.69 * x) + 1)
-        windVolume = 100.f * (-1.f / std::pow(1.1f, 1.69f * (windForceAbsoluteMagnitude - abs(baseMagnitude))) + 1.f);
+        // 20 -> 43:
+        // 100 * (-1 / 1.1^(0.3 * x) + 1)
+        windVolume = 100.f * (-1.f / std::pow(1.1f, 0.3f * (windSpeedAbsoluteMagnitude - abs(baseSpeedMagnitude))) + 1.f);
     }
     else
     {
         // Raise volume only if goes up
-        float const deltaUp = std::max(0.0f, windForceAbsoluteMagnitude - mLastWindForceAbsoluteMagnitude);
+        float const deltaUp = std::max(0.0f, windSpeedAbsoluteMagnitude - mLastWindSpeedAbsoluteMagnitude);
 
-        // 100 * (-1 / 1.1^(1.69 * x) + 1)
-        windVolume = 100.f * (-1.f / std::pow(1.1f, 1.69f * deltaUp) + 1.f);
+        // 100 * (-1 / 1.1^(0.3 * x) + 1)
+        windVolume = 100.f * (-1.f / std::pow(1.1f, 0.3f * deltaUp) + 1.f);
     }
 
     // Smooth the volume
@@ -1005,8 +1006,9 @@ void SoundController::OnWindForceUpdated(
 
     if (mPlayWindSound)
     {
-        if (windForceAbsoluteMagnitude > mLastWindForceAbsoluteMagnitude
-            && abs(maxMagnitude) - windForceAbsoluteMagnitude < 0.001f)
+        // Detect first arrival to max (gust) level
+        if (windSpeedAbsoluteMagnitude > mLastWindSpeedAbsoluteMagnitude
+            && abs(maxSpeedMagnitude) - windSpeedAbsoluteMagnitude < 0.001f)
         {
             PlayOneShotMultipleChoiceSound(
                 SoundType::WindGust,
@@ -1015,7 +1017,7 @@ void SoundController::OnWindForceUpdated(
         }
     }
 
-    mLastWindForceAbsoluteMagnitude = windForceAbsoluteMagnitude;
+    mLastWindSpeedAbsoluteMagnitude = windSpeedAbsoluteMagnitude;
 }
 
 void SoundController::OnBombPlaced(

@@ -37,7 +37,7 @@ ProbePanel::ProbePanel(wxWindow* parent)
     mWaterTakenProbe = AddScalarTimeSeriesProbe("Water Inflow", 120);
     mWaterSplashProbe = AddScalarTimeSeriesProbe("Water Splash", 200);
 
-    mWindForceProbe = AddScalarTimeSeriesProbe("Wind Force", 200);
+    mWindSpeedProbe = AddScalarTimeSeriesProbe("Wind Speed", 200);
 
     //
     // Finalize
@@ -62,7 +62,7 @@ void ProbePanel::Update()
         mURRatioProbe->Update();
         mWaterTakenProbe->Update();
         mWaterSplashProbe->Update();
-        mWindForceProbe->Update();
+        mWindSpeedProbe->Update();
 
         for (auto const & p : mCustomProbes)
         {
@@ -98,7 +98,7 @@ void ProbePanel::OnGameReset()
     mURRatioProbe->Reset();
     mWaterTakenProbe->Reset();
     mWaterSplashProbe->Reset();
-    mWindForceProbe->Reset();
+    mWindSpeedProbe->Reset();
 
     for (auto const & p : mCustomProbes)
     {
@@ -116,14 +116,14 @@ void ProbePanel::OnWaterSplashed(float waterSplashed)
     mWaterSplashProbe->RegisterSample(waterSplashed);
 }
 
-void ProbePanel::OnWindForceUpdated(
-    float const /*zeroMagnitude*/,
-    float const /*baseMagnitude*/,
-    float const /*preMaxMagnitude*/,
-    float const /*maxMagnitude*/,
-    vec2f const & windForce)
+void ProbePanel::OnWindSpeedUpdated(
+    float const /*zeroSpeedMagnitude*/,
+    float const /*baseSpeedMagnitude*/,
+    float const /*preMaxSpeedMagnitude*/,
+    float const /*maxSpeedMagnitude*/,
+    vec2f const & windSpeed)
 {
-    mWindForceProbe->RegisterSample(windForce.length());
+    mWindSpeedProbe->RegisterSample(windSpeed.length());
 }
 
 void ProbePanel::OnCustomProbe(

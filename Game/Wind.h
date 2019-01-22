@@ -26,33 +26,33 @@ public:
     void Update(GameParameters const & gameParameters);
 
     /*
-     * Returns the (signed) base magnitude, i.e. the magnitude of the unmodulated wind force.
+     * Returns the (signed) base magnitude, i.e. the magnitude of the unmodulated wind speed.
      *
-     * N.
+     * Km/h.
      */
-    float GetBaseMagnitude() const
+    float GetBaseSpeedMagnitude() const
     {
-        return mBaseMagnitude;
+        return mBaseSpeedMagnitude;
     }
 
     /*
-     * Returns the (signed) maximum magnitude, i.e. the full magnitude of the force of a gust.
+     * Returns the (signed) maximum magnitude, i.e. the full magnitude of the speed of a gust.
      *
-     * N.
+     * Km/h.
      */
-    float GetMaxMagnitude() const
+    float GetMaxSpeedMagnitude() const
     {
-        return mMaxMagnitude;
+        return mMaxSpeedMagnitude;
     }
 
     /*
-     * Returns the current modulated wind force.
+     * Returns the current modulated wind speed.
      *
-     * N.
+     * Km/h.
      */
-    vec2f const & GetCurrentWindForce() const
+    vec2f const & GetCurrentWindSpeed() const
     {
-        return mCurrentWindForce;
+        return mCurrentWindSpeed;
     }
 
 private:
@@ -69,12 +69,12 @@ private:
     // Pre-calculated parameters
     //
 
-    float mZeroMagnitude;
-    float mBaseMagnitude;
-    float mPreMaxMagnitude;
-    float mMaxMagnitude;
+    float mZeroSpeedMagnitude;
+    float mBaseSpeedMagnitude;
+    float mPreMaxSpeedMagnitude;
+    float mMaxSpeedMagnitude;
 
-    float mGustCdf;
+    float mGustCdf; // Poisson CDF for gust emission
 
     // The last parameter values our pre-calculated values are current with
     bool mCurrentDoModulateWindParameter;
@@ -123,16 +123,16 @@ private:
     // The next time at which the current gust should end
     GameWallClock::time_point mCurrentGustTransitionTimestamp;
 
-    // The current wind force magnitude, before averaging
-    float mCurrentRawWindForceMagnitude;
+    // The current wind speed magnitude, before averaging
+    float mCurrentRawWindSpeedMagnitude;
 
-    // The (short) running average of the wind force magnitude
+    // The (short) running average of the wind speed magnitude
     //
     // We average it just to prevent big impulses
-    RunningAverage<4> mCurrentWindForceMagnitudeRunningAverage;
+    RunningAverage<4> mCurrentWindSpeedMagnitudeRunningAverage;
 
-    // The current wind force
-    vec2f mCurrentWindForce;
+    // The current wind speed
+    vec2f mCurrentWindSpeed;
 };
 
 }

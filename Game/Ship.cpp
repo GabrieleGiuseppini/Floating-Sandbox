@@ -723,7 +723,14 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
 {
     float const densityAdjustedWaterMass = GameParameters::WaterMass * gameParameters.WaterDensityAdjustment;
 
-    vec2f const windForce = mParentWorld.GetCurrentWindForce();
+    // Calculate wind force:
+    //  Km/h -> Newton: F = 1/2 rho v**2 A
+    constexpr float VelocityConversionFactor = 1000.0f / 3600.0f;
+    vec2f const windForce =
+        mParentWorld.GetCurrentWindSpeed().square()
+        * (VelocityConversionFactor * VelocityConversionFactor)
+        * 0.5f
+        * GameParameters::AirMass;
 
     // Underwater points feel this amount of water drag
     //

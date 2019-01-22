@@ -19,18 +19,18 @@ void WaterSurface::Update(
 {
     // Waves
 
-    float const waveSpeed = gameParameters.WindSpeedBase / 8.0f; // Water moves slower than wind
+    float const waveSpeed = gameParameters.WindSpeedBase / 6.0f; // Water moves slower than wind
     float const waveTheta = currentSimulationTime * (0.5f + waveSpeed) / 3.0f;
     float const waveHeight = gameParameters.WaveHeight;
 
     // Ripples
 
-    float const windForceAbsoluteMagnitude = wind.GetCurrentWindForce().length();
-    float const windForceGustRelativeAmplitude = wind.GetMaxMagnitude() - wind.GetBaseMagnitude();
-    float const rawWindNormalizedIncisiveness = (windForceGustRelativeAmplitude == 0.0f)
+    float const windSpeedAbsoluteMagnitude = wind.GetCurrentWindSpeed().length();
+    float const windSpeedGustRelativeAmplitude = wind.GetMaxSpeedMagnitude() - wind.GetBaseSpeedMagnitude();
+    float const rawWindNormalizedIncisiveness = (windSpeedGustRelativeAmplitude == 0.0f)
         ? 0.0f
-        : std::max(0.0f, windForceAbsoluteMagnitude - abs(wind.GetBaseMagnitude()))
-          / abs(windForceGustRelativeAmplitude);
+        : std::max(0.0f, windSpeedAbsoluteMagnitude - abs(wind.GetBaseSpeedMagnitude()))
+          / abs(windSpeedGustRelativeAmplitude);
 
     float const windRipplesTimeFrequency = (gameParameters.WindSpeedBase >= 0.0f)
         ? 128.0f

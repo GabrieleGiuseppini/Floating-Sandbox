@@ -31,10 +31,14 @@ set  (FLOATING_SANDBOX_SOURCES
 	Sounds.h
 	SplashScreenDialog.cpp
 	SplashScreenDialog.h
+	StandardSystemPaths.cpp
+	StandardSystemPaths.h
 	ToolController.cpp
 	ToolController.h
 	Tools.cpp
 	Tools.h
+	UISettings.cpp
+	UISettings.h
 	Version.h
 	)
 

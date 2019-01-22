@@ -190,12 +190,12 @@ public:
 
     virtual void OnWaterSplashed(float waterSplashed) override;
 
-    virtual void OnWindForceUpdated(
-        float const zeroMagnitude,
-        float const baseMagnitude,
-        float const preMaxMagnitude,
-        float const maxMagnitude,
-        vec2f const & windForce) override;
+    virtual void OnWindSpeedUpdated(
+        float const zeroSpeedMagnitude,
+        float const baseSpeedMagnitude,
+        float const preMaxSpeedMagnitude,
+        float const maxSpeedMagnitude,
+        vec2f const & windSpeed) override;
 
     virtual void OnBombPlaced(
         ObjectId bombId,
@@ -322,7 +322,7 @@ private:
 
     float mLastWaterSplashed;
     float mCurrentWaterSplashedTrigger;
-    float mLastWindForceAbsoluteMagnitude;
+    float mLastWindSpeedAbsoluteMagnitude;
     RunningAverage<70> mWindVolumeRunningAverage;
 
 

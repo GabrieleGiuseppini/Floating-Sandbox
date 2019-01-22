@@ -136,22 +136,22 @@ public:
         }
     }
 
-    virtual void OnWindForceUpdated(
-        float const zeroMagnitude,
-        float const baseMagnitude,
-        float const preMaxMagnitude,
-        float const maxMagnitude,
-        vec2f const & windForce) override
+    virtual void OnWindSpeedUpdated(
+        float const zeroSpeedMagnitude,
+        float const baseSpeedMagnitude,
+        float const preMaxSpeedMagnitude,
+        float const maxSpeedMagnitude,
+        vec2f const & windSpeed) override
     {
         // No need to aggregate this one
         for (auto sink : mSinks)
         {
-            sink->OnWindForceUpdated(
-                zeroMagnitude,
-                baseMagnitude,
-                preMaxMagnitude,
-                maxMagnitude,
-                windForce);
+            sink->OnWindSpeedUpdated(
+                zeroSpeedMagnitude,
+                baseSpeedMagnitude,
+                preMaxSpeedMagnitude,
+                maxSpeedMagnitude,
+                windSpeed);
         }
     }
 

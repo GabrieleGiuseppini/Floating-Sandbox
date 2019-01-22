@@ -2180,7 +2180,7 @@
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.5, 
         "water_volume_fill": 0.05,
-	"wind_receptivity": 1.0
+	"wind_receptivity": 0.5
     }, 
     {
         "color_key": "#DD4523", 
@@ -2201,7 +2201,7 @@
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.5, 
         "water_volume_fill": 0.05,
-	"wind_receptivity": 1.0
+	"wind_receptivity": 0.5
     }, 
     {
         "color_key": "#054C00", 
@@ -2222,7 +2222,7 @@
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.5, 
         "water_volume_fill": 0.05,
-	"wind_receptivity": 1.0
+	"wind_receptivity": 0.5
     }, 
     {
         "color_key": "#0C20D1", 
@@ -2243,7 +2243,7 @@
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.5, 
         "water_volume_fill": 0.05,
-	"wind_receptivity": 1.0
+	"wind_receptivity": 0.5
     }, 
 
 
