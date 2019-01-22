@@ -301,15 +301,23 @@ GameWallClock::duration Wind::ChooseDuration(float minSeconds, float maxSeconds)
 
 void Wind::RecalculateParameters(GameParameters const & gameParameters)
 {
-    // Km/h -> Newton == 0.3543
-    static constexpr float ConversionFactor =
-        1000.0f
-        / 3600.0f
-        * GameParameters::AirMass;
+    //
+    // Km/h -> Newton: F = 1/2 rho v**2 A
+    //
 
     mZeroMagnitude = 0.0f;
-    mBaseMagnitude = gameParameters.WindSpeedBase * ConversionFactor;
-    mMaxMagnitude = gameParameters.WindSpeedBase * gameParameters.WindSpeedMaxFactor * ConversionFactor;
+
+    float const BaseSpeed = gameParameters.WindSpeedBase * 1000.0f / 3600.0f;
+    float const Direction = gameParameters.WindSpeedBase < 0.0f ? -1.0f : 1.0f;
+    mBaseMagnitude =
+        0.5f
+        * GameParameters::AirMass
+        * BaseSpeed
+        * BaseSpeed
+        * Direction;
+
+    mMaxMagnitude = mBaseMagnitude * gameParameters.WindSpeedMaxFactor;
+
     mPreMaxMagnitude = mBaseMagnitude + (mMaxMagnitude - mBaseMagnitude) / 8.0f;
 
     mGustCdf = 1.0f - exp(-GustLambda / (PoissonSampleRate * gameParameters.WindGustFrequencyAdjustment));

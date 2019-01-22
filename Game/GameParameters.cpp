@@ -25,8 +25,8 @@ GameParameters::GameParameters()
     , CumulatedIntakenWaterThresholdForAirBubbles(8.0f)
     // Wind
     , DoModulateWind(true)
-    , WindSpeedBase(-24.0f)
-    , WindSpeedMaxFactor(2.25f)
+    , WindSpeedBase(-20.0f)
+    , WindSpeedMaxFactor(2.5f)
     , WindGustFrequencyAdjustment(1.0f)
     // Misc
     , WaveHeight(2.5f)

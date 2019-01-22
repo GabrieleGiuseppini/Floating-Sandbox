@@ -803,8 +803,8 @@ Render:
 			+ Water
 			+ Sound?
 
-		- Test another re-dimension:
-			- Fw = 1/2 rho v2 A  
+		+ Test another re-dimension:
+			+ Fw = 1/2 rho v2 A  
 				
 		- Test perf
 			- Do perf analysis to rule out sound

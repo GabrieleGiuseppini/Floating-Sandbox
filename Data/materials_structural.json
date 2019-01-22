@@ -2159,7 +2159,7 @@
         "water_diffusion_speed": 0.015, 
         "water_retention": 0.5, 
         "water_volume_fill": 0.3,
-	"wind_receptivity": 3.0
+	"wind_receptivity": 1.0
     }, 
     {
         "color_key": "#D2D2D2", 
@@ -2172,7 +2172,7 @@
         "render_color": "#D2D2D2", 
         "sound_type": "Cloth", 
         "stiffness": 0.012, 
-        "strength": 2.1, 
+        "strength": 2.4, 
         "template": {
             "column": 2, 
             "row": "70|Cloth"
@@ -2180,7 +2180,7 @@
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.5, 
         "water_volume_fill": 0.05,
-	"wind_receptivity": 2.82
+	"wind_receptivity": 1.0
     }, 
     {
         "color_key": "#DD4523", 
@@ -2193,7 +2193,7 @@
         "render_color": "#DD4523", 
         "sound_type": "Cloth", 
         "stiffness": 0.012, 
-        "strength": 2.1, 
+        "strength": 2.4, 
         "template": {
             "column": 3, 
             "row": "70|Cloth"
@@ -2201,7 +2201,7 @@
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.5, 
         "water_volume_fill": 0.05,
-	"wind_receptivity": 2.82
+	"wind_receptivity": 1.0
     }, 
     {
         "color_key": "#054C00", 
@@ -2214,7 +2214,7 @@
         "render_color": "#054C00", 
         "sound_type": "Cloth", 
         "stiffness": 0.012, 
-        "strength": 2.1, 
+        "strength": 2.4, 
         "template": {
             "column": 4, 
             "row": "70|Cloth"
@@ -2222,7 +2222,7 @@
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.5, 
         "water_volume_fill": 0.05,
-	"wind_receptivity": 2.82
+	"wind_receptivity": 1.0
     }, 
     {
         "color_key": "#0C20D1", 
@@ -2235,7 +2235,7 @@
         "render_color": "#0C20D1", 
         "sound_type": "Cloth", 
         "stiffness": 0.012, 
-        "strength": 2.1, 
+        "strength": 2.4, 
         "template": {
             "column": 5, 
             "row": "70|Cloth"
@@ -2243,7 +2243,7 @@
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.5, 
         "water_volume_fill": 0.05,
-	"wind_receptivity": 2.82
+	"wind_receptivity": 1.0
     }, 
 
 
