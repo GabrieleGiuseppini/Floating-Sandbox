@@ -779,6 +779,8 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
         else
         {
             // Wind force
+            //
+            // Note: should be based on relative velocity, but we simplify here for performance reasons
             mPoints.GetForce(pointIndex) +=
                 windForce
                 * mPoints.GetWindReceptivity(pointIndex);

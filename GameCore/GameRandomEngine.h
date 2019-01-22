@@ -18,12 +18,10 @@ class GameRandomEngine
 {
 public:
 
-public:
-
     static GameRandomEngine & GetInstance()
     {
         static GameRandomEngine * instance = new GameRandomEngine();
-        
+
         return *instance;
     }
 
@@ -92,7 +90,7 @@ public:
     }
 
     inline float GenerateRandomNormalizedReal()
-    {        
+    {
         return mRandomUniformDistribution(mRandomEngine);
     }
 
