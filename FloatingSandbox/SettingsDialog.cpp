@@ -1262,7 +1262,7 @@ void SettingsDialog::PopulateAdvancedPanel(wxPanel * panel)
         panel,
         SliderWidth,
         SliderHeight,
-        "Stiffness Adjust",
+        "Spring Stiffness Adjust",
         mGameController->GetStiffnessAdjustment(),
         [this](float /*value*/)
         {
@@ -1273,7 +1273,8 @@ void SettingsDialog::PopulateAdvancedPanel(wxPanel * panel)
             mGameController->GetMinStiffnessAdjustment(),
             mGameController->GetMaxStiffnessAdjustment()),
             *mWarningIcon,
-            "This setting is for testing physical instability with high stiffness values");
+            "This setting is for testing physical instability of the mass-spring network with high stiffness values;"
+            " it is not meant for improving the rigidity of physical bodies");
 
     controlsSizer->Add(mStiffnessSlider.get(), 1, wxALL, SliderBorder);
 
