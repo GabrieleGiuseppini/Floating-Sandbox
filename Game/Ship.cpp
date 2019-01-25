@@ -53,7 +53,7 @@ Ship::Ship(
     , mElectricalElements(std::move(electricalElements))
     , mConnectedComponentSizes()
     , mAreElementsDirty(true)
-    , mLastShipRenderMode()
+    , mLastDebugShipRenderMode()
     , mIsSinking(false)
     , mTotalWater(0.0)
     , mWaterSplashedRunningAverage()
@@ -556,12 +556,12 @@ void Ship::Render(
     {
         //
         // Upload elements (point (elements), springs, ropes, triangles), iff dirty
-        // or the ship render mode has changed
+        // or the ship debug render mode has changed
         //
 
         if (mAreElementsDirty
-            || !mLastShipRenderMode
-            || *mLastShipRenderMode != renderContext.GetShipRenderMode())
+            || !mLastDebugShipRenderMode
+            || *mLastDebugShipRenderMode != renderContext.GetDebugShipRenderMode())
         {
             renderContext.UploadShipElementsStart(mId);
 
@@ -616,7 +616,7 @@ void Ship::Render(
 
         // Reset state
         mAreElementsDirty = false;
-        mLastShipRenderMode = renderContext.GetShipRenderMode();
+        mLastDebugShipRenderMode = renderContext.GetDebugShipRenderMode();
     }
 
 

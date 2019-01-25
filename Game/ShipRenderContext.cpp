@@ -29,9 +29,9 @@ ShipRenderContext::ShipRenderContext(
     float waterContrast,
     float waterLevelOfDetail,
     ShipRenderMode shipRenderMode,
+    DebugShipRenderMode debugShipRenderMode,
     VectorFieldRenderMode vectorFieldRenderMode,
-    bool showStressedSprings,
-    bool wireframeMode)
+    bool showStressedSprings)
     : mShaderManager(shaderManager)
     , mRenderStatistics(renderStatistics)
     // Parameters - all set at the end of the constructor
@@ -40,9 +40,9 @@ ShipRenderContext::ShipRenderContext(
     , mWaterContrast(0.0f)
     , mWaterLevelThreshold(0.0f)
     , mShipRenderMode(ShipRenderMode::Structure)
+    , mDebugShipRenderMode(DebugShipRenderMode::None)
     , mVectorFieldRenderMode(VectorFieldRenderMode::None)
     , mShowStressedSprings(false)
-    , mWireframeMode(false)
     // Textures
     , mElementShipTexture()
     , mElementStressedSpringTexture()
@@ -240,9 +240,9 @@ ShipRenderContext::ShipRenderContext(
     UpdateWaterContrast(waterContrast);
     UpdateWaterLevelThreshold(waterLevelOfDetail);
     UpdateShipRenderMode(shipRenderMode);
+    UpdateDebugShipRenderMode(debugShipRenderMode);
     UpdateVectorFieldRenderMode(vectorFieldRenderMode);
     UpdateShowStressedSprings(showStressedSprings);
-    UpdateWireframeMode(wireframeMode);
 }
 
 ShipRenderContext::~ShipRenderContext()
@@ -357,6 +357,11 @@ void ShipRenderContext::UpdateShipRenderMode(ShipRenderMode shipRenderMode)
     mShipRenderMode = shipRenderMode;
 }
 
+void ShipRenderContext::UpdateDebugShipRenderMode(DebugShipRenderMode debugShipRenderMode)
+{
+    mDebugShipRenderMode = debugShipRenderMode;
+}
+
 void ShipRenderContext::UpdateVectorFieldRenderMode(VectorFieldRenderMode vectorFieldRenderMode)
 {
     mVectorFieldRenderMode = vectorFieldRenderMode;
@@ -365,11 +370,6 @@ void ShipRenderContext::UpdateVectorFieldRenderMode(VectorFieldRenderMode vector
 void ShipRenderContext::UpdateShowStressedSprings(bool showStressedSprings)
 {
     mShowStressedSprings = showStressedSprings;
-}
-
-void ShipRenderContext::UpdateWireframeMode(bool wireframeMode)
-{
-    mWireframeMode = wireframeMode;
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -708,8 +708,7 @@ void ShipRenderContext::RenderEnd()
         // Draw points
         //
 
-        if (mShipRenderMode == ShipRenderMode::Points
-            && !mWireframeMode)
+        if (mDebugShipRenderMode == DebugShipRenderMode::Points)
         {
             RenderPointElements(mConnectedComponents[c]);
         }
@@ -719,21 +718,20 @@ void ShipRenderContext::RenderEnd()
         // Draw springs
         //
         // We draw springs when:
-        // - RenderMode is springs|edgeSprings ("X-Ray Mode"), in which case we use colors - so to show
+        // - DebugRenderMode is springs|edgeSprings ("X-Ray Mode"), in which case we use colors - so to show
         //   structural springs -, or
         // - RenderMode is structure (so to draw 1D chains), in which case we use colors, or
         // - RenderMode is texture (so to draw 1D chains), in which case we use texture iff it is present
         //
 
-        if ((mShipRenderMode == ShipRenderMode::Springs
-            || mShipRenderMode == ShipRenderMode::EdgeSprings
-            || mShipRenderMode == ShipRenderMode::Structure
-            || mShipRenderMode == ShipRenderMode::Texture)
-            && !mWireframeMode)
+        if (mDebugShipRenderMode == DebugShipRenderMode::Springs
+            || mDebugShipRenderMode == DebugShipRenderMode::EdgeSprings
+            || (mDebugShipRenderMode == DebugShipRenderMode::None
+                && (mShipRenderMode == ShipRenderMode::Structure || mShipRenderMode == ShipRenderMode::Texture)))
         {
             RenderSpringElements(
                 mConnectedComponents[c],
-                mShipRenderMode == ShipRenderMode::Texture);
+                mDebugShipRenderMode == DebugShipRenderMode::None && mShipRenderMode == ShipRenderMode::Texture);
         }
 
 
@@ -741,13 +739,11 @@ void ShipRenderContext::RenderEnd()
         // Draw ropes now if RenderMode is:
         // - Springs
         // - Texture (so rope endpoints are hidden behind texture, looks better)
-        // - AND: it's not wireframe mode
         //
 
-        if ((mShipRenderMode == ShipRenderMode::Springs
-            || mShipRenderMode == ShipRenderMode::EdgeSprings
-            || mShipRenderMode == ShipRenderMode::Texture)
-            && !mWireframeMode)
+        if (mDebugShipRenderMode == DebugShipRenderMode::Springs
+            || mDebugShipRenderMode == DebugShipRenderMode::EdgeSprings
+            || (mDebugShipRenderMode == DebugShipRenderMode::None && mShipRenderMode == ShipRenderMode::Texture))
         {
             RenderRopeElements(mConnectedComponents[c]);
         }
@@ -757,9 +753,9 @@ void ShipRenderContext::RenderEnd()
         // Draw triangles
         //
 
-        if (mShipRenderMode == ShipRenderMode::Structure
-            || mShipRenderMode == ShipRenderMode::Texture
-            || mWireframeMode)
+        if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe
+            || (mDebugShipRenderMode == DebugShipRenderMode::None
+                && (mShipRenderMode == ShipRenderMode::Structure || mShipRenderMode == ShipRenderMode::Texture)))
         {
             RenderTriangleElements(
                 mConnectedComponents[c],
@@ -767,12 +763,13 @@ void ShipRenderContext::RenderEnd()
         }
 
 
+
         //
         // Draw ropes now if RenderMode is Structure (so rope endpoints on the structure are visible)
         //
 
-        if (mShipRenderMode == ShipRenderMode::Structure
-            && !mWireframeMode)
+        if (mDebugShipRenderMode == DebugShipRenderMode::None
+            && mShipRenderMode == ShipRenderMode::Structure)
         {
             RenderRopeElements(mConnectedComponents[c]);
         }
@@ -782,8 +779,8 @@ void ShipRenderContext::RenderEnd()
         // Draw stressed springs
         //
 
-        if (mShowStressedSprings
-            && !mWireframeMode)
+        if (mDebugShipRenderMode == DebugShipRenderMode::None
+            && mShowStressedSprings)
         {
             RenderStressedSpringElements(mConnectedComponents[c]);
         }
@@ -910,7 +907,7 @@ void ShipRenderContext::RenderTriangleElements(
         mShaderManager.ActivateProgram<ProgramType::ShipTrianglesColor>();
     }
 
-    if (mWireframeMode)
+    if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
         glLineWidth(0.1f);
 
     // Bind VBO
@@ -978,7 +975,7 @@ void ShipRenderContext::RenderGenericTextures(GenericTextureConnectedComponentDa
         // Use program
         mShaderManager.ActivateProgram<ProgramType::GenericTextures>();
 
-        if (mWireframeMode)
+        if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
             glLineWidth(0.1f);
 
         // Draw polygons

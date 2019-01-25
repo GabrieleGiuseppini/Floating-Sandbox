@@ -43,9 +43,9 @@ private:
 
     void OnSeeShipThroughSeaWaterCheckBoxClick(wxCommandEvent & event);
     void OnShipRenderModeRadioBox(wxCommandEvent & event);
+    void OnDebugShipRenderModeRadioBox(wxCommandEvent & event);
     void OnVectorFieldRenderModeRadioBox(wxCommandEvent & event);
     void OnShowStressCheckBoxClick(wxCommandEvent & event);
-    void OnWireframeModeCheckBoxClick(wxCommandEvent & event);
 
     void OnPlayBreakSoundsCheckBoxClick(wxCommandEvent & event);
     void OnPlayStressSoundsCheckBoxClick(wxCommandEvent & event);
@@ -61,7 +61,6 @@ private:
 
     // Mechanics
     std::unique_ptr<SliderControl> mMechanicalQualitySlider;
-    std::unique_ptr<SliderControl> mStiffnessSlider;
     std::unique_ptr<SliderControl> mStrengthSlider;
 
     // Fluids
@@ -101,9 +100,7 @@ private:
     std::unique_ptr<SliderControl> mWaterContrastSlider;
     wxCheckBox * mSeeShipThroughSeaWaterCheckBox;
     wxRadioBox * mShipRenderModeRadioBox;
-    wxRadioBox * mVectorFieldRenderModeRadioBox;
     wxCheckBox* mShowStressCheckBox;
-    wxCheckBox* mWireframeModeCheckBox;
 
     // Sound
     std::unique_ptr<SliderControl> mEffectsVolumeSlider;
@@ -113,6 +110,11 @@ private:
     wxCheckBox * mPlayStressSoundsCheckBox;
     wxCheckBox * mPlayWindSoundCheckBox;
     wxCheckBox * mPlaySinkingMusicCheckBox;
+
+    // Advanced
+    std::unique_ptr<SliderControl> mStiffnessSlider;
+    wxRadioBox * mDebugShipRenderModeRadioBox;
+    wxRadioBox * mVectorFieldRenderModeRadioBox;
 
     wxButton * mOkButton;
     wxButton * mCancelButton;
@@ -130,6 +132,7 @@ private:
     void PopulateInteractionsPanel(wxPanel * panel);
     void PopulateRenderingPanel(wxPanel * panel);
     void PopulateSoundPanel(wxPanel * panel);
+    void PopulateAdvancedPanel(wxPanel * panel);
 
     void ReadSettings();
 

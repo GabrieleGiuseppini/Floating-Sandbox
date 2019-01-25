@@ -57,10 +57,10 @@ RenderContext::RenderContext(
     , mWaterContrast(0.6875f)
     , mWaterLevelOfDetail(0.6875f)
     , mShipRenderMode(ShipRenderMode::Texture)
+    , mDebugShipRenderMode(DebugShipRenderMode::None)
     , mVectorFieldRenderMode(VectorFieldRenderMode::None)
     , mVectorFieldLengthMultiplier(1.0f)
     , mShowStressedSprings(false)
-    , mWireframeMode(false)
     // Statistics
     , mRenderStatistics()
 {
@@ -359,6 +359,7 @@ RenderContext::RenderContext(
     UpdateWaterContrast();
     UpdateWaterLevelOfDetail();
     UpdateShipRenderMode();
+    UpdateDebugShipRenderMode();
     UpdateVectorFieldRenderMode();
     UpdateShowStressedSprings();
 
@@ -416,9 +417,9 @@ void RenderContext::AddShip(
             mWaterContrast,
             mWaterLevelOfDetail,
             mShipRenderMode,
+            mDebugShipRenderMode,
             mVectorFieldRenderMode,
-            mShowStressedSprings,
-            mWireframeMode));
+            mShowStressedSprings));
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -436,7 +437,7 @@ void RenderContext::RenderStart()
     glStencilMask(0xFF);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-    if (mWireframeMode)
+    if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     // Reset crosses of light
@@ -511,7 +512,7 @@ void RenderContext::RenderCloudsEnd()
     glDisableVertexAttribArray(0);
 
     // Make sure polygons are filled in any case
-    if (mWireframeMode)
+    if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     // Draw
@@ -524,7 +525,7 @@ void RenderContext::RenderCloudsEnd()
     glColorMask(true, true, true, true);
 
     // Reset wireframe mode, if enabled
-    if (mWireframeMode)
+    if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     // Enable stenciling - only draw where there are no 1's
@@ -575,7 +576,7 @@ void RenderContext::RenderCloudsEnd()
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedAttribute0), 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), nullptr);
     CheckOpenGLError();
 
-    if (mWireframeMode)
+    if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
         glLineWidth(0.1f);
 
     // Draw
@@ -675,7 +676,7 @@ void RenderContext::RenderLand()
     // Disable vertex attribute 0
     glDisableVertexAttribArray(0);
 
-    if (mWireframeMode)
+    if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
         glLineWidth(0.1f);
 
     // Draw
@@ -692,7 +693,7 @@ void RenderContext::RenderWater()
     // Disable vertex attribute 0
     glDisableVertexAttribArray(0);
 
-    if (mWireframeMode)
+    if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
         glLineWidth(0.1f);
 
     // Draw
@@ -885,6 +886,16 @@ void RenderContext::UpdateShipRenderMode()
     }
 }
 
+void RenderContext::UpdateDebugShipRenderMode()
+{
+    // Set parameter in all ships
+
+    for (auto & s : mShips)
+    {
+        s->UpdateDebugShipRenderMode(mDebugShipRenderMode);
+    }
+}
+
 void RenderContext::UpdateVectorFieldRenderMode()
 {
     // Set parameter in all ships
@@ -902,16 +913,6 @@ void RenderContext::UpdateShowStressedSprings()
     for (auto & s : mShips)
     {
         s->UpdateShowStressedSprings(mShowStressedSprings);
-    }
-}
-
-void RenderContext::UpdateWireframeMode()
-{
-    // Set parameter in all ships
-
-    for (auto & s : mShips)
-    {
-        s->UpdateWireframeMode(mWireframeMode);
     }
 }
 

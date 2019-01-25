@@ -150,11 +150,20 @@ DurationShortLongType StrToDurationShortLongType(std::string const & str);
  */
 enum class ShipRenderMode
 {
-    Points,
-    Springs,
-    EdgeSprings,
     Structure,
     Texture
+};
+
+/*
+ * The debug ways in which ships may be rendered.
+ */
+enum class DebugShipRenderMode
+{
+    None,
+    Wireframe,
+    Points,
+    Springs,
+    EdgeSprings
 };
 
 /*

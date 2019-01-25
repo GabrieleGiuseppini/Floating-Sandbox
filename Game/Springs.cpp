@@ -148,7 +148,8 @@ void Springs::UploadElements(
     Render::RenderContext & renderContext,
     Points const & points) const
 {
-    bool const doUploadAllSprings = (ShipRenderMode::Springs == renderContext.GetShipRenderMode());
+    // Either upload all springs, or just the edge springs
+    bool const doUploadAllSprings = (DebugShipRenderMode::Springs == renderContext.GetDebugShipRenderMode());
 
     for (ElementIndex i : *this)
     {

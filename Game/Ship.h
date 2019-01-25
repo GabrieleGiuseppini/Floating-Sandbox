@@ -294,9 +294,9 @@ private:
     // to the rendering context
     bool mAreElementsDirty;
 
-    // The ship render mode that was in effect the last time we've uploaded elements;
+    // The debug ship render mode that was in effect the last time we've uploaded elements;
     // used to detect changes and eventually re-upload
-    std::optional<ShipRenderMode> mLastShipRenderMode;
+    std::optional<DebugShipRenderMode> mLastDebugShipRenderMode;
 
     // Sinking detection
     bool mIsSinking;

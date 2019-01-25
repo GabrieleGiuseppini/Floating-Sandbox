@@ -196,14 +196,13 @@ Render:
 		+ Do we still need render color in material?
 			+ YES - For ephemeral particles
 			+ Update guide
+		+ SettingsDialog: advanced tab
 
-		- Bubble tool: make it dry ship 
-			- See MOLESKINE
-			- Tool is engaged if:
-				- It's on ship => suck water out (just like inverse flood)
-				- Else (no ship): if it's underwater (like now)
+		- Bubble tool: 
+			- Hide menu, but ensure it is still reachable
+			- Do inverse visits at World anyway
 
-		- SettingsDialog: advanced tab
+		- Ship file dialog (*)
 
 		- Extended move tool (*)
 
@@ -1090,8 +1089,25 @@ Render:
 
 	- Move tool: ability to move individual connected components
 		- After connected component has been overhauled
-		- Current tool is "Move All"
-		- New tool gets also connected component ID from GameController and passes it to MoveTo()/RotateTo()
+		- Spec:
+			- Current tool is "Move All"
+			- New tool gets also connected component ID from GameController and passes it to MoveTo()/RotateTo()
+		- Impl:
+			- Redesign move tool as:
+				- World keeps update'ing
+					- Remove GameController's pausing at Update
+				- Move engagement returns ObjectId for point ID (or none)
+				- Tool:
+					- Invoke Move/Rotate continuously at Update() only
+						- Disengage if it returns false
+					- Move: pass velocity = current (synthetic) mousePos - last (synthetic) mousePos
+					- Rotate: TBD
+				- Ship Move/MoveConnectedComponent(pointId, vec2f position, vec2f velocity):
+					- If point deleted => return false (to disengage)
+					- Calc deltaPos for the point
+					- Translate (entire ship || point's connected component) by deltaPos, and add velocity
+					- Test: if we get a tremolo:
+						- Store Move args @ Move() and apply after UpdateMechanics()
 				
 	- Changing the width of the waves up to at least 10x the current size
 		- Requires re-calculation of period (if adjustment is x-multiplier N, then period is N times basic period)

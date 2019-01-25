@@ -202,6 +202,18 @@ public:
         UpdateShipRenderMode();
     }
 
+    DebugShipRenderMode GetDebugShipRenderMode() const
+    {
+        return mDebugShipRenderMode;
+    }
+
+    void SetDebugShipRenderMode(DebugShipRenderMode debugShipRenderMode)
+    {
+        mDebugShipRenderMode = debugShipRenderMode;
+
+        UpdateDebugShipRenderMode();
+    }
+
     VectorFieldRenderMode GetVectorFieldRenderMode() const
     {
         return mVectorFieldRenderMode;
@@ -234,18 +246,6 @@ public:
         mShowStressedSprings = showStressedSprings;
 
         UpdateShowStressedSprings();
-    }
-
-    bool GetWireframeMode() const
-    {
-        return mWireframeMode;
-    }
-
-    void SetWireframeMode(bool wireframeMode)
-    {
-        mWireframeMode = wireframeMode;
-
-        UpdateWireframeMode();
     }
 
     //
@@ -834,9 +834,9 @@ private:
     void UpdateWaterContrast();
     void UpdateWaterLevelOfDetail();
     void UpdateShipRenderMode();
+    void UpdateDebugShipRenderMode();
     void UpdateVectorFieldRenderMode();
     void UpdateShowStressedSprings();
-    void UpdateWireframeMode();
 
 private:
 
@@ -1025,10 +1025,10 @@ private:
     float mWaterContrast;
     float mWaterLevelOfDetail;
     ShipRenderMode mShipRenderMode;
+    DebugShipRenderMode mDebugShipRenderMode;
     VectorFieldRenderMode mVectorFieldRenderMode;
     float mVectorFieldLengthMultiplier;
     bool mShowStressedSprings;
-    bool mWireframeMode;
 
     //
     // Statistics

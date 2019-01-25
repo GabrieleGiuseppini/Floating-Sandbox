@@ -27,7 +27,6 @@ const long ID_GENERATE_AIR_BUBBLES_CHECKBOX = wxNewId();
 const long ID_MODULATE_WIND_CHECKBOX = wxNewId();
 const long ID_SEE_SHIP_THROUGH_SEA_WATER_CHECKBOX = wxNewId();
 const long ID_SHOW_STRESS_CHECKBOX = wxNewId();
-const long ID_WIREFRAME_MODE_CHECKBOX = wxNewId();
 const long ID_PLAY_BREAK_SOUNDS_CHECKBOX = wxNewId();
 const long ID_PLAY_STRESS_SOUNDS_CHECKBOX = wxNewId();
 const long ID_PLAY_WIND_SOUND_CHECKBOX = wxNewId();
@@ -169,6 +168,20 @@ SettingsDialog::SettingsDialog(
 
 
 
+    //
+    // Advanced
+    //
+
+    wxPanel * advancedPanel = new wxPanel(notebook);
+
+    advancedPanel->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
+
+    PopulateAdvancedPanel(advancedPanel);
+
+    notebook->AddPage(advancedPanel, "Advanced");
+
+
+
     dialogVSizer->Add(notebook, 0, wxEXPAND);
 
     dialogVSizer->AddSpacer(20);
@@ -271,6 +284,12 @@ void SettingsDialog::OnShipRenderModeRadioBox(wxCommandEvent & /*event*/)
     mApplyButton->Enable(true);
 }
 
+void SettingsDialog::OnDebugShipRenderModeRadioBox(wxCommandEvent & /*event*/)
+{
+    // Remember we're dirty now
+    mApplyButton->Enable(true);
+}
+
 void SettingsDialog::OnVectorFieldRenderModeRadioBox(wxCommandEvent & /*event*/)
 {
     // Remember we're dirty now
@@ -279,14 +298,6 @@ void SettingsDialog::OnVectorFieldRenderModeRadioBox(wxCommandEvent & /*event*/)
 
 void SettingsDialog::OnShowStressCheckBoxClick(wxCommandEvent & /*event*/)
 {
-    // Remember we're dirty now
-    mApplyButton->Enable(true);
-}
-
-void SettingsDialog::OnWireframeModeCheckBoxClick(wxCommandEvent & /*event*/)
-{
-    mShipRenderModeRadioBox->Enable(!mWireframeModeCheckBox->IsChecked());
-
     // Remember we're dirty now
     mApplyButton->Enable(true);
 }
@@ -344,9 +355,6 @@ void SettingsDialog::ApplySettings()
 
     mGameController->SetNumMechanicalDynamicsIterationsAdjustment(
         mMechanicalQualitySlider->GetValue());
-
-    mGameController->SetStiffnessAdjustment(
-        mStiffnessSlider->GetValue());
 
     mGameController->SetStrengthAdjustment(
         mStrengthSlider->GetValue());
@@ -439,24 +447,62 @@ void SettingsDialog::ApplySettings()
     auto selectedShipRenderMode = mShipRenderModeRadioBox->GetSelection();
     if (0 == selectedShipRenderMode)
     {
-        mGameController->SetShipRenderMode(ShipRenderMode::Points);
-    }
-    else if (1 == selectedShipRenderMode)
-    {
-        mGameController->SetShipRenderMode(ShipRenderMode::Springs);
-    }
-    else if (2 == selectedShipRenderMode)
-    {
-        mGameController->SetShipRenderMode(ShipRenderMode::EdgeSprings);
-    }
-    else if (3 == selectedShipRenderMode)
-    {
         mGameController->SetShipRenderMode(ShipRenderMode::Structure);
     }
     else
     {
-        assert(4 == selectedShipRenderMode);
+        assert(1 == selectedShipRenderMode);
         mGameController->SetShipRenderMode(ShipRenderMode::Texture);
+    }
+
+    mGameController->SetShowShipStress(mShowStressCheckBox->IsChecked());
+
+
+
+
+    mSoundController->SetMasterEffectsVolume(
+        mEffectsVolumeSlider->GetValue());
+
+    mSoundController->SetMasterToolsVolume(
+        mToolsVolumeSlider->GetValue());
+
+    mSoundController->SetMasterMusicVolume(
+        mMusicVolumeSlider->GetValue());
+
+    mSoundController->SetPlayBreakSounds(mPlayBreakSoundsCheckBox->IsChecked());
+
+    mSoundController->SetPlayStressSounds(mPlayStressSoundsCheckBox->IsChecked());
+
+    mSoundController->SetPlayWindSound(mPlayWindSoundCheckBox->IsChecked());
+
+    mSoundController->SetPlaySinkingMusic(mPlaySinkingMusicCheckBox->IsChecked());
+
+
+
+    mGameController->SetStiffnessAdjustment(
+        mStiffnessSlider->GetValue());
+
+    auto selectedDebugShipRenderMode = mDebugShipRenderModeRadioBox->GetSelection();
+    if (0 == selectedDebugShipRenderMode)
+    {
+        mGameController->SetDebugShipRenderMode(DebugShipRenderMode::None);
+    }
+    else if (1 == selectedDebugShipRenderMode)
+    {
+        mGameController->SetDebugShipRenderMode(DebugShipRenderMode::Wireframe);
+    }
+    else if (2 == selectedDebugShipRenderMode)
+    {
+        mGameController->SetDebugShipRenderMode(DebugShipRenderMode::Points);
+    }
+    else if (3 == selectedDebugShipRenderMode)
+    {
+        mGameController->SetDebugShipRenderMode(DebugShipRenderMode::Springs);
+    }
+    else
+    {
+        assert(4 == selectedDebugShipRenderMode);
+        mGameController->SetDebugShipRenderMode(DebugShipRenderMode::EdgeSprings);
     }
 
     auto selectedVectorFieldRenderMode = mVectorFieldRenderModeRadioBox->GetSelection();
@@ -493,28 +539,6 @@ void SettingsDialog::ApplySettings()
             break;
         }
     }
-
-    mGameController->SetShowShipStress(mShowStressCheckBox->IsChecked());
-
-    mGameController->SetWireframeMode(mWireframeModeCheckBox->IsChecked());
-
-
-    mSoundController->SetMasterEffectsVolume(
-        mEffectsVolumeSlider->GetValue());
-
-    mSoundController->SetMasterToolsVolume(
-        mToolsVolumeSlider->GetValue());
-
-    mSoundController->SetMasterMusicVolume(
-        mMusicVolumeSlider->GetValue());
-
-    mSoundController->SetPlayBreakSounds(mPlayBreakSoundsCheckBox->IsChecked());
-
-    mSoundController->SetPlayStressSounds(mPlayStressSoundsCheckBox->IsChecked());
-
-    mSoundController->SetPlayWindSound(mPlayWindSoundCheckBox->IsChecked());
-
-    mSoundController->SetPlaySinkingMusic(mPlaySinkingMusicCheckBox->IsChecked());
 }
 
 void SettingsDialog::PopulateMechanicsPanel(wxPanel * panel)
@@ -544,27 +568,6 @@ void SettingsDialog::PopulateMechanicsPanel(wxPanel * panel)
 
     controlsSizer->Add(mMechanicalQualitySlider.get(), 1, wxALL, SliderBorder);
 
-
-    // Stiffness
-
-    mStiffnessSlider = std::make_unique<SliderControl>(
-        panel,
-        SliderWidth,
-        SliderHeight,
-        "Stiffness Adjust",
-        mGameController->GetStiffnessAdjustment(),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            mGameController->GetMinStiffnessAdjustment(),
-            mGameController->GetMaxStiffnessAdjustment()),
-        *mWarningIcon,
-        "Higher values cause physical instability, but provide for a nice effect!");
-
-    controlsSizer->Add(mStiffnessSlider.get(), 1, wxALL, SliderBorder);
 
 
     // Strength
@@ -1131,9 +1134,6 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
     wxString shipRenderModeChoices[] =
     {
-        _("Draw Only Points"),
-        _("Draw Only Springs"),
-        _("Draw Only Edge Springs"),
         _("Draw Structure"),
         _("Draw Image")
     };
@@ -1145,32 +1145,11 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
     checkboxesSizer->Add(mShipRenderModeRadioBox, 0, wxALL | wxALIGN_LEFT, 5);
 
 
-    wxString vectorFieldRenderModeChoices[] =
-    {
-        _("None"),
-        _("Point Velocities"),
-        _("Point Forces"),
-        _("Point Water Velocities"),
-        _("Point Water Momenta")
-    };
-
-    mVectorFieldRenderModeRadioBox = new wxRadioBox(panel, wxID_ANY, _("Vector Field Draw Options"), wxDefaultPosition, wxSize(-1,-1),
-        WXSIZEOF(vectorFieldRenderModeChoices), vectorFieldRenderModeChoices, 1, wxRA_SPECIFY_COLS);
-    Connect(mVectorFieldRenderModeRadioBox->GetId(), wxEVT_RADIOBOX, (wxObjectEventFunction)&SettingsDialog::OnVectorFieldRenderModeRadioBox);
-
-    checkboxesSizer->Add(mVectorFieldRenderModeRadioBox, 0, wxALL | wxALIGN_LEFT, 5);
-
 
     mShowStressCheckBox = new wxCheckBox(panel, ID_SHOW_STRESS_CHECKBOX, _("Show Stress"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Show Stress Checkbox"));
     Connect(ID_SHOW_STRESS_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnShowStressCheckBoxClick);
 
     checkboxesSizer->Add(mShowStressCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
-
-
-    mWireframeModeCheckBox = new wxCheckBox(panel, ID_WIREFRAME_MODE_CHECKBOX, _("Wireframe Mode"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Wireframe Mode Checkbox"));
-    Connect(ID_WIREFRAME_MODE_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnWireframeModeCheckBoxClick);
-
-    checkboxesSizer->Add(mWireframeModeCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
 
 
     controlsSizer->Add(checkboxesSizer, 0, wxALL, SliderBorder);
@@ -1273,14 +1252,82 @@ void SettingsDialog::PopulateSoundPanel(wxPanel * panel)
     panel->SetSizerAndFit(controlsSizer);
 }
 
+void SettingsDialog::PopulateAdvancedPanel(wxPanel * panel)
+{
+    wxBoxSizer* controlsSizer = new wxBoxSizer(wxHORIZONTAL);
+
+    // Stiffness
+
+    mStiffnessSlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Stiffness Adjust",
+        mGameController->GetStiffnessAdjustment(),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<LinearSliderCore>(
+            mGameController->GetMinStiffnessAdjustment(),
+            mGameController->GetMaxStiffnessAdjustment()),
+            *mWarningIcon,
+            "This setting is for testing physical instability with high stiffness values");
+
+    controlsSizer->Add(mStiffnessSlider.get(), 1, wxALL, SliderBorder);
+
+
+    // Check boxes
+
+    wxStaticBoxSizer* checkboxesSizer = new wxStaticBoxSizer(wxVERTICAL, panel);
+
+    wxString debugShipRenderModeChoices[] =
+    {
+        _("No Debug"),
+        _("Draw in Wireframe Mode"),
+        _("Draw Only Points"),
+        _("Draw Only Springs"),
+        _("Draw Only Edge Springs")
+    };
+
+    mDebugShipRenderModeRadioBox = new wxRadioBox(panel, wxID_ANY, _("Ship Debug Draw Options"), wxDefaultPosition, wxDefaultSize,
+        WXSIZEOF(debugShipRenderModeChoices), debugShipRenderModeChoices, 1, wxRA_SPECIFY_COLS);
+    Connect(mDebugShipRenderModeRadioBox->GetId(), wxEVT_RADIOBOX, (wxObjectEventFunction)&SettingsDialog::OnDebugShipRenderModeRadioBox);
+
+    checkboxesSizer->Add(mDebugShipRenderModeRadioBox, 0, wxALL | wxALIGN_LEFT, 5);
+
+
+    wxString vectorFieldRenderModeChoices[] =
+    {
+        _("None"),
+        _("Point Velocities"),
+        _("Point Forces"),
+        _("Point Water Velocities"),
+        _("Point Water Momenta")
+    };
+
+    mVectorFieldRenderModeRadioBox = new wxRadioBox(panel, wxID_ANY, _("Vector Field Draw Options"), wxDefaultPosition, wxSize(-1, -1),
+        WXSIZEOF(vectorFieldRenderModeChoices), vectorFieldRenderModeChoices, 1, wxRA_SPECIFY_COLS);
+    Connect(mVectorFieldRenderModeRadioBox->GetId(), wxEVT_RADIOBOX, (wxObjectEventFunction)&SettingsDialog::OnVectorFieldRenderModeRadioBox);
+
+    checkboxesSizer->Add(mVectorFieldRenderModeRadioBox, 0, wxALL | wxALIGN_LEFT, 5);
+
+
+    controlsSizer->Add(checkboxesSizer, 0, wxALL, SliderBorder);
+
+
+    // Finalize panel
+
+    panel->SetSizerAndFit(controlsSizer);
+}
+
 void SettingsDialog::ReadSettings()
 {
     assert(!!mGameController);
 
 
     mMechanicalQualitySlider->SetValue(mGameController->GetNumMechanicalDynamicsIterationsAdjustment());
-
-    mStiffnessSlider->SetValue(mGameController->GetStiffnessAdjustment());
 
     mStrengthSlider->SetValue(mGameController->GetStrengthAdjustment());
 
@@ -1352,38 +1399,75 @@ void SettingsDialog::ReadSettings()
     auto shipRenderMode = mGameController->GetShipRenderMode();
     switch (shipRenderMode)
     {
-        case ShipRenderMode::Points:
+        case ShipRenderMode::Structure:
         {
             mShipRenderModeRadioBox->SetSelection(0);
             break;
         }
 
-        case ShipRenderMode::Springs:
+        case ShipRenderMode::Texture:
         {
             mShipRenderModeRadioBox->SetSelection(1);
             break;
         }
+    }
 
-        case ShipRenderMode::EdgeSprings:
+    mShowStressCheckBox->SetValue(mGameController->GetShowShipStress());
+
+
+
+    mEffectsVolumeSlider->SetValue(mSoundController->GetMasterEffectsVolume());
+
+    mToolsVolumeSlider->SetValue(mSoundController->GetMasterToolsVolume());
+
+    mMusicVolumeSlider->SetValue(mSoundController->GetMasterMusicVolume());
+
+    mPlayBreakSoundsCheckBox->SetValue(mSoundController->GetPlayBreakSounds());
+
+    mPlayStressSoundsCheckBox->SetValue(mSoundController->GetPlayStressSounds());
+
+    mPlayWindSoundCheckBox->SetValue(mSoundController->GetPlayWindSound());
+
+    mPlaySinkingMusicCheckBox->SetValue(mSoundController->GetPlaySinkingMusic());
+
+
+
+
+    mStiffnessSlider->SetValue(mGameController->GetStiffnessAdjustment());
+
+    auto debugShipRenderMode = mGameController->GetDebugShipRenderMode();
+    switch (debugShipRenderMode)
+    {
+        case DebugShipRenderMode::None:
         {
-            mShipRenderModeRadioBox->SetSelection(2);
+            mDebugShipRenderModeRadioBox->SetSelection(0);
             break;
         }
 
-        case ShipRenderMode::Structure:
+        case DebugShipRenderMode::Wireframe:
         {
-            mShipRenderModeRadioBox->SetSelection(3);
+            mDebugShipRenderModeRadioBox->SetSelection(1);
             break;
         }
 
-        case ShipRenderMode::Texture:
+        case DebugShipRenderMode::Points:
         {
-            mShipRenderModeRadioBox->SetSelection(4);
+            mDebugShipRenderModeRadioBox->SetSelection(2);
+            break;
+        }
+
+        case DebugShipRenderMode::Springs:
+        {
+            mDebugShipRenderModeRadioBox->SetSelection(3);
+            break;
+        }
+
+        case DebugShipRenderMode::EdgeSprings:
+        {
+            mDebugShipRenderModeRadioBox->SetSelection(4);
             break;
         }
     }
-
-    mShipRenderModeRadioBox->Enable(!mGameController->GetWireframeMode());
 
     auto vectorFieldRenderMode = mGameController->GetVectorFieldRenderMode();
     switch (vectorFieldRenderMode)
@@ -1419,23 +1503,4 @@ void SettingsDialog::ReadSettings()
             break;
         }
     }
-
-    mShowStressCheckBox->SetValue(mGameController->GetShowShipStress());
-
-    mWireframeModeCheckBox->SetValue(mGameController->GetWireframeMode());
-
-
-    mEffectsVolumeSlider->SetValue(mSoundController->GetMasterEffectsVolume());
-
-    mToolsVolumeSlider->SetValue(mSoundController->GetMasterToolsVolume());
-
-    mMusicVolumeSlider->SetValue(mSoundController->GetMasterMusicVolume());
-
-    mPlayBreakSoundsCheckBox->SetValue(mSoundController->GetPlayBreakSounds());
-
-    mPlayStressSoundsCheckBox->SetValue(mSoundController->GetPlayStressSounds());
-
-    mPlayWindSoundCheckBox->SetValue(mSoundController->GetPlayWindSound());
-
-    mPlaySinkingMusicCheckBox->SetValue(mSoundController->GetPlaySinkingMusic());
 }
