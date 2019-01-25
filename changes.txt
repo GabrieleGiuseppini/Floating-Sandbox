@@ -2,7 +2,7 @@
 - Added ability to specify ships' characteristics with multiple layers (structural, electrical, ropes)
 	- Electrical properties can now be specified on top of any material - no more weak electrical cables!
 - Added cloth material (sails and flags!)
-- Added wind modulation and wind impulse on cloth and rope materials
+- Added wind modulation, with gusts transferring impulse on cloth and rope materials
 - Added interactive tool to shape the ocean floor in real time
 - Added air bubbles from leaking parts of the ship
 - Added flood tool to flood and dry parts of a ship

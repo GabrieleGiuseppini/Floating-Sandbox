@@ -192,30 +192,26 @@ Render:
 			+ Test multiple destruction sound w/delay being 50ms
 			+ Sound (hammer)
 			+ Changelist
-
-
-		= Wind and cloth (*)
-
-		- Do we still need render color in material?
-			- We might still want to use it before making texture
-				- Just color replacement with (structural) materials database
-					- Ship loader needs MaterialDatabase
-			- If not:
-				- Nuke from code
-				- Nuke from both materials' json's
+		+ Wind and cloth (*)
+		+ Do we still need render color in material?
+			+ YES - For ephemeral particles
+			+ Update guide
 
 		- Bubble tool: make it dry ship 
+			- See MOLESKINE
 			- Tool is engaged if:
 				- It's on ship => suck water out (just like inverse flood)
 				- Else (no ship): if it's underwater (like now)
 
+		- SettingsDialog: advanced tab
+
 		- Extended move tool (*)
-		- Interior layer (*)
 
 		- WiX Installer
 
 		- Release
 
+		- Interior layer (*)
 
 		- Zbuffer (*)
 		- Orphaned points (*)
@@ -262,6 +258,7 @@ Render:
 - Technical Debt:
 	+ Global damp as game parameter
 	+ Ships start from 1
+	- Sound controller: complain if find extraneous files (had issue with ".flc")
 
 - Simulation Optimizations:
 
@@ -742,97 +739,6 @@ Render:
 			+ PerfAnalysis
 
 - Dynamics:
-
-	= Wind and cloth (*)
-		+ Step 1: Points has WindReceptivity buffer, for now set at Add(.) to 1.0 if material is one of cloth
-		+ UpdatePointForces:
-			+ Add wind force vector to overwater points, multiplied by WindReceptivity
-				+ From mParentWorld.GetCurrentWindForce()
-					+ Step 1: GameParameters.WindDirection * GameParameters.WindSpeed
-					+ Will become erratic later on			  
-		+ Test with new flag (Iceland) attached to FlagShip
-		+ Step 2: new StructuralMaterial property: WindReceptivity
-			+ Optional in json (default=0.0), only set for cloth
-			+ Update guide
-		+ Step 3: erratic behavior of wind
-			+ GameParameters::WindSpeed becomes WindSpeedBase
-			+ World::UpdateWind(): implements state machine and calcs current wind force
-				+ Incorporate gust adjustment
-				+ See if we need to up force a bit for fater response
-					+ See first w/64 fps first if more respondent - skinnier test ship 
-				+ Use short running average to smooth transitions (minimally)
-					+ Make it 4
-					+ Get rid of intermediate states
-				+ Do piecewise state machine, w/various prob types
-					+ Gust transitions are still poisson, but not their duration
-		+ Step 4:
-			+ See interaction of wind on waves
-				+ Hi-freq sine whose amplitude is normally zero unless wind force over base
-		+ Add all wind settings to SettingsDialog
-			+ Include global flag
-		+ Sound:
-			+ Layered like waves:
-				+ 1 continuous sound
-					+ Triggered by abs threshold, 30
-				+ 1 one-shot sound (Gust)
-					+ Triggered by abs threshold && force > .9*Max
-			+ IEventHandlers::OnWindForce...(zero, base, max)
-			+ Do more gusts
-			+ Fix initial ramp up
-				+ RunningAverage::Fill(float)
-				+ Remove log message @ SoundController
-			+ Remove probe
-			+ Make sound's volume change inertial
-		+ Add probe for wind force
-		+ Step 5: implications of low wind settings
-		+ Test: 
-			+ SettingsDialog: 
-				+ Dealing with negative wind
-					+ See ripples
-				+ Gust adjustment
-				+ Modulation off
-		+ Try: 
-			+ Debris and Sparkles created with WindReceptivity=1.0
-			+ Rope has small WindReceptivity
-
-		+ SettingsDialog: expose "Play Wind Sound"
-			+ Test
-
-		+ Re-dimension wind force
-			+ Try default being -24
-				+ Flip Flagship
-			+ Say it's km/sec and transform to F (m/sec, w/air mass) in ApplyForce
-			+ Eventually adjust receptivity of cloth and rope
-			+ If ok:
-				+ Also change receptivity of sparkles and debris
-				+ Test 
-			+ Test Sailship 1
-			+ Increase strength of cloth to avoid stress at Flagship
-
-		+ Check with wind speed = 0 - divisions by zero!
-			+ Wind
-			+ Water
-			+ Sound?
-		+ Test another re-dimension:
-			+ Fw = 1/2 rho v2 A  				
-		+ Test perf
-			+ Do perf analysis to rule out sound
-		+ Rearc: Wind exports speed (vector & magnitudes), in km/h
-			+ Ship calcs force
-			+ Calc & adjust sound factors
-			+ Test:
-				+ Force on cloth
-					+ Lower receptivity
-				+ Force on Titanic's cables
-				+ Sound
-					+ Lower curve
-				+ Waves
-					+ Make them faster
-				+ Clouds
-				+ Max settings
-
-		= Do SailShip 2
-		- Changelist
 
 	- Lights breaking under pressure
 		- Idea:
@@ -3042,10 +2948,8 @@ IF WX:
 		+ See perf (orig was 3.36%)
 		+ Cleanup old
 		+ Commit
-
 	+ Make collisions with sea floor more dramatic
 		+ Bounce velocity with specular vector
-
 	+ Ephemeral Particles:
 		+ Spec:
 			+ Carve out fixed-size room at tail of Points for ephemeral particles				
@@ -3149,15 +3053,12 @@ IF WX:
 				+ Calls Points::UpdateEphemeralParticles(clockNow)
 				+ Emits ephemeral particles from emitters (e.g. smoke)
 					+ For now empty
-
 		+ Cleanup:
 			+ See if can control debris generation via GameParameters, which must be made available at 
 			  Ship::SpringDestroyHandler
-
 		+ Tests:
 			+ Pin ephemeral particle
 			+ Many connected components
-
 	+ Do debris each time a spring breaks
 		+ Look'n'feel: 
 			+ Points of the color of the spring's material
@@ -3178,14 +3079,12 @@ IF WX:
 				+ Just store index in buffer
 
 		+ Test look'n'feel and finalize constants
-
 	+ Ocean depth bitmaps
 		+ OceanFloor cctor takes ResourceLoader
 		+ ResourceLoader used by ocean floor to load image
 		+ OceanFloor translates image into float[] with raw pixel y's
 		+ At update, raw pixel y's are normalized/enhanced with new GameParameters constant
-		+ Test
-	
+		+ Test	
 	+ Slider for "simulation quality", affecting num of mechanical simulation iterations
 		+ Update GameParameters - Points and Springs might have to recalc things on changes
 			+ Ship
@@ -3195,7 +3094,6 @@ IF WX:
 		+ SettingsDialog: under mechanics tab
 		+ Requires extended status text w/measurements
 		+ See what to do with stiffness setting: max 1.0f? Leave it
-
 	+ Fix ephemeral particles
 		+ Pass also "now" all over the place
 			+ End put back UpdateEphemeralParticles where it was
@@ -3204,7 +3102,6 @@ IF WX:
 			+ "now" passed everywhere really has to become a "simulationNow" float
 		+ Test
 		+ Finalize constants
-
 	+ Do chainsaw sparkles with Ephemeral Particles
 		+ At Ship::Chainsaw for each broken spring
 		+ Initial particle dynamics:
@@ -3218,7 +3115,6 @@ IF WX:
 				+ Else: base material's render color
 			+ Finalize parameters
 			+ Final test
-
 	+ Add cloth material
 		+ Test, basically rope-like but no rope
 			+ Low stiffness, hight strength
@@ -3284,7 +3180,6 @@ IF WX:
 		+ Points::UploadForceBuffer: decide length
 		+ Update materials.md docs with new properties, including water
 		+ Update ShipAnalyzer for correct buoyancy-adjusted mass
-
 	+ Improve light diffusion
 		+ Use real distance
 		+ No more non-linear behavior
@@ -3294,6 +3189,100 @@ IF WX:
 		+ New Lamp property at ElectricalElements
 			+ Consumed by DiffuseLight
 		+ Use at Queen of Unova
+	+ Wind and cloth
+		+ Step 1: Points has WindReceptivity buffer, for now set at Add(.) to 1.0 if material is one of cloth
+		+ UpdatePointForces:
+			+ Add wind force vector to overwater points, multiplied by WindReceptivity
+				+ From mParentWorld.GetCurrentWindForce()
+					+ Step 1: GameParameters.WindDirection * GameParameters.WindSpeed
+					+ Will become erratic later on			  
+		+ Test with new flag (Iceland) attached to FlagShip
+		+ Step 2: new StructuralMaterial property: WindReceptivity
+			+ Optional in json (default=0.0), only set for cloth
+			+ Update guide
+		+ Step 3: erratic behavior of wind
+			+ GameParameters::WindSpeed becomes WindSpeedBase
+			+ World::UpdateWind(): implements state machine and calcs current wind force
+				+ Incorporate gust adjustment
+				+ See if we need to up force a bit for fater response
+					+ See first w/64 fps first if more respondent - skinnier test ship 
+				+ Use short running average to smooth transitions (minimally)
+					+ Make it 4
+					+ Get rid of intermediate states
+				+ Do piecewise state machine, w/various prob types
+					+ Gust transitions are still poisson, but not their duration
+		+ Step 4:
+			+ See interaction of wind on waves
+				+ Hi-freq sine whose amplitude is normally zero unless wind force over base
+		+ Add all wind settings to SettingsDialog
+			+ Include global flag
+		+ Sound:
+			+ Layered like waves:
+				+ 1 continuous sound
+					+ Triggered by abs threshold, 30
+				+ 1 one-shot sound (Gust)
+					+ Triggered by abs threshold && force > .9*Max
+			+ IEventHandlers::OnWindForce...(zero, base, max)
+			+ Do more gusts
+			+ Fix initial ramp up
+				+ RunningAverage::Fill(float)
+				+ Remove log message @ SoundController
+			+ Remove probe
+			+ Make sound's volume change inertial
+		+ Add probe for wind force
+		+ Step 5: implications of low wind settings
+		+ Test: 
+			+ SettingsDialog: 
+				+ Dealing with negative wind
+					+ See ripples
+				+ Gust adjustment
+				+ Modulation off
+		+ Try: 
+			+ Debris and Sparkles created with WindReceptivity=1.0
+			+ Rope has small WindReceptivity
+		+ SettingsDialog: expose "Play Wind Sound"
+			+ Test
+		+ Re-dimension wind force
+			+ Try default being -24
+				+ Flip Flagship
+			+ Say it's km/sec and transform to F (m/sec, w/air mass) in ApplyForce
+			+ Eventually adjust receptivity of cloth and rope
+			+ If ok:
+				+ Also change receptivity of sparkles and debris
+				+ Test 
+			+ Test Sailship 1
+			+ Increase strength of cloth to avoid stress at Flagship
+		+ Check with wind speed = 0 - divisions by zero!
+			+ Wind
+			+ Water
+			+ Sound?
+		+ Test another re-dimension:
+			+ Fw = 1/2 rho v2 A  				
+		+ Test perf
+			+ Do perf analysis to rule out sound
+		+ Rearc: Wind exports speed (vector & magnitudes), in km/h
+			+ Ship calcs force
+			+ Calc & adjust sound factors
+			+ Test:
+				+ Force on cloth
+					+ Lower receptivity
+				+ Force on Titanic's cables
+				+ Sound
+					+ Lower curve
+				+ Waves
+					+ Make them faster
+				+ Clouds
+				+ Max settings
+		+ Cloth:
+			+ Less heavy
+				+ Up strength by same factor
+			+ Less stiff
+				+ No		
+		+ Do SailShip 2
+			+ Larger sail?
+			+ Cleanup texture
+			+ Add ropes
+			+ Finish structure
 
 + Water
 	+ Water

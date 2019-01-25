@@ -1,0 +1,7 @@
+{
+	"structure_image":"sailboat_2_structure.png.dat",
+	"texture_image":"sailboat_2_texture.png.dat",
+	"ropes_image":"sailboat_2_ropes.png.dat",
+	"ship_name":"Sailboat 2",
+	"offset":{"x":0.0, "y":-16.0}
+}
