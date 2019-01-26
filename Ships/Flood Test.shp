@@ -1,0 +1,5 @@
+{
+	"structure_image":"flood_test.png.dat",
+	"ship_name":"Flood Test",
+	"offset":{"x":0.0, "y":-120.0}
+}
