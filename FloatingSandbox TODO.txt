@@ -388,7 +388,7 @@ Render:
 	- Forces rearc:
 		- Rationale: multiple spring iterations are really artificial; in reality, changes due to spring position changes in-between 
 		  iterations shouldn't impact physical world (e.g. buoyancy/drag) yet
-		- Points has two Force buffers: SpringForces and PointForces
+		- Points has two Force buffers: SpringForces and PointForces (or "NonSpringForces")
 		- Assumption: no deletions take place during mech loop
 		- UpdateMechanicalDynamics:
 			- First resets PointForces (or not, may reorder the below to do a first "set" loop rather than "add")
@@ -1247,10 +1247,21 @@ Render:
 					- Stores flag
 					- Enables/Disabled buttons and menus
 
-	- Revised FileDialog for loading ships: shows previews of ships
-		- Option 1: see if possible to hook into basic FileDialog's rendering of files
-		- Option 2: custom FileDialog ("ShipFileDialog"), with directory tree on the left and preview in main area
-			- Show also name, dimensions, and total mass
+	= Revised FileDialog for loading ships: shows previews of ships (*)
+		+ ShipPreview
+			+ <scaled ImageData, ShipMetadata>
+			+ Loaded like ShipDefinition, taking width (from dialog)
+		- ShipPreviewControl
+			- Show:
+				- Name
+				- Dimensions
+				- Total mass?
+		- ShipPreviewPanel
+		- ShipLoadDialog
+			- Directory tree on the left
+			- PreviewPanel in main area
+			- See MOLESKINE
+
 
 	- Save screenshots/photos 
 		- Saves automatically in custom folder
@@ -1261,8 +1272,8 @@ Render:
 		    glReadBuffer(GL_FRONT);
 		    glReadPixels(0, 0, windowWidth, windowHeight, GL_BGR_EXT, GL_UNSIGNED_BYTE, pixels);
 		- MainFrame does the saving, via GameLib/ImageTools
-			- Move load functions from ResourceLoader to ImageTools
-			- All static methods
+			+ Move load functions from ResourceLoader to ImageTools
+			+ All static methods
 			- MainFrame responsible for finding unique filenames like smartphone, with micro's portion
 			- Fires snapshot sound		   
 
