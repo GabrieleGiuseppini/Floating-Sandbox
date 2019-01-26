@@ -69,6 +69,10 @@ size_t World::GetShipPointCount(ShipId shipId) const
     return mAllShips[shipId - 1]->GetPointCount();
 }
 
+//////////////////////////////////////////////////////////////////////////////
+// Interactions
+//////////////////////////////////////////////////////////////////////////////
+
 void World::MoveBy(
     ShipId shipId,
     vec2f const & offset,
@@ -158,9 +162,9 @@ void World::TogglePinAt(
     GameParameters const & gameParameters)
 {
     // Stop at first ship that successfully pins or unpins a point
-    for (auto const & ship : mAllShips)
+    for (auto it = mAllShips.rbegin(); it != mAllShips.rend(); ++it)
     {
-        if (ship->TogglePinAt(targetPos, gameParameters))
+        if ((*it)->TogglePinAt(targetPos, gameParameters))
         {
             // Found!
             return;
@@ -176,9 +180,9 @@ bool World::InjectBubblesAt(
     GameParameters const & gameParameters)
 {
     // Stop at first ship that successfully injects
-    for (auto const & ship : mAllShips)
+    for (auto it = mAllShips.rbegin(); it != mAllShips.rend(); ++it)
     {
-        if (ship->InjectBubblesAt(
+        if ((*it)->InjectBubblesAt(
             targetPos,
             mCurrentSimulationTime,
             gameParameters))
@@ -201,9 +205,9 @@ bool World::FloodAt(
     GameParameters const & gameParameters)
 {
     // Stop at first ship that successfully injects
-    for (auto const & ship : mAllShips)
+    for (auto it = mAllShips.rbegin(); it != mAllShips.rend(); ++it)
     {
-        if (ship->FloodAt(
+        if ((*it)->FloodAt(
             targetPos,
             waterQuantityMultiplier,
             searchRadius,
@@ -225,9 +229,9 @@ void World::ToggleAntiMatterBombAt(
     GameParameters const & gameParameters)
 {
     // Stop at first ship that successfully places or removes a bomb
-    for (auto const & ship : mAllShips)
+    for (auto it = mAllShips.rbegin(); it != mAllShips.rend(); ++it)
     {
-        if (ship->ToggleAntiMatterBombAt(targetPos, gameParameters))
+        if ((*it)->ToggleAntiMatterBombAt(targetPos, gameParameters))
         {
             // Found!
             return;
@@ -243,9 +247,9 @@ void World::ToggleImpactBombAt(
     GameParameters const & gameParameters)
 {
     // Stop at first ship that successfully places or removes a bomb
-    for (auto const & ship : mAllShips)
+    for (auto it = mAllShips.rbegin(); it != mAllShips.rend(); ++it)
     {
-        if (ship->ToggleImpactBombAt(targetPos, gameParameters))
+        if ((*it)->ToggleImpactBombAt(targetPos, gameParameters))
         {
             // Found!
             return;
@@ -261,9 +265,9 @@ void World::ToggleRCBombAt(
     GameParameters const & gameParameters)
 {
     // Stop at first ship that successfully places or removes a bomb
-    for (auto const & ship : mAllShips)
+    for (auto it = mAllShips.rbegin(); it != mAllShips.rend(); ++it)
     {
-        if (ship->ToggleRCBombAt(targetPos, gameParameters))
+        if ((*it)->ToggleRCBombAt(targetPos, gameParameters))
         {
             // Found!
             return;
@@ -279,9 +283,9 @@ void World::ToggleTimerBombAt(
     GameParameters const & gameParameters)
 {
     // Stop at first ship that successfully places or removes a bomb
-    for (auto const & ship : mAllShips)
+    for (auto it = mAllShips.rbegin(); it != mAllShips.rend(); ++it)
     {
-        if (ship->ToggleTimerBombAt(targetPos, gameParameters))
+        if ((*it)->ToggleTimerBombAt(targetPos, gameParameters))
         {
             // Found!
             return;
@@ -343,12 +347,17 @@ void World::QueryNearestPointAt(
     vec2f const & targetPos,
     float radius) const
 {
-    for (auto const & ship : mAllShips)
+    // Stop at first ship that successfully queries
+    for (auto it = mAllShips.rbegin(); it != mAllShips.rend(); ++it)
     {
-        if (ship->QueryNearestPointAt(targetPos, radius))
+        if ((*it)->QueryNearestPointAt(targetPos, radius))
             return;
     }
 }
+
+//////////////////////////////////////////////////////////////////////////////
+// Simulation
+//////////////////////////////////////////////////////////////////////////////
 
 void World::Update(
     GameParameters const & gameParameters,

@@ -9,7 +9,9 @@
 #include <optional>
 
 /*
- * A wall clock that can be paused. Wish it were for real.
+ * A monotonic clock that can be paused. Wish it were for real.
+ *
+ * Note: it's not really a wall clock - its values do not measure time.
  *
  * Singleton.
  */

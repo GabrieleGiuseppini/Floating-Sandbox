@@ -197,14 +197,16 @@ Render:
 			+ YES - For ephemeral particles
 			+ Update guide
 		+ SettingsDialog: advanced tab
-
-		- Bubble tool: 
-			- Hide menu, but ensure it is still reachable
-			- Do inverse visits at World anyway
+		+ Bubble tool: 
+			+ Hide menu, but ensure it is still reachable
+			+ Do inverse visits at World anyway
+		+ Log marker w/timestamp
+			+ -------------------- 519558699552151
 
 		- Ship file dialog (*)
 
 		- Extended move tool (*)
+			- Actually, new "Pick" tool altogether, on conn component only - no rotation
 
 		- WiX Installer
 

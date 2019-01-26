@@ -192,7 +192,7 @@ MainFrame::MainFrame(wxApp * mainApp)
     fileMenu->Append(loadShipMenuItem);
     Connect(ID_LOAD_SHIP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnLoadShipMenuItemSelected);
 
-    wxMenuItem * reloadLastShipMenuItem = new wxMenuItem(fileMenu, ID_RELOAD_LAST_SHIP_MENUITEM, _("Reload Last Ship\tCtrl+R"), wxEmptyString, wxITEM_NORMAL);
+    wxMenuItem * reloadLastShipMenuItem = new wxMenuItem(fileMenu, ID_RELOAD_LAST_SHIP_MENUITEM, _("Reload Ship\tCtrl+R"), wxEmptyString, wxITEM_NORMAL);
     fileMenu->Append(reloadLastShipMenuItem);
     Connect(ID_RELOAD_LAST_SHIP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnReloadLastShipMenuItemSelected);
 
@@ -270,9 +270,11 @@ MainFrame::MainFrame(wxApp * mainApp)
     mToolsMenu->Append(pinMenuItem);
     Connect(ID_PIN_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnPinMenuItemSelected);
 
+    /*
     wxMenuItem * injectAirBubblesMenuItem = new wxMenuItem(mToolsMenu, ID_INJECT_AIR_BUBBLES_MENUITEM, _("Inject Air Bubbles\tB"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(injectAirBubblesMenuItem);
     Connect(ID_INJECT_AIR_BUBBLES_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnInjectAirBubblesMenuItemSelected);
+    */
 
     wxMenuItem * floodHoseMenuItem = new wxMenuItem(mToolsMenu, ID_FLOOD_HOSE_MENUITEM, _("Flood\tF"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(floodHoseMenuItem);
@@ -681,6 +683,13 @@ void MainFrame::OnKeyDown(wxKeyEvent & event)
         vec2f worldCoords = mGameController->ScreenToWorld(screenCoords);
 
         mGameController->QueryNearestPointAt(screenCoords);
+    }
+    else if (event.GetKeyCode() == 'B')
+    {
+        // Air Bubbles tool
+
+        assert(!!mToolController);
+        mToolController->SetTool(ToolType::InjectAirBubbles);
     }
 
     event.Skip();

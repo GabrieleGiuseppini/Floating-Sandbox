@@ -5,12 +5,14 @@
 ***************************************************************************************/
 #include "LoggingDialog.h"
 
+#include <GameCore/GameWallClock.h>
 #include <GameCore/Log.h>
 
 #include <wx/clipbrd.h>
 #include <wx/settings.h>
 
 #include <cassert>
+#include <chrono>
 
 wxBEGIN_EVENT_TABLE(LoggingDialog, wxDialog)
 	EVT_CLOSE(LoggingDialog::OnClose)
@@ -73,7 +75,10 @@ void LoggingDialog::OnKeyDown(wxKeyEvent& event)
 {
     if (event.GetKeyCode() == 'C')
     {
+        //
         // Copy content to clipboard
+        //
+
         if (wxTheClipboard->Open())
         {
             wxTheClipboard->Clear();
@@ -81,6 +86,28 @@ void LoggingDialog::OnKeyDown(wxKeyEvent& event)
             wxTheClipboard->Flush();
             wxTheClipboard->Close();
         }
+    }
+    else if (event.GetKeyCode() == 'L')
+    {
+        //
+        // Log a marker
+        //
+
+        auto now = std::chrono::system_clock::now();
+
+        auto secs = std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count();
+        auto usecs = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch() % std::chrono::seconds(1)).count();
+
+        LogMessage("-------------------- ", secs, ".", usecs);
+    }
+    else if (event.GetKeyCode() == 'X')
+    {
+        //
+        // Clear
+        //
+
+        assert(this->mTextCtrl != nullptr);
+        this->mTextCtrl->Clear();
     }
 }
 
