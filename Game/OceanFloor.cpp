@@ -20,7 +20,7 @@ OceanFloor::OceanFloor(ResourceLoader & resourceLoader)
     // - Convert each (topmost) y of the map into a Y coordinate, between H/2 (top) and -H/2 (bottom)
     //
 
-    ImageData bumpMapImage = ResourceLoader::LoadImageRgbUpperLeft(resourceLoader.GetOceanFloorBumpMapFilepath());
+    ImageData bumpMapImage = ImageFileTools::LoadImageRgbUpperLeft(resourceLoader.GetOceanFloorBumpMapFilepath());
 
     float const sampleIndexToX = static_cast<float>(bumpMapImage.Size.Width) / static_cast<float>(SamplesCount);
     float const halfHeight = static_cast<float>(bumpMapImage.Size.Height / 2);

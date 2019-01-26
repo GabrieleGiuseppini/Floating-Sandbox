@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "TextureDatabase.h"
 
+#include "ImageFileTools.h"
+
 #include <GameCore/GameException.h>
 #include <GameCore/Utils.h>
 
@@ -15,7 +17,7 @@ namespace Render {
 
 TextureFrame TextureFrameSpecification::LoadFrame() const
 {
-    ImageData imageData = ResourceLoader::LoadImageRgbaLowerLeft(FilePath);
+    ImageData imageData = ImageFileTools::LoadImageRgbaLowerLeft(FilePath);
 
     return TextureFrame(
         Metadata,
@@ -144,7 +146,7 @@ TextureDatabase TextureDatabase::Load(
                     // Get frame size
                     //
 
-                    ImageSize textureSize = ResourceLoader::GetImageSize(fileData.Path);
+                    ImageSize textureSize = ImageFileTools::GetImageSize(fileData.Path);
 
 
                     //

@@ -35,7 +35,11 @@ public:
     // The ship's metadata
     ShipMetadata const Metadata;
 
-    static ShipDefinitionFile Create(picojson::object const & definitionJson);
+    static ShipDefinitionFile Create(std::filesystem::path definitionFilePath);
+
+    static ShipDefinitionFile Create(
+        picojson::object const & definitionJson,
+        std::string const & defaultShipName);
 
     static bool IsShipDefinitionFile(std::filesystem::path const & filepath)
     {

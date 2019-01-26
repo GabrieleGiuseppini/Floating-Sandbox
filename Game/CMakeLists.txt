@@ -10,6 +10,8 @@ set  (GAME_SOURCES
 	GameParameters.cpp
 	GameParameters.h
 	IGameEventHandler.h
+	ImageFileTools.cpp
+	ImageFileTools.h
 	Materials.cpp
 	Materials.h
 	MaterialDatabase.h
@@ -22,6 +24,8 @@ set  (GAME_SOURCES
 	ShipDefinitionFile.cpp
 	ShipDefinitionFile.h
 	ShipMetadata.h
+	ShipPreview.cpp
+	ShipPreview.h
 	TextLayer.cpp
 	TextLayer.h)
 

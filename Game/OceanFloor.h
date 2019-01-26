@@ -6,9 +6,10 @@
 #pragma once
 
 #include "Physics.h"
-#include "ResourceLoader.h"
 
 #include "GameParameters.h"
+#include "ImageFileTools.h"
+#include "ResourceLoader.h"
 
 #include <GameCore/GameMath.h>
 

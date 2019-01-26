@@ -6,7 +6,6 @@
 #include "Quantizer.h"
 
 #include <Game/MaterialDatabase.h>
-#include <Game/ResourceLoader.h>
 
 #include <GameCore/Vectors.h>
 

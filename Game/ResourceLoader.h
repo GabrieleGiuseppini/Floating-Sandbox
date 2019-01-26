@@ -98,28 +98,4 @@ public:
     std::filesystem::path GetRenderShadersRootPath() const;
 
     static std::filesystem::path GetGPUCalcShadersRootPath();
-
-
-    //
-    // Images
-    //
-
-    static ImageSize GetImageSize(std::filesystem::path const & filepath);
-
-    static ImageData LoadImageRgbaUpperLeft(std::filesystem::path const & filepath, int resize = 1);
-    static ImageData LoadImageRgbaLowerLeft(std::filesystem::path const & filepath, int resize = 1);
-    static ImageData LoadImageRgbUpperLeft(std::filesystem::path const & filepath, int resize = 1);
-    static ImageData LoadImageRgbLowerLeft(std::filesystem::path const & filepath, int resize = 1);
-
-    static void SaveImage(
-        std::filesystem::path filepath,
-        ImageData const & image);
-
-private:
-
-    static ImageData LoadImage(
-        std::filesystem::path const & filepath,
-        int targetFormat,
-        int targetOrigin,
-        int resize);
 };

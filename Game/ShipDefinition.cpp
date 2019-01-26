@@ -5,10 +5,8 @@
 ***************************************************************************************/
 #include "ShipDefinition.h"
 
-#include "ResourceLoader.h"
+#include "ImageFileTools.h"
 #include "ShipDefinitionFile.h"
-
-#include <GameCore/Utils.h>
 
 #include <cassert>
 
@@ -27,13 +25,7 @@ ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
         // Load full definition
         //
 
-        picojson::value root = Utils::ParseJSONFile(filepath.string());
-        if (!root.is<picojson::object>())
-        {
-            throw GameException("File \"" + filepath.string() + "\" does not contain a JSON object");
-        }
-
-        ShipDefinitionFile sdf = ShipDefinitionFile::Create(root.get<picojson::object>());
+        ShipDefinitionFile sdf = ShipDefinitionFile::Create(filepath);
 
         //
         // Make paths absolute
@@ -47,15 +39,13 @@ ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
         if (!!sdf.RopesLayerImageFilePath)
         {
             ropesLayerImage.emplace(
-                ResourceLoader::LoadImageRgbUpperLeft(
-                    (basePath / *sdf.RopesLayerImageFilePath).string()));
+                ImageFileTools::LoadImageRgbUpperLeft(basePath / *sdf.RopesLayerImageFilePath));
         }
 
         if (!!sdf.ElectricalLayerImageFilePath)
         {
             electricalLayerImage.emplace(
-                ResourceLoader::LoadImageRgbUpperLeft(
-                    (basePath / *sdf.ElectricalLayerImageFilePath).string()));
+                ImageFileTools::LoadImageRgbUpperLeft(basePath / *sdf.ElectricalLayerImageFilePath));
         }
 
         if (!!sdf.TextureLayerImageFilePath)
@@ -80,14 +70,7 @@ ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
         // Make metadata
         //
 
-        std::string shipName = sdf.Metadata.ShipName.empty()
-            ? std::filesystem::path(filepath).stem().string()
-            : sdf.Metadata.ShipName;
-
-        shipMetadata.emplace(
-            shipName,
-            sdf.Metadata.Author,
-            sdf.Metadata.Offset);
+        shipMetadata.emplace(sdf.Metadata);
     }
     else
     {
@@ -99,10 +82,7 @@ ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
         absoluteTextureLayerImageFilePath = absoluteStructuralLayerImageFilePath;
         textureOrigin = ShipDefinition::TextureOriginType::StructuralImage;
 
-        shipMetadata.emplace(
-            std::filesystem::path(filepath).stem().string(),
-            std::nullopt,
-            vec2f(0.0f, 0.0f));
+        shipMetadata.emplace(std::filesystem::path(filepath).stem().string());
     }
 
     assert(!!shipMetadata);
@@ -111,8 +91,7 @@ ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
     // Load structural image
     //
 
-    ImageData structuralImage = ResourceLoader::LoadImageRgbUpperLeft(
-        absoluteStructuralLayerImageFilePath.string());
+    ImageData structuralImage = ImageFileTools::LoadImageRgbUpperLeft(absoluteStructuralLayerImageFilePath);
 
     //
     // Load texture image
@@ -127,8 +106,7 @@ ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
             // Just load as-is
 
             textureImage.emplace(
-                ResourceLoader::LoadImageRgbaLowerLeft(
-                    absoluteTextureLayerImageFilePath.string()));
+                ImageFileTools::LoadImageRgbaLowerLeft(absoluteTextureLayerImageFilePath));
 
             break;
         }
@@ -138,14 +116,14 @@ ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
             // Resize it up - ideally by 8, but don't exceed 4096 in any dimension
 
             int maxDimension = std::max(structuralImage.Size.Width, structuralImage.Size.Height);
-            int resize = 8;
-            while (maxDimension * resize > 4096 && resize > 1)
-                resize /= 2;
+            int magnify = 8;
+            while (maxDimension * magnify > 4096 && magnify > 1)
+                magnify /= 2;
 
             textureImage.emplace(
-                ResourceLoader::LoadImageRgbaLowerLeft(
-                    absoluteTextureLayerImageFilePath.string(),
-                    resize));
+                ImageFileTools::LoadImageRgbaLowerLeftAndMagnify(
+                    absoluteTextureLayerImageFilePath,
+                    magnify));
 
             break;
         }

@@ -3,10 +3,28 @@
 * Created:				2018-03-19
 * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
-
 #include "ShipDefinitionFile.h"
 
-ShipDefinitionFile ShipDefinitionFile::Create(picojson::object const & definitionJson)
+#include <GameCore/Utils.h>
+
+ShipDefinitionFile ShipDefinitionFile::Create(std::filesystem::path definitionFilePath)
+{
+    // Load JSON file
+    picojson::value root = Utils::ParseJSONFile(definitionFilePath.string());
+    if (!root.is<picojson::object>())
+    {
+        throw GameException("Ship definition file \"" + definitionFilePath.string() + "\" does not contain a JSON object");
+    }
+
+    // Parse definition
+    return Create(
+        root.get<picojson::object>(),
+        definitionFilePath.stem().string());
+}
+
+ShipDefinitionFile ShipDefinitionFile::Create(
+    picojson::object const & definitionJson,
+    std::string const & defaultShipName)
 {
     std::string structuralLayerImageFilePath = Utils::GetMandatoryJsonMember<std::string>(
         definitionJson,
@@ -27,7 +45,7 @@ ShipDefinitionFile ShipDefinitionFile::Create(picojson::object const & definitio
     std::string shipName = Utils::GetOptionalJsonMember<std::string>(
         definitionJson,
         "ship_name",
-        "");
+        defaultShipName);
 
     std::optional<std::string> author = Utils::GetOptionalJsonMember<std::string>(
         definitionJson,

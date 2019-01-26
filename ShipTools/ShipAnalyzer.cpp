@@ -6,8 +6,8 @@
 #include "ShipAnalyzer.h"
 
 #include <Game/GameParameters.h>
+#include <Game/ImageFileTools.h>
 #include <Game/MaterialDatabase.h>
-#include <Game/ResourceLoader.h>
 
 #include <GameCore/Vectors.h>
 
@@ -24,7 +24,7 @@ ShipAnalyzer::AnalysisInfo ShipAnalyzer::Analyze(
     std::string const & materialsDir)
 {
     // Load image
-    auto image = ResourceLoader::LoadImageRgbUpperLeft(std::filesystem::path(inputFile));
+    auto image = ImageFileTools::LoadImageRgbUpperLeft(std::filesystem::path(inputFile));
 
     float const halfWidth = static_cast<float>(image.Size.Width) / 2.0f;
 

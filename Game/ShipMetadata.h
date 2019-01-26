@@ -32,4 +32,11 @@ public:
         , Offset(std::move(offset))
     {
     }
+
+    ShipMetadata(std::string shipName)
+        : ShipName(std::move(shipName))
+        , Author()
+        , Offset()
+    {
+    }
 };
