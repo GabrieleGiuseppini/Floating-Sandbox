@@ -205,9 +205,17 @@ Render:
 		+ Complete "How to Build a Ship" guide
 		+ Move all guides to own folder "Docs"
 			+ Also material_template's
-		= Air bubble randomization
+		+ Air bubble randomization
 
 		- WiX Installer
+			- Notes:
+				- Product GUID (once and for all)
+				- Version (different for each release)
+				- Package GUID (different for each release) (can use asterisk)
+				- Upgrade GUID (once and for all)
+			- Inputs to generation:
+				- Could be in include file that defines variables
+				- Version
 
 		- Ship file dialog (*)
 

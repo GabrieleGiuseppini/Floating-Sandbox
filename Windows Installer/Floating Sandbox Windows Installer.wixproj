@@ -6,9 +6,10 @@
     <ProductVersion>3.10</ProductVersion>
     <ProjectGuid>80bd56c1-4720-4a46-b78f-900cd19f2434</ProjectGuid>
     <SchemaVersion>2.0</SchemaVersion>
-    <OutputName>Floating_Sandbox_Windows_Installer</OutputName>
+    <OutputName>Floating-Sandbox</OutputName>
     <OutputType>Package</OutputType>
-    <DefineConstants>HarvestPath=C:\Users\Neurodancer\source\build\Floating-Sandbox\Install</DefineConstants>
+	<FloatingSandboxInstallDirectory>C:\Users\Neurodancer\source\build\Floating-Sandbox\Install</FloatingSandboxInstallDirectory>
+    <DefineConstants>HarvestPath=$(FloatingSandboxInstallDirectory)</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <OutputPath>C:\Users\Neurodancer\source\build\Floating-Sandbox\Windows Installer\$(Configuration)\</OutputPath>
@@ -28,7 +29,7 @@
     <Error Text="The WiX Toolset v3.11 (or newer) build tools must be installed to build this project. To download the WiX Toolset, see http://wixtoolset.org/releases/" />
   </Target>
   <Target Name="BeforeBuild">
-    <HeatDirectory Directory="C:\Users\Neurodancer\source\build\Floating-Sandbox\Install" PreprocessorVariable="var.HarvestPath" OutputFile="HeatGeneratedFileList.wxs" ComponentGroupName="HeatGenerated" DirectoryRefId="INSTALLFOLDER" AutogenerateGuids="true" ToolPath="$(WixToolPath)" SuppressFragments="true" SuppressRegistry="true" SuppressRootDirectory="true" />
+    <HeatDirectory Directory="$(FloatingSandboxInstallDirectory)" PreprocessorVariable="var.HarvestPath" OutputFile="HeatGeneratedFileList.wxs" ComponentGroupName="HeatGenerated" DirectoryRefId="INSTALLFOLDER" AutogenerateGuids="true" ToolPath="$(WixToolPath)" SuppressFragments="true" SuppressRegistry="true" SuppressRootDirectory="true" />
   </Target>
   <!--
 	To modify your build process, add your task inside one of the targets below and uncomment it.
