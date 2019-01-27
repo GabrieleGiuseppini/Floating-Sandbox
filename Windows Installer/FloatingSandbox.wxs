@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+
+    <?define FloatingSandboxVersion = "1.8.0"?>
+
+	<Product Id="FA55DC66-DE8A-4E7A-836A-BA77EF75BAB8"
+             Name="FloatingSandbox" Language="1033"
+             Version="$(var.FloatingSandboxVersion)"
+             Manufacturer="Gabriele Giuseppini" UpgradeCode="AC8AC6BD-54D5-4FE8-86E7-79FCAAADD817">
+		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+
+		<MediaTemplate />
+
+		<Feature Id="ProductFeature" Title="FloatingSandbox" Level="1">
+			<ComponentGroupRef Id="HeatGenerated" />
+		</Feature>
+	</Product>
+
+	<Fragment>
+		<Directory Id="TARGETDIR" Name="SourceDir">
+			<Directory Id="ProgramFilesFolder">
+				<Directory Id="INSTALLFOLDER" Name="Floating Sandbox" />
+			</Directory>
+		</Directory>
+	</Fragment>
+
+</Wix>
