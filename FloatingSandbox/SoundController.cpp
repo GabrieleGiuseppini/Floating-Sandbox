@@ -328,6 +328,7 @@ SoundController::SoundController(
                 || soundType == SoundType::WindGust
                 || soundType == SoundType::AntiMatterBombPreImplosion
                 || soundType == SoundType::AntiMatterBombImplosion
+                || soundType == SoundType::Snapshot
                 || soundType == SoundType::TerrainAdjust)
         {
             //
@@ -744,6 +745,14 @@ void SoundController::PlayTerrainAdjustSound()
 {
     PlayOneShotMultipleChoiceSound(
         SoundType::TerrainAdjust,
+        100.0f,
+        true);
+}
+
+void SoundController::PlaySnapshotSound()
+{
+    PlayOneShotMultipleChoiceSound(
+        SoundType::Snapshot,
         100.0f,
         true);
 }

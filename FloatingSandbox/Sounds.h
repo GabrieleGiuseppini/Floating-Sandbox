@@ -52,6 +52,7 @@ enum class SoundType
     AntiMatterBombPreImplosion,
     AntiMatterBombImplosion,
     AntiMatterBombExplosion,
+    Snapshot,
     TerrainAdjust
 };
 

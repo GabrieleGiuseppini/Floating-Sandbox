@@ -285,6 +285,8 @@ public:
         ImageData texture,
         ShipDefinition::TextureOriginType textureOrigin);
 
+    ImageData TakeScreenshot();
+
 public:
 
     void RenderStart();

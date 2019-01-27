@@ -100,7 +100,7 @@ ImageData ImageFileTools::LoadImageRgbUpperLeft(std::filesystem::path const & fi
         std::nullopt);
 }
 
-void ImageFileTools::SaveImage(
+void ImageFileTools::SaveImageRgb(
     std::filesystem::path filepath,
     ImageData const & image)
 {
@@ -114,8 +114,8 @@ void ImageFileTools::SaveImage(
         image.Size.Width,
         image.Size.Height,
         1,
-        4,
-        IL_RGBA,
+        3,
+        IL_RGB,
         IL_UNSIGNED_BYTE,
         reinterpret_cast<void *>(const_cast<unsigned char *>(image.Data.get())));
 

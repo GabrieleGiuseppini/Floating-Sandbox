@@ -235,7 +235,6 @@ Render:
 			- Batisphere
 		- Smoke (*)
 		- Settings Manager (*)
-		- Screenshots (*)
 	- 1.10.0
 		- Frontier
 		- Resource Packs (*)
@@ -1156,15 +1155,15 @@ Render:
 
 	- SettingsDialog: save settings, defaults, and real-time changes
 		- SettingsManager (@FloatingSandbox):
-			- Has GameController, SoundController, etc.
+			- Has GameController, SoundController, UISettings, etc.
 			- Defines struct with all customizable setting members
 			- Maintains two copies of struct:
 				- Defaults
 				- Last
-			- Currently-enforced settings live at their place, i.e. at GameController, SoundController, etc.
+			- Currently-enforced settings live at their place, i.e. at GameController, SoundController, UISettings, etc.
 			- Manages saving and loading customizable settings to and from json
 			- Created by MainFrame on startup
-				- Initializes here
+				- Initializes here, loading settings if present
 			- Exposes getters and setters for all customizable properties, used by SettingsDialog
 				- get(): from their place
 				- set(): to their place
@@ -1251,31 +1250,41 @@ Render:
 		+ ShipPreview
 			+ <scaled ImageData, ShipMetadata>
 			+ Loaded like ShipDefinition, taking width (from dialog)
+		- ShipPreviewPanel
+			- Now empty
+			- SetDirectory(std::filesystem::path)
+				- Just log for now
+		- ShipLoadDialog
+			- Directory tree on the left
+				- https://docs.wxwidgets.org/3.0/classwx_generic_dir_ctrl.html
+				- Stores last N in UIPreferences
+			- PreviewPanel in main area
+			- When dir tree chooses, call ShipPreviewPanel::SetDirectory
+			- When ship is loaded, call UIPreferences::AddShipLoadDirectory
+		- UIPreferences
+			- Created by main frame and passed around as shared_ptr
+			- Loads and Saves to uncustomizable file path
+			- Also has defaults, as initialization values set at cctor
+			- cctor:
+				- Set defaults
+				- Load
+					- No exceptions, if anything broken => keep defaults
+			- dctor:
+				- Save
+					- No exceptions, if anything broken => silent
+			- AddShipLoadDirectory:
+				- Check if already there
+					- If yes: move first
+					- If not: add first
+		- ShipPreviewPanel
+			- Thread - see MOLESKINE
 		- ShipPreviewControl
 			- Show:
 				- Name
 				- Dimensions
 				- Total mass?
-		- ShipPreviewPanel
-		- ShipLoadDialog
-			- Directory tree on the left
-			- PreviewPanel in main area
-			- See MOLESKINE
 
 
-	- Save screenshots/photos 
-		- Saves automatically in custom folder
-			- New settings provider: UISettings
-				- Managed normally by SettingsManager, and thus tweaked via SettingsDialog
-		- Code (at RenderContext::TakeScreenshot() -> returns ImageData)
-		    glPixelStorei(GL_PACK_ALIGNMENT, 1);
-		    glReadBuffer(GL_FRONT);
-		    glReadPixels(0, 0, windowWidth, windowHeight, GL_BGR_EXT, GL_UNSIGNED_BYTE, pixels);
-		- MainFrame does the saving, via GameLib/ImageTools
-			+ Move load functions from ResourceLoader to ImageTools
-			+ All static methods
-			- MainFrame responsible for finding unique filenames like smartphone, with micro's portion
-			- Fires snapshot sound		   
 
 - Sounds:
 	- Ship may come with custom sound(s) for horns
@@ -1831,23 +1840,18 @@ IF WX:
 
 		+ Try Adjancency rearc:
 			+ Commit and push first
-    			+ Each adjacency arc exists for each non-hull spring, and lives
- as long as the spring lives;
+    			+ Each adjacency arc exists for each non-hull spring, and lives as long as the spring lives;
 			  we might then get rid of these and just visit the non-hull springs,
-			  provided that we adjust GravitateWater and BalancePressure
- for the fact that each arc 
+			  provided that we adjust GravitateWater and BalancePressure for the fact that each arc 
 			  would now be visited only once
-
 			+ However, for electrical elements we still want to visit the spring-connected graph,
 			  regardless of hull-ness this time;
 			  we then want each point to know its N attached springs (arcs), which
 			  we maintain as a vector<Spring *> (there's max 8)
 				+ Actually: FixedSizeVector<TElement, Size>, w/erase that shifts and returns bool
 				+ Remove: use vector::erase(std::remove(val)), or self-done for just one
-				+ Adjust GravitateWater and BalancePressure
- for the fact that each arc 
+				+ Adjust GravitateWater and BalancePressure for the fact that each arc 
 			  		is now visited only once
-
 					+ GravitateWater: change to visit springs, and do realize that one of the points 
 					  always has cos > and the other cos <
 					+ BalancePressure: for each pair in which one has water > 1.0, do delta
@@ -3582,6 +3586,28 @@ IF WX:
 				+ Update() attempts to stop i
 	+ Control incisiveness (contrast) of water color for water in ship
 		+ New uniform
+	+ Save screenshots/photos 
+		+ Saves automatically in custom folder
+			+ New settings provider: UISettings
+				+ Managed normally by SettingsManager, and thus tweaked via SettingsDialog
+				+ Cctor sets default path (which will be default for SettingsManager)
+		+ Code (at RenderContext::TakeScreenshot() -> returns ImageData)
+		    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+		    glReadBuffer(GL_FRONT);
+		    glReadPixels(0, 0, windowWidth, windowHeight, GL_BGR_EXT, GL_UNSIGNED_BYTE, pixels);
+		    + See glPixelStorei and glReadBuffer
+		    + Call glFinish before all
+		+ MainFrame does the saving, via GameLib/ImageTools
+			+ Move load functions from ResourceLoader to ImageTools
+			+ All static methods
+			+ Creates UISettings and passes to SettingsDialog
+			+ MainFrame responsible for finding unique filenames like smartphone, with micro's portion
+			+ Fires snapshot sound	
+		+ SettingsDialog:
+			+ Add DirCtrl under tab "TODO"
+				+ https://docs.wxwidgets.org/3.0/classwx_dir_picker_ctrl.html
+		+ Make actual snapshot sound
+		+ Changelist
 
 + Sound:
 	+ SFML:

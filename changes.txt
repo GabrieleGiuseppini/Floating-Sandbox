@@ -6,6 +6,7 @@
 - Added interactive tool to shape the ocean floor in real time
 - Added air bubbles from leaking parts of the ship
 - Added flood tool to flood and dry parts of a ship
+- Added possibility to take screenshots directly from within the game
 - Improved light diffusion, added more light types, and made lights vulnerable to becoming wet
 - Redesigned entire buoyancy simulation (see https://gabrielegiuseppini.wordpress.com/2018/12/22/a-physics-puzzle/)
 - Lowered friction of ships on the sea floor

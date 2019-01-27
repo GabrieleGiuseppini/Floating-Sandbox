@@ -7,6 +7,7 @@
 
 #include "SliderControl.h"
 #include "SoundController.h"
+#include "UISettings.h"
 
 #include <Game/GameController.h>
 #include <Game/ResourceLoader.h>
@@ -15,6 +16,7 @@
 #include <wx/button.h>
 #include <wx/checkbox.h>
 #include <wx/dialog.h>
+#include <wx/filepicker.h>
 #include <wx/radiobox.h>
 
 #include <memory>
@@ -27,6 +29,7 @@ public:
         wxWindow * parent,
         std::shared_ptr<GameController> gameController,
         std::shared_ptr<SoundController> soundController,
+        std::shared_ptr< UISettings> uiSettings,
         ResourceLoader const & resourceLoader);
 
     virtual ~SettingsDialog();
@@ -39,6 +42,7 @@ private:
     void OnGenerateDebrisCheckBoxClick(wxCommandEvent & event);
     void OnGenerateSparklesCheckBoxClick(wxCommandEvent & event);
     void OnGenerateAirBubblesCheckBoxClick(wxCommandEvent & event);
+    void OnScreenshotDirPickerChanged(wxCommandEvent & event);
     void OnModulateWindCheckBoxClick(wxCommandEvent & event);
 
     void OnSeeShipThroughSeaWaterCheckBoxClick(wxCommandEvent & event);
@@ -57,7 +61,9 @@ private:
 
 private:
 
-    // Controls
+    //////////////////////////////////////////////////////
+    // Control tabs
+    //////////////////////////////////////////////////////
 
     // Mechanics
     std::unique_ptr<SliderControl> mMechanicalQualitySlider;
@@ -94,6 +100,7 @@ private:
     wxCheckBox * mGenerateDebrisCheckBox;
     wxCheckBox * mGenerateSparklesCheckBox;
     wxCheckBox * mGenerateAirBubblesCheckBox;
+    wxDirPickerCtrl * mScreenshotDirPickerCtrl;
 
     // Rendering
     std::unique_ptr<SliderControl> mSeaWaterTransparencySlider;
@@ -116,6 +123,9 @@ private:
     wxRadioBox * mDebugShipRenderModeRadioBox;
     wxRadioBox * mVectorFieldRenderModeRadioBox;
 
+    //////////////////////////////////////////////////////
+
+    // Buttons
     wxButton * mOkButton;
     wxButton * mCancelButton;
     wxButton * mApplyButton;
@@ -143,4 +153,5 @@ private:
     wxWindow * const mParent;
     std::shared_ptr<GameController> mGameController;
     std::shared_ptr<SoundController> mSoundController;
+    std::shared_ptr<UISettings> mUISettings;
 };

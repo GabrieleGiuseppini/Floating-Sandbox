@@ -10,6 +10,7 @@
 #include <GameCore/LinearSliderCore.h>
 #include <GameCore/Log.h>
 
+#include <wx/gbsizer.h>
 #include <wx/intl.h>
 #include <wx/notebook.h>
 #include <wx/sizer.h>
@@ -24,6 +25,7 @@ const long ID_ULTRA_VIOLENT_CHECKBOX = wxNewId();
 const long ID_GENERATE_DEBRIS_CHECKBOX = wxNewId();
 const long ID_GENERATE_SPARKLES_CHECKBOX = wxNewId();
 const long ID_GENERATE_AIR_BUBBLES_CHECKBOX = wxNewId();
+const long ID_SCREENSHOT_DIR_PICKER = wxNewId();
 const long ID_MODULATE_WIND_CHECKBOX = wxNewId();
 const long ID_SEE_SHIP_THROUGH_SEA_WATER_CHECKBOX = wxNewId();
 const long ID_SHOW_STRESS_CHECKBOX = wxNewId();
@@ -36,10 +38,12 @@ SettingsDialog::SettingsDialog(
     wxWindow* parent,
     std::shared_ptr<GameController> gameController,
     std::shared_ptr<SoundController> soundController,
+    std::shared_ptr< UISettings> uiSettings,
     ResourceLoader const & resourceLoader)
     : mParent(parent)
     , mGameController(std::move(gameController))
     , mSoundController(std::move(soundController))
+    , mUISettings(std::move(uiSettings))
 {
     Create(
         mParent,
@@ -270,6 +274,12 @@ void SettingsDialog::OnGenerateAirBubblesCheckBoxClick(wxCommandEvent & /*event*
     mApplyButton->Enable(true);
 }
 
+void SettingsDialog::OnScreenshotDirPickerChanged(wxCommandEvent & /*event*/)
+{
+    // Remember we're dirty now
+    mApplyButton->Enable(true);
+}
+
 void SettingsDialog::OnModulateWindCheckBoxClick(wxCommandEvent & /*event*/)
 {
     mWindGustAmplitudeSlider->Enable(mModulateWindCheckBox->IsChecked());
@@ -433,6 +443,8 @@ void SettingsDialog::ApplySettings()
     mGameController->SetDoGenerateSparkles(mGenerateSparklesCheckBox->IsChecked());
 
     mGameController->SetDoGenerateAirBubbles(mGenerateAirBubblesCheckBox->IsChecked());
+
+    mUISettings->SetScreenshotsFolderPath(mScreenshotDirPickerCtrl->GetPath().ToStdString());
 
 
 
@@ -985,8 +997,12 @@ void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
 
 void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 {
-    wxBoxSizer* controlsSizer = new wxBoxSizer(wxHORIZONTAL);
+    wxGridBagSizer* gridSizer = new wxGridBagSizer(0, 0);
 
+
+    //
+    // Row 1
+    //
 
     // Destroy Radius
 
@@ -1005,7 +1021,12 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
             mGameController->GetMinDestroyRadius(),
             mGameController->GetMaxDestroyRadius()));
 
-    controlsSizer->Add(mDestroyRadiusSlider.get(), 1, wxALL, SliderBorder);
+    gridSizer->Add(
+        mDestroyRadiusSlider.get(),
+        wxGBPosition(0, 0),
+        wxGBSpan(1, 1),
+        wxALL,
+        SliderBorder);
 
 
     // Bomb Blast Radius
@@ -1025,7 +1046,12 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
             mGameController->GetMinBombBlastRadius(),
             mGameController->GetMaxBombBlastRadius()));
 
-    controlsSizer->Add(mBombBlastRadiusSlider.get(), 1, wxALL, SliderBorder);
+    gridSizer->Add(
+        mBombBlastRadiusSlider.get(),
+        wxGBPosition(0, 1),
+        wxGBSpan(1, 1),
+        wxALL,
+        SliderBorder);
 
 
     // Anti-matter Bomb Implosion Strength
@@ -1045,8 +1071,12 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
             mGameController->GetMinAntiMatterBombImplosionStrength(),
             mGameController->GetMaxAntiMatterBombImplosionStrength()));
 
-    controlsSizer->Add(mAntiMatterBombImplosionStrengthSlider.get(), 1, wxALL, SliderBorder);
-
+    gridSizer->Add(
+        mAntiMatterBombImplosionStrengthSlider.get(),
+        wxGBPosition(0, 2),
+        wxGBSpan(1, 1),
+        wxALL,
+        SliderBorder);
 
     // Check boxes
 
@@ -1068,12 +1098,44 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
     Connect(ID_GENERATE_AIR_BUBBLES_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnGenerateAirBubblesCheckBoxClick);
     checkboxesSizer->Add(mGenerateAirBubblesCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
 
-    controlsSizer->Add(checkboxesSizer, 0, wxALL, SliderBorder);
+    gridSizer->Add(
+        checkboxesSizer,
+        wxGBPosition(0, 3),
+        wxGBSpan(1, 1),
+        wxALL,
+        SliderBorder);
+
+    //
+    // Row 2
+    //
+
+    wxBoxSizer* screenshotDirSizer = new wxBoxSizer(wxVERTICAL);
+
+    wxStaticText * screenshotDirStaticText = new wxStaticText(panel, wxID_ANY, "Screenshot directory:", wxDefaultPosition, wxDefaultSize, 0);
+    screenshotDirSizer->Add(screenshotDirStaticText, 1, wxALIGN_LEFT | wxEXPAND, 0);
+
+    mScreenshotDirPickerCtrl = new wxDirPickerCtrl(
+        panel,
+        ID_SCREENSHOT_DIR_PICKER,
+        _T(""),
+        _("Select directory that screenshots will be saved to:"),
+        wxDefaultPosition,
+        wxSize(-1, -1),
+        wxDIRP_DIR_MUST_EXIST | wxDIRP_USE_TEXTCTRL);
+    Connect(ID_SCREENSHOT_DIR_PICKER, wxEVT_DIRPICKER_CHANGED, (wxObjectEventFunction)&SettingsDialog::OnScreenshotDirPickerChanged);
+    screenshotDirSizer->Add(mScreenshotDirPickerCtrl, 1, wxALIGN_LEFT | wxEXPAND, 0);
+
+    gridSizer->Add(
+        screenshotDirSizer,
+        wxGBPosition(1, 0),
+        wxGBSpan(1, 4), // Take entire row
+        wxALL | wxEXPAND,
+        SliderBorder);
 
 
     // Finalize panel
 
-    panel->SetSizerAndFit(controlsSizer);
+    panel->SetSizerAndFit(gridSizer);
 }
 
 void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
@@ -1388,6 +1450,8 @@ void SettingsDialog::ReadSettings()
     mGenerateSparklesCheckBox->SetValue(mGameController->GetDoGenerateSparkles());
 
     mGenerateAirBubblesCheckBox->SetValue(mGameController->GetDoGenerateAirBubbles());
+
+    mScreenshotDirPickerCtrl->SetPath(mUISettings->GetScreenshotsFolderPath().string());
 
 
 

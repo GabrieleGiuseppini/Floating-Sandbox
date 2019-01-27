@@ -13,6 +13,7 @@
 #include "SettingsDialog.h"
 #include "SoundController.h"
 #include "ToolController.h"
+#include "UISettings.h"
 
 #include <Game/GameController.h>
 #include <Game/IGameEventHandler.h>
@@ -135,6 +136,7 @@ private:
     void OnResetViewMenuItemSelected(wxCommandEvent& event);
     void OnLoadShipMenuItemSelected(wxCommandEvent& event);
     void OnReloadLastShipMenuItemSelected(wxCommandEvent& event);
+    void OnSaveScreenshotMenuItemSelected(wxCommandEvent& event);
     void OnMoveMenuItemSelected(wxCommandEvent& event);
     void OnSmashMenuItemSelected(wxCommandEvent& event);
     void OnSliceMenuItemSelected(wxCommandEvent& event);
@@ -256,6 +258,7 @@ private:
     std::shared_ptr<ResourceLoader> mResourceLoader;
     std::shared_ptr<GameController> mGameController;
     std::shared_ptr<SoundController> mSoundController;
+    std::shared_ptr <UISettings> mUISettings;
     std::unique_ptr<ToolController> mToolController;
 
 

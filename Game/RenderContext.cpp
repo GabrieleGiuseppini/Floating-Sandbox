@@ -422,6 +422,41 @@ void RenderContext::AddShip(
             mShowStressedSprings));
 }
 
+ImageData RenderContext::TakeScreenshot()
+{
+    //
+    // Flush draw calls
+    //
+
+    glFinish();
+
+    //
+    // Allocate buffer
+    //
+
+    auto pixelBuffer = std::make_unique<uint8_t[]>(mCanvasWidth * mCanvasHeight * 3);
+
+    //
+    // Read pixels
+    //
+
+    // Alignment is byte
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    CheckOpenGLError();
+
+    // Read the front buffer
+    glReadBuffer(GL_FRONT);
+    CheckOpenGLError();
+
+    // Read
+    glReadPixels(0, 0, mCanvasWidth, mCanvasHeight, GL_RGB, GL_UNSIGNED_BYTE, pixelBuffer.get());
+    CheckOpenGLError();
+
+    return ImageData(
+        ImageSize(mCanvasWidth, mCanvasHeight),
+        std::move(pixelBuffer));
+}
+
 //////////////////////////////////////////////////////////////////////////////////
 
 void RenderContext::RenderStart()

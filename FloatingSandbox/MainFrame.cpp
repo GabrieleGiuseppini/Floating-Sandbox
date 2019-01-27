@@ -8,6 +8,8 @@
 #include "SplashScreenDialog.h"
 #include "Version.h"
 
+#include <Game/ImageFileTools.h>
+
 #include <GameOpenGL/GameOpenGL.h>
 
 #include <GameCore/GameException.h>
@@ -23,6 +25,8 @@
 #include <wx/tooltip.h>
 
 #include <cassert>
+#include <chrono>
+#include <ctime>
 #include <iomanip>
 #include <map>
 #include <sstream>
@@ -31,6 +35,7 @@ const long ID_MAIN_CANVAS = wxNewId();
 
 const long ID_LOAD_SHIP_MENUITEM = wxNewId();
 const long ID_RELOAD_LAST_SHIP_MENUITEM = wxNewId();
+const long ID_SAVE_SCREENSHOT_MENUITEM = wxNewId();
 const long ID_QUIT_MENUITEM = wxNewId();
 
 const long ID_ZOOM_IN_MENUITEM = wxNewId();
@@ -79,6 +84,7 @@ MainFrame::MainFrame(wxApp * mainApp)
     , mResourceLoader(new ResourceLoader())
     , mGameController()
     , mSoundController()
+    , mUISettings()
     , mToolController()
     , mHasWindowBeenShown(false)
     , mCurrentShipTitles()
@@ -196,6 +202,14 @@ MainFrame::MainFrame(wxApp * mainApp)
     fileMenu->Append(reloadLastShipMenuItem);
     Connect(ID_RELOAD_LAST_SHIP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnReloadLastShipMenuItemSelected);
 
+    fileMenu->Append(new wxMenuItem(fileMenu, wxID_SEPARATOR));
+
+    wxMenuItem * saveScreenshotMenuItem = new wxMenuItem(fileMenu, ID_SAVE_SCREENSHOT_MENUITEM, _("Save Screenshot\tCtrl+C"), wxEmptyString, wxITEM_NORMAL);
+    fileMenu->Append(saveScreenshotMenuItem);
+    Connect(ID_SAVE_SCREENSHOT_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSaveScreenshotMenuItemSelected);
+
+    fileMenu->Append(new wxMenuItem(fileMenu, wxID_SEPARATOR));
+
     wxMenuItem* quitMenuItem = new wxMenuItem(fileMenu, ID_QUIT_MENUITEM, _("Quit\tAlt-F4"), _("Quit the application"), wxITEM_NORMAL);
     fileMenu->Append(quitMenuItem);
     Connect(ID_QUIT_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnQuit);
@@ -311,8 +325,6 @@ MainFrame::MainFrame(wxApp * mainApp)
     mToolsMenu->Append(mAntiMatterBombsDetonateMenuItem);
     Connect(ID_ANTIMATTERBOMBDETONATE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAntiMatterBombDetonateMenuItemSelected);
     mAntiMatterBombsDetonateMenuItem->Enable(false);
-
-    mToolsMenu->Append(new wxMenuItem(mToolsMenu, wxID_SEPARATOR));
 
 
 
@@ -531,6 +543,13 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     }
 
     this->mMainApp->Yield();
+
+
+    //
+    // Create UI Settings
+    //
+
+    mUISettings = std::make_shared<UISettings>();
 
 
     //
@@ -898,6 +917,98 @@ void MainFrame::OnReloadLastShipMenuItemSelected(wxCommandEvent & /*event*/)
     }
 }
 
+void MainFrame::OnSaveScreenshotMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    //
+    // Fire snapshot sound
+    //
+
+    assert(!!mSoundController);
+    mSoundController->PlaySnapshotSound();
+
+
+    //
+    // Take screenshot
+    //
+
+    assert(!!mGameController);
+    ImageData screenshotImage = mGameController->TakeScreenshot();
+
+
+    //
+    // Ensure pictures folder exists
+    //
+
+    assert(!!mUISettings);
+    auto const folderPath = mUISettings->GetScreenshotsFolderPath();
+
+    if (!std::filesystem::exists(folderPath))
+    {
+        try
+        {
+            std::filesystem::create_directories(folderPath);
+        }
+        catch (std::filesystem::filesystem_error const & fex)
+        {
+            OnError(
+                std::string("Could not save screenshot to path \"") + folderPath.string() + "\": " + fex.what(),
+                false);
+
+            return;
+        }
+    }
+
+    //
+    // Choose filename
+    //
+
+    std::filesystem::path screenshotFilePath;
+
+    std::string shipName = mCurrentShipTitles.empty()
+        ? "NoShip"
+        : mCurrentShipTitles.back();
+
+    do
+    {
+        auto now = std::chrono::system_clock::now();
+        auto now_time_t = std::chrono::system_clock::to_time_t(now);
+        auto const tm = std::localtime(&now_time_t);
+
+        std::stringstream ssFilename;
+        ssFilename.fill('0');
+        ssFilename
+            << shipName
+            << "_"
+            << std::setw(4) << (1900 + tm->tm_year) << std::setw(2) << (1 + tm->tm_mon) << std::setw(2) << tm->tm_mday
+            << "_"
+            << std::setw(2) << tm->tm_hour << std::setw(2) << tm->tm_min << std::setw(2) << tm->tm_sec
+            << "_"
+            << std::setw(3) << std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch() % std::chrono::seconds(1)).count()
+            << ".png";
+
+        screenshotFilePath = folderPath / ssFilename.str();
+
+    } while (std::filesystem::exists(screenshotFilePath));
+
+
+    //
+    // Save screenshot
+    //
+
+    try
+    {
+        ImageFileTools::SaveImageRgb(
+            screenshotFilePath,
+            screenshotImage);
+    }
+    catch (std::filesystem::filesystem_error const & fex)
+    {
+        OnError(
+            std::string("Could not save screenshot to file \"") + screenshotFilePath.string() + "\": " + fex.what(),
+            false);
+    }
+}
+
 void MainFrame::OnPauseMenuItemSelected(wxCommandEvent & /*event*/)
 {
     if (mPauseMenuItem->IsChecked())
@@ -1069,6 +1180,7 @@ void MainFrame::OnOpenSettingsWindowMenuItemSelected(wxCommandEvent & /*event*/)
             this,
             mGameController,
             mSoundController,
+            mUISettings,
             *mResourceLoader);
     }
 

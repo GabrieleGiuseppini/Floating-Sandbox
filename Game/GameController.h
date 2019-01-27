@@ -15,6 +15,7 @@
 
 #include <GameCore/GameTypes.h>
 #include <GameCore/GameWallClock.h>
+#include <GameCore/ImageData.h>
 #include <GameCore/ProgressCallback.h>
 #include <GameCore/Vectors.h>
 
@@ -51,6 +52,8 @@ public:
     void ResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath);
     void AddShip(std::filesystem::path const & shipDefinitionFilepath);
     void ReloadLastShip();
+
+    ImageData TakeScreenshot();
 
     void RunGameIteration();
     void LowFrequencyUpdate();

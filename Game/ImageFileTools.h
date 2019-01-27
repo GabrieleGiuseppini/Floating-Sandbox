@@ -22,7 +22,7 @@ public:
 
     static ImageData LoadImageRgbUpperLeft(std::filesystem::path const & filepath);
 
-    static void SaveImage(
+    static void SaveImageRgb(
         std::filesystem::path filepath,
         ImageData const & image);
 
