@@ -15,6 +15,7 @@
 #include <GameCore/ElementContainer.h>
 #include <GameCore/ElementIndexRangeIterator.h>
 #include <GameCore/FixedSizeVector.h>
+#include <GameCore/GameRandomEngine.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/Vectors.h>
 
@@ -611,6 +612,11 @@ public:
     void SetLeaking(ElementIndex pointElementIndex)
     {
         mIsLeakingBuffer[pointElementIndex] = true;
+
+        // Randomize the initial water intaken, so that air bubbles won't come out all at the same moment
+        mCumulatedIntakenWater[pointElementIndex] = GameRandomEngine::GetInstance().GenerateRandomReal(
+            0.0f,
+            GameParameters::CumulatedIntakenWaterThresholdForAirBubbles);
     }
 
     //

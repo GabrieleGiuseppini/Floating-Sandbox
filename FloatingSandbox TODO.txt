@@ -202,15 +202,17 @@ Render:
 			+ Do inverse visits at World anyway
 		+ Log marker w/timestamp
 			+ -------------------- 519558699552151
-
-		- Ship file dialog (*)
-
-		- Extended move tool (*)
-			- Actually, new "Pick" tool altogether, on conn component only - no rotation
+		+ Complete "How to Build a Ship" guide
+		+ Move all guides to own folder "Docs"
+			+ Also material_template's
+		= Air bubble randomization
 
 		- WiX Installer
 
-		- Release
+		- Ship file dialog (*)
+
+	- 1.9.0
+		- Pick tool (*)
 
 		- Interior layer (*)
 
@@ -218,16 +220,10 @@ Render:
 		- Orphaned points (*)
 
 		- ConnectedSprings/OtherEndpoint Optimization (*)
-		- TODO: other optimization we thought about?
 		- Increase ephemeral particles
 
-		- Libsimdpp spring relaxation (*)
-
-		+ Complete "How to Build a Ship" guide
-		+ Move all guides to own folder "Docs"
-			+ Also material_template's
-
-	- 1.9.0
+	- 1.10.0
+		- Spring and NonSpring force separation optimization
 		- Batisphere with pumps and propulsion (*)
 			- Switches (*)
 			- Pumps (*)
@@ -235,7 +231,9 @@ Render:
 			- Batisphere
 		- Smoke (*)
 		- Settings Manager (*)
-	- 1.10.0
+
+	- 1.11.0
+		- Libsimdpp spring relaxation (*)
 		- Frontier
 		- Resource Packs (*)
 
@@ -1088,27 +1086,23 @@ Render:
 
 - Game Interactions and Controls:
 
-	- Move tool: ability to move individual connected components
+	- Pick tool: ability to move individual connected components
 		- After connected component has been overhauled
 		- Spec:
-			- Current tool is "Move All"
-			- New tool gets also connected component ID from GameController and passes it to MoveTo()/RotateTo()
-		- Impl:
-			- Redesign move tool as:
-				- World keeps update'ing
-					- Remove GameController's pausing at Update
-				- Move engagement returns ObjectId for point ID (or none)
-				- Tool:
-					- Invoke Move/Rotate continuously at Update() only
-						- Disengage if it returns false
-					- Move: pass velocity = current (synthetic) mousePos - last (synthetic) mousePos
-					- Rotate: TBD
-				- Ship Move/MoveConnectedComponent(pointId, vec2f position, vec2f velocity):
-					- If point deleted => return false (to disengage)
-					- Calc deltaPos for the point
-					- Translate (entire ship || point's connected component) by deltaPos, and add velocity
-					- Test: if we get a tremolo:
-						- Store Move args @ Move() and apply after UpdateMechanics()
+			- New tool gets point ID from GameController::Pick() and passes it to new MoveTo()
+		- Impl:		
+			- Pick engagement returns ObjectId for point ID (or none)
+				- Ship::Pick(vec2f position) -> opt<ObjectId>
+			- Ship::MoveTo(pointId, vec2f position, vec2f velocity) (new overload):
+				- If point deleted => return false (to disengage)
+				- Calc deltaPos for the point
+				- Translate point's connected component by deltaPos, and add velocity
+				- Test: if we get a tremolo:
+					- Store Move args @ Move() and apply after UpdateMechanics()
+			- Tool:
+				- Invoke MoveTo() continuously at Update() only
+					- Disengage if it returns false
+				- Pass velocity = current (synthetic) mousePos - last (synthetic) mousePos
 				
 	- Changing the width of the waves up to at least 10x the current size
 		- Requires re-calculation of period (if adjustment is x-multiplier N, then period is N times basic period)

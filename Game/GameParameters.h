@@ -36,6 +36,8 @@ struct GameParameters
         return SimulationStepTimeDuration<T> / numMechanicalDynamicsIterations;
     }
 
+
+
     //
     // Physical Constants
     //
@@ -50,9 +52,6 @@ struct GameParameters
 
     // Water mass
     static constexpr float WaterMass = 1000.0f;
-
-    // Wind
-    static constexpr vec2f WindDirection = vec2f(1.0f, 0.0f);
 
 
 
@@ -137,7 +136,7 @@ struct GameParameters
     static constexpr std::chrono::milliseconds MaxSparkleParticlesLifetime = std::chrono::milliseconds(500);
 
     bool DoGenerateAirBubbles;
-    float CumulatedIntakenWaterThresholdForAirBubbles;
+    static constexpr float CumulatedIntakenWaterThresholdForAirBubbles = 8.0f;
     static constexpr float MinAirBubblesVortexAmplitude = 0.05f;
     static constexpr float MaxAirBubblesVortexAmplitude = 2.0f;
     static constexpr float MinAirBubblesVortexFrequency = 1.0f;
@@ -145,13 +144,15 @@ struct GameParameters
 
     // Wind
 
+    static constexpr vec2f WindDirection = vec2f(1.0f, 0.0f);
+
     bool DoModulateWind;
 
-    float WindSpeedBase;        // Beaufort scale, km/h
+    float WindSpeedBase; // Beaufort scale, km/h
     static constexpr float MinWindSpeedBase = -100.f;
     static constexpr float MaxWindSpeedBase = 100.0f;
 
-    float WindSpeedMaxFactor;   // Multiplier on base
+    float WindSpeedMaxFactor; // Multiplier on base
     static constexpr float MinWindSpeedMaxFactor = 1.f;
     static constexpr float MaxWindSpeedMaxFactor = 10.0f;
 

@@ -22,7 +22,6 @@ GameParameters::GameParameters()
     , DoGenerateDebris(true)
     , DoGenerateSparkles(true)
     , DoGenerateAirBubbles(true)
-    , CumulatedIntakenWaterThresholdForAirBubbles(8.0f)
     // Wind
     , DoModulateWind(true)
     , WindSpeedBase(-20.0f)

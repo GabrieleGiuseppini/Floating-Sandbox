@@ -23,6 +23,8 @@ void Points::Add(
     vec4f const & color,
     vec2f const & textureCoordinates)
 {
+    ElementIndex const pointIndex = static_cast<ElementIndex>(mIsDeletedBuffer.GetCurrentPopulatedSize());
+
     mIsDeletedBuffer.emplace_back(false);
 
     mMaterialsBuffer.emplace_back(&structuralMaterial, electricalMaterial);
@@ -49,6 +51,8 @@ void Points::Add(
     mWaterMomentumBuffer.emplace_back(vec2f::zero());
     mCumulatedIntakenWater.emplace_back(0.0f);
     mIsLeakingBuffer.emplace_back(isLeaking);
+    if (isLeaking)
+        SetLeaking(pointIndex);
 
     // Electrical dynamics
     mElectricalElementBuffer.emplace_back(electricalElementIndex);
