@@ -218,17 +218,18 @@ Render:
 						+ w/shortcuts
 					+ license, readme, changes
 
-			= No upgrade/downgrade
+			+ No upgrade/downgrade
 				+ Version in product name
 				+ New product guid each time
 					+ Just use new variable
-			= Icon
-				- See if can take from binary
 			+ Program files
-			= Desktop shortcut
-				- No working directory
+			+ Desktop shortcut
+				+ No working directory
+				+ Check icon
 			+ Start menu shortcut
+				+ Check icon
 			- Completion message
+			+ Icon of add/remove programs
 			= Change name of final MSI
 				+ Requires bind with version of file ID
 				- Do PostBuildaction

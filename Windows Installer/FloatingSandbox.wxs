@@ -22,8 +22,8 @@
             Compressed="yes"
             InstallScope="perMachine" />
 
-        <Icon Id="FS_ICON.ico" SourceFile="..\FloatingSandbox\Resources\Ship.ico" />
-        <Property Id="ARPPRODUCTICON" Value="icon.ico" />
+        <Icon Id="FsIcon.ico" SourceFile="..\FloatingSandbox\Resources\Ship.ico" />
+        <Property Id="ARPPRODUCTICON" Value="FsIcon.ico" />
 
         <Media Id='1' Cabinet='FloatingSandbox.cab' EmbedCab='yes' />
 
@@ -38,9 +38,7 @@
                     </Component>
 
                     <Component Id="FloatingSandboxExe_comp" Guid="391F6B0C-C946-4032-B215-EBB178730107" Win64="yes">
-                        <File Id="FloatingSandboxExe" Source="$(var.SourceInstallFolderPath)\FloatingSandbox.exe" KeyPath="yes">
-                            <Shortcut Id="DesktopShortcut" Directory="DesktopFolder" Name="$(var.FullApplicationName)" WorkingDirectory='INSTALLDIR' Icon="FS_ICON.ico" IconIndex="0" Advertise="yes" />
-                        </File>
+                        <File Id="FloatingSandboxExe" Source="$(var.SourceInstallFolderPath)\FloatingSandbox.exe" KeyPath="yes" />
                     </Component>
 
                     <Component Id="RuntimeBinaries_comp" Guid="77F0F0A0-7B10-4851-AAFA-E534D934CEAE" Win64="yes">
@@ -71,6 +69,24 @@
                 </Directory>
             </Directory>
 
+            <Directory Id="DesktopFolder" Name="Desktop">
+                <Component Id="FloatingSandboxDesktopShortcut_comp" Guid="BF8DBA16-B79B-4B27-9021-E7563C43340D">
+                    <Shortcut Id="FloatingSandboxDesktopShortcut"
+                        Name="$(var.FullApplicationName)"
+                        Description="$(var.FullApplicationName)"
+                        Target="[#FloatingSandboxExe]"
+                        WorkingDirectory="INSTALLFOLDER" />
+                    <RemoveFolder Id="DesktopFolder" On="uninstall" />
+                    <RegistryValue
+                        Root="HKCU"
+                        Key="Software/$(var.FullApplicationName)"
+                        Name="installed"
+                        Type="integer"
+                        Value="1"
+                        KeyPath="yes" />
+                </Component>
+            </Directory>
+
             <Directory Id="ProgramMenuFolder">
                 <Directory Id="FloatingSandboxProgramMenuFolder" Name="$(var.FullApplicationName)">
                     <Component Id="FloatingSandboxProgramMenuShortcut_comp" Guid="739A99F0-EE1E-4B7E-905B-A288D953499F">
@@ -85,8 +101,6 @@
                 </Directory>
             </Directory>
 
-            <Directory Id="DesktopFolder" />
-
         </Directory>
 
 
@@ -98,6 +112,7 @@
 			<ComponentGroupRef Id="Data_generated_comp" />
             <ComponentRef Id="ShipsDir_comp" />
             <ComponentGroupRef Id="Ships_generated_comp" />
+            <ComponentRef Id="FloatingSandboxDesktopShortcut_comp" />
             <ComponentRef Id="FloatingSandboxProgramMenuShortcut_comp" />
 		</Feature>
 
