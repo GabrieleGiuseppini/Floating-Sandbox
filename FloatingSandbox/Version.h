@@ -11,23 +11,25 @@
 #define STRINGIZE2(s) #s
 #define STRINGIZE(s) STRINGIZE2(s)
 
-#define VERSION_MAJOR               1
-#define VERSION_MINOR               8
-#define VERSION_REVISION            0
-#define VERSION_BUILD               0
+#define APPLICATION_VERSION_MAJOR               1
+#define APPLICATION_VERSION_MINOR               8
+#define APPLICATION_VERSION_REVISION            0
+#define APPLICATION_VERSION_BUILD               0
 
-// TODOHERE: APPLICATION_VERSION_STR, APPLICATION_NAME, APPLICATION_NAME_WITH_VERSION
-#define VER_PRODUCT_VERSION_STR     STRINGIZE(VERSION_MAJOR)        \
-                                    "." STRINGIZE(VERSION_MINOR)    \
-                                    "." STRINGIZE(VERSION_REVISION) \
-                                    "." STRINGIZE(VERSION_BUILD)    \
+#define APPLICATION_VERSION_LONG_STR    STRINGIZE(APPLICATION_VERSION_MAJOR)        \
+                                        "." STRINGIZE(APPLICATION_VERSION_MINOR)    \
+                                        "." STRINGIZE(APPLICATION_VERSION_REVISION) \
+                                        "." STRINGIZE(APPLICATION_VERSION_BUILD)
 
-#define VER_PRODUCTNAME_STR                 "Floating Sandbox"
-#define VER_PRODUCTNAME_WITH_VERSION_STR    VER_PRODUCTNAME_STR " " VER_PRODUCT_VERSION_STR
+#define APPLICATION_VERSION_SHORT_STR   STRINGIZE(APPLICATION_VERSION_MAJOR)        \
+                                        "." STRINGIZE(APPLICATION_VERSION_MINOR)    \
+                                        "." STRINGIZE(APPLICATION_VERSION_REVISION)
 
-#define VERSION STRINGIZE(VERSION_MAJOR) "." STRINGIZE(VERSION_MINOR) "." STRINGIZE(VERSION_REVISION)
+#define APPLICATION_NAME                 "Floating Sandbox"
+#define APPLICATION_NAME_WITH_VERSION    APPLICATION_NAME " " APPLICATION_VERSION_SHORT_STR
 
-inline std::string ApplicationName = VER_PRODUCTNAME_STR;
+inline std::string ApplicationName = APPLICATION_NAME;
+inline std::string ApplicationNameWithVersion = APPLICATION_NAME_WITH_VERSION;
 
 enum class VersionFormat
 {
@@ -42,17 +44,17 @@ inline std::string GetVersionInfo(VersionFormat versionFormat)
     {
         case VersionFormat::Short:
         {
-            return std::string(VERSION);
+            return std::string(APPLICATION_VERSION_LONG_STR);
         }
 
         case VersionFormat::Long:
         {
-            return std::string(ApplicationName + " v" VERSION);
+            return std::string(APPLICATION_NAME_WITH_VERSION);
         }
 
         case VersionFormat::LongWithDate:
         {
-            return std::string(ApplicationName + " v" VERSION " (" __DATE__ ")");
+            return std::string(APPLICATION_NAME_WITH_VERSION " (" __DATE__ ")");
         }
 
         default:
