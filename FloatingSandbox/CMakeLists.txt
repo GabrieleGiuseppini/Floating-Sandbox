@@ -50,14 +50,18 @@ set  (FLOATING_SANDBOX_SOURCES
 
 source_group(" " FILES ${FLOATING_SANDBOX_SOURCES})
 
-set  (RESOURCE_FILES
-	Resources/FloatingSandbox.rc
-	Resources/Ship.ico)
+set(RESOURCE_FILES "")
+if (MSVC)
+	list(APPEND RESOURCE_FILES
+		Resources/FloatingSandbox.rc
+		Resources/Ship.ico)
+endif (MSVC)
 
 source_group("Resources" FILES ${RESOURCE_FILES})
 
 add_executable (FloatingSandbox ${FLOATING_SANDBOX_SOURCES} ${RESOURCE_FILES})
 
+target_include_directories(FloatingSandbox PRIVATE .)
 target_include_directories(FloatingSandbox PRIVATE ${SFML_INCLUDE_DIR})
 target_include_directories(FloatingSandbox PRIVATE ${wxWidgets_INCLUDE_DIRS})
 target_compile_definitions(FloatingSandbox PRIVATE "${wxWidgets_DEFINITIONS}")
