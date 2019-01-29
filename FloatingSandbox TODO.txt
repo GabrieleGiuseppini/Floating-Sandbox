@@ -207,15 +207,37 @@ Render:
 			+ Also material_template's
 		+ Air bubble randomization
 
-		- WiX Installer
-			- Notes:
-				- Product GUID (once and for all)
-				- Version (different for each release)
-				- Package GUID (different for each release) (can use asterisk)
-				- Upgrade GUID (once and for all)
-			- Inputs to generation:
-				- Could be in include file that defines variables
-				- Version
+		= WiX Installer
+			+ Rearc:
+				+ Heat only used for:
+					+ Data - ComponentGroup "Data", own wxs
+					+ Ships - ComponentGroup "Ships", own wxs
+				+ Then manual ComponentGroups:
+					+ Binaries
+						+ w/proper platform
+						+ w/shortcuts
+					+ license, readme, changes
+
+			= No upgrade/downgrade
+				+ Version in product name
+				+ New product guid each time
+					+ Just use new variable
+			= Icon
+				- See if can take from binary
+			+ Program files
+			= Desktop shortcut
+				- No working directory
+			+ Start menu shortcut
+			- Completion message
+			= Change name of final MSI
+				+ Requires bind with version of file ID
+				- Do PostBuildaction
+				+ Version main binary:
+					+ CMake: only include resources if MSVC
+					+ Use version defines from Version.h
+
+			+ Remove whole folder on uninstall, even with users' files
+				+ https://helgeklein.com/blog/2014/09/real-world-example-wix-msi-application-installer/
 
 		- Ship file dialog (*)
 
