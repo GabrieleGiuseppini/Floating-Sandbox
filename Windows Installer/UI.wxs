@@ -20,7 +20,7 @@
 
             <Dialog Id="FSStarterDlg" Width="370" Height="270" Title="Ready to Install [ProductName]!" TrackDiskSpace="no">
                 <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="80" TabSkip="no" FixedSize="yes" Text="FSBannerBitmap" />
-                <Control Id="InstallText" Type="Text" X="25" Y="90" Width="320" Height="80" Hidden="no" Text="You are one click away from installing [ProductName]. Are you ready to go?" />
+                <Control Id="InstallText" Type="Text" X="25" Y="95" Width="320" Height="80" Hidden="no" Text="You are one click away from installing [ProductName]. Are you ready to go?" />
                 <Control Id="Install" Type="PushButton" X="85" Y="110" Width="200" Height="77" Default="yes" Bitmap="yes" FixedSize="yes" Text="[InstallControlContent]">
                     <Publish Event="EndDialog" Value="Return">1</Publish>
                 </Control>
@@ -39,7 +39,7 @@
                 <Control Id="ProgressBar" Type="ProgressBar" X="20" Y="155" Width="330" Height="10" ProgressBlocks="yes" Text="Progress done">
                     <Subscribe Event="SetProgress" Attribute="Progress" />
                 </Control>
-                <Control Id="Cancel" Type="PushButton" X="85" Y="190" Width="200" Height="77" Cancel="yes" Bitmap="yes" FixedSize="yes" Text="[CancelControlContent]">
+                <Control Id="Cancel" Type="PushButton" X="85" Y="180" Width="200" Height="77" Cancel="yes" Bitmap="yes" FixedSize="yes" Text="[CancelControlContent]">
                     <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
                 </Control>
             </Dialog>
@@ -55,7 +55,7 @@
 
             <Dialog Id="FSAlreadyInstalledDlg" Width="370" Height="270" Title="[ProductName] Already Installed">
                 <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="80" TabSkip="no" FixedSize="yes" Text="FSBannerBitmap" />
-                <Control Id="AlreadyInstalledText" Type="Text" X="75" Y="117" Width="320" Height="80" Hidden="no" Text="[ProductName] is already installed on this computer." />
+                <Control Id="AlreadyInstalledText" Type="Text" X="25" Y="117" Width="320" Height="80" Hidden="no" Text="[ProductName] is already installed on this computer; no further action is necessary." />
                 <Control Id="Finish" Type="PushButton" X="85" Y="165" Width="200" Height="77" Default="yes" Bitmap="yes" FixedSize="yes" Text="[OkControlContent]">
                     <Publish Event="EndDialog" Value="Exit">1</Publish>
                     <Condition Action="enable">1</Condition>
@@ -88,7 +88,7 @@
                 <Show Dialog="FSAlreadyInstalledDlg" Before="FSProgressDlg">Installed</Show>
                 <Show Dialog="FSProgressDlg" Before="ExecuteAction">1</Show>
                 <Show Dialog="FSCompletedDlg" OnExit="success">1</Show>
-                <Show Dialog="FSUserExit" OnExit="cancel">1</Show>
+                <Show Dialog="FSUserExit" OnExit="cancel">NOT Installed</Show>
             </InstallUISequence>
 
             <AdminUISequence>

@@ -6,7 +6,7 @@
     <!-- Change at each release!!! -->
     <?define UpgradeCode = "00F7A957-943E-4AB6-AB52-92AD338CFA1E"?>
 
-	<Product Id="*"
+	<Product Id="B0947CCD-6ABE-494D-9E48-72FB6641645A"
              Name="$(var.FullApplicationName)" Language="1033"
              Version="$(var.FloatingSandboxVersion)"
              Manufacturer="Gabriele Giuseppini" UpgradeCode="$(var.UpgradeCode)">
