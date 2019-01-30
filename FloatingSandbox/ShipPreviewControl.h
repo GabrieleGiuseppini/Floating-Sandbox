@@ -11,11 +11,19 @@ class ShipPreviewControl : public wxPanel
 {
 public:
 
-    ShipPreviewControl(wxWindow * parent);
+    ShipPreviewControl(
+        wxWindow * parent,
+        int width,
+        int height);
 
     virtual ~ShipPreviewControl();
 
 private:
 
     void OnMouseClick(wxMouseEvent & event);
+
+private:
+
+    int const mWidth;
+    int const mHeight;
 };

@@ -85,6 +85,7 @@ MainFrame::MainFrame(wxApp * mainApp)
     , mGameController()
     , mSoundController()
     , mUISettings()
+    , mUIPreferences()
     , mToolController()
     , mHasWindowBeenShown(false)
     , mCurrentShipTitles()
@@ -553,6 +554,13 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
 
     //
+    // Create UI Preferences
+    //
+
+    mUIPreferences = std::make_shared<UIPreferences>();
+
+
+    //
     // Create Tool controller
     //
 
@@ -868,24 +876,19 @@ void MainFrame::OnMainGLCanvasCaptureMouseLost(wxCloseEvent & /*event*/)
 
 void MainFrame::OnLoadShipMenuItemSelected(wxCommandEvent & /*event*/)
 {
-    if (!mFileOpenDialog)
+    if (!mShipLoadDialog)
     {
-        mFileOpenDialog = std::make_unique<wxFileDialog>(
+        mShipLoadDialog = std::make_unique<ShipLoadDialog>(
             this,
-            L"Select Ship",
-            wxEmptyString,
-            wxEmptyString,
-            L"Ship files (*.shp; *.png)|*.shp; *.png",
-            wxFD_OPEN | wxFD_FILE_MUST_EXIST,
-            wxDefaultPosition,
-            wxDefaultSize,
-            _T("File Open Dialog"));
+            mUIPreferences);
     }
 
-    assert(!!mFileOpenDialog);
+    assert(!!mShipLoadDialog);
 
-    if (mFileOpenDialog->ShowModal() == wxID_OK)
+    if (mShipLoadDialog->ShowModal() == wxID_OK)
     {
+        // TODOHERE
+        /*
         std::string filename = mFileOpenDialog->GetPath().ToStdString();
 
         ResetState();
@@ -899,6 +902,7 @@ void MainFrame::OnLoadShipMenuItemSelected(wxCommandEvent & /*event*/)
         {
             OnError(ex.what(), false);
         }
+        */
     }
 }
 

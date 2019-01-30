@@ -13,6 +13,8 @@ public:
 
     UISettings();
 
+public:
+
     std::filesystem::path const & GetScreenshotsFolderPath() const
     {
         return mScreenshotsFolderPath;

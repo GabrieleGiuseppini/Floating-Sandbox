@@ -5,7 +5,10 @@
 ***************************************************************************************/
 #include "ShipPreviewPanel.h"
 
-ShipPreviewPanel::ShipPreviewPanel(wxWindow* parent)
+#include <GameCore/Log.h>
+
+ShipPreviewPanel::ShipPreviewPanel(
+    wxWindow* parent)
     : wxPanel(
         parent,
         wxID_ANY,
@@ -14,8 +17,16 @@ ShipPreviewPanel::ShipPreviewPanel(wxWindow* parent)
         wxBORDER_SIMPLE)
 {
     SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW));
+
+    // TODO
 }
 
 ShipPreviewPanel::~ShipPreviewPanel()
 {
+}
+
+void ShipPreviewPanel::SetDirectory(std::filesystem::path const & directoryPath)
+{
+    // TODOHERE
+    LogMessage("ShipPreviewPanel::SetDirectory(", directoryPath.string(), ")");
 }

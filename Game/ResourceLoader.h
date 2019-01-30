@@ -26,6 +26,8 @@ public:
     // Ships
     //
 
+    static std::filesystem::path GetInstalledShipFolderPath();
+
     std::filesystem::path GetDefaultShipDefinitionFilePath() const;
 
 

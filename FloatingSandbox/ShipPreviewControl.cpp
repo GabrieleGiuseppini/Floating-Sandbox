@@ -6,13 +6,17 @@
 #include "ShipPreviewControl.h"
 
 ShipPreviewControl::ShipPreviewControl(
-    wxWindow * parent)
+    wxWindow * parent,
+    int width,
+    int height)
     : wxPanel(
         parent,
         wxID_ANY,
         wxDefaultPosition,
         wxDefaultSize,
         wxBORDER_SIMPLE)
+    , mWidth(width)
+    , mHeight(height)
 {
     SetBackgroundColour(wxColour("WHITE"));
 

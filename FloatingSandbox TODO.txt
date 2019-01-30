@@ -1277,9 +1277,9 @@ Render:
 			+ <scaled ImageData, ShipMetadata>
 			+ Loaded like ShipDefinition, taking width (from dialog)
 		- ShipPreviewPanel
-			- Now empty
-			- SetDirectory(std::filesystem::path)
-				- Just log for now
+			+ Now empty
+			+ SetDirectory(std::filesystem::path)
+				+ Just log for now
 		- ShipLoadDialog
 			- Directory tree on the left
 				- https://docs.wxwidgets.org/3.0/classwx_generic_dir_ctrl.html
@@ -1292,16 +1292,16 @@ Render:
 			- Loads and Saves to uncustomizable file path
 			- Also has defaults, as initialization values set at cctor
 			- cctor:
-				- Set defaults
+				+ Set defaults
 				- Load
 					- No exceptions, if anything broken => keep defaults
 			- dctor:
 				- Save
 					- No exceptions, if anything broken => silent
-			- AddShipLoadDirectory:
-				- Check if already there
-					- If yes: move first
-					- If not: add first
+			+ AddShipLoadDirectory:
+				+ Check if already there
+					+ If yes: move first
+					+ If not: add first
 		- ShipPreviewPanel
 			- Thread - see MOLESKINE
 		- ShipPreviewControl

@@ -23,12 +23,17 @@ ResourceLoader::ResourceLoader()
 // Ships
 ////////////////////////////////////////////////////////////////////////////////////////////
 
+std::filesystem::path ResourceLoader::GetInstalledShipFolderPath()
+{
+    return std::filesystem::canonical(std::filesystem::path("Ships"));
+}
+
 std::filesystem::path ResourceLoader::GetDefaultShipDefinitionFilePath() const
 {
-    std::filesystem::path defaultShipDefinitionFilePath = std::filesystem::path("Ships") / "default_ship.shp";
+    std::filesystem::path defaultShipDefinitionFilePath = GetInstalledShipFolderPath() / "default_ship.shp";
     if (!std::filesystem::exists(defaultShipDefinitionFilePath))
     {
-        defaultShipDefinitionFilePath = std::filesystem::path("Ships") / "default_ship.png";
+        defaultShipDefinitionFilePath = GetInstalledShipFolderPath() / "default_ship.png";
     }
 
     return defaultShipDefinitionFilePath;
