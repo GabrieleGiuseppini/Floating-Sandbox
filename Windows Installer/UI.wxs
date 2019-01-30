@@ -13,13 +13,14 @@
         <Binary Id="CancelBmp" SourceFile="CancelButton.bmp" />
         <Property Id="CancelControlContent">CancelBmp</Property>
 
+        <Binary Id="OkBmp" SourceFile="OkButton.bmp" />
+        <Property Id="OkControlContent">OkBmp</Property>
 
         <UI Id="FloatingSandboxUI">
 
-
-            <Dialog Id="FSStarterDlg" Width="370" Height="270" Title="Ready to install $(var.FullApplicationName)!" TrackDiskSpace="no">
+            <Dialog Id="FSStarterDlg" Width="370" Height="270" Title="Ready to Install [ProductName]!" TrackDiskSpace="no">
                 <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="80" TabSkip="no" FixedSize="yes" Text="FSBannerBitmap" />
-                <Control Id="InstallText" Type="Text" X="25" Y="90" Width="320" Height="80" Hidden="no" Text="You are one click away from installing $(var.ShortApplicationName). Are you ready to go?" />
+                <Control Id="InstallText" Type="Text" X="25" Y="90" Width="320" Height="80" Hidden="no" Text="You are one click away from installing [ProductName]. Are you ready to go?" />
                 <Control Id="Install" Type="PushButton" X="85" Y="110" Width="200" Height="77" Default="yes" Bitmap="yes" FixedSize="yes" Text="[InstallControlContent]">
                     <Publish Event="EndDialog" Value="Return">1</Publish>
                 </Control>
@@ -28,10 +29,9 @@
                 </Control>
             </Dialog>
 
-            <Dialog Id="FSProgressDlg" Width="370" Height="270" Title="Installing $(var.FullApplicationName)..." Modeless="yes">
+            <Dialog Id="FSProgressDlg" Width="370" Height="270" Title="Installing [ProductName]..." Modeless="yes">
                 <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="80" TabSkip="no" FixedSize="yes" Text="FSBannerBitmap" />
-
-                <Control Id="TextInstalling" Type="Text" X="20" Y="105" Width="330" Height="35" Hidden="no" NoPrefix="yes" Text="Please wait while $(var.FullApplicationName) gets installed..." />
+                <Control Id="TextInstalling" Type="Text" X="20" Y="105" Width="330" Height="35" Hidden="no" NoPrefix="yes" Text="Please wait while [ProductName] gets installed..." />
                 <Control Id="ActionText" Type="Text" X="70" Y="140" Width="285" Height="10">
                     <Subscribe Event="ActionText" Attribute="Text" />
                 </Control>
@@ -39,13 +39,39 @@
                 <Control Id="ProgressBar" Type="ProgressBar" X="20" Y="155" Width="330" Height="10" ProgressBlocks="yes" Text="Progress done">
                     <Subscribe Event="SetProgress" Attribute="Progress" />
                 </Control>
-
                 <Control Id="Cancel" Type="PushButton" X="85" Y="190" Width="200" Height="77" Cancel="yes" Bitmap="yes" FixedSize="yes" Text="[CancelControlContent]">
                     <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
                 </Control>
-
             </Dialog>
 
+            <Dialog Id="FSCompletedDlg" Width="370" Height="270" Title="[ProductName] Successfully Installed!">
+                <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="80" TabSkip="no" FixedSize="yes" Text="FSBannerBitmap" />
+                <Control Id="CompletedText" Type="Text" X="75" Y="117" Width="320" Height="80" Hidden="no" Text="[ProductName] has been successfully installed!" />
+                <Control Id="Finish" Type="PushButton" X="85" Y="165" Width="200" Height="77" Default="yes" Bitmap="yes" FixedSize="yes" Text="[OkControlContent]">
+                    <Publish Event="EndDialog" Value="Return" Order="999">1</Publish>
+                    <Condition Action="enable">1</Condition> <!-- See http://windows-installer-xml-wix-toolset.687559.n2.nabble.com/Bug-causing-ICE-17-failure-td4050724.html -->
+                </Control>
+            </Dialog>
+
+            <Dialog Id="FSAlreadyInstalledDlg" Width="370" Height="270" Title="[ProductName] Already Installed">
+                <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="80" TabSkip="no" FixedSize="yes" Text="FSBannerBitmap" />
+                <Control Id="AlreadyInstalledText" Type="Text" X="75" Y="117" Width="320" Height="80" Hidden="no" Text="[ProductName] is already installed on this computer." />
+                <Control Id="Finish" Type="PushButton" X="85" Y="165" Width="200" Height="77" Default="yes" Bitmap="yes" FixedSize="yes" Text="[OkControlContent]">
+                    <Publish Event="EndDialog" Value="Exit">1</Publish>
+                    <Condition Action="enable">1</Condition>
+                    <!-- See http://windows-installer-xml-wix-toolset.687559.n2.nabble.com/Bug-causing-ICE-17-failure-td4050724.html -->
+                </Control>
+            </Dialog>
+
+            <Dialog Id="FSUserExit" Width="370" Height="270" Title="[ProductName] Not Installed">
+                <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="80" TabSkip="no" FixedSize="yes" Text="FSBannerBitmap" />
+                <Control Id="InterruptedText" Type="Text" X="20" Y="117" Width="320" Height="80" Hidden="no" Text="[ProductName] setup was interrupted. Your system has not been modified. To install [ProductName] at a later time, please run this installation again." />
+                <Control Id="Finish" Type="PushButton" X="85" Y="165" Width="200" Height="77" Default="yes" Bitmap="yes" FixedSize="yes" Text="[OkControlContent]">
+                    <Publish Event="EndDialog" Value="Exit">1</Publish>
+                    <Condition Action="enable">1</Condition>
+                    <!-- See http://windows-installer-xml-wix-toolset.687559.n2.nabble.com/Bug-causing-ICE-17-failure-td4050724.html -->
+                </Control>
+            </Dialog>
 
             <TextStyle Id="WixUI_Font_Normal" FaceName="Tahoma" Size="8" />
             <TextStyle Id="WixUI_Font_Bigger" FaceName="Tahoma" Size="12" />
@@ -55,15 +81,20 @@
 
             <DialogRef Id="FatalError" />
             <DialogRef Id="FilesInUse" />
-            <DialogRef Id="UserExit" />
             <DialogRef Id="ErrorDlg" />
 
-            <Publish Dialog="ExitDialog" Control="Finish" Event="EndDialog" Value="Return" Order="999">1</Publish>
-
             <InstallUISequence>
-                <Show Dialog="FSStarterDlg" Before="FSProgressDlg">1</Show>
+                <Show Dialog="FSStarterDlg" Before="FSProgressDlg">NOT Installed</Show>
+                <Show Dialog="FSAlreadyInstalledDlg" Before="FSProgressDlg">Installed</Show>
                 <Show Dialog="FSProgressDlg" Before="ExecuteAction">1</Show>
+                <Show Dialog="FSCompletedDlg" OnExit="success">1</Show>
+                <Show Dialog="FSUserExit" OnExit="cancel">1</Show>
             </InstallUISequence>
+
+            <AdminUISequence>
+                <Show Dialog="FSCompletedDlg" OnExit="success">1</Show>
+                <Show Dialog="FSUserExit" OnExit="cancel">1</Show>
+            </AdminUISequence>
 
             <Property Id="ARPNOMODIFY" Value="1" />
 
