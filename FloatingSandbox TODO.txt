@@ -206,8 +206,7 @@ Render:
 		+ Move all guides to own folder "Docs"
 			+ Also material_template's
 		+ Air bubble randomization
-
-		= WiX Installer
+		+ WiX Installer
 			+ Rearc:
 				+ Heat only used for:
 					+ Data - ComponentGroup "Data", own wxs
@@ -228,15 +227,17 @@ Render:
 				+ Check icon
 			+ Start menu shortcut
 				+ Check icon
-			- Completion message
+			+ UI
+				+ Initial screen
+				+ Progress
+				+ Final confirmation
+				+ Canceled
+				+ Already installed
 			+ Icon of add/remove programs
-			= Change name of final MSI
-				+ Requires bind with version of file ID
-				- Do PostBuildaction
-				+ Version main binary:
-					+ CMake: only include resources if MSVC
-					+ Use version defines from Version.h
-
+			+ Version main binary:
+				+ CMake: only include resources if MSVC
+				+ Use version defines from Version.h
+			+ Test repair
 			+ Remove whole folder on uninstall, even with users' files
 				+ https://helgeklein.com/blog/2014/09/real-world-example-wix-msi-application-installer/
 

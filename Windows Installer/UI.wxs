@@ -16,11 +16,19 @@
         <Binary Id="OkBmp" SourceFile="OkButton.bmp" />
         <Property Id="OkControlContent">OkBmp</Property>
 
+        <Property Id="DO_LAUNCH_APP" Value="1" />
+
         <UI Id="FloatingSandboxUI">
+
+            <TextStyle Id="WixUI_Font_Normal" FaceName="Tahoma" Size="8" />
+            <TextStyle Id="WixUI_Font_Bigger" FaceName="Tahoma" Size="12" />
+            <TextStyle Id="WixUI_Font_Title" FaceName="Tahoma" Size="9" Bold="yes" />
+
+            <Property Id="DefaultUIFont" Value="WixUI_Font_Normal" />
 
             <Dialog Id="FSStarterDlg" Width="370" Height="270" Title="Ready to Install [ProductName]!" TrackDiskSpace="no">
                 <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="80" TabSkip="no" FixedSize="yes" Text="FSBannerBitmap" />
-                <Control Id="InstallText" Type="Text" X="25" Y="95" Width="320" Height="80" Hidden="no" Text="You are one click away from installing [ProductName]. Are you ready to go?" />
+                <Control Id="InstallText" Type="Text" X="25" Y="95" Width="320" Height="10" Hidden="no" Text="You are one click away from installing [ProductName]. Are you ready to go?" />
                 <Control Id="Install" Type="PushButton" X="85" Y="110" Width="200" Height="77" Default="yes" Bitmap="yes" FixedSize="yes" Text="[InstallControlContent]">
                     <Publish Event="EndDialog" Value="Return">1</Publish>
                 </Control>
@@ -46,16 +54,18 @@
 
             <Dialog Id="FSCompletedDlg" Width="370" Height="270" Title="[ProductName] Successfully Installed!">
                 <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="80" TabSkip="no" FixedSize="yes" Text="FSBannerBitmap" />
-                <Control Id="CompletedText" Type="Text" X="75" Y="117" Width="320" Height="80" Hidden="no" Text="[ProductName] has been successfully installed!" />
+                <Control Id="CompletedText" Type="Text" X="75" Y="120" Width="320" Height="10" Hidden="no" Text="[ProductName] has been successfully installed!" />
                 <Control Id="Finish" Type="PushButton" X="85" Y="165" Width="200" Height="77" Default="yes" Bitmap="yes" FixedSize="yes" Text="[OkControlContent]">
                     <Publish Event="EndDialog" Value="Return" Order="999">1</Publish>
+                    <Publish Event="DoAction" Value="LaunchApp">(DO_LAUNCH_APP = 1) AND (NOT Installed)</Publish>
                     <Condition Action="enable">1</Condition> <!-- See http://windows-installer-xml-wix-toolset.687559.n2.nabble.com/Bug-causing-ICE-17-failure-td4050724.html -->
                 </Control>
+                <Control Id="LaunchAppCheckBox" Type="CheckBox" X="145" Y="246" Width="220" Height="10" Hidden="no" Property="DO_LAUNCH_APP" CheckBoxValue="1" Text="Let me play now!" />
             </Dialog>
 
             <Dialog Id="FSAlreadyInstalledDlg" Width="370" Height="270" Title="[ProductName] Already Installed">
                 <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="80" TabSkip="no" FixedSize="yes" Text="FSBannerBitmap" />
-                <Control Id="AlreadyInstalledText" Type="Text" X="25" Y="117" Width="320" Height="80" Hidden="no" Text="[ProductName] is already installed on this computer; no further action is necessary." />
+                <Control Id="AlreadyInstalledText" Type="Text" X="25" Y="120" Width="320" Height="10" Hidden="no" Text="[ProductName] is already installed on this computer; nothing to do here." />
                 <Control Id="Finish" Type="PushButton" X="85" Y="165" Width="200" Height="77" Default="yes" Bitmap="yes" FixedSize="yes" Text="[OkControlContent]">
                     <Publish Event="EndDialog" Value="Exit">1</Publish>
                     <Condition Action="enable">1</Condition>
@@ -72,12 +82,6 @@
                     <!-- See http://windows-installer-xml-wix-toolset.687559.n2.nabble.com/Bug-causing-ICE-17-failure-td4050724.html -->
                 </Control>
             </Dialog>
-
-            <TextStyle Id="WixUI_Font_Normal" FaceName="Tahoma" Size="8" />
-            <TextStyle Id="WixUI_Font_Bigger" FaceName="Tahoma" Size="12" />
-            <TextStyle Id="WixUI_Font_Title" FaceName="Tahoma" Size="9" Bold="yes" />
-
-            <Property Id="DefaultUIFont" Value="WixUI_Font_Normal" />
 
             <DialogRef Id="FatalError" />
             <DialogRef Id="FilesInUse" />
@@ -101,6 +105,8 @@
         </UI>
 
         <UIRef Id="WixUI_Common" />
+
+        <CustomAction Id="LaunchApp" Directory="INSTALLFOLDER" ExeCommand="[#FloatingSandboxExe]" Return="asyncNoWait" />
 
     </Fragment>
 </Wix>
