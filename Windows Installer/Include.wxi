@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Include xmlns="http://schemas.microsoft.com/wix/2006/wi">
+
+    <!-- Static properties -->
+    <?define SourceInstallFolderPath = "C:\Users\Neurodancer\source\build\Floating-Sandbox\Install"?>
+    <?define FloatingSandboxVersion = "!(bind.FileVersion.FloatingSandboxExe)"?>
+    <?define ShortApplicationName = "Floating Sandbox"?>
+    <?define FullApplicationName = "$(var.ShortApplicationName) $(var.FloatingSandboxVersion)"?>
+
+</Include>

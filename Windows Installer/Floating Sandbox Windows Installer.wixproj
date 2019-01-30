@@ -2,14 +2,14 @@
 <Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="EnsureWixToolsetInstalled" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-	<InstallerPlatform>x64</InstallerPlatform>
+    <InstallerPlatform>x64</InstallerPlatform>
     <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
     <ProductVersion>3.10</ProductVersion>
     <ProjectGuid>80bd56c1-4720-4a46-b78f-900cd19f2434</ProjectGuid>
     <SchemaVersion>2.0</SchemaVersion>
     <OutputName>Floating-Sandbox</OutputName>
     <OutputType>Package</OutputType>
-	<FloatingSandboxInstallDirectory>C:\Users\Neurodancer\source\build\Floating-Sandbox\Install</FloatingSandboxInstallDirectory>
+    <FloatingSandboxInstallDirectory>C:\Users\Neurodancer\source\build\Floating-Sandbox\Install</FloatingSandboxInstallDirectory>
     <DefineConstants>HarvestPathData=$(FloatingSandboxInstallDirectory)\Data;HarvestPathShips=$(FloatingSandboxInstallDirectory)\Ships</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
@@ -19,11 +19,17 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
     <OutputPath>C:\Users\Neurodancer\source\build\Floating-Sandbox\Windows Installer\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>C:\Users\Neurodancer\source\build\Floating-Sandbox\Windows Installer\obj\$(Configuration)\</IntermediateOutputPath>
+    <LinkerAdditionalOptions>-ext WixUIExtension</LinkerAdditionalOptions>
+    <SuppressIces>ICE69</SuppressIces>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="FloatingSandbox.wxs" />
     <Compile Include="DataGeneratedFileList.wxs" />
     <Compile Include="ShipsGeneratedFileList.wxs" />
+    <Compile Include="UI.wxs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Include.wxi" />
   </ItemGroup>
   <Import Project="$(WixTargetsPath)" Condition=" '$(WixTargetsPath)' != '' " />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets" Condition=" '$(WixTargetsPath)' == '' AND Exists('$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets') " />
