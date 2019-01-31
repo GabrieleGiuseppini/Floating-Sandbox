@@ -134,6 +134,12 @@ std::filesystem::path ResourceLoader::GetArtFilepath(std::string const & artName
     return std::filesystem::absolute(localPath);
 }
 
+std::filesystem::path ResourceLoader::GetBitmapFilepath(std::string const & bitmapName) const
+{
+    std::filesystem::path localPath = std::filesystem::path("Data") / "Resources" / (bitmapName + ".png");
+    return std::filesystem::absolute(localPath);
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////
 // Misc
 ////////////////////////////////////////////////////////////////////////////////////////////

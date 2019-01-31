@@ -8,11 +8,16 @@
 #include "ShipPreviewPanel.h"
 #include "UIPreferences.h"
 
+#include <Game/ResourceLoader.h>
+
 #include <wx/combobox.h>
 #include <wx/dialog.h>
 #include <wx/dirctrl.h>
 
+#include <filesystem>
 #include <memory>
+#include <optional>
+#include <string>
 
 class ShipLoadDialog : public wxDialog
 {
@@ -20,9 +25,12 @@ public:
 
     ShipLoadDialog(
         wxWindow* parent,
-        std::shared_ptr<UIPreferences> uiPreferences);
+        std::shared_ptr<UIPreferences> uiPreferences,
+        ResourceLoader const & resourceLoader);
 
 	virtual ~ShipLoadDialog();
+
+    std::optional<std::filesystem::path> Open();
 
 private:
 

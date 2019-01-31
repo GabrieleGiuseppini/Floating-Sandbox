@@ -13,7 +13,8 @@ constexpr int DirColumnWidth = 260;
 
 ShipLoadDialog::ShipLoadDialog(
     wxWindow * parent,
-    std::shared_ptr<UIPreferences> uiPreferences)
+    std::shared_ptr<UIPreferences> uiPreferences,
+    ResourceLoader const & resourceLoader)
 	: mParent(parent)
     , mUIPreferences(std::move(uiPreferences))
 {
@@ -23,7 +24,7 @@ ShipLoadDialog::ShipLoadDialog(
 		_("Load Ship"),
 		wxDefaultPosition,
         wxSize(Width, Height),
-		wxCAPTION | wxCLOSE_BOX | wxFRAME_SHAPED,
+		wxCAPTION | wxRESIZE_BORDER | wxCLOSE_BOX | wxFRAME_SHAPED,
 		_T("Load Ship Dialog"));
 
 	SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
@@ -59,7 +60,7 @@ ShipLoadDialog::ShipLoadDialog(
 
 
 
-    mShipPreviewPanel = new ShipPreviewPanel(this);
+    mShipPreviewPanel = new ShipPreviewPanel(this, resourceLoader);
 
     hSizer1->Add(mShipPreviewPanel, 1, wxALIGN_TOP | wxEXPAND);
 
@@ -136,6 +137,14 @@ ShipLoadDialog::ShipLoadDialog(
 
 ShipLoadDialog::~ShipLoadDialog()
 {
+}
+
+std::optional<std::filesystem::path> ShipLoadDialog::Open()
+{
+    this->Show();
+
+    // TODO: return member, which is set by event handler for fsEVT_SHIP_FILE_SELECTED (decl'd by ShipPreviewControl)
+    return std::nullopt;
 }
 
 void ShipLoadDialog::OnDirectorySelected(wxCommandEvent & /*event*/)

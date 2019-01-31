@@ -880,29 +880,27 @@ void MainFrame::OnLoadShipMenuItemSelected(wxCommandEvent & /*event*/)
     {
         mShipLoadDialog = std::make_unique<ShipLoadDialog>(
             this,
-            mUIPreferences);
+            mUIPreferences,
+            *mResourceLoader);
     }
 
     assert(!!mShipLoadDialog);
 
-    if (mShipLoadDialog->ShowModal() == wxID_OK)
-    {
-        // TODOHERE
-        /*
-        std::string filename = mFileOpenDialog->GetPath().ToStdString();
+    auto selectedShipFilepath = mShipLoadDialog->Open();
 
+    if (!!selectedShipFilepath)
+    {
         ResetState();
 
         assert(!!mGameController);
         try
         {
-            mGameController->ResetAndLoadShip(filename);
+            mGameController->ResetAndLoadShip(*selectedShipFilepath);
         }
         catch (std::exception const & ex)
         {
             OnError(ex.what(), false);
         }
-        */
     }
 }
 

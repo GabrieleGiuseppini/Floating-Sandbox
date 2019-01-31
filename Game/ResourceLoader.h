@@ -78,6 +78,8 @@ public:
 
     std::filesystem::path GetArtFilepath(std::string const & artName) const;
 
+    std::filesystem::path GetBitmapFilepath(std::string const & iconName) const;
+
 
     //
     // Misc

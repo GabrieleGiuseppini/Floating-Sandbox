@@ -1276,21 +1276,27 @@ Render:
 		+ ShipPreview
 			+ <scaled ImageData, ShipMetadata>
 			+ Loaded like ShipDefinition, taking width (from dialog)
-		- ShipPreviewPanel
+		+ ShipPreviewPanel
 			+ Now empty
 			+ SetDirectory(std::filesystem::path)
-				+ Just log for now
-		- ShipLoadDialog
-			- Directory tree on the left
-				- https://docs.wxwidgets.org/3.0/classwx_generic_dir_ctrl.html
-				- Stores last N in UIPreferences
+				+ Just log for now			
+		= ShipLoadDialog
+			+ Directory tree on the left
+				+ https://docs.wxwidgets.org/3.0/classwx_generic_dir_ctrl.html
+			- Combo:
+				- Last N from UIPreferences
+				- OnSelection
+				- TODO: what to do with current dir?
 			- PreviewPanel in main area
-			- When dir tree chooses, call ShipPreviewPanel::SetDirectory
+				- Fixed size, use defines for preview size and/or number of cols
+				- TODO: see if want to make it resizeable instead
+			+ When dir tree chooses, call ShipPreviewPanel::SetDirectory
 			- When ship is loaded, call UIPreferences::AddShipLoadDirectory
-		- UIPreferences
-			- Created by main frame and passed around as shared_ptr
+			+ No use as modal, do with Open() which returns opt<path>
+		= UIPreferences
+			+ Created by main frame and passed around as shared_ptr
 			- Loads and Saves to uncustomizable file path
-			- Also has defaults, as initialization values set at cctor
+			+ Also has defaults, as initialization values set at cctor
 			- cctor:
 				+ Set defaults
 				- Load
@@ -1304,7 +1310,10 @@ Render:
 					+ If not: add first
 		- ShipPreviewPanel
 			- Thread - see MOLESKINE
+			- Redo with custom events for thread-to-panel
 		- ShipPreviewControl
+			= Catch double-click event and fire ShipFileSelectedEvent
+				- ShipFileSelectedEvent registered to by ShipFileDialog, which uses it as "Ok"
 			- Show:
 				- Name
 				- Dimensions
