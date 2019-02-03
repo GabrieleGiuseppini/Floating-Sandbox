@@ -28,6 +28,11 @@ ShipPreviewPanel::ShipPreviewPanel(
         wxDefaultPosition,
         wxDefaultSize,
         wxBORDER_SIMPLE | wxVSCROLL)
+    , mWidth(0)
+    , mHeight(0)
+    , mPreviewPanel(nullptr)
+    , mPreviewPanelSizer(nullptr)
+    , mPreviewControls()
     , mCurrentDirectory()
     // Preview Thread
     , mPreviewThread()
@@ -64,14 +69,9 @@ ShipPreviewPanel::ShipPreviewPanel(
         resourceLoader.GetBitmapFilepath("ship_preview_error").string(),
         wxBITMAP_TYPE_PNG);
 
-
-    //
-    // Create sizer
-    //
-
-    mPreviewsSizer = new wxGridSizer(1, 0, 0);
-
-    SetSizer(mPreviewsSizer);
+    // Make our own sizer
+    wxBoxSizer * panelSizer = new wxBoxSizer(wxVERTICAL);
+    SetSizer(panelSizer);
 }
 
 ShipPreviewPanel::~ShipPreviewPanel()
@@ -123,13 +123,105 @@ void ShipPreviewPanel::OnResized(wxSizeEvent & event)
     mHeight = event.GetSize().GetHeight();
 
     // See if need to rearrange
-    if (!mPreviewControls.empty())
+    if (nullptr != mPreviewPanelSizer)
     {
-        ArrangePreviewTiles();
+        ArrangePreviewTiles(mPreviewPanelSizer);
+        mPreviewPanelSizer->Layout();
     }
 }
 
-void ShipPreviewPanel::ArrangePreviewTiles()
+void ShipPreviewPanel::OnDirScanned(fsDirScannedEvent & event)
+{
+    //
+    // Create new panel
+    //
+
+    wxPanel * newPreviewPanel = new wxPanel();
+    newPreviewPanel->Hide();
+    newPreviewPanel->Create(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+
+    wxGridSizer * newPreviewPanelSizer = new wxGridSizer(1, 0, 0);
+
+
+    //
+    // Create new preview controls
+    //
+
+    std::vector<ShipPreviewControl *> newPreviewControls;
+
+    for (auto const & shipFilepath : event.GetShipFilepaths())
+    {
+        auto shipPreviewControl = new ShipPreviewControl(
+            newPreviewPanel,
+            shipFilepath,
+            PreviewWidth,
+            PreviewHeight,
+            PreviewMargin,
+            mWaitBitmap,
+            mErrorBitmap);
+
+        newPreviewControls.push_back(shipPreviewControl);
+
+        // Add to sizer
+        newPreviewPanelSizer->Add(shipPreviewControl, 0, wxALIGN_CENTRE_HORIZONTAL | wxALIGN_TOP);
+    }
+
+
+    //
+    // Arrange controls
+    //
+
+    ArrangePreviewTiles(newPreviewPanelSizer);
+
+    newPreviewPanel->SetSizerAndFit(newPreviewPanelSizer);
+
+
+
+    //
+    // Swap panels
+    //
+
+    if (mPreviewPanel != nullptr)
+        mPreviewPanel->Destroy(); // Will also destroy sizer and preview controls
+
+    mPreviewControls = newPreviewControls;
+
+    mPreviewPanel = newPreviewPanel;
+    mPreviewPanelSizer = newPreviewPanelSizer;
+
+    // Add panel to our sizer
+    assert(nullptr != GetSizer());
+    GetSizer()->Clear();
+    GetSizer()->Add(mPreviewPanel, 1, wxEXPAND);
+    GetSizer()->Layout();
+
+    mPreviewPanel->Show();
+
+    // Re-trigger scroll bar
+    this->FitInside();
+}
+
+void ShipPreviewPanel::OnDirScanError(fsDirScanErrorEvent & event)
+{
+    // TODO
+}
+
+void ShipPreviewPanel::OnPreviewReady(fsPreviewReadyEvent & event)
+{
+    // TODO
+}
+
+void ShipPreviewPanel::OnPreviewError(fsPreviewErrorEvent & event)
+{
+    // TODO
+}
+
+void ShipPreviewPanel::OnDirPreviewComplete(fsDirPreviewCompleteEvent & event)
+{
+    // TODO
+}
+
+void ShipPreviewPanel::ArrangePreviewTiles(wxGridSizer * sizer)
 {
     //
     // Rearrange tiles based on width
@@ -138,8 +230,10 @@ void ShipPreviewPanel::ArrangePreviewTiles()
     int nCols = static_cast<int>(static_cast<float>(mWidth) / static_cast<float>(PreviewWidth + 2 * PreviewMargin));
     assert(nCols >= 1);
 
+    LogMessage("TODO:", nCols);
+
     // Rearrange
-    mPreviewsSizer->SetCols(nCols);
+    sizer->SetCols(nCols);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -263,66 +357,4 @@ void ShipPreviewPanel::ScanDirectory(std::filesystem::path const & directoryPath
         new fsDirPreviewCompleteEvent(
             fsEVT_DIR_PREVIEW_COMPLETE,
             this->GetId()));
-}
-
-void ShipPreviewPanel::OnDirScanned(fsDirScannedEvent & event)
-{
-    //
-    // Clear all preview controls
-    //
-
-    mPreviewsSizer->Clear(true);
-    mPreviewControls.clear();
-
-
-    //
-    // Create new preview controls
-    //
-
-    for (auto const & shipFilepath : event.GetShipFilepaths())
-    {
-        auto shipPreviewControl = new ShipPreviewControl(
-            this,
-            shipFilepath,
-            PreviewWidth,
-            PreviewHeight,
-            PreviewMargin,
-            mWaitBitmap,
-            mErrorBitmap);
-
-        mPreviewControls.push_back(shipPreviewControl);
-
-        // Add to sizer
-        mPreviewsSizer->Add(shipPreviewControl, 0, wxALIGN_CENTRE_HORIZONTAL | wxALIGN_TOP);
-    }
-
-
-    //
-    // Arrange controls
-    //
-
-    ArrangePreviewTiles();
-
-    mPreviewsSizer->Layout();
-    FitInside();
-}
-
-void ShipPreviewPanel::OnDirScanError(fsDirScanErrorEvent & event)
-{
-    // TODO
-}
-
-void ShipPreviewPanel::OnPreviewReady(fsPreviewReadyEvent & event)
-{
-    // TODO
-}
-
-void ShipPreviewPanel::OnPreviewError(fsPreviewErrorEvent & event)
-{
-    // TODO
-}
-
-void ShipPreviewPanel::OnDirPreviewComplete(fsDirPreviewCompleteEvent & event)
-{
-    // TODO
 }

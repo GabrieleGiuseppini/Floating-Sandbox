@@ -125,7 +125,7 @@ void ShipPreviewControl::OnMouseSingleClick(wxMouseEvent & /*event*/)
     // Set border
     //
 
-    this->SetExtraStyle(wxBORDER_SIMPLE);
+    this->SetWindowStyle(wxBORDER_SIMPLE);
     // TODO: if this works, need "Select/Deselect" invoked by panel
 
 
@@ -133,14 +133,11 @@ void ShipPreviewControl::OnMouseSingleClick(wxMouseEvent & /*event*/)
     // Fire our custom event
     //
 
-    fsShipFileSelectedEvent event(
-        fsEVT_SHIP_FILE_SELECTED,
-        this->GetId(),
-        mShipFilepath);
-
-    event.SetEventObject(this);
-
-    ProcessWindowEvent(event);
+    ProcessWindowEvent(
+        fsShipFileSelectedEvent(
+            fsEVT_SHIP_FILE_SELECTED,
+            this->GetId(),
+            mShipFilepath));
 }
 
 void ShipPreviewControl::OnMouseDoubleClick(wxMouseEvent & /*event*/)
@@ -149,12 +146,9 @@ void ShipPreviewControl::OnMouseDoubleClick(wxMouseEvent & /*event*/)
     // Fire our custom event
     //
 
-    fsShipFileChosenEvent event(
-        fsEVT_SHIP_FILE_CHOSEN,
-        this->GetId(),
-        mShipFilepath);
-
-    event.SetEventObject(this);
-
-    ProcessWindowEvent(event);
+    ProcessWindowEvent(
+        fsShipFileChosenEvent(
+            fsEVT_SHIP_FILE_CHOSEN,
+            this->GetId(),
+            mShipFilepath));
 }

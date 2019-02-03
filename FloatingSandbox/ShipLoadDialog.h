@@ -39,6 +39,7 @@ private:
     void OnShipFileChosen(fsShipFileChosenEvent & event);
     void OnLoadButton(wxCommandEvent & event);
     void OnCancelButton(wxCommandEvent & event);
+    void OnCloseWindow(wxCloseEvent & event);
 
     void OnDirectorySelected(std::filesystem::path directoryPath);
     void OnShipFileChosen(std::filesystem::path shipFilepath);

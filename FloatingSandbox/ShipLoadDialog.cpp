@@ -32,6 +32,8 @@ ShipLoadDialog::ShipLoadDialog(
     Centre();
 
 
+    Bind(wxEVT_CLOSE_WINDOW, &ShipLoadDialog::OnCloseWindow, this);
+
     wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
 
 
@@ -231,9 +233,17 @@ void ShipLoadDialog::OnLoadButton(wxCommandEvent & /*event*/)
 
 void ShipLoadDialog::OnCancelButton(wxCommandEvent & /*event*/)
 {
-    // Close ourselves
-    mShipPreviewPanel->OnClose();
+    // Close ourselves silently
     this->Close();
+}
+
+void ShipLoadDialog::OnCloseWindow(wxCloseEvent & event)
+{
+    LogMessage("ShipLoadDialog::OnCloseWindow");
+
+    mShipPreviewPanel->OnClose();
+
+    event.Skip();
 }
 
 void ShipLoadDialog::OnDirectorySelected(std::filesystem::path directoryPath)
@@ -253,16 +263,16 @@ void ShipLoadDialog::OnShipFileChosen(std::filesystem::path shipFilepath)
     LogMessage("ShipLoadDialog::OnShipFileChosen: ", shipFilepath);
 
     // Close ourselves
-    mShipPreviewPanel->OnClose();
     this->Close();
 
+    // Store directory in preferences
+    mUIPreferences->AddShipLoadDirectory(shipFilepath.parent_path());
+
     // Fire select event
-    fsShipFileChosenEvent shipFileChosenEvent(
+    auto event = fsShipFileChosenEvent(
         fsEVT_SHIP_FILE_CHOSEN,
         this->GetId(),
         shipFilepath);
 
-    shipFileChosenEvent.SetEventObject(this);
-
-    ProcessWindowEvent(shipFileChosenEvent);
+    ProcessWindowEvent(event);
 }

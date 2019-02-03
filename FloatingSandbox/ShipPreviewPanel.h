@@ -227,14 +227,22 @@ private:
 
 private:
 
-    void ArrangePreviewTiles();
+    // Thread-to-Panel communication - we use wxWidgets' custom events
+    void OnDirScanned(fsDirScannedEvent & event);
+    void OnDirScanError(fsDirScanErrorEvent & event);
+    void OnPreviewReady(fsPreviewReadyEvent & event);
+    void OnPreviewError(fsPreviewErrorEvent & event);
+    void OnDirPreviewComplete(fsDirPreviewCompleteEvent & event);
+
+    void ArrangePreviewTiles(wxGridSizer * sizer);
 
 private:
 
     int mWidth;
     int mHeight;
 
-    wxGridSizer * mPreviewsSizer;
+    wxPanel * mPreviewPanel;
+    wxGridSizer * mPreviewPanelSizer;
     std::vector<ShipPreviewControl *> mPreviewControls;
 
     std::shared_ptr<wxBitmap> mWaitBitmap;
@@ -314,17 +322,4 @@ private:
     std::mutex mPanelToThreadMessageMutex;
     std::unique_lock<std::mutex> mPanelToThreadMessageLock;
     std::condition_variable mPanelToThreadMessageEvent;
-
-
-    //
-    // Thread-to-Panel communication
-    //
-    // We use wxWidgets' custom events
-    //
-
-    void OnDirScanned(fsDirScannedEvent & event);
-    void OnDirScanError(fsDirScanErrorEvent & event);
-    void OnPreviewReady(fsPreviewReadyEvent & event);
-    void OnPreviewError(fsPreviewErrorEvent & event);
-    void OnDirPreviewComplete(fsDirPreviewCompleteEvent & event);
 };
