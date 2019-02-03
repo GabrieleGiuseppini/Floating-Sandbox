@@ -126,7 +126,6 @@ void ShipPreviewPanel::OnResized(wxSizeEvent & event)
     if (nullptr != mPreviewPanelSizer)
     {
         ArrangePreviewTiles(mPreviewPanelSizer);
-        mPreviewPanelSizer->Layout();
     }
 }
 
@@ -232,8 +231,12 @@ void ShipPreviewPanel::ArrangePreviewTiles(wxGridSizer * sizer)
 
     LogMessage("TODO:", nCols);
 
-    // Rearrange
-    sizer->SetCols(nCols);
+    if (nCols != sizer->GetCols())
+    {
+        // Rearrange
+        sizer->SetCols(nCols);
+        sizer->Layout();
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////

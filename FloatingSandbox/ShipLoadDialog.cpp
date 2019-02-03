@@ -29,10 +29,9 @@ ShipLoadDialog::ShipLoadDialog(
 
 	SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 
-    Centre();
-
-
     Bind(wxEVT_CLOSE_WINDOW, &ShipLoadDialog::OnCloseWindow, this);
+
+
 
     wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
 
@@ -140,7 +139,10 @@ ShipLoadDialog::ShipLoadDialog(
     //
 
     SetSizerAndFit(vSizer);
+
     SetSize(wxSize(800, 600));
+
+    Centre();
 }
 
 ShipLoadDialog::~ShipLoadDialog()
