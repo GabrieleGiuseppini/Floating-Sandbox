@@ -7,7 +7,8 @@
 
 #include <GameCore/Log.h>
 
-wxDEFINE_EVENT(fsSHIP_FILE_SELECTED, fsShipFileSelectedEvent);
+wxDEFINE_EVENT(fsEVT_SHIP_FILE_SELECTED, fsShipFileSelectedEvent);
+wxDEFINE_EVENT(fsEVT_SHIP_FILE_CHOSEN, fsShipFileChosenEvent);
 
 ShipPreviewControl::ShipPreviewControl(
     wxWindow * parent,
@@ -41,7 +42,7 @@ ShipPreviewControl::ShipPreviewControl(
     // Preview image
     //
 
-    mPreviewStaticBitmap = new wxStaticBitmap(
+    mPreviewBitmap = new wxStaticBitmap(
         this,
         wxID_ANY,
         *mWaitBitmap,
@@ -49,23 +50,40 @@ ShipPreviewControl::ShipPreviewControl(
         mWaitBitmap->GetSize(),
         wxBORDER_SIMPLE);
 
-    mPreviewStaticBitmap->SetScaleMode(wxStaticBitmap::Scale_AspectFill);
+    mPreviewBitmap->SetScaleMode(wxStaticBitmap::Scale_AspectFill);
 
-    mVSizer->Add(mPreviewStaticBitmap, 1, wxEXPAND);
+    mPreviewBitmap->Bind(wxEVT_LEFT_DOWN, &ShipPreviewControl::OnMouseSingleClick, this);
+    mPreviewBitmap->Bind(wxEVT_LEFT_DCLICK, &ShipPreviewControl::OnMouseDoubleClick, this);
 
-    // TODOTEST
-    mPreviewStaticBitmap->Bind(wxEVT_LEFT_DCLICK, &ShipPreviewControl::OnMouseDoubleClick1, this);
+    mVSizer->Add(mPreviewBitmap, 1, wxEXPAND);
+
 
 
     //
-    // Label
+    // Preview Label
     //
 
-    mPreviewLabel = new wxStaticText(this, wxID_ANY, "Loading...", wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER_HORIZONTAL);
+    mPreviewLabel = new wxStaticText(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER_HORIZONTAL);
+
+    mPreviewLabel->Bind(wxEVT_LEFT_DOWN, &ShipPreviewControl::OnMouseSingleClick, this);
+    mPreviewLabel->Bind(wxEVT_LEFT_DCLICK, &ShipPreviewControl::OnMouseDoubleClick, this);
 
     mVSizer->Add(mPreviewLabel, 0, wxEXPAND);
 
-    Bind(wxEVT_LEFT_DCLICK, &ShipPreviewControl::OnMouseDoubleClick2, this, mPreviewLabel->GetId());
+
+
+    //
+    // Filename Label
+    //
+
+    mFilenameLabel = new wxStaticText(this, wxID_ANY, "Loading...", wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER_HORIZONTAL);
+
+    mFilenameLabel->Bind(wxEVT_LEFT_DOWN, &ShipPreviewControl::OnMouseSingleClick, this);
+    mFilenameLabel->Bind(wxEVT_LEFT_DCLICK, &ShipPreviewControl::OnMouseDoubleClick, this);
+
+    mVSizer->Add(mFilenameLabel, 0, wxEXPAND);
+
+
 
 
     this->SetSizer(mVSizer);
@@ -75,17 +93,42 @@ ShipPreviewControl::~ShipPreviewControl()
 {
 }
 
-void ShipPreviewControl::OnMouseDoubleClick1(wxMouseEvent & /*event*/)
+void ShipPreviewControl::SetPreviewContent(
+    ImageData previewImageData,
+    ShipMetadata const & shipMetadata)
 {
-    // TODOTEST
-    LogMessage("ShipPreviewControl::OnMouseDoubleClick1");
+    //
+    // Set preview image
+    //
 
+    wxBitmap * bmp = new wxBitmap(
+        reinterpret_cast<char const *>(previewImageData.Data.get()),
+        previewImageData.Size.Width,
+        previewImageData.Size.Height,
+        4);
+
+    mPreviewBitmap->SetBitmap(*bmp);
+
+
+    //
+    // Set preview label
+    //
+
+    std::string previewLabelTest = shipMetadata.ShipName;
+    if (!!shipMetadata.Author)
+        previewLabelTest += " by " + *(shipMetadata.Author);
+
+    mPreviewLabel->SetLabel(previewLabelTest);
+}
+
+void ShipPreviewControl::OnMouseSingleClick(wxMouseEvent & /*event*/)
+{
     //
     // Fire our custom event
     //
 
     fsShipFileSelectedEvent event(
-        fsSHIP_FILE_SELECTED,
+        fsEVT_SHIP_FILE_SELECTED,
         this->GetId(),
         mShipFilepath);
 
@@ -94,8 +137,18 @@ void ShipPreviewControl::OnMouseDoubleClick1(wxMouseEvent & /*event*/)
     ProcessWindowEvent(event);
 }
 
-void ShipPreviewControl::OnMouseDoubleClick2(wxMouseEvent & /*event*/)
+void ShipPreviewControl::OnMouseDoubleClick(wxMouseEvent & /*event*/)
 {
-    // TODOHERE
-    LogMessage("ShipPreviewControl::OnMouseDoubleClick2");
+    //
+    // Fire our custom event
+    //
+
+    fsShipFileChosenEvent event(
+        fsEVT_SHIP_FILE_CHOSEN,
+        this->GetId(),
+        mShipFilepath);
+
+    event.SetEventObject(this);
+
+    ProcessWindowEvent(event);
 }

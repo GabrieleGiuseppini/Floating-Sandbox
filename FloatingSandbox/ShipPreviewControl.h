@@ -5,6 +5,10 @@
 ***************************************************************************************/
 #pragma once
 
+#include <Game/ShipMetadata.h>
+
+#include <GameCore/ImageData.h>
+
 #include <wx/wx.h>
 
 #include <filesystem>
@@ -24,15 +28,17 @@ public:
         : wxEvent(winid, eventType)
         , mShipFilepath(shipFilepath)
     {
+        m_propagationLevel = wxEVENT_PROPAGATE_MAX;
     }
 
     fsShipFileSelectedEvent(fsShipFileSelectedEvent const & other)
         : wxEvent(other)
         , mShipFilepath(other.mShipFilepath)
     {
+        m_propagationLevel = wxEVENT_PROPAGATE_MAX;
     }
 
-    virtual wxEvent *Clone() const
+    virtual wxEvent *Clone() const override
     {
         return new fsShipFileSelectedEvent(*this);
     }
@@ -46,7 +52,47 @@ private:
     std::filesystem::path const mShipFilepath;
 };
 
-wxDECLARE_EVENT(fsSHIP_FILE_SELECTED, fsShipFileSelectedEvent);
+wxDECLARE_EVENT(fsEVT_SHIP_FILE_SELECTED, fsShipFileSelectedEvent);
+
+/*
+ * Event fired when a ship file has been chosen.
+ */
+class fsShipFileChosenEvent : public wxEvent
+{
+public:
+
+    fsShipFileChosenEvent(
+        wxEventType eventType,
+        int winid,
+        std::filesystem::path const & shipFilepath)
+        : wxEvent(winid, eventType)
+        , mShipFilepath(shipFilepath)
+    {
+        m_propagationLevel = wxEVENT_PROPAGATE_MAX;
+    }
+
+    fsShipFileChosenEvent(fsShipFileChosenEvent const & other)
+        : wxEvent(other)
+        , mShipFilepath(other.mShipFilepath)
+    {
+        m_propagationLevel = wxEVENT_PROPAGATE_MAX;
+    }
+
+    virtual wxEvent *Clone() const override
+    {
+        return new fsShipFileChosenEvent(*this);
+    }
+
+    std::filesystem::path const GetShipFilepath() const
+    {
+        return mShipFilepath;
+    }
+
+private:
+    std::filesystem::path const mShipFilepath;
+};
+
+wxDECLARE_EVENT(fsEVT_SHIP_FILE_CHOSEN, fsShipFileChosenEvent);
 
 /*
  * This control implements the tile that contains a ship preview.
@@ -65,16 +111,22 @@ public:
 
     virtual ~ShipPreviewControl();
 
+    void SetPreviewContent(
+        ImageData previewImageData,
+        ShipMetadata const & shipMetadata);
+
+
 private:
 
-    void OnMouseDoubleClick1(wxMouseEvent & event);
-    void OnMouseDoubleClick2(wxMouseEvent & event);
+    void OnMouseSingleClick(wxMouseEvent & event);
+    void OnMouseDoubleClick(wxMouseEvent & event);
 
 private:
 
     wxBoxSizer * mVSizer;
-    wxStaticBitmap * mPreviewStaticBitmap;
+    wxStaticBitmap * mPreviewBitmap;
     wxStaticText * mPreviewLabel;
+    wxStaticText * mFilenameLabel;
 
 private:
 

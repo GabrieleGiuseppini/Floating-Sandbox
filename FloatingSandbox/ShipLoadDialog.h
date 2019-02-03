@@ -34,7 +34,13 @@ public:
 
 private:
 
-    void OnDirectorySelected(wxCommandEvent & event);
+    void OnDirCtrlDirSelected(wxCommandEvent & event);
+    void OnShipFileSelected(fsShipFileSelectedEvent & event);
+    void OnShipFileChosen(fsShipFileChosenEvent & event);
+    void OnLoadButton(wxCommandEvent & event);
+    void OnCancelButton(wxCommandEvent & event);
+
+    void OnDirectorySelected(std::filesystem::path directoryPath);
 
 private:
 
@@ -44,4 +50,9 @@ private:
     wxGenericDirCtrl * mDirCtrl;
     ShipPreviewPanel * mShipPreviewPanel;
     wxComboBox * mDirectoriesComboBox;
+    wxButton * mLoadButton;
+
+private:
+
+    std::optional<std::filesystem::path> mSelectedShipFilepath;
 };

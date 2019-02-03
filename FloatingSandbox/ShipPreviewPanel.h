@@ -8,15 +8,198 @@
 #include "ShipPreviewControl.h"
 
 #include <Game/ResourceLoader.h>
+#include <Game/ShipPreview.h>
 
 #include <wx/wx.h>
 
-#include <deque>
 #include <filesystem>
 #include <memory>
 #include <mutex>
 #include <string>
 #include <thread>
+#include <vector>
+
+//
+// Custom events
+//
+
+// A directory has been scanned
+class fsDirScannedEvent : public wxEvent
+{
+public:
+
+    fsDirScannedEvent(
+        wxEventType eventType,
+        int winid,
+        std::vector<std::filesystem::path> const & shipFilepaths)
+        : wxEvent(winid, eventType)
+        , mShipFilepaths(shipFilepaths)
+    {
+    }
+
+    fsDirScannedEvent(fsDirScannedEvent const & other)
+        : wxEvent(other)
+        , mShipFilepaths(other.mShipFilepaths)
+    {
+    }
+
+    virtual wxEvent *Clone() const override
+    {
+        return new fsDirScannedEvent(*this);
+    }
+
+    std::vector<std::filesystem::path> const & GetShipFilepaths() const
+    {
+        return mShipFilepaths;
+    }
+
+private:
+    std::vector<std::filesystem::path> const mShipFilepaths;
+};
+
+wxDECLARE_EVENT(fsEVT_DIR_SCANNED, fsDirScannedEvent);
+
+// An error was encountered while scanning a directory
+class fsDirScanErrorEvent : public wxEvent
+{
+public:
+
+    fsDirScanErrorEvent(
+        wxEventType eventType,
+        int winid,
+        std::string const & errorMessage)
+        : wxEvent(winid, eventType)
+        , mErrorMessage(errorMessage)
+    {
+    }
+
+    fsDirScanErrorEvent(fsDirScanErrorEvent const & other)
+        : wxEvent(other)
+        , mErrorMessage(other.mErrorMessage)
+    {
+    }
+
+    virtual wxEvent *Clone() const override
+    {
+        return new fsDirScanErrorEvent(*this);
+    }
+
+    std::string const & GetErrorMessage() const
+    {
+        return mErrorMessage;
+    }
+
+private:
+    std::string const mErrorMessage;
+};
+
+wxDECLARE_EVENT(fsEVT_DIR_SCAN_ERROR, fsDirScanErrorEvent);
+
+// A preview is ready
+class fsPreviewReadyEvent : public wxEvent
+{
+public:
+
+    fsPreviewReadyEvent(
+        wxEventType eventType,
+        int winid,
+        size_t shipIndex,
+        std::shared_ptr<ShipPreview> shipPreview)
+        : wxEvent(winid, eventType)
+        , mShipIndex(shipIndex)
+        , mShipPreview(std::move(shipPreview))
+    {
+    }
+
+    fsPreviewReadyEvent(fsPreviewReadyEvent const & other)
+        : wxEvent(other)
+        , mShipIndex(other.mShipIndex)
+        , mShipPreview(std::move(other.mShipPreview))
+    {
+    }
+
+    virtual wxEvent *Clone() const override
+    {
+        return new fsPreviewReadyEvent(*this);
+    }
+
+    size_t GetShipIndex() const
+    {
+        return mShipIndex;
+    }
+
+    std::shared_ptr<ShipPreview> GetShipPreview()
+    {
+        return mShipPreview;
+    }
+
+private:
+    size_t const mShipIndex;
+    std::shared_ptr<ShipPreview> mShipPreview;
+};
+
+wxDECLARE_EVENT(fsEVT_PREVIEW_READY, fsPreviewReadyEvent);
+
+// An error occurred while preparing a preview
+class fsPreviewErrorEvent : public wxEvent
+{
+public:
+
+    fsPreviewErrorEvent(
+        wxEventType eventType,
+        int winid,
+        std::string errorMessage)
+        : wxEvent(winid, eventType)
+        , mErrorMessage(errorMessage)
+    {
+    }
+
+    fsPreviewErrorEvent(fsPreviewErrorEvent const & other)
+        : wxEvent(other)
+        , mErrorMessage(other.mErrorMessage)
+    {
+    }
+
+    virtual wxEvent *Clone() const override
+    {
+        return new fsPreviewErrorEvent(*this);
+    }
+
+    std::string const & GetErrorMessage()
+    {
+        return mErrorMessage;
+    }
+
+private:
+    std::string const mErrorMessage;
+};
+
+wxDECLARE_EVENT(fsEVT_PREVIEW_ERROR, fsPreviewErrorEvent);
+
+// The directory preview was completed
+class fsDirPreviewCompleteEvent : public wxEvent
+{
+public:
+
+    fsDirPreviewCompleteEvent(
+        wxEventType eventType,
+        int winid)
+        : wxEvent(winid, eventType)
+    {
+    }
+
+    fsDirPreviewCompleteEvent(fsDirPreviewCompleteEvent const & other)
+        : wxEvent(other)
+    {
+    }
+
+    virtual wxEvent *Clone() const override
+    {
+        return new fsDirPreviewCompleteEvent(*this);
+    }
+};
+
+wxDECLARE_EVENT(fsEVT_DIR_PREVIEW_COMPLETE, fsDirPreviewCompleteEvent);
 
 /*
  * This panel populates itself with previews of all ships found in a directory.
@@ -33,22 +216,29 @@ public:
 
 	virtual ~ShipPreviewPanel();
 
+    void OnOpen();
+    void OnClose();
+
     void SetDirectory(std::filesystem::path const & directoryPath);
 
 private:
 
-    void OnShow(wxShowEvent & event);
     void OnResized(wxSizeEvent & event);
-    void OnShipFileSelected(fsShipFileSelectedEvent & event);
+
+private:
 
 private:
 
     wxGridSizer * mPreviewsSizer;
+    std::vector<ShipPreviewControl *> mPreviewControls;
 
     std::shared_ptr<wxBitmap> mWaitBitmap;
     std::shared_ptr<wxBitmap> mErrorBitmap;
 
 private:
+
+    // The directory currently being previewed
+    std::filesystem::path mCurrentDirectory;
 
     ////////////////////////////////////////////////
     // Preview Thread
@@ -57,12 +247,14 @@ private:
     std::thread mPreviewThread;
 
     void RunPreviewThread();
+    void ScanDirectory(std::filesystem::path const & directoryPath);
+
 
     //
     // Panel-to-Thread communication
     //
 
-    struct IPanelToThreadMessage
+    struct PanelToThreadMessage
     {
     public:
 
@@ -72,64 +264,62 @@ private:
             Exit
         };
 
-        IPanelToThreadMessage(MessageType messageType)
-            : mMessageType(messageType)
-        {}
+        static PanelToThreadMessage MakeExitMessage()
+        {
+            return PanelToThreadMessage(MessageType::Exit, std::filesystem::path());
+        }
 
-        virtual ~IPanelToThreadMessage() {}
+        static PanelToThreadMessage MakeSetDirectoryMessage(std::filesystem::path const & directoryPath)
+        {
+            return PanelToThreadMessage(MessageType::SetDirectory, directoryPath);
+        }
+
+        PanelToThreadMessage(PanelToThreadMessage && other)
+            : mMessageType(other.mMessageType)
+            , mDirectoryPath(std::move(other.mDirectoryPath))
+        {}
 
         MessageType GetMessageType() const
         {
             return mMessageType;
         }
 
+        std::filesystem::path const & GetDirectoryPath() const
+        {
+            return mDirectoryPath;
+        }
+
     private:
 
+        PanelToThreadMessage(
+            MessageType messageType,
+            std::filesystem::path const & directoryPath)
+            : mMessageType(messageType)
+            , mDirectoryPath(directoryPath)
+        {}
+
         MessageType const mMessageType;
+        std::filesystem::path const mDirectoryPath;
     };
 
     // Single message holder - thread only cares about last message
-    std::unique_ptr<IPanelToThreadMessage> mPanelToThreadMessage;
+    std::unique_ptr<PanelToThreadMessage> mPanelToThreadMessage;
 
-    // TODO: cond var & mutex
+    // Locks for the panel-to-thread message
+    std::mutex mPanelToThreadMessageMutex;
+    std::unique_lock<std::mutex> mPanelToThreadMessageLock;
+    std::condition_variable mPanelToThreadMessageEvent;
+
 
     //
     // Thread-to-Panel communication
     //
+    // We use wxWidgets' custom events
+    //
 
-    struct IThreadToPanelMessage
-    {
-    public:
-
-        enum class MessageType
-        {
-            Clear,
-            SetSize,
-            PreviewReady,
-            Done,
-            Error
-        };
-
-        IThreadToPanelMessage(MessageType messageType)
-            : mMessageType(messageType)
-        {}
-
-        virtual ~IThreadToPanelMessage() {}
-
-        MessageType GetMessageType() const
-        {
-            return mMessageType;
-        }
-
-    private:
-
-        MessageType const mMessageType;
-    };
-
-    // Queue of messages for panel, together with its lock and event
-    std::deque<std::unique_ptr<IThreadToPanelMessage>> mThreadToPanelMessages;
-    std::mutex mThreadToPanelMessagesMutex;
-    void FireThreadToPanelMessageReady();
-    void OnThreadToPanelMessageReady();
-
+    void OnDirScanned(fsDirScannedEvent & event);
+    void OnDirScanError(fsDirScanErrorEvent & event);
+    void OnPreviewReady(fsPreviewReadyEvent & event);
+    void OnPreviewError(fsPreviewErrorEvent & event);
+    void OnDirPreviewComplete(fsDirPreviewCompleteEvent & event);
 };

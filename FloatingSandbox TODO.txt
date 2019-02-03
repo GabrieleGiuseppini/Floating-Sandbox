@@ -1283,16 +1283,26 @@ Render:
 		= ShipLoadDialog
 			+ Directory tree on the left
 				+ https://docs.wxwidgets.org/3.0/classwx_generic_dir_ctrl.html
+			- PreviewPanel in main area
+				- TODO: figure out size math and number of cols
+			= void Open()
+				- Load vals from UIPreferences
+				= Call ShipPreviewPanel::Open()
+					- Clear grid
+					- Start thread
+				= Then, call ShipPreviewPanel::Close()
+					- Stop thread
+					- Clear Grid
+			- Resize:
+				- Set min size for dir tree and for preview panel
 			- Combo:
 				- Last N from UIPreferences
 				- OnSelection
 				- TODO: what to do with current dir?
-			- PreviewPanel in main area
-				- Fixed size, use defines for preview size and/or number of cols
-				- TODO: see if want to make it resizeable instead
 			+ When dir tree chooses, call ShipPreviewPanel::SetDirectory
-			- When ship is loaded, call UIPreferences::AddShipLoadDirectory
+			+ When ship is loaded, call UIPreferences::AddShipLoadDirectory
 			+ No use as modal, do with Open() which returns opt<path>
+			- Hitting OK with preview just selected
 		= UIPreferences
 			+ Created by main frame and passed around as shared_ptr
 			- Loads and Saves to uncustomizable file path
@@ -1309,7 +1319,9 @@ Render:
 					+ If yes: move first
 					+ If not: add first
 		- ShipPreviewPanel
+			- See if there's another control for grid
 			- Thread - see MOLESKINE
+				- Figure out how to hook Show()
 			- Redo with custom events for thread-to-panel
 		- ShipPreviewControl
 			= Catch double-click event and fire ShipFileSelectedEvent
