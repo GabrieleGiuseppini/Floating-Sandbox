@@ -40,7 +40,7 @@ ShipPreviewPanel::ShipPreviewPanel(
     SetScrollRate(5, 5);
 
     // Ensure one tile always fits
-    SetMinSize(wxSize(PreviewWidth + 2 * PreviewMargin, PreviewWidth));
+    SetMinSize(wxSize(PreviewWidth + 2 * PreviewMargin, PreviewHeight));
 
     Bind(wxEVT_SIZE, &ShipPreviewPanel::OnResized, this, this->GetId());
 
@@ -286,6 +286,7 @@ void ShipPreviewPanel::OnDirScanned(fsDirScannedEvent & event)
             shipFilepath,
             PreviewWidth,
             PreviewHeight,
+            PreviewMargin,
             mWaitBitmap,
             mErrorBitmap);
 

@@ -106,6 +106,7 @@ public:
         std::filesystem::path const & shipFilepath,
         int width,
         int height,
+        int vMargin,
         std::shared_ptr<wxBitmap> waitBitmap,
         std::shared_ptr<wxBitmap> errorBitmap);
 

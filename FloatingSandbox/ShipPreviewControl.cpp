@@ -15,6 +15,7 @@ ShipPreviewControl::ShipPreviewControl(
     std::filesystem::path const & shipFilepath,
     int width,
     int height,
+    int vMargin,
     std::shared_ptr<wxBitmap> waitBitmap,
     std::shared_ptr<wxBitmap> errorBitmap)
     : wxPanel(
@@ -22,7 +23,7 @@ ShipPreviewControl::ShipPreviewControl(
         wxID_ANY,
         wxDefaultPosition,
         wxSize(width, height),
-        wxBORDER_SIMPLE)
+        0)
     , mShipFilepath(shipFilepath)
     , mWidth(width)
     , mHeight(height)
@@ -30,9 +31,6 @@ ShipPreviewControl::ShipPreviewControl(
     , mErrorBitmap(std::move(errorBitmap))
 {
     SetBackgroundColour(wxColour("WHITE"));
-
-    wxFont font(wxFontInfo(wxSize(8, 8)).Family(wxFONTFAMILY_TELETYPE));
-    SetFont(font);
 
 
     mVSizer = new wxBoxSizer(wxVERTICAL);
@@ -47,8 +45,7 @@ ShipPreviewControl::ShipPreviewControl(
         wxID_ANY,
         *mWaitBitmap,
         wxDefaultPosition,
-        mWaitBitmap->GetSize(),
-        wxBORDER_SIMPLE);
+        mWaitBitmap->GetSize());
 
     mPreviewBitmap->SetScaleMode(wxStaticBitmap::Scale_AspectFill);
 
@@ -63,7 +60,7 @@ ShipPreviewControl::ShipPreviewControl(
     // Preview Label
     //
 
-    mPreviewLabel = new wxStaticText(this, wxID_ANY, "Loading...", wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER_HORIZONTAL);
+    mPreviewLabel = new wxStaticText(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER_HORIZONTAL);
 
     mPreviewLabel->Bind(wxEVT_LEFT_DOWN, &ShipPreviewControl::OnMouseSingleClick, this);
     mPreviewLabel->Bind(wxEVT_LEFT_DCLICK, &ShipPreviewControl::OnMouseDoubleClick, this);
@@ -83,6 +80,7 @@ ShipPreviewControl::ShipPreviewControl(
 
     mVSizer->Add(mFilenameLabel, 0, wxEXPAND);
 
+    mVSizer->AddSpacer(vMargin);
 
 
 
@@ -123,6 +121,14 @@ void ShipPreviewControl::SetPreviewContent(
 
 void ShipPreviewControl::OnMouseSingleClick(wxMouseEvent & /*event*/)
 {
+    //
+    // Set border
+    //
+
+    this->SetExtraStyle(wxBORDER_SIMPLE);
+    // TODO: if this works, need "Select/Deselect" invoked by panel
+
+
     //
     // Fire our custom event
     //
