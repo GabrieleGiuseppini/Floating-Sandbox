@@ -109,14 +109,15 @@ private:
     //
 
     // App
-    void OnPostInitializeTrigger(wxTimerEvent& event);
-    void OnMainFrameClose(wxCloseEvent& event);
-    void OnQuit(wxCommandEvent& event);
-    void OnPaint(wxPaintEvent& event);
-    void OnKeyDown(wxKeyEvent& event);
-    void OnGameTimerTrigger(wxTimerEvent& event);
-    void OnLowFrequencyTimerTrigger(wxTimerEvent& event);
-    void OnIdle(wxIdleEvent& event);
+    void OnPostInitializeTrigger(wxTimerEvent & event);
+    void OnMainFrameClose(wxCloseEvent & event);
+    void OnQuit(wxCommandEvent & event);
+    void OnPaint(wxPaintEvent & event);
+    void OnKeyDown(wxKeyEvent & event);
+    void OnGameTimerTrigger(wxTimerEvent & event);
+    void OnLowFrequencyTimerTrigger(wxTimerEvent & event);
+    void OnIdle(wxIdleEvent & event);
+    void OnShipFileChosen(fsShipFileChosenEvent & event);
 
     // Main GL canvas
     void OnMainGLCanvasResize(wxSizeEvent& event);

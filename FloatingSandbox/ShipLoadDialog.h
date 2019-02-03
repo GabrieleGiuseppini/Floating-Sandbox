@@ -30,7 +30,7 @@ public:
 
 	virtual ~ShipLoadDialog();
 
-    std::optional<std::filesystem::path> Open();
+    void Open();
 
 private:
 
@@ -41,6 +41,7 @@ private:
     void OnCancelButton(wxCommandEvent & event);
 
     void OnDirectorySelected(std::filesystem::path directoryPath);
+    void OnShipFileChosen(std::filesystem::path shipFilepath);
 
 private:
 

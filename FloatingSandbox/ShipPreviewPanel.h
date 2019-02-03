@@ -227,7 +227,12 @@ private:
 
 private:
 
+    void ArrangePreviewTiles();
+
 private:
+
+    int mWidth;
+    int mHeight;
 
     wxGridSizer * mPreviewsSizer;
     std::vector<ShipPreviewControl *> mPreviewControls;

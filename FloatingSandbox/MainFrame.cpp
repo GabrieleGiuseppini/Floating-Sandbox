@@ -106,11 +106,11 @@ MainFrame::MainFrame(wxApp * mainApp)
     Maximize();
     Centre();
 
-    Connect(this->GetId(), wxEVT_CLOSE_WINDOW, (wxObjectEventFunction)&MainFrame::OnMainFrameClose);
-    Connect(this->GetId(), wxEVT_PAINT, (wxObjectEventFunction)&MainFrame::OnPaint);
+    Bind(wxEVT_CLOSE_WINDOW, &MainFrame::OnMainFrameClose, this);
+    Bind(wxEVT_PAINT, &MainFrame::OnPaint, this);
 
     wxPanel* mainPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, -1), wxWANTS_CHARS);
-    mainPanel->Bind(wxEVT_CHAR_HOOK, (wxObjectEventFunction)&MainFrame::OnKeyDown, this);
+    mainPanel->Bind(wxEVT_CHAR_HOOK, &MainFrame::OnKeyDown, this);
 
     mMainFrameSizer = new wxBoxSizer(wxVERTICAL);
 
@@ -801,6 +801,25 @@ void MainFrame::OnIdle(wxIdleEvent & /*event*/)
 {
 }
 
+void MainFrame::OnShipFileChosen(fsShipFileChosenEvent & event)
+{
+    //
+    // Load ship
+    //
+
+    ResetState();
+
+    assert(!!mGameController);
+    try
+    {
+        mGameController->ResetAndLoadShip(event.GetShipFilepath());
+    }
+    catch (std::exception const & ex)
+    {
+        OnError(ex.what(), false);
+    }
+}
+
 //
 // Main canvas event handlers
 //
@@ -882,26 +901,13 @@ void MainFrame::OnLoadShipMenuItemSelected(wxCommandEvent & /*event*/)
             this,
             mUIPreferences,
             *mResourceLoader);
+
+        mShipLoadDialog->Bind(fsEVT_SHIP_FILE_CHOSEN, &MainFrame::OnShipFileChosen, this);
     }
 
     assert(!!mShipLoadDialog);
 
-    auto selectedShipFilepath = mShipLoadDialog->Open();
-
-    if (!!selectedShipFilepath)
-    {
-        ResetState();
-
-        assert(!!mGameController);
-        try
-        {
-            mGameController->ResetAndLoadShip(*selectedShipFilepath);
-        }
-        catch (std::exception const & ex)
-        {
-            OnError(ex.what(), false);
-        }
-    }
+    mShipLoadDialog->Open(); // Will fire a ShipFileChosen event if user ends up selecting a ship
 }
 
 void MainFrame::OnReloadLastShipMenuItemSelected(wxCommandEvent & /*event*/)

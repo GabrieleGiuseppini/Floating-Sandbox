@@ -63,7 +63,7 @@ ShipPreviewControl::ShipPreviewControl(
     // Preview Label
     //
 
-    mPreviewLabel = new wxStaticText(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER_HORIZONTAL);
+    mPreviewLabel = new wxStaticText(this, wxID_ANY, "Loading...", wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER_HORIZONTAL);
 
     mPreviewLabel->Bind(wxEVT_LEFT_DOWN, &ShipPreviewControl::OnMouseSingleClick, this);
     mPreviewLabel->Bind(wxEVT_LEFT_DCLICK, &ShipPreviewControl::OnMouseDoubleClick, this);
@@ -76,7 +76,7 @@ ShipPreviewControl::ShipPreviewControl(
     // Filename Label
     //
 
-    mFilenameLabel = new wxStaticText(this, wxID_ANY, "Loading...", wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER_HORIZONTAL);
+    mFilenameLabel = new wxStaticText(this, wxID_ANY, shipFilepath.stem().string(), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER_HORIZONTAL);
 
     mFilenameLabel->Bind(wxEVT_LEFT_DOWN, &ShipPreviewControl::OnMouseSingleClick, this);
     mFilenameLabel->Bind(wxEVT_LEFT_DCLICK, &ShipPreviewControl::OnMouseDoubleClick, this);

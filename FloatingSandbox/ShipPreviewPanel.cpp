@@ -9,7 +9,9 @@
 
 #include <GameCore/Log.h>
 
-constexpr int TileGap = 5;
+constexpr int PreviewWidth = 200;
+constexpr int PreviewHeight = 100;
+constexpr int PreviewMargin = 5;
 
 wxDEFINE_EVENT(fsEVT_DIR_SCANNED, fsDirScannedEvent);
 wxDEFINE_EVENT(fsEVT_DIR_SCAN_ERROR, fsDirScanErrorEvent);
@@ -35,6 +37,10 @@ ShipPreviewPanel::ShipPreviewPanel(
     , mPanelToThreadMessageEvent()
 {
     SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW));
+    SetScrollRate(5, 5);
+
+    // Ensure one tile always fits
+    SetMinSize(wxSize(PreviewWidth + 2 * PreviewMargin, PreviewWidth));
 
     Bind(wxEVT_SIZE, &ShipPreviewPanel::OnResized, this, this->GetId());
 
@@ -58,19 +64,14 @@ ShipPreviewPanel::ShipPreviewPanel(
         resourceLoader.GetBitmapFilepath("ship_preview_error").string(),
         wxBITMAP_TYPE_PNG);
 
-    // TODOTEST
-    mPreviewsSizer = new wxGridSizer(2, 2, TileGap, TileGap);
-    auto spc1 = new ShipPreviewControl(this, "TODOTEST1", 200, 100, mWaitBitmap, mErrorBitmap);
-    mPreviewsSizer->Add(spc1);
-    auto spc2 = new ShipPreviewControl(this, "TODOTEST2", 200, 100, mWaitBitmap, mErrorBitmap);
-    mPreviewsSizer->Add(spc2);
-    auto spc3 = new ShipPreviewControl(this, "TODOTEST3", 200, 100, mWaitBitmap, mErrorBitmap);
-    mPreviewsSizer->Add(spc3);
-    auto spc4 = new ShipPreviewControl(this, "TODOTEST4", 200, 100, mWaitBitmap, mErrorBitmap);
-    mPreviewsSizer->Add(spc4);
 
+    //
+    // Create sizer
+    //
 
-    SetSizerAndFit(mPreviewsSizer);
+    mPreviewsSizer = new wxGridSizer(1, 0, 0);
+
+    SetSizer(mPreviewsSizer);
 }
 
 ShipPreviewPanel::~ShipPreviewPanel()
@@ -115,10 +116,30 @@ void ShipPreviewPanel::SetDirectory(std::filesystem::path const & directoryPath)
 
 void ShipPreviewPanel::OnResized(wxSizeEvent & event)
 {
-    // TODOTEST
     LogMessage("ShipPreviewPanel::OnResized(", event.GetSize().GetWidth(), ", ", event.GetSize().GetHeight(), ")");
 
-    // TODO: see Moleskine
+    // Store size
+    mWidth = event.GetSize().GetWidth();
+    mHeight = event.GetSize().GetHeight();
+
+    // See if need to rearrange
+    if (!mPreviewControls.empty())
+    {
+        ArrangePreviewTiles();
+    }
+}
+
+void ShipPreviewPanel::ArrangePreviewTiles()
+{
+    //
+    // Rearrange tiles based on width
+    //
+
+    int nCols = static_cast<int>(static_cast<float>(mWidth) / static_cast<float>(PreviewWidth + 2 * PreviewMargin));
+    assert(nCols >= 1);
+
+    // Rearrange
+    mPreviewsSizer->SetCols(nCols);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -246,7 +267,43 @@ void ShipPreviewPanel::ScanDirectory(std::filesystem::path const & directoryPath
 
 void ShipPreviewPanel::OnDirScanned(fsDirScannedEvent & event)
 {
-    // TODO
+    //
+    // Clear all preview controls
+    //
+
+    mPreviewsSizer->Clear(true);
+    mPreviewControls.clear();
+
+
+    //
+    // Create new preview controls
+    //
+
+    for (auto const & shipFilepath : event.GetShipFilepaths())
+    {
+        auto shipPreviewControl = new ShipPreviewControl(
+            this,
+            shipFilepath,
+            PreviewWidth,
+            PreviewHeight,
+            mWaitBitmap,
+            mErrorBitmap);
+
+        mPreviewControls.push_back(shipPreviewControl);
+
+        // Add to sizer
+        mPreviewsSizer->Add(shipPreviewControl, 0, wxALIGN_CENTRE_HORIZONTAL | wxALIGN_TOP);
+    }
+
+
+    //
+    // Arrange controls
+    //
+
+    ArrangePreviewTiles();
+
+    mPreviewsSizer->Layout();
+    FitInside();
 }
 
 void ShipPreviewPanel::OnDirScanError(fsDirScanErrorEvent & event)
