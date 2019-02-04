@@ -8,6 +8,8 @@ set  (SOURCES
 	Buffer.h
 	BufferAllocator.h
 	CircularList.h
+	Colors.cpp
+	Colors.h
 	ElementContainer.h
 	ElementIndexRangeIterator.h
 	EnumFlags.h

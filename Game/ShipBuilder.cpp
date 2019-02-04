@@ -66,12 +66,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
         // From bottom to top
         for (int y = 0; y < structureHeight; ++y)
         {
-            MaterialDatabase::ColorKey colorKey = {
-                shipDefinition.StructuralLayerImage.Data[(x + (structureHeight - y - 1) * structureWidth) * 3 + 0],
-                shipDefinition.StructuralLayerImage.Data[(x + (structureHeight - y - 1) * structureWidth) * 3 + 1],
-                shipDefinition.StructuralLayerImage.Data[(x + (structureHeight - y - 1) * structureWidth) * 3 + 2]
-            };
-
+            MaterialDatabase::ColorKey colorKey = shipDefinition.StructuralLayerImage.Data[x + (structureHeight - y - 1) * structureWidth];
             StructuralMaterial const * structuralMaterial = materialDatabase.FindStructuralMaterial(colorKey);
             if (nullptr != structuralMaterial)
             {
@@ -331,7 +326,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 void ShipBuilder::AppendRopeEndpoints(
-    ImageData const & ropeLayerImage,
+    RgbImageData const & ropeLayerImage,
     std::map<MaterialDatabase::ColorKey, RopeSegment> & ropeSegments,
     std::vector<PointInfo> & pointInfos1,
     std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> & pointIndexMatrix,
@@ -350,11 +345,7 @@ void ShipBuilder::AppendRopeEndpoints(
         for (int y = 0; y < height; ++y)
         {
             // Get color
-            MaterialDatabase::ColorKey colorKey = {
-                ropeLayerImage.Data[(x + (height - y - 1) * width) * 3 + 0],
-                ropeLayerImage.Data[(x + (height - y - 1) * width) * 3 + 1],
-                ropeLayerImage.Data[(x + (height - y - 1) * width) * 3 + 2]
-            };
+            MaterialDatabase::ColorKey colorKey = ropeLayerImage.Data[x + (height - y - 1) * width];
 
             // Check if background
             if (colorKey != BackgroundColorKey)
@@ -369,9 +360,9 @@ void ShipBuilder::AppendRopeEndpoints(
                         vec2f(
                             static_cast<float>(x) - halfWidth,
                             static_cast<float>(y))
-                            + shipOffset,
+                        + shipOffset,
                         MakeTextureCoordinates(x, y, ropeLayerImage.Size),
-                        vec4f(Utils::RgbToVec(colorKey), 1.0f),
+                        colorKey.toVec4f(1.0f),
                         materialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Rope),
                         true);
 
@@ -405,7 +396,7 @@ void ShipBuilder::AppendRopeEndpoints(
 
                 // Change endpoint's color to match the rope's - or else the spring will look bad,
                 // and make it a rope point so that the first spring segment is a rope spring
-                pointInfos1[pointIndex].RenderColor = vec4f(Utils::RgbToVec(colorKey), 1.0f);
+                pointInfos1[pointIndex].RenderColor = colorKey.toVec4f(1.0f);
                 pointInfos1[pointIndex].IsRope = true;
             }
         }
@@ -413,7 +404,7 @@ void ShipBuilder::AppendRopeEndpoints(
 }
 
 void ShipBuilder::DecoratePointsWithElectricalMaterials(
-    ImageData const & layerImage,
+    RgbImageData const & layerImage,
     std::vector<PointInfo> & pointInfos1,
     bool isDedicatedElectricalLayer,
     std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
@@ -430,11 +421,7 @@ void ShipBuilder::DecoratePointsWithElectricalMaterials(
         for (int y = 0; y < height; ++y)
         {
             // Get color
-            MaterialDatabase::ColorKey colorKey = {
-                layerImage.Data[(x + (height - y - 1) * width) * 3 + 0],
-                layerImage.Data[(x + (height - y - 1) * width) * 3 + 1],
-                layerImage.Data[(x + (height - y - 1) * width) * 3 + 2]
-            };
+            MaterialDatabase::ColorKey colorKey = layerImage.Data[x + (height - y - 1) * width];
 
             // Check if it's an electrical material
             ElectricalMaterial const * electricalMaterial = materialDatabase.FindElectricalMaterial(colorKey);
@@ -579,7 +566,7 @@ void ShipBuilder::AppendRopes(
             pointInfos1.emplace_back(
                 newPosition,
                 MakeTextureCoordinates(newPosition.x, newPosition.y, structureImageSize),
-                vec4f(Utils::RgbToVec(ropeSegment.RopeColorKey), 1.0f),
+                ropeSegment.RopeColorKey.toVec4f(1.0f),
                 ropeMaterial,
                 true); // IsRope
 

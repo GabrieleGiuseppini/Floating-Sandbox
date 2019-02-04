@@ -12,7 +12,7 @@
 
 ShipPreview ShipPreview::Load(
     std::filesystem::path const & filepath,
-    int previewWidth)
+    ImageSize const & maxSize)
 {
     std::filesystem::path previewImageFilePath;
     std::optional<ShipMetadata> shipMetadata;
@@ -58,9 +58,9 @@ ShipPreview ShipPreview::Load(
     // Load preview
     //
 
-    ImageData previewImage = ImageFileTools::LoadImageRgbaLowerLeftAndResize(
+    auto previewImage = ImageFileTools::LoadImageRgbaLowerLeftAndResize(
         previewImageFilePath,
-        previewWidth);
+        maxSize);
 
     return ShipPreview(
         std::move(previewImage),

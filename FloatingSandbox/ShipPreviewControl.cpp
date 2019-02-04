@@ -92,7 +92,7 @@ ShipPreviewControl::~ShipPreviewControl()
 }
 
 void ShipPreviewControl::SetPreviewContent(
-    ImageData previewImageData,
+    RgbaImageData previewImageData,
     ShipMetadata const & shipMetadata)
 {
     //
@@ -133,11 +133,12 @@ void ShipPreviewControl::OnMouseSingleClick(wxMouseEvent & /*event*/)
     // Fire our custom event
     //
 
-    ProcessWindowEvent(
-        fsShipFileSelectedEvent(
-            fsEVT_SHIP_FILE_SELECTED,
-            this->GetId(),
-            mShipFilepath));
+    auto event = fsShipFileSelectedEvent(
+        fsEVT_SHIP_FILE_SELECTED,
+        this->GetId(),
+        mShipFilepath);
+
+    ProcessWindowEvent(event);
 }
 
 void ShipPreviewControl::OnMouseDoubleClick(wxMouseEvent & /*event*/)
@@ -146,9 +147,10 @@ void ShipPreviewControl::OnMouseDoubleClick(wxMouseEvent & /*event*/)
     // Fire our custom event
     //
 
-    ProcessWindowEvent(
-        fsShipFileChosenEvent(
-            fsEVT_SHIP_FILE_CHOSEN,
-            this->GetId(),
-            mShipFilepath));
+    auto event = fsShipFileChosenEvent(
+        fsEVT_SHIP_FILE_CHOSEN,
+        this->GetId(),
+        mShipFilepath);
+
+    ProcessWindowEvent(event);
 }

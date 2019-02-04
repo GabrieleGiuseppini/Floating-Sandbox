@@ -282,10 +282,10 @@ public:
     void AddShip(
         ShipId shipId,
         size_t pointCount,
-        ImageData texture,
+        RgbaImageData texture,
         ShipDefinition::TextureOriginType textureOrigin);
 
-    ImageData TakeScreenshot();
+    RgbImageData TakeScreenshot();
 
 public:
 

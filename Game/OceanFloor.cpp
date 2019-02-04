@@ -20,7 +20,7 @@ OceanFloor::OceanFloor(ResourceLoader & resourceLoader)
     // - Convert each (topmost) y of the map into a Y coordinate, between H/2 (top) and -H/2 (bottom)
     //
 
-    ImageData bumpMapImage = ImageFileTools::LoadImageRgbUpperLeft(resourceLoader.GetOceanFloorBumpMapFilepath());
+    RgbImageData bumpMapImage = ImageFileTools::LoadImageRgbUpperLeft(resourceLoader.GetOceanFloorBumpMapFilepath());
 
     float const sampleIndexToX = static_cast<float>(bumpMapImage.Size.Width) / static_cast<float>(SamplesCount);
     float const halfHeight = static_cast<float>(bumpMapImage.Size.Height / 2);
@@ -36,10 +36,8 @@ OceanFloor::OceanFloor(ResourceLoader & resourceLoader)
         // Find topmost Y
         for (int imageY = 0 /*top*/; imageY < bumpMapImage.Size.Height; ++imageY)
         {
-            int pointIndex = 3 * (imageY * bumpMapImage.Size.Width + imageX);
-            if (bumpMapImage.Data[pointIndex] != 0x00
-                || bumpMapImage.Data[pointIndex + 1] != 0x00
-                || bumpMapImage.Data[pointIndex + 2] != 0x00)
+            int pointIndex = imageY * bumpMapImage.Size.Width + imageX;
+            if (bumpMapImage.Data[pointIndex] != rgbColor::zero())
             {
                 // Found it!
                 bumpMapSampleValue =

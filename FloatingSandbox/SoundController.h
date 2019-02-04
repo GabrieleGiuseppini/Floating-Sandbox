@@ -11,6 +11,7 @@
 #include <Game/ResourceLoader.h>
 
 #include <GameCore/GameRandomEngine.h>
+#include <GameCore/ProgressCallback.h>
 #include <GameCore/RunningAverage.h>
 #include <GameCore/TupleKeys.h>
 #include <GameCore/Utils.h>

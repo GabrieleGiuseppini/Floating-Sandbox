@@ -5,11 +5,6 @@
 ***************************************************************************************/
 #pragma once
 
-#include <GameCore/ImageData.h>
-#include <GameCore/ProgressCallback.h>
-#include <GameCore/SysSpecifics.h>
-
-#include <cstdint>
 #include <filesystem>
 #include <string>
 #include <vector>

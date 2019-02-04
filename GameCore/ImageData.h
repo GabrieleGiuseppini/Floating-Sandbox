@@ -5,21 +5,27 @@
 ***************************************************************************************/
 #pragma once
 
+#include "Colors.h"
 #include "ImageSize.h"
 
 #include <memory>
 
+template <typename TColor>
 struct ImageData
 {
 public:
 
+    using color_type = TColor;
+
+public:
+
     ImageSize const Size;
-    std::unique_ptr<unsigned char const[]> Data;
+    std::unique_ptr<color_type const[]> Data;
 
     ImageData(
         int width,
         int height,
-        std::unique_ptr<unsigned char const[]> data)
+        std::unique_ptr<color_type const[]> data)
         : Size(width, height)
         , Data(std::move(data))
     {
@@ -27,9 +33,12 @@ public:
 
     ImageData(
         ImageSize size,
-        std::unique_ptr<unsigned char const[]> data)
+        std::unique_ptr<color_type const[]> data)
         : Size(size)
         , Data(std::move(data))
     {
     }
 };
+
+using RgbImageData = ImageData<rgbColor>;
+using RgbaImageData = ImageData<rgbaColor>;

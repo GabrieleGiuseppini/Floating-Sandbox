@@ -113,9 +113,8 @@ public:
     virtual ~ShipPreviewControl();
 
     void SetPreviewContent(
-        ImageData previewImageData,
+        RgbaImageData previewImageData,
         ShipMetadata const & shipMetadata);
-
 
 private:
 

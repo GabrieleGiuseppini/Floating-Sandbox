@@ -13,8 +13,8 @@
 ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
 {
     std::filesystem::path absoluteStructuralLayerImageFilePath;
-    std::optional<ImageData> ropesLayerImage;
-    std::optional<ImageData> electricalLayerImage;
+    std::optional<RgbImageData> ropesLayerImage;
+    std::optional<RgbImageData> electricalLayerImage;
     std::filesystem::path absoluteTextureLayerImageFilePath;
     ShipDefinition::TextureOriginType textureOrigin;
     std::optional<ShipMetadata> shipMetadata;
@@ -97,7 +97,7 @@ ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
     // Load texture image
     //
 
-    std::optional<ImageData> textureImage;
+    std::optional<RgbaImageData> textureImage;
 
     switch (textureOrigin)
     {

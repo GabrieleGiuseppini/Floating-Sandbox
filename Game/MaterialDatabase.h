@@ -8,12 +8,12 @@
 #include "Materials.h"
 #include "ResourceLoader.h"
 
+#include <GameCore/Colors.h>
 #include <GameCore/GameException.h>
 #include <GameCore/Utils.h>
 
 #include <picojson/picojson.h>
 
-#include <array>
 #include <cassert>
 #include <cstdint>
 #include <map>
@@ -23,7 +23,7 @@ class MaterialDatabase
 {
 public:
 
-    using ColorKey = std::array<uint8_t, 3>;
+    using ColorKey = rgbColor;
 
 private:
 
@@ -111,8 +111,8 @@ public:
         for (auto const & entry : structuralMaterialsMap)
         {
             if ((!entry.second.UniqueType || StructuralMaterial::MaterialUniqueType::Rope != *(entry.second.UniqueType))
-                && entry.first[0] == uniqueStructuralMaterials[RopeUniqueMaterialIndex].first[0]
-                && (entry.first[1] & 0xF0) == (uniqueStructuralMaterials[RopeUniqueMaterialIndex].first[1] & 0xF0))
+                && entry.first.r == uniqueStructuralMaterials[RopeUniqueMaterialIndex].first.r
+                && (entry.first.g & 0xF0) == (uniqueStructuralMaterials[RopeUniqueMaterialIndex].first.g & 0xF0))
             {
                 throw GameException("Structural material \"" + entry.second.Name + "\" has a color key that is reserved for ropes and rope endpoints");
             }
@@ -175,8 +175,8 @@ public:
         }
 
         // Check whether it's a rope endpoint
-        if (colorKey[0] == mUniqueStructuralMaterials[RopeUniqueMaterialIndex].first[0]
-            && ((colorKey[1] & 0xF0) == (mUniqueStructuralMaterials[RopeUniqueMaterialIndex].first[1] & 0xF0)))
+        if (colorKey.r == mUniqueStructuralMaterials[RopeUniqueMaterialIndex].first.r
+            && ((colorKey.g & 0xF0) == (mUniqueStructuralMaterials[RopeUniqueMaterialIndex].first.g & 0xF0)))
         {
             return mUniqueStructuralMaterials[RopeUniqueMaterialIndex].second;
         }

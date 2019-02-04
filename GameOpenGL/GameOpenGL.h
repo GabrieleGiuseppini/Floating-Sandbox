@@ -207,12 +207,12 @@ public:
         GLuint attributeIndex,
         std::string const & attributeName);
 
-    static void UploadTexture(ImageData texture);
+    static void UploadTexture(RgbaImageData texture);
 
-    static void UploadMipmappedTexture(ImageData baseTexture);
+    static void UploadMipmappedTexture(RgbaImageData baseTexture);
 
     static void UploadMipmappedPowerOfTwoTexture(
-        ImageData baseTexture,
+        RgbaImageData baseTexture,
         int maxDimension);
 
     template <GLenum TTarget>

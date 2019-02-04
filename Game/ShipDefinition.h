@@ -22,13 +22,13 @@ struct ShipDefinition
 {
 public:
 
-    ImageData StructuralLayerImage;
+    RgbImageData StructuralLayerImage;
 
-    std::optional<ImageData> RopesLayerImage;
+    std::optional<RgbImageData> RopesLayerImage;
 
-    std::optional<ImageData> ElectricalLayerImage;
+    std::optional<RgbImageData> ElectricalLayerImage;
 
-    ImageData TextureLayerImage;
+    RgbaImageData TextureLayerImage;
 
     enum class TextureOriginType
     {
@@ -48,10 +48,10 @@ public:
 private:
 
     ShipDefinition(
-        ImageData structuralLayerImage,
-        std::optional<ImageData> ropesLayerImage,
-        std::optional<ImageData> electricalLayerImage,
-        ImageData textureLayerImage,
+        RgbImageData structuralLayerImage,
+        std::optional<RgbImageData> ropesLayerImage,
+        std::optional<RgbImageData> electricalLayerImage,
+        RgbaImageData textureLayerImage,
         TextureOriginType textureOrigin,
         ShipMetadata const metadata)
         : StructuralLayerImage(std::move(structuralLayerImage))

@@ -5,14 +5,6 @@
 ***************************************************************************************/
 #include "ResourceLoader.h"
 
-#include <GameCore/GameException.h>
-#include <GameCore/Log.h>
-#include <GameCore/Utils.h>
-
-#include <algorithm>
-#include <cstring>
-#include <regex>
-
 ResourceLoader::ResourceLoader()
 {
     // Nothing special, for now.

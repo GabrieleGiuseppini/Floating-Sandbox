@@ -68,11 +68,11 @@ struct TextureFrame
     TextureFrameMetadata Metadata;
 
     // The image itself
-    ImageData TextureData;
+    RgbaImageData TextureData;
 
     TextureFrame(
         TextureFrameMetadata const & metadata,
-        ImageData textureData)
+        RgbaImageData textureData)
         : Metadata(metadata)
         , TextureData(std::move(textureData))
     {}

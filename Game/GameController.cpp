@@ -139,7 +139,7 @@ void GameController::ReloadLastShip()
         shipId);
 }
 
-ImageData GameController::TakeScreenshot()
+RgbImageData GameController::TakeScreenshot()
 {
     return mRenderContext->TakeScreenshot();
 }

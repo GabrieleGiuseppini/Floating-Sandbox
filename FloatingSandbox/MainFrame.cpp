@@ -940,7 +940,7 @@ void MainFrame::OnSaveScreenshotMenuItemSelected(wxCommandEvent & /*event*/)
     //
 
     assert(!!mGameController);
-    ImageData screenshotImage = mGameController->TakeScreenshot();
+    auto screenshotImage = mGameController->TakeScreenshot();
 
 
     //
@@ -1005,7 +1005,7 @@ void MainFrame::OnSaveScreenshotMenuItemSelected(wxCommandEvent & /*event*/)
 
     try
     {
-        ImageFileTools::SaveImageRgb(
+        ImageFileTools::SaveImage(
             screenshotFilePath,
             screenshotImage);
     }

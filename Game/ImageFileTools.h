@@ -8,6 +8,7 @@
 #include <GameCore/ImageData.h>
 
 #include <filesystem>
+#include <functional>
 #include <optional>
 
 class ImageFileTools
@@ -16,15 +17,20 @@ public:
 
     static ImageSize GetImageSize(std::filesystem::path const & filepath);
 
-    static ImageData LoadImageRgbaLowerLeft(std::filesystem::path const & filepath);
-    static ImageData LoadImageRgbaLowerLeftAndMagnify(std::filesystem::path const & filepath, int magnificationFactor);
-    static ImageData LoadImageRgbaLowerLeftAndResize(std::filesystem::path const & filepath, int resizedWidth);
+    static RgbaImageData LoadImageRgbaLowerLeft(std::filesystem::path const & filepath);
+    static RgbaImageData LoadImageRgbaLowerLeftAndMagnify(std::filesystem::path const & filepath, int magnificationFactor);
+    static RgbaImageData LoadImageRgbaLowerLeftAndResize(std::filesystem::path const & filepath, int resizedWidth);
+    static RgbaImageData LoadImageRgbaLowerLeftAndResize(std::filesystem::path const & filepath, ImageSize const & maxSize);
 
-    static ImageData LoadImageRgbUpperLeft(std::filesystem::path const & filepath);
+    static RgbImageData LoadImageRgbUpperLeft(std::filesystem::path const & filepath);
 
-    static void SaveImageRgb(
+    static void SaveImage(
         std::filesystem::path filepath,
-        ImageData const & image);
+        RgbaImageData const & image);
+
+    static void SaveImage(
+        std::filesystem::path filepath,
+        RgbImageData const & image);
 
 private:
 
@@ -32,22 +38,30 @@ private:
 
     struct ResizeInfo
     {
-        int ResizedWidth;
+        std::function<ImageSize(ImageSize const &)> ResizeHandler;
         int FilterType;
 
         ResizeInfo(
-            int resizedWidth,
+            std::function<ImageSize(ImageSize const &)> resizeHandler,
             int filterType)
-            : ResizedWidth(resizedWidth)
+            : ResizeHandler(std::move(resizeHandler))
             , FilterType(filterType)
         {}
     };
 
-    static ImageData InternalLoadImage(
+    template <typename TColor>
+    static ImageData<TColor> InternalLoadImage(
         std::filesystem::path const & filepath,
         int targetFormat,
         int targetOrigin,
         std::optional<ResizeInfo> resizeInfo);
+
+    static void InternalSaveImage(
+        ImageSize imageSize,
+        void const * imageData,
+        int bpp,
+        int format,
+        std::filesystem::path filepath);
 
 private:
 

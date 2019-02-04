@@ -393,7 +393,7 @@ void RenderContext::Reset()
 void RenderContext::AddShip(
     ShipId shipId,
     size_t pointCount,
-    ImageData texture,
+    RgbaImageData texture,
     ShipDefinition::TextureOriginType textureOrigin)
 {
     assert(shipId == mShips.size() + 1);
@@ -422,7 +422,7 @@ void RenderContext::AddShip(
             mShowStressedSprings));
 }
 
-ImageData RenderContext::TakeScreenshot()
+RgbImageData RenderContext::TakeScreenshot()
 {
     //
     // Flush draw calls
@@ -434,7 +434,7 @@ ImageData RenderContext::TakeScreenshot()
     // Allocate buffer
     //
 
-    auto pixelBuffer = std::make_unique<uint8_t[]>(mCanvasWidth * mCanvasHeight * 3);
+    auto pixelBuffer = std::make_unique<rgbColor[]>(mCanvasWidth * mCanvasHeight);
 
     //
     // Read pixels
@@ -452,7 +452,7 @@ ImageData RenderContext::TakeScreenshot()
     glReadPixels(0, 0, mCanvasWidth, mCanvasHeight, GL_RGB, GL_UNSIGNED_BYTE, pixelBuffer.get());
     CheckOpenGLError();
 
-    return ImageData(
+    return RgbImageData(
         ImageSize(mCanvasWidth, mCanvasHeight),
         std::move(pixelBuffer));
 }

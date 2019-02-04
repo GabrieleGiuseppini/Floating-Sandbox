@@ -165,7 +165,7 @@ void GameOpenGL::BindAttributeLocation(
     }
 }
 
-void GameOpenGL::UploadTexture(ImageData texture)
+void GameOpenGL::UploadTexture(RgbaImageData texture)
 {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.Size.Width, texture.Size.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.Data.get());
     GLenum glError = glGetError();
@@ -175,7 +175,7 @@ void GameOpenGL::UploadTexture(ImageData texture)
     }
 }
 
-void GameOpenGL::UploadMipmappedTexture(ImageData baseTexture)
+void GameOpenGL::UploadMipmappedTexture(RgbaImageData baseTexture)
 {
     //
     // Upload base image
@@ -195,8 +195,8 @@ void GameOpenGL::UploadMipmappedTexture(ImageData baseTexture)
 
     ImageSize readImageSize(baseTexture.Size);
 
-    std::unique_ptr<unsigned char const []> readBuffer(std::move(baseTexture.Data));
-    std::unique_ptr<unsigned char []> writeBuffer;
+    std::unique_ptr<rgbaColor const []> readBuffer(std::move(baseTexture.Data));
+    std::unique_ptr<rgbaColor[]> writeBuffer;
 
     for (GLint textureLevel = 1; ; ++textureLevel)
     {
@@ -211,11 +211,11 @@ void GameOpenGL::UploadMipmappedTexture(ImageData baseTexture)
         int height = std::max(1, readImageSize.Height / 2);
 
         // Allocate new write buffer
-        writeBuffer.reset(new unsigned char[width * height * 4]);
+        writeBuffer.reset(new rgbaColor[width * height]);
 
         // Create new buffer
-        unsigned char const * rp = readBuffer.get();
-        unsigned char * wp = writeBuffer.get();
+        rgbaColor const * rp = readBuffer.get();
+        rgbaColor * wp = writeBuffer.get();
         for (int h = 0; h < height; ++h)
         {
             for (int w = 0; w < width; ++w)
@@ -224,40 +224,25 @@ void GameOpenGL::UploadMipmappedTexture(ImageData baseTexture)
                 // Apply box filter
                 //
 
-                int wIndex = ((h * width) + w) * 4;
+                int wIndex = ((h * width) + w);
 
-                int rIndex = (((h * 2) * readImageSize.Width) + (w * 2)) * 4;
-                int rIndexNextLine = ((((h * 2) + 1) * readImageSize.Width) + (w * 2)) * 4;
+                int rIndex = (((h * 2) * readImageSize.Width) + (w * 2));
+                int rIndexNextLine = ((((h * 2) + 1) * readImageSize.Width) + (w * 2));
 
-                for (int comp = 0; comp < 4; ++comp)
+                rgbaColorAccumulation sum(rp[rIndex]);
+
+                if (readImageSize.Width > 1)
+                    sum += rp[rIndex + 1];
+
+                if (readImageSize.Height > 1)
                 {
-                    int sum = 0;
-                    int count = 0;
-
-                    sum += static_cast<int>(rp[rIndex + comp]);
-                    ++count;
+                    sum += rp[rIndexNextLine];
 
                     if (readImageSize.Width > 1)
-                    {
-                        sum += static_cast<int>(rp[rIndex + 4 + comp]);
-                        ++count;
-                    }
-
-                    if (readImageSize.Height > 1)
-                    {
-                        sum += static_cast<int>(rp[rIndexNextLine + comp]);
-                        ++count;
-
-                        if (readImageSize.Width > 1)
-                        {
-                            sum += static_cast<int>(rp[rIndexNextLine + 4 + comp]);
-                            ++count;
-                        }
-                    }
-
-
-                    wp[wIndex + comp] = static_cast<unsigned char>(sum / count);
+                        sum += rp[rIndexNextLine + 1];
                 }
+
+                wp[wIndex] = sum.toRgbaColor();
             }
         }
 
@@ -276,7 +261,7 @@ void GameOpenGL::UploadMipmappedTexture(ImageData baseTexture)
 }
 
 void GameOpenGL::UploadMipmappedPowerOfTwoTexture(
-    ImageData baseTexture,
+    RgbaImageData baseTexture,
     int maxDimension)
 {
     assert(baseTexture.Size.Width == CeilPowerOfTwo(baseTexture.Size.Width));
@@ -305,8 +290,8 @@ void GameOpenGL::UploadMipmappedPowerOfTwoTexture(
     // Create minified textures
     //
 
-    std::unique_ptr<unsigned char const[]> readBuffer(std::move(baseTexture.Data));
-    std::unique_ptr<unsigned char[]> writeBuffer;
+    std::unique_ptr<rgbaColor const[]> readBuffer(std::move(baseTexture.Data));
+    std::unique_ptr<rgbaColor[]> writeBuffer;
 
     GLint lastUploadedTextureLevel = 0;
     for (int divisor = 2; maxDimension / divisor >= 1; divisor *= 2)
@@ -316,15 +301,15 @@ void GameOpenGL::UploadMipmappedPowerOfTwoTexture(
         int newHeight = std::max(1, baseTexture.Size.Height / divisor);
 
         // Allocate new write buffer
-        writeBuffer.reset(new unsigned char[newWidth * newHeight * 4]);
+        writeBuffer.reset(new rgbaColor[newWidth * newHeight]);
 
         // Populate write buffer
-        unsigned char const * rp = readBuffer.get();
-        unsigned char * wp = writeBuffer.get();
+        rgbaColor const * rp = readBuffer.get();
+        rgbaColor * wp = writeBuffer.get();
         for (int h = 0; h < newHeight; ++h)
         {
-            size_t frameIndexInReadBuffer = (h * 2) * (newWidth * 2) * 4;
-            size_t frameIndexInWriteBuffer = (h) * (newWidth) * 4;
+            size_t frameIndexInReadBuffer = (h * 2) * (newWidth * 2);
+            size_t frameIndexInWriteBuffer = (h) * (newWidth);
 
             for (int w = 0; w < newWidth; ++w)
             {
@@ -332,34 +317,14 @@ void GameOpenGL::UploadMipmappedPowerOfTwoTexture(
                 // Calculate and store average of the four neighboring pixels whose bottom-left corner is at (w*2, h*2)
                 //
 
-                float components[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+                rgbaColorAccumulation sum;
 
-                for (int c = 0; c < 4; ++c)
-                {
-                    components[c] += static_cast<float>(rp[frameIndexInReadBuffer + w * 2 * 4 + c]);
-                }
+                sum += rp[frameIndexInReadBuffer + w * 2];
+                sum += rp[frameIndexInReadBuffer + w * 2 + 1];
+                sum += rp[frameIndexInReadBuffer + newWidth * 2 + w * 2];
+                sum += rp[frameIndexInReadBuffer + newWidth * 2 + w * 2 + 1];
 
-                for (int c = 0; c < 4; ++c)
-                {
-                    components[c] += static_cast<float>(rp[frameIndexInReadBuffer + w * 2 * 4 + c + 4]);
-                }
-
-                for (int c = 0; c < 4; ++c)
-                {
-                    components[c] += static_cast<float>(rp[frameIndexInReadBuffer + ((newWidth * 2) * 4) + w * 2 * 4 + c]);
-                }
-
-                for (int c = 0; c < 4; ++c)
-                {
-                    components[c] += static_cast<float>(rp[frameIndexInReadBuffer + ((newWidth * 2) * 4) + w * 2 * 4 + c + 4]);
-                }
-
-                // Store
-                for (int c = 0; c < 4; ++c)
-                {
-                    wp[frameIndexInWriteBuffer + w * 4 + c] =
-                        static_cast<unsigned char>(components[c] / 4.0f);
-                }
+                wp[frameIndexInWriteBuffer + w] = sum.toRgbaColor();
             }
         }
 
