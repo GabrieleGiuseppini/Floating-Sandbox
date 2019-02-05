@@ -52,7 +52,7 @@ ShipPreviewControl::ShipPreviewControl(
     mPreviewBitmap->Bind(wxEVT_LEFT_DOWN, &ShipPreviewControl::OnMouseSingleClick, this);
     mPreviewBitmap->Bind(wxEVT_LEFT_DCLICK, &ShipPreviewControl::OnMouseDoubleClick, this);
 
-    mVSizer->Add(mPreviewBitmap, 1, wxEXPAND);
+    mVSizer->Add(mPreviewBitmap, 1, wxEXPAND | wxALIGN_CENTER_HORIZONTAL);
 
 
 
@@ -65,7 +65,7 @@ ShipPreviewControl::ShipPreviewControl(
     mPreviewLabel->Bind(wxEVT_LEFT_DOWN, &ShipPreviewControl::OnMouseSingleClick, this);
     mPreviewLabel->Bind(wxEVT_LEFT_DCLICK, &ShipPreviewControl::OnMouseDoubleClick, this);
 
-    mVSizer->Add(mPreviewLabel, 0, wxEXPAND);
+    mVSizer->Add(mPreviewLabel, 0, wxEXPAND | wxALIGN_CENTER_HORIZONTAL);
 
 
 
@@ -78,7 +78,7 @@ ShipPreviewControl::ShipPreviewControl(
     mFilenameLabel->Bind(wxEVT_LEFT_DOWN, &ShipPreviewControl::OnMouseSingleClick, this);
     mFilenameLabel->Bind(wxEVT_LEFT_DCLICK, &ShipPreviewControl::OnMouseDoubleClick, this);
 
-    mVSizer->Add(mFilenameLabel, 0, wxEXPAND);
+    mVSizer->Add(mFilenameLabel, 0, wxEXPAND | wxALIGN_CENTER_HORIZONTAL);
 
     mVSizer->AddSpacer(vMargin);
 
