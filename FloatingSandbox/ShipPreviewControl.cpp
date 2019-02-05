@@ -32,6 +32,7 @@ ShipPreviewControl::ShipPreviewControl(
 {
     SetBackgroundColour(wxColour("WHITE"));
 
+    SetMinSize(wxSize(width, -1));
 
     mVSizer = new wxBoxSizer(wxVERTICAL);
 
