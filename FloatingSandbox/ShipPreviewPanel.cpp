@@ -130,7 +130,7 @@ void ShipPreviewPanel::OnResized(wxSizeEvent & event)
         {
             // Rearrange
             mPreviewPanelSizer->SetCols(nCols);
-            mPreviewPanelSizer->Layout();
+            mPreviewPanel->Layout();
             mPreviewPanelSizer->SetSizeHints(mPreviewPanel);
             this->Refresh();
         }
@@ -196,10 +196,6 @@ void ShipPreviewPanel::OnDirScanned(fsDirScannedEvent & event)
     // Add panel to our sizer
     //
 
-    // TODOTEST
-    LogMessage("ShipPreviewPanel::this::Pre:", this->GetSize().GetWidth(), "x", this->GetSize().GetHeight());
-    LogMessage("ShipPreviewPanel::mPreviewPanel::Pre:", mPreviewPanel->GetSize().GetWidth(), "x", mPreviewPanel->GetSize().GetHeight());
-
     assert(nullptr != GetSizer());
     GetSizer()->Clear();
     GetSizer()->Add(mPreviewPanel, 1, wxEXPAND);
@@ -209,10 +205,6 @@ void ShipPreviewPanel::OnDirScanned(fsDirScannedEvent & event)
 
     // Re-trigger scroll bar
     this->FitInside();
-
-    // TODOTEST
-    LogMessage("ShipPreviewPanel::this::Post:", this->GetSize().GetWidth(), "x", this->GetSize().GetHeight());
-    LogMessage("ShipPreviewPanel::mPreviewPanel::Post:", mPreviewPanel->GetSize().GetWidth(), "x", mPreviewPanel->GetSize().GetHeight());
 }
 
 void ShipPreviewPanel::OnDirScanError(fsDirScanErrorEvent & event)
@@ -233,7 +225,7 @@ void ShipPreviewPanel::OnPreviewError(fsPreviewErrorEvent & event)
 
 void ShipPreviewPanel::OnDirPreviewComplete(fsDirPreviewCompleteEvent & event)
 {
-    // TODO
+    // Nop
 }
 
 int ShipPreviewPanel::CalculateTileColumns()
@@ -319,6 +311,8 @@ void ShipPreviewPanel::ScanDirectory(std::filesystem::path const & directoryPath
 {
     LogMessage("PreviewThread::ScanDirectory(", directoryPath.string(), ")");
 
+    bool isSingleCore = (std::thread::hardware_concurrency() < 2);
+
 
     //
     // Get listings and fire event
@@ -341,6 +335,12 @@ void ShipPreviewPanel::ScanDirectory(std::filesystem::path const & directoryPath
             fsEVT_DIR_SCANNED,
             this->GetId(),
             shipFilepaths));
+
+    if (isSingleCore)
+    {
+        // Give the main thread time to process this
+        std::this_thread::yield();
+    }
 
 
     //
@@ -367,6 +367,13 @@ void ShipPreviewPanel::ScanDirectory(std::filesystem::path const & directoryPath
                     this->GetId(),
                     iShip,
                     std::make_shared<ShipPreview>(std::move(shipPreview))));
+
+            if (isSingleCore)
+            {
+                // Give the main thread time to process this
+                // TODOHERE: doing it each time seems to slow down the entire processing
+                std::this_thread::yield();
+            }
         }
         catch (std::exception const & ex)
         {
