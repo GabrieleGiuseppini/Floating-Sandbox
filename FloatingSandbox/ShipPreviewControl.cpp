@@ -73,7 +73,7 @@ ShipPreviewControl::ShipPreviewControl(
     // Filename Label
     //
 
-    mFilenameLabel = new wxStaticText(this, wxID_ANY, shipFilepath.stem().string(), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER_HORIZONTAL);
+    mFilenameLabel = new wxStaticText(this, wxID_ANY, shipFilepath.filename().string(), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER_HORIZONTAL);
 
     mFilenameLabel->Bind(wxEVT_LEFT_DOWN, &ShipPreviewControl::OnMouseSingleClick, this);
     mFilenameLabel->Bind(wxEVT_LEFT_DCLICK, &ShipPreviewControl::OnMouseDoubleClick, this);
@@ -91,32 +91,39 @@ ShipPreviewControl::~ShipPreviewControl()
 {
 }
 
-void ShipPreviewControl::SetPreviewContent(
-    RgbaImageData previewImageData,
-    ShipMetadata const & shipMetadata)
+void ShipPreviewControl::SetPreviewContent(ShipPreview const & shipPreview)
 {
     //
     // Set preview image
     //
 
-    wxBitmap * bmp = new wxBitmap(
-        reinterpret_cast<char const *>(previewImageData.Data.get()),
-        previewImageData.Size.Width,
-        previewImageData.Size.Height,
-        4);
+    // TODOTEST
+    ////wxBitmap bmp(
+    ////    reinterpret_cast<char const *>(shipPreview.PreviewImage.Data.get()),
+    ////    shipPreview.PreviewImage.Size.Width,
+    ////    shipPreview.PreviewImage.Size.Height,
+    ////    4);
 
-    mPreviewBitmap->SetBitmap(*bmp);
+    ////mPreviewBitmap->SetBitmap(bmp);
 
 
     //
     // Set preview label
     //
 
-    std::string previewLabelTest = shipMetadata.ShipName;
-    if (!!shipMetadata.Author)
-        previewLabelTest += " by " + *(shipMetadata.Author);
+    std::string previewLabelText = shipPreview.Metadata.ShipName;
 
-    mPreviewLabel->SetLabel(previewLabelTest);
+    if (!!shipPreview.Metadata.YearBuilt)
+        previewLabelText += " (" + *(shipPreview.Metadata.YearBuilt) + ")";
+
+    if (!!shipPreview.Metadata.Author)
+        previewLabelText += " by " + *(shipPreview.Metadata.Author);
+
+    mPreviewLabel->SetLabel(previewLabelText);
+
+
+    // Rearrange
+    mVSizer->Layout();
 }
 
 void ShipPreviewControl::OnMouseSingleClick(wxMouseEvent & /*event*/)

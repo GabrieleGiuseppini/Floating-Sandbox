@@ -148,14 +148,17 @@ public:
     fsPreviewErrorEvent(
         wxEventType eventType,
         int winid,
+        size_t shipIndex,
         std::string errorMessage)
         : wxEvent(winid, eventType)
+        , mShipIndex(shipIndex)
         , mErrorMessage(errorMessage)
     {
     }
 
     fsPreviewErrorEvent(fsPreviewErrorEvent const & other)
         : wxEvent(other)
+        , mShipIndex(other.mShipIndex)
         , mErrorMessage(other.mErrorMessage)
     {
     }
@@ -165,12 +168,19 @@ public:
         return new fsPreviewErrorEvent(*this);
     }
 
-    std::string const & GetErrorMessage()
+    size_t GetShipindex() const
+    {
+        return mShipIndex;
+    }
+
+    std::string const & GetErrorMessage() const
     {
         return mErrorMessage;
     }
 
 private:
+
+    size_t const mShipIndex;
     std::string const mErrorMessage;
 };
 
@@ -210,6 +220,14 @@ class ShipPreviewPanel : public wxScrolled<wxPanel>
 {
 public:
 
+    static constexpr int PreviewWidth = 200;
+    static constexpr int PreviewHeight = 100;
+    static constexpr int PreviewMargin = 5;
+    static constexpr int PreviewTotalWidth = PreviewWidth + 2 * PreviewMargin;
+    static constexpr int PreviewTotalHeight = PreviewHeight;
+
+public:
+
     ShipPreviewPanel(
         wxWindow* parent,
         ResourceLoader const & resourceLoader);
@@ -234,7 +252,7 @@ private:
     void OnPreviewError(fsPreviewErrorEvent & event);
     void OnDirPreviewComplete(fsDirPreviewCompleteEvent & event);
 
-    void ArrangePreviewTiles(wxGridSizer * sizer);
+    int CalculateTileColumns();
 
 private:
 

@@ -9,10 +9,6 @@
 
 #include <GameCore/Log.h>
 
-constexpr int PreviewWidth = 200;
-constexpr int PreviewHeight = 100;
-constexpr int PreviewMargin = 5;
-
 wxDEFINE_EVENT(fsEVT_DIR_SCANNED, fsDirScannedEvent);
 wxDEFINE_EVENT(fsEVT_DIR_SCAN_ERROR, fsDirScanErrorEvent);
 wxDEFINE_EVENT(fsEVT_PREVIEW_READY, fsPreviewReadyEvent);
@@ -45,7 +41,7 @@ ShipPreviewPanel::ShipPreviewPanel(
     SetScrollRate(5, 5);
 
     // Ensure one tile always fits
-    SetMinSize(wxSize(PreviewWidth + 2 * PreviewMargin, PreviewHeight));
+    SetMinSize(wxSize(PreviewTotalWidth, PreviewTotalHeight));
 
     Bind(wxEVT_SIZE, &ShipPreviewPanel::OnResized, this, this->GetId());
 
@@ -122,11 +118,25 @@ void ShipPreviewPanel::OnResized(wxSizeEvent & event)
     mWidth = event.GetSize().GetWidth();
     mHeight = event.GetSize().GetHeight();
 
-    // See if need to rearrange
+    // Rearrange
     if (nullptr != mPreviewPanelSizer)
     {
-        ArrangePreviewTiles(mPreviewPanelSizer);
+        //
+        // Rearrange tiles based on width
+        //
+
+        int nCols = CalculateTileColumns();
+        if (nCols != mPreviewPanelSizer->GetCols())
+        {
+            // Rearrange
+            mPreviewPanelSizer->SetCols(nCols);
+            mPreviewPanelSizer->Layout();
+            mPreviewPanelSizer->SetSizeHints(mPreviewPanel);
+            this->Refresh();
+        }
     }
+
+    event.Skip();
 }
 
 void ShipPreviewPanel::OnDirScanned(fsDirScannedEvent & event)
@@ -139,7 +149,7 @@ void ShipPreviewPanel::OnDirScanned(fsDirScannedEvent & event)
     newPreviewPanel->Hide();
     newPreviewPanel->Create(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
-    wxGridSizer * newPreviewPanelSizer = new wxGridSizer(1, 0, 0);
+    wxGridSizer * newPreviewPanelSizer = new wxGridSizer(CalculateTileColumns(), 0, 0);
 
 
     //
@@ -165,13 +175,6 @@ void ShipPreviewPanel::OnDirScanned(fsDirScannedEvent & event)
         newPreviewPanelSizer->Add(shipPreviewControl, 0, wxALIGN_CENTRE_HORIZONTAL | wxALIGN_TOP);
     }
 
-
-    //
-    // Arrange controls
-    //
-
-    ArrangePreviewTiles(newPreviewPanelSizer);
-
     newPreviewPanel->SetSizerAndFit(newPreviewPanelSizer);
 
 
@@ -188,7 +191,15 @@ void ShipPreviewPanel::OnDirScanned(fsDirScannedEvent & event)
     mPreviewPanel = newPreviewPanel;
     mPreviewPanelSizer = newPreviewPanelSizer;
 
+
+    //
     // Add panel to our sizer
+    //
+
+    // TODOTEST
+    LogMessage("ShipPreviewPanel::this::Pre:", this->GetSize().GetWidth(), "x", this->GetSize().GetHeight());
+    LogMessage("ShipPreviewPanel::mPreviewPanel::Pre:", mPreviewPanel->GetSize().GetWidth(), "x", mPreviewPanel->GetSize().GetHeight());
+
     assert(nullptr != GetSizer());
     GetSizer()->Clear();
     GetSizer()->Add(mPreviewPanel, 1, wxEXPAND);
@@ -198,6 +209,10 @@ void ShipPreviewPanel::OnDirScanned(fsDirScannedEvent & event)
 
     // Re-trigger scroll bar
     this->FitInside();
+
+    // TODOTEST
+    LogMessage("ShipPreviewPanel::this::Post:", this->GetSize().GetWidth(), "x", this->GetSize().GetHeight());
+    LogMessage("ShipPreviewPanel::mPreviewPanel::Post:", mPreviewPanel->GetSize().GetWidth(), "x", mPreviewPanel->GetSize().GetHeight());
 }
 
 void ShipPreviewPanel::OnDirScanError(fsDirScanErrorEvent & event)
@@ -207,7 +222,8 @@ void ShipPreviewPanel::OnDirScanError(fsDirScanErrorEvent & event)
 
 void ShipPreviewPanel::OnPreviewReady(fsPreviewReadyEvent & event)
 {
-    // TODO
+    assert(event.GetShipIndex() < mPreviewControls.size());
+    mPreviewControls[event.GetShipIndex()]->SetPreviewContent(*(event.GetShipPreview()));
 }
 
 void ShipPreviewPanel::OnPreviewError(fsPreviewErrorEvent & event)
@@ -220,23 +236,12 @@ void ShipPreviewPanel::OnDirPreviewComplete(fsDirPreviewCompleteEvent & event)
     // TODO
 }
 
-void ShipPreviewPanel::ArrangePreviewTiles(wxGridSizer * sizer)
+int ShipPreviewPanel::CalculateTileColumns()
 {
-    //
-    // Rearrange tiles based on width
-    //
-
-    int nCols = static_cast<int>(static_cast<float>(mWidth) / static_cast<float>(PreviewWidth + 2 * PreviewMargin));
+    int nCols = static_cast<int>(static_cast<float>(mWidth) / static_cast<float>(PreviewTotalWidth));
     assert(nCols >= 1);
 
-    LogMessage("TODO:", nCols);
-
-    if (nCols != sizer->GetCols())
-    {
-        // Rearrange
-        sizer->SetCols(nCols);
-        sizer->Layout();
-    }
+    return nCols;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -342,13 +347,37 @@ void ShipPreviewPanel::ScanDirectory(std::filesystem::path const & directoryPath
     // Process all files and create previews
     //
 
-    for (auto const & shipFilepath : shipFilepaths)
+    for (size_t iShip = 0; iShip < shipFilepaths.size(); ++iShip)
     {
         // Check whether we have been interrupted
         if (!!mPanelToThreadMessage)
             return;
 
-        // TODO
+        try
+        {
+            // Load preview
+            auto shipPreview = ShipPreview::Load(
+                shipFilepaths[iShip],
+                ImageSize(PreviewWidth, PreviewHeight));
+
+            // Fire event
+            QueueEvent(
+                new fsPreviewReadyEvent(
+                    fsEVT_PREVIEW_READY,
+                    this->GetId(),
+                    iShip,
+                    std::make_shared<ShipPreview>(std::move(shipPreview))));
+        }
+        catch (std::exception const & ex)
+        {
+            // Fire error event
+            QueueEvent(
+                new fsPreviewErrorEvent(
+                    fsEVT_PREVIEW_ERROR,
+                    this->GetId(),
+                    iShip,
+                    ex.what()));
+        }
     }
 
 

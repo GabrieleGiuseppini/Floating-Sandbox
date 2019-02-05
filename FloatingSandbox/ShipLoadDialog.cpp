@@ -140,7 +140,10 @@ ShipLoadDialog::ShipLoadDialog(
 
     SetSizerAndFit(vSizer);
 
-    SetSize(wxSize(800, 600));
+    // Size so that we have 3 columns of previews right away
+    // TODOHERE: verify width is minimal
+    constexpr int Width = MinDirCtrlWidth + ShipPreviewPanel::PreviewTotalWidth * 3 + 50;
+    SetSize(wxSize(Width, 600 * Width / 800));
 
     Centre();
 }

@@ -5,9 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include <Game/ShipMetadata.h>
-
-#include <GameCore/ImageData.h>
+#include <Game/ShipPreview.h>
 
 #include <wx/wx.h>
 
@@ -112,9 +110,7 @@ public:
 
     virtual ~ShipPreviewControl();
 
-    void SetPreviewContent(
-        RgbaImageData previewImageData,
-        ShipMetadata const & shipMetadata);
+    void SetPreviewContent(ShipPreview const & shipPreview);
 
 private:
 
