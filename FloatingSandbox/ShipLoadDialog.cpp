@@ -82,12 +82,19 @@ ShipLoadDialog::ShipLoadDialog(
 
 
     //
-    // Directories combo
+    // Recent directories combo
     //
 
-    wxBoxSizer * hSizer2 = new wxBoxSizer(wxHORIZONTAL);
+    // |  | Label |  |
+    // |  | Combo |  |
 
+    wxBoxSizer * hSizer2 = new wxBoxSizer(wxHORIZONTAL);
     hSizer2->AddSpacer(10);
+
+    wxBoxSizer * vSizer2 = new wxBoxSizer(wxVERTICAL);
+
+    wxStaticText * recentDirsLabel = new wxStaticText(this, wxID_ANY, "Recent directories:");
+    vSizer2->Add(recentDirsLabel, 0, wxALIGN_LEFT);
 
     wxArrayString comboChoices;
     mDirectoriesComboBox = new wxComboBox(
@@ -98,8 +105,9 @@ ShipLoadDialog::ShipLoadDialog(
         wxDefaultSize,
         comboChoices,
         wxCB_DROPDOWN | wxCB_READONLY);
+    vSizer2->Add(mDirectoriesComboBox, 0, wxEXPAND);
 
-    hSizer2->Add(mDirectoriesComboBox, 1, 0);
+    hSizer2->Add(vSizer2, 1, 0);
 
     hSizer2->AddSpacer(10);
 
@@ -141,8 +149,7 @@ ShipLoadDialog::ShipLoadDialog(
     SetSizerAndFit(vSizer);
 
     // Size so that we have 3 columns of previews right away
-    // TODOHERE: verify width is minimal
-    constexpr int Width = MinDirCtrlWidth + ShipPreviewPanel::MinPreviewWidth * 3 + 50;
+    constexpr int Width = MinDirCtrlWidth + ShipPreviewPanel::MinPreviewWidth * 3 + 20;
     SetSize(wxSize(Width, 600 * Width / 800));
 
     Centre();

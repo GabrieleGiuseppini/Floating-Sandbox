@@ -170,7 +170,7 @@ public:
         return new fsPreviewErrorEvent(*this);
     }
 
-    size_t GetShipindex() const
+    size_t GetShipIndex() const
     {
         return mShipIndex;
     }
@@ -224,7 +224,7 @@ public:
 
     static constexpr int MinPreviewHGap = 5;
     static constexpr int MinPreviewWidth = ShipPreviewControl::Width + 2 * MinPreviewHGap;
-    static constexpr int PreviewVGap = 5;
+    static constexpr int PreviewVGap = 8;
 
 public:
 

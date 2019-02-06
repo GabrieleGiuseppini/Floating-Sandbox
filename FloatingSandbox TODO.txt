@@ -1301,20 +1301,16 @@ Render:
 			+ Resize:
 				+ Set min size for dir tree and for preview panel
 			= Combo:
-				- Last N from UIPreferences
+				+ Last N from UIPreferences
 				- OnSelection:
 					- Tell DirCtrl
 						- See if it generates DirSelected event
 						- If not, tell also PreviewPanel
-				- TODO: what to do with current dir? Allow editable?
-					- If allow editable:
-						- Each dir tree selection sets text in combo
-						- OnEdit/Enter: 
-							- Exactly as OnSelection
+				- Nothing to do with current dir
 			+ When dir tree chooses, call ShipPreviewPanel::SetDirectory
 			+ When ship is loaded, call UIPreferences::AddShipLoadDirectory
 			+ No use as modal, do with Open() which returns opt<path>
-			= Hitting OK with preview just selected
+			+ Hitting OK with preview just selected
 		= UIPreferences
 			+ Created by main frame and passed around as shared_ptr
 			- Loads and Saves to uncustomizable file path
@@ -1343,11 +1339,11 @@ Render:
 				- Name
 				- Dimensions
 				- Year
+					- Fill-in years @ ships
 				- Author
 			- Border when selected
-				- 
-
-
+				- Matrioska
+		- Cleanup Ships directory (make .dat's)
 
 - Sounds:
 	- Ship may come with custom sound(s) for horns

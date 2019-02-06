@@ -118,6 +118,7 @@ public:
     virtual ~ShipPreviewControl();
 
     void SetPreviewContent(ShipPreview const & shipPreview);
+    void SetPreviewContent(RgbaImageData const & image, std::string const & description);
 
 private:
 

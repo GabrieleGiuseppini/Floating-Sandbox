@@ -207,7 +207,8 @@ void ShipPreviewPanel::OnPreviewReady(fsPreviewReadyEvent & event)
 
 void ShipPreviewPanel::OnPreviewError(fsPreviewErrorEvent & event)
 {
-    // TODO
+    assert(event.GetShipIndex() < mPreviewControls.size());
+    mPreviewControls[event.GetShipIndex()]->SetPreviewContent(mErrorImage, event.GetErrorMessage());
 }
 
 void ShipPreviewPanel::OnDirPreviewComplete(fsDirPreviewCompleteEvent & event)
@@ -257,16 +258,13 @@ void ShipPreviewPanel::RunPreviewThread()
         // Lock now so that we can guarantee that the condition variable
         // won't be set before we're waiting for it
         messageThreadLock.lock();
-        OutputDebugStringA("TODO: entered lock");
         if (!mPanelToThreadMessage)
         {
-            OutputDebugStringA("TODO: waiting for event");
             // No message, wait
             // Mutex is currently locked, and it will be unlocked while we are waiting
             mPanelToThreadMessageEvent.wait(messageThreadLock);
             // Mutex is now locked again
         }
-        OutputDebugStringA("TODO: entered lock 2");
 
         // Got a message, extract it (we're holding the lock)
         assert(!!mPanelToThreadMessage);

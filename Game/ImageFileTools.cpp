@@ -117,13 +117,15 @@ RgbaImageData ImageFileTools::LoadImageRgbaLowerLeftAndResize(
         ResizeInfo(
             [maxSize](ImageSize const & originalImageSize)
             {
-                auto maxOldDimension = originalImageSize.Width > maxSize.Height ? originalImageSize.Width : originalImageSize.Height;
-                auto minNewDimension = maxSize.Width < maxSize.Height ? maxSize.Width : maxSize.Height;
+                float wShrinkFactor = static_cast<float>(maxSize.Width) / static_cast<float>(originalImageSize.Width);
+                float hShrinkFactor = static_cast<float>(maxSize.Height) / static_cast<float>(originalImageSize.Height);
+                float shrinkFactor = std::min(
+                    std::min(wShrinkFactor, hShrinkFactor),
+                    1.0f);
 
-                float magnificationFactor = static_cast<float>(minNewDimension) / static_cast<float>(maxOldDimension);
                 return ImageSize(
-                    static_cast<int>(round(static_cast<float>(originalImageSize.Width) * magnificationFactor)),
-                    static_cast<int>(round(static_cast<float>(originalImageSize.Height) * magnificationFactor)));
+                    static_cast<int>(round(static_cast<float>(originalImageSize.Width) * shrinkFactor)),
+                    static_cast<int>(round(static_cast<float>(originalImageSize.Height) * shrinkFactor)));
             },
             ILU_BILINEAR));
 }
@@ -297,7 +299,7 @@ void ImageFileTools::InternalSaveImage(
         imageSize.Width,
         imageSize.Height,
         1,
-        bpp,
+        static_cast<ILubyte>(bpp),
         format,
         IL_UNSIGNED_BYTE,
         const_cast<void *>(imageData));

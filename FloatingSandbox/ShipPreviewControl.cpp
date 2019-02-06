@@ -48,10 +48,12 @@ ShipPreviewControl::ShipPreviewControl(
     mImagePanel->Bind(wxEVT_LEFT_DOWN, &ShipPreviewControl::OnMouseSingleClick, this);
     mImagePanel->Bind(wxEVT_LEFT_DCLICK, &ShipPreviewControl::OnMouseDoubleClick, this);
 
+    auto imageSizer = new wxBoxSizer(wxVERTICAL);
+    mImagePanel->SetSizer(imageSizer);
+
     // Set initial content to "Wait" image
     SetImageContent(mWaitImage);
 
-    // TODO: see if gets v-centered when smaller
     mVSizer->Add(mImagePanel, 1, wxALIGN_CENTER_HORIZONTAL);
 
 
@@ -60,7 +62,14 @@ ShipPreviewControl::ShipPreviewControl(
     // Description Label
     //
 
-    mDescriptionLabel = new wxStaticText(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER_HORIZONTAL);
+    mDescriptionLabel = new wxStaticText(
+        this,
+        wxID_ANY,
+        "",
+        wxDefaultPosition,
+        wxSize(Width, -1),
+        wxST_NO_AUTORESIZE | wxALIGN_CENTER_HORIZONTAL | wxST_ELLIPSIZE_END);
+    mDescriptionLabel->SetMaxSize(wxSize(Width, -1));
 
     mDescriptionLabel->Bind(wxEVT_LEFT_DOWN, &ShipPreviewControl::OnMouseSingleClick, this);
     mDescriptionLabel->Bind(wxEVT_LEFT_DCLICK, &ShipPreviewControl::OnMouseDoubleClick, this);
@@ -73,7 +82,14 @@ ShipPreviewControl::ShipPreviewControl(
     // Filename Label
     //
 
-    mFilenameLabel = new wxStaticText(this, wxID_ANY, shipFilepath.filename().string(), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER_HORIZONTAL);
+    mFilenameLabel = new wxStaticText(
+        this,
+        wxID_ANY,
+        shipFilepath.filename().string(),
+        wxDefaultPosition,
+        wxSize(Width, -1),
+        wxST_NO_AUTORESIZE | wxALIGN_CENTER_HORIZONTAL | wxST_ELLIPSIZE_END);
+    mFilenameLabel->SetMaxSize(wxSize(Width, -1));
 
     mFilenameLabel->Bind(wxEVT_LEFT_DOWN, &ShipPreviewControl::OnMouseSingleClick, this);
     mFilenameLabel->Bind(wxEVT_LEFT_DCLICK, &ShipPreviewControl::OnMouseDoubleClick, this);
@@ -99,15 +115,7 @@ ShipPreviewControl::~ShipPreviewControl()
 void ShipPreviewControl::SetPreviewContent(ShipPreview const & shipPreview)
 {
     //
-    // Set image
-    //
-
-    SetImageContent(shipPreview.PreviewImage);
-    mImagePanel->Refresh();
-
-
-    //
-    // Set description label
+    // Create description
     //
 
     std::string descriptionLabelText = shipPreview.Metadata.ShipName;
@@ -120,6 +128,24 @@ void ShipPreviewControl::SetPreviewContent(ShipPreview const & shipPreview)
 
     mDescriptionLabel->SetLabel(descriptionLabelText);
 
+
+    //
+    // Set content
+    //
+
+    SetPreviewContent(
+        shipPreview.PreviewImage,
+        descriptionLabelText);
+}
+
+void ShipPreviewControl::SetPreviewContent(
+    RgbaImageData const & image,
+    std::string const & description)
+{
+    SetImageContent(image);
+    mImagePanel->Refresh();
+
+    mDescriptionLabel->SetLabel(description);
 
     // Rearrange
     mVSizer->Layout();
@@ -171,7 +197,7 @@ void ShipPreviewControl::SetImageContent(RgbaImageData const & imageData)
     wxPixelData<wxBitmap, wxAlphaPixelFormat> pixelData(bitmap);
     if (!pixelData)
     {
-        throw std::exception("Cannot get native pixel data");
+        throw std::exception("Cannot get bitmap pixel data");
     }
 
     assert(pixelData.GetWidth() == imageData.Size.Width);
@@ -179,6 +205,7 @@ void ShipPreviewControl::SetImageContent(RgbaImageData const & imageData)
 
     rgbaColor const * readIt = imageData.Data.get();
     auto writeIt = pixelData.GetPixels();
+    writeIt.OffsetY(pixelData, imageData.Size.Height - 1);
     for (int y = 0; y < imageData.Size.Height; ++y)
     {
         // Save current iterator
@@ -194,7 +221,7 @@ void ShipPreviewControl::SetImageContent(RgbaImageData const & imageData)
 
         // Move write iterator to next row
         writeIt = rowStart;
-        writeIt.OffsetY(pixelData, 1);
+        writeIt.OffsetY(pixelData, -1);
     }
 
 
@@ -216,6 +243,8 @@ void ShipPreviewControl::SetImageContent(RgbaImageData const & imageData)
     mImageGenericStaticBitmap->Bind(wxEVT_LEFT_DOWN, &ShipPreviewControl::OnMouseSingleClick, this);
     mImageGenericStaticBitmap->Bind(wxEVT_LEFT_DCLICK, &ShipPreviewControl::OnMouseDoubleClick, this);
 
-    // TODO: see if needed
-    mImagePanel->Refresh();
+    mImagePanel->GetSizer()->AddStretchSpacer(2);
+    mImagePanel->GetSizer()->Add(mImageGenericStaticBitmap, 0, wxALIGN_CENTRE_HORIZONTAL);
+    mImagePanel->GetSizer()->AddStretchSpacer(1);
+    mImagePanel->GetSizer()->Layout();
 }
