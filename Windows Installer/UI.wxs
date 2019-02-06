@@ -16,6 +16,7 @@
         <Binary Id="OkBmp" SourceFile="OkButton.bmp" />
         <Property Id="OkControlContent">OkBmp</Property>
 
+        <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
         <Property Id="DO_LAUNCH_APP" Value="1" />
 
         <UI Id="FloatingSandboxUI">
@@ -28,11 +29,21 @@
 
             <Dialog Id="FSStarterDlg" Width="370" Height="270" Title="Ready to Install [ProductName]!" TrackDiskSpace="no">
                 <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="80" TabSkip="no" FixedSize="yes" Text="FSBannerBitmap" />
-                <Control Id="InstallText" Type="Text" X="25" Y="95" Width="320" Height="10" Hidden="no" Text="You are one click away from installing [ProductName]. Are you ready to go?" />
-                <Control Id="Install" Type="PushButton" X="85" Y="110" Width="200" Height="77" Default="yes" Bitmap="yes" FixedSize="yes" Text="[InstallControlContent]">
-                    <Publish Event="EndDialog" Value="Return">1</Publish>
+                <Control Id="Folder" Type="PathEdit" X="5" Y="95" Width="300" Height="18" Property="WIXUI_INSTALLDIR" Indirect="yes" />
+                <Control Id="ChangeFolder" Type="PushButton" X="310" Y="95" Width="56" Height="17" Text="&amp;Change...">
+                    <Publish Property="_BrowseProperty" Value="[WIXUI_INSTALLDIR]" Order="1">1</Publish>
+                    <Publish Event="SpawnDialog" Value="BrowseDlg" Order="2">1</Publish>
                 </Control>
-                <Control Id="Cancel" Type="PushButton" X="85" Y="190" Width="200" Height="77" Cancel="yes" Bitmap="yes" FixedSize="yes" Text="[CancelControlContent]">
+                <!--
+                <Control Id="InstallText" Type="Text" X="75" Y="110" Width="320" Height="10" Hidden="no" Text="Are you ready to go?" />
+                -->
+                <Control Id="Install" Type="PushButton" X="85" Y="125" Width="200" Height="77" Default="yes" Bitmap="yes" FixedSize="yes" Text="[InstallControlContent]">
+                    <Publish Event="SetTargetPath" Value="[WIXUI_INSTALLDIR]" Order="1">1</Publish>
+                    <Publish Event="DoAction" Value="WixUIValidatePath" Order="2">1</Publish>
+                    <Publish Event="SpawnDialog" Value="InvalidDirDlg" Order="3"><![CDATA[WIXUI_INSTALLDIR_VALID<>"1"]]></Publish>
+                    <Publish Event="EndDialog" Value="Return" Order="4">WIXUI_INSTALLDIR_VALID="1"</Publish>
+                </Control>
+                <Control Id="Cancel" Type="PushButton" X="85" Y="195" Width="200" Height="77" Cancel="yes" Bitmap="yes" FixedSize="yes" Text="[CancelControlContent]">
                     <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
                 </Control>
             </Dialog>
@@ -75,7 +86,7 @@
 
             <Dialog Id="FSUserExit" Width="370" Height="270" Title="[ProductName] Not Installed">
                 <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="80" TabSkip="no" FixedSize="yes" Text="FSBannerBitmap" />
-                <Control Id="InterruptedText" Type="Text" X="20" Y="117" Width="320" Height="80" Hidden="no" Text="[ProductName] setup was interrupted. Your system has not been modified. To install [ProductName] at a later time, please run this installation again." />
+                <Control Id="InterruptedText" Type="Text" X="20" Y="117" Width="320" Height="20" Hidden="no" Text="[ProductName] setup was interrupted. Your system has not been modified. To install [ProductName] at a later time, please run this installation again." />
                 <Control Id="Finish" Type="PushButton" X="85" Y="165" Width="200" Height="77" Default="yes" Bitmap="yes" FixedSize="yes" Text="[OkControlContent]">
                     <Publish Event="EndDialog" Value="Exit">1</Publish>
                     <Condition Action="enable">1</Condition>
@@ -86,6 +97,8 @@
             <DialogRef Id="FatalError" />
             <DialogRef Id="FilesInUse" />
             <DialogRef Id="ErrorDlg" />
+            <DialogRef Id="BrowseDlg" />
+            <DialogRef Id="InvalidDirDlg" />
 
             <InstallUISequence>
                 <Show Dialog="FSStarterDlg" Before="FSProgressDlg">NOT Installed</Show>
