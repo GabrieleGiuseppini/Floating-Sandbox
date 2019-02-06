@@ -7,66 +7,65 @@
 
 #include <GameCore/Log.h>
 
+#include <wx/rawbmp.h>
+
 wxDEFINE_EVENT(fsEVT_SHIP_FILE_SELECTED, fsShipFileSelectedEvent);
 wxDEFINE_EVENT(fsEVT_SHIP_FILE_CHOSEN, fsShipFileChosenEvent);
 
 ShipPreviewControl::ShipPreviewControl(
     wxWindow * parent,
     std::filesystem::path const & shipFilepath,
-    int width,
-    int height,
     int vMargin,
-    std::shared_ptr<wxBitmap> waitBitmap,
-    std::shared_ptr<wxBitmap> errorBitmap)
+    RgbaImageData const & waitImage,
+    RgbaImageData const & errorImage)
     : wxPanel(
         parent,
         wxID_ANY,
-        wxDefaultPosition,
-        wxSize(width, height),
-        0)
+        wxDefaultPosition)
+    , mImageGenericStaticBitmap(nullptr)
     , mShipFilepath(shipFilepath)
-    , mWidth(width)
-    , mHeight(height)
-    , mWaitBitmap(std::move(waitBitmap))
-    , mErrorBitmap(std::move(errorBitmap))
+    , mWaitImage(waitImage)
+    , mErrorImage(errorImage)
 {
     SetBackgroundColour(wxColour("WHITE"));
-
-    SetMinSize(wxSize(width, -1));
 
     mVSizer = new wxBoxSizer(wxVERTICAL);
 
 
     //
-    // Preview image
+    // Image panel
     //
 
-    mPreviewBitmap = new wxStaticBitmap(
+    mImagePanel = new wxPanel(
         this,
         wxID_ANY,
-        *mWaitBitmap,
         wxDefaultPosition,
-        mWaitBitmap->GetSize());
+        wxSize(ImageWidth, ImageHeight));
 
-    mPreviewBitmap->SetScaleMode(wxStaticBitmap::Scale_AspectFill);
+    mImagePanel->SetMinSize(wxSize(ImageWidth, ImageHeight));
+    mImagePanel->SetMaxSize(wxSize(ImageWidth, ImageHeight));
 
-    mPreviewBitmap->Bind(wxEVT_LEFT_DOWN, &ShipPreviewControl::OnMouseSingleClick, this);
-    mPreviewBitmap->Bind(wxEVT_LEFT_DCLICK, &ShipPreviewControl::OnMouseDoubleClick, this);
+    mImagePanel->Bind(wxEVT_LEFT_DOWN, &ShipPreviewControl::OnMouseSingleClick, this);
+    mImagePanel->Bind(wxEVT_LEFT_DCLICK, &ShipPreviewControl::OnMouseDoubleClick, this);
 
-    mVSizer->Add(mPreviewBitmap, 1, wxALIGN_CENTER_HORIZONTAL);
+    // Set initial content to "Wait" image
+    SetImageContent(mWaitImage);
+
+    // TODO: see if gets v-centered when smaller
+    mVSizer->Add(mImagePanel, 1, wxALIGN_CENTER_HORIZONTAL);
 
 
 
     //
-    // Preview Label
+    // Description Label
     //
 
-    mPreviewLabel = new wxStaticText(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER_HORIZONTAL);
+    mDescriptionLabel = new wxStaticText(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER_HORIZONTAL);
 
-    mPreviewLabel->Bind(wxEVT_LEFT_DOWN, &ShipPreviewControl::OnMouseSingleClick, this);
-    mPreviewLabel->Bind(wxEVT_LEFT_DCLICK, &ShipPreviewControl::OnMouseDoubleClick, this);
+    mDescriptionLabel->Bind(wxEVT_LEFT_DOWN, &ShipPreviewControl::OnMouseSingleClick, this);
+    mDescriptionLabel->Bind(wxEVT_LEFT_DCLICK, &ShipPreviewControl::OnMouseDoubleClick, this);
 
-    mVSizer->Add(mPreviewLabel, 0, wxEXPAND);
+    mVSizer->Add(mDescriptionLabel, 0, wxEXPAND);
 
 
 
@@ -80,6 +79,11 @@ ShipPreviewControl::ShipPreviewControl(
     mFilenameLabel->Bind(wxEVT_LEFT_DCLICK, &ShipPreviewControl::OnMouseDoubleClick, this);
 
     mVSizer->Add(mFilenameLabel, 0, wxEXPAND);
+
+
+    //
+    // Bottom margin
+    //
 
     mVSizer->AddSpacer(vMargin);
 
@@ -95,32 +99,26 @@ ShipPreviewControl::~ShipPreviewControl()
 void ShipPreviewControl::SetPreviewContent(ShipPreview const & shipPreview)
 {
     //
-    // Set preview image
+    // Set image
     //
 
-    // TODOTEST
-    ////wxBitmap bmp(
-    ////    reinterpret_cast<char const *>(shipPreview.PreviewImage.Data.get()),
-    ////    shipPreview.PreviewImage.Size.Width,
-    ////    shipPreview.PreviewImage.Size.Height,
-    ////    4);
-
-    ////mPreviewBitmap->SetBitmap(bmp);
+    SetImageContent(shipPreview.PreviewImage);
+    mImagePanel->Refresh();
 
 
     //
-    // Set preview label
+    // Set description label
     //
 
-    std::string previewLabelText = shipPreview.Metadata.ShipName;
+    std::string descriptionLabelText = shipPreview.Metadata.ShipName;
 
     if (!!shipPreview.Metadata.YearBuilt)
-        previewLabelText += " (" + *(shipPreview.Metadata.YearBuilt) + ")";
+        descriptionLabelText += " (" + *(shipPreview.Metadata.YearBuilt) + ")";
 
     if (!!shipPreview.Metadata.Author)
-        previewLabelText += " by " + *(shipPreview.Metadata.Author);
+        descriptionLabelText += " by " + *(shipPreview.Metadata.Author);
 
-    mPreviewLabel->SetLabel(previewLabelText);
+    mDescriptionLabel->SetLabel(descriptionLabelText);
 
 
     // Rearrange
@@ -133,8 +131,7 @@ void ShipPreviewControl::OnMouseSingleClick(wxMouseEvent & /*event*/)
     // Set border
     //
 
-    this->SetWindowStyle(wxBORDER_SIMPLE);
-    // TODO: if this works, need "Select/Deselect" invoked by panel
+    // TODO: with Matrioska panels
 
 
     //
@@ -161,4 +158,64 @@ void ShipPreviewControl::OnMouseDoubleClick(wxMouseEvent & /*event*/)
         mShipFilepath);
 
     ProcessWindowEvent(event);
+}
+
+void ShipPreviewControl::SetImageContent(RgbaImageData const & imageData)
+{
+    //
+    // Create bitmap with content
+    //
+
+    wxBitmap bitmap(imageData.Size.Width, imageData.Size.Height, 32);
+
+    wxPixelData<wxBitmap, wxAlphaPixelFormat> pixelData(bitmap);
+    if (!pixelData)
+    {
+        throw std::exception("Cannot get native pixel data");
+    }
+
+    assert(pixelData.GetWidth() == imageData.Size.Width);
+    assert(pixelData.GetHeight() == imageData.Size.Height);
+
+    rgbaColor const * readIt = imageData.Data.get();
+    auto writeIt = pixelData.GetPixels();
+    for (int y = 0; y < imageData.Size.Height; ++y)
+    {
+        // Save current iterator
+        auto rowStart = writeIt;
+
+        for (int x = 0; x < imageData.Size.Width; ++x, ++readIt, ++writeIt)
+        {
+            writeIt.Red() = readIt->r;
+            writeIt.Green() = readIt->g;
+            writeIt.Blue() = readIt->b;
+            writeIt.Alpha() = readIt->a;
+        }
+
+        // Move write iterator to next row
+        writeIt = rowStart;
+        writeIt.OffsetY(pixelData, 1);
+    }
+
+
+    //
+    // Create new static bitmap
+    //
+
+    // Destroy previous static bitmap
+    if (nullptr != mImageGenericStaticBitmap)
+        mImageGenericStaticBitmap->Destroy();
+
+    mImageGenericStaticBitmap = new wxGenericStaticBitmap(
+        mImagePanel,
+        wxID_ANY,
+        bitmap,
+        wxDefaultPosition,
+        wxSize(ImageWidth, ImageHeight));
+
+    mImageGenericStaticBitmap->Bind(wxEVT_LEFT_DOWN, &ShipPreviewControl::OnMouseSingleClick, this);
+    mImageGenericStaticBitmap->Bind(wxEVT_LEFT_DCLICK, &ShipPreviewControl::OnMouseDoubleClick, this);
+
+    // TODO: see if needed
+    mImagePanel->Refresh();
 }

@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #include "ShipPreviewPanel.h"
 
+#include <Game/ImageFileTools.h>
 #include <Game/ShipDefinitionFile.h>
 
 #include <GameCore/Log.h>
@@ -29,6 +30,8 @@ ShipPreviewPanel::ShipPreviewPanel(
     , mPreviewPanel(nullptr)
     , mPreviewPanelSizer(nullptr)
     , mPreviewControls()
+    , mWaitImage(ImageFileTools::LoadImageRgbaLowerLeft(resourceLoader.GetBitmapFilepath("ship_preview_wait")))
+    , mErrorImage(ImageFileTools::LoadImageRgbaLowerLeft(resourceLoader.GetBitmapFilepath("ship_preview_error")))
     , mCurrentDirectory()
     // Preview Thread
     , mPreviewThread()
@@ -41,7 +44,7 @@ ShipPreviewPanel::ShipPreviewPanel(
     SetScrollRate(5, 5);
 
     // Ensure one tile always fits
-    SetMinSize(wxSize(PreviewTotalWidth, PreviewTotalHeight));
+    SetMinSize(wxSize(MinPreviewWidth, -1));
 
     Bind(wxEVT_SIZE, &ShipPreviewPanel::OnResized, this, this->GetId());
 
@@ -52,19 +55,6 @@ ShipPreviewPanel::ShipPreviewPanel(
     Bind(fsEVT_PREVIEW_ERROR, &ShipPreviewPanel::OnPreviewError, this);
     Bind(fsEVT_DIR_PREVIEW_COMPLETE, &ShipPreviewPanel::OnDirPreviewComplete, this);
 
-
-    //
-    // Load bitmaps
-    //
-
-    mWaitBitmap = std::make_shared<wxBitmap>(
-        resourceLoader.GetBitmapFilepath("ship_preview_wait").string(),
-        wxBITMAP_TYPE_PNG);
-
-    mErrorBitmap = std::make_shared<wxBitmap>(
-        resourceLoader.GetBitmapFilepath("ship_preview_error").string(),
-        wxBITMAP_TYPE_PNG);
-
     // Make our own sizer
     wxBoxSizer * panelSizer = new wxBoxSizer(wxVERTICAL);
     SetSizer(panelSizer);
@@ -72,6 +62,11 @@ ShipPreviewPanel::ShipPreviewPanel(
 
 ShipPreviewPanel::~ShipPreviewPanel()
 {
+    // Stop thread
+    if (mPreviewThread.joinable())
+    {
+        ShutdownPreviewThread();
+    }
 }
 
 void ShipPreviewPanel::OnOpen()
@@ -85,13 +80,7 @@ void ShipPreviewPanel::OnClose()
 {
     // Stop thread
     assert(mPreviewThread.joinable());
-    mPanelToThreadMessageLock.lock();
-    mPanelToThreadMessage.reset(new PanelToThreadMessage(PanelToThreadMessage::MakeExitMessage()));
-    mPanelToThreadMessageEvent.notify_one();
-    mPanelToThreadMessageLock.unlock();
-
-    // Wait for thread to be done
-    mPreviewThread.join();
+    ShutdownPreviewThread();
 }
 
 void ShipPreviewPanel::SetDirectory(std::filesystem::path const & directoryPath)
@@ -163,11 +152,9 @@ void ShipPreviewPanel::OnDirScanned(fsDirScannedEvent & event)
         auto shipPreviewControl = new ShipPreviewControl(
             newPreviewPanel,
             shipFilepath,
-            PreviewWidth,
-            PreviewHeight,
-            PreviewMargin,
-            mWaitBitmap,
-            mErrorBitmap);
+            PreviewVGap,
+            mWaitImage,
+            mErrorImage);
 
         newPreviewControls.push_back(shipPreviewControl);
 
@@ -230,10 +217,21 @@ void ShipPreviewPanel::OnDirPreviewComplete(fsDirPreviewCompleteEvent & event)
 
 int ShipPreviewPanel::CalculateTileColumns()
 {
-    int nCols = static_cast<int>(static_cast<float>(mWidth) / static_cast<float>(PreviewTotalWidth));
+    int nCols = static_cast<int>(static_cast<float>(mWidth) / static_cast<float>(MinPreviewWidth));
     assert(nCols >= 1);
 
     return nCols;
+}
+
+void ShipPreviewPanel::ShutdownPreviewThread()
+{
+    mPanelToThreadMessageLock.lock();
+    mPanelToThreadMessage.reset(new PanelToThreadMessage(PanelToThreadMessage::MakeExitMessage()));
+    mPanelToThreadMessageEvent.notify_one();
+    mPanelToThreadMessageLock.unlock();
+
+    // Wait for thread to be done
+    mPreviewThread.join();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -259,13 +257,16 @@ void ShipPreviewPanel::RunPreviewThread()
         // Lock now so that we can guarantee that the condition variable
         // won't be set before we're waiting for it
         messageThreadLock.lock();
+        OutputDebugStringA("TODO: entered lock");
         if (!mPanelToThreadMessage)
         {
+            OutputDebugStringA("TODO: waiting for event");
             // No message, wait
             // Mutex is currently locked, and it will be unlocked while we are waiting
             mPanelToThreadMessageEvent.wait(messageThreadLock);
             // Mutex is now locked again
         }
+        OutputDebugStringA("TODO: entered lock 2");
 
         // Got a message, extract it (we're holding the lock)
         assert(!!mPanelToThreadMessage);
@@ -358,7 +359,7 @@ void ShipPreviewPanel::ScanDirectory(std::filesystem::path const & directoryPath
             // Load preview
             auto shipPreview = ShipPreview::Load(
                 shipFilepaths[iShip],
-                ImageSize(PreviewWidth, PreviewHeight));
+                ImageSize(ShipPreviewControl::ImageWidth, ShipPreviewControl::ImageHeight));
 
             // Fire event
             QueueEvent(

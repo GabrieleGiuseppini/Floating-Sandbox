@@ -7,6 +7,7 @@
 
 #include <Game/ShipPreview.h>
 
+#include <wx/generic/statbmpg.h>
 #include <wx/wx.h>
 
 #include <filesystem>
@@ -99,14 +100,20 @@ class ShipPreviewControl : public wxPanel
 {
 public:
 
+    static constexpr int Width = 200;
+
+    static constexpr int ImageWidth = 200;
+    static constexpr int ImageHeight = 150;
+    static_assert(ImageWidth <= Width);
+
+public:
+
     ShipPreviewControl(
         wxWindow * parent,
         std::filesystem::path const & shipFilepath,
-        int width,
-        int height,
         int vMargin,
-        std::shared_ptr<wxBitmap> waitBitmap,
-        std::shared_ptr<wxBitmap> errorBitmap);
+        RgbaImageData const & waitImage,
+        RgbaImageData const & errorImage);
 
     virtual ~ShipPreviewControl();
 
@@ -119,16 +126,20 @@ private:
 
 private:
 
+    void SetImageContent(RgbaImageData const & imageData);
+
+private:
+
     wxBoxSizer * mVSizer;
-    wxStaticBitmap * mPreviewBitmap;
-    wxStaticText * mPreviewLabel;
+
+    wxPanel * mImagePanel;
+    wxGenericStaticBitmap * mImageGenericStaticBitmap;
+    wxStaticText * mDescriptionLabel;
     wxStaticText * mFilenameLabel;
 
 private:
 
     std::filesystem::path const mShipFilepath;
-    int const mWidth;
-    int const mHeight;
-    std::shared_ptr<wxBitmap> mWaitBitmap;
-    std::shared_ptr<wxBitmap> mErrorBitmap;
+    RgbaImageData const & mWaitImage;
+    RgbaImageData const & mErrorImage;
 };

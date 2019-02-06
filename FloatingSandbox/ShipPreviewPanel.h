@@ -10,6 +10,8 @@
 #include <Game/ResourceLoader.h>
 #include <Game/ShipPreview.h>
 
+#include <GameCore/ImageData.h>
+
 #include <wx/wx.h>
 
 #include <filesystem>
@@ -220,11 +222,9 @@ class ShipPreviewPanel : public wxScrolled<wxPanel>
 {
 public:
 
-    static constexpr int PreviewWidth = 200;
-    static constexpr int PreviewHeight = 100;
-    static constexpr int PreviewMargin = 5;
-    static constexpr int PreviewTotalWidth = PreviewWidth + 2 * PreviewMargin;
-    static constexpr int PreviewTotalHeight = PreviewHeight;
+    static constexpr int MinPreviewHGap = 5;
+    static constexpr int MinPreviewWidth = ShipPreviewControl::Width + 2 * MinPreviewHGap;
+    static constexpr int PreviewVGap = 5;
 
 public:
 
@@ -253,6 +253,7 @@ private:
     void OnDirPreviewComplete(fsDirPreviewCompleteEvent & event);
 
     int CalculateTileColumns();
+    void ShutdownPreviewThread();
 
 private:
 
@@ -263,8 +264,8 @@ private:
     wxGridSizer * mPreviewPanelSizer;
     std::vector<ShipPreviewControl *> mPreviewControls;
 
-    std::shared_ptr<wxBitmap> mWaitBitmap;
-    std::shared_ptr<wxBitmap> mErrorBitmap;
+    RgbaImageData mWaitImage;
+    RgbaImageData mErrorImage;
 
 private:
 
