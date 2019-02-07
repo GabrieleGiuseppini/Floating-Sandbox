@@ -34,6 +34,10 @@ public:
 
     static picojson::value ParseJSONFile(std::filesystem::path const & filepath);
 
+    static void SaveJSONFile(
+        picojson::value const & value,
+        std::filesystem::path const & filepath);
+
     template<typename T>
     static T GetOptionalJsonMember(
         picojson::object const & obj,
@@ -308,5 +312,22 @@ public:
         ss << file.rdbuf();
 
         return ss.str();
+    }
+
+    static void SaveTextFile(
+        std::string const & content,
+        std::filesystem::path const & filepath)
+    {
+        auto const directoryPath = filepath.parent_path();
+        if (!std::filesystem::exists(directoryPath))
+            std::filesystem::create_directories(directoryPath);
+
+        std::ofstream file(filepath.string(), std::ios::out);
+        if (!file.is_open())
+        {
+            throw GameException("Cannot open file \"" + filepath.string() + "\"");
+        }
+
+        file << content;
     }
 };

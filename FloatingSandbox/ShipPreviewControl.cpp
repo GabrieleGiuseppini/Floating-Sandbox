@@ -59,23 +59,41 @@ ShipPreviewControl::ShipPreviewControl(
 
 
     //
-    // Description Label
+    // Description Labels
     //
 
-    mDescriptionLabel = new wxStaticText(
+    mDescriptionLabel1 = new wxStaticText(
         this,
         wxID_ANY,
         "",
         wxDefaultPosition,
         wxSize(Width, -1),
         wxST_NO_AUTORESIZE | wxALIGN_CENTER_HORIZONTAL | wxST_ELLIPSIZE_END);
-    mDescriptionLabel->SetMaxSize(wxSize(Width, -1));
+    mDescriptionLabel1->SetFont(wxFont(wxFontInfo(7)));
+    mDescriptionLabel1->SetMaxSize(wxSize(Width, -1));
 
-    mDescriptionLabel->Bind(wxEVT_LEFT_DOWN, &ShipPreviewControl::OnMouseSingleClick, this);
-    mDescriptionLabel->Bind(wxEVT_LEFT_DCLICK, &ShipPreviewControl::OnMouseDoubleClick, this);
+    mDescriptionLabel1->Bind(wxEVT_LEFT_DOWN, &ShipPreviewControl::OnMouseSingleClick, this);
+    mDescriptionLabel1->Bind(wxEVT_LEFT_DCLICK, &ShipPreviewControl::OnMouseDoubleClick, this);
 
-    mVSizer->Add(mDescriptionLabel, 0, wxEXPAND);
+    mVSizer->Add(mDescriptionLabel1, 0, wxEXPAND);
 
+
+    mDescriptionLabel2 = new wxStaticText(
+        this,
+        wxID_ANY,
+        "",
+        wxDefaultPosition,
+        wxSize(Width, -1),
+        wxST_NO_AUTORESIZE | wxALIGN_CENTER_HORIZONTAL | wxST_ELLIPSIZE_END);
+    mDescriptionLabel2->SetFont(wxFont(wxFontInfo(7)));
+    mDescriptionLabel2->SetMaxSize(wxSize(Width, -1));
+
+    mDescriptionLabel2->Bind(wxEVT_LEFT_DOWN, &ShipPreviewControl::OnMouseSingleClick, this);
+    mDescriptionLabel2->Bind(wxEVT_LEFT_DCLICK, &ShipPreviewControl::OnMouseDoubleClick, this);
+
+    mVSizer->Add(mDescriptionLabel2, 0, wxEXPAND);
+
+    mVSizer->AddSpacer(4);
 
 
     //
@@ -89,6 +107,7 @@ ShipPreviewControl::ShipPreviewControl(
         wxDefaultPosition,
         wxSize(Width, -1),
         wxST_NO_AUTORESIZE | wxALIGN_CENTER_HORIZONTAL | wxST_ELLIPSIZE_END);
+    mFilenameLabel->SetFont(wxFont(wxFontInfo(7).Italic()));
     mFilenameLabel->SetMaxSize(wxSize(Width, -1));
 
     mFilenameLabel->Bind(wxEVT_LEFT_DOWN, &ShipPreviewControl::OnMouseSingleClick, this);
@@ -115,19 +134,30 @@ ShipPreviewControl::~ShipPreviewControl()
 void ShipPreviewControl::SetPreviewContent(ShipPreview const & shipPreview)
 {
     //
-    // Create description
+    // Create description 1
     //
 
-    std::string descriptionLabelText = shipPreview.Metadata.ShipName;
+    std::string descriptionLabelText1 = shipPreview.Metadata.ShipName;
 
     if (!!shipPreview.Metadata.YearBuilt)
-        descriptionLabelText += " (" + *(shipPreview.Metadata.YearBuilt) + ")";
+        descriptionLabelText1 += " (" + *(shipPreview.Metadata.YearBuilt) + ")";
+
+
+    //
+    // Create description 2
+    //
+
+    int metres = shipPreview.PreviewImage.Size.Width;
+    int feet = static_cast<int>(round(3.28f * metres));
+
+    std::string descriptionLabelText2 =
+        std::to_string(metres)
+        + " m/"
+        + std::to_string(feet)
+        + " ft";
 
     if (!!shipPreview.Metadata.Author)
-        descriptionLabelText += " by " + *(shipPreview.Metadata.Author);
-
-    mDescriptionLabel->SetLabel(descriptionLabelText);
-
+        descriptionLabelText2 += " - by " + *(shipPreview.Metadata.Author);
 
     //
     // Set content
@@ -135,17 +165,20 @@ void ShipPreviewControl::SetPreviewContent(ShipPreview const & shipPreview)
 
     SetPreviewContent(
         shipPreview.PreviewImage,
-        descriptionLabelText);
+        descriptionLabelText1,
+        descriptionLabelText2);
 }
 
 void ShipPreviewControl::SetPreviewContent(
     RgbaImageData const & image,
-    std::string const & description)
+    std::string const & description1,
+    std::string const & description2)
 {
     SetImageContent(image);
     mImagePanel->Refresh();
 
-    mDescriptionLabel->SetLabel(description);
+    mDescriptionLabel1->SetLabel(description1);
+    mDescriptionLabel2->SetLabel(description2);
 
     // Rearrange
     mVSizer->Layout();
@@ -157,7 +190,7 @@ void ShipPreviewControl::OnMouseSingleClick(wxMouseEvent & /*event*/)
     // Set border
     //
 
-    // TODO: with Matrioska panels
+    // TODO: with DC, or with Matrioska panels
 
 
     //

@@ -2,6 +2,10 @@
 	"structure_image":"sailboat_2_structure.png.dat",
 	"texture_image":"sailboat_2_texture.png.dat",
 	"ropes_image":"sailboat_2_ropes.png.dat",
+	"offset":{"x":0.0, "y":-16.0},
+
 	"ship_name":"Sailboat 2",
-	"offset":{"x":0.0, "y":-16.0}
+	"created_by":"Gabriele Giuseppini",
+	"year_built":"1968"
+
 }

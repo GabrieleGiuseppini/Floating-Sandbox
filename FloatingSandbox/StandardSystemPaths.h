@@ -24,6 +24,8 @@ public:
 
     std::filesystem::path GetUserPicturesGameFolderPath() const;
 
+    std::filesystem::path GetUserSettingsGameFolderPath() const;
+
 private:
 
     StandardSystemPaths()

@@ -32,8 +32,8 @@ ShipLoadDialog::ShipLoadDialog(
     Bind(wxEVT_CLOSE_WINDOW, &ShipLoadDialog::OnCloseWindow, this);
 
 
-
     wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+
 
 
     //
@@ -97,7 +97,7 @@ ShipLoadDialog::ShipLoadDialog(
     vSizer2->Add(recentDirsLabel, 0, wxALIGN_LEFT);
 
     wxArrayString comboChoices;
-    mDirectoriesComboBox = new wxComboBox(
+    mRecentDirectoriesComboBox = new wxComboBox(
         this,
         wxID_ANY,
         "",
@@ -105,7 +105,8 @@ ShipLoadDialog::ShipLoadDialog(
         wxDefaultSize,
         comboChoices,
         wxCB_DROPDOWN | wxCB_READONLY);
-    vSizer2->Add(mDirectoriesComboBox, 0, wxEXPAND);
+    mRecentDirectoriesComboBox->Bind(wxEVT_COMBOBOX, &ShipLoadDialog::OnRecentDirectorySelected, this);
+    vSizer2->Add(mRecentDirectoriesComboBox, 0, wxEXPAND);
 
     hSizer2->Add(vSizer2, 1, 0);
 
@@ -177,12 +178,12 @@ void ShipLoadDialog::Open()
         assert(!mUIPreferences->GetShipLoadDirectories().empty());
 
         bool isFirst = true;
-        mDirectoriesComboBox->Clear();
+        mRecentDirectoriesComboBox->Clear();
         for (auto dir : mUIPreferences->GetShipLoadDirectories())
         {
             if (std::filesystem::exists(dir))
             {
-                mDirectoriesComboBox->Append(dir.string());
+                mRecentDirectoriesComboBox->Append(dir.string());
 
                 if (isFirst)
                 {
@@ -234,6 +235,11 @@ void ShipLoadDialog::OnShipFileChosen(fsShipFileChosenEvent & event)
 
     // Process
     OnShipFileChosen(*mSelectedShipFilepath);
+}
+
+void ShipLoadDialog::OnRecentDirectorySelected(wxCommandEvent & /*event*/)
+{
+    mDirCtrl->SetPath(mRecentDirectoriesComboBox->GetValue()); // Will send its own event
 }
 
 void ShipLoadDialog::OnLoadButton(wxCommandEvent & /*event*/)

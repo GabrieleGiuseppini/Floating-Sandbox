@@ -8,6 +8,7 @@
 #include <Game/ImageFileTools.h>
 #include <Game/ShipDefinitionFile.h>
 
+#include <GameCore/GameException.h>
 #include <GameCore/Log.h>
 
 wxDEFINE_EVENT(fsEVT_DIR_SCANNED, fsDirScannedEvent);
@@ -196,7 +197,7 @@ void ShipPreviewPanel::OnDirScanned(fsDirScannedEvent & event)
 
 void ShipPreviewPanel::OnDirScanError(fsDirScanErrorEvent & event)
 {
-    // TODO
+    throw GameException(event.GetErrorMessage());
 }
 
 void ShipPreviewPanel::OnPreviewReady(fsPreviewReadyEvent & event)
@@ -208,10 +209,10 @@ void ShipPreviewPanel::OnPreviewReady(fsPreviewReadyEvent & event)
 void ShipPreviewPanel::OnPreviewError(fsPreviewErrorEvent & event)
 {
     assert(event.GetShipIndex() < mPreviewControls.size());
-    mPreviewControls[event.GetShipIndex()]->SetPreviewContent(mErrorImage, event.GetErrorMessage());
+    mPreviewControls[event.GetShipIndex()]->SetPreviewContent(mErrorImage, event.GetErrorMessage(), "");
 }
 
-void ShipPreviewPanel::OnDirPreviewComplete(fsDirPreviewCompleteEvent & event)
+void ShipPreviewPanel::OnDirPreviewComplete(fsDirPreviewCompleteEvent & /*event*/)
 {
     // Nop
 }
@@ -370,7 +371,6 @@ void ShipPreviewPanel::ScanDirectory(std::filesystem::path const & directoryPath
             if (isSingleCore)
             {
                 // Give the main thread time to process this
-                // TODOHERE: doing it each time seems to slow down the entire processing
                 std::this_thread::yield();
             }
         }

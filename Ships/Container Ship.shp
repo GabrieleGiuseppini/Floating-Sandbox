@@ -1,6 +1,7 @@
 {
 	"structure_image":"container_ship_structure.png.dat",
-	"ship_name":"Container Ship",
 	"offset":{"x":0.0, "y":-16.0},
-	"created_by":"Gabriele Giuseppini"
+	"ship_name":"Container Ship",
+	"created_by":"Gabriele Giuseppini",
+	"year_built":"2013"
 }

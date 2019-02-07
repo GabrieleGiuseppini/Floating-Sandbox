@@ -118,7 +118,10 @@ public:
     virtual ~ShipPreviewControl();
 
     void SetPreviewContent(ShipPreview const & shipPreview);
-    void SetPreviewContent(RgbaImageData const & image, std::string const & description);
+    void SetPreviewContent(
+        RgbaImageData const & image,
+        std::string const & description1,
+        std::string const & description2);
 
 private:
 
@@ -135,7 +138,8 @@ private:
 
     wxPanel * mImagePanel;
     wxGenericStaticBitmap * mImageGenericStaticBitmap;
-    wxStaticText * mDescriptionLabel;
+    wxStaticText * mDescriptionLabel1;
+    wxStaticText * mDescriptionLabel2;
     wxStaticText * mFilenameLabel;
 
 private:

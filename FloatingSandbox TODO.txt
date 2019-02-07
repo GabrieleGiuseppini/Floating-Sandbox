@@ -296,6 +296,8 @@ Render:
 	+ Global damp as game parameter
 	+ Ships start from 1
 	- Sound controller: complain if find extraneous files (had issue with ".flc")
+	- Nuke UISettings and move ScreenshotFolderPath into UIPreferences
+		- Still managed by SettingsDialog, but loaded/saved automagically by UIPreferences
 
 - Simulation Optimizations:
 
@@ -893,7 +895,9 @@ Render:
 			- SwitchBoard panel (see below)
 				- Registers as event listener at cctor
 				- Uses GameController (own shared ptr) :: SetSwitch(ObjectId switchId, bool state) to control switches
-		- MainFrame also registers for AddSwitch and shows SwitchBoard on first add
+		- MainFrame:
+			- Also registers for AddSwitch and shows SwitchBoard on first add
+				- As long as UIPreferences::AutoShowSwitchBoard is set (default=true)
 			- Hides it again only at Reset()
 		- Electrical dynamics:
 			- ElectricalElement: rename "ConnectivityVisit" (sequence number, etc.) as "ElectricalPropagationVisit" (...)
@@ -904,6 +908,7 @@ Render:
 			- Ship::SetSwitch(switchId, bool):
 				- Toggles electrical element's "conductsElectricity", via ElectricalElements::SetSwitch(switchId, bool)
 		- SwitchboardPanel:
+			- MainFrame menu pops it up and down (and MainFrame also pops it up automagically at first switch add, see above)
 			- SwitchControl: much like slider, button (w/two switch images) with label below
 				- Switch event is via lambda
 				- Media:
@@ -1186,6 +1191,9 @@ Render:
 		+ S:  Higher values cause physical instability but provide for a nice effect!
 		+ See if global settings are really needed
 
+	- SettingsDialog: add tooltips at each setting
+		- Explanation and unit
+
 	- SettingsDialog: save settings, defaults, and real-time changes
 		- SettingsManager (@FloatingSandbox):
 			- Has GameController, SoundController, UISettings, etc.
@@ -1279,7 +1287,7 @@ Render:
 					- Stores flag
 					- Enables/Disabled buttons and menus
 
-	= Revised FileDialog for loading ships: shows previews of ships (*)
+	= ShipLoadDialog: revised FileDialog for loading ships showing previews of ships (*)
 		+ ShipPreview
 			+ <scaled ImageData, ShipMetadata>
 			+ Loaded like ShipDefinition, taking width (from dialog)
@@ -1287,7 +1295,7 @@ Render:
 			+ Now empty
 			+ SetDirectory(std::filesystem::path)
 				+ Just log for now			
-		= ShipLoadDialog
+		+ ShipLoadDialog
 			+ Directory tree on the left
 				+ https://docs.wxwidgets.org/3.0/classwx_generic_dir_ctrl.html
 			+ PreviewPanel in main area
@@ -1300,50 +1308,55 @@ Render:
 					+ Stop thread
 			+ Resize:
 				+ Set min size for dir tree and for preview panel
-			= Combo:
+			+ Combo:
 				+ Last N from UIPreferences
-				- OnSelection:
-					- Tell DirCtrl
-						- See if it generates DirSelected event
-						- If not, tell also PreviewPanel
-				- Nothing to do with current dir
+				+ OnSelection:
+					+ Tell DirCtrl
+						+ See if it generates DirSelected event
+						+ If not, tell also PreviewPanel
+				+ Nothing to do with current dir
 			+ When dir tree chooses, call ShipPreviewPanel::SetDirectory
 			+ When ship is loaded, call UIPreferences::AddShipLoadDirectory
 			+ No use as modal, do with Open() which returns opt<path>
 			+ Hitting OK with preview just selected
-		= UIPreferences
+		+ UIPreferences
 			+ Created by main frame and passed around as shared_ptr
-			- Loads and Saves to uncustomizable file path
+			+ Loads and Saves to uncustomizable file path
 			+ Also has defaults, as initialization values set at cctor
-			- cctor:
+			+ cctor:
 				+ Set defaults
-				- Load
-					- No exceptions, if anything broken => keep defaults
-					- Filter and keep only existing paths
-			- dctor:
-				- Save
-					- No exceptions, if anything broken => silent
+				+ Load
+					+ No exceptions, if anything broken => keep defaults
+					+ Filter and keep only existing paths
+			+ dctor:
+				+ Save
+					+ No exceptions, if anything broken => silent
 			+ AddShipLoadDirectory:
 				+ Check if already there
 					+ If yes: move first
 					+ If not: add first
-		- ShipPreviewPanel
+		+ ShipPreviewPanel
 			+ Thread
 				+ Figure out how to hook Show()
 			+ Redo with custom events for thread-to-panel
-			- Other thread messages
+			+ Other thread messages
 		- ShipPreviewControl
 			+ Catch double-click event and fire ShipFileSelectedEvent
 				+ ShipFileSelectedEvent registered to by ShipFileDialog, which uses it as "Ok"
-			- Show:
-				- Name
-				- Dimensions
-				- Year
-					- Fill-in years @ ships
-				- Author
+			- Trim at load
+			+ Show:
+				+ Name
+				+ Dimensions: 
+					+ Metres: "160 m"
+				+ Year
+					+ Fill-in years @ ships
+				+ Author
 			- Border when selected
-				- Matrioska
+				+ See wxPanel border
+				- If doesn't work, try DC
+				- If doesn't work, try Matrioska
 		- Cleanup Ships directory (make .dat's)
+		- Test on two other Windows'
 
 - Sounds:
 	- Ship may come with custom sound(s) for horns
