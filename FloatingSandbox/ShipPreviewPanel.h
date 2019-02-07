@@ -252,6 +252,11 @@ private:
     void OnPreviewError(fsPreviewErrorEvent & event);
     void OnDirPreviewComplete(fsDirPreviewCompleteEvent & event);
 
+    // Preview selected event
+    void OnShipFileSelected(fsShipFileSelectedEvent & event);
+
+private:
+
     int CalculateTileColumns();
     void ShutdownPreviewThread();
 
@@ -263,6 +268,7 @@ private:
     wxPanel * mPreviewPanel;
     wxGridSizer * mPreviewPanelSizer;
     std::vector<ShipPreviewControl *> mPreviewControls;
+    std::optional<size_t> mSelectedPreview;
 
     RgbaImageData mWaitImage;
     RgbaImageData mErrorImage;

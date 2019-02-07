@@ -1351,10 +1351,10 @@ Render:
 				+ Year
 					+ Fill-in years @ ships
 				+ Author
-			- Border when selected
+			= Border when selected
 				+ See wxPanel border
-				- If doesn't work, try DC
-				- If doesn't work, try Matrioska
+				+ If doesn't work, try DC
+				= If doesn't work, try Matrioska
 		- Cleanup Ships directory (make .dat's)
 		- Test on two other Windows'
 

@@ -23,8 +23,10 @@ public:
     fsShipFileSelectedEvent(
         wxEventType eventType,
         int winid,
+        size_t shipIndex,
         std::filesystem::path const & shipFilepath)
         : wxEvent(winid, eventType)
+        , mShipIndex(shipIndex)
         , mShipFilepath(shipFilepath)
     {
         m_propagationLevel = wxEVENT_PROPAGATE_MAX;
@@ -32,6 +34,7 @@ public:
 
     fsShipFileSelectedEvent(fsShipFileSelectedEvent const & other)
         : wxEvent(other)
+        , mShipIndex(other.mShipIndex)
         , mShipFilepath(other.mShipFilepath)
     {
         m_propagationLevel = wxEVENT_PROPAGATE_MAX;
@@ -42,12 +45,20 @@ public:
         return new fsShipFileSelectedEvent(*this);
     }
 
+    size_t GetShipIndex() const
+    {
+        return mShipIndex;
+    }
+
     std::filesystem::path const GetShipFilepath() const
     {
         return mShipFilepath;
     }
 
 private:
+
+
+    size_t const mShipIndex;
     std::filesystem::path const mShipFilepath;
 };
 
@@ -100,16 +111,19 @@ class ShipPreviewControl : public wxPanel
 {
 public:
 
-    static constexpr int Width = 200;
-
     static constexpr int ImageWidth = 200;
     static constexpr int ImageHeight = 150;
+    static constexpr int BorderSize = 1;
+
+    static constexpr int Width = ImageWidth + 2 * BorderSize;
+
     static_assert(ImageWidth <= Width);
 
 public:
 
     ShipPreviewControl(
         wxWindow * parent,
+        size_t shipIndex,
         std::filesystem::path const & shipFilepath,
         int vMargin,
         RgbaImageData const & waitImage,
@@ -117,7 +131,10 @@ public:
 
     virtual ~ShipPreviewControl();
 
+    void SetSelected(bool isSelected);
+
     void SetPreviewContent(ShipPreview const & shipPreview);
+
     void SetPreviewContent(
         RgbaImageData const & image,
         std::string const & description1,
@@ -136,6 +153,7 @@ private:
 
     wxBoxSizer * mVSizer;
 
+    wxPanel * mBackgroundPanel;
     wxPanel * mImagePanel;
     wxGenericStaticBitmap * mImageGenericStaticBitmap;
     wxStaticText * mDescriptionLabel1;
@@ -144,6 +162,7 @@ private:
 
 private:
 
+    size_t const mShipIndex;
     std::filesystem::path const mShipFilepath;
     RgbaImageData const & mWaitImage;
     RgbaImageData const & mErrorImage;

@@ -14,6 +14,7 @@ wxDEFINE_EVENT(fsEVT_SHIP_FILE_CHOSEN, fsShipFileChosenEvent);
 
 ShipPreviewControl::ShipPreviewControl(
     wxWindow * parent,
+    size_t shipIndex,
     std::filesystem::path const & shipFilepath,
     int vMargin,
     RgbaImageData const & waitImage,
@@ -23,11 +24,27 @@ ShipPreviewControl::ShipPreviewControl(
         wxID_ANY,
         wxDefaultPosition)
     , mImageGenericStaticBitmap(nullptr)
+    , mShipIndex(shipIndex)
     , mShipFilepath(shipFilepath)
     , mWaitImage(waitImage)
     , mErrorImage(errorImage)
 {
     SetBackgroundColour(wxColour("WHITE"));
+
+
+    //
+    // Background panel
+    //
+
+    mBackgroundPanel = new wxPanel(this);
+
+    mBackgroundPanel->SetBackgroundColour(wxColour("WHITE"));
+
+
+
+    //
+    // Content
+    //
 
     mVSizer = new wxBoxSizer(wxVERTICAL);
 
@@ -37,7 +54,7 @@ ShipPreviewControl::ShipPreviewControl(
     //
 
     mImagePanel = new wxPanel(
-        this,
+        mBackgroundPanel,
         wxID_ANY,
         wxDefaultPosition,
         wxSize(ImageWidth, ImageHeight));
@@ -63,7 +80,7 @@ ShipPreviewControl::ShipPreviewControl(
     //
 
     mDescriptionLabel1 = new wxStaticText(
-        this,
+        mBackgroundPanel,
         wxID_ANY,
         "",
         wxDefaultPosition,
@@ -79,7 +96,7 @@ ShipPreviewControl::ShipPreviewControl(
 
 
     mDescriptionLabel2 = new wxStaticText(
-        this,
+        mBackgroundPanel,
         wxID_ANY,
         "",
         wxDefaultPosition,
@@ -101,7 +118,7 @@ ShipPreviewControl::ShipPreviewControl(
     //
 
     mFilenameLabel = new wxStaticText(
-        this,
+        mBackgroundPanel,
         wxID_ANY,
         shipFilepath.filename().string(),
         wxDefaultPosition,
@@ -123,18 +140,39 @@ ShipPreviewControl::ShipPreviewControl(
     mVSizer->AddSpacer(vMargin);
 
 
+    //
+    // Finalize content
+    //
 
-    this->SetSizer(mVSizer);
+    mBackgroundPanel->SetSizer(mVSizer);
+
+
+    //
+    // Finalize this panel
+    //
+
+    // Wrap the background panel with border
+    wxSizer * backgroundSizer = new wxBoxSizer(wxVERTICAL);
+    backgroundSizer->Add(mBackgroundPanel, 0, wxALL, BorderSize);
+
+    this->SetSizer(backgroundSizer);
 }
 
 ShipPreviewControl::~ShipPreviewControl()
 {
 }
 
+void ShipPreviewControl::SetSelected(bool isSelected)
+{
+    // Set border
+    this->SetBackgroundColour(isSelected ? wxColour("BLACK") : wxColour("WHITE"));
+    this->Refresh();
+}
+
 void ShipPreviewControl::SetPreviewContent(ShipPreview const & shipPreview)
 {
     //
-    // Create description 1
+    // Create description text 1
     //
 
     std::string descriptionLabelText1 = shipPreview.Metadata.ShipName;
@@ -144,7 +182,7 @@ void ShipPreviewControl::SetPreviewContent(ShipPreview const & shipPreview)
 
 
     //
-    // Create description 2
+    // Create description text 2
     //
 
     int metres = shipPreview.PreviewImage.Size.Width;
@@ -187,19 +225,13 @@ void ShipPreviewControl::SetPreviewContent(
 void ShipPreviewControl::OnMouseSingleClick(wxMouseEvent & /*event*/)
 {
     //
-    // Set border
-    //
-
-    // TODO: with DC, or with Matrioska panels
-
-
-    //
     // Fire our custom event
     //
 
     auto event = fsShipFileSelectedEvent(
         fsEVT_SHIP_FILE_SELECTED,
         this->GetId(),
+        mShipIndex,
         mShipFilepath);
 
     ProcessWindowEvent(event);

@@ -31,6 +31,7 @@ ShipPreviewPanel::ShipPreviewPanel(
     , mPreviewPanel(nullptr)
     , mPreviewPanelSizer(nullptr)
     , mPreviewControls()
+    , mSelectedPreview(std::nullopt)
     , mWaitImage(ImageFileTools::LoadImageRgbaLowerLeft(resourceLoader.GetBitmapFilepath("ship_preview_wait")))
     , mErrorImage(ImageFileTools::LoadImageRgbaLowerLeft(resourceLoader.GetBitmapFilepath("ship_preview_error")))
     , mCurrentDirectory()
@@ -56,6 +57,9 @@ ShipPreviewPanel::ShipPreviewPanel(
     Bind(fsEVT_PREVIEW_ERROR, &ShipPreviewPanel::OnPreviewError, this);
     Bind(fsEVT_DIR_PREVIEW_COMPLETE, &ShipPreviewPanel::OnDirPreviewComplete, this);
 
+    // Register for preview selections
+    Bind(fsEVT_SHIP_FILE_SELECTED, &ShipPreviewPanel::OnShipFileSelected, this);
+
     // Make our own sizer
     wxBoxSizer * panelSizer = new wxBoxSizer(wxVERTICAL);
     SetSizer(panelSizer);
@@ -72,6 +76,9 @@ ShipPreviewPanel::~ShipPreviewPanel()
 
 void ShipPreviewPanel::OnOpen()
 {
+    // Clear state
+    mSelectedPreview.reset();
+
     // Start thread
     assert(!mPreviewThread.joinable());
     mPreviewThread = std::thread(&ShipPreviewPanel::RunPreviewThread, this);
@@ -91,6 +98,9 @@ void ShipPreviewPanel::SetDirectory(std::filesystem::path const & directoryPath)
     {
         // Change directory
         mCurrentDirectory = directoryPath;
+
+        // Clear state
+        mSelectedPreview.reset();
 
         // Tell thread (if it's running)
         mPanelToThreadMessageLock.lock();
@@ -148,11 +158,12 @@ void ShipPreviewPanel::OnDirScanned(fsDirScannedEvent & event)
 
     std::vector<ShipPreviewControl *> newPreviewControls;
 
-    for (auto const & shipFilepath : event.GetShipFilepaths())
+    for (size_t shipIndex = 0; shipIndex < event.GetShipFilepaths().size(); ++shipIndex)
     {
         auto shipPreviewControl = new ShipPreviewControl(
             newPreviewPanel,
-            shipFilepath,
+            shipIndex,
+            event.GetShipFilepaths()[shipIndex],
             PreviewVGap,
             mWaitImage,
             mErrorImage);
@@ -215,6 +226,27 @@ void ShipPreviewPanel::OnPreviewError(fsPreviewErrorEvent & event)
 void ShipPreviewPanel::OnDirPreviewComplete(fsDirPreviewCompleteEvent & /*event*/)
 {
     // Nop
+}
+
+void ShipPreviewPanel::OnShipFileSelected(fsShipFileSelectedEvent & event)
+{
+    //
+    // Toggle selection
+    //
+
+    if (!!mSelectedPreview)
+    {
+        assert(*mSelectedPreview < mPreviewControls.size());
+        mPreviewControls[*mSelectedPreview]->SetSelected(false);
+    }
+
+    assert(event.GetShipIndex() < mPreviewControls.size());
+    mPreviewControls[event.GetShipIndex()]->SetSelected(true);
+
+    mSelectedPreview = event.GetShipIndex();
+
+    // Propagate
+    event.Skip();
 }
 
 int ShipPreviewPanel::CalculateTileColumns()
@@ -280,13 +312,19 @@ void ShipPreviewPanel::RunPreviewThread()
 
         if (PanelToThreadMessage::MessageType::Exit == message->GetMessageType())
         {
+            //
             // Exit
+            //
+
             break;
         }
         else
         {
-            // Set directory
             assert(PanelToThreadMessage::MessageType::SetDirectory == message->GetMessageType());
+
+            //
+            // Set directory
+            //
 
             try
             {

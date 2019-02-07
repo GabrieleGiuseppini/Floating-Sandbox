@@ -31,6 +31,10 @@ ShipLoadDialog::ShipLoadDialog(
 
     Bind(wxEVT_CLOSE_WINDOW, &ShipLoadDialog::OnCloseWindow, this);
 
+    Bind(fsEVT_SHIP_FILE_SELECTED, &ShipLoadDialog::OnShipFileSelected, this);
+    Bind(fsEVT_SHIP_FILE_CHOSEN, &ShipLoadDialog::OnShipFileChosen, this);
+
+
 
     wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
 
@@ -57,8 +61,7 @@ ShipLoadDialog::ShipLoadDialog(
         wxDIRCTRL_DIR_ONLY);
 
     mDirCtrl->SetMinSize(wxSize(MinDirCtrlWidth, 500));
-
-    Connect(mDirCtrl->GetId(), wxEVT_DIRCTRL_SELECTIONCHANGED, (wxObjectEventFunction)&ShipLoadDialog::OnDirCtrlDirSelected);
+    mDirCtrl->Bind(wxEVT_DIRCTRL_SELECTIONCHANGED, (wxObjectEventFunction)&ShipLoadDialog::OnDirCtrlDirSelected, this);
 
     hSizer1->Add(mDirCtrl, 0, wxEXPAND | wxALIGN_TOP);
 
@@ -66,9 +69,6 @@ ShipLoadDialog::ShipLoadDialog(
     // Preview
 
     mShipPreviewPanel = new ShipPreviewPanel(this, resourceLoader);
-
-    mShipPreviewPanel->Bind(fsEVT_SHIP_FILE_SELECTED, &ShipLoadDialog::OnShipFileSelected, this);
-    mShipPreviewPanel->Bind(fsEVT_SHIP_FILE_CHOSEN, &ShipLoadDialog::OnShipFileChosen, this);
 
     hSizer1->Add(mShipPreviewPanel, 1, wxALIGN_TOP | wxEXPAND);
 
