@@ -8,6 +8,9 @@
 #include <filesystem>
 #include <vector>
 
+/*
+ * Maintains persistent UI preferences.
+ */
 class UIPreferences
 {
 public:

@@ -7,6 +7,9 @@
 
 #include <filesystem>
 
+/*
+ * UI settings managed by the SettingsManager class.
+ */
 class UISettings
 {
 public:

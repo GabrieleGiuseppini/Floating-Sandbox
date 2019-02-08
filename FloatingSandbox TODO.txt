@@ -296,8 +296,6 @@ Render:
 	+ Global damp as game parameter
 	+ Ships start from 1
 	- Sound controller: complain if find extraneous files (had issue with ".flc")
-	- Nuke UISettings and move ScreenshotFolderPath into UIPreferences
-		- Still managed by SettingsDialog, but loaded/saved automagically by UIPreferences
 
 - Simulation Optimizations:
 
@@ -1358,13 +1356,13 @@ Render:
 				+ See wxPanel border
 				+ If doesn't work, try DC
 				+ If doesn't work, try Matrioska
-		- Cleanup Ships directory (make .dat's)
+		- Cleanup source/Ships directory (make .dat's)
 		- Test:
 			+ Super-minimize
 			+ Image preview hits selection border? No
 			+ ShipLoadDialog does not catch ShipFileChosen event
-			- Closing dialog when still loading images does not resume loading upon open
-				- ...and now test changing dir back to orig one while thread is loading
+			+ Closing dialog when still loading images does not resume loading upon open
+				+ ...and now test changing dir back to orig one while thread is loading
 			+ Ugly flickering at re-open
 				+ See if can avoid refreshing when not visible
 				+ Due to Yield? No

@@ -287,8 +287,8 @@ private:
 
 private:
 
-    // The directory currently being previewed
-    std::filesystem::path mCurrentDirectory;
+    // When set, indicates that the preview of this directory is completed
+    std::optional<std::filesystem::path> mCurrentlyCompletedDirectory;
 
     ////////////////////////////////////////////////
     // Preview Thread

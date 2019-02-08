@@ -34,7 +34,7 @@ ShipPreviewPanel::ShipPreviewPanel(
     , mSelectedPreview(std::nullopt)
     , mWaitImage(ImageFileTools::LoadImageRgbaLowerLeft(resourceLoader.GetBitmapFilepath("ship_preview_wait")))
     , mErrorImage(ImageFileTools::LoadImageRgbaLowerLeft(resourceLoader.GetBitmapFilepath("ship_preview_error")))
-    , mCurrentDirectory()
+    , mCurrentlyCompletedDirectory()
     // Preview Thread
     , mPreviewThread()
     , mPanelToThreadMessage()
@@ -109,8 +109,14 @@ void ShipPreviewPanel::OnClose()
 void ShipPreviewPanel::SetDirectory(std::filesystem::path const & directoryPath)
 {
     // Check if different than current
-    if (directoryPath != mCurrentDirectory)
+    if (directoryPath != mCurrentlyCompletedDirectory)
     {
+        //
+        // Change directory
+        //
+
+        mCurrentlyCompletedDirectory.reset();
+
         // Clear state
         mSelectedPreview.reset();
 
@@ -248,7 +254,7 @@ void ShipPreviewPanel::OnPreviewError(fsPreviewErrorEvent & event)
 void ShipPreviewPanel::OnDirPreviewComplete(fsDirPreviewCompleteEvent & event)
 {
     // Remember the current directory, now that it's complete
-    mCurrentDirectory = event.GetDirectoryPath();
+    mCurrentlyCompletedDirectory = event.GetDirectoryPath();
 }
 
 void ShipPreviewPanel::OnShipFileSelected(fsShipFileSelectedEvent & event)
