@@ -8,11 +8,17 @@
 #include "Vectors.h"
 
 #include <cstdint>
+#include <limits>
 #include <ostream>
 #include <string>
 
 struct rgbColor
 {
+public:
+
+    typedef uint8_t data_type;
+    static constexpr uint8_t data_type_max = std::numeric_limits<uint8_t>::max();
+
 public:
 
     uint8_t r;
@@ -94,6 +100,11 @@ inline std::basic_ostream<char> & operator<<(std::basic_ostream<char>& os, rgbCo
 
 struct rgbaColor
 {
+public:
+
+    typedef uint8_t data_type;
+    static constexpr uint8_t data_type_max = std::numeric_limits<uint8_t>::max();
+
 public:
 
     uint8_t r;

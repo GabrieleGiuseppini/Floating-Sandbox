@@ -1191,6 +1191,9 @@ Render:
 		+ S:  Higher values cause physical instability but provide for a nice effect!
 		+ See if global settings are really needed
 
+	- Menu entry for "Check for updates..."
+		- wxLaunchDefaultBrowser
+
 	- SettingsDialog: add tooltips at each setting
 		- Explanation and unit
 
@@ -1340,10 +1343,10 @@ Render:
 				+ Figure out how to hook Show()
 			+ Redo with custom events for thread-to-panel
 			+ Other thread messages
-		- ShipPreviewControl
+		+ ShipPreviewControl
 			+ Catch double-click event and fire ShipFileSelectedEvent
 				+ ShipFileSelectedEvent registered to by ShipFileDialog, which uses it as "Ok"
-			- Trim at load
+			+ Trim at load
 			+ Show:
 				+ Name
 				+ Dimensions: 
@@ -1351,11 +1354,21 @@ Render:
 				+ Year
 					+ Fill-in years @ ships
 				+ Author
-			= Border when selected
+			+ Border when selected
 				+ See wxPanel border
 				+ If doesn't work, try DC
-				= If doesn't work, try Matrioska
+				+ If doesn't work, try Matrioska
 		- Cleanup Ships directory (make .dat's)
+		- Test:
+			+ Super-minimize
+			+ Image preview hits selection border? No
+			+ ShipLoadDialog does not catch ShipFileChosen event
+			- Closing dialog when still loading images does not resume loading upon open
+				- ...and now test changing dir back to orig one while thread is loading
+			+ Ugly flickering at re-open
+				+ See if can avoid refreshing when not visible
+				+ Due to Yield? No
+			- Run under debugger to see if there are assert's
 		- Test on two other Windows'
 
 - Sounds:

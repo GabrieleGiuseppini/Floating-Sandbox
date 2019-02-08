@@ -40,6 +40,9 @@ ShipPreviewControl::ShipPreviewControl(
 
     mBackgroundPanel->SetBackgroundColour(wxColour("WHITE"));
 
+    mBackgroundPanel->Bind(wxEVT_LEFT_DOWN, &ShipPreviewControl::OnMouseSingleClick, this);
+    mBackgroundPanel->Bind(wxEVT_LEFT_DCLICK, &ShipPreviewControl::OnMouseDoubleClick, this);
+
 
 
     //
@@ -65,6 +68,7 @@ ShipPreviewControl::ShipPreviewControl(
     mImagePanel->Bind(wxEVT_LEFT_DOWN, &ShipPreviewControl::OnMouseSingleClick, this);
     mImagePanel->Bind(wxEVT_LEFT_DCLICK, &ShipPreviewControl::OnMouseDoubleClick, this);
 
+    // Create sizer that we'll use to size image
     auto imageSizer = new wxBoxSizer(wxVERTICAL);
     mImagePanel->SetSizer(imageSizer);
 
@@ -72,6 +76,8 @@ ShipPreviewControl::ShipPreviewControl(
     SetImageContent(mWaitImage);
 
     mVSizer->Add(mImagePanel, 1, wxALIGN_CENTER_HORIZONTAL);
+
+    mVSizer->AddSpacer(4);
 
 
 
@@ -308,8 +314,7 @@ void ShipPreviewControl::SetImageContent(RgbaImageData const & imageData)
     mImageGenericStaticBitmap->Bind(wxEVT_LEFT_DOWN, &ShipPreviewControl::OnMouseSingleClick, this);
     mImageGenericStaticBitmap->Bind(wxEVT_LEFT_DCLICK, &ShipPreviewControl::OnMouseDoubleClick, this);
 
-    mImagePanel->GetSizer()->AddStretchSpacer(2);
-    mImagePanel->GetSizer()->Add(mImageGenericStaticBitmap, 0, wxALIGN_CENTRE_HORIZONTAL);
     mImagePanel->GetSizer()->AddStretchSpacer(1);
+    mImagePanel->GetSizer()->Add(mImageGenericStaticBitmap, 0, wxALIGN_CENTRE_HORIZONTAL);
     mImagePanel->GetSizer()->Layout();
 }

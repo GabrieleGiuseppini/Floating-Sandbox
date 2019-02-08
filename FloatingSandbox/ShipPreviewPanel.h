@@ -195,13 +195,16 @@ public:
 
     fsDirPreviewCompleteEvent(
         wxEventType eventType,
-        int winid)
+        int winid,
+        std::filesystem::path const & directoryPath)
         : wxEvent(winid, eventType)
+        , mDirectoryPath(directoryPath)
     {
     }
 
     fsDirPreviewCompleteEvent(fsDirPreviewCompleteEvent const & other)
         : wxEvent(other)
+        , mDirectoryPath(other.mDirectoryPath)
     {
     }
 
@@ -209,6 +212,15 @@ public:
     {
         return new fsDirPreviewCompleteEvent(*this);
     }
+
+    std::filesystem::path const & GetDirectoryPath() const
+    {
+        return mDirectoryPath;
+    }
+
+private:
+
+    std::filesystem::path const mDirectoryPath;
 };
 
 wxDECLARE_EVENT(fsEVT_DIR_PREVIEW_COMPLETE, fsDirPreviewCompleteEvent);

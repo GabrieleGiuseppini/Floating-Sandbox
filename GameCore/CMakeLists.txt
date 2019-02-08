@@ -28,6 +28,8 @@ set  (SOURCES
 	GameWallClock.h
 	ImageData.h
 	ImageSize.h
+	ImageTools.cpp
+	ImageTools.h
 	ISliderCore.h
 	LinearSliderCore.cpp
 	LinearSliderCore.h

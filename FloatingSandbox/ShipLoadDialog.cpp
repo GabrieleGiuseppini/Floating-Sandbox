@@ -31,9 +31,6 @@ ShipLoadDialog::ShipLoadDialog(
 
     Bind(wxEVT_CLOSE_WINDOW, &ShipLoadDialog::OnCloseWindow, this);
 
-    Bind(fsEVT_SHIP_FILE_SELECTED, &ShipLoadDialog::OnShipFileSelected, this);
-    Bind(fsEVT_SHIP_FILE_CHOSEN, &ShipLoadDialog::OnShipFileChosen, this);
-
 
 
     wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
@@ -69,6 +66,9 @@ ShipLoadDialog::ShipLoadDialog(
     // Preview
 
     mShipPreviewPanel = new ShipPreviewPanel(this, resourceLoader);
+
+    mShipPreviewPanel->Bind(fsEVT_SHIP_FILE_SELECTED, &ShipLoadDialog::OnShipFileSelected, this);
+    mShipPreviewPanel->Bind(fsEVT_SHIP_FILE_CHOSEN, &ShipLoadDialog::OnShipFileChosen, this);
 
     hSizer1->Add(mShipPreviewPanel, 1, wxALIGN_TOP | wxEXPAND);
 

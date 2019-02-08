@@ -20,12 +20,12 @@ public:
 public:
 
     ImageSize const Size;
-    std::unique_ptr<color_type const[]> Data;
+    std::unique_ptr<color_type[]> Data;
 
     ImageData(
         int width,
         int height,
-        std::unique_ptr<color_type const[]> data)
+        std::unique_ptr<color_type[]> data)
         : Size(width, height)
         , Data(std::move(data))
     {
@@ -33,7 +33,7 @@ public:
 
     ImageData(
         ImageSize size,
-        std::unique_ptr<color_type const[]> data)
+        std::unique_ptr<color_type[]> data)
         : Size(size)
         , Data(std::move(data))
     {

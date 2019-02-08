@@ -277,6 +277,8 @@ ImageData<TColor> ImageFileTools::InternalLoadImage(
 
     ilDeleteImage(imghandle);
 
+
+
     return ImageData<TColor>(
         imageSize,
         std::move(data));
