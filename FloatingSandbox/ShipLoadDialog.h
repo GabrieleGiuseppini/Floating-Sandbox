@@ -47,6 +47,10 @@ private:
 
 private:
 
+    void Close();
+
+private:
+
 	wxWindow * const mParent;
     std::shared_ptr<UIPreferences> mUIPreferences;
 

@@ -252,17 +252,12 @@ void ShipLoadDialog::OnLoadButton(wxCommandEvent & /*event*/)
 
 void ShipLoadDialog::OnCancelButton(wxCommandEvent & /*event*/)
 {
-    // Close ourselves silently
-    this->Close();
+    Close();
 }
 
-void ShipLoadDialog::OnCloseWindow(wxCloseEvent & event)
+void ShipLoadDialog::OnCloseWindow(wxCloseEvent & /*event*/)
 {
-    LogMessage("ShipLoadDialog::OnCloseWindow");
-
-    mShipPreviewPanel->OnClose();
-
-    event.Skip();
+    Close();
 }
 
 void ShipLoadDialog::OnDirectorySelected(std::filesystem::path directoryPath)
@@ -282,7 +277,7 @@ void ShipLoadDialog::OnShipFileChosen(std::filesystem::path shipFilepath)
     LogMessage("ShipLoadDialog::OnShipFileChosen: ", shipFilepath);
 
     // Close ourselves
-    this->Close();
+    Close();
 
     // Store directory in preferences
     mUIPreferences->AddShipLoadDirectory(shipFilepath.parent_path());
@@ -294,4 +289,12 @@ void ShipLoadDialog::OnShipFileChosen(std::filesystem::path shipFilepath)
         shipFilepath);
 
     ProcessWindowEvent(event);
+}
+
+void ShipLoadDialog::Close()
+{
+    mShipPreviewPanel->OnClose();
+
+    // We just hide ourselves, so we can re-show ourselves again
+    this->Hide();
 }
