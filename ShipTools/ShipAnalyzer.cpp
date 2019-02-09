@@ -9,12 +9,12 @@
 #include <Game/ImageFileTools.h>
 #include <Game/MaterialDatabase.h>
 
+#include <GameCore/Colors.h>
 #include <GameCore/Vectors.h>
 
 #include <IL/il.h>
 #include <IL/ilu.h>
 
-#include <array>
 #include <limits>
 #include <stdexcept>
 #include <vector>
@@ -45,14 +45,9 @@ ShipAnalyzer::AnalysisInfo ShipAnalyzer::Analyze(
         {
             float worldY = static_cast<float>(y);
 
-            auto pixelIndex = (x + (image.Size.Height - y - 1) * image.Size.Width) * 3;
+            auto pixelIndex = (x + (image.Size.Height - y - 1) * image.Size.Width);
 
-            std::array<uint8_t, 3u> rgbColour = {
-                image.Data[pixelIndex + 0],
-                image.Data[pixelIndex + 1],
-                image.Data[pixelIndex + 2] };
-
-            StructuralMaterial const * structuralMaterial = materials.FindStructuralMaterial(rgbColour);
+            StructuralMaterial const * structuralMaterial = materials.FindStructuralMaterial(image.Data[pixelIndex]);
             if (nullptr != structuralMaterial)
             {
                 numPoints += 1.0f;

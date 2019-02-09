@@ -4,7 +4,8 @@
  * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
  ***************************************************************************************/
 
-#include <array>
+#include <GameCore/Colors.h>
+
 #include <optional>
 #include <string>
 
@@ -18,5 +19,5 @@ public:
         std::string const & materialsDir,
         bool doKeepRopes,
         bool doKeepGlass,
-        std::optional<std::array<uint8_t, 3u>> targetFixedColor);
+        std::optional<rgbColor> targetFixedColor);
 };

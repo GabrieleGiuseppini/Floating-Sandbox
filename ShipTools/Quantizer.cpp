@@ -22,7 +22,7 @@ void Quantizer::Quantize(
     std::string const & materialsDir,
     bool doKeepRopes,
     bool doKeepGlass,
-    std::optional<std::array<uint8_t, 3u>> targetFixedColor)
+    std::optional<rgbColor> targetFixedColor)
 {
     //
     // Load image
@@ -61,7 +61,7 @@ void Quantizer::Quantize(
 
     auto materials = MaterialDatabase::Load(materialsDir);
 
-    std::vector<std::pair<vec3f, std::array<uint8_t, 3u>>> gameColors;
+    std::vector<std::pair<vec3f, rgbColor>> gameColors;
 
     for (auto const & entry : materials.GetStructuralMaterials())
     {
@@ -70,13 +70,13 @@ void Quantizer::Quantize(
         {
             gameColors.emplace_back(
                 std::make_pair(
-                    Utils::RgbToVec(entry.first),
+                    entry.first.toVec3f(),
                     entry.first));
         }
     }
 
     // Add pure white
-    static std::array<uint8_t, 3u> PureWhite = { 255, 255, 255 };
+    static rgbColor PureWhite = { 255, 255, 255 };
     gameColors.emplace_back(
         std::make_pair(
             vec3f(1.0f, 1.0f, 1.0f),
@@ -98,7 +98,7 @@ void Quantizer::Quantize(
                 static_cast<float>(imageData[index + 1]) / 255.0f,
                 static_cast<float>(imageData[index + 2]) / 255.0f);
 
-            std::optional<std::array<uint8_t, 3u>> bestColor;
+            std::optional<rgbColor> bestColor;
 
             if (!targetFixedColor)
             {
@@ -130,17 +130,17 @@ void Quantizer::Quantize(
 
             if (!!bestColor)
             {
-                imageData[index] = (*bestColor)[0];
-                imageData[index + 1] = (*bestColor)[1];
-                imageData[index + 2] = (*bestColor)[2];
+                imageData[index] = bestColor->r;
+                imageData[index + 1] = bestColor->g;
+                imageData[index + 2] = bestColor->b;
                 imageData[index + 3] = 255;
             }
             else
             {
                 // Full white
-                imageData[index] = PureWhite[0];
-                imageData[index + 1] = PureWhite[1];
-                imageData[index + 2] = PureWhite[2];
+                imageData[index] = PureWhite.r;
+                imageData[index + 1] = PureWhite.g;
+                imageData[index + 2] = PureWhite.b;
                 imageData[index + 3] = 255;
             }
         }

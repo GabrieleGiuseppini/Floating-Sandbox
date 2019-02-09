@@ -79,7 +79,7 @@ int DoQuantize(int argc, char ** argv)
 
     bool doKeepRopes = false;
     bool doKeepGlass = false;
-    std::optional<std::array<uint8_t, 3u>> targetFixedColor;
+    std::optional<rgbColor> targetFixedColor;
     std::string targetFixedColorStr;
     for (int i = 5; i < argc; ++i)
     {

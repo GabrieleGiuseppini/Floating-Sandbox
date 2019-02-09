@@ -143,11 +143,10 @@ Render:
 
 	= 1.9.0
 		+ Ship file dialog (*)
-		- Fix metres bug
-			- ShipPreview must carry original size, before resize
-		- Installer does not install guides
-
-		- check new ships
+		+ Fix metres bug
+			+ ShipPreview must carry original size, before resize
+		+ Add new ships
+		= Installer does not install guides
 
 		- Zbuffer (*)
 		- Orphaned points (*)
