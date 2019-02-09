@@ -146,7 +146,8 @@ Render:
 		+ Fix metres bug
 			+ ShipPreview must carry original size, before resize
 		+ Add new ships
-		= Installer does not install guides
+		+ Installer does not install guides
+		- Change version
 
 		- Zbuffer (*)
 		- Orphaned points (*)
