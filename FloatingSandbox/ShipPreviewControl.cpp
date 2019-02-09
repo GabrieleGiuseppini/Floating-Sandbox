@@ -191,7 +191,7 @@ void ShipPreviewControl::SetPreviewContent(ShipPreview const & shipPreview)
     // Create description text 2
     //
 
-    int metres = shipPreview.PreviewImage.Size.Width;
+    int metres = shipPreview.OriginalSize.Width;
     int feet = static_cast<int>(round(3.28f * metres));
 
     std::string descriptionLabelText2 =

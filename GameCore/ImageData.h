@@ -38,6 +38,12 @@ public:
         , Data(std::move(data))
     {
     }
+
+    ImageData(ImageData && other)
+        : Size(other.Size)
+        , Data(std::move(other.Data))
+    {
+    }
 };
 
 using RgbImageData = ImageData<rgbColor>;

@@ -17,6 +17,7 @@ ShipPreview ShipPreview::Load(
     ImageSize const & maxSize)
 {
     std::filesystem::path previewImageFilePath;
+    std::optional<ImageSize> originalSize;
     std::optional<ShipMetadata> shipMetadata;
 
     if (ShipDefinitionFile::IsShipDefinitionFile(filepath))
@@ -33,13 +34,15 @@ ShipPreview ShipPreview::Load(
         {
             // Use texture for preview
             previewImageFilePath = basePath  / *sdf.TextureLayerImageFilePath;
-
         }
         else
         {
             // Use structural image for preview
             previewImageFilePath = basePath / sdf.StructuralLayerImageFilePath;
         }
+
+        // Original size is from structure
+        originalSize = ImageFileTools::GetImageSize(basePath / sdf.StructuralLayerImageFilePath);
 
         shipMetadata.emplace(sdf.Metadata);
     }
@@ -51,9 +54,12 @@ ShipPreview ShipPreview::Load(
 
         previewImageFilePath = filepath;
 
+        originalSize = ImageFileTools::GetImageSize(filepath);
+
         shipMetadata.emplace(std::filesystem::path(filepath).stem().string());
     }
 
+    assert(!!originalSize);
     assert(!!shipMetadata);
 
     //
@@ -68,5 +74,6 @@ ShipPreview ShipPreview::Load(
 
     return ShipPreview(
         std::move(trimmedPreviewImage),
+        std::move(*originalSize),
         *shipMetadata);
 }

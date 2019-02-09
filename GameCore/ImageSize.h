@@ -30,6 +30,20 @@ public:
     {
     }
 
+    ImageSize(ImageSize && other)
+        : Width(other.Width)
+        , Height(other.Height)
+    {
+    }
+
+    ImageSize & operator=(ImageSize const & other)
+    {
+        this->Width = other.Width;
+        this->Height = other.Height;
+
+        return *this;
+    }
+
     inline static ImageSize Zero()
     {
         return ImageSize(0, 0);
