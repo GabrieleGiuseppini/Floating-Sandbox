@@ -209,6 +209,10 @@ void ShipLoadDialog::Open()
 
         mShipPreviewPanel->OnOpen();
 
+        auto selectedPath = mDirCtrl->GetPath();
+        if (!selectedPath.IsEmpty())
+            mShipPreviewPanel->SetDirectory(std::filesystem::path(selectedPath.ToStdString()));
+
         Show(true);
     }
 }

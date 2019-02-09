@@ -387,15 +387,25 @@ void ShipPreviewPanel::ScanDirectory(std::filesystem::path const & directoryPath
 
     std::vector<std::filesystem::path> shipFilepaths;
 
-    for (auto const & entryIt : std::filesystem::directory_iterator(directoryPath))
+    try
     {
-        auto const entryFilepath = entryIt.path();
-        if (std::filesystem::is_regular_file(entryFilepath)
-            && (entryFilepath.extension().string() == ".png" || ShipDefinitionFile::IsShipDefinitionFile(entryFilepath)))
+        for (auto const & entryIt : std::filesystem::directory_iterator(directoryPath))
         {
-            shipFilepaths.push_back(entryFilepath);
+            auto const entryFilepath = entryIt.path();
+            try
+            {
+                if (std::filesystem::is_regular_file(entryFilepath)
+                    && (entryFilepath.extension().string() == ".png" || ShipDefinitionFile::IsShipDefinitionFile(entryFilepath)))
+                {
+                    shipFilepaths.push_back(entryFilepath);
+                }
+            }
+            catch (...)
+            { /*ignore this file*/ }
         }
     }
+    catch (...)
+    { /* interrupt scan here */ }
 
     QueueEvent(
         new fsDirScannedEvent(
