@@ -74,6 +74,8 @@ const long ID_MUTE_MENUITEM = wxNewId();
 
 const long ID_HELP_MENUITEM = wxNewId();
 const long ID_ABOUT_MENUITEM = wxNewId();
+const long ID_OPEN_HOME_PAGE_MENUITEM = wxNewId();
+const long ID_OPEN_CODE_PAGE_MENUITEM = wxNewId();
 
 const long ID_POSTIINITIALIZE_TIMER = wxNewId();
 const long ID_GAME_TIMER = wxNewId();
@@ -396,6 +398,16 @@ MainFrame::MainFrame(wxApp * mainApp)
     wxMenuItem * aboutMenuItem = new wxMenuItem(helpMenu, ID_ABOUT_MENUITEM, _("About\tF2"), _("Show credits and other I'vedunnit stuff"), wxITEM_NORMAL);
     helpMenu->Append(aboutMenuItem);
     Connect(ID_ABOUT_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAboutMenuItemSelected);
+
+    helpMenu->Append(new wxMenuItem(helpMenu, wxID_SEPARATOR));
+
+    wxMenuItem * openHomePageMenuItem = new wxMenuItem(helpMenu, ID_OPEN_HOME_PAGE_MENUITEM, _("Open Home Page (Game Jolt)"));
+    helpMenu->Append(openHomePageMenuItem);
+    Connect(ID_OPEN_HOME_PAGE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnOpenHomePageMenuItemSelected);
+
+    wxMenuItem * openCodePageMenuItem = new wxMenuItem(helpMenu, ID_OPEN_CODE_PAGE_MENUITEM, _("Open Code Page (GitHub)"));
+    helpMenu->Append(openCodePageMenuItem);
+    Connect(ID_OPEN_CODE_PAGE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnOpenCodePageMenuItemSelected);
 
     mainMenuBar->Append(helpMenu, _("Help"));
 
@@ -1283,6 +1295,16 @@ void MainFrame::OnAboutMenuItemSelected(wxCommandEvent & /*event*/)
     }
 
     mAboutDialog->Open();
+}
+
+void MainFrame::OnOpenHomePageMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    wxLaunchDefaultBrowser("https://gamejolt.com/games/floating-sandbox/353572");
+}
+
+void MainFrame::OnOpenCodePageMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    wxLaunchDefaultBrowser("https://github.com/GabrieleGiuseppini/Floating-Sandbox");
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

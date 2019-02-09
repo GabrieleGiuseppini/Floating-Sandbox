@@ -1,12 +1,13 @@
 1.8.0
+- Musical theme for this release: Coldplay, "A Rush of Blood to the Head"
 - Added ability to specify ships' characteristics with multiple layers (structural, electrical, ropes)
 	- Electrical properties can now be specified on top of any material - no more weak electrical cables!
 - Added cloth material (sails and flags!)
-- Added wind modulation, with gusts transferring impulse on cloth and rope materials
-- Added interactive tool to shape the ocean floor in real time
-- Added air bubbles from leaking parts of the ship
-- Added flood tool to flood and dry parts of a ship
-- Added possibility to take screenshots directly from within the game
+- Added wind modulation, with gusts transferring momentum to cloth and rope materials
+- Added tool to shape the ocean floor interactively
+- Added air bubbles coming out from holes in a ship
+- Added tool to flood and dry the interior of a ship
+- Added ability to take screenshots directly from within the game
 - Improved light diffusion, added more light types, and made lights vulnerable to becoming wet
 - Redesigned entire buoyancy simulation (see https://gabrielegiuseppini.wordpress.com/2018/12/22/a-physics-puzzle/)
 - Lowered friction of ships on the sea floor
