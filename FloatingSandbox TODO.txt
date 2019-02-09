@@ -1189,7 +1189,7 @@ Render:
 		+ S:  Higher values cause physical instability but provide for a nice effect!
 		+ See if global settings are really needed
 
-	- Menu entry for "Check for updates..."
+	- Menu entries for "Home Page (GameJolt)/Code Page (GitHub)"
 		- wxLaunchDefaultBrowser
 
 	- SettingsDialog: add tooltips at each setting
@@ -1357,7 +1357,7 @@ Render:
 				+ If doesn't work, try DC
 				+ If doesn't work, try Matrioska
 		- Cleanup source/Ships directory (make .dat's)
-		- Test:
+		= Test:
 			+ Super-minimize
 			+ Image preview hits selection border? No
 			+ ShipLoadDialog does not catch ShipFileChosen event

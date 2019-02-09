@@ -164,7 +164,7 @@ void ShipLoadDialog::Open()
 {
     if (!IsShown())
     {
-        // Reset our current selection
+        // Reset our current ship selection
         mSelectedShipFilepath.reset();
 
         // Disable load button

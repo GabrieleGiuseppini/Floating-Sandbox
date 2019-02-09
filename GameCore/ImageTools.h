@@ -146,7 +146,7 @@ private:
                     dstX < newWidth;
                     ++srcX, ++dstX)
                 {
-                    assert(dstLineOffset + dstX < srcLineOffset + srcX);
+                    assert(dstLineOffset + dstX <= srcLineOffset + srcX);
 
                     buffer[dstLineOffset + dstX] = buffer[srcLineOffset + srcX];
                 }
