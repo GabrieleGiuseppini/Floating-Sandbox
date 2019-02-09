@@ -168,32 +168,35 @@ void ShipLoadDialog::Open()
         mSelectedShipFilepath.reset();
 
         // Disable load button
-        mLoadButton->Enable(true);
+        mLoadButton->Enable(false);
 
 
         //
-        // Load settings from preferences
+        // Load settings from preferences, if needed
         //
 
-        assert(!mUIPreferences->GetShipLoadDirectories().empty());
-
-        bool isFirst = true;
-        mRecentDirectoriesComboBox->Clear();
-        for (auto dir : mUIPreferences->GetShipLoadDirectories())
+        if (mRecentDirectoriesComboBox->GetCount() == 0)
         {
-            if (std::filesystem::exists(dir))
+            assert(!mUIPreferences->GetShipLoadDirectories().empty());
+
+            bool isFirst = true;
+            mRecentDirectoriesComboBox->Clear();
+            for (auto dir : mUIPreferences->GetShipLoadDirectories())
             {
-                mRecentDirectoriesComboBox->Append(dir.string());
-
-                if (isFirst)
+                if (std::filesystem::exists(dir))
                 {
-                    // Set in dir tree
-                    mDirCtrl->SetPath(dir.string());
+                    mRecentDirectoriesComboBox->Append(dir.string());
 
-                    // Set in preview
-                    mShipPreviewPanel->SetDirectory(dir.string());
+                    if (isFirst)
+                    {
+                        // Set in dir tree
+                        mDirCtrl->SetPath(dir.string());
 
-                    isFirst = false;
+                        // Set in preview
+                        mShipPreviewPanel->SetDirectory(dir.string());
+
+                        isFirst = false;
+                    }
                 }
             }
         }
@@ -203,8 +206,6 @@ void ShipLoadDialog::Open()
         //
         // Open dialog
         //
-
-        mLoadButton->Enable(false);
 
         mShipPreviewPanel->OnOpen();
 
@@ -266,7 +267,7 @@ void ShipLoadDialog::OnDirectorySelected(std::filesystem::path directoryPath)
     mSelectedShipFilepath.reset();
 
     // Disable load button
-    mLoadButton->Enable(true);
+    mLoadButton->Enable(false);
 
     // Propagate to preview panel
     mShipPreviewPanel->SetDirectory(directoryPath);
