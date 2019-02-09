@@ -5,14 +5,6 @@
 ***************************************************************************************/
 #include "ResourceLoader.h"
 
-#include <GameCore/GameException.h>
-#include <GameCore/Log.h>
-#include <GameCore/Utils.h>
-
-#include <algorithm>
-#include <cstring>
-#include <regex>
-
 ResourceLoader::ResourceLoader()
 {
     // Nothing special, for now.
@@ -23,12 +15,17 @@ ResourceLoader::ResourceLoader()
 // Ships
 ////////////////////////////////////////////////////////////////////////////////////////////
 
+std::filesystem::path ResourceLoader::GetInstalledShipFolderPath()
+{
+    return std::filesystem::canonical(std::filesystem::path("Ships"));
+}
+
 std::filesystem::path ResourceLoader::GetDefaultShipDefinitionFilePath() const
 {
-    std::filesystem::path defaultShipDefinitionFilePath = std::filesystem::path("Ships") / "default_ship.shp";
+    std::filesystem::path defaultShipDefinitionFilePath = GetInstalledShipFolderPath() / "default_ship.shp";
     if (!std::filesystem::exists(defaultShipDefinitionFilePath))
     {
-        defaultShipDefinitionFilePath = std::filesystem::path("Ships") / "default_ship.png";
+        defaultShipDefinitionFilePath = GetInstalledShipFolderPath() / "default_ship.png";
     }
 
     return defaultShipDefinitionFilePath;
@@ -126,6 +123,12 @@ std::filesystem::path ResourceLoader::GetIconFilepath(std::string const & iconNa
 std::filesystem::path ResourceLoader::GetArtFilepath(std::string const & artName) const
 {
     std::filesystem::path localPath = std::filesystem::path("Data") / "Resources" / (artName + ".png");
+    return std::filesystem::absolute(localPath);
+}
+
+std::filesystem::path ResourceLoader::GetBitmapFilepath(std::string const & bitmapName) const
+{
+    std::filesystem::path localPath = std::filesystem::path("Data") / "Resources" / (bitmapName + ".png");
     return std::filesystem::absolute(localPath);
 }
 

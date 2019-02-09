@@ -1,6 +1,9 @@
 {
 	"structure_image":"carnival_dream_structure.png.dat",
 	"texture_image":"carnival_dream_texture.png.dat",
+	"offset":{"x":0.0, "y":-5.0},
+
 	"ship_name":"Carnival Dream",
-	"offset":{"x":0.0, "y":-5.0}
+	"created_by":"Gabriele Giuseppini",
+	"year_built":"2008"
 }

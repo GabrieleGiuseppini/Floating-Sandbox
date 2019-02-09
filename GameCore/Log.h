@@ -9,6 +9,7 @@
 #include <deque>
 #include <functional>
 #include <iostream>
+#include <mutex>
 #include <sstream>
 #include <string>
 
@@ -48,6 +49,7 @@ public:
 	Logger()
 		: mCurrentListener()
 		, mStoredMessages()
+        , mStoredMessagesMutex()
 	{
 	}
 
@@ -63,10 +65,14 @@ public:
 		mCurrentListener = std::move(listener);
 
 		// Publish all the messages so far
-		for (std::string const & message : mStoredMessages)
-		{
-			mCurrentListener(message);
-		}
+        {
+            std::scoped_lock lock(mStoredMessagesMutex);
+
+            for (std::string const & message : mStoredMessages)
+            {
+                mCurrentListener(message);
+            }
+        }
 	}
 
 	void UnregisterListener()
@@ -84,11 +90,15 @@ public:
 		std::string const & message = ss.str();
 
 		// Store
-		mStoredMessages.push_back(message);
-		if (mStoredMessages.size() > MaxStoredMessages)
-		{
-			mStoredMessages.pop_front();
-		}
+        {
+            std::scoped_lock lock(mStoredMessagesMutex);
+
+            mStoredMessages.push_back(message);
+            if (mStoredMessages.size() > MaxStoredMessages)
+            {
+                mStoredMessages.pop_front();
+            }
+        }
 
 		// Publish
 		if (!!mCurrentListener)
@@ -118,6 +128,9 @@ private:
 	// The messages stored so far
 	std::deque<std::string> mStoredMessages;
 	static constexpr size_t MaxStoredMessages = 10000;
+
+    // The mutex for the message queue
+    std::mutex mStoredMessagesMutex;
 };
 
 //

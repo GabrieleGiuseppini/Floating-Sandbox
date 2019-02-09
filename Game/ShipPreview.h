@@ -22,18 +22,18 @@ struct ShipPreview
 {
 public:
 
-    ImageData PreviewImage;
+    RgbaImageData PreviewImage;
 
     ShipMetadata const Metadata;
 
     static ShipPreview Load(
         std::filesystem::path const & filepath,
-        int previewWidth);
+        ImageSize const & maxSize);
 
 private:
 
     ShipPreview(
-        ImageData previewImage,
+        RgbaImageData previewImage,
         ShipMetadata const metadata)
         : PreviewImage(std::move(previewImage))
         , Metadata(std::move(metadata))

@@ -15,7 +15,7 @@ namespace Render {
 
 ShipRenderContext::ShipRenderContext(
     size_t pointCount,
-    ImageData texture,
+    RgbaImageData texture,
     ShipDefinition::TextureOriginType /*textureOrigin*/,
     ShaderManager<ShaderManagerTraits> & shaderManager,
     GameOpenGLTexture & textureAtlasOpenGLHandle,

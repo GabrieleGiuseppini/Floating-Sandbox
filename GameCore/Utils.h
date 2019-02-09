@@ -5,6 +5,7 @@
  ***************************************************************************************/
 #pragma once
 
+#include "Colors.h"
 #include "GameException.h"
 #include "Vectors.h"
 
@@ -32,6 +33,10 @@ public:
     //
 
     static picojson::value ParseJSONFile(std::filesystem::path const & filepath);
+
+    static void SaveJSONFile(
+        picojson::value const & value,
+        std::filesystem::path const & filepath);
 
     template<typename T>
     static T GetOptionalJsonMember(
@@ -272,7 +277,7 @@ public:
         return ss.str();
     }
 
-    static std::array<uint8_t, 3u> Hex2RgbColor(std::string str)
+    static rgbColor Hex2RgbColor(std::string str)
     {
         if (str[0] == '#')
             str = str.substr(1);
@@ -280,34 +285,15 @@ public:
         if (str.length() != 6)
             throw GameException("Error: badly formed hex color value \"" + str + "\"");
 
-        std::array<uint8_t, 3u> rgbColor;
-        rgbColor[0] = Hex2Byte(str.substr(0, 2));
-        rgbColor[1] = Hex2Byte(str.substr(2, 2));
-        rgbColor[2] = Hex2Byte(str.substr(4, 2));
-
-        return rgbColor;
+        return rgbColor(
+            Hex2Byte(str.substr(0, 2)),
+            Hex2Byte(str.substr(2, 2)),
+            Hex2Byte(str.substr(4, 2)));
     }
 
-    static std::string RgbColor2Hex(std::array<uint8_t, 3u> const & rgbColor)
+    static std::string RgbColor2Hex(rgbColor const & rgbColor)
     {
-        return std::string("#") + Byte2Hex(rgbColor[0]) + Byte2Hex(rgbColor[1]) + Byte2Hex(rgbColor[2]);
-    }
-
-    static vec3f RgbToVec(std::array<uint8_t, 3u> const & rgbColor)
-    {
-        return vec3f(
-            rgbColor[0] / 255.f,
-            rgbColor[1] / 255.f,
-            rgbColor[2] / 255.f);
-    }
-
-    static vec4f RgbaToVec(std::array<uint8_t, 4u> const & rgbColor)
-    {
-        return vec4f(
-            rgbColor[0] / 255.f,
-            rgbColor[1] / 255.f,
-            rgbColor[2] / 255.f,
-            rgbColor[3] / 255.f);
+        return std::string("#") + Byte2Hex(rgbColor.r) + Byte2Hex(rgbColor.g) + Byte2Hex(rgbColor.b);
     }
 
     //
@@ -326,5 +312,22 @@ public:
         ss << file.rdbuf();
 
         return ss.str();
+    }
+
+    static void SaveTextFile(
+        std::string const & content,
+        std::filesystem::path const & filepath)
+    {
+        auto const directoryPath = filepath.parent_path();
+        if (!std::filesystem::exists(directoryPath))
+            std::filesystem::create_directories(directoryPath);
+
+        std::ofstream file(filepath.string(), std::ios::out);
+        if (!file.is_open())
+        {
+            throw GameException("Cannot open file \"" + filepath.string() + "\"");
+        }
+
+        file << content;
     }
 };

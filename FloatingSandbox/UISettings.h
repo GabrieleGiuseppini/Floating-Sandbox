@@ -7,11 +7,16 @@
 
 #include <filesystem>
 
+/*
+ * UI settings managed by the SettingsManager class.
+ */
 class UISettings
 {
 public:
 
     UISettings();
+
+public:
 
     std::filesystem::path const & GetScreenshotsFolderPath() const
     {

@@ -7,8 +7,6 @@
 
 #include <GameCore/Utils.h>
 
-#include <array>
-
 StructuralMaterial StructuralMaterial::Create(picojson::object const & structuralMaterialJson)
 {
     std::string name = Utils::GetMandatoryJsonMember<std::string>(structuralMaterialJson, "name");
@@ -23,9 +21,10 @@ StructuralMaterial StructuralMaterial::Create(picojson::object const & structura
 
         float stiffness = static_cast<float>(Utils::GetOptionalJsonMember<double>(structuralMaterialJson, "stiffness", 1.0));
 
-        std::array<uint8_t, 3u> renderColorRgb = Utils::Hex2RgbColor(
-            Utils::GetMandatoryJsonMember<std::string>(structuralMaterialJson, "render_color"));
-        vec4f renderColor = Utils::RgbaToVec({ renderColorRgb[0], renderColorRgb[1], renderColorRgb[2], 255 });
+        vec4f renderColor =
+            Utils::Hex2RgbColor(
+                Utils::GetMandatoryJsonMember<std::string>(structuralMaterialJson, "render_color"))
+            .toVec4f(1.0f);
 
         bool isHull = Utils::GetMandatoryJsonMember<bool>(structuralMaterialJson, "is_hull");
         float waterVolumeFill = static_cast<float>(Utils::GetMandatoryJsonMember<double>(structuralMaterialJson, "water_volume_fill"));

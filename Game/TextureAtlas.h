@@ -128,11 +128,11 @@ struct TextureAtlas
     TextureAtlasMetadata Metadata;
 
     // The image itself
-    ImageData AtlasData;
+    RgbaImageData AtlasData;
 
     TextureAtlas(
         TextureAtlasMetadata const & metadata,
-        ImageData atlasData)
+        RgbaImageData atlasData)
         : Metadata(metadata)
         , AtlasData(std::move(atlasData))
     {}
@@ -237,9 +237,9 @@ private:
         ProgressCallback const & progressCallback);
 
     static void CopyImage(
-        std::unique_ptr<unsigned char const []> sourceImage,
+        std::unique_ptr<rgbaColor const []> sourceImage,
         ImageSize sourceImageSize,
-        unsigned char * destImage,
+        rgbaColor * destImage,
         ImageSize destImageSize,
         int destinationLeftX,
         int destinationBottomY);

@@ -137,7 +137,7 @@ struct Font
 {
     FontMetadata Metadata;
 
-    ImageData Texture;
+    RgbaImageData Texture;
 
     static std::vector<Render::Font> LoadAll(
         ResourceLoader const & resourceLoader,
@@ -149,7 +149,7 @@ private:
 
     Font(
         FontMetadata metadata,
-        ImageData texture)
+        RgbaImageData texture)
         : Metadata(std::move(metadata))
         , Texture(std::move(texture))
     {}

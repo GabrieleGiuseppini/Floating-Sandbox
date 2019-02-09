@@ -113,7 +113,9 @@ Font Font::Load(std::filesystem::path const & filepath)
     std::unique_ptr<uint8_t[]> header = std::make_unique<uint8_t[]>(HeaderSize);
     file.read(reinterpret_cast<char*>(header.get()), HeaderSize);
 
-    std::unique_ptr<unsigned char[]> textureData = std::make_unique<unsigned char[]>(fileSize - HeaderSize);
+    assert(0 == ((fileSize - HeaderSize) % sizeof(rgbaColor)));
+
+    std::unique_ptr<rgbaColor[]> textureData = std::make_unique<rgbaColor[]>((fileSize - HeaderSize) / sizeof(rgbaColor));
     file.read(reinterpret_cast<char*>(textureData.get()), fileSize - HeaderSize);
 
 
@@ -163,7 +165,7 @@ Font Font::Load(std::filesystem::path const & filepath)
             textureSize.Width / cellSize.Width,
             static_cast<float>(cellSize.Width) / static_cast<float>(textureSize.Width),
             static_cast<float>(cellSize.Height) / static_cast<float>(textureSize.Height)),
-        ImageData(
+        RgbaImageData(
             textureSize,
             std::move(textureData)));
 }

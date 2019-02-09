@@ -11,8 +11,10 @@
 #include "LoggingDialog.h"
 #include "ProbePanel.h"
 #include "SettingsDialog.h"
+#include "ShipLoadDialog.h"
 #include "SoundController.h"
 #include "ToolController.h"
+#include "UIPreferences.h"
 #include "UISettings.h"
 
 #include <Game/GameController.h>
@@ -86,7 +88,7 @@ private:
     // Dialogs
     //
 
-    std::unique_ptr<wxFileDialog> mFileOpenDialog;
+    std::unique_ptr<ShipLoadDialog> mShipLoadDialog;
     std::unique_ptr<LoggingDialog> mLoggingDialog;
     std::unique_ptr<SettingsDialog> mSettingsDialog;
     std::unique_ptr<HelpDialog> mHelpDialog;
@@ -107,14 +109,15 @@ private:
     //
 
     // App
-    void OnPostInitializeTrigger(wxTimerEvent& event);
-    void OnMainFrameClose(wxCloseEvent& event);
-    void OnQuit(wxCommandEvent& event);
-    void OnPaint(wxPaintEvent& event);
-    void OnKeyDown(wxKeyEvent& event);
-    void OnGameTimerTrigger(wxTimerEvent& event);
-    void OnLowFrequencyTimerTrigger(wxTimerEvent& event);
-    void OnIdle(wxIdleEvent& event);
+    void OnPostInitializeTrigger(wxTimerEvent & event);
+    void OnMainFrameClose(wxCloseEvent & event);
+    void OnQuit(wxCommandEvent & event);
+    void OnPaint(wxPaintEvent & event);
+    void OnKeyDown(wxKeyEvent & event);
+    void OnGameTimerTrigger(wxTimerEvent & event);
+    void OnLowFrequencyTimerTrigger(wxTimerEvent & event);
+    void OnIdle(wxIdleEvent & event);
+    void OnShipFileChosen(fsShipFileChosenEvent & event);
 
     // Main GL canvas
     void OnMainGLCanvasResize(wxSizeEvent& event);
@@ -261,6 +264,7 @@ private:
     std::shared_ptr<GameController> mGameController;
     std::shared_ptr<SoundController> mSoundController;
     std::shared_ptr <UISettings> mUISettings;
+    std::shared_ptr <UIPreferences> mUIPreferences;
     std::unique_ptr<ToolController> mToolController;
 
 

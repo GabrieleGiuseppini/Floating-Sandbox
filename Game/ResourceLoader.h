@@ -5,11 +5,6 @@
 ***************************************************************************************/
 #pragma once
 
-#include <GameCore/ImageData.h>
-#include <GameCore/ProgressCallback.h>
-#include <GameCore/SysSpecifics.h>
-
-#include <cstdint>
 #include <filesystem>
 #include <string>
 #include <vector>
@@ -25,6 +20,8 @@ public:
     //
     // Ships
     //
+
+    static std::filesystem::path GetInstalledShipFolderPath();
 
     std::filesystem::path GetDefaultShipDefinitionFilePath() const;
 
@@ -75,6 +72,8 @@ public:
     std::filesystem::path GetIconFilepath(std::string const & iconName) const;
 
     std::filesystem::path GetArtFilepath(std::string const & artName) const;
+
+    std::filesystem::path GetBitmapFilepath(std::string const & iconName) const;
 
 
     //

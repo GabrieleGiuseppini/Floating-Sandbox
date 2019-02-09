@@ -87,6 +87,7 @@ MainFrame::MainFrame(wxApp * mainApp)
     , mGameController()
     , mSoundController()
     , mUISettings()
+    , mUIPreferences()
     , mToolController()
     , mHasWindowBeenShown(false)
     , mCurrentShipTitles()
@@ -107,11 +108,11 @@ MainFrame::MainFrame(wxApp * mainApp)
     Maximize();
     Centre();
 
-    Connect(this->GetId(), wxEVT_CLOSE_WINDOW, (wxObjectEventFunction)&MainFrame::OnMainFrameClose);
-    Connect(this->GetId(), wxEVT_PAINT, (wxObjectEventFunction)&MainFrame::OnPaint);
+    Bind(wxEVT_CLOSE_WINDOW, &MainFrame::OnMainFrameClose, this);
+    Bind(wxEVT_PAINT, &MainFrame::OnPaint, this);
 
     wxPanel* mainPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, -1), wxWANTS_CHARS);
-    mainPanel->Bind(wxEVT_CHAR_HOOK, (wxObjectEventFunction)&MainFrame::OnKeyDown, this);
+    mainPanel->Bind(wxEVT_CHAR_HOOK, &MainFrame::OnKeyDown, this);
 
     mMainFrameSizer = new wxBoxSizer(wxVERTICAL);
 
@@ -565,6 +566,13 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
 
     //
+    // Create UI Preferences
+    //
+
+    mUIPreferences = std::make_shared<UIPreferences>();
+
+
+    //
     // Create Tool controller
     //
 
@@ -805,6 +813,25 @@ void MainFrame::OnIdle(wxIdleEvent & /*event*/)
 {
 }
 
+void MainFrame::OnShipFileChosen(fsShipFileChosenEvent & event)
+{
+    //
+    // Load ship
+    //
+
+    ResetState();
+
+    assert(!!mGameController);
+    try
+    {
+        mGameController->ResetAndLoadShip(event.GetShipFilepath());
+    }
+    catch (std::exception const & ex)
+    {
+        OnError(ex.what(), false);
+    }
+}
+
 //
 // Main canvas event handlers
 //
@@ -880,38 +907,19 @@ void MainFrame::OnMainGLCanvasCaptureMouseLost(wxCloseEvent & /*event*/)
 
 void MainFrame::OnLoadShipMenuItemSelected(wxCommandEvent & /*event*/)
 {
-    if (!mFileOpenDialog)
+    if (!mShipLoadDialog)
     {
-        mFileOpenDialog = std::make_unique<wxFileDialog>(
+        mShipLoadDialog = std::make_unique<ShipLoadDialog>(
             this,
-            L"Select Ship",
-            wxEmptyString,
-            wxEmptyString,
-            L"Ship files (*.shp; *.png)|*.shp; *.png",
-            wxFD_OPEN | wxFD_FILE_MUST_EXIST,
-            wxDefaultPosition,
-            wxDefaultSize,
-            _T("File Open Dialog"));
+            mUIPreferences,
+            *mResourceLoader);
+
+        mShipLoadDialog->Bind(fsEVT_SHIP_FILE_CHOSEN, &MainFrame::OnShipFileChosen, this);
     }
 
-    assert(!!mFileOpenDialog);
+    assert(!!mShipLoadDialog);
 
-    if (mFileOpenDialog->ShowModal() == wxID_OK)
-    {
-        std::string filename = mFileOpenDialog->GetPath().ToStdString();
-
-        ResetState();
-
-        assert(!!mGameController);
-        try
-        {
-            mGameController->ResetAndLoadShip(filename);
-        }
-        catch (std::exception const & ex)
-        {
-            OnError(ex.what(), false);
-        }
-    }
+    mShipLoadDialog->Open(); // Will fire a ShipFileChosen event if user ends up selecting a ship
 }
 
 void MainFrame::OnReloadLastShipMenuItemSelected(wxCommandEvent & /*event*/)
@@ -944,7 +952,7 @@ void MainFrame::OnSaveScreenshotMenuItemSelected(wxCommandEvent & /*event*/)
     //
 
     assert(!!mGameController);
-    ImageData screenshotImage = mGameController->TakeScreenshot();
+    auto screenshotImage = mGameController->TakeScreenshot();
 
 
     //
@@ -1009,7 +1017,7 @@ void MainFrame::OnSaveScreenshotMenuItemSelected(wxCommandEvent & /*event*/)
 
     try
     {
-        ImageFileTools::SaveImageRgb(
+        ImageFileTools::SaveImage(
             screenshotFilePath,
             screenshotImage);
     }

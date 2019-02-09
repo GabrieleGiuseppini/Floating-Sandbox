@@ -53,7 +53,7 @@ public:
     void AddShip(std::filesystem::path const & shipDefinitionFilepath);
     void ReloadLastShip();
 
-    ImageData TakeScreenshot();
+    RgbImageData TakeScreenshot();
 
     void RunGameIteration();
     void LowFrequencyUpdate();

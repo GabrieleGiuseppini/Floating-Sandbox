@@ -51,6 +51,10 @@ ShipDefinitionFile ShipDefinitionFile::Create(
         definitionJson,
         "created_by");
 
+    std::optional<std::string> yearBuilt = Utils::GetOptionalJsonMember<std::string>(
+        definitionJson,
+        "year_built");
+
     vec2f offset(0.0f, 0.0f);
     std::optional<picojson::object> offsetObject = Utils::GetOptionalJsonObject(definitionJson, "offset");
     if (!!offsetObject)
@@ -67,5 +71,6 @@ ShipDefinitionFile ShipDefinitionFile::Create(
         ShipMetadata(
             shipName,
             author,
+            yearBuilt,
             offset));
 }

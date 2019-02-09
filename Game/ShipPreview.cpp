@@ -8,11 +8,13 @@
 #include "ImageFileTools.h"
 #include "ShipDefinitionFile.h"
 
+#include <GameCore/ImageTools.h>
+
 #include <cassert>
 
 ShipPreview ShipPreview::Load(
     std::filesystem::path const & filepath,
-    int previewWidth)
+    ImageSize const & maxSize)
 {
     std::filesystem::path previewImageFilePath;
     std::optional<ShipMetadata> shipMetadata;
@@ -55,14 +57,16 @@ ShipPreview ShipPreview::Load(
     assert(!!shipMetadata);
 
     //
-    // Load preview
+    // Load preview image and trim it
     //
 
-    ImageData previewImage = ImageFileTools::LoadImageRgbaLowerLeftAndResize(
+    auto previewImage = ImageFileTools::LoadImageRgbaLowerLeftAndResize(
         previewImageFilePath,
-        previewWidth);
+        maxSize);
+
+    auto trimmedPreviewImage = ImageTools::Trim(std::move(previewImage));
 
     return ShipPreview(
-        std::move(previewImage),
+        std::move(trimmedPreviewImage),
         *shipMetadata);
 }

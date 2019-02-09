@@ -5,6 +5,7 @@
  ***************************************************************************************/
 #pragma once
 
+#include <GameCore/Colors.h>
 #include <GameCore/GameException.h>
 #include <GameCore/Vectors.h>
 

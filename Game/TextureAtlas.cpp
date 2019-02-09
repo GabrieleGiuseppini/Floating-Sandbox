@@ -224,11 +224,11 @@ TextureAtlas TextureAtlasBuilder::BuildAtlas(
     float const dy = 0.5f / static_cast<float>(specification.AtlasSize.Height);
 
     // Allocate image
-    size_t const imageByteSize = specification.AtlasSize.Width * specification.AtlasSize.Height * 4;
-    std::unique_ptr<unsigned char[]> atlasImage(new unsigned char[imageByteSize]);
+    size_t const imagePoints = specification.AtlasSize.Width * specification.AtlasSize.Height;
+    std::unique_ptr<rgbaColor[]> atlasImage(new rgbaColor[imagePoints]);
 
     // Fill image - transparent black
-    std::fill_n(atlasImage.get(), imageByteSize, static_cast<unsigned char>(0u));
+    std::fill_n(atlasImage.get(), imagePoints, rgbaColor::zero());
 
     // Copy all textures into image, building metadata at the same time
     std::vector<TextureAtlasFrameMetadata> metadata;
@@ -265,7 +265,7 @@ TextureAtlas TextureAtlasBuilder::BuildAtlas(
             textureFrame.Metadata);
     }
 
-    ImageData atlasImageData(
+    RgbaImageData atlasImageData(
         specification.AtlasSize,
         std::move(atlasImage));
 
@@ -280,9 +280,9 @@ TextureAtlas TextureAtlasBuilder::BuildAtlas(
 }
 
 void TextureAtlasBuilder::CopyImage(
-    std::unique_ptr<unsigned char const []> sourceImage,
+    std::unique_ptr<rgbaColor const []> sourceImage,
     ImageSize sourceImageSize,
-    unsigned char * destImage,
+    rgbaColor * destImage,
     ImageSize destImageSize,
     int destinationLeftX,
     int destinationBottomY)
@@ -294,9 +294,9 @@ void TextureAtlasBuilder::CopyImage(
         size_t const srcIndex = y * sourceImageSize.Width;
         size_t const dstIndex = (destinationBottomY + y) * destImageSize.Width + destinationLeftX;
         std::copy_n(
-            &(sourceImage[srcIndex * 4]),
-            sourceImageSize.Width * 4,
-            &(destImage[dstIndex * 4]));
+            &(sourceImage[srcIndex]),
+            sourceImageSize.Width,
+            &(destImage[dstIndex]));
     }
 }
 

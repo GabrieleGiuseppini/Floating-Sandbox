@@ -5,19 +5,155 @@
 ***************************************************************************************/
 #include "ShipLoadDialog.h"
 
-ShipLoadDialog::ShipLoadDialog(wxWindow * parent)
+#include <GameCore/Log.h>
+
+#include <wx/sizer.h>
+
+constexpr int MinDirCtrlWidth = 260;
+
+ShipLoadDialog::ShipLoadDialog(
+    wxWindow * parent,
+    std::shared_ptr<UIPreferences> uiPreferences,
+    ResourceLoader const & resourceLoader)
 	: mParent(parent)
+    , mUIPreferences(std::move(uiPreferences))
 {
 	Create(
 		mParent,
 		wxID_ANY,
 		_("Load Ship"),
 		wxDefaultPosition,
-        wxSize(800, 250),
-		wxCAPTION | wxCLOSE_BOX | wxRESIZE_BORDER | wxMINIMIZE_BOX | wxFRAME_SHAPED,
+        wxDefaultSize,
+		wxCAPTION | wxRESIZE_BORDER | wxCLOSE_BOX | wxFRAME_SHAPED | wxSTAY_ON_TOP,
 		_T("Load Ship Dialog"));
 
 	SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
+
+    Bind(wxEVT_CLOSE_WINDOW, &ShipLoadDialog::OnCloseWindow, this);
+
+
+
+    wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+
+
+
+    //
+    // Directory and preview
+    //
+
+    wxBoxSizer * hSizer1 = new wxBoxSizer(wxHORIZONTAL);
+
+
+
+    // Directory
+
+    assert(!mUIPreferences->GetShipLoadDirectories().empty());
+
+    mDirCtrl = new wxGenericDirCtrl(
+        this,
+        wxID_ANY,
+        mUIPreferences->GetShipLoadDirectories().front().string(),
+        wxDefaultPosition,
+        wxSize(MinDirCtrlWidth, 500),
+        wxDIRCTRL_DIR_ONLY);
+
+    mDirCtrl->SetMinSize(wxSize(MinDirCtrlWidth, 500));
+    mDirCtrl->Bind(wxEVT_DIRCTRL_SELECTIONCHANGED, (wxObjectEventFunction)&ShipLoadDialog::OnDirCtrlDirSelected, this);
+
+    hSizer1->Add(mDirCtrl, 0, wxEXPAND | wxALIGN_TOP);
+
+
+    // Preview
+
+    mShipPreviewPanel = new ShipPreviewPanel(this, resourceLoader);
+
+    mShipPreviewPanel->Bind(fsEVT_SHIP_FILE_SELECTED, &ShipLoadDialog::OnShipFileSelected, this);
+    mShipPreviewPanel->Bind(fsEVT_SHIP_FILE_CHOSEN, &ShipLoadDialog::OnShipFileChosen, this);
+
+    hSizer1->Add(mShipPreviewPanel, 1, wxALIGN_TOP | wxEXPAND);
+
+
+
+
+    vSizer->Add(hSizer1, 1, wxEXPAND);
+
+    vSizer->AddSpacer(10);
+
+
+
+    //
+    // Recent directories combo
+    //
+
+    // |  | Label |  |
+    // |  | Combo |  |
+
+    wxBoxSizer * hSizer2 = new wxBoxSizer(wxHORIZONTAL);
+    hSizer2->AddSpacer(10);
+
+    wxBoxSizer * vSizer2 = new wxBoxSizer(wxVERTICAL);
+
+    wxStaticText * recentDirsLabel = new wxStaticText(this, wxID_ANY, "Recent directories:");
+    vSizer2->Add(recentDirsLabel, 0, wxALIGN_LEFT);
+
+    wxArrayString comboChoices;
+    mRecentDirectoriesComboBox = new wxComboBox(
+        this,
+        wxID_ANY,
+        "",
+        wxDefaultPosition,
+        wxDefaultSize,
+        comboChoices,
+        wxCB_DROPDOWN | wxCB_READONLY);
+    mRecentDirectoriesComboBox->Bind(wxEVT_COMBOBOX, &ShipLoadDialog::OnRecentDirectorySelected, this);
+    vSizer2->Add(mRecentDirectoriesComboBox, 0, wxEXPAND);
+
+    hSizer2->Add(vSizer2, 1, 0);
+
+    hSizer2->AddSpacer(10);
+
+
+
+    vSizer->Add(hSizer2, 0, wxEXPAND);
+
+    vSizer->AddSpacer(10);
+
+
+
+    //
+    // Buttons
+    //
+
+    wxBoxSizer * buttonsSizer = new wxBoxSizer(wxHORIZONTAL);
+
+    mLoadButton = new wxButton(this, wxID_ANY, "Load");
+    mLoadButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnLoadButton, this);
+    buttonsSizer->Add(mLoadButton, 0);
+
+    buttonsSizer->AddSpacer(20);
+
+    wxButton * cancelButton = new wxButton(this, wxID_ANY, "Cancel");
+    cancelButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnCancelButton, this);
+    buttonsSizer->Add(cancelButton, 0);
+
+    buttonsSizer->AddSpacer(20);
+
+    vSizer->Add(buttonsSizer, 0, wxALIGN_RIGHT);
+
+    vSizer->AddSpacer(10);
+
+
+    //
+    // Finalize layout
+    //
+
+    SetSizerAndFit(vSizer);
+
+    // Size so that we have 3 columns of previews right away
+    constexpr int Width = MinDirCtrlWidth + ShipPreviewPanel::MinPreviewWidth * 3 + 20;
+    SetSize(wxSize(Width, 600 * Width / 800));
+
+    Centre();
 }
 
 ShipLoadDialog::~ShipLoadDialog()
@@ -26,5 +162,144 @@ ShipLoadDialog::~ShipLoadDialog()
 
 void ShipLoadDialog::Open()
 {
-	this->Show();
+    if (!IsShown())
+    {
+        // Reset our current ship selection
+        mSelectedShipFilepath.reset();
+
+        // Disable load button
+        mLoadButton->Enable(false);
+
+
+        //
+        // Load settings from preferences, if needed
+        //
+
+        if (mRecentDirectoriesComboBox->GetCount() == 0)
+        {
+            assert(!mUIPreferences->GetShipLoadDirectories().empty());
+
+            bool isFirst = true;
+            mRecentDirectoriesComboBox->Clear();
+            for (auto dir : mUIPreferences->GetShipLoadDirectories())
+            {
+                if (std::filesystem::exists(dir))
+                {
+                    mRecentDirectoriesComboBox->Append(dir.string());
+
+                    if (isFirst)
+                    {
+                        // Set in dir tree
+                        mDirCtrl->SetPath(dir.string());
+
+                        // Set in preview
+                        mShipPreviewPanel->SetDirectory(dir.string());
+
+                        isFirst = false;
+                    }
+                }
+            }
+        }
+
+
+
+        //
+        // Open dialog
+        //
+
+        mShipPreviewPanel->OnOpen();
+
+        auto selectedPath = mDirCtrl->GetPath();
+        if (!selectedPath.IsEmpty())
+            mShipPreviewPanel->SetDirectory(std::filesystem::path(selectedPath.ToStdString()));
+
+        Show(true);
+    }
+}
+
+void ShipLoadDialog::OnDirCtrlDirSelected(wxCommandEvent & /*event*/)
+{
+    std::filesystem::path selectedDirPath(mDirCtrl->GetPath().ToStdString());
+
+    OnDirectorySelected(selectedDirPath);
+}
+
+void ShipLoadDialog::OnShipFileSelected(fsShipFileSelectedEvent & event)
+{
+    // Store selection
+    mSelectedShipFilepath = event.GetShipFilepath();
+
+    // Enable load button
+    mLoadButton->Enable(true);
+}
+
+void ShipLoadDialog::OnShipFileChosen(fsShipFileChosenEvent & event)
+{
+    // Store selection
+    mSelectedShipFilepath = event.GetShipFilepath();
+
+    // Process
+    OnShipFileChosen(*mSelectedShipFilepath);
+}
+
+void ShipLoadDialog::OnRecentDirectorySelected(wxCommandEvent & /*event*/)
+{
+    mDirCtrl->SetPath(mRecentDirectoriesComboBox->GetValue()); // Will send its own event
+}
+
+void ShipLoadDialog::OnLoadButton(wxCommandEvent & /*event*/)
+{
+    assert(!!mSelectedShipFilepath);
+
+    // Process
+    OnShipFileChosen(*mSelectedShipFilepath);
+}
+
+void ShipLoadDialog::OnCancelButton(wxCommandEvent & /*event*/)
+{
+    Close();
+}
+
+void ShipLoadDialog::OnCloseWindow(wxCloseEvent & /*event*/)
+{
+    Close();
+}
+
+void ShipLoadDialog::OnDirectorySelected(std::filesystem::path directoryPath)
+{
+    // Reset our current selection
+    mSelectedShipFilepath.reset();
+
+    // Disable load button
+    mLoadButton->Enable(false);
+
+    // Propagate to preview panel
+    mShipPreviewPanel->SetDirectory(directoryPath);
+}
+
+void ShipLoadDialog::OnShipFileChosen(std::filesystem::path shipFilepath)
+{
+    LogMessage("ShipLoadDialog::OnShipFileChosen: ", shipFilepath);
+
+    // Close ourselves
+    Close();
+
+    // Store directory in preferences
+    mUIPreferences->AddShipLoadDirectory(shipFilepath.parent_path());
+
+    // Fire select event
+    auto event = fsShipFileChosenEvent(
+        fsEVT_SHIP_FILE_CHOSEN,
+        this->GetId(),
+        shipFilepath);
+
+    ProcessWindowEvent(event);
+}
+
+void ShipLoadDialog::Close()
+{
+    mShipPreviewPanel->OnClose();
+
+    // We just hide ourselves, so we can re-show ourselves again
+    this->Hide();
 }

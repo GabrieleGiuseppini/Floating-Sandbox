@@ -18,6 +18,8 @@ wxBEGIN_EVENT_TABLE(LoggingDialog, wxDialog)
 	EVT_CLOSE(LoggingDialog::OnClose)
 wxEND_EVENT_TABLE()
 
+wxDEFINE_EVENT(fsEVT_LOG_MESSAGE, fsLogMessageEvent);
+
 LoggingDialog::LoggingDialog(wxWindow * parent)
 	: mParent(parent)
 {
@@ -48,11 +50,12 @@ LoggingDialog::LoggingDialog(wxWindow * parent)
 	mTextCtrl->SetFont(font);
 
     //
-    // Connect key events
+    // Connect events
     //
 
-    this->Connect(wxID_ANY, wxEVT_KEY_DOWN, wxKeyEventHandler(LoggingDialog::OnKeyDown), (wxObject*)NULL, this);
-    mTextCtrl->Connect(wxID_ANY, wxEVT_KEY_DOWN, wxKeyEventHandler(LoggingDialog::OnKeyDown), (wxObject*)NULL, this);
+    Bind(wxEVT_KEY_DOWN, &LoggingDialog::OnKeyDown, this);
+    mTextCtrl->Bind(wxEVT_KEY_DOWN, &LoggingDialog::OnKeyDown, this);
+    Bind(fsEVT_LOG_MESSAGE, &LoggingDialog::OnLogMessage, this);
 }
 
 LoggingDialog::~LoggingDialog()
@@ -64,8 +67,8 @@ void LoggingDialog::Open()
 	Logger::Instance.RegisterListener(
 		[this](std::string const & message)
 		{
-			assert(this->mTextCtrl != nullptr);
-			this->mTextCtrl->WriteText(message);
+            fsLogMessageEvent * event = new fsLogMessageEvent(fsEVT_LOG_MESSAGE, this->GetId(), message);
+            QueueEvent(event);
 		});
 
 	this->Show();
@@ -120,4 +123,10 @@ void LoggingDialog::OnClose(wxCloseEvent & event)
 	this->mTextCtrl->Clear();
 
 	event.Skip();
+}
+
+void LoggingDialog::OnLogMessage(fsLogMessageEvent & event)
+{
+    assert(this->mTextCtrl != nullptr);
+    this->mTextCtrl->WriteText(event.GetMessage());
 }

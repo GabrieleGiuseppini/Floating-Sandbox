@@ -49,3 +49,14 @@ picojson::value Utils::ParseJSONFile(std::filesystem::path const & filepath)
 
 	return jsonContent;
 }
+
+void Utils::SaveJSONFile(
+    picojson::value const & value,
+    std::filesystem::path const & filepath)
+{
+    std::string serializedJson = value.serialize(true);
+
+    Utils::SaveTextFile(
+        serializedJson,
+        filepath);
+}

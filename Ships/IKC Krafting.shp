@@ -2,5 +2,6 @@
 	"structure_image":"ikc_krafting_structure.png.dat",
 	"texture_image":"ikc_krafting_texture.png.dat",
 	"ship_name":"I.K.C. Krafting",
+	"year_built":"2002",
 	"offset":{"x":0.0, "y":-5.0}
 }

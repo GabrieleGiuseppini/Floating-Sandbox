@@ -43,6 +43,8 @@ set  (FLOATING_SANDBOX_SOURCES
 	ToolController.h
 	Tools.cpp
 	Tools.h
+	UIPreferences.cpp
+	UIPreferences.h
 	UISettings.cpp
 	UISettings.h
 	Version.h

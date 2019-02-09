@@ -17,7 +17,7 @@ namespace Render {
 
 TextureFrame TextureFrameSpecification::LoadFrame() const
 {
-    ImageData imageData = ImageFileTools::LoadImageRgbaLowerLeft(FilePath);
+    RgbaImageData imageData = ImageFileTools::LoadImageRgbaLowerLeft(FilePath);
 
     return TextureFrame(
         Metadata,

@@ -192,7 +192,7 @@ private:
     }
 
     static void AppendRopeEndpoints(
-        ImageData const & ropeLayerImage,
+        RgbImageData const & ropeLayerImage,
         std::map<MaterialDatabase::ColorKey, RopeSegment> & ropeSegments,
         std::vector<PointInfo> & pointInfos1,
         std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> & pointIndexMatrix,
@@ -200,7 +200,7 @@ private:
         vec2f const & shipOffset);
 
     static void DecoratePointsWithElectricalMaterials(
-        ImageData const & layerImage,
+        RgbImageData const & layerImage,
         std::vector<PointInfo> & pointInfos1,
         bool isDedicatedElectricalLayer,
         std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
