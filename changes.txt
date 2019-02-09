@@ -1,3 +1,7 @@
+1.9.0
+- Revamped UI for loading ships
+- Added a few more ships
+
 1.8.0
 - Musical theme for this release: Coldplay, "A Rush of Blood to the Head"
 - Added ability to specify ships' characteristics with multiple layers (structural, electrical, ropes)

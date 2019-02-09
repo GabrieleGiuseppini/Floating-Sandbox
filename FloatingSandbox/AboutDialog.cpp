@@ -108,6 +108,7 @@ AboutDialog::AboutDialog(
         {"\t\t\t\t", "Wreno - https://discordapp.com/" },
         {"\t\t\t\t", "Pac0master - https://discordapp.com/" },
         {"\t\t\t\t", "mrpasta444 - https://discordapp.com/" },
+        {"\t\t\t\t", "Yorkie - https://discordapp.com/" },
 
         {"Textures:\t", "Tune 'Prototstar' Katerungroch"},
         {"wxWidgets:\t", "Copyright (c) 1998-2005 Julian Smart, Robert Roebling et al - https://www.wxwidgets.org/"},

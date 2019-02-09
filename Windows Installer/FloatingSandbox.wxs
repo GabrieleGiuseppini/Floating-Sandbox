@@ -56,6 +56,9 @@
                     <Directory Id="DataDir" Name="Data">
                     </Directory>
 
+                    <Directory Id="GuidesDir" Name="Guides">
+                    </Directory>
+
                     <Directory Id="ShipsDir" Name="Ships">
                         <Component Id="ShipsDir_comp" Guid="203AA07F-B62C-4788-804E-068FC09AC4A3">
                             <CreateFolder />
@@ -107,6 +110,7 @@
             <ComponentRef Id="RuntimeBinaries_comp" />
             <ComponentRef Id="MiscFiles_comp" />
 			<ComponentGroupRef Id="Data_generated_comp" />
+            <ComponentGroupRef Id="Guides_generated_comp" />
             <ComponentRef Id="ShipsDir_comp" />
             <ComponentGroupRef Id="Ships_generated_comp" />
             <ComponentRef Id="FloatingSandboxDesktopShortcut_comp" />

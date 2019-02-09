@@ -1,0 +1,8 @@
+{
+	"structure_image":"romanorum_imperatrix_structure.png.dat",
+	"texture_image":"romanorum_imperatrix_texture.png.dat",
+	"offset":{"x":0.0, "y":-18.0},
+	"ship_name":"Romanorum Imperatrix",
+	"created_by":"Emery Thrash",
+	"year_built":"2025"
+}

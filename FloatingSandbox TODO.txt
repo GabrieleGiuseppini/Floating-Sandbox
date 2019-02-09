@@ -140,118 +140,21 @@ Render:
 		+ After water contrast
 
 - Roadmap:
-	+ 1.8.0
-		+ Multi-layer ships
-		+ Initial GL canvas size issue
-		+ Focus kill/tools issue
-		+ Add cloth material (*)
-		+ Improve light diffusion (*)
-		+ Buoyancy rearc (*)
-		+ Crazy ropes:
-			+ Don't touch water retention
-			+ Add new "water diffusion speed" - value=0.5
-				+ Materials system
-				+ Points buffer
-				+ Use at UpdateWaterVelocities
-				+ Rope: 0.015
 
-			+ Make water quickness a "water quickness adjust", between 0.0 and 2.0, default = 1.0
-				+ Also @ setting dialog
-			+ Test:
-				+ Ropes @ ATest
-				+ Flags/Cloth
-					+ Also with move
-				+ Settings Dialog
-				+ Perf (after optimization above)
-		+ See if need to bump up again global damp
-			+ Test: bomb on Titanic; splinter springs tend to dance a tad too much		
-		+ Add Roma
-			+ .dat renames
-		+ Light:
-			+ Add low/medium/high-dimmed lights and portholes (*)
-		+ See if cloths should be lighter - to not break ropes
-		+ Bubbles
-		+ Flood tool
-		+ Test if debris (and sparkles?) really fly out of water
-		+ Redo Submarine - thicker to avoid bending
-		+ Lights with different chances of turning off when wet
-			+ Do test ship
-			+ Do
-		+ Trawler with cloth
-		+ Ship loading: resize of texture must depend on actual image size (don't get huge)
-		+ Make these ships more breakable:
-			+ Titanic
-			+ Krafting
-		+ Porthole: "wet_failure_rate": 3.0
-		+ Terrain adjust tool
-			+ Managed by World via OceanFloor
-			+ See if can get rid of extra sample
-				+ Also at Water
-			+ Fix zero-index
-			+ Undo 500 samples
-			+ Test multiple destruction sound w/delay being 50ms
-			+ Sound (hammer)
-			+ Changelist
-		+ Wind and cloth (*)
-		+ Do we still need render color in material?
-			+ YES - For ephemeral particles
-			+ Update guide
-		+ SettingsDialog: advanced tab
-		+ Bubble tool: 
-			+ Hide menu, but ensure it is still reachable
-			+ Do inverse visits at World anyway
-		+ Log marker w/timestamp
-			+ -------------------- 519558699552151
-		+ Complete "How to Build a Ship" guide
-		+ Move all guides to own folder "Docs"
-			+ Also material_template's
-		+ Air bubble randomization
-		+ WiX Installer
-			+ Rearc:
-				+ Heat only used for:
-					+ Data - ComponentGroup "Data", own wxs
-					+ Ships - ComponentGroup "Ships", own wxs
-				+ Then manual ComponentGroups:
-					+ Binaries
-						+ w/proper platform
-						+ w/shortcuts
-					+ license, readme, changes
-
-			+ No upgrade/downgrade
-				+ Version in product name
-				+ New product guid each time
-					+ Just use new variable
-			+ Program files
-			+ Desktop shortcut
-				+ No working directory
-				+ Check icon
-			+ Start menu shortcut
-				+ Check icon
-			+ UI
-				+ Initial screen
-				+ Progress
-				+ Final confirmation
-				+ Canceled
-				+ Already installed
-			+ Icon of add/remove programs
-			+ Version main binary:
-				+ CMake: only include resources if MSVC
-				+ Use version defines from Version.h
-			+ Test repair
-			+ Remove whole folder on uninstall, even with users' files
-				+ https://helgeklein.com/blog/2014/09/real-world-example-wix-msi-application-installer/
-		
-		+ Installer: add location picker
-
-	- 1.9.0
+	= 1.9.0
 		+ Ship file dialog (*)
+		- Fix metres bug
+			- ShipPreview must carry original size, before resize
+		- Installer does not install guides
+
+		- check new ships
+
+		- Zbuffer (*)
+		- Orphaned points (*)
 
 		- Pick tool (*)
 
 		- Interior layer (*)
-
-		- Zbuffer (*)
-		- Orphaned points (*)
 
 		- ConnectedSprings/OtherEndpoint Optimization (*)
 		- Increase # of ephemeral particles
@@ -278,8 +181,9 @@ Render:
 - New ships
 	= USS Shark
 		- Need Z buffer work first
-	- Warship
-	- See Moleskine
+	- PM Goliath/check new
+
+
 
 - Suggestions to spec:
 	- Different colored lights
@@ -401,6 +305,7 @@ Render:
 					- See https://stackoverflow.com/questions/12157646/how-to-render-offscreen-on-opengl
 
 	- Points::ConnectedSprings is of struct { SpringIndex, OtherEndpointIndex }
+		- ...or just two separate buffers, as in many cases we don't care about spring indices
 		- Init's @ShipBuilder
 		- Maintained at SpringDestroyHandler
 		- Used at:
@@ -1188,8 +1093,8 @@ Render:
 		+ S:  Higher values cause physical instability but provide for a nice effect!
 		+ See if global settings are really needed
 
-	- Menu entries for "Home Page (GameJolt)/Code Page (GitHub)"
-		- wxLaunchDefaultBrowser
+	+ Menu entries for "Home Page (GameJolt)/Code Page (GitHub)"
+		+ wxLaunchDefaultBrowser
 
 	- SettingsDialog: add tooltips at each setting
 		- Explanation and unit
@@ -4330,4 +4235,105 @@ IF WX:
 				+ Fix eaten things
 		+ Reduce sparkles' angle
 		+ Impact bomb (*)
+	+ 1.8.0
+		+ Multi-layer ships
+		+ Initial GL canvas size issue
+		+ Focus kill/tools issue
+		+ Add cloth material (*)
+		+ Improve light diffusion (*)
+		+ Buoyancy rearc (*)
+		+ Crazy ropes:
+			+ Don't touch water retention
+			+ Add new "water diffusion speed" - value=0.5
+				+ Materials system
+				+ Points buffer
+				+ Use at UpdateWaterVelocities
+				+ Rope: 0.015
+
+			+ Make water quickness a "water quickness adjust", between 0.0 and 2.0, default = 1.0
+				+ Also @ setting dialog
+			+ Test:
+				+ Ropes @ ATest
+				+ Flags/Cloth
+					+ Also with move
+				+ Settings Dialog
+				+ Perf (after optimization above)
+		+ See if need to bump up again global damp
+			+ Test: bomb on Titanic; splinter springs tend to dance a tad too much		
+		+ Add Roma
+			+ .dat renames
+		+ Light:
+			+ Add low/medium/high-dimmed lights and portholes (*)
+		+ See if cloths should be lighter - to not break ropes
+		+ Bubbles
+		+ Flood tool
+		+ Test if debris (and sparkles?) really fly out of water
+		+ Redo Submarine - thicker to avoid bending
+		+ Lights with different chances of turning off when wet
+			+ Do test ship
+			+ Do
+		+ Trawler with cloth
+		+ Ship loading: resize of texture must depend on actual image size (don't get huge)
+		+ Make these ships more breakable:
+			+ Titanic
+			+ Krafting
+		+ Porthole: "wet_failure_rate": 3.0
+		+ Terrain adjust tool
+			+ Managed by World via OceanFloor
+			+ See if can get rid of extra sample
+				+ Also at Water
+			+ Fix zero-index
+			+ Undo 500 samples
+			+ Test multiple destruction sound w/delay being 50ms
+			+ Sound (hammer)
+			+ Changelist
+		+ Wind and cloth (*)
+		+ Do we still need render color in material?
+			+ YES - For ephemeral particles
+			+ Update guide
+		+ SettingsDialog: advanced tab
+		+ Bubble tool: 
+			+ Hide menu, but ensure it is still reachable
+			+ Do inverse visits at World anyway
+		+ Log marker w/timestamp
+			+ -------------------- 519558699552151
+		+ Complete "How to Build a Ship" guide
+		+ Move all guides to own folder "Docs"
+			+ Also material_template's
+		+ Air bubble randomization
+		+ WiX Installer
+			+ Rearc:
+				+ Heat only used for:
+					+ Data - ComponentGroup "Data", own wxs
+					+ Ships - ComponentGroup "Ships", own wxs
+				+ Then manual ComponentGroups:
+					+ Binaries
+						+ w/proper platform
+						+ w/shortcuts
+					+ license, readme, changes
+
+			+ No upgrade/downgrade
+				+ Version in product name
+				+ New product guid each time
+					+ Just use new variable
+			+ Program files
+			+ Desktop shortcut
+				+ No working directory
+				+ Check icon
+			+ Start menu shortcut
+				+ Check icon
+			+ UI
+				+ Initial screen
+				+ Progress
+				+ Final confirmation
+				+ Canceled
+				+ Already installed
+			+ Icon of add/remove programs
+			+ Version main binary:
+				+ CMake: only include resources if MSVC
+				+ Use version defines from Version.h
+			+ Test repair
+			+ Remove whole folder on uninstall, even with users' files
+				+ https://helgeklein.com/blog/2014/09/real-world-example-wix-msi-application-installer/		
+		+ Installer: add location picker
 

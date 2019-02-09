@@ -89,6 +89,7 @@ Here's an explanation of the elements:
 - _ship name_: the official name of the ship. When absent, the ship is named after the filename.
 - _offset_: initial position in world coordinates. When absent, the initial position is at {0,0}.
 - _created by_: the author of the ship. May be absent.
+- _year built_: the year the ship (no the file!) was built on. May be absent.
 
 Note that it is a good practice to rename the various layer image files with a ".dat" extension. The UI dialog that allows users to load ships in fact shows all the _png_ and _shp_ files in a folder, including scattered _png_ layers of ships in that folder, which may be confusing as loading an electrical layer image as a ship, for example, would yield unpredictable results. Changing the extension of layer image files instead would prevent the dialog from allowing the user to select an individual layer image.
 

@@ -10,7 +10,7 @@
     <OutputName>Floating-Sandbox</OutputName>
     <OutputType>Package</OutputType>
     <FloatingSandboxInstallDirectory>C:\Users\Neurodancer\source\build\Floating-Sandbox\Install</FloatingSandboxInstallDirectory>
-    <DefineConstants>HarvestPathData=$(FloatingSandboxInstallDirectory)\Data;HarvestPathShips=$(FloatingSandboxInstallDirectory)\Ships</DefineConstants>
+    <DefineConstants>HarvestPathData=$(FloatingSandboxInstallDirectory)\Data;HarvestPathGuides=$(FloatingSandboxInstallDirectory)\Guides;HarvestPathShips=$(FloatingSandboxInstallDirectory)\Ships</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
     <OutputPath>C:\Users\Neurodancer\source\build\Floating-Sandbox\Windows Installer\$(Configuration)\</OutputPath>
@@ -25,6 +25,7 @@
   <ItemGroup>
     <Compile Include="FloatingSandbox.wxs" />
     <Compile Include="DataGeneratedFileList.wxs" />
+    <Compile Include="GuidesGeneratedFileList.wxs" />
     <Compile Include="ShipsGeneratedFileList.wxs" />
     <Compile Include="UI.wxs" />
   </ItemGroup>
@@ -38,6 +39,7 @@
   </Target>
   <Target Name="BeforeBuild">
     <HeatDirectory Directory="$(FloatingSandboxInstallDirectory)\Data" PreprocessorVariable="var.HarvestPathData" OutputFile="DataGeneratedFileList.wxs" ComponentGroupName="Data_generated_comp" DirectoryRefId="DataDir" AutogenerateGuids="true" ToolPath="$(WixToolPath)" SuppressFragments="true" SuppressRegistry="true" SuppressRootDirectory="true" />
+    <HeatDirectory Directory="$(FloatingSandboxInstallDirectory)\Guides" PreprocessorVariable="var.HarvestPathGuides" OutputFile="GuidesGeneratedFileList.wxs" ComponentGroupName="Guides_generated_comp" DirectoryRefId="GuidesDir" AutogenerateGuids="true" ToolPath="$(WixToolPath)" SuppressFragments="true" SuppressRegistry="true" SuppressRootDirectory="true" />
     <HeatDirectory Directory="$(FloatingSandboxInstallDirectory)\Ships" PreprocessorVariable="var.HarvestPathShips" OutputFile="ShipsGeneratedFileList.wxs" ComponentGroupName="Ships_generated_comp" DirectoryRefId="ShipsDir" AutogenerateGuids="true" ToolPath="$(WixToolPath)" SuppressFragments="true" SuppressRegistry="true" SuppressRootDirectory="true" />
   </Target>
   <!--

@@ -1,5 +1,10 @@
 {
 	"structure_image":"pm_goliath_structure.png.dat",
+	"texture_image":"pm_goliath_texture.png.dat",
+	"ropes_image":"pm_goliath_ropes.png.dat",
+	"electrical_image":"pm_goliath_electrical.png.dat",
+	"offset":{"x":0.0, "y":-13.0},
 	"ship_name":"PM Goliath",
-	"offset":{"x":0.0, "y":-14.0}
+	"created_by":"Pac0master",
+	"year_built":"1928"
 }
