@@ -152,6 +152,9 @@ Render:
 		- Create "z_buffer" branch
 
 		- Zbuffer (*)
+
+		- Make Titanic default ship
+
 		- Orphaned points (*)
 
 		- Pick tool (*)
@@ -160,6 +163,7 @@ Render:
 
 		- ConnectedSprings/OtherEndpoint Optimization (*)
 		- Increase # of ephemeral particles
+			- And thus lower threshold of air bubbles
 
 		- Ships:
 			- Romanorum Imperatrix
@@ -481,7 +485,7 @@ Render:
 				- All points have PlaneId
 					- Can we revert ShipId and ConnectedComponentId to start from zero and having None=max? 
 						- Yes, no one used NoneConnectedComponentId
-						- When we need stuff on top we can always use member variable with max plane ID, or the total 
+						- When we need stuff on top we can always use member variable with max plane ID and/or the total 
 						  count of ships 
 						 - If so, Plane ID starts from zero
 					- Own buffer (it'll have to be uploaded to GPU)
@@ -514,51 +518,61 @@ Render:
 				- And later, if we move GenericTexture to RenderContext, also when we do generic textures
 		+ Figure out range of Z:
 			+ After matrix it's NDC: [-1, +1] (far, near)
-			+ When given to fragment, it's [0,+1], but we don't care!
-		- Mapping of <ShipId, PlaneId> to Z in NDC:
-			- ShipId=0 and PlaneId=0 must be closest => +1
-				- TODO: see above, likely we don't need this at all
-			- But then, larger ship IDs and plane IDs must also be nearer
-			- TODOHERE: figure this out
-				- Might just use max's
-		- Plan:
-			- Preliminaries:
-				- Test explosions without connected component ID constraint; if ok, eradicate connected component IDs
+			+ When given to fragment shader it's [0,+1], but we don't care anymore at this moment, as we calc Z in vertex shader!
+		+ Mapping of <ShipId, PlaneId> to Z in NDC:
+			+ Normal: ShipId=0 and PlaneId=0 are furthest
+		= Plan:
+			+ Branch
+			+ Preliminaries:
+				+ Test explosions without connected component ID constraint; if ok, eradicate connected component IDs
 				  from ForceFields
-			- Branch
-			- Test perspective with hardcoded z=-1 at triangle shaders and z=+1 at springs, and see if it makes any difference
-			- Do test images:
-				+ Get problematic # of CC's first, with AM bomb on Titanic: 6,000
-				- ConnectedComponentsTestShip1: those CC's
-				- ConnectedComponentsTestShip2: one CC, same # of points
-			- Add "PlaneID"
-				- GameType
-					- Same integral type as ConnectedComponentId
-					- Change ShipId, ConnectedComponentId, PlaneId to start from zero and have None=max (see @Spec above)
-				- Points: new buffer
+				+ Test perspective with hardcoded z=-1 at triangle shaders and z=-999 at springs, and see if it makes any difference
+					+ Undo afterwards
+				+ Do test images:
+					+ Get problematic # of CC's first, with AM bomb on Titanic: 6,000
+					+ ConnectedComponentsTestShip1: 8192 CC's, 33280 points, 49152 springs
+					+ ConnectedComponentsTestShip2: 1 CC, 36588 points, 47882 springs
+				+ Get initial perf:
+					+ Default: 30.8
+					+ ConnectedComponentsTestShip1: 3.10
+					+ ConnectedComponentsTestShip2: 11.6
+			- Step 1:
+				- Add "PlaneID"
+					- GameType
+						- Same integral type as ConnectedComponentId
+						- Change ShipId, ConnectedComponentId, PlaneId to start from zero and have None=max (see @Spec above)
+					- Points: new buffer
+				- Points: add connected springs' "other endpoint"
+					- As separate ElementIndex buffer
+					- Populated by whatever populates ConnSprings now (ShipBuilder or Points::Add)
+					- Write off work item from elsewhere in this file
+				- Connectivity visit:
+					- New PlaneId propagation (see @Spec above and Moleskine)
+					- Change ConnectedComponentId propagation to match frontier style (i.e. not on strings)
+				- Light diffusion algo now follows PlaneIds (see @Spec above and Moleskine)
 				- All the other things that currently require a ConnectedComponentId for rendering purposes:
 					- Bombs: substitute ConnCompId with PlaneId
 					- PinnedPoints: substitute ConnCompId with PlaneId
 					- Triangles: no ConnCompId nor PlaneId
 					- Spring: no ConnCompId, PlaneId returns min
 						- Cache @ caller, e.g. bomb
-			- Connectivity visit:
-				- New PlaneId propagation (see @Spec above)
-					- Has own counter
-				- Change ConnectedComponentId propagation to match frontier style
-			- Light diffusion algo now follows PlaneIds (see @Spec above)
-			- Uploading of PlaneId's:
-				- Ship, when mAreElementsDirty, causes Points to upload PlaneIds
-					- See role of current Upload() - Rename: we have 3+ roles: immutable, (continuously) mutable, ad-hoc
-					  (UploadEphParticles, UploadPlaneIds, etc.)
-					- Ship must take charge of immutable attributes state - 2 state variables (immutable dirty and mutable dirty)
-			- Enable Z test and writing to Z buffer at RenderContext before doing ships, and disable all afterwards
-				+ Also clear Z buffer at canvas clear
-				- glEnable(GL_DEPTH_TEST);
-				- glDepthMask(GL_TRUE); // This at initialization
-				- glDepthFunc(GL_LESS); // This at initialization
-			- Ship/RenderContext:
-				- 
+			- Step 2:
+				- TODO: divide below into steps
+				- Uploading of PlaneId's:
+					- Ship, when mAreElementsDirty, causes Points to upload PlaneIds
+						- See role of current Upload() - Rename: we have 3+ roles: immutable, (continuously) mutable, ad-hoc
+						  (UploadEphParticles, UploadPlaneIds, etc.)
+						- Ship must take charge of immutable attributes state - 2 state variables (immutable dirty and mutable dirty)
+				- Enable Z test and writing to Z buffer at RenderContext before doing ships, and disable afterwards
+					+ Also clear Z buffer at canvas clear
+					- glEnable(GL_DEPTH_TEST);
+					+ glDepthMask(GL_TRUE); // This at initialization
+					+ glDepthFunc(GL_LESS); // This at initialization
+				- Ship/RenderContext:
+					- Shaders take new vertex attribute
+					- See Moleskine for shaders calc'ns and uniforms to calc & set
+						- TODO: what do we do with OrthoMatrix? Can we incorporate Moleskine's calcn's into it?
+							- Requires an OrthoMatrix per ship, on top of a single global OrthoMatrix for everything else
 			
 			- TODO: review the below based off transparency sorting - see MOLESKINE
 			2 - Ship assigns points' ConnectedComponentID as float in vector
@@ -566,7 +580,6 @@ Render:
 			    transform ConnectedComponentID to Z
 			4 - ShipRenderContext::UploadXYZElement() does not take anymore connected component ID
 			5 - (Nice to have): sticky component IDs, by leveraging the fact that normally IDs are assigned from L,T to R,B
-
 
 		- See if drawing springs & triangles at separate depths also helps generally with render speed, even for one single
 		  connected component (for springs' fragment shader - may be it takes shortcuts if it knows it's behind)
@@ -601,13 +614,15 @@ Render:
 	- Should we always draw orphaned points - those that come after destruction?
 		+ Orphaned point == points with 0 connected springs
 		- We must first stop deleting points just because springs are deleted
-			- Though should still delete them as Destroy() and Bomb(), for example
+			- Though should still delete them at Destroy() and Bomb(), for example
 		- We should somehow unify the uploading of orphaned points and the uploading of ephemeral points
 			- Connected component ID/Z buffer is enough to keep them on separate planes
 		- Also, ShipRenderMode::Points should only be consumed by Points::Upload, who is the only one who decides what gets uploaded
-		- Orphaned points go into their own single plane, above all connected components
+			~ Not really, see below - it's ConnectivityVisit the only one that checks ShipRenderMode::Points 
+		- Orphaned points go into their own single plane, at whatever connected component/plane ID algo assigns them to
 			- Assigned directly by ConnectivityVisit by checking if point has no connected springs (and it's not deleted)
-				- Since we're doing this, we might as well fill-in vector of Point indices for UploadPoints:
+				- Since we're doing this, we might as well fill-in vector of Point indices 
+				  (containing ShipRenderMode::Points + orphaned + ephemeral points), replacing UploadPoints:
 					- Ship has own vector<ElementIndex>, appropriately reserved to mPoints.total_size
 					- Ship::ConnectivityVisit:
 						- Clears vector - after all, we run ConnectivityVisit if we're dirty
@@ -615,7 +630,8 @@ Render:
 							- If ShipRenderMode is Points OR point is orphan: appends it
 						- Remembers size of vector at this moment, as mShipPointElementsCount (see below)
 					- Then passes it to Points::UploadEphemeralParticles(), who appends to it
-						- Instead, when we're not dirty, Ship truncates it to mShipPointElementsCount
+						- When we're not dirty, instead, Ship truncates it to mShipPointElementsCount length
+						  (maintaining point indices from previous ConnectivityVisit),
 						  before passing it to UploadEphemeralParticles() (which now takes no RenderContext anymore)
 		- Ship::Render(): new dirty/ephemeral algo:
 			- With Z buffer we don't need anymore to worry about ShipRenderElementsStart() to allocate all connected components
@@ -629,7 +645,7 @@ Render:
 							  may upload only sub-portion after mShipPointElementsCount
 		- ShipRenderContext always renders point elements	
 			- Even when ShipRenderMode is Springs
-				- Test L'n'F'
+				- Test L'n'F' with ShipRenderMode=Springs
 
 		- Test L'n'F'
 

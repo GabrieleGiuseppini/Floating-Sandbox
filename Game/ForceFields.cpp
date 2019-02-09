@@ -51,9 +51,9 @@ void BlastForceField::Apply(
     float currentSimulationTime,
     GameParameters const & gameParameters) const
 {
-    // 
-    // Go through all the connected component's points and, for each point in radius:
-    // - Keep non-ephemeral point that is closest to blast position; we'll Destroy() it later 
+    //
+    // Go through allpoints and, for each point in radius:
+    // - Keep non-ephemeral point that is closest to blast position; we'll Destroy() it later
     //   (if this is the fist frame of the blast sequence)
     // - Flip over the point outside of the radius
     //
@@ -67,31 +67,27 @@ void BlastForceField::Apply(
     // Visit all (non-ephemeral) points (ephemerals would be blown immediately away otherwise)
     for (auto pointIndex : points.NonEphemeralPoints())
     {
-        // Make sure this point belongs to the required connected component
-        if (points.GetConnectedComponentId(pointIndex) == mConnectedComponentId)
+        vec2f pointRadius = points.GetPosition(pointIndex) - mCenterPosition;
+        float squarePointDistance = pointRadius.squareLength();
+        if (squarePointDistance < squareBlastRadius)
         {
-            vec2f pointRadius = points.GetPosition(pointIndex) - mCenterPosition;
-            float squarePointDistance = pointRadius.squareLength();
-            if (squarePointDistance < squareBlastRadius)
+            // Check whether this point is the closest, non-deleted point
+            //  Wee don't want to waste destroy's on already-deleted points
+            if (squarePointDistance < closestPointSquareDistance
+                && !points.IsDeleted(pointIndex))
             {
-                // Check whether this point is the closest, non-deleted point
-                //  Wee don't want to waste destroy's on already-deleted points
-                if (squarePointDistance < closestPointSquareDistance
-                    && !points.IsDeleted(pointIndex))
-                {
-                    closestPointSquareDistance = squarePointDistance;
-                    closestPointIndex = pointIndex;
-                }
-
-                // Create acceleration to flip the point
-                vec2f flippedRadius = pointRadius.normalise() * (mBlastRadius + (mBlastRadius - pointRadius.length()));
-                vec2f newPosition = mCenterPosition + flippedRadius;
-                points.GetForce(pointIndex) +=
-                    (newPosition - points.GetPosition(pointIndex)) 
-                    / DtSquared
-                    * mStrength
-                    * points.GetMass(pointIndex);
+                closestPointSquareDistance = squarePointDistance;
+                closestPointIndex = pointIndex;
             }
+
+            // Create acceleration to flip the point
+            vec2f flippedRadius = pointRadius.normalise() * (mBlastRadius + (mBlastRadius - pointRadius.length()));
+            vec2f newPosition = mCenterPosition + flippedRadius;
+            points.GetForce(pointIndex) +=
+                (newPosition - points.GetPosition(pointIndex))
+                / DtSquared
+                * mStrength
+                * points.GetMass(pointIndex);
         }
     }
 
@@ -176,7 +172,7 @@ void RadialExplosionForceField::Apply(
     //
 
     for (auto pointIndex : points)
-    {        
+    {
         vec2f displacement = (points.GetPosition(pointIndex) - mCenterPosition);
         float forceMagnitude = mStrength / sqrtf(0.1f + displacement.length());
 

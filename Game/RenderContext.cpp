@@ -333,6 +333,14 @@ RenderContext::RenderContext(
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+    // Disable depth test
+    glDisable(GL_DEPTH_TEST);
+
+    // Set depth test parameters for when we'll need them
+    glDepthMask(GL_TRUE);
+    glDepthFunc(GL_LESS);
+
+
 
     //
     // Initialize ortho matrix

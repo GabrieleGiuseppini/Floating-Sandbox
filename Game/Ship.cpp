@@ -2004,7 +2004,7 @@ void Ship::GenerateSparkles(
 void Ship::DoBombExplosion(
     vec2f const & blastPosition,
     float sequenceProgress,
-    ConnectedComponentId connectedComponentId,
+    ConnectedComponentId /*connectedComponentId*/,
     GameParameters const & gameParameters)
 {
     // Blast radius: from 0.6 to BombBlastRadius
@@ -2020,7 +2020,6 @@ void Ship::DoBombExplosion(
             blastPosition,
             blastRadius,
             strength,
-            connectedComponentId,
             sequenceProgress == 0.0f));
 }
 
