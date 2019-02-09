@@ -12,7 +12,7 @@
 #define STRINGIZE(s) STRINGIZE2(s)
 
 #define APPLICATION_VERSION_MAJOR               1
-#define APPLICATION_VERSION_MINOR               8
+#define APPLICATION_VERSION_MINOR               9
 #define APPLICATION_VERSION_REVISION            0
 #define APPLICATION_VERSION_BUILD               0
 

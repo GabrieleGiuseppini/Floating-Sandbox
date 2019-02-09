@@ -147,7 +147,9 @@ Render:
 			+ ShipPreview must carry original size, before resize
 		+ Add new ships
 		+ Installer does not install guides
-		- Change version
+		+ Change version
+
+		- Create "z_buffer" branch
 
 		- Zbuffer (*)
 		- Orphaned points (*)
