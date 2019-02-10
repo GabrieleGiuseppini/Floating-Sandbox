@@ -26,18 +26,26 @@ static constexpr ElementIndex NoneElementIndex = std::numeric_limits<ElementInde
 /*
  * Ship identifiers.
  *
- * Comparable and ordered. Start from 1.
+ * Comparable and ordered. Start from 0.
  */
 using ShipId = std::uint32_t;
-static constexpr ShipId NoneShip = 0;
+static constexpr ShipId NoneShip = std::numeric_limits<ShipId>::max();
 
 /*
  * Connected component identifiers.
  *
- * Comparable and ordered. Start from 1.
+ * Comparable and ordered. Start from 0.
  */
 using ConnectedComponentId = std::uint32_t;
-static constexpr ConnectedComponentId NoneConnectedComponentId = 0;
+static constexpr ConnectedComponentId NoneConnectedComponentId = std::numeric_limits<ConnectedComponentId>::max();
+
+/*
+ * Plane (depth) identifiers.
+ *
+ * Comparable and ordered. Start from 0.
+ */
+using PlaneId = std::uint32_t;
+static constexpr PlaneId NonePlaneId = std::numeric_limits<PlaneId>::max();
 
 /*
  * Object ID's, identifying objects of ships across ships.

@@ -131,19 +131,29 @@ private:
     };
 
     /*
-     * The elements connected to a point.
+     * The metadata for the springs connected to a point.
      */
-    struct Network
+    struct ConnectedSpring
     {
-        FixedSizeVector<ElementIndex, GameParameters::MaxSpringsPerPoint> ConnectedSprings;
+        ElementIndex SpringIndex;
+        ElementIndex OtherEndpointIndex;
 
-        FixedSizeVector<ElementIndex, GameParameters::MaxTrianglesPerPoint> ConnectedTriangles;
+        ConnectedSpring()
+            : SpringIndex(NoneElementIndex)
+            , OtherEndpointIndex(NoneElementIndex)
+        {}
 
-        Network()
-            : ConnectedSprings()
-            , ConnectedTriangles()
+        ConnectedSpring(
+            ElementIndex springIndex,
+            ElementIndex otherEndpointIndex)
+            : SpringIndex(springIndex)
+            , OtherEndpointIndex(otherEndpointIndex)
         {}
     };
+
+    using ConnectedSpringsVector = FixedSizeVector<ConnectedSpring, GameParameters::MaxSpringsPerPoint>;
+
+    using ConnectedTrianglesVector = FixedSizeVector<ElementIndex, GameParameters::MaxTrianglesPerPoint>;
 
     /*
      * The materials of this point.
@@ -206,10 +216,12 @@ public:
         , mEphemeralMaxLifetimeBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mEphemeralStateBuffer(mBufferElementCount, shipPointCount, EphemeralState::DebrisState())
         // Structure
-        , mNetworkBuffer(mBufferElementCount, shipPointCount, Network())
-        // Connected component
-        , mConnectedComponentIdBuffer(mBufferElementCount, shipPointCount, NoneElementIndex)
-        , mCurrentConnectedComponentDetectionVisitSequenceNumberBuffer(mBufferElementCount, shipPointCount, NoneElementIndex)
+        , mConnectedSpringsBuffer(mBufferElementCount, shipPointCount, ConnectedSpringsVector())
+        , mConnectedTrianglesBuffer(mBufferElementCount, shipPointCount, ConnectedTrianglesVector())
+        // Connected component and plane ID
+        , mConnectedComponentIdBuffer(mBufferElementCount, shipPointCount, NoneConnectedComponentId)
+        , mPlaneIdBuffer(mBufferElementCount, shipPointCount, NonePlaneId)
+        , mCurrentConnectivityVisitSequenceNumberBuffer(mBufferElementCount, shipPointCount, NoneVisitSequenceNumber)
         // Pinning
         , mIsPinnedBuffer(mBufferElementCount, shipPointCount, false)
         // Immutable render attributes
@@ -286,7 +298,7 @@ public:
         float vortexFrequency,
         StructuralMaterial const & structuralMaterial,
         float currentSimulationTime,
-        ConnectedComponentId connectedComponentId);
+        PlaneId planeId);
 
     void CreateEphemeralParticleDebris(
         vec2f const & position,
@@ -294,7 +306,7 @@ public:
         StructuralMaterial const & structuralMaterial,
         float currentSimulationTime,
         std::chrono::milliseconds maxLifetime,
-        ConnectedComponentId connectedComponentId);
+        PlaneId planeId);
 
     void CreateEphemeralParticleSparkle(
         vec2f const & position,
@@ -302,7 +314,7 @@ public:
         StructuralMaterial const & structuralMaterial,
         float currentSimulationTime,
         std::chrono::milliseconds maxLifetime,
-        ConnectedComponentId connectedComponentId);
+        PlaneId planeId);
 
     void Destroy(
         ElementIndex pointElementIndex,
@@ -662,21 +674,26 @@ public:
 
     auto const & GetConnectedSprings(ElementIndex pointElementIndex) const
     {
-        return mNetworkBuffer[pointElementIndex].ConnectedSprings;
+        return mConnectedSpringsBuffer[pointElementIndex];
     }
 
     void AddConnectedSpring(
         ElementIndex pointElementIndex,
-        ElementIndex springElementIndex)
+        ElementIndex springElementIndex,
+        ElementIndex otherEndpointElementIndex)
     {
-        mNetworkBuffer[pointElementIndex].ConnectedSprings.push_back(springElementIndex);
+        mConnectedSpringsBuffer[pointElementIndex].emplace_back(springElementIndex, otherEndpointElementIndex);
     }
 
     void RemoveConnectedSpring(
         ElementIndex pointElementIndex,
         ElementIndex springElementIndex)
     {
-        bool found = mNetworkBuffer[pointElementIndex].ConnectedSprings.erase_first(springElementIndex);
+        bool found = mConnectedSpringsBuffer[pointElementIndex].erase_first(
+            [springElementIndex](ConnectedSpring const & c)
+            {
+                return c.SpringIndex == springElementIndex;
+            });
 
         assert(found);
         (void)found;
@@ -684,21 +701,21 @@ public:
 
     auto const & GetConnectedTriangles(ElementIndex pointElementIndex) const
     {
-        return mNetworkBuffer[pointElementIndex].ConnectedTriangles;
+        return mConnectedTrianglesBuffer[pointElementIndex];
     }
 
     void AddConnectedTriangle(
         ElementIndex pointElementIndex,
         ElementIndex triangleElementIndex)
     {
-        mNetworkBuffer[pointElementIndex].ConnectedTriangles.push_back(triangleElementIndex);
+        mConnectedTrianglesBuffer[pointElementIndex].push_back(triangleElementIndex);
     }
 
     void RemoveConnectedTriangle(
         ElementIndex pointElementIndex,
         ElementIndex triangleElementIndex)
     {
-        bool found = mNetworkBuffer[pointElementIndex].ConnectedTriangles.erase_first(triangleElementIndex);
+        bool found = mConnectedTrianglesBuffer[pointElementIndex].erase_first(triangleElementIndex);
 
         assert(found);
         (void)found;
@@ -732,7 +749,7 @@ public:
     }
 
     //
-    // Connected component
+    // Connected components and plane IDs
     //
 
     ConnectedComponentId GetConnectedComponentId(ElementIndex pointElementIndex) const
@@ -747,17 +764,29 @@ public:
         mConnectedComponentIdBuffer[pointElementIndex] = connectedComponentId;
     }
 
-    VisitSequenceNumber GetCurrentConnectedComponentDetectionVisitSequenceNumber(ElementIndex pointElementIndex) const
+    PlaneId GetPlaneId(ElementIndex pointElementIndex) const
     {
-        return mCurrentConnectedComponentDetectionVisitSequenceNumberBuffer[pointElementIndex];
+        return mPlaneIdBuffer[pointElementIndex];
     }
 
-    void SetCurrentConnectedComponentDetectionVisitSequenceNumber(
+    void SetPlaneId(
         ElementIndex pointElementIndex,
-        VisitSequenceNumber connectedComponentDetectionVisitSequenceNumber)
+        PlaneId planeId)
     {
-        mCurrentConnectedComponentDetectionVisitSequenceNumberBuffer[pointElementIndex] =
-            connectedComponentDetectionVisitSequenceNumber;
+        mPlaneIdBuffer[pointElementIndex] = planeId;
+    }
+
+    VisitSequenceNumber GetCurrentConnectivityVisitSequenceNumber(ElementIndex pointElementIndex) const
+    {
+        return mCurrentConnectivityVisitSequenceNumberBuffer[pointElementIndex];
+    }
+
+    void SetCurrentConnectivityVisitSequenceNumber(
+        ElementIndex pointElementIndex,
+        VisitSequenceNumber connectivityVisitSequenceNumber)
+    {
+        mCurrentConnectivityVisitSequenceNumberBuffer[pointElementIndex] =
+            connectivityVisitSequenceNumber;
     }
 
     //
@@ -882,14 +911,16 @@ private:
     // Structure
     //
 
-    Buffer<Network> mNetworkBuffer;
+    Buffer<ConnectedSpringsVector> mConnectedSpringsBuffer;
+    Buffer<ConnectedTrianglesVector> mConnectedTrianglesBuffer;
 
     //
-    // Connected component
+    // Connectivity
     //
 
     Buffer<ConnectedComponentId> mConnectedComponentIdBuffer;
-    Buffer<VisitSequenceNumber> mCurrentConnectedComponentDetectionVisitSequenceNumberBuffer;
+    Buffer<PlaneId> mPlaneIdBuffer;
+    Buffer<VisitSequenceNumber> mCurrentConnectivityVisitSequenceNumberBuffer;
 
     //
     // Pinning

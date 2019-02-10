@@ -68,10 +68,12 @@ void Points::Add(
     mEphemeralStateBuffer.emplace_back(EphemeralState::DebrisState());
 
     // Structure
-    mNetworkBuffer.emplace_back();
+    mConnectedSpringsBuffer.emplace_back(ConnectedSpringsVector());
+    mConnectedTrianglesBuffer.emplace_back(ConnectedTrianglesVector());
 
-    mConnectedComponentIdBuffer.emplace_back(0u);
-    mCurrentConnectedComponentDetectionVisitSequenceNumberBuffer.emplace_back(NoneVisitSequenceNumber);
+    mConnectedComponentIdBuffer.emplace_back(NoneConnectedComponentId);
+    mPlaneIdBuffer.emplace_back(NonePlaneId);
+    mCurrentConnectivityVisitSequenceNumberBuffer.emplace_back(NoneVisitSequenceNumber);
 
     mIsPinnedBuffer.emplace_back(false);
 
@@ -86,7 +88,7 @@ void Points::CreateEphemeralParticleAirBubble(
     float vortexFrequency,
     StructuralMaterial const & structuralMaterial,
     float currentSimulationTime,
-    ConnectedComponentId connectedComponentId)
+    PlaneId planeId)
 {
     // Get a free slot (but don't steal one)
     auto pointIndex = FindFreeEphemeralParticle(currentSimulationTime, false);
@@ -125,7 +127,9 @@ void Points::CreateEphemeralParticleAirBubble(
         initialSize,
         vortexAmplitude,
         vortexFrequency);
-    mConnectedComponentIdBuffer[pointIndex] = connectedComponentId;
+
+    mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
+    mPlaneIdBuffer[pointIndex] = planeId;
 
     assert(false == mIsPinnedBuffer[pointIndex]);
 
@@ -141,7 +145,7 @@ void Points::CreateEphemeralParticleDebris(
     StructuralMaterial const & structuralMaterial,
     float currentSimulationTime,
     std::chrono::milliseconds maxLifetime,
-    ConnectedComponentId connectedComponentId)
+    PlaneId planeId)
 {
     // Get a free slot (or steal one)
     auto pointIndex = FindFreeEphemeralParticle(currentSimulationTime, true);
@@ -174,7 +178,9 @@ void Points::CreateEphemeralParticleDebris(
     mEphemeralStartTimeBuffer[pointIndex] = currentSimulationTime;
     mEphemeralMaxLifetimeBuffer[pointIndex] = std::chrono::duration_cast<std::chrono::duration<float>>(maxLifetime).count();
     mEphemeralStateBuffer[pointIndex] = EphemeralState::DebrisState();
-    mConnectedComponentIdBuffer[pointIndex] = connectedComponentId;
+
+    mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
+    mPlaneIdBuffer[pointIndex] = planeId;
 
     assert(false == mIsPinnedBuffer[pointIndex]);
 
@@ -190,7 +196,7 @@ void Points::CreateEphemeralParticleSparkle(
     StructuralMaterial const & structuralMaterial,
     float currentSimulationTime,
     std::chrono::milliseconds maxLifetime,
-    ConnectedComponentId connectedComponentId)
+    PlaneId planeId)
 {
     // Get a free slot (or steal one)
     auto pointIndex = FindFreeEphemeralParticle(currentSimulationTime, true);
@@ -224,7 +230,9 @@ void Points::CreateEphemeralParticleSparkle(
     mEphemeralMaxLifetimeBuffer[pointIndex] = std::chrono::duration_cast<std::chrono::duration<float>>(maxLifetime).count();
     mEphemeralStateBuffer[pointIndex] = EphemeralState::SparkleState(
         GameRandomEngine::GetInstance().Choose<TextureFrameIndex>(2));
-    mConnectedComponentIdBuffer[pointIndex] = connectedComponentId;
+
+    mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
+    mPlaneIdBuffer[pointIndex] = planeId;
 
     assert(false == mIsPinnedBuffer[pointIndex]);
 
@@ -522,9 +530,9 @@ void Points::UploadEphemeralParticles(
     //  which is independent from ephemeral particles; the latter might insist on using
     //  a connected component ID that is well gone after a new connectivity visit).
     // This will be fixed with the Z buffer work - at that moment points will already
-    // have an associated ConnectedComponent buffer, and the shader will automagically
-    // draw ephemeral points at the right Z for their point's connected component ID.
-    // Remember to make sure Ship always tracks the max connected component ID it has
+    // have an associated plane ID, and the shader will automagically
+    // draw ephemeral points at the right Z for their point's plane ID.
+    // Remember to make sure Ship always tracks the max plane ID it has
     // ever seen, and that it specifies it at RenderContext::RenderShipStart() via an
     // additional, new argument.
 
@@ -606,9 +614,9 @@ void Points::SetMassToStructuralMaterialOffset(
     mMassBuffer[pointElementIndex] = GetStructuralMaterial(pointElementIndex).Mass + offset;
 
     // Notify all springs
-    for (auto springIndex : mNetworkBuffer[pointElementIndex].ConnectedSprings)
+    for (auto connectedSpring : mConnectedSpringsBuffer[pointElementIndex])
     {
-        springs.OnPointMassUpdated(springIndex, *this);
+        springs.OnPointMassUpdated(connectedSpring.SpringIndex, *this);
     }
 }
 

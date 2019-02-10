@@ -511,9 +511,9 @@ public:
         ShipId shipId,
         std::vector<std::size_t> const & connectedComponentsMaxSizes)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->RenderStart(connectedComponentsMaxSizes);
+        mShips[shipId]->RenderStart(connectedComponentsMaxSizes);
     }
 
     //
@@ -525,9 +525,9 @@ public:
         vec4f const * restrict color,
         vec2f const * restrict textureCoordinates)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->UploadPointImmutableGraphicalAttributes(
+        mShips[shipId]->UploadPointImmutableGraphicalAttributes(
             color,
             textureCoordinates);
     }
@@ -538,9 +538,9 @@ public:
         size_t startIndex,
         size_t count)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->UploadShipPointColorRange(
+        mShips[shipId]->UploadShipPointColorRange(
             color,
             startIndex,
             count);
@@ -552,9 +552,9 @@ public:
         float const * restrict light,
         float const * restrict water)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->UploadPoints(
+        mShips[shipId]->UploadPoints(
             position,
             light,
             water);
@@ -566,9 +566,9 @@ public:
 
     inline void UploadShipElementsStart(ShipId shipId)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->UploadElementsStart();
+        mShips[shipId]->UploadElementsStart();
     }
 
     inline void UploadShipElementPoint(
@@ -576,9 +576,9 @@ public:
         int shipPointIndex,
         ConnectedComponentId connectedComponentId)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->UploadElementPoint(
+        mShips[shipId]->UploadElementPoint(
             shipPointIndex,
             connectedComponentId);
     }
@@ -589,9 +589,9 @@ public:
         int shipPointIndex2,
         ConnectedComponentId connectedComponentId)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->UploadElementSpring(
+        mShips[shipId]->UploadElementSpring(
             shipPointIndex1,
             shipPointIndex2,
             connectedComponentId);
@@ -603,9 +603,9 @@ public:
         int shipPointIndex2,
         ConnectedComponentId connectedComponentId)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->UploadElementRope(
+        mShips[shipId]->UploadElementRope(
             shipPointIndex1,
             shipPointIndex2,
             connectedComponentId);
@@ -618,9 +618,9 @@ public:
         int shipPointIndex3,
         ConnectedComponentId connectedComponentId)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->UploadElementTriangle(
+        mShips[shipId]->UploadElementTriangle(
             shipPointIndex1,
             shipPointIndex2,
             shipPointIndex3,
@@ -629,16 +629,16 @@ public:
 
     inline void UploadShipElementsEnd(ShipId shipId)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->UploadElementsEnd();
+        mShips[shipId]->UploadElementsEnd();
     }
 
     inline void UploadShipElementStressedSpringsStart(ShipId shipId)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->UploadElementStressedSpringsStart();
+        mShips[shipId]->UploadElementStressedSpringsStart();
     }
 
     inline void UploadShipElementStressedSpring(
@@ -647,9 +647,9 @@ public:
         int shipPointIndex2,
         ConnectedComponentId connectedComponentId)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->UploadElementStressedSpring(
+        mShips[shipId]->UploadElementStressedSpring(
             shipPointIndex1,
             shipPointIndex2,
             connectedComponentId);
@@ -657,9 +657,9 @@ public:
 
     void UploadShipElementStressedSpringsEnd(ShipId shipId)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->UploadElementStressedSpringsEnd();
+        mShips[shipId]->UploadElementStressedSpringsEnd();
     }
 
     //
@@ -672,9 +672,9 @@ public:
         TextureFrameId const & textureFrameId,
         vec2f const & position)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->UploadGenericTextureRenderSpecification(
+        mShips[shipId]->UploadGenericTextureRenderSpecification(
             connectedComponentId,
             textureFrameId,
             position);
@@ -690,9 +690,9 @@ public:
         vec2f const & rotationOffset,
         float alpha)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->UploadGenericTextureRenderSpecification(
+        mShips[shipId]->UploadGenericTextureRenderSpecification(
             connectedComponentId,
             textureFrameId,
             position,
@@ -711,9 +711,9 @@ public:
         float angle,
         float alpha)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->UploadGenericTextureRenderSpecification(
+        mShips[shipId]->UploadGenericTextureRenderSpecification(
             connectedComponentId,
             textureFrameId,
             position,
@@ -728,26 +728,26 @@ public:
 
     inline void UploadShipEphemeralPointsStart(ShipId shipId)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->UploadEphemeralPointsStart();
+        mShips[shipId]->UploadEphemeralPointsStart();
     }
 
     inline void UploadShipEphemeralPoint(
         ShipId shipId,
         int pointIndex)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->UploadEphemeralPoint(
+        mShips[shipId]->UploadEphemeralPoint(
             pointIndex);
     }
 
     void UploadShipEphemeralPointsEnd(ShipId shipId)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->UploadEphemeralPointsEnd();
+        mShips[shipId]->UploadEphemeralPointsEnd();
     }
 
 
@@ -763,9 +763,9 @@ public:
         float lengthAdjustment,
         vec4f const & color)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->UploadVectors(
+        mShips[shipId]->UploadVectors(
             count,
             position,
             vector,
@@ -775,9 +775,9 @@ public:
 
     void RenderShipEnd(ShipId shipId)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->RenderEnd();
+        mShips[shipId]->RenderEnd();
     }
 
 

@@ -9,6 +9,7 @@
 
 #include <array>
 #include <cassert>
+#include <functional>
 
 /*
  * This class is a fixed-size vector for value elements.
@@ -155,6 +156,18 @@ public:
         return false;
     }
 
+    template<typename UnaryPredicate>
+    inline bool contains(UnaryPredicate p) const noexcept
+    {
+        for (size_t i = 0; i < mCurrentSize; ++i)
+        {
+            if (p(mArray[i]))
+                return true;
+        }
+
+        return false;
+    }
+
     //
     // Modifiers
     //
@@ -184,6 +197,19 @@ public:
         }
     }
 
+    template<typename ...TArgs>
+    void emplace_back(TArgs&&... args)
+    {
+        if (mCurrentSize < MaxSize)
+        {
+            mArray[mCurrentSize++] = TElement(std::forward<TArgs>(args)...);
+        }
+        else
+        {
+            throw std::runtime_error("The container is already full");
+        }
+    }
+
     void erase(size_t index)
     {
         assert(index < mCurrentSize);
@@ -197,11 +223,12 @@ public:
         --mCurrentSize;
     }
 
-    bool erase_first(TElement const & element)
+    template<typename UnaryPredicate>
+    bool erase_first(UnaryPredicate p)
     {
         for (size_t i = 0; i < mCurrentSize; /* incremented in loop */)
         {
-            if (mArray[i] == element)
+            if (p(mArray[i]))
             {
                 // Shift remaining elements
                 for (size_t j = i; j < mCurrentSize - 1; ++j)
@@ -220,6 +247,15 @@ public:
         }
 
         return false;
+    }
+
+    bool erase_first(TElement const & element)
+    {
+        return erase_first(
+            [&element](TElement const & e)
+            {
+                return e == element;
+            });
     }
 
     void clear()

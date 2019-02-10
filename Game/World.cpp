@@ -41,7 +41,7 @@ ShipId World::AddShip(
     MaterialDatabase const & materialDatabase,
     GameParameters const & gameParameters)
 {
-    ShipId shipId = static_cast<ShipId>(mAllShips.size()) + 1;
+    ShipId shipId = static_cast<ShipId>(mAllShips.size());
 
     auto ship = ShipBuilder::Create(
         shipId,
@@ -64,9 +64,9 @@ size_t World::GetShipCount() const
 
 size_t World::GetShipPointCount(ShipId shipId) const
 {
-    assert(shipId > 0 && shipId <= mAllShips.size());
+    assert(shipId >= 0 && shipId < mAllShips.size());
 
-    return mAllShips[shipId - 1]->GetPointCount();
+    return mAllShips[shipId]->GetPointCount();
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -78,9 +78,9 @@ void World::MoveBy(
     vec2f const & offset,
     GameParameters const & gameParameters)
 {
-    assert(shipId > 0 && shipId <= mAllShips.size());
+    assert(shipId >= 0 && shipId < mAllShips.size());
 
-    mAllShips[shipId - 1]->MoveBy(
+    mAllShips[shipId]->MoveBy(
         offset,
         gameParameters);
 }
@@ -91,9 +91,9 @@ void World::RotateBy(
     vec2f const & center,
     GameParameters const & gameParameters)
 {
-    assert(shipId > 0 && shipId <= mAllShips.size());
+    assert(shipId >= 0 && shipId < mAllShips.size());
 
-    mAllShips[shipId - 1]->RotateBy(
+    mAllShips[shipId]->RotateBy(
         angle,
         center,
         gameParameters);

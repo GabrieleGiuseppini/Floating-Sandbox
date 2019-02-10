@@ -149,10 +149,10 @@ Render:
 		+ Installer does not install guides
 		+ Change version
 
-		- Create "z_buffer" branch
-
+		+ Create "z_buffer" branch
 		- Zbuffer (*)
 
+		- Make flood tool's FloodQuantityOfWater adjustable
 		- Make Titanic default ship
 
 		- Orphaned points (*)
@@ -161,7 +161,7 @@ Render:
 
 		- Interior layer (*)
 
-		- ConnectedSprings/OtherEndpoint Optimization (*)
+		= ConnectedSprings/OtherEndpoint Optimization (*)
 		- Increase # of ephemeral particles
 			- And thus lower threshold of air bubbles
 
@@ -310,14 +310,13 @@ Render:
 				- Consider using pixel buffer objects to asynchronously read from render buffer
 					- See https://stackoverflow.com/questions/12157646/how-to-render-offscreen-on-opengl
 
-	- Points::ConnectedSprings is of struct { SpringIndex, OtherEndpointIndex }
-		- ...or just two separate buffers, as in many cases we don't care about spring indices
-		- Init's @ShipBuilder
-		- Maintained at SpringDestroyHandler
-		- Used at:
-			- DiffuseLight
-			- ConnectedComponentDetection
-			- UpdateWaterVelocities
+	+ Points::ConnectedSprings is of struct { SpringIndex, OtherEndpointIndex }
+		+ No two separate buffers, as we seldom (if not neveer) need them separate
+		+ Init's @ShipBuilder or at whoever populates it now
+		+ Maintained at SpringDestroyHandler
+		+ Used at:
+			+ ConnectedComponentDetection
+			+ UpdateWaterVelocities
 
 	- Retry triangles cache optimization, now that layouts are different
 
@@ -517,6 +516,7 @@ Render:
 			- We only enable Z test and writing to Z buffer at RenderContext before doing ships
 				- And later, if we move GenericTexture to RenderContext, also when we do generic textures
 		+ Figure out range of Z:
+			+ World: -1000 -> -1  ==> NDC: +1 -> -1
 			+ After matrix it's NDC: [-1, +1] (far, near)
 			+ When given to fragment shader it's [0,+1], but we don't care anymore at this moment, as we calc Z in vertex shader!
 		+ Mapping of <ShipId, PlaneId> to Z in NDC:
@@ -536,16 +536,24 @@ Render:
 					+ Default: 30.8
 					+ ConnectedComponentsTestShip1: 3.10
 					+ ConnectedComponentsTestShip2: 11.6
-			- Step 1:
-				- Add "PlaneID"
-					- GameType
-						- Same integral type as ConnectedComponentId
-						- Change ShipId, ConnectedComponentId, PlaneId to start from zero and have None=max (see @Spec above)
-					- Points: new buffer
-				- Points: add connected springs' "other endpoint"
-					- As separate ElementIndex buffer
-					- Populated by whatever populates ConnSprings now (ShipBuilder or Points::Add)
-					- Write off work item from elsewhere in this file
+			+ Step 1:
+				+ Add "PlaneID"
+					+ GameType
+						+ Same integral type as ConnectedComponentId
+						+ Change ShipId, ConnectedComponentId, PlaneId to start from zero and have None=max (see @Spec above)
+					+ Points: new buffer
+				+ Points: add connected springs' "other endpoint"
+					+ As part of Network
+					+ Test fixed_size_vector::erase_first with/lambda
+						+ Check assembly with unit tests
+					+ Populated by whatever populates ConnSprings now (ShipBuilder or Points::Add)
+					+ Nuke Springs::GetOtherEndpointIndex
+					+ Write off work item from elsewhere in this file
+				+ Run in debug and validate
+					+ Revert to Render::uploading ConnCompId's 
+					+ Test crash w/Goliath
+				+ Check perf
+			- Step 2:
 				- Connectivity visit:
 					- New PlaneId propagation (see @Spec above and Moleskine)
 					- Change ConnectedComponentId propagation to match frontier style (i.e. not on strings)
@@ -556,13 +564,17 @@ Render:
 					- Triangles: no ConnCompId nor PlaneId
 					- Spring: no ConnCompId, PlaneId returns min
 						- Cache @ caller, e.g. bomb
-			- Step 2:
+					- Ephemeral particles (check all Points::CreateXYZEphemeralParticle(...))
+				- Render: upload PlaneId instead of ConnectedId
+			- Step 3:
 				- TODO: divide below into steps
 				- Uploading of PlaneId's:
 					- Ship, when mAreElementsDirty, causes Points to upload PlaneIds
+						- Together with the ship-maintained "max ever plane ID"
 						- See role of current Upload() - Rename: we have 3+ roles: immutable, (continuously) mutable, ad-hoc
 						  (UploadEphParticles, UploadPlaneIds, etc.)
 						- Ship must take charge of immutable attributes state - 2 state variables (immutable dirty and mutable dirty)
+				- ShipRenderContext::UploadXYZElement() do not take anymore connected component ID					
 				- Enable Z test and writing to Z buffer at RenderContext before doing ships, and disable afterwards
 					+ Also clear Z buffer at canvas clear
 					- glEnable(GL_DEPTH_TEST);
@@ -574,13 +586,6 @@ Render:
 						- TODO: what do we do with OrthoMatrix? Can we incorporate Moleskine's calcn's into it?
 							- Requires an OrthoMatrix per ship, on top of a single global OrthoMatrix for everything else
 			
-			- TODO: review the below based off transparency sorting - see MOLESKINE
-			2 - Ship assigns points' ConnectedComponentID as float in vector
-			3 - ShipRenderContext's shaders (Triangles, Springs) take Z and with ad-hoc OrthoMatrix
-			    transform ConnectedComponentID to Z
-			4 - ShipRenderContext::UploadXYZElement() does not take anymore connected component ID
-			5 - (Nice to have): sticky component IDs, by leveraging the fact that normally IDs are assigned from L,T to R,B
-
 		- See if drawing springs & triangles at separate depths also helps generally with render speed, even for one single
 		  connected component (for springs' fragment shader - may be it takes shortcuts if it knows it's behind)
 		- After Z is done:

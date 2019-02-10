@@ -224,7 +224,7 @@ private:
     void GenerateAirBubbles(
         vec2f const & position,
         float currentSimulationTime,
-        ConnectedComponentId connectedComponentId,
+        PlaneId planeId,
         GameParameters const & gameParameters);
 
     void GenerateDebris(

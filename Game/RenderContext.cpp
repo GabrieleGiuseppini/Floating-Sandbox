@@ -404,7 +404,7 @@ void RenderContext::AddShip(
     RgbaImageData texture,
     ShipDefinition::TextureOriginType textureOrigin)
 {
-    assert(shipId == mShips.size() + 1);
+    assert(shipId == mShips.size());
     (void)shipId;
 
     // Add the ship

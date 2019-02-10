@@ -1076,7 +1076,7 @@ void Ship::UpdateWaterInflow(
                         GenerateAirBubbles(
                             mPoints.GetPosition(pointIndex),
                             currentSimulationTime,
-                            mPoints.GetConnectedComponentId(pointIndex),
+                            mPoints.GetPlaneId(pointIndex),
                             gameParameters);
                     }
 
@@ -1168,12 +1168,10 @@ void Ship::UpdateWaterVelocities(
 
         for (size_t s = 0; s < mPoints.GetConnectedSprings(pointIndex).size(); ++s)
         {
-            auto const springIndex = mPoints.GetConnectedSprings(pointIndex)[s];
-
-            auto const otherEndpointIndex = mSprings.GetOtherEndpointIndex(springIndex, pointIndex);
+            auto const & cs = mPoints.GetConnectedSprings(pointIndex)[s];
 
             // Normalized spring vector, oriented point -> other endpoint
-            vec2f const springNormalizedVector = (mPoints.GetPosition(otherEndpointIndex) - mPoints.GetPosition(pointIndex)).normalise();
+            vec2f const springNormalizedVector = (mPoints.GetPosition(cs.OtherEndpointIndex) - mPoints.GetPosition(pointIndex)).normalise();
 
             // Component of the point's own water velocity along the spring
             float const pointWaterVelocityAlongSpring =
@@ -1186,10 +1184,10 @@ void Ship::UpdateWaterVelocities(
             //
 
             // Pressure difference (positive implies point -> other endpoint flow)
-            float const dw = oldPointWaterBufferData[pointIndex] - oldPointWaterBufferData[otherEndpointIndex];
+            float const dw = oldPointWaterBufferData[pointIndex] - oldPointWaterBufferData[cs.OtherEndpointIndex];
 
             // Gravity potential difference (positive implies point -> other endpoint flow)
-            float const dy = mPoints.GetPosition(pointIndex).y - mPoints.GetPosition(otherEndpointIndex).y;
+            float const dy = mPoints.GetPosition(pointIndex).y - mPoints.GetPosition(cs.OtherEndpointIndex).y;
 
             // Calculate gained water velocity along this spring, from point to other endpoint
             // (Bernoulli, 1738)
@@ -1219,7 +1217,7 @@ void Ship::UpdateWaterVelocities(
             // diagonalsprings
             springOutboundWaterFlowWeights[s] =
                 springOutboundScalarWaterVelocity
-                / mSprings.GetRestLength(springIndex);
+                / mSprings.GetRestLength(cs.SpringIndex);
 
             // Resultant outbound velocity along spring
             springOutboundWaterVelocities[s] =
@@ -1235,10 +1233,10 @@ void Ship::UpdateWaterVelocities(
             //
 
             pointSplashFreeNeighbors +=
-                mSprings.GetWaterPermeability(springIndex)
-                * pointFreenessFactorBufferData[otherEndpointIndex];
+                mSprings.GetWaterPermeability(cs.SpringIndex)
+                * pointFreenessFactorBufferData[cs.OtherEndpointIndex];
 
-            pointSplashNeighbors += mSprings.GetWaterPermeability(springIndex);
+            pointSplashNeighbors += mSprings.GetWaterPermeability(cs.SpringIndex);
         }
 
 
@@ -1270,11 +1268,7 @@ void Ship::UpdateWaterVelocities(
 
         for (size_t s = 0; s < mPoints.GetConnectedSprings(pointIndex).size(); ++s)
         {
-            auto const springIndex = mPoints.GetConnectedSprings(pointIndex)[s];
-
-            auto const otherEndpointIndex = mSprings.GetOtherEndpointIndex(
-                springIndex,
-                pointIndex);
+            auto const & cs = mPoints.GetConnectedSprings(pointIndex)[s];
 
             // Calculate quantity of water directed outwards
             float const springOutboundQuantityOfWater =
@@ -1283,7 +1277,7 @@ void Ship::UpdateWaterVelocities(
 
             assert(springOutboundQuantityOfWater >= 0.0f);
 
-            if (mSprings.GetWaterPermeability(springIndex) != 0.0f)
+            if (mSprings.GetWaterPermeability(cs.SpringIndex) != 0.0f)
             {
                 //
                 // Water - and momentum - move from point to endpoint
@@ -1291,7 +1285,7 @@ void Ship::UpdateWaterVelocities(
 
                 // Move water quantity
                 newPointWaterBufferData[pointIndex] -= springOutboundQuantityOfWater;
-                newPointWaterBufferData[otherEndpointIndex] += springOutboundQuantityOfWater;
+                newPointWaterBufferData[cs.OtherEndpointIndex] += springOutboundQuantityOfWater;
 
                 // Remove "old momentum" (old velocity) from point
                 newPointWaterMomentumBufferData[pointIndex] -=
@@ -1299,7 +1293,7 @@ void Ship::UpdateWaterVelocities(
                     * springOutboundQuantityOfWater;
 
                 // Add "new momentum" (old velocity + velocity gained) to other endpoint
-                newPointWaterMomentumBufferData[otherEndpointIndex] +=
+                newPointWaterMomentumBufferData[cs.OtherEndpointIndex] +=
                     springOutboundWaterVelocities[s]
                     * springOutboundQuantityOfWater;
 
@@ -1310,12 +1304,12 @@ void Ship::UpdateWaterVelocities(
                 //
 
                 // FUTURE: get rid of this re-calculation once we pre-calculate all spring normalized vectors
-                vec2f const springNormalizedVector = (mPoints.GetPosition(otherEndpointIndex) - mPoints.GetPosition(pointIndex)).normalise();
+                vec2f const springNormalizedVector = (mPoints.GetPosition(cs.OtherEndpointIndex) - mPoints.GetPosition(pointIndex)).normalise();
 
                 float ma = springOutboundQuantityOfWater;
                 float va = springOutboundWaterVelocities[s].length();
-                float mb = oldPointWaterBufferData[otherEndpointIndex];
-                float vb = oldPointWaterVelocityBufferData[otherEndpointIndex].dot(springNormalizedVector);
+                float mb = oldPointWaterBufferData[cs.OtherEndpointIndex];
+                float vb = oldPointWaterVelocityBufferData[cs.OtherEndpointIndex].dot(springNormalizedVector);
 
                 float vf = 0.0f;
                 if (ma + mb != 0.0f)
@@ -1334,7 +1328,7 @@ void Ship::UpdateWaterVelocities(
             else
             {
                 // Deleted springs are removed from points' connected springs
-                assert(!mSprings.IsDeleted(springIndex));
+                assert(!mSprings.IsDeleted(cs.SpringIndex));
 
                 //
                 // New momentum (old velocity + velocity gained) bounces back
@@ -1513,6 +1507,7 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
         }
         else
         {
+            // TODOHERE: change this to plane ID
             // Spread light to all the points in the same connected component
 
             float const effectiveExponent =
@@ -1579,7 +1574,7 @@ void Ship::DetectConnectedComponents(VisitSequenceNumber currentVisitSequenceNum
         if (!mPoints.IsDeleted(pointIndex))
         {
             // Check if visited
-            if (mPoints.GetCurrentConnectedComponentDetectionVisitSequenceNumber(pointIndex) != currentVisitSequenceNumber)
+            if (mPoints.GetCurrentConnectivityVisitSequenceNumber(pointIndex) != currentVisitSequenceNumber)
             {
                 // This node has not been visited, hence it's the beginning of a new connected component
                 ++currentConnectedComponentId;
@@ -1594,7 +1589,7 @@ void Ship::DetectConnectedComponents(VisitSequenceNumber currentVisitSequenceNum
                 pointsToVisitForConnectedComponents.push(pointIndex);
 
                 // Mark as visited
-                mPoints.SetCurrentConnectedComponentDetectionVisitSequenceNumber(
+                mPoints.SetCurrentConnectivityVisitSequenceNumber(
                     pointIndex,
                     currentVisitSequenceNumber);
 
@@ -1604,31 +1599,22 @@ void Ship::DetectConnectedComponents(VisitSequenceNumber currentVisitSequenceNum
                     auto currentPointIndex = pointsToVisitForConnectedComponents.front();
                     pointsToVisitForConnectedComponents.pop();
 
-                    assert(currentVisitSequenceNumber == mPoints.GetCurrentConnectedComponentDetectionVisitSequenceNumber(currentPointIndex));
+                    assert(currentVisitSequenceNumber == mPoints.GetCurrentConnectivityVisitSequenceNumber(currentPointIndex));
 
                     // Assign the connected component ID
                     mPoints.SetConnectedComponentId(currentPointIndex, currentConnectedComponentId);
                     ++pointsInCurrentConnectedComponent;
 
                     // Go through this point's adjacents
-                    for (auto adjacentSpringElementIndex : mPoints.GetConnectedSprings(currentPointIndex))
+                    for (auto const & cs : mPoints.GetConnectedSprings(currentPointIndex))
                     {
-                        assert(!mSprings.IsDeleted(adjacentSpringElementIndex));
+                        assert(!mSprings.IsDeleted(cs.SpringIndex));
 
-                        auto pointAIndex = mSprings.GetPointAIndex(adjacentSpringElementIndex);
-                        assert(!mPoints.IsDeleted(pointAIndex));
-                        if (currentVisitSequenceNumber != mPoints.GetCurrentConnectedComponentDetectionVisitSequenceNumber(pointAIndex))
+                        assert(!mPoints.IsDeleted(cs.OtherEndpointIndex));
+                        if (currentVisitSequenceNumber != mPoints.GetCurrentConnectivityVisitSequenceNumber(cs.OtherEndpointIndex))
                         {
-                            mPoints.SetCurrentConnectedComponentDetectionVisitSequenceNumber(pointAIndex, currentVisitSequenceNumber);
-                            pointsToVisitForConnectedComponents.push(pointAIndex);
-                        }
-
-                        auto pointBIndex = mSprings.GetPointBIndex(adjacentSpringElementIndex);
-                        assert(!mPoints.IsDeleted(pointBIndex));
-                        if (currentVisitSequenceNumber != mPoints.GetCurrentConnectedComponentDetectionVisitSequenceNumber(pointBIndex))
-                        {
-                            mPoints.SetCurrentConnectedComponentDetectionVisitSequenceNumber(pointBIndex, currentVisitSequenceNumber);
-                            pointsToVisitForConnectedComponents.push(pointBIndex);
+                            mPoints.SetCurrentConnectivityVisitSequenceNumber(cs.OtherEndpointIndex, currentVisitSequenceNumber);
+                            pointsToVisitForConnectedComponents.push(cs.OtherEndpointIndex);
                         }
                     }
                 }
@@ -1701,10 +1687,10 @@ void Ship::PointDestroyHandler(
     auto & connectedSprings = mPoints.GetConnectedSprings(pointElementIndex);
     while (!connectedSprings.empty())
     {
-        assert(!mSprings.IsDeleted(connectedSprings.back()));
+        assert(!mSprings.IsDeleted(connectedSprings.back().SpringIndex));
 
         mSprings.Destroy(
-            connectedSprings.back(),
+            connectedSprings.back().SpringIndex,
             Springs::DestroyOptions::DoNotFireBreakEvent // We're already firing the Destroy event for the point
             | Springs::DestroyOptions::DestroyAllTriangles,
             currentSimulationTime,
@@ -1884,7 +1870,7 @@ void Ship::ElectricalElementDestroyHandler(ElementIndex /*electricalElementIndex
 void Ship::GenerateAirBubbles(
     vec2f const & position,
     float currentSimulationTime,
-    ConnectedComponentId connectedComponentId,
+    PlaneId planeId,
     GameParameters const & /*gameParameters*/)
 {
     float vortexAmplitude = GameRandomEngine::GetInstance().GenerateRandomReal(
@@ -1899,7 +1885,7 @@ void Ship::GenerateAirBubbles(
         vortexFrequency,
         mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Air),
         currentSimulationTime,
-        connectedComponentId);
+        planeId);
 }
 
 void Ship::GenerateDebris(

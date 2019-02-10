@@ -296,7 +296,6 @@ std::unique_ptr<Ship> ShipBuilder::Create(
 
     ElectricalElements electricalElements = CreateElectricalElements(
         points,
-        springs,
         parentWorld,
         gameEventHandler);
 
@@ -1179,8 +1178,8 @@ Physics::Springs ShipBuilder::CreateSprings(
             points);
 
         // Add spring to its endpoints
-        points.AddConnectedSpring(pointIndexRemap[springInfos2[s].PointAIndex1], s);
-        points.AddConnectedSpring(pointIndexRemap[springInfos2[s].PointBIndex1], s);
+        points.AddConnectedSpring(pointIndexRemap[springInfos2[s].PointAIndex1], s, pointIndexRemap[springInfos2[s].PointBIndex1]);
+        points.AddConnectedSpring(pointIndexRemap[springInfos2[s].PointBIndex1], s, pointIndexRemap[springInfos2[s].PointAIndex1]);
     }
 
     return springs;
@@ -1213,7 +1212,6 @@ Physics::Triangles ShipBuilder::CreateTriangles(
 
 ElectricalElements ShipBuilder::CreateElectricalElements(
     Physics::Points const & points,
-    Physics::Springs const & springs,
     Physics::World & parentWorld,
     std::shared_ptr<IGameEventHandler> gameEventHandler)
 {
@@ -1255,28 +1253,14 @@ ElectricalElements ShipBuilder::CreateElectricalElements(
     {
         auto pointIndex = electricalElements.GetPointIndex(electricalElementIndex);
 
-        for (auto springIndex : points.GetConnectedSprings(pointIndex))
+        for (auto const & cs : points.GetConnectedSprings(pointIndex))
         {
-            ElementIndex otherEndpointElectricalElement;
-
-            auto pointAIndex = springs.GetPointAIndex(springIndex);
-            if (pointAIndex != pointIndex)
-            {
-                assert(springs.GetPointBIndex(springIndex) == pointIndex);
-                otherEndpointElectricalElement = points.GetElectricalElement(pointAIndex);
-            }
-            else
-            {
-                assert(springs.GetPointBIndex(springIndex) != pointIndex);
-
-                otherEndpointElectricalElement = points.GetElectricalElement(springs.GetPointBIndex(springIndex));
-            }
-
-            if (NoneElementIndex != otherEndpointElectricalElement)
+            auto otherEndpointElectricalElementIndex = points.GetElectricalElement(cs.OtherEndpointIndex);
+            if (NoneElementIndex != otherEndpointElectricalElementIndex)
             {
                 electricalElements.AddConnectedElectricalElement(
                     electricalElementIndex,
-                    otherEndpointElectricalElement);
+                    otherEndpointElectricalElementIndex);
             }
         }
     }
