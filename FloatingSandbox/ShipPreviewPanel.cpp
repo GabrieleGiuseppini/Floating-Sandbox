@@ -174,36 +174,62 @@ void ShipPreviewPanel::OnDirScanned(fsDirScannedEvent & event)
     newPreviewPanel->Hide();
     newPreviewPanel->Create(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
-    wxGridSizer * newPreviewPanelSizer = new wxGridSizer(CalculateTileColumns(), 0, 0);
-
-
-    //
-    // Create new preview controls
-    //
+    wxGridSizer * newPreviewPanelSizer = nullptr;
 
     std::vector<ShipPreviewControl *> newPreviewControls;
 
-    for (size_t shipIndex = 0; shipIndex < event.GetShipFilepaths().size(); ++shipIndex)
+    if (!event.GetShipFilepaths().empty())
     {
-        auto shipPreviewControl = new ShipPreviewControl(
-            newPreviewPanel,
-            shipIndex,
-            event.GetShipFilepaths()[shipIndex],
-            PreviewVGap,
-            mWaitImage,
-            mErrorImage);
 
-        newPreviewControls.push_back(shipPreviewControl);
+        //
+        // Create new preview controls
+        //
 
-        // Register for preview selections
-        shipPreviewControl->Bind(fsEVT_SHIP_FILE_SELECTED, &ShipPreviewPanel::OnShipFileSelected, this);
+        newPreviewPanelSizer = new wxGridSizer(CalculateTileColumns(), 0, 0);
 
-        // Add to sizer
-        newPreviewPanelSizer->Add(shipPreviewControl, 0, wxALIGN_CENTRE_HORIZONTAL | wxALIGN_TOP);
+        for (size_t shipIndex = 0; shipIndex < event.GetShipFilepaths().size(); ++shipIndex)
+        {
+            auto shipPreviewControl = new ShipPreviewControl(
+                newPreviewPanel,
+                shipIndex,
+                event.GetShipFilepaths()[shipIndex],
+                PreviewVGap,
+                mWaitImage,
+                mErrorImage);
+
+            newPreviewControls.push_back(shipPreviewControl);
+
+            // Register for preview selections
+            shipPreviewControl->Bind(fsEVT_SHIP_FILE_SELECTED, &ShipPreviewPanel::OnShipFileSelected, this);
+
+            // Add to sizer
+            newPreviewPanelSizer->Add(shipPreviewControl, 0, wxALIGN_CENTRE_HORIZONTAL | wxALIGN_TOP);
+        }
+
+        newPreviewPanel->SetSizerAndFit(newPreviewPanelSizer);
     }
+    else
+    {
+        //
+        // Just tell the user there are no ships here
+        //
 
-    newPreviewPanel->SetSizerAndFit(newPreviewPanelSizer);
+        auto labelSizer = new wxBoxSizer(wxVERTICAL);
 
+        auto label = new wxStaticText(
+            newPreviewPanel,
+            wxID_ANY,
+            "There are no ships in this folder",
+            wxDefaultPosition,
+            wxDefaultSize,
+            wxALIGN_CENTER_HORIZONTAL);
+
+        labelSizer->AddStretchSpacer(1);
+        labelSizer->Add(label, 0, wxEXPAND);
+        labelSizer->AddStretchSpacer(1);
+
+        newPreviewPanel->SetSizerAndFit(labelSizer);
+    }
 
 
     //

@@ -161,7 +161,7 @@ Render:
 
 		- Interior layer (*)
 
-		= ConnectedSprings/OtherEndpoint Optimization (*)
+		+ ConnectedSprings/OtherEndpoint Optimization (*)
 		- Increase # of ephemeral particles
 			- And thus lower threshold of air bubbles
 
@@ -502,7 +502,7 @@ Render:
 					  we don't propagate them through "cables" nor assign them to standalone points; all of these 
 					  won't have a ConnectedComponentId at all
 					- So, what doesn't have a ConnectedComponentId?
-						- "cables"
+						- "strings"
 						- standalone points
 				- Assignment of PlaneId is done via the same connectivity visit used for assigning ConnectedComponentId's,
 				  but we assign "single-spring paths" to the origin's PlaneId and don't propagate to solid body again
@@ -565,7 +565,7 @@ Render:
 					- Spring: no ConnCompId, PlaneId returns min
 						- Cache @ caller, e.g. bomb
 					- Ephemeral particles (check all Points::CreateXYZEphemeralParticle(...))
-				- Render: upload PlaneId instead of ConnectedId
+				- Render: upload PlaneId instead of ConnectedComponentId
 			- Step 3:
 				- TODO: divide below into steps
 				- Uploading of PlaneId's:
