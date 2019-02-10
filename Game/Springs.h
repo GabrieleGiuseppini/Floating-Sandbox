@@ -277,14 +277,14 @@ public:
             + GetPointBPosition(springElementIndex, points)) / 2.0f;
     }
 
-    ConnectedComponentId GetConnectedComponentId(
+    PlaneId GetPlaneId(
         ElementIndex springElementIndex,
         Points const & points) const
     {
-        assert(points.GetConnectedComponentId(GetPointAIndex(springElementIndex))
-            == points.GetConnectedComponentId(GetPointBIndex(springElementIndex)));
-
-        return points.GetConnectedComponentId(GetPointAIndex(springElementIndex));
+        // Return, quite arbitrarily, the plane of point A
+        // (the two endpoints might have different plane IDs in case, for example,
+        // this spring connects a "string" to a triangle)
+        return points.GetPlaneId(GetPointAIndex(springElementIndex));
     }
 
     //

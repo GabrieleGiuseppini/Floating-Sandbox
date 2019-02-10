@@ -256,6 +256,14 @@ public:
     }
 
     /*
+     * Returns a reverse iterator for the non-ephemeral points only.
+     */
+    inline auto const NonEphemeralPointsReverse() const
+    {
+        return ElementIndexReverseRangeIterator(0, mShipPointCount);
+    }
+
+    /*
      * Returns an iterator for the ephemeral points only.
      */
     inline auto const EphemeralPoints() const

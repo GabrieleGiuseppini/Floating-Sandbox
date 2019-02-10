@@ -67,7 +67,8 @@ void PinnedPoints::Upload(
 
         renderContext.UploadShipGenericTextureRenderSpecification(
             shipId,
-            mShipPoints.GetConnectedComponentId(pinnedPointIndex),
+            // TODO: will become just plane ID
+            static_cast<ConnectedComponentId>(mShipPoints.GetPlaneId(pinnedPointIndex)),
             TextureFrameId(TextureGroupType::PinnedPoint, 0),
             mShipPoints.GetPosition(pinnedPointIndex));
     }

@@ -198,7 +198,7 @@ public:
 
 private:
 
-    void DetectConnectedComponents(VisitSequenceNumber currentVisitSequenceNumber);
+    void RunConnectivityVisit(VisitSequenceNumber currentVisitSequenceNumber);
 
     void DestroyConnectedTriangles(ElementIndex pointElementIndex);
 
@@ -248,7 +248,6 @@ private:
     virtual void DoBombExplosion(
         vec2f const & blastPosition,
         float sequenceProgress,
-        ConnectedComponentId connectedComponentId,
         GameParameters const & gameParameters) override;
 
     virtual void DoAntiMatterBombPreimplosion(
@@ -285,12 +284,16 @@ private:
     Triangles mTriangles;
     ElectricalElements mElectricalElements;
 
+    // TODO: nuke
     // Connected components metadata
     std::vector<std::size_t> mConnectedComponentSizes;
 
+    // The max plane ID we have seen - ever
+    PlaneId mMaxMaxPlaneId;
+
     // Flag remembering whether points (elements) and/or springs (incl. ropes) and/or triangles have changed
     // since the last step.
-    // When this flag is set, we'll re-detect connected components and re-upload elements
+    // When this flag is set, we'll re-detect connected components, planes, and re-upload elements
     // to the rendering context
     bool mAreElementsDirty;
 

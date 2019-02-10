@@ -413,8 +413,9 @@ void Points::Query(ElementIndex pointElementIndex) const
     LogMessage("PointIndex: ", pointElementIndex);
     LogMessage("Position: ", mPositionBuffer[pointElementIndex].toString());
     LogMessage("Velocity: ", mVelocityBuffer[pointElementIndex].toString());
-    LogMessage("IntegrationFactorTimeCoefficient: ", mIntegrationFactorTimeCoefficientBuffer[pointElementIndex]);
     LogMessage("Water: ", mWaterBuffer[pointElementIndex]);
+    LogMessage("PlaneID: ", mPlaneIdBuffer[pointElementIndex]);
+    LogMessage("ConnectedComponentID: ", mConnectedComponentIdBuffer[pointElementIndex]);
 }
 
 void Points::Upload(
@@ -451,7 +452,8 @@ void Points::UploadElements(
             renderContext.UploadShipElementPoint(
                 shipId,
                 pointIndex,
-                mConnectedComponentIdBuffer[pointIndex]);
+                // TODO: this will go
+                static_cast<ConnectedComponentId>(mPlaneIdBuffer[pointIndex]));
         }
     }
 }

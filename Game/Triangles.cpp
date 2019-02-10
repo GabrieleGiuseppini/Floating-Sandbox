@@ -44,15 +44,16 @@ void Triangles::UploadElements(
     {
         if (!mIsDeletedBuffer[i])
         {
-            assert(points.GetConnectedComponentId(GetPointAIndex(i)) == points.GetConnectedComponentId(GetPointBIndex(i))
-                && points.GetConnectedComponentId(GetPointAIndex(i)) == points.GetConnectedComponentId(GetPointCIndex(i)));
+            // TODO: this will go
+            assert(points.GetPlaneId(GetPointAIndex(i)) == points.GetPlaneId(GetPointBIndex(i))
+                && points.GetPlaneId(GetPointAIndex(i)) == points.GetPlaneId(GetPointCIndex(i)));
 
             renderContext.UploadShipElementTriangle(
                 shipId,
                 GetPointAIndex(i),
                 GetPointBIndex(i),
                 GetPointCIndex(i),
-                points.GetConnectedComponentId(GetPointAIndex(i)));
+                points.GetPlaneId(GetPointAIndex(i)));
         }
     }
 }

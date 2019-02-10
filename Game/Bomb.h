@@ -38,7 +38,6 @@ public:
         virtual void DoBombExplosion(
             vec2f const & blastPosition,
             float sequenceProgress,
-            ConnectedComponentId connectedComponentId,
             GameParameters const & gameParameters) = 0;
 
         virtual void DoAntiMatterBombPreimplosion(
@@ -107,18 +106,14 @@ public:
                 *mSpringIndex,
                 mShipPoints);
 
-            // Freeze current midpoint position, rotation offset, and connected component
+            // Freeze current midpoint position, rotation offset, and plane ID
 
-            mMidpointPosition = mShipSprings.GetMidpointPosition(*mSpringIndex, mShipPoints);
+            mFrozenMidpointPosition = mShipSprings.GetMidpointPosition(*mSpringIndex, mShipPoints);
 
-            mRotationOffsetAxis = mShipSprings.GetPointBPosition(*mSpringIndex, mShipPoints)
+            mFrozenRotationOffsetAxis = mShipSprings.GetPointBPosition(*mSpringIndex, mShipPoints)
                 - mShipSprings.GetPointAPosition(*mSpringIndex, mShipPoints);
 
-            assert(
-                mShipPoints.GetConnectedComponentId(mShipSprings.GetPointAIndex(*mSpringIndex))
-                == mShipPoints.GetConnectedComponentId(mShipSprings.GetPointBIndex(*mSpringIndex)));
-
-            mConnectedComponentId = mShipPoints.GetConnectedComponentId(mShipSprings.GetPointAIndex(*mSpringIndex));
+            mFrozenPlaneId = mShipSprings.GetPlaneId(*mSpringIndex, mShipPoints);
 
             // Remember we don't have a spring index anymore
 
@@ -126,9 +121,9 @@ public:
         }
         else
         {
-            assert(!!mMidpointPosition);
-            assert(!!mRotationOffsetAxis);
-            assert(!!mConnectedComponentId);
+            assert(!!mFrozenMidpointPosition);
+            assert(!!mFrozenRotationOffsetAxis);
+            assert(!!mFrozenPlaneId);
         }
     }
 
@@ -162,9 +157,9 @@ public:
      */
     vec2f const GetPosition() const
     {
-        if (!!mMidpointPosition)
+        if (!!mFrozenMidpointPosition)
         {
-            return *mMidpointPosition;
+            return *mFrozenMidpointPosition;
         }
         else
         {
@@ -178,9 +173,9 @@ public:
      */
     vec2f const GetRotationOffsetAxis() const
     {
-        if (!!mRotationOffsetAxis)
+        if (!!mFrozenRotationOffsetAxis)
         {
-            return *mRotationOffsetAxis;
+            return *mFrozenRotationOffsetAxis;
         }
         else
         {
@@ -191,20 +186,18 @@ public:
     }
 
     /*
-     * Returns the ID of the connected component of this bomb.
+     * Returns the ID of the plane of this bomb.
      */
-    ConnectedComponentId GetConnectedComponentId() const
+    PlaneId GetPlaneId() const
     {
-        if (!!mConnectedComponentId)
+        if (!!mFrozenPlaneId)
         {
-            return *mConnectedComponentId;
+            return *mFrozenPlaneId;
         }
         else
         {
             assert(!!mSpringIndex);
-            assert(mShipPoints.GetConnectedComponentId(mShipSprings.GetPointAIndex(*mSpringIndex))
-                == mShipPoints.GetConnectedComponentId(mShipSprings.GetPointBIndex(*mSpringIndex)));
-            return mShipPoints.GetConnectedComponentId(mShipSprings.GetPointAIndex(*mSpringIndex));
+            return mShipSprings.GetPlaneId(*mSpringIndex, mShipPoints);
         }
     }
 
@@ -228,9 +221,9 @@ protected:
         , mRotationBaseAxis(shipPoints.GetPosition(shipSprings.GetPointBIndex(springIndex)) - shipPoints.GetPosition(shipSprings.GetPointAIndex(springIndex)))
         , mType(type)
         , mSpringIndex(springIndex)
-        , mMidpointPosition(std::nullopt)
-        , mRotationOffsetAxis(std::nullopt)
-        , mConnectedComponentId(std::nullopt)
+        , mFrozenMidpointPosition(std::nullopt)
+        , mFrozenRotationOffsetAxis(std::nullopt)
+        , mFrozenPlaneId(std::nullopt)
     {
     }
 
@@ -266,14 +259,14 @@ private:
 
     // The position of the midpoint of the spring of this bomb, if the bomb has been detached from its spring;
     // otherwise, none
-    std::optional<vec2f> mMidpointPosition;
+    std::optional<vec2f> mFrozenMidpointPosition;
 
     // The last rotation axis of the spring of this bomb, if the bomb has been detached from its spring;
     // otherwise, none
-    std::optional<vec2f> mRotationOffsetAxis;
+    std::optional<vec2f> mFrozenRotationOffsetAxis;
 
-    // The connected component ID of this bomb, if the bomb has been detached from its spring; otherwise, none
-    std::optional<ConnectedComponentId> mConnectedComponentId;
+    // The plane ID of this bomb, if the bomb has been detached from its spring; otherwise, none
+    std::optional<PlaneId> mFrozenPlaneId;
 };
 
 }

@@ -157,15 +157,14 @@ void Springs::UploadElements(
         // we are in springs render mode
         if (!mIsDeletedBuffer[i])
         {
-            assert(points.GetConnectedComponentId(GetPointAIndex(i)) == points.GetConnectedComponentId(GetPointBIndex(i)));
-
             if (IsRope(i))
             {
                 renderContext.UploadShipElementRope(
                     shipId,
                     GetPointAIndex(i),
                     GetPointBIndex(i),
-                    points.GetConnectedComponentId(GetPointAIndex(i)));
+                    // TODO: this will go
+                    static_cast<ConnectedComponentId>(GetPlaneId(i, points)));
             }
             else if (mSuperTrianglesBuffer[i].size() < 2 || doUploadAllSprings)
             {
@@ -173,7 +172,8 @@ void Springs::UploadElements(
                     shipId,
                     GetPointAIndex(i),
                     GetPointBIndex(i),
-                    points.GetConnectedComponentId(GetPointAIndex(i)));
+                    // TODO: this will go
+                    static_cast<ConnectedComponentId>(GetPlaneId(i, points)));
             }
         }
     }
@@ -190,13 +190,12 @@ void Springs::UploadStressedSpringElements(
         {
             if (mIsStressedBuffer[i])
             {
-                assert(points.GetConnectedComponentId(GetPointAIndex(i)) == points.GetConnectedComponentId(GetPointBIndex(i)));
-
                 renderContext.UploadShipElementStressedSpring(
                     shipId,
                     GetPointAIndex(i),
                     GetPointBIndex(i),
-                    points.GetConnectedComponentId(GetPointAIndex(i)));
+                    // TODO: this will go
+                    static_cast<ConnectedComponentId>(GetPlaneId(i, points)));
             }
         }
     }

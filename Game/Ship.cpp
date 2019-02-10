@@ -52,6 +52,7 @@ Ship::Ship(
     , mTriangles(std::move(triangles))
     , mElectricalElements(std::move(electricalElements))
     , mConnectedComponentSizes()
+    , mMaxMaxPlaneId(0)
     , mAreElementsDirty(true)
     , mLastDebugShipRenderMode()
     , mIsSinking(false)
@@ -78,8 +79,8 @@ Ship::Ship(
     mTriangles.RegisterDestroyHandler(std::bind(&Ship::TriangleDestroyHandler, this, std::placeholders::_1));
     mElectricalElements.RegisterDestroyHandler(std::bind(&Ship::ElectricalElementDestroyHandler, this, std::placeholders::_1));
 
-    // Do a first connected component detection pass
-    DetectConnectedComponents(currentVisitSequenceNumber);
+    // Do a first connectivity pass
+    RunConnectivityVisit(currentVisitSequenceNumber);
 }
 
 Ship::~Ship()
@@ -268,7 +269,7 @@ bool Ship::InjectBubblesAt(
         GenerateAirBubbles(
             targetPos,
             currentSimulationTime,
-            NoneConnectedComponentId, // FUTURE: use mMaxConnectedComponentId/ZPlane
+            NoneConnectedComponentId, // FUTURE: use mMaxMaxPlaneId
             gameParameters);
 
         return true;
@@ -485,12 +486,12 @@ void Ship::Update(
 
 
     //
-    // Detect connected components, if there have been any deletions
+    // Run connectivity visit, if there have been any deletions
     //
 
     if (mAreElementsDirty)
     {
-        DetectConnectedComponents(currentVisitSequenceNumber);
+        RunConnectivityVisit(currentVisitSequenceNumber);
     }
 
 
@@ -1477,7 +1478,7 @@ void Ship::UpdateElectricalConnectivity(VisitSequenceNumber currentVisitSequence
 void Ship::DiffuseLight(GameParameters const & gameParameters)
 {
     //
-    // Diffuse light from each lamp to all connected (i.e. spring-connected) points,
+    // Diffuse light from each lamp to all points on the same plane ID,
     // inverse-proportionally to the nth power of the distance, where n is the spread
     //
 
@@ -1507,8 +1508,9 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
         }
         else
         {
-            // TODOHERE: change this to plane ID
-            // Spread light to all the points in the same connected component
+            //
+            // Spread light to all the points in the same plane ID
+            //
 
             float const effectiveExponent =
                 (1.0f / lampLightSpread)
@@ -1516,11 +1518,11 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
                 / 2.0f; // We piggyback on the power to avoid taking a sqrt for distance
 
             vec2f const & lampPosition = mPoints.GetPosition(lampPointIndex);
-            ConnectedComponentId const lampConnectedComponentId = mPoints.GetConnectedComponentId(lampPointIndex);
+            PlaneId const lampPlaneId = mPoints.GetPlaneId(lampPointIndex);
 
             for (auto pointIndex : mPoints)
             {
-                if (mPoints.GetConnectedComponentId(pointIndex) == lampConnectedComponentId)
+                if (mPoints.GetPlaneId(pointIndex) == lampPlaneId)
                 {
                     float const squareDistance = (mPoints.GetPosition(pointIndex) - lampPosition).squareLength();
 
@@ -1560,70 +1562,198 @@ void Ship::UpdateEphemeralParticles(
 // Private helpers
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
-void Ship::DetectConnectedComponents(VisitSequenceNumber currentVisitSequenceNumber)
+void Ship::RunConnectivityVisit(VisitSequenceNumber currentVisitSequenceNumber)
 {
+    //
+    // Here we visit the entire network of points (NOT including the ephemerals)
+    // and propagate connectivity information:
+    //
+    // - PlaneID: all points belonging to the same connected component, including "strings"
+    //            propagating from a solid body (triangle) but not solid bodies reached via "strings",
+    //            are assigned the same plane ID
+    //      - We allow "by chance" some strings to have their own plane ID, not shared with any solid body;
+    //        this may happen if, for example, we begin a flood from a string point
+    //
+    // - Connected Component ID: all points belonging to the same connected component (excluding
+    //           string points) are assigned the same connected component ID
+    //
+    // Basically, at the end of a visit *ALL* (non-ephemeral) points will have a Plane ID, and only
+    // all non-string points (i.e. points that are also vertices of at least one triangle) will also
+    // have a Connected Component ID (which will just happen to have the same value as the Plane ID).
+    //
+
+    // TODO: this may go soon
     mConnectedComponentSizes.clear();
 
-    ConnectedComponentId currentConnectedComponentId = 0;
-    std::queue<ElementIndex> pointsToVisitForConnectedComponents;
+    PlaneId currentPlaneId = 0; // Also serves as Connected Component ID
 
-    // Visit all non-ephemeral points, or we run the risk of creating a zillion connected components
-    for (auto pointIndex : mPoints.NonEphemeralPoints())
+    // The set of (already) marked points, from which we still
+    // have to propagate out
+    std::queue<ElementIndex> pointsToPropagateFrom;
+
+    // Visit all non-ephemeral points, from right to left - so that funnels, which tend to be Z-nearer,
+    // also carry on their own plane the ropes that connect them to further connected components.
+    //
+    // The reverse visit also implies that at the end of this run, higher plane IDs will mean Z-far, and lower
+    // plane IDs will mean Z-near.
+    for (auto pointIndex : mPoints.NonEphemeralPointsReverse())
     {
-        // Don't visit destroyed points, or we run the risk of creating a zillion connected components
-        if (!mPoints.IsDeleted(pointIndex))
+        // Don't visit destroyed points, or we run the risk of creating a zillion planes for nothing,
+        // and don't re-visit already-visited points
+        if (!mPoints.IsDeleted(pointIndex)
+            && mPoints.GetCurrentConnectivityVisitSequenceNumber(pointIndex) != currentVisitSequenceNumber)
         {
-            // Check if visited
-            if (mPoints.GetCurrentConnectivityVisitSequenceNumber(pointIndex) != currentVisitSequenceNumber)
+            //
+            // Flood from this point
+            //
+
+            // This node has not been visited, hence it's the beginning of a new plane and connected component
+            ++currentPlaneId;
+
+            // TODO: this may go away
+            size_t pointsInCurrentConnectedComponent = 0;
+
+            // Visit this point first
+            mPoints.SetPlaneId(pointIndex, currentPlaneId);
+            if (mPoints.GetConnectedTriangles(pointIndex).size() > 0) // Do not assign connected component ID to "strings"
+                mPoints.SetConnectedComponentId(pointIndex, static_cast<ConnectedComponentId>(currentPlaneId));
+            else
+                mPoints.SetConnectedComponentId(pointIndex, NoneConnectedComponentId);
+            mPoints.SetCurrentConnectivityVisitSequenceNumber(pointIndex, currentVisitSequenceNumber);
+
+            // TODO: this may go away
+            ++pointsInCurrentConnectedComponent;
+
+            // Add point to queue
+            assert(pointsToPropagateFrom.empty());
+            pointsToPropagateFrom.push(pointIndex);
+
+            // Visit all points reachable from this point via springs
+            while (!pointsToPropagateFrom.empty())
             {
-                // This node has not been visited, hence it's the beginning of a new connected component
-                ++currentConnectedComponentId;
-                size_t pointsInCurrentConnectedComponent = 0;
+                // Pop point that we have to propagate from
+                auto currentPointIndex = pointsToPropagateFrom.front();
+                pointsToPropagateFrom.pop();
 
-                //
-                // Propagate the connected component ID to all points reachable from this point
-                //
+                // This point has been visited already
+                assert(currentVisitSequenceNumber == mPoints.GetCurrentConnectivityVisitSequenceNumber(currentPointIndex));
 
-                // Add point to queue
-                assert(pointsToVisitForConnectedComponents.empty());
-                pointsToVisitForConnectedComponents.push(pointIndex);
+                // Remember whether this point is a string point
+                bool const isStartStringPoint = mPoints.GetConnectedTriangles(currentPointIndex).size() == 0;
 
-                // Mark as visited
-                mPoints.SetCurrentConnectivityVisitSequenceNumber(
-                    pointIndex,
-                    currentVisitSequenceNumber);
-
-                // Visit all points reachable from this point via springs
-                while (!pointsToVisitForConnectedComponents.empty())
+                // Visit all its non-visited connected points
+                for (auto const & cs : mPoints.GetConnectedSprings(currentPointIndex))
                 {
-                    auto currentPointIndex = pointsToVisitForConnectedComponents.front();
-                    pointsToVisitForConnectedComponents.pop();
+                    assert(!mPoints.IsDeleted(cs.OtherEndpointIndex));
 
-                    assert(currentVisitSequenceNumber == mPoints.GetCurrentConnectivityVisitSequenceNumber(currentPointIndex));
-
-                    // Assign the connected component ID
-                    mPoints.SetConnectedComponentId(currentPointIndex, currentConnectedComponentId);
-                    ++pointsInCurrentConnectedComponent;
-
-                    // Go through this point's adjacents
-                    for (auto const & cs : mPoints.GetConnectedSprings(currentPointIndex))
+                    if (currentVisitSequenceNumber != mPoints.GetCurrentConnectivityVisitSequenceNumber(cs.OtherEndpointIndex))
                     {
-                        assert(!mSprings.IsDeleted(cs.SpringIndex));
+                        // Visit this point only if we're not transitioning from a string point to a non-string point
+                        // (but string-to-string is fine)
+                        //
+                        // In case we don't visit this point, we'll visit it later with a new flood!
 
-                        assert(!mPoints.IsDeleted(cs.OtherEndpointIndex));
-                        if (currentVisitSequenceNumber != mPoints.GetCurrentConnectivityVisitSequenceNumber(cs.OtherEndpointIndex))
+                        bool const isEndStringPoint = mPoints.GetConnectedTriangles(cs.OtherEndpointIndex).size() == 0;
+                        if (!isStartStringPoint || isEndStringPoint)
                         {
+                            //
+                            // Visit point
+                            //
+
+                            mPoints.SetPlaneId(cs.OtherEndpointIndex, currentPlaneId);
+                            if (!isEndStringPoint) // Do not assign connected component ID to "strings"
+                                mPoints.SetConnectedComponentId(cs.OtherEndpointIndex, static_cast<ConnectedComponentId>(currentPlaneId));
+                            else
+                                mPoints.SetConnectedComponentId(cs.OtherEndpointIndex, NoneConnectedComponentId);
                             mPoints.SetCurrentConnectivityVisitSequenceNumber(cs.OtherEndpointIndex, currentVisitSequenceNumber);
-                            pointsToVisitForConnectedComponents.push(cs.OtherEndpointIndex);
+
+                            // TODO: this will go away
+                            ++pointsInCurrentConnectedComponent;
+
+                            // Add point to queue
+                            pointsToPropagateFrom.push(cs.OtherEndpointIndex);
                         }
                     }
                 }
-
-                // Store number of connected components
-                mConnectedComponentSizes.push_back(pointsInCurrentConnectedComponent);
             }
+
+            // TODO: this may go away
+            // Store number of connected components
+            mConnectedComponentSizes.push_back(pointsInCurrentConnectedComponent);
         }
     }
+
+
+    //
+    // Remember max plane ID ever
+    //
+
+    mMaxMaxPlaneId = std::max(mMaxMaxPlaneId, currentPlaneId);
+
+
+    ////////////////////////////////////////////////////////
+    // TODOOLD
+
+    ////ConnectedComponentId currentConnectedComponentId = 0;
+    ////std::queue<ElementIndex> pointsToVisitForConnectedComponents;
+
+    ////// Visit all non-ephemeral points, or we run the risk of creating a zillion connected components
+    ////for (auto pointIndex : mPoints.NonEphemeralPoints())
+    ////{
+    ////    // Don't visit destroyed points, or we run the risk of creating a zillion connected components
+    ////    if (!mPoints.IsDeleted(pointIndex))
+    ////    {
+    ////        // Check if visited
+    ////        if (mPoints.GetCurrentConnectivityVisitSequenceNumber(pointIndex) != currentVisitSequenceNumber)
+    ////        {
+    ////            // This node has not been visited, hence it's the beginning of a new connected component
+    ////            ++currentConnectedComponentId;
+    ////            size_t pointsInCurrentConnectedComponent = 0;
+
+    ////            //
+    ////            // Propagate the connected component ID to all points reachable from this point
+    ////            //
+
+    ////            // Add point to queue
+    ////            assert(pointsToVisitForConnectedComponents.empty());
+    ////            pointsToVisitForConnectedComponents.push(pointIndex);
+
+    ////            // Mark as visited
+    ////            mPoints.SetCurrentConnectivityVisitSequenceNumber(
+    ////                pointIndex,
+    ////                currentVisitSequenceNumber);
+
+    ////            // Visit all points reachable from this point via springs
+    ////            while (!pointsToVisitForConnectedComponents.empty())
+    ////            {
+    ////                auto currentPointIndex = pointsToVisitForConnectedComponents.front();
+    ////                pointsToVisitForConnectedComponents.pop();
+
+    ////                assert(currentVisitSequenceNumber == mPoints.GetCurrentConnectivityVisitSequenceNumber(currentPointIndex));
+
+    ////                // Assign the connected component ID
+    ////                mPoints.SetConnectedComponentId(currentPointIndex, currentConnectedComponentId);
+    ////                ++pointsInCurrentConnectedComponent;
+
+    ////                // Go through this point's adjacents
+    ////                for (auto const & cs : mPoints.GetConnectedSprings(currentPointIndex))
+    ////                {
+    ////                    assert(!mSprings.IsDeleted(cs.SpringIndex));
+
+    ////                    assert(!mPoints.IsDeleted(cs.OtherEndpointIndex));
+    ////                    if (currentVisitSequenceNumber != mPoints.GetCurrentConnectivityVisitSequenceNumber(cs.OtherEndpointIndex))
+    ////                    {
+    ////                        mPoints.SetCurrentConnectivityVisitSequenceNumber(cs.OtherEndpointIndex, currentVisitSequenceNumber);
+    ////                        pointsToVisitForConnectedComponents.push(cs.OtherEndpointIndex);
+    ////                    }
+    ////                }
+    ////            }
+
+    ////            // Store number of connected components
+    ////            mConnectedComponentSizes.push_back(pointsInCurrentConnectedComponent);
+    ////        }
+    ////    }
+    ////}
 }
 
 void Ship::DestroyConnectedTriangles(ElementIndex pointElementIndex)
@@ -1917,7 +2047,7 @@ void Ship::GenerateDebris(
                 mPoints.GetStructuralMaterial(pointElementIndex),
                 currentSimulationTime,
                 maxLifetime,
-                mPoints.GetConnectedComponentId(pointElementIndex));
+                mPoints.GetPlaneId(pointElementIndex));
         }
     }
 }
@@ -1978,7 +2108,7 @@ void Ship::GenerateSparkles(
                 mSprings.GetBaseStructuralMaterial(springElementIndex),
                 currentSimulationTime,
                 maxLifetime,
-                mSprings.GetConnectedComponentId(springElementIndex, mPoints));
+                mSprings.GetPlaneId(springElementIndex, mPoints));
         }
     }
 }
@@ -1990,7 +2120,6 @@ void Ship::GenerateSparkles(
 void Ship::DoBombExplosion(
     vec2f const & blastPosition,
     float sequenceProgress,
-    ConnectedComponentId /*connectedComponentId*/,
     GameParameters const & gameParameters)
 {
     // Blast radius: from 0.6 to BombBlastRadius

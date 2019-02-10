@@ -146,7 +146,8 @@ void RCBomb::Upload(
         {
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
-                GetConnectedComponentId(),
+                // TODO: will be replaced with plain PlaneId
+                static_cast<ConnectedComponentId>(GetPlaneId()),
                 TextureFrameId(TextureGroupType::RcBomb, 0),
                 GetPosition(),
                 1.0,
@@ -161,7 +162,8 @@ void RCBomb::Upload(
         {
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
-                GetConnectedComponentId(),
+                // TODO: will be replaced with plain PlaneId
+                static_cast<ConnectedComponentId>(GetPlaneId()),
                 TextureFrameId(TextureGroupType::RcBomb, 0),
                 GetPosition(),
                 1.0,
@@ -171,7 +173,8 @@ void RCBomb::Upload(
 
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
-                GetConnectedComponentId(),
+                // TODO: will be replaced with plain PlaneId
+                static_cast<ConnectedComponentId>(GetPlaneId()),
                 TextureFrameId(TextureGroupType::RcBombPing, (mPingOnStepCounter - 1) % PingFramesCount),
                 GetPosition(),
                 1.0,
@@ -186,7 +189,8 @@ void RCBomb::Upload(
         {
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
-                GetConnectedComponentId(),
+                // TODO: will be replaced with plain PlaneId
+                static_cast<ConnectedComponentId>(GetPlaneId()),
                 TextureFrameId(TextureGroupType::RcBomb, 0),
                 GetPosition(),
                 1.0,
@@ -196,7 +200,8 @@ void RCBomb::Upload(
 
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
-                GetConnectedComponentId(),
+                // TODO: will be replaced with plain PlaneId
+                static_cast<ConnectedComponentId>(GetPlaneId()),
                 TextureFrameId(TextureGroupType::RcBombPing, (mPingOnStepCounter - 1) % PingFramesCount),
                 GetPosition(),
                 1.0,
@@ -214,7 +219,8 @@ void RCBomb::Upload(
 
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
-                GetConnectedComponentId(),
+                // TODO: will be replaced with plain PlaneId
+                static_cast<ConnectedComponentId>(GetPlaneId()),
                 TextureFrameId(TextureGroupType::RcBombExplosion, mExplodingStepCounter),
                 GetPosition(),
                 1.0f + static_cast<float>(mExplodingStepCounter) / static_cast<float>(ExplosionStepsCount),

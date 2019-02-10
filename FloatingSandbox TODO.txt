@@ -472,23 +472,22 @@ Render:
 		- Rationale: more connected components => slower (multiple batches); try to draw one single batch then, using Z buffer and depth test 
 		- Spec:
 			- TODO: incorporate in this:
-				- Remember in connected component visit to visit from right and also assign plane ID backwards
-					- Because of rope-follow algo - we want ropes (who are assigned to plane ID of entering (first) point)
+				+ Remember in connected component visit to visit from right and also assign plane ID backwards
+					+ Because of rope-follow algo - we want ropes (who are assigned to plane ID of entering (first) point)
 					  to always have the closest plane of the two
-					- See below latest rope-follow algo to see if this is still needed
 				- Might not need to sort generic textures if we upload bombs with plane ID of attached spring
 					- Does not work for bubbles though, but might be irrelevant
 				- Assignment of PlaneID to triangles based off owner point - see MOLESKINE
-				- Generation of triangles for rendering purposes - see MOLESKINE
+				- Generation of triangles' point indices for rendering purposes - see MOLESKINE
 			- Assign Z based on cousin of connected component ID (named "Plane ID", uint32_t)
-				- All points have PlaneId
-					- Can we revert ShipId and ConnectedComponentId to start from zero and having None=max? 
-						- Yes, no one used NoneConnectedComponentId
-						- When we need stuff on top we can always use member variable with max plane ID and/or the total 
+				+ All points have PlaneId
+					+ Can we revert ShipId and ConnectedComponentId to start from zero and having None=max? 
+						+ Yes, no one used NoneConnectedComponentId
+						+ When we need stuff on top we can always use member variable with max plane ID and/or the total 
 						  count of ships 
-						 - If so, Plane ID starts from zero
-					- Own buffer (it'll have to be uploaded to GPU)
-				- Points that belong to a connected component also have ConnectedComponentId
+						+ If so, Plane ID starts from zero
+					+ Own buffer (it'll have to be uploaded to GPU)
+				+ Points that belong to a connected component also have ConnectedComponentId
 					+ What doesn't have a ConnectedComponentId?
 						+ ConnectedComponentId is used for:
 							+ Frontier (possibly?)
@@ -498,10 +497,10 @@ Render:
 								+ But we can get rid of this and just explode all over the place, after all
 								  explosions travel through air
 							+ Not by light diffusion algo, see below
-					- We keep ConnectedComponentIds for future use, but do the frontier-type propagation, i.e.
+					+ We keep ConnectedComponentIds for future use, but do the frontier-type propagation, i.e.
 					  we don't propagate them through "cables" nor assign them to standalone points; all of these 
 					  won't have a ConnectedComponentId at all
-					- So, what doesn't have a ConnectedComponentId?
+					+ So, what doesn't have a ConnectedComponentId?
 						- "strings"
 						- standalone points
 				- Assignment of PlaneId is done via the same connectivity visit used for assigning ConnectedComponentId's,
@@ -511,13 +510,14 @@ Render:
 					- Propagation algo: don't propagate if coming from a spring with zero SuperTriangles to a spring
 					  with >0 SuperTriangles, unless these are all rope triangles
 						- New "IsRope" property of Triangle, pop'd by ShipBuilder; new buffer
-				- Light diffusion algo follows PlaneId's, instead of ConnectedComponentId's, as it's really about planes
+				+ Light diffusion algo follows PlaneId's, instead of ConnectedComponentId's, as it's really about planes
 				- We assign Z after orthomatrix - in NDC - and thus positive is near
 			- We only enable Z test and writing to Z buffer at RenderContext before doing ships
 				- And later, if we move GenericTexture to RenderContext, also when we do generic textures
 		+ Figure out range of Z:
 			+ World: -1000 -> -1  ==> NDC: +1 -> -1
-			+ After matrix it's NDC: [-1, +1] (far, near)
+			+ We assign Z after orthomatrix - in NDC - and thus positive is near
+			+ After matrix it's NDC: [-1, +1] (far, near
 			+ When given to fragment shader it's [0,+1], but we don't care anymore at this moment, as we calc Z in vertex shader!
 		+ Mapping of <ShipId, PlaneId> to Z in NDC:
 			+ Normal: ShipId=0 and PlaneId=0 are furthest
@@ -553,20 +553,22 @@ Render:
 					+ Revert to Render::uploading ConnCompId's 
 					+ Test crash w/Goliath
 				+ Check perf
-			- Step 2:
-				- Connectivity visit:
-					- New PlaneId propagation (see @Spec above and Moleskine)
-					- Change ConnectedComponentId propagation to match frontier style (i.e. not on strings)
-				- Light diffusion algo now follows PlaneIds (see @Spec above and Moleskine)
-				- All the other things that currently require a ConnectedComponentId for rendering purposes:
-					- Bombs: substitute ConnCompId with PlaneId
-					- PinnedPoints: substitute ConnCompId with PlaneId
-					- Triangles: no ConnCompId nor PlaneId
-					- Spring: no ConnCompId, PlaneId returns min
-						- Cache @ caller, e.g. bomb
-					- Ephemeral particles (check all Points::CreateXYZEphemeralParticle(...))
-				- Render: upload PlaneId instead of ConnectedComponentId
-			- Step 3:
+			+ Step 2:
+				+ Connectivity visit:
+					+ New PlaneId propagation (see @Spec above and Moleskine)
+					+ Change ConnectedComponentId propagation to match frontier style (i.e. not on strings)
+				+ Light diffusion algo now follows PlaneIds (see @Spec above and Moleskine)
+				+ All the other things that currently require a ConnectedComponentId for rendering purposes:
+					+ Bombs: substitute ConnCompId with PlaneId
+					+ PinnedPoints: substitute ConnCompId with PlaneId
+					+ Triangles: no ConnCompId nor PlaneId
+					+ Spring: no ConnCompId, just PlaneId
+					+ Ephemeral particles (check all Points::CreateXYZEphemeralParticle(...))
+				+ Render: upload PlaneId instead of ConnectedComponentId
+				+ Do ad-hoc tests to validate assignment of plane IDs and connected component IDs
+				+ Run in debug and validate
+				+ Commit
+			= Step 3:
 				- TODO: divide below into steps
 				- Uploading of PlaneId's:
 					- Ship, when mAreElementsDirty, causes Points to upload PlaneIds
@@ -574,7 +576,14 @@ Render:
 						- See role of current Upload() - Rename: we have 3+ roles: immutable, (continuously) mutable, ad-hoc
 						  (UploadEphParticles, UploadPlaneIds, etc.)
 						- Ship must take charge of immutable attributes state - 2 state variables (immutable dirty and mutable dirty)
-				- ShipRenderContext::UploadXYZElement() do not take anymore connected component ID					
+				- ShipRenderContext::UploadXYZElement() do not take anymore connected component ID
+					- Except for generic textures
+					- Ship: nuke mConnectedComponentSizes
+				- Ship/RenderContext::UploadGenericTextureXYZ(): upload plane IDs
+					- Fix at all calls from:
+						- Bombs
+						- Points::Ephemeral
+						- PinnedPoints
 				- Enable Z test and writing to Z buffer at RenderContext before doing ships, and disable afterwards
 					+ Also clear Z buffer at canvas clear
 					- glEnable(GL_DEPTH_TEST);
@@ -585,6 +594,9 @@ Render:
 					- See Moleskine for shaders calc'ns and uniforms to calc & set
 						- TODO: what do we do with OrthoMatrix? Can we incorporate Moleskine's calcn's into it?
 							- Requires an OrthoMatrix per ship, on top of a single global OrthoMatrix for everything else
+
+		- Tests:
+			- Rope triangles built via ropes layer
 			
 		- See if drawing springs & triangles at separate depths also helps generally with render speed, even for one single
 		  connected component (for springs' fragment shader - may be it takes shortcuts if it knows it's behind)
@@ -594,7 +606,7 @@ Render:
 					- Move this shader and all ShipRenderContext::UploadTextureRenderSpecification to 
 					  RenderContext
 					  - ShipId = None => topmost plane (still with PlaneID Z variations)
-				- Also enable/disable Z depth for this step after it has moved to RenderContext
+				- Also enable/disable depth test for this step after it has moved to RenderContext
 					- Optimize: do this immediately after ships
 
 - Gfx:
