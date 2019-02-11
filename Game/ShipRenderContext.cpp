@@ -52,6 +52,7 @@ ShipRenderContext::ShipRenderContext(
     , mPointLightVBO()
     , mPointWaterVBO()
     , mPointColorVBO()
+    , mPointPlaneIdVBO()
     , mPointElementTextureCoordinatesVBO()
     // Generic Textures
     , mTextureAtlasOpenGLHandle(textureAtlasOpenGLHandle)
@@ -78,11 +79,11 @@ ShipRenderContext::ShipRenderContext(
 
 
     //
-    // Create and initialize point VBOs
+    // Create and pre-allocate point VBOs
     //
 
-    GLuint pointVBOs[5];
-    glGenBuffers(5, pointVBOs);
+    GLuint pointVBOs[6];
+    glGenBuffers(6, pointVBOs);
 
     mPointPositionVBO = pointVBOs[0];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointPositionVBO);
@@ -108,7 +109,14 @@ ShipRenderContext::ShipRenderContext(
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointColor), 4, GL_FLOAT, GL_FALSE, sizeof(vec4f), (void*)(0));
     CheckOpenGLError();
 
-    mPointElementTextureCoordinatesVBO = pointVBOs[4];
+    mPointPlaneIdVBO = pointVBOs[4];
+    glBindBuffer(GL_ARRAY_BUFFER, *mPointPlaneIdVBO);
+    glBufferData(GL_ARRAY_BUFFER, mPointCount * sizeof(PlaneId), nullptr, GL_STATIC_DRAW);
+    static_assert(sizeof(PlaneId) == sizeof(uint32_t)); // GL_UNSIGNED_INT
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointPlaneId), 1, GL_UNSIGNED_INT, GL_FALSE, sizeof(PlaneId), (void*)(0));
+    CheckOpenGLError();
+
+    mPointElementTextureCoordinatesVBO = pointVBOs[5];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointElementTextureCoordinatesVBO);
     glBufferData(GL_ARRAY_BUFFER, mPointCount * sizeof(vec2f), nullptr, GL_STATIC_DRAW);
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointTextureCoordinates), 2, GL_FLOAT, GL_FALSE, sizeof(vec2f), (void*)(0));
@@ -389,8 +397,8 @@ void ShipRenderContext::RenderStart(std::vector<std::size_t> const & connectedCo
 }
 
 void ShipRenderContext::UploadPointImmutableGraphicalAttributes(
-    vec4f const * restrict color,
-    vec2f const * restrict textureCoordinates)
+    vec4f const * color,
+    vec2f const * textureCoordinates)
 {
     // Upload colors
     glBindBuffer(GL_ARRAY_BUFFER, *mPointColorVBO);
@@ -407,7 +415,7 @@ void ShipRenderContext::UploadPointImmutableGraphicalAttributes(
 }
 
 void ShipRenderContext::UploadShipPointColorRange(
-    vec4f const * restrict color,
+    vec4f const * color,
     size_t startIndex,
     size_t count)
 {
@@ -419,9 +427,9 @@ void ShipRenderContext::UploadShipPointColorRange(
 }
 
 void ShipRenderContext::UploadPoints(
-    vec2f const * restrict position,
-    float const * restrict light,
-    float const * restrict water)
+    vec2f const * position,
+    float const * light,
+    float const * water)
 {
     // Upload positions
     glBindBuffer(GL_ARRAY_BUFFER, *mPointPositionVBO);
@@ -437,6 +445,20 @@ void ShipRenderContext::UploadPoints(
     glBindBuffer(GL_ARRAY_BUFFER, *mPointWaterVBO);
     glBufferSubData(GL_ARRAY_BUFFER, 0, mPointCount * sizeof(float), water);
     CheckOpenGLError();
+}
+
+void ShipRenderContext::UploadPointPlaneIds(
+    PlaneId const * planeId,
+    PlaneId maxMaxPlaneId)
+{
+    // Upload plane IDs
+    glBindBuffer(GL_ARRAY_BUFFER, *mPointPlaneIdVBO);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, mPointCount * sizeof(PlaneId), planeId);
+    CheckOpenGLError();
+
+    // Store max ever plane ID
+    // TODOHERE
+    // TODO: detect change and recalc what needs to be recalcd (uniforms or ortho matrix)
 }
 
 void ShipRenderContext::UploadElementsStart()
@@ -633,8 +655,8 @@ void ShipRenderContext::UploadEphemeralPointsEnd()
 
 void ShipRenderContext::UploadVectors(
     size_t count,
-    vec2f const * restrict position,
-    vec2f const * restrict vector,
+    vec2f const * position,
+    vec2f const * vector,
     float lengthAdjustment,
     vec4f const & color)
 {

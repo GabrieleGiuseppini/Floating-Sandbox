@@ -100,7 +100,8 @@ enum class VertexAttributeType : GLuint
     ShipPointColor = 8,
     ShipPointLight = 9,
     ShipPointWater = 10,
-    ShipPointTextureCoordinates = 11
+    ShipPointPlaneId = 11,
+    ShipPointTextureCoordinates = 12
 };
 
 VertexAttributeType StrToVertexAttributeType(std::string const & str);

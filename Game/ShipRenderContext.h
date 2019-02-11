@@ -84,18 +84,22 @@ public:
     //
 
     void UploadPointImmutableGraphicalAttributes(
-        vec4f const * restrict color,
-        vec2f const * restrict textureCoordinates);
+        vec4f const * color,
+        vec2f const * textureCoordinates);
 
     void UploadShipPointColorRange(
-        vec4f const * restrict color,
+        vec4f const * color,
         size_t startIndex,
         size_t count);
 
     void UploadPoints(
-        vec2f const * restrict position,
-        float const * restrict light,
-        float const * restrict water);
+        vec2f const * position,
+        float const * light,
+        float const * water);
+
+    void UploadPointPlaneIds(
+        PlaneId const * planeId,
+        PlaneId maxMaxPlaneId);
 
 
     //
@@ -360,8 +364,8 @@ public:
 
     void UploadVectors(
         size_t count,
-        vec2f const * restrict position,
-        vec2f const * restrict vector,
+        vec2f const * position,
+        vec2f const * vector,
         float lengthAdjustment,
         vec4f const & color);
 
@@ -431,6 +435,7 @@ private:
     GameOpenGLVBO mPointLightVBO;
     GameOpenGLVBO mPointWaterVBO;
     GameOpenGLVBO mPointColorVBO;
+    GameOpenGLVBO mPointPlaneIdVBO;
     GameOpenGLVBO mPointElementTextureCoordinatesVBO;
 
     //

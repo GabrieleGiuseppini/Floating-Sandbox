@@ -522,8 +522,8 @@ public:
 
     void UploadShipPointImmutableGraphicalAttributes(
         ShipId shipId,
-        vec4f const * restrict color,
-        vec2f const * restrict textureCoordinates)
+        vec4f const * color,
+        vec2f const * textureCoordinates)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
@@ -534,7 +534,7 @@ public:
 
     void UploadShipPointColorRange(
         ShipId shipId,
-        vec4f const * restrict color,
+        vec4f const * color,
         size_t startIndex,
         size_t count)
     {
@@ -548,9 +548,9 @@ public:
 
     void UploadShipPoints(
         ShipId shipId,
-        vec2f const * restrict position,
-        float const * restrict light,
-        float const * restrict water)
+        vec2f const * position,
+        float const * light,
+        float const * water)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
@@ -558,6 +558,18 @@ public:
             position,
             light,
             water);
+    }
+
+    void UploadShipPointPlaneIds(
+        ShipId shipId,
+        PlaneId const * planeId,
+        PlaneId maxMaxPlaneId)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        mShips[shipId]->UploadPointPlaneIds(
+            planeId,
+            maxMaxPlaneId);
     }
 
     //
@@ -758,8 +770,8 @@ public:
     void UploadShipVectors(
         ShipId shipId,
         size_t count,
-        vec2f const * restrict position,
-        vec2f const * restrict vector,
+        vec2f const * position,
+        vec2f const * vector,
         float lengthAdjustment,
         vec4f const & color)
     {

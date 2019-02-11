@@ -544,9 +544,17 @@ void Ship::Render(
     // Upload points's mutable attributes
     //
 
-    mPoints.Upload(
+    mPoints.UploadMutableAttributes(
         mId,
         renderContext);
+
+    if (mAreElementsDirty)
+    {
+        mPoints.UploadPlaneIds(
+            mId,
+            mMaxMaxPlaneId,
+            renderContext);
+    }
 
 
     //

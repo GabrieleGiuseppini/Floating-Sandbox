@@ -341,8 +341,13 @@ public:
     // Render
     //
 
-    void Upload(
+    void UploadMutableAttributes(
         ShipId shipId,
+        Render::RenderContext & renderContext) const;
+
+    void UploadPlaneIds(
+        ShipId shipId,
+        PlaneId maxMaxPlaneId,
         Render::RenderContext & renderContext) const;
 
     void UploadElements(

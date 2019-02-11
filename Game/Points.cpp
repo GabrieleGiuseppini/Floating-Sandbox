@@ -418,7 +418,18 @@ void Points::Query(ElementIndex pointElementIndex) const
     LogMessage("ConnectedComponentID: ", mConnectedComponentIdBuffer[pointElementIndex]);
 }
 
-void Points::Upload(
+void Points::UploadPlaneIds(
+    ShipId shipId,
+    PlaneId maxMaxPlaneId,
+    Render::RenderContext & renderContext) const
+{
+    renderContext.UploadShipPointPlaneIds(
+        shipId,
+        mPlaneIdBuffer.data(),
+        maxMaxPlaneId);
+}
+
+void Points::UploadMutableAttributes(
     ShipId shipId,
     Render::RenderContext & renderContext) const
 {

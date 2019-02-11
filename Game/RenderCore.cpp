@@ -183,6 +183,8 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::ShipPointLight;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointWater"))
         return VertexAttributeType::ShipPointWater;
+    else if (Utils::CaseInsensitiveEquals(str, "ShipPointPlaneId"))
+        return VertexAttributeType::ShipPointPlaneId;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointTextureCoordinates"))
         return VertexAttributeType::ShipPointTextureCoordinates;
     else
@@ -215,6 +217,8 @@ std::string VertexAttributeTypeToStr(VertexAttributeType vertexAttribute)
         return "ShipPointLight";
     case VertexAttributeType::ShipPointWater:
         return "ShipPointWater";
+    case VertexAttributeType::ShipPointPlaneId:
+        return "ShipPointPlaneId";
     case VertexAttributeType::ShipPointTextureCoordinates:
         return "ShipPointTextureCoordinates";
     default:

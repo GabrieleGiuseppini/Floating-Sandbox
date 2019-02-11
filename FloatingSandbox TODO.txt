@@ -517,7 +517,7 @@ Render:
 		+ Figure out range of Z:
 			+ World: -1000 -> -1  ==> NDC: +1 -> -1
 			+ We assign Z after orthomatrix - in NDC - and thus positive is near
-			+ After matrix it's NDC: [-1, +1] (far, near
+			+ After matrix it's NDC: [-1, +1] (far, near)
 			+ When given to fragment shader it's [0,+1], but we don't care anymore at this moment, as we calc Z in vertex shader!
 		+ Mapping of <ShipId, PlaneId> to Z in NDC:
 			+ Normal: ShipId=0 and PlaneId=0 are furthest
@@ -568,35 +568,80 @@ Render:
 				+ Do ad-hoc tests to validate assignment of plane IDs and connected component IDs
 				+ Run in debug and validate
 				+ Commit
-			= Step 3:
-				- TODO: divide below into steps
-				- Uploading of PlaneId's:
-					- Ship, when mAreElementsDirty, causes Points to upload PlaneIds
-						- Together with the ship-maintained "max ever plane ID"
-						- See role of current Upload() - Rename: we have 3+ roles: immutable, (continuously) mutable, ad-hoc
-						  (UploadEphParticles, UploadPlaneIds, etc.)
-						- Ship must take charge of immutable attributes state - 2 state variables (immutable dirty and mutable dirty)
-				- ShipRenderContext::UploadXYZElement() do not take anymore connected component ID
-					- Except for generic textures
-					- Ship: nuke mConnectedComponentSizes
-				- Ship/RenderContext::UploadGenericTextureXYZ(): upload plane IDs
+			+ Step 3:
+				+ Ship/RenderContext: UploadPlaneIds(..., maxMaxPlaneId)
+					+ Send to GPU right away, in buffer mapped to shared vertex attribute
+				+ Test
+				+ Commit
+			- Step 4
+				- Ship:
+					+ Theme: Points becomes passive re: need to upload its stuff
+					- Replace Ship::mAreElementsDirty with mIsStructureDirty
+						- Set in the same places where it is set now
+						- Used for connectivity visit like it is now
+						- Only change is at Ship::Render: when dirty:
+							+ Calls Points::UploadPlaneIds(..., mMaxMaxPlaneId)
+							- Calls all the other ABC::UploadXYZ(...)
+								- For now, still with "umbrella" connected comp ID call
+							- Resets mIsStructureDirty
+					- Add mAreImmutableAttributesDirty
+						- Used for first upload
+						- Remove it from Points
+					- Break current Points::UploadEphemeralParticles into:
+							- UploadEphemeralPointColorRange
+							- AreEphemeralPointsDirty
+							- UploadEphemeralPoints
+							- UploadEphemeralTexture 
+					- Invoke new Points' ephemeral uploads where we invoke single one now
+				- Ship/RenderContext::UploadGenericTextureXYZ(): upload plane IDs instead of conn comp IDs
+					- ShipRenderContext still stores with per-planeID segments, just change conn comp ID with plane ID
 					- Fix at all calls from:
 						- Bombs
 						- Points::Ephemeral
-						- PinnedPoints
-				- Enable Z test and writing to Z buffer at RenderContext before doing ships, and disable afterwards
+						- PinnedPoint
+					- Sort by plane ID right before rendering
+				- Test
+				- Run in Debug
+				- Commit
+			- Step 5:
+				- Enable Z test and writing to Z buffer:
+					- At RenderContext before doing ships, and disable afterwards
+						- Need World to invoke RenderShipsStart()/End() before going through individual ships
 					+ Also clear Z buffer at canvas clear
 					- glEnable(GL_DEPTH_TEST);
 					+ glDepthMask(GL_TRUE); // This at initialization
 					+ glDepthFunc(GL_LESS); // This at initialization
-				- Ship/RenderContext:
-					- Shaders take new vertex attribute
-					- See Moleskine for shaders calc'ns and uniforms to calc & set
-						- TODO: what do we do with OrthoMatrix? Can we incorporate Moleskine's calcn's into it?
-							- Requires an OrthoMatrix per ship, on top of a single global OrthoMatrix for everything else
-
+				- ShipRenderContext::UploadXYZElement() do not take anymore connected component ID
+					- Remove ShipRenderContext connected component tracking; store everything in buffers
+					- Ship: nuke mConnectedComponentSizes
+					- Ship::Render: if mIsStructureDirty or debug mode changed:
+						- Do not call "umbrella" conn comp ID API
+						- Upload parts individually
+				- Ship/RenderContext: PlaneID->Z calculations
+					- OrthoMatrix:
+						- Rename RenderContext's as "GlobalOrthoMatrix"
+						- Ship has own, calc'd (and set as uniform) at:
+							- private ShipRenderContext::UpdateShipOrthoMatrix()
+								- Invoked at:
+									- UpdateCanvas/Zoom/Cam
+									- OnShipAdded
+									- Changed MaxMaPlaneId at UploadPlaneIds(...) call
+								- See Moleskine for calc'ns
+					- Shaders take new vertex attribute and calc Z via OrthoMatrix
+				- GenericTextures: is now own pass that uses plane IDs as input for Z's in shader
+					- Still needs to sort by plane ID
+					- Points::UploadEphemeralPoints: the texture ones can now pass plane ID
+				- EphemeralPoints: is now own pass that uses plane IDs as input for Z's in shader
+				- Test
+				- Run in Debug
+				- Commit
+			
 		- Tests:
-			- Rope triangles built via ropes layer
+			- Rope triangles built via ropes layer: verify plane ID and conn comp ID assignment
+
+		- Optimizations to try:
+			- PlaneID's being float's to start with
+				- ...as long as we don't need bucketization for GenericTextures' depth-sorting
 			
 		- See if drawing springs & triangles at separate depths also helps generally with render speed, even for one single
 		  connected component (for springs' fragment shader - may be it takes shortcuts if it knows it's behind)
@@ -608,6 +653,8 @@ Render:
 					  - ShipId = None => topmost plane (still with PlaneID Z variations)
 				- Also enable/disable depth test for this step after it has moved to RenderContext
 					- Optimize: do this immediately after ships
+				- TODO: do we really want to do this:
+					-Extra costs: OrthoMatrix and calc'ns in two places; plus, ships offer already per-ship containers
 
 - Gfx:
 	+ Make font white inversely to ambient light
