@@ -393,23 +393,45 @@ void World::Render(
     GameParameters const & gameParameters,
     Render::RenderContext & renderContext) const
 {
+    //
+    // Upload land and water data (before clouds and stars are rendered, as the latters
+    // need the water stencil)
+    //
+
+    UploadLandAndWater(gameParameters, renderContext);
+
+
+    //
+    // Render sky
+    //
+
+    renderContext.RenderSkyStart();
+
     // Upload stars
     mStars.Upload(renderContext);
 
-    // Upload land and water data (before clouds and stars are rendered, as the latters
-    // need the water stencil)
-    UploadLandAndWater(gameParameters, renderContext);
+    // Upload clouds
+    mClouds.Upload(renderContext);
 
-    // Render the clouds (and stars)
-    mClouds.Render(renderContext);
+    renderContext.RenderSkyEnd();
 
+
+    //
     // Render the water now, if we want to see the ship through the water
+    //
+
     if (renderContext.GetShowShipThroughSeaWater())
     {
         renderContext.RenderWater();
     }
 
+
+    //
     // Render all ships
+    //
+
+    renderContext.RenderShipsStart(mAllShips.size());
+
     for (auto const & ship : mAllShips)
     {
         ship->Render(
@@ -417,13 +439,23 @@ void World::Render(
             renderContext);
     }
 
+    renderContext.RenderShipsEnd();
+
+
+    //
     // Render the water now, if we want to see the ship *in* the water instead
+    //
+
     if (!renderContext.GetShowShipThroughSeaWater())
     {
         renderContext.RenderWater();
     }
 
+
+    //
     // Render the ocean floor
+    //
+
     renderContext.RenderLand();
 }
 

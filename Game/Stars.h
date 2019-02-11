@@ -36,10 +36,6 @@ public:
     {
         if (mIsDirty)
         {
-            //
-            // Upload stars
-            //
-
             renderContext.UploadStarsStart(mStars.size());
 
             for (auto const & star : mStars)
@@ -52,7 +48,6 @@ public:
             mIsDirty = false;
         }
     }
-
 
 private:
 

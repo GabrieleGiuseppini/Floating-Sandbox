@@ -152,8 +152,12 @@ Render:
 		+ Create "z_buffer" branch
 		- Zbuffer (*)
 
-		- Make flood tool's FloodQuantityOfWater adjustable
+		- Make flood tool adjustable
+			- Both radius and quantity of water
+
 		- Make Titanic default ship
+
+		- Make ropes less crazy when they get wet
 
 		- Orphaned points (*)
 
@@ -192,7 +196,10 @@ Render:
 
 
 - Suggestions to spec:
+	- Wreck rustes after some time
+	- Fishes
 	- Different colored lights
+	- Backgrounds: use keys to switch between a dock, cliffs, open ocean, ice field, etc.
 	- Custom sky colour - if possible a RGB picker in the settings
 	- Black hole
 	- Tool to increase or lower mass under the cursor
@@ -573,64 +580,46 @@ Render:
 					+ Send to GPU right away, in buffer mapped to shared vertex attribute
 				+ Test
 				+ Commit
-			- Step 4
-				- Ship:
-					+ Theme: Points becomes passive re: need to upload its stuff
-					- Replace Ship::mAreElementsDirty with mIsStructureDirty
-						- Set in the same places where it is set now
-						- Used for connectivity visit like it is now
-						- Only change is at Ship::Render: when dirty:
-							+ Calls Points::UploadPlaneIds(..., mMaxMaxPlaneId)
-							- Calls all the other ABC::UploadXYZ(...)
-								- For now, still with "umbrella" connected comp ID call
-							- Resets mIsStructureDirty
-					- Add mAreImmutableAttributesDirty
-						- Used for first upload
-						- Remove it from Points
-					- Break current Points::UploadEphemeralParticles into:
-							- UploadEphemeralPointColorRange
-							- AreEphemeralPointsDirty
-							- UploadEphemeralPoints
-							- UploadEphemeralTexture 
-					- Invoke new Points' ephemeral uploads where we invoke single one now
-				- Ship/RenderContext::UploadGenericTextureXYZ(): upload plane IDs instead of conn comp IDs
-					- ShipRenderContext still stores with per-planeID segments, just change conn comp ID with plane ID
-					- Fix at all calls from:
-						- Bombs
-						- Points::Ephemeral
-						- PinnedPoint
-					- Sort by plane ID right before rendering
-				- Test
-				- Run in Debug
-				- Commit
-			- Step 5:
-				- Enable Z test and writing to Z buffer:
-					- At RenderContext before doing ships, and disable afterwards
-						- Need World to invoke RenderShipsStart()/End() before going through individual ships
+			+ Step 4
+				+ Enable Z test and writing to Z buffer:
+					+ At RenderContext before doing ships, and disable afterwards
+						+ Need World to invoke RenderShipsStart()/End() before going through individual ships
 					+ Also clear Z buffer at canvas clear
-					- glEnable(GL_DEPTH_TEST);
+					+ glEnable(GL_DEPTH_TEST);
 					+ glDepthMask(GL_TRUE); // This at initialization
 					+ glDepthFunc(GL_LESS); // This at initialization
+				+ Test
+					+ Also FPS: 32.0 - MIRACLE?!?!?
+				+ Commit
+			- Step 5:
 				- ShipRenderContext::UploadXYZElement() do not take anymore connected component ID
-					- Remove ShipRenderContext connected component tracking; store everything in buffers
+					- Remove ShipRenderContext connected component tracking; store everything in buffers or upload directly
 					- Ship: nuke mConnectedComponentSizes
-					- Ship::Render: if mIsStructureDirty or debug mode changed:
-						- Do not call "umbrella" conn comp ID API
-						- Upload parts individually
+					- Ship::Render: 
+						- Nuke connected component empty check
+						- if mIsStructureDirty or debug mode changed:
+							- Do not call "umbrella" conn comp ID API
+							- Upload parts individually
 				- Ship/RenderContext: PlaneID->Z calculations
 					- OrthoMatrix:
 						- Rename RenderContext's as "GlobalOrthoMatrix"
 						- Ship has own, calc'd (and set as uniform) at:
 							- private ShipRenderContext::UpdateShipOrthoMatrix()
 								- Invoked at:
-									- UpdateCanvas/Zoom/Cam
-									- OnShipAdded
+									- UpdateCanvas/Zoom/Cam (use struct - @ parent - with all params)
+									- Changed nShips at RenderContext::RenderShipsStart()
+										- via ShipRenderContext::UpdateNumberOfShips(nShips)
 									- Changed MaxMaPlaneId at UploadPlaneIds(...) call
 								- See Moleskine for calc'ns
 					- Shaders take new vertex attribute and calc Z via OrthoMatrix
 				- GenericTextures: is now own pass that uses plane IDs as input for Z's in shader
-					- Still needs to sort by plane ID
-					- Points::UploadEphemeralPoints: the texture ones can now pass plane ID
+					- Upload plane IDs instead of conn comp IDs
+					- Fix at all calls from:
+						- Bombs
+						- Points::UploadEphemeralPoints
+							- The texture ones can now pass real plane ID, fix call chain up to caller
+						- PinnedPoint
+					- Sort by plane ID right before rendering
 				- EphemeralPoints: is now own pass that uses plane IDs as input for Z's in shader
 				- Test
 				- Run in Debug
@@ -638,6 +627,26 @@ Render:
 			
 		- Tests:
 			- Rope triangles built via ropes layer: verify plane ID and conn comp ID assignment
+
+		- Cleanups:
+			- (TODO: might not be agood idea, see below) Ship:
+				+ Theme: Points becomes passive re: need to upload its stuff
+				- Replace Ship::mAreElementsDirty with mIsStructureDirty
+					- Set in the same places where it is set now
+					- Used for connectivity visit like it is now
+					- Only change is at Ship::Render: when dirty:
+						+ Calls Points::UploadPlaneIds(..., mMaxMaxPlaneId)
+						- Calls all the other ABC::UploadXYZ(...)
+						- Resets mIsStructureDirty
+				- Add mAreImmutableAttributesDirty
+					- Used for first upload
+					- Remove it from Points
+				- Break current Points::UploadEphemeralParticles into:
+						- UploadEphemeralPointColorRange
+						- AreEphemeralPointsDirty
+						- UploadEphemeralPointElements
+						- UploadEphemeralPointTextures - TODO: this would require second pass...
+					- Invoke new Points' ephemeral uploads where we invoke single one now
 
 		- Optimizations to try:
 			- PlaneID's being float's to start with
@@ -680,7 +689,7 @@ Render:
 		- We must first stop deleting points just because springs are deleted
 			- Though should still delete them at Destroy() and Bomb(), for example
 		- We should somehow unify the uploading of orphaned points and the uploading of ephemeral points
-			- Connected component ID/Z buffer is enough to keep them on separate planes
+			- Plane ID is enough to keep them on separate planes
 		- Also, ShipRenderMode::Points should only be consumed by Points::Upload, who is the only one who decides what gets uploaded
 			~ Not really, see below - it's ConnectivityVisit the only one that checks ShipRenderMode::Points 
 		- Orphaned points go into their own single plane, at whatever connected component/plane ID algo assigns them to
@@ -704,7 +713,7 @@ Render:
 					- mArePointElementIndicesDirty is set when:
 						- ConnectivityVisit runs
 							- ConnectivityVisit sets it itself at end
-						- Points::UploadEphemeralParticles() returns true (because it remembers it is dirty)
+						- Points::UploadEphemeralParticles(indices vector) returns true (because it remembers it is dirty)
 							- Optimize here: if only UploadEphemeralParticles() returns true, then
 							  may upload only sub-portion after mShipPointElementsCount
 		- ShipRenderContext always renders point elements	

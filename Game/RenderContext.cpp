@@ -338,7 +338,7 @@ RenderContext::RenderContext(
 
     // Set depth test parameters for when we'll need them
     glDepthMask(GL_TRUE);
-    glDepthFunc(GL_LESS);
+    glDepthFunc(GL_LEQUAL);
 
 
 
@@ -493,25 +493,30 @@ void RenderContext::RenderStart()
     mRenderStatistics.Reset();
 }
 
+void RenderContext::RenderSkyStart()
+{
+}
+
 void RenderContext::UploadStarsStart(size_t starCount)
 {
+    //
+    // Prepare stars buffer
+    //
+
     mStarElementBuffer.clear();
     mStarElementBuffer.reserve(starCount);
 }
 
 void RenderContext::UploadStarsEnd()
 {
-    // Bind VBO
-    glBindBuffer(GL_ARRAY_BUFFER, *mStarVBO);
-    CheckOpenGLError();
-
-    // Upload buffer
-    glBufferData(GL_ARRAY_BUFFER, mStarElementBuffer.size() * sizeof(StarElement), mStarElementBuffer.data(), GL_STATIC_DRAW);
-    CheckOpenGLError();
 }
 
-void RenderContext::RenderCloudsStart(size_t cloudCount)
+void RenderContext::UploadCloudsStart(size_t cloudCount)
 {
+    //
+    // Prepare clouds buffers
+    //
+
     if (cloudCount != mCloudElementCount)
     {
         // Bind VBO
@@ -531,14 +536,18 @@ void RenderContext::RenderCloudsStart(size_t cloudCount)
     mCurrentCloudElementCount = 0u;
 }
 
-void RenderContext::RenderCloudsEnd()
+void RenderContext::UploadCloudsEnd()
 {
-    // Enable stencil test
-    glEnable(GL_STENCIL_TEST);
+}
 
+void RenderContext::RenderSkyEnd()
+{
     ////////////////////////////////////////////////////
     // Draw water stencil
     ////////////////////////////////////////////////////
+
+    // Enable stencil test
+    glEnable(GL_STENCIL_TEST);
 
     // Use matte water program
     mShaderManager->ActivateProgram<ProgramType::MatteWater>();
@@ -583,6 +592,10 @@ void RenderContext::RenderCloudsEnd()
 
     // Bind VBO
     glBindBuffer(GL_ARRAY_BUFFER, *mStarVBO);
+    CheckOpenGLError();
+
+    // Upload buffer
+    glBufferData(GL_ARRAY_BUFFER, mStarElementBuffer.size() * sizeof(StarElement), mStarElementBuffer.data(), GL_STATIC_DRAW);
     CheckOpenGLError();
 
     // Describe vertex attribute 0
@@ -741,6 +754,20 @@ void RenderContext::RenderWater()
 
     // Draw
     glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mWaterElementCount));
+}
+
+void RenderContext::RenderShipsStart(size_t shipCount)
+{
+    // TODO: check if shipCount has changed and, if so, trigger recalculation of ships' ortho matrices
+
+    // Enable depth test, required by ships
+    glEnable(GL_DEPTH_TEST);
+}
+
+void RenderContext::RenderShipsEnd()
+{
+    // Disable depth test
+    glDisable(GL_DEPTH_TEST);
 }
 
 void RenderContext::RenderEnd()

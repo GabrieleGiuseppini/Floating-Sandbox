@@ -292,8 +292,11 @@ public:
     void RenderStart();
 
     //
-    // Stars
+    // Sky
     //
+
+    void RenderSkyStart();
+
 
     void UploadStarsStart(size_t starCount);
 
@@ -308,11 +311,7 @@ public:
     void UploadStarsEnd();
 
 
-    //
-    // Clouds
-    //
-
-    void RenderCloudsStart(size_t cloudCount);
+    void UploadCloudsStart(size_t cloudCount);
 
     inline void UploadCloud(
         float virtualX,
@@ -393,7 +392,10 @@ public:
         ++mCurrentCloudElementCount;
     }
 
-    void RenderCloudsEnd();
+    void UploadCloudsEnd();
+
+
+    void RenderSkyEnd();
 
 
     //
@@ -506,6 +508,9 @@ public:
     /////////////////////////////////////////////////////////////////////////
     // Ships
     /////////////////////////////////////////////////////////////////////////
+
+    void RenderShipsStart(size_t shipCount);
+
 
     void RenderShipStart(
         ShipId shipId,
@@ -791,6 +796,10 @@ public:
 
         mShips[shipId]->RenderEnd();
     }
+
+
+    void RenderShipsEnd();
+
 
 
     //

@@ -27,7 +27,20 @@ public:
         float currentSimulationTime,
         GameParameters const & gameParameters);
 
-    void Render(Render::RenderContext & renderContext) const;
+    void Upload(Render::RenderContext & renderContext) const
+    {
+        renderContext.UploadCloudsStart(mClouds.size());
+
+        for (auto const & cloud : mClouds)
+        {
+            renderContext.UploadCloud(
+                cloud->GetX(),
+                cloud->GetY(),
+                cloud->GetScale());
+        }
+
+        renderContext.UploadCloudsEnd();
+    }
 
 private:
 

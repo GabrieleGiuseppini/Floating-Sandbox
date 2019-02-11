@@ -48,19 +48,4 @@ void Clouds::Update(
 
 }
 
-void Clouds::Render(Render::RenderContext & renderContext) const
-{
-    renderContext.RenderCloudsStart(mClouds.size());
-
-    for (auto const & cloud : mClouds)
-    {
-        renderContext.UploadCloud(
-            cloud->GetX(),
-            cloud->GetY(),
-            cloud->GetScale());
-    }
-
-    renderContext.RenderCloudsEnd();
-}
-
 }
