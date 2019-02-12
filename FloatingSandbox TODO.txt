@@ -591,7 +591,7 @@ Render:
 				+ Test
 					+ Also FPS: 32.0 - MIRACLE?!?!?
 				+ Commit
-			- Step 5:
+			+ Step 5:
 				+ Ship/RenderContext: PlaneID->Z calculations
 					+ OrthoMatrix:
 						+ Rename RenderContext's as "GlobalOrthoMatrix"
@@ -603,9 +603,9 @@ Render:
 									+ Changed nShips at RenderContext::RenderShipsStart()
 										+ via ShipRenderContext::UpdateNumberOfShips(nShips)
 									+ Changed MaxMaxPlaneId at UploadPlaneIds(...) call
-				- RenderContext ans ShipRenderContext: change OnXYZUpdated/UpdateXYX pattern: no args
-				- Test
-				- Commit
+				+ RenderContext ans ShipRenderContext: change OnXYZUpdated/UpdateXYX pattern: no args
+				+ Test
+				+ Commit
 			- Step 6
 				- ShipRenderContext:
 					- Complete: do per-layer ortho matrices

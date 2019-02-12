@@ -54,23 +54,63 @@ public:
 
 public:
 
-    void OnShipCountUpdated(size_t shipCount);
+    void OnViewModelUpdated()
+    {
+        // Recalculate ortho matrices
+        UpdateOrthoMatrices();
+    }
 
-    void OnViewModelUpdated(ViewModel const & viewModel);
+    void SetShipCount(size_t shipCount)
+    {
+        mShipCount = shipCount;
 
-    void UpdateAmbientLightIntensity(float ambientLightIntensity);
+        // Recalculate ortho matrices
+        UpdateOrthoMatrices();
+    }
 
-    void UpdateWaterContrast(float waterConstrast);
+    void SetAmbientLightIntensity(float ambientLightIntensity)
+    {
+        mAmbientLightIntensity = ambientLightIntensity;
 
-    void UpdateWaterLevelThreshold(float waterLevelOfDetail);
+        // Set parameters
+        OnAmbientLightIntensityUpdated();
+    }
 
-    void UpdateShipRenderMode(ShipRenderMode shipRenderMode);
+    void SetWaterContrast(float waterContrast)
+    {
+        mWaterContrast = waterContrast;
 
-    void UpdateDebugShipRenderMode(DebugShipRenderMode debugShipRenderMode);
+        // Set parameters
+        OnWaterContrastUpdated();
+    }
 
-    void UpdateVectorFieldRenderMode(VectorFieldRenderMode vectorFieldRenderMode);
+    void SetWaterLevelThreshold(float waterLevelOfDetail)
+    {
+        mWaterLevelOfDetail = waterLevelOfDetail;
 
-    void UpdateShowStressedSprings(bool showStressedSprings);
+        // Set parameters
+        OnWaterLevelOfDetailUpdated();
+    }
+
+    void SetShipRenderMode(ShipRenderMode shipRenderMode)
+    {
+        mShipRenderMode = shipRenderMode;
+    }
+
+    void SetDebugShipRenderMode(DebugShipRenderMode debugShipRenderMode)
+    {
+        mDebugShipRenderMode = debugShipRenderMode;
+    }
+
+    void SetVectorFieldRenderMode(VectorFieldRenderMode vectorFieldRenderMode)
+    {
+        mVectorFieldRenderMode = vectorFieldRenderMode;
+    }
+
+    void SetShowStressedSprings(bool showStressedSprings)
+    {
+        mShowStressedSprings = showStressedSprings;
+    }
 
 public:
 
@@ -370,6 +410,11 @@ public:
 
 private:
 
+    void UpdateOrthoMatrices();
+    void OnAmbientLightIntensityUpdated();
+    void OnWaterContrastUpdated();
+    void OnWaterLevelOfDetailUpdated();
+
     struct ConnectedComponentData;
     struct GenericTextureConnectedComponentData;
 
@@ -407,7 +452,7 @@ private:
 
     float mAmbientLightIntensity;
     float mWaterContrast;
-    float mWaterLevelThreshold;
+    float mWaterLevelOfDetail;
     ShipRenderMode mShipRenderMode;
     DebugShipRenderMode mDebugShipRenderMode;
     VectorFieldRenderMode mVectorFieldRenderMode;

@@ -341,16 +341,16 @@ RenderContext::RenderContext(
     // Update parameters
     //
 
-    OnViewModelUpdated(mViewModel);
+    OnViewModelUpdated();
 
-    UpdateAmbientLightIntensity();
-    UpdateSeaWaterTransparency();
-    UpdateWaterContrast();
-    UpdateWaterLevelOfDetail();
-    UpdateShipRenderMode();
-    UpdateDebugShipRenderMode();
-    UpdateVectorFieldRenderMode();
-    UpdateShowStressedSprings();
+    OnAmbientLightIntensityUpdated();
+    OnSeaWaterTransparencyUpdated();
+    OnWaterContrastUpdated();
+    OnWaterLevelOfDetailUpdated();
+    OnShipRenderModeUpdated();
+    OnDebugShipRenderModeUpdated();
+    OnVectorFieldRenderModeUpdated();
+    OnShowStressedSpringsUpdated();
 
     //
     // Flush all pending operations
@@ -392,7 +392,7 @@ void RenderContext::AddShip(
     // Tell all ships that there's a new ship
     for (auto & ship : mShips)
     {
-        ship->OnShipCountUpdated(newShipCount);
+        ship->SetShipCount(newShipCount);
     }
 
     // Add the ship
@@ -808,7 +808,7 @@ void RenderContext::RenderCrossesOfLight()
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-void RenderContext::OnViewModelUpdated(ViewModel const & viewModel)
+void RenderContext::OnViewModelUpdated()
 {
     //
     // Update ortho matrix
@@ -818,7 +818,7 @@ void RenderContext::OnViewModelUpdated(ViewModel const & viewModel)
     constexpr float ZNear = 1.0f;
 
     ViewModel::ProjectionMatrix globalOrthoMatrix;
-    viewModel.CalculateGlobalOrthoMatrix(ZFar, ZNear, globalOrthoMatrix);
+    mViewModel.CalculateGlobalOrthoMatrix(ZFar, ZNear, globalOrthoMatrix);
 
     mShaderManager->ActivateProgram<ProgramType::Land>();
     mShaderManager->SetProgramParameter<ProgramType::Land, ProgramParameterType::OrthoMatrix>(
@@ -846,8 +846,8 @@ void RenderContext::OnViewModelUpdated(ViewModel const & viewModel)
 
     mShaderManager->ActivateProgram<ProgramType::CrossOfLight>();
     mShaderManager->SetProgramParameter<ProgramType::CrossOfLight, ProgramParameterType::ViewportSize>(
-        static_cast<float>(viewModel.GetCanvasWidth()),
-        static_cast<float>(viewModel.GetCanvasHeight()));
+        static_cast<float>(mViewModel.GetCanvasWidth()),
+        static_cast<float>(mViewModel.GetCanvasHeight()));
 
 
     //
@@ -856,11 +856,11 @@ void RenderContext::OnViewModelUpdated(ViewModel const & viewModel)
 
     for (auto & ship : mShips)
     {
-        ship->OnViewModelUpdated(viewModel);
+        ship->OnViewModelUpdated();
     }
 }
 
-void RenderContext::UpdateAmbientLightIntensity()
+void RenderContext::OnAmbientLightIntensityUpdated()
 {
     // Set parameters in all programs
 
@@ -883,14 +883,14 @@ void RenderContext::UpdateAmbientLightIntensity()
     // Update all ships
     for (auto & ship : mShips)
     {
-        ship->UpdateAmbientLightIntensity(mAmbientLightIntensity);
+        ship->SetAmbientLightIntensity(mAmbientLightIntensity);
     }
 
     // Update text context
     mTextRenderContext->UpdateAmbientLightIntensity(mAmbientLightIntensity);
 }
 
-void RenderContext::UpdateSeaWaterTransparency()
+void RenderContext::OnSeaWaterTransparencyUpdated()
 {
     // Set parameter in all programs
 
@@ -899,63 +899,63 @@ void RenderContext::UpdateSeaWaterTransparency()
         mSeaWaterTransparency);
 }
 
-void RenderContext::UpdateWaterContrast()
+void RenderContext::OnWaterContrastUpdated()
 {
     // Set parameter in all ships
 
     for (auto & s : mShips)
     {
-        s->UpdateWaterContrast(mWaterContrast);
+        s->SetWaterContrast(mWaterContrast);
     }
 }
 
-void RenderContext::UpdateWaterLevelOfDetail()
+void RenderContext::OnWaterLevelOfDetailUpdated()
 {
     // Set parameter in all ships
 
     for (auto & s : mShips)
     {
-        s->UpdateWaterLevelThreshold(mWaterLevelOfDetail);
+        s->SetWaterLevelThreshold(mWaterLevelOfDetail);
     }
 }
 
-void RenderContext::UpdateShipRenderMode()
+void RenderContext::OnShipRenderModeUpdated()
 {
     // Set parameter in all ships
 
     for (auto & s : mShips)
     {
-        s->UpdateShipRenderMode(mShipRenderMode);
+        s->SetShipRenderMode(mShipRenderMode);
     }
 }
 
-void RenderContext::UpdateDebugShipRenderMode()
+void RenderContext::OnDebugShipRenderModeUpdated()
 {
     // Set parameter in all ships
 
     for (auto & s : mShips)
     {
-        s->UpdateDebugShipRenderMode(mDebugShipRenderMode);
+        s->SetDebugShipRenderMode(mDebugShipRenderMode);
     }
 }
 
-void RenderContext::UpdateVectorFieldRenderMode()
+void RenderContext::OnVectorFieldRenderModeUpdated()
 {
     // Set parameter in all ships
 
     for (auto & s : mShips)
     {
-        s->UpdateVectorFieldRenderMode(mVectorFieldRenderMode);
+        s->SetVectorFieldRenderMode(mVectorFieldRenderMode);
     }
 }
 
-void RenderContext::UpdateShowStressedSprings()
+void RenderContext::OnShowStressedSpringsUpdated()
 {
     // Set parameter in all ships
 
     for (auto & s : mShips)
     {
-        s->UpdateShowStressedSprings(mShowStressedSprings);
+        s->SetShowStressedSprings(mShowStressedSprings);
     }
 }
 

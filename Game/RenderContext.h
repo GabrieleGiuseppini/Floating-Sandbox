@@ -57,14 +57,14 @@ public:
     {
         mViewModel.SetZoom(zoom);
 
-        OnViewModelUpdated(mViewModel);
+        OnViewModelUpdated();
     }
 
     void AdjustZoom(float amount)
     {
         mViewModel.AdjustZoom(amount);
 
-        OnViewModelUpdated(mViewModel);
+        OnViewModelUpdated();
     }
 
     vec2f GetCameraWorldPosition() const
@@ -76,14 +76,14 @@ public:
     {
         mViewModel.SetCameraWorldPosition(pos);
 
-        OnViewModelUpdated(mViewModel);
+        OnViewModelUpdated();
     }
 
     void AdjustCameraWorldPosition(vec2f const & offset)
     {
         mViewModel.AdjustCameraWorldPosition(offset);
 
-        OnViewModelUpdated(mViewModel);
+        OnViewModelUpdated();
     }
 
     int GetCanvasWidth() const
@@ -104,7 +104,7 @@ public:
 
         mTextRenderContext->UpdateCanvasSize(mViewModel.GetCanvasWidth(), mViewModel.GetCanvasHeight());
 
-        OnViewModelUpdated(mViewModel);
+        OnViewModelUpdated();
     }
 
     float GetVisibleWorldWidth() const
@@ -128,7 +128,7 @@ public:
     {
         mAmbientLightIntensity = intensity;
 
-        UpdateAmbientLightIntensity();
+        OnAmbientLightIntensityUpdated();
     }
 
     float GetSeaWaterTransparency() const
@@ -140,7 +140,7 @@ public:
     {
         mSeaWaterTransparency = transparency;
 
-        UpdateSeaWaterTransparency();
+        OnSeaWaterTransparencyUpdated();
     }
 
     bool GetShowShipThroughSeaWater() const
@@ -162,7 +162,7 @@ public:
     {
         mWaterContrast = contrast;
 
-        UpdateWaterContrast();
+        OnWaterContrastUpdated();
     }
 
     float GetWaterLevelOfDetail() const
@@ -174,7 +174,7 @@ public:
     {
         mWaterLevelOfDetail = levelOfDetail;
 
-        UpdateWaterLevelOfDetail();
+        OnWaterLevelOfDetailUpdated();
     }
 
     static constexpr float MinWaterLevelOfDetail = 0.0f;
@@ -193,7 +193,7 @@ public:
     {
         mShipRenderMode = shipRenderMode;
 
-        UpdateShipRenderMode();
+        OnShipRenderModeUpdated();
     }
 
     DebugShipRenderMode GetDebugShipRenderMode() const
@@ -205,7 +205,7 @@ public:
     {
         mDebugShipRenderMode = debugShipRenderMode;
 
-        UpdateDebugShipRenderMode();
+        OnDebugShipRenderModeUpdated();
     }
 
     VectorFieldRenderMode GetVectorFieldRenderMode() const
@@ -217,7 +217,7 @@ public:
     {
         mVectorFieldRenderMode = vectorFieldRenderMode;
 
-        UpdateVectorFieldRenderMode();
+        OnVectorFieldRenderModeUpdated();
     }
 
     float GetVectorFieldLengthMultiplier() const
@@ -239,7 +239,7 @@ public:
     {
         mShowStressedSprings = showStressedSprings;
 
-        UpdateShowStressedSprings();
+        OnShowStressedSpringsUpdated();
     }
 
     //
@@ -274,8 +274,6 @@ public:
         size_t pointCount,
         RgbaImageData texture,
         ShipDefinition::TextureOriginType textureOrigin);
-
-    void OnShipCountUpdated(size_t shipCount);
 
     RgbImageData TakeScreenshot();
 
@@ -841,16 +839,15 @@ private:
 
     void RenderCrossesOfLight();
 
-    void OnViewModelUpdated(ViewModel const & viewModel);
-
-    void UpdateAmbientLightIntensity();
-    void UpdateSeaWaterTransparency();
-    void UpdateWaterContrast();
-    void UpdateWaterLevelOfDetail();
-    void UpdateShipRenderMode();
-    void UpdateDebugShipRenderMode();
-    void UpdateVectorFieldRenderMode();
-    void UpdateShowStressedSprings();
+    void OnViewModelUpdated();
+    void OnAmbientLightIntensityUpdated();
+    void OnSeaWaterTransparencyUpdated();
+    void OnWaterContrastUpdated();
+    void OnWaterLevelOfDetailUpdated();
+    void OnShipRenderModeUpdated();
+    void OnDebugShipRenderModeUpdated();
+    void OnVectorFieldRenderModeUpdated();
+    void OnShowStressedSpringsUpdated();
 
 private:
 

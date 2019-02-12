@@ -38,6 +38,13 @@ ShipRenderContext::ShipRenderContext(
     , mRenderStatistics(renderStatistics)
     // Parameters
     , mViewModel(viewModel)
+    , mAmbientLightIntensity(ambientLightIntensity)
+    , mWaterContrast(waterContrast)
+    , mWaterLevelOfDetail(waterLevelOfDetail)
+    , mShipRenderMode(shipRenderMode)
+    , mDebugShipRenderMode(debugShipRenderMode)
+    , mVectorFieldRenderMode(vectorFieldRenderMode)
+    , mShowStressedSprings(showStressedSprings)
     // Textures
     , mElementShipTexture()
     , mElementStressedSpringTexture()
@@ -234,40 +241,19 @@ ShipRenderContext::ShipRenderContext(
     // Set parameters to initial values
     //
 
-    OnViewModelUpdated(mViewModel);
+    OnViewModelUpdated();
 
-    UpdateAmbientLightIntensity(ambientLightIntensity);
-    UpdateWaterContrast(waterContrast);
-    UpdateWaterLevelThreshold(waterLevelOfDetail);
-    UpdateShipRenderMode(shipRenderMode);
-    UpdateDebugShipRenderMode(debugShipRenderMode);
-    UpdateVectorFieldRenderMode(vectorFieldRenderMode);
-    UpdateShowStressedSprings(showStressedSprings);
+    OnAmbientLightIntensityUpdated();
+    OnWaterContrastUpdated();
+    OnWaterLevelOfDetailUpdated();
 }
 
 ShipRenderContext::~ShipRenderContext()
 {
 }
 
-void ShipRenderContext::OnShipCountUpdated(size_t shipCount)
+void ShipRenderContext::UpdateOrthoMatrices()
 {
-    // Check if the value has changed
-    if (shipCount != mShipCount)
-    {
-        // Update value
-        mShipCount = shipCount;
-
-        // Recalculate view model parameters
-        OnViewModelUpdated(mViewModel);
-    }
-}
-
-void ShipRenderContext::OnViewModelUpdated(ViewModel const & viewModel)
-{
-    //
-    // Update ortho matrix
-    //
-
     // TODOHERE: this has to be done per-layer
 
     constexpr float ShipRegionZStart = 0.0f; // TODO
@@ -276,7 +262,7 @@ void ShipRenderContext::OnViewModelUpdated(ViewModel const & viewModel)
     constexpr int NLayers = 6; // TODO
 
     ViewModel::ProjectionMatrix shipOrthoMatrix;
-    viewModel.CalculateShipOrthoMatrix(
+    mViewModel.CalculateShipOrthoMatrix(
         ShipRegionZStart,
         ShipRegionZWidth,
         static_cast<int>(mShipId),
@@ -306,35 +292,31 @@ void ShipRenderContext::OnViewModelUpdated(ViewModel const & viewModel)
         shipOrthoMatrix);
 }
 
-void ShipRenderContext::UpdateAmbientLightIntensity(float ambientLightIntensity)
+void ShipRenderContext::OnAmbientLightIntensityUpdated()
 {
-    mAmbientLightIntensity = ambientLightIntensity;
-
     //
     // Set parameter in all programs
     //
 
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesColor>();
     mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesColor, ProgramParameterType::AmbientLightIntensity>(
-        ambientLightIntensity);
+        mAmbientLightIntensity);
 
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTexture>();
     mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesTexture, ProgramParameterType::AmbientLightIntensity>(
-        ambientLightIntensity);
+        mAmbientLightIntensity);
 
     mShaderManager.ActivateProgram<ProgramType::ShipRopes>();
     mShaderManager.SetProgramParameter<ProgramType::ShipRopes, ProgramParameterType::AmbientLightIntensity>(
-        ambientLightIntensity);
+        mAmbientLightIntensity);
 
     mShaderManager.ActivateProgram<ProgramType::GenericTextures>();
     mShaderManager.SetProgramParameter<ProgramType::GenericTextures, ProgramParameterType::AmbientLightIntensity>(
-        ambientLightIntensity);
+        mAmbientLightIntensity);
 }
 
-void ShipRenderContext::UpdateWaterContrast(float waterContrast)
+void ShipRenderContext::OnWaterContrastUpdated()
 {
-    mWaterContrast = waterContrast;
-
     //
     // Set parameter in all programs
     //
@@ -352,10 +334,10 @@ void ShipRenderContext::UpdateWaterContrast(float waterContrast)
         mWaterContrast);
 }
 
-void ShipRenderContext::UpdateWaterLevelThreshold(float waterLevelOfDetail)
+void ShipRenderContext::OnWaterLevelOfDetailUpdated()
 {
     // Transform: 0->1 == 2.0->0.01
-    mWaterLevelThreshold = 2.0f + waterLevelOfDetail * (-2.0f + 0.01f);
+    float waterLevelThreshold = 2.0f + mWaterLevelOfDetail * (-2.0f + 0.01f);
 
     //
     // Set parameter in all programs
@@ -363,35 +345,15 @@ void ShipRenderContext::UpdateWaterLevelThreshold(float waterLevelOfDetail)
 
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesColor>();
     mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesColor, ProgramParameterType::WaterLevelThreshold>(
-        mWaterLevelThreshold);
+        waterLevelThreshold);
 
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTexture>();
     mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesTexture, ProgramParameterType::WaterLevelThreshold>(
-        mWaterLevelThreshold);
+        waterLevelThreshold);
 
     mShaderManager.ActivateProgram<ProgramType::ShipRopes>();
     mShaderManager.SetProgramParameter<ProgramType::ShipRopes, ProgramParameterType::WaterLevelThreshold>(
-        mWaterLevelThreshold);
-}
-
-void ShipRenderContext::UpdateShipRenderMode(ShipRenderMode shipRenderMode)
-{
-    mShipRenderMode = shipRenderMode;
-}
-
-void ShipRenderContext::UpdateDebugShipRenderMode(DebugShipRenderMode debugShipRenderMode)
-{
-    mDebugShipRenderMode = debugShipRenderMode;
-}
-
-void ShipRenderContext::UpdateVectorFieldRenderMode(VectorFieldRenderMode vectorFieldRenderMode)
-{
-    mVectorFieldRenderMode = vectorFieldRenderMode;
-}
-
-void ShipRenderContext::UpdateShowStressedSprings(bool showStressedSprings)
-{
-    mShowStressedSprings = showStressedSprings;
+        waterLevelThreshold);
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -477,7 +439,7 @@ void ShipRenderContext::UploadPointPlaneIds(
         mMaxMaxPlaneId = maxMaxPlaneId;
 
         // Recalculate view model parameters
-        OnViewModelUpdated(mViewModel);
+        OnViewModelUpdated();
     }
 }
 
