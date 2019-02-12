@@ -381,13 +381,10 @@ void ShipRenderContext::UploadPointImmutableGraphicalAttributes(
     glBufferSubData(GL_ARRAY_BUFFER, 0, mPointCount * sizeof(vec4f), color);
     CheckOpenGLError();
 
-    if (!!mElementShipTexture)
-    {
-        // Upload texture coordinates
-        glBindBuffer(GL_ARRAY_BUFFER, *mPointElementTextureCoordinatesVBO);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, mPointCount * sizeof(vec2f), textureCoordinates);
-        CheckOpenGLError();
-    }
+    // Upload texture coordinates
+    glBindBuffer(GL_ARRAY_BUFFER, *mPointElementTextureCoordinatesVBO);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, mPointCount * sizeof(vec2f), textureCoordinates);
+    CheckOpenGLError();
 }
 
 void ShipRenderContext::UploadShipPointColorRange(
@@ -843,13 +840,14 @@ void ShipRenderContext::RenderSpringElements(
     ConnectedComponentData const & connectedComponent,
     bool withTexture)
 {
-    if (withTexture && !!mElementShipTexture)
+    if (withTexture)
     {
         // Use texture program
         mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTexture>();
 
         // Bind texture
         mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
+        assert(!!mElementShipTexture);
         glBindTexture(GL_TEXTURE_2D, *mElementShipTexture);
         CheckOpenGLError();
     }
@@ -896,13 +894,14 @@ void ShipRenderContext::RenderTriangleElements(
     ConnectedComponentData const & connectedComponent,
     bool withTexture)
 {
-    if (withTexture && !!mElementShipTexture)
+    if (withTexture)
     {
         // Use texture program
         mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTexture>();
 
         // Bind texture
         mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
+        assert(!!mElementShipTexture);
         glBindTexture(GL_TEXTURE_2D, *mElementShipTexture);
     }
     else

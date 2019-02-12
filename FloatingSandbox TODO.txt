@@ -608,6 +608,22 @@ Render:
 				+ Commit
 			- Step 6
 				- ShipRenderContext:
+					= See if can get rid of optionality of ship's texture
+					- Make dedicated shaders for each layer:
+						- Current => New:
+							- Ropes: ShipRopes => ShipRopes
+							- Triangles:
+								- ShipTrianglesTexture: if !debug && RenderMode==Texture
+								- ShipTrianglesColor: otherwise
+								=> ShipTrianglesTexture, ShipTrianglesColor
+							  & Springs:
+								- ShipTrianglesTexture: if !debug && RenderMode==Texture
+								- ShipTrianglesColor: otherwise
+								=> ShipTrianglesTexture, ShipTrianglesColor
+							- StressedSprings: ShipStressedSprings => ShipStressedSprings
+							- Points: ShipTrianglesColor => ShipPoints (copy)
+							- GenTex: GenericTextures => ShipGenericTextures (rename)
+							- Vectors: Matte => ShipMatte (copy)
 					- Complete: do per-layer ortho matrices
 					- Complete: Do actual ship ortho matrix calculation at ViewModel::CalculateShipOrthoMatrix
 						- See Moleskine for calc'ns
