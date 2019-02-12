@@ -46,11 +46,7 @@ RenderContext::RenderContext(
     , mCrossOfLightBuffer()
     , mCrossOfLightVBO()
     // Render parameters
-    , mZoom(1.0f)
-    , mCamX(0.0f)
-    , mCamY(0.0f)
-    , mCanvasWidth(100)
-    , mCanvasHeight(100)
+    , mViewModel(1.0f, vec2f::zero(), 100, 100)
     , mAmbientLightIntensity(1.0f)
     , mSeaWaterTransparency(0.8125f)
     , mShowShipThroughSeaWater(false)
@@ -97,8 +93,8 @@ RenderContext::RenderContext(
     mTextRenderContext = std::make_unique<TextRenderContext>(
         resourceLoader,
         *(mShaderManager.get()),
-        mCanvasWidth,
-        mCanvasHeight,
+        mViewModel.GetCanvasWidth(),
+        mViewModel.GetCanvasHeight(),
         mAmbientLightIntensity,
         [&progressCallback](float progress, std::string const & message)
         {
@@ -341,27 +337,12 @@ RenderContext::RenderContext(
     glDepthFunc(GL_LEQUAL);
 
 
-
-    //
-    // Initialize ortho matrix
-    //
-
-    for (size_t r = 0; r < 4; ++r)
-    {
-        for (size_t c = 0; c < 4; ++c)
-        {
-            mOrthoMatrix[r][c] = 0.0f;
-        }
-    }
-
-
     //
     // Update parameters
     //
 
-    UpdateOrthoMatrix();
-    UpdateCanvasSize();
-    UpdateVisibleWorldCoordinates();
+    OnViewModelUpdated(mViewModel);
+
     UpdateAmbientLightIntensity();
     UpdateSeaWaterTransparency();
     UpdateWaterContrast();
@@ -405,11 +386,20 @@ void RenderContext::AddShip(
     ShipDefinition::TextureOriginType textureOrigin)
 {
     assert(shipId == mShips.size());
-    (void)shipId;
+
+    size_t const newShipCount = mShips.size() + 1;
+
+    // Tell all ships that there's a new ship
+    for (auto & ship : mShips)
+    {
+        ship->OnShipCountUpdated(newShipCount);
+    }
 
     // Add the ship
     mShips.emplace_back(
         new ShipRenderContext(
+            shipId,
+            newShipCount,
             pointCount,
             std::move(texture),
             textureOrigin,
@@ -417,10 +407,7 @@ void RenderContext::AddShip(
             mGenericTextureAtlasOpenGLHandle,
             *mGenericTextureAtlasMetadata,
             mRenderStatistics,
-            mOrthoMatrix,
-            mVisibleWorldHeight,
-            mVisibleWorldWidth,
-            mCanvasToVisibleWorldHeightRatio,
+            mViewModel,
             mAmbientLightIntensity,
             mWaterContrast,
             mWaterLevelOfDetail,
@@ -442,7 +429,10 @@ RgbImageData RenderContext::TakeScreenshot()
     // Allocate buffer
     //
 
-    auto pixelBuffer = std::make_unique<rgbColor[]>(mCanvasWidth * mCanvasHeight);
+    int const canvasWidth = mViewModel.GetCanvasWidth();
+    int const canvasHeight = mViewModel.GetCanvasHeight();
+
+    auto pixelBuffer = std::make_unique<rgbColor[]>(canvasWidth * canvasHeight);
 
     //
     // Read pixels
@@ -457,11 +447,11 @@ RgbImageData RenderContext::TakeScreenshot()
     CheckOpenGLError();
 
     // Read
-    glReadPixels(0, 0, mCanvasWidth, mCanvasHeight, GL_RGB, GL_UNSIGNED_BYTE, pixelBuffer.get());
+    glReadPixels(0, 0, canvasWidth, canvasHeight, GL_RGB, GL_UNSIGNED_BYTE, pixelBuffer.get());
     CheckOpenGLError();
 
     return RgbImageData(
-        ImageSize(mCanvasWidth, mCanvasHeight),
+        ImageSize(canvasWidth, canvasHeight),
         std::move(pixelBuffer));
 }
 
@@ -759,6 +749,7 @@ void RenderContext::RenderWater()
 void RenderContext::RenderShipsStart(size_t shipCount)
 {
     // TODO: check if shipCount has changed and, if so, trigger recalculation of ships' ortho matrices
+    (void)shipCount;
 
     // Enable depth test, required by ships
     glEnable(GL_DEPTH_TEST);
@@ -817,73 +808,55 @@ void RenderContext::RenderCrossesOfLight()
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-void RenderContext::UpdateOrthoMatrix()
+void RenderContext::OnViewModelUpdated(ViewModel const & viewModel)
 {
-    static constexpr float zFar = 1000.0f;
-    static constexpr float zNear = 1.0f;
+    //
+    // Update ortho matrix
+    //
 
-    // Calculate new matrix
-    mOrthoMatrix[0][0] = 2.0f / mVisibleWorldWidth;
-    mOrthoMatrix[1][1] = 2.0f / mVisibleWorldHeight;
-    mOrthoMatrix[2][2] = -2.0f / (zFar - zNear);
-    mOrthoMatrix[3][0] = -2.0f * mCamX / mVisibleWorldWidth;
-    mOrthoMatrix[3][1] = -2.0f * mCamY / mVisibleWorldHeight;
-    mOrthoMatrix[3][2] = -(zFar + zNear) / (zFar - zNear);
-    mOrthoMatrix[3][3] = 1.0f;
+    constexpr float ZFar = 1000.0f;
+    constexpr float ZNear = 1.0f;
 
-    // Set parameters in all programs
+    ViewModel::ProjectionMatrix globalOrthoMatrix;
+    viewModel.CalculateGlobalOrthoMatrix(ZFar, ZNear, globalOrthoMatrix);
 
     mShaderManager->ActivateProgram<ProgramType::Land>();
     mShaderManager->SetProgramParameter<ProgramType::Land, ProgramParameterType::OrthoMatrix>(
-        mOrthoMatrix);
+        globalOrthoMatrix);
 
     mShaderManager->ActivateProgram<ProgramType::Water>();
     mShaderManager->SetProgramParameter<ProgramType::Water, ProgramParameterType::OrthoMatrix>(
-        mOrthoMatrix);
+        globalOrthoMatrix);
 
     mShaderManager->ActivateProgram<ProgramType::MatteWater>();
     mShaderManager->SetProgramParameter<ProgramType::MatteWater, ProgramParameterType::OrthoMatrix>(
-        mOrthoMatrix);
+        globalOrthoMatrix);
 
     mShaderManager->ActivateProgram<ProgramType::Matte>();
     mShaderManager->SetProgramParameter<ProgramType::Matte, ProgramParameterType::OrthoMatrix>(
-        mOrthoMatrix);
+        globalOrthoMatrix);
 
     mShaderManager->ActivateProgram<ProgramType::CrossOfLight>();
     mShaderManager->SetProgramParameter<ProgramType::CrossOfLight, ProgramParameterType::OrthoMatrix>(
-        mOrthoMatrix);
+        globalOrthoMatrix);
 
-    // Update all ships
-    for (auto & ship : mShips)
-    {
-        ship->UpdateOrthoMatrix(mOrthoMatrix);
-    }
-}
-
-void RenderContext::UpdateCanvasSize()
-{
-    // Set parameters in all programs
+    //
+    // Update canvas size
+    //
 
     mShaderManager->ActivateProgram<ProgramType::CrossOfLight>();
     mShaderManager->SetProgramParameter<ProgramType::CrossOfLight, ProgramParameterType::ViewportSize>(
-        static_cast<float>(mCanvasWidth),
-        static_cast<float>(mCanvasHeight));
-}
+        static_cast<float>(viewModel.GetCanvasWidth()),
+        static_cast<float>(viewModel.GetCanvasHeight()));
 
-void RenderContext::UpdateVisibleWorldCoordinates()
-{
-    // Calculate new dimensions
-    mVisibleWorldHeight = 2.0f * 70.0f / (mZoom + 0.001f);
-    mVisibleWorldWidth = static_cast<float>(mCanvasWidth) / static_cast<float>(mCanvasHeight) * mVisibleWorldHeight;
-    mCanvasToVisibleWorldHeightRatio = static_cast<float>(mCanvasHeight) / mVisibleWorldHeight;
 
+    //
     // Update all ships
+    //
+
     for (auto & ship : mShips)
     {
-        ship->UpdateVisibleWorldCoordinates(
-            mVisibleWorldHeight,
-            mVisibleWorldWidth,
-            mCanvasToVisibleWorldHeightRatio);
+        ship->OnViewModelUpdated(viewModel);
     }
 }
 

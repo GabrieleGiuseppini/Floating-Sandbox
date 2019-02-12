@@ -14,6 +14,8 @@
 namespace Render {
 
 ShipRenderContext::ShipRenderContext(
+    ShipId shipId,
+    size_t shipCount,
     size_t pointCount,
     RgbaImageData texture,
     ShipDefinition::TextureOriginType /*textureOrigin*/,
@@ -21,10 +23,7 @@ ShipRenderContext::ShipRenderContext(
     GameOpenGLTexture & textureAtlasOpenGLHandle,
     TextureAtlasMetadata const & textureAtlasMetadata,
     RenderStatistics & renderStatistics,
-    float const(&orthoMatrix)[4][4],
-    float visibleWorldHeight,
-    float visibleWorldWidth,
-    float canvasToVisibleWorldHeightRatio,
+    ViewModel const & viewModel,
     float ambientLightIntensity,
     float waterContrast,
     float waterLevelOfDetail,
@@ -32,17 +31,13 @@ ShipRenderContext::ShipRenderContext(
     DebugShipRenderMode debugShipRenderMode,
     VectorFieldRenderMode vectorFieldRenderMode,
     bool showStressedSprings)
-    : mShaderManager(shaderManager)
+    : mShipId(shipId)
+    , mShipCount(shipCount)
+    , mMaxMaxPlaneId(0)
+    , mShaderManager(shaderManager)
     , mRenderStatistics(renderStatistics)
-    // Parameters - all set at the end of the constructor
-    , mCanvasToVisibleWorldHeightRatio(0)
-    , mAmbientLightIntensity(0.0f)
-    , mWaterContrast(0.0f)
-    , mWaterLevelThreshold(0.0f)
-    , mShipRenderMode(ShipRenderMode::Structure)
-    , mDebugShipRenderMode(DebugShipRenderMode::None)
-    , mVectorFieldRenderMode(VectorFieldRenderMode::None)
-    , mShowStressedSprings(false)
+    // Parameters
+    , mViewModel(viewModel)
     // Textures
     , mElementShipTexture()
     , mElementStressedSpringTexture()
@@ -239,11 +234,8 @@ ShipRenderContext::ShipRenderContext(
     // Set parameters to initial values
     //
 
-    UpdateOrthoMatrix(orthoMatrix);
-    UpdateVisibleWorldCoordinates(
-        visibleWorldHeight,
-        visibleWorldWidth,
-        canvasToVisibleWorldHeightRatio);
+    OnViewModelUpdated(mViewModel);
+
     UpdateAmbientLightIntensity(ambientLightIntensity);
     UpdateWaterContrast(waterContrast);
     UpdateWaterLevelThreshold(waterLevelOfDetail);
@@ -257,39 +249,61 @@ ShipRenderContext::~ShipRenderContext()
 {
 }
 
-void ShipRenderContext::UpdateOrthoMatrix(float const(&orthoMatrix)[4][4])
+void ShipRenderContext::OnShipCountUpdated(size_t shipCount)
+{
+    // Check if the value has changed
+    if (shipCount != mShipCount)
+    {
+        // Update value
+        mShipCount = shipCount;
+
+        // Recalculate view model parameters
+        OnViewModelUpdated(mViewModel);
+    }
+}
+
+void ShipRenderContext::OnViewModelUpdated(ViewModel const & viewModel)
 {
     //
-    // Set parameter in all programs
+    // Update ortho matrix
     //
+
+    // TODOHERE: this has to be done per-layer
+
+    constexpr float ShipRegionZStart = 0.0f; // TODO
+    constexpr float ShipRegionZWidth = 0.0f; // TODO
+
+    constexpr int NLayers = 6; // TODO
+
+    ViewModel::ProjectionMatrix shipOrthoMatrix;
+    viewModel.CalculateShipOrthoMatrix(
+        ShipRegionZStart,
+        ShipRegionZWidth,
+        static_cast<int>(mShipId),
+        static_cast<int>(mShipCount),
+        0,
+        NLayers,
+        shipOrthoMatrix);
 
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesColor>();
     mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesColor, ProgramParameterType::OrthoMatrix>(
-        orthoMatrix);
+        shipOrthoMatrix);
 
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTexture>();
     mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesTexture, ProgramParameterType::OrthoMatrix>(
-        orthoMatrix);
+        shipOrthoMatrix);
 
     mShaderManager.ActivateProgram<ProgramType::ShipRopes>();
     mShaderManager.SetProgramParameter<ProgramType::ShipRopes, ProgramParameterType::OrthoMatrix>(
-        orthoMatrix);
+        shipOrthoMatrix);
 
     mShaderManager.ActivateProgram<ProgramType::ShipStressedSprings>();
     mShaderManager.SetProgramParameter<ProgramType::ShipStressedSprings, ProgramParameterType::OrthoMatrix>(
-        orthoMatrix);
+        shipOrthoMatrix);
 
     mShaderManager.ActivateProgram<ProgramType::GenericTextures>();
     mShaderManager.SetProgramParameter<ProgramType::GenericTextures, ProgramParameterType::OrthoMatrix>(
-        orthoMatrix);
-}
-
-void ShipRenderContext::UpdateVisibleWorldCoordinates(
-    float /*visibleWorldHeight*/,
-    float /*visibleWorldWidth*/,
-    float canvasToVisibleWorldHeightRatio)
-{
-    mCanvasToVisibleWorldHeightRatio = canvasToVisibleWorldHeightRatio;
+        shipOrthoMatrix);
 }
 
 void ShipRenderContext::UpdateAmbientLightIntensity(float ambientLightIntensity)
@@ -456,9 +470,15 @@ void ShipRenderContext::UploadPointPlaneIds(
     glBufferSubData(GL_ARRAY_BUFFER, 0, mPointCount * sizeof(PlaneId), planeId);
     CheckOpenGLError();
 
-    // Store max ever plane ID
-    // TODOHERE
-    // TODO: detect change and recalc what needs to be recalcd (uniforms or ortho matrix)
+    // Check if the max ever plane ID has changed
+    if (maxMaxPlaneId != mMaxMaxPlaneId)
+    {
+        // Update value
+        mMaxMaxPlaneId = maxMaxPlaneId;
+
+        // Recalculate view model parameters
+        OnViewModelUpdated(mViewModel);
+    }
 }
 
 void ShipRenderContext::UploadElementsStart()
@@ -847,7 +867,7 @@ void ShipRenderContext::RenderPointElements(ConnectedComponentData const & conne
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesColor>();
 
     // Set point size
-    glPointSize(0.2f * 2.0f * mCanvasToVisibleWorldHeightRatio);
+    glPointSize(0.2f * 2.0f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
 
     // Bind VBO
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *connectedComponent.pointElementVBO);
@@ -878,7 +898,7 @@ void ShipRenderContext::RenderSpringElements(
     }
 
     // Set line size
-    glLineWidth(0.1f * 2.0f * mCanvasToVisibleWorldHeightRatio);
+    glLineWidth(0.1f * 2.0f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
 
     // Bind VBO
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *connectedComponent.springElementVBO);
@@ -899,7 +919,7 @@ void ShipRenderContext::RenderRopeElements(ConnectedComponentData const & connec
         mShaderManager.ActivateProgram<ProgramType::ShipRopes>();
 
         // Set line size
-        glLineWidth(0.1f * 2.0f * mCanvasToVisibleWorldHeightRatio);
+        glLineWidth(0.1f * 2.0f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
 
         // Bind VBO
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *connectedComponent.ropeElementVBO);
@@ -951,7 +971,7 @@ void ShipRenderContext::RenderStressedSpringElements(ConnectedComponentData cons
         mShaderManager.ActivateProgram<ProgramType::ShipStressedSprings>();
 
         // Set line size
-        glLineWidth(0.1f * 2.0f * mCanvasToVisibleWorldHeightRatio);
+        glLineWidth(0.1f * 2.0f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
 
         // Bind texture
         mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
@@ -1016,7 +1036,7 @@ void ShipRenderContext::RenderEphemeralPoints()
         mShaderManager.ActivateProgram<ProgramType::ShipTrianglesColor>();
 
         // Set point size
-        glPointSize(0.3f * mCanvasToVisibleWorldHeightRatio);
+        glPointSize(0.3f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
 
         // Bind VBO
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mEphemeralPointVBO);

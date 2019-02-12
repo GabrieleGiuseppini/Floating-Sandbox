@@ -592,6 +592,26 @@ Render:
 					+ Also FPS: 32.0 - MIRACLE?!?!?
 				+ Commit
 			- Step 5:
+				+ Ship/RenderContext: PlaneID->Z calculations
+					+ OrthoMatrix:
+						+ Rename RenderContext's as "GlobalOrthoMatrix"
+						+ Ship has own per-layer, calc'd (and set as uniform) at:
+							+ private ShipRenderContext::OnViewModelUpdated()
+								+ Invoked at:
+									+ UpdateCanvas/Zoom/Cam (use struct - @ parent - with all params)
+										+ What about visible world w/h?
+									+ Changed nShips at RenderContext::RenderShipsStart()
+										+ via ShipRenderContext::UpdateNumberOfShips(nShips)
+									+ Changed MaxMaxPlaneId at UploadPlaneIds(...) call
+				- RenderContext ans ShipRenderContext: change OnXYZUpdated/UpdateXYX pattern: no args
+				- Test
+				- Commit
+			- Step 6
+				- ShipRenderContext:
+					- Complete: do per-layer ortho matrices
+					- Complete: Do actual ship ortho matrix calculation at ViewModel::CalculateShipOrthoMatrix
+						- See Moleskine for calc'ns
+					- Shaders take new vertex attribute and calc Z via OrthoMatrix
 				- ShipRenderContext::UploadXYZElement() do not take anymore connected component ID
 					- Remove ShipRenderContext connected component tracking; store everything in buffers or upload directly
 					- Ship: nuke mConnectedComponentSizes
@@ -600,18 +620,6 @@ Render:
 						- if mIsStructureDirty or debug mode changed:
 							- Do not call "umbrella" conn comp ID API
 							- Upload parts individually
-				- Ship/RenderContext: PlaneID->Z calculations
-					- OrthoMatrix:
-						- Rename RenderContext's as "GlobalOrthoMatrix"
-						- Ship has own, calc'd (and set as uniform) at:
-							- private ShipRenderContext::UpdateShipOrthoMatrix()
-								- Invoked at:
-									- UpdateCanvas/Zoom/Cam (use struct - @ parent - with all params)
-									- Changed nShips at RenderContext::RenderShipsStart()
-										- via ShipRenderContext::UpdateNumberOfShips(nShips)
-									- Changed MaxMaPlaneId at UploadPlaneIds(...) call
-								- See Moleskine for calc'ns
-					- Shaders take new vertex attribute and calc Z via OrthoMatrix
 				- GenericTextures: is now own pass that uses plane IDs as input for Z's in shader
 					- Upload plane IDs instead of conn comp IDs
 					- Fix at all calls from:

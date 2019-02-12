@@ -12,6 +12,7 @@
 #include "TextRenderContext.h"
 #include "TextureAtlas.h"
 #include "TextureRenderManager.h"
+#include "ViewModel.h"
 
 #include <GameOpenGL/GameOpenGL.h>
 #include <GameOpenGL/ShaderManager.h>
@@ -49,81 +50,74 @@ public:
 
     float GetZoom() const
     {
-        return mZoom;
+        return mViewModel.GetZoom();
     }
 
     void SetZoom(float zoom)
     {
-        mZoom = zoom;
+        mViewModel.SetZoom(zoom);
 
-        UpdateVisibleWorldCoordinates();
-        UpdateOrthoMatrix();
+        OnViewModelUpdated(mViewModel);
     }
 
     void AdjustZoom(float amount)
     {
-        mZoom *= amount;
+        mViewModel.AdjustZoom(amount);
 
-        UpdateVisibleWorldCoordinates();
-        UpdateOrthoMatrix();
+        OnViewModelUpdated(mViewModel);
     }
 
     vec2f GetCameraWorldPosition() const
     {
-        return vec2f(mCamX, mCamY);
+        return mViewModel.GetCameraWorldPosition();
     }
 
     void SetCameraWorldPosition(vec2f const & pos)
     {
-        mCamX = pos.x;
-        mCamY = pos.y;
+        mViewModel.SetCameraWorldPosition(pos);
 
-        UpdateVisibleWorldCoordinates();
-        UpdateOrthoMatrix();
+        OnViewModelUpdated(mViewModel);
     }
 
-    void AdjustCameraWorldPosition(vec2f const & worldOffset)
+    void AdjustCameraWorldPosition(vec2f const & offset)
     {
-        mCamX += worldOffset.x;
-        mCamY += worldOffset.y;
+        mViewModel.AdjustCameraWorldPosition(offset);
 
-        UpdateVisibleWorldCoordinates();
-        UpdateOrthoMatrix();
+        OnViewModelUpdated(mViewModel);
     }
 
-    int GetCanvasSizeWidth() const
+    int GetCanvasWidth() const
     {
-        return mCanvasWidth;
+        return mViewModel.GetCanvasWidth();
     }
 
-    int GetCanvasSizeHeight() const
+    int GetCanvasHeight() const
     {
-        return mCanvasHeight;
+        return mViewModel.GetCanvasHeight();
     }
 
     void SetCanvasSize(int width, int height)
     {
-        mCanvasWidth = width;
-        mCanvasHeight = height;
+        mViewModel.SetCanvasSize(width, height);
 
-        glViewport(0, 0, mCanvasWidth, mCanvasHeight);
+        glViewport(0, 0, mViewModel.GetCanvasWidth(), mViewModel.GetCanvasHeight());
 
-        mTextRenderContext->UpdateCanvasSize(mCanvasWidth, mCanvasHeight);
+        mTextRenderContext->UpdateCanvasSize(mViewModel.GetCanvasWidth(), mViewModel.GetCanvasHeight());
 
-        UpdateCanvasSize();
-        UpdateVisibleWorldCoordinates();
-        UpdateOrthoMatrix();
+        OnViewModelUpdated(mViewModel);
     }
 
     float GetVisibleWorldWidth() const
     {
-        return mVisibleWorldWidth;
+        return mViewModel.GetVisibleWorldWidth();
     }
 
     float GetVisibleWorldHeight() const
     {
-        return mVisibleWorldHeight;
+        return mViewModel.GetVisibleWorldHeight();
     }
+
+    //
 
     float GetAmbientLightIntensity() const
     {
@@ -254,16 +248,12 @@ public:
 
     inline vec2f ScreenToWorld(vec2f const & screenCoordinates)
     {
-        return vec2f(
-            (screenCoordinates.x / static_cast<float>(mCanvasWidth) - 0.5f) * mVisibleWorldWidth + mCamX,
-            (screenCoordinates.y / static_cast<float>(mCanvasHeight) - 0.5f) * -mVisibleWorldHeight + mCamY);
+        return mViewModel.ScreenToWorld(screenCoordinates);
     }
 
     inline vec2f ScreenOffsetToWorldOffset(vec2f const & screenOffset)
     {
-        return vec2f(
-            screenOffset.x / static_cast<float>(mCanvasWidth) * mVisibleWorldWidth,
-            - screenOffset.y / static_cast<float>(mCanvasHeight) * mVisibleWorldHeight);
+        return mViewModel.ScreenOffsetToWorldOffset(screenOffset);
     }
 
     //
@@ -284,6 +274,8 @@ public:
         size_t pointCount,
         RgbaImageData texture,
         ShipDefinition::TextureOriginType textureOrigin);
+
+    void OnShipCountUpdated(size_t shipCount);
 
     RgbImageData TakeScreenshot();
 
@@ -352,7 +344,7 @@ public:
             TextureGroupType::Cloud,
             static_cast<TextureFrameIndex>(cloudTextureIndex));
 
-        float const aspectRatio = static_cast<float>(mCanvasWidth) / static_cast<float>(mCanvasHeight);
+        float const aspectRatio = static_cast<float>(mViewModel.GetCanvasWidth()) / static_cast<float>(mViewModel.GetCanvasHeight());
 
         float leftX = mappedX - scale * cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldX;
         float rightX = mappedX + scale * (cloudAtlasFrameMetadata.FrameMetadata.WorldWidth - cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldX);
@@ -413,7 +405,7 @@ public:
         assert(mLandElementCount == mWaterElementCount);
         assert(mLandElementCount > 0);
 
-        float const worldBottom = mCamY - (mVisibleWorldHeight / 2.0f);
+        float const worldBottom = mViewModel.GetCameraWorldPosition().y - (mViewModel.GetVisibleWorldHeight() / 2.0f);
 
         //
         // Store Land element
@@ -465,10 +457,10 @@ public:
         vec2f const & centerPosition,
         float progress)
     {
-        float const left = -mVisibleWorldWidth / 2.0f;
-        float const right = mVisibleWorldWidth / 2.0f;
-        float const top = mVisibleWorldHeight / 2.0f;
-        float const bottom = -mVisibleWorldHeight / 2.0f;
+        float const left = -mViewModel.GetVisibleWorldWidth() / 2.0f;
+        float const right = mViewModel.GetVisibleWorldWidth() / 2.0f;
+        float const top = mViewModel.GetVisibleWorldHeight() / 2.0f;
+        float const bottom = -mViewModel.GetVisibleWorldHeight() / 2.0f;
 
         // Triangle 1
 
@@ -849,9 +841,8 @@ private:
 
     void RenderCrossesOfLight();
 
-    void UpdateOrthoMatrix();
-    void UpdateCanvasSize();
-    void UpdateVisibleWorldCoordinates();
+    void OnViewModelUpdated(ViewModel const & viewModel);
+
     void UpdateAmbientLightIntensity();
     void UpdateSeaWaterTransparency();
     void UpdateWaterContrast();
@@ -1023,24 +1014,11 @@ private:
 
 private:
 
-    // The Ortho matrix
-    float mOrthoMatrix[4][4];
-
-    // The world coordinates of the visible portion
-    float mVisibleWorldWidth;
-    float mVisibleWorldHeight;
-    float mCanvasToVisibleWorldHeightRatio;
-
-
     //
     // The current render parameters
     //
 
-    float mZoom;
-    float mCamX;
-    float mCamY;
-    int mCanvasWidth;
-    int mCanvasHeight;
+    ViewModel mViewModel;
 
     float mAmbientLightIntensity;
     float mSeaWaterTransparency;

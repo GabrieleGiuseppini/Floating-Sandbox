@@ -8,6 +8,7 @@
 #include "RenderCore.h"
 #include "ShipDefinition.h"
 #include "TextureAtlas.h"
+#include "ViewModel.h"
 
 #include <GameOpenGL/GameOpenGL.h>
 #include <GameOpenGL/ShaderManager.h>
@@ -31,6 +32,8 @@ class ShipRenderContext
 public:
 
     ShipRenderContext(
+        ShipId shipId,
+        size_t shipCount,
         size_t pointCount,
         RgbaImageData texture,
         ShipDefinition::TextureOriginType textureOrigin,
@@ -38,10 +41,7 @@ public:
         GameOpenGLTexture & textureAtlasOpenGLHandle,
         TextureAtlasMetadata const & textureAtlasMetadata,
         RenderStatistics & renderStatistics,
-        float const(&orthoMatrix)[4][4],
-        float visibleWorldHeight,
-        float visibleWorldWidth,
-        float canvasToVisibleWorldHeightRatio,
+        ViewModel const & viewModel,
         float ambientLightIntensity,
         float waterContrast,
         float waterLevelOfDetail,
@@ -54,12 +54,9 @@ public:
 
 public:
 
-    void UpdateOrthoMatrix(float const(&orthoMatrix)[4][4]);
+    void OnShipCountUpdated(size_t shipCount);
 
-    void UpdateVisibleWorldCoordinates(
-        float visibleWorldHeight,
-        float visibleWorldWidth,
-        float canvasToVisibleWorldHeightRatio);
+    void OnViewModelUpdated(ViewModel const & viewModel);
 
     void UpdateAmbientLightIntensity(float ambientLightIntensity);
 
@@ -398,11 +395,16 @@ private:
 
 private:
 
+    ShipId const mShipId;
+    size_t mShipCount;
+    PlaneId mMaxMaxPlaneId;
+
     //
     // Parameters
     //
 
-    float mCanvasToVisibleWorldHeightRatio;
+    ViewModel const & mViewModel;
+
     float mAmbientLightIntensity;
     float mWaterContrast;
     float mWaterLevelThreshold;
