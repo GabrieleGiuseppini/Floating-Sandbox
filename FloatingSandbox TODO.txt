@@ -150,10 +150,10 @@ Render:
 		+ Change version
 
 		+ Create "z_buffer" branch
-		- Zbuffer (*)
+		= Zbuffer (*)
 
 		- Make flood tool adjustable
-			- Both radius and quantity of water
+			- Try one single setting affecting both radius and quantity of water
 
 		- Make Titanic default ship
 
@@ -475,17 +475,12 @@ Render:
 			+ Research glFlush()
 			+ By invoking glFlush() and SwapBuffers() in MainFrame, before Render()
 
-	- Z buffer:
-		- Rationale: more connected components => slower (multiple batches); try to draw one single batch then, using Z buffer and depth test 
+	= Z buffer: (*)
+		+ Rationale: more connected components => slower (multiple batches); try to draw one single batch then, using Z buffer and depth test 
 		- Spec:
 			- TODO: incorporate in this:
-				+ Remember in connected component visit to visit from right and also assign plane ID backwards
-					+ Because of rope-follow algo - we want ropes (who are assigned to plane ID of entering (first) point)
-					  to always have the closest plane of the two
 				- Might not need to sort generic textures if we upload bombs with plane ID of attached spring
 					- Does not work for bubbles though, but might be irrelevant
-				- Assignment of PlaneID to triangles based off owner point - see MOLESKINE
-				- Generation of triangles' point indices for rendering purposes - see MOLESKINE
 			- Assign Z based on cousin of connected component ID (named "Plane ID", uint32_t)
 				+ All points have PlaneId
 					+ Can we revert ShipId and ConnectedComponentId to start from zero and having None=max? 
@@ -626,20 +621,39 @@ Render:
 							- Vectors: Matte => ShipMatte (copy)
 					+ Complete: assign per-layer ortho matrices
 					+ Test & commit
-			- Step 7:
-				- Do actual ship ortho matrix calculation at ViewModel::CalculateShipOrthoMatrix
-					- See Moleskine for calc'ns
-				- All ship shaders take new vertex attribute and calc Z via OrthoMatrix
-				- Test & commit
-			- Step 8:
+			= Step 7:
+				+ Do actual ship ortho matrix calculation at ViewModel::CalculateShipOrthoMatrix
+					+ See Moleskine for calc'ns
+				+ All ship shaders take new vertex attribute and calc Z via OrthoMatrix
+					+ Test first with triangles layer
+					+ Do all other layers and shaders next
+				+ Test all layers
 				- ShipRenderContext::UploadXYZElement() do not take anymore connected component ID
-					- Remove ShipRenderContext connected component tracking; store everything in buffers or upload directly
+					- Dismantle ShipRenderContext connected component tracking; store everything in buffers and/or upload directly
 					- Ship: nuke mConnectedComponentSizes
 					- Ship::Render: 
 						- Nuke connected component empty check
 						- if mIsStructureDirty or debug mode changed:
 							- Do not call "umbrella" conn comp ID API
 							- Upload parts individually
+				- Check if we need to draw ropes in same layer as triangles and springs (but still before them)
+				- Test & commit
+			- Step 8:
+				- Add PlaneID to vectors
+					- Actually, remove position upload: bind to same positions (and plane ID) of points
+				- Test & commit
+			- Step 9:
+				- Verify ship triangles in texture mode are drawn incorrectly
+					- Do test ship with texture smaller than structure, cut in 3
+				- Do ship triangles correct sorting
+					- Store bool owned_by_point in Points::ConnectedTriangles (see MOLESKINE)
+					- Nuke Triangles::Upload
+					- Upload triangles by Ship::Render
+						- From own vector populated during connectivity visit (see MOLESKINE)
+						- Still, only when mIsStructureDirty
+				- Verify with test ship again
+				- Commit
+			- Step 10:
 				- GenericTextures: is now own pass that uses plane IDs as input for Z's in shader
 					- Upload plane IDs instead of conn comp IDs
 					- Fix at all calls from:
@@ -648,15 +662,24 @@ Render:
 							- The texture ones can now pass real plane ID, fix call chain up to caller
 						- PinnedPoint
 					- Sort by plane ID right before rendering
+				- Test & commit
+			- Step 11:
+				- Verify first ephemeral points are broken with planeID=1, with ship cut in half
+				  and ephemerals from either side
 				- EphemeralPoints: is now own pass that uses plane IDs as input for Z's in shader
-				- Test
-				- Run in Debug
+				- Verify with test again
 				- Commit
+				
+
 			
 		- Tests:
+			- Run in Debug
 			- Rope triangles built via ropes layer: verify plane ID and conn comp ID assignment
+			- Gen textures are correctly covered by things in nearer plane
 
 		- Cleanups:
+			- Light spread on surface changes abruptly when piece is cut; see if it makes sense for diffuse
+			  to only light points whose plane ID is behind lamp (thus planeID>=lampPlaneID)
 			- (TODO: might not be agood idea, see below) Ship:
 				+ Theme: Points becomes passive re: need to upload its stuff
 				- Replace Ship::mAreElementsDirty with mIsStructureDirty
@@ -673,7 +696,7 @@ Render:
 						- UploadEphemeralPointColorRange
 						- AreEphemeralPointsDirty
 						- UploadEphemeralPointElements
-						- UploadEphemeralPointTextures - TODO: this would require second pass...
+						- UploadEphemeralPointTextures - TODO: this would require second pass through all eph points...
 					- Invoke new Points' ephemeral uploads where we invoke single one now
 
 		- Optimizations to try:
@@ -691,7 +714,7 @@ Render:
 				- Also enable/disable depth test for this step after it has moved to RenderContext
 					- Optimize: do this immediately after ships
 				- TODO: do we really want to do this:
-					-Extra costs: OrthoMatrix and calc'ns in two places; plus, ships offer already per-ship containers
+					- Extra costs: OrthoMatrix and calc'ns in two places; plus, ships offer already per-ship containers
 
 - Gfx:
 	+ Make font white inversely to ambient light
@@ -712,43 +735,77 @@ Render:
 					- Check asm
 				- Current of a spring == current of EP1 * current of EP2
 
-	- Should we always draw orphaned points - those that come after destruction?
+	- Should we always draw orphaned points - those that come after destruction? (*)
 		+ Orphaned point == points with 0 connected springs
-		- We must first stop deleting points just because springs are deleted
-			- Though should still delete them at Destroy() and Bomb(), for example
-		- We should somehow unify the uploading of orphaned points and the uploading of ephemeral points
-			- Plane ID is enough to keep them on separate planes
-		- Also, ShipRenderMode::Points should only be consumed by Points::Upload, who is the only one who decides what gets uploaded
-			~ Not really, see below - it's ConnectivityVisit the only one that checks ShipRenderMode::Points 
-		- Orphaned points go into their own single plane, at whatever connected component/plane ID algo assigns them to
-			- Assigned directly by ConnectivityVisit by checking if point has no connected springs (and it's not deleted)
-				- Since we're doing this, we might as well fill-in vector of Point indices 
-				  (containing ShipRenderMode::Points + orphaned + ephemeral points), replacing UploadPoints:
-					- Ship has own vector<ElementIndex>, appropriately reserved to mPoints.total_size
-					- Ship::ConnectivityVisit:
-						- Clears vector - after all, we run ConnectivityVisit if we're dirty
-						- For each point: 
-							- If ShipRenderMode is Points OR point is orphan: appends it
-						- Remembers size of vector at this moment, as mShipPointElementsCount (see below)
-					- Then passes it to Points::UploadEphemeralParticles(), who appends to it
-						- When we're not dirty, instead, Ship truncates it to mShipPointElementsCount length
-						  (maintaining point indices from previous ConnectivityVisit),
-						  before passing it to UploadEphemeralParticles() (which now takes no RenderContext anymore)
-		- Ship::Render(): new dirty/ephemeral algo:
-			- With Z buffer we don't need anymore to worry about ShipRenderElementsStart() to allocate all connected components
-			- Ship uploads own point element index vector when:
-				- old: mAreElementsDirty => new: mArePointElementIndicesDirty
-					- mArePointElementIndicesDirty is set when:
-						- ConnectivityVisit runs
-							- ConnectivityVisit sets it itself at end
-						- Points::UploadEphemeralParticles(indices vector) returns true (because it remembers it is dirty)
-							- Optimize here: if only UploadEphemeralParticles() returns true, then
-							  may upload only sub-portion after mShipPointElementsCount
-		- ShipRenderContext always renders point elements	
-			- Even when ShipRenderMode is Springs
-				- Test L'n'F' with ShipRenderMode=Springs
-
+		+ We unify ephemeral points uploading and rendering with ship points (either debug or orphan) uploading and rendering
+			+ Plane ID is enough to keep them on separate planes
+		- Verify first that connectivity visit really assigns plane IDs also to orphaned points 
+		- Impl:
+			- We must first stop deleting points just because springs are deleted
+				- Though should still delete them at Destroy() and Bomb(), for example
+			- RenderContext and ShipRenderContext expose one single, independent UploadPointElements for segments:
+				- UploadPointElements(srcbuffer, start (valid for both src and dst), len)
+				- Only requires ShipRenderCointext to have been init'd with total # of points, so to
+				  allocate VBO once at initialization
+			- Ship::Render:
+				- std::vector<ElementIndex> mPointElements
+					- reserved(mPoints.total_size) at cctor
+				- Nuke old upload call for point elements
+				- if mIsStructureDirty:
+					- Clear mPointElements
+					- Ask Points to populate point indices in mPointElements
+						- Starting from zero
+						- Points decides between all or orphaned only based off DebugShipRenderMode
+					- Store # of points just populated into mCurrentShipPointElementsCount
+				- ...later...:
+				- At Points::UploadEphemeral:
+					- Pass mPointElements
+					- Points::UploadEphemeral returns nEphemeralPointsPopulated
+				- if mIsStructureDirty || nEphemeralPointsPopulated > 0:
+					- Call RenderContext::UploadPointElements(
+						srcbuffer=ship's buffer, truncated to mCurrentShipPointElementsCount if !mIsStructureDirty
+						start = mIsStructureDirty ? 0 : mCurrentShipPointElementsCount,
+						len = mIsStructureDirty ? buffer.len : nEphemeralPointsPopulated)
+					- TEST: go through this again and verify all cases covered
+			- ShipRenderContext:
+				- Nuke RenderEphemeralPoints and its structs and members
+				- Have just one single RenderPoints
+					- Always invoked
+					- Even when ShipRenderMode is Springs
+						- Test L'n'F' with ShipRenderMode=Springs; if not good, skip it
 		- Test L'n'F'
+
+		- TODOOLD: in case any assumptions fail:		
+			- Also, ShipRenderMode::Points should only be consumed by Points::Upload, who is the only one who decides what gets uploaded
+				~ Not really, see below - it's ConnectivityVisit the only one that checks ShipRenderMode::Points 
+			- Orphaned points go into their own single plane, at whatever connected component/plane ID algo assigns them to
+				- Assigned directly by ConnectivityVisit by checking if point has no connected springs (and it's not deleted)
+					- Do we really need to special-case PlaneID assignment? Doesn't ConnectivityVisit already assign a good Plane ID?
+					- Since we're doing this, we might as well fill-in vector of Point indices 
+					  (containing ShipRenderMode::Points + orphaned + ephemeral points), replacing UploadPoints:
+						- Ship has own vector<ElementIndex>, appropriately reserved to mPoints.total_size
+						- Ship::ConnectivityVisit:
+							- Clears vector - after all, we run ConnectivityVisit if we're dirty
+							- For each point: 
+								- If ShipRenderMode is Points OR point is orphan: appends it
+							- Remembers size of vector at this moment, as mShipPointElementsCount (see below)
+						- Then passes it to Points::UploadEphemeralParticles(), who appends to it
+							- When we're not dirty, instead, Ship truncates it to mShipPointElementsCount length
+							  (maintaining point indices from previous ConnectivityVisit),
+							  before passing it to UploadEphemeralParticles() (which now takes no RenderContext anymore)
+			- Ship::Render(): new dirty/ephemeral algo:
+				- With Z buffer we don't need anymore to worry about ShipRenderElementsStart() to allocate all connected components
+				- Ship uploads own point element index vector when:
+					- old: mAreElementsDirty => new: mArePointElementIndicesDirty
+						- mArePointElementIndicesDirty is set when:
+							- ConnectivityVisit runs
+								- ConnectivityVisit sets it itself at end
+							- Points::UploadEphemeralParticles(indices vector) returns true (because it remembers it is dirty)
+								- Optimize here: if only UploadEphemeralParticles() returns true, then
+								  may upload only sub-portion after mShipPointElementsCount
+			- ShipRenderContext always renders point elements	
+				- Even when ShipRenderMode is Springs
+
 
 	- A toggle-able shader for the sea - so it gets darker the further down you go; it would be affected by the ambient lighting
 		- Need new scalar vertex attrib for depthBrightness - between 1.0 (top) and 0.0 (at greater of 1000m and sea depth)
@@ -760,6 +817,7 @@ Render:
 	  larger than texture), then one sees parts of the springs
 		- It's a problem with rendering springs with the texture shader
 		- However, these springs give an anti-aliasing effect
+
 	- Draw better (depth-wise) those parts that are only connected by ropes (**)
 		- TODO: this is taken care of by Z-buffer work, by carefully propagating plane IDs 
 			- This in reality has nothing to do with ConnectedComponentIds
@@ -771,10 +829,12 @@ Render:
 			  #connected_triangles>0
 				- Though we must still propagate through rope triangles, so maintain "coming from #connected_triangles=0"
 				  when propagating from a rope point to a rope point - regardless of connected triangles
-	- Option to enable drawing of force vectors for each point
-		- Ship::Update() takes also RenderContext const &, so can check if need to save force buffer
-			- Points::SaveForceBufferForVectorRender()
-		- Copied right before integration
+
+	+ Option to enable drawing of force vectors for each point
+		+ Ship::Update() takes also RenderContext const &, so can check if need to save force buffer
+			+ Points::SaveForceBufferForVectorRender()
+		+ Copied right before integration
+
 	- AmbientLightIntensity:
 		+ Use also in RenderContext::RenderStart() for clear (sky) color
 		+ Phase 1: pgup/down
@@ -1151,6 +1211,14 @@ Render:
 
 - Game Interactions and Controls:
 
+	- Setting for wave width 
+		- Changing the width of the waves up to at least 10x the current size
+		- Option 1:
+			- Requires re-calculation of period (if adjustment is x-multiplier N, then period is N times basic period)
+			- Resolution stays the same
+		- Option 2:
+			- Integral ticks to change frequencies so that period is always the same
+
 	- Pick tool: ability to move individual connected components
 		- After connected component has been overhauled
 		- Spec:
@@ -1169,9 +1237,6 @@ Render:
 					- Disengage if it returns false
 				- Pass velocity = current (synthetic) mousePos - last (synthetic) mousePos
 				
-	- Changing the width of the waves up to at least 10x the current size
-		- Requires re-calculation of period (if adjustment is x-multiplier N, then period is N times basic period)
-		- Resolution stays the same
 
 	- Allow ocean floor bump map to be loaded at runtime
 

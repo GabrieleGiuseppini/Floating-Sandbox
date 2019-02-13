@@ -7,13 +7,14 @@
 
 // Inputs
 in vec2 inSharedAttribute0;
+in float inShipPointPlaneId;
 
 // Params
 uniform mat4 paramOrthoMatrix;
 
 void main()
 {
-    gl_Position = paramOrthoMatrix * vec4(inSharedAttribute0.xy, -1.0, 1.0);
+    gl_Position = paramOrthoMatrix * vec4(inSharedAttribute0.xy, inShipPointPlaneId, 1.0);
 }
 
 ###FRAGMENT

@@ -164,31 +164,57 @@ public:
     }
 
     inline void CalculateShipOrthoMatrix(
-        float shipRegionZStart,
-        float shipRegionZWidth,
+        float shipZRegionStart,
+        float shipZRegionWidth,
         int iShip,
         int nShips,
+        int maxMaxPlaneId,
         int iLayer,
         int nLayers,
         ProjectionMatrix & matrix) const
     {
+        //
+        // Our Z-depth strategy for ships is as follows.
+        //
+        // - An entire range of Z values is allocated for all the ships: from +1 (far) to -1 (near)
+        //      - Range: ShipZRegionStart (far), ShipZRegionStart + ShipZRegionZWidth (near)
+        // - The range is divided among all ships into equal segments
+        //      - Each segment width is ShipZRegionZWidth/nShips
+        // - Each ship segment is divided into sub-segments for each distinct plane ID
+        //      - So a total of maxMaxPlaneId sub-segments
+        // - Each plane sub-segment is divided into nLayers layers
+        //
+
+
         // Copy kernel ortho matrix
         std::copy(
             &(mKernelOrthoMatrix[0][0]),
             &(mKernelOrthoMatrix[0][0]) + sizeof(mKernelOrthoMatrix) / sizeof(float),
             &(matrix[0][0]));
 
-        // TODOHERE: for the time being we simply return the global ortho matrix
-        (void)shipRegionZStart;
-        (void)shipRegionZWidth;
-        (void)iShip;
-        (void)nShips;
-        (void)iLayer;
-        (void)nLayers;
-        constexpr float ZFar = 1000.0f;
-        constexpr float ZNear = 1.0f;
-        matrix[2][2] = -2.0f / (ZFar - ZNear);
-        matrix[3][2] = -(ZFar + ZNear) / (ZFar - ZNear);
+        //
+        // Calculate Z cells: (2,2)==planeCoeff and (3,2)==planeOffset
+        //
+
+        // Beginning of Z range for this ship
+        float const shipZStart =
+            shipZRegionStart
+            + shipZRegionWidth * static_cast<float>(iShip) / static_cast<float>(nShips);
+
+        // Fractional Z value for this plane, to account for layer
+        float const layerZFraction =
+            shipZRegionWidth / static_cast<float>(nShips)
+            * static_cast<float>(iLayer + nLayers * maxMaxPlaneId)
+            / static_cast<float>(nLayers * (maxMaxPlaneId + 1));
+
+        // Multiplier of world Z
+        float const worldZMultiplier =
+            - shipZRegionWidth / static_cast<float>(nShips)
+            * static_cast<float>(nLayers)
+            / static_cast<float>(nLayers * (maxMaxPlaneId + 1));
+
+        matrix[2][2] = worldZMultiplier;
+        matrix[3][2] = shipZStart + layerZFraction;
     }
 
 private:

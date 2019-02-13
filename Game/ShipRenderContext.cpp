@@ -107,20 +107,20 @@ ShipRenderContext::ShipRenderContext(
 
     mPointColorVBO = pointVBOs[3];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointColorVBO);
-    glBufferData(GL_ARRAY_BUFFER, mPointCount * sizeof(vec4f), nullptr, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(vec4f), nullptr, GL_DYNAMIC_DRAW);
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointColor), 4, GL_FLOAT, GL_FALSE, sizeof(vec4f), (void*)(0));
     CheckOpenGLError();
 
     mPointPlaneIdVBO = pointVBOs[4];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointPlaneIdVBO);
-    glBufferData(GL_ARRAY_BUFFER, mPointCount * sizeof(PlaneId), nullptr, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(PlaneId), nullptr, GL_STATIC_DRAW);
     static_assert(sizeof(PlaneId) == sizeof(uint32_t)); // GL_UNSIGNED_INT
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointPlaneId), 1, GL_UNSIGNED_INT, GL_FALSE, sizeof(PlaneId), (void*)(0));
     CheckOpenGLError();
 
     mPointElementTextureCoordinatesVBO = pointVBOs[5];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointElementTextureCoordinatesVBO);
-    glBufferData(GL_ARRAY_BUFFER, mPointCount * sizeof(vec2f), nullptr, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(vec2f), nullptr, GL_STATIC_DRAW);
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointTextureCoordinates), 2, GL_FLOAT, GL_FALSE, sizeof(vec2f), (void*)(0));
     CheckOpenGLError();
 
@@ -255,13 +255,7 @@ ShipRenderContext::~ShipRenderContext()
 void ShipRenderContext::UpdateOrthoMatrices()
 {
     //
-    // Our Z-depth strategy is as follows.
-    //
-    // - An entire range of Z values is allocated for all the ships: from +1 (far) to -1 (near)
-    //      - Range: ShipRegionStart=1, ShipRegionWidth=-2
-    // - The range is divided among all ships into equal segments
-    //      - Each segment width is ShipRegionWidth/nShips
-    // - Each ship-private segment is divided into 6 layers, one for each type of rendering we do for a ship:
+    // Each plane Z segment is divided into 6 layers, one for each type of rendering we do for a ship:
     //      - 0: Ropes (always behind)
     //      - 1: Springs and Triangles
     //          - Same Z as we use springs to "anti-alias" triangles' edges
@@ -288,6 +282,7 @@ void ShipRenderContext::UpdateOrthoMatrices()
         ShipRegionZWidth,
         static_cast<int>(mShipId),
         static_cast<int>(mShipCount),
+        static_cast<int>(mMaxMaxPlaneId),
         0,
         NLayers,
         shipOrthoMatrix);
@@ -306,6 +301,7 @@ void ShipRenderContext::UpdateOrthoMatrices()
         ShipRegionZWidth,
         static_cast<int>(mShipId),
         static_cast<int>(mShipCount),
+        static_cast<int>(mMaxMaxPlaneId),
         1,
         NLayers,
         shipOrthoMatrix);
@@ -327,6 +323,7 @@ void ShipRenderContext::UpdateOrthoMatrices()
         ShipRegionZWidth,
         static_cast<int>(mShipId),
         static_cast<int>(mShipCount),
+        static_cast<int>(mMaxMaxPlaneId),
         2,
         NLayers,
         shipOrthoMatrix);
@@ -344,6 +341,7 @@ void ShipRenderContext::UpdateOrthoMatrices()
         ShipRegionZWidth,
         static_cast<int>(mShipId),
         static_cast<int>(mShipCount),
+        static_cast<int>(mMaxMaxPlaneId),
         3,
         NLayers,
         shipOrthoMatrix);
@@ -361,6 +359,7 @@ void ShipRenderContext::UpdateOrthoMatrices()
         ShipRegionZWidth,
         static_cast<int>(mShipId),
         static_cast<int>(mShipCount),
+        static_cast<int>(mMaxMaxPlaneId),
         4,
         NLayers,
         shipOrthoMatrix);
@@ -378,6 +377,7 @@ void ShipRenderContext::UpdateOrthoMatrices()
         ShipRegionZWidth,
         static_cast<int>(mShipId),
         static_cast<int>(mShipCount),
+        static_cast<int>(mMaxMaxPlaneId),
         5,
         NLayers,
         shipOrthoMatrix);
@@ -814,7 +814,9 @@ void ShipRenderContext::RenderEnd()
     // Process all connected components, from first to last, and draw all elements
     //
 
-    for (size_t c = 0; c < mConnectedComponents.size(); ++c)
+    // TODOTEST: using planeID direction
+    //for (size_t c = 0; c < mConnectedComponents.size(); ++c)
+    for (int c = mConnectedComponents.size() - 1; c >= 0; --c)
     {
         //
         // Draw points

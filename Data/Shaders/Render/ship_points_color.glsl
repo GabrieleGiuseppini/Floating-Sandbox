@@ -10,6 +10,7 @@ in vec2 inShipPointPosition;
 in float inShipPointLight;
 in float inShipPointWater;
 in vec4 inShipPointColor;
+in float inShipPointPlaneId;
 
 // Outputs        
 out float vertexLight;
@@ -25,7 +26,7 @@ void main()
     vertexWater = inShipPointWater;
     vertexCol = inShipPointColor;
 
-    gl_Position = paramOrthoMatrix * vec4(inShipPointPosition.xy, -1.0, 1.0);
+    gl_Position = paramOrthoMatrix * vec4(inShipPointPosition.xy, inShipPointPlaneId, 1.0);
 }
 
 ###FRAGMENT

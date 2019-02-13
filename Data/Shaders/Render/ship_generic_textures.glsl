@@ -9,6 +9,7 @@
 in vec4 inGenericTexturePackedData1; // centerPosition, vertexOffset
 in vec2 inGenericTextureTextureCoordinates;
 in vec4 inGenericTexturePackedData2; // scale, angle, alpha, ambientLightSensitivity
+in float inShipPointPlaneId;
 
 // Outputs
 out vec2 vertexTextureCoordinates;
@@ -35,7 +36,7 @@ void main()
         inGenericTexturePackedData1.xy 
         + rotationMatrix * inGenericTexturePackedData1.zw * scale;
 
-    gl_Position = paramOrthoMatrix * vec4(worldPosition.xy, -1.0, 1.0);
+    gl_Position = paramOrthoMatrix * vec4(worldPosition.xy, inShipPointPlaneId, 1.0);
 }
 
 ###FRAGMENT
