@@ -177,8 +177,8 @@ RenderContext::RenderContext(
     mGenericTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata>(genericTextureAtlas.Metadata);
 
     // Set hardcoded parameters
-    mShaderManager->ActivateProgram<ProgramType::GenericTextures>();
-    mShaderManager->SetTextureParameters<ProgramType::GenericTextures>();
+    mShaderManager->ActivateProgram<ProgramType::ShipGenericTextures>();
+    mShaderManager->SetTextureParameters<ProgramType::ShipGenericTextures>();
 
 
     //

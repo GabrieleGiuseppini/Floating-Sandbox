@@ -580,7 +580,7 @@ Render:
 					+ Send to GPU right away, in buffer mapped to shared vertex attribute
 				+ Test
 				+ Commit
-			+ Step 4
+			+ Step 4:
 				+ Enable Z test and writing to Z buffer:
 					+ At RenderContext before doing ships, and disable afterwards
 						+ Need World to invoke RenderShipsStart()/End() before going through individual ships
@@ -606,11 +606,11 @@ Render:
 				+ RenderContext ans ShipRenderContext: change OnXYZUpdated/UpdateXYX pattern: no args
 				+ Test
 				+ Commit
-			- Step 6
-				- ShipRenderContext:
-					= See if can get rid of optionality of ship's texture
-					- Make dedicated shaders for each layer:
-						- Current => New:
+			+ Step 6:
+				+ ShipRenderContext:
+					+ See if can get rid of optionality of ship's texture
+					+ Make dedicated shaders for each layer:
+						+ Current => New:
 							- Ropes: ShipRopes => ShipRopes
 							- Triangles:
 								- ShipTrianglesTexture: if !debug && RenderMode==Texture
@@ -621,13 +621,17 @@ Render:
 								- ShipTrianglesColor: otherwise
 								=> ShipTrianglesTexture, ShipTrianglesColor
 							- StressedSprings: ShipStressedSprings => ShipStressedSprings
-							- Points: ShipTrianglesColor => ShipPoints (copy)
+							- Points: ShipTrianglesColor => ShipPointsColor (copy)
 							- GenTex: GenericTextures => ShipGenericTextures (rename)
 							- Vectors: Matte => ShipMatte (copy)
-					- Complete: do per-layer ortho matrices
-					- Complete: Do actual ship ortho matrix calculation at ViewModel::CalculateShipOrthoMatrix
-						- See Moleskine for calc'ns
-					- Shaders take new vertex attribute and calc Z via OrthoMatrix
+					+ Complete: assign per-layer ortho matrices
+					+ Test & commit
+			- Step 7:
+				- Do actual ship ortho matrix calculation at ViewModel::CalculateShipOrthoMatrix
+					- See Moleskine for calc'ns
+				- All ship shaders take new vertex attribute and calc Z via OrthoMatrix
+				- Test & commit
+			- Step 8:
 				- ShipRenderContext::UploadXYZElement() do not take anymore connected component ID
 					- Remove ShipRenderContext connected component tracking; store everything in buffers or upload directly
 					- Ship: nuke mConnectedComponentSizes

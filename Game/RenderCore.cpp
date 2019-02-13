@@ -19,8 +19,6 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::Clouds;
     else if (lstr == "cross_of_light")
         return ProgramType::CrossOfLight;
-    else if (lstr == "generic_textures")
-        return ProgramType::GenericTextures;
     else if (lstr == "land")
         return ProgramType::Land;
     else if (lstr == "matte")
@@ -29,6 +27,10 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::MatteNDC;
     else if (lstr == "matte_water")
         return ProgramType::MatteWater;
+    else if (lstr == "ship_generic_textures")
+        return ProgramType::ShipGenericTextures;
+    else if (lstr == "ship_points_color")
+        return ProgramType::ShipPointsColor;
     else if (lstr == "ship_ropes")
         return ProgramType::ShipRopes;
     else if (lstr == "ship_stressed_springs")
@@ -37,6 +39,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::ShipTrianglesColor;
     else if (lstr == "ship_triangles_texture")
         return ProgramType::ShipTrianglesTexture;
+    else if (lstr == "ship_vectors")
+        return ProgramType::ShipVectors;
     else if (lstr == "stars")
         return ProgramType::Stars;
     else if (lstr == "text_ndc")
@@ -55,8 +59,6 @@ std::string ProgramTypeToStr(ProgramType program)
         return "Clouds";
     case ProgramType::CrossOfLight:
         return "CrossOfLight";
-    case ProgramType::GenericTextures:
-        return "GenericTextures";
     case ProgramType::Land:
         return "Land";
     case ProgramType::Matte:
@@ -65,6 +67,10 @@ std::string ProgramTypeToStr(ProgramType program)
         return "MatteNDC";
     case ProgramType::MatteWater:
         return "MatteWater";
+    case ProgramType::ShipGenericTextures:
+        return "ShipGenericTextures";
+    case ProgramType::ShipPointsColor:
+        return "ShipPointsColor";
     case ProgramType::ShipRopes:
         return "ShipRopes";
     case ProgramType::ShipStressedSprings:
@@ -73,6 +79,8 @@ std::string ProgramTypeToStr(ProgramType program)
         return "ShipTrianglesColor";
     case ProgramType::ShipTrianglesTexture:
         return "ShipTrianglesTexture";
+    case ProgramType::ShipVectors:
+        return "ShipVectors";
     case ProgramType::Stars:
         return "Stars";
     case ProgramType::TextNDC:
