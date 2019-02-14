@@ -63,9 +63,17 @@ ShipRenderContext::ShipRenderContext(
     , mGenericTextureMaxVertexBufferSize(0)
     , mGenericTextureAllocatedVertexBufferSize(0)
     , mGenericTextureRenderPolygonVertexVBO()
-    // Connected components
-    , mConnectedComponentsMaxSizes()
-    , mConnectedComponents()
+    // Elements
+    , mPointElementBuffer()
+    , mPointElementVBO()
+    , mSpringElementBuffer()
+    , mSpringElementVBO()
+    , mRopeElementBuffer()
+    , mRopeElementVBO()
+    , mTriangleElementBuffer()
+    , mTriangleElementVBO()
+    , mStressedSpringElementBuffer()
+    , mStressedSpringElementVBO()
     // Ephemeral points
     , mEphemeralPoints()
     , mEphemeralPointVBO()
@@ -213,6 +221,30 @@ ShipRenderContext::ShipRenderContext(
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTextureTextureCoordinates), 2, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)((2 + 2) * sizeof(float)));
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTexturePackedData2), 4, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)((2 + 2 + 2) * sizeof(float)));
     CheckOpenGLError();
+
+    //
+    // Initialize elements
+    //
+
+    GLuint elementVBOs[5];
+    glGenBuffers(5, elementVBOs);
+
+
+    mPointElementBuffer.reserve(pointCount);
+    mPointElementVBO = elementVBOs[0];
+
+    mSpringElementBuffer.reserve(pointCount * GameParameters::MaxSpringsPerPoint);
+    mSpringElementVBO = elementVBOs[1];
+
+    mRopeElementBuffer.reserve(pointCount); // Arbitrary
+    mRopeElementVBO = elementVBOs[2];
+
+    mTriangleElementBuffer.reserve(pointCount * GameParameters::MaxTrianglesPerPoint);
+    mTriangleElementVBO = elementVBOs[3];
+
+    mStressedSpringElementBuffer.reserve(1000); // Arbitrary
+    mStressedSpringElementVBO = elementVBOs[4];
+
 
 
     //
@@ -469,17 +501,15 @@ void ShipRenderContext::OnWaterLevelOfDetailUpdated()
 
 //////////////////////////////////////////////////////////////////////////////////
 
-void ShipRenderContext::RenderStart(std::vector<std::size_t> const & connectedComponentsMaxSizes)
+void ShipRenderContext::RenderStart()
 {
-    // Store connected component max sizes
-    mConnectedComponentsMaxSizes = connectedComponentsMaxSizes;
-
     //
     // Reset generic textures
     //
 
+    // TODO: this will go and be replaced by vector.clear()
     mGenericTextureConnectedComponents.clear();
-    mGenericTextureConnectedComponents.resize(connectedComponentsMaxSizes.size());
+    mGenericTextureConnectedComponents.resize(mMaxMaxPlaneId + 1000); // Arbitrary, just for now, to catch growth
     mGenericTextureMaxVertexBufferSize = 0;
 }
 
@@ -553,125 +583,12 @@ void ShipRenderContext::UploadPointPlaneIds(
 
 void ShipRenderContext::UploadElementsStart()
 {
-    GLuint elementVBO;
-
-    if (mConnectedComponentsMaxSizes.size() != mConnectedComponents.size())
-    {
-        // A change in the number of connected components, nuke everything
-        mConnectedComponents.clear();
-        mConnectedComponents.resize(mConnectedComponentsMaxSizes.size());
-    }
-
-    for (size_t c = 0; c < mConnectedComponentsMaxSizes.size(); ++c)
-    {
-        //
-        // Prepare point elements
-        //
-
-        // Max # of points = number of points
-        size_t maxConnectedComponentPoints = mConnectedComponentsMaxSizes[c];
-        if (mConnectedComponents[c].pointElementMaxCount != maxConnectedComponentPoints)
-        {
-            // A change in the max size of this connected component
-            mConnectedComponents[c].pointElementBuffer.reset();
-            mConnectedComponents[c].pointElementBuffer.reset(new PointElement[maxConnectedComponentPoints]);
-            mConnectedComponents[c].pointElementMaxCount = maxConnectedComponentPoints;
-        }
-
-        mConnectedComponents[c].pointElementCount = 0;
-
-        if (!mConnectedComponents[c].pointElementVBO)
-        {
-            glGenBuffers(1, &elementVBO);
-            mConnectedComponents[c].pointElementVBO = elementVBO;
-        }
-
-        //
-        // Prepare spring elements
-        //
-
-        size_t maxConnectedComponentSprings = mConnectedComponentsMaxSizes[c] * GameParameters::MaxSpringsPerPoint;
-        if (mConnectedComponents[c].springElementMaxCount != maxConnectedComponentSprings)
-        {
-            // A change in the max size of this connected component
-            mConnectedComponents[c].springElementBuffer.reset();
-            mConnectedComponents[c].springElementBuffer.reset(new SpringElement[maxConnectedComponentSprings]);
-            mConnectedComponents[c].springElementMaxCount = maxConnectedComponentSprings;
-        }
-
-        mConnectedComponents[c].springElementCount = 0;
-
-        if (!mConnectedComponents[c].springElementVBO)
-        {
-            glGenBuffers(1, &elementVBO);
-            mConnectedComponents[c].springElementVBO = elementVBO;
-        }
-
-        //
-        // Prepare rope elements
-        //
-
-        // Max # of ropes = max number of springs
-        size_t maxConnectedComponentRopes = maxConnectedComponentSprings;
-        if (mConnectedComponents[c].ropeElementMaxCount != maxConnectedComponentRopes)
-        {
-            // A change in the max size of this connected component
-            mConnectedComponents[c].ropeElementBuffer.reset();
-            mConnectedComponents[c].ropeElementBuffer.reset(new RopeElement[maxConnectedComponentRopes]);
-            mConnectedComponents[c].ropeElementMaxCount = maxConnectedComponentRopes;
-        }
-
-        mConnectedComponents[c].ropeElementCount = 0;
-
-        if (!mConnectedComponents[c].ropeElementVBO)
-        {
-            glGenBuffers(1, &elementVBO);
-            mConnectedComponents[c].ropeElementVBO = elementVBO;
-        }
-
-        //
-        // Prepare triangle elements
-        //
-
-        size_t maxConnectedComponentTriangles = mConnectedComponentsMaxSizes[c] * GameParameters::MaxTrianglesPerPoint;
-        if (mConnectedComponents[c].triangleElementMaxCount != maxConnectedComponentTriangles)
-        {
-            // A change in the max size of this connected component
-            mConnectedComponents[c].triangleElementBuffer.reset();
-            mConnectedComponents[c].triangleElementBuffer.reset(new TriangleElement[maxConnectedComponentTriangles]);
-            mConnectedComponents[c].triangleElementMaxCount = maxConnectedComponentTriangles;
-        }
-
-        mConnectedComponents[c].triangleElementCount = 0;
-
-        if (!mConnectedComponents[c].triangleElementVBO)
-        {
-            glGenBuffers(1, &elementVBO);
-            mConnectedComponents[c].triangleElementVBO = elementVBO;
-        }
-
-        //
-        // Prepare stressed spring elements
-        //
-
-        // Max # of stressed springs = max number of springs
-        size_t maxConnectedComponentStressedSprings = maxConnectedComponentSprings;
-        if (mConnectedComponents[c].stressedSpringElementMaxCount != maxConnectedComponentStressedSprings)
-        {
-            // A change in the max size of this connected component
-            mConnectedComponents[c].stressedSpringElementBuffer.reset();
-            mConnectedComponents[c].stressedSpringElementBuffer.reset(new StressedSpringElement[maxConnectedComponentStressedSprings]);
-            mConnectedComponents[c].stressedSpringElementMaxCount = maxConnectedComponentStressedSprings;
-        }
-
-        mConnectedComponents[c].stressedSpringElementCount = 0;
-
-        if (!mConnectedComponents[c].stressedSpringElementVBO)
-        {
-            glGenBuffers(1, &elementVBO);
-            mConnectedComponents[c].stressedSpringElementVBO = elementVBO;
-        }
-    }
+    // Empty all buffers, as they will be re-populated soon
+    mPointElementBuffer.clear();
+    mSpringElementBuffer.clear();
+    mRopeElementBuffer.clear();
+    mTriangleElementBuffer.clear();
+    mStressedSpringElementBuffer.clear();
 }
 
 void ShipRenderContext::UploadElementsEnd()
@@ -680,37 +597,31 @@ void ShipRenderContext::UploadElementsEnd()
     // Upload all elements, except for stressed springs
     //
 
-    for (size_t c = 0; c < mConnectedComponents.size(); ++c)
-    {
-        // Points
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mConnectedComponents[c].pointElementVBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, mConnectedComponents[c].pointElementCount * sizeof(PointElement), mConnectedComponents[c].pointElementBuffer.get(), GL_STATIC_DRAW);
-        CheckOpenGLError();
+    // Points
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mPointElementVBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mPointElementBuffer.size() * sizeof(PointElement), mPointElementBuffer.data(), GL_STATIC_DRAW);
+    CheckOpenGLError();
 
-        // Springs
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mConnectedComponents[c].springElementVBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, mConnectedComponents[c].springElementCount * sizeof(SpringElement), mConnectedComponents[c].springElementBuffer.get(), GL_STATIC_DRAW);
-        CheckOpenGLError();
+    // Springs
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mSpringElementVBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mSpringElementBuffer.size() * sizeof(SpringElement), mSpringElementBuffer.data(), GL_STATIC_DRAW);
+    CheckOpenGLError();
 
-        // Ropes
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mConnectedComponents[c].ropeElementVBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, mConnectedComponents[c].ropeElementCount * sizeof(RopeElement), mConnectedComponents[c].ropeElementBuffer.get(), GL_STATIC_DRAW);
-        CheckOpenGLError();
+    // Ropes
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mRopeElementVBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mRopeElementBuffer.size() * sizeof(RopeElement), mRopeElementBuffer.data(), GL_STATIC_DRAW);
+    CheckOpenGLError();
 
-        // Triangles
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mConnectedComponents[c].triangleElementVBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, mConnectedComponents[c].triangleElementCount * sizeof(TriangleElement), mConnectedComponents[c].triangleElementBuffer.get(), GL_STATIC_DRAW);
-        CheckOpenGLError();
-    }
+    // Triangles
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mTriangleElementVBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mTriangleElementBuffer.size() * sizeof(TriangleElement), mTriangleElementBuffer.data(), GL_STATIC_DRAW);
+    CheckOpenGLError();
 }
 
 void ShipRenderContext::UploadElementStressedSpringsStart()
 {
-    for (size_t c = 0; c < mConnectedComponents.size(); ++c)
-    {
-        // Zero-out count of stressed springs
-        mConnectedComponents[c].stressedSpringElementCount = 0;
-    }
+    // Empty buffer
+    mStressedSpringElementBuffer.clear();
 }
 
 void ShipRenderContext::UploadElementStressedSpringsEnd()
@@ -719,12 +630,9 @@ void ShipRenderContext::UploadElementStressedSpringsEnd()
     // Upload stressed spring elements
     //
 
-    for (size_t c = 0; c < mConnectedComponents.size(); ++c)
-    {
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mConnectedComponents[c].stressedSpringElementVBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, mConnectedComponents[c].stressedSpringElementCount * sizeof(StressedSpringElement), mConnectedComponents[c].stressedSpringElementBuffer.get(), GL_DYNAMIC_DRAW);
-        CheckOpenGLError();
-    }
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mStressedSpringElementVBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mStressedSpringElementBuffer.size() * sizeof(StressedSpringElement), mStressedSpringElementBuffer.data(), GL_DYNAMIC_DRAW);
+    CheckOpenGLError();
 }
 
 void ShipRenderContext::UploadEphemeralPointsStart()
@@ -810,115 +718,110 @@ void ShipRenderContext::RenderEnd()
     glDisableVertexAttribArray(0);
 
 
+    ///////////////////////////////////////////////
     //
-    // Process all connected components, from first to last, and draw all elements
+    // Draw all layers
+    //
+    ///////////////////////////////////////////////
+
+    // TODO: this will go with orphaned points rearc, will become a single Render invoked right after triangles
+    //
+    // Draw points
     //
 
-    // TODOTEST: using planeID direction
-    //for (size_t c = 0; c < mConnectedComponents.size(); ++c)
-    for (int c = mConnectedComponents.size() - 1; c >= 0; --c)
+    if (mDebugShipRenderMode == DebugShipRenderMode::Points)
     {
-        //
-        // Draw points
-        //
-
-        if (mDebugShipRenderMode == DebugShipRenderMode::Points)
-        {
-            RenderPointElements(mConnectedComponents[c]);
-        }
-
-
-        //
-        // Draw springs
-        //
-        // We draw springs when:
-        // - DebugRenderMode is springs|edgeSprings ("X-Ray Mode"), in which case we use colors - so to show
-        //   structural springs -, or
-        // - RenderMode is structure (so to draw 1D chains), in which case we use colors, or
-        // - RenderMode is texture (so to draw 1D chains), in which case we use texture iff it is present
-        //
-
-        if (mDebugShipRenderMode == DebugShipRenderMode::Springs
-            || mDebugShipRenderMode == DebugShipRenderMode::EdgeSprings
-            || (mDebugShipRenderMode == DebugShipRenderMode::None
-                && (mShipRenderMode == ShipRenderMode::Structure || mShipRenderMode == ShipRenderMode::Texture)))
-        {
-            RenderSpringElements(
-                mConnectedComponents[c],
-                mDebugShipRenderMode == DebugShipRenderMode::None && mShipRenderMode == ShipRenderMode::Texture);
-        }
-
-
-        //
-        // Draw ropes now if RenderMode is:
-        // - Springs
-        // - Texture (so rope endpoints are hidden behind texture, looks better)
-        //
-
-        if (mDebugShipRenderMode == DebugShipRenderMode::Springs
-            || mDebugShipRenderMode == DebugShipRenderMode::EdgeSprings
-            || (mDebugShipRenderMode == DebugShipRenderMode::None && mShipRenderMode == ShipRenderMode::Texture))
-        {
-            RenderRopeElements(mConnectedComponents[c]);
-        }
-
-
-        //
-        // Draw triangles
-        //
-
-        if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe
-            || (mDebugShipRenderMode == DebugShipRenderMode::None
-                && (mShipRenderMode == ShipRenderMode::Structure || mShipRenderMode == ShipRenderMode::Texture)))
-        {
-            RenderTriangleElements(
-                mConnectedComponents[c],
-                mShipRenderMode == ShipRenderMode::Texture);
-        }
-
-
-
-        //
-        // Draw ropes now if RenderMode is Structure (so rope endpoints on the structure are visible)
-        //
-
-        if (mDebugShipRenderMode == DebugShipRenderMode::None
-            && mShipRenderMode == ShipRenderMode::Structure)
-        {
-            RenderRopeElements(mConnectedComponents[c]);
-        }
-
-
-        //
-        // Draw stressed springs
-        //
-
-        if (mDebugShipRenderMode == DebugShipRenderMode::None
-            && mShowStressedSprings)
-        {
-            RenderStressedSpringElements(mConnectedComponents[c]);
-        }
-
-
-        //
-        // Draw Generic textures
-        //
-
-        if (c < mGenericTextureConnectedComponents.size())
-        {
-            RenderGenericTextures(mGenericTextureConnectedComponents[c]);
-        }
+        RenderPointElements();
     }
 
-    // Update stats
-    mRenderStatistics.LastRenderedShipConnectedComponents += mConnectedComponents.size();
+
+    //
+    // Draw ropes now if RenderMode is anything but Structure
+    // (with Structure we want endpoints on the structure to be visible)
+    //
+
+    if (mDebugShipRenderMode != DebugShipRenderMode::None
+        || mShipRenderMode != ShipRenderMode::Structure)
+    {
+        RenderRopeElements();
+    }
 
 
     //
-    // Render ephemeral points
+    // Draw springs
+    //
+    // We draw springs when:
+    // - DebugRenderMode is springs|edgeSprings, in which case we use colors - so to show
+    //   structural springs -, or
+    // - RenderMode is structure (so to draw 1D chains), in which case we use colors, or
+    // - RenderMode is texture (so to draw 1D chains), in which case we use texture iff it is present
+    //
+
+    if (mDebugShipRenderMode == DebugShipRenderMode::Springs
+        || mDebugShipRenderMode == DebugShipRenderMode::EdgeSprings
+        || (mDebugShipRenderMode == DebugShipRenderMode::None
+            && (mShipRenderMode == ShipRenderMode::Structure || mShipRenderMode == ShipRenderMode::Texture)))
+    {
+        RenderSpringElements(mDebugShipRenderMode == DebugShipRenderMode::None && mShipRenderMode == ShipRenderMode::Texture);
+    }
+
+
+    //
+    // Draw triangles
+    //
+
+    if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe
+        || (mDebugShipRenderMode == DebugShipRenderMode::None
+            && (mShipRenderMode == ShipRenderMode::Structure || mShipRenderMode == ShipRenderMode::Texture)))
+    {
+        RenderTriangleElements(mShipRenderMode == ShipRenderMode::Texture);
+    }
+
+
+    // TODO: this is broken as the ropes layer is still behind the structure. See if we need to draw ropes on same layer as
+    // structure.
+    //
+    // Draw ropes now if RenderMode is Structure (so rope endpoints on the structure are visible)
+    //
+
+    if (mDebugShipRenderMode == DebugShipRenderMode::None
+        && mShipRenderMode == ShipRenderMode::Structure)
+    {
+        RenderRopeElements();
+    }
+
+
+
+    //
+    // Draw stressed springs
+    //
+
+    if (mDebugShipRenderMode == DebugShipRenderMode::None
+        && mShowStressedSprings)
+    {
+        RenderStressedSpringElements();
+    }
+
+
+
+    //
+    // Draw ephemeral points
     //
 
     RenderEphemeralPoints();
+
+
+
+    //
+    // Draw Generic textures
+    //
+
+    // TODO: the loop will go
+    for (size_t c = 0; c < mGenericTextureConnectedComponents.size(); ++c)
+    {
+        RenderGenericTextures(mGenericTextureConnectedComponents[c]);
+    }
+
 
 
     //
@@ -929,11 +832,19 @@ void ShipRenderContext::RenderEnd()
     {
         RenderVectors();
     }
+
+
+
+    //
+    // Update stats
+    //
+
+    mRenderStatistics.LastRenderedShipPlanes += mMaxMaxPlaneId;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-void ShipRenderContext::RenderPointElements(ConnectedComponentData const & connectedComponent)
+void ShipRenderContext::RenderPointElements()
 {
     // Use color program
     mShaderManager.ActivateProgram<ProgramType::ShipPointsColor>();
@@ -942,16 +853,14 @@ void ShipRenderContext::RenderPointElements(ConnectedComponentData const & conne
     glPointSize(0.2f * 2.0f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
 
     // Bind VBO
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *connectedComponent.pointElementVBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mPointElementVBO);
     CheckOpenGLError();
 
     // Draw
-    glDrawElements(GL_POINTS, static_cast<GLsizei>(1 * connectedComponent.pointElementCount), GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_POINTS, static_cast<GLsizei>(1 * mPointElementBuffer.size()), GL_UNSIGNED_INT, 0);
 }
 
-void ShipRenderContext::RenderSpringElements(
-    ConnectedComponentData const & connectedComponent,
-    bool withTexture)
+void ShipRenderContext::RenderSpringElements(bool withTexture)
 {
     if (withTexture)
     {
@@ -974,38 +883,33 @@ void ShipRenderContext::RenderSpringElements(
     glLineWidth(0.1f * 2.0f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
 
     // Bind VBO
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *connectedComponent.springElementVBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mSpringElementVBO);
     CheckOpenGLError();
 
     // Draw
-    glDrawElements(GL_LINES, static_cast<GLsizei>(2 * connectedComponent.springElementCount), GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_LINES, static_cast<GLsizei>(2 * mSpringElementBuffer.size()), GL_UNSIGNED_INT, 0);
 
     // Update stats
-    mRenderStatistics.LastRenderedShipSprings += connectedComponent.springElementCount;
+    mRenderStatistics.LastRenderedShipSprings += mSpringElementBuffer.size();
 }
 
-void ShipRenderContext::RenderRopeElements(ConnectedComponentData const & connectedComponent)
+void ShipRenderContext::RenderRopeElements()
 {
-    if (connectedComponent.ropeElementCount > 0)
-    {
-        // Use rope program
-        mShaderManager.ActivateProgram<ProgramType::ShipRopes>();
+    // Use rope program
+    mShaderManager.ActivateProgram<ProgramType::ShipRopes>();
 
-        // Set line size
-        glLineWidth(0.1f * 2.0f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
+    // Set line size
+    glLineWidth(0.1f * 2.0f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
 
-        // Bind VBO
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *connectedComponent.ropeElementVBO);
-        CheckOpenGLError();
+    // Bind VBO
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mRopeElementVBO);
+    CheckOpenGLError();
 
-        // Draw
-        glDrawElements(GL_LINES, static_cast<GLsizei>(2 * connectedComponent.ropeElementCount), GL_UNSIGNED_INT, 0);
-    }
+    // Draw
+    glDrawElements(GL_LINES, static_cast<GLsizei>(2 * mRopeElementBuffer.size()), GL_UNSIGNED_INT, 0);
 }
 
-void ShipRenderContext::RenderTriangleElements(
-    ConnectedComponentData const & connectedComponent,
-    bool withTexture)
+void ShipRenderContext::RenderTriangleElements(bool withTexture)
 {
     if (withTexture)
     {
@@ -1027,19 +931,19 @@ void ShipRenderContext::RenderTriangleElements(
         glLineWidth(0.1f);
 
     // Bind VBO
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *connectedComponent.triangleElementVBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mTriangleElementVBO);
     CheckOpenGLError();
 
     // Draw
-    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(3 * connectedComponent.triangleElementCount), GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(3 * mTriangleElementBuffer.size()), GL_UNSIGNED_INT, 0);
 
     // Update stats
-    mRenderStatistics.LastRenderedShipTriangles += connectedComponent.triangleElementCount;
+    mRenderStatistics.LastRenderedShipTriangles += mTriangleElementBuffer.size();
 }
 
-void ShipRenderContext::RenderStressedSpringElements(ConnectedComponentData const & connectedComponent)
+void ShipRenderContext::RenderStressedSpringElements()
 {
-    if (connectedComponent.stressedSpringElementCount > 0)
+    if (!mStressedSpringElementBuffer.empty())
     {
         // Use program
         mShaderManager.ActivateProgram<ProgramType::ShipStressedSprings>();
@@ -1053,11 +957,11 @@ void ShipRenderContext::RenderStressedSpringElements(ConnectedComponentData cons
         CheckOpenGLError();
 
         // Bind VBO
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *connectedComponent.stressedSpringElementVBO);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mStressedSpringElementVBO);
         CheckOpenGLError();
 
         // Draw
-        glDrawElements(GL_LINES, static_cast<GLsizei>(2 * connectedComponent.stressedSpringElementCount), GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_LINES, static_cast<GLsizei>(2 * mStressedSpringElementBuffer.size()), GL_UNSIGNED_INT, 0);
     }
 }
 
@@ -1098,7 +1002,7 @@ void ShipRenderContext::RenderGenericTextures(GenericTextureConnectedComponentDa
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(connectedComponent.VertexBuffer.size()));
 
         // Update stats
-        mRenderStatistics.LastRenderedGenericTextures += connectedComponent.VertexBuffer.size() / 6;
+        mRenderStatistics.LastRenderedShipGenericTextures += connectedComponent.VertexBuffer.size() / 6;
     }
 }
 
@@ -1120,7 +1024,7 @@ void ShipRenderContext::RenderEphemeralPoints()
         glDrawElements(GL_POINTS, static_cast<GLsizei>(mEphemeralPoints.size()), GL_UNSIGNED_INT, 0);
 
         // Update stats
-        mRenderStatistics.LastRenderedEphemeralPoints += mEphemeralPoints.size();
+        mRenderStatistics.LastRenderedShipEphemeralPoints += mEphemeralPoints.size();
     }
 }
 

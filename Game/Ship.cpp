@@ -51,7 +51,6 @@ Ship::Ship(
     , mSprings(std::move(springs))
     , mTriangles(std::move(triangles))
     , mElectricalElements(std::move(electricalElements))
-    , mConnectedComponentSizes()
     , mMaxMaxPlaneId(0)
     , mAreElementsDirty(true)
     , mLastDebugShipRenderMode()
@@ -535,9 +534,7 @@ void Ship::Render(
     // Initialize render
     //
 
-    renderContext.RenderShipStart(
-        mId,
-        mConnectedComponentSizes);
+    renderContext.RenderShipStart(mId);
 
 
     //
@@ -558,75 +555,65 @@ void Ship::Render(
 
 
     //
-    // Upload elements
+    // Upload elements (point (elements), springs, ropes, triangles), iff dirty
+    // or the ship debug render mode has changed
     //
 
-    if (!mConnectedComponentSizes.empty())
+    if (mAreElementsDirty
+        || !mLastDebugShipRenderMode
+        || *mLastDebugShipRenderMode != renderContext.GetDebugShipRenderMode())
     {
-        //
-        // Upload elements (point (elements), springs, ropes, triangles), iff dirty
-        // or the ship debug render mode has changed
-        //
-
-        if (mAreElementsDirty
-            || !mLastDebugShipRenderMode
-            || *mLastDebugShipRenderMode != renderContext.GetDebugShipRenderMode())
-        {
-            renderContext.UploadShipElementsStart(mId);
-
-            //
-            // Upload all the point elements
-            //
-
-            mPoints.UploadElements(
-                mId,
-                renderContext);
-
-            //
-            // Upload all the spring elements (including ropes)
-            //
-
-            mSprings.UploadElements(
-                mId,
-                renderContext,
-                mPoints);
-
-            //
-            // Upload all the triangle elements
-            //
-
-            mTriangles.UploadElements(
-                mId,
-                renderContext,
-                mPoints);
-
-            renderContext.UploadShipElementsEnd(mId);
-        }
-
+        renderContext.UploadShipElementsStart(mId);
 
         //
-        // Upload stressed springs
-        //
-        // We do this regardless of whether or not elements are dirty,
-        // as the set of stressed springs is bound to change from frame to frame
+        // Upload all the point elements
         //
 
-        renderContext.UploadShipElementStressedSpringsStart(mId);
+        mPoints.UploadElements(
+            mId,
+            renderContext);
 
-        if (renderContext.GetShowStressedSprings())
-        {
-            mSprings.UploadStressedSpringElements(
-                mId,
-                renderContext,
-                mPoints);
-        }
+        //
+        // Upload all the spring elements (including ropes)
+        //
 
-        renderContext.UploadShipElementStressedSpringsEnd(mId);
+        mSprings.UploadElements(
+            mId,
+            renderContext,
+            mPoints);
 
-        // Reset state
-        mAreElementsDirty = false;
-        mLastDebugShipRenderMode = renderContext.GetDebugShipRenderMode();
+        //
+        // Upload all the triangle elements
+        //
+
+        mTriangles.UploadElements(
+            mId,
+            renderContext,
+            mPoints);
+
+        renderContext.UploadShipElementsEnd(mId);
     }
+
+
+    //
+    // Upload stressed springs
+    //
+    // We do this regardless of whether or not elements are dirty,
+    // as the set of stressed springs is bound to change from frame to frame
+    //
+
+    renderContext.UploadShipElementStressedSpringsStart(mId);
+
+    if (renderContext.GetShowStressedSprings())
+    {
+        mSprings.UploadStressedSpringElements(
+            mId,
+            renderContext,
+            mPoints);
+    }
+
+    renderContext.UploadShipElementStressedSpringsEnd(mId);
+
 
 
     //
@@ -666,6 +653,14 @@ void Ship::Render(
     //
 
     renderContext.RenderShipEnd(mId);
+
+
+    //
+    // Reset render state
+    //
+
+    mAreElementsDirty = false;
+    mLastDebugShipRenderMode = renderContext.GetDebugShipRenderMode();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -1590,9 +1585,6 @@ void Ship::RunConnectivityVisit(VisitSequenceNumber currentVisitSequenceNumber)
     // have a Connected Component ID (which will just happen to have the same value as the Plane ID).
     //
 
-    // TODO: this may go soon
-    mConnectedComponentSizes.clear();
-
     PlaneId currentPlaneId = 0; // Also serves as Connected Component ID
 
     // The set of (already) marked points, from which we still
@@ -1615,22 +1607,21 @@ void Ship::RunConnectivityVisit(VisitSequenceNumber currentVisitSequenceNumber)
             // Flood from this point
             //
 
+            bool isPointString = mPoints.GetConnectedTriangles(pointIndex).size() == 0;
+
             // This node has not been visited, hence it's the beginning of a new plane and connected component
             ++currentPlaneId;
 
-            // TODO: this may go away
-            size_t pointsInCurrentConnectedComponent = 0;
-
             // Visit this point first
             mPoints.SetPlaneId(pointIndex, currentPlaneId);
-            if (mPoints.GetConnectedTriangles(pointIndex).size() > 0) // Do not assign connected component ID to "strings"
+            if (!isPointString) // Do not assign connected component ID to "strings"
                 mPoints.SetConnectedComponentId(pointIndex, static_cast<ConnectedComponentId>(currentPlaneId));
             else
                 mPoints.SetConnectedComponentId(pointIndex, NoneConnectedComponentId);
             mPoints.SetCurrentConnectivityVisitSequenceNumber(pointIndex, currentVisitSequenceNumber);
 
-            // TODO: this may go away
-            ++pointsInCurrentConnectedComponent;
+            // Remember whether this flood has seen a non-string point
+            bool hasFloodedNonStringPoint = !isPointString;
 
             // Add point to queue
             assert(pointsToPropagateFrom.empty());
@@ -1647,7 +1638,7 @@ void Ship::RunConnectivityVisit(VisitSequenceNumber currentVisitSequenceNumber)
                 assert(currentVisitSequenceNumber == mPoints.GetCurrentConnectivityVisitSequenceNumber(currentPointIndex));
 
                 // Remember whether this point is a string point
-                bool const isStartStringPoint = mPoints.GetConnectedTriangles(currentPointIndex).size() == 0;
+                bool const isStartPointString = mPoints.GetConnectedTriangles(currentPointIndex).size() == 0;
 
                 // Visit all its non-visited connected points
                 for (auto const & cs : mPoints.GetConnectedSprings(currentPointIndex))
@@ -1656,27 +1647,35 @@ void Ship::RunConnectivityVisit(VisitSequenceNumber currentVisitSequenceNumber)
 
                     if (currentVisitSequenceNumber != mPoints.GetCurrentConnectivityVisitSequenceNumber(cs.OtherEndpointIndex))
                     {
-                        // Visit this point only if we're not transitioning from a string point to a non-string point
-                        // (but string-to-string is fine)
                         //
-                        // In case we don't visit this point, we'll visit it later with a new flood!
+                        // We want strings to belong to the (arbitrarily) first "body" connected to the string.
+                        // This implies that we visit a connected point only if by doing so we're not advancing
+                        // from a string point to a non-string point (string-to-string is always fine).
+                        // In case the flood itself started from a string, we allow once an advancement from a
+                        // string point to a non-string point (which would be the first and only "body" connected
+                        // to the string).
+                        //
+                        // When we don't visit a point, we'll visit it later with a new flood!
+                        //
 
-                        bool const isEndStringPoint = mPoints.GetConnectedTriangles(cs.OtherEndpointIndex).size() == 0;
-                        if (!isStartStringPoint || isEndStringPoint)
+                        bool const isEndPointString = mPoints.GetConnectedTriangles(cs.OtherEndpointIndex).size() == 0;
+                        if (!hasFloodedNonStringPoint   // Haven't advanced to a body yet
+                            || !isStartPointString      // We are advancing from a body
+                            || isEndPointString)        // We are advancing to a string
                         {
                             //
                             // Visit point
                             //
 
                             mPoints.SetPlaneId(cs.OtherEndpointIndex, currentPlaneId);
-                            if (!isEndStringPoint) // Do not assign connected component ID to "strings"
+                            if (!isEndPointString) // Do not assign connected component ID to "strings"
                                 mPoints.SetConnectedComponentId(cs.OtherEndpointIndex, static_cast<ConnectedComponentId>(currentPlaneId));
                             else
                                 mPoints.SetConnectedComponentId(cs.OtherEndpointIndex, NoneConnectedComponentId);
                             mPoints.SetCurrentConnectivityVisitSequenceNumber(cs.OtherEndpointIndex, currentVisitSequenceNumber);
 
-                            // TODO: this will go away
-                            ++pointsInCurrentConnectedComponent;
+                            // Remember whether we have flooded a non-string point
+                            hasFloodedNonStringPoint |= !isEndPointString;
 
                             // Add point to queue
                             pointsToPropagateFrom.push(cs.OtherEndpointIndex);
@@ -1684,10 +1683,6 @@ void Ship::RunConnectivityVisit(VisitSequenceNumber currentVisitSequenceNumber)
                     }
                 }
             }
-
-            // TODO: this may go away
-            // Store number of connected components
-            mConnectedComponentSizes.push_back(pointsInCurrentConnectedComponent);
         }
     }
 

@@ -114,7 +114,7 @@ public:
 
 public:
 
-    void RenderStart(std::vector<std::size_t> const & connectedComponentsMaxSizes);
+    void RenderStart();
 
     //
     // Points
@@ -145,76 +145,47 @@ public:
 
     void UploadElementsStart();
 
-    inline void UploadElementPoint(
-        int pointIndex,
-        ConnectedComponentId connectedComponentId)
+    inline void UploadElementPoint(int pointIndex)
     {
-        size_t const connectedComponentIndex = connectedComponentId - 1;
+        mPointElementBuffer.emplace_back();
+        PointElement & pointElement = mPointElementBuffer.back();
 
-        assert(connectedComponentIndex < mConnectedComponents.size());
-        assert(mConnectedComponents[connectedComponentIndex].pointElementCount + 1u <= mConnectedComponents[connectedComponentIndex].pointElementMaxCount);
-
-        PointElement * const pointElement = &(mConnectedComponents[connectedComponentIndex].pointElementBuffer[mConnectedComponents[connectedComponentIndex].pointElementCount]);
-
-        pointElement->pointIndex = pointIndex;
-
-        ++(mConnectedComponents[connectedComponentIndex].pointElementCount);
+        pointElement.pointIndex = pointIndex;
     }
 
     inline void UploadElementSpring(
         int pointIndex1,
-        int pointIndex2,
-        ConnectedComponentId connectedComponentId)
+        int pointIndex2)
     {
-        size_t const connectedComponentIndex = connectedComponentId - 1;
+        mSpringElementBuffer.emplace_back();
+        SpringElement & springElement = mSpringElementBuffer.back();
 
-        assert(connectedComponentIndex < mConnectedComponents.size());
-        assert(mConnectedComponents[connectedComponentIndex].springElementCount + 1u <= mConnectedComponents[connectedComponentIndex].springElementMaxCount);
-
-        SpringElement * const springElement = &(mConnectedComponents[connectedComponentIndex].springElementBuffer[mConnectedComponents[connectedComponentIndex].springElementCount]);
-
-        springElement->pointIndex1 = pointIndex1;
-        springElement->pointIndex2 = pointIndex2;
-
-        ++(mConnectedComponents[connectedComponentIndex].springElementCount);
+        springElement.pointIndex1 = pointIndex1;
+        springElement.pointIndex2 = pointIndex2;
     }
 
     inline void UploadElementRope(
         int pointIndex1,
-        int pointIndex2,
-        ConnectedComponentId connectedComponentId)
+        int pointIndex2)
     {
-        size_t const connectedComponentIndex = connectedComponentId - 1;
+        mRopeElementBuffer.emplace_back();
+        RopeElement & ropeElement = mRopeElementBuffer.back();
 
-        assert(connectedComponentIndex < mConnectedComponents.size());
-        assert(mConnectedComponents[connectedComponentIndex].ropeElementCount + 1u <= mConnectedComponents[connectedComponentIndex].ropeElementMaxCount);
-
-        RopeElement * const ropeElement = &(mConnectedComponents[connectedComponentIndex].ropeElementBuffer[mConnectedComponents[connectedComponentIndex].ropeElementCount]);
-
-        ropeElement->pointIndex1 = pointIndex1;
-        ropeElement->pointIndex2 = pointIndex2;
-
-        ++(mConnectedComponents[connectedComponentIndex].ropeElementCount);
+        ropeElement.pointIndex1 = pointIndex1;
+        ropeElement.pointIndex2 = pointIndex2;
     }
 
     inline void UploadElementTriangle(
         int pointIndex1,
         int pointIndex2,
-        int pointIndex3,
-        ConnectedComponentId connectedComponentId)
+        int pointIndex3)
     {
-        size_t const connectedComponentIndex = connectedComponentId - 1;
+        mTriangleElementBuffer.emplace_back();
+        TriangleElement & triangleElement = mTriangleElementBuffer.back();
 
-        assert(connectedComponentIndex < mConnectedComponents.size());
-        assert(mConnectedComponents[connectedComponentIndex].triangleElementCount + 1u <= mConnectedComponents[connectedComponentIndex].triangleElementMaxCount);
-
-        TriangleElement * const triangleElement = &(mConnectedComponents[connectedComponentIndex].triangleElementBuffer[mConnectedComponents[connectedComponentIndex].triangleElementCount]);
-
-        triangleElement->pointIndex1 = pointIndex1;
-        triangleElement->pointIndex2 = pointIndex2;
-        triangleElement->pointIndex3 = pointIndex3;
-
-        ++(mConnectedComponents[connectedComponentIndex].triangleElementCount);
+        triangleElement.pointIndex1 = pointIndex1;
+        triangleElement.pointIndex2 = pointIndex2;
+        triangleElement.pointIndex3 = pointIndex3;
     }
 
     void UploadElementsEnd();
@@ -223,20 +194,13 @@ public:
 
     inline void UploadElementStressedSpring(
         int pointIndex1,
-        int pointIndex2,
-        ConnectedComponentId connectedComponentId)
+        int pointIndex2)
     {
-        size_t const connectedComponentIndex = connectedComponentId - 1;
+        mStressedSpringElementBuffer.emplace_back();
+        StressedSpringElement & stressedSpringElement = mStressedSpringElementBuffer.back();
 
-        assert(connectedComponentIndex < mConnectedComponents.size());
-        assert(mConnectedComponents[connectedComponentIndex].stressedSpringElementCount + 1u <= mConnectedComponents[connectedComponentIndex].stressedSpringElementMaxCount);
-
-        StressedSpringElement * const stressedSpringElement = &(mConnectedComponents[connectedComponentIndex].stressedSpringElementBuffer[mConnectedComponents[connectedComponentIndex].stressedSpringElementCount]);
-
-        stressedSpringElement->pointIndex1 = pointIndex1;
-        stressedSpringElement->pointIndex2 = pointIndex2;
-
-        ++(mConnectedComponents[connectedComponentIndex].stressedSpringElementCount);
+        stressedSpringElement.pointIndex1 = pointIndex1;
+        stressedSpringElement.pointIndex2 = pointIndex2;
     }
 
     void UploadElementStressedSpringsEnd();
@@ -415,22 +379,18 @@ private:
     void OnWaterContrastUpdated();
     void OnWaterLevelOfDetailUpdated();
 
-    struct ConnectedComponentData;
+    // TODO: this will go
     struct GenericTextureConnectedComponentData;
 
-    void RenderPointElements(ConnectedComponentData const & connectedComponent);
+    void RenderPointElements();
 
-    void RenderSpringElements(
-        ConnectedComponentData const & connectedComponent,
-        bool withTexture);
+    void RenderSpringElements(bool withTexture);
 
-    void RenderRopeElements(ConnectedComponentData const & connectedComponent);
+    void RenderRopeElements();
 
-    void RenderTriangleElements(
-        ConnectedComponentData const & connectedComponent,
-        bool withTexture);
+    void RenderTriangleElements(bool withTexture);
 
-    void RenderStressedSpringElements(ConnectedComponentData const & connectedComponent);
+    void RenderStressedSpringElements();
 
     void RenderGenericTextures(GenericTextureConnectedComponentData const & connectedComponent);
 
@@ -537,10 +497,8 @@ struct TextureRenderPolygonVertex
 
 
     //
-    // Connected component data
+    // Elements
     //
-
-    std::vector<std::size_t> mConnectedComponentsMaxSizes;
 
 #pragma pack(push)
     struct PointElement
@@ -582,63 +540,20 @@ struct TextureRenderPolygonVertex
     };
 #pragma pack(pop)
 
+    std::vector<PointElement> mPointElementBuffer;
+    GameOpenGLVBO mPointElementVBO;
 
-    //
-    // All the data that belongs to a single connected component
-    //
+    std::vector<SpringElement> mSpringElementBuffer;
+    GameOpenGLVBO mSpringElementVBO;
 
-    struct ConnectedComponentData
-    {
-        size_t pointElementCount;
-        size_t pointElementMaxCount;
-        std::unique_ptr<PointElement[]> pointElementBuffer;
-        GameOpenGLVBO pointElementVBO;
+    std::vector<RopeElement> mRopeElementBuffer;
+    GameOpenGLVBO mRopeElementVBO;
 
-        size_t springElementCount;
-        size_t springElementMaxCount;
-        std::unique_ptr<SpringElement[]> springElementBuffer;
-        GameOpenGLVBO springElementVBO;
+    std::vector<TriangleElement> mTriangleElementBuffer;
+    GameOpenGLVBO mTriangleElementVBO;
 
-        size_t ropeElementCount;
-        size_t ropeElementMaxCount;
-        std::unique_ptr<RopeElement[]> ropeElementBuffer;
-        GameOpenGLVBO ropeElementVBO;
-
-        size_t triangleElementCount;
-        size_t triangleElementMaxCount;
-        std::unique_ptr<TriangleElement[]> triangleElementBuffer;
-        GameOpenGLVBO triangleElementVBO;
-
-        size_t stressedSpringElementCount;
-        size_t stressedSpringElementMaxCount;
-        std::unique_ptr<StressedSpringElement[]> stressedSpringElementBuffer;
-        GameOpenGLVBO stressedSpringElementVBO;
-
-        ConnectedComponentData()
-            : pointElementCount(0)
-            , pointElementMaxCount(0)
-            , pointElementBuffer()
-            , pointElementVBO()
-            , springElementCount(0)
-            , springElementMaxCount(0)
-            , springElementBuffer()
-            , springElementVBO()
-            , ropeElementCount(0)
-            , ropeElementMaxCount(0)
-            , ropeElementBuffer()
-            , ropeElementVBO()
-            , triangleElementCount(0)
-            , triangleElementMaxCount(0)
-            , triangleElementBuffer()
-            , triangleElementVBO()
-            , stressedSpringElementCount(0)
-            , stressedSpringElementMaxCount(0)
-            , stressedSpringElementBuffer()
-            , stressedSpringElementVBO()
-        {}
-    };
-
-    std::vector<ConnectedComponentData> mConnectedComponents;
+    std::vector<StressedSpringElement> mStressedSpringElementBuffer;
+    GameOpenGLVBO mStressedSpringElementVBO;
 
 
     //

@@ -165,9 +165,9 @@ struct RenderStatistics
 {
     std::uint64_t LastRenderedShipSprings;
     std::uint64_t LastRenderedShipTriangles;
-    std::uint64_t LastRenderedShipConnectedComponents;
-    std::uint64_t LastRenderedGenericTextures;
-    std::uint64_t LastRenderedEphemeralPoints;
+    std::uint64_t LastRenderedShipPlanes;
+    std::uint64_t LastRenderedShipGenericTextures;
+    std::uint64_t LastRenderedShipEphemeralPoints;
 
     RenderStatistics()
     {
@@ -178,9 +178,9 @@ struct RenderStatistics
     {
         LastRenderedShipSprings = 0;
         LastRenderedShipTriangles = 0;
-        LastRenderedShipConnectedComponents = 0;
-        LastRenderedGenericTextures = 0;
-        LastRenderedEphemeralPoints = 0;
+        LastRenderedShipPlanes = 0;
+        LastRenderedShipGenericTextures = 0;
+        LastRenderedShipEphemeralPoints = 0;
     }
 };
 

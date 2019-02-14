@@ -83,9 +83,9 @@ void TextLayer::SetStatusText(
         ss
             << "SPR:" << renderStatistics.LastRenderedShipSprings
             << " TRI:" << renderStatistics.LastRenderedShipTriangles
-            << " CC:" << renderStatistics.LastRenderedShipConnectedComponents
-            << " GENTEX:" << renderStatistics.LastRenderedGenericTextures
-            << " EPH:" << renderStatistics.LastRenderedEphemeralPoints;
+            << " PLANES:" << renderStatistics.LastRenderedShipPlanes
+            << " GENTEX:" << renderStatistics.LastRenderedShipGenericTextures
+            << " EPH:" << renderStatistics.LastRenderedShipEphemeralPoints;
 
         mStatusTextLines.emplace_back(ss.str());
     }

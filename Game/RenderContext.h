@@ -502,13 +502,11 @@ public:
     void RenderShipsStart(size_t shipCount);
 
 
-    void RenderShipStart(
-        ShipId shipId,
-        std::vector<std::size_t> const & connectedComponentsMaxSizes)
+    void RenderShipStart(ShipId shipId)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId]->RenderStart(connectedComponentsMaxSizes);
+        mShips[shipId]->RenderStart();
     }
 
     //
@@ -580,58 +578,49 @@ public:
 
     inline void UploadShipElementPoint(
         ShipId shipId,
-        int shipPointIndex,
-        ConnectedComponentId connectedComponentId)
+        int shipPointIndex)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId]->UploadElementPoint(
-            shipPointIndex,
-            connectedComponentId);
+        mShips[shipId]->UploadElementPoint(shipPointIndex);
     }
 
     inline void UploadShipElementSpring(
         ShipId shipId,
         int shipPointIndex1,
-        int shipPointIndex2,
-        ConnectedComponentId connectedComponentId)
+        int shipPointIndex2)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
         mShips[shipId]->UploadElementSpring(
             shipPointIndex1,
-            shipPointIndex2,
-            connectedComponentId);
+            shipPointIndex2);
     }
 
     inline void UploadShipElementRope(
         ShipId shipId,
         int shipPointIndex1,
-        int shipPointIndex2,
-        ConnectedComponentId connectedComponentId)
+        int shipPointIndex2)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
         mShips[shipId]->UploadElementRope(
             shipPointIndex1,
-            shipPointIndex2,
-            connectedComponentId);
+            shipPointIndex2);
     }
 
     inline void UploadShipElementTriangle(
         ShipId shipId,
         int shipPointIndex1,
         int shipPointIndex2,
-        int shipPointIndex3,
-        ConnectedComponentId connectedComponentId)
+        int shipPointIndex3)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
         mShips[shipId]->UploadElementTriangle(
             shipPointIndex1,
             shipPointIndex2,
-            shipPointIndex3,
-            connectedComponentId);
+            shipPointIndex3);
     }
 
     inline void UploadShipElementsEnd(ShipId shipId)
@@ -651,15 +640,13 @@ public:
     inline void UploadShipElementStressedSpring(
         ShipId shipId,
         int shipPointIndex1,
-        int shipPointIndex2,
-        ConnectedComponentId connectedComponentId)
+        int shipPointIndex2)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
         mShips[shipId]->UploadElementStressedSpring(
             shipPointIndex1,
-            shipPointIndex2,
-            connectedComponentId);
+            shipPointIndex2);
     }
 
     void UploadShipElementStressedSpringsEnd(ShipId shipId)

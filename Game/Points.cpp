@@ -462,9 +462,7 @@ void Points::UploadElements(
         {
             renderContext.UploadShipElementPoint(
                 shipId,
-                pointIndex,
-                // TODO: this will go
-                static_cast<ConnectedComponentId>(mPlaneIdBuffer[pointIndex]));
+                pointIndex);
         }
     }
 }

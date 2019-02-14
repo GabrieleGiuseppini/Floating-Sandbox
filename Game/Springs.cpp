@@ -162,18 +162,14 @@ void Springs::UploadElements(
                 renderContext.UploadShipElementRope(
                     shipId,
                     GetPointAIndex(i),
-                    GetPointBIndex(i),
-                    // TODO: this will go
-                    static_cast<ConnectedComponentId>(GetPlaneId(i, points)));
+                    GetPointBIndex(i));
             }
             else if (mSuperTrianglesBuffer[i].size() < 2 || doUploadAllSprings)
             {
                 renderContext.UploadShipElementSpring(
                     shipId,
                     GetPointAIndex(i),
-                    GetPointBIndex(i),
-                    // TODO: this will go
-                    static_cast<ConnectedComponentId>(GetPlaneId(i, points)));
+                    GetPointBIndex(i));
             }
         }
     }
@@ -193,9 +189,7 @@ void Springs::UploadStressedSpringElements(
                 renderContext.UploadShipElementStressedSpring(
                     shipId,
                     GetPointAIndex(i),
-                    GetPointBIndex(i),
-                    // TODO: this will go
-                    static_cast<ConnectedComponentId>(GetPlaneId(i, points)));
+                    GetPointBIndex(i));
             }
         }
     }

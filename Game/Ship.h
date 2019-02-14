@@ -284,10 +284,6 @@ private:
     Triangles mTriangles;
     ElectricalElements mElectricalElements;
 
-    // TODO: nuke
-    // Connected components metadata
-    std::vector<std::size_t> mConnectedComponentSizes;
-
     // The max plane ID we have seen - ever
     PlaneId mMaxMaxPlaneId;
 
