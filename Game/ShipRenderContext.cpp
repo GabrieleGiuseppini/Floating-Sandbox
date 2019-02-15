@@ -907,6 +907,9 @@ void ShipRenderContext::RenderRopeElements()
 
     // Draw
     glDrawElements(GL_LINES, static_cast<GLsizei>(2 * mRopeElementBuffer.size()), GL_UNSIGNED_INT, 0);
+
+    // Update stats
+    mRenderStatistics.LastRenderedShipRopes += mRopeElementBuffer.size();
 }
 
 void ShipRenderContext::RenderTriangleElements(bool withTexture)

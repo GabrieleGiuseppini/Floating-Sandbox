@@ -81,7 +81,8 @@ void TextLayer::SetStatusText(
         ss.str("");
 
         ss
-            << "SPR:" << renderStatistics.LastRenderedShipSprings
+            << "RPS:" << renderStatistics.LastRenderedShipRopes
+            << " SPR:" << renderStatistics.LastRenderedShipSprings
             << " TRI:" << renderStatistics.LastRenderedShipTriangles
             << " PLANES:" << renderStatistics.LastRenderedShipPlanes
             << " GENTEX:" << renderStatistics.LastRenderedShipGenericTextures

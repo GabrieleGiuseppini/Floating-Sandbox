@@ -163,6 +163,7 @@ struct TextQuadVertex
 
 struct RenderStatistics
 {
+    std::uint64_t LastRenderedShipRopes;
     std::uint64_t LastRenderedShipSprings;
     std::uint64_t LastRenderedShipTriangles;
     std::uint64_t LastRenderedShipPlanes;
@@ -176,6 +177,7 @@ struct RenderStatistics
 
     void Reset()
     {
+        LastRenderedShipRopes = 0;
         LastRenderedShipSprings = 0;
         LastRenderedShipTriangles = 0;
         LastRenderedShipPlanes = 0;
