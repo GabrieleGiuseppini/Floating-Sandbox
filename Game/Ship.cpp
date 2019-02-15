@@ -52,8 +52,9 @@ Ship::Ship(
     , mTriangles(std::move(triangles))
     , mElectricalElements(std::move(electricalElements))
     , mMaxMaxPlaneId(0)
-    , mAreElementsDirty(true)
+    , mIsStructureDirty(true)
     , mLastDebugShipRenderMode()
+    , mDepthSortedTriangleRenderIndices()
     , mIsSinking(false)
     , mTotalWater(0.0)
     , mWaterSplashedRunningAverage()
@@ -72,13 +73,16 @@ Ship::Ship(
         mSprings)
     , mCurrentForceFields()
 {
+    // Reserve room for rendering indices
+    mDepthSortedTriangleRenderIndices.reserve(mTriangles.GetElementCount());
+
     // Set destroy handlers
     mPoints.RegisterDestroyHandler(std::bind(&Ship::PointDestroyHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     mSprings.RegisterDestroyHandler(std::bind(&Ship::SpringDestroyHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
     mTriangles.RegisterDestroyHandler(std::bind(&Ship::TriangleDestroyHandler, this, std::placeholders::_1));
     mElectricalElements.RegisterDestroyHandler(std::bind(&Ship::ElectricalElementDestroyHandler, this, std::placeholders::_1));
 
-    // Do a first connectivity pass
+    // Do a first connectivity pass (for the first Update)
     RunConnectivityVisit(currentVisitSequenceNumber);
 }
 
@@ -488,7 +492,7 @@ void Ship::Update(
     // Run connectivity visit, if there have been any deletions
     //
 
-    if (mAreElementsDirty)
+    if (mIsStructureDirty)
     {
         RunConnectivityVisit(currentVisitSequenceNumber);
     }
@@ -545,7 +549,7 @@ void Ship::Render(
         mId,
         renderContext);
 
-    if (mAreElementsDirty)
+    if (mIsStructureDirty)
     {
         mPoints.UploadPlaneIds(
             mId,
@@ -559,7 +563,7 @@ void Ship::Render(
     // or the ship debug render mode has changed
     //
 
-    if (mAreElementsDirty
+    if (mIsStructureDirty
         || !mLastDebugShipRenderMode
         || *mLastDebugShipRenderMode != renderContext.GetDebugShipRenderMode())
     {
@@ -579,17 +583,16 @@ void Ship::Render(
 
         mSprings.UploadElements(
             mId,
-            renderContext,
-            mPoints);
+            renderContext);
 
         //
-        // Upload all the triangle elements
+        // Upload all the triangle elements - according to *our* indices though
         //
 
         mTriangles.UploadElements(
+            mDepthSortedTriangleRenderIndices,
             mId,
-            renderContext,
-            mPoints);
+            renderContext);
 
         renderContext.UploadShipElementsEnd(mId);
     }
@@ -608,8 +611,7 @@ void Ship::Render(
     {
         mSprings.UploadStressedSpringElements(
             mId,
-            renderContext,
-            mPoints);
+            renderContext);
     }
 
     renderContext.UploadShipElementStressedSpringsEnd(mId);
@@ -659,7 +661,7 @@ void Ship::Render(
     // Reset render state
     //
 
-    mAreElementsDirty = false;
+    mIsStructureDirty = false;
     mLastDebugShipRenderMode = renderContext.GetDebugShipRenderMode();
 }
 
@@ -1584,12 +1586,17 @@ void Ship::RunConnectivityVisit(VisitSequenceNumber currentVisitSequenceNumber)
     // all non-string points (i.e. points that are also vertices of at least one triangle) will also
     // have a Connected Component ID (which will just happen to have the same value as the Plane ID).
     //
+    // We also piggyback the visit to create the array of triangle indices in plane (Z) order.
+    //
 
     PlaneId currentPlaneId = 0; // Also serves as Connected Component ID
 
     // The set of (already) marked points, from which we still
     // have to propagate out
     std::queue<ElementIndex> pointsToPropagateFrom;
+
+    // Reset triangle indices
+    mDepthSortedTriangleRenderIndices.clear();
 
     // Visit all non-ephemeral points, from right to left - so that funnels, which tend to be Z-nearer,
     // also carry on their own plane the ropes that connect them to further connected components.
@@ -1608,9 +1615,6 @@ void Ship::RunConnectivityVisit(VisitSequenceNumber currentVisitSequenceNumber)
             //
 
             bool isPointString = mPoints.GetConnectedTriangles(pointIndex).size() == 0;
-
-            // This node has not been visited, hence it's the beginning of a new plane and connected component
-            ++currentPlaneId;
 
             // Visit this point first
             mPoints.SetPlaneId(pointIndex, currentPlaneId);
@@ -1631,7 +1635,7 @@ void Ship::RunConnectivityVisit(VisitSequenceNumber currentVisitSequenceNumber)
             while (!pointsToPropagateFrom.empty())
             {
                 // Pop point that we have to propagate from
-                auto currentPointIndex = pointsToPropagateFrom.front();
+                auto const currentPointIndex = pointsToPropagateFrom.front();
                 pointsToPropagateFrom.pop();
 
                 // This point has been visited already
@@ -1682,16 +1686,33 @@ void Ship::RunConnectivityVisit(VisitSequenceNumber currentVisitSequenceNumber)
                         }
                     }
                 }
+
+
+                //
+                // Add all the triangles owned by this point to the list of triangles sorted by plane (i.e. Z)
+                //
+
+                for (auto const & ct : mPoints.GetConnectedTriangles(currentPointIndex))
+                {
+                    if (!ct.IsAtOwner)
+                        break; // We rely on the fact that the triangles connected to this point are sorted by IsAtOwner
+
+                    if (!mTriangles.IsDeleted(ct.TriangleIndex))
+                        mDepthSortedTriangleRenderIndices.push_back(ct.TriangleIndex);
+                }
             }
+
+            //
+            // Flood completed
+            //
+
+            // Remember max plane ID ever
+            mMaxMaxPlaneId = std::max(mMaxMaxPlaneId, currentPlaneId);
+
+            // Next we begin a new plane and connected component
+            ++currentPlaneId;
         }
     }
-
-
-    //
-    // Remember max plane ID ever
-    //
-
-    mMaxMaxPlaneId = std::max(mMaxMaxPlaneId, currentPlaneId);
 
 
     ////////////////////////////////////////////////////////
@@ -1770,8 +1791,8 @@ void Ship::DestroyConnectedTriangles(ElementIndex pointElementIndex)
     auto & connectedTriangles = mPoints.GetConnectedTriangles(pointElementIndex);
     while (!connectedTriangles.empty())
     {
-        assert(!mTriangles.IsDeleted(connectedTriangles.back()));
-        mTriangles.Destroy(connectedTriangles.back());
+        assert(!mTriangles.IsDeleted(connectedTriangles.back().TriangleIndex));
+        mTriangles.Destroy(connectedTriangles.back().TriangleIndex);
     }
 
     assert(mPoints.GetConnectedTriangles(pointElementIndex).empty());
@@ -1790,14 +1811,16 @@ void Ship::DestroyConnectedTriangles(
     {
         for (size_t t = connectedTriangles.size() - 1; ;--t)
         {
-            assert(!mTriangles.IsDeleted(connectedTriangles[t]));
+            auto const triangleIndex = connectedTriangles[t].TriangleIndex;
 
-            if (mTriangles.GetPointAIndex(connectedTriangles[t]) == pointBElementIndex
-                || mTriangles.GetPointBIndex(connectedTriangles[t]) == pointBElementIndex
-                || mTriangles.GetPointCIndex(connectedTriangles[t]) == pointBElementIndex)
+            assert(!mTriangles.IsDeleted(triangleIndex));
+
+            if (mTriangles.GetPointAIndex(triangleIndex) == pointBElementIndex
+                || mTriangles.GetPointBIndex(triangleIndex) == pointBElementIndex
+                || mTriangles.GetPointCIndex(triangleIndex) == pointBElementIndex)
             {
                 // Erase it
-                mTriangles.Destroy(connectedTriangles[t]);
+                mTriangles.Destroy(triangleIndex);
             }
 
             if (t == 0)
@@ -1843,9 +1866,9 @@ void Ship::PointDestroyHandler(
     auto & connectedTriangles = mPoints.GetConnectedTriangles(pointElementIndex);
     while(!connectedTriangles.empty())
     {
-        assert(!mTriangles.IsDeleted(connectedTriangles.back()));
+        assert(!mTriangles.IsDeleted(connectedTriangles.back().TriangleIndex));
 
-        mTriangles.Destroy(connectedTriangles.back());
+        mTriangles.Destroy(connectedTriangles.back().TriangleIndex);
     }
 
     assert(mPoints.GetConnectedTriangles(pointElementIndex).empty());
@@ -1877,8 +1900,8 @@ void Ship::PointDestroyHandler(
         currentSimulationTime,
         gameParameters);
 
-    // Remember our elements are now dirty
-    mAreElementsDirty = true;
+    // Remember the structure is now dirty
+    mIsStructureDirty = true;
 }
 
 void Ship::SpringDestroyHandler(
@@ -1970,8 +1993,8 @@ void Ship::SpringDestroyHandler(
     // Notify pinned points
     mPinnedPoints.OnSpringDestroyed(springElementIndex);
 
-    // Remember our elements are now dirty
-    mAreElementsDirty = true;
+    // Remember our structure is now dirty
+    mIsStructureDirty = true;
 }
 
 void Ship::TriangleDestroyHandler(ElementIndex triangleElementIndex)
@@ -1990,14 +2013,14 @@ void Ship::TriangleDestroyHandler(ElementIndex triangleElementIndex)
     mPoints.RemoveConnectedTriangle(mTriangles.GetPointBIndex(triangleElementIndex), triangleElementIndex);
     mPoints.RemoveConnectedTriangle(mTriangles.GetPointCIndex(triangleElementIndex), triangleElementIndex);
 
-    // Remember our elements are now dirty
-    mAreElementsDirty = true;
+    // Remember our structure is now dirty
+    mIsStructureDirty = true;
 }
 
 void Ship::ElectricalElementDestroyHandler(ElementIndex /*electricalElementIndex*/)
 {
-    // Remember our elements are now dirty
-    mAreElementsDirty = true;
+    // Remember our structure is now dirty
+    mIsStructureDirty = true;
 }
 
 void Ship::GenerateAirBubbles(
@@ -2211,9 +2234,9 @@ void Ship::VerifyInvariants()
     {
         if (!mTriangles.IsDeleted(t))
         {
-            Verify(mPoints.GetConnectedTriangles(mTriangles.GetPointAIndex(t)).contains(t));
-            Verify(mPoints.GetConnectedTriangles(mTriangles.GetPointBIndex(t)).contains(t));
-            Verify(mPoints.GetConnectedTriangles(mTriangles.GetPointCIndex(t)).contains(t));
+            Verify(mPoints.GetConnectedTriangles(mTriangles.GetPointAIndex(t)).contains([t](auto const & c){ return c.TriangleIndex == t; }));
+            Verify(mPoints.GetConnectedTriangles(mTriangles.GetPointBIndex(t)).contains([t](auto const & c) { return c.TriangleIndex == t; }));
+            Verify(mPoints.GetConnectedTriangles(mTriangles.GetPointCIndex(t)).contains([t](auto const & c) { return c.TriangleIndex == t; }));
         }
     }
 

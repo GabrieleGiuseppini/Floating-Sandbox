@@ -145,8 +145,7 @@ void Springs::UpdateGameParameters(
 
 void Springs::UploadElements(
     ShipId shipId,
-    Render::RenderContext & renderContext,
-    Points const & points) const
+    Render::RenderContext & renderContext) const
 {
     // Either upload all springs, or just the edge springs
     bool const doUploadAllSprings = (DebugShipRenderMode::Springs == renderContext.GetDebugShipRenderMode());
@@ -177,8 +176,7 @@ void Springs::UploadElements(
 
 void Springs::UploadStressedSpringElements(
     ShipId shipId,
-    Render::RenderContext & renderContext,
-    Points const & points) const
+    Render::RenderContext & renderContext) const
 {
     for (ElementIndex i : *this)
     {

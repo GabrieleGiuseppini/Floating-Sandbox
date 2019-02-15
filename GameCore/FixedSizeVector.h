@@ -172,6 +172,29 @@ public:
     // Modifiers
     //
 
+    void push_front(TElement const & element)
+    {
+        if (mCurrentSize < MaxSize)
+        {
+            assert(false == contains(element));
+
+            // Shift elements (to the right) first
+            for (size_t j = mCurrentSize; j > 0; --j)
+            {
+                mArray[j] = std::move(mArray[j - 1]);
+            }
+
+            // Set new element at front
+            mArray[0] = element;
+
+            ++mCurrentSize;
+        }
+        else
+        {
+            throw std::runtime_error("The container is already full");
+        }
+    }
+
     void push_back(TElement const & element)
     {
         if (mCurrentSize < MaxSize)
@@ -190,6 +213,28 @@ public:
         if (mCurrentSize < MaxSize)
         {
             mArray[mCurrentSize++] = std::move(element);
+        }
+        else
+        {
+            throw std::runtime_error("The container is already full");
+        }
+    }
+
+    template<typename ...TArgs>
+    void emplace_front(TArgs&&... args)
+    {
+        if (mCurrentSize < MaxSize)
+        {
+            // Shift elements (to the right) first
+            for (size_t j = mCurrentSize; j > 0; --j)
+            {
+                mArray[j] = std::move(mArray[j - 1]);
+            }
+
+            // Set new element at front
+            mArray[0] = TElement(std::forward<TArgs>(args)...);
+
+            ++mCurrentSize;
         }
         else
         {

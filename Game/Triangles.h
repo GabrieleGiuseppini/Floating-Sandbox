@@ -98,10 +98,23 @@ public:
     // Render
     //
 
+    template<typename TIndices>
     void UploadElements(
+        TIndices const & indices,
         ShipId shipId,
-        Render::RenderContext & renderContext,
-        Points const & points) const;
+        Render::RenderContext & renderContext) const
+    {
+        for (ElementIndex i : indices)
+        {
+            assert(!mIsDeletedBuffer[i]);
+
+            renderContext.UploadShipElementTriangle(
+                shipId,
+                GetPointAIndex(i),
+                GetPointBIndex(i),
+                GetPointCIndex(i));
+        }
+    }
 
 public:
 

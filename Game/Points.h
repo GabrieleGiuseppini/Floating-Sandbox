@@ -153,7 +153,28 @@ private:
 
     using ConnectedSpringsVector = FixedSizeVector<ConnectedSpring, GameParameters::MaxSpringsPerPoint>;
 
-    using ConnectedTrianglesVector = FixedSizeVector<ElementIndex, GameParameters::MaxTrianglesPerPoint>;
+    /*
+     * The metadata for the triangles connected to a point.
+     */
+    struct ConnectedTriangle
+    {
+        ElementIndex TriangleIndex;
+        bool IsAtOwner; // true if the point "owns" this triangle (each triangle is owned by one and only one point)
+
+        ConnectedTriangle()
+            : TriangleIndex(NoneElementIndex)
+            , IsAtOwner(false)
+        {}
+
+        ConnectedTriangle(
+            ElementIndex triangleIndex,
+            bool isAtOwner)
+            : TriangleIndex(triangleIndex)
+            , IsAtOwner(isAtOwner)
+        {}
+    };
+
+    using ConnectedTrianglesVector = FixedSizeVector<ConnectedTriangle, GameParameters::MaxTrianglesPerPoint>;
 
     /*
      * The materials of this point.
@@ -719,16 +740,26 @@ public:
 
     void AddConnectedTriangle(
         ElementIndex pointElementIndex,
-        ElementIndex triangleElementIndex)
+        ElementIndex triangleElementIndex,
+        bool isAtOwner)
     {
-        mConnectedTrianglesBuffer[pointElementIndex].push_back(triangleElementIndex);
+        // Add so that all triangles owned by this point come first
+        if (isAtOwner)
+            mConnectedTrianglesBuffer[pointElementIndex].emplace_front(triangleElementIndex, isAtOwner);
+        else
+            mConnectedTrianglesBuffer[pointElementIndex].emplace_back(triangleElementIndex, isAtOwner);
     }
 
     void RemoveConnectedTriangle(
         ElementIndex pointElementIndex,
         ElementIndex triangleElementIndex)
     {
-        bool found = mConnectedTrianglesBuffer[pointElementIndex].erase_first(triangleElementIndex);
+        bool found = mConnectedTrianglesBuffer[pointElementIndex].erase_first(
+            [triangleElementIndex](ConnectedTriangle const & c)
+            {
+                return c.TriangleIndex == triangleElementIndex;
+            });
+
 
         assert(found);
         (void)found;

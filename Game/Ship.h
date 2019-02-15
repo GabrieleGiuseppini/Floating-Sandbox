@@ -287,15 +287,18 @@ private:
     // The max plane ID we have seen - ever
     PlaneId mMaxMaxPlaneId;
 
-    // Flag remembering whether points (elements) and/or springs (incl. ropes) and/or triangles have changed
-    // since the last step.
-    // When this flag is set, we'll re-detect connected components, planes, and re-upload elements
+    // Flag remembering whether the structure of the ship (i.e. the connectivity between elements)
+    // has changed since the last step.
+    // When this flag is set, we'll re-detect connected components and planes, and re-upload elements
     // to the rendering context
-    bool mAreElementsDirty;
+    bool mIsStructureDirty;
 
     // The debug ship render mode that was in effect the last time we've uploaded elements;
     // used to detect changes and eventually re-upload
     std::optional<DebugShipRenderMode> mLastDebugShipRenderMode;
+
+    // The structure elements we have to upload for rendering
+    std::vector<ElementIndex> mDepthSortedTriangleRenderIndices; // In PlaneID (i.e. Z) order
 
     // Sinking detection
     bool mIsSinking;

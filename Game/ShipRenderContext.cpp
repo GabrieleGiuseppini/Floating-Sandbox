@@ -839,7 +839,7 @@ void ShipRenderContext::RenderEnd()
     // Update stats
     //
 
-    mRenderStatistics.LastRenderedShipPlanes += mMaxMaxPlaneId;
+    mRenderStatistics.LastRenderedShipPlanes += mMaxMaxPlaneId + 1;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////

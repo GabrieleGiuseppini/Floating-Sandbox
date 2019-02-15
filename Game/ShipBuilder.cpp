@@ -1202,9 +1202,9 @@ Physics::Triangles ShipBuilder::CreateTriangles(
             triangleInfos2[t].SubSprings2);
 
         // Add triangle to its endpoints
-        points.AddConnectedTriangle(pointIndexRemap[triangleInfos2[t].PointIndices1[0]], t);
-        points.AddConnectedTriangle(pointIndexRemap[triangleInfos2[t].PointIndices1[1]], t);
-        points.AddConnectedTriangle(pointIndexRemap[triangleInfos2[t].PointIndices1[2]], t);
+        points.AddConnectedTriangle(pointIndexRemap[triangleInfos2[t].PointIndices1[0]], t, true);
+        points.AddConnectedTriangle(pointIndexRemap[triangleInfos2[t].PointIndices1[1]], t, false);
+        points.AddConnectedTriangle(pointIndexRemap[triangleInfos2[t].PointIndices1[2]], t, false);
     }
 
     return triangles;

@@ -196,13 +196,11 @@ public:
 
     void UploadElements(
         ShipId shipId,
-        Render::RenderContext & renderContext,
-        Points const & points) const;
+        Render::RenderContext & renderContext) const;
 
     void UploadStressedSpringElements(
         ShipId shipId,
-        Render::RenderContext & renderContext,
-        Points const & points) const;
+        Render::RenderContext & renderContext) const;
 
 public:
 

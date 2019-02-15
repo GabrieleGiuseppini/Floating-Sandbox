@@ -156,6 +156,7 @@ Render:
 			- Try one single setting affecting both radius and quantity of water
 
 		- Make Titanic default ship
+			- ...and see if funnels have jagged sides
 
 		- Make ropes less crazy when they get wet
 			- Test: base high, slice rightmost tip
@@ -506,15 +507,15 @@ Render:
 					+ So, what doesn't have a ConnectedComponentId?
 						- "strings"
 						- standalone points
-				- Assignment of PlaneId is done via the same connectivity visit used for assigning ConnectedComponentId's,
+				+ Assignment of PlaneId is done via the same connectivity visit used for assigning ConnectedComponentId's,
 				  but we assign "single-spring paths" to the origin's PlaneId and don't propagate to solid body again
-					- So we draw as separate two pieces that are connected solely by a "cable" (**)
-					- Also rope triangles must be assigned to the origin's PlaneId
-					- Propagation algo: don't propagate if coming from a spring with zero SuperTriangles to a spring
+					+ So we draw as separate two pieces that are connected solely by a "cable" (**)
+					+ Also rope triangles must be assigned to the origin's PlaneId
+					+ Propagation algo: don't propagate if coming from a spring with zero SuperTriangles to a spring
 					  with >0 SuperTriangles, unless these are all rope triangles
-						- New "IsRope" property of Triangle, pop'd by ShipBuilder; new buffer
+						+ New "IsRope" property of Triangle, pop'd by ShipBuilder; new buffer
 				+ Light diffusion algo follows PlaneId's, instead of ConnectedComponentId's, as it's really about planes
-				- We assign Z after orthomatrix - in NDC - and thus positive is near
+				+ We assign Z after orthomatrix - in NDC - and thus positive is near
 			- We only enable Z test and writing to Z buffer at RenderContext before doing ships
 				- And later, if we move GenericTexture to RenderContext, also when we do generic textures
 		+ Figure out range of Z:
@@ -622,7 +623,7 @@ Render:
 							- Vectors: Matte => ShipMatte (copy)
 					+ Complete: assign per-layer ortho matrices
 					+ Test & commit
-			= Step 7:
+			+ Step 7:
 				+ Do actual ship ortho matrix calculation at ViewModel::CalculateShipOrthoMatrix
 					+ See Moleskine for calc'ns
 				+ All ship shaders take new vertex attribute and calc Z via OrthoMatrix
@@ -640,18 +641,23 @@ Render:
 						+ Nuke connected component empty check
 						+ if mIsStructureDirty or debug mode changed:
 							+ Upload parts individually
-				+ Verify ship triangles in texture mode are drawn incorrectly
-					+ Can be seen with Titanic funnels falling in front of Titanic - they currently have
-					  a sky border around the,
-				- Do ship triangles correct sorting
-					- Store bool owned_by_point in Points::ConnectedTriangles (see MOLESKINE)
-					- Nuke Triangles::Upload
-					- Upload triangles by Ship::Render
-						- From own vector populated during connectivity visit (see MOLESKINE)
-						- Still, only when mIsStructureDirty
-				- Verify with test ship again
+				+ Do ship triangles correct sorting
+					+ Store bool owned_by_point in Points::ConnectedTriangles (see MOLESKINE)
+						+ Store it sorted
+					+ Replace Triangles::UploadElements() with Triangles::UploadElements<TIndices>(TIndices const &, ...)
+					+ Ship:
+						+ Populate std::vector<ElementIndex> at ConnectivityVisit with owned triangle indices only
+							+ vector reserved at cctor
+						+ ::Render(): still when mIsStructureDirty: Triangles::UploadElements(mIndices)
+				+ Verify old behavior (ship triangles in texture mode are drawn incorrectly): 
+					+ With Titanic's back flag
+					+ Temp triangles upload in old order
+					+ Temp no springs draw 
+				+ Verify new behavior: OK
+				+ Put back ShipRenderContext's Springs rendering
+				+ Commit
 			- Step 8:
-				- Three issues:
+				- Five issues:
 					- Disappearing ropes
 						- Verify it's due because of Z range going out of [-1,+1] range
 							- Test with smaller ship range
@@ -659,15 +665,21 @@ Render:
 							- a) Review formula
 							- b) Adjust range
 					+ Ropes jumping ahead (when new connected components come up)
-						+ Should be due to incorrect planeID direction on Z axis: higher plane ID (recipient of string
+						+ Due to incorrect planeID direction on Z axis: higher plane ID (recipient of string
 						  assigned to previous (lower) plane ID) must be nearer (than string and its solid body)
+					- (Edge) springs countoured with background (because of anti-aliasing)
+						+ Testable with Titanic funnel
 					- Ropes and anti-aliasing issue:
 						- Option 1: draw ropes *after* triangles and springs, but still in current layer (farther)
-						- Option2: see https://stackoverflow.com/questions/30426178/lines-appear-segmented-after-enabling-depth-testing:
+						- Option 2: see https://stackoverflow.com/questions/30426178/lines-appear-segmented-after-enabling-depth-testing:
 							- Draw ropes first (in invoke order) with Z write off (Z test is irrelevant, as it'd be the first)
 								- BUT: if there's no Z write then there's no Z test among ropes, hence
 								  they'd cover each other wrongly
 							- Draw everything else with Z write (and Z test) on
+					- Piece of rope appears to belong to higher connected component
+						- Was to be expected - after all last segment of rope is between two points that have
+						  two different plane IDs, hence a part of the last segment will be visible
+						- Possible solution is to stop doing the "smart" string plane propagation
 				- Test texture mode
 				- Test structure mode
 					- See if loss of ropes over structure is ugly; if we can live without it, remove conditions and dual 
@@ -681,7 +693,7 @@ Render:
 						- Points::UploadEphemeralPoints
 							- The texture ones can now pass real plane ID, fix call chain up to caller
 						- PinnedPoint
-					- Sort by plane ID right before rendering
+					- For now keep doing per-plane partitioning of textures for depth-sorting; we'll try alternatives later
 				- Test & commit
 			- Step 11:
 				- Add PlaneID to vectors
@@ -703,17 +715,21 @@ Render:
 			- Gen textures are correctly covered by things in nearer plane
 
 		- Cleanups:
+			- Points: order connected triangles so that owned are first
+				- Might be best done @ insert
+				- ConnectivityVisit::population of triangle indices: cut short connected triangles' visit as soon
+				  as isAtOwner==false
 			- Light spread on surface changes abruptly when piece is cut; see if it makes sense for diffuse
 			  to only light points whose plane ID is behind lamp (thus planeID>=lampPlaneID)
 			- (TODO: might not be agood idea, see below) Ship:
 				+ Theme: Points becomes passive re: need to upload its stuff
-				- Replace Ship::mAreElementsDirty with mIsStructureDirty
-					- Set in the same places where it is set now
-					- Used for connectivity visit like it is now
-					- Only change is at Ship::Render: when dirty:
+				+ Replace Ship::mAreElementsDirty with mIsStructureDirty
+					+ Set in the same places where it is set now
+					+ Used for connectivity visit like it is now
+					+ Only change is at Ship::Render: when dirty:
 						+ Calls Points::UploadPlaneIds(..., mMaxMaxPlaneId)
-						- Calls all the other ABC::UploadXYZ(...)
-						- Resets mIsStructureDirty
+						+ Calls all the other ABC::UploadXYZ(...)
+						+ Resets mIsStructureDirty
 				- Add mAreImmutableAttributesDirty
 					- Used for first upload
 					- Remove it from Points
@@ -725,13 +741,16 @@ Render:
 					- Invoke new Points' ephemeral uploads where we invoke single one now
 
 		- Optimizations to try:
+			- GenericTextures depth-sorting:
+				- Option 1 (current): per-plane buffers
+				- Option 2: single buffer and sort by plane ID right before rendering
 			- PlaneID's being float's to start with
 				- ...as long as we don't need bucketization for GenericTextures' depth-sorting
 			
 		- See if drawing springs & triangles at separate depths also helps generally with render speed, even for one single
 		  connected component (for springs' fragment shader - may be it takes shortcuts if it knows it's behind)
 		- After Z is done:
-			- GenericTextureShader also takes ShipID and PlaneID for Z, and exists in one central place
+			- [Depending on how we end up doing generic textures] GenericTextureShader also takes ShipID and PlaneID for Z, and exists in one central place
 				- Invoke shader at one place
 					- Move this shader and all ShipRenderContext::UploadTextureRenderSpecification to 
 					  RenderContext
