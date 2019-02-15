@@ -182,6 +182,7 @@ public:
         //      - Each segment width is ShipZRegionZWidth/nShips
         // - Each ship segment is divided into sub-segments for each distinct plane ID
         //      - So a total of maxMaxPlaneId sub-segments
+        //      - Lower plane ID values => further (z->+1), higher plane ID values => nearer (z->-1)
         // - Each plane sub-segment is divided into nLayers layers
         //
 
@@ -195,6 +196,8 @@ public:
         //
         // Calculate Z cells: (2,2)==planeCoeff and (3,2)==planeOffset
         //
+        // z' = OM(2,2)*z + OM(3,2)
+        //
 
         // Beginning of Z range for this ship
         float const shipZStart =
@@ -204,14 +207,13 @@ public:
         // Fractional Z value for this plane, to account for layer
         float const layerZFraction =
             shipZRegionWidth / static_cast<float>(nShips)
-            * static_cast<float>(iLayer + nLayers * maxMaxPlaneId)
+            * static_cast<float>(iLayer)
             / static_cast<float>(nLayers * (maxMaxPlaneId + 1));
 
         // Multiplier of world Z
         float const worldZMultiplier =
-            - shipZRegionWidth / static_cast<float>(nShips)
-            * static_cast<float>(nLayers)
-            / static_cast<float>(nLayers * (maxMaxPlaneId + 1));
+            shipZRegionWidth / static_cast<float>(nShips)
+            / static_cast<float>(maxMaxPlaneId + 1);
 
         matrix[2][2] = worldZMultiplier;
         matrix[3][2] = shipZStart + layerZFraction;
