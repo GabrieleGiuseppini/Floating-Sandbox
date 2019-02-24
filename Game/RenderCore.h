@@ -34,6 +34,8 @@ enum class ProgramType
     ShipGenericTextures,
     ShipPointsColor,
     ShipRopes,
+    ShipSpringsColor,
+    ShipSpringsTexture,
     ShipStressedSprings,
     ShipTrianglesColor,
     ShipTrianglesTexture,

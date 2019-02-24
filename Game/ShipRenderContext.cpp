@@ -287,26 +287,26 @@ ShipRenderContext::~ShipRenderContext()
 void ShipRenderContext::UpdateOrthoMatrices()
 {
     //
-    // Each plane Z segment is divided into 6 layers, one for each type of rendering we do for a ship:
+    // Each plane Z segment is divided into 7 layers, one for each type of rendering we do for a ship:
     //      - 0: Ropes (always behind)
-    //      - 1: Springs and Triangles
-    //          - Same Z as we use springs to "anti-alias" triangles' edges
-    //          - Triangles are always drawn after springs
-    //      - 2: Stressed springs
-    //      - 3: Points
-    //      - 4: Generic textures
-    //      - 5: Vectors
+    //      - 1: Springs
+    //      - 2: Triangles
+    //          - Triangles are always drawn temporally before ropes and springs though, to avoid anti-aliasing issues
+    //      - 3: Stressed springs
+    //      - 4: Points
+    //      - 5: Generic textures
+    //      - 6: Vectors
     //
 
     constexpr float ShipRegionZStart = 1.0f;
     constexpr float ShipRegionZWidth = -2.0f;
 
-    constexpr int NLayers = 6;
+    constexpr int NLayers = 7;
 
     ViewModel::ProjectionMatrix shipOrthoMatrix;
 
     //
-    // Layer 0
+    // Layer 0: Ropes
     //
 
     mViewModel.CalculateShipOrthoMatrix(
@@ -325,7 +325,7 @@ void ShipRenderContext::UpdateOrthoMatrices()
 
 
     //
-    // Layer 1
+    // Layer 1: Springs
     //
 
     mViewModel.CalculateShipOrthoMatrix(
@@ -338,16 +338,16 @@ void ShipRenderContext::UpdateOrthoMatrices()
         NLayers,
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<ProgramType::ShipTrianglesColor>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesColor, ProgramParameterType::OrthoMatrix>(
+    mShaderManager.ActivateProgram<ProgramType::ShipSpringsColor>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipSpringsColor, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTexture>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesTexture, ProgramParameterType::OrthoMatrix>(
+    mShaderManager.ActivateProgram<ProgramType::ShipSpringsTexture>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipSpringsTexture, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
 
     //
-    // Layer 2
+    // Layer 2: Triangles
     //
 
     mViewModel.CalculateShipOrthoMatrix(
@@ -360,12 +360,16 @@ void ShipRenderContext::UpdateOrthoMatrices()
         NLayers,
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<ProgramType::ShipStressedSprings>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipStressedSprings, ProgramParameterType::OrthoMatrix>(
+    mShaderManager.ActivateProgram<ProgramType::ShipTrianglesColor>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesColor, ProgramParameterType::OrthoMatrix>(
+        shipOrthoMatrix);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTexture>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesTexture, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
 
     //
-    // Layer 3
+    // Layer 3: Stressed Springs
     //
 
     mViewModel.CalculateShipOrthoMatrix(
@@ -378,12 +382,12 @@ void ShipRenderContext::UpdateOrthoMatrices()
         NLayers,
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<ProgramType::ShipPointsColor>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipPointsColor, ProgramParameterType::OrthoMatrix>(
+    mShaderManager.ActivateProgram<ProgramType::ShipStressedSprings>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipStressedSprings, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
 
     //
-    // Layer 4
+    // Layer 4: Points
     //
 
     mViewModel.CalculateShipOrthoMatrix(
@@ -396,12 +400,12 @@ void ShipRenderContext::UpdateOrthoMatrices()
         NLayers,
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<ProgramType::ShipGenericTextures>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipGenericTextures, ProgramParameterType::OrthoMatrix>(
+    mShaderManager.ActivateProgram<ProgramType::ShipPointsColor>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipPointsColor, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
 
     //
-    // Layer 5
+    // Layer 5: Generic Textures
     //
 
     mViewModel.CalculateShipOrthoMatrix(
@@ -411,6 +415,24 @@ void ShipRenderContext::UpdateOrthoMatrices()
         static_cast<int>(mShipCount),
         static_cast<int>(mMaxMaxPlaneId),
         5,
+        NLayers,
+        shipOrthoMatrix);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipGenericTextures>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipGenericTextures, ProgramParameterType::OrthoMatrix>(
+        shipOrthoMatrix);
+
+    //
+    // Layer 6: Vectors
+    //
+
+    mViewModel.CalculateShipOrthoMatrix(
+        ShipRegionZStart,
+        ShipRegionZWidth,
+        static_cast<int>(mShipId),
+        static_cast<int>(mShipCount),
+        static_cast<int>(mMaxMaxPlaneId),
+        6,
         NLayers,
         shipOrthoMatrix);
 
@@ -427,6 +449,14 @@ void ShipRenderContext::OnAmbientLightIntensityUpdated()
 
     mShaderManager.ActivateProgram<ProgramType::ShipRopes>();
     mShaderManager.SetProgramParameter<ProgramType::ShipRopes, ProgramParameterType::AmbientLightIntensity>(
+        mAmbientLightIntensity);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipSpringsColor>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipSpringsColor, ProgramParameterType::AmbientLightIntensity>(
+        mAmbientLightIntensity);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipSpringsTexture>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipSpringsTexture, ProgramParameterType::AmbientLightIntensity>(
         mAmbientLightIntensity);
 
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesColor>();
@@ -460,6 +490,14 @@ void ShipRenderContext::OnWaterContrastUpdated()
     mShaderManager.SetProgramParameter<ProgramType::ShipRopes, ProgramParameterType::WaterContrast>(
         mWaterContrast);
 
+    mShaderManager.ActivateProgram<ProgramType::ShipSpringsColor>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipSpringsColor, ProgramParameterType::WaterContrast>(
+        mWaterContrast);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipSpringsTexture>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipSpringsTexture, ProgramParameterType::WaterContrast>(
+        mWaterContrast);
+
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesColor>();
     mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesColor, ProgramParameterType::WaterContrast>(
         mWaterContrast);
@@ -484,6 +522,14 @@ void ShipRenderContext::OnWaterLevelOfDetailUpdated()
 
     mShaderManager.ActivateProgram<ProgramType::ShipRopes>();
     mShaderManager.SetProgramParameter<ProgramType::ShipRopes, ProgramParameterType::WaterLevelThreshold>(
+        waterLevelThreshold);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipSpringsColor>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipSpringsColor, ProgramParameterType::WaterLevelThreshold>(
+        waterLevelThreshold);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipSpringsTexture>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipSpringsTexture, ProgramParameterType::WaterLevelThreshold>(
         waterLevelThreshold);
 
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesColor>();
@@ -872,7 +918,7 @@ void ShipRenderContext::RenderSpringElements(bool withTexture)
     if (withTexture)
     {
         // Use texture program
-        mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTexture>();
+        mShaderManager.ActivateProgram<ProgramType::ShipSpringsTexture>();
 
         // Bind texture
         mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
@@ -883,7 +929,7 @@ void ShipRenderContext::RenderSpringElements(bool withTexture)
     else
     {
         // Use color program
-        mShaderManager.ActivateProgram<ProgramType::ShipTrianglesColor>();
+        mShaderManager.ActivateProgram<ProgramType::ShipSpringsColor>();
     }
 
     // Set line size

@@ -33,6 +33,10 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::ShipPointsColor;
     else if (lstr == "ship_ropes")
         return ProgramType::ShipRopes;
+    else if (lstr == "ship_springs_color")
+        return ProgramType::ShipSpringsColor;
+    else if (lstr == "ship_springs_texture")
+        return ProgramType::ShipSpringsTexture;
     else if (lstr == "ship_stressed_springs")
         return ProgramType::ShipStressedSprings;
     else if (lstr == "ship_triangles_color")
@@ -73,6 +77,10 @@ std::string ProgramTypeToStr(ProgramType program)
         return "ShipPointsColor";
     case ProgramType::ShipRopes:
         return "ShipRopes";
+    case ProgramType::ShipSpringsColor:
+        return "ShipSpringsColor";
+    case ProgramType::ShipSpringsTexture:
+        return "ShipSpringsTexture";
     case ProgramType::ShipStressedSprings:
         return "ShipStressedSprings";
     case ProgramType::ShipTrianglesColor:
