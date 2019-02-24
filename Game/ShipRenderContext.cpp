@@ -736,6 +736,18 @@ void ShipRenderContext::RenderEnd()
 
 
     //
+    // Draw triangles
+    //
+
+    if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe
+        || (mDebugShipRenderMode == DebugShipRenderMode::None
+            && (mShipRenderMode == ShipRenderMode::Structure || mShipRenderMode == ShipRenderMode::Texture)))
+    {
+        RenderTriangleElements(mShipRenderMode == ShipRenderMode::Texture);
+    }
+
+    // TODO: change comment once this becomes the only ropes invocation
+    //
     // Draw ropes now if RenderMode is anything but Structure
     // (with Structure we want endpoints on the structure to be visible)
     //
@@ -745,7 +757,6 @@ void ShipRenderContext::RenderEnd()
     {
         RenderRopeElements();
     }
-
 
     //
     // Draw springs
@@ -765,17 +776,6 @@ void ShipRenderContext::RenderEnd()
         RenderSpringElements(mDebugShipRenderMode == DebugShipRenderMode::None && mShipRenderMode == ShipRenderMode::Texture);
     }
 
-
-    //
-    // Draw triangles
-    //
-
-    if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe
-        || (mDebugShipRenderMode == DebugShipRenderMode::None
-            && (mShipRenderMode == ShipRenderMode::Structure || mShipRenderMode == ShipRenderMode::Texture)))
-    {
-        RenderTriangleElements(mShipRenderMode == ShipRenderMode::Texture);
-    }
 
 
     // TODO: this is broken as the ropes layer is still behind the structure. See if we need to draw ropes on same layer as
