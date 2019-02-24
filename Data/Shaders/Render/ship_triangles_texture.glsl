@@ -52,6 +52,11 @@ void main()
 {
     vec4 vertexCol = texture2D(sharedSpringTexture, vertexTextureCoords);
 
+    // Discard transparent pixels, so that ropes (which are drawn temporally after
+    // this shader but Z-ally behind) are not occluded by transparent triangles
+    if (vertexCol.w < 0.2)
+        discard;
+
     // Apply point water
     float colorWetness = min(vertexWater, paramWaterLevelThreshold) / paramWaterLevelThreshold * paramWaterContrast;
     vec4 fragColour = vertexCol * (1.0 - colorWetness) + vec4(%WET_COLOR_VEC4%) * colorWetness;
