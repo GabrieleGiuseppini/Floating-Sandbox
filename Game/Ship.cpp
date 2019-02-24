@@ -1570,21 +1570,18 @@ void Ship::UpdateEphemeralParticles(
 void Ship::RunConnectivityVisit(VisitSequenceNumber currentVisitSequenceNumber)
 {
     //
-    // Here we visit the entire network of points (NOT including the ephemerals)
-    // and propagate connectivity information:
     //
-    // - PlaneID: all points belonging to the same connected component, including "strings"
-    //            propagating from a solid body (triangle) but not solid bodies reached via "strings",
+    // Here we visit the entire network of points (NOT including the ephemerals - they'll be assigned
+    // their own plane ID's at creation time) and propagate connectivity information:
+    //
+    // - PlaneID: all points belonging to the same connected component, including "strings",
     //            are assigned the same plane ID
-    //      - We allow "by chance" some strings to have their own plane ID, not shared with any solid body;
-    //        this may happen if, for example, we begin a flood from a string point
     //
-    // - Connected Component ID: all points belonging to the same connected component (excluding
-    //           string points) are assigned the same connected component ID
+    // - Connected Component ID: at this moment we assign the same value as the plane ID; in the future
+    //           we might want to only assign a connected component ID to points belonging to the same
+    //           connected component, but excluding string points (this will then require a separate visit)
     //
-    // Basically, at the end of a visit *ALL* (non-ephemeral) points will have a Plane ID, and only
-    // all non-string points (i.e. points that are also vertices of at least one triangle) will also
-    // have a Connected Component ID (which will just happen to have the same value as the Plane ID).
+    // Basically, at the end of a visit *ALL* (non-ephemeral) points will have a Plane ID.
     //
     // We also piggyback the visit to create the array of triangle indices in plane (Z) order.
     //
@@ -1614,18 +1611,10 @@ void Ship::RunConnectivityVisit(VisitSequenceNumber currentVisitSequenceNumber)
             // Flood from this point
             //
 
-            bool isPointString = mPoints.GetConnectedTriangles(pointIndex).size() == 0;
-
             // Visit this point first
             mPoints.SetPlaneId(pointIndex, currentPlaneId);
-            if (!isPointString) // Do not assign connected component ID to "strings"
-                mPoints.SetConnectedComponentId(pointIndex, static_cast<ConnectedComponentId>(currentPlaneId));
-            else
-                mPoints.SetConnectedComponentId(pointIndex, NoneConnectedComponentId);
+            mPoints.SetConnectedComponentId(pointIndex, static_cast<ConnectedComponentId>(currentPlaneId));
             mPoints.SetCurrentConnectivityVisitSequenceNumber(pointIndex, currentVisitSequenceNumber);
-
-            // Remember whether this flood has seen a non-string point
-            bool hasFloodedNonStringPoint = !isPointString;
 
             // Add point to queue
             assert(pointsToPropagateFrom.empty());
@@ -1641,9 +1630,6 @@ void Ship::RunConnectivityVisit(VisitSequenceNumber currentVisitSequenceNumber)
                 // This point has been visited already
                 assert(currentVisitSequenceNumber == mPoints.GetCurrentConnectivityVisitSequenceNumber(currentPointIndex));
 
-                // Remember whether this point is a string point
-                bool const isStartPointString = mPoints.GetConnectedTriangles(currentPointIndex).size() == 0;
-
                 // Visit all its non-visited connected points
                 for (auto const & cs : mPoints.GetConnectedSprings(currentPointIndex))
                 {
@@ -1652,38 +1638,15 @@ void Ship::RunConnectivityVisit(VisitSequenceNumber currentVisitSequenceNumber)
                     if (currentVisitSequenceNumber != mPoints.GetCurrentConnectivityVisitSequenceNumber(cs.OtherEndpointIndex))
                     {
                         //
-                        // We want strings to belong to the (arbitrarily) first "body" connected to the string.
-                        // This implies that we visit a connected point only if by doing so we're not advancing
-                        // from a string point to a non-string point (string-to-string is always fine).
-                        // In case the flood itself started from a string, we allow once an advancement from a
-                        // string point to a non-string point (which would be the first and only "body" connected
-                        // to the string).
-                        //
-                        // When we don't visit a point, we'll visit it later with a new flood!
+                        // Visit point
                         //
 
-                        bool const isEndPointString = mPoints.GetConnectedTriangles(cs.OtherEndpointIndex).size() == 0;
-                        if (!hasFloodedNonStringPoint   // Haven't advanced to a body yet
-                            || !isStartPointString      // We are advancing from a body
-                            || isEndPointString)        // We are advancing to a string
-                        {
-                            //
-                            // Visit point
-                            //
+                        mPoints.SetPlaneId(cs.OtherEndpointIndex, currentPlaneId);
+                        mPoints.SetConnectedComponentId(cs.OtherEndpointIndex, static_cast<ConnectedComponentId>(currentPlaneId));
+                        mPoints.SetCurrentConnectivityVisitSequenceNumber(cs.OtherEndpointIndex, currentVisitSequenceNumber);
 
-                            mPoints.SetPlaneId(cs.OtherEndpointIndex, currentPlaneId);
-                            if (!isEndPointString) // Do not assign connected component ID to "strings"
-                                mPoints.SetConnectedComponentId(cs.OtherEndpointIndex, static_cast<ConnectedComponentId>(currentPlaneId));
-                            else
-                                mPoints.SetConnectedComponentId(cs.OtherEndpointIndex, NoneConnectedComponentId);
-                            mPoints.SetCurrentConnectivityVisitSequenceNumber(cs.OtherEndpointIndex, currentVisitSequenceNumber);
-
-                            // Remember whether we have flooded a non-string point
-                            hasFloodedNonStringPoint |= !isEndPointString;
-
-                            // Add point to queue
-                            pointsToPropagateFrom.push(cs.OtherEndpointIndex);
-                        }
+                        // Add point to queue
+                        pointsToPropagateFrom.push(cs.OtherEndpointIndex);
                     }
                 }
 
@@ -1713,6 +1676,161 @@ void Ship::RunConnectivityVisit(VisitSequenceNumber currentVisitSequenceNumber)
             ++currentPlaneId;
         }
     }
+
+    return;
+
+    //
+    // TODOTEST: this was the first implementation in 1.9, the one that attempted
+    // to separate strings and bodies. It is now deprecated as it yields horrible
+    // artifacts: half of the final part of each rope would belong to the body with
+    // a higher plane ID, while the other half would be occluded behind.
+    //
+
+    //////
+    //////
+    ////// Here we visit the entire network of points (NOT including the ephemerals)
+    ////// and propagate connectivity information:
+    //////
+    ////// - PlaneID: all points belonging to the same connected component, including "strings"
+    //////            propagating from a solid body (triangle) but not solid bodies reached via "strings",
+    //////            are assigned the same plane ID
+    //////      - We allow "by chance" some strings to have their own plane ID, not shared with any solid body;
+    //////        this may happen if, for example, we begin a flood from a string point
+    //////
+    ////// - Connected Component ID: all points belonging to the same connected component (excluding
+    //////           string points) are assigned the same connected component ID
+    //////
+    ////// Basically, at the end of a visit *ALL* (non-ephemeral) points will have a Plane ID, and only
+    ////// all non-string points (i.e. points that are also vertices of at least one triangle) will also
+    ////// have a Connected Component ID (which will just happen to have the same value as the Plane ID).
+    //////
+    ////// We also piggyback the visit to create the array of triangle indices in plane (Z) order.
+    //////
+
+    ////PlaneId currentPlaneId = 0; // Also serves as Connected Component ID
+
+    ////// The set of (already) marked points, from which we still
+    ////// have to propagate out
+    ////std::queue<ElementIndex> pointsToPropagateFrom;
+
+    ////// Reset triangle indices
+    ////mDepthSortedTriangleRenderIndices.clear();
+
+    ////// Visit all non-ephemeral points, from right to left - so that funnels, which tend to be Z-nearer,
+    ////// also carry on their own plane the ropes that connect them to further connected components.
+    //////
+    ////// The reverse visit also implies that at the end of this run, higher plane IDs will mean Z-far, and lower
+    ////// plane IDs will mean Z-near.
+    ////for (auto pointIndex : mPoints.NonEphemeralPointsReverse())
+    ////{
+    ////    // Don't visit destroyed points, or we run the risk of creating a zillion planes for nothing,
+    ////    // and don't re-visit already-visited points
+    ////    if (!mPoints.IsDeleted(pointIndex)
+    ////        && mPoints.GetCurrentConnectivityVisitSequenceNumber(pointIndex) != currentVisitSequenceNumber)
+    ////    {
+    ////        //
+    ////        // Flood from this point
+    ////        //
+
+    ////        bool isPointString = mPoints.GetConnectedTriangles(pointIndex).size() == 0;
+
+    ////        // Visit this point first
+    ////        mPoints.SetPlaneId(pointIndex, currentPlaneId);
+    ////        if (!isPointString) // Do not assign connected component ID to "strings"
+    ////            mPoints.SetConnectedComponentId(pointIndex, static_cast<ConnectedComponentId>(currentPlaneId));
+    ////        else
+    ////            mPoints.SetConnectedComponentId(pointIndex, NoneConnectedComponentId);
+    ////        mPoints.SetCurrentConnectivityVisitSequenceNumber(pointIndex, currentVisitSequenceNumber);
+
+    ////        // Remember whether this flood has seen a non-string point
+    ////        bool hasFloodedNonStringPoint = !isPointString;
+
+    ////        // Add point to queue
+    ////        assert(pointsToPropagateFrom.empty());
+    ////        pointsToPropagateFrom.push(pointIndex);
+
+    ////        // Visit all points reachable from this point via springs
+    ////        while (!pointsToPropagateFrom.empty())
+    ////        {
+    ////            // Pop point that we have to propagate from
+    ////            auto const currentPointIndex = pointsToPropagateFrom.front();
+    ////            pointsToPropagateFrom.pop();
+
+    ////            // This point has been visited already
+    ////            assert(currentVisitSequenceNumber == mPoints.GetCurrentConnectivityVisitSequenceNumber(currentPointIndex));
+
+    ////            // Remember whether this point is a string point
+    ////            bool const isStartPointString = mPoints.GetConnectedTriangles(currentPointIndex).size() == 0;
+
+    ////            // Visit all its non-visited connected points
+    ////            for (auto const & cs : mPoints.GetConnectedSprings(currentPointIndex))
+    ////            {
+    ////                assert(!mPoints.IsDeleted(cs.OtherEndpointIndex));
+
+    ////                if (currentVisitSequenceNumber != mPoints.GetCurrentConnectivityVisitSequenceNumber(cs.OtherEndpointIndex))
+    ////                {
+    ////                    //
+    ////                    // We want strings to belong to the (arbitrarily) first "body" connected to the string.
+    ////                    // This implies that we visit a connected point only if by doing so we're not advancing
+    ////                    // from a string point to a non-string point (string-to-string is always fine).
+    ////                    // In case the flood itself started from a string, we allow once an advancement from a
+    ////                    // string point to a non-string point (which would be the first and only "body" connected
+    ////                    // to the string).
+    ////                    //
+    ////                    // When we don't visit a point, we'll visit it later with a new flood!
+    ////                    //
+
+    ////                    bool const isEndPointString = mPoints.GetConnectedTriangles(cs.OtherEndpointIndex).size() == 0;
+    ////                    if (!hasFloodedNonStringPoint   // Haven't advanced to a body yet
+    ////                        || !isStartPointString      // We are advancing from a body
+    ////                        || isEndPointString)        // We are advancing to a string
+    ////                    {
+    ////                        //
+    ////                        // Visit point
+    ////                        //
+
+    ////                        mPoints.SetPlaneId(cs.OtherEndpointIndex, currentPlaneId);
+    ////                        if (!isEndPointString) // Do not assign connected component ID to "strings"
+    ////                            mPoints.SetConnectedComponentId(cs.OtherEndpointIndex, static_cast<ConnectedComponentId>(currentPlaneId));
+    ////                        else
+    ////                            mPoints.SetConnectedComponentId(cs.OtherEndpointIndex, NoneConnectedComponentId);
+    ////                        mPoints.SetCurrentConnectivityVisitSequenceNumber(cs.OtherEndpointIndex, currentVisitSequenceNumber);
+
+    ////                        // Remember whether we have flooded a non-string point
+    ////                        hasFloodedNonStringPoint |= !isEndPointString;
+
+    ////                        // Add point to queue
+    ////                        pointsToPropagateFrom.push(cs.OtherEndpointIndex);
+    ////                    }
+    ////                }
+    ////            }
+
+
+    ////            //
+    ////            // Add all the triangles owned by this point to the list of triangles sorted by plane (i.e. Z)
+    ////            //
+
+    ////            for (auto const & ct : mPoints.GetConnectedTriangles(currentPointIndex))
+    ////            {
+    ////                if (!ct.IsAtOwner)
+    ////                    break; // We rely on the fact that the triangles connected to this point are sorted by IsAtOwner
+
+    ////                if (!mTriangles.IsDeleted(ct.TriangleIndex))
+    ////                    mDepthSortedTriangleRenderIndices.push_back(ct.TriangleIndex);
+    ////            }
+    ////        }
+
+    ////        //
+    ////        // Flood completed
+    ////        //
+
+    ////        // Remember max plane ID ever
+    ////        mMaxMaxPlaneId = std::max(mMaxMaxPlaneId, currentPlaneId);
+
+    ////        // Next we begin a new plane and connected component
+    ////        ++currentPlaneId;
+    ////    }
+    ////}
 
 
     ////////////////////////////////////////////////////////
