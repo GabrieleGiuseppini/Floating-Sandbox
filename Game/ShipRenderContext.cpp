@@ -738,6 +738,10 @@ void ShipRenderContext::RenderEnd()
     //
     // Draw triangles
     //
+    // Best to draw triangles (temporally) before springs and ropes, otherwise
+    // the latter, which use anti-aliasing, would end up being contoured with background
+    // when drawn Z-ally over triangles
+    //
 
     if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe
         || (mDebugShipRenderMode == DebugShipRenderMode::None
