@@ -742,6 +742,9 @@ void ShipRenderContext::RenderEnd()
     // the latter, which use anti-aliasing, would end up being contoured with background
     // when drawn Z-ally over triangles
     //
+    // Also, edge springs might just contain transparent pixels (when textured), which
+    // would result in the same artifact
+    //
 
     if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe
         || (mDebugShipRenderMode == DebugShipRenderMode::None
