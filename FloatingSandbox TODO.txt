@@ -152,6 +152,8 @@ Render:
 		+ Create "z_buffer" branch
 		= Zbuffer (*)
 
+		- ShipLoadDialog: make sure default Ships directory is always in recent dirs
+
 		- Make flood tool adjustable
 			- Try one single setting affecting both radius and quantity of water
 
@@ -656,9 +658,9 @@ Render:
 				+ Verify new behavior: OK
 				+ Put back ShipRenderContext's Springs rendering
 				+ Commit
-			- Step 8:
-				- Five issues:
-					- Disappearing ropes
+			= Step 8:
+				= Issues:
+					- Disappearing ropes (test with Base)
 						- Verify it's due because of Z range going out of [-1,+1] range
 							- Test with smaller ship range
 						- If so, solutions:
@@ -667,24 +669,37 @@ Render:
 					+ Ropes jumping ahead (when new connected components come up)
 						+ Due to incorrect planeID direction on Z axis: higher plane ID (recipient of string
 						  assigned to previous (lower) plane ID) must be nearer (than string and its solid body)
-					- (Edge) springs countoured with background (because of anti-aliasing)
+					+ (Edge) springs countoured with background
 						+ Testable with Titanic funnel
-					- Ropes and anti-aliasing issue:
-						- Option 1: draw ropes *after* triangles and springs, but still in current layer (farther)
+						+ Solution: draw triangles before all
+					+ Ropes and anti-aliasing issue:
+						+ Option 1: draw ropes *after* triangles and springs, but still in current layer (farther)
 						- Option 2: see https://stackoverflow.com/questions/30426178/lines-appear-segmented-after-enabling-depth-testing:
 							- Draw ropes first (in invoke order) with Z write off (Z test is irrelevant, as it'd be the first)
 								- BUT: if there's no Z write then there's no Z test among ropes, hence
 								  they'd cover each other wrongly
 							- Draw everything else with Z write (and Z test) on
-					- Piece of rope appears to belong to higher connected component
-						- Was to be expected - after all last segment of rope is between two points that have
+					+ Piece of rope appears to belong to higher connected component
+						+ Was to be expected - after all last segment of rope is between two points that have
 						  two different plane IDs, hence a part of the last segment will be visible
-						- Possible solution is to stop doing the "smart" string plane propagation
+						+ Possible solution is to stop doing the "smart" string plane propagation altogether
+					+ When pieces belong to same plane, (edge) springs are drawn in disagreement with triangles
+					  (e.g. triangles invisible but their edge springs visible)
+						+ Option 1: springs are drawn in layer Z-behind
+						- Option 2: depth-sort springs as well
+					+ After we start drawing ropes temporally after triangles (because of anti-aliasing issue):
+						+ Ropes are now occluded by transparent (texture) triangles from same plane
+							+ This is because ropes layer is Z-behind triangles layer
+							+ Option 1: alpha test in shader
+					- Same plane: covering is now more random
 				- Test texture mode
 				- Test structure mode
 					- See if loss of ropes over structure is ugly; if we can live without it, remove conditions and dual 
 					  rope rendering
+				- Test stressed springs
 				- Commit
+			- Step 9: cleanup:
+				- ConnectivityVisit: redo visit from L to R and thus simplify ortho matrix
 			- Step 10:
 				- GenericTextures: is now own pass that uses plane IDs as input for Z's in shader
 					- Upload plane IDs instead of conn comp IDs
