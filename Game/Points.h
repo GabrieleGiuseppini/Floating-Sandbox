@@ -247,7 +247,9 @@ public:
         , mIsPinnedBuffer(mBufferElementCount, shipPointCount, false)
         // Immutable render attributes
         , mColorBuffer(mBufferElementCount, shipPointCount, vec4f::zero())
+        , mIsColorBufferDirty(false)
         , mTextureCoordinatesBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
+        , mIsTextureCoordinatesBufferDirty(false)
         //////////////////////////////////
         // Container
         //////////////////////////////////
@@ -258,7 +260,6 @@ public:
         , mGameEventHandler(std::move(gameEventHandler))
         , mDestroyHandler()
         , mCurrentNumMechanicalDynamicsIterations(gameParameters.NumMechanicalDynamicsIterations<float>())
-        , mAreImmutableRenderAttributesUploaded(false)
         , mFloatBufferAllocator(mBufferElementCount)
         , mVec2fBufferAllocator(mBufferElementCount)
         , mFreeEphemeralParticleSearchStartIndex(mShipPointCount)
@@ -766,33 +767,6 @@ public:
     }
 
     //
-    // Pinning
-    //
-
-    bool IsPinned(ElementIndex pointElementIndex) const
-    {
-        return mIsPinnedBuffer[pointElementIndex];
-    }
-
-    void Pin(ElementIndex pointElementIndex)
-    {
-        assert(false == mIsPinnedBuffer[pointElementIndex]);
-
-        mIsPinnedBuffer[pointElementIndex] = true;
-
-        Freeze(pointElementIndex);
-    }
-
-    void Unpin(ElementIndex pointElementIndex)
-    {
-        assert(true == mIsPinnedBuffer[pointElementIndex]);
-
-        mIsPinnedBuffer[pointElementIndex] = false;
-
-        Thaw(pointElementIndex);
-    }
-
-    //
     // Connected components and plane IDs
     //
 
@@ -832,6 +806,48 @@ public:
         mCurrentConnectivityVisitSequenceNumberBuffer[pointElementIndex] =
             connectivityVisitSequenceNumber;
     }
+
+    //
+    // Pinning
+    //
+
+    bool IsPinned(ElementIndex pointElementIndex) const
+    {
+        return mIsPinnedBuffer[pointElementIndex];
+    }
+
+    void Pin(ElementIndex pointElementIndex)
+    {
+        assert(false == mIsPinnedBuffer[pointElementIndex]);
+
+        mIsPinnedBuffer[pointElementIndex] = true;
+
+        Freeze(pointElementIndex);
+    }
+
+    void Unpin(ElementIndex pointElementIndex)
+    {
+        assert(true == mIsPinnedBuffer[pointElementIndex]);
+
+        mIsPinnedBuffer[pointElementIndex] = false;
+
+        Thaw(pointElementIndex);
+    }
+
+    //
+    // Immutable attributes
+    //
+
+    vec4f & GetColor(ElementIndex pointElementIndex)
+    {
+        return mColorBuffer[pointElementIndex];
+    }
+
+    void MarkColorBufferAsDirty()
+    {
+        mIsColorBufferDirty = true;
+    }
+
 
     //
     // Temporary buffer
@@ -977,7 +993,9 @@ private:
     //
 
     Buffer<vec4f> mColorBuffer;
+    bool mutable mIsColorBufferDirty;  // Whether or not is dirty since last render upload
     Buffer<vec2f> mTextureCoordinatesBuffer;
+    bool mutable mIsTextureCoordinatesBufferDirty; // Whether or not is dirty since last render upload
 
 
     //////////////////////////////////////////////////////////
@@ -1003,10 +1021,6 @@ private:
     // in the values of these parameters will trigger a re-calculation
     // of pre-calculated coefficients
     float mCurrentNumMechanicalDynamicsIterations;
-
-    // Flag remembering whether or not we've already uploaded
-    // the immutable render attributes
-    bool mutable mAreImmutableRenderAttributesUploaded;
 
     // Allocators for work buffers
     BufferAllocator<float> mFloatBufferAllocator;

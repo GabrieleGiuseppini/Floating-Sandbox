@@ -434,14 +434,16 @@ void Points::UploadMutableAttributes(
     Render::RenderContext & renderContext) const
 {
     // Upload immutable attributes, if we haven't uploaded them yet
-    if (!mAreImmutableRenderAttributesUploaded)
+    if (mIsColorBufferDirty
+        || mIsTextureCoordinatesBufferDirty)
     {
         renderContext.UploadShipPointImmutableGraphicalAttributes(
             shipId,
             mColorBuffer.data(),
             mTextureCoordinatesBuffer.data());
 
-        mAreImmutableRenderAttributesUploaded = true;
+        mIsColorBufferDirty = false;
+        mIsTextureCoordinatesBufferDirty = false;
     }
 
     // Upload mutable attributes

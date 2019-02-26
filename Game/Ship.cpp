@@ -1567,6 +1567,8 @@ void Ship::UpdateEphemeralParticles(
 // Private helpers
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
+#define RENDER_FLOOD_DISTANCE
+
 void Ship::RunConnectivityVisit(VisitSequenceNumber currentVisitSequenceNumber)
 {
     //
@@ -1587,6 +1589,10 @@ void Ship::RunConnectivityVisit(VisitSequenceNumber currentVisitSequenceNumber)
     //
 
     PlaneId currentPlaneId = 0; // Also serves as Connected Component ID
+
+#ifdef RENDER_FLOOD_DISTANCE
+    std::optional<float> floodDistanceColor;
+#endif
 
     // The set of (already) marked points, from which we still
     // have to propagate out
@@ -1629,6 +1635,19 @@ void Ship::RunConnectivityVisit(VisitSequenceNumber currentVisitSequenceNumber)
 
                 // This point has been visited already
                 assert(currentVisitSequenceNumber == mPoints.GetCurrentConnectivityVisitSequenceNumber(currentPointIndex));
+
+#ifdef RENDER_FLOOD_DISTANCE
+                if (!floodDistanceColor)
+                {
+                    mPoints.GetColor(currentPointIndex) = vec4f(0.0f, 0.0f, 0.75f, 1.0f);
+                    floodDistanceColor = 0.0f;
+                }
+                else
+                    mPoints.GetColor(currentPointIndex) = vec4f(*floodDistanceColor, 0.0f, 0.0f, 1.0f);
+                floodDistanceColor = *floodDistanceColor + 1.0f / 128.0f;
+                if (*floodDistanceColor > 1.0f)
+                    floodDistanceColor = 0.0f;
+#endif
 
                 // Visit all its non-visited connected points
                 for (auto const & cs : mPoints.GetConnectedSprings(currentPointIndex))
@@ -1676,6 +1695,10 @@ void Ship::RunConnectivityVisit(VisitSequenceNumber currentVisitSequenceNumber)
             ++currentPlaneId;
         }
     }
+
+#ifdef RENDER_FLOOD_DISTANCE
+    mPoints.MarkColorBufferAsDirty();
+#endif
 
     return;
 
