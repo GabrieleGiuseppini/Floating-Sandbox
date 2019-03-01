@@ -154,6 +154,8 @@ Render:
 
 		- ShipLoadDialog: make sure default Ships directory is always in recent dirs
 
+		- Fix sailing ship - cut sail in texture (but not in psd)
+
 		- Make flood tool adjustable
 			- Try one single setting affecting both radius and quantity of water
 
@@ -162,8 +164,16 @@ Render:
 
 		- Make ropes less crazy when they get wet
 			- Test: base high, slice rightmost tip
+			- Lower water intake adjust seems to help: do we have it per-material?
+
+		- Add more cloth colors
+			- Redo structural template
+
+		- Take new ships from 02/09
 
 		- Orphaned points (*)
+
+		- Decay (rust) (*)
 
 		- Pick tool (*)
 
@@ -171,14 +181,14 @@ Render:
 
 		+ ConnectedSprings/OtherEndpoint Optimization (*)
 		- Increase # of ephemeral particles
-			- And thus lower threshold of air bubbles
+			- And thus lower water intake threshold for air bubbles
 
 		- Ships:
 			- Romanorum Imperatrix
 			- See sinking_feeling's capsizing ship issue
 
 	- 1.10.0
-		- Spring and NonSpring force separation optimization
+		- Spring and NonSpring force separation optimization (*)
 		- Batisphere with pumps and propulsion (*)
 			- Switches (*)
 			- Pumps (*)
@@ -200,7 +210,6 @@ Render:
 
 
 - Suggestions to spec:
-	- Wreck rustes after some time
 	- Fishes
 	- Different colored lights
 	- Backgrounds: use keys to switch between a dock, cliffs, open ocean, ice field, etc.
@@ -341,7 +350,7 @@ Render:
 		- Points: Position with Velocity and Force
 			- Affects Integrate and Rendering
 
-	- Forces rearc:
+	- Forces rearc (*):
 		- Rationale: multiple spring iterations are really artificial; in reality, changes due to spring position changes in-between 
 		  iterations shouldn't impact physical world (e.g. buoyancy/drag) yet
 		- Points has two Force buffers: SpringForces and PointForces (or "NonSpringForces")
@@ -691,16 +700,32 @@ Render:
 						+ Ropes are now occluded by transparent (texture) triangles from same plane
 							+ This is because ropes layer is Z-behind triangles layer
 							+ Option 1: alpha test in shader
-					- Same plane: covering is now more random
+					= Same plane: covering is now more random
+						+ Analyze visit pattern
+						+ Try with deque
+						+ Try with old-style visit (step 9 below)
+						= Try following raster visit using per-plane indices in final vector
+							+ 1: ConnectivityVisit: populate N+1 vector with # of triangles per plane
+							+ 2: Triangles::Upload: take it and send endpoints to ShipRenderContext
+							+ Test
+							= If ok:
+								+ Add # of owned triangles to each point (new buffer)
+									+ Init to 0 at Points::Add
+									+ Update count at Points::Add/RemoveConnectedTriangles
+									+ Use it @ ConnectivityVisit instead of counting triangles
+				+ Undefine flood rendering
+				- See if need to and can make alpha threshold higher, to eliminate artifacts around ropes close to their endpoints on 
+				  Titanic's funnels
 				- Test texture mode
 				- Test structure mode
 					- See if loss of ropes over structure is ugly; if we can live without it, remove conditions and dual 
 					  rope rendering
-				- Test stressed springs
+				+ Test stressed springs
 				- Commit
 			- Step 9: cleanup:
-				- ConnectivityVisit: redo visit from L to R and thus simplify ortho matrix
-			- Step 10:
+				+ ConnectivityVisit: redo visit from L to R and thus simplify ortho matrix
+				- Remove commented-out connectivity visit
+			- Step 10: generic textures
 				- GenericTextures: is now own pass that uses plane IDs as input for Z's in shader
 					- Upload plane IDs instead of conn comp IDs
 					- Fix at all calls from:
@@ -709,30 +734,32 @@ Render:
 							- The texture ones can now pass real plane ID, fix call chain up to caller
 						- PinnedPoint
 					- For now keep doing per-plane partitioning of textures for depth-sorting; we'll try alternatives later
-				- Test & commit
-			- Step 11:
+				- Test
+					- Gen textures are correctly covered by things (ropes, triangles, gen textures) in nearer plane, 
+					  and correctly cover things (ropes, triangles, gen textures) in further plane
+				- Commit
+			- Step 11: vectors
 				- Add PlaneID to vectors
 					- Actually, remove position upload: bind to same positions (and plane ID) of points
 						- Make sure we have plane IDs for all, including eph points
 				- Test & commit
-			- Step 12:
-				- Verify first ephemeral points are broken with planeID=1, with ship cut in half
+			- Step 12: ephemeral points
+				- Verify first ephemeral points are broken with constant planeID=1, by using ship cut in half
 				  and ephemerals from either side
 				- EphemeralPoints: is now own pass that uses plane IDs as input for Z's in shader
 				- Verify with test again
 				- Commit
-				
-
-			
+							
 		- Tests:
 			- Run in Debug
-			- Rope triangles built via ropes layer: verify plane ID and conn comp ID assignment
-			- Gen textures are correctly covered by things in nearer plane
-
+			- Post perf test
+				- Benchmark: TODO
+				- Gradual reduction to smithereens (anti-matter bomb w/Titanic)
+					- Check whether slowness during gradual decomposition is acceptable
 		- Cleanups:
-			- Points: order connected triangles so that owned are first
-				- Might be best done @ insert
-				- ConnectivityVisit::population of triangle indices: cut short connected triangles' visit as soon
+			+ Points: order connected triangles so that owned are first
+				+ Might be best done @ insert
+				+ ConnectivityVisit::population of triangle indices: cut short connected triangles' visit as soon
 				  as isAtOwner==false
 			- Light spread on surface changes abruptly when piece is cut; see if it makes sense for diffuse
 			  to only light points whose plane ID is behind lamp (thus planeID>=lampPlaneID)
@@ -779,20 +806,30 @@ Render:
 	+ Make font white inversely to ambient light
 	- Make water texture scroll with wind speed
 
-	- Electrical view
-		- New flag (not in ShipRenderMode)
-			- Settable at SettingsDialog
-				- Ideally, enabled only if there are electrical elements, but how to figure it out?
-		- When enabled, draws lines and electrical current (color) on top of ship
-			- Ship uploads <EPIndex1, EPIndex2, float current>
-		- Better if this is done after Z buffer rearc
-			- So no need to mess with ShipRenderContext::ConnectedComponentData
-		- Generation of buffer done at (new, see elsewhere in this roadmap) UpdateElectricalConnectivity
-			- If flag is enabled, UpdateElectricalConnectivity also stores data in buffer 
-				- Exactly like we plan to do for triangles, but always done, regardless of dirty-ness
-				- Test: buffer storage controlled via argument lambda
-					- Check asm
-				- Current of a spring == current of EP1 * current of EP2
+	- Electrical view:
+		- Spec:
+			- New flag (not in ShipRenderMode, standalone ~like StressedSprings)
+				- Settable at SettingsDialog
+					- Ideally, enabled only if there are electrical elements, but how to figure it out?
+			- When enabled, draws "Connections" (lines - w/own endpoints) and "Devices" (points - w/own endpoints) 
+			  on top of ship
+				- One new layer after tri's, springs, and ropes
+				- Connection, w/bool isPowered
+					- Powered: 1D texture, animated (w/clock->offset), red
+					- !Powered: 1D texture, still, grey matte
+						- Both textures are segments in same texture
+		- Impl:
+			- (Ship)RenderContext::UploadElectricalConnection/Device/Start/End:
+				- Conn: 
+					- vec2 startPos, endPos
+					- planeId
+					- isPowered => texture coord
+				- Device:
+					- vec2 pos
+					- planeId
+					- vec4 color => color
+			- Ship::Render: if flag set: invokes Ship::RenderElectricalElements()				
+				- Do a sort of connectivity visit and upload as you go
 
 	- Should we always draw orphaned points - those that come after destruction? (*)
 		+ Orphaned point == points with 0 connected springs
@@ -919,6 +956,38 @@ Render:
 
 - Dynamics:
 
+	- Decay (rust) (*)
+		- Spec:
+			- Over time, *wet* *metal* points and springs get reddish or greenish, and strength lowers
+			- GameParameters: DecayAcceler8r controls how quickly
+				- 0  = +INF == never
+				- 1  = 5m (default)
+				- 10 = 10s
+			- Low-frequency Ship update does job
+		- Impl:
+			- Points: new Decay buffer
+				- Init as 0.0
+				- Ship::DecayStructure sends it asymptotically to 1.0
+			- Ship::DecayStructure:
+				- Invoked by Ship::Update
+				- Checks whether currentSimTimestamp >= lastDecaySimTimestamp + DT
+					- Acceler8r => T to ~total decay: TBD: find formula
+					- DT = T / 300
+				- When so:
+					- alpha = (10**-5)**(1/300) (~total decay in 300 steps)
+					- for each point p for which p.water > threshold and p.isMetal:
+						- p.rust *= alpha
+					- Points.MarkRustBufferAsDirty()
+					- for each spring s:
+						- s.strength *= (1.0 - pA.rust)
+			- (Ship)RenderContext:
+				- UploadDecayBuffer
+				- Triangle, Spring, and Point shaders take attrib array and use it for color blend
+			- Ship::Render:
+				- Call Points::UploadDirtyBuffers (new name for old method)
+					- Also uploads Decay buffer if dirty
+
+
 	- Lights breaking under pressure
 		- Idea:
 			- All structural materials have max pressure delta after which they break, with some randomness
@@ -931,6 +1000,7 @@ Render:
 		- Make number of samples be bump map width
 		- Still check width is power of two
 		- Still calculate bit stuff for fast mod
+		- Make default floor larger and check perf impact
 
 	- Ocean floor breaking up upon impact
 		- Layer on top of floor samples, with hash buckets and lists of heights per-bucket
@@ -1274,8 +1344,9 @@ Render:
 
 	- Setting for wave width 
 		- Changing the width of the waves up to at least 10x the current size
+		- Period: https://www.quora.com/How-can-I-determine-the-period-of-a-sum-of-sines-or-cosines-or-mixed
 		- Option 1:
-			- Requires re-calculation of period (if adjustment is x-multiplier N, then period is N times basic period)
+			- Requires re-calculation of period (if adjustment is x-multiplier N, then period is N times basic period?)
 			- Resolution stays the same
 		- Option 2:
 			- Integral ticks to change frequencies so that period is always the same
