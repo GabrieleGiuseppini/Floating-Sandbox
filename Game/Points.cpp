@@ -563,7 +563,7 @@ void Points::UploadEphemeralParticles(
             {
                 renderContext.UploadShipGenericTextureRenderSpecification(
                     shipId,
-                    1, // Connected component ID - see note above
+                    GetPlaneId(pointIndex),
                     TextureFrameId(TextureGroupType::AirBubble, mEphemeralStateBuffer[pointIndex].AirBubble.FrameIndex),
                     GetPosition(pointIndex),
                     mEphemeralStateBuffer[pointIndex].AirBubble.InitialSize, // Scale
@@ -591,7 +591,7 @@ void Points::UploadEphemeralParticles(
             {
                 renderContext.UploadShipGenericTextureRenderSpecification(
                     shipId,
-                    1, // Connected component ID - see note above
+                    GetPlaneId(pointIndex),
                     TextureFrameId(TextureGroupType::SawSparkle, mEphemeralStateBuffer[pointIndex].Sparkle.FrameIndex),
                     GetPosition(pointIndex),
                     1.0f,

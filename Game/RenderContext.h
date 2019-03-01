@@ -689,21 +689,21 @@ public:
 
     inline void UploadShipGenericTextureRenderSpecification(
         ShipId shipId,
-        ConnectedComponentId connectedComponentId,
+        PlaneId planeId,
         TextureFrameId const & textureFrameId,
         vec2f const & position)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
         mShips[shipId]->UploadGenericTextureRenderSpecification(
-            connectedComponentId,
+            planeId,
             textureFrameId,
             position);
     }
 
     inline void UploadShipGenericTextureRenderSpecification(
         ShipId shipId,
-        ConnectedComponentId connectedComponentId,
+        PlaneId planeId,
         TextureFrameId const & textureFrameId,
         vec2f const & position,
         float scale,
@@ -714,7 +714,7 @@ public:
         assert(shipId >= 0 && shipId < mShips.size());
 
         mShips[shipId]->UploadGenericTextureRenderSpecification(
-            connectedComponentId,
+            planeId,
             textureFrameId,
             position,
             scale,
@@ -725,7 +725,7 @@ public:
 
     inline void UploadShipGenericTextureRenderSpecification(
         ShipId shipId,
-        ConnectedComponentId connectedComponentId,
+        PlaneId planeId,
         TextureFrameId const & textureFrameId,
         vec2f const & position,
         float scale,
@@ -735,7 +735,7 @@ public:
         assert(shipId >= 0 && shipId < mShips.size());
 
         mShips[shipId]->UploadGenericTextureRenderSpecification(
-            connectedComponentId,
+            planeId,
             textureFrameId,
             position,
             scale,

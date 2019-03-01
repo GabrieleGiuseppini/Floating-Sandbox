@@ -152,7 +152,19 @@ Render:
 		+ Create "z_buffer" branch
 		= Zbuffer (*)
 
-		- ShipLoadDialog: make sure default Ships directory is always in recent dirs
+		- See if can avoid freezing (so, deleting) points to which we have bombs attached
+			- Don't destroy point if it has a bomb attached, at:
+				- ForceFields
+				- StressedSprings break (already the case?)
+				- Manual destroy
+				- Manual saw (already the case?)
+			- Test L'n'F':
+				- 3 Bombs
+				- Anti-Matter bomb (should fall at some point)
+
+		- ShipLoadDialog: make sure default Ships directory is always in recent dirs, first
+
+		- Tooltips (*)
 
 		- Fix sailing ship - cut sail in texture (but not in psd)
 
@@ -167,9 +179,10 @@ Render:
 			- Lower water intake adjust seems to help: do we have it per-material?
 
 		- Add more cloth colors
-			- Redo structural template
+			- Redo structural palette afterwards
 
 		- Take new ships from 02/09
+			- Anso also Kiko's ready ships
 
 		- Orphaned points (*)
 
@@ -723,18 +736,24 @@ Render:
 				+ ConnectivityVisit: redo visit from L to R and thus simplify ortho matrix
 				+ Remove commented-out connectivity visit
 				+ Commit
-			- Step 10: generic textures
-				- GenericTextures: is now own pass that uses plane IDs as input for Z's in shader
-					- Upload plane IDs instead of conn comp IDs
-					- Fix at all calls from:
-						- Bombs
-						- Points::UploadEphemeralPoints
-							- The texture ones can now pass real plane ID, fix call chain up to caller
-						- PinnedPoint
-					- For now keep doing per-plane partitioning of textures for depth-sorting; we'll try alternatives later
+			= Step 10: generic textures
+				= GenericTextures: is now own pass that uses own plane IDs as input for Z's in shader
+					+ Upload plane IDs instead of conn comp IDs
+						+ Fix at all calls from:
+							+ Bombs
+							+ Points::UploadEphemeralPoints
+								+ The texture ones can now pass real plane ID, fix call chain up to caller
+							+ PinnedPoint
+					+ Fix grow problem at ShipRenderContext
+					+ For now keep doing per-plane partitioning of textures for depth-sorting; we'll try alternatives later
+					+ Pass PlaneID into gen tex shader (which must NOT take point's vertex attrib)
+					- Try without padding
 				- Test
 					- Gen textures are correctly covered by things (ropes, triangles, gen textures) in nearer plane, 
 					  and correctly cover things (ropes, triangles, gen textures) in further plane
+					+ Test bombs - different planes
+					- Test pinned points - different planes
+					- Test eph particles - different planes
 				- Commit
 			- Step 11: vectors
 				- Add PlaneID to vectors
@@ -744,6 +763,7 @@ Render:
 			- Step 12: ephemeral points
 				- Verify first ephemeral points are broken with constant planeID=1, by using ship cut in half
 				  and ephemerals from either side
+					- Really? shouldn't this be all done for free by now?
 				- EphemeralPoints: is now own pass that uses plane IDs as input for Z's in shader
 				- Verify with test again
 				- Commit
@@ -1410,8 +1430,10 @@ Render:
 	+ Menu entries for "Home Page (GameJolt)/Code Page (GitHub)"
 		+ wxLaunchDefaultBrowser
 
-	- SettingsDialog: add tooltips at each setting
+	- SettingsDialog: add tooltips at each setting (*)
 		- Explanation and unit
+		- See if just on slider and label works; if not, do entire panel but have to merge with icon...
+			- Or remove tooltip from icon altogether, do just standalone panel tooltip & standalone icon w/no tooltip
 
 	- SettingsDialog: save settings, defaults, and real-time changes
 		- SettingsManager (@FloatingSandbox):
@@ -1458,9 +1480,7 @@ Render:
 				- Load(filepath) -> struct
 		- Impl:
 			- Standard paths: http://docs.wxwidgets.org/3.1/classwx_standard_paths.html#a4752213ef4d7bdc71170b9e5c3691f0f
-				- MainApp: call App::SetAppName() at startup
-					- With app name from version.h
-				- SettingsManager can deal directly with wxWidgets
+				- Via StandardSystemPaths class
 		- Dialog:
 			- Control values are meant to always be in sync with real game params
 				- Handlers write value directly to SettingsManager

@@ -189,8 +189,8 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::GenericTexturePackedData1;
     else if (Utils::CaseInsensitiveEquals(str, "GenericTexturePackedData2"))
         return VertexAttributeType::GenericTexturePackedData2;
-    else if (Utils::CaseInsensitiveEquals(str, "GenericTextureTextureCoordinates"))
-        return VertexAttributeType::GenericTextureTextureCoordinates;
+    else if (Utils::CaseInsensitiveEquals(str, "GenericTexturePackedData3"))
+        return VertexAttributeType::GenericTexturePackedData3;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointPosition"))
         return VertexAttributeType::ShipPointPosition;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointColor"))
@@ -223,8 +223,8 @@ std::string VertexAttributeTypeToStr(VertexAttributeType vertexAttribute)
         return "GenericTexturePackedData1";
     case VertexAttributeType::GenericTexturePackedData2:
         return "GenericTexturePackedData2";
-    case VertexAttributeType::GenericTextureTextureCoordinates:
-        return "GenericTextureTextureCoordinates";
+    case VertexAttributeType::GenericTexturePackedData3:
+        return "GenericTexturePackedData3";
     case VertexAttributeType::ShipPointPosition:
         return "ShipPointPosition";
     case VertexAttributeType::ShipPointColor:

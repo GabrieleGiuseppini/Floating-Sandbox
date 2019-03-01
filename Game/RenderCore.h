@@ -96,8 +96,8 @@ enum class VertexAttributeType : GLuint
     WaterAttribute = 3,
 
     GenericTexturePackedData1 = 4,
-    GenericTextureTextureCoordinates = 5,
-    GenericTexturePackedData2 = 6,
+    GenericTexturePackedData2 = 5,
+    GenericTexturePackedData3 = 6,
 
     // Note: dedicated as long as we have one single ship and one VBO per ship
     ShipPointPosition = 7,

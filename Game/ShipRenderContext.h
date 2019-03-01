@@ -226,12 +226,12 @@ public:
     //
 
     inline void UploadGenericTextureRenderSpecification(
-        ConnectedComponentId connectedComponentId,
+        PlaneId planeId,
         TextureFrameId const & textureFrameId,
         vec2f const & position)
     {
         UploadGenericTextureRenderSpecification(
-            connectedComponentId,
+            planeId,
             textureFrameId,
             position,
             1.0f,
@@ -240,7 +240,7 @@ public:
     }
 
     inline void UploadGenericTextureRenderSpecification(
-        ConnectedComponentId connectedComponentId,
+        PlaneId planeId,
         TextureFrameId const & textureFrameId,
         vec2f const & position,
         float scale,
@@ -249,7 +249,7 @@ public:
         float alpha)
     {
         UploadGenericTextureRenderSpecification(
-            connectedComponentId,
+            planeId,
             textureFrameId,
             position,
             scale,
@@ -258,19 +258,19 @@ public:
     }
 
     inline void UploadGenericTextureRenderSpecification(
-        ConnectedComponentId connectedComponentId,
+        PlaneId planeId,
         TextureFrameId const & textureFrameId,
         vec2f const & position,
         float scale,
         float angle,
         float alpha)
     {
-        size_t const connectedComponentIndex = connectedComponentId;
+        size_t const planeIndex = static_cast<size_t>(planeId);
 
-        assert(connectedComponentIndex < mGenericTextureConnectedComponents.size());
+        assert(planeIndex < mGenericTexturePlanes.size());
 
-        // Get this connected component's vertex buffer
-        auto & vertexBuffer = mGenericTextureConnectedComponents[connectedComponentIndex].VertexBuffer;
+        // Get this plane's vertex buffer
+        auto & vertexBuffer = mGenericTexturePlanes[planeIndex].VertexBuffer;
 
         //
         // Populate the texture quad
@@ -295,6 +295,7 @@ public:
             position,
             vec2f(leftX, topY),
             vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesTopRight.y),
+            static_cast<float>(planeId),
             scale,
             angle,
             alpha,
@@ -305,6 +306,7 @@ public:
             position,
             vec2f(rightX, topY),
             frame.TextureCoordinatesTopRight,
+            static_cast<float>(planeId),
             scale,
             angle,
             alpha,
@@ -315,6 +317,7 @@ public:
             position,
             vec2f(leftX, bottomY),
             frame.TextureCoordinatesBottomLeft,
+            static_cast<float>(planeId),
             scale,
             angle,
             alpha,
@@ -327,6 +330,7 @@ public:
             position,
             vec2f(rightX, topY),
             frame.TextureCoordinatesTopRight,
+            static_cast<float>(planeId),
             scale,
             angle,
             alpha,
@@ -337,6 +341,7 @@ public:
             position,
             vec2f(leftX, bottomY),
             frame.TextureCoordinatesBottomLeft,
+            static_cast<float>(planeId),
             scale,
             angle,
             alpha,
@@ -347,12 +352,13 @@ public:
             position,
             vec2f(rightX, bottomY),
             vec2f(frame.TextureCoordinatesTopRight.x, frame.TextureCoordinatesBottomLeft.y),
+            static_cast<float>(planeId),
             scale,
             angle,
             alpha,
             lightSensitivity);
 
-        // Update max size among all connected components
+        // Update max size among all planes
         mGenericTextureMaxVertexBufferSize = std::max(mGenericTextureMaxVertexBufferSize, vertexBuffer.size());
     }
 
@@ -394,8 +400,7 @@ private:
     void OnWaterContrastUpdated();
     void OnWaterLevelOfDetailUpdated();
 
-    // TODO: this will go
-    struct GenericTextureConnectedComponentData;
+    struct GenericTexturePlaneData;
 
     void RenderPointElements();
 
@@ -407,7 +412,7 @@ private:
 
     void RenderStressedSpringElements();
 
-    void RenderGenericTextures(GenericTextureConnectedComponentData const & connectedComponent);
+    void RenderGenericTextures(GenericTexturePlaneData const & planeData);
 
     void RenderEphemeralPoints();
 
@@ -474,15 +479,20 @@ struct TextureRenderPolygonVertex
     vec2f vertexOffset;
     vec2f textureCoordinate;
 
+    float planeId;
+
     float scale;
     float angle;
     float alpha;
     float ambientLightSensitivity;
 
+    float PAD;
+
     TextureRenderPolygonVertex(
         vec2f _centerPosition,
         vec2f _vertexOffset,
         vec2f _textureCoordinate,
+        float _planeId,
         float _scale,
         float _angle,
         float _alpha,
@@ -490,20 +500,22 @@ struct TextureRenderPolygonVertex
         : centerPosition(_centerPosition)
         , vertexOffset(_vertexOffset)
         , textureCoordinate(_textureCoordinate)
+        , planeId(_planeId)
         , scale(_scale)
         , angle(_angle)
         , alpha(_alpha)
         , ambientLightSensitivity(_ambientLightSensitivity)
+        , PAD(0.0f)
     {}
 };
 #pragma pack(pop)
 
-    struct GenericTextureConnectedComponentData
+    struct GenericTexturePlaneData
     {
         std::vector<TextureRenderPolygonVertex> VertexBuffer;
     };
 
-    std::vector<GenericTextureConnectedComponentData> mGenericTextureConnectedComponents;
+    std::vector<GenericTexturePlaneData> mGenericTexturePlanes;
     size_t mGenericTextureMaxVertexBufferSize;
     size_t mGenericTextureAllocatedVertexBufferSize;
 

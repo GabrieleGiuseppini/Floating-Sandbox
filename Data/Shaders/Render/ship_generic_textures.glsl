@@ -7,9 +7,8 @@
 
 // Inputs
 in vec4 inGenericTexturePackedData1; // centerPosition, vertexOffset
-in vec2 inGenericTextureTextureCoordinates;
-in vec4 inGenericTexturePackedData2; // scale, angle, alpha, ambientLightSensitivity
-in float inShipPointPlaneId;
+in vec4 inGenericTexturePackedData2; // textureCoordinates, planeId, scale
+in vec4 inGenericTexturePackedData3; // angle, alpha, ambientLightSensitivity, PAD
 
 // Outputs
 out vec2 vertexTextureCoordinates;
@@ -21,12 +20,12 @@ uniform mat4 paramOrthoMatrix;
 
 void main()
 {
-    vertexTextureCoordinates = inGenericTextureTextureCoordinates; 
-    vertexAlpha = inGenericTexturePackedData2.z;
-    vertexAmbientLightSensitivity = inGenericTexturePackedData2.w;
+    vertexTextureCoordinates = inGenericTexturePackedData2.xy; 
+    vertexAlpha = inGenericTexturePackedData3.y;
+    vertexAmbientLightSensitivity = inGenericTexturePackedData3.z;
 
-    float scale = inGenericTexturePackedData2.x;
-    float angle = inGenericTexturePackedData2.y;
+    float scale = inGenericTexturePackedData2.w;
+    float angle = inGenericTexturePackedData3.x;
 
     mat2 rotationMatrix = mat2(
         cos(angle), -sin(angle),
@@ -36,7 +35,7 @@ void main()
         inGenericTexturePackedData1.xy 
         + rotationMatrix * inGenericTexturePackedData1.zw * scale;
 
-    gl_Position = paramOrthoMatrix * vec4(worldPosition.xy, inShipPointPlaneId, 1.0);
+    gl_Position = paramOrthoMatrix * vec4(worldPosition.xy, inGenericTexturePackedData2.z, 1.0);
 }
 
 ###FRAGMENT
