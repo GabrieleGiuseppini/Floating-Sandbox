@@ -719,10 +719,10 @@ Render:
 					+ Structure, ...
 				+ Test stressed springs
 				+ Commit
-			- Step 9: cleanup:
+			+ Step 9: cleanup:
 				+ ConnectivityVisit: redo visit from L to R and thus simplify ortho matrix
-				- Remove commented-out connectivity visit
-				- Commit
+				+ Remove commented-out connectivity visit
+				+ Commit
 			- Step 10: generic textures
 				- GenericTextures: is now own pass that uses plane IDs as input for Z's in shader
 					- Upload plane IDs instead of conn comp IDs
