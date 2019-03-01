@@ -566,7 +566,44 @@ public:
     }
 
     //
-    // Ship elements (points, springs, ropes, and triangles)
+    // Ship triangle elements
+    //
+
+    inline void UploadShipElementTrianglesStart(
+        ShipId shipId,
+        size_t trianglesCount)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        mShips[shipId]->UploadElementTrianglesStart(trianglesCount);
+    }
+
+    inline void UploadShipElementTriangle(
+        ShipId shipId,
+        size_t triangleIndex,
+        int shipPointIndex1,
+        int shipPointIndex2,
+        int shipPointIndex3)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        mShips[shipId]->UploadElementTriangle(
+            triangleIndex,
+            shipPointIndex1,
+            shipPointIndex2,
+            shipPointIndex3);
+    }
+
+    inline void UploadShipElementTrianglesEnd(
+        ShipId shipId)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        mShips[shipId]->UploadElementTrianglesEnd();
+    }
+
+    //
+    // Other ship elements (points, springs, and ropes)
     //
 
     inline void UploadShipElementsStart(ShipId shipId)
@@ -609,26 +646,16 @@ public:
             shipPointIndex2);
     }
 
-    inline void UploadShipElementTriangle(
-        ShipId shipId,
-        int shipPointIndex1,
-        int shipPointIndex2,
-        int shipPointIndex3)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadElementTriangle(
-            shipPointIndex1,
-            shipPointIndex2,
-            shipPointIndex3);
-    }
-
     inline void UploadShipElementsEnd(ShipId shipId)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
         mShips[shipId]->UploadElementsEnd();
     }
+
+    //
+    // Ship stressed springs
+    //
 
     inline void UploadShipElementStressedSpringsStart(ShipId shipId)
     {

@@ -126,7 +126,7 @@ public:
     }
 
     //
-    // Transformations
+    // Coordinate transformations
     //
 
     inline vec2f ScreenToWorld(vec2f const & screenCoordinates)
@@ -182,7 +182,7 @@ public:
         //      - Each segment width is ShipZRegionZWidth/nShips
         // - Each ship segment is divided into sub-segments for each distinct plane ID
         //      - So a total of maxMaxPlaneId sub-segments
-        //      - Lower plane ID values => further (z->+1), higher plane ID values => nearer (z->-1)
+        //      - Lower plane ID values => nearer (z -> -1), higher plane ID values => further (z -> +1)
         // - Each plane sub-segment is divided into nLayers layers
         //
 

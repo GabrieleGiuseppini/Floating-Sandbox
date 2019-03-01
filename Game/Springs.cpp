@@ -150,20 +150,28 @@ void Springs::UploadElements(
     // Either upload all springs, or just the edge springs
     bool const doUploadAllSprings = (DebugShipRenderMode::Springs == renderContext.GetDebugShipRenderMode());
 
+    // Ropes are uploaded as springs only if DebugRenderMode is springs or edge springs
+    bool const doUploadRopesAsSprings = (
+        DebugShipRenderMode::Springs == renderContext.GetDebugShipRenderMode()
+        || DebugShipRenderMode::EdgeSprings == renderContext.GetDebugShipRenderMode());
+
     for (ElementIndex i : *this)
     {
         // Only upload non-deleted springs that are not covered by two super-triangles, unless
         // we are in springs render mode
         if (!mIsDeletedBuffer[i])
         {
-            if (IsRope(i))
+            if (IsRope(i) && !doUploadRopesAsSprings)
             {
                 renderContext.UploadShipElementRope(
                     shipId,
                     GetPointAIndex(i),
                     GetPointBIndex(i));
             }
-            else if (mSuperTrianglesBuffer[i].size() < 2 || doUploadAllSprings)
+            else if (
+                mSuperTrianglesBuffer[i].size() < 2
+                || doUploadAllSprings
+                || IsRope(i))
             {
                 renderContext.UploadShipElementSpring(
                     shipId,

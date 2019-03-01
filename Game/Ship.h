@@ -297,8 +297,9 @@ private:
     // used to detect changes and eventually re-upload
     std::optional<DebugShipRenderMode> mLastDebugShipRenderMode;
 
-    // The structure elements we have to upload for rendering
-    std::vector<ElementIndex> mDepthSortedTriangleRenderIndices; // In PlaneID (i.e. Z) order
+    // Initial indices of the triangles for each plane ID;
+    // last extra element contains total number of triangles
+    std::vector<size_t> mPlaneTrianglesRenderIndices;
 
     // Sinking detection
     bool mIsSinking;

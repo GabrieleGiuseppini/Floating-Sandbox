@@ -98,21 +98,41 @@ public:
     // Render
     //
 
+    /*
+     * Uploads triangle elements.
+     *
+     * The planeIndices container contains, for each plane, the starting index of the triangles in that plane into a single
+     * buffer for all triangles. The last element contains the total number of (non-deleted) triangles.
+     *
+     * The content of the planeIndices container is modified by this method, for performance convenience only.
+     */
     template<typename TIndices>
     void UploadElements(
-        TIndices const & indices,
+        TIndices & planeIndices,
         ShipId shipId,
+        Points const & points,
         Render::RenderContext & renderContext) const
     {
-        for (ElementIndex i : indices)
+        for (ElementIndex i : *this)
         {
-            assert(!mIsDeletedBuffer[i]);
+            if (!mIsDeletedBuffer[i])
+            {
+                // Get the plane of this triangle (== plane of point A)
+                assert(!points.IsDeleted(GetPointAIndex(i)));
+                PlaneId planeId = points.GetPlaneId(GetPointAIndex(i));
 
-            renderContext.UploadShipElementTriangle(
-                shipId,
-                GetPointAIndex(i),
-                GetPointBIndex(i),
-                GetPointCIndex(i));
+                // Send triangle to its index
+                assert(planeId < planeIndices.size());
+                renderContext.UploadShipElementTriangle(
+                    shipId,
+                    planeIndices[planeId],
+                    GetPointAIndex(i),
+                    GetPointBIndex(i),
+                    GetPointCIndex(i));
+
+                // Remember that the next triangle for this plane goes to the next element
+                planeIndices[planeId]++;
+            }
         }
     }
 

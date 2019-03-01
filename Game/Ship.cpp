@@ -54,7 +54,7 @@ Ship::Ship(
     , mMaxMaxPlaneId(0)
     , mIsStructureDirty(true)
     , mLastDebugShipRenderMode()
-    , mDepthSortedTriangleRenderIndices()
+    , mPlaneTrianglesRenderIndices()
     , mIsSinking(false)
     , mTotalWater(0.0)
     , mWaterSplashedRunningAverage()
@@ -73,9 +73,6 @@ Ship::Ship(
         mSprings)
     , mCurrentForceFields()
 {
-    // Reserve room for rendering indices
-    mDepthSortedTriangleRenderIndices.reserve(mTriangles.GetElementCount());
-
     // Set destroy handlers
     mPoints.RegisterDestroyHandler(std::bind(&Ship::PointDestroyHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     mSprings.RegisterDestroyHandler(std::bind(&Ship::SpringDestroyHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
@@ -559,7 +556,33 @@ void Ship::Render(
 
 
     //
-    // Upload elements (point (elements), springs, ropes, triangles), iff dirty
+    // Upload triangles, iff structure is dirty
+    //
+
+    if (mIsStructureDirty)
+    {
+        assert(mPlaneTrianglesRenderIndices.size() >= 1);
+
+        //
+        // Upload all the triangle elements
+        //
+
+        renderContext.UploadShipElementTrianglesStart(
+            mId,
+            mPlaneTrianglesRenderIndices.back());
+
+        mTriangles.UploadElements(
+            mPlaneTrianglesRenderIndices,
+            mId,
+            mPoints,
+            renderContext);
+
+        renderContext.UploadShipElementTrianglesEnd(mId);
+    }
+
+
+    //
+    // Upload other elements (point (elements), springs, ropes), iff dirty
     // or the ship debug render mode has changed
     //
 
@@ -585,15 +608,6 @@ void Ship::Render(
             mId,
             renderContext);
 
-        //
-        // Upload all the triangle elements - according to *our* indices though
-        //
-
-        mTriangles.UploadElements(
-            mDepthSortedTriangleRenderIndices,
-            mId,
-            renderContext);
-
         renderContext.UploadShipElementsEnd(mId);
     }
 
@@ -615,8 +629,6 @@ void Ship::Render(
     }
 
     renderContext.UploadShipElementStressedSpringsEnd(mId);
-
-
 
     //
     // Upload bombs
@@ -1567,7 +1579,7 @@ void Ship::UpdateEphemeralParticles(
 // Private helpers
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
-#define RENDER_FLOOD_DISTANCE
+//#define RENDER_FLOOD_DISTANCE
 
 void Ship::RunConnectivityVisit(VisitSequenceNumber currentVisitSequenceNumber)
 {
@@ -1580,12 +1592,14 @@ void Ship::RunConnectivityVisit(VisitSequenceNumber currentVisitSequenceNumber)
     //            are assigned the same plane ID
     //
     // - Connected Component ID: at this moment we assign the same value as the plane ID; in the future
-    //           we might want to only assign a connected component ID to points belonging to the same
-    //           connected component, but excluding string points (this will then require a separate visit)
+    //                           we might want to only assign a connected component ID to "solids" by only
+    //                           assigning it to points that are not string points
+    //                           (this will then require a separate visit pass)
     //
-    // Basically, at the end of a visit *ALL* (non-ephemeral) points will have a Plane ID.
+    // At the end of a visit *ALL* (non-ephemeral) points will have a Plane ID.
     //
-    // We also piggyback the visit to create the array of triangle indices in plane (Z) order.
+    // We also piggyback the visit to create the array containing the counts of triangles in each plane,
+    // so that we can later upload triangles in {PlaneID, Tessellation Order} order.
     //
 
     PlaneId currentPlaneId = 0; // Also serves as Connected Component ID
@@ -1598,23 +1612,21 @@ void Ship::RunConnectivityVisit(VisitSequenceNumber currentVisitSequenceNumber)
     // have to propagate out
     std::queue<ElementIndex> pointsToPropagateFrom;
 
-    // Reset triangle indices
-    mDepthSortedTriangleRenderIndices.clear();
+    // Reset per-plane triangle indices
+    size_t totalPlaneTrianglesCount = 0;
+    mPlaneTrianglesRenderIndices.clear();
+    mPlaneTrianglesRenderIndices.push_back(totalPlaneTrianglesCount); // First plane starts at zero, and we have zero triangles
 
-    // Visit all non-ephemeral points, from right to left - so that funnels, which tend to be Z-nearer,
-    // also carry on their own plane the ropes that connect them to further connected components.
-    //
-    // The reverse visit also implies that at the end of this run, higher plane IDs will mean Z-far, and lower
-    // plane IDs will mean Z-near.
+    // Visit all non-ephemeral points
     for (auto pointIndex : mPoints.NonEphemeralPointsReverse())
     {
-        // Don't visit destroyed points, or we run the risk of creating a zillion planes for nothing,
-        // and don't re-visit already-visited points
+        // Don't visit destroyed points, or we run the risk of creating a zillion planes for nothing;
+        // also, don't re-visit already-visited points
         if (!mPoints.IsDeleted(pointIndex)
             && mPoints.GetCurrentConnectivityVisitSequenceNumber(pointIndex) != currentVisitSequenceNumber)
         {
             //
-            // Flood from this point
+            // Flood a new plane from this point
             //
 
             // Visit this point first
@@ -1669,20 +1681,13 @@ void Ship::RunConnectivityVisit(VisitSequenceNumber currentVisitSequenceNumber)
                     }
                 }
 
-
-                //
-                // Add all the triangles owned by this point to the list of triangles sorted by plane (i.e. Z)
-                //
-
-                for (auto const & ct : mPoints.GetConnectedTriangles(currentPointIndex))
-                {
-                    if (!ct.IsAtOwner)
-                        break; // We rely on the fact that the triangles connected to this point are sorted by IsAtOwner
-
-                    if (!mTriangles.IsDeleted(ct.TriangleIndex))
-                        mDepthSortedTriangleRenderIndices.push_back(ct.TriangleIndex);
-                }
+                // Update count of triangles with this points's triangles
+                totalPlaneTrianglesCount += mPoints.GetConnectedOwnedTrianglesCount(currentPointIndex);
             }
+
+            // Remember the starting index of the triangles in the next plane
+            assert(mPlaneTrianglesRenderIndices.size() == static_cast<size_t>(currentPlaneId + 1));
+            mPlaneTrianglesRenderIndices.push_back(totalPlaneTrianglesCount);
 
             //
             // Flood completed
@@ -2150,9 +2155,9 @@ void Ship::TriangleDestroyHandler(ElementIndex triangleElementIndex)
     mTriangles.ClearSubSprings(triangleElementIndex);
 
     // Remove triangle from its endpoints
-    mPoints.RemoveConnectedTriangle(mTriangles.GetPointAIndex(triangleElementIndex), triangleElementIndex);
-    mPoints.RemoveConnectedTriangle(mTriangles.GetPointBIndex(triangleElementIndex), triangleElementIndex);
-    mPoints.RemoveConnectedTriangle(mTriangles.GetPointCIndex(triangleElementIndex), triangleElementIndex);
+    mPoints.RemoveConnectedTriangle(mTriangles.GetPointAIndex(triangleElementIndex), triangleElementIndex, true);
+    mPoints.RemoveConnectedTriangle(mTriangles.GetPointBIndex(triangleElementIndex), triangleElementIndex, false);
+    mPoints.RemoveConnectedTriangle(mTriangles.GetPointCIndex(triangleElementIndex), triangleElementIndex, false);
 
     // Remember our structure is now dirty
     mIsStructureDirty = true;

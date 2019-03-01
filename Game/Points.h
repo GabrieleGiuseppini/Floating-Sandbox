@@ -239,6 +239,7 @@ public:
         // Structure
         , mConnectedSpringsBuffer(mBufferElementCount, shipPointCount, ConnectedSpringsVector())
         , mConnectedTrianglesBuffer(mBufferElementCount, shipPointCount, ConnectedTrianglesVector())
+        , mConnectedOwnedTrianglesCountBuffer(mBufferElementCount, shipPointCount, 0)
         // Connected component and plane ID
         , mConnectedComponentIdBuffer(mBufferElementCount, shipPointCount, NoneConnectedComponentId)
         , mPlaneIdBuffer(mBufferElementCount, shipPointCount, NonePlaneId)
@@ -247,9 +248,9 @@ public:
         , mIsPinnedBuffer(mBufferElementCount, shipPointCount, false)
         // Immutable render attributes
         , mColorBuffer(mBufferElementCount, shipPointCount, vec4f::zero())
-        , mIsColorBufferDirty(false)
+        , mIsColorBufferDirty(true)
         , mTextureCoordinatesBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
-        , mIsTextureCoordinatesBufferDirty(false)
+        , mIsTextureCoordinatesBufferDirty(true)
         //////////////////////////////////
         // Container
         //////////////////////////////////
@@ -746,24 +747,42 @@ public:
     {
         // Add so that all triangles owned by this point come first
         if (isAtOwner)
-            mConnectedTrianglesBuffer[pointElementIndex].emplace_front(triangleElementIndex, isAtOwner);
+        {
+            mConnectedTrianglesBuffer[pointElementIndex].emplace_front(triangleElementIndex, true);
+            ++mConnectedOwnedTrianglesCountBuffer[pointElementIndex];
+        }
         else
-            mConnectedTrianglesBuffer[pointElementIndex].emplace_back(triangleElementIndex, isAtOwner);
+        {
+            mConnectedTrianglesBuffer[pointElementIndex].emplace_back(triangleElementIndex, false);
+        }
     }
 
     void RemoveConnectedTriangle(
         ElementIndex pointElementIndex,
-        ElementIndex triangleElementIndex)
+        ElementIndex triangleElementIndex,
+        bool isAtOwner)
     {
+        // Remove triangle
         bool found = mConnectedTrianglesBuffer[pointElementIndex].erase_first(
             [triangleElementIndex](ConnectedTriangle const & c)
             {
                 return c.TriangleIndex == triangleElementIndex;
             });
 
-
         assert(found);
         (void)found;
+
+        // Update count of owned triangles, if this triangle is owned
+        if (isAtOwner)
+        {
+            assert(mConnectedOwnedTrianglesCountBuffer[pointElementIndex] > 0);
+            --mConnectedOwnedTrianglesCountBuffer[pointElementIndex];
+        }
+    }
+
+    size_t GetConnectedOwnedTrianglesCount(ElementIndex pointElementIndex) const
+    {
+        return mConnectedOwnedTrianglesCountBuffer[pointElementIndex];
     }
 
     //
@@ -973,6 +992,7 @@ private:
 
     Buffer<ConnectedSpringsVector> mConnectedSpringsBuffer;
     Buffer<ConnectedTrianglesVector> mConnectedTrianglesBuffer;
+    Buffer<size_t> mConnectedOwnedTrianglesCountBuffer;
 
     //
     // Connectivity

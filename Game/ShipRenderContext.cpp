@@ -627,13 +627,21 @@ void ShipRenderContext::UploadPointPlaneIds(
     }
 }
 
+void ShipRenderContext::UploadElementTrianglesStart(size_t trianglesCount)
+{
+    mTriangleElementBuffer.resize(trianglesCount);
+}
+
+void ShipRenderContext::UploadElementTrianglesEnd()
+{
+}
+
 void ShipRenderContext::UploadElementsStart()
 {
     // Empty all buffers, as they will be re-populated soon
     mPointElementBuffer.clear();
     mSpringElementBuffer.clear();
     mRopeElementBuffer.clear();
-    mTriangleElementBuffer.clear();
     mStressedSpringElementBuffer.clear();
 }
 
@@ -799,17 +807,20 @@ void ShipRenderContext::RenderEnd()
         RenderTriangleElements(mShipRenderMode == ShipRenderMode::Texture);
     }
 
-    // TODO: change comment once this becomes the only ropes invocation
+
+
     //
-    // Draw ropes now if RenderMode is anything but Structure
-    // (with Structure we want endpoints on the structure to be visible)
+    // Draw ropes, unless it's a debug mode
+    //
+    // Note: in springs or edge springs debug mode, all ropes are uploaded as springs
     //
 
-    if (mDebugShipRenderMode != DebugShipRenderMode::None
-        || mShipRenderMode != ShipRenderMode::Structure)
+    if (mDebugShipRenderMode == DebugShipRenderMode::None)
     {
         RenderRopeElements();
     }
+
+
 
     //
     // Draw springs
@@ -820,6 +831,8 @@ void ShipRenderContext::RenderEnd()
     // - RenderMode is structure (so to draw 1D chains), in which case we use colors, or
     // - RenderMode is texture (so to draw 1D chains), in which case we use texture iff it is present
     //
+    // Note: when DebugRenderMode is springs|edgeSprings, ropes would all be here.
+    //
 
     if (mDebugShipRenderMode == DebugShipRenderMode::Springs
         || mDebugShipRenderMode == DebugShipRenderMode::EdgeSprings
@@ -827,20 +840,6 @@ void ShipRenderContext::RenderEnd()
             && (mShipRenderMode == ShipRenderMode::Structure || mShipRenderMode == ShipRenderMode::Texture)))
     {
         RenderSpringElements(mDebugShipRenderMode == DebugShipRenderMode::None && mShipRenderMode == ShipRenderMode::Texture);
-    }
-
-
-
-    // TODO: this is broken as the ropes layer is still behind the structure. See if we need to draw ropes on same layer as
-    // structure.
-    //
-    // Draw ropes now if RenderMode is Structure (so rope endpoints on the structure are visible)
-    //
-
-    if (mDebugShipRenderMode == DebugShipRenderMode::None
-        && mShipRenderMode == ShipRenderMode::Structure)
-    {
-        RenderRopeElements();
     }
 
 

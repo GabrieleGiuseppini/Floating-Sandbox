@@ -140,7 +140,30 @@ public:
 
 
     //
-    // Elements
+    // Triangle Elements
+    //
+
+    void UploadElementTrianglesStart(size_t trianglesCount);
+
+    inline void UploadElementTriangle(
+        size_t triangleIndex,
+        int pointIndex1,
+        int pointIndex2,
+        int pointIndex3)
+    {
+        assert(triangleIndex < mTriangleElementBuffer.size());
+
+        TriangleElement & triangleElement = mTriangleElementBuffer[triangleIndex];
+
+        triangleElement.pointIndex1 = pointIndex1;
+        triangleElement.pointIndex2 = pointIndex2;
+        triangleElement.pointIndex3 = pointIndex3;
+    }
+
+    void UploadElementTrianglesEnd();
+
+    //
+    // Other Elements
     //
 
     void UploadElementsStart();
@@ -175,20 +198,12 @@ public:
         ropeElement.pointIndex2 = pointIndex2;
     }
 
-    inline void UploadElementTriangle(
-        int pointIndex1,
-        int pointIndex2,
-        int pointIndex3)
-    {
-        mTriangleElementBuffer.emplace_back();
-        TriangleElement & triangleElement = mTriangleElementBuffer.back();
-
-        triangleElement.pointIndex1 = pointIndex1;
-        triangleElement.pointIndex2 = pointIndex2;
-        triangleElement.pointIndex3 = pointIndex3;
-    }
 
     void UploadElementsEnd();
+
+    //
+    // Stressed springs
+    //
 
     void UploadElementStressedSpringsStart();
 
@@ -250,7 +265,7 @@ public:
         float angle,
         float alpha)
     {
-        size_t const connectedComponentIndex = connectedComponentId - 1;
+        size_t const connectedComponentIndex = connectedComponentId;
 
         assert(connectedComponentIndex < mGenericTextureConnectedComponents.size());
 

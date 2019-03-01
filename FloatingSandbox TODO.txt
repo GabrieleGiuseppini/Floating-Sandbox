@@ -667,14 +667,8 @@ Render:
 				+ Verify new behavior: OK
 				+ Put back ShipRenderContext's Springs rendering
 				+ Commit
-			= Step 8:
-				= Issues:
-					- Disappearing ropes (test with Base)
-						- Verify it's due because of Z range going out of [-1,+1] range
-							- Test with smaller ship range
-						- If so, solutions:
-							- a) Review formula
-							- b) Adjust range
+			+ Step 8:
+				+ Issues:
 					+ Ropes jumping ahead (when new connected components come up)
 						+ Due to incorrect planeID direction on Z axis: higher plane ID (recipient of string
 						  assigned to previous (lower) plane ID) must be nearer (than string and its solid body)
@@ -700,7 +694,7 @@ Render:
 						+ Ropes are now occluded by transparent (texture) triangles from same plane
 							+ This is because ropes layer is Z-behind triangles layer
 							+ Option 1: alpha test in shader
-					= Same plane: covering is now more random
+					+ Same plane: covering is now more random
 						+ Analyze visit pattern
 						+ Try with deque
 						+ Try with old-style visit (step 9 below)
@@ -708,23 +702,27 @@ Render:
 							+ 1: ConnectivityVisit: populate N+1 vector with # of triangles per plane
 							+ 2: Triangles::Upload: take it and send endpoints to ShipRenderContext
 							+ Test
-							= If ok:
+							+ If ok:
 								+ Add # of owned triangles to each point (new buffer)
 									+ Init to 0 at Points::Add
 									+ Update count at Points::Add/RemoveConnectedTriangles
 									+ Use it @ ConnectivityVisit instead of counting triangles
 				+ Undefine flood rendering
-				- See if need to and can make alpha threshold higher, to eliminate artifacts around ropes close to their endpoints on 
+				+ See if need to and can make alpha threshold higher, to eliminate artifacts around ropes close to their endpoints on 
 				  Titanic's funnels
-				- Test texture mode
-				- Test structure mode
-					- See if loss of ropes over structure is ugly; if we can live without it, remove conditions and dual 
+				+ Test texture mode
+				+ Test structure mode
+					+ See if loss of ropes over structure is ugly; if we can live without it, remove conditions and dual 
 					  rope rendering
+				+ Test full RenderMode x DebugRenderMode matrix:
+					+ Texture, ...
+					+ Structure, ...
 				+ Test stressed springs
-				- Commit
+				+ Commit
 			- Step 9: cleanup:
 				+ ConnectivityVisit: redo visit from L to R and thus simplify ortho matrix
 				- Remove commented-out connectivity visit
+				- Commit
 			- Step 10: generic textures
 				- GenericTextures: is now own pass that uses plane IDs as input for Z's in shader
 					- Upload plane IDs instead of conn comp IDs

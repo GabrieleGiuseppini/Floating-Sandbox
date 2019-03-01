@@ -70,6 +70,7 @@ void Points::Add(
     // Structure
     mConnectedSpringsBuffer.emplace_back(ConnectedSpringsVector());
     mConnectedTrianglesBuffer.emplace_back(ConnectedTrianglesVector());
+    mConnectedOwnedTrianglesCountBuffer.emplace_back(0);
 
     mConnectedComponentIdBuffer.emplace_back(NoneConnectedComponentId);
     mPlaneIdBuffer.emplace_back(NonePlaneId);
