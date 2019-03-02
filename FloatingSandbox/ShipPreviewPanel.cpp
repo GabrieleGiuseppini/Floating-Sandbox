@@ -433,6 +433,16 @@ void ShipPreviewPanel::ScanDirectory(std::filesystem::path const & directoryPath
     catch (...)
     { /* interrupt scan here */ }
 
+    // Sort by filename
+    std::sort(
+        shipFilepaths.begin(),
+        shipFilepaths.end(),
+        [](auto const & a, auto const & b) -> bool
+        {
+            return a.filename().string() < b.filename().string();
+        });
+
+    // Notify
     QueueEvent(
         new fsDirScannedEvent(
             fsEVT_DIR_SCANNED,
