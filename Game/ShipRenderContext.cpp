@@ -712,6 +712,7 @@ void ShipRenderContext::UploadEphemeralPointsEnd()
 void ShipRenderContext::UploadVectors(
     size_t count,
     vec2f const * position,
+    PlaneId const * planeId,
     vec2f const * vector,
     float lengthAdjustment,
     vec4f const & color)
@@ -734,20 +735,22 @@ void ShipRenderContext::UploadVectors(
 
     for (size_t i = 0; i < count; ++i)
     {
+        float planeIdf = static_cast<float>(planeId[i]);
+
         // Stem
         vec2f stemEndpoint = position[i] + vector[i] * lengthAdjustment;
-        mVectorArrowPointPositionBuffer.push_back(position[i]);
-        mVectorArrowPointPositionBuffer.push_back(stemEndpoint);
+        mVectorArrowPointPositionBuffer.emplace_back(position[i], planeIdf);
+        mVectorArrowPointPositionBuffer.emplace_back(stemEndpoint, planeIdf);
 
         // Left
         vec2f leftDir = vec2f(-vector[i].dot(XMatrixLeft), -vector[i].dot(YMatrixLeft)).normalise();
-        mVectorArrowPointPositionBuffer.push_back(stemEndpoint);
-        mVectorArrowPointPositionBuffer.push_back(stemEndpoint + leftDir * 0.2f);
+        mVectorArrowPointPositionBuffer.emplace_back(stemEndpoint, planeIdf);
+        mVectorArrowPointPositionBuffer.emplace_back(stemEndpoint + leftDir * 0.2f, planeIdf);
 
         // Right
         vec2f rightDir = vec2f(-vector[i].dot(XMatrixRight), -vector[i].dot(YMatrixRight)).normalise();
-        mVectorArrowPointPositionBuffer.push_back(stemEndpoint);
-        mVectorArrowPointPositionBuffer.push_back(stemEndpoint + rightDir * 0.2f);
+        mVectorArrowPointPositionBuffer.emplace_back(stemEndpoint, planeIdf);
+        mVectorArrowPointPositionBuffer.emplace_back(stemEndpoint + rightDir * 0.2f, planeIdf);
     }
 
 
@@ -756,7 +759,7 @@ void ShipRenderContext::UploadVectors(
     //
 
     glBindBuffer(GL_ARRAY_BUFFER, *mVectorArrowPointPositionVBO);
-    glBufferData(GL_ARRAY_BUFFER, mVectorArrowPointPositionBuffer.size() * sizeof(vec2f), mVectorArrowPointPositionBuffer.data(), GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, mVectorArrowPointPositionBuffer.size() * sizeof(vec3f), mVectorArrowPointPositionBuffer.data(), GL_DYNAMIC_DRAW);
     CheckOpenGLError();
 
 
@@ -1121,7 +1124,7 @@ void ShipRenderContext::RenderVectors()
     CheckOpenGLError();
 
     // Describe buffer
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedAttribute0), 2, GL_FLOAT, GL_FALSE, sizeof(vec2f), (void*)(0));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedAttribute0), 3, GL_FLOAT, GL_FALSE, sizeof(vec3f), (void*)(0));
     CheckOpenGLError();
 
     // Enable vertex attribute 0

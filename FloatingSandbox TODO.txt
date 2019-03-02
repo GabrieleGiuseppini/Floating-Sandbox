@@ -757,11 +757,9 @@ Render:
 					+ Test pinned points - different planes
 					+ Test eph particles - different planes
 				+ Commit
-			- Step 11: vectors
-				- Add PlaneID to vectors
-					- Actually, remove position upload: bind to same positions (and plane ID) of points
-						- Make sure we have plane IDs for all, including eph points
-				- Test & commit
+			+ Step 11: vectors
+				+ Add PlaneID to vectors
+				+ Test & commit
 			- Step 12: ephemeral points
 				- Verify first ephemeral points are broken with constant planeID=1, by using ship cut in half
 				  and ephemerals from either side
@@ -771,6 +769,7 @@ Render:
 				- Commit
 							
 		- Tests:
+			- Do perf analysis to catch low-hanging fruit
 			- Run in Debug
 			- Post perf test
 				- Benchmark: TODO

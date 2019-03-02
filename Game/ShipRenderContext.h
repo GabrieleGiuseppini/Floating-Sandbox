@@ -387,6 +387,7 @@ public:
     void UploadVectors(
         size_t count,
         vec2f const * position,
+        PlaneId const * planeId,
         vec2f const * vector,
         float lengthAdjustment,
         vec4f const & color);
@@ -593,7 +594,7 @@ struct TextureRenderPolygonVertex
     // Vectors
     //
 
-    std::vector<vec2f> mVectorArrowPointPositionBuffer;
+    std::vector<vec3f> mVectorArrowPointPositionBuffer;
     GameOpenGLVBO mVectorArrowPointPositionVBO;
     vec4f mVectorArrowColor;
 };

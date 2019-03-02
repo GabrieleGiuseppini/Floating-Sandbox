@@ -482,6 +482,7 @@ void Points::UploadVectors(
             shipId,
             mElementCount,
             mPositionBuffer.data(),
+            mPlaneIdBuffer.data(),
             mVelocityBuffer.data(),
             0.25f,
             VectorColor);
@@ -492,6 +493,7 @@ void Points::UploadVectors(
             shipId,
             mElementCount,
             mPositionBuffer.data(),
+            mPlaneIdBuffer.data(),
             mForceRenderBuffer.data(),
             0.0005f,
             VectorColor);
@@ -502,6 +504,7 @@ void Points::UploadVectors(
             shipId,
             mElementCount,
             mPositionBuffer.data(),
+            mPlaneIdBuffer.data(),
             mWaterVelocityBuffer.data(),
             1.0f,
             VectorColor);
@@ -512,6 +515,7 @@ void Points::UploadVectors(
             shipId,
             mElementCount,
             mPositionBuffer.data(),
+            mPlaneIdBuffer.data(),
             mWaterMomentumBuffer.data(),
             0.4f,
             VectorColor);

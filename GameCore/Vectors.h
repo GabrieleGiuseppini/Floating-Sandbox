@@ -227,6 +227,15 @@ public:
     {
     }
 
+    inline constexpr vec3f(
+        vec2f const & vec2,
+        float _z)
+        : x(vec2.x)
+        , y(vec2.y)
+        , z(_z)
+    {
+    }
+
 	inline vec3f operator+(vec3f const & other) const
 	{
 		return vec3f(

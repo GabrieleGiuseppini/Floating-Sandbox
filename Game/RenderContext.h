@@ -780,6 +780,7 @@ public:
         ShipId shipId,
         size_t count,
         vec2f const * position,
+        PlaneId const * planeId,
         vec2f const * vector,
         float lengthAdjustment,
         vec4f const & color)
@@ -789,6 +790,7 @@ public:
         mShips[shipId]->UploadVectors(
             count,
             position,
+            planeId,
             vector,
             lengthAdjustment * mVectorFieldLengthMultiplier,
             color);
