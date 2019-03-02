@@ -764,39 +764,29 @@ Render:
 				  invoke UploadPlaneIdsIfDirty() from ship
 				+ Test: eph points from multiple parts
 				+ Commit							
-		- Tests:
-			- Do perf analysis to catch low-hanging fruit
-			- Run in Debug
-			- Post perf test
-				- Benchmark: TODO
-				- Gradual reduction to smithereens (anti-matter bomb w/Titanic)
-					- Check whether slowness during gradual decomposition is acceptable
-		- Cleanups:
+		+ Tests:
+			+ Do perf analysis to catch low-hanging fruit
+			+ Run in Debug
+			+ Post perf test
+				+ Benchmark:
+					+ Orig:
+						+ Default: 30.8
+						+ ConnectedComponentsTestShip1: 3.10
+						+ ConnectedComponentsTestShip2: 11.6
+					+ New:
+						+ Default: 29.1/29.5
+						+ ConnectedComponentsTestShip1: 10.4/10.6
+						+ ConnectedComponentsTestShip2: 10.8/11.1
+
+				+ Gradual reduction to smithereens (anti-matter bomb w/Titanic)
+					+ Check whether slowness during gradual decomposition - due to conn visit - is acceptable
+		+ Cleanups:
 			+ Points: order connected triangles so that owned are first
 				+ Might be best done @ insert
 				+ ConnectivityVisit::population of triangle indices: cut short connected triangles' visit as soon
 				  as isAtOwner==false
 			+ Light spread on surface changes abruptly when piece is cut; see if it makes sense for diffuse
 			  to only light points whose plane ID is behind lamp (thus planeID<=lampPlaneID)
-			  
-			- (TODO: might not be agood idea, see below) Ship:
-				+ Theme: Points becomes passive re: need to upload its stuff
-				+ Replace Ship::mAreElementsDirty with mIsStructureDirty
-					+ Set in the same places where it is set now
-					+ Used for connectivity visit like it is now
-					+ Only change is at Ship::Render: when dirty:
-						+ Calls Points::UploadPlaneIds(..., mMaxMaxPlaneId)
-						+ Calls all the other ABC::UploadXYZ(...)
-						+ Resets mIsStructureDirty
-				- Add mAreImmutableAttributesDirty
-					- Used for first upload
-					- Remove it from Points
-				- Break current Points::UploadEphemeralParticles into:
-						- UploadEphemeralPointColorRange
-						- AreEphemeralPointsDirty
-						- UploadEphemeralPointElements
-						- UploadEphemeralPointTextures - TODO: this would require second pass through all eph points...
-					- Invoke new Points' ephemeral uploads where we invoke single one now
 
 		- Optimizations to try:
 			- GenericTextures depth-sorting:
