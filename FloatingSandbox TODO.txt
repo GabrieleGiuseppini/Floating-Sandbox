@@ -148,25 +148,59 @@ Render:
 		+ Add new ships
 		+ Installer does not install guides
 		+ Change version
+		+ Create "z_buffer" branch
+		+ Zbuffer (*)
 
-		- Create "z_buffer" branch
+		- See if can avoid freezing (so, deleting) points to which we have bombs attached
+			- Don't destroy point if it has a bomb attached, at:
+				- ForceFields
+				- StressedSprings break (already the case?)
+				- Manual destroy
+				- Manual saw (already the case?)
+			- Test L'n'F':
+				- 3 Bombs
+				- Anti-Matter bomb (should fall at some point)
 
-		- Zbuffer (*)
+		- ShipLoadDialog: make sure default Ships directory is always in recent dirs, first
+
+		- Tooltips (*)
+
+		- Fix sailing ship - cut sail in texture (but not in psd)
+
+		- Make flood tool adjustable
+			- Try one single setting affecting both radius and quantity of water
+
+		- Make Titanic default ship
+			- ...and see if funnels have jagged sides
+
+		- Make ropes less crazy when they get wet
+			- Test: base high, slice rightmost tip
+			- Lower water intake adjust seems to help: do we have it per-material?
+
+		- Add more cloth colors
+			- Redo structural palette afterwards
+
+		- Take new ships from 02/09
+			- Anso also Kiko's ready ships
+
 		- Orphaned points (*)
+
+		- Decay (rust) (*)
 
 		- Pick tool (*)
 
 		- Interior layer (*)
 
-		- ConnectedSprings/OtherEndpoint Optimization (*)
+		+ ConnectedSprings/OtherEndpoint Optimization (*)
 		- Increase # of ephemeral particles
+			- And thus lower water intake threshold for air bubbles
 
 		- Ships:
 			- Romanorum Imperatrix
 			- See sinking_feeling's capsizing ship issue
 
 	- 1.10.0
-		- Spring and NonSpring force separation optimization
+		- Spring and NonSpring force separation optimization (*)
 		- Batisphere with pumps and propulsion (*)
 			- Switches (*)
 			- Pumps (*)
@@ -188,7 +222,9 @@ Render:
 
 
 - Suggestions to spec:
+	- Fishes
 	- Different colored lights
+	- Backgrounds: use keys to switch between a dock, cliffs, open ocean, ice field, etc.
 	- Custom sky colour - if possible a RGB picker in the settings
 	- Black hole
 	- Tool to increase or lower mass under the cursor
@@ -306,14 +342,13 @@ Render:
 				- Consider using pixel buffer objects to asynchronously read from render buffer
 					- See https://stackoverflow.com/questions/12157646/how-to-render-offscreen-on-opengl
 
-	- Points::ConnectedSprings is of struct { SpringIndex, OtherEndpointIndex }
-		- ...or just two separate buffers, as in many cases we don't care about spring indices
-		- Init's @ShipBuilder
-		- Maintained at SpringDestroyHandler
-		- Used at:
-			- DiffuseLight
-			- ConnectedComponentDetection
-			- UpdateWaterVelocities
+	+ Points::ConnectedSprings is of struct { SpringIndex, OtherEndpointIndex }
+		+ No two separate buffers, as we seldom (if not neveer) need them separate
+		+ Init's @ShipBuilder or at whoever populates it now
+		+ Maintained at SpringDestroyHandler
+		+ Used at:
+			+ ConnectedComponentDetection
+			+ UpdateWaterVelocities
 
 	- Retry triangles cache optimization, now that layouts are different
 
@@ -327,7 +362,7 @@ Render:
 		- Points: Position with Velocity and Force
 			- Affects Integrate and Rendering
 
-	- Forces rearc:
+	- Forces rearc (*):
 		- Rationale: multiple spring iterations are really artificial; in reality, changes due to spring position changes in-between 
 		  iterations shouldn't impact physical world (e.g. buoyancy/drag) yet
 		- Points has two Force buffers: SpringForces and PointForces (or "NonSpringForces")
@@ -444,18 +479,22 @@ Render:
 
 	- Use VAO's
 
+	- Reduce number of vertex attributes for ship_triangles_texture and color (and possibly forced to do others)
+		+ We've already confirmed that one less attribute vertex sends FPS frpom 29 to 30
+		- At this moment, all Ship shaders - except for stressed springs - have the following inputs:
+			in vec2 inShipPointPosition;
+			in float inShipPointLight;
+			in float inShipPointWater;
+			in vec4 inShipPointColor;
+			in float inShipPointPlaneId;
+
 	- Lights in the GPU with instanced drawing
 		- Figure out whether at vertex or fragment shader
+			- Depends on whether or not interpolation would re-create circular halo
 		- Lamp coords, spread, and luminiscence in uniform array
 			- Which then have to be set individually
-		- Loop as many times necessary to avoid going beyond uniform limit of the GPU
+		- Loop as many times as necessary to avoid going beyond uniform limit of the GPU
 			- Figure out max (for right shader: v or f) at OpenGLInit
-
-	- See if can unify springs and ropes rendering
-		- Just make sure that ropecolor is already in point color buffer
-		- RenderSprings + RenderRopes == new RenderSprings:
-			- Watch out: ropes can't ever use texture
-		- What about rendering phases?
 
 	- Try using GL_SHORT for Ship texture coordinates
 		- Passing NORMALIZE and 3 components to glVertexAttribPointer
@@ -465,173 +504,108 @@ Render:
 			+ Research glFlush()
 			+ By invoking glFlush() and SwapBuffers() in MainFrame, before Render()
 
-	- Z buffer:
-		- Rationale: more connected components => slower (multiple batches); try to draw one single batch then, using Z buffer and depth test 
-		- Spec:
-			- TODO: incorporate in this:
-				- Remember in connected component visit to visit from right and also assign plane ID backwards
-					- Because of rope-follow algo - we want ropes (who are assigned to plane ID of entering (first) point)
-					  to always have the closest plane of the two
-					- See below latest rope-follow algo to see if this is still needed
-				- Might not need to sort generic textures if we upload bombs with plane ID of attached spring
-					- Does not work for bubbles though, but might be irrelevant
-				- Assignment of PlaneID to triangles based off owner point - see MOLESKINE
-				- Generation of triangles for rendering purposes - see MOLESKINE
-			- Assign Z based on cousin of connected component ID (named "Plane ID", uint32_t)
-				- All points have PlaneId
-					- Can we revert ShipId and ConnectedComponentId to start from zero and having None=max? 
-						- Yes, no one used NoneConnectedComponentId
-						- When we need stuff on top we can always use member variable with max plane ID, or the total 
-						  count of ships 
-						 - If so, Plane ID starts from zero
-					- Own buffer (it'll have to be uploaded to GPU)
-				- Points that belong to a connected component also have ConnectedComponentId
-					+ What doesn't have a ConnectedComponentId?
-						+ ConnectedComponentId is used for:
-							+ Frontier (possibly?)
-								+ In this case we don't want to assign them to "cables" (0-triangle edges a.k.a. 
-								  0-SuperTriangle springs), nor to standalone points
-							+ ForceFields that spring from a point
-								+ But we can get rid of this and just explode all over the place, after all
-								  explosions travel through air
-							+ Not by light diffusion algo, see below
-					- We keep ConnectedComponentIds for future use, but do the frontier-type propagation, i.e.
-					  we don't propagate them through "cables" nor assign them to standalone points; all of these 
-					  won't have a ConnectedComponentId at all
-					- So, what doesn't have a ConnectedComponentId?
-						- "cables"
-						- standalone points
-				- Assignment of PlaneId is done via the same connectivity visit used for assigning ConnectedComponentId's,
-				  but we assign "single-spring paths" to the origin's PlaneId and don't propagate to solid body again
-					- So we draw as separate two pieces that are connected solely by a "cable" (**)
-					- Also rope triangles must be assigned to the origin's PlaneId
-					- Propagation algo: don't propagate if coming from a spring with zero SuperTriangles to a spring
-					  with >0 SuperTriangles, unless these are all rope triangles
-						- New "IsRope" property of Triangle, pop'd by ShipBuilder; new buffer
-				- Light diffusion algo follows PlaneId's, instead of ConnectedComponentId's, as it's really about planes
-				- We assign Z after orthomatrix - in NDC - and thus positive is near
-			- We only enable Z test and writing to Z buffer at RenderContext before doing ships
-				- And later, if we move GenericTexture to RenderContext, also when we do generic textures
-		+ Figure out range of Z:
-			+ After matrix it's NDC: [-1, +1] (far, near)
-			+ When given to fragment, it's [0,+1], but we don't care!
-		- Mapping of <ShipId, PlaneId> to Z in NDC:
-			- ShipId=0 and PlaneId=0 must be closest => +1
-				- TODO: see above, likely we don't need this at all
-			- But then, larger ship IDs and plane IDs must also be nearer
-			- TODOHERE: figure this out
-				- Might just use max's
-		- Plan:
-			- Preliminaries:
-				- Test explosions without connected component ID constraint; if ok, eradicate connected component IDs
-				  from ForceFields
-			- Branch
-			- Test perspective with hardcoded z=-1 at triangle shaders and z=+1 at springs, and see if it makes any difference
-			- Do test images:
-				+ Get problematic # of CC's first, with AM bomb on Titanic: 6,000
-				- ConnectedComponentsTestShip1: those CC's
-				- ConnectedComponentsTestShip2: one CC, same # of points
-			- Add "PlaneID"
-				- GameType
-					- Same integral type as ConnectedComponentId
-					- Change ShipId, ConnectedComponentId, PlaneId to start from zero and have None=max (see @Spec above)
-				- Points: new buffer
-				- All the other things that currently require a ConnectedComponentId for rendering purposes:
-					- Bombs: substitute ConnCompId with PlaneId
-					- PinnedPoints: substitute ConnCompId with PlaneId
-					- Triangles: no ConnCompId nor PlaneId
-					- Spring: no ConnCompId, PlaneId returns min
-						- Cache @ caller, e.g. bomb
-			- Connectivity visit:
-				- New PlaneId propagation (see @Spec above)
-					- Has own counter
-				- Change ConnectedComponentId propagation to match frontier style
-			- Light diffusion algo now follows PlaneIds (see @Spec above)
-			- Uploading of PlaneId's:
-				- Ship, when mAreElementsDirty, causes Points to upload PlaneIds
-					- See role of current Upload() - Rename: we have 3+ roles: immutable, (continuously) mutable, ad-hoc
-					  (UploadEphParticles, UploadPlaneIds, etc.)
-					- Ship must take charge of immutable attributes state - 2 state variables (immutable dirty and mutable dirty)
-			- Enable Z test and writing to Z buffer at RenderContext before doing ships, and disable all afterwards
-				+ Also clear Z buffer at canvas clear
-				- glEnable(GL_DEPTH_TEST);
-				- glDepthMask(GL_TRUE); // This at initialization
-				- glDepthFunc(GL_LESS); // This at initialization
-			- Ship/RenderContext:
-				- 
-			
-			- TODO: review the below based off transparency sorting - see MOLESKINE
-			2 - Ship assigns points' ConnectedComponentID as float in vector
-			3 - ShipRenderContext's shaders (Triangles, Springs) take Z and with ad-hoc OrthoMatrix
-			    transform ConnectedComponentID to Z
-			4 - ShipRenderContext::UploadXYZElement() does not take anymore connected component ID
-			5 - (Nice to have): sticky component IDs, by leveraging the fact that normally IDs are assigned from L,T to R,B
-
-
-		- See if drawing springs & triangles at separate depths also helps generally with render speed, even for one single
-		  connected component (for springs' fragment shader - may be it takes shortcuts if it knows it's behind)
-		- After Z is done:
-			- GenericTextureShader also takes ShipID and PlaneID for Z, and exists in one central place
-				- Invoke shader at one place
-					- Move this shader and all ShipRenderContext::UploadTextureRenderSpecification to 
-					  RenderContext
-					  - ShipId = None => topmost plane (still with PlaneID Z variations)
-				- Also enable/disable Z depth for this step after it has moved to RenderContext
-					- Optimize: do this immediately after ships
 
 - Gfx:
 	+ Make font white inversely to ambient light
+
 	- Make water texture scroll with wind speed
 
-	- Electrical view
-		- New flag (not in ShipRenderMode)
-			- Settable at SettingsDialog
-				- Ideally, enabled only if there are electrical elements, but how to figure it out?
-		- When enabled, draws lines and electrical current (color) on top of ship
-			- Ship uploads <EPIndex1, EPIndex2, float current>
-		- Better if this is done after Z buffer rearc
-			- So no need to mess with ShipRenderContext::ConnectedComponentData
-		- Generation of buffer done at (new, see elsewhere in this roadmap) UpdateElectricalConnectivity
-			- If flag is enabled, UpdateElectricalConnectivity also stores data in buffer 
-				- Exactly like we plan to do for triangles, but always done, regardless of dirty-ness
-				- Test: buffer storage controlled via argument lambda
-					- Check asm
-				- Current of a spring == current of EP1 * current of EP2
+	- Electrical view:
+		- Spec:
+			- New flag (not in ShipRenderMode, standalone ~like StressedSprings)
+				- Settable at SettingsDialog
+					- Ideally, enabled only if there are electrical elements, but how to figure it out?
+			- When enabled, draws "Connections" (lines - w/own endpoints) and "Devices" (points - w/own endpoints) 
+			  on top of ship
+				- One new layer after tri's, springs, and ropes
+				- Connection, w/bool isPowered
+					- Powered: 1D texture, animated (w/clock->offset), red
+					- !Powered: 1D texture, still, grey matte
+						- Both textures are segments in same texture
+		- Impl:
+			- (Ship)RenderContext::UploadElectricalConnection/Device/Start/End:
+				- Conn: 
+					- vec2 startPos, endPos
+					- planeId
+					- isPowered => texture coord
+				- Device:
+					- vec2 pos
+					- planeId
+					- vec4 color => color
+			- Ship::Render: if flag set: invokes Ship::RenderElectricalElements()				
+				- Do a sort of connectivity visit and upload as you go
 
-	- Should we always draw orphaned points - those that come after destruction?
+	- Should we always draw orphaned points - those that come after destruction? (*)
 		+ Orphaned point == points with 0 connected springs
-		- We must first stop deleting points just because springs are deleted
-			- Though should still delete them as Destroy() and Bomb(), for example
-		- We should somehow unify the uploading of orphaned points and the uploading of ephemeral points
-			- Connected component ID/Z buffer is enough to keep them on separate planes
-		- Also, ShipRenderMode::Points should only be consumed by Points::Upload, who is the only one who decides what gets uploaded
-		- Orphaned points go into their own single plane, above all connected components
-			- Assigned directly by ConnectivityVisit by checking if point has no connected springs (and it's not deleted)
-				- Since we're doing this, we might as well fill-in vector of Point indices for UploadPoints:
-					- Ship has own vector<ElementIndex>, appropriately reserved to mPoints.total_size
-					- Ship::ConnectivityVisit:
-						- Clears vector - after all, we run ConnectivityVisit if we're dirty
-						- For each point: 
-							- If ShipRenderMode is Points OR point is orphan: appends it
-						- Remembers size of vector at this moment, as mShipPointElementsCount (see below)
-					- Then passes it to Points::UploadEphemeralParticles(), who appends to it
-						- Instead, when we're not dirty, Ship truncates it to mShipPointElementsCount
-						  before passing it to UploadEphemeralParticles() (which now takes no RenderContext anymore)
-		- Ship::Render(): new dirty/ephemeral algo:
-			- With Z buffer we don't need anymore to worry about ShipRenderElementsStart() to allocate all connected components
-			- Ship uploads own point element index vector when:
-				- old: mAreElementsDirty => new: mArePointElementIndicesDirty
-					- mArePointElementIndicesDirty is set when:
-						- ConnectivityVisit runs
-							- ConnectivityVisit sets it itself at end
-						- Points::UploadEphemeralParticles() returns true (because it remembers it is dirty)
-							- Optimize here: if only UploadEphemeralParticles() returns true, then
-							  may upload only sub-portion after mShipPointElementsCount
-		- ShipRenderContext always renders point elements	
-			- Even when ShipRenderMode is Springs
-				- Test L'n'F'
-
+		+ We unify ephemeral points uploading and rendering with ship points (either debug or orphan) uploading and rendering
+			+ Plane ID is enough to keep them on separate planes
+		- Verify first that connectivity visit really assigns plane IDs also to orphaned points 
+		- Impl:
+			- We must first stop deleting points just because springs are deleted
+				- Though should still delete them at Destroy() and Bomb(), for example
+			- RenderContext and ShipRenderContext expose one single, independent UploadPointElements for segments:
+				- UploadPointElements(srcbuffer, start (valid for both src and dst), len)
+				- Only requires ShipRenderCointext to have been init'd with total # of points, so to
+				  allocate VBO once at initialization
+			- Ship::Render:
+				- std::vector<ElementIndex> mPointElements
+					- reserved(mPoints.total_size) at cctor
+				- Nuke old upload call for point elements
+				- if mIsStructureDirty:
+					- Clear mPointElements
+					- Ask Points to populate point indices in mPointElements
+						- Starting from zero
+						- Points decides between all or orphaned only based off DebugShipRenderMode
+					- Store # of points just populated into mCurrentShipPointElementsCount
+				- ...later...:
+				- At Points::UploadEphemeral:
+					- Pass mPointElements
+					- Points::UploadEphemeral returns nEphemeralPointsPopulated
+				- if mIsStructureDirty || nEphemeralPointsPopulated > 0:
+					- Call RenderContext::UploadPointElements(
+						srcbuffer=ship's buffer, truncated to mCurrentShipPointElementsCount if !mIsStructureDirty
+						start = mIsStructureDirty ? 0 : mCurrentShipPointElementsCount,
+						len = mIsStructureDirty ? buffer.len : nEphemeralPointsPopulated)
+					- TEST: go through this again and verify all cases covered
+			- ShipRenderContext:
+				- Nuke RenderEphemeralPoints and its structs and members
+				- Have just one single RenderPoints
+					- Always invoked
+					- Even when ShipRenderMode is Springs
+						- Test L'n'F' with ShipRenderMode=Springs; if not good, skip it
 		- Test L'n'F'
+
+		- TODOOLD: in case any assumptions fail:		
+			- Also, ShipRenderMode::Points should only be consumed by Points::Upload, who is the only one who decides what gets uploaded
+				~ Not really, see below - it's ConnectivityVisit the only one that checks ShipRenderMode::Points 
+			- Orphaned points go into their own single plane, at whatever connected component/plane ID algo assigns them to
+				- Assigned directly by ConnectivityVisit by checking if point has no connected springs (and it's not deleted)
+					- Do we really need to special-case PlaneID assignment? Doesn't ConnectivityVisit already assign a good Plane ID?
+					- Since we're doing this, we might as well fill-in vector of Point indices 
+					  (containing ShipRenderMode::Points + orphaned + ephemeral points), replacing UploadPoints:
+						- Ship has own vector<ElementIndex>, appropriately reserved to mPoints.total_size
+						- Ship::ConnectivityVisit:
+							- Clears vector - after all, we run ConnectivityVisit if we're dirty
+							- For each point: 
+								- If ShipRenderMode is Points OR point is orphan: appends it
+							- Remembers size of vector at this moment, as mShipPointElementsCount (see below)
+						- Then passes it to Points::UploadEphemeralParticles(), who appends to it
+							- When we're not dirty, instead, Ship truncates it to mShipPointElementsCount length
+							  (maintaining point indices from previous ConnectivityVisit),
+							  before passing it to UploadEphemeralParticles() (which now takes no RenderContext anymore)
+			- Ship::Render(): new dirty/ephemeral algo:
+				- With Z buffer we don't need anymore to worry about ShipRenderElementsStart() to allocate all connected components
+				- Ship uploads own point element index vector when:
+					- old: mAreElementsDirty => new: mArePointElementIndicesDirty
+						- mArePointElementIndicesDirty is set when:
+							- ConnectivityVisit runs
+								- ConnectivityVisit sets it itself at end
+							- Points::UploadEphemeralParticles(indices vector) returns true (because it remembers it is dirty)
+								- Optimize here: if only UploadEphemeralParticles() returns true, then
+								  may upload only sub-portion after mShipPointElementsCount
+			- ShipRenderContext always renders point elements	
+				- Even when ShipRenderMode is Springs
+
 
 	- A toggle-able shader for the sea - so it gets darker the further down you go; it would be affected by the ambient lighting
 		- Need new scalar vertex attrib for depthBrightness - between 1.0 (top) and 0.0 (at greater of 1000m and sea depth)
@@ -643,6 +617,7 @@ Render:
 	  larger than texture), then one sees parts of the springs
 		- It's a problem with rendering springs with the texture shader
 		- However, these springs give an anti-aliasing effect
+
 	- Draw better (depth-wise) those parts that are only connected by ropes (**)
 		- TODO: this is taken care of by Z-buffer work, by carefully propagating plane IDs 
 			- This in reality has nothing to do with ConnectedComponentIds
@@ -654,10 +629,12 @@ Render:
 			  #connected_triangles>0
 				- Though we must still propagate through rope triangles, so maintain "coming from #connected_triangles=0"
 				  when propagating from a rope point to a rope point - regardless of connected triangles
-	- Option to enable drawing of force vectors for each point
-		- Ship::Update() takes also RenderContext const &, so can check if need to save force buffer
-			- Points::SaveForceBufferForVectorRender()
-		- Copied right before integration
+
+	+ Option to enable drawing of force vectors for each point
+		+ Ship::Update() takes also RenderContext const &, so can check if need to save force buffer
+			+ Points::SaveForceBufferForVectorRender()
+		+ Copied right before integration
+
 	- AmbientLightIntensity:
 		+ Use also in RenderContext::RenderStart() for clear (sky) color
 		+ Phase 1: pgup/down
@@ -683,6 +660,38 @@ Render:
 
 - Dynamics:
 
+	- Decay (rust) (*)
+		- Spec:
+			- Over time, *wet* *metal* points and springs get reddish or greenish, and strength lowers
+			- GameParameters: DecayAcceler8r controls how quickly
+				- 0  = +INF == never
+				- 1  = 5m (default)
+				- 10 = 10s
+			- Low-frequency Ship update does job
+		- Impl:
+			- Points: new Decay buffer
+				- Init as 0.0
+				- Ship::DecayStructure sends it asymptotically to 1.0
+			- Ship::DecayStructure:
+				- Invoked by Ship::Update
+				- Checks whether currentSimTimestamp >= lastDecaySimTimestamp + DT
+					- Acceler8r => T to ~total decay: TBD: find formula
+					- DT = T / 300
+				- When so:
+					- alpha = (10**-5)**(1/300) (~total decay in 300 steps)
+					- for each point p for which p.water > threshold and p.isMetal:
+						- p.rust *= alpha
+					- Points.MarkRustBufferAsDirty()
+					- for each spring s:
+						- s.strength *= (1.0 - pA.rust)
+			- (Ship)RenderContext:
+				- UploadDecayBuffer
+				- Triangle, Spring, and Point shaders take attrib array and use it for color blend
+			- Ship::Render:
+				- Call Points::UploadDirtyBuffers (new name for old method)
+					- Also uploads Decay buffer if dirty
+
+
 	- Lights breaking under pressure
 		- Idea:
 			- All structural materials have max pressure delta after which they break, with some randomness
@@ -695,6 +704,7 @@ Render:
 		- Make number of samples be bump map width
 		- Still check width is power of two
 		- Still calculate bit stuff for fast mod
+		- Make default floor larger and check perf impact
 
 	- Ocean floor breaking up upon impact
 		- Layer on top of floor samples, with hash buckets and lists of heights per-bucket
@@ -783,6 +793,8 @@ Render:
 				+ ObjectIdGenerator only provides helper for globally unique - with no guarantees - or should go
 			+ All ship ID ints become ShipId
 			+ All object ID ints become ObjectId
+		- To improve typesafety, should ObjectId become template on actual local ID?
+			- Make strong typedef for SwitchID
 		- Ship json adds optional names for each ID
 			- as vector<tuple<local switch ID, std::string>>>
 				- local switch ID is ID from color code
@@ -1034,6 +1046,15 @@ Render:
 
 - Game Interactions and Controls:
 
+	- Setting for wave width 
+		- Changing the width of the waves up to at least 10x the current size
+		- Period: https://www.quora.com/How-can-I-determine-the-period-of-a-sum-of-sines-or-cosines-or-mixed
+		- Option 1:
+			- Requires re-calculation of period (if adjustment is x-multiplier N, then period is N times basic period?)
+			- Resolution stays the same
+		- Option 2:
+			- Integral ticks to change frequencies so that period is always the same
+
 	- Pick tool: ability to move individual connected components
 		- After connected component has been overhauled
 		- Spec:
@@ -1052,9 +1073,6 @@ Render:
 					- Disengage if it returns false
 				- Pass velocity = current (synthetic) mousePos - last (synthetic) mousePos
 				
-	- Changing the width of the waves up to at least 10x the current size
-		- Requires re-calculation of period (if adjustment is x-multiplier N, then period is N times basic period)
-		- Resolution stays the same
 
 	- Allow ocean floor bump map to be loaded at runtime
 
@@ -1098,8 +1116,10 @@ Render:
 	+ Menu entries for "Home Page (GameJolt)/Code Page (GitHub)"
 		+ wxLaunchDefaultBrowser
 
-	- SettingsDialog: add tooltips at each setting
+	- SettingsDialog: add tooltips at each setting (*)
 		- Explanation and unit
+		- See if just on slider and label works; if not, do entire panel but have to merge with icon...
+			- Or remove tooltip from icon altogether, do just standalone panel tooltip & standalone icon w/no tooltip
 
 	- SettingsDialog: save settings, defaults, and real-time changes
 		- SettingsManager (@FloatingSandbox):
@@ -1146,9 +1166,7 @@ Render:
 				- Load(filepath) -> struct
 		- Impl:
 			- Standard paths: http://docs.wxwidgets.org/3.1/classwx_standard_paths.html#a4752213ef4d7bdc71170b9e5c3691f0f
-				- MainApp: call App::SetAppName() at startup
-					- With app name from version.h
-				- SettingsManager can deal directly with wxWidgets
+				- Via StandardSystemPaths class
 		- Dialog:
 			- Control values are meant to always be in sync with real game params
 				- Handlers write value directly to SettingsManager
@@ -2182,7 +2200,7 @@ IF WX:
 			+ Perf optimizations:
 				+ Precalcd stuff in FontMetadata, indexed by char
 
-+ Gfx Optimizations
++ Gfx Optimizations:
 
 	+ Try without buffer population: 			
 		+ Point has vec2f * const mPosition and vec2f * const mColour, pointing into two fixed buffers
@@ -2427,6 +2445,298 @@ IF WX:
 		+ Redo perf FPS measurement
 
 
+	+ Z buffer:
+		+ Rationale: more connected components => slower (multiple batches); try to draw one single batch then, using Z buffer and depth test 
+		+ Spec:
+			+ Assign Z based on cousin of connected component ID (named "Plane ID", uint32_t)
+				+ All points have PlaneId
+					+ Can we revert ShipId and ConnectedComponentId to start from zero and having None=max? 
+						+ Yes, no one used NoneConnectedComponentId
+						+ When we need stuff on top we can always use member variable with max plane ID and/or the total 
+						  count of ships 
+						+ If so, Plane ID starts from zero
+					+ Own buffer (it'll have to be uploaded to GPU)
+				+ Points that belong to a connected component also have ConnectedComponentId
+					+ What doesn't have a ConnectedComponentId?
+						+ ConnectedComponentId is used for:
+							+ Frontier (possibly?)
+								+ In this case we don't want to assign them to "cables" (0-triangle edges a.k.a. 
+								  0-SuperTriangle springs), nor to standalone points
+							+ ForceFields that spring from a point
+								+ But we can get rid of this and just explode all over the place, after all
+								  explosions travel through air
+							+ Not by light diffusion algo, see below
+					+ We keep ConnectedComponentIds for future use, but do the frontier-type propagation, i.e.
+					  we don't propagate them through "cables" nor assign them to standalone points; all of these 
+					  won't have a ConnectedComponentId at all
+					+ So, what doesn't have a ConnectedComponentId?
+						- "strings"
+						- standalone points
+				+ Assignment of PlaneId is done via the same connectivity visit used for assigning ConnectedComponentId's,
+				  but we assign "single-spring paths" to the origin's PlaneId and don't propagate to solid body again
+					+ So we draw as separate two pieces that are connected solely by a "cable" (**)
+					+ Also rope triangles must be assigned to the origin's PlaneId
+					+ Propagation algo: don't propagate if coming from a spring with zero SuperTriangles to a spring
+					  with >0 SuperTriangles, unless these are all rope triangles
+						+ New "IsRope" property of Triangle, pop'd by ShipBuilder; new buffer
+				+ Light diffusion algo follows PlaneId's, instead of ConnectedComponentId's, as it's really about planes
+				+ We assign Z after orthomatrix - in NDC - and thus positive is near
+			+ We only enable Z test and writing to Z buffer at RenderContext before doing ships
+				+ And later, if we move GenericTexture to RenderContext, also when we do generic textures
+		+ Figure out range of Z:
+			+ World: -1000 -> -1  ==> NDC: +1 -> -1
+			+ We assign Z after orthomatrix - in NDC - and thus positive is near
+			+ After matrix it's NDC: [-1, +1] (far, near)
+			+ When given to fragment shader it's [0,+1], but we don't care anymore at this moment, as we calc Z in vertex shader!
+		+ Mapping of <ShipId, PlaneId> to Z in NDC:
+			+ Normal: ShipId=0 and PlaneId=0 are furthest
+		+ Plan:
+			+ Branch
+			+ Preliminaries:
+				+ Test explosions without connected component ID constraint; if ok, eradicate connected component IDs
+				  from ForceFields
+				+ Test perspective with hardcoded z=-1 at triangle shaders and z=-999 at springs, and see if it makes any difference
+					+ Undo afterwards
+				+ Do test images:
+					+ Get problematic # of CC's first, with AM bomb on Titanic: 6,000
+					+ ConnectedComponentsTestShip1: 8192 CC's, 33280 points, 49152 springs
+					+ ConnectedComponentsTestShip2: 1 CC, 36588 points, 47882 springs
+				+ Get initial perf:
+					+ Default: 30.8
+					+ ConnectedComponentsTestShip1: 3.10
+					+ ConnectedComponentsTestShip2: 11.6
+			+ Step 1:
+				+ Add "PlaneID"
+					+ GameType
+						+ Same integral type as ConnectedComponentId
+						+ Change ShipId, ConnectedComponentId, PlaneId to start from zero and have None=max (see @Spec above)
+					+ Points: new buffer
+				+ Points: add connected springs' "other endpoint"
+					+ As part of Network
+					+ Test fixed_size_vector::erase_first with/lambda
+						+ Check assembly with unit tests
+					+ Populated by whatever populates ConnSprings now (ShipBuilder or Points::Add)
+					+ Nuke Springs::GetOtherEndpointIndex
+					+ Write off work item from elsewhere in this file
+				+ Run in debug and validate
+					+ Revert to Render::uploading ConnCompId's 
+					+ Test crash w/Goliath
+				+ Check perf
+			+ Step 2:
+				+ Connectivity visit:
+					+ New PlaneId propagation (see @Spec above and Moleskine)
+					+ Change ConnectedComponentId propagation to match frontier style (i.e. not on strings)
+				+ Light diffusion algo now follows PlaneIds (see @Spec above and Moleskine)
+				+ All the other things that currently require a ConnectedComponentId for rendering purposes:
+					+ Bombs: substitute ConnCompId with PlaneId
+					+ PinnedPoints: substitute ConnCompId with PlaneId
+					+ Triangles: no ConnCompId nor PlaneId
+					+ Spring: no ConnCompId, just PlaneId
+					+ Ephemeral particles (check all Points::CreateXYZEphemeralParticle(...))
+				+ Render: upload PlaneId instead of ConnectedComponentId
+				+ Do ad-hoc tests to validate assignment of plane IDs and connected component IDs
+				+ Run in debug and validate
+				+ Commit
+			+ Step 3:
+				+ Ship/RenderContext: UploadPlaneIds(..., maxMaxPlaneId)
+					+ Send to GPU right away, in buffer mapped to shared vertex attribute
+				+ Test
+				+ Commit
+			+ Step 4:
+				+ Enable Z test and writing to Z buffer:
+					+ At RenderContext before doing ships, and disable afterwards
+						+ Need World to invoke RenderShipsStart()/End() before going through individual ships
+					+ Also clear Z buffer at canvas clear
+					+ glEnable(GL_DEPTH_TEST);
+					+ glDepthMask(GL_TRUE); // This at initialization
+					+ glDepthFunc(GL_LESS); // This at initialization
+				+ Test
+					+ Also FPS: 32.0 - MIRACLE?!?!?
+				+ Commit
+			+ Step 5:
+				+ Ship/RenderContext: PlaneID->Z calculations
+					+ OrthoMatrix:
+						+ Rename RenderContext's as "GlobalOrthoMatrix"
+						+ Ship has own per-layer, calc'd (and set as uniform) at:
+							+ private ShipRenderContext::OnViewModelUpdated()
+								+ Invoked at:
+									+ UpdateCanvas/Zoom/Cam (use struct - @ parent - with all params)
+										+ What about visible world w/h?
+									+ Changed nShips at RenderContext::RenderShipsStart()
+										+ via ShipRenderContext::UpdateNumberOfShips(nShips)
+									+ Changed MaxMaxPlaneId at UploadPlaneIds(...) call
+				+ RenderContext ans ShipRenderContext: change OnXYZUpdated/UpdateXYX pattern: no args
+				+ Test
+				+ Commit
+			+ Step 6:
+				+ ShipRenderContext:
+					+ See if can get rid of optionality of ship's texture
+					+ Make dedicated shaders for each layer:
+						+ Current => New:
+							- Ropes: ShipRopes => ShipRopes
+							- Triangles:
+								- ShipTrianglesTexture: if !debug && RenderMode==Texture
+								- ShipTrianglesColor: otherwise
+								=> ShipTrianglesTexture, ShipTrianglesColor
+							  & Springs:
+								- ShipTrianglesTexture: if !debug && RenderMode==Texture
+								- ShipTrianglesColor: otherwise
+								=> ShipTrianglesTexture, ShipTrianglesColor
+							- StressedSprings: ShipStressedSprings => ShipStressedSprings
+							- Points: ShipTrianglesColor => ShipPointsColor (copy)
+							- GenTex: GenericTextures => ShipGenericTextures (rename)
+							- Vectors: Matte => ShipMatte (copy)
+					+ Complete: assign per-layer ortho matrices
+					+ Test & commit
+			+ Step 7:
+				+ Do actual ship ortho matrix calculation at ViewModel::CalculateShipOrthoMatrix
+					+ See Moleskine for calc'ns
+				+ All ship shaders take new vertex attribute and calc Z via OrthoMatrix
+					+ Test first with triangles layer
+					+ Do all other layers and shaders next
+				+ Test all layers
+				+ ShipRenderContext::UploadXYZElement() do not take anymore connected component ID
+					+ Dismantle ShipRenderContext connected component tracking; store everything in buffers and/or upload directly
+						+ cctor:
+							+ // Elements:
+								+ Reserve vectors w/maxes from old func
+								+ Create VBO's 
+					+ Ship: nuke mConnectedComponentSizes
+					+ Ship::Render: 
+						+ Nuke connected component empty check
+						+ if mIsStructureDirty or debug mode changed:
+							+ Upload parts individually
+				+ Do ship triangles correct sorting
+					+ Store bool owned_by_point in Points::ConnectedTriangles (see MOLESKINE)
+						+ Store it sorted
+					+ Replace Triangles::UploadElements() with Triangles::UploadElements<TIndices>(TIndices const &, ...)
+					+ Ship:
+						+ Populate std::vector<ElementIndex> at ConnectivityVisit with owned triangle indices only
+							+ vector reserved at cctor
+						+ ::Render(): still when mIsStructureDirty: Triangles::UploadElements(mIndices)
+				+ Verify old behavior (ship triangles in texture mode are drawn incorrectly): 
+					+ With Titanic's back flag
+					+ Temp triangles upload in old order
+					+ Temp no springs draw 
+				+ Verify new behavior: OK
+				+ Put back ShipRenderContext's Springs rendering
+				+ Commit
+			+ Step 8:
+				+ Issues:
+					+ Ropes jumping ahead (when new connected components come up)
+						+ Due to incorrect planeID direction on Z axis: higher plane ID (recipient of string
+						  assigned to previous (lower) plane ID) must be nearer (than string and its solid body)
+					+ (Edge) springs countoured with background
+						+ Testable with Titanic funnel
+						+ Solution: draw triangles before all
+					+ Ropes and anti-aliasing issue:
+						+ Option 1: draw ropes *after* triangles and springs, but still in current layer (farther)
+						- Option 2: see https://stackoverflow.com/questions/30426178/lines-appear-segmented-after-enabling-depth-testing:
+							- Draw ropes first (in invoke order) with Z write off (Z test is irrelevant, as it'd be the first)
+								- BUT: if there's no Z write then there's no Z test among ropes, hence
+								  they'd cover each other wrongly
+							- Draw everything else with Z write (and Z test) on
+					+ Piece of rope appears to belong to higher connected component
+						+ Was to be expected - after all last segment of rope is between two points that have
+						  two different plane IDs, hence a part of the last segment will be visible
+						+ Possible solution is to stop doing the "smart" string plane propagation altogether
+					+ When pieces belong to same plane, (edge) springs are drawn in disagreement with triangles
+					  (e.g. triangles invisible but their edge springs visible)
+						+ Option 1: springs are drawn in layer Z-behind
+						- Option 2: depth-sort springs as well
+					+ After we start drawing ropes temporally after triangles (because of anti-aliasing issue):
+						+ Ropes are now occluded by transparent (texture) triangles from same plane
+							+ This is because ropes layer is Z-behind triangles layer
+							+ Option 1: alpha test in shader
+					+ Same plane: covering is now more random
+						+ Analyze visit pattern
+						+ Try with deque
+						+ Try with old-style visit (step 9 below)
+						+ Try following raster visit using per-plane indices in final vector
+							+ 1: ConnectivityVisit: populate N+1 vector with # of triangles per plane
+							+ 2: Triangles::Upload: take it and send endpoints to ShipRenderContext
+							+ Test
+							+ If ok:
+								+ Add # of owned triangles to each point (new buffer)
+									+ Init to 0 at Points::Add
+									+ Update count at Points::Add/RemoveConnectedTriangles
+									+ Use it @ ConnectivityVisit instead of counting triangles
+				+ Undefine flood rendering
+				+ See if need to and can make alpha threshold higher, to eliminate artifacts around ropes close to their endpoints on 
+				  Titanic's funnels
+				+ Test texture mode
+				+ Test structure mode
+					+ See if loss of ropes over structure is ugly; if we can live without it, remove conditions and dual 
+					  rope rendering
+				+ Test full RenderMode x DebugRenderMode matrix:
+					+ Texture, ...
+					+ Structure, ...
+				+ Test stressed springs
+				+ Commit
+			+ Step 9: cleanup:
+				+ ConnectivityVisit: redo visit from L to R and thus simplify ortho matrix
+				+ Remove commented-out connectivity visit
+				+ Commit
+			+ Step 10: generic textures
+				+ GenericTextures: is now own pass that uses own plane IDs as input for Z's in shader
+					+ Upload plane IDs instead of conn comp IDs
+						+ Fix at all calls from:
+							+ Bombs
+							+ Points::UploadEphemeralPoints
+								+ The texture ones can now pass real plane ID, fix call chain up to caller
+							+ PinnedPoint
+					+ Fix grow problem at ShipRenderContext
+					+ For now keep doing per-plane partitioning of textures for depth-sorting; we'll try alternatives later
+					+ Pass PlaneID into gen tex shader (which must NOT take point's vertex attrib)
+					+ Try without padding?
+					+ That TODO for moving allocation of vertex buffer
+						+ And rename of member: mGenericTextureRenderPolygonVertexAllocatedSize
+				+ Test
+					+ Gen textures are correctly covered by things (ropes, triangles, gen textures) in nearer plane, 
+					  and correctly cover things (ropes, triangles, gen textures) in further plane
+					+ Test bombs - different planes
+					+ Test pinned points - different planes
+					+ Test eph particles - different planes
+				+ Commit
+			+ Step 11: vectors
+				+ Add PlaneID to vectors
+				+ Test & commit
+			+ Step 12: ephemeral points
+				+ EphemeralPoints: is now own pass that uses plane IDs as input for Z's in shader
+				+ When eph particles are created (e.g. at Points::CreateEphemeralParticleDebris()), we write to the planeId buffer but
+				  don't re-upload it; should mark plane ID buffer as dirty, but at two different segments, and then blindly
+				  invoke UploadPlaneIdsIfDirty() from ship
+				+ Test: eph points from multiple parts
+				+ Commit							
+		+ Tests:
+			+ Do perf analysis to catch low-hanging fruit
+			+ Run in Debug
+			+ Post perf test
+				+ Benchmark:
+					+ Orig:
+						+ Default: 30.8
+						+ ConnectedComponentsTestShip1: 3.10
+						+ ConnectedComponentsTestShip2: 11.6
+					+ New:
+						+ Default: 29.1/29.5
+						+ ConnectedComponentsTestShip1: 10.4/10.6
+						+ ConnectedComponentsTestShip2: 10.8/11.1
+
+				+ Gradual reduction to smithereens (anti-matter bomb w/Titanic)
+					+ Check whether slowness during gradual decomposition - due to conn visit - is acceptable
+		+ Cleanups:
+			+ Points: order connected triangles so that owned are first
+				+ Might be best done @ insert
+				+ ConnectivityVisit::population of triangle indices: cut short connected triangles' visit as soon
+				  as isAtOwner==false
+			+ Light spread on surface changes abruptly when piece is cut; see if it makes sense for diffuse
+			  to only light points whose plane ID is behind lamp (thus planeID<=lampPlaneID)
+		+ Optimizations to try:
+			+ PlaneID's being float's to start with
+				+ ...as long as we don't need bucketization for GenericTextures' depth-sorting
+			
+		+ See if drawing springs & triangles at separate depths also helps generally with render speed, even for one single
+		  connected component (for springs' fragment shader - may be it takes shortcuts if it knows it's behind)
 
 
 + Dynamics

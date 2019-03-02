@@ -198,7 +198,7 @@ public:
 
 private:
 
-    void DetectConnectedComponents(VisitSequenceNumber currentVisitSequenceNumber);
+    void RunConnectivityVisit(VisitSequenceNumber currentVisitSequenceNumber);
 
     void DestroyConnectedTriangles(ElementIndex pointElementIndex);
 
@@ -224,7 +224,7 @@ private:
     void GenerateAirBubbles(
         vec2f const & position,
         float currentSimulationTime,
-        ConnectedComponentId connectedComponentId,
+        PlaneId planeId,
         GameParameters const & gameParameters);
 
     void GenerateDebris(
@@ -248,7 +248,6 @@ private:
     virtual void DoBombExplosion(
         vec2f const & blastPosition,
         float sequenceProgress,
-        ConnectedComponentId connectedComponentId,
         GameParameters const & gameParameters) override;
 
     virtual void DoAntiMatterBombPreimplosion(
@@ -285,18 +284,22 @@ private:
     Triangles mTriangles;
     ElectricalElements mElectricalElements;
 
-    // Connected components metadata
-    std::vector<std::size_t> mConnectedComponentSizes;
+    // The max plane ID we have seen - ever
+    PlaneId mMaxMaxPlaneId;
 
-    // Flag remembering whether points (elements) and/or springs (incl. ropes) and/or triangles have changed
-    // since the last step.
-    // When this flag is set, we'll re-detect connected components and re-upload elements
+    // Flag remembering whether the structure of the ship (i.e. the connectivity between elements)
+    // has changed since the last step.
+    // When this flag is set, we'll re-detect connected components and planes, and re-upload elements
     // to the rendering context
-    bool mAreElementsDirty;
+    bool mIsStructureDirty;
 
     // The debug ship render mode that was in effect the last time we've uploaded elements;
     // used to detect changes and eventually re-upload
     std::optional<DebugShipRenderMode> mLastDebugShipRenderMode;
+
+    // Initial indices of the triangles for each plane ID;
+    // last extra element contains total number of triangles
+    std::vector<size_t> mPlaneTrianglesRenderIndices;
 
     // Sinking detection
     bool mIsSinking;

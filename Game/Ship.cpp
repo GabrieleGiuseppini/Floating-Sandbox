@@ -51,9 +51,10 @@ Ship::Ship(
     , mSprings(std::move(springs))
     , mTriangles(std::move(triangles))
     , mElectricalElements(std::move(electricalElements))
-    , mConnectedComponentSizes()
-    , mAreElementsDirty(true)
+    , mMaxMaxPlaneId(0)
+    , mIsStructureDirty(true)
     , mLastDebugShipRenderMode()
+    , mPlaneTrianglesRenderIndices()
     , mIsSinking(false)
     , mTotalWater(0.0)
     , mWaterSplashedRunningAverage()
@@ -78,8 +79,8 @@ Ship::Ship(
     mTriangles.RegisterDestroyHandler(std::bind(&Ship::TriangleDestroyHandler, this, std::placeholders::_1));
     mElectricalElements.RegisterDestroyHandler(std::bind(&Ship::ElectricalElementDestroyHandler, this, std::placeholders::_1));
 
-    // Do a first connected component detection pass
-    DetectConnectedComponents(currentVisitSequenceNumber);
+    // Do a first connectivity pass (for the first Update)
+    RunConnectivityVisit(currentVisitSequenceNumber);
 }
 
 Ship::~Ship()
@@ -268,7 +269,7 @@ bool Ship::InjectBubblesAt(
         GenerateAirBubbles(
             targetPos,
             currentSimulationTime,
-            NoneConnectedComponentId, // FUTURE: use mMaxConnectedComponentId/ZPlane
+            NoneConnectedComponentId, // FUTURE: use mMaxMaxPlaneId
             gameParameters);
 
         return true;
@@ -485,12 +486,12 @@ void Ship::Update(
 
 
     //
-    // Detect connected components, if there have been any deletions
+    // Run connectivity visit, if there have been any deletions
     //
 
-    if (mAreElementsDirty)
+    if (mIsStructureDirty)
     {
-        DetectConnectedComponents(currentVisitSequenceNumber);
+        RunConnectivityVisit(currentVisitSequenceNumber);
     }
 
 
@@ -534,91 +535,97 @@ void Ship::Render(
     // Initialize render
     //
 
-    renderContext.RenderShipStart(
-        mId,
-        mConnectedComponentSizes);
+    renderContext.RenderShipStart(mId);
 
 
     //
     // Upload points's mutable attributes
     //
 
-    mPoints.Upload(
+    mPoints.UploadMutableAttributes(
         mId,
+        renderContext);
+
+    mPoints.UploadPlaneIds(
+        mId,
+        mMaxMaxPlaneId,
         renderContext);
 
 
     //
-    // Upload elements
+    // Upload triangles, iff structure is dirty
     //
 
-    if (!mConnectedComponentSizes.empty())
+    if (mIsStructureDirty)
     {
-        //
-        // Upload elements (point (elements), springs, ropes, triangles), iff dirty
-        // or the ship debug render mode has changed
-        //
-
-        if (mAreElementsDirty
-            || !mLastDebugShipRenderMode
-            || *mLastDebugShipRenderMode != renderContext.GetDebugShipRenderMode())
-        {
-            renderContext.UploadShipElementsStart(mId);
-
-            //
-            // Upload all the point elements
-            //
-
-            mPoints.UploadElements(
-                mId,
-                renderContext);
-
-            //
-            // Upload all the spring elements (including ropes)
-            //
-
-            mSprings.UploadElements(
-                mId,
-                renderContext,
-                mPoints);
-
-            //
-            // Upload all the triangle elements
-            //
-
-            mTriangles.UploadElements(
-                mId,
-                renderContext,
-                mPoints);
-
-            renderContext.UploadShipElementsEnd(mId);
-        }
-
+        assert(mPlaneTrianglesRenderIndices.size() >= 1);
 
         //
-        // Upload stressed springs
-        //
-        // We do this regardless of whether or not elements are dirty,
-        // as the set of stressed springs is bound to change from frame to frame
+        // Upload all the triangle elements
         //
 
-        renderContext.UploadShipElementStressedSpringsStart(mId);
+        renderContext.UploadShipElementTrianglesStart(
+            mId,
+            mPlaneTrianglesRenderIndices.back());
 
-        if (renderContext.GetShowStressedSprings())
-        {
-            mSprings.UploadStressedSpringElements(
-                mId,
-                renderContext,
-                mPoints);
-        }
+        mTriangles.UploadElements(
+            mPlaneTrianglesRenderIndices,
+            mId,
+            mPoints,
+            renderContext);
 
-        renderContext.UploadShipElementStressedSpringsEnd(mId);
-
-        // Reset state
-        mAreElementsDirty = false;
-        mLastDebugShipRenderMode = renderContext.GetDebugShipRenderMode();
+        renderContext.UploadShipElementTrianglesEnd(mId);
     }
 
+
+    //
+    // Upload other elements (point (elements), springs, ropes), iff dirty
+    // or the ship debug render mode has changed
+    //
+
+    if (mIsStructureDirty
+        || !mLastDebugShipRenderMode
+        || *mLastDebugShipRenderMode != renderContext.GetDebugShipRenderMode())
+    {
+        renderContext.UploadShipElementsStart(mId);
+
+        //
+        // Upload all the point elements
+        //
+
+        mPoints.UploadElements(
+            mId,
+            renderContext);
+
+        //
+        // Upload all the spring elements (including ropes)
+        //
+
+        mSprings.UploadElements(
+            mId,
+            renderContext);
+
+        renderContext.UploadShipElementsEnd(mId);
+    }
+
+
+    //
+    // Upload stressed springs
+    //
+    // We do this regardless of whether or not elements are dirty,
+    // as the set of stressed springs is bound to change from frame to frame
+    //
+
+    renderContext.UploadShipElementStressedSpringsStart(mId);
+
+    if (renderContext.GetShowStressedSprings())
+    {
+        mSprings.UploadStressedSpringElements(
+            mId,
+            renderContext);
+    }
+
+    renderContext.UploadShipElementStressedSpringsEnd(mId);
 
     //
     // Upload bombs
@@ -657,6 +664,14 @@ void Ship::Render(
     //
 
     renderContext.RenderShipEnd(mId);
+
+
+    //
+    // Reset render state
+    //
+
+    mIsStructureDirty = false;
+    mLastDebugShipRenderMode = renderContext.GetDebugShipRenderMode();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -1076,7 +1091,7 @@ void Ship::UpdateWaterInflow(
                         GenerateAirBubbles(
                             mPoints.GetPosition(pointIndex),
                             currentSimulationTime,
-                            mPoints.GetConnectedComponentId(pointIndex),
+                            mPoints.GetPlaneId(pointIndex),
                             gameParameters);
                     }
 
@@ -1168,12 +1183,10 @@ void Ship::UpdateWaterVelocities(
 
         for (size_t s = 0; s < mPoints.GetConnectedSprings(pointIndex).size(); ++s)
         {
-            auto const springIndex = mPoints.GetConnectedSprings(pointIndex)[s];
-
-            auto const otherEndpointIndex = mSprings.GetOtherEndpointIndex(springIndex, pointIndex);
+            auto const & cs = mPoints.GetConnectedSprings(pointIndex)[s];
 
             // Normalized spring vector, oriented point -> other endpoint
-            vec2f const springNormalizedVector = (mPoints.GetPosition(otherEndpointIndex) - mPoints.GetPosition(pointIndex)).normalise();
+            vec2f const springNormalizedVector = (mPoints.GetPosition(cs.OtherEndpointIndex) - mPoints.GetPosition(pointIndex)).normalise();
 
             // Component of the point's own water velocity along the spring
             float const pointWaterVelocityAlongSpring =
@@ -1186,10 +1199,10 @@ void Ship::UpdateWaterVelocities(
             //
 
             // Pressure difference (positive implies point -> other endpoint flow)
-            float const dw = oldPointWaterBufferData[pointIndex] - oldPointWaterBufferData[otherEndpointIndex];
+            float const dw = oldPointWaterBufferData[pointIndex] - oldPointWaterBufferData[cs.OtherEndpointIndex];
 
             // Gravity potential difference (positive implies point -> other endpoint flow)
-            float const dy = mPoints.GetPosition(pointIndex).y - mPoints.GetPosition(otherEndpointIndex).y;
+            float const dy = mPoints.GetPosition(pointIndex).y - mPoints.GetPosition(cs.OtherEndpointIndex).y;
 
             // Calculate gained water velocity along this spring, from point to other endpoint
             // (Bernoulli, 1738)
@@ -1219,7 +1232,7 @@ void Ship::UpdateWaterVelocities(
             // diagonalsprings
             springOutboundWaterFlowWeights[s] =
                 springOutboundScalarWaterVelocity
-                / mSprings.GetRestLength(springIndex);
+                / mSprings.GetRestLength(cs.SpringIndex);
 
             // Resultant outbound velocity along spring
             springOutboundWaterVelocities[s] =
@@ -1235,10 +1248,10 @@ void Ship::UpdateWaterVelocities(
             //
 
             pointSplashFreeNeighbors +=
-                mSprings.GetWaterPermeability(springIndex)
-                * pointFreenessFactorBufferData[otherEndpointIndex];
+                mSprings.GetWaterPermeability(cs.SpringIndex)
+                * pointFreenessFactorBufferData[cs.OtherEndpointIndex];
 
-            pointSplashNeighbors += mSprings.GetWaterPermeability(springIndex);
+            pointSplashNeighbors += mSprings.GetWaterPermeability(cs.SpringIndex);
         }
 
 
@@ -1270,11 +1283,7 @@ void Ship::UpdateWaterVelocities(
 
         for (size_t s = 0; s < mPoints.GetConnectedSprings(pointIndex).size(); ++s)
         {
-            auto const springIndex = mPoints.GetConnectedSprings(pointIndex)[s];
-
-            auto const otherEndpointIndex = mSprings.GetOtherEndpointIndex(
-                springIndex,
-                pointIndex);
+            auto const & cs = mPoints.GetConnectedSprings(pointIndex)[s];
 
             // Calculate quantity of water directed outwards
             float const springOutboundQuantityOfWater =
@@ -1283,7 +1292,7 @@ void Ship::UpdateWaterVelocities(
 
             assert(springOutboundQuantityOfWater >= 0.0f);
 
-            if (mSprings.GetWaterPermeability(springIndex) != 0.0f)
+            if (mSprings.GetWaterPermeability(cs.SpringIndex) != 0.0f)
             {
                 //
                 // Water - and momentum - move from point to endpoint
@@ -1291,7 +1300,7 @@ void Ship::UpdateWaterVelocities(
 
                 // Move water quantity
                 newPointWaterBufferData[pointIndex] -= springOutboundQuantityOfWater;
-                newPointWaterBufferData[otherEndpointIndex] += springOutboundQuantityOfWater;
+                newPointWaterBufferData[cs.OtherEndpointIndex] += springOutboundQuantityOfWater;
 
                 // Remove "old momentum" (old velocity) from point
                 newPointWaterMomentumBufferData[pointIndex] -=
@@ -1299,7 +1308,7 @@ void Ship::UpdateWaterVelocities(
                     * springOutboundQuantityOfWater;
 
                 // Add "new momentum" (old velocity + velocity gained) to other endpoint
-                newPointWaterMomentumBufferData[otherEndpointIndex] +=
+                newPointWaterMomentumBufferData[cs.OtherEndpointIndex] +=
                     springOutboundWaterVelocities[s]
                     * springOutboundQuantityOfWater;
 
@@ -1310,12 +1319,12 @@ void Ship::UpdateWaterVelocities(
                 //
 
                 // FUTURE: get rid of this re-calculation once we pre-calculate all spring normalized vectors
-                vec2f const springNormalizedVector = (mPoints.GetPosition(otherEndpointIndex) - mPoints.GetPosition(pointIndex)).normalise();
+                vec2f const springNormalizedVector = (mPoints.GetPosition(cs.OtherEndpointIndex) - mPoints.GetPosition(pointIndex)).normalise();
 
                 float ma = springOutboundQuantityOfWater;
                 float va = springOutboundWaterVelocities[s].length();
-                float mb = oldPointWaterBufferData[otherEndpointIndex];
-                float vb = oldPointWaterVelocityBufferData[otherEndpointIndex].dot(springNormalizedVector);
+                float mb = oldPointWaterBufferData[cs.OtherEndpointIndex];
+                float vb = oldPointWaterVelocityBufferData[cs.OtherEndpointIndex].dot(springNormalizedVector);
 
                 float vf = 0.0f;
                 if (ma + mb != 0.0f)
@@ -1334,7 +1343,7 @@ void Ship::UpdateWaterVelocities(
             else
             {
                 // Deleted springs are removed from points' connected springs
-                assert(!mSprings.IsDeleted(springIndex));
+                assert(!mSprings.IsDeleted(cs.SpringIndex));
 
                 //
                 // New momentum (old velocity + velocity gained) bounces back
@@ -1483,7 +1492,7 @@ void Ship::UpdateElectricalConnectivity(VisitSequenceNumber currentVisitSequence
 void Ship::DiffuseLight(GameParameters const & gameParameters)
 {
     //
-    // Diffuse light from each lamp to all connected (i.e. spring-connected) points,
+    // Diffuse light from each lamp to all points on the same or lower plane ID,
     // inverse-proportionally to the nth power of the distance, where n is the spread
     //
 
@@ -1513,7 +1522,9 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
         }
         else
         {
-            // Spread light to all the points in the same connected component
+            //
+            // Spread light to all the points in the same or lower plane ID
+            //
 
             float const effectiveExponent =
                 (1.0f / lampLightSpread)
@@ -1521,11 +1532,11 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
                 / 2.0f; // We piggyback on the power to avoid taking a sqrt for distance
 
             vec2f const & lampPosition = mPoints.GetPosition(lampPointIndex);
-            ConnectedComponentId const lampConnectedComponentId = mPoints.GetConnectedComponentId(lampPointIndex);
+            PlaneId const lampPlaneId = mPoints.GetPlaneId(lampPointIndex);
 
             for (auto pointIndex : mPoints)
             {
-                if (mPoints.GetConnectedComponentId(pointIndex) == lampConnectedComponentId)
+                if (mPoints.GetPlaneId(pointIndex) <= lampPlaneId)
                 {
                     float const squareDistance = (mPoints.GetPosition(pointIndex) - lampPosition).squareLength();
 
@@ -1565,79 +1576,135 @@ void Ship::UpdateEphemeralParticles(
 // Private helpers
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
-void Ship::DetectConnectedComponents(VisitSequenceNumber currentVisitSequenceNumber)
+//#define RENDER_FLOOD_DISTANCE
+
+void Ship::RunConnectivityVisit(VisitSequenceNumber currentVisitSequenceNumber)
 {
-    mConnectedComponentSizes.clear();
+    //
+    //
+    // Here we visit the entire network of points (NOT including the ephemerals - they'll be assigned
+    // their own plane ID's at creation time) and propagate connectivity information:
+    //
+    // - PlaneID: all points belonging to the same connected component, including "strings",
+    //            are assigned the same plane ID
+    //
+    // - Connected Component ID: at this moment we assign the same value as the plane ID; in the future
+    //                           we might want to only assign a connected component ID to "solids" by only
+    //                           assigning it to points that are not string points
+    //                           (this will then require a separate visit pass)
+    //
+    // At the end of a visit *ALL* (non-ephemeral) points will have a Plane ID.
+    //
+    // We also piggyback the visit to create the array containing the counts of triangles in each plane,
+    // so that we can later upload triangles in {PlaneID, Tessellation Order} order.
+    //
 
-    ConnectedComponentId currentConnectedComponentId = 0;
-    std::queue<ElementIndex> pointsToVisitForConnectedComponents;
+    PlaneId currentPlaneId = 0; // Also serves as Connected Component ID
 
-    // Visit all non-ephemeral points, or we run the risk of creating a zillion connected components
-    for (auto pointIndex : mPoints.NonEphemeralPoints())
+#ifdef RENDER_FLOOD_DISTANCE
+    std::optional<float> floodDistanceColor;
+#endif
+
+    // The set of (already) marked points, from which we still
+    // have to propagate out
+    std::queue<ElementIndex> pointsToPropagateFrom;
+
+    // Reset per-plane triangle indices
+    size_t totalPlaneTrianglesCount = 0;
+    mPlaneTrianglesRenderIndices.clear();
+    mPlaneTrianglesRenderIndices.push_back(totalPlaneTrianglesCount); // First plane starts at zero, and we have zero triangles
+
+    // Visit all non-ephemeral points
+    for (auto pointIndex : mPoints.NonEphemeralPointsReverse())
     {
-        // Don't visit destroyed points, or we run the risk of creating a zillion connected components
-        if (!mPoints.IsDeleted(pointIndex))
+        // Don't visit destroyed points, or we run the risk of creating a zillion planes for nothing;
+        // also, don't re-visit already-visited points
+        if (!mPoints.IsDeleted(pointIndex)
+            && mPoints.GetCurrentConnectivityVisitSequenceNumber(pointIndex) != currentVisitSequenceNumber)
         {
-            // Check if visited
-            if (mPoints.GetCurrentConnectedComponentDetectionVisitSequenceNumber(pointIndex) != currentVisitSequenceNumber)
+            //
+            // Flood a new plane from this point
+            //
+
+            // Visit this point first
+            mPoints.SetPlaneId(pointIndex, currentPlaneId);
+            mPoints.SetConnectedComponentId(pointIndex, static_cast<ConnectedComponentId>(currentPlaneId));
+            mPoints.SetCurrentConnectivityVisitSequenceNumber(pointIndex, currentVisitSequenceNumber);
+
+            // Add point to queue
+            assert(pointsToPropagateFrom.empty());
+            pointsToPropagateFrom.push(pointIndex);
+
+            // Visit all points reachable from this point via springs
+            while (!pointsToPropagateFrom.empty())
             {
-                // This node has not been visited, hence it's the beginning of a new connected component
-                ++currentConnectedComponentId;
-                size_t pointsInCurrentConnectedComponent = 0;
+                // Pop point that we have to propagate from
+                auto const currentPointIndex = pointsToPropagateFrom.front();
+                pointsToPropagateFrom.pop();
 
-                //
-                // Propagate the connected component ID to all points reachable from this point
-                //
+                // This point has been visited already
+                assert(currentVisitSequenceNumber == mPoints.GetCurrentConnectivityVisitSequenceNumber(currentPointIndex));
 
-                // Add point to queue
-                assert(pointsToVisitForConnectedComponents.empty());
-                pointsToVisitForConnectedComponents.push(pointIndex);
-
-                // Mark as visited
-                mPoints.SetCurrentConnectedComponentDetectionVisitSequenceNumber(
-                    pointIndex,
-                    currentVisitSequenceNumber);
-
-                // Visit all points reachable from this point via springs
-                while (!pointsToVisitForConnectedComponents.empty())
+#ifdef RENDER_FLOOD_DISTANCE
+                if (!floodDistanceColor)
                 {
-                    auto currentPointIndex = pointsToVisitForConnectedComponents.front();
-                    pointsToVisitForConnectedComponents.pop();
+                    mPoints.GetColor(currentPointIndex) = vec4f(0.0f, 0.0f, 0.75f, 1.0f);
+                    floodDistanceColor = 0.0f;
+                }
+                else
+                    mPoints.GetColor(currentPointIndex) = vec4f(*floodDistanceColor, 0.0f, 0.0f, 1.0f);
+                floodDistanceColor = *floodDistanceColor + 1.0f / 128.0f;
+                if (*floodDistanceColor > 1.0f)
+                    floodDistanceColor = 0.0f;
+#endif
 
-                    assert(currentVisitSequenceNumber == mPoints.GetCurrentConnectedComponentDetectionVisitSequenceNumber(currentPointIndex));
+                // Visit all its non-visited connected points
+                for (auto const & cs : mPoints.GetConnectedSprings(currentPointIndex))
+                {
+                    assert(!mPoints.IsDeleted(cs.OtherEndpointIndex));
 
-                    // Assign the connected component ID
-                    mPoints.SetConnectedComponentId(currentPointIndex, currentConnectedComponentId);
-                    ++pointsInCurrentConnectedComponent;
-
-                    // Go through this point's adjacents
-                    for (auto adjacentSpringElementIndex : mPoints.GetConnectedSprings(currentPointIndex))
+                    if (currentVisitSequenceNumber != mPoints.GetCurrentConnectivityVisitSequenceNumber(cs.OtherEndpointIndex))
                     {
-                        assert(!mSprings.IsDeleted(adjacentSpringElementIndex));
+                        //
+                        // Visit point
+                        //
 
-                        auto pointAIndex = mSprings.GetPointAIndex(adjacentSpringElementIndex);
-                        assert(!mPoints.IsDeleted(pointAIndex));
-                        if (currentVisitSequenceNumber != mPoints.GetCurrentConnectedComponentDetectionVisitSequenceNumber(pointAIndex))
-                        {
-                            mPoints.SetCurrentConnectedComponentDetectionVisitSequenceNumber(pointAIndex, currentVisitSequenceNumber);
-                            pointsToVisitForConnectedComponents.push(pointAIndex);
-                        }
+                        mPoints.SetPlaneId(cs.OtherEndpointIndex, currentPlaneId);
+                        mPoints.SetConnectedComponentId(cs.OtherEndpointIndex, static_cast<ConnectedComponentId>(currentPlaneId));
+                        mPoints.SetCurrentConnectivityVisitSequenceNumber(cs.OtherEndpointIndex, currentVisitSequenceNumber);
 
-                        auto pointBIndex = mSprings.GetPointBIndex(adjacentSpringElementIndex);
-                        assert(!mPoints.IsDeleted(pointBIndex));
-                        if (currentVisitSequenceNumber != mPoints.GetCurrentConnectedComponentDetectionVisitSequenceNumber(pointBIndex))
-                        {
-                            mPoints.SetCurrentConnectedComponentDetectionVisitSequenceNumber(pointBIndex, currentVisitSequenceNumber);
-                            pointsToVisitForConnectedComponents.push(pointBIndex);
-                        }
+                        // Add point to queue
+                        pointsToPropagateFrom.push(cs.OtherEndpointIndex);
                     }
                 }
 
-                // Store number of connected components
-                mConnectedComponentSizes.push_back(pointsInCurrentConnectedComponent);
+                // Update count of triangles with this points's triangles
+                totalPlaneTrianglesCount += mPoints.GetConnectedOwnedTrianglesCount(currentPointIndex);
             }
+
+            // Remember the starting index of the triangles in the next plane
+            assert(mPlaneTrianglesRenderIndices.size() == static_cast<size_t>(currentPlaneId + 1));
+            mPlaneTrianglesRenderIndices.push_back(totalPlaneTrianglesCount);
+
+            //
+            // Flood completed
+            //
+
+            // Remember max plane ID ever
+            mMaxMaxPlaneId = std::max(mMaxMaxPlaneId, currentPlaneId);
+
+            // Next we begin a new plane and connected component
+            ++currentPlaneId;
         }
     }
+
+#ifdef RENDER_FLOOD_DISTANCE
+    // Remember colors are dirty
+    mPoints.MarkColorBufferAsDirty();
+#endif
+
+    // Remember non-ephemeral portion of plane IDs is dirty
+    mPoints.MarkPlaneIdBufferNonEphemeralAsDirty();
 }
 
 void Ship::DestroyConnectedTriangles(ElementIndex pointElementIndex)
@@ -1651,8 +1718,8 @@ void Ship::DestroyConnectedTriangles(ElementIndex pointElementIndex)
     auto & connectedTriangles = mPoints.GetConnectedTriangles(pointElementIndex);
     while (!connectedTriangles.empty())
     {
-        assert(!mTriangles.IsDeleted(connectedTriangles.back()));
-        mTriangles.Destroy(connectedTriangles.back());
+        assert(!mTriangles.IsDeleted(connectedTriangles.back().TriangleIndex));
+        mTriangles.Destroy(connectedTriangles.back().TriangleIndex);
     }
 
     assert(mPoints.GetConnectedTriangles(pointElementIndex).empty());
@@ -1671,14 +1738,16 @@ void Ship::DestroyConnectedTriangles(
     {
         for (size_t t = connectedTriangles.size() - 1; ;--t)
         {
-            assert(!mTriangles.IsDeleted(connectedTriangles[t]));
+            auto const triangleIndex = connectedTriangles[t].TriangleIndex;
 
-            if (mTriangles.GetPointAIndex(connectedTriangles[t]) == pointBElementIndex
-                || mTriangles.GetPointBIndex(connectedTriangles[t]) == pointBElementIndex
-                || mTriangles.GetPointCIndex(connectedTriangles[t]) == pointBElementIndex)
+            assert(!mTriangles.IsDeleted(triangleIndex));
+
+            if (mTriangles.GetPointAIndex(triangleIndex) == pointBElementIndex
+                || mTriangles.GetPointBIndex(triangleIndex) == pointBElementIndex
+                || mTriangles.GetPointCIndex(triangleIndex) == pointBElementIndex)
             {
                 // Erase it
-                mTriangles.Destroy(connectedTriangles[t]);
+                mTriangles.Destroy(triangleIndex);
             }
 
             if (t == 0)
@@ -1701,10 +1770,10 @@ void Ship::PointDestroyHandler(
     auto & connectedSprings = mPoints.GetConnectedSprings(pointElementIndex);
     while (!connectedSprings.empty())
     {
-        assert(!mSprings.IsDeleted(connectedSprings.back()));
+        assert(!mSprings.IsDeleted(connectedSprings.back().SpringIndex));
 
         mSprings.Destroy(
-            connectedSprings.back(),
+            connectedSprings.back().SpringIndex,
             Springs::DestroyOptions::DoNotFireBreakEvent // We're already firing the Destroy event for the point
             | Springs::DestroyOptions::DestroyAllTriangles,
             currentSimulationTime,
@@ -1724,9 +1793,9 @@ void Ship::PointDestroyHandler(
     auto & connectedTriangles = mPoints.GetConnectedTriangles(pointElementIndex);
     while(!connectedTriangles.empty())
     {
-        assert(!mTriangles.IsDeleted(connectedTriangles.back()));
+        assert(!mTriangles.IsDeleted(connectedTriangles.back().TriangleIndex));
 
-        mTriangles.Destroy(connectedTriangles.back());
+        mTriangles.Destroy(connectedTriangles.back().TriangleIndex);
     }
 
     assert(mPoints.GetConnectedTriangles(pointElementIndex).empty());
@@ -1758,8 +1827,8 @@ void Ship::PointDestroyHandler(
         currentSimulationTime,
         gameParameters);
 
-    // Remember our elements are now dirty
-    mAreElementsDirty = true;
+    // Remember the structure is now dirty
+    mIsStructureDirty = true;
 }
 
 void Ship::SpringDestroyHandler(
@@ -1851,8 +1920,8 @@ void Ship::SpringDestroyHandler(
     // Notify pinned points
     mPinnedPoints.OnSpringDestroyed(springElementIndex);
 
-    // Remember our elements are now dirty
-    mAreElementsDirty = true;
+    // Remember our structure is now dirty
+    mIsStructureDirty = true;
 }
 
 void Ship::TriangleDestroyHandler(ElementIndex triangleElementIndex)
@@ -1867,24 +1936,24 @@ void Ship::TriangleDestroyHandler(ElementIndex triangleElementIndex)
     mTriangles.ClearSubSprings(triangleElementIndex);
 
     // Remove triangle from its endpoints
-    mPoints.RemoveConnectedTriangle(mTriangles.GetPointAIndex(triangleElementIndex), triangleElementIndex);
-    mPoints.RemoveConnectedTriangle(mTriangles.GetPointBIndex(triangleElementIndex), triangleElementIndex);
-    mPoints.RemoveConnectedTriangle(mTriangles.GetPointCIndex(triangleElementIndex), triangleElementIndex);
+    mPoints.RemoveConnectedTriangle(mTriangles.GetPointAIndex(triangleElementIndex), triangleElementIndex, true);
+    mPoints.RemoveConnectedTriangle(mTriangles.GetPointBIndex(triangleElementIndex), triangleElementIndex, false);
+    mPoints.RemoveConnectedTriangle(mTriangles.GetPointCIndex(triangleElementIndex), triangleElementIndex, false);
 
-    // Remember our elements are now dirty
-    mAreElementsDirty = true;
+    // Remember our structure is now dirty
+    mIsStructureDirty = true;
 }
 
 void Ship::ElectricalElementDestroyHandler(ElementIndex /*electricalElementIndex*/)
 {
-    // Remember our elements are now dirty
-    mAreElementsDirty = true;
+    // Remember our structure is now dirty
+    mIsStructureDirty = true;
 }
 
 void Ship::GenerateAirBubbles(
     vec2f const & position,
     float currentSimulationTime,
-    ConnectedComponentId connectedComponentId,
+    PlaneId planeId,
     GameParameters const & /*gameParameters*/)
 {
     float vortexAmplitude = GameRandomEngine::GetInstance().GenerateRandomReal(
@@ -1899,7 +1968,7 @@ void Ship::GenerateAirBubbles(
         vortexFrequency,
         mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Air),
         currentSimulationTime,
-        connectedComponentId);
+        planeId);
 }
 
 void Ship::GenerateDebris(
@@ -1931,7 +2000,7 @@ void Ship::GenerateDebris(
                 mPoints.GetStructuralMaterial(pointElementIndex),
                 currentSimulationTime,
                 maxLifetime,
-                mPoints.GetConnectedComponentId(pointElementIndex));
+                mPoints.GetPlaneId(pointElementIndex));
         }
     }
 }
@@ -1992,7 +2061,7 @@ void Ship::GenerateSparkles(
                 mSprings.GetBaseStructuralMaterial(springElementIndex),
                 currentSimulationTime,
                 maxLifetime,
-                mSprings.GetConnectedComponentId(springElementIndex, mPoints));
+                mSprings.GetPlaneId(springElementIndex, mPoints));
         }
     }
 }
@@ -2004,7 +2073,6 @@ void Ship::GenerateSparkles(
 void Ship::DoBombExplosion(
     vec2f const & blastPosition,
     float sequenceProgress,
-    ConnectedComponentId connectedComponentId,
     GameParameters const & gameParameters)
 {
     // Blast radius: from 0.6 to BombBlastRadius
@@ -2020,7 +2088,6 @@ void Ship::DoBombExplosion(
             blastPosition,
             blastRadius,
             strength,
-            connectedComponentId,
             sequenceProgress == 0.0f));
 }
 
@@ -2094,9 +2161,9 @@ void Ship::VerifyInvariants()
     {
         if (!mTriangles.IsDeleted(t))
         {
-            Verify(mPoints.GetConnectedTriangles(mTriangles.GetPointAIndex(t)).contains(t));
-            Verify(mPoints.GetConnectedTriangles(mTriangles.GetPointBIndex(t)).contains(t));
-            Verify(mPoints.GetConnectedTriangles(mTriangles.GetPointCIndex(t)).contains(t));
+            Verify(mPoints.GetConnectedTriangles(mTriangles.GetPointAIndex(t)).contains([t](auto const & c){ return c.TriangleIndex == t; }));
+            Verify(mPoints.GetConnectedTriangles(mTriangles.GetPointBIndex(t)).contains([t](auto const & c) { return c.TriangleIndex == t; }));
+            Verify(mPoints.GetConnectedTriangles(mTriangles.GetPointCIndex(t)).contains([t](auto const & c) { return c.TriangleIndex == t; }));
         }
     }
 

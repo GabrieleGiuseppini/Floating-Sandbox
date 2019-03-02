@@ -145,11 +145,15 @@ void Springs::UpdateGameParameters(
 
 void Springs::UploadElements(
     ShipId shipId,
-    Render::RenderContext & renderContext,
-    Points const & points) const
+    Render::RenderContext & renderContext) const
 {
     // Either upload all springs, or just the edge springs
     bool const doUploadAllSprings = (DebugShipRenderMode::Springs == renderContext.GetDebugShipRenderMode());
+
+    // Ropes are uploaded as springs only if DebugRenderMode is springs or edge springs
+    bool const doUploadRopesAsSprings = (
+        DebugShipRenderMode::Springs == renderContext.GetDebugShipRenderMode()
+        || DebugShipRenderMode::EdgeSprings == renderContext.GetDebugShipRenderMode());
 
     for (ElementIndex i : *this)
     {
@@ -157,23 +161,22 @@ void Springs::UploadElements(
         // we are in springs render mode
         if (!mIsDeletedBuffer[i])
         {
-            assert(points.GetConnectedComponentId(GetPointAIndex(i)) == points.GetConnectedComponentId(GetPointBIndex(i)));
-
-            if (IsRope(i))
+            if (IsRope(i) && !doUploadRopesAsSprings)
             {
                 renderContext.UploadShipElementRope(
                     shipId,
                     GetPointAIndex(i),
-                    GetPointBIndex(i),
-                    points.GetConnectedComponentId(GetPointAIndex(i)));
+                    GetPointBIndex(i));
             }
-            else if (mSuperTrianglesBuffer[i].size() < 2 || doUploadAllSprings)
+            else if (
+                mSuperTrianglesBuffer[i].size() < 2
+                || doUploadAllSprings
+                || IsRope(i))
             {
                 renderContext.UploadShipElementSpring(
                     shipId,
                     GetPointAIndex(i),
-                    GetPointBIndex(i),
-                    points.GetConnectedComponentId(GetPointAIndex(i)));
+                    GetPointBIndex(i));
             }
         }
     }
@@ -181,8 +184,7 @@ void Springs::UploadElements(
 
 void Springs::UploadStressedSpringElements(
     ShipId shipId,
-    Render::RenderContext & renderContext,
-    Points const & points) const
+    Render::RenderContext & renderContext) const
 {
     for (ElementIndex i : *this)
     {
@@ -190,13 +192,10 @@ void Springs::UploadStressedSpringElements(
         {
             if (mIsStressedBuffer[i])
             {
-                assert(points.GetConnectedComponentId(GetPointAIndex(i)) == points.GetConnectedComponentId(GetPointBIndex(i)));
-
                 renderContext.UploadShipElementStressedSpring(
                     shipId,
                     GetPointAIndex(i),
-                    GetPointBIndex(i),
-                    points.GetConnectedComponentId(GetPointAIndex(i)));
+                    GetPointBIndex(i));
             }
         }
     }

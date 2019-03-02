@@ -68,10 +68,13 @@ void Points::Add(
     mEphemeralStateBuffer.emplace_back(EphemeralState::DebrisState());
 
     // Structure
-    mNetworkBuffer.emplace_back();
+    mConnectedSpringsBuffer.emplace_back(ConnectedSpringsVector());
+    mConnectedTrianglesBuffer.emplace_back(ConnectedTrianglesVector());
+    mConnectedOwnedTrianglesCountBuffer.emplace_back(0);
 
-    mConnectedComponentIdBuffer.emplace_back(0u);
-    mCurrentConnectedComponentDetectionVisitSequenceNumberBuffer.emplace_back(NoneVisitSequenceNumber);
+    mConnectedComponentIdBuffer.emplace_back(NoneConnectedComponentId);
+    mPlaneIdBuffer.emplace_back(NonePlaneId);
+    mCurrentConnectivityVisitSequenceNumberBuffer.emplace_back(NoneVisitSequenceNumber);
 
     mIsPinnedBuffer.emplace_back(false);
 
@@ -86,7 +89,7 @@ void Points::CreateEphemeralParticleAirBubble(
     float vortexFrequency,
     StructuralMaterial const & structuralMaterial,
     float currentSimulationTime,
-    ConnectedComponentId connectedComponentId)
+    PlaneId planeId)
 {
     // Get a free slot (but don't steal one)
     auto pointIndex = FindFreeEphemeralParticle(currentSimulationTime, false);
@@ -125,7 +128,10 @@ void Points::CreateEphemeralParticleAirBubble(
         initialSize,
         vortexAmplitude,
         vortexFrequency);
-    mConnectedComponentIdBuffer[pointIndex] = connectedComponentId;
+
+    mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
+    mPlaneIdBuffer[pointIndex] = planeId;
+    mIsPlaneIdBufferEphemeralDirty = true;
 
     assert(false == mIsPinnedBuffer[pointIndex]);
 
@@ -141,7 +147,7 @@ void Points::CreateEphemeralParticleDebris(
     StructuralMaterial const & structuralMaterial,
     float currentSimulationTime,
     std::chrono::milliseconds maxLifetime,
-    ConnectedComponentId connectedComponentId)
+    PlaneId planeId)
 {
     // Get a free slot (or steal one)
     auto pointIndex = FindFreeEphemeralParticle(currentSimulationTime, true);
@@ -174,7 +180,10 @@ void Points::CreateEphemeralParticleDebris(
     mEphemeralStartTimeBuffer[pointIndex] = currentSimulationTime;
     mEphemeralMaxLifetimeBuffer[pointIndex] = std::chrono::duration_cast<std::chrono::duration<float>>(maxLifetime).count();
     mEphemeralStateBuffer[pointIndex] = EphemeralState::DebrisState();
-    mConnectedComponentIdBuffer[pointIndex] = connectedComponentId;
+
+    mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
+    mPlaneIdBuffer[pointIndex] = planeId;
+    mIsPlaneIdBufferEphemeralDirty = true;
 
     assert(false == mIsPinnedBuffer[pointIndex]);
 
@@ -190,7 +199,7 @@ void Points::CreateEphemeralParticleSparkle(
     StructuralMaterial const & structuralMaterial,
     float currentSimulationTime,
     std::chrono::milliseconds maxLifetime,
-    ConnectedComponentId connectedComponentId)
+    PlaneId planeId)
 {
     // Get a free slot (or steal one)
     auto pointIndex = FindFreeEphemeralParticle(currentSimulationTime, true);
@@ -224,7 +233,10 @@ void Points::CreateEphemeralParticleSparkle(
     mEphemeralMaxLifetimeBuffer[pointIndex] = std::chrono::duration_cast<std::chrono::duration<float>>(maxLifetime).count();
     mEphemeralStateBuffer[pointIndex] = EphemeralState::SparkleState(
         GameRandomEngine::GetInstance().Choose<TextureFrameIndex>(2));
-    mConnectedComponentIdBuffer[pointIndex] = connectedComponentId;
+
+    mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
+    mPlaneIdBuffer[pointIndex] = planeId;
+    mIsPlaneIdBufferEphemeralDirty = true;
 
     assert(false == mIsPinnedBuffer[pointIndex]);
 
@@ -405,23 +417,75 @@ void Points::Query(ElementIndex pointElementIndex) const
     LogMessage("PointIndex: ", pointElementIndex);
     LogMessage("Position: ", mPositionBuffer[pointElementIndex].toString());
     LogMessage("Velocity: ", mVelocityBuffer[pointElementIndex].toString());
-    LogMessage("IntegrationFactorTimeCoefficient: ", mIntegrationFactorTimeCoefficientBuffer[pointElementIndex]);
     LogMessage("Water: ", mWaterBuffer[pointElementIndex]);
+    LogMessage("PlaneID: ", mPlaneIdBuffer[pointElementIndex]);
+    LogMessage("ConnectedComponentID: ", mConnectedComponentIdBuffer[pointElementIndex]);
 }
 
-void Points::Upload(
+void Points::UploadPlaneIds(
+    ShipId shipId,
+    PlaneId maxMaxPlaneId,
+    Render::RenderContext & renderContext) const
+{
+    if (mIsPlaneIdBufferNonEphemeralDirty)
+    {
+        if (mIsPlaneIdBufferEphemeralDirty)
+        {
+            // Whole
+
+            renderContext.UploadShipPointPlaneIds(
+                shipId,
+                mPlaneIdBuffer.data(),
+                0,
+                mAllPointCount,
+                maxMaxPlaneId);
+
+            mIsPlaneIdBufferEphemeralDirty = false;
+        }
+        else
+        {
+            // Just non-ephemeral portion
+
+            renderContext.UploadShipPointPlaneIds(
+                shipId,
+                mPlaneIdBuffer.data(),
+                0,
+                mShipPointCount,
+                maxMaxPlaneId);
+        }
+
+        mIsPlaneIdBufferNonEphemeralDirty = false;
+    }
+    else if (mIsPlaneIdBufferEphemeralDirty)
+    {
+        // Just ephemeral portion
+
+        renderContext.UploadShipPointPlaneIds(
+            shipId,
+            &(mPlaneIdBuffer.data()[mShipPointCount]),
+            mShipPointCount,
+            mEphemeralPointCount,
+            maxMaxPlaneId);
+
+        mIsPlaneIdBufferEphemeralDirty = false;
+    }
+}
+
+void Points::UploadMutableAttributes(
     ShipId shipId,
     Render::RenderContext & renderContext) const
 {
     // Upload immutable attributes, if we haven't uploaded them yet
-    if (!mAreImmutableRenderAttributesUploaded)
+    if (mIsColorBufferDirty
+        || mIsTextureCoordinatesBufferDirty)
     {
         renderContext.UploadShipPointImmutableGraphicalAttributes(
             shipId,
             mColorBuffer.data(),
             mTextureCoordinatesBuffer.data());
 
-        mAreImmutableRenderAttributesUploaded = true;
+        mIsColorBufferDirty = false;
+        mIsTextureCoordinatesBufferDirty = false;
     }
 
     // Upload mutable attributes
@@ -442,8 +506,7 @@ void Points::UploadElements(
         {
             renderContext.UploadShipElementPoint(
                 shipId,
-                pointIndex,
-                mConnectedComponentIdBuffer[pointIndex]);
+                pointIndex);
         }
     }
 }
@@ -460,6 +523,7 @@ void Points::UploadVectors(
             shipId,
             mElementCount,
             mPositionBuffer.data(),
+            mPlaneIdBuffer.data(),
             mVelocityBuffer.data(),
             0.25f,
             VectorColor);
@@ -470,6 +534,7 @@ void Points::UploadVectors(
             shipId,
             mElementCount,
             mPositionBuffer.data(),
+            mPlaneIdBuffer.data(),
             mForceRenderBuffer.data(),
             0.0005f,
             VectorColor);
@@ -480,6 +545,7 @@ void Points::UploadVectors(
             shipId,
             mElementCount,
             mPositionBuffer.data(),
+            mPlaneIdBuffer.data(),
             mWaterVelocityBuffer.data(),
             1.0f,
             VectorColor);
@@ -490,6 +556,7 @@ void Points::UploadVectors(
             shipId,
             mElementCount,
             mPositionBuffer.data(),
+            mPlaneIdBuffer.data(),
             mWaterMomentumBuffer.data(),
             0.4f,
             VectorColor);
@@ -522,9 +589,9 @@ void Points::UploadEphemeralParticles(
     //  which is independent from ephemeral particles; the latter might insist on using
     //  a connected component ID that is well gone after a new connectivity visit).
     // This will be fixed with the Z buffer work - at that moment points will already
-    // have an associated ConnectedComponent buffer, and the shader will automagically
-    // draw ephemeral points at the right Z for their point's connected component ID.
-    // Remember to make sure Ship always tracks the max connected component ID it has
+    // have an associated plane ID, and the shader will automagically
+    // draw ephemeral points at the right Z for their point's plane ID.
+    // Remember to make sure Ship always tracks the max plane ID it has
     // ever seen, and that it specifies it at RenderContext::RenderShipStart() via an
     // additional, new argument.
 
@@ -541,7 +608,7 @@ void Points::UploadEphemeralParticles(
             {
                 renderContext.UploadShipGenericTextureRenderSpecification(
                     shipId,
-                    1, // Connected component ID - see note above
+                    GetPlaneId(pointIndex),
                     TextureFrameId(TextureGroupType::AirBubble, mEphemeralStateBuffer[pointIndex].AirBubble.FrameIndex),
                     GetPosition(pointIndex),
                     mEphemeralStateBuffer[pointIndex].AirBubble.InitialSize, // Scale
@@ -569,7 +636,7 @@ void Points::UploadEphemeralParticles(
             {
                 renderContext.UploadShipGenericTextureRenderSpecification(
                     shipId,
-                    1, // Connected component ID - see note above
+                    GetPlaneId(pointIndex),
                     TextureFrameId(TextureGroupType::SawSparkle, mEphemeralStateBuffer[pointIndex].Sparkle.FrameIndex),
                     GetPosition(pointIndex),
                     1.0f,
@@ -606,9 +673,9 @@ void Points::SetMassToStructuralMaterialOffset(
     mMassBuffer[pointElementIndex] = GetStructuralMaterial(pointElementIndex).Mass + offset;
 
     // Notify all springs
-    for (auto springIndex : mNetworkBuffer[pointElementIndex].ConnectedSprings)
+    for (auto connectedSpring : mConnectedSpringsBuffer[pointElementIndex])
     {
-        springs.OnPointMassUpdated(springIndex, *this);
+        springs.OnPointMassUpdated(connectedSpring.SpringIndex, *this);
     }
 }
 

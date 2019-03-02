@@ -27,15 +27,19 @@ enum class ProgramType
 {
     Clouds = 0,
     CrossOfLight,
-    GenericTextures,
     Land,
     Matte,
     MatteNDC,
     MatteWater,
+    ShipGenericTextures,
+    ShipPointsColor,
     ShipRopes,
+    ShipSpringsColor,
+    ShipSpringsTexture,
     ShipStressedSprings,
     ShipTrianglesColor,
     ShipTrianglesTexture,
+    ShipVectors,
     Stars,
     TextNDC,
     Water,
@@ -92,15 +96,16 @@ enum class VertexAttributeType : GLuint
     WaterAttribute = 3,
 
     GenericTexturePackedData1 = 4,
-    GenericTextureTextureCoordinates = 5,
-    GenericTexturePackedData2 = 6,
+    GenericTexturePackedData2 = 5,
+    GenericTexturePackedData3 = 6,
 
     // Note: dedicated as long as we have one single ship and one VBO per ship
     ShipPointPosition = 7,
     ShipPointColor = 8,
     ShipPointLight = 9,
     ShipPointWater = 10,
-    ShipPointTextureCoordinates = 11
+    ShipPointPlaneId = 11,
+    ShipPointTextureCoordinates = 12
 };
 
 VertexAttributeType StrToVertexAttributeType(std::string const & str);
@@ -160,11 +165,12 @@ struct TextQuadVertex
 
 struct RenderStatistics
 {
+    std::uint64_t LastRenderedShipRopes;
     std::uint64_t LastRenderedShipSprings;
     std::uint64_t LastRenderedShipTriangles;
-    std::uint64_t LastRenderedShipConnectedComponents;
-    std::uint64_t LastRenderedGenericTextures;
-    std::uint64_t LastRenderedEphemeralPoints;
+    std::uint64_t LastRenderedShipPlanes;
+    std::uint64_t LastRenderedShipGenericTextures;
+    std::uint64_t LastRenderedShipEphemeralPoints;
 
     RenderStatistics()
     {
@@ -173,11 +179,12 @@ struct RenderStatistics
 
     void Reset()
     {
+        LastRenderedShipRopes = 0;
         LastRenderedShipSprings = 0;
         LastRenderedShipTriangles = 0;
-        LastRenderedShipConnectedComponents = 0;
-        LastRenderedGenericTextures = 0;
-        LastRenderedEphemeralPoints = 0;
+        LastRenderedShipPlanes = 0;
+        LastRenderedShipGenericTextures = 0;
+        LastRenderedShipEphemeralPoints = 0;
     }
 };
 

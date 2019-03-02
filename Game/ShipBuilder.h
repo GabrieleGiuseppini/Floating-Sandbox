@@ -165,10 +165,10 @@ private:
         std::vector<ElementIndex> const & pointIndexRemap,
         std::vector<SpringInfo> const & springInfos)
     {
-        for (auto springIndex : points.GetConnectedSprings(pointIndex))
+        for (auto cs : points.GetConnectedSprings(pointIndex))
         {
-            if (!points.IsRope(pointIndexRemap[springInfos[springIndex].PointAIndex1])
-                || !points.IsRope(pointIndexRemap[springInfos[springIndex].PointBIndex1]))
+            if (!points.IsRope(pointIndexRemap[springInfos[cs.SpringIndex].PointAIndex1])
+                || !points.IsRope(pointIndexRemap[springInfos[cs.SpringIndex].PointBIndex1]))
             {
                 return true;
             }
@@ -268,7 +268,6 @@ private:
 
     static Physics::ElectricalElements CreateElectricalElements(
         Physics::Points const & points,
-        Physics::Springs const & springs,
         Physics::World & parentWorld,
         std::shared_ptr<IGameEventHandler> gameEventHandler);
 

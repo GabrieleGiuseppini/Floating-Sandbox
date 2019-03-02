@@ -131,19 +131,50 @@ private:
     };
 
     /*
-     * The elements connected to a point.
+     * The metadata for the springs connected to a point.
      */
-    struct Network
+    struct ConnectedSpring
     {
-        FixedSizeVector<ElementIndex, GameParameters::MaxSpringsPerPoint> ConnectedSprings;
+        ElementIndex SpringIndex;
+        ElementIndex OtherEndpointIndex;
 
-        FixedSizeVector<ElementIndex, GameParameters::MaxTrianglesPerPoint> ConnectedTriangles;
+        ConnectedSpring()
+            : SpringIndex(NoneElementIndex)
+            , OtherEndpointIndex(NoneElementIndex)
+        {}
 
-        Network()
-            : ConnectedSprings()
-            , ConnectedTriangles()
+        ConnectedSpring(
+            ElementIndex springIndex,
+            ElementIndex otherEndpointIndex)
+            : SpringIndex(springIndex)
+            , OtherEndpointIndex(otherEndpointIndex)
         {}
     };
+
+    using ConnectedSpringsVector = FixedSizeVector<ConnectedSpring, GameParameters::MaxSpringsPerPoint>;
+
+    /*
+     * The metadata for the triangles connected to a point.
+     */
+    struct ConnectedTriangle
+    {
+        ElementIndex TriangleIndex;
+        bool IsAtOwner; // true if the point "owns" this triangle (each triangle is owned by one and only one point)
+
+        ConnectedTriangle()
+            : TriangleIndex(NoneElementIndex)
+            , IsAtOwner(false)
+        {}
+
+        ConnectedTriangle(
+            ElementIndex triangleIndex,
+            bool isAtOwner)
+            : TriangleIndex(triangleIndex)
+            , IsAtOwner(isAtOwner)
+        {}
+    };
+
+    using ConnectedTrianglesVector = FixedSizeVector<ConnectedTriangle, GameParameters::MaxTrianglesPerPoint>;
 
     /*
      * The materials of this point.
@@ -206,26 +237,32 @@ public:
         , mEphemeralMaxLifetimeBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mEphemeralStateBuffer(mBufferElementCount, shipPointCount, EphemeralState::DebrisState())
         // Structure
-        , mNetworkBuffer(mBufferElementCount, shipPointCount, Network())
-        // Connected component
-        , mConnectedComponentIdBuffer(mBufferElementCount, shipPointCount, NoneElementIndex)
-        , mCurrentConnectedComponentDetectionVisitSequenceNumberBuffer(mBufferElementCount, shipPointCount, NoneElementIndex)
+        , mConnectedSpringsBuffer(mBufferElementCount, shipPointCount, ConnectedSpringsVector())
+        , mConnectedTrianglesBuffer(mBufferElementCount, shipPointCount, ConnectedTrianglesVector())
+        , mConnectedOwnedTrianglesCountBuffer(mBufferElementCount, shipPointCount, 0)
+        // Connected component and plane ID
+        , mConnectedComponentIdBuffer(mBufferElementCount, shipPointCount, NoneConnectedComponentId)
+        , mPlaneIdBuffer(mBufferElementCount, shipPointCount, NonePlaneId)
+        , mIsPlaneIdBufferNonEphemeralDirty(true)
+        , mIsPlaneIdBufferEphemeralDirty(true)
+        , mCurrentConnectivityVisitSequenceNumberBuffer(mBufferElementCount, shipPointCount, NoneVisitSequenceNumber)
         // Pinning
         , mIsPinnedBuffer(mBufferElementCount, shipPointCount, false)
         // Immutable render attributes
         , mColorBuffer(mBufferElementCount, shipPointCount, vec4f::zero())
+        , mIsColorBufferDirty(true)
         , mTextureCoordinatesBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
+        , mIsTextureCoordinatesBufferDirty(true)
         //////////////////////////////////
         // Container
         //////////////////////////////////
         , mShipPointCount(shipPointCount)
         , mEphemeralPointCount(GameParameters::MaxEphemeralParticles)
-        , mAllPointCount(shipPointCount + mEphemeralPointCount)
+        , mAllPointCount(mShipPointCount + mEphemeralPointCount)
         , mParentWorld(parentWorld)
         , mGameEventHandler(std::move(gameEventHandler))
         , mDestroyHandler()
         , mCurrentNumMechanicalDynamicsIterations(gameParameters.NumMechanicalDynamicsIterations<float>())
-        , mAreImmutableRenderAttributesUploaded(false)
         , mFloatBufferAllocator(mBufferElementCount)
         , mVec2fBufferAllocator(mBufferElementCount)
         , mFreeEphemeralParticleSearchStartIndex(mShipPointCount)
@@ -241,6 +278,14 @@ public:
     inline auto const NonEphemeralPoints() const
     {
         return ElementIndexRangeIterator(0, mShipPointCount);
+    }
+
+    /*
+     * Returns a reverse iterator for the non-ephemeral points only.
+     */
+    inline auto const NonEphemeralPointsReverse() const
+    {
+        return ElementIndexReverseRangeIterator(0, mShipPointCount);
     }
 
     /*
@@ -286,7 +331,7 @@ public:
         float vortexFrequency,
         StructuralMaterial const & structuralMaterial,
         float currentSimulationTime,
-        ConnectedComponentId connectedComponentId);
+        PlaneId planeId);
 
     void CreateEphemeralParticleDebris(
         vec2f const & position,
@@ -294,7 +339,7 @@ public:
         StructuralMaterial const & structuralMaterial,
         float currentSimulationTime,
         std::chrono::milliseconds maxLifetime,
-        ConnectedComponentId connectedComponentId);
+        PlaneId planeId);
 
     void CreateEphemeralParticleSparkle(
         vec2f const & position,
@@ -302,7 +347,7 @@ public:
         StructuralMaterial const & structuralMaterial,
         float currentSimulationTime,
         std::chrono::milliseconds maxLifetime,
-        ConnectedComponentId connectedComponentId);
+        PlaneId planeId);
 
     void Destroy(
         ElementIndex pointElementIndex,
@@ -321,8 +366,13 @@ public:
     // Render
     //
 
-    void Upload(
+    void UploadMutableAttributes(
         ShipId shipId,
+        Render::RenderContext & renderContext) const;
+
+    void UploadPlaneIds(
+        ShipId shipId,
+        PlaneId maxMaxPlaneId,
         Render::RenderContext & renderContext) const;
 
     void UploadElements(
@@ -662,21 +712,26 @@ public:
 
     auto const & GetConnectedSprings(ElementIndex pointElementIndex) const
     {
-        return mNetworkBuffer[pointElementIndex].ConnectedSprings;
+        return mConnectedSpringsBuffer[pointElementIndex];
     }
 
     void AddConnectedSpring(
         ElementIndex pointElementIndex,
-        ElementIndex springElementIndex)
+        ElementIndex springElementIndex,
+        ElementIndex otherEndpointElementIndex)
     {
-        mNetworkBuffer[pointElementIndex].ConnectedSprings.push_back(springElementIndex);
+        mConnectedSpringsBuffer[pointElementIndex].emplace_back(springElementIndex, otherEndpointElementIndex);
     }
 
     void RemoveConnectedSpring(
         ElementIndex pointElementIndex,
         ElementIndex springElementIndex)
     {
-        bool found = mNetworkBuffer[pointElementIndex].ConnectedSprings.erase_first(springElementIndex);
+        bool found = mConnectedSpringsBuffer[pointElementIndex].erase_first(
+            [springElementIndex](ConnectedSpring const & c)
+            {
+                return c.SpringIndex == springElementIndex;
+            });
 
         assert(found);
         (void)found;
@@ -684,24 +739,98 @@ public:
 
     auto const & GetConnectedTriangles(ElementIndex pointElementIndex) const
     {
-        return mNetworkBuffer[pointElementIndex].ConnectedTriangles;
+        return mConnectedTrianglesBuffer[pointElementIndex];
     }
 
     void AddConnectedTriangle(
         ElementIndex pointElementIndex,
-        ElementIndex triangleElementIndex)
+        ElementIndex triangleElementIndex,
+        bool isAtOwner)
     {
-        mNetworkBuffer[pointElementIndex].ConnectedTriangles.push_back(triangleElementIndex);
+        // Add so that all triangles owned by this point come first
+        if (isAtOwner)
+        {
+            mConnectedTrianglesBuffer[pointElementIndex].emplace_front(triangleElementIndex, true);
+            ++mConnectedOwnedTrianglesCountBuffer[pointElementIndex];
+        }
+        else
+        {
+            mConnectedTrianglesBuffer[pointElementIndex].emplace_back(triangleElementIndex, false);
+        }
     }
 
     void RemoveConnectedTriangle(
         ElementIndex pointElementIndex,
-        ElementIndex triangleElementIndex)
+        ElementIndex triangleElementIndex,
+        bool isAtOwner)
     {
-        bool found = mNetworkBuffer[pointElementIndex].ConnectedTriangles.erase_first(triangleElementIndex);
+        // Remove triangle
+        bool found = mConnectedTrianglesBuffer[pointElementIndex].erase_first(
+            [triangleElementIndex](ConnectedTriangle const & c)
+            {
+                return c.TriangleIndex == triangleElementIndex;
+            });
 
         assert(found);
         (void)found;
+
+        // Update count of owned triangles, if this triangle is owned
+        if (isAtOwner)
+        {
+            assert(mConnectedOwnedTrianglesCountBuffer[pointElementIndex] > 0);
+            --mConnectedOwnedTrianglesCountBuffer[pointElementIndex];
+        }
+    }
+
+    size_t GetConnectedOwnedTrianglesCount(ElementIndex pointElementIndex) const
+    {
+        return mConnectedOwnedTrianglesCountBuffer[pointElementIndex];
+    }
+
+    //
+    // Connected components and plane IDs
+    //
+
+    ConnectedComponentId GetConnectedComponentId(ElementIndex pointElementIndex) const
+    {
+        return mConnectedComponentIdBuffer[pointElementIndex];
+    }
+
+    void SetConnectedComponentId(
+        ElementIndex pointElementIndex,
+        ConnectedComponentId connectedComponentId)
+    {
+        mConnectedComponentIdBuffer[pointElementIndex] = connectedComponentId;
+    }
+
+    PlaneId GetPlaneId(ElementIndex pointElementIndex) const
+    {
+        return mPlaneIdBuffer[pointElementIndex];
+    }
+
+    void SetPlaneId(
+        ElementIndex pointElementIndex,
+        PlaneId planeId)
+    {
+        mPlaneIdBuffer[pointElementIndex] = planeId;
+    }
+
+    void MarkPlaneIdBufferNonEphemeralAsDirty()
+    {
+        mIsPlaneIdBufferNonEphemeralDirty = true;
+    }
+
+    VisitSequenceNumber GetCurrentConnectivityVisitSequenceNumber(ElementIndex pointElementIndex) const
+    {
+        return mCurrentConnectivityVisitSequenceNumberBuffer[pointElementIndex];
+    }
+
+    void SetCurrentConnectivityVisitSequenceNumber(
+        ElementIndex pointElementIndex,
+        VisitSequenceNumber connectivityVisitSequenceNumber)
+    {
+        mCurrentConnectivityVisitSequenceNumberBuffer[pointElementIndex] =
+            connectivityVisitSequenceNumber;
     }
 
     //
@@ -732,33 +861,19 @@ public:
     }
 
     //
-    // Connected component
+    // Immutable attributes
     //
 
-    ConnectedComponentId GetConnectedComponentId(ElementIndex pointElementIndex) const
+    vec4f & GetColor(ElementIndex pointElementIndex)
     {
-        return mConnectedComponentIdBuffer[pointElementIndex];
+        return mColorBuffer[pointElementIndex];
     }
 
-    void SetConnectedComponentId(
-        ElementIndex pointElementIndex,
-        ConnectedComponentId connectedComponentId)
+    void MarkColorBufferAsDirty()
     {
-        mConnectedComponentIdBuffer[pointElementIndex] = connectedComponentId;
+        mIsColorBufferDirty = true;
     }
 
-    VisitSequenceNumber GetCurrentConnectedComponentDetectionVisitSequenceNumber(ElementIndex pointElementIndex) const
-    {
-        return mCurrentConnectedComponentDetectionVisitSequenceNumberBuffer[pointElementIndex];
-    }
-
-    void SetCurrentConnectedComponentDetectionVisitSequenceNumber(
-        ElementIndex pointElementIndex,
-        VisitSequenceNumber connectedComponentDetectionVisitSequenceNumber)
-    {
-        mCurrentConnectedComponentDetectionVisitSequenceNumberBuffer[pointElementIndex] =
-            connectedComponentDetectionVisitSequenceNumber;
-    }
 
     //
     // Temporary buffer
@@ -882,14 +997,19 @@ private:
     // Structure
     //
 
-    Buffer<Network> mNetworkBuffer;
+    Buffer<ConnectedSpringsVector> mConnectedSpringsBuffer;
+    Buffer<ConnectedTrianglesVector> mConnectedTrianglesBuffer;
+    Buffer<size_t> mConnectedOwnedTrianglesCountBuffer;
 
     //
-    // Connected component
+    // Connectivity
     //
 
     Buffer<ConnectedComponentId> mConnectedComponentIdBuffer;
-    Buffer<VisitSequenceNumber> mCurrentConnectedComponentDetectionVisitSequenceNumberBuffer;
+    Buffer<PlaneId> mPlaneIdBuffer;
+    bool mutable mIsPlaneIdBufferNonEphemeralDirty;
+    bool mutable mIsPlaneIdBufferEphemeralDirty;
+    Buffer<VisitSequenceNumber> mCurrentConnectivityVisitSequenceNumberBuffer;
 
     //
     // Pinning
@@ -902,7 +1022,9 @@ private:
     //
 
     Buffer<vec4f> mColorBuffer;
+    bool mutable mIsColorBufferDirty;  // Whether or not is dirty since last render upload
     Buffer<vec2f> mTextureCoordinatesBuffer;
+    bool mutable mIsTextureCoordinatesBufferDirty; // Whether or not is dirty since last render upload
 
 
     //////////////////////////////////////////////////////////
@@ -915,7 +1037,7 @@ private:
     // Count of ephemeral points
     ElementCount const mEphemeralPointCount;
 
-    // Count of all points
+    // Count of all points (sum of two above)
     ElementCount const mAllPointCount;
 
     World & mParentWorld;
@@ -928,10 +1050,6 @@ private:
     // in the values of these parameters will trigger a re-calculation
     // of pre-calculated coefficients
     float mCurrentNumMechanicalDynamicsIterations;
-
-    // Flag remembering whether or not we've already uploaded
-    // the immutable render attributes
-    bool mutable mAreImmutableRenderAttributesUploaded;
 
     // Allocators for work buffers
     BufferAllocator<float> mFloatBufferAllocator;

@@ -41,7 +41,7 @@ ShipId World::AddShip(
     MaterialDatabase const & materialDatabase,
     GameParameters const & gameParameters)
 {
-    ShipId shipId = static_cast<ShipId>(mAllShips.size()) + 1;
+    ShipId shipId = static_cast<ShipId>(mAllShips.size());
 
     auto ship = ShipBuilder::Create(
         shipId,
@@ -64,9 +64,9 @@ size_t World::GetShipCount() const
 
 size_t World::GetShipPointCount(ShipId shipId) const
 {
-    assert(shipId > 0 && shipId <= mAllShips.size());
+    assert(shipId >= 0 && shipId < mAllShips.size());
 
-    return mAllShips[shipId - 1]->GetPointCount();
+    return mAllShips[shipId]->GetPointCount();
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -78,9 +78,9 @@ void World::MoveBy(
     vec2f const & offset,
     GameParameters const & gameParameters)
 {
-    assert(shipId > 0 && shipId <= mAllShips.size());
+    assert(shipId >= 0 && shipId < mAllShips.size());
 
-    mAllShips[shipId - 1]->MoveBy(
+    mAllShips[shipId]->MoveBy(
         offset,
         gameParameters);
 }
@@ -91,9 +91,9 @@ void World::RotateBy(
     vec2f const & center,
     GameParameters const & gameParameters)
 {
-    assert(shipId > 0 && shipId <= mAllShips.size());
+    assert(shipId >= 0 && shipId < mAllShips.size());
 
-    mAllShips[shipId - 1]->RotateBy(
+    mAllShips[shipId]->RotateBy(
         angle,
         center,
         gameParameters);
@@ -393,23 +393,45 @@ void World::Render(
     GameParameters const & gameParameters,
     Render::RenderContext & renderContext) const
 {
+    //
+    // Upload land and water data (before clouds and stars are rendered, as the latters
+    // need the water stencil)
+    //
+
+    UploadLandAndWater(gameParameters, renderContext);
+
+
+    //
+    // Render sky
+    //
+
+    renderContext.RenderSkyStart();
+
     // Upload stars
     mStars.Upload(renderContext);
 
-    // Upload land and water data (before clouds and stars are rendered, as the latters
-    // need the water stencil)
-    UploadLandAndWater(gameParameters, renderContext);
+    // Upload clouds
+    mClouds.Upload(renderContext);
 
-    // Render the clouds (and stars)
-    mClouds.Render(renderContext);
+    renderContext.RenderSkyEnd();
 
+
+    //
     // Render the water now, if we want to see the ship through the water
+    //
+
     if (renderContext.GetShowShipThroughSeaWater())
     {
         renderContext.RenderWater();
     }
 
+
+    //
     // Render all ships
+    //
+
+    renderContext.RenderShipsStart(mAllShips.size());
+
     for (auto const & ship : mAllShips)
     {
         ship->Render(
@@ -417,13 +439,23 @@ void World::Render(
             renderContext);
     }
 
+    renderContext.RenderShipsEnd();
+
+
+    //
     // Render the water now, if we want to see the ship *in* the water instead
+    //
+
     if (!renderContext.GetShowShipThroughSeaWater())
     {
         renderContext.RenderWater();
     }
 
+
+    //
     // Render the ocean floor
+    //
+
     renderContext.RenderLand();
 }
 

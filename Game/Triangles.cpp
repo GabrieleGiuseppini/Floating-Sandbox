@@ -35,26 +35,4 @@ void Triangles::Destroy(ElementIndex triangleElementIndex)
     mIsDeletedBuffer[triangleElementIndex] = true;
 }
 
-void Triangles::UploadElements(
-    ShipId shipId,
-    Render::RenderContext & renderContext,
-    Points const & points) const
-{
-    for (ElementIndex i : *this)
-    {
-        if (!mIsDeletedBuffer[i])
-        {
-            assert(points.GetConnectedComponentId(GetPointAIndex(i)) == points.GetConnectedComponentId(GetPointBIndex(i))
-                && points.GetConnectedComponentId(GetPointAIndex(i)) == points.GetConnectedComponentId(GetPointCIndex(i)));
-
-            renderContext.UploadShipElementTriangle(
-                shipId,
-                GetPointAIndex(i),
-                GetPointBIndex(i),
-                GetPointCIndex(i),
-                points.GetConnectedComponentId(GetPointAIndex(i)));
-        }
-    }
-}
-
 }

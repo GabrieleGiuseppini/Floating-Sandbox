@@ -146,7 +146,7 @@ void RCBomb::Upload(
         {
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
-                GetConnectedComponentId(),
+                GetPlaneId(),
                 TextureFrameId(TextureGroupType::RcBomb, 0),
                 GetPosition(),
                 1.0,
@@ -161,7 +161,7 @@ void RCBomb::Upload(
         {
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
-                GetConnectedComponentId(),
+                GetPlaneId(),
                 TextureFrameId(TextureGroupType::RcBomb, 0),
                 GetPosition(),
                 1.0,
@@ -171,7 +171,7 @@ void RCBomb::Upload(
 
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
-                GetConnectedComponentId(),
+                GetPlaneId(),
                 TextureFrameId(TextureGroupType::RcBombPing, (mPingOnStepCounter - 1) % PingFramesCount),
                 GetPosition(),
                 1.0,
@@ -186,7 +186,7 @@ void RCBomb::Upload(
         {
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
-                GetConnectedComponentId(),
+                GetPlaneId(),
                 TextureFrameId(TextureGroupType::RcBomb, 0),
                 GetPosition(),
                 1.0,
@@ -196,7 +196,7 @@ void RCBomb::Upload(
 
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
-                GetConnectedComponentId(),
+                GetPlaneId(),
                 TextureFrameId(TextureGroupType::RcBombPing, (mPingOnStepCounter - 1) % PingFramesCount),
                 GetPosition(),
                 1.0,
@@ -214,7 +214,7 @@ void RCBomb::Upload(
 
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
-                GetConnectedComponentId(),
+                GetPlaneId(),
                 TextureFrameId(TextureGroupType::RcBombExplosion, mExplodingStepCounter),
                 GetPosition(),
                 1.0f + static_cast<float>(mExplodingStepCounter) / static_cast<float>(ExplosionStepsCount),

@@ -46,11 +46,7 @@ RenderContext::RenderContext(
     , mCrossOfLightBuffer()
     , mCrossOfLightVBO()
     // Render parameters
-    , mZoom(1.0f)
-    , mCamX(0.0f)
-    , mCamY(0.0f)
-    , mCanvasWidth(100)
-    , mCanvasHeight(100)
+    , mViewModel(1.0f, vec2f::zero(), 100, 100)
     , mAmbientLightIntensity(1.0f)
     , mSeaWaterTransparency(0.8125f)
     , mShowShipThroughSeaWater(false)
@@ -97,8 +93,8 @@ RenderContext::RenderContext(
     mTextRenderContext = std::make_unique<TextRenderContext>(
         resourceLoader,
         *(mShaderManager.get()),
-        mCanvasWidth,
-        mCanvasHeight,
+        mViewModel.GetCanvasWidth(),
+        mViewModel.GetCanvasHeight(),
         mAmbientLightIntensity,
         [&progressCallback](float progress, std::string const & message)
         {
@@ -181,8 +177,8 @@ RenderContext::RenderContext(
     mGenericTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata>(genericTextureAtlas.Metadata);
 
     // Set hardcoded parameters
-    mShaderManager->ActivateProgram<ProgramType::GenericTextures>();
-    mShaderManager->SetTextureParameters<ProgramType::GenericTextures>();
+    mShaderManager->ActivateProgram<ProgramType::ShipGenericTextures>();
+    mShaderManager->SetTextureParameters<ProgramType::ShipGenericTextures>();
 
 
     //
@@ -333,35 +329,28 @@ RenderContext::RenderContext(
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+    // Disable depth test
+    glDisable(GL_DEPTH_TEST);
 
-    //
-    // Initialize ortho matrix
-    //
-
-    for (size_t r = 0; r < 4; ++r)
-    {
-        for (size_t c = 0; c < 4; ++c)
-        {
-            mOrthoMatrix[r][c] = 0.0f;
-        }
-    }
+    // Set depth test parameters for when we'll need them
+    glDepthMask(GL_TRUE);
+    glDepthFunc(GL_LEQUAL);
 
 
     //
     // Update parameters
     //
 
-    UpdateOrthoMatrix();
-    UpdateCanvasSize();
-    UpdateVisibleWorldCoordinates();
-    UpdateAmbientLightIntensity();
-    UpdateSeaWaterTransparency();
-    UpdateWaterContrast();
-    UpdateWaterLevelOfDetail();
-    UpdateShipRenderMode();
-    UpdateDebugShipRenderMode();
-    UpdateVectorFieldRenderMode();
-    UpdateShowStressedSprings();
+    OnViewModelUpdated();
+
+    OnAmbientLightIntensityUpdated();
+    OnSeaWaterTransparencyUpdated();
+    OnWaterContrastUpdated();
+    OnWaterLevelOfDetailUpdated();
+    OnShipRenderModeUpdated();
+    OnDebugShipRenderModeUpdated();
+    OnVectorFieldRenderModeUpdated();
+    OnShowStressedSpringsUpdated();
 
     //
     // Flush all pending operations
@@ -396,12 +385,21 @@ void RenderContext::AddShip(
     RgbaImageData texture,
     ShipDefinition::TextureOriginType textureOrigin)
 {
-    assert(shipId == mShips.size() + 1);
-    (void)shipId;
+    assert(shipId == mShips.size());
+
+    size_t const newShipCount = mShips.size() + 1;
+
+    // Tell all ships that there's a new ship
+    for (auto & ship : mShips)
+    {
+        ship->SetShipCount(newShipCount);
+    }
 
     // Add the ship
     mShips.emplace_back(
         new ShipRenderContext(
+            shipId,
+            newShipCount,
             pointCount,
             std::move(texture),
             textureOrigin,
@@ -409,10 +407,7 @@ void RenderContext::AddShip(
             mGenericTextureAtlasOpenGLHandle,
             *mGenericTextureAtlasMetadata,
             mRenderStatistics,
-            mOrthoMatrix,
-            mVisibleWorldHeight,
-            mVisibleWorldWidth,
-            mCanvasToVisibleWorldHeightRatio,
+            mViewModel,
             mAmbientLightIntensity,
             mWaterContrast,
             mWaterLevelOfDetail,
@@ -434,7 +429,10 @@ RgbImageData RenderContext::TakeScreenshot()
     // Allocate buffer
     //
 
-    auto pixelBuffer = std::make_unique<rgbColor[]>(mCanvasWidth * mCanvasHeight);
+    int const canvasWidth = mViewModel.GetCanvasWidth();
+    int const canvasHeight = mViewModel.GetCanvasHeight();
+
+    auto pixelBuffer = std::make_unique<rgbColor[]>(canvasWidth * canvasHeight);
 
     //
     // Read pixels
@@ -449,11 +447,11 @@ RgbImageData RenderContext::TakeScreenshot()
     CheckOpenGLError();
 
     // Read
-    glReadPixels(0, 0, mCanvasWidth, mCanvasHeight, GL_RGB, GL_UNSIGNED_BYTE, pixelBuffer.get());
+    glReadPixels(0, 0, canvasWidth, canvasHeight, GL_RGB, GL_UNSIGNED_BYTE, pixelBuffer.get());
     CheckOpenGLError();
 
     return RgbImageData(
-        ImageSize(mCanvasWidth, mCanvasHeight),
+        ImageSize(canvasWidth, canvasHeight),
         std::move(pixelBuffer));
 }
 
@@ -485,25 +483,30 @@ void RenderContext::RenderStart()
     mRenderStatistics.Reset();
 }
 
+void RenderContext::RenderSkyStart()
+{
+}
+
 void RenderContext::UploadStarsStart(size_t starCount)
 {
+    //
+    // Prepare stars buffer
+    //
+
     mStarElementBuffer.clear();
     mStarElementBuffer.reserve(starCount);
 }
 
 void RenderContext::UploadStarsEnd()
 {
-    // Bind VBO
-    glBindBuffer(GL_ARRAY_BUFFER, *mStarVBO);
-    CheckOpenGLError();
-
-    // Upload buffer
-    glBufferData(GL_ARRAY_BUFFER, mStarElementBuffer.size() * sizeof(StarElement), mStarElementBuffer.data(), GL_STATIC_DRAW);
-    CheckOpenGLError();
 }
 
-void RenderContext::RenderCloudsStart(size_t cloudCount)
+void RenderContext::UploadCloudsStart(size_t cloudCount)
 {
+    //
+    // Prepare clouds buffers
+    //
+
     if (cloudCount != mCloudElementCount)
     {
         // Bind VBO
@@ -523,14 +526,18 @@ void RenderContext::RenderCloudsStart(size_t cloudCount)
     mCurrentCloudElementCount = 0u;
 }
 
-void RenderContext::RenderCloudsEnd()
+void RenderContext::UploadCloudsEnd()
 {
-    // Enable stencil test
-    glEnable(GL_STENCIL_TEST);
+}
 
+void RenderContext::RenderSkyEnd()
+{
     ////////////////////////////////////////////////////
     // Draw water stencil
     ////////////////////////////////////////////////////
+
+    // Enable stencil test
+    glEnable(GL_STENCIL_TEST);
 
     // Use matte water program
     mShaderManager->ActivateProgram<ProgramType::MatteWater>();
@@ -575,6 +582,10 @@ void RenderContext::RenderCloudsEnd()
 
     // Bind VBO
     glBindBuffer(GL_ARRAY_BUFFER, *mStarVBO);
+    CheckOpenGLError();
+
+    // Upload buffer
+    glBufferData(GL_ARRAY_BUFFER, mStarElementBuffer.size() * sizeof(StarElement), mStarElementBuffer.data(), GL_STATIC_DRAW);
     CheckOpenGLError();
 
     // Describe vertex attribute 0
@@ -735,6 +746,21 @@ void RenderContext::RenderWater()
     glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mWaterElementCount));
 }
 
+void RenderContext::RenderShipsStart(size_t shipCount)
+{
+    // TODO: check if shipCount has changed and, if so, trigger recalculation of ships' ortho matrices
+    (void)shipCount;
+
+    // Enable depth test, required by ships
+    glEnable(GL_DEPTH_TEST);
+}
+
+void RenderContext::RenderShipsEnd()
+{
+    // Disable depth test
+    glDisable(GL_DEPTH_TEST);
+}
+
 void RenderContext::RenderEnd()
 {
     // Render crosses of light
@@ -782,77 +808,59 @@ void RenderContext::RenderCrossesOfLight()
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-void RenderContext::UpdateOrthoMatrix()
+void RenderContext::OnViewModelUpdated()
 {
-    static constexpr float zFar = 1000.0f;
-    static constexpr float zNear = 1.0f;
+    //
+    // Update ortho matrix
+    //
 
-    // Calculate new matrix
-    mOrthoMatrix[0][0] = 2.0f / mVisibleWorldWidth;
-    mOrthoMatrix[1][1] = 2.0f / mVisibleWorldHeight;
-    mOrthoMatrix[2][2] = -2.0f / (zFar - zNear);
-    mOrthoMatrix[3][0] = -2.0f * mCamX / mVisibleWorldWidth;
-    mOrthoMatrix[3][1] = -2.0f * mCamY / mVisibleWorldHeight;
-    mOrthoMatrix[3][2] = -(zFar + zNear) / (zFar - zNear);
-    mOrthoMatrix[3][3] = 1.0f;
+    constexpr float ZFar = 1000.0f;
+    constexpr float ZNear = 1.0f;
 
-    // Set parameters in all programs
+    ViewModel::ProjectionMatrix globalOrthoMatrix;
+    mViewModel.CalculateGlobalOrthoMatrix(ZFar, ZNear, globalOrthoMatrix);
 
     mShaderManager->ActivateProgram<ProgramType::Land>();
     mShaderManager->SetProgramParameter<ProgramType::Land, ProgramParameterType::OrthoMatrix>(
-        mOrthoMatrix);
+        globalOrthoMatrix);
 
     mShaderManager->ActivateProgram<ProgramType::Water>();
     mShaderManager->SetProgramParameter<ProgramType::Water, ProgramParameterType::OrthoMatrix>(
-        mOrthoMatrix);
+        globalOrthoMatrix);
 
     mShaderManager->ActivateProgram<ProgramType::MatteWater>();
     mShaderManager->SetProgramParameter<ProgramType::MatteWater, ProgramParameterType::OrthoMatrix>(
-        mOrthoMatrix);
+        globalOrthoMatrix);
 
     mShaderManager->ActivateProgram<ProgramType::Matte>();
     mShaderManager->SetProgramParameter<ProgramType::Matte, ProgramParameterType::OrthoMatrix>(
-        mOrthoMatrix);
+        globalOrthoMatrix);
 
     mShaderManager->ActivateProgram<ProgramType::CrossOfLight>();
     mShaderManager->SetProgramParameter<ProgramType::CrossOfLight, ProgramParameterType::OrthoMatrix>(
-        mOrthoMatrix);
+        globalOrthoMatrix);
 
-    // Update all ships
-    for (auto & ship : mShips)
-    {
-        ship->UpdateOrthoMatrix(mOrthoMatrix);
-    }
-}
-
-void RenderContext::UpdateCanvasSize()
-{
-    // Set parameters in all programs
+    //
+    // Update canvas size
+    //
 
     mShaderManager->ActivateProgram<ProgramType::CrossOfLight>();
     mShaderManager->SetProgramParameter<ProgramType::CrossOfLight, ProgramParameterType::ViewportSize>(
-        static_cast<float>(mCanvasWidth),
-        static_cast<float>(mCanvasHeight));
-}
+        static_cast<float>(mViewModel.GetCanvasWidth()),
+        static_cast<float>(mViewModel.GetCanvasHeight()));
 
-void RenderContext::UpdateVisibleWorldCoordinates()
-{
-    // Calculate new dimensions
-    mVisibleWorldHeight = 2.0f * 70.0f / (mZoom + 0.001f);
-    mVisibleWorldWidth = static_cast<float>(mCanvasWidth) / static_cast<float>(mCanvasHeight) * mVisibleWorldHeight;
-    mCanvasToVisibleWorldHeightRatio = static_cast<float>(mCanvasHeight) / mVisibleWorldHeight;
 
+    //
     // Update all ships
+    //
+
     for (auto & ship : mShips)
     {
-        ship->UpdateVisibleWorldCoordinates(
-            mVisibleWorldHeight,
-            mVisibleWorldWidth,
-            mCanvasToVisibleWorldHeightRatio);
+        ship->OnViewModelUpdated();
     }
 }
 
-void RenderContext::UpdateAmbientLightIntensity()
+void RenderContext::OnAmbientLightIntensityUpdated()
 {
     // Set parameters in all programs
 
@@ -875,14 +883,14 @@ void RenderContext::UpdateAmbientLightIntensity()
     // Update all ships
     for (auto & ship : mShips)
     {
-        ship->UpdateAmbientLightIntensity(mAmbientLightIntensity);
+        ship->SetAmbientLightIntensity(mAmbientLightIntensity);
     }
 
     // Update text context
     mTextRenderContext->UpdateAmbientLightIntensity(mAmbientLightIntensity);
 }
 
-void RenderContext::UpdateSeaWaterTransparency()
+void RenderContext::OnSeaWaterTransparencyUpdated()
 {
     // Set parameter in all programs
 
@@ -891,63 +899,63 @@ void RenderContext::UpdateSeaWaterTransparency()
         mSeaWaterTransparency);
 }
 
-void RenderContext::UpdateWaterContrast()
+void RenderContext::OnWaterContrastUpdated()
 {
     // Set parameter in all ships
 
     for (auto & s : mShips)
     {
-        s->UpdateWaterContrast(mWaterContrast);
+        s->SetWaterContrast(mWaterContrast);
     }
 }
 
-void RenderContext::UpdateWaterLevelOfDetail()
+void RenderContext::OnWaterLevelOfDetailUpdated()
 {
     // Set parameter in all ships
 
     for (auto & s : mShips)
     {
-        s->UpdateWaterLevelThreshold(mWaterLevelOfDetail);
+        s->SetWaterLevelThreshold(mWaterLevelOfDetail);
     }
 }
 
-void RenderContext::UpdateShipRenderMode()
+void RenderContext::OnShipRenderModeUpdated()
 {
     // Set parameter in all ships
 
     for (auto & s : mShips)
     {
-        s->UpdateShipRenderMode(mShipRenderMode);
+        s->SetShipRenderMode(mShipRenderMode);
     }
 }
 
-void RenderContext::UpdateDebugShipRenderMode()
+void RenderContext::OnDebugShipRenderModeUpdated()
 {
     // Set parameter in all ships
 
     for (auto & s : mShips)
     {
-        s->UpdateDebugShipRenderMode(mDebugShipRenderMode);
+        s->SetDebugShipRenderMode(mDebugShipRenderMode);
     }
 }
 
-void RenderContext::UpdateVectorFieldRenderMode()
+void RenderContext::OnVectorFieldRenderModeUpdated()
 {
     // Set parameter in all ships
 
     for (auto & s : mShips)
     {
-        s->UpdateVectorFieldRenderMode(mVectorFieldRenderMode);
+        s->SetVectorFieldRenderMode(mVectorFieldRenderMode);
     }
 }
 
-void RenderContext::UpdateShowStressedSprings()
+void RenderContext::OnShowStressedSpringsUpdated()
 {
     // Set parameter in all ships
 
     for (auto & s : mShips)
     {
-        s->UpdateShowStressedSprings(mShowStressedSprings);
+        s->SetShowStressedSprings(mShowStressedSprings);
     }
 }
 

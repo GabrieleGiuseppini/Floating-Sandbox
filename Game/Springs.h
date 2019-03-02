@@ -196,13 +196,11 @@ public:
 
     void UploadElements(
         ShipId shipId,
-        Render::RenderContext & renderContext,
-        Points const & points) const;
+        Render::RenderContext & renderContext) const;
 
     void UploadStressedSpringElements(
         ShipId shipId,
-        Render::RenderContext & renderContext,
-        Points const & points) const;
+        Render::RenderContext & renderContext) const;
 
 public:
 
@@ -229,18 +227,19 @@ public:
         return mEndpointsBuffer[springElementIndex].PointBIndex;
     }
 
-    ElementIndex GetOtherEndpointIndex(
-        ElementIndex springElementIndex,
-        ElementIndex pointIndex) const
-    {
-        ElementIndex otherEndpointIndex = mEndpointsBuffer[springElementIndex].PointBIndex;
-        if (otherEndpointIndex == pointIndex)
-        {
-            otherEndpointIndex = mEndpointsBuffer[springElementIndex].PointAIndex;
-        }
+    // TODO: NUKE
+    ////ElementIndex GetOtherEndpointIndex(
+    ////    ElementIndex springElementIndex,
+    ////    ElementIndex pointIndex) const
+    ////{
+    ////    ElementIndex otherEndpointIndex = mEndpointsBuffer[springElementIndex].PointBIndex;
+    ////    if (otherEndpointIndex == pointIndex)
+    ////    {
+    ////        otherEndpointIndex = mEndpointsBuffer[springElementIndex].PointAIndex;
+    ////    }
 
-        return otherEndpointIndex;
-    }
+    ////    return otherEndpointIndex;
+    ////}
 
     // Returns +1.0 if the spring is directed outward from the specified point;
     // otherwise, -1.0.
@@ -276,14 +275,14 @@ public:
             + GetPointBPosition(springElementIndex, points)) / 2.0f;
     }
 
-    ConnectedComponentId GetConnectedComponentId(
+    PlaneId GetPlaneId(
         ElementIndex springElementIndex,
         Points const & points) const
     {
-        assert(points.GetConnectedComponentId(GetPointAIndex(springElementIndex))
-            == points.GetConnectedComponentId(GetPointBIndex(springElementIndex)));
-
-        return points.GetConnectedComponentId(GetPointAIndex(springElementIndex));
+        // Return, quite arbitrarily, the plane of point A
+        // (the two endpoints might have different plane IDs in case, for example,
+        // this spring connects a "string" to a triangle)
+        return points.GetPlaneId(GetPointAIndex(springElementIndex));
     }
 
     //

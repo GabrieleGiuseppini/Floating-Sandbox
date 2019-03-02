@@ -12,6 +12,7 @@
 #include "TextRenderContext.h"
 #include "TextureAtlas.h"
 #include "TextureRenderManager.h"
+#include "ViewModel.h"
 
 #include <GameOpenGL/GameOpenGL.h>
 #include <GameOpenGL/ShaderManager.h>
@@ -49,81 +50,74 @@ public:
 
     float GetZoom() const
     {
-        return mZoom;
+        return mViewModel.GetZoom();
     }
 
     void SetZoom(float zoom)
     {
-        mZoom = zoom;
+        mViewModel.SetZoom(zoom);
 
-        UpdateVisibleWorldCoordinates();
-        UpdateOrthoMatrix();
+        OnViewModelUpdated();
     }
 
     void AdjustZoom(float amount)
     {
-        mZoom *= amount;
+        mViewModel.AdjustZoom(amount);
 
-        UpdateVisibleWorldCoordinates();
-        UpdateOrthoMatrix();
+        OnViewModelUpdated();
     }
 
     vec2f GetCameraWorldPosition() const
     {
-        return vec2f(mCamX, mCamY);
+        return mViewModel.GetCameraWorldPosition();
     }
 
     void SetCameraWorldPosition(vec2f const & pos)
     {
-        mCamX = pos.x;
-        mCamY = pos.y;
+        mViewModel.SetCameraWorldPosition(pos);
 
-        UpdateVisibleWorldCoordinates();
-        UpdateOrthoMatrix();
+        OnViewModelUpdated();
     }
 
-    void AdjustCameraWorldPosition(vec2f const & worldOffset)
+    void AdjustCameraWorldPosition(vec2f const & offset)
     {
-        mCamX += worldOffset.x;
-        mCamY += worldOffset.y;
+        mViewModel.AdjustCameraWorldPosition(offset);
 
-        UpdateVisibleWorldCoordinates();
-        UpdateOrthoMatrix();
+        OnViewModelUpdated();
     }
 
-    int GetCanvasSizeWidth() const
+    int GetCanvasWidth() const
     {
-        return mCanvasWidth;
+        return mViewModel.GetCanvasWidth();
     }
 
-    int GetCanvasSizeHeight() const
+    int GetCanvasHeight() const
     {
-        return mCanvasHeight;
+        return mViewModel.GetCanvasHeight();
     }
 
     void SetCanvasSize(int width, int height)
     {
-        mCanvasWidth = width;
-        mCanvasHeight = height;
+        mViewModel.SetCanvasSize(width, height);
 
-        glViewport(0, 0, mCanvasWidth, mCanvasHeight);
+        glViewport(0, 0, mViewModel.GetCanvasWidth(), mViewModel.GetCanvasHeight());
 
-        mTextRenderContext->UpdateCanvasSize(mCanvasWidth, mCanvasHeight);
+        mTextRenderContext->UpdateCanvasSize(mViewModel.GetCanvasWidth(), mViewModel.GetCanvasHeight());
 
-        UpdateCanvasSize();
-        UpdateVisibleWorldCoordinates();
-        UpdateOrthoMatrix();
+        OnViewModelUpdated();
     }
 
     float GetVisibleWorldWidth() const
     {
-        return mVisibleWorldWidth;
+        return mViewModel.GetVisibleWorldWidth();
     }
 
     float GetVisibleWorldHeight() const
     {
-        return mVisibleWorldHeight;
+        return mViewModel.GetVisibleWorldHeight();
     }
+
+    //
 
     float GetAmbientLightIntensity() const
     {
@@ -134,7 +128,7 @@ public:
     {
         mAmbientLightIntensity = intensity;
 
-        UpdateAmbientLightIntensity();
+        OnAmbientLightIntensityUpdated();
     }
 
     float GetSeaWaterTransparency() const
@@ -146,7 +140,7 @@ public:
     {
         mSeaWaterTransparency = transparency;
 
-        UpdateSeaWaterTransparency();
+        OnSeaWaterTransparencyUpdated();
     }
 
     bool GetShowShipThroughSeaWater() const
@@ -168,7 +162,7 @@ public:
     {
         mWaterContrast = contrast;
 
-        UpdateWaterContrast();
+        OnWaterContrastUpdated();
     }
 
     float GetWaterLevelOfDetail() const
@@ -180,7 +174,7 @@ public:
     {
         mWaterLevelOfDetail = levelOfDetail;
 
-        UpdateWaterLevelOfDetail();
+        OnWaterLevelOfDetailUpdated();
     }
 
     static constexpr float MinWaterLevelOfDetail = 0.0f;
@@ -199,7 +193,7 @@ public:
     {
         mShipRenderMode = shipRenderMode;
 
-        UpdateShipRenderMode();
+        OnShipRenderModeUpdated();
     }
 
     DebugShipRenderMode GetDebugShipRenderMode() const
@@ -211,7 +205,7 @@ public:
     {
         mDebugShipRenderMode = debugShipRenderMode;
 
-        UpdateDebugShipRenderMode();
+        OnDebugShipRenderModeUpdated();
     }
 
     VectorFieldRenderMode GetVectorFieldRenderMode() const
@@ -223,7 +217,7 @@ public:
     {
         mVectorFieldRenderMode = vectorFieldRenderMode;
 
-        UpdateVectorFieldRenderMode();
+        OnVectorFieldRenderModeUpdated();
     }
 
     float GetVectorFieldLengthMultiplier() const
@@ -245,7 +239,7 @@ public:
     {
         mShowStressedSprings = showStressedSprings;
 
-        UpdateShowStressedSprings();
+        OnShowStressedSpringsUpdated();
     }
 
     //
@@ -254,16 +248,12 @@ public:
 
     inline vec2f ScreenToWorld(vec2f const & screenCoordinates)
     {
-        return vec2f(
-            (screenCoordinates.x / static_cast<float>(mCanvasWidth) - 0.5f) * mVisibleWorldWidth + mCamX,
-            (screenCoordinates.y / static_cast<float>(mCanvasHeight) - 0.5f) * -mVisibleWorldHeight + mCamY);
+        return mViewModel.ScreenToWorld(screenCoordinates);
     }
 
     inline vec2f ScreenOffsetToWorldOffset(vec2f const & screenOffset)
     {
-        return vec2f(
-            screenOffset.x / static_cast<float>(mCanvasWidth) * mVisibleWorldWidth,
-            - screenOffset.y / static_cast<float>(mCanvasHeight) * mVisibleWorldHeight);
+        return mViewModel.ScreenOffsetToWorldOffset(screenOffset);
     }
 
     //
@@ -292,8 +282,11 @@ public:
     void RenderStart();
 
     //
-    // Stars
+    // Sky
     //
+
+    void RenderSkyStart();
+
 
     void UploadStarsStart(size_t starCount);
 
@@ -308,11 +301,7 @@ public:
     void UploadStarsEnd();
 
 
-    //
-    // Clouds
-    //
-
-    void RenderCloudsStart(size_t cloudCount);
+    void UploadCloudsStart(size_t cloudCount);
 
     inline void UploadCloud(
         float virtualX,
@@ -353,7 +342,7 @@ public:
             TextureGroupType::Cloud,
             static_cast<TextureFrameIndex>(cloudTextureIndex));
 
-        float const aspectRatio = static_cast<float>(mCanvasWidth) / static_cast<float>(mCanvasHeight);
+        float const aspectRatio = static_cast<float>(mViewModel.GetCanvasWidth()) / static_cast<float>(mViewModel.GetCanvasHeight());
 
         float leftX = mappedX - scale * cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldX;
         float rightX = mappedX + scale * (cloudAtlasFrameMetadata.FrameMetadata.WorldWidth - cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldX);
@@ -393,7 +382,10 @@ public:
         ++mCurrentCloudElementCount;
     }
 
-    void RenderCloudsEnd();
+    void UploadCloudsEnd();
+
+
+    void RenderSkyEnd();
 
 
     //
@@ -411,7 +403,7 @@ public:
         assert(mLandElementCount == mWaterElementCount);
         assert(mLandElementCount > 0);
 
-        float const worldBottom = mCamY - (mVisibleWorldHeight / 2.0f);
+        float const worldBottom = mViewModel.GetCameraWorldPosition().y - (mViewModel.GetVisibleWorldHeight() / 2.0f);
 
         //
         // Store Land element
@@ -463,10 +455,10 @@ public:
         vec2f const & centerPosition,
         float progress)
     {
-        float const left = -mVisibleWorldWidth / 2.0f;
-        float const right = mVisibleWorldWidth / 2.0f;
-        float const top = mVisibleWorldHeight / 2.0f;
-        float const bottom = -mVisibleWorldHeight / 2.0f;
+        float const left = -mViewModel.GetVisibleWorldWidth() / 2.0f;
+        float const right = mViewModel.GetVisibleWorldWidth() / 2.0f;
+        float const top = mViewModel.GetVisibleWorldHeight() / 2.0f;
+        float const bottom = -mViewModel.GetVisibleWorldHeight() / 2.0f;
 
         // Triangle 1
 
@@ -507,13 +499,14 @@ public:
     // Ships
     /////////////////////////////////////////////////////////////////////////
 
-    void RenderShipStart(
-        ShipId shipId,
-        std::vector<std::size_t> const & connectedComponentsMaxSizes)
-    {
-        assert(shipId > 0 && shipId <= mShips.size());
+    void RenderShipsStart(size_t shipCount);
 
-        mShips[shipId - 1]->RenderStart(connectedComponentsMaxSizes);
+
+    void RenderShipStart(ShipId shipId)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        mShips[shipId]->RenderStart();
     }
 
     //
@@ -522,25 +515,25 @@ public:
 
     void UploadShipPointImmutableGraphicalAttributes(
         ShipId shipId,
-        vec4f const * restrict color,
-        vec2f const * restrict textureCoordinates)
+        vec4f const * color,
+        vec2f const * textureCoordinates)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->UploadPointImmutableGraphicalAttributes(
+        mShips[shipId]->UploadPointImmutableGraphicalAttributes(
             color,
             textureCoordinates);
     }
 
     void UploadShipPointColorRange(
         ShipId shipId,
-        vec4f const * restrict color,
+        vec4f const * color,
         size_t startIndex,
         size_t count)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->UploadShipPointColorRange(
+        mShips[shipId]->UploadShipPointColorRange(
             color,
             startIndex,
             count);
@@ -548,118 +541,150 @@ public:
 
     void UploadShipPoints(
         ShipId shipId,
-        vec2f const * restrict position,
-        float const * restrict light,
-        float const * restrict water)
+        vec2f const * position,
+        float const * light,
+        float const * water)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->UploadPoints(
+        mShips[shipId]->UploadPoints(
             position,
             light,
             water);
     }
 
+    void UploadShipPointPlaneIds(
+        ShipId shipId,
+        PlaneId const * planeId,
+        size_t start,
+        size_t count,
+        PlaneId maxMaxPlaneId)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        mShips[shipId]->UploadPointPlaneIds(
+            planeId,
+            start,
+            count,
+            maxMaxPlaneId);
+    }
+
     //
-    // Ship elements (points, springs, ropes, and triangles)
+    // Ship triangle elements
+    //
+
+    inline void UploadShipElementTrianglesStart(
+        ShipId shipId,
+        size_t trianglesCount)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        mShips[shipId]->UploadElementTrianglesStart(trianglesCount);
+    }
+
+    inline void UploadShipElementTriangle(
+        ShipId shipId,
+        size_t triangleIndex,
+        int shipPointIndex1,
+        int shipPointIndex2,
+        int shipPointIndex3)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        mShips[shipId]->UploadElementTriangle(
+            triangleIndex,
+            shipPointIndex1,
+            shipPointIndex2,
+            shipPointIndex3);
+    }
+
+    inline void UploadShipElementTrianglesEnd(
+        ShipId shipId)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        mShips[shipId]->UploadElementTrianglesEnd();
+    }
+
+    //
+    // Other ship elements (points, springs, and ropes)
     //
 
     inline void UploadShipElementsStart(ShipId shipId)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->UploadElementsStart();
+        mShips[shipId]->UploadElementsStart();
     }
 
     inline void UploadShipElementPoint(
         ShipId shipId,
-        int shipPointIndex,
-        ConnectedComponentId connectedComponentId)
+        int shipPointIndex)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->UploadElementPoint(
-            shipPointIndex,
-            connectedComponentId);
+        mShips[shipId]->UploadElementPoint(shipPointIndex);
     }
 
     inline void UploadShipElementSpring(
         ShipId shipId,
         int shipPointIndex1,
-        int shipPointIndex2,
-        ConnectedComponentId connectedComponentId)
+        int shipPointIndex2)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->UploadElementSpring(
+        mShips[shipId]->UploadElementSpring(
             shipPointIndex1,
-            shipPointIndex2,
-            connectedComponentId);
+            shipPointIndex2);
     }
 
     inline void UploadShipElementRope(
         ShipId shipId,
         int shipPointIndex1,
-        int shipPointIndex2,
-        ConnectedComponentId connectedComponentId)
+        int shipPointIndex2)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->UploadElementRope(
+        mShips[shipId]->UploadElementRope(
             shipPointIndex1,
-            shipPointIndex2,
-            connectedComponentId);
-    }
-
-    inline void UploadShipElementTriangle(
-        ShipId shipId,
-        int shipPointIndex1,
-        int shipPointIndex2,
-        int shipPointIndex3,
-        ConnectedComponentId connectedComponentId)
-    {
-        assert(shipId > 0 && shipId <= mShips.size());
-
-        mShips[shipId - 1]->UploadElementTriangle(
-            shipPointIndex1,
-            shipPointIndex2,
-            shipPointIndex3,
-            connectedComponentId);
+            shipPointIndex2);
     }
 
     inline void UploadShipElementsEnd(ShipId shipId)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->UploadElementsEnd();
+        mShips[shipId]->UploadElementsEnd();
     }
+
+    //
+    // Ship stressed springs
+    //
 
     inline void UploadShipElementStressedSpringsStart(ShipId shipId)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->UploadElementStressedSpringsStart();
+        mShips[shipId]->UploadElementStressedSpringsStart();
     }
 
     inline void UploadShipElementStressedSpring(
         ShipId shipId,
         int shipPointIndex1,
-        int shipPointIndex2,
-        ConnectedComponentId connectedComponentId)
+        int shipPointIndex2)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->UploadElementStressedSpring(
+        mShips[shipId]->UploadElementStressedSpring(
             shipPointIndex1,
-            shipPointIndex2,
-            connectedComponentId);
+            shipPointIndex2);
     }
 
     void UploadShipElementStressedSpringsEnd(ShipId shipId)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->UploadElementStressedSpringsEnd();
+        mShips[shipId]->UploadElementStressedSpringsEnd();
     }
 
     //
@@ -668,21 +693,21 @@ public:
 
     inline void UploadShipGenericTextureRenderSpecification(
         ShipId shipId,
-        ConnectedComponentId connectedComponentId,
+        PlaneId planeId,
         TextureFrameId const & textureFrameId,
         vec2f const & position)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->UploadGenericTextureRenderSpecification(
-            connectedComponentId,
+        mShips[shipId]->UploadGenericTextureRenderSpecification(
+            planeId,
             textureFrameId,
             position);
     }
 
     inline void UploadShipGenericTextureRenderSpecification(
         ShipId shipId,
-        ConnectedComponentId connectedComponentId,
+        PlaneId planeId,
         TextureFrameId const & textureFrameId,
         vec2f const & position,
         float scale,
@@ -690,10 +715,10 @@ public:
         vec2f const & rotationOffset,
         float alpha)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->UploadGenericTextureRenderSpecification(
-            connectedComponentId,
+        mShips[shipId]->UploadGenericTextureRenderSpecification(
+            planeId,
             textureFrameId,
             position,
             scale,
@@ -704,17 +729,17 @@ public:
 
     inline void UploadShipGenericTextureRenderSpecification(
         ShipId shipId,
-        ConnectedComponentId connectedComponentId,
+        PlaneId planeId,
         TextureFrameId const & textureFrameId,
         vec2f const & position,
         float scale,
         float angle,
         float alpha)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->UploadGenericTextureRenderSpecification(
-            connectedComponentId,
+        mShips[shipId]->UploadGenericTextureRenderSpecification(
+            planeId,
             textureFrameId,
             position,
             scale,
@@ -728,26 +753,26 @@ public:
 
     inline void UploadShipEphemeralPointsStart(ShipId shipId)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->UploadEphemeralPointsStart();
+        mShips[shipId]->UploadEphemeralPointsStart();
     }
 
     inline void UploadShipEphemeralPoint(
         ShipId shipId,
         int pointIndex)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->UploadEphemeralPoint(
+        mShips[shipId]->UploadEphemeralPoint(
             pointIndex);
     }
 
     void UploadShipEphemeralPointsEnd(ShipId shipId)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->UploadEphemeralPointsEnd();
+        mShips[shipId]->UploadEphemeralPointsEnd();
     }
 
 
@@ -758,16 +783,18 @@ public:
     void UploadShipVectors(
         ShipId shipId,
         size_t count,
-        vec2f const * restrict position,
-        vec2f const * restrict vector,
+        vec2f const * position,
+        PlaneId const * planeId,
+        vec2f const * vector,
         float lengthAdjustment,
         vec4f const & color)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->UploadVectors(
+        mShips[shipId]->UploadVectors(
             count,
             position,
+            planeId,
             vector,
             lengthAdjustment * mVectorFieldLengthMultiplier,
             color);
@@ -775,10 +802,14 @@ public:
 
     void RenderShipEnd(ShipId shipId)
     {
-        assert(shipId > 0 && shipId <= mShips.size());
+        assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId - 1]->RenderEnd();
+        mShips[shipId]->RenderEnd();
     }
+
+
+    void RenderShipsEnd();
+
 
 
     //
@@ -828,17 +859,15 @@ private:
 
     void RenderCrossesOfLight();
 
-    void UpdateOrthoMatrix();
-    void UpdateCanvasSize();
-    void UpdateVisibleWorldCoordinates();
-    void UpdateAmbientLightIntensity();
-    void UpdateSeaWaterTransparency();
-    void UpdateWaterContrast();
-    void UpdateWaterLevelOfDetail();
-    void UpdateShipRenderMode();
-    void UpdateDebugShipRenderMode();
-    void UpdateVectorFieldRenderMode();
-    void UpdateShowStressedSprings();
+    void OnViewModelUpdated();
+    void OnAmbientLightIntensityUpdated();
+    void OnSeaWaterTransparencyUpdated();
+    void OnWaterContrastUpdated();
+    void OnWaterLevelOfDetailUpdated();
+    void OnShipRenderModeUpdated();
+    void OnDebugShipRenderModeUpdated();
+    void OnVectorFieldRenderModeUpdated();
+    void OnShowStressedSpringsUpdated();
 
 private:
 
@@ -1002,24 +1031,11 @@ private:
 
 private:
 
-    // The Ortho matrix
-    float mOrthoMatrix[4][4];
-
-    // The world coordinates of the visible portion
-    float mVisibleWorldWidth;
-    float mVisibleWorldHeight;
-    float mCanvasToVisibleWorldHeightRatio;
-
-
     //
     // The current render parameters
     //
 
-    float mZoom;
-    float mCamX;
-    float mCamY;
-    int mCanvasWidth;
-    int mCanvasHeight;
+    ViewModel mViewModel;
 
     float mAmbientLightIntensity;
     float mSeaWaterTransparency;

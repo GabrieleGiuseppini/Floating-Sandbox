@@ -8,6 +8,7 @@
 #include "RenderCore.h"
 #include "ShipDefinition.h"
 #include "TextureAtlas.h"
+#include "ViewModel.h"
 
 #include <GameOpenGL/GameOpenGL.h>
 #include <GameOpenGL/ShaderManager.h>
@@ -31,6 +32,8 @@ class ShipRenderContext
 public:
 
     ShipRenderContext(
+        ShipId shipId,
+        size_t shipCount,
         size_t pointCount,
         RgbaImageData texture,
         ShipDefinition::TextureOriginType textureOrigin,
@@ -38,10 +41,7 @@ public:
         GameOpenGLTexture & textureAtlasOpenGLHandle,
         TextureAtlasMetadata const & textureAtlasMetadata,
         RenderStatistics & renderStatistics,
-        float const(&orthoMatrix)[4][4],
-        float visibleWorldHeight,
-        float visibleWorldWidth,
-        float canvasToVisibleWorldHeightRatio,
+        ViewModel const & viewModel,
         float ambientLightIntensity,
         float waterContrast,
         float waterLevelOfDetail,
@@ -54,148 +54,170 @@ public:
 
 public:
 
-    void UpdateOrthoMatrix(float const(&orthoMatrix)[4][4]);
+    void OnViewModelUpdated()
+    {
+        // Recalculate ortho matrices
+        UpdateOrthoMatrices();
+    }
 
-    void UpdateVisibleWorldCoordinates(
-        float visibleWorldHeight,
-        float visibleWorldWidth,
-        float canvasToVisibleWorldHeightRatio);
+    void SetShipCount(size_t shipCount)
+    {
+        mShipCount = shipCount;
 
-    void UpdateAmbientLightIntensity(float ambientLightIntensity);
+        // Recalculate ortho matrices
+        UpdateOrthoMatrices();
+    }
 
-    void UpdateWaterContrast(float waterConstrast);
+    void SetAmbientLightIntensity(float ambientLightIntensity)
+    {
+        mAmbientLightIntensity = ambientLightIntensity;
 
-    void UpdateWaterLevelThreshold(float waterLevelOfDetail);
+        // Set parameters
+        OnAmbientLightIntensityUpdated();
+    }
 
-    void UpdateShipRenderMode(ShipRenderMode shipRenderMode);
+    void SetWaterContrast(float waterContrast)
+    {
+        mWaterContrast = waterContrast;
 
-    void UpdateDebugShipRenderMode(DebugShipRenderMode debugShipRenderMode);
+        // Set parameters
+        OnWaterContrastUpdated();
+    }
 
-    void UpdateVectorFieldRenderMode(VectorFieldRenderMode vectorFieldRenderMode);
+    void SetWaterLevelThreshold(float waterLevelOfDetail)
+    {
+        mWaterLevelOfDetail = waterLevelOfDetail;
 
-    void UpdateShowStressedSprings(bool showStressedSprings);
+        // Set parameters
+        OnWaterLevelOfDetailUpdated();
+    }
+
+    void SetShipRenderMode(ShipRenderMode shipRenderMode)
+    {
+        mShipRenderMode = shipRenderMode;
+    }
+
+    void SetDebugShipRenderMode(DebugShipRenderMode debugShipRenderMode)
+    {
+        mDebugShipRenderMode = debugShipRenderMode;
+    }
+
+    void SetVectorFieldRenderMode(VectorFieldRenderMode vectorFieldRenderMode)
+    {
+        mVectorFieldRenderMode = vectorFieldRenderMode;
+    }
+
+    void SetShowStressedSprings(bool showStressedSprings)
+    {
+        mShowStressedSprings = showStressedSprings;
+    }
 
 public:
 
-    void RenderStart(std::vector<std::size_t> const & connectedComponentsMaxSizes);
+    void RenderStart();
 
     //
     // Points
     //
 
     void UploadPointImmutableGraphicalAttributes(
-        vec4f const * restrict color,
-        vec2f const * restrict textureCoordinates);
+        vec4f const * color,
+        vec2f const * textureCoordinates);
 
     void UploadShipPointColorRange(
-        vec4f const * restrict color,
+        vec4f const * color,
         size_t startIndex,
         size_t count);
 
     void UploadPoints(
-        vec2f const * restrict position,
-        float const * restrict light,
-        float const * restrict water);
+        vec2f const * position,
+        float const * light,
+        float const * water);
+
+    void UploadPointPlaneIds(
+        PlaneId const * planeId,
+        size_t start,
+        size_t count,
+        PlaneId maxMaxPlaneId);
 
 
     //
-    // Elements
+    // Triangle Elements
+    //
+
+    void UploadElementTrianglesStart(size_t trianglesCount);
+
+    inline void UploadElementTriangle(
+        size_t triangleIndex,
+        int pointIndex1,
+        int pointIndex2,
+        int pointIndex3)
+    {
+        assert(triangleIndex < mTriangleElementBuffer.size());
+
+        TriangleElement & triangleElement = mTriangleElementBuffer[triangleIndex];
+
+        triangleElement.pointIndex1 = pointIndex1;
+        triangleElement.pointIndex2 = pointIndex2;
+        triangleElement.pointIndex3 = pointIndex3;
+    }
+
+    void UploadElementTrianglesEnd();
+
+    //
+    // Other Elements
     //
 
     void UploadElementsStart();
 
-    inline void UploadElementPoint(
-        int pointIndex,
-        ConnectedComponentId connectedComponentId)
+    inline void UploadElementPoint(int pointIndex)
     {
-        size_t const connectedComponentIndex = connectedComponentId - 1;
+        mPointElementBuffer.emplace_back();
+        PointElement & pointElement = mPointElementBuffer.back();
 
-        assert(connectedComponentIndex < mConnectedComponents.size());
-        assert(mConnectedComponents[connectedComponentIndex].pointElementCount + 1u <= mConnectedComponents[connectedComponentIndex].pointElementMaxCount);
-
-        PointElement * const pointElement = &(mConnectedComponents[connectedComponentIndex].pointElementBuffer[mConnectedComponents[connectedComponentIndex].pointElementCount]);
-
-        pointElement->pointIndex = pointIndex;
-
-        ++(mConnectedComponents[connectedComponentIndex].pointElementCount);
+        pointElement.pointIndex = pointIndex;
     }
 
     inline void UploadElementSpring(
         int pointIndex1,
-        int pointIndex2,
-        ConnectedComponentId connectedComponentId)
+        int pointIndex2)
     {
-        size_t const connectedComponentIndex = connectedComponentId - 1;
+        mSpringElementBuffer.emplace_back();
+        SpringElement & springElement = mSpringElementBuffer.back();
 
-        assert(connectedComponentIndex < mConnectedComponents.size());
-        assert(mConnectedComponents[connectedComponentIndex].springElementCount + 1u <= mConnectedComponents[connectedComponentIndex].springElementMaxCount);
-
-        SpringElement * const springElement = &(mConnectedComponents[connectedComponentIndex].springElementBuffer[mConnectedComponents[connectedComponentIndex].springElementCount]);
-
-        springElement->pointIndex1 = pointIndex1;
-        springElement->pointIndex2 = pointIndex2;
-
-        ++(mConnectedComponents[connectedComponentIndex].springElementCount);
+        springElement.pointIndex1 = pointIndex1;
+        springElement.pointIndex2 = pointIndex2;
     }
 
     inline void UploadElementRope(
         int pointIndex1,
-        int pointIndex2,
-        ConnectedComponentId connectedComponentId)
+        int pointIndex2)
     {
-        size_t const connectedComponentIndex = connectedComponentId - 1;
+        mRopeElementBuffer.emplace_back();
+        RopeElement & ropeElement = mRopeElementBuffer.back();
 
-        assert(connectedComponentIndex < mConnectedComponents.size());
-        assert(mConnectedComponents[connectedComponentIndex].ropeElementCount + 1u <= mConnectedComponents[connectedComponentIndex].ropeElementMaxCount);
-
-        RopeElement * const ropeElement = &(mConnectedComponents[connectedComponentIndex].ropeElementBuffer[mConnectedComponents[connectedComponentIndex].ropeElementCount]);
-
-        ropeElement->pointIndex1 = pointIndex1;
-        ropeElement->pointIndex2 = pointIndex2;
-
-        ++(mConnectedComponents[connectedComponentIndex].ropeElementCount);
+        ropeElement.pointIndex1 = pointIndex1;
+        ropeElement.pointIndex2 = pointIndex2;
     }
 
-    inline void UploadElementTriangle(
-        int pointIndex1,
-        int pointIndex2,
-        int pointIndex3,
-        ConnectedComponentId connectedComponentId)
-    {
-        size_t const connectedComponentIndex = connectedComponentId - 1;
-
-        assert(connectedComponentIndex < mConnectedComponents.size());
-        assert(mConnectedComponents[connectedComponentIndex].triangleElementCount + 1u <= mConnectedComponents[connectedComponentIndex].triangleElementMaxCount);
-
-        TriangleElement * const triangleElement = &(mConnectedComponents[connectedComponentIndex].triangleElementBuffer[mConnectedComponents[connectedComponentIndex].triangleElementCount]);
-
-        triangleElement->pointIndex1 = pointIndex1;
-        triangleElement->pointIndex2 = pointIndex2;
-        triangleElement->pointIndex3 = pointIndex3;
-
-        ++(mConnectedComponents[connectedComponentIndex].triangleElementCount);
-    }
 
     void UploadElementsEnd();
+
+    //
+    // Stressed springs
+    //
 
     void UploadElementStressedSpringsStart();
 
     inline void UploadElementStressedSpring(
         int pointIndex1,
-        int pointIndex2,
-        ConnectedComponentId connectedComponentId)
+        int pointIndex2)
     {
-        size_t const connectedComponentIndex = connectedComponentId - 1;
+        mStressedSpringElementBuffer.emplace_back();
+        StressedSpringElement & stressedSpringElement = mStressedSpringElementBuffer.back();
 
-        assert(connectedComponentIndex < mConnectedComponents.size());
-        assert(mConnectedComponents[connectedComponentIndex].stressedSpringElementCount + 1u <= mConnectedComponents[connectedComponentIndex].stressedSpringElementMaxCount);
-
-        StressedSpringElement * const stressedSpringElement = &(mConnectedComponents[connectedComponentIndex].stressedSpringElementBuffer[mConnectedComponents[connectedComponentIndex].stressedSpringElementCount]);
-
-        stressedSpringElement->pointIndex1 = pointIndex1;
-        stressedSpringElement->pointIndex2 = pointIndex2;
-
-        ++(mConnectedComponents[connectedComponentIndex].stressedSpringElementCount);
+        stressedSpringElement.pointIndex1 = pointIndex1;
+        stressedSpringElement.pointIndex2 = pointIndex2;
     }
 
     void UploadElementStressedSpringsEnd();
@@ -206,12 +228,12 @@ public:
     //
 
     inline void UploadGenericTextureRenderSpecification(
-        ConnectedComponentId connectedComponentId,
+        PlaneId planeId,
         TextureFrameId const & textureFrameId,
         vec2f const & position)
     {
         UploadGenericTextureRenderSpecification(
-            connectedComponentId,
+            planeId,
             textureFrameId,
             position,
             1.0f,
@@ -220,7 +242,7 @@ public:
     }
 
     inline void UploadGenericTextureRenderSpecification(
-        ConnectedComponentId connectedComponentId,
+        PlaneId planeId,
         TextureFrameId const & textureFrameId,
         vec2f const & position,
         float scale,
@@ -229,7 +251,7 @@ public:
         float alpha)
     {
         UploadGenericTextureRenderSpecification(
-            connectedComponentId,
+            planeId,
             textureFrameId,
             position,
             scale,
@@ -238,19 +260,19 @@ public:
     }
 
     inline void UploadGenericTextureRenderSpecification(
-        ConnectedComponentId connectedComponentId,
+        PlaneId planeId,
         TextureFrameId const & textureFrameId,
         vec2f const & position,
         float scale,
         float angle,
         float alpha)
     {
-        size_t const connectedComponentIndex = connectedComponentId - 1;
+        size_t const planeIndex = static_cast<size_t>(planeId);
 
-        assert(connectedComponentIndex < mGenericTextureConnectedComponents.size());
+        assert(planeIndex < mGenericTexturePlanes.size());
 
-        // Get this connected component's vertex buffer
-        auto & vertexBuffer = mGenericTextureConnectedComponents[connectedComponentIndex].VertexBuffer;
+        // Get this plane's vertex buffer
+        auto & vertexBuffer = mGenericTexturePlanes[planeIndex].VertexBuffer;
 
         //
         // Populate the texture quad
@@ -275,6 +297,7 @@ public:
             position,
             vec2f(leftX, topY),
             vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesTopRight.y),
+            static_cast<float>(planeId),
             scale,
             angle,
             alpha,
@@ -285,6 +308,7 @@ public:
             position,
             vec2f(rightX, topY),
             frame.TextureCoordinatesTopRight,
+            static_cast<float>(planeId),
             scale,
             angle,
             alpha,
@@ -295,6 +319,7 @@ public:
             position,
             vec2f(leftX, bottomY),
             frame.TextureCoordinatesBottomLeft,
+            static_cast<float>(planeId),
             scale,
             angle,
             alpha,
@@ -307,6 +332,7 @@ public:
             position,
             vec2f(rightX, topY),
             frame.TextureCoordinatesTopRight,
+            static_cast<float>(planeId),
             scale,
             angle,
             alpha,
@@ -317,6 +343,7 @@ public:
             position,
             vec2f(leftX, bottomY),
             frame.TextureCoordinatesBottomLeft,
+            static_cast<float>(planeId),
             scale,
             angle,
             alpha,
@@ -327,13 +354,14 @@ public:
             position,
             vec2f(rightX, bottomY),
             vec2f(frame.TextureCoordinatesTopRight.x, frame.TextureCoordinatesBottomLeft.y),
+            static_cast<float>(planeId),
             scale,
             angle,
             alpha,
             lightSensitivity);
 
-        // Update max size among all connected components
-        mGenericTextureMaxVertexBufferSize = std::max(mGenericTextureMaxVertexBufferSize, vertexBuffer.size());
+        // Update max size among all planes
+        mGenericTextureMaxPlaneVertexBufferSize = std::max(mGenericTextureMaxPlaneVertexBufferSize, vertexBuffer.size());
     }
 
 
@@ -360,8 +388,9 @@ public:
 
     void UploadVectors(
         size_t count,
-        vec2f const * restrict position,
-        vec2f const * restrict vector,
+        vec2f const * position,
+        PlaneId const * planeId,
+        vec2f const * vector,
         float lengthAdjustment,
         vec4f const & color);
 
@@ -369,24 +398,24 @@ public:
 
 private:
 
-    struct ConnectedComponentData;
-    struct GenericTextureConnectedComponentData;
+    void UpdateOrthoMatrices();
+    void OnAmbientLightIntensityUpdated();
+    void OnWaterContrastUpdated();
+    void OnWaterLevelOfDetailUpdated();
 
-    void RenderPointElements(ConnectedComponentData const & connectedComponent);
+    struct GenericTexturePlaneData;
 
-    void RenderSpringElements(
-        ConnectedComponentData const & connectedComponent,
-        bool withTexture);
+    void RenderPointElements();
 
-    void RenderRopeElements(ConnectedComponentData const & connectedComponent);
+    void RenderSpringElements(bool withTexture);
 
-    void RenderTriangleElements(
-        ConnectedComponentData const & connectedComponent,
-        bool withTexture);
+    void RenderRopeElements();
 
-    void RenderStressedSpringElements(ConnectedComponentData const & connectedComponent);
+    void RenderTriangleElements(bool withTexture);
 
-    void RenderGenericTextures(GenericTextureConnectedComponentData const & connectedComponent);
+    void RenderStressedSpringElements();
+
+    void RenderGenericTextures();
 
     void RenderEphemeralPoints();
 
@@ -394,14 +423,19 @@ private:
 
 private:
 
+    ShipId const mShipId;
+    size_t mShipCount;
+    PlaneId mMaxMaxPlaneId;
+
     //
     // Parameters
     //
 
-    float mCanvasToVisibleWorldHeightRatio;
+    ViewModel const & mViewModel;
+
     float mAmbientLightIntensity;
     float mWaterContrast;
-    float mWaterLevelThreshold;
+    float mWaterLevelOfDetail;
     ShipRenderMode mShipRenderMode;
     DebugShipRenderMode mDebugShipRenderMode;
     VectorFieldRenderMode mVectorFieldRenderMode;
@@ -431,6 +465,7 @@ private:
     GameOpenGLVBO mPointLightVBO;
     GameOpenGLVBO mPointWaterVBO;
     GameOpenGLVBO mPointColorVBO;
+    GameOpenGLVBO mPointPlaneIdVBO;
     GameOpenGLVBO mPointElementTextureCoordinatesVBO;
 
     //
@@ -447,6 +482,8 @@ struct TextureRenderPolygonVertex
     vec2f vertexOffset;
     vec2f textureCoordinate;
 
+    float planeId;
+
     float scale;
     float angle;
     float alpha;
@@ -456,6 +493,7 @@ struct TextureRenderPolygonVertex
         vec2f _centerPosition,
         vec2f _vertexOffset,
         vec2f _textureCoordinate,
+        float _planeId,
         float _scale,
         float _angle,
         float _alpha,
@@ -463,6 +501,7 @@ struct TextureRenderPolygonVertex
         : centerPosition(_centerPosition)
         , vertexOffset(_vertexOffset)
         , textureCoordinate(_textureCoordinate)
+        , planeId(_planeId)
         , scale(_scale)
         , angle(_angle)
         , alpha(_alpha)
@@ -471,24 +510,22 @@ struct TextureRenderPolygonVertex
 };
 #pragma pack(pop)
 
-    struct GenericTextureConnectedComponentData
+    struct GenericTexturePlaneData
     {
         std::vector<TextureRenderPolygonVertex> VertexBuffer;
     };
 
-    std::vector<GenericTextureConnectedComponentData> mGenericTextureConnectedComponents;
-    size_t mGenericTextureMaxVertexBufferSize;
-    size_t mGenericTextureAllocatedVertexBufferSize;
+    std::vector<GenericTexturePlaneData> mGenericTexturePlanes;
+    size_t mGenericTextureMaxPlaneVertexBufferSize;
+    size_t mGenericTextureRenderPolygonVertexAllocatedSize;
 
     GameOpenGLVBO mGenericTextureRenderPolygonVertexVBO;
 
 
 
     //
-    // Connected component data
+    // Elements
     //
-
-    std::vector<std::size_t> mConnectedComponentsMaxSizes;
 
 #pragma pack(push)
     struct PointElement
@@ -530,63 +567,20 @@ struct TextureRenderPolygonVertex
     };
 #pragma pack(pop)
 
+    std::vector<PointElement> mPointElementBuffer;
+    GameOpenGLVBO mPointElementVBO;
 
-    //
-    // All the data that belongs to a single connected component
-    //
+    std::vector<SpringElement> mSpringElementBuffer;
+    GameOpenGLVBO mSpringElementVBO;
 
-    struct ConnectedComponentData
-    {
-        size_t pointElementCount;
-        size_t pointElementMaxCount;
-        std::unique_ptr<PointElement[]> pointElementBuffer;
-        GameOpenGLVBO pointElementVBO;
+    std::vector<RopeElement> mRopeElementBuffer;
+    GameOpenGLVBO mRopeElementVBO;
 
-        size_t springElementCount;
-        size_t springElementMaxCount;
-        std::unique_ptr<SpringElement[]> springElementBuffer;
-        GameOpenGLVBO springElementVBO;
+    std::vector<TriangleElement> mTriangleElementBuffer;
+    GameOpenGLVBO mTriangleElementVBO;
 
-        size_t ropeElementCount;
-        size_t ropeElementMaxCount;
-        std::unique_ptr<RopeElement[]> ropeElementBuffer;
-        GameOpenGLVBO ropeElementVBO;
-
-        size_t triangleElementCount;
-        size_t triangleElementMaxCount;
-        std::unique_ptr<TriangleElement[]> triangleElementBuffer;
-        GameOpenGLVBO triangleElementVBO;
-
-        size_t stressedSpringElementCount;
-        size_t stressedSpringElementMaxCount;
-        std::unique_ptr<StressedSpringElement[]> stressedSpringElementBuffer;
-        GameOpenGLVBO stressedSpringElementVBO;
-
-        ConnectedComponentData()
-            : pointElementCount(0)
-            , pointElementMaxCount(0)
-            , pointElementBuffer()
-            , pointElementVBO()
-            , springElementCount(0)
-            , springElementMaxCount(0)
-            , springElementBuffer()
-            , springElementVBO()
-            , ropeElementCount(0)
-            , ropeElementMaxCount(0)
-            , ropeElementBuffer()
-            , ropeElementVBO()
-            , triangleElementCount(0)
-            , triangleElementMaxCount(0)
-            , triangleElementBuffer()
-            , triangleElementVBO()
-            , stressedSpringElementCount(0)
-            , stressedSpringElementMaxCount(0)
-            , stressedSpringElementBuffer()
-            , stressedSpringElementVBO()
-        {}
-    };
-
-    std::vector<ConnectedComponentData> mConnectedComponents;
+    std::vector<StressedSpringElement> mStressedSpringElementBuffer;
+    GameOpenGLVBO mStressedSpringElementVBO;
 
 
     //
@@ -602,7 +596,7 @@ struct TextureRenderPolygonVertex
     // Vectors
     //
 
-    std::vector<vec2f> mVectorArrowPointPositionBuffer;
+    std::vector<vec3f> mVectorArrowPointPositionBuffer;
     GameOpenGLVBO mVectorArrowPointPositionVBO;
     vec4f mVectorArrowColor;
 };

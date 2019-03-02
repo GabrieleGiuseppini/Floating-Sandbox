@@ -19,8 +19,6 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::Clouds;
     else if (lstr == "cross_of_light")
         return ProgramType::CrossOfLight;
-    else if (lstr == "generic_textures")
-        return ProgramType::GenericTextures;
     else if (lstr == "land")
         return ProgramType::Land;
     else if (lstr == "matte")
@@ -29,14 +27,24 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::MatteNDC;
     else if (lstr == "matte_water")
         return ProgramType::MatteWater;
+    else if (lstr == "ship_generic_textures")
+        return ProgramType::ShipGenericTextures;
+    else if (lstr == "ship_points_color")
+        return ProgramType::ShipPointsColor;
     else if (lstr == "ship_ropes")
         return ProgramType::ShipRopes;
+    else if (lstr == "ship_springs_color")
+        return ProgramType::ShipSpringsColor;
+    else if (lstr == "ship_springs_texture")
+        return ProgramType::ShipSpringsTexture;
     else if (lstr == "ship_stressed_springs")
         return ProgramType::ShipStressedSprings;
     else if (lstr == "ship_triangles_color")
         return ProgramType::ShipTrianglesColor;
     else if (lstr == "ship_triangles_texture")
         return ProgramType::ShipTrianglesTexture;
+    else if (lstr == "ship_vectors")
+        return ProgramType::ShipVectors;
     else if (lstr == "stars")
         return ProgramType::Stars;
     else if (lstr == "text_ndc")
@@ -55,8 +63,6 @@ std::string ProgramTypeToStr(ProgramType program)
         return "Clouds";
     case ProgramType::CrossOfLight:
         return "CrossOfLight";
-    case ProgramType::GenericTextures:
-        return "GenericTextures";
     case ProgramType::Land:
         return "Land";
     case ProgramType::Matte:
@@ -65,14 +71,24 @@ std::string ProgramTypeToStr(ProgramType program)
         return "MatteNDC";
     case ProgramType::MatteWater:
         return "MatteWater";
+    case ProgramType::ShipGenericTextures:
+        return "ShipGenericTextures";
+    case ProgramType::ShipPointsColor:
+        return "ShipPointsColor";
     case ProgramType::ShipRopes:
         return "ShipRopes";
+    case ProgramType::ShipSpringsColor:
+        return "ShipSpringsColor";
+    case ProgramType::ShipSpringsTexture:
+        return "ShipSpringsTexture";
     case ProgramType::ShipStressedSprings:
         return "ShipStressedSprings";
     case ProgramType::ShipTrianglesColor:
         return "ShipTrianglesColor";
     case ProgramType::ShipTrianglesTexture:
         return "ShipTrianglesTexture";
+    case ProgramType::ShipVectors:
+        return "ShipVectors";
     case ProgramType::Stars:
         return "Stars";
     case ProgramType::TextNDC:
@@ -173,8 +189,8 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::GenericTexturePackedData1;
     else if (Utils::CaseInsensitiveEquals(str, "GenericTexturePackedData2"))
         return VertexAttributeType::GenericTexturePackedData2;
-    else if (Utils::CaseInsensitiveEquals(str, "GenericTextureTextureCoordinates"))
-        return VertexAttributeType::GenericTextureTextureCoordinates;
+    else if (Utils::CaseInsensitiveEquals(str, "GenericTexturePackedData3"))
+        return VertexAttributeType::GenericTexturePackedData3;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointPosition"))
         return VertexAttributeType::ShipPointPosition;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointColor"))
@@ -183,6 +199,8 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::ShipPointLight;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointWater"))
         return VertexAttributeType::ShipPointWater;
+    else if (Utils::CaseInsensitiveEquals(str, "ShipPointPlaneId"))
+        return VertexAttributeType::ShipPointPlaneId;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointTextureCoordinates"))
         return VertexAttributeType::ShipPointTextureCoordinates;
     else
@@ -205,8 +223,8 @@ std::string VertexAttributeTypeToStr(VertexAttributeType vertexAttribute)
         return "GenericTexturePackedData1";
     case VertexAttributeType::GenericTexturePackedData2:
         return "GenericTexturePackedData2";
-    case VertexAttributeType::GenericTextureTextureCoordinates:
-        return "GenericTextureTextureCoordinates";
+    case VertexAttributeType::GenericTexturePackedData3:
+        return "GenericTexturePackedData3";
     case VertexAttributeType::ShipPointPosition:
         return "ShipPointPosition";
     case VertexAttributeType::ShipPointColor:
@@ -215,6 +233,8 @@ std::string VertexAttributeTypeToStr(VertexAttributeType vertexAttribute)
         return "ShipPointLight";
     case VertexAttributeType::ShipPointWater:
         return "ShipPointWater";
+    case VertexAttributeType::ShipPointPlaneId:
+        return "ShipPointPlaneId";
     case VertexAttributeType::ShipPointTextureCoordinates:
         return "ShipPointTextureCoordinates";
     default:

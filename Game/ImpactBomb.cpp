@@ -91,7 +91,7 @@ void ImpactBomb::Upload(
         {
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
-                GetConnectedComponentId(),
+                GetPlaneId(),
                 TextureFrameId(TextureGroupType::ImpactBomb, 0),
                 GetPosition(),
                 1.0,
@@ -109,7 +109,7 @@ void ImpactBomb::Upload(
 
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
-                GetConnectedComponentId(),
+                GetPlaneId(),
                 TextureFrameId(TextureGroupType::RcBombExplosion, mExplodingStepCounter), // Squat on RC bomb explosion
                 GetPosition(),
                 1.0f + static_cast<float>(mExplodingStepCounter) / static_cast<float>(ExplosionStepsCount),

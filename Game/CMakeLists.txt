@@ -85,7 +85,8 @@ set  (RENDER_SOURCES
 	TextureDatabase.cpp
 	TextureDatabase.h
 	TextureRenderManager.cpp
-	TextureRenderManager.h)
+	TextureRenderManager.h
+	ViewModel.h)
 
 source_group(" " FILES ${GAME_SOURCES})
 source_group("Physics" FILES ${PHYSICS_SOURCES})

@@ -27,6 +27,129 @@ TEST(FixedSizeVectorTests, PushBack)
     EXPECT_FALSE(vec.empty());
 }
 
+TEST(FixedSizeVectorTests, PushFront)
+{
+    FixedSizeVector<int, 6> vec;
+
+    vec.push_back(4);
+    vec.push_back(5);
+
+    EXPECT_EQ(2u, vec.size());
+    EXPECT_FALSE(vec.empty());
+
+    EXPECT_EQ(4, vec[0]);
+    EXPECT_EQ(5, vec[1]);
+
+    vec.push_front(6);
+
+    EXPECT_EQ(3u, vec.size());
+    EXPECT_FALSE(vec.empty());
+
+    EXPECT_EQ(6, vec[0]);
+    EXPECT_EQ(4, vec[1]);
+    EXPECT_EQ(5, vec[2]);
+}
+
+TEST(FixedSizeVectorTests, PushFront_OnEmpty)
+{
+    FixedSizeVector<int, 6> vec;
+
+    vec.push_front(6);
+
+    EXPECT_EQ(1u, vec.size());
+    EXPECT_FALSE(vec.empty());
+
+    EXPECT_EQ(6, vec[0]);
+}
+
+TEST(FixedSizeVectorTests, EmplaceBack)
+{
+    struct Elem
+    {
+        int val1;
+        float val2;
+
+        Elem()
+            : val1(0)
+            , val2(0)
+        {}
+
+        Elem(
+            int _val1,
+            float _val2)
+            : val1(_val1)
+            , val2(_val2)
+        {}
+    };
+
+    FixedSizeVector<Elem, 6> vec;
+
+    vec.emplace_back(4, 8.0f);
+
+    EXPECT_EQ(1u, vec.size());
+    EXPECT_FALSE(vec.empty());
+
+    vec.emplace_back(6, 12.0f);
+
+    EXPECT_EQ(2u, vec.size());
+    EXPECT_FALSE(vec.empty());
+
+    EXPECT_EQ(4, vec[0].val1);
+    EXPECT_EQ(8.0f, vec[0].val2);
+
+    EXPECT_EQ(6, vec[1].val1);
+    EXPECT_EQ(12.0f, vec[1].val2);
+}
+
+TEST(FixedSizeVectorTests, EmplaceFront)
+{
+    struct Elem
+    {
+        int val1;
+        float val2;
+
+        Elem()
+            : val1(0)
+            , val2(0)
+        {}
+
+        Elem(
+            int _val1,
+            float _val2)
+            : val1(_val1)
+            , val2(_val2)
+        {}
+    };
+
+    FixedSizeVector<Elem, 6> vec;
+
+    vec.emplace_back(4, 8.0f);
+    vec.emplace_back(6, 12.0f);
+
+    EXPECT_EQ(2u, vec.size());
+    EXPECT_FALSE(vec.empty());
+
+    EXPECT_EQ(4, vec[0].val1);
+    EXPECT_EQ(8.0f, vec[0].val2);
+
+    EXPECT_EQ(6, vec[1].val1);
+    EXPECT_EQ(12.0f, vec[1].val2);
+
+    vec.emplace_front(8, 16.0f);
+
+    EXPECT_EQ(3u, vec.size());
+    EXPECT_FALSE(vec.empty());
+
+    EXPECT_EQ(8, vec[0].val1);
+    EXPECT_EQ(16.0f, vec[0].val2);
+
+    EXPECT_EQ(4, vec[1].val1);
+    EXPECT_EQ(8.0f, vec[1].val2);
+
+    EXPECT_EQ(6, vec[2].val1);
+    EXPECT_EQ(12.0f, vec[2].val2);
+}
+
 TEST(FixedSizeVectorTests, IteratesElements)
 {
     FixedSizeVector<int, 6> vec;
@@ -312,6 +435,27 @@ TEST(FixedSizeVectorTests, EraseFirst_Copies_Last)
     ASSERT_EQ(2u, vec.size());
     EXPECT_EQ(1, vec[0]);
     EXPECT_EQ(2, vec[1]);
+}
+
+TEST(FixedSizeVectorTests, EraseFirst_Lambda_Copies_Middle)
+{
+    FixedSizeVector<int, 6> vec;
+
+    vec.push_back(1);
+    vec.push_back(2);
+    vec.push_back(3);
+
+    bool result = vec.erase_first(
+        [](int const & elem)
+        {
+            return elem * 4 == 8;
+        });
+
+    EXPECT_TRUE(result);
+
+    ASSERT_EQ(2u, vec.size());
+    EXPECT_EQ(1, vec[0]);
+    EXPECT_EQ(3, vec[1]);
 }
 
 TEST(FixedSizeVectorTests, Back)

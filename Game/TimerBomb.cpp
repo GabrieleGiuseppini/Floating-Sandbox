@@ -123,7 +123,6 @@ bool TimerBomb::Update(
                 mPhysicsHandler.DoBombExplosion(
                     GetPosition(),
                     static_cast<float>(mExplodingStepCounter) / static_cast<float>(ExplosionStepsCount - 1),
-                    GetConnectedComponentId(),
                     gameParameters);
 
                 // Notify explosion
@@ -164,7 +163,6 @@ bool TimerBomb::Update(
                     mPhysicsHandler.DoBombExplosion(
                         GetPosition(),
                         static_cast<float>(mExplodingStepCounter) / static_cast<float>(ExplosionStepsCount - 1),
-                        GetConnectedComponentId(),
                         gameParameters);
 
                     // Schedule next transition
@@ -252,7 +250,7 @@ void TimerBomb::Upload(
         {
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
-                GetConnectedComponentId(),
+                GetPlaneId(),
                 TextureFrameId(TextureGroupType::TimerBomb, mFuseStepCounter / FuseFramesPerFuseLengthCount),
                 GetPosition(),
                 1.0,
@@ -262,7 +260,7 @@ void TimerBomb::Upload(
 
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
-                GetConnectedComponentId(),
+                GetPlaneId(),
                 TextureFrameId(TextureGroupType::TimerBombFuse, mFuseFlameFrameIndex),
                 GetPosition(),
                 1.0,
@@ -284,7 +282,7 @@ void TimerBomb::Upload(
 
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
-                GetConnectedComponentId(),
+                GetPlaneId(),
                 TextureFrameId(TextureGroupType::TimerBomb, FuseLengthStepCount),
                 shakenPosition,
                 1.0,
@@ -301,7 +299,7 @@ void TimerBomb::Upload(
 
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
-                GetConnectedComponentId(),
+                GetPlaneId(),
                 TextureFrameId(TextureGroupType::TimerBombExplosion, mExplodingStepCounter),
                 GetPosition(),
                 1.0f + static_cast<float>(mExplodingStepCounter + 1) / static_cast<float>(ExplosionStepsCount),
@@ -316,7 +314,7 @@ void TimerBomb::Upload(
         {
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
-                GetConnectedComponentId(),
+                GetPlaneId(),
                 TextureFrameId(TextureGroupType::TimerBomb, mFuseStepCounter / FuseFramesPerFuseLengthCount),
                 GetPosition(),
                 1.0f,
@@ -326,7 +324,7 @@ void TimerBomb::Upload(
 
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
-                GetConnectedComponentId(),
+                GetPlaneId(),
                 TextureFrameId(TextureGroupType::TimerBombDefuse, mDefuseStepCounter),
                 GetPosition(),
                 1.0f,
@@ -341,7 +339,7 @@ void TimerBomb::Upload(
         {
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
-                GetConnectedComponentId(),
+                GetPlaneId(),
                 TextureFrameId(TextureGroupType::TimerBomb, mFuseStepCounter / FuseFramesPerFuseLengthCount),
                 GetPosition(),
                 1.0f,
