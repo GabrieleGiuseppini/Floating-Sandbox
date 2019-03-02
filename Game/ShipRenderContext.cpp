@@ -635,16 +635,22 @@ void ShipRenderContext::UploadPointPlaneIds(
 
 void ShipRenderContext::UploadElementTrianglesStart(size_t trianglesCount)
 {
+    // No need to clear, we'll repopulate everything
     mTriangleElementBuffer.resize(trianglesCount);
 }
 
 void ShipRenderContext::UploadElementTrianglesEnd()
 {
+    // Upload
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mTriangleElementVBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mTriangleElementBuffer.size() * sizeof(TriangleElement), mTriangleElementBuffer.data(), GL_STATIC_DRAW);
+    CheckOpenGLError();
 }
 
 void ShipRenderContext::UploadElementsStart()
 {
-    // Empty all buffers, as they will be re-populated soon
+    // Empty all buffers, as they will be completely re-populated soon
+    // (with a yet-unknown quantity of elements)
     mPointElementBuffer.clear();
     mSpringElementBuffer.clear();
     mRopeElementBuffer.clear();
@@ -670,11 +676,6 @@ void ShipRenderContext::UploadElementsEnd()
     // Ropes
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mRopeElementVBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, mRopeElementBuffer.size() * sizeof(RopeElement), mRopeElementBuffer.data(), GL_STATIC_DRAW);
-    CheckOpenGLError();
-
-    // Triangles
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mTriangleElementVBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mTriangleElementBuffer.size() * sizeof(TriangleElement), mTriangleElementBuffer.data(), GL_STATIC_DRAW);
     CheckOpenGLError();
 }
 
