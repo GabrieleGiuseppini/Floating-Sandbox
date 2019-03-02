@@ -243,6 +243,8 @@ public:
         // Connected component and plane ID
         , mConnectedComponentIdBuffer(mBufferElementCount, shipPointCount, NoneConnectedComponentId)
         , mPlaneIdBuffer(mBufferElementCount, shipPointCount, NonePlaneId)
+        , mIsPlaneIdBufferNonEphemeralDirty(true)
+        , mIsPlaneIdBufferEphemeralDirty(true)
         , mCurrentConnectivityVisitSequenceNumberBuffer(mBufferElementCount, shipPointCount, NoneVisitSequenceNumber)
         // Pinning
         , mIsPinnedBuffer(mBufferElementCount, shipPointCount, false)
@@ -256,7 +258,7 @@ public:
         //////////////////////////////////
         , mShipPointCount(shipPointCount)
         , mEphemeralPointCount(GameParameters::MaxEphemeralParticles)
-        , mAllPointCount(shipPointCount + mEphemeralPointCount)
+        , mAllPointCount(mShipPointCount + mEphemeralPointCount)
         , mParentWorld(parentWorld)
         , mGameEventHandler(std::move(gameEventHandler))
         , mDestroyHandler()
@@ -813,6 +815,11 @@ public:
         mPlaneIdBuffer[pointElementIndex] = planeId;
     }
 
+    void MarkPlaneIdBufferNonEphemeralAsDirty()
+    {
+        mIsPlaneIdBufferNonEphemeralDirty = true;
+    }
+
     VisitSequenceNumber GetCurrentConnectivityVisitSequenceNumber(ElementIndex pointElementIndex) const
     {
         return mCurrentConnectivityVisitSequenceNumberBuffer[pointElementIndex];
@@ -1000,6 +1007,8 @@ private:
 
     Buffer<ConnectedComponentId> mConnectedComponentIdBuffer;
     Buffer<PlaneId> mPlaneIdBuffer;
+    bool mutable mIsPlaneIdBufferNonEphemeralDirty;
+    bool mutable mIsPlaneIdBufferEphemeralDirty;
     Buffer<VisitSequenceNumber> mCurrentConnectivityVisitSequenceNumberBuffer;
 
     //
@@ -1028,7 +1037,7 @@ private:
     // Count of ephemeral points
     ElementCount const mEphemeralPointCount;
 
-    // Count of all points
+    // Count of all points (sum of two above)
     ElementCount const mAllPointCount;
 
     World & mParentWorld;

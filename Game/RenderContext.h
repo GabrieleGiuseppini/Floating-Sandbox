@@ -556,12 +556,16 @@ public:
     void UploadShipPointPlaneIds(
         ShipId shipId,
         PlaneId const * planeId,
+        size_t start,
+        size_t count,
         PlaneId maxMaxPlaneId)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
         mShips[shipId]->UploadPointPlaneIds(
             planeId,
+            start,
+            count,
             maxMaxPlaneId);
     }
 

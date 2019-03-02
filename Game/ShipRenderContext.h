@@ -136,6 +136,8 @@ public:
 
     void UploadPointPlaneIds(
         PlaneId const * planeId,
+        size_t start,
+        size_t count,
         PlaneId maxMaxPlaneId);
 
 

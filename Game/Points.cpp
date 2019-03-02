@@ -131,6 +131,7 @@ void Points::CreateEphemeralParticleAirBubble(
 
     mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
     mPlaneIdBuffer[pointIndex] = planeId;
+    mIsPlaneIdBufferEphemeralDirty = true;
 
     assert(false == mIsPinnedBuffer[pointIndex]);
 
@@ -182,6 +183,7 @@ void Points::CreateEphemeralParticleDebris(
 
     mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
     mPlaneIdBuffer[pointIndex] = planeId;
+    mIsPlaneIdBufferEphemeralDirty = true;
 
     assert(false == mIsPinnedBuffer[pointIndex]);
 
@@ -234,6 +236,7 @@ void Points::CreateEphemeralParticleSparkle(
 
     mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
     mPlaneIdBuffer[pointIndex] = planeId;
+    mIsPlaneIdBufferEphemeralDirty = true;
 
     assert(false == mIsPinnedBuffer[pointIndex]);
 
@@ -424,10 +427,48 @@ void Points::UploadPlaneIds(
     PlaneId maxMaxPlaneId,
     Render::RenderContext & renderContext) const
 {
-    renderContext.UploadShipPointPlaneIds(
-        shipId,
-        mPlaneIdBuffer.data(),
-        maxMaxPlaneId);
+    if (mIsPlaneIdBufferNonEphemeralDirty)
+    {
+        if (mIsPlaneIdBufferEphemeralDirty)
+        {
+            // Whole
+
+            renderContext.UploadShipPointPlaneIds(
+                shipId,
+                mPlaneIdBuffer.data(),
+                0,
+                mAllPointCount,
+                maxMaxPlaneId);
+
+            mIsPlaneIdBufferEphemeralDirty = false;
+        }
+        else
+        {
+            // Just non-ephemeral portion
+
+            renderContext.UploadShipPointPlaneIds(
+                shipId,
+                mPlaneIdBuffer.data(),
+                0,
+                mShipPointCount,
+                maxMaxPlaneId);
+        }
+
+        mIsPlaneIdBufferNonEphemeralDirty = false;
+    }
+    else if (mIsPlaneIdBufferEphemeralDirty)
+    {
+        // Just ephemeral portion
+
+        renderContext.UploadShipPointPlaneIds(
+            shipId,
+            &(mPlaneIdBuffer.data()[mShipPointCount]),
+            mShipPointCount,
+            mEphemeralPointCount,
+            maxMaxPlaneId);
+
+        mIsPlaneIdBufferEphemeralDirty = false;
+    }
 }
 
 void Points::UploadMutableAttributes(

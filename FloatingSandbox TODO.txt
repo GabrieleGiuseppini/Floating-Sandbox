@@ -503,11 +503,8 @@ Render:
 
 	= Z buffer: (*)
 		+ Rationale: more connected components => slower (multiple batches); try to draw one single batch then, using Z buffer and depth test 
-		- Spec:
-			- TODO: incorporate in this:
-				- Might not need to sort generic textures if we upload bombs with plane ID of attached spring
-					- Does not work for bubbles though, but might be irrelevant
-			- Assign Z based on cousin of connected component ID (named "Plane ID", uint32_t)
+		+ Spec:
+			+ Assign Z based on cousin of connected component ID (named "Plane ID", uint32_t)
 				+ All points have PlaneId
 					+ Can we revert ShipId and ConnectedComponentId to start from zero and having None=max? 
 						+ Yes, no one used NoneConnectedComponentId
@@ -540,8 +537,8 @@ Render:
 						+ New "IsRope" property of Triangle, pop'd by ShipBuilder; new buffer
 				+ Light diffusion algo follows PlaneId's, instead of ConnectedComponentId's, as it's really about planes
 				+ We assign Z after orthomatrix - in NDC - and thus positive is near
-			- We only enable Z test and writing to Z buffer at RenderContext before doing ships
-				- And later, if we move GenericTexture to RenderContext, also when we do generic textures
+			+ We only enable Z test and writing to Z buffer at RenderContext before doing ships
+				+ And later, if we move GenericTexture to RenderContext, also when we do generic textures
 		+ Figure out range of Z:
 			+ World: -1000 -> -1  ==> NDC: +1 -> -1
 			+ We assign Z after orthomatrix - in NDC - and thus positive is near
@@ -549,7 +546,7 @@ Render:
 			+ When given to fragment shader it's [0,+1], but we don't care anymore at this moment, as we calc Z in vertex shader!
 		+ Mapping of <ShipId, PlaneId> to Z in NDC:
 			+ Normal: ShipId=0 and PlaneId=0 are furthest
-		= Plan:
+		+ Plan:
 			+ Branch
 			+ Preliminaries:
 				+ Test explosions without connected component ID constraint; if ok, eradicate connected component IDs
@@ -760,14 +757,13 @@ Render:
 			+ Step 11: vectors
 				+ Add PlaneID to vectors
 				+ Test & commit
-			- Step 12: ephemeral points
-				- Verify first ephemeral points are broken with constant planeID=1, by using ship cut in half
-				  and ephemerals from either side
-					- Really? shouldn't this be all done for free by now?
-				- EphemeralPoints: is now own pass that uses plane IDs as input for Z's in shader
-				- Verify with test again
-				- Commit
-							
+			+ Step 12: ephemeral points
+				+ EphemeralPoints: is now own pass that uses plane IDs as input for Z's in shader
+				+ When eph particles are created (e.g. at Points::CreateEphemeralParticleDebris()), we write to the planeId buffer but
+				  don't re-upload it; should mark plane ID buffer as dirty, but at two different segments, and then blindly
+				  invoke UploadPlaneIdsIfDirty() from ship
+				+ Test: eph points from multiple parts
+				+ Commit							
 		- Tests:
 			- Do perf analysis to catch low-hanging fruit
 			- Run in Debug
@@ -782,6 +778,7 @@ Render:
 				  as isAtOwner==false
 			- Light spread on surface changes abruptly when piece is cut; see if it makes sense for diffuse
 			  to only light points whose plane ID is behind lamp (thus planeID>=lampPlaneID)
+			  
 			- (TODO: might not be agood idea, see below) Ship:
 				+ Theme: Points becomes passive re: need to upload its stuff
 				+ Replace Ship::mAreElementsDirty with mIsStructureDirty

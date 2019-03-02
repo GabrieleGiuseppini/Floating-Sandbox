@@ -610,11 +610,13 @@ void ShipRenderContext::UploadPoints(
 
 void ShipRenderContext::UploadPointPlaneIds(
     PlaneId const * planeId,
+    size_t start,
+    size_t count,
     PlaneId maxMaxPlaneId)
 {
     // Upload plane IDs
     glBindBuffer(GL_ARRAY_BUFFER, *mPointPlaneIdVBO);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, mPointCount * sizeof(PlaneId), planeId);
+    glBufferSubData(GL_ARRAY_BUFFER, start * sizeof(PlaneId), count * sizeof(PlaneId), planeId);
     CheckOpenGLError();
 
     // Check if the max ever plane ID has changed

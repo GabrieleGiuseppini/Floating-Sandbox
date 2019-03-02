@@ -546,13 +546,10 @@ void Ship::Render(
         mId,
         renderContext);
 
-    if (mIsStructureDirty)
-    {
-        mPoints.UploadPlaneIds(
-            mId,
-            mMaxMaxPlaneId,
-            renderContext);
-    }
+    mPoints.UploadPlaneIds(
+        mId,
+        mMaxMaxPlaneId,
+        renderContext);
 
 
     //
@@ -1702,8 +1699,12 @@ void Ship::RunConnectivityVisit(VisitSequenceNumber currentVisitSequenceNumber)
     }
 
 #ifdef RENDER_FLOOD_DISTANCE
+    // Remember colors are dirty
     mPoints.MarkColorBufferAsDirty();
 #endif
+
+    // Remember non-ephemeral portion of plane IDs is dirty
+    mPoints.MarkPlaneIdBufferNonEphemeralAsDirty();
 }
 
 void Ship::DestroyConnectedTriangles(ElementIndex pointElementIndex)
