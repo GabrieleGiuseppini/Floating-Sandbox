@@ -1492,7 +1492,7 @@ void Ship::UpdateElectricalConnectivity(VisitSequenceNumber currentVisitSequence
 void Ship::DiffuseLight(GameParameters const & gameParameters)
 {
     //
-    // Diffuse light from each lamp to all points on the same plane ID,
+    // Diffuse light from each lamp to all points on the same or lower plane ID,
     // inverse-proportionally to the nth power of the distance, where n is the spread
     //
 
@@ -1523,7 +1523,7 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
         else
         {
             //
-            // Spread light to all the points in the same plane ID
+            // Spread light to all the points in the same or lower plane ID
             //
 
             float const effectiveExponent =
@@ -1536,7 +1536,7 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
 
             for (auto pointIndex : mPoints)
             {
-                if (mPoints.GetPlaneId(pointIndex) == lampPlaneId)
+                if (mPoints.GetPlaneId(pointIndex) <= lampPlaneId)
                 {
                     float const squareDistance = (mPoints.GetPosition(pointIndex) - lampPosition).squareLength();
 

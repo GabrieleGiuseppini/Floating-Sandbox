@@ -776,8 +776,8 @@ Render:
 				+ Might be best done @ insert
 				+ ConnectivityVisit::population of triangle indices: cut short connected triangles' visit as soon
 				  as isAtOwner==false
-			- Light spread on surface changes abruptly when piece is cut; see if it makes sense for diffuse
-			  to only light points whose plane ID is behind lamp (thus planeID>=lampPlaneID)
+			+ Light spread on surface changes abruptly when piece is cut; see if it makes sense for diffuse
+			  to only light points whose plane ID is behind lamp (thus planeID<=lampPlaneID)
 			  
 			- (TODO: might not be agood idea, see below) Ship:
 				+ Theme: Points becomes passive re: need to upload its stuff
