@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include <cassert>
 #include <filesystem>
 #include <vector>
 
@@ -28,20 +29,26 @@ public:
 
     void AddShipLoadDirectory(std::filesystem::path shipLoadDirectory)
     {
-        // Check if we have one already
-        for (auto it = mShipLoadDirectories.begin(); it != mShipLoadDirectories.end(); ++it)
+        // We always have the default ship directory in the first position
+        assert(mShipLoadDirectories.size() >= 1);
+
+        if (shipLoadDirectory != mShipLoadDirectories[0])
         {
-            if (*it == shipLoadDirectory)
+            // Check if we have one already
+            for (auto it = mShipLoadDirectories.begin(); it != mShipLoadDirectories.end(); ++it)
             {
-                // Move it to first place
-                std::rotate(mShipLoadDirectories.begin(), it, it + 1);
+                if (*it == shipLoadDirectory)
+                {
+                    // Move it to second place
+                    std::rotate(mShipLoadDirectories.begin() + 1, it, it + 1);
 
-                return;
+                    return;
+                }
             }
-        }
 
-        // Add to front
-        mShipLoadDirectories.insert(mShipLoadDirectories.begin(), shipLoadDirectory);
+            // Add to second place
+            mShipLoadDirectories.insert(mShipLoadDirectories.begin() + 1, shipLoadDirectory);
+        }
     }
 
 private:

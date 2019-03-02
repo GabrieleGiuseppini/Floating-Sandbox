@@ -38,6 +38,7 @@ private:
     void OnShipFileSelected(fsShipFileSelectedEvent & event);
     void OnShipFileChosen(fsShipFileChosenEvent & event);
     void OnRecentDirectorySelected(wxCommandEvent & event);
+    void OnHomeDirButtonClicked(wxCommandEvent & event);
     void OnLoadButton(wxCommandEvent & event);
     void OnCancelButton(wxCommandEvent & event);
     void OnCloseWindow(wxCloseEvent & event);

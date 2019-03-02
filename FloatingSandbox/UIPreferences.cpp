@@ -31,8 +31,6 @@ UIPreferences::UIPreferences()
     // Load preferences
     //
 
-    std::vector<std::filesystem::path> newShipLoadDirectories;
-
     try
     {
         auto preferencesRootValue = Utils::ParseJSONFile(
@@ -56,13 +54,16 @@ UIPreferences::UIPreferences()
                     if (shipLoadDirectory.is<std::string>())
                     {
                         auto shipLoadDirectoryPath = std::filesystem::path(shipLoadDirectory.get<std::string>());
+
+                        // Make sure dir still exists, and it's not the default one, and it's not in the vector already
                         if (std::filesystem::exists(shipLoadDirectoryPath)
-                            && newShipLoadDirectories.end() == std::find(
-                                newShipLoadDirectories.begin(),
-                                newShipLoadDirectories.end(),
+                            && shipLoadDirectoryPath != defaultShipLoadDirectory
+                            && mShipLoadDirectories.end() == std::find(
+                                mShipLoadDirectories.begin(),
+                                mShipLoadDirectories.end(),
                                 shipLoadDirectoryPath))
                         {
-                            newShipLoadDirectories.push_back(shipLoadDirectoryPath);
+                            mShipLoadDirectories.push_back(shipLoadDirectoryPath);
                         }
                     }
                 }
@@ -73,17 +74,6 @@ UIPreferences::UIPreferences()
     {
         // Ignore
     }
-
-    // Make sure default is in, at leat at the end
-    if (newShipLoadDirectories.end() == std::find(
-        newShipLoadDirectories.begin(),
-        newShipLoadDirectories.end(),
-        defaultShipLoadDirectory))
-    {
-        newShipLoadDirectories.push_back(defaultShipLoadDirectory);
-    }
-
-    mShipLoadDirectories = newShipLoadDirectories;
 }
 
 UIPreferences::~UIPreferences()

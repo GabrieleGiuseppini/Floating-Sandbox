@@ -38,14 +38,14 @@ ShipLoadDialog::ShipLoadDialog(
 
 
     //
-    // Directory and preview
+    // Directory tree and preview
     //
 
     wxBoxSizer * hSizer1 = new wxBoxSizer(wxHORIZONTAL);
 
 
 
-    // Directory
+    // Directory tree
 
     assert(!mUIPreferences->GetShipLoadDirectories().empty());
 
@@ -82,11 +82,11 @@ ShipLoadDialog::ShipLoadDialog(
 
 
     //
-    // Recent directories combo
+    // Recent directories combo and home button
     //
 
-    // |  | Label |  |
-    // |  | Combo |  |
+    // |  | Label      |  |
+    // |  | Combo Home |  |
 
     wxBoxSizer * hSizer2 = new wxBoxSizer(wxHORIZONTAL);
     hSizer2->AddSpacer(10);
@@ -96,21 +96,37 @@ ShipLoadDialog::ShipLoadDialog(
     wxStaticText * recentDirsLabel = new wxStaticText(this, wxID_ANY, "Recent directories:");
     vSizer2->Add(recentDirsLabel, 0, wxALIGN_LEFT);
 
-    wxArrayString comboChoices;
+    wxBoxSizer * hComboSizer = new wxBoxSizer(wxHORIZONTAL);
+
+    // Combo
+
+    wxArrayString emptyComboChoices;
     mRecentDirectoriesComboBox = new wxComboBox(
         this,
         wxID_ANY,
         "",
         wxDefaultPosition,
         wxDefaultSize,
-        comboChoices,
+        emptyComboChoices,
         wxCB_DROPDOWN | wxCB_READONLY);
     mRecentDirectoriesComboBox->Bind(wxEVT_COMBOBOX, &ShipLoadDialog::OnRecentDirectorySelected, this);
-    vSizer2->Add(mRecentDirectoriesComboBox, 0, wxEXPAND);
+    hComboSizer->Add(mRecentDirectoriesComboBox, 1, wxEXPAND);
+
+    hComboSizer->AddSpacer(4);
+
+    // HomeDir button
+
+    wxButton * homeDirButton = new wxButton(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(24, -1));
+    wxBitmap homeBitmap(resourceLoader.GetIconFilepath("home").string(), wxBITMAP_TYPE_PNG);
+    homeDirButton->SetBitmap(homeBitmap);
+    homeDirButton->Bind(wxEVT_BUTTON, (wxObjectEventFunction)&ShipLoadDialog::OnHomeDirButtonClicked, this);
+    hComboSizer->Add(homeDirButton, 0, 0);
+
+    vSizer2->Add(hComboSizer, 0, wxEXPAND);
 
     hSizer2->Add(vSizer2, 1, 0);
 
-    hSizer2->AddSpacer(10);
+    hSizer2->AddSpacer(20);
 
 
 
@@ -189,10 +205,9 @@ void ShipLoadDialog::Open()
 
                     if (isFirst)
                     {
-                        // Set in dir tree
+                        // Set this one everywhere
                         mDirCtrl->SetPath(dir.string());
-
-                        // Set in preview
+                        mRecentDirectoriesComboBox->SetValue(dir.string());
                         mShipPreviewPanel->SetDirectory(dir.string());
 
                         isFirst = false;
@@ -244,6 +259,17 @@ void ShipLoadDialog::OnShipFileChosen(fsShipFileChosenEvent & event)
 
 void ShipLoadDialog::OnRecentDirectorySelected(wxCommandEvent & /*event*/)
 {
+    mDirCtrl->SetPath(mRecentDirectoriesComboBox->GetValue()); // Will send its own event
+}
+
+void ShipLoadDialog::OnHomeDirButtonClicked(wxCommandEvent & /*event*/)
+{
+    assert(mUIPreferences->GetShipLoadDirectories().size() >= 1);
+
+    // Change combo
+    mRecentDirectoriesComboBox->Select(0);
+
+    // Change dir tree
     mDirCtrl->SetPath(mRecentDirectoriesComboBox->GetValue()); // Will send its own event
 }
 
