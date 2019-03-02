@@ -227,20 +227,6 @@ public:
         return mEndpointsBuffer[springElementIndex].PointBIndex;
     }
 
-    // TODO: NUKE
-    ////ElementIndex GetOtherEndpointIndex(
-    ////    ElementIndex springElementIndex,
-    ////    ElementIndex pointIndex) const
-    ////{
-    ////    ElementIndex otherEndpointIndex = mEndpointsBuffer[springElementIndex].PointBIndex;
-    ////    if (otherEndpointIndex == pointIndex)
-    ////    {
-    ////        otherEndpointIndex = mEndpointsBuffer[springElementIndex].PointAIndex;
-    ////    }
-
-    ////    return otherEndpointIndex;
-    ////}
-
     // Returns +1.0 if the spring is directed outward from the specified point;
     // otherwise, -1.0.
     float GetSpringDirectionFrom(

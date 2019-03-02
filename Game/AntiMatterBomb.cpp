@@ -114,7 +114,8 @@ bool AntiMatterBomb::Update(
 
                 // Detach self (or else bomb will move along with ship performing
                 // its implosion)
-                DetachIfAttached();
+                // TODOTEST
+                //DetachIfAttached();
 
                 // Invoke handler
                 mPhysicsHandler.DoAntiMatterBombImplosion(

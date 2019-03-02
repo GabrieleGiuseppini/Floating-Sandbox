@@ -52,7 +52,7 @@ void BlastForceField::Apply(
     GameParameters const & gameParameters) const
 {
     //
-    // Go through allpoints and, for each point in radius:
+    // Go through all points and, for each point in radius:
     // - Keep non-ephemeral point that is closest to blast position; we'll Destroy() it later
     //   (if this is the fist frame of the blast sequence)
     // - Flip over the point outside of the radius
@@ -72,7 +72,7 @@ void BlastForceField::Apply(
         if (squarePointDistance < squareBlastRadius)
         {
             // Check whether this point is the closest, non-deleted point
-            //  Wee don't want to waste destroy's on already-deleted points
+            // (we don't want to waste destroy's on already-deleted points)
             if (squarePointDistance < closestPointSquareDistance
                 && !points.IsDeleted(pointIndex))
             {

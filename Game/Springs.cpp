@@ -235,8 +235,10 @@ bool Springs::UpdateStrains(
     // Visit all springs
     for (ElementIndex s : *this)
     {
-        // Avoid breaking deleted springs
-        if (!mIsDeletedBuffer[s])
+        // Avoid breaking deleted springs and springs with attached bombs
+        // (we want to avoid orphanizing bombs)
+        if (!mIsDeletedBuffer[s]
+            && !mIsBombAttachedBuffer[s])
         {
             // Calculate strain
             float dx = (points.GetPosition(mEndpointsBuffer[s].PointAIndex) - points.GetPosition(mEndpointsBuffer[s].PointBIndex)).length();
