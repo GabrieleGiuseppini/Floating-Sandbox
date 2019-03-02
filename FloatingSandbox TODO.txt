@@ -150,26 +150,20 @@ Render:
 		+ Change version
 		+ Create "z_buffer" branch
 		+ Zbuffer (*)
-
 		+ See if can avoid freezing (so, deleting) springs to which we have bombs attached
 			+ Don't destroy spring if it has a bomb attached, at:
 				+ StressedSprings break 
 			+ Test L'n'F':
 				+ 3 Bombs
 				+ Anti-Matter bomb (should fall at some point)
-
 		+ ShipLoadDialog: make sure default Ships directory is always in recent dirs, first
 			+ Test w/empty preferences
 			+ Also add Home button
-		
-		+ Fix bug with cross-of-light spawning underwater
+		+ Fix bug with cross-of-light spawning underwater		
+		+ Fix sailing ship - cut sail in texture (but not in psd)
+		+ Fix Titanic's jagged sides
 
 		- Tooltips (*)
-
-		- Fix sailing ship - cut sail in texture (but not in psd)
-
-		- Make Titanic default ship
-			- ...and see if funnels have jagged sides
 
 		- Take new ships from 02/09
 			+ Also Kiko's ready ships
@@ -179,7 +173,7 @@ Render:
 			- Try one single setting affecting both radius and quantity of water
 
 		- Make ropes less crazy when they get wet
-			- Test: base high, slice rightmost tip
+			- Test: base tall, slice rightmost tip
 			- Lower water intake adjust seems to help: do we have it per-material?
 
 		- Add more cloth colors
@@ -194,20 +188,19 @@ Render:
 		- Interior layer (*)
 
 		+ ConnectedSprings/OtherEndpoint Optimization (*)
+
 		- Increase # of ephemeral particles
 			- And thus lower water intake threshold for air bubbles
-
-		- Ships:
-			- Romanorum Imperatrix
-			- See sinking_feeling's capsizing ship issue
 
 	- 1.10.0
 		- Spring and NonSpring force separation optimization (*)
 		- Batisphere with pumps and propulsion (*)
 			- Switches (*)
+			- Flood doors (*)
 			- Pumps (*)
 			- Propulsion (*)
-			- Batisphere
+			- Batisphere ship
+		- Electrical layer view (*)
 		- Smoke (*)
 		- Settings Manager (*)
 

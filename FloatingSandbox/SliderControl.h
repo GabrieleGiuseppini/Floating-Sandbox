@@ -10,7 +10,6 @@
 #include <wx/bitmap.h>
 #include <wx/slider.h>
 #include <wx/textctrl.h>
-#include <wx/tooltip.h>
 #include <wx/wx.h>
 
 #include <functional>
