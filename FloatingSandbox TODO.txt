@@ -736,8 +736,8 @@ Render:
 				+ ConnectivityVisit: redo visit from L to R and thus simplify ortho matrix
 				+ Remove commented-out connectivity visit
 				+ Commit
-			= Step 10: generic textures
-				= GenericTextures: is now own pass that uses own plane IDs as input for Z's in shader
+			+ Step 10: generic textures
+				+ GenericTextures: is now own pass that uses own plane IDs as input for Z's in shader
 					+ Upload plane IDs instead of conn comp IDs
 						+ Fix at all calls from:
 							+ Bombs
@@ -747,14 +747,16 @@ Render:
 					+ Fix grow problem at ShipRenderContext
 					+ For now keep doing per-plane partitioning of textures for depth-sorting; we'll try alternatives later
 					+ Pass PlaneID into gen tex shader (which must NOT take point's vertex attrib)
-					- Try without padding
-				- Test
-					- Gen textures are correctly covered by things (ropes, triangles, gen textures) in nearer plane, 
+					+ Try without padding?
+					+ That TODO for moving allocation of vertex buffer
+						+ And rename of member: mGenericTextureRenderPolygonVertexAllocatedSize
+				+ Test
+					+ Gen textures are correctly covered by things (ropes, triangles, gen textures) in nearer plane, 
 					  and correctly cover things (ropes, triangles, gen textures) in further plane
 					+ Test bombs - different planes
-					- Test pinned points - different planes
-					- Test eph particles - different planes
-				- Commit
+					+ Test pinned points - different planes
+					+ Test eph particles - different planes
+				+ Commit
 			- Step 11: vectors
 				- Add PlaneID to vectors
 					- Actually, remove position upload: bind to same positions (and plane ID) of points

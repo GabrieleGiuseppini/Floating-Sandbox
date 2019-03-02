@@ -359,7 +359,7 @@ public:
             lightSensitivity);
 
         // Update max size among all planes
-        mGenericTextureMaxVertexBufferSize = std::max(mGenericTextureMaxVertexBufferSize, vertexBuffer.size());
+        mGenericTextureMaxPlaneVertexBufferSize = std::max(mGenericTextureMaxPlaneVertexBufferSize, vertexBuffer.size());
     }
 
 
@@ -412,7 +412,7 @@ private:
 
     void RenderStressedSpringElements();
 
-    void RenderGenericTextures(GenericTexturePlaneData const & planeData);
+    void RenderGenericTextures();
 
     void RenderEphemeralPoints();
 
@@ -486,8 +486,6 @@ struct TextureRenderPolygonVertex
     float alpha;
     float ambientLightSensitivity;
 
-    float PAD;
-
     TextureRenderPolygonVertex(
         vec2f _centerPosition,
         vec2f _vertexOffset,
@@ -505,7 +503,6 @@ struct TextureRenderPolygonVertex
         , angle(_angle)
         , alpha(_alpha)
         , ambientLightSensitivity(_ambientLightSensitivity)
-        , PAD(0.0f)
     {}
 };
 #pragma pack(pop)
@@ -516,8 +513,8 @@ struct TextureRenderPolygonVertex
     };
 
     std::vector<GenericTexturePlaneData> mGenericTexturePlanes;
-    size_t mGenericTextureMaxVertexBufferSize;
-    size_t mGenericTextureAllocatedVertexBufferSize;
+    size_t mGenericTextureMaxPlaneVertexBufferSize;
+    size_t mGenericTextureRenderPolygonVertexAllocatedSize;
 
     GameOpenGLVBO mGenericTextureRenderPolygonVertexVBO;
 

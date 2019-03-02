@@ -60,8 +60,8 @@ ShipRenderContext::ShipRenderContext(
     , mTextureAtlasOpenGLHandle(textureAtlasOpenGLHandle)
     , mTextureAtlasMetadata(textureAtlasMetadata)
     , mGenericTexturePlanes()
-    , mGenericTextureMaxVertexBufferSize(0)
-    , mGenericTextureAllocatedVertexBufferSize(0)
+    , mGenericTextureMaxPlaneVertexBufferSize(0)
+    , mGenericTextureRenderPolygonVertexAllocatedSize(0)
     , mGenericTextureRenderPolygonVertexVBO()
     // Elements
     , mPointElementBuffer()
@@ -217,10 +217,10 @@ ShipRenderContext::ShipRenderContext(
     CheckOpenGLError();
 
     // Describe vertex buffer
-    static_assert(sizeof(TextureRenderPolygonVertex) == 4 * 3 * sizeof(float));
+    static_assert(sizeof(TextureRenderPolygonVertex) == (4 + 4 + 3) * sizeof(float));
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTexturePackedData1), 4, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)0);
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTexturePackedData2), 4, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)((2 + 2) * sizeof(float)));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTexturePackedData3), 4, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)((2 + 2 + 2 + 2) * sizeof(float)));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTexturePackedData2), 4, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)((4) * sizeof(float)));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTexturePackedData3), 3, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)((4 + 4) * sizeof(float)));
     CheckOpenGLError();
 
 
@@ -557,7 +557,7 @@ void ShipRenderContext::RenderStart()
 
     mGenericTexturePlanes.clear();
     mGenericTexturePlanes.resize(mMaxMaxPlaneId + 1);
-    mGenericTextureMaxVertexBufferSize = 0;
+    mGenericTextureMaxPlaneVertexBufferSize = 0;
 }
 
 void ShipRenderContext::UploadPointImmutableGraphicalAttributes(
@@ -869,13 +869,10 @@ void ShipRenderContext::RenderEnd()
 
 
     //
-    // Draw Generic textures, separately for each plane
+    // Draw Generic textures
     //
 
-    for (size_t p = 0; p < mGenericTexturePlanes.size(); ++p)
-    {
-        RenderGenericTextures(mGenericTexturePlanes[p]);
-    }
+    RenderGenericTextures();
 
 
 
@@ -1023,44 +1020,62 @@ void ShipRenderContext::RenderStressedSpringElements()
     }
 }
 
-void ShipRenderContext::RenderGenericTextures(GenericTexturePlaneData const & plane)
+void ShipRenderContext::RenderGenericTextures()
 {
-    if (!plane.VertexBuffer.empty())
+    if (mGenericTextureMaxPlaneVertexBufferSize > 0)
     {
-        //
-        // Upload vertex buffer
-        //
-
+        // Bind VBO
         glBindBuffer(GL_ARRAY_BUFFER, *mGenericTextureRenderPolygonVertexVBO);
 
-        // Allocate vertex buffer, if needed
-        if (mGenericTextureAllocatedVertexBufferSize != mGenericTextureMaxVertexBufferSize)
+        // (Re-)Allocate vertex buffer, if needed
+        if (mGenericTextureRenderPolygonVertexAllocatedSize != mGenericTextureMaxPlaneVertexBufferSize)
         {
-            glBufferData(GL_ARRAY_BUFFER, mGenericTextureMaxVertexBufferSize * sizeof(TextureRenderPolygonVertex), nullptr, GL_DYNAMIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, mGenericTextureMaxPlaneVertexBufferSize * sizeof(TextureRenderPolygonVertex), nullptr, GL_DYNAMIC_DRAW);
             CheckOpenGLError();
 
-            mGenericTextureAllocatedVertexBufferSize = mGenericTextureMaxVertexBufferSize;
+            mGenericTextureRenderPolygonVertexAllocatedSize = mGenericTextureMaxPlaneVertexBufferSize;
         }
 
-        glBufferSubData(GL_ARRAY_BUFFER, 0, plane.VertexBuffer.size() * sizeof(TextureRenderPolygonVertex), plane.VertexBuffer.data());
-        CheckOpenGLError();
-
-
         //
-        // Render
+        // Draw, separately for each plane
         //
 
-        // Use program
-        mShaderManager.ActivateProgram<ProgramType::ShipGenericTextures>();
+        for (auto const & plane : mGenericTexturePlanes)
+        {
+            if (!plane.VertexBuffer.empty())
+            {
+                //
+                // Upload vertex buffer
+                //
 
-        if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
-            glLineWidth(0.1f);
+                assert(plane.VertexBuffer.size() <= mGenericTextureRenderPolygonVertexAllocatedSize);
 
-        // Draw polygons
-        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(plane.VertexBuffer.size()));
+                glBufferSubData(
+                    GL_ARRAY_BUFFER,
+                    0,
+                    plane.VertexBuffer.size() * sizeof(TextureRenderPolygonVertex),
+                    plane.VertexBuffer.data());
 
-        // Update stats
-        mRenderStatistics.LastRenderedShipGenericTextures += plane.VertexBuffer.size() / 6;
+                CheckOpenGLError();
+
+
+                //
+                // Render
+                //
+
+                // Use program
+                mShaderManager.ActivateProgram<ProgramType::ShipGenericTextures>();
+
+                if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
+                    glLineWidth(0.1f);
+
+                // Draw polygons
+                glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(plane.VertexBuffer.size()));
+
+                // Update stats
+                mRenderStatistics.LastRenderedShipGenericTextures += plane.VertexBuffer.size() / 6;
+            }
+        }
     }
 }
 

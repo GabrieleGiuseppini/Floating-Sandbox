@@ -8,7 +8,7 @@
 // Inputs
 in vec4 inGenericTexturePackedData1; // centerPosition, vertexOffset
 in vec4 inGenericTexturePackedData2; // textureCoordinates, planeId, scale
-in vec4 inGenericTexturePackedData3; // angle, alpha, ambientLightSensitivity, PAD
+in vec3 inGenericTexturePackedData3; // angle, alpha, ambientLightSensitivity
 
 // Outputs
 out vec2 vertexTextureCoordinates;
