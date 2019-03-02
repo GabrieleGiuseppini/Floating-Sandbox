@@ -455,10 +455,10 @@ public:
         vec2f const & centerPosition,
         float progress)
     {
-        float const left = -mViewModel.GetVisibleWorldWidth() / 2.0f;
-        float const right = mViewModel.GetVisibleWorldWidth() / 2.0f;
-        float const top = mViewModel.GetVisibleWorldHeight() / 2.0f;
-        float const bottom = -mViewModel.GetVisibleWorldHeight() / 2.0f;
+        float const left = -mViewModel.GetVisibleWorldWidth() / 2.0f + mViewModel.GetCameraWorldPosition().x;
+        float const right = mViewModel.GetVisibleWorldWidth() / 2.0f + mViewModel.GetCameraWorldPosition().x;
+        float const top = mViewModel.GetVisibleWorldHeight() / 2.0f + mViewModel.GetCameraWorldPosition().y;
+        float const bottom = -mViewModel.GetVisibleWorldHeight() / 2.0f + mViewModel.GetCameraWorldPosition().y;
 
         // Triangle 1
 

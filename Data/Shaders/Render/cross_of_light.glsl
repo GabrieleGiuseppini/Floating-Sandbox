@@ -5,7 +5,6 @@
 #define in attribute
 #define out varying
 
-
 // Inputs
 in vec4 inSharedAttribute0;  // Position, CenterPosition
 in float inSharedAttribute1; // Progress
@@ -43,7 +42,9 @@ uniform vec2 paramViewportSize;
 void main()
 {
     float progress = vertexProgress - 0.5; // (-0.5, 0.5]
-    //float angle = progress;
+
+    // No rotation for the time being
+    // float angle = progress;
 
     // Calculate fragment's coordinates in the NDC space
     vec2 centeredFragCoord = gl_FragCoord.xy - paramViewportSize.xy / 2.0;
@@ -56,13 +57,13 @@ void main()
 
     // ------------------    
     
-    /*
-    mat2 rotationMatrix = mat2(
-        cos(angle), -sin(angle),
-        sin(angle), cos(angle));
-    
-    vec2 rotNdc = rotationMatrix * ndc;
-    */
+    // No rotation for the time being
+    //
+    // mat2 rotationMatrix = mat2(
+    //    cos(angle), -sin(angle),
+    //    sin(angle), cos(angle));
+    //
+    // vec2 rotNdc = rotationMatrix * ndc;
     vec2 rotNdc = ndc;
     
     progress = pow(abs(progress), 3.0);
@@ -72,8 +73,8 @@ void main()
     float taperY = pow(100000.0 * abs(rotNdc.y), 1.6) * progress;
     
     // Calculate width along arm
-    float sx = max(0.0, (1.0-rotNdc.x * rotNdc.x * taperY));
-    float sy = max(0.0, (1.0-rotNdc.y * rotNdc.y * taperX));
+    float sx = max(0.0, (1.0 - rotNdc.x * rotNdc.x * taperY));
+    float sy = max(0.0, (1.0 - rotNdc.y * rotNdc.y * taperX));
     float alpha = (sx + sy) / 2.0;
 
     gl_FragColor = vec4(1.0, 1.0, 1.0, alpha);
