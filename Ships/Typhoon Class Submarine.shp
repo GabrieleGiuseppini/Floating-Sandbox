@@ -1,0 +1,7 @@
+{
+	"structure_image":"typhoon_class_submarine_structure.png.dat",
+	"offset":{"x":0.0, "y":0.0},
+	"ship_name":"Typhoon Class Submarine",
+	"year_built":"1976",
+	"created_by":"KikoTheBoatBuilder"
+}
