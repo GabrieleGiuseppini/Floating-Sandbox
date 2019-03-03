@@ -201,27 +201,21 @@ bool World::InjectBubblesAt(
 bool World::FloodAt(
     vec2f const & targetPos,
     float waterQuantityMultiplier,
-    float searchRadius,
     GameParameters const & gameParameters)
 {
-    // Stop at first ship that successfully injects
-    for (auto it = mAllShips.rbegin(); it != mAllShips.rend(); ++it)
+    // Flood all ships
+    bool anyHasFlooded = false;
+    for (auto & ship : mAllShips)
     {
-        if ((*it)->FloodAt(
+        bool hasFlooded = ship->FloodAt(
             targetPos,
             waterQuantityMultiplier,
-            searchRadius,
-            gameParameters))
-        {
-            // Found!
-            return true;
-        }
+            gameParameters);
 
-        // No luck...
-        // search other ships
+        anyHasFlooded |= hasFlooded;
     }
 
-    return false;
+    return anyHasFlooded;
 }
 
 void World::ToggleAntiMatterBombAt(

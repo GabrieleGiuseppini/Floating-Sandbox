@@ -283,47 +283,41 @@ bool Ship::InjectBubblesAt(
 bool Ship::FloodAt(
     vec2f const & targetPos,
     float waterQuantityMultiplier,
-    float searchRadius,
     GameParameters const & gameParameters)
 {
+    float const searchRadius = gameParameters.FloodRadius;
+
     float const quantityOfWater =
-        gameParameters.FloodQuantityOfWater
+        gameParameters.FloodQuantity
         * waterQuantityMultiplier
         * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
-    // Find the closest point
-    float const searchSquareRadius = searchRadius * searchRadius;
-    ElementIndex bestPointIndex = NoneElementIndex;
-    float bestSquareDistance = std::numeric_limits<float>::max();
+    //
+    // Find the (non-ephemeral) non-hull points in the radius
+    //
 
+    float const searchSquareRadius = searchRadius * searchRadius;
+
+    bool anyHasFlooded = false;
     for (auto pointIndex : mPoints.NonEphemeralPoints())
     {
         if (!mPoints.IsDeleted(pointIndex)
             && !mPoints.IsHull(pointIndex))
         {
             float squareDistance = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
-            if (squareDistance < searchSquareRadius && squareDistance < bestSquareDistance)
+            if (squareDistance < searchSquareRadius)
             {
-                bestPointIndex = pointIndex;
-                bestSquareDistance = squareDistance;
+                if (quantityOfWater >= 0.0f)
+                    mPoints.GetWater(pointIndex) += quantityOfWater;
+                else
+                    mPoints.GetWater(pointIndex) -= std::min(-quantityOfWater, mPoints.GetWater(pointIndex));
+
+                anyHasFlooded = true;
             }
         }
     }
 
-    if (NoneElementIndex != bestPointIndex)
-    {
-        if (quantityOfWater >= 0.0f)
-            mPoints.GetWater(bestPointIndex) += quantityOfWater;
-        else
-            mPoints.GetWater(bestPointIndex) -= std::min(-quantityOfWater, mPoints.GetWater(bestPointIndex));
-
-        return true;
-    }
-    else
-    {
-        // No luck
-        return false;
-    }
+    return anyHasFlooded;
 }
 
 bool Ship::ToggleAntiMatterBombAt(

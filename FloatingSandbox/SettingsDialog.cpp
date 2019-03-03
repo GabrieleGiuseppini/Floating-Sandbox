@@ -436,6 +436,12 @@ void SettingsDialog::ApplySettings()
     mGameController->SetAntiMatterBombImplosionStrength(
         mAntiMatterBombImplosionStrengthSlider->GetValue());
 
+    mGameController->SetFloodRadius(
+        mFloodRadiusSlider->GetValue());
+
+    mGameController->SetFloodQuantity(
+        mFloodQuantitySlider->GetValue());
+
     mGameController->SetUltraViolentMode(mUltraViolentCheckBox->IsChecked());
 
     mGameController->SetDoGenerateDebris(mGenerateDebrisCheckBox->IsChecked());
@@ -1136,6 +1142,60 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
     // Row 2
     //
 
+    // Flood Radius
+
+    mFloodRadiusSlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Flood Radius",
+        "How wide an area is flooded by the flood tool (m).",
+        mGameController->GetFloodRadius(),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<LinearSliderCore>(
+            mGameController->GetMinFloodRadius(),
+            mGameController->GetMaxFloodRadius()));
+
+    gridSizer->Add(
+        mFloodRadiusSlider.get(),
+        wxGBPosition(1, 0),
+        wxGBSpan(1, 1),
+        wxALL,
+        SliderBorder);
+
+    // Flood Quantity
+
+    mFloodQuantitySlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Flood Quantity",
+        "How much water is injected by the flood tool (m3).",
+        mGameController->GetFloodQuantity(),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<LinearSliderCore>(
+            mGameController->GetMinFloodQuantity(),
+            mGameController->GetMaxFloodQuantity()));
+
+    gridSizer->Add(
+        mFloodQuantitySlider.get(),
+        wxGBPosition(1, 1),
+        wxGBSpan(1, 1),
+        wxALL,
+        SliderBorder);
+
+    //
+    // Row 3
+    //
+
     wxBoxSizer* screenshotDirSizer = new wxBoxSizer(wxVERTICAL);
 
     wxStaticText * screenshotDirStaticText = new wxStaticText(panel, wxID_ANY, "Screenshot directory:", wxDefaultPosition, wxDefaultSize, 0);
@@ -1154,7 +1214,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 
     gridSizer->Add(
         screenshotDirSizer,
-        wxGBPosition(1, 0),
+        wxGBPosition(2, 0),
         wxGBSpan(1, 4), // Take entire row
         wxALL | wxEXPAND,
         SliderBorder);
@@ -1480,6 +1540,10 @@ void SettingsDialog::ReadSettings()
     mBombBlastRadiusSlider->SetValue(mGameController->GetBombBlastRadius());
 
     mAntiMatterBombImplosionStrengthSlider->SetValue(mGameController->GetAntiMatterBombImplosionStrength());
+
+    mFloodRadiusSlider->SetValue(mGameController->GetFloodRadius());
+
+    mFloodQuantitySlider->SetValue(mGameController->GetFloodQuantity());
 
     mUltraViolentCheckBox->SetValue(mGameController->GetUltraViolentMode());
 

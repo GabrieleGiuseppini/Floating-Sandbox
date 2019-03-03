@@ -245,6 +245,16 @@ public:
     float GetMinAntiMatterBombImplosionStrength() const { return GameParameters::MinAntiMatterBombImplosionStrength; }
     float GetMaxAntiMatterBombImplosionStrength() const { return GameParameters::MaxAntiMatterBombImplosionStrength; }
 
+    float GetFloodRadius() const { return mGameParameters.FloodRadius; }
+    void SetFloodRadius(float value) { mGameParameters.FloodRadius = value; }
+    float GetMinFloodRadius() const { return GameParameters::MinFloodRadius; }
+    float GetMaxFloodRadius() const { return GameParameters::MaxFloodRadius; }
+
+    float GetFloodQuantity() const { return mGameParameters.FloodQuantity; }
+    void SetFloodQuantity(float value) { mGameParameters.FloodQuantity = value; }
+    float GetMinFloodQuantity() const { return GameParameters::MinFloodQuantity; }
+    float GetMaxFloodQuantity() const { return GameParameters::MaxFloodQuantity; }
+
     float GetLuminiscenceAdjustment() const { return mGameParameters.LuminiscenceAdjustment; }
     void SetLuminiscenceAdjustment(float value) { mGameParameters.LuminiscenceAdjustment = value; }
     float GetMinLuminiscenceAdjustment() const { return GameParameters::MinLuminiscenceAdjustment; }

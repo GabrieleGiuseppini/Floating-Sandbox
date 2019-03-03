@@ -165,6 +165,12 @@ Render:
 		+ Tooltips (*)
 		+ Update changes.txt with tooltips and z-buffer
 		+ Fix SettingsDialog/RecentDirs bug: when new dir loaded, it doesn't appear in combo
+		+ Make flood tool adjustable
+			+ Two settings - radius and quantity of water
+			+ Make sure ultra-violent mode applies to both
+			+ SettingsDialog
+				+ Use same sliders as DestroyRadius
+			+ Test mins and maxs
 
 		= Take new ships from 02/09
 			+ Also Kiko's ready ships
@@ -178,15 +184,6 @@ Render:
 					- RMS Titanic (Kiko)
 					- Cassidy (Kiko)
 				- Ready:
-					= SSHowedes (RetroGraczz)
-						- Need year
-						+ Then, nuke it
-					= RMS Lusitania, Albert Windsor is fine, and 1906. 
-						- Need new name
-
-		- Make flood tool adjustable
-			- Two settings - radius and quantity of water
-			- Make sure ultra-violent mode applies to both
 
 		- Make ropes less crazy when they get wet
 			- Test: base tall, slice rightmost tip
@@ -195,11 +192,14 @@ Render:
 		- Add more cloth colors
 			- Redo structural palette afterwards
 
-		= Tooltips: - Check if possible to have tooltip for parent
+		- New render setting: Water Render Mode {Texture, Flat, Depth}
+			- 3 structures for RenderContext's vertex attributes
 
 		- Orphaned points (*)
 
 		- Decay (rust) (*)
+
+		- Instanced drawing for lights (*)
 
 		- Pick tool (*)
 

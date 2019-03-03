@@ -96,6 +96,8 @@ private:
     std::unique_ptr<SliderControl> mDestroyRadiusSlider;
     std::unique_ptr<SliderControl> mBombBlastRadiusSlider;
     std::unique_ptr<SliderControl> mAntiMatterBombImplosionStrengthSlider;
+    std::unique_ptr<SliderControl> mFloodRadiusSlider;
+    std::unique_ptr<SliderControl> mFloodQuantitySlider;
     wxCheckBox * mUltraViolentCheckBox;
     wxCheckBox * mGenerateDebrisCheckBox;
     wxCheckBox * mGenerateSparklesCheckBox;

@@ -178,20 +178,6 @@ struct GameParameters
     static constexpr float MinOceanFloorDetailAmplification = 0.0f;
     static constexpr float MaxOceanFloorDetailAmplification = 200.0f;
 
-    float BombBlastRadius;
-    static constexpr float MinBombBlastRadius = 0.1f;
-    static constexpr float MaxBombBlastRadius = 20.0f;
-
-    float AntiMatterBombImplosionStrength;
-    static constexpr float MinAntiMatterBombImplosionStrength = 0.1f;
-    static constexpr float MaxAntiMatterBombImplosionStrength = 10.0f;
-
-    static constexpr float BombNeighborhoodRadius = 3.5f;
-
-    std::chrono::seconds TimerBombInterval;
-
-    float BombMass;
-
     float LuminiscenceAdjustment;
     static constexpr float MinLuminiscenceAdjustment = 0.0f;
     static constexpr float MaxLuminiscenceAdjustment = 10.0f;
@@ -208,9 +194,7 @@ struct GameParameters
     static constexpr size_t MinNumberOfClouds = 0;
     static constexpr size_t MaxNumberOfClouds = 500;
 
-    //
     // Interactions
-    //
 
     float ToolSearchRadius;
 
@@ -218,7 +202,27 @@ struct GameParameters
     static constexpr float MinDestroyRadius = 0.1f;
     static constexpr float MaxDestroyRadius = 10.0f;
 
-    float FloodQuantityOfWater;
+    float BombBlastRadius;
+    static constexpr float MinBombBlastRadius = 0.1f;
+    static constexpr float MaxBombBlastRadius = 20.0f;
+
+    float AntiMatterBombImplosionStrength;
+    static constexpr float MinAntiMatterBombImplosionStrength = 0.1f;
+    static constexpr float MaxAntiMatterBombImplosionStrength = 10.0f;
+
+    static constexpr float BombNeighborhoodRadius = 3.5f;
+
+    std::chrono::seconds TimerBombInterval;
+
+    float BombMass;
+
+    float FloodRadius;
+    static constexpr float MinFloodRadius = 0.1f;
+    static constexpr float MaxFloodRadius = 10.0f;
+
+    float FloodQuantity;
+    static constexpr float MinFloodQuantity = 0.1f;
+    static constexpr float MaxFloodQuantity = 10.0f;
 
     bool IsUltraViolentMode;
 

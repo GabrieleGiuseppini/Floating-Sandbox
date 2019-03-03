@@ -415,7 +415,6 @@ bool GameController::FloodAt(
     return mWorld->FloodAt(
         worldCoordinates,
         waterQuantityMultiplier,
-        1.0f,
         mGameParameters);
 }
 
