@@ -49,6 +49,7 @@ private:
 private:
 
     void Close();
+    void RepopulateRecentDirectoriesComboBox();
 
 private:
 

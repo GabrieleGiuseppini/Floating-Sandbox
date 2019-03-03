@@ -193,29 +193,16 @@ void ShipLoadDialog::Open()
 
         if (mRecentDirectoriesComboBox->GetCount() == 0)
         {
-            assert(!mUIPreferences->GetShipLoadDirectories().empty());
+            RepopulateRecentDirectoriesComboBox();
 
-            bool isFirst = true;
-            mRecentDirectoriesComboBox->Clear();
-            for (auto dir : mUIPreferences->GetShipLoadDirectories())
-            {
-                if (std::filesystem::exists(dir))
-                {
-                    mRecentDirectoriesComboBox->Append(dir.string());
+            assert(mRecentDirectoriesComboBox->GetCount() > 0);
 
-                    if (isFirst)
-                    {
-                        // Set this one everywhere
-                        mDirCtrl->SetPath(dir.string());
-                        mRecentDirectoriesComboBox->SetValue(dir.string());
-                        mShipPreviewPanel->SetDirectory(dir.string());
-
-                        isFirst = false;
-                    }
-                }
-            }
+            // Set the first one everywhere
+            auto dir = mRecentDirectoriesComboBox->GetStrings().front();
+            mDirCtrl->SetPath(dir);
+            mRecentDirectoriesComboBox->SetValue(dir);
+            mShipPreviewPanel->SetDirectory(dir.ToStdString());
         }
-
 
 
         //
@@ -311,7 +298,14 @@ void ShipLoadDialog::OnShipFileChosen(std::filesystem::path shipFilepath)
     Close();
 
     // Store directory in preferences
-    mUIPreferences->AddShipLoadDirectory(shipFilepath.parent_path());
+    auto dir = shipFilepath.parent_path();
+    mUIPreferences->AddShipLoadDirectory(dir);
+
+    // Re-populate combo box
+    RepopulateRecentDirectoriesComboBox();
+
+    // Select this directory in the combo box
+    mRecentDirectoriesComboBox->SetValue(dir.string());
 
     // Fire select event
     auto event = fsShipFileChosenEvent(
@@ -328,4 +322,18 @@ void ShipLoadDialog::Close()
 
     // We just hide ourselves, so we can re-show ourselves again
     this->Hide();
+}
+
+void ShipLoadDialog::RepopulateRecentDirectoriesComboBox()
+{
+    assert(!mUIPreferences->GetShipLoadDirectories().empty());
+
+    mRecentDirectoriesComboBox->Clear();
+    for (auto dir : mUIPreferences->GetShipLoadDirectories())
+    {
+        if (std::filesystem::exists(dir))
+        {
+            mRecentDirectoriesComboBox->Append(dir.string());
+        }
+    }
 }
