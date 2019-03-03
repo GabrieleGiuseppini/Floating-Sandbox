@@ -112,11 +112,6 @@ bool AntiMatterBomb::Update(
                 mCurrentStateStartTimePoint = currentWallClockTime;
                 mCurrentStateProgress = 0.0f;
 
-                // Detach self (or else bomb will move along with ship performing
-                // its implosion)
-                // TODOTEST
-                //DetachIfAttached();
-
                 // Invoke handler
                 mPhysicsHandler.DoAntiMatterBombImplosion(
                     GetPosition(),

@@ -17,6 +17,7 @@ SliderControl::SliderControl(
     int width,
     int height,
     std::string const & label,
+    std::string const & toolTipLabel,
     float currentValue,
     std::function<void(float)> onValueChanged,
     std::unique_ptr<ISliderCore> sliderCore)
@@ -25,10 +26,11 @@ SliderControl::SliderControl(
         width,
         height,
         label,
+        toolTipLabel,
         currentValue,
         onValueChanged,
         std::move(sliderCore),
-        std::nullopt)
+        nullptr)
 {
 }
 
@@ -37,32 +39,11 @@ SliderControl::SliderControl(
     int width,
     int height,
     std::string const & label,
+    std::string const & toolTipLabel,
     float currentValue,
     std::function<void(float)> onValueChanged,
     std::unique_ptr<ISliderCore> sliderCore,
-    wxBitmap const & toolTipIcon,
-    std::string const & toolTipText)
-    : SliderControl(
-        parent,
-        width,
-        height,
-        label,
-        currentValue,
-        onValueChanged,
-        std::move(sliderCore),
-        std::make_tuple(toolTipIcon, toolTipText))
-{
-}
-
-SliderControl::SliderControl(
-    wxWindow * parent,
-    int width,
-    int height,
-    std::string const & label,
-    float currentValue,
-    std::function<void(float)> onValueChanged,
-    std::unique_ptr<ISliderCore> sliderCore,
-    std::optional<std::tuple<wxBitmap const &, std::string const &>> toolTipInfo)
+    wxBitmap const * warningIcon)
     : wxPanel(
         parent,
         wxID_ANY,
@@ -72,6 +53,8 @@ SliderControl::SliderControl(
     , mOnValueChanged(std::move(onValueChanged))
     , mSliderCore(std::move(sliderCore))
 {
+    if (!toolTipLabel.empty())
+        SetToolTip(toolTipLabel);
 
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 
@@ -88,8 +71,9 @@ SliderControl::SliderControl(
         wxDefaultPosition,
         wxSize(-1, height),
         wxSL_VERTICAL | wxSL_LEFT | wxSL_INVERSE | wxSL_AUTOTICKS, wxDefaultValidator);
-
     mSlider->SetTickFreq(4);
+    if (!toolTipLabel.empty())
+        mSlider->SetToolTip(toolTipLabel);
 
     Connect(ID_SLIDER, wxEVT_SLIDER, (wxObjectEventFunction)&SliderControl::OnSliderScroll);
 
@@ -101,20 +85,21 @@ SliderControl::SliderControl(
     //
 
     wxStaticText * labelStaticText = new wxStaticText(this, wxID_ANY, label, wxDefaultPosition, wxDefaultSize, 0);
+    if (!toolTipLabel.empty())
+        labelStaticText->SetToolTip(toolTipLabel);
 
-    if (!toolTipInfo)
+    if (nullptr == warningIcon)
     {
+        // Just add label
         sizer->Add(labelStaticText, 0, wxALIGN_CENTRE);
     }
     else
     {
-        // Create tooltip
-        wxToolTip * toolTip = new wxToolTip(std::get<1>(*toolTipInfo));
-
         // Create icon
-        wxStaticBitmap * icon = new wxStaticBitmap(this, wxID_ANY, std::get<0>(*toolTipInfo), wxDefaultPosition, wxSize(-1, -1), wxBORDER_NONE);
+        wxStaticBitmap * icon = new wxStaticBitmap(this, wxID_ANY, *warningIcon, wxDefaultPosition, wxSize(-1, -1), wxBORDER_NONE);
         icon->SetScaleMode(wxStaticBitmap::Scale_AspectFill);
-        icon->SetToolTip(toolTip);
+        if (!toolTipLabel.empty())
+            icon->SetToolTip(toolTipLabel);
 
         // Add label and icon
         wxBoxSizer* hSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -130,8 +115,9 @@ SliderControl::SliderControl(
     //
 
     mTextCtrl = std::make_unique<wxTextCtrl>(this, wxID_ANY, _(""), wxDefaultPosition, wxDefaultSize, wxTE_READONLY | wxTE_CENTRE);
-
     mTextCtrl->SetValue(std::to_string(currentValue));
+    if (!toolTipLabel.empty())
+        mTextCtrl->SetToolTip(toolTipLabel);
 
     sizer->Add(mTextCtrl.get(), 0, wxALIGN_CENTRE);
 

@@ -1,6 +1,8 @@
 1.9.0
+- Re-designed depth management: game does not lag anymore when ships are reduced to smithereens!
 - Revamped UI for loading ships
 - Added a few more ships
+- Added tooltips to each customizable setting
 
 1.8.0
 - Musical theme for this release: Coldplay, "A Rush of Blood to the Head"

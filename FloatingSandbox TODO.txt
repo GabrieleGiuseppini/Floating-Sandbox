@@ -162,15 +162,15 @@ Render:
 		+ Fix bug with cross-of-light spawning underwater		
 		+ Fix sailing ship - cut sail in texture (but not in psd)
 		+ Fix Titanic's jagged sides
-
-		- Tooltips (*)
+		+ Tooltips (*)
+		+ Update changes.txt with tooltips and z-buffer
 
 		- Take new ships from 02/09
 			+ Also Kiko's ready ships
 
-
 		- Make flood tool adjustable
-			- Try one single setting affecting both radius and quantity of water
+			- Two settings - radius and quantity of water
+			- Make sure ultra-violent mode applies to both
 
 		- Make ropes less crazy when they get wet
 			- Test: base tall, slice rightmost tip
@@ -178,6 +178,8 @@ Render:
 
 		- Add more cloth colors
 			- Redo structural palette afterwards
+
+		= Tooltips: - Check if possible to have tooltip for parent
 
 		- Orphaned points (*)
 
@@ -534,40 +536,44 @@ Render:
 		+ Orphaned point == points with 0 connected springs
 		+ We unify ephemeral points uploading and rendering with ship points (either debug or orphan) uploading and rendering
 			+ Plane ID is enough to keep them on separate planes
-		- Verify first that connectivity visit really assigns plane IDs also to orphaned points 
+		+ Verify first that connectivity visit really assigns plane IDs also to orphaned points 
 		- Impl:
 			- We must first stop deleting points just because springs are deleted
 				- Though should still delete them at Destroy() and Bomb(), for example
 			- RenderContext and ShipRenderContext expose one single, independent UploadPointElements for segments:
-				- UploadPointElements(srcbuffer, start (valid for both src and dst), len)
+				- UploadPointElements(srcbuffer, start (valid only for dst), len)
 				- Only requires ShipRenderCointext to have been init'd with total # of points, so to
-				  allocate VBO once at initialization
+				  allocate GPU buffer once at initialization
 			- Ship::Render:
-				- std::vector<ElementIndex> mPointElements
-					- reserved(mPoints.total_size) at cctor
+				- New member: std::vector<ElementIndex> mPointElementsToRender
+					- Rename also other one as "...ToRender"
+					- cctor: reserve(mPoints.total_size)
+					- It will contain first non-ephemerals (orphaned or all), then ephemerals
+					- Coping with mIsStructureDirty=true but no new ephemerals:
+						- Need to add boolean to Points::UploadEphemeral to force emission of points
 				- Nuke old upload call for point elements
 				- if mIsStructureDirty:
-					- Clear mPointElements
-					- Ask Points to populate point indices in mPointElements
+					- Clear mPointElementsToRender
+					- Ask Points to populate point indices in mPointElementsToRender
 						- Starting from zero
 						- Points decides between all or orphaned only based off DebugShipRenderMode
-					- Store # of points just populated into mCurrentShipPointElementsCount
+							- Like now, only non-ephemerals
+					- Store # of points just populated into mCurrentShipPointElementsToRenderCount
 				- ...later...:
 				- At Points::UploadEphemeral:
-					- Pass mPointElements
-					- Points::UploadEphemeral returns nEphemeralPointsPopulated
-				- if mIsStructureDirty || nEphemeralPointsPopulated > 0:
+					- Pass mPointElementsToRender
+					- Pass "forceEmissionOfPoints" == mIsStructureDirty
+					- Points::UploadEphemeral returns ephemeralPointsPopulatedCount
+				- if mIsStructureDirty || ephemeralPointsPopulatedCount > 0:
 					- Call RenderContext::UploadPointElements(
-						srcbuffer=ship's buffer, truncated to mCurrentShipPointElementsCount if !mIsStructureDirty
+						srcbuffer=ship's buffer, truncated to mCurrentShipPointElementsCount if !mIsStructureDirty, and offseted as mIsStructureDirty ? 0 : mCurrentShipPointElementsCount
 						start = mIsStructureDirty ? 0 : mCurrentShipPointElementsCount,
 						len = mIsStructureDirty ? buffer.len : nEphemeralPointsPopulated)
-					- TEST: go through this again and verify all cases covered
+					- TEST: go through this again and verify all cases covered, including all combinations of empty's
 			- ShipRenderContext:
 				- Nuke RenderEphemeralPoints and its structs and members
 				- Have just one single RenderPoints
-					- Always invoked
-					- Even when ShipRenderMode is Springs
-						- Test L'n'F' with ShipRenderMode=Springs; if not good, skip it
+					- Always invoked, except when DebugShipRenderMode is not None and not Points
 		- Test L'n'F'
 
 		- TODOOLD: in case any assumptions fail:		
@@ -1101,21 +1107,6 @@ Render:
 						- If "Interior" -> Interior OR Fallback
 
 - UI:
-	+ SettingsDialog: tooltips at Simulation Quality (tradeoff) and Stiffness (instability)
-		+ Use "Attention" icon
-		+ wxToolTip
-		+ SQ: Higher values improve the rigidity of simulated structures, at the expense of longer computation times
-		+ S:  Higher values cause physical instability but provide for a nice effect!
-		+ See if global settings are really needed
-
-	+ Menu entries for "Home Page (GameJolt)/Code Page (GitHub)"
-		+ wxLaunchDefaultBrowser
-
-	- SettingsDialog: add tooltips at each setting (*)
-		- Explanation and unit
-		- See if just on slider and label works; if not, do entire panel but have to merge with icon...
-			- Or remove tooltip from icon altogether, do just standalone panel tooltip & standalone icon w/no tooltip
-
 	- SettingsDialog: save settings, defaults, and real-time changes
 		- SettingsManager (@FloatingSandbox):
 			- Has GameController, SoundController, UISettings, etc.
@@ -1131,7 +1122,7 @@ Render:
 				- get(): from their place
 				- set(): to their place
 			- cctor (actually, CreateInstance()->uq_ptr which MainFrame makes shared):
-				- Makes defaults (in Defaults), asking members for their (compile-time default) values
+				- Makes defaults (in Defaults), asking member providers for their (compile-time default) values
 				- Then if personal_settings.json exists:
 					- Loads it to temp struct - via Load(filepath)->temp struct
 					- Then applies temp struct - via ApplyToGame(temp struct)
@@ -1982,6 +1973,19 @@ IF WX:
 				+ Due to Yield? No
 			+ Run under debugger to see if there are assert's
 		+ Test on two other Windows'
+	+ SettingsDialog: tooltips at Simulation Quality (tradeoff) and Stiffness (instability)
+		+ Use "Attention" icon
+		+ wxToolTip
+		+ SQ: Higher values improve the rigidity of simulated structures, at the expense of longer computation times
+		+ S:  Higher values cause physical instability but provide for a nice effect!
+		+ See if global settings are really needed
+	+ Menu entries for "Home Page (GameJolt)/Code Page (GitHub)"
+		+ wxLaunchDefaultBrowser
+	+ SettingsDialog: add tooltips at each setting (*)
+		+ Explanations and units
+		+ Do on panel, slider, label, and textbox
+			+ Or remove tooltip from icon altogether, do just standalone panel tooltip & standalone icon w/no tooltip
+		+ Do also on various checkboxes in SettingsDialog
 
 + Gfx:
 	+ Do ropes with two endpoints (000xxx)

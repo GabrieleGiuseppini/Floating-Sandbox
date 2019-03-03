@@ -558,13 +558,14 @@ void SettingsDialog::PopulateMechanicsPanel(wxPanel * panel)
     wxBoxSizer* controlsSizer = new wxBoxSizer(wxHORIZONTAL);
 
 
-    // Mechanical quality
+    // Simulation quality
 
     mMechanicalQualitySlider = std::make_unique<SliderControl>(
         panel,
         SliderWidth,
         SliderHeight,
         "Simulation Quality",
+        "Higher values improve the rigidity of simulated structures, at the expense of longer computation times.",
         mGameController->GetNumMechanicalDynamicsIterationsAdjustment(),
         [this](float /*value*/)
         {
@@ -575,8 +576,7 @@ void SettingsDialog::PopulateMechanicsPanel(wxPanel * panel)
             0.5f,
             mGameController->GetMinNumMechanicalDynamicsIterationsAdjustment(),
             mGameController->GetMaxNumMechanicalDynamicsIterationsAdjustment()),
-        *mWarningIcon,
-        "Higher values improve the rigidity of simulated structures, at the expense of longer computation times");
+        mWarningIcon.get());
 
     controlsSizer->Add(mMechanicalQualitySlider.get(), 1, wxALL, SliderBorder);
 
@@ -589,6 +589,7 @@ void SettingsDialog::PopulateMechanicsPanel(wxPanel * panel)
         SliderWidth,
         SliderHeight,
         "Strength Adjust",
+        "Adjusts the strength of springs.",
         mGameController->GetStrengthAdjustment(),
         [this](float /*value*/)
         {
@@ -624,6 +625,7 @@ void SettingsDialog::PopulateFluidsPanel(wxPanel * panel)
         SliderWidth,
         SliderHeight,
         "Water Density Adjust",
+        "Adjusts the density of sea water.",
         mGameController->GetWaterDensityAdjustment(),
         [this](float /*value*/)
         {
@@ -644,6 +646,7 @@ void SettingsDialog::PopulateFluidsPanel(wxPanel * panel)
         SliderWidth,
         SliderHeight,
         "Water Drag Adjust",
+        "Adjusts the drag force exerted by sea water on physical bodies.",
         mGameController->GetWaterDragAdjustment(),
         [this](float /*value*/)
         {
@@ -665,6 +668,7 @@ void SettingsDialog::PopulateFluidsPanel(wxPanel * panel)
         SliderWidth,
         SliderHeight,
         "Water Intake Adjust",
+        "Adjusts the speed with which sea water enters or leaves a physical body.",
         mGameController->GetWaterIntakeAdjustment(),
         [this](float /*value*/)
         {
@@ -685,6 +689,7 @@ void SettingsDialog::PopulateFluidsPanel(wxPanel * panel)
         SliderWidth,
         SliderHeight,
         "Water Crazyness",
+        "Adjusts how \"splashy\" water flows inside a physical body.",
         mGameController->GetWaterCrazyness(),
         [this](float /*value*/)
         {
@@ -710,6 +715,7 @@ void SettingsDialog::PopulateFluidsPanel(wxPanel * panel)
         SliderWidth,
         SliderHeight,
         "Water Diffusion Speed",
+        "Adjusts the speed with which water propagates within a physical body.",
         mGameController->GetWaterDiffusionSpeedAdjustment(),
         [this](float /*value*/)
         {
@@ -730,6 +736,7 @@ void SettingsDialog::PopulateFluidsPanel(wxPanel * panel)
         SliderWidth,
         SliderHeight,
         "Water Level of Detail",
+        "Adjusts how detailed water inside a physical body looks.",
         mGameController->GetWaterLevelOfDetail(),
         [this](float /*value*/)
         {
@@ -764,6 +771,7 @@ void SettingsDialog::PopulateSkyPanel(wxPanel * panel)
         SliderWidth,
         SliderHeight,
         "Number of Stars",
+        "The number of stars in the sky.",
         static_cast<float>(mGameController->GetNumberOfStars()),
         [this](float /*value*/)
         {
@@ -784,6 +792,7 @@ void SettingsDialog::PopulateSkyPanel(wxPanel * panel)
         SliderWidth,
         SliderHeight,
         "Number of Clouds",
+        "The number of clouds in the sky.",
         static_cast<float>(mGameController->GetNumberOfClouds()),
         [this](float /*value*/)
         {
@@ -804,6 +813,7 @@ void SettingsDialog::PopulateSkyPanel(wxPanel * panel)
         SliderWidth,
         SliderHeight,
         "Wind Speed Base",
+        "The base speed of wind (Km/h), before modulation takes place.",
         mGameController->GetWindSpeedBase(),
         [this](float /*value*/)
         {
@@ -824,6 +834,7 @@ void SettingsDialog::PopulateSkyPanel(wxPanel * panel)
         SliderWidth,
         SliderHeight,
         "Wind Gust Amplitude",
+        "The amplitude of wind gusts, as a multiplier of the base wind speed.",
         mGameController->GetWindSpeedMaxFactor(),
         [this](float /*value*/)
         {
@@ -845,7 +856,10 @@ void SettingsDialog::PopulateSkyPanel(wxPanel * panel)
     gridSizer->AddSpacer(0);
     gridSizer->AddSpacer(0);
 
+
     mModulateWindCheckBox = new wxCheckBox(panel, ID_MODULATE_WIND_CHECKBOX, _("Modulate Wind"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Modulate Wind Checkbox"));
+    mModulateWindCheckBox->SetToolTip("Enables or disables simulation of wind variations, alternating between dead calm and high-speed gusts.");
+
     Connect(ID_MODULATE_WIND_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnModulateWindCheckBoxClick);
 
     gridSizer->Add(mModulateWindCheckBox, 0, wxALL | wxALIGN_TOP, 0);
@@ -872,6 +886,7 @@ void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
         SliderWidth,
         SliderHeight,
         "Wave Height",
+        "The height of sea water waves (m).",
         mGameController->GetWaveHeight(),
         [this](float /*value*/)
         {
@@ -892,6 +907,7 @@ void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
         SliderWidth,
         SliderHeight,
         "Ocean Depth",
+        "The ocean depth (m).",
         mGameController->GetSeaDepth(),
         [this](float /*value*/)
         {
@@ -913,6 +929,7 @@ void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
         SliderWidth,
         SliderHeight,
         "Ocean Floor Bumpiness",
+        "Adjusts how much the ocean floor rolls up and down.",
         mGameController->GetOceanFloorBumpiness(),
         [this](float /*value*/)
         {
@@ -933,6 +950,7 @@ void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
         SliderWidth,
         SliderHeight,
         "Ocean Floor Detail",
+        "Adjusts the jaggedness of the ocean floor irregularities.",
         mGameController->GetOceanFloorDetailAmplification(),
         [this](float /*value*/)
         {
@@ -958,6 +976,7 @@ void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
         SliderWidth,
         SliderHeight,
         "Luminiscence Adjust",
+        "Adjusts how much light is emitted by luminiscent materials.",
         mGameController->GetLuminiscenceAdjustment(),
         [this](float /*value*/)
         {
@@ -977,6 +996,7 @@ void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
         SliderWidth,
         SliderHeight,
         "Light Spread Adjust",
+        "Adjusts how wide light emitted by luminiscent materials spreads out.",
         mGameController->GetLightSpreadAdjustment(),
         [this](float /*value*/)
         {
@@ -1011,6 +1031,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
         SliderWidth,
         SliderHeight,
         "Destroy Radius",
+        "The starting radius of the damage caused by destructive tools (m).",
         mGameController->GetDestroyRadius(),
         [this](float /*value*/)
         {
@@ -1036,6 +1057,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
         SliderWidth,
         SliderHeight,
         "Bomb Blast Radius",
+        "The radius of bomb explosions (m).",
         mGameController->GetBombBlastRadius(),
         [this](float /*value*/)
         {
@@ -1061,6 +1083,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
         SliderWidth,
         SliderHeight,
         "AM Bomb Implosion Strength",
+        "Adjusts the strength of the initial anti-matter bomb implosion.",
         mGameController->GetAntiMatterBombImplosionStrength(),
         [this](float /*value*/)
         {
@@ -1083,18 +1106,22 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
     wxStaticBoxSizer* checkboxesSizer = new wxStaticBoxSizer(wxVERTICAL, panel);
 
     mUltraViolentCheckBox = new wxCheckBox(panel, ID_ULTRA_VIOLENT_CHECKBOX, _("Ultra-Violent Mode"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Ultra-Violent Mode Checkbox"));
+    mUltraViolentCheckBox->SetToolTip("Enables or disables amplification of tool forces and inflicted damages.");
     Connect(ID_ULTRA_VIOLENT_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnUltraViolentCheckBoxClick);
     checkboxesSizer->Add(mUltraViolentCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
 
     mGenerateDebrisCheckBox = new wxCheckBox(panel, ID_GENERATE_DEBRIS_CHECKBOX, _("Generate Debris"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Generate Debris Checkbox"));
+    mGenerateDebrisCheckBox->SetToolTip("Enables or disables generation of debris when using destructive tools.");
     Connect(ID_GENERATE_DEBRIS_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnGenerateDebrisCheckBoxClick);
     checkboxesSizer->Add(mGenerateDebrisCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
 
     mGenerateSparklesCheckBox = new wxCheckBox(panel, ID_GENERATE_SPARKLES_CHECKBOX, _("Generate Sparkles"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Generate Sparkles Checkbox"));
+    mGenerateSparklesCheckBox->SetToolTip("Enables or disables generation of sparkles when using the saw tool on metal.");
     Connect(ID_GENERATE_SPARKLES_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnGenerateSparklesCheckBoxClick);
     checkboxesSizer->Add(mGenerateSparklesCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
 
     mGenerateAirBubblesCheckBox = new wxCheckBox(panel, ID_GENERATE_AIR_BUBBLES_CHECKBOX, _("Generate Air Bubbles"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Generate Air Bubbles Checkbox"));
+    mGenerateAirBubblesCheckBox->SetToolTip("Enables or disables generation of air bubbles when water enters a physical body.");
     Connect(ID_GENERATE_AIR_BUBBLES_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnGenerateAirBubblesCheckBoxClick);
     checkboxesSizer->Add(mGenerateAirBubblesCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
 
@@ -1150,6 +1177,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
         SliderWidth,
         SliderHeight,
         "Water Contrast",
+        "Adjusts the contrast of water inside physical bodies.",
         mGameController->GetWaterContrast(),
         [this](float /*value*/)
         {
@@ -1170,6 +1198,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
         SliderWidth,
         SliderHeight,
         "Sea Water Transparency",
+        "Adjusts the transparency of sea water.",
         mGameController->GetSeaWaterTransparency(),
         [this](float /*value*/)
         {
@@ -1209,6 +1238,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
 
     mShowStressCheckBox = new wxCheckBox(panel, ID_SHOW_STRESS_CHECKBOX, _("Show Stress"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Show Stress Checkbox"));
+    mShowStressCheckBox->SetToolTip("Enables or disables highlighting of the springs that are under heavy stress and close to rupture.");
     Connect(ID_SHOW_STRESS_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnShowStressCheckBoxClick);
 
     checkboxesSizer->Add(mShowStressCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
@@ -1233,6 +1263,7 @@ void SettingsDialog::PopulateSoundPanel(wxPanel * panel)
         SliderWidth,
         SliderHeight,
         "Effects Volume",
+        "Adjusts the volume of sounds generated by the simulation.",
         mSoundController->GetMasterEffectsVolume(),
         [this](float /*value*/)
         {
@@ -1253,6 +1284,7 @@ void SettingsDialog::PopulateSoundPanel(wxPanel * panel)
         SliderWidth,
         SliderHeight,
         "Tools Volume",
+        "Adjusts the volume of sounds generated by interactive tools.",
         mSoundController->GetMasterToolsVolume(),
         [this](float /*value*/)
         {
@@ -1273,6 +1305,7 @@ void SettingsDialog::PopulateSoundPanel(wxPanel * panel)
         SliderWidth,
         SliderHeight,
         "Music Volume",
+        "Adjusts the volume of music.",
         mSoundController->GetMasterMusicVolume(),
         [this](float /*value*/)
         {
@@ -1291,18 +1324,22 @@ void SettingsDialog::PopulateSoundPanel(wxPanel * panel)
     wxStaticBoxSizer* checkboxesSizer = new wxStaticBoxSizer(wxVERTICAL, panel);
 
     mPlayBreakSoundsCheckBox = new wxCheckBox(panel, ID_PLAY_BREAK_SOUNDS_CHECKBOX, _("Play Break Sounds"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Play Break Sounds Checkbox"));
+    mPlayBreakSoundsCheckBox->SetToolTip("Enables or disables the generation of sounds when materials break.");
     Connect(ID_PLAY_BREAK_SOUNDS_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnPlayBreakSoundsCheckBoxClick);
     checkboxesSizer->Add(mPlayBreakSoundsCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
 
     mPlayStressSoundsCheckBox = new wxCheckBox(panel, ID_PLAY_STRESS_SOUNDS_CHECKBOX, _("Play Stress Sounds"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Play Stress Sounds Checkbox"));
+    mPlayStressSoundsCheckBox->SetToolTip("Enables or disables the generation of sounds when materials are under stress.");
     Connect(ID_PLAY_STRESS_SOUNDS_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnPlayStressSoundsCheckBoxClick);
     checkboxesSizer->Add(mPlayStressSoundsCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
 
-    mPlayWindSoundCheckBox = new wxCheckBox(panel, ID_PLAY_WIND_SOUND_CHECKBOX, _("Play Wind Sound"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Play Wind Sound Checkbox"));
+    mPlayWindSoundCheckBox = new wxCheckBox(panel, ID_PLAY_WIND_SOUND_CHECKBOX, _("Play Wind Sounds"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Play Wind Sound Checkbox"));
+    mPlayWindSoundCheckBox->SetToolTip("Enables or disables the generation of wind sounds.");
     Connect(ID_PLAY_WIND_SOUND_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnPlayWindSoundCheckBoxClick);
     checkboxesSizer->Add(mPlayWindSoundCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
 
     mPlaySinkingMusicCheckBox = new wxCheckBox(panel, ID_PLAY_SINKING_MUSIC_CHECKBOX, _("Play Farewell Music"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Play Sinking Music Checkbox"));
+    mPlaySinkingMusicCheckBox->SetToolTip("Enables or disables playing \"Nearer My God to Thee\" when a ship starts sinking.");
     Connect(ID_PLAY_SINKING_MUSIC_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnPlaySinkingMusicCheckBoxClick);
     checkboxesSizer->Add(mPlaySinkingMusicCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
 
@@ -1325,6 +1362,8 @@ void SettingsDialog::PopulateAdvancedPanel(wxPanel * panel)
         SliderWidth,
         SliderHeight,
         "Spring Stiffness Adjust",
+        "This setting is for testing physical instability of the mass-spring network with high stiffness values;"
+        " it is not meant for improving the rigidity of physical bodies.",
         mGameController->GetStiffnessAdjustment(),
         [this](float /*value*/)
         {
@@ -1334,9 +1373,7 @@ void SettingsDialog::PopulateAdvancedPanel(wxPanel * panel)
         std::make_unique<LinearSliderCore>(
             mGameController->GetMinStiffnessAdjustment(),
             mGameController->GetMaxStiffnessAdjustment()),
-            *mWarningIcon,
-            "This setting is for testing physical instability of the mass-spring network with high stiffness values;"
-            " it is not meant for improving the rigidity of physical bodies");
+        mWarningIcon.get());
 
     controlsSizer->Add(mStiffnessSlider.get(), 1, wxALL, SliderBorder);
 
@@ -1372,6 +1409,7 @@ void SettingsDialog::PopulateAdvancedPanel(wxPanel * panel)
 
     mVectorFieldRenderModeRadioBox = new wxRadioBox(panel, wxID_ANY, _("Vector Field Draw Options"), wxDefaultPosition, wxSize(-1, -1),
         WXSIZEOF(vectorFieldRenderModeChoices), vectorFieldRenderModeChoices, 1, wxRA_SPECIFY_COLS);
+    mVectorFieldRenderModeRadioBox->SetToolTip("Enables or disables rendering of vector fields.");
     Connect(mVectorFieldRenderModeRadioBox->GetId(), wxEVT_RADIOBOX, (wxObjectEventFunction)&SettingsDialog::OnVectorFieldRenderModeRadioBox);
 
     checkboxesSizer->Add(mVectorFieldRenderModeRadioBox, 0, wxALL | wxALIGN_LEFT, 5);

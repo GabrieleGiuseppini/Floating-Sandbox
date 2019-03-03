@@ -33,6 +33,7 @@ public:
         int width,
         int height,
         std::string const & label,
+        std::string const & toolTipLabel,
         float currentValue,
         std::function<void(float)> onValueChanged,
         std::unique_ptr<ISliderCore> sliderCore);
@@ -42,11 +43,11 @@ public:
         int width,
         int height,
         std::string const & label,
+        std::string const & toolTipLabel,
         float currentValue,
         std::function<void(float)> onValueChanged,
         std::unique_ptr<ISliderCore> sliderCore,
-        wxBitmap const & toolTipIcon,
-        std::string const & toolTipText);
+        wxBitmap const * warningIcon);
 
     virtual ~SliderControl();
 
@@ -62,16 +63,6 @@ public:
     }
 
 private:
-
-    SliderControl(
-        wxWindow * parent,
-        int width,
-        int height,
-        std::string const & label,
-        float currentValue,
-        std::function<void(float)> onValueChanged,
-        std::unique_ptr<ISliderCore> sliderCore,
-        std::optional<std::tuple<wxBitmap const &, std::string const &>> toolTipInfo);
 
     void OnSliderScroll(wxScrollEvent & event);
 
