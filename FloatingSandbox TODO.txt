@@ -164,9 +164,25 @@ Render:
 		+ Fix Titanic's jagged sides
 		+ Tooltips (*)
 		+ Update changes.txt with tooltips and z-buffer
+		+ Fix SettingsDialog/RecentDirs bug: when new dir loaded, it doesn't appear in combo
 
-		- Take new ships from 02/09
+		= Take new ships from 02/09
 			+ Also Kiko's ready ships
+			+ Downloaded
+				- Asked:
+					- SS nomadic (Lumbago, just sent friend request, have to ask)
+					- Ed Fitzgerald (but needs to be fixed) (Kiko)
+					- Aegir_Mark_III
+					- AlbertWindsor's QM2 (too heavy on bow)
+					- Good FS
+					- RMS Titanic (Kiko)
+					- Cassidy (Kiko)
+				- Ready:
+					= SSHowedes (RetroGraczz)
+						- Need year
+						+ Then, nuke it
+					= RMS Lusitania, Albert Windsor is fine, and 1906. 
+						- Need new name
 
 		- Make flood tool adjustable
 			- Two settings - radius and quantity of water
