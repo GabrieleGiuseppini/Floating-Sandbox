@@ -196,9 +196,9 @@ void ShipPreviewControl::SetPreviewContent(ShipPreview const & shipPreview)
 
     std::string descriptionLabelText2 =
         std::to_string(metres)
-        + " m/"
+        + "m/"
         + std::to_string(feet)
-        + " ft";
+        + "ft";
 
     if (!!shipPreview.Metadata.Author)
         descriptionLabelText2 += " - by " + *(shipPreview.Metadata.Author);
