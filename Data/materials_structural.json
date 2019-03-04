@@ -2156,7 +2156,8 @@
             "column": 1, 
             "row": "70|Rope"
         }, 
-        "water_diffusion_speed": 0.015, 
+        "water_diffusion_speed": 0.015,
+	"water_intake": 0.05,
         "water_retention": 0.5, 
         "water_volume_fill": 0.3,
 	"wind_receptivity": 1.0
@@ -2204,6 +2205,27 @@
 	"wind_receptivity": 0.5
     }, 
     {
+        "color_key": "#FFE680", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.0215,
+            "nominal_mass": 30
+        }, 
+        "name": "Cloth Yellow", 
+        "render_color": "#FFE680", 
+        "sound_type": "Cloth", 
+        "stiffness": 0.012, 
+        "strength": 3.8, 
+        "template": {
+            "column": 4, 
+            "row": "70|Cloth"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.5, 
+        "water_volume_fill": 0.05,
+	"wind_receptivity": 0.5
+    }, 
+    {
         "color_key": "#054C00", 
         "is_hull": false, 
         "mass": {
@@ -2216,7 +2238,7 @@
         "stiffness": 0.012, 
         "strength": 3.8, 
         "template": {
-            "column": 4, 
+            "column": 5, 
             "row": "70|Cloth"
         }, 
         "water_diffusion_speed": 0.5, 
@@ -2237,7 +2259,28 @@
         "stiffness": 0.012, 
         "strength": 3.8,
         "template": {
-            "column": 5, 
+            "column": 6, 
+            "row": "70|Cloth"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.5, 
+        "water_volume_fill": 0.05,
+	"wind_receptivity": 0.5
+    }, 
+    {
+        "color_key": "#FF8000", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.0215,
+            "nominal_mass": 30
+        }, 
+        "name": "Cloth Orange", 
+        "render_color": "#FF8000", 
+        "sound_type": "Cloth", 
+        "stiffness": 0.012, 
+        "strength": 3.8, 
+        "template": {
+            "column": 7, 
             "row": "70|Cloth"
         }, 
         "water_diffusion_speed": 0.5, 
@@ -2264,6 +2307,7 @@
             "row": "90|Air"
         }, 
         "water_diffusion_speed": 0.0,
+	"water_intake": 0.0,
         "water_retention": 0.0, 
         "water_volume_fill": 0.003	// We want to limit the buoyancy applied to air - using 1.0 makes the air particle boost up too quickly
     },
