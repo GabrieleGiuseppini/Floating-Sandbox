@@ -24,6 +24,7 @@ struct StructuralMaterial
 
     bool IsHull;
     float WaterVolumeFill;
+    float WaterIntake;
     float WaterDiffusionSpeed;
     float WaterRetention;
     float WindReceptivity;
@@ -69,6 +70,7 @@ public:
         vec4f renderColor,
         bool isHull,
         float waterVolumeFill,
+        float waterIntake,
         float waterDiffusionSpeed,
         float waterRetention,
         float windReceptivity,
@@ -80,6 +82,7 @@ public:
         , Stiffness(stiffness)
         , RenderColor(renderColor)
         , IsHull(isHull)
+        , WaterIntake(waterIntake)
         , WaterVolumeFill(waterVolumeFill)
         , WaterDiffusionSpeed(waterDiffusionSpeed)
         , WaterRetention(waterRetention)

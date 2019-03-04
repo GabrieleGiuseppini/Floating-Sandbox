@@ -1052,6 +1052,7 @@ void Ship::UpdateWaterInflow(
                 float newWater =
                     incomingWaterVelocity
                     * GameParameters::SimulationStepTimeDuration<float>
+                    * mPoints.GetWaterIntake(pointIndex)
                     * gameParameters.WaterIntakeAdjustment;
 
                 if (newWater < 0.0f)

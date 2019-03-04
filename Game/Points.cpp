@@ -43,6 +43,7 @@ void Points::Add(
 
     mIsHullBuffer.emplace_back(structuralMaterial.IsHull);
     mWaterVolumeFillBuffer.emplace_back(structuralMaterial.WaterVolumeFill);
+    mWaterIntakeBuffer.emplace_back(structuralMaterial.WaterIntake);
     mWaterRestitutionBuffer.emplace_back(1.0f - structuralMaterial.WaterRetention);
     mWaterDiffusionSpeedBuffer.emplace_back(structuralMaterial.WaterDiffusionSpeed);
 
@@ -110,6 +111,7 @@ void Points::CreateEphemeralParticleAirBubble(
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
 
     mWaterVolumeFillBuffer[pointIndex] = structuralMaterial.WaterVolumeFill;
+    mWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
     mWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
     mWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
     mWaterBuffer[pointIndex] = 0.0f;
@@ -167,6 +169,7 @@ void Points::CreateEphemeralParticleDebris(
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
 
     mWaterVolumeFillBuffer[pointIndex] = 0.0f; // No buoyancy
+    mWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
     mWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
     mWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
     mWaterBuffer[pointIndex] = 0.0f;
@@ -219,6 +222,7 @@ void Points::CreateEphemeralParticleSparkle(
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
 
     mWaterVolumeFillBuffer[pointIndex] = 0.0f; // No buoyancy
+    mWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
     mWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
     mWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
     mWaterBuffer[pointIndex] = 0.0f;

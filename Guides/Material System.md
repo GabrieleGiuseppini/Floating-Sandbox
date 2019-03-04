@@ -49,6 +49,7 @@ Structural materials are as follows:
             "row": "0|Iron Hull"
         }, 
         "water_diffusion_speed": 0.5, 
+        "water_intake": 1.0, 
         "water_retention": 0.05, 
         "water_volume_fill": 0.0,
 	"wind_receptivity": 0.0
@@ -69,6 +70,7 @@ Here's an explanation of the elements:
    - For example, 0.01 means that a spring will break after it gets shorter or longer by 1% of its rest length.
 - _template_: coordinates of the material in the automatically-generated materials template.
 - _water diffusion speed_: the speed with which water at this particle spreads out of it. Technically, it's the fraction of water at this particle that is allowed to leave the particle towards its neighbors.
+- _water intake_: the amount of water that enters or leaves this particle when the particle is leaking; when not set, assumed to be 1.0.
 - _water retention_: the amount of water that will remain in this particle when the particle is leaking and finds itself at a pressure point lower than the pressure of the water it contains.
 - _water volume fill_: the fraction of 1m3 that may be filled-in by water, and at the same time, the fraction of 1m3 of water that this particle displaces when submerged. This parameter basically controls buoyancy.
    - For example, 0.5 means that this particle may take in up to half a cubic meter, and that this particle also displaces half a cubic meter of water when submerged.

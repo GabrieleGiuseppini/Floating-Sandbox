@@ -171,6 +171,20 @@ Render:
 			+ SettingsDialog
 				+ Use same sliders as DestroyRadius
 			+ Test mins and maxs
+		+ Make ropes less crazy when they get wet
+			+ Test: base tall, slice rightmost tip
+			+ Lower water intake adjust seems to help: add per-material
+				+ StructuralMaterial: WaterIntake: 0.1 for Rope, default 1.0
+					+ Also to guide; dimensionless
+				+ Point buffer
+				+ Use 
+			+ Find good value:
+				+ 0.05
+			+ Perf:
+				+ Pre: 29.1/29.2
+				+ Post: 29.3/29.3
+		+ Add more cloth colors
+			+ Redo structural palette afterwards
 
 		= Take new ships from 02/09
 			+ Also Kiko's ready ships
@@ -179,18 +193,10 @@ Render:
 					- SS nomadic (Lumbago, just sent friend request, have to ask)
 					- Ed Fitzgerald (but needs to be fixed) (Kiko)
 					- Aegir_Mark_III
-					- AlbertWindsor's QM2 (too heavy on bow)
-					- Good FS
-					- RMS Titanic (Kiko)
-					- Cassidy (Kiko)
+					- Good FS - asked meta
+					- Cassidy (Kiko) - waiting
+					- Saturn V
 				- Ready:
-
-		- Make ropes less crazy when they get wet
-			- Test: base tall, slice rightmost tip
-			- Lower water intake adjust seems to help: do we have it per-material?
-
-		- Add more cloth colors
-			- Redo structural palette afterwards
 
 		- New render setting: Water Render Mode {Texture, Flat, Depth}
 			- 3 structures for RenderContext's vertex attributes

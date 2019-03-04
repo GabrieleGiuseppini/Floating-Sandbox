@@ -219,6 +219,7 @@ public:
         // Water dynamics
         , mIsHullBuffer(mBufferElementCount, shipPointCount, false)
         , mWaterVolumeFillBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mWaterIntakeBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mWaterRestitutionBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mWaterDiffusionSpeedBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mWaterBuffer(mBufferElementCount, shipPointCount, 0.0f)
@@ -547,6 +548,11 @@ public:
     float GetWaterVolumeFill(ElementIndex pointElementIndex) const
     {
         return mWaterVolumeFillBuffer[pointElementIndex];
+    }
+
+    float GetWaterIntake(ElementIndex pointElementIndex) const
+    {
+        return mWaterIntakeBuffer[pointElementIndex];
     }
 
     float GetWaterRestitution(ElementIndex pointElementIndex) const
@@ -949,6 +955,7 @@ private:
 
     Buffer<bool> mIsHullBuffer;
     Buffer<float> mWaterVolumeFillBuffer;
+    Buffer<float> mWaterIntakeBuffer;
     Buffer<float> mWaterRestitutionBuffer;
     Buffer<float> mWaterDiffusionSpeedBuffer;
 

@@ -28,6 +28,7 @@ StructuralMaterial StructuralMaterial::Create(picojson::object const & structura
 
         bool isHull = Utils::GetMandatoryJsonMember<bool>(structuralMaterialJson, "is_hull");
         float waterVolumeFill = static_cast<float>(Utils::GetMandatoryJsonMember<double>(structuralMaterialJson, "water_volume_fill"));
+        float waterIntake = static_cast<float>(Utils::GetOptionalJsonMember<double>(structuralMaterialJson, "water_intake", 1.0));
         float waterDiffusionSpeed = static_cast<float>(Utils::GetMandatoryJsonMember<double>(structuralMaterialJson, "water_diffusion_speed"));
         float waterRetention = static_cast<float>(Utils::GetMandatoryJsonMember<double>(structuralMaterialJson, "water_retention"));
 
@@ -52,6 +53,7 @@ StructuralMaterial StructuralMaterial::Create(picojson::object const & structura
             renderColor,
             isHull,
             waterVolumeFill,
+            waterIntake,
             waterDiffusionSpeed,
             waterRetention,
             windReceptivity,
