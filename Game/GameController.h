@@ -13,6 +13,7 @@
 #include "ResourceLoader.h"
 #include "TextLayer.h"
 
+#include <GameCore/Colors.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/GameWallClock.h>
 #include <GameCore/ImageData.h>
@@ -313,6 +314,18 @@ public:
 
     DebugShipRenderMode GetDebugShipRenderMode() const { return mRenderContext->GetDebugShipRenderMode(); }
     void SetDebugShipRenderMode(DebugShipRenderMode debugShipRenderMode) { mRenderContext->SetDebugShipRenderMode(debugShipRenderMode); }
+
+    WaterRenderMode GetWaterRenderMode() const { return mRenderContext->GetWaterRenderMode(); }
+    void SetWaterRenderMode(WaterRenderMode waterRenderMode) { mRenderContext->SetWaterRenderMode(waterRenderMode); }
+
+    rgbColor GetDepthWaterColorStart() const { return mRenderContext->GetDepthWaterColorStart(); }
+    void SetDepthWaterColorStart(rgbColor const & color) { mRenderContext->SetDepthWaterColorStart(color); }
+
+    rgbColor GetDepthWaterColorEnd() const { return mRenderContext->GetDepthWaterColorEnd(); }
+    void SetDepthWaterColorEnd(rgbColor const & color) { mRenderContext->SetDepthWaterColorEnd(color); }
+
+    rgbColor GetFlatWaterColor() const { return mRenderContext->GetFlatWaterColor(); }
+    void SetFlatWaterColor(rgbColor const & color) { mRenderContext->SetFlatWaterColor(color); }
 
     VectorFieldRenderMode GetVectorFieldRenderMode() const { return mRenderContext->GetVectorFieldRenderMode(); }
     void SetVectorFieldRenderMode(VectorFieldRenderMode VectorFieldRenderMode) { mRenderContext->SetVectorFieldRenderMode(VectorFieldRenderMode); }

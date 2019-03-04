@@ -49,8 +49,12 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::Stars;
     else if (lstr == "text_ndc")
         return ProgramType::TextNDC;
-    else if (lstr == "water")
-        return ProgramType::Water;
+    else if (lstr == "water_depth")
+        return ProgramType::WaterDepth;
+    else if (lstr == "water_flat")
+        return ProgramType::WaterFlat;
+    else if (lstr == "water_texture")
+        return ProgramType::WaterTexture;
     else
         throw GameException("Unrecognized program \"" + str + "\"");
 }
@@ -93,8 +97,12 @@ std::string ProgramTypeToStr(ProgramType program)
         return "Stars";
     case ProgramType::TextNDC:
         return "TextNDC";
-    case ProgramType::Water:
-        return "Water";
+    case ProgramType::WaterDepth:
+        return "WaterDepth";
+    case ProgramType::WaterFlat:
+        return "WaterFlat";
+    case ProgramType::WaterTexture:
+        return "WaterTexture";
     default:
         assert(false);
         throw GameException("Unsupported ProgramType");
@@ -121,6 +129,12 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::WaterLevelThreshold;
     else if (str == "WaterTransparency")
         return ProgramParameterType::WaterTransparency;
+    else if (str == "WaterDepthColorStart")
+        return ProgramParameterType::WaterDepthColorStart;
+    else if (str == "WaterDepthColorEnd")
+        return ProgramParameterType::WaterDepthColorEnd;
+    else if (str == "WaterFlatColor")
+        return ProgramParameterType::WaterFlatColor;
     // Textures
     else if (str == "SharedTexture")
         return ProgramParameterType::SharedTexture;
@@ -158,6 +172,12 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "WaterLevelThreshold";
     case ProgramParameterType::WaterTransparency:
         return "WaterTransparency";
+    case ProgramParameterType::WaterDepthColorStart:
+        return "WaterDepthColorStart";
+    case ProgramParameterType::WaterDepthColorEnd:
+        return "WaterDepthColorEnd";
+    case ProgramParameterType::WaterFlatColor:
+        return "WaterFlatColor";
     // Textures
     case ProgramParameterType::SharedTexture:
         return "SharedTexture";

@@ -42,9 +42,11 @@ enum class ProgramType
     ShipVectors,
     Stars,
     TextNDC,
-    Water,
+    WaterDepth,
+    WaterFlat,
+    WaterTexture,
 
-    _Last = Water
+    _Last = WaterTexture
 };
 
 ProgramType ShaderFilenameToProgramType(std::string const & str);
@@ -62,6 +64,9 @@ enum class ProgramParameterType : uint8_t
     WaterContrast,
     WaterLevelThreshold,
     WaterTransparency,
+    WaterDepthColorStart,
+    WaterDepthColorEnd,
+    WaterFlatColor,
 
     // Textures
     SharedTexture,                  // 0

@@ -175,6 +175,16 @@ enum class DebugShipRenderMode
 };
 
 /*
+ * The different ways in which water may be rendered.
+ */
+enum class WaterRenderMode
+{
+    Texture,
+    Depth,
+    Flat
+};
+
+/*
  * The different vector fields that may be rendered.
  */
 enum class VectorFieldRenderMode

@@ -198,15 +198,20 @@ Render:
 					- Saturn V
 				- Ready:
 
-		- New render setting: Water Render Mode {Texture, Flat, Depth}
-			- 3 structures for RenderContext's vertex attributes
+		= New render setting: Water Render Mode {Texture, Flat, Depth}
+			- One vertex attribute structure to rule them all 
 				+ Texture
 				- Flat
 				- Depth
 					= restWaterHeight is sea depth, no need for: RenderContext need to be told of changing sea depth by GameController
 						- Rename as seaDepth
-
-			- 3 shaders
+			+ 3 shaders
+			- SettingsDialog:
+				- Settings
+				- 3 colors
+			- Find good color values:
+				- Depth
+				- Flat
 
 		- Orphaned points (*)
 

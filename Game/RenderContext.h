@@ -17,10 +17,10 @@
 #include <GameOpenGL/GameOpenGL.h>
 #include <GameOpenGL/ShaderManager.h>
 
+#include <GameCore/Colors.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/ImageData.h>
 #include <GameCore/ProgressCallback.h>
-
 #include <GameCore/SysSpecifics.h>
 #include <GameCore/Vectors.h>
 
@@ -206,6 +206,54 @@ public:
         mDebugShipRenderMode = debugShipRenderMode;
 
         OnDebugShipRenderModeUpdated();
+    }
+
+    WaterRenderMode GetWaterRenderMode() const
+    {
+        return mWaterRenderMode;
+    }
+
+    void SetWaterRenderMode(WaterRenderMode waterRenderMode)
+    {
+        mWaterRenderMode = waterRenderMode;
+
+        OnWaterRenderParametersUpdated();
+    }
+
+    rgbColor GetDepthWaterColorStart() const
+    {
+        return mDepthWaterColorStart;
+    }
+
+    void SetDepthWaterColorStart(rgbColor const & color)
+    {
+        mDepthWaterColorStart = color;
+
+        OnWaterRenderParametersUpdated();
+    }
+
+    rgbColor GetDepthWaterColorEnd() const
+    {
+        return mDepthWaterColorEnd;
+    }
+
+    void SetDepthWaterColorEnd(rgbColor const & color)
+    {
+        mDepthWaterColorEnd = color;
+
+        OnWaterRenderParametersUpdated();
+    }
+
+    rgbColor GetFlatWaterColor() const
+    {
+        return mFlatWaterColor;
+    }
+
+    void SetFlatWaterColor(rgbColor const & color)
+    {
+        mFlatWaterColor = color;
+
+        OnWaterRenderParametersUpdated();
     }
 
     VectorFieldRenderMode GetVectorFieldRenderMode() const
@@ -867,6 +915,7 @@ private:
     void OnWaterLevelOfDetailUpdated();
     void OnShipRenderModeUpdated();
     void OnDebugShipRenderModeUpdated();
+    void OnWaterRenderParametersUpdated();
     void OnVectorFieldRenderModeUpdated();
     void OnShowStressedSpringsUpdated();
 
@@ -1045,6 +1094,10 @@ private:
     float mWaterLevelOfDetail;
     ShipRenderMode mShipRenderMode;
     DebugShipRenderMode mDebugShipRenderMode;
+    WaterRenderMode mWaterRenderMode;
+    rgbColor mDepthWaterColorStart;
+    rgbColor mDepthWaterColorEnd;
+    rgbColor mFlatWaterColor;
     VectorFieldRenderMode mVectorFieldRenderMode;
     float mVectorFieldLengthMultiplier;
     bool mShowStressedSprings;

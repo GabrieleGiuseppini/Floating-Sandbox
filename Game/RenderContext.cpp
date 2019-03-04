@@ -54,6 +54,10 @@ RenderContext::RenderContext(
     , mWaterLevelOfDetail(0.6875f)
     , mShipRenderMode(ShipRenderMode::Texture)
     , mDebugShipRenderMode(DebugShipRenderMode::None)
+    , mWaterRenderMode(WaterRenderMode::Texture)
+    , mDepthWaterColorStart(0xe6, 0xf0, 0xff)
+    , mDepthWaterColorEnd(0x00, 0x0a, 0x1a)
+    , mFlatWaterColor(0x00, 0x3d, 0x99)
     , mVectorFieldRenderMode(VectorFieldRenderMode::None)
     , mVectorFieldLengthMultiplier(1.0f)
     , mShowStressedSprings(false)
@@ -274,8 +278,10 @@ RenderContext::RenderContext(
     // Initialize water
     //
 
+    // Activate texture
     mShaderManager->ActivateTexture<ProgramParameterType::WaterTexture>();
 
+    // Upload texture
     mTextureRenderManager->UploadMipmappedGroup(
         textureDatabase.GetGroup(TextureGroupType::Water),
         GL_LINEAR_MIPMAP_NEAREST,
@@ -290,11 +296,11 @@ RenderContext::RenderContext(
 
     // Set hardcoded parameters
     auto const & waterTextureMetadata = textureDatabase.GetFrameMetadata(TextureGroupType::Water, 0);
-    mShaderManager->ActivateProgram<ProgramType::Water>();
-    mShaderManager->SetProgramParameter<ProgramType::Water, ProgramParameterType::TextureScaling>(
+    mShaderManager->ActivateProgram<ProgramType::WaterTexture>();
+    mShaderManager->SetProgramParameter<ProgramType::WaterTexture, ProgramParameterType::TextureScaling>(
             1.0f / waterTextureMetadata.WorldWidth,
             1.0f / waterTextureMetadata.WorldHeight);
-    mShaderManager->SetTextureParameters<ProgramType::Water>();
+    mShaderManager->SetTextureParameters<ProgramType::WaterTexture>();
 
     // Create VBO
     glGenBuffers(1, &tmpGLuint);
@@ -349,6 +355,7 @@ RenderContext::RenderContext(
     OnWaterLevelOfDetailUpdated();
     OnShipRenderModeUpdated();
     OnDebugShipRenderModeUpdated();
+    OnWaterRenderParametersUpdated();
     OnVectorFieldRenderModeUpdated();
     OnShowStressedSpringsUpdated();
 
@@ -692,7 +699,7 @@ void RenderContext::UploadLandAndWaterEnd()
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(LandElement) * mLandElementCount, mLandElementBuffer.get());
 
     // Describe vertex attribute 1
-    // (we know we'll be using before CrossOfLight - which is the only subsequent user of this attribute,
+    // (we know we'll be using it before CrossOfLight - which is the only subsequent user of this attribute,
     //  so we can describe it now and avoid a bind later)
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedAttribute1), 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), nullptr);
     CheckOpenGLError();
@@ -734,7 +741,26 @@ void RenderContext::RenderWater()
     assert(mCurrentWaterElementCount == mWaterElementCount);
 
     // Use program
-    mShaderManager->ActivateProgram<ProgramType::Water>();
+    switch (mWaterRenderMode)
+    {
+        case WaterRenderMode::Depth:
+        {
+            mShaderManager->ActivateProgram<ProgramType::WaterDepth>();
+            break;
+        }
+
+        case WaterRenderMode::Flat:
+        {
+            mShaderManager->ActivateProgram<ProgramType::WaterFlat>();
+            break;
+        }
+
+        case WaterRenderMode::Texture:
+        {
+            mShaderManager->ActivateProgram<ProgramType::WaterTexture>();
+            break;
+        }
+    }
 
     // Disable vertex attribute 0
     glDisableVertexAttribArray(0);
@@ -824,8 +850,16 @@ void RenderContext::OnViewModelUpdated()
     mShaderManager->SetProgramParameter<ProgramType::Land, ProgramParameterType::OrthoMatrix>(
         globalOrthoMatrix);
 
-    mShaderManager->ActivateProgram<ProgramType::Water>();
-    mShaderManager->SetProgramParameter<ProgramType::Water, ProgramParameterType::OrthoMatrix>(
+    mShaderManager->ActivateProgram<ProgramType::WaterDepth>();
+    mShaderManager->SetProgramParameter<ProgramType::WaterDepth, ProgramParameterType::OrthoMatrix>(
+        globalOrthoMatrix);
+
+    mShaderManager->ActivateProgram<ProgramType::WaterFlat>();
+    mShaderManager->SetProgramParameter<ProgramType::WaterFlat, ProgramParameterType::OrthoMatrix>(
+        globalOrthoMatrix);
+
+    mShaderManager->ActivateProgram<ProgramType::WaterTexture>();
+    mShaderManager->SetProgramParameter<ProgramType::WaterTexture, ProgramParameterType::OrthoMatrix>(
         globalOrthoMatrix);
 
     mShaderManager->ActivateProgram<ProgramType::MatteWater>();
@@ -876,8 +910,16 @@ void RenderContext::OnAmbientLightIntensityUpdated()
     mShaderManager->SetProgramParameter<ProgramType::Land, ProgramParameterType::AmbientLightIntensity>(
         mAmbientLightIntensity);
 
-    mShaderManager->ActivateProgram<ProgramType::Water>();
-    mShaderManager->SetProgramParameter<ProgramType::Water, ProgramParameterType::AmbientLightIntensity>(
+    mShaderManager->ActivateProgram<ProgramType::WaterDepth>();
+    mShaderManager->SetProgramParameter<ProgramType::WaterDepth, ProgramParameterType::AmbientLightIntensity>(
+        mAmbientLightIntensity);
+
+    mShaderManager->ActivateProgram<ProgramType::WaterFlat>();
+    mShaderManager->SetProgramParameter<ProgramType::WaterFlat, ProgramParameterType::AmbientLightIntensity>(
+        mAmbientLightIntensity);
+
+    mShaderManager->ActivateProgram<ProgramType::WaterTexture>();
+    mShaderManager->SetProgramParameter<ProgramType::WaterTexture, ProgramParameterType::AmbientLightIntensity>(
         mAmbientLightIntensity);
 
     // Update all ships
@@ -894,8 +936,16 @@ void RenderContext::OnSeaWaterTransparencyUpdated()
 {
     // Set parameter in all programs
 
-    mShaderManager->ActivateProgram<ProgramType::Water>();
-    mShaderManager->SetProgramParameter<ProgramType::Water, ProgramParameterType::WaterTransparency>(
+    mShaderManager->ActivateProgram<ProgramType::WaterDepth>();
+    mShaderManager->SetProgramParameter<ProgramType::WaterDepth, ProgramParameterType::WaterTransparency>(
+        mSeaWaterTransparency);
+
+    mShaderManager->ActivateProgram<ProgramType::WaterFlat>();
+    mShaderManager->SetProgramParameter<ProgramType::WaterFlat, ProgramParameterType::WaterTransparency>(
+        mSeaWaterTransparency);
+
+    mShaderManager->ActivateProgram<ProgramType::WaterTexture>();
+    mShaderManager->SetProgramParameter<ProgramType::WaterTexture, ProgramParameterType::WaterTransparency>(
         mSeaWaterTransparency);
 }
 
@@ -937,6 +987,32 @@ void RenderContext::OnDebugShipRenderModeUpdated()
     {
         s->SetDebugShipRenderMode(mDebugShipRenderMode);
     }
+}
+
+void RenderContext::OnWaterRenderParametersUpdated()
+{
+    // Set water parameters in all water programs
+
+    auto depthColorStart = mDepthWaterColorStart.toVec3f();
+    mShaderManager->ActivateProgram<ProgramType::WaterDepth>();
+    mShaderManager->SetProgramParameter<ProgramType::WaterDepth, ProgramParameterType::WaterDepthColorStart>(
+        depthColorStart.x,
+        depthColorStart.y,
+        depthColorStart.z);
+
+    auto depthColorEnd = mDepthWaterColorEnd.toVec3f();
+    mShaderManager->ActivateProgram<ProgramType::WaterDepth>();
+    mShaderManager->SetProgramParameter<ProgramType::WaterDepth, ProgramParameterType::WaterDepthColorEnd>(
+        depthColorEnd.x,
+        depthColorEnd.y,
+        depthColorEnd.z);
+
+    auto flatColor = mFlatWaterColor.toVec3f();
+    mShaderManager->ActivateProgram<ProgramType::WaterFlat>();
+    mShaderManager->SetProgramParameter<ProgramType::WaterFlat, ProgramParameterType::WaterFlatColor>(
+        flatColor.x,
+        flatColor.y,
+        flatColor.z);
 }
 
 void RenderContext::OnVectorFieldRenderModeUpdated()
