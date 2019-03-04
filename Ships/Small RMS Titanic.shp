@@ -1,0 +1,7 @@
+{
+	"structure_image":"small_rms_titanic_structural.png.dat",
+	"offset":{"x":0.0, "y":0.0},
+	"ship_name":"Small RMS Titanic",
+	"created_by":"KikoTheBoatBuilder",
+	"year_built":"1912"
+}
