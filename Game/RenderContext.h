@@ -403,7 +403,8 @@ public:
         assert(mLandElementCount == mWaterElementCount);
         assert(mLandElementCount > 0);
 
-        float const worldBottom = mViewModel.GetCameraWorldPosition().y - (mViewModel.GetVisibleWorldHeight() / 2.0f);
+        // TODO: move as (pre-calc'd) member of view model
+        float const yVisibleWorldBottom = mViewModel.GetCameraWorldPosition().y - (mViewModel.GetVisibleWorldHeight() / 2.0f);
 
         //
         // Store Land element
@@ -414,9 +415,9 @@ public:
         LandElement * landElement = &(mLandElementBuffer[mCurrentLandElementCount]);
 
         landElement->x1 = x;
-        landElement->y1 = yLand;
+        landElement->y1 = yLand > yVisibleWorldBottom ? yLand : yVisibleWorldBottom; // Clamp top up to visible bottom
         landElement->x2 = x;
-        landElement->y2 = worldBottom;
+        landElement->y2 = yVisibleWorldBottom;
 
         ++mCurrentLandElementCount;
 
@@ -434,7 +435,7 @@ public:
         waterElement->textureY1 = restWaterHeight;
 
         waterElement->x2 = x;
-        waterElement->y2 = yWater > yLand ? yLand : worldBottom;
+        waterElement->y2 = yWater > yLand ? yLand : yVisibleWorldBottom; // If land sticks out, go down to visible bottom (land is drawn last)
         waterElement->textureY2 = 0.0f;
 
         ++mCurrentWaterElementCount;

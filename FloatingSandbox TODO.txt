@@ -194,6 +194,13 @@ Render:
 
 		- New render setting: Water Render Mode {Texture, Flat, Depth}
 			- 3 structures for RenderContext's vertex attributes
+				+ Texture
+				- Flat
+				- Depth
+					= restWaterHeight is sea depth, no need for: RenderContext need to be told of changing sea depth by GameController
+						- Rename as seaDepth
+
+			- 3 shaders
 
 		- Orphaned points (*)
 
