@@ -1136,7 +1136,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
                     mTextureOceanRenderModeRadioButton = new wxRadioButton(oceanRenderModeBox, wxID_ANY, _("Texture"),
                         wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-                    mTextureOceanRenderModeRadioButton->SetToolTip("Draws the ocean with a static pattern.");
+                    mTextureOceanRenderModeRadioButton->SetToolTip("Draws the ocean using a static pattern.");
                     mTextureOceanRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnTextureOceanRenderModeRadioButtonClick, this);
                     oceanRenderModeBoxSizer2->Add(mTextureOceanRenderModeRadioButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 0);
 
@@ -1146,7 +1146,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
                     mDepthOceanRenderModeRadioButton = new wxRadioButton(oceanRenderModeBox, wxID_ANY, _("Depth Gradient"),
                         wxDefaultPosition, wxDefaultSize);
-                    mDepthOceanRenderModeRadioButton->SetToolTip("Draws the ocean with a vertical color gradient.");
+                    mDepthOceanRenderModeRadioButton->SetToolTip("Draws the ocean using a vertical color gradient.");
                     mDepthOceanRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnDepthOceanRenderModeRadioButtonClick, this);
                     oceanRenderModeBoxSizer2->Add(mDepthOceanRenderModeRadioButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 0);
 
@@ -1164,7 +1164,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
                     mFlatOceanRenderModeRadioButton = new wxRadioButton(oceanRenderModeBox, wxID_ANY, _("Flat"),
                         wxDefaultPosition, wxDefaultSize);
-                    mFlatOceanRenderModeRadioButton->SetToolTip("Draws the ocean with a single color.");
+                    mFlatOceanRenderModeRadioButton->SetToolTip("Draws the ocean using a single color.");
                     mFlatOceanRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnFlatOceanRenderModeRadioButtonClick, this);
                     oceanRenderModeBoxSizer2->Add(mFlatOceanRenderModeRadioButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 0);
 

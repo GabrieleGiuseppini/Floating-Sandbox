@@ -5,6 +5,7 @@
  ***************************************************************************************/
 #pragma once
 
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <ostream>
@@ -351,6 +352,14 @@ public:
             return vec3f(0.0f, 0.0f, 0.0f);
         }
 	}
+
+    vec3f ceilPositive() const
+    {
+        return vec3f(
+            std::max(x, 0.0f),
+            std::max(y, 0.0f),
+            std::max(z, 0.0f));
+    }
 
     std::string toString() const;
 };

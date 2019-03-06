@@ -1,6 +1,9 @@
 =================================================
 Current perf:
 =================================================
+-fps: 29.0/29.2/29.4
+
+Before Z buffer:
 - fps: 30.2/30.6/31.2
 
 Before wind:
@@ -148,6 +151,7 @@ Render:
 		+ Add new ships
 		+ Installer does not install guides
 		+ Change version
+		+ ConnectedSprings/OtherEndpoint Optimization (*)
 		+ Create "z_buffer" branch
 		+ Zbuffer (*)
 		+ See if can avoid freezing (so, deleting) springs to which we have bombs attached
@@ -185,8 +189,7 @@ Render:
 				+ Post: 29.3/29.3
 		+ Add more cloth colors
 			+ Redo structural palette afterwards
-
-		= New render setting: Ocean Render Mode {Texture, Flat, Depth}
+		+ New render setting: Ocean Render Mode {Texture, Flat, Depth}
 			+ One vertex attribute structure to rule them all 
 				+ Texture
 				+ Flat
@@ -196,18 +199,16 @@ Render:
 			+ 3 shaders
 			+ VisibleWorld bounding box in viewmodel
 				+ Test CrossOfLight
-			= SettingsDialog:
+			+ SettingsDialog:
 				+ RenderMode
 				+ 3 colors
-				- Calc color to send based off (new) sky color and ocean transparency
 			+ Test all 3 with:
 				+ Ambient light intensity
 				+ Ocean transparency
-			- Find good default colors:
-				- Depth
-				- Flat
-
-		= New render setting: Ocean Floor Render Mode {Texture, Flat}
+			+ Find good default colors:
+				+ Depth
+				+ Flat
+		+ New render setting: Ocean Floor Render Mode {Texture, Flat}
 			+ One vertex attribute structure to rule them all 
 				+ Texture
 				+ Flat
@@ -217,7 +218,9 @@ Render:
 				+ 1 color
 			+ Test all 2 with:
 				+ Ambient light intensity
-			- Find good default flat color
+			+ Find good default flat color
+
+	- 1.10.0
 
 		- Orphaned points (*)
 
@@ -229,24 +232,24 @@ Render:
 
 		- Interior layer (*)
 
-		+ ConnectedSprings/OtherEndpoint Optimization (*)
+		- Electrical layer view (*)
+
+		- Spring and NonSpring force separation optimization (*)
 
 		- Increase # of ephemeral particles
 			- And thus lower water intake threshold for air bubbles
 
-	- 1.10.0
-		- Spring and NonSpring force separation optimization (*)
 		- Batisphere with pumps and propulsion (*)
 			- Switches (*)
 			- Flood doors (*)
 			- Pumps (*)
 			- Propulsion (*)
 			- Batisphere ship
-		- Electrical layer view (*)
+	- 1.11.0
+
 		- Smoke (*)
 		- Settings Manager (*)
 
-	- 1.11.0
 		- Libsimdpp spring relaxation (*)
 		- Frontier
 		- Resource Packs (*)
@@ -257,20 +260,15 @@ Render:
 			- Need Z buffer work first
 		- Sub
 	- Asked:
-		- SS nomadic (Lumbago, just sent friend request, have to ask)
 		- Ed Fitzgerald (but needs to be fixed) (Kiko)
 		- Aegir_Mark_III (coolman asks original designer)
-		- S.S. Caraboudjan TBD - KikoTheBoatBuilder - YEARTBD
-		- S.S. Caraboudjan TBD - (shippy mc jerry) - YEARTBD
 	- Ready:
-
 
 
 - Suggestions to spec:
 	- Fishes
 	- Different colored lights
 	- Backgrounds: use keys to switch between a dock, cliffs, open ocean, ice field, etc.
-	- Custom sky colour - if possible a RGB picker in the settings
 	- Black hole
 	- Tool to increase or lower mass under the cursor
 	- Can the bubble tool be used to remove water from the ship? that could be pretty cool
@@ -721,6 +719,9 @@ Render:
 			- Points: new Decay buffer
 				- Init as 0.0
 				- Ship::DecayStructure sends it asymptotically to 1.0
+			- Points: ConnectedSprings structure contains size_t with # of springs owned by the point
+				- Update at Add/RemoveConnectedSpring
+				- Clone same to triangles - remove isAtOwner flag there
 			- Ship::DecayStructure:
 				- Invoked by Ship::Update
 				- Checks whether currentSimTimestamp >= lastDecaySimTimestamp + DT
@@ -730,15 +731,16 @@ Render:
 					- alpha = (10**-5)**(1/300) (~total decay in 300 steps)
 					- for each point p for which p.water > threshold and p.isMetal:
 						- p.rust *= alpha
+						- for each spring s that is owned (use new size_t member of ConnectedSprings struct):
+							- s.strength *= (1.0 - pA.rust)
 					- Points.MarkRustBufferAsDirty()
-					- for each spring s:
-						- s.strength *= (1.0 - pA.rust)
+
 			- (Ship)RenderContext:
 				- UploadDecayBuffer
 				- Triangle, Spring, and Point shaders take attrib array and use it for color blend
 			- Ship::Render:
 				- Call Points::UploadDirtyBuffers (new name for old method)
-					- Also uploads Decay buffer if dirty
+					- Now also uploads Decay buffer if dirty
 
 
 	- Lights breaking under pressure

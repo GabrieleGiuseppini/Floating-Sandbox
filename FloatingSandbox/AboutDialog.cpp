@@ -112,6 +112,7 @@ AboutDialog::AboutDialog(
         {"\t\t\t\t", "Artica - https://discordapp.com/" },
         {"\t\t\t\t", "KikoTheBoatBuilder - https://discordapp.com/" },
         {"\t\t\t\t", "Albert Windsor - https://discordapp.com/" },
+        {"\t\t\t\t", "ShipBuilder1912 - https://discordapp.com/" },
 
         {"Textures:\t", "Tune 'Prototstar' Katerungroch"},
         {"wxWidgets:\t", "Copyright (c) 1998-2005 Julian Smart, Robert Roebling et al - https://www.wxwidgets.org/"},

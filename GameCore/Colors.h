@@ -47,6 +47,13 @@ public:
     {
     }
 
+    inline rgbColor(vec3f const & c)
+        : r(static_cast<uint8_t>(round(c.x * 255.0f)))
+        , g(static_cast<uint8_t>(round(c.y * 255.0f)))
+        , b(static_cast<uint8_t>(round(c.z * 255.0f)))
+    {
+    }
+
 	inline bool operator==(rgbColor const & other) const
 	{
         return r == other.r
