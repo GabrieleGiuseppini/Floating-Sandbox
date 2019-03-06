@@ -19,14 +19,22 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::Clouds;
     else if (lstr == "cross_of_light")
         return ProgramType::CrossOfLight;
-    else if (lstr == "land")
-        return ProgramType::Land;
+    else if (lstr == "land_flat")
+        return ProgramType::LandFlat;
+    else if (lstr == "land_texture")
+        return ProgramType::LandTexture;
     else if (lstr == "matte")
         return ProgramType::Matte;
     else if (lstr == "matte_ndc")
         return ProgramType::MatteNDC;
-    else if (lstr == "matte_water")
-        return ProgramType::MatteWater;
+    else if (lstr == "matte_ocean")
+        return ProgramType::MatteOcean;
+    else if (lstr == "ocean_depth")
+        return ProgramType::OceanDepth;
+    else if (lstr == "ocean_flat")
+        return ProgramType::OceanFlat;
+    else if (lstr == "ocean_texture")
+        return ProgramType::OceanTexture;
     else if (lstr == "ship_generic_textures")
         return ProgramType::ShipGenericTextures;
     else if (lstr == "ship_points_color")
@@ -49,12 +57,6 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::Stars;
     else if (lstr == "text_ndc")
         return ProgramType::TextNDC;
-    else if (lstr == "water_depth")
-        return ProgramType::WaterDepth;
-    else if (lstr == "water_flat")
-        return ProgramType::WaterFlat;
-    else if (lstr == "water_texture")
-        return ProgramType::WaterTexture;
     else
         throw GameException("Unrecognized program \"" + str + "\"");
 }
@@ -67,14 +69,22 @@ std::string ProgramTypeToStr(ProgramType program)
         return "Clouds";
     case ProgramType::CrossOfLight:
         return "CrossOfLight";
-    case ProgramType::Land:
-        return "Land";
+    case ProgramType::LandFlat:
+        return "LandFlat";
+    case ProgramType::LandTexture:
+        return "LandTexture";
     case ProgramType::Matte:
         return "Matte";
     case ProgramType::MatteNDC:
         return "MatteNDC";
-    case ProgramType::MatteWater:
-        return "MatteWater";
+    case ProgramType::MatteOcean:
+        return "MatteOcean";
+    case ProgramType::OceanDepth:
+        return "OceanDepth";
+    case ProgramType::OceanFlat:
+        return "OceanFlat";
+    case ProgramType::OceanTexture:
+        return "OceanTexture";
     case ProgramType::ShipGenericTextures:
         return "ShipGenericTextures";
     case ProgramType::ShipPointsColor:
@@ -97,12 +107,6 @@ std::string ProgramTypeToStr(ProgramType program)
         return "Stars";
     case ProgramType::TextNDC:
         return "TextNDC";
-    case ProgramType::WaterDepth:
-        return "WaterDepth";
-    case ProgramType::WaterFlat:
-        return "WaterFlat";
-    case ProgramType::WaterTexture:
-        return "WaterTexture";
     default:
         assert(false);
         throw GameException("Unsupported ProgramType");
@@ -113,8 +117,18 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
 {
     if (str == "AmbientLightIntensity")
         return ProgramParameterType::AmbientLightIntensity;
+    else if (str == "LandFlatColor")
+        return ProgramParameterType::LandFlatColor;
     else if (str == "MatteColor")
         return ProgramParameterType::MatteColor;
+    else if (str == "OceanTransparency")
+        return ProgramParameterType::OceanTransparency;
+    else if (str == "OceanDepthColorStart")
+        return ProgramParameterType::OceanDepthColorStart;
+    else if (str == "OceanDepthColorEnd")
+        return ProgramParameterType::OceanDepthColorEnd;
+    else if (str == "OceanFlatColor")
+        return ProgramParameterType::OceanFlatColor;
     else if (str == "OrthoMatrix")
         return ProgramParameterType::OrthoMatrix;
     else if (str == "StarTransparency")
@@ -127,14 +141,6 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::WaterContrast;
     else if (str == "WaterLevelThreshold")
         return ProgramParameterType::WaterLevelThreshold;
-    else if (str == "WaterTransparency")
-        return ProgramParameterType::WaterTransparency;
-    else if (str == "WaterDepthColorStart")
-        return ProgramParameterType::WaterDepthColorStart;
-    else if (str == "WaterDepthColorEnd")
-        return ProgramParameterType::WaterDepthColorEnd;
-    else if (str == "WaterFlatColor")
-        return ProgramParameterType::WaterFlatColor;
     // Textures
     else if (str == "SharedTexture")
         return ProgramParameterType::SharedTexture;
@@ -144,8 +150,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::GenericTexturesAtlasTexture;
     else if (str == "LandTexture")
         return ProgramParameterType::LandTexture;
-    else if (str == "WaterTexture")
-        return ProgramParameterType::WaterTexture;
+    else if (str == "OceanTexture")
+        return ProgramParameterType::OceanTexture;
     else
         throw GameException("Unrecognized program parameter \"" + str + "\"");
 }
@@ -156,8 +162,18 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
     {
     case ProgramParameterType::AmbientLightIntensity:
         return "AmbientLightIntensity";
+    case ProgramParameterType::LandFlatColor:
+        return "LandFlatColor";
     case ProgramParameterType::MatteColor:
         return "MatteColor";
+    case ProgramParameterType::OceanTransparency:
+        return "OceanTransparency";
+    case ProgramParameterType::OceanDepthColorStart:
+        return "OceanDepthColorStart";
+    case ProgramParameterType::OceanDepthColorEnd:
+        return "OceanDepthColorEnd";
+    case ProgramParameterType::OceanFlatColor:
+        return "OceanFlatColor";
     case ProgramParameterType::OrthoMatrix:
         return "OrthoMatrix";
     case ProgramParameterType::StarTransparency:
@@ -170,14 +186,6 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "WaterContrast";
     case ProgramParameterType::WaterLevelThreshold:
         return "WaterLevelThreshold";
-    case ProgramParameterType::WaterTransparency:
-        return "WaterTransparency";
-    case ProgramParameterType::WaterDepthColorStart:
-        return "WaterDepthColorStart";
-    case ProgramParameterType::WaterDepthColorEnd:
-        return "WaterDepthColorEnd";
-    case ProgramParameterType::WaterFlatColor:
-        return "WaterFlatColor";
     // Textures
     case ProgramParameterType::SharedTexture:
         return "SharedTexture";
@@ -187,8 +195,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "GenericTexturesAtlasTexture";
     case ProgramParameterType::LandTexture:
         return "LandTexture";
-    case ProgramParameterType::WaterTexture:
-        return "WaterTexture";
+    case ProgramParameterType::OceanTexture:
+        return "OceanTexture";
     default:
         assert(false);
         throw GameException("Unsupported ProgramParameterType");
@@ -203,8 +211,8 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::SharedAttribute1;
     else if (Utils::CaseInsensitiveEquals(str, "SharedAttribute2"))
         return VertexAttributeType::SharedAttribute2;
-    else if (Utils::CaseInsensitiveEquals(str, "WaterAttribute"))
-        return VertexAttributeType::WaterAttribute;
+    else if (Utils::CaseInsensitiveEquals(str, "OceanAttribute"))
+        return VertexAttributeType::OceanAttribute;
     else if (Utils::CaseInsensitiveEquals(str, "GenericTexturePackedData1"))
         return VertexAttributeType::GenericTexturePackedData1;
     else if (Utils::CaseInsensitiveEquals(str, "GenericTexturePackedData2"))
@@ -237,8 +245,8 @@ std::string VertexAttributeTypeToStr(VertexAttributeType vertexAttribute)
         return "SharedAttribute1";
     case VertexAttributeType::SharedAttribute2:
         return "SharedAttribute2";
-    case VertexAttributeType::WaterAttribute:
-        return "WaterAttribute";
+    case VertexAttributeType::OceanAttribute:
+        return "OceanAttribute";
     case VertexAttributeType::GenericTexturePackedData1:
         return "GenericTexturePackedData1";
     case VertexAttributeType::GenericTexturePackedData2:

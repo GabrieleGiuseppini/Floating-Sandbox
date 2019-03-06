@@ -175,12 +175,21 @@ enum class DebugShipRenderMode
 };
 
 /*
- * The different ways in which water may be rendered.
+ * The different ways in which the ocean may be rendered.
  */
-enum class WaterRenderMode
+enum class OceanRenderMode
 {
     Texture,
     Depth,
+    Flat
+};
+
+/*
+ * The different ways in which the ocean floor may be rendered.
+ */
+enum class LandRenderMode
+{
+    Texture,
     Flat
 };
 
@@ -208,6 +217,7 @@ enum class TextureGroupType : uint16_t
     Cloud,
     ImpactBomb,
     Land,
+    Ocean,
     PinnedPoint,
     RcBomb,
     RcBombExplosion,
@@ -217,9 +227,8 @@ enum class TextureGroupType : uint16_t
     TimerBombDefuse,
     TimerBombExplosion,
     TimerBombFuse,
-    Water,
 
-    _Last = Water
+    _Last = TimerBombFuse
 };
 
 TextureGroupType StrToTextureGroupType(std::string const & str);

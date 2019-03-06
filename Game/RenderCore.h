@@ -27,10 +27,14 @@ enum class ProgramType
 {
     Clouds = 0,
     CrossOfLight,
-    Land,
+    LandFlat,
+    LandTexture,
     Matte,
     MatteNDC,
-    MatteWater,
+    MatteOcean,
+    OceanDepth,
+    OceanFlat,
+    OceanTexture,
     ShipGenericTextures,
     ShipPointsColor,
     ShipRopes,
@@ -42,11 +46,8 @@ enum class ProgramType
     ShipVectors,
     Stars,
     TextNDC,
-    WaterDepth,
-    WaterFlat,
-    WaterTexture,
 
-    _Last = WaterTexture
+    _Last = TextNDC
 };
 
 ProgramType ShaderFilenameToProgramType(std::string const & str);
@@ -56,27 +57,28 @@ std::string ProgramTypeToStr(ProgramType program);
 enum class ProgramParameterType : uint8_t
 {
     AmbientLightIntensity = 0,
+    LandFlatColor,
     MatteColor,
+    OceanTransparency,
+    OceanDepthColorStart,
+    OceanDepthColorEnd,
+    OceanFlatColor,
     OrthoMatrix,
     StarTransparency,
     TextureScaling,
     ViewportSize,
     WaterContrast,
     WaterLevelThreshold,
-    WaterTransparency,
-    WaterDepthColorStart,
-    WaterDepthColorEnd,
-    WaterFlatColor,
 
     // Textures
     SharedTexture,                  // 0
     CloudTexture,                   // 1
     GenericTexturesAtlasTexture,    // 2
     LandTexture,                    // 3
-    WaterTexture,                   // 4
+    OceanTexture,                   // 4
 
     _FirstTexture = SharedTexture,
-    _LastTexture = WaterTexture
+    _LastTexture = OceanTexture
 };
 
 ProgramParameterType StrToProgramParameterType(std::string const & str);
@@ -98,7 +100,7 @@ enum class VertexAttributeType : GLuint
     // Vertex attributes dedicated to a VBO
     //
 
-    WaterAttribute = 3,
+    OceanAttribute = 3,
 
     GenericTexturePackedData1 = 4,
     GenericTexturePackedData2 = 5,

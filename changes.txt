@@ -2,6 +2,7 @@
 - Re-designed depth management: game does not lag anymore when ships are reduced to smithereens!
 - Revamped load ship window, and added memory of ship directories
 - Made flood tool adjustable
+- Made rendering of sky, land, and water customizable
 - Added a few more ships
 - Added tooltips to each customizable setting
 - ...and a few more small improvements here and there

@@ -148,7 +148,7 @@ public:
 
 private:
 
-    void UploadLandAndWater(
+    void UploadLandAndOcean(
         GameParameters const & gameParameters,
         Render::RenderContext & renderContext) const;
 

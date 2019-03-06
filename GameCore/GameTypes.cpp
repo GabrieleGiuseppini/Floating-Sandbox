@@ -34,6 +34,8 @@ TextureGroupType StrToTextureGroupType(std::string const & str)
         return TextureGroupType::ImpactBomb;
     else if (Utils::CaseInsensitiveEquals(str, "Land"))
         return TextureGroupType::Land;
+    else if (Utils::CaseInsensitiveEquals(str, "Ocean"))
+        return TextureGroupType::Ocean;
     else if (Utils::CaseInsensitiveEquals(str, "PinnedPoint"))
         return TextureGroupType::PinnedPoint;
     else if (Utils::CaseInsensitiveEquals(str, "RCBomb"))
@@ -52,8 +54,6 @@ TextureGroupType StrToTextureGroupType(std::string const & str)
         return TextureGroupType::TimerBombExplosion;
     else if (Utils::CaseInsensitiveEquals(str, "TimerBombFuse"))
         return TextureGroupType::TimerBombFuse;
-    else if (Utils::CaseInsensitiveEquals(str, "Water"))
-        return TextureGroupType::Water;
     else
         throw GameException("Unrecognized TextureGroupType \"" + str + "\"");
 }

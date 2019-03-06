@@ -388,11 +388,11 @@ void World::Render(
     Render::RenderContext & renderContext) const
 {
     //
-    // Upload land and water data (before clouds and stars are rendered, as the latters
-    // need the water stencil)
+    // Upload land and ocean data (before clouds and stars are rendered, as the latters
+    // need the ocean stencil)
     //
 
-    UploadLandAndWater(gameParameters, renderContext);
+    UploadLandAndOcean(gameParameters, renderContext);
 
 
     //
@@ -411,12 +411,12 @@ void World::Render(
 
 
     //
-    // Render the water now, if we want to see the ship through the water
+    // Render the ocean now, if we want to see the ship through the ocean
     //
 
-    if (renderContext.GetShowShipThroughSeaWater())
+    if (renderContext.GetShowShipThroughOcean())
     {
-        renderContext.RenderWater();
+        renderContext.RenderOcean();
     }
 
 
@@ -424,7 +424,7 @@ void World::Render(
     // Render all ships
     //
 
-    renderContext.RenderShipsStart(mAllShips.size());
+    renderContext.RenderShipsStart();
 
     for (auto const & ship : mAllShips)
     {
@@ -437,12 +437,12 @@ void World::Render(
 
 
     //
-    // Render the water now, if we want to see the ship *in* the water instead
+    // Render the ocean now, if we want to see the ship *in* the ocean instead
     //
 
-    if (!renderContext.GetShowShipThroughSeaWater())
+    if (!renderContext.GetShowShipThroughOcean())
     {
-        renderContext.RenderWater();
+        renderContext.RenderOcean();
     }
 
 
@@ -457,7 +457,7 @@ void World::Render(
 // Private Helpers
 ///////////////////////////////////////////////////////////////////////////////////
 
-void World::UploadLandAndWater(
+void World::UploadLandAndOcean(
     GameParameters const & gameParameters,
     Render::RenderContext & renderContext) const
 {
@@ -467,20 +467,20 @@ void World::UploadLandAndWater(
     float const sliceWidth = visibleWorldWidth / static_cast<float>(SlicesCount);
     float sliceX = renderContext.GetCameraWorldPosition().x - (visibleWorldWidth / 2.0f);
 
-    renderContext.UploadLandAndWaterStart(SlicesCount);
+    renderContext.UploadLandAndOceanStart(SlicesCount);
 
     // We do one extra iteration as the number of slices is the number of quads, and the last vertical
     // quad side must be at the end of the width
     for (size_t i = 0; i <= SlicesCount; ++i, sliceX += sliceWidth)
     {
-        renderContext.UploadLandAndWater(
+        renderContext.UploadLandAndOcean(
             sliceX,
             mOceanFloor.GetFloorHeightAt(sliceX),
             mWaterSurface.GetWaterHeightAt(sliceX),
             gameParameters.SeaDepth);
     }
 
-    renderContext.UploadLandAndWaterEnd();
+    renderContext.UploadLandAndOceanEnd();
 }
 
 }

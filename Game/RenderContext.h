@@ -17,6 +17,8 @@
 #include <GameOpenGL/GameOpenGL.h>
 #include <GameOpenGL/ShaderManager.h>
 
+#include <Game/GameParameters.h>
+
 #include <GameCore/Colors.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/ImageData.h>
@@ -119,6 +121,18 @@ public:
 
     //
 
+    rgbColor const & GetFlatSkyColor() const
+    {
+        return mFlatSkyColor;
+    }
+
+    void SetFlatSkyColor(rgbColor const & color)
+    {
+        mFlatSkyColor = color;
+
+        // No need to notify anyone
+    }
+
     float GetAmbientLightIntensity() const
     {
         return mAmbientLightIntensity;
@@ -131,26 +145,26 @@ public:
         OnAmbientLightIntensityUpdated();
     }
 
-    float GetSeaWaterTransparency() const
+    float GetOceanTransparency() const
     {
-        return mSeaWaterTransparency;
+        return mOceanTransparency;
     }
 
-    void SetSeaWaterTransparency(float transparency)
+    void SetOceanTransparency(float transparency)
     {
-        mSeaWaterTransparency = transparency;
+        mOceanTransparency = transparency;
 
-        OnSeaWaterTransparencyUpdated();
+        OnOceanTransparencyUpdated();
     }
 
-    bool GetShowShipThroughSeaWater() const
+    bool GetShowShipThroughOcean() const
     {
-        return mShowShipThroughSeaWater;
+        return mShowShipThroughOcean;
     }
 
-    void SetShowShipThroughSeaWater(bool showShipThroughSeaWater)
+    void SetShowShipThroughOcean(bool showShipThroughOcean)
     {
-        mShowShipThroughSeaWater = showShipThroughSeaWater;
+        mShowShipThroughOcean = showShipThroughOcean;
     }
 
     float GetWaterContrast() const
@@ -208,52 +222,76 @@ public:
         OnDebugShipRenderModeUpdated();
     }
 
-    WaterRenderMode GetWaterRenderMode() const
+    OceanRenderMode GetOceanRenderMode() const
     {
-        return mWaterRenderMode;
+        return mOceanRenderMode;
     }
 
-    void SetWaterRenderMode(WaterRenderMode waterRenderMode)
+    void SetOceanRenderMode(OceanRenderMode oceanRenderMode)
     {
-        mWaterRenderMode = waterRenderMode;
+        mOceanRenderMode = oceanRenderMode;
 
-        OnWaterRenderParametersUpdated();
+        OnOceanRenderParametersUpdated();
     }
 
-    rgbColor GetDepthWaterColorStart() const
+    rgbColor const & GetDepthOceanColorStart() const
     {
-        return mDepthWaterColorStart;
+        return mDepthOceanColorStart;
     }
 
-    void SetDepthWaterColorStart(rgbColor const & color)
+    void SetDepthOceanColorStart(rgbColor const & color)
     {
-        mDepthWaterColorStart = color;
+        mDepthOceanColorStart = color;
 
-        OnWaterRenderParametersUpdated();
+        OnOceanRenderParametersUpdated();
     }
 
-    rgbColor GetDepthWaterColorEnd() const
+    rgbColor const & GetDepthOceanColorEnd() const
     {
-        return mDepthWaterColorEnd;
+        return mDepthOceanColorEnd;
     }
 
-    void SetDepthWaterColorEnd(rgbColor const & color)
+    void SetDepthOceanColorEnd(rgbColor const & color)
     {
-        mDepthWaterColorEnd = color;
+        mDepthOceanColorEnd = color;
 
-        OnWaterRenderParametersUpdated();
+        OnOceanRenderParametersUpdated();
     }
 
-    rgbColor GetFlatWaterColor() const
+    rgbColor const & GetFlatOceanColor() const
     {
-        return mFlatWaterColor;
+        return mFlatOceanColor;
     }
 
-    void SetFlatWaterColor(rgbColor const & color)
+    void SetFlatOceanColor(rgbColor const & color)
     {
-        mFlatWaterColor = color;
+        mFlatOceanColor = color;
 
-        OnWaterRenderParametersUpdated();
+        OnOceanRenderParametersUpdated();
+    }
+
+    LandRenderMode GetLandRenderMode() const
+    {
+        return mLandRenderMode;
+    }
+
+    void SetLandRenderMode(LandRenderMode landRenderMode)
+    {
+        mLandRenderMode = landRenderMode;
+
+        OnLandRenderParametersUpdated();
+    }
+
+    rgbColor const & GetFlatLandColor() const
+    {
+        return mFlatLandColor;
+    }
+
+    void SetFlatLandColor(rgbColor const & color)
+    {
+        mFlatLandColor = color;
+
+        OnLandRenderParametersUpdated();
     }
 
     VectorFieldRenderMode GetVectorFieldRenderMode() const
@@ -437,22 +475,21 @@ public:
 
 
     //
-    // Land and Water
+    // Land and Ocean
     //
 
-    void UploadLandAndWaterStart(size_t slices);
+    void UploadLandAndOceanStart(size_t slices);
 
-    inline void UploadLandAndWater(
+    inline void UploadLandAndOcean(
         float x,
         float yLand,
-        float yWater,
-        float restWaterHeight)
+        float yOcean,
+        float oceanDepth)
     {
-        assert(mLandElementCount == mWaterElementCount);
+        assert(mLandElementCount == mOceanElementCount);
         assert(mLandElementCount > 0);
 
-        // TODO: move as (pre-calc'd) member of view model
-        float const yVisibleWorldBottom = mViewModel.GetCameraWorldPosition().y - (mViewModel.GetVisibleWorldHeight() / 2.0f);
+        float const yVisibleWorldBottom = mViewModel.GetVisibleWorldBottomRight().y;
 
         //
         // Store Land element
@@ -471,29 +508,59 @@ public:
 
 
         //
-        // Store water element
+        // Store ocean element
         //
 
-        assert(!!mWaterElementBuffer);
-        assert(mCurrentWaterElementCount + 1u <= mWaterElementCount);
-        WaterElement * waterElement = &(mWaterElementBuffer[mCurrentWaterElementCount]);
+        assert(!!mOceanElementBuffer);
+        assert(mCurrentOceanElementCount + 1u <= mOceanElementCount);
+        OceanElement * oceanElement = &(mOceanElementBuffer[mCurrentOceanElementCount]);
 
-        waterElement->x1 = x;
-        waterElement->y1 = yWater;
-        waterElement->textureY1 = restWaterHeight;
+        oceanElement->x1 = x;
+        oceanElement->y1 = yOcean;
 
-        waterElement->x2 = x;
-        waterElement->y2 = yWater > yLand ? yLand : yVisibleWorldBottom; // If land sticks out, go down to visible bottom (land is drawn last)
-        waterElement->textureY2 = 0.0f;
+        oceanElement->x2 = x;
+        oceanElement->y2 = yOcean > yLand ? yLand : yVisibleWorldBottom; // If land sticks out, go down to visible bottom (land is drawn last)
 
-        ++mCurrentWaterElementCount;
+        switch (mOceanRenderMode)
+        {
+            case OceanRenderMode::Texture:
+            {
+                // Texture sample Y: top=oceanDepth (we use repeat mode), bottom=0.0
+                oceanElement->value1 = oceanDepth;
+                oceanElement->value2 = 0.0f;
+
+                break;
+            }
+
+            case OceanRenderMode::Depth:
+            {
+                // Depth: top=0.0, bottom=height as fraction of maximum depth
+                oceanElement->value1 = 0.0f;
+                oceanElement->value2 = oceanDepth != 0.0f
+                    ? abs(oceanElement->y2 - oceanElement->y1) / oceanDepth
+                    : 0.0f;
+
+                break;
+            }
+
+            case OceanRenderMode::Flat:
+            {
+                // Nop
+                oceanElement->value1 = 0.0f;
+                oceanElement->value2 = 0.0f;
+
+                break;
+            }
+        }
+
+        ++mCurrentOceanElementCount;
     }
 
-    void UploadLandAndWaterEnd();
+    void UploadLandAndOceanEnd();
 
     void RenderLand();
 
-    void RenderWater();
+    void RenderOcean();
 
 
     //
@@ -504,42 +571,37 @@ public:
         vec2f const & centerPosition,
         float progress)
     {
-        float const left = -mViewModel.GetVisibleWorldWidth() / 2.0f + mViewModel.GetCameraWorldPosition().x;
-        float const right = mViewModel.GetVisibleWorldWidth() / 2.0f + mViewModel.GetCameraWorldPosition().x;
-        float const top = mViewModel.GetVisibleWorldHeight() / 2.0f + mViewModel.GetCameraWorldPosition().y;
-        float const bottom = -mViewModel.GetVisibleWorldHeight() / 2.0f + mViewModel.GetCameraWorldPosition().y;
-
         // Triangle 1
 
         mCrossOfLightBuffer.emplace_back(
-            vec2f(left, bottom),
+            vec2f(mViewModel.GetVisibleWorldTopLeft().x, mViewModel.GetVisibleWorldBottomRight().y), // left, bottom
             centerPosition,
             progress);
 
         mCrossOfLightBuffer.emplace_back(
-            vec2f(left, top),
+            mViewModel.GetVisibleWorldTopLeft(), // left, top
             centerPosition,
             progress);
 
         mCrossOfLightBuffer.emplace_back(
-            vec2f(right, bottom),
+            mViewModel.GetVisibleWorldBottomRight(), // right, bottom
             centerPosition,
             progress);
 
         // Triangle 2
 
         mCrossOfLightBuffer.emplace_back(
-            vec2f(left, top),
+            mViewModel.GetVisibleWorldTopLeft(), // left, top
             centerPosition,
             progress);
 
         mCrossOfLightBuffer.emplace_back(
-            vec2f(right, bottom),
+            mViewModel.GetVisibleWorldBottomRight(), // right, bottom
             centerPosition,
             progress);
 
         mCrossOfLightBuffer.emplace_back(
-            vec2f(right, top),
+            vec2f(mViewModel.GetVisibleWorldBottomRight().x, mViewModel.GetVisibleWorldTopLeft().y),  // right, top
             centerPosition,
             progress);
     }
@@ -548,7 +610,7 @@ public:
     // Ships
     /////////////////////////////////////////////////////////////////////////
 
-    void RenderShipsStart(size_t shipCount);
+    void RenderShipsStart();
 
 
     void RenderShipStart(ShipId shipId)
@@ -910,12 +972,13 @@ private:
 
     void OnViewModelUpdated();
     void OnAmbientLightIntensityUpdated();
-    void OnSeaWaterTransparencyUpdated();
+    void OnOceanTransparencyUpdated();
     void OnWaterContrastUpdated();
     void OnWaterLevelOfDetailUpdated();
     void OnShipRenderModeUpdated();
     void OnDebugShipRenderModeUpdated();
-    void OnWaterRenderParametersUpdated();
+    void OnOceanRenderParametersUpdated();
+    void OnLandRenderParametersUpdated();
     void OnVectorFieldRenderModeUpdated();
     void OnShowStressedSpringsUpdated();
 
@@ -1022,27 +1085,27 @@ private:
     GameOpenGLVBO mLandVBO;
 
     //
-    // Sea water
+    // Ocean
     //
 
 #pragma pack(push)
-    struct WaterElement
+    struct OceanElement
     {
         float x1;
         float y1;
-        float textureY1;
+        float value1;
 
         float x2;
         float y2;
-        float textureY2;
+        float value2;
     };
 #pragma pack(pop)
 
-    std::unique_ptr<WaterElement[]> mWaterElementBuffer;
-    size_t mCurrentWaterElementCount;
-    size_t mWaterElementCount;
+    std::unique_ptr<OceanElement[]> mOceanElementBuffer;
+    size_t mCurrentOceanElementCount;
+    size_t mOceanElementCount;
 
-    GameOpenGLVBO mWaterVBO;
+    GameOpenGLVBO mOceanVBO;
 
     //
     // Ships
@@ -1087,17 +1150,20 @@ private:
 
     ViewModel mViewModel;
 
+    rgbColor mFlatSkyColor;
     float mAmbientLightIntensity;
-    float mSeaWaterTransparency;
-    bool mShowShipThroughSeaWater;
+    float mOceanTransparency;
+    bool mShowShipThroughOcean;
     float mWaterContrast;
     float mWaterLevelOfDetail;
     ShipRenderMode mShipRenderMode;
     DebugShipRenderMode mDebugShipRenderMode;
-    WaterRenderMode mWaterRenderMode;
-    rgbColor mDepthWaterColorStart;
-    rgbColor mDepthWaterColorEnd;
-    rgbColor mFlatWaterColor;
+    OceanRenderMode mOceanRenderMode;
+    rgbColor mDepthOceanColorStart;
+    rgbColor mDepthOceanColorEnd;
+    rgbColor mFlatOceanColor;
+    LandRenderMode mLandRenderMode;
+    rgbColor mFlatLandColor;
     VectorFieldRenderMode mVectorFieldRenderMode;
     float mVectorFieldLengthMultiplier;
     bool mShowStressedSprings;

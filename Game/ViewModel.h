@@ -120,6 +120,16 @@ public:
         return mVisibleWorldHeight;
     }
 
+    vec2f const & GetVisibleWorldTopLeft() const
+    {
+        return mVisibleWorldTopLeft;
+    }
+
+    vec2f const & GetVisibleWorldBottomRight() const
+    {
+        return mVisibleWorldBottomRight;
+    }
+
     float GetCanvasToVisibleWorldHeightRatio() const
     {
         return mCanvasToVisibleWorldHeightRatio;
@@ -225,6 +235,14 @@ private:
     {
         mVisibleWorldHeight = 2.0f * 70.0f / (mZoom + 0.001f);
         mVisibleWorldWidth = static_cast<float>(mCanvasWidth) / static_cast<float>(mCanvasHeight) * mVisibleWorldHeight;
+
+        mVisibleWorldTopLeft = vec2f(
+            mCamX - (mVisibleWorldWidth / 2.0f),
+            mCamY + (mVisibleWorldHeight / 2.0f));
+        mVisibleWorldBottomRight = vec2f(
+            mCamX + (mVisibleWorldWidth /2.0f),
+            mCamY - (mVisibleWorldHeight / 2.0f));
+
         mCanvasToVisibleWorldHeightRatio = static_cast<float>(mCanvasHeight) / mVisibleWorldHeight;
 
         // Recalculate kernel Ortho Matrix cells
@@ -246,6 +264,8 @@ private:
     // Calculated attributes
     float mVisibleWorldWidth;
     float mVisibleWorldHeight;
+    vec2f mVisibleWorldTopLeft;
+    vec2f mVisibleWorldBottomRight;
     float mCanvasToVisibleWorldHeightRatio;
     ProjectionMatrix mKernelOrthoMatrix; // Common subset of all ortho matrices
 };

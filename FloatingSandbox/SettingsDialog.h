@@ -15,6 +15,7 @@
 #include <wx/bitmap.h>
 #include <wx/button.h>
 #include <wx/checkbox.h>
+#include <wx/clrpicker.h>
 #include <wx/dialog.h>
 #include <wx/filepicker.h>
 #include <wx/radiobox.h>
@@ -45,11 +46,26 @@ private:
     void OnScreenshotDirPickerChanged(wxCommandEvent & event);
     void OnModulateWindCheckBoxClick(wxCommandEvent & event);
 
-    void OnSeeShipThroughSeaWaterCheckBoxClick(wxCommandEvent & event);
-    void OnShipRenderModeRadioBox(wxCommandEvent & event);
+    void OnTextureOceanRenderModeRadioButtonClick(wxCommandEvent & event);
+    void OnDepthOceanRenderModeRadioButtonClick(wxCommandEvent & event);
+    void OnDepthOceanColorStartChanged(wxColourPickerEvent & event);
+    void OnDepthOceanColorEndChanged(wxColourPickerEvent & event);
+    void OnFlatOceanRenderModeRadioButtonClick(wxCommandEvent & event);
+    void OnFlatOceanColorChanged(wxColourPickerEvent & event);
+    void OnSeeShipThroughOceanCheckBoxClick(wxCommandEvent & event);
+
+    void OnTextureLandRenderModeRadioButtonClick(wxCommandEvent & event);
+    void OnFlatLandRenderModeRadioButtonClick(wxCommandEvent & event);
+    void OnFlatLandColorChanged(wxColourPickerEvent & event);
+
+    void OnFlatSkyColorChanged(wxColourPickerEvent & event);
+
+    void OnTextureShipRenderModeRadioButtonClick(wxCommandEvent & event);
+    void OnStructureShipRenderModeRadioButtonClick(wxCommandEvent & event);
+    void OnShowStressCheckBoxClick(wxCommandEvent & event);
+
     void OnDebugShipRenderModeRadioBox(wxCommandEvent & event);
     void OnVectorFieldRenderModeRadioBox(wxCommandEvent & event);
-    void OnShowStressCheckBoxClick(wxCommandEvent & event);
 
     void OnPlayBreakSoundsCheckBoxClick(wxCommandEvent & event);
     void OnPlayStressSoundsCheckBoxClick(wxCommandEvent & event);
@@ -77,7 +93,7 @@ private:
     std::unique_ptr<SliderControl> mWaterDiffusionSpeedSlider;
     std::unique_ptr<SliderControl> mWaterLevelOfDetailSlider;
 
-    // Sky
+    // Air
     std::unique_ptr<SliderControl> mNumberOfStarsSlider;
     std::unique_ptr<SliderControl> mNumberOfCloudsSlider;
     std::unique_ptr<SliderControl> mWindSpeedBaseSlider;
@@ -105,11 +121,22 @@ private:
     wxDirPickerCtrl * mScreenshotDirPickerCtrl;
 
     // Rendering
-    std::unique_ptr<SliderControl> mSeaWaterTransparencySlider;
-    std::unique_ptr<SliderControl> mWaterContrastSlider;
-    wxCheckBox * mSeeShipThroughSeaWaterCheckBox;
-    wxRadioBox * mShipRenderModeRadioBox;
+    wxRadioButton * mTextureOceanRenderModeRadioButton;
+    wxRadioButton * mDepthOceanRenderModeRadioButton;
+    wxColourPickerCtrl * mDepthOceanColorStartPicker;
+    wxColourPickerCtrl * mDepthOceanColorEndPicker;
+    wxRadioButton * mFlatOceanRenderModeRadioButton;
+    wxColourPickerCtrl * mFlatOceanColorPicker;
+    wxCheckBox * mSeeShipThroughOceanCheckBox;
+    std::unique_ptr<SliderControl> mOceanTransparencySlider;
+    wxRadioButton * mTextureLandRenderModeRadioButton;
+    wxRadioButton * mFlatLandRenderModeRadioButton;
+    wxColourPickerCtrl * mFlatLandColorPicker;
+    wxColourPickerCtrl * mFlatSkyColorPicker;
+    wxRadioButton * mTextureShipRenderModeRadioButton;
+    wxRadioButton * mStructureShipRenderModeRadioButton;
     wxCheckBox* mShowStressCheckBox;
+    std::unique_ptr<SliderControl> mWaterContrastSlider;
 
     // Sound
     std::unique_ptr<SliderControl> mEffectsVolumeSlider;
@@ -139,7 +166,7 @@ private:
 
     void PopulateMechanicsPanel(wxPanel * panel);
     void PopulateFluidsPanel(wxPanel * panel);
-    void PopulateSkyPanel(wxPanel * panel);
+    void PopulateAirPanel(wxPanel * panel);
     void PopulateWorldPanel(wxPanel * panel);
     void PopulateInteractionsPanel(wxPanel * panel);
     void PopulateRenderingPanel(wxPanel * panel);
@@ -147,6 +174,8 @@ private:
     void PopulateAdvancedPanel(wxPanel * panel);
 
     void ReadSettings();
+    void ReconciliateOceanRenderModeSettings();
+    void ReconciliateLandRenderModeSettings();
 
     void ApplySettings();
 

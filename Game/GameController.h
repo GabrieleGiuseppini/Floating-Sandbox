@@ -292,17 +292,20 @@ public:
     // Render
     //
 
+    rgbColor const & GetFlatSkyColor() const { return mRenderContext->GetFlatSkyColor(); }
+    void SetFlatSkyColor(rgbColor const & color) { mRenderContext->SetFlatSkyColor(color); }
+
     float GetAmbientLightIntensity() const { return mRenderContext->GetAmbientLightIntensity(); }
     void SetAmbientLightIntensity(float value) { mRenderContext->SetAmbientLightIntensity(value); }
 
     float GetWaterContrast() const { return mRenderContext->GetWaterContrast(); }
     void SetWaterContrast(float value) { mRenderContext->SetWaterContrast(value); }
 
-    float GetSeaWaterTransparency() const { return mRenderContext->GetSeaWaterTransparency(); }
-    void SetSeaWaterTransparency(float value) { mRenderContext->SetSeaWaterTransparency(value); }
+    float GetOceanTransparency() const { return mRenderContext->GetOceanTransparency(); }
+    void SetOceanTransparency(float value) { mRenderContext->SetOceanTransparency(value); }
 
-    bool GetShowShipThroughSeaWater() const { return mRenderContext->GetShowShipThroughSeaWater(); }
-    void SetShowShipThroughSeaWater(bool value) { mRenderContext->SetShowShipThroughSeaWater(value); }
+    bool GetShowShipThroughOcean() const { return mRenderContext->GetShowShipThroughOcean(); }
+    void SetShowShipThroughOcean(bool value) { mRenderContext->SetShowShipThroughOcean(value); }
 
     float GetWaterLevelOfDetail() const { return mRenderContext->GetWaterLevelOfDetail(); }
     void SetWaterLevelOfDetail(float value) { mRenderContext->SetWaterLevelOfDetail(value); }
@@ -315,17 +318,23 @@ public:
     DebugShipRenderMode GetDebugShipRenderMode() const { return mRenderContext->GetDebugShipRenderMode(); }
     void SetDebugShipRenderMode(DebugShipRenderMode debugShipRenderMode) { mRenderContext->SetDebugShipRenderMode(debugShipRenderMode); }
 
-    WaterRenderMode GetWaterRenderMode() const { return mRenderContext->GetWaterRenderMode(); }
-    void SetWaterRenderMode(WaterRenderMode waterRenderMode) { mRenderContext->SetWaterRenderMode(waterRenderMode); }
+    OceanRenderMode GetOceanRenderMode() const { return mRenderContext->GetOceanRenderMode(); }
+    void SetOceanRenderMode(OceanRenderMode oceanRenderMode) { mRenderContext->SetOceanRenderMode(oceanRenderMode); }
 
-    rgbColor GetDepthWaterColorStart() const { return mRenderContext->GetDepthWaterColorStart(); }
-    void SetDepthWaterColorStart(rgbColor const & color) { mRenderContext->SetDepthWaterColorStart(color); }
+    rgbColor const & GetDepthOceanColorStart() const { return mRenderContext->GetDepthOceanColorStart(); }
+    void SetDepthOceanColorStart(rgbColor const & color) { mRenderContext->SetDepthOceanColorStart(color); }
 
-    rgbColor GetDepthWaterColorEnd() const { return mRenderContext->GetDepthWaterColorEnd(); }
-    void SetDepthWaterColorEnd(rgbColor const & color) { mRenderContext->SetDepthWaterColorEnd(color); }
+    rgbColor const & GetDepthOceanColorEnd() const { return mRenderContext->GetDepthOceanColorEnd(); }
+    void SetDepthOceanColorEnd(rgbColor const & color) { mRenderContext->SetDepthOceanColorEnd(color); }
 
-    rgbColor GetFlatWaterColor() const { return mRenderContext->GetFlatWaterColor(); }
-    void SetFlatWaterColor(rgbColor const & color) { mRenderContext->SetFlatWaterColor(color); }
+    rgbColor const & GetFlatOceanColor() const { return mRenderContext->GetFlatOceanColor(); }
+    void SetFlatOceanColor(rgbColor const & color) { mRenderContext->SetFlatOceanColor(color); }
+
+    LandRenderMode GetLandRenderMode() const { return mRenderContext->GetLandRenderMode(); }
+    void SetLandRenderMode(LandRenderMode landRenderMode) { mRenderContext->SetLandRenderMode(landRenderMode); }
+
+    rgbColor const & GetFlatLandColor() const { return mRenderContext->GetFlatLandColor(); }
+    void SetFlatLandColor(rgbColor const & color) { mRenderContext->SetFlatLandColor(color); }
 
     VectorFieldRenderMode GetVectorFieldRenderMode() const { return mRenderContext->GetVectorFieldRenderMode(); }
     void SetVectorFieldRenderMode(VectorFieldRenderMode VectorFieldRenderMode) { mRenderContext->SetVectorFieldRenderMode(VectorFieldRenderMode); }

@@ -27,8 +27,6 @@ const long ID_GENERATE_SPARKLES_CHECKBOX = wxNewId();
 const long ID_GENERATE_AIR_BUBBLES_CHECKBOX = wxNewId();
 const long ID_SCREENSHOT_DIR_PICKER = wxNewId();
 const long ID_MODULATE_WIND_CHECKBOX = wxNewId();
-const long ID_SEE_SHIP_THROUGH_SEA_WATER_CHECKBOX = wxNewId();
-const long ID_SHOW_STRESS_CHECKBOX = wxNewId();
 const long ID_PLAY_BREAK_SOUNDS_CHECKBOX = wxNewId();
 const long ID_PLAY_STRESS_SOUNDS_CHECKBOX = wxNewId();
 const long ID_PLAY_WIND_SOUND_CHECKBOX = wxNewId();
@@ -107,16 +105,16 @@ SettingsDialog::SettingsDialog(
 
 
     //
-    // Sky
+    // Air
     //
 
-    wxPanel * skyPanel = new wxPanel(notebook);
+    wxPanel * airPanel = new wxPanel(notebook);
 
-    skyPanel->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
+    airPanel->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 
-    PopulateSkyPanel(skyPanel);
+    PopulateAirPanel(airPanel);
 
-    notebook->AddPage(skyPanel, "Sky");
+    notebook->AddPage(airPanel, "Air");
 
 
     //
@@ -226,6 +224,8 @@ SettingsDialog::SettingsDialog(
     //
 
     SetSizerAndFit(dialogVSizer);
+
+    Centre(wxCENTER_ON_SCREEN | wxBOTH);
 }
 
 SettingsDialog::~SettingsDialog()
@@ -242,12 +242,6 @@ void SettingsDialog::Open()
     mApplyButton->Enable(false);
 
     this->Show();
-}
-
-void SettingsDialog::OnSeeShipThroughSeaWaterCheckBoxClick(wxCommandEvent & /*event*/)
-{
-    // Remember we're dirty now
-    mApplyButton->Enable(true);
 }
 
 void SettingsDialog::OnUltraViolentCheckBoxClick(wxCommandEvent & /*event*/)
@@ -288,7 +282,95 @@ void SettingsDialog::OnModulateWindCheckBoxClick(wxCommandEvent & /*event*/)
     mApplyButton->Enable(true);
 }
 
-void SettingsDialog::OnShipRenderModeRadioBox(wxCommandEvent & /*event*/)
+void SettingsDialog::OnTextureOceanRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
+{
+    ReconciliateOceanRenderModeSettings();
+
+    // Remember we're dirty now
+    mApplyButton->Enable(true);
+}
+
+void SettingsDialog::OnDepthOceanRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
+{
+    ReconciliateOceanRenderModeSettings();
+
+    // Remember we're dirty now
+    mApplyButton->Enable(true);
+}
+
+void SettingsDialog::OnDepthOceanColorStartChanged(wxColourPickerEvent & /*event*/)
+{
+    // Remember we're dirty now
+    mApplyButton->Enable(true);
+}
+
+void SettingsDialog::OnDepthOceanColorEndChanged(wxColourPickerEvent & /*event*/)
+{
+    // Remember we're dirty now
+    mApplyButton->Enable(true);
+}
+
+void SettingsDialog::OnFlatOceanRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
+{
+    ReconciliateOceanRenderModeSettings();
+
+    // Remember we're dirty now
+    mApplyButton->Enable(true);
+}
+
+void SettingsDialog::OnFlatOceanColorChanged(wxColourPickerEvent & /*event*/)
+{
+    // Remember we're dirty now
+    mApplyButton->Enable(true);
+}
+
+void SettingsDialog::OnSeeShipThroughOceanCheckBoxClick(wxCommandEvent & /*event*/)
+{
+    // Remember we're dirty now
+    mApplyButton->Enable(true);
+}
+
+void SettingsDialog::OnTextureLandRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
+{
+    ReconciliateLandRenderModeSettings();
+
+    // Remember we're dirty now
+    mApplyButton->Enable(true);
+}
+
+void SettingsDialog::OnFlatLandRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
+{
+    ReconciliateLandRenderModeSettings();
+
+    // Remember we're dirty now
+    mApplyButton->Enable(true);
+}
+
+void SettingsDialog::OnFlatLandColorChanged(wxColourPickerEvent & /*event*/)
+{
+    // Remember we're dirty now
+    mApplyButton->Enable(true);
+}
+
+void SettingsDialog::OnFlatSkyColorChanged(wxColourPickerEvent & /*event*/)
+{
+    // Remember we're dirty now
+    mApplyButton->Enable(true);
+}
+
+void SettingsDialog::OnTextureShipRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
+{
+    // Remember we're dirty now
+    mApplyButton->Enable(true);
+}
+
+void SettingsDialog::OnStructureShipRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
+{
+    // Remember we're dirty now
+    mApplyButton->Enable(true);
+}
+
+void SettingsDialog::OnShowStressCheckBoxClick(wxCommandEvent & /*event*/)
 {
     // Remember we're dirty now
     mApplyButton->Enable(true);
@@ -301,12 +383,6 @@ void SettingsDialog::OnDebugShipRenderModeRadioBox(wxCommandEvent & /*event*/)
 }
 
 void SettingsDialog::OnVectorFieldRenderModeRadioBox(wxCommandEvent & /*event*/)
-{
-    // Remember we're dirty now
-    mApplyButton->Enable(true);
-}
-
-void SettingsDialog::OnShowStressCheckBoxClick(wxCommandEvent & /*event*/)
 {
     // Remember we're dirty now
     mApplyButton->Enable(true);
@@ -356,207 +432,6 @@ void SettingsDialog::OnApplyButton(wxCommandEvent & /*event*/)
 
     // We're not dirty anymore
     mApplyButton->Enable(false);
-}
-
-void SettingsDialog::ApplySettings()
-{
-    assert(!!mGameController);
-
-
-    mGameController->SetNumMechanicalDynamicsIterationsAdjustment(
-        mMechanicalQualitySlider->GetValue());
-
-    mGameController->SetStrengthAdjustment(
-        mStrengthSlider->GetValue());
-
-
-
-    mGameController->SetWaterDensityAdjustment(
-        mWaterDensitySlider->GetValue());
-
-    mGameController->SetWaterDragAdjustment(
-        mWaterDragSlider->GetValue());
-
-    mGameController->SetWaterIntakeAdjustment(
-        mWaterIntakeSlider->GetValue());
-
-    mGameController->SetWaterCrazyness(
-        mWaterCrazynessSlider->GetValue());
-
-    mGameController->SetWaterDiffusionSpeedAdjustment(
-        mWaterDiffusionSpeedSlider->GetValue());
-
-    mGameController->SetWaterLevelOfDetail(
-        mWaterLevelOfDetailSlider->GetValue());
-
-
-
-    mGameController->SetNumberOfStars(
-        static_cast<size_t>(mNumberOfStarsSlider->GetValue()));
-
-    mGameController->SetNumberOfClouds(
-        static_cast<size_t>(mNumberOfCloudsSlider->GetValue()));
-
-    mGameController->SetWindSpeedBase(
-        mWindSpeedBaseSlider->GetValue());
-
-    mGameController->SetDoModulateWind(mModulateWindCheckBox->IsChecked());
-
-    mGameController->SetWindSpeedMaxFactor(
-        mWindGustAmplitudeSlider->GetValue());
-
-
-
-    mGameController->SetWaveHeight(
-        mWaveHeightSlider->GetValue());
-
-    mGameController->SetSeaDepth(
-        mSeaDepthSlider->GetValue());
-
-    mGameController->SetOceanFloorBumpiness(
-        mOceanFloorBumpinessSlider->GetValue());
-
-    mGameController->SetOceanFloorDetailAmplification(
-        mOceanFloorDetailAmplificationSlider->GetValue());
-
-    mGameController->SetLuminiscenceAdjustment(
-        mLuminiscenceSlider->GetValue());
-
-    mGameController->SetLightSpreadAdjustment(
-        mLightSpreadSlider->GetValue());
-
-
-
-    mGameController->SetDestroyRadius(
-        mDestroyRadiusSlider->GetValue());
-
-    mGameController->SetBombBlastRadius(
-        mBombBlastRadiusSlider->GetValue());
-
-    mGameController->SetAntiMatterBombImplosionStrength(
-        mAntiMatterBombImplosionStrengthSlider->GetValue());
-
-    mGameController->SetFloodRadius(
-        mFloodRadiusSlider->GetValue());
-
-    mGameController->SetFloodQuantity(
-        mFloodQuantitySlider->GetValue());
-
-    mGameController->SetUltraViolentMode(mUltraViolentCheckBox->IsChecked());
-
-    mGameController->SetDoGenerateDebris(mGenerateDebrisCheckBox->IsChecked());
-
-    mGameController->SetDoGenerateSparkles(mGenerateSparklesCheckBox->IsChecked());
-
-    mGameController->SetDoGenerateAirBubbles(mGenerateAirBubblesCheckBox->IsChecked());
-
-    mUISettings->SetScreenshotsFolderPath(mScreenshotDirPickerCtrl->GetPath().ToStdString());
-
-
-
-    mGameController->SetWaterContrast(
-        mWaterContrastSlider->GetValue());
-
-    mGameController->SetSeaWaterTransparency(
-        mSeaWaterTransparencySlider->GetValue());
-
-    mGameController->SetShowShipThroughSeaWater(mSeeShipThroughSeaWaterCheckBox->IsChecked());
-
-    auto selectedShipRenderMode = mShipRenderModeRadioBox->GetSelection();
-    if (0 == selectedShipRenderMode)
-    {
-        mGameController->SetShipRenderMode(ShipRenderMode::Structure);
-    }
-    else
-    {
-        assert(1 == selectedShipRenderMode);
-        mGameController->SetShipRenderMode(ShipRenderMode::Texture);
-    }
-
-    mGameController->SetShowShipStress(mShowStressCheckBox->IsChecked());
-
-
-
-
-    mSoundController->SetMasterEffectsVolume(
-        mEffectsVolumeSlider->GetValue());
-
-    mSoundController->SetMasterToolsVolume(
-        mToolsVolumeSlider->GetValue());
-
-    mSoundController->SetMasterMusicVolume(
-        mMusicVolumeSlider->GetValue());
-
-    mSoundController->SetPlayBreakSounds(mPlayBreakSoundsCheckBox->IsChecked());
-
-    mSoundController->SetPlayStressSounds(mPlayStressSoundsCheckBox->IsChecked());
-
-    mSoundController->SetPlayWindSound(mPlayWindSoundCheckBox->IsChecked());
-
-    mSoundController->SetPlaySinkingMusic(mPlaySinkingMusicCheckBox->IsChecked());
-
-
-
-    mGameController->SetStiffnessAdjustment(
-        mStiffnessSlider->GetValue());
-
-    auto selectedDebugShipRenderMode = mDebugShipRenderModeRadioBox->GetSelection();
-    if (0 == selectedDebugShipRenderMode)
-    {
-        mGameController->SetDebugShipRenderMode(DebugShipRenderMode::None);
-    }
-    else if (1 == selectedDebugShipRenderMode)
-    {
-        mGameController->SetDebugShipRenderMode(DebugShipRenderMode::Wireframe);
-    }
-    else if (2 == selectedDebugShipRenderMode)
-    {
-        mGameController->SetDebugShipRenderMode(DebugShipRenderMode::Points);
-    }
-    else if (3 == selectedDebugShipRenderMode)
-    {
-        mGameController->SetDebugShipRenderMode(DebugShipRenderMode::Springs);
-    }
-    else
-    {
-        assert(4 == selectedDebugShipRenderMode);
-        mGameController->SetDebugShipRenderMode(DebugShipRenderMode::EdgeSprings);
-    }
-
-    auto selectedVectorFieldRenderMode = mVectorFieldRenderModeRadioBox->GetSelection();
-    switch (selectedVectorFieldRenderMode)
-    {
-        case 0:
-        {
-            mGameController->SetVectorFieldRenderMode(VectorFieldRenderMode::None);
-            break;
-        }
-
-        case 1:
-        {
-            mGameController->SetVectorFieldRenderMode(VectorFieldRenderMode::PointVelocity);
-            break;
-        }
-
-        case 2:
-        {
-            mGameController->SetVectorFieldRenderMode(VectorFieldRenderMode::PointForce);
-            break;
-        }
-
-        case 3:
-        {
-            mGameController->SetVectorFieldRenderMode(VectorFieldRenderMode::PointWaterVelocity);
-            break;
-        }
-
-        default:
-        {
-            assert(4 == selectedVectorFieldRenderMode);
-            mGameController->SetVectorFieldRenderMode(VectorFieldRenderMode::PointWaterMomentum);
-            break;
-        }
-    }
 }
 
 void SettingsDialog::PopulateMechanicsPanel(wxPanel * panel)
@@ -761,7 +636,7 @@ void SettingsDialog::PopulateFluidsPanel(wxPanel * panel)
     panel->SetSizerAndFit(gridSizer);
 }
 
-void SettingsDialog::PopulateSkyPanel(wxPanel * panel)
+void SettingsDialog::PopulateAirPanel(wxPanel * panel)
 {
     wxGridSizer* gridSizer = new wxGridSizer(2, 4, 0, 0);
 
@@ -1227,89 +1102,381 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 
 void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 {
-    wxBoxSizer* controlsSizer = new wxBoxSizer(wxHORIZONTAL);
+    static constexpr int StaticBoxTopMargin = 7;
+    static constexpr int StaticBoxInsetMargin = 10;
+    static constexpr int CellBorder = 8;
+
+    wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
 
 
-    // Water Contrast
+    //
+    // Row 1
+    //
 
-    mWaterContrastSlider = std::make_unique<SliderControl>(
-        panel,
-        SliderWidth,
-        SliderHeight,
-        "Water Contrast",
-        "Adjusts the contrast of water inside physical bodies.",
-        mGameController->GetWaterContrast(),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            0.0f,
-            1.0f));
-
-    controlsSizer->Add(mWaterContrastSlider.get(), 1, wxALL, SliderBorder);
-
-
-    // Sea Water Transparency
-
-    mSeaWaterTransparencySlider = std::make_unique<SliderControl>(
-        panel,
-        SliderWidth,
-        SliderHeight,
-        "Sea Water Transparency",
-        "Adjusts the transparency of sea water.",
-        mGameController->GetSeaWaterTransparency(),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            0.0f,
-            1.0f));
-
-    controlsSizer->Add(mSeaWaterTransparencySlider.get(), 1, wxALL, SliderBorder);
-
-
-    // Check boxes
-
-    wxStaticBoxSizer* checkboxesSizer = new wxStaticBoxSizer(wxVERTICAL, panel);
-
-
-    mSeeShipThroughSeaWaterCheckBox = new wxCheckBox(panel, ID_SEE_SHIP_THROUGH_SEA_WATER_CHECKBOX, _("See Ship Through Water"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T(""));
-    Connect(ID_SEE_SHIP_THROUGH_SEA_WATER_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnSeeShipThroughSeaWaterCheckBoxClick);
-
-    checkboxesSizer->Add(mSeeShipThroughSeaWaterCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
-
-
-    wxString shipRenderModeChoices[] =
+    // Ocean
     {
-        _("Draw Structure"),
-        _("Draw Image")
-    };
+        wxStaticBox * oceanBox = new wxStaticBox(panel, wxID_ANY, _("Sea"));
 
-    mShipRenderModeRadioBox = new wxRadioBox(panel, wxID_ANY, _("Ship Draw Options"), wxDefaultPosition, wxDefaultSize,
-        WXSIZEOF(shipRenderModeChoices), shipRenderModeChoices, 1, wxRA_SPECIFY_COLS);
-    Connect(mShipRenderModeRadioBox->GetId(), wxEVT_RADIOBOX, (wxObjectEventFunction)&SettingsDialog::OnShipRenderModeRadioBox);
+        wxBoxSizer * oceanBoxSizer1 = new wxBoxSizer(wxVERTICAL);
+        oceanBoxSizer1->AddSpacer(StaticBoxTopMargin);
 
-    checkboxesSizer->Add(mShipRenderModeRadioBox, 0, wxALL | wxALIGN_LEFT, 5);
+        {
+            wxGridBagSizer * oceanSizer = new wxGridBagSizer(0, 0);
 
+            // Ocean Render Mode
+            {
+                wxStaticBox * oceanRenderModeBox = new wxStaticBox(oceanBox, wxID_ANY, _("Draw Mode"));
 
+                wxBoxSizer * oceanRenderModeBoxSizer1 = new wxBoxSizer(wxVERTICAL);
+                oceanRenderModeBoxSizer1->AddSpacer(StaticBoxTopMargin);
 
-    mShowStressCheckBox = new wxCheckBox(panel, ID_SHOW_STRESS_CHECKBOX, _("Show Stress"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Show Stress Checkbox"));
-    mShowStressCheckBox->SetToolTip("Enables or disables highlighting of the springs that are under heavy stress and close to rupture.");
-    Connect(ID_SHOW_STRESS_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnShowStressCheckBoxClick);
+                {
+                    wxFlexGridSizer * oceanRenderModeBoxSizer2 = new wxFlexGridSizer(3, 5, 5);
+                    oceanRenderModeBoxSizer2->SetFlexibleDirection(wxHORIZONTAL);
 
-    checkboxesSizer->Add(mShowStressCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
+                    mTextureOceanRenderModeRadioButton = new wxRadioButton(oceanRenderModeBox, wxID_ANY, _("Texture"),
+                        wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+                    mTextureOceanRenderModeRadioButton->SetToolTip("Draws the ocean with a static pattern.");
+                    mTextureOceanRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnTextureOceanRenderModeRadioButtonClick, this);
+                    oceanRenderModeBoxSizer2->Add(mTextureOceanRenderModeRadioButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 0);
 
+                    oceanRenderModeBoxSizer2->AddSpacer(0);
 
-    controlsSizer->Add(checkboxesSizer, 0, wxALL, SliderBorder);
+                    oceanRenderModeBoxSizer2->AddSpacer(0);
+
+                    mDepthOceanRenderModeRadioButton = new wxRadioButton(oceanRenderModeBox, wxID_ANY, _("Depth Gradient"),
+                        wxDefaultPosition, wxDefaultSize);
+                    mDepthOceanRenderModeRadioButton->SetToolTip("Draws the ocean with a vertical color gradient.");
+                    mDepthOceanRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnDepthOceanRenderModeRadioButtonClick, this);
+                    oceanRenderModeBoxSizer2->Add(mDepthOceanRenderModeRadioButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 0);
+
+                    mDepthOceanColorStartPicker = new wxColourPickerCtrl(oceanRenderModeBox, wxID_ANY, wxColour("WHITE"),
+                        wxDefaultPosition, wxDefaultSize);
+                    mDepthOceanColorStartPicker->SetToolTip("Sets the starting (top) color of the gradient.");
+                    mDepthOceanColorStartPicker->Bind(wxEVT_COLOURPICKER_CHANGED, &SettingsDialog::OnDepthOceanColorStartChanged, this);
+                    oceanRenderModeBoxSizer2->Add(mDepthOceanColorStartPicker, 0, wxALL, 0);
+
+                    mDepthOceanColorEndPicker = new wxColourPickerCtrl(oceanRenderModeBox, wxID_ANY, wxColour("WHITE"),
+                        wxDefaultPosition, wxDefaultSize);
+                    mDepthOceanColorEndPicker->SetToolTip("Sets the ending (bottom) color of the gradient.");
+                    mDepthOceanColorEndPicker->Bind(wxEVT_COLOURPICKER_CHANGED, &SettingsDialog::OnDepthOceanColorEndChanged, this);
+                    oceanRenderModeBoxSizer2->Add(mDepthOceanColorEndPicker, 0, wxALL, 0);
+
+                    mFlatOceanRenderModeRadioButton = new wxRadioButton(oceanRenderModeBox, wxID_ANY, _("Flat"),
+                        wxDefaultPosition, wxDefaultSize);
+                    mFlatOceanRenderModeRadioButton->SetToolTip("Draws the ocean with a single color.");
+                    mFlatOceanRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnFlatOceanRenderModeRadioButtonClick, this);
+                    oceanRenderModeBoxSizer2->Add(mFlatOceanRenderModeRadioButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 0);
+
+                    mFlatOceanColorPicker = new wxColourPickerCtrl(oceanRenderModeBox, wxID_ANY, wxColour("WHITE"),
+                        wxDefaultPosition, wxDefaultSize);
+                    mFlatOceanColorPicker->SetToolTip("Sets the single color of the ocean.");
+                    mFlatOceanColorPicker->Bind(wxEVT_COLOURPICKER_CHANGED, &SettingsDialog::OnFlatOceanColorChanged, this);
+                    oceanRenderModeBoxSizer2->Add(mFlatOceanColorPicker, 0, wxALL, 0);
+
+                    oceanRenderModeBoxSizer2->AddSpacer(0);
+
+                    oceanRenderModeBoxSizer1->Add(oceanRenderModeBoxSizer2, 0, wxALL, StaticBoxInsetMargin);
+                }
+
+                oceanRenderModeBox->SetSizerAndFit(oceanRenderModeBoxSizer1);
+
+                oceanSizer->Add(
+                    oceanRenderModeBox,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorder);
+            }
+
+            // See Ship Through Water
+            {
+                mSeeShipThroughOceanCheckBox = new wxCheckBox(oceanBox, wxID_ANY,
+                    _("See Ship Through Water"), wxDefaultPosition, wxDefaultSize);
+                mSeeShipThroughOceanCheckBox->SetToolTip("Shows the ship either behind the sea water or in front of it.");
+                mSeeShipThroughOceanCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED,&SettingsDialog::OnSeeShipThroughOceanCheckBoxClick, this);
+
+                oceanSizer->Add(
+                    mSeeShipThroughOceanCheckBox,
+                    wxGBPosition(1, 0),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorder);
+            }
+
+            // Ocean Transparency
+            {
+                mOceanTransparencySlider = std::make_unique<SliderControl>(
+                    oceanBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Transparency",
+                    "Adjusts the transparency of sea water.",
+                    mGameController->GetOceanTransparency(),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        0.0f,
+                        1.0f));
+
+                oceanSizer->Add(
+                    mOceanTransparencySlider.get(),
+                    wxGBPosition(0, 1),
+                    wxGBSpan(2, 1),
+                    wxALL,
+                    CellBorder);
+            }
+
+            oceanBoxSizer1->Add(oceanSizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        oceanBox->SetSizerAndFit(oceanBoxSizer1);
+
+        gridSizer->Add(
+            oceanBox,
+            wxGBPosition(0, 0),
+            wxGBSpan(1, 3),
+            wxALL,
+            CellBorder);
+    }
+
+    // Land
+    {
+        wxStaticBox * landBox = new wxStaticBox(panel, wxID_ANY, _("Land"));
+
+        wxBoxSizer * landBoxSizer1 = new wxBoxSizer(wxVERTICAL);
+        landBoxSizer1->AddSpacer(StaticBoxTopMargin);
+
+        {
+            wxGridBagSizer * landSizer = new wxGridBagSizer(0, 0);
+
+            // Land Render Mode
+            {
+                wxStaticBox * landRenderModeBox = new wxStaticBox(landBox, wxID_ANY, _("Draw Mode"));
+
+                wxBoxSizer * landRenderModeBoxSizer1 = new wxBoxSizer(wxVERTICAL);
+                landRenderModeBoxSizer1->AddSpacer(StaticBoxTopMargin);
+
+                {
+                    wxFlexGridSizer* landRenderModeBoxSizer2 = new wxFlexGridSizer(3, 5, 5);
+                    landRenderModeBoxSizer2->SetFlexibleDirection(wxHORIZONTAL);
+
+                    mTextureLandRenderModeRadioButton = new wxRadioButton(landRenderModeBox, wxID_ANY, _("Texture"),
+                        wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+                    mTextureLandRenderModeRadioButton->SetToolTip("Draws the ocean floor using a static image.");
+                    mTextureLandRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnTextureLandRenderModeRadioButtonClick, this);
+                    landRenderModeBoxSizer2->Add(mTextureLandRenderModeRadioButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 0);
+
+                    landRenderModeBoxSizer2->AddSpacer(0);
+
+                    landRenderModeBoxSizer2->AddSpacer(0);
+
+                    mFlatLandRenderModeRadioButton = new wxRadioButton(landRenderModeBox, wxID_ANY, _("Flat"),
+                        wxDefaultPosition, wxDefaultSize);
+                    mFlatLandRenderModeRadioButton->SetToolTip("Draws the ocean floor using a static color.");
+                    mFlatLandRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnFlatLandRenderModeRadioButtonClick, this);
+                    landRenderModeBoxSizer2->Add(mFlatLandRenderModeRadioButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 0);
+
+                    mFlatLandColorPicker = new wxColourPickerCtrl(landRenderModeBox, wxID_ANY);
+                    mFlatLandColorPicker->SetToolTip("Sets the single color of the ocean floor.");
+                    mFlatLandColorPicker->Bind(wxEVT_COLOURPICKER_CHANGED, &SettingsDialog::OnFlatLandColorChanged, this);
+                    landRenderModeBoxSizer2->Add(mFlatLandColorPicker, 0, wxALL, 0);
+
+                    landRenderModeBoxSizer2->AddSpacer(0);
+
+                    landRenderModeBoxSizer1->Add(landRenderModeBoxSizer2, 0, wxALL, StaticBoxInsetMargin);
+                }
+
+                landRenderModeBox->SetSizerAndFit(landRenderModeBoxSizer1);
+
+                landSizer->Add(
+                    landRenderModeBox,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorder);
+            }
+
+            landBoxSizer1->Add(landSizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        landBox->SetSizerAndFit(landBoxSizer1);
+
+        gridSizer->Add(
+            landBox,
+            wxGBPosition(0, 3),
+            wxGBSpan(1, 1),
+            wxALL,
+            CellBorder);
+    }
+
+    // Sky
+    {
+        wxStaticBox * skyBox = new wxStaticBox(panel, wxID_ANY, _("Sky"));
+
+        wxBoxSizer * skyBoxSizer1 = new wxBoxSizer(wxVERTICAL);
+        skyBoxSizer1->AddSpacer(StaticBoxTopMargin);
+
+        {
+            wxGridBagSizer * skySizer = new wxGridBagSizer(0, 0);
+
+            // Sky color
+            {
+                mFlatSkyColorPicker = new wxColourPickerCtrl(skyBox, wxID_ANY);
+                mFlatSkyColorPicker->SetToolTip("Sets the color of the sky. Duh.");
+                mFlatSkyColorPicker->Bind(wxEVT_COLOURPICKER_CHANGED, &SettingsDialog::OnFlatSkyColorChanged, this);
+
+                skySizer->Add(
+                    mFlatSkyColorPicker,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorder);
+            }
+
+            skyBoxSizer1->Add(skySizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        skyBox->SetSizerAndFit(skyBoxSizer1);
+
+        gridSizer->Add(
+            skyBox,
+            wxGBPosition(1, 0),
+            wxGBSpan(1, 1),
+            wxALL,
+            CellBorder);
+    }
+
+    // Ship
+    {
+        wxStaticBox * shipBox = new wxStaticBox(panel, wxID_ANY, _("Ship"));
+
+        wxBoxSizer * shipBoxSizer1 = new wxBoxSizer(wxVERTICAL);
+        shipBoxSizer1->AddSpacer(StaticBoxTopMargin);
+
+        {
+            wxGridBagSizer * shipSizer = new wxGridBagSizer(0, 0);
+
+            // Ship Render Mode
+            {
+                wxStaticBox * shipRenderModeBox = new wxStaticBox(shipBox, wxID_ANY, _("Draw Mode"));
+
+                wxBoxSizer * shipRenderModeBoxSizer1 = new wxBoxSizer(wxVERTICAL);
+                shipRenderModeBoxSizer1->AddSpacer(StaticBoxTopMargin);
+
+                {
+                    wxFlexGridSizer* shipRenderModeBoxSizer2 = new wxFlexGridSizer(1, 5, 5);
+                    shipRenderModeBoxSizer2->SetFlexibleDirection(wxHORIZONTAL);
+
+                    mTextureShipRenderModeRadioButton = new wxRadioButton(shipRenderModeBox, wxID_ANY, _("Texture"),
+                        wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+                    mTextureShipRenderModeRadioButton->SetToolTip("Draws the ship using its texture image.");
+                    mTextureShipRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnTextureShipRenderModeRadioButtonClick, this);
+                    shipRenderModeBoxSizer2->Add(mTextureShipRenderModeRadioButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 0);
+
+                    mStructureShipRenderModeRadioButton = new wxRadioButton(shipRenderModeBox, wxID_ANY, _("Structure"),
+                        wxDefaultPosition, wxDefaultSize);
+                    mStructureShipRenderModeRadioButton->SetToolTip("Draws the ship using its structure.");
+                    mStructureShipRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnStructureShipRenderModeRadioButtonClick, this);
+                    shipRenderModeBoxSizer2->Add(mStructureShipRenderModeRadioButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 0);
+
+                    shipRenderModeBoxSizer1->Add(shipRenderModeBoxSizer2, 0, wxALL, StaticBoxInsetMargin);
+                }
+
+                shipRenderModeBox->SetSizerAndFit(shipRenderModeBoxSizer1);
+
+                shipSizer->Add(
+                    shipRenderModeBox,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorder);
+            }
+
+            // Show Stress
+            {
+                mShowStressCheckBox = new wxCheckBox(shipBox, wxID_ANY,
+                    _("Show Stress"), wxDefaultPosition, wxDefaultSize);
+                mShowStressCheckBox->SetToolTip("Enables or disables highlighting of the springs that are under heavy stress and close to rupture.");
+                mShowStressCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnSeeShipThroughOceanCheckBoxClick, this);
+
+                shipSizer->Add(
+                    mShowStressCheckBox,
+                    wxGBPosition(1, 0),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorder);
+            }
+
+            shipBoxSizer1->Add(shipSizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        shipBox->SetSizerAndFit(shipBoxSizer1);
+
+        gridSizer->Add(
+            shipBox,
+            wxGBPosition(1, 1),
+            wxGBSpan(1, 1),
+            wxALL,
+            CellBorder);
+    }
+
+    // Water
+    {
+        wxStaticBox * waterBox = new wxStaticBox(panel, wxID_ANY, _("Water"));
+
+        wxBoxSizer * waterBoxSizer1 = new wxBoxSizer(wxVERTICAL);
+        waterBoxSizer1->AddSpacer(StaticBoxTopMargin);
+
+        {
+            wxGridBagSizer * waterSizer = new wxGridBagSizer(0, 0);
+
+            // Water contrast
+            {
+                mWaterContrastSlider = std::make_unique<SliderControl>(
+                    waterBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Water Contrast",
+                    "Adjusts the contrast of water inside physical bodies.",
+                    mGameController->GetWaterContrast(),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        0.0f,
+                        1.0f));
+
+                waterSizer->Add(
+                    mWaterContrastSlider.get(),
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorder);
+            }
+
+            waterBoxSizer1->Add(waterSizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        waterBox->SetSizerAndFit(waterBoxSizer1);
+
+        gridSizer->Add(
+            waterBox,
+            wxGBPosition(1, 2),
+            wxGBSpan(1, 1),
+            wxALL,
+            CellBorder);
+    }
 
 
     // Finalize panel
 
-    panel->SetSizerAndFit(controlsSizer);
+    panel->SetSizerAndFit(gridSizer);
 }
 
 void SettingsDialog::PopulateSoundPanel(wxPanel * panel)
@@ -1555,33 +1722,90 @@ void SettingsDialog::ReadSettings()
 
     mScreenshotDirPickerCtrl->SetPath(mUISettings->GetScreenshotsFolderPath().string());
 
+    // Render
 
+    auto oceanRenderMode = mGameController->GetOceanRenderMode();
+    switch (oceanRenderMode)
+    {
+        case OceanRenderMode::Texture:
+        {
+            mTextureOceanRenderModeRadioButton->SetValue(true);
+            break;
+        }
 
-    mWaterContrastSlider->SetValue(mGameController->GetWaterContrast());
+        case OceanRenderMode::Depth:
+        {
+            mDepthOceanRenderModeRadioButton->SetValue(true);
+            break;
+        }
 
-    mSeaWaterTransparencySlider->SetValue(mGameController->GetSeaWaterTransparency());
+        case OceanRenderMode::Flat:
+        {
+            mFlatOceanRenderModeRadioButton->SetValue(true);
+            break;
+        }
+    }
 
-    mSeeShipThroughSeaWaterCheckBox->SetValue(mGameController->GetShowShipThroughSeaWater());
+    auto depthOceanColorStart = mGameController->GetDepthOceanColorStart();
+    mDepthOceanColorStartPicker->SetColour(wxColor(depthOceanColorStart.r, depthOceanColorStart.g, depthOceanColorStart.b));
+
+    auto depthOceanColorEnd = mGameController->GetDepthOceanColorEnd();
+    mDepthOceanColorEndPicker->SetColour(wxColor(depthOceanColorEnd.r, depthOceanColorEnd.g, depthOceanColorEnd.b));
+
+    auto flatOceanColor = mGameController->GetFlatOceanColor();
+    mFlatOceanColorPicker->SetColour(wxColor(flatOceanColor.r, flatOceanColor.g, flatOceanColor.b));
+
+    ReconciliateOceanRenderModeSettings();
+
+    mSeeShipThroughOceanCheckBox->SetValue(mGameController->GetShowShipThroughOcean());
+
+    mOceanTransparencySlider->SetValue(mGameController->GetOceanTransparency());
+
+    auto landRenderMode = mGameController->GetLandRenderMode();
+    switch (landRenderMode)
+    {
+        case LandRenderMode::Texture:
+        {
+            mTextureLandRenderModeRadioButton->SetValue(true);
+            break;
+        }
+
+        case LandRenderMode::Flat:
+        {
+            mFlatLandRenderModeRadioButton->SetValue(true);
+            break;
+        }
+    }
+
+    auto flatLandColor = mGameController->GetFlatLandColor();
+    mFlatLandColorPicker->SetColour(wxColor(flatLandColor.r, flatLandColor.g, flatLandColor.b));
+
+    ReconciliateLandRenderModeSettings();
+
+    auto flatSkyColor = mGameController->GetFlatSkyColor();
+    mFlatSkyColorPicker->SetColour(wxColor(flatSkyColor.r, flatSkyColor.g, flatSkyColor.b));
 
     auto shipRenderMode = mGameController->GetShipRenderMode();
     switch (shipRenderMode)
     {
-        case ShipRenderMode::Structure:
+        case ShipRenderMode::Texture:
         {
-            mShipRenderModeRadioBox->SetSelection(0);
+            mTextureShipRenderModeRadioButton->SetValue(true);
             break;
         }
 
-        case ShipRenderMode::Texture:
+        case ShipRenderMode::Structure:
         {
-            mShipRenderModeRadioBox->SetSelection(1);
+            mStructureShipRenderModeRadioButton->SetValue(true);
             break;
         }
     }
 
     mShowStressCheckBox->SetValue(mGameController->GetShowShipStress());
 
+    mWaterContrastSlider->SetValue(mGameController->GetWaterContrast());
 
+    // Sound
 
     mEffectsVolumeSlider->SetValue(mSoundController->GetMasterEffectsVolume());
 
@@ -1667,6 +1891,262 @@ void SettingsDialog::ReadSettings()
         {
             assert(vectorFieldRenderMode == VectorFieldRenderMode::PointWaterMomentum);
             mVectorFieldRenderModeRadioBox->SetSelection(4);
+            break;
+        }
+    }
+}
+
+void SettingsDialog::ReconciliateOceanRenderModeSettings()
+{
+    mDepthOceanColorStartPicker->Enable(mDepthOceanRenderModeRadioButton->GetValue());
+    mDepthOceanColorEndPicker->Enable(mDepthOceanRenderModeRadioButton->GetValue());
+    mFlatOceanColorPicker->Enable(mFlatOceanRenderModeRadioButton->GetValue());
+}
+
+void SettingsDialog::ReconciliateLandRenderModeSettings()
+{
+    mFlatLandColorPicker->Enable(mFlatLandRenderModeRadioButton->GetValue());
+}
+
+void SettingsDialog::ApplySettings()
+{
+    assert(!!mGameController);
+
+
+    mGameController->SetNumMechanicalDynamicsIterationsAdjustment(
+        mMechanicalQualitySlider->GetValue());
+
+    mGameController->SetStrengthAdjustment(
+        mStrengthSlider->GetValue());
+
+
+
+    mGameController->SetWaterDensityAdjustment(
+        mWaterDensitySlider->GetValue());
+
+    mGameController->SetWaterDragAdjustment(
+        mWaterDragSlider->GetValue());
+
+    mGameController->SetWaterIntakeAdjustment(
+        mWaterIntakeSlider->GetValue());
+
+    mGameController->SetWaterCrazyness(
+        mWaterCrazynessSlider->GetValue());
+
+    mGameController->SetWaterDiffusionSpeedAdjustment(
+        mWaterDiffusionSpeedSlider->GetValue());
+
+    mGameController->SetWaterLevelOfDetail(
+        mWaterLevelOfDetailSlider->GetValue());
+
+
+
+    mGameController->SetNumberOfStars(
+        static_cast<size_t>(mNumberOfStarsSlider->GetValue()));
+
+    mGameController->SetNumberOfClouds(
+        static_cast<size_t>(mNumberOfCloudsSlider->GetValue()));
+
+    mGameController->SetWindSpeedBase(
+        mWindSpeedBaseSlider->GetValue());
+
+    mGameController->SetDoModulateWind(mModulateWindCheckBox->IsChecked());
+
+    mGameController->SetWindSpeedMaxFactor(
+        mWindGustAmplitudeSlider->GetValue());
+
+
+
+    mGameController->SetWaveHeight(
+        mWaveHeightSlider->GetValue());
+
+    mGameController->SetSeaDepth(
+        mSeaDepthSlider->GetValue());
+
+    mGameController->SetOceanFloorBumpiness(
+        mOceanFloorBumpinessSlider->GetValue());
+
+    mGameController->SetOceanFloorDetailAmplification(
+        mOceanFloorDetailAmplificationSlider->GetValue());
+
+    mGameController->SetLuminiscenceAdjustment(
+        mLuminiscenceSlider->GetValue());
+
+    mGameController->SetLightSpreadAdjustment(
+        mLightSpreadSlider->GetValue());
+
+
+
+    mGameController->SetDestroyRadius(
+        mDestroyRadiusSlider->GetValue());
+
+    mGameController->SetBombBlastRadius(
+        mBombBlastRadiusSlider->GetValue());
+
+    mGameController->SetAntiMatterBombImplosionStrength(
+        mAntiMatterBombImplosionStrengthSlider->GetValue());
+
+    mGameController->SetFloodRadius(
+        mFloodRadiusSlider->GetValue());
+
+    mGameController->SetFloodQuantity(
+        mFloodQuantitySlider->GetValue());
+
+    mGameController->SetUltraViolentMode(mUltraViolentCheckBox->IsChecked());
+
+    mGameController->SetDoGenerateDebris(mGenerateDebrisCheckBox->IsChecked());
+
+    mGameController->SetDoGenerateSparkles(mGenerateSparklesCheckBox->IsChecked());
+
+    mGameController->SetDoGenerateAirBubbles(mGenerateAirBubblesCheckBox->IsChecked());
+
+    mUISettings->SetScreenshotsFolderPath(mScreenshotDirPickerCtrl->GetPath().ToStdString());
+
+
+    // Render
+
+    if (mTextureOceanRenderModeRadioButton->GetValue())
+    {
+        mGameController->SetOceanRenderMode(OceanRenderMode::Texture);
+    }
+    else if (mDepthOceanRenderModeRadioButton->GetValue())
+    {
+        mGameController->SetOceanRenderMode(OceanRenderMode::Depth);
+    }
+    else
+    {
+        assert(mFlatOceanRenderModeRadioButton->GetValue());
+        mGameController->SetOceanRenderMode(OceanRenderMode::Flat);
+    }
+
+    auto depthOceanColorStart = mDepthOceanColorStartPicker->GetColour();
+    mGameController->SetDepthOceanColorStart(
+        rgbColor(depthOceanColorStart.Red(), depthOceanColorStart.Green(), depthOceanColorStart.Blue()));
+
+    auto depthOceanColorEnd = mDepthOceanColorEndPicker->GetColour();
+    mGameController->SetDepthOceanColorEnd(
+        rgbColor(depthOceanColorEnd.Red(), depthOceanColorEnd.Green(), depthOceanColorEnd.Blue()));
+
+    auto flatOceanColor = mFlatOceanColorPicker->GetColour();
+    mGameController->SetFlatOceanColor(
+        rgbColor(flatOceanColor.Red(), flatOceanColor.Green(), flatOceanColor.Blue()));
+
+    mGameController->SetShowShipThroughOcean(mSeeShipThroughOceanCheckBox->IsChecked());
+
+    mGameController->SetOceanTransparency(
+        mOceanTransparencySlider->GetValue());
+
+    if (mTextureLandRenderModeRadioButton->GetValue())
+    {
+        mGameController->SetLandRenderMode(LandRenderMode::Texture);
+    }
+    else
+    {
+        assert(mFlatLandRenderModeRadioButton->GetValue());
+        mGameController->SetLandRenderMode(LandRenderMode::Flat);
+    }
+
+    auto flatLandColor = mFlatLandColorPicker->GetColour();
+    mGameController->SetFlatLandColor(
+        rgbColor(flatLandColor.Red(), flatLandColor.Green(), flatLandColor.Blue()));
+
+    auto flatSkyColor = mFlatSkyColorPicker->GetColour();
+    mGameController->SetFlatSkyColor(
+        rgbColor(flatSkyColor.Red(), flatSkyColor.Green(), flatSkyColor.Blue()));
+
+    if (mTextureShipRenderModeRadioButton->GetValue())
+    {
+        mGameController->SetShipRenderMode(ShipRenderMode::Texture);
+    }
+    else
+    {
+        assert(mStructureShipRenderModeRadioButton->GetValue());
+        mGameController->SetShipRenderMode(ShipRenderMode::Structure);
+    }
+
+    mGameController->SetShowShipStress(mShowStressCheckBox->IsChecked());
+
+    mGameController->SetWaterContrast(
+        mWaterContrastSlider->GetValue());
+
+    // Sound
+
+    mSoundController->SetMasterEffectsVolume(
+        mEffectsVolumeSlider->GetValue());
+
+    mSoundController->SetMasterToolsVolume(
+        mToolsVolumeSlider->GetValue());
+
+    mSoundController->SetMasterMusicVolume(
+        mMusicVolumeSlider->GetValue());
+
+    mSoundController->SetPlayBreakSounds(mPlayBreakSoundsCheckBox->IsChecked());
+
+    mSoundController->SetPlayStressSounds(mPlayStressSoundsCheckBox->IsChecked());
+
+    mSoundController->SetPlayWindSound(mPlayWindSoundCheckBox->IsChecked());
+
+    mSoundController->SetPlaySinkingMusic(mPlaySinkingMusicCheckBox->IsChecked());
+
+
+
+    mGameController->SetStiffnessAdjustment(
+        mStiffnessSlider->GetValue());
+
+    auto selectedDebugShipRenderMode = mDebugShipRenderModeRadioBox->GetSelection();
+    if (0 == selectedDebugShipRenderMode)
+    {
+        mGameController->SetDebugShipRenderMode(DebugShipRenderMode::None);
+    }
+    else if (1 == selectedDebugShipRenderMode)
+    {
+        mGameController->SetDebugShipRenderMode(DebugShipRenderMode::Wireframe);
+    }
+    else if (2 == selectedDebugShipRenderMode)
+    {
+        mGameController->SetDebugShipRenderMode(DebugShipRenderMode::Points);
+    }
+    else if (3 == selectedDebugShipRenderMode)
+    {
+        mGameController->SetDebugShipRenderMode(DebugShipRenderMode::Springs);
+    }
+    else
+    {
+        assert(4 == selectedDebugShipRenderMode);
+        mGameController->SetDebugShipRenderMode(DebugShipRenderMode::EdgeSprings);
+    }
+
+    auto selectedVectorFieldRenderMode = mVectorFieldRenderModeRadioBox->GetSelection();
+    switch (selectedVectorFieldRenderMode)
+    {
+        case 0:
+        {
+            mGameController->SetVectorFieldRenderMode(VectorFieldRenderMode::None);
+            break;
+        }
+
+        case 1:
+        {
+            mGameController->SetVectorFieldRenderMode(VectorFieldRenderMode::PointVelocity);
+            break;
+        }
+
+        case 2:
+        {
+            mGameController->SetVectorFieldRenderMode(VectorFieldRenderMode::PointForce);
+            break;
+        }
+
+        case 3:
+        {
+            mGameController->SetVectorFieldRenderMode(VectorFieldRenderMode::PointWaterVelocity);
+            break;
+        }
+
+        default:
+        {
+            assert(4 == selectedVectorFieldRenderMode);
+            mGameController->SetVectorFieldRenderMode(VectorFieldRenderMode::PointWaterMomentum);
             break;
         }
     }

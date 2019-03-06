@@ -87,6 +87,18 @@
 },
 
 {
+	"groupName": "Ocean",
+	"hasOwnAmbientLight": false,
+	"frames":[
+		{	
+			"worldWidth": 64.0,
+			"worldHeight": 64.0,
+			"filename": "ocean_\\d+"
+		}
+	]
+},
+
+{
 	"groupName": "PinnedPoint",
 	"hasOwnAmbientLight": false,
 	"frames":[
@@ -198,18 +210,6 @@
 			"anchorOffsetX": -1,
 			"anchorOffsetY": 57,
 			"filename": "timer_bomb_fuse_\\d+"
-		}
-	]
-},
-
-{
-	"groupName": "Water",
-	"hasOwnAmbientLight": false,
-	"frames":[
-		{	
-			"worldWidth": 64.0,
-			"worldHeight": 64.0,
-			"filename": "water_\\d+"
 		}
 	]
 }
