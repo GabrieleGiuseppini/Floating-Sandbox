@@ -1,5 +1,5 @@
 {
-	"structure_image":"saturn _v_1st_stage_structural.png.dat",
+	"structure_image":"saturn_v_1st_stage_structural.png.dat",
 	"offset":{"x":0.0, "y":0.0},
 	"ship_name":"Saturn V 1st Stage",
 	"year_built":"1967",

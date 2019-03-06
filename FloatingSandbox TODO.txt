@@ -222,6 +222,10 @@ Render:
 
 	- 1.10.0
 
+		- VAO (*)
+
+		- Vertex buffer optimization (*)
+
 		- Orphaned points (*)
 
 		- Decay (rust) (*)
@@ -520,9 +524,9 @@ Render:
 
 - Gfx optimizations:
 
-	- Use VAO's
+	- Use VAO's (*)
 
-	- Reduce number of vertex attributes for ship_triangles_texture and color (and possibly forced to do others)
+	- Reduce number of vertex attributes for ship_triangles_texture and color (and possibly forced to do others) (*)
 		+ We've already confirmed that one less attribute vertex sends FPS frpom 29 to 30
 		- At this moment, all Ship shaders - except for stressed springs - have the following inputs:
 			in vec2 inShipPointPosition;
@@ -531,7 +535,7 @@ Render:
 			in vec4 inShipPointColor;
 			in float inShipPointPlaneId;
 
-	- Lights in the GPU with instanced drawing
+	- Lights in the GPU with instanced drawing (*)
 		- Figure out whether at vertex or fragment shader
 			- Depends on whether or not interpolation would re-create circular halo
 		- Lamp coords, spread, and luminiscence in uniform array
