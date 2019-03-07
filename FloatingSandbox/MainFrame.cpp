@@ -652,7 +652,21 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
     splash->Close();
 
+    UpdateFrameTitle();
 
+
+    //
+    // Post finalization separately
+    //
+
+    assert(!!mPostInitializeTimer);
+
+    Connect(ID_POSTIINITIALIZE_TIMER, wxEVT_TIMER, (wxObjectEventFunction)&MainFrame::OnPostInitializeTrigger2);
+    mPostInitializeTimer->Start(0, true);
+}
+
+void MainFrame::OnPostInitializeTrigger2(wxTimerEvent & /*event*/)
+{
     //
     // Show startup tip
     //
@@ -667,15 +681,11 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
         startupTipDialog.ShowModal();
     }
 
-
     //
     // Start timers
     //
 
     StartTimers();
-
-
-    UpdateFrameTitle();
 }
 
 void MainFrame::OnMainFrameClose(wxCloseEvent & /*event*/)

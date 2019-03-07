@@ -219,11 +219,15 @@ Render:
 			+ Test all 2 with:
 				+ Ambient light intensity
 			+ Find good default flat color
+		= Initial help window (HTML) @ Startup
+			= UserPreferences tag to suppress
+
+		- Push everything
+		- Delete tag from git and pull
+		- Delete 1.9.0 from desktop
 
 	- 1.10.0
 
-		- Initial help window (HTML) @ Startup
-			- UserPreferences tag to suppress
 
 		- VAO (*)
 

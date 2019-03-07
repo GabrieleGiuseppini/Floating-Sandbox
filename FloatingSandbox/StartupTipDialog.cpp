@@ -16,7 +16,7 @@ StartupTipDialog::StartupTipDialog(
     wxWindow * parent,
     std::shared_ptr<UIPreferences> uiPreferences,
     ResourceLoader const & resourceLoader)
-    : wxDialog(parent, wxID_ANY, wxString(_("Welcome!")))
+    : wxDialog(parent, wxID_ANY, wxString(_("Welcome!")), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxSTAY_ON_TOP)
     , mUIPreferences(std::move(uiPreferences))
 {
     wxBoxSizer * topSizer = new wxBoxSizer(wxVERTICAL);
@@ -46,7 +46,7 @@ StartupTipDialog::StartupTipDialog(
         wxBoxSizer * rowSizer = new wxBoxSizer(wxHORIZONTAL);
 
         {
-            wxCheckBox * dontChk = new wxCheckBox(this, wxID_ANY, "Don't show this tip on startup again");
+            wxCheckBox * dontChk = new wxCheckBox(this, wxID_ANY, "Don't show this tip again");
             dontChk->SetValue(false);
             dontChk->Bind(wxEVT_CHECKBOX, &StartupTipDialog::OnDontShowAgainCheckboxChanged, this);
 
@@ -62,7 +62,7 @@ StartupTipDialog::StartupTipDialog(
             rowSizer->Add(okButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 15);
         }
 
-        topSizer->Add(rowSizer);
+        topSizer->Add(rowSizer, 0, wxEXPAND);
     }
 
     this->SetSizerAndFit(topSizer);

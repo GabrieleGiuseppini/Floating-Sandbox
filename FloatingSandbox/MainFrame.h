@@ -110,6 +110,7 @@ private:
 
     // App
     void OnPostInitializeTrigger(wxTimerEvent & event);
+    void OnPostInitializeTrigger2(wxTimerEvent & event);
     void OnMainFrameClose(wxCloseEvent & event);
     void OnQuit(wxCommandEvent & event);
     void OnPaint(wxPaintEvent & event);

@@ -111,7 +111,7 @@ UIPreferences::~UIPreferences()
 
         // Add show startup tip
 
-        preferencesRootObject["show_startup_tip"] = picojson::value(true);
+        preferencesRootObject["show_startup_tip"] = picojson::value(mShowStartupTip);
 
         // Save
         Utils::SaveJSONFile(
