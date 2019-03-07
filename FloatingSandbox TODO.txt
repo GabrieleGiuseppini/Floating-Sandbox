@@ -138,96 +138,26 @@ Render:
 ====================================================
 
 - Marketing:
-	- Youtube channel
+	- GameJolt post w/screenshot with gradient, at night
 	- Video of Titanic under Mariannes' Trench
 		+ After water contrast
 
 - Roadmap:
 
-	= 1.9.0
-		+ Ship file dialog (*)
-		+ Fix metres bug
-			+ ShipPreview must carry original size, before resize
-		+ Add new ships
-		+ Installer does not install guides
-		+ Change version
-		+ ConnectedSprings/OtherEndpoint Optimization (*)
-		+ Create "z_buffer" branch
-		+ Zbuffer (*)
-		+ See if can avoid freezing (so, deleting) springs to which we have bombs attached
-			+ Don't destroy spring if it has a bomb attached, at:
-				+ StressedSprings break 
-			+ Test L'n'F':
-				+ 3 Bombs
-				+ Anti-Matter bomb (should fall at some point)
-		+ ShipLoadDialog: make sure default Ships directory is always in recent dirs, first
-			+ Test w/empty preferences
-			+ Also add Home button
-		+ Fix bug with cross-of-light spawning underwater		
-		+ Fix sailing ship - cut sail in texture (but not in psd)
-		+ Fix Titanic's jagged sides
-		+ Tooltips (*)
-		+ Update changes.txt with tooltips and z-buffer
-		+ Fix SettingsDialog/RecentDirs bug: when new dir loaded, it doesn't appear in combo
-		+ Make flood tool adjustable
-			+ Two settings - radius and quantity of water
-			+ Make sure ultra-violent mode applies to both
-			+ SettingsDialog
-				+ Use same sliders as DestroyRadius
-			+ Test mins and maxs
-		+ Make ropes less crazy when they get wet
-			+ Test: base tall, slice rightmost tip
-			+ Lower water intake adjust seems to help: add per-material
-				+ StructuralMaterial: WaterIntake: 0.1 for Rope, default 1.0
-					+ Also to guide; dimensionless
-				+ Point buffer
-				+ Use 
-			+ Find good value:
-				+ 0.05
-			+ Perf:
-				+ Pre: 29.1/29.2
-				+ Post: 29.3/29.3
-		+ Add more cloth colors
-			+ Redo structural palette afterwards
-		+ New render setting: Ocean Render Mode {Texture, Flat, Depth}
-			+ One vertex attribute structure to rule them all 
-				+ Texture
-				+ Flat
-				+ Depth
-					+ restWaterHeight is sea depth, no need for: RenderContext need to be told of changing sea depth by GameController
-					+ Rename as seaDepth
-			+ 3 shaders
-			+ VisibleWorld bounding box in viewmodel
-				+ Test CrossOfLight
-			+ SettingsDialog:
-				+ RenderMode
-				+ 3 colors
-			+ Test all 3 with:
-				+ Ambient light intensity
-				+ Ocean transparency
-			+ Find good default colors:
-				+ Depth
-				+ Flat
-		+ New render setting: Ocean Floor Render Mode {Texture, Flat}
-			+ One vertex attribute structure to rule them all 
-				+ Texture
-				+ Flat
-			+ 2 shaders
-			+ SettingsDialog:
-				+ RenderMode
-				+ 1 color
-			+ Test all 2 with:
-				+ Ambient light intensity
-			+ Find good default flat color
-		= Initial help window (HTML) @ Startup
-			= UserPreferences tag to suppress
-
-		- Push everything
-		- Delete tag from git and pull
-		- Delete 1.9.0 from desktop
-
 	- 1.10.0
 
+		= Fix ShipLoadDialog crash
+			- Communicate
+		= See Carnival issue
+			- Normal - structure property, communicate
+		= Gradient: we keep it like this (no bottom exists), communicate
+		- Delete 1.8 link from forum
+
+		- See if should do 1.9.1
+
+		- Spring Damp setting
+			- SettingsDialog: advanced
+			- Play to see if can find value
 
 		- VAO (*)
 
@@ -860,27 +790,32 @@ Render:
 		- New electrical material type
 			- Color trick like ropes to have unique and deterministic IDs for switches
 				- One material (base structural color) for initially on and another one for initially off
-			- Or 30 different materials (Switch 1, ...)
-				- New electrical material property: switch_id
-					- Must be > 0 and <= 30 for all switch materials, checked at load
 			- New electrical property: ConductsElectricity, bool - used at connectivity visit
-		+ ObjectId overhaul:
-			+ ObjectId is unique only in the context in which it's used (e.g. bombs vs switches)
-			+ ObjectId == <ShipId (new GameType alias, uint32_t w/ None), LocalObjectId (uint32_t)>
-				+ LocalObjectId is provided by caller
-				+ ObjectIdGenerator only provides helper for globally unique - with no guarantees - or should go
-			+ All ship ID ints become ShipId
-			+ All object ID ints become ObjectId
-		- To improve typesafety, should ObjectId become template on actual local ID?
-			- Make strong typedef for SwitchID
+				- Lights, Cables, Generators have it as true
+				- Switches have is as true or false depending on whether switch material is on or off
+		- GameTypes:
+			+ ObjectId overhaul:
+				+ ObjectId is unique only in the context in which it's used (e.g. bombs vs switches)
+				+ ObjectId == <ShipId (new GameType alias, uint32_t w/ None), LocalObjectId (uint32_t)>
+					+ LocalObjectId is provided by caller
+					+ ObjectIdGenerator only provides helper for globally unique - with no guarantees - or should go
+				+ All ship ID ints become ShipId
+				+ All object ID ints become ObjectId
+			- LocalSwitchId typedef (uint32_t)
+			- ObjectId:
+				- Templated on type of local ID
+				- Also strong typedef (w/tag?) -> SwitchId (on LocalSwitchId)
 		- Ship json adds optional names for each ID
-			- as vector<tuple<local switch ID, std::string>>>
+			- as vector<pair<local switch ID, std::string>>>
 				- local switch ID is ID from color code
 		- ShipBuilder detects all switches as electrical elements
-			- Generates an ObjectId using ship ID and index of switch
-			- Each switch gets own ObjectId, as part of Electrical Elements data communicated to ship
+			- Initial ID is from color code
+			- Checks for duplicate initial IDs
+			- Initial ID is only used to match with ship's switch names
+			- Then, generates an ObjectId using ship ID and local object ID
 				- LocalObjectId is just element index of switch in ElectricalElements
-				- Also name goes into Electrical Elements
+			- Each switch gets name as part of Electrical Elements data communicated to ship
+				- ObjectId is implicit (local ID is index in container of switches's ElementIndex within ElectricalElements)
 		- Create and Destroy events:
 			- Ship::cctor visits switches among ElectricalElements and fires AddSwitch(ID, name, state)
 			- Ship::ElectricalElementDestroyHandler fires DeleteSwitch(ID) if deleting a switch
@@ -892,6 +827,7 @@ Render:
 		- MainFrame:
 			- Also registers for AddSwitch and shows SwitchBoard on first add
 				- As long as UIPreferences::AutoShowSwitchBoard is set (default=true)
+					- Menu item to toggle AutoShowSwitchBoard; only changes UIPreferences
 			- Hides it again only at Reset()
 		- Electrical dynamics:
 			- ElectricalElement: rename "ConnectivityVisit" (sequence number, etc.) as "ElectricalPropagationVisit" (...)
@@ -899,10 +835,12 @@ Render:
 			- ElectricalElement has new "conductsElectricity" bool buffer
 				- Init'd with material's
 				- Ship::UpdateElectricalConnectivity checks conductance first when deciding to follow a connected electrical element
-			- Ship::SetSwitch(switchId, bool):
-				- Toggles electrical element's "conductsElectricity", via ElectricalElements::SetSwitch(switchId, bool)
+			- Ship::SetSwitch(LocalSwitchId, bool):
+				- Toggles electrical element's "conductsElectricity", via ElectricalElements::SetSwitch(switch index, bool)
 		- SwitchboardPanel:
 			- MainFrame menu pops it up and down (and MainFrame also pops it up automagically at first switch add, see above)
+				- Menu items to toggle it, enabled iff there's at least one switch
+			- Has control to hide it back (kinda like "close" button at top-right corner)
 			- SwitchControl: much like slider, button (w/two switch images) with label below
 				- Switch event is via lambda
 				- Media:
@@ -4473,7 +4411,6 @@ IF WX:
 		+ Do perf analysis with complex graph
 			+ Need circuit test 3
 			+ Impact negligible: Ship::UpdateElectricalConnectivity: 0.21%
-
 	+ Diffusion:
 		+ Can test it by itself, by using light material and by cheating with current!
 		+ After current propagation:
@@ -4724,4 +4661,81 @@ IF WX:
 			+ Remove whole folder on uninstall, even with users' files
 				+ https://helgeklein.com/blog/2014/09/real-world-example-wix-msi-application-installer/		
 		+ Installer: add location picker
+	+ 1.9.0
+		+ Ship file dialog (*)
+		+ Fix metres bug
+			+ ShipPreview must carry original size, before resize
+		+ Add new ships
+		+ Installer does not install guides
+		+ Change version
+		+ ConnectedSprings/OtherEndpoint Optimization (*)
+		+ Create "z_buffer" branch
+		+ Zbuffer (*)
+		+ See if can avoid freezing (so, deleting) springs to which we have bombs attached
+			+ Don't destroy spring if it has a bomb attached, at:
+				+ StressedSprings break 
+			+ Test L'n'F':
+				+ 3 Bombs
+				+ Anti-Matter bomb (should fall at some point)
+		+ ShipLoadDialog: make sure default Ships directory is always in recent dirs, first
+			+ Test w/empty preferences
+			+ Also add Home button
+		+ Fix bug with cross-of-light spawning underwater		
+		+ Fix sailing ship - cut sail in texture (but not in psd)
+		+ Fix Titanic's jagged sides
+		+ Tooltips (*)
+		+ Update changes.txt with tooltips and z-buffer
+		+ Fix SettingsDialog/RecentDirs bug: when new dir loaded, it doesn't appear in combo
+		+ Make flood tool adjustable
+			+ Two settings - radius and quantity of water
+			+ Make sure ultra-violent mode applies to both
+			+ SettingsDialog
+				+ Use same sliders as DestroyRadius
+			+ Test mins and maxs
+		+ Make ropes less crazy when they get wet
+			+ Test: base tall, slice rightmost tip
+			+ Lower water intake adjust seems to help: add per-material
+				+ StructuralMaterial: WaterIntake: 0.1 for Rope, default 1.0
+					+ Also to guide; dimensionless
+				+ Point buffer
+				+ Use 
+			+ Find good value:
+				+ 0.05
+			+ Perf:
+				+ Pre: 29.1/29.2
+				+ Post: 29.3/29.3
+		+ Add more cloth colors
+			+ Redo structural palette afterwards
+		+ New render setting: Ocean Render Mode {Texture, Flat, Depth}
+			+ One vertex attribute structure to rule them all 
+				+ Texture
+				+ Flat
+				+ Depth
+					+ restWaterHeight is sea depth, no need for: RenderContext need to be told of changing sea depth by GameController
+					+ Rename as seaDepth
+			+ 3 shaders
+			+ VisibleWorld bounding box in viewmodel
+				+ Test CrossOfLight
+			+ SettingsDialog:
+				+ RenderMode
+				+ 3 colors
+			+ Test all 3 with:
+				+ Ambient light intensity
+				+ Ocean transparency
+			+ Find good default colors:
+				+ Depth
+				+ Flat
+		+ New render setting: Ocean Floor Render Mode {Texture, Flat}
+			+ One vertex attribute structure to rule them all 
+				+ Texture
+				+ Flat
+			+ 2 shaders
+			+ SettingsDialog:
+				+ RenderMode
+				+ 1 color
+			+ Test all 2 with:
+				+ Ambient light intensity
+			+ Find good default flat color
+		+ Initial help window (HTML) @ Startup
+			+ UserPreferences tag to suppress
 

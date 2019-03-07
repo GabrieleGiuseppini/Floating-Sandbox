@@ -52,6 +52,16 @@ ImageSize ImageFileTools::GetImageSize(std::filesystem::path const & filepath)
 
     ilDeleteImage(imghandle);
 
+
+    //
+    // Check
+    //
+
+    if (width == 0 || height == 0)
+    {
+        throw GameException("Could not load image \"" + filepathStr + "\": image is empty");
+    }
+
     return ImageSize(width, height);
 }
 

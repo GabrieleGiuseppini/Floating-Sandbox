@@ -263,36 +263,56 @@ void ShipPreviewControl::SetImageContent(RgbaImageData const & imageData)
     // Create bitmap with content
     //
 
-    wxBitmap bitmap(imageData.Size.Width, imageData.Size.Height, 32);
-
-    wxPixelData<wxBitmap, wxAlphaPixelFormat> pixelData(bitmap);
-    if (!pixelData)
+    wxBitmap bitmap;
+    if (imageData.Size.Width > 0 && imageData.Size.Height > 0)
     {
-        throw std::exception("Cannot get bitmap pixel data");
-    }
+        bitmap.Create(imageData.Size.Width, imageData.Size.Height, 32);
 
-    assert(pixelData.GetWidth() == imageData.Size.Width);
-    assert(pixelData.GetHeight() == imageData.Size.Height);
-
-    rgbaColor const * readIt = imageData.Data.get();
-    auto writeIt = pixelData.GetPixels();
-    writeIt.OffsetY(pixelData, imageData.Size.Height - 1);
-    for (int y = 0; y < imageData.Size.Height; ++y)
-    {
-        // Save current iterator
-        auto rowStart = writeIt;
-
-        for (int x = 0; x < imageData.Size.Width; ++x, ++readIt, ++writeIt)
+        wxPixelData<wxBitmap, wxAlphaPixelFormat> pixelData(bitmap);
+        if (!pixelData)
         {
-            writeIt.Red() = readIt->r;
-            writeIt.Green() = readIt->g;
-            writeIt.Blue() = readIt->b;
-            writeIt.Alpha() = readIt->a;
+            throw std::exception("Cannot get bitmap pixel data");
         }
 
-        // Move write iterator to next row
-        writeIt = rowStart;
-        writeIt.OffsetY(pixelData, -1);
+        assert(pixelData.GetWidth() == imageData.Size.Width);
+        assert(pixelData.GetHeight() == imageData.Size.Height);
+
+        rgbaColor const * readIt = imageData.Data.get();
+        auto writeIt = pixelData.GetPixels();
+        writeIt.OffsetY(pixelData, imageData.Size.Height - 1);
+        for (int y = 0; y < imageData.Size.Height; ++y)
+        {
+            // Save current iterator
+            auto rowStart = writeIt;
+
+            for (int x = 0; x < imageData.Size.Width; ++x, ++readIt, ++writeIt)
+            {
+                writeIt.Red() = readIt->r;
+                writeIt.Green() = readIt->g;
+                writeIt.Blue() = readIt->b;
+                writeIt.Alpha() = readIt->a;
+            }
+
+            // Move write iterator to next row
+            writeIt = rowStart;
+            writeIt.OffsetY(pixelData, -1);
+        }
+    }
+    else
+    {
+        bitmap.Create(1, 1, 32);
+
+        wxPixelData<wxBitmap, wxAlphaPixelFormat> pixelData(bitmap);
+        if (!pixelData)
+        {
+            throw std::exception("Cannot get bitmap pixel data");
+        }
+
+        auto writeIt = pixelData.GetPixels();
+        writeIt.Red() = 0xff;
+        writeIt.Green() = 0xff;
+        writeIt.Blue() = 0xff;
+        writeIt.Alpha() = 0x00;
     }
 
 
