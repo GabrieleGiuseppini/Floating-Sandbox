@@ -4,9 +4,10 @@
     <?include Include.wxi ?>
 
     <!-- Change at each release!!! -->
+    <?define ProductCode = "70CB3842-07B9-4E45-8F67-C1DC3F73C8F9"?> <!-- 1.9.0.0 -->
     <?define UpgradeCode = "B314E06D-CD9F-4860-BDBC-601ED67EBA62"?> <!-- 1.9.0.0 -->
 
-	<Product Id="B0947CCD-6ABE-494D-9E48-72FB6641645A"
+	<Product Id="$(var.ProductCode)"
              Name="$(var.FullApplicationName)" Language="1033"
              Version="$(var.FloatingSandboxVersion)"
              Manufacturer="Gabriele Giuseppini" UpgradeCode="$(var.UpgradeCode)">
