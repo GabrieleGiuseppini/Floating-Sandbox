@@ -146,6 +146,12 @@ std::filesystem::path ResourceLoader::GetOceanFloorBumpMapFilepath() const
 // Help
 ////////////////////////////////////////////////////////////////////////////////////////////
 
+std::filesystem::path ResourceLoader::GetStartupTipFilepath() const
+{
+    std::filesystem::path localPath = std::filesystem::path("Data") / "Help" / "startup_tip.html";
+    return std::filesystem::absolute(localPath);
+}
+
 std::filesystem::path ResourceLoader::GetHelpFilepath() const
 {
     std::filesystem::path localPath = std::filesystem::path("Data") / "Help" / "index.html";

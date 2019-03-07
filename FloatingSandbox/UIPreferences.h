@@ -51,7 +51,19 @@ public:
         }
     }
 
+    bool GetShowStartupTip() const
+    {
+        return mShowStartupTip;
+    }
+
+    void SetShowStartupTip(bool value)
+    {
+        mShowStartupTip = value;
+    }
+
 private:
 
     std::vector<std::filesystem::path> mShipLoadDirectories;
+
+    bool mShowStartupTip;
 };

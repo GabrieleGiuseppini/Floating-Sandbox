@@ -87,6 +87,8 @@ public:
     // Help
     //
 
+    std::filesystem::path GetStartupTipFilepath() const;
+
     std::filesystem::path GetHelpFilepath() const;
 
 

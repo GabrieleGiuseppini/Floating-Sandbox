@@ -39,6 +39,8 @@ set  (FLOATING_SANDBOX_SOURCES
 	SplashScreenDialog.h
 	StandardSystemPaths.cpp
 	StandardSystemPaths.h
+	StartupTipDialog.cpp
+	StartupTipDialog.h
 	ToolController.cpp
 	ToolController.h
 	Tools.cpp

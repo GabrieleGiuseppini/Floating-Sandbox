@@ -23,8 +23,9 @@ UIPreferences::UIPreferences()
     //
 
     auto const defaultShipLoadDirectory = ResourceLoader::GetInstalledShipFolderPath();
-
     mShipLoadDirectories.push_back(defaultShipLoadDirectory);
+
+    mShowStartupTip = true;
 
 
     //
@@ -68,6 +69,17 @@ UIPreferences::UIPreferences()
                     }
                 }
             }
+
+            //
+            // Show startup tip
+            //
+
+            auto showStartupTipIt = preferencesRootObject.find("show_startup_tip");
+            if (showStartupTipIt != preferencesRootObject.end()
+                && showStartupTipIt->second.is<bool>())
+            {
+                mShowStartupTip = showStartupTipIt->second.get<bool>();
+            }
         }
     }
     catch (...)
@@ -96,6 +108,10 @@ UIPreferences::~UIPreferences()
         }
 
         preferencesRootObject["ship_load_directories"] = picojson::value(shipLoadDirectories);
+
+        // Add show startup tip
+
+        preferencesRootObject["show_startup_tip"] = picojson::value(true);
 
         // Save
         Utils::SaveJSONFile(

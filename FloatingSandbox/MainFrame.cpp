@@ -6,6 +6,7 @@
 #include "MainFrame.h"
 
 #include "SplashScreenDialog.h"
+#include "StartupTipDialog.h"
 #include "Version.h"
 
 #include <Game/ImageFileTools.h>
@@ -649,8 +650,22 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
 #endif
 
-    splash->Destroy();
+    splash->Close();
 
+
+    //
+    // Show startup tip
+    //
+
+    if (mUIPreferences->GetShowStartupTip())
+    {
+        StartupTipDialog startupTipDialog(
+            this,
+            mUIPreferences,
+            *mResourceLoader);
+
+        startupTipDialog.ShowModal();
+    }
 
 
     //

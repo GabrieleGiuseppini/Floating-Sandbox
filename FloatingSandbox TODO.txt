@@ -222,6 +222,9 @@ Render:
 
 	- 1.10.0
 
+		- Initial help window (HTML) @ Startup
+			- UserPreferences tag to suppress
+
 		- VAO (*)
 
 		- Vertex buffer optimization (*)
@@ -554,6 +557,22 @@ Render:
 
 - Gfx:
 	+ Make font white inversely to ambient light
+
+	- Add SkyRenderMode (Flat, Gradient)
+		- The two endpoints of gradient dependent on ambient light
+			- Interpolated between two pairs of endpoints
+		- RenderContext:
+			- If Flat:
+				- When clearing buffers, clear also color buffer with flat color
+			- If Gradient:
+				- When clearing buffers, do not clear color buffer
+				- Run program with quad immediately afterwards
+					- Shader
+						- No orthomatrix, all NDC
+						- No ambient light param, no new params
+
+		- SettingsDialog:
+			- Gradient RadioButton: on the right has two rows with a gradient each
 
 	- Make water texture scroll with wind speed
 
