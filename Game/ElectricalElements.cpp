@@ -49,7 +49,7 @@ void ElectricalElements::Add(
         }
     }
 
-    mCurrentConnectivityVisitSequenceNumberBuffer.emplace_back(NoneVisitSequenceNumber);
+    mCurrentConnectivityVisitSequenceNumberBuffer.emplace_back();
 }
 
 void ElectricalElements::Destroy(ElementIndex electricalElementIndex)

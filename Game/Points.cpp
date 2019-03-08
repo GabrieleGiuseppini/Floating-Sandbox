@@ -69,13 +69,13 @@ void Points::Add(
     mEphemeralStateBuffer.emplace_back(EphemeralState::DebrisState());
 
     // Structure
-    mConnectedSpringsBuffer.emplace_back(ConnectedSpringsVector());
-    mConnectedTrianglesBuffer.emplace_back(ConnectedTrianglesVector());
+    mConnectedSpringsBuffer.emplace_back();
+    mConnectedTrianglesBuffer.emplace_back();
     mConnectedOwnedTrianglesCountBuffer.emplace_back(0);
 
     mConnectedComponentIdBuffer.emplace_back(NoneConnectedComponentId);
     mPlaneIdBuffer.emplace_back(NonePlaneId);
-    mCurrentConnectivityVisitSequenceNumberBuffer.emplace_back(NoneVisitSequenceNumber);
+    mCurrentConnectivityVisitSequenceNumberBuffer.emplace_back();
 
     mIsPinnedBuffer.emplace_back(false);
 

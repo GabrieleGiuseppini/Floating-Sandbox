@@ -156,6 +156,7 @@ Render:
 		+ Fix V offset of AM bomb cursor
 		+ Slice-while-paused bug
 
+	- 1.10.0
 
 		- Bounded World
 			- GameParameters: MaxWorldWidth, Height
@@ -163,7 +164,9 @@ Render:
 				- Use very small world now
 			- Constrain view changes:
 				- ViewModel:
-					- float ClampXYZ() -> clampedVallue
+					- float ClampXYZ() -> clamped value
+					- CanvasSize changes: make sure the largest visible world dimension stays the same
+						- i.e., make sure that the new visible world dimensions are contained within the old one
 				- Use at GameController:
 					- Zoom updates
 					- Camera updates
@@ -173,8 +176,6 @@ Render:
 			- Verify AM bomb issue is gone
 			- Make larger bounding world
 			- Verify AM bomb issue is still gone
-
-	- 1.10.0
 
 		- VAO (*)
 

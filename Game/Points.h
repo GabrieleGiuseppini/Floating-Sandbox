@@ -246,7 +246,7 @@ public:
         , mPlaneIdBuffer(mBufferElementCount, shipPointCount, NonePlaneId)
         , mIsPlaneIdBufferNonEphemeralDirty(true)
         , mIsPlaneIdBufferEphemeralDirty(true)
-        , mCurrentConnectivityVisitSequenceNumberBuffer(mBufferElementCount, shipPointCount, NoneVisitSequenceNumber)
+        , mCurrentConnectivityVisitSequenceNumberBuffer(mBufferElementCount, shipPointCount, VisitSequenceNumber())
         // Pinning
         , mIsPinnedBuffer(mBufferElementCount, shipPointCount, false)
         // Immutable render attributes

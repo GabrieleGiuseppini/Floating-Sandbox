@@ -121,11 +121,50 @@ struct hash<ObjectId>
 
 /*
  * Graph visit sequence numbers.
- *
- * Equatable. Never zero.
  */
-using VisitSequenceNumber = std::uint32_t;
-static constexpr VisitSequenceNumber NoneVisitSequenceNumber = 0;
+class VisitSequenceNumber
+{
+public:
+
+    VisitSequenceNumber()
+        : mValue(0)
+    {}
+
+    inline VisitSequenceNumber & operator=(VisitSequenceNumber const & other)
+    {
+        mValue = other.mValue;
+
+        return *this;
+    }
+
+    VisitSequenceNumber & operator++()
+    {
+        ++mValue;
+        if (0 == mValue)
+            mValue = 1;
+
+        return *this;
+    }
+
+    inline bool operator==(VisitSequenceNumber const & other) const
+    {
+        return mValue == other.mValue;
+    }
+
+    inline bool operator!=(VisitSequenceNumber const & other) const
+    {
+        return !(*this == other);
+    }
+
+    operator bool() const
+    {
+        return mValue != 0;
+    }
+
+private:
+
+    std::uint32_t mValue;
+};
 
 /*
  * Types of bombs (duh).

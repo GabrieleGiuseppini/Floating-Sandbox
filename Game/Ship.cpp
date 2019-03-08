@@ -50,9 +50,9 @@ Ship::Ship(
     , mSprings(std::move(springs))
     , mTriangles(std::move(triangles))
     , mElectricalElements(std::move(electricalElements))
-    , mCurrentConnectivityVisitSequenceNumber(0)
+    , mCurrentConnectivityVisitSequenceNumber()
     , mMaxMaxPlaneId(0)
-    , mCurrentElectricalVisitSequenceNumber(0)
+    , mCurrentElectricalVisitSequenceNumber()
     , mIsStructureDirty(true)
     , mLastDebugShipRenderMode()
     , mPlaneTrianglesRenderIndices()
@@ -1413,8 +1413,6 @@ void Ship::UpdateElectricalDynamics(
 {
     // Generate a new visit sequence number
     ++mCurrentElectricalVisitSequenceNumber;
-    if (NoneVisitSequenceNumber == mCurrentElectricalVisitSequenceNumber)
-        mCurrentElectricalVisitSequenceNumber = 1u;
 
     UpdateElectricalConnectivity(mCurrentElectricalVisitSequenceNumber); // Invoked regardless of dirty elements, as generators might become wet
 
@@ -1598,9 +1596,7 @@ void Ship::RunConnectivityVisit()
     //
 
     // Generate a new visit sequence number
-    ++mCurrentConnectivityVisitSequenceNumber;
-    if (NoneVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumber)
-        mCurrentConnectivityVisitSequenceNumber = 1u;
+    auto const visitSequenceNumber = ++mCurrentConnectivityVisitSequenceNumber;
 
     // Initialize plane ID
     PlaneId currentPlaneId = 0; // Also serves as Connected Component ID
@@ -1624,7 +1620,7 @@ void Ship::RunConnectivityVisit()
         // Don't visit destroyed points, or we run the risk of creating a zillion planes for nothing;
         // also, don't re-visit already-visited points
         if (!mPoints.IsDeleted(pointIndex)
-            && mPoints.GetCurrentConnectivityVisitSequenceNumber(pointIndex) != mCurrentConnectivityVisitSequenceNumber)
+            && mPoints.GetCurrentConnectivityVisitSequenceNumber(pointIndex) != visitSequenceNumber)
         {
             //
             // Flood a new plane from this point
@@ -1633,7 +1629,7 @@ void Ship::RunConnectivityVisit()
             // Visit this point first
             mPoints.SetPlaneId(pointIndex, currentPlaneId);
             mPoints.SetConnectedComponentId(pointIndex, static_cast<ConnectedComponentId>(currentPlaneId));
-            mPoints.SetCurrentConnectivityVisitSequenceNumber(pointIndex, mCurrentConnectivityVisitSequenceNumber);
+            mPoints.SetCurrentConnectivityVisitSequenceNumber(pointIndex, visitSequenceNumber);
 
             // Add point to queue
             assert(pointsToPropagateFrom.empty());
@@ -1647,7 +1643,7 @@ void Ship::RunConnectivityVisit()
                 pointsToPropagateFrom.pop();
 
                 // This point has been visited already
-                assert(mCurrentConnectivityVisitSequenceNumber == mPoints.GetCurrentConnectivityVisitSequenceNumber(currentPointIndex));
+                assert(visitSequenceNumber == mPoints.GetCurrentConnectivityVisitSequenceNumber(currentPointIndex));
 
 #ifdef RENDER_FLOOD_DISTANCE
                 if (!floodDistanceColor)
@@ -1667,7 +1663,7 @@ void Ship::RunConnectivityVisit()
                 {
                     assert(!mPoints.IsDeleted(cs.OtherEndpointIndex));
 
-                    if (mCurrentConnectivityVisitSequenceNumber != mPoints.GetCurrentConnectivityVisitSequenceNumber(cs.OtherEndpointIndex))
+                    if (visitSequenceNumber != mPoints.GetCurrentConnectivityVisitSequenceNumber(cs.OtherEndpointIndex))
                     {
                         //
                         // Visit point
@@ -1675,7 +1671,7 @@ void Ship::RunConnectivityVisit()
 
                         mPoints.SetPlaneId(cs.OtherEndpointIndex, currentPlaneId);
                         mPoints.SetConnectedComponentId(cs.OtherEndpointIndex, static_cast<ConnectedComponentId>(currentPlaneId));
-                        mPoints.SetCurrentConnectivityVisitSequenceNumber(cs.OtherEndpointIndex, mCurrentConnectivityVisitSequenceNumber);
+                        mPoints.SetCurrentConnectivityVisitSequenceNumber(cs.OtherEndpointIndex, visitSequenceNumber);
 
                         // Add point to queue
                         pointsToPropagateFrom.push(cs.OtherEndpointIndex);

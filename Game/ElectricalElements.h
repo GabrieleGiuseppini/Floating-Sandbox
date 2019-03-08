@@ -46,7 +46,7 @@ public:
         , mConnectedElectricalElementsBuffer(mBufferElementCount, mElementCount, {})
         , mElementStateBuffer(mBufferElementCount, mElementCount, ElementState::CableState())
         , mAvailableCurrentBuffer(mBufferElementCount, mElementCount, 0.0f)
-        , mCurrentConnectivityVisitSequenceNumberBuffer(mBufferElementCount, mElementCount, NoneVisitSequenceNumber)
+        , mCurrentConnectivityVisitSequenceNumberBuffer(mBufferElementCount, mElementCount, VisitSequenceNumber())
         //////////////////////////////////
         // Container
         //////////////////////////////////

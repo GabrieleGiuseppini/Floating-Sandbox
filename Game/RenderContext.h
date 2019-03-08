@@ -62,13 +62,6 @@ public:
         OnViewModelUpdated();
     }
 
-    void AdjustZoom(float amount)
-    {
-        mViewModel.AdjustZoom(amount);
-
-        OnViewModelUpdated();
-    }
-
     vec2f GetCameraWorldPosition() const
     {
         return mViewModel.GetCameraWorldPosition();
