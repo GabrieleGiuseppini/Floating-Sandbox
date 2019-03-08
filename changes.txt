@@ -1,5 +1,5 @@
 1.9.1
-- Fixed crash when attemping to load a ship from a directory that contains an empty ship
+- Fixed crash when attempting to load a ship from a directory that contains an empty ship
 - Fixed crash with the air bubbles tool
 - Fixed crash when destroying parts of a ship while the game is paused
 

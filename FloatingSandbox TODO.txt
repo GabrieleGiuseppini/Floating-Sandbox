@@ -143,20 +143,16 @@ Render:
 		+ After water contrast
 
 - Roadmap:
-
-	= 1.9.1:
-		+ Fixed crash when attemping to load a ship from a directory containing an empty ship
-		+ Fixed crash with air bubbles tool
-		+ Spring Damp setting
-			+ Test mass changes (now that coeffs are recalc'd on mass change)
-				+ Bomb attaches
-			+ SettingsDialog: advanced
-			+ Play to see if can find value
-			+ Try dividing by dtSquared
-		+ Fix V offset of AM bomb cursor
-		+ Slice-while-paused bug
-
 	- 1.10.0
+
+		= Create dump upon crash
+			+ https://stackoverflow.com/questions/9020353/create-a-dump-file-for-an-application-whenever-it-crashes
+			+ In app folder, via StandardSystemPaths
+				+ Under \CrashDumps
+			= Test w/crash on thread (goliath ropes, reinsert bug)
+			- PDB:
+				+ Install: copy to \install (for GitHub)
+				- Windows Installer: make sure we do NOT take it
 
 		- Bounded World
 			- GameParameters: MaxWorldWidth, Height
@@ -4772,4 +4768,15 @@ IF WX:
 			+ Find good default flat color
 		+ Initial help window (HTML) @ Startup
 			+ UserPreferences tag to suppress
+	+ 1.9.1:
+		+ Fixed crash when attemping to load a ship from a directory containing an empty ship
+		+ Fixed crash with air bubbles tool
+		+ Spring Damp setting
+			+ Test mass changes (now that coeffs are recalc'd on mass change)
+				+ Bomb attaches
+			+ SettingsDialog: advanced
+			+ Play to see if can find value
+			+ Try dividing by dtSquared
+		+ Fix V offset of AM bomb cursor
+		+ Slice-while-paused bug
 

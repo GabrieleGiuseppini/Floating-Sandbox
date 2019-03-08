@@ -8,9 +8,10 @@
 // The main application. This journey begins from here.
 //
 
-#include <GameCore/FloatingPoint.h>
-
 #include "MainFrame.h"
+#include "UnhandledExceptionHandler.h"
+
+#include <GameCore/FloatingPoint.h>
 
 #include <wx/app.h>
 #include <wx/msgdlg.h>
@@ -44,6 +45,13 @@ IMPLEMENT_APP(MainApp);
 
 bool MainApp::OnInit()
 {
+    //
+    // Install handler for unhandled exceptions
+    //
+
+    InstallUnhandledExceptionHandler();
+
+
     //
     // Initialize assert handling
     //
