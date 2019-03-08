@@ -25,7 +25,6 @@ World::World(
     , mOceanFloor(resourceLoader)
     , mWind(gameEventHandler)
     , mCurrentSimulationTime(0.0f)
-    , mCurrentVisitSequenceNumber(1u)
     , mGameEventHandler(std::move(gameEventHandler))
 {
     // Initialize world pieces
@@ -49,8 +48,7 @@ ShipId World::AddShip(
         mGameEventHandler,
         shipDefinition,
         materialDatabase,
-        gameParameters,
-        mCurrentVisitSequenceNumber);
+        gameParameters);
 
     mAllShips.push_back(std::move(ship));
 
@@ -360,11 +358,6 @@ void World::Update(
     // Update current time
     mCurrentSimulationTime += GameParameters::SimulationStepTimeDuration<float>;
 
-    // Generate a new visit sequence number
-    ++mCurrentVisitSequenceNumber;
-    if (NoneVisitSequenceNumber == mCurrentVisitSequenceNumber)
-        mCurrentVisitSequenceNumber = 1u;
-
     // Update world parts
     mStars.Update(gameParameters);
     mWind.Update(gameParameters);
@@ -377,7 +370,6 @@ void World::Update(
     {
         ship->Update(
             mCurrentSimulationTime,
-            mCurrentVisitSequenceNumber,
             gameParameters,
             renderContext);
     }

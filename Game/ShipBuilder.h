@@ -34,8 +34,7 @@ public:
         std::shared_ptr<IGameEventHandler> gameEventHandler,
         ShipDefinition const & shipDefinition,
         MaterialDatabase const & materialDatabase,
-        GameParameters const & gameParameters,
-        VisitSequenceNumber currentVisitSequenceNumber);
+        GameParameters const & gameParameters);
 
 private:
 

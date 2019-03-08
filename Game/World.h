@@ -165,10 +165,6 @@ private:
     // The current simulation time
     float mCurrentSimulationTime;
 
-    // The current step sequence number; used to avoid zero-ing out things.
-    // Guaranteed to never be zero, but expected to rollover
-    VisitSequenceNumber mCurrentVisitSequenceNumber;
-
     // The game event handler
     std::shared_ptr<IGameEventHandler> mGameEventHandler;
 };

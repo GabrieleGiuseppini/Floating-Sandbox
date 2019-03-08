@@ -35,8 +35,7 @@ public:
         Points && points,
         Springs && springs,
         Triangles && triangles,
-        ElectricalElements && electricalElements,
-        VisitSequenceNumber currentVisitSequenceNumber);
+        ElectricalElements && electricalElements);
 
     ~Ship();
 
@@ -134,7 +133,6 @@ public:
 
     void Update(
         float currentSimulationTime,
-        VisitSequenceNumber currentVisitSequenceNumber,
         GameParameters const & gameParameters,
         Render::RenderContext const & renderContext);
 
@@ -182,7 +180,6 @@ public:
 
     void UpdateElectricalDynamics(
         GameWallClock::time_point currentWallclockTime,
-        VisitSequenceNumber currentVisitSequenceNumber,
         GameParameters const & gameParameters);
 
     void UpdateElectricalConnectivity(VisitSequenceNumber currentVisitSequenceNumber);
@@ -197,7 +194,7 @@ public:
 
 private:
 
-    void RunConnectivityVisit(VisitSequenceNumber currentVisitSequenceNumber);
+    void RunConnectivityVisit();
 
     void DestroyConnectedTriangles(ElementIndex pointElementIndex);
 
@@ -283,8 +280,15 @@ private:
     Triangles mTriangles;
     ElectricalElements mElectricalElements;
 
+    // The current connectivity visit sequence number
+    VisitSequenceNumber mCurrentConnectivityVisitSequenceNumber;
+
     // The max plane ID we have seen - ever
     PlaneId mMaxMaxPlaneId;
+
+    // The current electrical connectivity visit sequence number
+    VisitSequenceNumber mCurrentElectricalVisitSequenceNumber;
+
 
     // Flag remembering whether the structure of the ship (i.e. the connectivity between elements)
     // has changed since the last step.

@@ -26,8 +26,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     std::shared_ptr<IGameEventHandler> gameEventHandler,
     ShipDefinition const & shipDefinition,
     MaterialDatabase const & materialDatabase,
-    GameParameters const & gameParameters,
-    VisitSequenceNumber currentVisitSequenceNumber)
+    GameParameters const & gameParameters)
 {
     int const structureWidth = shipDefinition.StructuralLayerImage.Size.Width;
     float const halfWidth = static_cast<float>(structureWidth) / 2.0f;
@@ -316,8 +315,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
         std::move(points),
         std::move(springs),
         std::move(triangles),
-        std::move(electricalElements),
-        currentVisitSequenceNumber);
+        std::move(electricalElements));
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

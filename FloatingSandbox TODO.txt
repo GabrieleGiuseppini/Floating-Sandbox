@@ -153,8 +153,9 @@ Render:
 			+ SettingsDialog: advanced
 			+ Play to see if can find value
 			+ Try dividing by dtSquared
-
 		+ Fix V offset of AM bomb cursor
+		+ Slice-while-paused bug
+
 
 		- Bounded World
 			- GameParameters: MaxWorldWidth, Height

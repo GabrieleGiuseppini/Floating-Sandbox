@@ -41,8 +41,7 @@ Ship::Ship(
     Points && points,
     Springs && springs,
     Triangles && triangles,
-    ElectricalElements && electricalElements,
-    VisitSequenceNumber currentVisitSequenceNumber)
+    ElectricalElements && electricalElements)
     : mId(id)
     , mParentWorld(parentWorld)
     , mGameEventHandler(std::move(gameEventHandler))
@@ -51,7 +50,9 @@ Ship::Ship(
     , mSprings(std::move(springs))
     , mTriangles(std::move(triangles))
     , mElectricalElements(std::move(electricalElements))
+    , mCurrentConnectivityVisitSequenceNumber(0)
     , mMaxMaxPlaneId(0)
+    , mCurrentElectricalVisitSequenceNumber(0)
     , mIsStructureDirty(true)
     , mLastDebugShipRenderMode()
     , mPlaneTrianglesRenderIndices()
@@ -80,7 +81,7 @@ Ship::Ship(
     mElectricalElements.RegisterDestroyHandler(std::bind(&Ship::ElectricalElementDestroyHandler, this, std::placeholders::_1));
 
     // Do a first connectivity pass (for the first Update)
-    RunConnectivityVisit(currentVisitSequenceNumber);
+    RunConnectivityVisit();
 }
 
 Ship::~Ship()
@@ -424,7 +425,6 @@ bool Ship::QueryNearestPointAt(
 
 void Ship::Update(
     float currentSimulationTime,
-    VisitSequenceNumber currentVisitSequenceNumber,
     GameParameters const & gameParameters,
     Render::RenderContext const & renderContext)
 {
@@ -479,15 +479,6 @@ void Ship::Update(
         mPoints);
 
 
-    //
-    // Run connectivity visit, if there have been any deletions
-    //
-
-    if (mIsStructureDirty)
-    {
-        RunConnectivityVisit(currentVisitSequenceNumber);
-    }
-
 
     //
     // Update water dynamics
@@ -504,7 +495,6 @@ void Ship::Update(
 
     UpdateElectricalDynamics(
         currentWallClockTime,
-        currentVisitSequenceNumber,
         gameParameters);
 
 
@@ -525,6 +515,15 @@ void Ship::Render(
     GameParameters const & /*gameParameters*/,
     Render::RenderContext & renderContext)
 {
+    //
+    // Run connectivity visit, if there have been any deletions
+    //
+
+    if (mIsStructureDirty)
+    {
+        RunConnectivityVisit();
+    }
+
     //
     // Initialize render
     //
@@ -1409,15 +1408,18 @@ void Ship::UpdateWaterVelocities(
 
 void Ship::UpdateElectricalDynamics(
     GameWallClock::time_point currentWallclockTime,
-    VisitSequenceNumber currentVisitSequenceNumber,
     GameParameters const & gameParameters)
 {
-    // Invoked regardless of dirty elements, as generators might become wet
-    UpdateElectricalConnectivity(currentVisitSequenceNumber);
+    // Generate a new visit sequence number
+    ++mCurrentElectricalVisitSequenceNumber;
+    if (NoneVisitSequenceNumber == mCurrentElectricalVisitSequenceNumber)
+        mCurrentElectricalVisitSequenceNumber = 1u;
+
+    UpdateElectricalConnectivity(mCurrentElectricalVisitSequenceNumber); // Invoked regardless of dirty elements, as generators might become wet
 
     mElectricalElements.Update(
         currentWallclockTime,
-        currentVisitSequenceNumber,
+        mCurrentElectricalVisitSequenceNumber,
         mPoints,
         gameParameters);
 
@@ -1573,7 +1575,7 @@ void Ship::UpdateEphemeralParticles(
 
 //#define RENDER_FLOOD_DISTANCE
 
-void Ship::RunConnectivityVisit(VisitSequenceNumber currentVisitSequenceNumber)
+void Ship::RunConnectivityVisit()
 {
     //
     //
@@ -1594,6 +1596,12 @@ void Ship::RunConnectivityVisit(VisitSequenceNumber currentVisitSequenceNumber)
     // so that we can later upload triangles in {PlaneID, Tessellation Order} order.
     //
 
+    // Generate a new visit sequence number
+    ++mCurrentConnectivityVisitSequenceNumber;
+    if (NoneVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumber)
+        mCurrentConnectivityVisitSequenceNumber = 1u;
+
+    // Initialize plane ID
     PlaneId currentPlaneId = 0; // Also serves as Connected Component ID
 
 #ifdef RENDER_FLOOD_DISTANCE
@@ -1615,7 +1623,7 @@ void Ship::RunConnectivityVisit(VisitSequenceNumber currentVisitSequenceNumber)
         // Don't visit destroyed points, or we run the risk of creating a zillion planes for nothing;
         // also, don't re-visit already-visited points
         if (!mPoints.IsDeleted(pointIndex)
-            && mPoints.GetCurrentConnectivityVisitSequenceNumber(pointIndex) != currentVisitSequenceNumber)
+            && mPoints.GetCurrentConnectivityVisitSequenceNumber(pointIndex) != mCurrentConnectivityVisitSequenceNumber)
         {
             //
             // Flood a new plane from this point
@@ -1624,7 +1632,7 @@ void Ship::RunConnectivityVisit(VisitSequenceNumber currentVisitSequenceNumber)
             // Visit this point first
             mPoints.SetPlaneId(pointIndex, currentPlaneId);
             mPoints.SetConnectedComponentId(pointIndex, static_cast<ConnectedComponentId>(currentPlaneId));
-            mPoints.SetCurrentConnectivityVisitSequenceNumber(pointIndex, currentVisitSequenceNumber);
+            mPoints.SetCurrentConnectivityVisitSequenceNumber(pointIndex, mCurrentConnectivityVisitSequenceNumber);
 
             // Add point to queue
             assert(pointsToPropagateFrom.empty());
@@ -1638,7 +1646,7 @@ void Ship::RunConnectivityVisit(VisitSequenceNumber currentVisitSequenceNumber)
                 pointsToPropagateFrom.pop();
 
                 // This point has been visited already
-                assert(currentVisitSequenceNumber == mPoints.GetCurrentConnectivityVisitSequenceNumber(currentPointIndex));
+                assert(mCurrentConnectivityVisitSequenceNumber == mPoints.GetCurrentConnectivityVisitSequenceNumber(currentPointIndex));
 
 #ifdef RENDER_FLOOD_DISTANCE
                 if (!floodDistanceColor)
@@ -1658,7 +1666,7 @@ void Ship::RunConnectivityVisit(VisitSequenceNumber currentVisitSequenceNumber)
                 {
                     assert(!mPoints.IsDeleted(cs.OtherEndpointIndex));
 
-                    if (currentVisitSequenceNumber != mPoints.GetCurrentConnectivityVisitSequenceNumber(cs.OtherEndpointIndex))
+                    if (mCurrentConnectivityVisitSequenceNumber != mPoints.GetCurrentConnectivityVisitSequenceNumber(cs.OtherEndpointIndex))
                     {
                         //
                         // Visit point
@@ -1666,7 +1674,7 @@ void Ship::RunConnectivityVisit(VisitSequenceNumber currentVisitSequenceNumber)
 
                         mPoints.SetPlaneId(cs.OtherEndpointIndex, currentPlaneId);
                         mPoints.SetConnectedComponentId(cs.OtherEndpointIndex, static_cast<ConnectedComponentId>(currentPlaneId));
-                        mPoints.SetCurrentConnectivityVisitSequenceNumber(cs.OtherEndpointIndex, currentVisitSequenceNumber);
+                        mPoints.SetCurrentConnectivityVisitSequenceNumber(cs.OtherEndpointIndex, mCurrentConnectivityVisitSequenceNumber);
 
                         // Add point to queue
                         pointsToPropagateFrom.push(cs.OtherEndpointIndex);
