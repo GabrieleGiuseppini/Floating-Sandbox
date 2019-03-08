@@ -471,16 +471,16 @@ void SettingsDialog::PopulateMechanicsPanel(wxPanel * panel)
         SliderHeight,
         "Strength Adjust",
         "Adjusts the strength of springs.",
-        mGameController->GetStrengthAdjustment(),
+        mGameController->GetSpringStrengthAdjustment(),
         [this](float /*value*/)
         {
             // Remember we're dirty now
             this->mApplyButton->Enable(true);
         },
         std::make_unique<ExponentialSliderCore>(
-            mGameController->GetMinStrengthAdjustment(),
+            mGameController->GetMinSpringStrengthAdjustment(),
             1.0f,
-            mGameController->GetMaxStrengthAdjustment()));
+            mGameController->GetMaxSpringStrengthAdjustment()));
 
     controlsSizer->Add(mStrengthSlider.get(), 1, wxALL, SliderBorder);
 
@@ -1582,28 +1582,49 @@ void SettingsDialog::PopulateAdvancedPanel(wxPanel * panel)
 {
     wxBoxSizer* controlsSizer = new wxBoxSizer(wxHORIZONTAL);
 
-    // Stiffness
+    // Spring Stiffness
 
-    mStiffnessSlider = std::make_unique<SliderControl>(
+    mSpringStiffnessSlider = std::make_unique<SliderControl>(
         panel,
         SliderWidth,
         SliderHeight,
         "Spring Stiffness Adjust",
         "This setting is for testing physical instability of the mass-spring network with high stiffness values;"
         " it is not meant for improving the rigidity of physical bodies.",
-        mGameController->GetStiffnessAdjustment(),
+        mGameController->GetSpringStiffnessAdjustment(),
         [this](float /*value*/)
         {
             // Remember we're dirty now
             this->mApplyButton->Enable(true);
         },
         std::make_unique<LinearSliderCore>(
-            mGameController->GetMinStiffnessAdjustment(),
-            mGameController->GetMaxStiffnessAdjustment()),
+            mGameController->GetMinSpringStiffnessAdjustment(),
+            mGameController->GetMaxSpringStiffnessAdjustment()),
         mWarningIcon.get());
 
-    controlsSizer->Add(mStiffnessSlider.get(), 1, wxALL, SliderBorder);
+    controlsSizer->Add(mSpringStiffnessSlider.get(), 1, wxALL, SliderBorder);
 
+    // Spring Damping
+
+    mSpringDampingSlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Spring Damping Adjust",
+        "This setting is for testing physical instability of the mass-spring network with different damping values;"
+        " it is not meant for improving the rigidity of physical bodies.",
+        mGameController->GetSpringDampingAdjustment(),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<LinearSliderCore>(
+            mGameController->GetMinSpringDampingAdjustment(),
+            mGameController->GetMaxSpringDampingAdjustment()),
+            mWarningIcon.get());
+
+    controlsSizer->Add(mSpringDampingSlider.get(), 1, wxALL, SliderBorder);
 
     // Check boxes
 
@@ -1657,7 +1678,7 @@ void SettingsDialog::ReadSettings()
 
     mMechanicalQualitySlider->SetValue(mGameController->GetNumMechanicalDynamicsIterationsAdjustment());
 
-    mStrengthSlider->SetValue(mGameController->GetStrengthAdjustment());
+    mStrengthSlider->SetValue(mGameController->GetSpringStrengthAdjustment());
 
 
 
@@ -1824,7 +1845,9 @@ void SettingsDialog::ReadSettings()
 
 
 
-    mStiffnessSlider->SetValue(mGameController->GetStiffnessAdjustment());
+    mSpringStiffnessSlider->SetValue(mGameController->GetSpringStiffnessAdjustment());
+
+    mSpringDampingSlider->SetValue(mGameController->GetSpringDampingAdjustment());
 
     auto debugShipRenderMode = mGameController->GetDebugShipRenderMode();
     switch (debugShipRenderMode)
@@ -1916,7 +1939,7 @@ void SettingsDialog::ApplySettings()
     mGameController->SetNumMechanicalDynamicsIterationsAdjustment(
         mMechanicalQualitySlider->GetValue());
 
-    mGameController->SetStrengthAdjustment(
+    mGameController->SetSpringStrengthAdjustment(
         mStrengthSlider->GetValue());
 
 
@@ -2090,8 +2113,11 @@ void SettingsDialog::ApplySettings()
 
 
 
-    mGameController->SetStiffnessAdjustment(
-        mStiffnessSlider->GetValue());
+    mGameController->SetSpringStiffnessAdjustment(
+        mSpringStiffnessSlider->GetValue());
+
+    mGameController->SetSpringDampingAdjustment(
+        mSpringDampingSlider->GetValue());
 
     auto selectedDebugShipRenderMode = mDebugShipRenderModeRadioBox->GetSelection();
     if (0 == selectedDebugShipRenderMode)

@@ -40,12 +40,13 @@ void Springs::Add(
             pointAIndex,
             pointBIndex,
             stiffness,
-            mCurrentStiffnessAdjustment,
+            mCurrentSpringStiffnessAdjustment,
             mCurrentNumMechanicalDynamicsIterations,
             points),
         CalculateDampingCoefficient(
             pointAIndex,
             pointBIndex,
+            mCurrentSpringDampingAdjustment,
             mCurrentNumMechanicalDynamicsIterations,
             points));
 
@@ -114,7 +115,8 @@ void Springs::UpdateGameParameters(
 {
     float const numMechanicalDynamicsIterations = gameParameters.NumMechanicalDynamicsIterations<float>();
     if (numMechanicalDynamicsIterations != mCurrentNumMechanicalDynamicsIterations
-        || gameParameters.StiffnessAdjustment != mCurrentStiffnessAdjustment)
+        || gameParameters.SpringStiffnessAdjustment != mCurrentSpringStiffnessAdjustment
+        || gameParameters.SpringDampingAdjustment != mCurrentSpringDampingAdjustment)
     {
         // Recalc coefficients
         for (ElementIndex i : *this)
@@ -125,13 +127,14 @@ void Springs::UpdateGameParameters(
                     GetPointAIndex(i),
                     GetPointBIndex(i),
                     GetStiffness(i),
-                    gameParameters.StiffnessAdjustment,
+                    gameParameters.SpringStiffnessAdjustment,
                     numMechanicalDynamicsIterations,
                     points);
 
                 mCoefficientsBuffer[i].DampingCoefficient = CalculateDampingCoefficient(
                     GetPointAIndex(i),
                     GetPointBIndex(i),
+                    gameParameters.SpringDampingAdjustment,
                     numMechanicalDynamicsIterations,
                     points);
             }
@@ -139,7 +142,8 @@ void Springs::UpdateGameParameters(
 
         // Remember the new values
         mCurrentNumMechanicalDynamicsIterations = numMechanicalDynamicsIterations;
-        mCurrentStiffnessAdjustment = gameParameters.StiffnessAdjustment;
+        mCurrentSpringStiffnessAdjustment = gameParameters.SpringStiffnessAdjustment;
+        mCurrentSpringDampingAdjustment = gameParameters.SpringDampingAdjustment;
     }
 }
 
@@ -227,7 +231,7 @@ bool Springs::UpdateStrains(
 
     float const effectiveStrengthAdjustment =
         iterationsAdjustmentFactor
-        * gameParameters.StrengthAdjustment;
+        * gameParameters.SpringStrengthAdjustment;
 
     // Flag remembering whether at least one spring broke
     bool isAtLeastOneBroken = false;
@@ -323,23 +327,20 @@ float Springs::CalculateStiffnessCoefficient(
 float Springs::CalculateDampingCoefficient(
     ElementIndex pointAIndex,
     ElementIndex pointBIndex,
+    float dampingAdjustment,
     float numMechanicalDynamicsIterations,
     Points const & points)
 {
-    // The empirically-determined constant for the spring damping
-    //
-    // The simulation is quite sensitive to this value:
-    // - 0.03 is almost fine (though bodies are sometimes soft)
-    // - 0.8 makes everything explode
-    static constexpr float C = 0.03f;
-
     float const massFactor =
         (points.GetMass(pointAIndex) * points.GetMass(pointBIndex))
         / (points.GetMass(pointAIndex) + points.GetMass(pointBIndex));
 
     float const dt = GameParameters::SimulationStepTimeDuration<float> / numMechanicalDynamicsIterations;
 
-    return C * massFactor / dt;
+    return GameParameters::SpringDampingCoefficient
+        * dampingAdjustment
+        * massFactor
+        / dt;
 }
 
 }

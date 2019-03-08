@@ -65,6 +65,12 @@ struct GameParameters
     // iteration. The remaining spring displacement is (1.0 - this fraction).
     static constexpr float SpringReductionFraction = 0.4f;
 
+    // The empirically-determined constant for the spring damping.
+    // The simulation is quite sensitive to this value:
+    // - 0.03 is almost fine (though bodies are sometimes soft)
+    // - 0.8 makes everything explode
+    static constexpr float SpringDampingCoefficient = 0.03f;
+
     //
     // The number of mechanical iterations dictates how stiff bodies are:
     // - Less iterations => softer (jelly) body
@@ -83,15 +89,19 @@ struct GameParameters
             * NumMechanicalDynamicsIterationsAdjustment);
     }
 
-    float StiffnessAdjustment;
-    static constexpr float MinStiffnessAdjustment = 0.001f;
-    static constexpr float MaxStiffnessAdjustment = 2.4f;
+    float SpringStiffnessAdjustment;
+    static constexpr float MinSpringStiffnessAdjustment = 0.001f;
+    static constexpr float MaxSpringStiffnessAdjustment = 2.4f;
 
-    float StrengthAdjustment;
-    static constexpr float MinStrengthAdjustment = 0.01f;
-    static constexpr float MaxStrengthAdjustment = 10.0f;
+    float SpringDampingAdjustment;
+    static constexpr float MinSpringDampingAdjustment = 0.001f;
+    static constexpr float MaxSpringDampingAdjustment = 4.0f;
 
-    static constexpr float GlobalDamp = 0.9996f; // // We've shipped 1.7.5 with 0.9997, but splinter springs danced for too long
+    float SpringStrengthAdjustment;
+    static constexpr float MinSpringStrengthAdjustment = 0.01f;
+    static constexpr float MaxSpringStrengthAdjustment = 10.0f;
+
+    static constexpr float GlobalDamp = 0.9996f; // // We've shipped 1.7.5 with 0.9997, but splinter springs used to dance for too long
 
     // Water
 

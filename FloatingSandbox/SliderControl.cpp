@@ -72,8 +72,11 @@ SliderControl::SliderControl(
         wxSize(-1, height),
         wxSL_VERTICAL | wxSL_LEFT | wxSL_INVERSE | wxSL_AUTOTICKS, wxDefaultValidator);
     mSlider->SetTickFreq(4);
-    if (!toolTipLabel.empty())
-        mSlider->SetToolTip(toolTipLabel);
+    // Removed as it was getting in the way when moving the slider
+    //
+    //if (!toolTipLabel.empty())
+    //    mSlider->SetToolTip(toolTipLabel);
+    //
 
     Connect(ID_SLIDER, wxEVT_SLIDER, (wxObjectEventFunction)&SliderControl::OnSliderScroll);
 

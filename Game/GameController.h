@@ -163,15 +163,20 @@ public:
     float GetMinNumMechanicalDynamicsIterationsAdjustment() const { return GameParameters::MinNumMechanicalDynamicsIterationsAdjustment; }
     float GetMaxNumMechanicalDynamicsIterationsAdjustment() const { return GameParameters::MaxNumMechanicalDynamicsIterationsAdjustment; }
 
-    float GetStiffnessAdjustment() const { return mGameParameters.StiffnessAdjustment; }
-    void SetStiffnessAdjustment(float value) { mGameParameters.StiffnessAdjustment = value; }
-    float GetMinStiffnessAdjustment() const { return GameParameters::MinStiffnessAdjustment; }
-    float GetMaxStiffnessAdjustment() const { return GameParameters::MaxStiffnessAdjustment; }
+    float GetSpringStiffnessAdjustment() const { return mGameParameters.SpringStiffnessAdjustment; }
+    void SetSpringStiffnessAdjustment(float value) { mGameParameters.SpringStiffnessAdjustment = value; }
+    float GetMinSpringStiffnessAdjustment() const { return GameParameters::MinSpringStiffnessAdjustment; }
+    float GetMaxSpringStiffnessAdjustment() const { return GameParameters::MaxSpringStiffnessAdjustment; }
 
-    float GetStrengthAdjustment() const { return mGameParameters.StrengthAdjustment; }
-    void SetStrengthAdjustment(float value) { mGameParameters.StrengthAdjustment = value; }
-    float GetMinStrengthAdjustment() const { return GameParameters::MinStrengthAdjustment;  }
-    float GetMaxStrengthAdjustment() const { return GameParameters::MaxStrengthAdjustment; }
+    float GetSpringDampingAdjustment() const { return mGameParameters.SpringDampingAdjustment; }
+    void SetSpringDampingAdjustment(float value) { mGameParameters.SpringDampingAdjustment = value; }
+    float GetMinSpringDampingAdjustment() const { return GameParameters::MinSpringDampingAdjustment; }
+    float GetMaxSpringDampingAdjustment() const { return GameParameters::MaxSpringDampingAdjustment; }
+
+    float GetSpringStrengthAdjustment() const { return mGameParameters.SpringStrengthAdjustment; }
+    void SetSpringStrengthAdjustment(float value) { mGameParameters.SpringStrengthAdjustment = value; }
+    float GetMinSpringStrengthAdjustment() const { return GameParameters::MinSpringStrengthAdjustment;  }
+    float GetMaxSpringStrengthAdjustment() const { return GameParameters::MaxSpringStrengthAdjustment; }
 
     float GetWaterDensityAdjustment() const { return mGameParameters.WaterDensityAdjustment; }
     void SetWaterDensityAdjustment(float value) { mGameParameters.WaterDensityAdjustment = value; }

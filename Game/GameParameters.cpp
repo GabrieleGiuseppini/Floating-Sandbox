@@ -10,8 +10,9 @@
 GameParameters::GameParameters()
     // Dynamics
     : NumMechanicalDynamicsIterationsAdjustment(1.0f)
-    , StiffnessAdjustment(1.0f)
-    , StrengthAdjustment(1.0f)
+    , SpringStiffnessAdjustment(1.0f)
+    , SpringDampingAdjustment(1.0f)
+    , SpringStrengthAdjustment(1.0f)
     // Water
     , WaterDensityAdjustment(1.0f)
     , WaterDragAdjustment(1.0f)

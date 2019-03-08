@@ -70,7 +70,7 @@ private:
     using SuperTrianglesVector = FixedSizeVector<ElementIndex, 2>;
 
     /*
-     * The coefficients used for the spring dynamics.
+     * The pre-calculated coefficients used for the spring dynamics.
      */
     struct Coefficients
     {
@@ -121,7 +121,8 @@ public:
         , mGameEventHandler(std::move(gameEventHandler))
         , mDestroyHandler()
         , mCurrentNumMechanicalDynamicsIterations(gameParameters.NumMechanicalDynamicsIterations<float>())
-        , mCurrentStiffnessAdjustment(gameParameters.StiffnessAdjustment)
+        , mCurrentSpringStiffnessAdjustment(gameParameters.SpringStiffnessAdjustment)
+        , mCurrentSpringDampingAdjustment(gameParameters.SpringDampingAdjustment)
         , mFloatBufferAllocator(mBufferElementCount)
         , mVec2fBufferAllocator(mBufferElementCount)
     {
@@ -171,13 +172,22 @@ public:
     {
         assert(springElementIndex < mElementCount);
 
-        CalculateStiffnessCoefficient(
-            mEndpointsBuffer[springElementIndex].PointAIndex,
-            mEndpointsBuffer[springElementIndex].PointBIndex,
-            mStiffnessBuffer[springElementIndex],
-            mCurrentStiffnessAdjustment,
-            mCurrentNumMechanicalDynamicsIterations,
-            points);
+        mCoefficientsBuffer[springElementIndex].StiffnessCoefficient =
+            CalculateStiffnessCoefficient(
+                mEndpointsBuffer[springElementIndex].PointAIndex,
+                mEndpointsBuffer[springElementIndex].PointBIndex,
+                mStiffnessBuffer[springElementIndex],
+                mCurrentSpringStiffnessAdjustment,
+                mCurrentNumMechanicalDynamicsIterations,
+                points);
+
+        mCoefficientsBuffer[springElementIndex].DampingCoefficient =
+            CalculateDampingCoefficient(
+                mEndpointsBuffer[springElementIndex].PointAIndex,
+                mEndpointsBuffer[springElementIndex].PointBIndex,
+                mCurrentSpringDampingAdjustment,
+                mCurrentNumMechanicalDynamicsIterations,
+                points);
     }
 
     /*
@@ -430,6 +440,7 @@ private:
     static float CalculateDampingCoefficient(
         ElementIndex pointAIndex,
         ElementIndex pointBIndex,
+        float dampingAdjustment,
         float numMechanicalDynamicsIterations,
         Points const & points);
 
@@ -498,7 +509,8 @@ private:
     // in the values of these parameters will trigger a re-calculation
     // of pre-calculated coefficients
     float mCurrentNumMechanicalDynamicsIterations;
-    float mCurrentStiffnessAdjustment;
+    float mCurrentSpringStiffnessAdjustment;
+    float mCurrentSpringDampingAdjustment;
 
     // Allocators for work buffers
     BufferAllocator<float> mFloatBufferAllocator;

@@ -148,7 +148,8 @@ private:
     wxCheckBox * mPlaySinkingMusicCheckBox;
 
     // Advanced
-    std::unique_ptr<SliderControl> mStiffnessSlider;
+    std::unique_ptr<SliderControl> mSpringStiffnessSlider;
+    std::unique_ptr<SliderControl> mSpringDampingSlider;
     wxRadioBox * mDebugShipRenderModeRadioBox;
     wxRadioBox * mVectorFieldRenderModeRadioBox;
 

@@ -1,3 +1,7 @@
+1.9.1
+- Fixed crash when attemping to load a ship from a directory containing an empty ship
+- Fixed crash with air bubbles tool
+
 1.9.0
 - Re-designed depth management: game does not lag anymore when ships are reduced to smithereens!
 - Revamped load ship window, and added memory of ship directories
