@@ -23,6 +23,16 @@ public:
         , BottomLeft(bottomLeft)
     {}
 
+    inline float GetWidth() const
+    {
+        return TopRight.x - BottomLeft.x;
+    }
+
+    inline float GetHeight() const
+    {
+        return TopRight.y - BottomLeft.y;
+    }
+
     void ExtendTo(AABB const & other)
     {
         if (other.TopRight.x > TopRight.x)

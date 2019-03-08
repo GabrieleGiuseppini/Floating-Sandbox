@@ -406,7 +406,7 @@ AntiMatterBombTool::AntiMatterBombTool(
         parentFrame,
         std::move(gameController),
         std::move(soundController))
-    , mCursor(MakeCursor("am_bomb_cursor", 16, 21, resourceLoader))
+    , mCursor(MakeCursor("am_bomb_cursor", 16, 16, resourceLoader))
 {
 }
 

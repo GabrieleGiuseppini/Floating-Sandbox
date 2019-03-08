@@ -154,6 +154,25 @@ Render:
 			+ Play to see if can find value
 			+ Try dividing by dtSquared
 
+		+ Fix V offset of AM bomb cursor
+
+		- Bounded World
+			- GameParameters: MaxWorldWidth, Height
+				- Remove MaxZoom, MinZoom
+				- Use very small world now
+			- Constrain view changes:
+				- ViewModel:
+					- float ClampXYZ() -> clampedVallue
+				- Use at GameController:
+					- Zoom updates
+					- Camera updates
+				- Test
+			- Constrain physics:
+				- Ship::Update: at end of update: Destroy (also with sounds, it's OK) points outside of bounding box
+			- Verify AM bomb issue is gone
+			- Make larger bounding world
+			- Verify AM bomb issue is still gone
+
 	- 1.10.0
 
 		- VAO (*)
@@ -183,6 +202,12 @@ Render:
 			- Pumps (*)
 			- Propulsion (*)
 			- Batisphere ship
+
+
+		- About box: testers
+			- Dkuz The Fox
+			- Ask Pac0master
+
 	- 1.11.0
 
 		- Smoke (*)
@@ -459,6 +484,7 @@ Render:
 - Gfx optimizations:
 
 	- Use VAO's (*)
+		- Branch
 		- New OpenGLObject w/deleter
 		- Component 1: Stars
 			- Test
