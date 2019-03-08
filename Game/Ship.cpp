@@ -269,7 +269,7 @@ bool Ship::InjectBubblesAt(
         GenerateAirBubbles(
             targetPos,
             currentSimulationTime,
-            NoneConnectedComponentId, // FUTURE: use mMaxMaxPlaneId
+            mMaxMaxPlaneId,
             gameParameters);
 
         return true;

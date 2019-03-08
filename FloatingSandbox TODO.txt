@@ -144,16 +144,13 @@ Render:
 
 - Roadmap:
 
+	- 1.9.1:
+		- Fixed crash when attemping to load a ship from a directory containing an empty ship
+
+
 	- 1.10.0
 
-		= Fix ShipLoadDialog crash
-			- Communicate
-		= See Carnival issue
-			- Normal - structure property, communicate
 		= Gradient: we keep it like this (no bottom exists), communicate
-		- Delete 1.8 link from forum
-
-		- See if should do 1.9.1
 
 		- Spring Damp setting
 			- SettingsDialog: advanced
@@ -462,6 +459,15 @@ Render:
 - Gfx optimizations:
 
 	- Use VAO's (*)
+		- New OpenGLObject w/deleter
+		- Component 1: Stars
+			- Test
+		- Component 2: CrossedOfLight
+			- Test
+		- Component 3: Vectors
+			- Test
+		- RenderContext:
+			- See if can move uploads early, and then later just bind VAOs
 
 	- Reduce number of vertex attributes for ship_triangles_texture and color (and possibly forced to do others) (*)
 		+ We've already confirmed that one less attribute vertex sends FPS frpom 29 to 30
