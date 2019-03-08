@@ -524,6 +524,7 @@ void Ship::Render(
         RunConnectivityVisit();
     }
 
+
     //
     // Initialize render
     //
