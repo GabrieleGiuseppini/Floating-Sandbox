@@ -144,9 +144,9 @@ Render:
 
 - Roadmap:
 
-	- 1.9.1:
+	= 1.9.1:
 		+ Fixed crash when attemping to load a ship from a directory containing an empty ship
-		+ Fixed crash with air bubbles too
+		+ Fixed crash with air bubbles tool
 		+ Spring Damp setting
 			+ Test mass changes (now that coeffs are recalc'd on mass change)
 				+ Bomb attaches
