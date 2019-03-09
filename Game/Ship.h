@@ -161,6 +161,10 @@ public:
 
     void HandleCollisionsWithSeaFloor(GameParameters const & gameParameters);
 
+    void TrimForWorldBounds(
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
+
     // Water
 
     void UpdateWaterDynamics(
@@ -204,6 +208,7 @@ private:
 
     void PointDestroyHandler(
         ElementIndex pointElementIndex,
+        bool generateDebris,
         float currentSimulationTime,
         GameParameters const & gameParameters);
 

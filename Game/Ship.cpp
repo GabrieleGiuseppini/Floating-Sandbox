@@ -75,7 +75,7 @@ Ship::Ship(
     , mCurrentForceFields()
 {
     // Set destroy handlers
-    mPoints.RegisterDestroyHandler(std::bind(&Ship::PointDestroyHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+    mPoints.RegisterDestroyHandler(std::bind(&Ship::PointDestroyHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
     mSprings.RegisterDestroyHandler(std::bind(&Ship::SpringDestroyHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
     mTriangles.RegisterDestroyHandler(std::bind(&Ship::TriangleDestroyHandler, this, std::placeholders::_1));
     mElectricalElements.RegisterDestroyHandler(std::bind(&Ship::ElectricalElementDestroyHandler, this, std::placeholders::_1));
@@ -153,13 +153,14 @@ void Ship::DestroyAt(
         // The only ephemeral points we allow to delete are air bubbles
         if (!mPoints.IsDeleted(pointIndex)
             && (Points::EphemeralType::None == mPoints.GetEphemeralType(pointIndex)
-                   || Points::EphemeralType::AirBubble == mPoints.GetEphemeralType(pointIndex)))
+                || Points::EphemeralType::AirBubble == mPoints.GetEphemeralType(pointIndex)))
         {
             if ((mPoints.GetPosition(pointIndex) - targetPos).squareLength() < squareRadius)
             {
                 // Destroy point
                 mPoints.Destroy(
                     pointIndex,
+                    Points::DestroyOptions::GenerateDebris,
                     currentSimulationTime,
                     gameParameters);
             }
@@ -457,10 +458,19 @@ void Ship::Update(
 
 
     //
+    // Trim for world bounds; might cause points to be destroyed
+    //
+
+    TrimForWorldBounds(
+        currentSimulationTime,
+        gameParameters);
+
+
+    //
     // Update bombs
     //
     // Might cause explosions; might cause points to be destroyed
-    // (which would flag our elements as dirty)
+    // (which would flag our structure as dirty)
     //
 
     mBombs.Update(
@@ -470,7 +480,7 @@ void Ship::Update(
 
     //
     // Update strain for all springs; might cause springs to break
-    // (which would flag our elements as dirty)
+    // (which would flag our structure as dirty)
     //
 
     mSprings.UpdateStrains(
@@ -944,6 +954,35 @@ void Ship::HandleCollisionsWithSeaFloor(GameParameters const & gameParameters)
                 floorheight - mParentWorld.GetOceanFloorHeightAt(mPoints.GetPosition(pointIndex).x + 0.01f),
                 0.01f).normalise();
             mPoints.GetVelocity(pointIndex) += seaFloorNormal * 0.5f;
+        }
+    }
+}
+
+void Ship::TrimForWorldBounds(
+    float currentSimulationTime,
+    GameParameters const & gameParameters)
+{
+    float constexpr MaxWorldLeft = -GameParameters::MaxWorldWidth / 2.0f;
+    float constexpr MaxWorldRight = GameParameters::MaxWorldWidth / 2.0f;
+
+    float constexpr MaxWorldTop = GameParameters::MaxWorldHeight;
+    float constexpr MaxWorldBottom = -GameParameters::MaxWorldHeight;
+
+    for (auto pointIndex : mPoints)
+    {
+        auto const & pos = mPoints.GetPosition(pointIndex);
+        if (pos.x < MaxWorldLeft || pos.x > MaxWorldRight
+            || pos.y > MaxWorldTop || pos.y < MaxWorldBottom)
+        {
+            // Destroy this point, unless it's already deleted
+            if (!mPoints.IsDeleted(pointIndex))
+            {
+                mPoints.Destroy(
+                    pointIndex,
+                    Points::DestroyOptions::DoNotGenerateDebris,
+                    currentSimulationTime,
+                    gameParameters);
+            }
         }
     }
 }
@@ -1758,6 +1797,7 @@ void Ship::DestroyConnectedTriangles(
 
 void Ship::PointDestroyHandler(
     ElementIndex pointElementIndex,
+    bool generateDebris,
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
@@ -1821,11 +1861,14 @@ void Ship::PointDestroyHandler(
     // Notify pinned points
     mPinnedPoints.OnPointDestroyed(pointElementIndex);
 
-    // Emit debris
-    GenerateDebris(
-        pointElementIndex,
-        currentSimulationTime,
-        gameParameters);
+    if (generateDebris)
+    {
+        // Emit debris
+        GenerateDebris(
+            pointElementIndex,
+            currentSimulationTime,
+            gameParameters);
+    }
 
     // Remember the structure is now dirty
     mIsStructureDirty = true;

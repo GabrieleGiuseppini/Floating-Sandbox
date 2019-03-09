@@ -101,7 +101,7 @@ void Points::CreateEphemeralParticleAirBubble(
     // Store attributes
     //
 
-    assert(false == mIsDeletedBuffer[pointIndex]);
+    mIsDeletedBuffer[pointIndex] = false;
 
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = vec2f::zero();
@@ -159,7 +159,7 @@ void Points::CreateEphemeralParticleDebris(
     // Store attributes
     //
 
-    assert(false == mIsDeletedBuffer[pointIndex]);
+    mIsDeletedBuffer[pointIndex] = false;
 
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
@@ -212,7 +212,7 @@ void Points::CreateEphemeralParticleSparkle(
     // Store attributes
     //
 
-    assert(false == mIsDeletedBuffer[pointIndex]);
+    mIsDeletedBuffer[pointIndex] = false;
 
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
@@ -250,6 +250,7 @@ void Points::CreateEphemeralParticleSparkle(
 
 void Points::Destroy(
     ElementIndex pointElementIndex,
+    DestroyOptions destroyOptions,
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
@@ -261,6 +262,7 @@ void Points::Destroy(
     {
         mDestroyHandler(
             pointElementIndex,
+            !!(destroyOptions & Points::DestroyOptions::GenerateDebris),
             currentSimulationTime,
             gameParameters);
     }

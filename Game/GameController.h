@@ -105,8 +105,6 @@ public:
         vec2f worldOffset = mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
         vec2f newTargetCameraPosition = mRenderContext->ClampCameraWorldPosition(mTargetCameraPosition + worldOffset);
 
-        // TODOTEST - if works, do also for zoom
-        //mCurrentCameraPosition = mTargetCameraPosition; // Skip straight to current target, in case we're already smoothing
         mCurrentCameraPosition = mRenderContext->SetCameraWorldPosition(mTargetCameraPosition); // Skip straight to current target, in case we're already smoothing
         mStartingCameraPosition = mCurrentCameraPosition;
         mTargetCameraPosition = newTargetCameraPosition;
@@ -135,8 +133,6 @@ public:
     {
         float newTargetZoom = mRenderContext->ClampZoom(mTargetZoom * amount);
 
-        // TODOTEST
-        //mCurrentZoom = mTargetZoom; // Skip straight to current target, in case we're already smoothing
         mCurrentZoom = mRenderContext->SetZoom(mTargetZoom); // Skip straight to current target, in case we're already smoothing
         mStartingZoom = mCurrentZoom;
         mTargetZoom = newTargetZoom;
