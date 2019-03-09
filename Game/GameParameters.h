@@ -242,8 +242,9 @@ struct GameParameters
     // Limits
     //
 
-    static constexpr float MinZoom = 0.0001f;
-    static constexpr float MaxZoom = 2000.0f;
+    // TODOTEST
+    static constexpr float MaxWorldWidth = 2000.0f;
+    static constexpr float MaxWorldHeight = 2000.0f;
 
     static constexpr size_t MaxBombs = 64u;
     static constexpr size_t MaxPinnedPoints = 64u;

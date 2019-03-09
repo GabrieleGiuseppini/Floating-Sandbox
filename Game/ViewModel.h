@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GameParameters.h"
+
 #include <GameCore/Vectors.h>
 
 #include <algorithm>
@@ -29,8 +31,7 @@ public:
         int canvasWidth,
         int canvasHeight)
         : mZoom(zoom)
-        , mCamX(cameraWorldPosition.x)
-        , mCamY(cameraWorldPosition.y)
+        , mCam(cameraWorldPosition)
         , mCanvasWidth(canvasWidth)
         , mCanvasHeight(canvasHeight)
     {
@@ -57,39 +58,85 @@ public:
         return mZoom;
     }
 
-    void SetZoom(float zoom)
+    /*
+     * Clamps the specified zoom so that the resulting view is still within the maximum world boundaries.
+     */
+    float ClampZoom(float zoom) const
     {
-        mZoom = zoom;
+        float constexpr MaxWorldLeft = -GameParameters::MaxWorldWidth / 2.0f;
+        float constexpr MaxWorldRight = GameParameters::MaxWorldWidth / 2.0f;
 
-        RecalculateAttributes();
+        float const visibleWorldWidth = CalculateVisibleWorldWidth(zoom);
+        if (mCam.x - visibleWorldWidth / 2.0f < MaxWorldLeft)
+        {
+            zoom = visibleWorldWidth * zoom / ((mCam.x - MaxWorldLeft) * 2.0f);
+        }
+        else if (mCam.x + visibleWorldWidth / 2.0f > MaxWorldRight)
+        {
+            zoom = visibleWorldWidth * zoom / ((MaxWorldRight - mCam.x) * 2.0f);
+        }
+
+        float constexpr MaxWorldTop = GameParameters::MaxWorldHeight;
+        float constexpr MaxWorldBottom = -GameParameters::MaxWorldHeight;
+
+        float const visibleWorldHeight = CalculateVisibleWorldHeight(zoom);
+        if (mCam.y + visibleWorldHeight / 2.0 > MaxWorldTop)
+        {
+            zoom = visibleWorldHeight * zoom / ((mCam.y - MaxWorldTop) * 2.0f);
+        }
+        else if (mCam.y - visibleWorldHeight / 2.0 < MaxWorldBottom)
+        {
+            zoom = visibleWorldHeight * zoom / ((MaxWorldBottom - mCam.y) * 2.0f);
+        }
+
+        return zoom;
     }
 
-    void AdjustZoom(float amount)
+    float SetZoom(float zoom)
     {
-        mZoom *= amount;
+        float newZoom = ClampZoom(zoom);
+
+        mZoom = newZoom;
 
         RecalculateAttributes();
+
+        return zoom;
     }
 
-    vec2f GetCameraWorldPosition() const
+    vec2f const & GetCameraWorldPosition() const
     {
-        return vec2f(mCamX, mCamY);
+        return mCam;
     }
 
-    void SetCameraWorldPosition(vec2f const & pos)
+    /*
+     * Clamps the specified camera position so that the resulting view is still within the maximum world boundaries.
+     */
+    vec2f ClampCameraWorldPosition(vec2f const & pos) const
     {
-        mCamX = pos.x;
-        mCamY = pos.y;
+        vec2f clampedPos = pos;
+
+        float newVisibleWorldLeft = clampedPos.x - mVisibleWorldWidth / 2.0f;
+        clampedPos.x += std::max(0.0f, -GameParameters::MaxWorldWidth / 2.0f - newVisibleWorldLeft);
+        float newVisibleWorldRight = clampedPos.x + mVisibleWorldWidth / 2.0f;
+        clampedPos.x += std::min(0.0f, GameParameters::MaxWorldWidth / 2.0f - newVisibleWorldRight);
+
+        float newVisibleWorldTop = clampedPos.y + mVisibleWorldHeight / 2.0f; // Top<->Positive
+        clampedPos.y += std::min(0.0f, GameParameters::MaxWorldHeight / 2.0f - newVisibleWorldTop);
+        float newVisibleWorldBottom = clampedPos.y - mVisibleWorldHeight / 2.0f;
+        clampedPos.y += std::max(0.0f, -GameParameters::MaxWorldHeight / 2.0f - newVisibleWorldBottom);
+
+        return clampedPos;
+    }
+
+    vec2f SetCameraWorldPosition(vec2f const & pos)
+    {
+        vec2f newPos = ClampCameraWorldPosition(pos);
+
+        mCam = newPos;
 
         RecalculateAttributes();
-    }
 
-    void AdjustCameraWorldPosition(vec2f const & offset)
-    {
-        mCamX += offset.x;
-        mCamY += offset.y;
-
-        RecalculateAttributes();
+        return newPos;
     }
 
     int GetCanvasWidth() const
@@ -142,8 +189,8 @@ public:
     inline vec2f ScreenToWorld(vec2f const & screenCoordinates)
     {
         return vec2f(
-            (screenCoordinates.x / static_cast<float>(mCanvasWidth) - 0.5f) * mVisibleWorldWidth + mCamX,
-            (screenCoordinates.y / static_cast<float>(mCanvasHeight) - 0.5f) * -mVisibleWorldHeight + mCamY);
+            (screenCoordinates.x / static_cast<float>(mCanvasWidth) - 0.5f) * mVisibleWorldWidth + mCam.x,
+            (screenCoordinates.y / static_cast<float>(mCanvasHeight) - 0.5f) * -mVisibleWorldHeight + mCam.y);
     }
 
     inline vec2f ScreenOffsetToWorldOffset(vec2f const & screenOffset)
@@ -231,33 +278,44 @@ public:
 
 private:
 
+    float CalculateVisibleWorldWidth(float zoom) const
+    {
+        return CalculateVisibleWorldHeight(zoom) * static_cast<float>(mCanvasWidth) / static_cast<float>(mCanvasHeight);
+    }
+
+    float CalculateVisibleWorldHeight(float zoom) const
+    {
+        assert(zoom != 0.0f);
+
+        return 2.0f * 70.0f / zoom;
+    }
+
     void RecalculateAttributes()
     {
-        mVisibleWorldHeight = 2.0f * 70.0f / (mZoom + 0.001f);
-        mVisibleWorldWidth = static_cast<float>(mCanvasWidth) / static_cast<float>(mCanvasHeight) * mVisibleWorldHeight;
+        mVisibleWorldWidth = CalculateVisibleWorldWidth(mZoom);
+        mVisibleWorldHeight = CalculateVisibleWorldHeight(mZoom);
 
         mVisibleWorldTopLeft = vec2f(
-            mCamX - (mVisibleWorldWidth / 2.0f),
-            mCamY + (mVisibleWorldHeight / 2.0f));
+            mCam.x - (mVisibleWorldWidth / 2.0f),
+            mCam.y + (mVisibleWorldHeight / 2.0f));
         mVisibleWorldBottomRight = vec2f(
-            mCamX + (mVisibleWorldWidth /2.0f),
-            mCamY - (mVisibleWorldHeight / 2.0f));
+            mCam.x + (mVisibleWorldWidth /2.0f),
+            mCam.y - (mVisibleWorldHeight / 2.0f));
 
         mCanvasToVisibleWorldHeightRatio = static_cast<float>(mCanvasHeight) / mVisibleWorldHeight;
 
         // Recalculate kernel Ortho Matrix cells
         mKernelOrthoMatrix[0][0] = 2.0f / mVisibleWorldWidth;
         mKernelOrthoMatrix[1][1] = 2.0f / mVisibleWorldHeight;
-        mKernelOrthoMatrix[3][0] = -2.0f * mCamX / mVisibleWorldWidth;
-        mKernelOrthoMatrix[3][1] = -2.0f * mCamY / mVisibleWorldHeight;
+        mKernelOrthoMatrix[3][0] = -2.0f * mCam.x / mVisibleWorldWidth;
+        mKernelOrthoMatrix[3][1] = -2.0f * mCam.y / mVisibleWorldHeight;
     }
 
 private:
 
     // Primary inputs
     float mZoom;
-    float mCamX;
-    float mCamY;
+    vec2f mCam;
     int mCanvasWidth;
     int mCanvasHeight;
 

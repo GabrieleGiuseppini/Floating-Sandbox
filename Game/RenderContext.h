@@ -55,11 +55,18 @@ public:
         return mViewModel.GetZoom();
     }
 
-    void SetZoom(float zoom)
+    float ClampZoom(float zoom) const
     {
-        mViewModel.SetZoom(zoom);
+        return mViewModel.ClampZoom(zoom);
+    }
+
+    float SetZoom(float zoom)
+    {
+        auto const newZoom = mViewModel.SetZoom(zoom);
 
         OnViewModelUpdated();
+
+        return newZoom;
     }
 
     vec2f GetCameraWorldPosition() const
@@ -67,18 +74,18 @@ public:
         return mViewModel.GetCameraWorldPosition();
     }
 
-    void SetCameraWorldPosition(vec2f const & pos)
+    vec2f ClampCameraWorldPosition(vec2f const & pos) const
     {
-        mViewModel.SetCameraWorldPosition(pos);
-
-        OnViewModelUpdated();
+        return mViewModel.ClampCameraWorldPosition(pos);
     }
 
-    void AdjustCameraWorldPosition(vec2f const & offset)
+    vec2f SetCameraWorldPosition(vec2f const & pos)
     {
-        mViewModel.AdjustCameraWorldPosition(offset);
+        auto const newCameraWorldPosition = mViewModel.SetCameraWorldPosition(pos);
 
         OnViewModelUpdated();
+
+        return newCameraWorldPosition;
     }
 
     int GetCanvasWidth() const
