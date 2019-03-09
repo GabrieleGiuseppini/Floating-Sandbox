@@ -149,6 +149,7 @@ Render:
 			+ https://stackoverflow.com/questions/9020353/create-a-dump-file-for-an-application-whenever-it-crashes
 			+ In app folder, via StandardSystemPaths
 				+ Under \CrashDumps
+			- Try with empty png and corrupted png
 
 		= Bounded World
 			+ GameParameters: MaxWorldWidth, Height
@@ -166,14 +167,23 @@ Render:
 						+ Get back value
 					+ CanvasSize update: pickup changes and reset smoothing
 				+ Test
-			- Constrain physics:
-				- Ship::Update: at end of mech physics (after last integrate): 
-					- Destroy points (also with sounds, it's OK) that are outside of bounding box
-			- Verify AM bomb issue is gone
+			+ Constrain physics:
+				+ Ship::Update: at end of mech physics (after last integrate): 
+					+ Destroy points (also with sounds, it's OK) that are outside of bounding box
+					+ No destroy points, just do simple bounce w/bounded velocity
+			+ Verify AM bomb issue is gone
+			- Test in Debug
 			- Make larger bounding world
+				- W: 10000
+				- H: MaxSeaDepth * 4
+				- w/static_assert for ocean depth
 			- Verify AM bomb issue is still gone
+			- Test perf
+			- Merge to master
+			- Changes.txt
 
-		- See if capillarity is a problem with imbalance of water intake and water diffusion
+		- ShipTrianglesTexture shader: use local light as "additive" to ambient light (to draw colors)
+			- If it works, also Color and springs and ropes and points (and others?)
 
 		- VAO (*)
 

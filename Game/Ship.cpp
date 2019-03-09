@@ -962,6 +962,8 @@ void Ship::TrimForWorldBounds(
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
+    static constexpr float MaxBounceVelocity = 50.0f;
+
     float constexpr MaxWorldLeft = -GameParameters::MaxWorldWidth / 2.0f;
     float constexpr MaxWorldRight = GameParameters::MaxWorldWidth / 2.0f;
 
@@ -970,19 +972,34 @@ void Ship::TrimForWorldBounds(
 
     for (auto pointIndex : mPoints)
     {
-        auto const & pos = mPoints.GetPosition(pointIndex);
-        if (pos.x < MaxWorldLeft || pos.x > MaxWorldRight
-            || pos.y > MaxWorldTop || pos.y < MaxWorldBottom)
+        auto & pos = mPoints.GetPosition(pointIndex);
+        if (pos.x < MaxWorldLeft)
         {
-            // Destroy this point, unless it's already deleted
-            if (!mPoints.IsDeleted(pointIndex))
-            {
-                mPoints.Destroy(
-                    pointIndex,
-                    Points::DestroyOptions::DoNotGenerateDebris,
-                    currentSimulationTime,
-                    gameParameters);
-            }
+            pos.x = MaxWorldLeft;
+
+            // Bounce bounded
+            mPoints.GetVelocity(pointIndex).x = std::min(-mPoints.GetVelocity(pointIndex).x, MaxBounceVelocity);
+        }
+        else if (pos.x > MaxWorldRight)
+        {
+            pos.x = MaxWorldRight;
+
+            // Bounce bounded
+            mPoints.GetVelocity(pointIndex).x = std::max(-mPoints.GetVelocity(pointIndex).x, -MaxBounceVelocity);
+        }
+        else if (pos.y > MaxWorldTop)
+        {
+            pos.y = MaxWorldTop;
+
+            // Bounce bounded
+            mPoints.GetVelocity(pointIndex).y = std::max(-mPoints.GetVelocity(pointIndex).y, -MaxBounceVelocity);
+        }
+        else if (pos.y < MaxWorldBottom)
+        {
+            pos.y = MaxWorldBottom;
+
+            // Bounce bounded
+            mPoints.GetVelocity(pointIndex).y = std::min(-mPoints.GetVelocity(pointIndex).y, MaxBounceVelocity);
         }
     }
 }

@@ -282,6 +282,10 @@ void Points::Destroy(
     mIntegrationFactorTimeCoefficientBuffer[pointElementIndex] = 0.0f;
     mWaterVelocityBuffer[pointElementIndex] = vec2f::zero();
     mWaterMomentumBuffer[pointElementIndex] = vec2f::zero();
+
+    // We're not anymore an ephemeral particle
+    // (in case we were one...
+    mEphemeralTypeBuffer[pointElementIndex] = EphemeralType::None;
 }
 
 void Points::UpdateGameParameters(GameParameters const & gameParameters)
@@ -316,6 +320,8 @@ void Points::UpdateEphemeralParticles(
         auto const ephemeralType = GetEphemeralType(pointIndex);
         if (EphemeralType::None != ephemeralType)
         {
+            assert(!IsDeleted(pointIndex));
+
             //
             // Run this particle's state machine
             //
@@ -608,6 +614,8 @@ void Points::UploadEphemeralParticles(
 
     for (ElementIndex pointIndex : this->EphemeralPoints())
     {
+        assert(GetEphemeralType(pointIndex) == EphemeralType::None || !IsDeleted(pointIndex));
+
         switch (GetEphemeralType(pointIndex))
         {
             case EphemeralType::AirBubble:
