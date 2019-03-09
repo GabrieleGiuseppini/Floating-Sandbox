@@ -151,11 +151,12 @@ install(TARGETS FloatingSandbox
 	DESTINATION .)
 
 # PDB
-if (MSVC)
-	install(FILES $<TARGET_PDB_FILE:FloatingSandbox> 
-		CONFIGURATIONS Release
-		DESTINATION .)
-endif (MSVC)
+#TODO: disabled as for now we don't generate PDBs at Release
+#if (MSVC)
+#	install(FILES $<TARGET_PDB_FILE:FloatingSandbox> 
+#		CONFIGURATIONS Release
+#		DESTINATION .)
+#endif (MSVC)
 
 # Runtime libraries
 if (WIN32)

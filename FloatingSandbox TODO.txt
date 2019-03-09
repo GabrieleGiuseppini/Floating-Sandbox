@@ -149,29 +149,31 @@ Render:
 			+ https://stackoverflow.com/questions/9020353/create-a-dump-file-for-an-application-whenever-it-crashes
 			+ In app folder, via StandardSystemPaths
 				+ Under \CrashDumps
-			= Test w/crash on thread (goliath ropes, reinsert bug)
-			- PDB:
-				+ Install: copy to \install (for GitHub)
-				- Windows Installer: make sure we do NOT take it
 
-		- Bounded World
-			- GameParameters: MaxWorldWidth, Height
-				- Remove MaxZoom, MinZoom
-				- Use very small world now
-			- Constrain view changes:
-				- ViewModel:
-					- float ClampXYZ() -> clamped value
-					- CanvasSize changes: make sure the largest visible world dimension stays the same
-						- i.e., make sure that the new visible world dimensions are contained within the old one
-				- Use at GameController:
-					- Zoom updates
-					- Camera updates
-				- Test
+		= Bounded World
+			+ GameParameters: MaxWorldWidth, Height
+				+ Remove MaxZoom, MinZoom
+				+ Use very small world for now
+			+ Constrain view changes:
+				+ ViewModel:
+					+ float ClampXYZ() -> clamped value
+					+ CanvasSize changes: make sure the largest visible world dimension stays the same
+						+ i.e., adjust zoom so that the new visible world dimensions are contained within the old one
+				+ Use at GameController:
+					+ Zoom updates
+						+ Get back value
+					+ Camera updates
+						+ Get back value
+					+ CanvasSize update: pickup changes and reset smoothing
+				+ Test
 			- Constrain physics:
-				- Ship::Update: at end of update: Destroy (also with sounds, it's OK) points outside of bounding box
+				- Ship::Update: at end of mech physics (after last integrate): 
+					- Destroy points (also with sounds, it's OK) that are outside of bounding box
 			- Verify AM bomb issue is gone
 			- Make larger bounding world
 			- Verify AM bomb issue is still gone
+
+		- See if capillarity is a problem with imbalance of water intake and water diffusion
 
 		- VAO (*)
 
@@ -182,6 +184,7 @@ Render:
 		- Decay (rust) (*)
 
 		- Instanced drawing for lights (*)
+		- See if lights can make texture colors come out at night, rather than just yellow-izing it
 
 		- Pick tool (*)
 
@@ -729,6 +732,9 @@ Render:
 				- Call Points::UploadDirtyBuffers (new name for old method)
 					- Now also uploads Decay buffer if dirty
 
+	- New electrical material: clamp
+		- When powered, destroys point (and of course its springs)
+		- Make ship with lifeboats, using multiple clamps to keep it
 
 	- Lights breaking under pressure
 		- Idea:

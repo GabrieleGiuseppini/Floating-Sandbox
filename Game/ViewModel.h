@@ -154,6 +154,9 @@ public:
         mCanvasWidth = width;
         mCanvasHeight = height;
 
+        // Adjust zoom so that the new visible world dimensions are contained within the maximum
+        SetZoom(mZoom);
+
         RecalculateAttributes();
     }
 
