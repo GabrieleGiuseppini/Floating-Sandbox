@@ -506,7 +506,7 @@ void SettingsDialog::PopulateFluidsPanel(wxPanel * panel)
         SliderWidth,
         SliderHeight,
         "Water Density Adjust",
-        "Adjusts the density of sea water, and thus the buoyancy it exerts on floating objects.",
+        "Adjusts the density of sea water, and thus the buoyancy it exerts on physical bodies.",
         mGameController->GetWaterDensityAdjustment(),
         [this](float /*value*/)
         {

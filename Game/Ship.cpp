@@ -744,7 +744,7 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
 
     // Calculate wind force:
     //  Km/h -> Newton: F = 1/2 rho v**2 A
-    constexpr float VelocityConversionFactor = 1000.0f / 3600.0f;
+    float constexpr VelocityConversionFactor = 1000.0f / 3600.0f;
     vec2f const windForce =
         mParentWorld.GetCurrentWindSpeed().square()
         * (VelocityConversionFactor * VelocityConversionFactor)
@@ -755,7 +755,7 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
     //
     // The higher the value, the more viscous the water looks when a body moves through it
     float const waterDragCoefficient =
-        0.020f // ~= 1.0f - powf(0.6f, 0.02f)
+        GameParameters::WaterDragLinearCoefficient
         * gameParameters.WaterDragAdjustment;
 
     for (auto pointIndex : mPoints)
@@ -797,9 +797,26 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
 
         if (mPoints.GetPosition(pointIndex).y <= waterHeightAtThisPoint)
         {
-            // Drag force = -C * (V^2*Vn)
+            //
+            // Note: we would have liked to use the square law:
+            //
+            //  Drag force = -C * (|V|^2*Vn)
+            //
+            // But when V >= m / (C * dt), the drag force overcomes the current velocity
+            // and thus it accelerates it, resulting in an unstable system.
+            //
+            // With a linear law, we know that the force will never accelerate the current velocity
+            // as long as m > (C * dt) / 2 (~=0.0002), which is a mass we won't have in our system (air is 1.2754).
+            //
+
+            // Square law:
+            ////mPoints.GetForce(pointIndex) +=
+            ////    mPoints.GetVelocity(pointIndex).square()
+            ////    * (-waterDragCoefficient);
+
+            // Linear law:
             mPoints.GetForce(pointIndex) +=
-                mPoints.GetVelocity(pointIndex).square()
+                mPoints.GetVelocity(pointIndex)
                 * (-waterDragCoefficient);
         }
         else
@@ -1570,8 +1587,6 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
             :   mElectricalElements.GetAvailableCurrent(lampIndex)
                 * mElectricalElements.GetLuminiscence(lampIndex)
                 * gameParameters.LuminiscenceAdjustment;
-
-        assert(effectiveLampLight <= 1.0f);
 
         float const lampLightSpread = mElectricalElements.GetLightSpread(lampIndex);
         if (lampLightSpread == 0.0f)

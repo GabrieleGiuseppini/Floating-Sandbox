@@ -1,7 +1,10 @@
 =================================================
 Current perf:
 =================================================
--fps: 29.0/29.2/29.4
+- fps: 28.1/28.3
+
+Before bound world and point light<->ambient light additiveness:
+- fps: 29.0/29.2/29.4
 
 Before Z buffer:
 - fps: 30.2/30.6/31.2
@@ -144,6 +147,26 @@ Render:
 
 - Roadmap:
 	- 1.10.0
+		+ ShipTrianglesTexture shader: use local light as "additive" to ambient light (to draw colors)
+			+ Split Points:: colorBuffer upload to own func
+				+ RenderContext: range-based
+			+ Remove logs and shader TODOs
+			+ Check intensity at distance==0
+			+ Change luminance to 1 rather than 2
+				+ See first what difference it makes
+				+ Change in materials.json
+				+ Enforce in electrical material
+				+ Verify fixes issue
+				+ Constrain luminiscence adjust to max 1
+					+ Or change how to apply adjustment
+					+ Change tooltip and minimum
+			+ If it works, also these shaders:
+				+ TrianglesColor
+				+ PointsColor
+				+ Ropes
+				+ SpringsColor
+				+ SpringsTexture
+			+ See if passing vec instead of floats among shaders helps with perf
 
 		= Create dump upon crash
 			+ https://stackoverflow.com/questions/9020353/create-a-dump-file-for-an-application-whenever-it-crashes
@@ -151,7 +174,7 @@ Render:
 				+ Under \CrashDumps
 			- Try with empty png and corrupted png
 
-		= Bounded World
+		+ Bounded World
 			+ GameParameters: MaxWorldWidth, Height
 				+ Remove MaxZoom, MinZoom
 				+ Use very small world for now
@@ -172,37 +195,29 @@ Render:
 					+ Destroy points (also with sounds, it's OK) that are outside of bounding box
 					+ No destroy points, just do simple bounce w/bounded velocity
 			+ Verify AM bomb issue is gone
-			- Test in Debug
-			- Make larger bounding world
-				- W: 10000
-				- H: MaxSeaDepth * 4
-				- w/static_assert for ocean depth
-			- Verify AM bomb issue is gone
-			- Test FPS
-			- Merge to master
-			- Changes.txt
+			+ Test in Debug
+			+ Make larger bounding world
+				+ W: 10000
+				+ H: MaxSeaDepth * 4
+				+ w/static_assert for ocean depth
+			+ Figure out where it is that the submarine disappears
+			+ Fix water drag 
+				+ Find coefficient for linear drag in "slow" range
+				+ When done: see if bounds of water drag adjustment are still good
+					+ Test at new max (1K) - do ship pieces go to a standstill?
+			+ Verify AM bomb issue is gone
+			+ Get current FPS
+			+ Changes.txt		
+			+ Merge to master			
 
-		= ShipTrianglesTexture shader: use local light as "additive" to ambient light (to draw colors)
-			+ Split Points:: colorBuffer upload to own func
-				+ RenderContext: range-based
-			+ Remove logs and shader TODOs
-			+ Check intensity at distance==0
-			+ Change luminance to 1 rather than 2
-				+ See first what difference it makes
-				+ Change in materials.json
-				+ Enforce in electrical material
-				+ Verify fixes issue
-				+ Constrain luminiscence adjust to max 1
-					+ Or change how to apply adjustment
-					+ Change tooltip and minimum
-			+ If it works, also these shaders:
-				+ TrianglesColor
-				+ PointsColor
-				+ Ropes
-				+ SpringsColor
-				+ SpringsTexture
+		- EventTickerPanel:
+			- Fix name of AM bomb @ placed (and @ al?)
+			- Msg for detonation
 
-			- See if passing vec instead of floats among shaders helps with perf
+		- See move tool changing center
+			- Log movements
+
+		- Test undoing TrianglesTexture shader optimization (vec4 and calc'n move)
 
 		- VAO (*)
 
@@ -512,6 +527,14 @@ Render:
 
 
 - Gfx optimizations:
+
+	- World::UploadLandAndWater: use same spatial frequency as samples, so to avoid interpolating altogether
+		- Warning: requires same sampling frequency for both, as ocean quads require landY when land sticks out,
+		  unless we always render ocean up to visibleWorldBottom, in which case the two are fully independent;
+		  so assuming we go ahead with different sampling frequencies
+		- Separate uploads, managed by OceanSurface and OceanFloor
+			- Find first sample == sample immediately to the left of visibleWorld.Left
+			- Go ahead by dx, up to last sample == sample immediately to the right of visibleWorld.Right
 
 	- Use VAO's (*)
 		- Branch
