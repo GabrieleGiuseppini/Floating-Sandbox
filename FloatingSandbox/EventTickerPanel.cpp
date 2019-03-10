@@ -143,7 +143,34 @@ void EventTickerPanel::OnBombPlaced(
     bool /*isUnderwater*/)
 {
     std::stringstream ss;
-    ss << (BombType::RCBomb == bombType ? "Remote-controlled" : "Timer") << " bomb placed!";
+    switch (bombType)
+    {
+        case BombType::AntiMatterBomb:
+        {
+            ss << "Anti-matter";
+            break;
+        }
+
+        case BombType::ImpactBomb:
+        {
+            ss << "Impact";
+            break;
+        }
+
+        case BombType::RCBomb:
+        {
+            ss << "Remote-controlled";
+            break;
+        }
+
+        case BombType::TimerBomb:
+        {
+            ss << "Timer";
+            break;
+        }
+    }
+
+    ss << " bomb placed!";
 
     AppendFutureTickerText(ss.str());
 }
