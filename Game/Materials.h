@@ -109,6 +109,7 @@ struct ElectricalMaterial
 
     // Light
     float Luminiscence;
+    vec4f LightColor;
     float LightSpread;
     float WetFailureRate; // Number of lamp failures per minute
 
@@ -121,12 +122,14 @@ struct ElectricalMaterial
         ElectricalElementType electricalType,
         bool isSelfPowered,
         float luminiscence,
+        vec4f lightColor,
         float lightSpread,
         float wetFailureRate)
         : Name(name)
         , ElectricalType(electricalType)
         , IsSelfPowered(isSelfPowered)
         , Luminiscence(luminiscence)
+        , LightColor(lightColor)
         , LightSpread(lightSpread)
         , WetFailureRate(wetFailureRate)
     {

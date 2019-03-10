@@ -55,11 +55,18 @@ public:
         return mViewModel.GetZoom();
     }
 
-    void SetZoom(float zoom)
+    float ClampZoom(float zoom) const
     {
-        mViewModel.SetZoom(zoom);
+        return mViewModel.ClampZoom(zoom);
+    }
+
+    float SetZoom(float zoom)
+    {
+        auto const newZoom = mViewModel.SetZoom(zoom);
 
         OnViewModelUpdated();
+
+        return newZoom;
     }
 
     vec2f GetCameraWorldPosition() const
@@ -67,18 +74,18 @@ public:
         return mViewModel.GetCameraWorldPosition();
     }
 
-    void SetCameraWorldPosition(vec2f const & pos)
+    vec2f ClampCameraWorldPosition(vec2f const & pos) const
     {
-        mViewModel.SetCameraWorldPosition(pos);
-
-        OnViewModelUpdated();
+        return mViewModel.ClampCameraWorldPosition(pos);
     }
 
-    void AdjustCameraWorldPosition(vec2f const & offset)
+    vec2f SetCameraWorldPosition(vec2f const & pos)
     {
-        mViewModel.AdjustCameraWorldPosition(offset);
+        auto const newCameraWorldPosition = mViewModel.SetCameraWorldPosition(pos);
 
         OnViewModelUpdated();
+
+        return newCameraWorldPosition;
     }
 
     int GetCanvasWidth() const
@@ -619,27 +626,24 @@ public:
 
     void UploadShipPointImmutableGraphicalAttributes(
         ShipId shipId,
-        vec4f const * color,
         vec2f const * textureCoordinates)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId]->UploadPointImmutableGraphicalAttributes(
-            color,
-            textureCoordinates);
+        mShips[shipId]->UploadPointImmutableGraphicalAttributes(textureCoordinates);
     }
 
-    void UploadShipPointColorRange(
+    void UploadShipPointColors(
         ShipId shipId,
         vec4f const * color,
-        size_t startIndex,
+        size_t startDst,
         size_t count)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId]->UploadShipPointColorRange(
+        mShips[shipId]->UploadShipPointColors(
             color,
-            startIndex,
+            startDst,
             count);
     }
 
@@ -660,7 +664,7 @@ public:
     void UploadShipPointPlaneIds(
         ShipId shipId,
         PlaneId const * planeId,
-        size_t start,
+        size_t startDst,
         size_t count,
         PlaneId maxMaxPlaneId)
     {
@@ -668,7 +672,7 @@ public:
 
         mShips[shipId]->UploadPointPlaneIds(
             planeId,
-            start,
+            startDst,
             count,
             maxMaxPlaneId);
     }

@@ -13,16 +13,19 @@ in vec4 inShipPointColor;
 in float inShipPointPlaneId;
 
 // Outputs        
-out float vertexLight;
+out float vertexLightIntensity;
+out float vertexLightColorMix;
 out float vertexWater;
 out vec4 vertexCol;
 
 // Params
+uniform float paramAmbientLightIntensity;
 uniform mat4 paramOrthoMatrix;
 
 void main()
 {            
-    vertexLight = inShipPointLight;
+    vertexLightIntensity = paramAmbientLightIntensity + (1.0 - paramAmbientLightIntensity) * inShipPointLight;
+    vertexLightColorMix = inShipPointLight;
     vertexWater = inShipPointWater;
     vertexCol = inShipPointColor;
 
@@ -36,12 +39,12 @@ void main()
 #define in varying
 
 // Inputs from previous shader        
-in float vertexLight;
+in float vertexLightIntensity;
+in float vertexLightColorMix;
 in float vertexWater;
 in vec4 vertexCol;
 
 // Params
-uniform float paramAmbientLightIntensity;
 uniform float paramWaterContrast;
 uniform float paramWaterLevelThreshold;
 
@@ -51,12 +54,12 @@ void main()
     float colorWetness = min(vertexWater, paramWaterLevelThreshold) / paramWaterLevelThreshold * paramWaterContrast;
     vec3 fragColour = vertexCol.xyz * (1.0 - colorWetness) + vec3(%WET_COLOR_VEC3%) * colorWetness;
 
-     // Apply ambient light
-    fragColour *= paramAmbientLightIntensity;
+     // Apply light
+    fragColour *= vertexLightIntensity;
 
     // Apply point light
-    fragColour = fragColour * (1.0 - vertexLight) + vec3(%LAMPLIGHT_COLOR_VEC3%) * vertexLight;
-    
+    fragColour = fragColour * (1.0 - vertexLightColorMix) + vec3(%LAMPLIGHT_COLOR_VEC3%) * vertexLightColorMix;
+
     gl_FragColor = vec4(fragColour.xyz, vertexCol.w);
 } 
 

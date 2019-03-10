@@ -109,9 +109,13 @@ struct GameParameters
     static constexpr float MinWaterDensityAdjustment = 0.0f;
     static constexpr float MaxWaterDensityAdjustment = 4.0f;
 
+    static constexpr float WaterDragLinearCoefficient =
+        0.020f  // ~= 1.0f - powf(0.6f, 0.02f)
+        * 5.0;  // Once we were comfortable with square law at |v|=5, now we use linear law and want to maintain the same force there
+
     float WaterDragAdjustment;
     static constexpr float MinWaterDragAdjustment = 0.0f;
-    static constexpr float MaxWaterDragAdjustment = 10000.0f;
+    static constexpr float MaxWaterDragAdjustment = 1000.0f; // Safe to avoid drag instability (2 * m / (dt * C) at minimal mass, 1Kg)
 
     float WaterIntakeAdjustment;
     static constexpr float MinWaterIntakeAdjustment = 0.1f;
@@ -189,7 +193,7 @@ struct GameParameters
     static constexpr float MaxOceanFloorDetailAmplification = 200.0f;
 
     float LuminiscenceAdjustment;
-    static constexpr float MinLuminiscenceAdjustment = 0.0f;
+    static constexpr float MinLuminiscenceAdjustment = 0.1f;
     static constexpr float MaxLuminiscenceAdjustment = 10.0f;
 
     float LightSpreadAdjustment;
@@ -242,8 +246,11 @@ struct GameParameters
     // Limits
     //
 
-    static constexpr float MinZoom = 0.0001f;
-    static constexpr float MaxZoom = 2000.0f;
+    static constexpr float MaxWorldWidth = 10000.0f;
+    static constexpr float MaxWorldHeight = 40000.0f;
+
+    static_assert(MaxWorldHeight >= MaxSeaDepth * 2);
+
 
     static constexpr size_t MaxBombs = 64u;
     static constexpr size_t MaxPinnedPoints = 64u;

@@ -1,7 +1,10 @@
 =================================================
 Current perf:
 =================================================
--fps: 29.0/29.2/29.4
+- fps: 28.1/28.3
+
+Before bound world and point light<->ambient light additiveness:
+- fps: 29.0/29.2/29.4
 
 Before Z buffer:
 - fps: 30.2/30.6/31.2
@@ -143,39 +146,78 @@ Render:
 		+ After water contrast
 
 - Roadmap:
-
-	= 1.9.1:
-		+ Fixed crash when attemping to load a ship from a directory containing an empty ship
-		+ Fixed crash with air bubbles tool
-		+ Spring Damp setting
-			+ Test mass changes (now that coeffs are recalc'd on mass change)
-				+ Bomb attaches
-			+ SettingsDialog: advanced
-			+ Play to see if can find value
-			+ Try dividing by dtSquared
-		+ Fix V offset of AM bomb cursor
-		+ Slice-while-paused bug
-
 	- 1.10.0
+		+ ShipTrianglesTexture shader: use local light as "additive" to ambient light (to draw colors)
+			+ Split Points:: colorBuffer upload to own func
+				+ RenderContext: range-based
+			+ Remove logs and shader TODOs
+			+ Check intensity at distance==0
+			+ Change luminance to 1 rather than 2
+				+ See first what difference it makes
+				+ Change in materials.json
+				+ Enforce in electrical material
+				+ Verify fixes issue
+				+ Constrain luminiscence adjust to max 1
+					+ Or change how to apply adjustment
+					+ Change tooltip and minimum
+			+ If it works, also these shaders:
+				+ TrianglesColor
+				+ PointsColor
+				+ Ropes
+				+ SpringsColor
+				+ SpringsTexture
+			+ See if passing vec instead of floats among shaders helps with perf
 
-		- Bounded World
-			- GameParameters: MaxWorldWidth, Height
-				- Remove MaxZoom, MinZoom
-				- Use very small world now
-			- Constrain view changes:
-				- ViewModel:
-					- float ClampXYZ() -> clamped value
-					- CanvasSize changes: make sure the largest visible world dimension stays the same
-						- i.e., make sure that the new visible world dimensions are contained within the old one
-				- Use at GameController:
-					- Zoom updates
-					- Camera updates
-				- Test
-			- Constrain physics:
-				- Ship::Update: at end of update: Destroy (also with sounds, it's OK) points outside of bounding box
-			- Verify AM bomb issue is gone
-			- Make larger bounding world
-			- Verify AM bomb issue is still gone
+		= Create dump upon crash
+			+ https://stackoverflow.com/questions/9020353/create-a-dump-file-for-an-application-whenever-it-crashes
+			+ In app folder, via StandardSystemPaths
+				+ Under \CrashDumps
+			- Try with empty png and corrupted png
+
+		+ Bounded World
+			+ GameParameters: MaxWorldWidth, Height
+				+ Remove MaxZoom, MinZoom
+				+ Use very small world for now
+			+ Constrain view changes:
+				+ ViewModel:
+					+ float ClampXYZ() -> clamped value
+					+ CanvasSize changes: make sure the largest visible world dimension stays the same
+						+ i.e., adjust zoom so that the new visible world dimensions are contained within the old one
+				+ Use at GameController:
+					+ Zoom updates
+						+ Get back value
+					+ Camera updates
+						+ Get back value
+					+ CanvasSize update: pickup changes and reset smoothing
+				+ Test
+			+ Constrain physics:
+				+ Ship::Update: at end of mech physics (after last integrate): 
+					+ Destroy points (also with sounds, it's OK) that are outside of bounding box
+					+ No destroy points, just do simple bounce w/bounded velocity
+			+ Verify AM bomb issue is gone
+			+ Test in Debug
+			+ Make larger bounding world
+				+ W: 10000
+				+ H: MaxSeaDepth * 4
+				+ w/static_assert for ocean depth
+			+ Figure out where it is that the submarine disappears
+			+ Fix water drag 
+				+ Find coefficient for linear drag in "slow" range
+				+ When done: see if bounds of water drag adjustment are still good
+					+ Test at new max (1K) - do ship pieces go to a standstill?
+			+ Verify AM bomb issue is gone
+			+ Get current FPS
+			+ Changes.txt		
+			+ Merge to master			
+
+		- EventTickerPanel:
+			- Fix name of AM bomb @ placed (and @ al?)
+			- Msg for detonation
+
+		- See move tool changing center
+			- Log movements
+
+		- Test undoing TrianglesTexture shader optimization (vec4 and calc'n move)
 
 		- VAO (*)
 
@@ -186,6 +228,7 @@ Render:
 		- Decay (rust) (*)
 
 		- Instanced drawing for lights (*)
+		- See if lights can make texture colors come out at night, rather than just yellow-izing it
 
 		- Pick tool (*)
 
@@ -485,6 +528,14 @@ Render:
 
 - Gfx optimizations:
 
+	- World::UploadLandAndWater: use same spatial frequency as samples, so to avoid interpolating altogether
+		- Warning: requires same sampling frequency for both, as ocean quads require landY when land sticks out,
+		  unless we always render ocean up to visibleWorldBottom, in which case the two are fully independent;
+		  so assuming we go ahead with different sampling frequencies
+		- Separate uploads, managed by OceanSurface and OceanFloor
+			- Find first sample == sample immediately to the left of visibleWorld.Left
+			- Go ahead by dx, up to last sample == sample immediately to the right of visibleWorld.Right
+
 	- Use VAO's (*)
 		- Branch
 		- New OpenGLObject w/deleter
@@ -496,6 +547,7 @@ Render:
 			- Test
 		- RenderContext:
 			- See if can move uploads early, and then later just bind VAOs
+			- Also see to bind element array indices to the VAOs
 
 	- Reduce number of vertex attributes for ship_triangles_texture and color (and possibly forced to do others) (*)
 		+ We've already confirmed that one less attribute vertex sends FPS frpom 29 to 30
@@ -587,18 +639,20 @@ Render:
 					- cctor: reserve(mPoints.total_size)
 					- It will contain first non-ephemerals (orphaned or all), then ephemerals
 					- Coping with mIsStructureDirty=true but no new ephemerals:
-						- Need to add boolean to Points::UploadEphemeral to force emission of points
+						- Need to add boolean to Points::UploadEphemerals to force emission of points even when not dirty
 				- Nuke old upload call for point elements
 				- if mIsStructureDirty:
 					- Clear mPointElementsToRender
 					- Ask Points to populate point indices in mPointElementsToRender
+						- Points::UploadNonEphemeralPointIndices(...)
 						- Starting from zero
 						- Points decides between all or orphaned only based off DebugShipRenderMode
 							- Like now, only non-ephemerals
 					- Store # of points just populated into mCurrentShipPointElementsToRenderCount
 				- ...later...:
-				- At Points::UploadEphemeral:
+				- At Points::UploadEphemerals:
 					- Pass mPointElementsToRender
+					- Since you're here, remove TBD comment about ConnectedComponentIDs
 					- Pass "forceEmissionOfPoints" == mIsStructureDirty
 					- Points::UploadEphemeral returns ephemeralPointsPopulatedCount
 				- if mIsStructureDirty || ephemeralPointsPopulatedCount > 0:
@@ -611,6 +665,7 @@ Render:
 				- Nuke RenderEphemeralPoints and its structs and members
 				- Have just one single RenderPoints
 					- Always invoked, except when DebugShipRenderMode is not None and not Points
+					  (i.e. when it's Springs, EdgeSprings, etc. but not Points)
 		- Test L'n'F'
 
 		- TODOOLD: in case any assumptions fail:		
@@ -733,6 +788,9 @@ Render:
 				- Call Points::UploadDirtyBuffers (new name for old method)
 					- Now also uploads Decay buffer if dirty
 
+	- New electrical material: clamp
+		- When powered, destroys point (and of course its springs)
+		- Make ship with lifeboats, using multiple clamps to keep it
 
 	- Lights breaking under pressure
 		- Idea:
@@ -4772,4 +4830,15 @@ IF WX:
 			+ Find good default flat color
 		+ Initial help window (HTML) @ Startup
 			+ UserPreferences tag to suppress
+	+ 1.9.1:
+		+ Fixed crash when attemping to load a ship from a directory containing an empty ship
+		+ Fixed crash with air bubbles tool
+		+ Spring Damp setting
+			+ Test mass changes (now that coeffs are recalc'd on mass change)
+				+ Bomb attaches
+			+ SettingsDialog: advanced
+			+ Play to see if can find value
+			+ Try dividing by dtSquared
+		+ Fix V offset of AM bomb cursor
+		+ Slice-while-paused bug
 

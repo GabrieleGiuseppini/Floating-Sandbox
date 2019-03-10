@@ -101,7 +101,7 @@ void Points::CreateEphemeralParticleAirBubble(
     // Store attributes
     //
 
-    assert(false == mIsDeletedBuffer[pointIndex]);
+    mIsDeletedBuffer[pointIndex] = false;
 
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = vec2f::zero();
@@ -159,7 +159,7 @@ void Points::CreateEphemeralParticleDebris(
     // Store attributes
     //
 
-    assert(false == mIsDeletedBuffer[pointIndex]);
+    mIsDeletedBuffer[pointIndex] = false;
 
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
@@ -212,7 +212,7 @@ void Points::CreateEphemeralParticleSparkle(
     // Store attributes
     //
 
-    assert(false == mIsDeletedBuffer[pointIndex]);
+    mIsDeletedBuffer[pointIndex] = false;
 
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
@@ -250,6 +250,7 @@ void Points::CreateEphemeralParticleSparkle(
 
 void Points::Destroy(
     ElementIndex pointElementIndex,
+    DestroyOptions destroyOptions,
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
@@ -261,6 +262,7 @@ void Points::Destroy(
     {
         mDestroyHandler(
             pointElementIndex,
+            !!(destroyOptions & Points::DestroyOptions::GenerateDebris),
             currentSimulationTime,
             gameParameters);
     }
@@ -280,6 +282,10 @@ void Points::Destroy(
     mIntegrationFactorTimeCoefficientBuffer[pointElementIndex] = 0.0f;
     mWaterVelocityBuffer[pointElementIndex] = vec2f::zero();
     mWaterMomentumBuffer[pointElementIndex] = vec2f::zero();
+
+    // We're not anymore an ephemeral particle
+    // (in case we were one...
+    mEphemeralTypeBuffer[pointElementIndex] = EphemeralType::None;
 }
 
 void Points::UpdateGameParameters(GameParameters const & gameParameters)
@@ -314,6 +320,8 @@ void Points::UpdateEphemeralParticles(
         auto const ephemeralType = GetEphemeralType(pointIndex);
         if (EphemeralType::None != ephemeralType)
         {
+            assert(!IsDeleted(pointIndex));
+
             //
             // Run this particle's state machine
             //
@@ -480,17 +488,36 @@ void Points::UploadMutableAttributes(
     Render::RenderContext & renderContext) const
 {
     // Upload immutable attributes, if we haven't uploaded them yet
-    if (mIsColorBufferDirty
-        || mIsTextureCoordinatesBufferDirty)
+    if (mIsTextureCoordinatesBufferDirty)
     {
         renderContext.UploadShipPointImmutableGraphicalAttributes(
             shipId,
-            mColorBuffer.data(),
             mTextureCoordinatesBuffer.data());
 
-        mIsColorBufferDirty = false;
         mIsTextureCoordinatesBufferDirty = false;
     }
+
+    // Upload colors, if dirty
+    if (mIsWholeColorBufferDirty)
+    {
+        renderContext.UploadShipPointColors(
+            shipId,
+            mColorBuffer.data(),
+            0,
+            mAllPointCount);
+
+        mIsWholeColorBufferDirty = false;
+    }
+    else
+    {
+        // Only upload ephemeral particle portion
+        renderContext.UploadShipPointColors(
+            shipId,
+            &(mColorBuffer.data()[mShipPointCount]),
+            mShipPointCount,
+            mEphemeralPointCount);
+    }
+
 
     // Upload mutable attributes
     renderContext.UploadShipPoints(
@@ -572,32 +599,8 @@ void Points::UploadEphemeralParticles(
     Render::RenderContext & renderContext) const
 {
     //
-    // 1. Upload ephemeral-particle portion of point colors
+    // Upload points and/or textures
     //
-
-    renderContext.UploadShipPointColorRange(
-        shipId,
-        &(mColorBuffer.data()[mShipPointCount]),
-        mShipPointCount,
-        mEphemeralPointCount);
-
-
-    //
-    // 2. Upload points and/or textures
-    //
-
-
-    // TBD: at this moment we can't pass the point's connected component ID,
-    // as the ShipRenderContext doesn't know how many connected components there are
-    // (the number of connected components may vary depending on the connectivity visit,
-    //  which is independent from ephemeral particles; the latter might insist on using
-    //  a connected component ID that is well gone after a new connectivity visit).
-    // This will be fixed with the Z buffer work - at that moment points will already
-    // have an associated plane ID, and the shader will automagically
-    // draw ephemeral points at the right Z for their point's plane ID.
-    // Remember to make sure Ship always tracks the max plane ID it has
-    // ever seen, and that it specifies it at RenderContext::RenderShipStart() via an
-    // additional, new argument.
 
     if (mAreEphemeralParticlesDirty)
     {
@@ -606,6 +609,8 @@ void Points::UploadEphemeralParticles(
 
     for (ElementIndex pointIndex : this->EphemeralPoints())
     {
+        assert(GetEphemeralType(pointIndex) == EphemeralType::None || !IsDeleted(pointIndex));
+
         switch (GetEphemeralType(pointIndex))
         {
             case EphemeralType::AirBubble:

@@ -14,6 +14,7 @@
 #include <GameCore/BufferAllocator.h>
 #include <GameCore/ElementContainer.h>
 #include <GameCore/ElementIndexRangeIterator.h>
+#include <GameCore/EnumFlags.h>
 #include <GameCore/FixedSizeVector.h>
 #include <GameCore/GameRandomEngine.h>
 #include <GameCore/GameTypes.h>
@@ -32,8 +33,15 @@ class Points : public ElementContainer
 {
 public:
 
+    enum class DestroyOptions
+    {
+        DoNotGenerateDebris = 0,
+        GenerateDebris = 1
+    };
+
     using DestroyHandler = std::function<void(
         ElementIndex,
+        bool /*generateDebris*/,
         float /*currentSimulationTime*/,
         GameParameters const &)>;
 
@@ -203,7 +211,7 @@ public:
         //////////////////////////////////
         // Buffers
         //////////////////////////////////
-        , mIsDeletedBuffer(mBufferElementCount, shipPointCount, false)
+        , mIsDeletedBuffer(mBufferElementCount, shipPointCount, true)
         // Materials
         , mMaterialsBuffer(mBufferElementCount, shipPointCount, Materials(nullptr, nullptr))
         , mIsRopeBuffer(mBufferElementCount, shipPointCount, false)
@@ -251,7 +259,7 @@ public:
         , mIsPinnedBuffer(mBufferElementCount, shipPointCount, false)
         // Immutable render attributes
         , mColorBuffer(mBufferElementCount, shipPointCount, vec4f::zero())
-        , mIsColorBufferDirty(true)
+        , mIsWholeColorBufferDirty(true)
         , mTextureCoordinatesBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mIsTextureCoordinatesBufferDirty(true)
         //////////////////////////////////
@@ -352,6 +360,7 @@ public:
 
     void Destroy(
         ElementIndex pointElementIndex,
+        DestroyOptions destroyOptions,
         float currentSimulationTime,
         GameParameters const & gameParameters);
 
@@ -875,9 +884,10 @@ public:
         return mColorBuffer[pointElementIndex];
     }
 
+    // Mostly for debugging
     void MarkColorBufferAsDirty()
     {
-        mIsColorBufferDirty = true;
+        mIsWholeColorBufferDirty = true;
     }
 
 
@@ -897,7 +907,7 @@ public:
 
 private:
 
-    static float CalculateIntegrationFactorTimeCoefficient(float numMechanicalDynamicsIterations)
+    static inline float CalculateIntegrationFactorTimeCoefficient(float numMechanicalDynamicsIterations)
     {
         return GameParameters::MechanicalSimulationStepTimeDuration<float>(numMechanicalDynamicsIterations)
             * GameParameters::MechanicalSimulationStepTimeDuration<float>(numMechanicalDynamicsIterations);
@@ -1029,7 +1039,7 @@ private:
     //
 
     Buffer<vec4f> mColorBuffer;
-    bool mutable mIsColorBufferDirty;  // Whether or not is dirty since last render upload
+    bool mutable mIsWholeColorBufferDirty;  // Whether or not is dirty since last render upload
     Buffer<vec2f> mTextureCoordinatesBuffer;
     bool mutable mIsTextureCoordinatesBufferDirty; // Whether or not is dirty since last render upload
 
@@ -1073,3 +1083,5 @@ private:
 };
 
 }
+
+template <> struct is_flag<Physics::Points::DestroyOptions> : std::true_type {};

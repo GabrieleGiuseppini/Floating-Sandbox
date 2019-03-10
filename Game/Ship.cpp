@@ -75,7 +75,7 @@ Ship::Ship(
     , mCurrentForceFields()
 {
     // Set destroy handlers
-    mPoints.RegisterDestroyHandler(std::bind(&Ship::PointDestroyHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+    mPoints.RegisterDestroyHandler(std::bind(&Ship::PointDestroyHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
     mSprings.RegisterDestroyHandler(std::bind(&Ship::SpringDestroyHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
     mTriangles.RegisterDestroyHandler(std::bind(&Ship::TriangleDestroyHandler, this, std::placeholders::_1));
     mElectricalElements.RegisterDestroyHandler(std::bind(&Ship::ElectricalElementDestroyHandler, this, std::placeholders::_1));
@@ -153,13 +153,14 @@ void Ship::DestroyAt(
         // The only ephemeral points we allow to delete are air bubbles
         if (!mPoints.IsDeleted(pointIndex)
             && (Points::EphemeralType::None == mPoints.GetEphemeralType(pointIndex)
-                   || Points::EphemeralType::AirBubble == mPoints.GetEphemeralType(pointIndex)))
+                || Points::EphemeralType::AirBubble == mPoints.GetEphemeralType(pointIndex)))
         {
             if ((mPoints.GetPosition(pointIndex) - targetPos).squareLength() < squareRadius)
             {
                 // Destroy point
                 mPoints.Destroy(
                     pointIndex,
+                    Points::DestroyOptions::GenerateDebris,
                     currentSimulationTime,
                     gameParameters);
             }
@@ -457,10 +458,19 @@ void Ship::Update(
 
 
     //
+    // Trim for world bounds
+    //
+
+    TrimForWorldBounds(
+        currentSimulationTime,
+        gameParameters);
+
+
+    //
     // Update bombs
     //
     // Might cause explosions; might cause points to be destroyed
-    // (which would flag our elements as dirty)
+    // (which would flag our structure as dirty)
     //
 
     mBombs.Update(
@@ -470,7 +480,7 @@ void Ship::Update(
 
     //
     // Update strain for all springs; might cause springs to break
-    // (which would flag our elements as dirty)
+    // (which would flag our structure as dirty)
     //
 
     mSprings.UpdateStrains(
@@ -734,7 +744,7 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
 
     // Calculate wind force:
     //  Km/h -> Newton: F = 1/2 rho v**2 A
-    constexpr float VelocityConversionFactor = 1000.0f / 3600.0f;
+    float constexpr VelocityConversionFactor = 1000.0f / 3600.0f;
     vec2f const windForce =
         mParentWorld.GetCurrentWindSpeed().square()
         * (VelocityConversionFactor * VelocityConversionFactor)
@@ -745,7 +755,7 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
     //
     // The higher the value, the more viscous the water looks when a body moves through it
     float const waterDragCoefficient =
-        0.020f // ~= 1.0f - powf(0.6f, 0.02f)
+        GameParameters::WaterDragLinearCoefficient
         * gameParameters.WaterDragAdjustment;
 
     for (auto pointIndex : mPoints)
@@ -787,9 +797,26 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
 
         if (mPoints.GetPosition(pointIndex).y <= waterHeightAtThisPoint)
         {
-            // Drag force = -C * (V^2*Vn)
+            //
+            // Note: we would have liked to use the square law:
+            //
+            //  Drag force = -C * (|V|^2*Vn)
+            //
+            // But when V >= m / (C * dt), the drag force overcomes the current velocity
+            // and thus it accelerates it, resulting in an unstable system.
+            //
+            // With a linear law, we know that the force will never accelerate the current velocity
+            // as long as m > (C * dt) / 2 (~=0.0002), which is a mass we won't have in our system (air is 1.2754).
+            //
+
+            // Square law:
+            ////mPoints.GetForce(pointIndex) +=
+            ////    mPoints.GetVelocity(pointIndex).square()
+            ////    * (-waterDragCoefficient);
+
+            // Linear law:
             mPoints.GetForce(pointIndex) +=
-                mPoints.GetVelocity(pointIndex).square()
+                mPoints.GetVelocity(pointIndex)
                 * (-waterDragCoefficient);
         }
         else
@@ -944,6 +971,52 @@ void Ship::HandleCollisionsWithSeaFloor(GameParameters const & gameParameters)
                 floorheight - mParentWorld.GetOceanFloorHeightAt(mPoints.GetPosition(pointIndex).x + 0.01f),
                 0.01f).normalise();
             mPoints.GetVelocity(pointIndex) += seaFloorNormal * 0.5f;
+        }
+    }
+}
+
+void Ship::TrimForWorldBounds(
+    float /*currentSimulationTime*/,
+    GameParameters const & /*gameParameters*/)
+{
+    static constexpr float MaxBounceVelocity = 50.0f;
+
+    float constexpr MaxWorldLeft = -GameParameters::MaxWorldWidth / 2.0f;
+    float constexpr MaxWorldRight = GameParameters::MaxWorldWidth / 2.0f;
+
+    float constexpr MaxWorldTop = GameParameters::MaxWorldHeight;
+    float constexpr MaxWorldBottom = -GameParameters::MaxWorldHeight;
+
+    for (auto pointIndex : mPoints)
+    {
+        auto & pos = mPoints.GetPosition(pointIndex);
+        if (pos.x < MaxWorldLeft)
+        {
+            pos.x = MaxWorldLeft;
+
+            // Bounce bounded
+            mPoints.GetVelocity(pointIndex).x = std::min(-mPoints.GetVelocity(pointIndex).x, MaxBounceVelocity);
+        }
+        else if (pos.x > MaxWorldRight)
+        {
+            pos.x = MaxWorldRight;
+
+            // Bounce bounded
+            mPoints.GetVelocity(pointIndex).x = std::max(-mPoints.GetVelocity(pointIndex).x, -MaxBounceVelocity);
+        }
+        else if (pos.y > MaxWorldTop)
+        {
+            pos.y = MaxWorldTop;
+
+            // Bounce bounded
+            mPoints.GetVelocity(pointIndex).y = std::max(-mPoints.GetVelocity(pointIndex).y, -MaxBounceVelocity);
+        }
+        else if (pos.y < MaxWorldBottom)
+        {
+            pos.y = MaxWorldBottom;
+
+            // Bounce bounded
+            mPoints.GetVelocity(pointIndex).y = std::min(-mPoints.GetVelocity(pointIndex).y, MaxBounceVelocity);
         }
     }
 }
@@ -1506,9 +1579,14 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
         auto const lampPointIndex = mElectricalElements.GetPointIndex(lampIndex);
 
         float const effectiveLampLight =
-            mElectricalElements.GetAvailableCurrent(lampIndex)
-            * mElectricalElements.GetLuminiscence(lampIndex)
-            * gameParameters.LuminiscenceAdjustment;
+            gameParameters.LuminiscenceAdjustment >= 1.0f
+            ?   FastPow(
+                    mElectricalElements.GetAvailableCurrent(lampIndex)
+                    * mElectricalElements.GetLuminiscence(lampIndex),
+                    1.0f / gameParameters.LuminiscenceAdjustment)
+            :   mElectricalElements.GetAvailableCurrent(lampIndex)
+                * mElectricalElements.GetLuminiscence(lampIndex)
+                * gameParameters.LuminiscenceAdjustment;
 
         float const lampLightSpread = mElectricalElements.GetLightSpread(lampIndex);
         if (lampLightSpread == 0.0f)
@@ -1540,8 +1618,9 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
                         effectiveLampLight
                         / (1.0f + FastPow(squareDistance, effectiveExponent));
 
-                    if (newLight > mPoints.GetLight(pointIndex))
-                        mPoints.GetLight(pointIndex) = newLight;
+                    mPoints.GetLight(pointIndex) = std::max(
+                        mPoints.GetLight(pointIndex),
+                        newLight);
                 }
             }
         }
@@ -1758,6 +1837,7 @@ void Ship::DestroyConnectedTriangles(
 
 void Ship::PointDestroyHandler(
     ElementIndex pointElementIndex,
+    bool generateDebris,
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
@@ -1821,11 +1901,14 @@ void Ship::PointDestroyHandler(
     // Notify pinned points
     mPinnedPoints.OnPointDestroyed(pointElementIndex);
 
-    // Emit debris
-    GenerateDebris(
-        pointElementIndex,
-        currentSimulationTime,
-        gameParameters);
+    if (generateDebris)
+    {
+        // Emit debris
+        GenerateDebris(
+            pointElementIndex,
+            currentSimulationTime,
+            gameParameters);
+    }
 
     // Remember the structure is now dirty
     mIsStructureDirty = true;

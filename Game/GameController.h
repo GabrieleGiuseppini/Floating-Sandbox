@@ -91,57 +91,60 @@ public:
     std::optional<ObjectId> GetNearestPointAt(vec2f const & screenCoordinates) const;
     void QueryNearestPointAt(vec2f const & screenCoordinates) const;
 
-    void SetCanvasSize(int width, int height) { mRenderContext->SetCanvasSize(width, height); }
+    void SetCanvasSize(int width, int height)
+    {
+        mRenderContext->SetCanvasSize(width, height);
+
+        // Pickup eventual changes
+        mTargetCameraPosition = mCurrentCameraPosition = mRenderContext->GetCameraWorldPosition();
+        mTargetZoom = mCurrentZoom = mRenderContext->GetZoom();
+    }
 
     void Pan(vec2f const & screenOffset)
     {
         vec2f worldOffset = mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
+        vec2f newTargetCameraPosition = mRenderContext->ClampCameraWorldPosition(mTargetCameraPosition + worldOffset);
 
-        mCurrentCameraPosition = mTargetCameraPosition; // Skip straight to current target, in case we're already smoothing
+        mCurrentCameraPosition = mRenderContext->SetCameraWorldPosition(mTargetCameraPosition); // Skip straight to current target, in case we're already smoothing
         mStartingCameraPosition = mCurrentCameraPosition;
-        mTargetCameraPosition = mTargetCameraPosition + worldOffset;
+        mTargetCameraPosition = newTargetCameraPosition;
 
         mStartCameraPositionTimestamp = std::chrono::steady_clock::now();
     }
 
     void PanImmediate(vec2f const & screenOffset)
     {
-        vec2f worldOffset = mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
-        mRenderContext->AdjustCameraWorldPosition(worldOffset);
+        vec2f const worldOffset = mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
 
-        mTargetCameraPosition = mCurrentCameraPosition = mRenderContext->GetCameraWorldPosition();
+        auto const newCameraWorldPosition = mRenderContext->SetCameraWorldPosition(
+            mRenderContext->GetCameraWorldPosition() + worldOffset);
+
+        mTargetCameraPosition = mCurrentCameraPosition = newCameraWorldPosition;
     }
 
     void ResetPan()
     {
-        mRenderContext->SetCameraWorldPosition(vec2f(0, 0));
+        auto const newCameraWorldPosition = mRenderContext->SetCameraWorldPosition(vec2f(0, 0));
 
-        mTargetCameraPosition = mCurrentCameraPosition = mRenderContext->GetCameraWorldPosition();
+        mTargetCameraPosition = mCurrentCameraPosition = newCameraWorldPosition;
     }
 
     void AdjustZoom(float amount)
     {
-        float newTargetZoom = mTargetZoom * amount;
-        if (newTargetZoom < GameParameters::MinZoom)
-            newTargetZoom = GameParameters::MinZoom;
-        else if (newTargetZoom > GameParameters::MaxZoom)
-            newTargetZoom = GameParameters::MaxZoom;
+        float newTargetZoom = mRenderContext->ClampZoom(mTargetZoom * amount);
 
-        if (newTargetZoom != mTargetZoom)
-        {
-            mCurrentZoom = mTargetZoom; // Skip straight to current target, in case we're already smoothing
-            mStartingZoom = mCurrentZoom;
-            mTargetZoom = newTargetZoom;
+        mCurrentZoom = mRenderContext->SetZoom(mTargetZoom); // Skip straight to current target, in case we're already smoothing
+        mStartingZoom = mCurrentZoom;
+        mTargetZoom = newTargetZoom;
 
-            mStartZoomTimestamp = std::chrono::steady_clock::now();
-        }
+        mStartZoomTimestamp = std::chrono::steady_clock::now();
     }
 
     void ResetZoom()
     {
-        mRenderContext->SetZoom(1.0);
+        auto const newZoom = mRenderContext->SetZoom(1.0);
 
-        mTargetZoom = mCurrentZoom = mRenderContext->GetZoom();
+        mTargetZoom = mCurrentZoom = newZoom;
     }
 
     vec2f ScreenToWorld(vec2f const & screenCoordinates) const

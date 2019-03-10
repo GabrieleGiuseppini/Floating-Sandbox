@@ -49,6 +49,8 @@ set  (FLOATING_SANDBOX_SOURCES
 	UIPreferences.h
 	UISettings.cpp
 	UISettings.h
+    UnhandledExceptionHandler.cpp
+    UnhandledExceptionHandler.h
 	Version.h
 	)
 
@@ -147,6 +149,14 @@ install(TARGETS FloatingSandbox
 	CONFIGURATIONS Release
         RUNTIME 
 	DESTINATION .)
+
+# PDB
+#TODO: disabled as for now we don't generate PDBs at Release
+#if (MSVC)
+#	install(FILES $<TARGET_PDB_FILE:FloatingSandbox> 
+#		CONFIGURATIONS Release
+#		DESTINATION .)
+#endif (MSVC)
 
 # Runtime libraries
 if (WIN32)

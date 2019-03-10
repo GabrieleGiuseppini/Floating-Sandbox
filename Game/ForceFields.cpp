@@ -102,6 +102,7 @@ void BlastForceField::Apply(
         // Destroy point
         points.Destroy(
             closestPointIndex,
+            Points::DestroyOptions::GenerateDebris,
             currentSimulationTime,
             gameParameters);
     }
