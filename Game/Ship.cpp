@@ -458,7 +458,7 @@ void Ship::Update(
 
 
     //
-    // Trim for world bounds; might cause points to be destroyed
+    // Trim for world bounds
     //
 
     TrimForWorldBounds(

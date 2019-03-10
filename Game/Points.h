@@ -907,7 +907,7 @@ public:
 
 private:
 
-    static float CalculateIntegrationFactorTimeCoefficient(float numMechanicalDynamicsIterations)
+    static inline float CalculateIntegrationFactorTimeCoefficient(float numMechanicalDynamicsIterations)
     {
         return GameParameters::MechanicalSimulationStepTimeDuration<float>(numMechanicalDynamicsIterations)
             * GameParameters::MechanicalSimulationStepTimeDuration<float>(numMechanicalDynamicsIterations);

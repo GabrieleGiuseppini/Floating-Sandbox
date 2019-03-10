@@ -1,3 +1,6 @@
+TODO
+- Ship lights now reveal underlying colors at night
+
 1.9.1
 - Fixed crash when attempting to load a ship from a directory that contains an empty ship
 - Fixed crash with the air bubbles tool
