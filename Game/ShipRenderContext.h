@@ -120,13 +120,11 @@ public:
     // Points
     //
 
-    void UploadPointImmutableGraphicalAttributes(
-        vec4f const * color,
-        vec2f const * textureCoordinates);
+    void UploadPointImmutableGraphicalAttributes(vec2f const * textureCoordinates);
 
-    void UploadShipPointColorRange(
+    void UploadShipPointColors(
         vec4f const * color,
-        size_t startIndex,
+        size_t startDst,
         size_t count);
 
     void UploadPoints(
@@ -136,7 +134,7 @@ public:
 
     void UploadPointPlaneIds(
         PlaneId const * planeId,
-        size_t start,
+        size_t startDst,
         size_t count,
         PlaneId maxMaxPlaneId);
 

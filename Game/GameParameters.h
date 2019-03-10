@@ -189,7 +189,7 @@ struct GameParameters
     static constexpr float MaxOceanFloorDetailAmplification = 200.0f;
 
     float LuminiscenceAdjustment;
-    static constexpr float MinLuminiscenceAdjustment = 0.0f;
+    static constexpr float MinLuminiscenceAdjustment = 0.1f;
     static constexpr float MaxLuminiscenceAdjustment = 10.0f;
 
     float LightSpreadAdjustment;

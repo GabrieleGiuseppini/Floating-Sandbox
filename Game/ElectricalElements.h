@@ -42,6 +42,7 @@ public:
         , mPointIndexBuffer(mBufferElementCount, mElementCount, NoneElementIndex)
         , mTypeBuffer(mBufferElementCount, mElementCount, ElectricalMaterial::ElectricalElementType::Cable)
         , mLuminiscenceBuffer(mBufferElementCount, mElementCount, 0.0f)
+        , mLightColorBuffer(mBufferElementCount, mElementCount, vec4f::zero())
         , mLightSpreadBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mConnectedElectricalElementsBuffer(mBufferElementCount, mElementCount, {})
         , mElementStateBuffer(mBufferElementCount, mElementCount, ElementState::CableState())
@@ -103,7 +104,7 @@ public:
     void Update(
         GameWallClock::time_point currentWallclockTime,
         VisitSequenceNumber currentConnectivityVisitSequenceNumber,
-        Points const & points,
+        Points & points,
         GameParameters const & gameParameters);
 
 public:
@@ -279,19 +280,12 @@ private:
         ElementIndex elementLampIndex,
         GameWallClock::time_point currentWallclockTime,
         VisitSequenceNumber currentConnectivityVisitSequenceNumber,
-        Points const & points,
+        Points & points,
         GameParameters const & gameParameters);
 
     bool CheckWetFailureTime(
         ElementState::LampState & lamp,
         GameWallClock::time_point currentWallclockTime);
-
-    inline vec2f const & GetPosition(
-        ElementIndex elementLampIndex,
-        Points const & points) const
-    {
-        return points.GetPosition(mPointIndexBuffer[elementLampIndex]);
-    }
 
 private:
 
@@ -310,6 +304,7 @@ private:
 
     // Light
     Buffer<float> mLuminiscenceBuffer;
+    Buffer<vec4f> mLightColorBuffer;
     Buffer<float> mLightSpreadBuffer;
 
     // Connected elements

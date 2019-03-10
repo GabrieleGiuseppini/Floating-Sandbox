@@ -13,16 +13,19 @@ in vec3 inGenericTexturePackedData3; // angle, alpha, ambientLightSensitivity
 // Outputs
 out vec2 vertexTextureCoordinates;
 out float vertexAlpha;
-out float vertexAmbientLightSensitivity;
+out float vertexAmbientLightIntensity;
 
 // Params
+uniform float paramAmbientLightIntensity;
 uniform mat4 paramOrthoMatrix;
 
 void main()
 {
     vertexTextureCoordinates = inGenericTexturePackedData2.xy; 
     vertexAlpha = inGenericTexturePackedData3.y;
-    vertexAmbientLightSensitivity = inGenericTexturePackedData3.z;
+    vertexAmbientLightIntensity = 
+        (1.0 - inGenericTexturePackedData3.z)
+	    + inGenericTexturePackedData3.z * paramAmbientLightIntensity;
 
     float scale = inGenericTexturePackedData2.w;
     float angle = inGenericTexturePackedData3.x;
@@ -47,23 +50,19 @@ void main()
 // Inputs from previous shader
 in vec2 vertexTextureCoordinates;
 in float vertexAlpha;
-in float vertexAmbientLightSensitivity;
+in float vertexAmbientLightIntensity;
 
 // The texture
 uniform sampler2D paramGenericTexturesAtlasTexture;
 
 // Parameters        
-uniform float paramAmbientLightIntensity;
+
 
 void main()
 {
     vec4 textureColor = texture2D(paramGenericTexturesAtlasTexture, vertexTextureCoordinates);
 
-    float ambientLightIntensity = 
-        (1.0 - vertexAmbientLightSensitivity)
-	    + vertexAmbientLightSensitivity * paramAmbientLightIntensity;
-
     gl_FragColor = vec4(
-        textureColor.xyz * ambientLightIntensity,
+        textureColor.xyz * vertexAmbientLightIntensity,
         textureColor.w * vertexAlpha);
 } 

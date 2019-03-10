@@ -177,13 +177,32 @@ Render:
 				- W: 10000
 				- H: MaxSeaDepth * 4
 				- w/static_assert for ocean depth
-			- Verify AM bomb issue is still gone
-			- Test perf
+			- Verify AM bomb issue is gone
+			- Test FPS
 			- Merge to master
 			- Changes.txt
 
-		- ShipTrianglesTexture shader: use local light as "additive" to ambient light (to draw colors)
-			- If it works, also Color and springs and ropes and points (and others?)
+		= ShipTrianglesTexture shader: use local light as "additive" to ambient light (to draw colors)
+			+ Split Points:: colorBuffer upload to own func
+				+ RenderContext: range-based
+			+ Remove logs and shader TODOs
+			+ Check intensity at distance==0
+			+ Change luminance to 1 rather than 2
+				+ See first what difference it makes
+				+ Change in materials.json
+				+ Enforce in electrical material
+				+ Verify fixes issue
+				+ Constrain luminiscence adjust to max 1
+					+ Or change how to apply adjustment
+					+ Change tooltip and minimum
+			+ If it works, also these shaders:
+				+ TrianglesColor
+				+ PointsColor
+				+ Ropes
+				+ SpringsColor
+				+ SpringsTexture
+
+			- See if passing vec instead of floats among shaders helps with perf
 
 		- VAO (*)
 
@@ -505,6 +524,7 @@ Render:
 			- Test
 		- RenderContext:
 			- See if can move uploads early, and then later just bind VAOs
+			- Also see to bind element array indices to the VAOs
 
 	- Reduce number of vertex attributes for ship_triangles_texture and color (and possibly forced to do others) (*)
 		+ We've already confirmed that one less attribute vertex sends FPS frpom 29 to 30
@@ -596,18 +616,20 @@ Render:
 					- cctor: reserve(mPoints.total_size)
 					- It will contain first non-ephemerals (orphaned or all), then ephemerals
 					- Coping with mIsStructureDirty=true but no new ephemerals:
-						- Need to add boolean to Points::UploadEphemeral to force emission of points
+						- Need to add boolean to Points::UploadEphemerals to force emission of points even when not dirty
 				- Nuke old upload call for point elements
 				- if mIsStructureDirty:
 					- Clear mPointElementsToRender
 					- Ask Points to populate point indices in mPointElementsToRender
+						- Points::UploadNonEphemeralPointIndices(...)
 						- Starting from zero
 						- Points decides between all or orphaned only based off DebugShipRenderMode
 							- Like now, only non-ephemerals
 					- Store # of points just populated into mCurrentShipPointElementsToRenderCount
 				- ...later...:
-				- At Points::UploadEphemeral:
+				- At Points::UploadEphemerals:
 					- Pass mPointElementsToRender
+					- Since you're here, remove TBD comment about ConnectedComponentIDs
 					- Pass "forceEmissionOfPoints" == mIsStructureDirty
 					- Points::UploadEphemeral returns ephemeralPointsPopulatedCount
 				- if mIsStructureDirty || ephemeralPointsPopulatedCount > 0:
@@ -620,6 +642,7 @@ Render:
 				- Nuke RenderEphemeralPoints and its structs and members
 				- Have just one single RenderPoints
 					- Always invoked, except when DebugShipRenderMode is not None and not Points
+					  (i.e. when it's Springs, EdgeSprings, etc. but not Points)
 		- Test L'n'F'
 
 		- TODOOLD: in case any assumptions fail:		

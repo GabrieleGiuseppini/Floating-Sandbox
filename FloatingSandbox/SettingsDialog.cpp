@@ -506,7 +506,7 @@ void SettingsDialog::PopulateFluidsPanel(wxPanel * panel)
         SliderWidth,
         SliderHeight,
         "Water Density Adjust",
-        "Adjusts the density of sea water.",
+        "Adjusts the density of sea water, and thus the buoyancy it exerts on floating objects.",
         mGameController->GetWaterDensityAdjustment(),
         [this](float /*value*/)
         {
@@ -857,7 +857,7 @@ void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
         SliderWidth,
         SliderHeight,
         "Luminiscence Adjust",
-        "Adjusts how much light is emitted by luminiscent materials.",
+        "Adjusts the quantity of light emitted by luminiscent materials.",
         mGameController->GetLuminiscenceAdjustment(),
         [this](float /*value*/)
         {

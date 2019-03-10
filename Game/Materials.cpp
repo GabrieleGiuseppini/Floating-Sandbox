@@ -98,19 +98,29 @@ ElectricalMaterial ElectricalMaterial::Create(picojson::object const & electrica
         // Lamps properties
         bool isSelfPowered = false;
         float luminiscence = 0.0f;
+        vec4f lightColor = vec4f::zero();
         float lightSpread = 0.0f;
         float wetFailureRate = 0.0f;
         if (ElectricalElementType::Lamp == electricalType)
         {
             isSelfPowered = Utils::GetMandatoryJsonMember<bool>(electricalMaterialJson, "is_self_powered");
             luminiscence = static_cast<float>(Utils::GetMandatoryJsonMember<double>(electricalMaterialJson, "luminiscence"));
+            lightColor =
+                Utils::Hex2RgbColor(
+                    Utils::GetMandatoryJsonMember<std::string>(electricalMaterialJson, "light_color"))
+                .toVec4f(1.0f);
+
             lightSpread = static_cast<float>(Utils::GetMandatoryJsonMember<double>(electricalMaterialJson, "light_spread"));
             wetFailureRate = static_cast<float>(Utils::GetMandatoryJsonMember<double>(electricalMaterialJson, "wet_failure_rate"));
 
+            if (luminiscence < 0.0f)
+                throw GameException("Error loading electrical material \"" + name + "\": the value of the \"luminiscence\" parameter must be greater than or equal 0.0");
+            if (luminiscence > 1.0f)
+                throw GameException("Error loading electrical material \"" + name + "\": the value of the \"luminiscence\" parameter must be less than or equal 1.0");
             if (lightSpread < 0.0f)
-                throw GameException("Error loading electrical material \"" + name + "\": the value of the light_spread parameter must be greater than or equal 0.0");
+                throw GameException("Error loading electrical material \"" + name + "\": the value of the \"light_spread\" parameter must be greater than or equal 0.0");
             if (wetFailureRate < 0.0f)
-                throw GameException("Error loading electrical material \"" + name + "\": the value of the wet_failure_rate parameter must be greater than or equal 0.0");
+                throw GameException("Error loading electrical material \"" + name + "\": the value of the \"wet_failure_rate\" parameter must be greater than or equal 0.0");
         }
 
         return ElectricalMaterial(
@@ -118,6 +128,7 @@ ElectricalMaterial ElectricalMaterial::Create(picojson::object const & electrica
             electricalType,
             isSelfPowered,
             luminiscence,
+            lightColor,
             lightSpread,
             wetFailureRate);
     }

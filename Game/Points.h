@@ -259,7 +259,7 @@ public:
         , mIsPinnedBuffer(mBufferElementCount, shipPointCount, false)
         // Immutable render attributes
         , mColorBuffer(mBufferElementCount, shipPointCount, vec4f::zero())
-        , mIsColorBufferDirty(true)
+        , mIsWholeColorBufferDirty(true)
         , mTextureCoordinatesBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mIsTextureCoordinatesBufferDirty(true)
         //////////////////////////////////
@@ -884,9 +884,10 @@ public:
         return mColorBuffer[pointElementIndex];
     }
 
+    // Mostly for debugging
     void MarkColorBufferAsDirty()
     {
-        mIsColorBufferDirty = true;
+        mIsWholeColorBufferDirty = true;
     }
 
 
@@ -1038,7 +1039,7 @@ private:
     //
 
     Buffer<vec4f> mColorBuffer;
-    bool mutable mIsColorBufferDirty;  // Whether or not is dirty since last render upload
+    bool mutable mIsWholeColorBufferDirty;  // Whether or not is dirty since last render upload
     Buffer<vec2f> mTextureCoordinatesBuffer;
     bool mutable mIsTextureCoordinatesBufferDirty; // Whether or not is dirty since last render upload
 

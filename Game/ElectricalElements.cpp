@@ -19,6 +19,7 @@ void ElectricalElements::Add(
     mPointIndexBuffer.emplace_back(pointElementIndex);
     mTypeBuffer.emplace_back(electricalMaterial.ElectricalType);
     mLuminiscenceBuffer.emplace_back(electricalMaterial.Luminiscence);
+    mLightColorBuffer.emplace_back(electricalMaterial.LightColor);
     mLightSpreadBuffer.emplace_back(electricalMaterial.LightSpread);
     mConnectedElectricalElementsBuffer.emplace_back();
     mAvailableCurrentBuffer.emplace_back(0.f);
@@ -78,7 +79,7 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
 void ElectricalElements::Update(
     GameWallClock::time_point currentWallclockTime,
     VisitSequenceNumber currentConnectivityVisitSequenceNumber,
-    Points const & points,
+    Points & points,
     GameParameters const & gameParameters)
 {
     //
@@ -107,12 +108,14 @@ void ElectricalElements::RunLampStateMachine(
     ElementIndex elementLampIndex,
     GameWallClock::time_point currentWallclockTime,
     VisitSequenceNumber currentConnectivityVisitSequenceNumber,
-    Points const & points,
+    Points & points,
     GameParameters const & /*gameParameters*/)
 {
     //
-    // Normal lamp, only on if visited, and controlled by flicker state machine
+    // Normal lamp, only on if visited of self-powered, and controlled by flicker state machine
     //
+
+    auto const pointIndex = GetPointIndex(elementLampIndex);
 
     auto & lamp = mElementStateBuffer[elementLampIndex].Lamp;
 
@@ -193,7 +196,7 @@ void ElectricalElements::RunLampStateMachine(
 
                     mGameEventHandler->OnLightFlicker(
                         DurationShortLongType::Short,
-                        mParentWorld.IsUnderwater(GetPosition(elementLampIndex, points)),
+                        mParentWorld.IsUnderwater(points.GetPosition(pointIndex)),
                         1);
 
                     lamp.NextStateTransitionTimePoint = currentWallclockTime + ElementState::LampState::FlickerAInterval;
@@ -246,7 +249,7 @@ void ElectricalElements::RunLampStateMachine(
 
                     mGameEventHandler->OnLightFlicker(
                         DurationShortLongType::Short,
-                        mParentWorld.IsUnderwater(GetPosition(elementLampIndex, points)),
+                        mParentWorld.IsUnderwater(points.GetPosition(pointIndex)),
                         1);
 
                     lamp.NextStateTransitionTimePoint = currentWallclockTime + ElementState::LampState::FlickerBInterval;
@@ -268,7 +271,7 @@ void ElectricalElements::RunLampStateMachine(
 
                     mGameEventHandler->OnLightFlicker(
                         DurationShortLongType::Long,
-                        mParentWorld.IsUnderwater(GetPosition(elementLampIndex, points)),
+                        mParentWorld.IsUnderwater(points.GetPosition(pointIndex)),
                         1);
 
                     lamp.NextStateTransitionTimePoint = currentWallclockTime + 2 * ElementState::LampState::FlickerBInterval;
@@ -299,7 +302,7 @@ void ElectricalElements::RunLampStateMachine(
 
                 mGameEventHandler->OnLightFlicker(
                     DurationShortLongType::Short,
-                    mParentWorld.IsUnderwater(GetPosition(elementLampIndex, points)),
+                    mParentWorld.IsUnderwater(points.GetPosition(pointIndex)),
                     1);
 
                 // Transition state

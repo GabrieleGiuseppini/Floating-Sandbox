@@ -959,8 +959,8 @@ void Ship::HandleCollisionsWithSeaFloor(GameParameters const & gameParameters)
 }
 
 void Ship::TrimForWorldBounds(
-    float currentSimulationTime,
-    GameParameters const & gameParameters)
+    float /*currentSimulationTime*/,
+    GameParameters const & /*gameParameters*/)
 {
     static constexpr float MaxBounceVelocity = 50.0f;
 
@@ -1562,9 +1562,16 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
         auto const lampPointIndex = mElectricalElements.GetPointIndex(lampIndex);
 
         float const effectiveLampLight =
-            mElectricalElements.GetAvailableCurrent(lampIndex)
-            * mElectricalElements.GetLuminiscence(lampIndex)
-            * gameParameters.LuminiscenceAdjustment;
+            gameParameters.LuminiscenceAdjustment >= 1.0f
+            ?   FastPow(
+                    mElectricalElements.GetAvailableCurrent(lampIndex)
+                    * mElectricalElements.GetLuminiscence(lampIndex),
+                    1.0f / gameParameters.LuminiscenceAdjustment)
+            :   mElectricalElements.GetAvailableCurrent(lampIndex)
+                * mElectricalElements.GetLuminiscence(lampIndex)
+                * gameParameters.LuminiscenceAdjustment;
+
+        assert(effectiveLampLight <= 1.0f);
 
         float const lampLightSpread = mElectricalElements.GetLightSpread(lampIndex);
         if (lampLightSpread == 0.0f)
@@ -1596,8 +1603,9 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
                         effectiveLampLight
                         / (1.0f + FastPow(squareDistance, effectiveExponent));
 
-                    if (newLight > mPoints.GetLight(pointIndex))
-                        mPoints.GetLight(pointIndex) = newLight;
+                    mPoints.GetLight(pointIndex) = std::max(
+                        mPoints.GetLight(pointIndex),
+                        newLight);
                 }
             }
         }

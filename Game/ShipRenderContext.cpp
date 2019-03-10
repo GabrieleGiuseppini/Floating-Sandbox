@@ -560,30 +560,23 @@ void ShipRenderContext::RenderStart()
     mGenericTextureMaxPlaneVertexBufferSize = 0;
 }
 
-void ShipRenderContext::UploadPointImmutableGraphicalAttributes(
-    vec4f const * color,
-    vec2f const * textureCoordinates)
+void ShipRenderContext::UploadPointImmutableGraphicalAttributes(vec2f const * textureCoordinates)
 {
-    // Upload colors
-    glBindBuffer(GL_ARRAY_BUFFER, *mPointColorVBO);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, mPointCount * sizeof(vec4f), color);
-    CheckOpenGLError();
-
     // Upload texture coordinates
     glBindBuffer(GL_ARRAY_BUFFER, *mPointElementTextureCoordinatesVBO);
     glBufferSubData(GL_ARRAY_BUFFER, 0, mPointCount * sizeof(vec2f), textureCoordinates);
     CheckOpenGLError();
 }
 
-void ShipRenderContext::UploadShipPointColorRange(
+void ShipRenderContext::UploadShipPointColors(
     vec4f const * color,
-    size_t startIndex,
+    size_t startDst,
     size_t count)
 {
-    assert(startIndex + count <= mPointCount);
+    assert(startDst + count <= mPointCount);
 
     glBindBuffer(GL_ARRAY_BUFFER, *mPointColorVBO);
-    glBufferSubData(GL_ARRAY_BUFFER, startIndex * sizeof(vec4f), count * sizeof(vec4f), color);
+    glBufferSubData(GL_ARRAY_BUFFER, startDst * sizeof(vec4f), count * sizeof(vec4f), color);
     CheckOpenGLError();
 }
 
@@ -610,13 +603,15 @@ void ShipRenderContext::UploadPoints(
 
 void ShipRenderContext::UploadPointPlaneIds(
     PlaneId const * planeId,
-    size_t start,
+    size_t startDst,
     size_t count,
     PlaneId maxMaxPlaneId)
 {
+    assert(startDst + count <= mPointCount);
+
     // Upload plane IDs
     glBindBuffer(GL_ARRAY_BUFFER, *mPointPlaneIdVBO);
-    glBufferSubData(GL_ARRAY_BUFFER, start * sizeof(PlaneId), count * sizeof(PlaneId), planeId);
+    glBufferSubData(GL_ARRAY_BUFFER, startDst * sizeof(PlaneId), count * sizeof(PlaneId), planeId);
     CheckOpenGLError();
 
     // Check if the max ever plane ID has changed
