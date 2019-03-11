@@ -304,43 +304,42 @@ public:
 
             auto const now = GameWallClock::GetInstance().Now();
 
-            if (now < mCurrentTrajectory->EndTimestamp)
+            //
+            // Smooth current position
+            //
+
+            float const rawProgress =
+                static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(now - mCurrentTrajectory->StartTimestamp).count())
+                / static_cast<float>(TrajectoryLag.count());
+
+            // ((x+0.5)^2-0.25)/2.0
+            float const progress = (pow(std::min(rawProgress, 1.0f) + 0.5f, 2.0f) - 0.25f) / 2.0f;
+
+            vec2f const newCurrentPosition =
+                mCurrentTrajectory->StartPosition
+                + (mCurrentTrajectory->EndPosition - mCurrentTrajectory->StartPosition) * progress;
+
+            // Tell GameController
+            if (!mCurrentTrajectory->RotationCenter)
             {
-                //
-                // Smooth current position
-                //
-
-                float progress =
-                    static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(now - mCurrentTrajectory->StartTimestamp).count())
-                    / static_cast<float>(TrajectoryLag.count());
-
-                // ((x+0.5)^2-0.25)/2.0
-                progress = (pow(progress + 0.5f, 2.0f) - 0.25f) / 2.0f;
-
-                vec2f const newCurrentPosition =
-                    mCurrentTrajectory->StartPosition
-                    + (mCurrentTrajectory->EndPosition - mCurrentTrajectory->StartPosition) * progress;
-
-                // Tell GameController
-                if (!mCurrentTrajectory->RotationCenter)
-                {
-                    // Move
-                    mGameController->MoveBy(
-                        mCurrentTrajectory->EngagedShipId,
-                        newCurrentPosition - mCurrentTrajectory->CurrentPosition);
-                }
-                else
-                {
-                    // Rotate
-                    mGameController->RotateBy(
-                        mCurrentTrajectory->EngagedShipId,
-                        newCurrentPosition.y - mCurrentTrajectory->CurrentPosition.y,
-                        *mCurrentTrajectory->RotationCenter);
-                }
-
-                mCurrentTrajectory->CurrentPosition = newCurrentPosition;
+                // Move
+                mGameController->MoveBy(
+                    mCurrentTrajectory->EngagedShipId,
+                    newCurrentPosition - mCurrentTrajectory->CurrentPosition);
             }
             else
+            {
+                // Rotate
+                mGameController->RotateBy(
+                    mCurrentTrajectory->EngagedShipId,
+                    newCurrentPosition.y - mCurrentTrajectory->CurrentPosition.y,
+                    *mCurrentTrajectory->RotationCenter);
+            }
+
+            mCurrentTrajectory->CurrentPosition = newCurrentPosition;
+
+            // Check whether we are done
+            if (rawProgress >= 1.0f)
             {
                 //
                 // Close trajectory

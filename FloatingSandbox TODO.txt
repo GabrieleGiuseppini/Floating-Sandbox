@@ -167,13 +167,8 @@ Render:
 				+ SpringsColor
 				+ SpringsTexture
 			+ See if passing vec instead of floats among shaders helps with perf
-
-		= Create dump upon crash
-			+ https://stackoverflow.com/questions/9020353/create-a-dump-file-for-an-application-whenever-it-crashes
-			+ In app folder, via StandardSystemPaths
-				+ Under \CrashDumps
-			- Try with empty png and corrupted png
-
+		+ EventTickerPanel:
+			+ Fix name of AM bomb @ placed (and @ al?)
 		+ Bounded World
 			+ GameParameters: MaxWorldWidth, Height
 				+ Remove MaxZoom, MinZoom
@@ -209,19 +204,21 @@ Render:
 			+ Get current FPS
 			+ Changes.txt		
 			+ Merge to master			
-
-		- EventTickerPanel:
-			- Fix name of AM bomb @ placed (and @ al?)
-			- Msg for detonation
-
-		- See move tool changing center
-			- Log movements
-
-		- Test undoing TrianglesTexture shader optimization (vec4 and calc'n move)
+		+ See move tool changing center
+			+ Is it because of missing last step?
+				+ Should finalize only after last step, making sure to clamp elapsed to Lag first
+		= Create dump upon crash
+			+ https://stackoverflow.com/questions/9020353/create-a-dump-file-for-an-application-whenever-it-crashes
+			+ In app folder, via StandardSystemPaths
+				+ Under \CrashDumps
+			+ Try with empty png and corrupted png
+			- Guy @ Discord?
 
 		- VAO (*)
 
-		- Vertex buffer optimization (*)
+		- Test undoing TrianglesTexture shader optimization (vec4 and calc'n move)
+
+		- Vertex buffer optimizations (*)
 
 		- Orphaned points (*)
 
@@ -1397,6 +1394,7 @@ Render:
 - Passengers:
 	- Ship has number of passengers
 		- "like how many people would be aboard & as the ship sinks it like shows how many people are alive, escaped via life boat or died"
+		- Maybe a life count? like you have sorta a life count on the top right of the screen that says Alive: number. Dead: Number. And as the ship is sinking you press a button like say A (abandon) for example and people will start heading to the life boats to survive. The counter will stop once the ship is fully under the surface of the ocean or the entire boat deck is under water. the boat deck would be highlighted sorta like how the light system works.
 
 	- Moving passengers
 		- Separate layer provides floors, ladders, and obstacles
