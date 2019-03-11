@@ -240,17 +240,17 @@ uniform mat4 paramAmbientLightIntensity;
         GameException);
 }
 
-TEST_F(ShaderManagerTests, ExtractsVertexAttributes_Single)
+TEST_F(ShaderManagerTests, ExtractsVertexAttributeNames_Single)
 {
     std::string source = "  in vec4 inShipPointColor;\n";
 
-    auto result = TestShaderManager::ExtractVertexAttributes(source);
+    auto result = TestShaderManager::ExtractVertexAttributeNames(source);
 
     ASSERT_EQ(1, result.size());
-    EXPECT_EQ(1, result.count(Render::VertexAttributeType::ShipPointColor));
+    EXPECT_EQ(1, result.count("ShipPointColor"));
 }
 
-TEST_F(ShaderManagerTests, ExtractsVertexAttributes_Multiple)
+TEST_F(ShaderManagerTests, ExtractsVertexAttributeNames_Multiple)
 {
     std::string source = R"!!!(
 uniform float paramAmbientLightIntensity;
@@ -259,14 +259,14 @@ foobar;
 in mat4 inSharedAttribute1;
 )!!!";
 
-    auto result = TestShaderManager::ExtractVertexAttributes(source);
+    auto result = TestShaderManager::ExtractVertexAttributeNames(source);
 
     ASSERT_EQ(2, result.size());
-    EXPECT_EQ(1, result.count(Render::VertexAttributeType::ShipPointColor));
-    EXPECT_EQ(1, result.count(Render::VertexAttributeType::SharedAttribute1));
+    EXPECT_EQ(1, result.count("ShipPointColor"));
+    EXPECT_EQ(1, result.count("SharedAttribute1"));
 }
 
-TEST_F(ShaderManagerTests, ExtractsVertexAttributes_ErrorsOnUnrecognizedAttribute)
+TEST_F(ShaderManagerTests, ExtractsVertexAttributeNames_ErrorsOnUnrecognizedAttribute)
 {
     std::string source = R"!!!(
 uniform float paramAmbientLightIntensity;
@@ -275,11 +275,11 @@ in mat4 inHeadPosition;
 )!!!";
 
     EXPECT_THROW(
-        TestShaderManager::ExtractVertexAttributes(source),
+        TestShaderManager::ExtractVertexAttributeNames(source),
         GameException);
 }
 
-TEST_F(ShaderManagerTests, ExtractsVertexAttributes_ErrorsOnRedeclaredAttribute)
+TEST_F(ShaderManagerTests, ExtractsVertexAttributeNames_ErrorsOnRedeclaredAttribute)
 {
     std::string source = R"!!!(
 uniform float paramAmbientLightIntensity;
@@ -289,6 +289,6 @@ in mat4 inShipPointColor;
 )!!!";
 
     EXPECT_THROW(
-        TestShaderManager::ExtractVertexAttributes(source),
+        TestShaderManager::ExtractVertexAttributeNames(source),
         GameException);
 }

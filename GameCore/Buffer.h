@@ -119,7 +119,7 @@ public:
     inline TElement const & operator[](size_t index) const noexcept
     {
 #ifndef NDEBUG
-        // Ugly trick to allows setting breakpoints
+        // Ugly trick to allow setting breakpoints on assert failures
         if (index >= mSize)
         {
             assert(index < mSize);

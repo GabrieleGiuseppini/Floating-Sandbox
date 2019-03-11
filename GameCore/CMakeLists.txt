@@ -5,6 +5,7 @@
 
 set  (SOURCES
 	AABB.h
+	BoundedVector.h
 	Buffer.h
 	BufferAllocator.h
 	CircularList.h

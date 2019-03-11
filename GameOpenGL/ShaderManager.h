@@ -208,7 +208,7 @@ private:
 
     static std::set<typename Traits::ProgramParameterType> ExtractShaderParameters(std::string const & source);
 
-    static std::set<typename Traits::VertexAttributeType> ExtractVertexAttributes(std::string const & source);
+    static std::set<std::string> ExtractVertexAttributeNames(std::string const & source);
 
 private:
 
@@ -248,10 +248,10 @@ private:
     friend class ShaderManagerTests_ExtractsShaderParameters_ErrorsOnUnrecognizedParameter_Test;
     friend class ShaderManagerTests_ExtractsShaderParameters_ErrorsOnRedefinedParameter_Test;
 
-    friend class ShaderManagerTests_ExtractsVertexAttributes_Single_Test;
-    friend class ShaderManagerTests_ExtractsVertexAttributes_Multiple_Test;
-    friend class ShaderManagerTests_ExtractsVertexAttributes_ErrorsOnUnrecognizedAttribute_Test;
-    friend class ShaderManagerTests_ExtractsVertexAttributes_ErrorsOnRedeclaredAttribute_Test;
+    friend class ShaderManagerTests_ExtractsVertexAttributeNames_Single_Test;
+    friend class ShaderManagerTests_ExtractsVertexAttributeNames_Multiple_Test;
+    friend class ShaderManagerTests_ExtractsVertexAttributeNames_ErrorsOnUnrecognizedAttribute_Test;
+    friend class ShaderManagerTests_ExtractsVertexAttributeNames_ErrorsOnRedeclaredAttribute_Test;
 };
 
 #include "ShaderManager.cpp.inl"

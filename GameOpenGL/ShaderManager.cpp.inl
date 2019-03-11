@@ -123,16 +123,19 @@ void ShaderManager<Traits>::CompileShader(
         // Extract attribute names from vertex shader and bind them
         //
 
-        std::set<typename Traits::VertexAttributeType> vertexAttributes = ExtractVertexAttributes(vertexShaderSource);
+        std::set<std::string> vertexAttributeNames = ExtractVertexAttributeNames(vertexShaderSource);
 
-        for (auto vertexAttribute : vertexAttributes)
+        for (auto const & vertexAttributeName : vertexAttributeNames)
         {
+            auto vertexAttribute = Traits::StrToVertexAttributeType(vertexAttributeName);
+
             GameOpenGL::BindAttributeLocation(
                 mPrograms[programIndex].OpenGLHandle,
                 static_cast<GLuint>(vertexAttribute),
-                "in" + Traits::VertexAttributeTypeToStr(vertexAttribute));
+                "in" + vertexAttributeName);
 
             // Enable this attribute
+            // TODO: this has to go
             glEnableVertexAttribArray(static_cast<GLuint>(vertexAttribute));
             CheckOpenGLError();
         }
@@ -347,11 +350,11 @@ std::set<typename Traits::ProgramParameterType> ShaderManager<Traits>::ExtractSh
 }
 
 template<typename Traits>
-std::set<typename Traits::VertexAttributeType> ShaderManager<Traits>::ExtractVertexAttributes(std::string const & source)
+std::set<std::string> ShaderManager<Traits>::ExtractVertexAttributeNames(std::string const & source)
 {
     static std::regex AttributeNameRegex(R"!(\bin\s+.*?\s+in([_a-zA-Z][_a-zA-Z0-9]*);)!");
 
-    std::set<Traits::VertexAttributeType> attributeNames;
+    std::set<std::string> attributeNames;
 
     std::string remainingSource = source;
     std::smatch match;
@@ -360,11 +363,11 @@ std::set<typename Traits::VertexAttributeType> ShaderManager<Traits>::ExtractVer
         assert(2 == match.size());
         auto const & attributeName = match[1].str();
 
-        // Lookup the attribute name
-        Traits::VertexAttributeType attribute = Traits::StrToVertexAttributeType(attributeName);
+        // Lookup the attribute name - just as a sanity check
+        Traits::StrToVertexAttributeType(attributeName);
 
         // Store it, making sure it's not specified more than once
-        if (!attributeNames.insert(attribute).second)
+        if (!attributeNames.insert(attributeName).second)
         {
             throw GameException("Attribute name \"" + attributeName + "\" is declared more than once");
         }

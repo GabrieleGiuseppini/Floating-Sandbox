@@ -214,7 +214,7 @@ Render:
 			+ Try with empty png and corrupted png
 			- Guy @ Discord?
 
-		- VAO (*)
+		= VAO (*)
 
 		- Test undoing TrianglesTexture shader optimization (vec4 and calc'n move)
 
@@ -533,35 +533,47 @@ Render:
 			- Find first sample == sample immediately to the left of visibleWorld.Left
 			- Go ahead by dx, up to last sample == sample immediately to the right of visibleWorld.Right
 
-	- Use VAO's (*)
-		- Branch
-		- New OpenGLObject w/deleter
-		- Component 1: Stars
-			- Test
-		- Component 2: CrossedOfLight
-			- Test
-		- Component 3: Vectors
-			- Test
-		- RenderContext:
-			- See if can move uploads early, and then later just bind VAOs
-			- Also see to bind element array indices to the VAOs
-
-	- Reduce number of vertex attributes for ship_triangles_texture and color (and possibly forced to do others) (*)
-		+ We've already confirmed that one less attribute vertex sends FPS frpom 29 to 30
-		- At this moment, all Ship shaders - except for stressed springs - have the following inputs:
-			in vec2 inShipPointPosition;
-			in float inShipPointLight;
-			in float inShipPointWater;
-			in vec4 inShipPointColor;
-			in float inShipPointPlaneId;
-
-	- Lights in the GPU with instanced drawing (*)
+	= Use VAO's (*)
+		+ Branch
+		+ New OpenGLObject w/deleter
+		= General concepts:
+			= See if can move uploads early, and then later just bind VAOs
+		+ Test 1: Stars
+			+ ShaderManager: allow for reusing numeric values
+				+ UTs
+			+ BoundedVector
+				+ UTs			
+			+ Use BoundedVector and handle GPU buffer (re-)allocation
+			+ Shader (new vertex attribute name)
+			+ Test			
+		- Test 2: Enlarge Stars VBO to include Clouds
+		- Move vertex attribute enabling out of shader manager and, for now, to where it is described		
+		- Enlarge up to complete "world VAO"
+			- Strive for 1 single VAO
+		- Ship:
+			- One per element type (see MOLESKINE?)
+			- Also make sure to bind element array indices to the VAOs
+		- TextLayer
+		- Cleanup:
+		- Check w/Parallels guy
+		
+			
+	- Lights on the GPU with instanced drawing (*)
 		- Figure out whether at vertex or fragment shader
 			- Depends on whether or not interpolation would re-create circular halo
 		- Lamp coords, spread, and luminiscence in uniform array
 			- Which then have to be set individually
 		- Loop as many times as necessary to avoid going beyond uniform limit of the GPU
 			- Figure out max (for right shader: v or f) at OpenGLInit
+
+	- Reduce number of vertex attributes for ship_triangles_texture and color (and possibly forced to do others) (*)
+		+ We've already confirmed that one less attribute vertex sends FPS frpom 29 to 30
+		- At this moment, all Ship shaders - except for stressed springs - have the following inputs:
+			in vec2 inShipPointPosition;
+			in float inShipPointLight;   *
+			in float inShipPointWater;
+			in vec4 inShipPointColor;    *
+			in float inShipPointPlaneId; *
 
 	- Try using GL_SHORT for Ship texture coordinates
 		- Passing NORMALIZE and 3 components to glVertexAttribPointer

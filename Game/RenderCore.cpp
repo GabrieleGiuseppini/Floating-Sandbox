@@ -205,6 +205,11 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
 
 VertexAttributeType StrToVertexAttributeType(std::string const & str)
 {
+    // TODOTEST:VAO: START
+    if (Utils::CaseInsensitiveEquals(str, "Star"))
+        return VertexAttributeType::Star;
+    else
+    // TODOTEST:VAO: END
     if (Utils::CaseInsensitiveEquals(str, "SharedAttribute0"))
         return VertexAttributeType::SharedAttribute0;
     else if (Utils::CaseInsensitiveEquals(str, "SharedAttribute1"))
@@ -233,42 +238,6 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::ShipPointTextureCoordinates;
     else
         throw GameException("Unrecognized vertex attribute \"" + str + "\"");
-}
-
-std::string VertexAttributeTypeToStr(VertexAttributeType vertexAttribute)
-{
-    switch (vertexAttribute)
-    {
-    case VertexAttributeType::SharedAttribute0:
-        return "SharedAttribute0";
-    case VertexAttributeType::SharedAttribute1:
-        return "SharedAttribute1";
-    case VertexAttributeType::SharedAttribute2:
-        return "SharedAttribute2";
-    case VertexAttributeType::OceanAttribute:
-        return "OceanAttribute";
-    case VertexAttributeType::GenericTexturePackedData1:
-        return "GenericTexturePackedData1";
-    case VertexAttributeType::GenericTexturePackedData2:
-        return "GenericTexturePackedData2";
-    case VertexAttributeType::GenericTexturePackedData3:
-        return "GenericTexturePackedData3";
-    case VertexAttributeType::ShipPointPosition:
-        return "ShipPointPosition";
-    case VertexAttributeType::ShipPointColor:
-        return "ShipPointColor";
-    case VertexAttributeType::ShipPointLight:
-        return "ShipPointLight";
-    case VertexAttributeType::ShipPointWater:
-        return "ShipPointWater";
-    case VertexAttributeType::ShipPointPlaneId:
-        return "ShipPointPlaneId";
-    case VertexAttributeType::ShipPointTextureCoordinates:
-        return "ShipPointTextureCoordinates";
-    default:
-        assert(false);
-        throw GameException("Unsupported VertexAttributeType");
-    }
 }
 
 }

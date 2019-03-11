@@ -20,6 +20,7 @@ set_property(
 #
 
 set (UNIT_TEST_SOURCES
+	BoundedVectorTests.cpp
 	CircularListTests.cpp
 	EnumFlagsTests.cpp
 	FixedSizeVectorTests.cpp

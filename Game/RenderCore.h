@@ -87,6 +87,10 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter);
 
 enum class VertexAttributeType : GLuint
 {
+    // TODOTEST: VAO: START
+    Star = 0,
+
+    // TODOTEST: VAO: END
     //
     // Vertex attributes sourced from multiple VBO's
     //
@@ -117,8 +121,6 @@ enum class VertexAttributeType : GLuint
 
 VertexAttributeType StrToVertexAttributeType(std::string const & str);
 
-std::string VertexAttributeTypeToStr(VertexAttributeType vertexAttribute);
-
 struct ShaderManagerTraits
 {
     using ProgramType = Render::ProgramType;
@@ -130,7 +132,6 @@ struct ShaderManagerTraits
     static constexpr auto StrToProgramParameterType = Render::StrToProgramParameterType;
     static constexpr auto ProgramParameterTypeToStr = Render::ProgramParameterTypeToStr;
     static constexpr auto StrToVertexAttributeType = Render::StrToVertexAttributeType;
-    static constexpr auto VertexAttributeTypeToStr = Render::VertexAttributeTypeToStr;
 };
 
 

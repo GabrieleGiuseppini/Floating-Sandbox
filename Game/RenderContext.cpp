@@ -18,9 +18,13 @@ RenderContext::RenderContext(
     : mShaderManager()
     , mTextureRenderManager()
     , mTextRenderContext()
-    // Stars
-    , mStarElementBuffer()
+    // TODOTEST: VAO: START
+    // Buffers
+    , mStarVertexBuffer()
     , mStarVBO()
+    // VAOs
+    , mStarVAO()
+    // TODOTEST: VAO: OLD
     // Clouds
     , mCloudElementBuffer()
     , mCurrentCloudElementCount(0u)
@@ -187,14 +191,38 @@ RenderContext::RenderContext(
     mShaderManager->ActivateProgram<ProgramType::ShipGenericTextures>();
     mShaderManager->SetTextureParameters<ProgramType::ShipGenericTextures>();
 
+    // TODOTEST: VAO: START
 
     //
-    // Initialize stars
+    // Initialize buffers
     //
 
-    // Create VBO
     glGenBuffers(1, &tmpGLuint);
     mStarVBO = tmpGLuint;
+
+    //
+    // Initialize Star VAO
+    //
+
+    glGenVertexArrays(1, &tmpGLuint);
+    mStarVAO = tmpGLuint;
+
+    glBindVertexArray(*mStarVAO);
+    CheckOpenGLError();
+
+    // Describe vertex attribute 0
+    glBindBuffer(GL_ARRAY_BUFFER, *mStarVBO);
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Star));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Star), 3, GL_FLOAT, GL_FALSE, sizeof(StarVertex), (void*)0);
+    CheckOpenGLError();
+
+    glBindVertexArray(0);
+
+
+
+
+    // TODOTEST: VAO: END
+
 
 
     //
@@ -503,13 +531,38 @@ void RenderContext::UploadStarsStart(size_t starCount)
     // Prepare stars buffer
     //
 
-    mStarElementBuffer.clear();
-    mStarElementBuffer.reserve(starCount);
+    if (starCount != mStarVertexBuffer.max_size())
+    {
+        // Reallocate GPU buffer
+        glBindBuffer(GL_ARRAY_BUFFER, *mStarVBO);
+        glBufferData(GL_ARRAY_BUFFER, starCount * sizeof(StarVertex), nullptr, GL_STATIC_DRAW);
+        CheckOpenGLError();
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        // Reallocate CPU buffer
+        mStarVertexBuffer.reset(starCount);
+    }
+    else
+    {
+        mStarVertexBuffer.clear();
+    }
 }
 
 void RenderContext::UploadStarsEnd()
 {
+    //
+    // Upload star buffer
+    //
+
+    glBindBuffer(GL_ARRAY_BUFFER, *mStarVBO);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, mStarVertexBuffer.size() * sizeof(StarVertex), mStarVertexBuffer.data());
+    CheckOpenGLError();
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
+
+// TODOTEST: VAO TEST: OLD
 
 void RenderContext::UploadCloudsStart(size_t cloudCount)
 {
@@ -587,29 +640,15 @@ void RenderContext::RenderSkyEnd()
     // Draw stars with stencil test
     ////////////////////////////////////////////////////
 
-    // Use program
-    mShaderManager->ActivateProgram<ProgramType::Stars>();
-
-    // Bind VBO
-    glBindBuffer(GL_ARRAY_BUFFER, *mStarVBO);
+    glBindVertexArray(*mStarVAO);
     CheckOpenGLError();
-
-    // Upload buffer
-    glBufferData(GL_ARRAY_BUFFER, mStarElementBuffer.size() * sizeof(StarElement), mStarElementBuffer.data(), GL_STATIC_DRAW);
-    CheckOpenGLError();
-
-    // Describe vertex attribute 0
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedAttribute0), (2 + 1), GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void*)0);
-    CheckOpenGLError();
-
-    // Enable vertex attribute 0
-    glEnableVertexAttribArray(0);
-
-    // Set point size
-    glPointSize(0.5f);
 
     // Draw
-    glDrawArrays(GL_POINTS, 0, static_cast<GLsizei>(mStarElementBuffer.size()));
+    mShaderManager->ActivateProgram<ProgramType::Stars>();
+    glPointSize(0.5f);
+    glDrawArrays(GL_POINTS, 0, static_cast<GLsizei>(mStarVertexBuffer.size()));
+
+    glBindVertexArray(0);
 
     ////////////////////////////////////////////////////
     // Draw clouds with stencil test

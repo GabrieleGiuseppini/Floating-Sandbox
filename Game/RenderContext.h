@@ -19,6 +19,7 @@
 
 #include <Game/GameParameters.h>
 
+#include <GameCore/BoundedVector.h>
 #include <GameCore/Colors.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/ImageData.h>
@@ -381,7 +382,7 @@ public:
         float ndcY,
         float brightness)
     {
-        mStarElementBuffer.emplace_back(ndcX, ndcY, brightness);
+        mStarVertexBuffer.emplace_back(ndcX, ndcY, brightness);
     }
 
     void UploadStarsEnd();
@@ -985,18 +986,20 @@ private:
     std::unique_ptr<TextureRenderManager> mTextureRenderManager;
     std::unique_ptr<TextRenderContext> mTextRenderContext;
 
+    // TODOTEST: VAO TEST START
+
     //
-    // Stars
+    // Types
     //
 
 #pragma pack(push)
-    struct StarElement
+    struct StarVertex
     {
         float ndcX;
         float ndcY;
         float brightness;
 
-        StarElement(
+        StarVertex(
             float _ndcX,
             float _ndcY,
             float _brightness)
@@ -1007,9 +1010,22 @@ private:
     };
 #pragma pack(pop)
 
-    std::vector<StarElement> mStarElementBuffer;
+    //
+    // Buffers
+    //
 
+    BoundedVector<StarVertex> mStarVertexBuffer;
     GameOpenGLVBO mStarVBO;
+
+
+    //
+    // VAOs
+    //
+
+    GameOpenGLVAO mStarVAO;
+
+
+    // TODOTEST: OLD
 
 
     //
