@@ -24,18 +24,16 @@ RenderContext::RenderContext(
     , mStarVBO()
     , mCloudQuadBuffer()
     , mCloudVBO()
+    , mLandSegmentBuffer()
+    , mLandVBO()
     // VAOs
     , mStarVAO()
     , mCloudVAO()
+    , mLandVAO()
     // Textures
     , mCloudTextureAtlasOpenGLHandle()
     , mCloudTextureAtlasMetadata()
     // TODOTEST: VAO: OLD
-    // Land
-    , mLandElementBuffer()
-    , mCurrentLandElementCount(0u)
-    , mLandElementCount(0u)
-    , mLandVBO()
     // Ocean
     , mOceanElementBuffer()
     , mCurrentOceanElementCount(0u)
@@ -196,10 +194,11 @@ RenderContext::RenderContext(
     // Initialize buffers
     //
 
-    GLuint vbos[2];
-    glGenBuffers(2, vbos);
+    GLuint vbos[3];
+    glGenBuffers(3, vbos);
     mStarVBO = vbos[0];
     mCloudVBO = vbos[1];
+    mLandVBO = vbos[2];
 
 
     //
@@ -235,6 +234,25 @@ RenderContext::RenderContext(
     glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
     glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Cloud));
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Cloud), 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    CheckOpenGLError();
+
+    glBindVertexArray(0);
+
+
+    //
+    // Initialize Land VAO
+    //
+
+    glGenVertexArrays(1, &tmpGLuint);
+    mLandVAO = tmpGLuint;
+
+    glBindVertexArray(*mLandVAO);
+    CheckOpenGLError();
+
+    // Describe vertex attributes
+    glBindBuffer(GL_ARRAY_BUFFER, *mLandVBO);
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Land));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Land), 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
     CheckOpenGLError();
 
     glBindVertexArray(0);
@@ -285,10 +303,8 @@ RenderContext::RenderContext(
     mShaderManager->SetTextureParameters<ProgramType::Clouds>();
 
 
-    // TODOTEST: VAO: END
-
     //
-    // Initialize land
+    // Initialize land texture
     //
 
     mShaderManager->ActivateTexture<ProgramParameterType::LandTexture>();
@@ -305,7 +321,7 @@ RenderContext::RenderContext(
     glBindTexture(GL_TEXTURE_2D, mTextureRenderManager->GetOpenGLHandle(TextureGroupType::Land, 0));
     CheckOpenGLError();
 
-    // Set hardcoded parameters
+    // Set texture and texture parameters in shader
     auto const & landTextureMetadata = textureDatabase.GetFrameMetadata(TextureGroupType::Land, 0);
     mShaderManager->ActivateProgram<ProgramType::LandTexture>();
     mShaderManager->SetProgramParameter<ProgramType::LandTexture, ProgramParameterType::TextureScaling>(
@@ -313,9 +329,8 @@ RenderContext::RenderContext(
             1.0f / landTextureMetadata.WorldHeight);
     mShaderManager->SetTextureParameters<ProgramType::LandTexture>();
 
-    // Create VBO
-    glGenBuffers(1, &tmpGLuint);
-    mLandVBO = tmpGLuint;
+
+    // TODOTEST: VAO: END
 
 
 
@@ -600,7 +615,7 @@ void RenderContext::UploadCloudsStart(size_t cloudCount)
 void RenderContext::UploadCloudsEnd()
 {
     //
-    // Upload cloud vertex buffer
+    // Upload cloud quad buffer
     //
 
     glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
@@ -662,12 +677,12 @@ void RenderContext::RenderSkyEnd()
 
     glBindVertexArray(*mStarVAO);
 
-    // Draw
     mShaderManager->ActivateProgram<ProgramType::Stars>();
+
     glPointSize(0.5f);
+
     glDrawArrays(GL_POINTS, 0, static_cast<GLsizei>(mStarVertexBuffer.size()));
     CheckOpenGLError();
-
 
     ////////////////////////////////////////////////////
     // Draw clouds with stencil test
@@ -675,19 +690,17 @@ void RenderContext::RenderSkyEnd()
 
     glBindVertexArray(*mCloudVAO);
 
-    // Draw
     mShaderManager->ActivateProgram<ProgramType::Clouds>();
+
     if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
         glLineWidth(0.1f);
+
     glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(6 * mCloudQuadBuffer.size()));
     CheckOpenGLError();
 
+    ////////////////////////////////////////////////////
 
     glBindVertexArray(0);
-
-    // TODOTEST: VAO: END
-
-    ////////////////////////////////////////////////////
 
     // Disable stencil test
     glDisable(GL_STENCIL_TEST);
@@ -696,32 +709,31 @@ void RenderContext::RenderSkyEnd()
 void RenderContext::UploadLandAndOceanStart(size_t slices)
 {
     //
-    // Prepare land buffer
+    // Prepare land segment buffer
     //
 
-    if (slices + 1 != mLandElementCount)
+    if (slices + 1 != mLandSegmentBuffer.max_size())
     {
-        // Bind VBO
+        // Reallocate GPU buffer
         glBindBuffer(GL_ARRAY_BUFFER, *mLandVBO);
+        glBufferData(GL_ARRAY_BUFFER, (slices + 1) * sizeof(LandSegment), nullptr, GL_DYNAMIC_DRAW);
         CheckOpenGLError();
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-        // Realloc GPU buffer
-        mLandElementCount = slices + 1;
-        glBufferData(GL_ARRAY_BUFFER, mLandElementCount * sizeof(LandElement), nullptr, GL_DYNAMIC_DRAW);
-        CheckOpenGLError();
-
-        // Realloc buffer
-        mLandElementBuffer.reset(new LandElement[mLandElementCount]);
+        // Reallocate CPU buffer
+        mLandSegmentBuffer.reset(slices + 1);
     }
-
-    // Reset current count of land elements
-    mCurrentLandElementCount = 0u;
+    else
+    {
+        mLandSegmentBuffer.clear();
+    }
 
 
     //
     // Prepare ocean buffer
     //
 
+    // TODO: use buffer
     if (slices + 1 != mOceanElementCount)
     {
         // Bind VBO
@@ -743,20 +755,17 @@ void RenderContext::UploadLandAndOceanStart(size_t slices)
 
 void RenderContext::UploadLandAndOceanEnd()
 {
-    // Bind land VBO
+    //
+    // Upload land segment buffer
+    //
+
     glBindBuffer(GL_ARRAY_BUFFER, *mLandVBO);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, mLandSegmentBuffer.size() * sizeof(LandSegment), mLandSegmentBuffer.data());
     CheckOpenGLError();
-
-    // Upload buffer
-    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(LandElement) * mLandElementCount, mLandElementBuffer.get());
-
-    // Describe vertex attribute 1
-    // (we know we'll be using it before CrossOfLight - which is the only subsequent user of this attribute,
-    //  so we can describe it now and avoid a bind later)
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedAttribute1), 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), nullptr);
-    CheckOpenGLError();
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 
+    // TODO: use buffer
 
     // Bind ocean VBO
     glBindBuffer(GL_ARRAY_BUFFER, *mOceanVBO);
@@ -770,9 +779,8 @@ void RenderContext::UploadLandAndOceanEnd()
 
 void RenderContext::RenderLand()
 {
-    assert(mCurrentLandElementCount == mLandElementCount);
+    glBindVertexArray(*mLandVAO);
 
-    // Use program
     switch (mLandRenderMode)
     {
         case LandRenderMode::Flat:
@@ -788,17 +796,12 @@ void RenderContext::RenderLand()
         }
     }
 
-    // No need to bind VBO - we've done that at UploadLandAndOceanEnd(),
-    // and we know nothing's been intervening
-
-    // Disable vertex attribute 0
-    glDisableVertexAttribArray(0);
-
     if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
         glLineWidth(0.1f);
 
-    // Draw
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mLandElementCount));
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mLandSegmentBuffer.size()));
+
+    glBindVertexArray(0);
 }
 
 void RenderContext::RenderOcean()

@@ -90,11 +90,13 @@ enum class VertexAttributeType : GLuint
     // TODOTEST: VAO: START
 
     //
-    // Stars and Clouds
+    // World
     //
 
     Star = 0,
     Cloud = 0,
+    Land = 0,
+    Ocean = 0,
 
     // TODOTEST: VAO: END
     //

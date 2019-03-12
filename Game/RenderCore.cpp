@@ -210,6 +210,10 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::Star;
     else if (Utils::CaseInsensitiveEquals(str, "Cloud"))
         return VertexAttributeType::Cloud;
+    else if (Utils::CaseInsensitiveEquals(str, "Land"))
+        return VertexAttributeType::Land;
+    else if (Utils::CaseInsensitiveEquals(str, "Ocean"))
+        return VertexAttributeType::Ocean;
 
     else
     // TODOTEST:VAO: END

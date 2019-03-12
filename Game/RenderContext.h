@@ -487,25 +487,18 @@ public:
         float yOcean,
         float oceanDepth)
     {
-        assert(mLandElementCount == mOceanElementCount);
-        assert(mLandElementCount > 0);
-
         float const yVisibleWorldBottom = mViewModel.GetVisibleWorldBottomRight().y;
 
         //
         // Store Land element
         //
 
-        assert(!!mLandElementBuffer);
-        assert(mCurrentLandElementCount + 1u <= mLandElementCount);
-        LandElement * landElement = &(mLandElementBuffer[mCurrentLandElementCount]);
+        LandSegment & landSegment = mLandSegmentBuffer.emplace_back();
 
-        landElement->x1 = x;
-        landElement->y1 = yLand > yVisibleWorldBottom ? yLand : yVisibleWorldBottom; // Clamp top up to visible bottom
-        landElement->x2 = x;
-        landElement->y2 = yVisibleWorldBottom;
-
-        ++mCurrentLandElementCount;
+        landSegment.x1 = x;
+        landSegment.y1 = yLand > yVisibleWorldBottom ? yLand : yVisibleWorldBottom; // Clamp top up to visible bottom
+        landSegment.x2 = x;
+        landSegment.y2 = yVisibleWorldBottom;
 
 
         //
@@ -1044,6 +1037,14 @@ private:
         float ndcTextureYBottomRight2;
     };
 
+    struct LandSegment
+    {
+        float x1;
+        float y1;
+        float x2;
+        float y2;
+    };
+
 #pragma pack(pop)
 
     //
@@ -1056,6 +1057,9 @@ private:
     BoundedVector<CloudQuad> mCloudQuadBuffer;
     GameOpenGLVBO mCloudVBO;
 
+    BoundedVector<LandSegment> mLandSegmentBuffer;
+    GameOpenGLVBO mLandVBO;
+
 
     //
     // VAOs
@@ -1063,6 +1067,7 @@ private:
 
     GameOpenGLVAO mStarVAO;
     GameOpenGLVAO mCloudVAO;
+    GameOpenGLVAO mLandVAO;
 
 
     //
@@ -1075,25 +1080,7 @@ private:
     // TODOTEST: VAO: END
 
 
-    //
-    // Land
-    //
 
-#pragma pack(push)
-    struct LandElement
-    {
-        float x1;
-        float y1;
-        float x2;
-        float y2;
-    };
-#pragma pack(pop)
-
-    std::unique_ptr<LandElement[]> mLandElementBuffer;
-    size_t mCurrentLandElementCount;
-    size_t mLandElementCount;
-
-    GameOpenGLVBO mLandVBO;
 
     //
     // Ocean

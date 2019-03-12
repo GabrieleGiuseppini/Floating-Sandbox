@@ -292,6 +292,15 @@ Render:
 
 - Simulation Optimizations:
 
+	- Take advantage of bounded-width world
+		- Main concept:
+			- OceanSurface and OceanFloor contain samples for the entire width
+			- Not anymore periodic, hence no mod anymore to get water height and ocean floor
+			- Only the number of samples dictates final definition of surface and floor
+			- Uploading may be done by sample
+				- Or not, it'd be overkill when zooming out
+
+
 	= GPUCalc:
 		+ 1: Simple OpenGLContext
 		+ 2: Multiple OpenGLContextes
@@ -557,11 +566,12 @@ Render:
 			+ Use BoundedVector and handle GPU buffer (re-)allocation
 			+ Shader (new vertex attribute name)
 			+ Test			
-		- Land
-			- Use BoundedVector and handle GPU buffer (re-)allocation
-			- Shader (new vertex attribute name)
-			- Test			
+		+ Land
+			+ Use BoundedVector and handle GPU buffer (re-)allocation
+			+ Shader (new vertex attribute name)
+			+ Test			
 		- Move vertex attribute enabling out of shader manager and, for now, to where it is described
+		- Ocean
 		- Do the rest of RenderContext
 		- Ship:
 			- One per element type and/or vertex element array (see MOLESKINE?)
