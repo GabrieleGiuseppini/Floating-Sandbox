@@ -244,6 +244,26 @@ void TextRenderContext::RenderEnd()
             }
         }
 
+        //
+        // Re-upload all vertices
+        //
+
+        for (auto const & fontRenderInfo : mFontRenderInfos)
+        {
+            auto const & vertexBuffer = fontRenderInfo.GetVertexBuffer();
+            if (!vertexBuffer.empty())
+            {
+                glBindBuffer(GL_ARRAY_BUFFER, fontRenderInfo.GetVerticesVBOHandle());
+                glBufferData(
+                    GL_ARRAY_BUFFER,
+                    vertexBuffer.size() * sizeof(TextQuadVertex),
+                    vertexBuffer.data(),
+                    GL_STATIC_DRAW);
+                glBindBuffer(GL_ARRAY_BUFFER, 0);
+                CheckOpenGLError();
+            }
+        }
+
         // Remember slots are not dirty anymore
         mAreTextSlotsDirty = false;
     }
@@ -260,19 +280,6 @@ void TextRenderContext::RenderEnd()
         auto const & vertexBuffer = fontRenderInfo.GetVertexBuffer();
         if (!vertexBuffer.empty())
         {
-            //
-            // Upload vertices
-            //
-
-            glBindBuffer(GL_ARRAY_BUFFER, fontRenderInfo.GetVerticesVBOHandle());
-            glBufferData(
-                GL_ARRAY_BUFFER,
-                vertexBuffer.size() * sizeof(TextQuadVertex),
-                vertexBuffer.data(),
-                GL_STATIC_DRAW);
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
-            CheckOpenGLError();
-
             //
             // Render the vertices for this font
             //

@@ -603,13 +603,14 @@ Render:
 			+ Test			
 		+ Verify asm for Upload->emplace_back
 			+ @ Stars::Upload
-		= TextLayer
-			- Test
-			- Then, move upload to VBO right after creating vertices
-			- Test
+		+ TextLayer
+			+ Test
+			+ Then, move upload to VBO right after creating vertices
+			+ Test
 		- Ship:
-			- One per element type and/or vertex element array (see MOLESKINE?)
-			- Also make sure to bind element array indices to the VAOs
+			- One per "input configuration" + vertex element array (see MOLESKINE?)
+				- Make sure to bind element array indices to the VAOs
+			- Have to repeat descriptions:
 		- Cleanup:
 		- Get new FPS
 		- Merge
