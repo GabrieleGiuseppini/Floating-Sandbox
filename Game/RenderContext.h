@@ -1061,7 +1061,8 @@ private:
     // VAOs
     //
 
-    GameOpenGLVAO mStarAndCloudVAO;
+    GameOpenGLVAO mStarVAO;
+    GameOpenGLVAO mCloudVAO;
 
 
     //

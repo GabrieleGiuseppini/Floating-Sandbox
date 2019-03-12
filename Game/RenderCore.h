@@ -93,8 +93,8 @@ enum class VertexAttributeType : GLuint
     // Stars and Clouds
     //
 
-    Star = 1,
-    Cloud = 2,
+    Star = 0,
+    Cloud = 0,
 
     // TODOTEST: VAO: END
     //

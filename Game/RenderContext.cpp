@@ -25,7 +25,8 @@ RenderContext::RenderContext(
     , mCloudQuadBuffer()
     , mCloudVBO()
     // VAOs
-    , mStarAndCloudVAO()
+    , mStarVAO()
+    , mCloudVAO()
     // Textures
     , mCloudTextureAtlasOpenGLHandle()
     , mCloudTextureAtlasMetadata()
@@ -195,28 +196,42 @@ RenderContext::RenderContext(
     // Initialize buffers
     //
 
-    GLuint vboBuffers[2];
-    glGenBuffers(2, vboBuffers);
-    mStarVBO = vboBuffers[0];
-    mCloudVBO = vboBuffers[1];
+    GLuint vbos[2];
+    glGenBuffers(2, vbos);
+    mStarVBO = vbos[0];
+    mCloudVBO = vbos[1];
+
 
     //
-    // Initialize Star and Cloud VAO
+    // Initialize Star VAO
     //
 
     glGenVertexArrays(1, &tmpGLuint);
-    mStarAndCloudVAO = tmpGLuint;
+    mStarVAO = tmpGLuint;
 
-    glBindVertexArray(*mStarAndCloudVAO);
+    glBindVertexArray(*mStarVAO);
     CheckOpenGLError();
 
-    // Describe vertex attribute 0
+    // Describe vertex attributes
     glBindBuffer(GL_ARRAY_BUFFER, *mStarVBO);
     glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Star));
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Star), 3, GL_FLOAT, GL_FALSE, sizeof(StarVertex), (void*)0);
     CheckOpenGLError();
 
-    // Describe vertex attribute 1
+    glBindVertexArray(0);
+
+
+    //
+    // Initialize Cloud VAO
+    //
+
+    glGenVertexArrays(1, &tmpGLuint);
+    mCloudVAO = tmpGLuint;
+
+    glBindVertexArray(*mCloudVAO);
+    CheckOpenGLError();
+
+    // Describe vertex attributes
     glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
     glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Cloud));
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Cloud), 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
@@ -638,14 +653,14 @@ void RenderContext::RenderSkyEnd()
     glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 
 
-    // TODOTEST: VAO: START
 
-    glBindVertexArray(*mStarAndCloudVAO);
-    CheckOpenGLError();
+    // TODOTEST: VAO: START
 
     ////////////////////////////////////////////////////
     // Draw stars with stencil test
     ////////////////////////////////////////////////////
+
+    glBindVertexArray(*mStarVAO);
 
     // Draw
     mShaderManager->ActivateProgram<ProgramType::Stars>();
@@ -653,9 +668,12 @@ void RenderContext::RenderSkyEnd()
     glDrawArrays(GL_POINTS, 0, static_cast<GLsizei>(mStarVertexBuffer.size()));
     CheckOpenGLError();
 
+
     ////////////////////////////////////////////////////
     // Draw clouds with stencil test
     ////////////////////////////////////////////////////
+
+    glBindVertexArray(*mCloudVAO);
 
     // Draw
     mShaderManager->ActivateProgram<ProgramType::Clouds>();

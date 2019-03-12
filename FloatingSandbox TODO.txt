@@ -541,9 +541,11 @@ Render:
 		+ Branch
 		+ New OpenGLObject w/deleter
 		= General concepts:
-			- Pass 1: do uploads where you want (@End?)
-			- Pass 2: change into mapbuffer and upload everything upfront
-		+ Test 1: Stars
+			- One VAO per "input configuration"
+			- Data uploading strategy:
+				- Pass 1: do uploads where you want (@End?)
+				- Pass 2: change into mapbuffer and upload everything upfront
+		+ Stars
 			+ ShaderManager: allow for reusing numeric values
 				+ UTs
 			+ BoundedVector
@@ -551,19 +553,18 @@ Render:
 			+ Use BoundedVector and handle GPU buffer (re-)allocation
 			+ Shader (new vertex attribute name)
 			+ Test			
-		= Test 2: Enlarge Stars VBO to include Clouds
-			- Use BoundedVector and handle GPU buffer (re-)allocation
+		+ Clouds
+			+ Use BoundedVector and handle GPU buffer (re-)allocation
 			+ Shader (new vertex attribute name)
-			- Test			
-		- Test 3: Enlarge StarsAndClouds VBO to include Lands
+			+ Test			
+		- Land
 			- Use BoundedVector and handle GPU buffer (re-)allocation
 			- Shader (new vertex attribute name)
 			- Test			
-		- Move vertex attribute enabling out of shader manager and, for now, to where it is described		
-		- Enlarge up to complete "world VAO"
-			- Strive for 1 single VAO
+		- Move vertex attribute enabling out of shader manager and, for now, to where it is described
+		- Do the rest of RenderContext
 		- Ship:
-			- One per element type (see MOLESKINE?)
+			- One per element type and/or vertex element array (see MOLESKINE?)
 			- Also make sure to bind element array indices to the VAOs
 		- TextLayer
 		- Cleanup:
