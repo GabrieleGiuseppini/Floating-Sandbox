@@ -15,37 +15,34 @@ namespace Render {
 RenderContext::RenderContext(
     ResourceLoader & resourceLoader,
     ProgressCallback const & progressCallback)
-    : mShaderManager()
-    , mTextureRenderManager()
-    , mTextRenderContext()
-    // TODOTEST: VAO: START
     // Buffers
-    , mStarVertexBuffer()
+    : mStarVertexBuffer()
     , mStarVBO()
     , mCloudQuadBuffer()
     , mCloudVBO()
     , mLandSegmentBuffer()
     , mLandVBO()
+    , mOceanSegmentBuffer()
+    , mOceanVBO()
+    , mCrossOfLightVertexBuffer()
+    , mCrossOfLightVBO()
     // VAOs
     , mStarVAO()
     , mCloudVAO()
     , mLandVAO()
+    , mOceanVAO()
+    , mCrossOfLightVAO()
     // Textures
     , mCloudTextureAtlasOpenGLHandle()
     , mCloudTextureAtlasMetadata()
-    // TODOTEST: VAO: OLD
-    // Ocean
-    , mOceanElementBuffer()
-    , mCurrentOceanElementCount(0u)
-    , mOceanElementCount(0u)
-    , mOceanVBO()
     // Ships
     , mShips()
     , mGenericTextureAtlasOpenGLHandle()
     , mGenericTextureAtlasMetadata()
-    // Cross of light
-    , mCrossOfLightBuffer()
-    , mCrossOfLightVBO()
+    // Managers
+    , mShaderManager()
+    , mTextureRenderManager()
+    , mTextRenderContext()
     // Render parameters
     , mViewModel(1.0f, vec2f::zero(), 100, 100)
     , mFlatSkyColor(0x87, 0xce, 0xfa) // (cornflower blue)
@@ -134,7 +131,7 @@ RenderContext::RenderContext(
     //
     // Atlas-ize all textures EXCEPT the following:
     // - Land, Ocean: we need these to be wrapping
-    // - Clouds: we keep these separate, we have to rebind anyway
+    // - Clouds: we keep these in a separate atlas, we have to rebind anyway
     //
 
     mShaderManager->ActivateTexture<ProgramParameterType::GenericTexturesAtlasTexture>();
@@ -188,17 +185,18 @@ RenderContext::RenderContext(
     mShaderManager->ActivateProgram<ProgramType::ShipGenericTextures>();
     mShaderManager->SetTextureParameters<ProgramType::ShipGenericTextures>();
 
-    // TODOTEST: VAO: START
 
     //
     // Initialize buffers
     //
 
-    GLuint vbos[3];
-    glGenBuffers(3, vbos);
+    GLuint vbos[5];
+    glGenBuffers(5, vbos);
     mStarVBO = vbos[0];
     mCloudVBO = vbos[1];
     mLandVBO = vbos[2];
+    mOceanVBO = vbos[3];
+    mCrossOfLightVBO = vbos[4];
 
 
     //
@@ -258,9 +256,48 @@ RenderContext::RenderContext(
     glBindVertexArray(0);
 
 
+    //
+    // Initialize Ocean VAO
+    //
+
+    glGenVertexArrays(1, &tmpGLuint);
+    mOceanVAO = tmpGLuint;
+
+    glBindVertexArray(*mOceanVAO);
+    CheckOpenGLError();
+
+    // Describe vertex attributes
+    glBindBuffer(GL_ARRAY_BUFFER, *mOceanVBO);
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Ocean));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Ocean), (2 + 1), GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void*)0);
+    CheckOpenGLError();
+
+    glBindVertexArray(0);
+
 
     //
-    // Initialize cloud textures
+    // Initialize CrossOfLight VAO
+    //
+
+    glGenVertexArrays(1, &tmpGLuint);
+    mCrossOfLightVAO = tmpGLuint;
+
+    glBindVertexArray(*mCrossOfLightVAO);
+    CheckOpenGLError();
+
+    // Describe vertex attributes
+    glBindBuffer(GL_ARRAY_BUFFER, *mCrossOfLightVBO);
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::CrossOfLight1));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::CrossOfLight1), 4, GL_FLOAT, GL_FALSE, sizeof(CrossOfLightVertex), (void*)0);
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::CrossOfLight2));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::CrossOfLight2), 1, GL_FLOAT, GL_FALSE, sizeof(CrossOfLightVertex), (void*)(4 * sizeof(float)));
+    CheckOpenGLError();
+
+    glBindVertexArray(0);
+
+
+    //
+    // Initialize cloud texture atlas
     //
 
     mShaderManager->ActivateTexture<ProgramParameterType::CloudTexture>();
@@ -278,7 +315,7 @@ RenderContext::RenderContext(
     glGenTextures(1, &tmpGLuint);
     mCloudTextureAtlasOpenGLHandle = tmpGLuint;
 
-    // Bind texture
+    // Bind texture atlas
     glBindTexture(GL_TEXTURE_2D, *mCloudTextureAtlasOpenGLHandle);
     CheckOpenGLError();
 
@@ -330,12 +367,8 @@ RenderContext::RenderContext(
     mShaderManager->SetTextureParameters<ProgramType::LandTexture>();
 
 
-    // TODOTEST: VAO: END
-
-
-
     //
-    // Initialize ocean
+    // Initialize ocean texture
     //
 
     // Activate texture
@@ -354,34 +387,13 @@ RenderContext::RenderContext(
     glBindTexture(GL_TEXTURE_2D, mTextureRenderManager->GetOpenGLHandle(TextureGroupType::Ocean, 0));
     CheckOpenGLError();
 
-    // Set hardcoded parameters
+    // Set texture and texture parameters in shader
     auto const & oceanTextureMetadata = textureDatabase.GetFrameMetadata(TextureGroupType::Ocean, 0);
     mShaderManager->ActivateProgram<ProgramType::OceanTexture>();
     mShaderManager->SetProgramParameter<ProgramType::OceanTexture, ProgramParameterType::TextureScaling>(
             1.0f / oceanTextureMetadata.WorldWidth,
             1.0f / oceanTextureMetadata.WorldHeight);
     mShaderManager->SetTextureParameters<ProgramType::OceanTexture>();
-
-    // Create VBO
-    glGenBuffers(1, &tmpGLuint);
-    mOceanVBO = tmpGLuint;
-
-    // Bind VBO
-    glBindBuffer(GL_ARRAY_BUFFER, *mOceanVBO);
-
-    // Associate ocean vertex attribute with this VBO and describe it
-    // (it's fully dedicated)
-    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::OceanAttribute));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::OceanAttribute), (2 + 1), GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void*)0);
-
-
-    //
-    // Initialize cross of light
-    //
-
-    // Create VBO
-    glGenBuffers(1, &tmpGLuint);
-    mCrossOfLightVBO = tmpGLuint;
 
 
     //
@@ -541,8 +553,8 @@ void RenderContext::RenderStart()
     if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-    // Reset crosses of light
-    mCrossOfLightBuffer.clear();
+    // Reset crosses of light, they are uploaded as needed
+    mCrossOfLightVertexBuffer.clear();
 
     // Communicate start to child contextes
     mTextRenderContext->RenderStart();
@@ -634,9 +646,6 @@ void RenderContext::RenderSkyEnd()
     // Enable stencil test
     glEnable(GL_STENCIL_TEST);
 
-    // Use matte ocean program
-    mShaderManager->ActivateProgram<ProgramType::MatteOcean>();
-
     // Disable writing to the color buffer
     glColorMask(false, false, false, false);
 
@@ -645,15 +654,20 @@ void RenderContext::RenderSkyEnd()
     glStencilFunc(GL_ALWAYS, 1, 0xFF);
     glStencilMask(0xFF);
 
-    // Disable vertex attribute 0, as we don't use it
-    glDisableVertexAttribArray(0);
+    //
+    // Draw ocean
+    //
+
+    glBindVertexArray(*mOceanVAO);
+
+    // Use matte ocean program
+    mShaderManager->ActivateProgram<ProgramType::MatteOcean>();
 
     // Make sure polygons are filled in any case
     if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-    // Draw
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mOceanElementCount));
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mOceanSegmentBuffer.size()));
 
     // Don't write anything to stencil buffer now
     glStencilMask(0x00);
@@ -665,12 +679,8 @@ void RenderContext::RenderSkyEnd()
     if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-    // Enable stenciling - only draw where there are no 1's
+    // Enable stenciling - now only draw where there are no 1's
     glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-
-
-
-    // TODOTEST: VAO: START
 
     ////////////////////////////////////////////////////
     // Draw stars with stencil test
@@ -731,27 +741,24 @@ void RenderContext::UploadLandAndOceanStart(size_t slices)
 
 
     //
-    // Prepare ocean buffer
+    // Prepare ocean segment buffer
     //
 
-    // TODO: use buffer
-    if (slices + 1 != mOceanElementCount)
+    if (slices + 1 != mOceanSegmentBuffer.max_size())
     {
-        // Bind VBO
+        // Reallocate GPU buffer
         glBindBuffer(GL_ARRAY_BUFFER, *mOceanVBO);
+        glBufferData(GL_ARRAY_BUFFER, (slices + 1) * sizeof(OceanSegment), nullptr, GL_DYNAMIC_DRAW);
         CheckOpenGLError();
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-        // Realloc GPU buffer
-        mOceanElementCount = slices + 1;
-        glBufferData(GL_ARRAY_BUFFER, mOceanElementCount * sizeof(OceanElement), nullptr, GL_DYNAMIC_DRAW);
-        CheckOpenGLError();
-
-        // Realloc buffer
-        mOceanElementBuffer.reset(new OceanElement[mOceanElementCount]);
+        // Reallocate CPU buffer
+        mOceanSegmentBuffer.reset(slices + 1);
     }
-
-    // Reset count of ocean elements
-    mCurrentOceanElementCount = 0u;
+    else
+    {
+        mOceanSegmentBuffer.clear();
+    }
 }
 
 void RenderContext::UploadLandAndOceanEnd()
@@ -766,16 +773,14 @@ void RenderContext::UploadLandAndOceanEnd()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 
-    // TODO: use buffer
+    //
+    // Upload ocean segment buffer
+    //
 
-    // Bind ocean VBO
     glBindBuffer(GL_ARRAY_BUFFER, *mOceanVBO);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, mOceanSegmentBuffer.size() * sizeof(OceanSegment), mOceanSegmentBuffer.data());
     CheckOpenGLError();
-
-    // Upload ocean buffer
-    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(OceanElement) * mOceanElementCount, mOceanElementBuffer.get());
-
-    // No need to describe ocean's vertex attribute as it is dedicated and we have described it already once and for all
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void RenderContext::RenderLand()
@@ -807,9 +812,8 @@ void RenderContext::RenderLand()
 
 void RenderContext::RenderOcean()
 {
-    assert(mCurrentOceanElementCount == mOceanElementCount);
+    glBindVertexArray(*mOceanVAO);
 
-    // Use program
     switch (mOceanRenderMode)
     {
         case OceanRenderMode::Depth:
@@ -831,14 +835,12 @@ void RenderContext::RenderOcean()
         }
     }
 
-    // Disable vertex attribute 0
-    glDisableVertexAttribArray(0);
-
     if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
         glLineWidth(0.1f);
 
-    // Draw
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mOceanElementCount));
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mOceanSegmentBuffer.size()));
+
+    glBindVertexArray(0);
 }
 
 void RenderContext::RenderShipsStart()
@@ -856,7 +858,7 @@ void RenderContext::RenderShipsEnd()
 void RenderContext::RenderEnd()
 {
     // Render crosses of light
-    if (!mCrossOfLightBuffer.empty())
+    if (!mCrossOfLightVertexBuffer.empty())
     {
         RenderCrossesOfLight();
     }
@@ -872,32 +874,31 @@ void RenderContext::RenderEnd()
 
 void RenderContext::RenderCrossesOfLight()
 {
-    // Use program
+    //
+    // Upload buffer
+    //
+
+    glBindBuffer(GL_ARRAY_BUFFER, *mCrossOfLightVBO);
+    glBufferData(GL_ARRAY_BUFFER,
+        sizeof(CrossOfLightVertex) * mCrossOfLightVertexBuffer.size(),
+        mCrossOfLightVertexBuffer.data(),
+        GL_DYNAMIC_DRAW);
+    CheckOpenGLError();
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+
+    //
+    // Render
+    //
+
+    glBindVertexArray(*mCrossOfLightVAO);
+
     mShaderManager->ActivateProgram<ProgramType::CrossOfLight>();
 
-    // Bind VBO
-    glBindBuffer(GL_ARRAY_BUFFER, *mCrossOfLightVBO);
-    CheckOpenGLError();
+    assert((mCrossOfLightVertexBuffer.size() % 6) == 0);
+    glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mCrossOfLightVertexBuffer.size()));
 
-    // Upload buffer
-    glBufferData(
-        GL_ARRAY_BUFFER,
-        sizeof(CrossOfLightElement) * mCrossOfLightBuffer.size(),
-        mCrossOfLightBuffer.data(),
-        GL_DYNAMIC_DRAW);
-
-    // Describe vertex attributes 0 and 1
-    //glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::SharedAttribute0);
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedAttribute0), 4, GL_FLOAT, GL_FALSE, sizeof(CrossOfLightElement), (void*)0);
-    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::SharedAttribute1));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedAttribute1), 1, GL_FLOAT, GL_FALSE, sizeof(CrossOfLightElement), (void*)((2 + 2) * sizeof(float)));
-
-    // Enable vertex attribute 0
-    glEnableVertexAttribArray(0);
-
-    // Draw
-    assert(0 == mCrossOfLightBuffer.size() % 6);
-    glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mCrossOfLightBuffer.size()));
+    glBindVertexArray(0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////

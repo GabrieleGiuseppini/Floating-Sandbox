@@ -85,20 +85,27 @@ ProgramParameterType StrToProgramParameterType(std::string const & str);
 
 std::string ProgramParameterTypeToStr(ProgramParameterType programParameter);
 
+/*
+ * This enum serves merely to associate a vertex attribute index to each vertex attribute name.
+ */
 enum class VertexAttributeType : GLuint
 {
-    // TODOTEST: VAO: START
-
     //
     // World
     //
 
     Star = 0,
+
     Cloud = 0,
+
     Land = 0,
+
     Ocean = 0,
 
-    // TODOTEST: VAO: END
+    CrossOfLight1 = 0,
+    CrossOfLight2 = 1,
+
+    // TODOHERE: ship ones
     //
     // Vertex attributes sourced from multiple VBO's
     //
@@ -111,8 +118,6 @@ enum class VertexAttributeType : GLuint
     //
     // Vertex attributes dedicated to a VBO
     //
-
-    OceanAttribute = 3,
 
     GenericTexturePackedData1 = 4,
     GenericTexturePackedData2 = 5,

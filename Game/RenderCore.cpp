@@ -214,6 +214,10 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::Land;
     else if (Utils::CaseInsensitiveEquals(str, "Ocean"))
         return VertexAttributeType::Ocean;
+    else if (Utils::CaseInsensitiveEquals(str, "CrossOfLight1"))
+        return VertexAttributeType::CrossOfLight1;
+    else if (Utils::CaseInsensitiveEquals(str, "CrossOfLight2"))
+        return VertexAttributeType::CrossOfLight2;
 
     else
     // TODOTEST:VAO: END
@@ -223,8 +227,6 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::SharedAttribute1;
     else if (Utils::CaseInsensitiveEquals(str, "SharedAttribute2"))
         return VertexAttributeType::SharedAttribute2;
-    else if (Utils::CaseInsensitiveEquals(str, "OceanAttribute"))
-        return VertexAttributeType::OceanAttribute;
     else if (Utils::CaseInsensitiveEquals(str, "GenericTexturePackedData1"))
         return VertexAttributeType::GenericTexturePackedData1;
     else if (Utils::CaseInsensitiveEquals(str, "GenericTexturePackedData2"))

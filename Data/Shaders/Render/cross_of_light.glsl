@@ -6,8 +6,8 @@
 #define out varying
 
 // Inputs
-in vec4 inSharedAttribute0;  // Position, CenterPosition
-in float inSharedAttribute1; // Progress
+in vec4 inCrossOfLight1;  // Position, CenterPosition
+in float inCrossOfLight2; // Progress
 
 // Outputs
 out vec2 vertexCenterPosition;
@@ -19,11 +19,11 @@ uniform mat4 paramOrthoMatrix;
 void main()
 {
     vertexCenterPosition = 
-        (paramOrthoMatrix * vec4(inSharedAttribute0.zw, -1.0, 1.0)).xy;
+        (paramOrthoMatrix * vec4(inCrossOfLight1.zw, -1.0, 1.0)).xy;
 
-    vertexProgress = inSharedAttribute1;
+    vertexProgress = inCrossOfLight2;
 
-    gl_Position = paramOrthoMatrix * vec4(inSharedAttribute0.xy, -1.0, 1.0);
+    gl_Position = paramOrthoMatrix * vec4(inCrossOfLight1.xy, -1.0, 1.0);
 }
 
 ###FRAGMENT

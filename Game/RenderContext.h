@@ -505,23 +505,23 @@ public:
         // Store ocean element
         //
 
-        assert(!!mOceanElementBuffer);
-        assert(mCurrentOceanElementCount + 1u <= mOceanElementCount);
-        OceanElement * oceanElement = &(mOceanElementBuffer[mCurrentOceanElementCount]);
+        OceanSegment & oceanSegment = mOceanSegmentBuffer.emplace_back();
 
-        oceanElement->x1 = x;
-        oceanElement->y1 = yOcean;
+        oceanSegment.x1 = x;
+        float const oceanSegmentY1 = yOcean;
+        oceanSegment.y1 = oceanSegmentY1;
 
-        oceanElement->x2 = x;
-        oceanElement->y2 = yOcean > yLand ? yLand : yVisibleWorldBottom; // If land sticks out, go down to visible bottom (land is drawn last)
+        oceanSegment.x2 = x;
+        float const oceanSegmentY2 = yOcean > yLand ? yLand : yVisibleWorldBottom; // If land sticks out, go down to visible bottom (land is drawn last)
+        oceanSegment.y2 = oceanSegmentY2;
 
         switch (mOceanRenderMode)
         {
             case OceanRenderMode::Texture:
             {
                 // Texture sample Y: top=oceanDepth (we use repeat mode), bottom=0.0
-                oceanElement->value1 = oceanDepth;
-                oceanElement->value2 = 0.0f;
+                oceanSegment.value1 = oceanDepth;
+                oceanSegment.value2 = 0.0f;
 
                 break;
             }
@@ -529,9 +529,9 @@ public:
             case OceanRenderMode::Depth:
             {
                 // Depth: top=0.0, bottom=height as fraction of maximum depth
-                oceanElement->value1 = 0.0f;
-                oceanElement->value2 = oceanDepth != 0.0f
-                    ? abs(oceanElement->y2 - oceanElement->y1) / oceanDepth
+                oceanSegment.value1 = 0.0f;
+                oceanSegment.value2 = oceanDepth != 0.0f
+                    ? abs(oceanSegmentY2 - oceanSegmentY1) / oceanDepth
                     : 0.0f;
 
                 break;
@@ -539,16 +539,14 @@ public:
 
             case OceanRenderMode::Flat:
             {
-                // Nop
-                oceanElement->value1 = 0.0f;
-                oceanElement->value2 = 0.0f;
+                // Nop, be nice
+                oceanSegment.value1 = 0.0f;
+                oceanSegment.value2 = 0.0f;
 
                 break;
             }
         }
-
-        ++mCurrentOceanElementCount;
-    }
+   }
 
     void UploadLandAndOceanEnd();
 
@@ -567,34 +565,34 @@ public:
     {
         // Triangle 1
 
-        mCrossOfLightBuffer.emplace_back(
+        mCrossOfLightVertexBuffer.emplace_back(
             vec2f(mViewModel.GetVisibleWorldTopLeft().x, mViewModel.GetVisibleWorldBottomRight().y), // left, bottom
             centerPosition,
             progress);
 
-        mCrossOfLightBuffer.emplace_back(
+        mCrossOfLightVertexBuffer.emplace_back(
             mViewModel.GetVisibleWorldTopLeft(), // left, top
             centerPosition,
             progress);
 
-        mCrossOfLightBuffer.emplace_back(
+        mCrossOfLightVertexBuffer.emplace_back(
             mViewModel.GetVisibleWorldBottomRight(), // right, bottom
             centerPosition,
             progress);
 
         // Triangle 2
 
-        mCrossOfLightBuffer.emplace_back(
+        mCrossOfLightVertexBuffer.emplace_back(
             mViewModel.GetVisibleWorldTopLeft(), // left, top
             centerPosition,
             progress);
 
-        mCrossOfLightBuffer.emplace_back(
+        mCrossOfLightVertexBuffer.emplace_back(
             mViewModel.GetVisibleWorldBottomRight(), // right, bottom
             centerPosition,
             progress);
 
-        mCrossOfLightBuffer.emplace_back(
+        mCrossOfLightVertexBuffer.emplace_back(
             vec2f(mViewModel.GetVisibleWorldBottomRight().x, mViewModel.GetVisibleWorldTopLeft().y),  // right, top
             centerPosition,
             progress);
@@ -975,12 +973,6 @@ private:
 
 private:
 
-    std::unique_ptr<ShaderManager<ShaderManagerTraits>> mShaderManager;
-    std::unique_ptr<TextureRenderManager> mTextureRenderManager;
-    std::unique_ptr<TextRenderContext> mTextRenderContext;
-
-    // TODOTEST: VAO: START
-
     //
     // Types
     //
@@ -1045,6 +1037,33 @@ private:
         float y2;
     };
 
+    struct OceanSegment
+    {
+        float x1;
+        float y1;
+        float value1;
+
+        float x2;
+        float y2;
+        float value2;
+    };
+
+    struct CrossOfLightVertex
+    {
+        vec2f vertex;
+        vec2f centerPosition;
+        float progress;
+
+        CrossOfLightVertex(
+            vec2f _vertex,
+            vec2f _centerPosition,
+            float _progress)
+            : vertex(_vertex)
+            , centerPosition(_centerPosition)
+            , progress(_progress)
+        {}
+    };
+
 #pragma pack(pop)
 
     //
@@ -1060,6 +1079,11 @@ private:
     BoundedVector<LandSegment> mLandSegmentBuffer;
     GameOpenGLVBO mLandVBO;
 
+    BoundedVector<OceanSegment> mOceanSegmentBuffer;
+    GameOpenGLVBO mOceanVBO;
+
+    std::vector<CrossOfLightVertex> mCrossOfLightVertexBuffer;
+    GameOpenGLVBO mCrossOfLightVBO;
 
     //
     // VAOs
@@ -1068,7 +1092,8 @@ private:
     GameOpenGLVAO mStarVAO;
     GameOpenGLVAO mCloudVAO;
     GameOpenGLVAO mLandVAO;
-
+    GameOpenGLVAO mOceanVAO;
+    GameOpenGLVAO mCrossOfLightVAO;
 
     //
     // Textures
@@ -1076,34 +1101,6 @@ private:
 
     GameOpenGLTexture mCloudTextureAtlasOpenGLHandle;
     std::unique_ptr<TextureAtlasMetadata> mCloudTextureAtlasMetadata;
-
-    // TODOTEST: VAO: END
-
-
-
-
-    //
-    // Ocean
-    //
-
-#pragma pack(push)
-    struct OceanElement
-    {
-        float x1;
-        float y1;
-        float value1;
-
-        float x2;
-        float y2;
-        float value2;
-    };
-#pragma pack(pop)
-
-    std::unique_ptr<OceanElement[]> mOceanElementBuffer;
-    size_t mCurrentOceanElementCount;
-    size_t mOceanElementCount;
-
-    GameOpenGLVBO mOceanVBO;
 
     //
     // Ships
@@ -1114,33 +1111,15 @@ private:
     GameOpenGLTexture mGenericTextureAtlasOpenGLHandle;
     std::unique_ptr<TextureAtlasMetadata> mGenericTextureAtlasMetadata;
 
-    //
-    // Cross of light
-    //
-
-#pragma pack(push)
-    struct CrossOfLightElement
-    {
-        vec2f vertex;
-        vec2f centerPosition;
-        float progress;
-
-        CrossOfLightElement(
-            vec2f _vertex,
-            vec2f _centerPosition,
-            float _progress)
-            : vertex(_vertex)
-            , centerPosition(_centerPosition)
-            , progress(_progress)
-        {}
-    };
-#pragma pack(pop)
-
-    std::vector<CrossOfLightElement> mCrossOfLightBuffer;
-
-    GameOpenGLVBO mCrossOfLightVBO;
-
 private:
+
+    //
+    // Managers
+    //
+
+    std::unique_ptr<ShaderManager<ShaderManagerTraits>> mShaderManager;
+    std::unique_ptr<TextureRenderManager> mTextureRenderManager;
+    std::unique_ptr<TextRenderContext> mTextRenderContext;
 
     //
     // The current render parameters

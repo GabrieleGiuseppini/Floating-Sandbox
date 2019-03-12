@@ -597,12 +597,16 @@ Render:
 			+ Shader (new vertex attribute name)
 			+ Test			
 		+ Move vertex attribute enabling out of shader manager and, for now, to where it is described
-		- Ocean
-		- Do the rest of RenderContext
+		+ Ocean and rest of RenderContext
+			+ Use BoundedVector and handle GPU buffer (re-)allocation
+			+ Shader (new vertex attribute names)
+			+ Test			
+		- Verify asm for Upload->emplace_back
+			- @ Stars::Upload
+		- TextLayer
 		- Ship:
 			- One per element type and/or vertex element array (see MOLESKINE?)
 			- Also make sure to bind element array indices to the VAOs
-		- TextLayer
 		- Cleanup:
 		- Check w/Parallels guy
 		
