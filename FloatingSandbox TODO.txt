@@ -601,14 +601,19 @@ Render:
 			+ Use BoundedVector and handle GPU buffer (re-)allocation
 			+ Shader (new vertex attribute names)
 			+ Test			
-		- Verify asm for Upload->emplace_back
-			- @ Stars::Upload
-		- TextLayer
+		+ Verify asm for Upload->emplace_back
+			+ @ Stars::Upload
+		= TextLayer
+			- Test
+			- Then, move upload to VBO right after creating vertices
+			- Test
 		- Ship:
 			- One per element type and/or vertex element array (see MOLESKINE?)
 			- Also make sure to bind element array indices to the VAOs
 		- Cleanup:
-		- Check w/Parallels guy
+		- Get new FPS
+		- Merge
+		= Check w/Parallels guy
 		
 			
 	- Lights on the GPU with instanced drawing (*)

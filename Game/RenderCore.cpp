@@ -205,7 +205,7 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
 
 VertexAttributeType StrToVertexAttributeType(std::string const & str)
 {
-    // TODOTEST:VAO: START
+    // World
     if (Utils::CaseInsensitiveEquals(str, "Star"))
         return VertexAttributeType::Star;
     else if (Utils::CaseInsensitiveEquals(str, "Cloud"))
@@ -218,9 +218,13 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::CrossOfLight1;
     else if (Utils::CaseInsensitiveEquals(str, "CrossOfLight2"))
         return VertexAttributeType::CrossOfLight2;
-
-    else
-    // TODOTEST:VAO: END
+    // TODOHERE: Ship
+    // Text
+    else if (Utils::CaseInsensitiveEquals(str, "Text1"))
+        return VertexAttributeType::Text1;
+    else if (Utils::CaseInsensitiveEquals(str, "Text2"))
+        return VertexAttributeType::Text2;
+    // TODO:OLD
     if (Utils::CaseInsensitiveEquals(str, "SharedAttribute0"))
         return VertexAttributeType::SharedAttribute0;
     else if (Utils::CaseInsensitiveEquals(str, "SharedAttribute1"))

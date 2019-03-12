@@ -105,31 +105,35 @@ enum class VertexAttributeType : GLuint
     CrossOfLight1 = 0,
     CrossOfLight2 = 1,
 
-    // TODOHERE: ship ones
     //
-    // Vertex attributes sourced from multiple VBO's
+    // Ship
     //
+
+    //TODOHERE
 
     SharedAttribute0 = 0,
     SharedAttribute1 = 14, //1,
     SharedAttribute2 = 15, //2,
 
-
-    //
-    // Vertex attributes dedicated to a VBO
-    //
-
+    // TODO: "GenericTexture1"
     GenericTexturePackedData1 = 4,
     GenericTexturePackedData2 = 5,
     GenericTexturePackedData3 = 6,
 
-    // Note: dedicated as long as we have one single ship and one VBO per ship
     ShipPointPosition = 7,
     ShipPointColor = 8,
     ShipPointLight = 9,
     ShipPointWater = 10,
     ShipPointPlaneId = 11,
-    ShipPointTextureCoordinates = 12
+    ShipPointTextureCoordinates = 12,
+
+
+    //
+    // Text
+    //
+
+    Text1 = 0,
+    Text2 = 1
 };
 
 VertexAttributeType StrToVertexAttributeType(std::string const & str);

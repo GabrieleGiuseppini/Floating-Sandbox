@@ -47,11 +47,13 @@ TextRenderContext::TextRenderContext(
 
     for (Font & font : fonts)
     {
-        // Create OpenGL handle for the texture
+        //
+        // Initialize texture
+        //
+
         GLuint textureOpenGLHandle;
         glGenTextures(1, &textureOpenGLHandle);
 
-        // Bind texture
         glBindTexture(GL_TEXTURE_2D, textureOpenGLHandle);
         CheckOpenGLError();
 
@@ -69,15 +71,44 @@ TextRenderContext::TextRenderContext(
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, font.Texture.Size.Width, font.Texture.Size.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, font.Texture.Data.get());
         CheckOpenGLError();
 
-        // Create vertices VBO
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        //
+        // Initialize VBO
+        //
+
         GLuint vertexBufferVBOHandle;
         glGenBuffers(1, &vertexBufferVBOHandle);
 
+        //
+        // Initialize VAO
+        //
+
+        GLuint vaoHandle;
+        glGenVertexArrays(1, &vaoHandle);
+
+        glBindVertexArray(vaoHandle);
+        CheckOpenGLError();
+
+        // Describe vertex attributes
+        glBindBuffer(GL_ARRAY_BUFFER, vertexBufferVBOHandle);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Text1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Text1), 4, GL_FLOAT, GL_FALSE, (4 + 1) * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Text2));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Text2), 1, GL_FLOAT, GL_FALSE, (4 + 1) * sizeof(float), (void*)(4 * sizeof(float)));
+        CheckOpenGLError();
+
+        glBindVertexArray(0);
+
+        //
         // Store font info
+        //
+
         mFontRenderInfos.emplace_back(
             font.Metadata,
             textureOpenGLHandle,
-            vertexBufferVBOHandle);
+            vertexBufferVBOHandle,
+            vaoHandle);
     }
 
 
@@ -122,7 +153,7 @@ void TextRenderContext::RenderEnd()
             if (mTextSlots[slot].Generation > 0)
             {
                 //
-                // Render this text
+                // Create vertices for this text
                 //
 
                 FontRenderInfo & fontRenderInfo = mFontRenderInfos[static_cast<size_t>(mTextSlots[slot].Font)];
@@ -222,52 +253,51 @@ void TextRenderContext::RenderEnd()
     // Render vertices
     //
 
-    bool isProgramActivated = false;
+    bool isFirst = true;
 
     for (auto const & fontRenderInfo : mFontRenderInfos)
     {
         auto const & vertexBuffer = fontRenderInfo.GetVertexBuffer();
         if (!vertexBuffer.empty())
         {
-            // Activate program (once for all fonts)
-            if (!isProgramActivated)
-            {
-                mShaderManager.ActivateProgram<ProgramType::TextNDC>();
-                isProgramActivated = true;
-            }
+            //
+            // Upload vertices
+            //
 
-            // Bind VBO
             glBindBuffer(GL_ARRAY_BUFFER, fontRenderInfo.GetVerticesVBOHandle());
-            CheckOpenGLError();
-
-            // Describe shared attribute indices
-            glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedAttribute0), 4, GL_FLOAT, GL_FALSE, (2 + 2 + 1) * sizeof(float), (void*)0);
-            glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::SharedAttribute1));
-            glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedAttribute1), 1, GL_FLOAT, GL_FALSE, (2 + 2 + 1) * sizeof(float), (void*)((2 + 2) * sizeof(float)));
-            CheckOpenGLError();
-
-            // Enable vertex attribute 0
-            glEnableVertexAttribArray(0);
-            CheckOpenGLError();
-
-            // Upload vertex buffer
             glBufferData(
                 GL_ARRAY_BUFFER,
                 vertexBuffer.size() * sizeof(TextQuadVertex),
                 vertexBuffer.data(),
                 GL_STATIC_DRAW);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
             CheckOpenGLError();
 
+            //
+            // Render the vertices for this font
+            //
+
+            glBindVertexArray(fontRenderInfo.GetVAOHandle());
+
+            if (isFirst)
+            {
+                // Activate program (once for all fonts)
+                mShaderManager.ActivateProgram<ProgramType::TextNDC>();
+
+                // Activate shared texture (once for all fonts)
+                mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
+
+                isFirst = false;
+            }
+
             // Bind texture
-            mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
             glBindTexture(GL_TEXTURE_2D, fontRenderInfo.GetFontTextureHandle());
             CheckOpenGLError();
 
             // Draw vertices
-            glDrawArrays(
-                GL_TRIANGLES,
-                0,
-                static_cast<GLsizei>(vertexBuffer.size()));
+            glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(vertexBuffer.size()));
+
+            glBindVertexArray(0);
         }
     }
 }

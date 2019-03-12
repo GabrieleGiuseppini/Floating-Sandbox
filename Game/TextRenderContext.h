@@ -144,16 +144,19 @@ private:
         FontRenderInfo(
             FontMetadata fontMetadata,
             GLuint fontTextureHandle,
-            GLuint vertexBufferVBOHandle)
+            GLuint vertexBufferVBOHandle,
+            GLuint vaoHandle)
             : mFontMetadata(std::move(fontMetadata))
             , mFontTextureHandle(fontTextureHandle)
             , mVertexBufferVBOHandle(vertexBufferVBOHandle)
+            , mVAOHandle(vaoHandle)
         {}
 
         FontRenderInfo(FontRenderInfo && other)
             : mFontMetadata(std::move(other.mFontMetadata))
             , mFontTextureHandle(std::move(other.mFontTextureHandle))
             , mVertexBufferVBOHandle(std::move(other.mVertexBufferVBOHandle))
+            , mVAOHandle(std::move(other.mVAOHandle))
         {}
 
         inline FontMetadata const & GetFontMetadata() const
@@ -171,6 +174,11 @@ private:
             return *mVertexBufferVBOHandle;
         }
 
+        inline GLuint GetVAOHandle() const
+        {
+            return *mVAOHandle;
+        }
+
         inline std::vector<TextQuadVertex> const & GetVertexBuffer() const
         {
             return mVertexBuffer;
@@ -185,6 +193,7 @@ private:
         FontMetadata mFontMetadata;
         GameOpenGLTexture mFontTextureHandle;
         GameOpenGLVBO mVertexBufferVBOHandle;
+        GameOpenGLVAO mVAOHandle;
 
         std::vector<TextQuadVertex> mVertexBuffer;
     };
