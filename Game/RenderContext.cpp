@@ -22,16 +22,14 @@ RenderContext::RenderContext(
     // Buffers
     , mStarVertexBuffer()
     , mStarVBO()
-    // VAOs
-    , mStarVAO()
-    // TODOTEST: VAO: OLD
-    // Clouds
-    , mCloudElementBuffer()
-    , mCurrentCloudElementCount(0u)
-    , mCloudElementCount(0u)
+    , mCloudQuadBuffer()
     , mCloudVBO()
+    // VAOs
+    , mStarAndCloudVAO()
+    // Textures
     , mCloudTextureAtlasOpenGLHandle()
     , mCloudTextureAtlasMetadata()
+    // TODOTEST: VAO: OLD
     // Land
     , mLandElementBuffer()
     , mCurrentLandElementCount(0u)
@@ -197,17 +195,19 @@ RenderContext::RenderContext(
     // Initialize buffers
     //
 
-    glGenBuffers(1, &tmpGLuint);
-    mStarVBO = tmpGLuint;
+    GLuint vboBuffers[2];
+    glGenBuffers(2, vboBuffers);
+    mStarVBO = vboBuffers[0];
+    mCloudVBO = vboBuffers[1];
 
     //
-    // Initialize Star VAO
+    // Initialize Star and Cloud VAO
     //
 
     glGenVertexArrays(1, &tmpGLuint);
-    mStarVAO = tmpGLuint;
+    mStarAndCloudVAO = tmpGLuint;
 
-    glBindVertexArray(*mStarVAO);
+    glBindVertexArray(*mStarAndCloudVAO);
     CheckOpenGLError();
 
     // Describe vertex attribute 0
@@ -216,17 +216,18 @@ RenderContext::RenderContext(
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Star), 3, GL_FLOAT, GL_FALSE, sizeof(StarVertex), (void*)0);
     CheckOpenGLError();
 
+    // Describe vertex attribute 1
+    glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Cloud));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Cloud), 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    CheckOpenGLError();
+
     glBindVertexArray(0);
 
 
 
-
-    // TODOTEST: VAO: END
-
-
-
     //
-    // Initialize clouds
+    // Initialize cloud textures
     //
 
     mShaderManager->ActivateTexture<ProgramParameterType::CloudTexture>();
@@ -264,14 +265,12 @@ RenderContext::RenderContext(
     // Store metadata
     mCloudTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata>(cloudTextureAtlas.Metadata);
 
-    // Set hardcoded parameters
+    // Set texture in shader
     mShaderManager->ActivateProgram<ProgramType::Clouds>();
     mShaderManager->SetTextureParameters<ProgramType::Clouds>();
 
-    // Create VBO
-    glGenBuffers(1, &tmpGLuint);
-    mCloudVBO = tmpGLuint;
 
+    // TODOTEST: VAO: END
 
     //
     // Initialize land
@@ -528,7 +527,7 @@ void RenderContext::RenderSkyStart()
 void RenderContext::UploadStarsStart(size_t starCount)
 {
     //
-    // Prepare stars buffer
+    // Prepare star vertex buffer
     //
 
     if (starCount != mStarVertexBuffer.max_size())
@@ -537,7 +536,6 @@ void RenderContext::UploadStarsStart(size_t starCount)
         glBindBuffer(GL_ARRAY_BUFFER, *mStarVBO);
         glBufferData(GL_ARRAY_BUFFER, starCount * sizeof(StarVertex), nullptr, GL_STATIC_DRAW);
         CheckOpenGLError();
-
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         // Reallocate CPU buffer
@@ -552,45 +550,48 @@ void RenderContext::UploadStarsStart(size_t starCount)
 void RenderContext::UploadStarsEnd()
 {
     //
-    // Upload star buffer
+    // Upload star vertex buffer
     //
 
     glBindBuffer(GL_ARRAY_BUFFER, *mStarVBO);
     glBufferSubData(GL_ARRAY_BUFFER, 0, mStarVertexBuffer.size() * sizeof(StarVertex), mStarVertexBuffer.data());
     CheckOpenGLError();
-
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
-
-// TODOTEST: VAO TEST: OLD
 
 void RenderContext::UploadCloudsStart(size_t cloudCount)
 {
     //
-    // Prepare clouds buffers
+    // Prepare cloud quad buffer
     //
 
-    if (cloudCount != mCloudElementCount)
+    if (cloudCount != mCloudQuadBuffer.max_size())
     {
-        // Bind VBO
+        // Reallocate GPU buffer
         glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
+        glBufferData(GL_ARRAY_BUFFER, cloudCount * sizeof(CloudQuad), nullptr, GL_DYNAMIC_DRAW);
         CheckOpenGLError();
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-        // Realloc GPU buffer
-        mCloudElementCount = cloudCount;
-        glBufferData(GL_ARRAY_BUFFER, mCloudElementCount * sizeof(CloudElement), nullptr, GL_DYNAMIC_DRAW);
-        CheckOpenGLError();
-
-        // Realloc buffer
-        mCloudElementBuffer.reset(new CloudElement[mCloudElementCount]);
+        // Reallocate CPU buffer
+        mCloudQuadBuffer.reset(cloudCount);
     }
-
-    // Reset current count of clouds
-    mCurrentCloudElementCount = 0u;
+    else
+    {
+        mCloudQuadBuffer.clear();
+    }
 }
 
 void RenderContext::UploadCloudsEnd()
 {
+    //
+    // Upload cloud vertex buffer
+    //
+
+    glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, mCloudQuadBuffer.size() * sizeof(CloudQuad), mCloudQuadBuffer.data());
+    CheckOpenGLError();
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void RenderContext::RenderSkyEnd()
@@ -636,46 +637,37 @@ void RenderContext::RenderSkyEnd()
     // Enable stenciling - only draw where there are no 1's
     glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 
+
+    // TODOTEST: VAO: START
+
+    glBindVertexArray(*mStarAndCloudVAO);
+    CheckOpenGLError();
+
     ////////////////////////////////////////////////////
     // Draw stars with stencil test
     ////////////////////////////////////////////////////
-
-    glBindVertexArray(*mStarVAO);
-    CheckOpenGLError();
 
     // Draw
     mShaderManager->ActivateProgram<ProgramType::Stars>();
     glPointSize(0.5f);
     glDrawArrays(GL_POINTS, 0, static_cast<GLsizei>(mStarVertexBuffer.size()));
-
-    glBindVertexArray(0);
+    CheckOpenGLError();
 
     ////////////////////////////////////////////////////
     // Draw clouds with stencil test
     ////////////////////////////////////////////////////
 
-    assert(mCurrentCloudElementCount == mCloudElementCount);
-
-    // Use program
+    // Draw
     mShaderManager->ActivateProgram<ProgramType::Clouds>();
-
-    // Bind VBO
-    glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
-    CheckOpenGLError();
-
-    // Upload buffer
-    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(CloudElement) * mCloudElementCount, mCloudElementBuffer.get());
-    CheckOpenGLError();
-
-    // Describe vertex attribute 0
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedAttribute0), 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), nullptr);
-    CheckOpenGLError();
-
     if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
         glLineWidth(0.1f);
+    glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(6 * mCloudQuadBuffer.size()));
+    CheckOpenGLError();
 
-    // Draw
-    glDrawArrays(GL_TRIANGLES, 0, static_cast<GLint>(6 * mCloudElementCount));
+
+    glBindVertexArray(0);
+
+    // TODOTEST: VAO: END
 
     ////////////////////////////////////////////////////
 

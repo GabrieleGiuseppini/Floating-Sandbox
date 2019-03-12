@@ -88,7 +88,13 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter);
 enum class VertexAttributeType : GLuint
 {
     // TODOTEST: VAO: START
-    Star = 0,
+
+    //
+    // Stars and Clouds
+    //
+
+    Star = 1,
+    Cloud = 2,
 
     // TODOTEST: VAO: END
     //
@@ -96,8 +102,8 @@ enum class VertexAttributeType : GLuint
     //
 
     SharedAttribute0 = 0,
-    SharedAttribute1 = 1,
-    SharedAttribute2 = 2,
+    SharedAttribute1 = 14, //1,
+    SharedAttribute2 = 15, //2,
 
 
     //

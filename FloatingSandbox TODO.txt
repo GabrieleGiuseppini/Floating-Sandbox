@@ -216,6 +216,10 @@ Render:
 
 		= VAO (*)
 
+		- Flood tool and ship un/sinking
+			- Make music class with FadeToStop()
+				- ::Update()
+
 		- Test undoing TrianglesTexture shader optimization (vec4 and calc'n move)
 
 		- Vertex buffer optimizations (*)
@@ -537,7 +541,8 @@ Render:
 		+ Branch
 		+ New OpenGLObject w/deleter
 		= General concepts:
-			= See if can move uploads early, and then later just bind VAOs
+			- Pass 1: do uploads where you want (@End?)
+			- Pass 2: change into mapbuffer and upload everything upfront
 		+ Test 1: Stars
 			+ ShaderManager: allow for reusing numeric values
 				+ UTs
@@ -546,7 +551,14 @@ Render:
 			+ Use BoundedVector and handle GPU buffer (re-)allocation
 			+ Shader (new vertex attribute name)
 			+ Test			
-		- Test 2: Enlarge Stars VBO to include Clouds
+		= Test 2: Enlarge Stars VBO to include Clouds
+			- Use BoundedVector and handle GPU buffer (re-)allocation
+			+ Shader (new vertex attribute name)
+			- Test			
+		- Test 3: Enlarge StarsAndClouds VBO to include Lands
+			- Use BoundedVector and handle GPU buffer (re-)allocation
+			- Shader (new vertex attribute name)
+			- Test			
 		- Move vertex attribute enabling out of shader manager and, for now, to where it is described		
 		- Enlarge up to complete "world VAO"
 			- Strive for 1 single VAO

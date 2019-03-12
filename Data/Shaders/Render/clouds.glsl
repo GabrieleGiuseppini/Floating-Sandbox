@@ -6,19 +6,19 @@
 #define out varying
 
 //
-// Clouds's inputs are directly in NDC coordinates
+// Clouds' inputs are directly in NDC coordinates
 //
 
 // Inputs
-in vec4 inSharedAttribute0; // Position (vec2), TextureCoordinates (vec2)
+in vec4 inCloud; // Position (vec2), TextureCoordinates (vec2)
 
 // Outputs
 out vec2 texturePos;
 
 void main()
 {
-    gl_Position = vec4(inSharedAttribute0.xy, -1.0, 1.0);
-    texturePos = inSharedAttribute0.zw;
+    gl_Position = vec4(inCloud.xy, -1.0, 1.0);
+    texturePos = inCloud.zw;
 }
 
 ###FRAGMENT

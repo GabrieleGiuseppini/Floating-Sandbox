@@ -382,6 +382,10 @@ public:
         float ndcY,
         float brightness)
     {
+        //
+        // Populate vertex in buffer
+        //
+
         mStarVertexBuffer.emplace_back(ndcX, ndcY, brightness);
     }
 
@@ -416,14 +420,10 @@ public:
 
 
         //
-        // Populate entry in buffer
+        // Populate quad in buffer
         //
 
-        assert(!!mCloudElementBuffer);
-        assert(mCurrentCloudElementCount + 1u <= mCloudElementCount);
-        CloudElement * cloudElement = &(mCloudElementBuffer[mCurrentCloudElementCount]);
-
-        size_t cloudTextureIndex = mCurrentCloudElementCount % mCloudTextureAtlasMetadata->GetFrameMetadata().size();
+        size_t const cloudTextureIndex = mCloudQuadBuffer.size() % mCloudTextureAtlasMetadata->GetFrameMetadata().size();
 
         auto cloudAtlasFrameMetadata = mCloudTextureAtlasMetadata->GetFrameMetadata(
             TextureGroupType::Cloud,
@@ -436,37 +436,37 @@ public:
         float topY = mappedY + scale * (cloudAtlasFrameMetadata.FrameMetadata.WorldHeight - cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldY) * aspectRatio;
         float bottomY = mappedY - scale * cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldY * aspectRatio;
 
-        cloudElement->ndcXTopLeft1 = leftX;
-        cloudElement->ndcYTopLeft1 = topY;
-        cloudElement->ndcTextureXTopLeft1 = cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x;
-        cloudElement->ndcTextureYTopLeft1 = cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y;
+        CloudQuad & cloudQuad = mCloudQuadBuffer.emplace_back();
 
-        cloudElement->ndcXBottomLeft1 = leftX;
-        cloudElement->ndcYBottomLeft1 = bottomY;
-        cloudElement->ndcTextureXBottomLeft1 = cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x;
-        cloudElement->ndcTextureYBottomLeft1 = cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y;
+        cloudQuad.ndcXTopLeft1 = leftX;
+        cloudQuad.ndcYTopLeft1 = topY;
+        cloudQuad.ndcTextureXTopLeft1 = cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x;
+        cloudQuad.ndcTextureYTopLeft1 = cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y;
 
-        cloudElement->ndcXTopRight1 = rightX;
-        cloudElement->ndcYTopRight1 = topY;
-        cloudElement->ndcTextureXTopRight1 = cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x;
-        cloudElement->ndcTextureYTopRight1 = cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y;
+        cloudQuad.ndcXBottomLeft1 = leftX;
+        cloudQuad.ndcYBottomLeft1 = bottomY;
+        cloudQuad.ndcTextureXBottomLeft1 = cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x;
+        cloudQuad.ndcTextureYBottomLeft1 = cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y;
 
-        cloudElement->ndcXBottomLeft2 = leftX;
-        cloudElement->ndcYBottomLeft2 = bottomY;
-        cloudElement->ndcTextureXBottomLeft2 = cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x;
-        cloudElement->ndcTextureYBottomLeft2 = cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y;
+        cloudQuad.ndcXTopRight1 = rightX;
+        cloudQuad.ndcYTopRight1 = topY;
+        cloudQuad.ndcTextureXTopRight1 = cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x;
+        cloudQuad.ndcTextureYTopRight1 = cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y;
 
-        cloudElement->ndcXTopRight2 = rightX;
-        cloudElement->ndcYTopRight2 = topY;
-        cloudElement->ndcTextureXTopRight2 = cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x;
-        cloudElement->ndcTextureYTopRight2 = cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y;
+        cloudQuad.ndcXBottomLeft2 = leftX;
+        cloudQuad.ndcYBottomLeft2 = bottomY;
+        cloudQuad.ndcTextureXBottomLeft2 = cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x;
+        cloudQuad.ndcTextureYBottomLeft2 = cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y;
 
-        cloudElement->ndcXBottomRight2 = rightX;
-        cloudElement->ndcYBottomRight2 = bottomY;
-        cloudElement->ndcTextureXBottomRight2 = cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x;
-        cloudElement->ndcTextureYBottomRight2 = cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y;
+        cloudQuad.ndcXTopRight2 = rightX;
+        cloudQuad.ndcYTopRight2 = topY;
+        cloudQuad.ndcTextureXTopRight2 = cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x;
+        cloudQuad.ndcTextureYTopRight2 = cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y;
 
-        ++mCurrentCloudElementCount;
+        cloudQuad.ndcXBottomRight2 = rightX;
+        cloudQuad.ndcYBottomRight2 = bottomY;
+        cloudQuad.ndcTextureXBottomRight2 = cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x;
+        cloudQuad.ndcTextureYBottomRight2 = cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y;
     }
 
     void UploadCloudsEnd();
@@ -986,13 +986,14 @@ private:
     std::unique_ptr<TextureRenderManager> mTextureRenderManager;
     std::unique_ptr<TextRenderContext> mTextRenderContext;
 
-    // TODOTEST: VAO TEST START
+    // TODOTEST: VAO: START
 
     //
     // Types
     //
 
 #pragma pack(push)
+
     struct StarVertex
     {
         float ndcX;
@@ -1008,33 +1009,9 @@ private:
             , brightness(_brightness)
         {}
     };
-#pragma pack(pop)
 
-    //
-    // Buffers
-    //
-
-    BoundedVector<StarVertex> mStarVertexBuffer;
-    GameOpenGLVBO mStarVBO;
-
-
-    //
-    // VAOs
-    //
-
-    GameOpenGLVAO mStarVAO;
-
-
-    // TODOTEST: OLD
-
-
-    //
-    // Clouds
-    //
-
-#pragma pack(push)
     // Two triangles
-    struct CloudElement
+    struct CloudQuad
     {
         float ndcXTopLeft1;
         float ndcYTopLeft1;
@@ -1066,16 +1043,36 @@ private:
         float ndcTextureXBottomRight2;
         float ndcTextureYBottomRight2;
     };
+
 #pragma pack(pop)
 
-    std::unique_ptr<CloudElement[]> mCloudElementBuffer;
-    size_t mCurrentCloudElementCount;
-    size_t mCloudElementCount;
+    //
+    // Buffers
+    //
 
+    BoundedVector<StarVertex> mStarVertexBuffer;
+    GameOpenGLVBO mStarVBO;
+
+    BoundedVector<CloudQuad> mCloudQuadBuffer;
     GameOpenGLVBO mCloudVBO;
+
+
+    //
+    // VAOs
+    //
+
+    GameOpenGLVAO mStarAndCloudVAO;
+
+
+    //
+    // Textures
+    //
 
     GameOpenGLTexture mCloudTextureAtlasOpenGLHandle;
     std::unique_ptr<TextureAtlasMetadata> mCloudTextureAtlasMetadata;
+
+    // TODOTEST: VAO: END
+
 
     //
     // Land

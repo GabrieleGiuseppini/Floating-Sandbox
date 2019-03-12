@@ -208,6 +208,9 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
     // TODOTEST:VAO: START
     if (Utils::CaseInsensitiveEquals(str, "Star"))
         return VertexAttributeType::Star;
+    else if (Utils::CaseInsensitiveEquals(str, "Cloud"))
+        return VertexAttributeType::Cloud;
+
     else
     // TODOTEST:VAO: END
     if (Utils::CaseInsensitiveEquals(str, "SharedAttribute0"))
