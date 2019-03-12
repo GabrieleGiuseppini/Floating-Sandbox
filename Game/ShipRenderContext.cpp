@@ -98,24 +98,28 @@ ShipRenderContext::ShipRenderContext(
     mPointPositionVBO = pointVBOs[0];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointPositionVBO);
     glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(vec2f), nullptr, GL_DYNAMIC_DRAW);
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointPosition));
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointPosition), 2, GL_FLOAT, GL_FALSE, sizeof(vec2f), (void*)(0));
     CheckOpenGLError();
 
     mPointLightVBO = pointVBOs[1];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointLightVBO);
     glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointLight));
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointLight), 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)(0));
     CheckOpenGLError();
 
     mPointWaterVBO = pointVBOs[2];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointWaterVBO);
     glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointWater));
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointWater), 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)(0));
     CheckOpenGLError();
 
     mPointColorVBO = pointVBOs[3];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointColorVBO);
     glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(vec4f), nullptr, GL_DYNAMIC_DRAW);
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointColor));
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointColor), 4, GL_FLOAT, GL_FALSE, sizeof(vec4f), (void*)(0));
     CheckOpenGLError();
 
@@ -123,12 +127,14 @@ ShipRenderContext::ShipRenderContext(
     glBindBuffer(GL_ARRAY_BUFFER, *mPointPlaneIdVBO);
     glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(PlaneId), nullptr, GL_STATIC_DRAW);
     static_assert(sizeof(PlaneId) == sizeof(uint32_t)); // GL_UNSIGNED_INT
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointPlaneId));
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointPlaneId), 1, GL_UNSIGNED_INT, GL_FALSE, sizeof(PlaneId), (void*)(0));
     CheckOpenGLError();
 
     mPointElementTextureCoordinatesVBO = pointVBOs[5];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointElementTextureCoordinatesVBO);
     glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(vec2f), nullptr, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointTextureCoordinates));
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointTextureCoordinates), 2, GL_FLOAT, GL_FALSE, sizeof(vec2f), (void*)(0));
     CheckOpenGLError();
 
@@ -218,8 +224,11 @@ ShipRenderContext::ShipRenderContext(
 
     // Describe vertex buffer
     static_assert(sizeof(TextureRenderPolygonVertex) == (4 + 4 + 3) * sizeof(float));
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::GenericTexturePackedData1));
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTexturePackedData1), 4, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)0);
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::GenericTexturePackedData2));
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTexturePackedData2), 4, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)((4) * sizeof(float)));
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::GenericTexturePackedData3));
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTexturePackedData3), 3, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)((4 + 4) * sizeof(float)));
     CheckOpenGLError();
 

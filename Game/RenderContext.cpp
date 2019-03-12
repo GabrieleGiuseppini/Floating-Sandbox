@@ -371,6 +371,7 @@ RenderContext::RenderContext(
 
     // Associate ocean vertex attribute with this VBO and describe it
     // (it's fully dedicated)
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::OceanAttribute));
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::OceanAttribute), (2 + 1), GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void*)0);
 
 
@@ -886,7 +887,9 @@ void RenderContext::RenderCrossesOfLight()
         GL_DYNAMIC_DRAW);
 
     // Describe vertex attributes 0 and 1
+    //glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::SharedAttribute0);
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedAttribute0), 4, GL_FLOAT, GL_FALSE, sizeof(CrossOfLightElement), (void*)0);
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::SharedAttribute1));
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedAttribute1), 1, GL_FLOAT, GL_FALSE, sizeof(CrossOfLightElement), (void*)((2 + 2) * sizeof(float)));
 
     // Enable vertex attribute 0

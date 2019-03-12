@@ -133,11 +133,6 @@ void ShaderManager<Traits>::CompileShader(
                 mPrograms[programIndex].OpenGLHandle,
                 static_cast<GLuint>(vertexAttribute),
                 "in" + vertexAttributeName);
-
-            // Enable this attribute
-            // TODO: this has to go
-            glEnableVertexAttribArray(static_cast<GLuint>(vertexAttribute));
-            CheckOpenGLError();
         }
 
 

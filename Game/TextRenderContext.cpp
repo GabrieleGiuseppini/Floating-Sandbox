@@ -242,6 +242,7 @@ void TextRenderContext::RenderEnd()
 
             // Describe shared attribute indices
             glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedAttribute0), 4, GL_FLOAT, GL_FALSE, (2 + 2 + 1) * sizeof(float), (void*)0);
+            glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::SharedAttribute1));
             glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedAttribute1), 1, GL_FLOAT, GL_FALSE, (2 + 2 + 1) * sizeof(float), (void*)((2 + 2) * sizeof(float)));
             CheckOpenGLError();
 

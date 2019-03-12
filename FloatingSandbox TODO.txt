@@ -216,6 +216,8 @@ Render:
 
 		= VAO (*)
 
+		- MapBuffer optimization (*)
+
 		- Flood tool and ship un/sinking
 			- Make music class with FadeToStop()
 				- ::Update()
@@ -538,6 +540,30 @@ Render:
 
 - Gfx optimizations:
 
+	- MapBuffer (*)
+		- Use MapBuffer to leverage asynchronousness at Unmap()
+		- GameOpenGLMappedVector<TElement, WRITE_ONLY>
+			- Map(size)
+			- emplace_back(...)
+				- w/assert that is mapped
+			- Unmap()
+			- ~()
+				- Unmap if mapped
+			- Remove that ugly GameOpenGLObject()
+		- Test 1:
+			- Replace current buffers
+			- See if faster
+		- Test 2:
+			- Do all uploads up-front
+			- Render pipeline sequence:
+				- RenderContext::RenderStart()
+				- RenderContext::UploadXYZ() or RenderContext::UploadXYZStart()/./End()
+				- RenderContext::RenderWorldPre()
+				- RenderContext::RenderShips()
+				- RenderContext::RenderWorldPost()
+				- RenderContext::RenderEnd()
+			- See if faster
+
 	- World::UploadLandAndWater: use same spatial frequency as samples, so to avoid interpolating altogether
 		- Warning: requires same sampling frequency for both, as ocean quads require landY when land sticks out,
 		  unless we always render ocean up to visibleWorldBottom, in which case the two are fully independent;
@@ -553,7 +579,7 @@ Render:
 			- One VAO per "input configuration"
 			- Data uploading strategy:
 				- Pass 1: do uploads where you want (@End?)
-				- Pass 2: change into mapbuffer and upload everything upfront
+				- Pass 2 (later, different work item above): change into mapbuffer and upload everything upfront
 		+ Stars
 			+ ShaderManager: allow for reusing numeric values
 				+ UTs
@@ -570,7 +596,7 @@ Render:
 			+ Use BoundedVector and handle GPU buffer (re-)allocation
 			+ Shader (new vertex attribute name)
 			+ Test			
-		- Move vertex attribute enabling out of shader manager and, for now, to where it is described
+		+ Move vertex attribute enabling out of shader manager and, for now, to where it is described
 		- Ocean
 		- Do the rest of RenderContext
 		- Ship:
