@@ -39,15 +39,11 @@ in float vertexAlpha;
 uniform float paramAmbientLightIntensity;
 
 // The texture
-uniform sampler2D sharedSpringTexture;
+uniform sampler2D paramSharedTexture;
 
 void main()
 {
-    vec4 textureColor = texture2D(sharedSpringTexture, vertexTextureCoordinates);
-
-    //vec3 textColor =
-    //    textureColor.xyz * sqrt(paramAmbientLightIntensity)
-    //    + vec3(1.0, 1.0, 1.0) * (1.0 - sqrt(paramAmbientLightIntensity));
+    vec4 textureColor = texture2D(paramSharedTexture, vertexTextureCoordinates);
 
     vec3 textColor =
         textureColor.xyz * step(0.5, paramAmbientLightIntensity)

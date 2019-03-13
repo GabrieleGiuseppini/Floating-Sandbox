@@ -13,6 +13,7 @@
 #include <GameOpenGL/GameOpenGL.h>
 #include <GameOpenGL/ShaderManager.h>
 
+#include <GameCore/BoundedVector.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/ImageData.h>
 #include <GameCore/SysSpecifics.h>
@@ -35,11 +36,11 @@ public:
         ShipId shipId,
         size_t shipCount,
         size_t pointCount,
-        RgbaImageData texture,
+        RgbaImageData shipTexture,
         ShipDefinition::TextureOriginType textureOrigin,
         ShaderManager<ShaderManagerTraits> & shaderManager,
-        GameOpenGLTexture & textureAtlasOpenGLHandle,
-        TextureAtlasMetadata const & textureAtlasMetadata,
+        GameOpenGLTexture & genericTextureAtlasOpenGLHandle,
+        TextureAtlasMetadata const & genericTextureAtlasMetadata,
         RenderStatistics & renderStatistics,
         ViewModel const & viewModel,
         float ambientLightIntensity,
@@ -114,7 +115,7 @@ public:
 
 public:
 
-    void RenderStart();
+    void RenderStart(PlaneId maxMaxPlaneId);
 
     //
     // Points
@@ -135,8 +136,7 @@ public:
     void UploadPointPlaneIds(
         PlaneId const * planeId,
         size_t startDst,
-        size_t count,
-        PlaneId maxMaxPlaneId);
+        size_t count);
 
 
     //
@@ -270,13 +270,13 @@ public:
         assert(planeIndex < mGenericTexturePlanes.size());
 
         // Get this plane's vertex buffer
-        auto & vertexBuffer = mGenericTexturePlanes[planeIndex].VertexBuffer;
+        auto & vertexBuffer = mGenericTexturePlaneVertexBuffers[planeIndex].vertexBuffer;
 
         //
         // Populate the texture quad
         //
 
-        TextureAtlasFrameMetadata const & frame = mTextureAtlasMetadata.GetFrameMetadata(textureFrameId);
+        TextureAtlasFrameMetadata const & frame = mGenericTextureAtlasMetadata.GetFrameMetadata(textureFrameId);
 
         float const leftX = -frame.FrameMetadata.AnchorWorldX;
         float const rightX = frame.FrameMetadata.WorldWidth - frame.FrameMetadata.AnchorWorldX;
@@ -401,29 +401,101 @@ private:
     void OnWaterContrastUpdated();
     void OnWaterLevelOfDetailUpdated();
 
-    struct GenericTexturePlaneData;
-
     void RenderPointElements();
-
     void RenderSpringElements(bool withTexture);
-
     void RenderRopeElements();
-
     void RenderTriangleElements(bool withTexture);
-
     void RenderStressedSpringElements();
-
     void RenderGenericTextures();
-
     void RenderEphemeralPoints();
-
     void RenderVectors();
 
 private:
 
     ShipId const mShipId;
     size_t mShipCount;
+    size_t const mPointCount;
     PlaneId mMaxMaxPlaneId;
+
+
+    //
+    // Types
+    //
+
+#pragma pack(push)
+
+    struct GenericTextureVertex
+    {
+        vec2f centerPosition;
+        vec2f vertexOffset;
+        vec2f textureCoordinate;
+
+        float planeId;
+
+        float scale;
+        float angle;
+        float alpha;
+        float ambientLightSensitivity;
+
+        GenericTextureVertex(
+            vec2f _centerPosition,
+            vec2f _vertexOffset,
+            vec2f _textureCoordinate,
+            float _planeId,
+            float _scale,
+            float _angle,
+            float _alpha,
+            float _ambientLightSensitivity)
+            : centerPosition(_centerPosition)
+            , vertexOffset(_vertexOffset)
+            , textureCoordinate(_textureCoordinate)
+            , planeId(_planeId)
+            , scale(_scale)
+            , angle(_angle)
+            , alpha(_alpha)
+            , ambientLightSensitivity(_ambientLightSensitivity)
+        {}
+    };
+
+#pragma pack(pop)
+
+    //
+    // Buffers
+    //
+
+    struct GenericTexturePlaneData
+    {
+        std::vector<GenericTextureVertex> vertexBuffer;
+    };
+
+    std::vector<GenericTexturePlaneData> mGenericTexturePlaneVertexBuffers;
+    size_t mGenericTextureMaxPlaneVertexBufferSize;
+    GameOpenGLVBO mGenericTextureVBO;
+    size_t mGenericTextureVBOAllocatedSize;
+
+    //
+    // VAOs
+    //
+
+    GameOpenGLVAO mGenericTextureVAO;
+
+    //
+    // Textures
+    //
+
+    GameOpenGLTexture mShipTextureOpenGLHandle;
+    GameOpenGLTexture mStressedSpringTextureOpenGLHandle;
+
+    GameOpenGLTexture & mGenericTextureAtlasOpenGLHandle;
+    TextureAtlasMetadata const & mGenericTextureAtlasMetadata;
+
+private:
+
+    //
+    // Managers
+    //
+
+    ShaderManager<ShaderManagerTraits> & mShaderManager;
 
     //
     // Parameters
@@ -439,25 +511,20 @@ private:
     VectorFieldRenderMode mVectorFieldRenderMode;
     bool mShowStressedSprings;
 
-private:
-
-    ShaderManager<ShaderManagerTraits> & mShaderManager;
+    //
+    // Statistics
+    //
 
     RenderStatistics & mRenderStatistics;
 
 
-    //
-    // Textures
-    //
 
-    GameOpenGLTexture mElementShipTexture;
-    GameOpenGLTexture mElementStressedSpringTexture;
-
+    // TODOOLD
     //
     // Points
     //
 
-    size_t const mPointCount;
+
 
     GameOpenGLVBO mPointPositionVBO;
     GameOpenGLVBO mPointLightVBO;
@@ -466,58 +533,8 @@ private:
     GameOpenGLVBO mPointPlaneIdVBO;
     GameOpenGLVBO mPointElementTextureCoordinatesVBO;
 
-    //
-    // Generic Textures
-    //
+    // TODOHERE
 
-    GameOpenGLTexture & mTextureAtlasOpenGLHandle;
-    TextureAtlasMetadata const & mTextureAtlasMetadata;
-
-#pragma pack(push)
-struct TextureRenderPolygonVertex
-{
-    vec2f centerPosition;
-    vec2f vertexOffset;
-    vec2f textureCoordinate;
-
-    float planeId;
-
-    float scale;
-    float angle;
-    float alpha;
-    float ambientLightSensitivity;
-
-    TextureRenderPolygonVertex(
-        vec2f _centerPosition,
-        vec2f _vertexOffset,
-        vec2f _textureCoordinate,
-        float _planeId,
-        float _scale,
-        float _angle,
-        float _alpha,
-        float _ambientLightSensitivity)
-        : centerPosition(_centerPosition)
-        , vertexOffset(_vertexOffset)
-        , textureCoordinate(_textureCoordinate)
-        , planeId(_planeId)
-        , scale(_scale)
-        , angle(_angle)
-        , alpha(_alpha)
-        , ambientLightSensitivity(_ambientLightSensitivity)
-    {}
-};
-#pragma pack(pop)
-
-    struct GenericTexturePlaneData
-    {
-        std::vector<TextureRenderPolygonVertex> VertexBuffer;
-    };
-
-    std::vector<GenericTexturePlaneData> mGenericTexturePlanes;
-    size_t mGenericTextureMaxPlaneVertexBufferSize;
-    size_t mGenericTextureRenderPolygonVertexAllocatedSize;
-
-    GameOpenGLVBO mGenericTextureRenderPolygonVertexVBO;
 
 
 

@@ -382,7 +382,6 @@ public:
 
     void UploadPlaneIds(
         ShipId shipId,
-        PlaneId maxMaxPlaneId,
         Render::RenderContext & renderContext) const;
 
     void UploadElements(

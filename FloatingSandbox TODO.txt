@@ -607,10 +607,26 @@ Render:
 			+ Test
 			+ Then, move upload to VBO right after creating vertices
 			+ Test
-		- Ship:
-			- One per "input configuration" + vertex element array (see MOLESKINE?)
-				- Make sure to bind element array indices to the VAOs
-			- Have to repeat descriptions:
+		= Ship:
+			+ GenericTextures
+				+ Code
+				+ Shaders
+				+ Test 
+					+ Different planes
+				+ Commit
+			- Vectors
+				- Code
+				- Shaders
+				- Test 
+				- Commit
+			- TODOHERE:
+				- One per "input configuration" + vertex element array (see MOLESKINE?)
+					- Make sure to bind element array indices to the VAOs
+				- Have to repeat descriptions:
+					- Use templated member funcs that bind correct VBO as well
+			- Cleanup:
+				- RenderEnd: do everything in function (springs, ropes, etc.) with one single
+				  texture activation and binding
 		- Cleanup:
 		- Get new FPS
 		- Merge

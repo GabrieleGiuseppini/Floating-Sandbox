@@ -43,8 +43,11 @@ TextRenderContext::TextRenderContext(
     // Initialize render machinery
     //
 
-    mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
+    // Set hardcoded parameters
+    mShaderManager.ActivateProgram<ProgramType::TextNDC>();
+    mShaderManager.SetTextureParameters<ProgramType::TextNDC>();
 
+    // Initialize fonts
     for (Font & font : fonts)
     {
         //
@@ -54,6 +57,7 @@ TextRenderContext::TextRenderContext(
         GLuint textureOpenGLHandle;
         glGenTextures(1, &textureOpenGLHandle);
 
+        mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
         glBindTexture(GL_TEXTURE_2D, textureOpenGLHandle);
         CheckOpenGLError();
 
@@ -288,11 +292,11 @@ void TextRenderContext::RenderEnd()
 
             if (isFirst)
             {
+                // Activate texture unit (once for all fonts)
+                mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
+
                 // Activate program (once for all fonts)
                 mShaderManager.ActivateProgram<ProgramType::TextNDC>();
-
-                // Activate shared texture (once for all fonts)
-                mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
 
                 isFirst = false;
             }

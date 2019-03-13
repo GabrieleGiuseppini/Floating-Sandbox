@@ -218,7 +218,14 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::CrossOfLight1;
     else if (Utils::CaseInsensitiveEquals(str, "CrossOfLight2"))
         return VertexAttributeType::CrossOfLight2;
-    // TODOHERE: Ship
+    // Ship
+    else if (Utils::CaseInsensitiveEquals(str, "GenericTexture1"))
+        return VertexAttributeType::GenericTexture1;
+    else if (Utils::CaseInsensitiveEquals(str, "GenericTexture2"))
+        return VertexAttributeType::GenericTexture2;
+    else if (Utils::CaseInsensitiveEquals(str, "GenericTexture3"))
+        return VertexAttributeType::GenericTexture3;
+    // TODOHERE: continue with ship
     // Text
     else if (Utils::CaseInsensitiveEquals(str, "Text1"))
         return VertexAttributeType::Text1;
@@ -231,12 +238,6 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::SharedAttribute1;
     else if (Utils::CaseInsensitiveEquals(str, "SharedAttribute2"))
         return VertexAttributeType::SharedAttribute2;
-    else if (Utils::CaseInsensitiveEquals(str, "GenericTexturePackedData1"))
-        return VertexAttributeType::GenericTexturePackedData1;
-    else if (Utils::CaseInsensitiveEquals(str, "GenericTexturePackedData2"))
-        return VertexAttributeType::GenericTexturePackedData2;
-    else if (Utils::CaseInsensitiveEquals(str, "GenericTexturePackedData3"))
-        return VertexAttributeType::GenericTexturePackedData3;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointPosition"))
         return VertexAttributeType::ShipPointPosition;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointColor"))

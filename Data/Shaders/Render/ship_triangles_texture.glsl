@@ -45,11 +45,11 @@ in vec3 vertexPackedParams; // LightIntensity, LightColorMix, ColorWetness
 in vec2 vertexTextureCoords;
 
 // Input texture
-uniform sampler2D sharedSpringTexture;
+uniform sampler2D paramSharedTexture;
 
 void main()
 {
-    vec4 vertexCol = texture2D(sharedSpringTexture, vertexTextureCoords);
+    vec4 vertexCol = texture2D(paramSharedTexture, vertexTextureCoords);
 
     // Discard transparent pixels, so that ropes (which are drawn temporally after
     // this shader but Z-ally behind) are not occluded by transparent triangles

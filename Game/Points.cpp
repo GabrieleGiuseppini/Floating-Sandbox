@@ -436,7 +436,6 @@ void Points::Query(ElementIndex pointElementIndex) const
 
 void Points::UploadPlaneIds(
     ShipId shipId,
-    PlaneId maxMaxPlaneId,
     Render::RenderContext & renderContext) const
 {
     if (mIsPlaneIdBufferNonEphemeralDirty)
@@ -449,8 +448,7 @@ void Points::UploadPlaneIds(
                 shipId,
                 mPlaneIdBuffer.data(),
                 0,
-                mAllPointCount,
-                maxMaxPlaneId);
+                mAllPointCount);
 
             mIsPlaneIdBufferEphemeralDirty = false;
         }
@@ -462,8 +460,7 @@ void Points::UploadPlaneIds(
                 shipId,
                 mPlaneIdBuffer.data(),
                 0,
-                mShipPointCount,
-                maxMaxPlaneId);
+                mShipPointCount);
         }
 
         mIsPlaneIdBufferNonEphemeralDirty = false;
@@ -476,8 +473,7 @@ void Points::UploadPlaneIds(
             shipId,
             &(mPlaneIdBuffer.data()[mShipPointCount]),
             mShipPointCount,
-            mEphemeralPointCount,
-            maxMaxPlaneId);
+            mEphemeralPointCount);
 
         mIsPlaneIdBufferEphemeralDirty = false;
     }

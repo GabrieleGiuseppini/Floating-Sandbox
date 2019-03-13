@@ -75,20 +75,20 @@ RenderContext::RenderContext(
 
 
     //
-    // Setup OpenGL context
-    //
-
-    // Activate shared texture unit
-    mShaderManager->ActivateTexture<ProgramParameterType::SharedTexture>();
-
-
-    //
     // Load shader manager
     //
 
     progressCallback(0.0f, "Loading shaders...");
 
     mShaderManager = ShaderManager<ShaderManagerTraits>::CreateInstance(resourceLoader.GetRenderShadersRootPath());
+
+
+    //
+    // Initialize OpenGL
+    //
+
+    // Initialize the shared texture unit once and for all
+    mShaderManager->ActivateTexture<ProgramParameterType::SharedTexture>();
 
 
     //
@@ -181,7 +181,7 @@ RenderContext::RenderContext(
     // Store metadata
     mGenericTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata>(genericTextureAtlas.Metadata);
 
-    // Set hardcoded parameters
+    // Set texture parameter
     mShaderManager->ActivateProgram<ProgramType::ShipGenericTextures>();
     mShaderManager->SetTextureParameters<ProgramType::ShipGenericTextures>();
 

@@ -605,11 +605,13 @@ public:
     void RenderShipsStart();
 
 
-    void RenderShipStart(ShipId shipId)
+    void RenderShipStart(
+        ShipId shipId,
+        PlaneId maxMaxPlaneId)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId]->RenderStart();
+        mShips[shipId]->RenderStart(maxMaxPlaneId);
     }
 
     //
@@ -657,16 +659,14 @@ public:
         ShipId shipId,
         PlaneId const * planeId,
         size_t startDst,
-        size_t count,
-        PlaneId maxMaxPlaneId)
+        size_t count)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
         mShips[shipId]->UploadPointPlaneIds(
             planeId,
             startDst,
-            count,
-            maxMaxPlaneId);
+            count);
     }
 
     //

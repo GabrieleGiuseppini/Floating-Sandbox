@@ -17,11 +17,11 @@ ShipRenderContext::ShipRenderContext(
     ShipId shipId,
     size_t shipCount,
     size_t pointCount,
-    RgbaImageData texture,
+    RgbaImageData shipTexture,
     ShipDefinition::TextureOriginType /*textureOrigin*/,
     ShaderManager<ShaderManagerTraits> & shaderManager,
-    GameOpenGLTexture & textureAtlasOpenGLHandle,
-    TextureAtlasMetadata const & textureAtlasMetadata,
+    GameOpenGLTexture & genericTextureAtlasOpenGLHandle,
+    TextureAtlasMetadata const & genericTextureAtlasMetadata,
     RenderStatistics & renderStatistics,
     ViewModel const & viewModel,
     float ambientLightIntensity,
@@ -33,9 +33,22 @@ ShipRenderContext::ShipRenderContext(
     bool showStressedSprings)
     : mShipId(shipId)
     , mShipCount(shipCount)
+    , mPointCount(pointCount)
     , mMaxMaxPlaneId(0)
+    // Buffers
+    , mGenericTexturePlaneVertexBuffers()
+    , mGenericTextureMaxPlaneVertexBufferSize(0)
+    , mGenericTextureVBO()
+    , mGenericTextureVBOAllocatedSize()
+    // VAOs
+    , mGenericTextureVAO()
+    // Textures
+    , mShipTextureOpenGLHandle()
+    , mStressedSpringTextureOpenGLHandle()
+    , mGenericTextureAtlasOpenGLHandle(genericTextureAtlasOpenGLHandle)
+    , mGenericTextureAtlasMetadata(genericTextureAtlasMetadata)
+    // Managers
     , mShaderManager(shaderManager)
-    , mRenderStatistics(renderStatistics)
     // Parameters
     , mViewModel(viewModel)
     , mAmbientLightIntensity(ambientLightIntensity)
@@ -45,24 +58,16 @@ ShipRenderContext::ShipRenderContext(
     , mDebugShipRenderMode(debugShipRenderMode)
     , mVectorFieldRenderMode(vectorFieldRenderMode)
     , mShowStressedSprings(showStressedSprings)
-    // Textures
-    , mElementShipTexture()
-    , mElementStressedSpringTexture()
+    // Statistics
+    , mRenderStatistics(renderStatistics)
+    // TODOOLD
     // Points
-    , mPointCount(pointCount)
     , mPointPositionVBO()
     , mPointLightVBO()
     , mPointWaterVBO()
     , mPointColorVBO()
     , mPointPlaneIdVBO()
     , mPointElementTextureCoordinatesVBO()
-    // Generic Textures
-    , mTextureAtlasOpenGLHandle(textureAtlasOpenGLHandle)
-    , mTextureAtlasMetadata(textureAtlasMetadata)
-    , mGenericTexturePlanes()
-    , mGenericTextureMaxPlaneVertexBufferSize(0)
-    , mGenericTextureRenderPolygonVertexAllocatedSize(0)
-    , mGenericTextureRenderPolygonVertexVBO()
     // Elements
     , mPointElementBuffer()
     , mPointElementVBO()
@@ -87,6 +92,113 @@ ShipRenderContext::ShipRenderContext(
     // Clear errors
     glGetError();
 
+
+    //
+    // Initialize buffers
+    //
+
+    GLuint vbos[1];
+    glGenBuffers(1, vbos);
+    mGenericTextureVBO = vbos[0];
+
+
+    //
+    // Initialize GenericTexture VAO
+    //
+
+    glGenVertexArrays(1, &tmpGLuint);
+    mGenericTextureVAO = tmpGLuint;
+
+    glBindVertexArray(*mGenericTextureVAO);
+    CheckOpenGLError();
+
+    // Describe vertex attributes
+    glBindBuffer(GL_ARRAY_BUFFER, *mGenericTextureVBO);
+    static_assert(sizeof(GenericTextureVertex) == (4 + 4 + 3) * sizeof(float));
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::GenericTexture1));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTexture1), 4, GL_FLOAT, GL_FALSE, sizeof(GenericTextureVertex), (void*)0);
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::GenericTexture2));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTexture2), 4, GL_FLOAT, GL_FALSE, sizeof(GenericTextureVertex), (void*)((4) * sizeof(float)));
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::GenericTexture3));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTexture3), 3, GL_FLOAT, GL_FALSE, sizeof(GenericTextureVertex), (void*)((4 + 4) * sizeof(float)));
+    CheckOpenGLError();
+
+    glBindVertexArray(0);
+
+
+    //
+    // Initialize Ship texture
+    //
+
+    glGenTextures(1, &tmpGLuint);
+    mShipTextureOpenGLHandle = tmpGLuint;
+
+    // Bind texture
+    mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
+    glBindTexture(GL_TEXTURE_2D, *mShipTextureOpenGLHandle);
+    CheckOpenGLError();
+
+    // Upload texture
+    GameOpenGL::UploadMipmappedTexture(std::move(shipTexture));
+
+    // Set repeat mode
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    CheckOpenGLError();
+
+    // Set filtering
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    CheckOpenGLError();
+
+    // Set texture parameter
+    mShaderManager.ActivateProgram<ProgramType::ShipSpringsTexture>();
+    mShaderManager.SetTextureParameters<ProgramType::ShipSpringsTexture>();
+    mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTexture>();
+    mShaderManager.SetTextureParameters<ProgramType::ShipTrianglesTexture>();
+
+    // Unbind texture
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+
+    //
+    // Initialize StressedSpring texture
+    //
+
+    glGenTextures(1, &tmpGLuint);
+    mStressedSpringTextureOpenGLHandle = tmpGLuint;
+
+    // Bind texture
+    mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
+    glBindTexture(GL_TEXTURE_2D, *mStressedSpringTextureOpenGLHandle);
+    CheckOpenGLError();
+
+    // Set repeat mode
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    CheckOpenGLError();
+
+    // Set filtering
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    CheckOpenGLError();
+
+    // Make texture data
+    unsigned char buf[] = {
+        239, 16, 39, 255,       255, 253, 181,  255,    239, 16, 39, 255,
+        255, 253, 181, 255,     239, 16, 39, 255,       255, 253, 181,  255,
+        239, 16, 39, 255,       255, 253, 181,  255,    239, 16, 39, 255
+    };
+
+    // Upload texture data
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 3, 3, 0, GL_RGBA, GL_UNSIGNED_BYTE, buf);
+    CheckOpenGLError();
+
+    // Unbind texture
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+
+    // TODOOLD
 
     //
     // Create and pre-allocate point VBOs
@@ -142,95 +254,6 @@ ShipRenderContext::ShipRenderContext(
 
 
 
-    //
-    // Create and upload ship texture
-    //
-
-    glGenTextures(1, &tmpGLuint);
-    mElementShipTexture = tmpGLuint;
-
-    // Bind texture
-    mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
-    glBindTexture(GL_TEXTURE_2D, *mElementShipTexture);
-    CheckOpenGLError();
-
-    // Upload texture
-    GameOpenGL::UploadMipmappedTexture(std::move(texture));
-
-    // Set repeat mode
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    CheckOpenGLError();
-
-    // Set filtering
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    CheckOpenGLError();
-
-    // Unbind texture
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-
-    //
-    // Create stressed spring texture
-    //
-
-    // Create texture name
-    glGenTextures(1, &tmpGLuint);
-    mElementStressedSpringTexture = tmpGLuint;
-
-    // Bind texture
-    mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
-    glBindTexture(GL_TEXTURE_2D, *mElementStressedSpringTexture);
-    CheckOpenGLError();
-
-    // Set repeat mode
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    CheckOpenGLError();
-
-    // Set filtering
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    CheckOpenGLError();
-
-    // Make texture data
-    unsigned char buf[] = {
-        239, 16, 39, 255,       255, 253, 181,  255,    239, 16, 39, 255,
-        255, 253, 181, 255,     239, 16, 39, 255,       255, 253, 181,  255,
-        239, 16, 39, 255,       255, 253, 181,  255,    239, 16, 39, 255
-    };
-
-    // Upload texture data
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 3, 3, 0, GL_RGBA, GL_UNSIGNED_BYTE, buf);
-    CheckOpenGLError();
-
-    // Unbind texture
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-
-
-    //
-    // Initialize generic textures
-    //
-
-    // Create VBO
-    glGenBuffers(1, &tmpGLuint);
-    mGenericTextureRenderPolygonVertexVBO = tmpGLuint;
-
-    // Bind VBO
-    glBindBuffer(GL_ARRAY_BUFFER, *mGenericTextureRenderPolygonVertexVBO);
-    CheckOpenGLError();
-
-    // Describe vertex buffer
-    static_assert(sizeof(TextureRenderPolygonVertex) == (4 + 4 + 3) * sizeof(float));
-    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::GenericTexturePackedData1));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTexturePackedData1), 4, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)0);
-    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::GenericTexturePackedData2));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTexturePackedData2), 4, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)((4) * sizeof(float)));
-    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::GenericTexturePackedData3));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTexturePackedData3), 3, GL_FLOAT, GL_FALSE, sizeof(TextureRenderPolygonVertex), (void*)((4 + 4) * sizeof(float)));
-    CheckOpenGLError();
 
 
     //
@@ -558,15 +581,29 @@ void ShipRenderContext::OnWaterLevelOfDetailUpdated()
 
 //////////////////////////////////////////////////////////////////////////////////
 
-void ShipRenderContext::RenderStart()
+void ShipRenderContext::RenderStart(PlaneId maxMaxPlaneId)
 {
     //
     // Reset generic textures
     //
 
-    mGenericTexturePlanes.clear();
-    mGenericTexturePlanes.resize(mMaxMaxPlaneId + 1);
+    mGenericTexturePlaneVertexBuffers.clear();
+    mGenericTexturePlaneVertexBuffers.resize(maxMaxPlaneId + 1);
     mGenericTextureMaxPlaneVertexBufferSize = 0;
+
+
+    //
+    // Check if the max ever plane ID has changed
+    //
+
+    if (maxMaxPlaneId != mMaxMaxPlaneId)
+    {
+        // Update value
+        mMaxMaxPlaneId = maxMaxPlaneId;
+
+        // Recalculate view model parameters
+        OnViewModelUpdated();
+    }
 }
 
 void ShipRenderContext::UploadPointImmutableGraphicalAttributes(vec2f const * textureCoordinates)
@@ -613,8 +650,7 @@ void ShipRenderContext::UploadPoints(
 void ShipRenderContext::UploadPointPlaneIds(
     PlaneId const * planeId,
     size_t startDst,
-    size_t count,
-    PlaneId maxMaxPlaneId)
+    size_t count)
 {
     assert(startDst + count <= mPointCount);
 
@@ -622,19 +658,6 @@ void ShipRenderContext::UploadPointPlaneIds(
     glBindBuffer(GL_ARRAY_BUFFER, *mPointPlaneIdVBO);
     glBufferSubData(GL_ARRAY_BUFFER, startDst * sizeof(PlaneId), count * sizeof(PlaneId), planeId);
     CheckOpenGLError();
-
-    // Check if the max ever plane ID has changed
-    if (maxMaxPlaneId != mMaxMaxPlaneId)
-    {
-        // Update value
-        mMaxMaxPlaneId = maxMaxPlaneId;
-
-        // Make room for generic textures
-        mGenericTexturePlanes.resize(mMaxMaxPlaneId + 1);
-
-        // Recalculate view model parameters
-        OnViewModelUpdated();
-    }
 }
 
 void ShipRenderContext::UploadElementTrianglesStart(size_t trianglesCount)
@@ -932,7 +955,7 @@ void ShipRenderContext::RenderSpringElements(bool withTexture)
         // Bind texture
         mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
         assert(!!mElementShipTexture);
-        glBindTexture(GL_TEXTURE_2D, *mElementShipTexture);
+        glBindTexture(GL_TEXTURE_2D, *mShipTextureOpenGLHandle);
         CheckOpenGLError();
     }
     else
@@ -984,7 +1007,7 @@ void ShipRenderContext::RenderTriangleElements(bool withTexture)
         // Bind texture
         mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
         assert(!!mElementShipTexture);
-        glBindTexture(GL_TEXTURE_2D, *mElementShipTexture);
+        glBindTexture(GL_TEXTURE_2D, *mShipTextureOpenGLHandle);
     }
     else
     {
@@ -1018,7 +1041,7 @@ void ShipRenderContext::RenderStressedSpringElements()
 
         // Bind texture
         mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
-        glBindTexture(GL_TEXTURE_2D, *mElementStressedSpringTexture);
+        glBindTexture(GL_TEXTURE_2D, *mStressedSpringTextureOpenGLHandle);
         CheckOpenGLError();
 
         // Bind VBO
@@ -1034,37 +1057,44 @@ void ShipRenderContext::RenderGenericTextures()
 {
     if (mGenericTextureMaxPlaneVertexBufferSize > 0)
     {
-        // Bind VBO
-        glBindBuffer(GL_ARRAY_BUFFER, *mGenericTextureRenderPolygonVertexVBO);
+        glBindVertexArray(*mGenericTextureVAO);
+
+        mShaderManager.ActivateProgram<ProgramType::ShipGenericTextures>();
+
+        if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
+            glLineWidth(0.1f);
+
+        // Bind VBO once and for all
+        glBindBuffer(GL_ARRAY_BUFFER, *mGenericTextureVBO);
 
         // (Re-)Allocate vertex buffer, if needed
-        if (mGenericTextureRenderPolygonVertexAllocatedSize != mGenericTextureMaxPlaneVertexBufferSize)
+        if (mGenericTextureVBOAllocatedSize != mGenericTextureMaxPlaneVertexBufferSize)
         {
-            glBufferData(GL_ARRAY_BUFFER, mGenericTextureMaxPlaneVertexBufferSize * sizeof(TextureRenderPolygonVertex), nullptr, GL_DYNAMIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, mGenericTextureMaxPlaneVertexBufferSize * sizeof(GenericTextureVertex), nullptr, GL_DYNAMIC_DRAW);
             CheckOpenGLError();
 
-            mGenericTextureRenderPolygonVertexAllocatedSize = mGenericTextureMaxPlaneVertexBufferSize;
+            mGenericTextureVBOAllocatedSize = mGenericTextureMaxPlaneVertexBufferSize;
         }
 
         //
         // Draw, separately for each plane
         //
 
-        for (auto const & plane : mGenericTexturePlanes)
+        for (auto const & plane : mGenericTexturePlaneVertexBuffers)
         {
-            if (!plane.VertexBuffer.empty())
+            if (!plane.vertexBuffer.empty())
             {
                 //
                 // Upload vertex buffer
                 //
 
-                assert(plane.VertexBuffer.size() <= mGenericTextureRenderPolygonVertexAllocatedSize);
+                assert(plane.VertexBuffer.size() <= mGenericTextureVBOAllocatedSize);
 
                 glBufferSubData(
                     GL_ARRAY_BUFFER,
                     0,
-                    plane.VertexBuffer.size() * sizeof(TextureRenderPolygonVertex),
-                    plane.VertexBuffer.data());
+                    plane.vertexBuffer.size() * sizeof(GenericTextureVertex),
+                    plane.vertexBuffer.data());
 
                 CheckOpenGLError();
 
@@ -1073,19 +1103,19 @@ void ShipRenderContext::RenderGenericTextures()
                 // Render
                 //
 
-                // Use program
-                mShaderManager.ActivateProgram<ProgramType::ShipGenericTextures>();
+                assert((plane.vertexBuffer.size() % 6) == 0);
+                glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(plane.vertexBuffer.size()));
 
-                if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
-                    glLineWidth(0.1f);
 
-                // Draw polygons
-                glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(plane.VertexBuffer.size()));
-
+                //
                 // Update stats
-                mRenderStatistics.LastRenderedShipGenericTextures += plane.VertexBuffer.size() / 6;
+                //
+
+                mRenderStatistics.LastRenderedShipGenericTextures += plane.vertexBuffer.size() / 6;
             }
         }
+
+        glBindVertexArray(0);
     }
 }
 

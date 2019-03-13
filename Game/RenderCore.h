@@ -71,7 +71,7 @@ enum class ProgramParameterType : uint8_t
     WaterLevelThreshold,
 
     // Textures
-    SharedTexture,                  // 0
+    SharedTexture,                  // 0, for programs that don't use a dedicated unit and hence will bind the texture
     CloudTexture,                   // 1
     GenericTexturesAtlasTexture,    // 2
     LandTexture,                    // 3
@@ -109,17 +109,14 @@ enum class VertexAttributeType : GLuint
     // Ship
     //
 
-    //TODOHERE
+    GenericTexture1 = 0,
+    GenericTexture2 = 1,
+    GenericTexture3 = 2,
 
+    //TODOOLD
     SharedAttribute0 = 0,
     SharedAttribute1 = 14, //1,
     SharedAttribute2 = 15, //2,
-
-    // TODO: "GenericTexture1"
-    GenericTexturePackedData1 = 4,
-    GenericTexturePackedData2 = 5,
-    GenericTexturePackedData3 = 6,
-
     ShipPointPosition = 7,
     ShipPointColor = 8,
     ShipPointLight = 9,
