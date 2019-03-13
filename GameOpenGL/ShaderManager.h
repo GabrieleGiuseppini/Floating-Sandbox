@@ -148,18 +148,20 @@ public:
         CheckUniformError<Program, Parameter>();
     }
 
+    // At any given moment, only one program may be active
     template <typename Traits::ProgramType Program>
     inline void ActivateProgram()
     {
         uint32_t const programIndex = static_cast<uint32_t>(Program);
-
         glUseProgram(*(mPrograms[programIndex].OpenGLHandle));
+        CheckOpenGLError();
     }
 
+    // At any given moment, only one texture (unit) may be active
     template <typename Traits::ProgramParameterType Parameter>
     inline void ActivateTexture()
     {
-        GLenum textureUnit = static_cast<GLenum>(Parameter) - static_cast<GLenum>(Traits::ProgramParameterType::_FirstTexture);
+        GLenum const textureUnit = static_cast<GLenum>(Parameter) - static_cast<GLenum>(Traits::ProgramParameterType::_FirstTexture);
         glActiveTexture(GL_TEXTURE0 + textureUnit);
         CheckOpenGLError();
     }

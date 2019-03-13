@@ -71,7 +71,7 @@ enum class ProgramParameterType : uint8_t
     WaterLevelThreshold,
 
     // Textures
-    SharedTexture,                  // 0, for programs that don't use a dedicated unit and hence will bind the texture
+    SharedTexture,                  // 0, for programs that don't use a dedicated unit and hence will keep binding different textures
     CloudTexture,                   // 1
     GenericTexturesAtlasTexture,    // 2
     LandTexture,                    // 3

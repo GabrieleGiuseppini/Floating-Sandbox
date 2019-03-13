@@ -43,6 +43,8 @@ TextRenderContext::TextRenderContext(
     // Initialize render machinery
     //
 
+    mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
+
     // Set hardcoded parameters
     mShaderManager.ActivateProgram<ProgramType::TextNDC>();
     mShaderManager.SetTextureParameters<ProgramType::TextNDC>();
@@ -57,7 +59,6 @@ TextRenderContext::TextRenderContext(
         GLuint textureOpenGLHandle;
         glGenTextures(1, &textureOpenGLHandle);
 
-        mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
         glBindTexture(GL_TEXTURE_2D, textureOpenGLHandle);
         CheckOpenGLError();
 
