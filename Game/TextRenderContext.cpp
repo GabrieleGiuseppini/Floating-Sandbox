@@ -258,7 +258,7 @@ void TextRenderContext::RenderEnd()
                     GL_ARRAY_BUFFER,
                     vertexBuffer.size() * sizeof(TextQuadVertex),
                     vertexBuffer.data(),
-                    GL_STATIC_DRAW);
+                    GL_DYNAMIC_DRAW);
                 glBindBuffer(GL_ARRAY_BUFFER, 0);
                 CheckOpenGLError();
             }
