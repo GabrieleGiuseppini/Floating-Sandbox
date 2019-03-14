@@ -225,6 +225,8 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::GenericTexture2;
     else if (Utils::CaseInsensitiveEquals(str, "GenericTexture3"))
         return VertexAttributeType::GenericTexture3;
+    else if (Utils::CaseInsensitiveEquals(str, "VectorArrow"))
+        return VertexAttributeType::VectorArrow;
     // TODOHERE: continue with ship
     // Text
     else if (Utils::CaseInsensitiveEquals(str, "Text1"))

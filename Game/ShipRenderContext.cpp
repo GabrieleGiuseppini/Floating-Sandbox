@@ -40,8 +40,13 @@ ShipRenderContext::ShipRenderContext(
     , mGenericTextureMaxPlaneVertexBufferSize(0)
     , mGenericTextureVBO()
     , mGenericTextureVBOAllocatedSize()
+    // Vectors
+    , mVectorArrowVertexBuffer()
+    , mVectorArrowVBO()
+    , mVectorArrowColor()
     // VAOs
     , mGenericTextureVAO()
+    , mVectorArrowVAO()
     // Textures
     , mShipTextureOpenGLHandle()
     , mStressedSpringTextureOpenGLHandle()
@@ -82,10 +87,6 @@ ShipRenderContext::ShipRenderContext(
     // Ephemeral points
     , mEphemeralPoints()
     , mEphemeralPointVBO()
-    // Vectors
-    , mVectorArrowPointPositionBuffer()
-    , mVectorArrowPointPositionVBO()
-    , mVectorArrowColor()
 {
     GLuint tmpGLuint;
 
@@ -97,9 +98,10 @@ ShipRenderContext::ShipRenderContext(
     // Initialize buffers
     //
 
-    GLuint vbos[1];
-    glGenBuffers(1, vbos);
+    GLuint vbos[2];
+    glGenBuffers(2, vbos);
     mGenericTextureVBO = vbos[0];
+    mVectorArrowVBO = vbos[1];
 
 
     //
@@ -125,6 +127,29 @@ ShipRenderContext::ShipRenderContext(
 
     glBindVertexArray(0);
 
+
+    //
+    // Initialize VectorArrow VAO
+    //
+
+    glGenVertexArrays(1, &tmpGLuint);
+    mVectorArrowVAO = tmpGLuint;
+
+    glBindVertexArray(*mVectorArrowVAO);
+    CheckOpenGLError();
+
+    // Describe vertex attributes
+    glBindBuffer(GL_ARRAY_BUFFER, *mVectorArrowVBO);
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::VectorArrow));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::VectorArrow), 3, GL_FLOAT, GL_FALSE, sizeof(vec3f), (void*)(0));
+    CheckOpenGLError();
+
+    glBindVertexArray(0);
+
+
+
+
+    // TODOHERE: others
 
     //
     // Initialize Ship texture
@@ -290,17 +315,6 @@ ShipRenderContext::ShipRenderContext(
     // Create VBO
     glGenBuffers(1, &tmpGLuint);
     mEphemeralPointVBO = tmpGLuint;
-
-
-
-    //
-    // Initialize vector field
-    //
-
-    // Create VBO
-    glGenBuffers(1, &tmpGLuint);
-    mVectorArrowPointPositionVBO = tmpGLuint;
-
 
 
     //
@@ -760,8 +774,8 @@ void ShipRenderContext::UploadVectors(
     // Create buffer with endpoint positions of each segment of each arrow
     //
 
-    mVectorArrowPointPositionBuffer.clear();
-    mVectorArrowPointPositionBuffer.reserve(count * 3 * 2);
+    mVectorArrowVertexBuffer.clear();
+    mVectorArrowVertexBuffer.reserve(count * 3 * 2);
 
     for (size_t i = 0; i < count; ++i)
     {
@@ -769,18 +783,18 @@ void ShipRenderContext::UploadVectors(
 
         // Stem
         vec2f stemEndpoint = position[i] + vector[i] * lengthAdjustment;
-        mVectorArrowPointPositionBuffer.emplace_back(position[i], planeIdf);
-        mVectorArrowPointPositionBuffer.emplace_back(stemEndpoint, planeIdf);
+        mVectorArrowVertexBuffer.emplace_back(position[i], planeIdf);
+        mVectorArrowVertexBuffer.emplace_back(stemEndpoint, planeIdf);
 
         // Left
         vec2f leftDir = vec2f(-vector[i].dot(XMatrixLeft), -vector[i].dot(YMatrixLeft)).normalise();
-        mVectorArrowPointPositionBuffer.emplace_back(stemEndpoint, planeIdf);
-        mVectorArrowPointPositionBuffer.emplace_back(stemEndpoint + leftDir * 0.2f, planeIdf);
+        mVectorArrowVertexBuffer.emplace_back(stemEndpoint, planeIdf);
+        mVectorArrowVertexBuffer.emplace_back(stemEndpoint + leftDir * 0.2f, planeIdf);
 
         // Right
         vec2f rightDir = vec2f(-vector[i].dot(XMatrixRight), -vector[i].dot(YMatrixRight)).normalise();
-        mVectorArrowPointPositionBuffer.emplace_back(stemEndpoint, planeIdf);
-        mVectorArrowPointPositionBuffer.emplace_back(stemEndpoint + rightDir * 0.2f, planeIdf);
+        mVectorArrowVertexBuffer.emplace_back(stemEndpoint, planeIdf);
+        mVectorArrowVertexBuffer.emplace_back(stemEndpoint + rightDir * 0.2f, planeIdf);
     }
 
 
@@ -788,16 +802,27 @@ void ShipRenderContext::UploadVectors(
     // Upload buffer
     //
 
-    glBindBuffer(GL_ARRAY_BUFFER, *mVectorArrowPointPositionVBO);
-    glBufferData(GL_ARRAY_BUFFER, mVectorArrowPointPositionBuffer.size() * sizeof(vec3f), mVectorArrowPointPositionBuffer.data(), GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, *mVectorArrowVBO);
+    glBufferData(GL_ARRAY_BUFFER, mVectorArrowVertexBuffer.size() * sizeof(vec3f), mVectorArrowVertexBuffer.data(), GL_DYNAMIC_DRAW);
     CheckOpenGLError();
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 
     //
-    // Store color
+    // Manage color
     //
 
-    mVectorArrowColor = color;
+    if (mVectorArrowColor != color)
+    {
+        mShaderManager.ActivateProgram<ProgramType::ShipVectors>();
+        mShaderManager.SetProgramParameter<ProgramType::ShipVectors, ProgramParameterType::MatteColor>(
+            color.x,
+            color.y,
+            color.z,
+            color.w);
+
+        mVectorArrowColor = color;
+    }
 }
 
 void ShipRenderContext::RenderEnd()
@@ -1143,33 +1168,15 @@ void ShipRenderContext::RenderEphemeralPoints()
 
 void ShipRenderContext::RenderVectors()
 {
-    // Use matte program
+    glBindVertexArray(*mVectorArrowVAO);
+
     mShaderManager.ActivateProgram<ProgramType::ShipVectors>();
 
-    // Set line size
     glLineWidth(0.5f);
 
-    // Set vector color
-    mShaderManager.SetProgramParameter<ProgramType::ShipVectors, ProgramParameterType::MatteColor>(
-        mVectorArrowColor.x,
-        mVectorArrowColor.y,
-        mVectorArrowColor.z,
-        mVectorArrowColor.w);
+    glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(mVectorArrowVertexBuffer.size()));
 
-    // Bind VBO
-    glBindBuffer(GL_ARRAY_BUFFER, *mVectorArrowPointPositionVBO);
-    CheckOpenGLError();
-
-    // Describe buffer
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::SharedAttribute0), 3, GL_FLOAT, GL_FALSE, sizeof(vec3f), (void*)(0));
-    CheckOpenGLError();
-
-    // Enable vertex attribute 0
-    glEnableVertexAttribArray(0);
-    CheckOpenGLError();
-
-    // Draw
-    glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(mVectorArrowPointPositionBuffer.size()));
+    glBindVertexArray(0);
 }
 
 }

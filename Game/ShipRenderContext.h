@@ -473,11 +473,16 @@ private:
     GameOpenGLVBO mGenericTextureVBO;
     size_t mGenericTextureVBOAllocatedSize;
 
+    std::vector<vec3f> mVectorArrowVertexBuffer;
+    GameOpenGLVBO mVectorArrowVBO;
+    std::optional<vec4f> mVectorArrowColor;
+
     //
     // VAOs
     //
 
     GameOpenGLVAO mGenericTextureVAO;
+    GameOpenGLVAO mVectorArrowVAO;
 
     //
     // Textures
@@ -605,15 +610,6 @@ private:
     std::vector<PointElement> mEphemeralPoints;
 
     GameOpenGLVBO mEphemeralPointVBO;
-
-
-    //
-    // Vectors
-    //
-
-    std::vector<vec3f> mVectorArrowPointPositionBuffer;
-    GameOpenGLVBO mVectorArrowPointPositionVBO;
-    vec4f mVectorArrowColor;
 };
 
 }
