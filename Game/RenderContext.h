@@ -618,13 +618,27 @@ public:
     // Ship Points
     //
 
-    void UploadShipPointImmutableGraphicalAttributes(
+    void UploadShipPointImmutableAttributes(
         ShipId shipId,
         vec2f const * textureCoordinates)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId]->UploadPointImmutableGraphicalAttributes(textureCoordinates);
+        mShips[shipId]->UploadPointImmutableAttributes(textureCoordinates);
+    }
+
+    void UploadShipPointMutableAttributes(
+        ShipId shipId,
+        vec2f const * position,
+        float const * light,
+        float const * water)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        mShips[shipId]->UploadPointMutableAttributes(
+            position,
+            light,
+            water);
     }
 
     void UploadShipPointColors(
@@ -635,24 +649,10 @@ public:
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId]->UploadShipPointColors(
+        mShips[shipId]->UploadPointColors(
             color,
             startDst,
             count);
-    }
-
-    void UploadShipPoints(
-        ShipId shipId,
-        vec2f const * position,
-        float const * light,
-        float const * water)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadPoints(
-            position,
-            light,
-            water);
     }
 
     void UploadShipPointPlaneIds(
@@ -851,28 +851,28 @@ public:
     // Ephemeral points
     //
 
-    inline void UploadShipEphemeralPointsStart(ShipId shipId)
+    inline void UploadShipElementEphemeralPointsStart(ShipId shipId)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId]->UploadEphemeralPointsStart();
+        mShips[shipId]->UploadElementEphemeralPointsStart();
     }
 
-    inline void UploadShipEphemeralPoint(
+    inline void UploadShipElementEphemeralPoint(
         ShipId shipId,
         int pointIndex)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId]->UploadEphemeralPoint(
+        mShips[shipId]->UploadElementEphemeralPoint(
             pointIndex);
     }
 
-    void UploadShipEphemeralPointsEnd(ShipId shipId)
+    void UploadShipElementEphemeralPointsEnd(ShipId shipId)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId]->UploadEphemeralPointsEnd();
+        mShips[shipId]->UploadElementEphemeralPointsEnd();
     }
 
 

@@ -219,27 +219,6 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
     else if (Utils::CaseInsensitiveEquals(str, "CrossOfLight2"))
         return VertexAttributeType::CrossOfLight2;
     // Ship
-    else if (Utils::CaseInsensitiveEquals(str, "GenericTexture1"))
-        return VertexAttributeType::GenericTexture1;
-    else if (Utils::CaseInsensitiveEquals(str, "GenericTexture2"))
-        return VertexAttributeType::GenericTexture2;
-    else if (Utils::CaseInsensitiveEquals(str, "GenericTexture3"))
-        return VertexAttributeType::GenericTexture3;
-    else if (Utils::CaseInsensitiveEquals(str, "VectorArrow"))
-        return VertexAttributeType::VectorArrow;
-    // TODOHERE: continue with ship
-    // Text
-    else if (Utils::CaseInsensitiveEquals(str, "Text1"))
-        return VertexAttributeType::Text1;
-    else if (Utils::CaseInsensitiveEquals(str, "Text2"))
-        return VertexAttributeType::Text2;
-    // TODO:OLD
-    if (Utils::CaseInsensitiveEquals(str, "SharedAttribute0"))
-        return VertexAttributeType::SharedAttribute0;
-    else if (Utils::CaseInsensitiveEquals(str, "SharedAttribute1"))
-        return VertexAttributeType::SharedAttribute1;
-    else if (Utils::CaseInsensitiveEquals(str, "SharedAttribute2"))
-        return VertexAttributeType::SharedAttribute2;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointPosition"))
         return VertexAttributeType::ShipPointPosition;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointColor"))
@@ -252,6 +231,26 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::ShipPointPlaneId;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointTextureCoordinates"))
         return VertexAttributeType::ShipPointTextureCoordinates;
+    else if (Utils::CaseInsensitiveEquals(str, "GenericTexture1"))
+        return VertexAttributeType::GenericTexture1;
+    else if (Utils::CaseInsensitiveEquals(str, "GenericTexture2"))
+        return VertexAttributeType::GenericTexture2;
+    else if (Utils::CaseInsensitiveEquals(str, "GenericTexture3"))
+        return VertexAttributeType::GenericTexture3;
+    else if (Utils::CaseInsensitiveEquals(str, "VectorArrow"))
+        return VertexAttributeType::VectorArrow;
+    // Text
+    else if (Utils::CaseInsensitiveEquals(str, "Text1"))
+        return VertexAttributeType::Text1;
+    else if (Utils::CaseInsensitiveEquals(str, "Text2"))
+        return VertexAttributeType::Text2;
+    // TODO:OLD
+    if (Utils::CaseInsensitiveEquals(str, "SharedAttribute0"))
+        return VertexAttributeType::SharedAttribute0;
+    else if (Utils::CaseInsensitiveEquals(str, "SharedAttribute1"))
+        return VertexAttributeType::SharedAttribute1;
+    else if (Utils::CaseInsensitiveEquals(str, "SharedAttribute2"))
+        return VertexAttributeType::SharedAttribute2;
     else
         throw GameException("Unrecognized vertex attribute \"" + str + "\"");
 }

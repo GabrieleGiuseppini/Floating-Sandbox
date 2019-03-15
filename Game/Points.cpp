@@ -486,7 +486,7 @@ void Points::UploadMutableAttributes(
     // Upload immutable attributes, if we haven't uploaded them yet
     if (mIsTextureCoordinatesBufferDirty)
     {
-        renderContext.UploadShipPointImmutableGraphicalAttributes(
+        renderContext.UploadShipPointImmutableAttributes(
             shipId,
             mTextureCoordinatesBuffer.data());
 
@@ -516,7 +516,7 @@ void Points::UploadMutableAttributes(
 
 
     // Upload mutable attributes
-    renderContext.UploadShipPoints(
+    renderContext.UploadShipPointMutableAttributes(
         shipId,
         mPositionBuffer.data(),
         mLightBuffer.data(),
@@ -600,7 +600,7 @@ void Points::UploadEphemeralParticles(
 
     if (mAreEphemeralParticlesDirty)
     {
-        renderContext.UploadShipEphemeralPointsStart(shipId);
+        renderContext.UploadShipElementEphemeralPointsStart(shipId);
     }
 
     for (ElementIndex pointIndex : this->EphemeralPoints())
@@ -629,7 +629,7 @@ void Points::UploadEphemeralParticles(
                 // Don't upload point unless there's been a change
                 if (mAreEphemeralParticlesDirty)
                 {
-                    renderContext.UploadShipEphemeralPoint(
+                    renderContext.UploadShipElementEphemeralPoint(
                         shipId,
                         pointIndex);
                 }
@@ -662,7 +662,7 @@ void Points::UploadEphemeralParticles(
 
     if (mAreEphemeralParticlesDirty)
     {
-        renderContext.UploadShipEphemeralPointsEnd(shipId);
+        renderContext.UploadShipElementEphemeralPointsEnd(shipId);
 
         mAreEphemeralParticlesDirty = false;
     }

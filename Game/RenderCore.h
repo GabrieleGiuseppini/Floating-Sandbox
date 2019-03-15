@@ -109,6 +109,13 @@ enum class VertexAttributeType : GLuint
     // Ship
     //
 
+    ShipPointPosition = 0,
+    ShipPointColor = 1,
+    ShipPointLight = 2,
+    ShipPointWater = 3,
+    ShipPointPlaneId = 4,
+    ShipPointTextureCoordinates = 5,
+
     GenericTexture1 = 0,
     GenericTexture2 = 1,
     GenericTexture3 = 2,
@@ -128,12 +135,6 @@ enum class VertexAttributeType : GLuint
     SharedAttribute0 = 0,
     SharedAttribute1 = 14, //1,
     SharedAttribute2 = 15, //2,
-    ShipPointPosition = 7,
-    ShipPointColor = 8,
-    ShipPointLight = 9,
-    ShipPointWater = 10,
-    ShipPointPlaneId = 11,
-    ShipPointTextureCoordinates = 12,
 };
 
 VertexAttributeType StrToVertexAttributeType(std::string const & str);

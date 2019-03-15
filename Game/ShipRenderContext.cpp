@@ -36,15 +36,41 @@ ShipRenderContext::ShipRenderContext(
     , mPointCount(pointCount)
     , mMaxMaxPlaneId(0)
     // Buffers
+    , mPointPositionVBO()
+    , mPointLightVBO()
+    , mPointWaterVBO()
+    , mPointColorVBO()
+    , mPointPlaneIdVBO()
+    , mPointTextureCoordinatesVBO()
+    //
+    , mPointElementBuffer()
+    , mPointElementVBO()
+    , mSpringElementBuffer()
+    , mSpringElementVBO()
+    , mRopeElementBuffer()
+    , mRopeElementVBO()
+    , mTriangleElementBuffer()
+    , mTriangleElementVBO()
+    , mStressedSpringElementBuffer()
+    , mStressedSpringElementVBO()
+    , mEphemeralPointElementBuffer()
+    , mEphemeralPointElementVBO()
+    //
     , mGenericTexturePlaneVertexBuffers()
     , mGenericTextureMaxPlaneVertexBufferSize(0)
     , mGenericTextureVBO()
     , mGenericTextureVBOAllocatedSize()
-    // Vectors
+    //
     , mVectorArrowVertexBuffer()
     , mVectorArrowVBO()
     , mVectorArrowColor()
     // VAOs
+    , mPointVAO()
+    , mSpringVAO()
+    , mRopeVAO()
+    , mTriangleVAO()
+    , mStressedSpringVAO()
+    , mEphemeralPointVAO()
     , mGenericTextureVAO()
     , mVectorArrowVAO()
     // Textures
@@ -65,28 +91,6 @@ ShipRenderContext::ShipRenderContext(
     , mShowStressedSprings(showStressedSprings)
     // Statistics
     , mRenderStatistics(renderStatistics)
-    // TODOOLD
-    // Points
-    , mPointPositionVBO()
-    , mPointLightVBO()
-    , mPointWaterVBO()
-    , mPointColorVBO()
-    , mPointPlaneIdVBO()
-    , mPointElementTextureCoordinatesVBO()
-    // Elements
-    , mPointElementBuffer()
-    , mPointElementVBO()
-    , mSpringElementBuffer()
-    , mSpringElementVBO()
-    , mRopeElementBuffer()
-    , mRopeElementVBO()
-    , mTriangleElementBuffer()
-    , mTriangleElementVBO()
-    , mStressedSpringElementBuffer()
-    , mStressedSpringElementVBO()
-    // Ephemeral points
-    , mEphemeralPoints()
-    , mEphemeralPointVBO()
 {
     GLuint tmpGLuint;
 
@@ -98,58 +102,249 @@ ShipRenderContext::ShipRenderContext(
     // Initialize buffers
     //
 
-    GLuint vbos[2];
-    glGenBuffers(2, vbos);
-    mGenericTextureVBO = vbos[0];
-    mVectorArrowVBO = vbos[1];
+    GLuint vbos[14];
+    glGenBuffers(14, vbos);
+    CheckOpenGLError();
+
+    mPointPositionVBO = vbos[0];
+    glBindBuffer(GL_ARRAY_BUFFER, *mPointPositionVBO);
+    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(vec2f), nullptr, GL_DYNAMIC_DRAW);
+
+    mPointLightVBO = vbos[1];
+    glBindBuffer(GL_ARRAY_BUFFER, *mPointLightVBO);
+    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
+
+    mPointWaterVBO = vbos[2];
+    glBindBuffer(GL_ARRAY_BUFFER, *mPointWaterVBO);
+    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
+
+    mPointColorVBO = vbos[3];
+    glBindBuffer(GL_ARRAY_BUFFER, *mPointColorVBO);
+    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(vec4f), nullptr, GL_DYNAMIC_DRAW);
+
+    mPointPlaneIdVBO = vbos[4];
+    glBindBuffer(GL_ARRAY_BUFFER, *mPointPlaneIdVBO);
+    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(PlaneId), nullptr, GL_STATIC_DRAW);
+
+    mPointTextureCoordinatesVBO = vbos[5];
+    glBindBuffer(GL_ARRAY_BUFFER, *mPointTextureCoordinatesVBO);
+    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(vec2f), nullptr, GL_STATIC_DRAW);
+
+    mPointElementVBO = vbos[6];
+    mPointElementBuffer.reserve(pointCount);
+
+    mSpringElementVBO = vbos[7];
+    mSpringElementBuffer.reserve(pointCount * GameParameters::MaxSpringsPerPoint);
+
+    mRopeElementVBO = vbos[8];
+    mRopeElementBuffer.reserve(pointCount); // Arbitrary
+
+    mTriangleElementVBO = vbos[9];
+    mTriangleElementBuffer.reserve(pointCount * GameParameters::MaxTrianglesPerPoint);
+
+    mStressedSpringElementVBO = vbos[10];
+    mStressedSpringElementBuffer.reserve(1000); // Arbitrary
+
+    mEphemeralPointElementVBO = vbos[11];
+    mEphemeralPointElementBuffer.reserve(GameParameters::MaxEphemeralParticles);
+
+    mGenericTextureVBO = vbos[12];
+
+    mVectorArrowVBO = vbos[13];
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+
+    //
+    // Initialize Point VAO
+    //
+
+    {
+        glGenVertexArrays(1, &tmpGLuint);
+        mPointVAO = tmpGLuint;
+
+        glBindVertexArray(*mPointVAO);
+        CheckOpenGLError();
+
+        // Describe vertex attributes
+        DescribePointVertexAttributes();
+
+        // Associate element VBO
+        // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
+        // in the VAO
+        ////glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mPointElementVBO);
+        ////CheckOpenGLError();
+
+        glBindVertexArray(0);
+    }
+
+
+    //
+    // Initialize Spring VAO
+    //
+
+    {
+        glGenVertexArrays(1, &tmpGLuint);
+        mSpringVAO = tmpGLuint;
+
+        glBindVertexArray(*mSpringVAO);
+        CheckOpenGLError();
+
+        // Describe vertex attributes
+        DescribePointVertexAttributes();
+
+        // Associate element VBO
+        // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
+        // in the VAO
+        ////glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mSpringElementVBO);
+        ////CheckOpenGLError();
+
+        glBindVertexArray(0);
+    }
+
+
+    //
+    // Initialize Rope VAO
+    //
+
+    {
+        glGenVertexArrays(1, &tmpGLuint);
+        mRopeVAO = tmpGLuint;
+
+        glBindVertexArray(*mRopeVAO);
+        CheckOpenGLError();
+
+        // Describe vertex attributes
+        DescribePointVertexAttributes();
+
+        // Associate element VBO
+        // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
+        // in the VAO
+        ////glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mRopeElementVBO);
+        ////CheckOpenGLError();
+
+        glBindVertexArray(0);
+    }
+
+
+    //
+    // Initialize Triangle VAO
+    //
+
+    {
+        glGenVertexArrays(1, &tmpGLuint);
+        mTriangleVAO = tmpGLuint;
+
+        glBindVertexArray(*mTriangleVAO);
+        CheckOpenGLError();
+
+        // Describe vertex attributes
+        DescribePointVertexAttributes();
+
+        // Associate element VBO
+        // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
+        // in the VAO
+        ////glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mTriangleElementVBO);
+        ////CheckOpenGLError();
+
+        glBindVertexArray(0);
+    }
+
+
+    //
+    // Initialize StressedSpring VAO
+    //
+
+    {
+        glGenVertexArrays(1, &tmpGLuint);
+        mStressedSpringVAO = tmpGLuint;
+
+        glBindVertexArray(*mStressedSpringVAO);
+        CheckOpenGLError();
+
+        // Describe vertex attributes
+        DescribePointVertexAttributes();
+
+        // Associate element VBO
+        // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
+        // in the VAO
+        ////glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mStressedSpringElementVBO);
+        ////CheckOpenGLError();
+
+        glBindVertexArray(0);
+    }
+
+
+    //
+    // Initialize EphemeralPoint VAO
+    //
+
+    {
+        glGenVertexArrays(1, &tmpGLuint);
+        mEphemeralPointVAO = tmpGLuint;
+
+        glBindVertexArray(*mEphemeralPointVAO);
+        CheckOpenGLError();
+
+        // Describe vertex attributes
+        DescribePointVertexAttributes();
+
+        // Associate element VBO
+        // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
+        // in the VAO
+        ////glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mEphemeralPointElementVBO);
+        ////CheckOpenGLError();
+
+        glBindVertexArray(0);
+    }
 
 
     //
     // Initialize GenericTexture VAO
     //
 
-    glGenVertexArrays(1, &tmpGLuint);
-    mGenericTextureVAO = tmpGLuint;
+    {
+        glGenVertexArrays(1, &tmpGLuint);
+        mGenericTextureVAO = tmpGLuint;
 
-    glBindVertexArray(*mGenericTextureVAO);
-    CheckOpenGLError();
+        glBindVertexArray(*mGenericTextureVAO);
+        CheckOpenGLError();
 
-    // Describe vertex attributes
-    glBindBuffer(GL_ARRAY_BUFFER, *mGenericTextureVBO);
-    static_assert(sizeof(GenericTextureVertex) == (4 + 4 + 3) * sizeof(float));
-    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::GenericTexture1));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTexture1), 4, GL_FLOAT, GL_FALSE, sizeof(GenericTextureVertex), (void*)0);
-    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::GenericTexture2));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTexture2), 4, GL_FLOAT, GL_FALSE, sizeof(GenericTextureVertex), (void*)((4) * sizeof(float)));
-    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::GenericTexture3));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTexture3), 3, GL_FLOAT, GL_FALSE, sizeof(GenericTextureVertex), (void*)((4 + 4) * sizeof(float)));
-    CheckOpenGLError();
+        // Describe vertex attributes
+        glBindBuffer(GL_ARRAY_BUFFER, *mGenericTextureVBO);
+        static_assert(sizeof(GenericTextureVertex) == (4 + 4 + 3) * sizeof(float));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::GenericTexture1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTexture1), 4, GL_FLOAT, GL_FALSE, sizeof(GenericTextureVertex), (void*)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::GenericTexture2));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTexture2), 4, GL_FLOAT, GL_FALSE, sizeof(GenericTextureVertex), (void*)((4) * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::GenericTexture3));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTexture3), 3, GL_FLOAT, GL_FALSE, sizeof(GenericTextureVertex), (void*)((4 + 4) * sizeof(float)));
+        CheckOpenGLError();
 
-    glBindVertexArray(0);
+        glBindVertexArray(0);
+    }
 
 
     //
     // Initialize VectorArrow VAO
     //
 
-    glGenVertexArrays(1, &tmpGLuint);
-    mVectorArrowVAO = tmpGLuint;
+    {
+        glGenVertexArrays(1, &tmpGLuint);
+        mVectorArrowVAO = tmpGLuint;
 
-    glBindVertexArray(*mVectorArrowVAO);
-    CheckOpenGLError();
+        glBindVertexArray(*mVectorArrowVAO);
+        CheckOpenGLError();
 
-    // Describe vertex attributes
-    glBindBuffer(GL_ARRAY_BUFFER, *mVectorArrowVBO);
-    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::VectorArrow));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::VectorArrow), 3, GL_FLOAT, GL_FALSE, sizeof(vec3f), (void*)(0));
-    CheckOpenGLError();
+        // Describe vertex attributes
+        glBindBuffer(GL_ARRAY_BUFFER, *mVectorArrowVBO);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::VectorArrow));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::VectorArrow), 3, GL_FLOAT, GL_FALSE, sizeof(vec3f), (void*)(0));
+        CheckOpenGLError();
 
-    glBindVertexArray(0);
+        glBindVertexArray(0);
+    }
 
-
-
-
-    // TODOHERE: others
 
     //
     // Initialize Ship texture
@@ -221,100 +416,6 @@ ShipRenderContext::ShipRenderContext(
 
     // Unbind texture
     glBindTexture(GL_TEXTURE_2D, 0);
-
-
-    // TODOOLD
-
-    //
-    // Create and pre-allocate point VBOs
-    //
-
-    GLuint pointVBOs[6];
-    glGenBuffers(6, pointVBOs);
-
-    mPointPositionVBO = pointVBOs[0];
-    glBindBuffer(GL_ARRAY_BUFFER, *mPointPositionVBO);
-    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(vec2f), nullptr, GL_DYNAMIC_DRAW);
-    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointPosition));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointPosition), 2, GL_FLOAT, GL_FALSE, sizeof(vec2f), (void*)(0));
-    CheckOpenGLError();
-
-    mPointLightVBO = pointVBOs[1];
-    glBindBuffer(GL_ARRAY_BUFFER, *mPointLightVBO);
-    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
-    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointLight));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointLight), 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)(0));
-    CheckOpenGLError();
-
-    mPointWaterVBO = pointVBOs[2];
-    glBindBuffer(GL_ARRAY_BUFFER, *mPointWaterVBO);
-    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
-    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointWater));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointWater), 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)(0));
-    CheckOpenGLError();
-
-    mPointColorVBO = pointVBOs[3];
-    glBindBuffer(GL_ARRAY_BUFFER, *mPointColorVBO);
-    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(vec4f), nullptr, GL_DYNAMIC_DRAW);
-    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointColor));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointColor), 4, GL_FLOAT, GL_FALSE, sizeof(vec4f), (void*)(0));
-    CheckOpenGLError();
-
-    mPointPlaneIdVBO = pointVBOs[4];
-    glBindBuffer(GL_ARRAY_BUFFER, *mPointPlaneIdVBO);
-    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(PlaneId), nullptr, GL_STATIC_DRAW);
-    static_assert(sizeof(PlaneId) == sizeof(uint32_t)); // GL_UNSIGNED_INT
-    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointPlaneId));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointPlaneId), 1, GL_UNSIGNED_INT, GL_FALSE, sizeof(PlaneId), (void*)(0));
-    CheckOpenGLError();
-
-    mPointElementTextureCoordinatesVBO = pointVBOs[5];
-    glBindBuffer(GL_ARRAY_BUFFER, *mPointElementTextureCoordinatesVBO);
-    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(vec2f), nullptr, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointTextureCoordinates));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointTextureCoordinates), 2, GL_FLOAT, GL_FALSE, sizeof(vec2f), (void*)(0));
-    CheckOpenGLError();
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-
-
-
-
-    //
-    // Initialize elements
-    //
-
-    GLuint elementVBOs[5];
-    glGenBuffers(5, elementVBOs);
-
-
-    mPointElementBuffer.reserve(pointCount);
-    mPointElementVBO = elementVBOs[0];
-
-    mSpringElementBuffer.reserve(pointCount * GameParameters::MaxSpringsPerPoint);
-    mSpringElementVBO = elementVBOs[1];
-
-    mRopeElementBuffer.reserve(pointCount); // Arbitrary
-    mRopeElementVBO = elementVBOs[2];
-
-    mTriangleElementBuffer.reserve(pointCount * GameParameters::MaxTrianglesPerPoint);
-    mTriangleElementVBO = elementVBOs[3];
-
-    mStressedSpringElementBuffer.reserve(1000); // Arbitrary
-    mStressedSpringElementVBO = elementVBOs[4];
-
-
-
-    //
-    // Initialize ephemeral points
-    //
-
-    mEphemeralPoints.reserve(GameParameters::MaxEphemeralParticles);
-
-    // Create VBO
-    glGenBuffers(1, &tmpGLuint);
-    mEphemeralPointVBO = tmpGLuint;
 
 
     //
@@ -595,6 +696,44 @@ void ShipRenderContext::OnWaterLevelOfDetailUpdated()
 
 //////////////////////////////////////////////////////////////////////////////////
 
+void ShipRenderContext::DescribePointVertexAttributes()
+{
+    glBindBuffer(GL_ARRAY_BUFFER, *mPointPositionVBO);
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointPosition));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointPosition), 2, GL_FLOAT, GL_FALSE, sizeof(vec2f), (void*)(0));
+    CheckOpenGLError();
+
+    glBindBuffer(GL_ARRAY_BUFFER, *mPointLightVBO);
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointLight));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointLight), 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)(0));
+    CheckOpenGLError();
+
+    glBindBuffer(GL_ARRAY_BUFFER, *mPointWaterVBO);
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointWater));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointWater), 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)(0));
+    CheckOpenGLError();
+
+    glBindBuffer(GL_ARRAY_BUFFER, *mPointColorVBO);
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointColor));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointColor), 4, GL_FLOAT, GL_FALSE, sizeof(vec4f), (void*)(0));
+    CheckOpenGLError();
+
+    glBindBuffer(GL_ARRAY_BUFFER, *mPointPlaneIdVBO);
+    static_assert(sizeof(PlaneId) == sizeof(uint32_t)); // GL_UNSIGNED_INT
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointPlaneId));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointPlaneId), 1, GL_UNSIGNED_INT, GL_FALSE, sizeof(PlaneId), (void*)(0));
+    CheckOpenGLError();
+
+    glBindBuffer(GL_ARRAY_BUFFER, *mPointTextureCoordinatesVBO);
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointTextureCoordinates));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointTextureCoordinates), 2, GL_FLOAT, GL_FALSE, sizeof(vec2f), (void*)(0));
+    CheckOpenGLError();
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+
 void ShipRenderContext::RenderStart(PlaneId maxMaxPlaneId)
 {
     //
@@ -620,27 +759,16 @@ void ShipRenderContext::RenderStart(PlaneId maxMaxPlaneId)
     }
 }
 
-void ShipRenderContext::UploadPointImmutableGraphicalAttributes(vec2f const * textureCoordinates)
+void ShipRenderContext::UploadPointImmutableAttributes(vec2f const * textureCoordinates)
 {
     // Upload texture coordinates
-    glBindBuffer(GL_ARRAY_BUFFER, *mPointElementTextureCoordinatesVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, *mPointTextureCoordinatesVBO);
     glBufferSubData(GL_ARRAY_BUFFER, 0, mPointCount * sizeof(vec2f), textureCoordinates);
     CheckOpenGLError();
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void ShipRenderContext::UploadShipPointColors(
-    vec4f const * color,
-    size_t startDst,
-    size_t count)
-{
-    assert(startDst + count <= mPointCount);
-
-    glBindBuffer(GL_ARRAY_BUFFER, *mPointColorVBO);
-    glBufferSubData(GL_ARRAY_BUFFER, startDst * sizeof(vec4f), count * sizeof(vec4f), color);
-    CheckOpenGLError();
-}
-
-void ShipRenderContext::UploadPoints(
+void ShipRenderContext::UploadPointMutableAttributes(
     vec2f const * position,
     float const * light,
     float const * water)
@@ -659,6 +787,22 @@ void ShipRenderContext::UploadPoints(
     glBindBuffer(GL_ARRAY_BUFFER, *mPointWaterVBO);
     glBufferSubData(GL_ARRAY_BUFFER, 0, mPointCount * sizeof(float), water);
     CheckOpenGLError();
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void ShipRenderContext::UploadPointColors(
+    vec4f const * color,
+    size_t startDst,
+    size_t count)
+{
+    assert(startDst + count <= mPointCount);
+
+    // Uplaod color range
+    glBindBuffer(GL_ARRAY_BUFFER, *mPointColorVBO);
+    glBufferSubData(GL_ARRAY_BUFFER, startDst * sizeof(vec4f), count * sizeof(vec4f), color);
+    CheckOpenGLError();
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void ShipRenderContext::UploadPointPlaneIds(
@@ -672,6 +816,7 @@ void ShipRenderContext::UploadPointPlaneIds(
     glBindBuffer(GL_ARRAY_BUFFER, *mPointPlaneIdVBO);
     glBufferSubData(GL_ARRAY_BUFFER, startDst * sizeof(PlaneId), count * sizeof(PlaneId), planeId);
     CheckOpenGLError();
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void ShipRenderContext::UploadElementTrianglesStart(size_t trianglesCount)
@@ -686,6 +831,7 @@ void ShipRenderContext::UploadElementTrianglesEnd()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mTriangleElementVBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, mTriangleElementBuffer.size() * sizeof(TriangleElement), mTriangleElementBuffer.data(), GL_STATIC_DRAW);
     CheckOpenGLError();
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void ShipRenderContext::UploadElementsStart()
@@ -711,13 +857,15 @@ void ShipRenderContext::UploadElementsEnd()
 
     // Springs
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mSpringElementVBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mSpringElementBuffer.size() * sizeof(SpringElement), mSpringElementBuffer.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mSpringElementBuffer.size() * sizeof(LineElement), mSpringElementBuffer.data(), GL_STATIC_DRAW);
     CheckOpenGLError();
 
     // Ropes
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mRopeElementVBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mRopeElementBuffer.size() * sizeof(RopeElement), mRopeElementBuffer.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mRopeElementBuffer.size() * sizeof(LineElement), mRopeElementBuffer.data(), GL_STATIC_DRAW);
     CheckOpenGLError();
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void ShipRenderContext::UploadElementStressedSpringsStart()
@@ -733,24 +881,26 @@ void ShipRenderContext::UploadElementStressedSpringsEnd()
     //
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mStressedSpringElementVBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mStressedSpringElementBuffer.size() * sizeof(StressedSpringElement), mStressedSpringElementBuffer.data(), GL_DYNAMIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mStressedSpringElementBuffer.size() * sizeof(LineElement), mStressedSpringElementBuffer.data(), GL_DYNAMIC_DRAW);
     CheckOpenGLError();
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void ShipRenderContext::UploadEphemeralPointsStart()
+void ShipRenderContext::UploadElementEphemeralPointsStart()
 {
-    mEphemeralPoints.clear();
+    mEphemeralPointElementBuffer.clear();
 }
 
-void ShipRenderContext::UploadEphemeralPointsEnd()
+void ShipRenderContext::UploadElementEphemeralPointsEnd()
 {
     //
-    // Upload ephemeral points
+    // Upload ephemeral point elements
     //
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mEphemeralPointVBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mEphemeralPoints.size() * sizeof(PointElement), mEphemeralPoints.data(), GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mEphemeralPointElementVBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mEphemeralPointElementBuffer.size() * sizeof(PointElement), mEphemeralPointElementBuffer.data(), GL_STATIC_DRAW);
     CheckOpenGLError();
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void ShipRenderContext::UploadVectors(
@@ -847,7 +997,17 @@ void ShipRenderContext::RenderEnd()
 
     if (mDebugShipRenderMode == DebugShipRenderMode::Points)
     {
-        RenderPointElements();
+        glBindVertexArray(*mPointVAO);
+
+        mShaderManager.ActivateProgram<ProgramType::ShipPointsColor>();
+
+        glPointSize(0.2f * 2.0f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
+
+        // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
+        // in the VAO
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mPointElementVBO);
+
+        glDrawElements(GL_POINTS, static_cast<GLsizei>(1 * mPointElementBuffer.size()), GL_UNSIGNED_INT, 0);
     }
 
 
@@ -866,9 +1026,36 @@ void ShipRenderContext::RenderEnd()
         || (mDebugShipRenderMode == DebugShipRenderMode::None
             && (mShipRenderMode == ShipRenderMode::Structure || mShipRenderMode == ShipRenderMode::Texture)))
     {
-        RenderTriangleElements(mShipRenderMode == ShipRenderMode::Texture);
-    }
+        glBindVertexArray(*mTriangleVAO);
 
+        if (mShipRenderMode == ShipRenderMode::Texture)
+        {
+            // Use texture program
+            mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTexture>();
+
+            // Bind texture
+            mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
+            assert(!!mShipTextureOpenGLHandle);
+            glBindTexture(GL_TEXTURE_2D, *mShipTextureOpenGLHandle);
+        }
+        else
+        {
+            // Use color program
+            mShaderManager.ActivateProgram<ProgramType::ShipTrianglesColor>();
+        }
+
+        if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
+            glLineWidth(0.1f);
+
+        // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
+        // in the VAO
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mTriangleElementVBO);
+
+        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(3 * mTriangleElementBuffer.size()), GL_UNSIGNED_INT, 0);
+
+        // Update stats
+        mRenderStatistics.LastRenderedShipTriangles += mTriangleElementBuffer.size();
+    }
 
 
     //
@@ -879,9 +1066,21 @@ void ShipRenderContext::RenderEnd()
 
     if (mDebugShipRenderMode == DebugShipRenderMode::None)
     {
-        RenderRopeElements();
-    }
+        glBindVertexArray(*mRopeVAO);
 
+        mShaderManager.ActivateProgram<ProgramType::ShipRopes>();
+
+        glLineWidth(0.1f * 2.0f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
+
+        // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
+        // in the VAO
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mRopeElementVBO);
+
+        glDrawElements(GL_LINES, static_cast<GLsizei>(2 * mRopeElementBuffer.size()), GL_UNSIGNED_INT, 0);
+
+        // Update stats
+        mRenderStatistics.LastRenderedShipRopes += mRopeElementBuffer.size();
+    }
 
 
     //
@@ -901,19 +1100,61 @@ void ShipRenderContext::RenderEnd()
         || (mDebugShipRenderMode == DebugShipRenderMode::None
             && (mShipRenderMode == ShipRenderMode::Structure || mShipRenderMode == ShipRenderMode::Texture)))
     {
-        RenderSpringElements(mDebugShipRenderMode == DebugShipRenderMode::None && mShipRenderMode == ShipRenderMode::Texture);
-    }
+        glBindVertexArray(*mSpringVAO);
 
+        if (mDebugShipRenderMode == DebugShipRenderMode::None && mShipRenderMode == ShipRenderMode::Texture)
+        {
+            // Use texture program
+            mShaderManager.ActivateProgram<ProgramType::ShipSpringsTexture>();
+
+            // Bind texture
+            mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
+            assert(!!mShipTextureOpenGLHandle);
+            glBindTexture(GL_TEXTURE_2D, *mShipTextureOpenGLHandle);
+            CheckOpenGLError();
+        }
+        else
+        {
+            // Use color program
+            mShaderManager.ActivateProgram<ProgramType::ShipSpringsColor>();
+        }
+
+        glLineWidth(0.1f * 2.0f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
+
+        // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
+        // in the VAO
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mSpringElementVBO);
+
+        glDrawElements(GL_LINES, static_cast<GLsizei>(2 * mSpringElementBuffer.size()), GL_UNSIGNED_INT, 0);
+
+        // Update stats
+        mRenderStatistics.LastRenderedShipSprings += mSpringElementBuffer.size();
+    }
 
 
     //
     // Draw stressed springs
     //
 
-    if (mDebugShipRenderMode == DebugShipRenderMode::None
-        && mShowStressedSprings)
+    if (mShowStressedSprings
+        && !mStressedSpringElementBuffer.empty())
     {
-        RenderStressedSpringElements();
+        glBindVertexArray(*mStressedSpringVAO);
+
+        mShaderManager.ActivateProgram<ProgramType::ShipStressedSprings>();
+
+        glLineWidth(0.1f * 2.0f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
+
+        // Bind stressed spring texture
+        mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
+        glBindTexture(GL_TEXTURE_2D, *mStressedSpringTextureOpenGLHandle);
+        CheckOpenGLError();
+
+        // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
+        // in the VAO
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mStressedSpringElementVBO);
+
+        glDrawElements(GL_LINES, static_cast<GLsizei>(2 * mStressedSpringElementBuffer.size()), GL_UNSIGNED_INT, 0);
     }
 
 
@@ -922,12 +1163,31 @@ void ShipRenderContext::RenderEnd()
     // Draw ephemeral points
     //
 
-    RenderEphemeralPoints();
+    if (!mEphemeralPointElementBuffer.empty())
+    {
+        glBindVertexArray(*mEphemeralPointVAO);
+
+        mShaderManager.ActivateProgram<ProgramType::ShipPointsColor>();
+
+        glPointSize(0.3f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
+
+        // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
+        // in the VAO
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mEphemeralPointElementVBO);
+
+        glDrawElements(GL_POINTS, static_cast<GLsizei>(mEphemeralPointElementBuffer.size()), GL_UNSIGNED_INT, 0);
+
+        // Update stats
+        mRenderStatistics.LastRenderedShipEphemeralPoints += mEphemeralPointElementBuffer.size();
+    }
+
+    // We are done with the ship VAO
+    glBindVertexArray(0);
 
 
 
     //
-    // Draw Generic textures
+    // Render generic textures
     //
 
     RenderGenericTextures();
@@ -940,7 +1200,7 @@ void ShipRenderContext::RenderEnd()
 
     if (mVectorFieldRenderMode != VectorFieldRenderMode::None)
     {
-        RenderVectors();
+        RenderVectorArrows();
     }
 
 
@@ -953,130 +1213,6 @@ void ShipRenderContext::RenderEnd()
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-
-void ShipRenderContext::RenderPointElements()
-{
-    // Use color program
-    mShaderManager.ActivateProgram<ProgramType::ShipPointsColor>();
-
-    // Set point size
-    glPointSize(0.2f * 2.0f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
-
-    // Bind VBO
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mPointElementVBO);
-    CheckOpenGLError();
-
-    // Draw
-    glDrawElements(GL_POINTS, static_cast<GLsizei>(1 * mPointElementBuffer.size()), GL_UNSIGNED_INT, 0);
-}
-
-void ShipRenderContext::RenderSpringElements(bool withTexture)
-{
-    if (withTexture)
-    {
-        // Use texture program
-        mShaderManager.ActivateProgram<ProgramType::ShipSpringsTexture>();
-
-        // Bind texture
-        mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
-        assert(!!mElementShipTexture);
-        glBindTexture(GL_TEXTURE_2D, *mShipTextureOpenGLHandle);
-        CheckOpenGLError();
-    }
-    else
-    {
-        // Use color program
-        mShaderManager.ActivateProgram<ProgramType::ShipSpringsColor>();
-    }
-
-    // Set line size
-    glLineWidth(0.1f * 2.0f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
-
-    // Bind VBO
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mSpringElementVBO);
-    CheckOpenGLError();
-
-    // Draw
-    glDrawElements(GL_LINES, static_cast<GLsizei>(2 * mSpringElementBuffer.size()), GL_UNSIGNED_INT, 0);
-
-    // Update stats
-    mRenderStatistics.LastRenderedShipSprings += mSpringElementBuffer.size();
-}
-
-void ShipRenderContext::RenderRopeElements()
-{
-    // Use rope program
-    mShaderManager.ActivateProgram<ProgramType::ShipRopes>();
-
-    // Set line size
-    glLineWidth(0.1f * 2.0f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
-
-    // Bind VBO
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mRopeElementVBO);
-    CheckOpenGLError();
-
-    // Draw
-    glDrawElements(GL_LINES, static_cast<GLsizei>(2 * mRopeElementBuffer.size()), GL_UNSIGNED_INT, 0);
-
-    // Update stats
-    mRenderStatistics.LastRenderedShipRopes += mRopeElementBuffer.size();
-}
-
-void ShipRenderContext::RenderTriangleElements(bool withTexture)
-{
-    if (withTexture)
-    {
-        // Use texture program
-        mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTexture>();
-
-        // Bind texture
-        mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
-        assert(!!mElementShipTexture);
-        glBindTexture(GL_TEXTURE_2D, *mShipTextureOpenGLHandle);
-    }
-    else
-    {
-        // Use color program
-        mShaderManager.ActivateProgram<ProgramType::ShipTrianglesColor>();
-    }
-
-    if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
-        glLineWidth(0.1f);
-
-    // Bind VBO
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mTriangleElementVBO);
-    CheckOpenGLError();
-
-    // Draw
-    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(3 * mTriangleElementBuffer.size()), GL_UNSIGNED_INT, 0);
-
-    // Update stats
-    mRenderStatistics.LastRenderedShipTriangles += mTriangleElementBuffer.size();
-}
-
-void ShipRenderContext::RenderStressedSpringElements()
-{
-    if (!mStressedSpringElementBuffer.empty())
-    {
-        // Use program
-        mShaderManager.ActivateProgram<ProgramType::ShipStressedSprings>();
-
-        // Set line size
-        glLineWidth(0.1f * 2.0f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
-
-        // Bind texture
-        mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
-        glBindTexture(GL_TEXTURE_2D, *mStressedSpringTextureOpenGLHandle);
-        CheckOpenGLError();
-
-        // Bind VBO
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mStressedSpringElementVBO);
-        CheckOpenGLError();
-
-        // Draw
-        glDrawElements(GL_LINES, static_cast<GLsizei>(2 * mStressedSpringElementBuffer.size()), GL_UNSIGNED_INT, 0);
-    }
-}
 
 void ShipRenderContext::RenderGenericTextures()
 {
@@ -1113,7 +1249,7 @@ void ShipRenderContext::RenderGenericTextures()
                 // Upload vertex buffer
                 //
 
-                assert(plane.VertexBuffer.size() <= mGenericTextureVBOAllocatedSize);
+                assert(plane.vertexBuffer.size() <= mGenericTextureVBOAllocatedSize);
 
                 glBufferSubData(
                     GL_ARRAY_BUFFER,
@@ -1144,29 +1280,7 @@ void ShipRenderContext::RenderGenericTextures()
     }
 }
 
-void ShipRenderContext::RenderEphemeralPoints()
-{
-    if (!mEphemeralPoints.empty())
-    {
-        // Use color program
-        mShaderManager.ActivateProgram<ProgramType::ShipPointsColor>();
-
-        // Set point size
-        glPointSize(0.3f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
-
-        // Bind VBO
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mEphemeralPointVBO);
-        CheckOpenGLError();
-
-        // Draw
-        glDrawElements(GL_POINTS, static_cast<GLsizei>(mEphemeralPoints.size()), GL_UNSIGNED_INT, 0);
-
-        // Update stats
-        mRenderStatistics.LastRenderedShipEphemeralPoints += mEphemeralPoints.size();
-    }
-}
-
-void ShipRenderContext::RenderVectors()
+void ShipRenderContext::RenderVectorArrows()
 {
     glBindVertexArray(*mVectorArrowVAO);
 

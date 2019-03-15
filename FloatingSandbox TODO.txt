@@ -216,17 +216,24 @@ Render:
 
 		= VAO (*)
 
-		- MapBuffer optimization (*)
+		- Misc OpenGL Optimizations (*)
+
+		- Secondary PlaneIDAsFloat buffer
+			- We only pay the price sparingly, but reap the benefits at each frame
+			- Update FPS
+
+		- Vertex buffer optimizations (*)
+
+		- Test undoing TrianglesTexture shader optimization and calculate impact
+			- Undo vec4 and calc'n move change
+			- This one we'd like to keep though, so make REALLY sure that it makes a big difference
+			- Update FPS (if needed)
+
+		- Orphaned points (*)
 
 		- Flood tool and ship un/sinking
 			- Make music class with FadeToStop()
 				- ::Update()
-
-		- Test undoing TrianglesTexture shader optimization (vec4 and calc'n move)
-
-		- Vertex buffer optimizations (*)
-
-		- Orphaned points (*)
 
 		- Decay (rust) (*)
 
@@ -541,29 +548,38 @@ Render:
 
 - Gfx optimizations:
 
-	- MapBuffer (*)
-		- Use MapBuffer to leverage asynchronousness at Unmap()
-		- GameOpenGLMappedVector<TElement, WRITE_ONLY>
-			- Map(size)
-			- emplace_back(...)
-				- w/assert that is mapped
-			- Unmap()
-			- ~()
-				- Unmap if mapped
-			- Remove that ugly GameOpenGLObject()
-		- Test 1:
-			- Replace current buffers
-			- See if faster
-		- Test 2:
-			- Do all uploads up-front
-			- Render pipeline sequence:
-				- RenderContext::RenderStart()
-				- RenderContext::UploadXYZ() or RenderContext::UploadXYZStart()/./End()
-				- RenderContext::RenderWorldPre()
-				- RenderContext::RenderShips()
-				- RenderContext::RenderWorldPost()
-				- RenderContext::RenderEnd()
-			- See if faster
+	- Misc OpenGL Optimizations (*)
+		- See fence to calculate frame draw latency
+			- Insert as last at end
+			- Check for it at beginning of next render, before SwapBuffers
+		- Try STREAM with ship VBO buffers (apparently should do it without testing!)
+			- 1: mutable point attributes
+			- 2: 
+		- Try orphaning VBO
+			- 1: mutable point attributes
+			- 2:
+		- Try MapBuffer to leverage asynchronousness at Unmap()
+			- GameOpenGLMappedVector<TElement, WRITE_ONLY>
+				- Map(size)
+				- emplace_back(...)
+					- w/assert that is mapped
+				- Unmap()
+				- ~()
+					- Unmap if mapped
+				- Remove that ugly GameOpenGLObject()
+			- Test 1:
+				- Replace current buffers
+				- See if faster
+			- Test 2:
+				- Do all uploads up-front
+				- Render pipeline sequence:
+					- RenderContext::RenderStart()
+					- RenderContext::UploadXYZ() or RenderContext::UploadXYZStart()/./End()
+					- RenderContext::RenderWorldPre()
+					- RenderContext::RenderShips()
+					- RenderContext::RenderWorldPost()
+					- RenderContext::RenderEnd()
+				- See if faster
 
 	- World::UploadLandAndWater: use same spatial frequency as samples, so to avoid interpolating altogether
 		- Warning: requires same sampling frequency for both, as ocean quads require landY when land sticks out,
@@ -620,33 +636,45 @@ Render:
 				+ Shaders
 				+ Test 
 				+ Commit
-			- Ship:
-				- One per "input configuration" + vertex element array (see MOLESKINE?)
-					- Make sure to bind element array indices to the VAOs
-				- Have to repeat descriptions:
-					- Use templated member funcs that bind correct VBO as well
-				- Code
-				- Shaders
+			= Ship:
+				+ One per "input configuration" + vertex element array 
+					+ Make sure to bind element array indices to the VAOs
+				+ Have to repeat descriptions
+				= Code
+					+ Do explicit element array binding :-(
+					- Reduce VAOs
+						- To 1?
+							- If so, nuke DescribePointVBOs()
+					- Reduce other calls
+						- LineWidth
+						- Texture activation and binding
+				+ Shaders
 				- Test
+					- Point
+					- Spring
+					- Rope
+					- Triangle
+					- StressedSpring
+					- EphemeralPoint
 				- Commit
 			- Cleanup:
-				- RenderEnd: do everything in function (springs, ropes, etc.) with one single
-				  texture activation and binding
-		- Cleanup:
+				- RenderCore.h/cpp: remove unused attributes and other TODOs
 		- Get new FPS
 		- Merge
 		= Check w/Parallels guy
 		
 			
 	- Lights on the GPU with instanced drawing (*)
-		- Figure out whether at vertex or fragment shader
-			- Depends on whether or not interpolation would re-create circular halo
+		- We begin with doing light at vertex (Gouraud)
 		- Lamp coords, spread, and luminiscence in uniform array
-			- Which then have to be set individually
 		- Loop as many times as necessary to avoid going beyond uniform limit of the GPU
 			- Figure out max (for right shader: v or f) at OpenGLInit
+		- Test 1: simply instance TrianglesTexture
+		- Test 2: also instance others
+		- At end:
+			- Try with light at fragment (Phong)
 
-	- Reduce number of vertex attributes for ship_triangles_texture and color (and possibly forced to do others) (*)
+	- Vertex Buffer Optimization (*): reduce number of vertex attributes for ship shaders 
 		+ We've already confirmed that one less attribute vertex sends FPS frpom 29 to 30
 		- At this moment, all Ship shaders - except for stressed springs - have the following inputs:
 			in vec2 inShipPointPosition;
@@ -654,6 +682,18 @@ Render:
 			in float inShipPointWater;
 			in vec4 inShipPointColor;    *
 			in float inShipPointPlaneId; *
+		- Test 1: Light + PlaneId
+			- Code
+			- Shaders
+			- Get FPS
+			- Commit if good
+		- Test 2: += Water + Pad
+			- Code
+				- Includes work buffer copy @ WaterDynamics!
+			- Shaders
+			- Get FPS
+			- Commit if good
+
 
 	- Try using GL_SHORT for Ship texture coordinates
 		- Passing NORMALIZE and 3 components to glVertexAttribPointer
@@ -911,6 +951,9 @@ Render:
 				- Upon point entering floor:
 					- Points goes back by displacement * FloorHardness
 					- Ocean floor's H goes back by displacement * (1 - FloorHardness)
+
+	- Stop playing music when ship has "sunk"
+		- Need to figure out easy way to detect "has sunk"
 
 
 	- Auto-adjust zoom at ship load
@@ -1487,7 +1530,10 @@ Render:
 - Passengers:
 	- Ship has number of passengers
 		- "like how many people would be aboard & as the ship sinks it like shows how many people are alive, escaped via life boat or died"
-		- Maybe a life count? like you have sorta a life count on the top right of the screen that says Alive: number. Dead: Number. And as the ship is sinking you press a button like say A (abandon) for example and people will start heading to the life boats to survive. The counter will stop once the ship is fully under the surface of the ocean or the entire boat deck is under water. the boat deck would be highlighted sorta like how the light system works.
+		- Maybe a life count? like you have sorta a life count on the top right of the screen that says Alive: number. Dead: Number. 
+		  And as the ship is sinking you press a button like say A (abandon) for example and people will start heading to the life boats 
+		  to survive. The counter will stop once the ship is fully under the surface of the ocean or the entire boat deck is under water. 
+		  The boat deck would be highlighted sorta like how the light system works.
 
 	- Moving passengers
 		- Separate layer provides floors, ladders, and obstacles
