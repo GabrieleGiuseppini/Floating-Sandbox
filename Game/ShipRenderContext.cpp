@@ -858,6 +858,17 @@ void ShipRenderContext::RenderEnd()
     glBindVertexArray(*mShipVAO);
 
     {
+        //
+        // Bind ship texture
+        //
+
+        assert(!!mShipTextureOpenGLHandle);
+
+        mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
+        glBindTexture(GL_TEXTURE_2D, *mShipTextureOpenGLHandle);
+
+
+
         // TODO: this will go with orphaned points rearc, will become a single Render invoked right after triangles
         //
         // Draw points
@@ -875,6 +886,7 @@ void ShipRenderContext::RenderEnd()
 
             glDrawElements(GL_POINTS, static_cast<GLsizei>(1 * mPointElementBuffer.size()), GL_UNSIGNED_INT, 0);
         }
+
 
 
         //
@@ -896,11 +908,6 @@ void ShipRenderContext::RenderEnd()
             {
                 // Use texture program
                 mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTexture>();
-
-                // Bind texture
-                mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
-                assert(!!mShipTextureOpenGLHandle);
-                glBindTexture(GL_TEXTURE_2D, *mShipTextureOpenGLHandle);
             }
             else
             {
@@ -922,6 +929,15 @@ void ShipRenderContext::RenderEnd()
         }
 
 
+
+        //
+        // Set line width, for ropes and springs
+        //
+
+        glLineWidth(0.1f * 2.0f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
+
+
+
         //
         // Draw ropes, unless it's a debug mode
         //
@@ -931,8 +947,6 @@ void ShipRenderContext::RenderEnd()
         if (mDebugShipRenderMode == DebugShipRenderMode::None)
         {
             mShaderManager.ActivateProgram<ProgramType::ShipRopes>();
-
-            glLineWidth(0.1f * 2.0f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
 
             // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
             // in the VAO
@@ -966,20 +980,12 @@ void ShipRenderContext::RenderEnd()
             {
                 // Use texture program
                 mShaderManager.ActivateProgram<ProgramType::ShipSpringsTexture>();
-
-                // Bind texture
-                mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
-                assert(!!mShipTextureOpenGLHandle);
-                glBindTexture(GL_TEXTURE_2D, *mShipTextureOpenGLHandle);
-                CheckOpenGLError();
             }
             else
             {
                 // Use color program
                 mShaderManager.ActivateProgram<ProgramType::ShipSpringsColor>();
             }
-
-            glLineWidth(0.1f * 2.0f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
 
             // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
             // in the VAO
@@ -992,6 +998,7 @@ void ShipRenderContext::RenderEnd()
         }
 
 
+
         //
         // Draw stressed springs
         //
@@ -1000,8 +1007,6 @@ void ShipRenderContext::RenderEnd()
             && !mStressedSpringElementBuffer.empty())
         {
             mShaderManager.ActivateProgram<ProgramType::ShipStressedSprings>();
-
-            glLineWidth(0.1f * 2.0f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
 
             // Bind stressed spring texture
             mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();

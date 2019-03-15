@@ -644,19 +644,13 @@ Render:
 				+ Have to repeat descriptions
 				= Code
 					+ Do explicit element array binding :-(
-					= Reduce VAOs
+					+ Reduce VAOs
 						+ To 1; nuke DescribePointVBOs()
-					- Reduce other calls
-						- LineWidth
-						- Texture activation and binding
+					+ Reduce other calls
+						+ LineWidth
+						+ Texture activation and binding
 				+ Shaders
-				- Test
-					- Point
-					- Spring
-					- Rope
-					- Triangle
-					- StressedSpring
-					- EphemeralPoint
+				+ Test
 				- Commit
 			- Cleanup:
 				- RenderCore.h/cpp: remove unused attributes and other TODOs
