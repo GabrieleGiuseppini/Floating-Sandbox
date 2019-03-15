@@ -2,6 +2,19 @@
 Current perf:
 =================================================
 - fps: 28.2/28.4 (miracle: 28.7/29.0/29.1)
+- World::Update: 54.66%
+		- UpdateMechanicalDynamics: 44.64%
+			- UpdateSpringForces: 34.70%
+			- UpdatePointForces: 4.88%
+			- HandleCollisionsWithSeafFloor: 2.89%
+			- IntegrateAndResetPointForces: 1.99%
+			- UpdateTotalMasses: 0.15%
+		- UpdateWaterDynamics: 6.29%
+		- DiffuseLight: 2.62%
+- World::Render: 28.24%
+	- Ship::Render: 25.11%
+	- RenderSkyEnd: 2.23%
+	- RenderOcean: 0.77%
 
 Before VAO:
 - fps: 28.1/28.3
@@ -559,15 +572,19 @@ Render:
 				+ Water, Land, Clouds
 			+ ShipRenderContext:
 				+ Mutable point attributes (pos, light, water)
-		- Try orphaning VBO
-			- RenderContext:
-				- Water, Land, Clouds
-			- ShipRenderContext:
-				- Mutable point attributes (pos, light, water)
-		- Try with single buffer for elements, appending stuff to it
+		+ Try orphaning VBO
+			+ RenderContext:
+				= Water, Land, Clouds
+			+ ShipRenderContext:
+				= Mutable point attributes (pos, light, water)
+			+ Figure out if should do null+subdata vs data
+			+ Verdict: no detectable improvement
+		= Try with single buffer for elements, appending stuff to it
+			- Springs, Ropes 
 			- JUST A TEST; if it's really super good, then we'll have to figure out how to do this
 			 (as not all elements come always at the same time)
-		- Try MapBuffer to leverage asynchronousness at Unmap()
+				- Add Points (for orphaned points)
+		- Try with mapped buffer for elements (springs, ropes, points?)
 			- GameOpenGLMappedVector<TElement, WRITE_ONLY>
 				- Map(size)
 				- emplace_back(...)
@@ -576,23 +593,7 @@ Render:
 				- ~()
 					- Unmap if mapped
 				- Remove that ugly GameOpenGLObject()
-			- Test 1:
-				- RenderContext:
-					- Water, Land, Clouds
-				- ShipRenderContext:
-					- Mutable point attributes (pos, light, water)
-					- GenTex
-					- VectorArrows
-			- Test 2:
-				- Do all uploads up-front
-				- Render pipeline sequence:
-					- RenderContext::RenderStart()
-					- RenderContext::UploadXYZ() or RenderContext::UploadXYZStart()/./End()
-					- RenderContext::RenderWorldPre()
-					- RenderContext::RenderShips()
-					- RenderContext::RenderWorldPost()
-					- RenderContext::RenderEnd()
-				- See if faster
+
 
 	- World::UploadLandAndWater: use same spatial frequency as samples, so to avoid interpolating altogether
 		- Warning: requires same sampling frequency for both, as ocean quads require landY when land sticks out,
