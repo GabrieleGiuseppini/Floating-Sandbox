@@ -549,6 +549,7 @@ Render:
 - Gfx optimizations:
 
 	- Misc OpenGL Optimizations (*)
+		+ Try all of these in isolation, or building on the previous one if the previous one is a clear winner
 		- See fence to calculate frame draw latency
 			- Insert as last at end
 			- Check for it at beginning of next render, before SwapBuffers
@@ -558,6 +559,7 @@ Render:
 		- Try orphaning VBO
 			- 1: mutable point attributes
 			- 2:
+		- Try with single buffer for elements, appending stuff to it
 		- Try MapBuffer to leverage asynchronousness at Unmap()
 			- GameOpenGLMappedVector<TElement, WRITE_ONLY>
 				- Map(size)
@@ -642,9 +644,8 @@ Render:
 				+ Have to repeat descriptions
 				= Code
 					+ Do explicit element array binding :-(
-					- Reduce VAOs
-						- To 1?
-							- If so, nuke DescribePointVBOs()
+					= Reduce VAOs
+						+ To 1; nuke DescribePointVBOs()
 					- Reduce other calls
 						- LineWidth
 						- Texture activation and binding

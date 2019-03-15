@@ -390,8 +390,6 @@ private:
     void OnWaterContrastUpdated();
     void OnWaterLevelOfDetailUpdated();
 
-    void DescribePointVertexAttributes();
-
     void RenderGenericTextures();
     void RenderVectorArrows();
 
@@ -520,13 +518,7 @@ private:
     // VAOs
     //
 
-    GameOpenGLVAO mPointVAO;
-    GameOpenGLVAO mSpringVAO;
-    GameOpenGLVAO mRopeVAO;
-    GameOpenGLVAO mTriangleVAO;
-    GameOpenGLVAO mStressedSpringVAO;
-    GameOpenGLVAO mEphemeralPointVAO;
-
+    GameOpenGLVAO mShipVAO;
     GameOpenGLVAO mGenericTextureVAO;
     GameOpenGLVAO mVectorArrowVAO;
 

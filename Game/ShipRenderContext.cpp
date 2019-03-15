@@ -65,12 +65,7 @@ ShipRenderContext::ShipRenderContext(
     , mVectorArrowVBO()
     , mVectorArrowColor()
     // VAOs
-    , mPointVAO()
-    , mSpringVAO()
-    , mRopeVAO()
-    , mTriangleVAO()
-    , mStressedSpringVAO()
-    , mEphemeralPointVAO()
+    , mShipVAO()
     , mGenericTextureVAO()
     , mVectorArrowVAO()
     // Textures
@@ -156,143 +151,60 @@ ShipRenderContext::ShipRenderContext(
 
 
     //
-    // Initialize Point VAO
+    // Initialize Ship VAO
     //
 
     {
         glGenVertexArrays(1, &tmpGLuint);
-        mPointVAO = tmpGLuint;
+        mShipVAO = tmpGLuint;
 
-        glBindVertexArray(*mPointVAO);
+        glBindVertexArray(*mShipVAO);
         CheckOpenGLError();
 
+        //
         // Describe vertex attributes
-        DescribePointVertexAttributes();
+        //
 
+        glBindBuffer(GL_ARRAY_BUFFER, *mPointPositionVBO);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointPosition));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointPosition), 2, GL_FLOAT, GL_FALSE, sizeof(vec2f), (void*)(0));
+        CheckOpenGLError();
+
+        glBindBuffer(GL_ARRAY_BUFFER, *mPointLightVBO);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointLight));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointLight), 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)(0));
+        CheckOpenGLError();
+
+        glBindBuffer(GL_ARRAY_BUFFER, *mPointWaterVBO);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointWater));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointWater), 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)(0));
+        CheckOpenGLError();
+
+        glBindBuffer(GL_ARRAY_BUFFER, *mPointColorVBO);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointColor));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointColor), 4, GL_FLOAT, GL_FALSE, sizeof(vec4f), (void*)(0));
+        CheckOpenGLError();
+
+        glBindBuffer(GL_ARRAY_BUFFER, *mPointPlaneIdVBO);
+        static_assert(sizeof(PlaneId) == sizeof(uint32_t)); // GL_UNSIGNED_INT
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointPlaneId));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointPlaneId), 1, GL_UNSIGNED_INT, GL_FALSE, sizeof(PlaneId), (void*)(0));
+        CheckOpenGLError();
+
+        glBindBuffer(GL_ARRAY_BUFFER, *mPointTextureCoordinatesVBO);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointTextureCoordinates));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointTextureCoordinates), 2, GL_FLOAT, GL_FALSE, sizeof(vec2f), (void*)(0));
+        CheckOpenGLError();
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        //
         // Associate element VBO
+        //
+
         // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
         // in the VAO
         ////glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mPointElementVBO);
-        ////CheckOpenGLError();
-
-        glBindVertexArray(0);
-    }
-
-
-    //
-    // Initialize Spring VAO
-    //
-
-    {
-        glGenVertexArrays(1, &tmpGLuint);
-        mSpringVAO = tmpGLuint;
-
-        glBindVertexArray(*mSpringVAO);
-        CheckOpenGLError();
-
-        // Describe vertex attributes
-        DescribePointVertexAttributes();
-
-        // Associate element VBO
-        // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
-        // in the VAO
-        ////glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mSpringElementVBO);
-        ////CheckOpenGLError();
-
-        glBindVertexArray(0);
-    }
-
-
-    //
-    // Initialize Rope VAO
-    //
-
-    {
-        glGenVertexArrays(1, &tmpGLuint);
-        mRopeVAO = tmpGLuint;
-
-        glBindVertexArray(*mRopeVAO);
-        CheckOpenGLError();
-
-        // Describe vertex attributes
-        DescribePointVertexAttributes();
-
-        // Associate element VBO
-        // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
-        // in the VAO
-        ////glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mRopeElementVBO);
-        ////CheckOpenGLError();
-
-        glBindVertexArray(0);
-    }
-
-
-    //
-    // Initialize Triangle VAO
-    //
-
-    {
-        glGenVertexArrays(1, &tmpGLuint);
-        mTriangleVAO = tmpGLuint;
-
-        glBindVertexArray(*mTriangleVAO);
-        CheckOpenGLError();
-
-        // Describe vertex attributes
-        DescribePointVertexAttributes();
-
-        // Associate element VBO
-        // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
-        // in the VAO
-        ////glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mTriangleElementVBO);
-        ////CheckOpenGLError();
-
-        glBindVertexArray(0);
-    }
-
-
-    //
-    // Initialize StressedSpring VAO
-    //
-
-    {
-        glGenVertexArrays(1, &tmpGLuint);
-        mStressedSpringVAO = tmpGLuint;
-
-        glBindVertexArray(*mStressedSpringVAO);
-        CheckOpenGLError();
-
-        // Describe vertex attributes
-        DescribePointVertexAttributes();
-
-        // Associate element VBO
-        // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
-        // in the VAO
-        ////glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mStressedSpringElementVBO);
-        ////CheckOpenGLError();
-
-        glBindVertexArray(0);
-    }
-
-
-    //
-    // Initialize EphemeralPoint VAO
-    //
-
-    {
-        glGenVertexArrays(1, &tmpGLuint);
-        mEphemeralPointVAO = tmpGLuint;
-
-        glBindVertexArray(*mEphemeralPointVAO);
-        CheckOpenGLError();
-
-        // Describe vertex attributes
-        DescribePointVertexAttributes();
-
-        // Associate element VBO
-        // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
-        // in the VAO
-        ////glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mEphemeralPointElementVBO);
         ////CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -696,44 +608,6 @@ void ShipRenderContext::OnWaterLevelOfDetailUpdated()
 
 //////////////////////////////////////////////////////////////////////////////////
 
-void ShipRenderContext::DescribePointVertexAttributes()
-{
-    glBindBuffer(GL_ARRAY_BUFFER, *mPointPositionVBO);
-    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointPosition));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointPosition), 2, GL_FLOAT, GL_FALSE, sizeof(vec2f), (void*)(0));
-    CheckOpenGLError();
-
-    glBindBuffer(GL_ARRAY_BUFFER, *mPointLightVBO);
-    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointLight));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointLight), 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)(0));
-    CheckOpenGLError();
-
-    glBindBuffer(GL_ARRAY_BUFFER, *mPointWaterVBO);
-    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointWater));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointWater), 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)(0));
-    CheckOpenGLError();
-
-    glBindBuffer(GL_ARRAY_BUFFER, *mPointColorVBO);
-    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointColor));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointColor), 4, GL_FLOAT, GL_FALSE, sizeof(vec4f), (void*)(0));
-    CheckOpenGLError();
-
-    glBindBuffer(GL_ARRAY_BUFFER, *mPointPlaneIdVBO);
-    static_assert(sizeof(PlaneId) == sizeof(uint32_t)); // GL_UNSIGNED_INT
-    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointPlaneId));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointPlaneId), 1, GL_UNSIGNED_INT, GL_FALSE, sizeof(PlaneId), (void*)(0));
-    CheckOpenGLError();
-
-    glBindBuffer(GL_ARRAY_BUFFER, *mPointTextureCoordinatesVBO);
-    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointTextureCoordinates));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointTextureCoordinates), 2, GL_FLOAT, GL_FALSE, sizeof(vec2f), (void*)(0));
-    CheckOpenGLError();
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
-//////////////////////////////////////////////////////////////////////////////////
-
 void ShipRenderContext::RenderStart(PlaneId maxMaxPlaneId)
 {
     //
@@ -978,211 +852,194 @@ void ShipRenderContext::UploadVectors(
 void ShipRenderContext::RenderEnd()
 {
     //
-    // Disable vertex attribute 0, as we won't use it in here (it's all dedicated)
+    // Draw ship elements
     //
 
-    glDisableVertexAttribArray(0);
+    glBindVertexArray(*mShipVAO);
 
-
-    ///////////////////////////////////////////////
-    //
-    // Draw all layers
-    //
-    ///////////////////////////////////////////////
-
-    // TODO: this will go with orphaned points rearc, will become a single Render invoked right after triangles
-    //
-    // Draw points
-    //
-
-    if (mDebugShipRenderMode == DebugShipRenderMode::Points)
     {
-        glBindVertexArray(*mPointVAO);
+        // TODO: this will go with orphaned points rearc, will become a single Render invoked right after triangles
+        //
+        // Draw points
+        //
 
-        mShaderManager.ActivateProgram<ProgramType::ShipPointsColor>();
-
-        glPointSize(0.2f * 2.0f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
-
-        // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
-        // in the VAO
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mPointElementVBO);
-
-        glDrawElements(GL_POINTS, static_cast<GLsizei>(1 * mPointElementBuffer.size()), GL_UNSIGNED_INT, 0);
-    }
-
-
-    //
-    // Draw triangles
-    //
-    // Best to draw triangles (temporally) before springs and ropes, otherwise
-    // the latter, which use anti-aliasing, would end up being contoured with background
-    // when drawn Z-ally over triangles
-    //
-    // Also, edge springs might just contain transparent pixels (when textured), which
-    // would result in the same artifact
-    //
-
-    if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe
-        || (mDebugShipRenderMode == DebugShipRenderMode::None
-            && (mShipRenderMode == ShipRenderMode::Structure || mShipRenderMode == ShipRenderMode::Texture)))
-    {
-        glBindVertexArray(*mTriangleVAO);
-
-        if (mShipRenderMode == ShipRenderMode::Texture)
+        if (mDebugShipRenderMode == DebugShipRenderMode::Points)
         {
-            // Use texture program
-            mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTexture>();
+            mShaderManager.ActivateProgram<ProgramType::ShipPointsColor>();
 
-            // Bind texture
-            mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
-            assert(!!mShipTextureOpenGLHandle);
-            glBindTexture(GL_TEXTURE_2D, *mShipTextureOpenGLHandle);
-        }
-        else
-        {
-            // Use color program
-            mShaderManager.ActivateProgram<ProgramType::ShipTrianglesColor>();
+            glPointSize(0.2f * 2.0f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
+
+            // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
+            // in the VAO
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mPointElementVBO);
+
+            glDrawElements(GL_POINTS, static_cast<GLsizei>(1 * mPointElementBuffer.size()), GL_UNSIGNED_INT, 0);
         }
 
-        if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
-            glLineWidth(0.1f);
 
-        // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
-        // in the VAO
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mTriangleElementVBO);
+        //
+        // Draw triangles
+        //
+        // Best to draw triangles (temporally) before springs and ropes, otherwise
+        // the latter, which use anti-aliasing, would end up being contoured with background
+        // when drawn Z-ally over triangles
+        //
+        // Also, edge springs might just contain transparent pixels (when textured), which
+        // would result in the same artifact
+        //
 
-        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(3 * mTriangleElementBuffer.size()), GL_UNSIGNED_INT, 0);
-
-        // Update stats
-        mRenderStatistics.LastRenderedShipTriangles += mTriangleElementBuffer.size();
-    }
-
-
-    //
-    // Draw ropes, unless it's a debug mode
-    //
-    // Note: in springs or edge springs debug mode, all ropes are uploaded as springs
-    //
-
-    if (mDebugShipRenderMode == DebugShipRenderMode::None)
-    {
-        glBindVertexArray(*mRopeVAO);
-
-        mShaderManager.ActivateProgram<ProgramType::ShipRopes>();
-
-        glLineWidth(0.1f * 2.0f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
-
-        // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
-        // in the VAO
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mRopeElementVBO);
-
-        glDrawElements(GL_LINES, static_cast<GLsizei>(2 * mRopeElementBuffer.size()), GL_UNSIGNED_INT, 0);
-
-        // Update stats
-        mRenderStatistics.LastRenderedShipRopes += mRopeElementBuffer.size();
-    }
-
-
-    //
-    // Draw springs
-    //
-    // We draw springs when:
-    // - DebugRenderMode is springs|edgeSprings, in which case we use colors - so to show
-    //   structural springs -, or
-    // - RenderMode is structure (so to draw 1D chains), in which case we use colors, or
-    // - RenderMode is texture (so to draw 1D chains), in which case we use texture iff it is present
-    //
-    // Note: when DebugRenderMode is springs|edgeSprings, ropes would all be here.
-    //
-
-    if (mDebugShipRenderMode == DebugShipRenderMode::Springs
-        || mDebugShipRenderMode == DebugShipRenderMode::EdgeSprings
-        || (mDebugShipRenderMode == DebugShipRenderMode::None
-            && (mShipRenderMode == ShipRenderMode::Structure || mShipRenderMode == ShipRenderMode::Texture)))
-    {
-        glBindVertexArray(*mSpringVAO);
-
-        if (mDebugShipRenderMode == DebugShipRenderMode::None && mShipRenderMode == ShipRenderMode::Texture)
+        if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe
+            || (mDebugShipRenderMode == DebugShipRenderMode::None
+                && (mShipRenderMode == ShipRenderMode::Structure || mShipRenderMode == ShipRenderMode::Texture)))
         {
-            // Use texture program
-            mShaderManager.ActivateProgram<ProgramType::ShipSpringsTexture>();
+            if (mShipRenderMode == ShipRenderMode::Texture)
+            {
+                // Use texture program
+                mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTexture>();
 
-            // Bind texture
+                // Bind texture
+                mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
+                assert(!!mShipTextureOpenGLHandle);
+                glBindTexture(GL_TEXTURE_2D, *mShipTextureOpenGLHandle);
+            }
+            else
+            {
+                // Use color program
+                mShaderManager.ActivateProgram<ProgramType::ShipTrianglesColor>();
+            }
+
+            if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
+                glLineWidth(0.1f);
+
+            // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
+            // in the VAO
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mTriangleElementVBO);
+
+            glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(3 * mTriangleElementBuffer.size()), GL_UNSIGNED_INT, 0);
+
+            // Update stats
+            mRenderStatistics.LastRenderedShipTriangles += mTriangleElementBuffer.size();
+        }
+
+
+        //
+        // Draw ropes, unless it's a debug mode
+        //
+        // Note: in springs or edge springs debug mode, all ropes are uploaded as springs
+        //
+
+        if (mDebugShipRenderMode == DebugShipRenderMode::None)
+        {
+            mShaderManager.ActivateProgram<ProgramType::ShipRopes>();
+
+            glLineWidth(0.1f * 2.0f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
+
+            // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
+            // in the VAO
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mRopeElementVBO);
+
+            glDrawElements(GL_LINES, static_cast<GLsizei>(2 * mRopeElementBuffer.size()), GL_UNSIGNED_INT, 0);
+
+            // Update stats
+            mRenderStatistics.LastRenderedShipRopes += mRopeElementBuffer.size();
+        }
+
+
+        //
+        // Draw springs
+        //
+        // We draw springs when:
+        // - DebugRenderMode is springs|edgeSprings, in which case we use colors - so to show
+        //   structural springs -, or
+        // - RenderMode is structure (so to draw 1D chains), in which case we use colors, or
+        // - RenderMode is texture (so to draw 1D chains), in which case we use texture iff it is present
+        //
+        // Note: when DebugRenderMode is springs|edgeSprings, ropes would all be here.
+        //
+
+        if (mDebugShipRenderMode == DebugShipRenderMode::Springs
+            || mDebugShipRenderMode == DebugShipRenderMode::EdgeSprings
+            || (mDebugShipRenderMode == DebugShipRenderMode::None
+                && (mShipRenderMode == ShipRenderMode::Structure || mShipRenderMode == ShipRenderMode::Texture)))
+        {
+            if (mDebugShipRenderMode == DebugShipRenderMode::None && mShipRenderMode == ShipRenderMode::Texture)
+            {
+                // Use texture program
+                mShaderManager.ActivateProgram<ProgramType::ShipSpringsTexture>();
+
+                // Bind texture
+                mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
+                assert(!!mShipTextureOpenGLHandle);
+                glBindTexture(GL_TEXTURE_2D, *mShipTextureOpenGLHandle);
+                CheckOpenGLError();
+            }
+            else
+            {
+                // Use color program
+                mShaderManager.ActivateProgram<ProgramType::ShipSpringsColor>();
+            }
+
+            glLineWidth(0.1f * 2.0f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
+
+            // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
+            // in the VAO
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mSpringElementVBO);
+
+            glDrawElements(GL_LINES, static_cast<GLsizei>(2 * mSpringElementBuffer.size()), GL_UNSIGNED_INT, 0);
+
+            // Update stats
+            mRenderStatistics.LastRenderedShipSprings += mSpringElementBuffer.size();
+        }
+
+
+        //
+        // Draw stressed springs
+        //
+
+        if (mShowStressedSprings
+            && !mStressedSpringElementBuffer.empty())
+        {
+            mShaderManager.ActivateProgram<ProgramType::ShipStressedSprings>();
+
+            glLineWidth(0.1f * 2.0f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
+
+            // Bind stressed spring texture
             mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
-            assert(!!mShipTextureOpenGLHandle);
-            glBindTexture(GL_TEXTURE_2D, *mShipTextureOpenGLHandle);
+            glBindTexture(GL_TEXTURE_2D, *mStressedSpringTextureOpenGLHandle);
             CheckOpenGLError();
+
+            // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
+            // in the VAO
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mStressedSpringElementVBO);
+
+            glDrawElements(GL_LINES, static_cast<GLsizei>(2 * mStressedSpringElementBuffer.size()), GL_UNSIGNED_INT, 0);
         }
-        else
+
+
+
+        //
+        // Draw ephemeral points
+        //
+
+        if (!mEphemeralPointElementBuffer.empty())
         {
-            // Use color program
-            mShaderManager.ActivateProgram<ProgramType::ShipSpringsColor>();
+            mShaderManager.ActivateProgram<ProgramType::ShipPointsColor>();
+
+            glPointSize(0.3f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
+
+            // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
+            // in the VAO
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mEphemeralPointElementVBO);
+
+            glDrawElements(GL_POINTS, static_cast<GLsizei>(mEphemeralPointElementBuffer.size()), GL_UNSIGNED_INT, 0);
+
+            // Update stats
+            mRenderStatistics.LastRenderedShipEphemeralPoints += mEphemeralPointElementBuffer.size();
         }
 
-        glLineWidth(0.1f * 2.0f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
-
-        // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
-        // in the VAO
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mSpringElementVBO);
-
-        glDrawElements(GL_LINES, static_cast<GLsizei>(2 * mSpringElementBuffer.size()), GL_UNSIGNED_INT, 0);
-
-        // Update stats
-        mRenderStatistics.LastRenderedShipSprings += mSpringElementBuffer.size();
+        // We are done with the ship VAO
+        glBindVertexArray(0);
     }
-
-
-    //
-    // Draw stressed springs
-    //
-
-    if (mShowStressedSprings
-        && !mStressedSpringElementBuffer.empty())
-    {
-        glBindVertexArray(*mStressedSpringVAO);
-
-        mShaderManager.ActivateProgram<ProgramType::ShipStressedSprings>();
-
-        glLineWidth(0.1f * 2.0f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
-
-        // Bind stressed spring texture
-        mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
-        glBindTexture(GL_TEXTURE_2D, *mStressedSpringTextureOpenGLHandle);
-        CheckOpenGLError();
-
-        // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
-        // in the VAO
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mStressedSpringElementVBO);
-
-        glDrawElements(GL_LINES, static_cast<GLsizei>(2 * mStressedSpringElementBuffer.size()), GL_UNSIGNED_INT, 0);
-    }
-
-
-
-    //
-    // Draw ephemeral points
-    //
-
-    if (!mEphemeralPointElementBuffer.empty())
-    {
-        glBindVertexArray(*mEphemeralPointVAO);
-
-        mShaderManager.ActivateProgram<ProgramType::ShipPointsColor>();
-
-        glPointSize(0.3f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
-
-        // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
-        // in the VAO
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mEphemeralPointElementVBO);
-
-        glDrawElements(GL_POINTS, static_cast<GLsizei>(mEphemeralPointElementBuffer.size()), GL_UNSIGNED_INT, 0);
-
-        // Update stats
-        mRenderStatistics.LastRenderedShipEphemeralPoints += mEphemeralPointElementBuffer.size();
-    }
-
-    // We are done with the ship VAO
-    glBindVertexArray(0);
 
 
 
