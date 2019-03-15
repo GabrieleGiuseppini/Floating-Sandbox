@@ -1,5 +1,7 @@
 TODO
 - Ship lights now reveal underlying colors at night
+- Improved rendering pipeline
+	- TODO: supporting now aadditional graphic cards which were previously only displaying clouds and water but no ship
 - Rectified simulation instability that was caused by square water drag law at very high speeds
 
 1.9.1

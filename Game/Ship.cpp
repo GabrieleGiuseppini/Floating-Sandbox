@@ -657,7 +657,7 @@ void Ship::Render(
         renderContext);
 
     //
-    // Upload point vectors
+    // Upload vector fields
     //
 
     mPoints.UploadVectors(

@@ -562,9 +562,13 @@ Render:
 				- GenTex
 				- VectorArrows
 		- Try orphaning VBO
-			- 1: mutable point attributes
-			- 2:
+			- RenderContext:
+				- Water, Land, Clouds
+			- ShipRenderContext:
+				- Mutable point attributes (pos, light, water)
 		- Try with single buffer for elements, appending stuff to it
+			- JUST A TEST; if it's really super good, then we'll have to figure out how to do this
+			 (as not all elements come always at the same time)
 		- Try MapBuffer to leverage asynchronousness at Unmap()
 			- GameOpenGLMappedVector<TElement, WRITE_ONLY>
 				- Map(size)
@@ -575,8 +579,12 @@ Render:
 					- Unmap if mapped
 				- Remove that ugly GameOpenGLObject()
 			- Test 1:
-				- Replace current buffers
-				- See if faster
+				- RenderContext:
+					- Water, Land, Clouds
+				- ShipRenderContext:
+					- Mutable point attributes (pos, light, water)
+					- GenTex
+					- VectorArrows
 			- Test 2:
 				- Do all uploads up-front
 				- Render pipeline sequence:
@@ -594,68 +602,8 @@ Render:
 		  so assuming we go ahead with different sampling frequencies
 		- Separate uploads, managed by OceanSurface and OceanFloor
 			- Find first sample == sample immediately to the left of visibleWorld.Left
-			- Go ahead by dx, up to last sample == sample immediately to the right of visibleWorld.Right
-
-	+ Use VAO's (*)
-		+ Branch
-		+ New OpenGLObject w/deleter
-		+ Stars
-			+ ShaderManager: allow for reusing numeric values
-				+ UTs
-			+ BoundedVector
-				+ UTs			
-			+ Use BoundedVector and handle GPU buffer (re-)allocation
-			+ Shader (new vertex attribute name)
-			+ Test			
-		+ Clouds
-			+ Use BoundedVector and handle GPU buffer (re-)allocation
-			+ Shader (new vertex attribute name)
-			+ Test			
-		+ Land
-			+ Use BoundedVector and handle GPU buffer (re-)allocation
-			+ Shader (new vertex attribute name)
-			+ Test			
-		+ Move vertex attribute enabling out of shader manager and, for now, to where it is described
-		+ Ocean and rest of RenderContext
-			+ Use BoundedVector and handle GPU buffer (re-)allocation
-			+ Shader (new vertex attribute names)
-			+ Test			
-		+ Verify asm for Upload->emplace_back
-			+ @ Stars::Upload
-		+ TextLayer
-			+ Test
-			+ Then, move upload to VBO right after creating vertices
-			+ Test
-		+ Ship:
-			+ GenericTextures
-				+ Code
-				+ Shaders
-				+ Test 
-					+ Different planes
-				+ Commit
-			+ Vectors
-				+ Code
-				+ Shaders
-				+ Test 
-				+ Commit
-			+ Ship:
-				+ One per "input configuration" + vertex element array 
-					+ Make sure to bind element array indices to the VAOs
-				+ Have to repeat descriptions
-				= Code
-					+ Do explicit element array binding :-(
-					+ Reduce VAOs
-						+ To 1; nuke DescribePointVBOs()
-					+ Reduce other calls
-						+ LineWidth
-						+ Texture activation and binding
-				+ Shaders
-				+ Test
-				+ Commit
-			+ Cleanup:
-				+ RenderCore.h/cpp: remove unused attributes and other TODOs
-		+ Get new FPS
-		+ Merge
+			- Go ahead by N*dx, up to last sample == sample immediately to the right of visibleWorld.Right
+				- N > 1 iff zoomed out "enough"
 		
 			
 	- Lights on the GPU with instanced drawing (*)
@@ -2974,6 +2922,66 @@ IF WX:
 			
 		+ See if drawing springs & triangles at separate depths also helps generally with render speed, even for one single
 		  connected component (for springs' fragment shader - may be it takes shortcuts if it knows it's behind)
+	+ Use VAO's (*)
+		+ Branch
+		+ New OpenGLObject w/deleter
+		+ Stars
+			+ ShaderManager: allow for reusing numeric values
+				+ UTs
+			+ BoundedVector
+				+ UTs			
+			+ Use BoundedVector and handle GPU buffer (re-)allocation
+			+ Shader (new vertex attribute name)
+			+ Test			
+		+ Clouds
+			+ Use BoundedVector and handle GPU buffer (re-)allocation
+			+ Shader (new vertex attribute name)
+			+ Test			
+		+ Land
+			+ Use BoundedVector and handle GPU buffer (re-)allocation
+			+ Shader (new vertex attribute name)
+			+ Test			
+		+ Move vertex attribute enabling out of shader manager and, for now, to where it is described
+		+ Ocean and rest of RenderContext
+			+ Use BoundedVector and handle GPU buffer (re-)allocation
+			+ Shader (new vertex attribute names)
+			+ Test			
+		+ Verify asm for Upload->emplace_back
+			+ @ Stars::Upload
+		+ TextLayer
+			+ Test
+			+ Then, move upload to VBO right after creating vertices
+			+ Test
+		+ Ship:
+			+ GenericTextures
+				+ Code
+				+ Shaders
+				+ Test 
+					+ Different planes
+				+ Commit
+			+ Vectors
+				+ Code
+				+ Shaders
+				+ Test 
+				+ Commit
+			+ Ship:
+				+ One per "input configuration" + vertex element array 
+					+ Make sure to bind element array indices to the VAOs
+				+ Have to repeat descriptions
+				= Code
+					+ Do explicit element array binding :-(
+					+ Reduce VAOs
+						+ To 1; nuke DescribePointVBOs()
+					+ Reduce other calls
+						+ LineWidth
+						+ Texture activation and binding
+				+ Shaders
+				+ Test
+				+ Commit
+			+ Cleanup:
+				+ RenderCore.h/cpp: remove unused attributes and other TODOs
+		+ Get new FPS
+		+ Merge
 
 
 + Dynamics
