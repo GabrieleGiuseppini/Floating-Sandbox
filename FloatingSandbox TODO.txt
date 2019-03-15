@@ -594,11 +594,6 @@ Render:
 	= Use VAO's (*)
 		+ Branch
 		+ New OpenGLObject w/deleter
-		= General concepts:
-			- One VAO per "input configuration"
-			- Data uploading strategy:
-				- Pass 1: do uploads where you want (@End?)
-				- Pass 2 (later, different work item above): change into mapbuffer and upload everything upfront
 		+ Stars
 			+ ShaderManager: allow for reusing numeric values
 				+ UTs
@@ -626,7 +621,7 @@ Render:
 			+ Test
 			+ Then, move upload to VBO right after creating vertices
 			+ Test
-		= Ship:
+		+ Ship:
 			+ GenericTextures
 				+ Code
 				+ Shaders
@@ -638,7 +633,7 @@ Render:
 				+ Shaders
 				+ Test 
 				+ Commit
-			= Ship:
+			+ Ship:
 				+ One per "input configuration" + vertex element array 
 					+ Make sure to bind element array indices to the VAOs
 				+ Have to repeat descriptions
@@ -651,12 +646,12 @@ Render:
 						+ Texture activation and binding
 				+ Shaders
 				+ Test
-				- Commit
-			- Cleanup:
-				- RenderCore.h/cpp: remove unused attributes and other TODOs
+				+ Commit
+			+ Cleanup:
+				+ RenderCore.h/cpp: remove unused attributes and other TODOs
 		- Get new FPS
 		- Merge
-		= Check w/Parallels guy
+		- Send to new Discord guy
 		
 			
 	- Lights on the GPU with instanced drawing (*)

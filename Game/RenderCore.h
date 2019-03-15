@@ -128,13 +128,6 @@ enum class VertexAttributeType : GLuint
 
     Text1 = 0,
     Text2 = 1
-
-
-    //TODOOLD
-    ,
-    SharedAttribute0 = 0,
-    SharedAttribute1 = 14, //1,
-    SharedAttribute2 = 15, //2,
 };
 
 VertexAttributeType StrToVertexAttributeType(std::string const & str);

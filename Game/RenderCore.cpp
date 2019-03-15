@@ -244,13 +244,6 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::Text1;
     else if (Utils::CaseInsensitiveEquals(str, "Text2"))
         return VertexAttributeType::Text2;
-    // TODO:OLD
-    if (Utils::CaseInsensitiveEquals(str, "SharedAttribute0"))
-        return VertexAttributeType::SharedAttribute0;
-    else if (Utils::CaseInsensitiveEquals(str, "SharedAttribute1"))
-        return VertexAttributeType::SharedAttribute1;
-    else if (Utils::CaseInsensitiveEquals(str, "SharedAttribute2"))
-        return VertexAttributeType::SharedAttribute2;
     else
         throw GameException("Unrecognized vertex attribute \"" + str + "\"");
 }
