@@ -23,10 +23,6 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::LandFlat;
     else if (lstr == "land_texture")
         return ProgramType::LandTexture;
-    else if (lstr == "matte")
-        return ProgramType::Matte;
-    else if (lstr == "matte_ndc")
-        return ProgramType::MatteNDC;
     else if (lstr == "matte_ocean")
         return ProgramType::MatteOcean;
     else if (lstr == "ocean_depth")
@@ -73,10 +69,6 @@ std::string ProgramTypeToStr(ProgramType program)
         return "LandFlat";
     case ProgramType::LandTexture:
         return "LandTexture";
-    case ProgramType::Matte:
-        return "Matte";
-    case ProgramType::MatteNDC:
-        return "MatteNDC";
     case ProgramType::MatteOcean:
         return "MatteOcean";
     case ProgramType::OceanDepth:

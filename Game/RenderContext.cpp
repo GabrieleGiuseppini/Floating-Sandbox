@@ -939,10 +939,6 @@ void RenderContext::OnViewModelUpdated()
     mShaderManager->SetProgramParameter<ProgramType::MatteOcean, ProgramParameterType::OrthoMatrix>(
         globalOrthoMatrix);
 
-    mShaderManager->ActivateProgram<ProgramType::Matte>();
-    mShaderManager->SetProgramParameter<ProgramType::Matte, ProgramParameterType::OrthoMatrix>(
-        globalOrthoMatrix);
-
     mShaderManager->ActivateProgram<ProgramType::CrossOfLight>();
     mShaderManager->SetProgramParameter<ProgramType::CrossOfLight, ProgramParameterType::OrthoMatrix>(
         globalOrthoMatrix);

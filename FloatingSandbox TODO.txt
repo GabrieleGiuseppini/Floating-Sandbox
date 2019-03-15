@@ -1,6 +1,9 @@
 =================================================
 Current perf:
 =================================================
+- fps: (28.2)/28.7/29.0/29.1 (miracle?)
+
+Before VAO:
 - fps: 28.1/28.3
 
 Before bound world and point light<->ambient light additiveness:
@@ -207,6 +210,7 @@ Render:
 		+ See move tool changing center
 			+ Is it because of missing last step?
 				+ Should finalize only after last step, making sure to clamp elapsed to Lag first
+		+ VAO (*)
 		= Create dump upon crash
 			+ https://stackoverflow.com/questions/9020353/create-a-dump-file-for-an-application-whenever-it-crashes
 			+ In app folder, via StandardSystemPaths
@@ -214,9 +218,9 @@ Render:
 			+ Try with empty png and corrupted png
 			- Guy @ Discord?
 
-		= VAO (*)
-
 		- Misc OpenGL Optimizations (*)
+
+		- Send zip to new Discord guy
 
 		- Secondary PlaneIDAsFloat buffer
 			- We only pay the price sparingly, but reap the benefits at each frame
@@ -550,12 +554,13 @@ Render:
 
 	- Misc OpenGL Optimizations (*)
 		+ Try all of these in isolation, or building on the previous one if the previous one is a clear winner
-		- See fence to calculate frame draw latency
-			- Insert as last at end
-			- Check for it at beginning of next render, before SwapBuffers
-		- Try STREAM with ship VBO buffers (apparently should do it without testing!)
-			- 1: mutable point attributes
-			- 2: 
+		- Try STREAM with ship VBO buffers (apparently should do it without even testing!)
+			- RenderContext:
+				- Water, Land, Clouds
+			- ShipRenderContext:
+				- Mutable point attributes (pos, light, water)
+				- GenTex
+				- VectorArrows
 		- Try orphaning VBO
 			- 1: mutable point attributes
 			- 2:
@@ -591,7 +596,7 @@ Render:
 			- Find first sample == sample immediately to the left of visibleWorld.Left
 			- Go ahead by dx, up to last sample == sample immediately to the right of visibleWorld.Right
 
-	= Use VAO's (*)
+	+ Use VAO's (*)
 		+ Branch
 		+ New OpenGLObject w/deleter
 		+ Stars
@@ -649,9 +654,8 @@ Render:
 				+ Commit
 			+ Cleanup:
 				+ RenderCore.h/cpp: remove unused attributes and other TODOs
-		- Get new FPS
-		- Merge
-		- Send to new Discord guy
+		+ Get new FPS
+		+ Merge
 		
 			
 	- Lights on the GPU with instanced drawing (*)
