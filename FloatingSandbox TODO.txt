@@ -1,7 +1,7 @@
 =================================================
 Current perf:
 =================================================
-- fps: (28.2)/28.7/29.0/29.1 (miracle?)
+- fps: 28.2/28.4 (miracle: 28.7/29.0/29.1)
 
 Before VAO:
 - fps: 28.1/28.3
@@ -552,15 +552,13 @@ Render:
 
 - Gfx optimizations:
 
-	- Misc OpenGL Optimizations (*)
+	= Misc OpenGL Optimizations (*)
 		+ Try all of these in isolation, or building on the previous one if the previous one is a clear winner
-		- Try STREAM with ship VBO buffers (apparently should do it without even testing!)
-			- RenderContext:
-				- Water, Land, Clouds
-			- ShipRenderContext:
-				- Mutable point attributes (pos, light, water)
-				- GenTex
-				- VectorArrows
+		+ Try STREAM with ship VBO buffers (apparently should do it without even testing!)
+			+ RenderContext:
+				+ Water, Land, Clouds
+			+ ShipRenderContext:
+				+ Mutable point attributes (pos, light, water)
 		- Try orphaning VBO
 			- RenderContext:
 				- Water, Land, Clouds

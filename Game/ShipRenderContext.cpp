@@ -103,19 +103,19 @@ ShipRenderContext::ShipRenderContext(
 
     mPointPositionVBO = vbos[0];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointPositionVBO);
-    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(vec2f), nullptr, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(vec2f), nullptr, GL_STREAM_DRAW);
 
     mPointLightVBO = vbos[1];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointLightVBO);
-    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(float), nullptr, GL_STREAM_DRAW);
 
     mPointWaterVBO = vbos[2];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointWaterVBO);
-    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(float), nullptr, GL_STREAM_DRAW);
 
     mPointColorVBO = vbos[3];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointColorVBO);
-    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(vec4f), nullptr, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(vec4f), nullptr, GL_STATIC_DRAW);
 
     mPointPlaneIdVBO = vbos[4];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointPlaneIdVBO);

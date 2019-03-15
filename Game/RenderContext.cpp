@@ -612,7 +612,7 @@ void RenderContext::UploadCloudsStart(size_t cloudCount)
     {
         // Reallocate GPU buffer
         glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
-        glBufferData(GL_ARRAY_BUFFER, cloudCount * sizeof(CloudQuad), nullptr, GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, cloudCount * sizeof(CloudQuad), nullptr, GL_STREAM_DRAW);
         CheckOpenGLError();
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -727,7 +727,7 @@ void RenderContext::UploadLandAndOceanStart(size_t slices)
     {
         // Reallocate GPU buffer
         glBindBuffer(GL_ARRAY_BUFFER, *mLandVBO);
-        glBufferData(GL_ARRAY_BUFFER, (slices + 1) * sizeof(LandSegment), nullptr, GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, (slices + 1) * sizeof(LandSegment), nullptr, GL_STREAM_DRAW);
         CheckOpenGLError();
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -748,7 +748,7 @@ void RenderContext::UploadLandAndOceanStart(size_t slices)
     {
         // Reallocate GPU buffer
         glBindBuffer(GL_ARRAY_BUFFER, *mOceanVBO);
-        glBufferData(GL_ARRAY_BUFFER, (slices + 1) * sizeof(OceanSegment), nullptr, GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, (slices + 1) * sizeof(OceanSegment), nullptr, GL_STREAM_DRAW);
         CheckOpenGLError();
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
