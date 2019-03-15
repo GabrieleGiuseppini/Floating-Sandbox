@@ -6,7 +6,7 @@
 #define out varying
 
 // Inputs
-in vec3 inOceanAttribute;	// Position (vec2), Texture coordinate Y (float)
+in vec3 inOcean;	// Position (vec2), Texture coordinate Y (float)
 
 // Parameters
 uniform mat4 paramOrthoMatrix;
@@ -16,8 +16,8 @@ out vec2 texturePos;
 
 void main()
 {
-    gl_Position = paramOrthoMatrix * vec4(inOceanAttribute.xy, -1.0, 1.0);
-    texturePos = vec2(inOceanAttribute.x, inOceanAttribute.z);
+    gl_Position = paramOrthoMatrix * vec4(inOcean.xy, -1.0, 1.0);
+    texturePos = inOcean.xz;
 }
 
 

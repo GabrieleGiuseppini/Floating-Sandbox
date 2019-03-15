@@ -13,6 +13,7 @@
 #include <GameOpenGL/GameOpenGL.h>
 #include <GameOpenGL/ShaderManager.h>
 
+#include <GameCore/BoundedVector.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/ImageData.h>
 #include <GameCore/SysSpecifics.h>
@@ -35,11 +36,11 @@ public:
         ShipId shipId,
         size_t shipCount,
         size_t pointCount,
-        RgbaImageData texture,
+        RgbaImageData shipTexture,
         ShipDefinition::TextureOriginType textureOrigin,
         ShaderManager<ShaderManagerTraits> & shaderManager,
-        GameOpenGLTexture & textureAtlasOpenGLHandle,
-        TextureAtlasMetadata const & textureAtlasMetadata,
+        GameOpenGLTexture & genericTextureAtlasOpenGLHandle,
+        TextureAtlasMetadata const & genericTextureAtlasMetadata,
         RenderStatistics & renderStatistics,
         ViewModel const & viewModel,
         float ambientLightIntensity,
@@ -114,29 +115,28 @@ public:
 
 public:
 
-    void RenderStart();
+    void RenderStart(PlaneId maxMaxPlaneId);
 
     //
     // Points
     //
 
-    void UploadPointImmutableGraphicalAttributes(vec2f const * textureCoordinates);
+    void UploadPointImmutableAttributes(vec2f const * textureCoordinates);
 
-    void UploadShipPointColors(
-        vec4f const * color,
-        size_t startDst,
-        size_t count);
-
-    void UploadPoints(
+    void UploadPointMutableAttributes(
         vec2f const * position,
         float const * light,
         float const * water);
 
+    void UploadPointColors(
+        vec4f const * color,
+        size_t startDst,
+        size_t count);
+
     void UploadPointPlaneIds(
         PlaneId const * planeId,
         size_t startDst,
-        size_t count,
-        PlaneId maxMaxPlaneId);
+        size_t count);
 
 
     //
@@ -170,32 +170,25 @@ public:
 
     inline void UploadElementPoint(int pointIndex)
     {
-        mPointElementBuffer.emplace_back();
-        PointElement & pointElement = mPointElementBuffer.back();
-
-        pointElement.pointIndex = pointIndex;
+        mPointElementBuffer.emplace_back(pointIndex);
     }
 
     inline void UploadElementSpring(
         int pointIndex1,
         int pointIndex2)
     {
-        mSpringElementBuffer.emplace_back();
-        SpringElement & springElement = mSpringElementBuffer.back();
-
-        springElement.pointIndex1 = pointIndex1;
-        springElement.pointIndex2 = pointIndex2;
+        mSpringElementBuffer.emplace_back(
+            pointIndex1,
+            pointIndex2);
     }
 
     inline void UploadElementRope(
         int pointIndex1,
         int pointIndex2)
     {
-        mRopeElementBuffer.emplace_back();
-        RopeElement & ropeElement = mRopeElementBuffer.back();
-
-        ropeElement.pointIndex1 = pointIndex1;
-        ropeElement.pointIndex2 = pointIndex2;
+        mRopeElementBuffer.emplace_back(
+            pointIndex1,
+            pointIndex2);
     }
 
 
@@ -211,11 +204,9 @@ public:
         int pointIndex1,
         int pointIndex2)
     {
-        mStressedSpringElementBuffer.emplace_back();
-        StressedSpringElement & stressedSpringElement = mStressedSpringElementBuffer.back();
-
-        stressedSpringElement.pointIndex1 = pointIndex1;
-        stressedSpringElement.pointIndex2 = pointIndex2;
+        mStressedSpringElementBuffer.emplace_back(
+            pointIndex1,
+            pointIndex2);
     }
 
     void UploadElementStressedSpringsEnd();
@@ -267,16 +258,16 @@ public:
     {
         size_t const planeIndex = static_cast<size_t>(planeId);
 
-        assert(planeIndex < mGenericTexturePlanes.size());
+        assert(planeIndex < mGenericTexturePlaneVertexBuffers.size());
 
         // Get this plane's vertex buffer
-        auto & vertexBuffer = mGenericTexturePlanes[planeIndex].VertexBuffer;
+        auto & vertexBuffer = mGenericTexturePlaneVertexBuffers[planeIndex].vertexBuffer;
 
         //
         // Populate the texture quad
         //
 
-        TextureAtlasFrameMetadata const & frame = mTextureAtlasMetadata.GetFrameMetadata(textureFrameId);
+        TextureAtlasFrameMetadata const & frame = mGenericTextureAtlasMetadata.GetFrameMetadata(textureFrameId);
 
         float const leftX = -frame.FrameMetadata.AnchorWorldX;
         float const rightX = frame.FrameMetadata.WorldWidth - frame.FrameMetadata.AnchorWorldX;
@@ -364,20 +355,18 @@ public:
 
 
     //
-    // Ephemeral points
+    // Ephemeral point elements
     //
 
-    void UploadEphemeralPointsStart();
+    void UploadElementEphemeralPointsStart();
 
-    inline void UploadEphemeralPoint(
+    inline void UploadElementEphemeralPoint(
         int pointIndex)
     {
-        mEphemeralPoints.emplace_back();
-
-        mEphemeralPoints.back().pointIndex = pointIndex;
+        mEphemeralPointElementBuffer.emplace_back(pointIndex);
     }
 
-    void UploadEphemeralPointsEnd();
+    void UploadElementEphemeralPointsEnd();
 
 
     //
@@ -401,29 +390,156 @@ private:
     void OnWaterContrastUpdated();
     void OnWaterLevelOfDetailUpdated();
 
-    struct GenericTexturePlaneData;
-
-    void RenderPointElements();
-
-    void RenderSpringElements(bool withTexture);
-
-    void RenderRopeElements();
-
-    void RenderTriangleElements(bool withTexture);
-
-    void RenderStressedSpringElements();
-
     void RenderGenericTextures();
-
-    void RenderEphemeralPoints();
-
-    void RenderVectors();
+    void RenderVectorArrows();
 
 private:
 
     ShipId const mShipId;
     size_t mShipCount;
+    size_t const mPointCount;
     PlaneId mMaxMaxPlaneId;
+
+
+    //
+    // Types
+    //
+
+#pragma pack(push)
+
+    struct PointElement
+    {
+        int pointIndex;
+
+        PointElement(int _pointIndex)
+            : pointIndex(_pointIndex)
+        {}
+    };
+
+    struct LineElement
+    {
+        int pointIndex1;
+        int pointIndex2;
+
+        LineElement(
+            int _pointIndex1,
+            int _pointIndex2)
+            : pointIndex1(_pointIndex1)
+            , pointIndex2(_pointIndex2)
+        {}
+    };
+
+    struct TriangleElement
+    {
+        int pointIndex1;
+        int pointIndex2;
+        int pointIndex3;
+    };
+
+    struct GenericTextureVertex
+    {
+        vec2f centerPosition;
+        vec2f vertexOffset;
+        vec2f textureCoordinate;
+
+        float planeId;
+
+        float scale;
+        float angle;
+        float alpha;
+        float ambientLightSensitivity;
+
+        GenericTextureVertex(
+            vec2f _centerPosition,
+            vec2f _vertexOffset,
+            vec2f _textureCoordinate,
+            float _planeId,
+            float _scale,
+            float _angle,
+            float _alpha,
+            float _ambientLightSensitivity)
+            : centerPosition(_centerPosition)
+            , vertexOffset(_vertexOffset)
+            , textureCoordinate(_textureCoordinate)
+            , planeId(_planeId)
+            , scale(_scale)
+            , angle(_angle)
+            , alpha(_alpha)
+            , ambientLightSensitivity(_ambientLightSensitivity)
+        {}
+    };
+
+#pragma pack(pop)
+
+    struct GenericTexturePlaneData
+    {
+        std::vector<GenericTextureVertex> vertexBuffer;
+    };
+
+    //
+    // Buffers
+    //
+
+    GameOpenGLVBO mPointPositionVBO;
+    GameOpenGLVBO mPointLightVBO;
+    GameOpenGLVBO mPointWaterVBO;
+    GameOpenGLVBO mPointColorVBO;
+    GameOpenGLVBO mPointPlaneIdVBO;
+    GameOpenGLVBO mPointTextureCoordinatesVBO;
+
+    std::vector<PointElement> mPointElementBuffer;
+    GameOpenGLVBO mPointElementVBO;
+
+    std::vector<LineElement> mSpringElementBuffer;
+    GameOpenGLVBO mSpringElementVBO;
+
+    std::vector<LineElement> mRopeElementBuffer;
+    GameOpenGLVBO mRopeElementVBO;
+
+    std::vector<TriangleElement> mTriangleElementBuffer;
+    GameOpenGLVBO mTriangleElementVBO;
+
+    std::vector<LineElement> mStressedSpringElementBuffer;
+    GameOpenGLVBO mStressedSpringElementVBO;
+
+    std::vector<PointElement> mEphemeralPointElementBuffer;
+    GameOpenGLVBO mEphemeralPointElementVBO;
+
+    std::vector<GenericTexturePlaneData> mGenericTexturePlaneVertexBuffers;
+    size_t mGenericTextureMaxPlaneVertexBufferSize;
+    GameOpenGLVBO mGenericTextureVBO;
+    size_t mGenericTextureVBOAllocatedSize;
+
+    std::vector<vec3f> mVectorArrowVertexBuffer;
+    GameOpenGLVBO mVectorArrowVBO;
+    std::optional<vec4f> mVectorArrowColor;
+
+    //
+    // VAOs
+    //
+
+    GameOpenGLVAO mShipVAO;
+    GameOpenGLVAO mGenericTextureVAO;
+    GameOpenGLVAO mVectorArrowVAO;
+
+
+    //
+    // Textures
+    //
+
+    GameOpenGLTexture mShipTextureOpenGLHandle;
+    GameOpenGLTexture mStressedSpringTextureOpenGLHandle;
+
+    GameOpenGLTexture & mGenericTextureAtlasOpenGLHandle;
+    TextureAtlasMetadata const & mGenericTextureAtlasMetadata;
+
+private:
+
+    //
+    // Managers
+    //
+
+    ShaderManager<ShaderManagerTraits> & mShaderManager;
 
     //
     // Parameters
@@ -439,164 +555,11 @@ private:
     VectorFieldRenderMode mVectorFieldRenderMode;
     bool mShowStressedSprings;
 
-private:
-
-    ShaderManager<ShaderManagerTraits> & mShaderManager;
+    //
+    // Statistics
+    //
 
     RenderStatistics & mRenderStatistics;
-
-
-    //
-    // Textures
-    //
-
-    GameOpenGLTexture mElementShipTexture;
-    GameOpenGLTexture mElementStressedSpringTexture;
-
-    //
-    // Points
-    //
-
-    size_t const mPointCount;
-
-    GameOpenGLVBO mPointPositionVBO;
-    GameOpenGLVBO mPointLightVBO;
-    GameOpenGLVBO mPointWaterVBO;
-    GameOpenGLVBO mPointColorVBO;
-    GameOpenGLVBO mPointPlaneIdVBO;
-    GameOpenGLVBO mPointElementTextureCoordinatesVBO;
-
-    //
-    // Generic Textures
-    //
-
-    GameOpenGLTexture & mTextureAtlasOpenGLHandle;
-    TextureAtlasMetadata const & mTextureAtlasMetadata;
-
-#pragma pack(push)
-struct TextureRenderPolygonVertex
-{
-    vec2f centerPosition;
-    vec2f vertexOffset;
-    vec2f textureCoordinate;
-
-    float planeId;
-
-    float scale;
-    float angle;
-    float alpha;
-    float ambientLightSensitivity;
-
-    TextureRenderPolygonVertex(
-        vec2f _centerPosition,
-        vec2f _vertexOffset,
-        vec2f _textureCoordinate,
-        float _planeId,
-        float _scale,
-        float _angle,
-        float _alpha,
-        float _ambientLightSensitivity)
-        : centerPosition(_centerPosition)
-        , vertexOffset(_vertexOffset)
-        , textureCoordinate(_textureCoordinate)
-        , planeId(_planeId)
-        , scale(_scale)
-        , angle(_angle)
-        , alpha(_alpha)
-        , ambientLightSensitivity(_ambientLightSensitivity)
-    {}
-};
-#pragma pack(pop)
-
-    struct GenericTexturePlaneData
-    {
-        std::vector<TextureRenderPolygonVertex> VertexBuffer;
-    };
-
-    std::vector<GenericTexturePlaneData> mGenericTexturePlanes;
-    size_t mGenericTextureMaxPlaneVertexBufferSize;
-    size_t mGenericTextureRenderPolygonVertexAllocatedSize;
-
-    GameOpenGLVBO mGenericTextureRenderPolygonVertexVBO;
-
-
-
-    //
-    // Elements
-    //
-
-#pragma pack(push)
-    struct PointElement
-    {
-        int pointIndex;
-    };
-#pragma pack(pop)
-
-#pragma pack(push)
-    struct SpringElement
-    {
-        int pointIndex1;
-        int pointIndex2;
-    };
-#pragma pack(pop)
-
-#pragma pack(push)
-    struct RopeElement
-    {
-        int pointIndex1;
-        int pointIndex2;
-    };
-#pragma pack(pop)
-
-#pragma pack(push)
-    struct TriangleElement
-    {
-        int pointIndex1;
-        int pointIndex2;
-        int pointIndex3;
-    };
-#pragma pack(pop)
-
-#pragma pack(push)
-    struct StressedSpringElement
-    {
-        int pointIndex1;
-        int pointIndex2;
-    };
-#pragma pack(pop)
-
-    std::vector<PointElement> mPointElementBuffer;
-    GameOpenGLVBO mPointElementVBO;
-
-    std::vector<SpringElement> mSpringElementBuffer;
-    GameOpenGLVBO mSpringElementVBO;
-
-    std::vector<RopeElement> mRopeElementBuffer;
-    GameOpenGLVBO mRopeElementVBO;
-
-    std::vector<TriangleElement> mTriangleElementBuffer;
-    GameOpenGLVBO mTriangleElementVBO;
-
-    std::vector<StressedSpringElement> mStressedSpringElementBuffer;
-    GameOpenGLVBO mStressedSpringElementVBO;
-
-
-    //
-    // Ephemeral points
-    //
-
-    std::vector<PointElement> mEphemeralPoints;
-
-    GameOpenGLVBO mEphemeralPointVBO;
-
-
-    //
-    // Vectors
-    //
-
-    std::vector<vec3f> mVectorArrowPointPositionBuffer;
-    GameOpenGLVBO mVectorArrowPointPositionVBO;
-    vec4f mVectorArrowColor;
 };
 
 }

@@ -103,6 +103,19 @@ struct GameOpenGLVBODeleter
     }
 };
 
+struct GameOpenGLVAODeleter
+{
+    static void Delete(GLuint p)
+    {
+        static_assert(GLuint() == 0, "Default value is not zero, i.e. the OpenGL NULL");
+
+        if (p != 0)
+        {
+            glDeleteVertexArrays(1, &p);
+        }
+    }
+};
+
 struct GameOpenGLTextureDeleter
 {
     static void Delete(GLuint p)
@@ -159,6 +172,7 @@ struct GameOpenGLRenderbufferDeleter
 
 using GameOpenGLShaderProgram = GameOpenGLObject<GLuint, GameOpenGLProgramDeleter>;
 using GameOpenGLVBO = GameOpenGLObject<GLuint, GameOpenGLVBODeleter>;
+using GameOpenGLVAO = GameOpenGLObject<GLuint, GameOpenGLVAODeleter>;
 using GameOpenGLTexture = GameOpenGLObject<GLuint, GameOpenGLTextureDeleter>;
 template <GLenum TTarget>
 using GameOpenGLMappedBuffer = GameOpenGLObject<void *, GameOpenGLMappedBufferDeleter<TTarget>>;

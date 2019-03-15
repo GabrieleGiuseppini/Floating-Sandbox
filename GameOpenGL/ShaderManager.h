@@ -148,18 +148,20 @@ public:
         CheckUniformError<Program, Parameter>();
     }
 
+    // At any given moment, only one program may be active
     template <typename Traits::ProgramType Program>
     inline void ActivateProgram()
     {
         uint32_t const programIndex = static_cast<uint32_t>(Program);
-
         glUseProgram(*(mPrograms[programIndex].OpenGLHandle));
+        CheckOpenGLError();
     }
 
+    // At any given moment, only one texture (unit) may be active
     template <typename Traits::ProgramParameterType Parameter>
     inline void ActivateTexture()
     {
-        GLenum textureUnit = static_cast<GLenum>(Parameter) - static_cast<GLenum>(Traits::ProgramParameterType::_FirstTexture);
+        GLenum const textureUnit = static_cast<GLenum>(Parameter) - static_cast<GLenum>(Traits::ProgramParameterType::_FirstTexture);
         glActiveTexture(GL_TEXTURE0 + textureUnit);
         CheckOpenGLError();
     }
@@ -208,7 +210,7 @@ private:
 
     static std::set<typename Traits::ProgramParameterType> ExtractShaderParameters(std::string const & source);
 
-    static std::set<typename Traits::VertexAttributeType> ExtractVertexAttributes(std::string const & source);
+    static std::set<std::string> ExtractVertexAttributeNames(std::string const & source);
 
 private:
 
@@ -248,10 +250,10 @@ private:
     friend class ShaderManagerTests_ExtractsShaderParameters_ErrorsOnUnrecognizedParameter_Test;
     friend class ShaderManagerTests_ExtractsShaderParameters_ErrorsOnRedefinedParameter_Test;
 
-    friend class ShaderManagerTests_ExtractsVertexAttributes_Single_Test;
-    friend class ShaderManagerTests_ExtractsVertexAttributes_Multiple_Test;
-    friend class ShaderManagerTests_ExtractsVertexAttributes_ErrorsOnUnrecognizedAttribute_Test;
-    friend class ShaderManagerTests_ExtractsVertexAttributes_ErrorsOnRedeclaredAttribute_Test;
+    friend class ShaderManagerTests_ExtractsVertexAttributeNames_Single_Test;
+    friend class ShaderManagerTests_ExtractsVertexAttributeNames_Multiple_Test;
+    friend class ShaderManagerTests_ExtractsVertexAttributeNames_ErrorsOnUnrecognizedAttribute_Test;
+    friend class ShaderManagerTests_ExtractsVertexAttributeNames_ErrorsOnRedeclaredAttribute_Test;
 };
 
 #include "ShaderManager.cpp.inl"

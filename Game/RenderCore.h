@@ -29,8 +29,6 @@ enum class ProgramType
     CrossOfLight,
     LandFlat,
     LandTexture,
-    Matte,
-    MatteNDC,
     MatteOcean,
     OceanDepth,
     OceanFlat,
@@ -71,7 +69,7 @@ enum class ProgramParameterType : uint8_t
     WaterLevelThreshold,
 
     // Textures
-    SharedTexture,                  // 0
+    SharedTexture,                  // 0, for programs that don't use a dedicated unit and hence will keep binding different textures
     CloudTexture,                   // 1
     GenericTexturesAtlasTexture,    // 2
     LandTexture,                    // 3
@@ -85,39 +83,52 @@ ProgramParameterType StrToProgramParameterType(std::string const & str);
 
 std::string ProgramParameterTypeToStr(ProgramParameterType programParameter);
 
+/*
+ * This enum serves merely to associate a vertex attribute index to each vertex attribute name.
+ */
 enum class VertexAttributeType : GLuint
 {
     //
-    // Vertex attributes sourced from multiple VBO's
+    // World
     //
 
-    SharedAttribute0 = 0,
-    SharedAttribute1 = 1,
-    SharedAttribute2 = 2,
+    Star = 0,
 
+    Cloud = 0,
+
+    Land = 0,
+
+    Ocean = 0,
+
+    CrossOfLight1 = 0,
+    CrossOfLight2 = 1,
 
     //
-    // Vertex attributes dedicated to a VBO
+    // Ship
     //
 
-    OceanAttribute = 3,
+    ShipPointPosition = 0,
+    ShipPointColor = 1,
+    ShipPointLight = 2,
+    ShipPointWater = 3,
+    ShipPointPlaneId = 4,
+    ShipPointTextureCoordinates = 5,
 
-    GenericTexturePackedData1 = 4,
-    GenericTexturePackedData2 = 5,
-    GenericTexturePackedData3 = 6,
+    GenericTexture1 = 0,
+    GenericTexture2 = 1,
+    GenericTexture3 = 2,
 
-    // Note: dedicated as long as we have one single ship and one VBO per ship
-    ShipPointPosition = 7,
-    ShipPointColor = 8,
-    ShipPointLight = 9,
-    ShipPointWater = 10,
-    ShipPointPlaneId = 11,
-    ShipPointTextureCoordinates = 12
+    VectorArrow = 0,
+
+    //
+    // Text
+    //
+
+    Text1 = 0,
+    Text2 = 1
 };
 
 VertexAttributeType StrToVertexAttributeType(std::string const & str);
-
-std::string VertexAttributeTypeToStr(VertexAttributeType vertexAttribute);
 
 struct ShaderManagerTraits
 {
@@ -130,7 +141,6 @@ struct ShaderManagerTraits
     static constexpr auto StrToProgramParameterType = Render::StrToProgramParameterType;
     static constexpr auto ProgramParameterTypeToStr = Render::ProgramParameterTypeToStr;
     static constexpr auto StrToVertexAttributeType = Render::StrToVertexAttributeType;
-    static constexpr auto VertexAttributeTypeToStr = Render::VertexAttributeTypeToStr;
 };
 
 

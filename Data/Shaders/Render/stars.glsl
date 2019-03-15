@@ -10,15 +10,15 @@
 //
 
 // Inputs
-in vec3 inSharedAttribute0; // Position (vec2), Brightness (float)
+in vec3 inStar; // Position (vec2), Brightness (float)
 
 // Outputs
 out float vertexBrightness;
 
 void main()
 {
-    vertexBrightness = inSharedAttribute0.z; 
-    gl_Position = vec4(inSharedAttribute0.xy, -1.0, 1.0);
+    vertexBrightness = inStar.z; 
+    gl_Position = vec4(inStar.xy, -1.0, 1.0);
 }
 
 

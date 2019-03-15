@@ -6,7 +6,7 @@
 #define out varying
 
 // Inputs
-in vec2 inSharedAttribute1; // Position
+in vec2 inLand; // Position
 
 // Parameters
 uniform float paramAmbientLightIntensity;
@@ -22,7 +22,7 @@ void main()
     landColor = vec4(paramLandFlatColor * paramAmbientLightIntensity, 1.0);
 
     // Calculate position
-    gl_Position = paramOrthoMatrix * vec4(inSharedAttribute1.xy, -1.0, 1.0);
+    gl_Position = paramOrthoMatrix * vec4(inLand.xy, -1.0, 1.0);
 }
 
 ###FRAGMENT

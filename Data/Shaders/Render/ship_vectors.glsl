@@ -6,14 +6,14 @@
 #define out varying
 
 // Inputs
-in vec3 inSharedAttribute0;
+in vec3 inVectorArrow; // Position
 
 // Params
 uniform mat4 paramOrthoMatrix;
 
 void main()
 {
-    gl_Position = paramOrthoMatrix * vec4(inSharedAttribute0.xyz, 1.0);
+    gl_Position = paramOrthoMatrix * vec4(inVectorArrow.xyz, 1.0);
 }
 
 ###FRAGMENT

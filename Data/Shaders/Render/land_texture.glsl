@@ -6,7 +6,7 @@
 #define out varying
 
 // Inputs
-in vec2 inSharedAttribute1; // Position
+in vec2 inLand; // Position
 
 // Parameters
 uniform mat4 paramOrthoMatrix;
@@ -16,8 +16,8 @@ out vec2 texturePos;
 
 void main()
 {
-    gl_Position = paramOrthoMatrix * vec4(inSharedAttribute1.xy, -1.0, 1.0);
-    texturePos = inSharedAttribute1.xy;
+    gl_Position = paramOrthoMatrix * vec4(inLand.xy, -1.0, 1.0);
+    texturePos = inLand.xy;
 }
 
 ###FRAGMENT

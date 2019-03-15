@@ -1,6 +1,9 @@
 =================================================
 Current perf:
 =================================================
+- fps: (28.2)/28.7/29.0/29.1 (miracle?)
+
+Before VAO:
 - fps: 28.1/28.3
 
 Before bound world and point light<->ambient light additiveness:
@@ -207,6 +210,7 @@ Render:
 		+ See move tool changing center
 			+ Is it because of missing last step?
 				+ Should finalize only after last step, making sure to clamp elapsed to Lag first
+		+ VAO (*)
 		= Create dump upon crash
 			+ https://stackoverflow.com/questions/9020353/create-a-dump-file-for-an-application-whenever-it-crashes
 			+ In app folder, via StandardSystemPaths
@@ -214,13 +218,26 @@ Render:
 			+ Try with empty png and corrupted png
 			- Guy @ Discord?
 
-		- VAO (*)
+		- Misc OpenGL Optimizations (*)
 
-		- Test undoing TrianglesTexture shader optimization (vec4 and calc'n move)
+		- Send zip to new Discord guy
+
+		- Secondary PlaneIDAsFloat buffer
+			- We only pay the price sparingly, but reap the benefits at each frame
+			- Update FPS
 
 		- Vertex buffer optimizations (*)
 
+		- Test undoing TrianglesTexture shader optimization and calculate impact
+			- Undo vec4 and calc'n move change
+			- This one we'd like to keep though, so make REALLY sure that it makes a big difference
+			- Update FPS (if needed)
+
 		- Orphaned points (*)
+
+		- Flood tool and ship un/sinking
+			- Make music class with FadeToStop()
+				- ::Update()
 
 		- Decay (rust) (*)
 
@@ -260,6 +277,7 @@ Render:
 		- Resource Packs (*)
 
 - New ships
+	- Titanic with more lights
 	- To test:
 		= USS Shark
 			- Need Z buffer work first
@@ -287,6 +305,15 @@ Render:
 	- Sound controller: complain if find extraneous files (had issue with ".flc")
 
 - Simulation Optimizations:
+
+	- Take advantage of bounded-width world
+		- Main concept:
+			- OceanSurface and OceanFloor contain samples for the entire width
+			- Not anymore periodic, hence no mod anymore to get water height and ocean floor
+			- Only the number of samples dictates final definition of surface and floor
+			- Uploading may be done by sample
+				- Or not, it'd be overkill when zooming out
+
 
 	= GPUCalc:
 		+ 1: Simple OpenGLContext
@@ -525,6 +552,42 @@ Render:
 
 - Gfx optimizations:
 
+	- Misc OpenGL Optimizations (*)
+		+ Try all of these in isolation, or building on the previous one if the previous one is a clear winner
+		- Try STREAM with ship VBO buffers (apparently should do it without even testing!)
+			- RenderContext:
+				- Water, Land, Clouds
+			- ShipRenderContext:
+				- Mutable point attributes (pos, light, water)
+				- GenTex
+				- VectorArrows
+		- Try orphaning VBO
+			- 1: mutable point attributes
+			- 2:
+		- Try with single buffer for elements, appending stuff to it
+		- Try MapBuffer to leverage asynchronousness at Unmap()
+			- GameOpenGLMappedVector<TElement, WRITE_ONLY>
+				- Map(size)
+				- emplace_back(...)
+					- w/assert that is mapped
+				- Unmap()
+				- ~()
+					- Unmap if mapped
+				- Remove that ugly GameOpenGLObject()
+			- Test 1:
+				- Replace current buffers
+				- See if faster
+			- Test 2:
+				- Do all uploads up-front
+				- Render pipeline sequence:
+					- RenderContext::RenderStart()
+					- RenderContext::UploadXYZ() or RenderContext::UploadXYZStart()/./End()
+					- RenderContext::RenderWorldPre()
+					- RenderContext::RenderShips()
+					- RenderContext::RenderWorldPost()
+					- RenderContext::RenderEnd()
+				- See if faster
+
 	- World::UploadLandAndWater: use same spatial frequency as samples, so to avoid interpolating altogether
 		- Warning: requires same sampling frequency for both, as ocean quads require landY when land sticks out,
 		  unless we always render ocean up to visibleWorldBottom, in which case the two are fully independent;
@@ -533,35 +596,98 @@ Render:
 			- Find first sample == sample immediately to the left of visibleWorld.Left
 			- Go ahead by dx, up to last sample == sample immediately to the right of visibleWorld.Right
 
-	- Use VAO's (*)
-		- Branch
-		- New OpenGLObject w/deleter
-		- Component 1: Stars
-			- Test
-		- Component 2: CrossedOfLight
-			- Test
-		- Component 3: Vectors
-			- Test
-		- RenderContext:
-			- See if can move uploads early, and then later just bind VAOs
-			- Also see to bind element array indices to the VAOs
+	+ Use VAO's (*)
+		+ Branch
+		+ New OpenGLObject w/deleter
+		+ Stars
+			+ ShaderManager: allow for reusing numeric values
+				+ UTs
+			+ BoundedVector
+				+ UTs			
+			+ Use BoundedVector and handle GPU buffer (re-)allocation
+			+ Shader (new vertex attribute name)
+			+ Test			
+		+ Clouds
+			+ Use BoundedVector and handle GPU buffer (re-)allocation
+			+ Shader (new vertex attribute name)
+			+ Test			
+		+ Land
+			+ Use BoundedVector and handle GPU buffer (re-)allocation
+			+ Shader (new vertex attribute name)
+			+ Test			
+		+ Move vertex attribute enabling out of shader manager and, for now, to where it is described
+		+ Ocean and rest of RenderContext
+			+ Use BoundedVector and handle GPU buffer (re-)allocation
+			+ Shader (new vertex attribute names)
+			+ Test			
+		+ Verify asm for Upload->emplace_back
+			+ @ Stars::Upload
+		+ TextLayer
+			+ Test
+			+ Then, move upload to VBO right after creating vertices
+			+ Test
+		+ Ship:
+			+ GenericTextures
+				+ Code
+				+ Shaders
+				+ Test 
+					+ Different planes
+				+ Commit
+			+ Vectors
+				+ Code
+				+ Shaders
+				+ Test 
+				+ Commit
+			+ Ship:
+				+ One per "input configuration" + vertex element array 
+					+ Make sure to bind element array indices to the VAOs
+				+ Have to repeat descriptions
+				= Code
+					+ Do explicit element array binding :-(
+					+ Reduce VAOs
+						+ To 1; nuke DescribePointVBOs()
+					+ Reduce other calls
+						+ LineWidth
+						+ Texture activation and binding
+				+ Shaders
+				+ Test
+				+ Commit
+			+ Cleanup:
+				+ RenderCore.h/cpp: remove unused attributes and other TODOs
+		+ Get new FPS
+		+ Merge
+		
+			
+	- Lights on the GPU with instanced drawing (*)
+		- We begin with doing light at vertex (Gouraud)
+		- Lamp coords, spread, and luminiscence in uniform array
+		- Loop as many times as necessary to avoid going beyond uniform limit of the GPU
+			- Figure out max (for right shader: v or f) at OpenGLInit
+		- Test 1: simply instance TrianglesTexture
+		- Test 2: also instance others
+		- At end:
+			- Try with light at fragment (Phong)
 
-	- Reduce number of vertex attributes for ship_triangles_texture and color (and possibly forced to do others) (*)
+	- Vertex Buffer Optimization (*): reduce number of vertex attributes for ship shaders 
 		+ We've already confirmed that one less attribute vertex sends FPS frpom 29 to 30
 		- At this moment, all Ship shaders - except for stressed springs - have the following inputs:
 			in vec2 inShipPointPosition;
-			in float inShipPointLight;
+			in float inShipPointLight;   *
 			in float inShipPointWater;
-			in vec4 inShipPointColor;
-			in float inShipPointPlaneId;
+			in vec4 inShipPointColor;    *
+			in float inShipPointPlaneId; *
+		- Test 1: Light + PlaneId
+			- Code
+			- Shaders
+			- Get FPS
+			- Commit if good
+		- Test 2: += Water + Pad
+			- Code
+				- Includes work buffer copy @ WaterDynamics!
+			- Shaders
+			- Get FPS
+			- Commit if good
 
-	- Lights in the GPU with instanced drawing (*)
-		- Figure out whether at vertex or fragment shader
-			- Depends on whether or not interpolation would re-create circular halo
-		- Lamp coords, spread, and luminiscence in uniform array
-			- Which then have to be set individually
-		- Loop as many times as necessary to avoid going beyond uniform limit of the GPU
-			- Figure out max (for right shader: v or f) at OpenGLInit
 
 	- Try using GL_SHORT for Ship texture coordinates
 		- Passing NORMALIZE and 3 components to glVertexAttribPointer
@@ -733,6 +859,7 @@ Render:
 	- Magnifying glass
 		- https://www.opengl.org/discussion_boards/showthread.php/154811-magnifying-glass-effect
 		- https://www.shadertoy.com/view/4tdXDl
+
 	+ Bug: bombs et al fade more rapidly than ship when ambient light goes away
 	+ Stars at night
 		+ Render:
@@ -818,6 +945,9 @@ Render:
 				- Upon point entering floor:
 					- Points goes back by displacement * FloorHardness
 					- Ocean floor's H goes back by displacement * (1 - FloorHardness)
+
+	- Stop playing music when ship has "sunk"
+		- Need to figure out easy way to detect "has sunk"
 
 
 	- Auto-adjust zoom at ship load
@@ -1394,7 +1524,10 @@ Render:
 - Passengers:
 	- Ship has number of passengers
 		- "like how many people would be aboard & as the ship sinks it like shows how many people are alive, escaped via life boat or died"
-		- Maybe a life count? like you have sorta a life count on the top right of the screen that says Alive: number. Dead: Number. And as the ship is sinking you press a button like say A (abandon) for example and people will start heading to the life boats to survive. The counter will stop once the ship is fully under the surface of the ocean or the entire boat deck is under water. the boat deck would be highlighted sorta like how the light system works.
+		- Maybe a life count? like you have sorta a life count on the top right of the screen that says Alive: number. Dead: Number. 
+		  And as the ship is sinking you press a button like say A (abandon) for example and people will start heading to the life boats 
+		  to survive. The counter will stop once the ship is fully under the surface of the ocean or the entire boat deck is under water. 
+		  The boat deck would be highlighted sorta like how the light system works.
 
 	- Moving passengers
 		- Separate layer provides floors, ladders, and obstacles

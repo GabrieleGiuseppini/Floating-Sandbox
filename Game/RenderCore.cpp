@@ -23,10 +23,6 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::LandFlat;
     else if (lstr == "land_texture")
         return ProgramType::LandTexture;
-    else if (lstr == "matte")
-        return ProgramType::Matte;
-    else if (lstr == "matte_ndc")
-        return ProgramType::MatteNDC;
     else if (lstr == "matte_ocean")
         return ProgramType::MatteOcean;
     else if (lstr == "ocean_depth")
@@ -73,10 +69,6 @@ std::string ProgramTypeToStr(ProgramType program)
         return "LandFlat";
     case ProgramType::LandTexture:
         return "LandTexture";
-    case ProgramType::Matte:
-        return "Matte";
-    case ProgramType::MatteNDC:
-        return "MatteNDC";
     case ProgramType::MatteOcean:
         return "MatteOcean";
     case ProgramType::OceanDepth:
@@ -205,20 +197,20 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
 
 VertexAttributeType StrToVertexAttributeType(std::string const & str)
 {
-    if (Utils::CaseInsensitiveEquals(str, "SharedAttribute0"))
-        return VertexAttributeType::SharedAttribute0;
-    else if (Utils::CaseInsensitiveEquals(str, "SharedAttribute1"))
-        return VertexAttributeType::SharedAttribute1;
-    else if (Utils::CaseInsensitiveEquals(str, "SharedAttribute2"))
-        return VertexAttributeType::SharedAttribute2;
-    else if (Utils::CaseInsensitiveEquals(str, "OceanAttribute"))
-        return VertexAttributeType::OceanAttribute;
-    else if (Utils::CaseInsensitiveEquals(str, "GenericTexturePackedData1"))
-        return VertexAttributeType::GenericTexturePackedData1;
-    else if (Utils::CaseInsensitiveEquals(str, "GenericTexturePackedData2"))
-        return VertexAttributeType::GenericTexturePackedData2;
-    else if (Utils::CaseInsensitiveEquals(str, "GenericTexturePackedData3"))
-        return VertexAttributeType::GenericTexturePackedData3;
+    // World
+    if (Utils::CaseInsensitiveEquals(str, "Star"))
+        return VertexAttributeType::Star;
+    else if (Utils::CaseInsensitiveEquals(str, "Cloud"))
+        return VertexAttributeType::Cloud;
+    else if (Utils::CaseInsensitiveEquals(str, "Land"))
+        return VertexAttributeType::Land;
+    else if (Utils::CaseInsensitiveEquals(str, "Ocean"))
+        return VertexAttributeType::Ocean;
+    else if (Utils::CaseInsensitiveEquals(str, "CrossOfLight1"))
+        return VertexAttributeType::CrossOfLight1;
+    else if (Utils::CaseInsensitiveEquals(str, "CrossOfLight2"))
+        return VertexAttributeType::CrossOfLight2;
+    // Ship
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointPosition"))
         return VertexAttributeType::ShipPointPosition;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointColor"))
@@ -231,44 +223,21 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::ShipPointPlaneId;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointTextureCoordinates"))
         return VertexAttributeType::ShipPointTextureCoordinates;
+    else if (Utils::CaseInsensitiveEquals(str, "GenericTexture1"))
+        return VertexAttributeType::GenericTexture1;
+    else if (Utils::CaseInsensitiveEquals(str, "GenericTexture2"))
+        return VertexAttributeType::GenericTexture2;
+    else if (Utils::CaseInsensitiveEquals(str, "GenericTexture3"))
+        return VertexAttributeType::GenericTexture3;
+    else if (Utils::CaseInsensitiveEquals(str, "VectorArrow"))
+        return VertexAttributeType::VectorArrow;
+    // Text
+    else if (Utils::CaseInsensitiveEquals(str, "Text1"))
+        return VertexAttributeType::Text1;
+    else if (Utils::CaseInsensitiveEquals(str, "Text2"))
+        return VertexAttributeType::Text2;
     else
         throw GameException("Unrecognized vertex attribute \"" + str + "\"");
-}
-
-std::string VertexAttributeTypeToStr(VertexAttributeType vertexAttribute)
-{
-    switch (vertexAttribute)
-    {
-    case VertexAttributeType::SharedAttribute0:
-        return "SharedAttribute0";
-    case VertexAttributeType::SharedAttribute1:
-        return "SharedAttribute1";
-    case VertexAttributeType::SharedAttribute2:
-        return "SharedAttribute2";
-    case VertexAttributeType::OceanAttribute:
-        return "OceanAttribute";
-    case VertexAttributeType::GenericTexturePackedData1:
-        return "GenericTexturePackedData1";
-    case VertexAttributeType::GenericTexturePackedData2:
-        return "GenericTexturePackedData2";
-    case VertexAttributeType::GenericTexturePackedData3:
-        return "GenericTexturePackedData3";
-    case VertexAttributeType::ShipPointPosition:
-        return "ShipPointPosition";
-    case VertexAttributeType::ShipPointColor:
-        return "ShipPointColor";
-    case VertexAttributeType::ShipPointLight:
-        return "ShipPointLight";
-    case VertexAttributeType::ShipPointWater:
-        return "ShipPointWater";
-    case VertexAttributeType::ShipPointPlaneId:
-        return "ShipPointPlaneId";
-    case VertexAttributeType::ShipPointTextureCoordinates:
-        return "ShipPointTextureCoordinates";
-    default:
-        assert(false);
-        throw GameException("Unsupported VertexAttributeType");
-    }
 }
 
 }

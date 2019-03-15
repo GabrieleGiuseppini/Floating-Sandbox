@@ -539,7 +539,9 @@ void Ship::Render(
     // Initialize render
     //
 
-    renderContext.RenderShipStart(mId);
+    renderContext.RenderShipStart(
+        mId,
+        mMaxMaxPlaneId);
 
 
     //
@@ -552,7 +554,6 @@ void Ship::Render(
 
     mPoints.UploadPlaneIds(
         mId,
-        mMaxMaxPlaneId,
         renderContext);
 
 

@@ -111,7 +111,7 @@ struct GameParameters
 
     static constexpr float WaterDragLinearCoefficient =
         0.020f  // ~= 1.0f - powf(0.6f, 0.02f)
-        * 5.0;  // Once we were comfortable with square law at |v|=5, now we use linear law and want to maintain the same force there
+        * 5.0f;  // Once we were comfortable with square law at |v|=5, now we use linear law and want to maintain the same force there
 
     float WaterDragAdjustment;
     static constexpr float MinWaterDragAdjustment = 0.0f;

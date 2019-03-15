@@ -10,8 +10,8 @@
 //
 
 // Inputs
-in vec4 inSharedAttribute0; // Position (vec2), TextureCoordinates (vec2)
-in float inSharedAttribute1; // alpha
+in vec4 inText1;  // Position (vec2), TextureCoordinates (vec2)
+in float inText2; // Alpha
 
 // Outputs
 out vec2 vertexTextureCoordinates;
@@ -19,9 +19,9 @@ out float vertexAlpha;
 
 void main()
 {
-    vertexTextureCoordinates = inSharedAttribute0.zw; 
-    vertexAlpha = inSharedAttribute1;
-    gl_Position = vec4(inSharedAttribute0.xy, -1.0, 1.0);
+    vertexTextureCoordinates = inText1.zw; 
+    vertexAlpha = inText2;
+    gl_Position = vec4(inText1.xy, -1.0, 1.0);
 }
 
 
@@ -39,15 +39,11 @@ in float vertexAlpha;
 uniform float paramAmbientLightIntensity;
 
 // The texture
-uniform sampler2D sharedSpringTexture;
+uniform sampler2D paramSharedTexture;
 
 void main()
 {
-    vec4 textureColor = texture2D(sharedSpringTexture, vertexTextureCoordinates);
-
-    //vec3 textColor =
-    //    textureColor.xyz * sqrt(paramAmbientLightIntensity)
-    //    + vec3(1.0, 1.0, 1.0) * (1.0 - sqrt(paramAmbientLightIntensity));
+    vec4 textureColor = texture2D(paramSharedTexture, vertexTextureCoordinates);
 
     vec3 textColor =
         textureColor.xyz * step(0.5, paramAmbientLightIntensity)

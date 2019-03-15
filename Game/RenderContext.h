@@ -19,6 +19,7 @@
 
 #include <Game/GameParameters.h>
 
+#include <GameCore/BoundedVector.h>
 #include <GameCore/Colors.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/ImageData.h>
@@ -381,7 +382,11 @@ public:
         float ndcY,
         float brightness)
     {
-        mStarElementBuffer.emplace_back(ndcX, ndcY, brightness);
+        //
+        // Populate vertex in buffer
+        //
+
+        mStarVertexBuffer.emplace_back(ndcX, ndcY, brightness);
     }
 
     void UploadStarsEnd();
@@ -415,14 +420,10 @@ public:
 
 
         //
-        // Populate entry in buffer
+        // Populate quad in buffer
         //
 
-        assert(!!mCloudElementBuffer);
-        assert(mCurrentCloudElementCount + 1u <= mCloudElementCount);
-        CloudElement * cloudElement = &(mCloudElementBuffer[mCurrentCloudElementCount]);
-
-        size_t cloudTextureIndex = mCurrentCloudElementCount % mCloudTextureAtlasMetadata->GetFrameMetadata().size();
+        size_t const cloudTextureIndex = mCloudQuadBuffer.size() % mCloudTextureAtlasMetadata->GetFrameMetadata().size();
 
         auto cloudAtlasFrameMetadata = mCloudTextureAtlasMetadata->GetFrameMetadata(
             TextureGroupType::Cloud,
@@ -435,37 +436,37 @@ public:
         float topY = mappedY + scale * (cloudAtlasFrameMetadata.FrameMetadata.WorldHeight - cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldY) * aspectRatio;
         float bottomY = mappedY - scale * cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldY * aspectRatio;
 
-        cloudElement->ndcXTopLeft1 = leftX;
-        cloudElement->ndcYTopLeft1 = topY;
-        cloudElement->ndcTextureXTopLeft1 = cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x;
-        cloudElement->ndcTextureYTopLeft1 = cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y;
+        CloudQuad & cloudQuad = mCloudQuadBuffer.emplace_back();
 
-        cloudElement->ndcXBottomLeft1 = leftX;
-        cloudElement->ndcYBottomLeft1 = bottomY;
-        cloudElement->ndcTextureXBottomLeft1 = cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x;
-        cloudElement->ndcTextureYBottomLeft1 = cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y;
+        cloudQuad.ndcXTopLeft1 = leftX;
+        cloudQuad.ndcYTopLeft1 = topY;
+        cloudQuad.ndcTextureXTopLeft1 = cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x;
+        cloudQuad.ndcTextureYTopLeft1 = cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y;
 
-        cloudElement->ndcXTopRight1 = rightX;
-        cloudElement->ndcYTopRight1 = topY;
-        cloudElement->ndcTextureXTopRight1 = cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x;
-        cloudElement->ndcTextureYTopRight1 = cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y;
+        cloudQuad.ndcXBottomLeft1 = leftX;
+        cloudQuad.ndcYBottomLeft1 = bottomY;
+        cloudQuad.ndcTextureXBottomLeft1 = cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x;
+        cloudQuad.ndcTextureYBottomLeft1 = cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y;
 
-        cloudElement->ndcXBottomLeft2 = leftX;
-        cloudElement->ndcYBottomLeft2 = bottomY;
-        cloudElement->ndcTextureXBottomLeft2 = cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x;
-        cloudElement->ndcTextureYBottomLeft2 = cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y;
+        cloudQuad.ndcXTopRight1 = rightX;
+        cloudQuad.ndcYTopRight1 = topY;
+        cloudQuad.ndcTextureXTopRight1 = cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x;
+        cloudQuad.ndcTextureYTopRight1 = cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y;
 
-        cloudElement->ndcXTopRight2 = rightX;
-        cloudElement->ndcYTopRight2 = topY;
-        cloudElement->ndcTextureXTopRight2 = cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x;
-        cloudElement->ndcTextureYTopRight2 = cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y;
+        cloudQuad.ndcXBottomLeft2 = leftX;
+        cloudQuad.ndcYBottomLeft2 = bottomY;
+        cloudQuad.ndcTextureXBottomLeft2 = cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x;
+        cloudQuad.ndcTextureYBottomLeft2 = cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y;
 
-        cloudElement->ndcXBottomRight2 = rightX;
-        cloudElement->ndcYBottomRight2 = bottomY;
-        cloudElement->ndcTextureXBottomRight2 = cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x;
-        cloudElement->ndcTextureYBottomRight2 = cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y;
+        cloudQuad.ndcXTopRight2 = rightX;
+        cloudQuad.ndcYTopRight2 = topY;
+        cloudQuad.ndcTextureXTopRight2 = cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x;
+        cloudQuad.ndcTextureYTopRight2 = cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y;
 
-        ++mCurrentCloudElementCount;
+        cloudQuad.ndcXBottomRight2 = rightX;
+        cloudQuad.ndcYBottomRight2 = bottomY;
+        cloudQuad.ndcTextureXBottomRight2 = cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x;
+        cloudQuad.ndcTextureYBottomRight2 = cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y;
     }
 
     void UploadCloudsEnd();
@@ -486,48 +487,41 @@ public:
         float yOcean,
         float oceanDepth)
     {
-        assert(mLandElementCount == mOceanElementCount);
-        assert(mLandElementCount > 0);
-
         float const yVisibleWorldBottom = mViewModel.GetVisibleWorldBottomRight().y;
 
         //
         // Store Land element
         //
 
-        assert(!!mLandElementBuffer);
-        assert(mCurrentLandElementCount + 1u <= mLandElementCount);
-        LandElement * landElement = &(mLandElementBuffer[mCurrentLandElementCount]);
+        LandSegment & landSegment = mLandSegmentBuffer.emplace_back();
 
-        landElement->x1 = x;
-        landElement->y1 = yLand > yVisibleWorldBottom ? yLand : yVisibleWorldBottom; // Clamp top up to visible bottom
-        landElement->x2 = x;
-        landElement->y2 = yVisibleWorldBottom;
-
-        ++mCurrentLandElementCount;
+        landSegment.x1 = x;
+        landSegment.y1 = yLand > yVisibleWorldBottom ? yLand : yVisibleWorldBottom; // Clamp top up to visible bottom
+        landSegment.x2 = x;
+        landSegment.y2 = yVisibleWorldBottom;
 
 
         //
         // Store ocean element
         //
 
-        assert(!!mOceanElementBuffer);
-        assert(mCurrentOceanElementCount + 1u <= mOceanElementCount);
-        OceanElement * oceanElement = &(mOceanElementBuffer[mCurrentOceanElementCount]);
+        OceanSegment & oceanSegment = mOceanSegmentBuffer.emplace_back();
 
-        oceanElement->x1 = x;
-        oceanElement->y1 = yOcean;
+        oceanSegment.x1 = x;
+        float const oceanSegmentY1 = yOcean;
+        oceanSegment.y1 = oceanSegmentY1;
 
-        oceanElement->x2 = x;
-        oceanElement->y2 = yOcean > yLand ? yLand : yVisibleWorldBottom; // If land sticks out, go down to visible bottom (land is drawn last)
+        oceanSegment.x2 = x;
+        float const oceanSegmentY2 = yOcean > yLand ? yLand : yVisibleWorldBottom; // If land sticks out, go down to visible bottom (land is drawn last)
+        oceanSegment.y2 = oceanSegmentY2;
 
         switch (mOceanRenderMode)
         {
             case OceanRenderMode::Texture:
             {
                 // Texture sample Y: top=oceanDepth (we use repeat mode), bottom=0.0
-                oceanElement->value1 = oceanDepth;
-                oceanElement->value2 = 0.0f;
+                oceanSegment.value1 = oceanDepth;
+                oceanSegment.value2 = 0.0f;
 
                 break;
             }
@@ -535,9 +529,9 @@ public:
             case OceanRenderMode::Depth:
             {
                 // Depth: top=0.0, bottom=height as fraction of maximum depth
-                oceanElement->value1 = 0.0f;
-                oceanElement->value2 = oceanDepth != 0.0f
-                    ? abs(oceanElement->y2 - oceanElement->y1) / oceanDepth
+                oceanSegment.value1 = 0.0f;
+                oceanSegment.value2 = oceanDepth != 0.0f
+                    ? abs(oceanSegmentY2 - oceanSegmentY1) / oceanDepth
                     : 0.0f;
 
                 break;
@@ -545,16 +539,14 @@ public:
 
             case OceanRenderMode::Flat:
             {
-                // Nop
-                oceanElement->value1 = 0.0f;
-                oceanElement->value2 = 0.0f;
+                // Nop, be nice
+                oceanSegment.value1 = 0.0f;
+                oceanSegment.value2 = 0.0f;
 
                 break;
             }
         }
-
-        ++mCurrentOceanElementCount;
-    }
+   }
 
     void UploadLandAndOceanEnd();
 
@@ -573,34 +565,34 @@ public:
     {
         // Triangle 1
 
-        mCrossOfLightBuffer.emplace_back(
+        mCrossOfLightVertexBuffer.emplace_back(
             vec2f(mViewModel.GetVisibleWorldTopLeft().x, mViewModel.GetVisibleWorldBottomRight().y), // left, bottom
             centerPosition,
             progress);
 
-        mCrossOfLightBuffer.emplace_back(
+        mCrossOfLightVertexBuffer.emplace_back(
             mViewModel.GetVisibleWorldTopLeft(), // left, top
             centerPosition,
             progress);
 
-        mCrossOfLightBuffer.emplace_back(
+        mCrossOfLightVertexBuffer.emplace_back(
             mViewModel.GetVisibleWorldBottomRight(), // right, bottom
             centerPosition,
             progress);
 
         // Triangle 2
 
-        mCrossOfLightBuffer.emplace_back(
+        mCrossOfLightVertexBuffer.emplace_back(
             mViewModel.GetVisibleWorldTopLeft(), // left, top
             centerPosition,
             progress);
 
-        mCrossOfLightBuffer.emplace_back(
+        mCrossOfLightVertexBuffer.emplace_back(
             mViewModel.GetVisibleWorldBottomRight(), // right, bottom
             centerPosition,
             progress);
 
-        mCrossOfLightBuffer.emplace_back(
+        mCrossOfLightVertexBuffer.emplace_back(
             vec2f(mViewModel.GetVisibleWorldBottomRight().x, mViewModel.GetVisibleWorldTopLeft().y),  // right, top
             centerPosition,
             progress);
@@ -613,24 +605,40 @@ public:
     void RenderShipsStart();
 
 
-    void RenderShipStart(ShipId shipId)
+    void RenderShipStart(
+        ShipId shipId,
+        PlaneId maxMaxPlaneId)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId]->RenderStart();
+        mShips[shipId]->RenderStart(maxMaxPlaneId);
     }
 
     //
     // Ship Points
     //
 
-    void UploadShipPointImmutableGraphicalAttributes(
+    void UploadShipPointImmutableAttributes(
         ShipId shipId,
         vec2f const * textureCoordinates)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId]->UploadPointImmutableGraphicalAttributes(textureCoordinates);
+        mShips[shipId]->UploadPointImmutableAttributes(textureCoordinates);
+    }
+
+    void UploadShipPointMutableAttributes(
+        ShipId shipId,
+        vec2f const * position,
+        float const * light,
+        float const * water)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        mShips[shipId]->UploadPointMutableAttributes(
+            position,
+            light,
+            water);
     }
 
     void UploadShipPointColors(
@@ -641,40 +649,24 @@ public:
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId]->UploadShipPointColors(
+        mShips[shipId]->UploadPointColors(
             color,
             startDst,
             count);
-    }
-
-    void UploadShipPoints(
-        ShipId shipId,
-        vec2f const * position,
-        float const * light,
-        float const * water)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadPoints(
-            position,
-            light,
-            water);
     }
 
     void UploadShipPointPlaneIds(
         ShipId shipId,
         PlaneId const * planeId,
         size_t startDst,
-        size_t count,
-        PlaneId maxMaxPlaneId)
+        size_t count)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
         mShips[shipId]->UploadPointPlaneIds(
             planeId,
             startDst,
-            count,
-            maxMaxPlaneId);
+            count);
     }
 
     //
@@ -859,28 +851,28 @@ public:
     // Ephemeral points
     //
 
-    inline void UploadShipEphemeralPointsStart(ShipId shipId)
+    inline void UploadShipElementEphemeralPointsStart(ShipId shipId)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId]->UploadEphemeralPointsStart();
+        mShips[shipId]->UploadElementEphemeralPointsStart();
     }
 
-    inline void UploadShipEphemeralPoint(
+    inline void UploadShipElementEphemeralPoint(
         ShipId shipId,
         int pointIndex)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId]->UploadEphemeralPoint(
+        mShips[shipId]->UploadElementEphemeralPoint(
             pointIndex);
     }
 
-    void UploadShipEphemeralPointsEnd(ShipId shipId)
+    void UploadShipElementEphemeralPointsEnd(ShipId shipId)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId]->UploadEphemeralPointsEnd();
+        mShips[shipId]->UploadElementEphemeralPointsEnd();
     }
 
 
@@ -981,22 +973,19 @@ private:
 
 private:
 
-    std::unique_ptr<ShaderManager<ShaderManagerTraits>> mShaderManager;
-    std::unique_ptr<TextureRenderManager> mTextureRenderManager;
-    std::unique_ptr<TextRenderContext> mTextRenderContext;
-
     //
-    // Stars
+    // Types
     //
 
 #pragma pack(push)
-    struct StarElement
+
+    struct StarVertex
     {
         float ndcX;
         float ndcY;
         float brightness;
 
-        StarElement(
+        StarVertex(
             float _ndcX,
             float _ndcY,
             float _brightness)
@@ -1005,20 +994,9 @@ private:
             , brightness(_brightness)
         {}
     };
-#pragma pack(pop)
 
-    std::vector<StarElement> mStarElementBuffer;
-
-    GameOpenGLVBO mStarVBO;
-
-
-    //
-    // Clouds
-    //
-
-#pragma pack(push)
     // Two triangles
-    struct CloudElement
+    struct CloudQuad
     {
         float ndcXTopLeft1;
         float ndcYTopLeft1;
@@ -1050,43 +1028,16 @@ private:
         float ndcTextureXBottomRight2;
         float ndcTextureYBottomRight2;
     };
-#pragma pack(pop)
 
-    std::unique_ptr<CloudElement[]> mCloudElementBuffer;
-    size_t mCurrentCloudElementCount;
-    size_t mCloudElementCount;
-
-    GameOpenGLVBO mCloudVBO;
-
-    GameOpenGLTexture mCloudTextureAtlasOpenGLHandle;
-    std::unique_ptr<TextureAtlasMetadata> mCloudTextureAtlasMetadata;
-
-    //
-    // Land
-    //
-
-#pragma pack(push)
-    struct LandElement
+    struct LandSegment
     {
         float x1;
         float y1;
         float x2;
         float y2;
     };
-#pragma pack(pop)
 
-    std::unique_ptr<LandElement[]> mLandElementBuffer;
-    size_t mCurrentLandElementCount;
-    size_t mLandElementCount;
-
-    GameOpenGLVBO mLandVBO;
-
-    //
-    // Ocean
-    //
-
-#pragma pack(push)
-    struct OceanElement
+    struct OceanSegment
     {
         float x1;
         float y1;
@@ -1096,13 +1047,60 @@ private:
         float y2;
         float value2;
     };
+
+    struct CrossOfLightVertex
+    {
+        vec2f vertex;
+        vec2f centerPosition;
+        float progress;
+
+        CrossOfLightVertex(
+            vec2f _vertex,
+            vec2f _centerPosition,
+            float _progress)
+            : vertex(_vertex)
+            , centerPosition(_centerPosition)
+            , progress(_progress)
+        {}
+    };
+
 #pragma pack(pop)
 
-    std::unique_ptr<OceanElement[]> mOceanElementBuffer;
-    size_t mCurrentOceanElementCount;
-    size_t mOceanElementCount;
+    //
+    // Buffers
+    //
 
+    BoundedVector<StarVertex> mStarVertexBuffer;
+    GameOpenGLVBO mStarVBO;
+
+    BoundedVector<CloudQuad> mCloudQuadBuffer;
+    GameOpenGLVBO mCloudVBO;
+
+    BoundedVector<LandSegment> mLandSegmentBuffer;
+    GameOpenGLVBO mLandVBO;
+
+    BoundedVector<OceanSegment> mOceanSegmentBuffer;
     GameOpenGLVBO mOceanVBO;
+
+    std::vector<CrossOfLightVertex> mCrossOfLightVertexBuffer;
+    GameOpenGLVBO mCrossOfLightVBO;
+
+    //
+    // VAOs
+    //
+
+    GameOpenGLVAO mStarVAO;
+    GameOpenGLVAO mCloudVAO;
+    GameOpenGLVAO mLandVAO;
+    GameOpenGLVAO mOceanVAO;
+    GameOpenGLVAO mCrossOfLightVAO;
+
+    //
+    // Textures
+    //
+
+    GameOpenGLTexture mCloudTextureAtlasOpenGLHandle;
+    std::unique_ptr<TextureAtlasMetadata> mCloudTextureAtlasMetadata;
 
     //
     // Ships
@@ -1113,33 +1111,15 @@ private:
     GameOpenGLTexture mGenericTextureAtlasOpenGLHandle;
     std::unique_ptr<TextureAtlasMetadata> mGenericTextureAtlasMetadata;
 
-    //
-    // Cross of light
-    //
-
-#pragma pack(push)
-    struct CrossOfLightElement
-    {
-        vec2f vertex;
-        vec2f centerPosition;
-        float progress;
-
-        CrossOfLightElement(
-            vec2f _vertex,
-            vec2f _centerPosition,
-            float _progress)
-            : vertex(_vertex)
-            , centerPosition(_centerPosition)
-            , progress(_progress)
-        {}
-    };
-#pragma pack(pop)
-
-    std::vector<CrossOfLightElement> mCrossOfLightBuffer;
-
-    GameOpenGLVBO mCrossOfLightVBO;
-
 private:
+
+    //
+    // Managers
+    //
+
+    std::unique_ptr<ShaderManager<ShaderManagerTraits>> mShaderManager;
+    std::unique_ptr<TextureRenderManager> mTextureRenderManager;
+    std::unique_ptr<TextRenderContext> mTextRenderContext;
 
     //
     // The current render parameters
