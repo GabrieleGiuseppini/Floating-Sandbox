@@ -584,7 +584,7 @@ void Ship::Render(
 
 
     //
-    // Upload other elements (point (elements), springs, ropes), iff dirty
+    // Upload elements (triangles, point (elements), springs, ropes), iff dirty
     // or the ship debug render mode has changed
     //
 

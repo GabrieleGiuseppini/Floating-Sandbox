@@ -43,14 +43,6 @@ ShipRenderContext::ShipRenderContext(
     , mPointPlaneIdVBO()
     , mPointTextureCoordinatesVBO()
     //
-    , mPointElementBuffer()
-    , mPointElementVBO()
-    , mSpringElementBuffer()
-    , mSpringElementVBO()
-    , mRopeElementBuffer()
-    , mRopeElementVBO()
-    , mTriangleElementBuffer()
-    , mTriangleElementVBO()
     , mStressedSpringElementBuffer()
     , mStressedSpringElementVBO()
     , mEphemeralPointElementBuffer()
@@ -64,6 +56,16 @@ ShipRenderContext::ShipRenderContext(
     , mVectorArrowVertexBuffer()
     , mVectorArrowVBO()
     , mVectorArrowColor()
+    // Element (index) buffers
+    , mPointElementBuffer()
+    , mSpringElementBuffer()
+    , mRopeElementBuffer()
+    , mTriangleElementBuffer()
+    , mElementVBO()
+    , mPointElementVBOStartIndex(0)
+    , mSpringElementVBOStartIndex(0)
+    , mRopeElementVBOStartIndex(0)
+    , mTriangleElementVBOStartIndex(0)
     // VAOs
     , mShipVAO()
     , mGenericTextureVAO()
@@ -97,8 +99,8 @@ ShipRenderContext::ShipRenderContext(
     // Initialize buffers
     //
 
-    GLuint vbos[14];
-    glGenBuffers(14, vbos);
+    GLuint vbos[10];
+    glGenBuffers(10, vbos);
     CheckOpenGLError();
 
     mPointPositionVBO = vbos[0];
@@ -125,29 +127,30 @@ ShipRenderContext::ShipRenderContext(
     glBindBuffer(GL_ARRAY_BUFFER, *mPointTextureCoordinatesVBO);
     glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(vec2f), nullptr, GL_STATIC_DRAW);
 
-    mPointElementVBO = vbos[6];
-    mPointElementBuffer.reserve(pointCount);
-
-    mSpringElementVBO = vbos[7];
-    mSpringElementBuffer.reserve(pointCount * GameParameters::MaxSpringsPerPoint);
-
-    mRopeElementVBO = vbos[8];
-    mRopeElementBuffer.reserve(pointCount); // Arbitrary
-
-    mTriangleElementVBO = vbos[9];
-    mTriangleElementBuffer.reserve(pointCount * GameParameters::MaxTrianglesPerPoint);
-
-    mStressedSpringElementVBO = vbos[10];
+    mStressedSpringElementVBO = vbos[6];
     mStressedSpringElementBuffer.reserve(1000); // Arbitrary
 
-    mEphemeralPointElementVBO = vbos[11];
+    mEphemeralPointElementVBO = vbos[7];
     mEphemeralPointElementBuffer.reserve(GameParameters::MaxEphemeralParticles);
 
-    mGenericTextureVBO = vbos[12];
+    mGenericTextureVBO = vbos[8];
 
-    mVectorArrowVBO = vbos[13];
+    mVectorArrowVBO = vbos[9];
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+
+    //
+    // Initialize element (index) buffers
+    //
+
+    glGenBuffers(1, &tmpGLuint);
+    mElementVBO = tmpGLuint;
+
+    mPointElementBuffer.reserve(pointCount);
+    mSpringElementBuffer.reserve(pointCount * GameParameters::MaxSpringsPerPoint);
+    mRopeElementBuffer.reserve(pointCount); // Arbitrary
+    mTriangleElementBuffer.reserve(pointCount * GameParameters::MaxTrianglesPerPoint);
 
 
     //
@@ -701,11 +704,8 @@ void ShipRenderContext::UploadElementTrianglesStart(size_t trianglesCount)
 
 void ShipRenderContext::UploadElementTrianglesEnd()
 {
-    // Upload
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mTriangleElementVBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mTriangleElementBuffer.size() * sizeof(TriangleElement), mTriangleElementBuffer.data(), GL_STATIC_DRAW);
-    CheckOpenGLError();
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    // We'll upload these indices at UploadElementsEnd(),
+    // which we assume always comes after triangles
 }
 
 void ShipRenderContext::UploadElementsStart()
@@ -721,23 +721,53 @@ void ShipRenderContext::UploadElementsStart()
 void ShipRenderContext::UploadElementsEnd()
 {
     //
-    // Upload all elements, except for stressed springs
+    // Upload all elements to the VBO, remembering the starting VBO index
+    // of each element type
     //
 
-    // Points
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mPointElementVBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mPointElementBuffer.size() * sizeof(PointElement), mPointElementBuffer.data(), GL_STATIC_DRAW);
+    // Byte indices
+    mTriangleElementVBOStartIndex = 0;
+    mRopeElementVBOStartIndex = mTriangleElementVBOStartIndex + mTriangleElementBuffer.size() * sizeof(TriangleElement);
+    mSpringElementVBOStartIndex = mRopeElementVBOStartIndex + mRopeElementBuffer.size() * sizeof(LineElement);
+    mPointElementVBOStartIndex = mSpringElementVBOStartIndex + mSpringElementBuffer.size() * sizeof(LineElement);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mElementVBO);
+
+    // Allocate whole buffer
+    glBufferData(
+        GL_ELEMENT_ARRAY_BUFFER,
+        mPointElementVBOStartIndex + (mPointElementBuffer.size() * sizeof(PointElement)),
+        nullptr,
+        GL_STATIC_DRAW);
     CheckOpenGLError();
 
-    // Springs
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mSpringElementVBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mSpringElementBuffer.size() * sizeof(LineElement), mSpringElementBuffer.data(), GL_STATIC_DRAW);
-    CheckOpenGLError();
+    // Upload triangles
+    glBufferSubData(
+        GL_ELEMENT_ARRAY_BUFFER,
+        mTriangleElementVBOStartIndex,
+        mTriangleElementBuffer.size() * sizeof(TriangleElement),
+        mTriangleElementBuffer.data());
 
-    // Ropes
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mRopeElementVBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mRopeElementBuffer.size() * sizeof(LineElement), mRopeElementBuffer.data(), GL_STATIC_DRAW);
-    CheckOpenGLError();
+    // Upload ropes
+    glBufferSubData(
+        GL_ELEMENT_ARRAY_BUFFER,
+        mRopeElementVBOStartIndex,
+        mRopeElementBuffer.size() * sizeof(LineElement),
+        mRopeElementBuffer.data());
+
+    // Upload springs
+    glBufferSubData(
+        GL_ELEMENT_ARRAY_BUFFER,
+        mSpringElementVBOStartIndex,
+        mSpringElementBuffer.size() * sizeof(LineElement),
+        mSpringElementBuffer.data());
+
+    // Upload points
+    glBufferSubData(
+        GL_ELEMENT_ARRAY_BUFFER,
+        mPointElementVBOStartIndex,
+        mPointElementBuffer.size() * sizeof(PointElement),
+        mPointElementBuffer.data());
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
@@ -755,13 +785,20 @@ void ShipRenderContext::UploadElementStressedSpringsEnd()
     //
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mStressedSpringElementVBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mStressedSpringElementBuffer.size() * sizeof(LineElement), mStressedSpringElementBuffer.data(), GL_DYNAMIC_DRAW);
+
+    glBufferData(
+        GL_ELEMENT_ARRAY_BUFFER,
+        mStressedSpringElementBuffer.size() * sizeof(LineElement),
+        mStressedSpringElementBuffer.data(),
+        GL_STREAM_DRAW);
     CheckOpenGLError();
+
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void ShipRenderContext::UploadElementEphemeralPointsStart()
 {
+    // Empty buffer
     mEphemeralPointElementBuffer.clear();
 }
 
@@ -772,8 +809,13 @@ void ShipRenderContext::UploadElementEphemeralPointsEnd()
     //
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mEphemeralPointElementVBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mEphemeralPointElementBuffer.size() * sizeof(PointElement), mEphemeralPointElementBuffer.data(), GL_STATIC_DRAW);
+
+    glBufferData(
+        GL_ELEMENT_ARRAY_BUFFER,
+        mEphemeralPointElementBuffer.size() * sizeof(PointElement), mEphemeralPointElementBuffer.data(),
+        GL_STATIC_DRAW);
     CheckOpenGLError();
+
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
@@ -859,6 +901,16 @@ void ShipRenderContext::RenderEnd()
 
     {
         //
+        // Bind element VBO
+        //
+        // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
+        // in the VAO
+        //
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mElementVBO);
+
+
+        //
         // Bind ship texture
         //
 
@@ -869,7 +921,8 @@ void ShipRenderContext::RenderEnd()
 
 
 
-        // TODO: this will go with orphaned points rearc, will become a single Render invoked right after triangles
+        // TODO: this will go with orphaned points rearc; will move to where we do ephemeral points
+        // now (below) once eph points and points are merged.
         //
         // Draw points
         //
@@ -880,11 +933,11 @@ void ShipRenderContext::RenderEnd()
 
             glPointSize(0.2f * 2.0f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
 
-            // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
-            // in the VAO
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mPointElementVBO);
-
-            glDrawElements(GL_POINTS, static_cast<GLsizei>(1 * mPointElementBuffer.size()), GL_UNSIGNED_INT, 0);
+            glDrawElements(
+                GL_POINTS,
+                static_cast<GLsizei>(1 * mPointElementBuffer.size()),
+                GL_UNSIGNED_INT,
+                (GLvoid *)mPointElementVBOStartIndex);
         }
 
 
@@ -918,11 +971,11 @@ void ShipRenderContext::RenderEnd()
             if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
                 glLineWidth(0.1f);
 
-            // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
-            // in the VAO
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mTriangleElementVBO);
-
-            glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(3 * mTriangleElementBuffer.size()), GL_UNSIGNED_INT, 0);
+            glDrawElements(
+                GL_TRIANGLES,
+                static_cast<GLsizei>(3 * mTriangleElementBuffer.size()),
+                GL_UNSIGNED_INT,
+                (GLvoid *)mTriangleElementVBOStartIndex);
 
             // Update stats
             mRenderStatistics.LastRenderedShipTriangles += mTriangleElementBuffer.size();
@@ -948,15 +1001,16 @@ void ShipRenderContext::RenderEnd()
         {
             mShaderManager.ActivateProgram<ProgramType::ShipRopes>();
 
-            // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
-            // in the VAO
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mRopeElementVBO);
-
-            glDrawElements(GL_LINES, static_cast<GLsizei>(2 * mRopeElementBuffer.size()), GL_UNSIGNED_INT, 0);
+            glDrawElements(
+                GL_LINES,
+                static_cast<GLsizei>(2 * mRopeElementBuffer.size()),
+                GL_UNSIGNED_INT,
+                (GLvoid *)mRopeElementVBOStartIndex);
 
             // Update stats
             mRenderStatistics.LastRenderedShipRopes += mRopeElementBuffer.size();
         }
+
 
 
         //
@@ -987,11 +1041,11 @@ void ShipRenderContext::RenderEnd()
                 mShaderManager.ActivateProgram<ProgramType::ShipSpringsColor>();
             }
 
-            // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
-            // in the VAO
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mSpringElementVBO);
-
-            glDrawElements(GL_LINES, static_cast<GLsizei>(2 * mSpringElementBuffer.size()), GL_UNSIGNED_INT, 0);
+            glDrawElements(
+                GL_LINES,
+                static_cast<GLsizei>(2 * mSpringElementBuffer.size()),
+                GL_UNSIGNED_INT,
+                (GLvoid *)mSpringElementVBOStartIndex);
 
             // Update stats
             mRenderStatistics.LastRenderedShipSprings += mSpringElementBuffer.size();
@@ -1013,8 +1067,6 @@ void ShipRenderContext::RenderEnd()
             glBindTexture(GL_TEXTURE_2D, *mStressedSpringTextureOpenGLHandle);
             CheckOpenGLError();
 
-            // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
-            // in the VAO
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mStressedSpringElementVBO);
 
             glDrawElements(GL_LINES, static_cast<GLsizei>(2 * mStressedSpringElementBuffer.size()), GL_UNSIGNED_INT, 0);
@@ -1032,8 +1084,6 @@ void ShipRenderContext::RenderEnd()
 
             glPointSize(0.3f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
 
-            // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
-            // in the VAO
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mEphemeralPointElementVBO);
 
             glDrawElements(GL_POINTS, static_cast<GLsizei>(mEphemeralPointElementBuffer.size()), GL_UNSIGNED_INT, 0);

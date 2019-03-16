@@ -138,7 +138,6 @@ public:
         size_t startDst,
         size_t count);
 
-
     //
     // Triangle Elements
     //
@@ -164,6 +163,9 @@ public:
 
     //
     // Other Elements
+    //
+    // These *MUST* always follow triangles (but may be performed without a preceding triangle upload,
+    // in those cases when triangles have not changed since last time)
     //
 
     void UploadElementsStart();
@@ -210,7 +212,6 @@ public:
     }
 
     void UploadElementStressedSpringsEnd();
-
 
     //
     // Generic textures
@@ -353,7 +354,6 @@ public:
         mGenericTextureMaxPlaneVertexBufferSize = std::max(mGenericTextureMaxPlaneVertexBufferSize, vertexBuffer.size());
     }
 
-
     //
     // Ephemeral point elements
     //
@@ -487,18 +487,6 @@ private:
     GameOpenGLVBO mPointPlaneIdVBO;
     GameOpenGLVBO mPointTextureCoordinatesVBO;
 
-    std::vector<PointElement> mPointElementBuffer;
-    GameOpenGLVBO mPointElementVBO;
-
-    std::vector<LineElement> mSpringElementBuffer;
-    GameOpenGLVBO mSpringElementVBO;
-
-    std::vector<LineElement> mRopeElementBuffer;
-    GameOpenGLVBO mRopeElementVBO;
-
-    std::vector<TriangleElement> mTriangleElementBuffer;
-    GameOpenGLVBO mTriangleElementVBO;
-
     std::vector<LineElement> mStressedSpringElementBuffer;
     GameOpenGLVBO mStressedSpringElementVBO;
 
@@ -513,6 +501,27 @@ private:
     std::vector<vec3f> mVectorArrowVertexBuffer;
     GameOpenGLVBO mVectorArrowVBO;
     std::optional<vec4f> mVectorArrowColor;
+
+    //
+    // Element (index) buffers
+    //
+    // We use a single VBO for all element indices except stressed springs
+    //
+
+    std::vector<PointElement> mPointElementBuffer;
+    std::vector<LineElement> mSpringElementBuffer;
+    std::vector<LineElement> mRopeElementBuffer;
+    std::vector<TriangleElement> mTriangleElementBuffer;
+
+    GameOpenGLVBO mElementVBO;
+
+    // Indices at which these elements begin in the VBO; populated
+    // when we upload element indices to the VBO
+    size_t mPointElementVBOStartIndex;
+    size_t mSpringElementVBOStartIndex;
+    size_t mRopeElementVBOStartIndex;
+    size_t mTriangleElementVBOStartIndex;
+
 
     //
     // VAOs

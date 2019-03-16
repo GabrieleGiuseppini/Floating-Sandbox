@@ -248,6 +248,13 @@ Render:
 
 		- Orphaned points (*)
 
+		- ShipRenderContext: make water color depend on ocean render mode color
+			- Water color in shader has to become parameter
+			- OceanRenderMode:
+				- Texture: waterColor=<constant matching now>
+				- Flat: waterColor=<that flat color>
+				- Gradient: waterColor=<mid color>
+
 		- Flood tool and ship un/sinking
 			- Make music class with FadeToStop()
 				- ::Update()
@@ -579,11 +586,12 @@ Render:
 				= Mutable point attributes (pos, light, water)
 			+ Figure out if should do null+subdata vs data
 			+ Verdict: no detectable improvement
-		= Try with single buffer for elements, appending stuff to it
-			- Springs, Ropes 
-			- JUST A TEST; if it's really super good, then we'll have to figure out how to do this
-			 (as not all elements come always at the same time)
-				- Add Points (for orphaned points)
+		= Try with single VBO for elements, appending stuff to it
+			- Test:
+				- Dynamics between structureDirty changes and debugShipModeRender changes
+			- See if can clean up enforced order between triangles and others
+				- TODO
+		- Try with glDrawRangeElements
 		- Try with mapped buffer for elements (springs, ropes, points?)
 			- GameOpenGLMappedVector<TElement, WRITE_ONLY>
 				- Map(size)
