@@ -44,7 +44,7 @@ in float vertexLightColorMix;
 in float vertexWater;
 in vec4 vertexCol;
 
-// Param
+// Params
 uniform float paramWaterContrast;
 uniform float paramWaterLevelThreshold;
 
