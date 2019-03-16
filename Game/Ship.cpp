@@ -558,34 +558,7 @@ void Ship::Render(
 
 
     //
-    // Upload triangles, iff structure is dirty
-    //
-
-    if (mIsStructureDirty)
-    {
-        assert(mPlaneTrianglesRenderIndices.size() >= 1);
-
-        //
-        // Upload all the triangle elements
-        //
-
-        renderContext.UploadShipElementTrianglesStart(
-            mId,
-            mPlaneTrianglesRenderIndices.back());
-
-        mTriangles.UploadElements(
-            mPlaneTrianglesRenderIndices,
-            mId,
-            mPoints,
-            renderContext);
-
-        renderContext.UploadShipElementTrianglesEnd(mId);
-    }
-
-
-    //
-    // Upload elements (triangles, point (elements), springs, ropes), iff dirty
-    // or the ship debug render mode has changed
+    // Upload elements, if needed
     //
 
     if (mIsStructureDirty
@@ -610,6 +583,28 @@ void Ship::Render(
             mId,
             renderContext);
 
+        //
+        // Upload triangles, but only if structure is dirty
+        // (we can't upload otherwise as mPlaneTrianglesRenderIndices is one-time use)
+        //
+
+        if (mIsStructureDirty)
+        {
+            assert(mPlaneTrianglesRenderIndices.size() >= 1);
+
+            renderContext.UploadShipElementTrianglesStart(
+                mId,
+                mPlaneTrianglesRenderIndices.back());
+
+            mTriangles.UploadElements(
+                mPlaneTrianglesRenderIndices,
+                mId,
+                mPoints,
+                renderContext);
+
+            renderContext.UploadShipElementTrianglesEnd(mId);
+        }
+
         renderContext.UploadShipElementsEnd(mId);
     }
 
@@ -632,6 +627,7 @@ void Ship::Render(
 
     renderContext.UploadShipElementStressedSpringsEnd(mId);
 
+
     //
     // Upload bombs
     //
@@ -639,6 +635,7 @@ void Ship::Render(
     mBombs.Upload(
         mId,
         renderContext);
+
 
     //
     // Upload pinned points
@@ -648,6 +645,7 @@ void Ship::Render(
         mId,
         renderContext);
 
+
     //
     // Upload ephemeral points
     //
@@ -656,6 +654,7 @@ void Ship::Render(
         mId,
         renderContext);
 
+
     //
     // Upload vector fields
     //
@@ -663,6 +662,7 @@ void Ship::Render(
     mPoints.UploadVectors(
         mId,
         renderContext);
+
 
     //
     // Finalize render

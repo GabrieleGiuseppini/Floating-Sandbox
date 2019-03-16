@@ -696,26 +696,30 @@ void ShipRenderContext::UploadPointPlaneIds(
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+void ShipRenderContext::UploadElementsStart()
+{
+    // Empty all buffers - except triangles - as elements will be completely re-populated soon
+    // (with a yet-unknown quantity of elements);
+    //
+    // if the client does not upload new triangles, it means we have to reuse the last known set
+
+    mPointElementBuffer.clear();
+    mSpringElementBuffer.clear();
+    mRopeElementBuffer.clear();
+    mStressedSpringElementBuffer.clear();
+}
+
 void ShipRenderContext::UploadElementTrianglesStart(size_t trianglesCount)
 {
+    // Client wants to upload a new set of triangles
+    //
     // No need to clear, we'll repopulate everything
+
     mTriangleElementBuffer.resize(trianglesCount);
 }
 
 void ShipRenderContext::UploadElementTrianglesEnd()
 {
-    // We'll upload these indices at UploadElementsEnd(),
-    // which we assume always comes after triangles
-}
-
-void ShipRenderContext::UploadElementsStart()
-{
-    // Empty all buffers, as they will be completely re-populated soon
-    // (with a yet-unknown quantity of elements)
-    mPointElementBuffer.clear();
-    mSpringElementBuffer.clear();
-    mRopeElementBuffer.clear();
-    mStressedSpringElementBuffer.clear();
 }
 
 void ShipRenderContext::UploadElementsEnd()
@@ -725,7 +729,7 @@ void ShipRenderContext::UploadElementsEnd()
     // of each element type
     //
 
-    // Byte indices
+    // Note: byte-granularity indices
     mTriangleElementVBOStartIndex = 0;
     mRopeElementVBOStartIndex = mTriangleElementVBOStartIndex + mTriangleElementBuffer.size() * sizeof(TriangleElement);
     mSpringElementVBOStartIndex = mRopeElementVBOStartIndex + mRopeElementBuffer.size() * sizeof(LineElement);

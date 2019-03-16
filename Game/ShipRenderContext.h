@@ -139,35 +139,13 @@ public:
         size_t count);
 
     //
-    // Triangle Elements
+    // Elements
     //
 
-    void UploadElementTrianglesStart(size_t trianglesCount);
-
-    inline void UploadElementTriangle(
-        size_t triangleIndex,
-        int pointIndex1,
-        int pointIndex2,
-        int pointIndex3)
-    {
-        assert(triangleIndex < mTriangleElementBuffer.size());
-
-        TriangleElement & triangleElement = mTriangleElementBuffer[triangleIndex];
-
-        triangleElement.pointIndex1 = pointIndex1;
-        triangleElement.pointIndex2 = pointIndex2;
-        triangleElement.pointIndex3 = pointIndex3;
-    }
-
-    void UploadElementTrianglesEnd();
-
-    //
-    // Other Elements
-    //
-    // These *MUST* always follow triangles (but may be performed without a preceding triangle upload,
-    // in those cases when triangles have not changed since last time)
-    //
-
+    /*
+     * Signals that all elements, except triangles, will be re-uploaded. If triangles have changed, they
+     * will also be uploaded; if they are not re-uploaded, then the last uploaded set is to be used.
+     */
     void UploadElementsStart();
 
     inline void UploadElementPoint(int pointIndex)
@@ -193,6 +171,24 @@ public:
             pointIndex2);
     }
 
+    void UploadElementTrianglesStart(size_t trianglesCount);
+
+    inline void UploadElementTriangle(
+        size_t triangleIndex,
+        int pointIndex1,
+        int pointIndex2,
+        int pointIndex3)
+    {
+        assert(triangleIndex < mTriangleElementBuffer.size());
+
+        TriangleElement & triangleElement = mTriangleElementBuffer[triangleIndex];
+
+        triangleElement.pointIndex1 = pointIndex1;
+        triangleElement.pointIndex2 = pointIndex2;
+        triangleElement.pointIndex3 = pointIndex3;
+    }
+
+    void UploadElementTrianglesEnd();
 
     void UploadElementsEnd();
 

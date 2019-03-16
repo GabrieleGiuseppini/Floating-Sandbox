@@ -223,15 +223,13 @@ Render:
 		+ See move tool changing center
 			+ Is it because of missing last step?
 				+ Should finalize only after last step, making sure to clamp elapsed to Lag first
-		+ VAO (*)
-		= Create dump upon crash
+		+ Create dump upon crash
 			+ https://stackoverflow.com/questions/9020353/create-a-dump-file-for-an-application-whenever-it-crashes
 			+ In app folder, via StandardSystemPaths
 				+ Under \CrashDumps
 			+ Try with empty png and corrupted png
-			- Guy @ Discord?
-
-		- Misc OpenGL Optimizations (*)
+		+ VAO (*)
+		+ Misc OpenGL Optimizations (*)
 
 		- Send zip to new Discord guy
 
@@ -240,6 +238,8 @@ Render:
 			- Update FPS
 
 		- Vertex buffer optimizations (*)
+
+		- Decay (rust) (*)
 
 		- Test undoing TrianglesTexture shader optimization and calculate impact
 			- Undo vec4 and calc'n move change
@@ -258,8 +258,6 @@ Render:
 		- Flood tool and ship un/sinking
 			- Make music class with FadeToStop()
 				- ::Update()
-
-		- Decay (rust) (*)
 
 		- Instanced drawing for lights (*)
 		- See if lights can make texture colors come out at night, rather than just yellow-izing it
@@ -572,7 +570,7 @@ Render:
 
 - Gfx optimizations:
 
-	= Misc OpenGL Optimizations (*)
+	+ Misc OpenGL Optimizations (*)
 		+ Try all of these in isolation, or building on the previous one if the previous one is a clear winner
 		+ Try STREAM with ship VBO buffers (apparently should do it without even testing!)
 			+ RenderContext:
@@ -586,22 +584,25 @@ Render:
 				= Mutable point attributes (pos, light, water)
 			+ Figure out if should do null+subdata vs data
 			+ Verdict: no detectable improvement
-		= Try with single VBO for elements, appending stuff to it
-			- Test:
-				- Dynamics between structureDirty changes and debugShipModeRender changes
-			- See if can clean up enforced order between triangles and others
-				- TODO
-		- Try with glDrawRangeElements
-		- Try with mapped buffer for elements (springs, ropes, points?)
-			- GameOpenGLMappedVector<TElement, WRITE_ONLY>
-				- Map(size)
-				- emplace_back(...)
-					- w/assert that is mapped
-				- Unmap()
-				- ~()
-					- Unmap if mapped
-				- Remove that ugly GameOpenGLObject()
+		+ Try with single VBO for elements, appending stuff to it
+			+ Test:
+				+ Dynamics between structureDirty changes and debugShipModeRender changes
+			+ See if can cleanup enforced order between triangles and others
+		+ ShipRenderEnd(): see if using the same shader for triangles and springs buys us anything
+			+ Not really
 
+	- Try with mapped buffer
+		- GameOpenGLMappedVector<TElement, WRITE_ONLY>
+			- Map(size)
+			- emplace_back(...)
+				- w/assert that is mapped
+			- Unmap()
+			- ~()
+				- Unmap if mapped
+			- Remove that ugly GameOpenGLObject()
+		- Try at:
+			- Clouds
+			- Land and Ocean
 
 	- World::UploadLandAndWater: use same spatial frequency as samples, so to avoid interpolating altogether
 		- Warning: requires same sampling frequency for both, as ocean quads require landY when land sticks out,
@@ -611,8 +612,7 @@ Render:
 			- Find first sample == sample immediately to the left of visibleWorld.Left
 			- Go ahead by N*dx, up to last sample == sample immediately to the right of visibleWorld.Right
 				- N > 1 iff zoomed out "enough"
-		
-			
+					
 	- Lights on the GPU with instanced drawing (*)
 		- We begin with doing light at vertex (Gouraud)
 		- Lamp coords, spread, and luminiscence in uniform array
@@ -625,13 +625,14 @@ Render:
 
 	- Vertex Buffer Optimization (*): reduce number of vertex attributes for ship shaders 
 		+ We've already confirmed that one less attribute vertex sends FPS frpom 29 to 30
-		- At this moment, all Ship shaders - except for stressed springs - have the following inputs:
+		+ At this moment, all Ship shaders - except for stressed springs - have the following inputs:
 			in vec2 inShipPointPosition;
 			in float inShipPointLight;   *
 			in float inShipPointWater;
 			in vec4 inShipPointColor;    *
 			in float inShipPointPlaneId; *
 		- Test 1: Light + PlaneId
+			- Requires "float planeID" work item first
 			- Code
 			- Shaders
 			- Get FPS
@@ -642,7 +643,6 @@ Render:
 			- Shaders
 			- Get FPS
 			- Commit if good
-
 
 	- Try using GL_SHORT for Ship texture coordinates
 		- Passing NORMALIZE and 3 components to glVertexAttribPointer
@@ -834,7 +834,7 @@ Render:
 
 	- Decay (rust) (*)
 		- Spec:
-			- Over time, *wet* *metal* points and springs get reddish or greenish, and strength lowers
+			- Over time, *wet* points and springs get decayed (grey), and strength lowers
 			- GameParameters: DecayAcceler8r controls how quickly
 				- 0  = +INF == never
 				- 1  = 5m (default)
@@ -842,10 +842,11 @@ Render:
 			- Low-frequency Ship update does job
 		- Impl:
 			- Points: new Decay buffer
-				- Init as 0.0
-				- Ship::DecayStructure sends it asymptotically to 1.0
+				- Init as 1.0
+					- Idea is that Ship::DecayStructure sends it asymptotically to 0.0
 			- Points: ConnectedSprings structure contains size_t with # of springs owned by the point
 				- Update at Add/RemoveConnectedSpring
+					- And make owned are first, non-owned next
 				- Clone same to triangles - remove isAtOwner flag there
 			- Ship::DecayStructure:
 				- Invoked by Ship::Update
@@ -853,19 +854,21 @@ Render:
 					- Acceler8r => T to ~total decay: TBD: find formula
 					- DT = T / 300
 				- When so:
-					- alpha = (10**-5)**(1/300) (~total decay in 300 steps)
-					- for each point p for which p.water > threshold and p.isMetal:
-						- p.rust *= alpha
-						- for each spring s that is owned (use new size_t member of ConnectedSprings struct):
-							- s.strength *= (1.0 - pA.rust)
-					- Points.MarkRustBufferAsDirty()
-
+					- alpha = (10^-5)^(1/300) (~total decay in 300 steps)
+					- for each point p for which p.isLeaking:
+						- beta ~= alpha * log(p.water) (beta << 1)
+						- p.decay *= (1.0 - beta)
+						- for each spring s that is owned by p (use new size_t member of ConnectedSprings struct):
+							- s.strength *= (1.0 - beta)
+								- Yes, irreversible change of strength
+					- Points.MarkDecayBufferAsDirty()
 			- (Ship)RenderContext:
 				- UploadDecayBuffer
 				- Triangle, Spring, and Point shaders take attrib array and use it for color blend
+					- Or simply to turn into grey scale					
 			- Ship::Render:
 				- Call Points::UploadDirtyBuffers (new name for old method)
-					- Now also uploads Decay buffer if dirty
+					- Now also uploads Decay buffer if dirty, and of course resets flag
 
 	- New electrical material: clamp
 		- When powered, destroys point (and of course its springs)

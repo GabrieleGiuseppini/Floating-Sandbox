@@ -670,44 +670,7 @@ public:
     }
 
     //
-    // Ship triangle elements
-    //
-
-    inline void UploadShipElementTrianglesStart(
-        ShipId shipId,
-        size_t trianglesCount)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadElementTrianglesStart(trianglesCount);
-    }
-
-    inline void UploadShipElementTriangle(
-        ShipId shipId,
-        size_t triangleIndex,
-        int shipPointIndex1,
-        int shipPointIndex2,
-        int shipPointIndex3)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadElementTriangle(
-            triangleIndex,
-            shipPointIndex1,
-            shipPointIndex2,
-            shipPointIndex3);
-    }
-
-    inline void UploadShipElementTrianglesEnd(
-        ShipId shipId)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadElementTrianglesEnd();
-    }
-
-    //
-    // Other ship elements (points, springs, and ropes)
+    // Ship elements
     //
 
     inline void UploadShipElementsStart(ShipId shipId)
@@ -748,6 +711,39 @@ public:
         mShips[shipId]->UploadElementRope(
             shipPointIndex1,
             shipPointIndex2);
+    }
+
+    inline void UploadShipElementTrianglesStart(
+        ShipId shipId,
+        size_t trianglesCount)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        mShips[shipId]->UploadElementTrianglesStart(trianglesCount);
+    }
+
+    inline void UploadShipElementTriangle(
+        ShipId shipId,
+        size_t triangleIndex,
+        int shipPointIndex1,
+        int shipPointIndex2,
+        int shipPointIndex3)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        mShips[shipId]->UploadElementTriangle(
+            triangleIndex,
+            shipPointIndex1,
+            shipPointIndex2,
+            shipPointIndex3);
+    }
+
+    inline void UploadShipElementTrianglesEnd(
+        ShipId shipId)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        mShips[shipId]->UploadElementTrianglesEnd();
     }
 
     inline void UploadShipElementsEnd(ShipId shipId)
