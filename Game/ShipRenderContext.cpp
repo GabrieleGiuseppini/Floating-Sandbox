@@ -994,7 +994,8 @@ void ShipRenderContext::RenderEnd()
         //
         // Draw ropes, unless it's a debug mode
         //
-        // Note: in springs or edge springs debug mode, all ropes are uploaded as springs
+        // Note: when DebugRenderMode is springs|edgeSprings, ropes would all be uploaded
+        // as springs.
         //
 
         if (mDebugShipRenderMode == DebugShipRenderMode::None)
