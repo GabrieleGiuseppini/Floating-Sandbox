@@ -252,6 +252,7 @@ public:
         // Connected component and plane ID
         , mConnectedComponentIdBuffer(mBufferElementCount, shipPointCount, NoneConnectedComponentId)
         , mPlaneIdBuffer(mBufferElementCount, shipPointCount, NonePlaneId)
+        , mPlaneIdFloatBuffer(mBufferElementCount, shipPointCount, 0.0)
         , mIsPlaneIdBufferNonEphemeralDirty(true)
         , mIsPlaneIdBufferEphemeralDirty(true)
         , mCurrentConnectivityVisitSequenceNumberBuffer(mBufferElementCount, shipPointCount, VisitSequenceNumber())
@@ -824,9 +825,11 @@ public:
 
     void SetPlaneId(
         ElementIndex pointElementIndex,
-        PlaneId planeId)
+        PlaneId planeId,
+        float planeIdFloat)
     {
         mPlaneIdBuffer[pointElementIndex] = planeId;
+        mPlaneIdFloatBuffer[pointElementIndex] = planeIdFloat;
     }
 
     void MarkPlaneIdBufferNonEphemeralAsDirty()
@@ -1023,6 +1026,7 @@ private:
 
     Buffer<ConnectedComponentId> mConnectedComponentIdBuffer;
     Buffer<PlaneId> mPlaneIdBuffer;
+    Buffer<float> mPlaneIdFloatBuffer;
     bool mutable mIsPlaneIdBufferNonEphemeralDirty;
     bool mutable mIsPlaneIdBufferEphemeralDirty;
     Buffer<VisitSequenceNumber> mCurrentConnectivityVisitSequenceNumberBuffer;

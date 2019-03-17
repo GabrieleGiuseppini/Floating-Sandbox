@@ -1680,6 +1680,7 @@ void Ship::RunConnectivityVisit()
 
     // Initialize plane ID
     PlaneId currentPlaneId = 0; // Also serves as Connected Component ID
+    float currentPlaneIdFloat = 0.0f;
 
 #ifdef RENDER_FLOOD_DISTANCE
     std::optional<float> floodDistanceColor;
@@ -1707,7 +1708,7 @@ void Ship::RunConnectivityVisit()
             //
 
             // Visit this point first
-            mPoints.SetPlaneId(pointIndex, currentPlaneId);
+            mPoints.SetPlaneId(pointIndex, currentPlaneId, currentPlaneIdFloat);
             mPoints.SetConnectedComponentId(pointIndex, static_cast<ConnectedComponentId>(currentPlaneId));
             mPoints.SetCurrentConnectivityVisitSequenceNumber(pointIndex, visitSequenceNumber);
 
@@ -1749,7 +1750,7 @@ void Ship::RunConnectivityVisit()
                         // Visit point
                         //
 
-                        mPoints.SetPlaneId(cs.OtherEndpointIndex, currentPlaneId);
+                        mPoints.SetPlaneId(cs.OtherEndpointIndex, currentPlaneId, currentPlaneIdFloat);
                         mPoints.SetConnectedComponentId(cs.OtherEndpointIndex, static_cast<ConnectedComponentId>(currentPlaneId));
                         mPoints.SetCurrentConnectivityVisitSequenceNumber(cs.OtherEndpointIndex, visitSequenceNumber);
 
@@ -1775,6 +1776,7 @@ void Ship::RunConnectivityVisit()
 
             // Next we begin a new plane and connected component
             ++currentPlaneId;
+            currentPlaneIdFloat = static_cast<float>(currentPlaneId);
         }
     }
 

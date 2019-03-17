@@ -75,6 +75,7 @@ void Points::Add(
 
     mConnectedComponentIdBuffer.emplace_back(NoneConnectedComponentId);
     mPlaneIdBuffer.emplace_back(NonePlaneId);
+    mPlaneIdFloatBuffer.emplace_back(0.0f);
     mCurrentConnectivityVisitSequenceNumberBuffer.emplace_back();
 
     mIsPinnedBuffer.emplace_back(false);
@@ -133,6 +134,7 @@ void Points::CreateEphemeralParticleAirBubble(
 
     mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
     mPlaneIdBuffer[pointIndex] = planeId;
+    mPlaneIdFloatBuffer[pointIndex] = static_cast<float>(planeId);
     mIsPlaneIdBufferEphemeralDirty = true;
 
     assert(false == mIsPinnedBuffer[pointIndex]);
@@ -186,6 +188,7 @@ void Points::CreateEphemeralParticleDebris(
 
     mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
     mPlaneIdBuffer[pointIndex] = planeId;
+    mPlaneIdFloatBuffer[pointIndex] = static_cast<float>(planeId);
     mIsPlaneIdBufferEphemeralDirty = true;
 
     assert(false == mIsPinnedBuffer[pointIndex]);
@@ -240,6 +243,7 @@ void Points::CreateEphemeralParticleSparkle(
 
     mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
     mPlaneIdBuffer[pointIndex] = planeId;
+    mPlaneIdFloatBuffer[pointIndex] = static_cast<float>(planeId);
     mIsPlaneIdBufferEphemeralDirty = true;
 
     assert(false == mIsPinnedBuffer[pointIndex]);
@@ -446,7 +450,7 @@ void Points::UploadPlaneIds(
 
             renderContext.UploadShipPointPlaneIds(
                 shipId,
-                mPlaneIdBuffer.data(),
+                mPlaneIdFloatBuffer.data(),
                 0,
                 mAllPointCount);
 
@@ -458,7 +462,7 @@ void Points::UploadPlaneIds(
 
             renderContext.UploadShipPointPlaneIds(
                 shipId,
-                mPlaneIdBuffer.data(),
+                mPlaneIdFloatBuffer.data(),
                 0,
                 mShipPointCount);
         }
@@ -471,7 +475,7 @@ void Points::UploadPlaneIds(
 
         renderContext.UploadShipPointPlaneIds(
             shipId,
-            &(mPlaneIdBuffer.data()[mShipPointCount]),
+            &(mPlaneIdFloatBuffer.data()[mShipPointCount]),
             mShipPointCount,
             mEphemeralPointCount);
 
@@ -550,7 +554,7 @@ void Points::UploadVectors(
             shipId,
             mElementCount,
             mPositionBuffer.data(),
-            mPlaneIdBuffer.data(),
+            mPlaneIdFloatBuffer.data(),
             mVelocityBuffer.data(),
             0.25f,
             VectorColor);
@@ -561,7 +565,7 @@ void Points::UploadVectors(
             shipId,
             mElementCount,
             mPositionBuffer.data(),
-            mPlaneIdBuffer.data(),
+            mPlaneIdFloatBuffer.data(),
             mForceRenderBuffer.data(),
             0.0005f,
             VectorColor);
@@ -572,7 +576,7 @@ void Points::UploadVectors(
             shipId,
             mElementCount,
             mPositionBuffer.data(),
-            mPlaneIdBuffer.data(),
+            mPlaneIdFloatBuffer.data(),
             mWaterVelocityBuffer.data(),
             1.0f,
             VectorColor);
@@ -583,7 +587,7 @@ void Points::UploadVectors(
             shipId,
             mElementCount,
             mPositionBuffer.data(),
-            mPlaneIdBuffer.data(),
+            mPlaneIdFloatBuffer.data(),
             mWaterMomentumBuffer.data(),
             0.4f,
             VectorColor);

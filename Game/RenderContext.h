@@ -657,7 +657,7 @@ public:
 
     void UploadShipPointPlaneIds(
         ShipId shipId,
-        PlaneId const * planeId,
+        float const * planeId,
         size_t startDst,
         size_t count)
     {
@@ -880,7 +880,7 @@ public:
         ShipId shipId,
         size_t count,
         vec2f const * position,
-        PlaneId const * planeId,
+        float const * planeId,
         vec2f const * vector,
         float lengthAdjustment,
         vec4f const & color)

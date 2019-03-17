@@ -121,7 +121,7 @@ ShipRenderContext::ShipRenderContext(
 
     mPointPlaneIdVBO = vbos[4];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointPlaneIdVBO);
-    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(PlaneId), nullptr, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(float), nullptr, GL_STATIC_DRAW);
 
     mPointTextureCoordinatesVBO = vbos[5];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointTextureCoordinatesVBO);
@@ -189,9 +189,8 @@ ShipRenderContext::ShipRenderContext(
         CheckOpenGLError();
 
         glBindBuffer(GL_ARRAY_BUFFER, *mPointPlaneIdVBO);
-        static_assert(sizeof(PlaneId) == sizeof(uint32_t)); // GL_UNSIGNED_INT
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointPlaneId));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointPlaneId), 1, GL_UNSIGNED_INT, GL_FALSE, sizeof(PlaneId), (void*)(0));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointPlaneId), 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)(0));
         CheckOpenGLError();
 
         glBindBuffer(GL_ARRAY_BUFFER, *mPointTextureCoordinatesVBO);
@@ -683,7 +682,7 @@ void ShipRenderContext::UploadPointColors(
 }
 
 void ShipRenderContext::UploadPointPlaneIds(
-    PlaneId const * planeId,
+    float const * planeId,
     size_t startDst,
     size_t count)
 {
@@ -691,7 +690,7 @@ void ShipRenderContext::UploadPointPlaneIds(
 
     // Upload plane IDs
     glBindBuffer(GL_ARRAY_BUFFER, *mPointPlaneIdVBO);
-    glBufferSubData(GL_ARRAY_BUFFER, startDst * sizeof(PlaneId), count * sizeof(PlaneId), planeId);
+    glBufferSubData(GL_ARRAY_BUFFER, startDst * sizeof(float), count * sizeof(float), planeId);
     CheckOpenGLError();
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
@@ -826,7 +825,7 @@ void ShipRenderContext::UploadElementEphemeralPointsEnd()
 void ShipRenderContext::UploadVectors(
     size_t count,
     vec2f const * position,
-    PlaneId const * planeId,
+    float const * planeId,
     vec2f const * vector,
     float lengthAdjustment,
     vec4f const & color)
@@ -849,22 +848,20 @@ void ShipRenderContext::UploadVectors(
 
     for (size_t i = 0; i < count; ++i)
     {
-        float planeIdf = static_cast<float>(planeId[i]);
-
         // Stem
         vec2f stemEndpoint = position[i] + vector[i] * lengthAdjustment;
-        mVectorArrowVertexBuffer.emplace_back(position[i], planeIdf);
-        mVectorArrowVertexBuffer.emplace_back(stemEndpoint, planeIdf);
+        mVectorArrowVertexBuffer.emplace_back(position[i], planeId[i]);
+        mVectorArrowVertexBuffer.emplace_back(stemEndpoint, planeId[i]);
 
         // Left
         vec2f leftDir = vec2f(-vector[i].dot(XMatrixLeft), -vector[i].dot(YMatrixLeft)).normalise();
-        mVectorArrowVertexBuffer.emplace_back(stemEndpoint, planeIdf);
-        mVectorArrowVertexBuffer.emplace_back(stemEndpoint + leftDir * 0.2f, planeIdf);
+        mVectorArrowVertexBuffer.emplace_back(stemEndpoint, planeId[i]);
+        mVectorArrowVertexBuffer.emplace_back(stemEndpoint + leftDir * 0.2f, planeId[i]);
 
         // Right
         vec2f rightDir = vec2f(-vector[i].dot(XMatrixRight), -vector[i].dot(YMatrixRight)).normalise();
-        mVectorArrowVertexBuffer.emplace_back(stemEndpoint, planeIdf);
-        mVectorArrowVertexBuffer.emplace_back(stemEndpoint + rightDir * 0.2f, planeIdf);
+        mVectorArrowVertexBuffer.emplace_back(stemEndpoint, planeId[i]);
+        mVectorArrowVertexBuffer.emplace_back(stemEndpoint + rightDir * 0.2f, planeId[i]);
     }
 
 
