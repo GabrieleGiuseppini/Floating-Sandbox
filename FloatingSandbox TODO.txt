@@ -231,18 +231,18 @@ Render:
 		+ VAO (*)
 		+ Misc OpenGL Optimizations (*)
 
-		= Secondary PlaneIDAsFloat buffer
+		+ Secondary PlaneIDAsFloat buffer
 			+ We only pay the price sparingly, but reap the benefits at each frame
-			= Code
+			+ Code
 		- Vertex buffer optimizations (*)
 		- Update FPS
-
-		- Decay (rust) (*)
 
 		- Test undoing TrianglesTexture shader optimization and calculate impact
 			- Undo vec4 and calc'n move change
 			- This one we'd like to keep though, so make REALLY sure that it makes a big difference
 			- Update FPS (if needed)
+
+		- Decay (rust) (*)
 
 		- Orphaned points (*)
 
@@ -316,6 +316,9 @@ Render:
 	- I wonder if that's possible to make the UI dark once the brightness of the game gets lower than a specific level just like your make the FPS counter white
 	- I wonder if you can add the "Ground" material, which is a material that cannot move.
 	  No physics calculation. Plus, you're using texture, so it would be neat if the same texture as the ground can be applied to it
+	- Meteorites
+	- Tsunami
+	- Earthquake
 
 - Technical Debt:
 	+ Global damp as game parameter
@@ -623,7 +626,7 @@ Render:
 		- At end:
 			- Try with light at fragment (Phong)
 
-	- Vertex Buffer Optimization (*): reduce number of vertex attributes for ship shaders 
+	= Vertex Buffer Optimization (*): reduce number of vertex attributes for ship shaders 
 		+ We've already confirmed that one less attribute vertex sends FPS frpom 29 to 30
 		+ At this moment, all Ship shaders - except for stressed springs - have the following inputs:
 			in vec2 inShipPointPosition;
@@ -631,19 +634,26 @@ Render:
 			in float inShipPointWater;
 			in vec4 inShipPointColor;    *
 			in float inShipPointPlaneId; *
-		- Test 1: Light + PlaneId
+		= Test 1: Light + PlaneId
 			+ Requires "float planeID" work item first
-			- Code
-				- Points: make struct, with comment on "rendering performance"
-			- Shaders
-			- Get FPS
-			- Commit if good
+			+ Code
+				+ Points: make struct, with comment on "rendering performance"
+			+ Shaders
+			+ Test 
+			+ See FPS: 29.3/29.7/29.9/30.8
+			- If good:
+				- Commit
 		- Test 2: += Water + Pad
 			- Code
-				- Includes work buffer copy @ WaterDynamics!
+				- Includes workBuffer copy @ WaterDynamics!
 			- Shaders
 			- Get FPS
 			- Commit if good
+		- Test 3: other shaders
+			- Stars
+			- OceanX
+			- LandX
+			- Clouds
 
 	- Try using GL_SHORT for Ship texture coordinates
 		- Passing NORMALIZE and 3 components to glVertexAttribPointer
@@ -870,6 +880,8 @@ Render:
 			- Ship::Render:
 				- Call Points::UploadDirtyBuffers (new name for old method)
 					- Now also uploads Decay buffer if dirty, and of course resets flag
+
+	- Dynamite that may be thrown to the ship
 
 	- New electrical material: clamp
 		- When powered, destroys point (and of course its springs)

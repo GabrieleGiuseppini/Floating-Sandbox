@@ -552,10 +552,6 @@ void Ship::Render(
         mId,
         renderContext);
 
-    mPoints.UploadPlaneIds(
-        mId,
-        renderContext);
-
 
     //
     // Upload elements, if needed
@@ -1784,9 +1780,6 @@ void Ship::RunConnectivityVisit()
     // Remember colors are dirty
     mPoints.MarkColorBufferAsDirty();
 #endif
-
-    // Remember non-ephemeral portion of plane IDs is dirty
-    mPoints.MarkPlaneIdBufferNonEphemeralAsDirty();
 }
 
 void Ship::DestroyConnectedTriangles(ElementIndex pointElementIndex)

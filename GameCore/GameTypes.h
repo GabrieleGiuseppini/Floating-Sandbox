@@ -188,6 +188,22 @@ enum class DurationShortLongType
 
 DurationShortLongType StrToDurationShortLongType(std::string const & str);
 
+/*
+ * Groups of point attributes, clustered together for rendering performance.
+ */
+struct PointAttributeGroup1
+{
+    float Light;
+    float PlaneId;
+
+    PointAttributeGroup1(
+        float light,
+        float planeId)
+        : Light(light)
+        , PlaneId(planeId)
+    {}
+};
+
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // Rendering
 ////////////////////////////////////////////////////////////////////////////////////////////////

@@ -7,10 +7,9 @@
 
 // Inputs
 in vec2 inShipPointPosition;
-in float inShipPointLight;
 in float inShipPointWater;
 in vec4 inShipPointColor;
-in float inShipPointPlaneId;
+in vec2 inShipPointAttributeGroup1; // Light, PlaneId
 
 // Outputs        
 out float vertexLightIntensity;
@@ -24,12 +23,12 @@ uniform mat4 paramOrthoMatrix;
 
 void main()
 {            
-    vertexLightIntensity = paramAmbientLightIntensity + (1.0 - paramAmbientLightIntensity) * inShipPointLight;
-    vertexLightColorMix = inShipPointLight;
+    vertexLightIntensity = paramAmbientLightIntensity + (1.0 - paramAmbientLightIntensity) * inShipPointAttributeGroup1.x;
+    vertexLightColorMix = inShipPointAttributeGroup1.x;
     vertexWater = inShipPointWater;
     vertexCol = inShipPointColor;
 
-    gl_Position = paramOrthoMatrix * vec4(inShipPointPosition.xy, inShipPointPlaneId, 1.0);
+    gl_Position = paramOrthoMatrix * vec4(inShipPointPosition.xy, inShipPointAttributeGroup1.y, 1.0);
 }
 
 ###FRAGMENT

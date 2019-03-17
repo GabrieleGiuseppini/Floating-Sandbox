@@ -215,6 +215,8 @@ public:
         // Materials
         , mMaterialsBuffer(mBufferElementCount, shipPointCount, Materials(nullptr, nullptr))
         , mIsRopeBuffer(mBufferElementCount, shipPointCount, false)
+        // Attribute groups
+        , mAttributeGroup1Buffer(mBufferElementCount, shipPointCount, PointAttributeGroup1(0.0f, 0.0f))
         // Mechanical dynamics
         , mPositionBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mVelocityBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
@@ -237,7 +239,6 @@ public:
         , mIsLeakingBuffer(mBufferElementCount, shipPointCount, false)
         // Electrical dynamics
         , mElectricalElementBuffer(mBufferElementCount, shipPointCount, NoneElementIndex)
-        , mLightBuffer(mBufferElementCount, shipPointCount, 0.0f)
         // Wind dynamics
         , mWindReceptivityBuffer(mBufferElementCount, shipPointCount, 0.0f)
         // Ephemeral particles
@@ -252,9 +253,6 @@ public:
         // Connected component and plane ID
         , mConnectedComponentIdBuffer(mBufferElementCount, shipPointCount, NoneConnectedComponentId)
         , mPlaneIdBuffer(mBufferElementCount, shipPointCount, NonePlaneId)
-        , mPlaneIdFloatBuffer(mBufferElementCount, shipPointCount, 0.0)
-        , mIsPlaneIdBufferNonEphemeralDirty(true)
-        , mIsPlaneIdBufferEphemeralDirty(true)
         , mCurrentConnectivityVisitSequenceNumberBuffer(mBufferElementCount, shipPointCount, VisitSequenceNumber())
         // Pinning
         , mIsPinnedBuffer(mBufferElementCount, shipPointCount, false)
@@ -378,10 +376,6 @@ public:
     //
 
     void UploadMutableAttributes(
-        ShipId shipId,
-        Render::RenderContext & renderContext) const;
-
-    void UploadPlaneIds(
         ShipId shipId,
         Render::RenderContext & renderContext) const;
 
@@ -695,12 +689,12 @@ public:
 
     float GetLight(ElementIndex pointElementIndex) const
     {
-        return mLightBuffer[pointElementIndex];
+        return mAttributeGroup1Buffer[pointElementIndex].Light;
     }
 
     float & GetLight(ElementIndex pointElementIndex)
     {
-        return mLightBuffer[pointElementIndex];
+        return mAttributeGroup1Buffer[pointElementIndex].Light;
     }
 
     //
@@ -829,12 +823,7 @@ public:
         float planeIdFloat)
     {
         mPlaneIdBuffer[pointElementIndex] = planeId;
-        mPlaneIdFloatBuffer[pointElementIndex] = planeIdFloat;
-    }
-
-    void MarkPlaneIdBufferNonEphemeralAsDirty()
-    {
-        mIsPlaneIdBufferNonEphemeralDirty = true;
+        mAttributeGroup1Buffer[pointElementIndex].PlaneId = planeIdFloat;
     }
 
     VisitSequenceNumber GetCurrentConnectivityVisitSequenceNumber(ElementIndex pointElementIndex) const
@@ -946,6 +935,10 @@ private:
     Buffer<Materials> mMaterialsBuffer;
     Buffer<bool> mIsRopeBuffer;
 
+    // Attribute groups - groups of point attributes, clustered together to improve
+    // rendering performance
+    Buffer<PointAttributeGroup1> mAttributeGroup1Buffer;
+
     //
     // Dynamics
     //
@@ -994,9 +987,6 @@ private:
     // Electrical element, when any
     Buffer<ElementIndex> mElectricalElementBuffer;
 
-    // Total illumination, 0.0->1.0
-    Buffer<float> mLightBuffer;
-
     //
     // Wind dynamics
     //
@@ -1026,9 +1016,6 @@ private:
 
     Buffer<ConnectedComponentId> mConnectedComponentIdBuffer;
     Buffer<PlaneId> mPlaneIdBuffer;
-    Buffer<float> mPlaneIdFloatBuffer;
-    bool mutable mIsPlaneIdBufferNonEphemeralDirty;
-    bool mutable mIsPlaneIdBufferEphemeralDirty;
     Buffer<VisitSequenceNumber> mCurrentConnectivityVisitSequenceNumberBuffer;
 
     //
@@ -1045,7 +1032,6 @@ private:
     bool mutable mIsWholeColorBufferDirty;  // Whether or not is dirty since last render upload
     Buffer<vec2f> mTextureCoordinatesBuffer;
     bool mutable mIsTextureCoordinatesBufferDirty; // Whether or not is dirty since last render upload
-
 
     //////////////////////////////////////////////////////////
     // Container

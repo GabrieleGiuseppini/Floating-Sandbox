@@ -30,6 +30,8 @@ void Points::Add(
     mMaterialsBuffer.emplace_back(&structuralMaterial, electricalMaterial);
     mIsRopeBuffer.emplace_back(isRope);
 
+    mAttributeGroup1Buffer.emplace_back(0.0f, 0.0f);
+
     mPositionBuffer.emplace_back(position);
     mVelocityBuffer.emplace_back(vec2f::zero());
     mForceBuffer.emplace_back(vec2f::zero());
@@ -57,7 +59,6 @@ void Points::Add(
 
     // Electrical dynamics
     mElectricalElementBuffer.emplace_back(electricalElementIndex);
-    mLightBuffer.emplace_back(0.0f);
 
     // Wind dynamics
     mWindReceptivityBuffer.emplace_back(structuralMaterial.WindReceptivity);
@@ -75,7 +76,6 @@ void Points::Add(
 
     mConnectedComponentIdBuffer.emplace_back(NoneConnectedComponentId);
     mPlaneIdBuffer.emplace_back(NonePlaneId);
-    mPlaneIdFloatBuffer.emplace_back(0.0f);
     mCurrentConnectivityVisitSequenceNumberBuffer.emplace_back();
 
     mIsPinnedBuffer.emplace_back(false);
@@ -104,6 +104,8 @@ void Points::CreateEphemeralParticleAirBubble(
 
     mIsDeletedBuffer[pointIndex] = false;
 
+    mAttributeGroup1Buffer[pointIndex].PlaneId = static_cast<float>(planeId);
+
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = vec2f::zero();
     mForceBuffer[pointIndex] = vec2f::zero();
@@ -117,8 +119,6 @@ void Points::CreateEphemeralParticleAirBubble(
     mWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
     mWaterBuffer[pointIndex] = 0.0f;
     assert(false == mIsLeakingBuffer[pointIndex]);
-
-    mLightBuffer[pointIndex] = 0.0f;
 
     mWindReceptivityBuffer[pointIndex] = 0.0f;
 
@@ -134,8 +134,6 @@ void Points::CreateEphemeralParticleAirBubble(
 
     mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
     mPlaneIdBuffer[pointIndex] = planeId;
-    mPlaneIdFloatBuffer[pointIndex] = static_cast<float>(planeId);
-    mIsPlaneIdBufferEphemeralDirty = true;
 
     assert(false == mIsPinnedBuffer[pointIndex]);
 
@@ -163,6 +161,8 @@ void Points::CreateEphemeralParticleDebris(
 
     mIsDeletedBuffer[pointIndex] = false;
 
+    mAttributeGroup1Buffer[pointIndex].PlaneId = static_cast<float>(planeId);
+
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
     mForceBuffer[pointIndex] = vec2f::zero();
@@ -177,8 +177,6 @@ void Points::CreateEphemeralParticleDebris(
     mWaterBuffer[pointIndex] = 0.0f;
     assert(false == mIsLeakingBuffer[pointIndex]);
 
-    mLightBuffer[pointIndex] = 0.0f;
-
     mWindReceptivityBuffer[pointIndex] = 3.0f;
 
     mEphemeralTypeBuffer[pointIndex] = EphemeralType::Debris;
@@ -188,8 +186,6 @@ void Points::CreateEphemeralParticleDebris(
 
     mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
     mPlaneIdBuffer[pointIndex] = planeId;
-    mPlaneIdFloatBuffer[pointIndex] = static_cast<float>(planeId);
-    mIsPlaneIdBufferEphemeralDirty = true;
 
     assert(false == mIsPinnedBuffer[pointIndex]);
 
@@ -217,6 +213,8 @@ void Points::CreateEphemeralParticleSparkle(
 
     mIsDeletedBuffer[pointIndex] = false;
 
+    mAttributeGroup1Buffer[pointIndex].PlaneId = static_cast<float>(planeId);
+
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
     mForceBuffer[pointIndex] = vec2f::zero();
@@ -231,8 +229,6 @@ void Points::CreateEphemeralParticleSparkle(
     mWaterBuffer[pointIndex] = 0.0f;
     assert(false == mIsLeakingBuffer[pointIndex]);
 
-    mLightBuffer[pointIndex] = 0.0f;
-
     mWindReceptivityBuffer[pointIndex] = 3.0f;
 
     mEphemeralTypeBuffer[pointIndex] = EphemeralType::Sparkle;
@@ -243,8 +239,6 @@ void Points::CreateEphemeralParticleSparkle(
 
     mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
     mPlaneIdBuffer[pointIndex] = planeId;
-    mPlaneIdFloatBuffer[pointIndex] = static_cast<float>(planeId);
-    mIsPlaneIdBufferEphemeralDirty = true;
 
     assert(false == mIsPinnedBuffer[pointIndex]);
 
@@ -438,51 +432,6 @@ void Points::Query(ElementIndex pointElementIndex) const
     LogMessage("ConnectedComponentID: ", mConnectedComponentIdBuffer[pointElementIndex]);
 }
 
-void Points::UploadPlaneIds(
-    ShipId shipId,
-    Render::RenderContext & renderContext) const
-{
-    if (mIsPlaneIdBufferNonEphemeralDirty)
-    {
-        if (mIsPlaneIdBufferEphemeralDirty)
-        {
-            // Whole
-
-            renderContext.UploadShipPointPlaneIds(
-                shipId,
-                mPlaneIdFloatBuffer.data(),
-                0,
-                mAllPointCount);
-
-            mIsPlaneIdBufferEphemeralDirty = false;
-        }
-        else
-        {
-            // Just non-ephemeral portion
-
-            renderContext.UploadShipPointPlaneIds(
-                shipId,
-                mPlaneIdFloatBuffer.data(),
-                0,
-                mShipPointCount);
-        }
-
-        mIsPlaneIdBufferNonEphemeralDirty = false;
-    }
-    else if (mIsPlaneIdBufferEphemeralDirty)
-    {
-        // Just ephemeral portion
-
-        renderContext.UploadShipPointPlaneIds(
-            shipId,
-            &(mPlaneIdFloatBuffer.data()[mShipPointCount]),
-            mShipPointCount,
-            mEphemeralPointCount);
-
-        mIsPlaneIdBufferEphemeralDirty = false;
-    }
-}
-
 void Points::UploadMutableAttributes(
     ShipId shipId,
     Render::RenderContext & renderContext) const
@@ -523,8 +472,8 @@ void Points::UploadMutableAttributes(
     renderContext.UploadShipPointMutableAttributes(
         shipId,
         mPositionBuffer.data(),
-        mLightBuffer.data(),
-        mWaterBuffer.data());
+        mWaterBuffer.data(),
+        mAttributeGroup1Buffer.data());
 }
 
 void Points::UploadElements(
@@ -554,7 +503,7 @@ void Points::UploadVectors(
             shipId,
             mElementCount,
             mPositionBuffer.data(),
-            mPlaneIdFloatBuffer.data(),
+            mAttributeGroup1Buffer.data(),
             mVelocityBuffer.data(),
             0.25f,
             VectorColor);
@@ -565,7 +514,7 @@ void Points::UploadVectors(
             shipId,
             mElementCount,
             mPositionBuffer.data(),
-            mPlaneIdFloatBuffer.data(),
+            mAttributeGroup1Buffer.data(),
             mForceRenderBuffer.data(),
             0.0005f,
             VectorColor);
@@ -576,7 +525,7 @@ void Points::UploadVectors(
             shipId,
             mElementCount,
             mPositionBuffer.data(),
-            mPlaneIdFloatBuffer.data(),
+            mAttributeGroup1Buffer.data(),
             mWaterVelocityBuffer.data(),
             1.0f,
             VectorColor);
@@ -587,7 +536,7 @@ void Points::UploadVectors(
             shipId,
             mElementCount,
             mPositionBuffer.data(),
-            mPlaneIdFloatBuffer.data(),
+            mAttributeGroup1Buffer.data(),
             mWaterMomentumBuffer.data(),
             0.4f,
             VectorColor);
