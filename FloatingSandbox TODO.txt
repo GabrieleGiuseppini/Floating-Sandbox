@@ -237,11 +237,6 @@ Render:
 		- Vertex buffer optimizations (*)
 		- Update FPS
 
-		- Test undoing TrianglesTexture shader optimization and calculate impact
-			- Undo vec4 and calc'n move change
-			- This one we'd like to keep though, so make REALLY sure that it makes a big difference
-			- Update FPS (if needed)
-
 		- Decay (rust) (*)
 
 		- Orphaned points (*)
@@ -634,26 +629,28 @@ Render:
 			in float inShipPointWater;
 			in vec4 inShipPointColor;    *
 			in float inShipPointPlaneId; *
-		= Test 1: Light + PlaneId
+		+ Test 1: Light + PlaneId
 			+ Requires "float planeID" work item first
 			+ Code
 				+ Points: make struct, with comment on "rendering performance"
 			+ Shaders
 			+ Test 
 			+ See FPS: 29.3/29.7/29.9/30.8
-			- If good:
-				- Commit
+			+ If good:
+				+ Commit
+		= Undo V->F shader in/out packing which we did at TrianglesTexture 
+			= And move wetness calculation into vertex shader for all
+			+ See if there are other shaders as well
+			- See if want to keep it:
+				- FPS: 29.8/29.9/
 		- Test 2: += Water + Pad
 			- Code
 				- Includes workBuffer copy @ WaterDynamics!
 			- Shaders
 			- Get FPS
 			- Commit if good
-		- Test 3: other shaders
-			- Stars
-			- OceanX
-			- LandX
-			- Clouds
+		+ Test 3: other shaders
+			+ None
 
 	- Try using GL_SHORT for Ship texture coordinates
 		- Passing NORMALIZE and 3 components to glVertexAttribPointer

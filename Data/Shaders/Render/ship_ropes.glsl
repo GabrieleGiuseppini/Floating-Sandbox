@@ -12,7 +12,9 @@ in vec4 inShipPointColor;
 in vec2 inShipPointAttributeGroup1; // Light, PlaneId
 
 // Outputs        
-out vec3 vertexPackedParams; // LightIntensity, LightColorMix, ColorWetness
+out float vertexLightIntensity;
+out float vertexLightColorMix;
+out float vertexColorWetness;
 out vec4 vertexCol;
 
 // Params
@@ -23,11 +25,9 @@ uniform mat4 paramOrthoMatrix;
 
 void main()
 {            
-    vertexPackedParams = vec3(
-        paramAmbientLightIntensity + (1.0 - paramAmbientLightIntensity) * inShipPointAttributeGroup1.x, // LightIntensity
-        inShipPointAttributeGroup1.x, // LightColorMix        
-        min(inShipPointWater, paramWaterLevelThreshold) / paramWaterLevelThreshold * paramWaterContrast); // ColorWetness
-
+    vertexLightIntensity = paramAmbientLightIntensity + (1.0 - paramAmbientLightIntensity) * inShipPointAttributeGroup1.x;
+    vertexLightColorMix = inShipPointAttributeGroup1.x;
+    vertexColorWetness = min(inShipPointWater, paramWaterLevelThreshold) / paramWaterLevelThreshold * paramWaterContrast;
     vertexCol = inShipPointColor;
 
     gl_Position = paramOrthoMatrix * vec4(inShipPointPosition.xy, inShipPointAttributeGroup1.y, 1.0);
@@ -40,19 +40,21 @@ void main()
 #define in varying
 
 // Inputs from previous shader        
-in vec3 vertexPackedParams; // LightIntensity, LightColorMix, ColorWetness
+in float vertexLightIntensity;
+in float vertexLightColorMix;
+in float vertexColorWetness;
 in vec4 vertexCol;
 
 void main()
 {
     // Apply point water
-    vec3 fragColour = vertexCol.xyz * (1.0 - vertexPackedParams.z) + vec3(%WET_COLOR_VEC3%) * vertexPackedParams.z;
+    vec3 fragColour = vertexCol.xyz * (1.0 - vertexColorWetness) + vec3(%WET_COLOR_VEC3%) * vertexColorWetness;
 
      // Apply light
-    fragColour *= vertexPackedParams.x;
+    fragColour *= vertexLightIntensity;
 
     // Apply point light
-    fragColour = fragColour * (1.0 - vertexPackedParams.y) + vec3(%LAMPLIGHT_COLOR_VEC3%) * vertexPackedParams.y;
+    fragColour = fragColour * (1.0 - vertexLightColorMix) + vec3(%LAMPLIGHT_COLOR_VEC3%) * vertexLightColorMix;
     
     gl_FragColor = vec4(fragColour.xyz, vertexCol.w);
 } 
