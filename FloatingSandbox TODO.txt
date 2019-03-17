@@ -231,13 +231,11 @@ Render:
 		+ VAO (*)
 		+ Misc OpenGL Optimizations (*)
 
-		- Send zip to new Discord guy
-
-		- Secondary PlaneIDAsFloat buffer
-			- We only pay the price sparingly, but reap the benefits at each frame
-			- Update FPS
-
+		= Secondary PlaneIDAsFloat buffer
+			+ We only pay the price sparingly, but reap the benefits at each frame
+			= Code
 		- Vertex buffer optimizations (*)
+		- Update FPS
 
 		- Decay (rust) (*)
 
@@ -299,8 +297,10 @@ Render:
 	- To test:
 		= USS Shark
 			- Need Z buffer work first
-		- Sub
 	- Asked:
+		- America - Rockabilly
+		- Caronia - Rockabilly
+			- Center it
 		- Ed Fitzgerald (but needs to be fixed) (Kiko)
 		- Aegir_Mark_III (coolman asks original designer)
 	- Ready:
@@ -632,8 +632,9 @@ Render:
 			in vec4 inShipPointColor;    *
 			in float inShipPointPlaneId; *
 		- Test 1: Light + PlaneId
-			- Requires "float planeID" work item first
+			+ Requires "float planeID" work item first
 			- Code
+				- Points: make struct, with comment on "rendering performance"
 			- Shaders
 			- Get FPS
 			- Commit if good

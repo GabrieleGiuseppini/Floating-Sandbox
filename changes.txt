@@ -1,7 +1,7 @@
 TODO
 - Ship lights now reveal underlying colors at night
 - Improved rendering pipeline
-	- TODO: supporting now additional graphic cards which were previously only displaying clouds and water but no ship
+	- Floating Sandbox now supports some graphic cards which were previously only displaying clouds and water but no ship!
 - Rectified simulation instability that was caused by square water drag law at very high speeds 
  (see https://gabrielegiuseppini.wordpress.com/2019/03/17/euler-fights-with-square-drag/)
 
