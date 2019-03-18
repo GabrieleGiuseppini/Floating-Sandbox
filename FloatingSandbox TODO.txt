@@ -706,6 +706,7 @@ Render:
 			+ None
 		- Test 4: Bas' idea
 			- Revert to before Test 1
+				- ...but keep shaders
 			- Do interleaving just at ShipRenderContext
 
 	- Try using GL_SHORT for Ship texture coordinates
