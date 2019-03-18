@@ -123,9 +123,19 @@ public:
 
     void UploadPointImmutableAttributes(vec2f const * textureCoordinates);
 
+    void UploadPointMutableAttributesStart();
+
     void UploadPointMutableAttributes(
         vec2f const * position,
-        PointAttributeGroup1 const * attributeGroup1); // Light, PlaneId, Water, Pad
+        float const * light,
+        float const * water);
+
+    void UploadPointMutableAttributes(
+        float const * planeId,
+        size_t startDst,
+        size_t count);
+
+    void UploadPointMutableAttributesEnd();
 
     void UploadPointColors(
         vec4f const * color,
@@ -366,7 +376,7 @@ public:
     void UploadVectors(
         size_t count,
         vec2f const * position,
-        PointAttributeGroup1 const * attributeGroup1,
+        float const * planeId,
         vec2f const * vector,
         float lengthAdjustment,
         vec4f const & color);
@@ -471,8 +481,12 @@ private:
     //
 
     GameOpenGLVBO mPointPositionVBO;
+
     GameOpenGLVBO mPointColorVBO;
+
+    std::unique_ptr<vec4f> mPointAttributeGroup1Buffer; // Light, Water, PlaneId, Pad
     GameOpenGLVBO mPointAttributeGroup1VBO;
+
     GameOpenGLVBO mPointTextureCoordinatesVBO;
 
     std::vector<LineElement> mStressedSpringElementBuffer;

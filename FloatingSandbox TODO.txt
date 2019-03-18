@@ -179,7 +179,7 @@ Render:
 	- Maximord - "Maximord" (Parallels)
 	- Pac0master - "<Same as now>" (Intel core i5-8600K, NVIDIA GeForce RTX 2070)
 	- The_SamminAter - "<ask>" (Parallels)
-	- DkuzThFox: "Dkuz The Fox": (Intel core i7-5700HQ, Windows 10)
+	- DkuzTheFox: "Dkuz The Fox": (Intel core i7-5700HQ, Windows 10)
 
 - Marketing:
 	- GameJolt post w/screenshot with gradient, at night
@@ -704,10 +704,27 @@ Render:
 			+ Commit if good
 		+ Test 3: other shaders
 			+ None
-		- Test 4: Bas' idea
-			- Revert to before Test 1
-				- ...but keep shaders
-			- Do interleaving just at ShipRenderContext
+		= Test 4: Bas' idea
+			+ Revert to before Test 1
+				+ ...but keep shaders
+			+ Do interleaving just at ShipRenderContext
+			+ Test:
+				+ Light
+				+ Water
+				+ Vectors
+			= Check assembly
+			= Check FPS:
+				= 30.0/30.4/31.1/31.7
+			- Do perf analysis
+			- Commit
+		- Test 5:
+			- ShipRenderContext: see if orphaning AttributeGroup1 buffer makes any difference
+		- Test 6:
+			- See if can also interleave Position and TextureCoordinates
+				- Name the other "AttributeGroup2"
+					- Fix all
+				- Make new "AttributeGroup1"
+					- Uploaded straight at ShipRenderContext::UploadPointMutableAttributes()
 
 	- Try using GL_SHORT for Ship texture coordinates
 		- Passing NORMALIZE and 3 components to glVertexAttribPointer

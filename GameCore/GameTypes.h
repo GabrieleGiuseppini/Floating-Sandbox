@@ -188,39 +188,6 @@ enum class DurationShortLongType
 
 DurationShortLongType StrToDurationShortLongType(std::string const & str);
 
-/*
- * Groups of point attributes, clustered together for rendering performance.
- */
-
-#pragma pack(push)
-
-struct PointAttributeGroup1
-{
-    // Total aggregated luminiscence at this point
-    float Light;
-
-    // Height of a 1m2 column of water which provides a pressure equivalent to the pressure at
-    // this point. Quantity (mass) of water is max(water, 1.0)
-    float Water;
-
-    // Plane depth (between 0 and +INF)
-    float PlaneId;
-
-    float Pad;
-
-    PointAttributeGroup1(
-        float light,
-        float water,
-        float planeId)
-        : Light(light)
-        , Water(water)
-        , PlaneId(planeId)
-        , Pad(0.0f)
-    {}
-};
-
-#pragma pack(pop)
-
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // Rendering
 ////////////////////////////////////////////////////////////////////////////////////////////////

@@ -627,16 +627,46 @@ public:
         mShips[shipId]->UploadPointImmutableAttributes(textureCoordinates);
     }
 
+    void UploadShipPointMutableAttributesStart(ShipId shipId)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        mShips[shipId]->UploadPointMutableAttributesStart();
+    }
+
     void UploadShipPointMutableAttributes(
         ShipId shipId,
         vec2f const * position,
-        PointAttributeGroup1 const * attributeGroup1) // Light, PlaneId, Water, Pad
+        float const * light,
+        float const * water)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
         mShips[shipId]->UploadPointMutableAttributes(
             position,
-            attributeGroup1);
+            light,
+            water);
+    }
+
+    void UploadShipPointMutableAttributes(
+        ShipId shipId,
+        float const * planeId,
+        size_t startDst,
+        size_t count)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        mShips[shipId]->UploadPointMutableAttributes(
+            planeId,
+            startDst,
+            count);
+    }
+
+    void UploadShipPointMutableAttributesEnd(ShipId shipId)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        mShips[shipId]->UploadPointMutableAttributesEnd();
     }
 
     void UploadShipPointColors(
@@ -864,7 +894,7 @@ public:
         ShipId shipId,
         size_t count,
         vec2f const * position,
-        PointAttributeGroup1 const * attributeGroup1,
+        float const * planeId,
         vec2f const * vector,
         float lengthAdjustment,
         vec4f const & color)
@@ -874,7 +904,7 @@ public:
         mShips[shipId]->UploadVectors(
             count,
             position,
-            attributeGroup1,
+            planeId,
             vector,
             lengthAdjustment * mVectorFieldLengthMultiplier,
             color);

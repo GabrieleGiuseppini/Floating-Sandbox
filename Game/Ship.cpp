@@ -545,10 +545,10 @@ void Ship::Render(
 
 
     //
-    // Upload points's mutable attributes
+    // Upload points's attributes
     //
 
-    mPoints.UploadMutableAttributes(
+    mPoints.UploadAttributes(
         mId,
         renderContext);
 
@@ -1186,9 +1186,9 @@ void Ship::UpdateWaterVelocities(
     mPoints.UpdateWaterMomentaFromVelocities();
 
     // Source and result water buffers
-    PointAttributeGroup1 * restrict oldPointWaterBufferData = mPoints.GetAttributeGroup1BufferAsAttributeGroup();
-    auto newPointWaterBuffer = mPoints.MakeAttributeGroup1BufferCopy();
-    PointAttributeGroup1 * restrict newPointWaterBufferData = newPointWaterBuffer->data();
+    float * restrict oldPointWaterBufferData = mPoints.GetWaterBufferAsFloat();
+    auto newPointWaterBuffer = mPoints.MakeWaterBufferCopy();
+    float * restrict newPointWaterBufferData = newPointWaterBuffer->data();
     vec2f * restrict oldPointWaterVelocityBufferData = mPoints.GetWaterVelocityBufferAsVec2();
     vec2f * restrict newPointWaterMomentumBufferData = mPoints.GetWaterMomentumBufferAsVec2f();
 
@@ -1213,7 +1213,7 @@ void Ship::UpdateWaterVelocities(
     for (auto pointIndex : mPoints)
     {
         pointFreenessFactorBufferData[pointIndex] =
-            FastExp(-oldPointWaterBufferData[pointIndex].Water * 10.0f);
+            FastExp(-oldPointWaterBufferData[pointIndex] * 10.0f);
     }
 
 
@@ -1235,7 +1235,7 @@ void Ship::UpdateWaterVelocities(
         // WaterCrazyness=0   -> alpha=1
         // WaterCrazyness=0.5 -> alpha=0.5 + 0.5*Wh
         // WaterCrazyness=1   -> alpha=Wh
-        float const alphaCrazyness = 1.0f + gameParameters.WaterCrazyness * (oldPointWaterBufferData[pointIndex].Water - 1.0f);
+        float const alphaCrazyness = 1.0f + gameParameters.WaterCrazyness * (oldPointWaterBufferData[pointIndex] - 1.0f);
 
         // Kinetic energy lost at this point
         float pointKineticEnergyLoss = 0.0f;
@@ -1264,7 +1264,7 @@ void Ship::UpdateWaterVelocities(
             //
 
             // Pressure difference (positive implies point -> other endpoint flow)
-            float const dw = oldPointWaterBufferData[pointIndex].Water - oldPointWaterBufferData[cs.OtherEndpointIndex].Water;
+            float const dw = oldPointWaterBufferData[pointIndex] - oldPointWaterBufferData[cs.OtherEndpointIndex];
 
             // Gravity potential difference (positive implies point -> other endpoint flow)
             float const dy = mPoints.GetPosition(pointIndex).y - mPoints.GetPosition(cs.OtherEndpointIndex).y;
@@ -1334,7 +1334,7 @@ void Ship::UpdateWaterVelocities(
         if (totalOutboundWaterFlowWeight != 0.0f)
         {
             waterQuantityNormalizationFactor =
-                oldPointWaterBufferData[pointIndex].Water
+                oldPointWaterBufferData[pointIndex]
                 * mPoints.GetWaterDiffusionSpeed(pointIndex)
                 * gameParameters.WaterDiffusionSpeedAdjustment
                 / totalOutboundWaterFlowWeight;
@@ -1364,8 +1364,8 @@ void Ship::UpdateWaterVelocities(
                 //
 
                 // Move water quantity
-                newPointWaterBufferData[pointIndex].Water -= springOutboundQuantityOfWater;
-                newPointWaterBufferData[cs.OtherEndpointIndex].Water += springOutboundQuantityOfWater;
+                newPointWaterBufferData[pointIndex] -= springOutboundQuantityOfWater;
+                newPointWaterBufferData[cs.OtherEndpointIndex] += springOutboundQuantityOfWater;
 
                 // Remove "old momentum" (old velocity) from point
                 newPointWaterMomentumBufferData[pointIndex] -=
@@ -1388,7 +1388,7 @@ void Ship::UpdateWaterVelocities(
 
                 float ma = springOutboundQuantityOfWater;
                 float va = springOutboundWaterVelocities[s].length();
-                float mb = oldPointWaterBufferData[cs.OtherEndpointIndex].Water;
+                float mb = oldPointWaterBufferData[cs.OtherEndpointIndex];
                 float vb = oldPointWaterVelocityBufferData[cs.OtherEndpointIndex].dot(springNormalizedVector);
 
                 float vf = 0.0f;
@@ -1469,7 +1469,7 @@ void Ship::UpdateWaterVelocities(
     // Move result values back to point, transforming momenta into velocities
     //
 
-    mPoints.UpdateAttributeGroup1Buffer(std::move(newPointWaterBuffer));
+    mPoints.UpdateWaterBuffer(std::move(newPointWaterBuffer));
     mPoints.UpdateWaterVelocitiesFromMomenta();
 }
 
@@ -1780,6 +1780,9 @@ void Ship::RunConnectivityVisit()
     // Remember colors are dirty
     mPoints.MarkColorBufferAsDirty();
 #endif
+
+    // Remember non-ephemeral portion of plane IDs is dirty
+    mPoints.MarkPlaneIdBufferNonEphemeralAsDirty();
 }
 
 void Ship::DestroyConnectedTriangles(ElementIndex pointElementIndex)

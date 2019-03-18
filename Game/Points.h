@@ -215,8 +215,6 @@ public:
         // Materials
         , mMaterialsBuffer(mBufferElementCount, shipPointCount, Materials(nullptr, nullptr))
         , mIsRopeBuffer(mBufferElementCount, shipPointCount, false)
-        // Attribute groups
-        , mAttributeGroup1Buffer(mBufferElementCount, shipPointCount, PointAttributeGroup1(0.0f, 0.0f, 0.0f))
         // Mechanical dynamics
         , mPositionBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mVelocityBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
@@ -232,12 +230,14 @@ public:
         , mWaterIntakeBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mWaterRestitutionBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mWaterDiffusionSpeedBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mWaterBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mWaterVelocityBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mWaterMomentumBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mCumulatedIntakenWater(mBufferElementCount, shipPointCount, 0.0f)
         , mIsLeakingBuffer(mBufferElementCount, shipPointCount, false)
         // Electrical dynamics
         , mElectricalElementBuffer(mBufferElementCount, shipPointCount, NoneElementIndex)
+        , mLightBuffer(mBufferElementCount, shipPointCount, 0.0f)
         // Wind dynamics
         , mWindReceptivityBuffer(mBufferElementCount, shipPointCount, 0.0f)
         // Ephemeral particles
@@ -252,6 +252,9 @@ public:
         // Connected component and plane ID
         , mConnectedComponentIdBuffer(mBufferElementCount, shipPointCount, NoneConnectedComponentId)
         , mPlaneIdBuffer(mBufferElementCount, shipPointCount, NonePlaneId)
+        , mPlaneIdFloatBuffer(mBufferElementCount, shipPointCount, 0.0)
+        , mIsPlaneIdBufferNonEphemeralDirty(true)
+        , mIsPlaneIdBufferEphemeralDirty(true)
         , mCurrentConnectivityVisitSequenceNumberBuffer(mBufferElementCount, shipPointCount, VisitSequenceNumber())
         // Pinning
         , mIsPinnedBuffer(mBufferElementCount, shipPointCount, false)
@@ -272,7 +275,6 @@ public:
         , mCurrentNumMechanicalDynamicsIterations(gameParameters.NumMechanicalDynamicsIterations<float>())
         , mFloatBufferAllocator(mBufferElementCount)
         , mVec2fBufferAllocator(mBufferElementCount)
-        , mAttributeGroup1BufferAllocator(mBufferElementCount)
         , mFreeEphemeralParticleSearchStartIndex(mShipPointCount)
         , mAreEphemeralParticlesDirty(false)
     {
@@ -375,7 +377,7 @@ public:
     // Render
     //
 
-    void UploadMutableAttributes(
+    void UploadAttributes(
         ShipId shipId,
         Render::RenderContext & renderContext) const;
 
@@ -422,30 +424,6 @@ public:
     {
         return mIsRopeBuffer[pointElementIndex];
     }
-
-
-    //
-    // Attribute Groups
-    //
-
-    PointAttributeGroup1 * restrict GetAttributeGroup1BufferAsAttributeGroup()
-    {
-        return mAttributeGroup1Buffer.data();
-    }
-
-    std::shared_ptr<Buffer<PointAttributeGroup1>> MakeAttributeGroup1BufferCopy()
-    {
-        auto attributeGroup1BufferCopy = mAttributeGroup1BufferAllocator.Allocate();
-        attributeGroup1BufferCopy->copy_from(mAttributeGroup1Buffer);
-
-        return attributeGroup1BufferCopy;
-    }
-
-    void UpdateAttributeGroup1Buffer(std::shared_ptr<Buffer<PointAttributeGroup1>> newAttributeGroup1Buffer)
-    {
-        mAttributeGroup1Buffer.copy_from(*newAttributeGroup1Buffer);
-    }
-
 
     //
     // Dynamics
@@ -592,21 +570,39 @@ public:
         return mWaterDiffusionSpeedBuffer[pointElementIndex];
     }
 
+    float * restrict GetWaterBufferAsFloat()
+    {
+        return mWaterBuffer.data();
+    }
+
     float GetWater(ElementIndex pointElementIndex) const
     {
-        return mAttributeGroup1Buffer[pointElementIndex].Water;
+        return mWaterBuffer[pointElementIndex];
     }
 
     float & GetWater(ElementIndex pointElementIndex)
     {
-        return mAttributeGroup1Buffer[pointElementIndex].Water;
+        return mWaterBuffer[pointElementIndex];
     }
 
     bool IsWet(
         ElementIndex pointElementIndex,
         float threshold) const
     {
-        return mAttributeGroup1Buffer[pointElementIndex].Water > threshold;
+        return mWaterBuffer[pointElementIndex] > threshold;
+    }
+
+    std::shared_ptr<Buffer<float>> MakeWaterBufferCopy()
+    {
+        auto waterBufferCopy = mFloatBufferAllocator.Allocate();
+        waterBufferCopy->copy_from(mWaterBuffer);
+
+        return waterBufferCopy;
+    }
+
+    void UpdateWaterBuffer(std::shared_ptr<Buffer<float>> newWaterBuffer)
+    {
+        mWaterBuffer.copy_from(*newWaterBuffer);
     }
 
     vec2f * restrict GetWaterVelocityBufferAsVec2()
@@ -625,7 +621,7 @@ public:
 
     void UpdateWaterMomentaFromVelocities()
     {
-        PointAttributeGroup1 * const restrict attributeGroup1Buffer = mAttributeGroup1Buffer.data();
+        float * const restrict waterBuffer = mWaterBuffer.data();
         vec2f * const restrict waterVelocityBuffer = mWaterVelocityBuffer.data();
         vec2f * restrict waterMomentumBuffer = mWaterMomentumBuffer.data();
 
@@ -633,23 +629,23 @@ public:
         {
             waterMomentumBuffer[p] =
                 waterVelocityBuffer[p]
-                * attributeGroup1Buffer[p].Water;
+                * waterBuffer[p];
         }
     }
 
     void UpdateWaterVelocitiesFromMomenta()
     {
-        PointAttributeGroup1 * const restrict attributeGroup1Buffer = mAttributeGroup1Buffer.data();
+        float * const restrict waterBuffer = mWaterBuffer.data();
         vec2f * restrict waterVelocityBuffer = mWaterVelocityBuffer.data();
         vec2f * const restrict waterMomentumBuffer = mWaterMomentumBuffer.data();
 
         for (ElementIndex p = 0; p < mBufferElementCount; ++p)
         {
-            if (attributeGroup1Buffer[p].Water != 0.0f)
+            if (waterBuffer[p] != 0.0f)
             {
                 waterVelocityBuffer[p] =
                     waterMomentumBuffer[p]
-                    / attributeGroup1Buffer[p].Water;
+                    / waterBuffer[p];
             }
             else
             {
@@ -695,12 +691,12 @@ public:
 
     float GetLight(ElementIndex pointElementIndex) const
     {
-        return mAttributeGroup1Buffer[pointElementIndex].Light;
+        return mLightBuffer[pointElementIndex];
     }
 
     float & GetLight(ElementIndex pointElementIndex)
     {
-        return mAttributeGroup1Buffer[pointElementIndex].Light;
+        return mLightBuffer[pointElementIndex];
     }
 
     //
@@ -829,7 +825,12 @@ public:
         float planeIdFloat)
     {
         mPlaneIdBuffer[pointElementIndex] = planeId;
-        mAttributeGroup1Buffer[pointElementIndex].PlaneId = planeIdFloat;
+        mPlaneIdFloatBuffer[pointElementIndex] = planeIdFloat;
+    }
+
+    void MarkPlaneIdBufferNonEphemeralAsDirty()
+    {
+        mIsPlaneIdBufferNonEphemeralDirty = true;
     }
 
     VisitSequenceNumber GetCurrentConnectivityVisitSequenceNumber(ElementIndex pointElementIndex) const
@@ -902,11 +903,6 @@ public:
         return mVec2fBufferAllocator.Allocate();
     }
 
-    std::shared_ptr<Buffer<PointAttributeGroup1>> AllocateWorkBufferAttributeGroup1()
-    {
-        return mAttributeGroup1BufferAllocator.Allocate();
-    }
-
 private:
 
     static inline float CalculateIntegrationFactorTimeCoefficient(float numMechanicalDynamicsIterations)
@@ -946,10 +942,6 @@ private:
     Buffer<Materials> mMaterialsBuffer;
     Buffer<bool> mIsRopeBuffer;
 
-    // Attribute groups - groups of point attributes, clustered together to improve
-    // rendering performance
-    Buffer<PointAttributeGroup1> mAttributeGroup1Buffer;
-
     //
     // Dynamics
     //
@@ -975,6 +967,10 @@ private:
     Buffer<float> mWaterRestitutionBuffer;
     Buffer<float> mWaterDiffusionSpeedBuffer;
 
+    // Height of a 1m2 column of water which provides a pressure equivalent to the pressure at
+    // this point. Quantity of water is max(water, 1.0)
+    Buffer<float> mWaterBuffer;
+
     // Total velocity of the water at this point
     Buffer<vec2f> mWaterVelocityBuffer;
 
@@ -993,6 +989,9 @@ private:
 
     // Electrical element, when any
     Buffer<ElementIndex> mElectricalElementBuffer;
+
+    // Total illumination, 0.0->1.0
+    Buffer<float> mLightBuffer;
 
     //
     // Wind dynamics
@@ -1023,6 +1022,9 @@ private:
 
     Buffer<ConnectedComponentId> mConnectedComponentIdBuffer;
     Buffer<PlaneId> mPlaneIdBuffer;
+    Buffer<float> mPlaneIdFloatBuffer;
+    bool mutable mIsPlaneIdBufferNonEphemeralDirty;
+    bool mutable mIsPlaneIdBufferEphemeralDirty;
     Buffer<VisitSequenceNumber> mCurrentConnectivityVisitSequenceNumberBuffer;
 
     //
@@ -1039,6 +1041,7 @@ private:
     bool mutable mIsWholeColorBufferDirty;  // Whether or not is dirty since last render upload
     Buffer<vec2f> mTextureCoordinatesBuffer;
     bool mutable mIsTextureCoordinatesBufferDirty; // Whether or not is dirty since last render upload
+
 
     //////////////////////////////////////////////////////////
     // Container
@@ -1067,7 +1070,6 @@ private:
     // Allocators for work buffers
     BufferAllocator<float> mFloatBufferAllocator;
     BufferAllocator<vec2f> mVec2fBufferAllocator;
-    BufferAllocator<PointAttributeGroup1> mAttributeGroup1BufferAllocator;
 
     // The index at which to start searching for free ephemeral particles
     // (just an optimization over restarting from zero each time)
