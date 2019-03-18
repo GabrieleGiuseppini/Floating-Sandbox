@@ -7,28 +7,29 @@
 
 // Inputs
 in vec2 inShipPointPosition;
-in float inShipPointWater;
+in vec3 inShipPointAttributeGroup1; // Light, Water, PlaneId
 in vec4 inShipPointColor;
-in vec2 inShipPointAttributeGroup1; // Light, PlaneId
 
 // Outputs        
 out float vertexLightIntensity;
 out float vertexLightColorMix;
-out float vertexWater;
+out float vertexColorWetness;
 out vec4 vertexCol;
 
 // Params
 uniform float paramAmbientLightIntensity;
+uniform float paramWaterContrast;
+uniform float paramWaterLevelThreshold;
 uniform mat4 paramOrthoMatrix;
 
 void main()
 {            
     vertexLightIntensity = paramAmbientLightIntensity + (1.0 - paramAmbientLightIntensity) * inShipPointAttributeGroup1.x;
     vertexLightColorMix = inShipPointAttributeGroup1.x;
-    vertexWater = inShipPointWater;
+    vertexColorWetness = min(inShipPointAttributeGroup1.y, paramWaterLevelThreshold) / paramWaterLevelThreshold * paramWaterContrast;
     vertexCol = inShipPointColor;
 
-    gl_Position = paramOrthoMatrix * vec4(inShipPointPosition.xy, inShipPointAttributeGroup1.y, 1.0);
+    gl_Position = paramOrthoMatrix * vec4(inShipPointPosition.xy, inShipPointAttributeGroup1.z, 1.0);
 }
 
 ###FRAGMENT
@@ -40,19 +41,14 @@ void main()
 // Inputs from previous shader        
 in float vertexLightIntensity;
 in float vertexLightColorMix;
-in float vertexWater;
+in float vertexColorWetness;
 in vec4 vertexCol;
-
-// Params
-uniform float paramWaterContrast;
-uniform float paramWaterLevelThreshold;
 
 void main()
 {
     // Apply point water
-    float colorWetness = min(vertexWater, paramWaterLevelThreshold) / paramWaterLevelThreshold * paramWaterContrast;
-    vec3 fragColour = vertexCol.xyz * (1.0 - colorWetness) + vec3(%WET_COLOR_VEC3%) * colorWetness;
-    
+    vec3 fragColour = vertexCol.xyz * (1.0 - vertexColorWetness) + vec3(%WET_COLOR_VEC3%) * vertexColorWetness;
+
      // Apply light
     fragColour *= vertexLightIntensity;
 

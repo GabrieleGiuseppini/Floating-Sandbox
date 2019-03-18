@@ -109,9 +109,9 @@ enum class VertexAttributeType : GLuint
 
     ShipPointPosition = 0,
     ShipPointColor = 1,
-    ShipPointWater = 2,
+    ShipPointAttributeGroup1 = 2,
     ShipPointTextureCoordinates = 3,
-    ShipPointAttributeGroup1 = 4,
+
 
     GenericTexture1 = 0,
     GenericTexture2 = 1,

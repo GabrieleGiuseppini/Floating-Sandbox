@@ -215,8 +215,6 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::ShipPointPosition;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointColor"))
         return VertexAttributeType::ShipPointColor;
-    else if (Utils::CaseInsensitiveEquals(str, "ShipPointWater"))
-        return VertexAttributeType::ShipPointWater;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointTextureCoordinates"))
         return VertexAttributeType::ShipPointTextureCoordinates;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointAttributeGroup1"))

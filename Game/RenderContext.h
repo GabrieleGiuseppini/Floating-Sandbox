@@ -630,14 +630,12 @@ public:
     void UploadShipPointMutableAttributes(
         ShipId shipId,
         vec2f const * position,
-        float const * water,
-        PointAttributeGroup1 const * attributeGroup1) // Light, PlaneId
+        PointAttributeGroup1 const * attributeGroup1) // Light, PlaneId, Water, Pad
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
         mShips[shipId]->UploadPointMutableAttributes(
             position,
-            water,
             attributeGroup1);
     }
 

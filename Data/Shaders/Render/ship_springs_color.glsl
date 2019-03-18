@@ -7,9 +7,8 @@
 
 // Inputs
 in vec2 inShipPointPosition;
-in float inShipPointWater;
+in vec3 inShipPointAttributeGroup1; // Light, Water, PlaneId
 in vec4 inShipPointColor;
-in vec2 inShipPointAttributeGroup1; // Light, PlaneId
 
 // Outputs        
 out float vertexLightIntensity;
@@ -27,10 +26,10 @@ void main()
 {            
     vertexLightIntensity = paramAmbientLightIntensity + (1.0 - paramAmbientLightIntensity) * inShipPointAttributeGroup1.x;
     vertexLightColorMix = inShipPointAttributeGroup1.x;
-    vertexColorWetness = min(inShipPointWater, paramWaterLevelThreshold) / paramWaterLevelThreshold * paramWaterContrast;
+    vertexColorWetness = min(inShipPointAttributeGroup1.y, paramWaterLevelThreshold) / paramWaterLevelThreshold * paramWaterContrast;
     vertexCol = inShipPointColor;
 
-    gl_Position = paramOrthoMatrix * vec4(inShipPointPosition.xy, inShipPointAttributeGroup1.y, 1.0);
+    gl_Position = paramOrthoMatrix * vec4(inShipPointPosition.xy, inShipPointAttributeGroup1.z, 1.0);
 }
 
 ###FRAGMENT

@@ -1,6 +1,25 @@
 =================================================
 Current perf:
 =================================================
+- fps: 29.8/29.9/30.5/30.6
+- RunGameIteration: 86.57% (initialization time)
+- World::Update: 59.13%
+		- UpdateMechanicalDynamics: 48.06%
+			- UpdateSpringForces: 36.99%
+			- UpdatePointForces: 5.48%
+			- HandleCollisionsWithSeafFloor: 2.94%
+			- IntegrateAndResetPointForces: 2.39%
+			- UpdateTotalMasses: 0.25%
+		- UpdateWaterDynamics: 6.91%
+			- UpdateWaterVelocities: 6.80%
+			- UpdateWaterInflow: 0.05%
+		- DiffuseLight: 2.97%
+- World::Render: 23.19%
+	- Ship::Render: 19.91%
+	- RenderSkyEnd: 2.38%
+	- RenderOcean: 0.78%
+
+Before Vertex Attribute Optimization:
 - fps: 28.2/28.4 (miracle: 28.7/29.0/29.1)
 - World::Update: 54.66%
 		- UpdateMechanicalDynamics: 44.64%
@@ -156,14 +175,21 @@ Render:
 ====================================================
 ====================================================
 
+- Testers:
+	- Maximord - "Maximord" (Parallels)
+	- Pac0master - "<Same as now>" (Intel core i5-8600K, NVIDIA GeForce RTX 2070)
+	- The_SamminAter - "<ask>" (Parallels)
+	- DkuzThFox: "Dkuz The Fox": (Intel core i7-5700HQ, Windows 10)
+
 - Marketing:
 	- GameJolt post w/screenshot with gradient, at night
 	- Video of Titanic under Mariannes' Trench
 		+ After water contrast
 
 - Roadmap:
-	- 1.10.0
-		+ ShipTrianglesTexture shader: use local light as "additive" to ambient light (to draw colors)
+	= 1.10.0
+		+ See if lights can make texture colors come out at night, rather than just yellow-izing it
+			+ ShipTrianglesTexture shader: use local light as "additive" to ambient light (to draw colors)
 			+ Split Points:: colorBuffer upload to own func
 				+ RenderContext: range-based
 			+ Remove logs and shader TODOs
@@ -234,30 +260,38 @@ Render:
 		+ Secondary PlaneIDAsFloat buffer
 			+ We only pay the price sparingly, but reap the benefits at each frame
 			+ Code
-		- Vertex buffer optimizations (*)
+		= Vertex buffer optimizations (*)
 		- Update FPS
 
+		- Water Contrast @ 0.875?
+
+		- About dialog with testers
+
 		- Decay (rust) (*)
+
 
 		- Orphaned points (*)
 
 		- ShipRenderContext: make water color depend on ocean render mode color
 			- Water color in shader has to become parameter
+				- Test FPS after setting it to constant
 			- OceanRenderMode:
 				- Texture: waterColor=<constant matching now>
 				- Flat: waterColor=<that flat color>
 				- Gradient: waterColor=<mid color>
 
 		- Flood tool and ship un/sinking
+			- Sinking: do HighWatermark/LowWatermark
 			- Make music class with FadeToStop()
 				- ::Update()
 
 		- Instanced drawing for lights (*)
-		- See if lights can make texture colors come out at night, rather than just yellow-izing it
 
 		- Pick tool (*)
 
 		- Interior layer (*)
+
+		- Ship description/history (*)
 
 		- Electrical layer view (*)
 
@@ -288,6 +322,8 @@ Render:
 		- Resource Packs (*)
 
 - New ships
+	- Names:
+		- ShippyMcJerry: ShipBuilder1912 
 	- Titanic with more lights
 	- To test:
 		= USS Shark
@@ -304,7 +340,8 @@ Render:
 - Suggestions to spec:
 	- Fishes
 	- Different colored lights
-	- Backgrounds: use keys to switch between a dock, cliffs, open ocean, ice field, etc.
+	- Different backgrounds: use keys to switch between a dock, cliffs, open ocean, ice field, etc.
+	- Different maps: maps that might even have islands and grass 
 	- Black hole
 	- Tool to increase or lower mass under the cursor
 	- Can the bubble tool be used to remove water from the ship? that could be pretty cool
@@ -638,19 +675,38 @@ Render:
 			+ See FPS: 29.3/29.7/29.9/30.8
 			+ If good:
 				+ Commit
-		= Undo V->F shader in/out packing which we did at TrianglesTexture 
-			= And move wetness calculation into vertex shader for all
+		+ Undo V->F shader in/out packing which we did at TrianglesTexture 
+			+ And move wetness calculation into vertex shader for all
 			+ See if there are other shaders as well
-			- See if want to keep it:
-				- FPS: 29.8/29.9/
-		- Test 2: += Water + Pad
-			- Code
-				- Includes workBuffer copy @ WaterDynamics!
-			- Shaders
-			- Get FPS
-			- Commit if good
+			+ See if want to keep it:
+				+ FPS: 29.8/29.9/
+		+ Test 2: += Water + Pad
+			+ Code
+				+ Note: includes workBuffer copy @ WaterDynamics!
+				+ GameTypes:Add to PointAttributeGroup1
+				+ Points:
+					+ Remove buffer
+					+ Change getter & setter
+					+ Wo workbuffer copy (replace water one)
+				+ Ship::WaterDynamics
+					+ Use PointAttributeGroup1.Water instead of Water
+				+ RenderContext:
+					+ Nuke upload water vector
+				+ ShipRenderContext:
+					+ Nuke upload water vector
+					+ Describe new vertex attribute
+					+ Nuke RenderCore::AttributeType
+					+ Shaders
+			+ Test
+			+ Get FPS
+				- Make sure laptop is quiet
+			+ New Perf Analysis
+			+ Commit if good
 		+ Test 3: other shaders
 			+ None
+		- Test 4: Bas' idea
+			- Revert to before Test 1
+			- Do interleaving just at ShipRenderContext
 
 	- Try using GL_SHORT for Ship texture coordinates
 		- Passing NORMALIZE and 3 components to glVertexAttribPointer
@@ -865,6 +921,8 @@ Render:
 					- alpha = (10^-5)^(1/300) (~total decay in 300 steps)
 					- for each point p for which p.isLeaking:
 						- beta ~= alpha * log(p.water) (beta << 1)
+							- Do log with https://en.wikipedia.org/wiki/Taylor_series#Natural_logarithm
+								- Only for w between zero and 1
 						- p.decay *= (1.0 - beta)
 						- for each spring s that is owned by p (use new size_t member of ConnectedSprings struct):
 							- s.strength *= (1.0 - beta)
@@ -1280,8 +1338,11 @@ Render:
 	- Allow ocean floor bump map to be loaded at runtime
 
 	- Ship definition: 
-		- "instructions"
-			- If present, at the first load of a ship spawns a text box (if enabled in settings)
+		- "description"
+			- Description/history; also instructions?
+			- Pops up when hovering in ship load box
+				- Maximord may help with description/history
+			- If instructions present, at the first load of a ship spawns a text box (if enabled in settings)
 		- Interior layer:
 			- New layer @ ShipDefinitionFile and ShipDefinition
 			- New flag @

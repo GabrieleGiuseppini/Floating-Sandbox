@@ -37,10 +37,9 @@ ShipRenderContext::ShipRenderContext(
     , mMaxMaxPlaneId(0)
     // Buffers
     , mPointPositionVBO()
-    , mPointWaterVBO()
     , mPointColorVBO()
-    , mPointTextureCoordinatesVBO()
     , mPointAttributeGroup1VBO()
+    , mPointTextureCoordinatesVBO()
     //
     , mStressedSpringElementBuffer()
     , mStressedSpringElementVBO()
@@ -98,39 +97,35 @@ ShipRenderContext::ShipRenderContext(
     // Initialize buffers
     //
 
-    GLuint vbos[9];
-    glGenBuffers(9, vbos);
+    GLuint vbos[8];
+    glGenBuffers(8, vbos);
     CheckOpenGLError();
 
     mPointPositionVBO = vbos[0];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointPositionVBO);
     glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(vec2f), nullptr, GL_STREAM_DRAW);
 
-    mPointWaterVBO = vbos[1];
-    glBindBuffer(GL_ARRAY_BUFFER, *mPointWaterVBO);
-    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(float), nullptr, GL_STREAM_DRAW);
-
-    mPointColorVBO = vbos[2];
+    mPointColorVBO = vbos[1];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointColorVBO);
     glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(vec4f), nullptr, GL_STATIC_DRAW);
+
+    mPointAttributeGroup1VBO = vbos[2];
+    glBindBuffer(GL_ARRAY_BUFFER, *mPointAttributeGroup1VBO);
+    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(PointAttributeGroup1), nullptr, GL_STREAM_DRAW);
 
     mPointTextureCoordinatesVBO = vbos[3];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointTextureCoordinatesVBO);
     glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(vec2f), nullptr, GL_STATIC_DRAW);
 
-    mPointAttributeGroup1VBO = vbos[4];
-    glBindBuffer(GL_ARRAY_BUFFER, *mPointAttributeGroup1VBO);
-    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(PointAttributeGroup1), nullptr, GL_STREAM_DRAW);
-
-    mStressedSpringElementVBO = vbos[5];
+    mStressedSpringElementVBO = vbos[4];
     mStressedSpringElementBuffer.reserve(1000); // Arbitrary
 
-    mEphemeralPointElementVBO = vbos[6];
+    mEphemeralPointElementVBO = vbos[5];
     mEphemeralPointElementBuffer.reserve(GameParameters::MaxEphemeralParticles);
 
-    mGenericTextureVBO = vbos[7];
+    mGenericTextureVBO = vbos[6];
 
-    mVectorArrowVBO = vbos[8];
+    mVectorArrowVBO = vbos[7];
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -168,24 +163,19 @@ ShipRenderContext::ShipRenderContext(
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointPosition), 2, GL_FLOAT, GL_FALSE, sizeof(vec2f), (void*)(0));
         CheckOpenGLError();
 
-        glBindBuffer(GL_ARRAY_BUFFER, *mPointWaterVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointWater));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointWater), 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)(0));
-        CheckOpenGLError();
-
         glBindBuffer(GL_ARRAY_BUFFER, *mPointColorVBO);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointColor));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointColor), 4, GL_FLOAT, GL_FALSE, sizeof(vec4f), (void*)(0));
         CheckOpenGLError();
 
+        glBindBuffer(GL_ARRAY_BUFFER, *mPointAttributeGroup1VBO);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointAttributeGroup1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointAttributeGroup1), 3, GL_FLOAT, GL_FALSE, sizeof(PointAttributeGroup1), (void*)(0));
+        CheckOpenGLError();
+
         glBindBuffer(GL_ARRAY_BUFFER, *mPointTextureCoordinatesVBO);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointTextureCoordinates));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointTextureCoordinates), 2, GL_FLOAT, GL_FALSE, sizeof(vec2f), (void*)(0));
-        CheckOpenGLError();
-
-        glBindBuffer(GL_ARRAY_BUFFER, *mPointAttributeGroup1VBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointAttributeGroup1));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointAttributeGroup1), 2, GL_FLOAT, GL_FALSE, sizeof(PointAttributeGroup1), (void*)(0));
         CheckOpenGLError();
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -636,7 +626,6 @@ void ShipRenderContext::UploadPointImmutableAttributes(vec2f const * textureCoor
 
 void ShipRenderContext::UploadPointMutableAttributes(
     vec2f const * position,
-    float const * water,
     PointAttributeGroup1 const * attributeGroup1)
 {
     // Upload positions
@@ -644,12 +633,7 @@ void ShipRenderContext::UploadPointMutableAttributes(
     glBufferSubData(GL_ARRAY_BUFFER, 0, mPointCount * sizeof(vec2f), position);
     CheckOpenGLError();
 
-    // Upload water
-    glBindBuffer(GL_ARRAY_BUFFER, *mPointWaterVBO);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, mPointCount * sizeof(float), water);
-    CheckOpenGLError();
-
-    // Upload light and plane IDs
+    // Upload light, water, plane ID, and pad
     glBindBuffer(GL_ARRAY_BUFFER, *mPointAttributeGroup1VBO);
     glBufferSubData(GL_ARRAY_BUFFER, 0, mPointCount * sizeof(PointAttributeGroup1), attributeGroup1);
     CheckOpenGLError();

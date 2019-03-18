@@ -216,7 +216,7 @@ public:
         , mMaterialsBuffer(mBufferElementCount, shipPointCount, Materials(nullptr, nullptr))
         , mIsRopeBuffer(mBufferElementCount, shipPointCount, false)
         // Attribute groups
-        , mAttributeGroup1Buffer(mBufferElementCount, shipPointCount, PointAttributeGroup1(0.0f, 0.0f))
+        , mAttributeGroup1Buffer(mBufferElementCount, shipPointCount, PointAttributeGroup1(0.0f, 0.0f, 0.0f))
         // Mechanical dynamics
         , mPositionBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mVelocityBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
@@ -232,7 +232,6 @@ public:
         , mWaterIntakeBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mWaterRestitutionBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mWaterDiffusionSpeedBuffer(mBufferElementCount, shipPointCount, 0.0f)
-        , mWaterBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mWaterVelocityBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mWaterMomentumBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mCumulatedIntakenWater(mBufferElementCount, shipPointCount, 0.0f)
@@ -273,6 +272,7 @@ public:
         , mCurrentNumMechanicalDynamicsIterations(gameParameters.NumMechanicalDynamicsIterations<float>())
         , mFloatBufferAllocator(mBufferElementCount)
         , mVec2fBufferAllocator(mBufferElementCount)
+        , mAttributeGroup1BufferAllocator(mBufferElementCount)
         , mFreeEphemeralParticleSearchStartIndex(mShipPointCount)
         , mAreEphemeralParticlesDirty(false)
     {
@@ -423,6 +423,30 @@ public:
         return mIsRopeBuffer[pointElementIndex];
     }
 
+
+    //
+    // Attribute Groups
+    //
+
+    PointAttributeGroup1 * restrict GetAttributeGroup1BufferAsAttributeGroup()
+    {
+        return mAttributeGroup1Buffer.data();
+    }
+
+    std::shared_ptr<Buffer<PointAttributeGroup1>> MakeAttributeGroup1BufferCopy()
+    {
+        auto attributeGroup1BufferCopy = mAttributeGroup1BufferAllocator.Allocate();
+        attributeGroup1BufferCopy->copy_from(mAttributeGroup1Buffer);
+
+        return attributeGroup1BufferCopy;
+    }
+
+    void UpdateAttributeGroup1Buffer(std::shared_ptr<Buffer<PointAttributeGroup1>> newAttributeGroup1Buffer)
+    {
+        mAttributeGroup1Buffer.copy_from(*newAttributeGroup1Buffer);
+    }
+
+
     //
     // Dynamics
     //
@@ -568,39 +592,21 @@ public:
         return mWaterDiffusionSpeedBuffer[pointElementIndex];
     }
 
-    float * restrict GetWaterBufferAsFloat()
-    {
-        return mWaterBuffer.data();
-    }
-
     float GetWater(ElementIndex pointElementIndex) const
     {
-        return mWaterBuffer[pointElementIndex];
+        return mAttributeGroup1Buffer[pointElementIndex].Water;
     }
 
     float & GetWater(ElementIndex pointElementIndex)
     {
-        return mWaterBuffer[pointElementIndex];
+        return mAttributeGroup1Buffer[pointElementIndex].Water;
     }
 
     bool IsWet(
         ElementIndex pointElementIndex,
         float threshold) const
     {
-        return mWaterBuffer[pointElementIndex] > threshold;
-    }
-
-    std::shared_ptr<Buffer<float>> MakeWaterBufferCopy()
-    {
-        auto waterBufferCopy = mFloatBufferAllocator.Allocate();
-        waterBufferCopy->copy_from(mWaterBuffer);
-
-        return waterBufferCopy;
-    }
-
-    void UpdateWaterBuffer(std::shared_ptr<Buffer<float>> newWaterBuffer)
-    {
-        mWaterBuffer.copy_from(*newWaterBuffer);
+        return mAttributeGroup1Buffer[pointElementIndex].Water > threshold;
     }
 
     vec2f * restrict GetWaterVelocityBufferAsVec2()
@@ -619,7 +625,7 @@ public:
 
     void UpdateWaterMomentaFromVelocities()
     {
-        float * const restrict waterBuffer = mWaterBuffer.data();
+        PointAttributeGroup1 * const restrict attributeGroup1Buffer = mAttributeGroup1Buffer.data();
         vec2f * const restrict waterVelocityBuffer = mWaterVelocityBuffer.data();
         vec2f * restrict waterMomentumBuffer = mWaterMomentumBuffer.data();
 
@@ -627,23 +633,23 @@ public:
         {
             waterMomentumBuffer[p] =
                 waterVelocityBuffer[p]
-                * waterBuffer[p];
+                * attributeGroup1Buffer[p].Water;
         }
     }
 
     void UpdateWaterVelocitiesFromMomenta()
     {
-        float * const restrict waterBuffer = mWaterBuffer.data();
+        PointAttributeGroup1 * const restrict attributeGroup1Buffer = mAttributeGroup1Buffer.data();
         vec2f * restrict waterVelocityBuffer = mWaterVelocityBuffer.data();
         vec2f * const restrict waterMomentumBuffer = mWaterMomentumBuffer.data();
 
         for (ElementIndex p = 0; p < mBufferElementCount; ++p)
         {
-            if (waterBuffer[p] != 0.0f)
+            if (attributeGroup1Buffer[p].Water != 0.0f)
             {
                 waterVelocityBuffer[p] =
                     waterMomentumBuffer[p]
-                    / waterBuffer[p];
+                    / attributeGroup1Buffer[p].Water;
             }
             else
             {
@@ -896,6 +902,11 @@ public:
         return mVec2fBufferAllocator.Allocate();
     }
 
+    std::shared_ptr<Buffer<PointAttributeGroup1>> AllocateWorkBufferAttributeGroup1()
+    {
+        return mAttributeGroup1BufferAllocator.Allocate();
+    }
+
 private:
 
     static inline float CalculateIntegrationFactorTimeCoefficient(float numMechanicalDynamicsIterations)
@@ -963,10 +974,6 @@ private:
     Buffer<float> mWaterIntakeBuffer;
     Buffer<float> mWaterRestitutionBuffer;
     Buffer<float> mWaterDiffusionSpeedBuffer;
-
-    // Height of a 1m2 column of water which provides a pressure equivalent to the pressure at
-    // this point. Quantity of water is max(water, 1.0)
-    Buffer<float> mWaterBuffer;
 
     // Total velocity of the water at this point
     Buffer<vec2f> mWaterVelocityBuffer;
@@ -1060,6 +1067,7 @@ private:
     // Allocators for work buffers
     BufferAllocator<float> mFloatBufferAllocator;
     BufferAllocator<vec2f> mVec2fBufferAllocator;
+    BufferAllocator<PointAttributeGroup1> mAttributeGroup1BufferAllocator;
 
     // The index at which to start searching for free ephemeral particles
     // (just an optimization over restarting from zero each time)

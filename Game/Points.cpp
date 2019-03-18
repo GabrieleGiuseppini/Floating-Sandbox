@@ -30,7 +30,7 @@ void Points::Add(
     mMaterialsBuffer.emplace_back(&structuralMaterial, electricalMaterial);
     mIsRopeBuffer.emplace_back(isRope);
 
-    mAttributeGroup1Buffer.emplace_back(0.0f, 0.0f);
+    mAttributeGroup1Buffer.emplace_back(0.0f, 0.0f, 0.0f);
 
     mPositionBuffer.emplace_back(position);
     mVelocityBuffer.emplace_back(vec2f::zero());
@@ -49,7 +49,6 @@ void Points::Add(
     mWaterRestitutionBuffer.emplace_back(1.0f - structuralMaterial.WaterRetention);
     mWaterDiffusionSpeedBuffer.emplace_back(structuralMaterial.WaterDiffusionSpeed);
 
-    mWaterBuffer.emplace_back(0.0f);
     mWaterVelocityBuffer.emplace_back(vec2f::zero());
     mWaterMomentumBuffer.emplace_back(vec2f::zero());
     mCumulatedIntakenWater.emplace_back(0.0f);
@@ -104,6 +103,7 @@ void Points::CreateEphemeralParticleAirBubble(
 
     mIsDeletedBuffer[pointIndex] = false;
 
+    mAttributeGroup1Buffer[pointIndex].Water = 0.0f;
     mAttributeGroup1Buffer[pointIndex].PlaneId = static_cast<float>(planeId);
 
     mPositionBuffer[pointIndex] = position;
@@ -117,7 +117,6 @@ void Points::CreateEphemeralParticleAirBubble(
     mWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
     mWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
     mWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
-    mWaterBuffer[pointIndex] = 0.0f;
     assert(false == mIsLeakingBuffer[pointIndex]);
 
     mWindReceptivityBuffer[pointIndex] = 0.0f;
@@ -161,6 +160,7 @@ void Points::CreateEphemeralParticleDebris(
 
     mIsDeletedBuffer[pointIndex] = false;
 
+    mAttributeGroup1Buffer[pointIndex].Water = 0.0f;
     mAttributeGroup1Buffer[pointIndex].PlaneId = static_cast<float>(planeId);
 
     mPositionBuffer[pointIndex] = position;
@@ -174,7 +174,6 @@ void Points::CreateEphemeralParticleDebris(
     mWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
     mWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
     mWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
-    mWaterBuffer[pointIndex] = 0.0f;
     assert(false == mIsLeakingBuffer[pointIndex]);
 
     mWindReceptivityBuffer[pointIndex] = 3.0f;
@@ -213,6 +212,7 @@ void Points::CreateEphemeralParticleSparkle(
 
     mIsDeletedBuffer[pointIndex] = false;
 
+    mAttributeGroup1Buffer[pointIndex].Water = 0.0f;
     mAttributeGroup1Buffer[pointIndex].PlaneId = static_cast<float>(planeId);
 
     mPositionBuffer[pointIndex] = position;
@@ -226,7 +226,6 @@ void Points::CreateEphemeralParticleSparkle(
     mWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
     mWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
     mWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
-    mWaterBuffer[pointIndex] = 0.0f;
     assert(false == mIsLeakingBuffer[pointIndex]);
 
     mWindReceptivityBuffer[pointIndex] = 3.0f;
@@ -427,7 +426,7 @@ void Points::Query(ElementIndex pointElementIndex) const
     LogMessage("PointIndex: ", pointElementIndex);
     LogMessage("Position: ", mPositionBuffer[pointElementIndex].toString());
     LogMessage("Velocity: ", mVelocityBuffer[pointElementIndex].toString());
-    LogMessage("Water: ", mWaterBuffer[pointElementIndex]);
+    LogMessage("Water: ", mAttributeGroup1Buffer[pointElementIndex].Water);
     LogMessage("PlaneID: ", mPlaneIdBuffer[pointElementIndex]);
     LogMessage("ConnectedComponentID: ", mConnectedComponentIdBuffer[pointElementIndex]);
 }
@@ -472,7 +471,6 @@ void Points::UploadMutableAttributes(
     renderContext.UploadShipPointMutableAttributes(
         shipId,
         mPositionBuffer.data(),
-        mWaterBuffer.data(),
         mAttributeGroup1Buffer.data());
 }
 
