@@ -703,27 +703,31 @@ Render:
 			+ Check assembly
 			+ Unbind VBO
 			+ Check FPS:
-				+ 30.0/30.4/31.1/32.2 (supercharged)/31.7
+				+ 30.0/30.4/31.1/31.2 (supercharged)/31.7
 			+ Commit			
-		= Test 5:
-			- ShipRenderContext: see MappedBuffer instead of own buffer, into which we interleave
-				- GameOpenGLMappedVector<TElement, WRITE_ONLY>
-					- Map(size)
-					- emplace_back(...)
+		+ Test 5:
+			+ ShipRenderContext: use MappedBuffer
+				+ GameOpenGLMappedBuffer<TElement, WRITE_ONLY>
+					+ Map(size)
+					+ emplace_back(...)
 						- w/assert that is mapped
-					- Unmap()
-					- ~()
-						- Unmap if mapped
-					- Remove that ugly GameOpenGLObject()
-			- Try also at places where we upload temporarily to local buffer:
-				- Clouds
-				- Land and Ocean
+					+ Unmap()
+					+ ~()
+						+ Unmap if mapped
+					+ Remove that ugly GameOpenGLObject()
+				+ Use where we upload temporarily to local buffer:
+					+ Clouds
+					+ Land and Ocean
+				+ Check if good and, if so, commit
+					+ 30.25/30.3/30.4/31.0/31.15
 		- Test 6:
 			- See if can also interleave Position and TextureCoordinates
 				- Name the other "AttributeGroup2"
 					- Fix all
 				- Make new "AttributeGroup1"
 					- Uploaded straight at ShipRenderContext::UploadPointMutableAttributes()
+			- Check FPS:
+			- Commit
 		- Do perf analysis
 
 	- Try using GL_SHORT for Ship texture coordinates

@@ -15,6 +15,7 @@
 #include "ViewModel.h"
 
 #include <GameOpenGL/GameOpenGL.h>
+#include <GameOpenGL/GameOpenGLMappedBuffer.h>
 #include <GameOpenGL/ShaderManager.h>
 
 #include <Game/GameParameters.h>
@@ -1083,13 +1084,13 @@ private:
     BoundedVector<StarVertex> mStarVertexBuffer;
     GameOpenGLVBO mStarVBO;
 
-    BoundedVector<CloudQuad> mCloudQuadBuffer;
+    GameOpenGLMappedBuffer<CloudQuad, GL_ARRAY_BUFFER> mCloudQuadBuffer;
     GameOpenGLVBO mCloudVBO;
 
-    BoundedVector<LandSegment> mLandSegmentBuffer;
+    GameOpenGLMappedBuffer<LandSegment, GL_ARRAY_BUFFER> mLandSegmentBuffer;
     GameOpenGLVBO mLandVBO;
 
-    BoundedVector<OceanSegment> mOceanSegmentBuffer;
+    GameOpenGLMappedBuffer<OceanSegment, GL_ARRAY_BUFFER> mOceanSegmentBuffer;
     GameOpenGLVBO mOceanVBO;
 
     std::vector<CrossOfLightVertex> mCrossOfLightVertexBuffer;

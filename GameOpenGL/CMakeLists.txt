@@ -8,6 +8,7 @@ set  (SOURCES
 	GameOpenGL.h
 	GameOpenGL_Ext.cpp
 	GameOpenGL_Ext.h
+	GameOpenGLMappedBuffer.h
 	ShaderManager.cpp.inl
 	ShaderManager.h)
 

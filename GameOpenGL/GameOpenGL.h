@@ -129,21 +129,6 @@ struct GameOpenGLTextureDeleter
     }
 };
 
-template <GLenum TTarget>
-struct GameOpenGLMappedBufferDeleter
-{
-    static void Delete(void * p)
-    {
-        using ptr = void *;
-        static_assert(ptr() == nullptr, "Default value is not nullptr, i.e. the OpenGL NULL");
-
-        if (p != nullptr)
-        {
-            glUnmapBuffer(TTarget);
-        }
-    }
-};
-
 struct GameOpenGLFramebufferDeleter
 {
     static void Delete(GLuint p)
@@ -174,8 +159,6 @@ using GameOpenGLShaderProgram = GameOpenGLObject<GLuint, GameOpenGLProgramDelete
 using GameOpenGLVBO = GameOpenGLObject<GLuint, GameOpenGLVBODeleter>;
 using GameOpenGLVAO = GameOpenGLObject<GLuint, GameOpenGLVAODeleter>;
 using GameOpenGLTexture = GameOpenGLObject<GLuint, GameOpenGLTextureDeleter>;
-template <GLenum TTarget>
-using GameOpenGLMappedBuffer = GameOpenGLObject<void *, GameOpenGLMappedBufferDeleter<TTarget>>;
 using GameOpenGLFramebuffer = GameOpenGLObject<GLuint, GameOpenGLFramebufferDeleter>;
 using GameOpenGLRenderbuffer = GameOpenGLObject<GLuint, GameOpenGLRenderbufferDeleter>;
 
@@ -228,32 +211,6 @@ public:
     static void UploadMipmappedPowerOfTwoTexture(
         RgbaImageData baseTexture,
         int maxDimension);
-
-    template <GLenum TTarget>
-    static GameOpenGLMappedBuffer<TTarget> MapBuffer(GLenum access)
-    {
-        void * pointer = glMapBuffer(TTarget, access);
-        if (pointer == nullptr)
-        {
-            throw GameException("Cannot map buffer");
-        }
-
-        return GameOpenGLMappedBuffer<TTarget>(pointer);
-    }
-
-    template <GLenum TTarget>
-    static void UnmapBuffer(GameOpenGLMappedBuffer<TTarget> buffer)
-    {
-        assert(!!buffer);
-
-        auto result = glUnmapBuffer(TTarget);
-        if (result == GL_FALSE)
-        {
-            throw GameException("Cannot unmap buffer");
-        }
-
-        buffer.release();
-    }
 
     static void Flush();
 };

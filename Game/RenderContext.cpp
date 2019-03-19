@@ -608,21 +608,12 @@ void RenderContext::UploadCloudsStart(size_t cloudCount)
     // Prepare cloud quad buffer
     //
 
-    if (cloudCount != mCloudQuadBuffer.max_size())
-    {
-        // Reallocate GPU buffer
-        glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
-        glBufferData(GL_ARRAY_BUFFER, cloudCount * sizeof(CloudQuad), nullptr, GL_STREAM_DRAW);
-        CheckOpenGLError();
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
 
-        // Reallocate CPU buffer
-        mCloudQuadBuffer.reset(cloudCount);
-    }
-    else
-    {
-        mCloudQuadBuffer.clear();
-    }
+    glBufferData(GL_ARRAY_BUFFER, cloudCount * sizeof(CloudQuad), nullptr, GL_STREAM_DRAW);
+    CheckOpenGLError();
+
+    mCloudQuadBuffer.map(cloudCount);
 }
 
 void RenderContext::UploadCloudsEnd()
@@ -632,8 +623,8 @@ void RenderContext::UploadCloudsEnd()
     //
 
     glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, mCloudQuadBuffer.size() * sizeof(CloudQuad), mCloudQuadBuffer.data());
-    CheckOpenGLError();
+    mCloudQuadBuffer.unmap();
+
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
@@ -723,42 +714,26 @@ void RenderContext::UploadLandAndOceanStart(size_t slices)
     // Prepare land segment buffer
     //
 
-    if (slices + 1 != mLandSegmentBuffer.max_size())
-    {
-        // Reallocate GPU buffer
-        glBindBuffer(GL_ARRAY_BUFFER, *mLandVBO);
-        glBufferData(GL_ARRAY_BUFFER, (slices + 1) * sizeof(LandSegment), nullptr, GL_STREAM_DRAW);
-        CheckOpenGLError();
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, *mLandVBO);
 
-        // Reallocate CPU buffer
-        mLandSegmentBuffer.reset(slices + 1);
-    }
-    else
-    {
-        mLandSegmentBuffer.clear();
-    }
+    glBufferData(GL_ARRAY_BUFFER, (slices + 1) * sizeof(LandSegment), nullptr, GL_STREAM_DRAW);
+    CheckOpenGLError();
+
+    mLandSegmentBuffer.map(slices + 1);
 
 
     //
     // Prepare ocean segment buffer
     //
 
-    if (slices + 1 != mOceanSegmentBuffer.max_size())
-    {
-        // Reallocate GPU buffer
-        glBindBuffer(GL_ARRAY_BUFFER, *mOceanVBO);
-        glBufferData(GL_ARRAY_BUFFER, (slices + 1) * sizeof(OceanSegment), nullptr, GL_STREAM_DRAW);
-        CheckOpenGLError();
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, *mOceanVBO);
 
-        // Reallocate CPU buffer
-        mOceanSegmentBuffer.reset(slices + 1);
-    }
-    else
-    {
-        mOceanSegmentBuffer.clear();
-    }
+    glBufferData(GL_ARRAY_BUFFER, (slices + 1) * sizeof(OceanSegment), nullptr, GL_STREAM_DRAW);
+    CheckOpenGLError();
+
+    mOceanSegmentBuffer.map(slices + 1);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void RenderContext::UploadLandAndOceanEnd()
@@ -768,9 +743,7 @@ void RenderContext::UploadLandAndOceanEnd()
     //
 
     glBindBuffer(GL_ARRAY_BUFFER, *mLandVBO);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, mLandSegmentBuffer.size() * sizeof(LandSegment), mLandSegmentBuffer.data());
-    CheckOpenGLError();
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    mLandSegmentBuffer.unmap();
 
 
     //
@@ -778,8 +751,8 @@ void RenderContext::UploadLandAndOceanEnd()
     //
 
     glBindBuffer(GL_ARRAY_BUFFER, *mOceanVBO);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, mOceanSegmentBuffer.size() * sizeof(OceanSegment), mOceanSegmentBuffer.data());
-    CheckOpenGLError();
+    mOceanSegmentBuffer.unmap();
+
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
