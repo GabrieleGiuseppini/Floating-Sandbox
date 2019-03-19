@@ -94,3 +94,28 @@ Here's an explanation of the elements:
 Note that it is a good practice to rename the various layer image files with a ".dat" extension. The UI dialog that allows users to load ships in fact shows all the _png_ and _shp_ files in a folder, including scattered _png_ layers of ships in that folder, which may be confusing as loading an electrical layer image as a ship, for example, would yield unpredictable results. Changing the extension of layer image files instead would prevent the dialog from allowing the user to select an individual layer image.
 
 Note that you may also create _shp_ files for single-layer ship; the advantage in this case over a _png_ ship is that you may customize ship metadata such as its initial offset and the ship name, among others.
+
+# A Walkthrough
+A good way to get started is to first create a large (hi-definition) texture image for the texture layer, then copy and resize this image for the structural layer, and finally fill-in the structural layer with material colors. Here's how to do just that:
+1. Decide your new ship's dimensions: a good starting point is 240 meters wide and 70 meters high (the dimensions of the _RMS Titanic_ that comes with the game!)
+2. Create an empty image 8 times larger than that, in our case 1920x560; this will be our texture layer image.
+3. Draw the ship with any colors you'd like - when drawing the texture layer you don't have to follow the material palette. Draw fine details here, this is how your ship will look like after all!
+4. Make sure that the image is *transparent* where there's no ship.
+5. Once you're done, save the texture image as a _png_ file; call it for example "my_new_ship_texture.png".
+6. Now resize the image down by 8 - you should end with a 240x70 image; this will be your structural layer image.
+7. Draw pixels over the pixels of the resized image, this time following the structural material palette. These pixels will be your particles, having the material corresponding to the palette color. Make sure you cover _all_ of the resized image's pixels. For this image, you should think of describing the "inside" of the ship - its beams, decks, shafts, hull, and so on. 
+8. Use only hull materials for those pixels of the structure which will have contact with sea water, or else water will flood immediately when the ship is loaded. Watch out for diagonals - two hull pixels that touch each other only on their corners will still allow water in.
+9. Make sure that when the texture image was transparent, the structure image has _white_ pixels instead. You may probably just flood the "outside" area with _white_ to achieve this.
+10. Once you're done, save the structural image as a _png_ file; call it for example "my_new_ship_structural.png".
+11. Create a text file with the following content:
+```
+{
+	"structure_image":"my_new_ship_structural.png",
+	"texture_image":"my_new_ship_texture.png",
+	"ship_name":"My New Ship",
+	"created_by":"Myself"
+}
+```
+12. Save the file as "My New Ship.shp"
+13. Load the ship end enjoy it!
+14. To avoid seeing the texture and structural images as ships in the "Load Ship" window, rename the images as ".dat" - and don't forget to update the _shp_ file as well!
