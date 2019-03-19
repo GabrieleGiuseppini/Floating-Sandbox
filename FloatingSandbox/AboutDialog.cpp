@@ -98,6 +98,9 @@ AboutDialog::AboutDialog(
 
     std::vector<std::pair<std::string, std::string>> credits
     {
+        {"Testing:\t\t", "Pac0master" },
+        {"\t\t\t\t", "TODOOTHER" },
+
         {"Cover art:\t", "Dimitar Katsarov - https://www.artstation.com/stukata/profile" },
 
         {"Ship art:\t\t", "OceanLinerOrca - https://www.deviantart.com/oceanlinerorca" },

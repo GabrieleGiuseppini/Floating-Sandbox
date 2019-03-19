@@ -265,10 +265,13 @@ Render:
 
 		= Water Contrast @ 0.875?
 
-		- About dialog with testers
-
 		- Decay (rust) (*)
 
+		- Send for testing
+
+		- About dialog with testers
+
+		- Release?
 
 		- Orphaned points (*)
 
@@ -283,7 +286,7 @@ Render:
 		- Flood tool and ship un/sinking
 			- Sinking: do HighWatermark/LowWatermark
 			- Make music class with FadeToStop()
-				- ::Update()
+				- ::Update()		
 
 		- Instanced drawing for lights (*)
 
@@ -821,17 +824,54 @@ Render:
 				- 1  = 5m (default)
 				- 10 = 10s
 			- Low-frequency Ship update does job
-			- Should integrate with Combustion feature:
+			- Integrate with Combustion feature:
 				- Combustion also is a source of decay
 				- Springs should get weak based off decay, independently from source
+				- It is really 3 distinct processes:
+					- 1a: Point rotting:
+						- Low-frequency
+						- water + isLeaking => decay
+					- 1b: Point combustion:
+						- Any frequency (combustion state machine update frequency)
+						- combustion y/n => decay
+					- 2: Spring decay
+						- Low-frequency
+						- p.decay => s.strength
+							- Use both endpoints' decay
+						- Impl:
+							- Springs::Decay(Points const &)
+								- For each spring: strength = material's strength * avg of two endpoints' decay
+									- float buffer: MaterialStrength
 		- Impl:
-			- Points: new Decay buffer
+			- Points: new Decay float buffer
 				- Init as 1.0
 					- Idea is that Ship::DecayStructure sends it asymptotically to 0.0
+			- Springs: new MaterialStrength float buffer
+				- Init with material strength, same as Strength
+				- Getter const
 			- Points: ConnectedSprings structure contains size_t with # of springs owned by the point
 				- Update at Add/RemoveConnectedSpring
 					- And make owned are first, non-owned next
 				- Clone same to triangles - remove isAtOwner flag there
+			- Ship::LowFrequencyUpdate()
+				- Invoked by Ship::Update
+				- Checks whether currentSimTime >= lastLowFrequencyUpdateSimTime + GameParameters::LowFrequencyUpdateInterval
+				- Does:
+					- Ship::RotPoints() -> decay
+						- alpha = (10^-5)^(f(Acceler8r)/300) (~total decay in 300/f(Acceler8r) steps)
+						- for each point p:
+							- beta ~= alpha * log(p.water) (beta << 1)
+								- Do log with c++ func for exponent extraction
+							- if p.isLeaking: beta *= 5.0
+							- p.SetDecay(decay *= (1.0 - beta))
+							- Check assembly!
+
+						- Points.MarkDecayBufferAsDirty()
+
+					- Ship::DecaySprings() -> strength
+						- TODO: from below
+
+			- TODOHERE
 			- Ship::DecayStructure:
 				- Invoked by Ship::Update
 				- Checks whether currentSimTimestamp >= lastDecaySimTimestamp + DT
@@ -839,7 +879,7 @@ Render:
 					- DT = T / 300
 				- When so:
 					- alpha = (10^-5)^(1/300) (~total decay in 300 steps)
-					- for each point p for which p.isLeaking:
+					- for each point p for which p.isLeaking (or just for each point p, and isLeaking adds to weight):
 						- beta ~= alpha * log(p.water) (beta << 1)
 							- Do log with https://en.wikipedia.org/wiki/Taylor_series#Natural_logarithm
 								- Only for w between zero and 1

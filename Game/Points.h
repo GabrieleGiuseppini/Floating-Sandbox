@@ -949,11 +949,11 @@ private:
     Buffer<vec2f> mPositionBuffer;
     Buffer<vec2f> mVelocityBuffer;
     Buffer<vec2f> mForceBuffer;
-    Buffer<float> mMassBuffer;
+    Buffer<float> mMassBuffer; // Structural + Offset
     Buffer<float> mIntegrationFactorTimeCoefficientBuffer; // dt^2 or zero when the point is frozen
 
     // Calculated values
-    Buffer<float> mTotalMassBuffer;
+    Buffer<float> mTotalMassBuffer; // MassBuffer + Water
     Buffer<vec2f> mIntegrationFactorBuffer;
     Buffer<vec2f> mForceRenderBuffer;
 
