@@ -480,14 +480,13 @@ private:
     // Buffers
     //
 
-    GameOpenGLVBO mPointPositionVBO;
-
-    GameOpenGLVBO mPointColorVBO;
-
-    std::unique_ptr<vec4f> mPointAttributeGroup1Buffer; // Light, Water, PlaneId, Pad
+    std::unique_ptr<vec4f> mPointAttributeGroup1Buffer; // Position, TextureCoordinates
     GameOpenGLVBO mPointAttributeGroup1VBO;
 
-    GameOpenGLVBO mPointTextureCoordinatesVBO;
+    std::unique_ptr<vec4f> mPointAttributeGroup2Buffer; // Light, Water, PlaneId, Pad
+    GameOpenGLVBO mPointAttributeGroup2VBO;
+
+    GameOpenGLVBO mPointColorVBO;
 
     std::vector<LineElement> mStressedSpringElementBuffer;
     GameOpenGLVBO mStressedSpringElementVBO;

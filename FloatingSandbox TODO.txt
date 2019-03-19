@@ -1,24 +1,26 @@
 =================================================
 Current perf:
 =================================================
-- fps: 30.0/30.4/31.1/32.2 (supercharged)/31.7
-- RunGameIteration: TODO:86.57% (initialization time)
-- World::Update: 59.13%
-		- UpdateMechanicalDynamics: 48.06%
-			- UpdateSpringForces: 36.99%
-			- UpdatePointForces: 5.48%
-			- HandleCollisionsWithSeafFloor: 2.94%
-			- IntegrateAndResetPointForces: 2.39%
-			- UpdateTotalMasses: 0.25%
-		- UpdateWaterDynamics: 6.91%
-			- UpdateWaterVelocities: 6.80%
-			- UpdateWaterInflow: 0.05%
-		- DiffuseLight: 2.97%
-- World::Render: 23.19%
-	- Ship::Render: 19.91%
-	- RenderSkyEnd: 2.38%
-	- RenderOcean: 0.78%
-
+- fps: 30.7/30.7/30.8/30.9/32.0
+- U/R: 193%
+- RunGameIteration: TODO:86.62% (initialization time)
+- World::Update: 60.25%
+		- UpdateMechanicalDynamics: 49.32%
+			- UpdateSpringForces: 37.99%
+			- UpdatePointForces: 5.51%
+			- HandleCollisionsWithSeafFloor: 3.38%
+			- IntegrateAndResetPointForces: 2.30%
+			- UpdateTotalMasses: 0.13%
+		- UpdateWaterDynamics: 6.72%
+			- UpdateWaterVelocities: 6.57%
+			- UpdateWaterInflow: 0.08%
+		- DiffuseLight: 2.94%
+			- FastPow2: 1.44%
+- World::Render: 22.54%
+	- Ship::Render: 19.36%
+	- RenderSkyEnd: 2.33%
+	- RenderOcean: 0.70%
+=================================================
 Before Vertex Attribute Optimization:
 - fps: 28.2/28.4 (miracle: 28.7/29.0/29.1)
 - World::Update: 54.66%
@@ -34,19 +36,19 @@ Before Vertex Attribute Optimization:
 	- Ship::Render: 25.11%
 	- RenderSkyEnd: 2.23%
 	- RenderOcean: 0.77%
-
+=================================================
 Before VAO:
 - fps: 28.1/28.3
-
+=================================================
 Before bound world and point light<->ambient light additiveness:
 - fps: 29.0/29.2/29.4
-
+=================================================
 Before Z buffer:
 - fps: 30.2/30.6/31.2
-
+=================================================
 Before wind:
 - fps: 30.8/31.0/31.3
-
+=================================================
 Before exp optimization:
 - fps: 30.8/31.0/31.3
 - World::Update: 58.48%
@@ -61,10 +63,9 @@ Before exp optimization:
 		- DiffuseLight: 1.31%
 - World::Render: 28.15%
 	- RenderContext::RenderCloudsEnd: 3.98%
-
+=================================================
 Before diffusion improvement:
 - fps: 31.5/31.7
-
 =================================================
 Current perf (spring optimization + double spring iterations)
 =================================================
@@ -256,14 +257,13 @@ Render:
 			+ Try with empty png and corrupted png
 		+ VAO (*)
 		+ Misc OpenGL Optimizations (*)
-
 		+ Secondary PlaneIDAsFloat buffer
 			+ We only pay the price sparingly, but reap the benefits at each frame
 			+ Code
-		= Vertex buffer optimizations (*)
-		- Update FPS
+		+ Vertex buffer optimizations (*)
+		+ Update FPS & perf analysis
 
-		- Water Contrast @ 0.875?
+		= Water Contrast @ 0.875?
 
 		- About dialog with testers
 
@@ -606,27 +606,6 @@ Render:
 
 - Gfx optimizations:
 
-	+ Misc OpenGL Optimizations (*)
-		+ Try all of these in isolation, or building on the previous one if the previous one is a clear winner
-		+ Try STREAM with ship VBO buffers (apparently should do it without even testing!)
-			+ RenderContext:
-				+ Water, Land, Clouds
-			+ ShipRenderContext:
-				+ Mutable point attributes (pos, light, water)
-		+ Try orphaning VBO
-			+ RenderContext:
-				= Water, Land, Clouds
-			+ ShipRenderContext:
-				= Mutable point attributes (pos, light, water)
-			+ Figure out if should do null+subdata vs data
-			+ Verdict: no detectable improvement
-		+ Try with single VBO for elements, appending stuff to it
-			+ Test:
-				+ Dynamics between structureDirty changes and debugShipModeRender changes
-			+ See if can cleanup enforced order between triangles and others
-		+ ShipRenderEnd(): see if using the same shader for triangles and springs buys us anything
-			+ Not really
-
 	- World::UploadLandAndWater: use same spatial frequency as samples, so to avoid interpolating altogether
 		- Warning: requires same sampling frequency for both, as ocean quads require landY when land sticks out,
 		  unless we always render ocean up to visibleWorldBottom, in which case the two are fully independent;
@@ -645,90 +624,6 @@ Render:
 		- Test 2: also instance others
 		- At end:
 			- Try with light at fragment (Phong)
-
-	= Vertex Buffer Optimization (*): reduce number of vertex attributes for ship shaders 
-		+ We've already confirmed that one less attribute vertex sends FPS frpom 29 to 30
-		+ At this moment, all Ship shaders - except for stressed springs - have the following inputs:
-			in vec2 inShipPointPosition;
-			in float inShipPointLight;   *
-			in float inShipPointWater;
-			in vec4 inShipPointColor;    *
-			in float inShipPointPlaneId; *
-		+ Test 1: Light + PlaneId
-			+ Requires "float planeID" work item first
-			+ Code
-				+ Points: make struct, with comment on "rendering performance"
-			+ Shaders
-			+ Test 
-			+ See FPS: 29.3/29.7/29.9/30.8
-			+ If good:
-				+ Commit
-		+ Undo V->F shader in/out packing which we did at TrianglesTexture 
-			+ And move wetness calculation into vertex shader for all
-			+ See if there are other shaders as well
-			+ See if want to keep it:
-				+ FPS: 29.8/29.9/
-		+ Test 2: += Water + Pad
-			+ Code
-				+ Note: includes workBuffer copy @ WaterDynamics!
-				+ GameTypes:Add to PointAttributeGroup1
-				+ Points:
-					+ Remove buffer
-					+ Change getter & setter
-					+ Wo workbuffer copy (replace water one)
-				+ Ship::WaterDynamics
-					+ Use PointAttributeGroup1.Water instead of Water
-				+ RenderContext:
-					+ Nuke upload water vector
-				+ ShipRenderContext:
-					+ Nuke upload water vector
-					+ Describe new vertex attribute
-					+ Nuke RenderCore::AttributeType
-					+ Shaders
-			+ Test
-			+ Get FPS
-				- Make sure laptop is quiet
-			+ New Perf Analysis
-			+ Commit if good
-		+ Test 3: other shaders
-			+ None
-		+ Test 4: Bas' idea
-			+ Revert to before Test 1
-				+ ...but keep shaders
-			+ Do interleaving just at ShipRenderContext
-			+ Test:
-				+ Light
-				+ Water
-				+ Vectors
-			+ Check assembly
-			+ Unbind VBO
-			+ Check FPS:
-				+ 30.0/30.4/31.1/31.2 (supercharged)/31.7
-			+ Commit			
-		+ Test 5:
-			+ ShipRenderContext: use MappedBuffer
-				+ GameOpenGLMappedBuffer<TElement, WRITE_ONLY>
-					+ Map(size)
-					+ emplace_back(...)
-						- w/assert that is mapped
-					+ Unmap()
-					+ ~()
-						+ Unmap if mapped
-					+ Remove that ugly GameOpenGLObject()
-				+ Use where we upload temporarily to local buffer:
-					+ Clouds
-					+ Land and Ocean
-				+ Check if good and, if so, commit
-					+ 30.25/30.3/30.4/31.0/31.15
-		- Test 6:
-			- See if can also interleave Position and TextureCoordinates
-				- Name the other "AttributeGroup2"
-					- Fix all
-				- Make new "AttributeGroup1"
-					- Uploaded straight at ShipRenderContext::UploadPointMutableAttributes()
-			- Check FPS:
-			- Commit
-		- Do perf analysis
 
 	- Try using GL_SHORT for Ship texture coordinates
 		- Passing NORMALIZE and 3 components to glVertexAttribPointer
@@ -926,6 +821,9 @@ Render:
 				- 1  = 5m (default)
 				- 10 = 10s
 			- Low-frequency Ship update does job
+			- Should integrate with Combustion feature:
+				- Combustion also is a source of decay
+				- Springs should get weak based off decay, independently from source
 		- Impl:
 			- Points: new Decay buffer
 				- Init as 1.0
@@ -2671,7 +2569,6 @@ IF WX:
 					+ Nuke TextureRenderManager member and cctor arg
 					+ Cleanup RenderContext's upload of textures				
 			+ Remove test saving of atlas
-
 	+ Figure out what's most expensive with perf analysis and noinline
 		+ Only triangles: 42fps
 		+ Triangles and ropes: 42fps
@@ -2731,8 +2628,6 @@ IF WX:
 		+ Replace calls to glActiveTexture with ShaderManager::ActivateTexture(parameter)
 		+ Fix/Recheck progress bar
 		+ Redo perf FPS measurement
-
-
 	+ Z buffer:
 		+ Rationale: more connected components => slower (multiple batches); try to draw one single batch then, using Z buffer and depth test 
 		+ Spec:
@@ -3085,7 +2980,112 @@ IF WX:
 				+ RenderCore.h/cpp: remove unused attributes and other TODOs
 		+ Get new FPS
 		+ Merge
-
+	+ Misc OpenGL Optimizations (*)
+		+ Try all of these in isolation, or building on the previous one if the previous one is a clear winner
+		+ Try STREAM with ship VBO buffers (apparently should do it without even testing!)
+			+ RenderContext:
+				+ Water, Land, Clouds
+			+ ShipRenderContext:
+				+ Mutable point attributes (pos, light, water)
+		+ Try orphaning VBO
+			+ RenderContext:
+				= Water, Land, Clouds
+			+ ShipRenderContext:
+				= Mutable point attributes (pos, light, water)
+			+ Figure out if should do null+subdata vs data
+			+ Verdict: no detectable improvement
+		+ Try with single VBO for elements, appending stuff to it
+			+ Test:
+				+ Dynamics between structureDirty changes and debugShipModeRender changes
+			+ See if can cleanup enforced order between triangles and others
+		+ ShipRenderEnd(): see if using the same shader for triangles and springs buys us anything
+			+ Not really
+	+ Vertex Buffer Optimization (*): reduce number of vertex attributes for ship shaders 
+		+ We've already confirmed that one less attribute vertex sends FPS frpom 29 to 30
+		+ At this moment, all Ship shaders - except for stressed springs - have the following inputs:
+			in vec2 inShipPointPosition;
+			in float inShipPointLight;   *
+			in float inShipPointWater;
+			in vec4 inShipPointColor;    *
+			in float inShipPointPlaneId; *
+		+ Test 1: Light + PlaneId
+			+ Requires "float planeID" work item first
+			+ Code
+				+ Points: make struct, with comment on "rendering performance"
+			+ Shaders
+			+ Test 
+			+ See FPS: 29.3/29.7/29.9/30.8
+			+ If good:
+				+ Commit
+		+ Undo V->F shader in/out packing which we did at TrianglesTexture 
+			+ And move wetness calculation into vertex shader for all
+			+ See if there are other shaders as well
+			+ See if want to keep it:
+				+ FPS: 29.8/29.9/
+		+ Test 2: += Water + Pad
+			+ Code
+				+ Note: includes workBuffer copy @ WaterDynamics!
+				+ GameTypes:Add to PointAttributeGroup1
+				+ Points:
+					+ Remove buffer
+					+ Change getter & setter
+					+ Wo workbuffer copy (replace water one)
+				+ Ship::WaterDynamics
+					+ Use PointAttributeGroup1.Water instead of Water
+				+ RenderContext:
+					+ Nuke upload water vector
+				+ ShipRenderContext:
+					+ Nuke upload water vector
+					+ Describe new vertex attribute
+					+ Nuke RenderCore::AttributeType
+					+ Shaders
+			+ Test
+			+ Get FPS
+				- Make sure laptop is quiet
+			+ New Perf Analysis
+			+ Commit if good
+		+ Test 3: other shaders
+			+ None
+		+ Test 4: Bas' idea
+			+ Revert to before Test 1
+				+ ...but keep shaders
+			+ Do interleaving just at ShipRenderContext
+			+ Test:
+				+ Light
+				+ Water
+				+ Vectors
+			+ Check assembly
+			+ Unbind VBO
+			+ Check FPS:
+				+ 30.0/30.4/31.1/31.2 (supercharged)/31.7
+			+ Commit			
+		+ Test 5:
+			+ ShipRenderContext: use MappedBuffer
+				+ GameOpenGLMappedBuffer<TElement, WRITE_ONLY>
+					+ Map(size)
+					+ emplace_back(...)
+						- w/assert that is mapped
+					+ Unmap()
+					+ ~()
+						+ Unmap if mapped
+					+ Remove that ugly GameOpenGLObject()
+				+ Use where we upload temporarily to local buffer:
+					+ Clouds
+					+ Land and Ocean
+				+ Check if good and, if so, commit
+					+ 30.25/30.3/30.4/31.0/31.15
+		+ Test 6:
+			+ See if can also interleave Position and TextureCoordinates
+				+ Name the other "AttributeGroup2"
+					+ Fix all
+				+ Make new "AttributeGroup1"
+					+ Uploaded straight at ShipRenderContext::UploadPointMutableAttributes()
+				+ Shaders
+			+ Check perf:
+				+ FPS: 30.7/30.7/30.8/30.9/32.0
+				+ U/R: 193%
+			+ Commit
+		+ Do perf analysis
 
 + Dynamics
 	+ Try half of the relaxation iterations

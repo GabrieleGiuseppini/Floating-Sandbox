@@ -6,9 +6,8 @@
 #define out varying
 
 // Inputs
-in vec2 inShipPointPosition;
-in vec3 inShipPointAttributeGroup1; // Light, Water, PlaneId
-in vec2 inShipPointTextureCoordinates;
+in vec4 inShipPointAttributeGroup1; // Position, TextureCoordinates
+in vec3 inShipPointAttributeGroup2; // Light, Water, PlaneId
 
 // Outputs        
 out float vertexLightIntensity;
@@ -24,12 +23,12 @@ uniform mat4 paramOrthoMatrix;
 
 void main()
 {            
-    vertexLightIntensity = paramAmbientLightIntensity + (1.0 - paramAmbientLightIntensity) * inShipPointAttributeGroup1.x;
-    vertexLightColorMix = inShipPointAttributeGroup1.x;
-    vertexColorWetness = min(inShipPointAttributeGroup1.y, paramWaterLevelThreshold) / paramWaterLevelThreshold * paramWaterContrast;
-    vertexTextureCoords = inShipPointTextureCoordinates;
+    vertexLightIntensity = paramAmbientLightIntensity + (1.0 - paramAmbientLightIntensity) * inShipPointAttributeGroup2.x;
+    vertexLightColorMix = inShipPointAttributeGroup2.x;
+    vertexColorWetness = min(inShipPointAttributeGroup2.y, paramWaterLevelThreshold) / paramWaterLevelThreshold * paramWaterContrast;
+    vertexTextureCoords = inShipPointAttributeGroup1.zw;
 
-    gl_Position = paramOrthoMatrix * vec4(inShipPointPosition.xy, inShipPointAttributeGroup1.z, 1.0);
+    gl_Position = paramOrthoMatrix * vec4(inShipPointAttributeGroup1.xy, inShipPointAttributeGroup2.z, 1.0);
 }
 
 ###FRAGMENT

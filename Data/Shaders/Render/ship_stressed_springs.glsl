@@ -6,8 +6,8 @@
 #define out varying
 
 // Inputs
-in vec2 inShipPointPosition;
-in vec3 inShipPointAttributeGroup1; // Light, Water, PlaneId
+in vec4 inShipPointAttributeGroup1; // Position, TextureCoordinates
+in vec3 inShipPointAttributeGroup2; // Light, Water, PlaneId
 
 // Outputs        
 out vec2 vertexTextureCoords;
@@ -17,8 +17,8 @@ uniform mat4 paramOrthoMatrix;
 
 void main()
 {
-    vertexTextureCoords = inShipPointPosition; 
-    gl_Position = paramOrthoMatrix * vec4(inShipPointPosition.xy, inShipPointAttributeGroup1.z, 1.0);
+    vertexTextureCoords = inShipPointAttributeGroup1.xy; 
+    gl_Position = paramOrthoMatrix * vec4(inShipPointAttributeGroup1.xy, inShipPointAttributeGroup2.z, 1.0);
 }
 
 ###FRAGMENT

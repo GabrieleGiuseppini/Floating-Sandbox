@@ -211,14 +211,12 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
     else if (Utils::CaseInsensitiveEquals(str, "CrossOfLight2"))
         return VertexAttributeType::CrossOfLight2;
     // Ship
-    else if (Utils::CaseInsensitiveEquals(str, "ShipPointPosition"))
-        return VertexAttributeType::ShipPointPosition;
-    else if (Utils::CaseInsensitiveEquals(str, "ShipPointColor"))
-        return VertexAttributeType::ShipPointColor;
-    else if (Utils::CaseInsensitiveEquals(str, "ShipPointTextureCoordinates"))
-        return VertexAttributeType::ShipPointTextureCoordinates;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointAttributeGroup1"))
         return VertexAttributeType::ShipPointAttributeGroup1;
+    else if (Utils::CaseInsensitiveEquals(str, "ShipPointAttributeGroup2"))
+        return VertexAttributeType::ShipPointAttributeGroup2;
+    else if (Utils::CaseInsensitiveEquals(str, "ShipPointColor"))
+        return VertexAttributeType::ShipPointColor;
     else if (Utils::CaseInsensitiveEquals(str, "GenericTexture1"))
         return VertexAttributeType::GenericTexture1;
     else if (Utils::CaseInsensitiveEquals(str, "GenericTexture2"))
