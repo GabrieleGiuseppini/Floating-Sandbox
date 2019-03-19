@@ -674,6 +674,8 @@ void ShipRenderContext::UploadPointMutableAttributesEnd()
     glBindBuffer(GL_ARRAY_BUFFER, *mPointAttributeGroup1VBO);
     glBufferSubData(GL_ARRAY_BUFFER, 0, mPointCount * sizeof(vec4f), mPointAttributeGroup1Buffer.get());
     CheckOpenGLError();
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void ShipRenderContext::UploadPointColors(
@@ -683,10 +685,11 @@ void ShipRenderContext::UploadPointColors(
 {
     assert(startDst + count <= mPointCount);
 
-    // Uplaod color range
+    // Upload color range
     glBindBuffer(GL_ARRAY_BUFFER, *mPointColorVBO);
     glBufferSubData(GL_ARRAY_BUFFER, startDst * sizeof(vec4f), count * sizeof(vec4f), color);
     CheckOpenGLError();
+
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 

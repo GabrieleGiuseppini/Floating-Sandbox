@@ -1,8 +1,8 @@
 =================================================
 Current perf:
 =================================================
-- fps: 29.8/29.9/30.5/30.6
-- RunGameIteration: 86.57% (initialization time)
+- fps: 30.0/30.4/31.1/32.2 (supercharged)/31.7
+- RunGameIteration: TODO:86.57% (initialization time)
 - World::Update: 59.13%
 		- UpdateMechanicalDynamics: 48.06%
 			- UpdateSpringForces: 36.99%
@@ -351,6 +351,7 @@ Render:
 	- Meteorites
 	- Tsunami
 	- Earthquake
+	- Storm: rain and waves at ~4.4
 
 - Technical Debt:
 	+ Global damp as game parameter
@@ -626,19 +627,6 @@ Render:
 		+ ShipRenderEnd(): see if using the same shader for triangles and springs buys us anything
 			+ Not really
 
-	- Try with mapped buffer
-		- GameOpenGLMappedVector<TElement, WRITE_ONLY>
-			- Map(size)
-			- emplace_back(...)
-				- w/assert that is mapped
-			- Unmap()
-			- ~()
-				- Unmap if mapped
-			- Remove that ugly GameOpenGLObject()
-		- Try at:
-			- Clouds
-			- Land and Ocean
-
 	- World::UploadLandAndWater: use same spatial frequency as samples, so to avoid interpolating altogether
 		- Warning: requires same sampling frequency for both, as ocean quads require landY when land sticks out,
 		  unless we always render ocean up to visibleWorldBottom, in which case the two are fully independent;
@@ -704,7 +692,7 @@ Render:
 			+ Commit if good
 		+ Test 3: other shaders
 			+ None
-		= Test 4: Bas' idea
+		+ Test 4: Bas' idea
 			+ Revert to before Test 1
 				+ ...but keep shaders
 			+ Do interleaving just at ShipRenderContext
@@ -712,19 +700,31 @@ Render:
 				+ Light
 				+ Water
 				+ Vectors
-			= Check assembly
-			= Check FPS:
-				= 30.0/30.4/31.1/31.7
-			- Do perf analysis
-			- Commit
-		- Test 5:
-			- ShipRenderContext: see if orphaning AttributeGroup1 buffer makes any difference
+			+ Check assembly
+			+ Unbind VBO
+			+ Check FPS:
+				+ 30.0/30.4/31.1/32.2 (supercharged)/31.7
+			+ Commit			
+		= Test 5:
+			- ShipRenderContext: see MappedBuffer instead of own buffer, into which we interleave
+				- GameOpenGLMappedVector<TElement, WRITE_ONLY>
+					- Map(size)
+					- emplace_back(...)
+						- w/assert that is mapped
+					- Unmap()
+					- ~()
+						- Unmap if mapped
+					- Remove that ugly GameOpenGLObject()
+			- Try also at places where we upload temporarily to local buffer:
+				- Clouds
+				- Land and Ocean
 		- Test 6:
 			- See if can also interleave Position and TextureCoordinates
 				- Name the other "AttributeGroup2"
 					- Fix all
 				- Make new "AttributeGroup1"
 					- Uploaded straight at ShipRenderContext::UploadPointMutableAttributes()
+		- Do perf analysis
 
 	- Try using GL_SHORT for Ship texture coordinates
 		- Passing NORMALIZE and 3 components to glVertexAttribPointer
