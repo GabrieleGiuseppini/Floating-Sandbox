@@ -51,6 +51,16 @@ public:
         }
     }
 
+    std::filesystem::path const & GetScreenshotsFolderPath() const
+    {
+        return mScreenshotsFolderPath;
+    }
+
+    void SetScreenshotsFolderPath(std::filesystem::path screenshotsFolderPath)
+    {
+        mScreenshotsFolderPath = std::move(screenshotsFolderPath);
+    }
+
     bool GetShowStartupTip() const
     {
         return mShowStartupTip;
@@ -61,9 +71,22 @@ public:
         mShowStartupTip = value;
     }
 
+    bool GetShowShipDescriptionsAtShipLoad() const
+    {
+        return mShowShipDescriptionsAtShipLoad;
+    }
+
+    void SetShowShipDescriptionsAtShipLoad(bool value)
+    {
+        mShowShipDescriptionsAtShipLoad = value;
+    }
+
 private:
 
     std::vector<std::filesystem::path> mShipLoadDirectories;
 
+    std::filesystem::path mScreenshotsFolderPath;
+
     bool mShowStartupTip;
+    bool mShowShipDescriptionsAtShipLoad;
 };

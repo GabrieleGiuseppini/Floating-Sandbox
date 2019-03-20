@@ -25,7 +25,10 @@ UIPreferences::UIPreferences()
     auto const defaultShipLoadDirectory = ResourceLoader::GetInstalledShipFolderPath();
     mShipLoadDirectories.push_back(defaultShipLoadDirectory);
 
+    mScreenshotsFolderPath = StandardSystemPaths::GetInstance().GetUserPicturesGameFolderPath();
+
     mShowStartupTip = true;
+    mShowShipDescriptionsAtShipLoad = true;
 
 
     //
@@ -71,6 +74,17 @@ UIPreferences::UIPreferences()
             }
 
             //
+            // Screenshots folder path
+            //
+
+            auto screenshotsFolderPathIt = preferencesRootObject.find("screenshots_folder_path");
+            if (screenshotsFolderPathIt != preferencesRootObject.end()
+                && screenshotsFolderPathIt->second.is<std::string>())
+            {
+                mScreenshotsFolderPath = screenshotsFolderPathIt->second.get<std::string>();
+            }
+
+            //
             // Show startup tip
             //
 
@@ -79,6 +93,17 @@ UIPreferences::UIPreferences()
                 && showStartupTipIt->second.is<bool>())
             {
                 mShowStartupTip = showStartupTipIt->second.get<bool>();
+            }
+
+            //
+            // Show ship descriptions at ship load
+            //
+
+            auto showShipDescriptionAtShipLoadIt = preferencesRootObject.find("show_ship_descriptions_at_ship_load");
+            if (showShipDescriptionAtShipLoadIt != preferencesRootObject.end()
+                && showShipDescriptionAtShipLoadIt->second.is<bool>())
+            {
+                mShowShipDescriptionsAtShipLoad = showShipDescriptionAtShipLoadIt->second.get<bool>();
             }
         }
     }
@@ -109,9 +134,14 @@ UIPreferences::~UIPreferences()
 
         preferencesRootObject["ship_load_directories"] = picojson::value(shipLoadDirectories);
 
-        // Add show startup tip
+        // Add screenshots folder path
+        preferencesRootObject["screenshots_folder_path"] = picojson::value(mScreenshotsFolderPath.string());
 
+        // Add show startup tip
         preferencesRootObject["show_startup_tip"] = picojson::value(mShowStartupTip);
+
+        // Add show ship descriptions at ship load
+        preferencesRootObject["show_ship_descriptions_at_ship_load"] = picojson::value(mShowShipDescriptionsAtShipLoad);
 
         // Save
         Utils::SaveJSONFile(

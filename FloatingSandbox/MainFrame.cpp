@@ -5,6 +5,7 @@
  ***************************************************************************************/
 #include "MainFrame.h"
 
+#include "ShipDescriptionDialog.h"
 #include "SplashScreenDialog.h"
 #include "StartupTipDialog.h"
 #include "Version.h"
@@ -64,6 +65,7 @@ const long ID_ANTIMATTERBOMBDETONATE_MENUITEM = wxNewId();
 const long ID_ADJUSTTERRAIN_MENUITEM = wxNewId();
 
 const long ID_OPEN_SETTINGS_WINDOW_MENUITEM = wxNewId();
+const long ID_OPEN_PREFERENCES_WINDOW_MENUITEM = wxNewId();
 const long ID_OPEN_LOG_WINDOW_MENUITEM = wxNewId();
 const long ID_SHOW_EVENT_TICKER_MENUITEM = wxNewId();
 const long ID_SHOW_PROBE_PANEL_MENUITEM = wxNewId();
@@ -87,7 +89,6 @@ MainFrame::MainFrame(wxApp * mainApp)
     , mResourceLoader(new ResourceLoader())
     , mGameController()
     , mSoundController()
-    , mUISettings()
     , mUIPreferences()
     , mToolController()
     , mHasWindowBeenShown(false)
@@ -339,9 +340,13 @@ MainFrame::MainFrame(wxApp * mainApp)
 
     wxMenu * optionsMenu = new wxMenu();
 
-    wxMenuItem * openSettingsWindowMenuItem = new wxMenuItem(optionsMenu, ID_OPEN_SETTINGS_WINDOW_MENUITEM, _("Open Settings Window\tCtrl+S"), wxEmptyString, wxITEM_NORMAL);
+    wxMenuItem * openSettingsWindowMenuItem = new wxMenuItem(optionsMenu, ID_OPEN_SETTINGS_WINDOW_MENUITEM, _("Settings...\tCtrl+S"), wxEmptyString, wxITEM_NORMAL);
     optionsMenu->Append(openSettingsWindowMenuItem);
     Connect(ID_OPEN_SETTINGS_WINDOW_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnOpenSettingsWindowMenuItemSelected);
+
+    wxMenuItem * openPreferencesWindowMenuItem = new wxMenuItem(optionsMenu, ID_OPEN_PREFERENCES_WINDOW_MENUITEM, _("Preferences...\tCtrl+F"), wxEmptyString, wxITEM_NORMAL);
+    optionsMenu->Append(openPreferencesWindowMenuItem);
+    Connect(ID_OPEN_PREFERENCES_WINDOW_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnOpenPreferencesWindowMenuItemSelected);
 
     wxMenuItem * openLogWindowMenuItem = new wxMenuItem(optionsMenu, ID_OPEN_LOG_WINDOW_MENUITEM, _("Open Log Window\tCtrl+L"), wxEmptyString, wxITEM_NORMAL);
     optionsMenu->Append(openLogWindowMenuItem);
@@ -557,13 +562,6 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     }
 
     this->mMainApp->Yield();
-
-
-    //
-    // Create UI Settings
-    //
-
-    mUISettings = std::make_shared<UISettings>();
 
 
     //
@@ -849,7 +847,20 @@ void MainFrame::OnShipFileChosen(fsShipFileChosenEvent & event)
     assert(!!mGameController);
     try
     {
-        mGameController->ResetAndLoadShip(event.GetShipFilepath());
+        auto shipMetadata = mGameController->ResetAndLoadShip(event.GetShipFilepath());
+
+        // Open description, if a description exists and the user allows
+        if (!!shipMetadata.Description
+            && mUIPreferences->GetShowShipDescriptionsAtShipLoad())
+        {
+            ShipDescriptionDialog shipDescriptionDialog(
+                this,
+                shipMetadata,
+                true,
+                mUIPreferences);
+
+            shipDescriptionDialog.ShowModal();
+        }
     }
     catch (std::exception const & ex)
     {
@@ -984,8 +995,8 @@ void MainFrame::OnSaveScreenshotMenuItemSelected(wxCommandEvent & /*event*/)
     // Ensure pictures folder exists
     //
 
-    assert(!!mUISettings);
-    auto const folderPath = mUISettings->GetScreenshotsFolderPath();
+    assert(!!mUIPreferences);
+    auto const folderPath = mUIPreferences->GetScreenshotsFolderPath();
 
     if (!std::filesystem::exists(folderPath))
     {
@@ -1225,11 +1236,22 @@ void MainFrame::OnOpenSettingsWindowMenuItemSelected(wxCommandEvent & /*event*/)
             this,
             mGameController,
             mSoundController,
-            mUISettings,
             *mResourceLoader);
     }
 
     mSettingsDialog->Open();
+}
+
+void MainFrame::OnOpenPreferencesWindowMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    if (!mPreferencesDialog)
+    {
+        mPreferencesDialog = std::make_unique<PreferencesDialog>(
+            this,
+            mUIPreferences);
+    }
+
+    mPreferencesDialog->Open();
 }
 
 void MainFrame::OnOpenLogWindowMenuItemSelected(wxCommandEvent & /*event*/)

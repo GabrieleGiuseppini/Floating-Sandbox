@@ -28,6 +28,7 @@ ShipPreviewControl::ShipPreviewControl(
     , mShipFilepath(shipFilepath)
     , mWaitImage(waitImage)
     , mErrorImage(errorImage)
+    , mShipMetadata()
 {
     SetBackgroundColour(wxColour("WHITE"));
 
@@ -178,6 +179,12 @@ void ShipPreviewControl::SetSelected(bool isSelected)
 void ShipPreviewControl::SetPreviewContent(ShipPreview const & shipPreview)
 {
     //
+    // Store ship metadata
+    //
+
+    mShipMetadata.emplace(shipPreview.Metadata);
+
+    //
     // Create description text 1
     //
 
@@ -238,6 +245,7 @@ void ShipPreviewControl::OnMouseSingleClick(wxMouseEvent & /*event*/)
         fsEVT_SHIP_FILE_SELECTED,
         this->GetId(),
         mShipIndex,
+        mShipMetadata,
         mShipFilepath);
 
     ProcessWindowEvent(event);

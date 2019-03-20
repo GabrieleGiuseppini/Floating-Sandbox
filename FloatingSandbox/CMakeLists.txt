@@ -17,12 +17,16 @@ set  (FLOATING_SANDBOX_SOURCES
 	MainFrame.h
 	OpenGLContext.cpp
 	OpenGLContext.h
+	PreferencesDialog.cpp
+	PreferencesDialog.h
 	ProbePanel.cpp
 	ProbePanel.h
 	ScalarTimeSeriesProbeControl.cpp
 	ScalarTimeSeriesProbeControl.h
 	SettingsDialog.cpp
 	SettingsDialog.h
+	ShipDescriptionDialog.cpp
+	ShipDescriptionDialog.h
 	ShipLoadDialog.cpp
 	ShipLoadDialog.h
 	ShipPreviewControl.cpp
@@ -47,10 +51,8 @@ set  (FLOATING_SANDBOX_SOURCES
 	Tools.h
 	UIPreferences.cpp
 	UIPreferences.h
-	UISettings.cpp
-	UISettings.h
-    UnhandledExceptionHandler.cpp
-    UnhandledExceptionHandler.h
+	UnhandledExceptionHandler.cpp
+	UnhandledExceptionHandler.h
 	Version.h
 	)
 

@@ -23,16 +23,20 @@ public:
 
     std::optional<std::string> const YearBuilt;
 
+    std::optional<std::string> const Description;
+
     vec2f const Offset;
 
     ShipMetadata(
         std::string shipName,
         std::optional<std::string> author,
         std::optional<std::string> yearBuilt,
+        std::optional<std::string> description,
         vec2f offset)
         : ShipName(std::move(shipName))
         , Author(std::move(author))
         , YearBuilt(std::move(yearBuilt))
+        , Description(std::move(description))
         , Offset(std::move(offset))
     {
     }
@@ -41,7 +45,10 @@ public:
         : ShipName(std::move(shipName))
         , Author()
         , YearBuilt()
+        , Description()
         , Offset()
     {
     }
+
+    ShipMetadata(ShipMetadata const & other) = default;
 };

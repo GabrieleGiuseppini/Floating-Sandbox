@@ -9,13 +9,13 @@
 #include "EventTickerPanel.h"
 #include "HelpDialog.h"
 #include "LoggingDialog.h"
+#include "PreferencesDialog.h"
 #include "ProbePanel.h"
 #include "SettingsDialog.h"
 #include "ShipLoadDialog.h"
 #include "SoundController.h"
 #include "ToolController.h"
 #include "UIPreferences.h"
-#include "UISettings.h"
 
 #include <Game/GameController.h>
 #include <Game/IGameEventHandler.h>
@@ -91,6 +91,7 @@ private:
     std::unique_ptr<ShipLoadDialog> mShipLoadDialog;
     std::unique_ptr<LoggingDialog> mLoggingDialog;
     std::unique_ptr<SettingsDialog> mSettingsDialog;
+    std::unique_ptr<PreferencesDialog> mPreferencesDialog;
     std::unique_ptr<HelpDialog> mHelpDialog;
     std::unique_ptr<AboutDialog> mAboutDialog;
 
@@ -157,6 +158,7 @@ private:
     void OnRCBombDetonateMenuItemSelected(wxCommandEvent& event);
     void OnAntiMatterBombDetonateMenuItemSelected(wxCommandEvent& event);
     void OnOpenSettingsWindowMenuItemSelected(wxCommandEvent& event);
+    void OnOpenPreferencesWindowMenuItemSelected(wxCommandEvent& event);
     void OnOpenLogWindowMenuItemSelected(wxCommandEvent& event);
     void OnShowEventTickerMenuItemSelected(wxCommandEvent& event);
     void OnShowProbePanelMenuItemSelected(wxCommandEvent& event);
@@ -264,7 +266,6 @@ private:
     std::shared_ptr<ResourceLoader> mResourceLoader;
     std::shared_ptr<GameController> mGameController;
     std::shared_ptr<SoundController> mSoundController;
-    std::shared_ptr <UISettings> mUISettings;
     std::shared_ptr <UIPreferences> mUIPreferences;
     std::unique_ptr<ToolController> mToolController;
 

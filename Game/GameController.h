@@ -11,6 +11,7 @@
 #include "Physics.h"
 #include "RenderContext.h"
 #include "ResourceLoader.h"
+#include "ShipMetadata.h"
 #include "TextLayer.h"
 
 #include <GameCore/Colors.h>
@@ -50,8 +51,8 @@ public:
 
     void RegisterGameEventHandler(IGameEventHandler * gameEventHandler);
 
-    void ResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath);
-    void AddShip(std::filesystem::path const & shipDefinitionFilepath);
+    ShipMetadata ResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath);
+    ShipMetadata AddShip(std::filesystem::path const & shipDefinitionFilepath);
     void ReloadLastShip();
 
     RgbImageData TakeScreenshot();

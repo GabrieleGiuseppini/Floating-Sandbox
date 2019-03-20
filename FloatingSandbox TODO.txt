@@ -264,12 +264,16 @@ Render:
 		+ Update FPS & perf analysis
 		+ Water Contrast @ 0.875?
 
+		= UIPreferences
+
 		= Decay (rust) (*)
+
+		- Ship descriptions (*)
 
 		- Send for testing
 
 		- More incisive air bubble vortex?
-		- About dialog with testers
+		- About dialog with testers & descriptions
 
 		- Release?
 
@@ -1329,9 +1333,30 @@ Render:
 						- If "Interior" -> Interior OR Fallback
 
 - UI:
-	- PreferencesDialog:
-		- Nuke UISettings and move its setting in UIPreferences
-			- Also remove it from SettingsDialog altogether
+	+ PreferencesDialog:
+		+ Nuke UISettings and move its setting in UIPreferences
+			+ Also remove it from SettingsDialog altogether
+		+ Plug into MainFrame
+		+ Tooltip at ScreenshotsDir
+		+ Tooltip at StartupDialog
+
+	= Ship Descriptions (*)
+		+ ShipMetadata: description
+			+ opt<string> member
+			+ json load
+		- ShipDescriptionDialog
+			- Modal usage
+			- HTML control
+			- cctor takes bool ShipMetadata const &, isAutomatic, sh_ptr<UIPreferences>
+				- If automatic, checkbox with "Don't show description when ships are loaded"
+					- With tooltip about UIPreferences
+		- MainFrame: at LoadShip
+			- If gameController reports successful load, check UIPreferences and eventually create
+			  ShipDescriptionDialog (automatic=true) and DoModal()
+		- Integrate in ShipLoadDialog
+			- '?' button enabled when a ship with description is selected
+			- ShipLoadDialog needs to take ShipMetadata
+				
 
 	- SettingsDialog: save settings, defaults, and real-time changes
 		- SettingsManager (@FloatingSandbox):

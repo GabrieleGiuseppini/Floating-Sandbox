@@ -54,7 +54,7 @@ void GameController::RegisterGameEventHandler(IGameEventHandler * gameEventHandl
     mGameEventDispatcher->RegisterSink(gameEventHandler);
 }
 
-void GameController::ResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath)
+ShipMetadata GameController::ResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath)
 {
     // Create a new world
     auto newWorld = std::make_unique<Physics::World>(
@@ -64,6 +64,9 @@ void GameController::ResetAndLoadShip(std::filesystem::path const & shipDefiniti
 
     // Load ship definition
     auto shipDefinition = ShipDefinition::Load(shipDefinitionFilepath);
+
+    // Save metadata
+    ShipMetadata shipMetadata(shipDefinition.Metadata);
 
     // Add ship to new world
     ShipId shipId = newWorld->AddShip(
@@ -81,12 +84,17 @@ void GameController::ResetAndLoadShip(std::filesystem::path const & shipDefiniti
         std::move(shipDefinition),
         shipDefinitionFilepath,
         shipId);
+
+    return shipMetadata;
 }
 
-void GameController::AddShip(std::filesystem::path const & shipDefinitionFilepath)
+ShipMetadata GameController::AddShip(std::filesystem::path const & shipDefinitionFilepath)
 {
     // Load ship definition
     auto shipDefinition = ShipDefinition::Load(shipDefinitionFilepath);
+
+    // Save metadata
+    ShipMetadata shipMetadata(shipDefinition.Metadata);
 
     // Load ship into current world
     ShipId shipId = mWorld->AddShip(
@@ -102,6 +110,8 @@ void GameController::AddShip(std::filesystem::path const & shipDefinitionFilepat
         std::move(shipDefinition),
         shipDefinitionFilepath,
         shipId);
+
+    return shipMetadata;
 }
 
 void GameController::ReloadLastShip()

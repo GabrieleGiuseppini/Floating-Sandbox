@@ -25,7 +25,6 @@ const long ID_ULTRA_VIOLENT_CHECKBOX = wxNewId();
 const long ID_GENERATE_DEBRIS_CHECKBOX = wxNewId();
 const long ID_GENERATE_SPARKLES_CHECKBOX = wxNewId();
 const long ID_GENERATE_AIR_BUBBLES_CHECKBOX = wxNewId();
-const long ID_SCREENSHOT_DIR_PICKER = wxNewId();
 const long ID_MODULATE_WIND_CHECKBOX = wxNewId();
 const long ID_PLAY_BREAK_SOUNDS_CHECKBOX = wxNewId();
 const long ID_PLAY_STRESS_SOUNDS_CHECKBOX = wxNewId();
@@ -36,12 +35,10 @@ SettingsDialog::SettingsDialog(
     wxWindow* parent,
     std::shared_ptr<GameController> gameController,
     std::shared_ptr<SoundController> soundController,
-    std::shared_ptr< UISettings> uiSettings,
     ResourceLoader const & resourceLoader)
     : mParent(parent)
     , mGameController(std::move(gameController))
     , mSoundController(std::move(soundController))
-    , mUISettings(std::move(uiSettings))
 {
     Create(
         mParent,
@@ -263,12 +260,6 @@ void SettingsDialog::OnGenerateSparklesCheckBoxClick(wxCommandEvent & /*event*/)
 }
 
 void SettingsDialog::OnGenerateAirBubblesCheckBoxClick(wxCommandEvent & /*event*/)
-{
-    // Remember we're dirty now
-    mApplyButton->Enable(true);
-}
-
-void SettingsDialog::OnScreenshotDirPickerChanged(wxCommandEvent & /*event*/)
 {
     // Remember we're dirty now
     mApplyButton->Enable(true);
@@ -1067,34 +1058,6 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
         wxALL,
         SliderBorder);
 
-    //
-    // Row 3
-    //
-
-    wxBoxSizer* screenshotDirSizer = new wxBoxSizer(wxVERTICAL);
-
-    wxStaticText * screenshotDirStaticText = new wxStaticText(panel, wxID_ANY, "Screenshot directory:", wxDefaultPosition, wxDefaultSize, 0);
-    screenshotDirSizer->Add(screenshotDirStaticText, 1, wxALIGN_LEFT | wxEXPAND, 0);
-
-    mScreenshotDirPickerCtrl = new wxDirPickerCtrl(
-        panel,
-        ID_SCREENSHOT_DIR_PICKER,
-        _T(""),
-        _("Select directory that screenshots will be saved to:"),
-        wxDefaultPosition,
-        wxSize(-1, -1),
-        wxDIRP_DIR_MUST_EXIST | wxDIRP_USE_TEXTCTRL);
-    Connect(ID_SCREENSHOT_DIR_PICKER, wxEVT_DIRPICKER_CHANGED, (wxObjectEventFunction)&SettingsDialog::OnScreenshotDirPickerChanged);
-    screenshotDirSizer->Add(mScreenshotDirPickerCtrl, 1, wxALIGN_LEFT | wxEXPAND, 0);
-
-    gridSizer->Add(
-        screenshotDirSizer,
-        wxGBPosition(2, 0),
-        wxGBSpan(1, 4), // Take entire row
-        wxALL | wxEXPAND,
-        SliderBorder);
-
-
     // Finalize panel
 
     panel->SetSizerAndFit(gridSizer);
@@ -1741,8 +1704,6 @@ void SettingsDialog::ReadSettings()
 
     mGenerateAirBubblesCheckBox->SetValue(mGameController->GetDoGenerateAirBubbles());
 
-    mScreenshotDirPickerCtrl->SetPath(mUISettings->GetScreenshotsFolderPath().string());
-
     // Render
 
     auto oceanRenderMode = mGameController->GetOceanRenderMode();
@@ -2022,8 +1983,6 @@ void SettingsDialog::ApplySettings()
     mGameController->SetDoGenerateSparkles(mGenerateSparklesCheckBox->IsChecked());
 
     mGameController->SetDoGenerateAirBubbles(mGenerateAirBubblesCheckBox->IsChecked());
-
-    mUISettings->SetScreenshotsFolderPath(mScreenshotDirPickerCtrl->GetPath().ToStdString());
 
 
     // Render
