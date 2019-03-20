@@ -1176,8 +1176,16 @@ Physics::Springs ShipBuilder::CreateSprings(
             points);
 
         // Add spring to its endpoints
-        points.AddConnectedSpring(pointIndexRemap[springInfos2[s].PointAIndex1], s, pointIndexRemap[springInfos2[s].PointBIndex1]);
-        points.AddConnectedSpring(pointIndexRemap[springInfos2[s].PointBIndex1], s, pointIndexRemap[springInfos2[s].PointAIndex1]);
+        points.AddConnectedSpring(
+            pointIndexRemap[springInfos2[s].PointAIndex1],
+            s,
+            pointIndexRemap[springInfos2[s].PointBIndex1],
+            true); // Owner
+        points.AddConnectedSpring(
+            pointIndexRemap[springInfos2[s].PointBIndex1],
+            s,
+            pointIndexRemap[springInfos2[s].PointAIndex1],
+            false); // Not owner
     }
 
     return springs;
@@ -1200,9 +1208,9 @@ Physics::Triangles ShipBuilder::CreateTriangles(
             triangleInfos2[t].SubSprings2);
 
         // Add triangle to its endpoints
-        points.AddConnectedTriangle(pointIndexRemap[triangleInfos2[t].PointIndices1[0]], t, true);
-        points.AddConnectedTriangle(pointIndexRemap[triangleInfos2[t].PointIndices1[1]], t, false);
-        points.AddConnectedTriangle(pointIndexRemap[triangleInfos2[t].PointIndices1[2]], t, false);
+        points.AddConnectedTriangle(pointIndexRemap[triangleInfos2[t].PointIndices1[0]], t, true); // Owner
+        points.AddConnectedTriangle(pointIndexRemap[triangleInfos2[t].PointIndices1[1]], t, false); // Not owner
+        points.AddConnectedTriangle(pointIndexRemap[triangleInfos2[t].PointIndices1[2]], t, false); // Not owner
     }
 
     return triangles;
@@ -1251,7 +1259,7 @@ ElectricalElements ShipBuilder::CreateElectricalElements(
     {
         auto pointIndex = electricalElements.GetPointIndex(electricalElementIndex);
 
-        for (auto const & cs : points.GetConnectedSprings(pointIndex))
+        for (auto const & cs : points.GetConnectedSprings(pointIndex).ConnectedSprings)
         {
             auto otherEndpointElectricalElementIndex = points.GetElectricalElement(cs.OtherEndpointIndex);
             if (NoneElementIndex != otherEndpointElectricalElementIndex)

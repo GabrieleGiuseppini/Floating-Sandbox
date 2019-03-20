@@ -130,8 +130,13 @@ public:
         float const * light,
         float const * water);
 
-    void UploadPointMutableAttributes(
+    void UploadPointMutableAttributesPlaneId(
         float const * planeId,
+        size_t startDst,
+        size_t count);
+
+    void UploadPointMutableAttributesDecay(
+        float const * decay,
         size_t startDst,
         size_t count);
 
@@ -483,7 +488,7 @@ private:
     std::unique_ptr<vec4f> mPointAttributeGroup1Buffer; // Position, TextureCoordinates
     GameOpenGLVBO mPointAttributeGroup1VBO;
 
-    std::unique_ptr<vec4f> mPointAttributeGroup2Buffer; // Light, Water, PlaneId, Pad
+    std::unique_ptr<vec4f> mPointAttributeGroup2Buffer; // Light, Water, PlaneId, Decay
     GameOpenGLVBO mPointAttributeGroup2VBO;
 
     GameOpenGLVBO mPointColorVBO;

@@ -649,7 +649,7 @@ public:
             water);
     }
 
-    void UploadShipPointMutableAttributes(
+    void UploadShipPointMutableAttributesPlaneId(
         ShipId shipId,
         float const * planeId,
         size_t startDst,
@@ -657,8 +657,22 @@ public:
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId]->UploadPointMutableAttributes(
+        mShips[shipId]->UploadPointMutableAttributesPlaneId(
             planeId,
+            startDst,
+            count);
+    }
+
+    void UploadShipPointMutableAttributesDecay(
+        ShipId shipId,
+        float const * decay,
+        size_t startDst,
+        size_t count)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        mShips[shipId]->UploadPointMutableAttributesDecay(
+            decay,
             startDst,
             count);
     }

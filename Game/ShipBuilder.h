@@ -164,7 +164,7 @@ private:
         std::vector<ElementIndex> const & pointIndexRemap,
         std::vector<SpringInfo> const & springInfos)
     {
-        for (auto cs : points.GetConnectedSprings(pointIndex))
+        for (auto cs : points.GetConnectedSprings(pointIndex).ConnectedSprings)
         {
             if (!points.IsRope(pointIndexRemap[springInfos[cs.SpringIndex].PointAIndex1])
                 || !points.IsRope(pointIndexRemap[springInfos[cs.SpringIndex].PointBIndex1]))

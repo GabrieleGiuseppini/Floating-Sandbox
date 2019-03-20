@@ -36,7 +36,7 @@ void PinnedPoints::OnSpringDestroyed(ElementIndex springElementIndex)
     auto const pointBIndex = mShipSprings.GetPointBIndex(springElementIndex);
 
     if (mShipPoints.IsPinned(pointAIndex)
-        && mShipPoints.GetConnectedSprings(pointAIndex).empty())
+        && mShipPoints.GetConnectedSprings(pointAIndex).ConnectedSprings.empty())
     {
         // Unpin it
         mShipPoints.Unpin(pointAIndex);
@@ -46,7 +46,7 @@ void PinnedPoints::OnSpringDestroyed(ElementIndex springElementIndex)
     }
 
     if (mShipPoints.IsPinned(pointBIndex)
-        && mShipPoints.GetConnectedSprings(pointBIndex).empty())
+        && mShipPoints.GetConnectedSprings(pointBIndex).ConnectedSprings.empty())
     {
         // Unpin it
         mShipPoints.Unpin(pointBIndex);

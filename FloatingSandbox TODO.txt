@@ -2,7 +2,7 @@
 Current perf:
 =================================================
 - fps: 30.7/30.7/30.8/30.9/32.0
-- U/R: 193%
+- U/R: 193.x%
 - RunGameIteration: TODO:86.62% (initialization time)
 - World::Update: 60.25%
 		- UpdateMechanicalDynamics: 49.32%
@@ -262,13 +262,13 @@ Render:
 			+ Code
 		+ Vertex buffer optimizations (*)
 		+ Update FPS & perf analysis
+		+ Water Contrast @ 0.875?
 
-		= Water Contrast @ 0.875?
-
-		- Decay (rust) (*)
+		= Decay (rust) (*)
 
 		- Send for testing
 
+		- More incisive air bubble vortex?
 		- About dialog with testers
 
 		- Release?
@@ -341,6 +341,9 @@ Render:
 
 
 - Suggestions to spec:
+	- Once we have ships, make "Lock Ship in View" flag and move camera with ship's center of mass (representative point or real CoM)
+	- Be able to place nukea nd AM bomb anywhere
+	- Add new materials: plastic, rubber, fiberglass
 	- Fishes
 	- Different colored lights
 	- Different backgrounds: use keys to switch between a dock, cliffs, open ocean, ice field, etc.
@@ -816,7 +819,7 @@ Render:
 
 - Dynamics:
 
-	- Decay (rust) (*)
+	= Decay (rust) (*)
 		- Spec:
 			- Over time, *wet* points and springs get decayed (grey), and strength lowers
 			- GameParameters: DecayAcceler8r controls how quickly
@@ -842,25 +845,29 @@ Render:
 							- Springs::Decay(Points const &)
 								- For each spring: strength = material's strength * avg of two endpoints' decay
 									- float buffer: MaterialStrength
-		- Impl:
-			- Points: new Decay float buffer
-				- Init as 1.0
-					- Idea is that Ship::DecayStructure sends it asymptotically to 0.0
-			- Springs: new MaterialStrength float buffer
-				- Init with material strength, same as Strength
-				- Getter const
-			- Points: ConnectedSprings structure contains size_t with # of springs owned by the point
-				- Update at Add/RemoveConnectedSpring
-					- And make owned are first, non-owned next
-				- Clone same to triangles - remove isAtOwner flag there
-			- Ship::LowFrequencyUpdate()
-				- Invoked by Ship::Update
-				- Checks whether currentSimTime >= lastLowFrequencyUpdateSimTime + GameParameters::LowFrequencyUpdateInterval
-				- Does:
-					- Ship::RotPoints() -> decay
-						- alpha = (10^-5)^(f(Acceler8r)/300) (~total decay in 300/f(Acceler8r) steps)
+		= Impl:
+			+ Points: new Decay float buffer
+				+ Init as 1.0
+					+ Idea is that Ship::DecayStructure sends it asymptotically to 0.0
+			+ Springs: new MaterialStrength float buffer
+				+ Init with material strength, same as Strength
+				+ Getter const
+			+ Points: ConnectedSprings structure contains size_t with # of springs owned by the point
+				+ Update at Add/RemoveConnectedSpring
+					+ And make owned first, non-owned next
+				+ Clone same to triangles - remove isAtOwner flag there
+			= Ship::LowFrequencyUpdate()
+				+ Invoked by Ship::Update
+				+ Checks whether currentSimTime >= lastLowFrequencyUpdateSimTime + GameParameters::LowFrequencySimulationStepTimeDuration<float>
+				= Does:
+					= Ship::RotPoints() -> decay
+						+ alpha = (10^-5)^(f(Acceler8r)/300) (~total decay in 300/f(RotAcceler8r) steps)
+							+ Accel = 1 => 300 steps (5 mins)
+							+ Accel = 10 => 30 steps (30  secs)
+							+ Accel = 0 => +INF steps
+							+ Come up with reasonable min, max
 						- for each point p:
-							- beta ~= alpha * log(p.water) (beta << 1)
+							- beta = alpha * log(1 + p.water) (beta << 1)
 								- Do log with c++ func for exponent extraction
 							- if p.isLeaking: beta *= 5.0
 							- p.SetDecay(decay *= (1.0 - beta))
@@ -869,32 +876,22 @@ Render:
 						- Points.MarkDecayBufferAsDirty()
 
 					- Ship::DecaySprings() -> strength
-						- TODO: from below
+						- for each spring: strength = material's strength * avg of two endpoints' decay
 
-			- TODOHERE
-			- Ship::DecayStructure:
-				- Invoked by Ship::Update
-				- Checks whether currentSimTimestamp >= lastDecaySimTimestamp + DT
-					- Acceler8r => T to ~total decay: TBD: find formula
-					- DT = T / 300
-				- When so:
-					- alpha = (10^-5)^(1/300) (~total decay in 300 steps)
-					- for each point p for which p.isLeaking (or just for each point p, and isLeaking adds to weight):
-						- beta ~= alpha * log(p.water) (beta << 1)
-							- Do log with https://en.wikipedia.org/wiki/Taylor_series#Natural_logarithm
-								- Only for w between zero and 1
-						- p.decay *= (1.0 - beta)
-						- for each spring s that is owned by p (use new size_t member of ConnectedSprings struct):
-							- s.strength *= (1.0 - beta)
-								- Yes, irreversible change of strength
-					- Points.MarkDecayBufferAsDirty()
-			- (Ship)RenderContext:
-				- UploadDecayBuffer
-				- Triangle, Spring, and Point shaders take attrib array and use it for color blend
-					- Or simply to turn into grey scale					
-			- Ship::Render:
-				- Call Points::UploadDirtyBuffers (new name for old method)
-					- Now also uploads Decay buffer if dirty, and of course resets flag
+			= (Ship)RenderContext:
+				+ UploadDecayBuffer
+					+ Just like upload plane ID, opportunistic
+					+ Interleaves in attribute group 2, at the place of padding
+				- Shaders:
+					- Group2: vec3 -> vec4
+					- Triangle, Spring, Ropes, and Point shaders give value to fragment shader
+					- Fragment shader uses it for:
+						- Turn color into grey scale
+						- Or color blend
+			+ Ship::Render:
+				+ Points::UploadAttributes
+					+ Now also uploads Decay buffer @ //mutable attributes// if dirty, and of course resets flag
+			- SettingsDialog: RotAcceler8r
 
 	- Dynamite that may be thrown to the ship
 
@@ -953,6 +950,8 @@ Render:
 				- May be at this moment we can unify normal point uploading
 
 	- Ephemeral particle emitters
+		- TODO: decide between the below (emitter is new object type in its own right) and having instead emitters as special
+		  types of electricals
 		- Implemented like electrical elements, i.e.:
 			- EphemeralParticlesEmitters container, almost clone of ElectricalElements
 				- Contains point index and IEphemeralParticleEmitter
@@ -1330,6 +1329,10 @@ Render:
 						- If "Interior" -> Interior OR Fallback
 
 - UI:
+	- PreferencesDialog:
+		- Nuke UISettings and move its setting in UIPreferences
+			- Also remove it from SettingsDialog altogether
+
 	- SettingsDialog: save settings, defaults, and real-time changes
 		- SettingsManager (@FloatingSandbox):
 			- Has GameController, SoundController, UISettings, etc.

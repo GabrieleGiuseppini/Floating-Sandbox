@@ -146,6 +146,10 @@ public:
     // Dynamics
     /////////////////////////////////////////////////////////////////////////
 
+    void LowFrequencyUpdate(
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
+
     // Mechanical
 
     void UpdateMechanicalDynamics(
@@ -193,6 +197,16 @@ public:
     // Ephemeral particles
 
     void UpdateEphemeralParticles(
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
+
+    // Misc
+
+    void RotPoints(
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
+
+    void DecaySprings(
         float currentSimulationTime,
         GameParameters const & gameParameters);
 
@@ -294,7 +308,6 @@ private:
     // The current electrical connectivity visit sequence number
     VisitSequenceNumber mCurrentElectricalVisitSequenceNumber;
 
-
     // Flag remembering whether the structure of the ship (i.e. the connectivity between elements)
     // has changed since the last step.
     // When this flag is set, we'll re-detect connected components and planes, and re-upload elements
@@ -324,6 +337,9 @@ private:
 
     // Force fields to apply at next iteration
     std::vector<std::unique_ptr<ForceField>> mCurrentForceFields;
+
+    // Low-frequency update timing
+    float mNextLowFrequencyUpdateSimulationTime;
 };
 
 }

@@ -23,9 +23,11 @@ void Springs::Add(
     mSuperTrianglesBuffer.emplace_back(superTriangles);
 
     // Strength is average
-    mStrengthBuffer.emplace_back(
+    float const averageStrength =
         (points.GetStructuralMaterial(pointAIndex).Strength + points.GetStructuralMaterial(pointBIndex).Strength)
-        / 2.0f);
+        / 2.0f;
+    mStrengthBuffer.emplace_back(averageStrength);
+    mMaterialStrengthBuffer.emplace_back(averageStrength);
 
     // Stiffness is average
     float stiffness =

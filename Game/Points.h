@@ -139,7 +139,7 @@ private:
     };
 
     /*
-     * The metadata for the springs connected to a point.
+     * The metadata of a single spring connected to a point.
      */
     struct ConnectedSpring
     {
@@ -159,30 +159,34 @@ private:
         {}
     };
 
-    using ConnectedSpringsVector = FixedSizeVector<ConnectedSpring, GameParameters::MaxSpringsPerPoint>;
-
     /*
-     * The metadata for the triangles connected to a point.
+     * The metadata of all the springs connected to a point.
      */
-    struct ConnectedTriangle
+    struct ConnectedSpringsVector
     {
-        ElementIndex TriangleIndex;
-        bool IsAtOwner; // true if the point "owns" this triangle (each triangle is owned by one and only one point)
+        FixedSizeVector<ConnectedSpring, GameParameters::MaxSpringsPerPoint> ConnectedSprings;
+        size_t OwnedConnectedSpringsCount;
 
-        ConnectedTriangle()
-            : TriangleIndex(NoneElementIndex)
-            , IsAtOwner(false)
-        {}
-
-        ConnectedTriangle(
-            ElementIndex triangleIndex,
-            bool isAtOwner)
-            : TriangleIndex(triangleIndex)
-            , IsAtOwner(isAtOwner)
+        ConnectedSpringsVector()
+            : ConnectedSprings()
+            , OwnedConnectedSpringsCount(0u)
         {}
     };
 
-    using ConnectedTrianglesVector = FixedSizeVector<ConnectedTriangle, GameParameters::MaxTrianglesPerPoint>;
+    /*
+     * The metadata of all the triangles connected to a point.
+     */
+    struct ConnectedTrianglesVector
+    {
+        FixedSizeVector<ElementIndex, GameParameters::MaxTrianglesPerPoint> ConnectedTriangles;
+        size_t OwnedConnectedTrianglesCount;
+
+        ConnectedTrianglesVector()
+            : ConnectedTriangles()
+            , OwnedConnectedTrianglesCount(0u)
+        {}
+    };
+
 
     /*
      * The materials of this point.
@@ -220,6 +224,8 @@ public:
         , mVelocityBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mForceBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
+        , mDecayBuffer(mBufferElementCount, shipPointCount, 1.0f)
+        , mIsDecayBufferDirty(true)
         , mIntegrationFactorTimeCoefficientBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mTotalMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mIntegrationFactorBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
@@ -248,7 +254,6 @@ public:
         // Structure
         , mConnectedSpringsBuffer(mBufferElementCount, shipPointCount, ConnectedSpringsVector())
         , mConnectedTrianglesBuffer(mBufferElementCount, shipPointCount, ConnectedTrianglesVector())
-        , mConnectedOwnedTrianglesCountBuffer(mBufferElementCount, shipPointCount, 0)
         // Connected component and plane ID
         , mConnectedComponentIdBuffer(mBufferElementCount, shipPointCount, NoneConnectedComponentId)
         , mPlaneIdBuffer(mBufferElementCount, shipPointCount, NonePlaneId)
@@ -499,8 +504,25 @@ public:
         float offset,
         Springs & springs);
 
+    float GetDecay(ElementIndex pointElementIndex) const
+    {
+        return mDecayBuffer[pointElementIndex];
+    }
+
+    void SetDecay(
+        ElementIndex pointElementIndex,
+        float value)
+    {
+        mDecayBuffer[pointElementIndex] = value;
+    }
+
+    void MarkDecayBufferAsDirty()
+    {
+        mIsDecayBufferDirty = true;
+    }
+
     /*
-     * Return's the total mass of the point, which equals the point's material's mass with
+     * Returns the total mass of the point, which equals the point's material's mass with
      * all modifiers (offsets, water, etc.).
      *
      * Only valid after a call to UpdateTotalMasses() and when
@@ -729,16 +751,27 @@ public:
     void AddConnectedSpring(
         ElementIndex pointElementIndex,
         ElementIndex springElementIndex,
-        ElementIndex otherEndpointElementIndex)
+        ElementIndex otherEndpointElementIndex,
+        bool isAtOwner)
     {
-        mConnectedSpringsBuffer[pointElementIndex].emplace_back(springElementIndex, otherEndpointElementIndex);
+        // Add so that all springs owned by this point come first
+        if (isAtOwner)
+        {
+            mConnectedSpringsBuffer[pointElementIndex].ConnectedSprings.emplace_front(springElementIndex, otherEndpointElementIndex);
+            ++(mConnectedSpringsBuffer[pointElementIndex].OwnedConnectedSpringsCount);
+        }
+        else
+        {
+            mConnectedSpringsBuffer[pointElementIndex].ConnectedSprings.emplace_back(springElementIndex, otherEndpointElementIndex);
+        }
     }
 
     void RemoveConnectedSpring(
         ElementIndex pointElementIndex,
-        ElementIndex springElementIndex)
+        ElementIndex springElementIndex,
+        bool isAtOwner)
     {
-        bool found = mConnectedSpringsBuffer[pointElementIndex].erase_first(
+        bool found = mConnectedSpringsBuffer[pointElementIndex].ConnectedSprings.erase_first(
             [springElementIndex](ConnectedSpring const & c)
             {
                 return c.SpringIndex == springElementIndex;
@@ -746,6 +779,13 @@ public:
 
         assert(found);
         (void)found;
+
+        // Update count of owned springs, if this spring is owned
+        if (isAtOwner)
+        {
+            assert(mConnectedSpringsBuffer[pointElementIndex].OwnedConnectedSpringsCount > 0);
+            --(mConnectedSpringsBuffer[pointElementIndex].OwnedConnectedSpringsCount);
+        }
     }
 
     auto const & GetConnectedTriangles(ElementIndex pointElementIndex) const
@@ -761,12 +801,12 @@ public:
         // Add so that all triangles owned by this point come first
         if (isAtOwner)
         {
-            mConnectedTrianglesBuffer[pointElementIndex].emplace_front(triangleElementIndex, true);
-            ++mConnectedOwnedTrianglesCountBuffer[pointElementIndex];
+            mConnectedTrianglesBuffer[pointElementIndex].ConnectedTriangles.emplace_front(triangleElementIndex);
+            ++(mConnectedTrianglesBuffer[pointElementIndex].OwnedConnectedTrianglesCount);
         }
         else
         {
-            mConnectedTrianglesBuffer[pointElementIndex].emplace_back(triangleElementIndex, false);
+            mConnectedTrianglesBuffer[pointElementIndex].ConnectedTriangles.emplace_back(triangleElementIndex);
         }
     }
 
@@ -776,10 +816,10 @@ public:
         bool isAtOwner)
     {
         // Remove triangle
-        bool found = mConnectedTrianglesBuffer[pointElementIndex].erase_first(
-            [triangleElementIndex](ConnectedTriangle const & c)
+        bool found = mConnectedTrianglesBuffer[pointElementIndex].ConnectedTriangles.erase_first(
+            [triangleElementIndex](ElementIndex c)
             {
-                return c.TriangleIndex == triangleElementIndex;
+                return c == triangleElementIndex;
             });
 
         assert(found);
@@ -788,14 +828,14 @@ public:
         // Update count of owned triangles, if this triangle is owned
         if (isAtOwner)
         {
-            assert(mConnectedOwnedTrianglesCountBuffer[pointElementIndex] > 0);
-            --mConnectedOwnedTrianglesCountBuffer[pointElementIndex];
+            assert(mConnectedTrianglesBuffer[pointElementIndex].OwnedConnectedTrianglesCount > 0);
+            --(mConnectedTrianglesBuffer[pointElementIndex].OwnedConnectedTrianglesCount);
         }
     }
 
     size_t GetConnectedOwnedTrianglesCount(ElementIndex pointElementIndex) const
     {
-        return mConnectedOwnedTrianglesCountBuffer[pointElementIndex];
+        return mConnectedTrianglesBuffer[pointElementIndex].OwnedConnectedTrianglesCount;
     }
 
     //
@@ -950,9 +990,11 @@ private:
     Buffer<vec2f> mVelocityBuffer;
     Buffer<vec2f> mForceBuffer;
     Buffer<float> mMassBuffer; // Structural + Offset
+    Buffer<float> mDecayBuffer; // 1.0 -> 0.0 (completely decayed)
+    mutable bool mIsDecayBufferDirty;
     Buffer<float> mIntegrationFactorTimeCoefficientBuffer; // dt^2 or zero when the point is frozen
 
-    // Calculated values
+    // Continuously-Calculated values
     Buffer<float> mTotalMassBuffer; // MassBuffer + Water
     Buffer<vec2f> mIntegrationFactorBuffer;
     Buffer<vec2f> mForceRenderBuffer;
@@ -1014,7 +1056,6 @@ private:
 
     Buffer<ConnectedSpringsVector> mConnectedSpringsBuffer;
     Buffer<ConnectedTrianglesVector> mConnectedTrianglesBuffer;
-    Buffer<size_t> mConnectedOwnedTrianglesCountBuffer;
 
     //
     // Connectivity

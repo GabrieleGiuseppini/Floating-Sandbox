@@ -166,7 +166,7 @@ ShipRenderContext::ShipRenderContext(
 
         glBindBuffer(GL_ARRAY_BUFFER, *mPointAttributeGroup2VBO);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointAttributeGroup2));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointAttributeGroup2), 3, GL_FLOAT, GL_FALSE, sizeof(vec4f), (void*)(0));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointAttributeGroup2), 4, GL_FLOAT, GL_FALSE, sizeof(vec4f), (void*)(0));
         CheckOpenGLError();
 
         glBindBuffer(GL_ARRAY_BUFFER, *mPointColorVBO);
@@ -662,7 +662,7 @@ void ShipRenderContext::UploadPointMutableAttributes(
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void ShipRenderContext::UploadPointMutableAttributes(
+void ShipRenderContext::UploadPointMutableAttributesPlaneId(
     float const * planeId,
     size_t startDst,
     size_t count)
@@ -672,6 +672,18 @@ void ShipRenderContext::UploadPointMutableAttributes(
     float const * restrict pSrc = planeId;
     for (size_t i = 0; i < count; ++i)
         pDst[i].z = pSrc[i];
+}
+
+void ShipRenderContext::UploadPointMutableAttributesDecay(
+    float const * decay,
+    size_t startDst,
+    size_t count)
+{
+    // Interleave decay into AttributeGroup2 buffer
+    vec4f * restrict pDst = &(mPointAttributeGroup2Buffer.get()[startDst]);
+    float const * restrict pSrc = decay;
+    for (size_t i = 0; i < count; ++i)
+        pDst[i].w = pSrc[i];
 }
 
 void ShipRenderContext::UploadPointMutableAttributesEnd()

@@ -37,6 +37,13 @@ struct GameParameters
     }
 
 
+    //
+    // The low-frequency update dt
+    //
+
+    template <typename T>
+    static constexpr T LowFrequencySimulationStepTimeDuration = 1.0f;
+
 
     //
     // Physical Constants
@@ -102,6 +109,10 @@ struct GameParameters
     static constexpr float MaxSpringStrengthAdjustment = 10.0f;
 
     static constexpr float GlobalDamp = 0.9996f; // // We've shipped 1.7.5 with 0.9997, but splinter springs used to dance for too long
+
+    float RotAcceler8r;
+    static constexpr float MinRotAcceler8r = 0.0f;
+    static constexpr float MaxRotAcceler8r = 10.0f;
 
     // Water
 

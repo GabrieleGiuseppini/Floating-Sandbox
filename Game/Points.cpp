@@ -34,6 +34,7 @@ void Points::Add(
     mVelocityBuffer.emplace_back(vec2f::zero());
     mForceBuffer.emplace_back(vec2f::zero());
     mMassBuffer.emplace_back(structuralMaterial.Mass);
+    mDecayBuffer.emplace_back(1.0f);
     mIntegrationFactorTimeCoefficientBuffer.emplace_back(CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations));
 
     // These will be recalculated each time
@@ -71,7 +72,6 @@ void Points::Add(
     // Structure
     mConnectedSpringsBuffer.emplace_back();
     mConnectedTrianglesBuffer.emplace_back();
-    mConnectedOwnedTrianglesCountBuffer.emplace_back(0);
 
     mConnectedComponentIdBuffer.emplace_back(NoneConnectedComponentId);
     mPlaneIdBuffer.emplace_back(NonePlaneId);
@@ -108,6 +108,7 @@ void Points::CreateEphemeralParticleAirBubble(
     mVelocityBuffer[pointIndex] = vec2f::zero();
     mForceBuffer[pointIndex] = vec2f::zero();
     mMassBuffer[pointIndex] = structuralMaterial.Mass;
+    mDecayBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations);
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
 
@@ -167,6 +168,7 @@ void Points::CreateEphemeralParticleDebris(
     mVelocityBuffer[pointIndex] = velocity;
     mForceBuffer[pointIndex] = vec2f::zero();
     mMassBuffer[pointIndex] = structuralMaterial.Mass;
+    mDecayBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations);
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
 
@@ -221,6 +223,7 @@ void Points::CreateEphemeralParticleSparkle(
     mVelocityBuffer[pointIndex] = velocity;
     mForceBuffer[pointIndex] = vec2f::zero();
     mMassBuffer[pointIndex] = structuralMaterial.Mass;
+    mDecayBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations);
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
 
@@ -433,6 +436,7 @@ void Points::Query(ElementIndex pointElementIndex) const
     LogMessage("PointIndex: ", pointElementIndex);
     LogMessage("Position: ", mPositionBuffer[pointElementIndex].toString());
     LogMessage("Velocity: ", mVelocityBuffer[pointElementIndex].toString());
+    LogMessage("Decay: ", mDecayBuffer[pointElementIndex]);
     LogMessage("Water: ", mWaterBuffer[pointElementIndex]);
     LogMessage("PlaneID: ", mPlaneIdBuffer[pointElementIndex]);
     LogMessage("ConnectedComponentID: ", mConnectedComponentIdBuffer[pointElementIndex]);
@@ -491,7 +495,7 @@ void Points::UploadAttributes(
         {
             // Whole
 
-            renderContext.UploadShipPointMutableAttributes(
+            renderContext.UploadShipPointMutableAttributesPlaneId(
                 shipId,
                 mPlaneIdFloatBuffer.data(),
                 0,
@@ -503,7 +507,7 @@ void Points::UploadAttributes(
         {
             // Just non-ephemeral portion
 
-            renderContext.UploadShipPointMutableAttributes(
+            renderContext.UploadShipPointMutableAttributesPlaneId(
                 shipId,
                 mPlaneIdFloatBuffer.data(),
                 0,
@@ -516,13 +520,24 @@ void Points::UploadAttributes(
     {
         // Just ephemeral portion
 
-        renderContext.UploadShipPointMutableAttributes(
+        renderContext.UploadShipPointMutableAttributesPlaneId(
             shipId,
             &(mPlaneIdFloatBuffer.data()[mShipPointCount]),
             mShipPointCount,
             mEphemeralPointCount);
 
         mIsPlaneIdBufferEphemeralDirty = false;
+    }
+
+    if (mIsDecayBufferDirty)
+    {
+        renderContext.UploadShipPointMutableAttributesDecay(
+            shipId,
+            mDecayBuffer.data(),
+            0,
+            mShipPointCount);
+
+        mIsDecayBufferDirty = false;
     }
 
     renderContext.UploadShipPointMutableAttributesEnd(shipId);
@@ -683,7 +698,7 @@ void Points::SetMassToStructuralMaterialOffset(
     mMassBuffer[pointElementIndex] = GetStructuralMaterial(pointElementIndex).Mass + offset;
 
     // Notify all springs
-    for (auto connectedSpring : mConnectedSpringsBuffer[pointElementIndex])
+    for (auto connectedSpring : mConnectedSpringsBuffer[pointElementIndex].ConnectedSprings)
     {
         springs.OnPointMassUpdated(connectedSpring.SpringIndex, *this);
     }

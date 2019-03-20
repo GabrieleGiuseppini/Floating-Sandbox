@@ -181,6 +181,11 @@ public:
     float GetMinSpringStrengthAdjustment() const { return GameParameters::MinSpringStrengthAdjustment;  }
     float GetMaxSpringStrengthAdjustment() const { return GameParameters::MaxSpringStrengthAdjustment; }
 
+    float GetRotAcceler8r() const { return mGameParameters.RotAcceler8r; }
+    void SetRotAcceler8r(float value) { mGameParameters.RotAcceler8r = value; }
+    float GetMinRotAcceler8r() const { return GameParameters::MinRotAcceler8r; }
+    float GetMaxRotAcceler8r() const { return GameParameters::MaxRotAcceler8r; }
+
     float GetWaterDensityAdjustment() const { return mGameParameters.WaterDensityAdjustment; }
     void SetWaterDensityAdjustment(float value) { mGameParameters.WaterDensityAdjustment = value; }
     float GetMinWaterDensityAdjustment() const { return GameParameters::MinWaterDensityAdjustment; }

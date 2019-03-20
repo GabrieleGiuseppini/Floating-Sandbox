@@ -73,6 +73,7 @@ Ship::Ship(
         mPoints,
         mSprings)
     , mCurrentForceFields()
+    , mNextLowFrequencyUpdateSimulationTime(GameParameters::LowFrequencySimulationStepTimeDuration<float>)
 {
     // Set destroy handlers
     mPoints.RegisterDestroyHandler(std::bind(&Ship::PointDestroyHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
@@ -448,6 +449,16 @@ void Ship::Update(
 
 
     //
+    // Run low-frequency update (probably)
+    //
+
+    LowFrequencyUpdate(
+        currentSimulationTime,
+        gameParameters);
+
+
+
+    //
     // Update mechanical dynamics
     //
 
@@ -678,6 +689,36 @@ void Ship::Render(
 ///////////////////////////////////////////////////////////////////////////////////
 // Private Helpers
 ///////////////////////////////////////////////////////////////////////////////////
+
+void Ship::LowFrequencyUpdate(
+    float currentSimulationTime,
+    GameParameters const & gameParameters)
+{
+    // Check whether it's time to run
+    if (currentSimulationTime < mNextLowFrequencyUpdateSimulationTime)
+        return;
+
+    //
+    // Rot points
+    //
+
+    RotPoints(
+        currentSimulationTime,
+        gameParameters);
+
+
+    //
+    // Decay springs
+    //
+
+    DecaySprings(
+        currentSimulationTime,
+        gameParameters);
+
+
+    // Re-schedule the next run
+    mNextLowFrequencyUpdateSimulationTime = currentSimulationTime + GameParameters::LowFrequencySimulationStepTimeDuration<float>;
+}
 
 ///////////////////////////////////////////////////////////////////////////////////
 // Mechanical Dynamics
@@ -1151,7 +1192,7 @@ void Ship::UpdateWaterInflow(
                     // at the moment; this may be removed later when orphaned points will be visible
                     if (gameParameters.DoGenerateAirBubbles
                         && !mPoints.IsRope(pointIndex)
-                        && mPoints.GetConnectedSprings(pointIndex).size() > 0)
+                        && mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() > 0)
                     {
                         GenerateAirBubbles(
                             mPoints.GetPosition(pointIndex),
@@ -1246,9 +1287,10 @@ void Ship::UpdateWaterVelocities(
 
         totalOutboundWaterFlowWeight = 0.0f;
 
-        for (size_t s = 0; s < mPoints.GetConnectedSprings(pointIndex).size(); ++s)
+        size_t const connectedSpringCount = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size();
+        for (size_t s = 0; s < connectedSpringCount; ++s)
         {
-            auto const & cs = mPoints.GetConnectedSprings(pointIndex)[s];
+            auto const & cs = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings[s];
 
             // Normalized spring vector, oriented point -> other endpoint
             vec2f const springNormalizedVector = (mPoints.GetPosition(cs.OtherEndpointIndex) - mPoints.GetPosition(pointIndex)).normalise();
@@ -1346,9 +1388,9 @@ void Ship::UpdateWaterVelocities(
         //    and update destination's momenta accordingly
         //
 
-        for (size_t s = 0; s < mPoints.GetConnectedSprings(pointIndex).size(); ++s)
+        for (size_t s = 0; s < connectedSpringCount; ++s)
         {
-            auto const & cs = mPoints.GetConnectedSprings(pointIndex)[s];
+            auto const & cs = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings[s];
 
             // Calculate quantity of water directed outwards
             float const springOutboundQuantityOfWater =
@@ -1629,19 +1671,35 @@ void Ship::UpdateEphemeralParticles(
     GameParameters const & gameParameters)
 {
     //
-    // 1. Update existing particles
+    // Update existing particles
     //
 
     mPoints.UpdateEphemeralParticles(
         currentSimulationTime,
         gameParameters);
+}
 
+void Ship::RotPoints(
+    float /*currentSimulationTime*/,
+    GameParameters const & gameParameters)
+{
+    // Calculate rot increment for each step
+    float const alphaIncrement = gameParameters.RotAcceler8r != 0.0f
+        ? pow(1e-5, gameParameters.RotAcceler8r / 300.0f)   // Accel=1 => 300 steps to total decay
+        : 0.0f;
 
-    //
-    // 2. Emit new particles
-    //
+    // Process all points
+    for (auto p : mPoints)
+    {
+        // TODOHERE
+    }
+}
 
-    // FUTURE: when we have emitters
+void Ship::DecaySprings(
+    float /*currentSimulationTime*/,
+    GameParameters const & /*gameParameters*/)
+{
+    // TODOHERE
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -1736,7 +1794,7 @@ void Ship::RunConnectivityVisit()
 #endif
 
                 // Visit all its non-visited connected points
-                for (auto const & cs : mPoints.GetConnectedSprings(currentPointIndex))
+                for (auto const & cs : mPoints.GetConnectedSprings(currentPointIndex).ConnectedSprings)
                 {
                     assert(!mPoints.IsDeleted(cs.OtherEndpointIndex));
 
@@ -1793,11 +1851,11 @@ void Ship::DestroyConnectedTriangles(ElementIndex pointElementIndex)
 
     // Note: we can't simply iterate and destroy, as destroying a triangle causes
     // that triangle to be removed from the vector being iterated
-    auto & connectedTriangles = mPoints.GetConnectedTriangles(pointElementIndex);
+    auto & connectedTriangles = mPoints.GetConnectedTriangles(pointElementIndex).ConnectedTriangles;
     while (!connectedTriangles.empty())
     {
-        assert(!mTriangles.IsDeleted(connectedTriangles.back().TriangleIndex));
-        mTriangles.Destroy(connectedTriangles.back().TriangleIndex);
+        assert(!mTriangles.IsDeleted(connectedTriangles.back()));
+        mTriangles.Destroy(connectedTriangles.back());
     }
 
     assert(mPoints.GetConnectedTriangles(pointElementIndex).empty());
@@ -1811,12 +1869,12 @@ void Ship::DestroyConnectedTriangles(
     // Destroy the triangles that have an edge among the two points
     //
 
-    auto & connectedTriangles = mPoints.GetConnectedTriangles(pointAElementIndex);
+    auto & connectedTriangles = mPoints.GetConnectedTriangles(pointAElementIndex).ConnectedTriangles;
     if (!connectedTriangles.empty())
     {
         for (size_t t = connectedTriangles.size() - 1; ;--t)
         {
-            auto const triangleIndex = connectedTriangles[t].TriangleIndex;
+            auto const triangleIndex = connectedTriangles[t];
 
             assert(!mTriangles.IsDeleted(triangleIndex));
 
@@ -1846,7 +1904,7 @@ void Ship::PointDestroyHandler(
 
     // Note: we can't simply iterate and destroy, as destroying a spring causes
     // that spring to be removed from the vector being iterated
-    auto & connectedSprings = mPoints.GetConnectedSprings(pointElementIndex);
+    auto & connectedSprings = mPoints.GetConnectedSprings(pointElementIndex).ConnectedSprings;
     while (!connectedSprings.empty())
     {
         assert(!mSprings.IsDeleted(connectedSprings.back().SpringIndex));
@@ -1860,7 +1918,7 @@ void Ship::PointDestroyHandler(
             mPoints);
     }
 
-    assert(mPoints.GetConnectedSprings(pointElementIndex).empty());
+    assert(mPoints.GetConnectedSprings(pointElementIndex).ConnectedSprings.empty());
 
 
     //
@@ -1869,15 +1927,15 @@ void Ship::PointDestroyHandler(
 
     // Note: we can't simply iterate and destroy, as destroying a triangle causes
     // that triangle to be removed from the vector being iterated
-    auto & connectedTriangles = mPoints.GetConnectedTriangles(pointElementIndex);
+    auto & connectedTriangles = mPoints.GetConnectedTriangles(pointElementIndex).ConnectedTriangles;
     while(!connectedTriangles.empty())
     {
-        assert(!mTriangles.IsDeleted(connectedTriangles.back().TriangleIndex));
+        assert(!mTriangles.IsDeleted(connectedTriangles.back()));
 
-        mTriangles.Destroy(connectedTriangles.back().TriangleIndex);
+        mTriangles.Destroy(connectedTriangles.back());
     }
 
-    assert(mPoints.GetConnectedTriangles(pointElementIndex).empty());
+    assert(mPoints.GetConnectedTriangles(pointElementIndex).ConnectedTriangles.empty());
 
 
     //
@@ -1960,8 +2018,8 @@ void Ship::SpringDestroyHandler(
     // Remove the spring from its endpoints
     //
 
-    mPoints.RemoveConnectedSpring(pointAIndex, springElementIndex);
-    mPoints.RemoveConnectedSpring(pointBIndex, springElementIndex);
+    mPoints.RemoveConnectedSpring(pointAIndex, springElementIndex, true); // Owner
+    mPoints.RemoveConnectedSpring(pointBIndex, springElementIndex, false); // Not owner
 
 
     //
@@ -2018,9 +2076,9 @@ void Ship::TriangleDestroyHandler(ElementIndex triangleElementIndex)
     mTriangles.ClearSubSprings(triangleElementIndex);
 
     // Remove triangle from its endpoints
-    mPoints.RemoveConnectedTriangle(mTriangles.GetPointAIndex(triangleElementIndex), triangleElementIndex, true);
-    mPoints.RemoveConnectedTriangle(mTriangles.GetPointBIndex(triangleElementIndex), triangleElementIndex, false);
-    mPoints.RemoveConnectedTriangle(mTriangles.GetPointCIndex(triangleElementIndex), triangleElementIndex, false);
+    mPoints.RemoveConnectedTriangle(mTriangles.GetPointAIndex(triangleElementIndex), triangleElementIndex, true); // Owner
+    mPoints.RemoveConnectedTriangle(mTriangles.GetPointBIndex(triangleElementIndex), triangleElementIndex, false); // Not owner
+    mPoints.RemoveConnectedTriangle(mTriangles.GetPointCIndex(triangleElementIndex), triangleElementIndex, false); // Not owner
 
     // Remember our structure is now dirty
     mIsStructureDirty = true;
