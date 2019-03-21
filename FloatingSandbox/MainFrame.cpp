@@ -348,6 +348,8 @@ MainFrame::MainFrame(wxApp * mainApp)
     optionsMenu->Append(openPreferencesWindowMenuItem);
     Connect(ID_OPEN_PREFERENCES_WINDOW_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnOpenPreferencesWindowMenuItemSelected);
 
+    optionsMenu->Append(new wxMenuItem(optionsMenu, wxID_SEPARATOR));
+
     wxMenuItem * openLogWindowMenuItem = new wxMenuItem(optionsMenu, ID_OPEN_LOG_WINDOW_MENUITEM, _("Open Log Window\tCtrl+L"), wxEmptyString, wxITEM_NORMAL);
     optionsMenu->Append(openLogWindowMenuItem);
     Connect(ID_OPEN_LOG_WINDOW_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnOpenLogWindowMenuItemSelected);

@@ -156,7 +156,7 @@ void PreferencesDialog::PopulateMainPanel(wxPanel * panel)
         mShowTipOnStartupCheckBox,
         wxGBPosition(1, 0),
         wxGBSpan(1, 1),
-        wxALL,
+        wxLEFT | wxRIGHT,
         Border);
 
 
@@ -164,17 +164,17 @@ void PreferencesDialog::PopulateMainPanel(wxPanel * panel)
     // Row 3
     //
 
-    mShowShipDescriptionAtShipLoadCheckBox = new wxCheckBox(panel, wxID_ANY, _("Show Ship Descriptions At Load"), wxDefaultPosition, wxDefaultSize, 0);
+    mShowShipDescriptionAtShipLoadCheckBox = new wxCheckBox(panel, wxID_ANY, _("Show Ship Descriptions at Load"), wxDefaultPosition, wxDefaultSize, 0);
 
     mShowShipDescriptionAtShipLoadCheckBox->SetToolTip("Enables or disables the window showing ship descriptions when ships are loaded.");
 
-    mShowShipDescriptionAtShipLoadCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowTipOnStartupCheckBoxClicked, this);
+    mShowShipDescriptionAtShipLoadCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowShipDescriptionAtShipLoadCheckBoxClicked, this);
 
     gridSizer->Add(
         mShowShipDescriptionAtShipLoadCheckBox,
         wxGBPosition(3, 0),
         wxGBSpan(1, 1),
-        wxALL,
+        wxLEFT | wxRIGHT,
         Border);
 
 

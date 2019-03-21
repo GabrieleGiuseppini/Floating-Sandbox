@@ -1344,18 +1344,29 @@ Render:
 		+ ShipMetadata: description
 			+ opt<string> member
 			+ json load
-		- ShipDescriptionDialog
-			- Modal usage
-			- HTML control
-			- cctor takes bool ShipMetadata const &, isAutomatic, sh_ptr<UIPreferences>
+		+ ShipDescriptionDialog
+			+ Modal usage
+			+ HTML control
+			+ MakeHtml
+			+ cctor takes bool ShipMetadata const &, isAutomatic, sh_ptr<UIPreferences>
 				- If automatic, checkbox with "Don't show description when ships are loaded"
 					- With tooltip about UIPreferences
-		- MainFrame: at LoadShip
-			- If gameController reports successful load, check UIPreferences and eventually create
+		+ MainFrame: at LoadShip
+			+ If gameController reports successful load, check UIPreferences and eventually create
 			  ShipDescriptionDialog (automatic=true) and DoModal()
-		- Integrate in ShipLoadDialog
-			- '?' button enabled when a ship with description is selected
-			- ShipLoadDialog needs to take ShipMetadata
+		+ Integrate in ShipLoadDialog
+			+ 'i' button enabled when a ship with description is selected
+			+ ShipLoadDialog needs to get ShipMetadata
+		+ Checkbox at PreferencesDialog for auto-show
+		+ Test:
+			+ Select and later load .shp w/no description
+			+ Select and later load .png w/no description
+			+ Checkbox 
+				+ @ ShipDescription window
+				+ @ PreferencesDialog
+		- Copy all descriptions into their respective .shp files
+			- Lusitania requires .shp; copy year from other Lusitania, and ask owner
+			- Ask ship owners
 				
 
 	- SettingsDialog: save settings, defaults, and real-time changes
