@@ -1685,7 +1685,7 @@ void Ship::RotPoints(
 {
     // Calculate rot increment for each step
     float const alphaIncrement = gameParameters.RotAcceler8r != 0.0f
-        ? pow(1e-5, gameParameters.RotAcceler8r / 300.0f)   // Accel=1 => 300 steps to total decay
+        ? powf(1e-5f, gameParameters.RotAcceler8r / 300.0f)   // Accel=1 => 300 steps to total decay
         : 0.0f;
 
     // Process all points
@@ -1858,7 +1858,7 @@ void Ship::DestroyConnectedTriangles(ElementIndex pointElementIndex)
         mTriangles.Destroy(connectedTriangles.back());
     }
 
-    assert(mPoints.GetConnectedTriangles(pointElementIndex).empty());
+    assert(mPoints.GetConnectedTriangles(pointElementIndex).ConnectedTriangles.empty());
 }
 
 void Ship::DestroyConnectedTriangles(
@@ -2301,9 +2301,9 @@ void Ship::VerifyInvariants()
     {
         if (!mTriangles.IsDeleted(t))
         {
-            Verify(mPoints.GetConnectedTriangles(mTriangles.GetPointAIndex(t)).contains([t](auto const & c){ return c.TriangleIndex == t; }));
-            Verify(mPoints.GetConnectedTriangles(mTriangles.GetPointBIndex(t)).contains([t](auto const & c) { return c.TriangleIndex == t; }));
-            Verify(mPoints.GetConnectedTriangles(mTriangles.GetPointCIndex(t)).contains([t](auto const & c) { return c.TriangleIndex == t; }));
+            Verify(mPoints.GetConnectedTriangles(mTriangles.GetPointAIndex(t)).ConnectedTriangles.contains([t](auto const & c) { return c == t; }));
+            Verify(mPoints.GetConnectedTriangles(mTriangles.GetPointBIndex(t)).ConnectedTriangles.contains([t](auto const & c) { return c == t; }));
+            Verify(mPoints.GetConnectedTriangles(mTriangles.GetPointCIndex(t)).ConnectedTriangles.contains([t](auto const & c) { return c == t; }));
         }
     }
 

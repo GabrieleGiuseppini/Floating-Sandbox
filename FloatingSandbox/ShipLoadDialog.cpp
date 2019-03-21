@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "ShipLoadDialog.h"
 
+#include "ShipDescriptionDialog.h"
+
 #include <GameCore/Log.h>
 
 #include <wx/sizer.h>
@@ -126,7 +128,7 @@ ShipLoadDialog::ShipLoadDialog(
 
     hSizer2->Add(vSizer2, 1, 0);
 
-    hSizer2->AddSpacer(20);
+    hSizer2->AddSpacer(10);
 
 
 
@@ -142,6 +144,16 @@ ShipLoadDialog::ShipLoadDialog(
 
     wxBoxSizer * buttonsSizer = new wxBoxSizer(wxHORIZONTAL);
 
+    buttonsSizer->AddSpacer(10);
+
+    mInfoButton = new wxButton(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(24, -1));
+    wxBitmap infoBitmap(resourceLoader.GetIconFilepath("info").string(), wxBITMAP_TYPE_PNG);
+    mInfoButton->SetBitmap(infoBitmap);
+    mInfoButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnInfoButtonClicked, this);
+    buttonsSizer->Add(mInfoButton, 0);
+
+    buttonsSizer->AddStretchSpacer(1);
+
     mLoadButton = new wxButton(this, wxID_ANY, "Load");
     mLoadButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnLoadButton, this);
     buttonsSizer->Add(mLoadButton, 0);
@@ -152,9 +164,9 @@ ShipLoadDialog::ShipLoadDialog(
     cancelButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnCancelButton, this);
     buttonsSizer->Add(cancelButton, 0);
 
-    buttonsSizer->AddSpacer(20);
+    buttonsSizer->AddSpacer(10);
 
-    vSizer->Add(buttonsSizer, 0, wxALIGN_RIGHT);
+    vSizer->Add(buttonsSizer, 0, wxEXPAND | wxALIGN_RIGHT);
 
     vSizer->AddSpacer(10);
 
@@ -181,9 +193,11 @@ void ShipLoadDialog::Open()
     if (!IsShown())
     {
         // Reset our current ship selection
+        mSelectedShipMetadata.reset();
         mSelectedShipFilepath.reset();
 
-        // Disable load button
+        // Disable buttons
+        mInfoButton->Enable(false);
         mLoadButton->Enable(false);
 
 
@@ -229,9 +243,14 @@ void ShipLoadDialog::OnDirCtrlDirSelected(wxCommandEvent & /*event*/)
 void ShipLoadDialog::OnShipFileSelected(fsShipFileSelectedEvent & event)
 {
     // Store selection
+    if (!!event.GetShipMetadata())
+        mSelectedShipMetadata.emplace(*event.GetShipMetadata());
+    else
+        mSelectedShipMetadata.reset();
     mSelectedShipFilepath = event.GetShipFilepath();
 
-    // Enable load button
+    // Enable buttons
+    mInfoButton->Enable(!!(event.GetShipMetadata()) && !!(event.GetShipMetadata()->Description));
     mLoadButton->Enable(true);
 }
 
@@ -260,6 +279,22 @@ void ShipLoadDialog::OnHomeDirButtonClicked(wxCommandEvent & /*event*/)
     mDirCtrl->SetPath(mRecentDirectoriesComboBox->GetValue()); // Will send its own event
 }
 
+void ShipLoadDialog::OnInfoButtonClicked(wxCommandEvent & /*event*/)
+{
+    assert(!!mSelectedShipMetadata);
+
+    if (!!(mSelectedShipMetadata->Description))
+    {
+        ShipDescriptionDialog shipDescriptionDialog(
+            this,
+            *mSelectedShipMetadata,
+            false,
+            mUIPreferences);
+
+        shipDescriptionDialog.ShowModal();
+    }
+}
+
 void ShipLoadDialog::OnLoadButton(wxCommandEvent & /*event*/)
 {
     assert(!!mSelectedShipFilepath);
@@ -281,9 +316,11 @@ void ShipLoadDialog::OnCloseWindow(wxCloseEvent & /*event*/)
 void ShipLoadDialog::OnDirectorySelected(std::filesystem::path directoryPath)
 {
     // Reset our current selection
+    mSelectedShipMetadata.reset();
     mSelectedShipFilepath.reset();
 
-    // Disable load button
+    // Disable buttons
+    mInfoButton->Enable(false);
     mLoadButton->Enable(false);
 
     // Propagate to preview panel

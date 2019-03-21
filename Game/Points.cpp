@@ -535,7 +535,7 @@ void Points::UploadAttributes(
             shipId,
             mDecayBuffer.data(),
             0,
-            mShipPointCount);
+            mAllPointCount);
 
         mIsDecayBufferDirty = false;
     }

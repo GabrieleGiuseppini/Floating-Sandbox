@@ -39,6 +39,7 @@ private:
     void OnShipFileChosen(fsShipFileChosenEvent & event);
     void OnRecentDirectorySelected(wxCommandEvent & event);
     void OnHomeDirButtonClicked(wxCommandEvent & event);
+    void OnInfoButtonClicked(wxCommandEvent & event);
     void OnLoadButton(wxCommandEvent & event);
     void OnCancelButton(wxCommandEvent & event);
     void OnCloseWindow(wxCloseEvent & event);
@@ -59,9 +60,11 @@ private:
     wxGenericDirCtrl * mDirCtrl;
     ShipPreviewPanel * mShipPreviewPanel;
     wxComboBox * mRecentDirectoriesComboBox;
+    wxButton * mInfoButton;
     wxButton * mLoadButton;
 
 private:
 
+    std::optional<ShipMetadata> mSelectedShipMetadata;
     std::optional<std::filesystem::path> mSelectedShipFilepath;
 };

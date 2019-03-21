@@ -7,7 +7,7 @@
 
 // Inputs
 in vec4 inShipPointAttributeGroup1; // Position, TextureCoordinates
-in vec3 inShipPointAttributeGroup2; // Light, Water, PlaneId
+in vec4 inShipPointAttributeGroup2; // Light, Water, PlaneId, Decay
 
 // Outputs        
 out vec2 vertexTextureCoords;

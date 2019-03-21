@@ -58,7 +58,7 @@ public:
         return mShipMetadata;
     }
 
-    std::filesystem::path const GetShipFilepath() const
+    std::filesystem::path const & GetShipFilepath() const
     {
         return mShipFilepath;
     }

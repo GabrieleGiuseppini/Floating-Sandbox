@@ -53,8 +53,6 @@ ShipDescriptionDialog::ShipDescriptionDialog(
 #endif // wxUSE_STATLINE
 
     {
-        wxBoxSizer * rowSizer = new wxBoxSizer(wxHORIZONTAL);
-
         if (isAutomatic)
         {
             wxCheckBox * dontChk = new wxCheckBox(this, wxID_ANY, "Don't show descriptions when ships are loaded");
@@ -62,19 +60,15 @@ ShipDescriptionDialog::ShipDescriptionDialog(
             dontChk->SetValue(false);
             dontChk->Bind(wxEVT_CHECKBOX, &ShipDescriptionDialog::OnDontShowOnShipLoadheckboxChanged, this);
 
-            rowSizer->Add(dontChk, 0, wxALL | wxALIGN_CENTER_VERTICAL, 15);
-
-            rowSizer->AddStretchSpacer(1);
+            topSizer->Add(dontChk, 0, wxALL | wxALIGN_LEFT, 10);
         }
 
         {
             wxButton * okButton = new wxButton(this, wxID_OK, _("OK"));
             okButton->SetDefault();
 
-            rowSizer->Add(okButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 15);
+            topSizer->Add(okButton, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 10);
         }
-
-        topSizer->Add(rowSizer, 0, wxEXPAND);
     }
 
     this->SetSizerAndFit(topSizer);

@@ -51,7 +51,7 @@ StartupTipDialog::StartupTipDialog(
             dontChk->SetValue(false);
             dontChk->Bind(wxEVT_CHECKBOX, &StartupTipDialog::OnDontShowAgainCheckboxChanged, this);
 
-            rowSizer->Add(dontChk, 0, wxALL | wxALIGN_CENTER_VERTICAL, 15);
+            rowSizer->Add(dontChk, 0, wxALL | wxALIGN_CENTER_VERTICAL, 10);
         }
 
         rowSizer->AddStretchSpacer(1);
@@ -60,7 +60,7 @@ StartupTipDialog::StartupTipDialog(
             wxButton * okButton = new wxButton(this, wxID_OK, _("OK"));
             okButton->SetDefault();
 
-            rowSizer->Add(okButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 15);
+            rowSizer->Add(okButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 10);
         }
 
         topSizer->Add(rowSizer, 0, wxEXPAND);

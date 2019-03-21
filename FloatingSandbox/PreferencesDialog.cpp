@@ -87,10 +87,16 @@ void PreferencesDialog::OnScreenshotDirPickerChanged(wxCommandEvent & /*event*/)
     mUIPreferences->SetScreenshotsFolderPath(mScreenshotDirPickerCtrl->GetPath().ToStdString());
 }
 
-void PreferencesDialog::OnShowTipOnStartup(wxCommandEvent & /*event*/)
+void PreferencesDialog::OnShowTipOnStartupCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferences);
     mUIPreferences->SetShowStartupTip(mShowTipOnStartupCheckBox->GetValue());
+}
+
+void PreferencesDialog::OnShowShipDescriptionAtShipLoadCheckBoxClicked(wxCommandEvent & /*event*/)
+{
+    assert(!!mUIPreferences);
+    mUIPreferences->SetShowShipDescriptionsAtShipLoad(mShowShipDescriptionAtShipLoadCheckBox->GetValue());
 }
 
 void PreferencesDialog::OnOkButton(wxCommandEvent & /*event*/)
@@ -144,11 +150,29 @@ void PreferencesDialog::PopulateMainPanel(wxPanel * panel)
 
     mShowTipOnStartupCheckBox->SetToolTip("Enables or disables the tips shown when the game starts.");
 
-    mShowTipOnStartupCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowTipOnStartup, this);
+    mShowTipOnStartupCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowTipOnStartupCheckBoxClicked, this);
 
     gridSizer->Add(
         mShowTipOnStartupCheckBox,
         wxGBPosition(1, 0),
+        wxGBSpan(1, 1),
+        wxALL,
+        Border);
+
+
+    //
+    // Row 3
+    //
+
+    mShowShipDescriptionAtShipLoadCheckBox = new wxCheckBox(panel, wxID_ANY, _("Show Ship Descriptions At Load"), wxDefaultPosition, wxDefaultSize, 0);
+
+    mShowShipDescriptionAtShipLoadCheckBox->SetToolTip("Enables or disables the window showing ship descriptions when ships are loaded.");
+
+    mShowShipDescriptionAtShipLoadCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowTipOnStartupCheckBoxClicked, this);
+
+    gridSizer->Add(
+        mShowShipDescriptionAtShipLoadCheckBox,
+        wxGBPosition(3, 0),
         wxGBSpan(1, 1),
         wxALL,
         Border);
@@ -166,4 +190,5 @@ void PreferencesDialog::ReadSettings()
     mScreenshotDirPickerCtrl->SetPath(mUIPreferences->GetScreenshotsFolderPath().string());
 
     mShowTipOnStartupCheckBox->SetValue(mUIPreferences->GetShowStartupTip());
+    mShowShipDescriptionAtShipLoadCheckBox->SetValue(mUIPreferences->GetShowShipDescriptionsAtShipLoad());
 }
