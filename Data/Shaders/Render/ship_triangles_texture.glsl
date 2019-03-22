@@ -10,22 +10,17 @@ in vec4 inShipPointAttributeGroup1; // Position, TextureCoordinates
 in vec4 inShipPointAttributeGroup2; // Light, Water, PlaneId, Decay
 
 // Outputs        
-out float vertexLightIntensity;
-out float vertexLightColorMix;
-out float vertexColorWetness;
+out float vertexLight;
+out float vertexWater;
 out vec2 vertexTextureCoords;
 
 // Params
-uniform float paramAmbientLightIntensity;
-uniform float paramWaterContrast;
-uniform float paramWaterLevelThreshold;
 uniform mat4 paramOrthoMatrix;
 
 void main()
 {            
-    vertexLightIntensity = paramAmbientLightIntensity + (1.0 - paramAmbientLightIntensity) * inShipPointAttributeGroup2.x;
-    vertexLightColorMix = inShipPointAttributeGroup2.x;
-    vertexColorWetness = min(inShipPointAttributeGroup2.y, paramWaterLevelThreshold) / paramWaterLevelThreshold * paramWaterContrast;
+    vertexLight = inShipPointAttributeGroup2.x;
+    vertexWater = inShipPointAttributeGroup2.y;
     vertexTextureCoords = inShipPointAttributeGroup1.zw;
 
     gl_Position = paramOrthoMatrix * vec4(inShipPointAttributeGroup1.xy, inShipPointAttributeGroup2.z, 1.0);
@@ -38,10 +33,14 @@ void main()
 #define in varying
 
 // Inputs from previous shader        
-in float vertexLightIntensity;
-in float vertexLightColorMix;
-in float vertexColorWetness;
+in float vertexLight;
+in float vertexWater;
 in vec2 vertexTextureCoords;
+
+// Params
+uniform float paramAmbientLightIntensity;
+uniform float paramWaterContrast;
+uniform float paramWaterLevelThreshold;
 
 // Input texture
 uniform sampler2D paramSharedTexture;
@@ -56,13 +55,17 @@ void main()
         discard;
 
     // Apply point water
+    float vertexColorWetness = min(vertexWater, paramWaterLevelThreshold) / paramWaterLevelThreshold * paramWaterContrast;
     vec4 fragColour = vertexCol * (1.0 - vertexColorWetness) + vec4(%WET_COLOR_VEC4%) * vertexColorWetness;
 
+    // Complement missing ambient light with point's light
+    float totalLightIntensity = paramAmbientLightIntensity + (1.0 - paramAmbientLightIntensity) * vertexLight;
+
     // Apply light
-    fragColour *= vertexLightIntensity;
+    fragColour *= totalLightIntensity;
 
     // Apply point light color
-    fragColour = fragColour * (1.0 - vertexLightColorMix) + vec4(%LAMPLIGHT_COLOR_VEC4%) * vertexLightColorMix;
+    fragColour = fragColour * (1.0 - vertexLight) + vec4(%LAMPLIGHT_COLOR_VEC4%) * vertexLight;
     
     gl_FragColor = vec4(fragColour.xyz, vertexCol.w);
 } 

@@ -99,7 +99,6 @@ AboutDialog::AboutDialog(
     std::vector<std::pair<std::string, std::string>> credits
     {
         {"Testing:\t\t", "Pac0master" },
-        {"\t\t\t\t", "TODOOTHER" },
 
         {"Cover art:\t", "Dimitar Katsarov - https://www.artstation.com/stukata/profile" },
 
@@ -110,12 +109,13 @@ AboutDialog::AboutDialog(
         {"\t\t\t\t", "SS Nomadavid - https://discordapp.com/" },
         {"\t\t\t\t", "Wreno - https://discordapp.com/" },
         {"\t\t\t\t", "Pac0master - https://discordapp.com/" },
-        {"\t\t\t\t", "mrpasta444 - https://discordapp.com/" },
+        {"\t\t\t\t", "CorbinPasta93 - https://discordapp.com/" },
         {"\t\t\t\t", "Yorkie - https://discordapp.com/" },
         {"\t\t\t\t", "Artica - https://discordapp.com/" },
         {"\t\t\t\t", "KikoTheBoatBuilder - https://discordapp.com/" },
         {"\t\t\t\t", "Albert Windsor - https://discordapp.com/" },
         {"\t\t\t\t", "ShipBuilder1912 - https://discordapp.com/" },
+        {"\t\t\t\t", "Maximord - https://discordapp.com/" },
 
         {"Textures:\t", "Tune 'Prototstar' Katerungroch"},
         {"wxWidgets:\t", "Copyright (c) 1998-2005 Julian Smart, Robert Roebling et al - https://www.wxwidgets.org/"},

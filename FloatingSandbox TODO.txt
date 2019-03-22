@@ -263,17 +263,16 @@ Render:
 		+ Vertex buffer optimizations (*)
 		+ Update FPS & perf analysis
 		+ Water Contrast @ 0.875?
-
-		= UIPreferences
+		+ UIPreferences		
 
 		= Decay (rust) (*)
 
-		- Ship descriptions (*)
+		= Ship descriptions (*)
 
 		- Send for testing
+			- Add other testers to About box
 
 		- More incisive air bubble vortex?
-		- About dialog with testers & descriptions
 
 		- Release?
 
@@ -292,13 +291,14 @@ Render:
 			- Make music class with FadeToStop()
 				- ::Update()		
 
+		- Heat and combustion
+			- Gunpowder: material or object?
+
 		- Instanced drawing for lights (*)
 
 		- Pick tool (*)
 
 		- Interior layer (*)
-
-		- Ship description/history (*)
 
 		- Electrical layer view (*)
 
@@ -329,8 +329,9 @@ Render:
 		- Resource Packs (*)
 
 - New ships
-	- Names:
-		- ShippyMcJerry: ShipBuilder1912 
+	# Names:
+		# ShippyMcJerry: ShipBuilder1912 
+		# Coolman115: CorbinPasta93
 	- Titanic with more lights
 	- To test:
 		= USS Shark
@@ -342,6 +343,10 @@ Render:
 		- Ed Fitzgerald (but needs to be fixed) (Kiko)
 		- Aegir_Mark_III (coolman asks original designer)
 	- Ready:
+		- Michael Bozarth
+			- https://drive.google.com/drive/u/0/folders/1k-A4SE8mMp2j_A3nH3gnl6SvYF9bnWoU
+				- See if he's gonna add descriptions
+			- Add "Michael Bozarth" to About box
 
 
 - Suggestions to spec:
@@ -881,7 +886,7 @@ Render:
 
 					- Ship::DecaySprings() -> strength
 						- for each spring: strength = material's strength * avg of two endpoints' decay
-
+			- When uploading uq_ptr<> buffers, use sizeof(buffer.value_type)
 			= (Ship)RenderContext:
 				+ UploadDecayBuffer
 					+ Just like upload plane ID, opportunistic
@@ -1027,7 +1032,7 @@ Render:
 		- Create and Destroy events:
 			- Ship::cctor visits switches among ElectricalElements and fires AddSwitch(ID, name, state)
 			- Ship::ElectricalElementDestroyHandler fires DeleteSwitch(ID) if deleting a switch
-		- UI gets switches via AddSwitch (and DeleteSwitch) event, with all metadata (ID, name, state)
+		- MainFrame gets switches via AddSwitch (and DeleteSwitch) event, with all metadata (ID, name, state)
 			- From Ship::cctor, visiting switches among ElectricalElements
 			- SwitchBoard panel (see below)
 				- Registers as event listener at cctor
@@ -1301,11 +1306,6 @@ Render:
 	- Allow ocean floor bump map to be loaded at runtime
 
 	- Ship definition: 
-		- "description"
-			- Description/history; also instructions?
-			- Pops up when hovering in ship load box
-				- Maximord may help with description/history
-			- If instructions present, at the first load of a ship spawns a text box (if enabled in settings)
 		- Interior layer:
 			- New layer @ ShipDefinitionFile and ShipDefinition
 			- New flag @
@@ -1364,9 +1364,19 @@ Render:
 			+ Checkbox 
 				+ @ ShipDescription window
 				+ @ PreferencesDialog
-		- Copy all descriptions into their respective .shp files
-			- Lusitania requires .shp; copy year from other Lusitania, and ask owner
+		= Copy all descriptions into their respective .shp files
+			+ mrpasta -> CorbinPasta93
+				+ Ships
+				+ About
 			- Ask ship owners
+				- mrpasta: wants to see them first
+				- kikotheshipbuilder: all except HMS Thunderchild
+				- Nomadavid: fine
+				- Pac0: 
+			- Shippymcjerry does:
+				- HMS Thunderchild
+				+ Karaboudjan
+			+ Add Maximord to About box
 				
 
 	- SettingsDialog: save settings, defaults, and real-time changes
