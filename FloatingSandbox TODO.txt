@@ -865,6 +865,11 @@ Render:
 				+ Update at Add/RemoveConnectedSpring
 					+ And make owned first, non-owned next
 				+ Clone same to triangles - remove isAtOwner flag there
+			+ FastLog2 benchmarks
+			+ Commit
+			- Unify shaders
+				- ship_color
+				- ship_texture
 			= Ship::LowFrequencyUpdate()
 				+ Invoked by Ship::Update
 				+ Checks whether currentSimTime >= lastLowFrequencyUpdateSimTime + GameParameters::LowFrequencySimulationStepTimeDuration<float>
@@ -876,31 +881,35 @@ Render:
 							+ Accel = 0 => +INF steps
 							+ Come up with reasonable min, max
 						- for each point p:
+							- TODO: make sure p.water = 0.0 => beta = 0.0
 							- beta = alpha * log(1 + p.water) (beta << 1)
-								- Do log with c++ func for exponent extraction
 							- if p.isLeaking: beta *= 5.0
 							- p.SetDecay(decay *= (1.0 - beta))
-							- Check assembly!
+								- Check assembly for p.SetXYZ() vs p.GetXYZ()*=y !
 
 						- Points.MarkDecayBufferAsDirty()
 
 					- Ship::DecaySprings() -> strength
 						- for each spring: strength = material's strength * avg of two endpoints' decay
-			- When uploading uq_ptr<> buffers, use sizeof(buffer.value_type)
 			= (Ship)RenderContext:
 				+ UploadDecayBuffer
 					+ Just like upload plane ID, opportunistic
 					+ Interleaves in attribute group 2, at the place of padding
 				- Shaders:
-					- Group2: vec3 -> vec4
+					+ Group2: vec3 -> vec4
 					- Triangle, Spring, Ropes, and Point shaders give value to fragment shader
 					- Fragment shader uses it for:
-						- Turn color into grey scale
-						- Or color blend
+						- Pre-test: triangle shader: just display white*decay
+						- Production:
+							- Turn color into grey scale
+							- Or color blend
 			+ Ship::Render:
 				+ Points::UploadAttributes
 					+ Now also uploads Decay buffer @ //mutable attributes// if dirty, and of course resets flag
+
 			- SettingsDialog: RotAcceler8r
+
+			- TODO: see Moleskine for clean et al
 
 	- Dynamite that may be thrown to the ship
 

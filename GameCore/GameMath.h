@@ -71,6 +71,22 @@ inline float FastLog(float x)
     return 0.69314718f * FastLog2(x);
 }
 
+inline float DiscreteLog2(float x)
+{
+    typedef union {
+        float f;
+        struct {
+            unsigned int mantissa : 23;
+            unsigned int exponent : 8;
+            unsigned int sign : 1;
+        } parts;
+    } float_cast;
+
+    float_cast d1 = { x };
+
+    return static_cast<float>(static_cast<int>(d1.parts.exponent) - 127);
+}
+
 /*
  * Adapted from Paul Mineiro - Copyright (C) 2011 Paul Mineiro.
  */

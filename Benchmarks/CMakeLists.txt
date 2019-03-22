@@ -1,6 +1,7 @@
 set (BENCHMARK_SOURCES
 	DivisionByZero.cpp
 	GameMath.cpp
+	Logarithm.cpp
 	UpdateSpringForces.cpp
 	Utils.cpp
 	Utils.h
