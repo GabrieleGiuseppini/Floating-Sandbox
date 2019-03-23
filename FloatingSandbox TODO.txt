@@ -345,11 +345,13 @@ Render:
 				- Center it
 			- Ed Fitzgerald (but needs to be fixed) (Kiko)
 			- Aegir_Mark_III (coolman asks original designer)
+		- Ready:
+			- MS Lisboeta - kiko - 
 	- Descriptions:
-		- Tell maximord about new ships - give him names
+		+ Tell maximord about new ships - give him names
+		- *
 	- Michael Bozarth
-		- https://drive.google.com/drive/u/0/folders/1k-A4SE8mMp2j_A3nH3gnl6SvYF9bnWoU
-			- See if he's gonna add descriptions
+		- https://drive.google.com/drive/u/0/folders/1k-A4SE8mMp2j_A3nH3gnl6SvYF9bnWoU			
 		- Add "Michael Bozarth" to About box
 
 

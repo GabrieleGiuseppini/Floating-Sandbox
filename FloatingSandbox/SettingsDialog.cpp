@@ -895,8 +895,9 @@ void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
             // Remember we're dirty now
             this->mApplyButton->Enable(true);
         },
-        std::make_unique<LinearSliderCore>(
+        std::make_unique<ExponentialSliderCore>(
             mGameController->GetMinRotAcceler8r(),
+            1.0f,
             mGameController->GetMaxRotAcceler8r()));
 
     gridSizer->Add(mRotAcceler8rSlider.get(), 1, wxALL, SliderBorder);

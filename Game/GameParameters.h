@@ -112,7 +112,7 @@ struct GameParameters
 
     float RotAcceler8r;
     static constexpr float MinRotAcceler8r = 0.0f;
-    static constexpr float MaxRotAcceler8r = 10.0f;
+    static constexpr float MaxRotAcceler8r = 1000.0f;
 
     // Water
 
