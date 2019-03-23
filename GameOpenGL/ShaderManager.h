@@ -195,8 +195,14 @@ private:
         std::filesystem::path const & shadersRoot);
 
     void CompileShader(
-        std::filesystem::path const & shaderFilepath,
+        std::string const & shaderFilename,
+        std::string const & shaderSource,
+        std::unordered_map<std::string, std::pair<bool, std::string>> const & shaderSources,
         std::map<std::string, std::string> const & staticParameters);
+
+    static std::string ResolveIncludes(
+        std::string const & shaderSource,
+        std::unordered_map<std::string, std::pair<bool, std::string>> const & shaderSources);
 
     static std::tuple<std::string, std::string> SplitSource(std::string const & source);
 
@@ -227,6 +233,11 @@ private:
     std::vector<ProgramInfo> mPrograms;
 
 private:
+
+    friend class ShaderManagerTests_ProcessesIncludes_OneLevel_Test;
+    friend class ShaderManagerTests_ProcessesIncludes_MultipleLevels_Test;
+    friend class ShaderManagerTests_ProcessesIncludes_DetectsLoops_Test;
+    friend class ShaderManagerTests_ProcessesIncludes_ComplainsWhenIncludeNotFound_Test;
 
     friend class ShaderManagerTests_SplitsShaders_Test;
     friend class ShaderManagerTests_SplitsShaders_ErrorsOnMissingVertexSection_Test;

@@ -1,0 +1,59 @@
+###VERTEX
+
+#version 120
+
+#define in attribute
+#define out varying
+
+// Inputs
+in vec4 inShipPointAttributeGroup1; // Position, TextureCoordinates
+in vec4 inShipPointAttributeGroup2; // Light, Water, PlaneId, Decay
+
+// Outputs        
+out float vertexDecay;
+out vec2 vertexTextureCoords;
+
+// Params
+uniform mat4 paramOrthoMatrix;
+
+void main()
+{            
+    vertexDecay = inShipPointAttributeGroup2.w;
+    vertexTextureCoords = inShipPointAttributeGroup1.zw;
+
+    gl_Position = paramOrthoMatrix * vec4(inShipPointAttributeGroup1.xy, inShipPointAttributeGroup2.z, 1.0);
+}
+
+###FRAGMENT
+
+#version 120
+
+#define in varying
+
+// Inputs from previous shader        
+in float vertexDecay;
+in vec2 vertexTextureCoords;
+
+// Params
+uniform float paramAmbientLightIntensity;
+
+// Input texture
+uniform sampler2D paramSharedTexture;
+
+void main()
+{
+    vec4 vertexCol = texture2D(paramSharedTexture, vertexTextureCoords);
+
+    // Discard transparent pixels, so that ropes (which are drawn temporally after
+    // this shader but Z-ally behind) are not occluded by transparent triangles
+    if (vertexCol.w < 0.2)
+        discard;
+
+    // Make color based off decay
+    vec4 fragColour = vec4(vertexDecay, vertexDecay, vertexDecay, 1.0);
+    
+    // Apply ambient light
+    fragColour *= paramAmbientLightIntensity;
+    
+    gl_FragColor = vec4(fragColour.xyz, vertexCol.w);
+} 

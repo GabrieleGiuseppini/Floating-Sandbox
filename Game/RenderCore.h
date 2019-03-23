@@ -40,6 +40,7 @@ enum class ProgramType
     ShipSpringsTexture,
     ShipStressedSprings,
     ShipTrianglesColor,
+    ShipTrianglesDecay,
     ShipTrianglesTexture,
     ShipVectors,
     Stars,

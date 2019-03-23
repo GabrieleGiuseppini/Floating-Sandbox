@@ -1,0 +1,82 @@
+###VERTEX
+
+#version 120
+
+#define in attribute
+#define out varying
+
+// Inputs
+in vec4 inShipPointAttributeGroup1; // Position, TextureCoordinates
+in vec4 inShipPointAttributeGroup2; // Light, Water, PlaneId, Decay
+
+// Outputs        
+out float vertexLight;
+out float vertexWater;
+out float vertexDecay;
+out vec2 vertexTextureCoords;
+
+// Params
+uniform mat4 paramOrthoMatrix;
+
+void main()
+{            
+    vertexLight = inShipPointAttributeGroup2.x;
+    vertexWater = inShipPointAttributeGroup2.y;
+    vertexDecay = inShipPointAttributeGroup2.w;
+    vertexTextureCoords = inShipPointAttributeGroup1.zw;
+
+    gl_Position = paramOrthoMatrix * vec4(inShipPointAttributeGroup1.xy, inShipPointAttributeGroup2.z, 1.0);
+}
+
+###FRAGMENT
+
+#version 120
+
+#define in varying
+
+// Inputs from previous shader        
+in float vertexLight;
+in float vertexWater;
+in float vertexDecay;
+in vec2 vertexTextureCoords;
+
+// Params
+uniform float paramAmbientLightIntensity;
+uniform float paramWaterContrast;
+uniform float paramWaterLevelThreshold;
+
+// Input texture
+uniform sampler2D paramSharedTexture;
+
+void main()
+{
+    vec4 vertexCol = texture2D(paramSharedTexture, vertexTextureCoords);
+
+    // Discard transparent pixels, so that ropes (which are drawn temporally after
+    // this shader but Z-ally behind) are not occluded by transparent triangles
+    if (vertexCol.w < 0.2)
+        discard;
+
+    // Apply decay
+    // TODO:to constants
+    vec4 brown = vec4(0.26, 0.16, 0.0, 1.0);
+    vec4 green = vec4(0.016, 0.42, 0.008, 1.0);
+    float originalLightness = (vertexCol.x + vertexCol.y + vertexCol.z) / 3.0;
+    vec4 blendColor = green * (1.0 - originalLightness) + brown * originalLightness;
+    vertexCol = vertexCol * vertexDecay + blendColor * (1.0 - vertexDecay);
+
+    // Apply point water
+    float vertexColorWetness = min(vertexWater, paramWaterLevelThreshold) / paramWaterLevelThreshold * paramWaterContrast;
+    vec4 fragColour = vertexCol * (1.0 - vertexColorWetness) + vec4(%WET_COLOR_VEC4%) * vertexColorWetness;
+
+    // Complement missing ambient light with point's light
+    float totalLightIntensity = paramAmbientLightIntensity + (1.0 - paramAmbientLightIntensity) * vertexLight;
+
+    // Apply light
+    fragColour *= totalLightIntensity;
+
+    // Apply point light color
+    fragColour = fragColour * (1.0 - vertexLight) + vec4(%LAMPLIGHT_COLOR_VEC4%) * vertexLight;
+    
+    gl_FragColor = vec4(fragColour.xyz, vertexCol.w);
+} 

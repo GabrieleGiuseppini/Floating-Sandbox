@@ -21,6 +21,81 @@ protected:
     }
 };
 
+TEST_F(ShaderManagerTests, ProcessesIncludes_OneLevel)
+{
+    std::string source = R"(
+aaa
+  #include "inc1.glsl"
+bbb
+)";
+
+    std::unordered_map<std::string, std::pair<bool, std::string>> includeFiles;
+    includeFiles["ggg.glsl"] = std::make_pair<bool, std::string>(true, std::string("   \n zorro \n"));
+    includeFiles["inc1.glsl"] = { false, std::string(" \n sancho \n") };
+
+    auto resolvedSource = TestShaderManager::ResolveIncludes(
+        source,
+        includeFiles);
+
+    EXPECT_EQ("\naaa\n \n sancho \n\nbbb\n", resolvedSource);
+}
+
+TEST_F(ShaderManagerTests, ProcessesIncludes_MultipleLevels)
+{
+    std::string source = R"(
+aaa
+  #include "inc1.glsl"
+bbb
+)";
+
+    std::unordered_map<std::string, std::pair<bool, std::string>> includeFiles;
+    includeFiles["inc2.glslinc"] = std::make_pair<bool, std::string>(true, std::string("nano\n"));
+    includeFiles["inc1.glsl"] = { false, std::string("sancho\n#include \"inc2.glslinc\"") };
+
+    auto resolvedSource = TestShaderManager::ResolveIncludes(
+        source,
+        includeFiles);
+
+    EXPECT_EQ("\naaa\nsancho\nnano\n\nbbb\n", resolvedSource);
+}
+
+TEST_F(ShaderManagerTests, ProcessesIncludes_DetectsLoops)
+{
+    std::string source = R"(
+aaa
+#include "inc1.glsl"
+bbb
+)";
+
+    std::unordered_map<std::string, std::pair<bool, std::string>> includeFiles;
+    includeFiles["inc2.glslinc"] = std::make_pair<bool, std::string>(true, std::string("#include \"inc1.glsl\"\n"));
+    includeFiles["inc1.glsl"] = { false, std::string("sancho\n#include \"inc2.glslinc\"") };
+
+    EXPECT_THROW(
+        TestShaderManager::ResolveIncludes(
+            source,
+            includeFiles),
+        GameException);
+}
+
+TEST_F(ShaderManagerTests, ProcessesIncludes_ComplainsWhenIncludeNotFound)
+{
+    std::string source = R"(
+aaa
+  #include "inc1.glslinc"
+bbb
+)";
+
+    std::unordered_map<std::string, std::pair<bool, std::string>> includeFiles;
+    includeFiles["inc3.glslinc"] = std::make_pair<bool, std::string>(true, std::string("nano\n"));
+
+    EXPECT_THROW(
+        TestShaderManager::ResolveIncludes(
+            source,
+            includeFiles),
+        GameException);
+}
+
 TEST_F(ShaderManagerTests, SplitsShaders)
 {
     std::string source = R"(

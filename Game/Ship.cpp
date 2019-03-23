@@ -1685,14 +1685,26 @@ void Ship::RotPoints(
 {
     // Calculate rot increment for each step
     float const alphaIncrement = gameParameters.RotAcceler8r != 0.0f
-        ? powf(1e-5f, gameParameters.RotAcceler8r / 300.0f)   // Accel=1 => 300 steps to total decay
+        ? 1.0f - powf(1e-10f, gameParameters.RotAcceler8r / 50000.0f)   // Accel=1 => 1000 steps to total decay
         : 0.0f;
+
+    // Higher rot increment for leaking points - they are directly in contact
+    // with water after all!
+    float const leakingAlphaIncrement = alphaIncrement * 3.0f;
 
     // Process all points
     for (auto p : mPoints)
     {
-        // TODOHERE
+        // When no water, beta == 0.0f
+        float const beta =
+            DiscreteLog2(1.0f + mPoints.GetWater(p))
+            * (mPoints.IsLeaking(p) ? leakingAlphaIncrement : alphaIncrement);
+
+        mPoints.SetDecay(p, mPoints.GetDecay(p) * (1.0f - beta));
     }
+
+    // Remember that the decay buffer is dirty
+    mPoints.MarkDecayBufferAsDirty();
 }
 
 void Ship::DecaySprings(

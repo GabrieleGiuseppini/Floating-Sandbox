@@ -102,8 +102,7 @@ AboutDialog::AboutDialog(
 
         {"Cover art:\t", "Dimitar Katsarov - https://www.artstation.com/stukata/profile" },
 
-        {"Ship art:\t\t", "OceanLinerOrca - https://www.deviantart.com/oceanlinerorca" },
-        {"\t\t\t\t", "TopHatLemons - https://discordapp.com/" },
+        {"Ship engineers:\t\t", "TopHatLemons - https://discordapp.com/" },
         {"\t\t\t\t", "Truce#3326 - https://discordapp.com/" },
         {"\t\t\t\t", "RetroGraczzPL - https://discordapp.com/" },
         {"\t\t\t\t", "SS Nomadavid - https://discordapp.com/" },
@@ -115,7 +114,10 @@ AboutDialog::AboutDialog(
         {"\t\t\t\t", "KikoTheBoatBuilder - https://discordapp.com/" },
         {"\t\t\t\t", "Albert Windsor - https://discordapp.com/" },
         {"\t\t\t\t", "ShipBuilder1912 - https://discordapp.com/" },
-        {"\t\t\t\t", "Maximord - https://discordapp.com/" },
+
+        {"Ship art:\t\t", "OceanLinerOrca - https://www.deviantart.com/oceanlinerorca" },
+
+        {"Chief ship literature officer:", "Maximord - https://discordapp.com/" },
 
         {"Textures:\t", "Tune 'Prototstar' Katerungroch"},
         {"wxWidgets:\t", "Copyright (c) 1998-2005 Julian Smart, Robert Roebling et al - https://www.wxwidgets.org/"},

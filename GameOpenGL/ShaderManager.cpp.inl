@@ -9,6 +9,8 @@
 #include <GameCore/Utils.h>
 
 #include <regex>
+#include <unordered_map>
+#include <unordered_set>
 
 static const std::string StaticParametersFilenameStem = "static_parameters";
 
@@ -26,30 +28,56 @@ ShaderManager<Traits>::ShaderManager(
     std::map<std::string, std::string> staticParameters;
 
     // 1) From file
-    std::filesystem::path localStaticParametersFilepath = shadersRoot / (StaticParametersFilenameStem + ".glsl");
+    std::filesystem::path localStaticParametersFilepath = shadersRoot / (StaticParametersFilenameStem + ".glslinc");
     if (std::filesystem::exists(localStaticParametersFilepath))
     {
         std::string localStaticParametersSource = Utils::LoadTextFile(localStaticParametersFilepath);
         ParseLocalStaticParameters(localStaticParametersSource, staticParameters);
     }
 
+    //
+    // Load all shader files
+    //
 
-    //
-    // Enumerate and compile all shader files
-    //
+    // Filename -> (isShader, source)
+    std::unordered_map<std::string, std::pair<bool, std::string>> shaderSources;
 
     for (auto const & entryIt : std::filesystem::directory_iterator(shadersRoot))
     {
         if (std::filesystem::is_regular_file(entryIt.path())
-            && entryIt.path().extension() == ".glsl"
+            && (entryIt.path().extension() == ".glsl" || entryIt.path().extension() == ".glslinc")
             && entryIt.path().stem() != StaticParametersFilenameStem)
         {
-            CompileShader(entryIt.path(), staticParameters);
+            std::string shaderFilename = entryIt.path().filename().string();
+
+            assert(shaderSources.count(shaderFilename) == 0); // Guaranteed by file system
+
+            shaderSources[shaderFilename] = std::make_pair<bool, std::string>(
+                entryIt.path().extension() == ".glsl",
+                Utils::LoadTextFile(entryIt.path()));
         }
     }
 
+
     //
-    // Verify all programs have been loaded
+    // Compile all shader files
+    //
+
+    for (auto const & entryIt : shaderSources)
+    {
+        if (entryIt.second.first)
+        {
+            CompileShader(
+                entryIt.first,
+                entryIt.second.second,
+                shaderSources,
+                staticParameters);
+        }
+    }
+
+
+    //
+    // Verify all expected programs have been loaded
     //
 
     for (uint32_t i = 0; i <= static_cast<uint32_t>(Traits::ProgramType::_Last); ++i)
@@ -63,17 +91,22 @@ ShaderManager<Traits>::ShaderManager(
 
 template<typename Traits>
 void ShaderManager<Traits>::CompileShader(
-    std::filesystem::path const & shaderFilepath,
+    std::string const & shaderFilename,
+    std::string const & shaderSource,
+    std::unordered_map<std::string, std::pair<bool, std::string>> const & shaderSources,
     std::map<std::string, std::string> const & staticParameters)
 {
-    // Load the source file
-    std::string shaderSource = Utils::LoadTextFile(shaderFilepath);
-
     try
     {
         // Get the program type
-        Traits::ProgramType const program = Traits::ShaderFilenameToProgramType(shaderFilepath.stem().string());
+        std::filesystem::path shaderFilenamePath(shaderFilename);
+        Traits::ProgramType const program = Traits::ShaderFilenameToProgramType(shaderFilenamePath.stem().string());
         std::string const programName = Traits::ProgramTypeToStr(program);
+
+        // Resolve includes
+        std::string preprocessedShaderSource = ResolveIncludes(
+            shaderSource,
+            shaderSources);
 
         // Make sure we have room for it
         size_t programIndex = static_cast<size_t>(program);
@@ -86,7 +119,7 @@ void ShaderManager<Traits>::CompileShader(
         assert(!(mPrograms[programIndex].OpenGLHandle));
 
         // Split the source file
-        auto [vertexShaderSource, fragmentShaderSource] = SplitSource(shaderSource);
+        auto [vertexShaderSource, fragmentShaderSource] = SplitSource(preprocessedShaderSource);
 
         // Create program
         mPrograms[programIndex].OpenGLHandle = glCreateProgram();
@@ -170,8 +203,70 @@ void ShaderManager<Traits>::CompileShader(
     }
     catch (GameException const & ex)
     {
-        throw GameException("Error compiling shader file \"" + shaderFilepath.filename().string() + "\": " + ex.what());
+        throw GameException("Error compiling shader file \"" + shaderFilename + "\": " + ex.what());
     }
+}
+
+template<typename Traits>
+std::string ShaderManager<Traits>::ResolveIncludes(
+    std::string const & shaderSource,
+    std::unordered_map<std::string, std::pair<bool, std::string>> const & shaderSources)
+{
+    static std::regex IncludeRegex(R"!(^\s*#include\s+\"\s*([_a-zA-Z0-9\.]+)\s*\"\s*$)!");
+
+    std::unordered_set<std::string> resolvedIncludes;
+
+    std::string resolvedSource = shaderSource;
+
+    for (bool hasResolved = true; hasResolved; )
+    {
+        std::stringstream sSource(resolvedSource);
+        std::stringstream sSubstitutedSource;
+
+        hasResolved = false;
+
+        std::string line;
+        while (std::getline(sSource, line))
+        {
+            std::smatch match;
+            if (std::regex_search(line, match, IncludeRegex))
+            {
+                //
+                // Found an include
+                //
+
+                assert(2 == match.size());
+
+                auto includeFilename = match[1].str();
+                auto includeIt = shaderSources.find(includeFilename);
+                if (includeIt == shaderSources.end())
+                {
+                    throw GameException("Cannot find include file \"" + includeFilename + "\"");
+                }
+
+                if (resolvedIncludes.count(includeFilename) > 0)
+                {
+                    throw GameException("Detected include file loop at include file \"" + includeFilename + "\"");
+                }
+
+                // Insert include
+                sSubstitutedSource << includeIt->second.second << sSource.widen('\n');
+
+                // Remember the files we've included in this path
+                resolvedIncludes.insert(includeFilename);
+
+                hasResolved = true;
+            }
+            else
+            {
+                sSubstitutedSource << line << sSource.widen('\n');
+            }
+        }
+
+        resolvedSource = sSubstitutedSource.str();
+    }
+
+    return resolvedSource;
 }
 
 template<typename Traits>

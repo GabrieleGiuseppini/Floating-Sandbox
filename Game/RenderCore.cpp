@@ -45,6 +45,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::ShipStressedSprings;
     else if (lstr == "ship_triangles_color")
         return ProgramType::ShipTrianglesColor;
+    else if (lstr == "ship_triangles_decay")
+        return ProgramType::ShipTrianglesDecay;
     else if (lstr == "ship_triangles_texture")
         return ProgramType::ShipTrianglesTexture;
     else if (lstr == "ship_vectors")
@@ -91,6 +93,8 @@ std::string ProgramTypeToStr(ProgramType program)
         return "ShipStressedSprings";
     case ProgramType::ShipTrianglesColor:
         return "ShipTrianglesColor";
+    case ProgramType::ShipTrianglesDecay:
+        return "ShipTrianglesDecay";
     case ProgramType::ShipTrianglesTexture:
         return "ShipTrianglesTexture";
     case ProgramType::ShipVectors:

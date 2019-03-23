@@ -403,6 +403,10 @@ void ShipRenderContext::UpdateOrthoMatrices()
     mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesColor, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
 
+    mShaderManager.ActivateProgram<ProgramType::ShipTrianglesDecay>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesDecay, ProgramParameterType::OrthoMatrix>(
+        shipOrthoMatrix);
+
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTexture>();
     mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesTexture, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
@@ -500,6 +504,10 @@ void ShipRenderContext::OnAmbientLightIntensityUpdated()
 
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesColor>();
     mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesColor, ProgramParameterType::AmbientLightIntensity>(
+        mAmbientLightIntensity);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipTrianglesDecay>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesDecay, ProgramParameterType::AmbientLightIntensity>(
         mAmbientLightIntensity);
 
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTexture>();
@@ -971,18 +979,26 @@ void ShipRenderContext::RenderEnd()
         //
 
         if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe
-            || (mDebugShipRenderMode == DebugShipRenderMode::None
-                && (mShipRenderMode == ShipRenderMode::Structure || mShipRenderMode == ShipRenderMode::Texture)))
+            || mDebugShipRenderMode == DebugShipRenderMode::Decay
+            || mDebugShipRenderMode == DebugShipRenderMode::None)
         {
-            if (mShipRenderMode == ShipRenderMode::Texture)
+            if (mDebugShipRenderMode == DebugShipRenderMode::Decay)
             {
-                // Use texture program
-                mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTexture>();
+                // Use decay program
+                mShaderManager.ActivateProgram<ProgramType::ShipTrianglesDecay>();
             }
             else
             {
-                // Use color program
-                mShaderManager.ActivateProgram<ProgramType::ShipTrianglesColor>();
+                if (mShipRenderMode == ShipRenderMode::Texture)
+                {
+                    // Use texture program
+                    mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTexture>();
+                }
+                else
+                {
+                    // Use color program
+                    mShaderManager.ActivateProgram<ProgramType::ShipTrianglesColor>();
+                }
             }
 
             if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)

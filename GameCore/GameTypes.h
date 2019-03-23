@@ -210,7 +210,8 @@ enum class DebugShipRenderMode
     Wireframe,
     Points,
     Springs,
-    EdgeSprings
+    EdgeSprings,
+    Decay
 };
 
 /*

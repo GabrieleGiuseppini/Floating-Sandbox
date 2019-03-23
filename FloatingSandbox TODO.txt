@@ -328,25 +328,29 @@ Render:
 		- Frontier
 		- Resource Packs (*)
 
-- New ships
-	# Names:
+- Ship making:
+	# Credit names:
 		# ShippyMcJerry: ShipBuilder1912 
 		# Coolman115: CorbinPasta93
-	- Titanic with more lights
-	- To test:
-		= USS Shark
-			- Need Z buffer work first
-	- Asked:
-		- America - Rockabilly
-		- Caronia - Rockabilly
-			- Center it
-		- Ed Fitzgerald (but needs to be fixed) (Kiko)
-		- Aegir_Mark_III (coolman asks original designer)
-	- Ready:
-		- Michael Bozarth
-			- https://drive.google.com/drive/u/0/folders/1k-A4SE8mMp2j_A3nH3gnl6SvYF9bnWoU
-				- See if he's gonna add descriptions
-			- Add "Michael Bozarth" to About box
+	- New ships:
+		- To adjust:
+			- SS France (Awesomeyorkie):
+				- Ropes
+		- To test:
+			= USS Shark
+				- Need Z buffer work first
+		- Asked:
+			- America - Rockabilly
+			- Caronia - Rockabilly
+				- Center it
+			- Ed Fitzgerald (but needs to be fixed) (Kiko)
+			- Aegir_Mark_III (coolman asks original designer)
+	- Descriptions:
+		- Tell maximord about new ships - give him names
+	- Michael Bozarth
+		- https://drive.google.com/drive/u/0/folders/1k-A4SE8mMp2j_A3nH3gnl6SvYF9bnWoU
+			- See if he's gonna add descriptions
+		- Add "Michael Bozarth" to About box
 
 
 - Suggestions to spec:
@@ -371,6 +375,10 @@ Render:
 - Technical Debt:
 	+ Global damp as game parameter
 	+ Ships start from 1
+	+ Do #include "foo.glsl" at ShaderManager
+		+ After including redo
+		+ Detect loops with unordered_set<std::string>
+		+ Use for ship color and texture
 	- Sound controller: complain if find extraneous files (had issue with ".flc")
 
 - Simulation Optimizations:
@@ -867,49 +875,59 @@ Render:
 				+ Clone same to triangles - remove isAtOwner flag there
 			+ FastLog2 benchmarks
 			+ Commit
-			- Unify shaders
-				- ship_color
-				- ship_texture
 			= Ship::LowFrequencyUpdate()
 				+ Invoked by Ship::Update
 				+ Checks whether currentSimTime >= lastLowFrequencyUpdateSimTime + GameParameters::LowFrequencySimulationStepTimeDuration<float>
 				= Does:
-					= Ship::RotPoints() -> decay
+					+ Ship::RotPoints() -> decay
 						+ alpha = (10^-5)^(f(Acceler8r)/300) (~total decay in 300/f(RotAcceler8r) steps)
 							+ Accel = 1 => 300 steps (5 mins)
 							+ Accel = 10 => 30 steps (30  secs)
 							+ Accel = 0 => +INF steps
 							+ Come up with reasonable min, max
-						- for each point p:
-							- TODO: make sure p.water = 0.0 => beta = 0.0
-							- beta = alpha * log(1 + p.water) (beta << 1)
-							- if p.isLeaking: beta *= 5.0
-							- p.SetDecay(decay *= (1.0 - beta))
-								- Check assembly for p.SetXYZ() vs p.GetXYZ()*=y !
+						+ for each point p:
+							+ beta = alpha * log(1 + p.water) (beta << 1)
+							+ if p.isLeaking: beta *= 5.0
+							+ p.SetDecay(decay *= (1.0 - beta))
+								+ Check assembly for p.SetXYZ() vs p.GetXYZ()*=y !
 
-						- Points.MarkDecayBufferAsDirty()
+						+ Points.MarkDecayBufferAsDirty()
 
 					- Ship::DecaySprings() -> strength
 						- for each spring: strength = material's strength * avg of two endpoints' decay
+					- Do RotPoints at SimulationStepSequence%4 and DecaySprings at SimulationStepSequence%5
+						- Change visit sequence number to SimulationStepSequenceNumber
+							- Double-check first
+							- Type (SequenceNumber, never zero) and variable (SimulationStepSequenceNumber)
+							- "Visit sequence number" members of containers ("VisitSimulationStepSequenceNumber")
 			= (Ship)RenderContext:
 				+ UploadDecayBuffer
 					+ Just like upload plane ID, opportunistic
 					+ Interleaves in attribute group 2, at the place of padding
-				- Shaders:
+				= Shaders:
 					+ Group2: vec3 -> vec4
-					- Triangle, Spring, Ropes, and Point shaders give value to fragment shader
-					- Fragment shader uses it for:
-						- Pre-test: triangle shader: just display white*decay
-						- Production:
-							- Turn color into grey scale
-							- Or color blend
+					+ Triangle, Spring, Ropes, and Point shaders give value to fragment shader
+					= Fragment shader uses it for:
+						+ Pre-test: triangle shader: just display white*decay
+						= Production:
+							= Blend with rot color == l(brown) + (1-l)(green), with l==lightness
+					- Do also at ship_color shader
 			+ Ship::Render:
 				+ Points::UploadAttributes
 					+ Now also uploads Decay buffer @ //mutable attributes// if dirty, and of course resets flag
 
-			- SettingsDialog: RotAcceler8r
+			+ SettingsDialog: 
+				+ RotAcceler8r
+				+ Debug option for rendering decay
 
-			- TODO: see Moleskine for clean et al
+			+ Debug option for rendering decay
+				+ Make 1 single layer
+
+			- Scrub tool
+				- Cleans when moves (sends decay back to 1.0) 
+					- Along trajectory, magnitude dependent from distance between tool and point 
+				- Icon: sponge
+				- Sound: scrub, with movement (based off feedback from GameController, like saw)
 
 	- Dynamite that may be thrown to the ship
 

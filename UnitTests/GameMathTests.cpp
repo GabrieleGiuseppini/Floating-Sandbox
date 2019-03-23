@@ -152,22 +152,6 @@ TEST(FastFastLog2_1, Basic)
     EXPECT_EQ(FastFastLog2_1(1000000.0f), 19.0f);
 }
 
-float DiscreteLog2(float x)
-{
-    typedef union {
-        float f;
-        struct {
-            unsigned int mantissa : 23;
-            unsigned int exponent : 8;
-            unsigned int sign : 1;
-        } parts;
-    } float_cast;
-
-    float_cast d1 = { x };
-
-    return static_cast<float>(static_cast<int>(d1.parts.exponent) - 127);
-}
-
 TEST(DiscreteLog2, Basic)
 {
     EXPECT_EQ(DiscreteLog2(0.1f), -4.0f);

@@ -103,6 +103,7 @@ private:
     std::unique_ptr<SliderControl> mOceanFloorDetailAmplificationSlider;
     std::unique_ptr<SliderControl> mLuminiscenceSlider;
     std::unique_ptr<SliderControl> mLightSpreadSlider;
+    std::unique_ptr<SliderControl> mRotAcceler8rSlider;
 
     // Interactions
     std::unique_ptr<SliderControl> mDestroyRadiusSlider;

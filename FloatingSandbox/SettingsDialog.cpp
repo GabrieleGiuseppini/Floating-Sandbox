@@ -881,6 +881,26 @@ void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
 
     gridSizer->Add(mLightSpreadSlider.get(), 1, wxALL, SliderBorder);
 
+    // Rot Accelerator
+
+    mRotAcceler8rSlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Rot Acceler8r",
+        "Adjusts the speed with which materials rot when exposed to sea water.",
+        mGameController->GetRotAcceler8r(),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<LinearSliderCore>(
+            mGameController->GetMinRotAcceler8r(),
+            mGameController->GetMaxRotAcceler8r()));
+
+    gridSizer->Add(mRotAcceler8rSlider.get(), 1, wxALL, SliderBorder);
+
 
     // Finalize panel
 
@@ -1599,7 +1619,8 @@ void SettingsDialog::PopulateAdvancedPanel(wxPanel * panel)
         _("Draw in Wireframe Mode"),
         _("Draw Only Points"),
         _("Draw Only Springs"),
-        _("Draw Only Edge Springs")
+        _("Draw Only Edge Springs"),
+        _("Draw Decay")
     };
 
     mDebugShipRenderModeRadioBox = new wxRadioBox(panel, wxID_ANY, _("Ship Debug Draw Options"), wxDefaultPosition, wxDefaultSize,
@@ -1677,6 +1698,8 @@ void SettingsDialog::ReadSettings()
     mLuminiscenceSlider->SetValue(mGameController->GetLuminiscenceAdjustment());
 
     mLightSpreadSlider->SetValue(mGameController->GetLightSpreadAdjustment());
+
+    mRotAcceler8rSlider->SetValue(mGameController->GetRotAcceler8r());
 
     mSeaDepthSlider->SetValue(mGameController->GetSeaDepth());
 
@@ -1842,6 +1865,12 @@ void SettingsDialog::ReadSettings()
             mDebugShipRenderModeRadioBox->SetSelection(4);
             break;
         }
+
+        case DebugShipRenderMode::Decay:
+        {
+            mDebugShipRenderModeRadioBox->SetSelection(5);
+            break;
+        }
     }
 
     auto vectorFieldRenderMode = mGameController->GetVectorFieldRenderMode();
@@ -1959,6 +1988,8 @@ void SettingsDialog::ApplySettings()
     mGameController->SetLightSpreadAdjustment(
         mLightSpreadSlider->GetValue());
 
+    mGameController->SetRotAcceler8r(
+        mRotAcceler8rSlider->GetValue());
 
 
     mGameController->SetDestroyRadius(
@@ -2095,10 +2126,14 @@ void SettingsDialog::ApplySettings()
     {
         mGameController->SetDebugShipRenderMode(DebugShipRenderMode::Springs);
     }
+    else if (4 == selectedDebugShipRenderMode)
+    {
+        mGameController->SetDebugShipRenderMode(DebugShipRenderMode::EdgeSprings);
+    }
     else
     {
-        assert(4 == selectedDebugShipRenderMode);
-        mGameController->SetDebugShipRenderMode(DebugShipRenderMode::EdgeSprings);
+        assert(5 == selectedDebugShipRenderMode);
+        mGameController->SetDebugShipRenderMode(DebugShipRenderMode::Decay);
     }
 
     auto selectedVectorFieldRenderMode = mVectorFieldRenderModeRadioBox->GetSelection();
