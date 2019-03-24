@@ -4,5 +4,7 @@
 	"offset":{"x":0.0, "y":-5.0},
 	"ship_name":"Flagship",
 	"created_by":"Gabriele Giuseppini",
-	"year_built":"1985"
+	"year_built":"1985",
+	"description":
+		"Not to be confused with a flagship that would usually guide the bigger ship around, but this flagship is used as a ship to hold flags up to honor other countries or their country. Pretty simple right? Well, Yes, It basically is exactly that."
 }

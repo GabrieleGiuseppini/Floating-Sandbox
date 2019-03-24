@@ -1,8 +1,8 @@
 {
-	"structure_image":"rms_lusitania_small_structural.png.dat",
+	"structure_image":"rms_lusitania_tiny_structural.png.dat",
 	"offset":{"x":0.0, "y":0.0},
-	"ship_name":"RMS Lusitania (Small)",
-	"created_by":"Albert Windsor",
+	"ship_name":"RMS Lusitania (Tiny)",
+	"created_by":"KikoTheBoatBuilder",
 	"year_built":"1906",
 	"description":
 		"The ‘R.M.S. Lusitania’ was a British ocean liner that was briefly known as the world’s largest passenger ship. The ship went on for many of its voyages until it was sunk on the 7th of May, 1915 by a German U-Boat 11 Miles (18 Kilometers) off the South Coast of Ireland which started The United States Declaration of War on Germany in 1917. A beautiful ship was once up, now down. We will miss you Lusitania!"
