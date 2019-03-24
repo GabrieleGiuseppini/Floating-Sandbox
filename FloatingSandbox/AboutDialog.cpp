@@ -114,6 +114,7 @@ AboutDialog::AboutDialog(
         {"\t\t\t\t", "KikoTheBoatBuilder - https://discordapp.com/" },
         {"\t\t\t\t", "Albert Windsor - https://discordapp.com/" },
         {"\t\t\t\t", "ShipBuilder1912 - https://discordapp.com/" },
+        {"\t\t\t\t", "Michael Bozarth" },
 
         {"Ship art:\t\t", "OceanLinerOrca - https://www.deviantart.com/oceanlinerorca" },
 

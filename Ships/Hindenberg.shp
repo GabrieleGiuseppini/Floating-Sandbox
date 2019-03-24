@@ -1,0 +1,8 @@
+{
+	"structure_image":"hindenberg_structure.png.dat",
+	"texture_image":"hindenberg_texture.png.dat",
+	"offset":{"x":0.0, "y":-10.0},
+	"ship_name":"Hindenberg",
+	"created_by":"Michael Bozarth",
+	"year_built":"1936"
+}

@@ -1,0 +1,8 @@
+{
+	"structure_image":"graf_zeppelin_structure.png.dat",
+	"texture_image":"graf_zeppelin_texture.png.dat",
+	"offset":{"x":0.0, "y":-8.0},
+	"ship_name":"Graf Zeppelin",
+	"created_by":"Michael Bozarth",
+	"year_built":"1938"
+}
