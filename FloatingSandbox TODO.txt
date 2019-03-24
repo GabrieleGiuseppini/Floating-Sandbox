@@ -1,6 +1,9 @@
 =================================================
 Current perf:
 =================================================
+- fps: 30.5/30.5/30.7/30.85
+=================================================
+Before decay:
 - fps: 30.7/30.7/30.8/30.9/32.0
 - U/R: 193.x%
 - RunGameIteration: TODO:86.62% (initialization time)
@@ -264,9 +267,7 @@ Render:
 		+ Update FPS & perf analysis
 		+ Water Contrast @ 0.875?
 		+ UIPreferences		
-
-		= Decay (rust) (*)
-
+		+ Decay (rust) (*)
 		+ Ship descriptions (*)
 
 		- Less stress sounds: use mIsStressed buffer, w/high and low watermarks
@@ -276,7 +277,7 @@ Render:
 		- Fix air bubble progress issue
 
 		- ShipRenderContext: make water color depend on ocean render mode color
-			- Get FPS before:
+			+ Get FPS before
 			- Water color in shader has to become parameter
 			- OceanRenderMode:
 				- Texture: waterColor=<constant matching now>
@@ -302,7 +303,7 @@ Render:
 			- Make music class with FadeToStop()
 				- ::Update()		
 
-		- Heat and combustion
+		- Heat and combustion (*)
 			- Gunpowder: material or object?
 
 		- Instanced drawing for lights (*)
@@ -867,101 +868,26 @@ Render:
 
 - Dynamics:
 
-	= Decay (rust) (*)
-		- Spec:
-			- Over time, *wet* points and springs get decayed (grey), and strength lowers
-			- GameParameters: DecayAcceler8r controls how quickly
-				- 0  = +INF == never
-				- 1  = 5m (default)
-				- 10 = 10s
-			- Low-frequency Ship update does job
-			- Integrate with Combustion feature:
-				- Combustion also is a source of decay
-				- Springs should get weak based off decay, independently from source
-				- It is really 3 distinct processes:
-					- 1a: Point rotting:
-						- Low-frequency
-						- water + isLeaking => decay
-					- 1b: Point combustion:
-						- Any frequency (combustion state machine update frequency)
-						- combustion y/n => decay
-					- 2: Spring decay
-						- Low-frequency
-						- p.decay => s.strength
-							- Use both endpoints' decay
-						- Impl:
-							- Springs::Decay(Points const &)
-								- For each spring: strength = material's strength * avg of two endpoints' decay
-									- float buffer: MaterialStrength
-		= Impl:
-			+ Points: new Decay float buffer
-				+ Init as 1.0
-					+ Idea is that Ship::DecayStructure sends it asymptotically to 0.0
-			+ Springs: new MaterialStrength float buffer
-				+ Init with material strength, same as Strength
-				+ Getter const
-			+ Points: ConnectedSprings structure contains size_t with # of springs owned by the point
-				+ Update at Add/RemoveConnectedSpring
-					+ And make owned first, non-owned next
-				+ Clone same to triangles - remove isAtOwner flag there
-			+ FastLog2 benchmarks
-			+ Commit
-			+ Ship::LowFrequencyUpdate()
-				+ Invoked by Ship::Update
-				+ Checks whether currentSimTime >= lastLowFrequencyUpdateSimTime + GameParameters::LowFrequencySimulationStepTimeDuration<float>
-				+ Does:
-					+ Ship::RotPoints() -> decay
-						+ alpha = (10^-5)^(f(Acceler8r)/300) (~total decay in 300/f(RotAcceler8r) steps)
-							+ Accel = 1 => 300 steps (5 mins)
-							+ Accel = 10 => 30 steps (30  secs)
-							+ Accel = 0 => +INF steps
-							+ Come up with reasonable min, max
-						+ for each point p:
-							+ beta = alpha * log(1 + p.water) (beta << 1)
-							+ if p.isLeaking: beta *= 5.0
-							+ p.SetDecay(decay *= (1.0 - beta))
-								+ Check assembly for p.SetXYZ() vs p.GetXYZ()*=y !
-
-						+ Points.MarkDecayBufferAsDirty()
-
-					+ Ship::DecaySprings() -> strength
-						+ for each spring: strength = material's strength * avg of two endpoints' decay
-						+ Check assembly
-					+ Spread out the two calls
-						+ Check with large ship if stutters
-					+ Do RotPoints at SimulationStepSequence%4 and DecaySprings at SimulationStepSequence%5
-						+ Change visit sequence number to SimulationStepSequenceNumber
-							+ Double-check first
-							+ Type (SequenceNumber, never zero) and variable (SimulationStepSequenceNumber
-			+ (Ship)RenderContext:
-				+ UploadDecayBuffer
-					+ Just like upload plane ID, opportunistic
-					+ Interleaves in attribute group 2, at the place of padding
-				+ Shaders:
-					+ Group2: vec3 -> vec4
-					+ Triangle, Spring, Ropes, and Point shaders give value to fragment shader
-					+ Fragment shader uses it for:
-						+ Pre-test: triangle shader: just display white*decay
-						+ Production:
-							+ Blend with rot color == l(brown) + (1-l)(green), with l==lightness
-					+ Do also at ship_color shader
-			+ Less stress sounds when really decayed
-			+ Ship::Render:
-				+ Points::UploadAttributes
-					+ Now also uploads Decay buffer @ //mutable attributes// if dirty, and of course resets flag
-			+ SettingsDialog: 
-				+ RotAcceler8r
-				+ Debug option for rendering decay
-			+ Debug option for rendering decay
-				+ Make 1 single layer
-			= Scrub tool
-				+ Cleans when moves (sends decay back to 1.0) 
-					+ Along trajectory, magnitude dependent from distance between tool and point 
-				= Icon: sponge
-					- Make separate down and up
-				+ Sound: scrub, with movement (based off feedback from GameController, like saw)
-				+ Better sounds with vector directions
-				- Help
+	- Heat and Combustion (*)
+		- Integration of Decay with Combustion:
+			- Combustion also is a source of decay
+			- Springs should get weak based off decay, independently from source
+			- It is really 3 distinct processes:
+				+ 1a: Point rotting:
+					+ Low-frequency
+					+ water + isLeaking => decay
+				- 1b: Point combustion:
+					- Any frequency (combustion state machine update frequency)
+					- combustion y/n => decay
+				+ 2: Spring decay
+					+ Low-frequency
+					+ p.decay => s.strength
+						+ Use both endpoints' decay
+					+ Impl:
+						+ Springs::Decay(Points const &)
+							+ For each spring: strength = material's strength * avg of two endpoints' decay
+								+ float buffer: MaterialStrength
+		- TODO: from Moleskine
 
 	- Dynamite that may be thrown to the ship
 
@@ -4098,6 +4024,83 @@ IF WX:
 			+ Cleanup texture
 			+ Add ropes
 			+ Finish structure
+	+ Decay (rust)
+		+ Spec:
+			+ Over time, *wet* points and springs get decayed (grey), and strength lowers
+			+ GameParameters: DecayAcceler8r controls how quickly
+				- 0  = +INF == never
+				- 1  = 5m (default)
+				- 10 = 10s
+			+ Low-frequency Ship update does job
+		+ Impl:
+			+ Points: new Decay float buffer
+				+ Init as 1.0
+					+ Idea is that Ship::DecayStructure sends it asymptotically to 0.0
+			+ Springs: new MaterialStrength float buffer
+				+ Init with material strength, same as Strength
+				+ Getter const
+			+ Points: ConnectedSprings structure contains size_t with # of springs owned by the point
+				+ Update at Add/RemoveConnectedSpring
+					+ And make owned first, non-owned next
+				+ Clone same to triangles - remove isAtOwner flag there
+			+ FastLog2 benchmarks
+			+ Commit
+			+ Ship::LowFrequencyUpdate()
+				+ Invoked by Ship::Update
+				+ Checks whether currentSimTime >= lastLowFrequencyUpdateSimTime + GameParameters::LowFrequencySimulationStepTimeDuration<float>
+				+ Does:
+					+ Ship::RotPoints() -> decay
+						+ alpha = (10^-5)^(f(Acceler8r)/300) (~total decay in 300/f(RotAcceler8r) steps)
+							+ Accel = 1 => 300 steps (5 mins)
+							+ Accel = 10 => 30 steps (30  secs)
+							+ Accel = 0 => +INF steps
+							+ Come up with reasonable min, max
+						+ for each point p:
+							+ beta = alpha * log(1 + p.water) (beta << 1)
+							+ if p.isLeaking: beta *= 5.0
+							+ p.SetDecay(decay *= (1.0 - beta))
+								+ Check assembly for p.SetXYZ() vs p.GetXYZ()*=y !
+
+						+ Points.MarkDecayBufferAsDirty()
+
+					+ Ship::DecaySprings() -> strength
+						+ for each spring: strength = material's strength * avg of two endpoints' decay
+						+ Check assembly
+					+ Spread out the two calls
+						+ Check with large ship if stutters
+					+ Do RotPoints at SimulationStepSequence%4 and DecaySprings at SimulationStepSequence%5
+						+ Change visit sequence number to SimulationStepSequenceNumber
+							+ Double-check first
+							+ Type (SequenceNumber, never zero) and variable (SimulationStepSequenceNumber
+			+ (Ship)RenderContext:
+				+ UploadDecayBuffer
+					+ Just like upload plane ID, opportunistic
+					+ Interleaves in attribute group 2, at the place of padding
+				+ Shaders:
+					+ Group2: vec3 -> vec4
+					+ Triangle, Spring, Ropes, and Point shaders give value to fragment shader
+					+ Fragment shader uses it for:
+						+ Pre-test: triangle shader: just display white*decay
+						+ Production:
+							+ Blend with rot color == l(brown) + (1-l)(green), with l==lightness
+					+ Do also at ship_color shader
+			+ Less stress sounds when really decayed
+			+ Ship::Render:
+				+ Points::UploadAttributes
+					+ Now also uploads Decay buffer @ //mutable attributes// if dirty, and of course resets flag
+			+ SettingsDialog: 
+				+ RotAcceler8r
+				+ Debug option for rendering decay
+			+ Debug option for rendering decay
+				+ Make 1 single layer
+			+ Scrub tool
+				+ Cleans when moves (sends decay back to 1.0) 
+					+ Along trajectory, magnitude dependent from distance between tool and point 
+				+ Icon: sponge
+					+ Make separate down and up
+				+ Sound: scrub, with movement (based off feedback from GameController, like saw)
+				+ Better sounds with vector directions
+				+ Help
 
 + Water
 	+ Water
