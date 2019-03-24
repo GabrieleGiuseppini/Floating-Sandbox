@@ -26,7 +26,7 @@ AboutDialog::AboutDialog(
         wxID_ANY,
         _("About " + GetVersionInfo(VersionFormat::Long)),
         wxDefaultPosition,
-        wxSize(780, 450),
+        wxSize(780, 620),
         wxCAPTION | wxCLOSE_BOX | wxFRAME_SHAPED | wxSTAY_ON_TOP,
         _T("About Window"));
 
@@ -98,11 +98,9 @@ AboutDialog::AboutDialog(
 
     std::vector<std::pair<std::string, std::string>> credits
     {
-        {"Testing:\t\t", "Pac0master" },
-
         {"Cover art:\t", "Dimitar Katsarov - https://www.artstation.com/stukata/profile" },
 
-        {"Ship engineers:\t\t", "TopHatLemons - https://discordapp.com/" },
+        {"Ship engineers:", "TopHatLemons - https://discordapp.com/" },
         {"\t\t\t\t", "Truce#3326 - https://discordapp.com/" },
         {"\t\t\t\t", "RetroGraczzPL - https://discordapp.com/" },
         {"\t\t\t\t", "SS Nomadavid - https://discordapp.com/" },
@@ -115,10 +113,15 @@ AboutDialog::AboutDialog(
         {"\t\t\t\t", "Albert Windsor - https://discordapp.com/" },
         {"\t\t\t\t", "ShipBuilder1912 - https://discordapp.com/" },
         {"\t\t\t\t", "Michael Bozarth" },
+        {"\t\t\t\t", "Rockabilly Rebel - https://discordapp.com/" },
 
         {"Ship art:\t\t", "OceanLinerOrca - https://www.deviantart.com/oceanlinerorca" },
 
         {"Chief ship literature officer:", "Maximord - https://discordapp.com/" },
+
+        {"Testing:\t\t", "Pac0master" },
+
+        {"", ""},
 
         {"Textures:\t", "Tune 'Prototstar' Katerungroch"},
         {"wxWidgets:\t", "Copyright (c) 1998-2005 Julian Smart, Robert Roebling et al - https://www.wxwidgets.org/"},
@@ -136,17 +139,28 @@ AboutDialog::AboutDialog(
     wxFlexGridSizer * creditsSizer = new wxFlexGridSizer(4, 0, 2);
     for (auto const & credit : credits)
     {
-        creditsSizer->AddSpacer(5);
+        if (credit.first.empty() && credit.second.empty())
+        {
+            // Spacer
+            creditsSizer->AddSpacer(5);
+            creditsSizer->AddSpacer(5);
+            creditsSizer->AddSpacer(5);
+            creditsSizer->AddSpacer(5);
+        }
+        else
+        {
+            creditsSizer->AddSpacer(5);
 
-        wxStaticText * credits1Label = new wxStaticText(mCreditsPanel, wxID_ANY, credit.first, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
-        credits1Label->SetFont(creditsTitleFont);
-        creditsSizer->Add(credits1Label, 0, wxALIGN_LEFT);
+            wxStaticText * credits1Label = new wxStaticText(mCreditsPanel, wxID_ANY, credit.first, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
+            credits1Label->SetFont(creditsTitleFont);
+            creditsSizer->Add(credits1Label, 0, wxALIGN_LEFT);
 
-        creditsSizer->AddSpacer(5);
+            creditsSizer->AddSpacer(5);
 
-        wxStaticText * credits2Label = new wxStaticText(mCreditsPanel, wxID_ANY, credit.second, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
-        credits2Label->SetFont(creditsContentFont);
-        creditsSizer->Add(credits2Label, 1, wxALIGN_LEFT);
+            wxStaticText * credits2Label = new wxStaticText(mCreditsPanel, wxID_ANY, credit.second, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
+            credits2Label->SetFont(creditsContentFont);
+            creditsSizer->Add(credits2Label, 1, wxALIGN_LEFT);
+        }
     }
 
     mCreditsPanel->SetSizer(creditsSizer);

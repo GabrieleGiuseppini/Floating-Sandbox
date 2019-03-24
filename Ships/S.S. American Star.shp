@@ -1,0 +1,7 @@
+{
+	"structure_image":"ss_american_star_structural.png.dat",
+	"ship_name":"S.S. American Star",
+	"offset":{"x":0.0, "y":-7.0},
+	"year_built":"1994",
+	"created_by":"Rockabilly Rebel"
+}

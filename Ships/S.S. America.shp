@@ -1,0 +1,7 @@
+{
+	"structure_image":"ss_america_structural.png.dat",
+	"ship_name":"S.S. America",
+	"offset":{"x":0.0, "y":-7.0},
+	"year_built":"1939",
+	"created_by":"Rockabilly Rebel"
+}

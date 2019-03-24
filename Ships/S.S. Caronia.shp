@@ -1,0 +1,7 @@
+{
+	"structure_image":"ss_caronia_structural.png.dat",
+	"ship_name":"S.S. Caronia",
+	"offset":{"x":0.0, "y":-7.0},
+	"year_built":"1949",
+	"created_by":"Rockabilly Rebel"
+}
