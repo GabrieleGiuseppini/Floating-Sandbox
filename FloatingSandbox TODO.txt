@@ -269,6 +269,10 @@ Render:
 
 		+ Ship descriptions (*)
 
+		- Less stress sounds: use mIsStressed buffer, w/high and low watermarks
+			- Get FPS before
+			- FPS: 
+
 		- Fix air bubble progress issue
 
 		- ShipRenderContext: make water color depend on ocean render mode color
@@ -953,10 +957,10 @@ Render:
 			= Scrub tool
 				+ Cleans when moves (sends decay back to 1.0) 
 					+ Along trajectory, magnitude dependent from distance between tool and point 
-				+ Icon: sponge
-					+ Make separate down and up
+				= Icon: sponge
+					- Make separate down and up
 				+ Sound: scrub, with movement (based off feedback from GameController, like saw)
-				- Better sounds with vector directions
+				+ Better sounds with vector directions
 				- Help
 
 	- Dynamite that may be thrown to the ship

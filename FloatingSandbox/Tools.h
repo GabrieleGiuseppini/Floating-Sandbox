@@ -172,7 +172,7 @@ public:
     {
         // Initialize the continuous tool state
         mPreviousMousePosition = inputState.MousePosition;
-        mPreviousTimestamp = std::chrono::steady_clock::now();
+        mPreviousTimestamp = GameWallClock::GetInstance().Now();
         mCumulatedTime = std::chrono::microseconds(0);
     }
 
@@ -184,7 +184,7 @@ public:
     {
         // Initialize the continuous tool state
         mPreviousMousePosition = inputState.MousePosition;
-        mPreviousTimestamp = std::chrono::steady_clock::now();
+        mPreviousTimestamp = GameWallClock::GetInstance().Now();
         mCumulatedTime = std::chrono::microseconds(0);
     }
 
@@ -213,7 +213,7 @@ protected:
             std::move(soundController))
         , mCurrentCursor(nullptr)
         , mPreviousMousePosition()
-        , mPreviousTimestamp(std::chrono::steady_clock::now())
+        , mPreviousTimestamp(GameWallClock::GetInstance().Now())
         , mCumulatedTime(0)
     {}
 
@@ -253,7 +253,7 @@ private:
 
     // Previous mouse position and time when we looked at it
     vec2f mPreviousMousePosition;
-    std::chrono::steady_clock::time_point mPreviousTimestamp;
+    GameWallClock::time_point mPreviousTimestamp;
 
     // The total accumulated press time - the proxy for the strength of the tool
     std::chrono::microseconds mCumulatedTime;
@@ -1466,6 +1466,10 @@ public:
             // Set current cursor to the up cursor
             mCurrentCursor = mUpCursor.get();
         }
+
+        // Reset scrub detection
+        mPreviousScrub.reset();
+        mPreviousScrubTimestamp = GameWallClock::time_point::min();
     }
 
     virtual void Deinitialize(InputState const & /*inputState*/) override {}
@@ -1483,10 +1487,25 @@ public:
                     *mPreviousMousePos,
                     inputState.MousePosition);
 
+                // See if we should emit a sound
                 if (hasScrubbed)
                 {
-                    // Play sound
-                    mSoundController->PlayScrubSound();
+                    vec2f const newScrub = inputState.MousePosition - *mPreviousMousePos;
+                    if (newScrub.length() > 1.0f)
+                    {
+                        auto const now = GameWallClock::GetInstance().Now();
+
+                        if (!mPreviousScrub
+                            || abs(mPreviousScrub->angle(newScrub)) > Pi<float> / 2.0f    // Direction change
+                            || (now - mPreviousScrubTimestamp) > std::chrono::milliseconds(250))
+                        {
+                            // Play sound
+                            mSoundController->PlayScrubSound();
+
+                            mPreviousScrub = newScrub;
+                            mPreviousScrubTimestamp = now;
+                        }
+                    }
                 }
             }
 
@@ -1499,6 +1518,8 @@ public:
     {
         // Initialize state
         mPreviousMousePos = inputState.MousePosition;
+        mPreviousScrub.reset();
+        mPreviousScrubTimestamp = GameWallClock::time_point::min();
 
         // Set current cursor to the down cursor
         mCurrentCursor = mDownCursor.get();
@@ -1541,4 +1562,11 @@ private:
 
     // The previous mouse position; when set, we have a segment and can scrub
     std::optional<vec2f> mPreviousMousePos;
+
+    // The previous scrub vector, which we want to remember in order to
+    // detect directions changes for the scrubbing sound
+    std::optional<vec2f> mPreviousScrub;
+
+    // The time at which we have last played a scrub sound
+    GameWallClock::time_point mPreviousScrubTimestamp;
 };

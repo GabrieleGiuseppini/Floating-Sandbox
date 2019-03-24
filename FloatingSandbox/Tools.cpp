@@ -499,5 +499,8 @@ ScrubTool::ScrubTool(
         std::move(soundController))
     , mUpCursor(MakeCursor("scrub_cursor_up", 15, 15, resourceLoader))
     , mDownCursor(MakeCursor("scrub_cursor_down", 15, 15, resourceLoader))
+    , mPreviousMousePos()
+    , mPreviousScrub()
+    , mPreviousScrubTimestamp(GameWallClock::time_point::min())
 {
 }
