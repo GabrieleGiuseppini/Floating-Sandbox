@@ -322,6 +322,13 @@ public:
         return mStrengthBuffer[springElementIndex];
     }
 
+    void SetStrength(
+        ElementIndex springElementIndex,
+        float value)
+    {
+        mStrengthBuffer[springElementIndex] = value;
+    }
+
     float GetMaterialStrength(ElementIndex springElementIndex) const
     {
         return mMaterialStrengthBuffer[springElementIndex];

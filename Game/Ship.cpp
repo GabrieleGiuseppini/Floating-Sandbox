@@ -50,6 +50,7 @@ Ship::Ship(
     , mSprings(std::move(springs))
     , mTriangles(std::move(triangles))
     , mElectricalElements(std::move(electricalElements))
+    , mCurrentSimulationSequenceNumber()
     , mCurrentConnectivityVisitSequenceNumber()
     , mMaxMaxPlaneId(0)
     , mCurrentElectricalVisitSequenceNumber()
@@ -73,7 +74,6 @@ Ship::Ship(
         mPoints,
         mSprings)
     , mCurrentForceFields()
-    , mNextLowFrequencyUpdateSimulationTime(GameParameters::LowFrequencySimulationStepTimeDuration<float>)
 {
     // Set destroy handlers
     mPoints.RegisterDestroyHandler(std::bind(&Ship::PointDestroyHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
@@ -430,7 +430,11 @@ void Ship::Update(
     GameParameters const & gameParameters,
     Render::RenderContext const & renderContext)
 {
+    // Get the current wall clock time
     auto const currentWallClockTime = GameWallClock::GetInstance().Now();
+
+    // Advance the current simulation sequence
+    ++mCurrentSimulationSequenceNumber;
 
 #ifdef _DEBUG
     VerifyInvariants();
@@ -447,14 +451,28 @@ void Ship::Update(
         gameParameters,
         mPoints);
 
+    //
+    // Rot points
+    //
+
+    if (mCurrentSimulationSequenceNumber.IsStepOf(24, 50))
+    {
+        RotPoints(
+            currentSimulationTime,
+            gameParameters);
+    }
+
 
     //
-    // Run low-frequency update (probably)
+    // Decay springs
     //
 
-    LowFrequencyUpdate(
-        currentSimulationTime,
-        gameParameters);
+    if (mCurrentSimulationSequenceNumber.IsStepOf(49, 50))
+    {
+        DecaySprings(
+            currentSimulationTime,
+            gameParameters);
+    }
 
 
 
@@ -690,35 +708,6 @@ void Ship::Render(
 // Private Helpers
 ///////////////////////////////////////////////////////////////////////////////////
 
-void Ship::LowFrequencyUpdate(
-    float currentSimulationTime,
-    GameParameters const & gameParameters)
-{
-    // Check whether it's time to run
-    if (currentSimulationTime < mNextLowFrequencyUpdateSimulationTime)
-        return;
-
-    //
-    // Rot points
-    //
-
-    RotPoints(
-        currentSimulationTime,
-        gameParameters);
-
-
-    //
-    // Decay springs
-    //
-
-    DecaySprings(
-        currentSimulationTime,
-        gameParameters);
-
-
-    // Re-schedule the next run
-    mNextLowFrequencyUpdateSimulationTime = currentSimulationTime + GameParameters::LowFrequencySimulationStepTimeDuration<float>;
-}
 
 ///////////////////////////////////////////////////////////////////////////////////
 // Mechanical Dynamics
@@ -1537,7 +1526,7 @@ void Ship::UpdateElectricalDynamics(
     DiffuseLight(gameParameters);
 }
 
-void Ship::UpdateElectricalConnectivity(VisitSequenceNumber currentVisitSequenceNumber)
+void Ship::UpdateElectricalConnectivity(SequenceNumber currentVisitSequenceNumber)
 {
     //
     // Visit electrical graph starting from (non-wet) generators, and propagate
@@ -1685,14 +1674,14 @@ void Ship::RotPoints(
 {
     // Calculate rot increment for each step
     float const alphaIncrement = gameParameters.RotAcceler8r != 0.0f
-        ? 1.0f - powf(1e-10f, gameParameters.RotAcceler8r / 50000.0f)   // Accel=1 => 1000 steps to total decay
+        ? 1.0f - powf(1e-10f, gameParameters.RotAcceler8r / 50000.0f)   // Accel=1 => 50000 steps to total decay
         : 0.0f;
 
     // Higher rot increment for leaking points - they are directly in contact
     // with water after all!
     float const leakingAlphaIncrement = alphaIncrement * 3.0f;
 
-    // Process all points
+    // Process all points - including ephemerals
     for (auto p : mPoints)
     {
         // When no water, beta == 0.0f
@@ -1711,7 +1700,19 @@ void Ship::DecaySprings(
     float /*currentSimulationTime*/,
     GameParameters const & /*gameParameters*/)
 {
-    // TODOHERE
+    // Update strength of all materials
+    for (auto s : mSprings)
+    {
+        // Take average decay of two endpoints
+        float const springDecay =
+            (mPoints.GetDecay(mSprings.GetPointAIndex(s)) + mPoints.GetDecay(mSprings.GetPointBIndex(s)))
+            / 2.0f;
+
+        // Adjust spring's strength
+        mSprings.SetStrength(
+            s,
+            mSprings.GetMaterialStrength(s) * springDecay);
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////

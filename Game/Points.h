@@ -260,7 +260,7 @@ public:
         , mPlaneIdFloatBuffer(mBufferElementCount, shipPointCount, 0.0)
         , mIsPlaneIdBufferNonEphemeralDirty(true)
         , mIsPlaneIdBufferEphemeralDirty(true)
-        , mCurrentConnectivityVisitSequenceNumberBuffer(mBufferElementCount, shipPointCount, VisitSequenceNumber())
+        , mCurrentConnectivityVisitSequenceNumberBuffer(mBufferElementCount, shipPointCount, SequenceNumber())
         // Pinning
         , mIsPinnedBuffer(mBufferElementCount, shipPointCount, false)
         // Immutable render attributes
@@ -873,17 +873,17 @@ public:
         mIsPlaneIdBufferNonEphemeralDirty = true;
     }
 
-    VisitSequenceNumber GetCurrentConnectivityVisitSequenceNumber(ElementIndex pointElementIndex) const
+    SequenceNumber GetCurrentConnectivityVisitSequenceNumber(ElementIndex pointElementIndex) const
     {
         return mCurrentConnectivityVisitSequenceNumberBuffer[pointElementIndex];
     }
 
     void SetCurrentConnectivityVisitSequenceNumber(
         ElementIndex pointElementIndex,
-        VisitSequenceNumber connectivityVisitSequenceNumber)
+        SequenceNumber ConnectivityVisitSequenceNumber)
     {
         mCurrentConnectivityVisitSequenceNumberBuffer[pointElementIndex] =
-            connectivityVisitSequenceNumber;
+            ConnectivityVisitSequenceNumber;
     }
 
     //
@@ -1066,7 +1066,7 @@ private:
     Buffer<float> mPlaneIdFloatBuffer;
     bool mutable mIsPlaneIdBufferNonEphemeralDirty;
     bool mutable mIsPlaneIdBufferEphemeralDirty;
-    Buffer<VisitSequenceNumber> mCurrentConnectivityVisitSequenceNumberBuffer;
+    Buffer<SequenceNumber> mCurrentConnectivityVisitSequenceNumberBuffer;
 
     //
     // Pinning

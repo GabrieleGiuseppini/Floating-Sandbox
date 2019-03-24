@@ -267,24 +267,31 @@ Render:
 
 		= Decay (rust) (*)
 
-		= Ship descriptions (*)
+		+ Ship descriptions (*)
 
-		- Send for testing
-			- Add other testers to About box
-
-		- More incisive air bubble vortex?
-
-		- Release?
-
-		- Orphaned points (*)
+		- Fix air bubble progress issue
 
 		- ShipRenderContext: make water color depend on ocean render mode color
+			- Get FPS before:
 			- Water color in shader has to become parameter
-				- Test FPS after setting it to constant
 			- OceanRenderMode:
 				- Texture: waterColor=<constant matching now>
 				- Flat: waterColor=<that flat color>
 				- Gradient: waterColor=<mid color>
+			- Get FPS after:
+
+		+ Ships
+
+		- Send for testing
+			- Add other testers to About box
+
+		- Release
+
+	- 1.11.0:
+
+		- More incisive air bubble vortex?
+
+		- Orphaned points (*)
 
 		- Flood tool and ship un/sinking
 			- Sinking: do HighWatermark/LowWatermark
@@ -319,7 +326,7 @@ Render:
 			- Dkuz The Fox
 			- Ask Pac0master
 
-	- 1.11.0
+	- 1.12.0
 
 		- Smoke (*)
 		- Settings Manager (*)
@@ -337,22 +344,39 @@ Render:
 			- SS France (Awesomeyorkie):
 				- Ropes
 		- To test:
-			= USS Shark
-				- Need Z buffer work first
+		- Ready:
+			- Ficier (alias: asked; year: asked)
 		- Asked:
-			- America - Rockabilly
-			- Caronia - Rockabilly
-				- Center it
 			- Ed Fitzgerald (but needs to be fixed) (Kiko)
 			- Aegir_Mark_III (coolman asks original designer)
+			- Siffiol (Ilovedumbphones)
 		- Ready:
-			- MS Lisboeta - kiko - 
 	- Descriptions:
 		+ Tell maximord about new ships - give him names
-		- *
-	- Michael Bozarth
-		- https://drive.google.com/drive/u/0/folders/1k-A4SE8mMp2j_A3nH3gnl6SvYF9bnWoU			
-		- Add "Michael Bozarth" to About box
+		= Copy all descriptions into their respective .shp files
+			# From https://docs.google.com/document/d/1niiB9AaqMAzThTY-pGjU3-qxIywKR8-nw_JDiOWcj1o/edit?usp=sharing_eil&ts=5c929c19
+			- Test:
+				+ Lusitania
+				+ HMHS britannic
+				+ RMs queen mary
+				+ balls
+				+ Carnival
+				+ Cruise Vessel
+				+ Container
+				+ Flagship
+			+ Ask ship owners
+				= mrpasta: wants to see them first
+				+ kikotheshipbuilder: all except HMS Thunderchild
+				+ Nomadavid: fine
+				+ Pac0: will do own
+			- Shippymcjerry does:
+				- HMS Thunderchild
+				+ Karaboudjan
+			+ Add Maximord to About box
+
+	+ Michael Bozarth
+		+ https://drive.google.com/drive/u/0/folders/1k-A4SE8mMp2j_A3nH3gnl6SvYF9bnWoU		
+		= Add "Michael Bozarth" to About box (link: https://www.youtube.com/channel/UCaJkgYP6yNw64U3WUZ3t1sw)
 
 
 - Suggestions to spec:
@@ -381,6 +405,7 @@ Render:
 		+ After including redo
 		+ Detect loops with unordered_set<std::string>
 		+ Use for ship color and texture
+	- Try 32-bit build
 	- Sound controller: complain if find extraneous files (had issue with ".flc")
 
 - Simulation Optimizations:
@@ -880,7 +905,7 @@ Render:
 			= Ship::LowFrequencyUpdate()
 				+ Invoked by Ship::Update
 				+ Checks whether currentSimTime >= lastLowFrequencyUpdateSimTime + GameParameters::LowFrequencySimulationStepTimeDuration<float>
-				= Does:
+				+ Does:
 					+ Ship::RotPoints() -> decay
 						+ alpha = (10^-5)^(f(Acceler8r)/300) (~total decay in 300/f(RotAcceler8r) steps)
 							+ Accel = 1 => 300 steps (5 mins)
@@ -895,13 +920,16 @@ Render:
 
 						+ Points.MarkDecayBufferAsDirty()
 
-					- Ship::DecaySprings() -> strength
-						- for each spring: strength = material's strength * avg of two endpoints' decay
-					- Do RotPoints at SimulationStepSequence%4 and DecaySprings at SimulationStepSequence%5
-						- Change visit sequence number to SimulationStepSequenceNumber
-							- Double-check first
-							- Type (SequenceNumber, never zero) and variable (SimulationStepSequenceNumber)
-							- "Visit sequence number" members of containers ("VisitSimulationStepSequenceNumber")
+					+ Ship::DecaySprings() -> strength
+						+ for each spring: strength = material's strength * avg of two endpoints' decay
+						+ Check assembly
+					+ Spread out the two calls
+						+ Check with large ship if stutters
+					+ Do RotPoints at SimulationStepSequence%4 and DecaySprings at SimulationStepSequence%5
+						+ Change visit sequence number to SimulationStepSequenceNumber
+							+ Double-check first
+							+ Type (SequenceNumber, never zero) and variable (SimulationStepSequenceNumber)
+
 			= (Ship)RenderContext:
 				+ UploadDecayBuffer
 					+ Just like upload plane ID, opportunistic
@@ -911,8 +939,8 @@ Render:
 					+ Triangle, Spring, Ropes, and Point shaders give value to fragment shader
 					= Fragment shader uses it for:
 						+ Pre-test: triangle shader: just display white*decay
-						= Production:
-							= Blend with rot color == l(brown) + (1-l)(green), with l==lightness
+						+ Production:
+							+ Blend with rot color == l(brown) + (1-l)(green), with l==lightness
 					- Do also at ship_color shader
 			+ Ship::Render:
 				+ Points::UploadAttributes
@@ -930,6 +958,7 @@ Render:
 					- Along trajectory, magnitude dependent from distance between tool and point 
 				- Icon: sponge
 				- Sound: scrub, with movement (based off feedback from GameController, like saw)
+				- Help
 
 	- Dynamite that may be thrown to the ship
 
@@ -1369,7 +1398,7 @@ Render:
 		+ Tooltip at ScreenshotsDir
 		+ Tooltip at StartupDialog
 
-	= Ship Descriptions (*)
+	+ Ship Descriptions (*)
 		+ ShipMetadata: description
 			+ opt<string> member
 			+ json load
@@ -1393,19 +1422,6 @@ Render:
 			+ Checkbox 
 				+ @ ShipDescription window
 				+ @ PreferencesDialog
-		= Copy all descriptions into their respective .shp files
-			+ mrpasta -> CorbinPasta93
-				+ Ships
-				+ About
-			- Ask ship owners
-				- mrpasta: wants to see them first
-				- kikotheshipbuilder: all except HMS Thunderchild
-				- Nomadavid: fine
-				- Pac0: 
-			- Shippymcjerry does:
-				- HMS Thunderchild
-				+ Karaboudjan
-			+ Add Maximord to About box
 				
 
 	- SettingsDialog: save settings, defaults, and real-time changes

@@ -1,9 +1,11 @@
-TODO
+1.10.0
 - Ship lights now reveal underlying colors at night
 - Improved rendering pipeline
 	- Floating Sandbox now supports some graphic cards which were previously only displaying clouds and water but no ship!
 - Rectified simulation instability that was caused by square water drag law at very high speeds 
  (see https://gabrielegiuseppini.wordpress.com/2019/03/17/euler-fights-with-square-drag/)
+- Ships now may carry a description which is optionally shown when they are loaded
+- Quite a few new ships!
 
 1.9.1
 - Fixed crash when attempting to load a ship from a directory that contains an empty ship

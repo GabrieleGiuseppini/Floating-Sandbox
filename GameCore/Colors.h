@@ -25,7 +25,7 @@ public:
     uint8_t g;
     uint8_t b;
 
-    static constexpr const rgbColor zero()
+    static constexpr rgbColor zero()
     {
         return rgbColor();
     }
@@ -119,7 +119,7 @@ public:
     uint8_t b;
     uint8_t a;
 
-    static constexpr const rgbaColor zero()
+    static constexpr rgbaColor zero()
     {
         return rgbaColor();
     }
@@ -205,7 +205,7 @@ public:
     uint32_t a;
     uint32_t count;
 
-    static constexpr const rgbaColorAccumulation zero()
+    static constexpr rgbaColorAccumulation zero()
     {
         return rgbaColorAccumulation();
     }

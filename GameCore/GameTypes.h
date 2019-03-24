@@ -120,24 +120,29 @@ struct hash<ObjectId>
 }
 
 /*
- * Graph visit sequence numbers.
+ * A sequence number which is never zero.
  */
-class VisitSequenceNumber
+struct SequenceNumber
 {
 public:
 
-    VisitSequenceNumber()
+    static constexpr SequenceNumber None()
+    {
+        return SequenceNumber();
+    }
+
+    inline constexpr SequenceNumber()
         : mValue(0)
     {}
 
-    inline VisitSequenceNumber & operator=(VisitSequenceNumber const & other)
+    inline SequenceNumber & operator=(SequenceNumber const & other)
     {
         mValue = other.mValue;
 
         return *this;
     }
 
-    VisitSequenceNumber & operator++()
+    SequenceNumber & operator++()
     {
         ++mValue;
         if (0 == mValue)
@@ -146,19 +151,24 @@ public:
         return *this;
     }
 
-    inline bool operator==(VisitSequenceNumber const & other) const
+    inline bool operator==(SequenceNumber const & other) const
     {
         return mValue == other.mValue;
     }
 
-    inline bool operator!=(VisitSequenceNumber const & other) const
+    inline bool operator!=(SequenceNumber const & other) const
     {
         return !(*this == other);
     }
 
-    operator bool() const
+    inline operator bool() const
     {
-        return mValue != 0;
+        return (*this) != None();
+    }
+
+    inline bool IsStepOf(std::uint32_t step, std::uint32_t period)
+    {
+        return step == (mValue % period);
     }
 
 private:

@@ -78,7 +78,7 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
 
 void ElectricalElements::Update(
     GameWallClock::time_point currentWallclockTime,
-    VisitSequenceNumber currentConnectivityVisitSequenceNumber,
+    SequenceNumber currentConnectivityVisitSequenceNumber,
     Points & points,
     GameParameters const & gameParameters)
 {
@@ -107,7 +107,7 @@ void ElectricalElements::Update(
 void ElectricalElements::RunLampStateMachine(
     ElementIndex elementLampIndex,
     GameWallClock::time_point currentWallclockTime,
-    VisitSequenceNumber currentConnectivityVisitSequenceNumber,
+    SequenceNumber currentConnectivityVisitSequenceNumber,
     Points & points,
     GameParameters const & /*gameParameters*/)
 {

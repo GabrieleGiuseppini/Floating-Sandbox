@@ -47,7 +47,7 @@ public:
         , mConnectedElectricalElementsBuffer(mBufferElementCount, mElementCount, {})
         , mElementStateBuffer(mBufferElementCount, mElementCount, ElementState::CableState())
         , mAvailableCurrentBuffer(mBufferElementCount, mElementCount, 0.0f)
-        , mCurrentConnectivityVisitSequenceNumberBuffer(mBufferElementCount, mElementCount, VisitSequenceNumber())
+        , mCurrentConnectivityVisitSequenceNumberBuffer(mBufferElementCount, mElementCount, SequenceNumber())
         //////////////////////////////////
         // Container
         //////////////////////////////////
@@ -103,7 +103,7 @@ public:
 
     void Update(
         GameWallClock::time_point currentWallclockTime,
-        VisitSequenceNumber currentConnectivityVisitSequenceNumber,
+        SequenceNumber currentConnectivityVisitSequenceNumber,
         Points & points,
         GameParameters const & gameParameters);
 
@@ -192,17 +192,17 @@ public:
     }
 
     //
-    // Connectivity detection step sequence number
+    // Connectivity detection visit sequence number
     //
 
-    inline VisitSequenceNumber GetCurrentConnectivityVisitSequenceNumber(ElementIndex electricalElementIndex) const
+    inline SequenceNumber GetCurrentConnectivityVisitSequenceNumber(ElementIndex electricalElementIndex) const
     {
         return mCurrentConnectivityVisitSequenceNumberBuffer[electricalElementIndex];
     }
 
     inline void SetConnectivityVisitSequenceNumber(
         ElementIndex electricalElementIndex,
-        VisitSequenceNumber connectivityVisitSequenceNumber)
+        SequenceNumber connectivityVisitSequenceNumber)
     {
         mCurrentConnectivityVisitSequenceNumberBuffer[electricalElementIndex] =
             connectivityVisitSequenceNumber;
@@ -279,7 +279,7 @@ private:
     void RunLampStateMachine(
         ElementIndex elementLampIndex,
         GameWallClock::time_point currentWallclockTime,
-        VisitSequenceNumber currentConnectivityVisitSequenceNumber,
+        SequenceNumber currentConnectivityVisitSequenceNumber,
         Points & points,
         GameParameters const & gameParameters);
 
@@ -316,8 +316,8 @@ private:
     // Available current (to lamps)
     Buffer<float> mAvailableCurrentBuffer;
 
-    // Connectivity detection step sequence number
-    Buffer<VisitSequenceNumber> mCurrentConnectivityVisitSequenceNumberBuffer;
+    // Connectivity detection visit sequence number
+    Buffer<SequenceNumber> mCurrentConnectivityVisitSequenceNumberBuffer;
 
     //////////////////////////////////////////////////////////
     // Container

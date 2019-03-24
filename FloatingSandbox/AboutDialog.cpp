@@ -112,8 +112,9 @@ AboutDialog::AboutDialog(
         {"\t\t\t\t", "KikoTheBoatBuilder - https://discordapp.com/" },
         {"\t\t\t\t", "Albert Windsor - https://discordapp.com/" },
         {"\t\t\t\t", "ShipBuilder1912 - https://discordapp.com/" },
-        {"\t\t\t\t", "Michael Bozarth" },
+        {"\t\t\t\t", "Michael Bozarth - https://www.youtube.com/channel/UCaJkgYP6yNw64U3WUZ3t1sw" },
         {"\t\t\t\t", "Rockabilly Rebel - https://discordapp.com/" },
+        {"\t\t\t\t", "McShooter2018 - https://discordapp.com/" },
 
         {"Ship art:\t\t", "OceanLinerOrca - https://www.deviantart.com/oceanlinerorca" },
 

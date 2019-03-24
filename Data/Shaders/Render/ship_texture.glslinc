@@ -58,11 +58,8 @@ void main()
         discard;
 
     // Apply decay
-    // TODO:to constants
-    vec4 brown = vec4(0.26, 0.16, 0.0, 1.0);
-    vec4 green = vec4(0.016, 0.42, 0.008, 1.0);
     float originalLightness = (vertexCol.x + vertexCol.y + vertexCol.z) / 3.0;
-    vec4 blendColor = green * (1.0 - originalLightness) + brown * originalLightness;
+    vec4 blendColor = vec4(%ROT_GREEN_COLOR%) * (1.0 - originalLightness) + vec4(%ROT_BROWN_COLOR%) * originalLightness;
     vertexCol = vertexCol * vertexDecay + blendColor * (1.0 - vertexDecay);
 
     // Apply point water

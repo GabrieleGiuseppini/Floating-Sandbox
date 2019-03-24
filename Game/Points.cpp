@@ -342,7 +342,7 @@ void Points::UpdateEphemeralParticles(
 
                     if (deltaY <= 0.0f)
                     {
-                        // Expire
+                        // Got to the surface, expire
                         ExpireEphemeralParticle(pointIndex);
                     }
                     else

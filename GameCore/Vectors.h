@@ -17,7 +17,7 @@ public:
 
     float x, y;
 
-    static constexpr const vec2f zero()
+    static constexpr vec2f zero()
     {
         return vec2f();
     }
@@ -209,7 +209,10 @@ public:
 
     float x, y, z;
 
-    static constexpr const vec3f zero() { return vec3f(); }
+    static constexpr vec3f zero()
+    {
+        return vec3f();
+    }
 
     inline constexpr vec3f()
         : x(0.0f)
@@ -381,7 +384,10 @@ public:
 
     float x, y, z, w;
 
-    static constexpr const vec4f zero() { return vec4f(); }
+    static constexpr vec4f zero()
+    {
+        return vec4f();
+    }
 
     inline constexpr vec4f()
         : x(0.0f)

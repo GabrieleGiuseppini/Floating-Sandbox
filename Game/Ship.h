@@ -146,10 +146,6 @@ public:
     // Dynamics
     /////////////////////////////////////////////////////////////////////////
 
-    void LowFrequencyUpdate(
-        float currentSimulationTime,
-        GameParameters const & gameParameters);
-
     // Mechanical
 
     void UpdateMechanicalDynamics(
@@ -190,7 +186,7 @@ public:
         GameWallClock::time_point currentWallclockTime,
         GameParameters const & gameParameters);
 
-    void UpdateElectricalConnectivity(VisitSequenceNumber currentVisitSequenceNumber);
+    void UpdateElectricalConnectivity(SequenceNumber currentSimulationSequenceNumber);
 
     void DiffuseLight(GameParameters const & gameParameters);
 
@@ -299,14 +295,17 @@ private:
     Triangles mTriangles;
     ElectricalElements mElectricalElements;
 
+    // The current simulation sequence number
+    SequenceNumber mCurrentSimulationSequenceNumber;
+
     // The current connectivity visit sequence number
-    VisitSequenceNumber mCurrentConnectivityVisitSequenceNumber;
+    SequenceNumber mCurrentConnectivityVisitSequenceNumber;
 
     // The max plane ID we have seen - ever
     PlaneId mMaxMaxPlaneId;
 
     // The current electrical connectivity visit sequence number
-    VisitSequenceNumber mCurrentElectricalVisitSequenceNumber;
+    SequenceNumber mCurrentElectricalVisitSequenceNumber;
 
     // Flag remembering whether the structure of the ship (i.e. the connectivity between elements)
     // has changed since the last step.
@@ -337,9 +336,6 @@ private:
 
     // Force fields to apply at next iteration
     std::vector<std::unique_ptr<ForceField>> mCurrentForceFields;
-
-    // Low-frequency update timing
-    float mNextLowFrequencyUpdateSimulationTime;
 };
 
 }
