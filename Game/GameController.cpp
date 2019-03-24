@@ -494,6 +494,21 @@ bool GameController::AdjustOceanFloorTo(vec2f const & screenCoordinates)
     return mWorld->AdjustOceanFloorTo(worldCoordinates.x, worldCoordinates.y);
 }
 
+bool GameController::ScrubThrough(
+    vec2f const & startScreenCoordinates,
+    vec2f const & endScreenCoordinates)
+{
+    vec2f const startWorldCoordinates = mRenderContext->ScreenToWorld(startScreenCoordinates);
+    vec2f const endWorldCoordinates = mRenderContext->ScreenToWorld(endScreenCoordinates);
+
+    // Apply action
+    assert(!!mWorld);
+    return mWorld->ScrubThrough(
+        startWorldCoordinates,
+        endWorldCoordinates,
+        mGameParameters);
+}
+
 std::optional<ObjectId> GameController::GetNearestPointAt(vec2f const & screenCoordinates) const
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);

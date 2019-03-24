@@ -311,6 +311,26 @@ bool World::AdjustOceanFloorTo(
     return mOceanFloor.AdjustTo(x, targetY);
 }
 
+bool World::ScrubThrough(
+    vec2f const & startPos,
+    vec2f const & endPos,
+    GameParameters const & gameParameters)
+{
+    // Scrub all ships
+    bool anyHasScrubbed = false;
+    for (auto & ship : mAllShips)
+    {
+        bool hasScrubbed = ship->ScrubThrough(
+            startPos,
+            endPos,
+            gameParameters);
+
+        anyHasScrubbed |= hasScrubbed;
+    }
+
+    return anyHasScrubbed;
+}
+
 std::optional<ObjectId> World::GetNearestPointAt(
     vec2f const & targetPos,
     float radius) const

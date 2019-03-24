@@ -13,6 +13,7 @@ in vec4 inShipPointColor;
 // Outputs        
 out float vertexLight;
 out float vertexWater;
+out float vertexDecay;
 out vec4 vertexCol;
 
 // Params
@@ -22,6 +23,7 @@ void main()
 {            
     vertexLight = inShipPointAttributeGroup2.x;
     vertexWater = inShipPointAttributeGroup2.y;
+    vertexDecay = inShipPointAttributeGroup2.w;
     vertexCol = inShipPointColor;
 
     gl_Position = paramOrthoMatrix * vec4(inShipPointAttributeGroup1.xy, inShipPointAttributeGroup2.z, 1.0);
@@ -36,6 +38,7 @@ void main()
 // Inputs from previous shader        
 in float vertexLight;
 in float vertexWater;
+in float vertexDecay;
 in vec4 vertexCol;
 
 // Params
@@ -45,9 +48,14 @@ uniform float paramWaterLevelThreshold;
 
 void main()
 {
+    // Apply decay
+    float originalLightness = (vertexCol.x + vertexCol.y + vertexCol.z) / 3.0;
+    vec4 blendColor = vec4(%ROT_GREEN_COLOR%) * (1.0 - originalLightness) + vec4(%ROT_BROWN_COLOR%) * originalLightness;
+    vec4 fragColour = vertexCol * vertexDecay + blendColor * (1.0 - vertexDecay);
+
     // Apply point water
     float vertexColorWetness = min(vertexWater, paramWaterLevelThreshold) / paramWaterLevelThreshold * paramWaterContrast;
-    vec4 fragColour = vertexCol * (1.0 - vertexColorWetness) + vec4(%WET_COLOR_VEC4%) * vertexColorWetness;
+    fragColour = fragColour * (1.0 - vertexColorWetness) + vec4(%WET_COLOR_VEC4%) * vertexColorWetness;
 
     // Complement missing ambient light with point's light
     float totalLightIntensity = paramAmbientLightIntensity + (1.0 - paramAmbientLightIntensity) * vertexLight;

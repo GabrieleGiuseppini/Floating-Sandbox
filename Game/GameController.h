@@ -89,6 +89,7 @@ public:
     void DetonateRCBombs();
     void DetonateAntiMatterBombs();
     bool AdjustOceanFloorTo(vec2f const & screenCoordinates);
+    bool ScrubThrough(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates);
     std::optional<ObjectId> GetNearestPointAt(vec2f const & screenCoordinates) const;
     void QueryNearestPointAt(vec2f const & screenCoordinates) const;
 

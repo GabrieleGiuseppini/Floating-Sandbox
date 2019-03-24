@@ -17,6 +17,15 @@ public:
     vec2f BottomLeft;
 
     AABB(
+        float left,
+        float right,
+        float top,
+        float bottom)
+        : TopRight(right, top)
+        , BottomLeft(left, bottom)
+    {}
+
+    AABB(
         vec2f const topRight,
         vec2f const bottomLeft)
         : TopRight(topRight)
@@ -43,6 +52,14 @@ public:
             BottomLeft.x = other.BottomLeft.x;
         if (other.BottomLeft.y < BottomLeft.y)
             BottomLeft.y = other.BottomLeft.y;
+    }
+
+    inline bool Contains(vec2f const & point) const
+    {
+        return point.x >= BottomLeft.x
+            && point.x <= TopRight.x
+            && point.y >= BottomLeft.y
+            && point.y <= TopRight.y;
     }
 };
 

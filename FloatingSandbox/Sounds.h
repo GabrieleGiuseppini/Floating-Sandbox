@@ -53,7 +53,8 @@ enum class SoundType
     AntiMatterBombImplosion,
     AntiMatterBombExplosion,
     Snapshot,
-    TerrainAdjust
+    TerrainAdjust,
+    Scrub
 };
 
 SoundType StrToSoundType(std::string const & str);

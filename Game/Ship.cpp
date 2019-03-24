@@ -7,6 +7,7 @@
 
 #include "Materials.h"
 
+#include <GameCore/AABB.h>
 #include <GameCore/GameDebug.h>
 #include <GameCore/GameMath.h>
 #include <GameCore/GameRandomEngine.h>
@@ -367,6 +368,68 @@ void Ship::DetonateRCBombs()
 void Ship::DetonateAntiMatterBombs()
 {
     mBombs.DetonateAntiMatterBombs();
+}
+
+bool Ship::ScrubThrough(
+    vec2f const & startPos,
+    vec2f const & endPos,
+    GameParameters const & gameParameters)
+{
+    float const scrubRadius = gameParameters.ScrubRadius;
+
+    //
+    // Find all points in the radius of the segment
+    //
+
+    // Calculate normal to the segment (doesn't really matter which orientation)
+    vec2f normalizedSegment = (endPos - startPos).normalise();
+    vec2f segmentNormal = vec2f(-normalizedSegment.y, normalizedSegment.x);
+
+    // Calculate bounding box for segment *and* search radius
+    Geometry::AABB boundingBox(
+        std::min(startPos.x, endPos.x) - scrubRadius,   // Left
+        std::max(startPos.x, endPos.x) + scrubRadius,   // Right
+        std::max(startPos.y, endPos.y) + scrubRadius,   // Top
+        std::min(startPos.y, endPos.y) - scrubRadius);  // Bottom
+
+    // Visit all points (excluding ephemerals, we don't want to scrub air bubbles)
+    bool hasScrubbed = false;
+    for (auto pointIndex : mPoints.NonEphemeralPoints())
+    {
+        auto const & pointPosition = mPoints.GetPosition(pointIndex);
+
+        // First check whether the point is in the bounding box
+        if (boundingBox.Contains(pointPosition))
+        {
+            // Distance = projection of (start->point) vector on segment normal
+            float const distance = abs((pointPosition - startPos).dot(segmentNormal));
+
+            // Check whether this point is in the radius
+            if (distance <= scrubRadius)
+            {
+                //
+                // Scrub this point, with magnitude dependent from distance
+                //
+
+                float newDecay =
+                    mPoints.GetDecay(pointIndex)
+                    + 0.5f * (1.0f - mPoints.GetDecay(pointIndex)) * (scrubRadius - distance) / scrubRadius;
+
+                    mPoints.SetDecay(pointIndex, newDecay);
+
+                // Remember at least one point has been scrubbed
+                hasScrubbed |= true;
+            }
+        }
+    }
+
+    if (hasScrubbed)
+    {
+        // Make sure the decay buffer gets uploaded again
+        mPoints.MarkDecayBufferAsDirty();
+    }
+
+    return hasScrubbed;
 }
 
 ElementIndex Ship::GetNearestPointAt(
@@ -1686,7 +1749,7 @@ void Ship::RotPoints(
     {
         // When no water, beta == 0.0f
         float const beta =
-            DiscreteLog2(1.0f + mPoints.GetWater(p))
+            std::min(mPoints.GetWater(p), 1.0f)
             * (mPoints.IsLeaking(p) ? leakingAlphaIncrement : alphaIncrement);
 
         mPoints.SetDecay(p, mPoints.GetDecay(p) * (1.0f - beta));

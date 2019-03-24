@@ -47,6 +47,7 @@ GameParameters::GameParameters()
     , BombMass(5000.0f)
     , FloodRadius(0.75f)
     , FloodQuantity(0.5f)
+    , ScrubRadius(7.0f)
     , IsUltraViolentMode(false)
     , MoveToolInertia(8.0f)
 {

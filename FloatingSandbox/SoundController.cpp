@@ -329,7 +329,8 @@ SoundController::SoundController(
                 || soundType == SoundType::AntiMatterBombPreImplosion
                 || soundType == SoundType::AntiMatterBombImplosion
                 || soundType == SoundType::Snapshot
-                || soundType == SoundType::TerrainAdjust)
+                || soundType == SoundType::TerrainAdjust
+                || soundType == SoundType::Scrub)
         {
             //
             // - one-shot sound
@@ -745,6 +746,14 @@ void SoundController::PlayTerrainAdjustSound()
 {
     PlayOneShotMultipleChoiceSound(
         SoundType::TerrainAdjust,
+        100.0f,
+        true);
+}
+
+void SoundController::PlayScrubSound()
+{
+    PlayOneShotMultipleChoiceSound(
+        SoundType::Scrub,
         100.0f,
         true);
 }
@@ -1423,7 +1432,6 @@ void SoundController::PlayOneShotSound(
             && std::chrono::duration_cast<std::chrono::milliseconds>(now - playingSound.StartedTimestamp) < minDeltaTimeSoundForType)
         {
             playingSound.Sound->addVolume(volume);
-
             return;
         }
     }

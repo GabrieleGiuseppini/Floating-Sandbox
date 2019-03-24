@@ -130,6 +130,11 @@ public:
         float x,
         float targetY);
 
+    bool ScrubThrough(
+        vec2f const & startPos,
+        vec2f const & endPos,
+        GameParameters const & gameParameters);
+
     std::optional<ObjectId> GetNearestPointAt(
         vec2f const & targetPos,
         float radius) const;

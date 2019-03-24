@@ -69,6 +69,8 @@ SoundType StrToSoundType(std::string const & str)
         return SoundType::Snapshot;
     else if (Utils::CaseInsensitiveEquals(str, "TerrainAdjust"))
         return SoundType::TerrainAdjust;
+    else if (Utils::CaseInsensitiveEquals(str, "Scrub"))
+        return SoundType::Scrub;
     else
         throw GameException("Unrecognized SoundType \"" + str + "\"");
 }

@@ -140,6 +140,9 @@ public:
     void StopFloodHoseSound();
 
     void PlayTerrainAdjustSound();
+
+    void PlayScrubSound();
+
     void PlaySnapshotSound();
 
     //
@@ -342,6 +345,7 @@ private:
             case SoundType::Stress:
                 return 30;
             case SoundType::TerrainAdjust:
+            case SoundType::Scrub:
             case SoundType::Snapshot:
                 return 2;
             default:
@@ -354,8 +358,9 @@ private:
         switch (soundType)
         {
             case SoundType::Break:
+                return std::chrono::milliseconds(200);
             case SoundType::Stress:
-                return std::chrono::milliseconds(100);
+                return std::chrono::milliseconds(600);
             case SoundType::TerrainAdjust:
             case SoundType::Snapshot:
                 return std::chrono::milliseconds(700);

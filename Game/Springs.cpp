@@ -274,11 +274,14 @@ bool Springs::UpdateStrains(
                 {
                     mIsStressedBuffer[s] = true;
 
-                    // Notify stress
-                    mGameEventHandler->OnStress(
-                        GetBaseStructuralMaterial(s),
-                        mParentWorld.IsUnderwater(points.GetPosition(mEndpointsBuffer[s].PointAIndex)),
-                        1);
+                    // Notify stress, but only if effective strength is not negligible
+                    if (effectiveStrength > 0.05 * 0.4f) // Weakest strength * a lot of decay
+                    {
+                        mGameEventHandler->OnStress(
+                            GetBaseStructuralMaterial(s),
+                            mParentWorld.IsUnderwater(points.GetPosition(mEndpointsBuffer[s].PointAIndex)),
+                            1);
+                    }
                 }
             }
             else

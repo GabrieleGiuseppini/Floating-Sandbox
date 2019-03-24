@@ -482,3 +482,22 @@ TerrainAdjustTool::TerrainAdjustTool(
     , mDownCursor(MakeCursor("terrain_adjust_cursor_down", 15, 15, resourceLoader))
 {
 }
+
+////////////////////////////////////////////////////////////////////////
+// Scrub
+////////////////////////////////////////////////////////////////////////
+
+ScrubTool::ScrubTool(
+    wxFrame * parentFrame,
+    std::shared_ptr<GameController> gameController,
+    std::shared_ptr<SoundController> soundController,
+    ResourceLoader & resourceLoader)
+    : Tool(
+        ToolType::Scrub,
+        parentFrame,
+        std::move(gameController),
+        std::move(soundController))
+    , mUpCursor(MakeCursor("scrub_cursor_up", 15, 15, resourceLoader))
+    , mDownCursor(MakeCursor("scrub_cursor_down", 15, 15, resourceLoader))
+{
+}

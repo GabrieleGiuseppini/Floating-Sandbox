@@ -46,7 +46,8 @@ enum class ToolType
     ImpactBomb = 9,
     RCBomb = 10,
     TimerBomb = 11,
-    TerrainAdjust = 12
+    TerrainAdjust = 12,
+    Scrub = 13
 };
 
 struct InputState
@@ -1433,4 +1434,111 @@ private:
     // The cursors
     std::unique_ptr<wxCursor> const mUpCursor;
     std::unique_ptr<wxCursor> const mDownCursor;
+};
+
+class ScrubTool final : public Tool
+{
+public:
+
+    ScrubTool(
+        wxFrame * parentFrame,
+        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<SoundController> soundController,
+        ResourceLoader & resourceLoader);
+
+public:
+
+    virtual void Initialize(InputState const & inputState) override
+    {
+        if (inputState.IsLeftMouseDown)
+        {
+            // Initialize state
+            mPreviousMousePos = inputState.MousePosition;
+
+            // Set current cursor to the down cursor
+            mCurrentCursor = mDownCursor.get();
+        }
+        else
+        {
+            // Reset state
+            mPreviousMousePos = std::nullopt;
+
+            // Set current cursor to the up cursor
+            mCurrentCursor = mUpCursor.get();
+        }
+    }
+
+    virtual void Deinitialize(InputState const & /*inputState*/) override {}
+
+    virtual void Update(InputState const & /*inputState*/) override {}
+
+    virtual void OnMouseMove(InputState const & inputState) override
+    {
+        if (inputState.IsLeftMouseDown)
+        {
+            if (!!mPreviousMousePos)
+            {
+                // Do a scrub strike
+                bool hasScrubbed = mGameController->ScrubThrough(
+                    *mPreviousMousePos,
+                    inputState.MousePosition);
+
+                if (hasScrubbed)
+                {
+                    // Play sound
+                    mSoundController->PlayScrubSound();
+                }
+            }
+
+            // Remember the next previous mouse position
+            mPreviousMousePos = inputState.MousePosition;
+        }
+    }
+
+    virtual void OnLeftMouseDown(InputState const & inputState) override
+    {
+        // Initialize state
+        mPreviousMousePos = inputState.MousePosition;
+
+        // Set current cursor to the down cursor
+        mCurrentCursor = mDownCursor.get();
+        ShowCurrentCursor();
+    }
+
+    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override
+    {
+        // Reset state
+        mPreviousMousePos = std::nullopt;
+
+        // Set current cursor to the up cursor
+        mCurrentCursor = mUpCursor.get();
+        ShowCurrentCursor();
+    }
+
+    virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+    virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+
+    virtual void ShowCurrentCursor() override
+    {
+        assert(nullptr != mParentFrame);
+        assert(nullptr != mCurrentCursor);
+
+        mParentFrame->SetCursor(*mCurrentCursor);
+    }
+
+private:
+
+    // Our cursors
+    std::unique_ptr<wxCursor> const mUpCursor;
+    std::unique_ptr<wxCursor> const mDownCursor;
+
+    // The currently-selected cursor that will be shown
+    wxCursor * mCurrentCursor;
+
+    //
+    // State
+    //
+
+    // The previous mouse position; when set, we have a segment and can scrub
+    std::optional<vec2f> mPreviousMousePos;
 };
