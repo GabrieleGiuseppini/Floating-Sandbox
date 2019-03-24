@@ -1,0 +1,7 @@
+{
+    "structure_image":"ijn_yamato_structural.png.dat",
+    "ship_name":"IJN Yamato",
+    "offset":{"x":0.0, "y":-8.0},
+    "year built":"1940",
+    "created_by":"KikoTheBoatBuilder"
+}
