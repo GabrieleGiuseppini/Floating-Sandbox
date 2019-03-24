@@ -1,0 +1,7 @@
+{
+    "structure_image":"hmt_pacmaster_structural.png.dat",
+    "ship_name":"HMT Pacmaster",
+    "offset":{"x":0.0, "y":-13.0},
+    "year built":"1940",
+    "created_by":"McShooter2018"
+}
