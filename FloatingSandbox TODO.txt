@@ -269,6 +269,16 @@ Render:
 		+ UIPreferences		
 		+ Decay (rust) (*)
 		+ Ship descriptions (*)
+		+ ShipRenderContext: make water color depend on ocean render mode color
+			+ Get FPS before
+			+ Water color in shader has to become parameter
+			+ OceanRenderMode:
+				+ Texture: waterColor=<constant matching now>
+				+ Flat: waterColor=<that flat color>
+				+ Gradient: waterColor=<mid color>
+			+ Test x 3
+			+ Get FPS after
+		+ Ships
 
 		- Less stress sounds: use mIsStressed buffer, w/high and low watermarks
 			- Get FPS before
@@ -276,16 +286,6 @@ Render:
 
 		- Fix air bubble progress issue
 
-		- ShipRenderContext: make water color depend on ocean render mode color
-			+ Get FPS before
-			- Water color in shader has to become parameter
-			- OceanRenderMode:
-				- Texture: waterColor=<constant matching now>
-				- Flat: waterColor=<that flat color>
-				- Gradient: waterColor=<mid color>
-			- Get FPS after:
-
-		+ Ships
 
 		- Send for testing
 			- Add other testers to About box
@@ -1272,25 +1272,26 @@ Render:
 			- Integral ticks to change frequencies so that period is always the same
 
 	- Pick tool: ability to move individual connected components
-		- After connected component has been overhauled
+		+ After connected component has been overhauled
 		- Spec:
 			- New tool gets point ID from GameController::Pick() and passes it to new MoveTo()
+			- Move tool becomes this new one
+			- Old move tool becomes "MoveAll" tool
 		- Impl:		
 			- Pick engagement returns ObjectId for point ID (or none)
-				- Ship::Pick(vec2f position) -> opt<ObjectId>
-			- Ship::MoveTo(pointId, vec2f position, vec2f velocity) (new overload):
+				- Ship::Pick(vec2f position) -> opt<ElementIndex pointId>
+				- World makes opt<ObjectId>
+			- Ship::MoveTo(ElementIndex pointId, vec2f position, vec2f velocity) (new overload):
 				- If point deleted => return false (to disengage)
 				- Calc deltaPos for the point
 				- Translate point's connected component by deltaPos, and add velocity
 				- Test: if we get a tremolo:
 					- Store Move args @ Move() and apply after UpdateMechanics()
-			- Tool:
+			- Tool: new paradigm (no need to do rotation, so simpler)
 				- Invoke MoveTo() continuously at Update() only
 					- Disengage if it returns false
 				- Pass velocity = current (synthetic) mousePos - last (synthetic) mousePos
-				
-
-	- Allow ocean floor bump map to be loaded at runtime
+			- Help
 
 	- Ship definition: 
 		- Interior layer:

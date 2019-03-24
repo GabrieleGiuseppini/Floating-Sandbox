@@ -44,6 +44,7 @@ public:
         RenderStatistics & renderStatistics,
         ViewModel const & viewModel,
         float ambientLightIntensity,
+        vec4f const & waterColor,
         float waterContrast,
         float waterLevelOfDetail,
         ShipRenderMode shipRenderMode,
@@ -75,6 +76,14 @@ public:
 
         // Set parameters
         OnAmbientLightIntensityUpdated();
+    }
+
+    void SetWaterColor(vec4f waterColor)
+    {
+        mWaterColor = waterColor;
+
+        // Set parameters
+        OnWaterColorUpdated();
     }
 
     void SetWaterContrast(float waterContrast)
@@ -392,6 +401,7 @@ private:
 
     void UpdateOrthoMatrices();
     void OnAmbientLightIntensityUpdated();
+    void OnWaterColorUpdated();
     void OnWaterContrastUpdated();
     void OnWaterLevelOfDetailUpdated();
 
@@ -563,6 +573,7 @@ private:
     ViewModel const & mViewModel;
 
     float mAmbientLightIntensity;
+    vec4f mWaterColor;
     float mWaterContrast;
     float mWaterLevelOfDetail;
     ShipRenderMode mShipRenderMode;

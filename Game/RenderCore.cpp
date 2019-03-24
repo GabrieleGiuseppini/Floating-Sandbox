@@ -133,6 +133,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::TextureScaling;
     else if (str == "ViewportSize")
         return ProgramParameterType::ViewportSize;
+    else if (str == "WaterColor")
+        return ProgramParameterType::WaterColor;
     else if (str == "WaterContrast")
         return ProgramParameterType::WaterContrast;
     else if (str == "WaterLevelThreshold")
@@ -178,6 +180,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "TextureScaling";
     case ProgramParameterType::ViewportSize:
         return "ViewportSize";
+    case ProgramParameterType::WaterColor:
+        return "WaterColor";
     case ProgramParameterType::WaterContrast:
         return "WaterContrast";
     case ProgramParameterType::WaterLevelThreshold:

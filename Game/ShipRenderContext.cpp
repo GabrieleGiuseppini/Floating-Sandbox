@@ -25,6 +25,7 @@ ShipRenderContext::ShipRenderContext(
     RenderStatistics & renderStatistics,
     ViewModel const & viewModel,
     float ambientLightIntensity,
+    vec4f const & waterColor,
     float waterContrast,
     float waterLevelOfDetail,
     ShipRenderMode shipRenderMode,
@@ -79,6 +80,7 @@ ShipRenderContext::ShipRenderContext(
     // Parameters
     , mViewModel(viewModel)
     , mAmbientLightIntensity(ambientLightIntensity)
+    , mWaterColor(waterColor)
     , mWaterContrast(waterContrast)
     , mWaterLevelOfDetail(waterLevelOfDetail)
     , mShipRenderMode(shipRenderMode)
@@ -315,6 +317,7 @@ ShipRenderContext::ShipRenderContext(
     OnViewModelUpdated();
 
     OnAmbientLightIntensityUpdated();
+    OnWaterColorUpdated();
     OnWaterContrastUpdated();
     OnWaterLevelOfDetailUpdated();
 }
@@ -525,6 +528,37 @@ void ShipRenderContext::OnAmbientLightIntensityUpdated()
     mShaderManager.ActivateProgram<ProgramType::ShipVectors>();
     mShaderManager.SetProgramParameter<ProgramType::ShipVectors, ProgramParameterType::AmbientLightIntensity>(
         mAmbientLightIntensity);
+}
+
+void ShipRenderContext::OnWaterColorUpdated()
+{
+    //
+    // Set parameter in all programs
+    //
+
+    mShaderManager.ActivateProgram<ProgramType::ShipRopes>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipRopes, ProgramParameterType::WaterColor>(
+        mWaterColor.x, mWaterColor.y, mWaterColor.z, mWaterColor.w);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipSpringsColor>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipSpringsColor, ProgramParameterType::WaterColor>(
+        mWaterColor.x, mWaterColor.y, mWaterColor.z, mWaterColor.w);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipSpringsTexture>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipSpringsTexture, ProgramParameterType::WaterColor>(
+        mWaterColor.x, mWaterColor.y, mWaterColor.z, mWaterColor.w);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipTrianglesColor>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesColor, ProgramParameterType::WaterColor>(
+        mWaterColor.x, mWaterColor.y, mWaterColor.z, mWaterColor.w);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTexture>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesTexture, ProgramParameterType::WaterColor>(
+        mWaterColor.x, mWaterColor.y, mWaterColor.z, mWaterColor.w);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipPointsColor>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipPointsColor, ProgramParameterType::WaterColor>(
+        mWaterColor.x, mWaterColor.y, mWaterColor.z, mWaterColor.w);
 }
 
 void ShipRenderContext::OnWaterContrastUpdated()

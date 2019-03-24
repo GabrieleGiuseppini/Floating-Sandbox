@@ -490,6 +490,7 @@ void RenderContext::AddShip(
             mRenderStatistics,
             mViewModel,
             mAmbientLightIntensity,
+            CalculateWaterColor(),
             mWaterContrast,
             mWaterLevelOfDetail,
             mShipRenderMode,
@@ -1059,6 +1060,16 @@ void RenderContext::OnOceanRenderParametersUpdated()
         flatColor.x,
         flatColor.y,
         flatColor.z);
+
+    //
+    // Tell ships about the water color
+    //
+
+    auto const waterColor = CalculateWaterColor();
+    for (auto & s : mShips)
+    {
+        s->SetWaterColor(waterColor);
+    }
 }
 
 void RenderContext::OnLandRenderParametersUpdated()
@@ -1090,6 +1101,31 @@ void RenderContext::OnShowStressedSpringsUpdated()
     for (auto & s : mShips)
     {
         s->SetShowStressedSprings(mShowStressedSprings);
+    }
+}
+
+vec4f RenderContext::CalculateWaterColor() const
+{
+    switch (mOceanRenderMode)
+    {
+        case OceanRenderMode::Depth:
+        {
+            return
+                (mDepthOceanColorStart.toVec4f(1.0f) + mDepthOceanColorEnd.toVec4f(1.0f))
+                / 2.0f;
+        }
+
+        case OceanRenderMode::Flat:
+        {
+            return mFlatOceanColor.toVec4f(1.0f);
+        }
+
+        default:
+        {
+            assert(mOceanRenderMode == OceanRenderMode::Texture); // Darn VS - warns
+
+            return vec4f(0.0f, 0.0f, 0.8f, 1.0f);
+        }
     }
 }
 

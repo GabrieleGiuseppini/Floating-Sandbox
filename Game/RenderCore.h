@@ -66,6 +66,7 @@ enum class ProgramParameterType : uint8_t
     StarTransparency,
     TextureScaling,
     ViewportSize,
+    WaterColor,
     WaterContrast,
     WaterLevelThreshold,
 

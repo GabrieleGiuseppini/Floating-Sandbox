@@ -169,61 +169,6 @@ public:
         mShowShipThroughOcean = showShipThroughOcean;
     }
 
-    float GetWaterContrast() const
-    {
-        return mWaterContrast;
-    }
-
-    void SetWaterContrast(float contrast)
-    {
-        mWaterContrast = contrast;
-
-        OnWaterContrastUpdated();
-    }
-
-    float GetWaterLevelOfDetail() const
-    {
-        return mWaterLevelOfDetail;
-    }
-
-    void SetWaterLevelOfDetail(float levelOfDetail)
-    {
-        mWaterLevelOfDetail = levelOfDetail;
-
-        OnWaterLevelOfDetailUpdated();
-    }
-
-    static constexpr float MinWaterLevelOfDetail = 0.0f;
-    static constexpr float MaxWaterLevelOfDetail = 1.0f;
-
-    //
-    // Ship rendering properties
-    //
-
-    ShipRenderMode GetShipRenderMode() const
-    {
-        return mShipRenderMode;
-    }
-
-    void SetShipRenderMode(ShipRenderMode shipRenderMode)
-    {
-        mShipRenderMode = shipRenderMode;
-
-        OnShipRenderModeUpdated();
-    }
-
-    DebugShipRenderMode GetDebugShipRenderMode() const
-    {
-        return mDebugShipRenderMode;
-    }
-
-    void SetDebugShipRenderMode(DebugShipRenderMode debugShipRenderMode)
-    {
-        mDebugShipRenderMode = debugShipRenderMode;
-
-        OnDebugShipRenderModeUpdated();
-    }
-
     OceanRenderMode GetOceanRenderMode() const
     {
         return mOceanRenderMode;
@@ -295,6 +240,62 @@ public:
 
         OnLandRenderParametersUpdated();
     }
+
+    float GetWaterContrast() const
+    {
+        return mWaterContrast;
+    }
+
+    void SetWaterContrast(float contrast)
+    {
+        mWaterContrast = contrast;
+
+        OnWaterContrastUpdated();
+    }
+
+    float GetWaterLevelOfDetail() const
+    {
+        return mWaterLevelOfDetail;
+    }
+
+    void SetWaterLevelOfDetail(float levelOfDetail)
+    {
+        mWaterLevelOfDetail = levelOfDetail;
+
+        OnWaterLevelOfDetailUpdated();
+    }
+
+    static constexpr float MinWaterLevelOfDetail = 0.0f;
+    static constexpr float MaxWaterLevelOfDetail = 1.0f;
+
+    //
+    // Ship rendering properties
+    //
+
+    ShipRenderMode GetShipRenderMode() const
+    {
+        return mShipRenderMode;
+    }
+
+    void SetShipRenderMode(ShipRenderMode shipRenderMode)
+    {
+        mShipRenderMode = shipRenderMode;
+
+        OnShipRenderModeUpdated();
+    }
+
+    DebugShipRenderMode GetDebugShipRenderMode() const
+    {
+        return mDebugShipRenderMode;
+    }
+
+    void SetDebugShipRenderMode(DebugShipRenderMode debugShipRenderMode)
+    {
+        mDebugShipRenderMode = debugShipRenderMode;
+
+        OnDebugShipRenderModeUpdated();
+    }
+
 
     VectorFieldRenderMode GetVectorFieldRenderMode() const
     {
@@ -995,6 +996,8 @@ private:
     void OnLandRenderParametersUpdated();
     void OnVectorFieldRenderModeUpdated();
     void OnShowStressedSpringsUpdated();
+
+    vec4f CalculateWaterColor() const;
 
 private:
 
