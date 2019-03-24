@@ -235,6 +235,9 @@ bool Springs::UpdateStrains(
         iterationsAdjustmentFactor
         * gameParameters.SpringStrengthAdjustment;
 
+    float constexpr StrainHighWatermark = 0.5f; // Greater than this to be stressed
+    float constexpr StrainLowWatermark = 0.12f; // Less than this to become non-stressed
+
     // Flag remembering whether at least one spring broke
     bool isAtLeastOneBroken = false;
 
@@ -267,27 +270,33 @@ bool Springs::UpdateStrains(
 
                 isAtLeastOneBroken = true;
             }
-            else if (strain > 0.5f * effectiveStrength)
+            else if (mIsStressedBuffer[s])
             {
-                // It's stressed!
-                if (!mIsStressedBuffer[s])
-                {
-                    mIsStressedBuffer[s] = true;
+                // Stressed spring...
+                // ...see if should un-stress it
 
-                    // Notify stress, but only if effective strength is not negligible
-                    if (effectiveStrength > 0.05 * 0.4f) // Weakest strength * a lot of decay
-                    {
-                        mGameEventHandler->OnStress(
-                            GetBaseStructuralMaterial(s),
-                            mParentWorld.IsUnderwater(points.GetPosition(mEndpointsBuffer[s].PointAIndex)),
-                            1);
-                    }
+                if (strain < StrainLowWatermark * effectiveStrength)
+                {
+                    // It's not stressed anymore
+                    mIsStressedBuffer[s] = false;
                 }
             }
             else
             {
-                // Just fine
-                mIsStressedBuffer[s] = false;
+                // Not stressed spring
+                // ...see if should stress it
+
+                if (strain > StrainHighWatermark * effectiveStrength)
+                {
+                    // It's stressed!
+                    mIsStressedBuffer[s] = true;
+
+                    // Notify stress
+                    mGameEventHandler->OnStress(
+                        GetBaseStructuralMaterial(s),
+                        mParentWorld.IsUnderwater(points.GetPosition(mEndpointsBuffer[s].PointAIndex)),
+                        1);
+                }
             }
         }
     }

@@ -481,7 +481,7 @@ private:
     //
 
     Buffer<float> mStrengthBuffer; // Decayed strength
-    Buffer<float> mMaterialStrengthBuffer; // Original
+    Buffer<float> mMaterialStrengthBuffer; // Original strength
     Buffer<float> mStiffnessBuffer;
     Buffer<float> mRestLengthBuffer;
     Buffer<Coefficients> mCoefficientsBuffer;

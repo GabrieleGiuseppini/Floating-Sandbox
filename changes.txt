@@ -1,4 +1,5 @@
 1.10.0
+- A ship that has sunk now slowly rots over time
 - Ship lights now reveal underlying colors at night
 - Improved rendering pipeline
 	- Floating Sandbox now supports some graphic cards which were previously only displaying clouds and water but no ship!
@@ -6,6 +7,7 @@
  (see https://gabrielegiuseppini.wordpress.com/2019/03/17/euler-fights-with-square-drag/)
 - Ships now may carry a description which is optionally shown when they are loaded
 - Quite a few new ships!
+- Improved control of stress sounds - less of a cacophony now
 
 1.9.1
 - Fixed crash when attempting to load a ship from a directory that contains an empty ship

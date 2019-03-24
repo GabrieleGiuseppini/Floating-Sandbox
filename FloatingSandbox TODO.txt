@@ -279,13 +279,20 @@ Render:
 			+ Test x 3
 			+ Get FPS after
 		+ Ships
-
-		- Less stress sounds: use mIsStressed buffer, w/high and low watermarks
-			- Get FPS before
-			- FPS: 
+		+ Less stress sounds: use mIsStressed buffer, w/high and low watermarks
+			+ Get FPS before
+			+ Do
+			+ Test
+			+ See if can remove "negligible" check now
 
 		- Fix air bubble progress issue
-
+			- Confirm repro test
+			- Get FPS before at bubble tool:
+			- Do:
+				- 
+			- Also: more incisive air bubble vortex?
+			- Test
+			- FPS after: 
 
 		- Send for testing
 			- Add other testers to About box
@@ -293,8 +300,6 @@ Render:
 		- Release
 
 	- 1.11.0:
-
-		- More incisive air bubble vortex?
 
 		- Orphaned points (*)
 
