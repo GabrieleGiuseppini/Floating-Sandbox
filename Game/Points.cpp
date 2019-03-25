@@ -128,7 +128,6 @@ void Points::CreateEphemeralParticleAirBubble(
     mEphemeralMaxLifetimeBuffer[pointIndex] = std::numeric_limits<float>::max();
     mEphemeralStateBuffer[pointIndex] = EphemeralState::AirBubbleState(
         GameRandomEngine::GetInstance().Choose<TextureFrameIndex>(2),
-        position.y,
         initialSize,
         vortexAmplitude,
         vortexFrequency);
@@ -348,14 +347,14 @@ void Points::UpdateEphemeralParticles(
                     else
                     {
                         //
-                        // Update progress based off remaining y
+                        // Update progress based off y
                         //
 
                         mEphemeralStateBuffer[pointIndex].AirBubble.CurrentDeltaY = deltaY;
 
-                        mEphemeralStateBuffer[pointIndex].AirBubble.Progress = 1.0f -
-                            deltaY
-                            / (waterHeight - mEphemeralStateBuffer[pointIndex].AirBubble.InitialY);
+                        mEphemeralStateBuffer[pointIndex].AirBubble.Progress =
+                            -1.0f
+                            / (-1.0f + std::min(GetPosition(pointIndex).y, 0.0f));
 
                         //
                         // Update vortex
@@ -637,8 +636,7 @@ void Points::UploadEphemeralParticles(
                     TextureFrameId(TextureGroupType::AirBubble, mEphemeralStateBuffer[pointIndex].AirBubble.FrameIndex),
                     GetPosition(pointIndex),
                     mEphemeralStateBuffer[pointIndex].AirBubble.InitialSize, // Scale
-                    mEphemeralStateBuffer[pointIndex].AirBubble.VortexAmplitude
-                        + mEphemeralStateBuffer[pointIndex].AirBubble.Progress, // Angle
+                    0.0f, // Angle
                     std::min(1.0f, mEphemeralStateBuffer[pointIndex].AirBubble.CurrentDeltaY / 4.0f)); // Alpha
 
                 break;

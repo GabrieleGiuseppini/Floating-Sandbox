@@ -64,7 +64,6 @@ private:
         struct AirBubbleState
         {
             TextureFrameIndex FrameIndex;
-            float InitialY;
             float InitialSize;
             float VortexAmplitude;
             float VortexFrequency;
@@ -78,12 +77,10 @@ private:
 
             AirBubbleState(
                 TextureFrameIndex frameIndex,
-                float initialY,
                 float initialSize,
                 float vortexAmplitude,
                 float vortexFrequency)
                 : FrameIndex(frameIndex)
-                , InitialY(initialY)
                 , InitialSize(initialSize)
                 , VortexAmplitude(vortexAmplitude)
                 , VortexFrequency(vortexFrequency)

@@ -284,15 +284,11 @@ Render:
 			+ Do
 			+ Test
 			+ See if can remove "negligible" check now
-
-		- Fix air bubble progress issue
-			- Confirm repro test
-			- Get FPS before at bubble tool:
-			- Do:
-				- 
-			- Also: more incisive air bubble vortex?
-			- Test
-			- FPS after: 
+		+ Fix air bubble progress issue
+			+ Confirm repro test
+			+ Get FPS before at bubble tool:
+			+ Do
+			+ Test
 
 		- Send for testing
 			- Add other testers to About box
@@ -408,6 +404,9 @@ Render:
 	- Earthquake
 	- Storm: rain and waves at ~4.4
 
+======================================================================================================================
+======================================================================================================================
+======================================================================================================================
 - Technical Debt:
 	+ Global damp as game parameter
 	+ Ships start from 1
@@ -423,10 +422,19 @@ Render:
 	- Take advantage of bounded-width world
 		- Main concept:
 			- OceanSurface and OceanFloor contain samples for the entire width
+				- Have to find <#Samples==BufferWidth, MaxWorldWidth> pair that we are comfortable
+				  with *and* which gives a good resolution
+					- Water: 
+						- Current dx = 20*pi/512 ~= 0.122m
+						- Next dx = W/S @ W=10K => ~80k samples
 			- Not anymore periodic, hence no mod anymore to get water height and ocean floor
 			- Only the number of samples dictates final definition of surface and floor
-			- Uploading may be done by sample
-				- Or not, it'd be overkill when zooming out
+			- OceanBottom bitmap gets up/down interpolated to # of samples at load time
+			- Uploading is by sample
+				- Loop uploads S(i0+ni), with i0=left start, n depending on zoom
+					- Magnifying: n = 1, dx > 1; GPU fills-in
+					- Minifying: n > 1, dx = n * resolution
+						- n chosen so that number of slices kinda like now, i.e. ~= 500
 
 
 	= GPUCalc:
@@ -892,6 +900,7 @@ Render:
 						+ Springs::Decay(Points const &)
 							+ For each spring: strength = material's strength * avg of two endpoints' decay
 								+ float buffer: MaterialStrength
+		- TO INTEGRATE: Materials have CombustionType==(Explosive, Burning?)
 		- TODO: from Moleskine
 
 	- Dynamite that may be thrown to the ship
