@@ -8,6 +8,7 @@
 - Ships now may carry a description which is optionally shown when they are loaded
 - Quite a few new ships!
 - Improved control of stress sounds - less of a cacophony now
+- ...and a few more small improvements here and there
 
 1.9.1
 - Fixed crash when attempting to load a ship from a directory that contains an empty ship
