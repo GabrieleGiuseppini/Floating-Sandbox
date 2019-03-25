@@ -236,7 +236,7 @@ bool Springs::UpdateStrains(
         * gameParameters.SpringStrengthAdjustment;
 
     float constexpr StrainHighWatermark = 0.5f; // Greater than this to be stressed
-    float constexpr StrainLowWatermark = 0.12f; // Less than this to become non-stressed
+    float constexpr StrainLowWatermark = 0.08f; // Less than this to become non-stressed
 
     // Flag remembering whether at least one spring broke
     bool isAtLeastOneBroken = false;
