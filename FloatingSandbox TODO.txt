@@ -289,9 +289,9 @@ Render:
 			+ Get FPS before at bubble tool:
 			+ Do
 			+ Test
+		+ Send for testing
 
-		- Send for testing
-			- Add other testers to About box
+		- Add other testers to About box
 
 		- Release
 
@@ -345,13 +345,15 @@ Render:
 	# Credit names:
 		# ShippyMcJerry: ShipBuilder1912 
 		# Coolman115: CorbinPasta93
+		# Ilovedumbphones: Dumbphones
 	- New ships:
 		- To adjust:
 			- SS France (Awesomeyorkie):
 				- Ropes
 		- To test:
+			- SS Poseidon from Kiko
 		- Ready:
-			- Ficier (alias: asked; year: asked)
+			- Ficier (alias: Dumbphones; year: 1916)
 		- Asked:
 			- Ed Fitzgerald (but needs to be fixed) (Kiko)
 			- Aegir_Mark_III (coolman asks original designer)
@@ -748,7 +750,8 @@ Render:
 			- Ship::Render: if flag set: invokes Ship::RenderElectricalElements()				
 				- Do a sort of connectivity visit and upload as you go
 
-	- Should we always draw orphaned points - those that come after destruction? (*)
+	- Orphaned points (*)
+		+ Idea: always draw orphaned points - those that come after destruction
 		+ Orphaned point == points with 0 connected springs
 		+ We unify ephemeral points uploading and rendering with ship points (either debug or orphan) uploading and rendering
 			+ Plane ID is enough to keep them on separate planes
@@ -794,6 +797,8 @@ Render:
 					- Always invoked, except when DebugShipRenderMode is not None and not Points
 					  (i.e. when it's Springs, EdgeSprings, etc. but not Points)
 		- Test L'n'F'
+		- Cleanups:
+			- Ship: generation of air bubbles: atm we don't generate air bubbles for orphaned points; see if this should change instead
 
 		- TODOOLD: in case any assumptions fail:		
 			- Also, ShipRenderMode::Points should only be consumed by Points::Upload, who is the only one who decides what gets uploaded
