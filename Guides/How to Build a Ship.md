@@ -1,8 +1,7 @@
 # Overview
-Ships in Floating Sandbox can be built by authoring simple image files saved in the _png_ format. The positions of pixels in the image provide
-the positions of the particles (points) of the ship, while the colors of the pixels map to characteristics of the particles such as their mass, strength, 
-the sound they make when they break, and so on. Floating sandbox comes with two palettes - _structural materials template_ and 
-_electrical materials template_ - that list the colors that you may use together with the various characteristics that they represent.
+Ships in Floating Sandbox can be built by authoring simple image files saved in the _png_ format; you may use your favorite image editor for this, MS Paint works perfectly for example. 
+
+The positions of pixels in the image provide the positions of the particles (points) of the ship, while the colors of the pixels map to characteristics of the particles such as their mass, strength, the sound they make when they break, and so on. Floating sandbox comes with two palettes - _structural materials template_ and _electrical materials template_ - that list the colors that you may use together with the various characteristics that they represent. You can find them under the _Guides_ folder of the game.
 
 There are basically two methods to author a ship: a **basic** method, and an **advanced** method.
 
