@@ -143,23 +143,23 @@ void ImplosionForceField::Apply(
         float const displacementLength = displacement.length();
         vec2f normalizedDisplacement = displacement.normalise(displacementLength);
 
-        // Make final acceleration independent from mass
-        float const massNormalization = points.GetMass(pointIndex) / 50.0f;
+        // Make final acceleration somewhat independent from mass
+        float const massNormalization = points.GetTotalMass(pointIndex) / 50.0f;
 
-        // Angular - constant
+        // Angular (constant)
         points.GetForce(pointIndex) +=
             vec2f(-normalizedDisplacement.y, normalizedDisplacement.x)
             * mStrength
-            / 10.0f
-            * massNormalization;
+            * massNormalization
+            / 10.0f; // Magic number
 
-        // Radial - stronger when closer
+        // Radial (stronger when closer)
         points.GetForce(pointIndex) +=
             normalizedDisplacement
             * mStrength
             / (0.2f + sqrt(displacementLength))
-            * 10.0f
-            * massNormalization;
+            * massNormalization
+            * 10.0f; // Magic number
     }
 }
 
