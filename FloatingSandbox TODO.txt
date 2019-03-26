@@ -302,7 +302,7 @@ Render:
 
 		- Fix Linux build break
 
-		- Orphaned points (*)
+		+ Orphaned points (*)
 
 		- Also dry points should rot, albeit very slowly
 			- Could just add ~0.005 to p.water at RotPoints()
@@ -762,31 +762,6 @@ Render:
 			- Ship::Render: if flag set: invokes Ship::RenderElectricalElements()				
 				- Do a sort of connectivity visit and upload as you go
 
-	= Orphaned points (*)
-		+ Idea: always draw orphaned points - those that come after destruction
-		+ Orphaned point == points with 0 connected springs
-		+ We unify ephemeral points uploading and rendering with ship points (either debug or orphan) uploading and rendering
-			+ Plane ID is enough to keep them on separate planes
-		+ Verify first that connectivity visit really assigns plane IDs also to orphaned points 
-		+ Impl:
-			+ We must first stop deleting points just because springs are deleted
-				+ Though should still delete them at Destroy() and Bomb(), for example
-			+ Unify non-ephemeral and ephemeral points in element VBO
-				+ Need hint from Points on whether or not ephemerals will follow
-			+ ShipRenderContext:
-				+ Nuke RenderEphemeralPoints and its structs and members
-				+ Have just one single RenderPoints
-					+ Always invoked, except when DebugShipRenderMode is not None and not Points
-					  (i.e. when it's Springs, EdgeSprings, etc. but not Points)
-		- Test L'n'F'
-		- Cleanup:
-			- Ship: generation of air bubbles: atm we don't generate air bubbles for orphaned points; see if this should change instead
-
-	+ Option to enable drawing of force vectors for each point
-		+ Ship::Update() takes also RenderContext const &, so can check if need to save force buffer
-			+ Points::SaveForceBufferForVectorRender()
-		+ Copied right before integration
-
 	- AmbientLightIntensity:
 		+ Use also in RenderContext::RenderStart() for clear (sky) color
 		+ Phase 1: pgup/down
@@ -834,7 +809,11 @@ Render:
 								+ float buffer: MaterialStrength
 		- TO INTEGRATE: Materials have CombustionType==(Explosive, Burning?)
 		- TODO: from Moleskine
-		- TODO: HeatPropagation may run sparingly
+		- TODO: HeatPropagation (and others?) may run sparingly
+
+		- Flamethrower tool:
+			- Need new layer - InteractionLayer - to do flamethrower's flames
+				- Owned, like text layer, by GameController
 
 	- Dynamite that may be thrown to the ship
 
@@ -2396,6 +2375,29 @@ IF WX:
 			+ Check perf
 			+ Perf optimizations:
 				+ Precalcd stuff in FontMetadata, indexed by char
+	+ Option to enable drawing of force vectors for each point
+		+ Ship::Update() takes also RenderContext const &, so can check if need to save force buffer
+			+ Points::SaveForceBufferForVectorRender()
+		+ Copied right before integration
+	+ Orphaned points (*)
+		+ Idea: always draw orphaned points - those that come after destruction
+		+ Orphaned point == points with 0 connected springs
+		+ We unify ephemeral points uploading and rendering with ship points (either debug or orphan) uploading and rendering
+			+ Plane ID is enough to keep them on separate planes
+		+ Verify first that connectivity visit really assigns plane IDs also to orphaned points 
+		+ Impl:
+			+ We must first stop deleting points just because springs are deleted
+				+ Though should still delete them at Destroy() and Bomb(), for example
+			+ Unify non-ephemeral and ephemeral points in element VBO
+				+ Need hint from Points on whether or not ephemerals will follow
+			+ ShipRenderContext:
+				+ Nuke RenderEphemeralPoints and its structs and members
+				+ Have just one single RenderPoints
+					+ Always invoked, except when DebugShipRenderMode is not None and not Points
+					  (i.e. when it's Springs, EdgeSprings, etc. but not Points)
+		+ Test L'n'F'
+		+ Cleanup:
+			+ Ship: generation of air bubbles: atm we don't generate air bubbles for orphaned points; see if this should change instead
 
 + Gfx Optimizations:
 

@@ -1150,7 +1150,7 @@ void ShipRenderContext::RenderEnd()
 
             mShaderManager.ActivateProgram<ProgramType::ShipPointsColor>();
 
-            glPointSize(0.2f * 2.0f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
+            glPointSize(0.3f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
 
             glDrawElements(
                 GL_POINTS,
