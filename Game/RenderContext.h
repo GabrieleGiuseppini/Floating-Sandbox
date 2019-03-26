@@ -776,11 +776,13 @@ public:
         mShips[shipId]->UploadElementTrianglesEnd();
     }
 
-    inline void UploadShipElementsEnd(ShipId shipId)
+    inline void UploadShipElementsEnd(
+        ShipId shipId,
+        bool doFinalizeEphemeralPoints)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId]->UploadElementsEnd();
+        mShips[shipId]->UploadElementsEnd(doFinalizeEphemeralPoints);
     }
 
     //

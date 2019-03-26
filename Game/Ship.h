@@ -324,7 +324,7 @@ private:
 
     // Initial indices of the triangles for each plane ID;
     // last extra element contains total number of triangles
-    std::vector<size_t> mPlaneTrianglesRenderIndices;
+    std::vector<size_t> mPlaneTriangleIndicesToRender;
 
     // Sinking detection
     bool mIsSinking;

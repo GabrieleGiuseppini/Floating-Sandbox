@@ -57,7 +57,7 @@ Ship::Ship(
     , mCurrentElectricalVisitSequenceNumber()
     , mIsStructureDirty(true)
     , mLastDebugShipRenderMode()
-    , mPlaneTrianglesRenderIndices()
+    , mPlaneTriangleIndicesToRender()
     , mIsSinking(false)
     , mTotalWater(0.0)
     , mWaterSplashedRunningAverage()
@@ -76,6 +76,8 @@ Ship::Ship(
         mSprings)
     , mCurrentForceFields()
 {
+    mPlaneTriangleIndicesToRender.reserve(mTriangles.GetElementCount());
+
     // Set destroy handlers
     mPoints.RegisterDestroyHandler(std::bind(&Ship::PointDestroyHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
     mSprings.RegisterDestroyHandler(std::bind(&Ship::SpringDestroyHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
@@ -656,10 +658,11 @@ void Ship::Render(
         renderContext.UploadShipElementsStart(mId);
 
         //
-        // Upload all the point elements
+        // Upload point elements (either orphaned only or all, depending
+        // on the debug render mode)
         //
 
-        mPoints.UploadElements(
+        mPoints.UploadNonEphemeralPointElements(
             mId,
             renderContext);
 
@@ -673,19 +676,19 @@ void Ship::Render(
 
         //
         // Upload triangles, but only if structure is dirty
-        // (we can't upload otherwise as mPlaneTrianglesRenderIndices is one-time use)
+        // (we can't upload more frequently as mPlaneTriangleIndicesToRender is a one-time use)
         //
 
         if (mIsStructureDirty)
         {
-            assert(mPlaneTrianglesRenderIndices.size() >= 1);
+            assert(mPlaneTriangleIndicesToRender.size() >= 1);
 
             renderContext.UploadShipElementTrianglesStart(
                 mId,
-                mPlaneTrianglesRenderIndices.back());
+                mPlaneTriangleIndicesToRender.back());
 
             mTriangles.UploadElements(
-                mPlaneTrianglesRenderIndices,
+                mPlaneTriangleIndicesToRender,
                 mId,
                 mPoints,
                 renderContext);
@@ -693,7 +696,9 @@ void Ship::Render(
             renderContext.UploadShipElementTrianglesEnd(mId);
         }
 
-        renderContext.UploadShipElementsEnd(mId);
+        renderContext.UploadShipElementsEnd(
+            mId,
+            !mPoints.AreEphemeralPointsDirty()); // Finalize ephemeral points only if there are no subsequent ephemeral point uploads
     }
 
 
@@ -735,7 +740,7 @@ void Ship::Render(
 
 
     //
-    // Upload ephemeral points
+    // Upload ephemeral points and textures
     //
 
     mPoints.UploadEphemeralParticles(
@@ -1822,8 +1827,8 @@ void Ship::RunConnectivityVisit()
 
     // Reset per-plane triangle indices
     size_t totalPlaneTrianglesCount = 0;
-    mPlaneTrianglesRenderIndices.clear();
-    mPlaneTrianglesRenderIndices.push_back(totalPlaneTrianglesCount); // First plane starts at zero, and we have zero triangles
+    mPlaneTriangleIndicesToRender.clear();
+    mPlaneTriangleIndicesToRender.push_back(totalPlaneTrianglesCount); // First plane starts at zero, and we have zero triangles
 
     // Visit all non-ephemeral points
     for (auto pointIndex : mPoints.NonEphemeralPointsReverse())
@@ -1894,8 +1899,8 @@ void Ship::RunConnectivityVisit()
             }
 
             // Remember the starting index of the triangles in the next plane
-            assert(mPlaneTrianglesRenderIndices.size() == static_cast<size_t>(currentPlaneId + 1));
-            mPlaneTrianglesRenderIndices.push_back(totalPlaneTrianglesCount);
+            assert(mPlaneTriangleIndicesToRender.size() == static_cast<size_t>(currentPlaneId + 1));
+            mPlaneTriangleIndicesToRender.push_back(totalPlaneTrianglesCount);
 
             //
             // Flood completed

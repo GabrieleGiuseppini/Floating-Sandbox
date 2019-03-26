@@ -208,7 +208,7 @@ public:
 
     void UploadElementTrianglesEnd();
 
-    void UploadElementsEnd();
+    void UploadElementsEnd(bool doFinalizeEphemeralPoints);
 
     //
     // Stressed springs
@@ -506,9 +506,6 @@ private:
     std::vector<LineElement> mStressedSpringElementBuffer;
     GameOpenGLVBO mStressedSpringElementVBO;
 
-    std::vector<PointElement> mEphemeralPointElementBuffer;
-    GameOpenGLVBO mEphemeralPointElementVBO;
-
     std::vector<GenericTexturePlaneData> mGenericTexturePlaneVertexBuffers;
     size_t mGenericTextureMaxPlaneVertexBufferSize;
     GameOpenGLVBO mGenericTextureVBO;
@@ -525,6 +522,7 @@ private:
     //
 
     std::vector<PointElement> mPointElementBuffer;
+    std::vector<PointElement> mEphemeralPointElementBuffer;
     std::vector<LineElement> mSpringElementBuffer;
     std::vector<LineElement> mRopeElementBuffer;
     std::vector<TriangleElement> mTriangleElementBuffer;
@@ -534,6 +532,7 @@ private:
     // Indices at which these elements begin in the VBO; populated
     // when we upload element indices to the VBO
     size_t mPointElementVBOStartIndex;
+    size_t mEphemeralPointElementVBOStartIndex;
     size_t mSpringElementVBOStartIndex;
     size_t mRopeElementVBOStartIndex;
     size_t mTriangleElementVBOStartIndex;

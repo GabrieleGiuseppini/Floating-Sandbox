@@ -81,12 +81,12 @@ void TextLayer::SetStatusText(
         ss.str("");
 
         ss
-            << "RPS:" << renderStatistics.LastRenderedShipRopes
+            << "PNT:" << renderStatistics.LastRenderedShipPoints
+            << " RPS:" << renderStatistics.LastRenderedShipRopes
             << " SPR:" << renderStatistics.LastRenderedShipSprings
             << " TRI:" << renderStatistics.LastRenderedShipTriangles
             << " PLANES:" << renderStatistics.LastRenderedShipPlanes
-            << " GENTEX:" << renderStatistics.LastRenderedShipGenericTextures
-            << " EPH:" << renderStatistics.LastRenderedShipEphemeralPoints;
+            << " GENTEX:" << renderStatistics.LastRenderedShipGenericTextures;
 
         mStatusTextLines.emplace_back(ss.str());
     }

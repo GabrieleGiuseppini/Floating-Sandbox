@@ -291,6 +291,9 @@ Render:
 			+ Test
 		+ Send for testing
 
+		- Change "rotting" to ""
+			- SettingsDialog label only
+
 		- Add other testers to About box
 
 		- Release
@@ -300,6 +303,9 @@ Render:
 		- Fix Linux build break
 
 		- Orphaned points (*)
+
+		- Also dry points should rot, albeit very slowly
+			- Could just add ~0.005 to p.water at RotPoints()
 
 		- Flood tool and ship un/sinking
 			- Sinking: do HighWatermark/LowWatermark
@@ -323,6 +329,9 @@ Render:
 			- And thus lower water intake threshold for air bubbles
 
 		- Batisphere with pumps and propulsion (*)
+			- First need to add a new material property - "rust_susceptibility"
+				- Use at RotPoints()
+				- Make "stainless" materials
 			- Switches (*)
 			- Flood doors (*)
 			- Pumps (*)
@@ -354,12 +363,13 @@ Render:
 				- Ropes
 		- To test:
 			- SS Poseidon from Kiko
+			- The two other ones
 		- Ready:
 			- Ficier (alias: Dumbphones; year: 1916)
+			- Siffiol (Dumbphones; year: 1912)
 		- Asked:
 			- Ed Fitzgerald (but needs to be fixed) (Kiko)
-			- Aegir_Mark_III (coolman asks original designer)
-			- Siffiol (Ilovedumbphones)
+			- Aegir_Mark_III (coolman asks original designer)			
 		- Ready:
 	- Descriptions:
 		+ Tell maximord about new ships - give him names
@@ -752,110 +762,25 @@ Render:
 			- Ship::Render: if flag set: invokes Ship::RenderElectricalElements()				
 				- Do a sort of connectivity visit and upload as you go
 
-	- Orphaned points (*)
+	= Orphaned points (*)
 		+ Idea: always draw orphaned points - those that come after destruction
 		+ Orphaned point == points with 0 connected springs
 		+ We unify ephemeral points uploading and rendering with ship points (either debug or orphan) uploading and rendering
 			+ Plane ID is enough to keep them on separate planes
 		+ Verify first that connectivity visit really assigns plane IDs also to orphaned points 
-		- Impl:
-			- We must first stop deleting points just because springs are deleted
-				- Though should still delete them at Destroy() and Bomb(), for example
-			- RenderContext and ShipRenderContext expose one single, independent UploadPointElements for segments:
-				- UploadPointElements(srcbuffer, start (valid only for dst), len)
-				- Only requires ShipRenderCointext to have been init'd with total # of points, so to
-				  allocate GPU buffer once at initialization
-			- Ship::Render:
-				- New member: std::vector<ElementIndex> mPointElementsToRender
-					- Rename also other one as "...ToRender"
-					- cctor: reserve(mPoints.total_size)
-					- It will contain first non-ephemerals (orphaned or all), then ephemerals
-					- Coping with mIsStructureDirty=true but no new ephemerals:
-						- Need to add boolean to Points::UploadEphemerals to force emission of points even when not dirty
-				- Nuke old upload call for point elements
-				- if mIsStructureDirty:
-					- Clear mPointElementsToRender
-					- Ask Points to populate point indices in mPointElementsToRender
-						- Points::UploadNonEphemeralPointIndices(...)
-						- Starting from zero
-						- Points decides between all or orphaned only based off DebugShipRenderMode
-							- Like now, only non-ephemerals
-					- Store # of points just populated into mCurrentShipPointElementsToRenderCount
-				- ...later...:
-				- At Points::UploadEphemerals:
-					- Pass mPointElementsToRender
-					- Since you're here, remove TBD comment about ConnectedComponentIDs
-					- Pass "forceEmissionOfPoints" == mIsStructureDirty
-					- Points::UploadEphemeral returns ephemeralPointsPopulatedCount
-				- if mIsStructureDirty || ephemeralPointsPopulatedCount > 0:
-					- Call RenderContext::UploadPointElements(
-						srcbuffer=ship's buffer, truncated to mCurrentShipPointElementsCount if !mIsStructureDirty, and offseted as mIsStructureDirty ? 0 : mCurrentShipPointElementsCount
-						start = mIsStructureDirty ? 0 : mCurrentShipPointElementsCount,
-						len = mIsStructureDirty ? buffer.len : nEphemeralPointsPopulated)
-					- TEST: go through this again and verify all cases covered, including all combinations of empty's
-			- ShipRenderContext:
-				- Nuke RenderEphemeralPoints and its structs and members
-				- Have just one single RenderPoints
-					- Always invoked, except when DebugShipRenderMode is not None and not Points
+		+ Impl:
+			+ We must first stop deleting points just because springs are deleted
+				+ Though should still delete them at Destroy() and Bomb(), for example
+			+ Unify non-ephemeral and ephemeral points in element VBO
+				+ Need hint from Points on whether or not ephemerals will follow
+			+ ShipRenderContext:
+				+ Nuke RenderEphemeralPoints and its structs and members
+				+ Have just one single RenderPoints
+					+ Always invoked, except when DebugShipRenderMode is not None and not Points
 					  (i.e. when it's Springs, EdgeSprings, etc. but not Points)
 		- Test L'n'F'
-		- Cleanups:
+		- Cleanup:
 			- Ship: generation of air bubbles: atm we don't generate air bubbles for orphaned points; see if this should change instead
-
-		- TODOOLD: in case any assumptions fail:		
-			- Also, ShipRenderMode::Points should only be consumed by Points::Upload, who is the only one who decides what gets uploaded
-				~ Not really, see below - it's ConnectivityVisit the only one that checks ShipRenderMode::Points 
-			- Orphaned points go into their own single plane, at whatever connected component/plane ID algo assigns them to
-				- Assigned directly by ConnectivityVisit by checking if point has no connected springs (and it's not deleted)
-					- Do we really need to special-case PlaneID assignment? Doesn't ConnectivityVisit already assign a good Plane ID?
-					- Since we're doing this, we might as well fill-in vector of Point indices 
-					  (containing ShipRenderMode::Points + orphaned + ephemeral points), replacing UploadPoints:
-						- Ship has own vector<ElementIndex>, appropriately reserved to mPoints.total_size
-						- Ship::ConnectivityVisit:
-							- Clears vector - after all, we run ConnectivityVisit if we're dirty
-							- For each point: 
-								- If ShipRenderMode is Points OR point is orphan: appends it
-							- Remembers size of vector at this moment, as mShipPointElementsCount (see below)
-						- Then passes it to Points::UploadEphemeralParticles(), who appends to it
-							- When we're not dirty, instead, Ship truncates it to mShipPointElementsCount length
-							  (maintaining point indices from previous ConnectivityVisit),
-							  before passing it to UploadEphemeralParticles() (which now takes no RenderContext anymore)
-			- Ship::Render(): new dirty/ephemeral algo:
-				- With Z buffer we don't need anymore to worry about ShipRenderElementsStart() to allocate all connected components
-				- Ship uploads own point element index vector when:
-					- old: mAreElementsDirty => new: mArePointElementIndicesDirty
-						- mArePointElementIndicesDirty is set when:
-							- ConnectivityVisit runs
-								- ConnectivityVisit sets it itself at end
-							- Points::UploadEphemeralParticles(indices vector) returns true (because it remembers it is dirty)
-								- Optimize here: if only UploadEphemeralParticles() returns true, then
-								  may upload only sub-portion after mShipPointElementsCount
-			- ShipRenderContext always renders point elements	
-				- Even when ShipRenderMode is Springs
-
-
-	- A toggle-able shader for the sea - so it gets darker the further down you go; it would be affected by the ambient lighting
-		- Need new scalar vertex attrib for depthBrightness - between 1.0 (top) and 0.0 (at greater of 1000m and sea depth)
-			- depthBrightness is always 1.0 if "modulate sea depth brightness" (new boolean GameParam) is not set
-
-	- A toggle-able shader for the sky - twilight
-
-	- Problem with texture over edges of structure: when texture is not reduced by structure (i.e. when structure is
-	  larger than texture), then one sees parts of the springs
-		- It's a problem with rendering springs with the texture shader
-		- However, these springs give an anti-aliasing effect
-
-	- Draw better (depth-wise) those parts that are only connected by ropes (**)
-		- TODO: this is taken care of by Z-buffer work, by carefully propagating plane IDs 
-			- This in reality has nothing to do with ConnectedComponentIds
-		- Change connected component detection by not propagating from a "spring only" to a "body", so that two bodies connected
-		  only by springs or ropes are considered separate, and spring/rope belongs to first one only
-			- In practice: flood the *edge* network, not the spring network, and don't propagate
-			  if coming from edge with zero triangles to an edge with >0 triangles
-			- Could also do it now with spring's connected triangles: don't propagate if coming from #connected_triangles=0 to
-			  #connected_triangles>0
-				- Though we must still propagate through rope triangles, so maintain "coming from #connected_triangles=0"
-				  when propagating from a rope point to a rope point - regardless of connected triangles
 
 	+ Option to enable drawing of force vectors for each point
 		+ Ship::Update() takes also RenderContext const &, so can check if need to save force buffer
@@ -909,6 +834,7 @@ Render:
 								+ float buffer: MaterialStrength
 		- TO INTEGRATE: Materials have CombustionType==(Explosive, Burning?)
 		- TODO: from Moleskine
+		- TODO: HeatPropagation may run sparingly
 
 	- Dynamite that may be thrown to the ship
 

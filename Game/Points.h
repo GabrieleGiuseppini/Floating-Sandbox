@@ -278,7 +278,7 @@ public:
         , mFloatBufferAllocator(mBufferElementCount)
         , mVec2fBufferAllocator(mBufferElementCount)
         , mFreeEphemeralParticleSearchStartIndex(mShipPointCount)
-        , mAreEphemeralParticlesDirty(false)
+        , mAreEphemeralPointsDirty(false)
     {
     }
 
@@ -383,13 +383,18 @@ public:
         ShipId shipId,
         Render::RenderContext & renderContext) const;
 
-    void UploadElements(
+    void UploadNonEphemeralPointElements(
         ShipId shipId,
         Render::RenderContext & renderContext) const;
 
     void UploadVectors(
         ShipId shipId,
         Render::RenderContext & renderContext) const;
+
+    bool AreEphemeralPointsDirty() const
+    {
+        return mAreEphemeralPointsDirty;
+    }
 
     void UploadEphemeralParticles(
         ShipId shipId,
@@ -961,9 +966,6 @@ private:
         // - Being rendered
         // - Being updated
         mEphemeralTypeBuffer[pointElementIndex] = EphemeralType::None;
-
-        // Remember we're now dirty
-        mAreEphemeralParticlesDirty = true;
     }
 
 private:
@@ -1113,10 +1115,10 @@ private:
     // (just an optimization over restarting from zero each time)
     ElementIndex mFreeEphemeralParticleSearchStartIndex;
 
-    // Flag remembering whether the set of ephemeral particles is dirty
-    // (i.e. whether there are more or less particles than previously
+    // Flag remembering whether the set of ephemeral points is dirty
+    // (i.e. whether there are more or less points than previously
     // reported to the rendering engine)
-    bool mutable mAreEphemeralParticlesDirty;
+    bool mutable mAreEphemeralPointsDirty;
 };
 
 }

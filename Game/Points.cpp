@@ -140,9 +140,6 @@ void Points::CreateEphemeralParticleAirBubble(
     assert(false == mIsPinnedBuffer[pointIndex]);
 
     mColorBuffer[pointIndex] = structuralMaterial.RenderColor;
-
-    // Remember we're dirty now
-    mAreEphemeralParticlesDirty = true;
 }
 
 void Points::CreateEphemeralParticleDebris(
@@ -196,8 +193,8 @@ void Points::CreateEphemeralParticleDebris(
 
     mColorBuffer[pointIndex] = structuralMaterial.RenderColor;
 
-    // Remember we're dirty now
-    mAreEphemeralParticlesDirty = true;
+    // Remember that ephemeral points are dirty now
+    mAreEphemeralPointsDirty = true;
 }
 
 void Points::CreateEphemeralParticleSparkle(
@@ -249,9 +246,6 @@ void Points::CreateEphemeralParticleSparkle(
     mIsPlaneIdBufferEphemeralDirty = true;
 
     assert(false == mIsPinnedBuffer[pointIndex]);
-
-    // Remember we're dirty now
-    mAreEphemeralParticlesDirty = true;
 }
 
 void Points::Destroy(
@@ -387,6 +381,9 @@ void Points::UpdateEphemeralParticles(
                     if (elapsedLifetime >= mEphemeralMaxLifetimeBuffer[pointIndex])
                     {
                         ExpireEphemeralParticle(pointIndex);
+
+                        // Remember that ephemeral points are now dirty
+                        mAreEphemeralPointsDirty = true;
                     }
                     else
                     {
@@ -542,17 +539,23 @@ void Points::UploadAttributes(
     renderContext.UploadShipPointMutableAttributesEnd(shipId);
 }
 
-void Points::UploadElements(
+void Points::UploadNonEphemeralPointElements(
     ShipId shipId,
     Render::RenderContext & renderContext) const
 {
+    bool doUploadAllPoints = (DebugShipRenderMode::Points == renderContext.GetDebugShipRenderMode());
+
     for (ElementIndex pointIndex : NonEphemeralPoints())
     {
         if (!mIsDeletedBuffer[pointIndex])
         {
-            renderContext.UploadShipElementPoint(
-                shipId,
-                pointIndex);
+            if (doUploadAllPoints
+                || mConnectedSpringsBuffer[pointIndex].ConnectedSprings.empty()) // orphaned
+            {
+                renderContext.UploadShipElementPoint(
+                    shipId,
+                    pointIndex);
+            }
         }
     }
 }
@@ -617,7 +620,7 @@ void Points::UploadEphemeralParticles(
     // Upload points and/or textures
     //
 
-    if (mAreEphemeralParticlesDirty)
+    if (mAreEphemeralPointsDirty)
     {
         renderContext.UploadShipElementEphemeralPointsStart(shipId);
     }
@@ -645,7 +648,7 @@ void Points::UploadEphemeralParticles(
             case EphemeralType::Debris:
             {
                 // Don't upload point unless there's been a change
-                if (mAreEphemeralParticlesDirty)
+                if (mAreEphemeralPointsDirty)
                 {
                     renderContext.UploadShipElementEphemeralPoint(
                         shipId,
@@ -678,11 +681,11 @@ void Points::UploadEphemeralParticles(
         }
     }
 
-    if (mAreEphemeralParticlesDirty)
+    if (mAreEphemeralPointsDirty)
     {
         renderContext.UploadShipElementEphemeralPointsEnd(shipId);
 
-        mAreEphemeralParticlesDirty = false;
+        mAreEphemeralPointsDirty = false;
     }
 }
 
