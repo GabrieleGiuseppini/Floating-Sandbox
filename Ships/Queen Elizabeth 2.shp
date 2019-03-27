@@ -1,0 +1,8 @@
+{
+	"structure_image":"queen_elizabeth_2_structure.png.dat",
+	"texture_image":"queen_elizabeth_2_texture.png.dat",
+	"offset":{"x":0.0, "y":-8.0},
+	"ship_name":"Queen Elizabeth 2",
+	"created_by":"Michael Bozarth",
+	"year_built":"1969"
+}

@@ -1,0 +1,9 @@
+{
+    "structure_image":"hms_ficier_structure.png.dat",
+    "texture_image":"hms_ficier_texture.png.dat",
+    "electrical_image":"hms_ficier_electrical.png.dat",
+    "ship_name":"HMS Ficier",
+    "offset":{"x":0.0, "y":-11.0},
+    "year_built":"1916",
+    "created_by":"Dumbphones"
+}
