@@ -291,14 +291,19 @@ Render:
 			+ Test
 		+ Send for testing
 
-		- Change "rotting" to ""
-			- SettingsDialog label only
+		- New ships
+
+		- Check "Smash" bug
+
+		- Make water drag adjustable
+			- Correct unit and value
+			- See if can make it higher, to fix exploding debris problem
 
 		- Add other testers to About box
 
 		- Release
 
-	- 1.11.0:
+	= 1.11.0:
 
 		- Fix Linux build break
 
