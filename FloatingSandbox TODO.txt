@@ -290,20 +290,19 @@ Render:
 			+ Do
 			+ Test
 		+ Send for testing
-
-		- New ships
+		+ New ships
 
 		- Check "Smash" bug
-
-		- Make water drag adjustable
-			- Correct unit and value
-			- See if can make it higher, to fix exploding debris problem
 
 		- Add other testers to About box
 
 		- Release
 
 	= 1.11.0:
+
+		- Make water drag adjustable
+			- Correct unit and value
+			- See if can make it higher, to fix exploding debris problem
 
 		- Fix Linux build break
 
@@ -366,16 +365,9 @@ Render:
 		- To adjust:
 			- SS France (Awesomeyorkie):
 				- Ropes
-		- To test:
-			- SS Poseidon from Kiko
-			- The two other ones
-		- Ready:
-			- Ficier (alias: Dumbphones; year: 1916)
-			- Siffiol (Dumbphones; year: 1912)
 		- Asked:
 			- Ed Fitzgerald (but needs to be fixed) (Kiko)
-			- Aegir_Mark_III (coolman asks original designer)			
-		- Ready:
+			- Aegir_Mark_III (coolman asks original designer)
 	- Descriptions:
 		+ Tell maximord about new ships - give him names
 		= Copy all descriptions into their respective .shp files
