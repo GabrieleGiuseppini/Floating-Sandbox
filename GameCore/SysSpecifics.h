@@ -44,10 +44,10 @@ inline void aligned_free(void * ptr)
 #endif
 
 // Targeting AVX-512
-static constexpr size_t VectorizationWordSize = 8;
+static constexpr size_t VectorizationWordSize = 8; // Number of elements, not bytes
 
 /*
- * Rounds a number of elements up to the next multiple of the 
+ * Rounds a number of elements up to the next multiple of the
  * vectorization word size, to facilitate loops with vectorized code.
  */
 inline size_t make_aligned_element_count(size_t element_count)
