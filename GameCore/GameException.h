@@ -8,11 +8,11 @@
 #include <stdexcept>
 #include <string>
 
-class GameException : public std::exception
+class GameException : public std::runtime_error
 {
 public:
 
 	GameException(std::string const & errorMessage)
-		: std::exception(errorMessage.c_str())
+		: std::runtime_error(errorMessage.c_str())
 	{}
 };
