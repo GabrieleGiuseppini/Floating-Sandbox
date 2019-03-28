@@ -61,10 +61,10 @@ AboutDialog::AboutDialog(
 
     wxBitmap* bmp = new wxBitmap(resourceLoader.GetArtFilepath("splash_screen").string(), wxBITMAP_TYPE_PNG);
 
-    wxStaticBitmap * stBmp = new wxStaticBitmap(this, wxID_ANY, *bmp, wxDefaultPosition, wxSize(400, 150), wxBORDER_SIMPLE);
-    stBmp->SetScaleMode(wxStaticBitmap::Scale_AspectFill);
+    wxStaticBitmap * stBmp = new wxStaticBitmap(this, wxID_ANY, *bmp, wxDefaultPosition, wxDefaultSize, wxBORDER_SIMPLE);
+    stBmp->SetScaleMode(wxStaticBitmap::Scale_None);
 
-    mainSizer->Add(stBmp, 0, wxALIGN_CENTER);
+    mainSizer->Add(stBmp, 1, wxALIGN_CENTER_HORIZONTAL);
 
     mainSizer->AddSpacer(5);
 
@@ -98,8 +98,6 @@ AboutDialog::AboutDialog(
 
     std::vector<std::pair<std::string, std::string>> credits
     {
-        {"Cover art:\t", "Dimitar Katsarov - https://www.artstation.com/stukata/profile" },
-
         {"Ship engineers:", "TopHatLemons - https://discordapp.com/" },
         {"\t\t\t\t", "Truce#3326 - https://discordapp.com/" },
         {"\t\t\t\t", "RetroGraczzPL - https://discordapp.com/" },

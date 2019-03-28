@@ -16,8 +16,8 @@ SplashScreenDialog::SplashScreenDialog(ResourceLoader const & resourceLoader)
 	Create(
         nullptr,
 		wxID_ANY,
-		wxEmptyString, 
-		wxDefaultPosition, 
+		wxEmptyString,
+		wxDefaultPosition,
 		wxSize(800, 400),
         wxSTAY_ON_TOP,
 		_T("Splash Screen"));
@@ -53,10 +53,10 @@ SplashScreenDialog::SplashScreenDialog(ResourceLoader const & resourceLoader)
         wxID_ANY,
         101,
         wxDefaultPosition,
-        wxSize(400, 30),
+        wxSize(bmp->GetWidth() - 20, 30),
         wxGA_HORIZONTAL);
-    
-    mainSizer->Add(mGauge, 0, wxALIGN_CENTER);
+
+    mainSizer->Add(mGauge, 1, wxALIGN_CENTER_HORIZONTAL);
 
 
 	//
@@ -64,8 +64,8 @@ SplashScreenDialog::SplashScreenDialog(ResourceLoader const & resourceLoader)
 	//
 
     mProgressText = new wxStaticText(
-        this, 
-        wxID_ANY, 
+        this,
+        wxID_ANY,
         wxEmptyString,
         wxDefaultPosition,
         wxSize(400, 20),
