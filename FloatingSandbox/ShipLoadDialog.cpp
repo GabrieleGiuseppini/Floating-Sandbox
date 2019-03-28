@@ -166,7 +166,7 @@ ShipLoadDialog::ShipLoadDialog(
 
     buttonsSizer->AddSpacer(10);
 
-    vSizer->Add(buttonsSizer, 0, wxEXPAND | wxALIGN_RIGHT);
+    vSizer->Add(buttonsSizer, 0, wxEXPAND);
 
     vSizer->AddSpacer(10);
 
