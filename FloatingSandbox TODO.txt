@@ -294,8 +294,8 @@ Render:
 
 		- Provide large banner to GameJolt
 
-		- Check "Smash" bug
-			- Run in Debug
+		= Check "Smash" bug
+			= Run in Debug
 
 		- Add other testers to About box
 
