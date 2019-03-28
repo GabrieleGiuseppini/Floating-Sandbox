@@ -310,7 +310,7 @@ Render:
 
 		- Change cover art to Logo2
 			- About box image
-				- And remove "Cover art" altogether
+				- And remove "Cover art" credit altogether
 			- Installer
 
 
@@ -318,7 +318,6 @@ Render:
 			- Could just add ~0.005 to p.water at RotPoints()
 
 		- Heat and combustion (*)
-			- Gunpowder: material or object?
 
 		- Instanced drawing for lights (*)
 
@@ -806,6 +805,7 @@ Render:
 							+ For each spring: strength = material's strength * avg of two endpoints' decay
 								+ float buffer: MaterialStrength
 		- TO INTEGRATE: Materials have CombustionType==(Explosive, Burning?)
+			- And "gunpowder" material
 		- TODO: from Moleskine
 		- TODO: HeatPropagation (and others?) may run sparingly
 

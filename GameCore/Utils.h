@@ -279,7 +279,7 @@ public:
 };
 
 template<>
-static inline float Utils::GetOptionalJsonMember<float>(
+inline float Utils::GetOptionalJsonMember<float>(
     picojson::object const & obj,
     std::string const & memberName,
     float const & defaultValue)
@@ -294,7 +294,7 @@ static inline float Utils::GetOptionalJsonMember<float>(
 }
 
 template<>
-static inline int Utils::GetOptionalJsonMember<int>(
+inline int Utils::GetOptionalJsonMember<int>(
     picojson::object const & obj,
     std::string const & memberName,
     int const & defaultValue)
@@ -309,7 +309,7 @@ static inline int Utils::GetOptionalJsonMember<int>(
 }
 
 template<>
-static inline std::optional<float> Utils::GetOptionalJsonMember<float>(
+inline std::optional<float> Utils::GetOptionalJsonMember<float>(
     picojson::object const & obj,
     std::string const & memberName)
 {
@@ -321,7 +321,7 @@ static inline std::optional<float> Utils::GetOptionalJsonMember<float>(
 }
 
 template<>
-static inline std::optional<int> Utils::GetOptionalJsonMember<int>(
+inline std::optional<int> Utils::GetOptionalJsonMember<int>(
     picojson::object const & obj,
     std::string const & memberName)
 {
@@ -333,7 +333,7 @@ static inline std::optional<int> Utils::GetOptionalJsonMember<int>(
 }
 
 template<>
-static inline float Utils::GetMandatoryJsonMember<float>(
+inline float Utils::GetMandatoryJsonMember<float>(
     picojson::object const & obj,
     std::string const & memberName)
 {
@@ -344,7 +344,7 @@ static inline float Utils::GetMandatoryJsonMember<float>(
 }
 
 template<>
-static inline int Utils::GetMandatoryJsonMember<int>(
+inline int Utils::GetMandatoryJsonMember<int>(
     picojson::object const & obj,
     std::string const & memberName)
 {
