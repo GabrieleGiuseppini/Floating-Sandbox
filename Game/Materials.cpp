@@ -13,13 +13,13 @@ StructuralMaterial StructuralMaterial::Create(picojson::object const & structura
 
     try
     {
-        float strength = static_cast<float>(Utils::GetMandatoryJsonMember<double>(structuralMaterialJson, "strength"));
+        float strength = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "strength");
 
         picojson::object massJson = Utils::GetMandatoryJsonObject(structuralMaterialJson, "mass");
-        float mass = static_cast<float>(Utils::GetMandatoryJsonMember<double>(massJson, "nominal_mass"))
-            * static_cast<float>(Utils::GetMandatoryJsonMember<double>(massJson, "density"));
+        float mass = Utils::GetMandatoryJsonMember<float>(massJson, "nominal_mass")
+            * Utils::GetMandatoryJsonMember<float>(massJson, "density");
 
-        float stiffness = static_cast<float>(Utils::GetOptionalJsonMember<double>(structuralMaterialJson, "stiffness", 1.0));
+        float stiffness = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "stiffness", 1.0);
 
         vec4f renderColor =
             Utils::Hex2RgbColor(
@@ -27,12 +27,12 @@ StructuralMaterial StructuralMaterial::Create(picojson::object const & structura
             .toVec4f(1.0f);
 
         bool isHull = Utils::GetMandatoryJsonMember<bool>(structuralMaterialJson, "is_hull");
-        float waterVolumeFill = static_cast<float>(Utils::GetMandatoryJsonMember<double>(structuralMaterialJson, "water_volume_fill"));
-        float waterIntake = static_cast<float>(Utils::GetOptionalJsonMember<double>(structuralMaterialJson, "water_intake", 1.0));
-        float waterDiffusionSpeed = static_cast<float>(Utils::GetMandatoryJsonMember<double>(structuralMaterialJson, "water_diffusion_speed"));
-        float waterRetention = static_cast<float>(Utils::GetMandatoryJsonMember<double>(structuralMaterialJson, "water_retention"));
+        float waterVolumeFill = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "water_volume_fill");
+        float waterIntake = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "water_intake", 1.0);
+        float waterDiffusionSpeed = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "water_diffusion_speed");
+        float waterRetention = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "water_retention");
 
-        float windReceptivity = static_cast<float>(Utils::GetOptionalJsonMember<double>(structuralMaterialJson, "wind_receptivity", 0.0));
+        float windReceptivity = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "wind_receptivity", 0.0);
 
         std::optional<MaterialUniqueType> uniqueType;
         if (name == "Air")
@@ -104,14 +104,14 @@ ElectricalMaterial ElectricalMaterial::Create(picojson::object const & electrica
         if (ElectricalElementType::Lamp == electricalType)
         {
             isSelfPowered = Utils::GetMandatoryJsonMember<bool>(electricalMaterialJson, "is_self_powered");
-            luminiscence = static_cast<float>(Utils::GetMandatoryJsonMember<double>(electricalMaterialJson, "luminiscence"));
+            luminiscence = Utils::GetMandatoryJsonMember<float>(electricalMaterialJson, "luminiscence");
             lightColor =
                 Utils::Hex2RgbColor(
                     Utils::GetMandatoryJsonMember<std::string>(electricalMaterialJson, "light_color"))
                 .toVec4f(1.0f);
 
-            lightSpread = static_cast<float>(Utils::GetMandatoryJsonMember<double>(electricalMaterialJson, "light_spread"));
-            wetFailureRate = static_cast<float>(Utils::GetMandatoryJsonMember<double>(electricalMaterialJson, "wet_failure_rate"));
+            lightSpread = Utils::GetMandatoryJsonMember<float>(electricalMaterialJson, "light_spread");
+            wetFailureRate = Utils::GetMandatoryJsonMember<float>(electricalMaterialJson, "wet_failure_rate");
 
             if (luminiscence < 0.0f)
                 throw GameException("Error loading electrical material \"" + name + "\": the value of the \"luminiscence\" parameter must be greater than or equal 0.0");

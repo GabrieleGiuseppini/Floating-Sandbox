@@ -292,7 +292,10 @@ Render:
 		+ Send for testing
 		+ New ships
 
+		- Provide large banner to GameJolt
+
 		- Check "Smash" bug
+			- Run in Debug
 
 		- Add other testers to About box
 
@@ -300,21 +303,19 @@ Render:
 
 	= 1.11.0:
 
-		- Make water drag adjustable
-			- Correct unit and value
-			- See if can make it higher, to fix exploding debris problem
-
-		- Fix Linux build break
-
 		+ Orphaned points (*)
+
+		= Fix Linux build break
+			+ Do specialization outside of class
+
+		- Change cover art to Logo2
+			- About box image
+				- And remove "Cover art" altogether
+			- Installer
+
 
 		- Also dry points should rot, albeit very slowly
 			- Could just add ~0.005 to p.water at RotPoints()
-
-		- Flood tool and ship un/sinking
-			- Sinking: do HighWatermark/LowWatermark
-			- Make music class with FadeToStop()
-				- ::Update()		
 
 		- Heat and combustion (*)
 			- Gunpowder: material or object?
@@ -1152,18 +1153,17 @@ Render:
 					- All iters take factors from Spring after calling lambda
 
 
-	- Sinking detection is broken - it currently only considers total water that entered the ship, which comes proportionally to external
-	  water pressure; all this water could be confined to a tiny volume, and yet we trigger sinking
-		- Solution: make it based on total number of points that have water instead, i.e. wet points
-			- ...which requires 
-			- Option1: or can just be calculated at end of each update with simple pass through water buffer and previous water buffer
-				- Better, "if" for prev_value==0 would be done only once per Ship::Update()
-				- Costly to copy water buffer
-			- Option 2: 
-				- Points keep track of point's water going from 0.0 to > 0.0, at all possible
-				  avenues of change (LeakWater, BalancePressure, etc.)
-					- Need Points::mIsWetBuffer and mWetPointsCount, both set/incrd automagically when Points::AddWater is called
-				- Needs multiple ifs - one at each change - vs. a single if at Option1
+	- New sinking detection:
+		- Sinking detection is broken - it currently only considers total water that entered the ship, which comes proportionally to external
+		  water pressure; all this water could be confined to a tiny volume, and yet we trigger sinking
+		- Should be based off # of points underwater
+			- Could be a very-lo-freq step that just checks y's against water height at that point
+				- Use HighWatermark/LowWatermark
+			- Make music class with FadeToStop()
+				- Also call its ::Update(), which fades
+					- Called only for music's that we know are to fade
+				- Stop() stops immediately at any point
+
 
 	+ Did original game propagate water also through hull springs? YES. How did hull thin dividers work? THEY DIDN'T WORK
 	+ Add Point::Hull Characteristic, and don't leak/propagate(incl. gravitate) water if at least one of the two points is hull			
