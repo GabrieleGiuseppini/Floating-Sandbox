@@ -30,8 +30,7 @@ private:
         return std::to_string(v);
     }
 
-    template <>
-    static std::string ToString(float const & v)
+    std::string ToString(float const & v)
     {
         std::stringstream stream;
         stream << std::fixed << v;
@@ -54,7 +53,7 @@ public:
         // Find all texture parameters
         for (auto parameterIndex = 0; parameterIndex < mPrograms[programIndex].UniformLocations.size(); ++parameterIndex)
         {
-            Traits::ProgramParameterType parameter = static_cast<Traits::ProgramParameterType>(parameterIndex);
+            typename Traits::ProgramParameterType parameter = static_cast<typename Traits::ProgramParameterType>(parameterIndex);
 
             // See if it's a texture/sampler parameter
             if (parameter >= Traits::ProgramParameterType::_FirstTexture
@@ -153,7 +152,9 @@ public:
     inline void ActivateProgram()
     {
         uint32_t const programIndex = static_cast<uint32_t>(Program);
+
         glUseProgram(*(mPrograms[programIndex].OpenGLHandle));
+
         CheckOpenGLError();
     }
 
