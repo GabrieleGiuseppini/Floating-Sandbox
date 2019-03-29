@@ -65,7 +65,7 @@ if (MSVC)
 		Resources/Ship.ico)
 else (MSVC)
 	list(APPEND RESOURCE_FILES
-		Resources/Ship.xpm
+		Resources/Ship.xpm)
 endif (MSVC)
 
 source_group("Resources" FILES ${RESOURCE_FILES})
