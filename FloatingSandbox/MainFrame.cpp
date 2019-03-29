@@ -32,6 +32,7 @@
 #include <iomanip>
 #include <map>
 #include <sstream>
+#include <thread>
 
 const long ID_MAIN_CANVAS = wxNewId();
 
@@ -648,7 +649,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     while ((end - start) < std::chrono::milliseconds(500))
     {
         this->mMainApp->Yield();
-        Sleep(10);
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
         end = std::chrono::steady_clock::now();
     }
 

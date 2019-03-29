@@ -14,6 +14,7 @@
 
 #include <wx/wx.h>
 
+#include <condition_variable>
 #include <filesystem>
 #include <memory>
 #include <mutex>
