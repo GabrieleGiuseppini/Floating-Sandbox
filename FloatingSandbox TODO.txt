@@ -307,12 +307,14 @@ Render:
 
 		= Fix Linux build break
 			+ Do specialization outside of class
+			- Set /permissive- for all projects
 
 		= Change cover art to Logo2
 			+ About box image
 				+ And remove "Cover art" credit altogether
 			- Installer
 
+		- Try to build with Runtime Type Information disabled
 
 		- Also dry points should rot, albeit very slowly
 			- Could just add ~0.005 to p.water at RotPoints()
@@ -333,7 +335,7 @@ Render:
 			- And thus lower water intake threshold for air bubbles
 
 		- Batisphere with pumps and propulsion (*)
-			- First need to add a new material property - "rust_susceptibility"
+			- First need to add a new material property - "rust_susceptibility" - for tanks
 				- Use at RotPoints()
 				- Make "stainless" materials
 			- Switches (*)
@@ -974,7 +976,7 @@ Render:
 			- MainFrame menu pops it up and down (and MainFrame also pops it up automagically at first switch add, see above)
 				- Menu items to toggle it, enabled iff there's at least one switch
 			- Has control to hide it back (kinda like "close" button at top-right corner)
-			- SwitchControl: much like slider, button (w/two switch images) with label below
+			- ShipSwitchControl: much like slider, button (w/two switch images) with label below
 				- Switch event is via lambda
 				- Media:
 					- 2 images
@@ -1050,11 +1052,14 @@ Render:
 
 
 	- Propulsion
-		- New electrical element
-		- Electrical current controls force
+		- New electrical element - engine
+			- Publicized like switch, and switchboard shows slider
+				- Need custom-drawn ShipSliderControl control
+		- Electrical current (0.0 vs !=0.0) and slider ("engine speed" buffer) control force
 		- At ElectricalElements::Update(): if powered, apply force to point (4 materials for 4 directions)
 			- Requires forces rearc, with separate "Mechanical" and "Other" force buffers
 				- And smarter zeroing of Mechanical
+			- Or can we piggyback on the "non-spring" force buffer that we talk about at "force rearc" above?
 
 	- Test:
 		- Self-adjustment of kSpring and kDamp based off paper's formula (H and L bounds)
