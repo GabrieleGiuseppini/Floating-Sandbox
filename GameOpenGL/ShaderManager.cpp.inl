@@ -411,7 +411,7 @@ std::set<typename Traits::ProgramParameterType> ShaderManager<Traits>::ExtractSh
 {
     static std::regex ShaderParamNameRegex(R"!((//\s*)?\buniform\s+.*?\s+param([_a-zA-Z0-9]*);)!");
 
-    std::set<Traits::ProgramParameterType> shaderParameters;
+    std::set<typename Traits::ProgramParameterType> shaderParameters;
 
     std::string remainingSource = source;
     std::smatch match;
