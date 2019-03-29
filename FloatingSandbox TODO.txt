@@ -307,7 +307,7 @@ Render:
 
 		= Fix Linux build break
 			+ Do specialization outside of class
-			- Set /permissive- for all projects
+			+ Set /permissive- for all projects
 
 		= Change cover art to Logo2
 			+ About box image
@@ -453,11 +453,26 @@ Render:
 					- Magnifying: n = 1, dx > 1; GPU fills-in
 					- Minifying: n > 1, dx = n * resolution
 						- n chosen so that number of slices kinda like now, i.e. ~= 500
+		+ Initial FPS: 29.5/29.8
 		- Impl step 1: Ocean floor
 			- # of samples: try 1K first
+			- dx = MaxWorldWidth/NumberOfSamples
 			- Initialization:
-				- OceanBottom bitmap gets repeated/cut to # of samples at load time
+				- OceanBottom bitmap gets implicitly upsampled to 5000m if w < 5000
+					- If it looks bad, made it larger until definition is enough
+				- Then it gets cut/repeated to # of samples
+					- ImgX = (s * dx) % 5000
+					- Do interpolation
+				- Then sine/cosine is superimposed for each sample
+			- Sampling:
+				- Just find sample index and interpolate in-between
 			
+		- Impl step 2: World::UploadLandAndWater: use same spatial frequency as samples, so to avoid interpolating altogether
+			- Need first to always render ocean up to visibleWorldBottom, in which case the two are fully independent
+			- Separate uploads, managed by OceanSurface and OceanFloor
+				- Find first sample == sample immediately to the left of visibleWorld.Left
+				- Go ahead by N*dx, up to last sample == sample immediately to the right of visibleWorld.Right
+					- N > 1 iff zoomed out "enough"
 
 
 	= GPUCalc:
@@ -696,15 +711,6 @@ Render:
 
 
 - Gfx optimizations:
-
-	- World::UploadLandAndWater: use same spatial frequency as samples, so to avoid interpolating altogether
-		- Warning: requires same sampling frequency for both, as ocean quads require landY when land sticks out,
-		  unless we always render ocean up to visibleWorldBottom, in which case the two are fully independent;
-		  so assuming we go ahead with different sampling frequencies
-		- Separate uploads, managed by OceanSurface and OceanFloor
-			- Find first sample == sample immediately to the left of visibleWorld.Left
-			- Go ahead by N*dx, up to last sample == sample immediately to the right of visibleWorld.Right
-				- N > 1 iff zoomed out "enough"
 					
 	- Lights on the GPU with instanced drawing (*)
 		- We begin with doing light at vertex (Gouraud)
@@ -726,6 +732,15 @@ Render:
 
 
 - Gfx:
+	- Add world end
+		- Add texture (square,repeatable in both directions)
+		- RenderContext::init: 
+			- Don't load in atlas
+			- Make it repeated
+		- Final step @ RenderContext::Render
+			- Checks first which sides, if any, have to be drawn
+			- Renders quad for each side
+
 	+ Make font white inversely to ambient light
 
 	- Add SkyRenderMode (Flat, Gradient)

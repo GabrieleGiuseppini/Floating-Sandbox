@@ -142,7 +142,7 @@ struct GameParameters
 
     // Ephemeral particles
 
-    static constexpr ElementCount MaxEphemeralParticles = 512;
+    static constexpr ElementCount MaxEphemeralParticles = 4096;
 
     bool DoGenerateDebris;
     static constexpr size_t MinDebrisParticlesPerEvent = 4;
@@ -161,7 +161,7 @@ struct GameParameters
     static constexpr std::chrono::milliseconds MaxSparkleParticlesLifetime = std::chrono::milliseconds(500);
 
     bool DoGenerateAirBubbles;
-    static constexpr float CumulatedIntakenWaterThresholdForAirBubbles = 8.0f;
+    static constexpr float CumulatedIntakenWaterThresholdForAirBubbles = 7.0f;
     static constexpr float MinAirBubblesVortexAmplitude = 0.05f;
     static constexpr float MaxAirBubblesVortexAmplitude = 2.0f;
     static constexpr float MinAirBubblesVortexFrequency = 1.0f;
