@@ -319,6 +319,8 @@ Render:
 		- Also dry points should rot, albeit very slowly
 			- Could just add ~0.005 to p.water at RotPoints()
 
+		- Sea and Ocean Floor rearc(*)
+
 		- Heat and combustion (*)
 
 		- Instanced drawing for lights (*)
@@ -343,11 +345,6 @@ Render:
 			- Pumps (*)
 			- Propulsion (*)
 			- Batisphere ship
-
-
-		- About box: testers
-			- Dkuz The Fox
-			- Ask Pac0master
 
 	- 1.12.0
 
@@ -441,7 +438,7 @@ Render:
 			- See bounces from ocean floor
 				- The back-sending should be fine as it's based off real initial velocity TODO: double-check
 
-	- Take advantage of bounded-width world
+	- Sea and Ocean Floor: take advantage of bounded-width world (*)
 		- Main concept:
 			- OceanSurface and OceanFloor contain samples for the entire width
 				- Have to find <#Samples==BufferWidth, MaxWorldWidth> pair that we are comfortable
@@ -451,12 +448,16 @@ Render:
 						- Next dx = W/S @ W=10K => ~80k samples
 			- Not anymore periodic, hence no mod anymore to get water height and ocean floor
 			- Only the number of samples dictates final definition of surface and floor
-			- OceanBottom bitmap gets up/down interpolated to # of samples at load time
 			- Uploading is by sample
 				- Loop uploads S(i0+ni), with i0=left start, n depending on zoom
 					- Magnifying: n = 1, dx > 1; GPU fills-in
 					- Minifying: n > 1, dx = n * resolution
 						- n chosen so that number of slices kinda like now, i.e. ~= 500
+		- Impl step 1: Ocean floor
+			- # of samples: try 1K first
+			- Initialization:
+				- OceanBottom bitmap gets repeated/cut to # of samples at load time
+			
 
 
 	= GPUCalc:

@@ -30,11 +30,6 @@ public:
 
     void Update(GameParameters const & gameParameters);
 
-    size_t GetSamplesCount() const
-    {
-        return SamplesCount;
-    }
-
     float GetFloorHeightAt(float x) const
     {
         // Fractional absolute index in the (infinite) sample array

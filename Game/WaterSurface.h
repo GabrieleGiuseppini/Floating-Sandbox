@@ -26,11 +26,6 @@ public:
         Wind const & wind,
         GameParameters const & gameParameters);
 
-    size_t GetSamplesCount() const
-    {
-        return SamplesCount;
-    }
-
     float GetWaterHeightAt(float x) const
     {
         // Fractional absolute index in the (infinite) sample array
