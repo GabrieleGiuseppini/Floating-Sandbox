@@ -52,7 +52,6 @@ target_link_libraries (UnitTests
 	gtest_main
 	${ADDITIONAL_LIBRARIES})
 
-
 #
 # Set VS properties
 #

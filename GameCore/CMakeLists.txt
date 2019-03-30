@@ -56,3 +56,12 @@ target_include_directories(GameCoreLib INTERFACE ..)
 
 target_link_libraries (GameCoreLib
 	${ADDITIONAL_LIBRARIES})
+
+if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+
+	target_link_libraries (GameCoreLib
+		"stdc++fs" 
+		"c++experimental")
+
+endif()
+

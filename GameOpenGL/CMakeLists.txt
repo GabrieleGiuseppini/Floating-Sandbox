@@ -30,8 +30,9 @@ target_link_libraries (GameOpenGLLib
 	${OPENGL_LIBRARIES}
 	${ADDITIONAL_LIBRARIES})
 
+if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 
-if (UNIX)
-	target_link_libraries(GameOpenGLLib
+	target_link_libraries (GameOpenGLLib
 		${CMAKE_DL_LIBS})
-endif (UNIX)
+
+endif()
