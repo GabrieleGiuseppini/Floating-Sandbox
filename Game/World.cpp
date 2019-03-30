@@ -406,7 +406,8 @@ void World::Render(
     // need the ocean stencil)
     //
 
-    UploadLandAndOcean(gameParameters, renderContext);
+    mOceanFloor.Upload(gameParameters, renderContext);
+    mWaterSurface.Upload(gameParameters, renderContext);
 
 
     //
@@ -470,31 +471,5 @@ void World::Render(
 ///////////////////////////////////////////////////////////////////////////////////
 // Private Helpers
 ///////////////////////////////////////////////////////////////////////////////////
-
-void World::UploadLandAndOcean(
-    GameParameters const & gameParameters,
-    Render::RenderContext & renderContext) const
-{
-    size_t constexpr SlicesCount = 500;
-
-    float const visibleWorldWidth = renderContext.GetVisibleWorldWidth();
-    float const sliceWidth = visibleWorldWidth / static_cast<float>(SlicesCount);
-    float sliceX = renderContext.GetCameraWorldPosition().x - (visibleWorldWidth / 2.0f);
-
-    renderContext.UploadLandAndOceanStart(SlicesCount);
-
-    // We do one extra iteration as the number of slices is the number of quads, and the last vertical
-    // quad side must be at the end of the width
-    for (size_t i = 0; i <= SlicesCount; ++i, sliceX += sliceWidth)
-    {
-        renderContext.UploadLandAndOcean(
-            sliceX,
-            mOceanFloor.GetFloorHeightAt(sliceX),
-            mWaterSurface.GetWaterHeightAt(sliceX),
-            gameParameters.SeaDepth);
-    }
-
-    renderContext.UploadLandAndOceanEnd();
-}
 
 }

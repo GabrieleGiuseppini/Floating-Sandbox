@@ -21,8 +21,10 @@ RenderContext::RenderContext(
     , mCloudQuadBuffer()
     , mCloudVBO()
     , mLandSegmentBuffer()
+    , mLandSegmentBufferAllocatedSize(0u)
     , mLandVBO()
     , mOceanSegmentBuffer()
+    , mOceanSegmentBufferAllocatedSize(0u)
     , mOceanVBO()
     , mCrossOfLightVertexBuffer()
     , mCrossOfLightVBO()
@@ -709,7 +711,7 @@ void RenderContext::RenderSkyEnd()
     glDisable(GL_STENCIL_TEST);
 }
 
-void RenderContext::UploadLandAndOceanStart(size_t slices)
+void RenderContext::UploadLandStart(size_t slices)
 {
     //
     // Prepare land segment buffer
@@ -717,42 +719,28 @@ void RenderContext::UploadLandAndOceanStart(size_t slices)
 
     glBindBuffer(GL_ARRAY_BUFFER, *mLandVBO);
 
-    glBufferData(GL_ARRAY_BUFFER, (slices + 1) * sizeof(LandSegment), nullptr, GL_STREAM_DRAW);
-    CheckOpenGLError();
+    if (slices + 1 != mLandSegmentBufferAllocatedSize)
+    {
+        glBufferData(GL_ARRAY_BUFFER, (slices + 1) * sizeof(LandSegment), nullptr, GL_STREAM_DRAW);
+        CheckOpenGLError();
+
+        mLandSegmentBufferAllocatedSize = slices + 1;
+    }
 
     mLandSegmentBuffer.map(slices + 1);
-
-
-    //
-    // Prepare ocean segment buffer
-    //
-
-    glBindBuffer(GL_ARRAY_BUFFER, *mOceanVBO);
-
-    glBufferData(GL_ARRAY_BUFFER, (slices + 1) * sizeof(OceanSegment), nullptr, GL_STREAM_DRAW);
-    CheckOpenGLError();
-
-    mOceanSegmentBuffer.map(slices + 1);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void RenderContext::UploadLandAndOceanEnd()
+void RenderContext::UploadLandEnd()
 {
     //
     // Upload land segment buffer
     //
 
     glBindBuffer(GL_ARRAY_BUFFER, *mLandVBO);
+
     mLandSegmentBuffer.unmap();
-
-
-    //
-    // Upload ocean segment buffer
-    //
-
-    glBindBuffer(GL_ARRAY_BUFFER, *mOceanVBO);
-    mOceanSegmentBuffer.unmap();
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
@@ -782,6 +770,40 @@ void RenderContext::RenderLand()
     glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mLandSegmentBuffer.size()));
 
     glBindVertexArray(0);
+}
+
+void RenderContext::UploadOceanStart(size_t slices)
+{
+    //
+    // Prepare ocean segment buffer
+    //
+
+    glBindBuffer(GL_ARRAY_BUFFER, *mOceanVBO);
+
+    if (slices + 1 != mOceanSegmentBufferAllocatedSize)
+    {
+        glBufferData(GL_ARRAY_BUFFER, (slices + 1) * sizeof(OceanSegment), nullptr, GL_STREAM_DRAW);
+        CheckOpenGLError();
+
+        mOceanSegmentBufferAllocatedSize = slices + 1;
+    }
+
+    mOceanSegmentBuffer.map(slices + 1);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void RenderContext::UploadOceanEnd()
+{
+    //
+    // Upload ocean segment buffer
+    //
+
+    glBindBuffer(GL_ARRAY_BUFFER, *mOceanVBO);
+
+    mOceanSegmentBuffer.unmap();
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void RenderContext::RenderOcean()

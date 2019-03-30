@@ -67,4 +67,29 @@ void WaterSurface::Update(
     mSamples[SamplesCount - 1].SampleValuePlusOneMinusSampleValue = mSamples[0].SampleValue - previousSampleValue;
 }
 
+void WaterSurface::Upload(
+    GameParameters const & gameParameters,
+    Render::RenderContext & renderContext) const
+{
+    size_t constexpr SlicesCount = 500;
+
+    float const visibleWorldWidth = renderContext.GetVisibleWorldWidth();
+    float const sliceWidth = visibleWorldWidth / static_cast<float>(SlicesCount);
+    float sliceX = renderContext.GetCameraWorldPosition().x - (visibleWorldWidth / 2.0f);
+
+    renderContext.UploadOceanStart(SlicesCount);
+
+    // We do one extra iteration as the number of slices is the number of quads, and the last vertical
+    // quad side must be at the end of the width
+    for (size_t i = 0; i <= SlicesCount; ++i, sliceX += sliceWidth)
+    {
+        renderContext.UploadOcean(
+            sliceX,
+            GetWaterHeightAt(sliceX),
+            gameParameters.SeaDepth);
+    }
+
+    renderContext.UploadOceanEnd();
+}
+
 }

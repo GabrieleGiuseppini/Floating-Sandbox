@@ -479,15 +479,15 @@ Render:
 				+ OceanFloor bitmap larger, not multiple (say, 700) - w/recongizable pattern
 			
 		= Impl step 2: Render upload: use same spatial frequency as samples, so to avoid interpolating altogether
-			- Need first to always render ocean up to visibleWorldBottom, in which case the two are fully independent
-				- Test afterwards
-			- Break World::UploadLandAndWater into OceanFloor::Upload(.) and WaterSurface::Upload(.)
-			- OceanFloor::Upload(.)
+			+ Need first to always render ocean up to visibleWorldBottom, in which case the two are fully independent
+				+ Test afterwards
+			+ Break World::UploadLandAndWater into OceanFloor::Upload(.) and WaterSurface::Upload(.)
+			= OceanFloor::Upload(.)
 				- Find first sample == sample immediately to the left of visibleWorld.Left
 				- Go ahead by N*dx, up to last sample == sample immediately to the right of visibleWorld.Right
 					- N > 1 iff zoomed out "enough"
-			- WaterSurface::Upload(.)
-				- For now, like it was at World
+			+ WaterSurface::Upload(.)
+				+ For now, like it was at World
 
 		- Impl step 3: TODO
 

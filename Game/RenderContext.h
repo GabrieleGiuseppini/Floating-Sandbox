@@ -478,16 +478,14 @@ public:
 
 
     //
-    // Land and Ocean
+    // Land
     //
 
-    void UploadLandAndOceanStart(size_t slices);
+    void UploadLandStart(size_t slices);
 
-    inline void UploadLandAndOcean(
+    inline void UploadLand(
         float x,
-        float yLand,
-        float yOcean,
-        float oceanDepth)
+        float yLand)
     {
         float const yVisibleWorldBottom = mViewModel.GetVisibleWorldBottomRight().y;
 
@@ -501,7 +499,25 @@ public:
         landSegment.y1 = yLand > yVisibleWorldBottom ? yLand : yVisibleWorldBottom; // Clamp top up to visible bottom
         landSegment.x2 = x;
         landSegment.y2 = yVisibleWorldBottom;
+   }
 
+    void UploadLandEnd();
+
+    void RenderLand();
+
+
+    //
+    // Ocean
+    //
+
+    void UploadOceanStart(size_t slices);
+
+    inline void UploadOcean(
+        float x,
+        float yOcean,
+        float oceanDepth)
+    {
+        float const yVisibleWorldBottom = mViewModel.GetVisibleWorldBottomRight().y;
 
         //
         // Store ocean element
@@ -514,7 +530,7 @@ public:
         oceanSegment.y1 = oceanSegmentY1;
 
         oceanSegment.x2 = x;
-        float const oceanSegmentY2 = yOcean > yLand ? yLand : yVisibleWorldBottom; // If land sticks out, go down to visible bottom (land is drawn last)
+        float const oceanSegmentY2 = yVisibleWorldBottom;
         oceanSegment.y2 = oceanSegmentY2;
 
         switch (mOceanRenderMode)
@@ -548,11 +564,9 @@ public:
                 break;
             }
         }
-   }
+    }
 
-    void UploadLandAndOceanEnd();
-
-    void RenderLand();
+    void UploadOceanEnd();
 
     void RenderOcean();
 
@@ -1107,9 +1121,11 @@ private:
     GameOpenGLVBO mCloudVBO;
 
     GameOpenGLMappedBuffer<LandSegment, GL_ARRAY_BUFFER> mLandSegmentBuffer;
+    size_t mLandSegmentBufferAllocatedSize;
     GameOpenGLVBO mLandVBO;
 
     GameOpenGLMappedBuffer<OceanSegment, GL_ARRAY_BUFFER> mOceanSegmentBuffer;
+    size_t mOceanSegmentBufferAllocatedSize;
     GameOpenGLVBO mOceanVBO;
 
     std::vector<CrossOfLightVertex> mCrossOfLightVertexBuffer;

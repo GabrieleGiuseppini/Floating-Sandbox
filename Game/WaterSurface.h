@@ -26,6 +26,12 @@ public:
         Wind const & wind,
         GameParameters const & gameParameters);
 
+    void Upload(
+        GameParameters const & gameParameters,
+        Render::RenderContext & renderContext) const;
+
+public:
+
     float GetWaterHeightAt(float x) const
     {
         // Fractional absolute index in the (infinite) sample array
@@ -38,7 +44,7 @@ public:
         int64_t sampleIndexI = absoluteSampleIndexI % SamplesCount;
 
         // Fractional part within sample index and the next sample index
-        float sampleIndexDx= absoluteSampleIndexF - absoluteSampleIndexI;
+        float sampleIndexDx = absoluteSampleIndexF - absoluteSampleIndexI;
 
         if (x < 0.0f)
         {
@@ -51,7 +57,7 @@ public:
         assert(sampleIndexDx >= 0.0f && sampleIndexDx <= 1.0f);
 
         return mSamples[sampleIndexI].SampleValue
-             + mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
+            + mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
     }
 
 private:

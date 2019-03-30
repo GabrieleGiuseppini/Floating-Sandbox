@@ -77,6 +77,89 @@ OceanFloor::OceanFloor(ResourceLoader & resourceLoader)
     mBumpMapSamples[SamplesCount] = mBumpMapSamples[SamplesCount - 1];
 }
 
+void OceanFloor::Upload(
+    GameParameters const & /*gameParameters*/,
+    Render::RenderContext & renderContext) const
+{
+    size_t constexpr SlicesCount = 500;
+
+    float const visibleWorldWidth = renderContext.GetVisibleWorldWidth();
+    float const sliceWidth = visibleWorldWidth / static_cast<float>(SlicesCount);
+    float sliceX = renderContext.GetCameraWorldPosition().x - (visibleWorldWidth / 2.0f);
+
+    renderContext.UploadLandStart(SlicesCount);
+
+    // We do one extra iteration as the number of slices is the number of quads, and the last vertical
+    // quad side must be at the end of the width
+    for (size_t i = 0; i <= SlicesCount; ++i, sliceX += sliceWidth)
+    {
+        renderContext.UploadLand(
+            sliceX,
+            GetFloorHeightAt(sliceX));
+    }
+
+    renderContext.UploadLandEnd();
+}
+
+void OceanFloor::Update(GameParameters const & gameParameters)
+{
+    if (gameParameters.SeaDepth != mCurrentSeaDepth
+        || gameParameters.OceanFloorBumpiness != mCurrentOceanFloorBumpiness
+        || gameParameters.OceanFloorDetailAmplification != mCurrentOceanFloorDetailAmplification)
+    {
+        // Frequencies of bump sine components
+        static constexpr float BumpFrequency1 = 0.005f;
+        static constexpr float BumpFrequency2 = 0.015f;
+        static constexpr float BumpFrequency3 = 0.001f;
+
+        float const seaDepth = gameParameters.SeaDepth;
+        float const oceanFloorBumpiness = gameParameters.OceanFloorBumpiness;
+        float const oceanFloorDetailAmplification = gameParameters.OceanFloorDetailAmplification;
+
+        // sample index = 0
+        float previousSampleValue;
+        {
+            previousSampleValue =
+                -seaDepth
+                + 0.0f
+                + mBumpMapSamples[0] * oceanFloorDetailAmplification;
+
+            mSamples[0].SampleValue = previousSampleValue;
+        }
+
+        // Calulate samples = world y of ocean floor at the sample's x
+        // sample index = 1...SamplesCount-1
+        float x = Dx;
+        for (int64_t i = 1; i < SamplesCount; i++, x += Dx)
+        {
+            float const c1 = sinf(x * BumpFrequency1) * 10.f;
+            float const c2 = sinf(x * BumpFrequency2) * 6.f;
+            float const c3 = sinf(x * BumpFrequency3) * 45.f;
+            float const sampleValue =
+                -seaDepth
+                + (c1 + c2 - c3) * oceanFloorBumpiness
+                + mBumpMapSamples[i] * oceanFloorDetailAmplification;
+
+            mSamples[i].SampleValue = sampleValue;
+            mSamples[i - 1].SampleValuePlusOneMinusSampleValue = sampleValue - previousSampleValue;
+
+            previousSampleValue = sampleValue;
+        }
+
+        // Populate last delta (extra sample has same value as this sample)
+        mSamples[SamplesCount - 1].SampleValuePlusOneMinusSampleValue = 0.0f;
+
+        // Populate extra sample - same value as last sample
+        mSamples[SamplesCount].SampleValue = mSamples[SamplesCount - 1].SampleValue;
+        mSamples[SamplesCount].SampleValuePlusOneMinusSampleValue = 0.0f; // Never used
+
+        // Remember current game parameters
+        mCurrentSeaDepth = gameParameters.SeaDepth;
+        mCurrentOceanFloorBumpiness = gameParameters.OceanFloorBumpiness;
+        mCurrentOceanFloorDetailAmplification = gameParameters.OceanFloorDetailAmplification;
+    }
+}
+
 bool OceanFloor::AdjustTo(
     float x1,
     float targetY1,
@@ -138,65 +221,6 @@ bool OceanFloor::AdjustTo(
     }
 
     return hasAdjusted;
-}
-
-void OceanFloor::Update(GameParameters const & gameParameters)
-{
-    if (gameParameters.SeaDepth != mCurrentSeaDepth
-        || gameParameters.OceanFloorBumpiness != mCurrentOceanFloorBumpiness
-        || gameParameters.OceanFloorDetailAmplification != mCurrentOceanFloorDetailAmplification)
-    {
-        // Frequencies of bump sine components
-        static constexpr float BumpFrequency1 = 0.005f;
-        static constexpr float BumpFrequency2 = 0.015f;
-        static constexpr float BumpFrequency3 = 0.001f;
-
-        float const seaDepth = gameParameters.SeaDepth;
-        float const oceanFloorBumpiness = gameParameters.OceanFloorBumpiness;
-        float const oceanFloorDetailAmplification = gameParameters.OceanFloorDetailAmplification;
-
-        // sample index = 0
-        float previousSampleValue;
-        {
-            previousSampleValue =
-                -seaDepth
-                + 0.0f
-                + mBumpMapSamples[0] * oceanFloorDetailAmplification;
-
-            mSamples[0].SampleValue = previousSampleValue;
-        }
-
-        // Calulate samples = world y of ocean floor at the sample's x
-        // sample index = 1...SamplesCount-1
-        float x = Dx;
-        for (int64_t i = 1; i < SamplesCount; i++, x += Dx)
-        {
-            float const c1 = sinf(x * BumpFrequency1) * 10.f;
-            float const c2 = sinf(x * BumpFrequency2) * 6.f;
-            float const c3 = sinf(x * BumpFrequency3) * 45.f;
-            float const sampleValue =
-                -seaDepth
-                + (c1 + c2 - c3) * oceanFloorBumpiness
-                + mBumpMapSamples[i] * oceanFloorDetailAmplification;
-
-            mSamples[i].SampleValue = sampleValue;
-            mSamples[i - 1].SampleValuePlusOneMinusSampleValue = sampleValue - previousSampleValue;
-
-            previousSampleValue = sampleValue;
-        }
-
-        // Populate last delta (extra sample has same value as this sample)
-        mSamples[SamplesCount - 1].SampleValuePlusOneMinusSampleValue = 0.0f;
-
-        // Populate extra sample - same value as last sample
-        mSamples[SamplesCount].SampleValue = mSamples[SamplesCount - 1].SampleValue;
-        mSamples[SamplesCount].SampleValuePlusOneMinusSampleValue = 0.0f; // Never used
-
-        // Remember current game parameters
-        mCurrentSeaDepth = gameParameters.SeaDepth;
-        mCurrentOceanFloorBumpiness = gameParameters.OceanFloorBumpiness;
-        mCurrentOceanFloorDetailAmplification = gameParameters.OceanFloorDetailAmplification;
-    }
 }
 
 }

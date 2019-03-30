@@ -24,13 +24,19 @@ public:
 
     OceanFloor(ResourceLoader & resourceLoader);
 
+    void Update(GameParameters const & gameParameters);
+
+    void Upload(
+        GameParameters const & gameParameters,
+        Render::RenderContext & renderContext) const;
+
+public:
+
     bool AdjustTo(
         float x1,
         float targetY1,
         float x2,
         float targetY2);
-
-    void Update(GameParameters const & gameParameters);
 
     float GetFloorHeightAt(float x) const
     {

@@ -155,12 +155,6 @@ public:
 
 private:
 
-    void UploadLandAndOcean(
-        GameParameters const & gameParameters,
-        Render::RenderContext & renderContext) const;
-
-private:
-
     // Repository
     std::vector<std::unique_ptr<Ship>> mAllShips;
     Stars mStars;
