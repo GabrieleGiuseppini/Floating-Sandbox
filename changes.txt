@@ -5,6 +5,7 @@
 	- Floating Sandbox now supports some graphic cards which were previously only displaying clouds and water but no ship!
 - Rectified simulation instability that was caused by square water drag law at very high speeds 
  (see https://gabrielegiuseppini.wordpress.com/2019/03/17/euler-fights-with-square-drag/)
+- The Floating Sandbox world is not anymore unbounded; this has minimal consequences in this version, but it will be very important for future features and optimizations!
 - Ships now may carry a description which is optionally shown when they are loaded
 - Quite a few new ships!
 - Improved control of stress sounds - less of a cacophony now

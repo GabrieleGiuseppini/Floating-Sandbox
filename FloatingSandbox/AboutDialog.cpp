@@ -121,7 +121,8 @@ AboutDialog::AboutDialog(
 
         {"Chief ship literature officer:", "Maximord - https://discordapp.com/" },
 
-        {"Testing:\t\t", "Pac0master" },
+        {"Testing:\t\t", "Pac0master - https://discordapp.com/" },
+        {"\t\t\t\t", "Maximord - https://discordapp.com/" },
 
         {"", ""},
 
