@@ -454,7 +454,7 @@ Render:
 					- Minifying: n > 1, dx = n * resolution
 						- n chosen so that number of slices kinda like now, i.e. ~= 500
 		+ Initial FPS: 29.5/29.8
-		= Impl step 1: Ocean floor
+		+ Impl step 1: Ocean floor
 			+ # of samples: try 2K first
 			+ dx = MaxWorldWidth/NumberOfSamples
 			+ Initialization:
@@ -474,11 +474,11 @@ Render:
 						+ Delta is zero though
 					+ Remove change at Ship
 				+ Test last ocean floor sample, again
-			= Since you're here, change AdjustTerrain tool to do trajectory
-			- Test:
-				- OceanFloor bitmap larger, not multiple (say, 700) - w/recongizable pattern
+			+ Since you're here, change AdjustTerrain tool to do trajectory
+			+ Test:
+				+ OceanFloor bitmap larger, not multiple (say, 700) - w/recongizable pattern
 			
-		- Impl step 2: Render upload: use same spatial frequency as samples, so to avoid interpolating altogether
+		= Impl step 2: Render upload: use same spatial frequency as samples, so to avoid interpolating altogether
 			- Need first to always render ocean up to visibleWorldBottom, in which case the two are fully independent
 				- Test afterwards
 			- Break World::UploadLandAndWater into OceanFloor::Upload(.) and WaterSurface::Upload(.)
