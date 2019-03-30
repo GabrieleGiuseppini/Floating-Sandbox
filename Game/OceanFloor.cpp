@@ -121,7 +121,7 @@ bool OceanFloor::AdjustTo(
 
     bool hasAdjusted = false;
     float x = leftX;
-    for (int64_t s = sampleIndex; x <= rightX; x += Dx)
+    for (int64_t s = sampleIndex; x <= rightX; ++s, x += Dx)
     {
         // Update sample value
         float newSampleValue = leftTargetY + slopeY * (x - leftX);
@@ -129,12 +129,12 @@ bool OceanFloor::AdjustTo(
         mSamples[s].SampleValue = newSampleValue;
 
         // Update previous sample's delta
-        if (sampleIndex > 0) // No point in updating sample[-1]
-            mSamples[sampleIndex - 1].SampleValuePlusOneMinusSampleValue = newSampleValue - mSamples[sampleIndex - 1].SampleValue;
+        if (s > 0) // No point in updating sample[-1]
+            mSamples[s - 1].SampleValuePlusOneMinusSampleValue = newSampleValue - mSamples[s - 1].SampleValue;
 
         // Update this sample's delta
-        if (sampleIndex < SamplesCount) // No point in updating delta of extra sample
-            mSamples[sampleIndex].SampleValuePlusOneMinusSampleValue = mSamples[sampleIndex + 1].SampleValue - newSampleValue;
+        if (s < SamplesCount) // No point in updating delta of extra sample
+            mSamples[s].SampleValuePlusOneMinusSampleValue = mSamples[s + 1].SampleValue - newSampleValue;
     }
 
     return hasAdjusted;
