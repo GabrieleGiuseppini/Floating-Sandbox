@@ -29,3 +29,9 @@ target_link_libraries (GameOpenGLLib
 	GameCoreLib
 	${OPENGL_LIBRARIES}
 	${ADDITIONAL_LIBRARIES})
+
+
+if (UNIX)
+	target_link_libraries(GameOpenGLLib
+		${CMAKE_DL_LIBS})
+endif (UNIX)
