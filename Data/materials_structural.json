@@ -2164,7 +2164,7 @@
         "render_color": "#A21000", 
         "sound_type": "Metal", 
         "stiffness": 1.0, 
-        "strength": 0.07,
+        "strength": 0.05,
         "template": {
             "column": "0|Double-Bottom Steel", 
             "row": "90|Double-Bottom"
@@ -2184,7 +2184,7 @@
         "render_color": "#842005", 
         "sound_type": "Metal", 
         "stiffness": 1.0, 
-        "strength": 0.11, 
+        "strength": 0.10, 
         "template": {
             "column": "1|Double-Bottom Titanium", 
             "row": "90|Double-Bottom"
@@ -2204,7 +2204,7 @@
         "render_color": "#7E0C00", 
         "sound_type": "Metal", 
         "stiffness": 1.0, 
-        "strength": 0.7, 
+        "strength": 0.6, 
         "template": {
             "column": "2|Double-Bottom Iron", 
             "row": "90|Double-Bottom"

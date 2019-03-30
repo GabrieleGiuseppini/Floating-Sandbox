@@ -121,6 +121,26 @@ public:
         return mViewModel.GetVisibleWorldHeight();
     }
 
+    float GetVisibleWorldLeft() const
+    {
+        return mViewModel.GetVisibleWorldTopLeft().x;
+    }
+
+    float GetVisibleWorldRight() const
+    {
+        return mViewModel.GetVisibleWorldBottomRight().x;
+    }
+
+    float GetVisibleWorldTop() const
+    {
+        return mViewModel.GetVisibleWorldTopLeft().y;
+    }
+
+    float GetVisibleWorldBottom() const
+    {
+        return mViewModel.GetVisibleWorldBottomRight().y;
+    }
+
     //
 
     rgbColor const & GetFlatSkyColor() const
@@ -517,8 +537,6 @@ public:
         float yOcean,
         float oceanDepth)
     {
-        float const yVisibleWorldBottom = mViewModel.GetVisibleWorldBottomRight().y;
-
         //
         // Store ocean element
         //
@@ -530,7 +548,7 @@ public:
         oceanSegment.y1 = oceanSegmentY1;
 
         oceanSegment.x2 = x;
-        float const oceanSegmentY2 = yVisibleWorldBottom;
+        float const oceanSegmentY2 = -GameParameters::HalfMaxWorldHeight;
         oceanSegment.y2 = oceanSegmentY2;
 
         switch (mOceanRenderMode)

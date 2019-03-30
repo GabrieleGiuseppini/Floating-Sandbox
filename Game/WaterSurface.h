@@ -38,7 +38,7 @@ public:
         float const absoluteSampleIndexF = x / Dx;
 
         // Integral part
-        int64_t absoluteSampleIndexI = FastFloorInt64(absoluteSampleIndexF);
+        int64_t absoluteSampleIndexI = FastTruncateInt64(absoluteSampleIndexF);
 
         // Integral part - sample
         int64_t sampleIndexI = absoluteSampleIndexI % SamplesCount;

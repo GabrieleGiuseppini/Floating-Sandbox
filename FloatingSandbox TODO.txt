@@ -318,8 +318,9 @@ Render:
 
 		- Also dry points should rot, albeit very slowly
 			- Could just add ~0.005 to p.water at RotPoints()
+			- However this would also apply to overwater points, so we'd have to do it for underwater points only
 
-		- Sea and Ocean Floor rearc(*)
+		= Sea and Ocean Floor rearc(*)
 
 		- Heat and combustion (*)
 
@@ -483,9 +484,10 @@ Render:
 				+ Test afterwards
 			+ Break World::UploadLandAndWater into OceanFloor::Upload(.) and WaterSurface::Upload(.)
 			= OceanFloor::Upload(.)
-				- Find first sample == sample immediately to the left of visibleWorld.Left
-				- Go ahead by N*dx, up to last sample == sample immediately to the right of visibleWorld.Right
-					- N > 1 iff zoomed out "enough"
+				= Find first sample == sample immediately to the left of visibleWorld.Left
+				= Magnifying: n = 1, dx > 1; GPU fills-in
+				- Minifying: n > 1, dx = n * resolution
+					- n chosen so that number of slices kinda like now, i.e. ~= 500
 			+ WaterSurface::Upload(.)
 				+ For now, like it was at World
 

@@ -45,10 +45,10 @@ public:
         //
 
         // Fractional index in the sample array
-        float const sampleIndexF = (x + GameParameters::MaxWorldWidth/2.0f) / Dx;
+        float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth) / Dx;
 
         // Integral part
-        int64_t sampleIndexI = FastFloorInt64(sampleIndexF);
+        int64_t sampleIndexI = FastTruncateInt64(sampleIndexF);
 
         // Fractional part within sample index and the next sample index
         float sampleIndexDx = sampleIndexF - sampleIndexI;

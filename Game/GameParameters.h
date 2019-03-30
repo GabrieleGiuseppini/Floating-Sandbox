@@ -260,7 +260,10 @@ struct GameParameters
     //
 
     static constexpr float MaxWorldWidth = 10000.0f;
+    static constexpr float HalfMaxWorldWidth = MaxWorldWidth / 2.0f;
+
     static constexpr float MaxWorldHeight = 40000.0f;
+    static constexpr float HalfMaxWorldHeight = MaxWorldHeight / 2.0f;
 
     static_assert(MaxWorldHeight >= MaxSeaDepth * 2);
 
