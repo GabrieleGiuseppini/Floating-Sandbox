@@ -78,41 +78,66 @@ OceanFloor::OceanFloor(ResourceLoader & resourceLoader)
 }
 
 bool OceanFloor::AdjustTo(
-    float x,
-    float targetY)
+    float x1,
+    float targetY1,
+    float x2,
+    float targetY2)
 {
+    float leftX, leftTargetY;
+    float rightX, rightTargetY;
+    if (x1 <= x2)
+    {
+        leftX = x1;
+        leftTargetY = targetY1;
+        rightX = x2;
+        rightTargetY = targetY2;
+    }
+    else
+    {
+        leftX = x2;
+        leftTargetY = targetY2;
+        rightX = x1;
+        rightTargetY = targetY1;
+    }
+
+    float slopeY = (leftX != rightX)
+        ? (rightTargetY - leftTargetY) / (rightX - leftX)
+        : 1.0f;
+
     //
-    // Calculate sample index, minimizing error
+    // Calculate left first sample index, minimizing error
     //
 
-    float const sampleIndexF = (x + GameParameters::MaxWorldWidth / 2.0f) / Dx;
+    float const sampleIndexF = (leftX + GameParameters::MaxWorldWidth / 2.0f) / Dx;
 
-    int64_t sampleIndex =
-        (sampleIndexF >= 0.0f)
-        ? FastFloorInt64(sampleIndexF + 0.5f)
-        : FastFloorInt64(sampleIndexF - 0.5f);
+    int64_t sampleIndex = FastFloorInt64(sampleIndexF + 0.5f);
 
     assert(sampleIndex >= 0 && sampleIndex <= SamplesCount);
 
 
     //
-    // Update values
+    // Update values for all samples in the trajectory
     //
 
-    float const oldValue = mSamples[sampleIndex].SampleValue;
+    bool hasAdjusted = false;
+    float x = leftX;
+    for (int64_t s = sampleIndex; x <= rightX; x += Dx)
+    {
+        // Update sample value
+        float newSampleValue = leftTargetY + slopeY * (x - leftX);
+        hasAdjusted |= abs(newSampleValue - mSamples[s].SampleValue) > 0.2f;
+        mSamples[s].SampleValue = newSampleValue;
 
-    // Update sample value
-    mSamples[sampleIndex].SampleValue = targetY;
+        // Update previous sample's delta
+        if (sampleIndex > 0) // No point in updating sample[-1]
+            mSamples[sampleIndex - 1].SampleValuePlusOneMinusSampleValue = newSampleValue - mSamples[sampleIndex - 1].SampleValue;
 
-    // Update previous sample's delta
-    if (sampleIndex > 0) // No point in updating sample[-1]
-        mSamples[sampleIndex - 1].SampleValuePlusOneMinusSampleValue = targetY - mSamples[sampleIndex - 1].SampleValue;
+        // Update this sample's delta
+        if (sampleIndex < SamplesCount) // No point in updating delta of extra sample
+            mSamples[sampleIndex].SampleValuePlusOneMinusSampleValue = mSamples[sampleIndex + 1].SampleValue - newSampleValue;
+    }
 
-    // Update this sample's delta
-    if (sampleIndex < SamplesCount) // No point in updating delta of extra sample
-        mSamples[sampleIndex].SampleValuePlusOneMinusSampleValue = mSamples[sampleIndex + 1].SampleValue - targetY;
-
-    return abs(targetY - oldValue) > 0.2f;
+    return hasAdjusted;
 }
 
 void OceanFloor::Update(GameParameters const & gameParameters)

@@ -305,10 +305,12 @@ void World::DetonateAntiMatterBombs()
 }
 
 bool World::AdjustOceanFloorTo(
-    float x,
-    float targetY)
+    float x1,
+    float targetY1,
+    float x2,
+    float targetY2)
 {
-    return mOceanFloor.AdjustTo(x, targetY);
+    return mOceanFloor.AdjustTo(x1, targetY1, x2, targetY2);
 }
 
 bool World::ScrubThrough(

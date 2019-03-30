@@ -1377,7 +1377,10 @@ public:
 
     virtual void Initialize(InputState const & inputState) override
     {
-        mIsEngaged = inputState.IsLeftMouseDown;
+        if (inputState.IsLeftMouseDown)
+            mCurrentTrajectoryPreviousPosition = inputState.MousePosition;
+        else
+            mCurrentTrajectoryPreviousPosition.reset();
     }
 
     virtual void Deinitialize(InputState const & /*inputState*/) override
@@ -1386,27 +1389,32 @@ public:
 
     virtual void Update(InputState const & inputState) override
     {
-        bool isEngaged;
+        bool wasEngaged = !!mCurrentTrajectoryPreviousPosition;
+
         if (inputState.IsLeftMouseDown)
         {
-            bool isAdjusted = mGameController->AdjustOceanFloorTo(inputState.MousePosition);
+            if (!mCurrentTrajectoryPreviousPosition)
+                mCurrentTrajectoryPreviousPosition = inputState.MousePosition;
+
+            bool isAdjusted = mGameController->AdjustOceanFloorTo(
+                *mCurrentTrajectoryPreviousPosition,
+                inputState.MousePosition);
 
             if (isAdjusted)
             {
                 mSoundController->PlayTerrainAdjustSound();
             }
 
-            isEngaged = true;
+            mCurrentTrajectoryPreviousPosition = inputState.MousePosition;
         }
         else
         {
-            isEngaged = false;
+            mCurrentTrajectoryPreviousPosition.reset();
         }
 
-        if (isEngaged != mIsEngaged)
+        if (!!mCurrentTrajectoryPreviousPosition != wasEngaged)
         {
             // State change
-            mIsEngaged = isEngaged;
 
             // Update cursor
             ShowCurrentCursor();
@@ -1423,13 +1431,13 @@ public:
     {
         assert(nullptr != mParentFrame);
 
-        mParentFrame->SetCursor(mIsEngaged ? *mDownCursor : *mUpCursor);
+        mParentFrame->SetCursor(!!mCurrentTrajectoryPreviousPosition ? *mDownCursor : *mUpCursor);
     }
 
 private:
 
     // Our state
-    bool mIsEngaged;
+    std::optional<vec2f> mCurrentTrajectoryPreviousPosition; // When set, indicates it's engaged
 
     // The cursors
     std::unique_ptr<wxCursor> const mUpCursor;

@@ -25,8 +25,10 @@ public:
     OceanFloor(ResourceLoader & resourceLoader);
 
     bool AdjustTo(
-        float x,
-        float targetY);
+        float x1,
+        float targetY1,
+        float x2,
+        float targetY2);
 
     void Update(GameParameters const & gameParameters);
 

@@ -478,6 +478,8 @@ TerrainAdjustTool::TerrainAdjustTool(
         parentFrame,
         std::move(gameController),
         std::move(soundController))
+
+    , mCurrentTrajectoryPreviousPosition()
     , mUpCursor(MakeCursor("terrain_adjust_cursor_up", 15, 15, resourceLoader))
     , mDownCursor(MakeCursor("terrain_adjust_cursor_down", 15, 15, resourceLoader))
 {

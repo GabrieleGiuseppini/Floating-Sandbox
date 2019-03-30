@@ -1,5 +1,7 @@
 #include <GameCore/GameMath.h>
 
+#include <cmath>
+
 #include "gtest/gtest.h"
 
 TEST(CeilPowerOfTwo, Basic)

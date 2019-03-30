@@ -1,5 +1,5 @@
 /* XPM */
-static char *AAA_SHIP_ICON_xpm[] = {
+static char const * AAA_SHIP_ICON_xpm[] = {
 /* columns rows colors chars-per-pixel */
 "16 16 39 1 ",
 "  c gray17",

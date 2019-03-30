@@ -127,8 +127,10 @@ public:
     void DetonateAntiMatterBombs();
 
     bool AdjustOceanFloorTo(
-        float x,
-        float targetY);
+        float x1,
+        float targetY1,
+        float x2,
+        float targetY2);
 
     bool ScrubThrough(
         vec2f const & startPos,
