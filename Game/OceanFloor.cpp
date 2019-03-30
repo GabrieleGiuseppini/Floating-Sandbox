@@ -94,7 +94,8 @@ void OceanFloor::Upload(
     auto sampleIndex = FastTruncateInt64((renderContext.GetVisibleWorldLeft() + GameParameters::HalfMaxWorldWidth) / Dx);
     float sampleIndexX = -GameParameters::HalfMaxWorldWidth + (Dx * sampleIndex);
 
-    // Calculate number of slices required to cover up to the visible world right (included)
+    // Calculate number of slices required to cover screen from leftmost sample
+    // up to the visible world right (included)
     float const coverageWidth = renderContext.GetVisibleWorldRight() - sampleIndexX;
     auto const numberOfSlicesToRender = static_cast<int64_t>(ceil(coverageWidth / Dx));
 

@@ -281,7 +281,7 @@ void ShipPreviewControl::SetImageContent(RgbaImageData const & imageData)
             wxPixelData<wxBitmap, wxAlphaPixelFormat> pixelData(bitmap);
             if (!pixelData)
             {
-                throw std::exception("Cannot get bitmap pixel data");
+                throw std::runtime_error("Cannot get bitmap pixel data");
             }
 
             assert(pixelData.GetWidth() == imageData.Size.Width);
@@ -325,7 +325,7 @@ void ShipPreviewControl::SetImageContent(RgbaImageData const & imageData)
         wxPixelData<wxBitmap, wxAlphaPixelFormat> pixelData(bitmap);
         if (!pixelData)
         {
-            throw std::exception("Cannot get bitmap pixel data");
+            throw std::runtime_error("Cannot get bitmap pixel data");
         }
 
         auto writeIt = pixelData.GetPixels();

@@ -306,7 +306,6 @@ Render:
 		= Fix Linux build break
 			+ Do specialization outside of class
 			+ Set /permissive- for all projects
-			- Replace rotate
 
 		= Change cover art to Logo2
 			+ About box image
@@ -478,17 +477,22 @@ Render:
 			+ Need first to always render ocean up to visibleWorldBottom, in which case the two are fully independent
 				+ Test afterwards
 			+ Break World::UploadLandAndWater into OceanFloor::Upload(.) and WaterSurface::Upload(.)
-			- Fix ocean gradient
-				- Use Max - if needed?
+			= Test ocean gradient				
 			= OceanFloor::Upload(.)
-				= Find first sample == sample immediately to the left of visibleWorld.Left
-				= Magnifying: n = 1, dx > 1; GPU fills-in
+				+ Find first sample == sample immediately to the left of visibleWorld.Left
+				+ Magnifying: n = 1, dx > 1; GPU fills-in
 				- Minifying: n > 1, dx = n * resolution
 					- n chosen so that number of slices kinda like now, i.e. ~= 500
 			+ WaterSurface::Upload(.)
 				+ For now, like it was at World
+			- Go back to 500 slides
+				- Test seams
 
-		- Impl step 3: TODO
+		- Impl step 3: WaterSurface
+			- # of samples: try 4K first
+			- dx = MaxWorldWidth/NumberOfSamples
+			- TODOHERE
+			- Test if # of samples good wrt waves' resolution
 
 	= GPUCalc:
 		+ 1: Simple OpenGLContext
