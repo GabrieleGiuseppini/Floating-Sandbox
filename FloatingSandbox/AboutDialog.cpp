@@ -62,7 +62,6 @@ AboutDialog::AboutDialog(
     wxBitmap* bmp = new wxBitmap(resourceLoader.GetArtFilepath("splash_screen").string(), wxBITMAP_TYPE_PNG);
 
     wxStaticBitmap * stBmp = new wxStaticBitmap(this, wxID_ANY, *bmp, wxDefaultPosition, wxDefaultSize, wxBORDER_SIMPLE);
-    stBmp->SetScaleMode(wxStaticBitmap::ScaleMode::Scale_None);
 
     mainSizer->Add(stBmp, 1, wxALIGN_CENTER_HORIZONTAL);
 
