@@ -11,6 +11,7 @@
 #include <Game/ResourceLoader.h>
 
 #include <GameCore/GameRandomEngine.h>
+#include <GameCore/GameWallClock.h>
 #include <GameCore/ProgressCallback.h>
 #include <GameCore/RunningAverage.h>
 #include <GameCore/TupleKeys.h>
@@ -243,13 +244,13 @@ private:
     {
         SoundType Type;
         std::unique_ptr<GameSound> Sound;
-        std::chrono::steady_clock::time_point StartedTimestamp;
+        GameWallClock::time_point StartedTimestamp;
         bool IsInterruptible;
 
         PlayingSound(
             SoundType type,
             std::unique_ptr<GameSound> sound,
-            std::chrono::steady_clock::time_point startedTimestamp,
+            GameWallClock::time_point startedTimestamp,
             bool isInterruptible)
             : Type(type)
             , Sound(std::move(sound))

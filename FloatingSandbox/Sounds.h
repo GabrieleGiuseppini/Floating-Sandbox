@@ -417,7 +417,7 @@ struct ContinuousInertialSound
 
     void SetVolume(float volume)
     {
-        auto now = std::chrono::steady_clock::now();
+        auto now = GameWallClock::GetInstance().Now();
 
         if (volume > 0.0f)
         {
@@ -478,7 +478,7 @@ private:
     ContinuousSound mContinuousSound;
 
     std::chrono::milliseconds const mInertiaDuration;
-    std::optional<std::chrono::steady_clock::time_point> mHearableLastTime;
+    std::optional<GameWallClock::time_point> mHearableLastTime;
 };
 
 struct OneShotMultipleChoiceSound

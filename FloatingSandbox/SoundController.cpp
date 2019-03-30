@@ -1422,7 +1422,7 @@ void SoundController::PlayOneShotSound(
 
     auto & thisTypeCurrentlyPlayingSounds = mCurrentlyPlayingOneShotSounds[soundType];
 
-    auto const now = std::chrono::steady_clock::now();
+    auto const now = GameWallClock::GetInstance().Now();
     auto const minDeltaTimeSoundForType = GetMinDeltaTimeSoundForType(soundType);
 
     for (auto & playingSound : thisTypeCurrentlyPlayingSounds)
@@ -1505,9 +1505,9 @@ void SoundController::ScavengeOldestSound(std::vector<PlayingSound> & playingSou
     //
 
     size_t iOldestInterruptibleSound = std::numeric_limits<size_t>::max();
-    auto oldestInterruptibleSoundStartTimestamp = std::chrono::steady_clock::time_point::max();
+    auto oldestInterruptibleSoundStartTimestamp = GameWallClock::time_point::max();
     size_t iOldestNonInterruptibleSound = std::numeric_limits<size_t>::max();
-    auto oldestNonInterruptibleSoundStartTimestamp = std::chrono::steady_clock::time_point::max();
+    auto oldestNonInterruptibleSoundStartTimestamp = GameWallClock::time_point::max();
     for (size_t i = 0; i < playingSounds.size(); ++i)
     {
         if (playingSounds[i].StartedTimestamp < oldestNonInterruptibleSoundStartTimestamp)
@@ -1525,13 +1525,13 @@ void SoundController::ScavengeOldestSound(std::vector<PlayingSound> & playingSou
     }
 
     size_t iSoundToStop;
-    if (oldestInterruptibleSoundStartTimestamp != std::chrono::steady_clock::time_point::max())
+    if (oldestInterruptibleSoundStartTimestamp != GameWallClock::time_point::max())
     {
         iSoundToStop = iOldestInterruptibleSound;
     }
     else
     {
-        assert((oldestNonInterruptibleSoundStartTimestamp != std::chrono::steady_clock::time_point::max()));
+        assert((oldestNonInterruptibleSoundStartTimestamp != GameWallClock::time_point::max()));
         iSoundToStop = iOldestNonInterruptibleSound;
     }
 
