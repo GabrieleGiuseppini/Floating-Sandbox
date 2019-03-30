@@ -32,26 +32,20 @@ public:
 
     float GetFloorHeightAt(float x) const
     {
-        // Fractional absolute index in the (infinite) sample array
-        float const absoluteSampleIndexF = x / Dx;
+        //
+        // Find sample index and interpolate in-between that sample and the next
+        //
+
+        // Fractional index in the sample array
+        float const sampleIndexF = (x + GameParameters::MaxWorldWidth/2.0f) / Dx;
 
         // Integral part
-        int64_t absoluteSampleIndexI = FastFloorInt64(absoluteSampleIndexF);
-
-        // Integral part - sample
-        int64_t sampleIndexI = absoluteSampleIndexI % SamplesCount;
+        int64_t sampleIndexI = FastFloorInt64(sampleIndexF);
 
         // Fractional part within sample index and the next sample index
-        float sampleIndexDx = absoluteSampleIndexF - absoluteSampleIndexI;
+        float sampleIndexDx = sampleIndexF - sampleIndexI;
 
-        if (x < 0.0f)
-        {
-            // Wrap around and anchor to the left sample
-            sampleIndexI += SamplesCount - 1; // Includes shift to left
-            sampleIndexDx += 1.0f;
-        }
-
-        assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
+        assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
         assert(sampleIndexDx >= 0.0f && sampleIndexDx <= 1.0f);
 
         return mSamples[sampleIndexI].SampleValue
@@ -60,33 +54,25 @@ public:
 
 private:
 
-    // Frequencies of the wave components
-    static constexpr float Frequency1 = 0.005f;
-    static constexpr float Frequency2 = 0.015f;
-    static constexpr float Frequency3 = 0.001f;
-
-    // Period of the sum of the frequency components
-    static constexpr float Period = 2000.0f * Pi<float>;
-
     // The number of samples;
-    // a higher value means more resolution at the expense of the cost of Update().
-    // Power of two's allow the compiler to optimize!
-    static constexpr int64_t SamplesCount = 512;
+    // a higher value means more resolution, at the expense of cache misses
+    static constexpr int64_t SamplesCount = 2048;
 
     // The x step of the samples
-    static constexpr float Dx = Period / static_cast<float>(SamplesCount);
+    static constexpr float Dx = GameParameters::MaxWorldWidth / static_cast<float>(SamplesCount);
 
     // What we store for each sample
     struct Sample
     {
         float SampleValue;
-        float SampleValuePlusOneMinusSampleValue;
+        float SampleValuePlusOneMinusSampleValue; // Delta w/next
     };
 
-    // The current samples
+    // The current samples (plus 1 to account for x==MaxWorldWidth)
     std::unique_ptr<Sample[]> mSamples;
 
-    // The bump map samples - between -H/2 and H/2
+    // The bump map samples (plus 1 to account for x==MaxWorldWidth),
+    // between -H/2 and H/2
     std::unique_ptr<float[]> const mBumpMapSamples;
 
     // The game parameters for which we're current
