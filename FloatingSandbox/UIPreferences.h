@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include <algorithm>
 #include <cassert>
 #include <filesystem>
 #include <vector>

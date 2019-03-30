@@ -564,7 +564,9 @@ public:
 
             case OceanRenderMode::Depth:
             {
-                // Depth: top=0.0, bottom=height as fraction of maximum depth
+                // Depth: top=0.0, bottom=height as fraction of ocean depth
+                // Note: fraction will be > 1 (maxworld H >> oceanDepth), but OpenGL's interpolation will
+                // get to 1.0 at y=-oceanDepth
                 oceanSegment.value1 = 0.0f;
                 oceanSegment.value2 = oceanDepth != 0.0f
                     ? abs(oceanSegmentY2 - oceanSegmentY1) / oceanDepth
