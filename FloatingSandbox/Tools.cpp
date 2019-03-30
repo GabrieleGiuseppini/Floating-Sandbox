@@ -119,7 +119,7 @@ void ContinuousTool::Update(InputState const & inputState)
     // We apply the tool only if the left mouse button is down
     if (inputState.IsLeftMouseDown)
     {
-        auto now = std::chrono::steady_clock::now();
+        auto now = GameWallClock::GetInstance().Now();
 
         // Accumulate total time iff we haven't moved since last time
         if (mPreviousMousePosition == inputState.MousePosition)
