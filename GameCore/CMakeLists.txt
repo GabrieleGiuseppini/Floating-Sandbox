@@ -60,8 +60,7 @@ target_link_libraries (GameCoreLib
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 
 	target_link_libraries (GameCoreLib
-		"stdc++fs" 
-		"c++experimental")
+		"stdc++fs")
 
 endif()
 
