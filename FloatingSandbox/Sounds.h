@@ -8,6 +8,7 @@
 #include <GameCore/GameException.h>
 #include <GameCore/GameRandomEngine.h>
 #include <GameCore/GameTypes.h>
+#include <GameCore/GameWallClock.h>
 
 #include <SFML/Audio.hpp>
 

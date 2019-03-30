@@ -139,18 +139,6 @@ void OceanFloor::Upload(
                 sampleIndexX,
                 mSamples[s + sampleIndex].SampleValue);
         }
-
-        ////// Upload samples until we're out of sight
-        ////float const rightmostX = renderContext.GetVisibleWorldRight();
-        ////for (; ; ++sampleIndex, sampleIndexX += Dx)
-        ////{
-        ////    renderContext.UploadLand(
-        ////        sampleIndexX,
-        ////        mSamples[sampleIndex].SampleValue);
-
-        ////    if (sampleIndexX >= rightmostX)
-        ////        break;
-        ////}
     }
 
     renderContext.UploadLandEnd();

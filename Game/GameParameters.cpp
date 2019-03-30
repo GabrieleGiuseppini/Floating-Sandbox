@@ -3,8 +3,6 @@
 * Created:				2018-04-13
 * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
-#pragma once
-
 #include "GameParameters.h"
 
 GameParameters::GameParameters()

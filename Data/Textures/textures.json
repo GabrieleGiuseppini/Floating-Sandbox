@@ -92,7 +92,7 @@
 	"frames":[
 		{	
 			"worldWidth": 64.0,
-			"worldHeight": 64.0,
+			"worldHeight": 32.0,
 			"filename": "ocean_\\d+"
 		}
 	]

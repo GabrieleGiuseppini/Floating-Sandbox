@@ -555,8 +555,8 @@ public:
         {
             case OceanRenderMode::Texture:
             {
-                // Texture sample Y: top=oceanDepth (we use repeat mode), bottom=0.0
-                oceanSegment.value1 = oceanDepth;
+                // Texture sample Y levels: entire half world height
+                oceanSegment.value1 = GameParameters::HalfMaxWorldHeight;
                 oceanSegment.value2 = 0.0f;
 
                 break;
@@ -575,7 +575,7 @@ public:
 
             case OceanRenderMode::Flat:
             {
-                // Nop, be nice
+                // Nop, but be nice
                 oceanSegment.value1 = 0.0f;
                 oceanSegment.value2 = 0.0f;
 

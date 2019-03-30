@@ -291,13 +291,11 @@ Render:
 			+ Test
 		+ Send for testing
 		+ New ships
+		+ Check "Smash" bug
 
-		- Provide large banner to GameJolt
+		= Add other testers to About box
 
-		= Check "Smash" bug
-			= Run in Debug
-
-		- Add other testers to About box
+		- Replace/remove descriptions
 
 		- Release
 
@@ -315,10 +313,6 @@ Render:
 			- Installer
 
 		- Try to build with Runtime Type Information disabled
-
-		- Also dry points should rot, albeit very slowly
-			- Could just add ~0.005 to p.water at RotPoints()
-			- However this would also apply to overwater points, so we'd have to do it for underwater points only
 
 		= Sea and Ocean Floor rearc(*)
 
@@ -829,6 +823,10 @@ Render:
 			+ PerfAnalysis
 
 - Dynamics:
+
+	- Also dry points should rot, albeit very slowly
+		- Could just add ~0.005 to p.water at RotPoints()
+		- However this would also apply to overwater points, so we'd have to do it for underwater points only
 
 	- Heat and Combustion (*)
 		- Integration of Decay with Combustion:
