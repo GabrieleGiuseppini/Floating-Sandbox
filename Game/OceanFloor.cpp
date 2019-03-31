@@ -12,7 +12,8 @@ static constexpr int IdealBumpMapWidth = 5000;
 
 // The number of slices we want to render the ocean floor as;
 // this is the graphical resolution
-static constexpr int RenderSlices = 512;
+template<typename T>
+static constexpr T RenderSlices = 500;
 
 namespace /* anonymous */ {
 
@@ -94,32 +95,29 @@ void OceanFloor::Upload(
     auto sampleIndex = FastTruncateInt64((renderContext.GetVisibleWorldLeft() + GameParameters::HalfMaxWorldWidth) / Dx);
     float sampleIndexX = -GameParameters::HalfMaxWorldWidth + (Dx * sampleIndex);
 
-    // Calculate number of slices required to cover screen from leftmost sample
+    // Calculate number of samples required to cover screen from leftmost sample
     // up to the visible world right (included)
     float const coverageWidth = renderContext.GetVisibleWorldRight() - sampleIndexX;
-    auto const numberOfSlicesToRender = static_cast<int64_t>(ceil(coverageWidth / Dx));
+    auto const numberOfSamplesToRender = static_cast<int64_t>(ceil(coverageWidth / Dx));
 
-    if (numberOfSlicesToRender >= RenderSlices)
+    if (numberOfSamplesToRender >= RenderSlices<int64_t>)
     {
         //
-        // Have to take 1 sample every NSkip
+        // Have to take more than 1 sample per slice
         //
 
-        // TODOHERE: this is the old one
-        size_t constexpr SlicesCount = 500;
+        renderContext.UploadLandStart(RenderSlices<int>);
 
-        float const sliceWidth = renderContext.GetVisibleWorldWidth() / static_cast<float>(SlicesCount);
-
-        renderContext.UploadLandStart(SlicesCount);
+        // Calculate dx between each pair of slices with want to upload
+        float const sliceDx = coverageWidth / RenderSlices<float>;
 
         // We do one extra iteration as the number of slices is the number of quads, and the last vertical
         // quad side must be at the end of the width
-        float sliceX = renderContext.GetVisibleWorldLeft();
-        for (size_t i = 0; i <= SlicesCount; ++i, sliceX += sliceWidth)
+        for (int64_t s = 0; s <= RenderSlices<int64_t>; ++s, sampleIndexX += sliceDx)
         {
             renderContext.UploadLand(
-                sliceX,
-                GetFloorHeightAt(sliceX));
+                sampleIndexX,
+                GetFloorHeightAt(sampleIndexX));
         }
     }
     else
@@ -130,11 +128,11 @@ void OceanFloor::Upload(
         // interpolate on our behalf
         //
 
-        renderContext.UploadLandStart(numberOfSlicesToRender);
+        renderContext.UploadLandStart(numberOfSamplesToRender);
 
         // We do one extra iteration as the number of slices is the number of quads, and the last vertical
         // quad side must be at the end of the width
-        for (std::int64_t s = 0; s <= numberOfSlicesToRender; ++s, sampleIndexX += Dx)
+        for (std::int64_t s = 0; s <= numberOfSamplesToRender; ++s, sampleIndexX += Dx)
         {
             renderContext.UploadLand(
                 sampleIndexX,
@@ -143,27 +141,6 @@ void OceanFloor::Upload(
     }
 
     renderContext.UploadLandEnd();
-
-    // TODOOLD
-
-    ////size_t constexpr SlicesCount = 500;
-
-    ////float const visibleWorldWidth = renderContext.GetVisibleWorldWidth();
-    ////float const sliceWidth = visibleWorldWidth / static_cast<float>(SlicesCount);
-    ////float sliceX = renderContext.GetCameraWorldPosition().x - (visibleWorldWidth / 2.0f);
-
-    ////renderContext.UploadLandStart(SlicesCount);
-
-    ////// We do one extra iteration as the number of slices is the number of quads, and the last vertical
-    ////// quad side must be at the end of the width
-    ////for (size_t i = 0; i <= SlicesCount; ++i, sliceX += sliceWidth)
-    ////{
-    ////    renderContext.UploadLand(
-    ////        sliceX,
-    ////        GetFloorHeightAt(sliceX));
-    ////}
-
-    ////renderContext.UploadLandEnd();
 }
 
 void OceanFloor::Update(GameParameters const & gameParameters)

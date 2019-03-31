@@ -442,8 +442,8 @@ Render:
 						- Current dx = 20*pi/512 ~= 0.122m
 						- Next dx = W/S @ W=10K => ~80k samples
 			- Not anymore periodic, hence no mod anymore to get water height and ocean floor
-			- Only the number of samples dictates final definition of surface and floor
-			- Uploading is by sample
+			+ Only the number of samples dictates final definition of surface and floor
+			- Uploading is by sample (when not minimifying a lot)
 				- Loop uploads S(i0+ni), with i0=left start, n depending on zoom
 					- Magnifying: n = 1, dx > 1; GPU fills-in
 					- Minifying: n > 1, dx = n * resolution
@@ -471,32 +471,37 @@ Render:
 				+ Test last ocean floor sample, again
 			+ Since you're here, change AdjustTerrain tool to do trajectory
 			+ Test:
-				+ OceanFloor bitmap larger, not multiple (say, 700) - w/recongizable pattern
-			
-		= Impl step 2: Render upload: use same spatial frequency as samples, so to avoid interpolating altogether
+				+ OceanFloor bitmap larger, not multiple (say, 700) - w/recongizable pattern			
+		+ Impl step 2: Render upload: use same spatial frequency as samples, so to avoid interpolating altogether
 			+ Need first to always render ocean up to visibleWorldBottom, in which case the two are fully independent
 				+ Test afterwards
 			+ Break World::UploadLandAndWater into OceanFloor::Upload(.) and WaterSurface::Upload(.)
-			- Fix perf issue w/tall quads
-				- Test waves below visible bottom
-			= Test ocean gradient				
+			+ Fix perf issue w/tall quads
+				+ Test waves below visible bottom
+			+ Test ocean gradient				
 			= OceanFloor::Upload(.)
 				+ Find first sample == sample immediately to the left of visibleWorld.Left
 				+ Magnifying: n = 1, dx > 1; GPU fills-in
-				- Minifying: n > 1, dx = n * resolution
-					- n chosen so that number of slices kinda like now, i.e. ~= 500
+				+ Minifying: n > 1, dx = n * resolution
+					+ n chosen so that number of slices kinda like now, i.e. ~= 500
+				+ No, minifying is old sampling way
 			+ WaterSurface::Upload(.)
 				+ For now, like it was at World
-			- Go back to 500 slides
-				- Test seams
-		- Perf:
-			- FPS was (during step 2): 30.2/30.4
-			- UR was (during step 2): 214
+			+ Go back to 500 slices
+				+ Test seams
+		+ Perf:
+			+ FPS was (during step 2): 30.2/30.4
+			+ Now: 30.5
+			+ UR was (during step 2): 214
+			+ Now: 217
 		- Impl step 3: WaterSurface
 			- # of samples: try 4K first
 			- dx = MaxWorldWidth/NumberOfSamples
 			- TODOHERE
 			- Test if # of samples good wrt waves' resolution
+		- Perf:
+			- FPS Now:
+			- UR Now:
 
 	= GPUCalc:
 		+ 1: Simple OpenGLContext
@@ -763,6 +768,8 @@ Render:
 		- Final step @ RenderContext::Render
 			- Checks first which sides, if any, have to be drawn
 			- Renders quad for each side
+				- Width is in NDC
+				- alpha = 0.5
 
 	+ Make font white inversely to ambient light
 
