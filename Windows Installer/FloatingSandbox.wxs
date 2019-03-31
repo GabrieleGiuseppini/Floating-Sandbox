@@ -4,8 +4,8 @@
     <?include Include.wxi ?>
 
     <!-- Change at each release!!! -->
-    <?define ProductCode = "59EC9A0E-C15C-452B-9952-B6C9A26BB4E3"?> <!-- 1.9.1.0 -->
-    <?define UpgradeCode = "9B0BE52D-A66D-4F8B-B858-73806796E571"?> <!-- 1.9.1.0 -->
+    <?define ProductCode = "462F9307-59DD-4573-A7F3-DE0419C7B7EF"?> <!-- 1.10.0.0 -->
+    <?define UpgradeCode = "863614D5-7480-4584-BB59-BA7AC880D79B"?> <!-- 1.10.0.0 -->
 
 	<Product Id="$(var.ProductCode)"
              Name="$(var.FullApplicationName)" Language="1033"
