@@ -89,6 +89,11 @@ public:
             zoom = visibleWorldHeight * zoom / ((MaxWorldBottom - mCam.y) * 2.0f);
         }
 
+        if (zoom > MaxZoom)
+        {
+            zoom = MaxZoom;
+        }
+
         return zoom;
     }
 
@@ -315,6 +320,9 @@ private:
     }
 
 private:
+
+    // Constants
+    static constexpr float MaxZoom = 1000.0f;
 
     // Primary inputs
     float mZoom;
