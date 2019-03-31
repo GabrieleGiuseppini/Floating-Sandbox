@@ -560,9 +560,9 @@ public:
             case OceanRenderMode::Texture:
             {
                 // Texture sample Y levels: anchor texture at top of wave,
-                // and set bottom at visible bottom's y (ocean texture repeats)
-                oceanSegment.value1 = 0.0f; // Note: this is at yOcean
-                oceanSegment.value2 = yVisibleWorldBottom; // Note: this is at yVisibleWorldBottom
+                // and set bottom at total visible height (after all, ocean texture repeats)
+                oceanSegment.value1 = 0.0f; // This is at yOcean
+                oceanSegment.value2 = yOcean - yVisibleWorldBottom; // Negative if yOcean invisible, but then who cares
 
                 break;
             }
