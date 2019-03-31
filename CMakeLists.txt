@@ -1,40 +1,36 @@
 cmake_minimum_required (VERSION 2.6)
 
 project (FloatingSandbox)
- 
+
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-####################################################
-# Hardcoded paths
-####################################################
-
-set(SDK_ROOT "C:/Users/Neurodancer/source/SDK" CACHE PATH "..." FORCE)
-set(REPOS_ROOT "C:/Users/Neurodancer/source/repos" CACHE PATH "..." FORCE)
-
+option(MSVC_USE_STATIC_LINKING "Force static linking on MSVC" OFF)
 
 ####################################################
-#                External libraries 
-#
-# The library paths I'm using are from my MSVC build
-# environment; just replace my paths with yours.
-# For platforms with no difference between Debug and
-# Release builds, just use the same library for both.
+# Custom CMake modules
 ####################################################
 
-list(APPEND CMAKE_PREFIX_PATH "${SDK_ROOT}/PicoJSON")
-list(APPEND CMAKE_PREFIX_PATH "${SDK_ROOT}/benchmark")
-list(APPEND CMAKE_PREFIX_PATH "${SDK_ROOT}/libsimdpp-2.1")
-list(APPEND CMAKE_PREFIX_PATH "${SDK_ROOT}/DevIL")
-list(APPEND CMAKE_PREFIX_PATH "${SDK_ROOT}/SFML")
-list(APPEND CMAKE_LIBRARY_PATH "${SDK_ROOT}/DevIL")
-set(SFML_ROOT "${SDK_ROOT}/SFML")
-set(wxWidgets_ROOT_DIR "${SDK_ROOT}/wxWidgets")
-set(GOOGLE_TEST_ROOT "${REPOS_ROOT}/googletest")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
-find_path(PICOJSON_INCLUDE_DIRS
-    NAMES picojson/picojson.h)
+####################################################
+# User settings file
+####################################################
 
-find_package(benchmark REQUIRED) 
+set(USER_SETTINGS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/UserSettings.cmake")
+if(EXISTS "${USER_SETTINGS_FILE}")
+	message("Loading user specific settings from ${USER_SETTINGS_FILE}")
+	include("${USER_SETTINGS_FILE}")
+endif()
+
+####################################################
+#  External library configuration
+####################################################
+
+list(APPEND CMAKE_PREFIX_PATH "${BENCHMARK_ROOT_DIR}")
+list(APPEND CMAKE_PREFIX_PATH "${LIBSIMDPP_ROOT_DIR}")
+
+find_package(PicoJSON REQUIRED)
+find_package(benchmark REQUIRED)
 
 find_path(LIBSIMDPP_INCLUDE_DIRS
     NAMES simdpp/simd.h)
@@ -43,10 +39,8 @@ find_package(wxWidgets REQUIRED base gl core html media)
 
 find_package(DevIL REQUIRED)
 if (WIN32)
-	find_path(DEVIL_LIB_DIR
-		NAMES DevIL.lib
-		PATH_SUFFIXES DevIL libx32 lib64 lib lib32)
-	file(GLOB DEVIL_RUNTIME_LIBRARIES 
+	get_filename_component(DEVIL_LIB_DIR ${IL_LIBRARIES} DIRECTORY)
+	file(GLOB DEVIL_RUNTIME_LIBRARIES
 		${DEVIL_LIB_DIR}/*.dll)
 endif()
 
@@ -54,22 +48,38 @@ find_package(SFML COMPONENTS system audio REQUIRED)
 if (WIN32)
 	find_path(SFML_BIN_DIR
 		NAMES sfml-system-2.dll openal32.dll
-		PATH_SUFFIXES SFML bin)
+		HINTS ${SFML_DIR}/../../../
+		PATH_SUFFIXES SFML bin
+	)
 
-	file(GLOB SFML_RUNTIME_RELEASE_LIBRARIES 
-		${SFML_BIN_DIR}/*.dll)
-	list(FILTER SFML_RUNTIME_RELEASE_LIBRARIES EXCLUDE REGEX "-d-") 
+	if(NOT EXISTS "${SFML_BIN_DIR}")
+		message(FATAL_ERROR "Could not find SFML binary directory")
+	endif()
 
-	file(GLOB SFML_RUNTIME_DEBUG_LIBRARIES 
+	# Pointing to System32 would result in copying all dlls in that directory
+	if(WIN32 AND SFML_BIN_DIR MATCHES "System32")
+		message(FATAL_ERROR "SFML_BIN_DIR ('${SFML_BIN_DIR}') seems to be pointing to System32 folder, which is not allowed")
+	endif()
+
+	file(GLOB SFML_RUNTIME_RELEASE_LIBRARIES
 		${SFML_BIN_DIR}/*.dll)
-	list(FILTER SFML_RUNTIME_DEBUG_LIBRARIES INCLUDE REGEX "-d-") 
-	list(APPEND SFML_RUNTIME_DEBUG_LIBRARIES ${SFML_BIN_DIR}/openal32.dll) 
+	list(FILTER SFML_RUNTIME_RELEASE_LIBRARIES EXCLUDE REGEX "-d-")
+
+	file(GLOB SFML_RUNTIME_DEBUG_LIBRARIES
+		${SFML_BIN_DIR}/*.dll)
+	list(FILTER SFML_RUNTIME_DEBUG_LIBRARIES INCLUDE REGEX "-d-")
+	list(APPEND SFML_RUNTIME_DEBUG_LIBRARIES ${SFML_BIN_DIR}/openal32.dll)
 
 endif()
 
-
 find_package(OpenGL REQUIRED)
 
+if(MSVC_USE_STATIC_LINKING) # No way to 'negate' a variable easily
+	set(gtest_force_shared_crt OFF CACHE BOOL "" FORCE)
+elseif()
+	set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+endif()
+add_subdirectory(${GTEST_DIR} gtest)
 
 ####################################################
 # Flags
@@ -86,9 +96,11 @@ if (MSVC)
 		CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO
 		CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
 		CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
-		if(${flag_var} MATCHES "/MD")
-			string(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
-		endif(${flag_var} MATCHES "/MD")
+		if(MSVC_USE_STATIC_LINKING)
+			if(${flag_var} MATCHES "/MD")
+				string(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
+			endif(${flag_var} MATCHES "/MD")
+		endif()
 		if(${flag_var} MATCHES "/W3")
 			string(REGEX REPLACE "/W3" "" ${flag_var} "${${flag_var}}")
 		endif(${flag_var} MATCHES "/W3")
@@ -123,7 +135,7 @@ elseif(CMAKE_COMPILER_IS_GNUXX)
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /fp:strict -DFLOATING_POINT_CHECKS")
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -ldl")
 endif()
- 
+
 add_definitions(-DPICOJSON_USE_INT64)
 
 message (STATUS "cxx Flags:" ${CMAKE_CXX_FLAGS})

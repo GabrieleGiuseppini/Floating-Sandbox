@@ -1,4 +1,6 @@
 build/
 PerfReports/
 .vs/
+.vscode/
 *.aps
+UserSettings.cmake

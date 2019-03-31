@@ -12,7 +12,7 @@
 #include <GameCore/GameException.h>
 #include <GameCore/Utils.h>
 
-#include <picojson/picojson.h>
+#include <picojson.h>
 
 #include <cassert>
 #include <cstdint>
