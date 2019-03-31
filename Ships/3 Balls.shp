@@ -2,5 +2,5 @@
 	"structure_image":"3_balls_structural.png.dat",
 	"ship_name":"3 Balls",
 	"year_built":"2013",
-	"description":"Not to be confused with <i>The three musketeers</i> or something else, but the three balls are just three balls made out of <ol><li>LEFT SIDE: Iron</li><li>MIDDLE: Stiff Titanium</li><li>RIGHT SIDE: Wood</li></ol>"
+	"description":"These three balls are made out of:<br/> <ol><li>LEFT SIDE: Iron</li><li>MIDDLE: Stiff Titanium</li><li>RIGHT SIDE: Wood</li></ol>"
 }
