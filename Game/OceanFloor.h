@@ -62,7 +62,7 @@ public:
 
 private:
 
-    // The number of samples;
+    // The number of samples for the entire world width;
     // a higher value means more resolution, at the expense of cache misses
     static constexpr int64_t SamplesCount = 2048;
 

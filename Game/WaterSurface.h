@@ -34,26 +34,20 @@ public:
 
     float GetWaterHeightAt(float x) const
     {
-        // Fractional absolute index in the (infinite) sample array
-        float const absoluteSampleIndexF = x / Dx;
+        //
+        // Find sample index and interpolate in-between that sample and the next
+        //
+
+        // Fractional index in the sample array
+        float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth) / Dx;
 
         // Integral part
-        int64_t absoluteSampleIndexI = FastTruncateInt64(absoluteSampleIndexF);
-
-        // Integral part - sample
-        int64_t sampleIndexI = absoluteSampleIndexI % SamplesCount;
+        int64_t sampleIndexI = FastTruncateInt64(sampleIndexF);
 
         // Fractional part within sample index and the next sample index
-        float sampleIndexDx = absoluteSampleIndexF - absoluteSampleIndexI;
+        float sampleIndexDx = sampleIndexF - sampleIndexI;
 
-        if (x < 0.0f)
-        {
-            // Wrap around and anchor to the left sample
-            sampleIndexI += SamplesCount - 1; // Includes shift to left
-            sampleIndexDx += 1.0f;
-        }
-
-        assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
+        assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
         assert(sampleIndexDx >= 0.0f && sampleIndexDx <= 1.0f);
 
         return mSamples[sampleIndexI].SampleValue
@@ -62,24 +56,15 @@ public:
 
 private:
 
-    // Spatial frequencies of the wave components
-    static constexpr float SpatialFrequency1 = 0.1f;
-    static constexpr float SpatialFrequency2 = 0.3f;
-    static constexpr float SpatialFrequency3 = 0.5f; // Wind component
-
-    // Period of the sum of the spatial frequency components
-    static constexpr float Period = 20.0f * Pi<float>;
-
     // Smoothing of wind incisiveness
     RunningAverage<15> mWindIncisivenessRunningAverage;
 
-    // The number of samples;
-    // a higher value means more resolution at the expense of the cost of Update().
-    // Power of two's allow the compiler to optimize!
-    static constexpr int64_t SamplesCount = 512;
+    // The number of samples for the entire world width;
+    // a higher value means more resolution at the expense of Update() and of cache misses
+    static constexpr int64_t SamplesCount = 8192;
 
     // The x step of the samples
-    static constexpr float Dx = Period / static_cast<float>(SamplesCount);
+    static constexpr float Dx = GameParameters::MaxWorldWidth / static_cast<float>(SamplesCount);
 
     // What we store for each sample
     struct Sample
@@ -88,7 +73,7 @@ private:
         float SampleValuePlusOneMinusSampleValue;
     };
 
-    // The samples
+    // The samples (plus 1 to account for x==MaxWorldWidth)
     std::unique_ptr<Sample[]> mSamples;
 };
 
