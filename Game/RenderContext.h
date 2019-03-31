@@ -516,9 +516,11 @@ public:
         LandSegment & landSegment = mLandSegmentBuffer.emplace_back();
 
         landSegment.x1 = x;
-        landSegment.y1 = yLand > yVisibleWorldBottom ? yLand : yVisibleWorldBottom; // Clamp top up to visible bottom
+        landSegment.y1 = yLand;
         landSegment.x2 = x;
-        landSegment.y2 = yVisibleWorldBottom;
+        // If land is invisible (below), then keep both points at same height, or else interpolated lines
+        // will have a slope varying with the y of the visible world bottom
+        landSegment.y2 = yLand >= yVisibleWorldBottom ? yVisibleWorldBottom : yLand;
    }
 
     void UploadLandEnd();
@@ -537,6 +539,8 @@ public:
         float yOcean,
         float oceanDepth)
     {
+        float const yVisibleWorldBottom = mViewModel.GetVisibleWorldBottomRight().y;
+
         //
         // Store ocean element
         //
@@ -548,16 +552,17 @@ public:
         oceanSegment.y1 = oceanSegmentY1;
 
         oceanSegment.x2 = x;
-        float const oceanSegmentY2 = -GameParameters::HalfMaxWorldHeight;
+        float const oceanSegmentY2 = yVisibleWorldBottom;
         oceanSegment.y2 = oceanSegmentY2;
 
         switch (mOceanRenderMode)
         {
             case OceanRenderMode::Texture:
             {
-                // Texture sample Y levels: entire half world height
-                oceanSegment.value1 = GameParameters::HalfMaxWorldHeight;
-                oceanSegment.value2 = 0.0f;
+                // Texture sample Y levels: anchor texture at top of wave,
+                // and set bottom at visible bottom's y (ocean texture repeats)
+                oceanSegment.value1 = 0.0f; // Note: this is at yOcean
+                oceanSegment.value2 = yVisibleWorldBottom; // Note: this is at yVisibleWorldBottom
 
                 break;
             }
@@ -565,8 +570,6 @@ public:
             case OceanRenderMode::Depth:
             {
                 // Depth: top=0.0, bottom=height as fraction of ocean depth
-                // Note: fraction will be > 1 (maxworld H >> oceanDepth), but OpenGL's interpolation will
-                // get to 1.0 at y=-oceanDepth
                 oceanSegment.value1 = 0.0f;
                 oceanSegment.value2 = oceanDepth != 0.0f
                     ? abs(oceanSegmentY2 - oceanSegmentY1) / oceanDepth

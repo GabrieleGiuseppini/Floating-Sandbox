@@ -305,6 +305,7 @@ Render:
 		= Fix Linux build break
 			+ Do specialization outside of class
 			+ Set /permissive- for all projects
+		- Take Mathia's pull request
 
 		= Change cover art to Logo2
 			+ About box image
@@ -418,6 +419,8 @@ Render:
 		+ Use for ship color and texture
 	- Try 32-bit build
 	- Sound controller: complain if find extraneous files (had issue with ".flc")
+	- Translations:
+		- Russian: steven6886@yandex.ru
 
 - Simulation Optimizations:
 
@@ -474,6 +477,8 @@ Render:
 			+ Need first to always render ocean up to visibleWorldBottom, in which case the two are fully independent
 				+ Test afterwards
 			+ Break World::UploadLandAndWater into OceanFloor::Upload(.) and WaterSurface::Upload(.)
+			- Fix perf issue w/tall quads
+				- Test waves below visible bottom
 			= Test ocean gradient				
 			= OceanFloor::Upload(.)
 				+ Find first sample == sample immediately to the left of visibleWorld.Left
@@ -484,7 +489,9 @@ Render:
 				+ For now, like it was at World
 			- Go back to 500 slides
 				- Test seams
-
+		- Perf:
+			- FPS was (during step 2): 30.2/30.4
+			- UR was (during step 2): 214
 		- Impl step 3: WaterSurface
 			- # of samples: try 4K first
 			- dx = MaxWorldWidth/NumberOfSamples
