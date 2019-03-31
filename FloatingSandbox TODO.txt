@@ -292,16 +292,15 @@ Render:
 		+ Send for testing
 		+ New ships
 		+ Check "Smash" bug
-
-		= Add other testers to About box
-
-		- Replace/remove descriptions
-
+		+ Add other testers to About box
+		+ Finalize descriptions
 		- Release
 
 	= 1.11.0:
 
 		+ Orphaned points (*)
+		+ Increase # of ephemeral particles
+			+ And thus lower water intake threshold for air bubbles
 
 		= Fix Linux build break
 			+ Do specialization outside of class
@@ -328,9 +327,6 @@ Render:
 
 		- Spring and NonSpring force separation optimization (*)
 
-		- Increase # of ephemeral particles
-			- And thus lower water intake threshold for air bubbles
-
 		- Batisphere with pumps and propulsion (*)
 			- First need to add a new material property - "rust_susceptibility" - for tanks
 				- Use at RotPoints()
@@ -355,6 +351,7 @@ Render:
 		# ShippyMcJerry: ShipBuilder1912 
 		# Coolman115: CorbinPasta93
 		# Ilovedumbphones: Dumbphones
+		# SweetStrawberryBoy: TopHatLemons
 	- New ships:
 		- To adjust:
 			- SS France (Awesomeyorkie):

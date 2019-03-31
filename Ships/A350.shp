@@ -3,5 +3,7 @@
 	"offset":{"x":0.0, "y":480.0},
 	"ship_name":"A350",
 	"year_built":"2010",
-	"created_by":"Wreno"
+	"created_by":"Wreno",
+	"description":
+		"Yes, the ‘A350’ is indeed a plane and not a boat with nothing too magical about it. All it does is it floats until you sink it. Pretty self-explanatory if I do say so myself."
 }

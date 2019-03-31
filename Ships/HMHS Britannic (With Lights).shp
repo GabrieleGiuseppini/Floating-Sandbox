@@ -5,7 +5,5 @@
 	"offset":{"x":0.0, "y":-8.0},
 	"ship_name":"H.M.H.S. Britannic (With Lights)",
 	"created_by":"Michael Bozarth",
-	"year_built":"1914",
-	"description":
-		"The ‘H.M.H.S. Britannic’, not to be confused with the R.M.S. Britannia, was a beauty of a vessel made by the company ‘White Star Line’ itself which was the fleet mate for both the R.M.S. Olympic and R.M.S. Titanic and was intended to enter its service as a Trans Atlantic Passenger liner but was inaugurated as an Olympic Class steamship. The H.M.H.S. Britannic was just before the beginning of the First World War (World War I OR WWI) and was designed to be a hospital ship and to be one of the safest of 3 ships on the water due to the lesson of the R.M.S. Titanic. She set on her maiden voyage and stayed up for many more trips… Until one day, the bow of the ship was shaken by a naval mine where she sank under 55 minutes near the Greek Island of Kea killing 30 people onboard. So long Britannic!"
+	"year_built":"1914"
 }
