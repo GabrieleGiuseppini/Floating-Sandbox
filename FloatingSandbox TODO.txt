@@ -195,127 +195,21 @@ Render:
 		+ After water contrast
 
 - Roadmap:
-	= 1.10.0
-		+ See if lights can make texture colors come out at night, rather than just yellow-izing it
-			+ ShipTrianglesTexture shader: use local light as "additive" to ambient light (to draw colors)
-			+ Split Points:: colorBuffer upload to own func
-				+ RenderContext: range-based
-			+ Remove logs and shader TODOs
-			+ Check intensity at distance==0
-			+ Change luminance to 1 rather than 2
-				+ See first what difference it makes
-				+ Change in materials.json
-				+ Enforce in electrical material
-				+ Verify fixes issue
-				+ Constrain luminiscence adjust to max 1
-					+ Or change how to apply adjustment
-					+ Change tooltip and minimum
-			+ If it works, also these shaders:
-				+ TrianglesColor
-				+ PointsColor
-				+ Ropes
-				+ SpringsColor
-				+ SpringsTexture
-			+ See if passing vec instead of floats among shaders helps with perf
-		+ EventTickerPanel:
-			+ Fix name of AM bomb @ placed (and @ al?)
-		+ Bounded World
-			+ GameParameters: MaxWorldWidth, Height
-				+ Remove MaxZoom, MinZoom
-				+ Use very small world for now
-			+ Constrain view changes:
-				+ ViewModel:
-					+ float ClampXYZ() -> clamped value
-					+ CanvasSize changes: make sure the largest visible world dimension stays the same
-						+ i.e., adjust zoom so that the new visible world dimensions are contained within the old one
-				+ Use at GameController:
-					+ Zoom updates
-						+ Get back value
-					+ Camera updates
-						+ Get back value
-					+ CanvasSize update: pickup changes and reset smoothing
-				+ Test
-			+ Constrain physics:
-				+ Ship::Update: at end of mech physics (after last integrate): 
-					+ Destroy points (also with sounds, it's OK) that are outside of bounding box
-					+ No destroy points, just do simple bounce w/bounded velocity
-			+ Verify AM bomb issue is gone
-			+ Test in Debug
-			+ Make larger bounding world
-				+ W: 10000
-				+ H: MaxSeaDepth * 4
-				+ w/static_assert for ocean depth
-			+ Figure out where it is that the submarine disappears
-			+ Fix water drag 
-				+ Find coefficient for linear drag in "slow" range
-				+ When done: see if bounds of water drag adjustment are still good
-					+ Test at new max (1K) - do ship pieces go to a standstill?
-			+ Verify AM bomb issue is gone
-			+ Get current FPS
-			+ Changes.txt		
-			+ Merge to master			
-		+ See move tool changing center
-			+ Is it because of missing last step?
-				+ Should finalize only after last step, making sure to clamp elapsed to Lag first
-		+ Create dump upon crash
-			+ https://stackoverflow.com/questions/9020353/create-a-dump-file-for-an-application-whenever-it-crashes
-			+ In app folder, via StandardSystemPaths
-				+ Under \CrashDumps
-			+ Try with empty png and corrupted png
-		+ VAO (*)
-		+ Misc OpenGL Optimizations (*)
-		+ Secondary PlaneIDAsFloat buffer
-			+ We only pay the price sparingly, but reap the benefits at each frame
-			+ Code
-		+ Vertex buffer optimizations (*)
-		+ Update FPS & perf analysis
-		+ Water Contrast @ 0.875?
-		+ UIPreferences		
-		+ Decay (rust) (*)
-		+ Ship descriptions (*)
-		+ ShipRenderContext: make water color depend on ocean render mode color
-			+ Get FPS before
-			+ Water color in shader has to become parameter
-			+ OceanRenderMode:
-				+ Texture: waterColor=<constant matching now>
-				+ Flat: waterColor=<that flat color>
-				+ Gradient: waterColor=<mid color>
-			+ Test x 3
-			+ Get FPS after
-		+ Ships
-		+ Less stress sounds: use mIsStressed buffer, w/high and low watermarks
-			+ Get FPS before
-			+ Do
-			+ Test
-			+ See if can remove "negligible" check now
-		+ Fix air bubble progress issue
-			+ Confirm repro test
-			+ Get FPS before at bubble tool:
-			+ Do
-			+ Test
-		+ Send for testing
-		+ New ships
-		+ Check "Smash" bug
-		+ Add other testers to About box
-		+ Finalize descriptions
-		- Release
 
 	= 1.11.0:
-
 		+ Orphaned points (*)
 		+ Increase # of ephemeral particles
 			+ And thus lower water intake threshold for air bubbles
 		+ Sea and Ocean Floor rearc(*)
+		+ Change cover art to Logo2
+			+ About box image
+				+ And remove "Cover art" credit altogether
+			+ Installer
 
 		= Fix Linux build break
 			+ Do specialization outside of class
 			+ Set /permissive- for all projects
 		- Take Mathias' pull request
-
-		= Change cover art to Logo2
-			+ About box image
-				+ And remove "Cover art" credit altogether
-			- Installer
 
 		- Try to build with Runtime Type Information disabled
 
@@ -5207,4 +5101,109 @@ IF WX:
 			+ Try dividing by dtSquared
 		+ Fix V offset of AM bomb cursor
 		+ Slice-while-paused bug
+	+ 1.10.0
+		+ See if lights can make texture colors come out at night, rather than just yellow-izing it
+			+ ShipTrianglesTexture shader: use local light as "additive" to ambient light (to draw colors)
+			+ Split Points:: colorBuffer upload to own func
+				+ RenderContext: range-based
+			+ Remove logs and shader TODOs
+			+ Check intensity at distance==0
+			+ Change luminance to 1 rather than 2
+				+ See first what difference it makes
+				+ Change in materials.json
+				+ Enforce in electrical material
+				+ Verify fixes issue
+				+ Constrain luminiscence adjust to max 1
+					+ Or change how to apply adjustment
+					+ Change tooltip and minimum
+			+ If it works, also these shaders:
+				+ TrianglesColor
+				+ PointsColor
+				+ Ropes
+				+ SpringsColor
+				+ SpringsTexture
+			+ See if passing vec instead of floats among shaders helps with perf
+		+ EventTickerPanel:
+			+ Fix name of AM bomb @ placed (and @ al?)
+		+ Bounded World
+			+ GameParameters: MaxWorldWidth, Height
+				+ Remove MaxZoom, MinZoom
+				+ Use very small world for now
+			+ Constrain view changes:
+				+ ViewModel:
+					+ float ClampXYZ() -> clamped value
+					+ CanvasSize changes: make sure the largest visible world dimension stays the same
+						+ i.e., adjust zoom so that the new visible world dimensions are contained within the old one
+				+ Use at GameController:
+					+ Zoom updates
+						+ Get back value
+					+ Camera updates
+						+ Get back value
+					+ CanvasSize update: pickup changes and reset smoothing
+				+ Test
+			+ Constrain physics:
+				+ Ship::Update: at end of mech physics (after last integrate): 
+					+ Destroy points (also with sounds, it's OK) that are outside of bounding box
+					+ No destroy points, just do simple bounce w/bounded velocity
+			+ Verify AM bomb issue is gone
+			+ Test in Debug
+			+ Make larger bounding world
+				+ W: 10000
+				+ H: MaxSeaDepth * 4
+				+ w/static_assert for ocean depth
+			+ Figure out where it is that the submarine disappears
+			+ Fix water drag 
+				+ Find coefficient for linear drag in "slow" range
+				+ When done: see if bounds of water drag adjustment are still good
+					+ Test at new max (1K) - do ship pieces go to a standstill?
+			+ Verify AM bomb issue is gone
+			+ Get current FPS
+			+ Changes.txt		
+			+ Merge to master			
+		+ See move tool changing center
+			+ Is it because of missing last step?
+				+ Should finalize only after last step, making sure to clamp elapsed to Lag first
+		+ Create dump upon crash
+			+ https://stackoverflow.com/questions/9020353/create-a-dump-file-for-an-application-whenever-it-crashes
+			+ In app folder, via StandardSystemPaths
+				+ Under \CrashDumps
+			+ Try with empty png and corrupted png
+		+ VAO (*)
+		+ Misc OpenGL Optimizations (*)
+		+ Secondary PlaneIDAsFloat buffer
+			+ We only pay the price sparingly, but reap the benefits at each frame
+			+ Code
+		+ Vertex buffer optimizations (*)
+		+ Update FPS & perf analysis
+		+ Water Contrast @ 0.875?
+		+ UIPreferences		
+		+ Decay (rust) (*)
+		+ Ship descriptions (*)
+		+ ShipRenderContext: make water color depend on ocean render mode color
+			+ Get FPS before
+			+ Water color in shader has to become parameter
+			+ OceanRenderMode:
+				+ Texture: waterColor=<constant matching now>
+				+ Flat: waterColor=<that flat color>
+				+ Gradient: waterColor=<mid color>
+			+ Test x 3
+			+ Get FPS after
+		+ Ships
+		+ Less stress sounds: use mIsStressed buffer, w/high and low watermarks
+			+ Get FPS before
+			+ Do
+			+ Test
+			+ See if can remove "negligible" check now
+		+ Fix air bubble progress issue
+			+ Confirm repro test
+			+ Get FPS before at bubble tool:
+			+ Do
+			+ Test
+		+ Send for testing
+		+ New ships
+		+ Check "Smash" bug
+		+ Add other testers to About box
+		+ Finalize descriptions
+		+ Release
+
 
