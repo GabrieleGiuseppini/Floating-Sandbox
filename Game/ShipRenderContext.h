@@ -273,6 +273,7 @@ public:
     {
         size_t const planeIndex = static_cast<size_t>(planeId);
 
+        // Pre-sized
         assert(planeIndex < mGenericTexturePlaneVertexBuffers.size());
 
         // Get this plane's vertex buffer
@@ -364,8 +365,8 @@ public:
             alpha,
             lightSensitivity);
 
-        // Update max size among all planes
-        mGenericTextureMaxPlaneVertexBufferSize = std::max(mGenericTextureMaxPlaneVertexBufferSize, vertexBuffer.size());
+        // Update total count of quads
+        ++mGenericTextureQuadCount;
     }
 
     //
@@ -507,9 +508,9 @@ private:
     GameOpenGLVBO mStressedSpringElementVBO;
 
     std::vector<GenericTexturePlaneData> mGenericTexturePlaneVertexBuffers;
-    size_t mGenericTextureMaxPlaneVertexBufferSize;
+    size_t mGenericTextureQuadCount;
     GameOpenGLVBO mGenericTextureVBO;
-    size_t mGenericTextureVBOAllocatedSize;
+    size_t mGenericTextureVBOAllocatedQuadCount;
 
     std::vector<vec3f> mVectorArrowVertexBuffer;
     GameOpenGLVBO mVectorArrowVBO;

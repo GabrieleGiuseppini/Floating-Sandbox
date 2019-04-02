@@ -11,6 +11,8 @@
 #include <GameCore/GameMath.h>
 #include <GameCore/Log.h>
 
+#include <cstring>
+
 namespace Render {
 
 ShipRenderContext::ShipRenderContext(
@@ -47,9 +49,9 @@ ShipRenderContext::ShipRenderContext(
     , mStressedSpringElementVBO()
     //
     , mGenericTexturePlaneVertexBuffers()
-    , mGenericTextureMaxPlaneVertexBufferSize(0)
+    , mGenericTextureQuadCount(0)
     , mGenericTextureVBO()
-    , mGenericTextureVBOAllocatedSize()
+    , mGenericTextureVBOAllocatedQuadCount()
     //
     , mVectorArrowVertexBuffer()
     , mVectorArrowVBO()
@@ -634,7 +636,7 @@ void ShipRenderContext::RenderStart(PlaneId maxMaxPlaneId)
 
     mGenericTexturePlaneVertexBuffers.clear();
     mGenericTexturePlaneVertexBuffers.resize(maxMaxPlaneId + 1);
-    mGenericTextureMaxPlaneVertexBufferSize = 0;
+    mGenericTextureQuadCount = 0;
 
 
     //
@@ -1198,7 +1200,7 @@ void ShipRenderContext::RenderEnd()
 
 void ShipRenderContext::RenderGenericTextures()
 {
-    if (mGenericTextureMaxPlaneVertexBufferSize > 0)
+    if (mGenericTextureQuadCount > 0)
     {
         glBindVertexArray(*mGenericTextureVAO);
 
@@ -1207,56 +1209,56 @@ void ShipRenderContext::RenderGenericTextures()
         if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
             glLineWidth(0.1f);
 
-        // Bind VBO once and for all
+        // Bind VBO
         glBindBuffer(GL_ARRAY_BUFFER, *mGenericTextureVBO);
 
+        //
+        // Upload vertex buffers
+        //
+
         // (Re-)Allocate vertex buffer, if needed
-        if (mGenericTextureVBOAllocatedSize != mGenericTextureMaxPlaneVertexBufferSize)
+        if (mGenericTextureVBOAllocatedQuadCount != mGenericTextureQuadCount)
         {
-            glBufferData(GL_ARRAY_BUFFER, mGenericTextureMaxPlaneVertexBufferSize * sizeof(GenericTextureVertex), nullptr, GL_DYNAMIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, mGenericTextureQuadCount * 6 * sizeof(GenericTextureVertex), nullptr, GL_DYNAMIC_DRAW);
             CheckOpenGLError();
 
-            mGenericTextureVBOAllocatedSize = mGenericTextureMaxPlaneVertexBufferSize;
+            mGenericTextureVBOAllocatedQuadCount = mGenericTextureQuadCount;
         }
 
-        //
-        // Draw, separately for each plane
-        //
+        // Map vertex buffer
+        auto mappedBuffer = reinterpret_cast<uint8_t *>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
+        CheckOpenGLError();
 
+        // Copy all buffers
         for (auto const & plane : mGenericTexturePlaneVertexBuffers)
         {
             if (!plane.vertexBuffer.empty())
             {
-                //
-                // Upload vertex buffer
-                //
+                size_t const byteCopySize = plane.vertexBuffer.size() * sizeof(GenericTextureVertex);
+                std::memcpy(mappedBuffer, plane.vertexBuffer.data(), byteCopySize);
 
-                assert(plane.vertexBuffer.size() <= mGenericTextureVBOAllocatedSize);
-
-                glBufferSubData(
-                    GL_ARRAY_BUFFER,
-                    0,
-                    plane.vertexBuffer.size() * sizeof(GenericTextureVertex),
-                    plane.vertexBuffer.data());
-
-                CheckOpenGLError();
-
-
-                //
-                // Render
-                //
-
-                assert((plane.vertexBuffer.size() % 6) == 0);
-                glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(plane.vertexBuffer.size()));
-
-
-                //
-                // Update stats
-                //
-
-                mRenderStatistics.LastRenderedShipGenericTextures += plane.vertexBuffer.size() / 6;
+                // Advance
+                mappedBuffer += byteCopySize;
             }
         }
+
+        // Unmap vertex buffer
+        glUnmapBuffer(GL_ARRAY_BUFFER);
+
+
+        //
+        // Render
+        //
+
+        assert((plane.vertexBuffer.size() % 6) == 0);
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mGenericTextureQuadCount * 6));
+
+
+        //
+        // Update stats
+        //
+
+        mRenderStatistics.LastRenderedShipGenericTextures += mGenericTextureQuadCount;
 
         glBindVertexArray(0);
     }

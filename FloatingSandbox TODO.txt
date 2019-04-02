@@ -672,7 +672,7 @@ Render:
 - Dynamics:
 
 	= Repair tool (*)
-		= 1) No Points::Destroy/Delete, but Detach()
+		+ 1) No Points::Destroy/Delete, but Detach()
 			+ Points::Detach(.), also at Handler
 			+ No IsDeleted() checks anymore, anywhere
 			+ Whenever we used to delete, we now detach and inject velocity
@@ -700,12 +700,16 @@ Render:
 					+ Destroyed
 					+ On ephemeral that becomes expired
 			+ If pinned points OK: remove TODOTEST for OnSpringDeleted
-			- Check perf
-				- 29.3/29.4
-			- Commit (to new branch)
-		- Do perf analysis with many air bubbles
+			+ Check perf
+				+ 29.9/30.0
+			+ Commit (to new branch)
+		+ Do perf analysis with many air bubbles
 			+ Make sure we don't make OpenGL calls for the zero-size gentex vectors
-			- Check perf impact of GenTex sorting with many plane IDs?
+			+ Check perf impact of single GenTex draw call
+				+ Mapbuffer & copy all
+				+ Get rid of maxMaxPlaneId for gentex's
+				+ Test:
+					+ Bombs cover each other
 		- 2) Maintain factory connections
 			+ Not electricals (at least for now)
 			- Points:
