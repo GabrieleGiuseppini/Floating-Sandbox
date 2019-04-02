@@ -18,7 +18,8 @@ class GameEventDispatcher : public IGameEventHandler
 public:
 
     GameEventDispatcher()
-        : mStressEvents()
+        : mPointAttachedEvents()
+        , mStressEvents()
         , mBreakEvents()
         , mSinkingBeginEvents()
         , mLightFlickerEvents()
@@ -62,6 +63,15 @@ public:
         {
             sink->OnDestroy(structuralMaterial, isUnderwater, size);
         }
+    }
+
+
+    virtual void OnPointAttached(
+        StructuralMaterial const & structuralMaterial,
+        bool isUnderwater,
+        unsigned int size) override
+    {
+        mPointAttachedEvents[std::make_tuple(&structuralMaterial, isUnderwater)] += size;
     }
 
     virtual void OnSawed(
@@ -302,6 +312,11 @@ public:
         // Publish aggregations
         for (IGameEventHandler * sink : mSinks)
         {
+            for (auto const & entry : mPointAttachedEvents)
+            {
+                sink->OnPointAttached(*(std::get<0>(entry.first)), std::get<1>(entry.first), entry.second);
+            }
+
             for (auto const & entry : mStressEvents)
             {
                 sink->OnStress(*(std::get<0>(entry.first)), std::get<1>(entry.first), entry.second);
@@ -356,6 +371,7 @@ public:
 private:
 
     // The current events being aggregated
+    unordered_tuple_map<std::tuple<StructuralMaterial const *, bool>, unsigned int> mPointAttachedEvents;
     unordered_tuple_map<std::tuple<StructuralMaterial const *, bool>, unsigned int> mStressEvents;
     unordered_tuple_map<std::tuple<StructuralMaterial const *, bool>, unsigned int> mBreakEvents;
     std::vector<ShipId> mSinkingBeginEvents;

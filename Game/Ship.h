@@ -221,11 +221,14 @@ private:
         ElementIndex pointAElementIndex,
         ElementIndex pointBElementIndex);
 
-    void PointDestroyHandler(
+    void PointDetachHandler(
         ElementIndex pointElementIndex,
         bool generateDebris,
         float currentSimulationTime,
         GameParameters const & gameParameters);
+
+    void EphemeralParticleDestroyHandler(
+        ElementIndex pointElementIndex);
 
     void SpringDestroyHandler(
         ElementIndex springElementIndex,

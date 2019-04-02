@@ -23,9 +23,7 @@ void Points::Add(
     vec4f const & color,
     vec2f const & textureCoordinates)
 {
-    ElementIndex const pointIndex = static_cast<ElementIndex>(mIsDeletedBuffer.GetCurrentPopulatedSize());
-
-    mIsDeletedBuffer.emplace_back(false);
+    ElementIndex const pointIndex = static_cast<ElementIndex>(mMaterialsBuffer.GetCurrentPopulatedSize());
 
     mMaterialsBuffer.emplace_back(&structuralMaterial, electricalMaterial);
     mIsRopeBuffer.emplace_back(isRope);
@@ -102,8 +100,6 @@ void Points::CreateEphemeralParticleAirBubble(
     // Store attributes
     //
 
-    mIsDeletedBuffer[pointIndex] = false;
-
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = vec2f::zero();
     mForceBuffer[pointIndex] = vec2f::zero();
@@ -158,8 +154,6 @@ void Points::CreateEphemeralParticleDebris(
     // Store attributes
     //
 
-    mIsDeletedBuffer[pointIndex] = false;
-
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
     mForceBuffer[pointIndex] = vec2f::zero();
@@ -213,8 +207,6 @@ void Points::CreateEphemeralParticleSparkle(
     // Store attributes
     //
 
-    mIsDeletedBuffer[pointIndex] = false;
-
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
     mForceBuffer[pointIndex] = vec2f::zero();
@@ -248,44 +240,47 @@ void Points::CreateEphemeralParticleSparkle(
     assert(false == mIsPinnedBuffer[pointIndex]);
 }
 
-void Points::Destroy(
+void Points::Detach(
     ElementIndex pointElementIndex,
-    DestroyOptions destroyOptions,
+    vec2f const & velocity,
+    DetachOptions detachOptions,
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
-    assert(pointElementIndex < mElementCount);
-    assert(!IsDeleted(pointElementIndex));
-
-    // Invoke destroy handler
-    if (!!mDestroyHandler)
+    // Invoke detach handler
+    if (!!mDetachHandler)
     {
-        mDestroyHandler(
+        mDetachHandler(
             pointElementIndex,
-            !!(destroyOptions & Points::DestroyOptions::GenerateDebris),
+            !!(detachOptions & Points::DetachOptions::GenerateDebris),
             currentSimulationTime,
             gameParameters);
     }
 
-    // Fire point destroy event
+    // Imprint velocity, unless the point is pinned
+    if (!mIsPinnedBuffer[pointElementIndex])
+    {
+        mVelocityBuffer[pointElementIndex] = velocity;
+    }
+}
+
+void Points::DestroyEphemeralParticle(
+    ElementIndex pointElementIndex)
+{
+    // Invoke handler
+    if (!!mEphemeralParticleDestroyHandler)
+    {
+        mEphemeralParticleDestroyHandler(pointElementIndex);
+    }
+
+    // Fire destroy event
     mGameEventHandler->OnDestroy(
         GetStructuralMaterial(pointElementIndex),
         mParentWorld.IsUnderwater(GetPosition(pointElementIndex)),
         1u);
 
-    // Flag ourselves as deleted
-    mIsDeletedBuffer[pointElementIndex] = true;
-
-    // Let the physical world forget about us
-    mPositionBuffer[pointElementIndex] = vec2f::zero();
-    mVelocityBuffer[pointElementIndex] = vec2f::zero();
-    mIntegrationFactorTimeCoefficientBuffer[pointElementIndex] = 0.0f;
-    mWaterVelocityBuffer[pointElementIndex] = vec2f::zero();
-    mWaterMomentumBuffer[pointElementIndex] = vec2f::zero();
-
-    // We're not anymore an ephemeral particle
-    // (in case we were one...
-    mEphemeralTypeBuffer[pointElementIndex] = EphemeralType::None;
+    // Expire particle
+    ExpireEphemeralParticle(pointElementIndex);
 }
 
 void Points::UpdateGameParameters(GameParameters const & gameParameters)
@@ -296,14 +291,7 @@ void Points::UpdateGameParameters(GameParameters const & gameParameters)
         // Recalc integration factor time coefficients
         for (ElementIndex i : *this)
         {
-            if (!IsDeleted(i))
-            {
-                mIntegrationFactorTimeCoefficientBuffer[i] = CalculateIntegrationFactorTimeCoefficient(numMechanicalDynamicsIterations);
-            }
-            else
-            {
-                assert(mIntegrationFactorTimeCoefficientBuffer[i] = 0.0f);
-            }
+            mIntegrationFactorTimeCoefficientBuffer[i] = CalculateIntegrationFactorTimeCoefficient(numMechanicalDynamicsIterations);
         }
 
         // Remember the new values
@@ -320,8 +308,6 @@ void Points::UpdateEphemeralParticles(
         auto const ephemeralType = GetEphemeralType(pointIndex);
         if (EphemeralType::None != ephemeralType)
         {
-            assert(!IsDeleted(pointIndex));
-
             //
             // Run this particle's state machine
             //
@@ -330,45 +316,49 @@ void Points::UpdateEphemeralParticles(
             {
                 case EphemeralType::AirBubble:
                 {
-                    float const waterHeight = mParentWorld.GetWaterHeightAt(GetPosition(pointIndex).x);
-                    float const deltaY = waterHeight - GetPosition(pointIndex).y;
-
-                    if (deltaY <= 0.0f)
+                    // Do not advance air bubble it it's pinned
+                    if (!mIsPinnedBuffer[pointIndex])
                     {
-                        // Got to the surface, expire
-                        ExpireEphemeralParticle(pointIndex);
-                    }
-                    else
-                    {
-                        //
-                        // Update progress based off y
-                        //
+                        float const waterHeight = mParentWorld.GetWaterHeightAt(GetPosition(pointIndex).x);
+                        float const deltaY = waterHeight - GetPosition(pointIndex).y;
 
-                        mEphemeralStateBuffer[pointIndex].AirBubble.CurrentDeltaY = deltaY;
+                        if (deltaY <= 0.0f)
+                        {
+                            // Got to the surface, expire
+                            ExpireEphemeralParticle(pointIndex);
+                        }
+                        else
+                        {
+                            //
+                            // Update progress based off y
+                            //
 
-                        mEphemeralStateBuffer[pointIndex].AirBubble.Progress =
-                            -1.0f
-                            / (-1.0f + std::min(GetPosition(pointIndex).y, 0.0f));
+                            mEphemeralStateBuffer[pointIndex].AirBubble.CurrentDeltaY = deltaY;
 
-                        //
-                        // Update vortex
-                        //
+                            mEphemeralStateBuffer[pointIndex].AirBubble.Progress =
+                                -1.0f
+                                / (-1.0f + std::min(GetPosition(pointIndex).y, 0.0f));
 
-                        float const lifetime = currentSimulationTime - mEphemeralStartTimeBuffer[pointIndex];
+                            //
+                            // Update vortex
+                            //
 
-                        float const vortexAmplitude =
-                            mEphemeralStateBuffer[pointIndex].AirBubble.VortexAmplitude
-                            + mEphemeralStateBuffer[pointIndex].AirBubble.Progress;
+                            float const lifetime = currentSimulationTime - mEphemeralStartTimeBuffer[pointIndex];
 
-                        float vortexValue =
-                            vortexAmplitude
-                            * sin(lifetime * mEphemeralStateBuffer[pointIndex].AirBubble.VortexFrequency);
+                            float const vortexAmplitude =
+                                mEphemeralStateBuffer[pointIndex].AirBubble.VortexAmplitude
+                                + mEphemeralStateBuffer[pointIndex].AirBubble.Progress;
 
-                        // Update position
-                        mPositionBuffer[pointIndex].x +=
-                            vortexValue - mEphemeralStateBuffer[pointIndex].AirBubble.LastVortexValue;
+                            float vortexValue =
+                                vortexAmplitude
+                                * sin(lifetime * mEphemeralStateBuffer[pointIndex].AirBubble.VortexFrequency);
 
-                        mEphemeralStateBuffer[pointIndex].AirBubble.LastVortexValue = vortexValue;
+                            // Update position
+                            mPositionBuffer[pointIndex].x +=
+                                vortexValue - mEphemeralStateBuffer[pointIndex].AirBubble.LastVortexValue;
+
+                            mEphemeralStateBuffer[pointIndex].AirBubble.LastVortexValue = vortexValue;
+                        }
                     }
 
                     break;
@@ -547,15 +537,12 @@ void Points::UploadNonEphemeralPointElements(
 
     for (ElementIndex pointIndex : NonEphemeralPoints())
     {
-        if (!mIsDeletedBuffer[pointIndex])
+        if (doUploadAllPoints
+            || mConnectedSpringsBuffer[pointIndex].ConnectedSprings.empty()) // orphaned
         {
-            if (doUploadAllPoints
-                || mConnectedSpringsBuffer[pointIndex].ConnectedSprings.empty()) // orphaned
-            {
-                renderContext.UploadShipElementPoint(
-                    shipId,
-                    pointIndex);
-            }
+            renderContext.UploadShipElementPoint(
+                shipId,
+                pointIndex);
         }
     }
 }
@@ -627,8 +614,6 @@ void Points::UploadEphemeralParticles(
 
     for (ElementIndex pointIndex : this->EphemeralPoints())
     {
-        assert(GetEphemeralType(pointIndex) == EphemeralType::None || !IsDeleted(pointIndex));
-
         switch (GetEphemeralType(pointIndex))
         {
             case EphemeralType::AirBubble:

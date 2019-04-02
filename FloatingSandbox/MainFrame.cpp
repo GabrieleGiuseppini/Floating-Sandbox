@@ -759,6 +759,9 @@ void MainFrame::OnKeyDown(wxKeyEvent & event)
 
         assert(!!mToolController);
         mToolController->SetTool(ToolType::InjectAirBubbles);
+
+        // Note: at this moment the current menu item is still selected, so re-selecting it has no effect; there's no way
+        // around this, but this is an Easter Egg after all....
     }
 
     event.Skip();

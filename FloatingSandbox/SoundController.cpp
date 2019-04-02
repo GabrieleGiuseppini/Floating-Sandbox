@@ -849,6 +849,25 @@ void SoundController::OnDestroy(
     }
 }
 
+void SoundController::OnPointAttached(
+    StructuralMaterial const & structuralMaterial,
+    bool isUnderwater,
+    unsigned int size)
+{
+    if (!!(structuralMaterial.MaterialSound))
+    {
+        /* TODO
+        PlayMSUOneShotMultipleChoiceSound(
+            SoundType::Attach,
+            *(structuralMaterial.MaterialSound),
+            size,
+            isUnderwater,
+            70.0f,
+            true);
+            */
+    }
+}
+
 void SoundController::OnSawed(
     bool isMetal,
     unsigned int size)

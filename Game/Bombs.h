@@ -52,7 +52,7 @@ public:
         GameWallClock::time_point currentWallClockTime,
         GameParameters const & gameParameters);
 
-    void OnPointDestroyed(ElementIndex pointElementIndex);
+    void OnPointDetached(ElementIndex pointElementIndex);
 
     void OnSpringDestroyed(ElementIndex springElementIndex);
 

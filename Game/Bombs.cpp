@@ -41,7 +41,7 @@ void Bombs::Update(
     }
 }
 
-void Bombs::OnPointDestroyed(ElementIndex pointElementIndex)
+void Bombs::OnPointDetached(ElementIndex pointElementIndex)
 {
     auto squareNeighborhoodRadius = GameParameters::BombNeighborhoodRadius * GameParameters::BombNeighborhoodRadius;
 

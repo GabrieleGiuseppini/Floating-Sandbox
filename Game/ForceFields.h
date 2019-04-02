@@ -90,11 +90,11 @@ public:
         vec2f const & centerPosition,
         float blastRadius,
         float strength,
-        bool destroyPoint)
+        bool detachPoint)
         : mCenterPosition(centerPosition)
         , mBlastRadius(blastRadius)
         , mStrength(strength)
-        , mDestroyPoint(destroyPoint)
+        , mDetachPoint(detachPoint)
     {}
 
     virtual void Apply(
@@ -107,7 +107,7 @@ private:
     vec2f const mCenterPosition;
     float const mBlastRadius;
     float const mStrength;
-    bool const mDestroyPoint;
+    bool const mDetachPoint;
 };
 
 /*

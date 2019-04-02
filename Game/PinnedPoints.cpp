@@ -7,7 +7,7 @@
 
 namespace Physics {
 
-void PinnedPoints::OnPointDestroyed(ElementIndex pointElementIndex)
+void PinnedPoints::OnEphemeralParticleDestroyed(ElementIndex pointElementIndex)
 {
     //
     // If the point is pinned, unpin it
@@ -22,37 +22,6 @@ void PinnedPoints::OnPointDestroyed(ElementIndex pointElementIndex)
 
         // Remove from stack
         mCurrentPinnedPoints.erase(it);
-    }
-}
-
-void PinnedPoints::OnSpringDestroyed(ElementIndex springElementIndex)
-{
-    //
-    // If an endpoint was pinned and it has now lost all of its springs, then make
-    // it unpinned
-    //
-
-    auto const pointAIndex = mShipSprings.GetPointAIndex(springElementIndex);
-    auto const pointBIndex = mShipSprings.GetPointBIndex(springElementIndex);
-
-    if (mShipPoints.IsPinned(pointAIndex)
-        && mShipPoints.GetConnectedSprings(pointAIndex).ConnectedSprings.empty())
-    {
-        // Unpin it
-        mShipPoints.Unpin(pointAIndex);
-
-        // Remove from set of pinned points
-        mCurrentPinnedPoints.erase(pointAIndex);
-    }
-
-    if (mShipPoints.IsPinned(pointBIndex)
-        && mShipPoints.GetConnectedSprings(pointBIndex).ConnectedSprings.empty())
-    {
-        // Unpin it
-        mShipPoints.Unpin(pointBIndex);
-
-        // Remove from set of pinned points
-        mCurrentPinnedPoints.erase(pointBIndex);
     }
 }
 

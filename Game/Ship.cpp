@@ -78,8 +78,9 @@ Ship::Ship(
 {
     mPlaneTriangleIndicesToRender.reserve(mTriangles.GetElementCount());
 
-    // Set destroy handlers
-    mPoints.RegisterDestroyHandler(std::bind(&Ship::PointDestroyHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
+    // Set handlers
+    mPoints.RegisterDetachHandler(std::bind(&Ship::PointDetachHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
+    mPoints.RegisterEphemeralParticleDestroyHandler(std::bind(&Ship::EphemeralParticleDestroyHandler, this, std::placeholders::_1));
     mSprings.RegisterDestroyHandler(std::bind(&Ship::SpringDestroyHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
     mTriangles.RegisterDestroyHandler(std::bind(&Ship::TriangleDestroyHandler, this, std::placeholders::_1));
     mElectricalElements.RegisterDestroyHandler(std::bind(&Ship::ElectricalElementDestroyHandler, this, std::placeholders::_1));
@@ -151,22 +152,37 @@ void Ship::DestroyAt(
 
     float const squareRadius = radius * radius;
 
-    // Destroy all points within the radius
+    // Detach/destroy all active, attached points within the radius
     for (auto pointIndex : mPoints)
     {
-        // The only ephemeral points we allow to delete are air bubbles
-        if (!mPoints.IsDeleted(pointIndex)
-            && (Points::EphemeralType::None == mPoints.GetEphemeralType(pointIndex)
-                || Points::EphemeralType::AirBubble == mPoints.GetEphemeralType(pointIndex)))
+        if (mPoints.IsActive(pointIndex)
+            && (mPoints.GetPosition(pointIndex) - targetPos).squareLength() < squareRadius)
         {
-            if ((mPoints.GetPosition(pointIndex) - targetPos).squareLength() < squareRadius)
+            //
+            // - Air bubble ephemeral points: destroy
+            // - Non-ephemeral, attached points: detach
+            //
+
+            if (Points::EphemeralType::None == mPoints.GetEphemeralType(pointIndex)
+                && mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() > 0)
             {
-                // Destroy point
-                mPoints.Destroy(
+                // Choose a detach velocity - using the same distribution as Debris
+                vec2f detachVelocity = GameRandomEngine::GetInstance().GenerateRandomRadialVector(
+                    GameParameters::MinDebrisParticlesVelocity,
+                    GameParameters::MaxDebrisParticlesVelocity);
+
+                // Detach
+                mPoints.Detach(
                     pointIndex,
-                    Points::DestroyOptions::GenerateDebris,
+                    detachVelocity,
+                    Points::DetachOptions::GenerateDebris,
                     currentSimulationTime,
                     gameParameters);
+            }
+            else if (Points::EphemeralType::AirBubble == mPoints.GetEphemeralType(pointIndex))
+            {
+                // Destroy
+                mPoints.DestroyEphemeralParticle(pointIndex);
             }
         }
     }
@@ -307,8 +323,7 @@ bool Ship::FloodAt(
     bool anyHasFlooded = false;
     for (auto pointIndex : mPoints.NonEphemeralPoints())
     {
-        if (!mPoints.IsDeleted(pointIndex)
-            && !mPoints.IsHull(pointIndex))
+        if (!mPoints.IsHull(pointIndex))
         {
             float squareDistance = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
             if (squareDistance < searchSquareRadius)
@@ -417,7 +432,7 @@ bool Ship::ScrubThrough(
                     mPoints.GetDecay(pointIndex)
                     + 0.5f * (1.0f - mPoints.GetDecay(pointIndex)) * (scrubRadius - distance) / scrubRadius;
 
-                    mPoints.SetDecay(pointIndex, newDecay);
+                mPoints.SetDecay(pointIndex, newDecay);
 
                 // Remember at least one point has been scrubbed
                 hasScrubbed |= true;
@@ -445,7 +460,7 @@ ElementIndex Ship::GetNearestPointAt(
 
     for (auto pointIndex : mPoints)
     {
-        if (!mPoints.IsDeleted(pointIndex))
+        if (mPoints.IsActive(pointIndex))
         {
             float squareDistance = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
             if (squareDistance < squareRadius && squareDistance < bestSquareDistance)
@@ -470,7 +485,7 @@ bool Ship::QueryNearestPointAt(
 
     for (auto pointIndex : mPoints)
     {
-        if (!mPoints.IsDeleted(pointIndex))
+        if (mPoints.IsActive(pointIndex))
         {
             float squareDistance = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
             if (squareDistance < squareRadius && squareDistance < bestSquareDistance)
@@ -563,7 +578,7 @@ void Ship::Update(
     //
     // Update bombs
     //
-    // Might cause explosions; might cause points to be destroyed
+    // Might cause explosions; might cause elements to be detached/destroyed
     // (which would flag our structure as dirty)
     //
 
@@ -1032,7 +1047,8 @@ void Ship::HandleCollisionsWithSeaFloor(GameParameters const & gameParameters)
 {
     //
     // We handle collisions really simplistically: we move back points to where they were
-    // at the last update, when they were NOT under the ocean floor, and fully bounce velocity back.
+    // at the last update, when they were NOT under the ocean floor, and bounce velocity back
+    // with some inelastic loss.
     //
     // Regarding calculating the post-collision position: ideally we would have to find the
     // mid-point - between the position at t-1 and t - at which we really entered the sea floor,
@@ -1047,6 +1063,9 @@ void Ship::HandleCollisionsWithSeaFloor(GameParameters const & gameParameters)
     // Hence we're gonna stick with this simple algorithm.
     //
 
+    // The fraction of velocity that bounces back (we model inelastic bounces)
+    static constexpr float VelocityBounceFraction = 0.75f;
+
     float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
 
     for (auto pointIndex : mPoints)
@@ -1058,14 +1077,20 @@ void Ship::HandleCollisionsWithSeaFloor(GameParameters const & gameParameters)
             // Move point back to where it was
             mPoints.GetPosition(pointIndex) -= mPoints.GetVelocity(pointIndex) * dt;
 
-            // Bounce velocity (naively)
-            mPoints.GetVelocity(pointIndex) = -mPoints.GetVelocity(pointIndex);
+            // Bounce velocity (naively), with some inelastic absorption
+            mPoints.GetVelocity(pointIndex) =
+                -mPoints.GetVelocity(pointIndex)
+                * VelocityBounceFraction;
 
             // Add a small normal component, so to have some non-infinite friction
+
             vec2f seaFloorNormal = vec2f(
                 floorheight - mParentWorld.GetOceanFloorHeightAt(mPoints.GetPosition(pointIndex).x + 0.01f),
+
                 0.01f).normalise();
-            mPoints.GetVelocity(pointIndex) += seaFloorNormal * 0.5f;
+            mPoints.GetVelocity(pointIndex) +=
+                seaFloorNormal
+                * 0.5f;
         }
     }
 }
@@ -1175,92 +1200,88 @@ void Ship::UpdateWaterInflow(
 
     for (auto pointIndex : mPoints)
     {
-        // Avoid taking water into points that are destroyed, as that would change total water taken
-        if (!mPoints.IsDeleted(pointIndex))
+        if (mPoints.IsLeaking(pointIndex))
         {
-            if (mPoints.IsLeaking(pointIndex))
+            //
+            // 1) Calculate velocity of incoming water, based off Bernoulli's equation applied to point:
+            //  v**2/2 + p/density = c (assuming y of incoming water does not change along the intake)
+            //      With: p = pressure of water at point = d*wh*g (d = water density, wh = water height in point)
+            //
+            // Considering that at equilibrium we have v=0 and p=external_pressure,
+            // then c=external_pressure/density;
+            // external_pressure is height_of_water_at_y*g*density, then c=height_of_water_at_y*g;
+            // hence, the velocity of water incoming at point p, when the "water height" in the point is already
+            // wh and the external water pressure is d*height_of_water_at_y*g, is:
+            //  v = +/- sqrt(2*g*|height_of_water_at_y-wh|)
+            //
+
+            float const externalWaterHeight = std::max(
+                mParentWorld.GetWaterHeightAt(mPoints.GetPosition(pointIndex).x) - mPoints.GetPosition(pointIndex).y,
+                0.0f);
+
+            float const internalWaterHeight = mPoints.GetWater(pointIndex);
+
+            float incomingWaterVelocity;
+            if (externalWaterHeight >= internalWaterHeight)
             {
-                //
-                // 1) Calculate velocity of incoming water, based off Bernoulli's equation applied to point:
-                //  v**2/2 + p/density = c (assuming y of incoming water does not change along the intake)
-                //      With: p = pressure of water at point = d*wh*g (d = water density, wh = water height in point)
-                //
-                // Considering that at equilibrium we have v=0 and p=external_pressure,
-                // then c=external_pressure/density;
-                // external_pressure is height_of_water_at_y*g*density, then c=height_of_water_at_y*g;
-                // hence, the velocity of water incoming at point p, when the "water height" in the point is already
-                // wh and the external water pressure is d*height_of_water_at_y*g, is:
-                //  v = +/- sqrt(2*g*|height_of_water_at_y-wh|)
-                //
-
-                float const externalWaterHeight = std::max(
-                    mParentWorld.GetWaterHeightAt(mPoints.GetPosition(pointIndex).x) - mPoints.GetPosition(pointIndex).y,
-                    0.0f);
-
-                float const internalWaterHeight = mPoints.GetWater(pointIndex);
-
-                float incomingWaterVelocity;
-                if (externalWaterHeight >= internalWaterHeight)
-                {
-                    // Incoming water
-                    incomingWaterVelocity = sqrtf(2.0f * GameParameters::GravityMagnitude * (externalWaterHeight - internalWaterHeight));
-                }
-                else
-                {
-                    // Outgoing water
-                    incomingWaterVelocity = - sqrtf(2.0f * GameParameters::GravityMagnitude * (internalWaterHeight - externalWaterHeight));
-                }
-
-                //
-                // 2) In/Outtake water according to velocity:
-                // - During dt, we move a volume of water Vw equal to A*v*dt; the equivalent change in water
-                //   height is thus Vw/A, i.e. v*dt
-                //
-
-                float newWater =
-                    incomingWaterVelocity
-                    * GameParameters::SimulationStepTimeDuration<float>
-                    * mPoints.GetWaterIntake(pointIndex)
-                    * gameParameters.WaterIntakeAdjustment;
-
-                if (newWater < 0.0f)
-                {
-                    // Outgoing water
-
-                    // Make sure we don't over-drain the point
-                    newWater = -std::min(-newWater, mPoints.GetWater(pointIndex));
-
-                    // Honor the water retention of this material
-                    newWater *= mPoints.GetWaterRestitution(pointIndex);
-                }
-
-                // Adjust water
-                mPoints.GetWater(pointIndex) += newWater;
-
-                // Adjust total cumulated intaken water at this point
-                mPoints.GetCumulatedIntakenWater(pointIndex) += newWater;
-
-                // Check if it's time to produce air bubbles
-                if (mPoints.GetCumulatedIntakenWater(pointIndex) > gameParameters.CumulatedIntakenWaterThresholdForAirBubbles)
-                {
-                    // Generate air bubbles - but not on ropes as that looks awful
-                    if (gameParameters.DoGenerateAirBubbles
-                        && !mPoints.IsRope(pointIndex))
-                    {
-                        GenerateAirBubbles(
-                            mPoints.GetPosition(pointIndex),
-                            currentSimulationTime,
-                            mPoints.GetPlaneId(pointIndex),
-                            gameParameters);
-                    }
-
-                    // Consume all cumulated water
-                    mPoints.GetCumulatedIntakenWater(pointIndex) = 0.0f;
-                }
-
-                // Adjust total water taken during step
-                waterTaken += newWater;
+                // Incoming water
+                incomingWaterVelocity = sqrtf(2.0f * GameParameters::GravityMagnitude * (externalWaterHeight - internalWaterHeight));
             }
+            else
+            {
+                // Outgoing water
+                incomingWaterVelocity = - sqrtf(2.0f * GameParameters::GravityMagnitude * (internalWaterHeight - externalWaterHeight));
+            }
+
+            //
+            // 2) In/Outtake water according to velocity:
+            // - During dt, we move a volume of water Vw equal to A*v*dt; the equivalent change in water
+            //   height is thus Vw/A, i.e. v*dt
+            //
+
+            float newWater =
+                incomingWaterVelocity
+                * GameParameters::SimulationStepTimeDuration<float>
+                * mPoints.GetWaterIntake(pointIndex)
+                * gameParameters.WaterIntakeAdjustment;
+
+            if (newWater < 0.0f)
+            {
+                // Outgoing water
+
+                // Make sure we don't over-drain the point
+                newWater = -std::min(-newWater, mPoints.GetWater(pointIndex));
+
+                // Honor the water retention of this material
+                newWater *= mPoints.GetWaterRestitution(pointIndex);
+            }
+
+            // Adjust water
+            mPoints.GetWater(pointIndex) += newWater;
+
+            // Adjust total cumulated intaken water at this point
+            mPoints.GetCumulatedIntakenWater(pointIndex) += newWater;
+
+            // Check if it's time to produce air bubbles
+            if (mPoints.GetCumulatedIntakenWater(pointIndex) > gameParameters.CumulatedIntakenWaterThresholdForAirBubbles)
+            {
+                // Generate air bubbles - but not on ropes as that looks awful
+                if (gameParameters.DoGenerateAirBubbles
+                    && !mPoints.IsRope(pointIndex))
+                {
+                    GenerateAirBubbles(
+                        mPoints.GetPosition(pointIndex),
+                        currentSimulationTime,
+                        mPoints.GetPlaneId(pointIndex),
+                        gameParameters);
+                }
+
+                // Consume all cumulated water
+                mPoints.GetCumulatedIntakenWater(pointIndex) = 0.0f;
+            }
+
+            // Adjust total water taken during step
+            waterTaken += newWater;
         }
     }
 }
@@ -1829,10 +1850,8 @@ void Ship::RunConnectivityVisit()
     // Visit all non-ephemeral points
     for (auto pointIndex : mPoints.NonEphemeralPointsReverse())
     {
-        // Don't visit destroyed points, or we run the risk of creating a zillion planes for nothing;
-        // also, don't re-visit already-visited points
-        if (!mPoints.IsDeleted(pointIndex)
-            && mPoints.GetCurrentConnectivityVisitSequenceNumber(pointIndex) != visitSequenceNumber)
+        // Don't re-visit already-visited points
+        if (mPoints.GetCurrentConnectivityVisitSequenceNumber(pointIndex) != visitSequenceNumber)
         {
             //
             // Flood a new plane from this point
@@ -1969,12 +1988,14 @@ void Ship::DestroyConnectedTriangles(
     }
 }
 
-void Ship::PointDestroyHandler(
+void Ship::PointDetachHandler(
     ElementIndex pointElementIndex,
     bool generateDebris,
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
+    bool hasAnythingBeenDestroyed = false;
+
     //
     // Destroy all springs attached to this point
     //
@@ -1993,6 +2014,8 @@ void Ship::PointDestroyHandler(
             currentSimulationTime,
             gameParameters,
             mPoints);
+
+        hasAnythingBeenDestroyed = true;
     }
 
     assert(mPoints.GetConnectedSprings(pointElementIndex).ConnectedSprings.empty());
@@ -2010,6 +2033,8 @@ void Ship::PointDestroyHandler(
         assert(!mTriangles.IsDeleted(connectedTriangles.back()));
 
         mTriangles.Destroy(connectedTriangles.back());
+
+        hasAnythingBeenDestroyed = true;
     }
 
     assert(mPoints.GetConnectedTriangles(pointElementIndex).ConnectedTriangles.empty());
@@ -2027,25 +2052,39 @@ void Ship::PointDestroyHandler(
         assert(!mElectricalElements.IsDeleted(mPoints.GetElectricalElement(pointElementIndex)));
 
         mElectricalElements.Destroy(mPoints.GetElectricalElement(pointElementIndex));
+
+        hasAnythingBeenDestroyed = true;
     }
 
-    // Notify bombs
-    mBombs.OnPointDestroyed(pointElementIndex);
-
-    // Notify pinned points
-    mPinnedPoints.OnPointDestroyed(pointElementIndex);
-
-    if (generateDebris)
+    if (hasAnythingBeenDestroyed)
     {
-        // Emit debris
-        GenerateDebris(
-            pointElementIndex,
-            currentSimulationTime,
-            gameParameters);
-    }
+        // Notify bombs
+        mBombs.OnPointDetached(pointElementIndex);
 
-    // Remember the structure is now dirty
-    mIsStructureDirty = true;
+        if (generateDebris)
+        {
+            // Emit debris
+            GenerateDebris(
+                pointElementIndex,
+                currentSimulationTime,
+                gameParameters);
+        }
+
+        // Notify destroy
+        mGameEventHandler->OnDestroy(
+            mPoints.GetStructuralMaterial(pointElementIndex),
+            mParentWorld.IsUnderwater(mPoints.GetPosition(pointElementIndex)),
+            1);
+
+        // Remember the structure is now dirty
+        mIsStructureDirty = true;
+    }
+}
+
+void Ship::EphemeralParticleDestroyHandler(ElementIndex pointElementIndex)
+{
+    // Notify pins
+    mPinnedPoints.OnEphemeralParticleDestroyed(pointElementIndex);
 }
 
 void Ship::SpringDestroyHandler(
@@ -2134,9 +2173,6 @@ void Ship::SpringDestroyHandler(
     // Notify bombs
     mBombs.OnSpringDestroyed(springElementIndex);
 
-    // Notify pinned points
-    mPinnedPoints.OnSpringDestroyed(springElementIndex);
-
     // Remember our structure is now dirty
     mIsStructureDirty = true;
 }
@@ -2200,10 +2236,10 @@ void Ship::GenerateDebris(
 
         for (size_t d = 0; d < debrisParticleCount; ++d)
         {
-            // Choose a velocity vector: point on a circle with random radius and random angle
-            float const velocityMagnitude = GameRandomEngine::GetInstance().GenerateRandomReal(
-                GameParameters::MinDebrisParticlesVelocity, GameParameters::MaxDebrisParticlesVelocity);
-            float const velocityAngle = GameRandomEngine::GetInstance().GenerateRandomReal(0.0f, 2.0f * Pi<float>);
+            // Choose velocity
+            vec2f const velocity = GameRandomEngine::GetInstance().GenerateRandomRadialVector(
+                GameParameters::MinDebrisParticlesVelocity,
+                GameParameters::MaxDebrisParticlesVelocity);
 
             // Choose a lifetime
             std::chrono::milliseconds const maxLifetime = std::chrono::milliseconds(
@@ -2213,7 +2249,7 @@ void Ship::GenerateDebris(
 
             mPoints.CreateEphemeralParticleDebris(
                 mPoints.GetPosition(pointElementIndex),
-                vec2f::fromPolar(velocityMagnitude, velocityAngle),
+                velocity,
                 mPoints.GetStructuralMaterial(pointElementIndex),
                 currentSimulationTime,
                 maxLifetime,

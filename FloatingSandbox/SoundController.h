@@ -167,6 +167,11 @@ public:
         bool isUnderwater,
         unsigned int size) override;
 
+    virtual void OnPointAttached(
+        StructuralMaterial const & structuralMaterial,
+        bool isUnderwater,
+        unsigned int size) override;
+
     virtual void OnSawed(
         bool isMetal,
         unsigned int size) override;

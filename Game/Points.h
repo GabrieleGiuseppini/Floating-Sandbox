@@ -33,17 +33,20 @@ class Points : public ElementContainer
 {
 public:
 
-    enum class DestroyOptions
+    enum class DetachOptions
     {
         DoNotGenerateDebris = 0,
         GenerateDebris = 1
     };
 
-    using DestroyHandler = std::function<void(
+    using DetachHandler = std::function<void(
         ElementIndex,
         bool /*generateDebris*/,
         float /*currentSimulationTime*/,
         GameParameters const &)>;
+
+    using EphemeralParticleDestroyHandler = std::function<void(
+        ElementIndex)>;
 
     enum class EphemeralType
     {
@@ -212,7 +215,6 @@ public:
         //////////////////////////////////
         // Buffers
         //////////////////////////////////
-        , mIsDeletedBuffer(mBufferElementCount, shipPointCount, true)
         // Materials
         , mMaterialsBuffer(mBufferElementCount, shipPointCount, Materials(nullptr, nullptr))
         , mIsRopeBuffer(mBufferElementCount, shipPointCount, false)
@@ -273,7 +275,8 @@ public:
         , mAllPointCount(mShipPointCount + mEphemeralPointCount)
         , mParentWorld(parentWorld)
         , mGameEventHandler(std::move(gameEventHandler))
-        , mDestroyHandler()
+        , mDetachHandler()
+        , mEphemeralParticleDestroyHandler()
         , mCurrentNumMechanicalDynamicsIterations(gameParameters.NumMechanicalDynamicsIterations<float>())
         , mFloatBufferAllocator(mBufferElementCount)
         , mVec2fBufferAllocator(mBufferElementCount)
@@ -309,21 +312,53 @@ public:
     }
 
     /*
-     * Sets a (single) handler that is invoked whenever a point is destroyed.
+     * Returns a flag indicating whether the point is active in the world.
      *
-     * The handler is invoked right before the point is marked as deleted. However,
-     * other elements connected to the soon-to-be-deleted point might already have been
+     * Active points are all non-ephemeral points and non-expired ephemeral points.
+     */
+    inline bool IsActive(ElementIndex pointIndex) const
+    {
+        return pointIndex < mShipPointCount
+            || EphemeralType::None != mEphemeralTypeBuffer[pointIndex];
+    }
+
+    inline bool IsEphemeral(ElementIndex pointIndex) const
+    {
+        return pointIndex >= mShipPointCount;
+    }
+
+    /*
+     * Sets a (single) handler that is invoked whenever a point is detached.
+     *
+     * The handler is invoked right before the point is modified for the detachment. However,
+     * other elements connected to the soon-to-be-detached point might already have been
      * deleted.
      *
-     * The handler is not re-entrant: destroying other points from it is not supported
+     * The handler is not re-entrant: detaching other points from it is not supported
      * and leads to undefined behavior.
      *
      * Setting more than one handler is not supported and leads to undefined behavior.
      */
-    void RegisterDestroyHandler(DestroyHandler destroyHandler)
+    void RegisterDetachHandler(DetachHandler detachHandler)
     {
-        assert(!mDestroyHandler);
-        mDestroyHandler = std::move(destroyHandler);
+        assert(!mDetachHandler);
+        mDetachHandler = std::move(detachHandler);
+    }
+
+    /*
+     * Sets a (single) handler that is invoked whenever an ephemeral particle is destroyed.
+     *
+     * The handler is invoked right before the particle is modified for the destroy.
+     *
+     * The handler is not re-entrant: destroying other ephemeral particles from it is not supported
+     * and leads to undefined behavior.
+     *
+     * Setting more than one handler is not supported and leads to undefined behavior.
+     */
+    void RegisterEphemeralParticleDestroyHandler(EphemeralParticleDestroyHandler ephemeralParticleDestroyHandler)
+    {
+        assert(!mEphemeralParticleDestroyHandler);
+        mEphemeralParticleDestroyHandler = std::move(ephemeralParticleDestroyHandler);
     }
 
     void Add(
@@ -361,9 +396,13 @@ public:
         std::chrono::milliseconds maxLifetime,
         PlaneId planeId);
 
-    void Destroy(
+    void DestroyEphemeralParticle(
+        ElementIndex pointElementIndex);
+
+    void Detach(
         ElementIndex pointElementIndex,
-        DestroyOptions destroyOptions,
+        vec2f const & detachVelocity,
+        DetachOptions detachOptions,
         float currentSimulationTime,
         GameParameters const & gameParameters);
 
@@ -401,15 +440,6 @@ public:
         Render::RenderContext & renderContext) const;
 
 public:
-
-    //
-    // IsDeleted
-    //
-
-    bool IsDeleted(ElementIndex pointElementIndex) const
-    {
-        return mIsDeletedBuffer[pointElementIndex];
-    }
 
     //
     // Materials
@@ -974,9 +1004,6 @@ private:
     // Buffers
     //////////////////////////////////////////////////////////
 
-    // Deletion
-    Buffer<bool> mIsDeletedBuffer;
-
     // Materials
     Buffer<Materials> mMaterialsBuffer;
     Buffer<bool> mIsRopeBuffer;
@@ -1099,8 +1126,11 @@ private:
     World & mParentWorld;
     std::shared_ptr<IGameEventHandler> const mGameEventHandler;
 
-    // The handler registered for point deletions
-    DestroyHandler mDestroyHandler;
+    // The handler registered for point detachments
+    DetachHandler mDetachHandler;
+
+    // The handler registered for ephemeral particle destroy's
+    EphemeralParticleDestroyHandler mEphemeralParticleDestroyHandler;
 
     // The game parameter values that we are current with; changes
     // in the values of these parameters will trigger a re-calculation
@@ -1123,4 +1153,4 @@ private:
 
 }
 
-template <> struct is_flag<Physics::Points::DestroyOptions> : std::true_type {};
+template <> struct is_flag<Physics::Points::DetachOptions> : std::true_type {};

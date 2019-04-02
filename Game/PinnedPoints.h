@@ -43,9 +43,7 @@ public:
     {
     }
 
-    void OnPointDestroyed(ElementIndex pointElementIndex);
-
-    void OnSpringDestroyed(ElementIndex springElementIndex);
+    void OnEphemeralParticleDestroyed(ElementIndex pointElementIndex);
 
     bool ToggleAt(
         vec2f const & targetPos,
@@ -88,7 +86,9 @@ public:
         //
         // No pinned points in radius...
         // ...so find closest unpinned point within the search radius, and
-        // if found, pin it
+        // if found, pin it.
+        //
+        // We only allow non-ephemerals and air bubble ephemerals to be pinned.
         //
 
         ElementIndex nearestUnpinnedPointIndex = NoneElementIndex;
@@ -96,7 +96,9 @@ public:
 
         for (auto pointIndex : mShipPoints)
         {
-            if (!mShipPoints.IsDeleted(pointIndex) && !mShipPoints.IsPinned(pointIndex))
+            if (mShipPoints.IsActive(pointIndex)
+                && !mShipPoints.IsPinned(pointIndex)
+                && (!mShipPoints.IsEphemeral(pointIndex) || Points::EphemeralType::AirBubble == mShipPoints.GetEphemeralType(pointIndex)))
             {
                 float squareDistance = (mShipPoints.GetPosition(pointIndex) - targetPos).squareLength();
                 if (squareDistance < squareSearchRadius)

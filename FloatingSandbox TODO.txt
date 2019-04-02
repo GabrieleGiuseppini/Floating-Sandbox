@@ -205,15 +205,18 @@ Render:
 			+ About box image
 				+ And remove "Cover art" credit altogether
 			+ Installer
+		+ Try to build with Runtime Type Information disabled
 
 		= Fix Linux build break
 			+ Do specialization outside of class
 			+ Set /permissive- for all projects
 		- Take Mathias' pull request
 
-		- Try to build with Runtime Type Information disabled
+		- Repair tool (*)
 
 		- Heat and combustion (*)
+
+		- Also dry points should rot (*)
 
 		- Instanced drawing for lights (*)
 
@@ -254,6 +257,11 @@ Render:
 		- To adjust:
 			- SS France (Awesomeyorkie):
 				- Ropes
+		- Ready:
+			- B747: (An SR71 Habu) alias=<TODO> year=<TODO>
+				- Add to About box
+			- Pacific: "S.S. Pacific" alias=Hugo_2503 year=1908
+				- Add to About box
 		- Asked:
 			- Ed Fitzgerald (but needs to be fixed) (Kiko)
 			- Aegir_Mark_III (coolman asks original designer)
@@ -261,16 +269,10 @@ Render:
 		+ Tell maximord about new ships - give him names
 		= Copy all descriptions into their respective .shp files
 			# From https://docs.google.com/document/d/1niiB9AaqMAzThTY-pGjU3-qxIywKR8-nw_JDiOWcj1o/edit?usp=sharing_eil&ts=5c929c19
-			- Test:
-				+ Lusitania
-				+ HMHS britannic
-				+ RMs queen mary
-				+ balls
-				+ Carnival
-				+ Cruise Vessel
-				+ Container
-				+ Flagship
-			+ Ask ship owners
+			- TODO:
+				- Can take HMHS Britannic
+				= SweetStrawberryBoy agreed to Black Titan
+			- Ask ship owners
 				= mrpasta: wants to see them first
 				+ kikotheshipbuilder: all except HMS Thunderchild
 				+ Nomadavid: fine
@@ -669,9 +671,61 @@ Render:
 
 - Dynamics:
 
-	- Also dry points should rot, albeit very slowly
+	= Repair tool (*)
+		= 1) No Points::Destroy/Delete, but Detach()
+			+ Points::Detach(.), also at Handler
+			+ No IsDeleted() checks anymore, anywhere
+			+ Whenever we used to delete, we now detach and inject velocity
+				+ Encapsulate debris' randomness in Ship::ChooseRadialVelocity(rnd coeffs)
+			+ Bombs::OnPoint"Detached"			
+			+ At these places should only consider non-ephemerals and non-expired ephemerals
+				+ Ship::Get/QueryNearestPointAt
+				+ PinnedPoints::Toggle: 
+			+ Ship should have EphemeralPointExpired handler
+				+ Calls PinnedPoints::OnEphemeralPointExpired
+			+ Decide what to do with event handlers - destroy and/or detach
+				+ Points invokes OnDestroy at DestroyEphemeralParticle
+				+ Ship::DetachHandler invokes OnPointDetached at DetachHandler *iff* really ended up detaching anything
+					+ Points::Detach does not invoke anymore OnDetach directly, only ship handler does
+					+ OnPointDetached/Attached: make aggregations
+					+ SoundController::OnPointDetached: use break
+			+ Check steady clock
+			+ Test in Debug mode:
+				+ Bombs neighborhood
+				+ Destroy
+				+ Destroy AirBubble
+				+ PinnedPoints:
+					+ AirBubble
+					+ Remaining at point
+					+ Destroyed
+					+ On ephemeral that becomes expired
+			+ If pinned points OK: remove TODOTEST for OnSpringDeleted
+			- Check perf
+				- 29.3/29.4
+			- Commit (to new branch)
+		- Do perf analysis with many air bubbles
+			+ Make sure we don't make OpenGL calls for the zero-size gentex vectors
+			- Check perf impact of GenTex sorting with many plane IDs?
+		- 2) Maintain factory connections
+			+ Not electricals (at least for now)
+			- Points:
+				- AddFactoryConnectedSpring(...)
+					- -> ConnectSpring(...)
+				- Connect/DisconnectSpring(...)
+					- assert it's in factory-connected springs
+			- TODO: from notepad
+			- Update invariants verification
+		- 3) Repair tool and action
+			- TODO: from notepad
+			- SoundController: OnAttached
+				- Sounds:
+					- Metal: thud
+					- Others: ?
+
+	- Also dry points should rot, albeit very slowly (*)
 		- Could just add ~0.005 to p.water at RotPoints()
 		- However this would also apply to overwater points, so we'd have to do it for underwater points only
+			- Performance-wise fine to do, as we do this every N frames
 
 	- Heat and Combustion (*)
 		- Integration of Decay with Combustion:
