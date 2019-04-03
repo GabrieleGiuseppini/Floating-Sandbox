@@ -736,12 +736,17 @@ Render:
 				- See if it's true that we don't need to destroy triangles
 			- TODO: double-check the below
 			- Ship::SpringRestoreHandler(s)
+				// TODO: this may better live in action itself, as there are triangles that have been deleted
+				// without their edge-springs having been deleted, so the resurrection of triangles
+				// wouldn't be complete if we resurrected triangles only when restoring a spring, like here
 				- For each triangle t in s.FactorySuperTriangles such that t.IsDeleted:
 					- If all t.FactorySubSprings are !Deleted:
 						- Triangles::Restore(t)
 						- Add s to t.SubSprings
 						- Add t to s.SuperTriangles
 				- Add s to its endpoints
+				- For each endpoint that now how all of its factory springs:
+					- Restore IsLeaking to factory value
 				- Set IsStructureDirty=true
 			- Triangles::Restore
 				- Undo deletion
@@ -765,6 +770,13 @@ Render:
 									- ...
 						- else: // Attract endpoint
 							- Points.GetForce(s.OtherEndpoint) += c * <normal>(Pr.Position - OtherEndpoint.Position)
+				- for each t in Pr.FactoryTriangles:
+					- if t.IsDeleted:
+						- If all t.FactorySubSprings are !Deleted:
+							- Triangles::Restore(t)	
+								- TriangleRestoreHandler:
+									- Add s to t.SubSprings
+									- Add t to s.SuperTriangles
 			- RepairStructureTool:
 				- repair_structure_cursor_up/down.png: screwdriver
 				- Adjust cursor hotpoints

@@ -2104,17 +2104,28 @@ void Ship::SpringDestroyHandler(
     auto const pointBIndex = mSprings.GetPointBIndex(springElementIndex);
 
     //
-    // Remove spring from set of sub springs at each super-triangle
+    // Remove spring from other elements
     //
 
+    // Remove spring from set of sub springs at each super-triangle
     for (auto superTriangleIndex : mSprings.GetSuperTriangles(springElementIndex))
     {
         mTriangles.RemoveSubSpring(superTriangleIndex, springElementIndex);
     }
 
-    // Let's be neat
+    // Remove the spring from its endpoints
+    mPoints.DisconnectSpring(pointAIndex, springElementIndex, true); // Owner
+    mPoints.DisconnectSpring(pointBIndex, springElementIndex, false); // Not owner
+
+
+    //
+    // Remove other elements from self
+    //
+
     mSprings.ClearSuperTriangles(springElementIndex);
 
+
+    /////////////////////////////////////////////////
 
     //
     // Destroy connected triangles
@@ -2135,14 +2146,6 @@ void Ship::SpringDestroyHandler(
         // We destroy only triangles connected to both endpoints
         DestroyConnectedTriangles(pointAIndex, pointBIndex);
     }
-
-
-    //
-    // Remove the spring from its endpoints
-    //
-
-    mPoints.DisconnectSpring(pointAIndex, springElementIndex, true); // Owner
-    mPoints.DisconnectSpring(pointBIndex, springElementIndex, false); // Not owner
 
 
     //
@@ -2194,19 +2197,26 @@ void Ship::SpringRestoreHandler(
 
 void Ship::TriangleDestroyHandler(ElementIndex triangleElementIndex)
 {
+    //
+    // Remove triangle from other elements
+    //
+
     // Remove triangle from set of super triangles of its sub springs
     for (ElementIndex subSpringIndex : mTriangles.GetSubSprings(triangleElementIndex))
     {
         mSprings.RemoveSuperTriangle(subSpringIndex, triangleElementIndex);
     }
 
-    // Let's be neat
-    mTriangles.ClearSubSprings(triangleElementIndex);
-
     // Remove triangle from its endpoints
     mPoints.RemoveConnectedTriangle(mTriangles.GetPointAIndex(triangleElementIndex), triangleElementIndex, true); // Owner
     mPoints.RemoveConnectedTriangle(mTriangles.GetPointBIndex(triangleElementIndex), triangleElementIndex, false); // Not owner
     mPoints.RemoveConnectedTriangle(mTriangles.GetPointCIndex(triangleElementIndex), triangleElementIndex, false); // Not owner
+
+    //
+    // Remove other elements from self
+    //
+
+    mTriangles.ClearSubSprings(triangleElementIndex);
 
     // Remember our structure is now dirty
     mIsStructureDirty = true;
@@ -2438,6 +2448,25 @@ void Ship::VerifyInvariants()
             Verify(!mPoints.GetConnectedTriangles(mTriangles.GetPointAIndex(t)).ConnectedTriangles.contains([t](auto const & c) { return c == t; }));
             Verify(!mPoints.GetConnectedTriangles(mTriangles.GetPointBIndex(t)).ConnectedTriangles.contains([t](auto const & c) { return c == t; }));
             Verify(!mPoints.GetConnectedTriangles(mTriangles.GetPointCIndex(t)).ConnectedTriangles.contains([t](auto const & c) { return c == t; }));
+        }
+    }
+
+
+    //
+    // Springs and points
+    //
+
+    for (auto s : mSprings)
+    {
+        if (!mSprings.IsDeleted(s))
+        {
+            Verify(mPoints.GetConnectedSprings(mSprings.GetPointAIndex(s)).ConnectedSprings.contains([s](auto const & c) { return c.SpringIndex == s; }));
+            Verify(mPoints.GetConnectedSprings(mSprings.GetPointBIndex(s)).ConnectedSprings.contains([s](auto const & c) { return c.SpringIndex == s; }));
+        }
+        else
+        {
+            Verify(!mPoints.GetConnectedSprings(mSprings.GetPointAIndex(s)).ConnectedSprings.contains([s](auto const & c) { return c.SpringIndex == s; }));
+            Verify(!mPoints.GetConnectedSprings(mSprings.GetPointBIndex(s)).ConnectedSprings.contains([s](auto const & c) { return c.SpringIndex == s; }));
         }
     }
 
