@@ -142,6 +142,9 @@ public:
 
     void PlayTerrainAdjustSound();
 
+    void PlayRepairSound();
+    void StopRepairSound();
+
     void PlayScrubSound();
 
     void PlaySnapshotSound();

@@ -78,6 +78,11 @@ public:
         float radiusMultiplier,
         GameParameters const & gameParameters);
 
+    void RepairAt(
+        vec2f const & targetPos,
+        float radiusMultiplier,
+        GameParameters const & gameParameters);
+
     void SawThrough(
         vec2f const & startPos,
         vec2f const & endPos,

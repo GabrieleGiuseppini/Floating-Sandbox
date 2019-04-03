@@ -252,6 +252,7 @@ public:
         , mEphemeralStateBuffer(mBufferElementCount, shipPointCount, EphemeralState::DebrisState())
         // Structure
         , mConnectedSpringsBuffer(mBufferElementCount, shipPointCount, ConnectedSpringsVector())
+        , mFactoryConnectedSpringsBuffer(mBufferElementCount, shipPointCount, ConnectedSpringsVector())
         , mConnectedTrianglesBuffer(mBufferElementCount, shipPointCount, ConnectedTrianglesVector())
         // Connected component and plane ID
         , mConnectedComponentIdBuffer(mBufferElementCount, shipPointCount, NoneConnectedComponentId)
@@ -780,12 +781,18 @@ public:
         return mConnectedSpringsBuffer[pointElementIndex];
     }
 
-    void AddConnectedSpring(
+    void ConnectSpring(
         ElementIndex pointElementIndex,
         ElementIndex springElementIndex,
         ElementIndex otherEndpointElementIndex,
         bool isAtOwner)
     {
+        assert(mFactoryConnectedSpringsBuffer[pointElementIndex].ConnectedSprings.contains(
+            [springElementIndex](auto const & cs)
+            {
+                return cs.SpringIndex == springElementIndex;
+            }));
+
         // Add so that all springs owned by this point come first
         if (isAtOwner)
         {
@@ -798,7 +805,7 @@ public:
         }
     }
 
-    void RemoveConnectedSpring(
+    void DisconnectSpring(
         ElementIndex pointElementIndex,
         ElementIndex springElementIndex,
         bool isAtOwner)
@@ -818,6 +825,36 @@ public:
             assert(mConnectedSpringsBuffer[pointElementIndex].OwnedConnectedSpringsCount > 0);
             --(mConnectedSpringsBuffer[pointElementIndex].OwnedConnectedSpringsCount);
         }
+    }
+
+    auto const & GetFactoryConnectedSprings(ElementIndex pointElementIndex) const
+    {
+        return mFactoryConnectedSpringsBuffer[pointElementIndex];
+    }
+
+    void AddFactoryConnectedSpring(
+        ElementIndex pointElementIndex,
+        ElementIndex springElementIndex,
+        ElementIndex otherEndpointElementIndex,
+        bool isAtOwner)
+    {
+        // Add so that all springs owned by this point come first
+        if (isAtOwner)
+        {
+            mFactoryConnectedSpringsBuffer[pointElementIndex].ConnectedSprings.emplace_front(springElementIndex, otherEndpointElementIndex);
+            ++(mFactoryConnectedSpringsBuffer[pointElementIndex].OwnedConnectedSpringsCount);
+        }
+        else
+        {
+            mFactoryConnectedSpringsBuffer[pointElementIndex].ConnectedSprings.emplace_back(springElementIndex, otherEndpointElementIndex);
+        }
+
+        // Connect spring
+        ConnectSpring(
+            pointElementIndex,
+            springElementIndex,
+            otherEndpointElementIndex,
+            isAtOwner);
     }
 
     auto const & GetConnectedTriangles(ElementIndex pointElementIndex) const
@@ -1081,6 +1118,7 @@ private:
     //
 
     Buffer<ConnectedSpringsVector> mConnectedSpringsBuffer;
+    Buffer<ConnectedSpringsVector> mFactoryConnectedSpringsBuffer;
     Buffer<ConnectedTrianglesVector> mConnectedTrianglesBuffer;
 
     //

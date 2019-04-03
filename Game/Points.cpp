@@ -69,6 +69,7 @@ void Points::Add(
 
     // Structure
     mConnectedSpringsBuffer.emplace_back();
+    mFactoryConnectedSpringsBuffer.emplace_back();
     mConnectedTrianglesBuffer.emplace_back();
 
     mConnectedComponentIdBuffer.emplace_back(NoneConnectedComponentId);

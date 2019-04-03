@@ -1176,12 +1176,12 @@ Physics::Springs ShipBuilder::CreateSprings(
             points);
 
         // Add spring to its endpoints
-        points.AddConnectedSpring(
+        points.AddFactoryConnectedSpring(
             pointIndexRemap[springInfos2[s].PointAIndex1],
             s,
             pointIndexRemap[springInfos2[s].PointBIndex1],
             true); // Owner
-        points.AddConnectedSpring(
+        points.AddFactoryConnectedSpring(
             pointIndexRemap[springInfos2[s].PointBIndex1],
             s,
             pointIndexRemap[springInfos2[s].PointAIndex1],

@@ -58,7 +58,6 @@ public:
 
         for (auto it = mCurrentPinnedPoints.begin(); it != mCurrentPinnedPoints.end(); ++it)
         {
-            assert(!mShipPoints.IsDeleted(*it));
             assert(mShipPoints.IsPinned(*it));
 
             float squareDistance = (mShipPoints.GetPosition(*it) - targetPos).squareLength();

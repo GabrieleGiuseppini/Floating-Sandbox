@@ -118,7 +118,6 @@ public:
             if (!mIsDeletedBuffer[i])
             {
                 // Get the plane of this triangle (== plane of point A)
-                assert(!points.IsDeleted(GetPointAIndex(i)));
                 PlaneId planeId = points.GetPlaneId(GetPointAIndex(i));
 
                 // Send triangle to its index

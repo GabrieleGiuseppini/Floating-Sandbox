@@ -1250,7 +1250,6 @@ void ShipRenderContext::RenderGenericTextures()
         // Render
         //
 
-        assert((plane.vertexBuffer.size() % 6) == 0);
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mGenericTextureQuadCount * 6));
 
 

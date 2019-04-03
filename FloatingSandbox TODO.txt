@@ -710,21 +710,45 @@ Render:
 				+ Get rid of maxMaxPlaneId for gentex's
 				+ Test:
 					+ Bombs cover each other
+		+ Run in Debug
+		+ Check flood tool change (Tool::Initialize - verify sound starts)
 		- 2) Maintain factory connections
 			+ Not electricals (at least for now)
-			- Points:
-				- AddFactoryConnectedSpring(...)
-					- -> ConnectSpring(...)
-				- Connect/DisconnectSpring(...)
-					- assert it's in factory-connected springs
-			- TODO: from notepad
+			- Find minimal necessary to rebuild the below:
+				- Points: needs to remember springs, triangles (?)
+				- Springs: need to remember super-triangles
+				- Triangles: needs to remember sub-springs (?)
+			= Points:
+				+ AddFactoryConnectedSpring(...)
+					+ -> ConnectSpring(...)
+				+ Connect/DisconnectSpring(...)
+					+ assert it's in factory-connected springs
+				- See if connecting-spring-kung-fu should be done by struct itself
+				- TODO: others?
+			- TODO:others?
 			- Update invariants verification
 		- 3) Repair tool and action
-			- TODO: from notepad
-			- SoundController: OnAttached
-				- Sounds:
-					- Metal: thud
-					- Others: ?
+			- Repair(Pr):
+				- for each s in Pr.FactorySprings:
+					- if s.IsDeleted:
+						- if s.length <= s.restLength: // Restore
+							- Springs::Restore(s)
+								- Undo deletion (flag, coeffs, etc.)
+								- Call (Spring)RestoreHandler
+									- Restore triangles t in s.FactorySuperTriangles
+										-...which will call (Triangle)RestoreHandler
+									- ...
+						- else: // Attract endpoint
+							- Points.GetForce(s.OtherEndpoint) += c * <normal>(Pr.Position - OtherEndpoint.Position)
+			- RepairStructureTool:
+				- repair_structure_cursor_up/down.png: screwdriver
+				- Adjust cursor hotpoints
+			- SoundController: 
+				- Repair sound: ?
+				- OnAttached
+					- Sounds:
+						- Metal: thud
+						- Others: ?
 
 	- Also dry points should rot, albeit very slowly (*)
 		- Could just add ~0.005 to p.water at RotPoints()

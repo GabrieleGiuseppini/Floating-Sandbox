@@ -64,6 +64,7 @@ const long ID_ANTIMATTERBOMB_MENUITEM = wxNewId();
 const long ID_RCBOMBDETONATE_MENUITEM = wxNewId();
 const long ID_ANTIMATTERBOMBDETONATE_MENUITEM = wxNewId();
 const long ID_ADJUSTTERRAIN_MENUITEM = wxNewId();
+const long ID_REPAIRSTRUCTURE_MENUITEM = wxNewId();
 const long ID_SCRUB_MENUITEM = wxNewId();
 
 const long ID_OPEN_SETTINGS_WINDOW_MENUITEM = wxNewId();
@@ -320,6 +321,10 @@ MainFrame::MainFrame(wxApp * mainApp)
     wxMenuItem * adjustTerrainMenuItem = new wxMenuItem(mToolsMenu, ID_ADJUSTTERRAIN_MENUITEM, _("Adjust Terrain\tJ"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(adjustTerrainMenuItem);
     Connect(ID_ADJUSTTERRAIN_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAdjustTerrainMenuItemSelected);
+
+    wxMenuItem * repairStructureMenuItem = new wxMenuItem(mToolsMenu, ID_REPAIRSTRUCTURE_MENUITEM, _("Repair Structure\tE"), wxEmptyString, wxITEM_RADIO);
+    mToolsMenu->Append(repairStructureMenuItem);
+    Connect(ID_REPAIRSTRUCTURE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnRepairStructureMenuItemSelected);
 
     wxMenuItem * scrubMenuItem = new wxMenuItem(mToolsMenu, ID_SCRUB_MENUITEM, _("Scrub\tU"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(scrubMenuItem);
@@ -1234,6 +1239,12 @@ void MainFrame::OnAdjustTerrainMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
     mToolController->SetTool(ToolType::TerrainAdjust);
+}
+
+void MainFrame::OnRepairStructureMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mToolController);
+    mToolController->SetTool(ToolType::RepairStructure);
 }
 
 void MainFrame::OnScrubMenuItemSelected(wxCommandEvent & /*event*/)

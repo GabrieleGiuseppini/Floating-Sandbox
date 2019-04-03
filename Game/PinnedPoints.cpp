@@ -31,7 +31,6 @@ void PinnedPoints::Upload(
 {
     for (auto pinnedPointIndex : mCurrentPinnedPoints)
     {
-        assert(!mShipPoints.IsDeleted(pinnedPointIndex));
         assert(mShipPoints.IsPinned(pinnedPointIndex));
 
         renderContext.UploadShipGenericTextureRenderSpecification(

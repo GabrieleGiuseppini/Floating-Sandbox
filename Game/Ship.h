@@ -73,6 +73,12 @@ public:
         float currentSimulationTime,
         GameParameters const & gameParameters);
 
+    void RepairAt(
+        vec2f const & targetPos,
+        float radiusMultiplier,
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
+
     void SawThrough(
         vec2f const & startPos,
         vec2f const & endPos,

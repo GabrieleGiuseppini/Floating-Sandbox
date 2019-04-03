@@ -47,7 +47,8 @@ enum class ToolType
     RCBomb = 10,
     TimerBomb = 11,
     TerrainAdjust = 12,
-    Scrub = 13
+    Scrub = 13,
+    RepairStructure = 14
 };
 
 struct InputState
@@ -1136,18 +1137,8 @@ public:
 
 public:
 
-    virtual void Initialize(InputState const & inputState) override
+    virtual void Initialize(InputState const & /*inputState*/) override
     {
-        if (inputState.IsLeftMouseDown)
-        {
-            mIsEngaged = mGameController->FloodAt(
-                inputState.MousePosition,
-                inputState.IsShiftKeyDown ? -1.0f : 1.0f);
-        }
-        else
-        {
-            mIsEngaged = false;
-        }
     }
 
     virtual void Deinitialize(InputState const & /*inputState*/) override
@@ -1577,4 +1568,94 @@ private:
 
     // The time at which we have last played a scrub sound
     GameWallClock::time_point mPreviousScrubTimestamp;
+};
+
+class RepairStructureTool final : public Tool
+{
+public:
+
+    RepairStructureTool(
+        wxFrame * parentFrame,
+        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<SoundController> soundController,
+        ResourceLoader & resourceLoader);
+
+    virtual void Initialize(InputState const & /*inputState*/) override
+    {
+    }
+
+    virtual void Deinitialize(InputState const & /*inputState*/) override
+    {
+        // Stop sound, just in case
+        mSoundController->StopRepairSound();
+    }
+
+    virtual void Update(InputState const & inputState) override
+    {
+        bool isEngaged;
+        if (inputState.IsLeftMouseDown)
+        {
+            isEngaged = true;
+
+            mGameController->RepairAt(
+                inputState.MousePosition,
+                1.0f);
+        }
+        else
+        {
+            isEngaged = false;
+        }
+
+        if (isEngaged)
+        {
+            if (!mIsEngaged)
+            {
+                // State change
+                mIsEngaged = true;
+
+                // Start sound
+                mSoundController->PlayRepairSound();
+            }
+
+            // Update cursor
+            ShowCurrentCursor();
+        }
+        else
+        {
+            if (mIsEngaged)
+            {
+                // State change
+                mIsEngaged = false;
+
+                // Stop sound
+                mSoundController->StopRepairSound();
+
+                // Update cursor
+                ShowCurrentCursor();
+            }
+        }
+    }
+
+    virtual void OnMouseMove(InputState const & /*inputState*/) override {}
+    virtual void OnLeftMouseDown(InputState const & /*inputState*/) override {}
+    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+    virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+    virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+
+    virtual void ShowCurrentCursor() override
+    {
+        assert(nullptr != mParentFrame);
+
+        mParentFrame->SetCursor(mIsEngaged ? *mDownCursor : *mUpCursor);
+    }
+
+private:
+
+    // Our state
+    bool mIsEngaged;
+
+    // Our cursors
+    std::unique_ptr<wxCursor> const mUpCursor;
+    std::unique_ptr<wxCursor> const mDownCursor;
+
 };

@@ -112,6 +112,21 @@ void World::DestroyAt(
     }
 }
 
+void World::RepairAt(
+    vec2f const & targetPos,
+    float radiusMultiplier,
+    GameParameters const & gameParameters)
+{
+    for (auto & ship : mAllShips)
+    {
+        ship->RepairAt(
+            targetPos,
+            radiusMultiplier,
+            mCurrentSimulationTime,
+            gameParameters);
+    }
+}
+
 void World::SawThrough(
     vec2f const & startPos,
     vec2f const & endPos,

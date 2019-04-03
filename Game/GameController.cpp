@@ -345,6 +345,20 @@ void GameController::DestroyAt(
         mGameParameters);
 }
 
+void GameController::RepairAt(
+    vec2f const & screenCoordinates,
+    float radiusMultiplier)
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+
+    // Apply action
+    assert(!!mWorld);
+    mWorld->RepairAt(
+        worldCoordinates,
+        radiusMultiplier,
+        mGameParameters);
+}
+
 void GameController::SawThrough(
     vec2f const & startScreenCoordinates,
     vec2f const & endScreenCoordinates)

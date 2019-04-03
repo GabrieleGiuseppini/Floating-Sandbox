@@ -506,3 +506,23 @@ ScrubTool::ScrubTool(
     , mPreviousScrubTimestamp(GameWallClock::time_point::min())
 {
 }
+
+////////////////////////////////////////////////////////////////////////
+// Scrub
+////////////////////////////////////////////////////////////////////////
+
+RepairStructureTool::RepairStructureTool(
+    wxFrame * parentFrame,
+    std::shared_ptr<GameController> gameController,
+    std::shared_ptr<SoundController> soundController,
+    ResourceLoader & resourceLoader)
+    : Tool(
+        ToolType::RepairStructure,
+        parentFrame,
+        std::move(gameController),
+        std::move(soundController))
+    , mIsEngaged(false)
+    , mUpCursor(MakeCursor("repair_structure_cursor_up", 15, 15, resourceLoader))
+    , mDownCursor(MakeCursor("repair_structure_cursor_down", 15, 15, resourceLoader))
+{
+}

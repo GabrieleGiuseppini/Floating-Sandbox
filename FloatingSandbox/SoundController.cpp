@@ -750,6 +750,18 @@ void SoundController::PlayTerrainAdjustSound()
         true);
 }
 
+void SoundController::PlayRepairSound()
+{
+    // TODOHERE
+    //mFloodHoseSound.Start();
+}
+
+void SoundController::StopRepairSound()
+{
+    //TODOHERE
+    //mFloodHoseSound.Stop();
+}
+
 void SoundController::PlayScrubSound()
 {
     PlayOneShotMultipleChoiceSound(

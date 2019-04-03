@@ -188,6 +188,30 @@ void Ship::DestroyAt(
     }
 }
 
+void Ship::RepairAt(
+    vec2f const & targetPos,
+    float radiusMultiplier,
+    float currentSimulationTime,
+    GameParameters const & gameParameters)
+{
+    float const radius =
+        gameParameters.DestroyRadius    // Yes, we use destroy radius, after all we're its inverse
+        * radiusMultiplier
+        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
+    float const squareRadius = radius * radius;
+
+    // Restore all deleted springs that were originally attached to the points within the radius
+    for (auto pointIndex : mPoints)
+    {
+        // TODOHERE
+        if (mPoints.IsActive(pointIndex)
+            && (mPoints.GetPosition(pointIndex) - targetPos).squareLength() < squareRadius)
+        {
+        }
+    }
+}
+
 void Ship::SawThrough(
     vec2f const & startPos,
     vec2f const & endPos,
@@ -1892,8 +1916,6 @@ void Ship::RunConnectivityVisit()
                 // Visit all its non-visited connected points
                 for (auto const & cs : mPoints.GetConnectedSprings(currentPointIndex).ConnectedSprings)
                 {
-                    assert(!mPoints.IsDeleted(cs.OtherEndpointIndex));
-
                     if (visitSequenceNumber != mPoints.GetCurrentConnectivityVisitSequenceNumber(cs.OtherEndpointIndex))
                     {
                         //
@@ -2134,8 +2156,8 @@ void Ship::SpringDestroyHandler(
     // Remove the spring from its endpoints
     //
 
-    mPoints.RemoveConnectedSpring(pointAIndex, springElementIndex, true); // Owner
-    mPoints.RemoveConnectedSpring(pointBIndex, springElementIndex, false); // Not owner
+    mPoints.DisconnectSpring(pointAIndex, springElementIndex, true); // Owner
+    mPoints.DisconnectSpring(pointBIndex, springElementIndex, false); // Not owner
 
 
     //
