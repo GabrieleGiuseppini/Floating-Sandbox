@@ -723,9 +723,34 @@ Render:
 					+ -> ConnectSpring(...)
 				+ Connect/DisconnectSpring(...)
 					+ assert it's in factory-connected springs
-				- See if connecting-spring-kung-fu should be done by struct itself
-				- TODO: others?
-			- TODO:others?
+				+ See if connecting-spring-kung-fu should be done by struct itself
+				- FactoryIsLeaking
+			- Springs:
+				- FactorySuperTriangles
+			- Triangles
+				- FactorySubSprings
+			+ Springs::Restore
+				+ Undo deletion
+				+ Call SpringRestoreHandler
+			- Ship::PointDetachHandler:
+				- See if it's true that we don't need to destroy triangles
+			- TODO: double-check the below
+			- Ship::SpringRestoreHandler(s)
+				- For each triangle t in s.FactorySuperTriangles such that t.IsDeleted:
+					- If all t.FactorySubSprings are !Deleted:
+						- Triangles::Restore(t)
+						- Add s to t.SubSprings
+						- Add t to s.SuperTriangles
+				- Add s to its endpoints
+				- Set IsStructureDirty=true
+			- Triangles::Restore
+				- Undo deletion
+				- Call TriangleRestoreHandler
+			- Ship::TriangleRestoreHandler(t):
+				- Add t to its endpoints
+				- Fire Attach event
+				- Set IsStructureDirty=true
+
 			- Update invariants verification
 		- 3) Repair tool and action
 			- Repair(Pr):

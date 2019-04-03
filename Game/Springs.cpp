@@ -75,7 +75,6 @@ void Springs::Add(
 void Springs::Destroy(
     ElementIndex springElementIndex,
     DestroyOptions destroyOptions,
-    float currentSimulationTime,
     GameParameters const & gameParameters,
     Points const & points)
 {
@@ -88,7 +87,6 @@ void Springs::Destroy(
         mDestroyHandler(
             springElementIndex,
             !!(destroyOptions & Springs::DestroyOptions::DestroyAllTriangles),
-            currentSimulationTime,
             gameParameters);
     }
 
@@ -109,6 +107,45 @@ void Springs::Destroy(
 
     // Flag ourselves as deleted
     mIsDeletedBuffer[springElementIndex] = true;
+}
+
+void Springs::Restore(
+    ElementIndex springElementIndex,
+    RestoreOptions restoreOptions,
+    GameParameters const & gameParameters,
+    Points const & points)
+{
+    assert(springElementIndex < mElementCount);
+    assert(IsDeleted(springElementIndex));
+
+    // Clear the delete flag
+    mIsDeletedBuffer[springElementIndex] = false;
+
+    // Recalculate coefficients
+
+    mCoefficientsBuffer[springElementIndex].StiffnessCoefficient = CalculateStiffnessCoefficient(
+        GetPointAIndex(springElementIndex),
+        GetPointBIndex(springElementIndex),
+        GetStiffness(springElementIndex),
+        gameParameters.SpringStiffnessAdjustment,
+        gameParameters.NumMechanicalDynamicsIterations<float>(),
+        points);
+
+    mCoefficientsBuffer[springElementIndex].DampingCoefficient = CalculateDampingCoefficient(
+        GetPointAIndex(springElementIndex),
+        GetPointBIndex(springElementIndex),
+        gameParameters.SpringDampingAdjustment,
+        gameParameters.NumMechanicalDynamicsIterations<float>(),
+        points);
+
+    // Invoke restore handler
+    if (!!mRestoreHandler)
+    {
+        mRestoreHandler(
+            springElementIndex,
+            !!(restoreOptions & Springs::RestoreOptions::RestoreTriangles),
+            gameParameters);
+    }
 }
 
 void Springs::UpdateGameParameters(
@@ -208,7 +245,6 @@ void Springs::UploadStressedSpringElements(
 }
 
 bool Springs::UpdateStrains(
-    float currentSimulationTime,
     GameParameters const & gameParameters,
     Points & points)
 {
@@ -264,7 +300,6 @@ bool Springs::UpdateStrains(
                     s,
                     DestroyOptions::FireBreakEvent // Notify Break
                     | DestroyOptions::DestroyAllTriangles,
-                    currentSimulationTime,
                     gameParameters,
                     points);
 

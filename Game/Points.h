@@ -171,6 +171,44 @@ private:
             : ConnectedSprings()
             , OwnedConnectedSpringsCount(0u)
         {}
+
+        inline void ConnectSpring(
+            ElementIndex springElementIndex,
+            ElementIndex otherEndpointElementIndex,
+            bool isAtOwner)
+        {
+            // Add so that all springs owned by this point come first
+            if (isAtOwner)
+            {
+                ConnectedSprings.emplace_front(springElementIndex, otherEndpointElementIndex);
+                ++OwnedConnectedSpringsCount;
+            }
+            else
+            {
+                ConnectedSprings.emplace_back(springElementIndex, otherEndpointElementIndex);
+            }
+        }
+
+        inline void DisconnectSpring(
+            ElementIndex springElementIndex,
+            bool isAtOwner)
+        {
+            bool found = ConnectedSprings.erase_first(
+                [springElementIndex](ConnectedSpring const & c)
+                {
+                    return c.SpringIndex == springElementIndex;
+                });
+
+            assert(found);
+            (void)found;
+
+            // Update count of owned springs, if this spring is owned
+            if (isAtOwner)
+            {
+                assert(OwnedConnectedSpringsCount > 0);
+                --OwnedConnectedSpringsCount;
+            }
+        }
     };
 
     /*
@@ -793,16 +831,10 @@ public:
                 return cs.SpringIndex == springElementIndex;
             }));
 
-        // Add so that all springs owned by this point come first
-        if (isAtOwner)
-        {
-            mConnectedSpringsBuffer[pointElementIndex].ConnectedSprings.emplace_front(springElementIndex, otherEndpointElementIndex);
-            ++(mConnectedSpringsBuffer[pointElementIndex].OwnedConnectedSpringsCount);
-        }
-        else
-        {
-            mConnectedSpringsBuffer[pointElementIndex].ConnectedSprings.emplace_back(springElementIndex, otherEndpointElementIndex);
-        }
+        mConnectedSpringsBuffer[pointElementIndex].ConnectSpring(
+            springElementIndex,
+            otherEndpointElementIndex,
+            isAtOwner);
     }
 
     void DisconnectSpring(
@@ -810,21 +842,9 @@ public:
         ElementIndex springElementIndex,
         bool isAtOwner)
     {
-        bool found = mConnectedSpringsBuffer[pointElementIndex].ConnectedSprings.erase_first(
-            [springElementIndex](ConnectedSpring const & c)
-            {
-                return c.SpringIndex == springElementIndex;
-            });
-
-        assert(found);
-        (void)found;
-
-        // Update count of owned springs, if this spring is owned
-        if (isAtOwner)
-        {
-            assert(mConnectedSpringsBuffer[pointElementIndex].OwnedConnectedSpringsCount > 0);
-            --(mConnectedSpringsBuffer[pointElementIndex].OwnedConnectedSpringsCount);
-        }
+        mConnectedSpringsBuffer[pointElementIndex].DisconnectSpring(
+            springElementIndex,
+            isAtOwner);
     }
 
     auto const & GetFactoryConnectedSprings(ElementIndex pointElementIndex) const
@@ -838,16 +858,11 @@ public:
         ElementIndex otherEndpointElementIndex,
         bool isAtOwner)
     {
-        // Add so that all springs owned by this point come first
-        if (isAtOwner)
-        {
-            mFactoryConnectedSpringsBuffer[pointElementIndex].ConnectedSprings.emplace_front(springElementIndex, otherEndpointElementIndex);
-            ++(mFactoryConnectedSpringsBuffer[pointElementIndex].OwnedConnectedSpringsCount);
-        }
-        else
-        {
-            mFactoryConnectedSpringsBuffer[pointElementIndex].ConnectedSprings.emplace_back(springElementIndex, otherEndpointElementIndex);
-        }
+        // Add spring
+        mFactoryConnectedSpringsBuffer[pointElementIndex].ConnectSpring(
+            springElementIndex,
+            otherEndpointElementIndex,
+            isAtOwner);
 
         // Connect spring
         ConnectSpring(

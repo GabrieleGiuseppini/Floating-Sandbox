@@ -36,6 +36,12 @@ public:
         DestroyAllTriangles = 2
     };
 
+    enum class RestoreOptions
+    {
+        DoNotRestoreTriangles = 0,
+        RestoreTriangles = 1
+    };
+
     enum class Characteristics : uint8_t
     {
         None = 0,
@@ -46,7 +52,11 @@ public:
     using DestroyHandler = std::function<void(
         ElementIndex,
         bool /*destroyTriangles*/,
-        float /*currentSimulationTime*/,
+        GameParameters const &)>;
+
+    using RestoreHandler = std::function<void(
+        ElementIndex,
+        bool /*restoreTriangles*/,
         GameParameters const &)>;
 
 private:
@@ -121,6 +131,7 @@ public:
         , mParentWorld(parentWorld)
         , mGameEventHandler(std::move(gameEventHandler))
         , mDestroyHandler()
+        , mRestoreHandler()
         , mCurrentNumMechanicalDynamicsIterations(gameParameters.NumMechanicalDynamicsIterations<float>())
         , mCurrentSpringStiffnessAdjustment(gameParameters.SpringStiffnessAdjustment)
         , mCurrentSpringDampingAdjustment(gameParameters.SpringDampingAdjustment)
@@ -149,6 +160,24 @@ public:
         mDestroyHandler = std::move(destroyHandler);
     }
 
+    /*
+     * Sets a (single) handler that is invoked whenever a spring is restored.
+     *
+     * The handler is invoked right after the spring is unmarked as deleted. However,
+     * other elements connected to the soon-to-be-deleted spring might not yet have been
+     * restored.
+     *
+     * The handler is not re-entrant: restoring other springs from it is not supported
+     * and leads to undefined behavior.
+     *
+     * Setting more than one handler is not supported and leads to undefined behavior.
+     */
+    void RegisterRestoreHandler(RestoreHandler restoreHandler)
+    {
+        assert(!mRestoreHandler);
+        mRestoreHandler = std::move(restoreHandler);
+    }
+
     void Add(
         ElementIndex pointAIndex,
         ElementIndex pointBIndex,
@@ -159,7 +188,12 @@ public:
     void Destroy(
         ElementIndex springElementIndex,
         DestroyOptions destroyOptions,
-        float currentSimulationTime,
+        GameParameters const & gameParameters,
+        Points const & points);
+
+    void Restore(
+        ElementIndex springElementIndex,
+        RestoreOptions restoreOptions,
         GameParameters const & gameParameters,
         Points const & points);
 
@@ -197,7 +231,6 @@ public:
      * Returns true if the spring got broken.
      */
     bool UpdateStrains(
-        float currentSimulationTime,
         GameParameters const & gameParameters,
         Points & points);
 
@@ -519,6 +552,9 @@ private:
     // The handler registered for spring deletions
     DestroyHandler mDestroyHandler;
 
+    // The handler registered for spring restores
+    DestroyHandler mRestoreHandler;
+
     // The game parameter values that we are current with; changes
     // in the values of these parameters will trigger a re-calculation
     // of pre-calculated coefficients
@@ -534,6 +570,7 @@ private:
 }
 
 template <> struct is_flag<Physics::Springs::DestroyOptions> : std::true_type {};
+template <> struct is_flag<Physics::Springs::RestoreOptions> : std::true_type {};
 template <> struct is_flag<Physics::Springs::Characteristics> : std::true_type {};
 
 inline bool Physics::Springs::IsRope(ElementIndex springElementIndex) const

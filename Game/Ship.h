@@ -239,7 +239,11 @@ private:
     void SpringDestroyHandler(
         ElementIndex springElementIndex,
         bool destroyAllTriangles,
-        float currentSimulationTime,
+        GameParameters const & gameParameters);
+
+    void SpringRestoreHandler(
+        ElementIndex springElementIndex,
+        bool restoreTriangles,
         GameParameters const & gameParameters);
 
     void TriangleDestroyHandler(ElementIndex triangleElementIndex);

@@ -81,7 +81,8 @@ Ship::Ship(
     // Set handlers
     mPoints.RegisterDetachHandler(std::bind(&Ship::PointDetachHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
     mPoints.RegisterEphemeralParticleDestroyHandler(std::bind(&Ship::EphemeralParticleDestroyHandler, this, std::placeholders::_1));
-    mSprings.RegisterDestroyHandler(std::bind(&Ship::SpringDestroyHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
+    mSprings.RegisterDestroyHandler(std::bind(&Ship::SpringDestroyHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+    mSprings.RegisterRestoreHandler(std::bind(&Ship::SpringRestoreHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     mTriangles.RegisterDestroyHandler(std::bind(&Ship::TriangleDestroyHandler, this, std::placeholders::_1));
     mElectricalElements.RegisterDestroyHandler(std::bind(&Ship::ElectricalElementDestroyHandler, this, std::placeholders::_1));
 
@@ -240,7 +241,6 @@ void Ship::SawThrough(
                     springIndex,
                     Springs::DestroyOptions::FireBreakEvent
                     | Springs::DestroyOptions::DestroyOnlyConnectedTriangle,
-                    currentSimulationTime,
                     gameParameters,
                     mPoints);
 
@@ -617,7 +617,6 @@ void Ship::Update(
     //
 
     mSprings.UpdateStrains(
-        currentSimulationTime,
         gameParameters,
         mPoints);
 
@@ -2032,8 +2031,7 @@ void Ship::PointDetachHandler(
         mSprings.Destroy(
             connectedSprings.back().SpringIndex,
             Springs::DestroyOptions::DoNotFireBreakEvent // We're already firing the Destroy event for the point
-            | Springs::DestroyOptions::DestroyAllTriangles,
-            currentSimulationTime,
+            | Springs::DestroyOptions::DestroyAllTriangles, // Destroy all triangles connected to each endpoint
             gameParameters,
             mPoints);
 
@@ -2042,23 +2040,11 @@ void Ship::PointDetachHandler(
 
     assert(mPoints.GetConnectedSprings(pointElementIndex).ConnectedSprings.empty());
 
-
-    //
-    // Destroy all triangles connected to this point
-    //
-
-    // Note: we can't simply iterate and destroy, as destroying a triangle causes
-    // that triangle to be removed from the vector being iterated
-    auto & connectedTriangles = mPoints.GetConnectedTriangles(pointElementIndex).ConnectedTriangles;
-    while(!connectedTriangles.empty())
-    {
-        assert(!mTriangles.IsDeleted(connectedTriangles.back()));
-
-        mTriangles.Destroy(connectedTriangles.back());
-
-        hasAnythingBeenDestroyed = true;
-    }
-
+    // At this moment, we've deleted all springs connected to this point, and we
+    // asked those strings to destroy all triangles connected to each endpoint
+    // (thus including this one).
+    // Given that a point is connected to a triangle iff the point is an endpoint
+    // of a spring-edge of that triangle, then we shouldn't have any triangles now
     assert(mPoints.GetConnectedTriangles(pointElementIndex).ConnectedTriangles.empty());
 
 
@@ -2112,7 +2098,6 @@ void Ship::EphemeralParticleDestroyHandler(ElementIndex pointElementIndex)
 void Ship::SpringDestroyHandler(
     ElementIndex springElementIndex,
     bool destroyAllTriangles,
-    float /*currentSimulationTime*/,
     GameParameters const & /*gameParameters*/)
 {
     auto const pointAIndex = mSprings.GetPointAIndex(springElementIndex);
@@ -2197,6 +2182,14 @@ void Ship::SpringDestroyHandler(
 
     // Remember our structure is now dirty
     mIsStructureDirty = true;
+}
+
+void Ship::SpringRestoreHandler(
+    ElementIndex springElementIndex,
+    bool restoreTriangles,
+    GameParameters const & /*gameParameters*/)
+{
+    // TODOHERE
 }
 
 void Ship::TriangleDestroyHandler(ElementIndex triangleElementIndex)
@@ -2439,6 +2432,12 @@ void Ship::VerifyInvariants()
             Verify(mPoints.GetConnectedTriangles(mTriangles.GetPointAIndex(t)).ConnectedTriangles.contains([t](auto const & c) { return c == t; }));
             Verify(mPoints.GetConnectedTriangles(mTriangles.GetPointBIndex(t)).ConnectedTriangles.contains([t](auto const & c) { return c == t; }));
             Verify(mPoints.GetConnectedTriangles(mTriangles.GetPointCIndex(t)).ConnectedTriangles.contains([t](auto const & c) { return c == t; }));
+        }
+        else
+        {
+            Verify(!mPoints.GetConnectedTriangles(mTriangles.GetPointAIndex(t)).ConnectedTriangles.contains([t](auto const & c) { return c == t; }));
+            Verify(!mPoints.GetConnectedTriangles(mTriangles.GetPointBIndex(t)).ConnectedTriangles.contains([t](auto const & c) { return c == t; }));
+            Verify(!mPoints.GetConnectedTriangles(mTriangles.GetPointCIndex(t)).ConnectedTriangles.contains([t](auto const & c) { return c == t; }));
         }
     }
 
