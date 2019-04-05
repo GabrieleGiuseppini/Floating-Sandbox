@@ -215,15 +215,19 @@ void Ship::RepairAt(
     {
         // Check if point is in radius
         float const squareRadius = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
-        if (squareRadius < squareSearchRadius)
+        if (squareRadius <= squareSearchRadius)
         {
             //
             // 1) (Attempt to) restore all delete springs
             //
 
+            // Calculate tool strength (1.0 at center and zero at border, quadratically)
+            float const toolStrength = 1.0f - (squareRadius / squareSearchRadius) * (squareRadius / squareSearchRadius);
+
             // Visit all the springs that were connected at factory time
             for (auto const & fcs : mPoints.GetFactoryConnectedSprings(pointIndex).ConnectedSprings)
             {
+                // Check if this spring is deleted
                 if (mSprings.IsDeleted(fcs.SpringIndex))
                 {
                     //
@@ -236,15 +240,7 @@ void Ship::RepairAt(
                     // Spring length
                     float const springLength = springVector.length();
 
-                    // Spring direction (positive towards this point)
-                    vec2f const springDirection = springVector.normalise(springLength);
-
-                    // Calculate current relative velocity magnitude (positive if towards this point)
-                    float const currentRelativeVelocityMagnitude =
-                        (mPoints.GetVelocity(fcs.OtherEndpointIndex) - mPoints.GetVelocity(pointIndex))
-                        .dot(springDirection);
-
-                    // Check spring length wrt rest length
+                    // Check spring length vs rest length
                     float const springDeltaLength = springLength - mSprings.GetRestLength(fcs.SpringIndex);
                     if (abs(springDeltaLength) <= 0.05f)
                     {
@@ -262,14 +258,8 @@ void Ship::RepairAt(
 
                         assert(!mSprings.IsDeleted(fcs.SpringIndex));
 
-                        // TODOTEST
-                        ////// Brake the other endpoint (to zero out relative velocity)
-                        ////mPoints.SetVelocity(fcs.OtherEndpointIndex,
-                        ////    mPoints.GetVelocity(fcs.OtherEndpointIndex)
-                        ////    - springDirection * currentRelativeVelocityMagnitude);
                         // Brake the other endpoint
-                        mPoints.SetVelocity(fcs.OtherEndpointIndex,
-                            mPoints.GetVelocity(pointIndex));
+                        mPoints.SetVelocity(fcs.OtherEndpointIndex, vec2f::zero());
                     }
                     else
                     {
@@ -278,32 +268,27 @@ void Ship::RepairAt(
                         // ...move them closer
                         //
 
-                        vec2f const displacement = mPoints.GetPosition(fcs.OtherEndpointIndex) - mPoints.GetPosition(pointIndex);
-                        float const displacementLength = displacement.length();
-                        vec2f const springDir = displacement.normalise(displacementLength);
+                        // Spring direction (positive towards this point)
+                        vec2f const springDir = springVector.normalise(springLength);
 
-                        float const massFactor =
-                            (mPoints.GetTotalMass(pointIndex) * mPoints.GetTotalMass(fcs.OtherEndpointIndex))
-                            / (mPoints.GetTotalMass(pointIndex) + mPoints.GetTotalMass(fcs.OtherEndpointIndex));
+                        // Calculate displacement towards this point
+                        float const displacementMagnitude =
+                            (springLength - mSprings.GetRestLength(fcs.SpringIndex))
+                            * 0.03f // TODO: make parameter, ~"repair attraction rate"
+                            * toolStrength;
 
-                        float const dtSquared =
-                            (GameParameters::SimulationStepTimeDuration<float> / gameParameters.NumMechanicalDynamicsIterations<float>())
-                            * (GameParameters::SimulationStepTimeDuration<float> / gameParameters.NumMechanicalDynamicsIterations<float>());
-
-                        float const stiffnessCoefficient =
-                            0.1f // reduction fraction
-                            * 0.01f // spring stiffness
-                            * massFactor
-                            / dtSquared;
-
-                        // Calculate spring force on point A
-                        vec2f const fSpringA =
+                        // Displace point
+                        mPoints.GetPosition(fcs.OtherEndpointIndex) +=
                             springDir
-                            * (displacementLength - mSprings.GetRestLength(fcs.SpringIndex))
-                            * stiffnessCoefficient;
+                            * displacementMagnitude;
 
-                        //mPoints.GetForce(pointIndex) += fSpringA;
-                        mPoints.GetForce(fcs.OtherEndpointIndex) -= fSpringA;
+                        // Add some non-linear inertia (smaller at higher displacements)
+                        mPoints.GetVelocity(fcs.OtherEndpointIndex) =
+                            springDir
+                            * ((displacementMagnitude < 0.0f) ? -1.0f : 1.0f)
+                            * sqrtf(abs(displacementMagnitude))
+                            / GameParameters::GameParameters::SimulationStepTimeDuration<float>
+                            * 0.5f;
                     }
                 }
             }
