@@ -861,7 +861,7 @@ void SoundController::OnDestroy(
     }
 }
 
-void SoundController::OnPointAttached(
+void SoundController::OnRepair(
     StructuralMaterial const & structuralMaterial,
     bool isUnderwater,
     unsigned int size)
@@ -870,7 +870,7 @@ void SoundController::OnPointAttached(
     {
         /* TODO
         PlayMSUOneShotMultipleChoiceSound(
-            SoundType::Attach,
+            SoundType::Repair,
             *(structuralMaterial.MaterialSound),
             size,
             isUnderwater,

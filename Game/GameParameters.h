@@ -227,6 +227,8 @@ struct GameParameters
     static constexpr float MinDestroyRadius = 0.1f;
     static constexpr float MaxDestroyRadius = 10.0f;
 
+    float RepairRadius;
+
     float BombBlastRadius;
     static constexpr float MinBombBlastRadius = 0.1f;
     static constexpr float MaxBombBlastRadius = 20.0f;
@@ -250,6 +252,10 @@ struct GameParameters
     static constexpr float MaxFloodQuantity = 10.0f;
 
     float ScrubRadius;
+
+    float RepairForceAdjustment;
+    static constexpr float MinRepairForceAdjustment = 0.1f;
+    static constexpr float MaxRepairForceAdjustment = 50.0f;
 
     bool IsUltraViolentMode;
 

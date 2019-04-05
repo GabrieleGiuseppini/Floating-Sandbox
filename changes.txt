@@ -1,5 +1,5 @@
 1.11.0
-- Added "Orphaned particles rendering": individual particles that break off a structure used to disappear, while they are now rendered
+- Added "Orphaned particles rendering": individual particles that break off the ship structure used to disappear, while they are now rendered
 - Increased number of ophemeral particles
 	
 1.10.0

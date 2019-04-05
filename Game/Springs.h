@@ -111,6 +111,7 @@ public:
         , mEndpointsBuffer(mBufferElementCount, mElementCount, Endpoints(NoneElementIndex, NoneElementIndex))
         // Super triangles
         , mSuperTrianglesBuffer(mBufferElementCount, mElementCount, SuperTrianglesVector())
+        , mFactorySuperTrianglesBuffer(mBufferElementCount, mElementCount, SuperTrianglesVector())
         // Physical
         , mStrengthBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mMaterialStrengthBuffer(mBufferElementCount, mElementCount, 0.0f)
@@ -328,6 +329,12 @@ public:
         ElementIndex springElementIndex,
         ElementIndex superTriangleElementIndex)
     {
+        assert(mFactorySuperTrianglesBuffer[springElementIndex].contains(
+            [superTriangleElementIndex](auto st)
+            {
+                return st = superTriangleElementIndex;
+            }));
+
         mSuperTrianglesBuffer[springElementIndex].push_back(superTriangleElementIndex);
     }
 
@@ -344,6 +351,21 @@ public:
     inline void ClearSuperTriangles(ElementIndex springElementIndex)
     {
         mSuperTrianglesBuffer[springElementIndex].clear();
+    }
+
+    auto const & GetFactorySuperTriangles(ElementIndex springElementIndex) const
+    {
+        return mFactorySuperTrianglesBuffer[springElementIndex];
+    }
+
+    void RestoreFactorySuperTriangles(ElementIndex springElementIndex)
+    {
+        assert(mSuperTrianglesBuffer[springElementIndex].empty());
+
+        std::copy(
+            mFactorySuperTrianglesBuffer[springElementIndex].begin(),
+            mFactorySuperTrianglesBuffer[springElementIndex].end(),
+            mSuperTrianglesBuffer[springElementIndex].begin());
     }
 
     //
@@ -370,6 +392,15 @@ public:
     float GetStiffness(ElementIndex springElementIndex) const
     {
         return mStiffnessBuffer[springElementIndex];
+    }
+
+    float GetLength(
+        ElementIndex springElementIndex,
+        Points const & points) const
+    {
+        return
+            (points.GetPosition(GetPointAIndex(springElementIndex)) - points.GetPosition(GetPointBIndex(springElementIndex)))
+            .length();
     }
 
     float GetRestLength(ElementIndex springElementIndex) const
@@ -508,6 +539,7 @@ private:
     // (i.e. when this spring is the non-edge diagonal of a two-triangle square).
     // In any case, a spring may have between 0 and at most 2 super triangles.
     Buffer<SuperTrianglesVector> mSuperTrianglesBuffer;
+    Buffer<SuperTrianglesVector> mFactorySuperTrianglesBuffer;
 
     //
     // Physical

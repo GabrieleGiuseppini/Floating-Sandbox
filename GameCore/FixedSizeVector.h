@@ -10,13 +10,14 @@
 #include <array>
 #include <cassert>
 #include <functional>
+#include <iterator>
 
 /*
- * This class is a fixed-size vector for value elements.
+ * This class is a fixed-size vector for distinct value elements.
  * Elements can be added up to the specified maximum size, after which an exception occurs.
  *
  * The container is optimized for fast *visit*, so that it can be used to iterate through
- * all elements, and *erase*. Pushes are not optimized.
+ * all its elements, and for fast *erase* by index. Pushes are not optimized.
  */
 template<typename TElement, size_t MaxSize>
 class FixedSizeVector
@@ -31,6 +32,15 @@ private:
         typename TIteratedPointer>
     struct _iterator
     {
+    public:
+
+        using difference_type = void;
+        using value_type = TIterated;
+        using pointer = TIteratedPointer;
+        using reference = TIterated & ;
+        using iterator_category = std::forward_iterator_tag;
+
+
     public:
 
         inline bool operator==(_iterator const & other) const noexcept

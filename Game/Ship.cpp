@@ -84,6 +84,7 @@ Ship::Ship(
     mSprings.RegisterDestroyHandler(std::bind(&Ship::SpringDestroyHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     mSprings.RegisterRestoreHandler(std::bind(&Ship::SpringRestoreHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     mTriangles.RegisterDestroyHandler(std::bind(&Ship::TriangleDestroyHandler, this, std::placeholders::_1));
+    mTriangles.RegisterRestoreHandler(std::bind(&Ship::TriangleRestoreHandler, this, std::placeholders::_1));
     mElectricalElements.RegisterDestroyHandler(std::bind(&Ship::ElectricalElementDestroyHandler, this, std::placeholders::_1));
 
     // Do a first connectivity pass (for the first Update)
@@ -195,20 +196,161 @@ void Ship::RepairAt(
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
-    float const radius =
-        gameParameters.DestroyRadius    // Yes, we use destroy radius, after all we're its inverse
+    float const searchRadius =
+        gameParameters.RepairRadius
         * radiusMultiplier
         * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
-    float const squareRadius = radius * radius;
+    float const squareSearchRadius = searchRadius * searchRadius;
 
-    // Restore all deleted springs that were originally attached to the points within the radius
-    for (auto pointIndex : mPoints)
+    // TODOHERE: do this somewhere embedded in the loop below
+    //
+    // Restore eligible endpoints' IsLeaking
+    //
+    // Eligible endpoints are those that now have all of their factory springs
+    //
+
+    // Visit all non ephemeral points
+    for (auto pointIndex : mPoints.NonEphemeralPoints())
     {
-        // TODOHERE
-        if (mPoints.IsActive(pointIndex)
-            && (mPoints.GetPosition(pointIndex) - targetPos).squareLength() < squareRadius)
+        // Check if point is in radius
+        float const squareRadius = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
+        if (squareRadius < squareSearchRadius)
         {
+            //
+            // 1) (Attempt to) restore all delete springs
+            //
+
+            // Visit all the springs that were connected at factory time
+            for (auto const & fcs : mPoints.GetFactoryConnectedSprings(pointIndex).ConnectedSprings)
+            {
+                if (mSprings.IsDeleted(fcs.SpringIndex))
+                {
+                    //
+                    // Restore this spring or move the other endpoint nearer
+                    //
+
+                    // Spring vector (positive towards this point)
+                    vec2f const springVector = mPoints.GetPosition(pointIndex) - mPoints.GetPosition(fcs.OtherEndpointIndex);
+
+                    // Spring length
+                    float const springLength = springVector.length();
+
+                    // Spring direction (positive towards this point)
+                    vec2f const springDirection = springVector.normalise(springLength);
+
+                    // Calculate current relative velocity magnitude (positive if towards this point)
+                    float const currentRelativeVelocityMagnitude =
+                        (mPoints.GetVelocity(fcs.OtherEndpointIndex) - mPoints.GetVelocity(pointIndex))
+                        .dot(springDirection);
+
+                    // Check spring length wrt rest length
+                    float const springDeltaLength = springLength - mSprings.GetRestLength(fcs.SpringIndex);
+                    if (abs(springDeltaLength) <= 0.05f)
+                    {
+                        //
+                        // Endpoints are close enough...
+                        // ...we can restore the spring
+                        //
+
+                        // Restore the spring
+                        mSprings.Restore(
+                            fcs.SpringIndex,
+                            Springs::RestoreOptions::RestoreTriangles,
+                            gameParameters,
+                            mPoints);
+
+                        assert(!mSprings.IsDeleted(fcs.SpringIndex));
+
+                        // Brake the other endpoint (to zero out relative velocity)
+                        mPoints.SetVelocity(fcs.OtherEndpointIndex,
+                            mPoints.GetVelocity(fcs.OtherEndpointIndex)
+                            - springDirection * currentRelativeVelocityMagnitude);
+                    }
+                    else
+                    {
+                        //
+                        // Endpoints are too far...
+                        // ...move them closer
+                        //
+
+                        // Calculate desired relative velocity
+                        // TODOHERE
+                        float const desiredRelativeVelocityMagnitude = 4.0f * sqrt(abs(springDeltaLength)) + 1.0f;
+
+                        // Adjust the other endpoint's velocity to bring it to the desired relative velocity
+                        mPoints.SetVelocity(fcs.OtherEndpointIndex,
+                            mPoints.GetVelocity(fcs.OtherEndpointIndex)
+                            + springDirection * (desiredRelativeVelocityMagnitude - currentRelativeVelocityMagnitude));
+
+                        // TODO: test with force
+
+                        // TODOOLD
+                        /*
+
+                        // Move closer
+
+                        // Get normal over the distance, directed towards this point
+                        vec2f const normal =
+                            (mPoints.GetPosition(pointIndex) - mPoints.GetPosition(fcs.OtherEndpointIndex))
+                            .normalise();
+
+                        // Calculate desired velocity at this distance, tapering off at the edges of the radius
+                        vec2f const desiredVelocity =
+                            normal
+                            * (springLengthRatio - 1.0f) * 3.0f
+                            * (1.0f - squareRadius / squareSearchRadius)
+                            * gameParameters.RepairForceAdjustment
+                            * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
+                        // Calculate force to bring the point's current velocity to the desired velocity
+                        vec2f const force =
+                            (desiredVelocity - mPoints.GetVelocity(fcs.OtherEndpointIndex))
+                            * mPoints.GetTotalMass(fcs.OtherEndpointIndex)
+                            / gameParameters.MechanicalSimulationStepTimeDuration<float>();
+
+                        // Calculate force - proportional to distance
+                        ////vec2f const force =
+                        ////    normal
+                        ////    * springLengthRatio
+                        ////    * 100000.0f // TODO! Find good value
+                        ////    * gameParameters.RepairForceAdjustment
+                        ////    * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
+                        // Add force to that point
+                        mPoints.AddForce(fcs.OtherEndpointIndex, force);
+                        */
+                    }
+                }
+            }
+
+            //
+            // 2) Restore deleted _eligible_ triangles that were connected to this point at factory time
+            //
+            // A triangle is eligible for being restored if all of its subsprings are not deleted.
+            //
+            // We do this at tool time as there are triangles that have been deleted
+			// without their edge-springs having been deleted, so the resurrection of triangles
+			// wouldn't be complete if we resurrected triangles only when restoring a spring
+            //
+
+            // Visit all the triangles that were connected at factory time
+            for (auto fct : mPoints.GetFactoryConnectedTriangles(pointIndex).ConnectedTriangles)
+            {
+                if (mTriangles.IsDeleted(fct))
+                {
+                    // Check if eligible
+                    bool hasDeletedSubsprings = false;
+                    for (auto fss : mTriangles.GetFactorySubSprings(fct))
+                        hasDeletedSubsprings |= mSprings.IsDeleted(fss);
+
+                    if (!hasDeletedSubsprings)
+                    {
+                        // Restore it
+                        mTriangles.Restore(fct);
+                    }
+                }
+            }
         }
     }
 }
@@ -1087,7 +1229,7 @@ void Ship::HandleCollisionsWithSeaFloor(GameParameters const & gameParameters)
     //
 
     // The fraction of velocity that bounces back (we model inelastic bounces)
-    static constexpr float VelocityBounceFraction = 0.75f;
+    static constexpr float VelocityBounceFraction = -0.75f;
 
     float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
 
@@ -1100,20 +1242,19 @@ void Ship::HandleCollisionsWithSeaFloor(GameParameters const & gameParameters)
             // Move point back to where it was
             mPoints.GetPosition(pointIndex) -= mPoints.GetVelocity(pointIndex) * dt;
 
-            // Bounce velocity (naively), with some inelastic absorption
-            mPoints.GetVelocity(pointIndex) =
-                -mPoints.GetVelocity(pointIndex)
-                * VelocityBounceFraction;
-
-            // Add a small normal component, so to have some non-infinite friction
+            //
+            // Calculate new velocity
+            //
 
             vec2f seaFloorNormal = vec2f(
                 floorheight - mParentWorld.GetOceanFloorHeightAt(mPoints.GetPosition(pointIndex).x + 0.01f),
-
                 0.01f).normalise();
-            mPoints.GetVelocity(pointIndex) +=
-                seaFloorNormal
-                * 0.5f;
+
+            vec2f newVelocity =
+                (mPoints.GetVelocity(pointIndex) * VelocityBounceFraction) // Bounce velocity (naively), with some inelastic absorption
+                + (seaFloorNormal * 0.5f); // Add a small normal component, so to have some non-infinite friction
+
+            mPoints.SetVelocity(pointIndex, newVelocity);
         }
     }
 }
@@ -1133,6 +1274,7 @@ void Ship::TrimForWorldBounds(
     for (auto pointIndex : mPoints)
     {
         auto & pos = mPoints.GetPosition(pointIndex);
+
         if (pos.x < MaxWorldLeft)
         {
             pos.x = MaxWorldLeft;
@@ -1147,7 +1289,8 @@ void Ship::TrimForWorldBounds(
             // Bounce bounded
             mPoints.GetVelocity(pointIndex).x = std::max(-mPoints.GetVelocity(pointIndex).x, -MaxBounceVelocity);
         }
-        else if (pos.y > MaxWorldTop)
+
+        if (pos.y > MaxWorldTop)
         {
             pos.y = MaxWorldTop;
 
@@ -2192,7 +2335,30 @@ void Ship::SpringRestoreHandler(
     bool restoreTriangles,
     GameParameters const & /*gameParameters*/)
 {
-    // TODOHERE
+    //
+    // Add others to self
+    //
+
+    // Restore factory supertriangles
+    mSprings.RestoreFactorySuperTriangles(springElementIndex);
+
+    //
+    // Add self to others
+    //
+
+    // Connect self to endpoints
+    mPoints.ConnectSpring(mSprings.GetPointAIndex(springElementIndex), springElementIndex, mSprings.GetPointBIndex(springElementIndex), true); // Owner
+    mPoints.ConnectSpring(mSprings.GetPointBIndex(springElementIndex), springElementIndex, mSprings.GetPointAIndex(springElementIndex), false); // Not owner
+
+    // Add spring to set of sub springs at each super-triangle
+    for (auto superTriangleIndex : mSprings.GetSuperTriangles(springElementIndex))
+    {
+        mTriangles.AddSubSpring(superTriangleIndex, springElementIndex);
+    }
+
+
+    // Remember our structure is now dirty
+    mIsStructureDirty = true;
 }
 
 void Ship::TriangleDestroyHandler(ElementIndex triangleElementIndex)
@@ -2207,16 +2373,54 @@ void Ship::TriangleDestroyHandler(ElementIndex triangleElementIndex)
         mSprings.RemoveSuperTriangle(subSpringIndex, triangleElementIndex);
     }
 
-    // Remove triangle from its endpoints
-    mPoints.RemoveConnectedTriangle(mTriangles.GetPointAIndex(triangleElementIndex), triangleElementIndex, true); // Owner
-    mPoints.RemoveConnectedTriangle(mTriangles.GetPointBIndex(triangleElementIndex), triangleElementIndex, false); // Not owner
-    mPoints.RemoveConnectedTriangle(mTriangles.GetPointCIndex(triangleElementIndex), triangleElementIndex, false); // Not owner
+    // Disconnect triangle from its endpoints
+    mPoints.DisconnectTriangle(mTriangles.GetPointAIndex(triangleElementIndex), triangleElementIndex, true); // Owner
+    mPoints.DisconnectTriangle(mTriangles.GetPointBIndex(triangleElementIndex), triangleElementIndex, false); // Not owner
+    mPoints.DisconnectTriangle(mTriangles.GetPointCIndex(triangleElementIndex), triangleElementIndex, false); // Not owner
 
     //
     // Remove other elements from self
     //
 
     mTriangles.ClearSubSprings(triangleElementIndex);
+
+
+    // Remember our structure is now dirty
+    mIsStructureDirty = true;
+}
+
+void Ship::TriangleRestoreHandler(ElementIndex triangleElementIndex)
+{
+    //
+    // Add others to self
+    //
+
+    // Restore factory subsprings
+    mTriangles.RestoreFactorySubSprings(triangleElementIndex);
+
+
+    //
+    // Add self to others
+    //
+
+    // Connect triangle to its endpoints
+    mPoints.ConnectTriangle(mTriangles.GetPointAIndex(triangleElementIndex), triangleElementIndex, true); // Owner
+    mPoints.ConnectTriangle(mTriangles.GetPointBIndex(triangleElementIndex), triangleElementIndex, false); // Not owner
+    mPoints.ConnectTriangle(mTriangles.GetPointCIndex(triangleElementIndex), triangleElementIndex, false); // Not owner
+
+    // Add triangle to set of super triangles of its sub springs
+    assert(!mTriangles.GetSubSprings(triangleElementIndex).empty());
+    for (ElementIndex subSpringIndex : mTriangles.GetSubSprings(triangleElementIndex))
+    {
+        mSprings.AddSuperTriangle(subSpringIndex, triangleElementIndex);
+    }
+
+
+    // Fire event - using point A's properties (quite arbitrarily)
+    mGameEventHandler->OnRepair(
+        mPoints.GetStructuralMaterial(mTriangles.GetPointAIndex(triangleElementIndex)),
+        mParentWorld.IsUnderwater(mPoints.GetPosition(mTriangles.GetPointAIndex(triangleElementIndex))),
+        1);
 
     // Remember our structure is now dirty
     mIsStructureDirty = true;
@@ -2477,11 +2681,18 @@ void Ship::VerifyInvariants()
 
     for (auto s : mSprings)
     {
-        Verify(mSprings.GetSuperTriangles(s).size() <= 2);
-
-        for (auto superTriangle : mSprings.GetSuperTriangles(s))
+        if (!mSprings.IsDeleted(s))
         {
-            Verify(mTriangles.GetSubSprings(superTriangle).contains(s));
+            Verify(mSprings.GetSuperTriangles(s).size() <= 2);
+
+            for (auto superTriangle : mSprings.GetSuperTriangles(s))
+            {
+                Verify(mTriangles.GetSubSprings(superTriangle).contains(s));
+            }
+        }
+        else
+        {
+            Verify(mSprings.GetSuperTriangles(s).empty());
         }
     }
 

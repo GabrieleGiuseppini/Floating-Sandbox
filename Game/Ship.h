@@ -248,6 +248,8 @@ private:
 
     void TriangleDestroyHandler(ElementIndex triangleElementIndex);
 
+    void TriangleRestoreHandler(ElementIndex triangleElementIndex);
+
     void ElectricalElementDestroyHandler(ElementIndex electricalElementIndex);
 
     void GenerateAirBubbles(

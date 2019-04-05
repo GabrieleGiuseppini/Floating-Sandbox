@@ -214,6 +214,15 @@ Render:
 
 		- Repair tool (*)
 
+		- Floatsam: see if using (waterY + 0.1) at UpdateWaterIntake helps
+
+		- Auto-focus (*)
+			- Owned by RenderContext
+
+		- Try to show tip window after first Render
+			- PostInitialize just posts callback
+			- Before setting up timers, callback checks if tip has ben checked or not
+
 		- Heat and combustion (*)
 
 		- Also dry points should rot (*)
@@ -258,7 +267,7 @@ Render:
 			- SS France (Awesomeyorkie):
 				- Ropes
 		- Ready:
-			- B747: (An SR71 Habu) alias=<TODO> year=<TODO>
+			- B747: (An SR71 Habu) alias=NotTelling year=1970
 				- Add to About box
 			- Pacific: "S.S. Pacific" alias=Hugo_2503 year=1908
 				- Add to About box
@@ -316,6 +325,7 @@ Render:
 		+ After including redo
 		+ Detect loops with unordered_set<std::string>
 		+ Use for ship color and texture
+	- Ship: replace handler registrations with points, springs, etc. with IStructureHandler, declared in own .h
 	- Try 32-bit build
 	- Sound controller: complain if find extraneous files (had issue with ".flc")
 	- Translations:
@@ -712,12 +722,8 @@ Render:
 					+ Bombs cover each other
 		+ Run in Debug
 		+ Check flood tool change (Tool::Initialize - verify sound starts)
-		- 2) Maintain factory connections
+		= 2) Maintain factory connections
 			+ Not electricals (at least for now)
-			- Find minimal necessary to rebuild the below:
-				- Points: needs to remember springs, triangles (?)
-				- Springs: need to remember super-triangles
-				- Triangles: needs to remember sub-springs (?)
 			= Points:
 				+ AddFactoryConnectedSpring(...)
 					+ -> ConnectSpring(...)
@@ -725,67 +731,59 @@ Render:
 					+ assert it's in factory-connected springs
 				+ See if connecting-spring-kung-fu should be done by struct itself
 				- FactoryIsLeaking
-			- Springs:
-				- FactorySuperTriangles
-			- Triangles
-				- FactorySubSprings
+			+ Springs:
+				+ FactorySuperTriangles
+			+ Other factory connections as necessary by restore algo
 			+ Springs::Restore
 				+ Undo deletion
 				+ Call SpringRestoreHandler
-			- Ship::PointDetachHandler:
-				- See if it's true that we don't need to destroy triangles
-			- TODO: double-check the below
-			- Ship::SpringRestoreHandler(s)
-				// TODO: this may better live in action itself, as there are triangles that have been deleted
-				// without their edge-springs having been deleted, so the resurrection of triangles
-				// wouldn't be complete if we resurrected triangles only when restoring a spring, like here
-				- For each triangle t in s.FactorySuperTriangles such that t.IsDeleted:
-					- If all t.FactorySubSprings are !Deleted:
-						- Triangles::Restore(t)
-						- Add s to t.SubSprings
-						- Add t to s.SuperTriangles
-				- Add s to its endpoints
-				- For each endpoint that now how all of its factory springs:
-					- Restore IsLeaking to factory value
-				- Set IsStructureDirty=true
-			- Triangles::Restore
-				- Undo deletion
-				- Call TriangleRestoreHandler
-			- Ship::TriangleRestoreHandler(t):
-				- Add t to its endpoints
-				- Fire Attach event
-				- Set IsStructureDirty=true
+			+ Ship::PointDetachHandler:
+				+ See if it's true that we don't need to destroy triangles
+			+ Springs::Restore			
+			+ Ship::SpringRestoreHandler(s)
+				+ Add others to self
+					+ Copy factory supertriangles
+				+ Add self to others
+					+ Connect self to endpoints
+					+ Add self to each supertriangle's subsprings
+				+ Set IsStructureDirty=true
+			+ Triangles::Restore
+				+ Undo deletion
+				+ Call TriangleRestoreHandler
+			+ Ship::TriangleRestoreHandler(t):
+				+ Add t to its endpoints
+				+ Fire Attach event
+				+ Set IsStructureDirty=true
+			+ Update invariants verification
+		- Commit
+		- Try changing Points::GetMass to Points::GetAugmentedStructuralMass
+		= 3) Repair tool and action
+			= Repair(Pr):
+				= for each s in Pr.FactorySprings:
+					= if s.IsDeleted:
+						= if s.length <= s.restLength: // Restore
+							+ Springs::Restore(s)
+							- Try with force instead of velocity
+						= else: // Attract endpoint
+							+ Points.GetForce(s.OtherEndpoint) += c * <normal>(Pr.Position - OtherEndpoint.Position)
+							- Try with force instead of velocity
+				+ for each t in Pr.FactoryTriangles:
+					+ if t.IsDeleted:
+						+ If all t.FactorySubSprings are !Deleted:
+							+ Triangles::Restore(t)	
+				- Restore endpoints' IsLeaking
+					- Only for endpoints that now have all of their factory springs
 
-			- Update invariants verification
-		- 3) Repair tool and action
-			- Repair(Pr):
-				- for each s in Pr.FactorySprings:
-					- if s.IsDeleted:
-						- if s.length <= s.restLength: // Restore
-							- Springs::Restore(s)
-								- Undo deletion (flag, coeffs, etc.)
-								- Call (Spring)RestoreHandler
-									- Restore triangles t in s.FactorySuperTriangles
-										-...which will call (Triangle)RestoreHandler
-									- ...
-						- else: // Attract endpoint
-							- Points.GetForce(s.OtherEndpoint) += c * <normal>(Pr.Position - OtherEndpoint.Position)
-				- for each t in Pr.FactoryTriangles:
-					- if t.IsDeleted:
-						- If all t.FactorySubSprings are !Deleted:
-							- Triangles::Restore(t)	
-								- TriangleRestoreHandler:
-									- Add s to t.SubSprings
-									- Add t to s.SuperTriangles
 			- RepairStructureTool:
 				- repair_structure_cursor_up/down.png: screwdriver
 				- Adjust cursor hotpoints
 			- SoundController: 
-				- Repair sound: ?
-				- OnAttached
+				- RepairTool sound: ?
+				- OnRepair
 					- Sounds:
 						- Metal: thud
 						- Others: ?
+						- X2 (underwater!)
 
 	- Also dry points should rot, albeit very slowly (*)
 		- Could just add ~0.005 to p.water at RotPoints()

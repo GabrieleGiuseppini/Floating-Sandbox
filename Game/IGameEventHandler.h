@@ -46,7 +46,7 @@ public:
         // Default-implemented
     }
 
-    virtual void OnPointAttached(
+    virtual void OnRepair(
         StructuralMaterial const & /*structuralMaterial*/,
         bool /*isUnderwater*/,
         unsigned int /*size*/)

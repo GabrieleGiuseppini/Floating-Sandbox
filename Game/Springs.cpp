@@ -21,6 +21,7 @@ void Springs::Add(
     mEndpointsBuffer.emplace_back(pointAIndex, pointBIndex);
 
     mSuperTrianglesBuffer.emplace_back(superTriangles);
+    mFactorySuperTrianglesBuffer.emplace_back(superTriangles);
 
     // Strength is average
     float const averageStrength =
@@ -286,7 +287,7 @@ bool Springs::UpdateStrains(
             && !mIsBombAttachedBuffer[s])
         {
             // Calculate strain
-            float dx = (points.GetPosition(mEndpointsBuffer[s].PointAIndex) - points.GetPosition(mEndpointsBuffer[s].PointBIndex)).length();
+            float dx = GetLength(s, points);
             float const strain = fabs(mRestLengthBuffer[s] - dx) / mRestLengthBuffer[s];
 
             // Check against strength

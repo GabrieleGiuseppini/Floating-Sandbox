@@ -71,6 +71,7 @@ void Points::Add(
     mConnectedSpringsBuffer.emplace_back();
     mFactoryConnectedSpringsBuffer.emplace_back();
     mConnectedTrianglesBuffer.emplace_back();
+    mFactoryConnectedTrianglesBuffer.emplace_back();
 
     mConnectedComponentIdBuffer.emplace_back(NoneConnectedComponentId);
     mPlaneIdBuffer.emplace_back(NonePlaneId);
