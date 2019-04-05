@@ -262,10 +262,14 @@ void Ship::RepairAt(
 
                         assert(!mSprings.IsDeleted(fcs.SpringIndex));
 
-                        // Brake the other endpoint (to zero out relative velocity)
+                        // TODOTEST
+                        ////// Brake the other endpoint (to zero out relative velocity)
+                        ////mPoints.SetVelocity(fcs.OtherEndpointIndex,
+                        ////    mPoints.GetVelocity(fcs.OtherEndpointIndex)
+                        ////    - springDirection * currentRelativeVelocityMagnitude);
+                        // Brake the other endpoint
                         mPoints.SetVelocity(fcs.OtherEndpointIndex,
-                            mPoints.GetVelocity(fcs.OtherEndpointIndex)
-                            - springDirection * currentRelativeVelocityMagnitude);
+                            mPoints.GetVelocity(pointIndex));
                     }
                     else
                     {
@@ -274,52 +278,32 @@ void Ship::RepairAt(
                         // ...move them closer
                         //
 
-                        // Calculate desired relative velocity
-                        // TODOHERE
-                        float const desiredRelativeVelocityMagnitude = 4.0f * sqrt(abs(springDeltaLength)) + 1.0f;
+                        vec2f const displacement = mPoints.GetPosition(fcs.OtherEndpointIndex) - mPoints.GetPosition(pointIndex);
+                        float const displacementLength = displacement.length();
+                        vec2f const springDir = displacement.normalise(displacementLength);
 
-                        // Adjust the other endpoint's velocity to bring it to the desired relative velocity
-                        mPoints.SetVelocity(fcs.OtherEndpointIndex,
-                            mPoints.GetVelocity(fcs.OtherEndpointIndex)
-                            + springDirection * (desiredRelativeVelocityMagnitude - currentRelativeVelocityMagnitude));
+                        float const massFactor =
+                            (mPoints.GetTotalMass(pointIndex) * mPoints.GetTotalMass(fcs.OtherEndpointIndex))
+                            / (mPoints.GetTotalMass(pointIndex) + mPoints.GetTotalMass(fcs.OtherEndpointIndex));
 
-                        // TODO: test with force
+                        float const dtSquared =
+                            (GameParameters::SimulationStepTimeDuration<float> / gameParameters.NumMechanicalDynamicsIterations<float>())
+                            * (GameParameters::SimulationStepTimeDuration<float> / gameParameters.NumMechanicalDynamicsIterations<float>());
 
-                        // TODOOLD
-                        /*
+                        float const stiffnessCoefficient =
+                            0.1f // reduction fraction
+                            * 0.01f // spring stiffness
+                            * massFactor
+                            / dtSquared;
 
-                        // Move closer
+                        // Calculate spring force on point A
+                        vec2f const fSpringA =
+                            springDir
+                            * (displacementLength - mSprings.GetRestLength(fcs.SpringIndex))
+                            * stiffnessCoefficient;
 
-                        // Get normal over the distance, directed towards this point
-                        vec2f const normal =
-                            (mPoints.GetPosition(pointIndex) - mPoints.GetPosition(fcs.OtherEndpointIndex))
-                            .normalise();
-
-                        // Calculate desired velocity at this distance, tapering off at the edges of the radius
-                        vec2f const desiredVelocity =
-                            normal
-                            * (springLengthRatio - 1.0f) * 3.0f
-                            * (1.0f - squareRadius / squareSearchRadius)
-                            * gameParameters.RepairForceAdjustment
-                            * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
-
-                        // Calculate force to bring the point's current velocity to the desired velocity
-                        vec2f const force =
-                            (desiredVelocity - mPoints.GetVelocity(fcs.OtherEndpointIndex))
-                            * mPoints.GetTotalMass(fcs.OtherEndpointIndex)
-                            / gameParameters.MechanicalSimulationStepTimeDuration<float>();
-
-                        // Calculate force - proportional to distance
-                        ////vec2f const force =
-                        ////    normal
-                        ////    * springLengthRatio
-                        ////    * 100000.0f // TODO! Find good value
-                        ////    * gameParameters.RepairForceAdjustment
-                        ////    * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
-
-                        // Add force to that point
-                        mPoints.AddForce(fcs.OtherEndpointIndex, force);
-                        */
+                        //mPoints.GetForce(pointIndex) += fSpringA;
+                        mPoints.GetForce(fcs.OtherEndpointIndex) -= fSpringA;
                     }
                 }
             }

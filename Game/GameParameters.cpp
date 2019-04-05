@@ -6,7 +6,7 @@
 #include "GameParameters.h"
 
 GameParameters::GameParameters()
-    // Dynamics
+// Dynamics
     : NumMechanicalDynamicsIterationsAdjustment(1.0f)
     , SpringStiffnessAdjustment(1.0f)
     , SpringDampingAdjustment(1.0f)
@@ -39,7 +39,7 @@ GameParameters::GameParameters()
     // Interactions
     , ToolSearchRadius(2.0f)
     , DestroyRadius(0.75f)
-    , RepairRadius(7.5f)
+    , RepairRadius(5.0f)
     , BombBlastRadius(2.0f)
     , AntiMatterBombImplosionStrength(3.0f)
     , TimerBombInterval(10)
