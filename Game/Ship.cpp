@@ -199,9 +199,7 @@ void Ship::RepairAt(
     float const searchRadius =
         gameParameters.RepairRadius
         * radiusMultiplier
-        // TODOTEST
-        //* (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
-        ;
+        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
     float const squareSearchRadius = searchRadius * searchRadius;
 
@@ -229,9 +227,7 @@ void Ship::RepairAt(
             //
 
             // Calculate tool strength (1.0 at center and zero at border, fourth power)
-            // TODOTEST
             float const toolStrength = 1.0f - (squareRadius / squareSearchRadius) * (squareRadius / squareSearchRadius);
-            //float const toolStrength = 1.0f - (squareRadius / squareSearchRadius);
 
             // Visit all the springs that were connected at factory time
             for (auto const & fcs : mPoints.GetFactoryConnectedSprings(pointIndex).ConnectedSprings)
@@ -413,7 +409,7 @@ void Ship::RepairAt(
                             // TODO: why is it suspiciously close to dt?
                             // TODOTEST
                             //* 0.02f
-                            * 0.04f
+                            * 0.08f
                             * toolStrength;
 
                         // Move point
@@ -421,7 +417,9 @@ void Ship::RepairAt(
                             movementDir
                             * movementMagnitude;
 
-                        // Add some non-linear inertia (smaller at higher displacements)
+                        // Set some non-linear inertia (smaller at higher displacements),
+                        // just for better looks
+                        // (note: last one that pulls this point wins)
                         mPoints.GetVelocity(fcs.OtherEndpointIndex) =
                             movementDir
                             * ((movementMagnitude < 0.0f) ? -1.0f : 1.0f)
