@@ -212,19 +212,26 @@ void Ship::RepairAt(
     // Eligible endpoints are those that now have all of their factory springs
     //
 
-    // Visit all non ephemeral points
+    // Visit all non-ephemeral points
     for (auto pointIndex : mPoints.NonEphemeralPoints())
     {
-        // Check if point is in radius
+        // Check if point is in radius and it's not orphaned
+        //
+        // If we were to attempt to restore also orphaned points, then two formerly-connected
+        // orphaned points within the search radius would interact with each other and nullify
+        // the effort put by the main structure's points
         float const squareRadius = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
-        if (squareRadius <= squareSearchRadius)
+        if (squareRadius <= squareSearchRadius
+            && mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() > 0)
         {
             //
             // 1) (Attempt to) restore this point's delete springs
             //
 
             // Calculate tool strength (1.0 at center and zero at border, fourth power)
+            // TODOTEST
             float const toolStrength = 1.0f - (squareRadius / squareSearchRadius) * (squareRadius / squareSearchRadius);
+            //float const toolStrength = 1.0f - (squareRadius / squareSearchRadius);
 
             // Visit all the springs that were connected at factory time
             for (auto const & fcs : mPoints.GetFactoryConnectedSprings(pointIndex).ConnectedSprings)
@@ -363,7 +370,10 @@ void Ship::RepairAt(
                     float const displacementMagnitude = displacementVector.length();
 
                     // Check whether we are close enough
-                    if (abs(displacementMagnitude) <= 0.025f) // TODO: parameter
+                    //
+                    // Note: a higher tolerance here causes springs to...spring into life
+                    // already stretches or compressed, generating an undesirable force impulse
+                    if (abs(displacementMagnitude) <= 0.025f)
                     {
                         //
                         // The other endpoint is close enough to its target, implying that
@@ -401,7 +411,9 @@ void Ship::RepairAt(
                         float const movementMagnitude =
                             displacementMagnitude
                             // TODO: why is it suspiciously close to dt?
-                            * 0.02f
+                            // TODOTEST
+                            //* 0.02f
+                            * 0.04f
                             * toolStrength;
 
                         // Move point
