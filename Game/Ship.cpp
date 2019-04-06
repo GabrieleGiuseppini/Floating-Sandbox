@@ -223,7 +223,7 @@ void Ship::RepairAt(
             // 1) (Attempt to) restore this point's delete springs
             //
 
-            // Calculate tool strength (1.0 at center and zero at border, quadratically)
+            // Calculate tool strength (1.0 at center and zero at border, fourth power)
             float const toolStrength = 1.0f - (squareRadius / squareSearchRadius) * (squareRadius / squareSearchRadius);
 
             // Visit all the springs that were connected at factory time
@@ -400,8 +400,8 @@ void Ship::RepairAt(
                         // Movement magnitude (just a fraction of what's needed, so that movement is smooth)
                         float const movementMagnitude =
                             displacementMagnitude
-                            * 0.02f // TODO: make parameter, ~"repair attraction rate"
-                            * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f)
+                            // TODO: why is it suspiciously close to dt?
+                            * 0.02f
                             * toolStrength;
 
                         // Move point
