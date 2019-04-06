@@ -12,8 +12,8 @@ namespace Physics {
 void Springs::Add(
     ElementIndex pointAIndex,
     ElementIndex pointBIndex,
-    uint32_t factoryPointAAngle,
-    uint32_t factoryPointBAngle,
+    int32_t factoryPointAOctant,
+    int32_t factoryPointBOctant,
     SuperTrianglesVector const & superTriangles,
     Characteristics characteristics,
     Points const & points)
@@ -22,7 +22,7 @@ void Springs::Add(
 
     mEndpointsBuffer.emplace_back(pointAIndex, pointBIndex);
 
-    mFactoryEndpointAnglesBuffer.emplace_back(factoryPointAAngle, factoryPointBAngle);
+    mFactoryEndpointOctantsBuffer.emplace_back(factoryPointAOctant, factoryPointBOctant);
 
     mSuperTrianglesBuffer.emplace_back(superTriangles);
     mFactorySuperTrianglesBuffer.emplace_back(superTriangles);

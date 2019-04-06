@@ -39,7 +39,7 @@ GameParameters::GameParameters()
     // Interactions
     , ToolSearchRadius(2.0f)
     , DestroyRadius(0.75f)
-    , RepairRadius(5.0f)
+    , RepairRadius(2.0f)
     , BombBlastRadius(2.0f)
     , AntiMatterBombImplosionStrength(3.0f)
     , TimerBombInterval(10)

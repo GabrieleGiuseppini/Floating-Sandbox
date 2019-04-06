@@ -232,10 +232,194 @@ void Ship::RepairAt(
                 // Check if this spring is deleted
                 if (mSprings.IsDeleted(fcs.SpringIndex))
                 {
+                    ////////////////////////////////////////////////////////
                     //
                     // Restore this spring or move the other endpoint nearer
                     //
+                    ////////////////////////////////////////////////////////
 
+                    //
+                    // The target position of the endpoint is on the circle whose radius
+                    // is the spring's rest length, and the angle is interpolated between
+                    // the two non-deleted springs immediately CW and CCW of this spring
+                    //
+
+                    float targetWorldAngle; // In world coordinates, positive when CCW
+
+                    // The angle of the spring wrt this point
+                    // 0 = E, 1 = SE, ..., 7 = NE
+                    int32_t const factoryPointSpringOctant = mSprings.GetFactoryEndpointOctant(
+                        fcs.SpringIndex,
+                        pointIndex);
+
+                    size_t const connectedSpringsCount = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size();
+                    if (connectedSpringsCount == 0)
+                    {
+                        // No springs exist yet for this point...
+                        // ...arbitrarily, use its factory octant as if it were a world angle
+                        targetWorldAngle = Pi<float> / 4.0f * static_cast<float>(8.0f - factoryPointSpringOctant);
+                    }
+                    else
+                    {
+                        // One or more springs...
+
+                        //
+                        // 1. Find nearest spring CW and closest spring CCW
+                        // (which might and up being the same spring in case there's only one spring)
+                        //
+
+                        int nearestCWSpringIndex = -1;
+                        int nearestCWSpringDeltaOctant = std::numeric_limits<int>::max();
+                        int nearestCCWSpringIndex = -1;
+                        int nearestCCWSpringDeltaOctant = std::numeric_limits<int>::max();
+                        for (auto const & cs : mPoints.GetConnectedSprings(pointIndex).ConnectedSprings)
+                        {
+                            //
+                            // CW
+                            //
+
+                            int cwDelta =
+                                mSprings.GetFactoryEndpointOctant(cs.SpringIndex, pointIndex)
+                                - factoryPointSpringOctant;
+
+                            if (cwDelta < 0)
+                                cwDelta += 8;
+
+                            if (cwDelta < nearestCWSpringDeltaOctant)
+                            {
+                                nearestCWSpringIndex = cs.SpringIndex;
+                                nearestCWSpringDeltaOctant = cwDelta;
+                            }
+
+                            //
+                            // CCW
+                            //
+
+                            assert(cwDelta > 0 && cwDelta < 8);
+                            int ccwDelta = 8 - cwDelta;
+                            assert(ccwDelta > 0);
+
+                            if (ccwDelta < nearestCCWSpringDeltaOctant)
+                            {
+                                nearestCCWSpringIndex = cs.SpringIndex;
+                                nearestCCWSpringDeltaOctant = ccwDelta;
+                            }
+                        }
+
+                        assert(nearestCWSpringIndex >= 0);
+                        assert(nearestCWSpringDeltaOctant > 0);
+                        assert(nearestCCWSpringIndex >= 0);
+                        assert(nearestCCWSpringDeltaOctant > 0);
+
+                        //
+                        // 2. Calculate this spring's world angle by
+                        // interpolating among these two springs
+                        //
+
+                        ElementIndex const ccwSpringOtherEndpointIndex =
+                            mSprings.GetOtherEndpointIndex(nearestCCWSpringIndex, pointIndex);
+
+                        ElementIndex const cwSpringOtherEndpointIndex =
+                            mSprings.GetOtherEndpointIndex(nearestCWSpringIndex, pointIndex);
+
+                        // Angle between this two springs
+                        float neighborsAngle =
+                            (ccwSpringOtherEndpointIndex == cwSpringOtherEndpointIndex)
+                            ? 2.0f * Pi<float>
+                            : (mPoints.GetPosition(ccwSpringOtherEndpointIndex) - mPoints.GetPosition(pointIndex))
+                              .angle(mPoints.GetPosition(cwSpringOtherEndpointIndex) - mPoints.GetPosition(pointIndex));
+
+                        if (neighborsAngle < 0.0f)
+                            neighborsAngle += 2.0f * Pi<float>;
+
+                        // Interpolated angle from CW spring
+                        float const interpolatedAngleFromCWSpring =
+                            neighborsAngle
+                            / static_cast<float>(nearestCWSpringDeltaOctant + nearestCCWSpringDeltaOctant)
+                            * static_cast<float>(nearestCWSpringDeltaOctant);
+
+                        // And finally, the target world angle (world angle is 0 at E)
+                        targetWorldAngle =
+                            (mPoints.GetPosition(cwSpringOtherEndpointIndex) - mPoints.GetPosition(pointIndex)).angle(vec2f(1.0f, 0.0f))
+                            + interpolatedAngleFromCWSpring;
+                    }
+
+                    // Calculate target position
+                    vec2f const targetOtherEndpointPosition =
+                        mPoints.GetPosition(pointIndex)
+                        + vec2f::fromPolar(
+                            mSprings.GetRestLength(fcs.SpringIndex),
+                            targetWorldAngle);
+
+
+                    //
+                    // Check progress of other endpoint towards the target position
+                    //
+
+                    // Displacement vector (positive towards target point)
+                    vec2f const displacementVector = targetOtherEndpointPosition - mPoints.GetPosition(fcs.OtherEndpointIndex);
+
+                    // Distance
+                    float const displacementMagnitude = displacementVector.length();
+
+                    // Check whether we are close enough
+                    if (abs(displacementMagnitude) <= 0.025f) // TODO: parameter
+                    {
+                        //
+                        // The other endpoint is close enough to its target, implying that
+                        // the spring length should be close to its rest length...
+                        // ...we can restore the spring
+                        //
+
+                        // TODOTEST
+                        float const todoSpringLength = mSprings.GetLength(fcs.SpringIndex, mPoints);
+                        if (abs(todoSpringLength - mSprings.GetRestLength(fcs.SpringIndex)) > 0.2f)
+                            LogMessage("Spring is not as long as we wish it would:", todoSpringLength);
+
+                        // Restore the spring
+                        mSprings.Restore(
+                            fcs.SpringIndex,
+                            gameParameters,
+                            mPoints);
+
+                        assert(!mSprings.IsDeleted(fcs.SpringIndex));
+
+                        // Brake the other endpoint
+                        mPoints.SetVelocity(fcs.OtherEndpointIndex, vec2f::zero());
+                    }
+                    else
+                    {
+                        //
+                        // Endpoints are too far...
+                        // ...move them closer by moving the other endpoint towards its target position
+                        //
+
+                        // Movement direction (positive towards this point)
+                        vec2f const movementDir = displacementVector.normalise(displacementMagnitude);
+
+                        // Movement magnitude (just a fraction of what's needed, so that movement is smooth)
+                        float const movementMagnitude =
+                            displacementMagnitude
+                            * 0.02f // TODO: make parameter, ~"repair attraction rate"
+                            * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f)
+                            * toolStrength;
+
+                        // Move point
+                        mPoints.GetPosition(fcs.OtherEndpointIndex) +=
+                            movementDir
+                            * movementMagnitude;
+
+                        // Add some non-linear inertia (smaller at higher displacements)
+                        mPoints.GetVelocity(fcs.OtherEndpointIndex) =
+                            movementDir
+                            * ((movementMagnitude < 0.0f) ? -1.0f : 1.0f)
+                            * sqrtf(abs(movementMagnitude))
+                            / GameParameters::GameParameters::SimulationStepTimeDuration<float>
+                            * 0.5f;
+                    }
+
+
+                    /* TODOOLD
                     // Spring vector (positive towards this point)
                     vec2f const springVector = mPoints.GetPosition(pointIndex) - mPoints.GetPosition(fcs.OtherEndpointIndex);
 
@@ -266,7 +450,7 @@ void Ship::RepairAt(
                     {
                         //
                         // Endpoints are too far...
-                        // ...move them closer
+                        // ...move them closer by moving other endpoint to target position
                         //
 
                         // Spring direction (positive towards this point)
@@ -292,6 +476,7 @@ void Ship::RepairAt(
                             / GameParameters::GameParameters::SimulationStepTimeDuration<float>
                             * 0.5f;
                     }
+                    */
                 }
             }
 

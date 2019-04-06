@@ -76,16 +76,16 @@ private:
      *
      * Angle 0 is E, angle 1 is SE, ..., angle 7 is NE.
      */
-    struct EndpointAngles
+    struct EndpointOctants
     {
-        uint32_t PointAAngle;
-        uint32_t PointBAngle;
+        int32_t PointAOctant;
+        int32_t PointBOctant;
 
-        EndpointAngles(
-            uint32_t pointAAngle,
-            uint32_t pointBAngle)
-            : PointAAngle(pointAAngle)
-            , PointBAngle(pointBAngle)
+        EndpointOctants(
+            int32_t pointAOctant,
+            int32_t pointBOctant)
+            : PointAOctant(pointAOctant)
+            , PointBOctant(pointBOctant)
         {}
     };
 
@@ -124,8 +124,8 @@ public:
         , mIsDeletedBuffer(mBufferElementCount, mElementCount, true)
         // Endpoints
         , mEndpointsBuffer(mBufferElementCount, mElementCount, Endpoints(NoneElementIndex, NoneElementIndex))
-        // Factory endpoint angles
-        , mFactoryEndpointAnglesBuffer(mBufferElementCount, mElementCount, EndpointAngles(0, 4))
+        // Factory endpoint octants
+        , mFactoryEndpointOctantsBuffer(mBufferElementCount, mElementCount, EndpointOctants(0, 4))
         // Super triangles
         , mSuperTrianglesBuffer(mBufferElementCount, mElementCount, SuperTrianglesVector())
         , mFactorySuperTrianglesBuffer(mBufferElementCount, mElementCount, SuperTrianglesVector())
@@ -199,8 +199,8 @@ public:
     void Add(
         ElementIndex pointAIndex,
         ElementIndex pointBIndex,
-        uint32_t factoryPointAAngle,
-        uint32_t factoryPointBAngle,
+        int32_t factoryPointAOctant,
+        int32_t factoryPointBOctant,
         SuperTrianglesVector const & superTriangles,
         Characteristics characteristics,
         Points const & points);
@@ -290,6 +290,19 @@ public:
         return mEndpointsBuffer[springElementIndex].PointBIndex;
     }
 
+    ElementIndex GetOtherEndpointIndex(
+        ElementIndex springElementIndex,
+        ElementIndex pointElementIndex) const
+    {
+        if (pointElementIndex == mEndpointsBuffer[springElementIndex].PointAIndex)
+            return mEndpointsBuffer[springElementIndex].PointBIndex;
+        else
+        {
+            assert(pointElementIndex == mEndpointsBuffer[springElementIndex].PointBIndex);
+            return mEndpointsBuffer[springElementIndex].PointAIndex;
+        }
+    }
+
     // Returns +1.0 if the spring is directed outward from the specified point;
     // otherwise, -1.0.
     float GetSpringDirectionFrom(
@@ -335,42 +348,42 @@ public:
     }
 
     //
-    // Factory endpoint angles
+    // Factory endpoint octants
     //
 
-    uint32_t GetFactoryEndpointAAngle(ElementIndex springElementIndex) const
+    int32_t GetFactoryEndpointAOctant(ElementIndex springElementIndex) const
     {
-        return mFactoryEndpointAnglesBuffer[springElementIndex].PointAAngle;
+        return mFactoryEndpointOctantsBuffer[springElementIndex].PointAOctant;
     }
 
-    uint32_t GetFactoryEndpointBAngle(ElementIndex springElementIndex) const
+    int32_t GetFactoryEndpointBOctant(ElementIndex springElementIndex) const
     {
-        return mFactoryEndpointAnglesBuffer[springElementIndex].PointBAngle;
+        return mFactoryEndpointOctantsBuffer[springElementIndex].PointBOctant;
     }
 
-    uint32_t GetFactoryEndpointAngle(
+    int32_t GetFactoryEndpointOctant(
         ElementIndex springElementIndex,
         ElementIndex pointElementIndex) const
     {
         if (pointElementIndex == GetEndpointAIndex(springElementIndex))
-            return GetFactoryEndpointAAngle(springElementIndex);
+            return GetFactoryEndpointAOctant(springElementIndex);
         else
         {
             assert(pointElementIndex == GetEndpointBIndex(springElementIndex));
-            return GetFactoryEndpointBAngle(springElementIndex);
+            return GetFactoryEndpointBOctant(springElementIndex);
         }
     }
 
-    uint32_t GetFactoryOtherEndpointAngle(
+    int32_t GetFactoryOtherEndpointOctant(
         ElementIndex springElementIndex,
         ElementIndex pointElementIndex) const
     {
         if (pointElementIndex == GetEndpointAIndex(springElementIndex))
-            return GetFactoryEndpointBAngle(springElementIndex);
+            return GetFactoryEndpointBOctant(springElementIndex);
         else
         {
             assert(pointElementIndex == GetEndpointBIndex(springElementIndex));
-            return GetFactoryEndpointAAngle(springElementIndex);
+            return GetFactoryEndpointAOctant(springElementIndex);
         }
     }
 
@@ -591,8 +604,8 @@ private:
     // Endpoints
     Buffer<Endpoints> mEndpointsBuffer;
 
-    // Factory-time endpoint angles
-    Buffer<EndpointAngles> mFactoryEndpointAnglesBuffer;
+    // Factory-time endpoint octants
+    Buffer<EndpointOctants> mFactoryEndpointOctantsBuffer;
 
     // Indexes of the super triangles covering this spring.
     // "Super triangles" are triangles that "cover" this spring when they're rendered - it's either triangles that
