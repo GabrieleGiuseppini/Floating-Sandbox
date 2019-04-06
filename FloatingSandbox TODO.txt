@@ -207,12 +207,16 @@ Render:
 			+ Installer
 		+ Try to build with Runtime Type Information disabled
 
+		- Repair tool (*)
+
 		= Fix Linux build break
 			+ Do specialization outside of class
 			+ Set /permissive- for all projects
 		- Take Mathias' pull request
 
-		- Repair tool (*)
+		- Are we really forced to set point colors to structural colors?
+			- Can we always use the (sampled) texture colors?
+				- After all texture layer is now mandatory!
 
 		- Floatsam: see if using (waterY + 0.1) at UpdateWaterIntake helps
 
@@ -755,7 +759,7 @@ Render:
 				+ Fire Attach event
 				+ Set IsStructureDirty=true
 			+ Update invariants verification
-		- Commit
+		+ Commit
 		- Try changing Points::GetMass to Points::GetAugmentedStructuralMass
 		= 3) Repair tool and action
 			= Repair(Pr):
@@ -773,6 +777,10 @@ Render:
 							+ Triangles::Restore(t)	
 				- Restore endpoints' IsLeaking
 					- Only for endpoints that now have all of their factory springs
+				- Decide on:
+					- Radius
+					- Force
+					- Ultra-violent mode effect
 
 			- RepairStructureTool:
 				- repair_structure_cursor_up/down.png: screwdriver

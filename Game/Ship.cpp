@@ -199,7 +199,9 @@ void Ship::RepairAt(
     float const searchRadius =
         gameParameters.RepairRadius
         * radiusMultiplier
-        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+        // TODOTEST
+        //* (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+        ;
 
     float const squareSearchRadius = searchRadius * searchRadius;
 
@@ -275,6 +277,7 @@ void Ship::RepairAt(
                         float const displacementMagnitude =
                             (springLength - mSprings.GetRestLength(fcs.SpringIndex))
                             * 0.03f // TODO: make parameter, ~"repair attraction rate"
+                            * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f)
                             * toolStrength;
 
                         // Displace point
