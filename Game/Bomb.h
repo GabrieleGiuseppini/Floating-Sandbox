@@ -110,8 +110,8 @@ public:
 
             mFrozenMidpointPosition = mShipSprings.GetMidpointPosition(*mSpringIndex, mShipPoints);
 
-            mFrozenRotationOffsetAxis = mShipSprings.GetPointBPosition(*mSpringIndex, mShipPoints)
-                - mShipSprings.GetPointAPosition(*mSpringIndex, mShipPoints);
+            mFrozenRotationOffsetAxis = mShipSprings.GetEndpointBPosition(*mSpringIndex, mShipPoints)
+                - mShipSprings.GetEndpointAPosition(*mSpringIndex, mShipPoints);
 
             mFrozenPlaneId = mShipSprings.GetPlaneId(*mSpringIndex, mShipPoints);
 
@@ -180,8 +180,8 @@ public:
         else
         {
             assert(!!mSpringIndex);
-            return mShipSprings.GetPointBPosition(*mSpringIndex, mShipPoints)
-                - mShipSprings.GetPointAPosition(*mSpringIndex, mShipPoints);
+            return mShipSprings.GetEndpointBPosition(*mSpringIndex, mShipPoints)
+                - mShipSprings.GetEndpointAPosition(*mSpringIndex, mShipPoints);
         }
     }
 
@@ -218,7 +218,7 @@ protected:
         , mPhysicsHandler(physicsHandler)
         , mShipPoints(shipPoints)
         , mShipSprings(shipSprings)
-        , mRotationBaseAxis(shipPoints.GetPosition(shipSprings.GetPointBIndex(springIndex)) - shipPoints.GetPosition(shipSprings.GetPointAIndex(springIndex)))
+        , mRotationBaseAxis(shipSprings.GetEndpointBPosition(springIndex, shipPoints) - shipSprings.GetEndpointAPosition(springIndex, shipPoints))
         , mType(type)
         , mSpringIndex(springIndex)
         , mFrozenMidpointPosition(std::nullopt)

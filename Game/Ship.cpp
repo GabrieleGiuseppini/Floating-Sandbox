@@ -82,7 +82,7 @@ Ship::Ship(
     mPoints.RegisterDetachHandler(std::bind(&Ship::PointDetachHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
     mPoints.RegisterEphemeralParticleDestroyHandler(std::bind(&Ship::EphemeralParticleDestroyHandler, this, std::placeholders::_1));
     mSprings.RegisterDestroyHandler(std::bind(&Ship::SpringDestroyHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-    mSprings.RegisterRestoreHandler(std::bind(&Ship::SpringRestoreHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+    mSprings.RegisterRestoreHandler(std::bind(&Ship::SpringRestoreHandler, this, std::placeholders::_1, std::placeholders::_2));
     mTriangles.RegisterDestroyHandler(std::bind(&Ship::TriangleDestroyHandler, this, std::placeholders::_1));
     mTriangles.RegisterRestoreHandler(std::bind(&Ship::TriangleRestoreHandler, this, std::placeholders::_1));
     mElectricalElements.RegisterDestroyHandler(std::bind(&Ship::ElectricalElementDestroyHandler, this, std::placeholders::_1));
@@ -193,7 +193,7 @@ void Ship::DestroyAt(
 void Ship::RepairAt(
     vec2f const & targetPos,
     float radiusMultiplier,
-    float currentSimulationTime,
+    float /*currentSimulationTime*/,
     GameParameters const & gameParameters)
 {
     float const searchRadius =
@@ -220,7 +220,7 @@ void Ship::RepairAt(
         if (squareRadius <= squareSearchRadius)
         {
             //
-            // 1) (Attempt to) restore all delete springs
+            // 1) (Attempt to) restore this point's delete springs
             //
 
             // Calculate tool strength (1.0 at center and zero at border, quadratically)
@@ -254,7 +254,6 @@ void Ship::RepairAt(
                         // Restore the spring
                         mSprings.Restore(
                             fcs.SpringIndex,
-                            Springs::RestoreOptions::RestoreTriangles,
                             gameParameters,
                             mPoints);
 
@@ -347,8 +346,8 @@ void Ship::SawThrough(
             if (Geometry::Segment::ProperIntersectionTest(
                 startPos,
                 endPos,
-                mSprings.GetPointAPosition(springIndex, mPoints),
-                mSprings.GetPointBPosition(springIndex, mPoints)))
+                mSprings.GetEndpointAPosition(springIndex, mPoints),
+                mSprings.GetEndpointBPosition(springIndex, mPoints)))
             {
                 // Destroy spring
                 mSprings.Destroy(
@@ -1082,8 +1081,8 @@ void Ship::UpdateSpringForces(GameParameters const & /*gameParameters*/)
 {
     for (auto springIndex : mSprings)
     {
-        auto const pointAIndex = mSprings.GetPointAIndex(springIndex);
-        auto const pointBIndex = mSprings.GetPointBIndex(springIndex);
+        auto const pointAIndex = mSprings.GetEndpointAIndex(springIndex);
+        auto const pointBIndex = mSprings.GetEndpointBIndex(springIndex);
 
         // No need to check whether the spring is deleted, as a deleted spring
         // has zero coefficients
@@ -1928,7 +1927,7 @@ void Ship::DecaySprings(
     {
         // Take average decay of two endpoints
         float const springDecay =
-            (mPoints.GetDecay(mSprings.GetPointAIndex(s)) + mPoints.GetDecay(mSprings.GetPointBIndex(s)))
+            (mPoints.GetDecay(mSprings.GetEndpointAIndex(s)) + mPoints.GetDecay(mSprings.GetEndpointBIndex(s)))
             / 2.0f;
 
         // Adjust spring's strength
@@ -2215,8 +2214,8 @@ void Ship::SpringDestroyHandler(
     bool destroyAllTriangles,
     GameParameters const & /*gameParameters*/)
 {
-    auto const pointAIndex = mSprings.GetPointAIndex(springElementIndex);
-    auto const pointBIndex = mSprings.GetPointBIndex(springElementIndex);
+    auto const pointAIndex = mSprings.GetEndpointAIndex(springElementIndex);
+    auto const pointBIndex = mSprings.GetEndpointBIndex(springElementIndex);
 
     //
     // Remove spring from other elements
@@ -2304,7 +2303,6 @@ void Ship::SpringDestroyHandler(
 
 void Ship::SpringRestoreHandler(
     ElementIndex springElementIndex,
-    bool restoreTriangles,
     GameParameters const & /*gameParameters*/)
 {
     //
@@ -2319,8 +2317,8 @@ void Ship::SpringRestoreHandler(
     //
 
     // Connect self to endpoints
-    mPoints.ConnectSpring(mSprings.GetPointAIndex(springElementIndex), springElementIndex, mSprings.GetPointBIndex(springElementIndex), true); // Owner
-    mPoints.ConnectSpring(mSprings.GetPointBIndex(springElementIndex), springElementIndex, mSprings.GetPointAIndex(springElementIndex), false); // Not owner
+    mPoints.ConnectSpring(mSprings.GetEndpointAIndex(springElementIndex), springElementIndex, mSprings.GetEndpointBIndex(springElementIndex), true); // Owner
+    mPoints.ConnectSpring(mSprings.GetEndpointBIndex(springElementIndex), springElementIndex, mSprings.GetEndpointAIndex(springElementIndex), false); // Not owner
 
     // Add spring to set of sub springs at each super-triangle
     for (auto superTriangleIndex : mSprings.GetSuperTriangles(springElementIndex))

@@ -688,7 +688,7 @@ void Points::SetMassToStructuralMaterialOffset(
     // Notify all springs
     for (auto connectedSpring : mConnectedSpringsBuffer[pointElementIndex].ConnectedSprings)
     {
-        springs.OnPointMassUpdated(connectedSpring.SpringIndex, *this);
+        springs.OnEndpointMassUpdated(connectedSpring.SpringIndex, *this);
     }
 }
 

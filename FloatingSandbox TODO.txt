@@ -260,6 +260,8 @@ Render:
 		- Frontier
 		- Resource Packs (*)
 
+		- Backgrounds (*)
+
 - Ship making:
 	# Credit names:
 		# ShippyMcJerry: ShipBuilder1912 
@@ -306,7 +308,6 @@ Render:
 	- Add new materials: plastic, rubber, fiberglass
 	- Fishes
 	- Different colored lights
-	- Different backgrounds: use keys to switch between a dock, cliffs, open ocean, ice field, etc.
 	- Different maps: maps that might even have islands and grass 
 	- Black hole
 	- Tool to increase or lower mass under the cursor
@@ -318,6 +319,7 @@ Render:
 	- Tsunami
 	- Earthquake
 	- Storm: rain and waves at ~4.4
+	- Rot tool (rots without having to flood it)
 
 ======================================================================================================================
 ======================================================================================================================
@@ -603,7 +605,7 @@ Render:
 
 
 - Gfx:
-	- Add world end
+	- Add world end markers
 		- Add texture (square,repeatable in both directions)
 		- RenderContext::init: 
 			- Don't load in atlas
@@ -613,6 +615,8 @@ Render:
 			- Renders quad for each side
 				- Width is in NDC
 				- alpha = 0.5
+
+	- Different backgrounds: use keys to switch between a dock, cliffs, open ocean, ice field, etc.
 
 	+ Make font white inversely to ambient light
 
@@ -1201,26 +1205,20 @@ Render:
 			- New flag @
 				- ShipRenderMode
 				- SettingsDialog
-			- RenderMode rearc:
-				- ShipDefinition:
-					- std::optional<ImageData> TextureImageData
-					- std::optional<ImageData> InteriorImageData
-					- ImageData StructureImageData
-					- std::optional<ImageData> FallbackImageData
-						- i.e. the 8X structural
-				- RenderContext:
-					- Exposes "HasShipTextureImages()" and "HasShipInteriorImages()"
-						- Updated @ AddShip (via OR) and @ Reset()
-				- SettingsDialog:
-					- Enable options conditionally 
-					- Refresh by MainFrame upon AddShip/Reset/...
-				- New RenderMode: DrawPrimitives
-					- Takes the place of the current "Draw Structure"
-				- ShipRenderContext:
-					- When not drawing primitives, texture used is:
-						- If "Texture" -> Texture OR Fallback
-						- If "Structure" -> Structure
-						- If "Interior" -> Interior OR Fallback
+			- ShipDefinition:
+				- std::optional<ImageData> InteriorImageData
+			- RenderContext:
+				- Exposes "HasShipInteriorImage()"
+					- Updated @ AddShip (via OR) and @ Reset()
+			- SettingsDialog:
+				- Enable option conditionally 
+				- Refresh by MainFrame upon AddShip/Reset/...
+			- ShipRenderContext:
+				- When not drawing primitives, texture used is:
+					- If "Texture" -> Texture
+					- If "Structure" -> Structure
+					- If "Interior" -> Interior OR Structure
+			- Use Michael's interior for RMS Titanic
 
 - UI:
 	+ PreferencesDialog:

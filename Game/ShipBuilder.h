@@ -124,15 +124,22 @@ private:
     struct SpringInfo
     {
         ElementIndex PointAIndex1;
+        uint32_t PointAAngle;
+
         ElementIndex PointBIndex1;
+        uint32_t PointBAngle;
 
         FixedSizeVector<ElementIndex, 2> SuperTriangles2;
 
         SpringInfo(
             ElementIndex pointAIndex1,
-            ElementIndex pointBIndex1)
+            uint32_t pointAAngle,
+            ElementIndex pointBIndex1,
+            uint32_t pointBAngle)
             : PointAIndex1(pointAIndex1)
+            , PointAAngle(pointAAngle)
             , PointBIndex1(pointBIndex1)
+            , PointBAngle(pointBAngle)
             , SuperTriangles2()
         {
         }

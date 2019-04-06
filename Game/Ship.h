@@ -243,7 +243,6 @@ private:
 
     void SpringRestoreHandler(
         ElementIndex springElementIndex,
-        bool restoreTriangles,
         GameParameters const & gameParameters);
 
     void TriangleDestroyHandler(ElementIndex triangleElementIndex);

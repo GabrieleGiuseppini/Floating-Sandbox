@@ -36,12 +36,6 @@ public:
         DestroyAllTriangles = 2
     };
 
-    enum class RestoreOptions
-    {
-        DoNotRestoreTriangles = 0,
-        RestoreTriangles = 1
-    };
-
     enum class Characteristics : uint8_t
     {
         None = 0,
@@ -56,7 +50,6 @@ public:
 
     using RestoreHandler = std::function<void(
         ElementIndex,
-        bool /*restoreTriangles*/,
         GameParameters const &)>;
 
 private:
@@ -77,6 +70,28 @@ private:
         {}
     };
 
+    /*
+     * The factory angle of the spring from the point of view
+     * of each endpoint.
+     *
+     * Angle 0 is E, angle 1 is SE, ..., angle 7 is NE.
+     */
+    struct EndpointAngles
+    {
+        uint32_t PointAAngle;
+        uint32_t PointBAngle;
+
+        EndpointAngles(
+            uint32_t pointAAngle,
+            uint32_t pointBAngle)
+            : PointAAngle(pointAAngle)
+            , PointBAngle(pointBAngle)
+        {}
+    };
+
+    /*
+     * The triangles that have an edge along this spring.
+     */
     using SuperTrianglesVector = FixedSizeVector<ElementIndex, 2>;
 
     /*
@@ -109,6 +124,8 @@ public:
         , mIsDeletedBuffer(mBufferElementCount, mElementCount, true)
         // Endpoints
         , mEndpointsBuffer(mBufferElementCount, mElementCount, Endpoints(NoneElementIndex, NoneElementIndex))
+        // Factory endpoint angles
+        , mFactoryEndpointAnglesBuffer(mBufferElementCount, mElementCount, EndpointAngles(0, 4))
         // Super triangles
         , mSuperTrianglesBuffer(mBufferElementCount, mElementCount, SuperTrianglesVector())
         , mFactorySuperTrianglesBuffer(mBufferElementCount, mElementCount, SuperTrianglesVector())
@@ -182,6 +199,8 @@ public:
     void Add(
         ElementIndex pointAIndex,
         ElementIndex pointBIndex,
+        uint32_t factoryPointAAngle,
+        uint32_t factoryPointBAngle,
         SuperTrianglesVector const & superTriangles,
         Characteristics characteristics,
         Points const & points);
@@ -194,7 +213,6 @@ public:
 
     void Restore(
         ElementIndex springElementIndex,
-        RestoreOptions restoreOptions,
         GameParameters const & gameParameters,
         Points const & points);
 
@@ -202,7 +220,7 @@ public:
         GameParameters const & gameParameters,
         Points const & points);
 
-    void OnPointMassUpdated(
+    void OnEndpointMassUpdated(
         ElementIndex springElementIndex,
         Points const & points)
     {
@@ -262,12 +280,12 @@ public:
     // Endpoints
     //
 
-    ElementIndex GetPointAIndex(ElementIndex springElementIndex) const
+    ElementIndex GetEndpointAIndex(ElementIndex springElementIndex) const
     {
         return mEndpointsBuffer[springElementIndex].PointAIndex;
     }
 
-    ElementIndex GetPointBIndex(ElementIndex springElementIndex) const
+    ElementIndex GetEndpointBIndex(ElementIndex springElementIndex) const
     {
         return mEndpointsBuffer[springElementIndex].PointBIndex;
     }
@@ -284,14 +302,14 @@ public:
             return -1.0f;
     }
 
-    vec2f const & GetPointAPosition(
+    vec2f const & GetEndpointAPosition(
         ElementIndex springElementIndex,
         Points const & points) const
     {
         return points.GetPosition(mEndpointsBuffer[springElementIndex].PointAIndex);
     }
 
-    vec2f const & GetPointBPosition(
+    vec2f const & GetEndpointBPosition(
         ElementIndex springElementIndex,
         Points const & points) const
     {
@@ -302,8 +320,8 @@ public:
         ElementIndex springElementIndex,
         Points const & points) const
     {
-        return (GetPointAPosition(springElementIndex, points)
-            + GetPointBPosition(springElementIndex, points)) / 2.0f;
+        return (GetEndpointAPosition(springElementIndex, points)
+            + GetEndpointBPosition(springElementIndex, points)) / 2.0f;
     }
 
     PlaneId GetPlaneId(
@@ -313,7 +331,47 @@ public:
         // Return, quite arbitrarily, the plane of point A
         // (the two endpoints might have different plane IDs in case, for example,
         // this spring connects a "string" to a triangle)
-        return points.GetPlaneId(GetPointAIndex(springElementIndex));
+        return points.GetPlaneId(GetEndpointAIndex(springElementIndex));
+    }
+
+    //
+    // Factory endpoint angles
+    //
+
+    uint32_t GetFactoryEndpointAAngle(ElementIndex springElementIndex) const
+    {
+        return mFactoryEndpointAnglesBuffer[springElementIndex].PointAAngle;
+    }
+
+    uint32_t GetFactoryEndpointBAngle(ElementIndex springElementIndex) const
+    {
+        return mFactoryEndpointAnglesBuffer[springElementIndex].PointBAngle;
+    }
+
+    uint32_t GetFactoryEndpointAngle(
+        ElementIndex springElementIndex,
+        ElementIndex pointElementIndex) const
+    {
+        if (pointElementIndex == GetEndpointAIndex(springElementIndex))
+            return GetFactoryEndpointAAngle(springElementIndex);
+        else
+        {
+            assert(pointElementIndex == GetEndpointBIndex(springElementIndex));
+            return GetFactoryEndpointBAngle(springElementIndex);
+        }
+    }
+
+    uint32_t GetFactoryOtherEndpointAngle(
+        ElementIndex springElementIndex,
+        ElementIndex pointElementIndex) const
+    {
+        if (pointElementIndex == GetEndpointAIndex(springElementIndex))
+            return GetFactoryEndpointBAngle(springElementIndex);
+        else
+        {
+            assert(pointElementIndex == GetEndpointBIndex(springElementIndex));
+            return GetFactoryEndpointAAngle(springElementIndex);
+        }
     }
 
     //
@@ -399,7 +457,7 @@ public:
         Points const & points) const
     {
         return
-            (points.GetPosition(GetPointAIndex(springElementIndex)) - points.GetPosition(GetPointBIndex(springElementIndex)))
+            (points.GetPosition(GetEndpointAIndex(springElementIndex)) - points.GetPosition(GetEndpointBIndex(springElementIndex)))
             .length();
     }
 
@@ -533,6 +591,9 @@ private:
     // Endpoints
     Buffer<Endpoints> mEndpointsBuffer;
 
+    // Factory-time endpoint angles
+    Buffer<EndpointAngles> mFactoryEndpointAnglesBuffer;
+
     // Indexes of the super triangles covering this spring.
     // "Super triangles" are triangles that "cover" this spring when they're rendered - it's either triangles that
     // have this spring as one of their edges, or triangles that (partially) cover this spring
@@ -585,7 +646,7 @@ private:
     DestroyHandler mDestroyHandler;
 
     // The handler registered for spring restores
-    DestroyHandler mRestoreHandler;
+    RestoreHandler mRestoreHandler;
 
     // The game parameter values that we are current with; changes
     // in the values of these parameters will trigger a re-calculation
@@ -602,7 +663,6 @@ private:
 }
 
 template <> struct is_flag<Physics::Springs::DestroyOptions> : std::true_type {};
-template <> struct is_flag<Physics::Springs::RestoreOptions> : std::true_type {};
 template <> struct is_flag<Physics::Springs::Characteristics> : std::true_type {};
 
 inline bool Physics::Springs::IsRope(ElementIndex springElementIndex) const
