@@ -377,11 +377,6 @@ void Ship::RepairAt(
                         // ...we can restore the spring
                         //
 
-                        // TODOTEST
-                        float const todoSpringLength = mSprings.GetLength(fcs.SpringIndex, mPoints);
-                        if (abs(todoSpringLength - mSprings.GetRestLength(fcs.SpringIndex)) > 0.2f)
-                            LogMessage("Spring is not as long as we wish it would:", todoSpringLength);
-
                         // Restore the spring
                         mSprings.Restore(
                             fcs.SpringIndex,
@@ -406,9 +401,6 @@ void Ship::RepairAt(
                         // Movement magnitude (just a fraction of what's needed, so that movement is smooth)
                         float const movementMagnitude =
                             displacementMagnitude
-                            // TODO: why is it suspiciously close to dt?
-                            // TODOTEST
-                            //* 0.02f
                             * 0.08f
                             * toolStrength;
 
@@ -427,66 +419,6 @@ void Ship::RepairAt(
                             / GameParameters::GameParameters::SimulationStepTimeDuration<float>
                             * 0.5f;
                     }
-
-
-                    /* TODOOLD
-                    // Spring vector (positive towards this point)
-                    vec2f const springVector = mPoints.GetPosition(pointIndex) - mPoints.GetPosition(fcs.OtherEndpointIndex);
-
-                    // Spring length
-                    float const springLength = springVector.length();
-
-                    // Check spring length vs rest length
-                    float const springDeltaLength = springLength - mSprings.GetRestLength(fcs.SpringIndex);
-                    if (abs(springDeltaLength) <= 0.05f)
-                    {
-                        //
-                        // Endpoints are close enough...
-                        // ...we can restore the spring
-                        //
-
-                        // Restore the spring
-                        mSprings.Restore(
-                            fcs.SpringIndex,
-                            gameParameters,
-                            mPoints);
-
-                        assert(!mSprings.IsDeleted(fcs.SpringIndex));
-
-                        // Brake the other endpoint
-                        mPoints.SetVelocity(fcs.OtherEndpointIndex, vec2f::zero());
-                    }
-                    else
-                    {
-                        //
-                        // Endpoints are too far...
-                        // ...move them closer by moving other endpoint to target position
-                        //
-
-                        // Spring direction (positive towards this point)
-                        vec2f const springDir = springVector.normalise(springLength);
-
-                        // Calculate displacement towards this point
-                        float const displacementMagnitude =
-                            (springLength - mSprings.GetRestLength(fcs.SpringIndex))
-                            * 0.03f // TODO: make parameter, ~"repair attraction rate"
-                            * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f)
-                            * toolStrength;
-
-                        // Displace point
-                        mPoints.GetPosition(fcs.OtherEndpointIndex) +=
-                            springDir
-                            * displacementMagnitude;
-
-                        // Add some non-linear inertia (smaller at higher displacements)
-                        mPoints.GetVelocity(fcs.OtherEndpointIndex) =
-                            springDir
-                            * ((displacementMagnitude < 0.0f) ? -1.0f : 1.0f)
-                            * sqrtf(abs(displacementMagnitude))
-                            / GameParameters::GameParameters::SimulationStepTimeDuration<float>
-                            * 0.5f;
-                    }
-                    */
                 }
             }
 
