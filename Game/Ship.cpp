@@ -363,32 +363,16 @@ void Ship::RepairAt(
                     vec2f const displacementVector = targetOtherEndpointPosition - mPoints.GetPosition(fcs.OtherEndpointIndex);
 
                     // Distance
-                    float const displacementMagnitude = displacementVector.length();
+                    float displacementMagnitude = displacementVector.length();
 
-                    // Check whether we are close enough
+                    // Tolerance to distance
                     //
                     // Note: a higher tolerance here causes springs to...spring into life
-                    // already stretches or compressed, generating an undesirable force impulse
-                    if (abs(displacementMagnitude) <= 0.025f)
-                    {
-                        //
-                        // The other endpoint is close enough to its target, implying that
-                        // the spring length should be close to its rest length...
-                        // ...we can restore the spring
-                        //
+                    // already stretches or compressed, generating an undesirable force impuls
+                    float constexpr DisplacementTolerance = 0.025f;
 
-                        // Restore the spring
-                        mSprings.Restore(
-                            fcs.SpringIndex,
-                            gameParameters,
-                            mPoints);
-
-                        assert(!mSprings.IsDeleted(fcs.SpringIndex));
-
-                        // Brake the other endpoint
-                        mPoints.SetVelocity(fcs.OtherEndpointIndex, vec2f::zero());
-                    }
-                    else
+                    // Check whether we are still further away than our tolerance
+                    if (displacementMagnitude > 0.025f)
                     {
                         //
                         // Endpoints are too far...
@@ -409,7 +393,11 @@ void Ship::RepairAt(
                             movementDir
                             * movementMagnitude;
 
-                        // Set some non-linear inertia (smaller at higher displacements),
+                        // Adjust displacement
+                        assert(movementMagnitude < displacementMagnitude);
+                        displacementMagnitude -= movementMagnitude;
+
+                        // Impart some non-linear inertia (smaller at higher displacements),
                         // just for better looks
                         // (note: last one that pulls this point wins)
                         mPoints.GetVelocity(fcs.OtherEndpointIndex) =
@@ -418,6 +406,27 @@ void Ship::RepairAt(
                             * sqrtf(abs(movementMagnitude))
                             / GameParameters::GameParameters::SimulationStepTimeDuration<float>
                             * 0.5f;
+                    }
+
+                    // Check whether we are now close enough
+                    if (displacementMagnitude <= 0.025f)
+                    {
+                        //
+                        // The other endpoint is close enough to its target, implying that
+                        // the spring length should be close to its rest length...
+                        // ...we can restore the spring
+                        //
+
+                        // Restore the spring
+                        mSprings.Restore(
+                            fcs.SpringIndex,
+                            gameParameters,
+                            mPoints);
+
+                        assert(!mSprings.IsDeleted(fcs.SpringIndex));
+
+                        // Brake the other endpoint
+                        mPoints.SetVelocity(fcs.OtherEndpointIndex, vec2f::zero());
                     }
                 }
             }

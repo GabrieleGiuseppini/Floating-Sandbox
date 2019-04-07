@@ -777,9 +777,9 @@ Render:
 			+ Update invariants verification
 		+ Commit
 		+ Try changing Points::GetMass to Points::GetAugmentedStructuralMass
-		- Move tolerance check _after_ movement
-			- Movement is still only done if not within tolerance
-				- And changes distance
+		+ Move tolerance check _after_ movement
+			+ Movement is still only done if not within tolerance
+				+ And changes distance
 		= 3) Repair tool and action
 			= Repair(Pr):
 				+ for each s in Pr.FactorySprings:
