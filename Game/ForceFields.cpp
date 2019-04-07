@@ -85,7 +85,7 @@ void BlastForceField::Apply(
                 (newPosition - points.GetPosition(pointIndex))
                 / DtSquared
                 * mStrength
-                * points.GetMass(pointIndex);
+                * points.GetTotalMass(pointIndex);
         }
     }
 

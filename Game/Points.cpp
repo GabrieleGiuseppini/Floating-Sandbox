@@ -676,7 +676,7 @@ void Points::UploadEphemeralParticles(
     }
 }
 
-void Points::SetMassToStructuralMaterialOffset(
+void Points::AugmentStructuralMass(
     ElementIndex pointElementIndex,
     float offset,
     Springs & springs)
@@ -685,7 +685,7 @@ void Points::SetMassToStructuralMaterialOffset(
 
     mMassBuffer[pointElementIndex] = GetStructuralMaterial(pointElementIndex).Mass + offset;
 
-    // Notify all springs
+    // Notify all connected springs
     for (auto connectedSpring : mConnectedSpringsBuffer[pointElementIndex].ConnectedSprings)
     {
         springs.OnEndpointMassUpdated(connectedSpring.SpringIndex, *this);

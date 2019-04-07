@@ -528,12 +528,12 @@ public:
 
         // Augment mass of endpoints due to bomb
 
-        points.SetMassToStructuralMaterialOffset(
+        points.AugmentStructuralMass(
             mEndpointsBuffer[springElementIndex].PointAIndex,
             gameParameters.BombMass,
             *this);
 
-        points.SetMassToStructuralMaterialOffset(
+        points.AugmentStructuralMass(
             mEndpointsBuffer[springElementIndex].PointBIndex,
             gameParameters.BombMass,
             *this);
@@ -550,12 +550,12 @@ public:
 
         // Reset mass of endpoints
 
-        points.SetMassToStructuralMaterialOffset(
+        points.AugmentStructuralMass(
             mEndpointsBuffer[springElementIndex].PointAIndex,
             0.0f,
             *this);
 
-        points.SetMassToStructuralMaterialOffset(
+        points.AugmentStructuralMass(
             mEndpointsBuffer[springElementIndex].PointBIndex,
             0.0f,
             *this);

@@ -617,12 +617,12 @@ public:
         mForceRenderBuffer.copy_from(mForceBuffer);
     }
 
-    float GetMass(ElementIndex pointElementIndex) const
+    float GetAugmentedStructuralMass(ElementIndex pointElementIndex) const
     {
         return mMassBuffer[pointElementIndex];
     }
 
-    void SetMassToStructuralMaterialOffset(
+    void AugmentStructuralMass(
         ElementIndex pointElementIndex,
         float offset,
         Springs & springs);

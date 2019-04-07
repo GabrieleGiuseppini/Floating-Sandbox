@@ -220,6 +220,8 @@ Render:
 
 		- Floatsam: see if using (waterY + 0.1) at UpdateWaterIntake helps
 
+		- Add world end markers (*)
+
 		- Auto-focus (*)
 			- Owned by RenderContext
 
@@ -227,15 +229,17 @@ Render:
 			- PostInitialize just posts callback
 			- Before setting up timers, callback checks if tip has ben checked or not
 
-		- Heat and combustion (*)
-
 		- Also dry points should rot (*)
+
+		- Interior layer (*)
+
+		- Shallow Water Equations (*)
+
+		- Heat and combustion (*)
 
 		- Instanced drawing for lights (*)
 
 		- Pick tool (*)
-
-		- Interior layer (*)
 
 		- Electrical layer view (*)
 
@@ -257,7 +261,7 @@ Render:
 		- Settings Manager (*)
 
 		- Libsimdpp spring relaxation (*)
-		- Frontier
+		- Frontier (*)
 		- Resource Packs (*)
 
 		- Backgrounds (*)
@@ -276,7 +280,7 @@ Render:
 			- B747: (An SR71 Habu) alias=NotTelling year=1970
 				- Add to About box
 			- Pacific: "S.S. Pacific" alias=Hugo_2503 year=1908
-				- Add to About box
+				- Add to About box			
 		- Asked:
 			- Ed Fitzgerald (but needs to be fixed) (Kiko)
 			- Aegir_Mark_III (coolman asks original designer)
@@ -297,9 +301,13 @@ Render:
 				+ Karaboudjan
 			+ Add Maximord to About box
 
-	+ Michael Bozarth
+	- Michael Bozarth
 		+ https://drive.google.com/drive/u/0/folders/1k-A4SE8mMp2j_A3nH3gnl6SvYF9bnWoU		
 		+ Add "Michael Bozarth" to About box (link: https://www.youtube.com/channel/UCaJkgYP6yNw64U3WUZ3t1sw)
+		- Titanic with interior layer
+			- See if current texture lines up
+				- If so, make new Titanic with his structure and interior, and my texture
+				- If not, ask him if he could do a texture
 
 
 - Suggestions to spec:
@@ -605,7 +613,7 @@ Render:
 
 
 - Gfx:
-	- Add world end markers
+	- Add world end markers (*)
 		- Add texture (square,repeatable in both directions)
 		- RenderContext::init: 
 			- Don't load in atlas
@@ -615,6 +623,10 @@ Render:
 			- Renders quad for each side
 				- Width is in NDC
 				- alpha = 0.5
+
+	- Auto-focus (*)
+		- Done by RenderContext upon each AddShip()
+			- Based off ship's AABB, calc'd by ShipBuilder
 
 	- Different backgrounds: use keys to switch between a dock, cliffs, open ocean, ice field, etc.
 
@@ -764,17 +776,20 @@ Render:
 				+ Set IsStructureDirty=true
 			+ Update invariants verification
 		+ Commit
-		- Try changing Points::GetMass to Points::GetAugmentedStructuralMass
+		+ Try changing Points::GetMass to Points::GetAugmentedStructuralMass
+		- Move tolerance check _after_ movement
+			- Movement is still only done if not within tolerance
+				- And changes distance
 		= 3) Repair tool and action
 			= Repair(Pr):
-				= for each s in Pr.FactorySprings:
-					= if s.IsDeleted:
-						= if s.length <= s.restLength: // Restore
+				+ for each s in Pr.FactorySprings:
+					+ if s.IsDeleted:
+						+ if s.length <= s.restLength: // Restore
 							+ Springs::Restore(s)
-							- Try with force instead of velocity
-						= else: // Attract endpoint
+							+ Try with force instead of velocity
+						+ else: // Attract endpoint
 							+ Points.GetForce(s.OtherEndpoint) += c * <normal>(Pr.Position - OtherEndpoint.Position)
-							- Try with force instead of velocity
+							+ Try with force instead of velocity
 				+ for each t in Pr.FactoryTriangles:
 					+ if t.IsDeleted:
 						+ If all t.FactorySubSprings are !Deleted:
@@ -796,11 +811,22 @@ Render:
 						- Metal: thud
 						- Others: ?
 						- X2 (underwater!)
+		- SettingsDialog:
+			- Repair radius
+			- Repair rate (test first if high value makes sense)
 
 	- Also dry points should rot, albeit very slowly (*)
 		- Could just add ~0.005 to p.water at RotPoints()
 		- However this would also apply to overwater points, so we'd have to do it for underwater points only
 			- Performance-wise fine to do, as we do this every N frames
+
+	- Make waves with Shallow Water Equations (*)
+		- Implement
+		- Follow-ups:
+			- Rogue waves/tsunami
+			- Manual tsunami
+				- Tool grabbing water
+				
 
 	- Heat and Combustion (*)
 		- Integration of Decay with Combustion:
@@ -853,28 +879,10 @@ Render:
 				- Points goes back by displacement * FloorHardness
 				- Ocean floor's H goes back by displacement * (1 - FloorHardness)
 
-	- Make waves with Shallow Water Equations 
-		- And if frontier works, change height when frontier touches water for the first time
-		- Problem with extent of heightfield: needs to look good when zooming out; 3 alternatives:
-			- 1: Find a way to stitch X segment to required world X
-				- i.e. still "periodic"
-				- Note that can't mirror segments or else waves would have different directions
-			- 2: Upsample and downsample depending on zoom
-				- But we lose details when we zoom out and then in again
-			- 3: Just cap zoom to reasonable max
-
-	- Rogue waves
-		- After cracking periodic repetition puzzle
-
 	- Breaking waves (Muller's paper)
 
 	- Stop playing music when ship has "sunk"
 		- Need to figure out easy way to detect "has sunk"
-
-
-	- Auto-adjust zoom at ship load
-		- Use preferred zoom from .shp file
-		- Configured by GameController
 
 	- Ephemeral particle emitters
 		- TODO: decide between the below (emitter is new object type in its own right) and having instead emitters as special
@@ -1094,6 +1102,15 @@ Render:
 		- Cleanups:
 			- Revisit need to have SuperTriangles and SubSprings, as we might now use edges
 				- We would now only upload springs that have 0 or 1 edges
+		- Follow-ups:
+			- Waves: generate wave (change height) when frontier (points) touch water for the first time
+			- Water drag 
+				- The one already there assumes velocity always normal to surface, but we should consider surface normal instead
+				- The new directional drag could make parts of the ship break off
+			- External water pressure should inflict stress on springs
+				- Have to visit frontier points and, if underwater, do force perpendicular towards interior
+
+
 		- TODOOLD
 		- Realize that a node can belong to up to 4 frontiers (center of 4 holes)
 			- And a point deletion might cause a merge of the four
@@ -1112,18 +1129,7 @@ Render:
 						- If one of the connected points is already a frontier, then the new frontier points
 						  take that frontierId
 						- TODO
-	- Water drag 
-		- The one already there assumes velocity always normal to surface, but we should consider surface normal instead
-			- Requires frontier
-		- The new directional drag could make parts of the ship break off
-
-	- DestroyAt:
-		- Test: Ship::SpringDestroyHandler() only destroys triangles that contain A-B
-			- Should definitely make both A and B leak, as they both now have an adjacent hole
 	
-	- See if can use external water's pressure to inflict stress on springs
-		- Have to visit frontier points and, if underwater, do force perpendicular towards interior
-
 	- Stars with database
 		- python script to generate binary maps for N and S emispheres
 
@@ -1136,24 +1142,6 @@ Render:
 		- Also other objects might be launched with click-and-drag
 
 - Water:
-	- If we don't have enough particles for air bubbles, test the following::
-		- Air bubbles only at leaking that became so because they have been broken
-			- "IsLeaking" -> "LeakingType": None, Leaking, LeakingDamaged
-		- Increase # of ephemeral particles
-
-
-	- OLD: Optimizations:
-		- GravitateWater:
-			- Calculate once and for all cos theta's at first iteration
-				- !!! Actually, calculate WaterGravityFactorA = dt*0.6*(1+cos_theta)/2, WaterGravityFactorB = -dt*0.6*(1-cos_theta)/2
-					float cos_theta_select = (1.0f + cos_theta) / 2.0f;
-			                float correction = 0.60f * cos_theta_select * pointA->GetWater() - 0.60f * (1.0f - cos_theta_select) * pointB->GetWater();
-			                correction *= GameParameters::SimulationStepTimeDuration<float>;
-				- Test (check disassembly) with templated lambda (Spring const &)->void
-					- First one calculates factors and stores them in Spring
-					- All others empty
-					- All iters take factors from Spring after calling lambda
-
 
 	- New sinking detection:
 		- Sinking detection is broken - it currently only considers total water that entered the ship, which comes proportionally to external
@@ -1199,26 +1187,28 @@ Render:
 				- Pass velocity = current (synthetic) mousePos - last (synthetic) mousePos
 			- Help
 
-	- Ship definition: 
-		- Interior layer:
-			- New layer @ ShipDefinitionFile and ShipDefinition
-			- New flag @
-				- ShipRenderMode
-				- SettingsDialog
-			- ShipDefinition:
-				- std::optional<ImageData> InteriorImageData
-			- RenderContext:
-				- Exposes "HasShipInteriorImage()"
-					- Updated @ AddShip (via OR) and @ Reset()
-			- SettingsDialog:
-				- Enable option conditionally 
-				- Refresh by MainFrame upon AddShip/Reset/...
-			- ShipRenderContext:
-				- When not drawing primitives, texture used is:
-					- If "Texture" -> Texture
-					- If "Structure" -> Structure
-					- If "Interior" -> Interior OR Structure
-			- Use Michael's interior for RMS Titanic
+	- Interior layer:
+		- New layer @ ShipDefinitionFile and ShipDefinition
+		- New flag @
+			- ShipRenderMode
+			- SettingsDialog
+		- ShipDefinition:
+			- std::optional<ImageData> InteriorImageData
+		- RenderContext:
+			- Exposes "HasShipInteriorImage()"
+				- Updated @ AddShip (via OR) and @ Reset()
+		- Toggling layer visibility:
+			- Choose between:
+				- On-window control
+					- Done via OpenGL with InteractionLayer
+				- SettingsDialog:
+					- Enable option conditionally 
+					- Refresh by MainFrame upon AddShip/Reset/...
+		- ShipRenderContext:
+			- When not drawing primitives, texture used is:
+				- If "Texture" -> Texture
+				- If "Structure" -> Structure
+				- If "Interior" -> Interior OR Structure
 
 - UI:
 	+ PreferencesDialog:

@@ -362,8 +362,8 @@ float Springs::CalculateStiffnessCoefficient(
     //
 
     float const massFactor =
-        (points.GetMass(pointAIndex) * points.GetMass(pointBIndex))
-        / (points.GetMass(pointAIndex) + points.GetMass(pointBIndex));
+        (points.GetAugmentedStructuralMass(pointAIndex) * points.GetAugmentedStructuralMass(pointBIndex))
+        / (points.GetAugmentedStructuralMass(pointAIndex) + points.GetAugmentedStructuralMass(pointBIndex));
 
     float const dtSquared =
         (GameParameters::SimulationStepTimeDuration<float> / numMechanicalDynamicsIterations)
@@ -384,8 +384,8 @@ float Springs::CalculateDampingCoefficient(
     Points const & points)
 {
     float const massFactor =
-        (points.GetMass(pointAIndex) * points.GetMass(pointBIndex))
-        / (points.GetMass(pointAIndex) + points.GetMass(pointBIndex));
+        (points.GetAugmentedStructuralMass(pointAIndex) * points.GetAugmentedStructuralMass(pointBIndex))
+        / (points.GetAugmentedStructuralMass(pointAIndex) + points.GetAugmentedStructuralMass(pointBIndex));
 
     float const dt = GameParameters::SimulationStepTimeDuration<float> / numMechanicalDynamicsIterations;
 
