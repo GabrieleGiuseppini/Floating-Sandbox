@@ -207,7 +207,7 @@ Render:
 			+ Installer
 		+ Try to build with Runtime Type Information disabled
 
-		= Add world end markers (*)
+		+ Add world end markers (*)
 
 		- Repair tool (*)
 
