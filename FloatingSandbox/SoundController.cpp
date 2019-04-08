@@ -58,6 +58,7 @@ SoundController::SoundController(
     , mSwirlSound()
     , mAirBubblesSound()
     , mFloodHoseSound()
+    , mRepairStructureSound()
     , mWaterRushSound()
     , mWaterSplashSound()
     , mWindSound()
@@ -205,6 +206,14 @@ SoundController::SoundController(
                 mMasterToolsVolume,
                 mMasterToolsMuted);
         }
+        else if (soundType == SoundType::RepairStructure)
+        {
+            mRepairStructureSound.Initialize(
+                std::move(soundBuffer),
+                100.0f,
+                mMasterToolsVolume,
+                mMasterToolsMuted);
+        }
         else if (soundType == SoundType::WaterRush)
         {
             mWaterRushSound.Initialize(
@@ -245,7 +254,8 @@ SoundController::SoundController(
                 mMasterEffectsVolume,
                 mMasterEffectsMuted);
         }
-        else if (soundType == SoundType::Break || soundType == SoundType::Destroy || soundType == SoundType::Stress)
+        else if (soundType == SoundType::Break || soundType == SoundType::Destroy || soundType == SoundType::Stress
+                || soundType == SoundType::RepairSpring || soundType == SoundType::RepairTriangle)
         {
             //
             // MSU sound
@@ -554,6 +564,7 @@ void SoundController::SetMasterToolsVolume(float volume)
     mSwirlSound.SetMasterVolume(mMasterToolsVolume);
     mAirBubblesSound.SetMasterVolume(mMasterToolsVolume);
     mFloodHoseSound.SetMasterVolume(mMasterToolsVolume);
+    mRepairStructureSound.SetMasterVolume(mMasterToolsVolume);
 }
 
 void SoundController::SetMasterToolsMuted(bool isMuted)
@@ -581,6 +592,7 @@ void SoundController::SetMasterToolsMuted(bool isMuted)
     mSwirlSound.SetMuted(mMasterToolsMuted);
     mAirBubblesSound.SetMuted(mMasterToolsMuted);
     mFloodHoseSound.SetMuted(mMasterToolsMuted);
+    mRepairStructureSound.SetMuted(mMasterToolsMuted);
 }
 
 // Master music
@@ -750,16 +762,14 @@ void SoundController::PlayTerrainAdjustSound()
         true);
 }
 
-void SoundController::PlayRepairSound()
+void SoundController::PlayRepairStructureSound()
 {
-    // TODOHERE
-    //mFloodHoseSound.Start();
+    mRepairStructureSound.Start();
 }
 
-void SoundController::StopRepairSound()
+void SoundController::StopRepairStructureSound()
 {
-    //TODOHERE
-    //mFloodHoseSound.Stop();
+    mRepairStructureSound.Stop();
 }
 
 void SoundController::PlayScrubSound()
@@ -818,6 +828,7 @@ void SoundController::Reset()
     mSwirlSound.Reset();
     mAirBubblesSound.Reset();
     mFloodHoseSound.Reset();
+    mRepairStructureSound.Reset();
 
     mWaterRushSound.Reset();
     mWaterSplashSound.Reset();
@@ -861,22 +872,37 @@ void SoundController::OnDestroy(
     }
 }
 
-void SoundController::OnRepair(
+void SoundController::OnSpringRepaired(
     StructuralMaterial const & structuralMaterial,
     bool isUnderwater,
     unsigned int size)
 {
     if (!!(structuralMaterial.MaterialSound))
     {
-        /* TODO
         PlayMSUOneShotMultipleChoiceSound(
-            SoundType::Repair,
+            SoundType::RepairSpring,
             *(structuralMaterial.MaterialSound),
             size,
             isUnderwater,
             70.0f,
             true);
-            */
+    }
+}
+
+void SoundController::OnTriangleRepaired(
+    StructuralMaterial const & structuralMaterial,
+    bool isUnderwater,
+    unsigned int size)
+{
+    if (!!(structuralMaterial.MaterialSound))
+    {
+        PlayMSUOneShotMultipleChoiceSound(
+            SoundType::RepairTriangle,
+            *(structuralMaterial.MaterialSound),
+            size,
+            isUnderwater,
+            70.0f,
+            true);
     }
 }
 

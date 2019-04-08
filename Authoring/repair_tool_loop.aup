@@ -1,0 +1,35 @@
+<?xml version="1.0" standalone="no" ?>
+<!DOCTYPE project PUBLIC "-//audacityproject-1.3.0//DTD//EN" "http://audacity.sourceforge.net/xml/audacityproject-1.3.0.dtd" >
+<project xmlns="http://audacity.sourceforge.net/xml/" projname="repair_tool_loop_data" version="1.3.0" audacityversion="2.1.0" sel0="0.2981561343" sel1="1.2284055674" vpos="0" h="0.7283371252" zoom="1817.8395061728" rate="11025.0" snapto="off" selectionformat="hh:mm:ss + hundredths">
+	<tags/>
+	<wavetrack name="wrench6_squeak" channel="2" linked="0" mute="0" solo="0" height="150" minimized="0" isSelected="1" rate="11025" gain="0.501187" pan="0.0">
+		<waveclip offset="0.29815613">
+			<sequence maxsamples="262144" sampleformat="262159" numsamples="10256">
+				<waveblock start="0">
+					<simpleblockfile filename="e00009e5.au" len="10256" min="-0.999871" max="0.70602" rms="0.03561"/>
+				</waveblock>
+			</sequence>
+			<envelope numpoints="0"/>
+		</waveclip>
+	</wavetrack>
+	<wavetrack name="wrench5_ratchet" channel="2" linked="0" mute="0" solo="0" height="150" minimized="0" isSelected="0" rate="11025" gain="1.0" pan="0.0">
+		<waveclip offset="0.00000000">
+			<sequence maxsamples="262144" sampleformat="262159" numsamples="3415">
+				<waveblock start="0">
+					<simpleblockfile filename="e0000eb0.au" len="3415" min="-0.933007" max="1.0" rms="0.018907"/>
+				</waveblock>
+			</sequence>
+			<envelope numpoints="0"/>
+		</waveclip>
+	</wavetrack>
+	<wavetrack name="wrench5_ratchet" channel="2" linked="0" mute="0" solo="0" height="150" minimized="0" isSelected="0" rate="11025" gain="1.0" pan="0.0">
+		<waveclip offset="0.65737376">
+			<sequence maxsamples="262144" sampleformat="262159" numsamples="3772">
+				<waveblock start="0">
+					<simpleblockfile filename="e0000ed5.au" len="3772" min="-0.486497" max="0.354523" rms="0.00978"/>
+				</waveblock>
+			</sequence>
+			<envelope numpoints="0"/>
+		</waveclip>
+	</wavetrack>
+</project>

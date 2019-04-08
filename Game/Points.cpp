@@ -53,6 +53,7 @@ void Points::Add(
     mIsLeakingBuffer.emplace_back(isLeaking);
     if (isLeaking)
         SetLeaking(pointIndex);
+    mFactoryIsLeakingBuffer.emplace_back(isLeaking);
 
     // Electrical dynamics
     mElectricalElementBuffer.emplace_back(electricalElementIndex);

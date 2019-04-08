@@ -27,6 +27,8 @@ enum class SoundType
 {
     Break,
     Destroy,
+    RepairSpring,
+    RepairTriangle,
     Draw,
     Saw,
     Sawed,
@@ -55,7 +57,8 @@ enum class SoundType
     AntiMatterBombExplosion,
     Snapshot,
     TerrainAdjust,
-    Scrub
+    Scrub,
+    RepairStructure
 };
 
 SoundType StrToSoundType(std::string const & str);

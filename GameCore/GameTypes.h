@@ -277,8 +277,9 @@ enum class TextureGroupType : uint16_t
     TimerBombDefuse,
     TimerBombExplosion,
     TimerBombFuse,
+    WorldBorder,
 
-    _Last = TimerBombFuse
+    _Last = WorldBorder
 };
 
 TextureGroupType StrToTextureGroupType(std::string const & str);

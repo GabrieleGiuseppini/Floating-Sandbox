@@ -55,6 +55,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::Stars;
     else if (lstr == "text_ndc")
         return ProgramType::TextNDC;
+    else if (lstr == "world_border")
+        return ProgramType::WorldBorder;
     else
         throw GameException("Unrecognized program \"" + str + "\"");
 }
@@ -103,6 +105,8 @@ std::string ProgramTypeToStr(ProgramType program)
         return "Stars";
     case ProgramType::TextNDC:
         return "TextNDC";
+    case ProgramType::WorldBorder:
+        return "WorldBorder";
     default:
         assert(false);
         throw GameException("Unsupported ProgramType");
@@ -150,6 +154,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::LandTexture;
     else if (str == "OceanTexture")
         return ProgramParameterType::OceanTexture;
+    else if (str == "WorldBorderTexture")
+        return ProgramParameterType::WorldBorderTexture;
     else
         throw GameException("Unrecognized program parameter \"" + str + "\"");
 }
@@ -197,6 +203,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "LandTexture";
     case ProgramParameterType::OceanTexture:
         return "OceanTexture";
+    case ProgramParameterType::WorldBorderTexture:
+        return "WorldBorderTexture";
     default:
         assert(false);
         throw GameException("Unsupported ProgramParameterType");
@@ -218,6 +226,8 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::CrossOfLight1;
     else if (Utils::CaseInsensitiveEquals(str, "CrossOfLight2"))
         return VertexAttributeType::CrossOfLight2;
+    else if (Utils::CaseInsensitiveEquals(str, "WorldBorder"))
+        return VertexAttributeType::WorldBorder;
     // Ship
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointAttributeGroup1"))
         return VertexAttributeType::ShipPointAttributeGroup1;

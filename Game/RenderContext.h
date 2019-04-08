@@ -1023,19 +1023,21 @@ public:
 private:
 
     void RenderCrossesOfLight();
+    void RenderWorldBorder();
 
     void OnViewModelUpdated();
     void OnAmbientLightIntensityUpdated();
     void OnOceanTransparencyUpdated();
+    void OnOceanRenderParametersUpdated();
+    void OnLandRenderParametersUpdated();
     void OnWaterContrastUpdated();
     void OnWaterLevelOfDetailUpdated();
     void OnShipRenderModeUpdated();
     void OnDebugShipRenderModeUpdated();
-    void OnOceanRenderParametersUpdated();
-    void OnLandRenderParametersUpdated();
     void OnVectorFieldRenderModeUpdated();
     void OnShowStressedSpringsUpdated();
 
+    void UpdateWorldBorder();
     vec4f CalculateWaterColor() const;
 
 private:
@@ -1131,6 +1133,25 @@ private:
         {}
     };
 
+    struct WorldBorderVertex
+    {
+        float x;
+        float y;
+        float textureX;
+        float textureY;
+
+        WorldBorderVertex(
+            float _x,
+            float _y,
+            float _textureX,
+            float _textureY)
+            : x(_x)
+            , y(_y)
+            , textureX(_textureX)
+            , textureY(_textureY)
+        {}
+    };
+
 #pragma pack(pop)
 
     //
@@ -1154,6 +1175,9 @@ private:
     std::vector<CrossOfLightVertex> mCrossOfLightVertexBuffer;
     GameOpenGLVBO mCrossOfLightVBO;
 
+    std::vector<WorldBorderVertex> mWorldBorderVertexBuffer;
+    GameOpenGLVBO mWorldBorderVBO;
+
     //
     // VAOs
     //
@@ -1163,6 +1187,7 @@ private:
     GameOpenGLVAO mLandVAO;
     GameOpenGLVAO mOceanVAO;
     GameOpenGLVAO mCrossOfLightVAO;
+    GameOpenGLVAO mWorldBorderVAO;
 
     //
     // Textures
@@ -1179,6 +1204,13 @@ private:
 
     GameOpenGLTexture mGenericTextureAtlasOpenGLHandle;
     std::unique_ptr<TextureAtlasMetadata> mGenericTextureAtlasMetadata;
+
+    //
+    // World border
+    //
+
+    ImageSize mWorldBorderTextureSize;
+    bool mIsWorldBorderVisible;
 
 private:
 

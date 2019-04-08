@@ -46,7 +46,15 @@ public:
         // Default-implemented
     }
 
-    virtual void OnRepair(
+    virtual void OnSpringRepaired(
+        StructuralMaterial const & /*structuralMaterial*/,
+        bool /*isUnderwater*/,
+        unsigned int /*size*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnTriangleRepaired(
         StructuralMaterial const & /*structuralMaterial*/,
         bool /*isUnderwater*/,
         unsigned int /*size*/)

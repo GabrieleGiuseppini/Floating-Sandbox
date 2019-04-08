@@ -58,6 +58,21 @@ public:
     auto const & GetElectricalElements() const { return mElectricalElements; }
     auto & GetElectricalElements() { return mElectricalElements; }
 
+    void Update(
+        float currentSimulationTime,
+        GameParameters const & gameParameters,
+        Render::RenderContext const & renderContext);
+
+    void Render(
+        GameParameters const & gameParameters,
+        Render::RenderContext & renderContext);
+
+public:
+
+    ///////////////////////////////////////////////////////////////
+    // Interactions
+    ///////////////////////////////////////////////////////////////
+
     void MoveBy(
         vec2f const & offset,
         GameParameters const & gameParameters);
@@ -141,15 +156,6 @@ public:
     bool QueryNearestPointAt(
         vec2f const & targetPos,
         float radius) const;
-
-    void Update(
-        float currentSimulationTime,
-        GameParameters const & gameParameters,
-        Render::RenderContext const & renderContext);
-
-    void Render(
-        GameParameters const & gameParameters,
-        Render::RenderContext & renderContext);
 
 public:
 

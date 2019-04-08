@@ -315,6 +315,7 @@ public:
         , mWaterMomentumBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mCumulatedIntakenWater(mBufferElementCount, shipPointCount, 0.0f)
         , mIsLeakingBuffer(mBufferElementCount, shipPointCount, false)
+        , mFactoryIsLeakingBuffer(mBufferElementCount, shipPointCount, false)
         // Electrical dynamics
         , mElectricalElementBuffer(mBufferElementCount, shipPointCount, NoneElementIndex)
         , mLightBuffer(mBufferElementCount, shipPointCount, 0.0f)
@@ -825,6 +826,11 @@ public:
             GameParameters::CumulatedIntakenWaterThresholdForAirBubbles);
     }
 
+    void RestoreFactoryIsLeaking(ElementIndex pointElementIndex)
+    {
+        mIsLeakingBuffer[pointElementIndex] = mFactoryIsLeakingBuffer[pointElementIndex];
+    }
+
     //
     // Electrical dynamics
     //
@@ -1161,7 +1167,9 @@ private:
     // utilized for air bubbles
     Buffer<float> mCumulatedIntakenWater;
 
+    // When true, the point is intaking water
     Buffer<bool> mIsLeakingBuffer;
+    Buffer<bool> mFactoryIsLeakingBuffer;
 
     //
     // Electrical dynamics

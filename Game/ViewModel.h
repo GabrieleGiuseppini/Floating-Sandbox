@@ -190,6 +190,11 @@ public:
         return mCanvasToVisibleWorldHeightRatio;
     }
 
+    float GetCanvasWidthToHeightRatio() const
+    {
+        return mCanvasWidthToHeightRatio;
+    }
+
     //
     // Coordinate transformations
     //
@@ -206,6 +211,24 @@ public:
         return vec2f(
             screenOffset.x / static_cast<float>(mCanvasWidth) * mVisibleWorldWidth,
             -screenOffset.y / static_cast<float>(mCanvasHeight) * mVisibleWorldHeight);
+    }
+
+    inline float PixelWidthToWorldWidth(float pixelWidth)
+    {
+        // Width in NDC coordinates (between 0 and 2.0)
+        float const ndcW = 2.0f * pixelWidth / static_cast<float>(mCanvasWidth);
+
+        // An NDC width of 2 is the entire visible world width
+        return (ndcW / 2.0f) * mVisibleWorldWidth;
+    }
+
+    inline float PixelHeightToWorldHeight(float pixelHeight)
+    {
+        // Height in NDC coordinates (between 0 and 2.0)
+        float const ndcH = 2.0f * pixelHeight / static_cast<float>(mCanvasHeight);
+
+        // An NDC height of 2 is the entire visible world height
+        return (ndcH / 2.0f) * mVisibleWorldHeight;
     }
 
     //
@@ -311,6 +334,7 @@ private:
             mCam.y - (mVisibleWorldHeight / 2.0f));
 
         mCanvasToVisibleWorldHeightRatio = static_cast<float>(mCanvasHeight) / mVisibleWorldHeight;
+        mCanvasWidthToHeightRatio = static_cast<float>(mCanvasWidth) / static_cast<float>(mCanvasHeight);
 
         // Recalculate kernel Ortho Matrix cells
         mKernelOrthoMatrix[0][0] = 2.0f / mVisibleWorldWidth;
@@ -336,6 +360,7 @@ private:
     vec2f mVisibleWorldTopLeft;
     vec2f mVisibleWorldBottomRight;
     float mCanvasToVisibleWorldHeightRatio;
+    float mCanvasWidthToHeightRatio;
     ProjectionMatrix mKernelOrthoMatrix; // Common subset of all ortho matrices
 };
 

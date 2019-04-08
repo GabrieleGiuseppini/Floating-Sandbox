@@ -18,7 +18,8 @@ class GameEventDispatcher : public IGameEventHandler
 public:
 
     GameEventDispatcher()
-        : mRepairEvents()
+        : mSpringRepairedEvents()
+        , mTriangleRepairedEvents()
         , mStressEvents()
         , mBreakEvents()
         , mSinkingBeginEvents()
@@ -65,12 +66,20 @@ public:
         }
     }
 
-    virtual void OnRepair(
+    virtual void OnSpringRepaired(
         StructuralMaterial const & structuralMaterial,
         bool isUnderwater,
         unsigned int size) override
     {
-        mRepairEvents[std::make_tuple(&structuralMaterial, isUnderwater)] += size;
+        mSpringRepairedEvents[std::make_tuple(&structuralMaterial, isUnderwater)] += size;
+    }
+
+    virtual void OnTriangleRepaired(
+        StructuralMaterial const & structuralMaterial,
+        bool isUnderwater,
+        unsigned int size) override
+    {
+        mTriangleRepairedEvents[std::make_tuple(&structuralMaterial, isUnderwater)] += size;
     }
 
     virtual void OnSawed(
@@ -311,9 +320,14 @@ public:
         // Publish aggregations
         for (IGameEventHandler * sink : mSinks)
         {
-            for (auto const & entry : mRepairEvents)
+            for (auto const & entry : mSpringRepairedEvents)
             {
-                sink->OnRepair(*(std::get<0>(entry.first)), std::get<1>(entry.first), entry.second);
+                sink->OnSpringRepaired(*(std::get<0>(entry.first)), std::get<1>(entry.first), entry.second);
+            }
+
+            for (auto const & entry : mTriangleRepairedEvents)
+            {
+                sink->OnTriangleRepaired(*(std::get<0>(entry.first)), std::get<1>(entry.first), entry.second);
             }
 
             for (auto const & entry : mStressEvents)
@@ -353,12 +367,15 @@ public:
         }
 
         // Clear collections
+        mSpringRepairedEvents.clear();
+        mTriangleRepairedEvents.clear();
         mStressEvents.clear();
         mBreakEvents.clear();
         mSinkingBeginEvents.clear();
         mLightFlickerEvents.clear();
         mBombExplosionEvents.clear();
         mRCBombPingEvents.clear();
+        mTimerBombDefusedEvents.clear();
         mTimerBombDefusedEvents.clear();
     }
 
@@ -370,7 +387,8 @@ public:
 private:
 
     // The current events being aggregated
-    unordered_tuple_map<std::tuple<StructuralMaterial const *, bool>, unsigned int> mRepairEvents;
+    unordered_tuple_map<std::tuple<StructuralMaterial const *, bool>, unsigned int> mSpringRepairedEvents;
+    unordered_tuple_map<std::tuple<StructuralMaterial const *, bool>, unsigned int> mTriangleRepairedEvents;
     unordered_tuple_map<std::tuple<StructuralMaterial const *, bool>, unsigned int> mStressEvents;
     unordered_tuple_map<std::tuple<StructuralMaterial const *, bool>, unsigned int> mBreakEvents;
     std::vector<ShipId> mSinkingBeginEvents;

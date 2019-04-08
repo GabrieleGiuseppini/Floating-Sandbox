@@ -1587,7 +1587,7 @@ public:
     virtual void Deinitialize(InputState const & /*inputState*/) override
     {
         // Stop sound, just in case
-        mSoundController->StopRepairSound();
+        mSoundController->StopRepairStructureSound();
     }
 
     virtual void Update(InputState const & inputState) override
@@ -1614,7 +1614,7 @@ public:
                 mIsEngaged = true;
 
                 // Start sound
-                mSoundController->PlayRepairSound();
+                mSoundController->PlayRepairStructureSound();
             }
 
             // Update cursor
@@ -1628,7 +1628,7 @@ public:
                 mIsEngaged = false;
 
                 // Stop sound
-                mSoundController->StopRepairSound();
+                mSoundController->StopRepairStructureSound();
 
                 // Update cursor
                 ShowCurrentCursor();

@@ -45,8 +45,9 @@ enum class ProgramType
     ShipVectors,
     Stars,
     TextNDC,
+    WorldBorder,
 
-    _Last = TextNDC
+    _Last = WorldBorder
 };
 
 ProgramType ShaderFilenameToProgramType(std::string const & str);
@@ -76,9 +77,10 @@ enum class ProgramParameterType : uint8_t
     GenericTexturesAtlasTexture,    // 2
     LandTexture,                    // 3
     OceanTexture,                   // 4
+    WorldBorderTexture,                // 5
 
     _FirstTexture = SharedTexture,
-    _LastTexture = OceanTexture
+    _LastTexture = WorldBorderTexture
 };
 
 ProgramParameterType StrToProgramParameterType(std::string const & str);
@@ -104,6 +106,8 @@ enum class VertexAttributeType : GLuint
 
     CrossOfLight1 = 0,
     CrossOfLight2 = 1,
+
+    WorldBorder = 0,
 
     //
     // Ship

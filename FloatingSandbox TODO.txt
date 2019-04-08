@@ -207,6 +207,8 @@ Render:
 			+ Installer
 		+ Try to build with Runtime Type Information disabled
 
+		= Add world end markers (*)
+
 		- Repair tool (*)
 
 		= Fix Linux build break
@@ -214,13 +216,15 @@ Render:
 			+ Set /permissive- for all projects
 		- Take Mathias' pull request
 
+		- Merge to master
+
+		- Fix github/clouds bug
+
 		- Are we really forced to set point colors to structural colors?
 			- Can we always use the (sampled) texture colors?
-				- After all texture layer is now mandatory!
+				- After all, texture layer is now mandatory!
 
 		- Floatsam: see if using (waterY + 0.1) at UpdateWaterIntake helps
-
-		- Add world end markers (*)
 
 		- Auto-focus (*)
 			- Owned by RenderContext
@@ -280,7 +284,11 @@ Render:
 			- B747: (An SR71 Habu) alias=NotTelling year=1970
 				- Add to About box
 			- Pacific: "S.S. Pacific" alias=Hugo_2503 year=1908
-				- Add to About box			
+				- Add to About box
+		- To test:
+			- RMS Magentasia (TopHatLemons)
+			- Menschenfresser (ASSTYU)
+			- JackMellon on Discord
 		- Asked:
 			- Ed Fitzgerald (but needs to be fixed) (Kiko)
 			- Aegir_Mark_III (coolman asks original designer)
@@ -340,6 +348,7 @@ Render:
 		+ Detect loops with unordered_set<std::string>
 		+ Use for ship color and texture
 	- Ship: replace handler registrations with points, springs, etc. with IStructureHandler, declared in own .h
+	- GameEventDispatcher: set mIsDirty at event publishing and consume at Flush()
 	- Try 32-bit build
 	- Sound controller: complain if find extraneous files (had issue with ".flc")
 	- Translations:
@@ -613,16 +622,16 @@ Render:
 
 
 - Gfx:
-	- Add world end markers (*)
-		- Add texture (square,repeatable in both directions)
-		- RenderContext::init: 
-			- Don't load in atlas
-			- Make it repeated
-		- Final step @ RenderContext::Render
-			- Checks first which sides, if any, have to be drawn
-			- Renders quad for each side
-				- Width is in NDC
-				- alpha = 0.5
+	+ Add world end markers
+		+ Add texture (square,repeatable in both directions)
+		+ RenderContext::init: 
+			+ Don't load in atlas
+			+ Make it repeated
+		+ Final step @ RenderContext::Render
+			+ Checks first which sides, if any, have to be drawn
+			+ Renders quad for each side
+				+ Width is in NDC
+				+ alpha = 0.5 (in shader)
 
 	- Auto-focus (*)
 		- Done by RenderContext upon each AddShip()
@@ -742,15 +751,15 @@ Render:
 					+ Bombs cover each other
 		+ Run in Debug
 		+ Check flood tool change (Tool::Initialize - verify sound starts)
-		= 2) Maintain factory connections
+		+ 2) Maintain factory connections
 			+ Not electricals (at least for now)
-			= Points:
+			+ Points:
 				+ AddFactoryConnectedSpring(...)
 					+ -> ConnectSpring(...)
 				+ Connect/DisconnectSpring(...)
 					+ assert it's in factory-connected springs
 				+ See if connecting-spring-kung-fu should be done by struct itself
-				- FactoryIsLeaking
+				+ FactoryIsLeaking
 			+ Springs:
 				+ FactorySuperTriangles
 			+ Other factory connections as necessary by restore algo
@@ -781,7 +790,7 @@ Render:
 			+ Movement is still only done if not within tolerance
 				+ And changes distance
 		= 3) Repair tool and action
-			= Repair(Pr):
+			+ Repair(Pr):
 				+ for each s in Pr.FactorySprings:
 					+ if s.IsDeleted:
 						+ if s.length <= s.restLength: // Restore
@@ -794,18 +803,20 @@ Render:
 					+ if t.IsDeleted:
 						+ If all t.FactorySubSprings are !Deleted:
 							+ Triangles::Restore(t)	
-				- Restore endpoints' IsLeaking
-					- Only for endpoints that now have all of their factory springs
-				- Decide on:
-					- Radius
-					- Force
-					- Ultra-violent mode effect
+				+ Restore endpoints' IsLeaking
+					+ Only for endpoints that now have all of their factory springs
+				+ Decide on:
+					+ Radius
+					+ Force
+					+ Ultra-violent mode effect
+			+ Test pinned points now
 
 			- RepairStructureTool:
-				- repair_structure_cursor_up/down.png: screwdriver
+				- repair_structure_cursor_up/down.png: wrench
+					- multiple frames for different rotations
 				- Adjust cursor hotpoints
-			- SoundController: 
-				- RepairTool sound: ?
+			= SoundController: 
+				= RepairTool sound
 				- OnRepair
 					- Sounds:
 						- Metal: thud
@@ -1336,6 +1347,9 @@ Render:
 					- Enables/Disabled buttons and menus
 
 - Sounds:
+	- New sounds:
+		- Ship sinking: https://www.youtube.com/watch?v=-f2B_bzcgV8
+		- ShipSoundsForFS (in Scratch)
 	- Ship may come with custom sound(s) for horns
 		- Figure out how to play them, may be like switchboard or *via* switchboard, or with just one horn sound
 	- Morse code sound when it's about to sink (early sink detection)

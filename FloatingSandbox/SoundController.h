@@ -142,8 +142,8 @@ public:
 
     void PlayTerrainAdjustSound();
 
-    void PlayRepairSound();
-    void StopRepairSound();
+    void PlayRepairStructureSound();
+    void StopRepairStructureSound();
 
     void PlayScrubSound();
 
@@ -170,7 +170,12 @@ public:
         bool isUnderwater,
         unsigned int size) override;
 
-    virtual void OnRepair(
+    virtual void OnSpringRepaired(
+        StructuralMaterial const & structuralMaterial,
+        bool isUnderwater,
+        unsigned int size) override;
+
+    virtual void OnTriangleRepaired(
         StructuralMaterial const & structuralMaterial,
         bool isUnderwater,
         unsigned int size) override;
@@ -409,6 +414,7 @@ private:
     ContinuousSingleChoiceSound mSwirlSound;
     ContinuousSingleChoiceSound mAirBubblesSound;
     ContinuousSingleChoiceSound mFloodHoseSound;
+    ContinuousSingleChoiceSound mRepairStructureSound;
 
     ContinuousSingleChoiceSound mWaterRushSound;
     ContinuousSingleChoiceSound mWaterSplashSound;
