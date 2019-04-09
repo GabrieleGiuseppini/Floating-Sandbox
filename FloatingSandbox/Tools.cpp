@@ -528,6 +528,7 @@ RepairStructureTool::RepairStructureTool(
         MakeCursor("repair_structure_cursor_down_0", 8, 8, resourceLoader),
         MakeCursor("repair_structure_cursor_down_1", 8, 8, resourceLoader),
         MakeCursor("repair_structure_cursor_down_2", 8, 8, resourceLoader),
-        MakeCursor("repair_structure_cursor_down_3", 8, 8, resourceLoader) }
+        MakeCursor("repair_structure_cursor_down_3", 8, 8, resourceLoader),
+        MakeCursor("repair_structure_cursor_down_4", 8, 8, resourceLoader) }
 {
 }
