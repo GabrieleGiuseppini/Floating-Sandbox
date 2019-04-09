@@ -521,8 +521,13 @@ RepairStructureTool::RepairStructureTool(
         parentFrame,
         std::move(gameController),
         std::move(soundController))
-    , mIsEngaged(false)
-    , mUpCursor(MakeCursor("repair_structure_cursor_up", 15, 15, resourceLoader))
-    , mDownCursor(MakeCursor("repair_structure_cursor_down", 15, 15, resourceLoader))
+    , mEngagementStartTimestamp()
+    , mCurrentCursor(nullptr)
+    , mUpCursor(MakeCursor("repair_structure_cursor_up", 8, 8, resourceLoader))
+    , mDownCursors{
+        MakeCursor("repair_structure_cursor_down_0", 8, 8, resourceLoader),
+        MakeCursor("repair_structure_cursor_down_1", 8, 8, resourceLoader),
+        MakeCursor("repair_structure_cursor_down_2", 8, 8, resourceLoader),
+        MakeCursor("repair_structure_cursor_down_3", 8, 8, resourceLoader) }
 {
 }

@@ -1582,6 +1582,8 @@ public:
 
     virtual void Initialize(InputState const & /*inputState*/) override
     {
+        // Just set a cursor, we'll update it at Update()
+        mCurrentCursor = mUpCursor.get();
     }
 
     virtual void Deinitialize(InputState const & /*inputState*/) override
@@ -1608,30 +1610,30 @@ public:
 
         if (isEngaged)
         {
-            if (!mIsEngaged)
+            if (!mEngagementStartTimestamp)
             {
                 // State change
-                mIsEngaged = true;
+                mEngagementStartTimestamp = GameWallClock::GetInstance().Now();
 
                 // Start sound
                 mSoundController->PlayRepairStructureSound();
             }
 
             // Update cursor
-            ShowCurrentCursor();
+            UpdateCurrentCursor();
         }
         else
         {
-            if (mIsEngaged)
+            if (!!mEngagementStartTimestamp)
             {
                 // State change
-                mIsEngaged = false;
+                mEngagementStartTimestamp.reset();
 
                 // Stop sound
                 mSoundController->StopRepairStructureSound();
 
                 // Update cursor
-                ShowCurrentCursor();
+                UpdateCurrentCursor();
             }
         }
     }
@@ -1646,16 +1648,48 @@ public:
     {
         assert(nullptr != mParentFrame);
 
-        mParentFrame->SetCursor(mIsEngaged ? *mDownCursor : *mUpCursor);
+        mParentFrame->SetCursor(*mCurrentCursor);
     }
 
 private:
 
-    // Our state
-    bool mIsEngaged;
+    virtual void UpdateCurrentCursor()
+    {
+        if (!!mEngagementStartTimestamp)
+        {
+            auto totalElapsed = std::chrono::duration_cast<std::chrono::milliseconds>(GameWallClock::GetInstance().Now() - *mEngagementStartTimestamp);
+
+            // Synchronize with sound
+            auto cursorPhase = (totalElapsed.count() % 1000);
+            if (cursorPhase < 175)
+                mCurrentCursor = mDownCursors[0].get();
+            else if (cursorPhase < 300)
+                mCurrentCursor = mDownCursors[1].get();
+            else if (cursorPhase < 600)
+                mCurrentCursor = mDownCursors[2].get();
+            else if (cursorPhase < 800)
+                mCurrentCursor = mDownCursors[3].get();
+            else
+                mCurrentCursor = mDownCursors[0].get();
+        }
+        else
+        {
+            mCurrentCursor = mUpCursor.get();
+        }
+
+        ShowCurrentCursor();
+    }
+
+private:
+
+    // When set, we are engaged
+    std::optional<GameWallClock::time_point> mEngagementStartTimestamp;
+
+    // The currently-chosen cursor
+    wxCursor * mCurrentCursor;
 
     // Our cursors
     std::unique_ptr<wxCursor> const mUpCursor;
-    std::unique_ptr<wxCursor> const mDownCursor;
+    std::array<std::unique_ptr<wxCursor>, 4> const mDownCursors;
 
 };

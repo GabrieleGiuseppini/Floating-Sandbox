@@ -250,9 +250,6 @@ Render:
 		- Spring and NonSpring force separation optimization (*)
 
 		- Batisphere with pumps and propulsion (*)
-			- First need to add a new material property - "rust_susceptibility" - for tanks
-				- Use at RotPoints()
-				- Make "stainless" materials
 			- Switches (*)
 			- Flood doors (*)
 			- Pumps (*)
@@ -319,6 +316,7 @@ Render:
 
 
 - Suggestions to spec:
+	- Tools turning white at night
 	- Once we have ships, make "Lock Ship in View" flag and move camera with ship's center of mass (representative point or real CoM)
 	- Be able to place nukea nd AM bomb anywhere
 	- Add new materials: plastic, rubber, fiberglass
@@ -810,26 +808,33 @@ Render:
 					+ Force
 					+ Ultra-violent mode effect
 			+ Test pinned points now
+			+ Do worldend texture a divisor of maxworldw/h
 
-			- RepairStructureTool:
-				- repair_structure_cursor_up/down.png: wrench
-					- multiple frames for different rotations
-				- Adjust cursor hotpoints
+			= RepairStructureTool:
+				= repair_structure_cursor_up/down.png: wrench
+					+ multiple frames for different rotations
+					= sync with sound
+				+ Adjust cursor hotpoints
 			= SoundController: 
 				= RepairTool sound
-				- OnRepair
-					- Sounds:
-						- Metal: thud
-						- Others: ?
+				= OnRepair
+					= Sounds:
+						= Metal
+						- Cable
+						- Cloth
+						- Glass
+						- Wood
 						- X2 (underwater!)
+						= Lower volume
 		- SettingsDialog:
 			- Repair radius
 			- Repair rate (test first if high value makes sense)
 
 	- Also dry points should rot, albeit very slowly (*)
-		- Could just add ~0.005 to p.water at RotPoints()
-		- However this would also apply to overwater points, so we'd have to do it for underwater points only
-			- Performance-wise fine to do, as we do this every N frames
+		- ...and also do material property (*)
+		- Rotting factor: (inner water + (isUnderwater ? 0.1 : 0.0)) * material."~rust_susceptibility"
+			- Factor: see if 0.005 is not better
+		- Do stainless steel materials
 
 	- Make waves with Shallow Water Equations (*)
 		- Implement
