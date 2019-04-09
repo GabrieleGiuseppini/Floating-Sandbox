@@ -153,7 +153,9 @@ void Ship::RepairAt(
             //
 
             // Calculate tool strength (1.0 at center and zero at border, fourth power)
-            float const toolStrength = 1.0f - (squareRadius / squareSearchRadius) * (squareRadius / squareSearchRadius);
+            float const toolStrength =
+                (1.0f - (squareRadius / squareSearchRadius) * (squareRadius / squareSearchRadius))
+                * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
             // Visit all the springs that were connected at factory time
             for (auto const & fcs : mPoints.GetFactoryConnectedSprings(pointIndex).ConnectedSprings)
@@ -307,14 +309,17 @@ void Ship::RepairAt(
                         // ...move them closer by moving the other endpoint towards its target position
                         //
 
-                        // Movement direction (positive towards this point)
-                        vec2f const movementDir = displacementVector.normalise(displacementMagnitude);
-
-                        // Movement fraction
+                        // Fraction of the movement that we want to do in this step
+                        // (which is once per SimulationStep)
                         //
                         // A higher value destroys the other point's springs too quickly;
                         // a lower value makes the other point follow a moving point forever
-                        float constexpr MovementFraction = 0.08;
+                        float constexpr MovementFraction =
+                            4.0f // We want a point to cover the whole distance in 1/4th of a simulated second
+                            * GameParameters::SimulationStepTimeDuration<float>;
+
+                        // Movement direction (positive towards this point)
+                        vec2f const movementDir = displacementVector.normalise(displacementMagnitude);
 
                         // Movement magnitude
                         //
@@ -327,7 +332,6 @@ void Ship::RepairAt(
                         float const movementMagnitude =
                             displacementMagnitude
                             * MovementFraction
-                            * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f)
                             * toolStrength;
 
                         // Move point
