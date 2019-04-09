@@ -36,6 +36,7 @@ void TextLayer::SetStatusText(
     std::chrono::duration<float> elapsedGameSeconds,
     bool isPaused,
     float zoom,
+    vec2f const & camera,
     float totalUpdateToRenderDurationRatio,
     float lastUpdateToRenderDurationRatio,
     Render::RenderStatistics const & renderStatistics)
@@ -74,7 +75,8 @@ void TextLayer::SetStatusText(
 
         ss << std::fixed << std::setprecision(2)
             << "U/R:" << (100.0f * totalUpdateToRenderDurationRatio) << "% (" << (100.0f * lastUpdateToRenderDurationRatio) << "%)"
-            << " ZOOM:" << zoom;
+            << " ZOOM:" << zoom
+            << " CAM:" << camera.x << ", " << camera.y;
 
         mStatusTextLines.emplace_back(ss.str());
 

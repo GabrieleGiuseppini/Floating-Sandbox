@@ -140,6 +140,7 @@ RenderContext::RenderContext(
     // Atlas-ize all textures EXCEPT the following:
     // - Land, Ocean: we need these to be wrapping
     // - Clouds: we keep these in a separate atlas, we have to rebind anyway
+    // - WorldBorder
     //
 
     mShaderManager->ActivateTexture<ProgramParameterType::GenericTexturesAtlasTexture>();
@@ -149,7 +150,8 @@ RenderContext::RenderContext(
     {
         if (TextureGroupType::Land != group.Group
             && TextureGroupType::Ocean != group.Group
-            && TextureGroupType::Cloud != group.Group)
+            && TextureGroupType::Cloud != group.Group
+            && TextureGroupType::WorldBorder != group.Group)
         {
             genericTextureAtlasBuilder.Add(group);
         }
@@ -1236,12 +1238,10 @@ static void MakeQuad(
 
 void RenderContext::UpdateWorldBorder()
 {
-    mWorldBorderVertexBuffer.clear();
-
     // Calculate width, in world coordinates, of the world border, under the constraint
     // that we want to ensure that the texture is rendered with its original size
-    float const worldBorderWorldWidth = mViewModel.PixelWidthToWorldWidth(static_cast<float>(mWorldBorderTextureSize.Width));
-    float const worldBorderWorldHeight = mViewModel.PixelHeightToWorldHeight(static_cast<float>(mWorldBorderTextureSize.Height));
+    float const worldBorderWorldWidth = mViewModel.PixelWidthToWorldWidth(static_cast<float>(mWorldBorderTextureSize.Width / 2));
+    float const worldBorderWorldHeight = mViewModel.PixelHeightToWorldHeight(static_cast<float>(mWorldBorderTextureSize.Height / 2));
 
     // Max texture coordinates - chosen so that texture dimensions do not depend on zoom
     float const textureWidth = GameParameters::MaxWorldWidth / worldBorderWorldWidth;
@@ -1253,6 +1253,8 @@ void RenderContext::UpdateWorldBorder()
     //
     // Check which sides of the border we need to draw
     //
+
+    mWorldBorderVertexBuffer.clear();
 
     // Left
     if (-GameParameters::HalfMaxWorldWidth + worldBorderWorldWidth >= mViewModel.GetVisibleWorldTopLeft().x)

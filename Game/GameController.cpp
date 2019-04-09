@@ -743,6 +743,7 @@ void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
         std::chrono::duration<float>(GameWallClock::GetInstance().Now() - mOriginTimestampGame),
         mIsPaused,
         mRenderContext->GetZoom(),
+        mRenderContext->GetCameraWorldPosition(),
         totalURRatio,
         lastURRatio,
         mRenderContext->GetStatistics());

@@ -31,6 +31,7 @@ public:
         std::chrono::duration<float> elapsedGameSeconds,
         bool isPaused,
         float zoom,
+        vec2f const & camera,
         float totalUpdateToRenderDurationRatio,
         float lastUpdateToRenderDurationRatio,
         Render::RenderStatistics const & renderStatistics);
