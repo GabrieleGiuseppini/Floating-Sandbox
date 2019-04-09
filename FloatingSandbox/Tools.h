@@ -1662,15 +1662,15 @@ private:
             // Synchronize with sound
             auto cursorPhase = (totalElapsed.count() % 1000);
             if (cursorPhase < 175)
-                mCurrentCursor = mDownCursors[0].get();
+                mCurrentCursor = mDownCursors[0].get(); /* | */
             else if (cursorPhase < 300)
-                mCurrentCursor = mDownCursors[1].get();
-            else if (cursorPhase < 600)
-                mCurrentCursor = mDownCursors[2].get();
-            else if (cursorPhase < 800)
-                mCurrentCursor = mDownCursors[3].get();
+                mCurrentCursor = mDownCursors[1].get(); /* \ */
+            else if (cursorPhase < 500)
+                mCurrentCursor = mDownCursors[2].get(); /* _ */
+            else if (cursorPhase < 580)
+                mCurrentCursor = mDownCursors[3].get(); /* \ */
             else
-                mCurrentCursor = mDownCursors[0].get();
+                mCurrentCursor = mDownCursors[0].get(); /* | */
         }
         else
         {

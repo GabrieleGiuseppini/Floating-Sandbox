@@ -808,12 +808,12 @@ Render:
 					+ Force
 					+ Ultra-violent mode effect
 			+ Test pinned points now
-			+ Do worldend texture a divisor of maxworldw/h
 
 			= RepairStructureTool:
 				= repair_structure_cursor_up/down.png: wrench
 					+ multiple frames for different rotations
 					= sync with sound
+					- do other 22.5-degree frames
 				+ Adjust cursor hotpoints
 			= SoundController: 
 				= RepairTool sound
@@ -827,7 +827,7 @@ Render:
 						- X2 (underwater!)
 						= Lower volume
 		- SettingsDialog:
-			- Repair radius
+			- Remove repair radius adjustability from GameParameters
 			- Repair rate (test first if high value makes sense)
 
 	- Also dry points should rot, albeit very slowly (*)
