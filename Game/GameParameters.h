@@ -253,10 +253,6 @@ struct GameParameters
 
     float ScrubRadius;
 
-    float RepairForceAdjustment;
-    static constexpr float MinRepairForceAdjustment = 0.1f;
-    static constexpr float MaxRepairForceAdjustment = 50.0f;
-
     bool IsUltraViolentMode;
 
     float MoveToolInertia;

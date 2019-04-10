@@ -15,7 +15,7 @@
 #include <limits>
 #include <regex>
 
-constexpr float RepairSoundVolume = 20.0f;
+constexpr float RepairSoundVolume = 40.0f;
 constexpr float SawVolume = 50.0f;
 constexpr float SawedVolume = 80.0f;
 constexpr float StressSoundVolume = 20.0f;

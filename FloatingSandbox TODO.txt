@@ -218,7 +218,9 @@ Render:
 
 		- Merge to master
 
-		- Fix github/clouds bug
+		- See certificate
+
+		- Fix github's clouds bug
 
 		- Are we really forced to set point colors to structural colors?
 			- Can we always use the (sampled) texture colors?
@@ -235,9 +237,11 @@ Render:
 
 		- Also dry points should rot (*)
 
-		- Interior layer (*)
+		- Add new materials: plastic, rubber, fiberglass
 
 		- Shallow Water Equations (*)
+
+		- Interior layer (*)
 
 		- Heat and combustion (*)
 
@@ -319,7 +323,6 @@ Render:
 	- Tools turning white at night
 	- Once we have ships, make "Lock Ship in View" flag and move camera with ship's center of mass (representative point or real CoM)
 	- Be able to place nukea nd AM bomb anywhere
-	- Add new materials: plastic, rubber, fiberglass
 	- Fishes
 	- Different colored lights
 	- Different maps: maps that might even have islands and grass 
@@ -815,18 +818,18 @@ Render:
 					+ do other 22.5-degree frames
 				+ Adjust cursor hotpoints
 			= SoundController: 
-				= RepairTool sound
+				+ RepairTool sound
 				= OnRepair
 					= Sounds:
-						= Metal
-						- Cable
-						- Cloth
-						- Glass
-						- Wood
+						+ Metal
+						= Cable
+						= Cloth
+						= Glass
+						= Wood
 						- X2 (underwater!)
 						= Lower volume
-		- SettingsDialog:
-			- Remove repair force adjustment from GameParameters
+		+ Parameters:
+			+ Remove repair force adjustment from GameParameters
 
 	- Also dry points should rot, albeit very slowly (*)
 		- ...and also do material property (*)
@@ -840,7 +843,10 @@ Render:
 			- Rogue waves/tsunami
 			- Manual tsunami
 				- Tool grabbing water
-				
+	
+	- Try to re-instate square velocity drag
+		- Goal: falling ship should break upon impact with water
+		- Need to max out drag force
 
 	- Heat and Combustion (*)
 		- Integration of Decay with Combustion:
