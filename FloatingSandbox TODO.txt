@@ -208,13 +208,11 @@ Render:
 		+ Try to build with Runtime Type Information disabled
 		+ Add world end markers
 		+ Repair tool
-
-		= Fix Linux build break
+		+ Fix Linux build break
 			+ Do specialization outside of class
 			+ Set /permissive- for all projects
-		- Take Mathias' pull request
-
-		- Merge to master
+		+ Take Mathias' pull request
+		+ Merge to master
 
 		- See certificate
 

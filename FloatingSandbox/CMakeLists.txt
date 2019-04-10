@@ -73,7 +73,6 @@ source_group("Resources" FILES ${RESOURCE_FILES})
 add_executable (FloatingSandbox ${FLOATING_SANDBOX_SOURCES} ${RESOURCE_FILES})
 
 target_include_directories(FloatingSandbox PRIVATE .)
-target_include_directories(FloatingSandbox PRIVATE ${SFML_INCLUDE_DIR})
 target_include_directories(FloatingSandbox PRIVATE ${wxWidgets_INCLUDE_DIRS})
 target_compile_definitions(FloatingSandbox PRIVATE "${wxWidgets_DEFINITIONS}")
 target_link_libraries (FloatingSandbox
@@ -81,7 +80,7 @@ target_link_libraries (FloatingSandbox
 	GameLib
 	GameOpenGLLib
 	GPUCalcLib
-	${SFML_LIBRARIES}
+	sfml-audio
 	${OPENGL_LIBRARIES}
 	${wxWidgets_LIBRARIES}
 	${ADDITIONAL_LIBRARIES})

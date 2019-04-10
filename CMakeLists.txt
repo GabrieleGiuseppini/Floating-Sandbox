@@ -44,11 +44,11 @@ if (WIN32)
 		${DEVIL_LIB_DIR}/*.dll)
 endif()
 
-find_package(SFML COMPONENTS system audio REQUIRED)
+find_package(SFML 2.5 COMPONENTS system audio REQUIRED)
 if (WIN32)
 	find_path(SFML_BIN_DIR
 		NAMES sfml-system-2.dll openal32.dll
-		HINTS ${SFML_DIR}
+		HINTS ${SFML_DIR}/../../../
 		PATH_SUFFIXES SFML bin
 	)
 
