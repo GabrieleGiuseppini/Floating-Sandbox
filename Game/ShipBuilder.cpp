@@ -304,7 +304,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     //
 
     LogMessage("Created ship: W=", shipDefinition.StructuralLayerImage.Size.Width, ", H=", shipDefinition.StructuralLayerImage.Size.Height, ", ",
-        points.GetElementCount(), " points, ", springs.GetElementCount(), " springs, ", triangles.GetElementCount(), " triangles, ",
+        points.GetShipPointCount(), " points, ", springs.GetElementCount(), " springs, ", triangles.GetElementCount(), " triangles, ",
         electricalElements.GetElementCount(), " electrical elements.");
 
     return std::make_unique<Ship>(

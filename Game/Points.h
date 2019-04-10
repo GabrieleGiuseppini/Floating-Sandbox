@@ -366,15 +366,20 @@ public:
     Points(Points && other) = default;
 
     /*
-     * Returns an iterator for the non-ephemeral points only.
+     * Returns an iterator for the non-ephemeral (ship) points only.
      */
     inline auto const NonEphemeralPoints() const
     {
         return ElementIndexRangeIterator(0, mShipPointCount);
     }
 
+    size_t const GetShipPointCount() const
+    {
+        return mShipPointCount;
+    }
+
     /*
-     * Returns a reverse iterator for the non-ephemeral points only.
+     * Returns a reverse iterator for the non-ephemeral (ship) points only.
      */
     inline auto const NonEphemeralPointsReverse() const
     {

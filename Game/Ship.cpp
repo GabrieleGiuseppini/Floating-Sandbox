@@ -18,6 +18,17 @@
 #include <queue>
 #include <set>
 
+//
+// Frequencies of low-frequency steps
+//
+
+static constexpr int LowFrequencyPeriod = 50; // Number of simulation steps
+
+static constexpr int UpdateSinkingFrequency = 12;
+static constexpr int RotPointsFrequency = 25;
+static constexpr int DecaySpringsFrequency = 50;
+
+
 namespace Physics {
 
 //   SSS    H     H  IIIIIII  PPPP
@@ -55,7 +66,6 @@ Ship::Ship(
     , mLastDebugShipRenderMode()
     , mPlaneTriangleIndicesToRender()
     , mIsSinking(false)
-    , mTotalWater(0.0)
     , mWaterSplashedRunningAverage()
     , mPinnedPoints(
         mParentWorld,
@@ -121,7 +131,7 @@ void Ship::Update(
     // Rot points
     //
 
-    if (mCurrentSimulationSequenceNumber.IsStepOf(24, 50))
+    if (mCurrentSimulationSequenceNumber.IsStepOf(RotPointsFrequency - 1, LowFrequencyPeriod))
     {
         RotPoints(
             currentSimulationTime,
@@ -133,7 +143,7 @@ void Ship::Update(
     // Decay springs
     //
 
-    if (mCurrentSimulationSequenceNumber.IsStepOf(49, 50))
+    if (mCurrentSimulationSequenceNumber.IsStepOf(DecaySpringsFrequency - 1, LowFrequencyPeriod))
     {
         DecaySprings(
             currentSimulationTime,
@@ -762,16 +772,12 @@ void Ship::UpdateWaterDynamics(
 
 
     //
-    // Update total water taken and check whether we've started sinking
+    // Run sink/unsink detection
     //
 
-    mTotalWater += waterTakenInStep;
-    if (!mIsSinking
-        && mTotalWater > static_cast<float>(mPoints.GetElementCount()) / 1.5f)
+    if (mCurrentSimulationSequenceNumber.IsStepOf(UpdateSinkingFrequency - 1, LowFrequencyPeriod))
     {
-        // Started sinking
-        mGameEventHandler->OnSinkingBegin(mId);
-        mIsSinking = true;
+        UpdateSinking();
     }
 }
 
@@ -1173,6 +1179,40 @@ void Ship::UpdateWaterVelocities(
 
     mPoints.UpdateWaterBuffer(std::move(newPointWaterBuffer));
     mPoints.UpdateWaterVelocitiesFromMomenta();
+}
+
+void Ship::UpdateSinking()
+{
+    //
+    // Calculate total number of wet points
+    //
+
+    size_t wetPointCount = 0;
+
+    for (auto p : mPoints.NonEphemeralPoints())
+    {
+        if (mPoints.GetWater(p) >= 0.5f) // Magic number - we only count a point as wet if its water is above this threshold
+            ++wetPointCount;
+    }
+
+    if (!mIsSinking)
+    {
+        if (wetPointCount > mPoints.GetShipPointCount() * 3 / 10)
+        {
+            // Started sinking
+            mGameEventHandler->OnSinkingBegin(mId);
+            mIsSinking = true;
+        }
+    }
+    else
+    {
+        if (wetPointCount < mPoints.GetShipPointCount() * 1 / 10)
+        {
+            // Stopped sinking
+            mGameEventHandler->OnSinkingEnd(mId);
+            mIsSinking = false;
+        }
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////

@@ -171,11 +171,12 @@ public:
         float volume,
         float masterVolume,
         bool isMuted,
-        int millisecondsFade)
+        std::chrono::milliseconds timeToFade)
         : mVolume(volume)
         , mMasterVolume(masterVolume)
+        , mFade(1.0f)
         , mIsMuted(isMuted)
-        , mMillisecondsFade(millisecondsFade)
+        , mTimeToFade(timeToFade)
         , mFadeStartTimestamp()
     {
         InternalSetVolume();
@@ -219,24 +220,29 @@ public:
     {
         if (!!mFadeStartTimestamp)
         {
-            auto elapsedMillis = std::chrono::duration_cast<std::chrono::milliseconds>(GameWallClock::GetInstance().Elapsed(*mFadeStartTimestamp))
-                .count();
+            auto elapsedMillis = std::chrono::duration_cast<std::chrono::milliseconds>(
+                GameWallClock::GetInstance().Elapsed(*mFadeStartTimestamp));
 
             // Check if we're done
-            if (elapsedMillis >= mMillisecondsFade)
+            if (elapsedMillis >= mTimeToFade)
             {
                 this->stop();
             }
             else
             {
-                // Halve volume
-                this->setVolume(mVolume / 2.0f);
+                // Lower volume
+                mFade = (1.0f - static_cast<float>(elapsedMillis.count()) / static_cast<float>(mTimeToFade.count()));
+                InternalSetVolume();
             }
         }
     }
 
     void play() override
     {
+        // Reset fade
+        mFade = 1.0f;
+        InternalSetVolume();
+
         // Play
         sf::Music::play();
 
@@ -258,15 +264,16 @@ private:
     void InternalSetVolume()
     {
         if (!mIsMuted)
-            sf::Music::setVolume(100.0f * (mVolume / 100.0f) * (mMasterVolume / 100.0f));
+            sf::Music::setVolume(100.0f * (mVolume / 100.0f) * (mMasterVolume / 100.0f) * mFade);
         else
             sf::Music::setVolume(0.0f);
     }
 
     float mVolume;
     float mMasterVolume;
+    float mFade;
     bool mIsMuted;
-    int const mMillisecondsFade;
+    std::chrono::milliseconds const mTimeToFade;
     std::optional<GameWallClock::time_point> mFadeStartTimestamp;
 };
 

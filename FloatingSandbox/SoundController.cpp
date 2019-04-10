@@ -67,7 +67,11 @@ SoundController::SoundController(
     , mTimerBombFastFuseSound()
     , mAntiMatterBombContainedSounds()
     // Music
-    , mSinkingMusic(SinkingMusicVolume, mMasterMusicVolume, mMasterMusicMuted, 1200)
+    , mSinkingMusic(
+        SinkingMusicVolume,
+        mMasterMusicVolume,
+        mMasterMusicMuted,
+        std::chrono::seconds(4))
 {
     //
     // Initialize Music

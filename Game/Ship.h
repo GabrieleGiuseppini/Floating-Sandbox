@@ -197,6 +197,8 @@ public:
         GameParameters const & gameParameters,
         float & waterSplashed);
 
+    void UpdateSinking();
+
     // Electrical
 
     void UpdateElectricalDynamics(
@@ -349,8 +351,7 @@ private:
     // Sinking detection
     bool mIsSinking;
 
-    // Water
-    float mTotalWater;
+    // Water splashes
     RunningAverage<30> mWaterSplashedRunningAverage;
 
     // Pinned points
