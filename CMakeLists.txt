@@ -18,7 +18,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
 set(USER_SETTINGS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/UserSettings.cmake")
 if(EXISTS "${USER_SETTINGS_FILE}")
-	message("Loading user specific settings from ${USER_SETTINGS_FILE}")
+	message(STATUS "Loading user specific settings from ${USER_SETTINGS_FILE}")
 	include("${USER_SETTINGS_FILE}")
 endif()
 
@@ -48,7 +48,7 @@ find_package(SFML COMPONENTS system audio REQUIRED)
 if (WIN32)
 	find_path(SFML_BIN_DIR
 		NAMES sfml-system-2.dll openal32.dll
-		HINTS ${SFML_DIR}/../../../
+		HINTS ${SFML_DIR}
 		PATH_SUFFIXES SFML bin
 	)
 
