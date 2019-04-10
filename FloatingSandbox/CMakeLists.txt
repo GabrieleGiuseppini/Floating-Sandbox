@@ -54,7 +54,7 @@ set  (FLOATING_SANDBOX_SOURCES
 	UnhandledExceptionHandler.cpp
 	UnhandledExceptionHandler.h
 	Version.h
-	)
+)
 
 source_group(" " FILES ${FLOATING_SANDBOX_SOURCES})
 
@@ -78,8 +78,8 @@ target_link_libraries (FloatingSandbox
 	GameLib
 	GameOpenGLLib
 	GPUCalcLib
+	sfml-audio
 	${OPENGL_LIBRARIES}
-	${SFML_LIBRARIES}
 	${wxWidgets_LIBRARIES}
 	${ADDITIONAL_LIBRARIES})
 
@@ -97,7 +97,7 @@ endif (MSVC)
 if (MSVC)
 
 	set_property( DIRECTORY PROPERTY VS_STARTUP_PROJECT "FloatingSandbox" )
-	
+
 	set_target_properties(
 		FloatingSandbox
 		PROPERTIES
@@ -149,13 +149,13 @@ endif (WIN32)
 # Main binary
 install(TARGETS FloatingSandbox
 	CONFIGURATIONS Release
-        RUNTIME 
+        RUNTIME
 	DESTINATION .)
 
 # PDB
 #TODO: disabled as for now we don't generate PDBs at Release
 #if (MSVC)
-#	install(FILES $<TARGET_PDB_FILE:FloatingSandbox> 
+#	install(FILES $<TARGET_PDB_FILE:FloatingSandbox>
 #		CONFIGURATIONS Release
 #		DESTINATION .)
 #endif (MSVC)
@@ -163,15 +163,15 @@ install(TARGETS FloatingSandbox
 # Runtime libraries
 if (WIN32)
 	# Devil
-	install(FILES ${DEVIL_RUNTIME_LIBRARIES} 
+	install(FILES ${DEVIL_RUNTIME_LIBRARIES}
 		DESTINATION .)
 	# SFML
-	install(FILES ${SFML_RUNTIME_RELEASE_LIBRARIES} 
+	install(FILES ${SFML_RUNTIME_RELEASE_LIBRARIES}
 		DESTINATION .)
 endif (WIN32)
 
 # Resources
-install(DIRECTORY "${CMAKE_SOURCE_DIR}/Data" 
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/Data"
 	DESTINATION .)
 
 # Guides
@@ -179,10 +179,10 @@ install(DIRECTORY "${CMAKE_SOURCE_DIR}/Guides"
 	DESTINATION .)
 
 # Ships
-install(DIRECTORY "${CMAKE_SOURCE_DIR}/Ships" 
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/Ships"
 	DESTINATION .
 	PATTERN "default_ship.png" EXCLUDE)
-install(FILES "${CMAKE_SOURCE_DIR}/Ships/IKC Krafting.shp" 
+install(FILES "${CMAKE_SOURCE_DIR}/Ships/IKC Krafting.shp"
 	DESTINATION Ships
 	RENAME "default_ship.shp")
 

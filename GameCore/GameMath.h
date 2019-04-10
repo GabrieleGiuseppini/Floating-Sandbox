@@ -6,6 +6,7 @@
 #pragma once
 
 #include <cstdint>
+#include <intrin.h>
 #include <xmmintrin.h>
 
 template<typename T>

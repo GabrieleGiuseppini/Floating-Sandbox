@@ -9,7 +9,7 @@
 #include <GameCore/GameException.h>
 #include <GameCore/Vectors.h>
 
-#include <picojson/picojson.h>
+#include <picojson.h>
 
 #include <optional>
 #include <string>

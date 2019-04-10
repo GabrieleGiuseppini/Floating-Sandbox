@@ -9,7 +9,7 @@
 #include "GameException.h"
 #include "Vectors.h"
 
-#include <picojson/picojson.h>
+#include <picojson.h>
 
 #include <algorithm>
 #include <array>
