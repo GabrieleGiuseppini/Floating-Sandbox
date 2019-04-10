@@ -214,7 +214,14 @@ Render:
 		+ Take Mathias' pull request
 		+ Merge to master
 
-		- See certificate
+		- Sign with certificate
+			+ https://blogs.msdn.microsoft.com/ieinternals/2011/03/22/everything-you-need-to-know-about-authenticode-code-signing/
+			- Buy certificate
+				- https://comodosslstore.com/code-signing/microsoft-authenticode
+				- Print receipt and store in Taxes 2019
+			- Sign exe
+			- Sign MSI
+				- https://stackoverflow.com/questions/17589754/wix-installer-msi-publisher-unknown/17591603
 
 		- Fix github's clouds bug
 
@@ -1039,10 +1046,10 @@ Render:
 
 - Water:
 
-	- New sinking detection:
+	- New sinking (and un-sinking) detection:
 		- Sinking detection is broken - it currently only considers total water that entered the ship, which comes proportionally to external
 		  water pressure; all this water could be confined to a tiny volume, and yet we trigger sinking
-		- Should be based off # of points underwater
+		- Should be based off # of points underwater *and* total water at point
 			- Could be a very-lo-freq step that just checks y's against water height at that point
 				- Use HighWatermark/LowWatermark
 			- Make music class with FadeToStop()

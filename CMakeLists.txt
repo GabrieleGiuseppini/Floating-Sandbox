@@ -61,15 +61,15 @@ if (WIN32)
 		message(FATAL_ERROR "SFML_BIN_DIR ('${SFML_BIN_DIR}') seems to be pointing to System32 folder, which is not allowed")
 	endif()
 
-	file(GLOB SFML_RUNTIME_RELEASE_LIBRARIES
-		${SFML_BIN_DIR}/*.dll)
-	list(FILTER SFML_RUNTIME_RELEASE_LIBRARIES EXCLUDE REGEX "-d-")
+	set(SFML_RUNTIME_RELEASE_LIBRARIES 
+		${SFML_BIN_DIR}/sfml-audio-2.dll
+		${SFML_BIN_DIR}/sfml-system-2.dll
+		${SFML_BIN_DIR}/openal32.dll)
 
-	file(GLOB SFML_RUNTIME_DEBUG_LIBRARIES
-		${SFML_BIN_DIR}/*.dll)
-	list(FILTER SFML_RUNTIME_DEBUG_LIBRARIES INCLUDE REGEX "-d-")
-	list(APPEND SFML_RUNTIME_DEBUG_LIBRARIES ${SFML_BIN_DIR}/openal32.dll)
-
+	set(SFML_RUNTIME_DEBUG_LIBRARIES 
+		${SFML_BIN_DIR}/sfml-audio-d-2.dll
+		${SFML_BIN_DIR}/sfml-system-d-2.dll
+		${SFML_BIN_DIR}/openal32.dll)
 endif()
 
 find_package(OpenGL REQUIRED)
