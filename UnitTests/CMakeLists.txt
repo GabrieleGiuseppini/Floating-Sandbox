@@ -8,9 +8,6 @@ endif(MSVC)
 # Setup google test
 #
 
-# Google advises to compile gtest from source with the project
-add_subdirectory("${GOOGLE_TEST_ROOT}" gtest EXCLUDE_FROM_ALL)
-
 set_property(
 	TARGET gmock gtest gtest_main
 	PROPERTY FOLDER "GoogleTest")
@@ -62,7 +59,7 @@ target_link_libraries (UnitTests
 #
 
 if (MSVC)
-	
+
 	set_target_properties(
 		UnitTests
 		PROPERTIES

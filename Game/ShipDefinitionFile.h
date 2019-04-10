@@ -11,7 +11,7 @@
 #include <GameCore/Utils.h>
 #include <GameCore/Vectors.h>
 
-#include <picojson/picojson.h>
+#include <picojson.h>
 
 #include <filesystem>
 #include <optional>
