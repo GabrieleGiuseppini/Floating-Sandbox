@@ -197,7 +197,7 @@ Render:
 - Roadmap:
 
 	= 1.11.0:
-		+ Orphaned points (*)
+		+ Orphaned points
 		+ Increase # of ephemeral particles
 			+ And thus lower water intake threshold for air bubbles
 		+ Sea and Ocean Floor rearc(*)
@@ -206,10 +206,8 @@ Render:
 				+ And remove "Cover art" credit altogether
 			+ Installer
 		+ Try to build with Runtime Type Information disabled
-
-		+ Add world end markers (*)
-
-		- Repair tool (*)
+		+ Add world end markers
+		+ Repair tool
 
 		= Fix Linux build break
 			+ Do specialization outside of class
@@ -710,126 +708,6 @@ Render:
 			+ PerfAnalysis
 
 - Dynamics:
-
-	= Repair tool (*)
-		+ 1) No Points::Destroy/Delete, but Detach()
-			+ Points::Detach(.), also at Handler
-			+ No IsDeleted() checks anymore, anywhere
-			+ Whenever we used to delete, we now detach and inject velocity
-				+ Encapsulate debris' randomness in Ship::ChooseRadialVelocity(rnd coeffs)
-			+ Bombs::OnPoint"Detached"			
-			+ At these places should only consider non-ephemerals and non-expired ephemerals
-				+ Ship::Get/QueryNearestPointAt
-				+ PinnedPoints::Toggle: 
-			+ Ship should have EphemeralPointExpired handler
-				+ Calls PinnedPoints::OnEphemeralPointExpired
-			+ Decide what to do with event handlers - destroy and/or detach
-				+ Points invokes OnDestroy at DestroyEphemeralParticle
-				+ Ship::DetachHandler invokes OnPointDetached at DetachHandler *iff* really ended up detaching anything
-					+ Points::Detach does not invoke anymore OnDetach directly, only ship handler does
-					+ OnPointDetached/Attached: make aggregations
-					+ SoundController::OnPointDetached: use break
-			+ Check steady clock
-			+ Test in Debug mode:
-				+ Bombs neighborhood
-				+ Destroy
-				+ Destroy AirBubble
-				+ PinnedPoints:
-					+ AirBubble
-					+ Remaining at point
-					+ Destroyed
-					+ On ephemeral that becomes expired
-			+ If pinned points OK: remove TODOTEST for OnSpringDeleted
-			+ Check perf
-				+ 29.9/30.0
-			+ Commit (to new branch)
-		+ Do perf analysis with many air bubbles
-			+ Make sure we don't make OpenGL calls for the zero-size gentex vectors
-			+ Check perf impact of single GenTex draw call
-				+ Mapbuffer & copy all
-				+ Get rid of maxMaxPlaneId for gentex's
-				+ Test:
-					+ Bombs cover each other
-		+ Run in Debug
-		+ Check flood tool change (Tool::Initialize - verify sound starts)
-		+ 2) Maintain factory connections
-			+ Not electricals (at least for now)
-			+ Points:
-				+ AddFactoryConnectedSpring(...)
-					+ -> ConnectSpring(...)
-				+ Connect/DisconnectSpring(...)
-					+ assert it's in factory-connected springs
-				+ See if connecting-spring-kung-fu should be done by struct itself
-				+ FactoryIsLeaking
-			+ Springs:
-				+ FactorySuperTriangles
-			+ Other factory connections as necessary by restore algo
-			+ Springs::Restore
-				+ Undo deletion
-				+ Call SpringRestoreHandler
-			+ Ship::PointDetachHandler:
-				+ See if it's true that we don't need to destroy triangles
-			+ Springs::Restore			
-			+ Ship::SpringRestoreHandler(s)
-				+ Add others to self
-					+ Copy factory supertriangles
-				+ Add self to others
-					+ Connect self to endpoints
-					+ Add self to each supertriangle's subsprings
-				+ Set IsStructureDirty=true
-			+ Triangles::Restore
-				+ Undo deletion
-				+ Call TriangleRestoreHandler
-			+ Ship::TriangleRestoreHandler(t):
-				+ Add t to its endpoints
-				+ Fire Attach event
-				+ Set IsStructureDirty=true
-			+ Update invariants verification
-		+ Commit
-		+ Try changing Points::GetMass to Points::GetAugmentedStructuralMass
-		+ Move tolerance check _after_ movement
-			+ Movement is still only done if not within tolerance
-				+ And changes distance
-		= 3) Repair tool and action
-			+ Repair(Pr):
-				+ for each s in Pr.FactorySprings:
-					+ if s.IsDeleted:
-						+ if s.length <= s.restLength: // Restore
-							+ Springs::Restore(s)
-							+ Try with force instead of velocity
-						+ else: // Attract endpoint
-							+ Points.GetForce(s.OtherEndpoint) += c * <normal>(Pr.Position - OtherEndpoint.Position)
-							+ Try with force instead of velocity
-				+ for each t in Pr.FactoryTriangles:
-					+ if t.IsDeleted:
-						+ If all t.FactorySubSprings are !Deleted:
-							+ Triangles::Restore(t)	
-				+ Restore endpoints' IsLeaking
-					+ Only for endpoints that now have all of their factory springs
-				+ Decide on:
-					+ Radius
-					+ Force
-					+ Ultra-violent mode effect
-			+ Test pinned points now
-			+ RepairStructureTool:
-				+ repair_structure_cursor_up/down.png: wrench
-					+ multiple frames for different rotations
-					+ sync with sound
-					+ do other 22.5-degree frames
-				+ Adjust cursor hotpoints
-			= SoundController: 
-				+ RepairTool sound
-				= OnRepair
-					= Sounds:
-						+ Metal
-						= Cable
-						= Cloth
-						= Glass
-						= Wood
-						- X2 (underwater!)
-						= Lower volume
-		+ Parameters:
-			+ Remove repair force adjustment from GameParameters
 
 	- Also dry points should rot, albeit very slowly (*)
 		- ...and also do material property (*)
@@ -4112,6 +3990,125 @@ IF WX:
 				+ Sound: scrub, with movement (based off feedback from GameController, like saw)
 				+ Better sounds with vector directions
 				+ Help
+	+ Repair tool (*)
+		+ 1) No Points::Destroy/Delete, but Detach()
+			+ Points::Detach(.), also at Handler
+			+ No IsDeleted() checks anymore, anywhere
+			+ Whenever we used to delete, we now detach and inject velocity
+				+ Encapsulate debris' randomness in Ship::ChooseRadialVelocity(rnd coeffs)
+			+ Bombs::OnPoint"Detached"			
+			+ At these places should only consider non-ephemerals and non-expired ephemerals
+				+ Ship::Get/QueryNearestPointAt
+				+ PinnedPoints::Toggle: 
+			+ Ship should have EphemeralPointExpired handler
+				+ Calls PinnedPoints::OnEphemeralPointExpired
+			+ Decide what to do with event handlers - destroy and/or detach
+				+ Points invokes OnDestroy at DestroyEphemeralParticle
+				+ Ship::DetachHandler invokes OnPointDetached at DetachHandler *iff* really ended up detaching anything
+					+ Points::Detach does not invoke anymore OnDetach directly, only ship handler does
+					+ OnPointDetached/Attached: make aggregations
+					+ SoundController::OnPointDetached: use break
+			+ Check steady clock
+			+ Test in Debug mode:
+				+ Bombs neighborhood
+				+ Destroy
+				+ Destroy AirBubble
+				+ PinnedPoints:
+					+ AirBubble
+					+ Remaining at point
+					+ Destroyed
+					+ On ephemeral that becomes expired
+			+ If pinned points OK: remove TODOTEST for OnSpringDeleted
+			+ Check perf
+				+ 29.9/30.0
+			+ Commit (to new branch)
+		+ Do perf analysis with many air bubbles
+			+ Make sure we don't make OpenGL calls for the zero-size gentex vectors
+			+ Check perf impact of single GenTex draw call
+				+ Mapbuffer & copy all
+				+ Get rid of maxMaxPlaneId for gentex's
+				+ Test:
+					+ Bombs cover each other
+		+ Run in Debug
+		+ Check flood tool change (Tool::Initialize - verify sound starts)
+		+ 2) Maintain factory connections
+			+ Not electricals (at least for now)
+			+ Points:
+				+ AddFactoryConnectedSpring(...)
+					+ -> ConnectSpring(...)
+				+ Connect/DisconnectSpring(...)
+					+ assert it's in factory-connected springs
+				+ See if connecting-spring-kung-fu should be done by struct itself
+				+ FactoryIsLeaking
+			+ Springs:
+				+ FactorySuperTriangles
+			+ Other factory connections as necessary by restore algo
+			+ Springs::Restore
+				+ Undo deletion
+				+ Call SpringRestoreHandler
+			+ Ship::PointDetachHandler:
+				+ See if it's true that we don't need to destroy triangles
+			+ Springs::Restore			
+			+ Ship::SpringRestoreHandler(s)
+				+ Add others to self
+					+ Copy factory supertriangles
+				+ Add self to others
+					+ Connect self to endpoints
+					+ Add self to each supertriangle's subsprings
+				+ Set IsStructureDirty=true
+			+ Triangles::Restore
+				+ Undo deletion
+				+ Call TriangleRestoreHandler
+			+ Ship::TriangleRestoreHandler(t):
+				+ Add t to its endpoints
+				+ Fire Attach event
+				+ Set IsStructureDirty=true
+			+ Update invariants verification
+		+ Commit
+		+ Try changing Points::GetMass to Points::GetAugmentedStructuralMass
+		+ Move tolerance check _after_ movement
+			+ Movement is still only done if not within tolerance
+				+ And changes distance
+		+ 3) Repair tool and action
+			+ Repair(Pr):
+				+ for each s in Pr.FactorySprings:
+					+ if s.IsDeleted:
+						+ if s.length <= s.restLength: // Restore
+							+ Springs::Restore(s)
+							+ Try with force instead of velocity
+						+ else: // Attract endpoint
+							+ Points.GetForce(s.OtherEndpoint) += c * <normal>(Pr.Position - OtherEndpoint.Position)
+							+ Try with force instead of velocity
+				+ for each t in Pr.FactoryTriangles:
+					+ if t.IsDeleted:
+						+ If all t.FactorySubSprings are !Deleted:
+							+ Triangles::Restore(t)	
+				+ Restore endpoints' IsLeaking
+					+ Only for endpoints that now have all of their factory springs
+				+ Decide on:
+					+ Radius
+					+ Force
+					+ Ultra-violent mode effect
+			+ Test pinned points now
+			+ RepairStructureTool:
+				+ repair_structure_cursor_up/down.png: wrench
+					+ multiple frames for different rotations
+					+ sync with sound
+					+ do other 22.5-degree frames
+				+ Adjust cursor hotpoints
+			+ SoundController: 
+				+ RepairTool sound
+				+ OnRepair
+					+ Sounds:
+						+ Metal
+						+ Cable
+						+ Cloth
+						+ Glass
+						+ Wood
+						+ X2 (underwater!)
+						+ Lower volume
+		+ Parameters:
+			+ Remove repair force adjustment from GameParameters
 
 + Water
 	+ Water

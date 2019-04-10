@@ -15,7 +15,7 @@
 #include <limits>
 #include <regex>
 
-constexpr float RepairSoundVolume = 40.0f;
+constexpr float RepairVolume = 40.0f;
 constexpr float SawVolume = 50.0f;
 constexpr float SawedVolume = 80.0f;
 constexpr float StressSoundVolume = 20.0f;
@@ -885,7 +885,7 @@ void SoundController::OnSpringRepaired(
             *(structuralMaterial.MaterialSound),
             size,
             isUnderwater,
-            RepairSoundVolume,
+            RepairVolume,
             true);
     }
 }
@@ -902,7 +902,7 @@ void SoundController::OnTriangleRepaired(
             *(structuralMaterial.MaterialSound),
             size,
             isUnderwater,
-            RepairSoundVolume,
+            RepairVolume,
             true);
     }
 }
