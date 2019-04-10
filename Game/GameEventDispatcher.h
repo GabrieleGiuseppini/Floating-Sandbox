@@ -23,6 +23,7 @@ public:
         , mStressEvents()
         , mBreakEvents()
         , mSinkingBeginEvents()
+        , mSinkingEndEvents()
         , mLightFlickerEvents()
         , mBombExplosionEvents()
         , mRCBombPingEvents()
@@ -125,6 +126,14 @@ public:
         if (mSinkingBeginEvents.end() == std::find(mSinkingBeginEvents.begin(), mSinkingBeginEvents.end(), shipId))
         {
             mSinkingBeginEvents.push_back(shipId);
+        }
+    }
+
+    virtual void OnSinkingEnd(ShipId shipId) override
+    {
+        if (mSinkingEndEvents.end() == std::find(mSinkingEndEvents.begin(), mSinkingEndEvents.end(), shipId))
+        {
+            mSinkingEndEvents.push_back(shipId);
         }
     }
 
@@ -345,6 +354,11 @@ public:
                 sink->OnSinkingBegin(shipId);
             }
 
+            for (auto const & shipId : mSinkingEndEvents)
+            {
+                sink->OnSinkingEnd(shipId);
+            }
+
             for (auto const & entry : mLightFlickerEvents)
             {
                 sink->OnLightFlicker(std::get<0>(entry.first), std::get<1>(entry.first), entry.second);
@@ -372,6 +386,7 @@ public:
         mStressEvents.clear();
         mBreakEvents.clear();
         mSinkingBeginEvents.clear();
+        mSinkingEndEvents.clear();
         mLightFlickerEvents.clear();
         mBombExplosionEvents.clear();
         mRCBombPingEvents.clear();
@@ -392,6 +407,7 @@ private:
     unordered_tuple_map<std::tuple<StructuralMaterial const *, bool>, unsigned int> mStressEvents;
     unordered_tuple_map<std::tuple<StructuralMaterial const *, bool>, unsigned int> mBreakEvents;
     std::vector<ShipId> mSinkingBeginEvents;
+    std::vector<ShipId> mSinkingEndEvents;
     unordered_tuple_map<std::tuple<DurationShortLongType, bool>, unsigned int> mLightFlickerEvents;
     unordered_tuple_map<std::tuple<BombType, bool>, unsigned int> mBombExplosionEvents;
     unordered_tuple_map<std::tuple<bool>, unsigned int> mRCBombPingEvents;

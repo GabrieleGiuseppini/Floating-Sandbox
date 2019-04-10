@@ -67,7 +67,7 @@ SoundController::SoundController(
     , mTimerBombFastFuseSound()
     , mAntiMatterBombContainedSounds()
     // Music
-    , mSinkingMusic(SinkingMusicVolume, mMasterMusicVolume, mMasterMusicMuted)
+    , mSinkingMusic(SinkingMusicVolume, mMasterMusicVolume, mMasterMusicMuted, 1200)
 {
     //
     // Initialize Music
@@ -791,6 +791,8 @@ void SoundController::PlaySnapshotSound()
 
 void SoundController::Update()
 {
+    mSinkingMusic.update();
+
     // Silence the sawed sounds - this will be a nop in case
     // they've just been started or will be started really soon
     mSawedMetalSound.SetVolume(0.0f);
@@ -972,6 +974,14 @@ void SoundController::OnSinkingBegin(ShipId /*shipId*/)
         {
             mSinkingMusic.play();
         }
+    }
+}
+
+void SoundController::OnSinkingEnd(ShipId /*shipId*/)
+{
+    if (sf::SoundSource::Status::Stopped != mSinkingMusic.getStatus())
+    {
+        mSinkingMusic.fadeToStop();
     }
 }
 

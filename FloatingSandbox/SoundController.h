@@ -200,6 +200,8 @@ public:
 
     virtual void OnSinkingBegin(ShipId shipId) override;
 
+    virtual void OnSinkingEnd(ShipId shipId) override;
+
     virtual void OnLightFlicker(
         DurationShortLongType duration,
         bool isUnderwater,

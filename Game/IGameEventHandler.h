@@ -97,6 +97,11 @@ public:
         // Default-implemented
     }
 
+    virtual void OnSinkingEnd(ShipId /*shipId*/)
+    {
+        // Default-implemented
+    }
+
     virtual void OnLightFlicker(
         DurationShortLongType /*duration*/,
         bool /*isUnderwater*/,

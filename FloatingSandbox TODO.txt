@@ -214,7 +214,7 @@ Render:
 		+ Take Mathias' pull request
 		+ Merge to master
 
-		- Sign with certificate
+		= Sign with certificate
 			+ https://blogs.msdn.microsoft.com/ieinternals/2011/03/22/everything-you-need-to-know-about-authenticode-code-signing/
 			- Buy certificate
 				- https://comodosslstore.com/code-signing/microsoft-authenticode
@@ -224,6 +224,8 @@ Render:
 				- https://stackoverflow.com/questions/17589754/wix-installer-msi-publisher-unknown/17591603
 
 		- Fix github's clouds bug
+
+		- Un-sinking (*)
 
 		- Are we really forced to set point colors to structural colors?
 			- Can we always use the (sampled) texture colors?
@@ -784,9 +786,6 @@ Render:
 
 	- Breaking waves (Muller's paper)
 
-	- Stop playing music when ship has "sunk"
-		- Need to figure out easy way to detect "has sunk"
-
 	- Ephemeral particle emitters
 		- TODO: decide between the below (emitter is new object type in its own right) and having instead emitters as special
 		  types of electricals
@@ -1046,16 +1045,24 @@ Render:
 
 - Water:
 
-	- New sinking (and un-sinking) detection:
+	- New sinking (and un-sinking) detection: (*)
 		- Sinking detection is broken - it currently only considers total water that entered the ship, which comes proportionally to external
 		  water pressure; all this water could be confined to a tiny volume, and yet we trigger sinking
-		- Should be based off # of points underwater *and* total water at point
+		- Should be based off # of points underwater *and/or* total # of wet points
 			- Could be a very-lo-freq step that just checks y's against water height at that point
+			  and/or total # of wet points
 				- Use HighWatermark/LowWatermark
-			- Make music class with FadeToStop()
-				- Also call its ::Update(), which fades
-					- Called only for music's that we know are to fade
-				- Stop() stops immediately at any point
+				- Sinking:
+					- Total # of wet points > 2/3 * total points
+				- Unisnking:
+					- Total # of wet points < 1/3 * total points
+			+ Make music class with FadeToStop()
+				+ Also call its ::Update(), which fades
+					+ Called only for music's that we know are to fade
+				+ Stop() stops immediately at any point
+				+ Test music:
+					+ Pause 
+					+ Stop/Resink
 
 - Game Interactions and Controls:
 

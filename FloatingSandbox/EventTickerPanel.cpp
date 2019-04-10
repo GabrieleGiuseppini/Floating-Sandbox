@@ -159,6 +159,14 @@ void EventTickerPanel::OnSinkingBegin(ShipId shipId)
     AppendFutureTickerText(ss.str());
 }
 
+void EventTickerPanel::OnSinkingEnd(ShipId shipId)
+{
+    std::stringstream ss;
+    ss << "SHIP " << shipId << " HAS STOPPED SINKING!";
+
+    AppendFutureTickerText(ss.str());
+}
+
 void EventTickerPanel::OnBombPlaced(
     ObjectId /*bombId*/,
     BombType bombType,
