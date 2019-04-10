@@ -193,6 +193,7 @@ Render:
 	- GameJolt post w/screenshot with gradient, at night
 	- Video of Titanic under Mariannes' Trench
 		+ After water contrast
+	- coolman's video: https://youtu.be/ciRhnZPwO5o
 
 - Roadmap:
 
@@ -213,6 +214,7 @@ Render:
 			+ Set /permissive- for all projects
 		+ Take Mathias' pull request
 		+ Merge to master
+		+ Fix github's clouds bug
 
 		= Sign with certificate
 			+ https://blogs.msdn.microsoft.com/ieinternals/2011/03/22/everything-you-need-to-know-about-authenticode-code-signing/
@@ -221,9 +223,7 @@ Render:
 				- Print receipt and store in Taxes 2019
 			- Sign exe
 			- Sign MSI
-				- https://stackoverflow.com/questions/17589754/wix-installer-msi-publisher-unknown/17591603
-
-		- Fix github's clouds bug
+				- https://stackoverflow.com/questions/17589754/wix-installer-msi-publisher-unknown/17591603		
 
 		- Un-sinking (*)
 
@@ -1063,6 +1063,7 @@ Render:
 				+ Test music:
 					+ Pause 
 					+ Stop/Resink
+			- Test music fading
 
 - Game Interactions and Controls:
 

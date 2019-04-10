@@ -662,28 +662,41 @@ void RenderContext::UploadStarsEnd()
 
 void RenderContext::UploadCloudsStart(size_t cloudCount)
 {
-    //
-    // Prepare cloud quad buffer
-    //
+    if (cloudCount > 0)
+    {
+        //
+        // Prepare cloud quad buffer
+        //
 
-    glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
 
-    glBufferData(GL_ARRAY_BUFFER, cloudCount * sizeof(CloudQuad), nullptr, GL_STREAM_DRAW);
-    CheckOpenGLError();
+        glBufferData(GL_ARRAY_BUFFER, cloudCount * sizeof(CloudQuad), nullptr, GL_STREAM_DRAW);
+        CheckOpenGLError();
 
-    mCloudQuadBuffer.map(cloudCount);
+        mCloudQuadBuffer.map(cloudCount);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+    else
+    {
+        mCloudQuadBuffer.reset();
+    }
 }
 
 void RenderContext::UploadCloudsEnd()
 {
-    //
-    // Upload cloud quad buffer
-    //
+    if (mCloudQuadBuffer.size() > 0)
+    {
+        //
+        // Upload cloud quad buffer
+        //
 
-    glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
-    mCloudQuadBuffer.unmap();
+        glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+        mCloudQuadBuffer.unmap();
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
 }
 
 void RenderContext::RenderSkyEnd()
@@ -748,15 +761,18 @@ void RenderContext::RenderSkyEnd()
     // Draw clouds with stencil test
     ////////////////////////////////////////////////////
 
-    glBindVertexArray(*mCloudVAO);
+    if (mCloudQuadBuffer.size() > 0)
+    {
+        glBindVertexArray(*mCloudVAO);
 
-    mShaderManager->ActivateProgram<ProgramType::Clouds>();
+        mShaderManager->ActivateProgram<ProgramType::Clouds>();
 
-    if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
-        glLineWidth(0.1f);
+        if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
+            glLineWidth(0.1f);
 
-    glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(6 * mCloudQuadBuffer.size()));
-    CheckOpenGLError();
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(6 * mCloudQuadBuffer.size()));
+        CheckOpenGLError();
+    }
 
     ////////////////////////////////////////////////////
 

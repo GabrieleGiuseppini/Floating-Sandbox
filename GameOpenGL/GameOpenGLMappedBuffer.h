@@ -50,6 +50,10 @@ public:
 
         glUnmapBuffer(TTarget);
         mMappedBuffer = nullptr;
+
+        // Leave size and allocated size as they are, as this
+        // buffer may still be asked for its size (regardless
+        // of whether or not its data has been uploaded)
     }
 
     template<typename... TArgs>
@@ -58,6 +62,14 @@ public:
         assert(nullptr != mMappedBuffer);
         assert(mSize < mAllocatedSize);
         return *new(&(((TElement *)mMappedBuffer)[mSize++])) TElement(std::forward<TArgs>(args)...);
+    }
+
+    void reset()
+    {
+        assert(nullptr == mMappedBuffer);
+
+        mSize = 0u;
+        mAllocatedSize = 0u;
     }
 
     inline size_t size() const noexcept

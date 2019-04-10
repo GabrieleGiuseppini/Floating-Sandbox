@@ -1,6 +1,8 @@
 1.11.0
+- New "Repair Structure" tool!
 - Added "Orphaned particles rendering": individual particles that break off the ship structure used to disappear, while they are now rendered
 - Increased number of ophemeral particles
+- Fixed bug that would crash the game when setting the number of clouds to zero on computers with specific graphics cards
 	
 1.10.0
 - A ship that has sunk now slowly rots over time

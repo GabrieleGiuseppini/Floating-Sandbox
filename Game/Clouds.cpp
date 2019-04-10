@@ -45,7 +45,6 @@ void Clouds::Update(
             currentSimulationTime,
             cloudSpeed);
     }
-
 }
 
 }

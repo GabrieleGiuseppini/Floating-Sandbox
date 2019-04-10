@@ -664,7 +664,7 @@ void SettingsDialog::PopulateAirPanel(wxPanel * panel)
         SliderWidth,
         SliderHeight,
         "Number of Clouds",
-        "The number of clouds in the sky.",
+        "The number of clouds in the world's sky. This is the total number of clouds in the world; at any moment in time, the number of clouds that are visible will be less than or equal to this value.",
         static_cast<float>(mGameController->GetNumberOfClouds()),
         [this](float /*value*/)
         {
