@@ -208,7 +208,7 @@ public:
 
     void UploadElementTrianglesEnd();
 
-    void UploadElementsEnd();
+    void UploadElementsEnd(bool doFinalizeEphemeralPoints);
 
     //
     // Stressed springs
@@ -273,6 +273,7 @@ public:
     {
         size_t const planeIndex = static_cast<size_t>(planeId);
 
+        // Pre-sized
         assert(planeIndex < mGenericTexturePlaneVertexBuffers.size());
 
         // Get this plane's vertex buffer
@@ -364,8 +365,8 @@ public:
             alpha,
             lightSensitivity);
 
-        // Update max size among all planes
-        mGenericTextureMaxPlaneVertexBufferSize = std::max(mGenericTextureMaxPlaneVertexBufferSize, vertexBuffer.size());
+        // Update total count of quads
+        ++mGenericTextureQuadCount;
     }
 
     //
@@ -506,13 +507,10 @@ private:
     std::vector<LineElement> mStressedSpringElementBuffer;
     GameOpenGLVBO mStressedSpringElementVBO;
 
-    std::vector<PointElement> mEphemeralPointElementBuffer;
-    GameOpenGLVBO mEphemeralPointElementVBO;
-
     std::vector<GenericTexturePlaneData> mGenericTexturePlaneVertexBuffers;
-    size_t mGenericTextureMaxPlaneVertexBufferSize;
+    size_t mGenericTextureQuadCount;
     GameOpenGLVBO mGenericTextureVBO;
-    size_t mGenericTextureVBOAllocatedSize;
+    size_t mGenericTextureVBOAllocatedQuadCount;
 
     std::vector<vec3f> mVectorArrowVertexBuffer;
     GameOpenGLVBO mVectorArrowVBO;
@@ -525,6 +523,7 @@ private:
     //
 
     std::vector<PointElement> mPointElementBuffer;
+    std::vector<PointElement> mEphemeralPointElementBuffer;
     std::vector<LineElement> mSpringElementBuffer;
     std::vector<LineElement> mRopeElementBuffer;
     std::vector<TriangleElement> mTriangleElementBuffer;
@@ -534,6 +533,7 @@ private:
     // Indices at which these elements begin in the VBO; populated
     // when we upload element indices to the VBO
     size_t mPointElementVBOStartIndex;
+    size_t mEphemeralPointElementVBOStartIndex;
     size_t mSpringElementVBOStartIndex;
     size_t mRopeElementVBOStartIndex;
     size_t mTriangleElementVBOStartIndex;

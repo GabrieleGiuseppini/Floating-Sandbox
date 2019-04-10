@@ -100,7 +100,7 @@ SliderControl::SliderControl(
     {
         // Create icon
         wxStaticBitmap * icon = new wxStaticBitmap(this, wxID_ANY, *warningIcon, wxDefaultPosition, wxSize(-1, -1), wxBORDER_NONE);
-        icon->SetScaleMode(wxStaticBitmap::Scale_AspectFill);
+        //icon->SetScaleMode(wxStaticBitmap::Scale_AspectFill);
         if (!toolTipLabel.empty())
             icon->SetToolTip(toolTipLabel);
 

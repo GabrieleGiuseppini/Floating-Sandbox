@@ -28,23 +28,23 @@ inline T CeilPowerOfTwo(T value)
 }
 
 /*
- * Converts the floating-point value to a 32-bit integer.
+ * Converts the floating-point value to a 32-bit integer, truncating it down
  *
  * Assumes the result fits a 32-bit value. The behavior is undefined if it doesn't.
  */
-inline std::int32_t FastFloorInt32(float value) noexcept
+inline std::int32_t FastTruncateInt32(float value) noexcept
 {
     return _mm_cvtt_ss2si(_mm_load_ss(&value));
 }
 
 /*
- * Converts the floating-point value to a 64-bit integer.
+ * Converts the floating-point value to a 64-bit integer, truncating it down.
  *
  * Assumes the result fits a 64-bit value. The behavior is undefined if it doesn't.
  *
- * As one would expect, FastFloorInt64(-7.6) == -7.
+ * As one would expect, FastTruncateInt64(-7.6) == -7.
  */
-inline std::int64_t FastFloorInt64(float value) noexcept
+inline std::int64_t FastTruncateInt64(float value) noexcept
 {
     return _mm_cvttss_si64(_mm_load_ss(&value));
 }

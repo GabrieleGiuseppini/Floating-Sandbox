@@ -43,9 +43,7 @@ public:
     {
     }
 
-    void OnPointDestroyed(ElementIndex pointElementIndex);
-
-    void OnSpringDestroyed(ElementIndex springElementIndex);
+    void OnEphemeralParticleDestroyed(ElementIndex pointElementIndex);
 
     bool ToggleAt(
         vec2f const & targetPos,
@@ -60,7 +58,6 @@ public:
 
         for (auto it = mCurrentPinnedPoints.begin(); it != mCurrentPinnedPoints.end(); ++it)
         {
-            assert(!mShipPoints.IsDeleted(*it));
             assert(mShipPoints.IsPinned(*it));
 
             float squareDistance = (mShipPoints.GetPosition(*it) - targetPos).squareLength();
@@ -88,7 +85,9 @@ public:
         //
         // No pinned points in radius...
         // ...so find closest unpinned point within the search radius, and
-        // if found, pin it
+        // if found, pin it.
+        //
+        // We only allow non-ephemerals and air bubble ephemerals to be pinned.
         //
 
         ElementIndex nearestUnpinnedPointIndex = NoneElementIndex;
@@ -96,7 +95,9 @@ public:
 
         for (auto pointIndex : mShipPoints)
         {
-            if (!mShipPoints.IsDeleted(pointIndex) && !mShipPoints.IsPinned(pointIndex))
+            if (mShipPoints.IsActive(pointIndex)
+                && !mShipPoints.IsPinned(pointIndex)
+                && (!mShipPoints.IsEphemeral(pointIndex) || Points::EphemeralType::AirBubble == mShipPoints.GetEphemeralType(pointIndex)))
             {
                 float squareDistance = (mShipPoints.GetPosition(pointIndex) - targetPos).squareLength();
                 if (squareDistance < squareSearchRadius)
@@ -148,112 +149,6 @@ public:
     void Upload(
         ShipId shipId,
         Render::RenderContext & renderContext) const;
-
-private:
-
-    template <typename TBomb>
-    bool ToggleBombAt(
-        vec2f const & targetPos,
-        GameParameters const & gameParameters)
-    {
-        float const squareSearchRadius = gameParameters.ToolSearchRadius * gameParameters.ToolSearchRadius;
-
-        //
-        // See first if there's a bomb within the search radius, most recent first;
-        // if so we remove it and we're done
-        //
-
-        for (auto it = mCurrentBombs.begin(); it != mCurrentBombs.end(); ++it)
-        {
-            float squareDistance = ((*it)->GetPosition() - targetPos).squareLength();
-            if (squareDistance < squareSearchRadius)
-            {
-                // Found a bomb
-
-                // Tell it we're removing it
-                (*it)->OnBombRemoved();
-
-                // Remove from set of bombs - forget about it
-                mCurrentBombs.erase(it);
-
-                // We're done
-                return true;
-            }
-        }
-
-
-        //
-        // No bombs in radius...
-        // ...so find closest spring with no attached bomb within the search radius, and
-        // if found, attach bomb to it it
-        //
-
-        ElementIndex nearestUnarmedSpringIndex = NoneElementIndex;
-        float nearestUnarmedSpringDistance = std::numeric_limits<float>::max();
-
-        for (auto springIndex : mShipSprings)
-        {
-            if (!mShipSprings.IsDeleted(springIndex) && !mShipSprings.IsBombAttached(springIndex))
-            {
-                float squareDistance = (mShipSprings.GetMidpointPosition(springIndex, mShipPoints) - targetPos).squareLength();
-                if (squareDistance < squareSearchRadius)
-                {
-                    // This spring is within the search radius
-
-                    // Keep the nearest
-                    if (squareDistance < squareSearchRadius && squareDistance < nearestUnarmedSpringDistance)
-                    {
-                        nearestUnarmedSpringIndex = springIndex;
-                        nearestUnarmedSpringDistance = squareDistance;
-                    }
-                }
-            }
-        }
-
-        if (NoneElementIndex != nearestUnarmedSpringIndex)
-        {
-            // We have a nearest, unarmed spring
-
-            // Create bomb
-            std::unique_ptr<Bomb> bomb(
-                new TBomb(
-                    ObjectId(mShipId, mNextLocalObjectId++),
-                    nearestUnarmedSpringIndex,
-                    mParentWorld,
-                    mGameEventHandler,
-                    mBlastHandler,
-                    mShipPoints,
-                    mShipSprings));
-
-            // Attach bomb to the spring
-            mShipSprings.AttachBomb(
-                nearestUnarmedSpringIndex,
-                mShipPoints,
-                gameParameters);
-
-            // Notify
-            mGameEventHandler->OnBombPlaced(
-                bomb->GetId(),
-                bomb->GetType(),
-                mParentWorld.IsUnderwater(
-                    bomb->GetPosition()));
-
-            // Add new bomb to set of bombs, removing eventual bombs that might get purged
-            mCurrentBombs.emplace(
-                [this, &gameParameters](std::unique_ptr<Bomb> const & purgedBomb)
-                {
-                    // Tell it we're removing it
-                    purgedBomb->OnBombRemoved();
-                },
-                std::move(bomb));
-
-            // We're done
-            return true;
-        }
-
-        // No spring found on this ship
-        return false;
-    }
 
 private:
 

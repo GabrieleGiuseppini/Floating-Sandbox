@@ -58,36 +58,6 @@ public:
         return memberIt->second.get<T>();
     }
 
-    template<>
-    static float GetOptionalJsonMember(
-        picojson::object const & obj,
-        std::string const & memberName,
-        float const & defaultValue)
-    {
-        double defaultValueDouble = static_cast<double>(defaultValue);
-
-        return static_cast<float>(
-            GetOptionalJsonMember<double>(
-                obj,
-                memberName,
-                defaultValueDouble));
-    }
-
-    template<>
-    static int GetOptionalJsonMember(
-        picojson::object const & obj,
-        std::string const & memberName,
-        int const & defaultValue)
-    {
-        int64_t defaultValueInt64 = static_cast<int64_t>(defaultValue);
-
-        return static_cast<int>(
-            GetOptionalJsonMember<int64_t>(
-                obj,
-                memberName,
-                defaultValueInt64));
-    }
-
     template<typename T>
     static std::optional<T> GetOptionalJsonMember(
         picojson::object const & obj,
@@ -105,30 +75,6 @@ public:
         }
 
         return std::make_optional<T>(memberIt->second.get<T>());
-    }
-
-    template<>
-    static std::optional<float> GetOptionalJsonMember(
-        picojson::object const & obj,
-        std::string const & memberName)
-    {
-        auto r = GetOptionalJsonMember<double>(obj, memberName);
-        if (r)
-            return static_cast<float>(*r);
-        else
-            return std::nullopt;
-    }
-
-    template<>
-    static std::optional<int> GetOptionalJsonMember(
-        picojson::object const & obj,
-        std::string const & memberName)
-    {
-        auto r = GetOptionalJsonMember<int64_t>(obj, memberName);
-        if (r)
-            return static_cast<int>(*r);
-        else
-            return std::nullopt;
     }
 
     static std::optional<picojson::object> GetOptionalJsonObject(
@@ -150,7 +96,7 @@ public:
     }
 
     template<typename T>
-    static T const GetMandatoryJsonMember(
+    static T GetMandatoryJsonMember(
         picojson::object const & obj,
         std::string const & memberName)
     {
@@ -331,3 +277,79 @@ public:
         file << content;
     }
 };
+
+template<>
+inline float Utils::GetOptionalJsonMember<float>(
+    picojson::object const & obj,
+    std::string const & memberName,
+    float const & defaultValue)
+{
+    double defaultValueDouble = static_cast<double>(defaultValue);
+
+    return static_cast<float>(
+        GetOptionalJsonMember<double>(
+            obj,
+            memberName,
+            defaultValueDouble));
+}
+
+template<>
+inline int Utils::GetOptionalJsonMember<int>(
+    picojson::object const & obj,
+    std::string const & memberName,
+    int const & defaultValue)
+{
+    int64_t defaultValueInt64 = static_cast<int64_t>(defaultValue);
+
+    return static_cast<int>(
+        GetOptionalJsonMember<int64_t>(
+            obj,
+            memberName,
+            defaultValueInt64));
+}
+
+template<>
+inline std::optional<float> Utils::GetOptionalJsonMember<float>(
+    picojson::object const & obj,
+    std::string const & memberName)
+{
+    auto r = GetOptionalJsonMember<double>(obj, memberName);
+    if (r)
+        return static_cast<float>(*r);
+    else
+        return std::nullopt;
+}
+
+template<>
+inline std::optional<int> Utils::GetOptionalJsonMember<int>(
+    picojson::object const & obj,
+    std::string const & memberName)
+{
+    auto r = GetOptionalJsonMember<int64_t>(obj, memberName);
+    if (r)
+        return static_cast<int>(*r);
+    else
+        return std::nullopt;
+}
+
+template<>
+inline float Utils::GetMandatoryJsonMember<float>(
+    picojson::object const & obj,
+    std::string const & memberName)
+{
+    return static_cast<float>(
+        Utils::GetMandatoryJsonMember<double>(
+            obj,
+            memberName));
+}
+
+template<>
+inline int Utils::GetMandatoryJsonMember<int>(
+    picojson::object const & obj,
+    std::string const & memberName)
+{
+    return static_cast<int>(
+        Utils::GetMandatoryJsonMember<std::uint64_t>(
+            obj,
+            memberName));
+}

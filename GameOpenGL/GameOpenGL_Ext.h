@@ -22,6 +22,10 @@
 // Framebuffer
 //////////////////////////////////////////////////////////////////////////
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef GLboolean(APIENTRYP PFNGLISRENDERBUFFERPROC)(GLuint renderbuffer);
 GLAPI PFNGLISRENDERBUFFERPROC glIsRenderbuffer;
 
@@ -180,6 +184,10 @@ GLAPI PFNGLISVERTEXARRAYPROC glIsVertexArray;
 #define GL_RGB32F 0x8815
 #define GL_RGBA16F 0x881a
 #define GL_RGB16F 0x881b
+
+#ifdef __cplusplus
+}
+#endif
 
 //////////////////////////////////////////////////////////////////////////
 // Init

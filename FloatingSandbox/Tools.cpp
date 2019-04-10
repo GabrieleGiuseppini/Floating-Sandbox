@@ -478,6 +478,8 @@ TerrainAdjustTool::TerrainAdjustTool(
         parentFrame,
         std::move(gameController),
         std::move(soundController))
+
+    , mCurrentTrajectoryPreviousPosition()
     , mUpCursor(MakeCursor("terrain_adjust_cursor_up", 15, 15, resourceLoader))
     , mDownCursor(MakeCursor("terrain_adjust_cursor_down", 15, 15, resourceLoader))
 {
@@ -502,5 +504,31 @@ ScrubTool::ScrubTool(
     , mPreviousMousePos()
     , mPreviousScrub()
     , mPreviousScrubTimestamp(GameWallClock::time_point::min())
+{
+}
+
+////////////////////////////////////////////////////////////////////////
+// Scrub
+////////////////////////////////////////////////////////////////////////
+
+RepairStructureTool::RepairStructureTool(
+    wxFrame * parentFrame,
+    std::shared_ptr<GameController> gameController,
+    std::shared_ptr<SoundController> soundController,
+    ResourceLoader & resourceLoader)
+    : Tool(
+        ToolType::RepairStructure,
+        parentFrame,
+        std::move(gameController),
+        std::move(soundController))
+    , mEngagementStartTimestamp()
+    , mCurrentCursor(nullptr)
+    , mUpCursor(MakeCursor("repair_structure_cursor_up", 8, 8, resourceLoader))
+    , mDownCursors{
+        MakeCursor("repair_structure_cursor_down_0", 8, 8, resourceLoader),
+        MakeCursor("repair_structure_cursor_down_1", 8, 8, resourceLoader),
+        MakeCursor("repair_structure_cursor_down_2", 8, 8, resourceLoader),
+        MakeCursor("repair_structure_cursor_down_3", 8, 8, resourceLoader),
+        MakeCursor("repair_structure_cursor_down_4", 8, 8, resourceLoader) }
 {
 }

@@ -155,6 +155,7 @@ private:
     void OnImpactBombMenuItemSelected(wxCommandEvent& event);
     void OnAntiMatterBombMenuItemSelected(wxCommandEvent& event);
     void OnAdjustTerrainMenuItemSelected(wxCommandEvent& event);
+    void OnRepairStructureMenuItemSelected(wxCommandEvent& event);
     void OnScrubMenuItemSelected(wxCommandEvent& event);
     void OnRCBombDetonateMenuItemSelected(wxCommandEvent& event);
     void OnAntiMatterBombDetonateMenuItemSelected(wxCommandEvent& event);

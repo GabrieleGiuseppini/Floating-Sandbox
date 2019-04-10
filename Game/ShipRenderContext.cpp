@@ -11,6 +11,8 @@
 #include <GameCore/GameMath.h>
 #include <GameCore/Log.h>
 
+#include <cstring>
+
 namespace Render {
 
 ShipRenderContext::ShipRenderContext(
@@ -45,24 +47,24 @@ ShipRenderContext::ShipRenderContext(
     //
     , mStressedSpringElementBuffer()
     , mStressedSpringElementVBO()
-    , mEphemeralPointElementBuffer()
-    , mEphemeralPointElementVBO()
     //
     , mGenericTexturePlaneVertexBuffers()
-    , mGenericTextureMaxPlaneVertexBufferSize(0)
+    , mGenericTextureQuadCount(0)
     , mGenericTextureVBO()
-    , mGenericTextureVBOAllocatedSize()
+    , mGenericTextureVBOAllocatedQuadCount()
     //
     , mVectorArrowVertexBuffer()
     , mVectorArrowVBO()
     , mVectorArrowColor()
     // Element (index) buffers
     , mPointElementBuffer()
+    , mEphemeralPointElementBuffer()
     , mSpringElementBuffer()
     , mRopeElementBuffer()
     , mTriangleElementBuffer()
     , mElementVBO()
     , mPointElementVBOStartIndex(0)
+    , mEphemeralPointElementVBOStartIndex(0)
     , mSpringElementVBOStartIndex(0)
     , mRopeElementVBOStartIndex(0)
     , mTriangleElementVBOStartIndex(0)
@@ -100,8 +102,8 @@ ShipRenderContext::ShipRenderContext(
     // Initialize buffers
     //
 
-    GLuint vbos[7];
-    glGenBuffers(7, vbos);
+    GLuint vbos[6];
+    glGenBuffers(6, vbos);
     CheckOpenGLError();
 
     mPointAttributeGroup1VBO = vbos[0];
@@ -123,12 +125,9 @@ ShipRenderContext::ShipRenderContext(
     mStressedSpringElementVBO = vbos[3];
     mStressedSpringElementBuffer.reserve(1000); // Arbitrary
 
-    mEphemeralPointElementVBO = vbos[4];
-    mEphemeralPointElementBuffer.reserve(GameParameters::MaxEphemeralParticles);
+    mGenericTextureVBO = vbos[4];
 
-    mGenericTextureVBO = vbos[5];
-
-    mVectorArrowVBO = vbos[6];
+    mVectorArrowVBO = vbos[5];
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -141,6 +140,7 @@ ShipRenderContext::ShipRenderContext(
     mElementVBO = tmpGLuint;
 
     mPointElementBuffer.reserve(pointCount);
+    mEphemeralPointElementBuffer.reserve(GameParameters::MaxEphemeralParticles);
     mSpringElementBuffer.reserve(pointCount * GameParameters::MaxSpringsPerPoint);
     mRopeElementBuffer.reserve(pointCount); // Arbitrary
     mTriangleElementBuffer.reserve(pointCount * GameParameters::MaxTrianglesPerPoint);
@@ -636,7 +636,7 @@ void ShipRenderContext::RenderStart(PlaneId maxMaxPlaneId)
 
     mGenericTexturePlaneVertexBuffers.clear();
     mGenericTexturePlaneVertexBuffers.resize(maxMaxPlaneId + 1);
-    mGenericTextureMaxPlaneVertexBufferSize = 0;
+    mGenericTextureQuadCount = 0;
 
 
     //
@@ -779,7 +779,7 @@ void ShipRenderContext::UploadElementTrianglesEnd()
 {
 }
 
-void ShipRenderContext::UploadElementsEnd()
+void ShipRenderContext::UploadElementsEnd(bool doFinalizeEphemeralPoints)
 {
     //
     // Upload all elements to the VBO, remembering the starting VBO index
@@ -791,13 +791,14 @@ void ShipRenderContext::UploadElementsEnd()
     mRopeElementVBOStartIndex = mTriangleElementVBOStartIndex + mTriangleElementBuffer.size() * sizeof(TriangleElement);
     mSpringElementVBOStartIndex = mRopeElementVBOStartIndex + mRopeElementBuffer.size() * sizeof(LineElement);
     mPointElementVBOStartIndex = mSpringElementVBOStartIndex + mSpringElementBuffer.size() * sizeof(LineElement);
+    mEphemeralPointElementVBOStartIndex = mPointElementVBOStartIndex + mPointElementBuffer.size() * sizeof(PointElement);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mElementVBO);
 
-    // Allocate whole buffer
+    // Allocate whole buffer, including room for all possible ephemeral points
     glBufferData(
         GL_ELEMENT_ARRAY_BUFFER,
-        mPointElementVBOStartIndex + (mPointElementBuffer.size() * sizeof(PointElement)),
+        mEphemeralPointElementVBOStartIndex + GameParameters::MaxEphemeralParticles * sizeof(PointElement),
         nullptr,
         GL_STATIC_DRAW);
     CheckOpenGLError();
@@ -829,6 +830,20 @@ void ShipRenderContext::UploadElementsEnd()
         mPointElementVBOStartIndex,
         mPointElementBuffer.size() * sizeof(PointElement),
         mPointElementBuffer.data());
+
+    // Upload the ephemeral points that we know about, provided
+    // that there aren't new ephemeral points coming; otherwise
+    // we'll upload these later
+    if (doFinalizeEphemeralPoints)
+    {
+        glBufferSubData(
+            GL_ELEMENT_ARRAY_BUFFER,
+            mEphemeralPointElementVBOStartIndex,
+            mEphemeralPointElementBuffer.size() * sizeof(PointElement),
+            mEphemeralPointElementBuffer.data());
+    }
+
+    CheckOpenGLError();
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
@@ -866,15 +881,16 @@ void ShipRenderContext::UploadElementEphemeralPointsStart()
 void ShipRenderContext::UploadElementEphemeralPointsEnd()
 {
     //
-    // Upload ephemeral point elements
+    // Upload ephemeral point elements to the end of the element VBO
     //
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mEphemeralPointElementVBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mElementVBO);
 
-    glBufferData(
+    glBufferSubData(
         GL_ELEMENT_ARRAY_BUFFER,
-        mEphemeralPointElementBuffer.size() * sizeof(PointElement), mEphemeralPointElementBuffer.data(),
-        GL_STATIC_DRAW);
+        mEphemeralPointElementVBOStartIndex,
+        mEphemeralPointElementBuffer.size() * sizeof(PointElement),
+        mEphemeralPointElementBuffer.data());
     CheckOpenGLError();
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -977,27 +993,6 @@ void ShipRenderContext::RenderEnd()
 
         mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
         glBindTexture(GL_TEXTURE_2D, *mShipTextureOpenGLHandle);
-
-
-
-        // TODO: this will go with orphaned points rearc; will move to where we do ephemeral points
-        // now (below) once eph points and points are merged.
-        //
-        // Draw points
-        //
-
-        if (mDebugShipRenderMode == DebugShipRenderMode::Points)
-        {
-            mShaderManager.ActivateProgram<ProgramType::ShipPointsColor>();
-
-            glPointSize(0.2f * 2.0f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
-
-            glDrawElements(
-                GL_POINTS,
-                static_cast<GLsizei>(1 * mPointElementBuffer.size()),
-                GL_UNSIGNED_INT,
-                (GLvoid *)mPointElementVBOStartIndex);
-        }
 
 
 
@@ -1137,27 +1132,36 @@ void ShipRenderContext::RenderEnd()
 
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mStressedSpringElementVBO);
 
-            glDrawElements(GL_LINES, static_cast<GLsizei>(2 * mStressedSpringElementBuffer.size()), GL_UNSIGNED_INT, 0);
+            glDrawElements(
+                GL_LINES,
+                static_cast<GLsizei>(2 * mStressedSpringElementBuffer.size()),
+                GL_UNSIGNED_INT,
+                (GLvoid *)0);
         }
 
 
 
         //
-        // Draw ephemeral points
+        // Draw points (orphaned/all non-ephemerals, and ephemerals)
         //
 
-        if (!mEphemeralPointElementBuffer.empty())
+        if (mDebugShipRenderMode == DebugShipRenderMode::None
+            || mDebugShipRenderMode == DebugShipRenderMode::Points)
         {
+            auto const totalPoints = mPointElementBuffer.size() + mEphemeralPointElementBuffer.size();
+
             mShaderManager.ActivateProgram<ProgramType::ShipPointsColor>();
 
             glPointSize(0.3f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
 
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mEphemeralPointElementVBO);
-
-            glDrawElements(GL_POINTS, static_cast<GLsizei>(mEphemeralPointElementBuffer.size()), GL_UNSIGNED_INT, 0);
+            glDrawElements(
+                GL_POINTS,
+                static_cast<GLsizei>(1 * totalPoints),
+                GL_UNSIGNED_INT,
+                (GLvoid *)mPointElementVBOStartIndex);
 
             // Update stats
-            mRenderStatistics.LastRenderedShipEphemeralPoints += mEphemeralPointElementBuffer.size();
+            mRenderStatistics.LastRenderedShipPoints += totalPoints;
         }
 
         // We are done with the ship VAO
@@ -1196,7 +1200,7 @@ void ShipRenderContext::RenderEnd()
 
 void ShipRenderContext::RenderGenericTextures()
 {
-    if (mGenericTextureMaxPlaneVertexBufferSize > 0)
+    if (mGenericTextureQuadCount > 0)
     {
         glBindVertexArray(*mGenericTextureVAO);
 
@@ -1205,56 +1209,55 @@ void ShipRenderContext::RenderGenericTextures()
         if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
             glLineWidth(0.1f);
 
-        // Bind VBO once and for all
+        // Bind VBO
         glBindBuffer(GL_ARRAY_BUFFER, *mGenericTextureVBO);
 
+        //
+        // Upload vertex buffers
+        //
+
         // (Re-)Allocate vertex buffer, if needed
-        if (mGenericTextureVBOAllocatedSize != mGenericTextureMaxPlaneVertexBufferSize)
+        if (mGenericTextureVBOAllocatedQuadCount != mGenericTextureQuadCount)
         {
-            glBufferData(GL_ARRAY_BUFFER, mGenericTextureMaxPlaneVertexBufferSize * sizeof(GenericTextureVertex), nullptr, GL_DYNAMIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, mGenericTextureQuadCount * 6 * sizeof(GenericTextureVertex), nullptr, GL_DYNAMIC_DRAW);
             CheckOpenGLError();
 
-            mGenericTextureVBOAllocatedSize = mGenericTextureMaxPlaneVertexBufferSize;
+            mGenericTextureVBOAllocatedQuadCount = mGenericTextureQuadCount;
         }
 
-        //
-        // Draw, separately for each plane
-        //
+        // Map vertex buffer
+        auto mappedBuffer = reinterpret_cast<uint8_t *>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
+        CheckOpenGLError();
 
+        // Copy all buffers
         for (auto const & plane : mGenericTexturePlaneVertexBuffers)
         {
             if (!plane.vertexBuffer.empty())
             {
-                //
-                // Upload vertex buffer
-                //
+                size_t const byteCopySize = plane.vertexBuffer.size() * sizeof(GenericTextureVertex);
+                std::memcpy(mappedBuffer, plane.vertexBuffer.data(), byteCopySize);
 
-                assert(plane.vertexBuffer.size() <= mGenericTextureVBOAllocatedSize);
-
-                glBufferSubData(
-                    GL_ARRAY_BUFFER,
-                    0,
-                    plane.vertexBuffer.size() * sizeof(GenericTextureVertex),
-                    plane.vertexBuffer.data());
-
-                CheckOpenGLError();
-
-
-                //
-                // Render
-                //
-
-                assert((plane.vertexBuffer.size() % 6) == 0);
-                glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(plane.vertexBuffer.size()));
-
-
-                //
-                // Update stats
-                //
-
-                mRenderStatistics.LastRenderedShipGenericTextures += plane.vertexBuffer.size() / 6;
+                // Advance
+                mappedBuffer += byteCopySize;
             }
         }
+
+        // Unmap vertex buffer
+        glUnmapBuffer(GL_ARRAY_BUFFER);
+
+
+        //
+        // Render
+        //
+
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mGenericTextureQuadCount * 6));
+
+
+        //
+        // Update stats
+        //
+
+        mRenderStatistics.LastRenderedShipGenericTextures += mGenericTextureQuadCount;
 
         glBindVertexArray(0);
     }

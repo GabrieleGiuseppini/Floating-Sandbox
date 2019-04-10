@@ -5,7 +5,11 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GameMath.h"
+#include "Vectors.h"
+
 #include <random>
+
 /*
  * The random engine for the entire game.
  *
@@ -99,6 +103,22 @@ public:
         float maxValue)
     {
         return minValue + mRandomUniformDistribution(mRandomEngine) * (maxValue - minValue);
+    }
+
+    inline vec2f GenerateRandomRadialVector(
+        float minMagnitude,
+        float maxMagnitude)
+    {
+        //
+        // Choose a vector: point on a circle with random radius and random angle
+        //
+
+        float const magnitude = GenerateRandomReal(
+            minMagnitude, maxMagnitude);
+
+        float const angle = GenerateRandomReal(0.0f, 2.0f * Pi<float>);
+
+        return vec2f::fromPolar(magnitude, angle);
     }
 
 private:

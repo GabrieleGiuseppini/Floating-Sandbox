@@ -76,6 +76,7 @@ public:
     void MoveBy(ShipId shipId, vec2f const & screenOffset);
     void RotateBy(ShipId shipId, float screenDeltaY, vec2f const & screenCenter);
     void DestroyAt(vec2f const & screenCoordinates, float radiusMultiplier);
+    void RepairAt(vec2f const & screenCoordinates, float radiusMultiplier);
     void SawThrough(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates);
     void DrawTo(vec2f const & screenCoordinates, float strengthMultiplier);
     void SwirlAt(vec2f const & screenCoordinates, float strengthMultiplier);
@@ -88,7 +89,7 @@ public:
     void ToggleTimerBombAt(vec2f const & screenCoordinates);
     void DetonateRCBombs();
     void DetonateAntiMatterBombs();
-    bool AdjustOceanFloorTo(vec2f const & screenCoordinates);
+    bool AdjustOceanFloorTo(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates);
     bool ScrubThrough(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates);
     std::optional<ObjectId> GetNearestPointAt(vec2f const & screenCoordinates) const;
     void QueryNearestPointAt(vec2f const & screenCoordinates) const;

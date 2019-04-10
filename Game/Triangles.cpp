@@ -18,6 +18,7 @@ void Triangles::Add(
     mEndpointsBuffer.emplace_back(pointAIndex, pointBIndex, pointCIndex);
 
     mSubSpringsBuffer.emplace_back(subSprings);
+    mFactorySubSpringsBuffer.emplace_back(subSprings);
 }
 
 void Triangles::Destroy(ElementIndex triangleElementIndex)
@@ -33,6 +34,21 @@ void Triangles::Destroy(ElementIndex triangleElementIndex)
 
     // Flag ourselves as deleted
     mIsDeletedBuffer[triangleElementIndex] = true;
+}
+
+void Triangles::Restore(ElementIndex triangleElementIndex)
+{
+    assert(triangleElementIndex < mElementCount);
+    assert(!IsDeleted(triangleElementIndex));
+
+    // Clear ourselves as not deleted
+    mIsDeletedBuffer[triangleElementIndex] = false;
+
+    // Invoke restore handler
+    if (!!mRestoreHandler)
+    {
+        mRestoreHandler(triangleElementIndex);
+    }
 }
 
 }

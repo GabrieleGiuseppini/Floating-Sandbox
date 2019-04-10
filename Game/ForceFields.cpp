@@ -53,7 +53,7 @@ void BlastForceField::Apply(
 {
     //
     // Go through all points and, for each point in radius:
-    // - Keep non-ephemeral point that is closest to blast position; we'll Destroy() it later
+    // - Keep non-ephemeral point that is closest to blast position; we'll Detach() it later
     //   (if this is the fist frame of the blast sequence)
     // - Flip over the point outside of the radius
     //
@@ -71,10 +71,8 @@ void BlastForceField::Apply(
         float squarePointDistance = pointRadius.squareLength();
         if (squarePointDistance < squareBlastRadius)
         {
-            // Check whether this point is the closest, non-deleted point
-            // (we don't want to waste destroy's on already-deleted points)
-            if (squarePointDistance < closestPointSquareDistance
-                && !points.IsDeleted(pointIndex))
+            // Check whether this point is the closest point
+            if (squarePointDistance < closestPointSquareDistance)
             {
                 closestPointSquareDistance = squarePointDistance;
                 closestPointIndex = pointIndex;
@@ -87,22 +85,28 @@ void BlastForceField::Apply(
                 (newPosition - points.GetPosition(pointIndex))
                 / DtSquared
                 * mStrength
-                * points.GetMass(pointIndex);
+                * points.GetTotalMass(pointIndex);
         }
     }
 
 
     //
-    // Eventually destroy the closest point
+    // Eventually detach the closest point
     //
 
-    if (mDestroyPoint
+    if (mDetachPoint
         && NoneElementIndex != closestPointIndex)
     {
-        // Destroy point
-        points.Destroy(
+        // Choose a detach velocity - using the same distribution as Debris
+        vec2f detachVelocity = GameRandomEngine::GetInstance().GenerateRandomRadialVector(
+            GameParameters::MinDebrisParticlesVelocity,
+            GameParameters::MaxDebrisParticlesVelocity);
+
+        // Detach point
+        points.Detach(
             closestPointIndex,
-            Points::DestroyOptions::GenerateDebris,
+            detachVelocity,
+            Points::DetachOptions::GenerateDebris,
             currentSimulationTime,
             gameParameters);
     }
@@ -143,23 +147,23 @@ void ImplosionForceField::Apply(
         float const displacementLength = displacement.length();
         vec2f normalizedDisplacement = displacement.normalise(displacementLength);
 
-        // Make final acceleration independent from mass
-        float const massNormalization = points.GetMass(pointIndex) / 50.0f;
+        // Make final acceleration somewhat independent from mass
+        float const massNormalization = points.GetTotalMass(pointIndex) / 50.0f;
 
-        // Angular - constant
+        // Angular (constant)
         points.GetForce(pointIndex) +=
             vec2f(-normalizedDisplacement.y, normalizedDisplacement.x)
             * mStrength
-            / 10.0f
-            * massNormalization;
+            * massNormalization
+            / 10.0f; // Magic number
 
-        // Radial - stronger when closer
+        // Radial (stronger when closer)
         points.GetForce(pointIndex) +=
             normalizedDisplacement
             * mStrength
             / (0.2f + sqrt(displacementLength))
-            * 10.0f
-            * massNormalization;
+            * massNormalization
+            * 10.0f; // Magic number
     }
 }
 

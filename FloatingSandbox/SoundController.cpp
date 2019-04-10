@@ -15,6 +15,7 @@
 #include <limits>
 #include <regex>
 
+constexpr float RepairVolume = 40.0f;
 constexpr float SawVolume = 50.0f;
 constexpr float SawedVolume = 80.0f;
 constexpr float StressSoundVolume = 20.0f;
@@ -58,6 +59,7 @@ SoundController::SoundController(
     , mSwirlSound()
     , mAirBubblesSound()
     , mFloodHoseSound()
+    , mRepairStructureSound()
     , mWaterRushSound()
     , mWaterSplashSound()
     , mWindSound()
@@ -205,6 +207,14 @@ SoundController::SoundController(
                 mMasterToolsVolume,
                 mMasterToolsMuted);
         }
+        else if (soundType == SoundType::RepairStructure)
+        {
+            mRepairStructureSound.Initialize(
+                std::move(soundBuffer),
+                100.0f,
+                mMasterToolsVolume,
+                mMasterToolsMuted);
+        }
         else if (soundType == SoundType::WaterRush)
         {
             mWaterRushSound.Initialize(
@@ -245,7 +255,8 @@ SoundController::SoundController(
                 mMasterEffectsVolume,
                 mMasterEffectsMuted);
         }
-        else if (soundType == SoundType::Break || soundType == SoundType::Destroy || soundType == SoundType::Stress)
+        else if (soundType == SoundType::Break || soundType == SoundType::Destroy || soundType == SoundType::Stress
+                || soundType == SoundType::RepairSpring || soundType == SoundType::RepairTriangle)
         {
             //
             // MSU sound
@@ -554,6 +565,7 @@ void SoundController::SetMasterToolsVolume(float volume)
     mSwirlSound.SetMasterVolume(mMasterToolsVolume);
     mAirBubblesSound.SetMasterVolume(mMasterToolsVolume);
     mFloodHoseSound.SetMasterVolume(mMasterToolsVolume);
+    mRepairStructureSound.SetMasterVolume(mMasterToolsVolume);
 }
 
 void SoundController::SetMasterToolsMuted(bool isMuted)
@@ -581,6 +593,7 @@ void SoundController::SetMasterToolsMuted(bool isMuted)
     mSwirlSound.SetMuted(mMasterToolsMuted);
     mAirBubblesSound.SetMuted(mMasterToolsMuted);
     mFloodHoseSound.SetMuted(mMasterToolsMuted);
+    mRepairStructureSound.SetMuted(mMasterToolsMuted);
 }
 
 // Master music
@@ -750,6 +763,16 @@ void SoundController::PlayTerrainAdjustSound()
         true);
 }
 
+void SoundController::PlayRepairStructureSound()
+{
+    mRepairStructureSound.Start();
+}
+
+void SoundController::StopRepairStructureSound()
+{
+    mRepairStructureSound.Stop();
+}
+
 void SoundController::PlayScrubSound()
 {
     PlayOneShotMultipleChoiceSound(
@@ -806,6 +829,7 @@ void SoundController::Reset()
     mSwirlSound.Reset();
     mAirBubblesSound.Reset();
     mFloodHoseSound.Reset();
+    mRepairStructureSound.Reset();
 
     mWaterRushSound.Reset();
     mWaterSplashSound.Reset();
@@ -845,6 +869,40 @@ void SoundController::OnDestroy(
             size,
             isUnderwater,
             70.0f,
+            true);
+    }
+}
+
+void SoundController::OnSpringRepaired(
+    StructuralMaterial const & structuralMaterial,
+    bool isUnderwater,
+    unsigned int size)
+{
+    if (!!(structuralMaterial.MaterialSound))
+    {
+        PlayMSUOneShotMultipleChoiceSound(
+            SoundType::RepairSpring,
+            *(structuralMaterial.MaterialSound),
+            size,
+            isUnderwater,
+            RepairVolume,
+            true);
+    }
+}
+
+void SoundController::OnTriangleRepaired(
+    StructuralMaterial const & structuralMaterial,
+    bool isUnderwater,
+    unsigned int size)
+{
+    if (!!(structuralMaterial.MaterialSound))
+    {
+        PlayMSUOneShotMultipleChoiceSound(
+            SoundType::RepairTriangle,
+            *(structuralMaterial.MaterialSound),
+            size,
+            isUnderwater,
+            RepairVolume,
             true);
     }
 }
@@ -1422,7 +1480,7 @@ void SoundController::PlayOneShotSound(
 
     auto & thisTypeCurrentlyPlayingSounds = mCurrentlyPlayingOneShotSounds[soundType];
 
-    auto const now = std::chrono::steady_clock::now();
+    auto const now = GameWallClock::GetInstance().Now();
     auto const minDeltaTimeSoundForType = GetMinDeltaTimeSoundForType(soundType);
 
     for (auto & playingSound : thisTypeCurrentlyPlayingSounds)
@@ -1505,9 +1563,9 @@ void SoundController::ScavengeOldestSound(std::vector<PlayingSound> & playingSou
     //
 
     size_t iOldestInterruptibleSound = std::numeric_limits<size_t>::max();
-    auto oldestInterruptibleSoundStartTimestamp = std::chrono::steady_clock::time_point::max();
+    auto oldestInterruptibleSoundStartTimestamp = GameWallClock::time_point::max();
     size_t iOldestNonInterruptibleSound = std::numeric_limits<size_t>::max();
-    auto oldestNonInterruptibleSoundStartTimestamp = std::chrono::steady_clock::time_point::max();
+    auto oldestNonInterruptibleSoundStartTimestamp = GameWallClock::time_point::max();
     for (size_t i = 0; i < playingSounds.size(); ++i)
     {
         if (playingSounds[i].StartedTimestamp < oldestNonInterruptibleSoundStartTimestamp)
@@ -1525,13 +1583,13 @@ void SoundController::ScavengeOldestSound(std::vector<PlayingSound> & playingSou
     }
 
     size_t iSoundToStop;
-    if (oldestInterruptibleSoundStartTimestamp != std::chrono::steady_clock::time_point::max())
+    if (oldestInterruptibleSoundStartTimestamp != GameWallClock::time_point::max())
     {
         iSoundToStop = iOldestInterruptibleSound;
     }
     else
     {
-        assert((oldestNonInterruptibleSoundStartTimestamp != std::chrono::steady_clock::time_point::max()));
+        assert((oldestNonInterruptibleSoundStartTimestamp != GameWallClock::time_point::max()));
         iSoundToStop = iOldestNonInterruptibleSound;
     }
 

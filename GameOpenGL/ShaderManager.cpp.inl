@@ -84,7 +84,7 @@ ShaderManager<Traits>::ShaderManager(
     {
         if (i >= mPrograms.size() || !(mPrograms[i].OpenGLHandle))
         {
-            throw GameException("Cannot find GLSL source file for program \"" + Traits::ProgramTypeToStr(static_cast<Traits::ProgramType>(i)) + "\"");
+            throw GameException("Cannot find GLSL source file for program \"" + Traits::ProgramTypeToStr(static_cast<typename Traits::ProgramType>(i)) + "\"");
         }
     }
 }
@@ -100,7 +100,7 @@ void ShaderManager<Traits>::CompileShader(
     {
         // Get the program type
         std::filesystem::path shaderFilenamePath(shaderFilename);
-        Traits::ProgramType const program = Traits::ShaderFilenameToProgramType(shaderFilenamePath.stem().string());
+        typename Traits::ProgramType const program = Traits::ShaderFilenameToProgramType(shaderFilenamePath.stem().string());
         std::string const programName = Traits::ProgramTypeToStr(program);
 
         // Resolve includes
@@ -186,7 +186,7 @@ void ShaderManager<Traits>::CompileShader(
         auto fragmentShaderParameters = ExtractShaderParameters(fragmentShaderSource);
         allProgramParameters.merge(fragmentShaderParameters);
 
-        for (Traits::ProgramParameterType programParameter : allProgramParameters)
+        for (typename Traits::ProgramParameterType programParameter : allProgramParameters)
         {
             // Make sure there is room
             size_t programParameterIndex = static_cast<size_t>(programParameter);
@@ -411,7 +411,7 @@ std::set<typename Traits::ProgramParameterType> ShaderManager<Traits>::ExtractSh
 {
     static std::regex ShaderParamNameRegex(R"!((//\s*)?\buniform\s+.*?\s+param([_a-zA-Z0-9]*);)!");
 
-    std::set<Traits::ProgramParameterType> shaderParameters;
+    std::set<typename Traits::ProgramParameterType> shaderParameters;
 
     std::string remainingSource = source;
     std::smatch match;
@@ -423,7 +423,7 @@ std::set<typename Traits::ProgramParameterType> ShaderManager<Traits>::ExtractSh
             auto const & shaderParameterName = match[2].str();
 
             // Lookup the parameter
-            Traits::ProgramParameterType shaderParameter = Traits::StrToProgramParameterType(shaderParameterName);
+            typename Traits::ProgramParameterType shaderParameter = Traits::StrToProgramParameterType(shaderParameterName);
 
             // Store it, making sure it's not specified more than once
             if (!shaderParameters.insert(shaderParameter).second)

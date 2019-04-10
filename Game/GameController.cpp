@@ -345,6 +345,20 @@ void GameController::DestroyAt(
         mGameParameters);
 }
 
+void GameController::RepairAt(
+    vec2f const & screenCoordinates,
+    float radiusMultiplier)
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+
+    // Apply action
+    assert(!!mWorld);
+    mWorld->RepairAt(
+        worldCoordinates,
+        radiusMultiplier,
+        mGameParameters);
+}
+
 void GameController::SawThrough(
     vec2f const & startScreenCoordinates,
     vec2f const & endScreenCoordinates)
@@ -486,12 +500,17 @@ void GameController::DetonateAntiMatterBombs()
     mWorld->DetonateAntiMatterBombs();
 }
 
-bool GameController::AdjustOceanFloorTo(vec2f const & screenCoordinates)
+bool GameController::AdjustOceanFloorTo(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates)
 {
-    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+    vec2f const startWorldCoordinates = mRenderContext->ScreenToWorld(startScreenCoordinates);
+    vec2f const endWorldCoordinates = mRenderContext->ScreenToWorld(endScreenCoordinates);
 
     assert(!!mWorld);
-    return mWorld->AdjustOceanFloorTo(worldCoordinates.x, worldCoordinates.y);
+    return mWorld->AdjustOceanFloorTo(
+        startWorldCoordinates.x,
+        startWorldCoordinates.y,
+        endWorldCoordinates.x,
+        endWorldCoordinates.y);
 }
 
 bool GameController::ScrubThrough(
@@ -724,6 +743,7 @@ void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
         std::chrono::duration<float>(GameWallClock::GetInstance().Now() - mOriginTimestampGame),
         mIsPaused,
         mRenderContext->GetZoom(),
+        mRenderContext->GetCameraWorldPosition(),
         totalURRatio,
         lastURRatio,
         mRenderContext->GetStatistics());

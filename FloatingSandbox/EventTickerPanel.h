@@ -40,6 +40,16 @@ public:
         bool isUnderwater,
         unsigned int size) override;
 
+    virtual void OnSpringRepaired(
+        StructuralMaterial const & structuralMaterial,
+        bool isUnderwater,
+        unsigned int size) override;
+
+    virtual void OnTriangleRepaired(
+        StructuralMaterial const & structuralMaterial,
+        bool isUnderwater,
+        unsigned int size) override;
+
     virtual void OnStress(
         StructuralMaterial const & structuralMaterial,
         bool isUnderwater,

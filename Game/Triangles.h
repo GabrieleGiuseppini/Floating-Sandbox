@@ -12,6 +12,7 @@
 #include <GameCore/ElementContainer.h>
 #include <GameCore/FixedSizeVector.h>
 
+#include <algorithm>
 #include <cassert>
 #include <functional>
 
@@ -23,6 +24,7 @@ class Triangles : public ElementContainer
 public:
 
     using DestroyHandler = std::function<void(ElementIndex)>;
+    using RestoreHandler = std::function<void(ElementIndex)>;
 
 private:
 
@@ -59,10 +61,12 @@ public:
         , mEndpointsBuffer(mBufferElementCount, mElementCount, Endpoints(NoneElementIndex, NoneElementIndex, NoneElementIndex))
         // Sub springs
         , mSubSpringsBuffer(mBufferElementCount, mElementCount, SubSpringsVector())
+        , mFactorySubSpringsBuffer(mBufferElementCount, mElementCount, SubSpringsVector())
         //////////////////////////////////
         // Container
         //////////////////////////////////
         , mDestroyHandler()
+        , mRestoreHandler()
     {
     }
 
@@ -86,6 +90,24 @@ public:
         mDestroyHandler = std::move(destroyHandler);
     }
 
+    /*
+     * Sets a (single) handler that is invoked whenever a triangle is restored.
+     *
+     * The handler is invoked right after the triangle is modified to be restored. However,
+     * other elements connected to the soon-to-be-restored triangle might not have been
+     * restored yet.
+     *
+     * The handler is not re-entrant: restoring other triangles from it is not supported
+     * and leads to undefined behavior.
+     *
+     * Setting more than one handler is not supported and leads to undefined behavior.
+     */
+    void RegisterRestoreHandler(RestoreHandler restoreHandler)
+    {
+        assert(!mRestoreHandler);
+        mRestoreHandler = std::move(restoreHandler);
+    }
+
     void Add(
         ElementIndex pointAIndex,
         ElementIndex pointBIndex,
@@ -93,6 +115,8 @@ public:
         SubSpringsVector const & subSprings);
 
     void Destroy(ElementIndex triangleElementIndex);
+
+    void Restore(ElementIndex triangleElementIndex);
 
     //
     // Render
@@ -118,7 +142,6 @@ public:
             if (!mIsDeletedBuffer[i])
             {
                 // Get the plane of this triangle (== plane of point A)
-                assert(!points.IsDeleted(GetPointAIndex(i)));
                 PlaneId planeId = points.GetPlaneId(GetPointAIndex(i));
 
                 // Send triangle to its index
@@ -179,6 +202,12 @@ public:
         ElementIndex triangleElementIndex,
         ElementIndex subSpringElementIndex)
     {
+        assert(mFactorySubSpringsBuffer[triangleElementIndex].contains(
+            [subSpringElementIndex](auto ss)
+            {
+                return ss = subSpringElementIndex;
+            }));
+
         mSubSpringsBuffer[triangleElementIndex].push_back(subSpringElementIndex);
     }
 
@@ -197,6 +226,21 @@ public:
         mSubSpringsBuffer[triangleElementIndex].clear();
     }
 
+    auto const & GetFactorySubSprings(ElementIndex triangleElementIndex) const
+    {
+        return mFactorySubSpringsBuffer[triangleElementIndex];
+    }
+
+    void RestoreFactorySubSprings(ElementIndex triangleElementIndex)
+    {
+        assert(mSubSpringsBuffer[triangleElementIndex].empty());
+
+        std::copy(
+            mFactorySubSpringsBuffer[triangleElementIndex].begin(),
+            mFactorySubSpringsBuffer[triangleElementIndex].end(),
+            mSubSpringsBuffer[triangleElementIndex].begin());
+    }
+
 private:
 
     //////////////////////////////////////////////////////////
@@ -213,6 +257,7 @@ private:
     // This is the three springs along the edges, plus the eventual "traverse" spring (i.e. the non-edge diagonal
     // in a two-triangle square)
     Buffer<SubSpringsVector> mSubSpringsBuffer;
+    Buffer<SubSpringsVector> mFactorySubSpringsBuffer;
 
     //////////////////////////////////////////////////////////
     // Container
@@ -220,6 +265,9 @@ private:
 
     // The handler registered for triangle deletions
     DestroyHandler mDestroyHandler;
+
+    // The handler registered for triangle restoration
+    RestoreHandler mRestoreHandler;
 };
 
 }

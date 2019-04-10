@@ -16,6 +16,11 @@
 #include <wx/app.h>
 #include <wx/msgdlg.h>
 
+#ifdef _MSC_VER
+#else
+#include "Resources/Ship.xpm"
+#endif
+
 #ifdef _DEBUG
 #ifdef _MSC_VER
 #include <crtdbg.h>

@@ -557,7 +557,11 @@ void ShipBuilder::AppendRopes(
 
             // Add SpringInfo
             ElementIndex const springIndex = static_cast<ElementIndex>(springInfos1.size());
-            springInfos1.emplace_back(curStartPointIndex, newPointIndex);
+            springInfos1.emplace_back(
+                curStartPointIndex,
+                0,  // Arbitrary factory direction (E)
+                newPointIndex,
+                4); // Arbitrary factory direction (W)
 
             // Add PointInfo
             pointInfos1.emplace_back(
@@ -583,7 +587,11 @@ void ShipBuilder::AppendRopes(
 
         // Add last SpringInfo (no PointInfo as the endpoint has already a PointInfo)
         ElementIndex const lastSpringIndex = static_cast<ElementIndex>(springInfos1.size());
-        springInfos1.emplace_back(curStartPointIndex, ropeSegment.PointBIndex1);
+        springInfos1.emplace_back(
+            curStartPointIndex,
+            0,  // Arbitrary factory direction (E)
+            ropeSegment.PointBIndex1,
+            4); // Arbitrary factory direction (W)
 
         // Connect points to spring
         pointInfos1[curStartPointIndex].AddConnectedSpring(lastSpringIndex);
@@ -611,14 +619,14 @@ void ShipBuilder::CreateShipElementInfos(
 
     // This is our local circular order
     static const int Directions[8][2] = {
-        {  1,  0 },  // E
-        {  1, -1 },  // SE
-        {  0, -1 },  // S
-        { -1, -1 },  // SW
-        { -1,  0 },  // W
-        { -1,  1 },  // NW
-        {  0,  1 },  // N
-        {  1,  1 }   // NE
+        {  1,  0 },  // 0: E
+        {  1, -1 },  // 1: SE
+        {  0, -1 },  // 2: S
+        { -1, -1 },  // 3: SW
+        { -1,  0 },  // 4: W
+        { -1,  1 },  // 5: NW
+        {  0,  1 },  // 6: N
+        {  1,  1 }   // 7: NE
     };
 
     // From bottom to top
@@ -679,7 +687,9 @@ void ShipBuilder::CreateShipElementInfos(
 
                         springInfos1.emplace_back(
                             pointIndex,
-                            otherEndpointIndex);
+                            i,
+                            otherEndpointIndex,
+                            (i + 4) % 8);
 
                         // Add the spring to its endpoints
                         pointInfos1[pointIndex].AddConnectedSpring(springIndex);
@@ -1171,17 +1181,19 @@ Physics::Springs ShipBuilder::CreateSprings(
         springs.Add(
             pointIndexRemap[springInfos2[s].PointAIndex1],
             pointIndexRemap[springInfos2[s].PointBIndex1],
+            springInfos2[s].PointAAngle,
+            springInfos2[s].PointBAngle,
             springInfos2[s].SuperTriangles2,
             static_cast<Springs::Characteristics>(characteristics),
             points);
 
         // Add spring to its endpoints
-        points.AddConnectedSpring(
+        points.AddFactoryConnectedSpring(
             pointIndexRemap[springInfos2[s].PointAIndex1],
             s,
             pointIndexRemap[springInfos2[s].PointBIndex1],
             true); // Owner
-        points.AddConnectedSpring(
+        points.AddFactoryConnectedSpring(
             pointIndexRemap[springInfos2[s].PointBIndex1],
             s,
             pointIndexRemap[springInfos2[s].PointAIndex1],
@@ -1208,9 +1220,9 @@ Physics::Triangles ShipBuilder::CreateTriangles(
             triangleInfos2[t].SubSprings2);
 
         // Add triangle to its endpoints
-        points.AddConnectedTriangle(pointIndexRemap[triangleInfos2[t].PointIndices1[0]], t, true); // Owner
-        points.AddConnectedTriangle(pointIndexRemap[triangleInfos2[t].PointIndices1[1]], t, false); // Not owner
-        points.AddConnectedTriangle(pointIndexRemap[triangleInfos2[t].PointIndices1[2]], t, false); // Not owner
+        points.AddFactoryConnectedTriangle(pointIndexRemap[triangleInfos2[t].PointIndices1[0]], t, true); // Owner
+        points.AddFactoryConnectedTriangle(pointIndexRemap[triangleInfos2[t].PointIndices1[1]], t, false); // Not owner
+        points.AddFactoryConnectedTriangle(pointIndexRemap[triangleInfos2[t].PointIndices1[2]], t, false); // Not owner
     }
 
     return triangles;

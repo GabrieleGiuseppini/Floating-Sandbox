@@ -121,6 +121,26 @@ public:
         return mViewModel.GetVisibleWorldHeight();
     }
 
+    float GetVisibleWorldLeft() const
+    {
+        return mViewModel.GetVisibleWorldTopLeft().x;
+    }
+
+    float GetVisibleWorldRight() const
+    {
+        return mViewModel.GetVisibleWorldBottomRight().x;
+    }
+
+    float GetVisibleWorldTop() const
+    {
+        return mViewModel.GetVisibleWorldTopLeft().y;
+    }
+
+    float GetVisibleWorldBottom() const
+    {
+        return mViewModel.GetVisibleWorldBottomRight().y;
+    }
+
     //
 
     rgbColor const & GetFlatSkyColor() const
@@ -478,16 +498,14 @@ public:
 
 
     //
-    // Land and Ocean
+    // Land
     //
 
-    void UploadLandAndOceanStart(size_t slices);
+    void UploadLandStart(size_t slices);
 
-    inline void UploadLandAndOcean(
+    inline void UploadLand(
         float x,
-        float yLand,
-        float yOcean,
-        float oceanDepth)
+        float yLand)
     {
         float const yVisibleWorldBottom = mViewModel.GetVisibleWorldBottomRight().y;
 
@@ -498,10 +516,30 @@ public:
         LandSegment & landSegment = mLandSegmentBuffer.emplace_back();
 
         landSegment.x1 = x;
-        landSegment.y1 = yLand > yVisibleWorldBottom ? yLand : yVisibleWorldBottom; // Clamp top up to visible bottom
+        landSegment.y1 = yLand;
         landSegment.x2 = x;
-        landSegment.y2 = yVisibleWorldBottom;
+        // If land is invisible (below), then keep both points at same height, or else interpolated lines
+        // will have a slope varying with the y of the visible world bottom
+        landSegment.y2 = yLand >= yVisibleWorldBottom ? yVisibleWorldBottom : yLand;
+   }
 
+    void UploadLandEnd();
+
+    void RenderLand();
+
+
+    //
+    // Ocean
+    //
+
+    void UploadOceanStart(size_t slices);
+
+    inline void UploadOcean(
+        float x,
+        float yOcean,
+        float oceanDepth)
+    {
+        float const yVisibleWorldBottom = mViewModel.GetVisibleWorldBottomRight().y;
 
         //
         // Store ocean element
@@ -514,23 +552,24 @@ public:
         oceanSegment.y1 = oceanSegmentY1;
 
         oceanSegment.x2 = x;
-        float const oceanSegmentY2 = yOcean > yLand ? yLand : yVisibleWorldBottom; // If land sticks out, go down to visible bottom (land is drawn last)
+        float const oceanSegmentY2 = yVisibleWorldBottom;
         oceanSegment.y2 = oceanSegmentY2;
 
         switch (mOceanRenderMode)
         {
             case OceanRenderMode::Texture:
             {
-                // Texture sample Y: top=oceanDepth (we use repeat mode), bottom=0.0
-                oceanSegment.value1 = oceanDepth;
-                oceanSegment.value2 = 0.0f;
+                // Texture sample Y levels: anchor texture at top of wave,
+                // and set bottom at total visible height (after all, ocean texture repeats)
+                oceanSegment.value1 = 0.0f; // This is at yOcean
+                oceanSegment.value2 = yOcean - yVisibleWorldBottom; // Negative if yOcean invisible, but then who cares
 
                 break;
             }
 
             case OceanRenderMode::Depth:
             {
-                // Depth: top=0.0, bottom=height as fraction of maximum depth
+                // Depth: top=0.0, bottom=height as fraction of ocean depth
                 oceanSegment.value1 = 0.0f;
                 oceanSegment.value2 = oceanDepth != 0.0f
                     ? abs(oceanSegmentY2 - oceanSegmentY1) / oceanDepth
@@ -541,18 +580,16 @@ public:
 
             case OceanRenderMode::Flat:
             {
-                // Nop, be nice
+                // Nop, but be nice
                 oceanSegment.value1 = 0.0f;
                 oceanSegment.value2 = 0.0f;
 
                 break;
             }
         }
-   }
+    }
 
-    void UploadLandAndOceanEnd();
-
-    void RenderLand();
+    void UploadOceanEnd();
 
     void RenderOcean();
 
@@ -776,11 +813,13 @@ public:
         mShips[shipId]->UploadElementTrianglesEnd();
     }
 
-    inline void UploadShipElementsEnd(ShipId shipId)
+    inline void UploadShipElementsEnd(
+        ShipId shipId,
+        bool doFinalizeEphemeralPoints)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId]->UploadElementsEnd();
+        mShips[shipId]->UploadElementsEnd(doFinalizeEphemeralPoints);
     }
 
     //
@@ -984,19 +1023,21 @@ public:
 private:
 
     void RenderCrossesOfLight();
+    void RenderWorldBorder();
 
     void OnViewModelUpdated();
     void OnAmbientLightIntensityUpdated();
     void OnOceanTransparencyUpdated();
+    void OnOceanRenderParametersUpdated();
+    void OnLandRenderParametersUpdated();
     void OnWaterContrastUpdated();
     void OnWaterLevelOfDetailUpdated();
     void OnShipRenderModeUpdated();
     void OnDebugShipRenderModeUpdated();
-    void OnOceanRenderParametersUpdated();
-    void OnLandRenderParametersUpdated();
     void OnVectorFieldRenderModeUpdated();
     void OnShowStressedSpringsUpdated();
 
+    void UpdateWorldBorder();
     vec4f CalculateWaterColor() const;
 
 private:
@@ -1092,6 +1133,25 @@ private:
         {}
     };
 
+    struct WorldBorderVertex
+    {
+        float x;
+        float y;
+        float textureX;
+        float textureY;
+
+        WorldBorderVertex(
+            float _x,
+            float _y,
+            float _textureX,
+            float _textureY)
+            : x(_x)
+            , y(_y)
+            , textureX(_textureX)
+            , textureY(_textureY)
+        {}
+    };
+
 #pragma pack(pop)
 
     //
@@ -1105,13 +1165,18 @@ private:
     GameOpenGLVBO mCloudVBO;
 
     GameOpenGLMappedBuffer<LandSegment, GL_ARRAY_BUFFER> mLandSegmentBuffer;
+    size_t mLandSegmentBufferAllocatedSize;
     GameOpenGLVBO mLandVBO;
 
     GameOpenGLMappedBuffer<OceanSegment, GL_ARRAY_BUFFER> mOceanSegmentBuffer;
+    size_t mOceanSegmentBufferAllocatedSize;
     GameOpenGLVBO mOceanVBO;
 
     std::vector<CrossOfLightVertex> mCrossOfLightVertexBuffer;
     GameOpenGLVBO mCrossOfLightVBO;
+
+    std::vector<WorldBorderVertex> mWorldBorderVertexBuffer;
+    GameOpenGLVBO mWorldBorderVBO;
 
     //
     // VAOs
@@ -1122,6 +1187,7 @@ private:
     GameOpenGLVAO mLandVAO;
     GameOpenGLVAO mOceanVAO;
     GameOpenGLVAO mCrossOfLightVAO;
+    GameOpenGLVAO mWorldBorderVAO;
 
     //
     // Textures
@@ -1138,6 +1204,13 @@ private:
 
     GameOpenGLTexture mGenericTextureAtlasOpenGLHandle;
     std::unique_ptr<TextureAtlasMetadata> mGenericTextureAtlasMetadata;
+
+    //
+    // World border
+    //
+
+    ImageSize mWorldBorderTextureSize;
+    bool mIsWorldBorderVisible;
 
 private:
 

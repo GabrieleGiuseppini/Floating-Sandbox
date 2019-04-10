@@ -3,8 +3,6 @@
  * Created:             2019-01-11
  * Copyright:           Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
  ***************************************************************************************/
-#pragma once
-
 #include "PixelCoordsTest.h"
 
 #include <GPUCalc/GPUCalculatorFactory.h>

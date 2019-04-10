@@ -63,8 +63,8 @@ public:
      */
     float ClampZoom(float zoom) const
     {
-        float constexpr MaxWorldLeft = -GameParameters::MaxWorldWidth / 2.0f;
-        float constexpr MaxWorldRight = GameParameters::MaxWorldWidth / 2.0f;
+        float constexpr MaxWorldLeft = -GameParameters::HalfMaxWorldWidth;
+        float constexpr MaxWorldRight = GameParameters::HalfMaxWorldWidth;
 
         float const visibleWorldWidth = CalculateVisibleWorldWidth(zoom);
         if (mCam.x - visibleWorldWidth / 2.0f < MaxWorldLeft)
@@ -76,17 +76,22 @@ public:
             zoom = visibleWorldWidth * zoom / ((MaxWorldRight - mCam.x) * 2.0f);
         }
 
-        float constexpr MaxWorldTop = GameParameters::MaxWorldHeight;
-        float constexpr MaxWorldBottom = -GameParameters::MaxWorldHeight;
+        float constexpr MaxWorldTop = GameParameters::HalfMaxWorldHeight;
+        float constexpr MaxWorldBottom = -GameParameters::HalfMaxWorldHeight;
 
         float const visibleWorldHeight = CalculateVisibleWorldHeight(zoom);
         if (mCam.y + visibleWorldHeight / 2.0 > MaxWorldTop)
         {
-            zoom = visibleWorldHeight * zoom / ((mCam.y - MaxWorldTop) * 2.0f);
+            zoom = visibleWorldHeight * zoom / ((MaxWorldTop - mCam.y) * 2.0f);
         }
         else if (mCam.y - visibleWorldHeight / 2.0 < MaxWorldBottom)
         {
-            zoom = visibleWorldHeight * zoom / ((MaxWorldBottom - mCam.y) * 2.0f);
+            zoom = visibleWorldHeight * zoom / ((mCam.y - MaxWorldBottom) * 2.0f);
+        }
+
+        if (zoom > MaxZoom)
+        {
+            zoom = MaxZoom;
         }
 
         return zoom;
@@ -185,6 +190,11 @@ public:
         return mCanvasToVisibleWorldHeightRatio;
     }
 
+    float GetCanvasWidthToHeightRatio() const
+    {
+        return mCanvasWidthToHeightRatio;
+    }
+
     //
     // Coordinate transformations
     //
@@ -201,6 +211,24 @@ public:
         return vec2f(
             screenOffset.x / static_cast<float>(mCanvasWidth) * mVisibleWorldWidth,
             -screenOffset.y / static_cast<float>(mCanvasHeight) * mVisibleWorldHeight);
+    }
+
+    inline float PixelWidthToWorldWidth(float pixelWidth)
+    {
+        // Width in NDC coordinates (between 0 and 2.0)
+        float const ndcW = 2.0f * pixelWidth / static_cast<float>(mCanvasWidth);
+
+        // An NDC width of 2 is the entire visible world width
+        return (ndcW / 2.0f) * mVisibleWorldWidth;
+    }
+
+    inline float PixelHeightToWorldHeight(float pixelHeight)
+    {
+        // Height in NDC coordinates (between 0 and 2.0)
+        float const ndcH = 2.0f * pixelHeight / static_cast<float>(mCanvasHeight);
+
+        // An NDC height of 2 is the entire visible world height
+        return (ndcH / 2.0f) * mVisibleWorldHeight;
     }
 
     //
@@ -306,6 +334,7 @@ private:
             mCam.y - (mVisibleWorldHeight / 2.0f));
 
         mCanvasToVisibleWorldHeightRatio = static_cast<float>(mCanvasHeight) / mVisibleWorldHeight;
+        mCanvasWidthToHeightRatio = static_cast<float>(mCanvasWidth) / static_cast<float>(mCanvasHeight);
 
         // Recalculate kernel Ortho Matrix cells
         mKernelOrthoMatrix[0][0] = 2.0f / mVisibleWorldWidth;
@@ -315,6 +344,9 @@ private:
     }
 
 private:
+
+    // Constants
+    static constexpr float MaxZoom = 1000.0f;
 
     // Primary inputs
     float mZoom;
@@ -328,6 +360,7 @@ private:
     vec2f mVisibleWorldTopLeft;
     vec2f mVisibleWorldBottomRight;
     float mCanvasToVisibleWorldHeightRatio;
+    float mCanvasWidthToHeightRatio;
     ProjectionMatrix mKernelOrthoMatrix; // Common subset of all ortho matrices
 };
 

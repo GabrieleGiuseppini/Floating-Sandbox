@@ -33,17 +33,20 @@ class Points : public ElementContainer
 {
 public:
 
-    enum class DestroyOptions
+    enum class DetachOptions
     {
         DoNotGenerateDebris = 0,
         GenerateDebris = 1
     };
 
-    using DestroyHandler = std::function<void(
+    using DetachHandler = std::function<void(
         ElementIndex,
         bool /*generateDebris*/,
         float /*currentSimulationTime*/,
         GameParameters const &)>;
+
+    using EphemeralParticleDestroyHandler = std::function<void(
+        ElementIndex)>;
 
     enum class EphemeralType
     {
@@ -168,6 +171,44 @@ private:
             : ConnectedSprings()
             , OwnedConnectedSpringsCount(0u)
         {}
+
+        inline void ConnectSpring(
+            ElementIndex springElementIndex,
+            ElementIndex otherEndpointElementIndex,
+            bool isAtOwner)
+        {
+            // Add so that all springs owned by this point come first
+            if (isAtOwner)
+            {
+                ConnectedSprings.emplace_front(springElementIndex, otherEndpointElementIndex);
+                ++OwnedConnectedSpringsCount;
+            }
+            else
+            {
+                ConnectedSprings.emplace_back(springElementIndex, otherEndpointElementIndex);
+            }
+        }
+
+        inline void DisconnectSpring(
+            ElementIndex springElementIndex,
+            bool isAtOwner)
+        {
+            bool found = ConnectedSprings.erase_first(
+                [springElementIndex](ConnectedSpring const & c)
+                {
+                    return c.SpringIndex == springElementIndex;
+                });
+
+            assert(found);
+            (void)found;
+
+            // Update count of owned springs, if this spring is owned
+            if (isAtOwner)
+            {
+                assert(OwnedConnectedSpringsCount > 0);
+                --OwnedConnectedSpringsCount;
+            }
+        }
     };
 
     /*
@@ -182,6 +223,43 @@ private:
             : ConnectedTriangles()
             , OwnedConnectedTrianglesCount(0u)
         {}
+
+        inline void ConnectTriangle(
+            ElementIndex triangleElementIndex,
+            bool isAtOwner)
+        {
+            // Add so that all triangles owned by this point come first
+            if (isAtOwner)
+            {
+                ConnectedTriangles.emplace_front(triangleElementIndex);
+                ++OwnedConnectedTrianglesCount;
+            }
+            else
+            {
+                ConnectedTriangles.emplace_back(triangleElementIndex);
+            }
+        }
+
+        inline void DisconnectTriangle(
+            ElementIndex triangleElementIndex,
+            bool isAtOwner)
+        {
+            bool found = ConnectedTriangles.erase_first(
+                [triangleElementIndex](ElementIndex c)
+                {
+                    return c == triangleElementIndex;
+                });
+
+            assert(found);
+            (void)found;
+
+            // Update count of owned triangles, if this triangle is owned
+            if (isAtOwner)
+            {
+                assert(OwnedConnectedTrianglesCount > 0);
+                --OwnedConnectedTrianglesCount;
+            }
+        }
     };
 
 
@@ -212,7 +290,6 @@ public:
         //////////////////////////////////
         // Buffers
         //////////////////////////////////
-        , mIsDeletedBuffer(mBufferElementCount, shipPointCount, true)
         // Materials
         , mMaterialsBuffer(mBufferElementCount, shipPointCount, Materials(nullptr, nullptr))
         , mIsRopeBuffer(mBufferElementCount, shipPointCount, false)
@@ -238,6 +315,7 @@ public:
         , mWaterMomentumBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mCumulatedIntakenWater(mBufferElementCount, shipPointCount, 0.0f)
         , mIsLeakingBuffer(mBufferElementCount, shipPointCount, false)
+        , mFactoryIsLeakingBuffer(mBufferElementCount, shipPointCount, false)
         // Electrical dynamics
         , mElectricalElementBuffer(mBufferElementCount, shipPointCount, NoneElementIndex)
         , mLightBuffer(mBufferElementCount, shipPointCount, 0.0f)
@@ -250,7 +328,9 @@ public:
         , mEphemeralStateBuffer(mBufferElementCount, shipPointCount, EphemeralState::DebrisState())
         // Structure
         , mConnectedSpringsBuffer(mBufferElementCount, shipPointCount, ConnectedSpringsVector())
+        , mFactoryConnectedSpringsBuffer(mBufferElementCount, shipPointCount, ConnectedSpringsVector())
         , mConnectedTrianglesBuffer(mBufferElementCount, shipPointCount, ConnectedTrianglesVector())
+        , mFactoryConnectedTrianglesBuffer(mBufferElementCount, shipPointCount, ConnectedTrianglesVector())
         // Connected component and plane ID
         , mConnectedComponentIdBuffer(mBufferElementCount, shipPointCount, NoneConnectedComponentId)
         , mPlaneIdBuffer(mBufferElementCount, shipPointCount, NonePlaneId)
@@ -273,12 +353,13 @@ public:
         , mAllPointCount(mShipPointCount + mEphemeralPointCount)
         , mParentWorld(parentWorld)
         , mGameEventHandler(std::move(gameEventHandler))
-        , mDestroyHandler()
+        , mDetachHandler()
+        , mEphemeralParticleDestroyHandler()
         , mCurrentNumMechanicalDynamicsIterations(gameParameters.NumMechanicalDynamicsIterations<float>())
         , mFloatBufferAllocator(mBufferElementCount)
         , mVec2fBufferAllocator(mBufferElementCount)
         , mFreeEphemeralParticleSearchStartIndex(mShipPointCount)
-        , mAreEphemeralParticlesDirty(false)
+        , mAreEphemeralPointsDirty(false)
     {
     }
 
@@ -309,21 +390,53 @@ public:
     }
 
     /*
-     * Sets a (single) handler that is invoked whenever a point is destroyed.
+     * Returns a flag indicating whether the point is active in the world.
      *
-     * The handler is invoked right before the point is marked as deleted. However,
-     * other elements connected to the soon-to-be-deleted point might already have been
+     * Active points are all non-ephemeral points and non-expired ephemeral points.
+     */
+    inline bool IsActive(ElementIndex pointIndex) const
+    {
+        return pointIndex < mShipPointCount
+            || EphemeralType::None != mEphemeralTypeBuffer[pointIndex];
+    }
+
+    inline bool IsEphemeral(ElementIndex pointIndex) const
+    {
+        return pointIndex >= mShipPointCount;
+    }
+
+    /*
+     * Sets a (single) handler that is invoked whenever a point is detached.
+     *
+     * The handler is invoked right before the point is modified for the detachment. However,
+     * other elements connected to the soon-to-be-detached point might already have been
      * deleted.
      *
-     * The handler is not re-entrant: destroying other points from it is not supported
+     * The handler is not re-entrant: detaching other points from it is not supported
      * and leads to undefined behavior.
      *
      * Setting more than one handler is not supported and leads to undefined behavior.
      */
-    void RegisterDestroyHandler(DestroyHandler destroyHandler)
+    void RegisterDetachHandler(DetachHandler detachHandler)
     {
-        assert(!mDestroyHandler);
-        mDestroyHandler = std::move(destroyHandler);
+        assert(!mDetachHandler);
+        mDetachHandler = std::move(detachHandler);
+    }
+
+    /*
+     * Sets a (single) handler that is invoked whenever an ephemeral particle is destroyed.
+     *
+     * The handler is invoked right before the particle is modified for the destroy.
+     *
+     * The handler is not re-entrant: destroying other ephemeral particles from it is not supported
+     * and leads to undefined behavior.
+     *
+     * Setting more than one handler is not supported and leads to undefined behavior.
+     */
+    void RegisterEphemeralParticleDestroyHandler(EphemeralParticleDestroyHandler ephemeralParticleDestroyHandler)
+    {
+        assert(!mEphemeralParticleDestroyHandler);
+        mEphemeralParticleDestroyHandler = std::move(ephemeralParticleDestroyHandler);
     }
 
     void Add(
@@ -361,9 +474,13 @@ public:
         std::chrono::milliseconds maxLifetime,
         PlaneId planeId);
 
-    void Destroy(
+    void DestroyEphemeralParticle(
+        ElementIndex pointElementIndex);
+
+    void Detach(
         ElementIndex pointElementIndex,
-        DestroyOptions destroyOptions,
+        vec2f const & detachVelocity,
+        DetachOptions detachOptions,
         float currentSimulationTime,
         GameParameters const & gameParameters);
 
@@ -383,7 +500,7 @@ public:
         ShipId shipId,
         Render::RenderContext & renderContext) const;
 
-    void UploadElements(
+    void UploadNonEphemeralPointElements(
         ShipId shipId,
         Render::RenderContext & renderContext) const;
 
@@ -391,20 +508,16 @@ public:
         ShipId shipId,
         Render::RenderContext & renderContext) const;
 
+    bool AreEphemeralPointsDirty() const
+    {
+        return mAreEphemeralPointsDirty;
+    }
+
     void UploadEphemeralParticles(
         ShipId shipId,
         Render::RenderContext & renderContext) const;
 
 public:
-
-    //
-    // IsDeleted
-    //
-
-    bool IsDeleted(ElementIndex pointElementIndex) const
-    {
-        return mIsDeletedBuffer[pointElementIndex];
-    }
 
     //
     // Materials
@@ -471,6 +584,13 @@ public:
         return reinterpret_cast<float *>(mVelocityBuffer.data());
     }
 
+    void SetVelocity(
+        ElementIndex pointElementIndex,
+        vec2f const & velocity)
+    {
+        mVelocityBuffer[pointElementIndex] = velocity;
+    }
+
     vec2f const & GetForce(ElementIndex pointElementIndex) const
     {
         return mForceBuffer[pointElementIndex];
@@ -479,6 +599,13 @@ public:
     vec2f & GetForce(ElementIndex pointElementIndex)
     {
         return mForceBuffer[pointElementIndex];
+    }
+
+    void AddForce(
+        ElementIndex pointElementIndex,
+        vec2f const & force)
+    {
+        mForceBuffer[pointElementIndex] += force;
     }
 
     float * restrict GetForceBufferAsFloat()
@@ -491,12 +618,12 @@ public:
         mForceRenderBuffer.copy_from(mForceBuffer);
     }
 
-    float GetMass(ElementIndex pointElementIndex) const
+    float GetAugmentedStructuralMass(ElementIndex pointElementIndex) const
     {
         return mMassBuffer[pointElementIndex];
     }
 
-    void SetMassToStructuralMaterialOffset(
+    void AugmentStructuralMass(
         ElementIndex pointElementIndex,
         float offset,
         Springs & springs);
@@ -699,6 +826,11 @@ public:
             GameParameters::CumulatedIntakenWaterThresholdForAirBubbles);
     }
 
+    void RestoreFactoryIsLeaking(ElementIndex pointElementIndex)
+    {
+        mIsLeakingBuffer[pointElementIndex] = mFactoryIsLeakingBuffer[pointElementIndex];
+    }
+
     //
     // Electrical dynamics
     //
@@ -745,44 +877,57 @@ public:
         return mConnectedSpringsBuffer[pointElementIndex];
     }
 
-    void AddConnectedSpring(
+    void ConnectSpring(
         ElementIndex pointElementIndex,
         ElementIndex springElementIndex,
         ElementIndex otherEndpointElementIndex,
         bool isAtOwner)
     {
-        // Add so that all springs owned by this point come first
-        if (isAtOwner)
-        {
-            mConnectedSpringsBuffer[pointElementIndex].ConnectedSprings.emplace_front(springElementIndex, otherEndpointElementIndex);
-            ++(mConnectedSpringsBuffer[pointElementIndex].OwnedConnectedSpringsCount);
-        }
-        else
-        {
-            mConnectedSpringsBuffer[pointElementIndex].ConnectedSprings.emplace_back(springElementIndex, otherEndpointElementIndex);
-        }
+        assert(mFactoryConnectedSpringsBuffer[pointElementIndex].ConnectedSprings.contains(
+            [springElementIndex](auto const & cs)
+            {
+                return cs.SpringIndex == springElementIndex;
+            }));
+
+        mConnectedSpringsBuffer[pointElementIndex].ConnectSpring(
+            springElementIndex,
+            otherEndpointElementIndex,
+            isAtOwner);
     }
 
-    void RemoveConnectedSpring(
+    void DisconnectSpring(
         ElementIndex pointElementIndex,
         ElementIndex springElementIndex,
         bool isAtOwner)
     {
-        bool found = mConnectedSpringsBuffer[pointElementIndex].ConnectedSprings.erase_first(
-            [springElementIndex](ConnectedSpring const & c)
-            {
-                return c.SpringIndex == springElementIndex;
-            });
+        mConnectedSpringsBuffer[pointElementIndex].DisconnectSpring(
+            springElementIndex,
+            isAtOwner);
+    }
 
-        assert(found);
-        (void)found;
+    auto const & GetFactoryConnectedSprings(ElementIndex pointElementIndex) const
+    {
+        return mFactoryConnectedSpringsBuffer[pointElementIndex];
+    }
 
-        // Update count of owned springs, if this spring is owned
-        if (isAtOwner)
-        {
-            assert(mConnectedSpringsBuffer[pointElementIndex].OwnedConnectedSpringsCount > 0);
-            --(mConnectedSpringsBuffer[pointElementIndex].OwnedConnectedSpringsCount);
-        }
+    void AddFactoryConnectedSpring(
+        ElementIndex pointElementIndex,
+        ElementIndex springElementIndex,
+        ElementIndex otherEndpointElementIndex,
+        bool isAtOwner)
+    {
+        // Add spring
+        mFactoryConnectedSpringsBuffer[pointElementIndex].ConnectSpring(
+            springElementIndex,
+            otherEndpointElementIndex,
+            isAtOwner);
+
+        // Connect spring
+        ConnectSpring(
+            pointElementIndex,
+            springElementIndex,
+            otherEndpointElementIndex,
+            isAtOwner);
     }
 
     auto const & GetConnectedTriangles(ElementIndex pointElementIndex) const
@@ -790,49 +935,57 @@ public:
         return mConnectedTrianglesBuffer[pointElementIndex];
     }
 
-    void AddConnectedTriangle(
+    void ConnectTriangle(
         ElementIndex pointElementIndex,
         ElementIndex triangleElementIndex,
         bool isAtOwner)
     {
-        // Add so that all triangles owned by this point come first
-        if (isAtOwner)
-        {
-            mConnectedTrianglesBuffer[pointElementIndex].ConnectedTriangles.emplace_front(triangleElementIndex);
-            ++(mConnectedTrianglesBuffer[pointElementIndex].OwnedConnectedTrianglesCount);
-        }
-        else
-        {
-            mConnectedTrianglesBuffer[pointElementIndex].ConnectedTriangles.emplace_back(triangleElementIndex);
-        }
+        assert(mFactoryConnectedTrianglesBuffer[pointElementIndex].ConnectedTriangles.contains(
+            [triangleElementIndex](auto const & ct)
+            {
+                return ct.TriangleIndex == triangleElementIndex;
+            }));
+
+        mConnectedTrianglesBuffer[pointElementIndex].ConnectTriangle(
+            triangleElementIndex,
+            isAtOwner);
     }
 
-    void RemoveConnectedTriangle(
+    void DisconnectTriangle(
         ElementIndex pointElementIndex,
         ElementIndex triangleElementIndex,
         bool isAtOwner)
     {
-        // Remove triangle
-        bool found = mConnectedTrianglesBuffer[pointElementIndex].ConnectedTriangles.erase_first(
-            [triangleElementIndex](ElementIndex c)
-            {
-                return c == triangleElementIndex;
-            });
-
-        assert(found);
-        (void)found;
-
-        // Update count of owned triangles, if this triangle is owned
-        if (isAtOwner)
-        {
-            assert(mConnectedTrianglesBuffer[pointElementIndex].OwnedConnectedTrianglesCount > 0);
-            --(mConnectedTrianglesBuffer[pointElementIndex].OwnedConnectedTrianglesCount);
-        }
+        mConnectedTrianglesBuffer[pointElementIndex].DisconnectTriangle(
+            triangleElementIndex,
+            isAtOwner);
     }
 
     size_t GetConnectedOwnedTrianglesCount(ElementIndex pointElementIndex) const
     {
         return mConnectedTrianglesBuffer[pointElementIndex].OwnedConnectedTrianglesCount;
+    }
+
+    auto const & GetFactoryConnectedTriangles(ElementIndex pointElementIndex) const
+    {
+        return mFactoryConnectedTrianglesBuffer[pointElementIndex];
+    }
+
+    void AddFactoryConnectedTriangle(
+        ElementIndex pointElementIndex,
+        ElementIndex triangleElementIndex,
+        bool isAtOwner)
+    {
+        // Add triangle
+        mFactoryConnectedTrianglesBuffer[pointElementIndex].ConnectTriangle(
+            triangleElementIndex,
+            isAtOwner);
+
+        // Connect triangle
+        ConnectTriangle(
+            pointElementIndex,
+            triangleElementIndex,
+            isAtOwner);
     }
 
     //
@@ -961,9 +1114,6 @@ private:
         // - Being rendered
         // - Being updated
         mEphemeralTypeBuffer[pointElementIndex] = EphemeralType::None;
-
-        // Remember we're now dirty
-        mAreEphemeralParticlesDirty = true;
     }
 
 private:
@@ -971,9 +1121,6 @@ private:
     //////////////////////////////////////////////////////////
     // Buffers
     //////////////////////////////////////////////////////////
-
-    // Deletion
-    Buffer<bool> mIsDeletedBuffer;
 
     // Materials
     Buffer<Materials> mMaterialsBuffer;
@@ -1020,7 +1167,9 @@ private:
     // utilized for air bubbles
     Buffer<float> mCumulatedIntakenWater;
 
+    // When true, the point is intaking water
     Buffer<bool> mIsLeakingBuffer;
+    Buffer<bool> mFactoryIsLeakingBuffer;
 
     //
     // Electrical dynamics
@@ -1052,7 +1201,9 @@ private:
     //
 
     Buffer<ConnectedSpringsVector> mConnectedSpringsBuffer;
+    Buffer<ConnectedSpringsVector> mFactoryConnectedSpringsBuffer;
     Buffer<ConnectedTrianglesVector> mConnectedTrianglesBuffer;
+    Buffer<ConnectedTrianglesVector> mFactoryConnectedTrianglesBuffer;
 
     //
     // Connectivity
@@ -1097,8 +1248,11 @@ private:
     World & mParentWorld;
     std::shared_ptr<IGameEventHandler> const mGameEventHandler;
 
-    // The handler registered for point deletions
-    DestroyHandler mDestroyHandler;
+    // The handler registered for point detachments
+    DetachHandler mDetachHandler;
+
+    // The handler registered for ephemeral particle destroy's
+    EphemeralParticleDestroyHandler mEphemeralParticleDestroyHandler;
 
     // The game parameter values that we are current with; changes
     // in the values of these parameters will trigger a re-calculation
@@ -1113,12 +1267,12 @@ private:
     // (just an optimization over restarting from zero each time)
     ElementIndex mFreeEphemeralParticleSearchStartIndex;
 
-    // Flag remembering whether the set of ephemeral particles is dirty
-    // (i.e. whether there are more or less particles than previously
+    // Flag remembering whether the set of ephemeral points is dirty
+    // (i.e. whether there are more or less points than previously
     // reported to the rendering engine)
-    bool mutable mAreEphemeralParticlesDirty;
+    bool mutable mAreEphemeralPointsDirty;
 };
 
 }
 
-template <> struct is_flag<Physics::Points::DestroyOptions> : std::true_type {};
+template <> struct is_flag<Physics::Points::DetachOptions> : std::true_type {};

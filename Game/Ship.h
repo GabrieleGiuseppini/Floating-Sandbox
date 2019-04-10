@@ -58,6 +58,21 @@ public:
     auto const & GetElectricalElements() const { return mElectricalElements; }
     auto & GetElectricalElements() { return mElectricalElements; }
 
+    void Update(
+        float currentSimulationTime,
+        GameParameters const & gameParameters,
+        Render::RenderContext const & renderContext);
+
+    void Render(
+        GameParameters const & gameParameters,
+        Render::RenderContext & renderContext);
+
+public:
+
+    ///////////////////////////////////////////////////////////////
+    // Interactions
+    ///////////////////////////////////////////////////////////////
+
     void MoveBy(
         vec2f const & offset,
         GameParameters const & gameParameters);
@@ -68,6 +83,12 @@ public:
         GameParameters const & gameParameters);
 
     void DestroyAt(
+        vec2f const & targetPos,
+        float radiusMultiplier,
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
+
+    void RepairAt(
         vec2f const & targetPos,
         float radiusMultiplier,
         float currentSimulationTime,
@@ -135,15 +156,6 @@ public:
     bool QueryNearestPointAt(
         vec2f const & targetPos,
         float radius) const;
-
-    void Update(
-        float currentSimulationTime,
-        GameParameters const & gameParameters,
-        Render::RenderContext const & renderContext);
-
-    void Render(
-        GameParameters const & gameParameters,
-        Render::RenderContext & renderContext);
 
 public:
 
@@ -221,19 +233,27 @@ private:
         ElementIndex pointAElementIndex,
         ElementIndex pointBElementIndex);
 
-    void PointDestroyHandler(
+    void PointDetachHandler(
         ElementIndex pointElementIndex,
         bool generateDebris,
         float currentSimulationTime,
         GameParameters const & gameParameters);
 
+    void EphemeralParticleDestroyHandler(
+        ElementIndex pointElementIndex);
+
     void SpringDestroyHandler(
         ElementIndex springElementIndex,
         bool destroyAllTriangles,
-        float currentSimulationTime,
+        GameParameters const & gameParameters);
+
+    void SpringRestoreHandler(
+        ElementIndex springElementIndex,
         GameParameters const & gameParameters);
 
     void TriangleDestroyHandler(ElementIndex triangleElementIndex);
+
+    void TriangleRestoreHandler(ElementIndex triangleElementIndex);
 
     void ElectricalElementDestroyHandler(ElementIndex electricalElementIndex);
 
@@ -324,7 +344,7 @@ private:
 
     // Initial indices of the triangles for each plane ID;
     // last extra element contains total number of triangles
-    std::vector<size_t> mPlaneTrianglesRenderIndices;
+    std::vector<size_t> mPlaneTriangleIndicesToRender;
 
     // Sinking detection
     bool mIsSinking;

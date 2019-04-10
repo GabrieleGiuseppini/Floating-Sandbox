@@ -92,7 +92,7 @@
 	"frames":[
 		{	
 			"worldWidth": 64.0,
-			"worldHeight": 64.0,
+			"worldHeight": 32.0,
 			"filename": "ocean_\\d+"
 		}
 	]
@@ -210,6 +210,20 @@
 			"anchorOffsetX": -1,
 			"anchorOffsetY": 57,
 			"filename": "timer_bomb_fuse_\\d+"
+		}
+	]
+},
+
+{
+	"groupName": "WorldBorder",
+	"hasOwnAmbientLight": false,
+	"frames":[
+		{	
+			"worldWidth": 1.0,
+			"worldHeight": 1.0,
+			"anchorOffsetX": 0,
+			"anchorOffsetY": 0,
+			"filename": "world_border_\\d+"
 		}
 	]
 }

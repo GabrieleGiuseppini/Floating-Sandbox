@@ -53,6 +53,7 @@ set  (PHYSICS_SOURCES
 	RCBomb.cpp
 	RCBomb.h
 	Ship.cpp
+	Ship_Interactions.cpp
 	Ship.h
 	Springs.cpp
 	Springs.h

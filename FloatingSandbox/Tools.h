@@ -47,7 +47,8 @@ enum class ToolType
     RCBomb = 10,
     TimerBomb = 11,
     TerrainAdjust = 12,
-    Scrub = 13
+    Scrub = 13,
+    RepairStructure = 14
 };
 
 struct InputState
@@ -1136,18 +1137,8 @@ public:
 
 public:
 
-    virtual void Initialize(InputState const & inputState) override
+    virtual void Initialize(InputState const & /*inputState*/) override
     {
-        if (inputState.IsLeftMouseDown)
-        {
-            mIsEngaged = mGameController->FloodAt(
-                inputState.MousePosition,
-                inputState.IsShiftKeyDown ? -1.0f : 1.0f);
-        }
-        else
-        {
-            mIsEngaged = false;
-        }
     }
 
     virtual void Deinitialize(InputState const & /*inputState*/) override
@@ -1377,7 +1368,10 @@ public:
 
     virtual void Initialize(InputState const & inputState) override
     {
-        mIsEngaged = inputState.IsLeftMouseDown;
+        if (inputState.IsLeftMouseDown)
+            mCurrentTrajectoryPreviousPosition = inputState.MousePosition;
+        else
+            mCurrentTrajectoryPreviousPosition.reset();
     }
 
     virtual void Deinitialize(InputState const & /*inputState*/) override
@@ -1386,27 +1380,32 @@ public:
 
     virtual void Update(InputState const & inputState) override
     {
-        bool isEngaged;
+        bool wasEngaged = !!mCurrentTrajectoryPreviousPosition;
+
         if (inputState.IsLeftMouseDown)
         {
-            bool isAdjusted = mGameController->AdjustOceanFloorTo(inputState.MousePosition);
+            if (!mCurrentTrajectoryPreviousPosition)
+                mCurrentTrajectoryPreviousPosition = inputState.MousePosition;
+
+            bool isAdjusted = mGameController->AdjustOceanFloorTo(
+                *mCurrentTrajectoryPreviousPosition,
+                inputState.MousePosition);
 
             if (isAdjusted)
             {
                 mSoundController->PlayTerrainAdjustSound();
             }
 
-            isEngaged = true;
+            mCurrentTrajectoryPreviousPosition = inputState.MousePosition;
         }
         else
         {
-            isEngaged = false;
+            mCurrentTrajectoryPreviousPosition.reset();
         }
 
-        if (isEngaged != mIsEngaged)
+        if (!!mCurrentTrajectoryPreviousPosition != wasEngaged)
         {
             // State change
-            mIsEngaged = isEngaged;
 
             // Update cursor
             ShowCurrentCursor();
@@ -1423,13 +1422,13 @@ public:
     {
         assert(nullptr != mParentFrame);
 
-        mParentFrame->SetCursor(mIsEngaged ? *mDownCursor : *mUpCursor);
+        mParentFrame->SetCursor(!!mCurrentTrajectoryPreviousPosition ? *mDownCursor : *mUpCursor);
     }
 
 private:
 
     // Our state
-    bool mIsEngaged;
+    std::optional<vec2f> mCurrentTrajectoryPreviousPosition; // When set, indicates it's engaged
 
     // The cursors
     std::unique_ptr<wxCursor> const mUpCursor;
@@ -1569,4 +1568,136 @@ private:
 
     // The time at which we have last played a scrub sound
     GameWallClock::time_point mPreviousScrubTimestamp;
+};
+
+class RepairStructureTool final : public Tool
+{
+public:
+
+    RepairStructureTool(
+        wxFrame * parentFrame,
+        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<SoundController> soundController,
+        ResourceLoader & resourceLoader);
+
+    virtual void Initialize(InputState const & /*inputState*/) override
+    {
+        // Just set a cursor, we'll update it at Update()
+        mCurrentCursor = mUpCursor.get();
+    }
+
+    virtual void Deinitialize(InputState const & /*inputState*/) override
+    {
+        // Stop sound, just in case
+        mSoundController->StopRepairStructureSound();
+    }
+
+    virtual void Update(InputState const & inputState) override
+    {
+        bool isEngaged;
+        if (inputState.IsLeftMouseDown)
+        {
+            isEngaged = true;
+
+            mGameController->RepairAt(
+                inputState.MousePosition,
+                1.0f);
+        }
+        else
+        {
+            isEngaged = false;
+        }
+
+        if (isEngaged)
+        {
+            if (!mEngagementStartTimestamp)
+            {
+                // State change
+                mEngagementStartTimestamp = GameWallClock::GetInstance().Now();
+
+                // Start sound
+                mSoundController->PlayRepairStructureSound();
+            }
+
+            // Update cursor
+            UpdateCurrentCursor();
+        }
+        else
+        {
+            if (!!mEngagementStartTimestamp)
+            {
+                // State change
+                mEngagementStartTimestamp.reset();
+
+                // Stop sound
+                mSoundController->StopRepairStructureSound();
+
+                // Update cursor
+                UpdateCurrentCursor();
+            }
+        }
+    }
+
+    virtual void OnMouseMove(InputState const & /*inputState*/) override {}
+    virtual void OnLeftMouseDown(InputState const & /*inputState*/) override {}
+    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+    virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+    virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+
+    virtual void ShowCurrentCursor() override
+    {
+        assert(nullptr != mParentFrame);
+
+        mParentFrame->SetCursor(*mCurrentCursor);
+    }
+
+private:
+
+    virtual void UpdateCurrentCursor()
+    {
+        if (!!mEngagementStartTimestamp)
+        {
+            auto totalElapsed = std::chrono::duration_cast<std::chrono::milliseconds>(GameWallClock::GetInstance().Now() - *mEngagementStartTimestamp);
+
+            // Synchronize with sound
+            auto cursorPhase = (totalElapsed.count() % 1000);
+            if (cursorPhase < 87)
+                mCurrentCursor = mDownCursors[0].get(); // |
+            else if (cursorPhase < 175)
+                mCurrentCursor = mDownCursors[1].get(); //
+            else if (cursorPhase < 237)
+                mCurrentCursor = mDownCursors[2].get(); // /* \ */
+            else if (cursorPhase < 300)
+                mCurrentCursor = mDownCursors[3].get(); //
+            else if (cursorPhase < 500)
+                mCurrentCursor = mDownCursors[4].get(); // _
+            else if (cursorPhase < 526)
+                mCurrentCursor = mDownCursors[3].get(); //
+            else if (cursorPhase < 553)
+                mCurrentCursor = mDownCursors[2].get(); // /* \ */
+            else if (cursorPhase < 580)
+                mCurrentCursor = mDownCursors[1].get(); //
+            else
+                mCurrentCursor = mDownCursors[0].get(); // |
+        }
+        else
+        {
+            mCurrentCursor = mUpCursor.get();
+        }
+
+        ShowCurrentCursor();
+    }
+
+private:
+
+    // When set, we are engaged
+    std::optional<GameWallClock::time_point> mEngagementStartTimestamp;
+
+    // The currently-chosen cursor
+    wxCursor * mCurrentCursor;
+
+    // Our cursors
+    std::unique_ptr<wxCursor> const mUpCursor;
+    std::array<std::unique_ptr<wxCursor>, 5> const mDownCursors;
+
 };

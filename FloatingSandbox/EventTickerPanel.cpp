@@ -107,6 +107,28 @@ void EventTickerPanel::OnDestroy(
     AppendFutureTickerText(ss.str());
 }
 
+void EventTickerPanel::OnSpringRepaired(
+    StructuralMaterial const & structuralMaterial,
+    bool isUnderwater,
+    unsigned int size)
+{
+    std::stringstream ss;
+    ss << "Repaired spring " << size << "x" << structuralMaterial.Name << (isUnderwater ? " underwater" : "") << "!";
+
+    AppendFutureTickerText(ss.str());
+}
+
+void EventTickerPanel::OnTriangleRepaired(
+    StructuralMaterial const & structuralMaterial,
+    bool isUnderwater,
+    unsigned int size)
+{
+    std::stringstream ss;
+    ss << "Repaired triangle " << size << "x" << structuralMaterial.Name << (isUnderwater ? " underwater" : "") << "!";
+
+    AppendFutureTickerText(ss.str());
+}
+
 void EventTickerPanel::OnStress(
     StructuralMaterial const & structuralMaterial,
     bool isUnderwater,

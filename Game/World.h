@@ -78,6 +78,11 @@ public:
         float radiusMultiplier,
         GameParameters const & gameParameters);
 
+    void RepairAt(
+        vec2f const & targetPos,
+        float radiusMultiplier,
+        GameParameters const & gameParameters);
+
     void SawThrough(
         vec2f const & startPos,
         vec2f const & endPos,
@@ -127,8 +132,10 @@ public:
     void DetonateAntiMatterBombs();
 
     bool AdjustOceanFloorTo(
-        float x,
-        float targetY);
+        float x1,
+        float targetY1,
+        float x2,
+        float targetY2);
 
     bool ScrubThrough(
         vec2f const & startPos,
@@ -148,12 +155,6 @@ public:
         Render::RenderContext const & renderContext);
 
     void Render(
-        GameParameters const & gameParameters,
-        Render::RenderContext & renderContext) const;
-
-private:
-
-    void UploadLandAndOcean(
         GameParameters const & gameParameters,
         Render::RenderContext & renderContext) const;
 

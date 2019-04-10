@@ -5,10 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#ifdef _MSC_VER
-#include <float.h>
-#endif
-
+#include <cfloat>
 #include <limits>
 #include <xmmintrin.h>
 

@@ -54,6 +54,8 @@ TextureGroupType StrToTextureGroupType(std::string const & str)
         return TextureGroupType::TimerBombExplosion;
     else if (Utils::CaseInsensitiveEquals(str, "TimerBombFuse"))
         return TextureGroupType::TimerBombFuse;
+    else if (Utils::CaseInsensitiveEquals(str, "WorldBorder"))
+        return TextureGroupType::WorldBorder;
     else
         throw GameException("Unrecognized TextureGroupType \"" + str + "\"");
 }

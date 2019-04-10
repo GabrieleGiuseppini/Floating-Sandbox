@@ -11,8 +11,6 @@
 
 #include <GameCore/Utils.h>
 
-#include <algorithm>
-
 const std::string Filename = "ui_preferences.json";
 
 UIPreferences::UIPreferences()

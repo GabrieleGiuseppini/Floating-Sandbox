@@ -63,6 +63,9 @@ if (MSVC)
 	list(APPEND RESOURCE_FILES
 		Resources/FloatingSandbox.rc
 		Resources/Ship.ico)
+else (MSVC)
+	list(APPEND RESOURCE_FILES
+		Resources/Ship.xpm)
 endif (MSVC)
 
 source_group("Resources" FILES ${RESOURCE_FILES})
@@ -86,7 +89,6 @@ target_link_libraries (FloatingSandbox
 
 if (MSVC)
 	set_target_properties(FloatingSandbox PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS /NODEFAULTLIB:MSVCRTD")
-else (MSVC)
 endif (MSVC)
 
 

@@ -11,6 +11,7 @@
 #include <Game/ResourceLoader.h>
 
 #include <GameCore/GameRandomEngine.h>
+#include <GameCore/GameWallClock.h>
 #include <GameCore/ProgressCallback.h>
 #include <GameCore/RunningAverage.h>
 #include <GameCore/TupleKeys.h>
@@ -141,6 +142,9 @@ public:
 
     void PlayTerrainAdjustSound();
 
+    void PlayRepairStructureSound();
+    void StopRepairStructureSound();
+
     void PlayScrubSound();
 
     void PlaySnapshotSound();
@@ -162,6 +166,16 @@ public:
     //
 
     virtual void OnDestroy(
+        StructuralMaterial const & structuralMaterial,
+        bool isUnderwater,
+        unsigned int size) override;
+
+    virtual void OnSpringRepaired(
+        StructuralMaterial const & structuralMaterial,
+        bool isUnderwater,
+        unsigned int size) override;
+
+    virtual void OnTriangleRepaired(
         StructuralMaterial const & structuralMaterial,
         bool isUnderwater,
         unsigned int size) override;
@@ -243,13 +257,13 @@ private:
     {
         SoundType Type;
         std::unique_ptr<GameSound> Sound;
-        std::chrono::steady_clock::time_point StartedTimestamp;
+        GameWallClock::time_point StartedTimestamp;
         bool IsInterruptible;
 
         PlayingSound(
             SoundType type,
             std::unique_ptr<GameSound> sound,
-            std::chrono::steady_clock::time_point startedTimestamp,
+            GameWallClock::time_point startedTimestamp,
             bool isInterruptible)
             : Type(type)
             , Sound(std::move(sound))
@@ -400,6 +414,7 @@ private:
     ContinuousSingleChoiceSound mSwirlSound;
     ContinuousSingleChoiceSound mAirBubblesSound;
     ContinuousSingleChoiceSound mFloodHoseSound;
+    ContinuousSingleChoiceSound mRepairStructureSound;
 
     ContinuousSingleChoiceSound mWaterRushSound;
     ContinuousSingleChoiceSound mWaterSplashSound;

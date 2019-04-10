@@ -8,6 +8,7 @@
 #include <GameCore/GameException.h>
 #include <GameCore/GameRandomEngine.h>
 #include <GameCore/GameTypes.h>
+#include <GameCore/GameWallClock.h>
 
 #include <SFML/Audio.hpp>
 
@@ -26,6 +27,8 @@ enum class SoundType
 {
     Break,
     Destroy,
+    RepairSpring,
+    RepairTriangle,
     Draw,
     Saw,
     Sawed,
@@ -54,7 +57,8 @@ enum class SoundType
     AntiMatterBombExplosion,
     Snapshot,
     TerrainAdjust,
-    Scrub
+    Scrub,
+    RepairStructure
 };
 
 SoundType StrToSoundType(std::string const & str);
@@ -417,7 +421,7 @@ struct ContinuousInertialSound
 
     void SetVolume(float volume)
     {
-        auto now = std::chrono::steady_clock::now();
+        auto now = GameWallClock::GetInstance().Now();
 
         if (volume > 0.0f)
         {
@@ -478,7 +482,7 @@ private:
     ContinuousSound mContinuousSound;
 
     std::chrono::milliseconds const mInertiaDuration;
-    std::optional<std::chrono::steady_clock::time_point> mHearableLastTime;
+    std::optional<GameWallClock::time_point> mHearableLastTime;
 };
 
 struct OneShotMultipleChoiceSound

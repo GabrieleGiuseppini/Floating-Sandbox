@@ -9,16 +9,16 @@
 #include <GameCore/Log.h>
 
 template <typename TFunc>
-void LoadAndVerify(char * const functionName, TFunc * & pFunc, GLADloadproc load)
+void LoadAndVerify(char const * functionName, TFunc * & pFunc, GLADloadproc load)
 {
-    pFunc = static_cast<TFunc *>(load(functionName));
+    pFunc = reinterpret_cast<TFunc *>(load(functionName));
     if (nullptr == pFunc)
     {
         throw GameException(std::string("OpenGL function '") + functionName + "' is not supported");
     }
 }
 
-bool HasExt(char * const extensionName)
+bool HasExt(char const * extensionName)
 {
     bool result = has_ext(extensionName);
 

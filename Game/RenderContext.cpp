@@ -21,17 +21,22 @@ RenderContext::RenderContext(
     , mCloudQuadBuffer()
     , mCloudVBO()
     , mLandSegmentBuffer()
+    , mLandSegmentBufferAllocatedSize(0u)
     , mLandVBO()
     , mOceanSegmentBuffer()
+    , mOceanSegmentBufferAllocatedSize(0u)
     , mOceanVBO()
     , mCrossOfLightVertexBuffer()
     , mCrossOfLightVBO()
+    , mWorldBorderVertexBuffer()
+    , mWorldBorderVBO()
     // VAOs
     , mStarVAO()
     , mCloudVAO()
     , mLandVAO()
     , mOceanVAO()
     , mCrossOfLightVAO()
+    , mWorldBorderVAO()
     // Textures
     , mCloudTextureAtlasOpenGLHandle()
     , mCloudTextureAtlasMetadata()
@@ -39,6 +44,9 @@ RenderContext::RenderContext(
     , mShips()
     , mGenericTextureAtlasOpenGLHandle()
     , mGenericTextureAtlasMetadata()
+    // World border
+    , mWorldBorderTextureSize(0, 0)
+    , mIsWorldBorderVisible(false)
     // Managers
     , mShaderManager()
     , mTextureRenderManager()
@@ -132,6 +140,7 @@ RenderContext::RenderContext(
     // Atlas-ize all textures EXCEPT the following:
     // - Land, Ocean: we need these to be wrapping
     // - Clouds: we keep these in a separate atlas, we have to rebind anyway
+    // - WorldBorder
     //
 
     mShaderManager->ActivateTexture<ProgramParameterType::GenericTexturesAtlasTexture>();
@@ -141,7 +150,8 @@ RenderContext::RenderContext(
     {
         if (TextureGroupType::Land != group.Group
             && TextureGroupType::Ocean != group.Group
-            && TextureGroupType::Cloud != group.Group)
+            && TextureGroupType::Cloud != group.Group
+            && TextureGroupType::WorldBorder != group.Group)
         {
             genericTextureAtlasBuilder.Add(group);
         }
@@ -190,13 +200,14 @@ RenderContext::RenderContext(
     // Initialize buffers
     //
 
-    GLuint vbos[5];
-    glGenBuffers(5, vbos);
+    GLuint vbos[6];
+    glGenBuffers(6, vbos);
     mStarVBO = vbos[0];
     mCloudVBO = vbos[1];
     mLandVBO = vbos[2];
     mOceanVBO = vbos[3];
     mCrossOfLightVBO = vbos[4];
+    mWorldBorderVBO = vbos[5];
 
 
     //
@@ -291,6 +302,25 @@ RenderContext::RenderContext(
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::CrossOfLight1), 4, GL_FLOAT, GL_FALSE, sizeof(CrossOfLightVertex), (void*)0);
     glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::CrossOfLight2));
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::CrossOfLight2), 1, GL_FLOAT, GL_FALSE, sizeof(CrossOfLightVertex), (void*)(4 * sizeof(float)));
+    CheckOpenGLError();
+
+    glBindVertexArray(0);
+
+
+    //
+    // Initialize WorldBorder VAO
+    //
+
+    glGenVertexArrays(1, &tmpGLuint);
+    mWorldBorderVAO = tmpGLuint;
+
+    glBindVertexArray(*mWorldBorderVAO);
+    CheckOpenGLError();
+
+    // Describe vertex attributes
+    glBindBuffer(GL_ARRAY_BUFFER, *mWorldBorderVBO);
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::WorldBorder));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::WorldBorder), 4, GL_FLOAT, GL_FALSE, sizeof(WorldBorderVertex), (void*)0);
     CheckOpenGLError();
 
     glBindVertexArray(0);
@@ -397,6 +427,33 @@ RenderContext::RenderContext(
 
 
     //
+    // Initialize world end texture
+    //
+
+    mShaderManager->ActivateTexture<ProgramParameterType::WorldBorderTexture>();
+
+    mTextureRenderManager->UploadMipmappedGroup(
+        textureDatabase.GetGroup(TextureGroupType::WorldBorder),
+        GL_LINEAR_MIPMAP_NEAREST,
+        [](float, std::string const &)
+        {
+            // No need to count, it's tiny
+        });
+
+    // Bind texture
+    glBindTexture(GL_TEXTURE_2D, mTextureRenderManager->GetOpenGLHandle(TextureGroupType::WorldBorder, 0));
+    CheckOpenGLError();
+
+    // Store metadata
+    auto const & worldBoderTextureMetadata = textureDatabase.GetFrameMetadata(TextureGroupType::WorldBorder, 0);
+    mWorldBorderTextureSize = worldBoderTextureMetadata.Size;
+
+    // Set texture in shader
+    mShaderManager->ActivateProgram<ProgramType::WorldBorder>();
+    mShaderManager->SetTextureParameters<ProgramType::WorldBorder>();
+
+
+    //
     // Initialize global settings
     //
 
@@ -424,12 +481,12 @@ RenderContext::RenderContext(
 
     OnAmbientLightIntensityUpdated();
     OnOceanTransparencyUpdated();
+    OnOceanRenderParametersUpdated();
+    OnLandRenderParametersUpdated();
     OnWaterContrastUpdated();
     OnWaterLevelOfDetailUpdated();
     OnShipRenderModeUpdated();
     OnDebugShipRenderModeUpdated();
-    OnOceanRenderParametersUpdated();
-    OnLandRenderParametersUpdated();
     OnVectorFieldRenderModeUpdated();
     OnShowStressedSpringsUpdated();
 
@@ -709,7 +766,7 @@ void RenderContext::RenderSkyEnd()
     glDisable(GL_STENCIL_TEST);
 }
 
-void RenderContext::UploadLandAndOceanStart(size_t slices)
+void RenderContext::UploadLandStart(size_t slices)
 {
     //
     // Prepare land segment buffer
@@ -717,42 +774,28 @@ void RenderContext::UploadLandAndOceanStart(size_t slices)
 
     glBindBuffer(GL_ARRAY_BUFFER, *mLandVBO);
 
-    glBufferData(GL_ARRAY_BUFFER, (slices + 1) * sizeof(LandSegment), nullptr, GL_STREAM_DRAW);
-    CheckOpenGLError();
+    if (slices + 1 != mLandSegmentBufferAllocatedSize)
+    {
+        glBufferData(GL_ARRAY_BUFFER, (slices + 1) * sizeof(LandSegment), nullptr, GL_STREAM_DRAW);
+        CheckOpenGLError();
+
+        mLandSegmentBufferAllocatedSize = slices + 1;
+    }
 
     mLandSegmentBuffer.map(slices + 1);
-
-
-    //
-    // Prepare ocean segment buffer
-    //
-
-    glBindBuffer(GL_ARRAY_BUFFER, *mOceanVBO);
-
-    glBufferData(GL_ARRAY_BUFFER, (slices + 1) * sizeof(OceanSegment), nullptr, GL_STREAM_DRAW);
-    CheckOpenGLError();
-
-    mOceanSegmentBuffer.map(slices + 1);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void RenderContext::UploadLandAndOceanEnd()
+void RenderContext::UploadLandEnd()
 {
     //
     // Upload land segment buffer
     //
 
     glBindBuffer(GL_ARRAY_BUFFER, *mLandVBO);
+
     mLandSegmentBuffer.unmap();
-
-
-    //
-    // Upload ocean segment buffer
-    //
-
-    glBindBuffer(GL_ARRAY_BUFFER, *mOceanVBO);
-    mOceanSegmentBuffer.unmap();
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
@@ -782,6 +825,40 @@ void RenderContext::RenderLand()
     glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mLandSegmentBuffer.size()));
 
     glBindVertexArray(0);
+}
+
+void RenderContext::UploadOceanStart(size_t slices)
+{
+    //
+    // Prepare ocean segment buffer
+    //
+
+    glBindBuffer(GL_ARRAY_BUFFER, *mOceanVBO);
+
+    if (slices + 1 != mOceanSegmentBufferAllocatedSize)
+    {
+        glBufferData(GL_ARRAY_BUFFER, (slices + 1) * sizeof(OceanSegment), nullptr, GL_STREAM_DRAW);
+        CheckOpenGLError();
+
+        mOceanSegmentBufferAllocatedSize = slices + 1;
+    }
+
+    mOceanSegmentBuffer.map(slices + 1);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void RenderContext::UploadOceanEnd()
+{
+    //
+    // Upload ocean segment buffer
+    //
+
+    glBindBuffer(GL_ARRAY_BUFFER, *mOceanVBO);
+
+    mOceanSegmentBuffer.unmap();
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void RenderContext::RenderOcean()
@@ -837,6 +914,9 @@ void RenderContext::RenderEnd()
         RenderCrossesOfLight();
     }
 
+    // Render world end
+    RenderWorldBorder();
+
     // Communicate end to child contextes
     mTextRenderContext->RenderEnd();
 
@@ -873,6 +953,25 @@ void RenderContext::RenderCrossesOfLight()
     glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mCrossOfLightVertexBuffer.size()));
 
     glBindVertexArray(0);
+}
+
+void RenderContext::RenderWorldBorder()
+{
+    if (mIsWorldBorderVisible)
+    {
+        //
+        // Render
+        //
+
+        glBindVertexArray(*mWorldBorderVAO);
+
+        mShaderManager->ActivateProgram<ProgramType::WorldBorder>();
+
+        assert((mWorldBorderVertexBuffer.size() % 6) == 0);
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mWorldBorderVertexBuffer.size()));
+
+        glBindVertexArray(0);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -917,6 +1016,10 @@ void RenderContext::OnViewModelUpdated()
     mShaderManager->SetProgramParameter<ProgramType::CrossOfLight, ProgramParameterType::OrthoMatrix>(
         globalOrthoMatrix);
 
+    mShaderManager->ActivateProgram<ProgramType::WorldBorder>();
+    mShaderManager->SetProgramParameter<ProgramType::WorldBorder, ProgramParameterType::OrthoMatrix>(
+        globalOrthoMatrix);
+
     //
     // Update canvas size
     //
@@ -926,7 +1029,6 @@ void RenderContext::OnViewModelUpdated()
         static_cast<float>(mViewModel.GetCanvasWidth()),
         static_cast<float>(mViewModel.GetCanvasHeight()));
 
-
     //
     // Update all ships
     //
@@ -935,6 +1037,12 @@ void RenderContext::OnViewModelUpdated()
     {
         ship->OnViewModelUpdated();
     }
+
+    //
+    // Update world border
+    //
+
+    UpdateWorldBorder();
 }
 
 void RenderContext::OnAmbientLightIntensityUpdated()
@@ -969,6 +1077,10 @@ void RenderContext::OnAmbientLightIntensityUpdated()
     mShaderManager->SetProgramParameter<ProgramType::OceanTexture, ProgramParameterType::AmbientLightIntensity>(
         mAmbientLightIntensity);
 
+    mShaderManager->ActivateProgram<ProgramType::WorldBorder>();
+    mShaderManager->SetProgramParameter<ProgramType::WorldBorder, ProgramParameterType::AmbientLightIntensity>(
+        mAmbientLightIntensity);
+
     // Update all ships
     for (auto & ship : mShips)
     {
@@ -994,46 +1106,6 @@ void RenderContext::OnOceanTransparencyUpdated()
     mShaderManager->ActivateProgram<ProgramType::OceanTexture>();
     mShaderManager->SetProgramParameter<ProgramType::OceanTexture, ProgramParameterType::OceanTransparency>(
         mOceanTransparency);
-}
-
-void RenderContext::OnWaterContrastUpdated()
-{
-    // Set parameter in all ships
-
-    for (auto & s : mShips)
-    {
-        s->SetWaterContrast(mWaterContrast);
-    }
-}
-
-void RenderContext::OnWaterLevelOfDetailUpdated()
-{
-    // Set parameter in all ships
-
-    for (auto & s : mShips)
-    {
-        s->SetWaterLevelThreshold(mWaterLevelOfDetail);
-    }
-}
-
-void RenderContext::OnShipRenderModeUpdated()
-{
-    // Set parameter in all ships
-
-    for (auto & s : mShips)
-    {
-        s->SetShipRenderMode(mShipRenderMode);
-    }
-}
-
-void RenderContext::OnDebugShipRenderModeUpdated()
-{
-    // Set parameter in all ships
-
-    for (auto & s : mShips)
-    {
-        s->SetDebugShipRenderMode(mDebugShipRenderMode);
-    }
 }
 
 void RenderContext::OnOceanRenderParametersUpdated()
@@ -1084,6 +1156,46 @@ void RenderContext::OnLandRenderParametersUpdated()
         flatColor.z);
 }
 
+void RenderContext::OnWaterContrastUpdated()
+{
+    // Set parameter in all ships
+
+    for (auto & s : mShips)
+    {
+        s->SetWaterContrast(mWaterContrast);
+    }
+}
+
+void RenderContext::OnWaterLevelOfDetailUpdated()
+{
+    // Set parameter in all ships
+
+    for (auto & s : mShips)
+    {
+        s->SetWaterLevelThreshold(mWaterLevelOfDetail);
+    }
+}
+
+void RenderContext::OnShipRenderModeUpdated()
+{
+    // Set parameter in all ships
+
+    for (auto & s : mShips)
+    {
+        s->SetShipRenderMode(mShipRenderMode);
+    }
+}
+
+void RenderContext::OnDebugShipRenderModeUpdated()
+{
+    // Set parameter in all ships
+
+    for (auto & s : mShips)
+    {
+        s->SetDebugShipRenderMode(mDebugShipRenderMode);
+    }
+}
+
 void RenderContext::OnVectorFieldRenderModeUpdated()
 {
     // Set parameter in all ships
@@ -1101,6 +1213,140 @@ void RenderContext::OnShowStressedSpringsUpdated()
     for (auto & s : mShips)
     {
         s->SetShowStressedSprings(mShowStressedSprings);
+    }
+}
+
+template <typename TVertexBuffer>
+static void MakeQuad(
+    float x1,
+    float y1,
+    float tx1,
+    float ty1,
+    float x2,
+    float y2,
+    float tx2,
+    float ty2,
+    TVertexBuffer & buffer)
+{
+    buffer.emplace_back(x1, y1, tx1, ty1);
+    buffer.emplace_back(x1, y2, tx1, ty2);
+    buffer.emplace_back(x2, y1, tx2, ty1);
+    buffer.emplace_back(x1, y2, tx1, ty2);
+    buffer.emplace_back(x2, y1, tx2, ty1);
+    buffer.emplace_back(x2, y2, tx2, ty2);
+}
+
+void RenderContext::UpdateWorldBorder()
+{
+    // Calculate width, in world coordinates, of the world border, under the constraint
+    // that we want to ensure that the texture is rendered with its original size
+    float const worldBorderWorldWidth = mViewModel.PixelWidthToWorldWidth(static_cast<float>(mWorldBorderTextureSize.Width / 2));
+    float const worldBorderWorldHeight = mViewModel.PixelHeightToWorldHeight(static_cast<float>(mWorldBorderTextureSize.Height / 2));
+
+    // Max texture coordinates - chosen so that texture dimensions do not depend on zoom
+    float const textureWidth = GameParameters::MaxWorldWidth / worldBorderWorldWidth;
+    float const textureHeight = GameParameters::MaxWorldHeight / worldBorderWorldHeight;
+
+    // Dx for drawing texture at dead-center pixel
+    float const dx = 0.5f / static_cast<float>(mWorldBorderTextureSize.Width);
+
+    //
+    // Check which sides of the border we need to draw
+    //
+
+    mWorldBorderVertexBuffer.clear();
+
+    // Left
+    if (-GameParameters::HalfMaxWorldWidth + worldBorderWorldWidth >= mViewModel.GetVisibleWorldTopLeft().x)
+    {
+        MakeQuad(
+            // Top-left
+            -GameParameters::HalfMaxWorldWidth,
+            GameParameters::HalfMaxWorldHeight,
+            0.0f + dx,
+            0.0f + dx,
+            // Bottom-right
+            -GameParameters::HalfMaxWorldWidth + worldBorderWorldWidth,
+            -GameParameters::HalfMaxWorldHeight,
+            1.0f - dx,
+            textureHeight - dx,
+            mWorldBorderVertexBuffer);
+    }
+
+    // Right
+    if (GameParameters::HalfMaxWorldWidth - worldBorderWorldWidth <= mViewModel.GetVisibleWorldBottomRight().x)
+    {
+        MakeQuad(
+            // Top-left
+            GameParameters::HalfMaxWorldWidth - worldBorderWorldWidth,
+            GameParameters::HalfMaxWorldHeight,
+            0.0f + dx,
+            0.0f + dx,
+            // Bottom-right
+            GameParameters::HalfMaxWorldWidth,
+            -GameParameters::HalfMaxWorldHeight,
+            1.0f - dx,
+            textureHeight - dx,
+            mWorldBorderVertexBuffer);
+    }
+
+    // Top
+    if (GameParameters::HalfMaxWorldHeight - worldBorderWorldHeight <= mViewModel.GetVisibleWorldTopLeft().y)
+    {
+        MakeQuad(
+            // Top-left
+            -GameParameters::HalfMaxWorldWidth,
+            GameParameters::HalfMaxWorldHeight,
+            0.0f + dx,
+            0.0f + dx,
+            // Bottom-right
+            GameParameters::HalfMaxWorldWidth,
+            GameParameters::HalfMaxWorldHeight - worldBorderWorldHeight,
+            textureWidth - dx,
+            1.0f - dx,
+            mWorldBorderVertexBuffer);
+    }
+
+    // Bottom
+    if (-GameParameters::HalfMaxWorldHeight + worldBorderWorldHeight >= mViewModel.GetVisibleWorldBottomRight().y)
+    {
+        MakeQuad(
+            // Top-left
+            -GameParameters::HalfMaxWorldWidth,
+            -GameParameters::HalfMaxWorldHeight + worldBorderWorldHeight,
+            0.0f + dx,
+            0.0f + dx,
+            // Bottom-right
+            GameParameters::HalfMaxWorldWidth,
+            -GameParameters::HalfMaxWorldHeight,
+            textureWidth - dx,
+            1.0f - dx,
+            mWorldBorderVertexBuffer);
+    }
+
+    if (!mWorldBorderVertexBuffer.empty())
+    {
+        //
+        // Upload buffer
+        //
+
+        glBindBuffer(GL_ARRAY_BUFFER, *mWorldBorderVBO);
+
+        glBufferData(GL_ARRAY_BUFFER,
+            sizeof(WorldBorderVertex) * mWorldBorderVertexBuffer.size(),
+            mWorldBorderVertexBuffer.data(),
+            GL_STATIC_DRAW);
+        CheckOpenGLError();
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        // Remember we have to draw the world border
+        mIsWorldBorderVisible = true;
+    }
+    else
+    {
+        // No need to draw the world border
+        mIsWorldBorderVisible = false;
     }
 }
 

@@ -29,3 +29,10 @@ target_link_libraries (GameOpenGLLib
 	GameCoreLib
 	${OPENGL_LIBRARIES}
 	${ADDITIONAL_LIBRARIES})
+
+if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+
+	target_link_libraries (GameOpenGLLib
+		${CMAKE_DL_LIBS})
+
+endif()

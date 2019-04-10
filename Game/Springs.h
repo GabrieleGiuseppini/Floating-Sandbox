@@ -46,7 +46,10 @@ public:
     using DestroyHandler = std::function<void(
         ElementIndex,
         bool /*destroyTriangles*/,
-        float /*currentSimulationTime*/,
+        GameParameters const &)>;
+
+    using RestoreHandler = std::function<void(
+        ElementIndex,
         GameParameters const &)>;
 
 private:
@@ -67,6 +70,28 @@ private:
         {}
     };
 
+    /*
+     * The factory angle of the spring from the point of view
+     * of each endpoint.
+     *
+     * Angle 0 is E, angle 1 is SE, ..., angle 7 is NE.
+     */
+    struct EndpointOctants
+    {
+        int32_t PointAOctant;
+        int32_t PointBOctant;
+
+        EndpointOctants(
+            int32_t pointAOctant,
+            int32_t pointBOctant)
+            : PointAOctant(pointAOctant)
+            , PointBOctant(pointBOctant)
+        {}
+    };
+
+    /*
+     * The triangles that have an edge along this spring.
+     */
     using SuperTrianglesVector = FixedSizeVector<ElementIndex, 2>;
 
     /*
@@ -99,8 +124,11 @@ public:
         , mIsDeletedBuffer(mBufferElementCount, mElementCount, true)
         // Endpoints
         , mEndpointsBuffer(mBufferElementCount, mElementCount, Endpoints(NoneElementIndex, NoneElementIndex))
+        // Factory endpoint octants
+        , mFactoryEndpointOctantsBuffer(mBufferElementCount, mElementCount, EndpointOctants(0, 4))
         // Super triangles
         , mSuperTrianglesBuffer(mBufferElementCount, mElementCount, SuperTrianglesVector())
+        , mFactorySuperTrianglesBuffer(mBufferElementCount, mElementCount, SuperTrianglesVector())
         // Physical
         , mStrengthBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mMaterialStrengthBuffer(mBufferElementCount, mElementCount, 0.0f)
@@ -121,6 +149,7 @@ public:
         , mParentWorld(parentWorld)
         , mGameEventHandler(std::move(gameEventHandler))
         , mDestroyHandler()
+        , mRestoreHandler()
         , mCurrentNumMechanicalDynamicsIterations(gameParameters.NumMechanicalDynamicsIterations<float>())
         , mCurrentSpringStiffnessAdjustment(gameParameters.SpringStiffnessAdjustment)
         , mCurrentSpringDampingAdjustment(gameParameters.SpringDampingAdjustment)
@@ -149,9 +178,29 @@ public:
         mDestroyHandler = std::move(destroyHandler);
     }
 
+    /*
+     * Sets a (single) handler that is invoked whenever a spring is restored.
+     *
+     * The handler is invoked right after the spring is unmarked as deleted. However,
+     * other elements connected to the soon-to-be-deleted spring might not yet have been
+     * restored.
+     *
+     * The handler is not re-entrant: restoring other springs from it is not supported
+     * and leads to undefined behavior.
+     *
+     * Setting more than one handler is not supported and leads to undefined behavior.
+     */
+    void RegisterRestoreHandler(RestoreHandler restoreHandler)
+    {
+        assert(!mRestoreHandler);
+        mRestoreHandler = std::move(restoreHandler);
+    }
+
     void Add(
         ElementIndex pointAIndex,
         ElementIndex pointBIndex,
+        int32_t factoryPointAOctant,
+        int32_t factoryPointBOctant,
         SuperTrianglesVector const & superTriangles,
         Characteristics characteristics,
         Points const & points);
@@ -159,7 +208,11 @@ public:
     void Destroy(
         ElementIndex springElementIndex,
         DestroyOptions destroyOptions,
-        float currentSimulationTime,
+        GameParameters const & gameParameters,
+        Points const & points);
+
+    void Restore(
+        ElementIndex springElementIndex,
         GameParameters const & gameParameters,
         Points const & points);
 
@@ -167,7 +220,7 @@ public:
         GameParameters const & gameParameters,
         Points const & points);
 
-    void OnPointMassUpdated(
+    void OnEndpointMassUpdated(
         ElementIndex springElementIndex,
         Points const & points)
     {
@@ -197,7 +250,6 @@ public:
      * Returns true if the spring got broken.
      */
     bool UpdateStrains(
-        float currentSimulationTime,
         GameParameters const & gameParameters,
         Points & points);
 
@@ -228,14 +280,27 @@ public:
     // Endpoints
     //
 
-    ElementIndex GetPointAIndex(ElementIndex springElementIndex) const
+    ElementIndex GetEndpointAIndex(ElementIndex springElementIndex) const
     {
         return mEndpointsBuffer[springElementIndex].PointAIndex;
     }
 
-    ElementIndex GetPointBIndex(ElementIndex springElementIndex) const
+    ElementIndex GetEndpointBIndex(ElementIndex springElementIndex) const
     {
         return mEndpointsBuffer[springElementIndex].PointBIndex;
+    }
+
+    ElementIndex GetOtherEndpointIndex(
+        ElementIndex springElementIndex,
+        ElementIndex pointElementIndex) const
+    {
+        if (pointElementIndex == mEndpointsBuffer[springElementIndex].PointAIndex)
+            return mEndpointsBuffer[springElementIndex].PointBIndex;
+        else
+        {
+            assert(pointElementIndex == mEndpointsBuffer[springElementIndex].PointBIndex);
+            return mEndpointsBuffer[springElementIndex].PointAIndex;
+        }
     }
 
     // Returns +1.0 if the spring is directed outward from the specified point;
@@ -250,14 +315,14 @@ public:
             return -1.0f;
     }
 
-    vec2f const & GetPointAPosition(
+    vec2f const & GetEndpointAPosition(
         ElementIndex springElementIndex,
         Points const & points) const
     {
         return points.GetPosition(mEndpointsBuffer[springElementIndex].PointAIndex);
     }
 
-    vec2f const & GetPointBPosition(
+    vec2f const & GetEndpointBPosition(
         ElementIndex springElementIndex,
         Points const & points) const
     {
@@ -268,8 +333,8 @@ public:
         ElementIndex springElementIndex,
         Points const & points) const
     {
-        return (GetPointAPosition(springElementIndex, points)
-            + GetPointBPosition(springElementIndex, points)) / 2.0f;
+        return (GetEndpointAPosition(springElementIndex, points)
+            + GetEndpointBPosition(springElementIndex, points)) / 2.0f;
     }
 
     PlaneId GetPlaneId(
@@ -279,7 +344,47 @@ public:
         // Return, quite arbitrarily, the plane of point A
         // (the two endpoints might have different plane IDs in case, for example,
         // this spring connects a "string" to a triangle)
-        return points.GetPlaneId(GetPointAIndex(springElementIndex));
+        return points.GetPlaneId(GetEndpointAIndex(springElementIndex));
+    }
+
+    //
+    // Factory endpoint octants
+    //
+
+    int32_t GetFactoryEndpointAOctant(ElementIndex springElementIndex) const
+    {
+        return mFactoryEndpointOctantsBuffer[springElementIndex].PointAOctant;
+    }
+
+    int32_t GetFactoryEndpointBOctant(ElementIndex springElementIndex) const
+    {
+        return mFactoryEndpointOctantsBuffer[springElementIndex].PointBOctant;
+    }
+
+    int32_t GetFactoryEndpointOctant(
+        ElementIndex springElementIndex,
+        ElementIndex pointElementIndex) const
+    {
+        if (pointElementIndex == GetEndpointAIndex(springElementIndex))
+            return GetFactoryEndpointAOctant(springElementIndex);
+        else
+        {
+            assert(pointElementIndex == GetEndpointBIndex(springElementIndex));
+            return GetFactoryEndpointBOctant(springElementIndex);
+        }
+    }
+
+    int32_t GetFactoryOtherEndpointOctant(
+        ElementIndex springElementIndex,
+        ElementIndex pointElementIndex) const
+    {
+        if (pointElementIndex == GetEndpointAIndex(springElementIndex))
+            return GetFactoryEndpointBOctant(springElementIndex);
+        else
+        {
+            assert(pointElementIndex == GetEndpointBIndex(springElementIndex));
+            return GetFactoryEndpointAOctant(springElementIndex);
+        }
     }
 
     //
@@ -295,6 +400,12 @@ public:
         ElementIndex springElementIndex,
         ElementIndex superTriangleElementIndex)
     {
+        assert(mFactorySuperTrianglesBuffer[springElementIndex].contains(
+            [superTriangleElementIndex](auto st)
+            {
+                return st = superTriangleElementIndex;
+            }));
+
         mSuperTrianglesBuffer[springElementIndex].push_back(superTriangleElementIndex);
     }
 
@@ -311,6 +422,21 @@ public:
     inline void ClearSuperTriangles(ElementIndex springElementIndex)
     {
         mSuperTrianglesBuffer[springElementIndex].clear();
+    }
+
+    auto const & GetFactorySuperTriangles(ElementIndex springElementIndex) const
+    {
+        return mFactorySuperTrianglesBuffer[springElementIndex];
+    }
+
+    void RestoreFactorySuperTriangles(ElementIndex springElementIndex)
+    {
+        assert(mSuperTrianglesBuffer[springElementIndex].empty());
+
+        std::copy(
+            mFactorySuperTrianglesBuffer[springElementIndex].begin(),
+            mFactorySuperTrianglesBuffer[springElementIndex].end(),
+            mSuperTrianglesBuffer[springElementIndex].begin());
     }
 
     //
@@ -337,6 +463,15 @@ public:
     float GetStiffness(ElementIndex springElementIndex) const
     {
         return mStiffnessBuffer[springElementIndex];
+    }
+
+    float GetLength(
+        ElementIndex springElementIndex,
+        Points const & points) const
+    {
+        return
+            (points.GetPosition(GetEndpointAIndex(springElementIndex)) - points.GetPosition(GetEndpointBIndex(springElementIndex)))
+            .length();
     }
 
     float GetRestLength(ElementIndex springElementIndex) const
@@ -393,12 +528,12 @@ public:
 
         // Augment mass of endpoints due to bomb
 
-        points.SetMassToStructuralMaterialOffset(
+        points.AugmentStructuralMass(
             mEndpointsBuffer[springElementIndex].PointAIndex,
             gameParameters.BombMass,
             *this);
 
-        points.SetMassToStructuralMaterialOffset(
+        points.AugmentStructuralMass(
             mEndpointsBuffer[springElementIndex].PointBIndex,
             gameParameters.BombMass,
             *this);
@@ -415,12 +550,12 @@ public:
 
         // Reset mass of endpoints
 
-        points.SetMassToStructuralMaterialOffset(
+        points.AugmentStructuralMass(
             mEndpointsBuffer[springElementIndex].PointAIndex,
             0.0f,
             *this);
 
-        points.SetMassToStructuralMaterialOffset(
+        points.AugmentStructuralMass(
             mEndpointsBuffer[springElementIndex].PointBIndex,
             0.0f,
             *this);
@@ -469,12 +604,16 @@ private:
     // Endpoints
     Buffer<Endpoints> mEndpointsBuffer;
 
+    // Factory-time endpoint octants
+    Buffer<EndpointOctants> mFactoryEndpointOctantsBuffer;
+
     // Indexes of the super triangles covering this spring.
     // "Super triangles" are triangles that "cover" this spring when they're rendered - it's either triangles that
     // have this spring as one of their edges, or triangles that (partially) cover this spring
     // (i.e. when this spring is the non-edge diagonal of a two-triangle square).
     // In any case, a spring may have between 0 and at most 2 super triangles.
     Buffer<SuperTrianglesVector> mSuperTrianglesBuffer;
+    Buffer<SuperTrianglesVector> mFactorySuperTrianglesBuffer;
 
     //
     // Physical
@@ -518,6 +657,9 @@ private:
 
     // The handler registered for spring deletions
     DestroyHandler mDestroyHandler;
+
+    // The handler registered for spring restores
+    RestoreHandler mRestoreHandler;
 
     // The game parameter values that we are current with; changes
     // in the values of these parameters will trigger a re-calculation

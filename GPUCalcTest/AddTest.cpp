@@ -3,8 +3,6 @@
  * Created:             2019-01-13
  * Copyright:           Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
  ***************************************************************************************/
-#pragma once
-
 #include "AddTest.h"
 
 #include <GPUCalc/GPUCalculatorFactory.h>

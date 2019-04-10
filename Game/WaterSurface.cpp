@@ -7,8 +7,13 @@
 
 namespace Physics {
 
+// The number of slices we want to render the water surface as;
+// this is the graphical resolution
+template<typename T>
+static constexpr T RenderSlices = 500;
+
 WaterSurface::WaterSurface()
-    : mSamples(new Sample[SamplesCount])
+    : mSamples(new Sample[SamplesCount + 1])
 {
 }
 
@@ -39,6 +44,16 @@ void WaterSurface::Update(
     float const smoothedWindNormalizedIncisiveness = mWindIncisivenessRunningAverage.Update(rawWindNormalizedIncisiveness);
     float const windRipplesWaveHeight = 0.7f * smoothedWindNormalizedIncisiveness;
 
+    // Spatial frequencies of the wave components
+
+    static constexpr float SpatialFrequency1 = 0.1f;
+    static constexpr float SpatialFrequency2 = 0.3f;
+    static constexpr float SpatialFrequency3 = 0.5f; // Wind component
+
+    //
+    // Create samples
+    //
+
     // sample index = 0
     float previousSampleValue;
     {
@@ -63,8 +78,74 @@ void WaterSurface::Update(
         previousSampleValue = sampleValue;
     }
 
-    // sample index = SamplesCount
-    mSamples[SamplesCount - 1].SampleValuePlusOneMinusSampleValue = mSamples[0].SampleValue - previousSampleValue;
+    // Populate last delta (extra sample has same value as this sample)
+    mSamples[SamplesCount - 1].SampleValuePlusOneMinusSampleValue = 0.0f;
+
+    // Populate extra sample - same value as last sample
+    mSamples[SamplesCount].SampleValue = mSamples[SamplesCount - 1].SampleValue;
+    mSamples[SamplesCount].SampleValuePlusOneMinusSampleValue = 0.0f; // Never used
+}
+
+void WaterSurface::Upload(
+    GameParameters const & gameParameters,
+    Render::RenderContext & renderContext) const
+{
+    //
+    // We want to upload at most RenderSlices slices
+    //
+
+    // Find index of leftmost sample, and its corresponding world X
+    auto sampleIndex = FastTruncateInt64((renderContext.GetVisibleWorldLeft() + GameParameters::HalfMaxWorldWidth) / Dx);
+    float sampleIndexX = -GameParameters::HalfMaxWorldWidth + (Dx * sampleIndex);
+
+    // Calculate number of samples required to cover screen from leftmost sample
+    // up to the visible world right (included)
+    float const coverageWidth = renderContext.GetVisibleWorldRight() - sampleIndexX;
+    auto const numberOfSamplesToRender = static_cast<int64_t>(ceil(coverageWidth / Dx));
+
+    if (numberOfSamplesToRender >= RenderSlices<int64_t>)
+    {
+        //
+        // Have to take more than 1 sample per slice
+        //
+
+        renderContext.UploadOceanStart(RenderSlices<int>);
+
+        // Calculate dx between each pair of slices with want to upload
+        float const sliceDx = coverageWidth / RenderSlices<float>;
+
+        // We do one extra iteration as the number of slices is the number of quads, and the last vertical
+        // quad side must be at the end of the width
+        for (int64_t s = 0; s <= RenderSlices<int64_t>; ++s, sampleIndexX += sliceDx)
+        {
+            renderContext.UploadOcean(
+                sampleIndexX,
+                GetWaterHeightAt(sampleIndexX),
+                gameParameters.SeaDepth);
+        }
+    }
+    else
+    {
+        //
+        // We just upload the required number of samples, which is less than
+        // the max number of slices we're prepared to upload, and we let OpenGL
+        // interpolate on our behalf
+        //
+
+        renderContext.UploadOceanStart(numberOfSamplesToRender);
+
+        // We do one extra iteration as the number of slices is the number of quads, and the last vertical
+        // quad side must be at the end of the width
+        for (std::int64_t s = 0; s <= numberOfSamplesToRender; ++s, sampleIndexX += Dx)
+        {
+            renderContext.UploadOcean(
+                sampleIndexX,
+                mSamples[s + sampleIndex].SampleValue,
+                gameParameters.SeaDepth);
+        }
+    }
+
+    renderContext.UploadOceanEnd();
 }
 
 }

@@ -12,6 +12,8 @@ namespace Physics {
 void Springs::Add(
     ElementIndex pointAIndex,
     ElementIndex pointBIndex,
+    int32_t factoryPointAOctant,
+    int32_t factoryPointBOctant,
     SuperTrianglesVector const & superTriangles,
     Characteristics characteristics,
     Points const & points)
@@ -20,7 +22,10 @@ void Springs::Add(
 
     mEndpointsBuffer.emplace_back(pointAIndex, pointBIndex);
 
+    mFactoryEndpointOctantsBuffer.emplace_back(factoryPointAOctant, factoryPointBOctant);
+
     mSuperTrianglesBuffer.emplace_back(superTriangles);
+    mFactorySuperTrianglesBuffer.emplace_back(superTriangles);
 
     // Strength is average
     float const averageStrength =
@@ -75,7 +80,6 @@ void Springs::Add(
 void Springs::Destroy(
     ElementIndex springElementIndex,
     DestroyOptions destroyOptions,
-    float currentSimulationTime,
     GameParameters const & gameParameters,
     Points const & points)
 {
@@ -88,7 +92,6 @@ void Springs::Destroy(
         mDestroyHandler(
             springElementIndex,
             !!(destroyOptions & Springs::DestroyOptions::DestroyAllTriangles),
-            currentSimulationTime,
             gameParameters);
     }
 
@@ -97,7 +100,7 @@ void Springs::Destroy(
     {
         mGameEventHandler->OnBreak(
             GetBaseStructuralMaterial(springElementIndex),
-            mParentWorld.IsUnderwater(GetPointAPosition(springElementIndex, points)), // Arbitrary
+            mParentWorld.IsUnderwater(GetEndpointAPosition(springElementIndex, points)), // Arbitrary
             1);
     }
 
@@ -109,6 +112,43 @@ void Springs::Destroy(
 
     // Flag ourselves as deleted
     mIsDeletedBuffer[springElementIndex] = true;
+}
+
+void Springs::Restore(
+    ElementIndex springElementIndex,
+    GameParameters const & gameParameters,
+    Points const & points)
+{
+    assert(springElementIndex < mElementCount);
+    assert(IsDeleted(springElementIndex));
+
+    // Clear the delete flag
+    mIsDeletedBuffer[springElementIndex] = false;
+
+    // Recalculate coefficients
+
+    mCoefficientsBuffer[springElementIndex].StiffnessCoefficient = CalculateStiffnessCoefficient(
+        GetEndpointAIndex(springElementIndex),
+        GetEndpointBIndex(springElementIndex),
+        GetStiffness(springElementIndex),
+        gameParameters.SpringStiffnessAdjustment,
+        gameParameters.NumMechanicalDynamicsIterations<float>(),
+        points);
+
+    mCoefficientsBuffer[springElementIndex].DampingCoefficient = CalculateDampingCoefficient(
+        GetEndpointAIndex(springElementIndex),
+        GetEndpointBIndex(springElementIndex),
+        gameParameters.SpringDampingAdjustment,
+        gameParameters.NumMechanicalDynamicsIterations<float>(),
+        points);
+
+    // Invoke restore handler
+    if (!!mRestoreHandler)
+    {
+        mRestoreHandler(
+            springElementIndex,
+            gameParameters);
+    }
 }
 
 void Springs::UpdateGameParameters(
@@ -126,16 +166,16 @@ void Springs::UpdateGameParameters(
             if (!IsDeleted(i))
             {
                 mCoefficientsBuffer[i].StiffnessCoefficient = CalculateStiffnessCoefficient(
-                    GetPointAIndex(i),
-                    GetPointBIndex(i),
+                    GetEndpointAIndex(i),
+                    GetEndpointBIndex(i),
                     GetStiffness(i),
                     gameParameters.SpringStiffnessAdjustment,
                     numMechanicalDynamicsIterations,
                     points);
 
                 mCoefficientsBuffer[i].DampingCoefficient = CalculateDampingCoefficient(
-                    GetPointAIndex(i),
-                    GetPointBIndex(i),
+                    GetEndpointAIndex(i),
+                    GetEndpointBIndex(i),
                     gameParameters.SpringDampingAdjustment,
                     numMechanicalDynamicsIterations,
                     points);
@@ -171,8 +211,8 @@ void Springs::UploadElements(
             {
                 renderContext.UploadShipElementRope(
                     shipId,
-                    GetPointAIndex(i),
-                    GetPointBIndex(i));
+                    GetEndpointAIndex(i),
+                    GetEndpointBIndex(i));
             }
             else if (
                 mSuperTrianglesBuffer[i].size() < 2
@@ -181,8 +221,8 @@ void Springs::UploadElements(
             {
                 renderContext.UploadShipElementSpring(
                     shipId,
-                    GetPointAIndex(i),
-                    GetPointBIndex(i));
+                    GetEndpointAIndex(i),
+                    GetEndpointBIndex(i));
             }
         }
     }
@@ -200,15 +240,14 @@ void Springs::UploadStressedSpringElements(
             {
                 renderContext.UploadShipElementStressedSpring(
                     shipId,
-                    GetPointAIndex(i),
-                    GetPointBIndex(i));
+                    GetEndpointAIndex(i),
+                    GetEndpointBIndex(i));
             }
         }
     }
 }
 
 bool Springs::UpdateStrains(
-    float currentSimulationTime,
     GameParameters const & gameParameters,
     Points & points)
 {
@@ -250,7 +289,7 @@ bool Springs::UpdateStrains(
             && !mIsBombAttachedBuffer[s])
         {
             // Calculate strain
-            float dx = (points.GetPosition(mEndpointsBuffer[s].PointAIndex) - points.GetPosition(mEndpointsBuffer[s].PointBIndex)).length();
+            float dx = GetLength(s, points);
             float const strain = fabs(mRestLengthBuffer[s] - dx) / mRestLengthBuffer[s];
 
             // Check against strength
@@ -264,7 +303,6 @@ bool Springs::UpdateStrains(
                     s,
                     DestroyOptions::FireBreakEvent // Notify Break
                     | DestroyOptions::DestroyAllTriangles,
-                    currentSimulationTime,
                     gameParameters,
                     points);
 
@@ -324,8 +362,8 @@ float Springs::CalculateStiffnessCoefficient(
     //
 
     float const massFactor =
-        (points.GetMass(pointAIndex) * points.GetMass(pointBIndex))
-        / (points.GetMass(pointAIndex) + points.GetMass(pointBIndex));
+        (points.GetAugmentedStructuralMass(pointAIndex) * points.GetAugmentedStructuralMass(pointBIndex))
+        / (points.GetAugmentedStructuralMass(pointAIndex) + points.GetAugmentedStructuralMass(pointBIndex));
 
     float const dtSquared =
         (GameParameters::SimulationStepTimeDuration<float> / numMechanicalDynamicsIterations)
@@ -346,8 +384,8 @@ float Springs::CalculateDampingCoefficient(
     Points const & points)
 {
     float const massFactor =
-        (points.GetMass(pointAIndex) * points.GetMass(pointBIndex))
-        / (points.GetMass(pointAIndex) + points.GetMass(pointBIndex));
+        (points.GetAugmentedStructuralMass(pointAIndex) * points.GetAugmentedStructuralMass(pointBIndex))
+        / (points.GetAugmentedStructuralMass(pointAIndex) + points.GetAugmentedStructuralMass(pointBIndex));
 
     float const dt = GameParameters::SimulationStepTimeDuration<float> / numMechanicalDynamicsIterations;
 

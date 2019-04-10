@@ -22,8 +22,7 @@ set (UNIT_TEST_SOURCES
 	EnumFlagsTests.cpp
 	FixedSizeVectorTests.cpp
 	GameEventDispatcherTests.cpp
-	GameMathTests.cpp
-	LibSimdPpTests.cpp
+	GameMathTests.cpp	
 	SegmentTests.cpp
 	ShaderManagerTests.cpp
 	SliderCoreTests.cpp
@@ -32,6 +31,12 @@ set (UNIT_TEST_SOURCES
 	Utils.cpp
 	Utils.h
 	VectorsTests.cpp)
+
+if (MSVC)
+	# We only use intrinsics when in MSVC
+	list(APPEND UNIT_TEST_SOURCES
+		LibSimdPpTests.cpp)
+endif (MSVC)
 
 source_group(" " FILES ${UNIT_TEST_SOURCES})
 
@@ -48,7 +53,6 @@ target_link_libraries (UnitTests
 	gmock
 	gtest_main
 	${ADDITIONAL_LIBRARIES})
-
 
 #
 # Set VS properties

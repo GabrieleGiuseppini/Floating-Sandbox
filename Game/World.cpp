@@ -112,6 +112,21 @@ void World::DestroyAt(
     }
 }
 
+void World::RepairAt(
+    vec2f const & targetPos,
+    float radiusMultiplier,
+    GameParameters const & gameParameters)
+{
+    for (auto & ship : mAllShips)
+    {
+        ship->RepairAt(
+            targetPos,
+            radiusMultiplier,
+            mCurrentSimulationTime,
+            gameParameters);
+    }
+}
+
 void World::SawThrough(
     vec2f const & startPos,
     vec2f const & endPos,
@@ -305,10 +320,12 @@ void World::DetonateAntiMatterBombs()
 }
 
 bool World::AdjustOceanFloorTo(
-    float x,
-    float targetY)
+    float x1,
+    float targetY1,
+    float x2,
+    float targetY2)
 {
-    return mOceanFloor.AdjustTo(x, targetY);
+    return mOceanFloor.AdjustTo(x1, targetY1, x2, targetY2);
 }
 
 bool World::ScrubThrough(
@@ -404,7 +421,8 @@ void World::Render(
     // need the ocean stencil)
     //
 
-    UploadLandAndOcean(gameParameters, renderContext);
+    mOceanFloor.Upload(gameParameters, renderContext);
+    mWaterSurface.Upload(gameParameters, renderContext);
 
 
     //
@@ -468,31 +486,5 @@ void World::Render(
 ///////////////////////////////////////////////////////////////////////////////////
 // Private Helpers
 ///////////////////////////////////////////////////////////////////////////////////
-
-void World::UploadLandAndOcean(
-    GameParameters const & gameParameters,
-    Render::RenderContext & renderContext) const
-{
-    size_t constexpr SlicesCount = 500;
-
-    float const visibleWorldWidth = renderContext.GetVisibleWorldWidth();
-    float const sliceWidth = visibleWorldWidth / static_cast<float>(SlicesCount);
-    float sliceX = renderContext.GetCameraWorldPosition().x - (visibleWorldWidth / 2.0f);
-
-    renderContext.UploadLandAndOceanStart(SlicesCount);
-
-    // We do one extra iteration as the number of slices is the number of quads, and the last vertical
-    // quad side must be at the end of the width
-    for (size_t i = 0; i <= SlicesCount; ++i, sliceX += sliceWidth)
-    {
-        renderContext.UploadLandAndOcean(
-            sliceX,
-            mOceanFloor.GetFloorHeightAt(sliceX),
-            mWaterSurface.GetWaterHeightAt(sliceX),
-            gameParameters.SeaDepth);
-    }
-
-    renderContext.UploadLandAndOceanEnd();
-}
 
 }

@@ -1,6 +1,10 @@
 =================================================
 Current perf:
 =================================================
+- fps: 30.8
+- UR: 224
+=================================================
+Before ocean/land rearc:
 - fps: 30.5/30.5/30.7/30.85
 =================================================
 Before decay:
@@ -191,141 +195,61 @@ Render:
 		+ After water contrast
 
 - Roadmap:
-	= 1.10.0
-		+ See if lights can make texture colors come out at night, rather than just yellow-izing it
-			+ ShipTrianglesTexture shader: use local light as "additive" to ambient light (to draw colors)
-			+ Split Points:: colorBuffer upload to own func
-				+ RenderContext: range-based
-			+ Remove logs and shader TODOs
-			+ Check intensity at distance==0
-			+ Change luminance to 1 rather than 2
-				+ See first what difference it makes
-				+ Change in materials.json
-				+ Enforce in electrical material
-				+ Verify fixes issue
-				+ Constrain luminiscence adjust to max 1
-					+ Or change how to apply adjustment
-					+ Change tooltip and minimum
-			+ If it works, also these shaders:
-				+ TrianglesColor
-				+ PointsColor
-				+ Ropes
-				+ SpringsColor
-				+ SpringsTexture
-			+ See if passing vec instead of floats among shaders helps with perf
-		+ EventTickerPanel:
-			+ Fix name of AM bomb @ placed (and @ al?)
-		+ Bounded World
-			+ GameParameters: MaxWorldWidth, Height
-				+ Remove MaxZoom, MinZoom
-				+ Use very small world for now
-			+ Constrain view changes:
-				+ ViewModel:
-					+ float ClampXYZ() -> clamped value
-					+ CanvasSize changes: make sure the largest visible world dimension stays the same
-						+ i.e., adjust zoom so that the new visible world dimensions are contained within the old one
-				+ Use at GameController:
-					+ Zoom updates
-						+ Get back value
-					+ Camera updates
-						+ Get back value
-					+ CanvasSize update: pickup changes and reset smoothing
-				+ Test
-			+ Constrain physics:
-				+ Ship::Update: at end of mech physics (after last integrate): 
-					+ Destroy points (also with sounds, it's OK) that are outside of bounding box
-					+ No destroy points, just do simple bounce w/bounded velocity
-			+ Verify AM bomb issue is gone
-			+ Test in Debug
-			+ Make larger bounding world
-				+ W: 10000
-				+ H: MaxSeaDepth * 4
-				+ w/static_assert for ocean depth
-			+ Figure out where it is that the submarine disappears
-			+ Fix water drag 
-				+ Find coefficient for linear drag in "slow" range
-				+ When done: see if bounds of water drag adjustment are still good
-					+ Test at new max (1K) - do ship pieces go to a standstill?
-			+ Verify AM bomb issue is gone
-			+ Get current FPS
-			+ Changes.txt		
-			+ Merge to master			
-		+ See move tool changing center
-			+ Is it because of missing last step?
-				+ Should finalize only after last step, making sure to clamp elapsed to Lag first
-		+ Create dump upon crash
-			+ https://stackoverflow.com/questions/9020353/create-a-dump-file-for-an-application-whenever-it-crashes
-			+ In app folder, via StandardSystemPaths
-				+ Under \CrashDumps
-			+ Try with empty png and corrupted png
-		+ VAO (*)
-		+ Misc OpenGL Optimizations (*)
-		+ Secondary PlaneIDAsFloat buffer
-			+ We only pay the price sparingly, but reap the benefits at each frame
-			+ Code
-		+ Vertex buffer optimizations (*)
-		+ Update FPS & perf analysis
-		+ Water Contrast @ 0.875?
-		+ UIPreferences		
-		+ Decay (rust) (*)
-		+ Ship descriptions (*)
-		+ ShipRenderContext: make water color depend on ocean render mode color
-			+ Get FPS before
-			+ Water color in shader has to become parameter
-			+ OceanRenderMode:
-				+ Texture: waterColor=<constant matching now>
-				+ Flat: waterColor=<that flat color>
-				+ Gradient: waterColor=<mid color>
-			+ Test x 3
-			+ Get FPS after
-		+ Ships
-		+ Less stress sounds: use mIsStressed buffer, w/high and low watermarks
-			+ Get FPS before
-			+ Do
-			+ Test
-			+ See if can remove "negligible" check now
-		+ Fix air bubble progress issue
-			+ Confirm repro test
-			+ Get FPS before at bubble tool:
-			+ Do
-			+ Test
-		+ Send for testing
-		+ New ships
-		+ Check "Smash" bug
-		+ Add other testers to About box
-		+ Finalize descriptions
-		- Release
 
-	- 1.11.0:
+	= 1.11.0:
+		+ Orphaned points
+		+ Increase # of ephemeral particles
+			+ And thus lower water intake threshold for air bubbles
+		+ Sea and Ocean Floor rearc(*)
+		+ Change cover art to Logo2
+			+ About box image
+				+ And remove "Cover art" credit altogether
+			+ Installer
+		+ Try to build with Runtime Type Information disabled
+		+ Add world end markers
+		+ Repair tool
 
-		- Make water drag adjustable
-			- Correct unit and value
-			- See if can make it higher, to fix exploding debris problem
+		= Fix Linux build break
+			+ Do specialization outside of class
+			+ Set /permissive- for all projects
+		- Take Mathias' pull request
 
-		- Fix Linux build break
+		- Merge to master
 
-		- Orphaned points (*)
+		- See certificate
 
-		- Flood tool and ship un/sinking
-			- Sinking: do HighWatermark/LowWatermark
-			- Make music class with FadeToStop()
-				- ::Update()		
+		- Fix github's clouds bug
+
+		- Are we really forced to set point colors to structural colors?
+			- Can we always use the (sampled) texture colors?
+				- After all, texture layer is now mandatory!
+
+		- Floatsam: see if using (waterY + 0.1) at UpdateWaterIntake helps
+
+		- Auto-focus (*)
+			- Owned by RenderContext
+
+		- Try to show tip window after first Render
+			- PostInitialize just posts callback
+			- Before setting up timers, callback checks if tip has ben checked or not
+
+		- Also dry points should rot (*)
+
+		- Add new materials: plastic, rubber, fiberglass
+
+		- Shallow Water Equations (*)
+
+		- Interior layer (*)
 
 		- Heat and combustion (*)
-			- Gunpowder: material or object?
 
 		- Instanced drawing for lights (*)
 
 		- Pick tool (*)
 
-		- Interior layer (*)
-
 		- Electrical layer view (*)
 
 		- Spring and NonSpring force separation optimization (*)
-
-		- Increase # of ephemeral particles
-			- And thus lower water intake threshold for air bubbles
 
 		- Batisphere with pumps and propulsion (*)
 			- Switches (*)
@@ -334,19 +258,16 @@ Render:
 			- Propulsion (*)
 			- Batisphere ship
 
-
-		- About box: testers
-			- Dkuz The Fox
-			- Ask Pac0master
-
 	- 1.12.0
 
 		- Smoke (*)
 		- Settings Manager (*)
 
 		- Libsimdpp spring relaxation (*)
-		- Frontier
+		- Frontier (*)
 		- Resource Packs (*)
+
+		- Backgrounds (*)
 
 - Ship making:
 	# Credit names:
@@ -358,6 +279,15 @@ Render:
 		- To adjust:
 			- SS France (Awesomeyorkie):
 				- Ropes
+		- Ready:
+			- B747: (An SR71 Habu) alias=NotTelling year=1970
+				- Add to About box
+			- Pacific: "S.S. Pacific" alias=Hugo_2503 year=1908
+				- Add to About box
+		- To test:
+			- RMS Magentasia (TopHatLemons)
+			- Menschenfresser (ASSTYU)
+			- JackMellon on Discord
 		- Asked:
 			- Ed Fitzgerald (but needs to be fixed) (Kiko)
 			- Aegir_Mark_III (coolman asks original designer)
@@ -365,16 +295,10 @@ Render:
 		+ Tell maximord about new ships - give him names
 		= Copy all descriptions into their respective .shp files
 			# From https://docs.google.com/document/d/1niiB9AaqMAzThTY-pGjU3-qxIywKR8-nw_JDiOWcj1o/edit?usp=sharing_eil&ts=5c929c19
-			- Test:
-				+ Lusitania
-				+ HMHS britannic
-				+ RMs queen mary
-				+ balls
-				+ Carnival
-				+ Cruise Vessel
-				+ Container
-				+ Flagship
-			+ Ask ship owners
+			- TODO:
+				- Can take HMHS Britannic
+				= SweetStrawberryBoy agreed to Black Titan
+			- Ask ship owners
 				= mrpasta: wants to see them first
 				+ kikotheshipbuilder: all except HMS Thunderchild
 				+ Nomadavid: fine
@@ -384,18 +308,21 @@ Render:
 				+ Karaboudjan
 			+ Add Maximord to About box
 
-	+ Michael Bozarth
+	- Michael Bozarth
 		+ https://drive.google.com/drive/u/0/folders/1k-A4SE8mMp2j_A3nH3gnl6SvYF9bnWoU		
 		+ Add "Michael Bozarth" to About box (link: https://www.youtube.com/channel/UCaJkgYP6yNw64U3WUZ3t1sw)
+		- Titanic with interior layer
+			- See if current texture lines up
+				- If so, make new Titanic with his structure and interior, and my texture
+				- If not, ask him if he could do a texture
 
 
 - Suggestions to spec:
+	- Tools turning white at night
 	- Once we have ships, make "Lock Ship in View" flag and move camera with ship's center of mass (representative point or real CoM)
 	- Be able to place nukea nd AM bomb anywhere
-	- Add new materials: plastic, rubber, fiberglass
 	- Fishes
 	- Different colored lights
-	- Different backgrounds: use keys to switch between a dock, cliffs, open ocean, ice field, etc.
 	- Different maps: maps that might even have islands and grass 
 	- Black hole
 	- Tool to increase or lower mass under the cursor
@@ -407,6 +334,7 @@ Render:
 	- Tsunami
 	- Earthquake
 	- Storm: rain and waves at ~4.4
+	- Rot tool (rots without having to flood it)
 
 ======================================================================================================================
 ======================================================================================================================
@@ -418,28 +346,23 @@ Render:
 		+ After including redo
 		+ Detect loops with unordered_set<std::string>
 		+ Use for ship color and texture
+	- Ship: replace handler registrations with points, springs, etc. with IStructureHandler, declared in own .h
+	- GameEventDispatcher: set mIsDirty at event publishing and consume at Flush()
 	- Try 32-bit build
 	- Sound controller: complain if find extraneous files (had issue with ".flc")
+	- Translations:
+		- Russian: steven6886@yandex.ru
 
 - Simulation Optimizations:
 
-	- Take advantage of bounded-width world
-		- Main concept:
-			- OceanSurface and OceanFloor contain samples for the entire width
-				- Have to find <#Samples==BufferWidth, MaxWorldWidth> pair that we are comfortable
-				  with *and* which gives a good resolution
-					- Water: 
-						- Current dx = 20*pi/512 ~= 0.122m
-						- Next dx = W/S @ W=10K => ~80k samples
-			- Not anymore periodic, hence no mod anymore to get water height and ocean floor
-			- Only the number of samples dictates final definition of surface and floor
-			- OceanBottom bitmap gets up/down interpolated to # of samples at load time
-			- Uploading is by sample
-				- Loop uploads S(i0+ni), with i0=left start, n depending on zoom
-					- Magnifying: n = 1, dx > 1; GPU fills-in
-					- Minifying: n > 1, dx = n * resolution
-						- n chosen so that number of slices kinda like now, i.e. ~= 500
-
+	- Try with SpringRelaxation updating only positions
+		- Still runs N times, but only updates positions (does a local "integration" based on "forces")
+		- After last step, update velocity adding last step's position minus initial position
+			- Need to save velocity buffer first
+			- Then add to it the resultant of the velocities generated by spring relaxation, i.e. the delta positions
+		- Test:
+			- See bounces from ocean floor
+				- The back-sending should be fine as it's based off real initial velocity TODO: double-check
 
 	= GPUCalc:
 		+ 1: Simple OpenGLContext
@@ -677,15 +600,6 @@ Render:
 
 
 - Gfx optimizations:
-
-	- World::UploadLandAndWater: use same spatial frequency as samples, so to avoid interpolating altogether
-		- Warning: requires same sampling frequency for both, as ocean quads require landY when land sticks out,
-		  unless we always render ocean up to visibleWorldBottom, in which case the two are fully independent;
-		  so assuming we go ahead with different sampling frequencies
-		- Separate uploads, managed by OceanSurface and OceanFloor
-			- Find first sample == sample immediately to the left of visibleWorld.Left
-			- Go ahead by N*dx, up to last sample == sample immediately to the right of visibleWorld.Right
-				- N > 1 iff zoomed out "enough"
 					
 	- Lights on the GPU with instanced drawing (*)
 		- We begin with doing light at vertex (Gouraud)
@@ -707,6 +621,23 @@ Render:
 
 
 - Gfx:
+	+ Add world end markers
+		+ Add texture (square,repeatable in both directions)
+		+ RenderContext::init: 
+			+ Don't load in atlas
+			+ Make it repeated
+		+ Final step @ RenderContext::Render
+			+ Checks first which sides, if any, have to be drawn
+			+ Renders quad for each side
+				+ Width is in NDC
+				+ alpha = 0.5 (in shader)
+
+	- Auto-focus (*)
+		- Done by RenderContext upon each AddShip()
+			- Based off ship's AABB, calc'd by ShipBuilder
+
+	- Different backgrounds: use keys to switch between a dock, cliffs, open ocean, ice field, etc.
+
 	+ Make font white inversely to ambient light
 
 	- Add SkyRenderMode (Flat, Gradient)
@@ -752,116 +683,6 @@ Render:
 			- Ship::Render: if flag set: invokes Ship::RenderElectricalElements()				
 				- Do a sort of connectivity visit and upload as you go
 
-	- Orphaned points (*)
-		+ Idea: always draw orphaned points - those that come after destruction
-		+ Orphaned point == points with 0 connected springs
-		+ We unify ephemeral points uploading and rendering with ship points (either debug or orphan) uploading and rendering
-			+ Plane ID is enough to keep them on separate planes
-		+ Verify first that connectivity visit really assigns plane IDs also to orphaned points 
-		- Impl:
-			- We must first stop deleting points just because springs are deleted
-				- Though should still delete them at Destroy() and Bomb(), for example
-			- RenderContext and ShipRenderContext expose one single, independent UploadPointElements for segments:
-				- UploadPointElements(srcbuffer, start (valid only for dst), len)
-				- Only requires ShipRenderCointext to have been init'd with total # of points, so to
-				  allocate GPU buffer once at initialization
-			- Ship::Render:
-				- New member: std::vector<ElementIndex> mPointElementsToRender
-					- Rename also other one as "...ToRender"
-					- cctor: reserve(mPoints.total_size)
-					- It will contain first non-ephemerals (orphaned or all), then ephemerals
-					- Coping with mIsStructureDirty=true but no new ephemerals:
-						- Need to add boolean to Points::UploadEphemerals to force emission of points even when not dirty
-				- Nuke old upload call for point elements
-				- if mIsStructureDirty:
-					- Clear mPointElementsToRender
-					- Ask Points to populate point indices in mPointElementsToRender
-						- Points::UploadNonEphemeralPointIndices(...)
-						- Starting from zero
-						- Points decides between all or orphaned only based off DebugShipRenderMode
-							- Like now, only non-ephemerals
-					- Store # of points just populated into mCurrentShipPointElementsToRenderCount
-				- ...later...:
-				- At Points::UploadEphemerals:
-					- Pass mPointElementsToRender
-					- Since you're here, remove TBD comment about ConnectedComponentIDs
-					- Pass "forceEmissionOfPoints" == mIsStructureDirty
-					- Points::UploadEphemeral returns ephemeralPointsPopulatedCount
-				- if mIsStructureDirty || ephemeralPointsPopulatedCount > 0:
-					- Call RenderContext::UploadPointElements(
-						srcbuffer=ship's buffer, truncated to mCurrentShipPointElementsCount if !mIsStructureDirty, and offseted as mIsStructureDirty ? 0 : mCurrentShipPointElementsCount
-						start = mIsStructureDirty ? 0 : mCurrentShipPointElementsCount,
-						len = mIsStructureDirty ? buffer.len : nEphemeralPointsPopulated)
-					- TEST: go through this again and verify all cases covered, including all combinations of empty's
-			- ShipRenderContext:
-				- Nuke RenderEphemeralPoints and its structs and members
-				- Have just one single RenderPoints
-					- Always invoked, except when DebugShipRenderMode is not None and not Points
-					  (i.e. when it's Springs, EdgeSprings, etc. but not Points)
-		- Test L'n'F'
-		- Cleanups:
-			- Ship: generation of air bubbles: atm we don't generate air bubbles for orphaned points; see if this should change instead
-
-		- TODOOLD: in case any assumptions fail:		
-			- Also, ShipRenderMode::Points should only be consumed by Points::Upload, who is the only one who decides what gets uploaded
-				~ Not really, see below - it's ConnectivityVisit the only one that checks ShipRenderMode::Points 
-			- Orphaned points go into their own single plane, at whatever connected component/plane ID algo assigns them to
-				- Assigned directly by ConnectivityVisit by checking if point has no connected springs (and it's not deleted)
-					- Do we really need to special-case PlaneID assignment? Doesn't ConnectivityVisit already assign a good Plane ID?
-					- Since we're doing this, we might as well fill-in vector of Point indices 
-					  (containing ShipRenderMode::Points + orphaned + ephemeral points), replacing UploadPoints:
-						- Ship has own vector<ElementIndex>, appropriately reserved to mPoints.total_size
-						- Ship::ConnectivityVisit:
-							- Clears vector - after all, we run ConnectivityVisit if we're dirty
-							- For each point: 
-								- If ShipRenderMode is Points OR point is orphan: appends it
-							- Remembers size of vector at this moment, as mShipPointElementsCount (see below)
-						- Then passes it to Points::UploadEphemeralParticles(), who appends to it
-							- When we're not dirty, instead, Ship truncates it to mShipPointElementsCount length
-							  (maintaining point indices from previous ConnectivityVisit),
-							  before passing it to UploadEphemeralParticles() (which now takes no RenderContext anymore)
-			- Ship::Render(): new dirty/ephemeral algo:
-				- With Z buffer we don't need anymore to worry about ShipRenderElementsStart() to allocate all connected components
-				- Ship uploads own point element index vector when:
-					- old: mAreElementsDirty => new: mArePointElementIndicesDirty
-						- mArePointElementIndicesDirty is set when:
-							- ConnectivityVisit runs
-								- ConnectivityVisit sets it itself at end
-							- Points::UploadEphemeralParticles(indices vector) returns true (because it remembers it is dirty)
-								- Optimize here: if only UploadEphemeralParticles() returns true, then
-								  may upload only sub-portion after mShipPointElementsCount
-			- ShipRenderContext always renders point elements	
-				- Even when ShipRenderMode is Springs
-
-
-	- A toggle-able shader for the sea - so it gets darker the further down you go; it would be affected by the ambient lighting
-		- Need new scalar vertex attrib for depthBrightness - between 1.0 (top) and 0.0 (at greater of 1000m and sea depth)
-			- depthBrightness is always 1.0 if "modulate sea depth brightness" (new boolean GameParam) is not set
-
-	- A toggle-able shader for the sky - twilight
-
-	- Problem with texture over edges of structure: when texture is not reduced by structure (i.e. when structure is
-	  larger than texture), then one sees parts of the springs
-		- It's a problem with rendering springs with the texture shader
-		- However, these springs give an anti-aliasing effect
-
-	- Draw better (depth-wise) those parts that are only connected by ropes (**)
-		- TODO: this is taken care of by Z-buffer work, by carefully propagating plane IDs 
-			- This in reality has nothing to do with ConnectedComponentIds
-		- Change connected component detection by not propagating from a "spring only" to a "body", so that two bodies connected
-		  only by springs or ropes are considered separate, and spring/rope belongs to first one only
-			- In practice: flood the *edge* network, not the spring network, and don't propagate
-			  if coming from edge with zero triangles to an edge with >0 triangles
-			- Could also do it now with spring's connected triangles: don't propagate if coming from #connected_triangles=0 to
-			  #connected_triangles>0
-				- Though we must still propagate through rope triangles, so maintain "coming from #connected_triangles=0"
-				  when propagating from a rope point to a rope point - regardless of connected triangles
-
-	+ Option to enable drawing of force vectors for each point
-		+ Ship::Update() takes also RenderContext const &, so can check if need to save force buffer
-			+ Points::SaveForceBufferForVectorRender()
-		+ Copied right before integration
-
 	- AmbientLightIntensity:
 		+ Use also in RenderContext::RenderStart() for clear (sky) color
 		+ Phase 1: pgup/down
@@ -888,6 +709,23 @@ Render:
 
 - Dynamics:
 
+	- Also dry points should rot, albeit very slowly (*)
+		- ...and also do material property (*)
+		- Rotting factor: (inner water + (isUnderwater ? 0.1 : 0.0)) * material."~rust_susceptibility"
+			- Factor: see if 0.005 is not better
+		- Do stainless steel materials
+
+	- Make waves with Shallow Water Equations (*)
+		- Implement
+		- Follow-ups:
+			- Rogue waves/tsunami
+			- Manual tsunami
+				- Tool grabbing water
+	
+	- Try to re-instate square velocity drag
+		- Goal: falling ship should break upon impact with water
+		- Need to max out drag force
+
 	- Heat and Combustion (*)
 		- Integration of Decay with Combustion:
 			- Combustion also is a source of decay
@@ -907,8 +745,17 @@ Render:
 						+ Springs::Decay(Points const &)
 							+ For each spring: strength = material's strength * avg of two endpoints' decay
 								+ float buffer: MaterialStrength
-		- TO INTEGRATE: Materials have CombustionType==(Explosive, Burning?)
+		- Materials' new properties:
+			- combustion threshold (T)
+			- combustion type (Explosive, Burning)
+		- New materials:
+			- "gunpowder" and "diesel"
 		- TODO: from Moleskine
+		- TODO: HeatPropagation (and others?) may run sparingly
+
+		- Flamethrower tool:
+			- Need new layer - InteractionLayer - to do flamethrower's flames
+				- Owned, like text layer, by GameController
 
 	- Dynamite that may be thrown to the ship
 
@@ -924,47 +771,16 @@ Render:
 				- Pressure delta between current water at point and external Y
 				- With probability growing in a band around max pressure delta
 
-	- OceanFloor:
-		- Make number of samples be bump map width
-		- Still check width is power of two
-		- Still calculate bit stuff for fast mod
-		- Make default floor larger and check perf impact
-
 	- Ocean floor breaking up upon impact
-		- Layer on top of floor samples, with hash buckets and lists of heights per-bucket
-		- Spec:
-			- Ocean floor has "height overrides" for bumps, etc.
-				- Addressed via "quantized X", i.e. buckets of X
-					- BucketSize ~= "default/initial visible world width" divided by ~ number of slices (512)
-						- Or dictated by will to re-use sample index @ sampling
-				- Fast lookup of X:
-					- Hash table w/hash=periodic bucketized X (same used for curve interpolation),
-					  & value=list of actual "quantized X" with corresponding H
-					- Hash table is array<vector<x, h>, # of buckets>
-			- @ Ocean floor collision:
-				- Upon point entering floor:
-					- Points goes back by displacement * FloorHardness
-					- Ocean floor's H goes back by displacement * (1 - FloorHardness)
+		- @ Ocean floor collision:
+			- Upon point entering floor:
+				- Points goes back by displacement * FloorHardness
+				- Ocean floor's H goes back by displacement * (1 - FloorHardness)
+
+	- Breaking waves (Muller's paper)
 
 	- Stop playing music when ship has "sunk"
 		- Need to figure out easy way to detect "has sunk"
-
-
-	- Auto-adjust zoom at ship load
-		- Use preferred zoom from .shp file
-		- Configured by GameController
-
-	- Figure out what to do with connected components and ephemeral particles
-		- Depending on the above:
-			- See if can piggyback the fact that Points is already uploading all (well, now non-ephemeral) point element indices
-			- ShipRenderContext: for each conn component, use a vector (w/reserve) rather than full MaxParticles
-				- Can then get rid of MaxCount, CurrentCount
-		- Possible solution # 1: wait for Z buffer; when it will be done everything will be for free:
-			- Assign provoking point's Connected Component ID 
-			- ConnectedComponent buffer is a proxy of points' Z, has no bearing to multiple buffers that need to be pre-allocated
-			- Ephemeral particles in ShipRenderContext are then a single NOT-per-connected-component single buffer of indices,
-			  exactly like normal points
-				- May be at this moment we can unify normal point uploading
 
 	- Ephemeral particle emitters
 		- TODO: decide between the below (emitter is new object type in its own right) and having instead emitters as special
@@ -994,14 +810,6 @@ Render:
 			- http://orbit.dtu.dk/files/3706687/Visser6.pdf
 			- @ Smoke
 				- http://matthias-mueller-fischer.ch/publications/sca03.pdf
-
-	- Fire
-		- Materials have flammability
-		- TBD: how to ignite?
-		- Once ignited, it spreads
-		- Water sets fire off, of course
-		- After some time burning, a point breaks
-		- While burning, changes material so that buoyancy goes down?
 
 	- Fireworks
 		- New emitter material, much like smoke emitters
@@ -1062,7 +870,7 @@ Render:
 			- MainFrame menu pops it up and down (and MainFrame also pops it up automagically at first switch add, see above)
 				- Menu items to toggle it, enabled iff there's at least one switch
 			- Has control to hide it back (kinda like "close" button at top-right corner)
-			- SwitchControl: much like slider, button (w/two switch images) with label below
+			- ShipSwitchControl: much like slider, button (w/two switch images) with label below
 				- Switch event is via lambda
 				- Media:
 					- 2 images
@@ -1138,11 +946,14 @@ Render:
 
 
 	- Propulsion
-		- New electrical element
-		- Electrical current controls force
+		- New electrical element - engine
+			- Publicized like switch, and switchboard shows slider
+				- Need custom-drawn ShipSliderControl control
+		- Electrical current (0.0 vs !=0.0) and slider ("engine speed" buffer) control force
 		- At ElectricalElements::Update(): if powered, apply force to point (4 materials for 4 directions)
 			- Requires forces rearc, with separate "Mechanical" and "Other" force buffers
 				- And smarter zeroing of Mechanical
+			- Or can we piggyback on the "non-spring" force buffer that we talk about at "force rearc" above?
 
 	- Test:
 		- Self-adjustment of kSpring and kDamp based off paper's formula (H and L bounds)
@@ -1186,9 +997,18 @@ Render:
 							- Make edge belong to frontier fId
 							- if p' == p0: break
 						- continue to next flip point on same scan line
-		- Conclusions:
+		- Cleanups:
 			- Revisit need to have SuperTriangles and SubSprings, as we might now use edges
 				- We would now only upload springs that have 0 or 1 edges
+		- Follow-ups:
+			- Waves: generate wave (change height) when frontier (points) touch water for the first time
+			- Water drag 
+				- The one already there assumes velocity always normal to surface, but we should consider surface normal instead
+				- The new directional drag could make parts of the ship break off
+			- External water pressure should inflict stress on springs
+				- Have to visit frontier points and, if underwater, do force perpendicular towards interior
+
+
 		- TODOOLD
 		- Realize that a node can belong to up to 4 frontiers (center of 4 holes)
 			- And a point deletion might cause a merge of the four
@@ -1207,18 +1027,7 @@ Render:
 						- If one of the connected points is already a frontier, then the new frontier points
 						  take that frontierId
 						- TODO
-	- Water drag 
-		- The one already there assumes velocity always normal to surface, but we should consider surface normal instead
-			- Requires frontier
-		- The new directional drag could make parts of the ship break off
-
-	- DestroyAt:
-		- Test: Ship::SpringDestroyHandler() only destroys triangles that contain A-B
-			- Should definitely make both A and B leak, as they both now have an adjacent hole
 	
-	- See if can use external water's pressure to inflict stress on springs
-		- Have to visit frontier points and, if underwater, do force perpendicular towards interior
-
 	- Stars with database
 		- python script to generate binary maps for N and S emispheres
 
@@ -1231,55 +1040,17 @@ Render:
 		- Also other objects might be launched with click-and-drag
 
 - Water:
-	- If we don't have enough particles for air bubbles, test the following::
-		- Air bubbles only at leaking that became so because they have been broken
-			- "IsLeaking" -> "LeakingType": None, Leaking, LeakingDamaged
-		- Increase # of ephemeral particles
 
-
-	- OLD: Optimizations:
-		- GravitateWater:
-			- Calculate once and for all cos theta's at first iteration
-				- !!! Actually, calculate WaterGravityFactorA = dt*0.6*(1+cos_theta)/2, WaterGravityFactorB = -dt*0.6*(1-cos_theta)/2
-					float cos_theta_select = (1.0f + cos_theta) / 2.0f;
-			                float correction = 0.60f * cos_theta_select * pointA->GetWater() - 0.60f * (1.0f - cos_theta_select) * pointB->GetWater();
-			                correction *= GameParameters::SimulationStepTimeDuration<float>;
-				- Test (check disassembly) with templated lambda (Spring const &)->void
-					- First one calculates factors and stores them in Spring
-					- All others empty
-					- All iters take factors from Spring after calling lambda
-
-
-	- Sinking detection is broken - it currently only considers total water that entered the ship, which comes proportionally to external
-	  water pressure; all this water could be confined to a tiny volume, and yet we trigger sinking
-		- Solution: make it based on total number of points that have water instead, i.e. wet points
-			- ...which requires 
-			- Option1: or can just be calculated at end of each update with simple pass through water buffer and previous water buffer
-				- Better, "if" for prev_value==0 would be done only once per Ship::Update()
-				- Costly to copy water buffer
-			- Option 2: 
-				- Points keep track of point's water going from 0.0 to > 0.0, at all possible
-				  avenues of change (LeakWater, BalancePressure, etc.)
-					- Need Points::mIsWetBuffer and mWetPointsCount, both set/incrd automagically when Points::AddWater is called
-				- Needs multiple ifs - one at each change - vs. a single if at Option1
-
-	+ Did original game propagate water also through hull springs? YES. How did hull thin dividers work? THEY DIDN'T WORK
-	+ Add Point::Hull Characteristic, and don't leak/propagate(incl. gravitate) water if at least one of the two points is hull			
-		+ Alternatively: just make a spring hull if one point is hull; test it
-
-	- Make waves with Shallow Water Equations 
-		- And if frontier works, change height when frontier touches water for the first time
-		- Problem with extent of heightfield: needs to look good when zooming out; 3 alternatives:
-			- 1: Find a way to stitch X segment to required world X
-				- i.e. still "periodic"
-				- Note that can't mirror segments or else waves would have different directions
-			- 2: Upsample and downsample depending on zoom
-				- But we lose details when we zoom out and then in again
-			- 3: Just cap zoom to reasonable max
-	- Rogue waves
-		- After cracking periodic repetition puzzle
-	- Breaking waves (Muller's paper)
-
+	- New sinking detection:
+		- Sinking detection is broken - it currently only considers total water that entered the ship, which comes proportionally to external
+		  water pressure; all this water could be confined to a tiny volume, and yet we trigger sinking
+		- Should be based off # of points underwater
+			- Could be a very-lo-freq step that just checks y's against water height at that point
+				- Use HighWatermark/LowWatermark
+			- Make music class with FadeToStop()
+				- Also call its ::Update(), which fades
+					- Called only for music's that we know are to fade
+				- Stop() stops immediately at any point
 
 - Game Interactions and Controls:
 
@@ -1314,32 +1085,28 @@ Render:
 				- Pass velocity = current (synthetic) mousePos - last (synthetic) mousePos
 			- Help
 
-	- Ship definition: 
-		- Interior layer:
-			- New layer @ ShipDefinitionFile and ShipDefinition
-			- New flag @
-				- ShipRenderMode
-				- SettingsDialog
-			- RenderMode rearc:
-				- ShipDefinition:
-					- std::optional<ImageData> TextureImageData
-					- std::optional<ImageData> InteriorImageData
-					- ImageData StructureImageData
-					- std::optional<ImageData> FallbackImageData
-						- i.e. the 8X structural
-				- RenderContext:
-					- Exposes "HasShipTextureImages()" and "HasShipInteriorImages()"
-						- Updated @ AddShip (via OR) and @ Reset()
+	- Interior layer:
+		- New layer @ ShipDefinitionFile and ShipDefinition
+		- New flag @
+			- ShipRenderMode
+			- SettingsDialog
+		- ShipDefinition:
+			- std::optional<ImageData> InteriorImageData
+		- RenderContext:
+			- Exposes "HasShipInteriorImage()"
+				- Updated @ AddShip (via OR) and @ Reset()
+		- Toggling layer visibility:
+			- Choose between:
+				- On-window control
+					- Done via OpenGL with InteractionLayer
 				- SettingsDialog:
-					- Enable options conditionally 
+					- Enable option conditionally 
 					- Refresh by MainFrame upon AddShip/Reset/...
-				- New RenderMode: DrawPrimitives
-					- Takes the place of the current "Draw Structure"
-				- ShipRenderContext:
-					- When not drawing primitives, texture used is:
-						- If "Texture" -> Texture OR Fallback
-						- If "Structure" -> Structure
-						- If "Interior" -> Interior OR Fallback
+		- ShipRenderContext:
+			- When not drawing primitives, texture used is:
+				- If "Texture" -> Texture
+				- If "Structure" -> Structure
+				- If "Interior" -> Interior OR Structure
 
 - UI:
 	+ PreferencesDialog:
@@ -1467,6 +1234,9 @@ Render:
 					- Enables/Disabled buttons and menus
 
 - Sounds:
+	- New sounds:
+		- Ship sinking: https://www.youtube.com/watch?v=-f2B_bzcgV8
+		- ShipSoundsForFS (in Scratch)
 	- Ship may come with custom sound(s) for horns
 		- Figure out how to play them, may be like switchboard or *via* switchboard, or with just one horn sound
 	- Morse code sound when it's about to sink (early sink detection)
@@ -1914,7 +1684,6 @@ IF WX:
 		+ Allocate() returns std::unique_ptr<Buffer<Type>>, with deleter invoking mAllocator->Release(Buffer<type>*)
 		+ Points::CheckoutWaterBufferTmp (as "AllocateWaterBufferCopy()") borrows one, copies it in, and returns it as std::unique_ptr<Buffer<float>>
 		+ Opposite for Commit() (as "UpdateWaterBuffer")
-
 	+ See if reordering springs according to small tiles helps, instead of according to cache heuristics
 		+ Visit point matrix as 2X2 blocks
 		+ Add all springs connected to any of the included points (0..4 points), except for already-added ones
@@ -1922,6 +1691,81 @@ IF WX:
 			+ Need un_map<point index->[spring index]>
 				+ See if [spring index] could be member of PointInfo
 			+ Done like this, it favors springs extending to the right and down
+	+ Sea and Ocean Floor: take advantage of bounded-width world (*)
+		+ Main concept:
+			- OceanSurface and OceanFloor contain samples for the entire width
+				+ Have to find <#Samples==BufferWidth, MaxWorldWidth> pair that we are comfortable
+				  with *and* which gives a good resolution
+					+ Water: 
+						+ Current dx = 20*pi/512 ~= 0.122m
+						+ Next dx = W/S @ W=10K => ~80k samples
+							+ But we ended up with 8k samples!
+			+ Not anymore periodic, hence no mod anymore to get water height and ocean floor
+			+ Only the number of samples dictates final definition of surface and floor
+			+ Uploading is by sample (when not minifying a lot)
+				+ Loop uploads S(i0+ni), with i0=left start, n depending on zoom
+					+ Magnifying: n = 1, dx > 1; GPU fills-in
+					+ Minifying: n > 1, dx = n * resolution
+						+ n chosen so that number of slices kinda like now, i.e. ~= 500
+		+ Initial FPS: 29.5/29.8
+		+ Impl step 1: Ocean floor
+			+ # of samples: try 2K first
+			+ dx = MaxWorldWidth/NumberOfSamples
+			+ Initialization:
+				+ OceanBottom bitmap gets implicitly upsampled to 5000m if w < 5000
+					+ If it looks bad, made it larger until definition is enough
+				+ Then it gets cut/repeated to # of samples
+					+ ImgX = (s * dx) % 5000
+					+ Do interpolation
+			+ Update:
+				+ Sine/cosine is superimposed for each sample, like now
+			+ AdjustTo:
+				+ Fix
+			+ Sampling:
+				+ Just find sample index and interpolate in-between
+				+ See issue with x==MaxWorldWidth
+					+ Do extra sample with same val as previous
+						+ Delta is zero though
+					+ Remove change at Ship
+				+ Test last ocean floor sample, again
+			+ Since you're here, change AdjustTerrain tool to do trajectory
+			+ Test:
+				+ OceanFloor bitmap larger, not multiple (say, 700) - w/recongizable pattern			
+		+ Impl step 2: Render upload: use same spatial frequency as samples, so to avoid interpolating altogether
+			+ Need first to always render ocean up to visibleWorldBottom, in which case the two are fully independent
+				+ Test afterwards
+			+ Break World::UploadLandAndWater into OceanFloor::Upload(.) and WaterSurface::Upload(.)
+			+ Fix perf issue w/tall quads
+				+ Test waves below visible bottom
+			+ Test ocean gradient				
+			+ OceanFloor::Upload(.)
+				+ Find first sample == sample immediately to the left of visibleWorld.Left
+				+ Magnifying: n = 1, dx > 1; GPU fills-in
+				+ Minifying: n > 1, dx = n * resolution
+					+ n chosen so that number of slices kinda like now, i.e. ~= 500
+				+ No, minifying is old sampling way
+			+ WaterSurface::Upload(.)
+				+ For now, like it was at World
+			+ Go back to 500 slices
+				+ Test seams
+		+ Perf:
+			+ FPS was (during step 2): 30.2/30.4
+			+ Now: 30.5
+			+ UR was (during step 2): 214
+			+ Now: 217
+		+ Impl step 3: WaterSurface
+			+ # of samples: try 4K first
+			+ dx = MaxWorldWidth/NumberOfSamples
+			+ GetWaterHeightAt()
+			+ Init
+			+ Update
+			+ WaterSurface::Upload(.)
+				+ Do same as OceanFloor
+			+ Test if # of samples good wrt waves' resolution
+				+ Not really, but we can live with it
+		+ Perf:
+			+ FPS Now: 30.8
+			+ UR Now: 224
 
 
 + Fix 4 BPP images
@@ -2470,6 +2314,29 @@ IF WX:
 			+ Check perf
 			+ Perf optimizations:
 				+ Precalcd stuff in FontMetadata, indexed by char
+	+ Option to enable drawing of force vectors for each point
+		+ Ship::Update() takes also RenderContext const &, so can check if need to save force buffer
+			+ Points::SaveForceBufferForVectorRender()
+		+ Copied right before integration
+	+ Orphaned points (*)
+		+ Idea: always draw orphaned points - those that come after destruction
+		+ Orphaned point == points with 0 connected springs
+		+ We unify ephemeral points uploading and rendering with ship points (either debug or orphan) uploading and rendering
+			+ Plane ID is enough to keep them on separate planes
+		+ Verify first that connectivity visit really assigns plane IDs also to orphaned points 
+		+ Impl:
+			+ We must first stop deleting points just because springs are deleted
+				+ Though should still delete them at Destroy() and Bomb(), for example
+			+ Unify non-ephemeral and ephemeral points in element VBO
+				+ Need hint from Points on whether or not ephemerals will follow
+			+ ShipRenderContext:
+				+ Nuke RenderEphemeralPoints and its structs and members
+				+ Have just one single RenderPoints
+					+ Always invoked, except when DebugShipRenderMode is not None and not Points
+					  (i.e. when it's Springs, EdgeSprings, etc. but not Points)
+		+ Test L'n'F'
+		+ Cleanup:
+			+ Ship: generation of air bubbles: atm we don't generate air bubbles for orphaned points; see if this should change instead
 
 + Gfx Optimizations:
 
@@ -4123,6 +3990,125 @@ IF WX:
 				+ Sound: scrub, with movement (based off feedback from GameController, like saw)
 				+ Better sounds with vector directions
 				+ Help
+	+ Repair tool (*)
+		+ 1) No Points::Destroy/Delete, but Detach()
+			+ Points::Detach(.), also at Handler
+			+ No IsDeleted() checks anymore, anywhere
+			+ Whenever we used to delete, we now detach and inject velocity
+				+ Encapsulate debris' randomness in Ship::ChooseRadialVelocity(rnd coeffs)
+			+ Bombs::OnPoint"Detached"			
+			+ At these places should only consider non-ephemerals and non-expired ephemerals
+				+ Ship::Get/QueryNearestPointAt
+				+ PinnedPoints::Toggle: 
+			+ Ship should have EphemeralPointExpired handler
+				+ Calls PinnedPoints::OnEphemeralPointExpired
+			+ Decide what to do with event handlers - destroy and/or detach
+				+ Points invokes OnDestroy at DestroyEphemeralParticle
+				+ Ship::DetachHandler invokes OnPointDetached at DetachHandler *iff* really ended up detaching anything
+					+ Points::Detach does not invoke anymore OnDetach directly, only ship handler does
+					+ OnPointDetached/Attached: make aggregations
+					+ SoundController::OnPointDetached: use break
+			+ Check steady clock
+			+ Test in Debug mode:
+				+ Bombs neighborhood
+				+ Destroy
+				+ Destroy AirBubble
+				+ PinnedPoints:
+					+ AirBubble
+					+ Remaining at point
+					+ Destroyed
+					+ On ephemeral that becomes expired
+			+ If pinned points OK: remove TODOTEST for OnSpringDeleted
+			+ Check perf
+				+ 29.9/30.0
+			+ Commit (to new branch)
+		+ Do perf analysis with many air bubbles
+			+ Make sure we don't make OpenGL calls for the zero-size gentex vectors
+			+ Check perf impact of single GenTex draw call
+				+ Mapbuffer & copy all
+				+ Get rid of maxMaxPlaneId for gentex's
+				+ Test:
+					+ Bombs cover each other
+		+ Run in Debug
+		+ Check flood tool change (Tool::Initialize - verify sound starts)
+		+ 2) Maintain factory connections
+			+ Not electricals (at least for now)
+			+ Points:
+				+ AddFactoryConnectedSpring(...)
+					+ -> ConnectSpring(...)
+				+ Connect/DisconnectSpring(...)
+					+ assert it's in factory-connected springs
+				+ See if connecting-spring-kung-fu should be done by struct itself
+				+ FactoryIsLeaking
+			+ Springs:
+				+ FactorySuperTriangles
+			+ Other factory connections as necessary by restore algo
+			+ Springs::Restore
+				+ Undo deletion
+				+ Call SpringRestoreHandler
+			+ Ship::PointDetachHandler:
+				+ See if it's true that we don't need to destroy triangles
+			+ Springs::Restore			
+			+ Ship::SpringRestoreHandler(s)
+				+ Add others to self
+					+ Copy factory supertriangles
+				+ Add self to others
+					+ Connect self to endpoints
+					+ Add self to each supertriangle's subsprings
+				+ Set IsStructureDirty=true
+			+ Triangles::Restore
+				+ Undo deletion
+				+ Call TriangleRestoreHandler
+			+ Ship::TriangleRestoreHandler(t):
+				+ Add t to its endpoints
+				+ Fire Attach event
+				+ Set IsStructureDirty=true
+			+ Update invariants verification
+		+ Commit
+		+ Try changing Points::GetMass to Points::GetAugmentedStructuralMass
+		+ Move tolerance check _after_ movement
+			+ Movement is still only done if not within tolerance
+				+ And changes distance
+		+ 3) Repair tool and action
+			+ Repair(Pr):
+				+ for each s in Pr.FactorySprings:
+					+ if s.IsDeleted:
+						+ if s.length <= s.restLength: // Restore
+							+ Springs::Restore(s)
+							+ Try with force instead of velocity
+						+ else: // Attract endpoint
+							+ Points.GetForce(s.OtherEndpoint) += c * <normal>(Pr.Position - OtherEndpoint.Position)
+							+ Try with force instead of velocity
+				+ for each t in Pr.FactoryTriangles:
+					+ if t.IsDeleted:
+						+ If all t.FactorySubSprings are !Deleted:
+							+ Triangles::Restore(t)	
+				+ Restore endpoints' IsLeaking
+					+ Only for endpoints that now have all of their factory springs
+				+ Decide on:
+					+ Radius
+					+ Force
+					+ Ultra-violent mode effect
+			+ Test pinned points now
+			+ RepairStructureTool:
+				+ repair_structure_cursor_up/down.png: wrench
+					+ multiple frames for different rotations
+					+ sync with sound
+					+ do other 22.5-degree frames
+				+ Adjust cursor hotpoints
+			+ SoundController: 
+				+ RepairTool sound
+				+ OnRepair
+					+ Sounds:
+						+ Metal
+						+ Cable
+						+ Cloth
+						+ Glass
+						+ Wood
+						+ X2 (underwater!)
+						+ Lower volume
+		+ Parameters:
+			+ Remove repair force adjustment from GameParameters
 
 + Water
 	+ Water
@@ -4132,6 +4118,9 @@ IF WX:
 			+ Check if also in old program Titanic.png had non-wet hull rudder: YES
 			+ Less hull material in Titanic, but maintain strength
 			+ Test Titanic afterwards
+	+ Did original game propagate water also through hull springs? YES. How did hull thin dividers work? THEY DIDN'T WORK
+	+ Add Point::Hull Characteristic, and don't leak/propagate(incl. gravitate) water if at least one of the two points is hull			
+		+ Alternatively: just make a spring hull if one point is hull; test it
  	+ Rush sound: should water rush sound be more....rushy?
 	+ Water rearc:
 		+ Points::Water is height of water column that provides equivalent pressure
@@ -5245,4 +5234,109 @@ IF WX:
 			+ Try dividing by dtSquared
 		+ Fix V offset of AM bomb cursor
 		+ Slice-while-paused bug
+	+ 1.10.0
+		+ See if lights can make texture colors come out at night, rather than just yellow-izing it
+			+ ShipTrianglesTexture shader: use local light as "additive" to ambient light (to draw colors)
+			+ Split Points:: colorBuffer upload to own func
+				+ RenderContext: range-based
+			+ Remove logs and shader TODOs
+			+ Check intensity at distance==0
+			+ Change luminance to 1 rather than 2
+				+ See first what difference it makes
+				+ Change in materials.json
+				+ Enforce in electrical material
+				+ Verify fixes issue
+				+ Constrain luminiscence adjust to max 1
+					+ Or change how to apply adjustment
+					+ Change tooltip and minimum
+			+ If it works, also these shaders:
+				+ TrianglesColor
+				+ PointsColor
+				+ Ropes
+				+ SpringsColor
+				+ SpringsTexture
+			+ See if passing vec instead of floats among shaders helps with perf
+		+ EventTickerPanel:
+			+ Fix name of AM bomb @ placed (and @ al?)
+		+ Bounded World
+			+ GameParameters: MaxWorldWidth, Height
+				+ Remove MaxZoom, MinZoom
+				+ Use very small world for now
+			+ Constrain view changes:
+				+ ViewModel:
+					+ float ClampXYZ() -> clamped value
+					+ CanvasSize changes: make sure the largest visible world dimension stays the same
+						+ i.e., adjust zoom so that the new visible world dimensions are contained within the old one
+				+ Use at GameController:
+					+ Zoom updates
+						+ Get back value
+					+ Camera updates
+						+ Get back value
+					+ CanvasSize update: pickup changes and reset smoothing
+				+ Test
+			+ Constrain physics:
+				+ Ship::Update: at end of mech physics (after last integrate): 
+					+ Destroy points (also with sounds, it's OK) that are outside of bounding box
+					+ No destroy points, just do simple bounce w/bounded velocity
+			+ Verify AM bomb issue is gone
+			+ Test in Debug
+			+ Make larger bounding world
+				+ W: 10000
+				+ H: MaxSeaDepth * 4
+				+ w/static_assert for ocean depth
+			+ Figure out where it is that the submarine disappears
+			+ Fix water drag 
+				+ Find coefficient for linear drag in "slow" range
+				+ When done: see if bounds of water drag adjustment are still good
+					+ Test at new max (1K) - do ship pieces go to a standstill?
+			+ Verify AM bomb issue is gone
+			+ Get current FPS
+			+ Changes.txt		
+			+ Merge to master			
+		+ See move tool changing center
+			+ Is it because of missing last step?
+				+ Should finalize only after last step, making sure to clamp elapsed to Lag first
+		+ Create dump upon crash
+			+ https://stackoverflow.com/questions/9020353/create-a-dump-file-for-an-application-whenever-it-crashes
+			+ In app folder, via StandardSystemPaths
+				+ Under \CrashDumps
+			+ Try with empty png and corrupted png
+		+ VAO (*)
+		+ Misc OpenGL Optimizations (*)
+		+ Secondary PlaneIDAsFloat buffer
+			+ We only pay the price sparingly, but reap the benefits at each frame
+			+ Code
+		+ Vertex buffer optimizations (*)
+		+ Update FPS & perf analysis
+		+ Water Contrast @ 0.875?
+		+ UIPreferences		
+		+ Decay (rust) (*)
+		+ Ship descriptions (*)
+		+ ShipRenderContext: make water color depend on ocean render mode color
+			+ Get FPS before
+			+ Water color in shader has to become parameter
+			+ OceanRenderMode:
+				+ Texture: waterColor=<constant matching now>
+				+ Flat: waterColor=<that flat color>
+				+ Gradient: waterColor=<mid color>
+			+ Test x 3
+			+ Get FPS after
+		+ Ships
+		+ Less stress sounds: use mIsStressed buffer, w/high and low watermarks
+			+ Get FPS before
+			+ Do
+			+ Test
+			+ See if can remove "negligible" check now
+		+ Fix air bubble progress issue
+			+ Confirm repro test
+			+ Get FPS before at bubble tool:
+			+ Do
+			+ Test
+		+ Send for testing
+		+ New ships
+		+ Check "Smash" bug
+		+ Add other testers to About box
+		+ Finalize descriptions
+		+ Release
+
 
