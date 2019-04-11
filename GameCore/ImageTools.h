@@ -5,7 +5,9 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GameMath.h"
 #include "ImageData.h"
+#include "Vectors.h"
 
 #include <algorithm>
 #include <cassert>
@@ -14,6 +16,34 @@
 class ImageTools
 {
 public:
+
+    static inline vec4f SamplePixel(
+        RgbaImageData const & imageData,
+        float x,
+        float y)
+    {
+        assert(x >= 0.0f && x <= static_cast<float>(imageData.Size.Width));
+        assert(y >= 0.0f && y <= static_cast<float>(imageData.Size.Height));
+
+        int32_t ix = FastTruncateInt32(x);
+        float fx = x - static_cast<float>(ix);
+        int32_t iy = FastTruncateInt32(y);
+        float fy = y - static_cast<float>(iy);
+
+        vec4f resulty1 = imageData.Data[iy * imageData.Size.Width + ix].toVec4f() * (1.0f - fx);
+        if (ix < imageData.Size.Width - 1)
+            resulty1 += imageData.Data[iy * imageData.Size.Width + ix + 1].toVec4f() * fx;
+
+        vec4f resulty2 = vec4f::zero();
+        if (iy < imageData.Size.Height - 1)
+        {
+            resulty2 = imageData.Data[(iy + 1) * imageData.Size.Width + ix].toVec4f() * (1.0f - fx);
+            if (ix < imageData.Size.Width - 1)
+                resulty2 += imageData.Data[(iy + 1) * imageData.Size.Width + ix + 1].toVec4f() * fx;
+        }
+
+        return resulty1 * (1.0f - fy) + resulty2 * fy;
+    }
 
     static inline RgbImageData Trim(RgbImageData imageData)
     {

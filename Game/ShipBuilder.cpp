@@ -7,6 +7,7 @@
 ***************************************************************************************/
 #include "ShipBuilder.h"
 
+#include <GameCore/ImageTools.h>
 #include <GameCore/Log.h>
 
 #include <algorithm>
@@ -31,6 +32,14 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     int const structureWidth = shipDefinition.StructuralLayerImage.Size.Width;
     float const halfWidth = static_cast<float>(structureWidth) / 2.0f;
     int const structureHeight = shipDefinition.StructuralLayerImage.Size.Height;
+
+    // Texture sampling (for points' colors)
+    float const textureSamplingDx =
+        static_cast<float>(shipDefinition.TextureLayerImage.Size.Width)
+        / static_cast<float>(structureWidth);
+    float const textureSamplingDy =
+        static_cast<float>(shipDefinition.TextureLayerImage.Size.Height)
+        / static_cast<float>(structureHeight);
 
     // PointInfo's
     std::vector<PointInfo> pointInfos;
@@ -60,10 +69,12 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     }
 
     // Visit all columns
-    for (int x = 0; x < structureWidth; ++x)
+    float textureX = 0.0f;
+    for (int x = 0; x < structureWidth; ++x, textureX += textureSamplingDx)
     {
         // From bottom to top
-        for (int y = 0; y < structureHeight; ++y)
+        float textureY = 0.0f;
+        for (int y = 0; y < structureHeight; ++y, textureY += textureSamplingDy)
         {
             MaterialDatabase::ColorKey colorKey = shipDefinition.StructuralLayerImage.Data[x + (structureHeight - y - 1) * structureWidth];
             StructuralMaterial const * structuralMaterial = materialDatabase.FindStructuralMaterial(colorKey);
@@ -81,9 +92,12 @@ std::unique_ptr<Ship> ShipBuilder::Create(
                     vec2f(
                         static_cast<float>(x) - halfWidth,
                         static_cast<float>(y))
-                        + shipDefinition.Metadata.Offset,
+                    + shipDefinition.Metadata.Offset,
                     MakeTextureCoordinates(x, y, shipDefinition.StructuralLayerImage.Size),
-                    structuralMaterial->RenderColor,
+                    // If not rope, use color from texture
+                    structuralMaterial->IsUniqueType(StructuralMaterial::MaterialUniqueType::Rope)
+                        ? structuralMaterial->RenderColor
+                        : ImageTools::SamplePixel(shipDefinition.TextureLayerImage, textureX, textureY),
                     *structuralMaterial,
                     structuralMaterial->IsUniqueType(StructuralMaterial::MaterialUniqueType::Rope));
 

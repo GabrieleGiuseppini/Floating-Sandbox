@@ -217,6 +217,10 @@ Render:
 		+ Fix github's clouds bug
 		+ Un-sinking (*)
 		+ Floatsam: see if using (waterY + 0.1) at UpdateWaterIntake helps
+		+ Are we really forced to set point colors to structural colors?
+			+ Can we always use the (sampled) texture colors?
+				+ After all, texture layer is now mandatory!
+			+ Test look'n'feel
 
 		= Sign with certificate
 			+ https://blogs.msdn.microsoft.com/ieinternals/2011/03/22/everything-you-need-to-know-about-authenticode-code-signing/
@@ -226,10 +230,6 @@ Render:
 			- Sign exe
 			- Sign MSI
 				- https://stackoverflow.com/questions/17589754/wix-installer-msi-publisher-unknown/17591603		
-
-		- Are we really forced to set point colors to structural colors?
-			- Can we always use the (sampled) texture colors?
-				- After all, texture layer is now mandatory!
 
 		- Also dry points should rot (*)
 		- Add new materials: plastic, rubber, fiberglass
@@ -254,6 +254,7 @@ Render:
 		- Electrical layer view (*)
 
 		- Spring and NonSpring force separation optimization (*)
+		- Attempt to re-instate square water drag (*)
 
 		- Batisphere with pumps and propulsion (*)
 			- Switches (*)
@@ -636,7 +637,7 @@ Render:
 				+ Width is in NDC
 				+ alpha = 0.5 (in shader)
 
-	- Auto-focus (*)
+	- Auto-focus at load (*)
 		- Done by RenderContext upon each AddShip()
 			- Based off ship's AABB, calc'd by ShipBuilder
 
@@ -726,9 +727,10 @@ Render:
 			- Manual tsunami
 				- Tool grabbing water
 	
-	- Try to re-instate square velocity drag
+	- Try to re-instate square velocity drag (*)
 		- Goal: falling ship should break upon impact with water
 		- Need to max out drag force
+			- So better done after spring/nonspring forces rearc
 
 	- Heat and Combustion (*)
 		- Integration of Decay with Combustion:
