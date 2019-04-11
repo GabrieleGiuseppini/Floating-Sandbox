@@ -1043,30 +1043,6 @@ Render:
 		- Might either have own propulsion or follow a vector specified with click-and-drag
 		- Also other objects might be launched with click-and-drag
 
-- Water:
-
-	= New sinking (and un-sinking) detection: (*)
-		+ Sinking detection is broken - it currently only considers total water that entered the ship, which comes proportionally to external
-		  water pressure; all this water could be confined to a tiny volume, and yet we trigger sinking
-		= Should be based off # of points underwater *and/or* total # of wet points
-			+ Could be a very-lo-freq step that just checks y's against water height at that point
-			  and/or total # of wet points
-				+ Use HighWatermark/LowWatermark
-				+ Sinking:
-					+ Total # of wet points > 2/3 * total points
-				+ Unsinking:
-					+ Total # of wet points < 1/3 * total points
-			+ Make music class with FadeToStop()
-				+ Also call its ::Update(), which fades
-					+ Called only for music's that we know are to fade
-				+ Stop() stops immediately at any point
-				+ Test music:
-					+ Pause 
-					+ Stop/Resink
-			+ Test music fading
-			= Find right thresholds
-		- Check assembly
-			- See without restrict point but GetWater() directly
 
 - Game Interactions and Controls:
 
@@ -4274,6 +4250,28 @@ IF WX:
 			+ Points::Ephemeral maxlifetime expiration is per-type, not global
 				+ But buffer stays, useful for finding free slots
 			+ Make vortex parameters GameParameters
+	+ New sinking (and un-sinking) detection: (*)
+		+ Sinking detection is broken - it currently only considers total water that entered the ship, which comes proportionally to external
+		  water pressure; all this water could be confined to a tiny volume, and yet we trigger sinking
+		+ Should be based off # of points underwater *and/or* total # of wet points
+			+ Could be a very-lo-freq step that just checks y's against water height at that point
+			  and/or total # of wet points
+				+ Use HighWatermark/LowWatermark
+				+ Sinking:
+					+ Total # of wet points > 2/3 * total points
+				+ Unsinking:
+					+ Total # of wet points < 1/3 * total points
+			+ Make music class with FadeToStop()
+				+ Also call its ::Update(), which fades
+					+ Called only for music's that we know are to fade
+				+ Stop() stops immediately at any point
+				+ Test music:
+					+ Pause 
+					+ Stop/Resink
+			+ Test music fading
+			+ Find right thresholds: just check default ship and balls and sailship2
+		+ Check assembly
+			+ See without restrict point but GetWater() directly
 
 
 + Debug light/drag issue
