@@ -215,6 +215,8 @@ Render:
 		+ Take Mathias' pull request
 		+ Merge to master
 		+ Fix github's clouds bug
+		+ Un-sinking (*)
+		+ Floatsam: see if using (waterY + 0.1) at UpdateWaterIntake helps
 
 		= Sign with certificate
 			+ https://blogs.msdn.microsoft.com/ieinternals/2011/03/22/everything-you-need-to-know-about-authenticode-code-signing/
@@ -225,13 +227,12 @@ Render:
 			- Sign MSI
 				- https://stackoverflow.com/questions/17589754/wix-installer-msi-publisher-unknown/17591603		
 
-		= Un-sinking (*)
-
-		- Floatsam: see if using (waterY + 0.1) at UpdateWaterIntake helps
-
 		- Are we really forced to set point colors to structural colors?
 			- Can we always use the (sampled) texture colors?
 				- After all, texture layer is now mandatory!
+
+		- Also dry points should rot (*)
+		- Add new materials: plastic, rubber, fiberglass
 
 		- Auto-focus (*)
 			- Owned by RenderContext
@@ -239,10 +240,6 @@ Render:
 		- Try to show tip window after first Render
 			- PostInitialize just posts callback
 			- Before setting up timers, callback checks if tip has ben checked or not
-
-		- Also dry points should rot (*)
-
-		- Add new materials: plastic, rubber, fiberglass
 
 		- Shallow Water Equations (*)
 

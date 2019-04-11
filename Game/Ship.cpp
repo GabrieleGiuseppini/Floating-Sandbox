@@ -808,7 +808,9 @@ void Ship::UpdateWaterInflow(
             //
 
             float const externalWaterHeight = std::max(
-                mParentWorld.GetWaterHeightAt(mPoints.GetPosition(pointIndex).x) - mPoints.GetPosition(pointIndex).y,
+                mParentWorld.GetWaterHeightAt(mPoints.GetPosition(pointIndex).x)
+                    + 0.1f // Magic number to force flotsam to take some water in and eventually sink
+                    - mPoints.GetPosition(pointIndex).y,
                 0.0f);
 
             float const internalWaterHeight = mPoints.GetWater(pointIndex);
