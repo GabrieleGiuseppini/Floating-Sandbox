@@ -1130,13 +1130,18 @@ void ShipRenderContext::RenderEnd()
             glBindTexture(GL_TEXTURE_2D, *mStressedSpringTextureOpenGLHandle);
             CheckOpenGLError();
 
+            // Bind stressed spring VBO
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mStressedSpringElementVBO);
 
+            // Draw
             glDrawElements(
                 GL_LINES,
                 static_cast<GLsizei>(2 * mStressedSpringElementBuffer.size()),
                 GL_UNSIGNED_INT,
                 (GLvoid *)0);
+
+            // Bind again element VBO
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mElementVBO);
         }
 
 

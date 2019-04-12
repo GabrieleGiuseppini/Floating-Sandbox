@@ -33,14 +33,6 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     float const halfWidth = static_cast<float>(structureWidth) / 2.0f;
     int const structureHeight = shipDefinition.StructuralLayerImage.Size.Height;
 
-    // Texture sampling (for points' colors)
-    float const textureSamplingDx =
-        static_cast<float>(shipDefinition.TextureLayerImage.Size.Width)
-        / static_cast<float>(structureWidth);
-    float const textureSamplingDy =
-        static_cast<float>(shipDefinition.TextureLayerImage.Size.Height)
-        / static_cast<float>(structureHeight);
-
     // PointInfo's
     std::vector<PointInfo> pointInfos;
 
@@ -69,12 +61,10 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     }
 
     // Visit all columns
-    float textureX = 0.0f;
-    for (int x = 0; x < structureWidth; ++x, textureX += textureSamplingDx)
+    for (int x = 0; x < structureWidth; ++x)
     {
         // From bottom to top
-        float textureY = 0.0f;
-        for (int y = 0; y < structureHeight; ++y, textureY += textureSamplingDy)
+        for (int y = 0; y < structureHeight; ++y)
         {
             MaterialDatabase::ColorKey colorKey = shipDefinition.StructuralLayerImage.Data[x + (structureHeight - y - 1) * structureWidth];
             StructuralMaterial const * structuralMaterial = materialDatabase.FindStructuralMaterial(colorKey);
@@ -94,10 +84,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
                         static_cast<float>(y))
                     + shipDefinition.Metadata.Offset,
                     MakeTextureCoordinates(x, y, shipDefinition.StructuralLayerImage.Size),
-                    // If not rope, use color from texture
-                    structuralMaterial->IsUniqueType(StructuralMaterial::MaterialUniqueType::Rope)
-                        ? structuralMaterial->RenderColor
-                        : ImageTools::SamplePixel(shipDefinition.TextureLayerImage, textureX, textureY),
+                    structuralMaterial->RenderColor,
                     *structuralMaterial,
                     structuralMaterial->IsUniqueType(StructuralMaterial::MaterialUniqueType::Rope));
 

@@ -321,6 +321,8 @@ public:
         , mLightBuffer(mBufferElementCount, shipPointCount, 0.0f)
         // Wind dynamics
         , mWindReceptivityBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        // Rust dynamics
+        , mRustReceptivityBuffer(mBufferElementCount, shipPointCount, 0.0f)
         // Ephemeral particles
         , mEphemeralTypeBuffer(mBufferElementCount, shipPointCount, EphemeralType::None)
         , mEphemeralStartTimeBuffer(mBufferElementCount, shipPointCount, 0.0f)
@@ -865,6 +867,15 @@ public:
     }
 
     //
+    // Rust dynamics
+    //
+
+    float GetRustReceptivity(ElementIndex pointElementIndex) const
+    {
+        return mRustReceptivityBuffer[pointElementIndex];
+    }
+
+    //
     // Ephemeral Particles
     //
 
@@ -1191,6 +1202,12 @@ private:
     //
 
     Buffer<float> mWindReceptivityBuffer;
+
+    //
+    // Rust dynamics
+    //
+
+    Buffer<float> mRustReceptivityBuffer;
 
     //
     // Ephemeral Particles

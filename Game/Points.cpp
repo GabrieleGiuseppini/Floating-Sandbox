@@ -62,6 +62,9 @@ void Points::Add(
     // Wind dynamics
     mWindReceptivityBuffer.emplace_back(structuralMaterial.WindReceptivity);
 
+    // Rust dynamics
+    mRustReceptivityBuffer.emplace_back(structuralMaterial.RustReceptivity);
+
     // Ephemeral particles
     mEphemeralTypeBuffer.emplace_back(EphemeralType::None);
     mEphemeralStartTimeBuffer.emplace_back(0.0f);
@@ -122,6 +125,8 @@ void Points::CreateEphemeralParticleAirBubble(
 
     mWindReceptivityBuffer[pointIndex] = 0.0f;
 
+    mRustReceptivityBuffer[pointIndex] = 0.0f;
+
     mEphemeralTypeBuffer[pointIndex] = EphemeralType::AirBubble;
     mEphemeralStartTimeBuffer[pointIndex] = currentSimulationTime;
     mEphemeralMaxLifetimeBuffer[pointIndex] = std::numeric_limits<float>::max();
@@ -176,6 +181,8 @@ void Points::CreateEphemeralParticleDebris(
 
     mWindReceptivityBuffer[pointIndex] = 3.0f;
 
+    mRustReceptivityBuffer[pointIndex] = 0.0f;
+
     mEphemeralTypeBuffer[pointIndex] = EphemeralType::Debris;
     mEphemeralStartTimeBuffer[pointIndex] = currentSimulationTime;
     mEphemeralMaxLifetimeBuffer[pointIndex] = std::chrono::duration_cast<std::chrono::duration<float>>(maxLifetime).count();
@@ -228,6 +235,8 @@ void Points::CreateEphemeralParticleSparkle(
     mLightBuffer[pointIndex] = 0.0f;
 
     mWindReceptivityBuffer[pointIndex] = 3.0f;
+
+    mRustReceptivityBuffer[pointIndex] = 0.0f;
 
     mEphemeralTypeBuffer[pointIndex] = EphemeralType::Sparkle;
     mEphemeralStartTimeBuffer[pointIndex] = currentSimulationTime;

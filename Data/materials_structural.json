@@ -220,6 +220,27 @@
         "water_volume_fill": 1.0
     }, 
     {
+        "color_key": "#EEEEEE", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.00935, 
+            "nominal_mass": 2710
+        }, 
+        "name": "Aluminium Cheap", 
+        "render_color": "#EEEEEE", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.05, 
+        "template": {
+            "column": 1, 
+            "row": "32|Aluminium"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+
+    {
         "color_key": "#A42E10", 
         "is_hull": true, 
         "mass": {
@@ -252,7 +273,7 @@
         "stiffness": 1.0, 
         "strength": 0.09, 
         "template": {
-            "column": 1, 
+            "column": 2, 
             "row": "32|Aluminium"
         }, 
         "water_diffusion_speed": 0.5, 
@@ -292,7 +313,7 @@
         "stiffness": 1.0, 
         "strength": 0.09, 
         "template": {
-            "column": 2, 
+            "column": 3, 
             "row": "32|Aluminium"
         }, 
         "water_diffusion_speed": 0.5, 
@@ -332,7 +353,7 @@
         "stiffness": 1.0, 
         "strength": 0.09, 
         "template": {
-            "column": 3, 
+            "column": 4, 
             "row": "32|Aluminium"
         }, 
         "water_diffusion_speed": 0.5, 
@@ -372,7 +393,7 @@
         "stiffness": 1.0, 
         "strength": 0.09, 
         "template": {
-            "column": 4, 
+            "column": 5, 
             "row": "32|Aluminium"
         }, 
         "water_diffusion_speed": 0.5, 
@@ -412,7 +433,7 @@
         "stiffness": 1.0, 
         "strength": 0.09, 
         "template": {
-            "column": 5, 
+            "column": 6, 
             "row": "32|Aluminium"
         }, 
         "water_diffusion_speed": 0.5, 
@@ -834,6 +855,26 @@
         "water_volume_fill": 1.0
     }, 
     {
+        "color_key": "#D80E02", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.00935, 
+            "nominal_mass": 7480
+        }, 
+        "name": "Steel Red Cheap", 
+        "render_color": "#D80E02", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.05, 
+        "template": {
+            "column": 2, 
+            "row": "12|Steel"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
         "color_key": "#840E00", 
         "is_hull": true, 
         "mass": {
@@ -1026,7 +1067,7 @@
         "stiffness": 1.0, 
         "strength": 0.0856, 
         "template": {
-            "column": 2, 
+            "column": 3, 
             "row": "12|Steel"
         }, 
         "water_diffusion_speed": 0.5, 
@@ -1206,7 +1247,7 @@
         "stiffness": 1.0, 
         "strength": 0.0856, 
         "template": {
-            "column": 3, 
+            "column": 4, 
             "row": "12|Steel"
         }, 
         "water_diffusion_speed": 0.5, 
@@ -1366,7 +1407,7 @@
         "stiffness": 1.0, 
         "strength": 0.0856, 
         "template": {
-            "column": 4, 
+            "column": 5, 
             "row": "12|Steel"
         }, 
         "water_diffusion_speed": 0.5, 
@@ -1526,7 +1567,7 @@
         "stiffness": 1.0, 
         "strength": 0.0856, 
         "template": {
-            "column": 5, 
+            "column": 6, 
             "row": "12|Steel"
         }, 
         "water_diffusion_speed": 0.5, 
@@ -1686,7 +1727,7 @@
         "stiffness": 1.0, 
         "strength": 0.0856, 
         "template": {
-            "column": 6, 
+            "column": 7, 
             "row": "12|Steel"
         }, 
         "water_diffusion_speed": 0.5, 
@@ -1846,7 +1887,7 @@
         "stiffness": 1.0, 
         "strength": 0.0856, 
         "template": {
-            "column": 7, 
+            "column": 8, 
             "row": "12|Steel"
         }, 
         "water_diffusion_speed": 0.5, 
@@ -2014,6 +2055,26 @@
         "water_volume_fill": 1.0
     }, 
     {
+        "color_key": "#1F1F1F", 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.00935, 
+            "nominal_mass": 7850
+        }, 
+        "name": "Iron Cheap", 
+        "render_color": "#1F1F1F", 
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.020, 
+        "template": {
+            "column": 9, 
+            "row": "2|Iron"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
         "color_key": "#333333", 
         "is_hull": true, 
         "mass": {
@@ -2046,7 +2107,7 @@
         "stiffness": 2.2, 
         "strength": 0.0856, 
         "template": {
-            "column": 8, 
+            "column": 9, 
             "row": "12|Steel"
         }, 
         "water_diffusion_speed": 0.5, 
@@ -2066,7 +2127,7 @@
         "stiffness": 1.0, 
         "strength": 0.0856, 
         "template": {
-            "column": 9, 
+            "column": 10, 
             "row": "12|Steel"
         }, 
         "water_diffusion_speed": 0.5, 

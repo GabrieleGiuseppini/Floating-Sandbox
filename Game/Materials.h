@@ -28,6 +28,7 @@ struct StructuralMaterial
     float WaterDiffusionSpeed;
     float WaterRetention;
     float WindReceptivity;
+    float RustReceptivity;
 
     enum class MaterialUniqueType : size_t
     {
@@ -74,6 +75,7 @@ public:
         float waterDiffusionSpeed,
         float waterRetention,
         float windReceptivity,
+        float rustReceptivity,
         std::optional<MaterialUniqueType> uniqueType,
         std::optional<MaterialSoundType> materialSound)
         : Name(name)
@@ -87,6 +89,7 @@ public:
         , WaterDiffusionSpeed(waterDiffusionSpeed)
         , WaterRetention(waterRetention)
         , WindReceptivity(windReceptivity)
+        , RustReceptivity(rustReceptivity)
         , UniqueType(uniqueType)
         , MaterialSound(materialSound)
     {}

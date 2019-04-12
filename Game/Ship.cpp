@@ -1386,8 +1386,9 @@ void Ship::RotPoints(
     GameParameters const & gameParameters)
 {
     // Calculate rot increment for each step
-    float const alphaIncrement = gameParameters.RotAcceler8r != 0.0f
-        ? 1.0f - powf(1e-10f, gameParameters.RotAcceler8r / 50000.0f)   // Accel=1 => 50000 steps to total decay
+    float const alphaIncrement =
+        gameParameters.RotAcceler8r != 0.0f
+        ? 1.0f - powf(1e-10f, gameParameters.RotAcceler8r / 30000.0f)   // Accel=1 => this many steps to total decay
         : 0.0f;
 
     // Higher rot increment for leaking points - they are directly in contact
@@ -1397,10 +1398,14 @@ void Ship::RotPoints(
     // Process all points - including ephemerals
     for (auto p : mPoints)
     {
-        // When no water, beta == 0.0f
-        float const beta =
+        float const waterEquivalent =
             std::min(mPoints.GetWater(p), 1.0f)
-            * (mPoints.IsLeaking(p) ? leakingAlphaIncrement : alphaIncrement);
+            + (mParentWorld.IsUnderwater(mPoints.GetPosition(p)) ? 0.2f : 0.0f); // Also rust a bit underwater points, even hull ones
+
+        float const beta =
+            waterEquivalent
+            * (mPoints.IsLeaking(p) ? leakingAlphaIncrement : alphaIncrement)
+            * mPoints.GetRustReceptivity(p);
 
         mPoints.SetDecay(p, mPoints.GetDecay(p) * (1.0f - beta));
     }
