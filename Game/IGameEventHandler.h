@@ -155,7 +155,7 @@ public:
     //
 
     virtual void OnBombPlaced(
-        ObjectId /*bombId*/,
+        BombId /*bombId*/,
         BombType /*bombType*/,
         bool /*isUnderwater*/)
     {
@@ -163,7 +163,7 @@ public:
     }
 
     virtual void OnBombRemoved(
-        ObjectId /*bombId*/,
+        BombId /*bombId*/,
         BombType /*bombType*/,
         std::optional<bool> /*isUnderwater*/)
     {
@@ -186,7 +186,7 @@ public:
     }
 
     virtual void OnTimerBombFuse(
-        ObjectId /*bombId*/,
+        BombId /*bombId*/,
         std::optional<bool> /*isFast*/)
     {
         // Default-implemented
@@ -200,7 +200,7 @@ public:
     }
 
     virtual void OnAntiMatterBombContained(
-        ObjectId /*bombId*/,
+        BombId /*bombId*/,
         bool /*isContained*/)
     {
         // Default-implemented

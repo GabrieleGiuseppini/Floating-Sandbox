@@ -341,6 +341,21 @@ struct ContinuousSound
         }
     }
 
+    void AggregateUpdate(size_t count)
+    {
+        if (count == 0)
+        {
+            // Stop it
+            Stop();
+        }
+        else
+        {
+            float volume = 100.0f * (1.0f - exp(-0.3f * static_cast<float>(count)));
+            SetVolume(volume);
+            Start();
+        }
+    }
+
     void SetMuted(bool isMuted)
     {
         if (!!mSound)
@@ -396,21 +411,6 @@ struct ContinuousSound
 
         // Remember we want to stay stopped when we resume
         mDesiredPlayingState = false;
-    }
-
-    void AggregateUpdate(size_t count)
-    {
-        if (count == 0)
-        {
-            // Stop it
-            Stop();
-        }
-        else
-        {
-            float volume = 100.0f * (1.0f - exp(-0.3f * static_cast<float>(count)));
-            SetVolume(volume);
-            Start();
-        }
     }
 
 private:
@@ -569,7 +569,6 @@ public:
     ContinuousMultipleChoiceSound()
         : mSoundAlternatives()
         , mSoundAlternativePlayCounts()
-        , mAlternativesByObject()
         , mLastChosenAlternative(std::numeric_limits<size_t>::max())
     {}
 
@@ -596,42 +595,6 @@ public:
             mSoundAlternativePlayCounts.begin(),
             mSoundAlternativePlayCounts.end(),
             0);
-
-        mAlternativesByObject.clear();
-    }
-
-    void StartSoundAlternativeForObject(ObjectId objectId)
-    {
-        // Choose alternative
-        mLastChosenAlternative = GameRandomEngine::GetInstance().ChooseNew(
-            mSoundAlternatives.size(),
-            mLastChosenAlternative);
-
-        // Remember how many objects are playing this alternative
-        ++mSoundAlternativePlayCounts[mLastChosenAlternative];
-
-        // Remember object<->alternative mapping
-        assert(mAlternativesByObject.count(objectId) == 0);
-        mAlternativesByObject[objectId] = mLastChosenAlternative;
-
-        // Update continuous sound
-        mSoundAlternatives[mLastChosenAlternative].AggregateUpdate(mSoundAlternativePlayCounts[mLastChosenAlternative]);
-    }
-
-    void StopSoundAlternativeForObject(ObjectId objectId)
-    {
-        // Get alternative we had for this object
-        assert(mAlternativesByObject.count(objectId) == 1);
-        size_t alternative = mAlternativesByObject[objectId];
-
-        // Update number ofobjects that are playing this alternative
-        --mSoundAlternativePlayCounts[alternative];
-
-        // Remove object<->alternative mapping
-        mAlternativesByObject.erase(objectId);
-
-        // Update continuous sound
-        mSoundAlternatives[alternative].AggregateUpdate(mSoundAlternativePlayCounts[alternative]);
     }
 
     void SetVolume(float volume)
@@ -689,19 +652,73 @@ public:
             });
     }
 
-private:
+protected:
 
     std::vector<ContinuousSound> mSoundAlternatives;
     std::vector<size_t> mSoundAlternativePlayCounts;
-    std::unordered_map<ObjectId, size_t> mAlternativesByObject;
     size_t mLastChosenAlternative;
+};
+
+template<typename TObjectId>
+struct ContinuousMultipleChoiceAggregateSound : public ContinuousMultipleChoiceSound
+{
+public:
+
+    ContinuousMultipleChoiceAggregateSound()
+        : ContinuousMultipleChoiceSound()
+        , mAlternativesByObject()
+    {}
+
+    void Reset()
+    {
+        ContinuousMultipleChoiceSound::Reset();
+
+        mAlternativesByObject.clear();
+    }
+
+    void StartSoundAlternativeForObject(TObjectId objectId)
+    {
+        // Choose alternative
+        mLastChosenAlternative = GameRandomEngine::GetInstance().ChooseNew(
+            mSoundAlternatives.size(),
+            mLastChosenAlternative);
+
+        // Remember how many objects are playing this alternative
+        ++mSoundAlternativePlayCounts[mLastChosenAlternative];
+
+        // Remember object<->alternative mapping
+        assert(mAlternativesByObject.count(objectId) == 0);
+        mAlternativesByObject[objectId] = mLastChosenAlternative;
+
+        // Update continuous sound
+        mSoundAlternatives[mLastChosenAlternative].AggregateUpdate(mSoundAlternativePlayCounts[mLastChosenAlternative]);
+    }
+
+    void StopSoundAlternativeForObject(TObjectId objectId)
+    {
+        // Get alternative we had for this object
+        assert(mAlternativesByObject.count(objectId) == 1);
+        size_t alternative = mAlternativesByObject[objectId];
+
+        // Update number ofobjects that are playing this alternative
+        --mSoundAlternativePlayCounts[alternative];
+
+        // Remove object<->alternative mapping
+        mAlternativesByObject.erase(objectId);
+
+        // Update continuous sound
+        mSoundAlternatives[alternative].AggregateUpdate(mSoundAlternativePlayCounts[alternative]);
+    }
+
+private:
+
+    std::unordered_map<TObjectId, size_t> mAlternativesByObject;
 };
 
 struct ContinuousSingleChoiceSound
 {
     ContinuousSingleChoiceSound()
         : mSound()
-        , mObjectsPlayingSound()
     {}
 
     void Initialize(
@@ -720,31 +737,6 @@ struct ContinuousSingleChoiceSound
     void Reset()
     {
         mSound.Stop();
-        mObjectsPlayingSound.clear();
-    }
-
-    void StartSoundForObject(ObjectId objectId)
-    {
-        // Remember that this object is playing this sound
-        assert(mObjectsPlayingSound.count(objectId) == 0);
-        mObjectsPlayingSound.insert(objectId);
-
-        // Update continuous sound
-        mSound.AggregateUpdate(mObjectsPlayingSound.size());
-    }
-
-    bool StopSoundForObject(ObjectId objectId)
-    {
-        // Remove the object tracking, if any
-        bool objectWasPlayingSound = (mObjectsPlayingSound.erase(objectId) != 0);
-
-        if (objectWasPlayingSound)
-        {
-            // Update continuous sound
-            mSound.AggregateUpdate(mObjectsPlayingSound.size());
-        }
-
-        return objectWasPlayingSound;
     }
 
     void SetVolume(float volume)
@@ -777,9 +769,50 @@ struct ContinuousSingleChoiceSound
         mSound.Stop();
     }
 
-private:
+protected:
 
     ContinuousSound mSound;
-    std::set<ObjectId> mObjectsPlayingSound;
 };
 
+template<typename TObjectId>
+struct ContinuousSingleChoiceAggregateSound : public ContinuousSingleChoiceSound
+{
+    ContinuousSingleChoiceAggregateSound()
+        : ContinuousSingleChoiceSound()
+        , mObjectsPlayingSound()
+    {}
+
+    void Reset()
+    {
+        ContinuousSingleChoiceSound::Reset();
+        mObjectsPlayingSound.clear();
+    }
+
+    void StartSoundForObject(TObjectId objectId)
+    {
+        // Remember that this object is playing this sound
+        assert(mObjectsPlayingSound.count(objectId) == 0);
+        mObjectsPlayingSound.insert(objectId);
+
+        // Update continuous sound
+        mSound.AggregateUpdate(mObjectsPlayingSound.size());
+    }
+
+    bool StopSoundForObject(TObjectId objectId)
+    {
+        // Remove the object tracking, if any
+        bool objectWasPlayingSound = (mObjectsPlayingSound.erase(objectId) != 0);
+
+        if (objectWasPlayingSound)
+        {
+            // Update continuous sound
+            mSound.AggregateUpdate(mObjectsPlayingSound.size());
+        }
+
+        return objectWasPlayingSound;
+    }
+
+private:
+
+    std::set<TObjectId> mObjectsPlayingSound;
+};

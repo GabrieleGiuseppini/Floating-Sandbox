@@ -50,6 +50,7 @@ const long ID_STEP_MENUITEM = wxNewId();
 const long ID_RESET_VIEW_MENUITEM = wxNewId();
 
 const long ID_MOVE_MENUITEM = wxNewId();
+const long ID_MOVE_ALL_MENUITEM = wxNewId();
 const long ID_SMASH_MENUITEM = wxNewId();
 const long ID_SLICE_MENUITEM = wxNewId();
 const long ID_GRAB_MENUITEM = wxNewId();
@@ -271,6 +272,10 @@ MainFrame::MainFrame(wxApp * mainApp)
     wxMenuItem * moveMenuItem = new wxMenuItem(mToolsMenu, ID_MOVE_MENUITEM, _("Move\tM"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(moveMenuItem);
     Connect(ID_MOVE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnMoveMenuItemSelected);
+
+    wxMenuItem * moveAllMenuItem = new wxMenuItem(mToolsMenu, ID_MOVE_ALL_MENUITEM, _("Move All\tALT+M"), wxEmptyString, wxITEM_RADIO);
+    mToolsMenu->Append(moveAllMenuItem);
+    Connect(ID_MOVE_ALL_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnMoveAllMenuItemSelected);
 
     wxMenuItem * smashMenuItem = new wxMenuItem(mToolsMenu, ID_SMASH_MENUITEM, _("Smash\tS"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(smashMenuItem);
@@ -1155,6 +1160,12 @@ void MainFrame::OnMoveMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
     mToolController->SetTool(ToolType::Move);
+}
+
+void MainFrame::OnMoveAllMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mToolController);
+    mToolController->SetTool(ToolType::MoveAll);
 }
 
 void MainFrame::OnSmashMenuItemSelected(wxCommandEvent & /*event*/)

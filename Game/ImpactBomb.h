@@ -23,7 +23,7 @@ class ImpactBomb final : public Bomb
 public:
 
     ImpactBomb(
-        ObjectId id,
+        BombId id,
         ElementIndex springIndex,
         World & parentWorld,
         std::shared_ptr<IGameEventHandler> gameEventHandler,

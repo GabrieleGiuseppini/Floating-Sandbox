@@ -29,7 +29,66 @@ namespace Physics {
 // SS   SS  H     H     I     P
 //   SSS    H     H  IIIIIII  P
 
+std::optional<ElementIndex> Ship::Pick(
+    vec2f const & pickPosition,
+    GameParameters const & gameParameters)
+{
+    //
+    // Find closest non-ephemeral, non-orphaned point within the radius
+    //
+
+    float const squareSearchRadius = gameParameters.ToolSearchRadius * gameParameters.ToolSearchRadius;
+
+    float bestSquareDistance = std::numeric_limits<float>::max();
+    ElementIndex bestPoint = NoneElementIndex;
+
+    for (auto p : mPoints.NonEphemeralPoints())
+    {
+        if (!mPoints.GetConnectedSprings(p).ConnectedSprings.empty())
+        {
+            float const squareDistance = (mPoints.GetPosition(p) - pickPosition).squareLength();
+            if (squareDistance < squareSearchRadius
+                && squareDistance < bestSquareDistance)
+            {
+                bestSquareDistance = squareDistance;
+                bestPoint = p;
+            }
+        }
+    }
+
+    if (bestPoint != NoneElementIndex)
+        return bestPoint;
+    else
+        return std::nullopt;
+}
+
 void Ship::MoveBy(
+    ElementIndex pointElementIndex,
+    vec2f const & offset,
+    GameParameters const & gameParameters)
+{
+    vec2f const velocity =
+        offset
+        * gameParameters.MoveToolInertia
+        * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
+
+    // Get connected component ID of the point
+    auto connectedComponentId = mPoints.GetConnectedComponentId(pointElementIndex);
+    if (connectedComponentId != NoneConnectedComponentId)
+    {
+        // Move all points (ephemeral and non-ephemeral) that belong to the same connected component
+        for (auto p : mPoints)
+        {
+            if (mPoints.GetConnectedComponentId(p) == connectedComponentId)
+            {
+                mPoints.GetPosition(p) += offset;
+                mPoints.SetVelocity(p, velocity);
+            }
+        }
+    }
+}
+
+void Ship::MoveAllBy(
     vec2f const & offset,
     GameParameters const & gameParameters)
 {
@@ -49,7 +108,7 @@ void Ship::MoveBy(
     }
 }
 
-void Ship::RotateBy(
+void Ship::RotateAllBy(
     float angle,
     vec2f const & center,
     GameParameters const & gameParameters)

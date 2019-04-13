@@ -39,7 +39,6 @@ public:
         , mShipPoints(shipPoints)
         , mShipSprings(shipSprings)
         , mCurrentPinnedPoints()
-        , mNextLocalObjectId(0)
     {
     }
 
@@ -169,9 +168,6 @@ private:
 
     // The current set of pinned points
     CircularList<ElementIndex, GameParameters::MaxPinnedPoints> mCurrentPinnedPoints;
-
-    // The next pinned point ID value
-    typename ObjectId::LocalObjectId mNextLocalObjectId;
 };
 
 }

@@ -62,12 +62,21 @@ public:
         return mWind.GetCurrentWindSpeed();
     }
 
+    std::optional<ElementId> Pick(
+        vec2f const & pickPosition,
+        GameParameters const & gameParameters);
+
     void MoveBy(
+        ElementId elementId,
+        vec2f const & offset,
+        GameParameters const & gameParameters);
+
+    void MoveAllBy(
         ShipId shipId,
         vec2f const & offset,
         GameParameters const & gameParameters);
 
-    void RotateBy(
+    void RotateAllBy(
         ShipId shipId,
         float angle,
         vec2f const & center,
@@ -142,7 +151,7 @@ public:
         vec2f const & endPos,
         GameParameters const & gameParameters);
 
-    std::optional<ObjectId> GetNearestPointAt(
+    std::optional<ElementId> GetNearestPointAt(
         vec2f const & targetPos,
         float radius) const;
 

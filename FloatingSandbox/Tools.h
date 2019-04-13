@@ -35,20 +35,21 @@ std::unique_ptr<wxCursor> MakeCursor(
 enum class ToolType
 {
     Move = 0,
-    Smash = 1,
-    Saw = 2,
-    Grab = 3,
-    Swirl = 4,
-    Pin = 5,
-    InjectAirBubbles = 6,
-    FloodHose = 7,
-    AntiMatterBomb = 8,
-    ImpactBomb = 9,
-    RCBomb = 10,
-    TimerBomb = 11,
-    TerrainAdjust = 12,
-    Scrub = 13,
-    RepairStructure = 14
+    MoveAll = 1,
+    Smash = 2,
+    Saw = 3,
+    Grab = 4,
+    Swirl = 5,
+    Pin = 6,
+    InjectAirBubbles = 7,
+    FloodHose = 8,
+    AntiMatterBomb = 9,
+    ImpactBomb = 10,
+    RCBomb = 11,
+    TimerBomb = 12,
+    TerrainAdjust = 13,
+    Scrub = 14,
+    RepairStructure = 15
 };
 
 struct InputState
@@ -279,6 +280,232 @@ public:
     virtual void Initialize(InputState const & inputState) override
     {
         // Reset state
+        mEngagedElementId.reset();
+        mCurrentTrajectory.reset();
+
+        // Initialize state
+        ProcessInputStateChange(inputState);
+    }
+
+    virtual void Deinitialize(InputState const & /*inputState*/) override
+    {
+        if (!!mEngagedElementId)
+        {
+            // Tell GameController
+            mGameController->SetMoveToolEngaged(false);
+        }
+    }
+
+    virtual void Update(InputState const & /*inputState*/) override
+    {
+        if (!!mCurrentTrajectory)
+        {
+            //
+            // We're following a trajectory
+            //
+
+            auto const now = GameWallClock::GetInstance().Now();
+
+            //
+            // Smooth current position
+            //
+
+            float const rawProgress =
+                static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(now - mCurrentTrajectory->StartTimestamp).count())
+                / static_cast<float>(TrajectoryLag.count());
+
+            // ((x+0.5)^2-0.25)/2.0
+            float const progress = (pow(std::min(rawProgress, 1.0f) + 0.5f, 2.0f) - 0.25f) / 2.0f;
+
+            vec2f const newCurrentPosition =
+                mCurrentTrajectory->StartPosition
+                + (mCurrentTrajectory->EndPosition - mCurrentTrajectory->StartPosition) * progress;
+
+            // Tell GameController
+            mGameController->MoveBy(
+                mCurrentTrajectory->EngagedElementId,
+                newCurrentPosition - mCurrentTrajectory->CurrentPosition);
+
+            mCurrentTrajectory->CurrentPosition = newCurrentPosition;
+
+            // Check whether we are done
+            if (rawProgress >= 1.0f)
+            {
+                //
+                // Close trajectory
+                //
+
+                if (!!mEngagedElementId)
+                {
+                    // Tell game controller to stop inertia
+                    mGameController->MoveBy(
+                        mCurrentTrajectory->EngagedElementId,
+                        vec2f::zero());
+                }
+
+                // Reset trajectory
+                mCurrentTrajectory.reset();
+            }
+        }
+    }
+
+    virtual void OnMouseMove(InputState const & inputState) override
+    {
+        if (!!mEngagedElementId)
+        {
+            if (!!mCurrentTrajectory)
+            {
+                // Restart from here
+                mCurrentTrajectory->StartPosition = mCurrentTrajectory->CurrentPosition;
+            }
+            else
+            {
+                mCurrentTrajectory = Trajectory(*mEngagedElementId);
+                mCurrentTrajectory->StartPosition = inputState.PreviousMousePosition;
+                mCurrentTrajectory->CurrentPosition = mCurrentTrajectory->StartPosition;
+            }
+
+            mCurrentTrajectory->EndPosition = inputState.MousePosition;
+            mCurrentTrajectory->StartTimestamp = GameWallClock::GetInstance().Now();
+            mCurrentTrajectory->EndTimestamp = mCurrentTrajectory->StartTimestamp + TrajectoryLag;
+        }
+    }
+
+    virtual void OnLeftMouseDown(InputState const & inputState) override
+    {
+        ProcessInputStateChange(inputState);
+        ShowCurrentCursor();
+    }
+
+    virtual void OnLeftMouseUp(InputState const & inputState) override
+    {
+        ProcessInputStateChange(inputState);
+        ShowCurrentCursor();
+    }
+
+    virtual void OnShiftKeyDown(InputState const & inputState) override
+    {
+        ProcessInputStateChange(inputState);
+        ShowCurrentCursor();
+    }
+
+    virtual void OnShiftKeyUp(InputState const & inputState) override
+    {
+        ProcessInputStateChange(inputState);
+        ShowCurrentCursor();
+    }
+
+private:
+
+    void ProcessInputStateChange(InputState const & inputState)
+    {
+        //
+        // Update state
+        //
+
+        if (inputState.IsLeftMouseDown)
+        {
+            // Left mouse down
+
+            if (!mEngagedElementId)
+            {
+                //
+                // We're currently not engaged
+                //
+
+                // Check with game controller
+                auto elementId = mGameController->Pick(inputState.MousePosition);
+                if (!!elementId)
+                {
+                    // Engaged
+                    mEngagedElementId = elementId;
+
+                    // Tell GameController
+                    mGameController->SetMoveToolEngaged(true);
+                }
+            }
+        }
+        else
+        {
+            // Left mouse up
+
+            if (!!mEngagedElementId)
+            {
+                //
+                // We're currently engaged
+                //
+
+                // Disengage
+                mEngagedElementId.reset();
+
+                // Leave the trajectory running
+
+                // Tell GameController
+                mGameController->SetMoveToolEngaged(false);
+            }
+        }
+
+
+        //
+        // Update cursor
+        //
+
+        if (!mEngagedElementId)
+        {
+            mCurrentCursor = mUpCursor.get();
+        }
+        else
+        {
+            mCurrentCursor = mDownCursor.get();
+        }
+    }
+
+private:
+
+    // When engaged, the ID of the element (point of a ship) we're currently moving
+    std::optional<ElementId> mEngagedElementId;
+
+    struct Trajectory
+    {
+        ElementId EngagedElementId;
+
+        vec2f StartPosition;
+        vec2f CurrentPosition;
+        vec2f EndPosition;
+
+        GameWallClock::time_point StartTimestamp;
+        GameWallClock::time_point EndTimestamp;
+
+        Trajectory(ElementId engagedElementId)
+            : EngagedElementId(engagedElementId)
+        {}
+    };
+
+    static constexpr std::chrono::milliseconds TrajectoryLag = std::chrono::milliseconds(300);
+
+    // When set, we're smoothing the mouse position along a trajectory
+    std::optional<Trajectory> mCurrentTrajectory;
+
+    // The cursors
+    std::unique_ptr<wxCursor> const mUpCursor;
+    std::unique_ptr<wxCursor> const mDownCursor;
+};
+
+class MoveAllTool final : public OneShotTool
+{
+public:
+
+    MoveAllTool(
+        wxFrame * parentFrame,
+        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<SoundController> soundController,
+        ResourceLoader & resourceLoader);
+
+public:
+
+    virtual void Initialize(InputState const & inputState) override
+    {
+        // Reset state
         mEngagedShipId.reset();
         mCurrentTrajectory.reset();
         mRotationCenter.reset();
@@ -325,14 +552,14 @@ public:
             if (!mCurrentTrajectory->RotationCenter)
             {
                 // Move
-                mGameController->MoveBy(
+                mGameController->MoveAllBy(
                     mCurrentTrajectory->EngagedShipId,
                     newCurrentPosition - mCurrentTrajectory->CurrentPosition);
             }
             else
             {
                 // Rotate
-                mGameController->RotateBy(
+                mGameController->RotateAllBy(
                     mCurrentTrajectory->EngagedShipId,
                     newCurrentPosition.y - mCurrentTrajectory->CurrentPosition.y,
                     *mCurrentTrajectory->RotationCenter);
@@ -353,14 +580,14 @@ public:
                     if (!mCurrentTrajectory->RotationCenter)
                     {
                         // Move
-                        mGameController->MoveBy(
+                        mGameController->MoveAllBy(
                             mCurrentTrajectory->EngagedShipId,
                             vec2f::zero());
                     }
                     else
                     {
                         // Rotate
-                        mGameController->RotateBy(
+                        mGameController->RotateAllBy(
                             mCurrentTrajectory->EngagedShipId,
                             0.0f,
                             *mCurrentTrajectory->RotationCenter);

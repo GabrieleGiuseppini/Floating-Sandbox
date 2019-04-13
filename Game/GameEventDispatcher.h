@@ -224,7 +224,7 @@ public:
     //
 
     virtual void OnBombPlaced(
-        ObjectId bombId,
+        BombId bombId,
         BombType bombType,
         bool isUnderwater) override
     {
@@ -239,7 +239,7 @@ public:
     }
 
     virtual void OnBombRemoved(
-        ObjectId bombId,
+        BombId bombId,
         BombType bombType,
         std::optional<bool> isUnderwater) override
     {
@@ -269,7 +269,7 @@ public:
     }
 
     virtual void OnTimerBombFuse(
-        ObjectId bombId,
+        BombId bombId,
         std::optional<bool> isFast)
     {
         // No need to aggregate this one
@@ -289,7 +289,7 @@ public:
     }
 
     virtual void OnAntiMatterBombContained(
-        ObjectId bombId,
+        BombId bombId,
         bool isContained)
     {
         // No need to aggregate this one

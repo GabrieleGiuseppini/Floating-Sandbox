@@ -23,7 +23,7 @@ class AntiMatterBomb final : public Bomb
 public:
 
     AntiMatterBomb(
-        ObjectId id,
+        BombId id,
         ElementIndex springIndex,
         World & parentWorld,
         std::shared_ptr<IGameEventHandler> gameEventHandler,

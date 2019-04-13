@@ -296,8 +296,19 @@ void GameController::SetExtendedStatusTextEnabled(bool isEnabled)
     mTextLayer->SetExtendedStatusTextEnabled(isEnabled);
 }
 
+std::optional<ElementId> GameController::Pick(vec2f const & screenCoordinates)
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+
+    // Apply action
+    assert(!!mWorld);
+    return mWorld->Pick(
+        worldCoordinates,
+        mGameParameters);
+}
+
 void GameController::MoveBy(
-    ShipId shipId,
+    ElementId elementId,
     vec2f const & screenOffset)
 {
     vec2f const worldOffset = mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
@@ -305,12 +316,26 @@ void GameController::MoveBy(
     // Apply action
     assert(!!mWorld);
     mWorld->MoveBy(
+        elementId,
+        worldOffset,
+        mGameParameters);
+}
+
+void GameController::MoveAllBy(
+    ShipId shipId,
+    vec2f const & screenOffset)
+{
+    vec2f const worldOffset = mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
+
+    // Apply action
+    assert(!!mWorld);
+    mWorld->MoveAllBy(
         shipId,
         worldOffset,
         mGameParameters);
 }
 
-void GameController::RotateBy(
+void GameController::RotateAllBy(
     ShipId shipId,
     float screenDeltaY,
     vec2f const & screenCenter)
@@ -324,7 +349,7 @@ void GameController::RotateBy(
 
     // Apply action
     assert(!!mWorld);
-    mWorld->RotateBy(
+    mWorld->RotateAllBy(
         shipId,
         angle,
         worldCenter,
@@ -528,7 +553,7 @@ bool GameController::ScrubThrough(
         mGameParameters);
 }
 
-std::optional<ObjectId> GameController::GetNearestPointAt(vec2f const & screenCoordinates) const
+std::optional<ElementId> GameController::GetNearestPointAt(vec2f const & screenCoordinates) const
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 

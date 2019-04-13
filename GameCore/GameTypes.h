@@ -48,6 +48,11 @@ using PlaneId = std::uint32_t;
 static constexpr PlaneId NonePlaneId = std::numeric_limits<PlaneId>::max();
 
 /*
+ * Various other identifiers.
+ */
+using LocalBombId = std::uint32_t;
+
+/*
  * Object ID's, identifying objects of ships across ships.
  *
  * An ObjectId is unique only in the context in which it's used; for example,
@@ -55,9 +60,10 @@ static constexpr PlaneId NonePlaneId = std::numeric_limits<PlaneId>::max();
  *
  * Not comparable, not ordered.
  */
+template<typename TLocalObjectId>
 struct ObjectId
 {
-    using LocalObjectId = uint32_t;
+    using LocalObjectId = TLocalObjectId;
 
     ObjectId(
         ShipId shipId,
@@ -107,17 +113,20 @@ private:
 
 namespace std {
 
-template <>
-struct hash<ObjectId>
-{
-    std::size_t operator()(ObjectId const & objectId) const
+    template <typename TLocalObjectId>
+    struct hash<ObjectId<TLocalObjectId>>
     {
-        return std::hash<ShipId>()(static_cast<uint16_t>(objectId.GetShipId()))
-            ^ std::hash<typename ObjectId::LocalObjectId>()(objectId.GetLocalObjectId());
-    }
-};
+        std::size_t operator()(ObjectId<TLocalObjectId> const & objectId) const
+        {
+            return std::hash<ShipId>()(static_cast<uint16_t>(objectId.GetShipId()))
+                ^ std::hash<typename ObjectId<TLocalObjectId>::LocalObjectId>()(objectId.GetLocalObjectId());
+        }
+    };
 
 }
+
+using ElementId = ObjectId<ElementIndex>;
+using BombId = ObjectId<LocalBombId>;
 
 /*
  * A sequence number which is never zero.

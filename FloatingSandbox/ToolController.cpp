@@ -35,6 +35,13 @@ ToolController::ToolController(
             resourceLoader));
 
     mAllTools.emplace_back(
+        std::make_unique<MoveAllTool>(
+            parentFrame,
+            gameController,
+            soundController,
+            resourceLoader));
+
+    mAllTools.emplace_back(
         std::make_unique<SmashTool>(
             parentFrame,
             gameController,

@@ -65,12 +65,12 @@ public:
     virtual void OnSinkingEnd(ShipId shipId) override;
 
     virtual void OnBombPlaced(
-        ObjectId bombId,
+        BombId bombId,
         BombType bombType,
         bool isUnderwater) override;
 
     virtual void OnBombRemoved(
-        ObjectId bombId,
+        BombId bombId,
         BombType bombType,
         std::optional<bool> isUnderwater) override;
 

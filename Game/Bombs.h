@@ -44,7 +44,7 @@ public:
         , mShipPoints(shipPoints)
         , mShipSprings(shipSprings)
         , mCurrentBombs()
-        , mNextLocalObjectId(0)
+        , mNextLocalBombId(0)
     {
     }
 
@@ -176,7 +176,7 @@ private:
             // Create bomb
             std::unique_ptr<Bomb> bomb(
                 new TBomb(
-                    ObjectId(mShipId, mNextLocalObjectId++),
+                    BombId(mShipId, mNextLocalBombId++),
                     nearestUnarmedSpringIndex,
                     mParentWorld,
                     mGameEventHandler,
@@ -238,7 +238,7 @@ private:
     CircularList<std::unique_ptr<Bomb>, GameParameters::MaxBombs> mCurrentBombs;
 
     // The next bomb ID value
-    typename ObjectId::LocalObjectId mNextLocalObjectId;
+    typename LocalBombId mNextLocalBombId;
 };
 
 }

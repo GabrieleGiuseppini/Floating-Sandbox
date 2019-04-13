@@ -219,12 +219,12 @@ public:
         vec2f const & windSpeed) override;
 
     virtual void OnBombPlaced(
-        ObjectId bombId,
+        BombId bombId,
         BombType bombType,
         bool isUnderwater) override;
 
     virtual void OnBombRemoved(
-        ObjectId bombId,
+        BombId bombId,
         BombType bombType,
         std::optional<bool> isUnderwater) override;
 
@@ -238,7 +238,7 @@ public:
         unsigned int size) override;
 
     virtual void OnTimerBombFuse(
-        ObjectId bombId,
+        BombId bombId,
         std::optional<bool> isFast) override;
 
     virtual void OnTimerBombDefused(
@@ -246,7 +246,7 @@ public:
         unsigned int size) override;
 
     virtual void OnAntiMatterBombContained(
-        ObjectId bombId,
+        BombId bombId,
         bool isContained) override;
 
     virtual void OnAntiMatterBombPreImploding() override;
@@ -422,9 +422,9 @@ private:
     ContinuousSingleChoiceSound mWaterSplashSound;
     ContinuousSingleChoiceSound mWindSound;
 
-    ContinuousSingleChoiceSound mTimerBombSlowFuseSound;
-    ContinuousSingleChoiceSound mTimerBombFastFuseSound;
-    ContinuousMultipleChoiceSound mAntiMatterBombContainedSounds;
+    ContinuousSingleChoiceAggregateSound<BombId> mTimerBombSlowFuseSound;
+    ContinuousSingleChoiceAggregateSound<BombId> mTimerBombFastFuseSound;
+    ContinuousMultipleChoiceAggregateSound<BombId> mAntiMatterBombContainedSounds;
 
     //
     // Music

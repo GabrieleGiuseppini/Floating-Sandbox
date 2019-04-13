@@ -168,7 +168,7 @@ void EventTickerPanel::OnSinkingEnd(ShipId shipId)
 }
 
 void EventTickerPanel::OnBombPlaced(
-    ObjectId /*bombId*/,
+    BombId /*bombId*/,
     BombType bombType,
     bool /*isUnderwater*/)
 {
@@ -206,7 +206,7 @@ void EventTickerPanel::OnBombPlaced(
 }
 
 void EventTickerPanel::OnBombRemoved(
-    ObjectId /*bombId*/,
+    BombId /*bombId*/,
     BombType bombType,
     std::optional<bool> /*isUnderwater*/)
 {

@@ -73,8 +73,10 @@ public:
     void SetStatusTextEnabled(bool isEnabled);
     void SetExtendedStatusTextEnabled(bool isEnabled);
 
-    void MoveBy(ShipId shipId, vec2f const & screenOffset);
-    void RotateBy(ShipId shipId, float screenDeltaY, vec2f const & screenCenter);
+    std::optional<ElementId> Pick(vec2f const & screenCoordinates);
+    void MoveBy(ElementId elementId, vec2f const & screenOffset);
+    void MoveAllBy(ShipId shipId, vec2f const & screenOffset);
+    void RotateAllBy(ShipId shipId, float screenDeltaY, vec2f const & screenCenter);
     void DestroyAt(vec2f const & screenCoordinates, float radiusMultiplier);
     void RepairAt(vec2f const & screenCoordinates, float radiusMultiplier);
     void SawThrough(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates);
@@ -91,7 +93,7 @@ public:
     void DetonateAntiMatterBombs();
     bool AdjustOceanFloorTo(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates);
     bool ScrubThrough(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates);
-    std::optional<ObjectId> GetNearestPointAt(vec2f const & screenCoordinates) const;
+    std::optional<ElementId> GetNearestPointAt(vec2f const & screenCoordinates) const;
     void QueryNearestPointAt(vec2f const & screenCoordinates) const;
 
     void SetCanvasSize(int width, int height)

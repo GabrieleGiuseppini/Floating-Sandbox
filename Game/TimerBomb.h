@@ -26,7 +26,7 @@ class TimerBomb final : public Bomb
 public:
 
     TimerBomb(
-        ObjectId id,
+        BombId id,
         ElementIndex springIndex,
         World & parentWorld,
         std::shared_ptr<IGameEventHandler> gameEventHandler,

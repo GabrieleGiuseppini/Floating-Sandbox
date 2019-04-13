@@ -222,6 +222,7 @@ Render:
 				+ After all, texture layer is now mandatory!
 			+ Test look'n'feel
 		+ Also dry points should rot (*)
+		+ Pick tool (*)
 
 		= Sign with certificate
 			+ https://blogs.msdn.microsoft.com/ieinternals/2011/03/22/everything-you-need-to-know-about-authenticode-code-signing/
@@ -251,8 +252,9 @@ Render:
 				- Hull, non Hull 
 					- 3 colors each
 				- Make ball at "New Materials Balls"
-
-		- Pick tool (*)
+			- Redo template
+			- Send to Michael
+			+ Add to changes.txt
 
 		- Auto-focus (*)
 			- Owned by RenderContext
@@ -857,9 +859,7 @@ Render:
 				+ All ship ID ints become ShipId
 				+ All object ID ints become ObjectId
 			- LocalSwitchId typedef (uint32_t)
-			- ObjectId:
-				- Templated on type of local ID
-				- Also strong typedef (w/tag?) -> SwitchId (on LocalSwitchId)
+			- SwitchId == ObjectId<LocalSwitchId>
 		- Ship json adds optional names for each ID
 			- as vector<pair<local switch ID, std::string>>>
 				- local switch ID is ID from color code
@@ -1076,29 +1076,6 @@ Render:
 			- Resolution stays the same
 		- Option 2:
 			- Integral ticks to change frequencies so that period is always the same
-
-	- Pick tool: ability to move individual connected components (*)
-		+ After connected component has been overhauled
-		- Spec:
-			- New tool gets point ID from GameController::Pick() and passes it to new MoveTo()
-			- Move tool becomes this new one
-			- Old move tool becomes "MoveAll" tool
-		- Impl:		
-			- Pick engagement returns ObjectId for point ID (or none)
-				- Ship::Pick(vec2f position) -> opt<ElementIndex pointId>
-				- World makes opt<ObjectId>
-			- Ship::MoveTo(ElementIndex pointId, vec2f position, vec2f velocity) (new overload):
-				- If point deleted => return false (to disengage)
-				- Calc deltaPos for the point
-				- Translate point's connected component by deltaPos, and add velocity
-				- Test: if we get a tremolo:
-					- Store Move args @ Move() and apply after UpdateMechanics()
-			- Tool: new paradigm (no need to do rotation, so simpler)
-				- Invoke MoveTo() continuously at Update() only
-					- Disengage if it returns false
-				- Pass velocity = current (synthetic) mousePos - last (synthetic) mousePos
-			+ Make cursor for "MoveAll"
-			- Help
 
 	- Interior layer:
 		- New layer @ ShipDefinitionFile and ShipDefinition
@@ -4453,7 +4430,22 @@ IF WX:
 				+ https://docs.wxwidgets.org/3.0/classwx_dir_picker_ctrl.html
 		+ Make actual snapshot sound
 		+ Changelist
-
+	+ Pick tool: ability to move individual connected components (*)
+		+ After connected component has been overhauled
+		+ Spec:
+			+ New tool gets point ID from GameController::Pick() and passes it to new MoveTo()
+			+ Move tool becomes this new one
+			+ Old move tool becomes "MoveAll" tool
+		+ Impl:		
+			+ Pick engagement returns ObjectId for point ID (or none)
+				+ Ship::Pick(vec2f position) -> opt<ElementIndex pointId>
+				+ World makes opt<ObjectId>
+			+ Ship::MoveTo(ElementIndex pointId, vec2f position, vec2f velocity) (new overload):
+				+ If point deleted => return false (to disengage)
+			+ Tool: copy from Move
+			+ Make cursor for "MoveAll"
+			+ Help
+			+ Changes.txt
 + Sound:
 	+ SFML:
 		+ Build own

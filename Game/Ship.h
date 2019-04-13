@@ -73,11 +73,20 @@ public:
     // Interactions
     ///////////////////////////////////////////////////////////////
 
+    std::optional<ElementIndex> Pick(
+        vec2f const & pickPosition,
+        GameParameters const & gameParameters);
+
     void MoveBy(
+        ElementIndex pointElementIndex,
         vec2f const & offset,
         GameParameters const & gameParameters);
 
-    void RotateBy(
+    void MoveAllBy(
+        vec2f const & offset,
+        GameParameters const & gameParameters);
+
+    void RotateAllBy(
         float angle,
         vec2f const & center,
         GameParameters const & gameParameters);

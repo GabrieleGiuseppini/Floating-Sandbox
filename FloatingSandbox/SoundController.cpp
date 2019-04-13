@@ -1111,7 +1111,7 @@ void SoundController::OnWindSpeedUpdated(
 }
 
 void SoundController::OnBombPlaced(
-    ObjectId /*bombId*/,
+    BombId /*bombId*/,
     BombType /*bombType*/,
     bool isUnderwater)
 {
@@ -1123,7 +1123,7 @@ void SoundController::OnBombPlaced(
 }
 
 void SoundController::OnBombRemoved(
-    ObjectId /*bombId*/,
+    BombId /*bombId*/,
     BombType /*bombType*/,
     std::optional<bool> isUnderwater)
 {
@@ -1167,7 +1167,7 @@ void SoundController::OnRCBombPing(
 }
 
 void SoundController::OnTimerBombFuse(
-    ObjectId bombId,
+    BombId bombId,
     std::optional<bool> isFast)
 {
     if (!!isFast)
@@ -1217,7 +1217,7 @@ void SoundController::OnTimerBombDefused(
 }
 
 void SoundController::OnAntiMatterBombContained(
-    ObjectId bombId,
+    BombId bombId,
     bool isContained)
 {
     if (isContained)

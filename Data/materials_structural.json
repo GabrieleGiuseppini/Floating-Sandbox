@@ -2416,7 +2416,7 @@
         "render_color": "#BFBFBF", 
 	"rust_receptivity": 0,
         "sound_type": "Rubber", 
-        "stiffness": 0.3, 
+        "stiffness": 0.5, 
         "strength": 2.5, 
         "template": {
             "column": 9, 
@@ -2437,7 +2437,7 @@
         "render_color": "#E1BFBF", 
 	"rust_receptivity": 0,
         "sound_type": "Rubber", 
-        "stiffness": 0.3, 
+        "stiffness": 0.5,
         "strength": 2.5, 
         "template": {
             "column": 10, 
@@ -2458,7 +2458,7 @@
         "render_color": "#BFBFE1", 
 	"rust_receptivity": 0,
         "sound_type": "Rubber", 
-        "stiffness": 0.3, 
+        "stiffness": 0.5,
         "strength": 2.5, 
         "template": {
             "column": 11, 
@@ -2479,8 +2479,8 @@
         "name": "Rubber Soft", 
         "render_color": "#CFCFCF", 
 	"rust_receptivity": 0,
-        "sound_type": "Rubber", 
-        "stiffness": 0.3, 
+        "sound_type": "Rubber",
+        "stiffness": 0.5,
         "strength": 2.5, 
         "template": {
             "column": 9, 
@@ -2500,8 +2500,8 @@
         "name": "Rubber Soft Red", 
         "render_color": "#E1CFCF", 
 	"rust_receptivity": 0,
-        "sound_type": "Rubber", 
-        "stiffness": 0.3, 
+        "sound_type": "Rubber",
+        "stiffness": 0.5,
         "strength": 2.5, 
         "template": {
             "column": 10, 
@@ -2521,8 +2521,8 @@
         "name": "Rubber Soft Blue", 
         "render_color": "#CFCFE1", 
 	"rust_receptivity": 0,
-        "sound_type": "Rubber", 
-        "stiffness": 0.3, 
+        "sound_type": "Rubber",
+        "stiffness": 0.5,
         "strength": 2.5, 
         "template": {
             "column": 11, 
@@ -2543,8 +2543,8 @@
         "name": "Rubber Hull Hard", 
         "render_color": "#B8B8B8", 
 	"rust_receptivity": 0,
-        "sound_type": "Rubber", 
-        "stiffness": 1.0, 
+        "sound_type": "Rubber",
+        "stiffness": 1.0,
         "strength": 2.5, 
         "template": {
             "column": 9, 

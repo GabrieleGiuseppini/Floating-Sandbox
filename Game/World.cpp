@@ -71,19 +71,50 @@ size_t World::GetShipPointCount(ShipId shipId) const
 // Interactions
 //////////////////////////////////////////////////////////////////////////////
 
+std::optional<ElementId> World::Pick(
+    vec2f const & pickPosition,
+    GameParameters const & gameParameters)
+{
+    for (auto & ship : mAllShips)
+    {
+        auto elementIndex = ship->Pick(
+            pickPosition,
+            gameParameters);
+
+        if (!!elementIndex)
+            return ElementId(ship->GetId(), *elementIndex);
+    }
+
+    return std::nullopt;
+}
+
 void World::MoveBy(
+    ElementId elementId,
+    vec2f const & offset,
+    GameParameters const & gameParameters)
+{
+    auto const shipId = elementId.GetShipId();
+    assert(shipId >= 0 && shipId < mAllShips.size());
+
+    mAllShips[shipId]->MoveBy(
+        elementId.GetLocalObjectId(),
+        offset,
+        gameParameters);
+}
+
+void World::MoveAllBy(
     ShipId shipId,
     vec2f const & offset,
     GameParameters const & gameParameters)
 {
     assert(shipId >= 0 && shipId < mAllShips.size());
 
-    mAllShips[shipId]->MoveBy(
+    mAllShips[shipId]->MoveAllBy(
         offset,
         gameParameters);
 }
 
-void World::RotateBy(
+void World::RotateAllBy(
     ShipId shipId,
     float angle,
     vec2f const & center,
@@ -91,7 +122,7 @@ void World::RotateBy(
 {
     assert(shipId >= 0 && shipId < mAllShips.size());
 
-    mAllShips[shipId]->RotateBy(
+    mAllShips[shipId]->RotateAllBy(
         angle,
         center,
         gameParameters);
@@ -348,11 +379,11 @@ bool World::ScrubThrough(
     return anyHasScrubbed;
 }
 
-std::optional<ObjectId> World::GetNearestPointAt(
+std::optional<ElementId> World::GetNearestPointAt(
     vec2f const & targetPos,
     float radius) const
 {
-    std::optional<ObjectId> bestPointId;
+    std::optional<ElementId> bestPointId;
     float bestSquareDistance = std::numeric_limits<float>::max();
 
     for (auto const & ship : mAllShips)
@@ -363,7 +394,7 @@ std::optional<ObjectId> World::GetNearestPointAt(
             float squareDistance = (ship->GetPoints().GetPosition(shipBestPointIndex) - targetPos).squareLength();
             if (squareDistance < bestSquareDistance)
             {
-                bestPointId = ObjectId(ship->GetId(), shipBestPointIndex);
+                bestPointId = ElementId(ship->GetId(), shipBestPointIndex);
                 bestSquareDistance = squareDistance;
             }
         }

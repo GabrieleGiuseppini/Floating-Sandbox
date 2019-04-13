@@ -157,13 +157,34 @@ MoveTool::MoveTool(
         parentFrame,
         std::move(gameController),
         std::move(soundController))
+    , mEngagedElementId(std::nullopt)
+    , mCurrentTrajectory(std::nullopt)
+    , mUpCursor(MakeCursor("move_cursor_up", 13, 5, resourceLoader))
+    , mDownCursor(MakeCursor("move_cursor_down", 13, 5, resourceLoader))
+{
+}
+
+////////////////////////////////////////////////////////////////////////
+// MoveAll
+////////////////////////////////////////////////////////////////////////
+
+MoveAllTool::MoveAllTool(
+    wxFrame * parentFrame,
+    std::shared_ptr<GameController> gameController,
+    std::shared_ptr<SoundController> soundController,
+    ResourceLoader & resourceLoader)
+    : OneShotTool(
+        ToolType::MoveAll,
+        parentFrame,
+        std::move(gameController),
+        std::move(soundController))
     , mEngagedShipId(std::nullopt)
     , mCurrentTrajectory(std::nullopt)
     , mRotationCenter(std::nullopt)
-    , mUpCursor(MakeCursor("move_cursor_up", 13, 5, resourceLoader))
-    , mDownCursor(MakeCursor("move_cursor_down", 13, 5, resourceLoader))
-    , mRotateUpCursor(MakeCursor("move_cursor_rotate_up", 13, 5, resourceLoader))
-    , mRotateDownCursor(MakeCursor("move_cursor_rotate_down", 13, 5, resourceLoader))
+    , mUpCursor(MakeCursor("move_all_cursor_up", 13, 5, resourceLoader))
+    , mDownCursor(MakeCursor("move_all_cursor_down", 13, 5, resourceLoader))
+    , mRotateUpCursor(MakeCursor("move_all_cursor_rotate_up", 13, 5, resourceLoader))
+    , mRotateDownCursor(MakeCursor("move_all_cursor_rotate_down", 13, 5, resourceLoader))
 {
 }
 

@@ -130,7 +130,7 @@ public:
     /*
      * Returns the ID of this bomb.
      */
-    ObjectId GetId() const
+    BombId GetId() const
     {
         return mId;
     }
@@ -204,7 +204,7 @@ public:
 protected:
 
     Bomb(
-        ObjectId id,
+        BombId id,
         BombType type,
         ElementIndex springIndex,
         World & parentWorld,
@@ -228,7 +228,7 @@ protected:
     }
 
     // Our ID
-    ObjectId const mId;
+    BombId const mId;
 
     // Our parent world
     World & mParentWorld;

@@ -143,6 +143,7 @@ private:
     void OnReloadLastShipMenuItemSelected(wxCommandEvent& event);
     void OnSaveScreenshotMenuItemSelected(wxCommandEvent& event);
     void OnMoveMenuItemSelected(wxCommandEvent& event);
+    void OnMoveAllMenuItemSelected(wxCommandEvent& event);
     void OnSmashMenuItemSelected(wxCommandEvent& event);
     void OnSliceMenuItemSelected(wxCommandEvent& event);
     void OnGrabMenuItemSelected(wxCommandEvent& event);
@@ -200,7 +201,7 @@ private:
     }
 
     virtual void OnBombPlaced(
-        ObjectId /*bombId*/,
+        BombId /*bombId*/,
         BombType bombType,
         bool /*isUnderwater*/) override
     {
@@ -217,7 +218,7 @@ private:
     }
 
     virtual void OnBombRemoved(
-        ObjectId /*bombId*/,
+        BombId /*bombId*/,
         BombType bombType,
         std::optional<bool> /*isUnderwater*/) override
     {

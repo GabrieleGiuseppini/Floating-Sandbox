@@ -23,7 +23,7 @@ class RCBomb final : public Bomb
 public:
 
     RCBomb(
-        ObjectId id,
+        BombId id,
         ElementIndex springIndex,
         World & parentWorld,
         std::shared_ptr<IGameEventHandler> gameEventHandler,
