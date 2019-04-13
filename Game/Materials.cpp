@@ -82,6 +82,10 @@ StructuralMaterial::MaterialSoundType StructuralMaterial::StrToMaterialSoundType
         return MaterialSoundType::Glass;
     else if (lstr == "metal")
         return MaterialSoundType::Metal;
+    else if (lstr == "plastic")
+        return MaterialSoundType::Plastic;
+    else if (lstr == "rubber")
+        return MaterialSoundType::Rubber;
     else if (lstr == "wood")
         return MaterialSoundType::Wood;
     else

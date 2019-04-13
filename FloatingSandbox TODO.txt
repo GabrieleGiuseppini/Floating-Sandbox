@@ -221,6 +221,7 @@ Render:
 			+ Can we always use the (sampled) texture colors?
 				+ After all, texture layer is now mandatory!
 			+ Test look'n'feel
+		+ Also dry points should rot (*)
 
 		= Sign with certificate
 			+ https://blogs.msdn.microsoft.com/ieinternals/2011/03/22/everything-you-need-to-know-about-authenticode-code-signing/
@@ -231,8 +232,27 @@ Render:
 			- Sign MSI
 				- https://stackoverflow.com/questions/17589754/wix-installer-msi-publisher-unknown/17591603		
 
-		= Also dry points should rot (*)
-		- Add new materials: plastic, rubber, fiberglass
+		= Add new materials: 
+			+ Rubber
+				+ SoundType=Rubber
+				+ Hull, Non-hull
+				+ 2x (hard and soft)
+					+ 3 colors each
+				+ Make repair sound (copy from one of the break)
+				+ Make separate balls
+			- Fiberglass
+				+ SoundType=Plastic
+				- Hull, Non-Hull
+					- 3 colors each
+				- Make ball at "New Materials Balls"
+				= Make repair sound (copy from one of the break)
+			- Plastic
+				+ SoundType=Plastic
+				- Hull, non Hull 
+					- 3 colors each
+				- Make ball at "New Materials Balls"
+
+		- Pick tool (*)
 
 		- Auto-focus (*)
 			- Owned by RenderContext
@@ -248,8 +268,6 @@ Render:
 		- Heat and combustion (*)
 
 		- Instanced drawing for lights (*)
-
-		- Pick tool (*)
 
 		- Electrical layer view (*)
 
@@ -722,17 +740,6 @@ Render:
 
 - Dynamics:
 
-	= Also dry points should rot, albeit very slowly (*)
-		+ ...and also do "rust_receptivity" material property
-		+ Rotting factor: (inner water + (isUnderwater ? 0.1 : 0.0)) * material.rust_receptivity
-			+ 0.2
-		= Titanic
-			- Also Titanic with lights
-		- Do stainless steel materials
-		+ Add new property to materials guide
-		- See general speed of rotting
-			= Try with 30,000
-
 	- Make waves with Shallow Water Equations (*)
 		- Implement
 		- Follow-ups:
@@ -1090,6 +1097,7 @@ Render:
 				- Invoke MoveTo() continuously at Update() only
 					- Disengage if it returns false
 				- Pass velocity = current (synthetic) mousePos - last (synthetic) mousePos
+			+ Make cursor for "MoveAll"
 			- Help
 
 	- Interior layer:
@@ -4120,6 +4128,14 @@ IF WX:
 						+ Lower volume
 		+ Parameters:
 			+ Remove repair force adjustment from GameParameters
+	+ Also dry points should rot, albeit very slowly (*)
+		+ ...and also do "rust_receptivity" material property
+		+ Rotting factor: (inner water + (isUnderwater ? 0.1 : 0.0)) * material.rust_receptivity
+			+ 0.2
+		+ Do stainless steel materials
+			+ Test ball half/half in "New Materials Balls.png"
+		+ Add new property to materials guide
+		+ See general speed of rotting
 
 + Water
 	+ Water

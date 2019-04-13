@@ -47,6 +47,8 @@ struct StructuralMaterial
         Cloth,
         Glass,
         Metal,
+        Plastic,
+        Rubber,
         Wood,
     };
 

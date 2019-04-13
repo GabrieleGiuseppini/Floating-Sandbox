@@ -1388,7 +1388,7 @@ void Ship::RotPoints(
     // Calculate rot increment for each step
     float const alphaIncrement =
         gameParameters.RotAcceler8r != 0.0f
-        ? 1.0f - powf(1e-10f, gameParameters.RotAcceler8r / 30000.0f)   // Accel=1 => this many steps to total decay
+        ? 1.0f - powf(1e-10f, gameParameters.RotAcceler8r / 40000.0f)   // Accel=1 => this many steps to total decay
         : 0.0f;
 
     // Higher rot increment for leaking points - they are directly in contact

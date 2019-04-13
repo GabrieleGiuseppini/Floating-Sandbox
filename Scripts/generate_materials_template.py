@@ -131,7 +131,7 @@ def main():
                 else:
                     html += "<td style='font-size:8px;'>"
                     if is_structural:
-                        html += str(c[3]["mass"]["nominal_mass"] * c[3]["mass"]["density"]) + "|" + str(c[3]["strength"]) + "|" + str(c[3]["stiffness"])
+                        html += "{:.2f}".format(c[3]["mass"]["nominal_mass"] * c[3]["mass"]["density"]) + "|" + str(c[3]["strength"]) + "|" + str(c[3]["stiffness"])
                     html += "</td>"
             else:
                 html += "<td/>"

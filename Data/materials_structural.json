@@ -2095,6 +2095,27 @@
         "water_volume_fill": 0.0
     }, 
     {
+        "color_key": "#A2A2A2",
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 7580
+        }, 
+        "name": "Stainless Steel Hull", 
+        "render_color": "#A2A2A2", 
+	"rust_receptivity": 0,
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.092, 
+        "template": {
+            "column": 9, 
+            "row": "10|Stainless Steel Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+    {
         "color_key": "#444444", 
         "is_hull": false, 
         "mass": {
@@ -2134,6 +2155,31 @@
         "water_retention": 0.05, 
         "water_volume_fill": 1.0
     }, 
+
+
+    {
+        "color_key": "#E8E8E8",
+        "is_hull": false, 
+        "mass": {
+            "density": 0.00935, 
+            "nominal_mass": 7480
+        }, 
+        "name": "Stainless Steel", 
+        "render_color": "#E8E8E8", 
+	"rust_receptivity": 0,
+        "sound_type": "Metal", 
+        "stiffness": 1.0, 
+        "strength": 0.0856, 
+        "template": {
+            "column": 9, 
+            "row": "20|Stainless Steel"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+
+
     {
         "color_key": "#555555", 
         "is_hull": true, 
@@ -2328,7 +2374,7 @@
         "stiffness": 1.0, 
         "strength": 0.1, 
         "template": {
-            "column": "1|Glass Hull", 
+            "column": "0|Glass Hull", 
             "row": "100|Glass"
         }, 
         "water_diffusion_speed": 0.5, 
@@ -2348,13 +2394,273 @@
         "stiffness": 1.0, 
         "strength": 0.1, 
         "template": {
-            "column": "2|Glass", 
+            "column": "1|Glass", 
             "row": "100|Glass"
         }, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.0, 
         "water_volume_fill": 1.0
     }, 
+
+
+
+
+    {
+        "color_key": "#BFBFBF", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 1522
+        }, 
+        "name": "Rubber Hull Soft", 
+        "render_color": "#BFBFBF", 
+	"rust_receptivity": 0,
+        "sound_type": "Rubber", 
+        "stiffness": 0.3, 
+        "strength": 2.5, 
+        "template": {
+            "column": 9, 
+            "row": "32|Rubber Hull Soft"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+    {
+        "color_key": "#E1BFBF", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 1522
+        }, 
+        "name": "Rubber Hull Soft Red", 
+        "render_color": "#E1BFBF", 
+	"rust_receptivity": 0,
+        "sound_type": "Rubber", 
+        "stiffness": 0.3, 
+        "strength": 2.5, 
+        "template": {
+            "column": 10, 
+            "row": "32|Rubber Hull Soft"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+    {
+        "color_key": "#BFBFE1", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 1522
+        }, 
+        "name": "Rubber Hull Soft Blue", 
+        "render_color": "#BFBFE1", 
+	"rust_receptivity": 0,
+        "sound_type": "Rubber", 
+        "stiffness": 0.3, 
+        "strength": 2.5, 
+        "template": {
+            "column": 11, 
+            "row": "32|Rubber Hull Soft"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+
+    {
+        "color_key": "#CFCFCF",
+        "is_hull": false, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 1522
+        }, 
+        "name": "Rubber Soft", 
+        "render_color": "#CFCFCF", 
+	"rust_receptivity": 0,
+        "sound_type": "Rubber", 
+        "stiffness": 0.3, 
+        "strength": 2.5, 
+        "template": {
+            "column": 9, 
+            "row": "40|Rubber Soft"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#E1CFCF",
+        "is_hull": false, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 1522
+        }, 
+        "name": "Rubber Soft Red", 
+        "render_color": "#E1CFCF", 
+	"rust_receptivity": 0,
+        "sound_type": "Rubber", 
+        "stiffness": 0.3, 
+        "strength": 2.5, 
+        "template": {
+            "column": 10, 
+            "row": "40|Rubber Soft"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#CFCFE1",
+        "is_hull": false, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 1522
+        }, 
+        "name": "Rubber Soft Blue", 
+        "render_color": "#CFCFE1", 
+	"rust_receptivity": 0,
+        "sound_type": "Rubber", 
+        "stiffness": 0.3, 
+        "strength": 2.5, 
+        "template": {
+            "column": 11, 
+            "row": "40|Rubber Soft"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+
+    {
+        "color_key": "#B8B8B8",
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 1522
+        }, 
+        "name": "Rubber Hull Hard", 
+        "render_color": "#B8B8B8", 
+	"rust_receptivity": 0,
+        "sound_type": "Rubber", 
+        "stiffness": 1.0, 
+        "strength": 2.5, 
+        "template": {
+            "column": 9, 
+            "row": "42|Rubber Hull Hard"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+    {
+        "color_key": "#E1B8B8",
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 1522
+        }, 
+        "name": "Rubber Hull Hard Red", 
+        "render_color": "#E1B8B8", 
+	"rust_receptivity": 0,
+        "sound_type": "Rubber", 
+        "stiffness": 1.0, 
+        "strength": 2.5, 
+        "template": {
+            "column": 10, 
+            "row": "42|Rubber Hull Hard"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+    {
+        "color_key": "#B8B8E1",
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 1522
+        }, 
+        "name": "Rubber Hull Hard Blue", 
+        "render_color": "#B8B8E1", 
+	"rust_receptivity": 0,
+        "sound_type": "Rubber", 
+        "stiffness": 1.0, 
+        "strength": 2.5, 
+        "template": {
+            "column": 11, 
+            "row": "42|Rubber Hull Hard"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+
+    {
+        "color_key": "#C7C7C7",
+        "is_hull": false, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 1522
+        }, 
+        "name": "Rubber Hard", 
+        "render_color": "#C7C7C7", 
+	"rust_receptivity": 0,
+        "sound_type": "Rubber", 
+        "stiffness": 1.0, 
+        "strength": 2.5, 
+        "template": {
+            "column": 8, 
+            "row": "50|Rubber Hard"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#E1C7C7",
+        "is_hull": false, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 1522
+        }, 
+        "name": "Rubber Hard Red", 
+        "render_color": "#E1C7C7", 
+	"rust_receptivity": 0,
+        "sound_type": "Rubber", 
+        "stiffness": 1.0, 
+        "strength": 2.5, 
+        "template": {
+            "column": 9, 
+            "row": "50|Rubber Hard"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#C7C7E1",
+        "is_hull": false, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 1522
+        }, 
+        "name": "Rubber Hard Blue", 
+        "render_color": "#C7C7E1", 
+	"rust_receptivity": 0,
+        "sound_type": "Rubber", 
+        "stiffness": 1.0, 
+        "strength": 2.5, 
+        "template": {
+            "column": 10, 
+            "row": "50|Rubber Hard"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+
 
 
     {
@@ -2370,8 +2676,8 @@
         "stiffness": 1.0, 
         "strength": 1.0, 
         "template": {
-            "column": "4|Air", 
-            "row": "90|Air"
+            "column": "3|Air", 
+            "row": "70|Air"
         }, 
         "water_diffusion_speed": 0.0,
 	"water_intake": 0.0,
