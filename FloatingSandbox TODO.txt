@@ -226,8 +226,10 @@ Render:
 
 		= Sign with certificate
 			+ https://blogs.msdn.microsoft.com/ieinternals/2011/03/22/everything-you-need-to-know-about-authenticode-code-signing/
+			+ https://www.thegeekstuff.com/2010/03/microsoft-digital-signatures/
 			- Buy certificate
 				- https://comodosslstore.com/code-signing/microsoft-authenticode
+				- https://comodosslstore.com/codesigning.aspx
 				- Print receipt and store in Taxes 2019
 			- Sign exe
 			- Sign MSI
@@ -243,18 +245,18 @@ Render:
 				+ Make separate balls
 			+ Test weight of new non-hull rubber
 				+ ...and make sure hull rubber sinks
-			= Fiberglass
+			+ Fiberglass
 				+ SoundType=Plastic
-				= Hull, Non-Hull
-					- 3 colors each
+				+ Hull, Non-Hull
+					+ 3 colors each
 				+ Make ball at "New Materials Balls"
 				+ Make repair sound (copy from one of the break)
-			- Plastic
+			+ Plastic (ABS)
 				+ SoundType=Plastic
-				- Hull, non Hull 
-					- 3 colors each
-				- Make ball at "New Materials Balls"
-			- Redo template
+				+ Hull, non Hull 
+					+ 3 colors each - LEGO colors
+				+ Make ball at "New Materials Balls"
+			+ Redo template
 			- Send to Michael
 			+ Add to changes.txt
 
@@ -380,6 +382,9 @@ Render:
 		+ After including redo
 		+ Detect loops with unordered_set<std::string>
 		+ Use for ship color and texture
+	- Merge Move tools
+		- Base templated class
+		- Derived only has virtual's for GameController calls
 	- Ship: replace handler registrations with points, springs, etc. with IStructureHandler, declared in own .h
 	- GameEventDispatcher: set mIsDirty at event publishing and consume at Flush()
 	- Try 32-bit build

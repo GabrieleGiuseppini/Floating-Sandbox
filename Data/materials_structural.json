@@ -2794,42 +2794,253 @@
 
 
     {
-        "color_key": "#A8A8A8", 
+        "color_key": "#E4E4E4", 
         "is_hull": true, 
         "mass": {
-            "density": 0.0935, 
-            "nominal_mass": 925
+            "density": 1.0,
+            "nominal_mass": 1060
         }, 
-        "name": "Plastic Hull", 
-        "render_color": "#A8A8A8", 
+        "name": "LEGO Hull (ABS) White", 
+        "render_color": "#E4E4E4", 
 	"rust_receptivity": 0,
         "sound_type": "Plastic", 
         "stiffness": 1.1, 
         "strength": 0.05, 
         "template": {
             "column": 6, 
-            "row": "70|Plastic Hull"
+            "row": "70|LEGO Hull (ABS)"
         }, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
         "water_volume_fill": 0.0
     }, 
     {
-        "color_key": "#B4B4B4",
-        "is_hull": false, 
+        "color_key": "#B3000B",
+        "is_hull": true, 
         "mass": {
-            "density": 0.00935, 
-            "nominal_mass": 925
+            "density": 1.0, 
+            "nominal_mass": 1060
         }, 
-        "name": "Plastic", 
-        "render_color": "#B4B4B4", 
+        "name": "LEGO Hull (ABS) Red", 
+        "render_color": "#B3000B", 
+	"rust_receptivity": 0,
+        "sound_type": "Plastic", 
+        "stiffness": 1.1, 
+        "strength": 0.05, 
+        "template": {
+            "column": 7, 
+            "row": "70|LEGO Hull (ABS)"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+    {
+        "color_key": "#EFED00",
+        "is_hull": true, 
+        "mass": {
+            "density": 1.0, 
+            "nominal_mass": 1060
+        }, 
+        "name": "LEGO Hull (ABS) Yellow", 
+        "render_color": "#EFED00", 
+	"rust_receptivity": 0,
+        "sound_type": "Plastic", 
+        "stiffness": 1.1, 
+        "strength": 0.05, 
+        "template": {
+            "column": 8, 
+            "row": "70|LEGO Hull (ABS)"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+    {
+        "color_key": "#186F36",
+        "is_hull": true, 
+        "mass": {
+            "density": 1.0, 
+            "nominal_mass": 1060
+        }, 
+        "name": "LEGO Hull (ABS) Green", 
+        "render_color": "#186F36", 
+	"rust_receptivity": 0,
+        "sound_type": "Plastic", 
+        "stiffness": 1.1, 
+        "strength": 0.05, 
+        "template": {
+            "column": 9, 
+            "row": "70|LEGO Hull (ABS)"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+    {
+        "color_key": "#13377B",
+        "is_hull": true, 
+        "mass": {
+            "density": 1.0, 
+            "nominal_mass": 1060
+        }, 
+        "name": "LEGO Hull (ABS) Blue", 
+        "render_color": "#13377B", 
 	"rust_receptivity": 0,
         "sound_type": "Plastic", 
         "stiffness": 1.1, 
         "strength": 0.05, 
         "template": {
             "column": 10, 
-            "row": "80|Plastic"
+            "row": "70|LEGO Hull (ABS)"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+    {
+        "color_key": "#050505",
+        "is_hull": true, 
+        "mass": {
+            "density": 1.0, 
+            "nominal_mass": 1060
+        }, 
+        "name": "LEGO Hull (ABS) Black", 
+        "render_color": "#050505", 
+	"rust_receptivity": 0,
+        "sound_type": "Plastic", 
+        "stiffness": 1.1, 
+        "strength": 0.05, 
+        "template": {
+            "column": 11, 
+            "row": "70|LEGO Hull (ABS)"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+
+    {
+        "color_key": "#F4F4F4",
+        "is_hull": false, 
+        "mass": {
+            "density": 0.4422, 
+            "nominal_mass": 1060
+        }, 
+        "name": "LEGO (ABS) White", 
+        "render_color": "#F4F4F4", 
+	"rust_receptivity": 0,
+        "sound_type": "Plastic", 
+        "stiffness": 1.1, 
+        "strength": 0.05, 
+        "template": {
+            "column": 10, 
+            "row": "80|LEGO (ABS)"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#E3000B",
+        "is_hull": false, 
+        "mass": {
+            "density": 0.4422, 
+            "nominal_mass": 1060
+        }, 
+        "name": "LEGO (ABS) Red", 
+        "render_color": "#E3000B", 
+	"rust_receptivity": 0,
+        "sound_type": "Plastic", 
+        "stiffness": 1.1, 
+        "strength": 0.05, 
+        "template": {
+            "column": 11, 
+            "row": "80|LEGO (ABS)"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#FFED00",
+        "is_hull": false, 
+        "mass": {
+            "density": 0.4422, 
+            "nominal_mass": 1060
+        }, 
+        "name": "LEGO (ABS) Yellow", 
+        "render_color": "#FFED00", 
+	"rust_receptivity": 0,
+        "sound_type": "Plastic", 
+        "stiffness": 1.1, 
+        "strength": 0.05, 
+        "template": {
+            "column": 12, 
+            "row": "80|LEGO (ABS)"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#287F46",
+        "is_hull": false, 
+        "mass": {
+            "density": 0.4422, 
+            "nominal_mass": 1060
+        }, 
+        "name": "LEGO (ABS) Green", 
+        "render_color": "#287F46", 
+	"rust_receptivity": 0,
+        "sound_type": "Plastic", 
+        "stiffness": 1.1, 
+        "strength": 0.05, 
+        "template": {
+            "column": 13, 
+            "row": "80|LEGO (ABS)"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#23478B",
+        "is_hull": false, 
+        "mass": {
+            "density": 0.4422, 
+            "nominal_mass": 1060
+        }, 
+        "name": "LEGO (ABS) Blue", 
+        "render_color": "#23478B", 
+	"rust_receptivity": 0,
+        "sound_type": "Plastic", 
+        "stiffness": 1.1, 
+        "strength": 0.05, 
+        "template": {
+            "column": 14, 
+            "row": "80|LEGO (ABS)"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+    {
+        "color_key": "#080808",
+        "is_hull": false, 
+        "mass": {
+            "density": 0.4422, 
+            "nominal_mass": 1060
+        }, 
+        "name": "LEGO (ABS) Black", 
+        "render_color": "#080808", 
+	"rust_receptivity": 0,
+        "sound_type": "Plastic", 
+        "stiffness": 1.1, 
+        "strength": 0.05, 
+        "template": {
+            "column": 15, 
+            "row": "80|LEGO (ABS)"
         }, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
@@ -2879,7 +3090,7 @@
         "strength": 0.1, 
         "template": {
             "column": "3|Self-Powered Lamp", 
-            "row": "100|Electrical"
+            "row": "100|Electrical (Basic)"
         }, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.0, 
@@ -2900,7 +3111,7 @@
         "strength": 0.1, 
         "template": {
             "column": "4|Lamp", 
-            "row": "100|Electrical"
+            "row": "100|Electrical (Basic)"
         }, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.0, 
@@ -2921,7 +3132,7 @@
         "strength": 0.089, 
         "template": {
             "column": "5|Generator", 
-            "row": "100|Electrical"
+            "row": "100|Electrical (Basic)"
         }, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
@@ -2942,7 +3153,7 @@
         "strength": 0.092, 
         "template": {
             "column": "6|Cable Hull", 
-            "row": "100|Electrical"
+            "row": "100|Electrical (Basic)"
         }, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
@@ -2963,7 +3174,7 @@
         "strength": 0.09, 
         "template": {
             "column": "7|Cable", 
-            "row": "100|Electrical"
+            "row": "100|Electrical (Basic)"
         }, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
