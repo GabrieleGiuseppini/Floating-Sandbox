@@ -779,8 +779,7 @@ void MainFrame::OnKeyDown(wxKeyEvent & event)
 
 void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
 {
-    // Note: on my laptop I can't get beyond 64 frames per second, hence I'm not
-    // setting a delay here
+    // Note: we are using vsync, so no delay here
     mGameTimer->Start(0, true);
 
     // Update SHIFT key state

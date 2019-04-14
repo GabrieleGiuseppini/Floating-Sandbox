@@ -2473,7 +2473,7 @@
         "color_key": "#CFCFCF",
         "is_hull": false, 
         "mass": {
-            "density": 0.0935, 
+            "density": 0.02, 
             "nominal_mass": 1522
         }, 
         "name": "Rubber Soft", 
@@ -2494,7 +2494,7 @@
         "color_key": "#E1CFCF",
         "is_hull": false, 
         "mass": {
-            "density": 0.0935, 
+            "density": 0.02, 
             "nominal_mass": 1522
         }, 
         "name": "Rubber Soft Red", 
@@ -2515,7 +2515,7 @@
         "color_key": "#CFCFE1",
         "is_hull": false, 
         "mass": {
-            "density": 0.0935, 
+            "density": 0.02, 
             "nominal_mass": 1522
         }, 
         "name": "Rubber Soft Blue", 
@@ -2601,7 +2601,7 @@
         "color_key": "#C7C7C7",
         "is_hull": false, 
         "mass": {
-            "density": 0.0935, 
+            "density": 0.02, 
             "nominal_mass": 1522
         }, 
         "name": "Rubber Hard", 
@@ -2622,7 +2622,7 @@
         "color_key": "#E1C7C7",
         "is_hull": false, 
         "mass": {
-            "density": 0.0935, 
+            "density": 0.02, 
             "nominal_mass": 1522
         }, 
         "name": "Rubber Hard Red", 
@@ -2643,7 +2643,7 @@
         "color_key": "#C7C7E1",
         "is_hull": false, 
         "mass": {
-            "density": 0.0935, 
+            "density": 0.02, 
             "nominal_mass": 1522
         }, 
         "name": "Rubber Hard Blue", 
@@ -2660,6 +2660,54 @@
         "water_retention": 0.05, 
         "water_volume_fill": 1.0
     }, 
+
+
+
+    {
+        "color_key": "#C4C4C4", 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 1522
+        }, 
+        "name": "Fiberglass Hull", 
+        "render_color": "#C4C4C4", 
+	"rust_receptivity": 0,
+        "sound_type": "Plastic", 
+        "stiffness": 1.1, 
+        "strength": 0.05, 
+        "template": {
+            "column": 8, 
+            "row": "55|Fiberglass Hull"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+
+    {
+        "color_key": "#D4D4D4",
+        "is_hull": false, 
+        "mass": {
+            "density": 0.00935, 
+            "nominal_mass": 1522
+        }, 
+        "name": "Fiberglass", 
+        "render_color": "#D4D4D4", 
+	"rust_receptivity": 0,
+        "sound_type": "Plastic", 
+        "stiffness": 1.1, 
+        "strength": 0.05, 
+        "template": {
+            "column": 8, 
+            "row": "60|Fiberglass"
+        }, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+
+
 
 
 

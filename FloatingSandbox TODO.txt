@@ -241,12 +241,14 @@ Render:
 					+ 3 colors each
 				+ Make repair sound (copy from one of the break)
 				+ Make separate balls
-			- Fiberglass
+			+ Test weight of new non-hull rubber
+				+ ...and make sure hull rubber sinks
+			= Fiberglass
 				+ SoundType=Plastic
-				- Hull, Non-Hull
+				= Hull, Non-Hull
 					- 3 colors each
-				- Make ball at "New Materials Balls"
-				= Make repair sound (copy from one of the break)
+				+ Make ball at "New Materials Balls"
+				+ Make repair sound (copy from one of the break)
 			- Plastic
 				+ SoundType=Plastic
 				- Hull, non Hull 
@@ -256,20 +258,24 @@ Render:
 			- Send to Michael
 			+ Add to changes.txt
 
-		- Auto-focus (*)
-			- Owned by RenderContext
+		- Do perf analysis for many air bubbles
 
 		- Try to show tip window after first Render
-			- PostInitialize just posts callback
-			- Before setting up timers, callback checks if tip has ben checked or not
+			- What if we check if tip has ben checked or not at first game timer?
+				- But before we reschedule it
+			- Nuke Low-Frequency update
 
 		- Shallow Water Equations (*)
+
+		- Automatic updates checker via Git tags
 
 		- Interior layer (*)
 
 		- Heat and combustion (*)
 
 		- Instanced drawing for lights (*)
+
+		- Continuous Auto-focus (*)
 
 		- Electrical layer view (*)
 
@@ -303,6 +309,7 @@ Render:
 		# Ilovedumbphones: Dumbphones
 		# SweetStrawberryBoy: TopHatLemons
 	- New ships:
+		- Re-take all Mike's .shp files for Shipbucket.com credits
 		- To adjust:
 			- SS France (Awesomeyorkie):
 				- Ropes
@@ -654,24 +661,33 @@ Render:
 
 
 - Gfx:
-	+ Add world end markers
-		+ Add texture (square,repeatable in both directions)
-		+ RenderContext::init: 
-			+ Don't load in atlas
-			+ Make it repeated
-		+ Final step @ RenderContext::Render
-			+ Checks first which sides, if any, have to be drawn
-			+ Renders quad for each side
-				+ Width is in NDC
-				+ alpha = 0.5 (in shader)
-
-	- Auto-focus at load (*)
-		- Done by RenderContext upon each AddShip()
-			- Based off ship's AABB, calc'd by ShipBuilder
+	- Continuous auto-focus (*)
+		- Spec:
+			- Orchestrated by GameController by taking "optimal" AABB from World (which takes union of "optimal" AABB's from each ship)
+			  and giving it to RenderContext, which adjusts ViewModel based on it
+				- At each simulation step
+			- Preferences setting for auto-focus (default is on)
+			- Also works as "auto-focus at load"
+		- Algo:
+			- Connected component i has AABBi
+			- Ship "optimal" AABB == Union(AABBi) for i belonging to B
+				- B is set of connected components such that sum(their #points) > 3/4 TotPoints, in optimal order (from larger to smaller)
+			- Maintaining AABBi:
+				- Updated at each simulation step leveraging geometrical and temporal coherency:
+					- For each connected component we remember the 4 extreme points
+					- At each simulation step: UpdateConnectedComponentAABBs()
+						- For each connected component i:
+							- For each extreme point p:
+								- Visit p.neighbors as long as they're more extreme than p (i.e. follow gradient)
+								- Replace p with this new most extreme point
+				- Technically we don't even need to maintain AABB, we just need to maintain 4 ElementIndex for each connected component
+				  (the 4 extreme points)
+					- struct AABBPoints, w/Left,Right,etc. members
+			- Maintaining B:
+				- Simply recalculated from scratch at each connectivity visit
+					- Use insertion sort to end up with list sorted by #points, desc
 
 	- Different backgrounds: use keys to switch between a dock, cliffs, open ocean, ice field, etc.
-
-	+ Make font white inversely to ambient light
 
 	- Add SkyRenderMode (Flat, Gradient)
 		- The two endpoints of gradient dependent on ambient light
@@ -724,21 +740,6 @@ Render:
 	- Magnifying glass
 		- https://www.opengl.org/discussion_boards/showthread.php/154811-magnifying-glass-effect
 		- https://www.shadertoy.com/view/4tdXDl
-
-	+ Bug: bombs et al fade more rapidly than ship when ambient light goes away
-	+ Stars at night
-		+ Render:
-			+ Need to be done at clouds, w/water stencil
-		+ Physics::Stars
-			+ Update(GameParams) -- recalcs if # changed
-			+ Upload(RenderContext)
-			+ Managed by world
-		+ Test ambient light -> transparency curve
-		+ Test customizability
-		+ Compare with screenshot
-		+ Check performance
-			+ FPS: 28.4
-			+ PerfAnalysis
 
 - Dynamics:
 
@@ -1101,89 +1102,59 @@ Render:
 				- If "Interior" -> Interior OR Structure
 
 - UI:
-	+ PreferencesDialog:
-		+ Nuke UISettings and move its setting in UIPreferences
-			+ Also remove it from SettingsDialog altogether
-		+ Plug into MainFrame
-		+ Tooltip at ScreenshotsDir
-		+ Tooltip at StartupDialog
-
-	+ Ship Descriptions (*)
-		+ ShipMetadata: description
-			+ opt<string> member
-			+ json load
-		+ ShipDescriptionDialog
-			+ Modal usage
-			+ HTML control
-			+ MakeHtml
-			+ cctor takes bool ShipMetadata const &, isAutomatic, sh_ptr<UIPreferences>
-				- If automatic, checkbox with "Don't show description when ships are loaded"
-					- With tooltip about UIPreferences
-		+ MainFrame: at LoadShip
-			+ If gameController reports successful load, check UIPreferences and eventually create
-			  ShipDescriptionDialog (automatic=true) and DoModal()
-		+ Integrate in ShipLoadDialog
-			+ 'i' button enabled when a ship with description is selected
-			+ ShipLoadDialog needs to get ShipMetadata
-		+ Checkbox at PreferencesDialog for auto-show
-		+ Test:
-			+ Select and later load .shp w/no description
-			+ Select and later load .png w/no description
-			+ Checkbox 
-				+ @ ShipDescription window
-				+ @ PreferencesDialog
-				
-
-	- SettingsDialog: save settings, defaults, and real-time changes
-		- Note: game starts always with default settings; user has the ability though
-		  to load named settings
+	- SettingsDialog: save settings, defaults, and real-time changes (*)
+		- Spec: 
+			- Game starts always with default settings; user has the ability though to load named settings
+				- Where "defaults" is hardcoded bag of settings
 			- Review the below based on this
+			- Saved settings have a name, which is the one shown to the user (filename is opaque and has unique prefix before mangled name)
 
-		- SettingsManager (@FloatingSandbox):
-			- Has GameController, SoundController, UISettings, etc.
-			- Defines struct with all customizable setting members
-			- Maintains two copies of struct:
-				- Defaults
-				- Last (current non-ephemeral settings)
-			- Currently-enforced settings live at their place, i.e. at GameController, SoundController, UISettings, etc.
-			- Manages saving and loading customizable settings to and from json
-			- Created by MainFrame on startup
-				- Initializes here, loading settings if present
-			- Exposes getters and setters for all customizable properties, used by SettingsDialog
-				- get(): from their place
-				- set(): to their place
-			- cctor (actually, CreateInstance()->uq_ptr which MainFrame makes shared):
-				- Makes defaults (in Defaults), asking member providers for their (compile-time default) values
-				- Then if personal_settings.json exists:
-					- Loads it to temp struct - via Load(filepath)->temp struct
-					- Then applies temp struct - via ApplyToGame(temp struct)
-			- CreateCheckpoint():
-				- Makes Last by reading from GameController, SoundController, etc.
-			- Load(filepath)
-				- Loads from path into temp struct - via Load(filepath)->temp struct
-				- Then applies temp struct via ApplyToGame(temp struct)
-			- Save()
-				- Save(path of personal_settings.json)
-			- Save(filepath)
-				- Reads current from their place into temp struct - via ReadFromGame()->temp struct
-				- Saves temp struct to filepath
-			- RevertToCheckpoint()
-				- Applies Last
-			- RestoreDefaults():
-				- Applies Default
-			- RestorePersonalSettings():
-				- Load(path of personal_settings.json)
-			- Internal helpers:
-				- ApplyToGame(struct)
-					- Applies struct to GameController, SoundController, etc.
-				- ReadFromGame()->struct
-					- Reads all from GameController, SoundController, etc. into struct
-						- struct cctor has all vals
-				- Save(struct, filepath)
-				- Load(filepath) -> struct
+			- SettingsManager (@FloatingSandbox):
+				- Has GameController, SoundController, etc.
+				- Defines struct with all customizable setting members
+				- Maintains two instances of struct:
+					- Defaults
+					- Last (last settings when the dialog was opened, i.e. before user has changed them in this settings session)
+						- TODO: really needed? Can't caller (SettingsDialog) ask SettingsManager to make/return_current struct?
+				- Currently-enforced settings live at their place, i.e. at GameController, SoundController, UISettings, etc.
+				- Manages saving and loading customizable settings to and from json
+				- Created by MainFrame on startup
+					- Initializes here --TODONUKE:, loading settings if present
+				- Exposes getters and setters for all customizable properties, used by SettingsDialog
+					- get(): from their place
+					- set(): to their place
+				- cctor (actually, CreateInstance()->uq_ptr which MainFrame makes shared):
+					- Makes defaults (in Defaults), asking member providers for their (compile-time default) values
+					- --TODONUKE: Then if personal_settings.json exists:
+						- Loads it to temp struct - via Load(filepath)->temp struct
+						- Then applies temp struct - via ApplyToGame(temp struct)
+				- CreateCheckpoint():
+					- Makes Last by reading from GameController, SoundController, etc.
+				- Load(filepath)
+					- Loads from path into temp struct - via Load(filepath)->temp struct
+					- Then applies temp struct via ApplyToGame(temp struct)
+				- --TODONUKE: Save()
+					- Save(path of personal_settings.json)
+				- Save(filepath)
+					- Reads current from their place into temp struct - via ReadFromGame()->temp struct
+					- Saves temp struct to filepath
+				- RevertToCheckpoint()
+					- Applies Last
+				- RestoreDefaults():
+					- Applies Default
+				- --TODONUKE:RestorePersonalSettings():
+					- Load(path of personal_settings.json)
+				- Internal helpers:
+					- ApplyToGame(struct)
+						- Applies struct to GameController, SoundController, etc.
+					- ReadFromGame()->struct
+						- Reads all from GameController, SoundController, etc. into struct
+							- struct cctor has all vals
+					- Save(struct, filepath)
+					- Load(filepath) -> struct
 		- Impl:
-			- Standard paths: http://docs.wxwidgets.org/3.1/classwx_standard_paths.html#a4752213ef4d7bdc71170b9e5c3691f0f
-				- Via StandardSystemPaths class
+			+ Standard paths: http://docs.wxwidgets.org/3.1/classwx_standard_paths.html#a4752213ef4d7bdc71170b9e5c3691f0f
+				+ Via StandardSystemPaths class
 		- Dialog:
 			- Control values are meant to always be in sync with real game params
 				- Handlers write value directly to SettingsManager
@@ -1192,12 +1163,12 @@ Render:
 			- UI:
 				- Remove Apply 
 				- Buttons: OK, Revert Changes (iff dirty), Cancel (iff dirty)
-				- File Menu: Save As Defaults, Save Preferences..., Load Preferences..., Restore Defaults, Restore Factory Defaults
+				- File Menu (TODO: no menu, buttons and drop-down): --TODONUKESave As Defaults, Save Preferences..., Load Preferences..., --TODONUKE:Restore Defaults, Restore Factory Defaults
 			- OnShow():
 				- Calls SettingsManager::CreateCheckpoint()
 				- Reads all control values from SettingsManager
 				- Does not mark self as dirty
-			- SaveAsDefaults: saves current to personal_settings.json
+			- --TODONUKE:SaveAsDefaults: saves current to personal_settings.json
 				- Calls SettingsManager::Save()
 				- Stays dirty if it was dirty
 			- SavePreferences: saves with filename
@@ -1207,7 +1178,7 @@ Render:
 				- Calls SettingsManager::Load(filepath)
 				- Reads all control values from SettingsManager
 				- Marks self as dirty
-			- RestoreDefaults: we set everything to personal_settings, but don't commit - allow Revert
+			- --TODONUKE:RestoreDefaults: we set everything to personal_settings, but don't commit - allow Revert
 				- Calls SettingsManager::RestorePersonalSettings()
 				- Reads all control values from SettingsManager
 				- Sets dirty
@@ -1385,8 +1356,7 @@ IF WX:
 + nuke GLFW from hard disk (repo, build)
 + add logger and fix missing ship
 
-+ Get perf baseline and start Readme.md and Changes.txt
-
++ Get perf baseline and start Readme.md and Changes.tx
 ===========
 + cherry-pick that typo fix
 + logging window: try http://docs.wxwidgets.org/3.0/classwx_text_ctrl.html
@@ -1905,7 +1875,6 @@ IF WX:
 	+ Complete unit tests with all new relationships
 	+ Commit & push
 	+ Take new perf baseline (FPS)
-
 	+ Final refactor physics:
 		+ No friends
 		+ Clear all warnings
@@ -2098,6 +2067,36 @@ IF WX:
 		+ Do on panel, slider, label, and textbox
 			+ Or remove tooltip from icon altogether, do just standalone panel tooltip & standalone icon w/no tooltip
 		+ Do also on various checkboxes in SettingsDialog
+	+ PreferencesDialog:
+		+ Nuke UISettings and move its setting in UIPreferences
+			+ Also remove it from SettingsDialog altogether
+		+ Plug into MainFrame
+		+ Tooltip at ScreenshotsDir
+		+ Tooltip at StartupDialog
+	+ Ship Descriptions (*)
+		+ ShipMetadata: description
+			+ opt<string> member
+			+ json load
+		+ ShipDescriptionDialog
+			+ Modal usage
+			+ HTML control
+			+ MakeHtml
+			+ cctor takes bool ShipMetadata const &, isAutomatic, sh_ptr<UIPreferences>
+				- If automatic, checkbox with "Don't show description when ships are loaded"
+					- With tooltip about UIPreferences
+		+ MainFrame: at LoadShip
+			+ If gameController reports successful load, check UIPreferences and eventually create
+			  ShipDescriptionDialog (automatic=true) and DoModal()
+		+ Integrate in ShipLoadDialog
+			+ 'i' button enabled when a ship with description is selected
+			+ ShipLoadDialog needs to get ShipMetadata
+		+ Checkbox at PreferencesDialog for auto-show
+		+ Test:
+			+ Select and later load .shp w/no description
+			+ Select and later load .png w/no description
+			+ Checkbox 
+				+ @ ShipDescription window
+				+ @ PreferencesDialog
 
 + Gfx:
 	+ Do ropes with two endpoints (000xxx)
@@ -2314,7 +2313,7 @@ IF WX:
 		+ Ship::Update() takes also RenderContext const &, so can check if need to save force buffer
 			+ Points::SaveForceBufferForVectorRender()
 		+ Copied right before integration
-	+ Orphaned points (*)
+	+ Orphaned points
 		+ Idea: always draw orphaned points - those that come after destruction
 		+ Orphaned point == points with 0 connected springs
 		+ We unify ephemeral points uploading and rendering with ship points (either debug or orphan) uploading and rendering
@@ -2333,9 +2332,33 @@ IF WX:
 		+ Test L'n'F'
 		+ Cleanup:
 			+ Ship: generation of air bubbles: atm we don't generate air bubbles for orphaned points; see if this should change instead
+	+ Bug: bombs et al fade more rapidly than ship when ambient light goes away
+	+ Make font white inversely to ambient light
+	+ Stars at night
+		+ Render:
+			+ Need to be done at clouds, w/water stencil
+		+ Physics::Stars
+			+ Update(GameParams) -- recalcs if # changed
+			+ Upload(RenderContext)
+			+ Managed by world
+		+ Test ambient light -> transparency curve
+		+ Test customizability
+		+ Compare with screenshot
+		+ Check performance
+			+ FPS: 28.4
+			+ PerfAnalysis
+	+ Add world end markers
+		+ Add texture (square,repeatable in both directions)
+		+ RenderContext::init: 
+			+ Don't load in atlas
+			+ Make it repeated
+		+ Final step @ RenderContext::Render
+			+ Checks first which sides, if any, have to be drawn
+			+ Renders quad for each side
+				+ Width is in NDC
+				+ alpha = 0.5 (in shader)
 
 + Gfx Optimizations:
-
 	+ Try without buffer population: 			
 		+ Point has vec2f * const mPosition and vec2f * const mColour, pointing into two fixed buffers
 			+ vectors are packed (static_assert on contiguous 2 or 3)
