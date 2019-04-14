@@ -269,7 +269,8 @@ Render:
 
 		- Shallow Water Equations (*)
 
-		- Automatic updates checker via Git tags
+		- Automatic updates checker via file on floatingsandbox.com
+			- SFML::Network::Http
 
 		- Interior layer (*)
 

@@ -249,7 +249,7 @@ struct GameParameters
 
     float FloodQuantity;
     static constexpr float MinFloodQuantity = 0.1f;
-    static constexpr float MaxFloodQuantity = 10.0f;
+    static constexpr float MaxFloodQuantity = 100.0f;
 
     float ScrubRadius;
 
