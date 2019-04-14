@@ -38,6 +38,7 @@ TEST(GameEventDispatcherTests, Aggregates_OnStress)
         1.0f,
         1.0f,
         1.0f,
+        1.0f,
         std::nullopt,
         std::nullopt);
 
@@ -74,6 +75,7 @@ TEST(GameEventDispatcherTests, Aggregates_OnStress_MultipleKeys)
         1.0f,
         1.0f,
         1.0f,
+        1.0f,
         std::nullopt,
         std::nullopt);
 
@@ -84,6 +86,7 @@ TEST(GameEventDispatcherTests, Aggregates_OnStress_MultipleKeys)
         1.0f,
         vec4f::zero(),
         false,
+        1.0f,
         1.0f,
         1.0f,
         1.0f,
@@ -170,6 +173,7 @@ TEST(GameEventDispatcherTests, ClearsStateAtUpdate)
         1.0f,
         vec4f::zero(),
         false,
+        1.0f,
         1.0f,
         1.0f,
         1.0f,
