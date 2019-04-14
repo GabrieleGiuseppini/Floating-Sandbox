@@ -114,6 +114,22 @@ void World::MoveAllBy(
         gameParameters);
 }
 
+void World::RotateBy(
+    ElementId elementId,
+    float angle,
+    vec2f const & center,
+    GameParameters const & gameParameters)
+{
+    auto const shipId = elementId.GetShipId();
+    assert(shipId >= 0 && shipId < mAllShips.size());
+
+    mAllShips[shipId]->RotateBy(
+        elementId.GetLocalObjectId(),
+        angle,
+        center,
+        gameParameters);
+}
+
 void World::RotateAllBy(
     ShipId shipId,
     float angle,

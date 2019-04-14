@@ -335,6 +335,27 @@ void GameController::MoveAllBy(
         mGameParameters);
 }
 
+void GameController::RotateBy(
+    ElementId elementId,
+    float screenDeltaY,
+    vec2f const & screenCenter)
+{
+    float const angle =
+        2.0f * Pi<float>
+        / static_cast<float>(mRenderContext->GetCanvasHeight())
+        * screenDeltaY;
+
+    vec2f const worldCenter = mRenderContext->ScreenToWorld(screenCenter);
+
+    // Apply action
+    assert(!!mWorld);
+    mWorld->RotateBy(
+        elementId,
+        angle,
+        worldCenter,
+        mGameParameters);
+}
+
 void GameController::RotateAllBy(
     ShipId shipId,
     float screenDeltaY,

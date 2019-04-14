@@ -282,6 +282,7 @@ public:
         // Reset state
         mEngagedElementId.reset();
         mCurrentTrajectory.reset();
+        mRotationCenter.reset();
 
         // Initialize state
         ProcessInputStateChange(inputState);
@@ -322,9 +323,21 @@ public:
                 + (mCurrentTrajectory->EndPosition - mCurrentTrajectory->StartPosition) * progress;
 
             // Tell GameController
-            mGameController->MoveBy(
-                mCurrentTrajectory->EngagedElementId,
-                newCurrentPosition - mCurrentTrajectory->CurrentPosition);
+            if (!mCurrentTrajectory->RotationCenter)
+            {
+                // Move
+                mGameController->MoveBy(
+                    mCurrentTrajectory->EngagedElementId,
+                    newCurrentPosition - mCurrentTrajectory->CurrentPosition);
+            }
+            else
+            {
+                // Rotate
+                mGameController->RotateBy(
+                    mCurrentTrajectory->EngagedElementId,
+                    newCurrentPosition.y - mCurrentTrajectory->CurrentPosition.y,
+                    *mCurrentTrajectory->RotationCenter);
+            }
 
             mCurrentTrajectory->CurrentPosition = newCurrentPosition;
 
@@ -338,9 +351,21 @@ public:
                 if (!!mEngagedElementId)
                 {
                     // Tell game controller to stop inertia
-                    mGameController->MoveBy(
+                    if (!mCurrentTrajectory->RotationCenter)
+                    {
+                        // Move
+                        mGameController->MoveBy(
                         mCurrentTrajectory->EngagedElementId,
                         vec2f::zero());
+                    }
+                    else
+                    {
+                        // Rotate
+                        mGameController->RotateBy(
+                            mCurrentTrajectory->EngagedElementId,
+                            0.0f,
+                            *mCurrentTrajectory->RotationCenter);
+                    }
                 }
 
                 // Reset trajectory
@@ -361,6 +386,7 @@ public:
             else
             {
                 mCurrentTrajectory = Trajectory(*mEngagedElementId);
+                mCurrentTrajectory->RotationCenter = mRotationCenter;
                 mCurrentTrajectory->StartPosition = inputState.PreviousMousePosition;
                 mCurrentTrajectory->CurrentPosition = mCurrentTrajectory->StartPosition;
             }
@@ -443,8 +469,39 @@ private:
                 // Tell GameController
                 mGameController->SetMoveToolEngaged(false);
             }
+
+            // Reset rotation in any case
+            mRotationCenter.reset();
         }
 
+        if (inputState.IsShiftKeyDown)
+        {
+            // Shift key down
+
+            if (!mRotationCenter && !!mEngagedElementId)
+            {
+                //
+                // We're engaged and not in rotation mode yet
+                //
+
+                // Start rotation mode
+                mRotationCenter = inputState.MousePosition;
+            }
+        }
+        else
+        {
+            // Shift key up
+
+            if (!!mRotationCenter)
+            {
+                //
+                // We are in rotation mode
+                //
+
+                // Stop rotation mode
+                mRotationCenter.reset();
+            }
+        }
 
         //
         // Update cursor
@@ -452,11 +509,25 @@ private:
 
         if (!mEngagedElementId)
         {
-            mCurrentCursor = mUpCursor.get();
+            if (!mRotationCenter)
+            {
+                mCurrentCursor = mUpCursor.get();
+            }
+            else
+            {
+                mCurrentCursor = mRotateUpCursor.get();
+            }
         }
         else
         {
-            mCurrentCursor = mDownCursor.get();
+            if (!mRotationCenter)
+            {
+                mCurrentCursor = mDownCursor.get();
+            }
+            else
+            {
+                mCurrentCursor = mRotateDownCursor.get();
+            }
         }
     }
 
@@ -468,6 +539,7 @@ private:
     struct Trajectory
     {
         ElementId EngagedElementId;
+        std::optional<vec2f> RotationCenter;
 
         vec2f StartPosition;
         vec2f CurrentPosition;
@@ -486,9 +558,14 @@ private:
     // When set, we're smoothing the mouse position along a trajectory
     std::optional<Trajectory> mCurrentTrajectory;
 
+    // When set, we're rotating
+    std::optional<vec2f> mRotationCenter;
+
     // The cursors
     std::unique_ptr<wxCursor> const mUpCursor;
     std::unique_ptr<wxCursor> const mDownCursor;
+    std::unique_ptr<wxCursor> const mRotateUpCursor;
+    std::unique_ptr<wxCursor> const mRotateDownCursor;
 };
 
 class MoveAllTool final : public OneShotTool

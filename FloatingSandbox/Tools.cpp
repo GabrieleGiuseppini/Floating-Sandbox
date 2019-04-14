@@ -159,8 +159,11 @@ MoveTool::MoveTool(
         std::move(soundController))
     , mEngagedElementId(std::nullopt)
     , mCurrentTrajectory(std::nullopt)
+    , mRotationCenter(std::nullopt)
     , mUpCursor(MakeCursor("move_cursor_up", 13, 5, resourceLoader))
     , mDownCursor(MakeCursor("move_cursor_down", 13, 5, resourceLoader))
+    , mRotateUpCursor(MakeCursor("move_cursor_rotate_up", 13, 5, resourceLoader))
+    , mRotateDownCursor(MakeCursor("move_cursor_rotate_down", 13, 5, resourceLoader))
 {
 }
 

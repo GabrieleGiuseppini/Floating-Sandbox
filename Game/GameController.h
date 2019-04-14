@@ -76,6 +76,7 @@ public:
     std::optional<ElementId> Pick(vec2f const & screenCoordinates);
     void MoveBy(ElementId elementId, vec2f const & screenOffset);
     void MoveAllBy(ShipId shipId, vec2f const & screenOffset);
+    void RotateBy(ElementId elementId, float screenDeltaY, vec2f const & screenCenter);
     void RotateAllBy(ShipId shipId, float screenDeltaY, vec2f const & screenCenter);
     void DestroyAt(vec2f const & screenCoordinates, float radiusMultiplier);
     void RepairAt(vec2f const & screenCoordinates, float radiusMultiplier);

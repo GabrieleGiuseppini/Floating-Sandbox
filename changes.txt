@@ -2,9 +2,9 @@
 - New "Repair Structure" tool! Use it on the edges of broken parts of a ship, and with some patience the ship structure will repair itself
 - Added "Orphaned particles rendering": individual particles that break off the ship structure used to disappear, while they are now rendered
 - Also dry parts of a ship now rot when exposed to sea water, albeit *very* slowly...
-- Improved "Move" tool to only move isolated parts of a ship
+- Improved "Move" tool to only move - or rotate - *isolated* parts of a ship
 - Increased number of ophemeral particles
-- Added a few new materials, including "stainless" materials that never rot and rubber
+- Added a few new materials, including "stainless" materials that never rot, and rubber
 - Fixed bug that would crash the game when setting the number of clouds to zero on computers with specific graphics cards
 - ...and a few more small improvements here and there
 

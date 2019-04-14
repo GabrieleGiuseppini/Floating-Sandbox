@@ -108,6 +108,38 @@ void Ship::MoveAllBy(
     }
 }
 
+void Ship::RotateBy(
+    ElementIndex pointElementIndex,
+    float angle,
+    vec2f const & center,
+    GameParameters const & gameParameters)
+{
+    float const inertia =
+        gameParameters.MoveToolInertia
+        * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
+
+    vec2f const rotX(cos(angle), sin(angle));
+    vec2f const rotY(-sin(angle), cos(angle));
+
+    // Get connected component ID of the point
+    auto connectedComponentId = mPoints.GetConnectedComponentId(pointElementIndex);
+    if (connectedComponentId != NoneConnectedComponentId)
+    {
+        // Rotate all points (ephemeral and non-ephemeral) that belong to the same connected component
+        for (auto p : mPoints)
+        {
+            if (mPoints.GetConnectedComponentId(p) == connectedComponentId)
+            {
+                vec2f pos = mPoints.GetPosition(p) - center;
+                pos = vec2f(pos.dot(rotX), pos.dot(rotY)) + center;
+
+                mPoints.SetVelocity(p, (pos - mPoints.GetPosition(p)) * inertia);
+                mPoints.GetPosition(p) = pos;
+            }
+        }
+    }
+}
+
 void Ship::RotateAllBy(
     float angle,
     vec2f const & center,

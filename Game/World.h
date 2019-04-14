@@ -76,6 +76,12 @@ public:
         vec2f const & offset,
         GameParameters const & gameParameters);
 
+    void RotateBy(
+        ElementId elementId,
+        float angle,
+        vec2f const & center,
+        GameParameters const & gameParameters);
+
     void RotateAllBy(
         ShipId shipId,
         float angle,
