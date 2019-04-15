@@ -779,7 +779,8 @@ void MainFrame::OnKeyDown(wxKeyEvent & event)
 
 void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
 {
-    // Note: we are using vsync, so no delay here
+    // On Windows, the minimal timer resolution is ~15ms, so we'd better
+    // post the timer event as early as possible
     mGameTimer->Start(0, true);
 
     // Update SHIFT key state
@@ -807,7 +808,7 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
         assert(!!mToolController);
         mToolController->Update();
 
-        // Update game
+        // Update game - will also render
         assert(!!mGameController);
         mGameController->RunGameIteration();
 
