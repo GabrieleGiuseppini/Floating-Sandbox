@@ -146,14 +146,14 @@ void World::RotateAllBy(
 
 void World::DestroyAt(
     vec2f const & targetPos,
-    float radiusMultiplier,
+    float radiusFraction,
     GameParameters const & gameParameters)
 {
     for (auto & ship : mAllShips)
     {
         ship->DestroyAt(
             targetPos,
-            radiusMultiplier,
+            radiusFraction,
             mCurrentSimulationTime,
             gameParameters);
     }
@@ -191,28 +191,28 @@ void World::SawThrough(
 
 void World::DrawTo(
     vec2f const & targetPos,
-    float strength,
+    float strengthFraction,
     GameParameters const & gameParameters)
 {
     for (auto & ship : mAllShips)
     {
         ship->DrawTo(
             targetPos,
-            strength,
+            strengthFraction,
             gameParameters);
     }
 }
 
 void World::SwirlAt(
     vec2f const & targetPos,
-    float strength,
+    float strengthFraction,
     GameParameters const & gameParameters)
 {
     for (auto & ship : mAllShips)
     {
         ship->SwirlAt(
             targetPos,
-            strength,
+            strengthFraction,
             gameParameters);
     }
 }

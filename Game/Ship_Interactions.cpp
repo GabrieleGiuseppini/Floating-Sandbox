@@ -168,13 +168,18 @@ void Ship::RotateAllBy(
 
 void Ship::DestroyAt(
     vec2f const & targetPos,
-    float radiusMultiplier,
+    float radiusFraction,
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
+    //
+    // Destroy points probabilistically - probability is one at
+    // distance = 0 and zero at distance = radius
+    //
+
     float const radius =
         gameParameters.DestroyRadius
-        * radiusMultiplier
+        * radiusFraction
         * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
     float const squareRadius = radius * radius;
@@ -182,29 +187,43 @@ void Ship::DestroyAt(
     // Detach/destroy all active, attached points within the radius
     for (auto pointIndex : mPoints)
     {
+        float const pointSquareDistance = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
         if (mPoints.IsActive(pointIndex)
-            && (mPoints.GetPosition(pointIndex) - targetPos).squareLength() < squareRadius)
+            && pointSquareDistance < squareRadius)
         {
             //
             // - Air bubble ephemeral points: destroy
-            // - Non-ephemeral, attached points: detach
+            // - Non-ephemeral, attached points: detach probabilistically
             //
 
             if (Points::EphemeralType::None == mPoints.GetEphemeralType(pointIndex)
                 && mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() > 0)
             {
-                // Choose a detach velocity - using the same distribution as Debris
-                vec2f detachVelocity = GameRandomEngine::GetInstance().GenerateRandomRadialVector(
-                    GameParameters::MinDebrisParticlesVelocity,
-                    GameParameters::MaxDebrisParticlesVelocity);
+                //
+                // Calculate probability: 1.0 at distance = 0.0 and 0.0 at distance = radius;
+                // however, we always destroy if we're in a very small fraction of the radius
+                //
 
-                // Detach
-                mPoints.Detach(
-                    pointIndex,
-                    detachVelocity,
-                    Points::DetachOptions::GenerateDebris,
-                    currentSimulationTime,
-                    gameParameters);
+                float destroyProbability =
+                    (squareRadius < 1.0f)
+                    ? 1.0f
+                    : (1.0f - (pointSquareDistance / squareRadius)) * (1.0f - (pointSquareDistance / squareRadius));
+
+                if (GameRandomEngine::GetInstance().GenerateRandomNormalizedReal() <= destroyProbability)
+                {
+                    // Choose a detach velocity - using the same distribution as Debris
+                    vec2f detachVelocity = GameRandomEngine::GetInstance().GenerateRandomRadialVector(
+                        GameParameters::MinDebrisParticlesVelocity,
+                        GameParameters::MaxDebrisParticlesVelocity);
+
+                    // Detach
+                    mPoints.Detach(
+                        pointIndex,
+                        detachVelocity,
+                        Points::DetachOptions::GenerateDebris,
+                        currentSimulationTime,
+                        gameParameters);
+                }
             }
             else if (Points::EphemeralType::AirBubble == mPoints.GetEphemeralType(pointIndex))
             {
@@ -573,26 +592,36 @@ void Ship::SawThrough(
 
 void Ship::DrawTo(
     vec2f const & targetPos,
-    float strength,
+    float strengthFraction,
     GameParameters const & gameParameters)
 {
+    float const strength =
+        GameParameters::DrawForce
+        * strengthFraction
+        * (gameParameters.IsUltraViolentMode ? 20.0f : 1.0f);
+
     // Store the force field
     mCurrentForceFields.emplace_back(
         new DrawForceField(
             targetPos,
-            strength * (gameParameters.IsUltraViolentMode ? 20.0f : 1.0f)));
+            strength));
 }
 
 void Ship::SwirlAt(
     vec2f const & targetPos,
-    float strength,
+    float strengthFraction,
     GameParameters const & gameParameters)
 {
+    float const strength =
+        GameParameters::SwirlForce
+        * strengthFraction
+        * (gameParameters.IsUltraViolentMode ? 20.0f : 1.0f);
+
     // Store the force field
     mCurrentForceFields.emplace_back(
         new SwirlForceField(
             targetPos,
-            strength * (gameParameters.IsUltraViolentMode ? 40.0f : 1.0f)));
+            strength));
 }
 
 bool Ship::TogglePinAt(

@@ -357,6 +357,7 @@ private:
         switch (soundType)
         {
             case SoundType::Break:
+            case SoundType::Destroy:
                 return 45;
             case SoundType::Stress:
                 return 30;
@@ -374,6 +375,7 @@ private:
         switch (soundType)
         {
             case SoundType::Break:
+            case SoundType::Destroy:
                 return std::chrono::milliseconds(200);
             case SoundType::Stress:
                 return std::chrono::milliseconds(600);

@@ -247,6 +247,11 @@ Render:
 			+ Redo template
 			+ Send to Michael
 			+ Add to changes.txt
+		+ Probabilistic Destroy
+			+ Probability is zero at radius
+			+ Cleanup:
+				+ Also do fraction at other continuous tools
+				+ Remove 1.0 at ModulateCursor
 
 
 		= Sign with certificate
@@ -268,10 +273,6 @@ Render:
 				+ Take FPS pre: 20, UR=113-132 @ 4K GenTex's, 62 planes
 				- Do
 				- Take FPS after:
-
-		- Probabilistic DestroyAt
-			- Probability is zero at absolute max == MaxRadius*UltraViolentMode
-				- Make RadiusMultiplier between [foo, 1.0] first
 
 		- Try to show tip window after first Render
 			- What if we check if tip has ben checked or not at first game timer?

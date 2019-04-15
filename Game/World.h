@@ -90,7 +90,7 @@ public:
 
     void DestroyAt(
         vec2f const & targetPos,
-        float radiusMultiplier,
+        float radiusFraction,
         GameParameters const & gameParameters);
 
     void RepairAt(
@@ -105,12 +105,12 @@ public:
 
     void DrawTo(
         vec2f const & targetPos,
-        float strength,
+        float strengthFraction,
         GameParameters const & gameParameters);
 
     void SwirlAt(
         vec2f const & targetPos,
-        float strength,
+        float strengthFraction,
         GameParameters const & gameParameters);
 
     void TogglePinAt(

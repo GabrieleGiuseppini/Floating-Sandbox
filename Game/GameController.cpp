@@ -379,7 +379,7 @@ void GameController::RotateAllBy(
 
 void GameController::DestroyAt(
     vec2f const & screenCoordinates,
-    float radiusMultiplier)
+    float radiusFraction)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -387,7 +387,7 @@ void GameController::DestroyAt(
     assert(!!mWorld);
     mWorld->DestroyAt(
         worldCoordinates,
-        radiusMultiplier,
+        radiusFraction,
         mGameParameters);
 }
 
@@ -422,33 +422,29 @@ void GameController::SawThrough(
 
 void GameController::DrawTo(
     vec2f const & screenCoordinates,
-    float strengthMultiplier)
+    float strengthFraction)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
-
-    float strength = 2000.0f * strengthMultiplier;
 
     // Apply action
     assert(!!mWorld);
     mWorld->DrawTo(
         worldCoordinates,
-        strength,
+        strengthFraction,
         mGameParameters);
 }
 
 void GameController::SwirlAt(
     vec2f const & screenCoordinates,
-    float strengthMultiplier)
+    float strengthFraction)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
-
-    float strength = 30.0f * strengthMultiplier;
 
     // Apply action
     assert(!!mWorld);
     mWorld->SwirlAt(
         worldCoordinates,
-        strength,
+        strengthFraction,
         mGameParameters);
 }
 

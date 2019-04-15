@@ -214,24 +214,24 @@ void SmashTool::ApplyTool(
     std::chrono::microseconds const & cumulatedTime,
     InputState const & inputState)
 {
-    // Calculate radius multiplier
-    // 0-500ms      = 1.0
+    // Calculate radius fraction
+    // 0-500ms      = 0.1
     // ...
-    // 5000ms-+INF = 10.0
+    // 5000ms-+INF = 1.0
 
-    static constexpr float MaxMultiplier = 10.0f;
+    static constexpr float MinFraction = 0.1f;
 
     float millisecondsElapsed = static_cast<float>(
         std::chrono::duration_cast<std::chrono::milliseconds>(cumulatedTime).count());
-    float radiusMultiplier = 1.0f + (MaxMultiplier - 1.0f) * std::min(1.0f, millisecondsElapsed / 5000.0f);
+    float radiusFraction = MinFraction + (1.0f - MinFraction) * std::min(1.0f, millisecondsElapsed / 5000.0f);
 
     // Modulate down cursor
-    ModulateCursor(mDownCursors, radiusMultiplier, 1.0f, MaxMultiplier);
+    ModulateCursor(mDownCursors, radiusFraction);
 
     // Destroy
     mGameController->DestroyAt(
         inputState.MousePosition,
-        radiusMultiplier);
+        radiusFraction);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -284,28 +284,27 @@ void GrabTool::ApplyTool(
     InputState const & inputState)
 {
     // Calculate strength multiplier
-    // 0-500ms      = 1.0
-    // 5000ms-+INF = 20.0
+    // 0-500ms      = 0.1
+    // ...
+    // 5000ms-+INF = 1.0
 
-    static constexpr float MaxMultiplier = 20.0f;
+    static constexpr float MinFraction = 0.1f;
 
     float millisecondsElapsed = static_cast<float>(
         std::chrono::duration_cast<std::chrono::milliseconds>(cumulatedTime).count());
-    float strengthMultiplier = 1.0f + (MaxMultiplier - 1.0f) * std::min(1.0f, millisecondsElapsed / 5000.0f);
+    float strengthFraction = MinFraction + (1.0f - MinFraction) * std::min(1.0f, millisecondsElapsed / 5000.0f);
 
     // Modulate down cursor
     ModulateCursor(
         inputState.IsShiftKeyDown ? mDownMinusCursors : mDownPlusCursors,
-        strengthMultiplier,
-        1.0f,
-        MaxMultiplier);
+        strengthFraction);
 
     // Draw
     mGameController->DrawTo(
         inputState.MousePosition,
         inputState.IsShiftKeyDown
-            ? -strengthMultiplier
-            : strengthMultiplier);
+            ? -strengthFraction
+            : strengthFraction);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -334,28 +333,27 @@ void SwirlTool::ApplyTool(
     InputState const & inputState)
 {
     // Calculate strength multiplier
-    // 0-500ms      = 1.0
-    // 5000ms-+INF = 20.0
+    // 0-500ms      = 0.1
+    // ...
+    // 5000ms-+INF = 1.0
 
-    static constexpr float MaxMultiplier = 20.0f;
+    static constexpr float MinFraction = 0.1f;
 
     float millisecondsElapsed = static_cast<float>(
         std::chrono::duration_cast<std::chrono::milliseconds>(cumulatedTime).count());
-    float strengthMultiplier = 1.0f + (MaxMultiplier - 1.0f) * std::min(1.0f, millisecondsElapsed / 5000.0f);
+    float strengthFraction = MinFraction + (1.0f - MinFraction) * std::min(1.0f, millisecondsElapsed / 5000.0f);
 
     // Modulate down cursor
     ModulateCursor(
         inputState.IsShiftKeyDown ? mDownMinusCursors : mDownPlusCursors,
-        strengthMultiplier,
-        1.0f,
-        MaxMultiplier);
+        strengthFraction);
 
     // Draw
     mGameController->SwirlAt(
         inputState.MousePosition,
         inputState.IsShiftKeyDown
-            ? -strengthMultiplier
-            : strengthMultiplier);
+            ? -strengthFraction
+            : strengthFraction);
 }
 
 ////////////////////////////////////////////////////////////////////////

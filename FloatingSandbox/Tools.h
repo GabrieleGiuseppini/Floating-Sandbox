@@ -221,15 +221,13 @@ protected:
 
     void ModulateCursor(
         std::vector<std::unique_ptr<wxCursor>> const & cursors,
-        float strength,
-        float minStrength,
-        float maxStrength)
+        float strength)
     {
         // Calculate cursor index (cursor 0 is the base, we don't use it here)
         size_t const numberOfCursors = (cursors.size() - 1);
         size_t cursorIndex = 1u + static_cast<size_t>(
             floorf(
-                (strength - minStrength) / (maxStrength - minStrength) * static_cast<float>(numberOfCursors - 1)));
+                strength * static_cast<float>(numberOfCursors - 1)));
 
         // Set cursor
         mCurrentCursor = cursors[cursorIndex].get();

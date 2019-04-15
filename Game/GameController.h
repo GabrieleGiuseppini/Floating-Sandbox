@@ -78,11 +78,11 @@ public:
     void MoveAllBy(ShipId shipId, vec2f const & screenOffset);
     void RotateBy(ElementId elementId, float screenDeltaY, vec2f const & screenCenter);
     void RotateAllBy(ShipId shipId, float screenDeltaY, vec2f const & screenCenter);
-    void DestroyAt(vec2f const & screenCoordinates, float radiusMultiplier);
+    void DestroyAt(vec2f const & screenCoordinates, float radiusFraction);
     void RepairAt(vec2f const & screenCoordinates, float radiusMultiplier);
     void SawThrough(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates);
-    void DrawTo(vec2f const & screenCoordinates, float strengthMultiplier);
-    void SwirlAt(vec2f const & screenCoordinates, float strengthMultiplier);
+    void DrawTo(vec2f const & screenCoordinates, float strengthFraction);
+    void SwirlAt(vec2f const & screenCoordinates, float strengthFraction);
     void TogglePinAt(vec2f const & screenCoordinates);
     bool InjectBubblesAt(vec2f const & screenCoordinates);
     bool FloodAt(vec2f const & screenCoordinates, float waterQuantityMultiplier);

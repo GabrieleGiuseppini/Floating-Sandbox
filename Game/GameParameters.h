@@ -224,10 +224,14 @@ struct GameParameters
     float ToolSearchRadius;
 
     float DestroyRadius;
-    static constexpr float MinDestroyRadius = 0.1f;
-    static constexpr float MaxDestroyRadius = 10.0f;
+    static constexpr float MinDestroyRadius = 5.0f;
+    static constexpr float MaxDestroyRadius = 100.0f;
 
     float RepairRadius;
+
+    static constexpr float DrawForce = 40000.0f;
+
+    static constexpr float SwirlForce = 600.0f;
 
     float BombBlastRadius;
     static constexpr float MinBombBlastRadius = 0.1f;
