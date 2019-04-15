@@ -223,19 +223,7 @@ Render:
 			+ Test look'n'feel
 		+ Also dry points should rot (*)
 		+ Pick tool (*)
-
-		= Sign with certificate
-			+ https://blogs.msdn.microsoft.com/ieinternals/2011/03/22/everything-you-need-to-know-about-authenticode-code-signing/
-			+ https://www.thegeekstuff.com/2010/03/microsoft-digital-signatures/
-			- Buy certificate
-				- https://comodosslstore.com/code-signing/microsoft-authenticode
-				- https://comodosslstore.com/codesigning.aspx
-				- Print receipt and store in Taxes 2019
-			- Sign exe
-			- Sign MSI
-				- https://stackoverflow.com/questions/17589754/wix-installer-msi-publisher-unknown/17591603		
-
-		= Add new materials: 
+		+ Add new materials: 
 			+ Rubber
 				+ SoundType=Rubber
 				+ Hull, Non-hull
@@ -257,10 +245,33 @@ Render:
 					+ 3 colors each - LEGO colors
 				+ Make ball at "New Materials Balls"
 			+ Redo template
-			- Send to Michael
+			+ Send to Michael
 			+ Add to changes.txt
 
-		- Do perf analysis for many air bubbles
+
+		= Sign with certificate
+			+ https://blogs.msdn.microsoft.com/ieinternals/2011/03/22/everything-you-need-to-know-about-authenticode-code-signing/
+			+ https://www.thegeekstuff.com/2010/03/microsoft-digital-signatures/
+			- Buy certificate
+				- https://comodosslstore.com/code-signing/microsoft-authenticode
+				- https://comodosslstore.com/codesigning.aspx
+				- Print receipt and store in Taxes 2019
+			- Sign exe
+			- Sign MSI
+				- https://stackoverflow.com/questions/17589754/wix-installer-msi-publisher-unknown/17591603		
+
+		= Do perf analysis for many air bubbles
+			+ ShipRenderContext::UploadGenericTexture: vector::emplace - 3.5
+			+ ShipRenderContext::RenderGenericTextures: memcpy - 1.0
+			+ Points::UpdateEphemeralParticles: sin - 1.0
+			= Try dedicated upload
+				+ Take FPS pre: 20, UR=113-132 @ 4K GenTex's, 62 planes
+				- Do
+				- Take FPS after:
+
+		- Probabilistic DestroyAt
+			- Probability is zero at absolute max == MaxRadius*UltraViolentMode
+				- Make RadiusMultiplier between [foo, 1.0] first
 
 		- Try to show tip window after first Render
 			- What if we check if tip has ben checked or not at first game timer?

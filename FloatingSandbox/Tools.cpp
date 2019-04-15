@@ -216,6 +216,7 @@ void SmashTool::ApplyTool(
 {
     // Calculate radius multiplier
     // 0-500ms      = 1.0
+    // ...
     // 5000ms-+INF = 10.0
 
     static constexpr float MaxMultiplier = 10.0f;
