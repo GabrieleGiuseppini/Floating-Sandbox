@@ -96,6 +96,7 @@ MainFrame::MainFrame(wxApp * mainApp)
     , mUIPreferences()
     , mToolController()
     , mHasWindowBeenShown(false)
+    , mHasStartupTipBeenChecked(false)
     , mCurrentShipTitles()
     , mCurrentRCBombCount(0u)
     , mCurrentAntiMatterBombCount(0u)
@@ -669,44 +670,20 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
     UpdateFrameTitle();
 
-
-    //
-    // Post finalization separately
-    //
-
-    assert(!!mPostInitializeTimer);
-
-    Connect(ID_POSTIINITIALIZE_TIMER, wxEVT_TIMER, (wxObjectEventFunction)&MainFrame::OnPostInitializeTrigger2);
-    mPostInitializeTimer->Start(0, true);
-}
-
-void MainFrame::OnPostInitializeTrigger2(wxTimerEvent & /*event*/)
-{
-    //
-    // Show startup tip
-    //
-
-    if (mUIPreferences->GetShowStartupTip())
-    {
-        StartupTipDialog startupTipDialog(
-            this,
-            mUIPreferences,
-            *mResourceLoader);
-
-        startupTipDialog.ShowModal();
-    }
-
     //
     // Start timers
     //
 
-    StartTimers();
+    PostGameStepTimer();
+
+    StartLowFrequencyTimer();
 }
 
 void MainFrame::OnMainFrameClose(wxCloseEvent & /*event*/)
 {
     if (!!mGameTimer)
         mGameTimer->Stop();
+
     if (!!mLowFrequencyTimer)
         mLowFrequencyTimer->Stop();
 
@@ -726,7 +703,7 @@ void MainFrame::OnPaint(wxPaintEvent & event)
     {
         mGameController->Render();
 
-        PostGameRender();
+        AfterGameRender();
     }
 
     event.Skip();
@@ -779,9 +756,12 @@ void MainFrame::OnKeyDown(wxKeyEvent & event)
 
 void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
 {
-    // On Windows, the minimal timer resolution is ~15ms, so we'd better
-    // post the timer event as early as possible
-    mGameTimer->Start(0, true);
+    if (mHasStartupTipBeenChecked)
+    {
+        // We've already checked the startup tip...
+        // ...so we'd better post the timer event as early as possible
+        PostGameStepTimer();
+    }
 
     // Update SHIFT key state
     if (wxGetKeyState(WXK_SHIFT))
@@ -801,7 +781,11 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
         }
     }
 
+
+    //
     // Run a game step
+    //
+
     try
     {
         // Update tool controller
@@ -824,13 +808,34 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
         assert(!!mSoundController);
         mSoundController->Update();
 
-        PostGameRender();
+        // Do after-render chores
+        AfterGameRender();
     }
     catch (std::exception const & e)
     {
         OnError("Error during game step: " + std::string(e.what()), true);
 
         return;
+    }
+
+    if (!mHasStartupTipBeenChecked)
+    {
+        // Show startup tip - unless user has decided not to
+        if (mUIPreferences->GetShowStartupTip())
+        {
+            StartupTipDialog startupTipDialog(
+                this,
+                mUIPreferences,
+                *mResourceLoader);
+
+            startupTipDialog.ShowModal();
+        }
+
+        // Post next game step now
+        PostGameStepTimer();
+
+        // Don't check for startup tips anymore
+        mHasStartupTipBeenChecked = true;
     }
 }
 
@@ -1467,13 +1472,20 @@ void MainFrame::OnError(
     }
     else
     {
-        // Restart timers
-        StartTimers();
+        // Restart game
+        PostGameStepTimer();
+        StartLowFrequencyTimer();
     }
 }
 
-void MainFrame::StartTimers()
+void MainFrame::PostGameStepTimer()
 {
+    // On Windows the timer resolution is 15.something ms,
+    // so we use a delay of zero to shoot for a maximum of ~64 frames/sec
     mGameTimer->Start(0, true);
+}
+
+void MainFrame::StartLowFrequencyTimer()
+{
     mLowFrequencyTimer->Start(1000, false);
 }

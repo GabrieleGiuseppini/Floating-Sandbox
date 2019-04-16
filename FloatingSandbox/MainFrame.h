@@ -111,7 +111,6 @@ private:
 
     // App
     void OnPostInitializeTrigger(wxTimerEvent & event);
-    void OnPostInitializeTrigger2(wxTimerEvent & event);
     void OnMainFrameClose(wxCloseEvent & event);
     void OnQuit(wxCommandEvent & event);
     void OnPaint(wxPaintEvent & event);
@@ -238,7 +237,7 @@ private:
 
 private:
 
-    inline void PostGameRender()
+    inline void AfterGameRender()
     {
         if (!mHasWindowBeenShown)
         {
@@ -252,11 +251,16 @@ private:
     }
 
     void ResetState();
+
     void UpdateFrameTitle();
+
     void OnError(
         std::string const & message,
         bool die);
-    void StartTimers();
+
+    void PostGameStepTimer();
+
+    void StartLowFrequencyTimer();
 
 private:
 
@@ -278,6 +282,7 @@ private:
     //
 
     bool mHasWindowBeenShown;
+    bool mHasStartupTipBeenChecked;
     std::vector<std::string> mCurrentShipTitles;
     size_t mCurrentRCBombCount;
     size_t mCurrentAntiMatterBombCount;

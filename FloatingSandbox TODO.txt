@@ -252,6 +252,17 @@ Render:
 			+ Cleanup:
 				+ Also do fraction at other continuous tools
 				+ Remove 1.0 at ModulateCursor
+		+ Try to show tip window after first Render
+			+ Undo hacky test changes
+			+ mHasStartupTipBeenChecked = false
+			+ OnGameStep:
+				+ at beginning: only schedule timer if mHasStartupTipBeenChecked
+				+ at end: 
+					+ if !mHasStartupTipBeenChecked:
+						+ Show startup tip dialog
+						+ schedule timer
+						+ mHasStartupTipBeenChecked = true
+			+ Check refresh when moving tip window
 
 
 		= Sign with certificate
@@ -272,12 +283,15 @@ Render:
 			= Try dedicated upload
 				+ Take FPS pre: 20, UR=113-132 @ 4K GenTex's, 62 planes
 				- Do
+					- Also redo clouds=0 fix via MappedBuffer resiliency to map(0) 
+						- And resiliency to unmap when not mapped
 				- Take FPS after:
 
-		- Try to show tip window after first Render
-			- What if we check if tip has ben checked or not at first game timer?
-				- But before we reschedule it
-			- Nuke Low-Frequency update
+		- About box: 
+			- Link to floatingsandbox.com
+			- Links menu:
+				- Link to floatingsandbox.com
+			- Maximord is webmaster
 
 		- Shallow Water Equations (*)
 
