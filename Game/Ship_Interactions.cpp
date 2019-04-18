@@ -407,7 +407,7 @@ void Ship::RepairAt(
                     //
                     // Note: a higher tolerance here causes springs to...spring into life
                     // already stretched or compressed, generating an undesirable force impulse
-                    float constexpr DisplacementTolerance = 0.04f;
+                    float constexpr DisplacementTolerance = 0.1f;
 
                     // Check whether we are still further away than our tolerance,
                     // and whether this point is free to move
@@ -423,7 +423,7 @@ void Ship::RepairAt(
                         // Fraction of the movement that we want to do in this step
                         // (which is once per SimulationStep)
                         //
-                        // A higher value destroys the other point's springs too quickly;
+                        // A higher value destroys the other point's (which might be already repaired) springs too quickly;
                         // a lower value makes the other point follow a moving point forever
                         float constexpr MovementFraction =
                             4.0f // We want a point to cover the whole distance in 1/4th of a simulated second
