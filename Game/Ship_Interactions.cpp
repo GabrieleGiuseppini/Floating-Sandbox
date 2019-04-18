@@ -406,11 +406,12 @@ void Ship::RepairAt(
                     // Tolerance to distance
                     //
                     // Note: a higher tolerance here causes springs to...spring into life
-                    // already stretches or compressed, generating an undesirable force impuls
-                    float constexpr DisplacementTolerance = 0.025f;
+                    // already stretched or compressed, generating an undesirable force impulse
+                    float constexpr DisplacementTolerance = 0.04f;
 
                     // Check whether we are still further away than our tolerance,
                     // and whether this point is free to move
+                    bool hasOtherEndpointPointBeenMoved = false;
                     if (displacementMagnitude > DisplacementTolerance
                         && !mPoints.IsPinned(fcs.OtherEndpointIndex))
                     {
@@ -462,6 +463,9 @@ void Ship::RepairAt(
                             * sqrtf(abs(movementMagnitude))
                             / GameParameters::GameParameters::SimulationStepTimeDuration<float>
                             * 0.5f;
+
+                        // Remember that we've acted on the other endpoint
+                        hasOtherEndpointPointBeenMoved = true;
                     }
 
                     // Check whether we are now close enough
@@ -483,6 +487,19 @@ void Ship::RepairAt(
 
                         // Brake the other endpoint
                         mPoints.SetVelocity(fcs.OtherEndpointIndex, vec2f::zero());
+
+                        // Remember that we've acted on the other endpoint
+                        hasOtherEndpointPointBeenMoved = true;
+                    }
+
+
+                    //
+                    // Dry the ohter endpoint, if we've messed with it
+                    //
+
+                    if (hasOtherEndpointPointBeenMoved)
+                    {
+                        mPoints.GetWater(fcs.OtherEndpointIndex) /= 2.0f;
                     }
                 }
             }
