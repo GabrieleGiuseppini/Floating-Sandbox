@@ -27,7 +27,7 @@ StartupTipDialog::StartupTipDialog(
             wxID_ANY,
             wxDefaultPosition,
             wxSize(480, 240),
-            wxHW_SCROLLBAR_AUTO);
+            wxHW_SCROLLBAR_AUTO | wxHW_NO_SELECTION);
 
         html->SetBorders(0);
         html->LoadPage(resourceLoader.GetStartupTipFilepath().string());

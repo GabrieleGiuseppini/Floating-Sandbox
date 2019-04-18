@@ -20,11 +20,11 @@ HelpDialog::HelpDialog(
     wxBoxSizer * topSizer = new wxBoxSizer(wxVERTICAL);
 
     wxHtmlWindow *html = new wxHtmlWindow(
-        this, 
-        wxID_ANY, 
-        wxDefaultPosition, 
-        wxSize(640, 800), 
-        wxHW_SCROLLBAR_AUTO);
+        this,
+        wxID_ANY,
+        wxDefaultPosition,
+        wxSize(640, 800),
+        wxHW_SCROLLBAR_AUTO | wxHW_NO_SELECTION);
 
     html->SetBorders(0);
     html->LoadPage(resourceLoader.GetHelpFilepath().string());
@@ -52,4 +52,3 @@ HelpDialog::HelpDialog(
 HelpDialog::~HelpDialog()
 {
 }
-

@@ -281,22 +281,24 @@ Render:
 			+ ShipRenderContext::RenderGenericTextures: memcpy - 1.0
 			+ Points::UpdateEphemeralParticles: sin - 1.0
 			= Try dedicated upload
-				+ Take FPS pre: 20, UR=113-132 @ 4K GenTex's, 62 planes
+				+ Take FPS pre: 20, UR=113-132 @ 4K GenTex's, 62/300 planes
 				- Do
-					- Also redo clouds=0 fix via MappedBuffer resiliency to map(0) 
-						- And resiliency to unmap when not mapped
 				- Take FPS after:
+			- changes.txt
 
-		- About box: 
-			- Link to floatingsandbox.com
-			- Links menu:
-				- Link to floatingsandbox.com
-			- Maximord is webmaster
+		- Dry points when repaired
+			- Set moved points' water to min(max(ext_pressure, 0), point.GetWater())
 
 		- Shallow Water Equations (*)
 
 		- Automatic updates checker via file on floatingsandbox.com
 			- SFML::Network::Http
+
+		- Do air bubbles sounds, very low volume
+			- At creation and at expiry
+			- New events at IGameEventHandler
+				- Dispatcher aggregates with counter
+				- Ship takes shared_ptr<Dispatcher> now
 
 		- Interior layer (*)
 
@@ -339,6 +341,7 @@ Render:
 		# SweetStrawberryBoy: TopHatLemons
 	- New ships:
 		- Re-take all Mike's .shp files for Shipbucket.com credits
+			- And also take electrical of RMS Titanic with Lights
 		- To adjust:
 			- SS France (Awesomeyorkie):
 				- Ropes
@@ -820,6 +823,11 @@ Render:
 		- Flamethrower tool:
 			- Need new layer - InteractionLayer - to do flamethrower's flames
 				- Owned, like text layer, by GameController
+	
+	- Air buoyancy (*)
+		- And new material: blimp body, representing a cube of thin cloth filled with warm air
+			- Might also play with heat
+			- Then tell Michael, who could change blimp
 
 	- Dynamite that may be thrown to the ship
 
@@ -863,7 +871,7 @@ Render:
 			- Recognized by ship builder via "particle_emitter_properties" sub-object
 		- New material: smoke
 			- Lighter than air
-		- UpdatePointForces: if any point is above water, apply air buoyancy
+		- UpdatePointForces: if any point is above water, apply air buoyancy (*)
 			- i.e. always end up applying one buoyancy, either water or air
 		- IEphemeralParticleEmitter implementation: SmokeEphemeralParticleEmitter
 		- Research particle motion - inject random walk in smoke and bubbles
@@ -1134,6 +1142,10 @@ Render:
 				- If "Interior" -> Interior OR Structure
 
 - UI:
+	- floatingsandbox.com: 
+		- About box (wxHyperlinkCtrl)
+		- Links menu
+
 	- SettingsDialog: save settings, defaults, and real-time changes (*)
 		- Spec: 
 			- Game starts always with default settings; user has the ability though to load named settings
