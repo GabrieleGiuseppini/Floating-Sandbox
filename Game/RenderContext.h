@@ -853,8 +853,26 @@ public:
     }
 
     //
-    // Generic textures
+    // Air bubbles and generic textures
     //
+
+    inline void UploadShipAirBubble(
+        ShipId shipId,
+        PlaneId planeId,
+        TextureFrameId const & textureFrameId,
+        vec2f const & position,
+        float scale,
+        float alpha)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        mShips[shipId]->UploadAirBubble(
+            planeId,
+            textureFrameId,
+            position,
+            scale,
+            alpha);
+    }
 
     inline void UploadShipGenericTextureRenderSpecification(
         ShipId shipId,

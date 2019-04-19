@@ -37,8 +37,11 @@ public:
     {
         assert(nullptr == mMappedBuffer);
 
-        mMappedBuffer = glMapBuffer(TTarget, GL_WRITE_ONLY);
-        CheckOpenGLError();
+        if (size != 0)
+        {
+            mMappedBuffer = glMapBuffer(TTarget, GL_WRITE_ONLY);
+            CheckOpenGLError();
+        }
 
         mSize = 0u;
         mAllocatedSize = size;
@@ -46,10 +49,12 @@ public:
 
     void unmap()
     {
-        assert(nullptr != mMappedBuffer);
-
-        glUnmapBuffer(TTarget);
-        mMappedBuffer = nullptr;
+        // Might not be mapped in case the size was zero
+        if (nullptr != mMappedBuffer)
+        {
+            glUnmapBuffer(TTarget);
+            mMappedBuffer = nullptr;
+        }
 
         // Leave size and allocated size as they are, as this
         // buffer may still be asked for its size (regardless

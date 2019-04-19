@@ -630,13 +630,12 @@ void Points::UploadEphemeralParticles(
         {
             case EphemeralType::AirBubble:
             {
-                renderContext.UploadShipGenericTextureRenderSpecification(
+                renderContext.UploadShipAirBubble(
                     shipId,
                     GetPlaneId(pointIndex),
                     TextureFrameId(TextureGroupType::AirBubble, mEphemeralStateBuffer[pointIndex].AirBubble.FrameIndex),
                     GetPosition(pointIndex),
                     mEphemeralStateBuffer[pointIndex].AirBubble.InitialSize, // Scale
-                    0.0f, // Angle
                     std::min(1.0f, mEphemeralStateBuffer[pointIndex].AirBubble.CurrentDeltaY / 4.0f)); // Alpha
 
                 break;

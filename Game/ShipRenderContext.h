@@ -11,6 +11,7 @@
 #include "ViewModel.h"
 
 #include <GameOpenGL/GameOpenGL.h>
+#include <GameOpenGL/GameOpenGLMappedBuffer.h>
 #include <GameOpenGL/ShaderManager.h>
 
 #include <GameCore/BoundedVector.h>
@@ -228,8 +229,25 @@ public:
     void UploadElementStressedSpringsEnd();
 
     //
-    // Generic textures
+    // Air bubbles and generic textures
     //
+
+    inline void UploadAirBubble(
+        PlaneId planeId,
+        TextureFrameId const & textureFrameId,
+        vec2f const & position,
+        float scale,
+        float alpha)
+    {
+        StoreGenericTextureRenderSpecification(
+            planeId,
+            textureFrameId,
+            position,
+            scale,
+            0.0f, // angle
+            alpha,
+            mAirBubbleVertexBuffer);
+    }
 
     inline void UploadGenericTextureRenderSpecification(
         PlaneId planeId,
@@ -279,6 +297,61 @@ public:
         // Get this plane's vertex buffer
         auto & vertexBuffer = mGenericTexturePlaneVertexBuffers[planeIndex].vertexBuffer;
 
+        // Populate the texture quad
+        StoreGenericTextureRenderSpecification(
+            planeId,
+            textureFrameId,
+            position,
+            scale,
+            angle,
+            alpha,
+            vertexBuffer);
+
+        // Update total count of quads
+        ++mGenericTextureTotalPlaneQuadCount;
+    }
+
+    //
+    // Ephemeral point elements
+    //
+
+    void UploadElementEphemeralPointsStart();
+
+    inline void UploadElementEphemeralPoint(
+        int pointIndex)
+    {
+        mEphemeralPointElementBuffer.emplace_back(pointIndex);
+    }
+
+    void UploadElementEphemeralPointsEnd();
+
+
+    //
+    // Vectors
+    //
+
+    void UploadVectors(
+        size_t count,
+        vec2f const * position,
+        float const * planeId,
+        vec2f const * vector,
+        float lengthAdjustment,
+        vec4f const & color);
+
+    void RenderEnd();
+
+private:
+
+    template<typename TVertexBuffer>
+    inline void StoreGenericTextureRenderSpecification(
+        PlaneId planeId,
+        TextureFrameId const & textureFrameId,
+        vec2f const & position,
+        float scale,
+        float angle,
+        float alpha,
+        TVertexBuffer & vertexBuffer)
+    {
         //
         // Populate the texture quad
         //
@@ -364,39 +437,7 @@ public:
             angle,
             alpha,
             lightSensitivity);
-
-        // Update total count of quads
-        ++mGenericTextureQuadCount;
     }
-
-    //
-    // Ephemeral point elements
-    //
-
-    void UploadElementEphemeralPointsStart();
-
-    inline void UploadElementEphemeralPoint(
-        int pointIndex)
-    {
-        mEphemeralPointElementBuffer.emplace_back(pointIndex);
-    }
-
-    void UploadElementEphemeralPointsEnd();
-
-
-    //
-    // Vectors
-    //
-
-    void UploadVectors(
-        size_t count,
-        vec2f const * position,
-        float const * planeId,
-        vec2f const * vector,
-        float lengthAdjustment,
-        vec4f const & color);
-
-    void RenderEnd();
 
 private:
 
@@ -507,10 +548,11 @@ private:
     std::vector<LineElement> mStressedSpringElementBuffer;
     GameOpenGLVBO mStressedSpringElementVBO;
 
+    GameOpenGLMappedBuffer<GenericTextureVertex, GL_ARRAY_BUFFER> mAirBubbleVertexBuffer;
     std::vector<GenericTexturePlaneData> mGenericTexturePlaneVertexBuffers;
-    size_t mGenericTextureQuadCount;
+    size_t mGenericTextureTotalPlaneQuadCount;
     GameOpenGLVBO mGenericTextureVBO;
-    size_t mGenericTextureVBOAllocatedQuadCount;
+    size_t mGenericTextureVBOAllocatedVertexCount;
 
     std::vector<vec3f> mVectorArrowVertexBuffer;
     GameOpenGLVBO mVectorArrowVBO;

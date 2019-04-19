@@ -213,7 +213,6 @@ Render:
 			+ Do specialization outside of class
 			+ Set /permissive- for all projects
 		+ Take Mathias' pull request
-		+ Merge to master
 		+ Fix github's clouds bug
 		+ Un-sinking (*)
 		+ Floatsam: see if using (waterY + 0.1) at UpdateWaterIntake helps
@@ -263,6 +262,21 @@ Render:
 						+ schedule timer
 						+ mHasStartupTipBeenChecked = true
 			+ Check refresh when moving tip window
+		+ Dry points when repaired
+			+ Halve moved points' water 
+		+ Do perf analysis for many air bubbles
+			+ ShipRenderContext::UploadGenericTexture: vector::emplace - 3.5
+			+ ShipRenderContext::RenderGenericTextures: memcpy - 1.0
+			+ Points::UpdateEphemeralParticles: sin - 1.0
+			+ Try dedicated upload
+				+ Take FPS pre: 20, UR=113-132 @ 4K GenTex's, 62/300 planes
+				+ Do
+					+ Use same VBO, two draw calls
+						+ VBO first used for AirBubbles, size=MaxEphParticles
+						+ Then re-allocated for GenTex's
+							+ Allocate only if necessary, i.e. if new size > last (MaxEphParticles)
+				+ Take FPS after: 22.3, UR=133
+			+ changes.txt
 
 
 		= Sign with certificate
@@ -276,23 +290,25 @@ Render:
 			- Sign MSI
 				- https://stackoverflow.com/questions/17589754/wix-installer-msi-publisher-unknown/17591603		
 
-		= Do perf analysis for many air bubbles
-			+ ShipRenderContext::UploadGenericTexture: vector::emplace - 3.5
-			+ ShipRenderContext::RenderGenericTextures: memcpy - 1.0
-			+ Points::UpdateEphemeralParticles: sin - 1.0
-			= Try dedicated upload
-				+ Take FPS pre: 20, UR=113-132 @ 4K GenTex's, 62/300 planes
-				- Do
-				- Take FPS after:
-			- changes.txt
-
-		- Dry points when repaired
-			- Set moved points' water to min(max(ext_pressure, 0), point.GetWater())
-
 		- Shallow Water Equations (*)
 
-		- Automatic updates checker via file on floatingsandbox.com
-			- SFML::Network::Http
+		- See if installer for current user removes need for admin consent
+
+		- Automatic updates checker via file placed on floatingsandbox.com
+			- UIPreferences::CheckForUpdatedAtStartup
+			- class UpdateChecker:
+				- Wraps separate thread and conveys result via custom event
+				- Takes wxEventHandler in cctor
+				- Uses SFML::Network::Http
+			- At startup:
+				- MainFrame starts UpdateChecker at end of PostInitialize
+				- On event, displays popup
+					- See if can use CheckForUpdatesDialog (eventually becomes "UpdatesDialog")
+			- Help->Check for Updates
+				- CheckForUpdatesDialog (Modal Dialog)
+				- cctor starts UpdateChecker 
+				- Timer does progress (calling wxGauge::Pulse)
+				- On event, displays message
 
 		- Do air bubbles sounds, very low volume
 			- At creation and at expiry
@@ -685,6 +701,8 @@ Render:
 		- Test 2: also instance others
 		- At end:
 			- Try with light at fragment (Phong)
+
+	- Air bubbles with instanced drawing
 
 	- Try using GL_SHORT for Ship texture coordinates
 		- Passing NORMALIZE and 3 components to glVertexAttribPointer
