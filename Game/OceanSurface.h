@@ -68,6 +68,13 @@ public:
 
 private:
 
+    void AdvectHeightField();
+    void AdvectVelocityField();
+    void UpdateHeightField();
+    void UpdateVelocityField();
+
+private:
+
     // What we store for each sample
     struct Sample
     {
@@ -85,17 +92,19 @@ private:
     // Shallow water equations
     //
 
-    // Height arrays (dual-buffered)
-    std::unique_ptr<float> mHeight1Buffer;
-    std::unique_ptr<float> mHeight2Buffer;
-    float * mCurrentHeightBuffer;
-    float * mNextHeightBuffer;
+    // Height field (dual-buffered)
+    // - Height values are at the middle of the staggered grid cells
+    std::unique_ptr<float> mHeightFieldBuffer1;
+    std::unique_ptr<float> mHeightFieldBuffer2;
+    float * mCurrentHeightField;
+    float * mNextHeightField;
 
-    // Velocity arrays (dual-buffered)
-    std::unique_ptr<float> mVelocity1Buffer;
-    std::unique_ptr<float> mVelocity2Buffer;
-    float * mCurrentVelocityBuffer;
-    float * mNextVelocityBuffer;
+    // Velocity field (dual-buffered)
+    // - Velocity values are at the edges of the staggered grid cells
+    std::unique_ptr<float> mVelocityFieldBuffer1;
+    std::unique_ptr<float> mVelocityFieldBuffer2;
+    float * mCurrentVelocityField;
+    float * mNextVelocityField;
 };
 
 }
