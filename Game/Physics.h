@@ -11,13 +11,13 @@ namespace Physics
     class Clouds;
     class ElectricalElements;
     class OceanFloor;
+    class OceanSurface;
     class PinnedPoints;
 	class Points;
 	class Ship;
 	class Springs;
     class Stars;
 	class Triangles;
-    class WaterSurface;
     class Wind;
 	class World;
 }
@@ -32,7 +32,7 @@ namespace Physics
 #include "Clouds.h"
 #include "Stars.h"
 #include "OceanFloor.h"
-#include "WaterSurface.h"
+#include "OceanSurface.h"
 #include "Wind.h"
 #include "World.h"
 

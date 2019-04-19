@@ -466,7 +466,7 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
     for (auto pointIndex : mPoints)
     {
         // Get height of water at this point
-        float const waterHeightAtThisPoint = mParentWorld.GetWaterHeightAt(mPoints.GetPosition(pointIndex).x);
+        float const waterHeightAtThisPoint = mParentWorld.GetOceanSurfaceHeightAt(mPoints.GetPosition(pointIndex).x);
 
         //
         // 1. Add gravity and buoyancy
@@ -808,7 +808,7 @@ void Ship::UpdateWaterInflow(
             //
 
             float const externalWaterHeight = std::max(
-                mParentWorld.GetWaterHeightAt(mPoints.GetPosition(pointIndex).x)
+                mParentWorld.GetOceanSurfaceHeightAt(mPoints.GetPosition(pointIndex).x)
                     + 0.1f // Magic number to force flotsam to take some water in and eventually sink
                     - mPoints.GetPosition(pointIndex).y,
                 0.0f);

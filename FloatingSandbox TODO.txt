@@ -290,7 +290,7 @@ Render:
 			- Sign MSI
 				- https://stackoverflow.com/questions/17589754/wix-installer-msi-publisher-unknown/17591603		
 
-		- Shallow Water Equations (*)
+		= Shallow Water Equations (*)
 
 		- See if installer for current user removes need for admin consent
 
@@ -796,8 +796,24 @@ Render:
 
 - Dynamics:
 
-	- Make waves with Shallow Water Equations (*)
-		- Implement
+	= Make waves with Shallow Water Equations (*)
+		= Implement
+			+ Rename to OceanSurface
+			= Step 1: basic SWE with reflecting boundaries
+				+ cctor: wave initialization
+				= Update:
+					- SWE update -> next buffers
+					+ NextHeightBuffer + Wind gust sines -> mSamples
+					+ Swap buffers
+			- Step 2: perturbation tool
+				- OceanSurface::AdjustTo
+					- Like OceanFloor
+				- Cursor
+				- Tool sound
+			- Misc:
+				- Wave sound:
+					- At high wave collapse; how?
+
 		- Follow-ups:
 			- Rogue waves/tsunami
 			- Manual tsunami

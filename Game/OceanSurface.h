@@ -15,11 +15,14 @@
 namespace Physics
 {
 
-class WaterSurface
+class OceanSurface
 {
 public:
 
-    WaterSurface();
+    OceanSurface(
+        float currentSimulationTime,
+        Wind const & wind,
+        GameParameters const & gameParameters);
 
     void Update(
         float currentSimulationTime,
@@ -32,7 +35,7 @@ public:
 
 public:
 
-    float GetWaterHeightAt(float x) const
+    float GetHeightAt(float x) const
     {
         //
         // Find sample index and interpolate in-between that sample and the next
@@ -54,10 +57,7 @@ public:
             + mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
     }
 
-private:
-
-    // Smoothing of wind incisiveness
-    RunningAverage<15> mWindIncisivenessRunningAverage;
+public:
 
     // The number of samples for the entire world width;
     // a higher value means more resolution at the expense of Update() and of cache misses
@@ -66,15 +66,36 @@ private:
     // The x step of the samples
     static constexpr float Dx = GameParameters::MaxWorldWidth / static_cast<float>(SamplesCount);
 
+private:
+
     // What we store for each sample
     struct Sample
     {
-        float SampleValue;
-        float SampleValuePlusOneMinusSampleValue;
+        float SampleValue; // Value of this sample
+        float SampleValuePlusOneMinusSampleValue; // Delta between next sample and this sample
     };
 
     // The samples (plus 1 to account for x==MaxWorldWidth)
     std::unique_ptr<Sample[]> mSamples;
+
+    // Smoothing of wind incisiveness
+    RunningAverage<15> mWindIncisivenessRunningAverage;
+
+    //
+    // Shallow water equations
+    //
+
+    // Height arrays (dual-buffered)
+    std::unique_ptr<float> mHeight1Buffer;
+    std::unique_ptr<float> mHeight2Buffer;
+    float * mCurrentHeightBuffer;
+    float * mNextHeightBuffer;
+
+    // Velocity arrays (dual-buffered)
+    std::unique_ptr<float> mVelocity1Buffer;
+    std::unique_ptr<float> mVelocity2Buffer;
+    float * mCurrentVelocityBuffer;
+    float * mNextVelocityBuffer;
 };
 
 }

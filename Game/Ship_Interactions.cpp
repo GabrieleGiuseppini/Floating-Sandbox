@@ -5,7 +5,6 @@
  ***************************************************************************************/
 #include "Physics.h"
 
-
 #include <GameCore/AABB.h>
 #include <GameCore/GameDebug.h>
 #include <GameCore/GameMath.h>
@@ -655,7 +654,7 @@ bool Ship::InjectBubblesAt(
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
-    if (targetPos.y < mParentWorld.GetWaterHeightAt(targetPos.x))
+    if (targetPos.y < mParentWorld.GetOceanSurfaceHeightAt(targetPos.x))
     {
         GenerateAirBubbles(
             targetPos,

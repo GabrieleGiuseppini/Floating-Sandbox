@@ -42,14 +42,14 @@ public:
 
     size_t GetShipPointCount(ShipId shipId) const;
 
-    inline float GetWaterHeightAt(float x) const
+    inline float GetOceanSurfaceHeightAt(float x) const
     {
-        return mWaterSurface.GetWaterHeightAt(x);
+        return mOceanSurface.GetHeightAt(x);
     }
 
     inline bool IsUnderwater(vec2f const & position) const
     {
-        return position.y < GetWaterHeightAt(position.x);
+        return position.y < GetOceanSurfaceHeightAt(position.x);
     }
 
     inline float GetOceanFloorHeightAt(float x) const
@@ -175,16 +175,16 @@ public:
 
 private:
 
+    // The current simulation time
+    float mCurrentSimulationTime;
+
     // Repository
     std::vector<std::unique_ptr<Ship>> mAllShips;
     Stars mStars;
-    Clouds mClouds;
-    WaterSurface mWaterSurface;
-    OceanFloor mOceanFloor;
     Wind mWind;
-
-    // The current simulation time
-    float mCurrentSimulationTime;
+    Clouds mClouds;
+    OceanSurface mOceanSurface;
+    OceanFloor mOceanFloor;
 
     // The game event handler
     std::shared_ptr<IGameEventHandler> mGameEventHandler;

@@ -18,20 +18,19 @@ World::World(
     std::shared_ptr<IGameEventHandler> gameEventHandler,
     GameParameters const & gameParameters,
     ResourceLoader & resourceLoader)
-    : mAllShips()
+    : mCurrentSimulationTime(0.0f)
+    , mAllShips()
     , mStars()
-    , mClouds()
-    , mWaterSurface()
-    , mOceanFloor(resourceLoader)
     , mWind(gameEventHandler)
-    , mCurrentSimulationTime(0.0f)
+    , mClouds()
+    , mOceanSurface(mCurrentSimulationTime, mWind, gameParameters)
+    , mOceanFloor(resourceLoader)
     , mGameEventHandler(std::move(gameEventHandler))
 {
     // Initialize world pieces
     mStars.Update(gameParameters);
     mWind.Update(gameParameters);
     mClouds.Update(mCurrentSimulationTime, gameParameters);
-    mWaterSurface.Update(mCurrentSimulationTime, mWind, gameParameters);
     mOceanFloor.Update(gameParameters);
 }
 
@@ -446,7 +445,7 @@ void World::Update(
     mStars.Update(gameParameters);
     mWind.Update(gameParameters);
     mClouds.Update(mCurrentSimulationTime, gameParameters);
-    mWaterSurface.Update(mCurrentSimulationTime, mWind, gameParameters);
+    mOceanSurface.Update(mCurrentSimulationTime, mWind, gameParameters);
     mOceanFloor.Update(gameParameters);
 
     // Update all ships
@@ -469,7 +468,7 @@ void World::Render(
     //
 
     mOceanFloor.Upload(gameParameters, renderContext);
-    mWaterSurface.Upload(gameParameters, renderContext);
+    mOceanSurface.Upload(gameParameters, renderContext);
 
 
     //

@@ -45,6 +45,8 @@ set  (PHYSICS_SOURCES
 	ImpactBomb.h
 	OceanFloor.cpp
 	OceanFloor.h
+	OceanSurface.cpp
+	OceanSurface.h
 	Physics.h
 	PinnedPoints.cpp
 	PinnedPoints.h
@@ -63,8 +65,6 @@ set  (PHYSICS_SOURCES
 	TimerBomb.h
 	Triangles.cpp
 	Triangles.h
-	WaterSurface.cpp
-	WaterSurface.h
 	Wind.cpp
 	Wind.h
 	World.cpp
