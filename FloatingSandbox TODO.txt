@@ -810,6 +810,10 @@ Render:
 					- Like OceanFloor
 				- Cursor
 				- Tool sound
+			- Step 3: wave genesys
+			- Optimizations:
+				- Two advections in one, so that we have a single loop
+				- Two field updates in one, so that we have a single loop
 			- Misc:
 				- Wave sound:
 					- At high wave collapse; how?

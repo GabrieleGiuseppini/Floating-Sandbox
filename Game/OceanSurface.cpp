@@ -296,6 +296,8 @@ void OceanSurface::Upload(
     renderContext.UploadOceanEnd();
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////
+
 void OceanSurface::AdvectHeightField()
 {
     //
@@ -372,12 +374,26 @@ void OceanSurface::AdvectVelocityField()
 
 void OceanSurface::UpdateHeightField()
 {
-    // TODOHERE
+    // Process all samples, except for boundary condition samples
+    for (size_t i = SWEBoundaryConditionsSamples; i < SWEBufferSize - SWEBoundaryConditionsSamples; ++i)
+    {
+        mNextHeightField[i] -=
+            mNextHeightField[i]
+            * (mNextVelocityField[i + 1] - mNextVelocityField[i]) / Dx
+            * GameParameters::SimulationStepTimeDuration<float>;
+    }
 }
 
 void OceanSurface::UpdateVelocityField()
 {
-    // TODOHERE
+    // Process all samples, except for boundary condition samples
+    for (size_t i = SWEBoundaryConditionsSamples; i < SWEBufferSize - SWEBoundaryConditionsSamples; ++i)
+    {
+        mNextVelocityField[i] +=
+            GameParameters::GravityMagnitude
+            * (mNextHeightField[i + 1] - mNextHeightField[i]) / Dx
+            * GameParameters::SimulationStepTimeDuration<float>;
+    }
 }
 
 }
