@@ -47,9 +47,10 @@ enum class ToolType
     ImpactBomb = 10,
     RCBomb = 11,
     TimerBomb = 12,
-    TerrainAdjust = 13,
-    Scrub = 14,
-    RepairStructure = 15
+    GenerateWave = 13,
+    TerrainAdjust = 14,
+    Scrub = 15,
+    RepairStructure = 16
 };
 
 struct InputState
@@ -1654,6 +1655,67 @@ public:
 private:
 
     std::unique_ptr<wxCursor> const mCursor;
+};
+
+class GenerateWaveTool final : public Tool
+{
+public:
+
+    GenerateWaveTool(
+        wxFrame * parentFrame,
+        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<SoundController> soundController,
+        ResourceLoader & resourceLoader);
+
+public:
+
+    virtual void Initialize(InputState const & inputState) override
+    {
+    }
+
+    virtual void Deinitialize(InputState const & /*inputState*/) override
+    {
+    }
+
+    virtual void Update(InputState const & inputState) override
+    {
+        if (inputState.IsLeftMouseDown)
+        {
+            mIsEngaged = true;
+        }
+        else
+        {
+            mIsEngaged = false;
+        }
+    }
+
+    virtual void OnMouseMove(InputState const & /*inputState*/) override {}
+
+    virtual void OnLeftMouseDown(InputState const & inputState) override
+    {
+        mGameController->AdjustOceanSurfaceTo(
+            inputState.MousePosition);
+    }
+
+    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+    virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+    virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+
+    virtual void ShowCurrentCursor() override
+    {
+        assert(nullptr != mParentFrame);
+
+        mParentFrame->SetCursor(mIsEngaged ? *mDownCursor : *mUpCursor);
+    }
+
+private:
+
+    // Our state
+    bool mIsEngaged;
+
+    // The cursors
+    std::unique_ptr<wxCursor> const mUpCursor;
+    std::unique_ptr<wxCursor> const mDownCursor;
 };
 
 class TerrainAdjustTool final : public Tool

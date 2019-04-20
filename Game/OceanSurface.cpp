@@ -33,6 +33,24 @@ constexpr size_t SWEBufferSize =
     + OceanSurface::SamplesCount
     + SWEOuterLayerSamples;
 
+namespace TODOTEST {
+
+    static std::optional<size_t> AdjustedSample;
+
+    void LogBuffers(std::string const & header, float const * h, float const * v)
+    {
+        if (AdjustedSample)
+        {
+            LogMessage(header);
+            size_t const baseIndex = *AdjustedSample;
+            for (size_t i = baseIndex - 5; i < baseIndex + 5; ++i)
+            {
+                LogMessage(i, ": h=", h[i], " v=", v[i]);
+            }
+        }
+    }
+}
+
 OceanSurface::OceanSurface(
     float currentSimulationTime,
     Wind const & /*wind*/,
@@ -91,17 +109,51 @@ void OceanSurface::Update(
     GameParameters const & gameParameters)
 {
     //
-    // 1. SWE Update
+    // 1. Wave Genesis
     //
+
+    // Set both genesis locii to the same value
+    float const waveSpeed = gameParameters.WindSpeedBase * WindSpeedToWaveSpeedFactor;
+    float const waveTheta = currentSimulationTime * (0.5f + waveSpeed) / 3.0f;
+    float const waveHeight = gameParameters.WaveHeight;
+    constexpr float SpatialFrequency1 = 0.1f;
+    constexpr float SpatialFrequency2 = 0.3f;
+    float const c1 = sinf(waveTheta) * 0.5f;
+    float const c2 = sinf(- waveTheta * 1.1f) * 0.3f;
+    float const height = (c1 + c2) * waveHeight;
+    mCurrentHeightField[SWEBoundaryConditionsSamples] = height;
+    mCurrentHeightField[SWEBufferSize - SWEBoundaryConditionsSamples - 1] = height;
+    mCurrentVelocityField[SWEBoundaryConditionsSamples] = waveSpeed;
+    mCurrentVelocityField[SWEBufferSize - SWEBoundaryConditionsSamples - 1] = waveSpeed;
+
+
+    //
+    // 2. SWE Update
+    //
+    // - Current -> Next
+    //
+
+    TODOTEST::LogBuffers("START", mCurrentHeightField, mCurrentVelocityField);
 
     AdvectHeightField();
+
+    TODOTEST::LogBuffers("POST-ADVECT.H", mNextHeightField, mNextVelocityField);
+
     AdvectVelocityField();
+
+    TODOTEST::LogBuffers("POST-ADVECT.V", mNextHeightField, mNextVelocityField);
+
     UpdateHeightField();
+
+    TODOTEST::LogBuffers("POST-UPDATE.H", mNextHeightField, mNextVelocityField);
+
     UpdateVelocityField();
+
+    TODOTEST::LogBuffers("POST-UPDATE.V", mNextHeightField, mNextVelocityField);
 
 
     //
-    // 2. Swap Buffers
+    // 3. Swap Buffers
     //
 
     std::swap(mCurrentHeightField, mNextHeightField);
@@ -109,7 +161,7 @@ void OceanSurface::Update(
 
 
     //
-    // 3. Generate samples
+    // 4. Generate samples
     //
     // - Here we simply superimpose wind gust ripples onto the current SWE height field.
     //
@@ -296,6 +348,31 @@ void OceanSurface::Upload(
     renderContext.UploadOceanEnd();
 }
 
+void OceanSurface::AdjustTo(
+    float x,
+    float targetY)
+{
+    //
+    // Calculate sample index, minimizing error
+    //
+
+    float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth) / Dx;
+
+    int32_t sampleIndexI = FastTruncateInt32(sampleIndexF + 0.5f);
+    assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
+
+
+    //
+    // Update height field
+    //
+
+    mCurrentHeightField[SWEOuterLayerSamples + sampleIndexI] = targetY;
+
+    LogMessage("TODOTEST: Adjusted:", SWEOuterLayerSamples + sampleIndexI, "=", targetY);
+
+    TODOTEST::AdjustedSample = SWEOuterLayerSamples + sampleIndexI;
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 void OceanSurface::AdvectHeightField()
@@ -304,7 +381,7 @@ void OceanSurface::AdvectHeightField()
     // Semi-Lagrangian method
     //
 
-    // Process all samples, except for boundary condition samples
+    // Process all height samples, except for boundary condition samples
     for (size_t i = SWEBoundaryConditionsSamples; i < SWEBufferSize - SWEBoundaryConditionsSamples; ++i)
     {
         // The height field values are at the center of the cell,
@@ -312,9 +389,9 @@ void OceanSurface::AdvectHeightField()
         // the two neighboring velocities
         float const v = (mCurrentVelocityField[i] + mCurrentVelocityField[i + 1]) / 2.0f;
 
-        // Calculate the index that this cell had one time step ago
+        // Calculate the (fractional) index that this height sample had one time step ago
         float const prevCellIndex =
-            static_cast<float>(i)
+            static_cast<float>(i) + 0.5f
             - v * GameParameters::SimulationStepTimeDuration<float> / Dx;
 
         // Transform index to ease interpolations, constraining the cell
@@ -328,8 +405,8 @@ void OceanSurface::AdvectHeightField()
         float const prevCellIndexF = prevCellIndex2 - prevCellIndexI;
         assert(prevCellIndexF >= 0.0f && prevCellIndexF < 1.0f);
 
-        // Set this cell's height field value as the interpolation of the previous
-        // cell's value
+        // Set this height field sample as the previous (in time) sample,
+        // interpolated between its two neighbors
         mNextHeightField[i] =
             (1.0f - prevCellIndexF) * mCurrentHeightField[prevCellIndexI]
             + prevCellIndexF * mCurrentHeightField[prevCellIndexI + 1];
@@ -342,13 +419,13 @@ void OceanSurface::AdvectVelocityField()
     // Semi-Lagrangian method
     //
 
-    // Process all samples, except for boundary condition samples
+    // Process all velocity samples, except for boundary condition samples
     for (size_t i = SWEBoundaryConditionsSamples; i < SWEBufferSize - SWEBoundaryConditionsSamples; ++i)
     {
         // Velocity values are at the edges of the cell
         float const v = mCurrentVelocityField[i];
 
-        // Calculate the index that this cell had one time step ago
+        // Calculate the (fractional) index that this velocity sample had one time step ago
         float const prevCellIndex =
             static_cast<float>(i)
             - v * GameParameters::SimulationStepTimeDuration<float> / Dx;
@@ -364,8 +441,8 @@ void OceanSurface::AdvectVelocityField()
         float const prevCellIndexF = prevCellIndex2 - prevCellIndexI;
         assert(prevCellIndexF >= 0.0f && prevCellIndexF < 1.0f);
 
-        // Set this cell's velocity field value as the interpolation of the previous
-        // cell's value
+        // Set this velocity field sample as the previous (in time) sample,
+        // interpolated between its two neighbors
         mNextVelocityField[i] =
             (1.0f - prevCellIndexF) * mCurrentVelocityField[prevCellIndexI]
             + prevCellIndexF * mCurrentVelocityField[prevCellIndexI + 1];
@@ -391,7 +468,7 @@ void OceanSurface::UpdateVelocityField()
     {
         mNextVelocityField[i] +=
             GameParameters::GravityMagnitude
-            * (mNextHeightField[i + 1] - mNextHeightField[i]) / Dx
+            * (mNextHeightField[i - 1] - mNextHeightField[i]) / Dx
             * GameParameters::SimulationStepTimeDuration<float>;
     }
 }

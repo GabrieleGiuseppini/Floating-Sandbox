@@ -35,6 +35,10 @@ public:
 
 public:
 
+    void AdjustTo(
+        float x,
+        float targetY);
+
     float GetHeightAt(float x) const
     {
         //

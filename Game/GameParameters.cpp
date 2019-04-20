@@ -24,11 +24,11 @@ GameParameters::GameParameters()
     , DoGenerateAirBubbles(true)
     // Wind
     , DoModulateWind(true)
-    , WindSpeedBase(-20.0f)
+    , WindSpeedBase(0.0f) // TODOTEST: was: -20.0f)
     , WindSpeedMaxFactor(2.5f)
     , WindGustFrequencyAdjustment(1.0f)
     // Misc
-    , WaveHeight(2.5f)
+    , WaveHeight(0.0f) // TODOTEST: was: 2.5f)
     , SeaDepth(300.0f)
     , OceanFloorBumpiness(1.0f)
     , OceanFloorDetailAmplification(10.0f)

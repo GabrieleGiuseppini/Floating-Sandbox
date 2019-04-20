@@ -64,6 +64,7 @@ const long ID_IMPACTBOMB_MENUITEM = wxNewId();
 const long ID_ANTIMATTERBOMB_MENUITEM = wxNewId();
 const long ID_RCBOMBDETONATE_MENUITEM = wxNewId();
 const long ID_ANTIMATTERBOMBDETONATE_MENUITEM = wxNewId();
+const long ID_GENERATEWAVE_MENUITEM = wxNewId();
 const long ID_ADJUSTTERRAIN_MENUITEM = wxNewId();
 const long ID_REPAIRSTRUCTURE_MENUITEM = wxNewId();
 const long ID_SCRUB_MENUITEM = wxNewId();
@@ -323,6 +324,10 @@ MainFrame::MainFrame(wxApp * mainApp)
     wxMenuItem * antiMatterBombMenuItem = new wxMenuItem(mToolsMenu, ID_ANTIMATTERBOMB_MENUITEM, _("Toggle Anti-Matter Bomb\tA"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(antiMatterBombMenuItem);
     Connect(ID_ANTIMATTERBOMB_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAntiMatterBombMenuItemSelected);
+
+    wxMenuItem * generateWaveMenuItem = new wxMenuItem(mToolsMenu, ID_GENERATEWAVE_MENUITEM, _("Generate Wave\tV"), wxEmptyString, wxITEM_RADIO);
+    mToolsMenu->Append(generateWaveMenuItem);
+    Connect(ID_GENERATEWAVE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnGenerateWaveMenuItemSelected);
 
     wxMenuItem * adjustTerrainMenuItem = new wxMenuItem(mToolsMenu, ID_ADJUSTTERRAIN_MENUITEM, _("Adjust Terrain\tJ"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(adjustTerrainMenuItem);
@@ -1249,6 +1254,12 @@ void MainFrame::OnAntiMatterBombDetonateMenuItemSelected(wxCommandEvent & /*even
 {
     assert(!!mGameController);
     mGameController->DetonateAntiMatterBombs();
+}
+
+void MainFrame::OnGenerateWaveMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mToolController);
+    mToolController->SetTool(ToolType::GenerateWave);
 }
 
 void MainFrame::OnAdjustTerrainMenuItemSelected(wxCommandEvent & /*event*/)

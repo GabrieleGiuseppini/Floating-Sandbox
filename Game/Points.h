@@ -959,7 +959,7 @@ public:
         assert(mFactoryConnectedTrianglesBuffer[pointElementIndex].ConnectedTriangles.contains(
             [triangleElementIndex](auto const & ct)
             {
-                return ct.TriangleIndex == triangleElementIndex;
+                return ct == triangleElementIndex;
             }));
 
         mConnectedTrianglesBuffer[pointElementIndex].ConnectTriangle(

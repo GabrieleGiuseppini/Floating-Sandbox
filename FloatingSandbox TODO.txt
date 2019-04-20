@@ -802,15 +802,14 @@ Render:
 			= Step 1: basic SWE with reflecting boundaries
 				+ cctor: wave initialization
 				= Update:
-					- SWE update -> next buffers
+					= SWE update -> next buffers
 					+ NextHeightBuffer + Wind gust sines -> mSamples
 					+ Swap buffers
-			- Step 2: perturbation tool
-				- OceanSurface::AdjustTo
-					- Like OceanFloor
+			= Step 2: perturbation tool
+				+ OceanSurface::AdjustTo
 				- Cursor
 				- Tool sound
-			- Step 3: wave genesys
+			- Step 3: wave genesis
 			- Optimizations:
 				- Two advections in one, so that we have a single loop
 				- Two field updates in one, so that we have a single loop

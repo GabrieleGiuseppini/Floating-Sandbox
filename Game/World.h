@@ -54,7 +54,7 @@ public:
 
     inline float GetOceanFloorHeightAt(float x) const
     {
-        return mOceanFloor.GetFloorHeightAt(x);
+        return mOceanFloor.GetHeightAt(x);
     }
 
     inline vec2f const & GetCurrentWindSpeed() const
@@ -145,6 +145,10 @@ public:
     void DetonateRCBombs();
 
     void DetonateAntiMatterBombs();
+
+    void AdjustOceanSurfaceTo(
+        float x,
+        float targetY);
 
     bool AdjustOceanFloorTo(
         float x1,

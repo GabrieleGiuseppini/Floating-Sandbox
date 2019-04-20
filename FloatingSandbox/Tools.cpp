@@ -488,6 +488,26 @@ TimerBombTool::TimerBombTool(
 }
 
 ////////////////////////////////////////////////////////////////////////
+// GenerateWave
+////////////////////////////////////////////////////////////////////////
+
+GenerateWaveTool::GenerateWaveTool(
+    wxFrame * parentFrame,
+    std::shared_ptr<GameController> gameController,
+    std::shared_ptr<SoundController> soundController,
+    ResourceLoader & resourceLoader)
+    : Tool(
+        ToolType::GenerateWave,
+        parentFrame,
+        std::move(gameController),
+        std::move(soundController))
+    , mIsEngaged(false)
+    , mUpCursor(MakeCursor("generate_wave_cursor_up", 15, 15, resourceLoader))
+    , mDownCursor(MakeCursor("generate_wave_cursor_down", 15, 15, resourceLoader))
+{
+}
+
+////////////////////////////////////////////////////////////////////////
 // TerrainAdjust
 ////////////////////////////////////////////////////////////////////////
 
@@ -501,7 +521,6 @@ TerrainAdjustTool::TerrainAdjustTool(
         parentFrame,
         std::move(gameController),
         std::move(soundController))
-
     , mCurrentTrajectoryPreviousPosition()
     , mUpCursor(MakeCursor("terrain_adjust_cursor_up", 15, 15, resourceLoader))
     , mDownCursor(MakeCursor("terrain_adjust_cursor_down", 15, 15, resourceLoader))

@@ -365,6 +365,13 @@ void World::DetonateAntiMatterBombs()
     }
 }
 
+void World::AdjustOceanSurfaceTo(
+    float x,
+    float targetY)
+{
+    mOceanSurface.AdjustTo(x, targetY);
+}
+
 bool World::AdjustOceanFloorTo(
     float x1,
     float targetY1,
