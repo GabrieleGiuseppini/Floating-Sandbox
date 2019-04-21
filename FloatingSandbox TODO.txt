@@ -796,13 +796,15 @@ Render:
 
 - Dynamics:
 
+	- See if true: realistic sink is 3 water intake and 0.25 water diffusion speed
+
 	= Make waves with Shallow Water Equations (*)
 		= Implement
 			+ Rename to OceanSurface
-			= Step 1: basic SWE with reflecting boundaries
+			+ Step 1: basic SWE with reflecting boundaries
 				+ cctor: wave initialization
-				= Update:
-					= SWE update -> next buffers
+				+ Update:
+					+ SWE update -> next buffers
 					+ NextHeightBuffer + Wind gust sines -> mSamples
 					+ Swap buffers
 			= Step 2: perturbation tool
@@ -810,6 +812,10 @@ Render:
 				- Cursor
 				- Tool sound
 			- Step 3: wave genesis
+				- Try with periodic, superimposed velocity field perturbation on the whole buffer
+					- Find out actual pertrubation with sine wave
+				- Keep genesis locii only for tsunami
+
 			- Optimizations:
 				- Two advections in one, so that we have a single loop
 				- Two field updates in one, so that we have a single loop

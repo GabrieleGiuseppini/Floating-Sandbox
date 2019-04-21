@@ -1681,6 +1681,9 @@ public:
     {
         if (inputState.IsLeftMouseDown)
         {
+            ////mGameController->AdjustOceanSurfaceTo(
+            ////    inputState.MousePosition);
+
             mIsEngaged = true;
         }
         else
@@ -1695,9 +1698,15 @@ public:
     {
         mGameController->AdjustOceanSurfaceTo(
             inputState.MousePosition);
+
+        mIsEngaged = true;
     }
 
-    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override
+    {
+        mIsEngaged = false;
+    }
+
     virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
     virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
 

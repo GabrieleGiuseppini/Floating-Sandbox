@@ -17,6 +17,10 @@ constexpr float WindSpeedToWaveSpeedFactor = 1.0f / 6.0f; // Waves move slower t
 template<typename T>
 constexpr T RenderSlices = 500;
 
+// The height of the height field - indirectly determines velocity
+// of waves
+float HeightFieldOffset = 30.0f;
+
 // The number of samples we set apart in the SWE buffers for wave generation at each end of a buffer
 constexpr size_t SWEWaveGenerationSamples = 2;
 
@@ -28,7 +32,7 @@ constexpr size_t SWEOuterLayerSamples =
     + SWEBoundaryConditionsSamples;
 
 // The total number of samples in the SWE buffers
-constexpr size_t SWEBufferSize =
+constexpr size_t SWETotalSamples =
     SWEOuterLayerSamples
     + OceanSurface::SamplesCount
     + SWEOuterLayerSamples;
@@ -56,10 +60,10 @@ OceanSurface::OceanSurface(
     Wind const & /*wind*/,
     GameParameters const & gameParameters)
     : mSamples(new Sample[SamplesCount + 1])
-    , mHeightFieldBuffer1(new float[SWEBufferSize + 1]) // One extra cell just to ease interpolations
-    , mHeightFieldBuffer2(new float[SWEBufferSize + 1]) // One extra cell just to ease interpolations
-    , mVelocityFieldBuffer1(new float[SWEBufferSize + 1]) // One extra cell just to ease interpolations
-    , mVelocityFieldBuffer2(new float[SWEBufferSize + 1]) // One extra cell just to ease interpolations
+    , mHeightFieldBuffer1(new float[SWETotalSamples + 1]) // One extra cell just to ease interpolations
+    , mHeightFieldBuffer2(new float[SWETotalSamples + 1]) // One extra cell just to ease interpolations
+    , mVelocityFieldBuffer1(new float[SWETotalSamples + 1]) // One extra cell just to ease interpolations
+    , mVelocityFieldBuffer2(new float[SWETotalSamples + 1]) // One extra cell just to ease interpolations
 {
     //
     // Initialize SWEs
@@ -71,15 +75,19 @@ OceanSurface::OceanSurface(
     mCurrentVelocityField = mVelocityFieldBuffer1.get();
     mNextVelocityField = mVelocityFieldBuffer2.get();
 
-    // Initialize outer layers
+    // Initialize outer layers, both fields
     // - Boundary condition layers are initialized here once and for all
     for (size_t i = 0; i < SWEOuterLayerSamples; ++i)
     {
-        mCurrentHeightField[i] = 0.0f;
-        mCurrentHeightField[SWEBufferSize - i - 1] = 0.0f;
+        mCurrentHeightField[i] = HeightFieldOffset;
+        mCurrentHeightField[SWETotalSamples - i - 1] = HeightFieldOffset;
+        mNextHeightField[i] = HeightFieldOffset;
+        mNextHeightField[SWETotalSamples - i - 1] = HeightFieldOffset;
 
         mCurrentVelocityField[i] = 0.0f;
-        mCurrentVelocityField[SWEBufferSize - i - 1] = 0.0f;
+        mCurrentVelocityField[SWETotalSamples - i - 1] = 0.0f;
+        mNextVelocityField[i] = 0.0f;
+        mNextVelocityField[SWETotalSamples - i - 1] = 0.0f;
     }
 
     // Initialize middle layer
@@ -93,14 +101,14 @@ OceanSurface::OceanSurface(
     {
         float const c1 = sinf(x * SpatialFrequency1 + waveTheta) * 0.5f;
         float const c2 = sinf(x * SpatialFrequency2 - waveTheta * 1.1f) * 0.3f;
-        mCurrentHeightField[SWEOuterLayerSamples + i] = (c1 + c2) * waveHeight;
+        mCurrentHeightField[SWEOuterLayerSamples + i] = HeightFieldOffset + (c1 + c2) * waveHeight;
         mCurrentVelocityField[SWEOuterLayerSamples + i] = waveSpeed;
     }
 
     // Initialize extra cell - we won't ever use this as it'll be multiplied with zero,
     // but still...
-    mCurrentHeightField[SWEBufferSize] = 0.0f;
-    mCurrentVelocityField[SWEBufferSize] = 0.0f;
+    mCurrentHeightField[SWETotalSamples] = HeightFieldOffset;
+    mCurrentVelocityField[SWETotalSamples] = 0.0f;
 }
 
 void OceanSurface::Update(
@@ -120,11 +128,11 @@ void OceanSurface::Update(
     constexpr float SpatialFrequency2 = 0.3f;
     float const c1 = sinf(waveTheta) * 0.5f;
     float const c2 = sinf(- waveTheta * 1.1f) * 0.3f;
-    float const height = (c1 + c2) * waveHeight;
+    float const height = HeightFieldOffset + (c1 + c2) * waveHeight;
     mCurrentHeightField[SWEBoundaryConditionsSamples] = height;
-    mCurrentHeightField[SWEBufferSize - SWEBoundaryConditionsSamples - 1] = height;
+    mCurrentHeightField[SWETotalSamples - SWEBoundaryConditionsSamples - 1] = height;
     mCurrentVelocityField[SWEBoundaryConditionsSamples] = waveSpeed;
-    mCurrentVelocityField[SWEBufferSize - SWEBoundaryConditionsSamples - 1] = waveSpeed;
+    mCurrentVelocityField[SWETotalSamples - SWEBoundaryConditionsSamples - 1] = waveSpeed;
 
 
     //
@@ -152,6 +160,17 @@ void OceanSurface::Update(
     TODOTEST::LogBuffers("POST-UPDATE.V", mNextHeightField, mNextVelocityField);
 
 
+    // Calc avg height
+    float avgHeight = 0.0f;
+    for (size_t i = SWEOuterLayerSamples; i < SWEOuterLayerSamples + SamplesCount; ++i)
+    {
+        avgHeight += mNextHeightField[i];
+    }
+    avgHeight /= static_cast<float>(SamplesCount);
+    LogMessage("AVG:", avgHeight);
+
+
+
     //
     // 3. Swap Buffers
     //
@@ -163,7 +182,8 @@ void OceanSurface::Update(
     //
     // 4. Generate samples
     //
-    // - Here we simply superimpose wind gust ripples onto the current SWE height field.
+    // - Sample values are the height field, short of the offset
+    // - Wind gust ripples are superimposed
     //
 
     static constexpr float WindGustRippleSpatialFrequency = 0.5f;
@@ -187,7 +207,7 @@ void OceanSurface::Update(
     {
         float const cRipple = sinf(-currentSimulationTime * windRipplesTimeFrequency);
         previousSampleValue =
-            mCurrentHeightField[SWEOuterLayerSamples + 0]
+            (mCurrentHeightField[SWEOuterLayerSamples + 0] - HeightFieldOffset)
             + cRipple * windRipplesWaveHeight;
 
         mSamples[0].SampleValue = previousSampleValue;
@@ -199,7 +219,7 @@ void OceanSurface::Update(
     {
         float const cRipple = sinf(x * WindGustRippleSpatialFrequency - currentSimulationTime * windRipplesTimeFrequency);
         float const sampleValue =
-            mCurrentHeightField[SWEOuterLayerSamples + i]
+            (mCurrentHeightField[SWEOuterLayerSamples + i] - HeightFieldOffset)
             + cRipple * windRipplesWaveHeight;
 
         mSamples[i].SampleValue = sampleValue;
@@ -208,7 +228,7 @@ void OceanSurface::Update(
         previousSampleValue = sampleValue;
     }
 
-    // Populate last delta (extra sample has same value as this sample)
+    // Populate last delta (extra sample will have same value as this sample)
     mSamples[SamplesCount - 1].SampleValuePlusOneMinusSampleValue = 0.0f;
 
     // Populate extra sample - same value as last sample
@@ -366,9 +386,9 @@ void OceanSurface::AdjustTo(
     // Update height field
     //
 
-    mCurrentHeightField[SWEOuterLayerSamples + sampleIndexI] = targetY;
+    mCurrentHeightField[SWEOuterLayerSamples + sampleIndexI] = targetY + HeightFieldOffset;
 
-    LogMessage("TODOTEST: Adjusted:", SWEOuterLayerSamples + sampleIndexI, "=", targetY);
+    LogMessage("TODOTEST: Adjusted:", SWEOuterLayerSamples + sampleIndexI, "=", mCurrentHeightField[SWEOuterLayerSamples + sampleIndexI]);
 
     TODOTEST::AdjustedSample = SWEOuterLayerSamples + sampleIndexI;
 }
@@ -382,7 +402,7 @@ void OceanSurface::AdvectHeightField()
     //
 
     // Process all height samples, except for boundary condition samples
-    for (size_t i = SWEBoundaryConditionsSamples; i < SWEBufferSize - SWEBoundaryConditionsSamples; ++i)
+    for (size_t i = SWEBoundaryConditionsSamples; i < SWETotalSamples - SWEBoundaryConditionsSamples; ++i)
     {
         // The height field values are at the center of the cell,
         // while velocities are at the edges - hence we need to take
@@ -398,7 +418,7 @@ void OceanSurface::AdvectHeightField()
         // to our grid at the same time
         float const prevCellIndex2 = std::min(
             std::max(0.0f, prevCellIndex - 0.5f),
-            static_cast<float>(SWEBufferSize - 1));
+            static_cast<float>(SWETotalSamples - 1));
 
         // Calculate integral and fractional parts of the index
         int32_t const prevCellIndexI = FastTruncateInt32(prevCellIndex2);
@@ -420,7 +440,7 @@ void OceanSurface::AdvectVelocityField()
     //
 
     // Process all velocity samples, except for boundary condition samples
-    for (size_t i = SWEBoundaryConditionsSamples; i < SWEBufferSize - SWEBoundaryConditionsSamples; ++i)
+    for (size_t i = SWEBoundaryConditionsSamples; i < SWETotalSamples - SWEBoundaryConditionsSamples; ++i)
     {
         // Velocity values are at the edges of the cell
         float const v = mCurrentVelocityField[i];
@@ -434,7 +454,7 @@ void OceanSurface::AdvectVelocityField()
         // to our grid at the same time
         float const prevCellIndex2 = std::min(
             std::max(0.0f, prevCellIndex),
-            static_cast<float>(SWEBufferSize - 1));
+            static_cast<float>(SWETotalSamples - 1));
 
         // Calculate integral and fractional parts of the index
         int32_t const prevCellIndexI = FastTruncateInt32(prevCellIndex2);
@@ -452,7 +472,7 @@ void OceanSurface::AdvectVelocityField()
 void OceanSurface::UpdateHeightField()
 {
     // Process all samples, except for boundary condition samples
-    for (size_t i = SWEBoundaryConditionsSamples; i < SWEBufferSize - SWEBoundaryConditionsSamples; ++i)
+    for (size_t i = SWEBoundaryConditionsSamples; i < SWETotalSamples - SWEBoundaryConditionsSamples; ++i)
     {
         mNextHeightField[i] -=
             mNextHeightField[i]
@@ -464,7 +484,7 @@ void OceanSurface::UpdateHeightField()
 void OceanSurface::UpdateVelocityField()
 {
     // Process all samples, except for boundary condition samples
-    for (size_t i = SWEBoundaryConditionsSamples; i < SWEBufferSize - SWEBoundaryConditionsSamples; ++i)
+    for (size_t i = SWEBoundaryConditionsSamples; i < SWETotalSamples - SWEBoundaryConditionsSamples; ++i)
     {
         mNextVelocityField[i] +=
             GameParameters::GravityMagnitude
