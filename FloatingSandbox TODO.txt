@@ -187,7 +187,7 @@ Render:
 	- Maximord - "Maximord" (Parallels)
 	- Pac0master - "<Same as now>" (Intel core i5-8600K, NVIDIA GeForce RTX 2070)
 	- The_SamminAter - "<ask>" (Parallels)
-	- DkuzTheFox: "Dkuz The Fox": (Intel core i7-5700HQ, Windows 10)
+	- Costin88boss: Windows 10, AMD, ATI OpenGL 4.6 w/Radeon RX 560 Series w/2GB RAM
 
 - Marketing:
 	- GameJolt post w/screenshot with gradient, at night
@@ -742,21 +742,24 @@ Render:
 
 	- Different backgrounds: use keys to switch between a dock, cliffs, open ocean, ice field, etc.
 
-	- Add SkyRenderMode (Flat, Gradient)
-		- The two endpoints of gradient dependent on ambient light
-			- Interpolated between two pairs of endpoints
-		- RenderContext:
-			- If Flat:
-				- When clearing buffers, clear also color buffer with flat color
-			- If Gradient:
-				- When clearing buffers, do not clear color buffer
-				- Run program with quad immediately afterwards
-					- Shader
-						- No orthomatrix, all NDC
-						- No ambient light param, no new params
+	- Sky:
+		- Add SkyRenderMode (Flat, Gradient)
+			- The two endpoints of gradient dependent on ambient light
+				- Interpolated between two pairs of endpoints
+			- RenderContext:
+				- If Flat:
+					- When clearing buffers, clear also color buffer with flat color
+				- If Gradient:
+					- When clearing buffers, do not clear color buffer
+					- Run program with quad immediately afterwards
+						- Shader
+							- No orthomatrix, all NDC
+							- No ambient light param, no new params
 
-		- SettingsDialog:
-			- Gradient RadioButton: on the right has two rows with a gradient each
+			- SettingsDialog:
+				- Gradient RadioButton: on the right has two rows with a gradient each
+		- Night sky should use a round darkening - center of screen is slightly lighter
+			- Or even better, Milky Way
 
 	- Make water texture scroll with wind speed
 
@@ -807,15 +810,35 @@ Render:
 					+ SWE update -> next buffers
 					+ NextHeightBuffer + Wind gust sines -> mSamples
 					+ Swap buffers
-			= Step 2: perturbation tool
+			+ Step 2: perturbation tool
 				+ OceanSurface::AdjustTo
+			- Rearc:
+				- Basal waves
+					- Params:
+						- Width (wavelength)
+						- Height
+						- Period (=> speed=Wavelength/Period)
+					- Controls:
+						- Auto mode:
+							- Wind speed => height, width, period (from table)
+								- Wind speed = 0 => no basal waves
+						- Width, Height, Period (>0)
+							- Actual Period = period * direction(wind speed) + wind speed * factor
+				- SWEs
+					= Tool
+						= Tool does smoothing from 0 to PI/2
+							= Should be enough so that OceanSurface::Update smoothes corners out
+							- If not, OceanSurface::AdjustTo should do a number of updates
+						- Check if average water depth increases
+						
+					- Rogue wave generation (incl. tsunami)
+						- Params:
+							- Height
+							- Frequency (Poisson's lambda)
+								- Same as tool: genesis does smoothing from 0 to PI/2
+			- Final touches:
 				- Cursor
 				- Tool sound
-			- Step 3: wave genesis
-				- Try with periodic, superimposed velocity field perturbation on the whole buffer
-					- Find out actual pertrubation with sine wave
-				- Keep genesis locii only for tsunami
-
 			- Optimizations:
 				- Two advections in one, so that we have a single loop
 				- Two field updates in one, so that we have a single loop
@@ -827,6 +850,7 @@ Render:
 			- Rogue waves/tsunami
 			- Manual tsunami
 				- Tool grabbing water
+			- See if bug with world borders and clamping is due to canvas size change
 	
 	- Try to re-instate square velocity drag (*)
 		- Goal: falling ship should break upon impact with water

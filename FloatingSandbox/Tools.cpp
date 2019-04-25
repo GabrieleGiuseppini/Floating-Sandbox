@@ -501,7 +501,8 @@ GenerateWaveTool::GenerateWaveTool(
         parentFrame,
         std::move(gameController),
         std::move(soundController))
-    , mIsEngaged(false)
+    , mCurrentTrajectory()
+    , mCurrentCursor(nullptr)
     , mUpCursor(MakeCursor("generate_wave_cursor_up", 15, 15, resourceLoader))
     , mDownCursor(MakeCursor("generate_wave_cursor_down", 15, 15, resourceLoader))
 {

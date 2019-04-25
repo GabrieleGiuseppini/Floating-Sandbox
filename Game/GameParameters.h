@@ -185,6 +185,24 @@ struct GameParameters
     static constexpr float MinWindGustFrequencyAdjustment = 0.1f;
     static constexpr float MaxWindGustFrequencyAdjustment = 10.0f;
 
+    // Waves TODO
+
+    float WaveTODOHeightOffset = 10.0f;
+    static constexpr float MinWaveTODOHeightOffset = 0.1f;
+    static constexpr float MaxWaveTODOHeightOffset = 100.0f;
+
+    float WaveTODORiseTime = 2.0f; // seconds
+    static constexpr float MinWaveTODORiseTime = 0.02f;
+    static constexpr float MaxWaveTODORiseTime = 10.0f;
+
+    float WaveTODOFallTime = 2.0f; // seconds
+    static constexpr float MinWaveTODOFallTime = 0.02f;
+    static constexpr float MaxWaveTODOFallTime = 10.0f;
+
+    float WaveTODOAmplification = 10.0f;
+    static constexpr float MinWaveTODOAmplification = 1.0f;
+    static constexpr float MaxWaveTODOAmplification = 100.0f;
+
     // Misc
 
     float WaveHeight;

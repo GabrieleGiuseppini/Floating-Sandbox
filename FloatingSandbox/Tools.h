@@ -1671,24 +1671,52 @@ public:
 
     virtual void Initialize(InputState const & inputState) override
     {
+        // Reset state
+        mCurrentTrajectory.reset();
+
+        // Initialize state
+        ProcessInputStateChange(inputState);
     }
 
-    virtual void Deinitialize(InputState const & /*inputState*/) override
-    {
-    }
+    virtual void Deinitialize(InputState const & /*inputState*/) override {}
 
     virtual void Update(InputState const & inputState) override
     {
-        if (inputState.IsLeftMouseDown)
+        if (!!mCurrentTrajectory)
         {
-            ////mGameController->AdjustOceanSurfaceTo(
-            ////    inputState.MousePosition);
+            //
+            // Continue trajectory
+            //
 
-            mIsEngaged = true;
-        }
-        else
-        {
-            mIsEngaged = false;
+            mCurrentTrajectory->LastSimulationTime = mGameController->GetCurrentSimulationTime();
+
+            float const timeElapsedFraction =
+                (mCurrentTrajectory->LastSimulationTime - mCurrentTrajectory->StartSimulationTime)
+                / mCurrentTrajectory->SmoothingRate;
+
+            float const progressArg =
+                mCurrentTrajectory->StartProgressArg
+                + (mCurrentTrajectory->TargetProgressArg - mCurrentTrajectory->StartProgressArg) * std::min(timeElapsedFraction, 1.0f);
+
+            float sinProgress = sin(Pi<float> / 2.0f * progressArg);
+
+            // TODOTEST
+            ////mGameController->AdjustOceanSurfaceTo(
+            ////    mCurrentTrajectory->X,
+            ////    mCurrentTrajectory->TargetHeight,
+            ////    sinProgress);
+
+            ////// Check whether we are done
+            ////if (timeElapsedFraction >= 1.0f)
+            ////{
+            ////    // Disengage
+            ////    Disengage();
+            ////}
+
+            mGameController->AdjustOceanSurfaceTo(
+                mCurrentTrajectory->X,
+                inputState.MousePosition.y,
+                1.0f);
         }
     }
 
@@ -1696,15 +1724,14 @@ public:
 
     virtual void OnLeftMouseDown(InputState const & inputState) override
     {
-        mGameController->AdjustOceanSurfaceTo(
-            inputState.MousePosition);
-
-        mIsEngaged = true;
+        ProcessInputStateChange(inputState);
+        ShowCurrentCursor();
     }
 
-    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override
+    virtual void OnLeftMouseUp(InputState const & inputState) override
     {
-        mIsEngaged = false;
+        ProcessInputStateChange(inputState);
+        ShowCurrentCursor();
     }
 
     virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
@@ -1713,16 +1740,138 @@ public:
     virtual void ShowCurrentCursor() override
     {
         assert(nullptr != mParentFrame);
+        assert(nullptr != mCurrentCursor);
 
-        mParentFrame->SetCursor(mIsEngaged ? *mDownCursor : *mUpCursor);
+        mParentFrame->SetCursor(*mCurrentCursor);
     }
 
 private:
 
-    // Our state
-    bool mIsEngaged;
+    void ProcessInputStateChange(InputState const & inputState)
+    {
+        //
+        // Update state
+        //
+
+        if (inputState.IsLeftMouseDown)
+        {
+            // Left mouse down
+
+            if (!mCurrentTrajectory)
+            {
+                //
+                // We're currently not engaged
+                //
+
+                // Engage
+                mCurrentTrajectory.emplace(
+                    mGameController->GetCurrentSimulationTime(),
+                    0.0f,
+                    1.0f,
+                    inputState.MousePosition.y,
+                    inputState.MousePosition.x,
+                    mGameController->GetWaveTODORiseTime(),
+                    false,
+                    mGameController->GetCurrentSimulationTime());
+            }
+        }
+        else
+        {
+            // Left mouse up
+
+            if (!!mCurrentTrajectory)
+            {
+                //
+                // We're currently engaged
+                //
+
+                // Disengage
+                ////Disengage();
+                mCurrentTrajectory.reset();
+            }
+        }
+
+        //
+        // Update cursor
+        //
+
+        if (!mCurrentTrajectory)
+        {
+            mCurrentCursor = mUpCursor.get();
+        }
+        else
+        {
+            mCurrentCursor = mDownCursor.get();
+        }
+    }
+
+    void Disengage()
+    {
+        if (!mCurrentTrajectory->IsDown)
+        {
+            //
+            // Start downfall
+            //
+
+            float const leftoverSimulationTime =
+                mCurrentTrajectory->StartSimulationTime
+                + mGameController->GetWaveTODORiseTime()
+                - mCurrentTrajectory->LastSimulationTime;
+
+            mCurrentTrajectory.emplace(
+                mGameController->GetCurrentSimulationTime() - leftoverSimulationTime,
+                1.0f,
+                0.0f,
+                mCurrentTrajectory->TargetHeight,
+                mCurrentTrajectory->X,
+                mGameController->GetWaveTODOFallTime(),
+                true,
+                mGameController->GetCurrentSimulationTime());
+        }
+        else
+        {
+            mCurrentTrajectory.reset();
+        }
+    }
+
+private:
+
+    struct Trajectory
+    {
+        float const StartSimulationTime;
+        float const StartProgressArg;
+        float const TargetProgressArg;
+        float const TargetHeight;
+        float const X;
+        float const SmoothingRate;
+        bool const IsDown;
+
+        float LastSimulationTime;
+
+        Trajectory(
+            float startSimulationTime,
+            float startProgressArg,
+            float targetProgressArg,
+            float targetHeight,
+            float x,
+            float smoothingRate,
+            bool isDown,
+            float currentSimulationTime)
+            : StartSimulationTime(startSimulationTime)
+            , StartProgressArg(startProgressArg)
+            , TargetProgressArg(targetProgressArg)
+            , TargetHeight(targetHeight)
+            , X(x)
+            , SmoothingRate(smoothingRate)
+            , IsDown(isDown)
+            , LastSimulationTime(currentSimulationTime)
+        {}
+    };
+
+    std::optional<Trajectory> mCurrentTrajectory; // When set, it's engaged
 
     // The cursors
+    wxCursor * mCurrentCursor;
     std::unique_ptr<wxCursor> const mUpCursor;
     std::unique_ptr<wxCursor> const mDownCursor;
 };

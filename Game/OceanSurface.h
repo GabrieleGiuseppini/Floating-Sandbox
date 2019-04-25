@@ -37,7 +37,8 @@ public:
 
     void AdjustTo(
         float x,
-        float targetY);
+        float y,
+        float progress);
 
     float GetHeightAt(float x) const
     {

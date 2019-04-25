@@ -115,6 +115,19 @@ SettingsDialog::SettingsDialog(
 
 
     //
+    // Waves
+    //
+
+    wxPanel * wavesPanel = new wxPanel(notebook);
+
+    wavesPanel->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
+
+    PopulateWavesPanel(wavesPanel);
+
+    notebook->AddPage(wavesPanel, "Waves");
+
+
+    //
     // World
     //
 
@@ -735,6 +748,107 @@ void SettingsDialog::PopulateAirPanel(wxPanel * panel)
     Connect(ID_MODULATE_WIND_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnModulateWindCheckBoxClick);
 
     gridSizer->Add(mModulateWindCheckBox, 0, wxALL | wxALIGN_TOP, 0);
+
+
+
+    // Finalize panel
+
+    panel->SetSizerAndFit(gridSizer);
+}
+
+void SettingsDialog::PopulateWavesPanel(wxPanel * panel)
+{
+    wxGridSizer* gridSizer = new wxGridSizer(2, 4, 0, 0);
+
+    //
+    // Row 1
+    //
+
+
+    // Height Offset
+
+    mWaveTODOHeightOffset = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Height Offset",
+        "TODO.",
+        static_cast<float>(mGameController->GetWaveTODOHeightOffset()),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<ExponentialSliderCore>(
+            static_cast<float>(mGameController->GetMinWaveTODOHeightOffset()),
+            2.0f,
+            static_cast<float>(mGameController->GetMaxWaveTODOHeightOffset())));
+
+    gridSizer->Add(mWaveTODOHeightOffset.get(), 1, wxALL, SliderBorder);
+
+
+    // Amplification
+
+    mWaveTODOAmplification = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Amplification",
+        "TODO.",
+        static_cast<float>(mGameController->GetWaveTODOAmplification()),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<ExponentialSliderCore>(
+            static_cast<float>(mGameController->GetMinWaveTODOAmplification()),
+            10.0f,
+            static_cast<float>(mGameController->GetMaxWaveTODOAmplification())));
+
+    gridSizer->Add(mWaveTODOAmplification.get(), 1, wxALL, SliderBorder);
+
+
+    // Rise time
+
+    mWaveTODORiseTime = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Rise Time",
+        "TODO.",
+        static_cast<float>(mGameController->GetWaveTODORiseTime()),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<LinearSliderCore>(
+            static_cast<float>(mGameController->GetMinWaveTODORiseTime()),
+            static_cast<float>(mGameController->GetMaxWaveTODORiseTime())));
+
+    gridSizer->Add(mWaveTODORiseTime.get(), 1, wxALL, SliderBorder);
+
+
+    // Fall time
+
+    mWaveTODOFallTime = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Fall Time",
+        "TODO.",
+        static_cast<float>(mGameController->GetWaveTODOFallTime()),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<LinearSliderCore>(
+            static_cast<float>(mGameController->GetMinWaveTODOFallTime()),
+            static_cast<float>(mGameController->GetMaxWaveTODOFallTime())));
+
+    gridSizer->Add(mWaveTODOFallTime.get(), 1, wxALL, SliderBorder);
 
 
 
@@ -1693,6 +1807,13 @@ void SettingsDialog::ReadSettings()
     mWindGustAmplitudeSlider->Enable(mGameController->GetDoModulateWind());
 
 
+    // TODO
+    mWaveTODOHeightOffset->SetValue(mGameController->GetWaveTODOHeightOffset());
+    mWaveTODORiseTime->SetValue(mGameController->GetWaveTODORiseTime());
+    mWaveTODOFallTime->SetValue(mGameController->GetWaveTODOFallTime());
+    mWaveTODOAmplification->SetValue(mGameController->GetWaveTODOAmplification());
+
+
 
     mWaveHeightSlider->SetValue(mGameController->GetWaveHeight());
 
@@ -1969,6 +2090,12 @@ void SettingsDialog::ApplySettings()
     mGameController->SetWindSpeedMaxFactor(
         mWindGustAmplitudeSlider->GetValue());
 
+
+    // TODO
+    mGameController->SetWaveTODOHeightOffset(mWaveTODOHeightOffset->GetValue());
+    mGameController->SetWaveTODORiseTime(mWaveTODORiseTime->GetValue());
+    mGameController->SetWaveTODOFallTime(mWaveTODOFallTime->GetValue());
+    mGameController->SetWaveTODOAmplification(mWaveTODOAmplification->GetValue());
 
 
     mGameController->SetWaveHeight(

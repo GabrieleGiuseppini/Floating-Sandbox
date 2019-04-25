@@ -28,7 +28,7 @@ GameParameters::GameParameters()
     , WindSpeedMaxFactor(2.5f)
     , WindGustFrequencyAdjustment(1.0f)
     // Misc
-    , WaveHeight(0.0f) // TODOTEST: was: 2.5f)
+    , WaveHeight(2.5f)
     , SeaDepth(300.0f)
     , OceanFloorBumpiness(1.0f)
     , OceanFloorDetailAmplification(10.0f)

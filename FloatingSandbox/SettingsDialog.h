@@ -96,6 +96,12 @@ private:
     wxCheckBox* mModulateWindCheckBox;
     std::unique_ptr<SliderControl> mWindGustAmplitudeSlider;
 
+    // Waves
+    std::unique_ptr<SliderControl> mWaveTODOHeightOffset;
+    std::unique_ptr<SliderControl> mWaveTODORiseTime;
+    std::unique_ptr<SliderControl> mWaveTODOFallTime;
+    std::unique_ptr<SliderControl> mWaveTODOAmplification;
+
     // World
     std::unique_ptr<SliderControl> mWaveHeightSlider;
     std::unique_ptr<SliderControl> mSeaDepthSlider;
@@ -164,6 +170,7 @@ private:
     void PopulateMechanicsPanel(wxPanel * panel);
     void PopulateFluidsPanel(wxPanel * panel);
     void PopulateAirPanel(wxPanel * panel);
+    void PopulateWavesPanel(wxPanel * panel);
     void PopulateWorldPanel(wxPanel * panel);
     void PopulateInteractionsPanel(wxPanel * panel);
     void PopulateRenderingPanel(wxPanel * panel);

@@ -33,6 +33,11 @@ public:
         GameParameters const & gameParameters,
         ResourceLoader & resourceLoader);
 
+    float GetCurrentSimulationTime() const
+    {
+        return mCurrentSimulationTime;
+    }
+
     ShipId AddShip(
         ShipDefinition const & shipDefinition,
         MaterialDatabase const & materialDatabase,
@@ -148,7 +153,8 @@ public:
 
     void AdjustOceanSurfaceTo(
         float x,
-        float targetY);
+        float y,
+        float progress);
 
     bool AdjustOceanFloorTo(
         float x1,
