@@ -153,8 +153,7 @@ public:
 
     void AdjustOceanSurfaceTo(
         float x,
-        float y,
-        float progress);
+        float y);
 
     bool AdjustOceanFloorTo(
         float x1,

@@ -119,7 +119,7 @@ ToolController::ToolController(
             resourceLoader));
 
     mAllTools.emplace_back(
-        std::make_unique<GenerateWaveTool>(
+        std::make_unique<WaveMakerTool>(
             parentFrame,
             gameController,
             soundController,

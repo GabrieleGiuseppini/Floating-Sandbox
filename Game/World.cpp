@@ -31,6 +31,7 @@ World::World(
     mStars.Update(gameParameters);
     mWind.Update(gameParameters);
     mClouds.Update(mCurrentSimulationTime, gameParameters);
+    mOceanSurface.Update(mCurrentSimulationTime, mWind, gameParameters);
     mOceanFloor.Update(gameParameters);
 }
 
@@ -367,13 +368,11 @@ void World::DetonateAntiMatterBombs()
 
 void World::AdjustOceanSurfaceTo(
     float x,
-    float y,
-    float progress)
+    float y)
 {
     mOceanSurface.AdjustTo(
         x,
-        y,
-        progress);
+        y);
 }
 
 bool World::AdjustOceanFloorTo(

@@ -488,21 +488,20 @@ TimerBombTool::TimerBombTool(
 }
 
 ////////////////////////////////////////////////////////////////////////
-// GenerateWave
+// WaveMaker
 ////////////////////////////////////////////////////////////////////////
 
-GenerateWaveTool::GenerateWaveTool(
+WaveMakerTool::WaveMakerTool(
     wxFrame * parentFrame,
     std::shared_ptr<GameController> gameController,
     std::shared_ptr<SoundController> soundController,
     ResourceLoader & resourceLoader)
-    : Tool(
-        ToolType::GenerateWave,
+    : OneShotTool(
+        ToolType::WaveMaker,
         parentFrame,
         std::move(gameController),
         std::move(soundController))
-    , mCurrentTrajectory()
-    , mCurrentCursor(nullptr)
+    , mEngagementX()
     , mUpCursor(MakeCursor("generate_wave_cursor_up", 15, 15, resourceLoader))
     , mDownCursor(MakeCursor("generate_wave_cursor_down", 15, 15, resourceLoader))
 {

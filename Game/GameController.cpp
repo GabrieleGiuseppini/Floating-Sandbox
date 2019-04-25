@@ -542,19 +542,15 @@ void GameController::DetonateAntiMatterBombs()
     mWorld->DetonateAntiMatterBombs();
 }
 
-void GameController::AdjustOceanSurfaceTo(
-    float screenX,
-    float screenHeight,
-    float progress)
+void GameController::AdjustOceanSurfaceTo(vec2f const & screenCoordinates)
 {
-    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(vec2f(screenX, screenHeight));
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
     // Apply action
     assert(!!mWorld);
     mWorld->AdjustOceanSurfaceTo(
         worldCoordinates.x,
-        worldCoordinates.y,
-        progress);
+        worldCoordinates.y);
 }
 
 bool GameController::AdjustOceanFloorTo(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates)

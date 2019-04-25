@@ -64,7 +64,7 @@ const long ID_IMPACTBOMB_MENUITEM = wxNewId();
 const long ID_ANTIMATTERBOMB_MENUITEM = wxNewId();
 const long ID_RCBOMBDETONATE_MENUITEM = wxNewId();
 const long ID_ANTIMATTERBOMBDETONATE_MENUITEM = wxNewId();
-const long ID_GENERATEWAVE_MENUITEM = wxNewId();
+const long ID_WAVEMAKER_MENUITEM = wxNewId();
 const long ID_ADJUSTTERRAIN_MENUITEM = wxNewId();
 const long ID_REPAIRSTRUCTURE_MENUITEM = wxNewId();
 const long ID_SCRUB_MENUITEM = wxNewId();
@@ -325,9 +325,9 @@ MainFrame::MainFrame(wxApp * mainApp)
     mToolsMenu->Append(antiMatterBombMenuItem);
     Connect(ID_ANTIMATTERBOMB_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAntiMatterBombMenuItemSelected);
 
-    wxMenuItem * generateWaveMenuItem = new wxMenuItem(mToolsMenu, ID_GENERATEWAVE_MENUITEM, _("Generate Wave\tV"), wxEmptyString, wxITEM_RADIO);
-    mToolsMenu->Append(generateWaveMenuItem);
-    Connect(ID_GENERATEWAVE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnGenerateWaveMenuItemSelected);
+    wxMenuItem * waveMakerMenuItem = new wxMenuItem(mToolsMenu, ID_WAVEMAKER_MENUITEM, _("WaveMaker\tV"), wxEmptyString, wxITEM_RADIO);
+    mToolsMenu->Append(waveMakerMenuItem);
+    Connect(ID_WAVEMAKER_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnWaveMakerMenuItemSelected);
 
     wxMenuItem * adjustTerrainMenuItem = new wxMenuItem(mToolsMenu, ID_ADJUSTTERRAIN_MENUITEM, _("Adjust Terrain\tJ"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(adjustTerrainMenuItem);
@@ -1256,10 +1256,10 @@ void MainFrame::OnAntiMatterBombDetonateMenuItemSelected(wxCommandEvent & /*even
     mGameController->DetonateAntiMatterBombs();
 }
 
-void MainFrame::OnGenerateWaveMenuItemSelected(wxCommandEvent & /*event*/)
+void MainFrame::OnWaveMakerMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
-    mToolController->SetTool(ToolType::GenerateWave);
+    mToolController->SetTool(ToolType::WaveMaker);
 }
 
 void MainFrame::OnAdjustTerrainMenuItemSelected(wxCommandEvent & /*event*/)

@@ -17,14 +17,21 @@ constexpr float WindSpeedToWaveSpeedFactor = 1.0f / 6.0f; // Waves move slower t
 template<typename T>
 constexpr T RenderSlices = 500;
 
-// The offset height of the height field - indirectly determines velocity
+//
+// SWE Layer
+//
+
+// The rest height of the height field - indirectly determines velocity
 // of waves (via dv/dt <= dh/dx, with dh/dt <= h*dv/dx)
-//float HeightFieldOffset = 200.0f;
-static float TODOHeightFieldOffset = 100.0f;
-static float TODOWaveAmplification = 0.0f;
+constexpr float SWEHeightFieldOffset = 100.0f;
+
+// The factor by which we amplify the height field perturbations;
+// higher values allow for smaller height field variations with the same visual height,
+// and smaller height field variations allow for greater stability
+constexpr float SWEHeightFieldAmplification = 50.0f;
 
 // The number of samples we set apart in the SWE buffers for wave generation at each end of a buffer
-constexpr size_t SWEWaveGenerationSamples = 2;
+constexpr size_t SWEWaveGenerationSamples = 1;
 
 // The number of samples we set apart in the SWE buffers for boundary conditions at each end of a buffer
 constexpr size_t SWEBoundaryConditionsSamples = 1;
@@ -39,24 +46,6 @@ constexpr size_t SWETotalSamples =
     + OceanSurface::SamplesCount
     + SWEOuterLayerSamples;
 
-namespace TODOTEST {
-
-    static std::optional<size_t> AdjustedSample;
-
-    void LogBuffers(std::string const & header, float const * h, float const * v)
-    {
-        ////if (AdjustedSample)
-        ////{
-        ////    LogMessage(header);
-        ////    size_t const baseIndex = *AdjustedSample;
-        ////    for (size_t i = baseIndex - 5; i < baseIndex + 5; ++i)
-        ////    {
-        ////        LogMessage(i, ": h=", h[i], " v=", v[i]);
-        ////    }
-        ////}
-    }
-}
-
 OceanSurface::OceanSurface(
     float currentSimulationTime,
     Wind const & /*wind*/,
@@ -67,11 +56,8 @@ OceanSurface::OceanSurface(
     , mVelocityFieldBuffer1(new float[SWETotalSamples + 1]) // One extra cell just to ease interpolations
     , mVelocityFieldBuffer2(new float[SWETotalSamples + 1]) // One extra cell just to ease interpolations
 {
-    TODOWaveAmplification = gameParameters.WaveTODOAmplification;
-    TODOHeightFieldOffset = gameParameters.WaveTODOHeightOffset;
-
     //
-    // Initialize SWEs
+    // Initialize SWE layer
     //
 
     // Initialize buffer pointers
@@ -80,43 +66,19 @@ OceanSurface::OceanSurface(
     mCurrentVelocityField = mVelocityFieldBuffer1.get();
     mNextVelocityField = mVelocityFieldBuffer2.get();
 
-    // Initialize outer layers, both fields
-    // - Boundary condition layers are initialized here once and for all
-    for (size_t i = 0; i < SWEOuterLayerSamples; ++i)
+    // Initialize all values
+    for (size_t i = 0; i < SWETotalSamples; ++i)
     {
-        mCurrentHeightField[i] = TODOHeightFieldOffset;
-        mCurrentHeightField[SWETotalSamples - i - 1] = TODOHeightFieldOffset;
-        mNextHeightField[i] = TODOHeightFieldOffset;
-        mNextHeightField[SWETotalSamples - i - 1] = TODOHeightFieldOffset;
+        mCurrentHeightField[i] = SWEHeightFieldOffset;
+        mNextHeightField[i] = SWEHeightFieldOffset;
 
         mCurrentVelocityField[i] = 0.0f;
-        mCurrentVelocityField[SWETotalSamples - i - 1] = 0.0f;
         mNextVelocityField[i] = 0.0f;
-        mNextVelocityField[SWETotalSamples - i - 1] = 0.0f;
-    }
-
-    // Initialize middle layer
-    float const waveSpeed = gameParameters.WindSpeedBase * WindSpeedToWaveSpeedFactor;
-    float const waveTheta = currentSimulationTime * (0.5f + waveSpeed) / 3.0f;
-    float const waveHeight = gameParameters.WaveHeight;
-    constexpr float SpatialFrequency1 = 0.1f;
-    constexpr float SpatialFrequency2 = 0.3f;
-    float x = 0.0f;
-    for (size_t i = 0; i < SamplesCount; ++i, x += Dx)
-    {
-        // TODOTEST
-        ////float const c1 = sinf(x * SpatialFrequency1 + waveTheta) * 0.5f;
-        ////float const c2 = sinf(x * SpatialFrequency2 - waveTheta * 1.1f) * 0.3f;
-        ////mCurrentHeightField[SWEOuterLayerSamples + i] = HeightFieldOffset + (c1 + c2) * waveHeight;
-        ////mCurrentVelocityField[SWEOuterLayerSamples + i] = waveSpeed;
-        // FLAT:
-        mCurrentHeightField[SWEOuterLayerSamples + i] = TODOHeightFieldOffset;
-        mCurrentVelocityField[SWEOuterLayerSamples + i] = 0.0f;
     }
 
     // Initialize extra cell - we won't ever use this as it'll be multiplied with zero,
     // but still...
-    mCurrentHeightField[SWETotalSamples] = TODOHeightFieldOffset;
+    mCurrentHeightField[SWETotalSamples] = SWEHeightFieldOffset;
     mCurrentVelocityField[SWETotalSamples] = 0.0f;
 }
 
@@ -125,65 +87,12 @@ void OceanSurface::Update(
     Wind const & wind,
     GameParameters const & gameParameters)
 {
-    TODOHeightFieldOffset = gameParameters.WaveTODOHeightOffset;
-    TODOWaveAmplification = gameParameters.WaveTODOAmplification;
-
     //
-    // 1. Wave Genesis
+    // 1. SWE: Wave Genesis
     //
 
-    // TODOTEST
-    ////float const waveSpeed = gameParameters.WindSpeedBase * WindSpeedToWaveSpeedFactor / 10.0f;
-    ////float const height =
-    ////    20.0f * gameParameters.WaveHeight * sinf(waveSpeed * currentSimulationTime)
-    ////    + HeightFieldOffset;
+    // TODO
 
-    ////// Left genesis locus
-    ////mCurrentHeightField[SWEBoundaryConditionsSamples] = height;
-    ////mCurrentVelocityField[SWEBoundaryConditionsSamples] +=
-    ////    GameParameters::GravityMagnitude
-    ////    * (mCurrentHeightField[SWEBoundaryConditionsSamples - 1] - height)
-    ////    * GameParameters::SimulationStepTimeDuration<float>
-    ////    / Dx;
-    ////mCurrentVelocityField[SWEBoundaryConditionsSamples + 1] +=
-    ////    GameParameters::GravityMagnitude
-    ////    * (height - mCurrentHeightField[SWEBoundaryConditionsSamples + 1])
-    ////    * GameParameters::SimulationStepTimeDuration<float>
-    ////    / Dx;
-
-    ////// Right genesis locus
-    ////mCurrentHeightField[SWETotalSamples - SWEBoundaryConditionsSamples - 1] = height;
-    ////mCurrentVelocityField[SWETotalSamples - SWEBoundaryConditionsSamples - 1] +=
-    ////    GameParameters::GravityMagnitude
-    ////    * (mCurrentHeightField[SWETotalSamples - SWEBoundaryConditionsSamples - 1 - 1] - height)
-    ////    * GameParameters::SimulationStepTimeDuration<float>
-    ////    / Dx;
-    ////mCurrentVelocityField[SWETotalSamples - SWEBoundaryConditionsSamples] +=
-    ////    GameParameters::GravityMagnitude
-    ////    * (height - mCurrentHeightField[SWETotalSamples - SWEBoundaryConditionsSamples])
-    ////    * GameParameters::SimulationStepTimeDuration<float>
-    ////    / Dx;
-
-    // TODOTEST: Basal wave generation
-    ////static int TODOcounter = 0;
-    ////if (0 == (TODOcounter % 200))
-    ////{
-    ////    float const WaveLength = 60.0f;
-    ////    float const WavePeriod = 2.5f;
-    ////    for (size_t i = SWEBoundaryConditionsSamples; i < SWETotalSamples - SWEBoundaryConditionsSamples; ++i)
-    ////    {
-    ////        float const arg =
-    ////            2 * Pi<float> * (i * Dx) / WaveLength
-    ////            - 2 * Pi<float> * currentSimulationTime / WavePeriod;
-
-    ////        mCurrentVelocityField[i] +=
-    ////            gameParameters.WaveHeight / 10.0f
-    ////            * cos(arg)
-    ////            //* 2 * Pi<float> / WaveLength
-    ////            ;
-    ////    }
-    ////}
-    ////++TODOcounter;
 
     //
     // 2. SWE Update
@@ -191,38 +100,32 @@ void OceanSurface::Update(
     // - Current -> Next
     //
 
-    TODOTEST::LogBuffers("START", mCurrentHeightField, mCurrentVelocityField);
-
     AdvectHeightField();
-
-    TODOTEST::LogBuffers("POST-ADVECT.H", mNextHeightField, mNextVelocityField);
-
     AdvectVelocityField();
 
-    TODOTEST::LogBuffers("POST-ADVECT.V", mNextHeightField, mNextVelocityField);
-
     UpdateHeightField();
-
-    TODOTEST::LogBuffers("POST-UPDATE.H", mNextHeightField, mNextVelocityField);
-
     UpdateVelocityField();
 
-    TODOTEST::LogBuffers("POST-UPDATE.V", mNextHeightField, mNextVelocityField);
-
-    // Fix boundary conditions
+    // Set reflective boundary conditions
     for (size_t i = 0; i < SWEBoundaryConditionsSamples; ++i)
     {
+        // Height mirrors height of actual samples
         mNextHeightField[i] = mNextHeightField[i + SWEBoundaryConditionsSamples];
         mNextHeightField[SWETotalSamples - 1 - i] = mNextHeightField[SWETotalSamples - 1 - SWEBoundaryConditionsSamples - i];
+
+        // Velocity is zero
+        assert(mNextVelocityField[i] == 0.0f);
+        assert(mNextVelocityField[SWETotalSamples - 1 - i] == 0.0f);
     }
 
-    // Calc avg height
-    float avgHeight = 0.0f;
-    for (size_t i = SWEOuterLayerSamples; i < SWEOuterLayerSamples + SamplesCount; ++i)
-    {
-        avgHeight += mNextHeightField[i];
-    }
-    avgHeight /= static_cast<float>(SamplesCount);
+    // TODOTEST
+    ////// Calc avg height among all samples
+    ////float avgHeight = 0.0f;
+    ////for (size_t i = SWEOuterLayerSamples; i < SWEOuterLayerSamples + SamplesCount; ++i)
+    ////{
+    ////    avgHeight += mNextHeightField[i];
+    ////}
+    ////avgHeight /= static_cast<float>(SamplesCount);
     ////LogMessage("AVG:", avgHeight);
 
 
@@ -266,10 +169,10 @@ void OceanSurface::Update(
     // sample index = 0
     float previousSampleValue;
     {
-        float const cRipple = sinf(-currentSimulationTime * windRipplesTimeFrequency);
+        float const rippleValue = sinf(-currentSimulationTime * windRipplesTimeFrequency);
         previousSampleValue =
-            (mCurrentHeightField[SWEOuterLayerSamples + 0] - TODOHeightFieldOffset) * TODOWaveAmplification
-            + cRipple * windRipplesWaveHeight;
+            (mCurrentHeightField[SWEOuterLayerSamples + 0] - SWEHeightFieldOffset) * SWEHeightFieldAmplification
+            + rippleValue * windRipplesWaveHeight;
 
         mSamples[0].SampleValue = previousSampleValue;
     }
@@ -278,10 +181,10 @@ void OceanSurface::Update(
     float x = Dx;
     for (int64_t i = 1; i < SamplesCount; i++, x += Dx)
     {
-        float const cRipple = sinf(x * WindGustRippleSpatialFrequency - currentSimulationTime * windRipplesTimeFrequency);
+        float const rippleValue = sinf(x * WindGustRippleSpatialFrequency - currentSimulationTime * windRipplesTimeFrequency);
         float const sampleValue =
-            (mCurrentHeightField[SWEOuterLayerSamples + i] - TODOHeightFieldOffset) * TODOWaveAmplification
-            + cRipple * windRipplesWaveHeight;
+            (mCurrentHeightField[SWEOuterLayerSamples + i] - SWEHeightFieldOffset) * SWEHeightFieldAmplification
+            + rippleValue * windRipplesWaveHeight;
 
         mSamples[i].SampleValue = sampleValue;
         mSamples[i - 1].SampleValuePlusOneMinusSampleValue = sampleValue - previousSampleValue;
@@ -431,8 +334,7 @@ void OceanSurface::Upload(
 
 void OceanSurface::AdjustTo(
     float x,
-    float y,
-    float progress)
+    float y)
 {
     //
     // Calculate sample index, minimizing error
@@ -448,11 +350,11 @@ void OceanSurface::AdjustTo(
     // Update height field
     //
 
-    mCurrentHeightField[SWEOuterLayerSamples + sampleIndexI] = (y * progress / TODOWaveAmplification) + TODOHeightFieldOffset;
+    // TODOHERE: do inertia
+    mCurrentHeightField[SWEOuterLayerSamples + sampleIndexI] =
+        (y / SWEHeightFieldAmplification) + SWEHeightFieldOffset;
 
-    LogMessage("TODOTEST: Adjusted:", SWEOuterLayerSamples + sampleIndexI, "=", mCurrentHeightField[SWEOuterLayerSamples + sampleIndexI]);
-
-    TODOTEST::AdjustedSample = SWEOuterLayerSamples + sampleIndexI;
+    LogMessage("TODOTEST: Adjusted=", mCurrentHeightField[SWEOuterLayerSamples + sampleIndexI]);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -473,13 +375,13 @@ void OceanSurface::AdvectHeightField()
 
         // Calculate the (fractional) index that this height sample had one time step ago
         float const prevCellIndex =
-            static_cast<float>(i) + 0.5f
+            static_cast<float>(i) /*+ 0.5f*/
             - v * GameParameters::SimulationStepTimeDuration<float> / Dx;
 
         // Transform index to ease interpolations, constraining the cell
         // to our grid at the same time
         float const prevCellIndex2 = std::min(
-            std::max(0.0f, prevCellIndex - 0.5f),
+            std::max(0.0f, prevCellIndex /*- 0.5f*/),
             static_cast<float>(SWETotalSamples - 1));
 
         // Calculate integral and fractional parts of the index

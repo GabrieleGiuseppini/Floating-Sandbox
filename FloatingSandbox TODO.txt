@@ -826,9 +826,8 @@ Render:
 							- Actual Period = period * direction(wind speed) + wind speed * factor
 				- SWEs
 					= Tool
-						= Tool does smoothing from 0 to PI/2
-							= Should be enough so that OceanSurface::Update smoothes corners out
-							- If not, OceanSurface::AdjustTo should do a number of updates
+						+ Tool does no smoothing
+						- OceanSurface implements stateless inertia at each AdjustTo call
 						- Check if average water depth increases
 						
 					- Rogue wave generation (incl. tsunami)

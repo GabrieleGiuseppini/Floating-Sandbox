@@ -37,8 +37,7 @@ public:
 
     void AdjustTo(
         float x,
-        float y,
-        float progress);
+        float y);
 
     float GetHeightAt(float x) const
     {
@@ -98,7 +97,7 @@ private:
     //
 
     // Height field (dual-buffered)
-    // - Height values are at the middle of the staggered grid cells
+    // - Height values are at the center of the staggered grid cells
     std::unique_ptr<float> mHeightFieldBuffer1;
     std::unique_ptr<float> mHeightFieldBuffer2;
     float * mCurrentHeightField;
