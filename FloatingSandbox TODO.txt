@@ -828,8 +828,9 @@ Render:
 				= SWEs
 					= Tool
 						+ Tool does no smoothing
-						= OceanSurface implements trajectory
-							- Delay rate must itself depend on delta H
+						+ OceanSurface implements trajectory
+							+ Delay rate must itself depend on delta H
+						= Test max delta H
 						- Check if average water depth increases
 						
 					- Rogue wave generation (incl. tsunami)

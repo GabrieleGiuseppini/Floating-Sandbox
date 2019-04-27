@@ -109,10 +109,6 @@ void OceanSurface::Update(
         }
         else
         {
-            // TODOTEST
-            LogMessage("TODOHERE2: ", mCurrentHeightField[mSWEExternalWaveStateMachine->GetSampleIndex()],
-                " -> ", *heightValue);
-
             mCurrentHeightField[mSWEExternalWaveStateMachine->GetSampleIndex()] = *heightValue;
         }
     }
@@ -579,9 +575,6 @@ std::optional<float> OceanSurface::SWEWaveStateMachine::Update(
     mCurrentHeight =
         mCurrentPhaseStartHeight + (mCurrentPhaseTargetHeight - mCurrentPhaseStartHeight) * sinProgress;
 
-    // TODOTEST
-    LogMessage("TODOHERE1:", mCurrentHeight);
-
     // Check whether it's time to switch phase
     if (mCurrentProgress >= 1.0f)
     {
@@ -605,16 +598,32 @@ std::optional<float> OceanSurface::SWEWaveStateMachine::Update(
 
 float OceanSurface::SWEWaveStateMachine::CalculateSmoothingDelay()
 {
-    // @HeightFieldOffset=100:
-    //  100.2 => SimulationStepTimeDuration
-    //  100.4 => SimulationStepTimeDuration * 2
+    float const deltaH = std::max(
+        abs(mCurrentPhaseTargetHeight - mCurrentHeight),
+        SWEHeightFieldOffset / 5.0f);
 
-    float const deltaH = abs(mCurrentPhaseTargetHeight - mCurrentHeight);
+    //
+    // Number of ticks must fit:
+    //  DeltaH=0.0  => Ticks=0.0
+    //  DeltaH=0.2  => Ticks=8.0
+    //  DeltaH=2.0  => Ticks=50.0
+    //  DeltaH>2.0  => Ticks~=50.0
+    // y = -1.375698 - (-63.32599/1.148332)*(1 - e^(-1.148332*x))
+    float delayTicks =
+        -1.375698f
+        + (63.32599f / 1.148332f) * (1.0f - exp(-1.148332f * deltaH));
 
-    return
-        GameParameters::SimulationStepTimeDuration<float>
-        * deltaH / (SWEHeightFieldOffset / 500.0f)
-        * (mCurrentWavePhase == WavePhaseType::Rise) ? 1.0f : 0.2f;
+    if (mCurrentWavePhase == WavePhaseType::Fall)
+    {
+        // Falling wave is faster
+        delayTicks /= 5.0f;
+    }
+
+    float const delay =
+        std::max(delayTicks, 0.0f)
+        * GameParameters::SimulationStepTimeDuration<float>;
+
+    return delay;
 }
 
 void OceanSurface::SWEWaveStateMachine::StartFallPhase(float currentSimulationTime)
