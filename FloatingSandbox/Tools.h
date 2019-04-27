@@ -1673,52 +1673,43 @@ public:
     {
         if (inputState.IsLeftMouseDown)
         {
-            mEngagementX = inputState.MousePosition.x;
+            mGameController->AdjustOceanSurfaceTo(inputState.MousePosition);
 
             mCurrentCursor = mDownCursor.get();
         }
         else
         {
-            mEngagementX.reset();
-
             mCurrentCursor = mUpCursor.get();
         }
 
         ShowCurrentCursor();
     }
 
-    virtual void Update(InputState const & inputState) override
+    virtual void OnMouseMove(InputState const & inputState) override
     {
-        if (!!mEngagementX)
+        if (inputState.IsLeftMouseDown)
         {
-            mGameController->AdjustOceanSurfaceTo(vec2f(
-                *mEngagementX,
-                inputState.MousePosition.y));
+            mGameController->AdjustOceanSurfaceTo(inputState.MousePosition);
         }
     }
 
     virtual void OnLeftMouseDown(InputState const & inputState) override
     {
-        mEngagementX = inputState.MousePosition.x;
+        mGameController->AdjustOceanSurfaceTo(inputState.MousePosition);
 
         mCurrentCursor = mDownCursor.get();
-
         ShowCurrentCursor();
     }
 
     virtual void OnLeftMouseUp(InputState const & /*inputState*/) override
     {
-        mEngagementX.reset();
+        mGameController->AdjustOceanSurfaceTo(std::nullopt);
 
         mCurrentCursor = mUpCursor.get();
-
         ShowCurrentCursor();
     }
 
 private:
-
-    // Screen x-coordinate of wave; when set, indicates tool is engaged
-    std::optional<float> mEngagementX;
 
     // The cursors
     std::unique_ptr<wxCursor> const mUpCursor;

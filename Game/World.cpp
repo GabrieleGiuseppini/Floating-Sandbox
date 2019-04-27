@@ -23,7 +23,7 @@ World::World(
     , mStars()
     , mWind(gameEventHandler)
     , mClouds()
-    , mOceanSurface(mCurrentSimulationTime, mWind, gameParameters)
+    , mOceanSurface()
     , mOceanFloor(resourceLoader)
     , mGameEventHandler(std::move(gameEventHandler))
 {
@@ -366,13 +366,11 @@ void World::DetonateAntiMatterBombs()
     }
 }
 
-void World::AdjustOceanSurfaceTo(
-    float x,
-    float y)
+void World::AdjustOceanSurfaceTo(std::optional<vec2f> const & worldCoordinates)
 {
     mOceanSurface.AdjustTo(
-        x,
-        y);
+        worldCoordinates,
+        mCurrentSimulationTime);
 }
 
 bool World::AdjustOceanFloorTo(

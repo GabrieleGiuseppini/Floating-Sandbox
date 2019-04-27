@@ -501,9 +501,8 @@ WaveMakerTool::WaveMakerTool(
         parentFrame,
         std::move(gameController),
         std::move(soundController))
-    , mEngagementX()
-    , mUpCursor(MakeCursor("generate_wave_cursor_up", 15, 15, resourceLoader))
-    , mDownCursor(MakeCursor("generate_wave_cursor_down", 15, 15, resourceLoader))
+    , mUpCursor(MakeCursor("wave_maker_cursor_up", 15, 15, resourceLoader))
+    , mDownCursor(MakeCursor("wave_maker_cursor_down", 15, 15, resourceLoader))
 {
 }
 

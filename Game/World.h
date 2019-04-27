@@ -151,9 +151,7 @@ public:
 
     void DetonateAntiMatterBombs();
 
-    void AdjustOceanSurfaceTo(
-        float x,
-        float y);
+    void AdjustOceanSurfaceTo(std::optional<vec2f> const & worldCoordinates);
 
     bool AdjustOceanFloorTo(
         float x1,

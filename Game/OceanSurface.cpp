@@ -46,15 +46,14 @@ constexpr size_t SWETotalSamples =
     + OceanSurface::SamplesCount
     + SWEOuterLayerSamples;
 
-OceanSurface::OceanSurface(
-    float currentSimulationTime,
-    Wind const & /*wind*/,
-    GameParameters const & gameParameters)
+OceanSurface::OceanSurface()
     : mSamples(new Sample[SamplesCount + 1])
     , mHeightFieldBuffer1(new float[SWETotalSamples + 1]) // One extra cell just to ease interpolations
     , mHeightFieldBuffer2(new float[SWETotalSamples + 1]) // One extra cell just to ease interpolations
     , mVelocityFieldBuffer1(new float[SWETotalSamples + 1]) // One extra cell just to ease interpolations
     , mVelocityFieldBuffer2(new float[SWETotalSamples + 1]) // One extra cell just to ease interpolations
+    ////////
+    , mSWEExternalWaveStateMachine()
 {
     //
     // Initialize SWE layer
@@ -67,6 +66,8 @@ OceanSurface::OceanSurface(
     mNextVelocityField = mVelocityFieldBuffer2.get();
 
     // Initialize all values
+    //
+    // Velocity boundary conditions are initialized here once and for all
     for (size_t i = 0; i < SWETotalSamples; ++i)
     {
         mCurrentHeightField[i] = SWEHeightFieldOffset;
@@ -88,14 +89,39 @@ void OceanSurface::Update(
     GameParameters const & gameParameters)
 {
     //
-    // 1. SWE: Wave Genesis
+    // 1. SWE Wave Genesis
     //
 
     // TODO
 
 
     //
-    // 2. SWE Update
+    // 2. Advance SWE Waves
+    //
+
+    if (!!mSWEExternalWaveStateMachine)
+    {
+        auto heightValue = mSWEExternalWaveStateMachine->Update(currentSimulationTime);
+        if (!heightValue)
+        {
+            // Done
+            mSWEExternalWaveStateMachine.reset();
+        }
+        else
+        {
+            // TODOTEST
+            LogMessage("TODOHERE2: ", mCurrentHeightField[mSWEExternalWaveStateMachine->GetSampleIndex()],
+                " -> ", *heightValue);
+
+            mCurrentHeightField[mSWEExternalWaveStateMachine->GetSampleIndex()] = *heightValue;
+        }
+    }
+
+    // TODO: wave genesis
+
+
+    //
+    // 3. SWE Update
     //
     // - Current -> Next
     //
@@ -131,7 +157,7 @@ void OceanSurface::Update(
 
 
     //
-    // 3. Swap Buffers
+    // 4. Swap Buffers
     //
 
     std::swap(mCurrentHeightField, mNextHeightField);
@@ -139,7 +165,7 @@ void OceanSurface::Update(
 
 
     //
-    // 4. Generate samples
+    // 5. Generate samples
     //
     // - Samples values are a combination of:
     //  - SWE's height field
@@ -333,28 +359,56 @@ void OceanSurface::Upload(
 }
 
 void OceanSurface::AdjustTo(
-    float x,
-    float y)
+    std::optional<vec2f> const & worldCoordinates,
+    float currentSimulationTime)
 {
-    //
-    // Calculate sample index, minimizing error
-    //
+    if (!!worldCoordinates)
+    {
+        // Calculate target height
+        float targetHeight =
+            (worldCoordinates->y / SWEHeightFieldAmplification)
+            + SWEHeightFieldOffset;
 
-    float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth) / Dx;
+        // Check whether we are already advancing a wave
+        if (!mSWEExternalWaveStateMachine)
+        {
+            //
+            // Start advancing a new wave
+            //
 
-    int32_t sampleIndexI = FastTruncateInt32(sampleIndexF + 0.5f);
-    assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
+            // Calculate sample index, minimizing error
+            float const sampleIndexF = (worldCoordinates->x + GameParameters::HalfMaxWorldWidth) / Dx;
+            int32_t sampleIndexI = FastTruncateInt32(sampleIndexF + 0.5f);
+            assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
 
+            // Start wave
+            mSWEExternalWaveStateMachine.emplace(
+                sampleIndexI,
+                mCurrentHeightField[SWEOuterLayerSamples + sampleIndexI], // LowHeight
+                targetHeight,
+                SWEWaveStateMachine::ReleaseModeType::OnCue,
+                currentSimulationTime);
+        }
+        else
+        {
+            //
+            // Restart currently-advancing wave
+            //
 
-    //
-    // Update height field
-    //
+            mSWEExternalWaveStateMachine->Restart(
+                targetHeight,
+                currentSimulationTime);
+        }
+    }
+    else
+    {
+        //
+        // Start release of currently-advancing wave
+        //
 
-    // TODOHERE: do inertia
-    mCurrentHeightField[SWEOuterLayerSamples + sampleIndexI] =
-        (y / SWEHeightFieldAmplification) + SWEHeightFieldOffset;
-
-    LogMessage("TODOTEST: Adjusted=", mCurrentHeightField[SWEOuterLayerSamples + sampleIndexI]);
+        assert(!!mSWEExternalWaveStateMachine);
+        mSWEExternalWaveStateMachine->Release(currentSimulationTime);
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -455,6 +509,124 @@ void OceanSurface::UpdateVelocityField()
             * (mNextHeightField[i - 1] - mNextHeightField[i]) / Dx
             * GameParameters::SimulationStepTimeDuration<float>;
     }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////
+
+OceanSurface::SWEWaveStateMachine::SWEWaveStateMachine(
+    int32_t sampleIndex,
+    float startHeight,
+    float targetHeight,
+    ReleaseModeType releaseMode,
+    float currentSimulationTime)
+    : mSampleIndex(sampleIndex)
+    , mLowHeight(startHeight)
+    , mCurrentPhaseStartHeight(startHeight)
+    , mCurrentPhaseTargetHeight(targetHeight)
+    , mCurrentHeight(startHeight)
+    , mCurrentProgress(0.0f)
+    , mStartSimulationTime(currentSimulationTime)
+    , mCurrentWavePhase(WavePhaseType::Rise)
+    , mReleaseMode(releaseMode)
+    , mSmoothingDelay(CalculateSmoothingDelay())
+{}
+
+void OceanSurface::SWEWaveStateMachine::Restart(
+    float restartHeight,
+    float currentSimulationTime)
+{
+    // Rise in any case, and our new target is the restart height
+
+    mCurrentPhaseStartHeight = mCurrentHeight;
+    mCurrentPhaseTargetHeight = restartHeight;
+    mCurrentProgress = 0.0f;
+    mStartSimulationTime = currentSimulationTime;
+    mCurrentWavePhase = WavePhaseType::Rise;
+
+    // Recalculate delay
+    mSmoothingDelay = CalculateSmoothingDelay();
+}
+
+void OceanSurface::SWEWaveStateMachine::Release(float currentSimulationTime)
+{
+    if (mCurrentWavePhase == WavePhaseType::Rise)
+    {
+        // Start falling
+        StartFallPhase(currentSimulationTime);
+    }
+    else
+    {
+        // Stop altogether
+        mCurrentProgress = 1.0f;
+    }
+}
+
+std::optional<float> OceanSurface::SWEWaveStateMachine::Update(
+    float currentSimulationTime)
+{
+    // Advance iff we are not done yet
+    if (mCurrentProgress < 1.0f)
+    {
+        mCurrentProgress =
+            (currentSimulationTime - mStartSimulationTime)
+            / mSmoothingDelay;
+    }
+
+    // Calculate sinusoidal progress
+    float const sinProgress = sin(Pi<float> / 2.0f * std::min(mCurrentProgress, 1.0f));
+
+    // Calculate new height value
+    mCurrentHeight =
+        mCurrentPhaseStartHeight + (mCurrentPhaseTargetHeight - mCurrentPhaseStartHeight) * sinProgress;
+
+    // TODOTEST
+    LogMessage("TODOHERE1:", mCurrentHeight);
+
+    // Check whether it's time to switch phase
+    if (mCurrentProgress >= 1.0f)
+    {
+        if (mCurrentWavePhase == WavePhaseType::Rise)
+        {
+            if (mReleaseMode == ReleaseModeType::Automatic)
+            {
+                // Start falling
+                StartFallPhase(currentSimulationTime);
+            }
+        }
+        else
+        {
+            // We're done
+            return std::nullopt;
+        }
+    }
+
+    return mCurrentHeight;
+}
+
+float OceanSurface::SWEWaveStateMachine::CalculateSmoothingDelay()
+{
+    // @HeightFieldOffset=100:
+    //  100.2 => SimulationStepTimeDuration
+    //  100.4 => SimulationStepTimeDuration * 2
+
+    float const deltaH = abs(mCurrentPhaseTargetHeight - mCurrentHeight);
+
+    return
+        GameParameters::SimulationStepTimeDuration<float>
+        * deltaH / (SWEHeightFieldOffset / 500.0f)
+        * (mCurrentWavePhase == WavePhaseType::Rise) ? 1.0f : 0.2f;
+}
+
+void OceanSurface::SWEWaveStateMachine::StartFallPhase(float currentSimulationTime)
+{
+    assert(mCurrentWavePhase == WavePhaseType::Rise);
+
+    mCurrentPhaseStartHeight = mCurrentHeight;
+    mCurrentPhaseTargetHeight = mLowHeight;
+    mCurrentProgress = 0.0f;
+    mStartSimulationTime = currentSimulationTime;
+    mCurrentWavePhase = WavePhaseType::Fall;
+    mSmoothingDelay = CalculateSmoothingDelay();
 }
 
 }

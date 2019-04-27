@@ -436,6 +436,7 @@ Render:
 	- Try 32-bit build
 	- Sound controller: complain if find extraneous files (had issue with ".flc")
 	- Translations:
+		- Make localizable
 		- Russian: steven6886@yandex.ru
 
 - Simulation Optimizations:
@@ -820,14 +821,15 @@ Render:
 						- Period (=> speed=Wavelength/Period)
 					- Controls:
 						- Auto mode:
-							- Wind speed => height, width, period (from table)
+							- Wind speed => height, width, period (from table at https://topex.ucsd.edu/ps/waves.pdf)
 								- Wind speed = 0 => no basal waves
 						- Width, Height, Period (>0)
 							- Actual Period = period * direction(wind speed) + wind speed * factor
-				- SWEs
+				= SWEs
 					= Tool
 						+ Tool does no smoothing
-						- OceanSurface implements stateless inertia at each AdjustTo call
+						= OceanSurface implements trajectory
+							- Delay rate must itself depend on delta H
 						- Check if average water depth increases
 						
 					- Rogue wave generation (incl. tsunami)

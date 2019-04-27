@@ -11,6 +11,7 @@
 #include <GameCore/RunningAverage.h>
 
 #include <memory>
+#include <optional>
 
 namespace Physics
 {
@@ -19,10 +20,7 @@ class OceanSurface
 {
 public:
 
-    OceanSurface(
-        float currentSimulationTime,
-        Wind const & wind,
-        GameParameters const & gameParameters);
+    OceanSurface();
 
     void Update(
         float currentSimulationTime,
@@ -36,8 +34,8 @@ public:
 public:
 
     void AdjustTo(
-        float x,
-        float y);
+        std::optional<vec2f> const & worldCoordinates,
+        float currentSimulationTime);
 
     float GetHeightAt(float x) const
     {
@@ -92,6 +90,7 @@ private:
     // Smoothing of wind incisiveness
     RunningAverage<15> mWindIncisivenessRunningAverage;
 
+
     //
     // Shallow water equations
     //
@@ -109,6 +108,74 @@ private:
     std::unique_ptr<float> mVelocityFieldBuffer2;
     float * mCurrentVelocityField;
     float * mNextVelocityField;
+
+private:
+
+    class SWEWaveStateMachine
+    {
+    public:
+
+        enum class ReleaseModeType
+        {
+            // Begins the wave downfall only when the rise is completed
+            Automatic,
+
+            // Begins the wave downfall only when Release is invoked
+            OnCue
+        };
+
+    public:
+
+        SWEWaveStateMachine(
+            int32_t sampleIndex,
+            float lowHeight,
+            float highHeight,
+            ReleaseModeType releaseMode,
+            float currentSimulationTime);
+
+        auto GetSampleIndex() const
+        {
+            return mSampleIndex;
+        }
+
+        void Restart(
+            float newTargetHeight,
+            float currentSimulationTime);
+
+        void Release(float currentSimulationTime);
+
+        /*
+         * Returns none when it may be retired.
+         */
+        std::optional<float> Update(
+            float currentSimulationTime);
+
+    private:
+
+        float CalculateSmoothingDelay();
+
+        void StartFallPhase(float currentSimulationTime);
+
+        enum class WavePhaseType
+        {
+            Rise,
+            Fall
+        };
+
+        int32_t const mSampleIndex;
+        float const mLowHeight;
+        float mCurrentPhaseStartHeight;
+        float mCurrentPhaseTargetHeight;
+        float mCurrentHeight;
+        float mCurrentProgress; // Between 0 and 1, regardless of direction
+        float mStartSimulationTime;
+        WavePhaseType mCurrentWavePhase;
+        ReleaseModeType const mReleaseMode;
+        float mSmoothingDelay;
+    };
+
+    // Interactive wave
+    std::optional<SWEWaveStateMachine> mSWEExternalWaveStateMachine;
 };
 
 }
