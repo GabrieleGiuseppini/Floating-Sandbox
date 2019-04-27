@@ -598,29 +598,41 @@ std::optional<float> OceanSurface::SWEWaveStateMachine::Update(
 
 float OceanSurface::SWEWaveStateMachine::CalculateSmoothingDelay()
 {
-    float const deltaH = std::max(
+    float const deltaH = std::min(
         abs(mCurrentPhaseTargetHeight - mCurrentHeight),
         SWEHeightFieldOffset / 5.0f);
 
-    //
-    // Number of ticks must fit:
-    //  DeltaH=0.0  => Ticks=0.0
-    //  DeltaH=0.2  => Ticks=8.0
-    //  DeltaH=2.0  => Ticks=50.0
-    //  DeltaH>2.0  => Ticks~=50.0
-    // y = -1.375698 - (-63.32599/1.148332)*(1 - e^(-1.148332*x))
-    float delayTicks =
-        -1.375698f
-        + (63.32599f / 1.148332f) * (1.0f - exp(-1.148332f * deltaH));
-
-    if (mCurrentWavePhase == WavePhaseType::Fall)
+    float delayTicks;
+    if (mCurrentWavePhase == WavePhaseType::Rise)
     {
-        // Falling wave is faster
-        delayTicks /= 5.0f;
+        //
+        // Number of ticks must fit:
+        //  DeltaH=0.0  => Ticks=0.0
+        //  DeltaH=0.2  => Ticks=8.0
+        //  DeltaH=2.0  => Ticks=150.0
+        //  DeltaH=4.0  => Ticks=200.0
+        //  DeltaH>4.0  => Ticks~=200.0
+        // y = -19.88881 - (-147.403/0.6126081)*(1 - e^(-0.6126081*x))
+        delayTicks =
+            -19.88881f
+            + (147.403f / 0.6126081f) * (1.0f - exp(-0.6126081f * deltaH));
+    }
+    else
+    {
+        //
+        // Number of ticks must fit:
+        //  DeltaH=0.1  => Ticks=2.0
+        //  DeltaH=0.25 => Ticks=3.0
+        //  DeltaH=1.0  => Ticks=7.0
+        //  DeltaH=2.0  => Ticks=10.0
+        // y = 1.220013 - (-7.8394/0.6485749)*(1 - e^(-0.6485749*x))
+        delayTicks =
+            1.220013f
+            + (7.8394f / 0.6485749f) * (1.0f - exp(-0.6485749f * deltaH));
     }
 
     float const delay =
-        std::max(delayTicks, 0.0f)
+        std::max(delayTicks, 1.0f)
         * GameParameters::SimulationStepTimeDuration<float>;
 
     return delay;

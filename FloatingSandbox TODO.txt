@@ -830,9 +830,9 @@ Render:
 						+ Tool does no smoothing
 						+ OceanSurface implements trajectory
 							+ Delay rate must itself depend on delta H
-						= Test max delta H
+						+ Test max delta H
+						= Find correct falling water speed
 						- Check if average water depth increases
-						
 					- Rogue wave generation (incl. tsunami)
 						- Params:
 							- Height
