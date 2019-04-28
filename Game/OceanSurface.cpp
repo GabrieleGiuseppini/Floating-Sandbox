@@ -65,10 +65,10 @@ OceanSurface::OceanSurface()
     mCurrentVelocityField = mVelocityFieldBuffer1.get();
     mNextVelocityField = mVelocityFieldBuffer2.get();
 
-    // Initialize all values
+    // Initialize all values - including extra unused sample
     //
     // Velocity boundary conditions are initialized here once and for all
-    for (size_t i = 0; i < SWETotalSamples; ++i)
+    for (size_t i = 0; i <= SWETotalSamples; ++i)
     {
         mCurrentHeightField[i] = SWEHeightFieldOffset;
         mNextHeightField[i] = SWEHeightFieldOffset;
@@ -76,11 +76,6 @@ OceanSurface::OceanSurface()
         mCurrentVelocityField[i] = 0.0f;
         mNextVelocityField[i] = 0.0f;
     }
-
-    // Initialize extra cell - we won't ever use this as it'll be multiplied with zero,
-    // but still...
-    mCurrentHeightField[SWETotalSamples] = SWEHeightFieldOffset;
-    mCurrentVelocityField[SWETotalSamples] = 0.0f;
 }
 
 void OceanSurface::Update(
@@ -140,7 +135,6 @@ void OceanSurface::Update(
         assert(mNextVelocityField[SWETotalSamples - 1 - i] == 0.0f);
     }
 
-    // TODOTEST
     ////// Calc avg height among all samples
     ////float avgHeight = 0.0f;
     ////for (size_t i = SWEOuterLayerSamples; i < SWEOuterLayerSamples + SamplesCount; ++i)

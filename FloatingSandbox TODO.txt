@@ -826,18 +826,21 @@ Render:
 						- Width, Height, Period (>0)
 							- Actual Period = period * direction(wind speed) + wind speed * factor
 				= SWEs
-					= Tool
+					+ Tool
 						+ Tool does no smoothing
 						+ OceanSurface implements trajectory
 							+ Delay rate must itself depend on delta H
 						+ Test max delta H
-						= Find correct falling water speed
-						- Check if average water depth increases
+						+ Find correct falling water speed
+						+ Check if average water depth increases
+					= Cursor: set arrows at same positions as adjust terrain cursor
+					- See why R-side is reflective and L side is not
 					- Rogue wave generation (incl. tsunami)
 						- Params:
 							- Height
+								- Tsunami: 105 (5%)
+								- Rogue: 101.0 (1%)
 							- Frequency (Poisson's lambda)
-								- Same as tool: genesis does smoothing from 0 to PI/2
 			- Final touches:
 				- Cursor
 				- Tool sound
