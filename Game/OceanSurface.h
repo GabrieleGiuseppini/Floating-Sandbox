@@ -75,6 +75,11 @@ private:
     void UpdateHeightField();
     void UpdateVelocityField();
 
+    void GenerateSamples(
+        float currentSimulationTime,
+        Wind const & wind,
+        GameParameters const & gameParameters);
+
 private:
 
     // What we store for each sample

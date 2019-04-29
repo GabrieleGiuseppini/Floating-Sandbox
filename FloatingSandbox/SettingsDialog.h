@@ -97,13 +97,11 @@ private:
     std::unique_ptr<SliderControl> mWindGustAmplitudeSlider;
 
     // Waves
-    std::unique_ptr<SliderControl> mWaveTODOHeightOffset;
-    std::unique_ptr<SliderControl> mWaveTODORiseTime;
-    std::unique_ptr<SliderControl> mWaveTODOFallTime;
-    std::unique_ptr<SliderControl> mWaveTODOAmplification;
+    std::unique_ptr<SliderControl> mWaveHeightSlider;
+    std::unique_ptr<SliderControl> mWaveLengthSlider;
+    std::unique_ptr<SliderControl> mWavePeriodSlider;
 
     // World
-    std::unique_ptr<SliderControl> mWaveHeightSlider;
     std::unique_ptr<SliderControl> mSeaDepthSlider;
     std::unique_ptr<SliderControl> mOceanFloorBumpinessSlider;
     std::unique_ptr<SliderControl> mOceanFloorDetailAmplificationSlider;

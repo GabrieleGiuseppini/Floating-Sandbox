@@ -765,90 +765,68 @@ void SettingsDialog::PopulateWavesPanel(wxPanel * panel)
     //
 
 
-    // Height Offset
+    // Wave Height
 
-    mWaveTODOHeightOffset = std::make_unique<SliderControl>(
+    mWaveHeightSlider = std::make_unique<SliderControl>(
         panel,
         SliderWidth,
         SliderHeight,
-        "Height Offset",
-        "TODO.",
-        static_cast<float>(mGameController->GetWaveTODOHeightOffset()),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<ExponentialSliderCore>(
-            static_cast<float>(mGameController->GetMinWaveTODOHeightOffset()),
-            2.0f,
-            static_cast<float>(mGameController->GetMaxWaveTODOHeightOffset())));
-
-    gridSizer->Add(mWaveTODOHeightOffset.get(), 1, wxALL, SliderBorder);
-
-
-    // Amplification
-
-    mWaveTODOAmplification = std::make_unique<SliderControl>(
-        panel,
-        SliderWidth,
-        SliderHeight,
-        "Amplification",
-        "TODO.",
-        static_cast<float>(mGameController->GetWaveTODOAmplification()),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<ExponentialSliderCore>(
-            static_cast<float>(mGameController->GetMinWaveTODOAmplification()),
-            10.0f,
-            static_cast<float>(mGameController->GetMaxWaveTODOAmplification())));
-
-    gridSizer->Add(mWaveTODOAmplification.get(), 1, wxALL, SliderBorder);
-
-
-    // Rise time
-
-    mWaveTODORiseTime = std::make_unique<SliderControl>(
-        panel,
-        SliderWidth,
-        SliderHeight,
-        "Rise Time",
-        "TODO.",
-        static_cast<float>(mGameController->GetWaveTODORiseTime()),
+        "Wave Height",
+        "The height of sea water waves (m).",
+        static_cast<float>(mGameController->GetWaveHeight()),
         [this](float /*value*/)
         {
             // Remember we're dirty now
             this->mApplyButton->Enable(true);
         },
         std::make_unique<LinearSliderCore>(
-            static_cast<float>(mGameController->GetMinWaveTODORiseTime()),
-            static_cast<float>(mGameController->GetMaxWaveTODORiseTime())));
+            mGameController->GetMinWaveHeight(),
+            mGameController->GetMaxWaveHeight()));
 
-    gridSizer->Add(mWaveTODORiseTime.get(), 1, wxALL, SliderBorder);
+    gridSizer->Add(mWaveHeightSlider.get(), 1, wxALL, SliderBorder);
 
 
-    // Fall time
+    // Wave Length
 
-    mWaveTODOFallTime = std::make_unique<SliderControl>(
+    mWaveLengthSlider = std::make_unique<SliderControl>(
         panel,
         SliderWidth,
         SliderHeight,
-        "Fall Time",
+        "Wave Width",
         "TODO.",
-        static_cast<float>(mGameController->GetWaveTODOFallTime()),
+        static_cast<float>(mGameController->GetWaveLength()),
         [this](float /*value*/)
         {
             // Remember we're dirty now
             this->mApplyButton->Enable(true);
         },
         std::make_unique<LinearSliderCore>(
-            static_cast<float>(mGameController->GetMinWaveTODOFallTime()),
-            static_cast<float>(mGameController->GetMaxWaveTODOFallTime())));
+            mGameController->GetMinWaveLength(),
+            mGameController->GetMaxWaveLength()));
 
-    gridSizer->Add(mWaveTODOFallTime.get(), 1, wxALL, SliderBorder);
+    gridSizer->Add(mWaveLengthSlider.get(), 1, wxALL, SliderBorder);
+
+
+    // Wave Period
+
+    mWavePeriodSlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Wave Period",
+        "TODO.",
+        static_cast<float>(mGameController->GetWavePeriod()),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<ExponentialSliderCore>(
+            mGameController->GetMinWavePeriod(),
+            1.0f,
+            mGameController->GetMaxWavePeriod()));
+
+    gridSizer->Add(mWavePeriodSlider.get(), 1, wxALL, SliderBorder);
 
 
 
@@ -864,27 +842,6 @@ void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
     //
     // Row 1
     //
-
-    // Wave Height
-
-    mWaveHeightSlider = std::make_unique<SliderControl>(
-        panel,
-        SliderWidth,
-        SliderHeight,
-        "Wave Height",
-        "The height of sea water waves (m).",
-        mGameController->GetWaveHeight(),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            mGameController->GetMinWaveHeight(),
-            mGameController->GetMaxWaveHeight()));
-
-    gridSizer->Add(mWaveHeightSlider.get(), 1, wxALL, SliderBorder);
-
 
     // Sea Depth
 
@@ -951,6 +908,29 @@ void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
     gridSizer->Add(mOceanFloorDetailAmplificationSlider.get(), 1, wxALL, SliderBorder);
 
 
+    // Rot Accelerator
+
+    mRotAcceler8rSlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Rot Acceler8r",
+        "Adjusts the speed with which materials rot when exposed to sea water.",
+        mGameController->GetRotAcceler8r(),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<ExponentialSliderCore>(
+            mGameController->GetMinRotAcceler8r(),
+            1.0f,
+            mGameController->GetMaxRotAcceler8r()));
+
+    gridSizer->Add(mRotAcceler8rSlider.get(), 1, wxALL, SliderBorder);
+
+
+
     //
     // Row 2
     //
@@ -994,27 +974,6 @@ void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
             mGameController->GetMaxLightSpreadAdjustment()));
 
     gridSizer->Add(mLightSpreadSlider.get(), 1, wxALL, SliderBorder);
-
-    // Rot Accelerator
-
-    mRotAcceler8rSlider = std::make_unique<SliderControl>(
-        panel,
-        SliderWidth,
-        SliderHeight,
-        "Rot Acceler8r",
-        "Adjusts the speed with which materials rot when exposed to sea water.",
-        mGameController->GetRotAcceler8r(),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<ExponentialSliderCore>(
-            mGameController->GetMinRotAcceler8r(),
-            1.0f,
-            mGameController->GetMaxRotAcceler8r()));
-
-    gridSizer->Add(mRotAcceler8rSlider.get(), 1, wxALL, SliderBorder);
 
 
     // Finalize panel
@@ -1806,16 +1765,15 @@ void SettingsDialog::ReadSettings()
     mWindGustAmplitudeSlider->SetValue(mGameController->GetWindSpeedMaxFactor());
     mWindGustAmplitudeSlider->Enable(mGameController->GetDoModulateWind());
 
-
-    // TODO
-    mWaveTODOHeightOffset->SetValue(mGameController->GetWaveTODOHeightOffset());
-    mWaveTODORiseTime->SetValue(mGameController->GetWaveTODORiseTime());
-    mWaveTODOFallTime->SetValue(mGameController->GetWaveTODOFallTime());
-    mWaveTODOAmplification->SetValue(mGameController->GetWaveTODOAmplification());
-
-
+    // Waves
 
     mWaveHeightSlider->SetValue(mGameController->GetWaveHeight());
+
+    mWaveLengthSlider->SetValue(mGameController->GetWaveLength());
+
+    mWavePeriodSlider->SetValue(mGameController->GetWavePeriod());
+
+    // World
 
     mLuminiscenceSlider->SetValue(mGameController->GetLuminiscenceAdjustment());
 
@@ -1829,7 +1787,7 @@ void SettingsDialog::ReadSettings()
 
     mOceanFloorDetailAmplificationSlider->SetValue(mGameController->GetOceanFloorDetailAmplification());
 
-
+    // Interactions
 
     mDestroyRadiusSlider->SetValue(mGameController->GetDestroyRadius());
 
@@ -2074,7 +2032,7 @@ void SettingsDialog::ApplySettings()
     mGameController->SetWaterLevelOfDetail(
         mWaterLevelOfDetailSlider->GetValue());
 
-
+    // Air
 
     mGameController->SetNumberOfStars(
         static_cast<size_t>(mNumberOfStarsSlider->GetValue()));
@@ -2090,16 +2048,18 @@ void SettingsDialog::ApplySettings()
     mGameController->SetWindSpeedMaxFactor(
         mWindGustAmplitudeSlider->GetValue());
 
-
-    // TODO
-    mGameController->SetWaveTODOHeightOffset(mWaveTODOHeightOffset->GetValue());
-    mGameController->SetWaveTODORiseTime(mWaveTODORiseTime->GetValue());
-    mGameController->SetWaveTODOFallTime(mWaveTODOFallTime->GetValue());
-    mGameController->SetWaveTODOAmplification(mWaveTODOAmplification->GetValue());
-
+    // Waves
 
     mGameController->SetWaveHeight(
         mWaveHeightSlider->GetValue());
+
+    mGameController->SetWaveLength(
+        mWaveLengthSlider->GetValue());
+
+    mGameController->SetWavePeriod(
+        mWavePeriodSlider->GetValue());
+
+    // World
 
     mGameController->SetSeaDepth(
         mSeaDepthSlider->GetValue());

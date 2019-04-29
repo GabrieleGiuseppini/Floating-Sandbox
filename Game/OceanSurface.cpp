@@ -157,63 +157,11 @@ void OceanSurface::Update(
     //
     // 5. Generate samples
     //
-    // - Samples values are a combination of:
-    //  - SWE's height field
-    //  - Basal waves
-    //  - Wind gust ripples
-    //
 
-    ////float constexpr BasalWaveLength = 60.0f; // metres
-    ////float constexpr BasalWavePeriod = 2.5f; // seconds
-
-    static constexpr float WindGustRippleSpatialFrequency = 0.5f;
-
-    float const windSpeedAbsoluteMagnitude = wind.GetCurrentWindSpeed().length();
-    float const windSpeedGustRelativeAmplitude = wind.GetMaxSpeedMagnitude() - wind.GetBaseSpeedMagnitude();
-    float const rawWindNormalizedIncisiveness = (windSpeedGustRelativeAmplitude == 0.0f)
-        ? 0.0f
-        : std::max(0.0f, windSpeedAbsoluteMagnitude - abs(wind.GetBaseSpeedMagnitude()))
-            / abs(windSpeedGustRelativeAmplitude);
-
-    float const windRipplesTimeFrequency = (gameParameters.WindSpeedBase >= 0.0f)
-        ? 128.0f
-        : -128.0f;
-
-    float const smoothedWindNormalizedIncisiveness = mWindIncisivenessRunningAverage.Update(rawWindNormalizedIncisiveness);
-    float const windRipplesWaveHeight = 0.7f * smoothedWindNormalizedIncisiveness;
-
-    // sample index = 0
-    float previousSampleValue;
-    {
-        float const rippleValue = sinf(-currentSimulationTime * windRipplesTimeFrequency);
-        previousSampleValue =
-            (mCurrentHeightField[SWEOuterLayerSamples + 0] - SWEHeightFieldOffset) * SWEHeightFieldAmplification
-            + rippleValue * windRipplesWaveHeight;
-
-        mSamples[0].SampleValue = previousSampleValue;
-    }
-
-    // sample index = 1...SamplesCount - 1
-    float x = Dx;
-    for (int64_t i = 1; i < SamplesCount; i++, x += Dx)
-    {
-        float const rippleValue = sinf(x * WindGustRippleSpatialFrequency - currentSimulationTime * windRipplesTimeFrequency);
-        float const sampleValue =
-            (mCurrentHeightField[SWEOuterLayerSamples + i] - SWEHeightFieldOffset) * SWEHeightFieldAmplification
-            + rippleValue * windRipplesWaveHeight;
-
-        mSamples[i].SampleValue = sampleValue;
-        mSamples[i - 1].SampleValuePlusOneMinusSampleValue = sampleValue - previousSampleValue;
-
-        previousSampleValue = sampleValue;
-    }
-
-    // Populate last delta (extra sample will have same value as this sample)
-    mSamples[SamplesCount - 1].SampleValuePlusOneMinusSampleValue = 0.0f;
-
-    // Populate extra sample - same value as last sample
-    mSamples[SamplesCount].SampleValue = mSamples[SamplesCount - 1].SampleValue;
-    mSamples[SamplesCount].SampleValuePlusOneMinusSampleValue = 0.0f; // Never used
+    GenerateSamples(
+        currentSimulationTime,
+        wind,
+        gameParameters);
 }
 
 // TODOOLD
@@ -499,6 +447,110 @@ void OceanSurface::UpdateVelocityField()
             * (mNextHeightField[i - 1] - mNextHeightField[i]) / Dx
             * GameParameters::SimulationStepTimeDuration<float>;
     }
+}
+
+void OceanSurface::GenerateSamples(
+    float currentSimulationTime,
+    Wind const & wind,
+    GameParameters const & gameParameters)
+{
+    //
+    // Sample values are a combination of:
+    //  - SWE's height field
+    //  - Basal waves
+    //  - Wind gust ripples
+    //
+
+    //
+    // Basal waves
+    //
+
+    float const basalWaveAmplitude = gameParameters.WaveHeight / 2.0f;
+    float const basalWaveNumber = 2.0f * Pi<float> / gameParameters.WaveLength;
+    float const basalWavePulsation = 2.0f * Pi<float> / gameParameters.WavePeriod;
+
+    //
+    // Wind gust ripples
+    //
+
+    static constexpr float WindGustRippleSpatialFrequency = 0.5f;
+
+    float const windSpeedAbsoluteMagnitude = wind.GetCurrentWindSpeed().length();
+    float const windSpeedGustRelativeAmplitude = wind.GetMaxSpeedMagnitude() - wind.GetBaseSpeedMagnitude();
+    float const rawWindNormalizedIncisiveness = (windSpeedGustRelativeAmplitude == 0.0f)
+        ? 0.0f
+        : std::max(0.0f, windSpeedAbsoluteMagnitude - abs(wind.GetBaseSpeedMagnitude()))
+        / abs(windSpeedGustRelativeAmplitude);
+
+    float const windRipplesTimeFrequency = (gameParameters.WindSpeedBase >= 0.0f)
+        ? 128.0f
+        : -128.0f;
+
+    float const smoothedWindNormalizedIncisiveness = mWindIncisivenessRunningAverage.Update(rawWindNormalizedIncisiveness);
+    float const windRipplesWaveHeight = 0.7f * smoothedWindNormalizedIncisiveness;
+
+
+    //
+    // Generate samples
+    //
+
+    // sample index = 0
+    float previousSampleValue;
+    {
+        float const sweValue =
+            (mCurrentHeightField[SWEOuterLayerSamples + 0] - SWEHeightFieldOffset)
+            * SWEHeightFieldAmplification;
+
+        float const basalValue =
+            sin(basalWaveNumber * 0 - basalWavePulsation * currentSimulationTime)
+            * basalWaveAmplitude;
+
+        float const rippleValue =
+            sinf(-currentSimulationTime * windRipplesTimeFrequency)
+            * windRipplesWaveHeight;
+
+        previousSampleValue =
+            sweValue
+            + basalValue
+            + rippleValue;
+
+        mSamples[0].SampleValue = previousSampleValue;
+    }
+
+    // sample index = 1...SamplesCount - 1
+    float x = Dx;
+    for (int64_t i = 1; i < SamplesCount; i++, x += Dx)
+    {
+        float const sweValue =
+            (mCurrentHeightField[SWEOuterLayerSamples + i] - SWEHeightFieldOffset)
+            * SWEHeightFieldAmplification;
+
+        float const basalValue =
+            sin(basalWaveNumber * x - basalWavePulsation * currentSimulationTime)
+            * basalWaveAmplitude;
+
+        float const rippleValue =
+            sinf(x * WindGustRippleSpatialFrequency - currentSimulationTime * windRipplesTimeFrequency)
+            * windRipplesWaveHeight;
+
+        float const sampleValue =
+            sweValue
+            + basalValue
+            + rippleValue;
+
+        mSamples[i].SampleValue = sampleValue;
+        mSamples[i - 1].SampleValuePlusOneMinusSampleValue = sampleValue - previousSampleValue;
+
+        previousSampleValue = sampleValue;
+    }
+
+    // Populate last delta (extra sample will have same value as this sample)
+    mSamples[SamplesCount - 1].SampleValuePlusOneMinusSampleValue = 0.0f;
+
+    // Populate extra sample - same value as last sample
+    mSamples[SamplesCount].SampleValue = mSamples[SamplesCount - 1].SampleValue;
+    mSamples[SamplesCount].SampleValuePlusOneMinusSampleValue = 0.0f; // Never used
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////

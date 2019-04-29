@@ -800,7 +800,7 @@ Render:
 
 - Dynamics:
 
-	- See if true: realistic sink is 3 water intake and 0.25 water diffusion speed
+	- See if true: realistic sinking of ship is 3 water intake and 0.25 water diffusion speed
 
 	= Make waves with Shallow Water Equations (*)
 		= Implement
@@ -813,18 +813,34 @@ Render:
 					+ Swap buffers
 			+ Step 2: perturbation tool
 				+ OceanSurface::AdjustTo
-			- Rearc:
-				- Basal waves
-					- Params:
-						- Width (wavelength)
-						- Height
-						- Period (=> speed=Wavelength/Period)
+			= Rearc:
+				= Basal waves
+					+ Params:
+						+ Width (wavelength)
+						+ Height
+						+ Period (=> speed=Wavelength/Period)
+					= Tests:
+						= Funcs:
+							= sin
+							- abs(sin)
+							- quadratic (8|f-0.5|^2 - 1)
+							- Peachey's profile: quadratic + sin, controlled via:
+								- local "steepness" param, at first for testing
+								- then, steepness is based off speed
+						- Composition of SWE and basal:
+							- add
+							- mul
+							- max
+						- Wave width is "WaveWidthAdjust"
+							- 1.0 means "max width" = f(height)
+						- Wavelength and period correlated: T = 1 / sqrt(g/2PiL)
+
 					- Controls:
+						- Width, Height, Period (>0)
+							- Actual Period = period * direction(wind speed) + wind speed * factor
 						- Auto mode:
 							- Wind speed => height, width, period (from table at https://topex.ucsd.edu/ps/waves.pdf)
 								- Wind speed = 0 => no basal waves
-						- Width, Height, Period (>0)
-							- Actual Period = period * direction(wind speed) + wind speed * factor
 				= SWEs
 					+ Tool
 						+ Tool does no smoothing
@@ -833,7 +849,7 @@ Render:
 						+ Test max delta H
 						+ Find correct falling water speed
 						+ Check if average water depth increases
-					= Cursor: set arrows at same positions as adjust terrain cursor
+					+ Cursor: set arrows at same positions as adjust terrain cursor
 					- See why R-side is reflective and L side is not
 					- Rogue wave generation (incl. tsunami)
 						- Params:
@@ -841,21 +857,19 @@ Render:
 								- Tsunami: 105 (5%)
 								- Rogue: 101.0 (1%)
 							- Frequency (Poisson's lambda)
+				- SettingsDialog:
+					- "Wind and Waves" tab
+						- Tooltips
 			- Final touches:
-				- Cursor
+				+ Cursor
 				- Tool sound
 			- Optimizations:
 				- Two advections in one, so that we have a single loop
 				- Two field updates in one, so that we have a single loop
 			- Misc:
 				- Wave sound:
-					- At high wave collapse; how?
+					- At peaks moving; how?
 
-		- Follow-ups:
-			- Rogue waves/tsunami
-			- Manual tsunami
-				- Tool grabbing water
-			- See if bug with world borders and clamping is due to canvas size change
 	
 	- Try to re-instate square velocity drag (*)
 		- Goal: falling ship should break upon impact with water

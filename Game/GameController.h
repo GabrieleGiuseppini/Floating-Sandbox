@@ -220,30 +220,20 @@ public:
     float GetMinWaterDiffusionSpeedAdjustment() const { return GameParameters::MinWaterDiffusionSpeedAdjustment; }
     float GetMaxWaterDiffusionSpeedAdjustment() const { return GameParameters::MaxWaterDiffusionSpeedAdjustment; }
 
-    float GetWaveTODOHeightOffset() const { return mGameParameters.WaveTODOHeightOffset; }
-    void SetWaveTODOHeightOffset(float value) { mGameParameters.WaveTODOHeightOffset = value; }
-    float GetMinWaveTODOHeightOffset() const { return GameParameters::MinWaveTODOHeightOffset; }
-    float GetMaxWaveTODOHeightOffset() const { return GameParameters::MaxWaveTODOHeightOffset; }
-
-    float GetWaveTODORiseTime() const { return mGameParameters.WaveTODORiseTime; }
-    void SetWaveTODORiseTime(float value) { mGameParameters.WaveTODORiseTime = value; }
-    float GetMinWaveTODORiseTime() const { return GameParameters::MinWaveTODORiseTime; }
-    float GetMaxWaveTODORiseTime() const { return GameParameters::MaxWaveTODORiseTime; }
-
-    float GetWaveTODOFallTime() const { return mGameParameters.WaveTODOFallTime; }
-    void SetWaveTODOFallTime(float value) { mGameParameters.WaveTODOFallTime = value; }
-    float GetMinWaveTODOFallTime() const { return GameParameters::MinWaveTODOFallTime; }
-    float GetMaxWaveTODOFallTime() const { return GameParameters::MaxWaveTODOFallTime; }
-
-    float GetWaveTODOAmplification() const { return mGameParameters.WaveTODOAmplification; }
-    void SetWaveTODOAmplification(float value) { mGameParameters.WaveTODOAmplification = value; }
-    float GetMinWaveTODOAmplification() const { return GameParameters::MinWaveTODOAmplification; }
-    float GetMaxWaveTODOAmplification() const { return GameParameters::MaxWaveTODOAmplification; }
-
     float GetWaveHeight() const { return mGameParameters.WaveHeight; }
     void SetWaveHeight(float value) { mGameParameters.WaveHeight = value; }
     float GetMinWaveHeight() const { return GameParameters::MinWaveHeight; }
     float GetMaxWaveHeight() const { return GameParameters::MaxWaveHeight; }
+
+    float GetWaveLength() const { return mGameParameters.WaveLength; }
+    void SetWaveLength(float value) { mGameParameters.WaveLength = value; }
+    float GetMinWaveLength() const { return GameParameters::MinWaveLength; }
+    float GetMaxWaveLength() const { return GameParameters::MaxWaveLength; }
+
+    float GetWavePeriod() const { return mGameParameters.WavePeriod; }
+    void SetWavePeriod(float value) { mGameParameters.WavePeriod = value; }
+    float GetMinWavePeriod() const { return GameParameters::MinWavePeriod; }
+    float GetMaxWavePeriod() const { return GameParameters::MaxWavePeriod; }
 
     bool GetDoModulateWind() const { return mGameParameters.DoModulateWind; }
     void SetDoModulateWind(bool value) { mGameParameters.DoModulateWind = value; }

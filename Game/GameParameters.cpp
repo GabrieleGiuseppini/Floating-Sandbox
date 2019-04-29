@@ -6,7 +6,7 @@
 #include "GameParameters.h"
 
 GameParameters::GameParameters()
-// Dynamics
+    // Dynamics
     : NumMechanicalDynamicsIterationsAdjustment(1.0f)
     , SpringStiffnessAdjustment(1.0f)
     , SpringDampingAdjustment(1.0f)
@@ -24,11 +24,14 @@ GameParameters::GameParameters()
     , DoGenerateAirBubbles(true)
     // Wind
     , DoModulateWind(true)
-    , WindSpeedBase(0.0f) // TODOTEST: was: -20.0f)
+    , WindSpeedBase(-20.0f)
     , WindSpeedMaxFactor(2.5f)
     , WindGustFrequencyAdjustment(1.0f)
-    // Misc
+    // Waves
     , WaveHeight(2.5f)
+    , WaveLength(30.0f)
+    , WavePeriod(2.0f)
+    // Misc
     , SeaDepth(300.0f)
     , OceanFloorBumpiness(1.0f)
     , OceanFloorDetailAmplification(10.0f)
