@@ -63,10 +63,10 @@ public:
 
     // The number of samples for the entire world width;
     // a higher value means more resolution at the expense of Update() and of cache misses
-    static constexpr int64_t SamplesCount = 8192;
+    static int64_t constexpr SamplesCount = 8192;
 
     // The x step of the samples
-    static constexpr float Dx = GameParameters::MaxWorldWidth / static_cast<float>(SamplesCount);
+    static float constexpr Dx = GameParameters::MaxWorldWidth / static_cast<float>(SamplesCount);
 
 private:
 

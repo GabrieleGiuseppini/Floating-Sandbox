@@ -765,68 +765,69 @@ void SettingsDialog::PopulateWavesPanel(wxPanel * panel)
     //
 
 
-    // Wave Height
+    // Basal Wave Height
 
-    mWaveHeightSlider = std::make_unique<SliderControl>(
+    mBasalWaveHeightSlider = std::make_unique<SliderControl>(
         panel,
         SliderWidth,
         SliderHeight,
-        "Wave Height",
-        "The height of sea water waves (m).",
-        static_cast<float>(mGameController->GetWaveHeight()),
+        "Basal Wave Height",
+        "The height of basal sea water waves (m).",
+        static_cast<float>(mGameController->GetBasalWaveHeight()),
         [this](float /*value*/)
         {
             // Remember we're dirty now
             this->mApplyButton->Enable(true);
         },
         std::make_unique<LinearSliderCore>(
-            mGameController->GetMinWaveHeight(),
-            mGameController->GetMaxWaveHeight()));
+            mGameController->GetMinBasalWaveHeight(),
+            mGameController->GetMaxBasalWaveHeight()));
 
-    gridSizer->Add(mWaveHeightSlider.get(), 1, wxALL, SliderBorder);
+    gridSizer->Add(mBasalWaveHeightSlider.get(), 1, wxALL, SliderBorder);
 
 
-    // Wave Length
+    // Basal Wave Length Adjustment
 
-    mWaveLengthSlider = std::make_unique<SliderControl>(
+    mBasalWaveLengthAdjustmentSlider = std::make_unique<SliderControl>(
         panel,
         SliderWidth,
         SliderHeight,
-        "Wave Width",
+        "BasalWave Width Adjust",
         "TODO.",
-        static_cast<float>(mGameController->GetWaveLength()),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            mGameController->GetMinWaveLength(),
-            mGameController->GetMaxWaveLength()));
-
-    gridSizer->Add(mWaveLengthSlider.get(), 1, wxALL, SliderBorder);
-
-
-    // Wave Period
-
-    mWavePeriodSlider = std::make_unique<SliderControl>(
-        panel,
-        SliderWidth,
-        SliderHeight,
-        "Wave Period",
-        "TODO.",
-        static_cast<float>(mGameController->GetWavePeriod()),
+        static_cast<float>(mGameController->GetBasalWaveLengthAdjustment()),
         [this](float /*value*/)
         {
             // Remember we're dirty now
             this->mApplyButton->Enable(true);
         },
         std::make_unique<ExponentialSliderCore>(
-            mGameController->GetMinWavePeriod(),
-            1.0f,
-            mGameController->GetMaxWavePeriod()));
+            mGameController->GetMinBasalWaveLengthAdjustment(),
+            0.1f,
+            mGameController->GetMaxBasalWaveLengthAdjustment()));
 
-    gridSizer->Add(mWavePeriodSlider.get(), 1, wxALL, SliderBorder);
+    gridSizer->Add(mBasalWaveLengthAdjustmentSlider.get(), 1, wxALL, SliderBorder);
+
+
+    // Basal Wave Period
+
+    mBasalWavePeriodSlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Basal Wave Period",
+        "TODO.",
+        static_cast<float>(mGameController->GetBasalWavePeriod()),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<ExponentialSliderCore>(
+            mGameController->GetMinBasalWavePeriod(),
+            1.0f,
+            mGameController->GetMaxBasalWavePeriod()));
+
+    gridSizer->Add(mBasalWavePeriodSlider.get(), 1, wxALL, SliderBorder);
 
 
 
@@ -1767,11 +1768,11 @@ void SettingsDialog::ReadSettings()
 
     // Waves
 
-    mWaveHeightSlider->SetValue(mGameController->GetWaveHeight());
+    mBasalWaveHeightSlider->SetValue(mGameController->GetBasalWaveHeight());
 
-    mWaveLengthSlider->SetValue(mGameController->GetWaveLength());
+    mBasalWaveLengthAdjustmentSlider->SetValue(mGameController->GetBasalWaveLengthAdjustment());
 
-    mWavePeriodSlider->SetValue(mGameController->GetWavePeriod());
+    mBasalWavePeriodSlider->SetValue(mGameController->GetBasalWavePeriod());
 
     // World
 
@@ -2050,14 +2051,14 @@ void SettingsDialog::ApplySettings()
 
     // Waves
 
-    mGameController->SetWaveHeight(
-        mWaveHeightSlider->GetValue());
+    mGameController->SetBasalWaveHeight(
+        mBasalWaveHeightSlider->GetValue());
 
-    mGameController->SetWaveLength(
-        mWaveLengthSlider->GetValue());
+    mGameController->SetBasalWaveLengthAdjustment(
+        mBasalWaveLengthAdjustmentSlider->GetValue());
 
-    mGameController->SetWavePeriod(
-        mWavePeriodSlider->GetValue());
+    mGameController->SetBasalWavePeriod(
+        mBasalWavePeriodSlider->GetValue());
 
     // World
 

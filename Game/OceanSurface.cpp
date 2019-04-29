@@ -9,13 +9,24 @@
 
 namespace Physics {
 
+//TODO: see if needed
 // The multiplicative factor to transform wind speed into wave speed
-constexpr float WindSpeedToWaveSpeedFactor = 1.0f / 6.0f; // Waves move slower than wind
+float constexpr WindSpeedToWaveSpeedFactor = 1.0f / 6.0f; // Waves move slower than wind
 
 // The number of slices we want to render the water surface as;
 // this is the graphical resolution
 template<typename T>
-constexpr T RenderSlices = 500;
+T constexpr RenderSlices = 500;
+
+//
+// Basal waves
+//
+
+// The maximum wave length
+float constexpr BasalMaxWaveLength = 1000.0f;
+
+// Max steepness (Height / Wavelength)
+float constexpr BasalMaxWaveSteepness = 1.0f / 6.0f;
 
 //
 // SWE Layer
@@ -23,25 +34,25 @@ constexpr T RenderSlices = 500;
 
 // The rest height of the height field - indirectly determines velocity
 // of waves (via dv/dt <= dh/dx, with dh/dt <= h*dv/dx)
-constexpr float SWEHeightFieldOffset = 100.0f;
+float constexpr SWEHeightFieldOffset = 100.0f;
 
 // The factor by which we amplify the height field perturbations;
 // higher values allow for smaller height field variations with the same visual height,
 // and smaller height field variations allow for greater stability
-constexpr float SWEHeightFieldAmplification = 50.0f;
+float constexpr SWEHeightFieldAmplification = 50.0f;
 
 // The number of samples we set apart in the SWE buffers for wave generation at each end of a buffer
-constexpr size_t SWEWaveGenerationSamples = 1;
+size_t constexpr SWEWaveGenerationSamples = 1;
 
 // The number of samples we set apart in the SWE buffers for boundary conditions at each end of a buffer
-constexpr size_t SWEBoundaryConditionsSamples = 1;
+size_t constexpr SWEBoundaryConditionsSamples = 1;
 
-constexpr size_t SWEOuterLayerSamples =
+size_t constexpr SWEOuterLayerSamples =
     SWEWaveGenerationSamples
     + SWEBoundaryConditionsSamples;
 
 // The total number of samples in the SWE buffers
-constexpr size_t SWETotalSamples =
+size_t constexpr SWETotalSamples =
     SWEOuterLayerSamples
     + OceanSurface::SamplesCount
     + SWEOuterLayerSamples;
@@ -465,15 +476,19 @@ void OceanSurface::GenerateSamples(
     // Basal waves
     //
 
-    float const basalWaveAmplitude = gameParameters.WaveHeight / 2.0f;
-    float const basalWaveNumber = 2.0f * Pi<float> / gameParameters.WaveLength;
-    float const basalWavePulsation = 2.0f * Pi<float> / gameParameters.WavePeriod;
+    float const basalWaveAmplitude = gameParameters.BasalWaveHeight / 2.0f;
+    float const basalWaveLength =
+        gameParameters.BasalWaveLengthAdjustment
+        * (BasalMaxWaveLength - gameParameters.BasalWaveHeight / BasalMaxWaveSteepness)
+        + gameParameters.BasalWaveHeight / BasalMaxWaveSteepness;
+    float const basalWaveNumber = 2.0f * Pi<float> / basalWaveLength;
+    float const basalWavePulsation = 2.0f * Pi<float> / gameParameters.BasalWavePeriod;
 
     //
     // Wind gust ripples
     //
 
-    static constexpr float WindGustRippleSpatialFrequency = 0.5f;
+    static float constexpr WindRippleSpatialFrequency = 0.5f;
 
     float const windSpeedAbsoluteMagnitude = wind.GetCurrentWindSpeed().length();
     float const windSpeedGustRelativeAmplitude = wind.GetMaxSpeedMagnitude() - wind.GetBaseSpeedMagnitude();
@@ -530,7 +545,7 @@ void OceanSurface::GenerateSamples(
             * basalWaveAmplitude;
 
         float const rippleValue =
-            sinf(x * WindGustRippleSpatialFrequency - currentSimulationTime * windRipplesTimeFrequency)
+            sinf(x * WindRippleSpatialFrequency - currentSimulationTime * windRipplesTimeFrequency)
             * windRipplesWaveHeight;
 
         float const sampleValue =

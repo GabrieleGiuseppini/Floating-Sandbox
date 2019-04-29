@@ -821,22 +821,34 @@ Render:
 						+ Period (=> speed=Wavelength/Period)
 					= Tests:
 						= Funcs:
-							= sin
-							- abs(sin)
-							- quadratic (8|f-0.5|^2 - 1)
+							+ sin
+							= abs(sin)							-
 							- Peachey's profile: quadratic + sin, controlled via:
 								- local "steepness" param, at first for testing
 								- then, steepness is based off speed
-						- Composition of SWE and basal:
-							- add
-							- mul
+								- quadratic: 8|f-0.5|^2 - 1
+									- f is non-PI'd: x/wavelength - t/period
+						= Composition of SWE and basal:
+							+ add
+							- mul - can it even be done, w/swe being 0?
 							- max
-						- Wave width is "WaveWidthAdjust"
-							- 1.0 means "max width" = f(height)
-						- Wavelength and period correlated: T = 1 / sqrt(g/2PiL)
+							- swe + alpha*basal, with alpha = f(sweH):
+								- sweH = 0.0 => alpha = 1.0
+								- sweH --> +INF alpha -->0.0
+						+ Wave width is "WaveWidthAdjust"
+							+ fraction of MaxWidth - MinWidth(H)
+							+ MinWidth(H) = 6*H
+							+ 1.0 means "max width" = f(height)
+						- Multiple components:
+							- Two components:
+								- H + 10%, H - 10%
+								- LAdj == LAdj
+								- T + 10%, H - 10%
+								- 2nd component has sin phase with very slow period
+						- Wavelength and period correlated: T = sqrt(2PiL/g)
 
 					- Controls:
-						- Width, Height, Period (>0)
+						= WidthAdjust, Height, Period (>0)
 							- Actual Period = period * direction(wind speed) + wind speed * factor
 						- Auto mode:
 							- Wind speed => height, width, period (from table at https://topex.ucsd.edu/ps/waves.pdf)
