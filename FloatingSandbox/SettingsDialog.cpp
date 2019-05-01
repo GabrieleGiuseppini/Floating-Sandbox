@@ -808,26 +808,25 @@ void SettingsDialog::PopulateWavesPanel(wxPanel * panel)
     gridSizer->Add(mBasalWaveLengthAdjustmentSlider.get(), 1, wxALL, SliderBorder);
 
 
-    // Basal Wave Period
+    // Basal Wave Speed Adjustment
 
-    mBasalWavePeriodSlider = std::make_unique<SliderControl>(
+    mBasalWaveSpeedAdjustmentSlider = std::make_unique<SliderControl>(
         panel,
         SliderWidth,
         SliderHeight,
-        "Basal Wave Period",
+        "Basal Wave Speed Adjust",
         "TODO.",
-        static_cast<float>(mGameController->GetBasalWavePeriod()),
+        static_cast<float>(mGameController->GetBasalWaveSpeedAdjustment()),
         [this](float /*value*/)
         {
             // Remember we're dirty now
             this->mApplyButton->Enable(true);
         },
-        std::make_unique<ExponentialSliderCore>(
-            mGameController->GetMinBasalWavePeriod(),
-            1.0f,
-            mGameController->GetMaxBasalWavePeriod()));
+        std::make_unique<LinearSliderCore>(
+            mGameController->GetMinBasalWaveSpeedAdjustment(),
+            mGameController->GetMaxBasalWaveSpeedAdjustment()));
 
-    gridSizer->Add(mBasalWavePeriodSlider.get(), 1, wxALL, SliderBorder);
+    gridSizer->Add(mBasalWaveSpeedAdjustmentSlider.get(), 1, wxALL, SliderBorder);
 
 
 
@@ -1772,7 +1771,7 @@ void SettingsDialog::ReadSettings()
 
     mBasalWaveLengthAdjustmentSlider->SetValue(mGameController->GetBasalWaveLengthAdjustment());
 
-    mBasalWavePeriodSlider->SetValue(mGameController->GetBasalWavePeriod());
+    mBasalWaveSpeedAdjustmentSlider->SetValue(mGameController->GetBasalWaveSpeedAdjustment());
 
     // World
 
@@ -2057,8 +2056,8 @@ void SettingsDialog::ApplySettings()
     mGameController->SetBasalWaveLengthAdjustment(
         mBasalWaveLengthAdjustmentSlider->GetValue());
 
-    mGameController->SetBasalWavePeriod(
-        mBasalWavePeriodSlider->GetValue());
+    mGameController->SetBasalWaveSpeedAdjustment(
+        mBasalWaveSpeedAdjustmentSlider->GetValue());
 
     // World
 

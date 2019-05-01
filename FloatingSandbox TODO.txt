@@ -370,7 +370,9 @@ Render:
 			- RMS Magentasia (TopHatLemons)
 			- Menschenfresser (ASSTYU)
 			- JackMellon on Discord
+			- serhiires: HMHS Danic, RMS Danic
 		- Asked:
+			- serhiires: SS Nobrix, HMHS and RMS Gotic
 			- Ed Fitzgerald (but needs to be fixed) (Kiko)
 			- Aegir_Mark_III (coolman asks original designer)
 	- Descriptions:
@@ -400,6 +402,7 @@ Render:
 
 
 - Suggestions to spec:
+	- Water currents
 	- Tools turning white at night
 	- Once we have ships, make "Lock Ship in View" flag and move camera with ship's center of mass (representative point or real CoM)
 	- Be able to place nukea nd AM bomb anywhere
@@ -835,34 +838,43 @@ Render:
 							- swe + alpha*basal, with alpha = f(sweH):
 								- sweH = 0.0 => alpha = 1.0
 								- sweH --> +INF alpha -->0.0
+								- f = a / (a + sweH)
 						+ Wave width is "WaveWidthAdjust"
 							+ fraction of MaxWidth - MinWidth(H)
 							+ MinWidth(H) = 6*H
 							+ 1.0 means "max width" = f(height)
+						= Wavelength and period correlated: 
+							+ Change period into speed (m/s) = S
+							+ S = 1/sqrt(2PiL/g)
+							= Adjustment makes +/- 50%
+								= Speed is never zero
+								- See if need to adjust percentage bands to avoid "almost still" waves or too slow waves 
+								  or too fast waves
+						- Actual wave speed = speed * direction(wind speed) + wind speed * factor
+							- With speed > 0						
 						- Multiple components:
 							- Two components:
 								- H + 10%, H - 10%
 								- LAdj == LAdj
 								- T + 10%, H - 10%
 								- 2nd component has sin phase with very slow period
-						- Wavelength and period correlated: T = sqrt(2PiL/g)
 
 					- Controls:
 						= WidthAdjust, Height, Period (>0)
-							- Actual Period = period * direction(wind speed) + wind speed * factor
 						- Auto mode:
 							- Wind speed => height, width, period (from table at https://topex.ucsd.edu/ps/waves.pdf)
 								- Wind speed = 0 => no basal waves
 				= SWEs
-					+ Tool
+					= Tool
 						+ Tool does no smoothing
 						+ OceanSurface implements trajectory
 							+ Delay rate must itself depend on delta H
 						+ Test max delta H
 						+ Find correct falling water speed
 						+ Check if average water depth increases
+						- Try with SWEWaveStateMachine using current height (passed at Update(.))
 					+ Cursor: set arrows at same positions as adjust terrain cursor
-					- See why R-side is reflective and L side is not
+					- See why R-side is reflective and L side is not					
 					- Rogue wave generation (incl. tsunami)
 						- Params:
 							- Height
@@ -876,6 +888,8 @@ Render:
 				+ Cursor
 				- Tool sound
 			- Optimizations:
+				- Wave params calc'd only at GameParameters changes
+				- Pre-calc'd funcs (sin, etc.)
 				- Two advections in one, so that we have a single loop
 				- Two field updates in one, so that we have a single loop
 			- Misc:

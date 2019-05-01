@@ -476,13 +476,46 @@ void OceanSurface::GenerateSamples(
     // Basal waves
     //
 
+    // Amplitude
     float const basalWaveAmplitude = gameParameters.BasalWaveHeight / 2.0f;
+
+    // WaveLength: adjustment blends from min=f(H) and Max
+    static_assert(BasalMaxWaveLength > GameParameters::MaxBasalWaveHeight / BasalMaxWaveSteepness);
     float const basalWaveLength =
         gameParameters.BasalWaveLengthAdjustment
         * (BasalMaxWaveLength - gameParameters.BasalWaveHeight / BasalMaxWaveSteepness)
         + gameParameters.BasalWaveHeight / BasalMaxWaveSteepness;
-    float const basalWaveNumber = 2.0f * Pi<float> / basalWaveLength;
-    float const basalWavePulsation = 2.0f * Pi<float> / gameParameters.BasalWavePeriod;
+    float const basalWaveNumber = (gameParameters.BasalWaveHeight > 0.0f)
+        ? 2.0f * Pi<float> / basalWaveLength
+        : 0.0f;
+
+    // Pulsation: adjustment blends speed around OceanWaveSpeed=f(L)
+    // TODO: make adjustment itself from 0.75 to 25.0, exponential through 1
+    float const oceanWaveSpeed = (gameParameters.BasalWaveHeight > 0.0f)
+        ? 1.0f / sqrt(2.0f * Pi<float> * basalWaveLength / GameParameters::GravityMagnitude)
+        : 0.0f;
+    float constexpr MinOceanWaveSpeedFraction = 0.75f; // Fraction of oceanWaveSpeed at adjustment = 0.0f
+    float constexpr MaxOceanWaveSpeedFraction = 25.0f; // Fraction of oceanWaveSpeed at adjustment = 1.0f
+    float const basalWaveSpeed = (gameParameters.BasalWaveSpeedAdjustment <= 0.5f)
+        ? (oceanWaveSpeed * MinOceanWaveSpeedFraction)
+          + (gameParameters.BasalWaveSpeedAdjustment * 2.0f * oceanWaveSpeed * (1.0f - MinOceanWaveSpeedFraction))
+        : (oceanWaveSpeed * 1.0f)
+          + ((gameParameters.BasalWaveSpeedAdjustment - 0.5f) * 2.0f * oceanWaveSpeed * (MaxOceanWaveSpeedFraction - 1.0f));
+    float const basalWavePulsation = 2.0f * Pi<float> * basalWaveSpeed;
+
+    // TODOTEST
+    static float TODOwaveLength = 0.0f;
+    if (basalWaveLength != TODOwaveLength)
+    {
+        LogMessage("basalWaveLength=", basalWaveLength);
+        TODOwaveLength = basalWaveLength;
+    }
+    static float TODOwaveSpeed = 0.0f;
+    if (basalWaveSpeed != TODOwaveSpeed)
+    {
+        LogMessage("basalWaveSpeed=", basalWaveSpeed);
+        TODOwaveSpeed = basalWaveSpeed;
+    }
 
     //
     // Wind gust ripples

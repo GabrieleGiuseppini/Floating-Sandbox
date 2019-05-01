@@ -30,7 +30,7 @@ GameParameters::GameParameters()
     // Waves
     , BasalWaveHeight(2.5f)
     , BasalWaveLengthAdjustment(0.017182f)
-    , BasalWavePeriod(2.0f)
+    , BasalWaveSpeedAdjustment(0.5f)
     // Misc
     , SeaDepth(300.0f)
     , OceanFloorBumpiness(1.0f)

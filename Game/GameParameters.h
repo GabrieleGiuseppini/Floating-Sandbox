@@ -195,9 +195,9 @@ struct GameParameters
     static constexpr float MinBasalWaveLengthAdjustment = 0.0f;
     static constexpr float MaxBasalWaveLengthAdjustment = 1.0f;
 
-    float BasalWavePeriod;
-    static constexpr float MinBasalWavePeriod = 0.02f;
-    static constexpr float MaxBasalWavePeriod = 20.0f;
+    float BasalWaveSpeedAdjustment;
+    static constexpr float MinBasalWaveSpeedAdjustment = 0.0f;
+    static constexpr float MaxBasalWaveSpeedAdjustment = 1.0f;
 
     // Misc
 

@@ -230,10 +230,10 @@ public:
     float GetMinBasalWaveLengthAdjustment() const { return GameParameters::MinBasalWaveLengthAdjustment; }
     float GetMaxBasalWaveLengthAdjustment() const { return GameParameters::MaxBasalWaveLengthAdjustment; }
 
-    float GetBasalWavePeriod() const { return mGameParameters.BasalWavePeriod; }
-    void SetBasalWavePeriod(float value) { mGameParameters.BasalWavePeriod = value; }
-    float GetMinBasalWavePeriod() const { return GameParameters::MinBasalWavePeriod; }
-    float GetMaxBasalWavePeriod() const { return GameParameters::MaxBasalWavePeriod; }
+    float GetBasalWaveSpeedAdjustment() const { return mGameParameters.BasalWaveSpeedAdjustment; }
+    void SetBasalWaveSpeedAdjustment(float value) { mGameParameters.BasalWaveSpeedAdjustment = value; }
+    float GetMinBasalWaveSpeedAdjustment() const { return GameParameters::MinBasalWaveSpeedAdjustment; }
+    float GetMaxBasalWaveSpeedAdjustment() const { return GameParameters::MaxBasalWaveSpeedAdjustment; }
 
     bool GetDoModulateWind() const { return mGameParameters.DoModulateWind; }
     void SetDoModulateWind(bool value) { mGameParameters.DoModulateWind = value; }

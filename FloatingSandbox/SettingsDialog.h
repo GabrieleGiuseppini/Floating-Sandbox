@@ -99,7 +99,7 @@ private:
     // Waves
     std::unique_ptr<SliderControl> mBasalWaveHeightSlider;
     std::unique_ptr<SliderControl> mBasalWaveLengthAdjustmentSlider;
-    std::unique_ptr<SliderControl> mBasalWavePeriodSlider;
+    std::unique_ptr<SliderControl> mBasalWaveSpeedAdjustmentSlider;
 
     // World
     std::unique_ptr<SliderControl> mSeaDepthSlider;
