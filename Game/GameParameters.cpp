@@ -28,9 +28,9 @@ GameParameters::GameParameters()
     , WindSpeedMaxFactor(2.5f)
     , WindGustFrequencyAdjustment(1.0f)
     // Waves
-    , BasalWaveHeight(2.5f)
-    , BasalWaveLengthAdjustment(0.017182f)
-    , BasalWaveSpeedAdjustment(0.5f)
+    , BasalWaveHeightAdjustment(0.5f) // TODO
+    , BasalWaveLengthAdjustment(0.5f) // TODO
+    , BasalWaveSpeedAdjustment(0.5f) // TODO
     // Misc
     , SeaDepth(300.0f)
     , OceanFloorBumpiness(1.0f)

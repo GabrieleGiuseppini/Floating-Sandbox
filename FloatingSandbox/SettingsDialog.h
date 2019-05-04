@@ -40,6 +40,7 @@ private:
     void OnGenerateDebrisCheckBoxClick(wxCommandEvent & event);
     void OnGenerateSparklesCheckBoxClick(wxCommandEvent & event);
     void OnGenerateAirBubblesCheckBoxClick(wxCommandEvent & event);
+
     void OnModulateWindCheckBoxClick(wxCommandEvent & event);
 
     void OnTextureOceanRenderModeRadioButtonClick(wxCommandEvent & event);
@@ -89,15 +90,15 @@ private:
     std::unique_ptr<SliderControl> mWaterDiffusionSpeedSlider;
     std::unique_ptr<SliderControl> mWaterLevelOfDetailSlider;
 
-    // Air
+    // Sky
     std::unique_ptr<SliderControl> mNumberOfStarsSlider;
     std::unique_ptr<SliderControl> mNumberOfCloudsSlider;
+
+    // Wind and Waves
     std::unique_ptr<SliderControl> mWindSpeedBaseSlider;
     wxCheckBox* mModulateWindCheckBox;
     std::unique_ptr<SliderControl> mWindGustAmplitudeSlider;
-
-    // Waves
-    std::unique_ptr<SliderControl> mBasalWaveHeightSlider;
+    std::unique_ptr<SliderControl> mBasalWaveHeightAdjustmentSlider;
     std::unique_ptr<SliderControl> mBasalWaveLengthAdjustmentSlider;
     std::unique_ptr<SliderControl> mBasalWaveSpeedAdjustmentSlider;
 
@@ -167,8 +168,8 @@ private:
 
     void PopulateMechanicsPanel(wxPanel * panel);
     void PopulateFluidsPanel(wxPanel * panel);
-    void PopulateAirPanel(wxPanel * panel);
-    void PopulateWavesPanel(wxPanel * panel);
+    void PopulateSkyPanel(wxPanel * panel);
+    void PopulateWindAndWavesPanel(wxPanel * panel);
     void PopulateWorldPanel(wxPanel * panel);
     void PopulateInteractionsPanel(wxPanel * panel);
     void PopulateRenderingPanel(wxPanel * panel);

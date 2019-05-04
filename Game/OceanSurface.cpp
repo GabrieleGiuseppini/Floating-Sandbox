@@ -476,46 +476,93 @@ void OceanSurface::GenerateSamples(
     // Basal waves
     //
 
+    // TODO: temporary, then move final min and max to GameParameters
+    float const TODObasalWaveHeightAdjustment = // 0.0 - 20.0
+        gameParameters.BasalWaveHeightAdjustment <= 0.5f
+        ? 2.0f * gameParameters.BasalWaveHeightAdjustment
+        : 1.0f + (gameParameters.BasalWaveHeightAdjustment - 0.5f) / 0.5f * 19.0f;
+    float const TODObasalWaveLengthAdjustment = // 0.5 - 3.0
+        gameParameters.BasalWaveHeightAdjustment <= 0.5f
+        ? 0.5f + gameParameters.BasalWaveHeightAdjustment
+        : 1.0f + 4.0f * (gameParameters.BasalWaveLengthAdjustment - 0.5f);
+    float const TODObasalWaveSpeedAdjustment = // 0.75f - 20.0f
+        gameParameters.BasalWaveSpeedAdjustment <= 0.5f
+        ? 0.75f + 0.25f * gameParameters.BasalWaveSpeedAdjustment / 0.5f
+        : 1.0f + (gameParameters.BasalWaveSpeedAdjustment - 0.5f) / 0.5f * 19.0f;
+
+    float const baseWindSpeedMagnitude = abs(wind.GetBaseSpeedMagnitude()); // km/h
+    float const baseWindSpeedSign = wind.GetBaseSpeedMagnitude() >= 0.0f ? 1.0f : -1.0f;
+
+
     // Amplitude
-    float const basalWaveAmplitude = gameParameters.BasalWaveHeight / 2.0f;
+    // - Amplitude = f(WindSpeed, km/h), with f fitted over points from Full Developed Waves
+    //   (H. V. Thurman, Introductory Oceanography, 1988)
+    // y = 1.039702 - 0.08155357*x + 0.002481548*x^2
 
-    // WaveLength: adjustment blends from min=f(H) and Max
-    static_assert(BasalMaxWaveLength > GameParameters::MaxBasalWaveHeight / BasalMaxWaveSteepness);
-    float const basalWaveLength =
-        gameParameters.BasalWaveLengthAdjustment
-        * (BasalMaxWaveLength - gameParameters.BasalWaveHeight / BasalMaxWaveSteepness)
-        + gameParameters.BasalWaveHeight / BasalMaxWaveSteepness;
-    float const basalWaveNumber = (gameParameters.BasalWaveHeight > 0.0f)
-        ? 2.0f * Pi<float> / basalWaveLength
+    float const basalWaveHeightBase = (baseWindSpeedMagnitude != 0.0f)
+        ? 0.002481548f * (baseWindSpeedMagnitude * baseWindSpeedMagnitude)
+          - 0.08155357f * baseWindSpeedMagnitude
+          + 1.039702f
         : 0.0f;
 
-    // Pulsation: adjustment blends speed around OceanWaveSpeed=f(L)
-    // TODO: make adjustment itself from 0.75 to 25.0, exponential through 1
-    float const oceanWaveSpeed = (gameParameters.BasalWaveHeight > 0.0f)
-        ? 1.0f / sqrt(2.0f * Pi<float> * basalWaveLength / GameParameters::GravityMagnitude)
-        : 0.0f;
-    float constexpr MinOceanWaveSpeedFraction = 0.75f; // Fraction of oceanWaveSpeed at adjustment = 0.0f
-    float constexpr MaxOceanWaveSpeedFraction = 25.0f; // Fraction of oceanWaveSpeed at adjustment = 1.0f
-    float const basalWaveSpeed = (gameParameters.BasalWaveSpeedAdjustment <= 0.5f)
-        ? (oceanWaveSpeed * MinOceanWaveSpeedFraction)
-          + (gameParameters.BasalWaveSpeedAdjustment * 2.0f * oceanWaveSpeed * (1.0f - MinOceanWaveSpeedFraction))
-        : (oceanWaveSpeed * 1.0f)
-          + ((gameParameters.BasalWaveSpeedAdjustment - 0.5f) * 2.0f * oceanWaveSpeed * (MaxOceanWaveSpeedFraction - 1.0f));
-    float const basalWavePulsation = 2.0f * Pi<float> * basalWaveSpeed;
+    float const basalWaveAmplitude = basalWaveHeightBase / 2.0f * TODObasalWaveHeightAdjustment;
 
     // TODOTEST
+    static float TODOwaveAmp = 0.0f;
+    if (basalWaveAmplitude != TODOwaveAmp)
+    {
+        LogMessage("basalWaveAmplitude=", basalWaveAmplitude, " (", TODObasalWaveHeightAdjustment, ")");
+        TODOwaveAmp = basalWaveAmplitude;
+    }
+
+
+    // Wavelength
+    // - Wavelength = f(WindSpeed, km/h), with f fitted over points from same table
+    // y = 1.774405 - 0.07375*x + 0.02547024*x^2
+
+    float const basalWaveLengthBase =
+        0.02547024f * (baseWindSpeedMagnitude * baseWindSpeedMagnitude)
+        - 0.07375f * baseWindSpeedMagnitude
+        + 1.774405f;
+
+    float const basalWaveLength = basalWaveLengthBase * TODObasalWaveLengthAdjustment;
+
     static float TODOwaveLength = 0.0f;
     if (basalWaveLength != TODOwaveLength)
     {
-        LogMessage("basalWaveLength=", basalWaveLength);
+        LogMessage("basalWaveLength=", basalWaveLength, " (", TODObasalWaveLengthAdjustment, ")");
         TODOwaveLength = basalWaveLength;
     }
-    static float TODOwaveSpeed = 0.0f;
-    if (basalWaveSpeed != TODOwaveSpeed)
+
+    assert(basalWaveLength != 0.0f);
+    float const basalWaveNumber = baseWindSpeedSign * 2.0f * Pi<float> / basalWaveLength;
+
+
+    // Period
+    // - Period = sqrt(2 * Pi * L / g)
+
+    float const basalWavePeriodBase = sqrt(
+        2.0f
+        * Pi<float>
+        * basalWaveLength
+        / GameParameters::GravityMagnitude);
+
+    assert(TODObasalWaveSpeedAdjustment != 0.0f);
+    float const basalWavePeriod = basalWavePeriodBase / TODObasalWaveSpeedAdjustment;
+
+    assert(basalWavePeriod != 0.0f);
+    float const basalWaveAngularVelocity = 2.0f * Pi<float> / basalWavePeriod;
+
+    // TODOTEST
+    static float TODOwavePeriod = 0.0f;
+    if (basalWavePeriod != TODOwavePeriod)
     {
-        LogMessage("basalWaveSpeed=", basalWaveSpeed);
-        TODOwaveSpeed = basalWaveSpeed;
+        LogMessage("basalWavePeriod=", basalWavePeriod, " (", TODObasalWaveSpeedAdjustment, ")");
+        TODOwavePeriod = basalWavePeriod;
     }
+
+    // TODOHERE
+
 
     //
     // Wind gust ripples
@@ -527,12 +574,10 @@ void OceanSurface::GenerateSamples(
     float const windSpeedGustRelativeAmplitude = wind.GetMaxSpeedMagnitude() - wind.GetBaseSpeedMagnitude();
     float const rawWindNormalizedIncisiveness = (windSpeedGustRelativeAmplitude == 0.0f)
         ? 0.0f
-        : std::max(0.0f, windSpeedAbsoluteMagnitude - abs(wind.GetBaseSpeedMagnitude()))
+        : std::max(0.0f, windSpeedAbsoluteMagnitude - baseWindSpeedMagnitude)
         / abs(windSpeedGustRelativeAmplitude);
 
-    float const windRipplesTimeFrequency = (gameParameters.WindSpeedBase >= 0.0f)
-        ? 128.0f
-        : -128.0f;
+    float const windRipplesTimeFrequency = baseWindSpeedSign * 128.0f;
 
     float const smoothedWindNormalizedIncisiveness = mWindIncisivenessRunningAverage.Update(rawWindNormalizedIncisiveness);
     float const windRipplesWaveHeight = 0.7f * smoothedWindNormalizedIncisiveness;
@@ -550,7 +595,7 @@ void OceanSurface::GenerateSamples(
             * SWEHeightFieldAmplification;
 
         float const basalValue =
-            sin(basalWaveNumber * 0 - basalWavePulsation * currentSimulationTime)
+            sin(basalWaveNumber * 0 - basalWaveAngularVelocity * currentSimulationTime)
             * basalWaveAmplitude;
 
         float const rippleValue =
@@ -574,7 +619,7 @@ void OceanSurface::GenerateSamples(
             * SWEHeightFieldAmplification;
 
         float const basalValue =
-            sin(basalWaveNumber * x - basalWavePulsation * currentSimulationTime)
+            sin(basalWaveNumber * x - basalWaveAngularVelocity * currentSimulationTime)
             * basalWaveAmplitude;
 
         float const rippleValue =

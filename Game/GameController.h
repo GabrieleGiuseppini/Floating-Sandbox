@@ -220,10 +220,10 @@ public:
     float GetMinWaterDiffusionSpeedAdjustment() const { return GameParameters::MinWaterDiffusionSpeedAdjustment; }
     float GetMaxWaterDiffusionSpeedAdjustment() const { return GameParameters::MaxWaterDiffusionSpeedAdjustment; }
 
-    float GetBasalWaveHeight() const { return mGameParameters.BasalWaveHeight; }
-    void SetBasalWaveHeight(float value) { mGameParameters.BasalWaveHeight = value; }
-    float GetMinBasalWaveHeight() const { return GameParameters::MinBasalWaveHeight; }
-    float GetMaxBasalWaveHeight() const { return GameParameters::MaxBasalWaveHeight; }
+    float GetBasalWaveHeightAdjustment() const { return mGameParameters.BasalWaveHeightAdjustment; }
+    void SetBasalWaveHeightAdjustment(float value) { mGameParameters.BasalWaveHeightAdjustment = value; }
+    float GetMinBasalWaveHeightAdjustment() const { return GameParameters::MinBasalWaveHeightAdjustment; }
+    float GetMaxBasalWaveHeightAdjustment() const { return GameParameters::MaxBasalWaveHeightAdjustment; }
 
     float GetBasalWaveLengthAdjustment() const { return mGameParameters.BasalWaveLengthAdjustment; }
     void SetBasalWaveLengthAdjustment(float value) { mGameParameters.BasalWaveLengthAdjustment = value; }

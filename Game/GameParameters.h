@@ -187,17 +187,17 @@ struct GameParameters
 
     // Waves
 
-    float BasalWaveHeight;
-    static constexpr float MinBasalWaveHeight = 0.0f;
-    static constexpr float MaxBasalWaveHeight = 30.0f;
+    float BasalWaveHeightAdjustment;
+    static constexpr float MinBasalWaveHeightAdjustment = 0.0f; // TODO
+    static constexpr float MaxBasalWaveHeightAdjustment = 1.0f; // TODO
 
     float BasalWaveLengthAdjustment;
-    static constexpr float MinBasalWaveLengthAdjustment = 0.0f;
-    static constexpr float MaxBasalWaveLengthAdjustment = 1.0f;
+    static constexpr float MinBasalWaveLengthAdjustment = 0.0f; // TODO
+    static constexpr float MaxBasalWaveLengthAdjustment = 1.0f; // TODO
 
     float BasalWaveSpeedAdjustment;
-    static constexpr float MinBasalWaveSpeedAdjustment = 0.0f;
-    static constexpr float MaxBasalWaveSpeedAdjustment = 1.0f;
+    static constexpr float MinBasalWaveSpeedAdjustment = 0.0f; // TODO
+    static constexpr float MaxBasalWaveSpeedAdjustment = 1.0f; // TODO
 
     // Misc
 

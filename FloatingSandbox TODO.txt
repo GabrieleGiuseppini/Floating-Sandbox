@@ -402,7 +402,6 @@ Render:
 
 
 - Suggestions to spec:
-	- Water currents
 	- Tools turning white at night
 	- Once we have ships, make "Lock Ship in View" flag and move camera with ship's center of mass (representative point or real CoM)
 	- Be able to place nukea nd AM bomb anywhere
@@ -886,7 +885,9 @@ Render:
 						- Tooltips
 			- Final touches:
 				+ Cursor
-				- Tool sound
+				- WaveMaker:
+					- Double-check hotspot
+					- Tool sound
 			- Optimizations:
 				- Wave params calc'd only at GameParameters changes
 				- Pre-calc'd funcs (sin, etc.)
@@ -895,6 +896,15 @@ Render:
 			- Misc:
 				- Wave sound:
 					- At peaks moving; how?
+
+	- Underwater currents
+		- Implicit function of x defines trajectory 
+			- To try:
+				- Constant
+				- Lorenz, from http://sprott.physics.wisc.edu/chaos/eulermap.htm
+				- Lorenz II, from https://en.wikipedia.org/wiki/Lorenz_96_model
+
+		- for each point: y-distance between point.y and trajectory(point.x) gives strength of x and y components of a force on the point
 
 	
 	- Try to re-instate square velocity drag (*)

@@ -80,7 +80,7 @@ SliderControl::SliderControl(
 
     Connect(ID_SLIDER, wxEVT_SLIDER, (wxObjectEventFunction)&SliderControl::OnSliderScroll);
 
-    sizer->Add(mSlider.get(), 1, wxALIGN_CENTRE);
+    sizer->Add(mSlider.get(), 1, wxALIGN_CENTER_HORIZONTAL);
 
 
     //
@@ -94,7 +94,7 @@ SliderControl::SliderControl(
     if (nullptr == warningIcon)
     {
         // Just add label
-        sizer->Add(labelStaticText, 0, wxALIGN_CENTRE);
+        sizer->Add(labelStaticText, 0, wxALIGN_CENTER_HORIZONTAL);
     }
     else
     {
@@ -109,7 +109,8 @@ SliderControl::SliderControl(
         hSizer->Add(labelStaticText, 0, wxALIGN_CENTRE_VERTICAL);
         hSizer->AddSpacer(2);
         hSizer->Add(icon, 0, wxALIGN_CENTRE_VERTICAL);
-        sizer->Add(hSizer, 0, wxALIGN_CENTRE);
+
+        sizer->Add(hSizer, 0, wxALIGN_CENTER_HORIZONTAL);
     }
 
 
@@ -122,10 +123,9 @@ SliderControl::SliderControl(
     if (!toolTipLabel.empty())
         mTextCtrl->SetToolTip(toolTipLabel);
 
-    sizer->Add(mTextCtrl.get(), 0, wxALIGN_CENTRE);
+    sizer->Add(mTextCtrl.get(), 0, wxALIGN_CENTER_HORIZONTAL);
 
     this->SetSizerAndFit(sizer);
-
 }
 
 SliderControl::~SliderControl()

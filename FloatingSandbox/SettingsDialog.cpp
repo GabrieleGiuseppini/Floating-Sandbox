@@ -17,9 +17,13 @@
 #include <wx/stattext.h>
 #include <wx/string.h>
 
-static constexpr int SliderWidth = 40;
-static constexpr int SliderHeight = 140;
-static constexpr int SliderBorder = 10;
+static int constexpr SliderWidth = 40;
+static int constexpr SliderHeight = 140;
+static int constexpr SliderBorder = 10;
+
+static int constexpr StaticBoxTopMargin = 7;
+static int constexpr StaticBoxInsetMargin = 10;
+static int constexpr CellBorder = 8;
 
 const long ID_ULTRA_VIOLENT_CHECKBOX = wxNewId();
 const long ID_GENERATE_DEBRIS_CHECKBOX = wxNewId();
@@ -102,29 +106,29 @@ SettingsDialog::SettingsDialog(
 
 
     //
-    // Air
+    // Sky
     //
 
-    wxPanel * airPanel = new wxPanel(notebook);
+    wxPanel * skyPanel = new wxPanel(notebook);
 
-    airPanel->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
+    skyPanel->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 
-    PopulateAirPanel(airPanel);
+    PopulateSkyPanel(skyPanel);
 
-    notebook->AddPage(airPanel, "Air");
+    notebook->AddPage(skyPanel, "Sky");
 
 
     //
-    // Waves
+    // Wind and Waves
     //
 
-    wxPanel * wavesPanel = new wxPanel(notebook);
+    wxPanel * windAndWavesPanel = new wxPanel(notebook);
 
-    wavesPanel->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
+    windAndWavesPanel->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 
-    PopulateWavesPanel(wavesPanel);
+    PopulateWindAndWavesPanel(windAndWavesPanel);
 
-    notebook->AddPage(wavesPanel, "Waves");
+    notebook->AddPage(windAndWavesPanel, "Wind and Waves");
 
 
     //
@@ -640,7 +644,7 @@ void SettingsDialog::PopulateFluidsPanel(wxPanel * panel)
     panel->SetSizerAndFit(gridSizer);
 }
 
-void SettingsDialog::PopulateAirPanel(wxPanel * panel)
+void SettingsDialog::PopulateSkyPanel(wxPanel * panel)
 {
     wxGridSizer* gridSizer = new wxGridSizer(2, 4, 0, 0);
 
@@ -691,64 +695,6 @@ void SettingsDialog::PopulateAirPanel(wxPanel * panel)
     gridSizer->Add(mNumberOfCloudsSlider.get(), 1, wxALL, SliderBorder);
 
 
-    // Wind Speed Base
-
-    mWindSpeedBaseSlider = std::make_unique<SliderControl>(
-        panel,
-        SliderWidth,
-        SliderHeight,
-        "Wind Speed Base",
-        "The base speed of wind (Km/h), before modulation takes place.",
-        mGameController->GetWindSpeedBase(),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            mGameController->GetMinWindSpeedBase(),
-            mGameController->GetMaxWindSpeedBase()));
-
-    gridSizer->Add(mWindSpeedBaseSlider.get(), 1, wxALL, SliderBorder);
-
-
-    // Wind Gust Amplitude
-
-    mWindGustAmplitudeSlider = std::make_unique<SliderControl>(
-        panel,
-        SliderWidth,
-        SliderHeight,
-        "Wind Gust Amplitude",
-        "The amplitude of wind gusts, as a multiplier of the base wind speed.",
-        mGameController->GetWindSpeedMaxFactor(),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            mGameController->GetMinWindSpeedMaxFactor(),
-            mGameController->GetMaxWindSpeedMaxFactor()));
-
-    gridSizer->Add(mWindGustAmplitudeSlider.get(), 1, wxALL, SliderBorder);
-
-
-    //
-    // Row 2
-    //
-
-    gridSizer->AddSpacer(0);
-    gridSizer->AddSpacer(0);
-    gridSizer->AddSpacer(0);
-
-
-    mModulateWindCheckBox = new wxCheckBox(panel, ID_MODULATE_WIND_CHECKBOX, _("Modulate Wind"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Modulate Wind Checkbox"));
-    mModulateWindCheckBox->SetToolTip("Enables or disables simulation of wind variations, alternating between dead calm and high-speed gusts.");
-
-    Connect(ID_MODULATE_WIND_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnModulateWindCheckBoxClick);
-
-    gridSizer->Add(mModulateWindCheckBox, 0, wxALL | wxALIGN_TOP, 0);
-
 
 
     // Finalize panel
@@ -756,34 +702,121 @@ void SettingsDialog::PopulateAirPanel(wxPanel * panel)
     panel->SetSizerAndFit(gridSizer);
 }
 
-void SettingsDialog::PopulateWavesPanel(wxPanel * panel)
+void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 {
-    wxGridSizer* gridSizer = new wxGridSizer(2, 4, 0, 0);
+    wxGridBagSizer* gridSizer = new wxGridBagSizer(0, 0);
+
+    //
+    // Wind
+    //
+
+    {
+        wxStaticBox * windBox = new wxStaticBox(panel, wxID_ANY, _("Wind"));
+
+        wxBoxSizer * windBoxSizerV1 = new wxBoxSizer(wxVERTICAL);
+        windBoxSizerV1->AddSpacer(StaticBoxTopMargin);
+
+        wxBoxSizer * windBoxSizerH2 = new wxBoxSizer(wxHORIZONTAL);
+
+        // Wind Speed Base
+        {
+            mWindSpeedBaseSlider = std::make_unique<SliderControl>(
+                windBox,
+                SliderWidth,
+                SliderHeight,
+                "Wind Speed Base",
+                "The base speed of wind (Km/h), before modulation takes place.",
+                mGameController->GetWindSpeedBase(),
+                [this](float /*value*/)
+                {
+                    // Remember we're dirty now
+                    this->mApplyButton->Enable(true);
+                },
+                std::make_unique<LinearSliderCore>(
+                    mGameController->GetMinWindSpeedBase(),
+                    mGameController->GetMaxWindSpeedBase()));
+
+            windBoxSizerH2->Add(mWindSpeedBaseSlider.get(), 0, wxEXPAND, 0);
+        }
+
+        windBoxSizerH2->AddSpacer(5);
+
+        // Wind modulation
+        {
+            wxBoxSizer * windModulationBoxSizer = new wxBoxSizer(wxVERTICAL);
+
+            // Modulate Wind
+            {
+                mModulateWindCheckBox = new wxCheckBox(windBox, ID_MODULATE_WIND_CHECKBOX, _("Modulate Wind"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Modulate Wind Checkbox"));
+                mModulateWindCheckBox->SetToolTip("Enables or disables simulation of wind variations, alternating between dead calm and high-speed gusts.");
+
+                Connect(ID_MODULATE_WIND_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnModulateWindCheckBoxClick);
+
+                windModulationBoxSizer->Add(mModulateWindCheckBox, 0, 0, 0);
+            }
+
+            // Wind Gust Amplitude
+            {
+                mWindGustAmplitudeSlider = std::make_unique<SliderControl>(
+                    windBox,
+                    SliderWidth,
+                    -1,
+                    "Wind Gust Amplitude",
+                    "The amplitude of wind gusts, as a multiplier of the base wind speed.",
+                    mGameController->GetWindSpeedMaxFactor(),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameController->GetMinWindSpeedMaxFactor(),
+                        mGameController->GetMaxWindSpeedMaxFactor()));
+
+                windModulationBoxSizer->Add(mWindGustAmplitudeSlider.get(), 1, wxEXPAND, 0);
+            }
+
+            windBoxSizerH2->Add(windModulationBoxSizer, 0, wxEXPAND, 0);
+        }
+
+        windBoxSizerV1->Add(windBoxSizerH2, 1, wxEXPAND | wxALL, StaticBoxInsetMargin);
+
+        windBox->SetSizerAndFit(windBoxSizerV1);
+
+        gridSizer->Add(windBox, 1, wxALL, SliderBorder);
+    }
+
+    // TODOHERE
+
+
+
+
+
 
     //
     // Row 1
     //
 
 
-    // Basal Wave Height
+    // Basal Wave Height Adjustment
 
-    mBasalWaveHeightSlider = std::make_unique<SliderControl>(
+    mBasalWaveHeightAdjustmentSlider = std::make_unique<SliderControl>(
         panel,
         SliderWidth,
         SliderHeight,
-        "Basal Wave Height",
-        "The height of basal sea water waves (m).",
-        static_cast<float>(mGameController->GetBasalWaveHeight()),
+        "Basal Wave Height Adjust",
+        "TODO.",
+        static_cast<float>(mGameController->GetBasalWaveHeightAdjustment()),
         [this](float /*value*/)
         {
             // Remember we're dirty now
             this->mApplyButton->Enable(true);
         },
         std::make_unique<LinearSliderCore>(
-            mGameController->GetMinBasalWaveHeight(),
-            mGameController->GetMaxBasalWaveHeight()));
+            mGameController->GetMinBasalWaveHeightAdjustment(),
+            mGameController->GetMaxBasalWaveHeightAdjustment()));
 
-    gridSizer->Add(mBasalWaveHeightSlider.get(), 1, wxALL, SliderBorder);
+    gridSizer->Add(mBasalWaveHeightAdjustmentSlider.get(), 1, wxALL, SliderBorder);
 
 
     // Basal Wave Length Adjustment
@@ -800,9 +833,8 @@ void SettingsDialog::PopulateWavesPanel(wxPanel * panel)
             // Remember we're dirty now
             this->mApplyButton->Enable(true);
         },
-        std::make_unique<ExponentialSliderCore>(
+        std::make_unique<LinearSliderCore>(
             mGameController->GetMinBasalWaveLengthAdjustment(),
-            0.1f,
             mGameController->GetMaxBasalWaveLengthAdjustment()));
 
     gridSizer->Add(mBasalWaveLengthAdjustmentSlider.get(), 1, wxALL, SliderBorder);
@@ -1159,10 +1191,6 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 
 void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 {
-    static constexpr int StaticBoxTopMargin = 7;
-    static constexpr int StaticBoxInsetMargin = 10;
-    static constexpr int CellBorder = 8;
-
     wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
 
 
@@ -1767,7 +1795,7 @@ void SettingsDialog::ReadSettings()
 
     // Waves
 
-    mBasalWaveHeightSlider->SetValue(mGameController->GetBasalWaveHeight());
+    mBasalWaveHeightAdjustmentSlider->SetValue(mGameController->GetBasalWaveHeightAdjustment());
 
     mBasalWaveLengthAdjustmentSlider->SetValue(mGameController->GetBasalWaveLengthAdjustment());
 
@@ -2050,8 +2078,8 @@ void SettingsDialog::ApplySettings()
 
     // Waves
 
-    mGameController->SetBasalWaveHeight(
-        mBasalWaveHeightSlider->GetValue());
+    mGameController->SetBasalWaveHeightAdjustment(
+        mBasalWaveHeightAdjustmentSlider->GetValue());
 
     mGameController->SetBasalWaveLengthAdjustment(
         mBasalWaveLengthAdjustmentSlider->GetValue());
