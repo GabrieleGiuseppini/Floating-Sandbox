@@ -851,12 +851,9 @@ Render:
 								  or too fast waves
 						+ Actual wave speed = speed * direction(wind speed) + wind speed * factor
 							+ With speed > 0						
-						- Multiple components:
-							- Two components:
-								- H + 10%, H - 10%
-								- LAdj == LAdj
-								- T + 10%, T - 10%
-								- 2nd component has sin phase with very slow period
+						+ Multiple components:
+							+ Two components:
+								+ 2nd component has sin phase with very slow period
 						- Dancing in the dark
 						+ Find good initial conditions
 							+ Need "as if" wind was 40, but not simply 2x as wind=100 makes wind'=200
