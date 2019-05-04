@@ -472,7 +472,11 @@ void OceanSurface::GenerateSamples(
     //  - Wind gust ripples
     //
 
-    float const baseWindSpeedMagnitude = abs(wind.GetBaseSpeedMagnitude()); // km/h
+    float baseWindSpeedMagnitude = abs(wind.GetBaseSpeedMagnitude()); // km/h
+    if (baseWindSpeedMagnitude < 60)
+        // y = 63.09401 - 63.09401*e^(-0.05025263*x)
+        baseWindSpeedMagnitude = 63.09401f - 63.09401f * exp(-0.05025263f * baseWindSpeedMagnitude); // Dramatize
+
     float const baseWindSpeedSign = wind.GetBaseSpeedMagnitude() >= 0.0f ? 1.0f : -1.0f;
 
 
