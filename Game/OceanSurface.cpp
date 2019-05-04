@@ -551,6 +551,11 @@ void OceanSurface::GenerateSamples(
         TODOwavePeriod = basalWavePeriod;
     }
 
+    // TODOTEST
+    //float const componentsPhase = Pi<float> * sin(0.2f * currentSimulationTime);
+    float const componentsPhase = Pi<float> * sin(currentSimulationTime);
+    //float const componentsPhase = 0.0f;
+
 
     //
     // Wind gust ripples
@@ -606,17 +611,25 @@ void OceanSurface::GenerateSamples(
             (mCurrentHeightField[SWEOuterLayerSamples + i] - SWEHeightFieldOffset)
             * SWEHeightFieldAmplification;
 
-        float const basalValue =
-            sin(basalWaveNumber * x - basalWaveAngularVelocity * currentSimulationTime)
-            * basalWaveAmplitude;
+        // TODOTEST
+        ////float const basalValue =
+        ////    sin(basalWaveNumber * x - basalWaveAngularVelocity * currentSimulationTime)
+        ////    * basalWaveAmplitude;
+        float const basalValue1 =
+            1.1f * basalWaveAmplitude
+            * sin(1.1f * basalWaveNumber * x - 1.1f * basalWaveAngularVelocity * currentSimulationTime);
+        float const basalValue2 =
+            0.9f * basalWaveAmplitude
+            * sin(0.9f * basalWaveNumber * x - 0.9f * basalWaveAngularVelocity * currentSimulationTime + componentsPhase);
 
         float const rippleValue =
-            sinf(x * WindRippleSpatialFrequency - currentSimulationTime * windRipplesTimeFrequency)
-            * windRipplesWaveHeight;
+            windRipplesWaveHeight
+            * sinf(x * WindRippleSpatialFrequency - currentSimulationTime * windRipplesTimeFrequency);
 
         float const sampleValue =
             sweValue
-            + basalValue
+            + basalValue1
+            + basalValue2
             + rippleValue;
 
         mSamples[i].SampleValue = sampleValue;

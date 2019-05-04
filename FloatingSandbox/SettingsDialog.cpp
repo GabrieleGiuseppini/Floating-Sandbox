@@ -833,8 +833,9 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
             // Remember we're dirty now
             this->mApplyButton->Enable(true);
         },
-        std::make_unique<LinearSliderCore>(
+        std::make_unique<ExponentialSliderCore>(
             mGameController->GetMinBasalWaveLengthAdjustment(),
+            1.0f,
             mGameController->GetMaxBasalWaveLengthAdjustment()));
 
     gridSizer->Add(mBasalWaveLengthAdjustmentSlider.get(), 1, wxALL, SliderBorder);

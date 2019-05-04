@@ -855,10 +855,11 @@ Render:
 							- Two components:
 								- H + 10%, H - 10%
 								- LAdj == LAdj
-								- T + 10%, H - 10%
+								- T + 10%, T - 10%
 								- 2nd component has sin phase with very slow period
-						- Find good initial conditions
-							- Need "as if" wind was 40, but not simply 2x as wind=100 makes wind'=200
+						- Dancing in the dark
+						+ Find good initial conditions
+							+ Need "as if" wind was 40, but not simply 2x as wind=100 makes wind'=200
 
 					+ Controls:
 						+ WidthAdjust, Height, Period (>0)
