@@ -695,11 +695,11 @@ void Ship::TrimForWorldBounds(
 {
     static constexpr float MaxBounceVelocity = 50.0f;
 
-    float constexpr MaxWorldLeft = -GameParameters::MaxWorldWidth / 2.0f;
-    float constexpr MaxWorldRight = GameParameters::MaxWorldWidth / 2.0f;
+    float constexpr MaxWorldLeft = -GameParameters::HalfMaxWorldWidth;
+    float constexpr MaxWorldRight = GameParameters::HalfMaxWorldWidth;
 
-    float constexpr MaxWorldTop = GameParameters::MaxWorldHeight;
-    float constexpr MaxWorldBottom = -GameParameters::MaxWorldHeight;
+    float constexpr MaxWorldTop = GameParameters::HalfMaxWorldHeight;
+    float constexpr MaxWorldBottom = -GameParameters::HalfMaxWorldHeight;
 
     for (auto pointIndex : mPoints)
     {

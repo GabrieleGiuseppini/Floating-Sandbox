@@ -477,14 +477,14 @@ void OceanSurface::GenerateSamples(
     //
 
     // TODO: temporary, then move final min and max to GameParameters
-    float const TODObasalWaveHeightAdjustment = // 0.0 - 20.0
+    float const TODObasalWaveHeightAdjustment = // 0.0 - 100.0
         gameParameters.BasalWaveHeightAdjustment <= 0.5f
         ? 2.0f * gameParameters.BasalWaveHeightAdjustment
-        : 1.0f + (gameParameters.BasalWaveHeightAdjustment - 0.5f) / 0.5f * 19.0f;
+        : 1.0f + (gameParameters.BasalWaveHeightAdjustment - 0.5f) / 0.5f * 99.0f;
     float const TODObasalWaveLengthAdjustment = // 0.5 - 3.0
-        gameParameters.BasalWaveHeightAdjustment <= 0.5f
-        ? 0.5f + gameParameters.BasalWaveHeightAdjustment
-        : 1.0f + 4.0f * (gameParameters.BasalWaveLengthAdjustment - 0.5f);
+        gameParameters.BasalWaveLengthAdjustment <= 0.5f
+        ? 0.5f + gameParameters.BasalWaveLengthAdjustment
+        : 1.0f + (gameParameters.BasalWaveLengthAdjustment - 0.5f) / 0.5f * 2.0f;
     float const TODObasalWaveSpeedAdjustment = // 0.75f - 20.0f
         gameParameters.BasalWaveSpeedAdjustment <= 0.5f
         ? 0.75f + 0.25f * gameParameters.BasalWaveSpeedAdjustment / 0.5f
@@ -517,13 +517,11 @@ void OceanSurface::GenerateSamples(
 
 
     // Wavelength
-    // - Wavelength = f(WindSpeed, km/h), with f fitted over points from same table
-    // y = 1.774405 - 0.07375*x + 0.02547024*x^2
-
+    // - Wavelength = f(WaveHeight (adjusted), m), with f fitted over points from same table
+    // y = -738512.1 + 738525.2*e^(+0.00001895026*x)
     float const basalWaveLengthBase =
-        0.02547024f * (baseWindSpeedMagnitude * baseWindSpeedMagnitude)
-        - 0.07375f * baseWindSpeedMagnitude
-        + 1.774405f;
+        -738512.1f
+        + 738525.2f * exp(0.00001895026f * (2.0f * basalWaveAmplitude));
 
     float const basalWaveLength = basalWaveLengthBase * TODObasalWaveLengthAdjustment;
 
@@ -539,13 +537,21 @@ void OceanSurface::GenerateSamples(
 
 
     // Period
+    // TODOOLD
     // - Period = sqrt(2 * Pi * L / g)
+    // - Period = f(WaveLength (adjusted), m), with f fitted over points from same table
+    // y = 17.91851 - 15.52928*e^(-0.006572834*x)
 
-    float const basalWavePeriodBase = sqrt(
-        2.0f
-        * Pi<float>
-        * basalWaveLength
-        / GameParameters::GravityMagnitude);
+    // TODOOLD
+    ////float const basalWavePeriodBase = sqrt(
+    ////    2.0f
+    ////    * Pi<float>
+    ////    * basalWaveLength
+    ////    / GameParameters::GravityMagnitude);
+
+    float const basalWavePeriodBase =
+        17.91851f
+        - 15.52928f * exp(-0.006572834f * basalWaveLength);
 
     assert(TODObasalWaveSpeedAdjustment != 0.0f);
     float const basalWavePeriod = basalWavePeriodBase / TODObasalWaveSpeedAdjustment;
