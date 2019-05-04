@@ -842,27 +842,26 @@ Render:
 							+ fraction of MaxWidth - MinWidth(H)
 							+ MinWidth(H) = 6*H
 							+ 1.0 means "max width" = f(height)
-						= Wavelength and period correlated: 
+						+ Wavelength and period correlated: 
 							+ Change period into speed (m/s) = S
 							+ S = 1/sqrt(2PiL/g)
-							= Adjustment makes +/- 50%
-								= Speed is never zero
-								- See if need to adjust percentage bands to avoid "almost still" waves or too slow waves 
+							+ Adjustment makes +/- 50%
+								+ Speed is never zero
+								+ See if need to adjust percentage bands to avoid "almost still" waves or too slow waves 
 								  or too fast waves
-						- Actual wave speed = speed * direction(wind speed) + wind speed * factor
-							- With speed > 0						
+						+ Actual wave speed = speed * direction(wind speed) + wind speed * factor
+							+ With speed > 0						
 						- Multiple components:
 							- Two components:
 								- H + 10%, H - 10%
 								- LAdj == LAdj
 								- T + 10%, H - 10%
 								- 2nd component has sin phase with very slow period
+						- Find good initial conditions
+							- Need "as if" wind was 40, but not simply 2x as wind=100 makes wind'=200
 
-					- Controls:
-						= WidthAdjust, Height, Period (>0)
-						- Auto mode:
-							- Wind speed => height, width, period (from table at https://topex.ucsd.edu/ps/waves.pdf)
-								- Wind speed = 0 => no basal waves
+					+ Controls:
+						+ WidthAdjust, Height, Period (>0)
 				= SWEs
 					= Tool
 						+ Tool does no smoothing

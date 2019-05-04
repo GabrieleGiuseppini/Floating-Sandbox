@@ -472,27 +472,13 @@ void OceanSurface::GenerateSamples(
     //  - Wind gust ripples
     //
 
-    //
-    // Basal waves
-    //
-
-    // TODO: temporary, then move final min and max to GameParameters
-    float const TODObasalWaveHeightAdjustment = // 0.0 - 100.0
-        gameParameters.BasalWaveHeightAdjustment <= 0.5f
-        ? 2.0f * gameParameters.BasalWaveHeightAdjustment
-        : 1.0f + (gameParameters.BasalWaveHeightAdjustment - 0.5f) / 0.5f * 99.0f;
-    float const TODObasalWaveLengthAdjustment = // 0.5 - 3.0
-        gameParameters.BasalWaveLengthAdjustment <= 0.5f
-        ? 0.5f + gameParameters.BasalWaveLengthAdjustment
-        : 1.0f + (gameParameters.BasalWaveLengthAdjustment - 0.5f) / 0.5f * 2.0f;
-    float const TODObasalWaveSpeedAdjustment = // 0.75f - 20.0f
-        gameParameters.BasalWaveSpeedAdjustment <= 0.5f
-        ? 0.75f + 0.25f * gameParameters.BasalWaveSpeedAdjustment / 0.5f
-        : 1.0f + (gameParameters.BasalWaveSpeedAdjustment - 0.5f) / 0.5f * 19.0f;
-
     float const baseWindSpeedMagnitude = abs(wind.GetBaseSpeedMagnitude()); // km/h
     float const baseWindSpeedSign = wind.GetBaseSpeedMagnitude() >= 0.0f ? 1.0f : -1.0f;
 
+
+    //
+    // Basal waves
+    //
 
     // Amplitude
     // - Amplitude = f(WindSpeed, km/h), with f fitted over points from Full Developed Waves
@@ -505,13 +491,13 @@ void OceanSurface::GenerateSamples(
           + 1.039702f
         : 0.0f;
 
-    float const basalWaveAmplitude = basalWaveHeightBase / 2.0f * TODObasalWaveHeightAdjustment;
+    float const basalWaveAmplitude = basalWaveHeightBase / 2.0f * gameParameters.BasalWaveHeightAdjustment;
 
     // TODOTEST
     static float TODOwaveAmp = 0.0f;
     if (basalWaveAmplitude != TODOwaveAmp)
     {
-        LogMessage("basalWaveAmplitude=", basalWaveAmplitude, " (", TODObasalWaveHeightAdjustment, ")");
+        LogMessage("basalWaveAmplitude=", basalWaveAmplitude, " (", gameParameters.BasalWaveHeightAdjustment, ")");
         TODOwaveAmp = basalWaveAmplitude;
     }
 
@@ -519,42 +505,36 @@ void OceanSurface::GenerateSamples(
     // Wavelength
     // - Wavelength = f(WaveHeight (adjusted), m), with f fitted over points from same table
     // y = -738512.1 + 738525.2*e^(+0.00001895026*x)
+
     float const basalWaveLengthBase =
         -738512.1f
         + 738525.2f * exp(0.00001895026f * (2.0f * basalWaveAmplitude));
 
-    float const basalWaveLength = basalWaveLengthBase * TODObasalWaveLengthAdjustment;
-
-    static float TODOwaveLength = 0.0f;
-    if (basalWaveLength != TODOwaveLength)
-    {
-        LogMessage("basalWaveLength=", basalWaveLength, " (", TODObasalWaveLengthAdjustment, ")");
-        TODOwaveLength = basalWaveLength;
-    }
+    float const basalWaveLength = basalWaveLengthBase * gameParameters.BasalWaveLengthAdjustment;
 
     assert(basalWaveLength != 0.0f);
     float const basalWaveNumber = baseWindSpeedSign * 2.0f * Pi<float> / basalWaveLength;
 
+    // TODOTEST
+    static float TODOwaveLength = 0.0f;
+    if (basalWaveLength != TODOwaveLength)
+    {
+        LogMessage("basalWaveLength=", basalWaveLength, " (", gameParameters.BasalWaveLengthAdjustment, ")");
+        TODOwaveLength = basalWaveLength;
+    }
+
 
     // Period
-    // TODOOLD
-    // - Period = sqrt(2 * Pi * L / g)
+    // - Technically, period = sqrt(2 * Pi * L / g), however this doesn't fit the table, so:
     // - Period = f(WaveLength (adjusted), m), with f fitted over points from same table
     // y = 17.91851 - 15.52928*e^(-0.006572834*x)
-
-    // TODOOLD
-    ////float const basalWavePeriodBase = sqrt(
-    ////    2.0f
-    ////    * Pi<float>
-    ////    * basalWaveLength
-    ////    / GameParameters::GravityMagnitude);
 
     float const basalWavePeriodBase =
         17.91851f
         - 15.52928f * exp(-0.006572834f * basalWaveLength);
 
-    assert(TODObasalWaveSpeedAdjustment != 0.0f);
-    float const basalWavePeriod = basalWavePeriodBase / TODObasalWaveSpeedAdjustment;
+    assert(gameParameters.BasalWaveSpeedAdjustment != 0.0f);
+    float const basalWavePeriod = basalWavePeriodBase / gameParameters.BasalWaveSpeedAdjustment;
 
     assert(basalWavePeriod != 0.0f);
     float const basalWaveAngularVelocity = 2.0f * Pi<float> / basalWavePeriod;
@@ -563,11 +543,9 @@ void OceanSurface::GenerateSamples(
     static float TODOwavePeriod = 0.0f;
     if (basalWavePeriod != TODOwavePeriod)
     {
-        LogMessage("basalWavePeriod=", basalWavePeriod, " (", TODObasalWaveSpeedAdjustment, ")");
+        LogMessage("basalWavePeriod=", basalWavePeriod, " (", gameParameters.BasalWaveSpeedAdjustment, ")");
         TODOwavePeriod = basalWavePeriod;
     }
-
-    // TODOHERE
 
 
     //
