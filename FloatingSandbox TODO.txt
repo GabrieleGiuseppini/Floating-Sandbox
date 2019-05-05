@@ -816,28 +816,16 @@ Render:
 			+ Step 2: perturbation tool
 				+ OceanSurface::AdjustTo
 			= Rearc:
-				= Basal waves
+				+ Basal waves
 					+ Params:
 						+ Width (wavelength)
 						+ Height
 						+ Period (=> speed=Wavelength/Period)
-					= Tests:
-						= Funcs:
+					+ Impl:
+						+ Funcs:
 							+ sin
-							= abs(sin)							-
-							- Peachey's profile: quadratic + sin, controlled via:
-								- local "steepness" param, at first for testing
-								- then, steepness is based off speed
-								- quadratic: 8|f-0.5|^2 - 1
-									- f is non-PI'd: x/wavelength - t/period
-						= Composition of SWE and basal:
+						+ Composition of SWE and basal:
 							+ add
-							- mul - can it even be done, w/swe being 0?
-							- max
-							- swe + alpha*basal, with alpha = f(sweH):
-								- sweH = 0.0 => alpha = 1.0
-								- sweH --> +INF alpha -->0.0
-								- f = a / (a + sweH)
 						+ Wave width is "WaveWidthAdjust"
 							+ fraction of MaxWidth - MinWidth(H)
 							+ MinWidth(H) = 6*H
@@ -853,46 +841,44 @@ Render:
 							+ With speed > 0						
 						+ Multiple components:
 							+ Two components:
-								+ 2nd component has sin phase with very slow period
-						- Dancing in the dark
+								+ 2nd component has sin phase with very slow period						
 						+ Find good initial conditions
 							+ Need "as if" wind was 40, but not simply 2x as wind=100 makes wind'=200
 
 					+ Controls:
-						+ WidthAdjust, Height, Period (>0)
+						+ WidthAdjust, Height, Period (>0)				
 				= SWEs
-					= Tool
+					+ Tool
 						+ Tool does no smoothing
 						+ OceanSurface implements trajectory
 							+ Delay rate must itself depend on delta H
 						+ Test max delta H
 						+ Find correct falling water speed
 						+ Check if average water depth increases
-						- Try with SWEWaveStateMachine using current height (passed at Update(.))
 					+ Cursor: set arrows at same positions as adjust terrain cursor
-					- See why R-side is reflective and L side is not					
 					- Rogue wave generation (incl. tsunami)
+						- Dancing in the dark
 						- Params:
 							- Height
 								- Tsunami: 105 (5%)
 								- Rogue: 101.0 (1%)
 							- Frequency (Poisson's lambda)
-				- SettingsDialog:
-					- "Wind and Waves" tab
-						- Tooltips
+				= SettingsDialog:
+					+ "Wind and Waves" tab
+						+ Static box for basal waves
+						+ Tooltips
+					- Run in Debug
 			- Final touches:
 				+ Cursor
 				- WaveMaker:
-					- Double-check hotspot
+					+ Double-check hotspot
 					- Tool sound
+						- Continuous with fade-in and fade-out
 			- Optimizations:
 				- Wave params calc'd only at GameParameters changes
-				- Pre-calc'd funcs (sin, etc.)
+				- Pre-calc'd funcs (sin)
 				- Two advections in one, so that we have a single loop
 				- Two field updates in one, so that we have a single loop
-			- Misc:
-				- Wave sound:
-					- At peaks moving; how?
 
 	- Underwater currents
 		- Implicit function of x defines trajectory 

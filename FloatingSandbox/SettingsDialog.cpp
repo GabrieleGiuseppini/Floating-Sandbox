@@ -106,16 +106,16 @@ SettingsDialog::SettingsDialog(
 
 
     //
-    // Sky
+    // Ocean and Sky
     //
 
-    wxPanel * skyPanel = new wxPanel(notebook);
+    wxPanel * oceanAndSkyPanel = new wxPanel(notebook);
 
-    skyPanel->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
+    oceanAndSkyPanel->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 
-    PopulateSkyPanel(skyPanel);
+    PopulateOceanAndSkyPanel(oceanAndSkyPanel);
 
-    notebook->AddPage(skyPanel, "Sky");
+    notebook->AddPage(oceanAndSkyPanel, "Ocean and Sky");
 
 
     //
@@ -644,56 +644,155 @@ void SettingsDialog::PopulateFluidsPanel(wxPanel * panel)
     panel->SetSizerAndFit(gridSizer);
 }
 
-void SettingsDialog::PopulateSkyPanel(wxPanel * panel)
+void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
 {
-    wxGridSizer* gridSizer = new wxGridSizer(2, 4, 0, 0);
+    wxGridBagSizer* gridSizer = new wxGridBagSizer(0, 0);
 
     //
-    // Row 1
+    // Ocean
     //
 
+    {
+        wxStaticBox * oceanBox = new wxStaticBox(panel, wxID_ANY, _("Ocean"));
 
-    // Number of Stars
+        wxBoxSizer * oceanBoxSizerV1 = new wxBoxSizer(wxVERTICAL);
+        oceanBoxSizerV1->AddSpacer(StaticBoxTopMargin);
 
-    mNumberOfStarsSlider = std::make_unique<SliderControl>(
-        panel,
-        SliderWidth,
-        SliderHeight,
-        "Number of Stars",
-        "The number of stars in the sky.",
-        static_cast<float>(mGameController->GetNumberOfStars()),
-        [this](float /*value*/)
+        wxBoxSizer * oceanBoxSizerH2 = new wxBoxSizer(wxHORIZONTAL);
+
+        // Ocean Depth
         {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            static_cast<float>(mGameController->GetMinNumberOfStars()),
-            static_cast<float>(mGameController->GetMaxNumberOfStars())));
+            mOceanDepthSlider = std::make_unique<SliderControl>(
+                oceanBox,
+                SliderWidth,
+                SliderHeight,
+                "Ocean Depth",
+                "The ocean depth (m).",
+                mGameController->GetSeaDepth(),
+                [this](float /*value*/)
+                {
+                    // Remember we're dirty now
+                    this->mApplyButton->Enable(true);
+                },
+                std::make_unique<ExponentialSliderCore>(
+                    mGameController->GetMinSeaDepth(),
+                    300.0f,
+                    mGameController->GetMaxSeaDepth()));
 
-    gridSizer->Add(mNumberOfStarsSlider.get(), 1, wxALL, SliderBorder);
+            oceanBoxSizerH2->Add(mOceanDepthSlider.get(), 0, wxEXPAND | wxLEFT | wxRIGHT, SliderBorder);
+        }
 
-
-    // Number of Clouds
-
-    mNumberOfCloudsSlider = std::make_unique<SliderControl>(
-        panel,
-        SliderWidth,
-        SliderHeight,
-        "Number of Clouds",
-        "The number of clouds in the world's sky. This is the total number of clouds in the world; at any moment in time, the number of clouds that are visible will be less than or equal to this value.",
-        static_cast<float>(mGameController->GetNumberOfClouds()),
-        [this](float /*value*/)
+        // Ocean Floor Bumpiness
         {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            static_cast<float>(mGameController->GetMinNumberOfClouds()),
-            static_cast<float>(mGameController->GetMaxNumberOfClouds())));
+            mOceanFloorBumpinessSlider = std::make_unique<SliderControl>(
+                oceanBox,
+                SliderWidth,
+                SliderHeight,
+                "Ocean Floor Bumpiness",
+                "Adjusts how much the ocean floor rolls up and down.",
+                mGameController->GetOceanFloorBumpiness(),
+                [this](float /*value*/)
+                {
+                    // Remember we're dirty now
+                    this->mApplyButton->Enable(true);
+                },
+                std::make_unique<LinearSliderCore>(
+                    mGameController->GetMinOceanFloorBumpiness(),
+                    mGameController->GetMaxOceanFloorBumpiness()));
 
-    gridSizer->Add(mNumberOfCloudsSlider.get(), 1, wxALL, SliderBorder);
+            oceanBoxSizerH2->Add(mOceanFloorBumpinessSlider.get(), 0, wxEXPAND | wxLEFT | wxRIGHT, SliderBorder);
+        }
 
+        // Ocean Floor Detail Amplification
+        {
+            mOceanFloorDetailAmplificationSlider = std::make_unique<SliderControl>(
+                oceanBox,
+                SliderWidth,
+                SliderHeight,
+                "Ocean Floor Detail",
+                "Adjusts the jaggedness of the ocean floor irregularities.",
+                mGameController->GetOceanFloorDetailAmplification(),
+                [this](float /*value*/)
+                {
+                    // Remember we're dirty now
+                    this->mApplyButton->Enable(true);
+                },
+                std::make_unique<ExponentialSliderCore>(
+                    mGameController->GetMinOceanFloorDetailAmplification(),
+                    10.0f,
+                    mGameController->GetMaxOceanFloorDetailAmplification()));
+
+            oceanBoxSizerH2->Add(mOceanFloorDetailAmplificationSlider.get(), 0, wxEXPAND | wxLEFT | wxRIGHT, SliderBorder);
+        }
+
+        oceanBoxSizerV1->Add(oceanBoxSizerH2, 1, wxEXPAND | wxALL, StaticBoxInsetMargin);
+
+        oceanBox->SetSizerAndFit(oceanBoxSizerV1);
+
+        gridSizer->Add(oceanBox, 1, wxALL, SliderBorder);
+    }
+
+
+    //
+    // Sky
+    //
+
+    {
+        wxStaticBox * skyBox = new wxStaticBox(panel, wxID_ANY, _("Sky"));
+
+        wxBoxSizer * skyBoxSizerV1 = new wxBoxSizer(wxVERTICAL);
+        skyBoxSizerV1->AddSpacer(StaticBoxTopMargin);
+
+        wxBoxSizer * skyBoxSizerH2 = new wxBoxSizer(wxHORIZONTAL);
+
+        // Number of Stars
+        {
+            mNumberOfStarsSlider = std::make_unique<SliderControl>(
+                skyBox,
+                SliderWidth,
+                SliderHeight,
+                "Number of Stars",
+                "The number of stars in the sky.",
+                static_cast<float>(mGameController->GetNumberOfStars()),
+                [this](float /*value*/)
+                {
+                    // Remember we're dirty now
+                    this->mApplyButton->Enable(true);
+                },
+                std::make_unique<LinearSliderCore>(
+                    static_cast<float>(mGameController->GetMinNumberOfStars()),
+                    static_cast<float>(mGameController->GetMaxNumberOfStars())));
+
+            skyBoxSizerH2->Add(mNumberOfStarsSlider.get(), 0, wxEXPAND | wxLEFT | wxRIGHT, SliderBorder);
+        }
+
+        // Number of Clouds
+        {
+            mNumberOfCloudsSlider = std::make_unique<SliderControl>(
+                skyBox,
+                SliderWidth,
+                SliderHeight,
+                "Number of Clouds",
+                "The number of clouds in the world's sky. This is the total number of clouds in the world; at any moment in time, the number of clouds that are visible will be less than or equal to this value.",
+                static_cast<float>(mGameController->GetNumberOfClouds()),
+                [this](float /*value*/)
+                {
+                    // Remember we're dirty now
+                    this->mApplyButton->Enable(true);
+                },
+                std::make_unique<LinearSliderCore>(
+                    static_cast<float>(mGameController->GetMinNumberOfClouds()),
+                    static_cast<float>(mGameController->GetMaxNumberOfClouds())));
+
+            skyBoxSizerH2->Add(mNumberOfCloudsSlider.get(), 0, wxEXPAND | wxLEFT | wxRIGHT, SliderBorder);
+        }
+
+        skyBoxSizerV1->Add(skyBoxSizerH2, 1, wxEXPAND | wxALL, StaticBoxInsetMargin);
+
+        skyBox->SetSizerAndFit(skyBoxSizerV1);
+
+        gridSizer->Add(skyBox, 1, wxALL, SliderBorder);
+    }
 
 
 
@@ -725,7 +824,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                 SliderWidth,
                 SliderHeight,
                 "Wind Speed Base",
-                "The base speed of wind (Km/h), before modulation takes place.",
+                "The base speed of wind (Km/h), before modulation takes place. Wind speed in turn determines ocean wave characteristics such as their height, speed, and width.",
                 mGameController->GetWindSpeedBase(),
                 [this](float /*value*/)
                 {
@@ -736,10 +835,8 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     mGameController->GetMinWindSpeedBase(),
                     mGameController->GetMaxWindSpeedBase()));
 
-            windBoxSizerH2->Add(mWindSpeedBaseSlider.get(), 0, wxEXPAND, 0);
+            windBoxSizerH2->Add(mWindSpeedBaseSlider.get(), 0, wxEXPAND | wxLEFT | wxRIGHT, SliderBorder);
         }
-
-        windBoxSizerH2->AddSpacer(5);
 
         // Wind modulation
         {
@@ -776,7 +873,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                 windModulationBoxSizer->Add(mWindGustAmplitudeSlider.get(), 1, wxEXPAND, 0);
             }
 
-            windBoxSizerH2->Add(windModulationBoxSizer, 0, wxEXPAND, 0);
+            windBoxSizerH2->Add(windModulationBoxSizer, 0, wxEXPAND | wxLEFT | wxRIGHT, SliderBorder);
         }
 
         windBoxSizerV1->Add(windBoxSizerH2, 1, wxEXPAND | wxALL, StaticBoxInsetMargin);
@@ -786,80 +883,89 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
         gridSizer->Add(windBox, 1, wxALL, SliderBorder);
     }
 
-    // TODOHERE
-
-
-
-
-
-
     //
-    // Row 1
+    // Basal waves
     //
 
+    {
+        wxStaticBox * basalWavesBox = new wxStaticBox(panel, wxID_ANY, _("Basal Waves"));
 
-    // Basal Wave Height Adjustment
+        wxBoxSizer * basalWavesBoxSizerV1 = new wxBoxSizer(wxVERTICAL);
+        basalWavesBoxSizerV1->AddSpacer(StaticBoxTopMargin);
 
-    mBasalWaveHeightAdjustmentSlider = std::make_unique<SliderControl>(
-        panel,
-        SliderWidth,
-        SliderHeight,
-        "Basal Wave Height Adjust",
-        "TODO.",
-        static_cast<float>(mGameController->GetBasalWaveHeightAdjustment()),
-        [this](float /*value*/)
+        wxBoxSizer * basalWavesSizerH2 = new wxBoxSizer(wxHORIZONTAL);
+
+        // Basal Wave Height Adjustment
         {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            mGameController->GetMinBasalWaveHeightAdjustment(),
-            mGameController->GetMaxBasalWaveHeightAdjustment()));
+            mBasalWaveHeightAdjustmentSlider = std::make_unique<SliderControl>(
+                basalWavesBox,
+                SliderWidth,
+                SliderHeight,
+                "Wave Height Adjust",
+                "Adjusts the height of ocean waves wrt their optimal value, which is determined by wind speed.",
+                static_cast<float>(mGameController->GetBasalWaveHeightAdjustment()),
+                [this](float /*value*/)
+                {
+                    // Remember we're dirty now
+                    this->mApplyButton->Enable(true);
+                },
+                std::make_unique<LinearSliderCore>(
+                    mGameController->GetMinBasalWaveHeightAdjustment(),
+                    mGameController->GetMaxBasalWaveHeightAdjustment()));
 
-    gridSizer->Add(mBasalWaveHeightAdjustmentSlider.get(), 1, wxALL, SliderBorder);
+            basalWavesSizerH2->Add(mBasalWaveHeightAdjustmentSlider.get(), 0, wxEXPAND | wxLEFT | wxRIGHT, SliderBorder);
+        }
 
-
-    // Basal Wave Length Adjustment
-
-    mBasalWaveLengthAdjustmentSlider = std::make_unique<SliderControl>(
-        panel,
-        SliderWidth,
-        SliderHeight,
-        "BasalWave Width Adjust",
-        "TODO.",
-        static_cast<float>(mGameController->GetBasalWaveLengthAdjustment()),
-        [this](float /*value*/)
+        // Basal Wave Length Adjustment
         {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<ExponentialSliderCore>(
-            mGameController->GetMinBasalWaveLengthAdjustment(),
-            1.0f,
-            mGameController->GetMaxBasalWaveLengthAdjustment()));
+            mBasalWaveLengthAdjustmentSlider = std::make_unique<SliderControl>(
+                basalWavesBox,
+                SliderWidth,
+                SliderHeight,
+                "Wave Width Adjust",
+                "Adjusts the width of ocean waves wrt their optimal value, which is determined by wind speed.",
+                static_cast<float>(mGameController->GetBasalWaveLengthAdjustment()),
+                [this](float /*value*/)
+                {
+                    // Remember we're dirty now
+                    this->mApplyButton->Enable(true);
+                },
+                std::make_unique<ExponentialSliderCore>(
+                    mGameController->GetMinBasalWaveLengthAdjustment(),
+                    1.0f,
+                    mGameController->GetMaxBasalWaveLengthAdjustment()));
 
-    gridSizer->Add(mBasalWaveLengthAdjustmentSlider.get(), 1, wxALL, SliderBorder);
+            basalWavesSizerH2->Add(mBasalWaveLengthAdjustmentSlider.get(), 0, wxEXPAND | wxLEFT | wxRIGHT, SliderBorder);
+        }
 
-
-    // Basal Wave Speed Adjustment
-
-    mBasalWaveSpeedAdjustmentSlider = std::make_unique<SliderControl>(
-        panel,
-        SliderWidth,
-        SliderHeight,
-        "Basal Wave Speed Adjust",
-        "TODO.",
-        static_cast<float>(mGameController->GetBasalWaveSpeedAdjustment()),
-        [this](float /*value*/)
+        // Basal Wave Speed Adjustment
         {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            mGameController->GetMinBasalWaveSpeedAdjustment(),
-            mGameController->GetMaxBasalWaveSpeedAdjustment()));
+            mBasalWaveSpeedAdjustmentSlider = std::make_unique<SliderControl>(
+                basalWavesBox,
+                SliderWidth,
+                SliderHeight,
+                "Wave Speed Adjust",
+                "Adjusts the speed of ocean waves wrt their optimal value, which is determined by wind speed.",
+                static_cast<float>(mGameController->GetBasalWaveSpeedAdjustment()),
+                [this](float /*value*/)
+                {
+                    // Remember we're dirty now
+                    this->mApplyButton->Enable(true);
+                },
+                std::make_unique<LinearSliderCore>(
+                    mGameController->GetMinBasalWaveSpeedAdjustment(),
+                    mGameController->GetMaxBasalWaveSpeedAdjustment()));
 
-    gridSizer->Add(mBasalWaveSpeedAdjustmentSlider.get(), 1, wxALL, SliderBorder);
+            basalWavesSizerH2->Add(mBasalWaveSpeedAdjustmentSlider.get(), 0, wxEXPAND | wxLEFT | wxRIGHT, SliderBorder);
+        }
+
+        basalWavesBoxSizerV1->Add(basalWavesSizerH2, 1, wxEXPAND | wxALL, StaticBoxInsetMargin);
+
+        basalWavesBox->SetSizerAndFit(basalWavesBoxSizerV1);
+
+        gridSizer->Add(basalWavesBox, 1, wxALL, SliderBorder);
+    }
+
 
 
 
@@ -875,71 +981,6 @@ void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
     //
     // Row 1
     //
-
-    // Sea Depth
-
-    mSeaDepthSlider = std::make_unique<SliderControl>(
-        panel,
-        SliderWidth,
-        SliderHeight,
-        "Ocean Depth",
-        "The ocean depth (m).",
-        mGameController->GetSeaDepth(),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<ExponentialSliderCore>(
-            mGameController->GetMinSeaDepth(),
-            300.0f,
-            mGameController->GetMaxSeaDepth()));
-
-    gridSizer->Add(mSeaDepthSlider.get(), 1, wxALL, SliderBorder);
-
-
-    // Ocean Floor Bumpiness
-
-    mOceanFloorBumpinessSlider = std::make_unique<SliderControl>(
-        panel,
-        SliderWidth,
-        SliderHeight,
-        "Ocean Floor Bumpiness",
-        "Adjusts how much the ocean floor rolls up and down.",
-        mGameController->GetOceanFloorBumpiness(),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            mGameController->GetMinOceanFloorBumpiness(),
-            mGameController->GetMaxOceanFloorBumpiness()));
-
-    gridSizer->Add(mOceanFloorBumpinessSlider.get(), 1, wxALL, SliderBorder);
-
-
-    // Ocean Floor Detail Amplification
-
-    mOceanFloorDetailAmplificationSlider = std::make_unique<SliderControl>(
-        panel,
-        SliderWidth,
-        SliderHeight,
-        "Ocean Floor Detail",
-        "Adjusts the jaggedness of the ocean floor irregularities.",
-        mGameController->GetOceanFloorDetailAmplification(),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<ExponentialSliderCore>(
-            mGameController->GetMinOceanFloorDetailAmplification(),
-            10.0f,
-            mGameController->GetMaxOceanFloorDetailAmplification()));
-
-    gridSizer->Add(mOceanFloorDetailAmplificationSlider.get(), 1, wxALL, SliderBorder);
-
 
     // Rot Accelerator
 
@@ -961,12 +1002,6 @@ void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
             mGameController->GetMaxRotAcceler8r()));
 
     gridSizer->Add(mRotAcceler8rSlider.get(), 1, wxALL, SliderBorder);
-
-
-
-    //
-    // Row 2
-    //
 
     // Luminiscence
 
@@ -1767,7 +1802,7 @@ void SettingsDialog::ReadSettings()
 
     mStrengthSlider->SetValue(mGameController->GetSpringStrengthAdjustment());
 
-
+    // Fluids
 
     mWaterDensitySlider->SetValue(mGameController->GetWaterDensityAdjustment());
 
@@ -1781,7 +1816,13 @@ void SettingsDialog::ReadSettings()
 
     mWaterLevelOfDetailSlider->SetValue(mGameController->GetWaterLevelOfDetail());
 
+    // Ocean and Sky
 
+    mOceanDepthSlider->SetValue(mGameController->GetSeaDepth());
+
+    mOceanFloorBumpinessSlider->SetValue(mGameController->GetOceanFloorBumpiness());
+
+    mOceanFloorDetailAmplificationSlider->SetValue(mGameController->GetOceanFloorDetailAmplification());
 
     mNumberOfStarsSlider->SetValue(static_cast<float>(mGameController->GetNumberOfStars()));
 
@@ -1809,12 +1850,6 @@ void SettingsDialog::ReadSettings()
     mLightSpreadSlider->SetValue(mGameController->GetLightSpreadAdjustment());
 
     mRotAcceler8rSlider->SetValue(mGameController->GetRotAcceler8r());
-
-    mSeaDepthSlider->SetValue(mGameController->GetSeaDepth());
-
-    mOceanFloorBumpinessSlider->SetValue(mGameController->GetOceanFloorBumpiness());
-
-    mOceanFloorDetailAmplificationSlider->SetValue(mGameController->GetOceanFloorDetailAmplification());
 
     // Interactions
 
@@ -2034,6 +2069,7 @@ void SettingsDialog::ApplySettings()
 {
     assert(!!mGameController);
 
+    // Mechanics
 
     mGameController->SetNumMechanicalDynamicsIterationsAdjustment(
         mMechanicalQualitySlider->GetValue());
@@ -2041,7 +2077,7 @@ void SettingsDialog::ApplySettings()
     mGameController->SetSpringStrengthAdjustment(
         mStrengthSlider->GetValue());
 
-
+    // Fluids
 
     mGameController->SetWaterDensityAdjustment(
         mWaterDensitySlider->GetValue());
@@ -2061,13 +2097,24 @@ void SettingsDialog::ApplySettings()
     mGameController->SetWaterLevelOfDetail(
         mWaterLevelOfDetailSlider->GetValue());
 
-    // Air
+    // Ocean and Sky
+
+    mGameController->SetSeaDepth(
+        mOceanDepthSlider->GetValue());
+
+    mGameController->SetOceanFloorBumpiness(
+        mOceanFloorBumpinessSlider->GetValue());
+
+    mGameController->SetOceanFloorDetailAmplification(
+        mOceanFloorDetailAmplificationSlider->GetValue());
 
     mGameController->SetNumberOfStars(
         static_cast<size_t>(mNumberOfStarsSlider->GetValue()));
 
     mGameController->SetNumberOfClouds(
         static_cast<size_t>(mNumberOfCloudsSlider->GetValue()));
+
+    // Wind and Waves
 
     mGameController->SetWindSpeedBase(
         mWindSpeedBaseSlider->GetValue());
@@ -2076,8 +2123,6 @@ void SettingsDialog::ApplySettings()
 
     mGameController->SetWindSpeedMaxFactor(
         mWindGustAmplitudeSlider->GetValue());
-
-    // Waves
 
     mGameController->SetBasalWaveHeightAdjustment(
         mBasalWaveHeightAdjustmentSlider->GetValue());
@@ -2089,15 +2134,6 @@ void SettingsDialog::ApplySettings()
         mBasalWaveSpeedAdjustmentSlider->GetValue());
 
     // World
-
-    mGameController->SetSeaDepth(
-        mSeaDepthSlider->GetValue());
-
-    mGameController->SetOceanFloorBumpiness(
-        mOceanFloorBumpinessSlider->GetValue());
-
-    mGameController->SetOceanFloorDetailAmplification(
-        mOceanFloorDetailAmplificationSlider->GetValue());
 
     mGameController->SetLuminiscenceAdjustment(
         mLuminiscenceSlider->GetValue());
