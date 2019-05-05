@@ -230,7 +230,7 @@ SoundController::SoundController(
                 mMasterToolsVolume,
                 mMasterToolsMuted,
                 std::chrono::milliseconds(2500),
-                std::chrono::milliseconds(2500));
+                std::chrono::milliseconds(5000));
         }
         else if (soundType == SoundType::WaterRush)
         {

@@ -292,10 +292,15 @@ Render:
 
 		= Shallow Water Equations (*)
 
+		- Double-check latest rotting speed
+
 		- See if installer for current user removes need for admin consent
 
+	- 1.12.0:
+		- Settings Manager (*)
+
 		- Automatic updates checker via file placed on floatingsandbox.com
-			- UIPreferences::CheckForUpdatedAtStartup
+			- UIPreferences::CheckForUpdatesAtStartup
 			- class UpdateChecker:
 				- Wraps separate thread and conveys result via custom event
 				- Takes wxEventHandler in cctor
@@ -310,21 +315,21 @@ Render:
 				- Timer does progress (calling wxGauge::Pulse)
 				- On event, displays message
 
-		- Do air bubbles sounds, very low volume
-			- At creation and at expiry
-			- New events at IGameEventHandler
-				- Dispatcher aggregates with counter
-				- Ship takes shared_ptr<Dispatcher> now
-
-		- Interior layer (*)
-
 		- Heat and combustion (*)
 
 		- Instanced drawing for lights (*)
 
-		- Continuous Auto-focus (*)
+		- Do air bubbles sounds, very low volume
+			- At creation and at expiry
+			- New events at IGameEventHandler
+				- Dispatcher aggregates with counter
+				- Ship takes shared_ptr<Dispatcher> now, for perf
 
+		- Interior layer (*)
+		
 		- Electrical layer view (*)
+
+		- Continuous Auto-focus (*)
 
 		- Spring and NonSpring force separation optimization (*)
 		- Try with SpringRelaxation updating only positions (*)
@@ -341,7 +346,6 @@ Render:
 	- 1.12.0
 
 		- Smoke (*)
-		- Settings Manager (*)
 
 		- Libsimdpp spring relaxation (*)
 		- Frontier (*)
@@ -369,8 +373,8 @@ Render:
 		- To test:
 			- RMS Magentasia (TopHatLemons)
 			- Menschenfresser (ASSTYU)
-			- JackMellon on Discord
-			- serhiires: HMHS Danic, RMS Danic
+			- JackMellon (see PM on Discord)
+			- serhiires (see PM on Discord): HMHS Danic, RMS Danic, and all his others
 		- Asked:
 			- serhiires: SS Nobrix, HMHS and RMS Gotic
 			- Ed Fitzgerald (but needs to be fixed) (Kiko)
@@ -435,8 +439,9 @@ Render:
 		- Derived only has virtual's for GameController calls
 	- Ship: replace handler registrations with points, springs, etc. with IStructureHandler, declared in own .h
 	- GameEventDispatcher: set mIsDirty at event publishing and consume at Flush()
+		- See if still needed, actually, after we break up IGameEventHandler
 	- Try 32-bit build
-	- Sound controller: complain if find extraneous files (had issue with ".flc")
+	= Sound controller: complain if find extraneous files (had issue with ".flc")
 	- Translations:
 		- Make localizable
 		- Russian: steven6886@yandex.ru
@@ -856,29 +861,60 @@ Render:
 						+ Find correct falling water speed
 						+ Check if average water depth increases
 					+ Cursor: set arrows at same positions as adjust terrain cursor
-					- Rogue wave generation (incl. tsunami)
-						- Dancing in the dark
-						- Params:
-							- Height
-								- Tsunami: 105 (5%)
-								- Rogue: 101.0 (1%)
-							- Frequency (Poisson's lambda)
-				= SettingsDialog:
+					= Tsunami
+						= GameParameters: "TsunamiArrivalTime", mins
+							- Min = 0 => no tsunamis
+							+ Max = 15
+							+ Settings Dialog, under "Wave Phenomena"
+						- OceanSurface:
+							- Tsunami-specific StateMachine member, std::optional
+							- When not set:
+								- Run choosing until chosen
+							- State machine
+								- Height = 105 (5%)
+								- See if need custom fall rate
+							- Publish "OnTsunamiTriggered" event
+								- Break IGameEventHandler into smaller pieces
+								- Ship takes GameEventDispatcher directly
+							- GameController registers for OnTsunamiTriggered and runs TsunamiNotificationStateMachine
+								- TsunamiNotificationStateMachine: private class, cctor takes:
+									- TextRenderContext (for text)
+									- RenderContext (for shaking)
+									- bool Update(): when returns true, GameController nukes it
+								- Text at text layer
+								- Shaking
+							- SoundController:
+								- Tsunami sound, one-shot (overridable): SOS + rumbling
+					= Rogue waves
+						= GameParameters: "RogueWaveArrivalTime", mins
+							- Min = 0 => no rogue waves
+							+ Settings Dialog, under "Wave Phenomena"
+						- OceanSurface:
+							- Run choosing until chosen
+							- State machine
+								- Height = 101 (1%)
+								- See if need custom fall rate
+				+ SettingsDialog:
 					+ "Wind and Waves" tab
 						+ Static box for basal waves
 						+ Tooltips
-					- Run in Debug
-			- Final touches:
+					+ Run in Debug
+			= Final touches:
 				+ Cursor
-				- WaveMaker:
+				+ WaveMaker:
 					+ Double-check hotspot
-					- Tool sound
-						- Continuous with fade-in and fade-out
+					+ Tool sound
+						+ Continuous with fade-in and fade-out
+						+ Fix restart while fading-in
+						+ Better sound
+						+ See linear fade-out again
 			- Optimizations:
+				- FPS before:
 				- Wave params calc'd only at GameParameters changes
 				- Pre-calc'd funcs (sin)
 				- Two advections in one, so that we have a single loop
 				- Two field updates in one, so that we have a single loop
+				- FPS after:
 
 	- Underwater currents
 		- Implicit function of x defines trajectory 
@@ -886,7 +922,7 @@ Render:
 				- Constant
 				- Lorenz, from http://sprott.physics.wisc.edu/chaos/eulermap.htm
 				- Lorenz II, from https://en.wikipedia.org/wiki/Lorenz_96_model
-
+				- WaterSurface, may be shifted
 		- for each point: y-distance between point.y and trajectory(point.x) gives strength of x and y components of a force on the point
 
 	
@@ -948,7 +984,7 @@ Render:
 				- Pressure delta between current water at point and external Y
 				- With probability growing in a band around max pressure delta
 
-	- Ocean floor breaking up upon impact
+	- Ocean floor deforming/breaking up upon impact
 		- @ Ocean floor collision:
 			- Upon point entering floor:
 				- Points goes back by displacement * FloorHardness

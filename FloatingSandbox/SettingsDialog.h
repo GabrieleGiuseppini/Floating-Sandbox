@@ -104,6 +104,8 @@ private:
     std::unique_ptr<SliderControl> mBasalWaveHeightAdjustmentSlider;
     std::unique_ptr<SliderControl> mBasalWaveLengthAdjustmentSlider;
     std::unique_ptr<SliderControl> mBasalWaveSpeedAdjustmentSlider;
+    std::unique_ptr<SliderControl> mTsunamiRateSlider;
+    std::unique_ptr<SliderControl> mRogueWaveRateSlider;
 
     // World
     std::unique_ptr<SliderControl> mLuminiscenceSlider;

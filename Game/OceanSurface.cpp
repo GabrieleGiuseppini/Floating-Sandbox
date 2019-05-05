@@ -411,16 +411,8 @@ void OceanSurface::GenerateSamples(
           + 1.039702f
         : 0.0f;
 
-    float const basalWaveAmplitude = basalWaveHeightBase / 2.0f * gameParameters.BasalWaveHeightAdjustment;
-
-    // TODOTEST
-    static float TODOwaveAmp = 0.0f;
-    if (basalWaveAmplitude != TODOwaveAmp)
-    {
-        LogMessage("basalWaveAmplitude=", basalWaveAmplitude, " (", gameParameters.BasalWaveHeightAdjustment, ")");
-        TODOwaveAmp = basalWaveAmplitude;
-    }
-
+    float const basalWaveAmplitude1 = basalWaveHeightBase / 2.0f * gameParameters.BasalWaveHeightAdjustment;
+    float const basalWaveAmplitude2 = 0.75f * basalWaveAmplitude1;
 
     // Wavelength
     // - Wavelength = f(WaveHeight (adjusted), m), with f fitted over points from same table
@@ -428,21 +420,13 @@ void OceanSurface::GenerateSamples(
 
     float const basalWaveLengthBase =
         -738512.1f
-        + 738525.2f * exp(0.00001895026f * (2.0f * basalWaveAmplitude));
+        + 738525.2f * exp(0.00001895026f * (2.0f * basalWaveAmplitude1));
 
     float const basalWaveLength = basalWaveLengthBase * gameParameters.BasalWaveLengthAdjustment;
 
     assert(basalWaveLength != 0.0f);
-    float const basalWaveNumber = baseWindSpeedSign * 2.0f * Pi<float> / basalWaveLength;
-
-    // TODOTEST
-    static float TODOwaveLength = 0.0f;
-    if (basalWaveLength != TODOwaveLength)
-    {
-        LogMessage("basalWaveLength=", basalWaveLength, " (", gameParameters.BasalWaveLengthAdjustment, ")");
-        TODOwaveLength = basalWaveLength;
-    }
-
+    float const basalWaveNumber1 = baseWindSpeedSign * 2.0f * Pi<float> / basalWaveLength;
+    float const basalWaveNumber2 = 0.66f * basalWaveNumber1;
 
     // Period
     // - Technically, period = sqrt(2 * Pi * L / g), however this doesn't fit the table, so:
@@ -457,17 +441,11 @@ void OceanSurface::GenerateSamples(
     float const basalWavePeriod = basalWavePeriodBase / gameParameters.BasalWaveSpeedAdjustment;
 
     assert(basalWavePeriod != 0.0f);
-    float const basalWaveAngularVelocity = 2.0f * Pi<float> / basalWavePeriod;
+    float const basalWaveAngularVelocity1 = 2.0f * Pi<float> / basalWavePeriod;
+    float const basalWaveAngularVelocity2 = 0.75f * basalWaveAngularVelocity1;
 
-    // TODOTEST
-    static float TODOwavePeriod = 0.0f;
-    if (basalWavePeriod != TODOwavePeriod)
-    {
-        LogMessage("basalWavePeriod=", basalWavePeriod, " (", gameParameters.BasalWaveSpeedAdjustment, ")");
-        TODOwavePeriod = basalWavePeriod;
-    }
-
-    float const componentsPhase = Pi<float> * sin(currentSimulationTime);
+    // Secondary component
+    float const secondaryComponentPhase = Pi<float> * sin(currentSimulationTime);
 
 
     //
@@ -501,12 +479,12 @@ void OceanSurface::GenerateSamples(
             * SWEHeightFieldAmplification;
 
         float const basalValue1 =
-            basalWaveAmplitude
-            * sin(basalWaveNumber * 0.0f - basalWaveAngularVelocity * currentSimulationTime);
+            basalWaveAmplitude1
+            * sin(basalWaveNumber1 * 0.0f - basalWaveAngularVelocity1 * currentSimulationTime);
 
         float const basalValue2 =
-            0.75f * basalWaveAmplitude
-            * sin(0.66f * basalWaveNumber * 0.0f - 0.75f * basalWaveAngularVelocity * currentSimulationTime + componentsPhase);
+            basalWaveAmplitude2
+            * sin(basalWaveNumber2 * 0.0f - basalWaveAngularVelocity2 * currentSimulationTime + secondaryComponentPhase);
 
         float const rippleValue =
             sinf(-currentSimulationTime * windRipplesTimeFrequency)
@@ -530,12 +508,12 @@ void OceanSurface::GenerateSamples(
             * SWEHeightFieldAmplification;
 
         float const basalValue1 =
-            basalWaveAmplitude
-            * sin(basalWaveNumber * x - basalWaveAngularVelocity * currentSimulationTime);
+            basalWaveAmplitude1
+            * sin(basalWaveNumber1 * x - basalWaveAngularVelocity1 * currentSimulationTime);
 
         float const basalValue2 =
-            0.75f * basalWaveAmplitude
-            * sin(0.66f * basalWaveNumber * x - 0.75f * basalWaveAngularVelocity * currentSimulationTime + componentsPhase);
+            basalWaveAmplitude2
+            * sin(basalWaveNumber2 * x - basalWaveAngularVelocity2 * currentSimulationTime + secondaryComponentPhase);
 
         float const rippleValue =
             windRipplesWaveHeight

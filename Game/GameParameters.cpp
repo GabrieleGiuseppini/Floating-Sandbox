@@ -31,6 +31,8 @@ GameParameters::GameParameters()
     , BasalWaveHeightAdjustment(1.0f)
     , BasalWaveLengthAdjustment(1.0f)
     , BasalWaveSpeedAdjustment(4.0f)
+    , TsunamiRate(20.0f)
+    , RogueWaveRate(4.0f)
     // Misc
     , SeaDepth(300.0f)
     , OceanFloorBumpiness(1.0f)

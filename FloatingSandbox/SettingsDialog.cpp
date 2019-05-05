@@ -880,7 +880,12 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
         windBox->SetSizerAndFit(windBoxSizerV1);
 
-        gridSizer->Add(windBox, 1, wxALL, SliderBorder);
+        gridSizer->Add(
+            windBox,
+            wxGBPosition(0, 0),
+            wxGBSpan(1, 1),
+            wxALL,
+            SliderBorder);
     }
 
     //
@@ -963,9 +968,79 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
         basalWavesBox->SetSizerAndFit(basalWavesBoxSizerV1);
 
-        gridSizer->Add(basalWavesBox, 1, wxALL, SliderBorder);
+        gridSizer->Add(
+            basalWavesBox,
+            wxGBPosition(0, 1),
+            wxGBSpan(1, 1),
+            wxALL,
+            SliderBorder);
     }
 
+    //
+    // Wave Phenomena
+    //
+
+    {
+        wxStaticBox * abnormalWavesBox = new wxStaticBox(panel, wxID_ANY, _("Wave Phenomena"));
+
+        wxBoxSizer * abnormalWavesBoxSizerV1 = new wxBoxSizer(wxVERTICAL);
+        abnormalWavesBoxSizerV1->AddSpacer(StaticBoxTopMargin);
+
+        wxBoxSizer * abnormalWavesSizerH2 = new wxBoxSizer(wxHORIZONTAL);
+
+        // Tsunami Rate
+        {
+            mTsunamiRateSlider = std::make_unique<SliderControl>(
+                abnormalWavesBox,
+                SliderWidth,
+                SliderHeight,
+                "Tsunami Rate",
+                "The expected time between two tsunami waves (minutes). Set to zero to disable tsunami waves altogether.",
+                static_cast<float>(mGameController->GetTsunamiRate()),
+                [this](float /*value*/)
+                {
+                    // Remember we're dirty now
+                    this->mApplyButton->Enable(true);
+                },
+                std::make_unique<LinearSliderCore>(
+                    mGameController->GetMinTsunamiRate(),
+                    mGameController->GetMaxTsunamiRate()));
+
+            abnormalWavesSizerH2->Add(mTsunamiRateSlider.get(), 0, wxEXPAND | wxLEFT | wxRIGHT, SliderBorder);
+        }
+
+        // Rogue Wave Rate
+        {
+            mRogueWaveRateSlider = std::make_unique<SliderControl>(
+                abnormalWavesBox,
+                SliderWidth,
+                SliderHeight,
+                "Rogue Wave Rate",
+                "The expected time between two rogue waves (minutes). Set to zero to disable rogue waves altogether.",
+                static_cast<float>(mGameController->GetRogueWaveRate()),
+                [this](float /*value*/)
+                {
+                    // Remember we're dirty now
+                    this->mApplyButton->Enable(true);
+                },
+                std::make_unique<LinearSliderCore>(
+                    mGameController->GetMinRogueWaveRate(),
+                    mGameController->GetMaxRogueWaveRate()));
+
+            abnormalWavesSizerH2->Add(mRogueWaveRateSlider.get(), 0, wxEXPAND | wxLEFT | wxRIGHT, SliderBorder);
+        }
+
+        abnormalWavesBoxSizerV1->Add(abnormalWavesSizerH2, 1, wxEXPAND | wxALL, StaticBoxInsetMargin);
+
+        abnormalWavesBox->SetSizerAndFit(abnormalWavesBoxSizerV1);
+
+        gridSizer->Add(
+            abnormalWavesBox,
+            wxGBPosition(1, 0),
+            wxGBSpan(1, 1),
+            wxALL,
+            SliderBorder);
+    }
 
 
 
@@ -1843,6 +1918,10 @@ void SettingsDialog::ReadSettings()
 
     mBasalWaveSpeedAdjustmentSlider->SetValue(mGameController->GetBasalWaveSpeedAdjustment());
 
+    mTsunamiRateSlider->SetValue(mGameController->GetTsunamiRate());
+
+    mRogueWaveRateSlider->SetValue(mGameController->GetRogueWaveRate());
+
     // World
 
     mLuminiscenceSlider->SetValue(mGameController->GetLuminiscenceAdjustment());
@@ -2132,6 +2211,12 @@ void SettingsDialog::ApplySettings()
 
     mGameController->SetBasalWaveSpeedAdjustment(
         mBasalWaveSpeedAdjustmentSlider->GetValue());
+
+    mGameController->SetTsunamiRate(
+        mTsunamiRateSlider->GetValue());
+
+    mGameController->SetRogueWaveRate(
+        mRogueWaveRateSlider->GetValue());
 
     // World
 

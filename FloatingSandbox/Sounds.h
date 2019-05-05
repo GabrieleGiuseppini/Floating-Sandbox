@@ -100,7 +100,7 @@ public:
         , mVolume(volume)
         , mMasterVolume(masterVolume)
         , mIsMuted(isMuted)
-        , mFadeLevel(1.0f)
+        , mFadeLevel(0.0f)
         , mTimeToFadeIn(timeToFadeIn)
         , mTimeToFadeOut(timeToFadeOut)
         , mFadeInStartTimestamp()
@@ -163,7 +163,13 @@ public:
 
     void fadeToPlay()
     {
-        mFadeInStartTimestamp = GameWallClock::GetInstance().Now();
+        // Start fade-in now, adjusting start timestamp to match current fade level,
+        // so that if we are interrupting a fade-out half-way, the volume doesn't drop
+        mFadeInStartTimestamp =
+            GameWallClock::GetInstance().Now()
+            - std::chrono::milliseconds(static_cast<std::chrono::milliseconds::rep>(mFadeLevel * mTimeToFadeIn.count()));
+
+        // Stop fade-out, if any
         mFadeOutStartTimestamp.reset();
     }
 
@@ -173,14 +179,21 @@ public:
         sf::Sound::stop();
 
         // Reset state
+        mFadeLevel = 0.0f;
         mFadeInStartTimestamp.reset();
         mFadeOutStartTimestamp.reset();
     }
 
     void fadeToStop()
     {
+        // Start fade-out now, adjusting end timestamp to match current fade level,
+        // so that if we are interrupting a fade-in half-way, the volume doesn't explode up
+        mFadeOutStartTimestamp =
+            GameWallClock::GetInstance().Now()
+            - std::chrono::milliseconds(static_cast<std::chrono::milliseconds::rep>((1.0f - mFadeLevel) * mTimeToFadeOut.count()));
+
+        // Stop fade-in, if any
         mFadeInStartTimestamp.reset();
-        mFadeOutStartTimestamp = GameWallClock::GetInstance().Now();
     }
 
     void update()
@@ -190,18 +203,16 @@ public:
             auto elapsedMillis = std::chrono::duration_cast<std::chrono::milliseconds>(
                 GameWallClock::GetInstance().Elapsed(*mFadeInStartTimestamp));
 
-            float constexpr MaxFadeInLevel = 0.5f; // atm, because of wavemaker
-
             // Check if we're done
             if (elapsedMillis >= mTimeToFadeIn)
             {
-                mFadeLevel = MaxFadeInLevel;
+                mFadeLevel = 1.0f;
                 mFadeInStartTimestamp.reset();
             }
             else
             {
                 // Raise volume towards max
-                mFadeLevel = MaxFadeInLevel * static_cast<float>(elapsedMillis.count()) / static_cast<float>(mTimeToFadeIn.count());
+                mFadeLevel = static_cast<float>(elapsedMillis.count()) / static_cast<float>(mTimeToFadeIn.count());
             }
 
             InternalSetVolume();
@@ -219,16 +230,15 @@ public:
             // Check if we're done
             if (elapsedMillis >= mTimeToFadeOut)
             {
-                sf::Sound::stop();
+                mFadeLevel = 0.0f;
                 mFadeOutStartTimestamp.reset();
+
+                sf::Sound::stop();
             }
             else
             {
-                // Lower volume, exponentially, from 1.0 (thus lower than fade-in max, so that we have a "bang")
-                // (atm we want it exponentially because of wave maker)
-                // 1/(1+exp(8*x - 4)), with x between 0 and 1
-                float const x = static_cast<float>(elapsedMillis.count()) / static_cast<float>(mTimeToFadeOut.count());
-                mFadeLevel = 1.0f / (1.0f + exp(8.0f * x - 4.0f));
+                // Lower volume towards zero
+                mFadeLevel = 1.0f - static_cast<float>(elapsedMillis.count()) / static_cast<float>(mTimeToFadeOut.count());
                 InternalSetVolume();
             }
         }

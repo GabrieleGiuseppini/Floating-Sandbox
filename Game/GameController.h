@@ -235,6 +235,16 @@ public:
     float GetMinBasalWaveSpeedAdjustment() const { return GameParameters::MinBasalWaveSpeedAdjustment; }
     float GetMaxBasalWaveSpeedAdjustment() const { return GameParameters::MaxBasalWaveSpeedAdjustment; }
 
+    float GetTsunamiRate() const { return mGameParameters.TsunamiRate; }
+    void SetTsunamiRate(float value) { mGameParameters.TsunamiRate = value; }
+    float GetMinTsunamiRate() const { return GameParameters::MinTsunamiRate; }
+    float GetMaxTsunamiRate() const { return GameParameters::MaxTsunamiRate; }
+
+    float GetRogueWaveRate() const { return mGameParameters.RogueWaveRate; }
+    void SetRogueWaveRate(float value) { mGameParameters.RogueWaveRate = value; }
+    float GetMinRogueWaveRate() const { return GameParameters::MinRogueWaveRate; }
+    float GetMaxRogueWaveRate() const { return GameParameters::MaxRogueWaveRate; }
+
     bool GetDoModulateWind() const { return mGameParameters.DoModulateWind; }
     void SetDoModulateWind(bool value) { mGameParameters.DoModulateWind = value; }
 
