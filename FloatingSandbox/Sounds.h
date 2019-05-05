@@ -161,7 +161,8 @@ private:
 /*
  * Our wrapper for sf::Music.
  *
- * Provides volume control based on a master volume and a local volume.
+ * Provides volume control based on a master volume and a local volume,
+ * and facilities to fade-in and fade-out.
  */
 class GameMusic : public sf::Music
 {
@@ -171,13 +172,16 @@ public:
         float volume,
         float masterVolume,
         bool isMuted,
-        std::chrono::milliseconds timeToFade)
+        std::chrono::milliseconds timeToFadeIn,
+        std::chrono::milliseconds timeToFadeOut)
         : mVolume(volume)
         , mMasterVolume(masterVolume)
-        , mFade(1.0f)
+        , mFadeLevel(1.0f)
         , mIsMuted(isMuted)
-        , mTimeToFade(timeToFade)
-        , mFadeStartTimestamp()
+        , mTimeToFadeIn(timeToFadeIn)
+        , mTimeToFadeOut(timeToFadeOut)
+        , mFadeInStartTimestamp()
+        , mFadeOutStartTimestamp()
     {
         InternalSetVolume();
     }
@@ -211,27 +215,58 @@ public:
         InternalSetVolume();
     }
 
+    void fadeToPlay()
+    {
+        mFadeInStartTimestamp = GameWallClock::GetInstance().Now();
+    }
+
     void fadeToStop()
     {
-        mFadeStartTimestamp = GameWallClock::GetInstance().Now();
+        mFadeInStartTimestamp.reset();
+        mFadeOutStartTimestamp = GameWallClock::GetInstance().Now();
     }
 
     void update()
     {
-        if (!!mFadeStartTimestamp)
+        if (!!mFadeInStartTimestamp)
         {
             auto elapsedMillis = std::chrono::duration_cast<std::chrono::milliseconds>(
-                GameWallClock::GetInstance().Elapsed(*mFadeStartTimestamp));
+                GameWallClock::GetInstance().Elapsed(*mFadeInStartTimestamp));
 
             // Check if we're done
-            if (elapsedMillis >= mTimeToFade)
+            if (elapsedMillis >= mTimeToFadeIn)
+            {
+                mFadeLevel = 1.0f;
+                mFadeInStartTimestamp.reset();
+            }
+            else
+            {
+                // Raise volume
+                mFadeLevel = static_cast<float>(elapsedMillis.count()) / static_cast<float>(mTimeToFadeOut.count());
+            }
+
+            InternalSetVolume();
+
+            if (sf::Sound::Status::Playing != this->getStatus())
+            {
+                this->play();
+            }
+        }
+        else if (!!mFadeOutStartTimestamp)
+        {
+            auto elapsedMillis = std::chrono::duration_cast<std::chrono::milliseconds>(
+                GameWallClock::GetInstance().Elapsed(*mFadeOutStartTimestamp));
+
+            // Check if we're done
+            if (elapsedMillis >= mTimeToFadeOut)
             {
                 this->stop();
+                mFadeOutStartTimestamp.reset();
             }
             else
             {
                 // Lower volume
-                mFade = (1.0f - static_cast<float>(elapsedMillis.count()) / static_cast<float>(mTimeToFade.count()));
+                mFadeLevel = (1.0f - static_cast<float>(elapsedMillis.count()) / static_cast<float>(mTimeToFadeOut.count()));
                 InternalSetVolume();
             }
         }
@@ -240,14 +275,15 @@ public:
     void play() override
     {
         // Reset fade
-        mFade = 1.0f;
+        mFadeLevel = 1.0f;
         InternalSetVolume();
 
         // Play
         sf::Music::play();
 
         // Reset state
-        mFadeStartTimestamp.reset();
+        mFadeInStartTimestamp.reset();
+        mFadeOutStartTimestamp.reset();
     }
 
     void stop() override
@@ -256,7 +292,8 @@ public:
         sf::Music::stop();
 
         // Reset state
-        mFadeStartTimestamp.reset();
+        mFadeInStartTimestamp.reset();
+        mFadeOutStartTimestamp.reset();
     }
 
 private:
@@ -264,17 +301,20 @@ private:
     void InternalSetVolume()
     {
         if (!mIsMuted)
-            sf::Music::setVolume(100.0f * (mVolume / 100.0f) * (mMasterVolume / 100.0f) * mFade);
+            sf::Music::setVolume(100.0f * (mVolume / 100.0f) * (mMasterVolume / 100.0f) * mFadeLevel);
         else
             sf::Music::setVolume(0.0f);
     }
 
     float mVolume;
     float mMasterVolume;
-    float mFade;
+    float mFadeLevel;
     bool mIsMuted;
-    std::chrono::milliseconds const mTimeToFade;
-    std::optional<GameWallClock::time_point> mFadeStartTimestamp;
+
+    std::chrono::milliseconds const mTimeToFadeIn;
+    std::chrono::milliseconds const mTimeToFadeOut;
+    std::optional<GameWallClock::time_point> mFadeInStartTimestamp;
+    std::optional<GameWallClock::time_point> mFadeOutStartTimestamp;
 };
 
 

@@ -71,6 +71,7 @@ SoundController::SoundController(
         SinkingMusicVolume,
         mMasterMusicVolume,
         mMasterMusicMuted,
+        std::chrono::seconds::zero(),
         std::chrono::seconds(4))
 {
     //
