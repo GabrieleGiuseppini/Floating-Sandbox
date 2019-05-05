@@ -15,13 +15,13 @@
 #include <limits>
 #include <regex>
 
-constexpr float RepairVolume = 40.0f;
-constexpr float SawVolume = 50.0f;
-constexpr float SawedVolume = 80.0f;
-constexpr float StressSoundVolume = 20.0f;
-constexpr std::chrono::milliseconds SawedInertiaDuration = std::chrono::milliseconds(200);
-constexpr float SinkingMusicVolume = 20.0f;
-constexpr float WaveSplashTriggerSize = 0.5f;
+float constexpr RepairVolume = 40.0f;
+float constexpr SawVolume = 50.0f;
+float constexpr SawedVolume = 80.0f;
+float constexpr StressSoundVolume = 20.0f;
+std::chrono::milliseconds constexpr SawedInertiaDuration = std::chrono::milliseconds(200);
+float constexpr SinkingMusicVolume = 20.0f;
+float constexpr WaveSplashTriggerSize = 0.5f;
 
 SoundController::SoundController(
     std::shared_ptr<ResourceLoader> resourceLoader,
@@ -60,6 +60,7 @@ SoundController::SoundController(
     , mAirBubblesSound()
     , mFloodHoseSound()
     , mRepairStructureSound()
+    , mWaveMakerSound()
     , mWaterRushSound()
     , mWaterSplashSound()
     , mWindSound()
@@ -91,6 +92,7 @@ SoundController::SoundController(
     //
 
     auto soundNames = mResourceLoader->GetSoundNames();
+
     for (size_t i = 0; i < soundNames.size(); ++i)
     {
         std::string const & soundName = soundNames[i];
@@ -219,6 +221,16 @@ SoundController::SoundController(
                 100.0f,
                 mMasterToolsVolume,
                 mMasterToolsMuted);
+        }
+        else if (soundType == SoundType::WaveMaker)
+        {
+            mWaveMakerSound.Initialize(
+                std::move(soundBuffer),
+                40.0f,
+                mMasterToolsVolume,
+                mMasterToolsMuted,
+                std::chrono::milliseconds(2500),
+                std::chrono::milliseconds(2500));
         }
         else if (soundType == SoundType::WaterRush)
         {
@@ -571,6 +583,7 @@ void SoundController::SetMasterToolsVolume(float volume)
     mAirBubblesSound.SetMasterVolume(mMasterToolsVolume);
     mFloodHoseSound.SetMasterVolume(mMasterToolsVolume);
     mRepairStructureSound.SetMasterVolume(mMasterToolsVolume);
+    mWaveMakerSound.SetMasterVolume(mMasterToolsVolume);
 }
 
 void SoundController::SetMasterToolsMuted(bool isMuted)
@@ -599,6 +612,7 @@ void SoundController::SetMasterToolsMuted(bool isMuted)
     mAirBubblesSound.SetMuted(mMasterToolsMuted);
     mFloodHoseSound.SetMuted(mMasterToolsMuted);
     mRepairStructureSound.SetMuted(mMasterToolsMuted);
+    mWaveMakerSound.SetMuted(mMasterToolsMuted);
 }
 
 // Master music
@@ -778,6 +792,16 @@ void SoundController::StopRepairStructureSound()
     mRepairStructureSound.Stop();
 }
 
+void SoundController::PlayWaveMakerSound()
+{
+    mWaveMakerSound.FadeIn();
+}
+
+void SoundController::StopWaveMakerSound()
+{
+    mWaveMakerSound.FadeOut();
+}
+
 void SoundController::PlayScrubSound()
 {
     PlayOneShotMultipleChoiceSound(
@@ -796,9 +820,10 @@ void SoundController::PlaySnapshotSound()
 
 void SoundController::Update()
 {
+    mWaveMakerSound.Update();
     mSinkingMusic.update();
 
-    // Silence the sawed sounds - this will be a nop in case
+    // Silence the inertial sounds - this will basically be a nop in case
     // they've just been started or will be started really soon
     mSawedMetalSound.SetVolume(0.0f);
     mSawedWoodSound.SetVolume(0.0f);
@@ -837,6 +862,7 @@ void SoundController::Reset()
     mAirBubblesSound.Reset();
     mFloodHoseSound.Reset();
     mRepairStructureSound.Reset();
+    mWaveMakerSound.Reset();
 
     mWaterRushSound.Reset();
     mWaterSplashSound.Reset();

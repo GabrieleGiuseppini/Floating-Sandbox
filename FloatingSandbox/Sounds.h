@@ -9,6 +9,7 @@
 #include <GameCore/GameRandomEngine.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/GameWallClock.h>
+#include <GameCore/Log.h>
 
 #include <SFML/Audio.hpp>
 
@@ -58,7 +59,8 @@ enum class SoundType
     Snapshot,
     TerrainAdjust,
     Scrub,
-    RepairStructure
+    RepairStructure,
+    WaveMaker
 };
 
 SoundType StrToSoundType(std::string const & str);
@@ -80,7 +82,8 @@ SizeType StrToSizeType(std::string const & str);
 /*
  * Our wrapper for sf::Sound.
  *
- * Provides volume control based on a master volume and a local volume.
+ * Provides volume control based on a master volume and a local volume,
+ * and facilities to fade-in and fade-out.
  */
 class GameSound : public sf::Sound
 {
@@ -90,11 +93,18 @@ public:
         sf::SoundBuffer const & soundBuffer,
         float volume,
         float masterVolume,
-        bool isMuted)
+        bool isMuted,
+        std::chrono::milliseconds timeToFadeIn = std::chrono::milliseconds::zero(),
+        std::chrono::milliseconds timeToFadeOut = std::chrono::milliseconds::zero())
         : sf::Sound(soundBuffer)
         , mVolume(volume)
         , mMasterVolume(masterVolume)
         , mIsMuted(isMuted)
+        , mFadeLevel(1.0f)
+        , mTimeToFadeIn(timeToFadeIn)
+        , mTimeToFadeOut(timeToFadeOut)
+        , mFadeInStartTimestamp()
+        , mFadeOutStartTimestamp()
     {
         InternalSetVolume();
     }
@@ -137,6 +147,93 @@ public:
         InternalSetVolume();
     }
 
+    void play() override
+    {
+        // Reset fade
+        mFadeLevel = 1.0f;
+        InternalSetVolume();
+
+        // Play
+        sf::Sound::play();
+
+        // Reset state
+        mFadeInStartTimestamp.reset();
+        mFadeOutStartTimestamp.reset();
+    }
+
+    void fadeToPlay()
+    {
+        mFadeInStartTimestamp = GameWallClock::GetInstance().Now();
+        mFadeOutStartTimestamp.reset();
+    }
+
+    void stop() override
+    {
+        // Stop
+        sf::Sound::stop();
+
+        // Reset state
+        mFadeInStartTimestamp.reset();
+        mFadeOutStartTimestamp.reset();
+    }
+
+    void fadeToStop()
+    {
+        mFadeInStartTimestamp.reset();
+        mFadeOutStartTimestamp = GameWallClock::GetInstance().Now();
+    }
+
+    void update()
+    {
+        if (!!mFadeInStartTimestamp)
+        {
+            auto elapsedMillis = std::chrono::duration_cast<std::chrono::milliseconds>(
+                GameWallClock::GetInstance().Elapsed(*mFadeInStartTimestamp));
+
+            float constexpr MaxFadeInLevel = 0.5f; // atm, because of wavemaker
+
+            // Check if we're done
+            if (elapsedMillis >= mTimeToFadeIn)
+            {
+                mFadeLevel = MaxFadeInLevel;
+                mFadeInStartTimestamp.reset();
+            }
+            else
+            {
+                // Raise volume towards max
+                mFadeLevel = MaxFadeInLevel * static_cast<float>(elapsedMillis.count()) / static_cast<float>(mTimeToFadeIn.count());
+            }
+
+            InternalSetVolume();
+
+            if (sf::Sound::Status::Playing != this->getStatus())
+            {
+                sf::Sound::play();
+            }
+        }
+        else if (!!mFadeOutStartTimestamp)
+        {
+            auto elapsedMillis = std::chrono::duration_cast<std::chrono::milliseconds>(
+                GameWallClock::GetInstance().Elapsed(*mFadeOutStartTimestamp));
+
+            // Check if we're done
+            if (elapsedMillis >= mTimeToFadeOut)
+            {
+                sf::Sound::stop();
+                mFadeOutStartTimestamp.reset();
+            }
+            else
+            {
+                // Lower volume, exponentially, from 1.0 (thus lower than fade-in max, so that we have a "bang")
+                // (atm we want it exponentially because of wave maker)
+                // 1/(1+exp(8*x - 4)), with x between 0 and 1
+                float const x = static_cast<float>(elapsedMillis.count()) / static_cast<float>(mTimeToFadeOut.count());
+                mFadeLevel = 1.0f / (1.0f + exp(8.0f * x - 4.0f));
+                InternalSetVolume();
+            }
+        }
+    }
+
 private:
 
     void InternalSetVolume()
@@ -145,7 +242,7 @@ private:
         {
             // 100*(1 - e^(-0.01*x))
             float localVolume = 1.0f - exp(-0.01f * mVolume);
-            sf::Sound::setVolume(100.0f * localVolume * (mMasterVolume / 100.0f));
+            sf::Sound::setVolume(100.0f * localVolume * (mMasterVolume / 100.0f) * mFadeLevel);
         }
         else
         {
@@ -156,6 +253,12 @@ private:
     float mVolume;
     float mMasterVolume;
     bool mIsMuted;
+    float mFadeLevel;
+
+    std::chrono::milliseconds const mTimeToFadeIn;
+    std::chrono::milliseconds const mTimeToFadeOut;
+    std::optional<GameWallClock::time_point> mFadeInStartTimestamp;
+    std::optional<GameWallClock::time_point> mFadeOutStartTimestamp;
 };
 
 /*
@@ -172,8 +275,8 @@ public:
         float volume,
         float masterVolume,
         bool isMuted,
-        std::chrono::milliseconds timeToFadeIn,
-        std::chrono::milliseconds timeToFadeOut)
+        std::chrono::milliseconds timeToFadeIn = std::chrono::milliseconds::zero(),
+        std::chrono::milliseconds timeToFadeOut = std::chrono::milliseconds::zero())
         : mVolume(volume)
         , mMasterVolume(masterVolume)
         , mFadeLevel(1.0f)
@@ -215,9 +318,33 @@ public:
         InternalSetVolume();
     }
 
+    void play() override
+    {
+        // Reset fade
+        mFadeLevel = 1.0f;
+        InternalSetVolume();
+
+        // Play
+        sf::Music::play();
+
+        // Reset state
+        mFadeInStartTimestamp.reset();
+        mFadeOutStartTimestamp.reset();
+    }
+
     void fadeToPlay()
     {
         mFadeInStartTimestamp = GameWallClock::GetInstance().Now();
+    }
+
+    void stop() override
+    {
+        // Stop
+        sf::Music::stop();
+
+        // Reset state
+        mFadeInStartTimestamp.reset();
+        mFadeOutStartTimestamp.reset();
     }
 
     void fadeToStop()
@@ -272,30 +399,6 @@ public:
         }
     }
 
-    void play() override
-    {
-        // Reset fade
-        mFadeLevel = 1.0f;
-        InternalSetVolume();
-
-        // Play
-        sf::Music::play();
-
-        // Reset state
-        mFadeInStartTimestamp.reset();
-        mFadeOutStartTimestamp.reset();
-    }
-
-    void stop() override
-    {
-        // Stop
-        sf::Music::stop();
-
-        // Reset state
-        mFadeInStartTimestamp.reset();
-        mFadeOutStartTimestamp.reset();
-    }
-
 private:
 
     void InternalSetVolume()
@@ -321,8 +424,8 @@ private:
 /*
  * A sound that plays continuously, until stopped.
  *
- * Remembers playing state across pauses, and is capable of adjusting its volume
- * based on "number of triggers".
+ * Remembers playing state across pauses, supports fade-in and fade-out, and
+ * is capable of adjusting its volume based on "number of triggers".
  */
 struct ContinuousSound
 {
@@ -334,25 +437,31 @@ struct ContinuousSound
     {
     }
 
-    explicit ContinuousSound(
+    ContinuousSound(
         std::unique_ptr<sf::SoundBuffer> soundBuffer,
         float volume,
         float masterVolume,
-        bool isMuted)
+        bool isMuted,
+        std::chrono::milliseconds timeToFadeIn = std::chrono::milliseconds::zero(),
+        std::chrono::milliseconds timeToFadeOut = std::chrono::milliseconds::zero())
         : ContinuousSound()
     {
         Initialize(
             std::move(soundBuffer),
             volume,
             masterVolume,
-            isMuted);
+            isMuted,
+            timeToFadeIn,
+            timeToFadeOut);
     }
 
     void Initialize(
         std::unique_ptr<sf::SoundBuffer> soundBuffer,
         float volume,
         float masterVolume,
-        bool isMuted)
+        bool isMuted,
+        std::chrono::milliseconds timeToFadeIn = std::chrono::milliseconds::zero(),
+        std::chrono::milliseconds timeToFadeOut = std::chrono::milliseconds::zero())
     {
         assert(!mSoundBuffer && !mSound);
 
@@ -361,7 +470,9 @@ struct ContinuousSound
             *mSoundBuffer,
             volume,
             masterVolume,
-            isMuted);
+            isMuted,
+            timeToFadeIn,
+            timeToFadeOut);
         mSound->setLoop(true);
     }
 
@@ -381,7 +492,7 @@ struct ContinuousSound
         }
     }
 
-    void AggregateUpdate(size_t count)
+    void UpdateAggregateVolume(size_t count)
     {
         if (count == 0)
         {
@@ -404,14 +515,29 @@ struct ContinuousSound
         }
     }
 
-    void Start()
+    enum class StartMode
+    {
+        Immediate,
+        WithFadeIn
+    };
+
+    void Start(StartMode startMode = StartMode::Immediate)
     {
         if (!!mSound)
         {
-            if (!mCurrentPauseState
-                && sf::Sound::Status::Playing != mSound->getStatus())
+            if (!mCurrentPauseState)
             {
-                mSound->play();
+                if (StartMode::WithFadeIn == startMode)
+                {
+                    mSound->fadeToPlay();
+                }
+                else
+                {
+                    if (sf::Sound::Status::Playing != mSound->getStatus())
+                    {
+                        mSound->play();
+                    }
+                }
             }
         }
 
@@ -440,17 +566,33 @@ struct ContinuousSound
         mCurrentPauseState = isPaused;
     }
 
-    void Stop()
+    enum class StopMode
+    {
+        Immediate,
+        WithFadeOut
+    };
+
+    void Stop(StopMode stopMode = StopMode::Immediate)
     {
         if (!!mSound)
         {
             // We stop regardless of the pause state, even if we're paused
             if (sf::Sound::Status::Stopped != mSound->getStatus())
-                mSound->stop();
+            {
+                if (StopMode::WithFadeOut == stopMode)
+                    mSound->fadeToStop();
+                else
+                    mSound->stop();
+            }
         }
 
         // Remember we want to stay stopped when we resume
         mDesiredPlayingState = false;
+    }
+
+    void Update()
+    {
+        mSound->update();
     }
 
 private:
@@ -731,7 +873,7 @@ public:
         mAlternativesByObject[objectId] = mLastChosenAlternative;
 
         // Update continuous sound
-        mSoundAlternatives[mLastChosenAlternative].AggregateUpdate(mSoundAlternativePlayCounts[mLastChosenAlternative]);
+        mSoundAlternatives[mLastChosenAlternative].UpdateAggregateVolume(mSoundAlternativePlayCounts[mLastChosenAlternative]);
     }
 
     void StopSoundAlternativeForObject(TObjectId objectId)
@@ -747,7 +889,7 @@ public:
         mAlternativesByObject.erase(objectId);
 
         // Update continuous sound
-        mSoundAlternatives[alternative].AggregateUpdate(mSoundAlternativePlayCounts[alternative]);
+        mSoundAlternatives[alternative].UpdateAggregateVolume(mSoundAlternativePlayCounts[alternative]);
     }
 
 private:
@@ -765,13 +907,17 @@ struct ContinuousSingleChoiceSound
         std::unique_ptr<sf::SoundBuffer> soundBuffer,
         float volume,
         float masterVolume,
-        bool isMuted)
+        bool isMuted,
+        std::chrono::milliseconds timeToFadeIn = std::chrono::milliseconds::zero(),
+        std::chrono::milliseconds timeToFadeOut = std::chrono::milliseconds::zero())
     {
         mSound.Initialize(
             std::move(soundBuffer),
             volume,
             masterVolume,
-            isMuted);
+            isMuted,
+            timeToFadeIn,
+            timeToFadeOut);
     }
 
     void Reset()
@@ -799,6 +945,11 @@ struct ContinuousSingleChoiceSound
         mSound.Start();
     }
 
+    void FadeIn()
+    {
+        mSound.Start(ContinuousSound::StartMode::WithFadeIn);
+    }
+
     void SetPaused(bool isPaused)
     {
         mSound.SetPaused(isPaused);
@@ -807,6 +958,16 @@ struct ContinuousSingleChoiceSound
     void Stop()
     {
         mSound.Stop();
+    }
+
+    void FadeOut()
+    {
+        mSound.Stop(ContinuousSound::StopMode::WithFadeOut);
+    }
+
+    void Update()
+    {
+        mSound.Update();
     }
 
 protected:
@@ -835,7 +996,7 @@ struct ContinuousSingleChoiceAggregateSound : public ContinuousSingleChoiceSound
         mObjectsPlayingSound.insert(objectId);
 
         // Update continuous sound
-        mSound.AggregateUpdate(mObjectsPlayingSound.size());
+        mSound.UpdateAggregateVolume(mObjectsPlayingSound.size());
     }
 
     bool StopSoundForObject(TObjectId objectId)
@@ -846,7 +1007,7 @@ struct ContinuousSingleChoiceAggregateSound : public ContinuousSingleChoiceSound
         if (objectWasPlayingSound)
         {
             // Update continuous sound
-            mSound.AggregateUpdate(mObjectsPlayingSound.size());
+            mSound.UpdateAggregateVolume(mObjectsPlayingSound.size());
         }
 
         return objectWasPlayingSound;

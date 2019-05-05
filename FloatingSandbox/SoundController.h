@@ -145,6 +145,9 @@ public:
     void PlayRepairStructureSound();
     void StopRepairStructureSound();
 
+    void PlayWaveMakerSound();
+    void StopWaveMakerSound();
+
     void PlayScrubSound();
 
     void PlaySnapshotSound();
@@ -419,6 +422,7 @@ private:
     ContinuousSingleChoiceSound mAirBubblesSound;
     ContinuousSingleChoiceSound mFloodHoseSound;
     ContinuousSingleChoiceSound mRepairStructureSound;
+    ContinuousSingleChoiceSound mWaveMakerSound;
 
     ContinuousSingleChoiceSound mWaterRushSound;
     ContinuousSingleChoiceSound mWaterSplashSound;

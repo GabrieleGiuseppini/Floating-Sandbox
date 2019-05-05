@@ -1675,6 +1675,8 @@ public:
         {
             mGameController->AdjustOceanSurfaceTo(inputState.MousePosition);
 
+            mSoundController->PlayWaveMakerSound();
+
             mCurrentCursor = mDownCursor.get();
         }
         else
@@ -1683,6 +1685,11 @@ public:
         }
 
         ShowCurrentCursor();
+    }
+
+    virtual void Deinitialize(InputState const & /*inputState*/) override
+    {
+        mSoundController->StopWaveMakerSound();
     }
 
     virtual void OnMouseMove(InputState const & inputState) override
@@ -1697,12 +1704,16 @@ public:
     {
         mGameController->AdjustOceanSurfaceTo(inputState.MousePosition);
 
+        mSoundController->PlayWaveMakerSound();
+
         mCurrentCursor = mDownCursor.get();
         ShowCurrentCursor();
     }
 
     virtual void OnLeftMouseUp(InputState const & /*inputState*/) override
     {
+        mSoundController->StopWaveMakerSound();
+
         mGameController->AdjustOceanSurfaceTo(std::nullopt);
 
         mCurrentCursor = mUpCursor.get();
