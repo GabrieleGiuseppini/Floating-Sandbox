@@ -292,7 +292,7 @@ Render:
 
 		= Shallow Water Equations (*)
 
-		- Double-check latest rotting speed
+		+ Double-check latest rotting speed
 
 		- See if installer for current user removes need for admin consent
 
@@ -872,8 +872,8 @@ Render:
 						+ Check if average water depth increases
 					+ Cursor: set arrows at same positions as adjust terrain cursor
 					= Tsunami
-						= GameParameters: "TsunamiArrivalTime", mins
-							- Min = 0 => no tsunamis
+						+ GameParameters: "TsunamiArrivalTime", mins
+							+ Min = 0 => no tsunamis
 							+ Max = 15
 							+ Settings Dialog, under "Wave Phenomena"
 								+ Tooltip: "...disables automatic generation of..."
@@ -881,16 +881,17 @@ Render:
 						= OceanSurface:
 							+ Tsunami-specific StateMachine member, std::optional
 							- When not set:
-								- Run choosing until chosen
-								- TriggerTsunami() when triggered
-							- void TriggerTsunami(): 
-								- Emplace state machine
+								= Run choosing until chosen
+									- Do not trigger within first 1 minute
+								+ TriggerTsunami() when triggered
+							= void TriggerTsunami(): 
+								+ Emplace state machine
+								- Test if slower rise (not fall) makes better long-run wave
 								- Fire "OnTsunamiTriggered" event
-							- State machine
-								- Height = 105 (5%)
-								- See if need custom fall rate
-									- If so, External wave is given OceanSurface-calculated rates, at cctor and at Restart()
-									- Or, new state machine altogether
+							+ State machine
+								+ Height = 105 (5%)
+								+ See if need custom fall rate
+									+ If so, new state machine altogether
 							- Publish "OnTsunamiTriggered" event
 								- Break IGameEventHandler into smaller pieces
 								- Ship takes GameEventDispatcher directly
@@ -903,22 +904,23 @@ Render:
 									- Shaking
 								- SoundController:
 									- Tsunami sound, one-shot (overridable): SOS + rumbling
-					= Rogue waves
-						= GameParameters: "RogueWaveArrivalTime", mins
-							- Min = 0 => no rogue waves
+					+ Rogue waves
+						+ GameParameters: "RogueWaveArrivalTime", mins
+							+ Min = 0 => no rogue waves
 							+ Settings Dialog, under "Wave Phenomena"
 								+ Tooltip: "...disables automatic generation of..."
 						+ Tools menu entry - w/no accelerator key
-						= OceanSurface:							
+						+ OceanSurface:							
 							+ RogueWave-specific StateMachine member, std::optional
-							- When not set:
-								- Run choosing until chosen
-								- TriggerRogueWave() when triggered
-							- void TriggerRogueWave(): 
-								- TODO
-							- State machine
-								- Height = 101 (1%)
-								- See if need custom fall rate
+							+ When not set:
+								+ Run choosing until chosen
+								+ TriggerRogueWave() when triggered
+							+ void TriggerRogueWave(): 
+								+ Take Wind & calc right locus index based off direction
+							+ State machine
+								+ Height = 101 (1%)
+								+ See if need custom fall rate
+					- Test with basal waves added to SWE height field, instead of added to samples
 				+ SettingsDialog:
 					+ "Wind and Waves" tab
 						+ Static box for basal waves
@@ -933,9 +935,10 @@ Render:
 						+ Fix restart while fading-in
 						+ Better sound
 						+ See linear fade-out again
+				- See if can stop making reflective boundaries with height field=0
 			- Optimizations:
 				- FPS before:
-				- Wave params calc'd only at GameParameters changes
+				- Basal wave params and abnormal wave CDFs calc'd only at GameParameters changes
 				- Pre-calc'd funcs (sin)
 				- Two advections in one, so that we have a single loop
 				- Two field updates in one, so that we have a single loop

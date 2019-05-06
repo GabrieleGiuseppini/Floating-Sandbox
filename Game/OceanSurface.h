@@ -59,9 +59,11 @@ public:
         std::optional<vec2f> const & worldCoordinates,
         float currentSimulationTime);
 
-    void TriggerTsunami();
+    void TriggerTsunami(float currentSimulationTime);
 
-    void TriggerRogueWave();
+    void TriggerRogueWave(
+        float currentSimulationTime,
+        Wind const & wind);
 
 public:
 
@@ -73,6 +75,16 @@ public:
     static float constexpr Dx = GameParameters::MaxWorldWidth / static_cast<float>(SamplesCount);
 
 private:
+
+    static int32_t ToSampleIndex(float x)
+    {
+        // Calculate sample index, minimizing error
+        float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth) / Dx;
+        int32_t sampleIndexI = FastTruncateInt32(sampleIndexF + 0.5f);
+        assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
+
+        return sampleIndexI;
+    }
 
     void AdvectHeightField();
     void AdvectVelocityField();
@@ -120,26 +132,18 @@ private:
 
 private:
 
-    class SWEWaveStateMachine
+    //
+    // Interactive waves
+    //
+
+    class SWEInteractiveWaveStateMachine
     {
     public:
 
-        enum class ReleaseModeType
-        {
-            // Begins the wave downfall only when the rise is completed
-            Automatic,
-
-            // Begins the wave downfall only when Release is invoked
-            OnCue
-        };
-
-    public:
-
-        SWEWaveStateMachine(
+        SWEInteractiveWaveStateMachine(
             int32_t sampleIndex,
             float lowHeight,
             float highHeight,
-            ReleaseModeType releaseMode,
             float currentSimulationTime);
 
         auto GetSampleIndex() const
@@ -163,8 +167,6 @@ private:
 
         float CalculateSmoothingDelay();
 
-        void StartFallPhase(float currentSimulationTime);
-
         enum class WavePhaseType
         {
             Rise,
@@ -179,16 +181,60 @@ private:
         float mCurrentProgress; // Between 0 and 1, regardless of direction
         float mStartSimulationTime;
         WavePhaseType mCurrentWavePhase;
-        ReleaseModeType const mReleaseMode;
-        float mSmoothingDelay;
+        float mCurrentSmoothingDelay;
     };
 
-    // Interactive wave
-    std::optional<SWEWaveStateMachine> mSWEExternalWaveStateMachine;
+    std::optional<SWEInteractiveWaveStateMachine> mSWEInteractiveWaveStateMachine;
 
-    // Wave phenomena
-    std::optional<SWEWaveStateMachine> mSWETsunamiWaveStateMachine;
-    std::optional<SWEWaveStateMachine> mSWERogueWaveWaveStateMachine;
+
+    //
+    // Abnormal waves
+    //
+
+    class SWEAbnormalWaveStateMachine
+    {
+    public:
+
+        SWEAbnormalWaveStateMachine(
+            int32_t sampleIndex,
+            float lowHeight,
+            float highHeight,
+            float riseDelay, // sec
+            float fallDelay, // sec
+            float currentSimulationTime);
+
+        auto GetSampleIndex() const
+        {
+            return mSampleIndex;
+        }
+
+        /*
+         * Returns none when it may be retired.
+         */
+        std::optional<float> Update(
+            float currentSimulationTime);
+
+    private:
+
+        enum class WavePhaseType
+        {
+            Rise,
+            Fall
+        };
+
+        int32_t const mSampleIndex;
+        float const mLowHeight;
+        float const mHighHeight;
+        float const mRiseDelay; // sec
+        float const mFallDelay; // sec
+        float mCurrentProgress; // Between 0 and 1, regardless of direction
+        float mCurrentPhaseStartSimulationTime;
+        float mCurrentPhaseDelay;
+        WavePhaseType mCurrentWavePhase;
+    };
+
+    std::optional<SWEAbnormalWaveStateMachine> mSWETsunamiWaveStateMachine;
+    std::optional<SWEAbnormalWaveStateMachine> mSWERogueWaveWaveStateMachine;
 };
 
 }

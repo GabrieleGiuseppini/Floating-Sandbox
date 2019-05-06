@@ -440,12 +440,14 @@ void World::QueryNearestPointAt(
 
 void World::TriggerTsunami()
 {
-    mOceanSurface.TriggerTsunami();
+    mOceanSurface.TriggerTsunami(mCurrentSimulationTime);
 }
 
 void World::TriggerRogueWave()
 {
-    mOceanSurface.TriggerRogueWave();
+    mOceanSurface.TriggerRogueWave(
+        mCurrentSimulationTime,
+        mWind);
 }
 
 //////////////////////////////////////////////////////////////////////////////
