@@ -68,7 +68,7 @@ OceanSurface::OceanSurface()
 
     // Initialize all values - including extra unused sample
     //
-    // Velocity boundary conditions are initialized here once and for all
+    // Boundary conditions are initialized here once and for all
     for (size_t i = 0; i <= SWETotalSamples; ++i)
     {
         mCurrentHeightField[i] = SWEHeightFieldOffset;
@@ -121,7 +121,8 @@ void OceanSurface::Update(
         // See if it's time to generate a tsunami
         //
 
-        if (gameParameters.TsunamiRate > 0.0f)
+        if (gameParameters.TsunamiRate > 0.0f
+            && currentSimulationTime >= 60.0f) // Grace period - we don't want tsunamis right after game start
         {
             // TODO: move to RecalculateParameters
             float const tsunamiCdf = 1.0f - exp(-GameParameters::SimulationStepTimeDuration<float> / (gameParameters.TsunamiRate * 60.0f));
@@ -180,18 +181,6 @@ void OceanSurface::Update(
 
     UpdateHeightField();
     UpdateVelocityField();
-
-    // Set reflective boundary conditions
-    for (size_t i = 0; i < SWEBoundaryConditionsSamples; ++i)
-    {
-        // Height mirrors height of actual samples
-        mNextHeightField[i] = mNextHeightField[i + SWEBoundaryConditionsSamples];
-        mNextHeightField[SWETotalSamples - 1 - i] = mNextHeightField[SWETotalSamples - 1 - SWEBoundaryConditionsSamples - i];
-
-        // Velocity is zero
-        assert(mNextVelocityField[i] == 0.0f);
-        assert(mNextVelocityField[SWETotalSamples - 1 - i] == 0.0f);
-    }
 
     ////// Calc avg height among all samples
     ////float avgHeight = 0.0f;
@@ -347,7 +336,7 @@ void OceanSurface::TriggerTsunami(float currentSimulationTime)
         sampleIndex,
         mCurrentHeightField[SWEOuterLayerSamples + sampleIndex], // LowHeight
         mCurrentHeightField[SWEOuterLayerSamples + sampleIndex] + SWEHeightFieldOffset * 0.05f, // HighHeight
-        5.0f, // Rise delay
+        7.0f, // Rise delay
         5.0f, // Fall delay
         currentSimulationTime);
 }

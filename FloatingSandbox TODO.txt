@@ -859,7 +859,6 @@ Render:
 								+ 2nd component has sin phase with very slow period						
 						+ Find good initial conditions
 							+ Need "as if" wind was 40, but not simply 2x as wind=100 makes wind'=200
-
 					+ Controls:
 						+ WidthAdjust, Height, Period (>0)				
 				= SWEs
@@ -880,13 +879,13 @@ Render:
 						+ Tools menu entry - w/no accelerator key
 						= OceanSurface:
 							+ Tsunami-specific StateMachine member, std::optional
-							- When not set:
-								= Run choosing until chosen
-									- Do not trigger within first 1 minute
+							+ When not set:
+								+ Run choosing until chosen
+									+ Do not trigger within first 1 minute
 								+ TriggerTsunami() when triggered
 							= void TriggerTsunami(): 
 								+ Emplace state machine
-								- Test if slower rise (not fall) makes better long-run wave
+								+ Test if slower rise (not fall) makes better long-run wave
 								- Fire "OnTsunamiTriggered" event
 							+ State machine
 								+ Height = 105 (5%)
@@ -935,7 +934,7 @@ Render:
 						+ Fix restart while fading-in
 						+ Better sound
 						+ See linear fade-out again
-				- See if can stop making reflective boundaries with height field=0
+				+ See if can stop making reflective boundaries with height field=0
 			- Optimizations:
 				- FPS before:
 				- Basal wave params and abnormal wave CDFs calc'd only at GameParameters changes
