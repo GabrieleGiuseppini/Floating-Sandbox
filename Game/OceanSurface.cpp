@@ -51,6 +51,8 @@ OceanSurface::OceanSurface()
     , mVelocityFieldBuffer2(new float[SWETotalSamples + 1]) // One extra cell just to ease interpolations
     ////////
     , mSWEExternalWaveStateMachine()
+    , mSWETsunamiWaveStateMachine()
+    , mSWERogueWaveWaveStateMachine()
 {
     //
     // Initialize SWE layer
@@ -81,14 +83,7 @@ void OceanSurface::Update(
     GameParameters const & gameParameters)
 {
     //
-    // 1. SWE Wave Genesis
-    //
-
-    // TODO
-
-
-    //
-    // 2. Advance SWE Waves
+    // 1. Advance SWE Wave State Machines
     //
 
     if (!!mSWEExternalWaveStateMachine)
@@ -105,11 +100,53 @@ void OceanSurface::Update(
         }
     }
 
-    // TODO: wave genesis
+    if (!!mSWETsunamiWaveStateMachine)
+    {
+        auto heightValue = mSWETsunamiWaveStateMachine->Update(currentSimulationTime);
+        if (!heightValue)
+        {
+            // Done
+            mSWETsunamiWaveStateMachine.reset();
+        }
+        else
+        {
+            mCurrentHeightField[mSWETsunamiWaveStateMachine->GetSampleIndex()] = *heightValue;
+        }
+    }
+    else
+    {
+        //
+        // See if time to generate tsunami
+        //
+
+        // TODO
+    }
+
+    if (!!mSWERogueWaveWaveStateMachine)
+    {
+        auto heightValue = mSWERogueWaveWaveStateMachine->Update(currentSimulationTime);
+        if (!heightValue)
+        {
+            // Done
+            mSWERogueWaveWaveStateMachine.reset();
+        }
+        else
+        {
+            mCurrentHeightField[mSWERogueWaveWaveStateMachine->GetSampleIndex()] = *heightValue;
+        }
+    }
+    else
+    {
+        //
+        // See if time to generate rogue wave
+        //
+
+        // TODO
+    }
 
 
     //
-    // 3. SWE Update
+    // 2. SWE Update
     //
     // - Current -> Next
     //
@@ -142,9 +179,8 @@ void OceanSurface::Update(
     ////LogMessage("AVG:", avgHeight);
 
 
-
     //
-    // 4. Swap Buffers
+    // 3. Swap Buffers
     //
 
     std::swap(mCurrentHeightField, mNextHeightField);
@@ -152,7 +188,7 @@ void OceanSurface::Update(
 
 
     //
-    // 5. Generate samples
+    // 4. Generate samples
     //
 
     GenerateSamples(
@@ -274,6 +310,16 @@ void OceanSurface::AdjustTo(
         assert(!!mSWEExternalWaveStateMachine);
         mSWEExternalWaveStateMachine->Release(currentSimulationTime);
     }
+}
+
+void OceanSurface::TriggerTsunami()
+{
+
+}
+
+void OceanSurface::TriggerRogueWave()
+{
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////

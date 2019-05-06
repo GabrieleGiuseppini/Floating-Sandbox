@@ -728,25 +728,35 @@ Render:
 			  and giving it to RenderContext, which adjusts ViewModel based on it
 				- At each simulation step
 			- Preferences setting for auto-focus (default is on)
+				- Also toggable at "Controls" menu
 			- Also works as "auto-focus at load"
 		- Algo:
-			- Connected component i has AABBi
-			- Ship "optimal" AABB == Union(AABBi) for i belonging to B
-				- B is set of connected components such that sum(their #points) > 3/4 TotPoints, in optimal order (from larger to smaller)
-			- Maintaining AABBi:
-				- Updated at each simulation step leveraging geometrical and temporal coherency:
-					- For each connected component we remember the 4 extreme points
-					- At each simulation step: UpdateConnectedComponentAABBs()
-						- For each connected component i:
-							- For each extreme point p:
-								- Visit p.neighbors as long as they're more extreme than p (i.e. follow gradient)
-								- Replace p with this new most extreme point
-				- Technically we don't even need to maintain AABB, we just need to maintain 4 ElementIndex for each connected component
-				  (the 4 extreme points)
-					- struct AABBPoints, w/Left,Right,etc. members
-			- Maintaining B:
-				- Simply recalculated from scratch at each connectivity visit
-					- Use insertion sort to end up with list sorted by #points, desc
+			- Option 1:
+				- Connected component i has AABBi
+				- Ship "optimal" AABB == Union(AABBi) for i belonging to B
+					- B is set of connected components such that sum(their #points) > 3/4 TotPoints, in optimal order (from larger to smaller)
+				- Maintaining AABBi:
+					- Option 1:
+						- Updated at each simulation step leveraging geometrical and temporal coherency:
+							- For each connected component we remember the 4 extreme points
+							- At each simulation step: UpdateConnectedComponentAABBs()
+								- For each connected component i:
+									- For each extreme point p:
+										- Visit p.neighbors as long as they're more extreme than p (i.e. follow gradient)
+										- Replace p with this new most extreme point
+						- Technically we don't even need to maintain AABB, we just need to maintain 4 ElementIndex for each connected component
+						  (the 4 extreme points)
+							- struct AABBPoints, w/Left,Right,etc. members
+					- Option 2:
+						- Recalculated at low-freq step
+				- Maintaining B:
+					- Option 1:
+						- Simply recalculated from scratch at each connectivity visit
+							- Use insertion sort to end up with list sorted by #points, desc
+					- Option 2:
+						- Recalculated at low-freq step (same as above)
+			- Option 2:
+				- Low-freq step calculates AABB
 
 	- Different backgrounds: use keys to switch between a dock, cliffs, open ocean, ice field, etc.
 
@@ -866,31 +876,46 @@ Render:
 							- Min = 0 => no tsunamis
 							+ Max = 15
 							+ Settings Dialog, under "Wave Phenomena"
-						- OceanSurface:
-							- Tsunami-specific StateMachine member, std::optional
+								+ Tooltip: "...disables automatic generation of..."
+						+ Tools menu entry - w/no accelerator key
+						= OceanSurface:
+							+ Tsunami-specific StateMachine member, std::optional
 							- When not set:
 								- Run choosing until chosen
+								- TriggerTsunami() when triggered
+							- void TriggerTsunami(): 
+								- Emplace state machine
+								- Fire "OnTsunamiTriggered" event
 							- State machine
 								- Height = 105 (5%)
 								- See if need custom fall rate
+									- If so, External wave is given OceanSurface-calculated rates, at cctor and at Restart()
+									- Or, new state machine altogether
 							- Publish "OnTsunamiTriggered" event
 								- Break IGameEventHandler into smaller pieces
 								- Ship takes GameEventDispatcher directly
-							- GameController registers for OnTsunamiTriggered and runs TsunamiNotificationStateMachine
-								- TsunamiNotificationStateMachine: private class, cctor takes:
-									- TextRenderContext (for text)
-									- RenderContext (for shaking)
-									- bool Update(): when returns true, GameController nukes it
-								- Text at text layer
-								- Shaking
-							- SoundController:
-								- Tsunami sound, one-shot (overridable): SOS + rumbling
+								- GameController registers for OnTsunamiTriggered and runs TsunamiNotificationStateMachine
+									- TsunamiNotificationStateMachine: private class, cctor takes:
+										- TextRenderContext (for text)
+										- RenderContext (for shaking)
+										- bool Update(): when returns true, GameController nukes it
+									- Text at text layer
+									- Shaking
+								- SoundController:
+									- Tsunami sound, one-shot (overridable): SOS + rumbling
 					= Rogue waves
 						= GameParameters: "RogueWaveArrivalTime", mins
 							- Min = 0 => no rogue waves
 							+ Settings Dialog, under "Wave Phenomena"
-						- OceanSurface:
-							- Run choosing until chosen
+								+ Tooltip: "...disables automatic generation of..."
+						+ Tools menu entry - w/no accelerator key
+						= OceanSurface:							
+							+ RogueWave-specific StateMachine member, std::optional
+							- When not set:
+								- Run choosing until chosen
+								- TriggerRogueWave() when triggered
+							- void TriggerRogueWave(): 
+								- TODO
 							- State machine
 								- Height = 101 (1%)
 								- See if need custom fall rate

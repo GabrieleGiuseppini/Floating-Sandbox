@@ -33,10 +33,6 @@ public:
 
 public:
 
-    void AdjustTo(
-        std::optional<vec2f> const & worldCoordinates,
-        float currentSimulationTime);
-
     float GetHeightAt(float x) const
     {
         //
@@ -58,6 +54,14 @@ public:
         return mSamples[sampleIndexI].SampleValue
             + mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
     }
+
+    void AdjustTo(
+        std::optional<vec2f> const & worldCoordinates,
+        float currentSimulationTime);
+
+    void TriggerTsunami();
+
+    void TriggerRogueWave();
 
 public:
 
@@ -181,6 +185,10 @@ private:
 
     // Interactive wave
     std::optional<SWEWaveStateMachine> mSWEExternalWaveStateMachine;
+
+    // Wave phenomena
+    std::optional<SWEWaveStateMachine> mSWETsunamiWaveStateMachine;
+    std::optional<SWEWaveStateMachine> mSWERogueWaveWaveStateMachine;
 };
 
 }

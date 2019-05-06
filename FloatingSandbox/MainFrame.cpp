@@ -62,12 +62,14 @@ const long ID_TIMERBOMB_MENUITEM = wxNewId();
 const long ID_RCBOMB_MENUITEM = wxNewId();
 const long ID_IMPACTBOMB_MENUITEM = wxNewId();
 const long ID_ANTIMATTERBOMB_MENUITEM = wxNewId();
-const long ID_RCBOMBDETONATE_MENUITEM = wxNewId();
-const long ID_ANTIMATTERBOMBDETONATE_MENUITEM = wxNewId();
 const long ID_WAVEMAKER_MENUITEM = wxNewId();
 const long ID_ADJUSTTERRAIN_MENUITEM = wxNewId();
 const long ID_REPAIRSTRUCTURE_MENUITEM = wxNewId();
 const long ID_SCRUB_MENUITEM = wxNewId();
+const long ID_RCBOMBDETONATE_MENUITEM = wxNewId();
+const long ID_ANTIMATTERBOMBDETONATE_MENUITEM = wxNewId();
+const long ID_TRIGGERTSUNAMI_MENUITEM = wxNewId();
+const long ID_TRIGGERROGUEWAVE_MENUITEM = wxNewId();
 
 const long ID_OPEN_SETTINGS_WINDOW_MENUITEM = wxNewId();
 const long ID_OPEN_PREFERENCES_WINDOW_MENUITEM = wxNewId();
@@ -353,6 +355,13 @@ MainFrame::MainFrame(wxApp * mainApp)
     Connect(ID_ANTIMATTERBOMBDETONATE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAntiMatterBombDetonateMenuItemSelected);
     mAntiMatterBombsDetonateMenuItem->Enable(false);
 
+    wxMenuItem * triggerTsunamiMenuItem = new wxMenuItem(mToolsMenu, ID_TRIGGERTSUNAMI_MENUITEM, _("Trigger Tsunami"), wxEmptyString, wxITEM_NORMAL);
+    mToolsMenu->Append(triggerTsunamiMenuItem);
+    Connect(ID_TRIGGERTSUNAMI_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnTriggerTsunamiMenuItemSelected);
+
+    wxMenuItem * triggerRogueWaveMenuItem = new wxMenuItem(mToolsMenu, ID_TRIGGERROGUEWAVE_MENUITEM, _("Trigger Rogue Wave"), wxEmptyString, wxITEM_NORMAL);
+    mToolsMenu->Append(triggerRogueWaveMenuItem);
+    Connect(ID_TRIGGERROGUEWAVE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnTriggerRogueWaveMenuItemSelected);
 
     mainMenuBar->Append(mToolsMenu, _("Tools"));
 
@@ -1238,18 +1247,6 @@ void MainFrame::OnImpactBombMenuItemSelected(wxCommandEvent & /*event*/)
     mToolController->SetTool(ToolType::ImpactBomb);
 }
 
-void MainFrame::OnAntiMatterBombMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    assert(!!mToolController);
-    mToolController->SetTool(ToolType::AntiMatterBomb);
-}
-
-void MainFrame::OnRCBombDetonateMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    assert(!!mGameController);
-    mGameController->DetonateRCBombs();
-}
-
 void MainFrame::OnAntiMatterBombDetonateMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mGameController);
@@ -1278,6 +1275,30 @@ void MainFrame::OnScrubMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
     mToolController->SetTool(ToolType::Scrub);
+}
+
+void MainFrame::OnRCBombDetonateMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mGameController);
+    mGameController->DetonateRCBombs();
+}
+
+void MainFrame::OnAntiMatterBombMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mToolController);
+    mToolController->SetTool(ToolType::AntiMatterBomb);
+}
+
+void MainFrame::OnTriggerTsunamiMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mGameController);
+    mGameController->TriggerTsunami();
+}
+
+void MainFrame::OnTriggerRogueWaveMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mGameController);
+    mGameController->TriggerRogueWave();
 }
 
 //////////

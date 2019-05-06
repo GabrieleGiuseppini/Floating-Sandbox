@@ -995,7 +995,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                 SliderWidth,
                 SliderHeight,
                 "Tsunami Rate",
-                "The expected time between two tsunami waves (minutes). Set to zero to disable tsunami waves altogether.",
+                "The expected time between two automatically-generated tsunami waves (minutes). Set to zero to disable automatic generation of tsunami waves altogether.",
                 static_cast<float>(mGameController->GetTsunamiRate()),
                 [this](float /*value*/)
                 {
@@ -1016,7 +1016,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                 SliderWidth,
                 SliderHeight,
                 "Rogue Wave Rate",
-                "The expected time between two rogue waves (minutes). Set to zero to disable rogue waves altogether.",
+                "The expected time between two automatically-generated rogue waves (minutes). Set to zero to disable automatic generation of rogue waves altogether.",
                 static_cast<float>(mGameController->GetRogueWaveRate()),
                 [this](float /*value*/)
                 {

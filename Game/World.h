@@ -67,6 +67,10 @@ public:
         return mWind.GetCurrentWindSpeed();
     }
 
+    //
+    // Interactions
+    //
+
     std::optional<ElementId> Pick(
         vec2f const & pickPosition,
         GameParameters const & gameParameters);
@@ -171,6 +175,12 @@ public:
     void QueryNearestPointAt(
         vec2f const & targetPos,
         float radius) const;
+
+    void TriggerTsunami();
+
+    void TriggerRogueWave();
+
+public:
 
     void Update(
         GameParameters const & gameParameters,

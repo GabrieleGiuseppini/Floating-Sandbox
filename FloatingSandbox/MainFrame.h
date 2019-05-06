@@ -141,6 +141,7 @@ private:
     void OnLoadShipMenuItemSelected(wxCommandEvent& event);
     void OnReloadLastShipMenuItemSelected(wxCommandEvent& event);
     void OnSaveScreenshotMenuItemSelected(wxCommandEvent& event);
+
     void OnMoveMenuItemSelected(wxCommandEvent& event);
     void OnMoveAllMenuItemSelected(wxCommandEvent& event);
     void OnSmashMenuItemSelected(wxCommandEvent& event);
@@ -160,6 +161,9 @@ private:
     void OnScrubMenuItemSelected(wxCommandEvent& event);
     void OnRCBombDetonateMenuItemSelected(wxCommandEvent& event);
     void OnAntiMatterBombDetonateMenuItemSelected(wxCommandEvent& event);
+    void OnTriggerTsunamiMenuItemSelected(wxCommandEvent& event);
+    void OnTriggerRogueWaveMenuItemSelected(wxCommandEvent& event);
+
     void OnOpenSettingsWindowMenuItemSelected(wxCommandEvent& event);
     void OnOpenPreferencesWindowMenuItemSelected(wxCommandEvent& event);
     void OnOpenLogWindowMenuItemSelected(wxCommandEvent& event);

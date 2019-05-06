@@ -438,6 +438,16 @@ void World::QueryNearestPointAt(
     }
 }
 
+void World::TriggerTsunami()
+{
+    mOceanSurface.TriggerTsunami();
+}
+
+void World::TriggerRogueWave()
+{
+    mOceanSurface.TriggerRogueWave();
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // Simulation
 //////////////////////////////////////////////////////////////////////////////

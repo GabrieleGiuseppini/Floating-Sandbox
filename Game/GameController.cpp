@@ -597,6 +597,18 @@ void GameController::QueryNearestPointAt(vec2f const & screenCoordinates) const
     mWorld->QueryNearestPointAt(worldCoordinates, 1.0f);
 }
 
+void GameController::TriggerTsunami()
+{
+    assert(!!mWorld);
+    mWorld->TriggerTsunami();
+}
+
+void GameController::TriggerRogueWave()
+{
+    assert(!!mWorld);
+    mWorld->TriggerRogueWave();
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////
 
 void GameController::InternalUpdate()
