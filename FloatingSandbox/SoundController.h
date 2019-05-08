@@ -7,7 +7,8 @@
 
 #include "Sounds.h"
 
-#include <Game/IGameEventHandler.h>
+#include <Game/GameController.h>
+#include <Game/GameEventHandlers.h>
 #include <Game/ResourceLoader.h>
 
 #include <GameCore/GameRandomEngine.h>
@@ -28,13 +29,16 @@
 #include <unordered_map>
 #include <vector>
 
-class SoundController : public IGameEventHandler
+class SoundController
+    : public ILifecycleGameEventHandler
+    , public IWavePhenomenaGameEventHandler
+    , public IStructuralGameEventHandler
+    , public IGenericGameEventHandler
 {
 public:
 
     SoundController(
         std::shared_ptr<ResourceLoader> resourceLoader,
-        std::shared_ptr<IGameEventHandler> gameEventHandler,
         ProgressCallback const & progressCallback);
 
 	virtual ~SoundController();
@@ -168,6 +172,30 @@ public:
     // Game event handlers
     //
 
+    void RegisterEventHandler(GameController & gameController)
+    {
+        gameController.RegisterLifecycleEventHandler(this);
+        gameController.RegisterWavePhenomenaEventHandler(this);
+        gameController.RegisterStructuralEventHandler(this);
+        gameController.RegisterGenericEventHandler(this);
+    }
+
+    virtual void OnSinkingBegin(ShipId shipId) override;
+
+    virtual void OnSinkingEnd(ShipId shipId) override;
+
+    virtual void OnTsunami(float x) override;
+
+    virtual void OnStress(
+        StructuralMaterial const & structuralMaterial,
+        bool isUnderwater,
+        unsigned int size) override;
+
+    virtual void OnBreak(
+        StructuralMaterial const & structuralMaterial,
+        bool isUnderwater,
+        unsigned int size) override;
+
     virtual void OnDestroy(
         StructuralMaterial const & structuralMaterial,
         bool isUnderwater,
@@ -190,20 +218,6 @@ public:
     virtual void OnPinToggled(
         bool isPinned,
         bool isUnderwater) override;
-
-    virtual void OnStress(
-        StructuralMaterial const & structuralMaterial,
-        bool isUnderwater,
-        unsigned int size) override;
-
-    virtual void OnBreak(
-        StructuralMaterial const & structuralMaterial,
-        bool isUnderwater,
-        unsigned int size) override;
-
-    virtual void OnSinkingBegin(ShipId shipId) override;
-
-    virtual void OnSinkingEnd(ShipId shipId) override;
 
     virtual void OnLightFlicker(
         DurationShortLongType duration,
@@ -325,7 +339,6 @@ private:
 private:
 
     std::shared_ptr<ResourceLoader> mResourceLoader;
-    std::shared_ptr<IGameEventHandler> mGameEventHandler; // Useful for debugging with probes
 
 
     //

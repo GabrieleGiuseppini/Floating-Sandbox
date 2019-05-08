@@ -44,7 +44,7 @@ namespace Physics {
 Ship::Ship(
     ShipId id,
     World & parentWorld,
-    std::shared_ptr<IGameEventHandler> gameEventHandler,
+    std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     MaterialDatabase const & materialDatabase,
     Points && points,
     Springs && springs,
@@ -52,7 +52,7 @@ Ship::Ship(
     ElectricalElements && electricalElements)
     : mId(id)
     , mParentWorld(parentWorld)
-    , mGameEventHandler(std::move(gameEventHandler))
+    , mGameEventHandler(std::move(gameEventDispatcher))
     , mMaterialDatabase(materialDatabase)
     , mPoints(std::move(points))
     , mSprings(std::move(springs))

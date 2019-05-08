@@ -29,8 +29,8 @@ std::unique_ptr<GameController> GameController::Create(
             progressCallback(0.9f * progress, message);
         });
 
-    // Create text layer
-    std::unique_ptr<TextLayer> textLayer = std::make_unique<TextLayer>(
+    // Create status text
+    std::unique_ptr<StatusText> statusText = std::make_unique<StatusText>(
         isStatusTextEnabled,
         isExtendedStatusTextEnabled);
 
@@ -43,15 +43,9 @@ std::unique_ptr<GameController> GameController::Create(
             std::move(renderContext),
             std::move(swapRenderBuffersFunction),
             std::move(gameEventDispatcher),
-            std::move(textLayer),
+            std::move(statusText),
             std::move(materialDatabase),
             resourceLoader));
-}
-
-void GameController::RegisterGameEventHandler(IGameEventHandler * gameEventHandler)
-{
-    assert(!!mGameEventDispatcher);
-    mGameEventDispatcher->RegisterSink(gameEventHandler);
 }
 
 ShipMetadata GameController::ResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath)
@@ -286,14 +280,14 @@ void GameController::SetMoveToolEngaged(bool isEngaged)
 
 void GameController::SetStatusTextEnabled(bool isEnabled)
 {
-    assert(!!mTextLayer);
-    mTextLayer->SetStatusTextEnabled(isEnabled);
+    assert(!!mStatusText);
+    mStatusText->SetStatusTextEnabled(isEnabled);
 }
 
 void GameController::SetExtendedStatusTextEnabled(bool isEnabled)
 {
-    assert(!!mTextLayer);
-    mTextLayer->SetExtendedStatusTextEnabled(isEnabled);
+    assert(!!mStatusText);
+    mStatusText->SetExtendedStatusTextEnabled(isEnabled);
 }
 
 std::optional<ElementId> GameController::Pick(vec2f const & screenCoordinates)
@@ -611,19 +605,42 @@ void GameController::TriggerRogueWave()
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
+void GameController::OnTsunami(float /*x*/)
+{
+    if (mShowTsunamiNotifications)
+    {
+        mTsunamiNotificationStateMachine.emplace(mRenderContext);
+    }
+}
+
 void GameController::InternalUpdate()
 {
+    auto now = GameWallClock::GetInstance().Now();
+
+    // Update parameter smoothers
+    std::for_each(
+        mParameterSmoothers.begin(),
+        mParameterSmoothers.end(),
+        [&now](auto & ps)
+        {
+            ps.Update(now);
+        });
+
     // Update world
     assert(!!mWorld);
     mWorld->Update(
         mGameParameters,
         *mRenderContext);
 
-    // Update text layer
-    mTextLayer->Update();
-
     // Flush events
     mGameEventDispatcher->Flush();
+
+    // Update own state
+    if (!!mTsunamiNotificationStateMachine)
+    {
+        if (!mTsunamiNotificationStateMachine->Update())
+            mTsunamiNotificationStateMachine.reset();
+    }
 }
 
 void GameController::InternalRender()
@@ -682,11 +699,11 @@ void GameController::InternalRender()
 
 
     //
-    // Render text layer
+    // Render status text
     //
 
-    assert(!!mTextLayer);
-    mTextLayer->Render(*mRenderContext);
+    assert(!!mStatusText);
+    mStatusText->Render(*mRenderContext);
 
 
     //
@@ -801,8 +818,8 @@ void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
     mGameEventDispatcher->OnUpdateToRenderRatioUpdated(lastURRatio);
 
     // Update status text
-    assert(!!mTextLayer);
-    mTextLayer->SetStatusText(
+    assert(!!mStatusText);
+    mStatusText->SetText(
         lastFps,
         totalFps,
         std::chrono::duration<float>(GameWallClock::GetInstance().Now() - mOriginTimestampGame),
@@ -812,4 +829,171 @@ void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
         totalURRatio,
         lastURRatio,
         mRenderContext->GetStatistics());
+}
+
+////////////////////////////////////////////////////////////////////////////////////////
+
+GameController::TsunamiNotificationStateMachine::TsunamiNotificationStateMachine(
+    std::shared_ptr<Render::RenderContext> renderContext)
+    : mRenderContext(std::move(renderContext))
+    , mCurrentState(StateType::RumblingFadeIn)
+    , mCurrentStateStartTime(GameWallClock::GetInstance().NowAsFloat())
+{
+    // Create text
+    mTextHandle = mRenderContext->AddText(
+        {"TSUNAMI WARNING!"},
+        TextPositionType::TopRight,
+        0.0f,
+        FontType::GameText);
+}
+
+GameController::TsunamiNotificationStateMachine::~TsunamiNotificationStateMachine()
+{
+    mRenderContext->ResetPixelOffset();
+
+    assert(NoneRenderedTextHandle != mTextHandle);
+    mRenderContext->ClearText(mTextHandle);
+}
+
+bool GameController::TsunamiNotificationStateMachine::Update()
+{
+    float constexpr TremorAmplitude = 5.0f;
+    float constexpr TremorAngularVelocity = 2.0f * Pi<float> * 6.0f;
+
+    float const now = GameWallClock::GetInstance().NowAsFloat();
+
+    switch (mCurrentState)
+    {
+        case StateType::RumblingFadeIn:
+        {
+            auto const progress = GameWallClock::Progress(now, mCurrentStateStartTime, 1s);
+
+            // Set tremor
+            mRenderContext->SetPixelOffset(progress * TremorAmplitude * sin(TremorAngularVelocity * now), 0.0f);
+
+            // See if time to transition
+            if (progress >= 1.0f)
+            {
+                mCurrentState = StateType::Rumbling1;
+                mCurrentStateStartTime = now;
+            }
+
+            return true;
+        }
+
+        case StateType::Rumbling1:
+        {
+            auto const progress = GameWallClock::Progress(now, mCurrentStateStartTime, 500ms);
+
+            // Set tremor
+            mRenderContext->SetPixelOffset(TremorAmplitude * sin(TremorAngularVelocity * now), 0.0f);
+
+            // See if time to transition
+            if (progress >= 1.0f)
+            {
+                mCurrentState = StateType::WarningFadeIn;
+                mCurrentStateStartTime = now;
+            }
+
+            return true;
+        }
+
+        case StateType::WarningFadeIn:
+        {
+            auto const progress = GameWallClock::Progress(now, mCurrentStateStartTime, 500ms);
+
+            // Set tremor
+            mRenderContext->SetPixelOffset(TremorAmplitude * sin(TremorAngularVelocity * now), 0.0f);
+
+            // Fade-in text
+            mRenderContext->UpdateText(
+                mTextHandle,
+                std::min(progress, 1.0f));
+
+            // See if time to transition
+            if (progress >= 1.0f)
+            {
+                mCurrentState = StateType::Warning;
+                mCurrentStateStartTime = now;
+            }
+
+            return true;
+        }
+
+        case StateType::Warning:
+        {
+            auto const progress = GameWallClock::Progress(now, mCurrentStateStartTime, 3s);
+
+            // Set tremor
+            mRenderContext->SetPixelOffset(TremorAmplitude * sin(TremorAngularVelocity * now), 0.0f);
+
+            // See if time to transition
+            if (progress >= 1.0f)
+            {
+                mCurrentState = StateType::WarningFadeOut;
+                mCurrentStateStartTime = now;
+            }
+
+            return true;
+        }
+
+        case StateType::WarningFadeOut:
+        {
+            auto const progress = GameWallClock::Progress(now, mCurrentStateStartTime, 500ms);
+
+            // Fade-out text
+            mRenderContext->UpdateText(
+                mTextHandle,
+                1.0f - std::min(progress, 1.0f));
+
+            // Set tremor
+            mRenderContext->SetPixelOffset(TremorAmplitude * sin(TremorAngularVelocity * now), 0.0f);
+
+            // See if time to transition
+            if (progress >= 1.0f)
+            {
+                mCurrentState = StateType::Rumbling2;
+                mCurrentStateStartTime = now;
+            }
+
+            return true;
+        }
+
+        case StateType::Rumbling2:
+        {
+            auto const progress = GameWallClock::Progress(now, mCurrentStateStartTime, 500ms);
+
+            // Set tremor
+            mRenderContext->SetPixelOffset(TremorAmplitude * sin(TremorAngularVelocity * now), 0.0f);
+
+            // See if time to transition
+            if (progress >= 1.0f)
+            {
+                mCurrentState = StateType::RumblingFadeOut;
+                mCurrentStateStartTime = now;
+            }
+
+            return true;
+        }
+
+        case StateType::RumblingFadeOut:
+        {
+            auto const progress = GameWallClock::Progress(now, mCurrentStateStartTime, 2s);
+
+            // Set tremor
+            mRenderContext->SetPixelOffset((1.0f - progress) * TremorAmplitude * sin(TremorAngularVelocity * now), 0.0f);
+
+            // See if time to transition
+            if (progress >= 1.0f)
+            {
+                // We're done
+                return false;
+            }
+
+            return true;
+        }
+    }
+
+    assert(false);
+    return true;
 }

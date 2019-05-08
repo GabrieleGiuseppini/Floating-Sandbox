@@ -24,7 +24,7 @@ using namespace Physics;
 std::unique_ptr<Ship> ShipBuilder::Create(
     ShipId shipId,
     World & parentWorld,
-    std::shared_ptr<IGameEventHandler> gameEventHandler,
+    std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     ShipDefinition const & shipDefinition,
     MaterialDatabase const & materialDatabase,
     GameParameters const & gameParameters)
@@ -243,7 +243,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     Points points = CreatePoints(
         pointInfos,
         parentWorld,
-        gameEventHandler,
+        gameEventDispatcher,
         gameParameters);
 
 
@@ -276,7 +276,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
         points,
         pointIndexRemap,
         parentWorld,
-        gameEventHandler,
+        gameEventDispatcher,
         gameParameters);
 
 
@@ -297,7 +297,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     ElectricalElements electricalElements = CreateElectricalElements(
         points,
         parentWorld,
-        gameEventHandler);
+        gameEventDispatcher);
 
 
     //
@@ -311,7 +311,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     return std::make_unique<Ship>(
         shipId,
         parentWorld,
-        gameEventHandler,
+        gameEventDispatcher,
         materialDatabase,
         std::move(points),
         std::move(springs),
@@ -896,13 +896,13 @@ std::vector<ShipBuilder::PointInfo> ShipBuilder::ReorderPointsOptimally_Idempote
 Points ShipBuilder::CreatePoints(
     std::vector<PointInfo> const & pointInfos2,
     World & parentWorld,
-    std::shared_ptr<IGameEventHandler> gameEventHandler,
+    std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     GameParameters const & gameParameters)
 {
     Physics::Points points(
         static_cast<ElementIndex>(pointInfos2.size()),
         parentWorld,
-        std::move(gameEventHandler),
+        std::move(gameEventDispatcher),
         gameParameters);
 
     ElementIndex electricalElementCounter = 0;
@@ -1153,13 +1153,13 @@ Physics::Springs ShipBuilder::CreateSprings(
     Physics::Points & points,
     std::vector<ElementIndex> const & pointIndexRemap,
     World & parentWorld,
-    std::shared_ptr<IGameEventHandler> gameEventHandler,
+    std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     GameParameters const & gameParameters)
 {
     Physics::Springs springs(
         static_cast<ElementIndex>(springInfos2.size()),
         parentWorld,
-        std::move(gameEventHandler),
+        std::move(gameEventDispatcher),
         gameParameters);
 
     for (ElementIndex s = 0; s < springInfos2.size(); ++s)
@@ -1232,7 +1232,7 @@ Physics::Triangles ShipBuilder::CreateTriangles(
 ElectricalElements ShipBuilder::CreateElectricalElements(
     Physics::Points const & points,
     Physics::World & parentWorld,
-    std::shared_ptr<IGameEventHandler> gameEventHandler)
+    std::shared_ptr<GameEventDispatcher> gameEventDispatcher)
 {
     //
     // Get indices of points with electrical elements
@@ -1254,7 +1254,7 @@ ElectricalElements ShipBuilder::CreateElectricalElements(
     ElectricalElements electricalElements(
         static_cast<ElementCount>(electricalElementPointIndices.size()),
         parentWorld,
-        gameEventHandler);
+        gameEventDispatcher);
 
     for (auto pointIndex : electricalElementPointIndices)
     {

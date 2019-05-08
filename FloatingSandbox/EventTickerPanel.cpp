@@ -96,6 +96,52 @@ void EventTickerPanel::OnShipLoaded(
     AppendFutureTickerText(ss.str());
 }
 
+void EventTickerPanel::OnSinkingBegin(ShipId shipId)
+{
+    std::stringstream ss;
+    ss << "SHIP " << shipId << " IS SINKING!";
+
+    AppendFutureTickerText(ss.str());
+}
+
+void EventTickerPanel::OnSinkingEnd(ShipId shipId)
+{
+    std::stringstream ss;
+    ss << "SHIP " << shipId << " HAS STOPPED SINKING!";
+
+    AppendFutureTickerText(ss.str());
+}
+
+void EventTickerPanel::OnStress(
+    StructuralMaterial const & structuralMaterial,
+    bool isUnderwater,
+    unsigned int size)
+{
+    std::stringstream ss;
+    ss << "Stressed " << size << "x" << structuralMaterial.Name << (isUnderwater ? " underwater" : "") << "!";
+
+    AppendFutureTickerText(ss.str());
+}
+
+void EventTickerPanel::OnBreak(
+    StructuralMaterial const & structuralMaterial,
+    bool isUnderwater,
+    unsigned int size)
+{
+    std::stringstream ss;
+    ss << "Broken " << size << "x" << structuralMaterial.Name << (isUnderwater ? " underwater" : "") << "!";
+
+    AppendFutureTickerText(ss.str());
+}
+
+void EventTickerPanel::OnTsunami(float x)
+{
+    std::stringstream ss;
+    ss << "WARNING: Tsunami at " << x;
+
+    AppendFutureTickerText(ss.str());
+}
+
 void EventTickerPanel::OnDestroy(
     StructuralMaterial const & structuralMaterial,
     bool isUnderwater,
@@ -125,44 +171,6 @@ void EventTickerPanel::OnTriangleRepaired(
 {
     std::stringstream ss;
     ss << "Repaired triangle " << size << "x" << structuralMaterial.Name << (isUnderwater ? " underwater" : "") << "!";
-
-    AppendFutureTickerText(ss.str());
-}
-
-void EventTickerPanel::OnStress(
-    StructuralMaterial const & structuralMaterial,
-    bool isUnderwater,
-    unsigned int size)
-{
-    std::stringstream ss;
-    ss << "Stressed " << size << "x" << structuralMaterial.Name << (isUnderwater ? " underwater" : "") << "!";
-
-    AppendFutureTickerText(ss.str());
-}
-
-void EventTickerPanel::OnBreak(
-    StructuralMaterial const & structuralMaterial,
-    bool isUnderwater,
-    unsigned int size)
-{
-    std::stringstream ss;
-    ss << "Broken " << size << "x" << structuralMaterial.Name << (isUnderwater ? " underwater" : "") << "!";
-
-    AppendFutureTickerText(ss.str());
-}
-
-void EventTickerPanel::OnSinkingBegin(ShipId shipId)
-{
-    std::stringstream ss;
-    ss << "SHIP " << shipId << " IS SINKING!";
-
-    AppendFutureTickerText(ss.str());
-}
-
-void EventTickerPanel::OnSinkingEnd(ShipId shipId)
-{
-    std::stringstream ss;
-    ss << "SHIP " << shipId << " HAS STOPPED SINKING!";
 
     AppendFutureTickerText(ss.str());
 }

@@ -5,8 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GameEventDispatcher.h"
 #include "GameParameters.h"
-#include "IGameEventHandler.h"
 #include "Materials.h"
 #include "RenderContext.h"
 
@@ -115,7 +115,7 @@ public:
     Springs(
         ElementCount elementCount,
         World & parentWorld,
-        std::shared_ptr<IGameEventHandler> gameEventHandler,
+        std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         GameParameters const & gameParameters)
         : ElementContainer(elementCount)
         //////////////////////////////////
@@ -147,7 +147,7 @@ public:
         // Container
         //////////////////////////////////
         , mParentWorld(parentWorld)
-        , mGameEventHandler(std::move(gameEventHandler))
+        , mGameEventHandler(std::move(gameEventDispatcher))
         , mDestroyHandler()
         , mRestoreHandler()
         , mCurrentNumMechanicalDynamicsIterations(gameParameters.NumMechanicalDynamicsIterations<float>())
@@ -653,7 +653,7 @@ private:
     //////////////////////////////////////////////////////////
 
     World & mParentWorld;
-    std::shared_ptr<IGameEventHandler> const mGameEventHandler;
+    std::shared_ptr<GameEventDispatcher> const mGameEventHandler;
 
     // The handler registered for spring deletions
     DestroyHandler mDestroyHandler;

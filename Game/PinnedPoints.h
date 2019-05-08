@@ -5,8 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GameEventDispatcher.h"
 #include "GameParameters.h"
-#include "IGameEventHandler.h"
 #include "Physics.h"
 #include "RenderContext.h"
 
@@ -30,12 +30,12 @@ public:
     PinnedPoints(
         World & parentWorld,
         ShipId shipId,
-        std::shared_ptr<IGameEventHandler> gameEventHandler,
+        std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         Points & shipPoints,
         Springs & shipSprings)
         : mParentWorld(parentWorld)
         , mShipId(shipId)
-        , mGameEventHandler(std::move(gameEventHandler))
+        , mGameEventHandler(std::move(gameEventDispatcher))
         , mShipPoints(shipPoints)
         , mShipSprings(shipSprings)
         , mCurrentPinnedPoints()
@@ -158,7 +158,7 @@ private:
     ShipId const mShipId;
 
     // The game event handler
-    std::shared_ptr<IGameEventHandler> mGameEventHandler;
+    std::shared_ptr<GameEventDispatcher> mGameEventHandler;
 
     // The container of all the ship's points
     Points & mShipPoints;

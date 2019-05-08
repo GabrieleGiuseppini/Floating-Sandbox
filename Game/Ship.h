@@ -5,6 +5,7 @@
  ***************************************************************************************/
 #pragma once
 
+#include "GameEventDispatcher.h"
 #include "GameParameters.h"
 #include "MaterialDatabase.h"
 #include "Physics.h"
@@ -30,7 +31,7 @@ public:
     Ship(
         ShipId id,
         World & parentWorld,
-        std::shared_ptr<IGameEventHandler> gameEventHandler,
+        std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         MaterialDatabase const & materialDatabase,
         Points && points,
         Springs && springs,
@@ -328,7 +329,7 @@ private:
 
     ShipId const mId;
     World & mParentWorld;
-    std::shared_ptr<IGameEventHandler> mGameEventHandler;
+    std::shared_ptr<GameEventDispatcher> mGameEventHandler;
     MaterialDatabase const & mMaterialDatabase;
 
     // All the ship elements - never removed, the repositories maintain their own size forever

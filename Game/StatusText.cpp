@@ -3,34 +3,34 @@
 * Created:              2018-10-13
 * Copyright:            Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
-#include "TextLayer.h"
+#include "StatusText.h"
 
 #include <cassert>
 #include <iomanip>
 #include <sstream>
 
-TextLayer::TextLayer(
+StatusText::StatusText(
     bool isStatusTextEnabled,
     bool isExtendedStatusTextEnabled)
     : mIsStatusTextEnabled(isStatusTextEnabled)
     , mIsExtendedStatusTextEnabled(isExtendedStatusTextEnabled)
-    , mStatusTextLines()
-    , mStatusTextHandle(NoneRenderedTextHandle)
-    , mIsStatusTextDirty(false)
+    , mTextLines()
+    , mTextHandle(NoneRenderedTextHandle)
+    , mIsTextDirty(false)
 {
 }
 
-void TextLayer::SetStatusTextEnabled(bool isEnabled)
+void StatusText::SetStatusTextEnabled(bool isEnabled)
 {
     mIsStatusTextEnabled = isEnabled;
 }
 
-void TextLayer::SetExtendedStatusTextEnabled(bool isEnabled)
+void StatusText::SetExtendedStatusTextEnabled(bool isEnabled)
 {
     mIsExtendedStatusTextEnabled = isEnabled;
 }
 
-void TextLayer::SetStatusText(
+void StatusText::SetText(
     float immediateFps,
     float averageFps,
     std::chrono::duration<float> elapsedGameSeconds,
@@ -49,7 +49,7 @@ void TextLayer::SetStatusText(
     // Build text
     //
 
-    mStatusTextLines.clear();
+    mTextLines.clear();
 
     if (mIsStatusTextEnabled)
     {
@@ -64,7 +64,7 @@ void TextLayer::SetStatusText(
         if (isPaused)
             ss << " (PAUSED)";
 
-        mStatusTextLines.emplace_back(ss.str());
+        mTextLines.emplace_back(ss.str());
     }
 
     if (mIsExtendedStatusTextEnabled)
@@ -78,7 +78,7 @@ void TextLayer::SetStatusText(
             << " ZOOM:" << zoom
             << " CAM:" << camera.x << ", " << camera.y;
 
-        mStatusTextLines.emplace_back(ss.str());
+        mTextLines.emplace_back(ss.str());
 
         ss.str("");
 
@@ -90,47 +90,41 @@ void TextLayer::SetStatusText(
             << " PLANES:" << renderStatistics.LastRenderedShipPlanes
             << " GENTEX:" << renderStatistics.LastRenderedShipGenericTextures;
 
-        mStatusTextLines.emplace_back(ss.str());
+        mTextLines.emplace_back(ss.str());
     }
 
-    mIsStatusTextDirty = true;
+    mIsTextDirty = true;
 }
 
-void TextLayer::Update()
-{
-    // Nop for the moment; this will change text properties when
-    // we'll have animated text
-}
-
-void TextLayer::Render(Render::RenderContext & renderContext)
+void StatusText::Render(Render::RenderContext & renderContext)
 {
     // Check whether we need to flip the state of the status text
     if (mIsStatusTextEnabled || mIsExtendedStatusTextEnabled)
     {
-        if (NoneRenderedTextHandle == mStatusTextHandle)
+        if (NoneRenderedTextHandle == mTextHandle)
         {
             // Create status text
-            mStatusTextHandle = renderContext.AddText(
-                mStatusTextLines,
+            mTextHandle = renderContext.AddText(
+                mTextLines,
                 TextPositionType::TopLeft,
                 1.0f,
                 FontType::StatusText);
         }
-        else if (mIsStatusTextDirty)
+        else if (mIsTextDirty)
         {
             // Update status text
             renderContext.UpdateText(
-                mStatusTextHandle,
-                mStatusTextLines,
+                mTextHandle,
+                mTextLines,
                 1.0f);
         }
 
-        mIsStatusTextDirty = false;
+        mIsTextDirty = false;
     }
-    else if (NoneRenderedTextHandle != mStatusTextHandle)
+    else if (NoneRenderedTextHandle != mTextHandle)
     {
         // Turn off status text
-        renderContext.ClearText(mStatusTextHandle);
-        mStatusTextHandle = NoneRenderedTextHandle;
+        renderContext.ClearText(mTextHandle);
+        mTextHandle = NoneRenderedTextHandle;
     }
 }

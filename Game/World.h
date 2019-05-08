@@ -5,8 +5,8 @@
  ***************************************************************************************/
 #pragma once
 
+#include "GameEventDispatcher.h"
 #include "GameParameters.h"
-#include "IGameEventHandler.h"
 #include "MaterialDatabase.h"
 #include "Physics.h"
 #include "RenderContext.h"
@@ -29,7 +29,7 @@ class World
 public:
 
     World(
-        std::shared_ptr<IGameEventHandler> gameEventHandler,
+        std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         GameParameters const & gameParameters,
         ResourceLoader & resourceLoader);
 
@@ -204,7 +204,7 @@ private:
     OceanFloor mOceanFloor;
 
     // The game event handler
-    std::shared_ptr<IGameEventHandler> mGameEventHandler;
+    std::shared_ptr<GameEventDispatcher> mGameEventHandler;
 };
 
 }

@@ -7,8 +7,8 @@
 
 #include "Physics.h"
 
+#include "GameEventDispatcher.h"
 #include "GameParameters.h"
-#include "IGameEventHandler.h"
 
 #include <GameCore/GameMath.h>
 #include <GameCore/GameWallClock.h>
@@ -21,7 +21,7 @@ class Wind
 {
 public:
 
-    Wind(std::shared_ptr<IGameEventHandler> gameEventHandler);
+    Wind(std::shared_ptr<GameEventDispatcher> gameEventDispatcher);
 
     void Update(GameParameters const & gameParameters);
 
@@ -63,7 +63,7 @@ private:
 
 private:
 
-    std::shared_ptr<IGameEventHandler> mGameEventHandler;
+    std::shared_ptr<GameEventDispatcher> mGameEventHandler;
 
     //
     // Pre-calculated parameters

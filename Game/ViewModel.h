@@ -34,6 +34,8 @@ public:
         , mCam(cameraWorldPosition)
         , mCanvasWidth(canvasWidth)
         , mCanvasHeight(canvasHeight)
+        , mPixelOffsetX(0.0f)
+        , mPixelOffsetY(0.0f)
     {
         //
         // Initialize kernel ortho matrix
@@ -175,6 +177,22 @@ public:
 
         // Adjust zoom so that the new visible world dimensions are contained within the maximum
         SetZoom(mZoom);
+
+        RecalculateAttributes();
+    }
+
+    void SetPixelOffset(float x, float y)
+    {
+        mPixelOffsetX = x;
+        mPixelOffsetY = y;
+
+        RecalculateAttributes();
+    }
+
+    void ResetPixelOffset()
+    {
+        mPixelOffsetX = 0.0f;
+        mPixelOffsetY = 0.0f;
 
         RecalculateAttributes();
     }
@@ -353,8 +371,8 @@ private:
         // Recalculate kernel Ortho Matrix cells
         mKernelOrthoMatrix[0][0] = 2.0f / mVisibleWorldWidth;
         mKernelOrthoMatrix[1][1] = 2.0f / mVisibleWorldHeight;
-        mKernelOrthoMatrix[3][0] = -2.0f * mCam.x / mVisibleWorldWidth;
-        mKernelOrthoMatrix[3][1] = -2.0f * mCam.y / mVisibleWorldHeight;
+        mKernelOrthoMatrix[3][0] = -2.0f * (mCam.x + PixelWidthToWorldWidth(mPixelOffsetX)) / mVisibleWorldWidth;
+        mKernelOrthoMatrix[3][1] = -2.0f * (mCam.y + PixelHeightToWorldHeight(mPixelOffsetY)) / mVisibleWorldHeight;
     }
 
 private:
@@ -367,6 +385,8 @@ private:
     vec2f mCam;
     int mCanvasWidth;
     int mCanvasHeight;
+    float mPixelOffsetX;
+    float mPixelOffsetY;
 
     // Calculated attributes
     float mVisibleWorldWidth;

@@ -5,8 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GameEventDispatcher.h"
 #include "GameParameters.h"
-#include "IGameEventHandler.h"
 #include "Physics.h"
 #include "RenderContext.h"
 
@@ -208,13 +208,13 @@ protected:
         BombType type,
         ElementIndex springIndex,
         World & parentWorld,
-        std::shared_ptr<IGameEventHandler> gameEventHandler,
+        std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         IPhysicsHandler & physicsHandler,
         Points & shipPoints,
         Springs & shipSprings)
         : mId(id)
         , mParentWorld(parentWorld)
-        , mGameEventHandler(std::move(gameEventHandler))
+        , mGameEventHandler(std::move(gameEventDispatcher))
         , mPhysicsHandler(physicsHandler)
         , mShipPoints(shipPoints)
         , mShipSprings(shipSprings)
@@ -234,7 +234,7 @@ protected:
     World & mParentWorld;
 
     // The game event handler
-    std::shared_ptr<IGameEventHandler> mGameEventHandler;
+    std::shared_ptr<GameEventDispatcher> mGameEventHandler;
 
     // The handler to invoke for acting on the world
     IPhysicsHandler & mPhysicsHandler;

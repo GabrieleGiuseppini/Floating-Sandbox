@@ -13,11 +13,11 @@
 #include <string>
 #include <vector>
 
-class TextLayer
+class StatusText
 {
 public:
 
-    TextLayer(
+    StatusText(
         bool isStatusTextEnabled,
         bool isExtendedStatusTextEnabled);
 
@@ -25,7 +25,7 @@ public:
 
     void SetExtendedStatusTextEnabled(bool isEnabled);
 
-    void SetStatusText(
+    void SetText(
         float immediateFps,
         float averageFps,
         std::chrono::duration<float> elapsedGameSeconds,
@@ -35,8 +35,6 @@ public:
         float totalUpdateToRenderDurationRatio,
         float lastUpdateToRenderDurationRatio,
         Render::RenderStatistics const & renderStatistics);
-
-    void Update();
 
     void Render(Render::RenderContext & renderContext);
 
@@ -48,8 +46,8 @@ private:
 
     bool mIsStatusTextEnabled;
     bool mIsExtendedStatusTextEnabled;
-    std::vector<std::string> mStatusTextLines;
-    RenderedTextHandle mStatusTextHandle;
-    bool mIsStatusTextDirty;
+    std::vector<std::string> mTextLines;
+    RenderedTextHandle mTextHandle;
+    bool mIsTextDirty;
 };
 

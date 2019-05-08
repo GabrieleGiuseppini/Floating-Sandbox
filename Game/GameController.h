@@ -6,13 +6,14 @@
 #pragma once
 
 #include "GameEventDispatcher.h"
+#include "GameEventHandlers.h"
 #include "GameParameters.h"
 #include "MaterialDatabase.h"
 #include "Physics.h"
 #include "RenderContext.h"
 #include "ResourceLoader.h"
 #include "ShipMetadata.h"
-#include "TextLayer.h"
+#include "StatusText.h"
 
 #include <GameCore/Colors.h>
 #include <GameCore/GameTypes.h>
@@ -21,6 +22,7 @@
 #include <GameCore/ProgressCallback.h>
 #include <GameCore/Vectors.h>
 
+#include <algorithm>
 #include <cassert>
 #include <chrono>
 #include <filesystem>
@@ -33,6 +35,7 @@
  * interactions.
  */
 class GameController
+    : public IWavePhenomenaGameEventHandler
 {
 public:
 
@@ -43,13 +46,41 @@ public:
         std::shared_ptr<ResourceLoader> resourceLoader,
         ProgressCallback const & progressCallback);
 
-    std::shared_ptr<IGameEventHandler> GetGameEventHandler()
+    std::shared_ptr<GameEventDispatcher> GetGameEventDispatcher()
     {
         assert(!!mGameEventDispatcher);
         return mGameEventDispatcher;
     }
 
-    void RegisterGameEventHandler(IGameEventHandler * gameEventHandler);
+    void RegisterLifecycleEventHandler(ILifecycleGameEventHandler * handler)
+    {
+        assert(!!mGameEventDispatcher);
+        mGameEventDispatcher->RegisterLifecycleEventHandler(handler);
+    }
+
+    void RegisterStructuralEventHandler(IStructuralGameEventHandler * handler)
+    {
+        assert(!!mGameEventDispatcher);
+        mGameEventDispatcher->RegisterStructuralEventHandler(handler);
+    }
+
+    void RegisterWavePhenomenaEventHandler(IWavePhenomenaGameEventHandler * handler)
+    {
+        assert(!!mGameEventDispatcher);
+        mGameEventDispatcher->RegisterWavePhenomenaEventHandler(handler);
+    }
+
+    void RegisterStatisticsEventHandler(IStatisticsGameEventHandler * handler)
+    {
+        assert(!!mGameEventDispatcher);
+        mGameEventDispatcher->RegisterStatisticsEventHandler(handler);
+    }
+
+    void RegisterGenericEventHandler(IGenericGameEventHandler * handler)
+    {
+        assert(!!mGameEventDispatcher);
+        mGameEventDispatcher->RegisterGenericEventHandler(handler);
+    }
 
     ShipMetadata ResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath);
     ShipMetadata AddShip(std::filesystem::path const & shipDefinitionFilepath);
@@ -170,7 +201,7 @@ public:
     }
 
     //
-    // Physics
+    // Game parameters
     //
 
     float GetNumMechanicalDynamicsIterationsAdjustment() const { return mGameParameters.NumMechanicalDynamicsIterationsAdjustment; }
@@ -334,7 +365,7 @@ public:
     size_t GetMaxNumberOfClouds() const { return GameParameters::MaxNumberOfClouds; }
 
     //
-    // Render
+    // Render parameters
     //
 
     rgbColor const & GetFlatSkyColor() const { return mRenderContext->GetFlatSkyColor(); }
@@ -387,25 +418,34 @@ public:
     bool GetShowShipStress() const { return mRenderContext->GetShowStressedSprings(); }
     void SetShowShipStress(bool value) { mRenderContext->SetShowStressedSprings(value); }
 
+    //
+    // Interaction parameters
+    //
+
+    bool GetShowTsunamiNotifications() const { return mShowTsunamiNotifications; }
+    void SetShowTsunamiNotifications(bool value) { mShowTsunamiNotifications = value; }
+
 private:
 
     GameController(
         std::unique_ptr<Render::RenderContext> renderContext,
         std::function<void()> swapRenderBuffersFunction,
         std::unique_ptr<GameEventDispatcher> gameEventDispatcher,
-        std::unique_ptr<TextLayer> textLayer,
+        std::unique_ptr<StatusText> statusText,
         MaterialDatabase materialDatabase,
         std::shared_ptr<ResourceLoader> resourceLoader)
         : mGameParameters()
         , mLastShipLoadedFilepath()
         , mIsPaused(false)
         , mIsMoveToolEngaged(false)
+        , mTsunamiNotificationStateMachine()
+        , mShowTsunamiNotifications(true)
         // Doers
         , mRenderContext(std::move(renderContext))
         , mSwapRenderBuffersFunction(std::move(swapRenderBuffersFunction))
         , mGameEventDispatcher(std::move(gameEventDispatcher))
         , mResourceLoader(std::move(resourceLoader))
-        , mTextLayer(std::move(textLayer))
+        , mStatusText(std::move(statusText))
         , mWorld(new Physics::World(
             mGameEventDispatcher,
             mGameParameters,
@@ -420,6 +460,7 @@ private:
         , mTargetCameraPosition(mCurrentCameraPosition)
         , mStartingCameraPosition(mCurrentCameraPosition)
         , mStartCameraPositionTimestamp()
+        , mParameterSmoothers()
         // Stats
         , mTotalFrameCount(0u)
         , mLastFrameCount(0u)
@@ -432,7 +473,71 @@ private:
         , mOriginTimestampGame(GameWallClock::time_point::min())
         , mSkippedFirstStatPublishes(0)
     {
+        RegisterEventHandler();
+
+        //
+        // Initialize parameter smoothers
+        //
+
+        /* TODOTEST
+        std::chrono::milliseconds constexpr ParameterSmoothingTrajectoryTime = std::chrono::milliseconds(1000);
+
+        assert(mParameterSmoothers.size() == WindSpeedBaseParameterSmoother);
+        mParameterSmoothers.emplace_back(
+            [this]()
+            {
+                return this->mGameParameters.WindSpeedBase;
+            },
+            [this](float value)
+            {
+                this->mGameParameters.WindSpeedBase = value;
+            },
+            ParameterSmoothingTrajectoryTime);
+
+        assert(mParameterSmoothers.size() == BasalWaveHeightAdjustmentParameterSmoother);
+        mParameterSmoothers.emplace_back(
+            [this]()
+            {
+                return this->mGameParameters.BasalWaveHeightAdjustment;
+            },
+            [this](float value)
+            {
+                this->mGameParameters.BasalWaveHeightAdjustment = value;
+            },
+            ParameterSmoothingTrajectoryTime);
+
+        assert(mParameterSmoothers.size() == BasalWaveLengthAdjustmentParameterSmoother);
+        mParameterSmoothers.emplace_back(
+            [this]()
+            {
+                return this->mGameParameters.BasalWaveLengthAdjustment;
+            },
+            [this](float value)
+            {
+                this->mGameParameters.BasalWaveLengthAdjustment = value;
+            },
+            ParameterSmoothingTrajectoryTime);
+
+        assert(mParameterSmoothers.size() == BasalWaveSpeedAdjustmentParameterSmoother);
+        mParameterSmoothers.emplace_back(
+            [this]()
+            {
+                return this->mGameParameters.BasalWaveSpeedAdjustment;
+            },
+            [this](float value)
+            {
+                this->mGameParameters.BasalWaveSpeedAdjustment = value;
+            },
+            ParameterSmoothingTrajectoryTime);
+            */
     }
+
+    void RegisterEventHandler()
+    {
+        mGameEventDispatcher->RegisterWavePhenomenaEventHandler(this);
+    }
+
+    virtual void OnTsunami(float x) override;
 
     void InternalUpdate();
 
@@ -464,16 +569,58 @@ private:
     bool mIsPaused;
     bool mIsMoveToolEngaged;
 
+    class TsunamiNotificationStateMachine
+    {
+    public:
+
+        TsunamiNotificationStateMachine(std::shared_ptr<Render::RenderContext> renderContext);
+
+        ~TsunamiNotificationStateMachine();
+
+        /*
+         * When returns false, the state machine is over.
+         */
+        bool Update();
+
+    private:
+
+        std::shared_ptr<Render::RenderContext> mRenderContext;
+        RenderedTextHandle mTextHandle;
+
+        enum class StateType
+        {
+            RumblingFadeIn,
+            Rumbling1,
+            WarningFadeIn,
+            Warning,
+            WarningFadeOut,
+            Rumbling2,
+            RumblingFadeOut
+        };
+
+        StateType mCurrentState;
+        float mCurrentStateStartTime;
+    };
+
+    std::optional<TsunamiNotificationStateMachine> mTsunamiNotificationStateMachine;
+
+    //
+    // The parameters that we own
+    //
+
+    bool mShowTsunamiNotifications;
+
 
     //
     // The doers
     //
 
-    std::unique_ptr<Render::RenderContext> mRenderContext;
+    std::shared_ptr<Render::RenderContext> mRenderContext;
     std::function<void()> const mSwapRenderBuffersFunction;
     std::shared_ptr<GameEventDispatcher> mGameEventDispatcher;
     std::shared_ptr<ResourceLoader> mResourceLoader;
-    std::shared_ptr<TextLayer> mTextLayer;
+    std::shared_ptr<StatusText> mStatusText;
+
 
     //
     // The world
@@ -499,6 +646,92 @@ private:
     vec2f mStartingCameraPosition;
     std::chrono::steady_clock::time_point mStartCameraPositionTimestamp;
 
+
+    //
+    // Parameter smoothing
+    //
+
+    /*
+     * All reads and writes of the parameters managed by a smoother go through the smoother.
+     *
+     * An underlying assumption is that the target value communicated to the smoother is the actual final parameter
+     * value that will be enforced - in other words, no clipping occurs.
+     */
+    class ParameterSmoother
+    {
+    public:
+
+        ParameterSmoother(
+            std::function<float()> getter,
+            std::function<void(float)> setter,
+            std::chrono::milliseconds trajectoryTime)
+            : mGetter(std::move(getter))
+            , mSetter(std::move(setter))
+            , mTrajectoryTime(trajectoryTime)
+        {
+            mStartValue = mTargetValue = mCurrentValue = mGetter();
+            mCurrentTimestamp = mEndTimestamp = GameWallClock::GetInstance().Now();
+        }
+
+        float GetValue() const
+        {
+            return mCurrentValue;
+        }
+
+        void SetValue(float value)
+        {
+            mStartValue = mCurrentValue;
+            mTargetValue = value;
+
+            mCurrentTimestamp = GameWallClock::GetInstance().Now();
+            mEndTimestamp =
+                mCurrentTimestamp
+                + mTrajectoryTime
+                + std::chrono::milliseconds(1); // Just to make sure we do an update
+        }
+
+        void Update(GameWallClock::time_point now)
+        {
+            if (mCurrentTimestamp < mEndTimestamp)
+            {
+                // Advance
+
+                mCurrentTimestamp = std::min(now, mEndTimestamp);
+
+                float const leftFraction =
+                    mTrajectoryTime == std::chrono::milliseconds::zero()
+                    ? 0.0f
+                    : static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(mEndTimestamp - mCurrentTimestamp).count())
+                    / static_cast<float>(mTrajectoryTime.count());
+
+                mCurrentValue =
+                    mStartValue
+                    + (mTargetValue - mStartValue) * (1.0f - leftFraction);
+
+                mSetter(mCurrentValue);
+            }
+        }
+
+    private:
+
+        std::function<float()> const mGetter;
+        std::function<void(float)> const mSetter;
+        std::chrono::milliseconds mTrajectoryTime;
+
+        float mStartValue;
+        float mTargetValue;
+        float mCurrentValue;
+        GameWallClock::time_point mCurrentTimestamp;
+        GameWallClock::time_point mEndTimestamp;
+    };
+
+    // TODO: need new ones
+    ////static constexpr size_t WindSpeedBaseParameterSmoother = 0;
+    ////static constexpr size_t BasalWaveHeightAdjustmentParameterSmoother = 1;
+    ////static constexpr size_t BasalWaveLengthAdjustmentParameterSmoother = 2;
+    ////static constexpr size_t BasalWaveSpeedAdjustmentParameterSmoother = 3;
+
+    std::vector<ParameterSmoother> mParameterSmoothers;
 
     //
     // Stats

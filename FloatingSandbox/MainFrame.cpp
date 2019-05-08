@@ -577,7 +577,6 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     {
         mSoundController = std::make_shared<SoundController>(
             mResourceLoader,
-            mGameController->GetGameEventHandler(),
             [&splash, this](float progress, std::string const & message)
             {
                 splash->UpdateProgress(0.5f + progress / 2.0f, message);
@@ -634,10 +633,10 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     // Register game event handlers
     //
 
-    mGameController->RegisterGameEventHandler(this);
-    mGameController->RegisterGameEventHandler(mEventTickerPanel.get());
-    mGameController->RegisterGameEventHandler(mProbePanel.get());
-    mGameController->RegisterGameEventHandler(mSoundController.get());
+    this->RegisterEventHandler(*mGameController);
+    mEventTickerPanel->RegisterEventHandler(*mGameController);
+    mProbePanel->RegisterEventHandler(*mGameController);
+    mSoundController->RegisterEventHandler(*mGameController);
 
 
     //

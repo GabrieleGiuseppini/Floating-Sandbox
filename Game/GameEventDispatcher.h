@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include "IGameEventHandler.h"
+#include "GameEventHandlers.h"
 
 #include <GameCore/TupleKeys.h>
 
@@ -13,7 +13,12 @@
 #include <optional>
 #include <vector>
 
-class GameEventDispatcher : public IGameEventHandler
+class GameEventDispatcher
+    : public ILifecycleGameEventHandler
+    , public IStructuralGameEventHandler
+    , public IWavePhenomenaGameEventHandler
+    , public IStatisticsGameEventHandler
+    , public IGenericGameEventHandler
 {
 public:
 
@@ -22,22 +27,28 @@ public:
         , mTriangleRepairedEvents()
         , mStressEvents()
         , mBreakEvents()
-        , mSinkingBeginEvents()
-        , mSinkingEndEvents()
         , mLightFlickerEvents()
         , mBombExplosionEvents()
         , mRCBombPingEvents()
         , mTimerBombDefusedEvents()
-        , mSinks()
+        // Sinks
+        , mLifecycleSinks()
+        , mStructuralSinks()
+        , mWavePhenomenaSinks()
+        , mStatisticsSinks()
+        , mGenericSinks()
     {
     }
 
 public:
 
+    //
+    // Lifecycle
+    //
+
     virtual void OnGameReset() override
     {
-        // No need to aggregate this one
-        for (auto sink : mSinks)
+        for (auto sink : mLifecycleSinks)
         {
             sink->OnGameReset();
         }
@@ -48,12 +59,89 @@ public:
         std::string const & name,
         std::optional<std::string> const & author) override
     {
-        // No need to aggregate this one
-        for (auto sink : mSinks)
+        for (auto sink : mLifecycleSinks)
         {
             sink->OnShipLoaded(id, name, author);
         }
     }
+
+    virtual void OnSinkingBegin(ShipId shipId) override
+    {
+        for (auto sink : mLifecycleSinks)
+        {
+            sink->OnSinkingBegin(shipId);
+        }
+    }
+
+    virtual void OnSinkingEnd(ShipId shipId) override
+    {
+        for (auto sink : mLifecycleSinks)
+        {
+            sink->OnSinkingEnd(shipId);
+        }
+    }
+
+    //
+    // Structural
+    //
+
+    virtual void OnStress(
+        StructuralMaterial const & structuralMaterial,
+        bool isUnderwater,
+        unsigned int size) override
+    {
+        mStressEvents[std::make_tuple(&structuralMaterial, isUnderwater)] += size;
+    }
+
+    virtual void OnBreak(
+        StructuralMaterial const & structuralMaterial,
+        bool isUnderwater,
+        unsigned int size) override
+    {
+        mBreakEvents[std::make_tuple(&structuralMaterial, isUnderwater)] += size;
+    }
+
+    //
+    // Wave phenomena
+    //
+
+    virtual void OnTsunami(float x) override
+    {
+        for (auto sink : mWavePhenomenaSinks)
+        {
+            sink->OnTsunami(x);
+        }
+    }
+
+    //
+    // Statistics
+    //
+
+    virtual void OnFrameRateUpdated(
+        float immediateFps,
+        float averageFps) override
+    {
+        for (auto sink : mStatisticsSinks)
+        {
+            sink->OnFrameRateUpdated(
+                immediateFps,
+                averageFps);
+        }
+    }
+
+    virtual void OnUpdateToRenderRatioUpdated(
+        float immediateURRatio)
+    {
+        for (auto sink : mStatisticsSinks)
+        {
+            sink->OnUpdateToRenderRatioUpdated(
+                immediateURRatio);
+        }
+    }
+
+    //
+    // Generic
+    //
 
     virtual void OnDestroy(
         StructuralMaterial const & structuralMaterial,
@@ -61,7 +149,7 @@ public:
         unsigned int size) override
     {
         // No need to aggregate this one
-        for (auto sink : mSinks)
+        for (auto sink : mGenericSinks)
         {
             sink->OnDestroy(structuralMaterial, isUnderwater, size);
         }
@@ -88,7 +176,7 @@ public:
         unsigned int size) override
     {
         // No need to aggregate this one
-        for (auto sink : mSinks)
+        for (auto sink : mGenericSinks)
         {
             sink->OnSawed(isMetal, size);
         }
@@ -99,41 +187,9 @@ public:
         bool isUnderwater) override
     {
         // No need to aggregate this one
-        for (auto sink : mSinks)
+        for (auto sink : mGenericSinks)
         {
             sink->OnPinToggled(isPinned, isUnderwater);
-        }
-    }
-
-    virtual void OnStress(
-        StructuralMaterial const & structuralMaterial,
-        bool isUnderwater,
-        unsigned int size) override
-    {
-        mStressEvents[std::make_tuple(&structuralMaterial, isUnderwater)] += size;
-    }
-
-    virtual void OnBreak(
-        StructuralMaterial const & structuralMaterial,
-        bool isUnderwater,
-        unsigned int size) override
-    {
-        mBreakEvents[std::make_tuple(&structuralMaterial, isUnderwater)] += size;
-    }
-
-    virtual void OnSinkingBegin(ShipId shipId) override
-    {
-        if (mSinkingBeginEvents.end() == std::find(mSinkingBeginEvents.begin(), mSinkingBeginEvents.end(), shipId))
-        {
-            mSinkingBeginEvents.push_back(shipId);
-        }
-    }
-
-    virtual void OnSinkingEnd(ShipId shipId) override
-    {
-        if (mSinkingEndEvents.end() == std::find(mSinkingEndEvents.begin(), mSinkingEndEvents.end(), shipId))
-        {
-            mSinkingEndEvents.push_back(shipId);
         }
     }
 
@@ -148,7 +204,7 @@ public:
     virtual void OnWaterTaken(float waterTaken) override
     {
         // No need to aggregate this one
-        for (auto sink : mSinks)
+        for (auto sink : mGenericSinks)
         {
             sink->OnWaterTaken(waterTaken);
         }
@@ -157,7 +213,7 @@ public:
     virtual void OnWaterSplashed(float waterSplashed) override
     {
         // No need to aggregate this one
-        for (auto sink : mSinks)
+        for (auto sink : mGenericSinks)
         {
             sink->OnWaterSplashed(waterSplashed);
         }
@@ -171,7 +227,7 @@ public:
         vec2f const & windSpeed) override
     {
         // No need to aggregate this one
-        for (auto sink : mSinks)
+        for (auto sink : mGenericSinks)
         {
             sink->OnWindSpeedUpdated(
                 zeroSpeedMagnitude,
@@ -187,35 +243,11 @@ public:
         float value) override
     {
         // No need to aggregate this one
-        for (auto sink : mSinks)
+        for (auto sink : mGenericSinks)
         {
             sink->OnCustomProbe(
                 name,
                 value);
-        }
-    }
-
-    virtual void OnFrameRateUpdated(
-        float immediateFps,
-        float averageFps) override
-    {
-        // No need to aggregate this one
-        for (auto sink : mSinks)
-        {
-            sink->OnFrameRateUpdated(
-                immediateFps,
-                averageFps);
-        }
-    }
-
-    virtual void OnUpdateToRenderRatioUpdated(
-        float immediateURRatio)
-    {
-        // No need to aggregate this one
-        for (auto sink : mSinks)
-        {
-            sink->OnUpdateToRenderRatioUpdated(
-                immediateURRatio);
         }
     }
 
@@ -229,7 +261,7 @@ public:
         bool isUnderwater) override
     {
         // No need to aggregate this one
-        for (auto sink : mSinks)
+        for (auto sink : mGenericSinks)
         {
             sink->OnBombPlaced(
                 bombId,
@@ -244,7 +276,7 @@ public:
         std::optional<bool> isUnderwater) override
     {
         // No need to aggregate this one
-        for (auto sink : mSinks)
+        for (auto sink : mGenericSinks)
         {
             sink->OnBombRemoved(
                 bombId,
@@ -273,7 +305,7 @@ public:
         std::optional<bool> isFast)
     {
         // No need to aggregate this one
-        for (auto sink : mSinks)
+        for (auto sink : mGenericSinks)
         {
             sink->OnTimerBombFuse(
                 bombId,
@@ -293,7 +325,7 @@ public:
         bool isContained)
     {
         // No need to aggregate this one
-        for (auto sink : mSinks)
+        for (auto sink : mGenericSinks)
         {
             sink->OnAntiMatterBombContained(
                 bombId,
@@ -304,7 +336,7 @@ public:
     virtual void OnAntiMatterBombPreImploding()
     {
         // No need to aggregate this one
-        for (auto sink : mSinks)
+        for (auto sink : mGenericSinks)
         {
             sink->OnAntiMatterBombPreImploding();
         }
@@ -313,7 +345,7 @@ public:
     virtual void OnAntiMatterBombImploding()
     {
         // No need to aggregate this one
-        for (auto sink : mSinks)
+        for (auto sink : mGenericSinks)
         {
             sink->OnAntiMatterBombImploding();
         }
@@ -326,19 +358,12 @@ public:
      */
     void Flush()
     {
+        //
         // Publish aggregations
-        for (IGameEventHandler * sink : mSinks)
+        //
+
+        for (auto * sink : mStructuralSinks)
         {
-            for (auto const & entry : mSpringRepairedEvents)
-            {
-                sink->OnSpringRepaired(*(std::get<0>(entry.first)), std::get<1>(entry.first), entry.second);
-            }
-
-            for (auto const & entry : mTriangleRepairedEvents)
-            {
-                sink->OnTriangleRepaired(*(std::get<0>(entry.first)), std::get<1>(entry.first), entry.second);
-            }
-
             for (auto const & entry : mStressEvents)
             {
                 sink->OnStress(*(std::get<0>(entry.first)), std::get<1>(entry.first), entry.second);
@@ -348,15 +373,21 @@ public:
             {
                 sink->OnBreak(*(std::get<0>(entry.first)), std::get<1>(entry.first), entry.second);
             }
+        }
 
-            for (auto const & shipId : mSinkingBeginEvents)
+        mStressEvents.clear();
+        mBreakEvents.clear();
+
+        for (auto * sink : mGenericSinks)
+        {
+            for (auto const & entry : mSpringRepairedEvents)
             {
-                sink->OnSinkingBegin(shipId);
+                sink->OnSpringRepaired(*(std::get<0>(entry.first)), std::get<1>(entry.first), entry.second);
             }
 
-            for (auto const & shipId : mSinkingEndEvents)
+            for (auto const & entry : mTriangleRepairedEvents)
             {
-                sink->OnSinkingEnd(shipId);
+                sink->OnTriangleRepaired(*(std::get<0>(entry.first)), std::get<1>(entry.first), entry.second);
             }
 
             for (auto const & entry : mLightFlickerEvents)
@@ -380,13 +411,8 @@ public:
             }
         }
 
-        // Clear collections
         mSpringRepairedEvents.clear();
         mTriangleRepairedEvents.clear();
-        mStressEvents.clear();
-        mBreakEvents.clear();
-        mSinkingBeginEvents.clear();
-        mSinkingEndEvents.clear();
         mLightFlickerEvents.clear();
         mBombExplosionEvents.clear();
         mRCBombPingEvents.clear();
@@ -394,9 +420,29 @@ public:
         mTimerBombDefusedEvents.clear();
     }
 
-    void RegisterSink(IGameEventHandler * sink)
+    void RegisterLifecycleEventHandler(ILifecycleGameEventHandler * sink)
     {
-        mSinks.push_back(sink);
+        mLifecycleSinks.push_back(sink);
+    }
+
+    void RegisterStructuralEventHandler(IStructuralGameEventHandler * sink)
+    {
+        mStructuralSinks.push_back(sink);
+    }
+
+    void RegisterWavePhenomenaEventHandler(IWavePhenomenaGameEventHandler * sink)
+    {
+        mWavePhenomenaSinks.push_back(sink);
+    }
+
+    void RegisterStatisticsEventHandler(IStatisticsGameEventHandler * sink)
+    {
+        mStatisticsSinks.push_back(sink);
+    }
+
+    void RegisterGenericEventHandler(IGenericGameEventHandler * sink)
+    {
+        mGenericSinks.push_back(sink);
     }
 
 private:
@@ -406,13 +452,15 @@ private:
     unordered_tuple_map<std::tuple<StructuralMaterial const *, bool>, unsigned int> mTriangleRepairedEvents;
     unordered_tuple_map<std::tuple<StructuralMaterial const *, bool>, unsigned int> mStressEvents;
     unordered_tuple_map<std::tuple<StructuralMaterial const *, bool>, unsigned int> mBreakEvents;
-    std::vector<ShipId> mSinkingBeginEvents;
-    std::vector<ShipId> mSinkingEndEvents;
     unordered_tuple_map<std::tuple<DurationShortLongType, bool>, unsigned int> mLightFlickerEvents;
     unordered_tuple_map<std::tuple<BombType, bool>, unsigned int> mBombExplosionEvents;
     unordered_tuple_map<std::tuple<bool>, unsigned int> mRCBombPingEvents;
     unordered_tuple_map<std::tuple<bool>, unsigned int> mTimerBombDefusedEvents;
 
     // The registered sinks
-    std::vector<IGameEventHandler *> mSinks;
+    std::vector<ILifecycleGameEventHandler *> mLifecycleSinks;
+    std::vector<IStructuralGameEventHandler *> mStructuralSinks;
+    std::vector<IWavePhenomenaGameEventHandler *> mWavePhenomenaSinks;
+    std::vector<IStatisticsGameEventHandler *> mStatisticsSinks;
+    std::vector<IGenericGameEventHandler *> mGenericSinks;
 };

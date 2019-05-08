@@ -889,26 +889,28 @@ Render:
 								+ Run choosing until chosen
 									+ Do not trigger within first 1 minute
 								+ TriggerTsunami() when triggered
-							= void TriggerTsunami(): 
+							+ void TriggerTsunami(): 
 								+ Emplace state machine
 								+ Test if slower rise (not fall) makes better long-run wave
-								- Fire "OnTsunamiTriggered" event
+								+ Fire "OnTsunamiTriggered" event
 							+ State machine
 								+ Height = 105 (5%)
 								+ See if need custom fall rate
 									+ If so, new state machine altogether
-							- Publish "OnTsunamiTriggered" event
-								- Break IGameEventHandler into smaller pieces
-								- Ship takes GameEventDispatcher directly
-								- GameController registers for OnTsunamiTriggered and runs TsunamiNotificationStateMachine
-									- TsunamiNotificationStateMachine: private class, cctor takes:
-										- TextRenderContext (for text)
-										- RenderContext (for shaking)
-										- bool Update(): when returns true, GameController nukes it
-									- Text at text layer
-									- Shaking
-								- SoundController:
-									- Tsunami sound, one-shot (overridable): SOS + rumbling
+							= Publish "OnTsunamiTriggered" event
+								+ Break IGameEventHandler into smaller pieces
+									+ Do separate one for hi-freq events
+								+ Ship takes GameEventDispatcher directly
+								+ GameController registers for OnTsunamiTriggered and runs TsunamiNotificationStateMachine
+									+ TsunamiNotificationStateMachine: private class, cctor takes:
+										+ TextRenderContext (for text)
+										+ RenderContext (for shaking)
+										+ bool Update(): when returns false, GameController nukes it
+									+ Text 
+									+ Shaking
+								= SoundController:
+									- Tsunami sound, one-shot (overridable): rumbling + siren + background SOS
+							- Settings dialog: show tsunami notifications checkbox
 					+ Rogue waves
 						+ GameParameters: "RogueWaveArrivalTime", mins
 							+ Min = 0 => no rogue waves
@@ -927,9 +929,9 @@ Render:
 								+ See if need custom fall rate
 					+ Re-check exponential distribution
 						+ And make helper at GameRandomEngine that takes CDF
-					- Test with basal waves added to SWE height field, instead of added to samples
+					+ Test with basal waves added to SWE height field, instead of added to samples
 					+ Test with 3 samples being modified at SWEWaveStateMachine
-					- Test with SWE with double's to see if long-running wave is better
+					+ Test with SWE with double's to see if long-running wave is better
 				+ SettingsDialog:
 					+ "Wind and Waves" tab
 						+ Static box for basal waves
@@ -945,7 +947,10 @@ Render:
 						+ Better sound
 						+ See linear fade-out again
 				+ See if can stop making reflective boundaries with height field=0
-				- Smooth wind and wave parameter changes
+				- Smooth some other parameters
+					- Ocean depth, ocean bumpiness, ocean detail
+				- See new font for game text
+				+ Optimize alpha changing for text
 			- Optimizations:
 				- FPS before:
 				- Anomaly choosing done only at scheduled (simulation) times, 1 per 0.5 sec
@@ -1288,6 +1293,8 @@ Render:
 		- Might either have own propulsion or follow a vector specified with click-and-drag
 		- Also other objects might be launched with click-and-drag
 
+	- Ocean waves:
+		- Add somehow waves to SWE height field, rather than "fake" superimposition of sins over SWE's height field
 
 - Game Interactions and Controls:
 

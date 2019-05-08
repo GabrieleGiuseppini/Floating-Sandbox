@@ -111,6 +111,20 @@ public:
         OnViewModelUpdated();
     }
 
+    void SetPixelOffset(float x, float y)
+    {
+        mViewModel.SetPixelOffset(x, y);
+
+        OnViewModelUpdated();
+    }
+
+    void ResetPixelOffset()
+    {
+        mViewModel.ResetPixelOffset();
+
+        OnViewModelUpdated();
+    }
+
     float GetVisibleWorldWidth() const
     {
         return mViewModel.GetVisibleWorldWidth();
@@ -1022,6 +1036,16 @@ public:
         mTextRenderContext->UpdateText(
             textHandle,
             textLines,
+            alpha);
+    }
+
+    void UpdateText(
+        RenderedTextHandle textHandle,
+        float alpha)
+    {
+        assert(!!mTextRenderContext);
+        mTextRenderContext->UpdateText(
+            textHandle,
             alpha);
     }
 

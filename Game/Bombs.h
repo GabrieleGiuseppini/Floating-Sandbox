@@ -5,8 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GameEventDispatcher.h"
 #include "GameParameters.h"
-#include "IGameEventHandler.h"
 #include "Physics.h"
 #include "RenderContext.h"
 
@@ -33,13 +33,13 @@ public:
     Bombs(
         World & parentWorld,
         ShipId shipId,
-        std::shared_ptr<IGameEventHandler> gameEventHandler,
+        std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         Bomb::IPhysicsHandler & physicsHandler,
         Points & shipPoints,
         Springs & shipSprings)
         : mParentWorld(parentWorld)
         , mShipId(shipId)
-        , mGameEventHandler(std::move(gameEventHandler))
+        , mGameEventHandler(std::move(gameEventDispatcher))
         , mPhysicsHandler(physicsHandler)
         , mShipPoints(shipPoints)
         , mShipSprings(shipSprings)
@@ -223,7 +223,7 @@ private:
     ShipId const mShipId;
 
     // The game event handler
-    std::shared_ptr<IGameEventHandler> mGameEventHandler;
+    std::shared_ptr<GameEventDispatcher> mGameEventHandler;
 
     // The handler to invoke for acting on the world
     Bomb::IPhysicsHandler & mPhysicsHandler;

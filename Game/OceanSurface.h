@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GameEventDispatcher.h"
 #include "GameParameters.h"
 
 #include <GameCore/GameMath.h>
@@ -20,7 +21,7 @@ class OceanSurface
 {
 public:
 
-    OceanSurface();
+    OceanSurface(std::shared_ptr<GameEventDispatcher> gameEventDispatcher);
 
     void Update(
         float currentSimulationTime,
@@ -101,6 +102,8 @@ private:
         GameParameters const & gameParameters);
 
 private:
+
+    std::shared_ptr<GameEventDispatcher> mGameEventHandler;
 
     // What we store for each sample
     struct Sample

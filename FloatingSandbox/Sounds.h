@@ -45,6 +45,7 @@ enum class SoundType
     Wave,
     Wind,
     WindGust,
+    TsunamiTriggered,
     BombAttached,
     BombDetached,
     BombExplosion,

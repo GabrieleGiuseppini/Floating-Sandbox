@@ -18,8 +18,8 @@ constexpr float PoissonSampleDeltaT = 1.0f / PoissonSampleRate;
 // The event rates for transitions, in 1/second
 constexpr float GustLambda = 1.0f / 1.0f;
 
-Wind::Wind(std::shared_ptr<IGameEventHandler> gameEventHandler)
-    : mGameEventHandler(std::move(gameEventHandler))
+Wind::Wind(std::shared_ptr<GameEventDispatcher> gameEventDispatcher)
+    : mGameEventHandler(std::move(gameEventDispatcher))
     // Pre-calculated parameters
     , mZeroSpeedMagnitude(0.0f)
     , mBaseSpeedMagnitude(0.0f)

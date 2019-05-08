@@ -25,10 +25,8 @@ float constexpr WaveSplashTriggerSize = 0.5f;
 
 SoundController::SoundController(
     std::shared_ptr<ResourceLoader> resourceLoader,
-    std::shared_ptr<IGameEventHandler> gameEventHandler,
     ProgressCallback const & progressCallback)
     : mResourceLoader(std::move(resourceLoader))
-    , mGameEventHandler(std::move(gameEventHandler))
     // State
     , mMasterEffectsVolume(100.0f)
     , mMasterEffectsMuted(false)
@@ -354,6 +352,7 @@ SoundController::SoundController(
         }
         else if (soundType == SoundType::Wave
                 || soundType == SoundType::WindGust
+                || soundType == SoundType::TsunamiTriggered
                 || soundType == SoundType::AntiMatterBombPreImplosion
                 || soundType == SoundType::AntiMatterBombImplosion
                 || soundType == SoundType::Snapshot
@@ -961,6 +960,33 @@ void SoundController::OnPinToggled(
         true);
 }
 
+void SoundController::OnSinkingBegin(ShipId /*shipId*/)
+{
+    if (mPlaySinkingMusic)
+    {
+        if (sf::SoundSource::Status::Playing != mSinkingMusic.getStatus())
+        {
+            mSinkingMusic.play();
+        }
+    }
+}
+
+void SoundController::OnSinkingEnd(ShipId /*shipId*/)
+{
+    if (sf::SoundSource::Status::Stopped != mSinkingMusic.getStatus())
+    {
+        mSinkingMusic.fadeToStop();
+    }
+}
+
+void SoundController::OnTsunami(float /*x*/)
+{
+    PlayOneShotMultipleChoiceSound(
+        SoundType::TsunamiTriggered,
+        100.0f,
+        true);
+}
+
 void SoundController::OnStress(
     StructuralMaterial const & structuralMaterial,
     bool isUnderwater,
@@ -994,25 +1020,6 @@ void SoundController::OnBreak(
             isUnderwater,
             10.0f,
             true);
-    }
-}
-
-void SoundController::OnSinkingBegin(ShipId /*shipId*/)
-{
-    if (mPlaySinkingMusic)
-    {
-        if (sf::SoundSource::Status::Playing != mSinkingMusic.getStatus())
-        {
-            mSinkingMusic.play();
-        }
-    }
-}
-
-void SoundController::OnSinkingEnd(ShipId /*shipId*/)
-{
-    if (sf::SoundSource::Status::Stopped != mSinkingMusic.getStatus())
-    {
-        mSinkingMusic.fadeToStop();
     }
 }
 

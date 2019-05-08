@@ -15,17 +15,17 @@
 namespace Physics {
 
 World::World(
-    std::shared_ptr<IGameEventHandler> gameEventHandler,
+    std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     GameParameters const & gameParameters,
     ResourceLoader & resourceLoader)
     : mCurrentSimulationTime(0.0f)
     , mAllShips()
     , mStars()
-    , mWind(gameEventHandler)
+    , mWind(gameEventDispatcher)
     , mClouds()
-    , mOceanSurface()
+    , mOceanSurface(gameEventDispatcher)
     , mOceanFloor(resourceLoader)
-    , mGameEventHandler(std::move(gameEventHandler))
+    , mGameEventHandler(std::move(gameEventDispatcher))
 {
     // Initialize world pieces
     mStars.Update(gameParameters);

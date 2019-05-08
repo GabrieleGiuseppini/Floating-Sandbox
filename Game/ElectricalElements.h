@@ -33,7 +33,7 @@ public:
     ElectricalElements(
         ElementCount elementCount,
         World & parentWorld,
-        std::shared_ptr<IGameEventHandler> gameEventHandler)
+        std::shared_ptr<GameEventDispatcher> gameEventDispatcher)
         : ElementContainer(elementCount)
         //////////////////////////////////
         // Buffers
@@ -52,7 +52,7 @@ public:
         // Container
         //////////////////////////////////
         , mParentWorld(parentWorld)
-        , mGameEventHandler(std::move(gameEventHandler))
+        , mGameEventHandler(std::move(gameEventDispatcher))
         , mDestroyHandler()
         , mGenerators()
         , mLamps()
@@ -324,7 +324,7 @@ private:
     //////////////////////////////////////////////////////////
 
     World & mParentWorld;
-    std::shared_ptr<IGameEventHandler> const mGameEventHandler;
+    std::shared_ptr<GameEventDispatcher> const mGameEventHandler;
 
     // The handler registered for electrical element deletions
     DestroyHandler mDestroyHandler;

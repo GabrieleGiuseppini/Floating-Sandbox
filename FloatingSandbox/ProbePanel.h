@@ -7,7 +7,8 @@
 
 #include "ScalarTimeSeriesProbeControl.h"
 
-#include <Game/IGameEventHandler.h>
+#include <Game/GameController.h>
+#include <Game/GameEventHandlers.h>
 
 #include <wx/sizer.h>
 #include <wx/wx.h>
@@ -16,7 +17,11 @@
 #include <string>
 #include <unordered_map>
 
-class ProbePanel : public wxPanel, public IGameEventHandler
+class ProbePanel
+    : public wxPanel
+    , public ILifecycleGameEventHandler
+    , public IStatisticsGameEventHandler
+    , public IGenericGameEventHandler
 {
 public:
 
@@ -29,8 +34,15 @@ public:
 public:
 
     //
-    // IGameEventHandler events
+    // Game event handlers
     //
+
+    void RegisterEventHandler(GameController & gameController)
+    {
+        gameController.RegisterLifecycleEventHandler(this);
+        gameController.RegisterStatisticsEventHandler(this);
+        gameController.RegisterGenericEventHandler(this);
+    }
 
     virtual void OnGameReset() override;
 

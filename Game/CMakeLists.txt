@@ -7,9 +7,9 @@ set  (GAME_SOURCES
 	GameController.cpp
 	GameController.h
 	GameEventDispatcher.h
+	GameEventHandlers.h
 	GameParameters.cpp
-	GameParameters.h
-	IGameEventHandler.h
+	GameParameters.h	
 	ImageFileTools.cpp
 	ImageFileTools.h
 	Materials.cpp
@@ -26,8 +26,8 @@ set  (GAME_SOURCES
 	ShipMetadata.h
 	ShipPreview.cpp
 	ShipPreview.h
-	TextLayer.cpp
-	TextLayer.h)
+	StatusText.cpp
+	StatusText.h)
 
 set  (PHYSICS_SOURCES
 	AntiMatterBomb.h

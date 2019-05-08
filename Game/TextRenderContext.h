@@ -38,7 +38,7 @@ public:
         mScreenToNdcX = 2.0f / static_cast<float>(width);
         mScreenToNdcY = 2.0f / static_cast<float>(height);
 
-        // Re-render text next time
+        // Re-create vertices next time
         mAreTextSlotsDirty = true;
     }
 
@@ -70,6 +70,8 @@ public:
         mTextSlots[oldestSlotIndex].Alpha = alpha;
         mTextSlots[oldestSlotIndex].Font = font;
         mTextSlots[oldestSlotIndex].Generation = ++mCurrentTextSlotGeneration;
+        mTextSlots[oldestSlotIndex].VertexBufferIndexStart = 0;
+        mTextSlots[oldestSlotIndex].VertexBufferCount = 0;
 
         // Remember we're dirty now
         mAreTextSlotsDirty = true;
@@ -89,6 +91,26 @@ public:
 
         // Remember we're dirty now
         mAreTextSlotsDirty = true;
+    }
+
+    void UpdateText(
+        RenderedTextHandle textHandle,
+        float alpha)
+    {
+        assert(textHandle < mTextSlots.size());
+
+        mTextSlots[textHandle].Alpha = alpha;
+
+        // Update all alpha's in this text's vertex buffer
+        auto & fontRenderInfo = mFontRenderInfos[static_cast<size_t>(mTextSlots[textHandle].Font)];
+        TextQuadVertex * vertexBuffer = &(fontRenderInfo.GetVertexBuffer()[mTextSlots[textHandle].VertexBufferIndexStart]);
+        for (size_t v = 0; v < mTextSlots[textHandle].VertexBufferCount; ++v)
+        {
+            vertexBuffer[v].alpha = alpha;
+        }
+
+        // Remember vertex buffers are dirty now
+        mAreTextSlotVertexBuffersDirty = true;
     }
 
     void ClearText(RenderedTextHandle textHandle)
@@ -125,11 +147,17 @@ private:
         TextPositionType Position;
         float Alpha;
         FontType Font;
+
+        // Position and number of vertices for this slot in the font's vertex buffer
+        size_t VertexBufferIndexStart;
+        size_t VertexBufferCount;
     };
 
     std::array<TextSlot, 8> mTextSlots;
     uint64_t mCurrentTextSlotGeneration;
     bool mAreTextSlotsDirty;
+    bool mAreTextSlotVertexBuffersDirty;
+
 
 
     //

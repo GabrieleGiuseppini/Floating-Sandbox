@@ -48,8 +48,9 @@ int32_t constexpr SWETotalSamples =
     + OceanSurface::SamplesCount
     + SWEOuterLayerSamples;
 
-OceanSurface::OceanSurface()
-    : mSamples(new Sample[SamplesCount + 1])
+OceanSurface::OceanSurface(std::shared_ptr<GameEventDispatcher> gameEventDispatcher)
+    : mGameEventHandler(std::move(gameEventDispatcher))
+    , mSamples(new Sample[SamplesCount + 1])
     , mHeightFieldBuffer1(new float[SWETotalSamples + 1]) // One extra cell just to ease interpolations
     , mHeightFieldBuffer2(new float[SWETotalSamples + 1]) // One extra cell just to ease interpolations
     , mVelocityFieldBuffer1(new float[SWETotalSamples + 1]) // One extra cell just to ease interpolations
@@ -337,12 +338,12 @@ void OceanSurface::TriggerTsunami(float currentSimulationTime)
     LogMessage("Generated tsunami at ", std::chrono::duration_cast<std::chrono::seconds>(GameWallClock::GetInstance().Now().time_since_epoch()).count());
 
     // Choose X
-    float const tsunamiX = GameRandomEngine::GetInstance().GenerateRandomReal(
+    float const tsunamiWorldX = GameRandomEngine::GetInstance().GenerateRandomReal(
         -GameParameters::HalfMaxWorldWidth,
         GameParameters::HalfMaxWorldWidth);
 
     // Make it a sample index
-    auto const sampleIndex = ToSampleIndex(tsunamiX);
+    auto const sampleIndex = ToSampleIndex(tsunamiWorldX);
 
     // (Re-)start state machine
     mSWETsunamiWaveStateMachine.emplace(
@@ -352,6 +353,10 @@ void OceanSurface::TriggerTsunami(float currentSimulationTime)
         7.0f, // Rise delay
         5.0f, // Fall delay
         currentSimulationTime);
+
+    // Fire tsunami event
+    assert(!!mGameEventHandler);
+    mGameEventHandler->OnTsunami(tsunamiWorldX);
 }
 
 void OceanSurface::TriggerRogueWave(
@@ -599,6 +604,8 @@ void OceanSurface::GenerateSamples(
     // Generate samples
     //
 
+    float x = -GameParameters::HalfMaxWorldWidth;
+
     // sample index = 0
     float previousSampleValue;
     {
@@ -608,15 +615,15 @@ void OceanSurface::GenerateSamples(
 
         float const basalValue1 =
             basalWaveAmplitude1
-            * sin(basalWaveNumber1 * 0.0f - basalWaveAngularVelocity1 * currentSimulationTime);
+            * sin(basalWaveNumber1 * x - basalWaveAngularVelocity1 * currentSimulationTime);
 
         float const basalValue2 =
             basalWaveAmplitude2
-            * sin(basalWaveNumber2 * 0.0f - basalWaveAngularVelocity2 * currentSimulationTime + secondaryComponentPhase);
+            * sin(basalWaveNumber2 * x - basalWaveAngularVelocity2 * currentSimulationTime + secondaryComponentPhase);
 
         float const rippleValue =
-            sinf(-currentSimulationTime * windRipplesTimeFrequency)
-            * windRipplesWaveHeight;
+            windRipplesWaveHeight
+            * sinf(x * WindRippleSpatialFrequency - currentSimulationTime * windRipplesTimeFrequency);
 
         previousSampleValue =
             sweValue
@@ -628,7 +635,6 @@ void OceanSurface::GenerateSamples(
     }
 
     // sample index = 1...SamplesCount - 1
-    float x = Dx;
     for (int64_t i = 1; i < SamplesCount; i++, x += Dx)
     {
         float const sweValue =
@@ -665,7 +671,6 @@ void OceanSurface::GenerateSamples(
     // Populate extra sample - same value as last sample
     mSamples[SamplesCount].SampleValue = mSamples[SamplesCount - 1].SampleValue;
     mSamples[SamplesCount].SampleValuePlusOneMinusSampleValue = 0.0f; // Never used
-
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////

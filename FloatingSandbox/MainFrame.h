@@ -18,7 +18,7 @@
 #include "UIPreferences.h"
 
 #include <Game/GameController.h>
-#include <Game/IGameEventHandler.h>
+#include <Game/GameEventHandlers.h>
 #include <Game/ResourceLoader.h>
 
 #include <wx/filedlg.h>
@@ -39,7 +39,8 @@
  */
 class MainFrame
     : public wxFrame
-    , public IGameEventHandler
+    , public ILifecycleGameEventHandler
+    , public IGenericGameEventHandler
 {
 public:
 
@@ -182,6 +183,12 @@ private:
     //
     // Game event handler
     //
+
+    void RegisterEventHandler(GameController & gameController)
+    {
+        gameController.RegisterLifecycleEventHandler(this);
+        gameController.RegisterGenericEventHandler(this);
+    }
 
     virtual void OnGameReset() override
     {
