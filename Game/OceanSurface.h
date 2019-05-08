@@ -86,6 +86,10 @@ private:
         return sampleIndexI;
     }
 
+    void SetSWEWaveHeight(
+        int32_t centerIndex,
+        float height);
+
     void AdvectHeightField();
     void AdvectVelocityField();
     void UpdateHeightField();
@@ -141,14 +145,15 @@ private:
     public:
 
         SWEInteractiveWaveStateMachine(
-            int32_t sampleIndex,
+            int32_t centerIndex,
             float lowHeight,
             float highHeight,
             float currentSimulationTime);
 
-        auto GetSampleIndex() const
+        // Absolute coordinate, not sample coordinate
+        auto GetCenterIndex() const
         {
-            return mSampleIndex;
+            return mCenterIndex;
         }
 
         void Restart(
@@ -173,7 +178,7 @@ private:
             Fall
         };
 
-        int32_t const mSampleIndex;
+        int32_t const mCenterIndex;
         float const mLowHeight;
         float mCurrentPhaseStartHeight;
         float mCurrentPhaseTargetHeight;
@@ -196,16 +201,17 @@ private:
     public:
 
         SWEAbnormalWaveStateMachine(
-            int32_t sampleIndex,
+            int32_t centerIndex,
             float lowHeight,
             float highHeight,
             float riseDelay, // sec
             float fallDelay, // sec
             float currentSimulationTime);
 
-        auto GetSampleIndex() const
+        // Absolute coordinate, not sample coordinate
+        auto GetCenterIndex() const
         {
-            return mSampleIndex;
+            return mCenterIndex;
         }
 
         /*
@@ -222,7 +228,7 @@ private:
             Fall
         };
 
-        int32_t const mSampleIndex;
+        int32_t const mCenterIndex;
         float const mLowHeight;
         float const mHighHeight;
         float const mRiseDelay; // sec

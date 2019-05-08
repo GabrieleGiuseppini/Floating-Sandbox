@@ -121,6 +121,11 @@ public:
         return vec2f::fromPolar(magnitude, angle);
     }
 
+    inline bool GenerateRandomBoolean(float trueProbability)
+    {
+        return GenerateRandomNormalizedReal() < trueProbability;
+    }
+
 private:
 
     GameRandomEngine()

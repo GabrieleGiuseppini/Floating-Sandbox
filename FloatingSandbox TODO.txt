@@ -297,6 +297,9 @@ Render:
 		- See if installer for current user removes need for admin consent
 
 	- 1.12.0:
+		- Shooting stars
+			- Star "parks" always an extra star at (-1, -1)
+
 		- Settings Manager (*)
 
 		- Automatic updates checker via file placed on floatingsandbox.com
@@ -362,6 +365,9 @@ Render:
 	- New ships:
 		- Re-take all Mike's .shp files for Shipbucket.com credits
 			- And also take electrical of RMS Titanic with Lights
+		- Mike:
+			- Make subfolder (ask him)
+			- Take Titanic with interior
 		- To adjust:
 			- SS France (Awesomeyorkie):
 				- Ropes
@@ -919,7 +925,11 @@ Render:
 							+ State machine
 								+ Height = 101 (1%)
 								+ See if need custom fall rate
+					+ Re-check exponential distribution
+						+ And make helper at GameRandomEngine that takes CDF
 					- Test with basal waves added to SWE height field, instead of added to samples
+					+ Test with 3 samples being modified at SWEWaveStateMachine
+					- Test with SWE with double's to see if long-running wave is better
 				+ SettingsDialog:
 					+ "Wind and Waves" tab
 						+ Static box for basal waves
@@ -935,8 +945,12 @@ Render:
 						+ Better sound
 						+ See linear fade-out again
 				+ See if can stop making reflective boundaries with height field=0
+				- Smooth wind and wave parameter changes
 			- Optimizations:
 				- FPS before:
+				- Anomaly choosing done only at scheduled (simulation) times, 1 per 0.5 sec
+					- Adjust exponential coefficients
+						- Double-check wind while you're at it
 				- Basal wave params and abnormal wave CDFs calc'd only at GameParameters changes
 				- Pre-calc'd funcs (sin)
 				- Two advections in one, so that we have a single loop

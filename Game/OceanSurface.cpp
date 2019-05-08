@@ -29,18 +29,21 @@ float constexpr SWEHeightFieldOffset = 100.0f;
 // and smaller height field variations allow for greater stability
 float constexpr SWEHeightFieldAmplification = 50.0f;
 
+// The number of samples we raise with a state machine
+int32_t constexpr SWEWaveStateMachinePerturbedSamplesCount = 3;
+
 // The number of samples we set apart in the SWE buffers for wave generation at each end of a buffer
-size_t constexpr SWEWaveGenerationSamples = 1;
+int32_t constexpr SWEWaveGenerationSamples = 1;
 
 // The number of samples we set apart in the SWE buffers for boundary conditions at each end of a buffer
-size_t constexpr SWEBoundaryConditionsSamples = 1;
+int32_t constexpr SWEBoundaryConditionsSamples = 1;
 
-size_t constexpr SWEOuterLayerSamples =
+int32_t constexpr SWEOuterLayerSamples =
     SWEWaveGenerationSamples
     + SWEBoundaryConditionsSamples;
 
 // The total number of samples in the SWE buffers
-size_t constexpr SWETotalSamples =
+int32_t constexpr SWETotalSamples =
     SWEOuterLayerSamples
     + OceanSurface::SamplesCount
     + SWEOuterLayerSamples;
@@ -69,7 +72,7 @@ OceanSurface::OceanSurface()
     // Initialize all values - including extra unused sample
     //
     // Boundary conditions are initialized here once and for all
-    for (size_t i = 0; i <= SWETotalSamples; ++i)
+    for (int32_t i = 0; i <= SWETotalSamples; ++i)
     {
         mCurrentHeightField[i] = SWEHeightFieldOffset;
         mNextHeightField[i] = SWEHeightFieldOffset;
@@ -98,7 +101,10 @@ void OceanSurface::Update(
         }
         else
         {
-            mCurrentHeightField[mSWEInteractiveWaveStateMachine->GetSampleIndex()] = *heightValue;
+            // Apply
+            SetSWEWaveHeight(
+                mSWEInteractiveWaveStateMachine->GetCenterIndex(),
+                *heightValue);
         }
     }
 
@@ -112,7 +118,10 @@ void OceanSurface::Update(
         }
         else
         {
-            mCurrentHeightField[mSWETsunamiWaveStateMachine->GetSampleIndex()] = *heightValue;
+            // Apply
+            SetSWEWaveHeight(
+                mSWETsunamiWaveStateMachine->GetCenterIndex(),
+                *heightValue);
         }
     }
     else
@@ -127,8 +136,7 @@ void OceanSurface::Update(
             // TODO: move to RecalculateParameters
             float const tsunamiCdf = 1.0f - exp(-GameParameters::SimulationStepTimeDuration<float> / (gameParameters.TsunamiRate * 60.0f));
 
-            float r = GameRandomEngine::GetInstance().GenerateRandomNormalizedReal();
-            if (r < tsunamiCdf)
+            if (GameRandomEngine::GetInstance().GenerateRandomBoolean(tsunamiCdf))
             {
                 // Tsunami!
                 TriggerTsunami(currentSimulationTime);
@@ -146,7 +154,10 @@ void OceanSurface::Update(
         }
         else
         {
-            mCurrentHeightField[mSWERogueWaveWaveStateMachine->GetSampleIndex()] = *heightValue;
+            // Apply
+            SetSWEWaveHeight(
+                mSWERogueWaveWaveStateMachine->GetCenterIndex(),
+                *heightValue);
         }
     }
     else
@@ -160,8 +171,7 @@ void OceanSurface::Update(
             // TODO: move to RecalculateParameters
             float const rogueWaveCdf = 1.0f - exp(-GameParameters::SimulationStepTimeDuration<float> / (gameParameters.RogueWaveRate * 60.0f));
 
-            float r = GameRandomEngine::GetInstance().GenerateRandomNormalizedReal();
-            if (r < rogueWaveCdf)
+            if (GameRandomEngine::GetInstance().GenerateRandomBoolean(rogueWaveCdf))
             {
                 // Rogue wave!
                 TriggerRogueWave(currentSimulationTime, wind);
@@ -184,7 +194,7 @@ void OceanSurface::Update(
 
     ////// Calc avg height among all samples
     ////float avgHeight = 0.0f;
-    ////for (size_t i = SWEOuterLayerSamples; i < SWEOuterLayerSamples + SamplesCount; ++i)
+    ////for (int32_t i = SWEOuterLayerSamples; i < SWEOuterLayerSamples + SamplesCount; ++i)
     ////{
     ////    avgHeight += mNextHeightField[i];
     ////}
@@ -294,7 +304,7 @@ void OceanSurface::AdjustTo(
 
             // Start wave
             mSWEInteractiveWaveStateMachine.emplace(
-                sampleIndex,
+                SWEOuterLayerSamples + sampleIndex,
                 mCurrentHeightField[SWEOuterLayerSamples + sampleIndex], // LowHeight
                 targetHeight,
                 currentSimulationTime);
@@ -323,6 +333,9 @@ void OceanSurface::AdjustTo(
 
 void OceanSurface::TriggerTsunami(float currentSimulationTime)
 {
+    // TODOTEST
+    LogMessage("Generated tsunami at ", std::chrono::duration_cast<std::chrono::seconds>(GameWallClock::GetInstance().Now().time_since_epoch()).count());
+
     // Choose X
     float const tsunamiX = GameRandomEngine::GetInstance().GenerateRandomReal(
         -GameParameters::HalfMaxWorldWidth,
@@ -333,7 +346,7 @@ void OceanSurface::TriggerTsunami(float currentSimulationTime)
 
     // (Re-)start state machine
     mSWETsunamiWaveStateMachine.emplace(
-        sampleIndex,
+        SWEOuterLayerSamples + sampleIndex,
         mCurrentHeightField[SWEOuterLayerSamples + sampleIndex], // LowHeight
         mCurrentHeightField[SWEOuterLayerSamples + sampleIndex] + SWEHeightFieldOffset * 0.05f, // HighHeight
         7.0f, // Rise delay
@@ -345,17 +358,20 @@ void OceanSurface::TriggerRogueWave(
     float currentSimulationTime,
     Wind const & wind)
 {
+    // TODOTEST
+    LogMessage("Generated rogue wave at ", std::chrono::duration_cast<std::chrono::seconds>(GameWallClock::GetInstance().Now().time_since_epoch()).count());
+
     // Choose locus
-    int32_t sampleIndex;
+    int32_t centerIndex;
     if (wind.GetBaseSpeedMagnitude() >= 0.0f)
     {
         // Left locus
-        sampleIndex = SWEBoundaryConditionsSamples;
+        centerIndex = SWEBoundaryConditionsSamples;
     }
     else
     {
         // Right locus
-        sampleIndex = SWEOuterLayerSamples + OceanSurface::SamplesCount;
+        centerIndex = SWEOuterLayerSamples + OceanSurface::SamplesCount;
     }
 
     // Choose height (as a fraction of the SWE height field offset)
@@ -366,9 +382,9 @@ void OceanSurface::TriggerRogueWave(
 
     // (Re-)start state machine
     mSWERogueWaveWaveStateMachine.emplace(
-        sampleIndex,
-        mCurrentHeightField[SWEOuterLayerSamples + sampleIndex], // LowHeight
-        mCurrentHeightField[SWEOuterLayerSamples + sampleIndex] + SWEHeightFieldOffset * rogueWaveHeightMultiplier, // HighHeight
+        centerIndex,
+        mCurrentHeightField[centerIndex], // LowHeight
+        mCurrentHeightField[centerIndex] + SWEHeightFieldOffset * rogueWaveHeightMultiplier, // HighHeight
         rogueWaveDelay, // Rise delay
         rogueWaveDelay, // Fall delay
         currentSimulationTime);
@@ -376,6 +392,20 @@ void OceanSurface::TriggerRogueWave(
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
+void OceanSurface::SetSWEWaveHeight(
+    int32_t centerIndex,
+    float height)
+{
+    for (int32_t i = 0; i < SWEWaveStateMachinePerturbedSamplesCount; ++i)
+    {
+        int32_t idx = centerIndex - SWEWaveStateMachinePerturbedSamplesCount / 2 + i;
+        if (idx > SWEBoundaryConditionsSamples
+            && idx < SWEOuterLayerSamples + SamplesCount + SWEWaveGenerationSamples)
+        {
+            mCurrentHeightField[idx] = height;
+        }
+    }
+}
 void OceanSurface::AdvectHeightField()
 {
     //
@@ -383,7 +413,7 @@ void OceanSurface::AdvectHeightField()
     //
 
     // Process all height samples, except for boundary condition samples
-    for (size_t i = SWEBoundaryConditionsSamples; i < SWETotalSamples - SWEBoundaryConditionsSamples; ++i)
+    for (int32_t i = SWEBoundaryConditionsSamples; i < SWETotalSamples - SWEBoundaryConditionsSamples; ++i)
     {
         // The height field values are at the center of the cell,
         // while velocities are at the edges - hence we need to take
@@ -421,7 +451,7 @@ void OceanSurface::AdvectVelocityField()
     //
 
     // Process all velocity samples, except for boundary condition samples
-    for (size_t i = SWEBoundaryConditionsSamples; i < SWETotalSamples - SWEBoundaryConditionsSamples; ++i)
+    for (int32_t i = SWEBoundaryConditionsSamples; i < SWETotalSamples - SWEBoundaryConditionsSamples; ++i)
     {
         // Velocity values are at the edges of the cell
         float const v = mCurrentVelocityField[i];
@@ -453,7 +483,7 @@ void OceanSurface::AdvectVelocityField()
 void OceanSurface::UpdateHeightField()
 {
     // Process all samples, except for boundary condition samples
-    for (size_t i = SWEBoundaryConditionsSamples; i < SWETotalSamples - SWEBoundaryConditionsSamples; ++i)
+    for (int32_t i = SWEBoundaryConditionsSamples; i < SWETotalSamples - SWEBoundaryConditionsSamples; ++i)
     {
         mNextHeightField[i] -=
             mNextHeightField[i]
@@ -465,7 +495,7 @@ void OceanSurface::UpdateHeightField()
 void OceanSurface::UpdateVelocityField()
 {
     // Process all samples, except for boundary condition samples
-    for (size_t i = SWEBoundaryConditionsSamples; i < SWETotalSamples - SWEBoundaryConditionsSamples; ++i)
+    for (int32_t i = SWEBoundaryConditionsSamples; i < SWETotalSamples - SWEBoundaryConditionsSamples; ++i)
     {
         mNextVelocityField[i] +=
             GameParameters::GravityMagnitude
@@ -641,11 +671,11 @@ void OceanSurface::GenerateSamples(
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 OceanSurface::SWEInteractiveWaveStateMachine::SWEInteractiveWaveStateMachine(
-    int32_t sampleIndex,
+    int32_t centerIndex,
     float startHeight,
     float targetHeight,
     float currentSimulationTime)
-    : mSampleIndex(sampleIndex)
+    : mCenterIndex(centerIndex)
     , mLowHeight(startHeight)
     , mCurrentPhaseStartHeight(startHeight)
     , mCurrentPhaseTargetHeight(targetHeight)
@@ -758,13 +788,13 @@ float OceanSurface::SWEInteractiveWaveStateMachine::CalculateSmoothingDelay()
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 OceanSurface::SWEAbnormalWaveStateMachine::SWEAbnormalWaveStateMachine(
-    int32_t sampleIndex,
+    int32_t centerIndex,
     float lowHeight,
     float highHeight,
     float riseDelay, // sec
     float fallDelay, // sec
     float currentSimulationTime)
-    : mSampleIndex(sampleIndex)
+    : mCenterIndex(centerIndex)
     , mLowHeight(lowHeight)
     , mHighHeight(highHeight)
     , mRiseDelay(riseDelay)

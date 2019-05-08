@@ -157,11 +157,8 @@ void Wind::Update(GameParameters const & gameParameters)
                     // Check if it's time to sample poisson
                     if (now >= mNextPoissonSampleTimestamp)
                     {
-                        // Draw random number
-                        float const sample = GameRandomEngine::GetInstance().GenerateRandomNormalizedReal();
-
                         // Check if we should gust
-                        if (sample < mGustCdf)
+                        if (GameRandomEngine::GetInstance().GenerateRandomBoolean(mGustCdf))
                         {
                             // Transition to EnterGust
                             mCurrentState = State::EnterGust;
