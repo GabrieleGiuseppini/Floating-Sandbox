@@ -209,8 +209,8 @@ public:
     float GetMinNumMechanicalDynamicsIterationsAdjustment() const { return GameParameters::MinNumMechanicalDynamicsIterationsAdjustment; }
     float GetMaxNumMechanicalDynamicsIterationsAdjustment() const { return GameParameters::MaxNumMechanicalDynamicsIterationsAdjustment; }
 
-    float GetSpringStiffnessAdjustment() const { return mGameParameters.SpringStiffnessAdjustment; }
-    void SetSpringStiffnessAdjustment(float value) { mGameParameters.SpringStiffnessAdjustment = value; }
+    float GetSpringStiffnessAdjustment() const { return mParameterSmoothers[SpringStiffnessAdjustmentParameterSmoother].GetValue(); }
+    void SetSpringStiffnessAdjustment(float value) { mParameterSmoothers[SpringStiffnessAdjustmentParameterSmoother].SetValue(value); }
     float GetMinSpringStiffnessAdjustment() const { return GameParameters::MinSpringStiffnessAdjustment; }
     float GetMaxSpringStiffnessAdjustment() const { return GameParameters::MaxSpringStiffnessAdjustment; }
 
@@ -219,8 +219,8 @@ public:
     float GetMinSpringDampingAdjustment() const { return GameParameters::MinSpringDampingAdjustment; }
     float GetMaxSpringDampingAdjustment() const { return GameParameters::MaxSpringDampingAdjustment; }
 
-    float GetSpringStrengthAdjustment() const { return mGameParameters.SpringStrengthAdjustment; }
-    void SetSpringStrengthAdjustment(float value) { mGameParameters.SpringStrengthAdjustment = value; }
+    float GetSpringStrengthAdjustment() const { return mParameterSmoothers[SpringStrengthAdjustmentParameterSmoother].GetValue(); }
+    void SetSpringStrengthAdjustment(float value) { mParameterSmoothers[SpringStrengthAdjustmentParameterSmoother].SetValue(value); }
     float GetMinSpringStrengthAdjustment() const { return GameParameters::MinSpringStrengthAdjustment;  }
     float GetMaxSpringStrengthAdjustment() const { return GameParameters::MaxSpringStrengthAdjustment; }
 
@@ -292,18 +292,18 @@ public:
     float GetMinWindSpeedMaxFactor() const { return GameParameters::MinWindSpeedMaxFactor; }
     float GetMaxWindSpeedMaxFactor() const { return GameParameters::MaxWindSpeedMaxFactor; }
 
-    float GetSeaDepth() const { return mGameParameters.SeaDepth; }
-    void SetSeaDepth(float value) { mGameParameters.SeaDepth = value; }
+    float GetSeaDepth() const { return mParameterSmoothers[SeaDepthParameterSmoother].GetValue(); }
+    void SetSeaDepth(float value) { mParameterSmoothers[SeaDepthParameterSmoother].SetValue(value); }
     float GetMinSeaDepth() const { return GameParameters::MinSeaDepth; }
     float GetMaxSeaDepth() const { return GameParameters::MaxSeaDepth; }
 
-    float GetOceanFloorBumpiness() const { return mGameParameters.OceanFloorBumpiness; }
-    void SetOceanFloorBumpiness(float value) { mGameParameters.OceanFloorBumpiness = value; }
+    float GetOceanFloorBumpiness() const { return mParameterSmoothers[OceanFloorBumpinessParameterSmoother].GetValue(); }
+    void SetOceanFloorBumpiness(float value) { mParameterSmoothers[OceanFloorBumpinessParameterSmoother].SetValue(value); }
     float GetMinOceanFloorBumpiness() const { return GameParameters::MinOceanFloorBumpiness; }
     float GetMaxOceanFloorBumpiness() const { return GameParameters::MaxOceanFloorBumpiness; }
 
-    float GetOceanFloorDetailAmplification() const { return mGameParameters.OceanFloorDetailAmplification; }
-    void SetOceanFloorDetailAmplification(float value) { mGameParameters.OceanFloorDetailAmplification = value; }
+    float GetOceanFloorDetailAmplification() const { return mParameterSmoothers[OceanFloorDetailAmplificationParameterSmoother].GetValue(); }
+    void SetOceanFloorDetailAmplification(float value) { mParameterSmoothers[OceanFloorDetailAmplificationParameterSmoother].SetValue(value); }
     float GetMinOceanFloorDetailAmplification() const { return GameParameters::MinOceanFloorDetailAmplification; }
     float GetMaxOceanFloorDetailAmplification() const { return GameParameters::MaxOceanFloorDetailAmplification; }
 
@@ -479,57 +479,67 @@ private:
         // Initialize parameter smoothers
         //
 
-        /* TODOTEST
         std::chrono::milliseconds constexpr ParameterSmoothingTrajectoryTime = std::chrono::milliseconds(1000);
 
-        assert(mParameterSmoothers.size() == WindSpeedBaseParameterSmoother);
+        assert(mParameterSmoothers.size() == SpringStiffnessAdjustmentParameterSmoother);
         mParameterSmoothers.emplace_back(
             [this]()
             {
-                return this->mGameParameters.WindSpeedBase;
+                return this->mGameParameters.SpringStiffnessAdjustment;
             },
             [this](float value)
             {
-                this->mGameParameters.WindSpeedBase = value;
+                this->mGameParameters.SpringStiffnessAdjustment = value;
             },
             ParameterSmoothingTrajectoryTime);
 
-        assert(mParameterSmoothers.size() == BasalWaveHeightAdjustmentParameterSmoother);
+        assert(mParameterSmoothers.size() == SpringStrengthAdjustmentParameterSmoother);
         mParameterSmoothers.emplace_back(
             [this]()
             {
-                return this->mGameParameters.BasalWaveHeightAdjustment;
+                return this->mGameParameters.SpringStrengthAdjustment;
             },
             [this](float value)
             {
-                this->mGameParameters.BasalWaveHeightAdjustment = value;
+                this->mGameParameters.SpringStrengthAdjustment = value;
             },
             ParameterSmoothingTrajectoryTime);
 
-        assert(mParameterSmoothers.size() == BasalWaveLengthAdjustmentParameterSmoother);
+        assert(mParameterSmoothers.size() == SeaDepthParameterSmoother);
         mParameterSmoothers.emplace_back(
             [this]()
             {
-                return this->mGameParameters.BasalWaveLengthAdjustment;
+                return this->mGameParameters.SeaDepth;
             },
             [this](float value)
             {
-                this->mGameParameters.BasalWaveLengthAdjustment = value;
+                this->mGameParameters.SeaDepth = value;
             },
             ParameterSmoothingTrajectoryTime);
 
-        assert(mParameterSmoothers.size() == BasalWaveSpeedAdjustmentParameterSmoother);
+        assert(mParameterSmoothers.size() == OceanFloorBumpinessParameterSmoother);
         mParameterSmoothers.emplace_back(
             [this]()
             {
-                return this->mGameParameters.BasalWaveSpeedAdjustment;
+                return this->mGameParameters.OceanFloorBumpiness;
             },
             [this](float value)
             {
-                this->mGameParameters.BasalWaveSpeedAdjustment = value;
+                this->mGameParameters.OceanFloorBumpiness = value;
             },
             ParameterSmoothingTrajectoryTime);
-            */
+
+        assert(mParameterSmoothers.size() == OceanFloorDetailAmplificationParameterSmoother);
+        mParameterSmoothers.emplace_back(
+            [this]()
+            {
+                return this->mGameParameters.OceanFloorDetailAmplification;
+            },
+            [this](float value)
+            {
+                this->mGameParameters.OceanFloorDetailAmplification = value;
+            },
+            ParameterSmoothingTrajectoryTime);
     }
 
     void RegisterEventHandler()
@@ -725,11 +735,11 @@ private:
         GameWallClock::time_point mEndTimestamp;
     };
 
-    // TODO: need new ones
-    ////static constexpr size_t WindSpeedBaseParameterSmoother = 0;
-    ////static constexpr size_t BasalWaveHeightAdjustmentParameterSmoother = 1;
-    ////static constexpr size_t BasalWaveLengthAdjustmentParameterSmoother = 2;
-    ////static constexpr size_t BasalWaveSpeedAdjustmentParameterSmoother = 3;
+    static constexpr size_t SpringStiffnessAdjustmentParameterSmoother = 0;
+    static constexpr size_t SpringStrengthAdjustmentParameterSmoother = 1;
+    static constexpr size_t SeaDepthParameterSmoother = 2;
+    static constexpr size_t OceanFloorBumpinessParameterSmoother = 3;
+    static constexpr size_t OceanFloorDetailAmplificationParameterSmoother = 4;
 
     std::vector<ParameterSmoother> mParameterSmoothers;
 

@@ -292,6 +292,8 @@ Render:
 
 		= Shallow Water Equations (*)
 
+		- Try to change speed of particles at repair
+
 		+ Double-check latest rotting speed
 
 		- See if installer for current user removes need for admin consent
@@ -362,28 +364,43 @@ Render:
 		# Coolman115: CorbinPasta93
 		# Ilovedumbphones: Dumbphones
 		# SweetStrawberryBoy: TopHatLemons
+		# sum wulf gurl: Artica
+		# An SR71 Habu: NotTelling
 	- New ships:
 		- Re-take all Mike's .shp files for Shipbucket.com credits
 			- And also take electrical of RMS Titanic with Lights
 		- Mike:
-			- Make subfolder (ask him)
+			= Make subfolder (ask him)
 			- Take Titanic with interior
 		- To adjust:
-			- SS France (Awesomeyorkie):
-				- Ropes
+			- SS France (Awesomeyorkie): bends a lot
+			- Ed Fitzgerald (Kiko); year: 1975
 		- Ready:
 			- B747: (An SR71 Habu) alias=NotTelling year=1970
 				- Add to About box
 			- Pacific: "S.S. Pacific" alias=Hugo_2503 year=1908
 				- Add to About box
+			- All the ones in "Ready"
+			- Two Transatlantic's from kiko; year: 1909
+			- Zero_sum_wuf_gurl; year: 1940
+			- Fokker (Artica); year: 1915
+			- P51 (Artica); year: 1940
+			- Mini_R.M.S_Titanic_mcshooter2018.png
+				- Asked
+			- HMS Ajax (ASSTYU); year: 1933
+				- Add "_ASTYuu_" to about box
+
 		- To test:
-			- RMS Magentasia (TopHatLemons)
-			- Menschenfresser (ASSTYU)
-			- JackMellon (see PM on Discord)
+			- JackMellon (see PM on Discord): https://drive.google.com/drive/folders/1isy3QiRzMfyu69v5M0gwD5tvBnYZMWXx
+				- JackTheBrickfilmMaker, link to youtube channel
 			- serhiires (see PM on Discord): HMHS Danic, RMS Danic, and all his others
+			- KMS_Unversinkbar_PandaDude.png
+				- Waiting for PandaDude12345
+			- Estonia - Dumbphones
+			- KMS Bismarck - Shippy
+			- RMS Titanic - Shippy
+			- Britannic - Dumbphones
 		- Asked:
-			- serhiires: SS Nobrix, HMHS and RMS Gotic
-			- Ed Fitzgerald (but needs to be fixed) (Kiko)
 			- Aegir_Mark_III (coolman asks original designer)
 	- Descriptions:
 		+ Tell maximord about new ships - give him names
@@ -414,7 +431,7 @@ Render:
 - Suggestions to spec:
 	- Tools turning white at night
 	- Once we have ships, make "Lock Ship in View" flag and move camera with ship's center of mass (representative point or real CoM)
-	- Be able to place nukea nd AM bomb anywhere
+	- Be able to place nuke and AM bomb anywhere
 	- Fishes
 	- Different colored lights
 	- Different maps: maps that might even have islands and grass 
@@ -425,7 +442,6 @@ Render:
 	- I wonder if you can add the "Ground" material, which is a material that cannot move.
 	  No physics calculation. Plus, you're using texture, so it would be neat if the same texture as the ground can be applied to it
 	- Meteorites
-	- Tsunami
 	- Earthquake
 	- Storm: rain and waves at ~4.4
 	- Rot tool (rots without having to flood it)
@@ -910,7 +926,8 @@ Render:
 									+ Shaking
 								= SoundController:
 									- Tsunami sound, one-shot (overridable): rumbling + siren + background SOS
-							- Settings dialog: show tsunami notifications checkbox
+							- UI preferences: show tsunami notifications checkbox
+								
 					+ Rogue waves
 						+ GameParameters: "RogueWaveArrivalTime", mins
 							+ Min = 0 => no rogue waves
@@ -947,13 +964,15 @@ Render:
 						+ Better sound
 						+ See linear fade-out again
 				+ See if can stop making reflective boundaries with height field=0
-				- Smooth some other parameters
-					- Ocean depth, ocean bumpiness, ocean detail
+				+ Smooth some other parameters
+					+ Ocean depth, ocean bumpiness, ocean detail
 				- See new font for game text
+				- SWE boundary conditions: try 5 bc samples, damping heights and braking down linearly
+					- Test at x=0
 				+ Optimize alpha changing for text
 			- Optimizations:
 				- FPS before:
-				- Anomaly choosing done only at scheduled (simulation) times, 1 per 0.5 sec
+				- Anomaly choosing done only at scheduled (wallclock) times, every ~0.5 sec
 					- Adjust exponential coefficients
 						- Double-check wind while you're at it
 				- Basal wave params and abnormal wave CDFs calc'd only at GameParameters changes
@@ -961,6 +980,7 @@ Render:
 				- Two advections in one, so that we have a single loop
 				- Two field updates in one, so that we have a single loop
 				- FPS after:
+			- Merge
 
 	- Underwater currents
 		- Implicit function of x defines trajectory 
@@ -968,8 +988,10 @@ Render:
 				- Constant
 				- Lorenz, from http://sprott.physics.wisc.edu/chaos/eulermap.htm
 				- Lorenz II, from https://en.wikipedia.org/wiki/Lorenz_96_model
-				- WaterSurface, may be shifted
+				- WaterSurface, may be x-shifted
 		- for each point: y-distance between point.y and trajectory(point.x) gives strength of x and y components of a force on the point
+		- Rendered (via option):
+			- TBD
 
 	
 	- Try to re-instate square velocity drag (*)
