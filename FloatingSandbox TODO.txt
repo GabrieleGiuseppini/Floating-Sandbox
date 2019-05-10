@@ -927,7 +927,15 @@ Render:
 								= SoundController:
 									- Tsunami sound, one-shot (overridable): rumbling + siren + background SOS
 							- UI preferences: show tsunami notifications checkbox
-								
+								- UIPreferencesManager:
+									- It's a test for SettingsManager
+									- Replaces UIPreferences
+										- Also given to ShipLoadDialog
+									- Has own struct, just like SettingsManager
+									- Also acts as storage for some of them (those not owned by GameController)
+										- Exposes setters and getters (like SettingsManager)
+									- Takes GameController at cctor	
+										- And gives it GameController's owned properties after having loaded them
 					+ Rogue waves
 						+ GameParameters: "RogueWaveArrivalTime", mins
 							+ Min = 0 => no rogue waves
@@ -1522,8 +1530,8 @@ Render:
 			- No more methods that load DB's
 		- Switching:
 			- Ad-hoc MainFrame dialog showing ResourcePackMetadata's 
-				- Chosen one goes to ApplicationSettings (see elsewhere in this roadmap)
-				- Checkbox for "Set as default" => ApplicationSettings::Save()
+				- Chosen one goes to UIPreferencesManager
+				- Checkbox for "Set as default" => UIPreferencesManager::Save()
 				- At Save, before saving - notify that a reload is necessary
 
 - Multiple ships:
