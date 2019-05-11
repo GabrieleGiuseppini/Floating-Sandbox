@@ -283,13 +283,13 @@ struct GameParameters
     // Limits
     //
 
-    static float constexpr MaxWorldWidth = 10000.0f;
+    static float constexpr MaxWorldWidth = 5000.0f;
     static float constexpr HalfMaxWorldWidth = MaxWorldWidth / 2.0f;
 
     static float constexpr MaxWorldHeight = 40000.0f;
     static float constexpr HalfMaxWorldHeight = MaxWorldHeight / 2.0f;
 
-    static_assert(MaxWorldHeight >= MaxSeaDepth * 2);
+    static_assert(HalfMaxWorldHeight >= MaxSeaDepth);
 
 
     static constexpr size_t MaxBombs = 64u;

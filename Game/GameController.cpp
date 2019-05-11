@@ -746,6 +746,9 @@ void GameController::Reset(std::unique_ptr<Physics::World> newWorld)
     assert(!!mWorld);
     mWorld = std::move(newWorld);
 
+    // Reset state
+    mTsunamiNotificationStateMachine.reset();
+
     // Reset rendering engine
     assert(!!mRenderContext);
     mRenderContext->Reset();

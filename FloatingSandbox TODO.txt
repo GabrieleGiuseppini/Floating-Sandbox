@@ -278,7 +278,6 @@ Render:
 				+ Take FPS after: 22.3, UR=133
 			+ changes.txt
 
-
 		= Sign with certificate
 			+ https://blogs.msdn.microsoft.com/ieinternals/2011/03/22/everything-you-need-to-know-about-authenticode-code-signing/
 			+ https://www.thegeekstuff.com/2010/03/microsoft-digital-signatures/
@@ -980,10 +979,11 @@ Render:
 				+ See if can stop making reflective boundaries with height field=0
 				+ Smooth some other parameters
 					+ Ocean depth, ocean bumpiness, ocean detail
-				- SWE boundary conditions: try 5 bc samples, damping heights and braking down linearly
-					- Test at x=0
+				+ SWE boundary conditions: try 5 bc samples, damping heights and braking down linearly
 				- Try with other formulation of SWEs
 				+ Optimize alpha changing for text
+				+ Reduce world width
+				+ Cap interactive height
 			- Optimizations:
 				- FPS before:
 				- Anomaly choosing done only at scheduled (wallclock) times, every ~0.5 sec
