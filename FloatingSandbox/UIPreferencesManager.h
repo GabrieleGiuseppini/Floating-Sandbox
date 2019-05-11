@@ -5,21 +5,26 @@
 ***************************************************************************************/
 #pragma once
 
+#include <Game/GameController.h>
+
 #include <algorithm>
 #include <cassert>
 #include <filesystem>
+#include <memory>
 #include <vector>
 
 /*
- * Maintains persistent UI preferences.
+ * This class manages UI preferences,and takes care of persisting and loading them.
+ *
+ * The class also serves as the storage for some of the preferences.
  */
-class UIPreferences
+class UIPreferencesManager
 {
 public:
 
-    UIPreferences();
+    UIPreferencesManager(std::shared_ptr<GameController> gameController);
 
-    ~UIPreferences();
+    ~UIPreferencesManager();
 
 public:
 
@@ -82,7 +87,28 @@ public:
         mShowShipDescriptionsAtShipLoad = value;
     }
 
+    bool GetShowTsunamiNotifications() const
+    {
+        return mGameController->GetShowTsunamiNotifications();
+    }
+
+    void SetShowTsunamiNotifications(bool value)
+    {
+        mGameController->SetShowTsunamiNotifications(value);
+    }
+
 private:
+
+    void LoadPreferences();
+
+    void SavePreferences() const;
+
+private:
+
+    std::shared_ptr<GameController> mGameController;
+
+    //
+    // The preferences for which we are the storage
 
     std::vector<std::filesystem::path> mShipLoadDirectories;
 

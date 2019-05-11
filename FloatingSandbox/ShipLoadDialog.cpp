@@ -15,10 +15,10 @@ constexpr int MinDirCtrlWidth = 260;
 
 ShipLoadDialog::ShipLoadDialog(
     wxWindow * parent,
-    std::shared_ptr<UIPreferences> uiPreferences,
+    std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
     ResourceLoader const & resourceLoader)
 	: mParent(parent)
-    , mUIPreferences(std::move(uiPreferences))
+    , mUIPreferencesManager(std::move(uiPreferencesManager))
 {
 	Create(
 		mParent,
@@ -49,12 +49,12 @@ ShipLoadDialog::ShipLoadDialog(
 
     // Directory tree
 
-    assert(!mUIPreferences->GetShipLoadDirectories().empty());
+    assert(!mUIPreferencesManager->GetShipLoadDirectories().empty());
 
     mDirCtrl = new wxGenericDirCtrl(
         this,
         wxID_ANY,
-        mUIPreferences->GetShipLoadDirectories().front().string(),
+        mUIPreferencesManager->GetShipLoadDirectories().front().string(),
         wxDefaultPosition,
         wxSize(MinDirCtrlWidth, 500),
         wxDIRCTRL_DIR_ONLY);
@@ -270,7 +270,7 @@ void ShipLoadDialog::OnRecentDirectorySelected(wxCommandEvent & /*event*/)
 
 void ShipLoadDialog::OnHomeDirButtonClicked(wxCommandEvent & /*event*/)
 {
-    assert(mUIPreferences->GetShipLoadDirectories().size() >= 1);
+    assert(mUIPreferencesManager->GetShipLoadDirectories().size() >= 1);
 
     // Change combo
     mRecentDirectoriesComboBox->Select(0);
@@ -289,7 +289,7 @@ void ShipLoadDialog::OnInfoButtonClicked(wxCommandEvent & /*event*/)
             this,
             *mSelectedShipMetadata,
             false,
-            mUIPreferences);
+            mUIPreferencesManager);
 
         shipDescriptionDialog.ShowModal();
     }
@@ -336,7 +336,7 @@ void ShipLoadDialog::OnShipFileChosen(std::filesystem::path shipFilepath)
 
     // Store directory in preferences
     auto dir = shipFilepath.parent_path();
-    mUIPreferences->AddShipLoadDirectory(dir);
+    mUIPreferencesManager->AddShipLoadDirectory(dir);
 
     // Re-populate combo box
     RepopulateRecentDirectoriesComboBox();
@@ -363,10 +363,10 @@ void ShipLoadDialog::Close()
 
 void ShipLoadDialog::RepopulateRecentDirectoriesComboBox()
 {
-    assert(!mUIPreferences->GetShipLoadDirectories().empty());
+    assert(!mUIPreferencesManager->GetShipLoadDirectories().empty());
 
     mRecentDirectoriesComboBox->Clear();
-    for (auto dir : mUIPreferences->GetShipLoadDirectories())
+    for (auto dir : mUIPreferencesManager->GetShipLoadDirectories())
     {
         if (std::filesystem::exists(dir))
         {

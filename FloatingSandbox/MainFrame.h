@@ -15,7 +15,7 @@
 #include "ShipLoadDialog.h"
 #include "SoundController.h"
 #include "ToolController.h"
-#include "UIPreferences.h"
+#include "UIPreferencesManager.h"
 
 #include <Game/GameController.h>
 #include <Game/GameEventHandlers.h>
@@ -285,8 +285,8 @@ private:
     std::shared_ptr<ResourceLoader> mResourceLoader;
     std::shared_ptr<GameController> mGameController;
     std::shared_ptr<SoundController> mSoundController;
-    std::shared_ptr <UIPreferences> mUIPreferences;
     std::unique_ptr<ToolController> mToolController;
+    std::shared_ptr <UIPreferencesManager> mUIPreferencesManager;
 
 
     //

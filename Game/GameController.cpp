@@ -883,7 +883,7 @@ bool GameController::TsunamiNotificationStateMachine::Update()
 
         case StateType::Rumbling1:
         {
-            auto const progress = GameWallClock::Progress(now, mCurrentStateStartTime, 500ms);
+            auto const progress = GameWallClock::Progress(now, mCurrentStateStartTime, 4500ms);
 
             // Set tremor
             mRenderContext->SetPixelOffset(TremorAmplitude * sin(TremorAngularVelocity * now), 0.0f);
@@ -922,7 +922,7 @@ bool GameController::TsunamiNotificationStateMachine::Update()
 
         case StateType::Warning:
         {
-            auto const progress = GameWallClock::Progress(now, mCurrentStateStartTime, 3s);
+            auto const progress = GameWallClock::Progress(now, mCurrentStateStartTime, 5s);
 
             // Set tremor
             mRenderContext->SetPixelOffset(TremorAmplitude * sin(TremorAngularVelocity * now), 0.0f);

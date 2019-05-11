@@ -744,6 +744,9 @@ Render:
 
 
 - Gfx:
+	- Find second font for game text
+		- Test with tsunami notifications
+
 	- Continuous auto-focus (*)
 		- Spec:
 			- Orchestrated by GameController by taking "optimal" AABB from World (which takes union of "optimal" AABB's from each ship)
@@ -883,7 +886,7 @@ Render:
 							+ Need "as if" wind was 40, but not simply 2x as wind=100 makes wind'=200
 					+ Controls:
 						+ WidthAdjust, Height, Period (>0)				
-				= SWEs
+				+ SWEs
 					+ Tool
 						+ Tool does no smoothing
 						+ OceanSurface implements trajectory
@@ -892,14 +895,14 @@ Render:
 						+ Find correct falling water speed
 						+ Check if average water depth increases
 					+ Cursor: set arrows at same positions as adjust terrain cursor
-					= Tsunami
+					+ Tsunami
 						+ GameParameters: "TsunamiArrivalTime", mins
 							+ Min = 0 => no tsunamis
 							+ Max = 15
 							+ Settings Dialog, under "Wave Phenomena"
 								+ Tooltip: "...disables automatic generation of..."
 						+ Tools menu entry - w/no accelerator key
-						= OceanSurface:
+						+ OceanSurface:
 							+ Tsunami-specific StateMachine member, std::optional
 							+ When not set:
 								+ Run choosing until chosen
@@ -913,7 +916,7 @@ Render:
 								+ Height = 105 (5%)
 								+ See if need custom fall rate
 									+ If so, new state machine altogether
-							= Publish "OnTsunamiTriggered" event
+							+ Publish "OnTsunamiTriggered" event
 								+ Break IGameEventHandler into smaller pieces
 									+ Do separate one for hi-freq events
 								+ Ship takes GameEventDispatcher directly
@@ -924,18 +927,21 @@ Render:
 										+ bool Update(): when returns false, GameController nukes it
 									+ Text 
 									+ Shaking
-								= SoundController:
-									- Tsunami sound, one-shot (overridable): rumbling + siren + background SOS
-							- UI preferences: show tsunami notifications checkbox
-								- UIPreferencesManager:
-									- It's a test for SettingsManager
-									- Replaces UIPreferences
-										- Also given to ShipLoadDialog
-									- Has own struct, just like SettingsManager
-									- Also acts as storage for some of them (those not owned by GameController)
-										- Exposes setters and getters (like SettingsManager)
-									- Takes GameController at cctor	
-										- And gives it GameController's owned properties after having loaded them
+								+ SoundController:
+									+ Tsunami sound, one-shot (overridable): rumbling + siren + background SOS
+							+ UI preferences: show tsunami notifications checkbox
+								+ UIPreferencesManager:
+									+ It's a test for SettingsManager
+									+ Replaces UIPreferences
+										+ Also given to ShipLoadDialog et al
+									+ Also acts as storage for some of them (those not owned by GameController)
+									+ Exposes setters and getters for all (like SettingsManager)
+									+ Takes GameController at cctor	
+										+ And gives it GameController's owned properties after having loaded them
+									+ Tooltip: say "visual notifications"
+										+ We keep sound
+									+ Test entire preferences dialog
+									+ Test tsunami notifications
 					+ Rogue waves
 						+ GameParameters: "RogueWaveArrivalTime", mins
 							+ Min = 0 => no rogue waves
@@ -974,9 +980,9 @@ Render:
 				+ See if can stop making reflective boundaries with height field=0
 				+ Smooth some other parameters
 					+ Ocean depth, ocean bumpiness, ocean detail
-				- See new font for game text
 				- SWE boundary conditions: try 5 bc samples, damping heights and braking down linearly
 					- Test at x=0
+				- Try with other formulation of SWEs
 				+ Optimize alpha changing for text
 			- Optimizations:
 				- FPS before:
@@ -986,6 +992,7 @@ Render:
 				- Basal wave params and abnormal wave CDFs calc'd only at GameParameters changes
 				- Pre-calc'd funcs (sin)
 				- Two advections in one, so that we have a single loop
+					- Then, check assembly
 				- Two field updates in one, so that we have a single loop
 				- FPS after:
 			- Merge

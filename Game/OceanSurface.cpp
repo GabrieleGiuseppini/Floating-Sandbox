@@ -401,9 +401,11 @@ void OceanSurface::SetSWEWaveHeight(
     int32_t centerIndex,
     float height)
 {
+    int32_t const firstSampleIndex = centerIndex - SWEWaveStateMachinePerturbedSamplesCount / 2;
+
     for (int32_t i = 0; i < SWEWaveStateMachinePerturbedSamplesCount; ++i)
     {
-        int32_t idx = centerIndex - SWEWaveStateMachinePerturbedSamplesCount / 2 + i;
+        int32_t idx = firstSampleIndex + i;
         if (idx > SWEBoundaryConditionsSamples
             && idx < SWEOuterLayerSamples + SamplesCount + SWEWaveGenerationSamples)
         {
@@ -411,6 +413,7 @@ void OceanSurface::SetSWEWaveHeight(
         }
     }
 }
+
 void OceanSurface::AdvectHeightField()
 {
     //

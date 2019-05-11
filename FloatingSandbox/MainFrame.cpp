@@ -96,8 +96,8 @@ MainFrame::MainFrame(wxApp * mainApp)
     , mResourceLoader(new ResourceLoader())
     , mGameController()
     , mSoundController()
-    , mUIPreferences()
     , mToolController()
+    , mUIPreferencesManager()
     , mHasWindowBeenShown(false)
     , mHasStartupTipBeenChecked(false)
     , mCurrentShipTitles()
@@ -596,10 +596,10 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
 
     //
-    // Create UI Preferences
+    // Create UI Preferences manager
     //
 
-    mUIPreferences = std::make_shared<UIPreferences>();
+    mUIPreferencesManager = std::make_shared<UIPreferencesManager>(mGameController);
 
 
     //
@@ -834,11 +834,11 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
     if (!mHasStartupTipBeenChecked)
     {
         // Show startup tip - unless user has decided not to
-        if (mUIPreferences->GetShowStartupTip())
+        if (mUIPreferencesManager->GetShowStartupTip())
         {
             StartupTipDialog startupTipDialog(
                 this,
-                mUIPreferences,
+                mUIPreferencesManager,
                 *mResourceLoader);
 
             startupTipDialog.ShowModal();
@@ -889,13 +889,13 @@ void MainFrame::OnShipFileChosen(fsShipFileChosenEvent & event)
 
         // Open description, if a description exists and the user allows
         if (!!shipMetadata.Description
-            && mUIPreferences->GetShowShipDescriptionsAtShipLoad())
+            && mUIPreferencesManager->GetShowShipDescriptionsAtShipLoad())
         {
             ShipDescriptionDialog shipDescriptionDialog(
                 this,
                 shipMetadata,
                 true,
-                mUIPreferences);
+                mUIPreferencesManager);
 
             shipDescriptionDialog.ShowModal();
         }
@@ -985,7 +985,7 @@ void MainFrame::OnLoadShipMenuItemSelected(wxCommandEvent & /*event*/)
     {
         mShipLoadDialog = std::make_unique<ShipLoadDialog>(
             this,
-            mUIPreferences,
+            mUIPreferencesManager,
             *mResourceLoader);
 
         mShipLoadDialog->Bind(fsEVT_SHIP_FILE_CHOSEN, &MainFrame::OnShipFileChosen, this);
@@ -1033,8 +1033,8 @@ void MainFrame::OnSaveScreenshotMenuItemSelected(wxCommandEvent & /*event*/)
     // Ensure pictures folder exists
     //
 
-    assert(!!mUIPreferences);
-    auto const folderPath = mUIPreferences->GetScreenshotsFolderPath();
+    assert(!!mUIPreferencesManager);
+    auto const folderPath = mUIPreferencesManager->GetScreenshotsFolderPath();
 
     if (!std::filesystem::exists(folderPath))
     {
@@ -1322,7 +1322,7 @@ void MainFrame::OnOpenPreferencesWindowMenuItemSelected(wxCommandEvent & /*event
     {
         mPreferencesDialog = std::make_unique<PreferencesDialog>(
             this,
-            mUIPreferences);
+            mUIPreferencesManager);
     }
 
     mPreferencesDialog->Open();

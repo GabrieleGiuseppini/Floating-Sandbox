@@ -439,6 +439,7 @@ private:
         , mIsPaused(false)
         , mIsMoveToolEngaged(false)
         , mTsunamiNotificationStateMachine()
+        // Parameters that we own
         , mShowTsunamiNotifications(true)
         // Doers
         , mRenderContext(std::move(renderContext))
