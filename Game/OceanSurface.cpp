@@ -21,7 +21,8 @@ T constexpr RenderSlices = 500;
 //
 
 // The rest height of the height field - indirectly determines velocity
-// of waves (via dv/dt <= dh/dx, with dh/dt <= h*dv/dx)
+// of waves (via dv/dt <= dh/dx, with dh/dt <= h*dv/dx).
+// Sensitive to Dx - With Dx=1.22, good offset is 100; with dx=0.61, good offset is 50
 float constexpr SWEHeightFieldOffset = 50.0f;
 
 // The factor by which we amplify the height field perturbations;
