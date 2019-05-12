@@ -2,13 +2,13 @@
 
 #include "gmock/gmock.h"
 
-class _MockHandler : public IGameEventHandler
+class _MockHandler
+    : public IStructuralGameEventHandler
+    , public ILifecycleGameEventHandler
 {
 public:
 
-    MOCK_METHOD3(OnDestroy, void(StructuralMaterial const & material, bool isUnderwater, unsigned int size));
     MOCK_METHOD3(OnBreak, void(StructuralMaterial const & material, bool isUnderwater, unsigned int size));
-    MOCK_METHOD2(OnPinToggled, void(bool isPinned, bool isUnderwater));
     MOCK_METHOD3(OnStress, void(StructuralMaterial const & material, bool isUnderwater, unsigned int size));
     MOCK_METHOD1(OnSinkingBegin, void(ShipId shipId));
 };
@@ -24,7 +24,7 @@ TEST(GameEventDispatcherTests, Aggregates_OnStress)
     MockHandler handler;
 
     GameEventDispatcher dispatcher;
-    dispatcher.RegisterSink(&handler);
+    dispatcher.RegisterStructuralEventHandler(&handler);
 
     StructuralMaterial sm(
         "Foo",
@@ -61,7 +61,7 @@ TEST(GameEventDispatcherTests, Aggregates_OnStress_MultipleKeys)
     MockHandler handler;
 
     GameEventDispatcher dispatcher;
-    dispatcher.RegisterSink(&handler);
+    dispatcher.RegisterStructuralEventHandler(&handler);
 
     StructuralMaterial sm1(
         "Foo1",
@@ -116,45 +116,32 @@ TEST(GameEventDispatcherTests, Aggregates_OnStress_MultipleKeys)
     Mock::VerifyAndClear(&handler);
 }
 
-TEST(GameEventDispatcherTests, Aggregates_OnSinkingBegin)
+TEST(GameEventDispatcherTests, OnSinkingBegin)
 {
     MockHandler handler;
 
     GameEventDispatcher dispatcher;
-    dispatcher.RegisterSink(&handler);
-
-    EXPECT_CALL(handler, OnSinkingBegin(_)).Times(0);
-
-    dispatcher.OnSinkingBegin(7);
-    dispatcher.OnSinkingBegin(7);
-
-    Mock::VerifyAndClear(&handler);
+    dispatcher.RegisterLifecycleEventHandler(&handler);
 
     EXPECT_CALL(handler, OnSinkingBegin(7)).Times(1);
 
-    dispatcher.Flush();
+    dispatcher.OnSinkingBegin(7);
 
     Mock::VerifyAndClear(&handler);
 }
 
-TEST(GameEventDispatcherTests, Aggregates_OnSinkingBegin_MultipleShips)
+TEST(GameEventDispatcherTests, OnSinkingBegin_MultipleShips)
 {
     MockHandler handler;
 
     GameEventDispatcher dispatcher;
-    dispatcher.RegisterSink(&handler);
-
-    EXPECT_CALL(handler, OnSinkingBegin(_)).Times(0);
-
-    dispatcher.OnSinkingBegin(7);
-    dispatcher.OnSinkingBegin(3);
-
-    Mock::VerifyAndClear(&handler);
+    dispatcher.RegisterLifecycleEventHandler(&handler);
 
     EXPECT_CALL(handler, OnSinkingBegin(3)).Times(1);
     EXPECT_CALL(handler, OnSinkingBegin(7)).Times(1);
 
-    dispatcher.Flush();
+    dispatcher.OnSinkingBegin(7);
+    dispatcher.OnSinkingBegin(3);
 
     Mock::VerifyAndClear(&handler);
 }
@@ -164,7 +151,7 @@ TEST(GameEventDispatcherTests, ClearsStateAtUpdate)
     MockHandler handler;
 
     GameEventDispatcher dispatcher;
-    dispatcher.RegisterSink(&handler);
+    dispatcher.RegisterStructuralEventHandler(&handler);
 
     StructuralMaterial sm(
         "Foo",

@@ -331,14 +331,14 @@ TEST_F(ShaderManagerTests, ExtractsVertexAttributeNames_Multiple)
 uniform float paramAmbientLightIntensity;
 in matfoo lopo lopo inShipPointColor;
 foobar;
-in mat4 inSharedAttribute1;
+in mat4 inGenericTexture3;
 )!!!";
 
     auto result = TestShaderManager::ExtractVertexAttributeNames(source);
 
     ASSERT_EQ(2, result.size());
     EXPECT_EQ(1, result.count("ShipPointColor"));
-    EXPECT_EQ(1, result.count("SharedAttribute1"));
+    EXPECT_EQ(1, result.count("GenericTexture3"));
 }
 
 TEST_F(ShaderManagerTests, ExtractsVertexAttributeNames_ErrorsOnUnrecognizedAttribute)

@@ -295,9 +295,17 @@ Render:
 
 		+ Double-check latest rotting speed
 
-		- See if installer for current user removes need for admin consent
+		- Installer:
+			- See if installer for current user removes need for admin consent
+			- Add repair when already installer
 
 	- 1.12.0:
+
+		- Spring and NonSpring force separation optimization (*)
+		- Try with SpringRelaxation updating only positions (*)
+		- Attempt to re-instate square water drag (*)
+		- Attempt to use total point masses for springs (*)
+
 		- Shooting stars
 			- Star "parks" always an extra star at (-1, -1)
 
@@ -323,6 +331,9 @@ Render:
 
 		- Instanced drawing for lights (*)
 
+
+		- Underwater currents (*)
+
 		- Do air bubbles sounds, very low volume
 			- At creation and at expiry
 			- New events at IGameEventHandler
@@ -334,11 +345,6 @@ Render:
 		- Electrical layer view (*)
 
 		- Continuous Auto-focus (*)
-
-		- Spring and NonSpring force separation optimization (*)
-		- Try with SpringRelaxation updating only positions (*)
-		- Attempt to re-instate square water drag (*)
-		- Attempt to use total point masses for springs (*)
 
 		- Batisphere with pumps and propulsion (*)
 			- Switches (*)
@@ -371,6 +377,11 @@ Render:
 		- Mike:
 			= Make subfolder (ask him)
 			- Take Titanic with interior
+		- To make:
+			- Antonia Graza:
+				- https://www.deviantart.com/izaquebr2015/art/M-S-Antonia-Graza-Final-Version-2015-570603964
+				- https://www.deviantart.com/izaquebr2015/art/M-S-Antonia-Graza-FV-Without-Boats-2015-570604582
+				- https://www.deviantart.com/izaquebr2015/art/M-S-Antonia-Graza-Rusty-FV-2015-570604977
 		- To adjust:
 			- SS France (Awesomeyorkie): bends a lot
 			- Ed Fitzgerald (Kiko); year: 1975
@@ -854,7 +865,7 @@ Render:
 					+ Swap buffers
 			+ Step 2: perturbation tool
 				+ OceanSurface::AdjustTo
-			= Rearc:
+			+ Rearc:
 				+ Basal waves
 					+ Params:
 						+ Width (wavelength)
@@ -967,7 +978,7 @@ Render:
 						+ Static box for basal waves
 						+ Tooltips
 					+ Run in Debug
-			= Final touches:
+			+ Final touches:
 				+ Cursor
 				+ WaveMaker:
 					+ Double-check hotspot
@@ -980,20 +991,20 @@ Render:
 				+ Smooth some other parameters
 					+ Ocean depth, ocean bumpiness, ocean detail
 				+ SWE boundary conditions: try 5 bc samples, damping heights and braking down linearly
-				- Try with other formulation of SWEs
+				+ Try with other formulation of SWEs
 				+ Optimize alpha changing for text
 				+ Reduce world width
 				+ Cap interactive height
-			- Optimizations:
-				- FPS before:
-				- Anomaly choosing done only at scheduled (wallclock) times, every ~0.5 sec
+			= Optimizations:
+				= FPS before: 28.6/28.6/28.7/29.5/29.6/
+				- 1: Basal wave params and abnormal wave CDFs calc'd only at GameParameters changes
+				- 2: Pre-calc'd funcs (sin)
+				- 3: Anomaly choosing done only at scheduled (wallclock) times, every ~0.5 sec
 					- Adjust exponential coefficients
 						- Double-check wind while you're at it
-				- Basal wave params and abnormal wave CDFs calc'd only at GameParameters changes
-				- Pre-calc'd funcs (sin)
-				- Two advections in one, so that we have a single loop
+				- 4: Two advections in one, so that we have a single loop
 					- Then, check assembly
-				- Two field updates in one, so that we have a single loop
+				- 5: Two field updates in one, so that we have a single loop
 				- FPS after:
 			- Merge
 
