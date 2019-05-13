@@ -22,7 +22,7 @@ T constexpr RenderSlices = 500;
 
 // The rest height of the height field - indirectly determines velocity
 // of waves (via dv/dt <= dh/dx, with dh/dt <= h*dv/dx).
-// Sensitive to Dx - With Dx=1.22, good offset is 100; with dx=0.61, good offset is 50
+// Sensitive to Dx - With Dx=1.22, a good offset is 100; with dx=0.61, a good offset is 50
 float constexpr SWEHeightFieldOffset = 50.0f;
 
 // The factor by which we amplify the height field perturbations;
@@ -89,7 +89,7 @@ OceanSurface::OceanSurface(std::shared_ptr<GameEventDispatcher> gameEventDispatc
 
     // Initialize *all* values - including extra unused sample
     //
-    // Boundary conditions are initialized here once for all.
+    // Boundary conditions are initialized here once and for all.
     for (int32_t i = 0; i <= SWETotalSamples; ++i)
     {
         mCurrentHeightField[i] = SWEHeightFieldOffset;
@@ -164,7 +164,7 @@ void OceanSurface::Update(
         //
 
         if (gameParameters.TsunamiRate > 0.0f
-            && currentSimulationTime >= 60.0f) // Grace period - we don't want tsunamis right after game start
+            && currentSimulationTime >= 30.0f) // Grace period - we don't want tsunamis right after game starts
         {
             if (GameRandomEngine::GetInstance().GenerateRandomBoolean(mTsunamiCdf))
             {
@@ -371,7 +371,10 @@ void OceanSurface::TriggerTsunami(float currentSimulationTime)
         GameParameters::HalfMaxWorldWidth);
 
     // Choose height
-    float const tsunamiHeight = GameRandomEngine::GetInstance().GenerateRandomReal(4.8f, 5.2f);
+    float constexpr AverageTsunamiHeight = 250.0f / SWEHeightFieldAmplification;
+    float const tsunamiHeight = GameRandomEngine::GetInstance().GenerateRandomReal(
+        AverageTsunamiHeight * 0.96f,
+        AverageTsunamiHeight * 1.04f);
 
     // Make it a sample index
     auto const sampleIndex = ToSampleIndex(tsunamiWorldX);
@@ -381,8 +384,10 @@ void OceanSurface::TriggerTsunami(float currentSimulationTime)
         SWEOuterLayerSamples + sampleIndex,
         mCurrentHeightField[SWEOuterLayerSamples + sampleIndex], // LowHeight
         mCurrentHeightField[SWEOuterLayerSamples + sampleIndex] + tsunamiHeight, // HighHeight
-        7.0f, // Rise delay
-        5.0f, // Fall delay
+        7.0f,
+        5.0f,
+        //10.0f, // Rise delay
+        //8.0f, // Fall delay
         currentSimulationTime);
 
     // Fire tsunami event
@@ -394,9 +399,6 @@ void OceanSurface::TriggerRogueWave(
     float currentSimulationTime,
     Wind const & wind)
 {
-    // TODOTEST
-    LogMessage("Generated rogue wave at ", std::chrono::duration_cast<std::chrono::seconds>(GameWallClock::GetInstance().Now().time_since_epoch()).count());
-
     // Choose locus
     int32_t centerIndex;
     if (wind.GetBaseSpeedMagnitude() >= 0.0f)
@@ -410,11 +412,19 @@ void OceanSurface::TriggerRogueWave(
         centerIndex = SWEOuterLayerSamples + OceanSurface::SamplesCount;
     }
 
+    // TODOTEST
+    LogMessage("Generated rogue wave[", centerIndex, "] at ", std::chrono::duration_cast<std::chrono::seconds>(GameWallClock::GetInstance().Now().time_since_epoch()).count());
+
     // Choose height
-    float const rogueWaveHeight = GameRandomEngine::GetInstance().GenerateRandomReal(0.35f, 1.0f);
+    float constexpr MaxRogueWaveHeight = 50.0f / SWEHeightFieldAmplification;
+    float const rogueWaveHeight = GameRandomEngine::GetInstance().GenerateRandomReal(
+        MaxRogueWaveHeight * 0.35f,
+        MaxRogueWaveHeight);
 
     // Choose rate
-    float const rogueWaveDelay = GameRandomEngine::GetInstance().GenerateRandomReal(0.7f, 2.0f);
+    float const rogueWaveDelay = GameRandomEngine::GetInstance().GenerateRandomReal(
+        0.7f,
+        2.0f);
 
     // (Re-)start state machine
     mSWERogueWaveWaveStateMachine.emplace(
@@ -437,7 +447,7 @@ void OceanSurface::SetSWEWaveHeight(
     for (int32_t i = 0; i < SWEWaveStateMachinePerturbedSamplesCount; ++i)
     {
         int32_t idx = firstSampleIndex + i;
-        if (idx > SWEBoundaryConditionsSamples
+        if (idx >= SWEBoundaryConditionsSamples
             && idx < SWEOuterLayerSamples + SamplesCount + SWEWaveGenerationSamples)
         {
             mCurrentHeightField[idx] = height;
@@ -613,7 +623,8 @@ void OceanSurface::UpdateHeightField()
 void OceanSurface::UpdateVelocityField()
 {
     // Process all samples, except for boundary condition samples
-    for (int32_t i = SWEBoundaryConditionsSamples; i < SWETotalSamples - SWEBoundaryConditionsSamples; ++i)
+    // Note: we skip the first velocity update as well for symmetry with the last one
+    for (int32_t i = SWEBoundaryConditionsSamples + 1; i < SWETotalSamples - SWEBoundaryConditionsSamples; ++i)
     {
         mNextVelocityField[i] +=
             GameParameters::GravityMagnitude
@@ -625,7 +636,7 @@ void OceanSurface::UpdateVelocityField()
 void OceanSurface::GenerateSamples(
     float currentSimulationTime,
     Wind const & wind,
-    GameParameters const & gameParameters)
+    GameParameters const & /*gameParameters*/)
 {
     //
     // Sample values are a combination of:
