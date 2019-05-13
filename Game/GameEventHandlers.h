@@ -81,6 +81,11 @@ struct IWavePhenomenaGameEventHandler
     {
         // Default-implemented
     }
+
+    virtual void OnTsunamiNotification(float /*x*/)
+    {
+        // Default-implemented
+    }
 };
 
 struct IStatisticsGameEventHandler

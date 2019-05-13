@@ -113,6 +113,14 @@ public:
         }
     }
 
+    virtual void OnTsunamiNotification(float x) override
+    {
+        for (auto sink : mWavePhenomenaSinks)
+        {
+            sink->OnTsunamiNotification(x);
+        }
+    }
+
     //
     // Statistics
     //

@@ -91,6 +91,10 @@ private:
         int32_t centerIndex,
         float height);
 
+    void RecalculateCoefficients(
+        Wind const & wind,
+        GameParameters const & gameParameters);
+
     void AdvectHeightField();
     void AdvectVelocityField();
     void UpdateHeightField();
@@ -118,6 +122,27 @@ private:
     // Smoothing of wind incisiveness
     RunningAverage<15> mWindIncisivenessRunningAverage;
 
+    //
+    // Calculated coefficients
+    //
+
+    // Calculated values
+    float mBasalWaveAmplitude1;
+    float mBasalWaveAmplitude2;
+    float mBasalWaveNumber1;
+    float mBasalWaveNumber2;
+    float mBasalWaveAngularVelocity1;
+    float mBasalWaveAngularVelocity2;
+    float mTsunamiCdf;
+    float mRogueWaveCdf;
+
+    // Parameters that the calculated values are current with
+    float mWindBaseSpeedMagnitude;
+    float mBasalWaveHeightAdjustment;
+    float mBasalWaveLengthAdjustment;
+    float mBasalWaveSpeedAdjustment;
+    float mTsunamiRate;
+    float mRogueWaveRate;
 
     //
     // Shallow water equations

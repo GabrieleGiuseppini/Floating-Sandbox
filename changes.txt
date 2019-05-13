@@ -1,5 +1,7 @@
 1.11.0
-- New "Repair Structure" tool! Use it on the edges of broken parts of a ship, and with some patience the ship structure will repair itself
+- New "Repair Structure" tool! Use it on the edges of broken parts of a ship, and if you are skilled the ship structure will repair itself
+- Redesigned waves sub-system: waves now consist of ocean waves and waves generated either manually with the new "WaveMaker" tool, or automatically like tsunami and rogue waves
+  (see https://gabrielegiuseppini.wordpress.com/2019/05/12/1d-simulation-of-ocean-waves/)
 - Added "Orphaned particles rendering": individual particles that break off the ship structure used to disappear, while they are now rendered contributing
   to debris, flotsam, and rubble
 - Also dry parts of a ship now rot when exposed to sea water, albeit *very* slowly...
@@ -8,6 +10,7 @@
 - Added a few new materials, including "stainless" materials that never rot, rubber, and LEGO(c) bricks!
 - Fixed bug that would crash the game when setting the number of clouds to zero on computers with specific graphics cards
 - ...and a few more small improvements here and there
+- Musical theme for this release: Evanescence, entire discography
 
 1.10.0
 - A ship that has sunk now slowly rots over time

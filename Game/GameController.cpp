@@ -605,10 +605,14 @@ void GameController::TriggerRogueWave()
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-void GameController::OnTsunami(float /*x*/)
+void GameController::OnTsunami(float x)
 {
     if (mShowTsunamiNotifications)
     {
+        // Fire notification event
+        mGameEventDispatcher->OnTsunamiNotification(x);
+
+        // Start visual notification
         mTsunamiNotificationStateMachine.emplace(mRenderContext);
     }
 }

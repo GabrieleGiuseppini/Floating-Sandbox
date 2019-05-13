@@ -188,7 +188,7 @@ void PreferencesDialog::PopulateMainPanel(wxPanel * panel)
 
     mShowTsunamiNotificationsCheckBox = new wxCheckBox(panel, wxID_ANY, _("Show Tsunami Notifications"), wxDefaultPosition, wxDefaultSize, 0);
 
-    mShowTsunamiNotificationsCheckBox->SetToolTip("Enables or disables visual notifications when a tsunami is being spawned.");
+    mShowTsunamiNotificationsCheckBox->SetToolTip("Enables or disables notifications when a tsunami is being spawned.");
 
     mShowTsunamiNotificationsCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowTsunamiNotificationsCheckBoxClicked, this);
 

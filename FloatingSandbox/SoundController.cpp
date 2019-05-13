@@ -979,7 +979,7 @@ void SoundController::OnSinkingEnd(ShipId /*shipId*/)
     }
 }
 
-void SoundController::OnTsunami(float /*x*/)
+void SoundController::OnTsunamiNotification(float /*x*/)
 {
     PlayOneShotMultipleChoiceSound(
         SoundType::TsunamiTriggered,

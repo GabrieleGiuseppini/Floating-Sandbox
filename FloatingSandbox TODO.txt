@@ -996,16 +996,24 @@ Render:
 				+ Reduce world width
 				+ Cap interactive height
 			= Optimizations:
-				= FPS before: 28.6/28.6/28.7/29.5/29.6/
-				- 1: Basal wave params and abnormal wave CDFs calc'd only at GameParameters changes
+				+ FPS before: 28.6/28.6/28.7/29.5/29.6/
+				+ 1: Basal wave params and abnormal wave CDFs calc'd only at GameParameters changes
+					+ Test all param changes
+					+ Test tsunami notifications
+				- UR/Ratio: 220
 				- 2: Pre-calc'd funcs (sin)
 				- 3: Anomaly choosing done only at scheduled (wallclock) times, every ~0.5 sec
 					- Adjust exponential coefficients
 						- Double-check wind while you're at it
+					- Test rates
 				- 4: Two advections in one, so that we have a single loop
 					- Then, check assembly
 				- 5: Two field updates in one, so that we have a single loop
 				- FPS after:
+			- See to reduce flattening of waves
+				- Test lower offset
+				- World at 6k
+				- View values
 			- Merge
 
 	- Underwater currents

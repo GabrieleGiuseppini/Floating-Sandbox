@@ -184,7 +184,7 @@ public:
 
     virtual void OnSinkingEnd(ShipId shipId) override;
 
-    virtual void OnTsunami(float x) override;
+    virtual void OnTsunamiNotification(float x) override;
 
     virtual void OnStress(
         StructuralMaterial const & structuralMaterial,

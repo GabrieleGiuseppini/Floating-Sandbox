@@ -52,6 +52,22 @@ int32_t constexpr SWETotalSamples =
 OceanSurface::OceanSurface(std::shared_ptr<GameEventDispatcher> gameEventDispatcher)
     : mGameEventHandler(std::move(gameEventDispatcher))
     , mSamples(new Sample[SamplesCount + 1])
+    ////////
+    , mBasalWaveAmplitude1(0.0f)
+    , mBasalWaveAmplitude2(0.0f)
+    , mBasalWaveNumber1(0.0f)
+    , mBasalWaveNumber2(0.0f)
+    , mBasalWaveAngularVelocity1(0.0f)
+    , mBasalWaveAngularVelocity2(0.0f)
+    , mTsunamiCdf(0.0f)
+    , mRogueWaveCdf(0.0f)
+    , mWindBaseSpeedMagnitude(std::numeric_limits<float>::max())
+    , mBasalWaveHeightAdjustment(std::numeric_limits<float>::max())
+    , mBasalWaveLengthAdjustment(std::numeric_limits<float>::max())
+    , mBasalWaveSpeedAdjustment(std::numeric_limits<float>::max())
+    , mTsunamiRate(std::numeric_limits<float>::max())
+    , mRogueWaveRate(std::numeric_limits<float>::max())
+    ////////
     , mHeightFieldBuffer1(new float[SWETotalSamples + 1]) // One extra cell just to ease interpolations
     , mHeightFieldBuffer2(new float[SWETotalSamples + 1]) // One extra cell just to ease interpolations
     , mVelocityFieldBuffer1(new float[SWETotalSamples + 1]) // One extra cell just to ease interpolations
@@ -72,6 +88,8 @@ OceanSurface::OceanSurface(std::shared_ptr<GameEventDispatcher> gameEventDispatc
     mNextVelocityField = mVelocityFieldBuffer2.get();
 
     // Initialize *all* values - including extra unused sample
+    //
+    // Boundary conditions are initialized here once for all.
     for (int32_t i = 0; i <= SWETotalSamples; ++i)
     {
         mCurrentHeightField[i] = SWEHeightFieldOffset;
@@ -87,6 +105,21 @@ void OceanSurface::Update(
     Wind const & wind,
     GameParameters const & gameParameters)
 {
+    //
+    // Check whether parameters have changed
+    //
+
+    if (mWindBaseSpeedMagnitude != wind.GetBaseSpeedMagnitude()
+        || mBasalWaveHeightAdjustment != gameParameters.BasalWaveHeightAdjustment
+        || mBasalWaveLengthAdjustment != gameParameters.BasalWaveLengthAdjustment
+        || mBasalWaveSpeedAdjustment != gameParameters.BasalWaveSpeedAdjustment
+        || mTsunamiRate != gameParameters.TsunamiRate
+        || mRogueWaveRate != gameParameters.RogueWaveRate)
+    {
+        RecalculateCoefficients(wind, gameParameters);
+    }
+
+
     //
     // 1. Advance SWE Wave State Machines
     //
@@ -133,10 +166,7 @@ void OceanSurface::Update(
         if (gameParameters.TsunamiRate > 0.0f
             && currentSimulationTime >= 60.0f) // Grace period - we don't want tsunamis right after game start
         {
-            // TODO: move to RecalculateParameters
-            float const tsunamiCdf = 1.0f - exp(-GameParameters::SimulationStepTimeDuration<float> / (gameParameters.TsunamiRate * 60.0f));
-
-            if (GameRandomEngine::GetInstance().GenerateRandomBoolean(tsunamiCdf))
+            if (GameRandomEngine::GetInstance().GenerateRandomBoolean(mTsunamiCdf))
             {
                 // Tsunami!
                 TriggerTsunami(currentSimulationTime);
@@ -168,10 +198,7 @@ void OceanSurface::Update(
 
         if (gameParameters.RogueWaveRate > 0.0f)
         {
-            // TODO: move to RecalculateParameters
-            float const rogueWaveCdf = 1.0f - exp(-GameParameters::SimulationStepTimeDuration<float> / (gameParameters.RogueWaveRate * 60.0f));
-
-            if (GameRandomEngine::GetInstance().GenerateRandomBoolean(rogueWaveCdf))
+            if (GameRandomEngine::GetInstance().GenerateRandomBoolean(mRogueWaveCdf))
             {
                 // Rogue wave!
                 TriggerRogueWave(currentSimulationTime, wind);
@@ -418,6 +445,85 @@ void OceanSurface::SetSWEWaveHeight(
     }
 }
 
+void OceanSurface::RecalculateCoefficients(
+    Wind const & wind,
+    GameParameters const & gameParameters)
+{
+    //
+    // Basal waves
+    //
+
+    float baseWindSpeedMagnitude = abs(wind.GetBaseSpeedMagnitude()); // km/h
+    if (baseWindSpeedMagnitude < 60)
+        // y = 63.09401 - 63.09401*e^(-0.05025263*x)
+        baseWindSpeedMagnitude = 63.09401f - 63.09401f * exp(-0.05025263f * baseWindSpeedMagnitude); // Dramatize
+
+    float const baseWindSpeedSign = wind.GetBaseSpeedMagnitude() >= 0.0f ? 1.0f : -1.0f;
+
+    // Amplitude
+    // - Amplitude = f(WindSpeed, km/h), with f fitted over points from Full Developed Waves
+    //   (H. V. Thurman, Introductory Oceanography, 1988)
+    // y = 1.039702 - 0.08155357*x + 0.002481548*x^2
+
+    float const basalWaveHeightBase = (baseWindSpeedMagnitude != 0.0f)
+        ? 0.002481548f * (baseWindSpeedMagnitude * baseWindSpeedMagnitude)
+        - 0.08155357f * baseWindSpeedMagnitude
+        + 1.039702f
+        : 0.0f;
+
+    mBasalWaveAmplitude1 = basalWaveHeightBase / 2.0f * gameParameters.BasalWaveHeightAdjustment;
+    mBasalWaveAmplitude2 = 0.75f * mBasalWaveAmplitude1;
+
+    // Wavelength
+    // - Wavelength = f(WaveHeight (adjusted), m), with f fitted over points from same table
+    // y = -738512.1 + 738525.2*e^(+0.00001895026*x)
+
+    float const basalWaveLengthBase =
+        -738512.1f
+        + 738525.2f * exp(0.00001895026f * (2.0f * mBasalWaveAmplitude1));
+
+    float const basalWaveLength = basalWaveLengthBase * gameParameters.BasalWaveLengthAdjustment;
+
+    assert(basalWaveLength != 0.0f);
+    mBasalWaveNumber1 = baseWindSpeedSign * 2.0f * Pi<float> / basalWaveLength;
+    mBasalWaveNumber2 = 0.66f * mBasalWaveNumber1;
+
+    // Period
+    // - Technically, period = sqrt(2 * Pi * L / g), however this doesn't fit the table, so:
+    // - Period = f(WaveLength (adjusted), m), with f fitted over points from same table
+    // y = 17.91851 - 15.52928*e^(-0.006572834*x)
+
+    float const basalWavePeriodBase =
+        17.91851f
+        - 15.52928f * exp(-0.006572834f * basalWaveLength);
+
+    assert(gameParameters.BasalWaveSpeedAdjustment != 0.0f);
+    float const basalWavePeriod = basalWavePeriodBase / gameParameters.BasalWaveSpeedAdjustment;
+
+    assert(basalWavePeriod != 0.0f);
+    mBasalWaveAngularVelocity1 = 2.0f * Pi<float> / basalWavePeriod;
+    mBasalWaveAngularVelocity2 = 0.75f * mBasalWaveAngularVelocity1;
+
+    //
+    // Abnormal wave CDFs
+    //
+
+    mTsunamiCdf = 1.0f - exp(-GameParameters::SimulationStepTimeDuration<float> / (gameParameters.TsunamiRate * 60.0f));
+    mRogueWaveCdf = 1.0f - exp(-GameParameters::SimulationStepTimeDuration<float> / (gameParameters.RogueWaveRate * 60.0f));
+
+
+    //
+    // Store new parameter values that we are now current with
+    //
+
+    mWindBaseSpeedMagnitude = wind.GetBaseSpeedMagnitude();
+    mBasalWaveHeightAdjustment = gameParameters.BasalWaveHeightAdjustment;
+    mBasalWaveLengthAdjustment = gameParameters.BasalWaveLengthAdjustment;
+    mBasalWaveSpeedAdjustment = gameParameters.BasalWaveSpeedAdjustment;
+    mTsunamiRate = gameParameters.TsunamiRate;
+    mRogueWaveRate = gameParameters.RogueWaveRate;
+}
+
 void OceanSurface::AdvectHeightField()
 {
     //
@@ -528,65 +634,8 @@ void OceanSurface::GenerateSamples(
     //  - Wind gust ripples
     //
 
-    float baseWindSpeedMagnitude = abs(wind.GetBaseSpeedMagnitude()); // km/h
-    if (baseWindSpeedMagnitude < 60)
-        // y = 63.09401 - 63.09401*e^(-0.05025263*x)
-        baseWindSpeedMagnitude = 63.09401f - 63.09401f * exp(-0.05025263f * baseWindSpeedMagnitude); // Dramatize
-
-    float const baseWindSpeedSign = wind.GetBaseSpeedMagnitude() >= 0.0f ? 1.0f : -1.0f;
-
-
-    //
-    // Basal waves
-    //
-
-    // Amplitude
-    // - Amplitude = f(WindSpeed, km/h), with f fitted over points from Full Developed Waves
-    //   (H. V. Thurman, Introductory Oceanography, 1988)
-    // y = 1.039702 - 0.08155357*x + 0.002481548*x^2
-
-    float const basalWaveHeightBase = (baseWindSpeedMagnitude != 0.0f)
-        ? 0.002481548f * (baseWindSpeedMagnitude * baseWindSpeedMagnitude)
-          - 0.08155357f * baseWindSpeedMagnitude
-          + 1.039702f
-        : 0.0f;
-
-    float const basalWaveAmplitude1 = basalWaveHeightBase / 2.0f * gameParameters.BasalWaveHeightAdjustment;
-    float const basalWaveAmplitude2 = 0.75f * basalWaveAmplitude1;
-
-    // Wavelength
-    // - Wavelength = f(WaveHeight (adjusted), m), with f fitted over points from same table
-    // y = -738512.1 + 738525.2*e^(+0.00001895026*x)
-
-    float const basalWaveLengthBase =
-        -738512.1f
-        + 738525.2f * exp(0.00001895026f * (2.0f * basalWaveAmplitude1));
-
-    float const basalWaveLength = basalWaveLengthBase * gameParameters.BasalWaveLengthAdjustment;
-
-    assert(basalWaveLength != 0.0f);
-    float const basalWaveNumber1 = baseWindSpeedSign * 2.0f * Pi<float> / basalWaveLength;
-    float const basalWaveNumber2 = 0.66f * basalWaveNumber1;
-
-    // Period
-    // - Technically, period = sqrt(2 * Pi * L / g), however this doesn't fit the table, so:
-    // - Period = f(WaveLength (adjusted), m), with f fitted over points from same table
-    // y = 17.91851 - 15.52928*e^(-0.006572834*x)
-
-    float const basalWavePeriodBase =
-        17.91851f
-        - 15.52928f * exp(-0.006572834f * basalWaveLength);
-
-    assert(gameParameters.BasalWaveSpeedAdjustment != 0.0f);
-    float const basalWavePeriod = basalWavePeriodBase / gameParameters.BasalWaveSpeedAdjustment;
-
-    assert(basalWavePeriod != 0.0f);
-    float const basalWaveAngularVelocity1 = 2.0f * Pi<float> / basalWavePeriod;
-    float const basalWaveAngularVelocity2 = 0.75f * basalWaveAngularVelocity1;
-
-    // Secondary component
-    float const secondaryComponentPhase = Pi<float> * sin(currentSimulationTime);
-
+    // Secondary basal component
+    float const secondaryBasalComponentPhase = Pi<float> * sin(currentSimulationTime);
 
     //
     // Wind gust ripples
@@ -598,10 +647,12 @@ void OceanSurface::GenerateSamples(
     float const windSpeedGustRelativeAmplitude = wind.GetMaxSpeedMagnitude() - wind.GetBaseSpeedMagnitude();
     float const rawWindNormalizedIncisiveness = (windSpeedGustRelativeAmplitude == 0.0f)
         ? 0.0f
-        : std::max(0.0f, windSpeedAbsoluteMagnitude - baseWindSpeedMagnitude)
+        : std::max(0.0f, windSpeedAbsoluteMagnitude - abs(wind.GetBaseSpeedMagnitude()))
         / abs(windSpeedGustRelativeAmplitude);
 
-    float const windRipplesTimeFrequency = baseWindSpeedSign * 128.0f;
+    float const windRipplesTimeFrequency = (wind.GetBaseSpeedMagnitude() >= 0)
+        ? 128.0f
+        : -128.0f;
 
     float const smoothedWindNormalizedIncisiveness = mWindIncisivenessRunningAverage.Update(rawWindNormalizedIncisiveness);
     float const windRipplesWaveHeight = 0.7f * smoothedWindNormalizedIncisiveness;
@@ -621,12 +672,12 @@ void OceanSurface::GenerateSamples(
             * SWEHeightFieldAmplification;
 
         float const basalValue1 =
-            basalWaveAmplitude1
-            * sin(basalWaveNumber1 * x - basalWaveAngularVelocity1 * currentSimulationTime);
+            mBasalWaveAmplitude1
+            * sin(mBasalWaveNumber1 * x - mBasalWaveAngularVelocity1 * currentSimulationTime);
 
         float const basalValue2 =
-            basalWaveAmplitude2
-            * sin(basalWaveNumber2 * x - basalWaveAngularVelocity2 * currentSimulationTime + secondaryComponentPhase);
+            mBasalWaveAmplitude2
+            * sin(mBasalWaveNumber2 * x - mBasalWaveAngularVelocity2 * currentSimulationTime + secondaryBasalComponentPhase);
 
         float const rippleValue =
             windRipplesWaveHeight
@@ -649,12 +700,12 @@ void OceanSurface::GenerateSamples(
             * SWEHeightFieldAmplification;
 
         float const basalValue1 =
-            basalWaveAmplitude1
-            * sin(basalWaveNumber1 * x - basalWaveAngularVelocity1 * currentSimulationTime);
+            mBasalWaveAmplitude1
+            * sin(mBasalWaveNumber1 * x - mBasalWaveAngularVelocity1 * currentSimulationTime);
 
         float const basalValue2 =
-            basalWaveAmplitude2
-            * sin(basalWaveNumber2 * x - basalWaveAngularVelocity2 * currentSimulationTime + secondaryComponentPhase);
+            mBasalWaveAmplitude2
+            * sin(mBasalWaveNumber2 * x - mBasalWaveAngularVelocity2 * currentSimulationTime + secondaryBasalComponentPhase);
 
         float const rippleValue =
             windRipplesWaveHeight
