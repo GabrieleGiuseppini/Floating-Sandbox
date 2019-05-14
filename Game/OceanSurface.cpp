@@ -37,7 +37,7 @@ int32_t constexpr SWEWaveStateMachinePerturbedSamplesCount = 3;
 int32_t constexpr SWEWaveGenerationSamples = 1;
 
 // The number of samples we set apart in the SWE buffers for boundary conditions at each end of a buffer
-int32_t constexpr SWEBoundaryConditionsSamples = 1;
+int32_t constexpr SWEBoundaryConditionsSamples = 3;
 
 int32_t constexpr SWEOuterLayerSamples =
     SWEWaveGenerationSamples
@@ -215,6 +215,8 @@ void OceanSurface::Update(
 
     AdvectHeightField();
     AdvectVelocityField();
+
+    ApplyDampingBoundaryConditions();
 
     UpdateHeightField();
     UpdateVelocityField();
@@ -579,7 +581,9 @@ void OceanSurface::AdvectVelocityField()
     //
 
     // Process all velocity samples, except for boundary condition samples
-    for (int32_t i = SWEBoundaryConditionsSamples; i < SWETotalSamples - SWEBoundaryConditionsSamples; ++i)
+    //
+    // Note: the last velocity sample is the one after the last height field sample
+    for (int32_t i = SWEBoundaryConditionsSamples; i <= SWETotalSamples - SWEBoundaryConditionsSamples; ++i)
     {
         // Velocity values are at the edges of the cell
         float const v = mCurrentVelocityField[i];
@@ -608,10 +612,32 @@ void OceanSurface::AdvectVelocityField()
     }
 }
 
+void OceanSurface::ApplyDampingBoundaryConditions()
+{
+    for (size_t i = 0; i < SWEBoundaryConditionsSamples; ++i)
+    {
+        float const damping = static_cast<float>(i) / static_cast<float>(SWEBoundaryConditionsSamples);
+
+        mNextHeightField[i] =
+            (mNextHeightField[i] - SWEHeightFieldOffset) * damping
+            + SWEHeightFieldOffset;
+
+        mNextVelocityField[i] *= damping;
+
+        mNextHeightField[SWEOuterLayerSamples + SamplesCount + SWEOuterLayerSamples - 1 - i] =
+            (mNextHeightField[SWEOuterLayerSamples + SamplesCount + SWEOuterLayerSamples - 1 - i] - SWEHeightFieldOffset) * damping
+            + SWEHeightFieldOffset;
+
+        // For symmetry we actually damp the v-sample after this height field sample
+        mNextVelocityField[SWEOuterLayerSamples + SamplesCount + SWEOuterLayerSamples - 1 - i + 1] *= damping;
+    }
+
+}
+
 void OceanSurface::UpdateHeightField()
 {
-    // Process all samples, except for boundary condition samples
-    for (int32_t i = SWEBoundaryConditionsSamples; i < SWETotalSamples - SWEBoundaryConditionsSamples; ++i)
+    // Process all height samples
+    for (int32_t i = 0; i < SWETotalSamples; ++i)
     {
         mNextHeightField[i] -=
             mNextHeightField[i]
@@ -622,9 +648,9 @@ void OceanSurface::UpdateHeightField()
 
 void OceanSurface::UpdateVelocityField()
 {
-    // Process all samples, except for boundary condition samples
-    // Note: we skip the first velocity update as well for symmetry with the last one
-    for (int32_t i = SWEBoundaryConditionsSamples + 1; i < SWETotalSamples - SWEBoundaryConditionsSamples; ++i)
+    // Process all samples
+    // Note: we skip the first velocity update for symmetry with the last one
+    for (int32_t i = 1; i < SWETotalSamples; ++i)
     {
         mNextVelocityField[i] +=
             GameParameters::GravityMagnitude

@@ -97,6 +97,7 @@ private:
 
     void AdvectHeightField();
     void AdvectVelocityField();
+    void ApplyDampingBoundaryConditions();
     void UpdateHeightField();
     void UpdateVelocityField();
 

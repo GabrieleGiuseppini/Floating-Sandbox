@@ -1010,11 +1010,14 @@ Render:
 					- Then, check assembly
 				- 5: Two field updates in one, so that we have a single loop
 				- FPS after:
-			- See to reduce flattening of waves
+			= See to reduce flattening of waves
 				+ Test lower offset
 				- World at 6k?
 				+ View values
-			- See damping boundary conditions
+			+ Retry damping boundary conditions
+				+ Between advection and update
+				+ Test first in visible world
+				+ Finalize
 			- Merge
 
 	- Underwater currents
