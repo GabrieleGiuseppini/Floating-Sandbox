@@ -88,8 +88,6 @@ OceanSurface::OceanSurface(std::shared_ptr<GameEventDispatcher> gameEventDispatc
     mNextVelocityField = mVelocityFieldBuffer2.get();
 
     // Initialize *all* values - including extra unused sample
-    //
-    // Boundary conditions are initialized here once and for all.
     for (int32_t i = 0; i <= SWETotalSamples; ++i)
     {
         mCurrentHeightField[i] = SWEHeightFieldOffset;
