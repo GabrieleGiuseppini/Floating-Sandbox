@@ -23,6 +23,8 @@ T constexpr RenderSlices = 500;
 // The rest height of the height field - indirectly determines velocity
 // of waves (via dv/dt <= dh/dx, with dh/dt <= h*dv/dx).
 // Sensitive to Dx - With Dx=1.22, a good offset is 100; with dx=0.61, a good offset is 50
+// TODOTEST
+//float constexpr SWEHeightFieldOffset = 50.0f;
 float constexpr SWEHeightFieldOffset = 50.0f;
 
 // The factor by which we amplify the height field perturbations;
@@ -318,8 +320,10 @@ void OceanSurface::AdjustTo(
     if (!!worldCoordinates)
     {
         // Calculate target height
+        float constexpr MaxHeight = 9.0f;
+        float constexpr MinHeight = -2.0f;
         float targetHeight =
-            std::max(-9.0f, std::min(9.0f, (worldCoordinates->y / SWEHeightFieldAmplification)))
+            std::max(MinHeight, std::min(MaxHeight, (worldCoordinates->y / SWEHeightFieldAmplification)))
             + SWEHeightFieldOffset;
 
         // Check whether we are already advancing an interactive wave
@@ -370,7 +374,7 @@ void OceanSurface::TriggerTsunami(float currentSimulationTime)
         -GameParameters::HalfMaxWorldWidth,
         GameParameters::HalfMaxWorldWidth);
 
-    // Choose height
+    // Choose height (good: 5 at 50-50)
     float constexpr AverageTsunamiHeight = 250.0f / SWEHeightFieldAmplification;
     float const tsunamiHeight = GameRandomEngine::GetInstance().GenerateRandomReal(
         AverageTsunamiHeight * 0.96f,
@@ -676,7 +680,7 @@ void OceanSurface::GenerateSamples(
     // Wind gust ripples
     //
 
-    static float constexpr WindRippleSpatialFrequency = 0.5f;
+    static float constexpr WindRippleWaveNumber = 0.5f;
 
     float const windSpeedAbsoluteMagnitude = wind.GetCurrentWindSpeed().length();
     float const windSpeedGustRelativeAmplitude = wind.GetMaxSpeedMagnitude() - wind.GetBaseSpeedMagnitude();
@@ -716,7 +720,7 @@ void OceanSurface::GenerateSamples(
 
         float const rippleValue =
             windRipplesWaveHeight
-            * sinf(x * WindRippleSpatialFrequency - currentSimulationTime * windRipplesTimeFrequency);
+            * sinf(WindRippleWaveNumber * x  - currentSimulationTime * windRipplesTimeFrequency);
 
         previousSampleValue =
             sweValue
@@ -744,7 +748,7 @@ void OceanSurface::GenerateSamples(
 
         float const rippleValue =
             windRipplesWaveHeight
-            * sinf(x * WindRippleSpatialFrequency - currentSimulationTime * windRipplesTimeFrequency);
+            * sinf(WindRippleWaveNumber * x  - currentSimulationTime * windRipplesTimeFrequency);
 
         float const sampleValue =
             sweValue
@@ -848,7 +852,8 @@ float OceanSurface::SWEInteractiveWaveStateMachine::CalculateSmoothingDelay()
         SWEHeightFieldOffset / 5.0f);
 
     float delayTicks;
-    if (mCurrentWavePhase == WavePhaseType::Rise)
+    if (mCurrentWavePhase == WavePhaseType::Rise
+        || mCurrentPhaseStartHeight < mCurrentPhaseTargetHeight) // If falling up, we want a slower fall
     {
         //
         // Number of ticks must fit:

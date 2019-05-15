@@ -396,13 +396,13 @@ Render:
 			- Fokker (Artica); year: 1915
 			- P51 (Artica); year: 1940
 			- Mini_R.M.S_Titanic_mcshooter2018.png
-				- Asked
 			- HMS Ajax (ASSTYU); year: 1933
 				- Add "_ASTYuu_" to about box
 
 		- To test:
 			- JackMellon (see PM on Discord): https://drive.google.com/drive/folders/1isy3QiRzMfyu69v5M0gwD5tvBnYZMWXx
-				- JackTheBrickfilmMaker, link to youtube channel
+				- JackTheBrickfilmMaker, link to youtube channel: https://www.youtube.com/channel/UCshPbiTqFuwpNNh7BlpffhQ
+					- About box
 			- serhiires (see PM on Discord): HMHS Danic, RMS Danic, and all his others
 			- KMS_Unversinkbar_PandaDude.png
 				- Waiting for PandaDude12345
@@ -1002,18 +1002,21 @@ Render:
 					+ Test tsunami notifications
 				+ UR/Ratio: 220
 				- 2: Pre-calc'd funcs (sin)
-				- 3: Anomaly choosing done only at scheduled (wallclock) times, every ~0.5 sec
+				- 3: Samples: advance x's with sums, no multiplications
+				- 4: Anomaly choosing done only at scheduled (wallclock) times, every ~0.5 sec
 					- Adjust exponential coefficients
 						- Double-check wind while you're at it
 					- Test rates
-				- 4: Two advections in one, so that we have a single loop
+				- 5a: see if both advections are really needed
+				- 5b: Two advections in one, so that we have a single loop
 					- Then, check assembly
-				- 5: Two field updates in one, so that we have a single loop
+				- 6: Two field updates in one, so that we have a single loop
 				- FPS after:
-			= See to reduce flattening of waves
+			+ See to reduce flattening of waves
 				+ Test lower offset
-				- World at 6k?
+				+ Try again with height offset
 				+ View values
+			+ Check width of tsunami wave
 			+ Retry damping boundary conditions
 				+ Between advection and update
 				+ Test first in visible world
