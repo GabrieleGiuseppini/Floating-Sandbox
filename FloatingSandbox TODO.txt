@@ -1000,13 +1000,18 @@ Render:
 				+ 1: Basal wave params and abnormal wave CDFs calc'd only at GameParameters changes
 					+ Test all param changes
 					+ Test tsunami notifications
-				+ UR/Ratio: 220
+				+ UR/Ratio: 220/230
 				- 2: Pre-calc'd funcs (sin)
+					- Arg needs to become current_arg/2PI
 				- 3: Samples: advance x's with sums, no multiplications
-				- 4: Anomaly choosing done only at scheduled (wallclock) times, every ~0.5 sec
-					- Adjust exponential coefficients
-						- Double-check wind while you're at it
-					- Test rates
+					- Take into account current_arg/2PI
+				= 4: Anomaly choosing done only at scheduled (wallclock) times, every ~0.5 sec
+					+ AnomalyTriggerSampleInterval = 500ms
+					+ Adjust exponential coefficients
+						+ If we want 1 tsunami every TsunamiRate * 60.0f second, we want 1/(TsunamiRate * 60.0f) tsunami
+						  every second, and thus we want 1/(TsunamiRate * 60.0f * 1s / AnomalyTriggerSampleInterval) every interval
+						+ Double-check wind while you're at it
+					= Verify rates
 				- 5a: see if both advections are really needed
 				- 5b: Two advections in one, so that we have a single loop
 					- Then, check assembly
@@ -1021,6 +1026,7 @@ Render:
 				+ Between advection and update
 				+ Test first in visible world
 				+ Finalize
+			- ParameterSmoothing: make it with sin (btwn pi/4 and pi/2)
 			- Merge
 
 	- Underwater currents
@@ -1067,6 +1073,16 @@ Render:
 			- combustion type (Explosive, Burning)
 		- New materials:
 			- "gunpowder" and "diesel"
+		- Rendering of flames:
+			- Need depth-sorting:
+				- Ship has heap of indices of burning points
+					- Heap created from scratch at connectivity visit
+					- Heap updated by Points's combustion state machine update (heap passed by Ship)
+					- Heap used by Points's Upload() (heap passed by Ship)
+		- Points::UnderwaterDepth buffer
+			- Re-populated by Ship at first step that checks underwater-ness after mechanical update
+				- i.e. water update?
+			- Used by anything else afterwards
 		- TODO: from Moleskine
 		- TODO: HeatPropagation (and others?) may run sparingly
 

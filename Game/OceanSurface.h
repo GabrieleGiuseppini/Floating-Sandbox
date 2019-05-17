@@ -151,8 +151,8 @@ private:
 
     // Height field (dual-buffered)
     // - Height values are at the center of the staggered grid cells
-    std::unique_ptr<float> mHeightFieldBuffer1;
-    std::unique_ptr<float> mHeightFieldBuffer2;
+    std::unique_ptr<float[]> mHeightFieldBuffer1;
+    std::unique_ptr<float[]> mHeightFieldBuffer2;
     float * mCurrentHeightField;
     float * mNextHeightField;
 
@@ -224,6 +224,9 @@ private:
     //
     // Abnormal waves
     //
+
+    GameWallClock::time_point mLastTsunamiTriggerCheckedTimestamp;
+    GameWallClock::time_point mLastRogueWaveTriggerCheckedTimestamp;
 
     class SWEAbnormalWaveStateMachine
     {
