@@ -25,7 +25,7 @@ World::World(
     , mClouds()
     , mOceanSurface(gameEventDispatcher)
     , mOceanFloor(resourceLoader)
-    , mGameEventHandler(std::move(gameEventDispatcher))
+    , mGameEventHandler(gameEventDispatcher)
 {
     // Initialize world pieces
     mStars.Update(gameParameters);

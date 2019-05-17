@@ -136,6 +136,8 @@ private:
     float mBasalWaveAngularVelocity2;
     float mTsunamiCdf;
     float mRogueWaveCdf;
+    GameWallClock::duration mTsunamiInterval;
+    GameWallClock::duration mRogueWaveInterval;
 
     // Parameters that the calculated values are current with
     float mWindBaseSpeedMagnitude;
@@ -225,7 +227,9 @@ private:
     // Abnormal waves
     //
 
+    GameWallClock::time_point mLastTsunamiTriggeredTimestamp;
     GameWallClock::time_point mLastTsunamiTriggerCheckedTimestamp;
+    GameWallClock::time_point mLastRogueWaveTriggeredTimestamp;
     GameWallClock::time_point mLastRogueWaveTriggerCheckedTimestamp;
 
     class SWEAbnormalWaveStateMachine
