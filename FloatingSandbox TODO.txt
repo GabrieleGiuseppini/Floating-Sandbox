@@ -1026,7 +1026,7 @@ Render:
 				+ Between advection and update
 				+ Test first in visible world
 				+ Finalize
-			- ParameterSmoothing: make it with sin (btwn pi/4 and pi/2)
+			+ ParameterSmoothing: make it with sin (btwn pi/4 and pi/2)
 			- Merge
 
 	- Underwater currents

@@ -709,15 +709,28 @@ private:
 
                 mCurrentTimestamp = std::min(now, mEndTimestamp);
 
-                float const leftFraction =
-                    mTrajectoryTime == std::chrono::milliseconds::zero()
+                float const leftFraction = (mTrajectoryTime == std::chrono::milliseconds::zero())
                     ? 0.0f
                     : static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(mEndTimestamp - mCurrentTimestamp).count())
-                    / static_cast<float>(mTrajectoryTime.count());
+                      / static_cast<float>(mTrajectoryTime.count());
+
+                // We want the sinusoidal to be between Pi/4 and Pi/2;
+                //  beginning of trajectory => leftFraction = 1.0 => phase = Pi/4
+                //  end of trajectory => leftFraction = 0.0 => phase = Pi/2
+                float const phase =
+                    Pi<float> / 4.0f
+                    + Pi<float> / 4.0f * (1.0f - leftFraction);
+
+                // We want the value of the sinusoidal to be:
+                //  beginning of trajectory => phase= Pi/4 => progress = 0
+                //  end of trajectory => phase= Pi/2 => progress = 1
+                float const progress =
+                    (sin(phase) - sin(Pi<float> / 4.0f))
+                    / (1.0f - sin(Pi<float> / 4.0f));
 
                 mCurrentValue =
                     mStartValue
-                    + (mTargetValue - mStartValue) * (1.0f - leftFraction);
+                    + (mTargetValue - mStartValue) * progress;
 
                 mSetter(mCurrentValue);
             }
