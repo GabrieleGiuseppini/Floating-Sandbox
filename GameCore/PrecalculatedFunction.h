@@ -23,29 +23,20 @@ class PrecalculatedFunction
 
 public:
 
+    PrecalculatedFunction()
+        : mSamples()
+    {
+    }
+
     PrecalculatedFunction(std::function<float(float)> calculator)
         : mSamples()
     {
-        // First sample
-        float sampleValue = calculator(0.0f);
-        mSamples[0].SampleValue = sampleValue;
+        PopulateSamples(calculator);
+    }
 
-        // Samples 1...SamplesCount-1
-        float x = Dx;
-        float previousValue = sampleValue;
-        for (size_t i = 1; i < SamplesCount; ++i, x += Dx)
-        {
-            sampleValue = calculator(x);
-
-            mSamples[i].SampleValue = sampleValue;
-            mSamples[i - 1].SampleValuePlusOneMinusSampleValue = sampleValue - previousValue;
-
-            previousValue = sampleValue;
-        }
-
-        // Last (extra) sample
-        mSamples[SamplesCount].SampleValue = previousValue;
-        mSamples[SamplesCount].SampleValuePlusOneMinusSampleValue = 0.0f; // Never used
+    void Recalculate(std::function<float(float)> calculator)
+    {
+        PopulateSamples(calculator);
     }
 
     /*
@@ -96,10 +87,12 @@ public:
         float const absoluteSampleIndexF = x / Dx;
 
         // Integral part
+        // Note: -7.6 => -7
         int64_t absoluteSampleIndexI = FastTruncateInt64(absoluteSampleIndexF);
 
         // Integral part - sample
-        int64_t sampleIndexI = absoluteSampleIndexI % SamplesCount;
+        // Note: -7 % 3 == -1
+        int64_t sampleIndexI = absoluteSampleIndexI % static_cast<int64_t>(SamplesCount);
 
         // Fractional part within sample index and the next sample index
         float sampleIndexDx = absoluteSampleIndexF - absoluteSampleIndexI;
@@ -119,6 +112,33 @@ public:
     }
 
 private:
+
+    void PopulateSamples(std::function<float(float)> calculator)
+    {
+        // First sample
+        float sampleValue = calculator(0.0f);
+        mSamples[0].SampleValue = sampleValue;
+
+        // Samples 1...SamplesCount-1
+        float x = Dx;
+        float previousValue = sampleValue;
+        for (size_t i = 1; i < SamplesCount; ++i, x += Dx)
+        {
+            sampleValue = calculator(x);
+
+            mSamples[i].SampleValue = sampleValue;
+            mSamples[i - 1].SampleValuePlusOneMinusSampleValue = sampleValue - previousValue;
+
+            previousValue = sampleValue;
+        }
+
+        // Assume periodic
+        mSamples[SamplesCount - 1].SampleValuePlusOneMinusSampleValue = mSamples[0].SampleValue - previousValue;
+
+        // Last (extra) sample
+        mSamples[SamplesCount].SampleValue = previousValue;
+        mSamples[SamplesCount].SampleValuePlusOneMinusSampleValue = 0.0f; // Never used
+    }
 
     struct Sample
     {

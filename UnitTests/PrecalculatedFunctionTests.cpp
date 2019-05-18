@@ -51,23 +51,54 @@ TEST(PrecalculatedFunctionTests, LinearlyInterpolatedPeriodic)
     EXPECT_NEAR(0.0f, pf.GetLinearlyInterpolatedPeriodic(2.0f), 0.0001);
     EXPECT_NEAR(0.0f, pf.GetLinearlyInterpolatedPeriodic(100.0f), 0.0001);
 
-    EXPECT_NEAR(1.0f, pf.GetLinearlyInterpolated(0.25f), 0.0001);
+    EXPECT_NEAR(0.0f, pf.GetLinearlyInterpolatedPeriodic(-1.0f), 0.0001);
+    EXPECT_NEAR(0.0f, pf.GetLinearlyInterpolatedPeriodic(-2.0f), 0.0001);
+    EXPECT_NEAR(0.0f, pf.GetLinearlyInterpolatedPeriodic(-100.0f), 0.0001);
+
+
+
+    EXPECT_NEAR(1.0f, pf.GetLinearlyInterpolatedPeriodic(0.25f), 0.0001);
     EXPECT_NEAR(1.0f, pf.GetLinearlyInterpolatedPeriodic(1.25f), 0.0001);
     EXPECT_NEAR(1.0f, pf.GetLinearlyInterpolatedPeriodic(2.25f), 0.0001);
     EXPECT_NEAR(1.0f, pf.GetLinearlyInterpolatedPeriodic(100.25f), 0.0001);
 
-    EXPECT_NEAR(-1.0f, pf.GetLinearlyInterpolated(0.75f), 0.0001);
+    EXPECT_NEAR(-1.0f, pf.GetLinearlyInterpolatedPeriodic(-0.25f), 0.0001);
+    EXPECT_NEAR(-1.0f, pf.GetLinearlyInterpolatedPeriodic(-1.25f), 0.0001);
+    EXPECT_NEAR(-1.0f, pf.GetLinearlyInterpolatedPeriodic(-2.25f), 0.0001);
+    EXPECT_NEAR(-1.0f, pf.GetLinearlyInterpolatedPeriodic(-100.25f), 0.0001);
+
+
+
+    EXPECT_NEAR(-1.0f, pf.GetLinearlyInterpolatedPeriodic(0.75f), 0.0001);
     EXPECT_NEAR(-1.0f, pf.GetLinearlyInterpolatedPeriodic(1.75f), 0.0001);
     EXPECT_NEAR(-1.0f, pf.GetLinearlyInterpolatedPeriodic(2.75f), 0.0001);
     EXPECT_NEAR(-1.0f, pf.GetLinearlyInterpolatedPeriodic(100.75f), 0.0001);
+
+    EXPECT_NEAR(1.0f, pf.GetLinearlyInterpolatedPeriodic(-0.75f), 0.0001);
+    EXPECT_NEAR(1.0f, pf.GetLinearlyInterpolatedPeriodic(-1.75f), 0.0001);
+    EXPECT_NEAR(1.0f, pf.GetLinearlyInterpolatedPeriodic(-2.75f), 0.0001);
+    EXPECT_NEAR(1.0f, pf.GetLinearlyInterpolatedPeriodic(-100.75f), 0.0001);
+
+
 
     EXPECT_NEAR(sin(2.0f * Pi<float> * 0.05f), pf.GetLinearlyInterpolatedPeriodic(0.05f), 0.0001);
     EXPECT_NEAR(sin(2.0f * Pi<float> * 0.05f), pf.GetLinearlyInterpolatedPeriodic(1.05f), 0.0001);
     EXPECT_NEAR(sin(2.0f * Pi<float> * 0.05f), pf.GetLinearlyInterpolatedPeriodic(2.05f), 0.0001);
     EXPECT_NEAR(sin(2.0f * Pi<float> * 0.05f), pf.GetLinearlyInterpolatedPeriodic(100.05f), 0.0001);
 
+    EXPECT_NEAR(sin(2.0f * Pi<float> * -0.05f), pf.GetLinearlyInterpolatedPeriodic(-0.05f), 0.0001);
+    EXPECT_NEAR(sin(2.0f * Pi<float> * -0.05f), pf.GetLinearlyInterpolatedPeriodic(-1.05f), 0.0001);
+    EXPECT_NEAR(sin(2.0f * Pi<float> * -0.05f), pf.GetLinearlyInterpolatedPeriodic(-2.05f), 0.0001);
+    EXPECT_NEAR(sin(2.0f * Pi<float> * -0.05f), pf.GetLinearlyInterpolatedPeriodic(-100.05f), 0.0001);
+
+
     EXPECT_NEAR(sin(2.0f * Pi<float> * 0.67f), pf.GetLinearlyInterpolatedPeriodic(0.67f), 0.0001);
     EXPECT_NEAR(sin(2.0f * Pi<float> * 0.67f), pf.GetLinearlyInterpolatedPeriodic(1.67f), 0.0001);
     EXPECT_NEAR(sin(2.0f * Pi<float> * 0.67f), pf.GetLinearlyInterpolatedPeriodic(2.67f), 0.0001);
     EXPECT_NEAR(sin(2.0f * Pi<float> * 0.67f), pf.GetLinearlyInterpolatedPeriodic(100.67f), 0.0001);
+
+    EXPECT_NEAR(sin(2.0f * Pi<float> * -0.67f), pf.GetLinearlyInterpolatedPeriodic(-0.67f), 0.0001);
+    EXPECT_NEAR(sin(2.0f * Pi<float> * -0.67f), pf.GetLinearlyInterpolatedPeriodic(-1.67f), 0.0001);
+    EXPECT_NEAR(sin(2.0f * Pi<float> * -0.67f), pf.GetLinearlyInterpolatedPeriodic(-2.67f), 0.0001);
+    EXPECT_NEAR(sin(2.0f * Pi<float> * -0.67f), pf.GetLinearlyInterpolatedPeriodic(-100.67f), 0.0001);
 }
