@@ -105,10 +105,13 @@ private:
 
 private:
 
+    std::filesystem::path const mDefaultShipLoadDirectory;
+
+    // The owners/storage of our properties
     std::shared_ptr<GameController> mGameController;
 
     //
-    // The preferences for which we are the storage
+    // The preferences for which we are the owners/storage
 
     std::vector<std::filesystem::path> mShipLoadDirectories;
 

@@ -14,14 +14,14 @@
 const std::string Filename = "ui_preferences.json";
 
 UIPreferencesManager::UIPreferencesManager(std::shared_ptr<GameController> gameController)
-    : mGameController(std::move(gameController))
+    : mDefaultShipLoadDirectory(ResourceLoader::GetInstalledShipFolderPath())
+    , mGameController(std::move(gameController))
 {
     //
     // Set defaults for our preferences
     //
 
-    auto const defaultShipLoadDirectory = ResourceLoader::GetInstalledShipFolderPath();
-    mShipLoadDirectories.push_back(defaultShipLoadDirectory);
+    mShipLoadDirectories.push_back(mDefaultShipLoadDirectory);
 
     mScreenshotsFolderPath = StandardSystemPaths::GetInstance().GetUserPicturesGameFolderPath();
 
@@ -77,6 +77,9 @@ void UIPreferencesManager::LoadPreferences()
             && shipLoadDirectoriesIt->second.is<picojson::array>())
         {
             mShipLoadDirectories.clear();
+
+            // Make sure default ship directory is always at the top
+            mShipLoadDirectories.push_back(mDefaultShipLoadDirectory);
 
             auto shipLoadDirectories = shipLoadDirectoriesIt->second.get<picojson::array>();
             for (auto shipLoadDirectory : shipLoadDirectories)

@@ -277,21 +277,18 @@ Render:
 							+ Allocate only if necessary, i.e. if new size > last (MaxEphParticles)
 				+ Take FPS after: 22.3, UR=133
 			+ changes.txt
-
-		= Sign with certificate
-			+ https://blogs.msdn.microsoft.com/ieinternals/2011/03/22/everything-you-need-to-know-about-authenticode-code-signing/
-			+ https://www.thegeekstuff.com/2010/03/microsoft-digital-signatures/
-			- Buy certificate
-				- https://comodosslstore.com/code-signing/microsoft-authenticode
-				- https://comodosslstore.com/codesigning.aspx
-				- Print receipt and store in Taxes 2019
-			- Sign exe
-			- Sign MSI
-				- https://stackoverflow.com/questions/17589754/wix-installer-msi-publisher-unknown/17591603		
+			+ ParameterSmoothing: make it with sin (btwn pi/4 and pi/2)
 
 		= Shallow Water Equations (*)
 
+		- See problem with too many bubbles
+			- See if water is constant after hole plugged
+				- Custom probe w/total water in ship
+			- See if true: realistic sinking of ship is 3 water intake and 0.25 water diffusion speed
+			
+
 		- Try to change speed of particles at repair
+			- See big notebook
 
 		+ Double-check latest rotting speed
 
@@ -303,6 +300,7 @@ Render:
 
 		- Spring and NonSpring force separation optimization (*)
 		- Try with SpringRelaxation updating only positions (*)
+
 		- Attempt to re-instate square water drag (*)
 		- Attempt to use total point masses for springs (*)
 
@@ -374,6 +372,7 @@ Render:
 	- New ships:
 		- Re-take all Mike's .shp files for Shipbucket.com credits
 			- And also take electrical of RMS Titanic with Lights
+			- Also test "Splitable Titanic"
 		- Mike:
 			= Make subfolder (ask him)
 			- Take Titanic with interior
@@ -405,7 +404,6 @@ Render:
 					- About box
 			- serhiires (see PM on Discord): HMHS Danic, RMS Danic, and all his others
 			- KMS_Unversinkbar_PandaDude.png
-				- Waiting for PandaDude12345
 			- Estonia - Dumbphones
 			- KMS Bismarck - Shippy
 			- RMS Titanic - Shippy
@@ -439,6 +437,7 @@ Render:
 
 
 - Suggestions to spec:
+	- Wreno's suggestions: https://docs.google.com/document/d/1kOYAgvh2rFYJJBnSp4DCiFm3FdJlfVEiCXQWNzJzO-I/edit
 	- Tools turning white at night
 	- Once we have ships, make "Lock Ship in View" flag and move camera with ship's center of mass (representative point or real CoM)
 	- Be able to place nuke and AM bomb anywhere
@@ -477,6 +476,16 @@ Render:
 	- Translations:
 		- Make localizable
 		- Russian: steven6886@yandex.ru
+	= Sign with certificate
+		+ https://blogs.msdn.microsoft.com/ieinternals/2011/03/22/everything-you-need-to-know-about-authenticode-code-signing/
+		+ https://www.thegeekstuff.com/2010/03/microsoft-digital-signatures/
+		- Buy certificate
+			- https://comodosslstore.com/code-signing/microsoft-authenticode
+			- https://comodosslstore.com/codesigning.aspx
+			- Print receipt and store in Taxes 2019
+		- Sign exe
+		- Sign MSI
+			- https://stackoverflow.com/questions/17589754/wix-installer-msi-publisher-unknown/17591603		
 
 - Simulation Optimizations:
 
@@ -852,8 +861,6 @@ Render:
 
 - Dynamics:
 
-	- See if true: realistic sinking of ship is 3 water intake and 0.25 water diffusion speed
-
 	= Make waves with Shallow Water Equations (*)
 		= Implement
 			+ Rename to OceanSurface
@@ -1026,7 +1033,6 @@ Render:
 				+ Between advection and update
 				+ Test first in visible world
 				+ Finalize
-			+ ParameterSmoothing: make it with sin (btwn pi/4 and pi/2)
 			- Merge
 
 	- Underwater currents
@@ -1536,7 +1542,7 @@ Render:
 				- IProbe knows whether it cares about a specific point and, if so, takes that and draw is
 				- IProbe might also create stats
 	= ProbePanel
-		- Pre-created member of MainFrame
+		+ Pre-created member of MainFrame
 		+ Then exposes Update() invoked by MainFrame, always, after simulation step
 		+ Update(): 
 			+ if not visible, return;
