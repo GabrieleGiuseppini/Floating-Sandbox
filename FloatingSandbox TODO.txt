@@ -278,10 +278,10 @@ Render:
 				+ Take FPS after: 22.3, UR=133
 			+ changes.txt
 			+ ParameterSmoothing: make it with sin (btwn pi/4 and pi/2)
+		+ Shallow Water Equations (*)
 
-		= Shallow Water Equations (*)
-
-		- Send version with ShipLoadDialog always yielding (not only on single-core box) to those two guys
+		- Try to change speed of particles at repair
+			- See big notebook
 
 		= See problem with too many bubbles
 			= See if water is constant after hole plugged
@@ -294,11 +294,9 @@ Render:
 			- Pre FPS:
 			- Post FPS:
 
+		- Send version with ShipLoadDialog always yielding (not only on single-core box) to those two guys
 
 		- Do test with "the possible ships" broken
-
-		- Try to change speed of particles at repair
-			- See big notebook
 
 		+ Double-check latest rotting speed
 
@@ -847,180 +845,6 @@ Render:
 		- https://www.shadertoy.com/view/4tdXDl
 
 - Dynamics:
-
-	= Make waves with Shallow Water Equations (*)
-		= Implement
-			+ Rename to OceanSurface
-			+ Step 1: basic SWE with reflecting boundaries
-				+ cctor: wave initialization
-				+ Update:
-					+ SWE update -> next buffers
-					+ NextHeightBuffer + Wind gust sines -> mSamples
-					+ Swap buffers
-			+ Step 2: perturbation tool
-				+ OceanSurface::AdjustTo
-			+ Rearc:
-				+ Basal waves
-					+ Params:
-						+ Width (wavelength)
-						+ Height
-						+ Period (=> speed=Wavelength/Period)
-					+ Impl:
-						+ Funcs:
-							+ sin
-						+ Composition of SWE and basal:
-							+ add
-						+ Wave width is "WaveWidthAdjust"
-							+ fraction of MaxWidth - MinWidth(H)
-							+ MinWidth(H) = 6*H
-							+ 1.0 means "max width" = f(height)
-						+ Wavelength and period correlated: 
-							+ Change period into speed (m/s) = S
-							+ S = 1/sqrt(2PiL/g)
-							+ Adjustment makes +/- 50%
-								+ Speed is never zero
-								+ See if need to adjust percentage bands to avoid "almost still" waves or too slow waves 
-								  or too fast waves
-						+ Actual wave speed = speed * direction(wind speed) + wind speed * factor
-							+ With speed > 0						
-						+ Multiple components:
-							+ Two components:
-								+ 2nd component has sin phase with very slow period						
-						+ Find good initial conditions
-							+ Need "as if" wind was 40, but not simply 2x as wind=100 makes wind'=200
-					+ Controls:
-						+ WidthAdjust, Height, Period (>0)				
-				+ SWEs
-					+ Tool
-						+ Tool does no smoothing
-						+ OceanSurface implements trajectory
-							+ Delay rate must itself depend on delta H
-						+ Test max delta H
-						+ Find correct falling water speed
-						+ Check if average water depth increases
-					+ Cursor: set arrows at same positions as adjust terrain cursor
-					+ Tsunami
-						+ GameParameters: "TsunamiArrivalTime", mins
-							+ Min = 0 => no tsunamis
-							+ Max = 15
-							+ Settings Dialog, under "Wave Phenomena"
-								+ Tooltip: "...disables automatic generation of..."
-						+ Tools menu entry - w/no accelerator key
-						+ OceanSurface:
-							+ Tsunami-specific StateMachine member, std::optional
-							+ When not set:
-								+ Run choosing until chosen
-									+ Do not trigger within first 1 minute
-								+ TriggerTsunami() when triggered
-							+ void TriggerTsunami(): 
-								+ Emplace state machine
-								+ Test if slower rise (not fall) makes better long-run wave
-								+ Fire "OnTsunamiTriggered" event
-							+ State machine
-								+ Height = 105 (5%)
-								+ See if need custom fall rate
-									+ If so, new state machine altogether
-							+ Publish "OnTsunamiTriggered" event
-								+ Break IGameEventHandler into smaller pieces
-									+ Do separate one for hi-freq events
-								+ Ship takes GameEventDispatcher directly
-								+ GameController registers for OnTsunamiTriggered and runs TsunamiNotificationStateMachine
-									+ TsunamiNotificationStateMachine: private class, cctor takes:
-										+ TextRenderContext (for text)
-										+ RenderContext (for shaking)
-										+ bool Update(): when returns false, GameController nukes it
-									+ Text 
-									+ Shaking
-								+ SoundController:
-									+ Tsunami sound, one-shot (overridable): rumbling + siren + background SOS
-							+ UI preferences: show tsunami notifications checkbox
-								+ UIPreferencesManager:
-									+ It's a test for SettingsManager
-									+ Replaces UIPreferences
-										+ Also given to ShipLoadDialog et al
-									+ Also acts as storage for some of them (those not owned by GameController)
-									+ Exposes setters and getters for all (like SettingsManager)
-									+ Takes GameController at cctor	
-										+ And gives it GameController's owned properties after having loaded them
-									+ Tooltip: say "visual notifications"
-										+ We keep sound
-									+ Test entire preferences dialog
-									+ Test tsunami notifications
-					+ Rogue waves
-						+ GameParameters: "RogueWaveArrivalTime", mins
-							+ Min = 0 => no rogue waves
-							+ Settings Dialog, under "Wave Phenomena"
-								+ Tooltip: "...disables automatic generation of..."
-						+ Tools menu entry - w/no accelerator key
-						+ OceanSurface:							
-							+ RogueWave-specific StateMachine member, std::optional
-							+ When not set:
-								+ Run choosing until chosen
-								+ TriggerRogueWave() when triggered
-							+ void TriggerRogueWave(): 
-								+ Take Wind & calc right locus index based off direction
-							+ State machine
-								+ Height = 101 (1%)
-								+ See if need custom fall rate
-					+ Re-check exponential distribution
-						+ And make helper at GameRandomEngine that takes CDF
-					+ Test with basal waves added to SWE height field, instead of added to samples
-					+ Test with 3 samples being modified at SWEWaveStateMachine
-					+ Test with SWE with double's to see if long-running wave is better
-				+ SettingsDialog:
-					+ "Wind and Waves" tab
-						+ Static box for basal waves
-						+ Tooltips
-					+ Run in Debug
-			+ Final touches:
-				+ Cursor
-				+ WaveMaker:
-					+ Double-check hotspot
-					+ Tool sound
-						+ Continuous with fade-in and fade-out
-						+ Fix restart while fading-in
-						+ Better sound
-						+ See linear fade-out again
-				+ See if can stop making reflective boundaries with height field=0
-				+ Smooth some other parameters
-					+ Ocean depth, ocean bumpiness, ocean detail
-				+ SWE boundary conditions: try 5 bc samples, damping heights and braking down linearly
-				+ Try with other formulation of SWEs
-				+ Optimize alpha changing for text
-				+ Reduce world width
-				+ Cap interactive height
-			= Optimizations:
-				+ FPS before: 28.6/28.6/28.7/29.5/29.6/
-				+ 1: Basal wave params and abnormal wave CDFs calc'd only at GameParameters changes
-					+ Test all param changes
-					+ Test tsunami notifications
-				+ UR/Ratio: 220/230
-				+ 2: Pre-calc'd funcs (sin)
-					+ Arg needs to become current_arg/2PI
-				+ 3: Samples: advance x's with sums, no multiplications
-					+ Take into account current_arg/2PI
-				+ 4: Anomaly choosing done only at scheduled (wallclock) times, every ~0.5 sec
-					+ AnomalyTriggerSampleInterval = 500ms
-					+ Adjust exponential coefficients
-						+ If we want 1 tsunami every TsunamiRate * 60.0f second, we want 1/(TsunamiRate * 60.0f) tsunami
-						  every second, and thus we want 1/(TsunamiRate * 60.0f * 1s / AnomalyTriggerSampleInterval) every interval
-						+ Double-check wind while you're at it
-					+ Verify rates
-				+ FPS: 30/30.15; UR/Ratio: 206
-				+ 5a: See if both advections are really needed
-				+ 6: Two field updates in one, so that we have a single loop
-					= Then, check assembly
-				+ FPS after: 30.4/30.6; UR/Ratio: 218
-			+ See to reduce flattening of waves
-				+ Test lower offset
-				+ Try again with height offset
-				+ View values
-			+ Check width of tsunami wave
-			+ Retry damping boundary conditions
-				+ Between advection and update
-				+ Test first in visible world
-				+ Finalize
-			- Merge
 
 	- Underwater currents
 		- Implicit function of x defines trajectory 
@@ -3823,7 +3647,6 @@ IF WX:
 				+ Prevent removal if not in containment (i.e. if detonated already)
 					+ Bomb::MayBeRemoved()
 					+ Test with all 3
-
 	+ Swirl tool
 		+ Force applied is r * AngularForce; AngularForce==m*AngularAcceleration
 			+ CW; if Shift -> CCW
@@ -3872,9 +3695,7 @@ IF WX:
 					+ Move also AABB to Geometry
 			+ SoundController: new continuous sound
 				+ Also underwater
-
 	+ Ultra-violent flag: very strong Draw and Swirl forces
-
 	+ Buoyancy redesign:
 		+ test with hack what would happen if all non-hull materials were 1/nth of the mass
 		+ python script: allow empty cells (skip cols if != index)
@@ -4464,6 +4285,179 @@ IF WX:
 			+ Test ball half/half in "New Materials Balls.png"
 		+ Add new property to materials guide
 		+ See general speed of rotting
+	+ Make waves with Shallow Water Equations
+		+ Implement
+			+ Rename to OceanSurface
+			+ Step 1: basic SWE with reflecting boundaries
+				+ cctor: wave initialization
+				+ Update:
+					+ SWE update -> next buffers
+					+ NextHeightBuffer + Wind gust sines -> mSamples
+					+ Swap buffers
+			+ Step 2: perturbation tool
+				+ OceanSurface::AdjustTo
+			+ Rearc:
+				+ Basal waves
+					+ Params:
+						+ Width (wavelength)
+						+ Height
+						+ Period (=> speed=Wavelength/Period)
+					+ Impl:
+						+ Funcs:
+							+ sin
+						+ Composition of SWE and basal:
+							+ add
+						+ Wave width is "WaveWidthAdjust"
+							+ fraction of MaxWidth - MinWidth(H)
+							+ MinWidth(H) = 6*H
+							+ 1.0 means "max width" = f(height)
+						+ Wavelength and period correlated: 
+							+ Change period into speed (m/s) = S
+							+ S = 1/sqrt(2PiL/g)
+							+ Adjustment makes +/- 50%
+								+ Speed is never zero
+								+ See if need to adjust percentage bands to avoid "almost still" waves or too slow waves 
+								  or too fast waves
+						+ Actual wave speed = speed * direction(wind speed) + wind speed * factor
+							+ With speed > 0						
+						+ Multiple components:
+							+ Two components:
+								+ 2nd component has sin phase with very slow period						
+						+ Find good initial conditions
+							+ Need "as if" wind was 40, but not simply 2x as wind=100 makes wind'=200
+					+ Controls:
+						+ WidthAdjust, Height, Period (>0)				
+				+ SWEs
+					+ Tool
+						+ Tool does no smoothing
+						+ OceanSurface implements trajectory
+							+ Delay rate must itself depend on delta H
+						+ Test max delta H
+						+ Find correct falling water speed
+						+ Check if average water depth increases
+					+ Cursor: set arrows at same positions as adjust terrain cursor
+					+ Tsunami
+						+ GameParameters: "TsunamiArrivalTime", mins
+							+ Min = 0 => no tsunamis
+							+ Max = 15
+							+ Settings Dialog, under "Wave Phenomena"
+								+ Tooltip: "...disables automatic generation of..."
+						+ Tools menu entry - w/no accelerator key
+						+ OceanSurface:
+							+ Tsunami-specific StateMachine member, std::optional
+							+ When not set:
+								+ Run choosing until chosen
+									+ Do not trigger within first 1 minute
+								+ TriggerTsunami() when triggered
+							+ void TriggerTsunami(): 
+								+ Emplace state machine
+								+ Test if slower rise (not fall) makes better long-run wave
+								+ Fire "OnTsunamiTriggered" event
+							+ State machine
+								+ Height = 105 (5%)
+								+ See if need custom fall rate
+									+ If so, new state machine altogether
+							+ Publish "OnTsunamiTriggered" event
+								+ Break IGameEventHandler into smaller pieces
+									+ Do separate one for hi-freq events
+								+ Ship takes GameEventDispatcher directly
+								+ GameController registers for OnTsunamiTriggered and runs TsunamiNotificationStateMachine
+									+ TsunamiNotificationStateMachine: private class, cctor takes:
+										+ TextRenderContext (for text)
+										+ RenderContext (for shaking)
+										+ bool Update(): when returns false, GameController nukes it
+									+ Text 
+									+ Shaking
+								+ SoundController:
+									+ Tsunami sound, one-shot (overridable): rumbling + siren + background SOS
+							+ UI preferences: show tsunami notifications checkbox
+								+ UIPreferencesManager:
+									+ It's a test for SettingsManager
+									+ Replaces UIPreferences
+										+ Also given to ShipLoadDialog et al
+									+ Also acts as storage for some of them (those not owned by GameController)
+									+ Exposes setters and getters for all (like SettingsManager)
+									+ Takes GameController at cctor	
+										+ And gives it GameController's owned properties after having loaded them
+									+ Tooltip: say "visual notifications"
+										+ We keep sound
+									+ Test entire preferences dialog
+									+ Test tsunami notifications
+					+ Rogue waves
+						+ GameParameters: "RogueWaveArrivalTime", mins
+							+ Min = 0 => no rogue waves
+							+ Settings Dialog, under "Wave Phenomena"
+								+ Tooltip: "...disables automatic generation of..."
+						+ Tools menu entry - w/no accelerator key
+						+ OceanSurface:							
+							+ RogueWave-specific StateMachine member, std::optional
+							+ When not set:
+								+ Run choosing until chosen
+								+ TriggerRogueWave() when triggered
+							+ void TriggerRogueWave(): 
+								+ Take Wind & calc right locus index based off direction
+							+ State machine
+								+ Height = 101 (1%)
+								+ See if need custom fall rate
+					+ Re-check exponential distribution
+						+ And make helper at GameRandomEngine that takes CDF
+					+ Test with basal waves added to SWE height field, instead of added to samples
+					+ Test with 3 samples being modified at SWEWaveStateMachine
+					+ Test with SWE with double's to see if long-running wave is better
+				+ SettingsDialog:
+					+ "Wind and Waves" tab
+						+ Static box for basal waves
+						+ Tooltips
+					+ Run in Debug
+			+ Final touches:
+				+ Cursor
+				+ WaveMaker:
+					+ Double-check hotspot
+					+ Tool sound
+						+ Continuous with fade-in and fade-out
+						+ Fix restart while fading-in
+						+ Better sound
+						+ See linear fade-out again
+				+ See if can stop making reflective boundaries with height field=0
+				+ Smooth some other parameters
+					+ Ocean depth, ocean bumpiness, ocean detail
+				+ SWE boundary conditions: try 5 bc samples, damping heights and braking down linearly
+				+ Try with other formulation of SWEs
+				+ Optimize alpha changing for text
+				+ Reduce world width
+				+ Cap interactive height
+			+ Optimizations:
+				+ FPS before: 28.6/28.6/28.7/29.5/29.6/
+				+ 1: Basal wave params and abnormal wave CDFs calc'd only at GameParameters changes
+					+ Test all param changes
+					+ Test tsunami notifications
+				+ UR/Ratio: 220/230
+				+ 2: Pre-calc'd funcs (sin)
+					+ Arg needs to become current_arg/2PI
+				+ 3: Samples: advance x's with sums, no multiplications
+					+ Take into account current_arg/2PI
+				+ 4: Anomaly choosing done only at scheduled (wallclock) times, every ~0.5 sec
+					+ AnomalyTriggerSampleInterval = 500ms
+					+ Adjust exponential coefficients
+						+ If we want 1 tsunami every TsunamiRate * 60.0f second, we want 1/(TsunamiRate * 60.0f) tsunami
+						  every second, and thus we want 1/(TsunamiRate * 60.0f * 1s / AnomalyTriggerSampleInterval) every interval
+						+ Double-check wind while you're at it
+					+ Verify rates
+				+ FPS: 30/30.15; UR/Ratio: 206
+				+ 5a: See if both advections are really needed
+				+ 6: Two field updates in one, so that we have a single loop
+					+ Then, check assembly
+				+ FPS after: 30.4/30.6; UR/Ratio: 218
+			+ See to reduce flattening of waves
+				+ Test lower offset
+				+ Try again with height offset
+				+ View values
+			+ Check width of tsunami wave
+			+ Retry damping boundary conditions
+				+ Between advection and update
+				+ Test first in visible world
+				+ Finalize
+			+ Merge
 
 + Water
 	+ Water
