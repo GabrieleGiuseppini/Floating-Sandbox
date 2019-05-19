@@ -156,19 +156,13 @@ private:
     // Shallow water equations
     //
 
-    // Height field (dual-buffered)
+    // Height field
     // - Height values are at the center of the staggered grid cells
-    std::unique_ptr<float[]> mHeightFieldBuffer1;
-    std::unique_ptr<float[]> mHeightFieldBuffer2;
-    float * mCurrentHeightField;
-    float * mNextHeightField;
+    std::unique_ptr<float[]> mHeightField;
 
-    // Velocity field (dual-buffered)
+    // Velocity field
     // - Velocity values are at the edges of the staggered grid cells
-    std::unique_ptr<float> mVelocityFieldBuffer1;
-    std::unique_ptr<float> mVelocityFieldBuffer2;
-    float * mCurrentVelocityField;
-    float * mNextVelocityField;
+    std::unique_ptr<float[]> mVelocityField;
 
 private:
 

@@ -1006,11 +1006,10 @@ Render:
 						  every second, and thus we want 1/(TsunamiRate * 60.0f * 1s / AnomalyTriggerSampleInterval) every interval
 						+ Double-check wind while you're at it
 					+ Verify rates
-				- FPS: TODO; UR/Ratio: TODO
-				- 5a: See if both advections are really needed
-				- 5b: Two advections in one, so that we have a single loop
-					- Then, check assembly
+				+ FPS: 30/30.15; UR/Ratio: 206
+				+ 5a: See if both advections are really needed
 				- 6: Two field updates in one, so that we have a single loop
+					- Then, check assembly
 				- FPS after:
 			+ See to reduce flattening of waves
 				+ Test lower offset

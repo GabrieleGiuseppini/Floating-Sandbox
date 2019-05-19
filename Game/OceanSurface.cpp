@@ -72,10 +72,8 @@ OceanSurface::OceanSurface(std::shared_ptr<GameEventDispatcher> gameEventDispatc
     , mTsunamiRate(std::numeric_limits<float>::max())
     , mRogueWaveRate(std::numeric_limits<float>::max())
     ////////
-    , mHeightFieldBuffer1(new float[SWETotalSamples + 1]) // One extra cell just to ease interpolations
-    , mHeightFieldBuffer2(new float[SWETotalSamples + 1]) // One extra cell just to ease interpolations
-    , mVelocityFieldBuffer1(new float[SWETotalSamples + 1]) // One extra cell just to ease interpolations
-    , mVelocityFieldBuffer2(new float[SWETotalSamples + 1]) // One extra cell just to ease interpolations
+    , mHeightField(new float[SWETotalSamples + 1]) // One extra cell just to ease interpolations
+    , mVelocityField(new float[SWETotalSamples + 1]) // One extra cell just to ease interpolations
     ////////
     , mSWEInteractiveWaveStateMachine()
     , mSWETsunamiWaveStateMachine()
@@ -85,22 +83,13 @@ OceanSurface::OceanSurface(std::shared_ptr<GameEventDispatcher> gameEventDispatc
 {
     //
     // Initialize SWE layer
+    // - Initialize *all* values - including extra unused sample
     //
 
-    // Initialize buffer pointers
-    mCurrentHeightField = mHeightFieldBuffer1.get();
-    mNextHeightField = mHeightFieldBuffer2.get();
-    mCurrentVelocityField = mVelocityFieldBuffer1.get();
-    mNextVelocityField = mVelocityFieldBuffer2.get();
-
-    // Initialize *all* values - including extra unused sample
     for (int32_t i = 0; i <= SWETotalSamples; ++i)
     {
-        mCurrentHeightField[i] = SWEHeightFieldOffset;
-        mNextHeightField[i] = SWEHeightFieldOffset;
-
-        mCurrentVelocityField[i] = 0.0f;
-        mNextVelocityField[i] = 0.0f;
+        mHeightField[i] = SWEHeightFieldOffset;
+        mVelocityField[i] = 0.0f;
     }
 
     //
@@ -232,11 +221,6 @@ void OceanSurface::Update(
     //
     // 2. SWE Update
     //
-    // - Current -> Next
-    //
-
-    AdvectHeightField();
-    AdvectVelocityField();
 
     ApplyDampingBoundaryConditions();
 
@@ -247,24 +231,14 @@ void OceanSurface::Update(
     ////float avgHeight = 0.0f;
     ////for (int32_t i = SWEOuterLayerSamples; i < SWEOuterLayerSamples + SamplesCount; ++i)
     ////{
-    ////    avgHeight += mNextHeightField[i];
+    ////    avgHeight += mHeightField[i];
     ////}
     ////avgHeight /= static_cast<float>(SamplesCount);
     ////LogMessage("AVG:", avgHeight);
 
 
     //
-    // 3. Swap Buffers
-    //
-    // - Next -> Current
-    //
-
-    std::swap(mCurrentHeightField, mNextHeightField);
-    std::swap(mCurrentVelocityField, mNextVelocityField);
-
-
-    //
-    // 4. Generate samples
+    // 3. Generate samples
     //
 
     GenerateSamples(
@@ -360,7 +334,7 @@ void OceanSurface::AdjustTo(
             // Start wave
             mSWEInteractiveWaveStateMachine.emplace(
                 SWEOuterLayerSamples + sampleIndex,
-                mCurrentHeightField[SWEOuterLayerSamples + sampleIndex], // LowHeight
+                mHeightField[SWEOuterLayerSamples + sampleIndex], // LowHeight
                 targetHeight,
                 currentSimulationTime);
         }
@@ -405,8 +379,8 @@ void OceanSurface::TriggerTsunami(float currentSimulationTime)
     // (Re-)start state machine
     mSWETsunamiWaveStateMachine.emplace(
         SWEOuterLayerSamples + sampleIndex,
-        mCurrentHeightField[SWEOuterLayerSamples + sampleIndex], // LowHeight
-        mCurrentHeightField[SWEOuterLayerSamples + sampleIndex] + tsunamiHeight, // HighHeight
+        mHeightField[SWEOuterLayerSamples + sampleIndex], // LowHeight
+        mHeightField[SWEOuterLayerSamples + sampleIndex] + tsunamiHeight, // HighHeight
         7.0f,
         5.0f,
         currentSimulationTime);
@@ -447,8 +421,8 @@ void OceanSurface::TriggerRogueWave(
     // (Re-)start state machine
     mSWERogueWaveWaveStateMachine.emplace(
         centerIndex,
-        mCurrentHeightField[centerIndex], // LowHeight
-        mCurrentHeightField[centerIndex] + rogueWaveHeight, // HighHeight
+        mHeightField[centerIndex], // LowHeight
+        mHeightField[centerIndex] + rogueWaveHeight, // HighHeight
         rogueWaveDelay, // Rise delay
         rogueWaveDelay, // Fall delay
         currentSimulationTime);
@@ -468,7 +442,7 @@ void OceanSurface::SetSWEWaveHeight(
         if (idx >= SWEBoundaryConditionsSamples
             && idx < SWEOuterLayerSamples + SamplesCount + SWEWaveGenerationSamples)
         {
-            mCurrentHeightField[idx] = height;
+            mHeightField[idx] = height;
         }
     }
 }
@@ -495,8 +469,8 @@ void OceanSurface::RecalculateCoefficients(
 
     float const basalWaveHeightBase = (baseWindSpeedMagnitude != 0.0f)
         ? 0.002481548f * (baseWindSpeedMagnitude * baseWindSpeedMagnitude)
-        - 0.08155357f * baseWindSpeedMagnitude
-        + 1.039702f
+          - 0.08155357f * baseWindSpeedMagnitude
+          + 1.039702f
         : 0.0f;
 
     mBasalWaveAmplitude1 = basalWaveHeightBase / 2.0f * gameParameters.BasalWaveHeightAdjustment;
@@ -595,6 +569,9 @@ GameWallClock::time_point OceanSurface::CalculateNextAbnormalWaveTimestamp(
                 GameRandomEngine::GetInstance().GenerateExponentialReal(1.0f / rateSeconds)));
 }
 
+/* Note: in this implementation we let go of the field advections,
+   as they dont's seem to improve the simulation in a visible way.
+
 void OceanSurface::AdvectHeightField()
 {
     //
@@ -611,13 +588,13 @@ void OceanSurface::AdvectHeightField()
 
         // Calculate the (fractional) index that this height sample had one time step ago
         float const prevCellIndex =
-            static_cast<float>(i) /*+ 0.5f*/
+            static_cast<float>(i)
             - v * GameParameters::SimulationStepTimeDuration<float> / Dx;
 
         // Transform index to ease interpolations, constraining the cell
         // to our grid at the same time
         float const prevCellIndex2 = std::min(
-            std::max(0.0f, prevCellIndex /*- 0.5f*/),
+            std::max(0.0f, prevCellIndex),
             static_cast<float>(SWETotalSamples - 1));
 
         // Calculate integral and fractional parts of the index
@@ -670,6 +647,7 @@ void OceanSurface::AdvectVelocityField()
             + prevCellIndexF * mCurrentVelocityField[prevCellIndexI + 1];
     }
 }
+*/
 
 void OceanSurface::ApplyDampingBoundaryConditions()
 {
@@ -677,18 +655,18 @@ void OceanSurface::ApplyDampingBoundaryConditions()
     {
         float const damping = static_cast<float>(i) / static_cast<float>(SWEBoundaryConditionsSamples);
 
-        mNextHeightField[i] =
-            (mNextHeightField[i] - SWEHeightFieldOffset) * damping
+        mHeightField[i] =
+            (mHeightField[i] - SWEHeightFieldOffset) * damping
             + SWEHeightFieldOffset;
 
-        mNextVelocityField[i] *= damping;
+        mVelocityField[i] *= damping;
 
-        mNextHeightField[SWEOuterLayerSamples + SamplesCount + SWEOuterLayerSamples - 1 - i] =
-            (mNextHeightField[SWEOuterLayerSamples + SamplesCount + SWEOuterLayerSamples - 1 - i] - SWEHeightFieldOffset) * damping
+        mHeightField[SWEOuterLayerSamples + SamplesCount + SWEOuterLayerSamples - 1 - i] =
+            (mHeightField[SWEOuterLayerSamples + SamplesCount + SWEOuterLayerSamples - 1 - i] - SWEHeightFieldOffset) * damping
             + SWEHeightFieldOffset;
 
         // For symmetry we actually damp the v-sample after this height field sample
-        mNextVelocityField[SWEOuterLayerSamples + SamplesCount + SWEOuterLayerSamples - 1 - i + 1] *= damping;
+        mVelocityField[SWEOuterLayerSamples + SamplesCount + SWEOuterLayerSamples - 1 - i + 1] *= damping;
     }
 
 }
@@ -698,9 +676,9 @@ void OceanSurface::UpdateHeightField()
     // Process all height samples
     for (int32_t i = 0; i < SWETotalSamples; ++i)
     {
-        mNextHeightField[i] -=
-            mNextHeightField[i]
-            * (mNextVelocityField[i + 1] - mNextVelocityField[i]) / Dx
+        mHeightField[i] -=
+            mHeightField[i]
+            * (mVelocityField[i + 1] - mVelocityField[i]) / Dx
             * GameParameters::SimulationStepTimeDuration<float>;
     }
 }
@@ -711,9 +689,9 @@ void OceanSurface::UpdateVelocityField()
     // Note: we skip the first velocity update for symmetry with the last one
     for (int32_t i = 1; i < SWETotalSamples; ++i)
     {
-        mNextVelocityField[i] +=
+        mVelocityField[i] +=
             GameParameters::GravityMagnitude
-            * (mNextHeightField[i - 1] - mNextHeightField[i]) / Dx
+            * (mHeightField[i - 1] - mHeightField[i]) / Dx
             * GameParameters::SimulationStepTimeDuration<float>;
     }
 }
@@ -768,7 +746,7 @@ void OceanSurface::GenerateSamples(
     float previousSampleValue;
     {
         float const sweValue =
-            (mCurrentHeightField[SWEOuterLayerSamples + 0] - SWEHeightFieldOffset)
+            (mHeightField[SWEOuterLayerSamples + 0] - SWEHeightFieldOffset)
             * SWEHeightFieldAmplification;
 
         float const basalValue1 =
@@ -799,7 +777,7 @@ void OceanSurface::GenerateSamples(
     for (int64_t i = 1; i < SamplesCount; ++i)
     {
         float const sweValue =
-            (mCurrentHeightField[SWEOuterLayerSamples + i] - SWEHeightFieldOffset)
+            (mHeightField[SWEOuterLayerSamples + i] - SWEHeightFieldOffset)
             * SWEHeightFieldAmplification;
 
         sinArg1 += sinArg1Dx;
