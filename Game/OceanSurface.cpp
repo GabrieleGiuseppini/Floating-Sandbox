@@ -22,6 +22,9 @@ T constexpr RenderSlices = 500;
 // (how often we check for abnormalities)
 std::chrono::duration<float> constexpr AbnormalityTriggerSampleInterval = std::chrono::duration<float>(0.5f); // 500ms
 
+// The fraction of the abnormality trigger rate that we take as grace period
+template<typename T>
+T constexpr AbnormalityTriggerRateFractionDenominator = 4;
 
 //
 // SWE Layer
@@ -66,6 +69,7 @@ OceanSurface::OceanSurface(std::shared_ptr<GameEventDispatcher> gameEventDispatc
     , mBasalWaveNumber2(0.0f)
     , mBasalWaveAngularVelocity1(0.0f)
     , mBasalWaveAngularVelocity2(0.0f)
+    , mBasalWaveSin1()
     , mTsunamiCdf(0.0f)
     , mRogueWaveCdf(0.0f)
     , mWindBaseSpeedMagnitude(std::numeric_limits<float>::max())
@@ -184,7 +188,7 @@ void OceanSurface::Update(
         // See if it's time to generate a tsunami
         //
 
-        if ((now - mLastTsunamiTriggeredTimestamp) > mTsunamiInterval / 4 // Bending exp distribution
+        if ((now - mLastTsunamiTriggeredTimestamp) > mTsunamiInterval / AbnormalityTriggerRateFractionDenominator<int> // Grace period
             && (now - mLastTsunamiTriggerCheckedTimestamp) > AbnormalityTriggerSampleInterval
             && gameParameters.TsunamiRate > 0.0f) // Grace period - we don't want tsunamis right after game starts
         {
@@ -223,7 +227,7 @@ void OceanSurface::Update(
         // See if it's time to generate a rogue wave
         //
 
-        if ((now - mLastRogueWaveTriggeredTimestamp) > mRogueWaveInterval / 4 // Bending exp distribution
+        if ((now - mLastRogueWaveTriggeredTimestamp) > mRogueWaveInterval / AbnormalityTriggerRateFractionDenominator<int> // Grace period
             && (now - mLastRogueWaveTriggerCheckedTimestamp) > AbnormalityTriggerSampleInterval
             && gameParameters.RogueWaveRate > 0.0f)
         {
@@ -401,7 +405,12 @@ void OceanSurface::TriggerTsunami(float currentSimulationTime)
 {
     // TODOTEST
     static float TODOLastTsunami = 0.0f;
-    LogMessage("Generated tsunami after ", GameWallClock::GetInstance().NowAsFloat() - TODOLastTsunami);
+    static float TODOavgSum = 0.0f;
+    static float TODOavgCount = 0;
+    TODOavgSum += GameWallClock::GetInstance().NowAsFloat() - TODOLastTsunami;
+    TODOavgCount += 1.0f;
+    LogMessage("Generated tsunami after ", GameWallClock::GetInstance().NowAsFloat() - TODOLastTsunami,
+        " avg=", TODOavgSum / TODOavgCount);
     TODOLastTsunami = GameWallClock::GetInstance().NowAsFloat();
 
     // Choose X
@@ -425,8 +434,6 @@ void OceanSurface::TriggerTsunami(float currentSimulationTime)
         mCurrentHeightField[SWEOuterLayerSamples + sampleIndex] + tsunamiHeight, // HighHeight
         7.0f,
         5.0f,
-        //10.0f, // Rise delay
-        //8.0f, // Fall delay
         currentSimulationTime);
 
     // Fire tsunami event
@@ -453,7 +460,12 @@ void OceanSurface::TriggerRogueWave(
 
     // TODOTEST
     static float TODOLastTsunami = 0.0f;
-    LogMessage("Generated rogue wave after ", GameWallClock::GetInstance().NowAsFloat() - TODOLastTsunami);
+    static float TODOavgSum = 0.0f;
+    static float TODOavgCount = 0;
+    TODOavgSum += GameWallClock::GetInstance().NowAsFloat() - TODOLastTsunami;
+    TODOavgCount += 1.0f;
+    LogMessage("Generated rogue wave after ", GameWallClock::GetInstance().NowAsFloat() - TODOLastTsunami,
+        " avg=", TODOavgSum / TODOavgCount);
     TODOLastTsunami = GameWallClock::GetInstance().NowAsFloat();
 
     // Choose height
@@ -556,20 +568,38 @@ void OceanSurface::RecalculateCoefficients(
     mBasalWaveAngularVelocity2 = 0.75f * mBasalWaveAngularVelocity1;
 
     //
+    // Pre-calculate basal wave sinusoid
+    //
+    // By pre-multiplying with the first basal wave's amplitude we may save
+    // one multiplication
+    //
+
+    mBasalWaveSin1.Recalculate(
+        [a = mBasalWaveAmplitude1](float x)
+        {
+            return a * sin(2.0f * Pi<float> * x);
+        });
+
+
+    //
     // Abnormal wave CDFs
     //
-    // We want 1 event every EventRate*60 seconds, hence we want 1/(EventRate*60) events per second
+    // We want 1 event every EventRate*60 seconds, hence we want 1/(EventRate*60) events per second;
+    // considering the grace period (1/D of the event rate), we want 1/((D-1)/D EventRate*60)
     //
+
+    float constexpr EffectivePeriodFraction =
+        (AbnormalityTriggerRateFractionDenominator<float> -1.0f)
+        / AbnormalityTriggerRateFractionDenominator<float>;
 
     auto const tsunamiRateSeconds = std::chrono::duration<float>(gameParameters.TsunamiRate * 60.0f);
     auto const rogueWaveRateSeconds = std::chrono::duration<float>(gameParameters.RogueWaveRate * 60.0f);
 
-    mTsunamiCdf = 1.0f - exp(-AbnormalityTriggerSampleInterval.count() / tsunamiRateSeconds.count());
-    mRogueWaveCdf = 1.0f - exp(-AbnormalityTriggerSampleInterval.count() / rogueWaveRateSeconds.count());
+    mTsunamiCdf = 1.0f - exp(-AbnormalityTriggerSampleInterval.count() / (EffectivePeriodFraction * tsunamiRateSeconds.count()));
+    mRogueWaveCdf = 1.0f - exp(-AbnormalityTriggerSampleInterval.count() / (EffectivePeriodFraction * rogueWaveRateSeconds.count()));
 
     mTsunamiInterval = std::chrono::duration_cast<GameWallClock::duration>(tsunamiRateSeconds);
     mRogueWaveInterval = std::chrono::duration_cast<GameWallClock::duration>(rogueWaveRateSeconds);
-
 
     //
     // Store new parameter values that we are now current with
@@ -734,7 +764,7 @@ void OceanSurface::GenerateSamples(
         : std::max(0.0f, windSpeedAbsoluteMagnitude - abs(wind.GetBaseSpeedMagnitude()))
         / abs(windSpeedGustRelativeAmplitude);
 
-    float const windRipplesTimeFrequency = (wind.GetBaseSpeedMagnitude() >= 0)
+    float const windRipplesAngularVelocity = (wind.GetBaseSpeedMagnitude() >= 0)
         ? 128.0f
         : -128.0f;
 
@@ -746,7 +776,11 @@ void OceanSurface::GenerateSamples(
     // Generate samples
     //
 
-    float x = -GameParameters::HalfMaxWorldWidth;
+    float const x = -GameParameters::HalfMaxWorldWidth;
+
+    float sinArg1 = (mBasalWaveNumber1 * x - mBasalWaveAngularVelocity1 * currentSimulationTime) / (2 * Pi<float>);
+    float sinArg2 = (mBasalWaveNumber2 * x - mBasalWaveAngularVelocity2 * currentSimulationTime + secondaryBasalComponentPhase) / (2 * Pi<float>);
+    float sinArgRipple = (WindRippleWaveNumber * x - windRipplesAngularVelocity * currentSimulationTime) / (2 * Pi<float>);
 
     // sample index = 0
     float previousSampleValue;
@@ -756,16 +790,15 @@ void OceanSurface::GenerateSamples(
             * SWEHeightFieldAmplification;
 
         float const basalValue1 =
-            mBasalWaveAmplitude1
-            * sin(mBasalWaveNumber1 * x - mBasalWaveAngularVelocity1 * currentSimulationTime);
+            mBasalWaveSin1.GetLinearlyInterpolatedPeriodic(sinArg1);
 
         float const basalValue2 =
-            mBasalWaveAmplitude2
-            * sin(mBasalWaveNumber2 * x - mBasalWaveAngularVelocity2 * currentSimulationTime + secondaryBasalComponentPhase);
+            mBasalWaveNumber2 / mBasalWaveNumber1
+            * mBasalWaveSin1.GetLinearlyInterpolatedPeriodic(sinArg2);
 
         float const rippleValue =
-            windRipplesWaveHeight
-            * sinf(WindRippleWaveNumber * x  - currentSimulationTime * windRipplesTimeFrequency);
+            windRipplesWaveHeight / mBasalWaveNumber1
+            * mBasalWaveSin1.GetLinearlyInterpolatedPeriodic(sinArgRipple);
 
         previousSampleValue =
             sweValue
@@ -776,24 +809,30 @@ void OceanSurface::GenerateSamples(
         mSamples[0].SampleValue = previousSampleValue;
     }
 
+    float const sinArg1Dx = mBasalWaveNumber1 * Dx / (2 * Pi<float>);
+    float const sinArg2Dx = mBasalWaveNumber2 * Dx / (2 * Pi<float>);
+    float const sinArgRippleDx = WindRippleWaveNumber * Dx / (2 * Pi<float>);
+
     // sample index = 1...SamplesCount - 1
-    for (int64_t i = 1; i < SamplesCount; i++, x += Dx)
+    for (int64_t i = 1; i < SamplesCount; ++i)
     {
         float const sweValue =
             (mCurrentHeightField[SWEOuterLayerSamples + i] - SWEHeightFieldOffset)
             * SWEHeightFieldAmplification;
 
+        sinArg1 += sinArg1Dx;
         float const basalValue1 =
-            mBasalWaveAmplitude1
-            * sin(mBasalWaveNumber1 * x - mBasalWaveAngularVelocity1 * currentSimulationTime);
+            mBasalWaveSin1.GetLinearlyInterpolatedPeriodic(sinArg1);
 
+        sinArg2 += sinArg2Dx;
         float const basalValue2 =
-            mBasalWaveAmplitude2
-            * sin(mBasalWaveNumber2 * x - mBasalWaveAngularVelocity2 * currentSimulationTime + secondaryBasalComponentPhase);
+            mBasalWaveAmplitude2 / mBasalWaveAmplitude1
+            * mBasalWaveSin1.GetLinearlyInterpolatedPeriodic(sinArg2);
 
+        sinArgRipple += sinArgRippleDx;
         float const rippleValue =
-            windRipplesWaveHeight
-            * sinf(WindRippleWaveNumber * x  - currentSimulationTime * windRipplesTimeFrequency);
+            windRipplesWaveHeight / mBasalWaveAmplitude1
+            * mBasalWaveSin1.GetLinearlyInterpolatedPeriodic(sinArgRipple);
 
         float const sampleValue =
             sweValue

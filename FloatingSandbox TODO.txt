@@ -281,11 +281,18 @@ Render:
 
 		= Shallow Water Equations (*)
 
-		- See problem with too many bubbles
-			- See if water is constant after hole plugged
-				- Custom probe w/total water in ship
+		- Send version with ShipLoadDialog always yielding (not only on single-core box) to those two guys
+
+		= See problem with too many bubbles
+			= See if water is constant after hole plugged
+				= Custom probe w/total water in ship
+				- Remove probe afterwards
+			- See if water is turbulent
+				- Temporarily change shader to draw pressure waves
 			- See if true: realistic sinking of ship is 3 water intake and 0.25 water diffusion speed
-			
+		- Use precalc'd sin for bubble vortex 
+			- Pre FPS:
+			- Post FPS:
 
 		- Try to change speed of particles at repair
 			- See big notebook
@@ -403,7 +410,7 @@ Render:
 				- JackTheBrickfilmMaker, link to youtube channel: https://www.youtube.com/channel/UCshPbiTqFuwpNNh7BlpffhQ
 					- About box
 			- serhiires (see PM on Discord): HMHS Danic, RMS Danic, and all his others
-			- KMS_Unversinkbar_PandaDude.png
+			- KMS_Unversinkbar_PandaDude.png: 1941 
 			- Estonia - Dumbphones
 			- KMS Bismarck - Shippy
 			- RMS Titanic - Shippy
@@ -622,14 +629,6 @@ Render:
 				- Consider using pixel buffer objects to asynchronously read from render buffer
 					- See https://stackoverflow.com/questions/12157646/how-to-render-offscreen-on-opengl
 
-	+ Points::ConnectedSprings is of struct { SpringIndex, OtherEndpointIndex }
-		+ No two separate buffers, as we seldom (if not neveer) need them separate
-		+ Init's @ShipBuilder or at whoever populates it now
-		+ Maintained at SpringDestroyHandler
-		+ Used at:
-			+ ConnectedComponentDetection
-			+ UpdateWaterVelocities
-
 	- Retry triangles cache optimization, now that layouts are different
 
 	- Array merging:
@@ -707,9 +706,6 @@ Render:
 		- Test turning it around into (multiple) spring visits, rather than point visits
 			- Multiple because of need to normalize outgoing for each point
 
-	- See if can avoid other IsDeleted checks, via zero'ing of coefficients
-		+ UpdateSpringForces()
-
 	- UpdatePointForces:
 		- Substitute "if(y<waterHeight)" branches with "float isUnderwater (1.f/0.f)"
 			- Force compiler into not branching - "?" operator won't work
@@ -723,18 +719,6 @@ Render:
 				  - This allows us to call UpdatePointForces only once
 				  - Also need to reset StaticForce buffer before UpdatePointForces, so:
 					- UpdatePointForces becomes CalculateFieldForces and take care of *filling* the buffer, overwriting it
-	+ Water and Land interpolations:
-		+ Prepare first test bench (noinline)
-			+ GetWaterHeight: 2.23%
-			+ GetFloorHeight: 1.66%
-			+ Save assembly
-		+ 1: see if it's better to store delta's and/or other pre-calculated things
-		+ 2: see if can do semi-integer x-axis interpolation
-			+ GetWaterHeight: 1.25%
-			+ GetFloorHeight: 0.77%
-		+ Cleanup test bench
-		+ Final functional test
-		+ Final FPS test
 
 	- Cache sea depth from PointDynamics at first calculation (Points?), using lambda
 
@@ -1008,10 +992,10 @@ Render:
 					+ Test all param changes
 					+ Test tsunami notifications
 				+ UR/Ratio: 220/230
-				- 2: Pre-calc'd funcs (sin)
-					- Arg needs to become current_arg/2PI
-				- 3: Samples: advance x's with sums, no multiplications
-					- Take into account current_arg/2PI
+				+ 2: Pre-calc'd funcs (sin)
+					+ Arg needs to become current_arg/2PI
+				+ 3: Samples: advance x's with sums, no multiplications
+					+ Take into account current_arg/2PI
 				= 4: Anomaly choosing done only at scheduled (wallclock) times, every ~0.5 sec
 					+ AnomalyTriggerSampleInterval = 500ms
 					+ Adjust exponential coefficients
@@ -1019,7 +1003,8 @@ Render:
 						  every second, and thus we want 1/(TsunamiRate * 60.0f * 1s / AnomalyTriggerSampleInterval) every interval
 						+ Double-check wind while you're at it
 					= Verify rates
-				- 5a: see if both advections are really needed
+				- FPS: TODO; UR/Ratio: TODO
+				- 5a: See if both advections are really needed
 				- 5b: Two advections in one, so that we have a single loop
 					- Then, check assembly
 				- 6: Two field updates in one, so that we have a single loop
@@ -1033,6 +1018,7 @@ Render:
 				+ Between advection and update
 				+ Test first in visible world
 				+ Finalize
+			- Do test with "the possible ships" broken
 			- Merge
 
 	- Underwater currents
@@ -1116,9 +1102,11 @@ Render:
 				- With probability growing in a band around max pressure delta
 
 	- Ocean floor deforming/breaking up upon impact
+		- WATCH OUT: might be ugly with peaks
 		- @ Ocean floor collision:
 			- Upon point entering floor:
 				- Points goes back by displacement * FloorHardness
+					- displacement is whatever displacement we currently use
 				- Ocean floor's H goes back by displacement * (1 - FloorHardness)
 
 	- Breaking waves (Muller's paper)
@@ -2050,6 +2038,27 @@ IF WX:
 		+ Perf:
 			+ FPS Now: 30.8
 			+ UR Now: 224
+	+ Points::ConnectedSprings is of struct { SpringIndex, OtherEndpointIndex }
+		+ No two separate buffers, as we seldom (if not neveer) need them separate
+		+ Init's @ShipBuilder or at whoever populates it now
+		+ Maintained at SpringDestroyHandler
+		+ Used at:
+			+ ConnectedComponentDetection
+			+ UpdateWaterVelocities
+	+ Water and Land interpolations:
+		+ Prepare first test bench (noinline)
+			+ GetWaterHeight: 2.23%
+			+ GetFloorHeight: 1.66%
+			+ Save assembly
+		+ 1: see if it's better to store delta's and/or other pre-calculated things
+		+ 2: see if can do semi-integer x-axis interpolation
+			+ GetWaterHeight: 1.25%
+			+ GetFloorHeight: 0.77%
+		+ Cleanup test bench
+		+ Final functional test
+		+ Final FPS test
+	+ See if can avoid other IsDeleted checks, via zero'ing of coefficients
+		+ UpdateSpringForces()
 
 
 + Fix 4 BPP images

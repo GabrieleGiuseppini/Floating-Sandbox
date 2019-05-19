@@ -9,6 +9,7 @@
 #include "GameParameters.h"
 
 #include <GameCore/GameMath.h>
+#include <GameCore/PrecalculatedFunction.h>
 #include <GameCore/RunningAverage.h>
 
 #include <memory>
@@ -134,6 +135,7 @@ private:
     float mBasalWaveNumber2;
     float mBasalWaveAngularVelocity1;
     float mBasalWaveAngularVelocity2;
+    PrecalculatedFunction<SamplesCount> mBasalWaveSin1;
     float mTsunamiCdf;
     float mRogueWaveCdf;
     GameWallClock::duration mTsunamiInterval;
