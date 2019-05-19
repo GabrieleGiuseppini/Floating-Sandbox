@@ -677,24 +677,24 @@ void OceanSurface::UpdateFields()
 
     // We will divide deltaField by Dx (spatial derivatives) and
     // then multiply by dt (because we are integrating over time)
-    float constexpr Factor = GameParameters::SimulationStepTimeDuration<float> / Dx;
+    float constexpr FactorH = GameParameters::SimulationStepTimeDuration<float> / Dx;
+    float constexpr FactorV = FactorH * GameParameters::GravityMagnitude;
 
     mHeightField[0] -=
         mHeightField[0]
         * (mVelocityField[0 + 1] - mVelocityField[0])
-        * Factor;
+        * FactorH;
 
     for (int32_t i = 1; i < SWETotalSamples; ++i)
     {
         mHeightField[i] -=
             mHeightField[i]
             * (mVelocityField[i + 1] - mVelocityField[i])
-            * Factor;
+            * FactorH;
 
         mVelocityField[i] +=
-            GameParameters::GravityMagnitude
-            * (mHeightField[i - 1] - mHeightField[i])
-            * Factor;
+            (mHeightField[i - 1] - mHeightField[i])
+            * FactorV;
     }
 }
 
