@@ -126,6 +126,12 @@ public:
         return GenerateRandomNormalizedReal() < trueProbability;
     }
 
+    inline float GenerateExponentialReal(float lambda)
+    {
+        std::exponential_distribution<float> dis(lambda);
+        return dis(mRandomEngine);
+    }
+
 private:
 
     GameRandomEngine()

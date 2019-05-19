@@ -18,14 +18,6 @@ namespace Physics {
 template<typename T>
 T constexpr RenderSlices = 500;
 
-// The interval with which we sample the abnormalities Poisson distributions
-// (how often we check for abnormalities)
-std::chrono::duration<float> constexpr AbnormalityTriggerSampleInterval = std::chrono::duration<float>(0.5f); // 500ms
-
-// The fraction of the abnormality trigger rate that we take as grace period
-template<typename T>
-T constexpr AbnormalityTriggerRateFractionDenominator = 4;
-
 //
 // SWE Layer
 //
@@ -70,16 +62,15 @@ OceanSurface::OceanSurface(std::shared_ptr<GameEventDispatcher> gameEventDispatc
     , mBasalWaveAngularVelocity1(0.0f)
     , mBasalWaveAngularVelocity2(0.0f)
     , mBasalWaveSin1()
-    , mTsunamiCdf(0.0f)
-    , mRogueWaveCdf(0.0f)
+    , mNextTsunamiTimestamp(GameWallClock::duration::max())
+    , mNextRogueWaveTimestamp(GameWallClock::duration::max())
+    ////////
     , mWindBaseSpeedMagnitude(std::numeric_limits<float>::max())
     , mBasalWaveHeightAdjustment(std::numeric_limits<float>::max())
     , mBasalWaveLengthAdjustment(std::numeric_limits<float>::max())
     , mBasalWaveSpeedAdjustment(std::numeric_limits<float>::max())
     , mTsunamiRate(std::numeric_limits<float>::max())
     , mRogueWaveRate(std::numeric_limits<float>::max())
-    , mTsunamiInterval(std::numeric_limits<GameWallClock::duration::rep>::max())
-    , mRogueWaveInterval(std::numeric_limits<GameWallClock::duration::rep>::max())
     ////////
     , mHeightFieldBuffer1(new float[SWETotalSamples + 1]) // One extra cell just to ease interpolations
     , mHeightFieldBuffer2(new float[SWETotalSamples + 1]) // One extra cell just to ease interpolations
@@ -87,12 +78,10 @@ OceanSurface::OceanSurface(std::shared_ptr<GameEventDispatcher> gameEventDispatc
     , mVelocityFieldBuffer2(new float[SWETotalSamples + 1]) // One extra cell just to ease interpolations
     ////////
     , mSWEInteractiveWaveStateMachine()
-    , mLastTsunamiTriggeredTimestamp(GameWallClock::GetInstance().Now())
-    , mLastTsunamiTriggerCheckedTimestamp(GameWallClock::GetInstance().Now())
-    , mLastRogueWaveTriggeredTimestamp(GameWallClock::GetInstance().Now())
-    , mLastRogueWaveTriggerCheckedTimestamp(GameWallClock::GetInstance().Now())
     , mSWETsunamiWaveStateMachine()
     , mSWERogueWaveWaveStateMachine()
+    , mLastTsunamiTimestamp(GameWallClock::GetInstance().Now())
+    , mLastRogueWaveTimestamp(GameWallClock::GetInstance().Now())
 {
     //
     // Initialize SWE layer
@@ -188,19 +177,17 @@ void OceanSurface::Update(
         // See if it's time to generate a tsunami
         //
 
-        if ((now - mLastTsunamiTriggeredTimestamp) > mTsunamiInterval / AbnormalityTriggerRateFractionDenominator<int> // Grace period
-            && (now - mLastTsunamiTriggerCheckedTimestamp) > AbnormalityTriggerSampleInterval
-            && gameParameters.TsunamiRate > 0.0f) // Grace period - we don't want tsunamis right after game starts
+        if (now > mNextTsunamiTimestamp)
         {
-            if (GameRandomEngine::GetInstance().GenerateRandomBoolean(mTsunamiCdf))
-            {
-                // Tsunami!
-                TriggerTsunami(currentSimulationTime);
+            // Tsunami!
+            TriggerTsunami(currentSimulationTime);
 
-                mLastTsunamiTriggeredTimestamp = now;
-            }
+            mLastTsunamiTimestamp = now;
 
-            mLastTsunamiTriggerCheckedTimestamp = now;
+            // Reset automatically-generated tsunamis
+            mNextTsunamiTimestamp = CalculateNextAbnormalWaveTimestamp(
+                now,
+                gameParameters.TsunamiRate * 60.0f);
         }
     }
 
@@ -227,19 +214,17 @@ void OceanSurface::Update(
         // See if it's time to generate a rogue wave
         //
 
-        if ((now - mLastRogueWaveTriggeredTimestamp) > mRogueWaveInterval / AbnormalityTriggerRateFractionDenominator<int> // Grace period
-            && (now - mLastRogueWaveTriggerCheckedTimestamp) > AbnormalityTriggerSampleInterval
-            && gameParameters.RogueWaveRate > 0.0f)
+        if (now > mNextRogueWaveTimestamp)
         {
-            if (GameRandomEngine::GetInstance().GenerateRandomBoolean(mRogueWaveCdf))
-            {
-                // Rogue wave!
-                TriggerRogueWave(currentSimulationTime, wind);
+            // RogueWave!
+            TriggerRogueWave(currentSimulationTime, wind);
 
-                mLastRogueWaveTriggeredTimestamp = now;
-            }
+            mLastRogueWaveTimestamp = now;
 
-            mLastRogueWaveTriggerCheckedTimestamp = now;
+            // Reset automatically-generated rogue waves
+            mNextRogueWaveTimestamp = CalculateNextAbnormalWaveTimestamp(
+                now,
+                gameParameters.RogueWaveRate * 60.0f);
         }
     }
 
@@ -403,16 +388,6 @@ void OceanSurface::AdjustTo(
 
 void OceanSurface::TriggerTsunami(float currentSimulationTime)
 {
-    // TODOTEST
-    static float TODOLastTsunami = 0.0f;
-    static float TODOavgSum = 0.0f;
-    static float TODOavgCount = 0;
-    TODOavgSum += GameWallClock::GetInstance().NowAsFloat() - TODOLastTsunami;
-    TODOavgCount += 1.0f;
-    LogMessage("Generated tsunami after ", GameWallClock::GetInstance().NowAsFloat() - TODOLastTsunami,
-        " avg=", TODOavgSum / TODOavgCount);
-    TODOLastTsunami = GameWallClock::GetInstance().NowAsFloat();
-
     // Choose X
     float const tsunamiWorldX = GameRandomEngine::GetInstance().GenerateRandomReal(
         -GameParameters::HalfMaxWorldWidth,
@@ -457,16 +432,6 @@ void OceanSurface::TriggerRogueWave(
         // Right locus
         centerIndex = SWEOuterLayerSamples + OceanSurface::SamplesCount;
     }
-
-    // TODOTEST
-    static float TODOLastTsunami = 0.0f;
-    static float TODOavgSum = 0.0f;
-    static float TODOavgCount = 0;
-    TODOavgSum += GameWallClock::GetInstance().NowAsFloat() - TODOLastTsunami;
-    TODOavgCount += 1.0f;
-    LogMessage("Generated rogue wave after ", GameWallClock::GetInstance().NowAsFloat() - TODOLastTsunami,
-        " avg=", TODOavgSum / TODOavgCount);
-    TODOLastTsunami = GameWallClock::GetInstance().NowAsFloat();
 
     // Choose height
     float constexpr MaxRogueWaveHeight = 50.0f / SWEHeightFieldAmplification;
@@ -582,24 +547,31 @@ void OceanSurface::RecalculateCoefficients(
 
 
     //
-    // Abnormal wave CDFs
-    //
-    // We want 1 event every EventRate*60 seconds, hence we want 1/(EventRate*60) events per second;
-    // considering the grace period (1/D of the event rate), we want 1/((D-1)/D EventRate*60)
+    // Abnormal wave timestamps
     //
 
-    float constexpr EffectivePeriodFraction =
-        (AbnormalityTriggerRateFractionDenominator<float> -1.0f)
-        / AbnormalityTriggerRateFractionDenominator<float>;
+    if (gameParameters.TsunamiRate > 0.0f)
+    {
+        mNextTsunamiTimestamp = CalculateNextAbnormalWaveTimestamp(
+            mLastTsunamiTimestamp,
+            gameParameters.TsunamiRate * 60.0f);
+    }
+    else
+    {
+        mNextTsunamiTimestamp = GameWallClock::time_point::max();
+    }
 
-    auto const tsunamiRateSeconds = std::chrono::duration<float>(gameParameters.TsunamiRate * 60.0f);
-    auto const rogueWaveRateSeconds = std::chrono::duration<float>(gameParameters.RogueWaveRate * 60.0f);
+    if (gameParameters.RogueWaveRate > 0.0f)
+    {
+        mNextRogueWaveTimestamp = CalculateNextAbnormalWaveTimestamp(
+            mLastRogueWaveTimestamp,
+            gameParameters.RogueWaveRate * 60.0f);
+    }
+    else
+    {
+        mNextRogueWaveTimestamp = GameWallClock::time_point::max();
+    }
 
-    mTsunamiCdf = 1.0f - exp(-AbnormalityTriggerSampleInterval.count() / (EffectivePeriodFraction * tsunamiRateSeconds.count()));
-    mRogueWaveCdf = 1.0f - exp(-AbnormalityTriggerSampleInterval.count() / (EffectivePeriodFraction * rogueWaveRateSeconds.count()));
-
-    mTsunamiInterval = std::chrono::duration_cast<GameWallClock::duration>(tsunamiRateSeconds);
-    mRogueWaveInterval = std::chrono::duration_cast<GameWallClock::duration>(rogueWaveRateSeconds);
 
     //
     // Store new parameter values that we are now current with
@@ -611,6 +583,16 @@ void OceanSurface::RecalculateCoefficients(
     mBasalWaveSpeedAdjustment = gameParameters.BasalWaveSpeedAdjustment;
     mTsunamiRate = gameParameters.TsunamiRate;
     mRogueWaveRate = gameParameters.RogueWaveRate;
+}
+
+GameWallClock::time_point OceanSurface::CalculateNextAbnormalWaveTimestamp(
+    GameWallClock::time_point lastTimestamp,
+    float rateSeconds)
+{
+    return lastTimestamp
+        + std::chrono::duration_cast<GameWallClock::duration>(
+            std::chrono::duration<float>(
+                GameRandomEngine::GetInstance().GenerateExponentialReal(1.0f / rateSeconds)));
 }
 
 void OceanSurface::AdvectHeightField()

@@ -96,6 +96,10 @@ private:
         Wind const & wind,
         GameParameters const & gameParameters);
 
+    static GameWallClock::time_point CalculateNextAbnormalWaveTimestamp(
+        GameWallClock::time_point lastTimestamp,
+        float rateSeconds);
+
     void AdvectHeightField();
     void AdvectVelocityField();
     void ApplyDampingBoundaryConditions();
@@ -136,10 +140,8 @@ private:
     float mBasalWaveAngularVelocity1;
     float mBasalWaveAngularVelocity2;
     PrecalculatedFunction<SamplesCount> mBasalWaveSin1;
-    float mTsunamiCdf;
-    float mRogueWaveCdf;
-    GameWallClock::duration mTsunamiInterval;
-    GameWallClock::duration mRogueWaveInterval;
+    GameWallClock::time_point mNextTsunamiTimestamp;
+    GameWallClock::time_point mNextRogueWaveTimestamp;
 
     // Parameters that the calculated values are current with
     float mWindBaseSpeedMagnitude;
@@ -148,6 +150,7 @@ private:
     float mBasalWaveSpeedAdjustment;
     float mTsunamiRate;
     float mRogueWaveRate;
+
 
     //
     // Shallow water equations
@@ -229,11 +232,6 @@ private:
     // Abnormal waves
     //
 
-    GameWallClock::time_point mLastTsunamiTriggeredTimestamp;
-    GameWallClock::time_point mLastTsunamiTriggerCheckedTimestamp;
-    GameWallClock::time_point mLastRogueWaveTriggeredTimestamp;
-    GameWallClock::time_point mLastRogueWaveTriggerCheckedTimestamp;
-
     class SWEAbnormalWaveStateMachine
     {
     public:
@@ -279,6 +277,9 @@ private:
 
     std::optional<SWEAbnormalWaveStateMachine> mSWETsunamiWaveStateMachine;
     std::optional<SWEAbnormalWaveStateMachine> mSWERogueWaveWaveStateMachine;
+
+    GameWallClock::time_point mLastTsunamiTimestamp;
+    GameWallClock::time_point mLastRogueWaveTimestamp;
 };
 
 }

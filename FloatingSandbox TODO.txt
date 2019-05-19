@@ -294,6 +294,9 @@ Render:
 			- Pre FPS:
 			- Post FPS:
 
+
+		- Do test with "the possible ships" broken
+
 		- Try to change speed of particles at repair
 			- See big notebook
 
@@ -996,13 +999,13 @@ Render:
 					+ Arg needs to become current_arg/2PI
 				+ 3: Samples: advance x's with sums, no multiplications
 					+ Take into account current_arg/2PI
-				= 4: Anomaly choosing done only at scheduled (wallclock) times, every ~0.5 sec
+				+ 4: Anomaly choosing done only at scheduled (wallclock) times, every ~0.5 sec
 					+ AnomalyTriggerSampleInterval = 500ms
 					+ Adjust exponential coefficients
 						+ If we want 1 tsunami every TsunamiRate * 60.0f second, we want 1/(TsunamiRate * 60.0f) tsunami
 						  every second, and thus we want 1/(TsunamiRate * 60.0f * 1s / AnomalyTriggerSampleInterval) every interval
 						+ Double-check wind while you're at it
-					= Verify rates
+					+ Verify rates
 				- FPS: TODO; UR/Ratio: TODO
 				- 5a: See if both advections are really needed
 				- 5b: Two advections in one, so that we have a single loop
@@ -1018,7 +1021,6 @@ Render:
 				+ Between advection and update
 				+ Test first in visible world
 				+ Finalize
-			- Do test with "the possible ships" broken
 			- Merge
 
 	- Underwater currents
