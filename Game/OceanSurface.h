@@ -100,11 +100,8 @@ private:
         GameWallClock::time_point lastTimestamp,
         float rateSeconds);
 
-    void AdvectHeightField();
-    void AdvectVelocityField();
     void ApplyDampingBoundaryConditions();
-    void UpdateHeightField();
-    void UpdateVelocityField();
+    void UpdateFields();
 
     void GenerateSamples(
         float currentSimulationTime,

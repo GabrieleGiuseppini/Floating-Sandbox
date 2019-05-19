@@ -224,8 +224,7 @@ void OceanSurface::Update(
 
     ApplyDampingBoundaryConditions();
 
-    UpdateHeightField();
-    UpdateVelocityField();
+    UpdateFields();
 
     ////// Calc avg height among all samples
     ////float avgHeight = 0.0f;
@@ -671,28 +670,31 @@ void OceanSurface::ApplyDampingBoundaryConditions()
 
 }
 
-void OceanSurface::UpdateHeightField()
+void OceanSurface::UpdateFields()
 {
-    // Process all height samples
-    for (int32_t i = 0; i < SWETotalSamples; ++i)
+    // Height field  : from 0 to SWETotalSamples
+    // Velocity field: from 1 to SWETotalSamples
+
+    // We will divide deltaField by Dx (spatial derivatives) and
+    // then multiply by dt (because we are integrating over time)
+    float constexpr Factor = GameParameters::SimulationStepTimeDuration<float> / Dx;
+
+    mHeightField[0] -=
+        mHeightField[0]
+        * (mVelocityField[0 + 1] - mVelocityField[0])
+        * Factor;
+
+    for (int32_t i = 1; i < SWETotalSamples; ++i)
     {
         mHeightField[i] -=
             mHeightField[i]
-            * (mVelocityField[i + 1] - mVelocityField[i]) / Dx
-            * GameParameters::SimulationStepTimeDuration<float>;
-    }
-}
+            * (mVelocityField[i + 1] - mVelocityField[i])
+            * Factor;
 
-void OceanSurface::UpdateVelocityField()
-{
-    // Process all samples
-    // Note: we skip the first velocity update for symmetry with the last one
-    for (int32_t i = 1; i < SWETotalSamples; ++i)
-    {
         mVelocityField[i] +=
             GameParameters::GravityMagnitude
-            * (mHeightField[i - 1] - mHeightField[i]) / Dx
-            * GameParameters::SimulationStepTimeDuration<float>;
+            * (mHeightField[i - 1] - mHeightField[i])
+            * Factor;
     }
 }
 

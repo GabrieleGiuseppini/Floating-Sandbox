@@ -1008,9 +1008,9 @@ Render:
 					+ Verify rates
 				+ FPS: 30/30.15; UR/Ratio: 206
 				+ 5a: See if both advections are really needed
-				- 6: Two field updates in one, so that we have a single loop
-					- Then, check assembly
-				- FPS after:
+				+ 6: Two field updates in one, so that we have a single loop
+					= Then, check assembly
+				+ FPS after: 30.4/30.6; UR/Ratio: 218
 			+ See to reduce flattening of waves
 				+ Test lower offset
 				+ Try again with height offset
