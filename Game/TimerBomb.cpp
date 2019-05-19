@@ -13,7 +13,7 @@ TimerBomb::TimerBomb(
     BombId id,
     ElementIndex springIndex,
     World & parentWorld,
-    std::shared_ptr<IGameEventHandler> gameEventHandler,
+    std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     IPhysicsHandler & physicsHandler,
     Points & shipPoints,
     Springs & shipSprings)
@@ -22,7 +22,7 @@ TimerBomb::TimerBomb(
         BombType::TimerBomb,
         springIndex,
         parentWorld,
-        std::move(gameEventHandler),
+        std::move(gameEventDispatcher),
         physicsHandler,
         shipPoints,
         shipSprings)

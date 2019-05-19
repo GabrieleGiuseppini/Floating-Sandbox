@@ -62,11 +62,14 @@ const long ID_TIMERBOMB_MENUITEM = wxNewId();
 const long ID_RCBOMB_MENUITEM = wxNewId();
 const long ID_IMPACTBOMB_MENUITEM = wxNewId();
 const long ID_ANTIMATTERBOMB_MENUITEM = wxNewId();
-const long ID_RCBOMBDETONATE_MENUITEM = wxNewId();
-const long ID_ANTIMATTERBOMBDETONATE_MENUITEM = wxNewId();
+const long ID_WAVEMAKER_MENUITEM = wxNewId();
 const long ID_ADJUSTTERRAIN_MENUITEM = wxNewId();
 const long ID_REPAIRSTRUCTURE_MENUITEM = wxNewId();
 const long ID_SCRUB_MENUITEM = wxNewId();
+const long ID_RCBOMBDETONATE_MENUITEM = wxNewId();
+const long ID_ANTIMATTERBOMBDETONATE_MENUITEM = wxNewId();
+const long ID_TRIGGERTSUNAMI_MENUITEM = wxNewId();
+const long ID_TRIGGERROGUEWAVE_MENUITEM = wxNewId();
 
 const long ID_OPEN_SETTINGS_WINDOW_MENUITEM = wxNewId();
 const long ID_OPEN_PREFERENCES_WINDOW_MENUITEM = wxNewId();
@@ -93,8 +96,8 @@ MainFrame::MainFrame(wxApp * mainApp)
     , mResourceLoader(new ResourceLoader())
     , mGameController()
     , mSoundController()
-    , mUIPreferences()
     , mToolController()
+    , mUIPreferencesManager()
     , mHasWindowBeenShown(false)
     , mHasStartupTipBeenChecked(false)
     , mCurrentShipTitles()
@@ -324,6 +327,10 @@ MainFrame::MainFrame(wxApp * mainApp)
     mToolsMenu->Append(antiMatterBombMenuItem);
     Connect(ID_ANTIMATTERBOMB_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAntiMatterBombMenuItemSelected);
 
+    wxMenuItem * waveMakerMenuItem = new wxMenuItem(mToolsMenu, ID_WAVEMAKER_MENUITEM, _("WaveMaker\tV"), wxEmptyString, wxITEM_RADIO);
+    mToolsMenu->Append(waveMakerMenuItem);
+    Connect(ID_WAVEMAKER_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnWaveMakerMenuItemSelected);
+
     wxMenuItem * adjustTerrainMenuItem = new wxMenuItem(mToolsMenu, ID_ADJUSTTERRAIN_MENUITEM, _("Adjust Terrain\tJ"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(adjustTerrainMenuItem);
     Connect(ID_ADJUSTTERRAIN_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAdjustTerrainMenuItemSelected);
@@ -348,6 +355,13 @@ MainFrame::MainFrame(wxApp * mainApp)
     Connect(ID_ANTIMATTERBOMBDETONATE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAntiMatterBombDetonateMenuItemSelected);
     mAntiMatterBombsDetonateMenuItem->Enable(false);
 
+    wxMenuItem * triggerTsunamiMenuItem = new wxMenuItem(mToolsMenu, ID_TRIGGERTSUNAMI_MENUITEM, _("Trigger Tsunami"), wxEmptyString, wxITEM_NORMAL);
+    mToolsMenu->Append(triggerTsunamiMenuItem);
+    Connect(ID_TRIGGERTSUNAMI_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnTriggerTsunamiMenuItemSelected);
+
+    wxMenuItem * triggerRogueWaveMenuItem = new wxMenuItem(mToolsMenu, ID_TRIGGERROGUEWAVE_MENUITEM, _("Trigger Rogue Wave"), wxEmptyString, wxITEM_NORMAL);
+    mToolsMenu->Append(triggerRogueWaveMenuItem);
+    Connect(ID_TRIGGERROGUEWAVE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnTriggerRogueWaveMenuItemSelected);
 
     mainMenuBar->Append(mToolsMenu, _("Tools"));
 
@@ -563,7 +577,6 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     {
         mSoundController = std::make_shared<SoundController>(
             mResourceLoader,
-            mGameController->GetGameEventHandler(),
             [&splash, this](float progress, std::string const & message)
             {
                 splash->UpdateProgress(0.5f + progress / 2.0f, message);
@@ -583,10 +596,10 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
 
     //
-    // Create UI Preferences
+    // Create UI Preferences manager
     //
 
-    mUIPreferences = std::make_shared<UIPreferences>();
+    mUIPreferencesManager = std::make_shared<UIPreferencesManager>(mGameController);
 
 
     //
@@ -620,10 +633,10 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     // Register game event handlers
     //
 
-    mGameController->RegisterGameEventHandler(this);
-    mGameController->RegisterGameEventHandler(mEventTickerPanel.get());
-    mGameController->RegisterGameEventHandler(mProbePanel.get());
-    mGameController->RegisterGameEventHandler(mSoundController.get());
+    this->RegisterEventHandler(*mGameController);
+    mEventTickerPanel->RegisterEventHandler(*mGameController);
+    mProbePanel->RegisterEventHandler(*mGameController);
+    mSoundController->RegisterEventHandler(*mGameController);
 
 
     //
@@ -821,11 +834,11 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
     if (!mHasStartupTipBeenChecked)
     {
         // Show startup tip - unless user has decided not to
-        if (mUIPreferences->GetShowStartupTip())
+        if (mUIPreferencesManager->GetShowStartupTip())
         {
             StartupTipDialog startupTipDialog(
                 this,
-                mUIPreferences,
+                mUIPreferencesManager,
                 *mResourceLoader);
 
             startupTipDialog.ShowModal();
@@ -876,13 +889,13 @@ void MainFrame::OnShipFileChosen(fsShipFileChosenEvent & event)
 
         // Open description, if a description exists and the user allows
         if (!!shipMetadata.Description
-            && mUIPreferences->GetShowShipDescriptionsAtShipLoad())
+            && mUIPreferencesManager->GetShowShipDescriptionsAtShipLoad())
         {
             ShipDescriptionDialog shipDescriptionDialog(
                 this,
                 shipMetadata,
                 true,
-                mUIPreferences);
+                mUIPreferencesManager);
 
             shipDescriptionDialog.ShowModal();
         }
@@ -972,7 +985,7 @@ void MainFrame::OnLoadShipMenuItemSelected(wxCommandEvent & /*event*/)
     {
         mShipLoadDialog = std::make_unique<ShipLoadDialog>(
             this,
-            mUIPreferences,
+            mUIPreferencesManager,
             *mResourceLoader);
 
         mShipLoadDialog->Bind(fsEVT_SHIP_FILE_CHOSEN, &MainFrame::OnShipFileChosen, this);
@@ -1020,8 +1033,8 @@ void MainFrame::OnSaveScreenshotMenuItemSelected(wxCommandEvent & /*event*/)
     // Ensure pictures folder exists
     //
 
-    assert(!!mUIPreferences);
-    auto const folderPath = mUIPreferences->GetScreenshotsFolderPath();
+    assert(!!mUIPreferencesManager);
+    auto const folderPath = mUIPreferencesManager->GetScreenshotsFolderPath();
 
     if (!std::filesystem::exists(folderPath))
     {
@@ -1233,22 +1246,16 @@ void MainFrame::OnImpactBombMenuItemSelected(wxCommandEvent & /*event*/)
     mToolController->SetTool(ToolType::ImpactBomb);
 }
 
-void MainFrame::OnAntiMatterBombMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    assert(!!mToolController);
-    mToolController->SetTool(ToolType::AntiMatterBomb);
-}
-
-void MainFrame::OnRCBombDetonateMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    assert(!!mGameController);
-    mGameController->DetonateRCBombs();
-}
-
 void MainFrame::OnAntiMatterBombDetonateMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mGameController);
     mGameController->DetonateAntiMatterBombs();
+}
+
+void MainFrame::OnWaveMakerMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mToolController);
+    mToolController->SetTool(ToolType::WaveMaker);
 }
 
 void MainFrame::OnAdjustTerrainMenuItemSelected(wxCommandEvent & /*event*/)
@@ -1267,6 +1274,30 @@ void MainFrame::OnScrubMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
     mToolController->SetTool(ToolType::Scrub);
+}
+
+void MainFrame::OnRCBombDetonateMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mGameController);
+    mGameController->DetonateRCBombs();
+}
+
+void MainFrame::OnAntiMatterBombMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mToolController);
+    mToolController->SetTool(ToolType::AntiMatterBomb);
+}
+
+void MainFrame::OnTriggerTsunamiMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mGameController);
+    mGameController->TriggerTsunami();
+}
+
+void MainFrame::OnTriggerRogueWaveMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mGameController);
+    mGameController->TriggerRogueWave();
 }
 
 //////////
@@ -1291,7 +1322,7 @@ void MainFrame::OnOpenPreferencesWindowMenuItemSelected(wxCommandEvent & /*event
     {
         mPreferencesDialog = std::make_unique<PreferencesDialog>(
             this,
-            mUIPreferences);
+            mUIPreferencesManager);
     }
 
     mPreferencesDialog->Open();

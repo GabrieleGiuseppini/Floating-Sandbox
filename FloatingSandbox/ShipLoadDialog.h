@@ -6,7 +6,7 @@
 #pragma once
 
 #include "ShipPreviewPanel.h"
-#include "UIPreferences.h"
+#include "UIPreferencesManager.h"
 
 #include <Game/ResourceLoader.h>
 
@@ -25,7 +25,7 @@ public:
 
     ShipLoadDialog(
         wxWindow* parent,
-        std::shared_ptr<UIPreferences> uiPreferences,
+        std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
         ResourceLoader const & resourceLoader);
 
 	virtual ~ShipLoadDialog();
@@ -55,7 +55,7 @@ private:
 private:
 
 	wxWindow * const mParent;
-    std::shared_ptr<UIPreferences> mUIPreferences;
+    std::shared_ptr<UIPreferencesManager> mUIPreferencesManager;
 
     wxGenericDirCtrl * mDirCtrl;
     ShipPreviewPanel * mShipPreviewPanel;

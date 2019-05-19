@@ -12,16 +12,16 @@ static constexpr int Border = 10;
 
 PreferencesDialog::PreferencesDialog(
     wxWindow* parent,
-    std::shared_ptr<UIPreferences> uiPreferences)
+    std::shared_ptr<UIPreferencesManager> uiPreferencesManager)
     : mParent(parent)
-    , mUIPreferences(std::move(uiPreferences))
+    , mUIPreferencesManager(std::move(uiPreferencesManager))
 {
     Create(
         mParent,
         wxID_ANY,
         _("Preferences"),
         wxDefaultPosition,
-        wxSize(400, 200),
+        wxSize(400, -1),
         wxCAPTION | wxCLOSE_BOX | wxMINIMIZE_BOX | wxFRAME_SHAPED,
         _T("Preferences Window"));
 
@@ -74,8 +74,6 @@ PreferencesDialog::~PreferencesDialog()
 
 void PreferencesDialog::Open()
 {
-    assert(!!mUIPreferences);
-
     ReadSettings();
 
     this->Show();
@@ -83,20 +81,26 @@ void PreferencesDialog::Open()
 
 void PreferencesDialog::OnScreenshotDirPickerChanged(wxCommandEvent & /*event*/)
 {
-    assert(!!mUIPreferences);
-    mUIPreferences->SetScreenshotsFolderPath(mScreenshotDirPickerCtrl->GetPath().ToStdString());
+    assert(!!mUIPreferencesManager);
+    mUIPreferencesManager->SetScreenshotsFolderPath(mScreenshotDirPickerCtrl->GetPath().ToStdString());
 }
 
 void PreferencesDialog::OnShowTipOnStartupCheckBoxClicked(wxCommandEvent & /*event*/)
 {
-    assert(!!mUIPreferences);
-    mUIPreferences->SetShowStartupTip(mShowTipOnStartupCheckBox->GetValue());
+    assert(!!mUIPreferencesManager);
+    mUIPreferencesManager->SetShowStartupTip(mShowTipOnStartupCheckBox->GetValue());
 }
 
 void PreferencesDialog::OnShowShipDescriptionAtShipLoadCheckBoxClicked(wxCommandEvent & /*event*/)
 {
-    assert(!!mUIPreferences);
-    mUIPreferences->SetShowShipDescriptionsAtShipLoad(mShowShipDescriptionAtShipLoadCheckBox->GetValue());
+    assert(!!mUIPreferencesManager);
+    mUIPreferencesManager->SetShowShipDescriptionsAtShipLoad(mShowShipDescriptionAtShipLoadCheckBox->GetValue());
+}
+
+void PreferencesDialog::OnShowTsunamiNotificationsCheckBoxClicked(wxCommandEvent & /*event*/)
+{
+    assert(!!mUIPreferencesManager);
+    mUIPreferencesManager->SetShowTsunamiNotifications(mShowTsunamiNotificationsCheckBox->GetValue());
 }
 
 void PreferencesDialog::OnOkButton(wxCommandEvent & /*event*/)
@@ -156,7 +160,7 @@ void PreferencesDialog::PopulateMainPanel(wxPanel * panel)
         mShowTipOnStartupCheckBox,
         wxGBPosition(1, 0),
         wxGBSpan(1, 1),
-        wxLEFT | wxRIGHT,
+        wxLEFT | wxRIGHT | wxBOTTOM,
         Border);
 
 
@@ -172,9 +176,27 @@ void PreferencesDialog::PopulateMainPanel(wxPanel * panel)
 
     gridSizer->Add(
         mShowShipDescriptionAtShipLoadCheckBox,
+        wxGBPosition(2, 0),
+        wxGBSpan(1, 1),
+        wxLEFT | wxRIGHT | wxBOTTOM,
+        Border);
+
+
+    //
+    // Row 4
+    //
+
+    mShowTsunamiNotificationsCheckBox = new wxCheckBox(panel, wxID_ANY, _("Show Tsunami Notifications"), wxDefaultPosition, wxDefaultSize, 0);
+
+    mShowTsunamiNotificationsCheckBox->SetToolTip("Enables or disables notifications when a tsunami is being spawned.");
+
+    mShowTsunamiNotificationsCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowTsunamiNotificationsCheckBoxClicked, this);
+
+    gridSizer->Add(
+        mShowTsunamiNotificationsCheckBox,
         wxGBPosition(3, 0),
         wxGBSpan(1, 1),
-        wxLEFT | wxRIGHT,
+        wxLEFT | wxRIGHT | wxBOTTOM,
         Border);
 
 
@@ -185,10 +207,11 @@ void PreferencesDialog::PopulateMainPanel(wxPanel * panel)
 
 void PreferencesDialog::ReadSettings()
 {
-    assert(!!mUIPreferences);
+    assert(!!mUIPreferencesManager);
 
-    mScreenshotDirPickerCtrl->SetPath(mUIPreferences->GetScreenshotsFolderPath().string());
+    mScreenshotDirPickerCtrl->SetPath(mUIPreferencesManager->GetScreenshotsFolderPath().string());
 
-    mShowTipOnStartupCheckBox->SetValue(mUIPreferences->GetShowStartupTip());
-    mShowShipDescriptionAtShipLoadCheckBox->SetValue(mUIPreferences->GetShowShipDescriptionsAtShipLoad());
+    mShowTipOnStartupCheckBox->SetValue(mUIPreferencesManager->GetShowStartupTip());
+    mShowShipDescriptionAtShipLoadCheckBox->SetValue(mUIPreferencesManager->GetShowShipDescriptionsAtShipLoad());
+    mShowTsunamiNotificationsCheckBox->SetValue(mUIPreferencesManager->GetShowTsunamiNotifications());
 }

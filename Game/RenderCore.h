@@ -161,19 +161,19 @@ struct TextQuadVertex
     float positionNdcY;
     float textureCoordinateX;
     float textureCoordinateY;
-    float transparency;
+    float alpha;
 
     TextQuadVertex(
         float _positionNdcX,
         float _positionNdcY,
         float _textureCoordinateX,
         float _textureCoordinateY,
-        float _transparency)
+        float _alpha)
         : positionNdcX(_positionNdcX)
         , positionNdcY(_positionNdcY)
         , textureCoordinateX(_textureCoordinateX)
         , textureCoordinateY(_textureCoordinateY)
-        , transparency(_transparency)
+        , alpha(_alpha)
     {}
 };
 #pragma pack(pop)

@@ -6,7 +6,7 @@
 #include "GameParameters.h"
 
 GameParameters::GameParameters()
-// Dynamics
+    // Dynamics
     : NumMechanicalDynamicsIterationsAdjustment(1.0f)
     , SpringStiffnessAdjustment(1.0f)
     , SpringDampingAdjustment(1.0f)
@@ -27,8 +27,13 @@ GameParameters::GameParameters()
     , WindSpeedBase(-20.0f)
     , WindSpeedMaxFactor(2.5f)
     , WindGustFrequencyAdjustment(1.0f)
+    // Waves
+    , BasalWaveHeightAdjustment(1.0f)
+    , BasalWaveLengthAdjustment(1.0f)
+    , BasalWaveSpeedAdjustment(4.0f)
+    , TsunamiRate(20.0f)
+    , RogueWaveRate(2.0f)
     // Misc
-    , WaveHeight(2.5f)
     , SeaDepth(300.0f)
     , OceanFloorBumpiness(1.0f)
     , OceanFloorDetailAmplification(10.0f)

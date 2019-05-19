@@ -15,23 +15,23 @@
 namespace Physics {
 
 World::World(
-    std::shared_ptr<IGameEventHandler> gameEventHandler,
+    std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     GameParameters const & gameParameters,
     ResourceLoader & resourceLoader)
-    : mAllShips()
+    : mCurrentSimulationTime(0.0f)
+    , mAllShips()
     , mStars()
+    , mWind(gameEventDispatcher)
     , mClouds()
-    , mWaterSurface()
+    , mOceanSurface(gameEventDispatcher)
     , mOceanFloor(resourceLoader)
-    , mWind(gameEventHandler)
-    , mCurrentSimulationTime(0.0f)
-    , mGameEventHandler(std::move(gameEventHandler))
+    , mGameEventHandler(gameEventDispatcher)
 {
     // Initialize world pieces
     mStars.Update(gameParameters);
     mWind.Update(gameParameters);
     mClouds.Update(mCurrentSimulationTime, gameParameters);
-    mWaterSurface.Update(mCurrentSimulationTime, mWind, gameParameters);
+    mOceanSurface.Update(mCurrentSimulationTime, mWind, gameParameters);
     mOceanFloor.Update(gameParameters);
 }
 
@@ -366,6 +366,13 @@ void World::DetonateAntiMatterBombs()
     }
 }
 
+void World::AdjustOceanSurfaceTo(std::optional<vec2f> const & worldCoordinates)
+{
+    mOceanSurface.AdjustTo(
+        worldCoordinates,
+        mCurrentSimulationTime);
+}
+
 bool World::AdjustOceanFloorTo(
     float x1,
     float targetY1,
@@ -431,6 +438,18 @@ void World::QueryNearestPointAt(
     }
 }
 
+void World::TriggerTsunami()
+{
+    mOceanSurface.TriggerTsunami(mCurrentSimulationTime);
+}
+
+void World::TriggerRogueWave()
+{
+    mOceanSurface.TriggerRogueWave(
+        mCurrentSimulationTime,
+        mWind);
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // Simulation
 //////////////////////////////////////////////////////////////////////////////
@@ -446,7 +465,7 @@ void World::Update(
     mStars.Update(gameParameters);
     mWind.Update(gameParameters);
     mClouds.Update(mCurrentSimulationTime, gameParameters);
-    mWaterSurface.Update(mCurrentSimulationTime, mWind, gameParameters);
+    mOceanSurface.Update(mCurrentSimulationTime, mWind, gameParameters);
     mOceanFloor.Update(gameParameters);
 
     // Update all ships
@@ -469,7 +488,7 @@ void World::Render(
     //
 
     mOceanFloor.Upload(gameParameters, renderContext);
-    mWaterSurface.Upload(gameParameters, renderContext);
+    mOceanSurface.Upload(gameParameters, renderContext);
 
 
     //

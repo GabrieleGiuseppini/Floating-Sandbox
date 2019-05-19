@@ -47,9 +47,10 @@ enum class ToolType
     ImpactBomb = 10,
     RCBomb = 11,
     TimerBomb = 12,
-    TerrainAdjust = 13,
-    Scrub = 14,
-    RepairStructure = 15
+    WaveMaker = 13,
+    TerrainAdjust = 14,
+    Scrub = 15,
+    RepairStructure = 16
 };
 
 struct InputState
@@ -1654,6 +1655,76 @@ public:
 private:
 
     std::unique_ptr<wxCursor> const mCursor;
+};
+
+class WaveMakerTool final : public OneShotTool
+{
+public:
+
+    WaveMakerTool(
+        wxFrame * parentFrame,
+        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<SoundController> soundController,
+        ResourceLoader & resourceLoader);
+
+public:
+
+    virtual void Initialize(InputState const & inputState) override
+    {
+        if (inputState.IsLeftMouseDown)
+        {
+            mGameController->AdjustOceanSurfaceTo(inputState.MousePosition);
+
+            mSoundController->PlayWaveMakerSound();
+
+            mCurrentCursor = mDownCursor.get();
+        }
+        else
+        {
+            mCurrentCursor = mUpCursor.get();
+        }
+
+        ShowCurrentCursor();
+    }
+
+    virtual void Deinitialize(InputState const & /*inputState*/) override
+    {
+        mSoundController->StopWaveMakerSound();
+    }
+
+    virtual void OnMouseMove(InputState const & inputState) override
+    {
+        if (inputState.IsLeftMouseDown)
+        {
+            mGameController->AdjustOceanSurfaceTo(inputState.MousePosition);
+        }
+    }
+
+    virtual void OnLeftMouseDown(InputState const & inputState) override
+    {
+        mGameController->AdjustOceanSurfaceTo(inputState.MousePosition);
+
+        mSoundController->PlayWaveMakerSound();
+
+        mCurrentCursor = mDownCursor.get();
+        ShowCurrentCursor();
+    }
+
+    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override
+    {
+        mSoundController->StopWaveMakerSound();
+
+        mGameController->AdjustOceanSurfaceTo(std::nullopt);
+
+        mCurrentCursor = mUpCursor.get();
+        ShowCurrentCursor();
+    }
+
+private:
+
+    // The cursors
+    std::unique_ptr<wxCursor> const mUpCursor;
+    std::unique_ptr<wxCursor> const mDownCursor;
 };
 
 class TerrainAdjustTool final : public Tool

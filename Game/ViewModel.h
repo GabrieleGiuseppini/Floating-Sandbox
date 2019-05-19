@@ -34,6 +34,8 @@ public:
         , mCam(cameraWorldPosition)
         , mCanvasWidth(canvasWidth)
         , mCanvasHeight(canvasHeight)
+        , mPixelOffsetX(0.0f)
+        , mPixelOffsetY(0.0f)
     {
         //
         // Initialize kernel ortho matrix
@@ -63,28 +65,42 @@ public:
      */
     float ClampZoom(float zoom) const
     {
+        //
+        // Width
+        //
+
         float constexpr MaxWorldLeft = -GameParameters::HalfMaxWorldWidth;
         float constexpr MaxWorldRight = GameParameters::HalfMaxWorldWidth;
 
-        float const visibleWorldWidth = CalculateVisibleWorldWidth(zoom);
+        float visibleWorldWidth = CalculateVisibleWorldWidth(zoom);
+
         if (mCam.x - visibleWorldWidth / 2.0f < MaxWorldLeft)
         {
             zoom = visibleWorldWidth * zoom / ((mCam.x - MaxWorldLeft) * 2.0f);
+            visibleWorldWidth = CalculateVisibleWorldWidth(zoom);
         }
-        else if (mCam.x + visibleWorldWidth / 2.0f > MaxWorldRight)
+
+        if (mCam.x + visibleWorldWidth / 2.0f > MaxWorldRight)
         {
             zoom = visibleWorldWidth * zoom / ((MaxWorldRight - mCam.x) * 2.0f);
         }
 
+        //
+        // Height
+        //
+
         float constexpr MaxWorldTop = GameParameters::HalfMaxWorldHeight;
         float constexpr MaxWorldBottom = -GameParameters::HalfMaxWorldHeight;
 
-        float const visibleWorldHeight = CalculateVisibleWorldHeight(zoom);
+        float visibleWorldHeight = CalculateVisibleWorldHeight(zoom);
+
         if (mCam.y + visibleWorldHeight / 2.0 > MaxWorldTop)
         {
             zoom = visibleWorldHeight * zoom / ((MaxWorldTop - mCam.y) * 2.0f);
+            visibleWorldHeight = CalculateVisibleWorldHeight(zoom);
         }
-        else if (mCam.y - visibleWorldHeight / 2.0 < MaxWorldBottom)
+
+        if (mCam.y - visibleWorldHeight / 2.0 < MaxWorldBottom)
         {
             zoom = visibleWorldHeight * zoom / ((mCam.y - MaxWorldBottom) * 2.0f);
         }
@@ -161,6 +177,22 @@ public:
 
         // Adjust zoom so that the new visible world dimensions are contained within the maximum
         SetZoom(mZoom);
+
+        RecalculateAttributes();
+    }
+
+    void SetPixelOffset(float x, float y)
+    {
+        mPixelOffsetX = x;
+        mPixelOffsetY = y;
+
+        RecalculateAttributes();
+    }
+
+    void ResetPixelOffset()
+    {
+        mPixelOffsetX = 0.0f;
+        mPixelOffsetY = 0.0f;
 
         RecalculateAttributes();
     }
@@ -339,8 +371,8 @@ private:
         // Recalculate kernel Ortho Matrix cells
         mKernelOrthoMatrix[0][0] = 2.0f / mVisibleWorldWidth;
         mKernelOrthoMatrix[1][1] = 2.0f / mVisibleWorldHeight;
-        mKernelOrthoMatrix[3][0] = -2.0f * mCam.x / mVisibleWorldWidth;
-        mKernelOrthoMatrix[3][1] = -2.0f * mCam.y / mVisibleWorldHeight;
+        mKernelOrthoMatrix[3][0] = -2.0f * (mCam.x + PixelWidthToWorldWidth(mPixelOffsetX)) / mVisibleWorldWidth;
+        mKernelOrthoMatrix[3][1] = -2.0f * (mCam.y + PixelHeightToWorldHeight(mPixelOffsetY)) / mVisibleWorldHeight;
     }
 
 private:
@@ -353,6 +385,8 @@ private:
     vec2f mCam;
     int mCanvasWidth;
     int mCanvasHeight;
+    float mPixelOffsetX;
+    float mPixelOffsetY;
 
     // Calculated attributes
     float mVisibleWorldWidth;

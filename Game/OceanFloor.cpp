@@ -176,7 +176,7 @@ void OceanFloor::Upload(
         {
             renderContext.UploadLand(
                 sampleIndexX,
-                GetFloorHeightAt(sampleIndexX));
+                GetHeightAt(sampleIndexX));
         }
     }
     else

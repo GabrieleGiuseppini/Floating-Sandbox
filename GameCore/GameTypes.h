@@ -357,7 +357,8 @@ namespace std {
 enum class FontType
 {
     // Indices must match suffix of filename
-    StatusText = 0
+    StatusText = 0,
+    GameText = 1
 };
 
 /*

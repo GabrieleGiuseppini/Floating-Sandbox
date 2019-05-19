@@ -52,13 +52,13 @@ struct GameParameters
     // Gravity
     static constexpr vec2f Gravity = vec2f(0.0f, -9.80f);
     static constexpr vec2f GravityNormalized = vec2f(0.0f, -1.0f);
-    static constexpr float GravityMagnitude = 9.80f;
+    static float constexpr GravityMagnitude = 9.80f;
 
     // Air mass
-    static constexpr float AirMass = 1.2754f;
+    static float constexpr AirMass = 1.2754f;
 
     // Water mass
-    static constexpr float WaterMass = 1000.0f;
+    static float constexpr WaterMass = 1000.0f;
 
 
 
@@ -70,13 +70,13 @@ struct GameParameters
 
     // Fraction of a spring displacement that is removed during a spring relaxation
     // iteration. The remaining spring displacement is (1.0 - this fraction).
-    static constexpr float SpringReductionFraction = 0.4f;
+    static float constexpr SpringReductionFraction = 0.4f;
 
     // The empirically-determined constant for the spring damping.
     // The simulation is quite sensitive to this value:
     // - 0.03 is almost fine (though bodies are sometimes soft)
     // - 0.8 makes everything explode
-    static constexpr float SpringDampingCoefficient = 0.03f;
+    static float constexpr SpringDampingCoefficient = 0.03f;
 
     //
     // The number of mechanical iterations dictates how stiff bodies are:
@@ -85,8 +85,8 @@ struct GameParameters
     //
 
     float NumMechanicalDynamicsIterationsAdjustment;
-    static constexpr float MinNumMechanicalDynamicsIterationsAdjustment = 0.5f;
-    static constexpr float MaxNumMechanicalDynamicsIterationsAdjustment = 20.0f;
+    static float constexpr MinNumMechanicalDynamicsIterationsAdjustment = 0.5f;
+    static float constexpr MaxNumMechanicalDynamicsIterationsAdjustment = 20.0f;
 
     template <typename T>
     inline T NumMechanicalDynamicsIterations() const
@@ -97,48 +97,48 @@ struct GameParameters
     }
 
     float SpringStiffnessAdjustment;
-    static constexpr float MinSpringStiffnessAdjustment = 0.001f;
-    static constexpr float MaxSpringStiffnessAdjustment = 2.4f;
+    static float constexpr MinSpringStiffnessAdjustment = 0.001f;
+    static float constexpr MaxSpringStiffnessAdjustment = 2.4f;
 
     float SpringDampingAdjustment;
-    static constexpr float MinSpringDampingAdjustment = 0.001f;
-    static constexpr float MaxSpringDampingAdjustment = 4.0f;
+    static float constexpr MinSpringDampingAdjustment = 0.001f;
+    static float constexpr MaxSpringDampingAdjustment = 4.0f;
 
     float SpringStrengthAdjustment;
-    static constexpr float MinSpringStrengthAdjustment = 0.01f;
-    static constexpr float MaxSpringStrengthAdjustment = 10.0f;
+    static float constexpr MinSpringStrengthAdjustment = 0.01f;
+    static float constexpr MaxSpringStrengthAdjustment = 10.0f;
 
-    static constexpr float GlobalDamp = 0.9996f; // // We've shipped 1.7.5 with 0.9997, but splinter springs used to dance for too long
+    static float constexpr GlobalDamp = 0.9996f; // // We've shipped 1.7.5 with 0.9997, but splinter springs used to dance for too long
 
     float RotAcceler8r;
-    static constexpr float MinRotAcceler8r = 0.0f;
-    static constexpr float MaxRotAcceler8r = 1000.0f;
+    static float constexpr MinRotAcceler8r = 0.0f;
+    static float constexpr MaxRotAcceler8r = 1000.0f;
 
     // Water
 
     float WaterDensityAdjustment;
-    static constexpr float MinWaterDensityAdjustment = 0.0f;
-    static constexpr float MaxWaterDensityAdjustment = 4.0f;
+    static float constexpr MinWaterDensityAdjustment = 0.0f;
+    static float constexpr MaxWaterDensityAdjustment = 4.0f;
 
-    static constexpr float WaterDragLinearCoefficient =
+    static float constexpr WaterDragLinearCoefficient =
         0.020f  // ~= 1.0f - powf(0.6f, 0.02f)
         * 5.0f;  // Once we were comfortable with square law at |v|=5, now we use linear law and want to maintain the same force there
 
     float WaterDragAdjustment;
-    static constexpr float MinWaterDragAdjustment = 0.0f;
-    static constexpr float MaxWaterDragAdjustment = 1000.0f; // Safe to avoid drag instability (2 * m / (dt * C) at minimal mass, 1Kg)
+    static float constexpr MinWaterDragAdjustment = 0.0f;
+    static float constexpr MaxWaterDragAdjustment = 1000.0f; // Safe to avoid drag instability (2 * m / (dt * C) at minimal mass, 1Kg)
 
     float WaterIntakeAdjustment;
-    static constexpr float MinWaterIntakeAdjustment = 0.1f;
-    static constexpr float MaxWaterIntakeAdjustment = 10.0f;
+    static float constexpr MinWaterIntakeAdjustment = 0.1f;
+    static float constexpr MaxWaterIntakeAdjustment = 10.0f;
 
     float WaterDiffusionSpeedAdjustment;
-    static constexpr float MinWaterDiffusionSpeedAdjustment = 0.001f;
-    static constexpr float MaxWaterDiffusionSpeedAdjustment = 2.0f;
+    static float constexpr MinWaterDiffusionSpeedAdjustment = 0.001f;
+    static float constexpr MaxWaterDiffusionSpeedAdjustment = 2.0f;
 
     float WaterCrazyness;
-    static constexpr float MinWaterCrazyness = 0.0f;
-    static constexpr float MaxWaterCrazyness = 2.0f;
+    static float constexpr MinWaterCrazyness = 0.0f;
+    static float constexpr MaxWaterCrazyness = 2.0f;
 
     // Ephemeral particles
 
@@ -147,25 +147,25 @@ struct GameParameters
     bool DoGenerateDebris;
     static constexpr size_t MinDebrisParticlesPerEvent = 4;
     static constexpr size_t MaxDebrisParticlesPerEvent = 9;
-    static constexpr float MinDebrisParticlesVelocity = 12.5f;
-    static constexpr float MaxDebrisParticlesVelocity = 20.0f;
+    static float constexpr MinDebrisParticlesVelocity = 12.5f;
+    static float constexpr MaxDebrisParticlesVelocity = 20.0f;
     static constexpr std::chrono::milliseconds MinDebrisParticlesLifetime = std::chrono::milliseconds(400);
     static constexpr std::chrono::milliseconds MaxDebrisParticlesLifetime = std::chrono::milliseconds(900);
 
     bool DoGenerateSparkles;
     static constexpr size_t MinSparkleParticlesPerEvent = 2;
     static constexpr size_t MaxSparkleParticlesPerEvent = 8;
-    static constexpr float MinSparkleParticlesVelocity = 50.0f;
-    static constexpr float MaxSparkleParticlesVelocity = 70.0f;
+    static float constexpr MinSparkleParticlesVelocity = 50.0f;
+    static float constexpr MaxSparkleParticlesVelocity = 70.0f;
     static constexpr std::chrono::milliseconds MinSparkleParticlesLifetime = std::chrono::milliseconds(200);
     static constexpr std::chrono::milliseconds MaxSparkleParticlesLifetime = std::chrono::milliseconds(500);
 
     bool DoGenerateAirBubbles;
-    static constexpr float CumulatedIntakenWaterThresholdForAirBubbles = 7.0f;
-    static constexpr float MinAirBubblesVortexAmplitude = 0.05f;
-    static constexpr float MaxAirBubblesVortexAmplitude = 2.0f;
-    static constexpr float MinAirBubblesVortexFrequency = 1.0f;
-    static constexpr float MaxAirBubblesVortexFrequency = 2.5f;
+    static float constexpr CumulatedIntakenWaterThresholdForAirBubbles = 7.0f;
+    static float constexpr MinAirBubblesVortexAmplitude = 0.05f;
+    static float constexpr MaxAirBubblesVortexAmplitude = 2.0f;
+    static float constexpr MinAirBubblesVortexFrequency = 1.0f;
+    static float constexpr MaxAirBubblesVortexFrequency = 2.5f;
 
     // Wind
 
@@ -174,42 +174,60 @@ struct GameParameters
     bool DoModulateWind;
 
     float WindSpeedBase; // Beaufort scale, km/h
-    static constexpr float MinWindSpeedBase = -100.f;
-    static constexpr float MaxWindSpeedBase = 100.0f;
+    static float constexpr MinWindSpeedBase = -100.f;
+    static float constexpr MaxWindSpeedBase = 100.0f;
 
     float WindSpeedMaxFactor; // Multiplier on base
-    static constexpr float MinWindSpeedMaxFactor = 1.f;
-    static constexpr float MaxWindSpeedMaxFactor = 10.0f;
+    static float constexpr MinWindSpeedMaxFactor = 1.f;
+    static float constexpr MaxWindSpeedMaxFactor = 10.0f;
 
     float WindGustFrequencyAdjustment;
-    static constexpr float MinWindGustFrequencyAdjustment = 0.1f;
-    static constexpr float MaxWindGustFrequencyAdjustment = 10.0f;
+    static float constexpr MinWindGustFrequencyAdjustment = 0.1f;
+    static float constexpr MaxWindGustFrequencyAdjustment = 10.0f;
+
+    // Waves
+
+    float BasalWaveHeightAdjustment;
+    static float constexpr MinBasalWaveHeightAdjustment = 0.0f;
+    static float constexpr MaxBasalWaveHeightAdjustment = 100.0f;
+
+    float BasalWaveLengthAdjustment;
+    static float constexpr MinBasalWaveLengthAdjustment = 0.3f;
+    static float constexpr MaxBasalWaveLengthAdjustment = 20.0f;
+
+    float BasalWaveSpeedAdjustment;
+    static float constexpr MinBasalWaveSpeedAdjustment = 0.75f;
+    static float constexpr MaxBasalWaveSpeedAdjustment = 20.0f;
+
+    float TsunamiRate; // Minutes
+    static float constexpr MinTsunamiRate = 0.0f;
+    static float constexpr MaxTsunamiRate = 60.0f;
+
+    float RogueWaveRate; // Minutes
+    static float constexpr MinRogueWaveRate = 0.0f;
+    static float constexpr MaxRogueWaveRate = 15.0f;
 
     // Misc
 
-    float WaveHeight;
-    static constexpr float MinWaveHeight = 0.0f;
-    static constexpr float MaxWaveHeight = 30.0f;
-
     float SeaDepth;
-    static constexpr float MinSeaDepth = 20.0f;
-    static constexpr float MaxSeaDepth = 10000.0f;
+    static float constexpr MinSeaDepth = 20.0f;
+    static float constexpr MaxSeaDepth = 10000.0f;
 
     float OceanFloorBumpiness;
-    static constexpr float MinOceanFloorBumpiness = 0.0f;
-    static constexpr float MaxOceanFloorBumpiness = 6.0f;
+    static float constexpr MinOceanFloorBumpiness = 0.0f;
+    static float constexpr MaxOceanFloorBumpiness = 6.0f;
 
     float OceanFloorDetailAmplification;
-    static constexpr float MinOceanFloorDetailAmplification = 0.0f;
-    static constexpr float MaxOceanFloorDetailAmplification = 200.0f;
+    static float constexpr MinOceanFloorDetailAmplification = 0.0f;
+    static float constexpr MaxOceanFloorDetailAmplification = 200.0f;
 
     float LuminiscenceAdjustment;
-    static constexpr float MinLuminiscenceAdjustment = 0.1f;
-    static constexpr float MaxLuminiscenceAdjustment = 10.0f;
+    static float constexpr MinLuminiscenceAdjustment = 0.1f;
+    static float constexpr MaxLuminiscenceAdjustment = 10.0f;
 
     float LightSpreadAdjustment;
-    static constexpr float MinLightSpreadAdjustment = 0.0f;
-    static constexpr float MaxLightSpreadAdjustment = 5.0f;
+    static float constexpr MinLightSpreadAdjustment = 0.0f;
+    static float constexpr MaxLightSpreadAdjustment = 5.0f;
 
     size_t NumberOfStars;
     static constexpr size_t MinNumberOfStars = 0;
@@ -224,36 +242,36 @@ struct GameParameters
     float ToolSearchRadius;
 
     float DestroyRadius;
-    static constexpr float MinDestroyRadius = 5.0f;
-    static constexpr float MaxDestroyRadius = 100.0f;
+    static float constexpr MinDestroyRadius = 5.0f;
+    static float constexpr MaxDestroyRadius = 100.0f;
 
     float RepairRadius;
 
-    static constexpr float DrawForce = 40000.0f;
+    static float constexpr DrawForce = 40000.0f;
 
-    static constexpr float SwirlForce = 600.0f;
+    static float constexpr SwirlForce = 600.0f;
 
     float BombBlastRadius;
-    static constexpr float MinBombBlastRadius = 0.1f;
-    static constexpr float MaxBombBlastRadius = 20.0f;
+    static float constexpr MinBombBlastRadius = 0.1f;
+    static float constexpr MaxBombBlastRadius = 20.0f;
 
     float AntiMatterBombImplosionStrength;
-    static constexpr float MinAntiMatterBombImplosionStrength = 0.1f;
-    static constexpr float MaxAntiMatterBombImplosionStrength = 10.0f;
+    static float constexpr MinAntiMatterBombImplosionStrength = 0.1f;
+    static float constexpr MaxAntiMatterBombImplosionStrength = 10.0f;
 
-    static constexpr float BombNeighborhoodRadius = 3.5f;
+    static float constexpr BombNeighborhoodRadius = 3.5f;
 
     std::chrono::seconds TimerBombInterval;
 
     float BombMass;
 
     float FloodRadius;
-    static constexpr float MinFloodRadius = 0.1f;
-    static constexpr float MaxFloodRadius = 10.0f;
+    static float constexpr MinFloodRadius = 0.1f;
+    static float constexpr MaxFloodRadius = 10.0f;
 
     float FloodQuantity;
-    static constexpr float MinFloodQuantity = 0.1f;
-    static constexpr float MaxFloodQuantity = 100.0f;
+    static float constexpr MinFloodQuantity = 0.1f;
+    static float constexpr MaxFloodQuantity = 100.0f;
 
     float ScrubRadius;
 
@@ -265,13 +283,13 @@ struct GameParameters
     // Limits
     //
 
-    static constexpr float MaxWorldWidth = 10000.0f;
-    static constexpr float HalfMaxWorldWidth = MaxWorldWidth / 2.0f;
+    static float constexpr MaxWorldWidth = 5000.0f;
+    static float constexpr HalfMaxWorldWidth = MaxWorldWidth / 2.0f;
 
-    static constexpr float MaxWorldHeight = 40000.0f;
-    static constexpr float HalfMaxWorldHeight = MaxWorldHeight / 2.0f;
+    static float constexpr MaxWorldHeight = 40000.0f;
+    static float constexpr HalfMaxWorldHeight = MaxWorldHeight / 2.0f;
 
-    static_assert(MaxWorldHeight >= MaxSeaDepth * 2);
+    static_assert(HalfMaxWorldHeight >= MaxSeaDepth);
 
 
     static constexpr size_t MaxBombs = 64u;

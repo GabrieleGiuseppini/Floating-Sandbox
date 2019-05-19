@@ -119,6 +119,13 @@ ToolController::ToolController(
             resourceLoader));
 
     mAllTools.emplace_back(
+        std::make_unique<WaveMakerTool>(
+            parentFrame,
+            gameController,
+            soundController,
+            resourceLoader));
+
+    mAllTools.emplace_back(
         std::make_unique<TerrainAdjustTool>(
             parentFrame,
             gameController,

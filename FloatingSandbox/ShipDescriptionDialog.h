@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include "UIPreferences.h"
+#include "UIPreferencesManager.h"
 
 #include <Game/ShipMetadata.h>
 
@@ -21,7 +21,7 @@ public:
         wxWindow* parent,
         ShipMetadata const & shipMetadata,
         bool isAutomatic,
-        std::shared_ptr<UIPreferences> uiPreferences);
+        std::shared_ptr<UIPreferencesManager> uiPreferencesManager);
 
     virtual ~ShipDescriptionDialog();
 
@@ -35,5 +35,5 @@ private:
 
 private:
 
-    std::shared_ptr<UIPreferences> mUIPreferences;
+    std::shared_ptr<UIPreferencesManager> mUIPreferencesManager;
 };

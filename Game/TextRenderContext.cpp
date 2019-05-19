@@ -21,6 +21,7 @@ TextRenderContext::TextRenderContext(
     , mTextSlots()
     , mCurrentTextSlotGeneration(0)
     , mAreTextSlotsDirty(false)
+    , mAreTextSlotVertexBuffersDirty(false)
     , mFontRenderInfos()
 {
     //
@@ -143,7 +144,7 @@ void TextRenderContext::RenderEnd()
     if (mAreTextSlotsDirty)
     {
         //
-        // Rebuild all vertices
+        // Rebuild all vertex buffers
         //
 
         // Cleanup
@@ -230,10 +231,13 @@ void TextRenderContext::RenderEnd()
                     }
                 }
 
+                mTextSlots[slot].VertexBufferIndexStart = fontRenderInfo.GetVertexBuffer().size();
+                mTextSlots[slot].VertexBufferCount = 0;
+
                 float lineOffsetNdc = 0.0f;
                 for (std::string const & line : mTextSlots[slot].TextLines)
                 {
-                    fontMetadata.EmitQuadVertices(
+                    auto vertexCount = fontMetadata.EmitQuadVertices(
                         line.c_str(),
                         line.size(),
                         vec2f(
@@ -244,13 +248,24 @@ void TextRenderContext::RenderEnd()
                         mScreenToNdcY,
                         fontRenderInfo.GetVertexBuffer());
 
+                    mTextSlots[slot].VertexBufferCount += vertexCount;
+
                     lineOffsetNdc += lineHeightIncrementNdc;
                 }
             }
         }
 
+        // Remember vertex buffers are dirty now
+        mAreTextSlotVertexBuffersDirty = true;
+
+        // Remember slots are not dirty anymore
+        mAreTextSlotsDirty = false;
+    }
+
+    if (mAreTextSlotVertexBuffersDirty)
+    {
         //
-        // Re-upload all vertices
+        // Re-upload all vertex buffers for each font
         //
 
         for (auto const & fontRenderInfo : mFontRenderInfos)
@@ -259,18 +274,21 @@ void TextRenderContext::RenderEnd()
             if (!vertexBuffer.empty())
             {
                 glBindBuffer(GL_ARRAY_BUFFER, fontRenderInfo.GetVerticesVBOHandle());
+
                 glBufferData(
                     GL_ARRAY_BUFFER,
                     vertexBuffer.size() * sizeof(TextQuadVertex),
                     vertexBuffer.data(),
                     GL_DYNAMIC_DRAW);
+
                 glBindBuffer(GL_ARRAY_BUFFER, 0);
+
                 CheckOpenGLError();
             }
         }
 
-        // Remember slots are not dirty anymore
-        mAreTextSlotsDirty = false;
+        // Remember vertex buffers are not dirty anymore
+        mAreTextSlotVertexBuffersDirty = false;
     }
 
 

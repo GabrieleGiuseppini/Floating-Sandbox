@@ -5,7 +5,7 @@
  ***************************************************************************************/
 #pragma once
 
-#include "UIPreferences.h"
+#include "UIPreferencesManager.h"
 
 #include <wx/filepicker.h>
 #include <wx/wx.h>
@@ -18,7 +18,7 @@ public:
 
     PreferencesDialog(
         wxWindow * parent,
-        std::shared_ptr<UIPreferences> uiPreferences);
+        std::shared_ptr<UIPreferencesManager> uiPreferencesManager);
 
     virtual ~PreferencesDialog();
 
@@ -29,6 +29,7 @@ private:
     void OnScreenshotDirPickerChanged(wxCommandEvent & event);
     void OnShowTipOnStartupCheckBoxClicked(wxCommandEvent & event);
     void OnShowShipDescriptionAtShipLoadCheckBoxClicked(wxCommandEvent & event);
+    void OnShowTsunamiNotificationsCheckBoxClicked(wxCommandEvent & event);
 
     void OnOkButton(wxCommandEvent & event);
 
@@ -44,6 +45,7 @@ private:
     wxDirPickerCtrl * mScreenshotDirPickerCtrl;
     wxCheckBox * mShowTipOnStartupCheckBox;
     wxCheckBox * mShowShipDescriptionAtShipLoadCheckBox;
+    wxCheckBox * mShowTsunamiNotificationsCheckBox;
 
     // Buttons
     wxButton * mOkButton;
@@ -51,5 +53,5 @@ private:
 private:
 
     wxWindow * const mParent;
-    std::shared_ptr<UIPreferences> mUIPreferences;
+    std::shared_ptr<UIPreferencesManager> mUIPreferencesManager;
 };

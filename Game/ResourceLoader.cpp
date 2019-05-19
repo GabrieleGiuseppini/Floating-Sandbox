@@ -88,8 +88,7 @@ std::vector<std::string> ResourceLoader::GetSoundNames() const
     std::vector<std::string> filenames;
     for (auto const & entryIt : std::filesystem::directory_iterator(std::filesystem::path("Data") / "Sounds"))
     {
-        if (std::filesystem::is_regular_file(entryIt.path())
-            && entryIt.path().extension().string() == ".flac")
+        if (std::filesystem::is_regular_file(entryIt.path()))
         {
             filenames.push_back(entryIt.path().stem().string());
         }

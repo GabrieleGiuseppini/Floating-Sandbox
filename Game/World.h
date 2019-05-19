@@ -5,8 +5,8 @@
  ***************************************************************************************/
 #pragma once
 
+#include "GameEventDispatcher.h"
 #include "GameParameters.h"
-#include "IGameEventHandler.h"
 #include "MaterialDatabase.h"
 #include "Physics.h"
 #include "RenderContext.h"
@@ -29,9 +29,14 @@ class World
 public:
 
     World(
-        std::shared_ptr<IGameEventHandler> gameEventHandler,
+        std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         GameParameters const & gameParameters,
         ResourceLoader & resourceLoader);
+
+    float GetCurrentSimulationTime() const
+    {
+        return mCurrentSimulationTime;
+    }
 
     ShipId AddShip(
         ShipDefinition const & shipDefinition,
@@ -42,25 +47,29 @@ public:
 
     size_t GetShipPointCount(ShipId shipId) const;
 
-    inline float GetWaterHeightAt(float x) const
+    inline float GetOceanSurfaceHeightAt(float x) const
     {
-        return mWaterSurface.GetWaterHeightAt(x);
+        return mOceanSurface.GetHeightAt(x);
     }
 
     inline bool IsUnderwater(vec2f const & position) const
     {
-        return position.y < GetWaterHeightAt(position.x);
+        return position.y < GetOceanSurfaceHeightAt(position.x);
     }
 
     inline float GetOceanFloorHeightAt(float x) const
     {
-        return mOceanFloor.GetFloorHeightAt(x);
+        return mOceanFloor.GetHeightAt(x);
     }
 
     inline vec2f const & GetCurrentWindSpeed() const
     {
         return mWind.GetCurrentWindSpeed();
     }
+
+    //
+    // Interactions
+    //
 
     std::optional<ElementId> Pick(
         vec2f const & pickPosition,
@@ -146,6 +155,8 @@ public:
 
     void DetonateAntiMatterBombs();
 
+    void AdjustOceanSurfaceTo(std::optional<vec2f> const & worldCoordinates);
+
     bool AdjustOceanFloorTo(
         float x1,
         float targetY1,
@@ -165,6 +176,12 @@ public:
         vec2f const & targetPos,
         float radius) const;
 
+    void TriggerTsunami();
+
+    void TriggerRogueWave();
+
+public:
+
     void Update(
         GameParameters const & gameParameters,
         Render::RenderContext const & renderContext);
@@ -175,19 +192,19 @@ public:
 
 private:
 
-    // Repository
-    std::vector<std::unique_ptr<Ship>> mAllShips;
-    Stars mStars;
-    Clouds mClouds;
-    WaterSurface mWaterSurface;
-    OceanFloor mOceanFloor;
-    Wind mWind;
-
     // The current simulation time
     float mCurrentSimulationTime;
 
+    // Repository
+    std::vector<std::unique_ptr<Ship>> mAllShips;
+    Stars mStars;
+    Wind mWind;
+    Clouds mClouds;
+    OceanSurface mOceanSurface;
+    OceanFloor mOceanFloor;
+
     // The game event handler
-    std::shared_ptr<IGameEventHandler> mGameEventHandler;
+    std::shared_ptr<GameEventDispatcher> mGameEventHandler;
 };
 
 }

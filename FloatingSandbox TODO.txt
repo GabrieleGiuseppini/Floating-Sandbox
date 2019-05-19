@@ -187,7 +187,7 @@ Render:
 	- Maximord - "Maximord" (Parallels)
 	- Pac0master - "<Same as now>" (Intel core i5-8600K, NVIDIA GeForce RTX 2070)
 	- The_SamminAter - "<ask>" (Parallels)
-	- DkuzTheFox: "Dkuz The Fox": (Intel core i7-5700HQ, Windows 10)
+	- Costin88boss: Windows 10, AMD, ATI OpenGL 4.6 w/Radeon RX 560 Series w/2GB RAM
 
 - Marketing:
 	- GameJolt post w/screenshot with gradient, at night
@@ -277,25 +277,50 @@ Render:
 							+ Allocate only if necessary, i.e. if new size > last (MaxEphParticles)
 				+ Take FPS after: 22.3, UR=133
 			+ changes.txt
+			+ ParameterSmoothing: make it with sin (btwn pi/4 and pi/2)
+
+		= Shallow Water Equations (*)
+
+		- Send version with ShipLoadDialog always yielding (not only on single-core box) to those two guys
+
+		= See problem with too many bubbles
+			= See if water is constant after hole plugged
+				= Custom probe w/total water in ship
+				- Remove probe afterwards
+			- See if water is turbulent
+				- Temporarily change shader to draw pressure waves
+			- See if true: realistic sinking of ship is 3 water intake and 0.25 water diffusion speed
+		- Use precalc'd sin for bubble vortex 
+			- Pre FPS:
+			- Post FPS:
 
 
-		= Sign with certificate
-			+ https://blogs.msdn.microsoft.com/ieinternals/2011/03/22/everything-you-need-to-know-about-authenticode-code-signing/
-			+ https://www.thegeekstuff.com/2010/03/microsoft-digital-signatures/
-			- Buy certificate
-				- https://comodosslstore.com/code-signing/microsoft-authenticode
-				- https://comodosslstore.com/codesigning.aspx
-				- Print receipt and store in Taxes 2019
-			- Sign exe
-			- Sign MSI
-				- https://stackoverflow.com/questions/17589754/wix-installer-msi-publisher-unknown/17591603		
+		- Do test with "the possible ships" broken
 
-		- Shallow Water Equations (*)
+		- Try to change speed of particles at repair
+			- See big notebook
 
-		- See if installer for current user removes need for admin consent
+		+ Double-check latest rotting speed
+
+		- Installer:
+			- See if installer for current user removes need for admin consent
+			- Add repair when already installer
+
+	- 1.12.0:
+
+		- Spring and NonSpring force separation optimization (*)
+		- Try with SpringRelaxation updating only positions (*)
+
+		- Attempt to re-instate square water drag (*)
+		- Attempt to use total point masses for springs (*)
+
+		- Shooting stars
+			- Star "parks" always an extra star at (-1, -1)
+
+		- Settings Manager (*)
 
 		- Automatic updates checker via file placed on floatingsandbox.com
-			- UIPreferences::CheckForUpdatedAtStartup
+			- UIPreferences::CheckForUpdatesAtStartup
 			- class UpdateChecker:
 				- Wraps separate thread and conveys result via custom event
 				- Takes wxEventHandler in cctor
@@ -310,26 +335,24 @@ Render:
 				- Timer does progress (calling wxGauge::Pulse)
 				- On event, displays message
 
-		- Do air bubbles sounds, very low volume
-			- At creation and at expiry
-			- New events at IGameEventHandler
-				- Dispatcher aggregates with counter
-				- Ship takes shared_ptr<Dispatcher> now
-
-		- Interior layer (*)
-
 		- Heat and combustion (*)
 
 		- Instanced drawing for lights (*)
 
-		- Continuous Auto-focus (*)
 
+		- Underwater currents (*)
+
+		- Do air bubbles sounds, very low volume
+			- At creation and at expiry
+			- New events at IGameEventHandler
+				- Dispatcher aggregates with counter
+				- Ship takes shared_ptr<Dispatcher> now, for perf
+
+		- Interior layer (*)
+		
 		- Electrical layer view (*)
 
-		- Spring and NonSpring force separation optimization (*)
-		- Try with SpringRelaxation updating only positions (*)
-		- Attempt to re-instate square water drag (*)
-		- Attempt to use total point masses for springs (*)
+		- Continuous Auto-focus (*)
 
 		- Batisphere with pumps and propulsion (*)
 			- Switches (*)
@@ -341,7 +364,6 @@ Render:
 	- 1.12.0
 
 		- Smoke (*)
-		- Settings Manager (*)
 
 		- Libsimdpp spring relaxation (*)
 		- Frontier (*)
@@ -355,23 +377,48 @@ Render:
 		# Coolman115: CorbinPasta93
 		# Ilovedumbphones: Dumbphones
 		# SweetStrawberryBoy: TopHatLemons
+		# sum wulf gurl: Artica
+		# An SR71 Habu: NotTelling
 	- New ships:
 		- Re-take all Mike's .shp files for Shipbucket.com credits
 			- And also take electrical of RMS Titanic with Lights
+			- Also test "Splitable Titanic"
+		- Mike:
+			= Make subfolder (ask him)
+			- Take Titanic with interior
+		- To make:
+			- Antonia Graza:
+				- https://www.deviantart.com/izaquebr2015/art/M-S-Antonia-Graza-Final-Version-2015-570603964
+				- https://www.deviantart.com/izaquebr2015/art/M-S-Antonia-Graza-FV-Without-Boats-2015-570604582
+				- https://www.deviantart.com/izaquebr2015/art/M-S-Antonia-Graza-Rusty-FV-2015-570604977
 		- To adjust:
-			- SS France (Awesomeyorkie):
-				- Ropes
+			- SS France (Awesomeyorkie): bends a lot
+			- Ed Fitzgerald (Kiko); year: 1975
 		- Ready:
 			- B747: (An SR71 Habu) alias=NotTelling year=1970
 				- Add to About box
 			- Pacific: "S.S. Pacific" alias=Hugo_2503 year=1908
 				- Add to About box
+			- All the ones in "Ready"
+			- Two Transatlantic's from kiko; year: 1909
+			- Zero_sum_wuf_gurl; year: 1940
+			- Fokker (Artica); year: 1915
+			- P51 (Artica); year: 1940
+			- Mini_R.M.S_Titanic_mcshooter2018.png
+			- HMS Ajax (ASSTYU); year: 1933
+				- Add "_ASTYuu_" to about box
+
 		- To test:
-			- RMS Magentasia (TopHatLemons)
-			- Menschenfresser (ASSTYU)
-			- JackMellon on Discord
+			- JackMellon (see PM on Discord): https://drive.google.com/drive/folders/1isy3QiRzMfyu69v5M0gwD5tvBnYZMWXx
+				- JackTheBrickfilmMaker, link to youtube channel: https://www.youtube.com/channel/UCshPbiTqFuwpNNh7BlpffhQ
+					- About box
+			- serhiires (see PM on Discord): HMHS Danic, RMS Danic, and all his others
+			- KMS_Unversinkbar_PandaDude.png: 1941 
+			- Estonia - Dumbphones
+			- KMS Bismarck - Shippy
+			- RMS Titanic - Shippy
+			- Britannic - Dumbphones
 		- Asked:
-			- Ed Fitzgerald (but needs to be fixed) (Kiko)
 			- Aegir_Mark_III (coolman asks original designer)
 	- Descriptions:
 		+ Tell maximord about new ships - give him names
@@ -400,9 +447,10 @@ Render:
 
 
 - Suggestions to spec:
+	- Wreno's suggestions: https://docs.google.com/document/d/1kOYAgvh2rFYJJBnSp4DCiFm3FdJlfVEiCXQWNzJzO-I/edit
 	- Tools turning white at night
 	- Once we have ships, make "Lock Ship in View" flag and move camera with ship's center of mass (representative point or real CoM)
-	- Be able to place nukea nd AM bomb anywhere
+	- Be able to place nuke and AM bomb anywhere
 	- Fishes
 	- Different colored lights
 	- Different maps: maps that might even have islands and grass 
@@ -413,7 +461,6 @@ Render:
 	- I wonder if you can add the "Ground" material, which is a material that cannot move.
 	  No physics calculation. Plus, you're using texture, so it would be neat if the same texture as the ground can be applied to it
 	- Meteorites
-	- Tsunami
 	- Earthquake
 	- Storm: rain and waves at ~4.4
 	- Rot tool (rots without having to flood it)
@@ -433,10 +480,22 @@ Render:
 		- Derived only has virtual's for GameController calls
 	- Ship: replace handler registrations with points, springs, etc. with IStructureHandler, declared in own .h
 	- GameEventDispatcher: set mIsDirty at event publishing and consume at Flush()
+		- See if still needed, actually, after we break up IGameEventHandler
 	- Try 32-bit build
-	- Sound controller: complain if find extraneous files (had issue with ".flc")
+	= Sound controller: complain if find extraneous files (had issue with ".flc")
 	- Translations:
+		- Make localizable
 		- Russian: steven6886@yandex.ru
+	= Sign with certificate
+		+ https://blogs.msdn.microsoft.com/ieinternals/2011/03/22/everything-you-need-to-know-about-authenticode-code-signing/
+		+ https://www.thegeekstuff.com/2010/03/microsoft-digital-signatures/
+		- Buy certificate
+			- https://comodosslstore.com/code-signing/microsoft-authenticode
+			- https://comodosslstore.com/codesigning.aspx
+			- Print receipt and store in Taxes 2019
+		- Sign exe
+		- Sign MSI
+			- https://stackoverflow.com/questions/17589754/wix-installer-msi-publisher-unknown/17591603		
 
 - Simulation Optimizations:
 
@@ -573,14 +632,6 @@ Render:
 				- Consider using pixel buffer objects to asynchronously read from render buffer
 					- See https://stackoverflow.com/questions/12157646/how-to-render-offscreen-on-opengl
 
-	+ Points::ConnectedSprings is of struct { SpringIndex, OtherEndpointIndex }
-		+ No two separate buffers, as we seldom (if not neveer) need them separate
-		+ Init's @ShipBuilder or at whoever populates it now
-		+ Maintained at SpringDestroyHandler
-		+ Used at:
-			+ ConnectedComponentDetection
-			+ UpdateWaterVelocities
-
 	- Retry triangles cache optimization, now that layouts are different
 
 	- Array merging:
@@ -658,9 +709,6 @@ Render:
 		- Test turning it around into (multiple) spring visits, rather than point visits
 			- Multiple because of need to normalize outgoing for each point
 
-	- See if can avoid other IsDeleted checks, via zero'ing of coefficients
-		+ UpdateSpringForces()
-
 	- UpdatePointForces:
 		- Substitute "if(y<waterHeight)" branches with "float isUnderwater (1.f/0.f)"
 			- Force compiler into not branching - "?" operator won't work
@@ -674,18 +722,6 @@ Render:
 				  - This allows us to call UpdatePointForces only once
 				  - Also need to reset StaticForce buffer before UpdatePointForces, so:
 					- UpdatePointForces becomes CalculateFieldForces and take care of *filling* the buffer, overwriting it
-	+ Water and Land interpolations:
-		+ Prepare first test bench (noinline)
-			+ GetWaterHeight: 2.23%
-			+ GetFloorHeight: 1.66%
-			+ Save assembly
-		+ 1: see if it's better to store delta's and/or other pre-calculated things
-		+ 2: see if can do semi-integer x-axis interpolation
-			+ GetWaterHeight: 1.25%
-			+ GetFloorHeight: 0.77%
-		+ Cleanup test bench
-		+ Final functional test
-		+ Final FPS test
 
 	- Cache sea depth from PointDynamics at first calculation (Points?), using lambda
 
@@ -714,49 +750,65 @@ Render:
 
 
 - Gfx:
+	- Find second font for game text
+		- Test with tsunami notifications
+
 	- Continuous auto-focus (*)
 		- Spec:
 			- Orchestrated by GameController by taking "optimal" AABB from World (which takes union of "optimal" AABB's from each ship)
 			  and giving it to RenderContext, which adjusts ViewModel based on it
 				- At each simulation step
 			- Preferences setting for auto-focus (default is on)
+				- Also toggable at "Controls" menu
 			- Also works as "auto-focus at load"
 		- Algo:
-			- Connected component i has AABBi
-			- Ship "optimal" AABB == Union(AABBi) for i belonging to B
-				- B is set of connected components such that sum(their #points) > 3/4 TotPoints, in optimal order (from larger to smaller)
-			- Maintaining AABBi:
-				- Updated at each simulation step leveraging geometrical and temporal coherency:
-					- For each connected component we remember the 4 extreme points
-					- At each simulation step: UpdateConnectedComponentAABBs()
-						- For each connected component i:
-							- For each extreme point p:
-								- Visit p.neighbors as long as they're more extreme than p (i.e. follow gradient)
-								- Replace p with this new most extreme point
-				- Technically we don't even need to maintain AABB, we just need to maintain 4 ElementIndex for each connected component
-				  (the 4 extreme points)
-					- struct AABBPoints, w/Left,Right,etc. members
-			- Maintaining B:
-				- Simply recalculated from scratch at each connectivity visit
-					- Use insertion sort to end up with list sorted by #points, desc
+			- Option 1:
+				- Connected component i has AABBi
+				- Ship "optimal" AABB == Union(AABBi) for i belonging to B
+					- B is set of connected components such that sum(their #points) > 3/4 TotPoints, in optimal order (from larger to smaller)
+				- Maintaining AABBi:
+					- Option 1:
+						- Updated at each simulation step leveraging geometrical and temporal coherency:
+							- For each connected component we remember the 4 extreme points
+							- At each simulation step: UpdateConnectedComponentAABBs()
+								- For each connected component i:
+									- For each extreme point p:
+										- Visit p.neighbors as long as they're more extreme than p (i.e. follow gradient)
+										- Replace p with this new most extreme point
+						- Technically we don't even need to maintain AABB, we just need to maintain 4 ElementIndex for each connected component
+						  (the 4 extreme points)
+							- struct AABBPoints, w/Left,Right,etc. members
+					- Option 2:
+						- Recalculated at low-freq step
+				- Maintaining B:
+					- Option 1:
+						- Simply recalculated from scratch at each connectivity visit
+							- Use insertion sort to end up with list sorted by #points, desc
+					- Option 2:
+						- Recalculated at low-freq step (same as above)
+			- Option 2:
+				- Low-freq step calculates AABB
 
 	- Different backgrounds: use keys to switch between a dock, cliffs, open ocean, ice field, etc.
 
-	- Add SkyRenderMode (Flat, Gradient)
-		- The two endpoints of gradient dependent on ambient light
-			- Interpolated between two pairs of endpoints
-		- RenderContext:
-			- If Flat:
-				- When clearing buffers, clear also color buffer with flat color
-			- If Gradient:
-				- When clearing buffers, do not clear color buffer
-				- Run program with quad immediately afterwards
-					- Shader
-						- No orthomatrix, all NDC
-						- No ambient light param, no new params
+	- Sky:
+		- Add SkyRenderMode (Flat, Gradient)
+			- The two endpoints of gradient dependent on ambient light
+				- Interpolated between two pairs of endpoints
+			- RenderContext:
+				- If Flat:
+					- When clearing buffers, clear also color buffer with flat color
+				- If Gradient:
+					- When clearing buffers, do not clear color buffer
+					- Run program with quad immediately afterwards
+						- Shader
+							- No orthomatrix, all NDC
+							- No ambient light param, no new params
 
-		- SettingsDialog:
-			- Gradient RadioButton: on the right has two rows with a gradient each
+			- SettingsDialog:
+				- Gradient RadioButton: on the right has two rows with a gradient each
+		- Night sky should use a round darkening - center of screen is slightly lighter
+			- Or even better, Milky Way
 
 	- Make water texture scroll with wind speed
 
@@ -796,12 +848,191 @@ Render:
 
 - Dynamics:
 
-	- Make waves with Shallow Water Equations (*)
-		- Implement
-		- Follow-ups:
-			- Rogue waves/tsunami
-			- Manual tsunami
-				- Tool grabbing water
+	= Make waves with Shallow Water Equations (*)
+		= Implement
+			+ Rename to OceanSurface
+			+ Step 1: basic SWE with reflecting boundaries
+				+ cctor: wave initialization
+				+ Update:
+					+ SWE update -> next buffers
+					+ NextHeightBuffer + Wind gust sines -> mSamples
+					+ Swap buffers
+			+ Step 2: perturbation tool
+				+ OceanSurface::AdjustTo
+			+ Rearc:
+				+ Basal waves
+					+ Params:
+						+ Width (wavelength)
+						+ Height
+						+ Period (=> speed=Wavelength/Period)
+					+ Impl:
+						+ Funcs:
+							+ sin
+						+ Composition of SWE and basal:
+							+ add
+						+ Wave width is "WaveWidthAdjust"
+							+ fraction of MaxWidth - MinWidth(H)
+							+ MinWidth(H) = 6*H
+							+ 1.0 means "max width" = f(height)
+						+ Wavelength and period correlated: 
+							+ Change period into speed (m/s) = S
+							+ S = 1/sqrt(2PiL/g)
+							+ Adjustment makes +/- 50%
+								+ Speed is never zero
+								+ See if need to adjust percentage bands to avoid "almost still" waves or too slow waves 
+								  or too fast waves
+						+ Actual wave speed = speed * direction(wind speed) + wind speed * factor
+							+ With speed > 0						
+						+ Multiple components:
+							+ Two components:
+								+ 2nd component has sin phase with very slow period						
+						+ Find good initial conditions
+							+ Need "as if" wind was 40, but not simply 2x as wind=100 makes wind'=200
+					+ Controls:
+						+ WidthAdjust, Height, Period (>0)				
+				+ SWEs
+					+ Tool
+						+ Tool does no smoothing
+						+ OceanSurface implements trajectory
+							+ Delay rate must itself depend on delta H
+						+ Test max delta H
+						+ Find correct falling water speed
+						+ Check if average water depth increases
+					+ Cursor: set arrows at same positions as adjust terrain cursor
+					+ Tsunami
+						+ GameParameters: "TsunamiArrivalTime", mins
+							+ Min = 0 => no tsunamis
+							+ Max = 15
+							+ Settings Dialog, under "Wave Phenomena"
+								+ Tooltip: "...disables automatic generation of..."
+						+ Tools menu entry - w/no accelerator key
+						+ OceanSurface:
+							+ Tsunami-specific StateMachine member, std::optional
+							+ When not set:
+								+ Run choosing until chosen
+									+ Do not trigger within first 1 minute
+								+ TriggerTsunami() when triggered
+							+ void TriggerTsunami(): 
+								+ Emplace state machine
+								+ Test if slower rise (not fall) makes better long-run wave
+								+ Fire "OnTsunamiTriggered" event
+							+ State machine
+								+ Height = 105 (5%)
+								+ See if need custom fall rate
+									+ If so, new state machine altogether
+							+ Publish "OnTsunamiTriggered" event
+								+ Break IGameEventHandler into smaller pieces
+									+ Do separate one for hi-freq events
+								+ Ship takes GameEventDispatcher directly
+								+ GameController registers for OnTsunamiTriggered and runs TsunamiNotificationStateMachine
+									+ TsunamiNotificationStateMachine: private class, cctor takes:
+										+ TextRenderContext (for text)
+										+ RenderContext (for shaking)
+										+ bool Update(): when returns false, GameController nukes it
+									+ Text 
+									+ Shaking
+								+ SoundController:
+									+ Tsunami sound, one-shot (overridable): rumbling + siren + background SOS
+							+ UI preferences: show tsunami notifications checkbox
+								+ UIPreferencesManager:
+									+ It's a test for SettingsManager
+									+ Replaces UIPreferences
+										+ Also given to ShipLoadDialog et al
+									+ Also acts as storage for some of them (those not owned by GameController)
+									+ Exposes setters and getters for all (like SettingsManager)
+									+ Takes GameController at cctor	
+										+ And gives it GameController's owned properties after having loaded them
+									+ Tooltip: say "visual notifications"
+										+ We keep sound
+									+ Test entire preferences dialog
+									+ Test tsunami notifications
+					+ Rogue waves
+						+ GameParameters: "RogueWaveArrivalTime", mins
+							+ Min = 0 => no rogue waves
+							+ Settings Dialog, under "Wave Phenomena"
+								+ Tooltip: "...disables automatic generation of..."
+						+ Tools menu entry - w/no accelerator key
+						+ OceanSurface:							
+							+ RogueWave-specific StateMachine member, std::optional
+							+ When not set:
+								+ Run choosing until chosen
+								+ TriggerRogueWave() when triggered
+							+ void TriggerRogueWave(): 
+								+ Take Wind & calc right locus index based off direction
+							+ State machine
+								+ Height = 101 (1%)
+								+ See if need custom fall rate
+					+ Re-check exponential distribution
+						+ And make helper at GameRandomEngine that takes CDF
+					+ Test with basal waves added to SWE height field, instead of added to samples
+					+ Test with 3 samples being modified at SWEWaveStateMachine
+					+ Test with SWE with double's to see if long-running wave is better
+				+ SettingsDialog:
+					+ "Wind and Waves" tab
+						+ Static box for basal waves
+						+ Tooltips
+					+ Run in Debug
+			+ Final touches:
+				+ Cursor
+				+ WaveMaker:
+					+ Double-check hotspot
+					+ Tool sound
+						+ Continuous with fade-in and fade-out
+						+ Fix restart while fading-in
+						+ Better sound
+						+ See linear fade-out again
+				+ See if can stop making reflective boundaries with height field=0
+				+ Smooth some other parameters
+					+ Ocean depth, ocean bumpiness, ocean detail
+				+ SWE boundary conditions: try 5 bc samples, damping heights and braking down linearly
+				+ Try with other formulation of SWEs
+				+ Optimize alpha changing for text
+				+ Reduce world width
+				+ Cap interactive height
+			= Optimizations:
+				+ FPS before: 28.6/28.6/28.7/29.5/29.6/
+				+ 1: Basal wave params and abnormal wave CDFs calc'd only at GameParameters changes
+					+ Test all param changes
+					+ Test tsunami notifications
+				+ UR/Ratio: 220/230
+				+ 2: Pre-calc'd funcs (sin)
+					+ Arg needs to become current_arg/2PI
+				+ 3: Samples: advance x's with sums, no multiplications
+					+ Take into account current_arg/2PI
+				+ 4: Anomaly choosing done only at scheduled (wallclock) times, every ~0.5 sec
+					+ AnomalyTriggerSampleInterval = 500ms
+					+ Adjust exponential coefficients
+						+ If we want 1 tsunami every TsunamiRate * 60.0f second, we want 1/(TsunamiRate * 60.0f) tsunami
+						  every second, and thus we want 1/(TsunamiRate * 60.0f * 1s / AnomalyTriggerSampleInterval) every interval
+						+ Double-check wind while you're at it
+					+ Verify rates
+				+ FPS: 30/30.15; UR/Ratio: 206
+				+ 5a: See if both advections are really needed
+				+ 6: Two field updates in one, so that we have a single loop
+					= Then, check assembly
+				+ FPS after: 30.4/30.6; UR/Ratio: 218
+			+ See to reduce flattening of waves
+				+ Test lower offset
+				+ Try again with height offset
+				+ View values
+			+ Check width of tsunami wave
+			+ Retry damping boundary conditions
+				+ Between advection and update
+				+ Test first in visible world
+				+ Finalize
+			- Merge
+
+	- Underwater currents
+		- Implicit function of x defines trajectory 
+			- To try:
+				- Constant
+				- Lorenz, from http://sprott.physics.wisc.edu/chaos/eulermap.htm
+				- Lorenz II, from https://en.wikipedia.org/wiki/Lorenz_96_model
+				- WaterSurface, may be x-shifted
+		- for each point: y-distance between point.y and trajectory(point.x) gives strength of x and y components of a force on the point
+		- Rendered (via option):
+			- TBD
+
 	
 	- Try to re-instate square velocity drag (*)
 		- Goal: falling ship should break upon impact with water
@@ -835,6 +1066,16 @@ Render:
 			- combustion type (Explosive, Burning)
 		- New materials:
 			- "gunpowder" and "diesel"
+		- Rendering of flames:
+			- Need depth-sorting:
+				- Ship has heap of indices of burning points
+					- Heap created from scratch at connectivity visit
+					- Heap updated by Points's combustion state machine update (heap passed by Ship)
+					- Heap used by Points's Upload() (heap passed by Ship)
+		- Points::UnderwaterDepth buffer
+			- Re-populated by Ship at first step that checks underwater-ness after mechanical update
+				- i.e. water update?
+			- Used by anything else afterwards
 		- TODO: from Moleskine
 		- TODO: HeatPropagation (and others?) may run sparingly
 
@@ -861,10 +1102,12 @@ Render:
 				- Pressure delta between current water at point and external Y
 				- With probability growing in a band around max pressure delta
 
-	- Ocean floor breaking up upon impact
+	- Ocean floor deforming/breaking up upon impact
+		- WATCH OUT: might be ugly with peaks
 		- @ Ocean floor collision:
 			- Upon point entering floor:
 				- Points goes back by displacement * FloorHardness
+					- displacement is whatever displacement we currently use
 				- Ocean floor's H goes back by displacement * (1 - FloorHardness)
 
 	- Breaking waves (Muller's paper)
@@ -1124,6 +1367,8 @@ Render:
 		- Might either have own propulsion or follow a vector specified with click-and-drag
 		- Also other objects might be launched with click-and-drag
 
+	- Ocean waves:
+		- Add somehow waves to SWE height field, rather than "fake" superimposition of sins over SWE's height field
 
 - Game Interactions and Controls:
 
@@ -1286,7 +1531,7 @@ Render:
 				- IProbe knows whether it cares about a specific point and, if so, takes that and draw is
 				- IProbe might also create stats
 	= ProbePanel
-		- Pre-created member of MainFrame
+		+ Pre-created member of MainFrame
 		+ Then exposes Update() invoked by MainFrame, always, after simulation step
 		+ Update(): 
 			+ if not visible, return;
@@ -1329,8 +1574,8 @@ Render:
 			- No more methods that load DB's
 		- Switching:
 			- Ad-hoc MainFrame dialog showing ResourcePackMetadata's 
-				- Chosen one goes to ApplicationSettings (see elsewhere in this roadmap)
-				- Checkbox for "Set as default" => ApplicationSettings::Save()
+				- Chosen one goes to UIPreferencesManager
+				- Checkbox for "Set as default" => UIPreferencesManager::Save()
 				- At Save, before saving - notify that a reload is necessary
 
 - Multiple ships:
@@ -1794,6 +2039,27 @@ IF WX:
 		+ Perf:
 			+ FPS Now: 30.8
 			+ UR Now: 224
+	+ Points::ConnectedSprings is of struct { SpringIndex, OtherEndpointIndex }
+		+ No two separate buffers, as we seldom (if not neveer) need them separate
+		+ Init's @ShipBuilder or at whoever populates it now
+		+ Maintained at SpringDestroyHandler
+		+ Used at:
+			+ ConnectedComponentDetection
+			+ UpdateWaterVelocities
+	+ Water and Land interpolations:
+		+ Prepare first test bench (noinline)
+			+ GetWaterHeight: 2.23%
+			+ GetFloorHeight: 1.66%
+			+ Save assembly
+		+ 1: see if it's better to store delta's and/or other pre-calculated things
+		+ 2: see if can do semi-integer x-axis interpolation
+			+ GetWaterHeight: 1.25%
+			+ GetFloorHeight: 0.77%
+		+ Cleanup test bench
+		+ Final functional test
+		+ Final FPS test
+	+ See if can avoid other IsDeleted checks, via zero'ing of coefficients
+		+ UpdateSpringForces()
 
 
 + Fix 4 BPP images

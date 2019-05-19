@@ -29,7 +29,7 @@ public:
         BombId id,
         ElementIndex springIndex,
         World & parentWorld,
-        std::shared_ptr<IGameEventHandler> gameEventHandler,
+        std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         IPhysicsHandler & physicsHandler,
         Points & shipPoints,
         Springs & shipSprings);

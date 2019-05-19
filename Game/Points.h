@@ -5,8 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GameEventDispatcher.h"
 #include "GameParameters.h"
-#include "IGameEventHandler.h"
 #include "Materials.h"
 #include "RenderContext.h"
 
@@ -284,7 +284,7 @@ public:
     Points(
         ElementCount shipPointCount,
         World & parentWorld,
-        std::shared_ptr<IGameEventHandler> gameEventHandler,
+        std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         GameParameters const & gameParameters)
         : ElementContainer(shipPointCount + GameParameters::MaxEphemeralParticles)
         //////////////////////////////////
@@ -354,7 +354,7 @@ public:
         , mEphemeralPointCount(GameParameters::MaxEphemeralParticles)
         , mAllPointCount(mShipPointCount + mEphemeralPointCount)
         , mParentWorld(parentWorld)
-        , mGameEventHandler(std::move(gameEventHandler))
+        , mGameEventHandler(std::move(gameEventDispatcher))
         , mDetachHandler()
         , mEphemeralParticleDestroyHandler()
         , mCurrentNumMechanicalDynamicsIterations(gameParameters.NumMechanicalDynamicsIterations<float>())
@@ -959,7 +959,7 @@ public:
         assert(mFactoryConnectedTrianglesBuffer[pointElementIndex].ConnectedTriangles.contains(
             [triangleElementIndex](auto const & ct)
             {
-                return ct.TriangleIndex == triangleElementIndex;
+                return ct == triangleElementIndex;
             }));
 
         mConnectedTrianglesBuffer[pointElementIndex].ConnectTriangle(
@@ -1268,7 +1268,7 @@ private:
     ElementCount const mAllPointCount;
 
     World & mParentWorld;
-    std::shared_ptr<IGameEventHandler> const mGameEventHandler;
+    std::shared_ptr<GameEventDispatcher> const mGameEventHandler;
 
     // The handler registered for point detachments
     DetachHandler mDetachHandler;

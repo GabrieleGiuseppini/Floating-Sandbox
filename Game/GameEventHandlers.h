@@ -12,16 +12,15 @@
 #include <optional>
 
 /*
- * This interface defines the methods that game event handlers must implement.
+ * These interfaces define the methods that game event handlers must implement.
  *
  * The methods are default-implemented to facilitate implementation of handlers that
  * only care about a subset of the events.
  */
-class IGameEventHandler
-{
-public:
 
-    virtual ~IGameEventHandler()
+struct ILifecycleGameEventHandler
+{
+    virtual ~ILifecycleGameEventHandler()
     {
     }
 
@@ -36,6 +35,83 @@ public:
         std::optional<std::string> const & /*author*/)
     {
         // Default-implemented
+    }
+
+    virtual void OnSinkingBegin(ShipId /*shipId*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnSinkingEnd(ShipId /*shipId*/)
+    {
+        // Default-implemented
+    }
+};
+
+struct IStructuralGameEventHandler
+{
+    virtual ~IStructuralGameEventHandler()
+    {
+    }
+
+    virtual void OnStress(
+        StructuralMaterial const & /*structuralMaterial*/,
+        bool /*isUnderwater*/,
+        unsigned int /*size*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnBreak(
+        StructuralMaterial const & /*structuralMaterial*/,
+        bool /*isUnderwater*/,
+        unsigned int /*size*/)
+    {
+        // Default-implemented
+    }
+};
+
+struct IWavePhenomenaGameEventHandler
+{
+    virtual ~IWavePhenomenaGameEventHandler()
+    {
+    }
+
+    virtual void OnTsunami(float /*x*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnTsunamiNotification(float /*x*/)
+    {
+        // Default-implemented
+    }
+};
+
+struct IStatisticsGameEventHandler
+{
+    virtual ~IStatisticsGameEventHandler()
+    {
+    }
+
+    virtual void OnFrameRateUpdated(
+        float /*immediateFps*/,
+        float /*averageFps*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnUpdateToRenderRatioUpdated(
+        float /*immediateURRatio*/)
+    {
+        // Default-implemented
+    }
+};
+
+struct IGenericGameEventHandler
+{
+    virtual ~IGenericGameEventHandler()
+    {
     }
 
     virtual void OnDestroy(
@@ -76,32 +152,6 @@ public:
         // Default-implemented
     }
 
-    virtual void OnStress(
-        StructuralMaterial const & /*structuralMaterial*/,
-        bool /*isUnderwater*/,
-        unsigned int /*size*/)
-    {
-        // Default-implemented
-    }
-
-    virtual void OnBreak(
-        StructuralMaterial const & /*structuralMaterial*/,
-        bool /*isUnderwater*/,
-        unsigned int /*size*/)
-    {
-        // Default-implemented
-    }
-
-    virtual void OnSinkingBegin(ShipId /*shipId*/)
-    {
-        // Default-implemented
-    }
-
-    virtual void OnSinkingEnd(ShipId /*shipId*/)
-    {
-        // Default-implemented
-    }
-
     virtual void OnLightFlicker(
         DurationShortLongType /*duration*/,
         bool /*isUnderwater*/,
@@ -133,19 +183,6 @@ public:
     virtual void OnCustomProbe(
         std::string const & /*name*/,
         float /*value*/)
-    {
-        // Default-implemented
-    }
-
-    virtual void OnFrameRateUpdated(
-        float /*immediateFps*/,
-        float /*averageFps*/)
-    {
-        // Default-implemented
-    }
-
-    virtual void OnUpdateToRenderRatioUpdated(
-        float /*immediateURRatio*/)
     {
         // Default-implemented
     }

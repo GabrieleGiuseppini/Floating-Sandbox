@@ -121,6 +121,17 @@ public:
         return vec2f::fromPolar(magnitude, angle);
     }
 
+    inline bool GenerateRandomBoolean(float trueProbability)
+    {
+        return GenerateRandomNormalizedReal() < trueProbability;
+    }
+
+    inline float GenerateExponentialReal(float lambda)
+    {
+        std::exponential_distribution<float> dis(lambda);
+        return dis(mRandomEngine);
+    }
+
 private:
 
     GameRandomEngine()

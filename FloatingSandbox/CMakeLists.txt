@@ -49,8 +49,8 @@ set  (FLOATING_SANDBOX_SOURCES
 	ToolController.h
 	Tools.cpp
 	Tools.h
-	UIPreferences.cpp
-	UIPreferences.h
+	UIPreferencesManager.cpp
+	UIPreferencesManager.h
 	UnhandledExceptionHandler.cpp
 	UnhandledExceptionHandler.h
 	Version.h

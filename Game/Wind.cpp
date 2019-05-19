@@ -11,15 +11,15 @@
 
 namespace Physics {
 
+// The number of gusts we want per second
+float constexpr GustRate = 1.0f;
+
 // The number of poisson samples we perform in a second
-constexpr float PoissonSampleRate = 4.0f;
-constexpr float PoissonSampleDeltaT = 1.0f / PoissonSampleRate;
+float constexpr PoissonSampleRate = 4.0f;
+float constexpr PoissonSampleDeltaT = 1.0f / PoissonSampleRate;
 
-// The event rates for transitions, in 1/second
-constexpr float GustLambda = 1.0f / 1.0f;
-
-Wind::Wind(std::shared_ptr<IGameEventHandler> gameEventHandler)
-    : mGameEventHandler(std::move(gameEventHandler))
+Wind::Wind(std::shared_ptr<GameEventDispatcher> gameEventDispatcher)
+    : mGameEventHandler(std::move(gameEventDispatcher))
     // Pre-calculated parameters
     , mZeroSpeedMagnitude(0.0f)
     , mBaseSpeedMagnitude(0.0f)
@@ -157,11 +157,8 @@ void Wind::Update(GameParameters const & gameParameters)
                     // Check if it's time to sample poisson
                     if (now >= mNextPoissonSampleTimestamp)
                     {
-                        // Draw random number
-                        float const sample = GameRandomEngine::GetInstance().GenerateRandomNormalizedReal();
-
                         // Check if we should gust
-                        if (sample < mGustCdf)
+                        if (GameRandomEngine::GetInstance().GenerateRandomBoolean(mGustCdf))
                         {
                             // Transition to EnterGust
                             mCurrentState = State::EnterGust;
@@ -306,7 +303,9 @@ void Wind::RecalculateParameters(GameParameters const & gameParameters)
     mMaxSpeedMagnitude = mBaseSpeedMagnitude * gameParameters.WindSpeedMaxFactor;
     mPreMaxSpeedMagnitude = mBaseSpeedMagnitude + (mMaxSpeedMagnitude - mBaseSpeedMagnitude) / 8.0f;
 
-    mGustCdf = 1.0f - exp(-GustLambda / (PoissonSampleRate * gameParameters.WindGustFrequencyAdjustment));
+    // We want GustRate gusts every 1 seconds, and in 1 second we perform PoissonSampleRate samplings,
+    // hence we want 1/PoissonSampleRate gusts per sample interval
+    mGustCdf = 1.0f - exp(-GustRate / (PoissonSampleRate * gameParameters.WindGustFrequencyAdjustment));
 }
 
 }

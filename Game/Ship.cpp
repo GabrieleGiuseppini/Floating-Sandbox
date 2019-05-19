@@ -44,7 +44,7 @@ namespace Physics {
 Ship::Ship(
     ShipId id,
     World & parentWorld,
-    std::shared_ptr<IGameEventHandler> gameEventHandler,
+    std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     MaterialDatabase const & materialDatabase,
     Points && points,
     Springs && springs,
@@ -52,7 +52,7 @@ Ship::Ship(
     ElectricalElements && electricalElements)
     : mId(id)
     , mParentWorld(parentWorld)
-    , mGameEventHandler(std::move(gameEventHandler))
+    , mGameEventHandler(std::move(gameEventDispatcher))
     , mMaterialDatabase(materialDatabase)
     , mPoints(std::move(points))
     , mSprings(std::move(springs))
@@ -466,7 +466,7 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
     for (auto pointIndex : mPoints)
     {
         // Get height of water at this point
-        float const waterHeightAtThisPoint = mParentWorld.GetWaterHeightAt(mPoints.GetPosition(pointIndex).x);
+        float const waterHeightAtThisPoint = mParentWorld.GetOceanSurfaceHeightAt(mPoints.GetPosition(pointIndex).x);
 
         //
         // 1. Add gravity and buoyancy
@@ -695,11 +695,11 @@ void Ship::TrimForWorldBounds(
 {
     static constexpr float MaxBounceVelocity = 50.0f;
 
-    float constexpr MaxWorldLeft = -GameParameters::MaxWorldWidth / 2.0f;
-    float constexpr MaxWorldRight = GameParameters::MaxWorldWidth / 2.0f;
+    float constexpr MaxWorldLeft = -GameParameters::HalfMaxWorldWidth;
+    float constexpr MaxWorldRight = GameParameters::HalfMaxWorldWidth;
 
-    float constexpr MaxWorldTop = GameParameters::MaxWorldHeight;
-    float constexpr MaxWorldBottom = -GameParameters::MaxWorldHeight;
+    float constexpr MaxWorldTop = GameParameters::HalfMaxWorldHeight;
+    float constexpr MaxWorldBottom = -GameParameters::HalfMaxWorldHeight;
 
     for (auto pointIndex : mPoints)
     {
@@ -808,7 +808,7 @@ void Ship::UpdateWaterInflow(
             //
 
             float const externalWaterHeight = std::max(
-                mParentWorld.GetWaterHeightAt(mPoints.GetPosition(pointIndex).x)
+                mParentWorld.GetOceanSurfaceHeightAt(mPoints.GetPosition(pointIndex).x)
                     + 0.1f // Magic number to force flotsam to take some water in and eventually sink
                     - mPoints.GetPosition(pointIndex).y,
                 0.0f);
@@ -1181,6 +1181,14 @@ void Ship::UpdateWaterVelocities(
 
     mPoints.UpdateWaterBuffer(std::move(newPointWaterBuffer));
     mPoints.UpdateWaterVelocitiesFromMomenta();
+
+    ////// TODOTEST
+    ////float totalWaterInShip = 0.0f;
+    ////for (auto p : mPoints.NonEphemeralPoints())
+    ////{
+    ////    totalWaterInShip += mPoints.GetWater(p);
+    ////}
+    ////mGameEventHandler->OnCustomProbe("Total Water", totalWaterInShip);
 }
 
 void Ship::UpdateSinking()
@@ -1388,7 +1396,7 @@ void Ship::RotPoints(
     // Calculate rot increment for each step
     float const alphaIncrement =
         gameParameters.RotAcceler8r != 0.0f
-        ? 1.0f - powf(1e-10f, gameParameters.RotAcceler8r / 40000.0f)   // Accel=1 => this many steps to total decay
+        ? 1.0f - powf(1e-10f, gameParameters.RotAcceler8r / 20000.0f)   // Accel=1 => this many steps to total decay
         : 0.0f;
 
     // Higher rot increment for leaking points - they are directly in contact
@@ -2134,13 +2142,13 @@ void Ship::VerifyInvariants()
     {
         if (!mSprings.IsDeleted(s))
         {
-            Verify(mPoints.GetConnectedSprings(mSprings.GetPointAIndex(s)).ConnectedSprings.contains([s](auto const & c) { return c.SpringIndex == s; }));
-            Verify(mPoints.GetConnectedSprings(mSprings.GetPointBIndex(s)).ConnectedSprings.contains([s](auto const & c) { return c.SpringIndex == s; }));
+            Verify(mPoints.GetConnectedSprings(mSprings.GetEndpointAIndex(s)).ConnectedSprings.contains([s](auto const & c) { return c.SpringIndex == s; }));
+            Verify(mPoints.GetConnectedSprings(mSprings.GetEndpointBIndex(s)).ConnectedSprings.contains([s](auto const & c) { return c.SpringIndex == s; }));
         }
         else
         {
-            Verify(!mPoints.GetConnectedSprings(mSprings.GetPointAIndex(s)).ConnectedSprings.contains([s](auto const & c) { return c.SpringIndex == s; }));
-            Verify(!mPoints.GetConnectedSprings(mSprings.GetPointBIndex(s)).ConnectedSprings.contains([s](auto const & c) { return c.SpringIndex == s; }));
+            Verify(!mPoints.GetConnectedSprings(mSprings.GetEndpointAIndex(s)).ConnectedSprings.contains([s](auto const & c) { return c.SpringIndex == s; }));
+            Verify(!mPoints.GetConnectedSprings(mSprings.GetEndpointBIndex(s)).ConnectedSprings.contains([s](auto const & c) { return c.SpringIndex == s; }));
         }
     }
 

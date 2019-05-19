@@ -488,6 +488,25 @@ TimerBombTool::TimerBombTool(
 }
 
 ////////////////////////////////////////////////////////////////////////
+// WaveMaker
+////////////////////////////////////////////////////////////////////////
+
+WaveMakerTool::WaveMakerTool(
+    wxFrame * parentFrame,
+    std::shared_ptr<GameController> gameController,
+    std::shared_ptr<SoundController> soundController,
+    ResourceLoader & resourceLoader)
+    : OneShotTool(
+        ToolType::WaveMaker,
+        parentFrame,
+        std::move(gameController),
+        std::move(soundController))
+    , mUpCursor(MakeCursor("wave_maker_cursor_up", 15, 15, resourceLoader))
+    , mDownCursor(MakeCursor("wave_maker_cursor_down", 15, 15, resourceLoader))
+{
+}
+
+////////////////////////////////////////////////////////////////////////
 // TerrainAdjust
 ////////////////////////////////////////////////////////////////////////
 
@@ -501,7 +520,6 @@ TerrainAdjustTool::TerrainAdjustTool(
         parentFrame,
         std::move(gameController),
         std::move(soundController))
-
     , mCurrentTrajectoryPreviousPosition()
     , mUpCursor(MakeCursor("terrain_adjust_cursor_up", 15, 15, resourceLoader))
     , mDownCursor(MakeCursor("terrain_adjust_cursor_down", 15, 15, resourceLoader))

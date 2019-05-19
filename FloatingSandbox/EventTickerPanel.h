@@ -5,14 +5,20 @@
 ***************************************************************************************/
 #pragma once
 
-#include <Game/IGameEventHandler.h>
+#include <Game/GameController.h>
+#include <Game/GameEventHandlers.h>
 
 #include <wx/wx.h>
 
 #include <memory>
 #include <string>
 
-class EventTickerPanel : public wxPanel, public IGameEventHandler
+class EventTickerPanel
+    : public wxPanel
+    , public ILifecycleGameEventHandler
+    , public IStructuralGameEventHandler
+    , public IWavePhenomenaGameEventHandler
+    , public IGenericGameEventHandler
 {
 public:
 
@@ -25,8 +31,16 @@ public:
 public:
 
     //
-    // IGameEventHandler events
+    // Game events
     //
+
+    void RegisterEventHandler(GameController & gameController)
+    {
+        gameController.RegisterLifecycleEventHandler(this);
+        gameController.RegisterStructuralEventHandler(this);
+        gameController.RegisterWavePhenomenaEventHandler(this);
+        gameController.RegisterGenericEventHandler(this);
+    }
 
     virtual void OnGameReset() override;
 
@@ -34,6 +48,22 @@ public:
         unsigned int id,
         std::string const & name,
         std::optional<std::string> const & author) override;
+
+    virtual void OnSinkingBegin(ShipId shipId) override;
+
+    virtual void OnSinkingEnd(ShipId shipId) override;
+
+    virtual void OnStress(
+        StructuralMaterial const & structuralMaterial,
+        bool isUnderwater,
+        unsigned int size) override;
+
+    virtual void OnBreak(
+        StructuralMaterial const & structuralMaterial,
+        bool isUnderwater,
+        unsigned int size) override;
+
+    virtual void OnTsunami(float x) override;
 
     virtual void OnDestroy(
         StructuralMaterial const & structuralMaterial,
@@ -49,20 +79,6 @@ public:
         StructuralMaterial const & structuralMaterial,
         bool isUnderwater,
         unsigned int size) override;
-
-    virtual void OnStress(
-        StructuralMaterial const & structuralMaterial,
-        bool isUnderwater,
-        unsigned int size) override;
-
-    virtual void OnBreak(
-        StructuralMaterial const & structuralMaterial,
-        bool isUnderwater,
-        unsigned int size) override;
-
-    virtual void OnSinkingBegin(ShipId shipId) override;
-
-    virtual void OnSinkingEnd(ShipId shipId) override;
 
     virtual void OnBombPlaced(
         BombId bombId,

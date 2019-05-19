@@ -127,7 +127,7 @@ private:
 
 	// The messages stored so far
 	std::deque<std::string> mStoredMessages;
-	static constexpr size_t MaxStoredMessages = 10000;
+	static constexpr size_t MaxStoredMessages = 1000;
 
     // The mutex for the message queue
     std::mutex mStoredMessagesMutex;

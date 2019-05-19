@@ -31,7 +31,7 @@ public:
     static std::unique_ptr<Physics::Ship> Create(
         ShipId shipId,
         Physics::World & parentWorld,
-        std::shared_ptr<IGameEventHandler> gameEventHandler,
+        std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         ShipDefinition const & shipDefinition,
         MaterialDatabase const & materialDatabase,
         GameParameters const & gameParameters);
@@ -246,7 +246,7 @@ private:
     static Physics::Points CreatePoints(
         std::vector<PointInfo> const & pointInfos2,
         Physics::World & parentWorld,
-        std::shared_ptr<IGameEventHandler> gameEventHandler,
+        std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         GameParameters const & gameParameters);
 
     static std::vector<TriangleInfo> FilterOutRedundantTriangles(
@@ -264,7 +264,7 @@ private:
         Physics::Points & points,
         std::vector<ElementIndex> const & pointIndexRemap,
         Physics::World & parentWorld,
-        std::shared_ptr<IGameEventHandler> gameEventHandler,
+        std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         GameParameters const & gameParameters);
 
     static Physics::Triangles CreateTriangles(
@@ -275,7 +275,7 @@ private:
     static Physics::ElectricalElements CreateElectricalElements(
         Physics::Points const & points,
         Physics::World & parentWorld,
-        std::shared_ptr<IGameEventHandler> gameEventHandler);
+        std::shared_ptr<GameEventDispatcher> gameEventDispatcher);
 
 private:
 

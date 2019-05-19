@@ -40,6 +40,7 @@ private:
     void OnGenerateDebrisCheckBoxClick(wxCommandEvent & event);
     void OnGenerateSparklesCheckBoxClick(wxCommandEvent & event);
     void OnGenerateAirBubblesCheckBoxClick(wxCommandEvent & event);
+
     void OnModulateWindCheckBoxClick(wxCommandEvent & event);
 
     void OnTextureOceanRenderModeRadioButtonClick(wxCommandEvent & event);
@@ -89,18 +90,24 @@ private:
     std::unique_ptr<SliderControl> mWaterDiffusionSpeedSlider;
     std::unique_ptr<SliderControl> mWaterLevelOfDetailSlider;
 
-    // Air
+    // Ocean and Sky
+    std::unique_ptr<SliderControl> mOceanDepthSlider;
+    std::unique_ptr<SliderControl> mOceanFloorBumpinessSlider;
+    std::unique_ptr<SliderControl> mOceanFloorDetailAmplificationSlider;
     std::unique_ptr<SliderControl> mNumberOfStarsSlider;
     std::unique_ptr<SliderControl> mNumberOfCloudsSlider;
+
+    // Wind and Waves
     std::unique_ptr<SliderControl> mWindSpeedBaseSlider;
     wxCheckBox* mModulateWindCheckBox;
     std::unique_ptr<SliderControl> mWindGustAmplitudeSlider;
+    std::unique_ptr<SliderControl> mBasalWaveHeightAdjustmentSlider;
+    std::unique_ptr<SliderControl> mBasalWaveLengthAdjustmentSlider;
+    std::unique_ptr<SliderControl> mBasalWaveSpeedAdjustmentSlider;
+    std::unique_ptr<SliderControl> mTsunamiRateSlider;
+    std::unique_ptr<SliderControl> mRogueWaveRateSlider;
 
     // World
-    std::unique_ptr<SliderControl> mWaveHeightSlider;
-    std::unique_ptr<SliderControl> mSeaDepthSlider;
-    std::unique_ptr<SliderControl> mOceanFloorBumpinessSlider;
-    std::unique_ptr<SliderControl> mOceanFloorDetailAmplificationSlider;
     std::unique_ptr<SliderControl> mLuminiscenceSlider;
     std::unique_ptr<SliderControl> mLightSpreadSlider;
     std::unique_ptr<SliderControl> mRotAcceler8rSlider;
@@ -163,7 +170,8 @@ private:
 
     void PopulateMechanicsPanel(wxPanel * panel);
     void PopulateFluidsPanel(wxPanel * panel);
-    void PopulateAirPanel(wxPanel * panel);
+    void PopulateOceanAndSkyPanel(wxPanel * panel);
+    void PopulateWindAndWavesPanel(wxPanel * panel);
     void PopulateWorldPanel(wxPanel * panel);
     void PopulateInteractionsPanel(wxPanel * panel);
     void PopulateRenderingPanel(wxPanel * panel);

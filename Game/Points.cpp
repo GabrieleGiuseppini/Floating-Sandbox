@@ -331,7 +331,7 @@ void Points::UpdateEphemeralParticles(
                     // Do not advance air bubble it it's pinned
                     if (!mIsPinnedBuffer[pointIndex])
                     {
-                        float const waterHeight = mParentWorld.GetWaterHeightAt(GetPosition(pointIndex).x);
+                        float const waterHeight = mParentWorld.GetOceanSurfaceHeightAt(GetPosition(pointIndex).x);
                         float const deltaY = waterHeight - GetPosition(pointIndex).y;
 
                         if (deltaY <= 0.0f)

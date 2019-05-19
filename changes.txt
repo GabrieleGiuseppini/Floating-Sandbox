@@ -1,21 +1,21 @@
 1.11.0
-- New "Repair Structure" tool! Use it on the edges of broken parts of a ship, and with some patience the ship structure will repair itself
-- Added "Orphaned particles rendering": individual particles that break off the ship structure used to disappear, while they are now rendered contributing
-  to debris, flotsam, and rubble
+- New "Repair Structure" tool! Use it on the edges of broken parts of a ship, and if you are skilled the ship structure will repair itself
+- Redesigned waves sub-system: waves now consist of ocean waves and waves generated either manually with the new "WaveMaker" tool, or automatically like tsunami and rogue waves (see https://gabrielegiuseppini.wordpress.com/2019/05/12/1d-simulation-of-ocean-waves/)
+- Added "Orphaned particles rendering": individual particles that break off the ship structure used to disappear, while they are now rendered contributing to debris, flotsam, and rubble
 - Also dry parts of a ship now rot when exposed to sea water, albeit *very* slowly...
 - Improved "Move" tool to only move - and rotate - loosened parts of a ship
-- Increased number of ophemeral particles, and improved performance of air bubbles
+- Increased number of ephemeral particles, and improved performance of air bubbles
 - Added a few new materials, including "stainless" materials that never rot, rubber, and LEGO(c) bricks!
 - Fixed bug that would crash the game when setting the number of clouds to zero on computers with specific graphics cards
 - ...and a few more small improvements here and there
+- Musical theme for this release: Evanescence, entire discography
 
 1.10.0
 - A ship that has sunk now slowly rots over time
 - Ship lights now reveal underlying colors at night
 - Improved rendering pipeline
 	- Floating Sandbox now supports some graphic cards which were previously only displaying clouds and water but no ship!
-- Rectified simulation instability that was caused by square water drag law at very high speeds 
- (see https://gabrielegiuseppini.wordpress.com/2019/03/17/euler-fights-with-square-drag/)
+- Rectified simulation instability that was caused by square water drag law at very high speeds (see https://gabrielegiuseppini.wordpress.com/2019/03/17/euler-fights-with-square-drag/)
 - The Floating Sandbox world is not anymore unbounded; this has minimal consequences in this version, but it will be very important for future features and optimizations!
 - Ships now may carry a description which is optionally shown when they are loaded
 - Quite a few new ships!

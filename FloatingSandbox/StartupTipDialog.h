@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include "UIPreferences.h"
+#include "UIPreferencesManager.h"
 
 #include <Game/ResourceLoader.h>
 
@@ -19,7 +19,7 @@ public:
 
     StartupTipDialog(
         wxWindow* parent,
-        std::shared_ptr<UIPreferences> uiPreferences,
+        std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
         ResourceLoader const & resourceLoader);
 
     virtual ~StartupTipDialog();
@@ -30,5 +30,5 @@ private:
 
 private:
 
-    std::shared_ptr<UIPreferences> mUIPreferences;
+    std::shared_ptr<UIPreferencesManager> mUIPreferencesManager;
 };

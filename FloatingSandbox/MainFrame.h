@@ -15,10 +15,10 @@
 #include "ShipLoadDialog.h"
 #include "SoundController.h"
 #include "ToolController.h"
-#include "UIPreferences.h"
+#include "UIPreferencesManager.h"
 
 #include <Game/GameController.h>
-#include <Game/IGameEventHandler.h>
+#include <Game/GameEventHandlers.h>
 #include <Game/ResourceLoader.h>
 
 #include <wx/filedlg.h>
@@ -39,7 +39,8 @@
  */
 class MainFrame
     : public wxFrame
-    , public IGameEventHandler
+    , public ILifecycleGameEventHandler
+    , public IGenericGameEventHandler
 {
 public:
 
@@ -141,6 +142,7 @@ private:
     void OnLoadShipMenuItemSelected(wxCommandEvent& event);
     void OnReloadLastShipMenuItemSelected(wxCommandEvent& event);
     void OnSaveScreenshotMenuItemSelected(wxCommandEvent& event);
+
     void OnMoveMenuItemSelected(wxCommandEvent& event);
     void OnMoveAllMenuItemSelected(wxCommandEvent& event);
     void OnSmashMenuItemSelected(wxCommandEvent& event);
@@ -154,11 +156,15 @@ private:
     void OnRCBombMenuItemSelected(wxCommandEvent& event);
     void OnImpactBombMenuItemSelected(wxCommandEvent& event);
     void OnAntiMatterBombMenuItemSelected(wxCommandEvent& event);
+    void OnWaveMakerMenuItemSelected(wxCommandEvent& event);
     void OnAdjustTerrainMenuItemSelected(wxCommandEvent& event);
     void OnRepairStructureMenuItemSelected(wxCommandEvent& event);
     void OnScrubMenuItemSelected(wxCommandEvent& event);
     void OnRCBombDetonateMenuItemSelected(wxCommandEvent& event);
     void OnAntiMatterBombDetonateMenuItemSelected(wxCommandEvent& event);
+    void OnTriggerTsunamiMenuItemSelected(wxCommandEvent& event);
+    void OnTriggerRogueWaveMenuItemSelected(wxCommandEvent& event);
+
     void OnOpenSettingsWindowMenuItemSelected(wxCommandEvent& event);
     void OnOpenPreferencesWindowMenuItemSelected(wxCommandEvent& event);
     void OnOpenLogWindowMenuItemSelected(wxCommandEvent& event);
@@ -177,6 +183,12 @@ private:
     //
     // Game event handler
     //
+
+    void RegisterEventHandler(GameController & gameController)
+    {
+        gameController.RegisterLifecycleEventHandler(this);
+        gameController.RegisterGenericEventHandler(this);
+    }
 
     virtual void OnGameReset() override
     {
@@ -273,8 +285,8 @@ private:
     std::shared_ptr<ResourceLoader> mResourceLoader;
     std::shared_ptr<GameController> mGameController;
     std::shared_ptr<SoundController> mSoundController;
-    std::shared_ptr <UIPreferences> mUIPreferences;
     std::unique_ptr<ToolController> mToolController;
+    std::shared_ptr <UIPreferencesManager> mUIPreferencesManager;
 
 
     //

@@ -17,7 +17,7 @@ ShipDescriptionDialog::ShipDescriptionDialog(
     wxWindow* parent,
     ShipMetadata const & shipMetadata,
     bool isAutomatic,
-    std::shared_ptr<UIPreferences> uiPreferences)
+    std::shared_ptr<UIPreferencesManager> uiPreferencesManager)
     : wxDialog(
         parent,
         wxID_ANY,
@@ -25,7 +25,7 @@ ShipDescriptionDialog::ShipDescriptionDialog(
         wxDefaultPosition,
         wxDefaultSize,
         wxDEFAULT_DIALOG_STYLE | wxSTAY_ON_TOP)
-    , mUIPreferences(std::move(uiPreferences))
+    , mUIPreferencesManager(std::move(uiPreferencesManager))
 {
     SetBackgroundColour(wxColour("WHITE"));
 
@@ -82,7 +82,7 @@ ShipDescriptionDialog::~ShipDescriptionDialog()
 
 void ShipDescriptionDialog::OnDontShowOnShipLoadheckboxChanged(wxCommandEvent & event)
 {
-    mUIPreferences->SetShowShipDescriptionsAtShipLoad(!event.IsChecked());
+    mUIPreferencesManager->SetShowShipDescriptionsAtShipLoad(!event.IsChecked());
 }
 
 std::string ShipDescriptionDialog::MakeHtml(ShipMetadata const & shipMetadata)
