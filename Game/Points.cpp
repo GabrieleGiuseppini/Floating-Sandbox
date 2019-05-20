@@ -7,6 +7,7 @@
 
 #include <GameCore/GameRandomEngine.h>
 #include <GameCore/Log.h>
+#include <GameCore/PrecalculatedFunction.h>
 
 #include <cmath>
 #include <limits>
@@ -92,7 +93,7 @@ void Points::CreateEphemeralParticleAirBubble(
     vec2f const & position,
     float initialSize,
     float vortexAmplitude,
-    float vortexFrequency,
+    float vortexPeriod,
     StructuralMaterial const & structuralMaterial,
     float currentSimulationTime,
     PlaneId planeId)
@@ -134,7 +135,7 @@ void Points::CreateEphemeralParticleAirBubble(
         GameRandomEngine::GetInstance().Choose<TextureFrameIndex>(2),
         initialSize,
         vortexAmplitude,
-        vortexFrequency);
+        vortexPeriod);
 
     mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
     mPlaneIdBuffer[pointIndex] = planeId;
@@ -363,7 +364,7 @@ void Points::UpdateEphemeralParticles(
 
                             float vortexValue =
                                 vortexAmplitude
-                                * sin(lifetime * mEphemeralStateBuffer[pointIndex].AirBubble.VortexFrequency);
+                                * PrecalcLoFreqSin.GetNearestPeriodic(mEphemeralStateBuffer[pointIndex].AirBubble.NormalizedVortexAngularVelocity * lifetime);
 
                             // Update position
                             mPositionBuffer[pointIndex].x +=

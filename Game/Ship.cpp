@@ -1910,14 +1910,14 @@ void Ship::GenerateAirBubbles(
 {
     float vortexAmplitude = GameRandomEngine::GetInstance().GenerateRandomReal(
         GameParameters::MinAirBubblesVortexAmplitude, GameParameters::MaxAirBubblesVortexAmplitude);
-    float vortexFrequency = 1.0f / GameRandomEngine::GetInstance().GenerateRandomReal(
-        GameParameters::MinAirBubblesVortexFrequency, GameParameters::MaxAirBubblesVortexFrequency);
+    float vortexPeriod = GameRandomEngine::GetInstance().GenerateRandomReal(
+        GameParameters::MinAirBubblesVortexPeriod, GameParameters::MaxAirBubblesVortexPeriod);
 
     mPoints.CreateEphemeralParticleAirBubble(
         position,
         0.3f,
         vortexAmplitude,
-        vortexFrequency,
+        vortexPeriod,
         mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Air),
         currentSimulationTime,
         planeId);

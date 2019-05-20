@@ -281,22 +281,30 @@ Render:
 		+ Shallow Water Equations (*)
 		+ Try to change speed of particles at repair
 			+ See big notebook
-
-		= See problem with too many bubbles
+		+ See problem with too many bubbles
 			+ See if water is constant after hole plugged
 				+ Custom probe w/total water in ship
 				+ Remove probe afterwards
-			- See if water is turbulent
-				- Temporarily change shader to draw pressure waves
-			- See if true: realistic sinking of ship is 3 water intake and 0.25 water diffusion speed
-		- Use precalc'd sin for bubble vortex 
-			- Pre FPS:
-			- Post FPS:
+			+ See if water is turbulent
+				+ Temporarily change shader to draw pressure waves
+			+ See if true: realistic sinking of ship is 3 water intake and 0.25 water diffusion speed
 
-		- Send version with ShipLoadDialog always yielding (not only on single-core box) to those two guys
+		= Use precalc'd sin for bubble vortex 
+			+ Pre FPS: 22.5, 125
+			+ Make static precalc'd sin (lo-res: 512)
+			+ Post FPS: 23.4, 136
 
-		- Do test with "the possible ships" broken
+		- Send for testing
 
+		- Do movie
+			- Repair 
+				- With move and rotate
+			- Rubber ball
+
+		- Check ShipLoadDialog issue
+			- Send version with ShipLoadDialog always yielding (not only on single-core box) to those two guys
+
+		+ Do test with "the possible ships" broken
 		+ Double-check latest rotting speed
 
 		- Installer:

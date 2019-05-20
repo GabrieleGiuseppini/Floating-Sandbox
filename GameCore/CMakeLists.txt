@@ -36,6 +36,7 @@ set  (SOURCES
 	LinearSliderCore.h
 	Log.cpp
 	Log.h
+	PrecalculatedFunction.cpp
 	PrecalculatedFunction.h
 	ProgressCallback.h
 	RunningAverage.h

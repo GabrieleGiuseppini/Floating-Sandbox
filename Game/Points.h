@@ -69,7 +69,7 @@ private:
             TextureFrameIndex FrameIndex;
             float InitialSize;
             float VortexAmplitude;
-            float VortexFrequency;
+            float NormalizedVortexAngularVelocity;
 
             float CurrentDeltaY;
             float Progress;
@@ -82,11 +82,11 @@ private:
                 TextureFrameIndex frameIndex,
                 float initialSize,
                 float vortexAmplitude,
-                float vortexFrequency)
+                float vortexPeriod)
                 : FrameIndex(frameIndex)
                 , InitialSize(initialSize)
                 , VortexAmplitude(vortexAmplitude)
-                , VortexFrequency(vortexFrequency)
+                , NormalizedVortexAngularVelocity(1.0f / vortexPeriod) // (2PI/vortexPeriod)/2PI
                 , CurrentDeltaY(0.0f)
                 , Progress(0.0f)
                 , LastVortexValue(0.0f)
@@ -460,7 +460,7 @@ public:
         vec2f const & position,
         float initialSize,
         float vortexAmplitude,
-        float vortexFrequency,
+        float vortexPeriod,
         StructuralMaterial const & structuralMaterial,
         float currentSimulationTime,
         PlaneId planeId);

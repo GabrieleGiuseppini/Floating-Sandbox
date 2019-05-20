@@ -21,6 +21,29 @@ TEST(PrecalculatedFunctionTests, Nearest)
     EXPECT_NEAR(sin(2.0f * Pi<float> * 0.67f), pf.GetNearest(0.67f), 0.001f);
 }
 
+TEST(PrecalculatedFunctionTests, NearestPeriodic)
+{
+    PrecalculatedFunction<8192> pf(
+        [](float x)
+        {
+            return sin(2.0f * Pi<float> * x);
+        });
+
+    for (float offset = -3.0f; offset < 4.0f; offset += 1.0f)
+    {
+        EXPECT_NEAR(0.0f, pf.GetNearestPeriodic(0.0f + offset), 0.001f);
+        EXPECT_NEAR(-1.0f, pf.GetNearestPeriodic(-0.25f + offset), 0.001f);
+        EXPECT_NEAR(1.0f, pf.GetNearestPeriodic(0.25f + offset), 0.001f);
+        EXPECT_NEAR(0.0f, pf.GetNearestPeriodic(-0.50f + offset), 0.001f);
+        EXPECT_NEAR(0.0f, pf.GetNearestPeriodic(0.50f + offset), 0.001f);
+        EXPECT_NEAR(1.0f, pf.GetNearestPeriodic(-0.75f + offset), 0.001f);
+        EXPECT_NEAR(-1.0f, pf.GetNearestPeriodic(0.75f + offset), 0.001f);
+
+        EXPECT_NEAR(sin(2.0f * Pi<float> * 0.17f), pf.GetNearestPeriodic(0.17f + offset), 0.001f);
+        EXPECT_NEAR(sin(2.0f * Pi<float> * 0.67f), pf.GetNearestPeriodic(0.67f + offset), 0.001f);
+    }
+}
+
 TEST(PrecalculatedFunctionTests, LinearlyInterpolated)
 {
     PrecalculatedFunction<8192> pf(

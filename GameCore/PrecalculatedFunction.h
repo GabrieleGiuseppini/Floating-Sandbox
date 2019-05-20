@@ -55,6 +55,34 @@ public:
     }
 
     /*
+     * Gets the sample nearest to the specified value,
+     * assumed to be periodic around one.
+     */
+    inline float GetNearestPeriodic(float x) const
+    {
+        // Fractional absolute index in the (infinite) sample array
+        float const absoluteSampleIndexF = x / Dx;
+
+        // Integral part - absolute, minimizing error
+        // Note: -7.6 => -7
+        int64_t absoluteSampleIndexI = FastTruncateInt64(absoluteSampleIndexF + 0.5f);
+
+        // Integral part - sample
+        // Note: -7 % 3 == -1
+        int64_t sampleIndexI = absoluteSampleIndexI % static_cast<int64_t>(SamplesCount);
+
+        if (sampleIndexI < 0)
+        {
+            // Wrap around and anchor to the left sample
+            sampleIndexI += SamplesCount - 1; // Includes shift to left
+        }
+
+        assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
+
+        return mSamples[sampleIndexI].SampleValue;
+    }
+
+    /*
      * Gets the value linearly-interpolated between the two samples at the specified value,
      * which is assumed to be between zero (first sample) and one-Dx (last sample).
      * One is also fine, but that would repeat the last sample.
@@ -151,3 +179,5 @@ private:
 
     static float constexpr Dx = 1.0f / SamplesCount;
 };
+
+extern PrecalculatedFunction<512> const PrecalcLoFreqSin;

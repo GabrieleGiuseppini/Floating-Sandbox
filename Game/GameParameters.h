@@ -164,8 +164,8 @@ struct GameParameters
     static float constexpr CumulatedIntakenWaterThresholdForAirBubbles = 7.0f;
     static float constexpr MinAirBubblesVortexAmplitude = 0.05f;
     static float constexpr MaxAirBubblesVortexAmplitude = 2.0f;
-    static float constexpr MinAirBubblesVortexFrequency = 1.0f;
-    static float constexpr MaxAirBubblesVortexFrequency = 2.5f;
+    static float constexpr MinAirBubblesVortexPeriod = 3.0f; // seconds
+    static float constexpr MaxAirBubblesVortexPeriod = 7.5f; // seconds
 
     // Wind
 
