@@ -440,9 +440,10 @@ void Ship::RepairAt(
                         // though, as you end up, for example, with points chasing a part of a ship
                         // that's moving away!
                         float const movementMagnitude =
-                            displacementMagnitude
+                            pow(displacementMagnitude, 0.6f)
                             * MovementFraction
                             * toolStrength;
+
 
                         // Move point
                         mPoints.GetPosition(fcs.OtherEndpointIndex) +=

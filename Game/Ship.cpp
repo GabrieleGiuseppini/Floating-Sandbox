@@ -1181,14 +1181,6 @@ void Ship::UpdateWaterVelocities(
 
     mPoints.UpdateWaterBuffer(std::move(newPointWaterBuffer));
     mPoints.UpdateWaterVelocitiesFromMomenta();
-
-    ////// TODOTEST
-    ////float totalWaterInShip = 0.0f;
-    ////for (auto p : mPoints.NonEphemeralPoints())
-    ////{
-    ////    totalWaterInShip += mPoints.GetWater(p);
-    ////}
-    ////mGameEventHandler->OnCustomProbe("Total Water", totalWaterInShip);
 }
 
 void Ship::UpdateSinking()

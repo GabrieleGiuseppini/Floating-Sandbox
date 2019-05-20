@@ -279,14 +279,13 @@ Render:
 			+ changes.txt
 			+ ParameterSmoothing: make it with sin (btwn pi/4 and pi/2)
 		+ Shallow Water Equations (*)
-
-		- Try to change speed of particles at repair
-			- See big notebook
+		+ Try to change speed of particles at repair
+			+ See big notebook
 
 		= See problem with too many bubbles
-			= See if water is constant after hole plugged
-				= Custom probe w/total water in ship
-				- Remove probe afterwards
+			+ See if water is constant after hole plugged
+				+ Custom probe w/total water in ship
+				+ Remove probe afterwards
 			- See if water is turbulent
 				- Temporarily change shader to draw pressure waves
 			- See if true: realistic sinking of ship is 3 water intake and 0.25 water diffusion speed
@@ -302,7 +301,7 @@ Render:
 
 		- Installer:
 			- See if installer for current user removes need for admin consent
-			- Add repair when already installer
+			- Add repair when already installed
 
 	- 1.12.0:
 
