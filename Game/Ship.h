@@ -225,12 +225,6 @@ public:
 
     void DiffuseLight(GameParameters const & gameParameters);
 
-    // Ephemeral particles
-
-    void UpdateEphemeralParticles(
-        float currentSimulationTime,
-        GameParameters const & gameParameters);
-
     // Misc
 
     void RotPoints(

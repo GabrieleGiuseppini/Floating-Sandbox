@@ -216,7 +216,7 @@ void Ship::Update(
     // Update ephemeral particles
     //
 
-    UpdateEphemeralParticles(
+    mPoints.UpdateEphemeralParticles(
         currentSimulationTime,
         gameParameters);
 
@@ -1366,19 +1366,6 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
             }
         }
     }
-}
-
-void Ship::UpdateEphemeralParticles(
-    float currentSimulationTime,
-    GameParameters const & gameParameters)
-{
-    //
-    // Update existing particles
-    //
-
-    mPoints.UpdateEphemeralParticles(
-        currentSimulationTime,
-        gameParameters);
 }
 
 void Ship::RotPoints(

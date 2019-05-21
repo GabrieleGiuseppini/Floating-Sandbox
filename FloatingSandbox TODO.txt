@@ -292,12 +292,11 @@ Render:
 			+ See if water is turbulent
 				+ Temporarily change shader to draw pressure waves
 			+ See if true: realistic sinking of ship is 3 water intake and 0.25 water diffusion speed
-
-		= Use precalc'd sin for bubble vortex 
+		+ Use precalc'd sin for bubble vortex 
 			+ Pre FPS: 22.5, 125
 			+ Make static precalc'd sin (lo-res: 512)
 			+ Post FPS: 23.4, 136
-			- Do perf analysis
+			+ Do perf analysis
 
 		- Send for testing
 
