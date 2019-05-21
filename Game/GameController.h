@@ -312,6 +312,11 @@ public:
     float GetMinDestroyRadius() const { return GameParameters::MinDestroyRadius; }
     float GetMaxDestroyRadius() const { return GameParameters::MaxDestroyRadius; }
 
+    float GetRepairStrengthAdjustment() const { return mGameParameters.RepairStrengthAdjustment; }
+    void SetRepairStrengthAdjustment(float value) { mGameParameters.RepairStrengthAdjustment = value; }
+    float GetMinRepairStrengthAdjustment() const { return GameParameters::MinRepairStrengthAdjustment; }
+    float GetMaxRepairStrengthAdjustment() const { return GameParameters::MaxRepairStrengthAdjustment; }
+
     float GetBombBlastRadius() const { return mGameParameters.BombBlastRadius; }
     void SetBombBlastRadius(float value) { mGameParameters.BombBlastRadius = value; }
     float GetMinBombBlastRadius() const { return GameParameters::MinBombBlastRadius; }

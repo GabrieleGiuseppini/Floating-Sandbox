@@ -247,6 +247,10 @@ struct GameParameters
 
     float RepairRadius;
 
+    float RepairStrengthAdjustment;
+    static float constexpr MinRepairStrengthAdjustment = 0.1f;
+    static float constexpr MaxRepairStrengthAdjustment = 1.0f;
+
     static float constexpr DrawForce = 40000.0f;
 
     static float constexpr SwirlForce = 600.0f;

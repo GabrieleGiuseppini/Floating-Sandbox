@@ -1295,6 +1295,31 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
         wxALL,
         SliderBorder);
 
+    // Repair Strength Adjustment
+
+    mRepairStrengthAdjustmentSlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        SliderHeight,
+        "Repair Strength Adjust",
+        "Adjusts the strength with which the repair tool attracts the particles needed to repair damage.",
+        mGameController->GetRepairStrengthAdjustment(),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<LinearSliderCore>(
+            mGameController->GetMinRepairStrengthAdjustment(),
+            mGameController->GetMaxRepairStrengthAdjustment()));
+
+    gridSizer->Add(
+        mRepairStrengthAdjustmentSlider.get(),
+        wxGBPosition(1, 2),
+        wxGBSpan(1, 1),
+        wxALL,
+        SliderBorder);
+
     // Finalize panel
 
     panel->SetSizerAndFit(gridSizer);
@@ -1942,6 +1967,8 @@ void SettingsDialog::ReadSettings()
 
     mFloodQuantitySlider->SetValue(mGameController->GetFloodQuantity());
 
+    mRepairStrengthAdjustmentSlider->SetValue(mGameController->GetRepairStrengthAdjustment());
+
     mUltraViolentCheckBox->SetValue(mGameController->GetUltraViolentMode());
 
     mGenerateDebrisCheckBox->SetValue(mGameController->GetDoGenerateDebris());
@@ -2244,6 +2271,9 @@ void SettingsDialog::ApplySettings()
 
     mGameController->SetFloodQuantity(
         mFloodQuantitySlider->GetValue());
+
+    mGameController->SetRepairStrengthAdjustment(
+        mRepairStrengthAdjustmentSlider->GetValue());
 
     mGameController->SetUltraViolentMode(mUltraViolentCheckBox->IsChecked());
 
