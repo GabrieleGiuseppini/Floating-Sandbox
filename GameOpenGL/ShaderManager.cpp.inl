@@ -409,31 +409,32 @@ std::string ShaderManager<Traits>::SubstituteStaticParameters(
 template<typename Traits>
 std::set<typename Traits::ProgramParameterType> ShaderManager<Traits>::ExtractShaderParameters(std::string const & source)
 {
-    static std::regex ShaderParamNameRegex(R"!((//\s*)?\buniform\s+.*?\s+param([_a-zA-Z0-9]*);)!");
+    static std::regex ShaderParamNameRegex(R"!(^\s*(//\s*)?\buniform\s+.*\s+param([_a-zA-Z0-9]+);\s*$)!");
 
     std::set<typename Traits::ProgramParameterType> shaderParameters;
 
-    std::string remainingSource = source;
+    std::stringstream sSource(source);
+    std::string line;
     std::smatch match;
-    while (std::regex_search(remainingSource, match, ShaderParamNameRegex))
+    while (std::getline(sSource, line))
     {
-        assert(3 == match.size());
-        if (!match[1].matched)
+        if (std::regex_match(line, match, ShaderParamNameRegex))
         {
-            auto const & shaderParameterName = match[2].str();
-
-            // Lookup the parameter
-            typename Traits::ProgramParameterType shaderParameter = Traits::StrToProgramParameterType(shaderParameterName);
-
-            // Store it, making sure it's not specified more than once
-            if (!shaderParameters.insert(shaderParameter).second)
+            assert(3 == match.size());
+            if (!match[1].matched) // Not a comment
             {
-                throw GameException("Shader parameter \"" + shaderParameterName + "\" is declared more than once");
+                auto const & shaderParameterName = match[2].str();
+
+                // Lookup the parameter
+                typename Traits::ProgramParameterType shaderParameter = Traits::StrToProgramParameterType(shaderParameterName);
+
+                // Store it, making sure it's not specified more than once
+                if (!shaderParameters.insert(shaderParameter).second)
+                {
+                    throw GameException("Shader parameter \"" + shaderParameterName + "\" is declared more than once");
+                }
             }
         }
-
-        // Advance
-        remainingSource = match.suffix();
     }
 
     return shaderParameters;

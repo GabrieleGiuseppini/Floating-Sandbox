@@ -15,21 +15,20 @@ namespace /* anonymous */ {
 
     std::string RemoveJSONComments(std::string const & source)
     {
-        static std::regex CommentRegex(R"!(^(.*?)(//.*)$)!");
-
         std::stringstream sSource(source);
         std::stringstream sSubstitutedSource;
         std::string line;
-        std::smatch match;
         while (std::getline(sSource, line))
         {
-            if (std::regex_match(line, match, CommentRegex))
+            auto commentStart = line.find("//");
+            if (commentStart != std::string::npos)
             {
-                assert(3 == match.size());
-                sSubstitutedSource << std::string(match[1].first, match[1].second);
+                sSubstitutedSource << line.substr(0, commentStart);
             }
             else
+            {
                 sSubstitutedSource << line;
+            }
         }
 
         return sSubstitutedSource.str();
