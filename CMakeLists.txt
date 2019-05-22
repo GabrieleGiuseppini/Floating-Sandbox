@@ -79,7 +79,7 @@ if(MSVC_USE_STATIC_LINKING) # No way to 'negate' a variable easily
 else()
 	set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 endif()
-add_subdirectory(${GTEST_DIR} gtest)
+add_subdirectory(${GTEST_DIR} gtest EXCLUDE_FROM_ALL)
 
 ####################################################
 # Flags
