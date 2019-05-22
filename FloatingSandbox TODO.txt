@@ -302,10 +302,9 @@ Render:
 		+ Double-check latest rotting speed
 		+ See frequency of wind ripples
 		+ Font 2
-
-		= Perf:
-			= ExtractShaderParameters: regex::search
-			= Utils::ParseJSONFile::RemoveJSonComments
+		+ Perf:
+			+ ExtractShaderParameters: regex::search
+			+ Utils::ParseJSONFile::RemoveJSonComments
 
 		- Do Samsung time-based perf analysis
 
@@ -363,6 +362,8 @@ Render:
 			- New events at IGameEventHandler
 				- Dispatcher aggregates with counter
 				- Ship takes shared_ptr<Dispatcher> now, for perf
+
+		- Black cloth, black wood
 
 		- Interior layer (*)
 		
@@ -441,9 +442,14 @@ Render:
 		+ Tell maximord about new ships - give him names
 		= Copy all descriptions into their respective .shp files
 			# From https://docs.google.com/document/d/1niiB9AaqMAzThTY-pGjU3-qxIywKR8-nw_JDiOWcj1o/edit?usp=sharing_eil&ts=5c929c19
-			- TODO:
-				- Can take HMHS Britannic
-				= SweetStrawberryBoy agreed to Black Titan
+			+ Done:
+				+ RMS Queen Mary
+				+ Black Titan
+				+ SS Germanic
+				+ Circuit Test
+				+ Flood Test
+				+ Hindenburg
+				+ HMHS Britannic (X3)
 			- Ask ship owners
 				= mrpasta: wants to see them first
 				+ kikotheshipbuilder: all except HMS Thunderchild
@@ -872,6 +878,15 @@ Render:
 
 	- Print speed (in m/s) after throwing objects with both move tools
 		- Requires slot-ification of text in text layer, and/or rotating slots
+		- Replace GameLib::StatusText with new TextLayer class
+			- Two sets of methods:
+				- 1: State-modifying:
+					- TextLayer::SetStatusText/...other StatusText funcs...
+					- TextLayer::PublishText(something for coords, text)
+						- Standard fade-in/stay/fade-out
+						- Handles slots and their rotation
+				- 2: void Render(RenderContext &)
+					- Does things
 
 	- Underwater currents
 		- Implicit function of x defines trajectory 

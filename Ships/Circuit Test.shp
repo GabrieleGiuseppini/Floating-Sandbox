@@ -2,5 +2,7 @@
 	"structure_image":"circuit_test_structural.png.dat",
 	"electrical_image":"circuit_test_electrical.png.dat",
 	"ship_name":"Circuit Test",
-	"offset":{"x":0.0, "y":0.0}
+	"offset":{"x":0.0, "y":0.0},
+	"description":
+		"The ‘Circuit Test’ is a simple test to see if a circuit works underwater and above it. Either way, it was just a test to see if it works during pre-beta before this game was released."
 }
