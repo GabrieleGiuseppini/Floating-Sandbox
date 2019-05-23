@@ -306,6 +306,12 @@ Render:
 			+ ExtractShaderParameters: regex::search
 			+ Utils::ParseJSONFile::RemoveJSonComments
 
+		= Bugs:
+			- Goliath crashing
+			- Mike's weird waves
+			- SamminAter unsupported OpenGL ext => crash
+				- Test error in Debug mode
+
 		- Do Samsung time-based perf analysis
 
 		- Do movie
@@ -316,6 +322,7 @@ Render:
 		- Installer:
 			- See if installer for current user removes need for admin consent
 			- Add repair when already installed
+
 		- Check ShipLoadDialog issue
 			- Send version with ShipLoadDialog always yielding (not only on single-core box) to those two guys
 
@@ -397,12 +404,6 @@ Render:
 		# sum wulf gurl: Artica
 		# An SR71 Habu: NotTelling
 	- New ships:
-		- Re-take all Mike's .shp files for Shipbucket.com credits
-			- And also take electrical of RMS Titanic with Lights
-			- Also test "Splitable Titanic"
-		- Mike:
-			= Make subfolder (ask him)
-			- Take Titanic with interior
 		- To make:
 			- Antonia Graza:
 				- https://www.deviantart.com/izaquebr2015/art/M-S-Antonia-Graza-Final-Version-2015-570603964
@@ -411,31 +412,25 @@ Render:
 		- To adjust:
 			- SS France (Awesomeyorkie): bends a lot
 			- Ed Fitzgerald (Kiko); year: 1975
-		- Ready:
-			- B747: (An SR71 Habu) alias=NotTelling year=1970
-				- Add to About box
-			- Pacific: "S.S. Pacific" alias=Hugo_2503 year=1908
-				- Add to About box
-			- All the ones in "Ready"
-			- Two Transatlantic's from kiko; year: 1909
-			- Zero_sum_wuf_gurl; year: 1940
-			- Fokker (Artica); year: 1915
-			- P51 (Artica); year: 1940
-			- Mini_R.M.S_Titanic_mcshooter2018.png
-			- HMS Ajax (ASSTYU); year: 1933
-				- Add "_ASTYuu_" to about box
-
 		- To test:
 			- JackMellon (see PM on Discord): https://drive.google.com/drive/folders/1isy3QiRzMfyu69v5M0gwD5tvBnYZMWXx
 				- JackTheBrickfilmMaker, link to youtube channel: https://www.youtube.com/channel/UCshPbiTqFuwpNNh7BlpffhQ
-					- About box
-			- serhiires (see PM on Discord): HMHS Danic, RMS Danic, and all his others
-			- KMS_Unversinkbar_PandaDude.png: 1941 
-				- Descr: The KMS Unversinkbar was made in 1941 to outrun any other ship on earth while still being a viable battleship. Its 24 boilers and quadruple screws containing 4 45,000 Hp Engines can propel it to a top speed of 50 Kt/hour. It is 54 meters (177 feet) tall from keel to top of funnel 770 feet long, and 40 meters wide. It has a 2 ton Tungsten knife edge bow that is 1 millimeter wide designed to sink any ship it "accidentally" rams. It has a lengthy and very successful career in sinking many ships and killing 70,000 men during D-Day while finally sinking just off the coast of Normandy on June 7, 1944 with everyone on the ship dying. It sank due to 20 torpedos, 5 bombs, and 3 cannon hits. and sank rather rapidly at that point.
-			- Estonia - Dumbphones
-			- KMS Bismarck - Shippy
-			- RMS Titanic - Shippy
-			- Britannic - Dumbphones
+					- Add to about box
+			- TheodoreRoosevelt
+			= serhiires (see PM on Discord): 
+					Hmm I would like to use  "Serhiiiihres"
+					RMS Danic 1909
+					HMHS Danic 1915
+					RMS Gotic 1911
+					HMHS 1916
+					HMHS Gotic 1916***
+					SS Nobrix 1906
+				- Asked to re-send ships
+
+			= KMS_Unversinkbar_PandaDude.png: 1941 
+				+ Descr: The KMS Unversinkbar was made in 1941 to outrun any other ship on earth while still being a viable battleship. Its 24 boilers and quadruple screws containing 4 45,000 Hp Engines can propel it to a top speed of 50 Kt/hour. It is 54 meters (177 feet) tall from keel to top of funnel 770 feet long, and 40 meters wide. It has a 2 ton Tungsten knife edge bow that is 1 millimeter wide designed to sink any ship it "accidentally" rams. It has a lengthy and very successful career in sinking many ships and killing 70,000 men during D-Day while finally sinking just off the coast of Normandy on June 7, 1944 with everyone on the ship dying. It sank due to 20 torpedos, 5 bombs, and 3 cannon hits. and sank rather rapidly at that point.
+				- Asked name for credits
+				- Add to about box
 		- Asked:
 			- Aegir_Mark_III (coolman asks original designer)
 	- Descriptions:
@@ -463,10 +458,12 @@ Render:
 	- Michael Bozarth
 		+ https://drive.google.com/drive/u/0/folders/1k-A4SE8mMp2j_A3nH3gnl6SvYF9bnWoU		
 		+ Add "Michael Bozarth" to About box (link: https://www.youtube.com/channel/UCaJkgYP6yNw64U3WUZ3t1sw)
-		- Titanic with interior layer
-			- See if current texture lines up
-				- If so, make new Titanic with his structure and interior, and my texture
-				- If not, ask him if he could do a texture
+		- Take new ships:
+			- Re-take all Mike's .shp files for Shipbucket.com credits
+				- And also take electrical of RMS Titanic with Lights
+				- Also test "Splitable Titanic"
+			= Make subfolder (ask him)
+			- Take Titanic with interior
 
 
 - Suggestions to spec:

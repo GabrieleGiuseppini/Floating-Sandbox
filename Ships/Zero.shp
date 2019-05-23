@@ -1,0 +1,7 @@
+{
+	"structure_image":"zero_structural.png.dat",
+	"offset":{"x":0.0, "y":300.0},
+	"ship_name":"Zero",
+	"year_built":"1940",
+	"created_by":"Artica"
+}

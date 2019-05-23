@@ -1,0 +1,7 @@
+{
+	"structure_image":"fokker_e_III_structural.png.dat",
+	"offset":{"x":0.0, "y":300.0},
+	"ship_name":"Fokker E.III",
+	"year_built":"2013",
+	"created_by":"Artica"
+}

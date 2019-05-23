@@ -1,0 +1,8 @@
+{
+    "structure_image":"rmcv_siffiol_structural.png.dat",
+    "electrical_image":"rmcv_siffiol_electrical.png.dat",
+    "texture_image":"rmcv_siffiol_texture.png.dat",
+    "ship_name":"R.M.C.V. Siffiol",
+    "offset":{"x":0.0, "y":-8.0},
+    "created_by":"Dumbphones"
+}

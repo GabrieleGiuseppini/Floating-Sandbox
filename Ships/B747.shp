@@ -1,0 +1,9 @@
+{
+	"structure_image":"b747_structural.png.dat",
+	"offset":{"x":0.0, "y":480.0},
+	"ship_name":"B747",
+	"year_built":"1969 - present",
+	"created_by":"NotTelling",
+	"description":
+		"The legendary Boeing 747 jumbo jet. Like the A350, there is nothing too magical about it. All it does is it floats until you sink it. Pretty self-explanatory. You could make it fly if you tossed it with the move tool though."
+}

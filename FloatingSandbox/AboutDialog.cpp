@@ -113,6 +113,9 @@ AboutDialog::AboutDialog(
         {"\t\t\t\t", "Rockabilly Rebel - https://discordapp.com/" },
         {"\t\t\t\t", "McShooter2018 - https://discordapp.com/" },
         {"\t\t\t\t", "Dumbphones - https://discordapp.com/" },
+        {"\t\t\t\t", "NotTelling - https://discordapp.com/" },
+        {"\t\t\t\t", "Hugo_2503 - https://discordapp.com/" },
+        {"\t\t\t\t", "_ASTYuu_ - https://discordapp.com/" },
 
         {"Ship art:\t\t", "OceanLinerOrca - https://www.deviantart.com/oceanlinerorca" },
 

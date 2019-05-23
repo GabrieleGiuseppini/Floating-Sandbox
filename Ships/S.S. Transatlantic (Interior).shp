@@ -1,0 +1,7 @@
+{
+	"structure_image":"ss_transatlantic_interior_structural.png.dat",
+	"offset":{"x":0.0, "y":-12.0},
+	"ship_name":"S.S. Transatlantic (Interior)",
+	"year_built":"1909",
+	"created_by":"KikoTheBoatBuilder"
+}
