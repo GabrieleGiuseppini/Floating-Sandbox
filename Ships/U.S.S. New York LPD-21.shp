@@ -2,7 +2,7 @@
 	"structure_image":"uss_new_york_lpd21_structure.png.dat",
 	"texture_image":"uss_new_york_lpd21_texture.png.dat",
 	"offset":{"x":0.0, "y":-4.0},
-	"ship_name":"USS New York LPD-21",
+	"ship_name":"U.S.S. New York LPD-21",
 	"created_by":"Michael Bozarth",
 	"year_built":"2007"
 }

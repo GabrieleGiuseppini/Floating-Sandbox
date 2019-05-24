@@ -1,6 +1,6 @@
 {
 	"structure_image":"ms_oceania_structure.png.dat",
 	"texture_image":"ms_oceania_texture.png.dat",
-	"ship_name":"MS Oceania",
+	"ship_name":"M.S. Oceania",
 	"offset":{"x":0.0, "y":0.0}
 }

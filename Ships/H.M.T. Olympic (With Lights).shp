@@ -3,7 +3,7 @@
 	"electrical_image":"hmt_olympic_with_lights_electrical.png.dat",
 	"texture_image":"hmt_olympic_with_lights_texture.png.dat",
 	"offset":{"x":0.0, "y":-8.0},
-	"ship_name":"H.M.T. Olympic (With Lights)",
+	"ship_name":"H.M.T. Olympic",
 	"created_by":"Michael Bozarth",
 	"year_built":"1911"
 }

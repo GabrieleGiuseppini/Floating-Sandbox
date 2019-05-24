@@ -3,7 +3,7 @@
 	"electrical_image":"hmhs_britannic_with_lights_electrical.png.dat",
 	"texture_image":"hmhs_britannic_with_lights_texture.png.dat",
 	"offset":{"x":0.0, "y":-8.0},
-	"ship_name":"H.M.H.S. Britannic (With Lights)",
+	"ship_name":"H.M.H.S. Britannic",
 	"created_by":"Michael Bozarth",
 	"year_built":"1914",
 	"description":

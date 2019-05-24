@@ -1,7 +1,7 @@
 {
 	"structure_image":"ms_lisboeta_structural.png.dat",
 	"offset":{"x":0.0, "y":0.0},
-	"ship_name":"MS Lisboeta",
+	"ship_name":"M.S. Lisboeta",
 	"created_by":"KikoTheBoatBuilder",
 	"year_built":"2003"
 }

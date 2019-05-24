@@ -116,6 +116,7 @@ AboutDialog::AboutDialog(
         {"\t\t\t\t", "NotTelling - https://discordapp.com/" },
         {"\t\t\t\t", "Hugo_2503 - https://discordapp.com/" },
         {"\t\t\t\t", "_ASTYuu_ - https://discordapp.com/" },
+        {"\t\t\t\t", "Serhiiiihres - https://discordapp.com/" },
 
         {"Ship art:\t\t", "OceanLinerOrca - https://www.deviantart.com/oceanlinerorca" },
 

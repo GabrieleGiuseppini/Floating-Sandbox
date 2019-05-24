@@ -1,7 +1,7 @@
 {
 	"structure_image":"hms_thunderchild_structure.png.dat",
 	"offset":{"x":0.0, "y":0.0},
-	"ship_name":"HMS Thunderchild",
+	"ship_name":"H.M.S. Thunderchild",
 	"year_built":"1898",
 	"created_by":"KikoTheBoatBuilder"
 }

@@ -1,7 +1,7 @@
 {
 	"structure_image":"rms_hope_structural.png.dat",
 	"offset":{"x":0.0, "y":0.0},
-	"ship_name":"RMS Hope",
+	"ship_name":"R.M.S. Hope",
 	"year_built":"1911",
 	"created_by":"CorbinPasta93"
 }

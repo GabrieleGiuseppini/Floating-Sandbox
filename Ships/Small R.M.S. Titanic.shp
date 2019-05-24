@@ -1,7 +1,7 @@
 {
-	"structure_image":"rms_titanic_tiny_structural.png.dat",
+	"structure_image":"small_rms_titanic_structural.png.dat",
 	"offset":{"x":0.0, "y":0.0},
-	"ship_name":"RMS Titanic (Tiny)",
+	"ship_name":"Small R.M.S. Titanic",
 	"created_by":"KikoTheBoatBuilder",
 	"year_built":"1912",
 	"description":

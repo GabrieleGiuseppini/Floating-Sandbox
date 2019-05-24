@@ -310,7 +310,8 @@ Render:
 			- Goliath crashing
 			- Mike's weird waves
 			- SamminAter unsupported OpenGL ext => crash
-				- Test error in Debug mode
+				+ Test error in Debug mode
+				- Give him a relwithdebinfo
 
 		- Do Samsung time-based perf analysis
 
@@ -418,14 +419,15 @@ Render:
 					- Add to about box
 			- TheodoreRoosevelt
 			= serhiires (see PM on Discord): 
-					Hmm I would like to use  "Serhiiiihres"
-					RMS Danic 1909
-					HMHS Danic 1915
-					RMS Gotic 1911
-					HMHS 1916
-					HMHS Gotic 1916***
-					SS Nobrix 1906
-				- Asked to re-send ships
+				+ "Serhiiiihres"
+				= HMHS Danic 1915
+				= HMHS Gotic 1916
+				= RMS Danic 1909 
+				= RMS Danic (Interior) 1909 
+				= RMS Gotic 1911
+				= SS Nobrix (Interior) 1906 X 2
+				+ Asked to re-send ships
+				- Add to about box
 
 			= KMS_Unversinkbar_PandaDude.png: 1941 
 				+ Descr: The KMS Unversinkbar was made in 1941 to outrun any other ship on earth while still being a viable battleship. Its 24 boilers and quadruple screws containing 4 45,000 Hp Engines can propel it to a top speed of 50 Kt/hour. It is 54 meters (177 feet) tall from keel to top of funnel 770 feet long, and 40 meters wide. It has a 2 ton Tungsten knife edge bow that is 1 millimeter wide designed to sink any ship it "accidentally" rams. It has a lengthy and very successful career in sinking many ships and killing 70,000 men during D-Day while finally sinking just off the coast of Normandy on June 7, 1944 with everyone on the ship dying. It sank due to 20 torpedos, 5 bombs, and 3 cannon hits. and sank rather rapidly at that point.
@@ -1244,28 +1246,21 @@ Render:
 		- Option 2:
 			- Integral ticks to change frequencies so that period is always the same
 
-	- Interior layer:
-		- New layer @ ShipDefinitionFile and ShipDefinition
-		- New flag @
-			- ShipRenderMode
-			- SettingsDialog
-		- ShipDefinition:
-			- std::optional<ImageData> InteriorImageData
-		- RenderContext:
-			- Exposes "HasShipInteriorImage()"
-				- Updated @ AddShip (via OR) and @ Reset()
-		- Toggling layer visibility:
-			- Choose between:
-				- On-window control
-					- Done via OpenGL with InteractionLayer
-				- SettingsDialog:
-					- Enable option conditionally 
-					- Refresh by MainFrame upon AddShip/Reset/...
-		- ShipRenderContext:
-			- When not drawing primitives, texture used is:
-				- If "Texture" -> Texture
-				- If "Structure" -> Structure
-				- If "Interior" -> Interior OR Structure
+	- Interior layer (multiple textures) (*):
+		- JSON: texture is optionally an array
+		- ShipDefinition: texture is vector
+			- Always non-empty
+		- GameEventHandler::OnShipLoaded tells how many textures
+		- MainFrame menu item: "Toggle Ship Layer"
+			- Initially disabled
+		- MainFrame @ OnShipLoaded enables/disables menu item based on whether at least 1 ship has > 1 textures
+			- Stores count of textures as well
+		- ShipRenderContext has array of textures
+		- RenderContext->ShipRenderContext::ToggleShipTexture(int advance)
+			- ShipRenderContext swaps textures
+		- Merge multi-layered ships
+		- Test
+		- How to Guide
 
 - UI:
 	- floatingsandbox.com: 

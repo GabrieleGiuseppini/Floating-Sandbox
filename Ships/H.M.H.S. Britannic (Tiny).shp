@@ -1,7 +1,7 @@
 {
 	"structure_image":"hmhs_britannic_tiny_structural.png.dat",
 	"offset":{"x":0.0, "y":0.0},
-	"ship_name":"H.M.H.S. Britannic (Tiny)",
+	"ship_name":"H.M.H.S. Britannic",
 	"created_by":"KikoTheBoatBuilder",
 	"year_built":"1914",
 	"description":

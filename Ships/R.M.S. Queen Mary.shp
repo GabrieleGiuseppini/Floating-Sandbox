@@ -1,7 +1,7 @@
 {
 	"structure_image":"rms_queen_mary_structural.png.dat",
-	"ship_name":"RMS Queen Mary",
 	"offset":{"x":0.0, "y":-6.0},
+	"ship_name":"R.M.S. Queen Mary",
 	"created_by":"KikoTheBoatBuilder",
 	"year_built":"1937",
 	"description":

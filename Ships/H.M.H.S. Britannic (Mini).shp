@@ -2,7 +2,7 @@
     "structure_image":"hmhs_britannic_mini_structure.png.dat",
     "electrical_image":"hmhs_britannic_mini_electrical.png.dat",
     "texture_image":"hmhs_britannic_mini_texture.png.dat",
-    "ship_name":"H.M.H.S Britannic (Mini)",
+    "ship_name":"H.M.H.S Britannic",
     "year_built":"1914",
     "offset":{"x":0.0, "y":-14.0},
     "created_by":"Dumbphones",
