@@ -404,6 +404,7 @@ Render:
 		# SweetStrawberryBoy: TopHatLemons
 		# sum wulf gurl: Artica
 		# An SR71 Habu: NotTelling
+		# JackMellon: JackTheBrickfilmMaker (Discord, https://drive.google.com/drive/folders/1isy3QiRzMfyu69v5M0gwD5tvBnYZMWXx)
 	- New ships:
 		- To make:
 			- Antonia Graza:
@@ -414,21 +415,7 @@ Render:
 			- SS France (Awesomeyorkie): bends a lot
 			- Ed Fitzgerald (Kiko); year: 1975
 		- To test:
-			- JackMellon (see PM on Discord): https://drive.google.com/drive/folders/1isy3QiRzMfyu69v5M0gwD5tvBnYZMWXx
-				- JackTheBrickfilmMaker, link to youtube channel: https://www.youtube.com/channel/UCshPbiTqFuwpNNh7BlpffhQ
-					- Add to about box
 			- TheodoreRoosevelt
-			= serhiires (see PM on Discord): 
-				+ "Serhiiiihres"
-				= HMHS Danic 1915
-				= HMHS Gotic 1916
-				= RMS Danic 1909 
-				= RMS Danic (Interior) 1909 
-				= RMS Gotic 1911
-				= SS Nobrix (Interior) 1906 X 2
-				+ Asked to re-send ships
-				- Add to about box
-
 			= KMS_Unversinkbar_PandaDude.png: 1941 
 				+ Descr: The KMS Unversinkbar was made in 1941 to outrun any other ship on earth while still being a viable battleship. Its 24 boilers and quadruple screws containing 4 45,000 Hp Engines can propel it to a top speed of 50 Kt/hour. It is 54 meters (177 feet) tall from keel to top of funnel 770 feet long, and 40 meters wide. It has a 2 ton Tungsten knife edge bow that is 1 millimeter wide designed to sink any ship it "accidentally" rams. It has a lengthy and very successful career in sinking many ships and killing 70,000 men during D-Day while finally sinking just off the coast of Normandy on June 7, 1944 with everyone on the ship dying. It sank due to 20 torpedos, 5 bombs, and 3 cannon hits. and sank rather rapidly at that point.
 				- Asked name for credits

@@ -117,6 +117,7 @@ AboutDialog::AboutDialog(
         {"\t\t\t\t", "Hugo_2503 - https://discordapp.com/" },
         {"\t\t\t\t", "_ASTYuu_ - https://discordapp.com/" },
         {"\t\t\t\t", "Serhiiiihres - https://discordapp.com/" },
+        {"\t\t\t\t", "JackTheBrickfilmMaker - https://www.youtube.com/channel/UCshPbiTqFuwpNNh7BlpffhQ" },
 
         {"Ship art:\t\t", "OceanLinerOrca - https://www.deviantart.com/oceanlinerorca" },
 
