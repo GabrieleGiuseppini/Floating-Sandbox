@@ -13,11 +13,20 @@
         <Binary Id="CancelBmp" SourceFile="CancelButton.bmp" />
         <Property Id="CancelControlContent">CancelBmp</Property>
 
+        <Binary Id="RemoveBmp" SourceFile="RemoveButton.bmp" />
+        <Property Id="RemoveControlContent">RemoveBmp</Property>
+
+        <Binary Id="RepairBmp" SourceFile="RepairButton.bmp" />
+        <Property Id="RepairControlContent">RepairBmp</Property>
+
         <Binary Id="OkBmp" SourceFile="OkButton.bmp" />
         <Property Id="OkControlContent">OkBmp</Property>
 
         <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
         <Property Id="DO_LAUNCH_APP" Value="1" />
+
+        <Property Id="ACTION_TEXT_DOING" Value="TO_BE_SET" />
+        <Property Id="ACTION_TEXT_DONE" Value="TO_BE_SET" />
 
         <UI Id="FloatingSandboxUI">
 
@@ -27,30 +36,71 @@
 
             <Property Id="DefaultUIFont" Value="WixUI_Font_Normal" />
 
-            <Dialog Id="FSStarterDlg" Width="370" Height="270" Title="Ready to Install [ProductName]!" TrackDiskSpace="no">
+            <Dialog Id="FSStarterDlg" Width="370" Height="270" Title="[ProductName] Setup" TrackDiskSpace="no">
                 <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="80" TabSkip="no" FixedSize="yes" Text="FSBannerBitmap" />
-                <Control Id="Folder" Type="PathEdit" X="5" Y="95" Width="300" Height="18" Property="WIXUI_INSTALLDIR" Indirect="yes" />
-                <Control Id="ChangeFolder" Type="PushButton" X="310" Y="95" Width="56" Height="17" Text="&amp;Change...">
+
+                <!-- Install actions -->
+                <Control Id="Folder" Type="PathEdit" X="5" Y="95" Width="300" Height="18" Hidden="yes" Property="WIXUI_INSTALLDIR" Indirect="yes">
+                    <Condition Action="show">NOT Installed</Condition>
+                </Control>
+                <Control Id="ChangeFolder" Type="PushButton" X="310" Y="95" Width="56" Height="17" Hidden="yes" Text="&amp;Change...">
                     <Publish Property="_BrowseProperty" Value="[WIXUI_INSTALLDIR]" Order="1">1</Publish>
                     <Publish Event="SpawnDialog" Value="BrowseDlg" Order="2">1</Publish>
+                    <Condition Action="show">NOT Installed</Condition>
                 </Control>
                 <!--
                 <Control Id="InstallText" Type="Text" X="75" Y="110" Width="320" Height="10" Hidden="no" Text="Are you ready to go?" />
                 -->
-                <Control Id="Install" Type="PushButton" X="85" Y="125" Width="200" Height="77" Default="yes" Bitmap="yes" FixedSize="yes" Text="[InstallControlContent]">
+                <Control Id="Install" Type="PushButton" X="85" Y="125" Width="200" Height="77" Hidden="yes" Default="yes" Bitmap="yes" FixedSize="yes" ToolTip="Install" Text="[InstallControlContent]">
                     <Publish Event="SetTargetPath" Value="[WIXUI_INSTALLDIR]" Order="1">1</Publish>
-                    <Publish Event="DoAction" Value="WixUIValidatePath" Order="2">1</Publish>
-                    <Publish Event="SpawnDialog" Value="InvalidDirDlg" Order="3"><![CDATA[WIXUI_INSTALLDIR_VALID<>"1"]]></Publish>
-                    <Publish Event="EndDialog" Value="Return" Order="4">WIXUI_INSTALLDIR_VALID="1"</Publish>
+                    <Publish Property="ACTION_TEXT_DOING" Value="Installing" Order="2">1</Publish>
+                    <Publish Property="ACTION_TEXT_DONE" Value="Installed" Order="3">1</Publish>
+                    <Publish Event="DoAction" Value="WixUIValidatePath" Order="4">1</Publish>
+                    <Publish Event="SpawnDialog" Value="InvalidDirDlg" Order="5"><![CDATA[WIXUI_INSTALLDIR_VALID<>"1"]]></Publish>
+                    <Publish Event="EndDialog" Value="Return" Order="6">WIXUI_INSTALLDIR_VALID="1"</Publish>
+                    <Condition Action="show">NOT Installed</Condition>
                 </Control>
-                <Control Id="Cancel" Type="PushButton" X="85" Y="195" Width="200" Height="77" Cancel="yes" Bitmap="yes" FixedSize="yes" Text="[CancelControlContent]">
+
+                <!-- Admin actions -->
+                <Control Id="RepairButton" Type="PushButton" X="0" Y="125" Width="180" Height="77" Hidden="yes" Bitmap="yes" FixedSize="yes" ToolTip="Repair" Text="[RepairControlContent]">
+                    <Publish Property="WixUI_InstallMode" Value="Repair" Order="1">1</Publish>
+                    <Publish Property="ACTION_TEXT_DOING" Value="Repairing" Order="2">1</Publish>
+                    <Publish Property="ACTION_TEXT_DONE" Value="Repaired" Order="3">1</Publish>
+                    <Publish Event="ReinstallMode" Value="amus" Order="4">1</Publish>
+                    <Publish Event="Reinstall" Value="All" Order="5">1</Publish>
+                    <Publish Event="EndDialog" Value="Return" Order="6">1</Publish>
+                    <Condition Action="show">Installed</Condition>
+                </Control>
+
+                <Control Id="RemoveButton" Type="PushButton" X="190" Y="125" Width="180" Height="77" Hidden="yes" Bitmap="yes" FixedSize="yes" ToolTip="Remove" Text="[RemoveControlContent]">
+                    <Publish Property="WixUI_InstallMode" Value="Remove" Order="1">1</Publish>
+                    <Publish Property="ACTION_TEXT_DOING" Value="Removing" Order="2">1</Publish>
+                    <Publish Property="ACTION_TEXT_DONE" Value="Removed" Order="3">1</Publish>
+                    <Publish Event="Remove" Value="All" Order="4">1</Publish>
+                    <Publish Event="EndDialog" Value="Return" Order="5">1</Publish>
+                    <Condition Action="show">Installed</Condition>
+                </Control>
+
+                <Control Id="Cancel" Type="PushButton" X="85" Y="195" Width="200" Height="77" Cancel="yes" Bitmap="yes" FixedSize="yes" ToolTip="Cancel" Text="[CancelControlContent]">
                     <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
                 </Control>
             </Dialog>
 
-            <Dialog Id="FSProgressDlg" Width="370" Height="270" Title="Installing [ProductName]..." Modeless="yes">
+            <Dialog Id="FSProgressDlg" Width="370" Height="270" Title="[ACTION_TEXT_DOING] [ProductName]..." Modeless="yes">
                 <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="80" TabSkip="no" FixedSize="yes" Text="FSBannerBitmap" />
-                <Control Id="TextInstalling" Type="Text" X="20" Y="105" Width="330" Height="35" Hidden="no" NoPrefix="yes" Text="Please wait while [ProductName] gets installed..." />
+
+                <Control Id="TextInstalling" Type="Text" X="20" Y="105" Width="330" Height="35" Hidden="yes" NoPrefix="yes" Text="Please wait while [ProductName] gets installed...">
+                    <Condition Action="show">NOT Installed</Condition>
+                </Control>
+
+                <Control Id="TextRepairing" Type="Text" X="20" Y="105" Width="330" Height="35" Hidden="yes" NoPrefix="yes" Text="Please wait while [ProductName] is repaired...">
+                    <Condition Action="show">WixUI_InstallMode = "Repair"</Condition>
+                </Control>
+
+                <Control Id="TextRemoving" Type="Text" X="20" Y="105" Width="330" Height="35" Hidden="yes" NoPrefix="yes" Text="Please wait while [ProductName] is uninstalled...">
+                    <Condition Action="show">WixUI_InstallMode = "Remove"</Condition>
+                </Control>
+
                 <Control Id="ActionText" Type="Text" X="70" Y="140" Width="285" Height="10">
                     <Subscribe Event="ActionText" Attribute="Text" />
                 </Control>
@@ -58,36 +108,42 @@
                 <Control Id="ProgressBar" Type="ProgressBar" X="20" Y="155" Width="330" Height="10" ProgressBlocks="yes" Text="Progress done">
                     <Subscribe Event="SetProgress" Attribute="Progress" />
                 </Control>
-                <Control Id="Cancel" Type="PushButton" X="85" Y="180" Width="200" Height="77" Cancel="yes" Bitmap="yes" FixedSize="yes" Text="[CancelControlContent]">
+
+                <Control Id="Cancel" Type="PushButton" X="85" Y="180" Width="200" Height="77" Cancel="yes" Bitmap="yes" FixedSize="yes" ToolTip="Cancel" Text="[CancelControlContent]">
                     <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
                 </Control>
             </Dialog>
 
-            <Dialog Id="FSCompletedDlg" Width="370" Height="270" Title="[ProductName] Successfully Installed!">
+            <Dialog Id="FSCompletedDlg" Width="370" Height="270" Title="[ProductName] Successfully [ACTION_TEXT_DONE]!">
                 <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="80" TabSkip="no" FixedSize="yes" Text="FSBannerBitmap" />
-                <Control Id="CompletedText" Type="Text" X="75" Y="120" Width="320" Height="10" Hidden="no" Text="[ProductName] has been successfully installed!" />
-                <Control Id="Finish" Type="PushButton" X="85" Y="165" Width="200" Height="77" Default="yes" Bitmap="yes" FixedSize="yes" Text="[OkControlContent]">
+
+                <Control Id="CompletedText_Installed" Type="Text" X="75" Y="120" Width="320" Height="10" Hidden="yes" Text="[ProductName] has been successfully installed!">
+                    <Condition Action="show">NOT Installed</Condition>
+                </Control>
+
+                <Control Id="CompletedText_Repaired" Type="Text" X="75" Y="120" Width="320" Height="10" Hidden="yes" Text="[ProductName] has been successfully repaired!">
+                    <Condition Action="show">Installed AND (WixUI_InstallMode = "Repair")</Condition>
+                </Control>
+
+                <Control Id="CompletedText_Removed" Type="Text" X="75" Y="120" Width="320" Height="10" Hidden="yes" Text="[ProductName] has been successfully removed!">
+                    <Condition Action="show">Installed AND (WixUI_InstallMode = "Remove")</Condition>
+                </Control>
+
+                <Control Id="Finish" Type="PushButton" X="85" Y="165" Width="200" Height="77" Default="yes" Bitmap="yes" FixedSize="yes" ToolTip="Close" Text="[OkControlContent]">
                     <Publish Event="EndDialog" Value="Return" Order="999">1</Publish>
                     <Publish Event="DoAction" Value="LaunchApp">(DO_LAUNCH_APP = 1) AND (NOT Installed)</Publish>
                     <Condition Action="enable">1</Condition> <!-- See http://windows-installer-xml-wix-toolset.687559.n2.nabble.com/Bug-causing-ICE-17-failure-td4050724.html -->
                 </Control>
-                <Control Id="LaunchAppCheckBox" Type="CheckBox" X="145" Y="246" Width="220" Height="10" Hidden="no" Property="DO_LAUNCH_APP" CheckBoxValue="1" Text="Let me play now!" />
-            </Dialog>
 
-            <Dialog Id="FSAlreadyInstalledDlg" Width="370" Height="270" Title="[ProductName] Already Installed">
-                <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="80" TabSkip="no" FixedSize="yes" Text="FSBannerBitmap" />
-                <Control Id="AlreadyInstalledText" Type="Text" X="25" Y="120" Width="320" Height="10" Hidden="no" Text="[ProductName] is already installed on this computer; nothing to do here." />
-                <Control Id="Finish" Type="PushButton" X="85" Y="165" Width="200" Height="77" Default="yes" Bitmap="yes" FixedSize="yes" Text="[OkControlContent]">
-                    <Publish Event="EndDialog" Value="Exit">1</Publish>
-                    <Condition Action="enable">1</Condition>
-                    <!-- See http://windows-installer-xml-wix-toolset.687559.n2.nabble.com/Bug-causing-ICE-17-failure-td4050724.html -->
+                <Control Id="LaunchAppCheckBox" Type="CheckBox" X="145" Y="246" Width="220" Height="10" Hidden="yes" Property="DO_LAUNCH_APP" CheckBoxValue="1" Text="Let me play now!">
+                    <Condition Action="show">NOT Installed</Condition>
                 </Control>
             </Dialog>
 
-            <Dialog Id="FSUserExit" Width="370" Height="270" Title="[ProductName] Not Installed">
+            <Dialog Id="FSUserExit" Width="370" Height="270" Title="[ProductName] Aborted">
                 <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="80" TabSkip="no" FixedSize="yes" Text="FSBannerBitmap" />
-                <Control Id="InterruptedText" Type="Text" X="20" Y="117" Width="320" Height="20" Hidden="no" Text="[ProductName] setup was interrupted. Your system has not been modified. To install [ProductName] at a later time, please run this installation again." />
-                <Control Id="Finish" Type="PushButton" X="85" Y="165" Width="200" Height="77" Default="yes" Bitmap="yes" FixedSize="yes" Text="[OkControlContent]">
+                <Control Id="InterruptedText" Type="Text" X="20" Y="117" Width="320" Height="40" Hidden="no" Text="[ProductName] setup was interrupted. Your system has not been modified. To install, repair, or uninstall [ProductName] at a later time, please run this installation again." />
+                <Control Id="Finish" Type="PushButton" X="85" Y="165" Width="200" Height="77" Default="yes" Bitmap="yes" FixedSize="yes" ToolTip="Exit" Text="[OkControlContent]">
                     <Publish Event="EndDialog" Value="Exit">1</Publish>
                     <Condition Action="enable">1</Condition>
                     <!-- See http://windows-installer-xml-wix-toolset.687559.n2.nabble.com/Bug-causing-ICE-17-failure-td4050724.html -->
@@ -101,14 +157,15 @@
             <DialogRef Id="InvalidDirDlg" />
 
             <InstallUISequence>
-                <Show Dialog="FSStarterDlg" Before="FSProgressDlg">NOT Installed</Show>
-                <Show Dialog="FSAlreadyInstalledDlg" Before="FSProgressDlg">Installed</Show>
+                <Show Dialog="FSStarterDlg" Before="FSProgressDlg">1</Show>
                 <Show Dialog="FSProgressDlg" Before="ExecuteAction">1</Show>
                 <Show Dialog="FSCompletedDlg" OnExit="success">1</Show>
-                <Show Dialog="FSUserExit" OnExit="cancel">NOT Installed</Show>
+                <Show Dialog="FSUserExit" OnExit="cancel">1</Show>
             </InstallUISequence>
 
             <AdminUISequence>
+                <Show Dialog="FSStarterDlg" Before="FSProgressDlg">1</Show>
+                <Show Dialog="FSProgressDlg" Before="ExecuteAction">1</Show>
                 <Show Dialog="FSCompletedDlg" OnExit="success">1</Show>
                 <Show Dialog="FSUserExit" OnExit="cancel">1</Show>
             </AdminUISequence>

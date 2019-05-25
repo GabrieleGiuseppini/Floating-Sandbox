@@ -20,7 +20,7 @@
     <OutputPath>C:\Users\Neurodancer\source\build\Floating-Sandbox\Windows Installer\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>C:\Users\Neurodancer\source\build\Floating-Sandbox\Windows Installer\obj\$(Configuration)\</IntermediateOutputPath>
     <LinkerAdditionalOptions>-ext WixUIExtension</LinkerAdditionalOptions>
-    <SuppressIces>ICE69</SuppressIces>
+    <SuppressIces>ICE69;ICE91</SuppressIces>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="FloatingSandbox.wxs" />
@@ -30,6 +30,7 @@
     <Compile Include="UI.wxs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="HeatPerUser.xslt" />
     <Content Include="Include.wxi" />
   </ItemGroup>
   <Import Project="$(WixTargetsPath)" Condition=" '$(WixTargetsPath)' != '' " />
@@ -38,16 +39,8 @@
     <Error Text="The WiX Toolset v3.11 (or newer) build tools must be installed to build this project. To download the WiX Toolset, see http://wixtoolset.org/releases/" />
   </Target>
   <Target Name="BeforeBuild">
-    <HeatDirectory Directory="$(FloatingSandboxInstallDirectory)\Data" PreprocessorVariable="var.HarvestPathData" OutputFile="DataGeneratedFileList.wxs" ComponentGroupName="Data_generated_comp" DirectoryRefId="DataDir" AutogenerateGuids="true" ToolPath="$(WixToolPath)" SuppressFragments="true" SuppressRegistry="true" SuppressRootDirectory="true" />
-    <HeatDirectory Directory="$(FloatingSandboxInstallDirectory)\Guides" PreprocessorVariable="var.HarvestPathGuides" OutputFile="GuidesGeneratedFileList.wxs" ComponentGroupName="Guides_generated_comp" DirectoryRefId="GuidesDir" AutogenerateGuids="true" ToolPath="$(WixToolPath)" SuppressFragments="true" SuppressRegistry="true" SuppressRootDirectory="true" />
-    <HeatDirectory Directory="$(FloatingSandboxInstallDirectory)\Ships" PreprocessorVariable="var.HarvestPathShips" OutputFile="ShipsGeneratedFileList.wxs" ComponentGroupName="Ships_generated_comp" DirectoryRefId="ShipsDir" AutogenerateGuids="true" ToolPath="$(WixToolPath)" SuppressFragments="true" SuppressRegistry="true" SuppressRootDirectory="true" />
+    <HeatDirectory Directory="$(FloatingSandboxInstallDirectory)\Data" PreprocessorVariable="var.HarvestPathData" OutputFile="DataGeneratedFileList.wxs" ComponentGroupName="Data_generated_comp" DirectoryRefId="DataDir" ToolPath="$(WixToolPath)" SuppressFragments="true" SuppressRegistry="true" SuppressRootDirectory="true" GenerateGuidsNow="true" AutogenerateGuids="false" Transforms="HeatPerUser.xslt" />
+    <HeatDirectory Directory="$(FloatingSandboxInstallDirectory)\Guides" PreprocessorVariable="var.HarvestPathGuides" OutputFile="GuidesGeneratedFileList.wxs" ComponentGroupName="Guides_generated_comp" DirectoryRefId="GuidesDir" ToolPath="$(WixToolPath)" SuppressFragments="true" SuppressRegistry="true" SuppressRootDirectory="true" GenerateGuidsNow="true" AutogenerateGuids="false" Transforms="HeatPerUser.xslt" />
+    <HeatDirectory Directory="$(FloatingSandboxInstallDirectory)\Ships" PreprocessorVariable="var.HarvestPathShips" OutputFile="ShipsGeneratedFileList.wxs" ComponentGroupName="Ships_generated_comp" DirectoryRefId="ShipsDir" ToolPath="$(WixToolPath)" SuppressFragments="true" SuppressRegistry="true" SuppressRootDirectory="true" GenerateGuidsNow="true" AutogenerateGuids="false" Transforms="HeatPerUser.xslt" />
   </Target>
-  <!--
-	To modify your build process, add your task inside one of the targets below and uncomment it.
-	Other similar extension points exist, see Wix.targets.
-	<Target Name="BeforeBuild">
-	</Target>
-	<Target Name="AfterBuild">
-	</Target>
-	-->
 </Project>

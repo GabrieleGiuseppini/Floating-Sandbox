@@ -321,8 +321,19 @@ Render:
 			- Rubber ball
 
 		- Installer:
-			- See if installer for current user removes need for admin consent
-			- Add repair when already installed
+			= Add repair when already installed
+				= Tests:
+					+ Install codepath
+					- Repair codepath (w/real deleted)
+					- Uninstall codepath (w/extra ship and delete verification)
+					+ Tooltips at install
+					- Repair and uninstall from control panel (w/real deleted) (w/extra ship and delete verification)
+					- Run Debug
+				- Make repair and remove buttons
+			= See if installer for current user removes need for admin consent
+				- Check app folder
+			+ Uninstall older versions except one
+			+ Info URL
 
 		- Check ShipLoadDialog issue
 			- Send version with ShipLoadDialog always yielding (not only on single-core box) to those two guys
@@ -415,6 +426,7 @@ Render:
 			- SS France (Awesomeyorkie): bends a lot
 			- Ed Fitzgerald (Kiko); year: 1975
 		- To test:
+			- mrpasta444_ship_pack
 			- TheodoreRoosevelt
 		- Asked:
 			- Aegir_Mark_III (coolman asks original designer)

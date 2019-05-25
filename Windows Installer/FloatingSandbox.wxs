@@ -4,8 +4,8 @@
     <?include Include.wxi ?>
 
     <!-- Change at each release!!! -->
-    <?define ProductCode = "462F9307-59DD-4573-A7F3-DE0419C7B7EF"?> <!-- 1.10.0.0 -->
-    <?define UpgradeCode = "863614D5-7480-4584-BB59-BA7AC880D79B"?> <!-- 1.10.0.0 -->
+    <?define ProductCode = "0A6BB87C-C152-4D81-B6A6-8E9108387F6A"?> <!-- 1.11.0.0 -->
+    <?define UpgradeCode = "03A947AC-0185-4F54-A376-A3A16ACEDF75"?> <!-- 1.11.0.0 -->
 
 	<Product Id="$(var.ProductCode)"
              Name="$(var.FullApplicationName)" Language="1033"
@@ -18,40 +18,49 @@
             Platform="x64"
             InstallerVersion="200"
             Compressed="yes"
-            InstallScope="perMachine" />
+            InstallScope="perUser"
+            InstallPrivileges="limited" />
 
         <Icon Id="FsIcon.ico" SourceFile="..\FloatingSandbox\Resources\Ship.ico" />
         <Property Id="ARPPRODUCTICON" Value="FsIcon.ico" />
+
+        <Property Id="ARPHELPLINK" Value="$(var.InfoURL)" />
 
         <Media Id='1' Cabinet='FloatingSandbox.cab' EmbedCab='yes' />
 
         <Directory Id="TARGETDIR" Name="SourceDir">
 
-            <Directory Id="ProgramFiles64Folder">
+            <Directory Id="LocalAppDataFolder">
+
                 <Directory Id="INSTALLFOLDER" Name="$(var.FullApplicationName)">
 
                     <Component Id="RootDir_comp" Guid="B6CAED5D-BC81-4530-98DE-CFEDC5ABD0BC">
                         <CreateFolder />
                         <RemoveFile Id="RemoveFilesFromRootDir" Name="*.*" On="uninstall" />
+                        <RemoveFolder Id="RemoveRootDir" Directory="INSTALLFOLDER" On="uninstall" />
+                        <RegistryValue Root="HKCU" Key="Software\Gabriele Giuseppini\Floating Sandbox" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
                     </Component>
 
                     <Component Id="FloatingSandboxExe_comp" Guid="391F6B0C-C946-4032-B215-EBB178730107" Win64="yes">
-                        <File Id="FloatingSandboxExe" Source="$(var.SourceInstallFolderPath)\FloatingSandbox.exe" KeyPath="yes" />
+                        <File Id="FloatingSandboxExe" Source="$(var.SourceInstallFolderPath)\FloatingSandbox.exe" KeyPath="no" />
+                        <RegistryValue Root="HKCU" Key="Software\Gabriele Giuseppini\Floating Sandbox" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
                     </Component>
 
                     <Component Id="RuntimeBinaries_comp" Guid="77F0F0A0-7B10-4851-AAFA-E534D934CEAE" Win64="yes">
-                        <File Source="$(var.SourceInstallFolderPath)\DevIL.dll" Id="DevILdll" KeyPath="yes" />
+                        <File Source="$(var.SourceInstallFolderPath)\DevIL.dll" Id="DevILdll" />
                         <File Source="$(var.SourceInstallFolderPath)\ILU.dll" Id="ILUdll" />
                         <File Source="$(var.SourceInstallFolderPath)\ILUT.dll" Id="ILUTdll" />
                         <File Source="$(var.SourceInstallFolderPath)\openal32.dll" Id="openal32dll" />
                         <File Source="$(var.SourceInstallFolderPath)\sfml-audio-2.dll" Id="sfmlaudio2dll" />
                         <File Source="$(var.SourceInstallFolderPath)\sfml-system-2.dll" Id="sfmlsystem2dll" />
+                        <RegistryValue Root="HKCU" Key="Software\Gabriele Giuseppini\Floating Sandbox" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
                     </Component>
 
                     <Component Id="MiscFiles_comp" Guid="8A25B156-AE5C-4AC2-AD30-D995ECAC5417">
-                        <File Source="$(var.SourceInstallFolderPath)\README.md" Id="READMEmd" KeyPath="yes" />
+                        <File Source="$(var.SourceInstallFolderPath)\README.md" Id="READMEmd" />
                         <File Source="$(var.SourceInstallFolderPath)\changes.txt" Id="changestxt" />
                         <File Source="$(var.SourceInstallFolderPath)\license.txt" Id="licensetxt" />
+                        <RegistryValue Root="HKCU" Key="Software\Gabriele Giuseppini\Floating Sandbox" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
                     </Component>
 
                     <Directory Id="DataDir" Name="Data">
@@ -64,10 +73,12 @@
                         <Component Id="ShipsDir_comp" Guid="203AA07F-B62C-4788-804E-068FC09AC4A3">
                             <CreateFolder />
                             <RemoveFile Id="RemoveFilesFromShipsDir" Name="*.*" On="uninstall" />
+                            <RegistryValue Root="HKCU" Key="Software\Gabriele Giuseppini\Floating Sandbox" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
                         </Component>
                     </Directory>
 
                 </Directory>
+
             </Directory>
 
             <Directory Id="DesktopFolder" Name="Desktop">
@@ -78,13 +89,7 @@
                         Target="[#FloatingSandboxExe]"
                         WorkingDirectory="INSTALLFOLDER" />
                     <RemoveFolder Id="DesktopFolder" On="uninstall" />
-                    <RegistryValue
-                        Root="HKCU"
-                        Key="Software/$(var.FullApplicationName)"
-                        Name="installed"
-                        Type="integer"
-                        Value="1"
-                        KeyPath="yes" />
+                    <RegistryValue Root="HKCU" Key="Software\Gabriele Giuseppini\Floating Sandbox" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
                 </Component>
             </Directory>
 
@@ -97,7 +102,7 @@
                                   Target="[#FloatingSandboxExe]"
                                   WorkingDirectory="INSTALLFOLDER" />
                         <RemoveFolder Id="CleanupFolder" Directory="FloatingSandboxProgramMenuFolder" On="uninstall" />
-                        <RegistryValue Root="HKCU" Key="Software\Gabriele Giuseppini\$(var.FullApplicationName)" Name="installed" Type="integer" Value="1" KeyPath="yes" />
+                        <RegistryValue Root="HKCU" Key="Software\Gabriele Giuseppini\Floating Sandbox" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
                     </Component>
                 </Directory>
             </Directory>
