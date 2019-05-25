@@ -308,7 +308,7 @@ Render:
 
 		= Bugs:
 			+ Goliath crashing
-			- Mike's weird waves
+			+ Mike's weird waves
 			- SamminAter unsupported OpenGL ext => crash
 				+ Test error in Debug mode
 				- Give him a relwithdebinfo
@@ -442,6 +442,8 @@ Render:
 		- To test:
 			- mrpasta444_ship_pack
 			- TheodoreRoosevelt
+			- Others in TODO
+			- Graza's from awesomeyorkie
 		- Asked:
 			- Aegir_Mark_III (coolman asks original designer)
 	- Descriptions:

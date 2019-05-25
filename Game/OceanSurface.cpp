@@ -740,6 +740,16 @@ void OceanSurface::GenerateSamples(
 
     float const x = -GameParameters::HalfMaxWorldWidth;
 
+    float const basalWave2AmplitudeCoeff =
+        (mBasalWaveAmplitude1 != 0.0f)
+        ? mBasalWaveAmplitude2 / mBasalWaveAmplitude1
+        : 0.0f;
+
+    float const rippleWaveAmplitudeCoeff =
+        (mBasalWaveAmplitude1 != 0.0f)
+        ? windRipplesWaveHeight / mBasalWaveAmplitude1
+        : 0.0f;
+
     float sinArg1 = (mBasalWaveNumber1 * x - mBasalWaveAngularVelocity1 * currentSimulationTime) / (2 * Pi<float>);
     float sinArg2 = (mBasalWaveNumber2 * x - mBasalWaveAngularVelocity2 * currentSimulationTime + secondaryBasalComponentPhase) / (2 * Pi<float>);
     float sinArgRipple = (WindRippleWaveNumber * x - windRipplesAngularVelocity * currentSimulationTime) / (2 * Pi<float>);
@@ -755,11 +765,11 @@ void OceanSurface::GenerateSamples(
             mBasalWaveSin1.GetLinearlyInterpolatedPeriodic(sinArg1);
 
         float const basalValue2 =
-            mBasalWaveNumber2 / mBasalWaveNumber1
+            basalWave2AmplitudeCoeff
             * mBasalWaveSin1.GetLinearlyInterpolatedPeriodic(sinArg2);
 
         float const rippleValue =
-            windRipplesWaveHeight / mBasalWaveNumber1
+            rippleWaveAmplitudeCoeff
             * mBasalWaveSin1.GetLinearlyInterpolatedPeriodic(sinArgRipple);
 
         previousSampleValue =
@@ -788,12 +798,12 @@ void OceanSurface::GenerateSamples(
 
         sinArg2 += sinArg2Dx;
         float const basalValue2 =
-            mBasalWaveAmplitude2 / mBasalWaveAmplitude1
+            basalWave2AmplitudeCoeff
             * mBasalWaveSin1.GetLinearlyInterpolatedPeriodic(sinArg2);
 
         sinArgRipple += sinArgRippleDx;
         float const rippleValue =
-            windRipplesWaveHeight / mBasalWaveAmplitude1
+            rippleWaveAmplitudeCoeff
             * mBasalWaveSin1.GetLinearlyInterpolatedPeriodic(sinArgRipple);
 
         float const sampleValue =
