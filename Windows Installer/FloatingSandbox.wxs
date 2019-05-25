@@ -64,14 +64,23 @@
                     </Component>
 
                     <Directory Id="DataDir" Name="Data">
+                        <Component Id="DataDir_comp" Guid="FAF8E6EB-6129-498E-A91B-D36B7B02D92A">
+                            <RemoveFolder Id="DataDirRemoval" Directory="DataDir" On="uninstall" />
+                            <RegistryValue Root="HKCU" Key="Software\Gabriele Giuseppini\Floating Sandbox" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
+                        </Component>
                     </Directory>
 
                     <Directory Id="GuidesDir" Name="Guides">
+                        <Component Id="GuidesDir_comp" Guid="E9630471-51AF-4460-9709-1A388D0B2A71">
+                            <RemoveFolder Id="GuidesDirRemoval" Directory="GuidesDir" On="uninstall" />
+                            <RegistryValue Root="HKCU" Key="Software\Gabriele Giuseppini\Floating Sandbox" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
+                        </Component>
                     </Directory>
 
                     <Directory Id="ShipsDir" Name="Ships">
                         <Component Id="ShipsDir_comp" Guid="203AA07F-B62C-4788-804E-068FC09AC4A3">
                             <CreateFolder />
+                            <RemoveFolder Id="ShipsDirRemoval" Directory="ShipsDir" On="uninstall" />
                             <RemoveFile Id="RemoveFilesFromShipsDir" Name="*.*" On="uninstall" />
                             <RegistryValue Root="HKCU" Key="Software\Gabriele Giuseppini\Floating Sandbox" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
                         </Component>
@@ -115,10 +124,19 @@
             <ComponentRef Id="FloatingSandboxExe_comp" />
             <ComponentRef Id="RuntimeBinaries_comp" />
             <ComponentRef Id="MiscFiles_comp" />
+
+            <ComponentRef Id="DataDir_comp" />
 			<ComponentGroupRef Id="Data_generated_comp" />
+            <ComponentRef Id="DataDir_children_removal_comp" />
+
+            <ComponentRef Id="GuidesDir_comp" />
             <ComponentGroupRef Id="Guides_generated_comp" />
+            <ComponentRef Id="GuidesDir_children_removal_comp" />
+
             <ComponentRef Id="ShipsDir_comp" />
             <ComponentGroupRef Id="Ships_generated_comp" />
+            <ComponentRef Id="ShipsDir_children_removal_comp" />
+
             <ComponentRef Id="FloatingSandboxDesktopShortcut_comp" />
             <ComponentRef Id="FloatingSandboxProgramMenuShortcut_comp" />
 		</Feature>

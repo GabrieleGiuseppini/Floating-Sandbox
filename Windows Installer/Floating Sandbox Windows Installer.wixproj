@@ -10,7 +10,7 @@
     <OutputName>Floating-Sandbox</OutputName>
     <OutputType>Package</OutputType>
     <FloatingSandboxInstallDirectory>C:\Users\Neurodancer\source\build\Floating-Sandbox\Install</FloatingSandboxInstallDirectory>
-    <DefineConstants>HarvestPathData=$(FloatingSandboxInstallDirectory)\Data;HarvestPathGuides=$(FloatingSandboxInstallDirectory)\Guides;HarvestPathShips=$(FloatingSandboxInstallDirectory)\Ships</DefineConstants>
+    <DefineConstants>HarvestPathData=$(FloatingSandboxInstallDirectory)\Data;HarvestPathGuides=$(FloatingSandboxInstallDirectory)\Guides;HarvestPathShips=$(FloatingSandboxInstallDirectory)\Ships;DataDirChildRemovalCompGuid={29660417-7FE9-4094-9189-D19D4383649C};GuidesDirChildRemovalCompGuid={A965B8F5-DE9E-484F-A77A-B130C1C6B5D0};ShipsDirChildRemovalCompGuid={4BBBC1F8-2854-4FF6-BC8D-319CBEBCEFF3}</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
     <OutputPath>C:\Users\Neurodancer\source\build\Floating-Sandbox\Windows Installer\$(Configuration)\</OutputPath>
