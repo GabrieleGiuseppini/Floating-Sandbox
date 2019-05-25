@@ -307,7 +307,7 @@ Render:
 			+ Utils::ParseJSONFile::RemoveJSonComments
 
 		= Bugs:
-			- Goliath crashing
+			+ Goliath crashing
 			- Mike's weird waves
 			- SamminAter unsupported OpenGL ext => crash
 				+ Test error in Debug mode
