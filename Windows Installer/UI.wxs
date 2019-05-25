@@ -62,6 +62,10 @@
                 </Control>
 
                 <!-- Admin actions -->
+                <Control Id="AdminText" Type="Text" X="55" Y="100" Width="320" Height="20" Hidden="yes" Text="[ProductName] is already installed. What do you want to do?">
+                    <Condition Action="show">Installed</Condition>
+                </Control>
+
                 <Control Id="RepairButton" Type="PushButton" X="0" Y="125" Width="180" Height="77" Hidden="yes" Bitmap="yes" FixedSize="yes" ToolTip="Repair" Text="[RepairControlContent]">
                     <Publish Property="WixUI_InstallMode" Value="Repair" Order="1">1</Publish>
                     <Publish Property="ACTION_TEXT_DOING" Value="Repairing" Order="2">1</Publish>
@@ -101,10 +105,10 @@
                     <Condition Action="show">WixUI_InstallMode = "Remove"</Condition>
                 </Control>
 
-                <Control Id="ActionText" Type="Text" X="70" Y="140" Width="285" Height="10">
+                <Control Id="StatusLabel" Type="Text" X="20" Y="140" Width="50" Height="10" Text="Status:" />
+                <Control Id="ActionText" Type="Text" X="70" Y="140" Width="285" Height="10" Text="Initializing...">
                     <Subscribe Event="ActionText" Attribute="Text" />
                 </Control>
-                <Control Id="StatusLabel" Type="Text" X="20" Y="140" Width="50" Height="10" Text="Status:" />
                 <Control Id="ProgressBar" Type="ProgressBar" X="20" Y="155" Width="330" Height="10" ProgressBlocks="yes" Text="Progress done">
                     <Subscribe Event="SetProgress" Attribute="Progress" />
                 </Control>

@@ -59,6 +59,7 @@ ShipLoadDialog::ShipLoadDialog(
         wxSize(MinDirCtrlWidth, 500),
         wxDIRCTRL_DIR_ONLY);
 
+    mDirCtrl->ShowHidden(true); // When installing per-user, the Ships folder is under AppData, which is hidden
     mDirCtrl->SetMinSize(wxSize(MinDirCtrlWidth, 500));
     mDirCtrl->Bind(wxEVT_DIRCTRL_SELECTIONCHANGED, (wxObjectEventFunction)&ShipLoadDialog::OnDirCtrlDirSelected, this);
 
