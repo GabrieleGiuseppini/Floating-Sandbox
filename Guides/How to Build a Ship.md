@@ -58,7 +58,7 @@ being whatever structural material specified by the structural layer.
 
 # Texture Layer
 The texture layer image provides the visible aspect of a ship. Using a texture layer allows the ship to look any way you want, regardless of the materials  used in the structural layer.
-Images used in the texture layer can be of any size - they are not constrained to match the size of the structural layer; for best results, however, the aspect ratios should fully match. So, for example, if your structural image is 300x100, then a nicely-looking texture image could be 1500x500 (5 times larger in all dimensions).
+Images used in the texture layer can be of any size - they are not constrained to match the size of the structural layer; for best results, however, the aspect ratios should fully match. So, for example, if your structural image is 300x100, then a nicely-looking texture image could be 1500x500 (5 times larger in all dimensions). Also please be considerate to older hardware - do not use texture images whose width and/or height is larger than 4096 pixels.
 
 One thing to keep in mind when building a texture layer is that the portions of a texture that will be visible are those that correspond to structure particles from the structural material. For example, a large rectangular texture over a small circular structure will be clipped to that circle, and only that circular portion of the texture will be visible.
 

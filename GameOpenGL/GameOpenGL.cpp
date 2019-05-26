@@ -22,7 +22,7 @@ void GameOpenGL::InitOpenGL()
     int status = gladLoadGL();
     if (!status)
     {
-        throw GameException("We are sorry, but this game requires OpenGL and it seems your graphics drivers does not support it; the error is: failed to initialize GLAD");
+        throw GameException("We are sorry, but this game requires OpenGL and it seems your graphics driver does not support it; the error is: failed to initialize GLAD");
     }
 
     //

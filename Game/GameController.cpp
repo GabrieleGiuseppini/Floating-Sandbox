@@ -59,6 +59,9 @@ ShipMetadata GameController::ResetAndLoadShip(std::filesystem::path const & ship
     // Load ship definition
     auto shipDefinition = ShipDefinition::Load(shipDefinitionFilepath);
 
+    // Validate ship
+    mRenderContext->ValidateShip(shipDefinition);
+
     // Save metadata
     ShipMetadata shipMetadata(shipDefinition.Metadata);
 
@@ -86,6 +89,9 @@ ShipMetadata GameController::AddShip(std::filesystem::path const & shipDefinitio
 {
     // Load ship definition
     auto shipDefinition = ShipDefinition::Load(shipDefinitionFilepath);
+
+    // Validate ship
+    mRenderContext->ValidateShip(shipDefinition);
 
     // Save metadata
     ShipMetadata shipMetadata(shipDefinition.Metadata);

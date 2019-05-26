@@ -113,7 +113,7 @@ ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
 
         case ShipDefinition::TextureOriginType::StructuralImage:
         {
-            // Resize it up - ideally by 8, but don't exceed 4096 in any dimension
+            // Resize it up - ideally by 8, but don't exceed 4096 (magic number) in any dimension
 
             int maxDimension = std::max(structuralImage.Size.Width, structuralImage.Size.Height);
             int magnify = 8;

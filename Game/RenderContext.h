@@ -392,6 +392,9 @@ public:
 
     void Reset();
 
+    void ValidateShip(
+        ShipDefinition const & shipDefinition);
+
     void AddShip(
         ShipId shipId,
         size_t pointCount,

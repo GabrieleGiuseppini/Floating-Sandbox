@@ -305,22 +305,7 @@ Render:
 		+ Perf:
 			+ ExtractShaderParameters: regex::search
 			+ Utils::ParseJSONFile::RemoveJSonComments
-
-		= Bugs:
-			+ Goliath crashing
-			+ Mike's weird waves
-			- SamminAter unsupported OpenGL ext => crash
-				+ Test error in Debug mode
-				- Give him a relwithdebinfo
-
-		- Do Samsung time-based perf analysis
-
-		- Do movie
-			- Repair 
-				- With move and rotate
-			- Rubber ball
-
-		= Installer:
+		+ Installer:
 			+ Add repair when already installed
 				+ Tests:
 					+ Install codepath
@@ -347,41 +332,69 @@ Render:
 				+ ShipLoadDialog does not show AppFolder
 			+ Uninstall older versions except one
 			+ Info URL
-			- Send installer for testing
+			+ Send installer for testing
+		= Bugs:
+			+ Goliath crashing
+			+ Mike's weird waves
+			- SamminAter unsupported OpenGL ext => crash
+				+ Test error in Debug mode
+				- Give him a relwithdebinfo
 
-		- Check ShipLoadDialog issue
-			- Send version with ShipLoadDialog always yielding (not only on single-core box) to those two guys
+		= Michael Bozarth's ships
+			+ Check Carpathia differences
+			- Fix his old ship
+			= Check OpenGL error with 3 queen mary's and titanic interior
+				+ Check first why it crashes afterwards
+				= Then, do explicit texture size check
+			- Fixes to do:
+				- Titanic in a bottle leak (asked)
+				- Ed Fitzgerald rope (asked)
+				- Take electrical of RMS Titanic with Lights				
+					= Can't see the difference; asked
+
+		- Do Samsung time-based perf analysis
+
+		- Do movie
+			- Repair 
+				- With move and rotate
+			- Rubber ball
 
 	- 1.12.0:
 		- Do perf analysis
 			- Usual sample-based one
 
-		- Spring and NonSpring force separation optimization (*)
-		- Try with SpringRelaxation updating only positions (*)
-
-		- Attempt to re-instate square water drag (*)
-		- Attempt to use total point masses for springs (*)
-
-		- Shooting stars
-			- Star "parks" always an extra star at (-1, -1)
-
-		- Settings Manager (*)
-
 		- Automatic updates checker via file placed on floatingsandbox.com
 			- UIPreferences::CheckForUpdatesAtStartup
 			- class UpdateChecker:
-				- Wraps separate thread and conveys result via custom event
-				- Takes wxEventHandler in cctor
+				- Wraps separate thread and conveys result via UpdateCheckOutcome
+				- Getter for UpdateCheckOutcome:
+					- Returns null if not done yet
+					- Returns UpdateCheckOutcome when done
 				- Uses SFML::Network::Http
 			- At startup:
-				- MainFrame starts UpdateChecker at end of PostInitialize
-				- On event, displays popup
-					- See if can use CheckForUpdatesDialog (eventually becomes "UpdatesDialog")
+				- MainFrame starts UpdateChecker at end of PostInitialize, and then polls it as long
+				  as it's not null
+				- If poll OK && new version, displays popup, then nullifies it
+					- Uses NewVersionDisplayDialog
 			- Help->Check for Updates
 				- CheckForUpdatesDialog (Modal Dialog)
 				- cctor starts UpdateChecker 
 				- Timer does progress (calling wxGauge::Pulse)
-				- On event, displays message
+				- On poll OK, displays with NewVersionDisplayDialog
+			- NewVersionDisplayDialog:
+				- If ccted with "atStartup", displays checkbox for turning off check on startup
+
+		- Interior layer (*)
+
+		- Shooting stars
+			- Star "parks" always an extra star at (-1, -1)
+
+		- Spring and NonSpring force separation optimization (*)
+		- Try with SpringRelaxation updating only positions (*)
+		- Attempt to re-instate square water drag (*)
+		- Attempt to use total point masses for springs (*)
+
+		- Settings Manager (*)
 
 		- Heat and combustion (*)
 
@@ -397,8 +410,6 @@ Render:
 				- Ship takes shared_ptr<Dispatcher> now, for perf
 
 		- Black cloth, black wood
-
-		- Interior layer (*)
 		
 		- Electrical layer view (*)
 
@@ -411,7 +422,7 @@ Render:
 			- Propulsion (*)
 			- Batisphere ship
 
-	- 1.12.0
+	- 1.13.0
 
 		- Smoke (*)
 
@@ -469,17 +480,15 @@ Render:
 			+ Add Maximord to About box
 
 	- Michael Bozarth
-		+ https://drive.google.com/drive/u/0/folders/1k-A4SE8mMp2j_A3nH3gnl6SvYF9bnWoU		
+		+ https://drive.google.com/drive/u/0/folders/1VUNnoO81GBejcdXgvQAt9siL4MnhkBBf (latest)
+		+ https://drive.google.com/drive/u/0/folders/1k-A4SE8mMp2j_A3nH3gnl6SvYF9bnWoU (older)
 		+ Add "Michael Bozarth" to About box (link: https://www.youtube.com/channel/UCaJkgYP6yNw64U3WUZ3t1sw)
-		- Take new ships:
-			- Re-take all Mike's .shp files for Shipbucket.com credits
-				- And also take electrical of RMS Titanic with Lights
-				- Also test "Splitable Titanic"
-			= Make subfolder (ask him)
-			- Take Titanic with interior
+		- Test his "Splitable Titanic"
 
 
 - Suggestions to spec:
+	- Slow motion
+		- When bombs explode, 
 	- Wreno's suggestions: https://docs.google.com/document/d/1kOYAgvh2rFYJJBnSp4DCiFm3FdJlfVEiCXQWNzJzO-I/edit
 	- Tools turning white at night
 	- Once we have ships, make "Lock Ship in View" flag and move camera with ship's center of mass (representative point or real CoM)

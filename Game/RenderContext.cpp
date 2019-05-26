@@ -517,6 +517,17 @@ void RenderContext::Reset()
     mShips.clear();
 }
 
+void RenderContext::ValidateShip(
+    ShipDefinition const & shipDefinition)
+{
+    // Check texture against max texture size
+    if (shipDefinition.TextureLayerImage.Size.Width > GameOpenGL::MaxTextureSize
+        || shipDefinition.TextureLayerImage.Size.Height > GameOpenGL::MaxTextureSize)
+    {
+        throw GameException("We are sorry, but this ship's texture image is too large for your graphics driver");
+    }
+}
+
 void RenderContext::AddShip(
     ShipId shipId,
     size_t pointCount,
