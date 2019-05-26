@@ -3,6 +3,6 @@
 	"texture_image":"hmt_olympic_texture.png.dat",
 	"offset":{"x":0.0, "y":-8.0},
 	"ship_name":"H.M.T. Olympic",
-	"created_by":"Michael Bozarth",
+	"created_by":"Michael Bozarth; D. Briedis (Shipbucket.com)",
 	"year_built":"1911"
 }

@@ -3,6 +3,6 @@
 	"texture_image":"graf_zeppelin_texture.png.dat",
 	"offset":{"x":0.0, "y":-8.0},
 	"ship_name":"Graf Zeppelin",
-	"created_by":"Michael Bozarth",
+	"created_by":"Michael Bozarth; DG_Alpha (Shipbucket.com)",
 	"year_built":"1938"
 }
