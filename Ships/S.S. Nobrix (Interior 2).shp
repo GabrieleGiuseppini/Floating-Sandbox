@@ -1,6 +1,6 @@
 {
     "structure_image":"ss_nobrix_interior2_structural.png.dat",
-    "ship_name":"S.S. Nobrix",
+    "ship_name":"S.S. Nobrix (Interior 2)",
     "offset":{"x":0.0, "y":-10.0},
     "created_by":"Serhiiiihres",
     "year_built":"1906"

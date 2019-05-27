@@ -126,6 +126,8 @@ AboutDialog::AboutDialog(
 
         {"Testing:\t\t", "Pac0master - https://discordapp.com/" },
         {"\t\t\t\t", "Maximord - https://discordapp.com/" },
+        {"\t\t\t\t", "The_SamminAter - https://discordapp.com/" },
+
         {"Webmaster:\t\t", "Maximord - https://discordapp.com/" },
 
         {"", ""},

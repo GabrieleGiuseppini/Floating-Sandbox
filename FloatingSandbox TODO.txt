@@ -190,14 +190,13 @@ Render:
 - Testers:
 	- Maximord - "Maximord" (Parallels)
 	- Pac0master - "<Same as now>" (Intel core i5-8600K, NVIDIA GeForce RTX 2070)
-	- The_SamminAter - "<ask>" (Parallels)
+	- The_SamminAter - "The_SamminAter" (Parallels)
 	- Costin88boss: Windows 10, AMD, ATI OpenGL 4.6 w/Radeon RX 560 Series w/2GB RAM
 
 - Marketing:
 	- GameJolt post w/screenshot with gradient, at night
 	- Video of Titanic under Mariannes' Trench
 		+ After water contrast
-	- coolman's video: https://youtu.be/ciRhnZPwO5o
 
 - Roadmap:
 
@@ -333,33 +332,48 @@ Render:
 			+ Uninstall older versions except one
 			+ Info URL
 			+ Send installer for testing
+		+ Change .shp names to match filenames
+			+ Use python script to detect
+
 		= Bugs:
 			+ Goliath crashing
 			+ Mike's weird waves
-			- SamminAter unsupported OpenGL ext => crash
+			= SamminAter unsupported OpenGL ext => crash
 				+ Test error in Debug mode
-				- Give him a relwithdebinfo
+				+ Give him a relwithdebinfo
+				- Check if dir is null
 
 		= Michael Bozarth's ships
 			+ Check Carpathia differences
-			- Fix his old ship
-			= Check OpenGL error with 3 queen mary's and titanic interior
+			+ Check OpenGL error with 3 queen mary's and titanic interior
 				+ Check first why it crashes afterwards
-				= Then, do explicit texture size check
+				+ Then, do explicit texture size check
 			- Fixes to do:
 				- Titanic in a bottle leak (asked)
 				- Ed Fitzgerald rope (asked)
 				- Take electrical of RMS Titanic with Lights				
 					= Can't see the difference; asked
 
-		- Do Samsung time-based perf analysis
+		= Do Samsung time-based perf analysis
+			- Run instrumented binaries:
+				- For timing
+				- For concurrency
 
-		- Do movie
-			- Repair 
-				- With move and rotate
+		= Do movie
+			+ Repair 
+				+ With move and rotate
 			- Rubber ball
 
 	- 1.12.0:
+
+		- Wine:
+			- Test checking for the APPLE extension for VAO's: https://developer.apple.com/opengl/OpenGL-Capabilities-Tables.pdf
+				- "APPLE_vertex_array_object"
+			- If won't work:
+			- Fix once and for all the Core profile vs 2.1 OpenGL
+				- To make it work with Wine: https://stackoverflow.com/questions/19658745/why-is-my-opengl-version-always-2-1-on-mac-os-x
+				- Check more recent wxWidgets versions
+
 		- Do perf analysis
 			- Usual sample-based one
 
@@ -386,8 +400,7 @@ Render:
 
 		- Interior layer (*)
 
-		- Shooting stars
-			- Star "parks" always an extra star at (-1, -1)
+		- Heat and combustion (*)
 
 		- Spring and NonSpring force separation optimization (*)
 		- Try with SpringRelaxation updating only positions (*)
@@ -395,8 +408,6 @@ Render:
 		- Attempt to use total point masses for springs (*)
 
 		- Settings Manager (*)
-
-		- Heat and combustion (*)
 
 		- Instanced drawing for lights (*)
 
@@ -797,8 +808,6 @@ Render:
 
 
 - Gfx:
-	- Find second font for game text
-		- Test with tsunami notifications
 
 	- Continuous auto-focus (*)
 		- Spec:
@@ -968,6 +977,9 @@ Render:
 			- Need new layer - InteractionLayer - to do flamethrower's flames
 				- Owned, like text layer, by GameController
 	
+	- Shooting stars
+		- Star "parks" always an extra star at (-1, -1)
+
 	- Air buoyancy (*)
 		- And new material: blimp body, representing a cube of thin cloth filled with warm air
 			- Might also play with heat
@@ -988,7 +1000,7 @@ Render:
 				- With probability growing in a band around max pressure delta
 
 	- Ocean floor deforming/breaking up upon impact
-		- WATCH OUT: might be ugly with peaks
+		- WATCH OUT: might be ugly with peaks (very vertical slope)
 		- @ Ocean floor collision:
 			- Upon point entering floor:
 				- Points goes back by displacement * FloorHardness

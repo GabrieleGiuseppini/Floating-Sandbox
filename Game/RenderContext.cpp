@@ -518,7 +518,7 @@ void RenderContext::Reset()
 }
 
 void RenderContext::ValidateShip(
-    ShipDefinition const & shipDefinition)
+    ShipDefinition const & shipDefinition) const
 {
     // Check texture against max texture size
     if (shipDefinition.TextureLayerImage.Size.Width > GameOpenGL::MaxTextureSize

@@ -3,9 +3,9 @@
 	"electrical_image":"rms_titanic_with_lights_electrical.png.dat",
 	"texture_image":"rms_titanic_with_lights_texture.png.dat",
 	"offset":{"x":0.0, "y":-8.0},
-	"ship_name":"R.M.S. Titanic",
+	"ship_name":"R.M.S. Titanic (With Lights)",
 	"created_by":"Gabriele Giuseppini;Michael Bozarth",
 	"year_built":"1912",
 	"description":
-		"The ‘R.M.S. Titanic’ was a British passenger liner that was made to be unsinkable… Until her first maiden voyage in 1912. In a little more than the way into of her maiden trip to New York City, New York, United States of America, she had struck an iceberg and sank to the bottom of the North Atlantic Ocean, 3800 meters below sea level, where she sits to this day. She slowly deteriorates over time because of the hungry bacteria eating away at its structure and hull. Scientists say she will be completely lost by the year 2030. So long Titanic!"
+		"The 'R.M.S. Titanic' was a British passenger liner that was made to be unsinkable... Until her first maiden voyage in 1912. In a little more than the way into of her maiden trip to New York City, New York, United States of America, she had struck an iceberg and sank to the bottom of the North Atlantic Ocean, 3800 meters below sea level, where she sits to this day. She slowly deteriorates over time because of the hungry bacteria eating away at its structure and hull. Scientists say she will be completely lost by the year 2030. So long Titanic!"
 }

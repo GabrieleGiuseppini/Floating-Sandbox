@@ -1,0 +1,8 @@
+{
+    "structure_image":"ms_estonia_structure.png.dat",
+    "electrical_image":"ms_estonia_electrical.png.dat",
+    "ship_name":"M.S. Estonia",
+    "year_built":"1985",
+    "offset":{"x":0.0, "y":-14.0},
+    "created_by":"Dumbphones"
+}

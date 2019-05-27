@@ -393,7 +393,7 @@ public:
     void Reset();
 
     void ValidateShip(
-        ShipDefinition const & shipDefinition);
+        ShipDefinition const & shipDefinition) const;
 
     void AddShip(
         ShipId shipId,
