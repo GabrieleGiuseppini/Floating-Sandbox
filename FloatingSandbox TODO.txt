@@ -334,14 +334,13 @@ Render:
 			+ Send installer for testing
 		+ Change .shp names to match filenames
 			+ Use python script to detect
-
-		= Bugs:
+		+ Bugs:
 			+ Goliath crashing
 			+ Mike's weird waves
-			= SamminAter unsupported OpenGL ext => crash
+			+ SamminAter unsupported OpenGL ext => crash
 				+ Test error in Debug mode
 				+ Give him a relwithdebinfo
-				- Check if dir is null
+				+ Check if dir is null
 
 		= Michael Bozarth's ships
 			+ Check Carpathia differences
@@ -349,10 +348,24 @@ Render:
 				+ Check first why it crashes afterwards
 				+ Then, do explicit texture size check
 			- Fixes to do:
-				- Titanic in a bottle leak (asked)
-				- Ed Fitzgerald rope (asked)
-				- Take electrical of RMS Titanic with Lights				
-					= Can't see the difference; asked
+				- 1: Titanic in a bottle (leak): his don't leak - I fix it
+					= In final, verify
+				- 2: Ed Fitzgerald (ropes): I do it
+					= In final, verify
+				+ 3: Cargo ship 2 (too heavy): asked
+				- 4: Lego Titanic (offset): done
+				- 5: RMS Britannic (ropes): I do it
+					= In final, verify
+				- 6: Queen Mary (ropes): I do it		
+					+ Retaken
+				+ 7: Take electrical of RMS Titanic with Lights				
+					+ Can't see the difference; asked
+					+ No changes
+				- 8a: 3 Queen Mary 2's (large texture): done
+					+ Retaken
+				- 8b: Titanic Interior (large texture): done
+					+ Retaken
+			- Run verifier on all ships
 
 		= Do Samsung time-based perf analysis
 			- Run instrumented binaries:

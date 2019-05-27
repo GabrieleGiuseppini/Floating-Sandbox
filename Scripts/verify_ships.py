@@ -48,6 +48,19 @@ def check_file_exists(ship_folder_path, ship_file_name, ship_definition, field_n
     else:
         return True
 
+def check_file_valid(ship_folder_path, ship_file_name, ship_definition, field_name):
+
+    if field_name in ship_definition:
+        file_name = ship_definition[field_name]
+        file_name_root, file_name_ext = os.path.splitext(file_name)
+        if not file_name_ext in ".dat":
+            print("ERROR: {}: '{}' file '{}' has an invalid extension".format(ship_file_name, field_name, file_name))
+            return False
+        else:
+            return True
+    else:
+        return True
+
 def main():
 
     ships_path = "../Ships";
@@ -67,6 +80,7 @@ def main():
     unrecognized_json_fields = 0
     invalid_schema = 0
     missing_files = 0
+    invalid_files = 0
     mismatched_ship_names = 0
 
 
@@ -111,6 +125,8 @@ def main():
         for file_field_name in FILE_JSON_FIELD_NAMES:
             if not check_file_exists(ships_path, file_name, ship_definition, file_field_name):
                     missing_files += 1
+            if not check_file_valid(ships_path, file_name, ship_definition, file_field_name):
+                    invalid_files += 1
 
         ### Check ship name
         if "ship_name" in ship_definition:
@@ -131,6 +147,7 @@ def main():
     print("  unrecognized_json_fields : {}".format(unrecognized_json_fields))
     print("  invalid_schema           : {}".format(invalid_schema))
     print("  missing_files            : {}".format(missing_files))
+    print("  invalid_files            : {}".format(invalid_files))
     print("  mismatched_ship_names    : {}".format(mismatched_ship_names))
 
 main()
