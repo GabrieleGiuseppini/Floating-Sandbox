@@ -200,184 +200,15 @@ Render:
 
 - Roadmap:
 
-	= 1.11.0:
-		+ Orphaned points
-		+ Increase # of ephemeral particles
-			+ And thus lower water intake threshold for air bubbles
-		+ Sea and Ocean Floor rearc(*)
-		+ Change cover art to Logo2
-			+ About box image
-				+ And remove "Cover art" credit altogether
-			+ Installer
-		+ Try to build with Runtime Type Information disabled
-		+ Add world end markers
-		+ Repair tool
-		+ Fix Linux build break
-			+ Do specialization outside of class
-			+ Set /permissive- for all projects
-		+ Take Mathias' pull request
-		+ Fix github's clouds bug
-		+ Un-sinking (*)
-		+ Floatsam: see if using (waterY + 0.1) at UpdateWaterIntake helps
-		+ Are we really forced to set point colors to structural colors?
-			+ Can we always use the (sampled) texture colors?
-				+ After all, texture layer is now mandatory!
-			+ Test look'n'feel
-		+ Also dry points should rot (*)
-		+ Pick tool (*)
-		+ Add new materials: 
-			+ Rubber
-				+ SoundType=Rubber
-				+ Hull, Non-hull
-				+ 2x (hard and soft)
-					+ 3 colors each
-				+ Make repair sound (copy from one of the break)
-				+ Make separate balls
-			+ Test weight of new non-hull rubber
-				+ ...and make sure hull rubber sinks
-			+ Fiberglass
-				+ SoundType=Plastic
-				+ Hull, Non-Hull
-					+ 3 colors each
-				+ Make ball at "New Materials Balls"
-				+ Make repair sound (copy from one of the break)
-			+ Plastic (ABS)
-				+ SoundType=Plastic
-				+ Hull, non Hull 
-					+ 3 colors each - LEGO colors
-				+ Make ball at "New Materials Balls"
-			+ Redo template
-			+ Send to Michael
-			+ Add to changes.txt
-		+ Probabilistic Destroy
-			+ Probability is zero at radius
-			+ Cleanup:
-				+ Also do fraction at other continuous tools
-				+ Remove 1.0 at ModulateCursor
-		+ Try to show tip window after first Render
-			+ Undo hacky test changes
-			+ mHasStartupTipBeenChecked = false
-			+ OnGameStep:
-				+ at beginning: only schedule timer if mHasStartupTipBeenChecked
-				+ at end: 
-					+ if !mHasStartupTipBeenChecked:
-						+ Show startup tip dialog
-						+ schedule timer
-						+ mHasStartupTipBeenChecked = true
-			+ Check refresh when moving tip window
-		+ Dry points when repaired
-			+ Halve moved points' water 
-		+ Do perf analysis for many air bubbles
-			+ ShipRenderContext::UploadGenericTexture: vector::emplace - 3.5
-			+ ShipRenderContext::RenderGenericTextures: memcpy - 1.0
-			+ Points::UpdateEphemeralParticles: sin - 1.0
-			+ Try dedicated upload
-				+ Take FPS pre: 20, UR=113-132 @ 4K GenTex's, 62/300 planes
-				+ Do
-					+ Use same VBO, two draw calls
-						+ VBO first used for AirBubbles, size=MaxEphParticles
-						+ Then re-allocated for GenTex's
-							+ Allocate only if necessary, i.e. if new size > last (MaxEphParticles)
-				+ Take FPS after: 22.3, UR=133
-			+ changes.txt
-			+ ParameterSmoothing: make it with sin (btwn pi/4 and pi/2)
-		+ Shallow Water Equations (*)
-		+ Try to change speed of particles at repair
-			+ See big notebook
-		+ See problem with too many bubbles
-			+ See if water is constant after hole plugged
-				+ Custom probe w/total water in ship
-				+ Remove probe afterwards
-			+ See if water is turbulent
-				+ Temporarily change shader to draw pressure waves
-			+ See if true: realistic sinking of ship is 3 water intake and 0.25 water diffusion speed
-		+ Use precalc'd sin for bubble vortex 
-			+ Pre FPS: 22.5, 125
-			+ Make static precalc'd sin (lo-res: 512)
-			+ Post FPS: 23.4, 136
-			+ Do perf analysis
-		+ Send for testing
-		+ Do test with "the possible ships" broken
-		+ Double-check latest rotting speed
-		+ See frequency of wind ripples
-		+ Font 2
-		+ Perf:
-			+ ExtractShaderParameters: regex::search
-			+ Utils::ParseJSONFile::RemoveJSonComments
-		+ Installer:
-			+ Add repair when already installed
-				+ Tests:
-					+ Install codepath
-						+ Verify registry keys
-						+ Verify control panel
-						+ Verify both shortcuts
-						+ See why game does not start visible
-					+ Repair codepath 
-						+ Verify delete bin file re-added
-						+ Verify desktop shortcut re-added
-					+ Uninstall codepath
-						+ Verify no registry keys left
-						+ Verify orig files gone
-						+ Verify added (ship) files gone
-						+ Verify control panel gone
-						+ Verify shortcuts gone
-					+ Tooltips at install
-					+ Repair and uninstall from control panel  
-						+ Repair (w/real deleted)
-						+ Uninstall (w/extra ship and delete verification)
-				+ Make repair and remove buttons
-			+ See if installer for current user removes need for admin consent
-				+ Check app folder
-				+ ShipLoadDialog does not show AppFolder
-			+ Uninstall older versions except one
-			+ Info URL
-			+ Send installer for testing
-		+ Change .shp names to match filenames
-			+ Use python script to detect
-		+ Bugs:
-			+ Goliath crashing
-			+ Mike's weird waves
-			+ SamminAter unsupported OpenGL ext => crash
-				+ Test error in Debug mode
-				+ Give him a relwithdebinfo
-				+ Check if dir is null
+	- 1.12.0:
 
-		= Michael Bozarth's ships
-			+ Check Carpathia differences
-			+ Check OpenGL error with 3 queen mary's and titanic interior
-				+ Check first why it crashes afterwards
-				+ Then, do explicit texture size check
-			+ Fixes to do:
-				+ 1: Titanic in a bottle (leak): his don't leak - I fix it
-					+ In final, verify
-				+ 2: Ed Fitzgerald (ropes): I do it
-					+ In final, verify
-				+ 3: Cargo ship 2 (too heavy): asked
-				+ 4: Lego Titanic (offset): done
-				+ 5: RMS Britannic (ropes): I do it
-					+ In final, verify
-				+ 6: Queen Mary (ropes): I do it		
-					+ Retaken
-				+ 7: Take electrical of RMS Titanic with Lights				
-					+ Can't see the difference; asked
-					+ No changes
-				+ 8a: 3 Queen Mary 2's (large texture): done
-					+ Retaken
-				+ 8b: Titanic Interior (large texture): done
-					+ Retaken
-			- Run verifier on all ships
+		- Fix latency of move tool
 
 		= Do Samsung time-based perf analysis
-			- Run instrumented binaries:
-				- For timing
+			= Run instrumented binaries:
+				= For timing
 				- For concurrency
 
-		= Do movie
-			+ Repair 
-				+ With move and rotate
-			- Rubber ball
-
-	- 1.12.0:
 
 		- Wine:
 			- Test checking for the APPLE extension for VAO's: https://developer.apple.com/opengl/OpenGL-Capabilities-Tables.pdf
@@ -5803,6 +5634,176 @@ IF WX:
 		+ Check "Smash" bug
 		+ Add other testers to About box
 		+ Finalize descriptions
+		+ Release
+	+ 1.11.0:
+		+ Orphaned points
+		+ Increase # of ephemeral particles
+			+ And thus lower water intake threshold for air bubbles
+		+ Sea and Ocean Floor rearc(*)
+		+ Change cover art to Logo2
+			+ About box image
+				+ And remove "Cover art" credit altogether
+			+ Installer
+		+ Try to build with Runtime Type Information disabled
+		+ Add world end markers
+		+ Repair tool
+		+ Fix Linux build break
+			+ Do specialization outside of class
+			+ Set /permissive- for all projects
+		+ Take Mathias' pull request
+		+ Fix github's clouds bug
+		+ Un-sinking (*)
+		+ Floatsam: see if using (waterY + 0.1) at UpdateWaterIntake helps
+		+ Are we really forced to set point colors to structural colors?
+			+ Can we always use the (sampled) texture colors?
+				+ After all, texture layer is now mandatory!
+			+ Test look'n'feel
+		+ Also dry points should rot (*)
+		+ Pick tool (*)
+		+ Add new materials: 
+			+ Rubber
+				+ SoundType=Rubber
+				+ Hull, Non-hull
+				+ 2x (hard and soft)
+					+ 3 colors each
+				+ Make repair sound (copy from one of the break)
+				+ Make separate balls
+			+ Test weight of new non-hull rubber
+				+ ...and make sure hull rubber sinks
+			+ Fiberglass
+				+ SoundType=Plastic
+				+ Hull, Non-Hull
+					+ 3 colors each
+				+ Make ball at "New Materials Balls"
+				+ Make repair sound (copy from one of the break)
+			+ Plastic (ABS)
+				+ SoundType=Plastic
+				+ Hull, non Hull 
+					+ 3 colors each - LEGO colors
+				+ Make ball at "New Materials Balls"
+			+ Redo template
+			+ Send to Michael
+			+ Add to changes.txt
+		+ Probabilistic Destroy
+			+ Probability is zero at radius
+			+ Cleanup:
+				+ Also do fraction at other continuous tools
+				+ Remove 1.0 at ModulateCursor
+		+ Try to show tip window after first Render
+			+ Undo hacky test changes
+			+ mHasStartupTipBeenChecked = false
+			+ OnGameStep:
+				+ at beginning: only schedule timer if mHasStartupTipBeenChecked
+				+ at end: 
+					+ if !mHasStartupTipBeenChecked:
+						+ Show startup tip dialog
+						+ schedule timer
+						+ mHasStartupTipBeenChecked = true
+			+ Check refresh when moving tip window
+		+ Dry points when repaired
+			+ Halve moved points' water 
+		+ Do perf analysis for many air bubbles
+			+ ShipRenderContext::UploadGenericTexture: vector::emplace - 3.5
+			+ ShipRenderContext::RenderGenericTextures: memcpy - 1.0
+			+ Points::UpdateEphemeralParticles: sin - 1.0
+			+ Try dedicated upload
+				+ Take FPS pre: 20, UR=113-132 @ 4K GenTex's, 62/300 planes
+				+ Do
+					+ Use same VBO, two draw calls
+						+ VBO first used for AirBubbles, size=MaxEphParticles
+						+ Then re-allocated for GenTex's
+							+ Allocate only if necessary, i.e. if new size > last (MaxEphParticles)
+				+ Take FPS after: 22.3, UR=133
+			+ changes.txt
+			+ ParameterSmoothing: make it with sin (btwn pi/4 and pi/2)
+		+ Shallow Water Equations (*)
+		+ Try to change speed of particles at repair
+			+ See big notebook
+		+ See problem with too many bubbles
+			+ See if water is constant after hole plugged
+				+ Custom probe w/total water in ship
+				+ Remove probe afterwards
+			+ See if water is turbulent
+				+ Temporarily change shader to draw pressure waves
+			+ See if true: realistic sinking of ship is 3 water intake and 0.25 water diffusion speed
+		+ Use precalc'd sin for bubble vortex 
+			+ Pre FPS: 22.5, 125
+			+ Make static precalc'd sin (lo-res: 512)
+			+ Post FPS: 23.4, 136
+			+ Do perf analysis
+		+ Send for testing
+		+ Do test with "the possible ships" broken
+		+ Double-check latest rotting speed
+		+ See frequency of wind ripples
+		+ Font 2
+		+ Perf:
+			+ ExtractShaderParameters: regex::search
+			+ Utils::ParseJSONFile::RemoveJSonComments
+		+ Installer:
+			+ Add repair when already installed
+				+ Tests:
+					+ Install codepath
+						+ Verify registry keys
+						+ Verify control panel
+						+ Verify both shortcuts
+						+ See why game does not start visible
+					+ Repair codepath 
+						+ Verify delete bin file re-added
+						+ Verify desktop shortcut re-added
+					+ Uninstall codepath
+						+ Verify no registry keys left
+						+ Verify orig files gone
+						+ Verify added (ship) files gone
+						+ Verify control panel gone
+						+ Verify shortcuts gone
+					+ Tooltips at install
+					+ Repair and uninstall from control panel  
+						+ Repair (w/real deleted)
+						+ Uninstall (w/extra ship and delete verification)
+				+ Make repair and remove buttons
+			+ See if installer for current user removes need for admin consent
+				+ Check app folder
+				+ ShipLoadDialog does not show AppFolder
+			+ Uninstall older versions except one
+			+ Info URL
+			+ Send installer for testing
+		+ Change .shp names to match filenames
+			+ Use python script to detect
+		+ Bugs:
+			+ Goliath crashing
+			+ Mike's weird waves
+			+ SamminAter unsupported OpenGL ext => crash
+				+ Test error in Debug mode
+				+ Give him a relwithdebinfo
+				+ Check if dir is null
+		+ Michael Bozarth's ships
+			+ Check Carpathia differences
+			+ Check OpenGL error with 3 queen mary's and titanic interior
+				+ Check first why it crashes afterwards
+				+ Then, do explicit texture size check
+			+ Fixes to do:
+				+ 1: Titanic in a bottle (leak): his don't leak - I fix it
+					+ In final, verify
+				+ 2: Ed Fitzgerald (ropes): I do it
+					+ In final, verify
+				+ 3: Cargo ship 2 (too heavy): asked
+				+ 4: Lego Titanic (offset): done
+				+ 5: RMS Britannic (ropes): I do it
+					+ In final, verify
+				+ 6: Queen Mary (ropes): I do it		
+					+ Retaken
+				+ 7: Take electrical of RMS Titanic with Lights				
+					+ Can't see the difference; asked
+					+ No changes
+				+ 8a: 3 Queen Mary 2's (large texture): done
+					+ Retaken
+				+ 8b: Titanic Interior (large texture): done
+					+ Retaken
+			+ Run verifier on all ships
+		+ Do movie
+			+ Repair 
+				+ With move and rotate
+			+ Rubber ball
 		+ Release
 
 
