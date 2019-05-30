@@ -314,8 +314,8 @@ public:
                 static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(now - mCurrentTrajectory->StartTimestamp).count())
                 / static_cast<float>(TrajectoryLag.count());
 
-            // ((x+0.5)^2-0.25)/2.0
-            float const progress = (pow(std::min(rawProgress, 1.0f) + 0.5f, 2.0f) - 0.25f) / 2.0f;
+            // ((x+0.7)^2-0.49)/2.0
+            float const progress = (pow(std::min(rawProgress, 1.0f) + 0.7f, 2.0f) - 0.49f) / 2.0f;
 
             vec2f const newCurrentPosition =
                 mCurrentTrajectory->StartPosition
@@ -379,20 +379,36 @@ public:
         {
             if (!!mCurrentTrajectory)
             {
-                // Restart from here
+                //
+                // We already have a trajectory
+                //
+
+                // Re-register the start position from where we are now
                 mCurrentTrajectory->StartPosition = mCurrentTrajectory->CurrentPosition;
+
+                // If we're enough into the trajectory, restart the timing - to avoid cramming a mouse move stretche
+                // into a tiny little time interval
+                if (GameWallClock::GetInstance().Now() > mCurrentTrajectory->StartTimestamp + TrajectoryLag / 2)
+                {
+                    mCurrentTrajectory->StartTimestamp = GameWallClock::GetInstance().Now();
+                    mCurrentTrajectory->EndTimestamp = mCurrentTrajectory->StartTimestamp + TrajectoryLag;
+                }
             }
             else
             {
+                //
+                // Start a new trajectory
+                //
+
                 mCurrentTrajectory = Trajectory(*mEngagedElementId);
                 mCurrentTrajectory->RotationCenter = mRotationCenter;
                 mCurrentTrajectory->StartPosition = inputState.PreviousMousePosition;
                 mCurrentTrajectory->CurrentPosition = mCurrentTrajectory->StartPosition;
+                mCurrentTrajectory->StartTimestamp = GameWallClock::GetInstance().Now();
+                mCurrentTrajectory->EndTimestamp = mCurrentTrajectory->StartTimestamp + TrajectoryLag;
             }
 
             mCurrentTrajectory->EndPosition = inputState.MousePosition;
-            mCurrentTrajectory->StartTimestamp = GameWallClock::GetInstance().Now();
-            mCurrentTrajectory->EndTimestamp = mCurrentTrajectory->StartTimestamp + TrajectoryLag;
         }
     }
 

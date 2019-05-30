@@ -1,3 +1,6 @@
+1.12.0
+- 
+
 1.11.0
 - New "Repair Structure" tool! Use it on the edges of broken parts of a ship, and if you are skilled the ship structure will repair itself
 - Redesigned waves sub-system: waves now consist of ocean waves and waves generated either manually with the new "WaveMaker" tool, or automatically like tsunami and rogue waves (see https://gabrielegiuseppini.wordpress.com/2019/05/12/1d-simulation-of-ocean-waves/)
