@@ -1,0 +1,8 @@
+{
+	"structure_image":"dodge_charger_structure.png.dat",
+	"texture_image":"dodge_charger_texture.png.dat",
+	"offset":{"x":0.0, "y":0.0},
+	"ship_name":"Dodge Charger",
+	"created_by":"Michael Bozarth; Pegasus206 (Shipbucket.com)",
+	"year_built":"2012"
+}

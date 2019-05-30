@@ -1,0 +1,8 @@
+{
+	"structure_image":"kms_bismarck_structure.png.dat",
+	"texture_image":"kms_bismarck_texture.png.dat",
+	"offset":{"x":20.0, "y":-8.0},
+	"ship_name":"K.M.S. Bismarck",
+	"created_by":"Michael Bozarth; Maomatic (Shipbucket.com)",
+	"year_built":"1939"
+}

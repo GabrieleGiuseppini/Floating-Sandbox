@@ -1,0 +1,8 @@
+{
+	"structure_image":"titanic_in_a_bottle_structure.png.dat",
+	"texture_image":"titanic_in_a_bottle_texture.png.dat",
+	"offset":{"x":0.0, "y":-60.0},
+	"ship_name":"Titanic in a Bottle",
+	"created_by":"Michael Bozarth",
+	"year_built":"2019"
+}

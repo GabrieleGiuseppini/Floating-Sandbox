@@ -1,0 +1,8 @@
+{
+	"structure_image":"uss_arizona_structure.png.dat",
+	"texture_image":"uss_arizona_texture.png.dat",
+	"offset":{"x":10.0, "y":-55.0},
+	"ship_name":"U.S.S. Arizona",
+	"created_by":"Michael Bozarth; Karle94 (Shipbucket.com)",
+	"year_built":"1915"
+}

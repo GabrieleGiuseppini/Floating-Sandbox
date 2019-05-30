@@ -1,0 +1,9 @@
+{
+	"structure_image":"ss_edmund_fitzgerald_structure.png.dat",
+	"ropes_image":"ss_edmund_fitzgerald_ropes.png.dat",
+	"texture_image":"ss_edmund_fitzgerald_texture.png.dat",
+	"offset":{"x":0.0, "y":-14.0},
+	"ship_name":"S.S. Edmund Fitzgerald",
+	"created_by":"Michael Bozarth",
+	"year_built":"1958"
+}

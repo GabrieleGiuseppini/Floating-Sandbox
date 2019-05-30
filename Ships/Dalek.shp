@@ -1,0 +1,8 @@
+{
+	"structure_image":"dalek_structure.png.dat",
+	"texture_image":"dalek_texture.png.dat",
+	"offset":{"x":0.0, "y":0.0},
+	"ship_name":"Dalek",
+	"created_by":"Michael Bozarth",
+	"year_built":"1967"
+}

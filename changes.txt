@@ -8,7 +8,7 @@
 - Added a few new materials, including "stainless" materials that never rot, rubber, and LEGO(c) bricks!
 - Fixed bug that would crash the game when setting the number of clouds to zero on computers with specific graphics cards
 - ...and a few more small improvements here and there
-- 39 new ships
+- 63 new ships
 - Musical theme for this release: Evanescence, entire discography
 
 1.10.0

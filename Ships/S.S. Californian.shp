@@ -1,0 +1,8 @@
+{
+	"structure_image":"ss_californian_structure.png.dat",
+	"texture_image":"ss_californian_texture.png.dat",
+	"offset":{"x":10.0, "y":-8.0},
+	"ship_name":"S.S. Californian",
+	"created_by":"Michael Bozarth",
+	"year_built":"1901"
+}

@@ -1,0 +1,10 @@
+{
+	"structure_image":"rms_lusitania_b_structure.png.dat",
+	"texture_image":"rms_lusitania_b_texture.png.dat",
+	"offset":{"x":0.0, "y":-8.0},
+	"ship_name":"R.M.S. Lusitania B",
+	"created_by":"Michael Bozarth; Lex the Pikachu",
+	"year_built":"1906",
+	"description":
+		"The 'R.M.S. Lusitania' was a British passenger ocean liner, launched on the 7th of June, 1906 that was briefly known as the world's largest passenger ship. The ship went on many of its voyages until it was sunk on the 7th of May, 1915 by a German U-Boat 11 Miles off the coast of Ireland during WWI. US citizens were among those on board. This event started the ball rolling and in 1917 the US joined the allies and declared war on Germany. A beautiful ship. Once up, now down. We will miss you Lusitania!"
+}

@@ -1,0 +1,8 @@
+{
+	"structure_image":"rms_britannic_with_ropes_structure.png.dat",
+	"texture_image":"rms_britannic_with_ropes_texture.png.dat",
+	"ropes_image":"rms_britannic_with_ropes_ropes.png.dat",
+	"ship_name":"R.M.S. Britannic (With Ropes)",
+	"offset":{"x":0.0, "y":-8.0},
+	"created_by":"Michael Bozarth"
+}

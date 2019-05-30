@@ -1,0 +1,9 @@
+{
+	"structure_image":"ss_californian_with_lights_structure.png.dat",
+	"texture_image":"ss_californian_with_lights_texture.png.dat",
+	"electrical_image":"ss_californian_with_lights_electrical.png.dat",
+	"offset":{"x":10.0, "y":-8.0},
+	"ship_name":"S.S. Californian (With Lights)",
+	"created_by":"Michael Bozarth",
+	"year_built":"1901"
+}

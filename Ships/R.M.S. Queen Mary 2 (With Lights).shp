@@ -1,0 +1,9 @@
+{
+	"structure_image":"rms_queen_mary_2_with_lights_structure.png.dat",
+	"texture_image":"rms_queen_mary_2_with_lights_texture.png.dat",
+	"electrical_image":"rms_queen_mary_2_with_lights_electrical.png.dat",
+	"offset":{"x":0.0, "y":-8.0},
+	"ship_name":"R.M.S. Queen Mary 2 (With Lights)",
+	"created_by":"Michael Bozarth",
+	"year_built":"2003"
+}

@@ -1,0 +1,8 @@
+{
+	"structure_image":"bmw_m3_gtr_structure.png.dat",
+	"texture_image":"bmw_m3_gtr_texture.png.dat",
+	"offset":{"x":0.0, "y":0.0},
+	"ship_name":"BMW M3 GTR",
+	"created_by":"Michael Bozarth",
+	"year_built":"2005"
+}

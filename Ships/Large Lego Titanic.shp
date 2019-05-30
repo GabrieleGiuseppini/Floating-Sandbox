@@ -1,0 +1,8 @@
+{
+	"structure_image":"large_lego_titanic_structure.png.dat",
+	"texture_image":"large_lego_titanic_texture.png.dat",
+	"offset":{"x":0.0, "y":-7.0},
+	"ship_name":"Large Lego Titanic",
+	"created_by":"Michael Bozarth",
+	"year_built":"2017"
+}

@@ -1,0 +1,7 @@
+{
+	"structure_image":"rms_britannic_structure.png.dat",
+	"texture_image":"rms_britannic_texture.png.dat",
+	"ship_name":"R.M.S. Britannic",
+	"offset":{"x":0.0, "y":-10.0},
+	"created_by":"Michael Bozarth"
+}

@@ -1,0 +1,8 @@
+{
+	"structure_image":"articulated_bus_structure.png.dat",
+	"texture_image":"articulated_bus_texture.png.dat",
+	"offset":{"x":86.0, "y":0.0},
+	"ship_name":"Articulated Bus",
+	"created_by":"Michael Bozarth; ABetterName (Shipbucket.com)",
+	"year_built":"1994"
+}

@@ -1,0 +1,8 @@
+{
+	"structure_image":"grave_digger_structure.png.dat",
+	"texture_image":"grave_digger_texture.png.dat",
+	"offset":{"x":0.0, "y":0.0},
+	"ship_name":"Grave Digger",
+	"created_by":"Michael Bozarth",
+	"year_built":"1939"
+}

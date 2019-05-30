@@ -1,0 +1,9 @@
+{
+	"structure_image":"sea_plane_structure.png.dat",
+	"texture_image":"sea_plane_texture.png.dat",
+	"ropes_image":"sea_plane_ropes.png.dat",
+	"offset":{"x":15.0, "y":0.0},
+	"ship_name":"Sea Plane",
+	"created_by":"Michael Bozarth; WhyMe (Shipbucket.com)",
+	"year_built":"1939"
+}
