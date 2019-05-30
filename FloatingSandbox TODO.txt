@@ -347,23 +347,23 @@ Render:
 			+ Check OpenGL error with 3 queen mary's and titanic interior
 				+ Check first why it crashes afterwards
 				+ Then, do explicit texture size check
-			- Fixes to do:
-				- 1: Titanic in a bottle (leak): his don't leak - I fix it
-					= In final, verify
-				- 2: Ed Fitzgerald (ropes): I do it
-					= In final, verify
+			+ Fixes to do:
+				+ 1: Titanic in a bottle (leak): his don't leak - I fix it
+					+ In final, verify
+				+ 2: Ed Fitzgerald (ropes): I do it
+					+ In final, verify
 				+ 3: Cargo ship 2 (too heavy): asked
-				- 4: Lego Titanic (offset): done
-				- 5: RMS Britannic (ropes): I do it
-					= In final, verify
-				- 6: Queen Mary (ropes): I do it		
+				+ 4: Lego Titanic (offset): done
+				+ 5: RMS Britannic (ropes): I do it
+					+ In final, verify
+				+ 6: Queen Mary (ropes): I do it		
 					+ Retaken
 				+ 7: Take electrical of RMS Titanic with Lights				
 					+ Can't see the difference; asked
 					+ No changes
-				- 8a: 3 Queen Mary 2's (large texture): done
+				+ 8a: 3 Queen Mary 2's (large texture): done
 					+ Retaken
-				- 8b: Titanic Interior (large texture): done
+				+ 8b: Titanic Interior (large texture): done
 					+ Retaken
 			- Run verifier on all ships
 
@@ -938,7 +938,8 @@ Render:
 				- WaterSurface, may be x-shifted
 		- for each point: y-distance between point.y and trajectory(point.x) gives strength of x and y components of a force on the point
 		- Rendered (via option):
-			- TBD
+			- Texture is distorted depending on force field
+			- TBD: see moleskine
 
 	
 	- Try to re-instate square velocity drag (*)

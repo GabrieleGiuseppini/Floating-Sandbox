@@ -481,7 +481,7 @@ void ShipPreviewPanel::ScanDirectory(std::filesystem::path const & directoryPath
                     iShip,
                     std::make_shared<ShipPreview>(std::move(shipPreview))));
 
-            if (isSingleCore && (3 == iShip % 4))
+            if (isSingleCore && (3 == (iShip % 4)))
             {
                 // Give the main thread time to process this
                 std::this_thread::yield();
