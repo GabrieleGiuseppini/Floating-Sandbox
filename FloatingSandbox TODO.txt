@@ -1,8 +1,26 @@
 =================================================
 Current perf:
 =================================================
-- fps: TBD (Samsung w/Krafting: 17.0) 
-- UR: TBD (Samsung w/Krafting: 690%)
+- fps: 29.2/29.4 (Samsung w/Krafting: 17.0) 
+- UR: 210/220 (Samsung w/Krafting: 690%)
+- GameController::InternalUpdate: 62.0%
+	- World::Update: 61.98%
+		- Ship::Update: 60.92%
+			- Ship::UpdateMechanicalDynamics: 49.92%
+				- Ship::UpdateSpringForces: 36.50%
+				- Ship::UpdatePointForces: 5.95%
+				- Ship::HandleCollisionsWithSeaFloor: 3.63%
+				- Ship::IntegrateAndResetPointForces: 3.59%
+				- Ship::UpdateTotalMasses: 0.24%
+			- Ship::UpdateWaterDynamics: 6.81%
+			- Ship::DiffuseLight: 2.99%
+			- Springs::UpdateStrains: 1.02%
+		- OceanSurface::GenerateSamples: 0.74%
+		- OceanSurface::Update: 0.24%
+- GameController::InternalRender: 22.7%
+	- Ship::Render: 19.30%
+	- RenderSkyEnd: 2.16%
+	- RenderOcean: 0.58%
 =================================================
 Before SWE:
 - fps: 30.8
@@ -202,18 +220,15 @@ Render:
 
 	- 1.12.0:
 		+ Fix latency of move tool
+		+ Do perf analysis
+			+ Usual sample-based one
 
-		- Do perf analysis
-			- Usual sample-based one
+		- Complete SFML SDK w/debug
+			- nuke gabe_backup afterwards
 
-		= Do Samsung time-based perf analysis
-			= Run instrumented binaries:
-				= For timing
-				- For concurrency
-
-		- Wine:
-			- Test checking for the APPLE extension for VAO's: https://developer.apple.com/opengl/OpenGL-Capabilities-Tables.pdf
-				- "APPLE_vertex_array_object"
+		= Wine:
+			= Test checking for the APPLE extension for VAO's: https://developer.apple.com/opengl/OpenGL-Capabilities-Tables.pdf
+				+ "APPLE_vertex_array_object"
 			- If won't work:
 			- Fix once and for all the Core profile vs 2.1 OpenGL
 				- To make it work with Wine: https://stackoverflow.com/questions/19658745/why-is-my-opengl-version-always-2-1-on-mac-os-x

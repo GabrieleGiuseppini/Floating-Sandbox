@@ -154,6 +154,13 @@ void InitOpenGLExt_VertexArray(GLADloadproc load)
         LoadAndVerify("glGenVertexArrays", glGenVertexArrays, load);
         LoadAndVerify("glIsVertexArray", glIsVertexArray, load);
     }
+    else if (HasExt("GL_APPLE_vertex_array_object"))
+    {
+        LoadAndVerify("glBindVertexArrayAPPLE", glBindVertexArray, load);
+        LoadAndVerify("glDeleteVertexArraysAPPLE", glDeleteVertexArrays, load);
+        LoadAndVerify("glGenVertexArraysAPPLE", glGenVertexArrays, load);
+        LoadAndVerify("glIsVertexArrayAPPLE", glIsVertexArray, load);
+    }
     else
     {
         throw GameException("VAO functionality is not supported");
