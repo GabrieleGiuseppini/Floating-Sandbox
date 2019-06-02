@@ -1,0 +1,113 @@
+/***************************************************************************************
+* Original Author:		Gabriele Giuseppini
+* Created:				2019-06-01
+* Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
+***************************************************************************************/
+#include "UpdateChecker.h"
+
+#include <GameCore/Log.h>
+
+#include <SFML/Network/Http.hpp>
+
+#include <cassert>
+#include <fstream>
+#include <memory>
+#include <regex>
+#include <sstream>
+
+
+std::string const UpdateHost = "http://floatingsandbox.com";
+std::string const UpdateUrl = "/TODO";
+
+size_t constexpr ReadBufferSize = 1024 * 1024;
+
+UpdateChecker::UpdateChecker()
+    : mOutcome()
+    , mOutcomeMutex()
+    , mWorkerThread()
+{
+    // Start thread immediately
+    mWorkerThread = std::thread(&UpdateChecker::WorkerThread, this);
+}
+
+UpdateChecker::~UpdateChecker()
+{
+    assert(mWorkerThread.joinable());
+    mWorkerThread.join();
+}
+
+UpdateChecker::Outcome UpdateChecker::ParseChangeList(std::string const & changeList)
+{
+    std::string line;
+
+    std::stringstream ss(changeList);
+
+    //
+    // Parse version
+    //
+
+    std::getline(ss, line);
+    Version version = Version::FromString(line);
+
+    //
+    // Parse features
+    //
+
+    static std::regex const FeatureRegex(R"(^(\s+)?-\s*(.*)\s*$)");
+
+    std::vector<std::vector<std::string>> features;
+
+    std::vector<std::string> * currentFeature = nullptr;
+
+    while (true)
+    {
+        std::getline(ss, line);
+        if (!ss.good())
+            break;
+
+        if (line.empty())
+            break; // We're done with this feature
+
+        std::smatch featureMatch;
+        if (std::regex_match(line, featureMatch, FeatureRegex))
+        {
+            assert(featureMatch.size() == 1 + 2);
+            if (!featureMatch[1].matched ||
+                nullptr == currentFeature)
+            {
+                // New feature
+                currentFeature = &(features.emplace_back());
+            }
+
+            currentFeature->push_back(featureMatch[2].str());
+        }
+    }
+
+    return Outcome::MakeHasVersionOutcome(
+        std::move(version),
+        std::move(features));
+}
+
+void UpdateChecker::WorkerThread()
+{
+    try
+    {
+        // TODOTEST
+        std::ifstream f("C:\\Users\\Neurodancer\\source\\repos\\Floating-Sandbox\\changes.txt");
+
+        std::unique_ptr<char[]> buf(new char[ReadBufferSize]);
+        f.read(buf.get(), ReadBufferSize);
+        std::string changesFileContent(buf.get(), f.gcount());
+
+        // TODOTEST
+        LogMessage(changesFileContent);
+
+        std::lock_guard<std::mutex> lock(mOutcomeMutex);
+        mOutcome = std::make_unique<Outcome>(ParseChangeList(changesFileContent));
+    }
+    catch (...)
+    {
+        std::lock_guard<std::mutex> lock(mOutcomeMutex);
+        mOutcome = std::make_unique<Outcome>(Outcome::MakeErrorOutcome());
+    }
+}

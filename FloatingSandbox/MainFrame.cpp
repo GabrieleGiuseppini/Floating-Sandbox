@@ -5,10 +5,10 @@
  ***************************************************************************************/
 #include "MainFrame.h"
 
+#include "NewVersionDisplayDialog.h"
 #include "ShipDescriptionDialog.h"
 #include "SplashScreenDialog.h"
 #include "StartupTipDialog.h"
-#include "Version.h"
 
 #include <Game/ImageFileTools.h>
 
@@ -17,6 +17,7 @@
 #include <GameCore/GameException.h>
 #include <GameCore/Log.h>
 #include <GameCore/Utils.h>
+#include <GameCore/Version.h>
 
 #include <wx/intl.h>
 #include <wx/msgdlg.h>
@@ -90,6 +91,7 @@ const long ID_OPEN_CODE_PAGE_MENUITEM = wxNewId();
 const long ID_POSTIINITIALIZE_TIMER = wxNewId();
 const long ID_GAME_TIMER = wxNewId();
 const long ID_LOW_FREQUENCY_TIMER = wxNewId();
+const long ID_CHECK_UPDATE_TIMER = wxNewId();
 
 MainFrame::MainFrame(wxApp * mainApp)
     : mMainApp(mainApp)
@@ -502,6 +504,9 @@ MainFrame::MainFrame(wxApp * mainApp)
     mLowFrequencyTimer = std::make_unique<wxTimer>(this, ID_LOW_FREQUENCY_TIMER);
     Connect(ID_LOW_FREQUENCY_TIMER, wxEVT_TIMER, (wxObjectEventFunction)&MainFrame::OnLowFrequencyTimerTrigger);
 
+    mCheckUpdateTimer = std::make_unique<wxTimer>(this, ID_CHECK_UPDATE_TIMER);
+    Connect(ID_CHECK_UPDATE_TIMER, wxEVT_TIMER, (wxObjectEventFunction)&MainFrame::OnCheckUpdateTimerTrigger);
+
 
     //
     // Post a PostInitialize, so that we can complete initialization with a main loop running
@@ -662,6 +667,17 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
 
     //
+    // Start check update timer
+    //
+
+    if (mUIPreferencesManager->GetCheckUpdatesAtStartup())
+    {
+        // TODOTEST: 10 secs
+        mCheckUpdateTimer->Start(1000, true);
+    }
+
+
+    //
     // Close splash screen
     //
 
@@ -682,6 +698,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     splash->Close();
 
     UpdateFrameTitle();
+
 
     //
     // Start timers
@@ -769,6 +786,38 @@ void MainFrame::OnKeyDown(wxKeyEvent & event)
 
 void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
 {
+    if (!!mUpdateChecker)
+    {
+        // We are checking for updates...
+        // ...check whether the check has completed
+        auto outcome = mUpdateChecker->GetOutcome();
+        if (!!outcome)
+        {
+            // Check completed...
+            // ...check if it's an interesting new version
+            if (outcome->OutcomeType == UpdateChecker::UpdateCheckOutcomeType::HasVersion
+                && *(outcome->LatestVersion) > Version::CurrentVersion()
+                && !mUIPreferencesManager->IsUpdateBlacklisted(*(outcome->LatestVersion)))
+            {
+                //
+                // Notify user of new version
+                //
+
+                NewVersionDisplayDialog dlg(
+                    this,
+                    *(outcome->LatestVersion),
+                    outcome->Features,
+                    true, // AtStartup
+                    mUIPreferencesManager);
+
+                dlg.ShowModal();
+            }
+
+            // Forget about the update check
+            mUpdateChecker.reset();
+        }
+    }
+
     if (mHasStartupTipBeenChecked)
     {
         // We've already checked the startup tip...
@@ -868,6 +917,11 @@ void MainFrame::OnLowFrequencyTimerTrigger(wxTimerEvent & /*event*/)
 
     assert(!!mSoundController);
     mSoundController->LowFrequencyUpdate();
+}
+
+void MainFrame::OnCheckUpdateTimerTrigger(wxTimerEvent & /*event*/)
+{
+    mUpdateChecker = std::make_unique<UpdateChecker>();
 }
 
 void MainFrame::OnIdle(wxIdleEvent & /*event*/)

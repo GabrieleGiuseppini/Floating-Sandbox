@@ -6,6 +6,8 @@
 set  (FLOATING_SANDBOX_SOURCES
 	AboutDialog.cpp
 	AboutDialog.h
+	#CheckForUpdatesDialog.cpp
+	#CheckForUpdatesDialog.h
 	EventTickerPanel.cpp
 	EventTickerPanel.h
 	HelpDialog.cpp
@@ -15,6 +17,8 @@ set  (FLOATING_SANDBOX_SOURCES
 	MainApp.cpp
 	MainFrame.cpp
 	MainFrame.h
+	NewVersionDisplayDialog.cpp
+	NewVersionDisplayDialog.h
 	OpenGLContext.cpp
 	OpenGLContext.h
 	PreferencesDialog.cpp
@@ -53,7 +57,8 @@ set  (FLOATING_SANDBOX_SOURCES
 	UIPreferencesManager.h
 	UnhandledExceptionHandler.cpp
 	UnhandledExceptionHandler.h
-	Version.h
+	UpdateChecker.cpp
+	UpdateChecker.h
 )
 
 source_group(" " FILES ${FLOATING_SANDBOX_SOURCES})

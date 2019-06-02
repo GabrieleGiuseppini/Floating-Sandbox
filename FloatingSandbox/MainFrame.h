@@ -16,6 +16,7 @@
 #include "SoundController.h"
 #include "ToolController.h"
 #include "UIPreferencesManager.h"
+#include "UpdateChecker.h"
 
 #include <Game/GameController.h>
 #include <Game/GameEventHandlers.h>
@@ -103,6 +104,7 @@ private:
     std::unique_ptr<wxTimer> mPostInitializeTimer;
     std::unique_ptr<wxTimer> mGameTimer;
     std::unique_ptr<wxTimer> mLowFrequencyTimer;
+    std::unique_ptr<wxTimer> mCheckUpdateTimer;
 
 private:
 
@@ -118,6 +120,7 @@ private:
     void OnKeyDown(wxKeyEvent & event);
     void OnGameTimerTrigger(wxTimerEvent & event);
     void OnLowFrequencyTimerTrigger(wxTimerEvent & event);
+    void OnCheckUpdateTimerTrigger(wxTimerEvent & event);
     void OnIdle(wxIdleEvent & event);
     void OnShipFileChosen(fsShipFileChosenEvent & event);
 
@@ -286,7 +289,8 @@ private:
     std::shared_ptr<GameController> mGameController;
     std::shared_ptr<SoundController> mSoundController;
     std::unique_ptr<ToolController> mToolController;
-    std::shared_ptr <UIPreferencesManager> mUIPreferencesManager;
+    std::shared_ptr<UIPreferencesManager> mUIPreferencesManager;
+    std::unique_ptr<UpdateChecker> mUpdateChecker;
 
 
     //

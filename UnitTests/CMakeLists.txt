@@ -31,7 +31,9 @@ set (UNIT_TEST_SOURCES
 	TupleKeysTests.cpp
 	Utils.cpp
 	Utils.h
-	VectorsTests.cpp)
+	VectorsTests.cpp
+	VersionTests.cpp
+)
 
 if (MSVC)
 	# We only use intrinsics when in MSVC

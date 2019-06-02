@@ -6,8 +6,6 @@
 #include "StartupTipDialog.h"
 
 #include <wx/button.h>
-#include <wx/image.h>
-#include <wx/imagpng.h>
 #include <wx/sizer.h>
 #include <wx/statline.h>
 #include <wx/wxhtml.h>

@@ -222,9 +222,17 @@ Render:
 		+ Fix latency of move tool
 		+ Do perf analysis
 			+ Usual sample-based one
+		+ SFML fixing:
+			+ Re-run FS cmake
+			+ Redo FS release build 
+				+ Verify static CRT in output
+			+ Redo FS install build 
+				+ Verify static CRT in output
+				+ Verify guides in output
 
-		- Complete SFML SDK w/debug
-			- nuke gabe_backup afterwards
+		- Bugs:
+			- When you turn off audio in the audio settings, it resets the terrain, so if you modified the terrain before you turned off the audio the terrain that you modified disappears.
+		- Add McShooter as tester
 
 		= Wine:
 			= Test checking for the APPLE extension for VAO's: https://developer.apple.com/opengl/OpenGL-Capabilities-Tables.pdf
@@ -234,26 +242,53 @@ Render:
 				- To make it work with Wine: https://stackoverflow.com/questions/19658745/why-is-my-opengl-version-always-2-1-on-mac-os-x
 				- Check more recent wxWidgets versions
 
-		- Automatic updates checker via file placed on floatingsandbox.com
-			- UIPreferences::CheckForUpdatesAtStartup
-			- class UpdateChecker:
-				- Wraps separate thread and conveys result via UpdateCheckOutcome
-				- Getter for UpdateCheckOutcome:
-					- Returns null if not done yet
-					- Returns UpdateCheckOutcome when done
+		= Automatic updates checker via file placed on floatingsandbox.com
+			+ UIPreferences::CheckForUpdatesAtStartup
+			= class UpdateChecker:
+				+ Wraps separate thread and conveys result via UpdateCheckOutcome
+				+ Getter for UpdateCheckOutcome:
+					+ Returns null if not done yet
+					+ Returns UpdateCheckOutcome when done
 				- Uses SFML::Network::Http
-			- At startup:
-				- MainFrame starts UpdateChecker at end of PostInitialize, and then polls it as long
+			+ At startup:
+				+ MainFrame starts UpdateChecker at end of PostInitialize, and then polls it as long
 				  as it's not null
-				- If poll OK && new version, displays popup, then nullifies it
-					- Uses NewVersionDisplayDialog
+				+ If poll OK && new version, displays popup, then nullifies it
+					+ Uses NewVersionDisplayDialog
+				+ Redo: kick-off is by timer after 10 secs, rather than at PostInitialize() - everything else stays
 			- Help->Check for Updates
 				- CheckForUpdatesDialog (Modal Dialog)
+					- Re-enable at CMakeLists.txt
 				- cctor starts UpdateChecker 
 				- Timer does progress (calling wxGauge::Pulse)
 				- On poll OK, displays with NewVersionDisplayDialog
-			- NewVersionDisplayDialog:
-				- If ccted with "atStartup", displays checkbox for turning off check on startup
+			+ NewVersionDisplayDialog:
+				+ If ccted with "atStartup", displays checkbox for turning off check on startup
+			- Test:
+				- Does not notify for old version x2
+				- Notifies for new version x2
+				- Everything stays the same at next check
+				- Blacklist checkbox clicked and re-clicked does nothing
+				- Blacklists version for next check (after checkbox)
+				- Does not check at next check (after checkbox)
+				- From http
+			- Cleanup:
+				- Cleanup changes.txt
+				- Timer: 10 sec
+
+		- Multiple textures for:
+			- Land
+				- Each has entry in texture DB
+					- Some new ones have 512 - decide one by one
+				- RenderContext::GetOceanFloorTextureCount()
+				- SettingsDialog: drop-down
+				- RenderContext::SetOceanFloorTexture(size_t)
+		- Ocean shaders:
+			- Gradient: make non-linear
+			- Texture: add non-linear (same non-linearity) darkening
+		- Land shaders:
+			- Texture: add non-linear (same non-linearity) darkening (lightest at ocean surface)
+			 
 
 		- Interior layer (*)
 
@@ -267,6 +302,10 @@ Render:
 		- Settings Manager (*)
 
 		- Instanced drawing for lights (*)
+
+
+		- Repair tool improvement
+			- When both points are in radius, use forces instead of velocity
 
 
 		- Underwater currents (*)
@@ -761,6 +800,9 @@ Render:
 
 - Dynamics:
 
+	- Different materials have different rotting speed
+		- For instance, Cardboard would soften and break apart in water within a minute or so
+
 	- Print speed (in m/s) after throwing objects with both move tools
 		- Requires slot-ification of text in text layer, and/or rotating slots
 		- Replace GameLib::StatusText with new TextLayer class
@@ -1153,6 +1195,16 @@ Render:
 		- How to Guide
 
 - UI:
+	- Save ocean floor terrain and load it at startup
+		- GameController takes root path of user world data (given by MainFrame via StandardPaths)
+			- Loads (optional) data at startup (if exists)
+			- Saves data at dctor
+			- Passes this data to world at World::cctor
+			- Preferences allows user to reset to default
+				- Conditionally, by polling GameController who checks if it has mUserOceanFloorTerrain
+				- When reset -> GameController::ResetOceanFloorTerranToDefault
+					- Nukes mUserOceanFloorTerrain and calls World::ResetOceanFloorTerranToDefault which propagates
+
 	- floatingsandbox.com: 
 		- About box (wxHyperlinkCtrl)
 		- Links menu

@@ -5,7 +5,7 @@
  ***************************************************************************************/
 #include "AboutDialog.h"
 
-#include "Version.h"
+#include <GameCore/Version.h>
 
 #include <wx/generic/statbmpg.h>
 #include <wx/settings.h>

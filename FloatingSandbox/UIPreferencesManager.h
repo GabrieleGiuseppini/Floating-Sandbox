@@ -7,6 +7,8 @@
 
 #include <Game/GameController.h>
 
+#include <GameCore/Version.h>
+
 #include <algorithm>
 #include <cassert>
 #include <filesystem>
@@ -67,6 +69,44 @@ public:
         mScreenshotsFolderPath = std::move(screenshotsFolderPath);
     }
 
+    bool GetCheckUpdatesAtStartup() const
+    {
+        return mCheckUpdatesAtStartup;
+    }
+
+    void SetCheckUpdatesAtStartup(bool value)
+    {
+        mCheckUpdatesAtStartup = value;
+    }
+
+    bool IsUpdateBlacklisted(Version const & version) const
+    {
+        return std::find(
+            mBlacklistedUpdates.begin(),
+            mBlacklistedUpdates.end(),
+            version) != mBlacklistedUpdates.end();
+    }
+
+    void AddUpdateToBlacklist(Version const & version)
+    {
+        if (std::find(
+            mBlacklistedUpdates.begin(),
+            mBlacklistedUpdates.end(),
+            version) == mBlacklistedUpdates.end())
+        {
+            mBlacklistedUpdates.push_back(version);
+        }
+    }
+
+    void RemoveUpdateFromBlacklist(Version const & version)
+    {
+        mBlacklistedUpdates.erase(
+            std::remove(
+                mBlacklistedUpdates.begin(),
+                mBlacklistedUpdates.end(),
+                version));
+    }
+
     bool GetShowStartupTip() const
     {
         return mShowStartupTip;
@@ -117,6 +157,8 @@ private:
 
     std::filesystem::path mScreenshotsFolderPath;
 
+    std::vector<Version> mBlacklistedUpdates;
+    bool mCheckUpdatesAtStartup;
     bool mShowStartupTip;
     bool mShowShipDescriptionsAtShipLoad;
 };

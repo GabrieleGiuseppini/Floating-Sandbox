@@ -6,7 +6,7 @@
 
 #include "StandardSystemPaths.h"
 
-#include "Version.h"
+#include <GameCore/Version.h>
 
 #include <wx/stdpaths.h>
 

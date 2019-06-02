@@ -25,6 +25,8 @@ UIPreferencesManager::UIPreferencesManager(std::shared_ptr<GameController> gameC
 
     mScreenshotsFolderPath = StandardSystemPaths::GetInstance().GetUserPicturesGameFolderPath();
 
+    mBlacklistedUpdates = { };
+    mCheckUpdatesAtStartup = true;
     mShowStartupTip = true;
     mShowShipDescriptionsAtShipLoad = true;
 
@@ -113,6 +115,46 @@ void UIPreferencesManager::LoadPreferences()
         }
 
         //
+        // Blacklisted updates
+        //
+
+        auto blacklistedUpdatedIt = preferencesRootObject.find("blacklisted_updates");
+        if (blacklistedUpdatedIt != preferencesRootObject.end()
+            && blacklistedUpdatedIt->second.is<picojson::array>())
+        {
+            mBlacklistedUpdates.clear();
+
+            auto blacklistedUpdates = blacklistedUpdatedIt->second.get<picojson::array>();
+            for (auto blacklistedUpdate : blacklistedUpdates)
+            {
+                if (blacklistedUpdate.is<std::string>())
+                {
+                    auto blacklistedVersion = Version::FromString(blacklistedUpdate.get<std::string>());
+
+                    if (mBlacklistedUpdates.end() == std::find(
+                        mBlacklistedUpdates.begin(),
+                        mBlacklistedUpdates.end(),
+                            blacklistedVersion))
+                    {
+                        mBlacklistedUpdates.push_back(blacklistedVersion);
+                    }
+                }
+            }
+        }
+
+
+        //
+        // Check updates at startup
+        //
+
+        auto checkUpdatesAtStartupIt = preferencesRootObject.find("check_updates_at_startup");
+        if (checkUpdatesAtStartupIt != preferencesRootObject.end()
+            && checkUpdatesAtStartupIt->second.is<bool>())
+        {
+            mCheckUpdatesAtStartup = checkUpdatesAtStartupIt->second.get<bool>();
+        }
+
+        //
         // Show startup tip
         //
 
@@ -164,6 +206,19 @@ void UIPreferencesManager::SavePreferences() const
 
     // Add screenshots folder path
     preferencesRootObject["screenshots_folder_path"] = picojson::value(mScreenshotsFolderPath.string());
+
+    // Add blacklisted updates
+
+    picojson::array blacklistedUpdates;
+    for (auto blacklistedUpdate : mBlacklistedUpdates)
+    {
+        blacklistedUpdates.push_back(picojson::value(blacklistedUpdate.ToString()));
+    }
+
+    preferencesRootObject["blacklisted_updates"] = picojson::value(blacklistedUpdates);
+
+    // Add check updates at startup
+    preferencesRootObject["check_updates_at_startup"] = picojson::value(mCheckUpdatesAtStartup);
 
     // Add show startup tip
     preferencesRootObject["show_startup_tip"] = picojson::value(mShowStartupTip);

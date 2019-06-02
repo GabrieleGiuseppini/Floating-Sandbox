@@ -46,7 +46,9 @@ set  (SOURCES
 	Utils.cpp
 	Utils.h	
 	Vectors.cpp
-	Vectors.h)
+	Vectors.h
+	Version.h	
+)
 
 source_group(" " FILES ${SOURCES})
 
