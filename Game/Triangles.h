@@ -235,10 +235,10 @@ public:
     {
         assert(mSubSpringsBuffer[triangleElementIndex].empty());
 
-        std::copy(
-            mFactorySubSpringsBuffer[triangleElementIndex].begin(),
-            mFactorySubSpringsBuffer[triangleElementIndex].end(),
-            mSubSpringsBuffer[triangleElementIndex].begin());
+        for (auto s : mFactorySubSpringsBuffer[triangleElementIndex])
+        {
+            mSubSpringsBuffer[triangleElementIndex].push_back(s);
+        }
     }
 
 private:

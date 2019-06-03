@@ -39,7 +39,7 @@ void Triangles::Destroy(ElementIndex triangleElementIndex)
 void Triangles::Restore(ElementIndex triangleElementIndex)
 {
     assert(triangleElementIndex < mElementCount);
-    assert(!IsDeleted(triangleElementIndex));
+    assert(IsDeleted(triangleElementIndex));
 
     // Clear ourselves as not deleted
     mIsDeletedBuffer[triangleElementIndex] = false;

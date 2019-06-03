@@ -53,11 +53,22 @@ public:
         // Fractional part within sample index and the next sample index
         float sampleIndexDx = sampleIndexF - sampleIndexI;
 
-        assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
-        assert(sampleIndexDx >= 0.0f && sampleIndexDx <= 1.0f);
+        // FUTURE: the following checks are temporary; as long as we have multiple mechanical
+        // iterations per step, each of the interim steps might exceed the world boundaries. The checks
+        // might be removed once the mechanical simulation may guarantee that each position update
+        // is followed by a world boundary trim
+        if (sampleIndexI < 0)
+            return mSamples[0].SampleValue;
+        else if (sampleIndexI > SamplesCount)
+            return mSamples[SamplesCount].SampleValue;
+        else
+        {
+            assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
+            assert(sampleIndexDx >= 0.0f && sampleIndexDx <= 1.0f);
 
-        return mSamples[sampleIndexI].SampleValue
-            + mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
+            return mSamples[sampleIndexI].SampleValue
+                + mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
+        }
     }
 
 private:

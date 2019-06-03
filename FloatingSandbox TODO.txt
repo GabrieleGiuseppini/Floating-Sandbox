@@ -218,6 +218,20 @@ Render:
 
 - Roadmap:
 
+	= 1.11.1:
+		+ Fix crash
+			+ Remove TODO logs and checks (discard all changes)
+			+ Fix bug
+			+ Test
+		+ Change version
+		+ Fix HMT Olympic b
+		+ Update changelist
+		+ Check if other bugs
+		- Release
+			- Git
+			- GameJolt
+		- Merge into 1.12
+
 	- 1.12.0:
 		+ Fix latency of move tool
 		+ Do perf analysis
@@ -289,6 +303,13 @@ Render:
 		- Land shaders:
 			- Texture: add non-linear (same non-linearity) darkening (lightest at ocean surface)
 			 
+
+		- TOSPREAD:
+		- Waves need to be further limited
+			- But not at creation: colliding they make too much; need a limit at UpdateField
+		- Repair tool: if both points in range, lower displacement more
+		- UI: make textboxes in settingsdialog editable
+		- Give SamminAter another RelWithDebInfo + pdb
 
 		- Interior layer (*)
 
