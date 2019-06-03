@@ -1,5 +1,6 @@
 1.11.1
 - Fixed crash that occurred at times when particles would near the world's end, for example while repairing a ship
+- Removed some smears from the H.M.T. Olympic B texture
 
 1.11.0
 - New "Repair Structure" tool! Use it on the edges of broken parts of a ship, and if you are skilled the ship structure will repair itself

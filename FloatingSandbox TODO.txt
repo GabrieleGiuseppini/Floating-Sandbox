@@ -206,10 +206,12 @@ Render:
 			+ Fix bug
 			+ Test
 		+ Change version
-		- Fix HMT Olympic b
-		- Update changes
-		- Check if other bugs
+		+ Fix HMT Olympic b
+		+ Update changelist
+		+ Check if other bugs
 		- Release
+			- Git
+			- GameJolt
 		- Merge into 1.12
 
 	- 1.12.0:
@@ -253,6 +255,13 @@ Render:
 				- On poll OK, displays with NewVersionDisplayDialog
 			- NewVersionDisplayDialog:
 				- If ccted with "atStartup", displays checkbox for turning off check on startup
+
+		- TOSPREAD:
+		- Waves need to be further limited
+			- But not at creation: colliding they make too much; need a limit at UpdateField
+		- Repair tool: if both points in range, lower displacement more
+		- UI: make textboxes in settingsdialog editable
+		- Give SamminAter another RelWithDebInfo + pdb
 
 		- Interior layer (*)
 
