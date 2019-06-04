@@ -248,6 +248,8 @@ Render:
 			+ Test checking for the APPLE extension for VAO's: https://developer.apple.com/opengl/OpenGL-Capabilities-Tables.pdf
 				+ "APPLE_vertex_array_object"
 			- Give SamminAter another RelWithDebInfo + pdb
+			- Other issues:
+				- No fullscreen mode
 
 		= Automatic updates checker via file placed on floatingsandbox.com
 			+ UIPreferences::CheckForUpdatesAtStartup
@@ -283,8 +285,28 @@ Render:
 				- Does not check at next check (after checkbox)
 				- From http
 			- Cleanup:
+				- "Click here to download ...":
+					- Button
+					- Change text
 				- Cleanup changes.txt
 				- Timer: 10 sec
+
+		- Bugs:
+			- Wavemaker sound when paused does not pause
+			- Move tool now doesn't work when paused
+				- See why
+				- Ain't that needed for world bounds though? Should run wold bound check inline while moving?
+
+
+		- Repair tool improvement:
+			- RepairTool passes RepairSessionId
+			- Points has buffer of struct RepairSmoothing{RepairSessionId currentSessionId, float smoothing}
+			- Repair interaction:
+				- Zero's smoothing if currentSessionId != this session ID
+				- Advanced smoothing (afterwards?)
+			- OLD:
+			- When both points are in radius, use forces instead of velocity
+			- OR: if both points in range, lower displacement more
 
 		- Multiple textures for:
 			- Land
@@ -303,8 +325,6 @@ Render:
 		- Waves need to be further limited
 			- But not at creation: colliding they make too much; need a limit at UpdateField
 
-		- Repair tool: if both points in range, lower displacement more
-
 		- Interior layer (*)
 
 		- Heat and combustion (*)
@@ -313,14 +333,11 @@ Render:
 		- Try with SpringRelaxation updating only positions (*)
 		- Attempt to re-instate square water drag (*)
 		- Attempt to use total point masses for springs (*)
+		- Attempt to get rid of boundary checks at OceanFloor and OceanSurface sampling
 
 		- Settings Manager (*)
 
 		- Instanced drawing for lights (*)
-
-
-		- Repair tool improvement
-			- When both points are in radius, use forces instead of velocity
 
 
 		- Underwater currents (*)
@@ -411,7 +428,7 @@ Render:
 
 - Suggestions to spec:
 	- Slow motion
-		- When bombs explode, 
+		- When bombs explode,
 	- Wreno's suggestions: https://docs.google.com/document/d/1kOYAgvh2rFYJJBnSp4DCiFm3FdJlfVEiCXQWNzJzO-I/edit
 	- Tools turning white at night
 	- Once we have ships, make "Lock Ship in View" flag and move camera with ship's center of mass (representative point or real CoM)
@@ -721,6 +738,8 @@ Render:
 
 - Gfx:
 
+	- Ship descriptions: use Mike's drawings
+
 	- Continuous auto-focus (*)
 		- Spec:
 			- Orchestrated by GameController by taking "optimal" AABB from World (which takes union of "optimal" AABB's from each ship)
@@ -815,6 +834,15 @@ Render:
 		- https://www.shadertoy.com/view/4tdXDl
 
 - Dynamics:
+
+	- Repair tool: undo decay (halve it)
+
+	- Randomize decay
+		- Perlin noise on ship, created at ShipBuilder, stored as Points::WeakNoise
+		- Used as rotting increase
+			- From PM: also, idk if you do it already, but it would be fun if the speed of decay was pseudorandomized not by much but just enough so it would cause uneven patterns of decay along the ships 
+		                   it would simulate defects in the hull or something
+				   the only way I have to help visualising what I mean is by adding some noise on top of an image of the ships and the darkness of the colour would represent the rate of decay
 
 	- Different materials have different rotting speed
 		- For instance, Cardboard would soften and break apart in water within a minute or so
@@ -1184,15 +1212,6 @@ Render:
 		- Add somehow waves to SWE height field, rather than "fake" superimposition of sins over SWE's height field
 
 - Game Interactions and Controls:
-
-	- Setting for wave width 
-		- Changing the width of the waves up to at least 10x the current size
-		- Period: https://www.quora.com/How-can-I-determine-the-period-of-a-sum-of-sines-or-cosines-or-mixed
-		- Option 1:
-			- Requires re-calculation of period (if adjustment is x-multiplier N, then period is N times basic period?)
-			- Resolution stays the same
-		- Option 2:
-			- Integral ticks to change frequencies so that period is always the same
 
 	- Interior layer (multiple textures) (*):
 		- JSON: texture is optionally an array

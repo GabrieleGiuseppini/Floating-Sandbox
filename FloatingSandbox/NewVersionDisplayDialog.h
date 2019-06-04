@@ -24,8 +24,7 @@ public:
         wxWindow* parent,
         Version const & version,
         std::vector<std::vector<std::string>> const & features,
-        bool isAtStartup,
-        std::shared_ptr<UIPreferencesManager> uiPreferencesManager);
+        UIPreferencesManager * uiPreferencesManager); // Only if at startup
 
     virtual ~NewVersionDisplayDialog();
 
@@ -44,5 +43,5 @@ private:
 
     Version const mVersion;
 
-    std::shared_ptr<UIPreferencesManager> mUIPreferencesManager;
+    UIPreferencesManager * const mUIPreferencesManager;
 };

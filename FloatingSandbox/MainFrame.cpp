@@ -5,6 +5,7 @@
  ***************************************************************************************/
 #include "MainFrame.h"
 
+#include "CheckForUpdatesDialog.h"
 #include "NewVersionDisplayDialog.h"
 #include "ShipDescriptionDialog.h"
 #include "SplashScreenDialog.h"
@@ -85,6 +86,7 @@ const long ID_MUTE_MENUITEM = wxNewId();
 
 const long ID_HELP_MENUITEM = wxNewId();
 const long ID_ABOUT_MENUITEM = wxNewId();
+const long ID_CHECK_FOR_UPDATES_MENUITEM = wxNewId();
 const long ID_OPEN_HOME_PAGE_MENUITEM = wxNewId();
 const long ID_OPEN_CODE_PAGE_MENUITEM = wxNewId();
 
@@ -439,6 +441,12 @@ MainFrame::MainFrame(wxApp * mainApp)
     wxMenuItem * aboutMenuItem = new wxMenuItem(helpMenu, ID_ABOUT_MENUITEM, _("About\tF2"), _("Show credits and other I'vedunnit stuff"), wxITEM_NORMAL);
     helpMenu->Append(aboutMenuItem);
     Connect(ID_ABOUT_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAboutMenuItemSelected);
+
+    helpMenu->Append(new wxMenuItem(helpMenu, wxID_SEPARATOR));
+
+    wxMenuItem * checkForUpdatesMenuItem = new wxMenuItem(helpMenu, ID_CHECK_FOR_UPDATES_MENUITEM, _("Check for Updates..."), wxEmptyString, wxITEM_NORMAL);
+    helpMenu->Append(checkForUpdatesMenuItem);
+    Connect(ID_CHECK_FOR_UPDATES_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnCheckForUpdatesMenuItemSelected);
 
     helpMenu->Append(new wxMenuItem(helpMenu, wxID_SEPARATOR));
 
@@ -807,8 +815,7 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
                     this,
                     *(outcome->LatestVersion),
                     outcome->Features,
-                    true, // AtStartup
-                    mUIPreferencesManager);
+                    mUIPreferencesManager.get());
 
                 dlg.ShowModal();
             }
@@ -1478,6 +1485,28 @@ void MainFrame::OnAboutMenuItemSelected(wxCommandEvent & /*event*/)
     }
 
     mAboutDialog->Open();
+}
+
+void MainFrame::OnCheckForUpdatesMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    CheckForUpdatesDialog checkDlg(this);
+    auto ret = checkDlg.ShowModal();
+    if (ret == wxID_OK)
+    {
+        assert(!!checkDlg.GetHasVersionOutcome());
+
+        //
+        // Notify user of new version
+        //
+
+        NewVersionDisplayDialog newVersionDlg(
+            this,
+            *(checkDlg.GetHasVersionOutcome()->LatestVersion),
+            checkDlg.GetHasVersionOutcome()->Features,
+            nullptr);
+
+        newVersionDlg.ShowModal();
+    }
 }
 
 void MainFrame::OnOpenHomePageMenuItemSelected(wxCommandEvent & /*event*/)

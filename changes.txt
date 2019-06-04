@@ -1,5 +1,20 @@
+1.11.0
+- Feature 1 added "Orphaned particles rendering": individual particles that break off the ship structure used to disappear, while they are now rendered contributing to debris, flotsam, and rubble
+- Test foo bar - heading of feature 2
+	- Sub feature 2 1
+	- Sub feature 2 2: Redesigned waves sub-system: waves now consist of ocean waves and waves generated either manually with the new "WaveMaker" tool, or automatically like tsunami and rogue waves (see https://gabrielegiuseppini.wordpress.com/2019/05/12/1d-simulation-of-ocean-waves/)	
+- Also dry parts of a ship now rot when exposed to sea water, albeit *very* slowly...
+- Improved "Move" tool to only move - and rotate - loosened parts of a ship
+- Increased number of ephemeral particles, and improved performance of air bubbles
+- Feature 3 added a few new materials, including "stainless" materials that never rot, rubber, and LEGO(c) bricks!
+	- Sub feature 3 1
+- Fixed bug that would crash the game when setting the number of clouds to zero on computers with specific graphics cards
+- ...and a few more small improvements here and there
+- 63 new ships
+- Musical theme for this release: Evanescence, entire discography
+
 1.12.0
-- 
+- Smoother move tool
 
 1.11.1
 - Fixed crash that occurred at times when particles would near the world's end, for example while repairing a ship

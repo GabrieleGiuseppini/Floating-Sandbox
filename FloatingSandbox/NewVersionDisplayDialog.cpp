@@ -15,11 +15,10 @@ NewVersionDisplayDialog::NewVersionDisplayDialog(
     wxWindow* parent,
     Version const & version,
     std::vector<std::vector<std::string>> const & features,
-    bool isAtStartup,
-    std::shared_ptr<UIPreferencesManager> uiPreferencesManager)
+    UIPreferencesManager * uiPreferencesManager)
     : wxDialog(parent, wxID_ANY, wxString(_("A New Version Is Available!")), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxSTAY_ON_TOP)
     , mVersion(version)
-    , mUIPreferencesManager(std::move(uiPreferencesManager))
+    , mUIPreferencesManager(uiPreferencesManager)
 {
     wxBoxSizer * topSizer = new wxBoxSizer(wxVERTICAL);
 
@@ -43,7 +42,7 @@ NewVersionDisplayDialog::NewVersionDisplayDialog(
     topSizer->Add(new wxStaticLine(this, wxID_ANY), 0, wxEXPAND | wxLEFT | wxRIGHT, 10);
 #endif // wxUSE_STATLINE
 
-    if (isAtStartup)
+    if (nullptr != uiPreferencesManager)
     {
         {
             wxCheckBox * dontNotifyChk = new wxCheckBox(this, wxID_ANY, "Don't notify about this version again");
@@ -159,6 +158,8 @@ void NewVersionDisplayDialog::OnHtmlLinkClicked(wxHtmlLinkEvent & event)
 
 void NewVersionDisplayDialog::OnDoNotNotifyAboutThisVersionAgainCheckboxChanged(wxCommandEvent & event)
 {
+    assert(nullptr != mUIPreferencesManager);
+
     if (event.IsChecked())
     {
         mUIPreferencesManager->AddUpdateToBlacklist(mVersion);
@@ -171,5 +172,7 @@ void NewVersionDisplayDialog::OnDoNotNotifyAboutThisVersionAgainCheckboxChanged(
 
 void NewVersionDisplayDialog::OnDoNotCheckForUpdatesAtStartupCheckboxChanged(wxCommandEvent & event)
 {
+    assert(nullptr != mUIPreferencesManager);
+
     mUIPreferencesManager->SetCheckUpdatesAtStartup(!event.IsChecked());
 }

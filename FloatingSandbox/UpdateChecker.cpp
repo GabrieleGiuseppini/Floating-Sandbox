@@ -94,6 +94,7 @@ void UpdateChecker::WorkerThread()
     {
         // TODOTEST
         std::ifstream f("C:\\Users\\Neurodancer\\source\\repos\\Floating-Sandbox\\changes.txt");
+        std::this_thread::sleep_for(std::chrono::seconds(2));
 
         std::unique_ptr<char[]> buf(new char[ReadBufferSize]);
         f.read(buf.get(), ReadBufferSize);

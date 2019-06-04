@@ -6,8 +6,8 @@
 set  (FLOATING_SANDBOX_SOURCES
 	AboutDialog.cpp
 	AboutDialog.h
-	#CheckForUpdatesDialog.cpp
-	#CheckForUpdatesDialog.h
+	CheckForUpdatesDialog.cpp
+	CheckForUpdatesDialog.h
 	EventTickerPanel.cpp
 	EventTickerPanel.h
 	HelpDialog.cpp
