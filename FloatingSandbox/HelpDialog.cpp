@@ -9,7 +9,6 @@
 #include <wx/image.h>
 #include <wx/imagpng.h>
 #include <wx/sizer.h>
-#include <wx/statline.h>
 #include <wx/wxhtml.h>
 
 HelpDialog::HelpDialog(
@@ -34,17 +33,7 @@ HelpDialog::HelpDialog(
 
     topSizer->Add(html, 1, wxALL, 10);
 
-#if wxUSE_STATLINE
-    topSizer->Add(new wxStaticLine(this, wxID_ANY), 0, wxEXPAND | wxLEFT | wxRIGHT, 10);
-#endif // wxUSE_STATLINE
-
-    wxButton * okButton = new wxButton(this, wxID_OK, _("OK"));
-    okButton->SetDefault();
-
-    topSizer->Add(okButton, 0, wxALL | wxALIGN_RIGHT, 15);
-
-    this->SetSizer(topSizer);
-    topSizer->Fit(this);
+    this->SetSizerAndFit(topSizer);
 
     Centre(wxCENTER_ON_SCREEN | wxBOTH);
 }
