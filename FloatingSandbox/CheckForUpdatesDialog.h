@@ -1,13 +1,14 @@
 /***************************************************************************************
  * Original Author:     Gabriele Giuseppini
- * Created:             2019-03-20
+ * Created:             2019-06-02
  * Copyright:           Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
  ***************************************************************************************/
 #pragma once
 
-#include "UIPreferencesManager.h"
+#include "UpdateChecker.h"
 
-#include <wx/filepicker.h>
+#include <wx/gauge.h>
+#include <wx/panel.h>
 #include <wx/wx.h>
 
 #include <memory>
@@ -17,41 +18,36 @@ class CheckForUpdatesDialog : public wxDialog
 public:
 
     CheckForUpdatesDialog(
-        wxWindow * parent,
-        std::shared_ptr<UIPreferencesManager> uiPreferencesManager);
+        wxWindow * parent);
 
     virtual ~CheckForUpdatesDialog();
 
-    void Open();
+    std::optional<UpdateChecker::Outcome> GetHasVersionOutcome() const
+    {
+        return mHasVersionOutcome;
+    }
 
 private:
 
-    void OnScreenshotDirPickerChanged(wxCommandEvent & event);
-    void OnShowTipOnStartupCheckBoxClicked(wxCommandEvent & event);
-    void OnShowShipDescriptionAtShipLoadCheckBoxClicked(wxCommandEvent & event);
-    void OnShowTsunamiNotificationsCheckBoxClicked(wxCommandEvent & event);
+    void OnCheckCompletionTimer(wxTimerEvent & event);
 
-    void OnOkButton(wxCommandEvent & event);
+    void ShowNoUpdateMessage(std::string message);
 
 private:
 
-    void PopulateMainPanel(wxPanel * panel);
+    std::unique_ptr<wxTimer> mCheckCompletionTimer;
 
-    void ReadSettings();
+    wxBoxSizer * mPanelSizer;
 
-private:
+    wxPanel * mCheckingPanel;
+    wxGauge * mCheckingGauge;
 
-    // Main panel
-    wxDirPickerCtrl * mScreenshotDirPickerCtrl;
-    wxCheckBox * mShowTipOnStartupCheckBox;
-    wxCheckBox * mShowShipDescriptionAtShipLoadCheckBox;
-    wxCheckBox * mShowTsunamiNotificationsCheckBox;
-
-    // Buttons
-    wxButton * mOkButton;
+    wxPanel * mNoUpdatePanel;
+    wxStaticText * mNoUpdateMessage;
 
 private:
 
-    wxWindow * const mParent;
-    std::shared_ptr<UIPreferencesManager> mUIPreferencesManager;
+    std::unique_ptr<UpdateChecker> mUpdateChecker;
+
+    std::optional<UpdateChecker::Outcome> mHasVersionOutcome;
 };
