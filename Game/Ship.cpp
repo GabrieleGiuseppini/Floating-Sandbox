@@ -166,9 +166,7 @@ void Ship::Update(
     // Trim for world bounds
     //
 
-    TrimForWorldBounds(
-        currentSimulationTime,
-        gameParameters);
+    TrimForWorldBounds(gameParameters);
 
 
     //
@@ -689,9 +687,7 @@ void Ship::HandleCollisionsWithSeaFloor(GameParameters const & gameParameters)
     }
 }
 
-void Ship::TrimForWorldBounds(
-    float /*currentSimulationTime*/,
-    GameParameters const & /*gameParameters*/)
+void Ship::TrimForWorldBounds(GameParameters const & /*gameParameters*/)
 {
     static constexpr float MaxBounceVelocity = 50.0f;
 
@@ -2022,12 +2018,11 @@ void Ship::DoBombExplosion(
         * (gameParameters.IsUltraViolentMode ? 100.0f : 1.0f);
 
     // Store the force field
-    mCurrentForceFields.emplace_back(
-        new BlastForceField(
-            blastPosition,
-            blastRadius,
-            strength,
-            sequenceProgress == 0.0f));
+    AddForceField<BlastForceField>(
+        blastPosition,
+        blastRadius,
+        strength,
+        sequenceProgress == 0.0f);
 }
 
 void Ship::DoAntiMatterBombPreimplosion(
@@ -2040,12 +2035,11 @@ void Ship::DoAntiMatterBombPreimplosion(
         * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
 
     // Store the force field
-    mCurrentForceFields.emplace_back(
-        new RadialSpaceWarpForceField(
-            centerPosition,
-            7.0f + sequenceProgress * 100.0f,
-            10.0f,
-            strength));
+    AddForceField<RadialSpaceWarpForceField>(
+        centerPosition,
+        7.0f + sequenceProgress * 100.0f,
+        10.0f,
+        strength);
 }
 
 void Ship::DoAntiMatterBombImplosion(
@@ -2060,10 +2054,9 @@ void Ship::DoAntiMatterBombImplosion(
         * (gameParameters.IsUltraViolentMode ? 50.0f : 1.0f);
 
     // Store the force field
-    mCurrentForceFields.emplace_back(
-        new ImplosionForceField(
-            centerPosition,
-            strength));
+    AddForceField<ImplosionForceField>(
+        centerPosition,
+        strength);
 }
 
 void Ship::DoAntiMatterBombExplosion(
@@ -2082,10 +2075,9 @@ void Ship::DoAntiMatterBombExplosion(
             * (gameParameters.IsUltraViolentMode ? 50.0f : 1.0f);
 
         // Store the force field
-        mCurrentForceFields.emplace_back(
-            new RadialExplosionForceField(
-                centerPosition,
-                strength));
+        AddForceField<RadialExplosionForceField>(
+            centerPosition,
+            strength);
     }
 }
 

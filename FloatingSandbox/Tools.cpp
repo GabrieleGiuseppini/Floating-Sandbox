@@ -119,7 +119,7 @@ void ContinuousTool::Update(InputState const & inputState)
     // We apply the tool only if the left mouse button is down
     if (inputState.IsLeftMouseDown)
     {
-        auto now = GameWallClock::GetInstance().Now();
+        auto const now = std::chrono::steady_clock::now();
 
         // Accumulate total time iff we haven't moved since last time
         if (mPreviousMousePosition == inputState.MousePosition)
@@ -544,7 +544,7 @@ ScrubTool::ScrubTool(
     , mDownCursor(MakeCursor("scrub_cursor_down", 15, 15, resourceLoader))
     , mPreviousMousePos()
     , mPreviousScrub()
-    , mPreviousScrubTimestamp(GameWallClock::time_point::min())
+    , mPreviousScrubTimestamp(std::chrono::steady_clock::time_point::min())
 {
 }
 

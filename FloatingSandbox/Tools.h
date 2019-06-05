@@ -10,8 +10,6 @@
 #include <Game/GameController.h>
 #include <Game/ResourceLoader.h>
 
-#include <GameCore/GameWallClock.h>
-
 #include <wx/cursor.h>
 #include <wx/frame.h>
 
@@ -175,7 +173,7 @@ public:
     {
         // Initialize the continuous tool state
         mPreviousMousePosition = inputState.MousePosition;
-        mPreviousTimestamp = GameWallClock::GetInstance().Now();
+        mPreviousTimestamp = std::chrono::steady_clock::now();
         mCumulatedTime = std::chrono::microseconds(0);
     }
 
@@ -187,7 +185,7 @@ public:
     {
         // Initialize the continuous tool state
         mPreviousMousePosition = inputState.MousePosition;
-        mPreviousTimestamp = GameWallClock::GetInstance().Now();
+        mPreviousTimestamp = std::chrono::steady_clock::now();
         mCumulatedTime = std::chrono::microseconds(0);
     }
 
@@ -216,7 +214,7 @@ protected:
             std::move(soundController))
         , mCurrentCursor(nullptr)
         , mPreviousMousePosition()
-        , mPreviousTimestamp(GameWallClock::GetInstance().Now())
+        , mPreviousTimestamp(std::chrono::steady_clock::now())
         , mCumulatedTime(0)
     {}
 
@@ -254,7 +252,7 @@ private:
 
     // Previous mouse position and time when we looked at it
     vec2f mPreviousMousePosition;
-    GameWallClock::time_point mPreviousTimestamp;
+    std::chrono::steady_clock::time_point mPreviousTimestamp;
 
     // The total accumulated press time - the proxy for the strength of the tool
     std::chrono::microseconds mCumulatedTime;
@@ -304,7 +302,7 @@ public:
             // We're following a trajectory
             //
 
-            auto const now = GameWallClock::GetInstance().Now();
+            auto const now = std::chrono::steady_clock::now();
 
             //
             // Smooth current position
@@ -377,6 +375,8 @@ public:
     {
         if (!!mEngagedElementId)
         {
+            auto const now = std::chrono::steady_clock::now();
+
             if (!!mCurrentTrajectory)
             {
                 //
@@ -388,9 +388,9 @@ public:
 
                 // If we're enough into the trajectory, restart the timing - to avoid cramming a mouse move stretche
                 // into a tiny little time interval
-                if (GameWallClock::GetInstance().Now() > mCurrentTrajectory->StartTimestamp + TrajectoryLag / 2)
+                if (now > mCurrentTrajectory->StartTimestamp + TrajectoryLag / 2)
                 {
-                    mCurrentTrajectory->StartTimestamp = GameWallClock::GetInstance().Now();
+                    mCurrentTrajectory->StartTimestamp = now;
                     mCurrentTrajectory->EndTimestamp = mCurrentTrajectory->StartTimestamp + TrajectoryLag;
                 }
             }
@@ -404,7 +404,7 @@ public:
                 mCurrentTrajectory->RotationCenter = mRotationCenter;
                 mCurrentTrajectory->StartPosition = inputState.PreviousMousePosition;
                 mCurrentTrajectory->CurrentPosition = mCurrentTrajectory->StartPosition;
-                mCurrentTrajectory->StartTimestamp = GameWallClock::GetInstance().Now();
+                mCurrentTrajectory->StartTimestamp = now;
                 mCurrentTrajectory->EndTimestamp = mCurrentTrajectory->StartTimestamp + TrajectoryLag;
             }
 
@@ -560,8 +560,8 @@ private:
         vec2f CurrentPosition;
         vec2f EndPosition;
 
-        GameWallClock::time_point StartTimestamp;
-        GameWallClock::time_point EndTimestamp;
+        std::chrono::steady_clock::time_point StartTimestamp;
+        std::chrono::steady_clock::time_point EndTimestamp;
 
         Trajectory(ElementId engagedElementId)
             : EngagedElementId(engagedElementId)
@@ -623,7 +623,7 @@ public:
             // We're following a trajectory
             //
 
-            auto const now = GameWallClock::GetInstance().Now();
+            auto const now = std::chrono::steady_clock::now();
 
             //
             // Smooth current position
@@ -711,7 +711,7 @@ public:
             }
 
             mCurrentTrajectory->EndPosition = inputState.MousePosition;
-            mCurrentTrajectory->StartTimestamp = GameWallClock::GetInstance().Now();
+            mCurrentTrajectory->StartTimestamp = std::chrono::steady_clock::now();
             mCurrentTrajectory->EndTimestamp = mCurrentTrajectory->StartTimestamp + TrajectoryLag;
         }
     }
@@ -864,8 +864,8 @@ private:
         vec2f CurrentPosition;
         vec2f EndPosition;
 
-        GameWallClock::time_point StartTimestamp;
-        GameWallClock::time_point EndTimestamp;
+        std::chrono::steady_clock::time_point StartTimestamp;
+        std::chrono::steady_clock::time_point EndTimestamp;
     };
 
     static constexpr std::chrono::milliseconds TrajectoryLag = std::chrono::milliseconds(300);
@@ -1857,7 +1857,7 @@ public:
 
         // Reset scrub detection
         mPreviousScrub.reset();
-        mPreviousScrubTimestamp = GameWallClock::time_point::min();
+        mPreviousScrubTimestamp = std::chrono::steady_clock::time_point::min();
     }
 
     virtual void Deinitialize(InputState const & /*inputState*/) override {}
@@ -1881,7 +1881,7 @@ public:
                     vec2f const newScrub = inputState.MousePosition - *mPreviousMousePos;
                     if (newScrub.length() > 1.0f)
                     {
-                        auto const now = GameWallClock::GetInstance().Now();
+                        auto const now = std::chrono::steady_clock::now();
 
                         if (!mPreviousScrub
                             || abs(mPreviousScrub->angle(newScrub)) > Pi<float> / 2.0f    // Direction change
@@ -1907,7 +1907,7 @@ public:
         // Initialize state
         mPreviousMousePos = inputState.MousePosition;
         mPreviousScrub.reset();
-        mPreviousScrubTimestamp = GameWallClock::time_point::min();
+        mPreviousScrubTimestamp = std::chrono::steady_clock::time_point::min();
 
         // Set current cursor to the down cursor
         mCurrentCursor = mDownCursor.get();
@@ -1956,7 +1956,7 @@ private:
     std::optional<vec2f> mPreviousScrub;
 
     // The time at which we have last played a scrub sound
-    GameWallClock::time_point mPreviousScrubTimestamp;
+    std::chrono::steady_clock::time_point mPreviousScrubTimestamp;
 };
 
 class RepairStructureTool final : public Tool
@@ -2002,7 +2002,7 @@ public:
             if (!mEngagementStartTimestamp)
             {
                 // State change
-                mEngagementStartTimestamp = GameWallClock::GetInstance().Now();
+                mEngagementStartTimestamp = std::chrono::steady_clock::now();
 
                 // Start sound
                 mSoundController->PlayRepairStructureSound();
@@ -2046,7 +2046,7 @@ private:
     {
         if (!!mEngagementStartTimestamp)
         {
-            auto totalElapsed = std::chrono::duration_cast<std::chrono::milliseconds>(GameWallClock::GetInstance().Now() - *mEngagementStartTimestamp);
+            auto totalElapsed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - *mEngagementStartTimestamp);
 
             // Synchronize with sound
             auto cursorPhase = (totalElapsed.count() % 1000);
@@ -2080,7 +2080,7 @@ private:
 private:
 
     // When set, we are engaged
-    std::optional<GameWallClock::time_point> mEngagementStartTimestamp;
+    std::optional<std::chrono::steady_clock::time_point> mEngagementStartTimestamp;
 
     // The currently-chosen cursor
     wxCursor * mCurrentCursor;

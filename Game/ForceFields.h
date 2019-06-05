@@ -20,13 +20,38 @@ class ForceField
 {
 public:
 
+    enum class Type
+    {
+        Draw,
+        Swirl,
+        Blast,
+        RadialSpaceWarp,
+        Implosion,
+        RadialExplosion
+    };
+
     virtual ~ForceField()
     {}
+
+    Type GetType() const
+    {
+        return mType;
+    }
 
     virtual void Apply(
         Points & points,
         float currentSimulationTime,
         GameParameters const & gameParameters) const = 0;
+
+protected:
+
+    ForceField(Type type)
+        : mType(type)
+    {}
+
+private:
+
+    Type const mType;
 };
 
 /*
@@ -36,12 +61,23 @@ class DrawForceField final : public ForceField
 {
 public:
 
+    static ForceField::Type constexpr ForceFieldType = ForceField::Type::Draw;
+
     DrawForceField(
         vec2f const & centerPosition,
         float strength)
-        : mCenterPosition(centerPosition)
+        : ForceField(ForceFieldType)
+        , mCenterPosition(centerPosition)
         , mStrength(strength)
     {}
+
+    void Reset(
+        vec2f const & centerPosition,
+        float strength)
+    {
+        mCenterPosition = centerPosition;
+        mStrength = strength;
+    }
 
     virtual void Apply(
         Points & points,
@@ -50,8 +86,8 @@ public:
 
 private:
 
-    vec2f const mCenterPosition;
-    float const mStrength;
+    vec2f mCenterPosition;
+    float mStrength;
 };
 
 /*
@@ -61,12 +97,23 @@ class SwirlForceField final : public ForceField
 {
 public:
 
+    static ForceField::Type constexpr ForceFieldType = ForceField::Type::Swirl;
+
     SwirlForceField(
         vec2f const & centerPosition,
         float strength)
-        : mCenterPosition(centerPosition)
+        : ForceField(ForceFieldType)
+        , mCenterPosition(centerPosition)
         , mStrength(strength)
     {}
+
+    void Reset(
+        vec2f const & centerPosition,
+        float strength)
+    {
+        mCenterPosition = centerPosition;
+        mStrength = strength;
+    }
 
     virtual void Apply(
         Points & points,
@@ -75,8 +122,8 @@ public:
 
 private:
 
-    vec2f const mCenterPosition;
-    float const mStrength;
+    vec2f mCenterPosition;
+    float mStrength;
 };
 
 /*
@@ -91,7 +138,8 @@ public:
         float blastRadius,
         float strength,
         bool detachPoint)
-        : mCenterPosition(centerPosition)
+        : ForceField(Type::Blast)
+        , mCenterPosition(centerPosition)
         , mBlastRadius(blastRadius)
         , mStrength(strength)
         , mDetachPoint(detachPoint)
@@ -122,7 +170,8 @@ public:
         float radius,
         float radiusThickness,
         float strength)
-        : mCenterPosition(centerPosition)
+        : ForceField(Type::RadialSpaceWarp)
+        , mCenterPosition(centerPosition)
         , mRadius(radius)
         , mRadiusThickness(radiusThickness)
         , mStrength(strength)
@@ -152,7 +201,8 @@ public:
     ImplosionForceField(
         vec2f const & centerPosition,
         float strength)
-        : mCenterPosition(centerPosition)
+        : ForceField(Type::Implosion)
+        , mCenterPosition(centerPosition)
         , mStrength(strength)
     {}
 
@@ -177,7 +227,8 @@ public:
     RadialExplosionForceField(
         vec2f const & centerPosition,
         float strength)
-        : mCenterPosition(centerPosition)
+        : ForceField(Type::RadialExplosion)
+        , mCenterPosition(centerPosition)
         , mStrength(strength)
     {}
 

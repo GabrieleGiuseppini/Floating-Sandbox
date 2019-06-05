@@ -194,9 +194,7 @@ public:
 
     void HandleCollisionsWithSeaFloor(GameParameters const & gameParameters);
 
-    void TrimForWorldBounds(
-        float currentSimulationTime,
-        GameParameters const & gameParameters);
+    void TrimForWorldBounds(GameParameters const & gameParameters);
 
     // Water
 
@@ -286,6 +284,35 @@ private:
         vec2f const & cutDirectionEndPos,
         float currentSimulationTime,
         GameParameters const & gameParameters);
+
+    template<typename TForceField, typename... TArgs>
+    void AddForceField(TArgs&&... args)
+    {
+        mCurrentForceFields.emplace_back(
+            new TForceField(std::forward<TArgs>(args)...));
+    }
+
+    template<typename TForceField, typename... TArgs>
+    void AddOrResetForceField(TArgs&&... args)
+    {
+        auto it = std::find_if(
+            mCurrentForceFields.begin(),
+            mCurrentForceFields.end(),
+            [](auto const & ff)
+            {
+                return ff->GetType() == TForceField::ForceFieldType;
+            });
+
+        if (it == mCurrentForceFields.end())
+        {
+            AddForceField<TForceField>(std::forward<TArgs>(args)...);
+        }
+        else
+        {
+            TForceField * forceField = dynamic_cast<TForceField *>(it->get());
+            forceField->Reset(std::forward<TArgs>(args)...);
+        }
+    }
 
 private:
 

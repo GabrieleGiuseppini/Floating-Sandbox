@@ -84,6 +84,8 @@ void Ship::MoveBy(
                 mPoints.SetVelocity(p, velocity);
             }
         }
+
+        TrimForWorldBounds(gameParameters);
     }
 }
 
@@ -105,6 +107,8 @@ void Ship::MoveAllBy(
         positionBuffer[p] += offset;
         velocityBuffer[p] = velocity;
     }
+
+    TrimForWorldBounds(gameParameters);
 }
 
 void Ship::RotateBy(
@@ -136,6 +140,8 @@ void Ship::RotateBy(
                 mPoints.GetPosition(p) = pos;
             }
         }
+
+        TrimForWorldBounds(gameParameters);
     }
 }
 
@@ -163,6 +169,8 @@ void Ship::RotateAllBy(
         velocityBuffer[p] = (pos - positionBuffer[p]) * inertia;
         positionBuffer[p] = pos;
     }
+
+    TrimForWorldBounds(gameParameters);
 }
 
 void Ship::DestroyAt(
@@ -617,10 +625,9 @@ void Ship::DrawTo(
         * (gameParameters.IsUltraViolentMode ? 20.0f : 1.0f);
 
     // Store the force field
-    mCurrentForceFields.emplace_back(
-        new DrawForceField(
-            targetPos,
-            strength));
+    AddOrResetForceField<DrawForceField>(
+        targetPos,
+        strength);
 }
 
 void Ship::SwirlAt(
@@ -634,10 +641,9 @@ void Ship::SwirlAt(
         * (gameParameters.IsUltraViolentMode ? 20.0f : 1.0f);
 
     // Store the force field
-    mCurrentForceFields.emplace_back(
-        new SwirlForceField(
-            targetPos,
-            strength));
+    AddOrResetForceField<SwirlForceField>(
+        targetPos,
+        strength);
 }
 
 bool Ship::TogglePinAt(
