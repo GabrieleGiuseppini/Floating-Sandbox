@@ -85,6 +85,8 @@ void Points::Add(
 
     mIsPinnedBuffer.emplace_back(false);
 
+    mRepairSmoothingBuffer.emplace_back();
+
     mColorBuffer.emplace_back(color);
     mTextureCoordinatesBuffer.emplace_back(textureCoordinates);
 }
@@ -329,7 +331,7 @@ void Points::UpdateEphemeralParticles(
             {
                 case EphemeralType::AirBubble:
                 {
-                    // Do not advance air bubble it it's pinned
+                    // Do not advance air bubble if it's pinned
                     if (!mIsPinnedBuffer[pointIndex])
                     {
                         float const waterHeight = mParentWorld.GetOceanSurfaceHeightAt(GetPosition(pointIndex).x);

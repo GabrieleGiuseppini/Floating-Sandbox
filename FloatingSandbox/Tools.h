@@ -1987,10 +1987,6 @@ public:
         if (inputState.IsLeftMouseDown)
         {
             isEngaged = true;
-
-            mGameController->RepairAt(
-                inputState.MousePosition,
-                1.0f);
         }
         else
         {
@@ -2002,11 +1998,24 @@ public:
             if (!mEngagementStartTimestamp)
             {
                 // State change
+                mCurrentSessionId += 1;
+                mCurrentSessionStepId = 1;
                 mEngagementStartTimestamp = std::chrono::steady_clock::now();
 
                 // Start sound
                 mSoundController->PlayRepairStructureSound();
             }
+            else
+            {
+                mCurrentSessionStepId += 1;
+            }
+
+            // Repair
+            mGameController->RepairAt(
+                inputState.MousePosition,
+                1.0f,
+                mCurrentSessionId,
+                mCurrentSessionStepId);
 
             // Update cursor
             UpdateCurrentCursor();
@@ -2081,6 +2090,10 @@ private:
 
     // When set, we are engaged
     std::optional<std::chrono::steady_clock::time_point> mEngagementStartTimestamp;
+
+    // The current session id, and the current step in that session
+    RepairSessionId mCurrentSessionId;
+    RepairSessionStepId mCurrentSessionStepId;
 
     // The currently-chosen cursor
     wxCursor * mCurrentCursor;

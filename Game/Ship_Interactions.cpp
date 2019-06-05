@@ -244,9 +244,25 @@ void Ship::DestroyAt(
 void Ship::RepairAt(
     vec2f const & targetPos,
     float radiusMultiplier,
+    RepairSessionId sessionId,
+    RepairSessionStepId stepId,
     float /*currentSimulationTime*/,
     GameParameters const & gameParameters)
 {
+    ///////////////////////////////////////////////////////
+
+    // Rate at which the "other" endpoint of a spring accelerates towards the velocity
+    // required for repairing
+    float constexpr SmoothingAlpha = 0.01f;
+
+    // Tolerance to distance
+    //
+    // Note: a higher tolerance here causes springs to...spring into life
+    // already stretched or compressed, generating an undesirable force impulse
+    float constexpr DisplacementTolerance = 0.1f;
+
+    ///////////////////////////////////////////////////////
+
     float const searchRadius =
         gameParameters.RepairRadius
         * radiusMultiplier;
@@ -282,9 +298,35 @@ void Ship::RepairAt(
                 {
                     ////////////////////////////////////////////////////////
                     //
-                    // Restore this spring or move the other endpoint nearer
+                    // Restore this spring moving the other endpoint nearer
                     //
                     ////////////////////////////////////////////////////////
+
+                    auto const otherEndpointIndex = fcs.OtherEndpointIndex;
+
+                    //
+                    // Advance the other endpoint's repair smoothing
+                    //
+
+                    if (mPoints.GetRepairSmoothing(otherEndpointIndex).SessionId != sessionId)
+                    {
+                        // First time this point is repaired in this session...
+                        // ...make its smoothing start from zero
+                        mPoints.GetRepairSmoothing(otherEndpointIndex).Smoothing = 0.0f;
+
+                        mPoints.GetRepairSmoothing(otherEndpointIndex).SessionId = sessionId;
+                    }
+
+                    if (mPoints.GetRepairSmoothing(otherEndpointIndex).StepId != stepId)
+                    {
+                        // First time this point is considered in this session step...
+                        // ...advance its smoothing
+                        mPoints.GetRepairSmoothing(otherEndpointIndex).Smoothing +=
+                            (1.0f - mPoints.GetRepairSmoothing(otherEndpointIndex).Smoothing)
+                            * SmoothingAlpha;
+
+                        mPoints.GetRepairSmoothing(otherEndpointIndex).StepId = stepId;
+                    }
 
                     //
                     // The target position of the endpoint is on the circle whose radius
@@ -405,22 +447,16 @@ void Ship::RepairAt(
                     //
 
                     // Displacement vector (positive towards target point)
-                    vec2f const displacementVector = targetOtherEndpointPosition - mPoints.GetPosition(fcs.OtherEndpointIndex);
+                    vec2f const displacementVector = targetOtherEndpointPosition - mPoints.GetPosition(otherEndpointIndex);
 
                     // Distance
                     float displacementMagnitude = displacementVector.length();
-
-                    // Tolerance to distance
-                    //
-                    // Note: a higher tolerance here causes springs to...spring into life
-                    // already stretched or compressed, generating an undesirable force impulse
-                    float constexpr DisplacementTolerance = 0.1f;
 
                     // Check whether we are still further away than our tolerance,
                     // and whether this point is free to move
                     bool hasOtherEndpointPointBeenMoved = false;
                     if (displacementMagnitude > DisplacementTolerance
-                        && !mPoints.IsPinned(fcs.OtherEndpointIndex))
+                        && !mPoints.IsPinned(otherEndpointIndex))
                     {
                         //
                         // Endpoints are too far...
@@ -441,6 +477,9 @@ void Ship::RepairAt(
 
                         // Movement magnitude
                         //
+                        // The magnitude is multiplied with the point's repair smoothing, which goes
+                        // from 0.0 at the moment the point is first engaged, to 1.0 later on
+                        //
                         // Note: here we calculate the movement based on the static positions
                         // of the two endpoints; however, if the two endpoints have a non-zero
                         // relative velocity, then this movement won't achieve the desired effect
@@ -450,10 +489,11 @@ void Ship::RepairAt(
                         float const movementMagnitude =
                             pow(displacementMagnitude, gameParameters.RepairStrengthAdjustment)
                             * MovementFraction
-                            * toolStrength;
+                            * toolStrength
+                            * mPoints.GetRepairSmoothing(otherEndpointIndex).Smoothing;
 
                         // Move point
-                        mPoints.GetPosition(fcs.OtherEndpointIndex) +=
+                        mPoints.GetPosition(otherEndpointIndex) +=
                             movementDir
                             * movementMagnitude;
 
@@ -461,14 +501,13 @@ void Ship::RepairAt(
                         assert(movementMagnitude < displacementMagnitude);
                         displacementMagnitude -= movementMagnitude;
 
-                        // Impart some non-linear inertia (smaller at higher displacements),
-                        // just for better looks
+                        // Impart some non-linear inertia (smaller at higher displacements)
                         // (note: last one that pulls this point wins)
-                        mPoints.GetVelocity(fcs.OtherEndpointIndex) =
+                        mPoints.GetVelocity(otherEndpointIndex) =
                             movementDir
                             * ((movementMagnitude < 0.0f) ? -1.0f : 1.0f)
-                            * sqrtf(abs(movementMagnitude))
-                            / GameParameters::GameParameters::SimulationStepTimeDuration<float>
+                            * pow(abs(movementMagnitude), 0.2f)
+                            / GameParameters::SimulationStepTimeDuration<float>
                             * 0.5f;
 
                         // Remember that we've acted on the other endpoint
@@ -493,7 +532,7 @@ void Ship::RepairAt(
                         assert(!mSprings.IsDeleted(fcs.SpringIndex));
 
                         // Brake the other endpoint
-                        mPoints.SetVelocity(fcs.OtherEndpointIndex, vec2f::zero());
+                        mPoints.SetVelocity(otherEndpointIndex, vec2f::zero());
 
                         // Remember that we've acted on the other endpoint
                         hasOtherEndpointPointBeenMoved = true;
@@ -506,7 +545,7 @@ void Ship::RepairAt(
 
                     if (hasOtherEndpointPointBeenMoved)
                     {
-                        mPoints.GetWater(fcs.OtherEndpointIndex) /= 2.0f;
+                        mPoints.GetWater(otherEndpointIndex) /= 2.0f;
                     }
                 }
             }

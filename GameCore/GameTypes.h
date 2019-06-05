@@ -207,6 +207,14 @@ enum class DurationShortLongType
 
 DurationShortLongType StrToDurationShortLongType(std::string const & str);
 
+/*
+ * Repair session ID, and step ID within a session.
+ *
+ * Not comparable, not ordered.
+ */
+using RepairSessionId = std::uint32_t;
+using RepairSessionStepId = std::uint32_t;
+
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // Rendering
 ////////////////////////////////////////////////////////////////////////////////////////////////

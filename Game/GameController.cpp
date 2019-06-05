@@ -393,7 +393,9 @@ void GameController::DestroyAt(
 
 void GameController::RepairAt(
     vec2f const & screenCoordinates,
-    float radiusMultiplier)
+    float radiusMultiplier,
+    RepairSessionId sessionId,
+    RepairSessionStepId stepId)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -402,6 +404,8 @@ void GameController::RepairAt(
     mWorld->RepairAt(
         worldCoordinates,
         radiusMultiplier,
+        sessionId,
+        stepId,
         mGameParameters);
 }
 

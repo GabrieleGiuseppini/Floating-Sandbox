@@ -296,14 +296,20 @@ Render:
 			- Try first with lower sea depth and more amplification
 			- If not: TBD
 
-		- Repair tool improvement:
-			- RepairTool passes RepairSessionId, RepairSessionStepId
-			- Points has buffer of struct RepairSmoothing{RepairSessionId currentSessionId, RepairSessionStepId currentSessionStepId, float smoothing}
-			- Repair interaction when engaging "other endpoint":
-				- Zero's smoothing iff currentSessionId != this session ID
-					- And sets currentSessionId = this session ID
-				- Advances smoothing (smoothing += (1-smoothing)*alpha) iff currentSessionStepId != this session step ID
-					- And sets currentSessionStepId = this session step ID
+		= Repair tool improvement:
+			+ RepairTool passes RepairSessionId, RepairSessionStepId
+			+ Points has buffer of struct RepairSmoothing{RepairSessionId currentSessionId, RepairSessionStepId currentSessionStepId, float smoothing}
+			+ Repair interaction when engaging "other endpoint":
+				+ Zero's smoothing iff currentSessionId != this session ID
+					+ And sets currentSessionId = this session ID
+				+ Advances smoothing (smoothing += (1-smoothing)*alpha) iff currentSessionStepId != this session step ID
+					+ And sets currentSessionStepId = this session step ID
+			+ Test and fine-tune alpha
+			+ Remove logging
+			+ Fine-tune inertial velocity exponent
+			- See why points fly at weird angles
+				- See if due to (wrong) intertial: does it happen with no inertial?
+			- Attempt with pinning connected component to session ID
 			- OLD:
 			- When both points are in radius, use forces instead of velocity
 			- OR: if both points in range, lower displacement more

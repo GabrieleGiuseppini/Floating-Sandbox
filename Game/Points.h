@@ -48,13 +48,32 @@ public:
     using EphemeralParticleDestroyHandler = std::function<void(
         ElementIndex)>;
 
+    /*
+     * The types of ephemeral particles.
+     */
     enum class EphemeralType
     {
-        None,
+        None,   // Not an ephemeral particle (or not an active ephemeral particle)
         AirBubble,
         Debris,
         Smoke,
         Sparkle
+    };
+
+    /*
+     * The state required for smoothing velocities of particles being repaired.
+     */
+    struct RepairSmoothing
+    {
+        RepairSessionId SessionId;
+        RepairSessionStepId StepId;
+        float Smoothing; // Grows from 0.0 to 1.0
+
+        RepairSmoothing()
+            : SessionId(0)
+            , StepId(0)
+            , Smoothing(0.0f)
+        {}
     };
 
 private:
@@ -342,6 +361,8 @@ public:
         , mCurrentConnectivityVisitSequenceNumberBuffer(mBufferElementCount, shipPointCount, SequenceNumber())
         // Pinning
         , mIsPinnedBuffer(mBufferElementCount, shipPointCount, false)
+        // Repair
+        , mRepairSmoothingBuffer(mBufferElementCount, shipPointCount, RepairSmoothing())
         // Immutable render attributes
         , mColorBuffer(mBufferElementCount, shipPointCount, vec4f::zero())
         , mIsWholeColorBufferDirty(true)
@@ -1080,6 +1101,15 @@ public:
     }
 
     //
+    // Repair
+    //
+
+    RepairSmoothing & GetRepairSmoothing(ElementIndex pointElementIndex)
+    {
+        return mRepairSmoothingBuffer[pointElementIndex];
+    }
+
+    //
     // Immutable attributes
     //
 
@@ -1243,6 +1273,12 @@ private:
     //
 
     Buffer<bool> mIsPinnedBuffer;
+
+    //
+    // Repair smoothing
+    //
+
+    Buffer<RepairSmoothing> mRepairSmoothingBuffer;
 
     //
     // Immutable render attributes

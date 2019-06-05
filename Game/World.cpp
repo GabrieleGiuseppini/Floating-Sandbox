@@ -162,6 +162,8 @@ void World::DestroyAt(
 void World::RepairAt(
     vec2f const & targetPos,
     float radiusMultiplier,
+    RepairSessionId sessionId,
+    RepairSessionStepId stepId,
     GameParameters const & gameParameters)
 {
     for (auto & ship : mAllShips)
@@ -169,6 +171,8 @@ void World::RepairAt(
         ship->RepairAt(
             targetPos,
             radiusMultiplier,
+            sessionId,
+            stepId,
             mCurrentSimulationTime,
             gameParameters);
     }
