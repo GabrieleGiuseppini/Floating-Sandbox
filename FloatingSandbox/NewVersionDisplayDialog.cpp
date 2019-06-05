@@ -33,14 +33,19 @@ NewVersionDisplayDialog::NewVersionDisplayDialog(
         html->SetBorders(0);
         html->SetPage(MakeHtml(version, features));
 
-        html->Bind(wxEVT_HTML_LINK_CLICKED, &NewVersionDisplayDialog::OnHtmlLinkClicked, this);
-
         topSizer->Add(html, 1, wxALL, 10);
     }
 
 #if wxUSE_STATLINE
     topSizer->Add(new wxStaticLine(this, wxID_ANY), 0, wxEXPAND | wxLEFT | wxRIGHT, 10);
 #endif // wxUSE_STATLINE
+
+    {
+        wxButton * goToDownloadPageButton = new wxButton(this, wxID_ANY, _("Go to the Download Page!"), wxDefaultPosition, wxSize(160, -1));
+        goToDownloadPageButton->Bind(wxEVT_BUTTON, (wxObjectEventFunction)&NewVersionDisplayDialog::OnGoToDownloadPageButtonClicked, this);
+
+        topSizer->Add(goToDownloadPageButton, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 10);
+    }
 
     if (nullptr != uiPreferencesManager)
     {
@@ -63,12 +68,12 @@ NewVersionDisplayDialog::NewVersionDisplayDialog(
         }
     }
 
-    {
-        wxButton * okButton = new wxButton(this, wxID_OK, _("OK"), wxDefaultPosition, wxSize(100, -1));
-        okButton->SetDefault();
+    ////{
+    ////    wxButton * okButton = new wxButton(this, wxID_OK, _("OK"), wxDefaultPosition, wxSize(100, -1));
+    ////    okButton->SetDefault();
 
-        topSizer->Add(okButton, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 10);
-    }
+    ////    topSizer->Add(okButton, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 10);
+    ////}
 
     this->SetSizerAndFit(topSizer);
 
@@ -127,33 +132,14 @@ std::string NewVersionDisplayDialog::MakeHtml(
     ss << "</ul></td></tr>";
 
 
-    //
-    // Download link
-    //
-
-    ss << R"(
-<tr>
-    <td align="center">
-        <font size=+1><a href=")";
-
-    ss << APPLICATION_DOWNLOAD_PAGE;
-
-    ss
-        << R"(">Click here to download )"
-        << version.ToString()
-        << R"(!</a></b></font>
-    </td>
-</tr>)";
-
-
     ss << R"(</table></body></html>)";
 
     return ss.str();
 }
 
-void NewVersionDisplayDialog::OnHtmlLinkClicked(wxHtmlLinkEvent & event)
+void NewVersionDisplayDialog::OnGoToDownloadPageButtonClicked(wxCommandEvent & /*event*/)
 {
-    wxLaunchDefaultBrowser(event.GetLinkInfo().GetHref());
+    wxLaunchDefaultBrowser(APPLICATION_DOWNLOAD_URL);
 }
 
 void NewVersionDisplayDialog::OnDoNotNotifyAboutThisVersionAgainCheckboxChanged(wxCommandEvent & event)

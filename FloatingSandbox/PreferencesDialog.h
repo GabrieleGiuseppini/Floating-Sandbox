@@ -28,6 +28,7 @@ private:
 
     void OnScreenshotDirPickerChanged(wxCommandEvent & event);
     void OnShowTipOnStartupCheckBoxClicked(wxCommandEvent & event);
+    void OnCheckForUpdatesAtStartupCheckBoxClicked(wxCommandEvent & event);
     void OnShowShipDescriptionAtShipLoadCheckBoxClicked(wxCommandEvent & event);
     void OnShowTsunamiNotificationsCheckBoxClicked(wxCommandEvent & event);
 
@@ -44,6 +45,7 @@ private:
     // Main panel
     wxDirPickerCtrl * mScreenshotDirPickerCtrl;
     wxCheckBox * mShowTipOnStartupCheckBox;
+    wxCheckBox * mCheckForUpdatesAtStartupCheckBox;
     wxCheckBox * mShowShipDescriptionAtShipLoadCheckBox;
     wxCheckBox * mShowTsunamiNotificationsCheckBox;
 

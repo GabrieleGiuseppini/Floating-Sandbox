@@ -91,6 +91,17 @@ void PreferencesDialog::OnShowTipOnStartupCheckBoxClicked(wxCommandEvent & /*eve
     mUIPreferencesManager->SetShowStartupTip(mShowTipOnStartupCheckBox->GetValue());
 }
 
+void PreferencesDialog::OnCheckForUpdatesAtStartupCheckBoxClicked(wxCommandEvent & /*event*/)
+{
+    assert(!!mUIPreferencesManager);
+    mUIPreferencesManager->SetCheckUpdatesAtStartup(mCheckForUpdatesAtStartupCheckBox->GetValue());
+
+    if (mCheckForUpdatesAtStartupCheckBox->GetValue())
+    {
+        mUIPreferencesManager->ResetUpdateBlacklist();
+    }
+}
+
 void PreferencesDialog::OnShowShipDescriptionAtShipLoadCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
@@ -163,19 +174,18 @@ void PreferencesDialog::PopulateMainPanel(wxPanel * panel)
         wxLEFT | wxRIGHT | wxBOTTOM,
         Border);
 
-
     //
     // Row 3
     //
 
-    mShowShipDescriptionAtShipLoadCheckBox = new wxCheckBox(panel, wxID_ANY, _("Show Ship Descriptions at Load"), wxDefaultPosition, wxDefaultSize, 0);
+    mCheckForUpdatesAtStartupCheckBox = new wxCheckBox(panel, wxID_ANY, _("Check for Updates on Startup"), wxDefaultPosition, wxDefaultSize, 0);
 
-    mShowShipDescriptionAtShipLoadCheckBox->SetToolTip("Enables or disables the window showing ship descriptions when ships are loaded.");
+    mCheckForUpdatesAtStartupCheckBox->SetToolTip("Enables or disables checking for new versions when the game starts.");
 
-    mShowShipDescriptionAtShipLoadCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowShipDescriptionAtShipLoadCheckBoxClicked, this);
+    mCheckForUpdatesAtStartupCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnCheckForUpdatesAtStartupCheckBoxClicked, this);
 
     gridSizer->Add(
-        mShowShipDescriptionAtShipLoadCheckBox,
+        mCheckForUpdatesAtStartupCheckBox,
         wxGBPosition(2, 0),
         wxGBSpan(1, 1),
         wxLEFT | wxRIGHT | wxBOTTOM,
@@ -186,6 +196,24 @@ void PreferencesDialog::PopulateMainPanel(wxPanel * panel)
     // Row 4
     //
 
+    mShowShipDescriptionAtShipLoadCheckBox = new wxCheckBox(panel, wxID_ANY, _("Show Ship Descriptions at Load"), wxDefaultPosition, wxDefaultSize, 0);
+
+    mShowShipDescriptionAtShipLoadCheckBox->SetToolTip("Enables or disables the window showing ship descriptions when ships are loaded.");
+
+    mShowShipDescriptionAtShipLoadCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowShipDescriptionAtShipLoadCheckBoxClicked, this);
+
+    gridSizer->Add(
+        mShowShipDescriptionAtShipLoadCheckBox,
+        wxGBPosition(3, 0),
+        wxGBSpan(1, 1),
+        wxLEFT | wxRIGHT | wxBOTTOM,
+        Border);
+
+
+    //
+    // Row 5
+    //
+
     mShowTsunamiNotificationsCheckBox = new wxCheckBox(panel, wxID_ANY, _("Show Tsunami Notifications"), wxDefaultPosition, wxDefaultSize, 0);
 
     mShowTsunamiNotificationsCheckBox->SetToolTip("Enables or disables notifications when a tsunami is being spawned.");
@@ -194,7 +222,7 @@ void PreferencesDialog::PopulateMainPanel(wxPanel * panel)
 
     gridSizer->Add(
         mShowTsunamiNotificationsCheckBox,
-        wxGBPosition(3, 0),
+        wxGBPosition(4, 0),
         wxGBSpan(1, 1),
         wxLEFT | wxRIGHT | wxBOTTOM,
         Border);
@@ -212,6 +240,7 @@ void PreferencesDialog::ReadSettings()
     mScreenshotDirPickerCtrl->SetPath(mUIPreferencesManager->GetScreenshotsFolderPath().string());
 
     mShowTipOnStartupCheckBox->SetValue(mUIPreferencesManager->GetShowStartupTip());
+    mCheckForUpdatesAtStartupCheckBox->SetValue(mUIPreferencesManager->GetCheckUpdatesAtStartup());
     mShowShipDescriptionAtShipLoadCheckBox->SetValue(mUIPreferencesManager->GetShowShipDescriptionsAtShipLoad());
     mShowTsunamiNotificationsCheckBox->SetValue(mUIPreferencesManager->GetShowTsunamiNotifications());
 }

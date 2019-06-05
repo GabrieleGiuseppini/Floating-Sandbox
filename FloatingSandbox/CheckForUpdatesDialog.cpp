@@ -148,14 +148,14 @@ void CheckForUpdatesDialog::OnCheckCompletionTimer(wxTimerEvent & /*event*/)
                         // Notify user of no new version
                         //
 
-                        this->SetTitle("No Updates Are Available");
+                        this->SetTitle("No New Updates");
 
                         ShowNoUpdateMessage(
                             "The latest available version is "
                             + outcome->LatestVersion->ToString()
                             + ", while you are running version "
                             + Version::CurrentVersion().ToString()
-                            + "; there are no available updates...");
+                            + "; there are no new updates...");
                     }
 
                     break;

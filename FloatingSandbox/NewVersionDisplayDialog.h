@@ -34,7 +34,7 @@ private:
         Version const & version,
         std::vector<std::vector<std::string>> const & features);
 
-    void OnHtmlLinkClicked(wxHtmlLinkEvent & event);
+    void OnGoToDownloadPageButtonClicked(wxCommandEvent & event);
 
     void OnDoNotNotifyAboutThisVersionAgainCheckboxChanged(wxCommandEvent & event);
     void OnDoNotCheckForUpdatesAtStartupCheckboxChanged(wxCommandEvent & event);

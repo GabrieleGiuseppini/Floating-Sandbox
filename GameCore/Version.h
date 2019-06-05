@@ -31,7 +31,7 @@
 #define APPLICATION_NAME                "Floating Sandbox"
 #define APPLICATION_NAME_WITH_VERSION   APPLICATION_NAME " " APPLICATION_VERSION_SHORT_STR
 
-#define APPLICATION_DOWNLOAD_PAGE       "https://gamejolt.com/games/floating-sandbox/353572"
+#define APPLICATION_DOWNLOAD_URL        "https://gamejolt.com/games/floating-sandbox/353572"
 
 inline std::string ApplicationName = APPLICATION_NAME;
 inline std::string ApplicationNameWithVersion = APPLICATION_NAME_WITH_VERSION;

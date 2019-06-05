@@ -107,6 +107,11 @@ public:
                 version));
     }
 
+    void ResetUpdateBlacklist()
+    {
+        mBlacklistedUpdates.clear();
+    }
+
     bool GetShowStartupTip() const
     {
         return mShowStartupTip;

@@ -680,8 +680,8 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
     if (mUIPreferencesManager->GetCheckUpdatesAtStartup())
     {
-        // TODOTEST: 10 secs
-        mCheckUpdateTimer->Start(1000, true);
+        // 10 seconds
+        mCheckUpdateTimer->Start(10000, true);
     }
 
 

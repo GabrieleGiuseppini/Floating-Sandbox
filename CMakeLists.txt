@@ -63,11 +63,13 @@ if (WIN32)
 
 	set(SFML_RUNTIME_RELEASE_LIBRARIES 
 		${SFML_BIN_DIR}/sfml-audio-2.dll
+		${SFML_BIN_DIR}/sfml-network-2.dll
 		${SFML_BIN_DIR}/sfml-system-2.dll
 		${SFML_BIN_DIR}/openal32.dll)
 
 	set(SFML_RUNTIME_DEBUG_LIBRARIES 
 		${SFML_BIN_DIR}/sfml-audio-d-2.dll
+		${SFML_BIN_DIR}/sfml-network-d-2.dll
 		${SFML_BIN_DIR}/sfml-system-d-2.dll
 		${SFML_BIN_DIR}/openal32.dll)
 endif()

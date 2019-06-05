@@ -17,7 +17,7 @@
 
 
 std::string const UpdateHost = "http://floatingsandbox.com";
-std::string const UpdateUrl = "/TODO";
+std::string const UpdateUrl = "/changes.txt";
 
 size_t constexpr ReadBufferSize = 1024 * 1024;
 
@@ -92,19 +92,42 @@ void UpdateChecker::WorkerThread()
 {
     try
     {
-        // TODOTEST
-        std::ifstream f("C:\\Users\\Neurodancer\\source\\repos\\Floating-Sandbox\\changes.txt");
-        std::this_thread::sleep_for(std::chrono::seconds(2));
+        std::string changesFileContent;
 
-        std::unique_ptr<char[]> buf(new char[ReadBufferSize]);
-        f.read(buf.get(), ReadBufferSize);
-        std::string changesFileContent(buf.get(), f.gcount());
+        {
+            // TEST
+            /*
+            std::this_thread::sleep_for(std::chrono::seconds(2));
+            std::ifstream f("C:\\Users\\Neurodancer\\source\\repos\\Floating-Sandbox\\changes.txt");
 
-        // TODOTEST
-        LogMessage(changesFileContent);
+            std::unique_ptr<char[]> buf(new char[ReadBufferSize]);
+            f.read(buf.get(), ReadBufferSize);
+            changesFileContent = std::string(buf.get(), f.gcount());
+            */
+        }
 
-        std::lock_guard<std::mutex> lock(mOutcomeMutex);
-        mOutcome = std::make_unique<Outcome>(ParseChangeList(changesFileContent));
+        sf::Http http;
+        http.setHost(UpdateHost);
+        sf::Http::Request request(UpdateUrl);
+
+        // Send the request and check the response
+        sf::Http::Response response = http.sendRequest(request, sf::seconds(5.0f));
+        sf::Http::Response::Status status = response.getStatus();
+        LogMessage("UpdateChecker: StatusCode=" + std::to_string(status));
+        if (status != sf::Http::Response::Ok)
+        {
+            throw std::runtime_error("Status code is " + std::to_string(status));
+        }
+
+        changesFileContent = response.getBody();
+
+        {
+            std::lock_guard<std::mutex> lock(mOutcomeMutex);
+            mOutcome = std::make_unique<Outcome>(ParseChangeList(changesFileContent));
+
+            if (mOutcome->OutcomeType == UpdateCheckOutcomeType::HasVersion)
+                LogMessage("UpdateChecker: Version=" + mOutcome->LatestVersion->ToString());
+        }
     }
     catch (...)
     {

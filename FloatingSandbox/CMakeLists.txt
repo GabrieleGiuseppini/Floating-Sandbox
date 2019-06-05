@@ -86,6 +86,7 @@ target_link_libraries (FloatingSandbox
 	GameOpenGLLib
 	GPUCalcLib
 	sfml-audio
+	sfml-network
 	${OPENGL_LIBRARIES}
 	${wxWidgets_LIBRARIES}
 	${ADDITIONAL_LIBRARIES})
