@@ -501,14 +501,18 @@ void Ship::RepairAt(
                         assert(movementMagnitude < displacementMagnitude);
                         displacementMagnitude -= movementMagnitude;
 
-                        // Impart some non-linear inertia (smaller at higher displacements)
+                        // Impart some non-linear inertia (smaller at higher displacements),
+                        // retaining a bit of the previous velocity
                         // (note: last one that pulls this point wins)
-                        mPoints.GetVelocity(otherEndpointIndex) =
+                        auto const displacementVelocity =
                             movementDir
                             * ((movementMagnitude < 0.0f) ? -1.0f : 1.0f)
                             * pow(abs(movementMagnitude), 0.2f)
                             / GameParameters::SimulationStepTimeDuration<float>
                             * 0.5f;
+                        mPoints.GetVelocity(otherEndpointIndex) =
+                            (mPoints.GetVelocity(otherEndpointIndex) * 0.35f)
+                            + (displacementVelocity * 0.65f);
 
                         // Remember that we've acted on the other endpoint
                         hasOtherEndpointPointBeenMoved = true;

@@ -309,8 +309,9 @@ Render:
 			+ Fine-tune inertial velocity exponent
 			- See why points fly at weird angles
 				- See if due to (wrong) intertial: does it happen with no inertial?
-			- Attempt with pinning connected component to session ID
+			- Attempt with forcing each point only once per step
 			- OLD:
+			- Attempt with pinning connected component to session ID
 			- When both points are in radius, use forces instead of velocity
 			- OR: if both points in range, lower displacement more
 
