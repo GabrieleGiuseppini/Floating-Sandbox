@@ -290,6 +290,8 @@ Render:
 			+ Make repro: tsunami on manually-created high wave field
 			+ Tsunami and rogue wave: target H is absolute, not based on current H
 			- Ask testers to test
+			- If ok:
+				- Update changes.txt
 			- Other attempts:
 			- Try first with lower sea depth and more amplification
 			- If not: TBD
