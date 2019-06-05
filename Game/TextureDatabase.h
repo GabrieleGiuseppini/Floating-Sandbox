@@ -19,6 +19,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace Render {
@@ -44,6 +45,9 @@ struct TextureFrameMetadata
     // The ID of this frame
     TextureFrameId FrameId;
 
+    // The optional name of the frame
+    std::string FrameName;
+
     TextureFrameMetadata(
         ImageSize size,
         float worldWidth,
@@ -51,7 +55,8 @@ struct TextureFrameMetadata
         bool hasOwnAmbientLight,
         float anchorWorldX,
         float anchorWorldY,
-        TextureFrameId frameId)
+        TextureFrameId frameId,
+        std::string const & frameName)
         : Size(size)
         , WorldWidth(worldWidth)
         , WorldHeight(worldHeight)
@@ -59,6 +64,7 @@ struct TextureFrameMetadata
         , AnchorWorldX(anchorWorldX)
         , AnchorWorldY(anchorWorldY)
         , FrameId(frameId)
+        , FrameName(frameName)
     {}
 };
 

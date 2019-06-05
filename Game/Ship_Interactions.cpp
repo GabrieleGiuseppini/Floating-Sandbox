@@ -272,15 +272,22 @@ void Ship::RepairAt(
     // Visit all non-ephemeral points
     for (auto pointIndex : mPoints.NonEphemeralPoints())
     {
-        // Check if point is in radius and whether it's not orphaned
+        // Attempt to restore this point's springs if the point meets all these conditions:
+        // - The point is in radius
+        // - The point is not orphaned
+        // - The point has not been acted upon already as the "other endpoint" of another point (TODOHERE)
         //
         // If we were to attempt to restore also orphaned points, then two formerly-connected
         // orphaned points within the search radius would interact with each other and nullify
         // the effort put by the main structure's points
         float const squareRadius = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
         if (squareRadius <= squareSearchRadius
-            && mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() > 0)
+            && mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() > 0
+            && mPoints.GetRepairSmoothing(pointIndex).StepId != stepId) // (TODOHERE)
         {
+            // Remember that this point has been acted upon in this step
+            mPoints.GetRepairSmoothing(pointIndex).StepId = stepId; // (TODOHERE)
+
             //
             // 1) (Attempt to) restore this point's delete springs
             //

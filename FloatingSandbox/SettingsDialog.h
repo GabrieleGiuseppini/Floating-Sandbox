@@ -12,6 +12,7 @@
 #include <Game/ResourceLoader.h>
 
 #include <wx/bitmap.h>
+#include <wx/bmpcbox.h>
 #include <wx/button.h>
 #include <wx/checkbox.h>
 #include <wx/clrpicker.h>
@@ -52,6 +53,7 @@ private:
     void OnSeeShipThroughOceanCheckBoxClick(wxCommandEvent & event);
 
     void OnTextureLandRenderModeRadioButtonClick(wxCommandEvent & event);
+    void OnTextureLandChanged(wxCommandEvent & event);
     void OnFlatLandRenderModeRadioButtonClick(wxCommandEvent & event);
     void OnFlatLandColorChanged(wxColourPickerEvent & event);
 
@@ -134,6 +136,7 @@ private:
     wxCheckBox * mSeeShipThroughOceanCheckBox;
     std::unique_ptr<SliderControl> mOceanTransparencySlider;
     wxRadioButton * mTextureLandRenderModeRadioButton;
+    wxBitmapComboBox * mTextureLandComboBox;
     wxRadioButton * mFlatLandRenderModeRadioButton;
     wxColourPickerCtrl * mFlatLandColorPicker;
     wxColourPickerCtrl * mFlatSkyColorPicker;

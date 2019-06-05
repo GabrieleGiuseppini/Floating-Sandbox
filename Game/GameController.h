@@ -414,6 +414,10 @@ public:
     LandRenderMode GetLandRenderMode() const { return mRenderContext->GetLandRenderMode(); }
     void SetLandRenderMode(LandRenderMode landRenderMode) { mRenderContext->SetLandRenderMode(landRenderMode); }
 
+    std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureLandAvailableThumbnails() const { return mRenderContext->GetTextureLandAvailableThumbnails(); }
+    size_t GetTextureLandTextureIndex() const { return mRenderContext->GetTextureLandTextureIndex(); }
+    void SetTextureLandTextureIndex(size_t index) { mRenderContext->SetTextureLandTextureIndex(index); }
+
     rgbColor const & GetFlatLandColor() const { return mRenderContext->GetFlatLandColor(); }
     void SetFlatLandColor(rgbColor const & color) { mRenderContext->SetFlatLandColor(color); }
 

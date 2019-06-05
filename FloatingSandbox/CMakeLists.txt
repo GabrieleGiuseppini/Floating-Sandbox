@@ -59,6 +59,8 @@ set  (FLOATING_SANDBOX_SOURCES
 	UnhandledExceptionHandler.h
 	UpdateChecker.cpp
 	UpdateChecker.h
+	WxHelpers.cpp
+	WxHelpers.h
 )
 
 source_group(" " FILES ${FLOATING_SANDBOX_SOURCES})

@@ -263,6 +263,23 @@ public:
         OnLandRenderParametersUpdated();
     }
 
+    std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureLandAvailableThumbnails() const
+    {
+        return mTextureLandAvailableThumbnails;
+    }
+
+    size_t GetTextureLandTextureIndex() const
+    {
+        return mTextureLandTextureIndex;
+    }
+
+    void SetTextureLandTextureIndex(size_t index)
+    {
+        mTextureLandTextureIndex = index;
+
+        OnTextureLandTextureIndexUpdated();
+    }
+
     rgbColor const & GetFlatLandColor() const
     {
         return mFlatLandColor;
@@ -1075,6 +1092,7 @@ private:
     void OnOceanTransparencyUpdated();
     void OnOceanRenderParametersUpdated();
     void OnLandRenderParametersUpdated();
+    void OnTextureLandTextureIndexUpdated();
     void OnWaterContrastUpdated();
     void OnWaterLevelOfDetailUpdated();
     void OnShipRenderModeUpdated();
@@ -1286,6 +1304,8 @@ private:
     rgbColor mDepthOceanColorEnd;
     rgbColor mFlatOceanColor;
     LandRenderMode mLandRenderMode;
+    std::vector<std::pair<std::string, RgbaImageData>> mTextureLandAvailableThumbnails;
+    size_t mTextureLandTextureIndex;
     rgbColor mFlatLandColor;
     VectorFieldRenderMode mVectorFieldRenderMode;
     float mVectorFieldLengthMultiplier;

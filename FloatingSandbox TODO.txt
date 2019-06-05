@@ -307,21 +307,22 @@ Render:
 			+ Test and fine-tune alpha
 			+ Remove logging
 			+ Fine-tune inertial velocity exponent
-			- See why points fly at weird angles
-				- See if due to (wrong) intertial: does it happen with no inertial?
+			+ See why points fly at weird angles
+				+ See if due to (wrong) intertial: does it happen with no inertial? NO.
 			- Attempt with forcing each point only once per step
 			- OLD:
 			- Attempt with pinning connected component to session ID
 			- When both points are in radius, use forces instead of velocity
 			- OR: if both points in range, lower displacement more
 
-		- Multiple textures for:
-			- Land
-				- Each has entry in texture DB
+		= Multiple textures for:
+			= Land
+				= Each has entry in texture DB
 					- Some new ones have 512 - decide one by one
-				- RenderContext::GetOceanFloorTextureCount()
-				- SettingsDialog: drop-down
+				+ RenderContext::GetAvailableLandTextures()
+				+ SettingsDialog: drop-down
 				- RenderContext::SetOceanFloorTexture(size_t)
+				+ Test ShipPreviewControl (for zero-sized bitmap)
 		- Ocean shaders:
 			- Gradient: make non-linear
 			- Texture: add non-linear (same non-linearity) darkening

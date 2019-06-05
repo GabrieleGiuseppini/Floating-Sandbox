@@ -5,6 +5,8 @@
  ***************************************************************************************/
 #include "SettingsDialog.h"
 
+#include "WxHelpers.h"
+
 #include <GameCore/ExponentialSliderCore.h>
 #include <GameCore/FixedTickSliderCore.h>
 #include <GameCore/LinearSliderCore.h>
@@ -342,6 +344,12 @@ void SettingsDialog::OnTextureLandRenderModeRadioButtonClick(wxCommandEvent & /*
 {
     ReconciliateLandRenderModeSettings();
 
+    // Remember we're dirty now
+    mApplyButton->Enable(true);
+}
+
+void SettingsDialog::OnTextureLandChanged(wxCommandEvent & /*event*/)
+{
     // Remember we're dirty now
     mApplyButton->Enable(true);
 }
@@ -1482,31 +1490,36 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                 landRenderModeBoxSizer1->AddSpacer(StaticBoxTopMargin);
 
                 {
-                    wxFlexGridSizer* landRenderModeBoxSizer2 = new wxFlexGridSizer(3, 5, 5);
-                    landRenderModeBoxSizer2->SetFlexibleDirection(wxHORIZONTAL);
+                    wxGridBagSizer* landRenderModeBoxSizer2 = new wxGridBagSizer(5, 5);
 
                     mTextureLandRenderModeRadioButton = new wxRadioButton(landRenderModeBox, wxID_ANY, _("Texture"),
                         wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
                     mTextureLandRenderModeRadioButton->SetToolTip("Draws the ocean floor using a static image.");
                     mTextureLandRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnTextureLandRenderModeRadioButtonClick, this);
-                    landRenderModeBoxSizer2->Add(mTextureLandRenderModeRadioButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 0);
+                    landRenderModeBoxSizer2->Add(mTextureLandRenderModeRadioButton, wxGBPosition(0, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
 
-                    landRenderModeBoxSizer2->AddSpacer(0);
-
-                    landRenderModeBoxSizer2->AddSpacer(0);
+                    mTextureLandComboBox = new wxBitmapComboBox(landRenderModeBox, wxID_ANY, wxEmptyString,
+                        wxDefaultPosition, wxSize(140, -1), wxArrayString(), wxCB_READONLY);
+                    for (auto const & entry : mGameController->GetTextureLandAvailableThumbnails())
+                    {
+                        mTextureLandComboBox->Append(
+                            entry.first,
+                            WxHelpers::MakeBitmap(entry.second));
+                    }
+                    mTextureLandComboBox->SetToolTip("Sets the texture to use for the ocean floor.");
+                    mTextureLandComboBox->Bind(wxEVT_COMBOBOX, &SettingsDialog::OnTextureLandChanged, this);
+                    landRenderModeBoxSizer2->Add(mTextureLandComboBox, wxGBPosition(0, 1), wxGBSpan(1, 2), wxALL, 0);
 
                     mFlatLandRenderModeRadioButton = new wxRadioButton(landRenderModeBox, wxID_ANY, _("Flat"),
                         wxDefaultPosition, wxDefaultSize);
                     mFlatLandRenderModeRadioButton->SetToolTip("Draws the ocean floor using a static color.");
                     mFlatLandRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnFlatLandRenderModeRadioButtonClick, this);
-                    landRenderModeBoxSizer2->Add(mFlatLandRenderModeRadioButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 0);
+                    landRenderModeBoxSizer2->Add(mFlatLandRenderModeRadioButton, wxGBPosition(1, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
 
                     mFlatLandColorPicker = new wxColourPickerCtrl(landRenderModeBox, wxID_ANY);
                     mFlatLandColorPicker->SetToolTip("Sets the single color of the ocean floor.");
                     mFlatLandColorPicker->Bind(wxEVT_COLOURPICKER_CHANGED, &SettingsDialog::OnFlatLandColorChanged, this);
-                    landRenderModeBoxSizer2->Add(mFlatLandColorPicker, 0, wxALL, 0);
-
-                    landRenderModeBoxSizer2->AddSpacer(0);
+                    landRenderModeBoxSizer2->Add(mFlatLandColorPicker, wxGBPosition(1, 1), wxGBSpan(1, 1), wxALL, 0);
 
                     landRenderModeBoxSizer1->Add(landRenderModeBoxSizer2, 0, wxALL, StaticBoxInsetMargin);
                 }
@@ -2032,6 +2045,8 @@ void SettingsDialog::ReadSettings()
         }
     }
 
+    mTextureLandComboBox->Select(static_cast<int>(mGameController->GetTextureLandTextureIndex()));
+
     auto flatLandColor = mGameController->GetFlatLandColor();
     mFlatLandColorPicker->SetColour(wxColor(flatLandColor.r, flatLandColor.g, flatLandColor.b));
 
@@ -2168,6 +2183,7 @@ void SettingsDialog::ReconciliateOceanRenderModeSettings()
 
 void SettingsDialog::ReconciliateLandRenderModeSettings()
 {
+    mTextureLandComboBox->Enable(mTextureLandRenderModeRadioButton->GetValue());
     mFlatLandColorPicker->Enable(mFlatLandRenderModeRadioButton->GetValue());
 }
 
@@ -2326,6 +2342,8 @@ void SettingsDialog::ApplySettings()
         assert(mFlatLandRenderModeRadioButton->GetValue());
         mGameController->SetLandRenderMode(LandRenderMode::Flat);
     }
+
+    mGameController->SetTextureLandTextureIndex(static_cast<size_t>(mTextureLandComboBox->GetSelection()));
 
     auto flatLandColor = mFlatLandColorPicker->GetColour();
     mGameController->SetFlatLandColor(

@@ -96,7 +96,7 @@ TextureDatabase TextureDatabase::Load(
         std::string groupName = Utils::GetMandatoryJsonMember<std::string>(groupJson, "groupName");
         TextureGroupType groupType = StrToTextureGroupType(groupName);
 
-        // Load defaults
+        // Load group-wide defaults
         std::optional<float> groupWorldScaling = Utils::GetOptionalJsonMember<float>(groupJson, "worldScaling");
         std::optional<float> groupWorldWidth = Utils::GetOptionalJsonMember<float>(groupJson, "worldWidth");
         std::optional<float> groupWorldHeight = Utils::GetOptionalJsonMember<float>(groupJson, "worldHeight");
@@ -127,6 +127,7 @@ TextureDatabase TextureDatabase::Load(
             std::optional<bool> frameHasOwnAmbientLight = Utils::GetOptionalJsonMember<bool>(frameJson, "hasOwnAmbientLight");
             std::optional<int> frameAnchorOffsetX = Utils::GetOptionalJsonMember<int>(frameJson, "anchorOffsetX");
             std::optional<int> frameAnchorOffsetY = Utils::GetOptionalJsonMember<int>(frameJson, "anchorOffsetY");
+            std::optional<std::string> frameName = Utils::GetOptionalJsonMember<std::string>(frameJson, "name");
 
             // Get filename and make regex out of it
             std::string frameFilename = Utils::GetMandatoryJsonMember<std::string>(frameJson, "filename");
@@ -224,9 +225,10 @@ TextureDatabase TextureDatabase::Load(
                     float anchorWorldX = static_cast<float>(anchorX) * worldWidth / static_cast<float>(textureSize.Width);
                     float anchorWorldY = static_cast<float>(textureSize.Height - anchorY) * worldHeight / static_cast<float>(textureSize.Height);
 
+                    std::string name = !!frameName ? *frameName : std::to_string(frameIndex);
 
                     //
-                    // Store frame
+                    // Store frame specification
                     //
 
                     textureFrames.emplace_back(
@@ -238,7 +240,8 @@ TextureDatabase TextureDatabase::Load(
                                 hasOwnAmbientLight,
                                 anchorWorldX,
                                 anchorWorldY,
-                                TextureFrameId(groupType, frameIndex)),
+                                TextureFrameId(groupType, frameIndex),
+                                name),
                             fileData.Path));
 
                     //

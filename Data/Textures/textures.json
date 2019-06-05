@@ -78,10 +78,77 @@
 	"groupName": "Land",
 	"hasOwnAmbientLight": false,
 	"frames":[
-		{	
+		{
 			"worldWidth": 128.0,
 			"worldHeight": 128.0,
-			"filename": "land_.*"
+			"filename": "land_0",
+			"name": "Sand"
+		},
+		{
+			"worldWidth": 128.0,
+			"worldHeight": 128.0,
+			"filename": "land_1",
+			"name": "Rock Coarse 1"
+		},
+		{
+			"worldWidth": 128.0,
+			"worldHeight": 128.0,
+			"filename": "land_2",
+			"name": "Rock Coarse 2"
+		},
+		{
+			"worldWidth": 128.0,
+			"worldHeight": 128.0,
+			"filename": "land_3",
+			"name": "Rock Coarse 3"
+		},
+		{
+			"worldWidth": 128.0,
+			"worldHeight": 128.0,
+			"filename": "land_4",
+			"name": "Rock Coarse 4"
+		},
+		{
+			"worldWidth": 128.0,
+			"worldHeight": 128.0,
+			"filename": "land_5",
+			"name": "Rock Coarse 5"
+		},
+		{
+			"worldWidth": 128.0,
+			"worldHeight": 128.0,
+			"filename": "land_6",
+			"name": "Rock Coarse 6"
+		},
+		{
+			"worldWidth": 128.0,
+			"worldHeight": 128.0,
+			"filename": "land_7",
+			"name": "Rock Fine 1"
+		},
+		{
+			"worldWidth": 128.0,
+			"worldHeight": 128.0,
+			"filename": "land_8",
+			"name": "Rock Fine 2"
+		},
+		{
+			"worldWidth": 128.0,
+			"worldHeight": 128.0,
+			"filename": "land_9",
+			"name": "Rock Fine 3"
+		},
+		{
+			"worldWidth": 128.0,
+			"worldHeight": 128.0,
+			"filename": "land_10",
+			"name": "Rock Fine 4"
+		},
+		{
+			"worldWidth": 128.0,
+			"worldHeight": 128.0,
+			"filename": "land_11",
+			"name": "Stratified"
 		}
 	]
 },

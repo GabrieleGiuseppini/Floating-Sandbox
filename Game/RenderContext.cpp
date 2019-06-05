@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "RenderContext.h"
 
+#include <Game/ImageFileTools.h>
+
 #include <GameCore/GameException.h>
 #include <GameCore/Log.h>
 
@@ -66,6 +68,8 @@ RenderContext::RenderContext(
     , mDepthOceanColorEnd(0x00, 0x00, 0x00)
     , mFlatOceanColor(0x00, 0x3d, 0x99)
     , mLandRenderMode(LandRenderMode::Texture)
+    , mTextureLandAvailableThumbnails()
+    , mTextureLandTextureIndex(0)
     , mFlatLandColor(0x72, 0x46, 0x05)
     , mVectorFieldRenderMode(VectorFieldRenderMode::None)
     , mVectorFieldLengthMultiplier(1.0f)
@@ -371,8 +375,24 @@ RenderContext::RenderContext(
 
 
     //
-    // Initialize land texture
+    // Initialize land textures
     //
+
+    // Create list of available textures for user
+    for (auto const & tfs : textureDatabase.GetGroup(TextureGroupType::Land).GetFrameSpecifications())
+    {
+        static ImageSize const ThumbnailSize(32, 32);
+
+        auto textureThumbnail = ImageFileTools::LoadImageRgbaLowerLeftAndResize(
+            tfs.FilePath,
+            ThumbnailSize);
+
+        mTextureLandAvailableThumbnails.emplace_back(
+            tfs.Metadata.FrameName,
+            std::move(textureThumbnail));
+    }
+
+    // TODO: move following to helper function invoked upon texture selection
 
     mShaderManager->ActivateTexture<ProgramParameterType::LandTexture>();
 
@@ -483,6 +503,7 @@ RenderContext::RenderContext(
     OnOceanTransparencyUpdated();
     OnOceanRenderParametersUpdated();
     OnLandRenderParametersUpdated();
+    OnTextureLandTextureIndexUpdated();
     OnWaterContrastUpdated();
     OnWaterLevelOfDetailUpdated();
     OnShipRenderModeUpdated();
@@ -1181,6 +1202,11 @@ void RenderContext::OnLandRenderParametersUpdated()
         flatColor.x,
         flatColor.y,
         flatColor.z);
+}
+
+void RenderContext::OnTextureLandTextureIndexUpdated()
+{
+    //TODOHERE
 }
 
 void RenderContext::OnWaterContrastUpdated()
