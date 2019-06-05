@@ -85,6 +85,8 @@ SizeType StrToSizeType(std::string const & str);
  *
  * Provides volume control based on a master volume and a local volume,
  * and facilities to fade-in and fade-out.
+ *
+ * Also provides facilities to pause/resume.
  */
 class GameSound : public sf::Sound
 {
@@ -98,6 +100,8 @@ public:
         std::chrono::milliseconds timeToFadeIn = std::chrono::milliseconds::zero(),
         std::chrono::milliseconds timeToFadeOut = std::chrono::milliseconds::zero())
         : sf::Sound(soundBuffer)
+        , mIsPaused(false)
+        , mDesiredPlayingStateAfterPause(false)
         , mVolume(volume)
         , mMasterVolume(masterVolume)
         , mIsMuted(isMuted)
@@ -154,12 +158,18 @@ public:
         mFadeLevel = 1.0f;
         InternalSetVolume();
 
-        // Play
-        sf::Sound::play();
-
         // Reset state
         mFadeInStartTimestamp.reset();
         mFadeOutStartTimestamp.reset();
+
+        // Remember we want to play when we resume
+        mDesiredPlayingStateAfterPause = true;
+
+        if (!mIsPaused)
+        {
+            // Play
+            sf::Sound::play();
+        }
     }
 
     void fadeToPlay()
@@ -172,17 +182,47 @@ public:
 
         // Stop fade-out, if any
         mFadeOutStartTimestamp.reset();
+
+        // Remember we want to play when we resume
+        mDesiredPlayingStateAfterPause = true;
     }
 
     void stop() override
     {
-        // Stop
-        sf::Sound::stop();
-
         // Reset state
         mFadeLevel = 0.0f;
         mFadeInStartTimestamp.reset();
         mFadeOutStartTimestamp.reset();
+
+        // Remember we want to stay stopped afte resume
+        mDesiredPlayingStateAfterPause = false;
+
+        // Stop
+        sf::Sound::stop();
+    }
+
+    void pause() override
+    {
+        if (!mIsPaused)
+        {
+            mIsPaused = true;
+
+            // Pause
+            sf::Sound::pause();
+        }
+    }
+
+    void resume()
+    {
+        if (mIsPaused)
+        {
+            mIsPaused = false;
+
+            // Look at the desired playing state
+            if (mDesiredPlayingStateAfterPause
+                && sf::Sound::Status::Paused == this->getStatus())
+                sf::Sound::play(); // Resume
+        }
     }
 
     void fadeToStop()
@@ -218,9 +258,12 @@ public:
 
             InternalSetVolume();
 
-            if (sf::Sound::Status::Playing != this->getStatus())
+            if (!mIsPaused)
             {
-                sf::Sound::play();
+                if (sf::Sound::Status::Playing != this->getStatus())
+                {
+                    sf::Sound::play();
+                }
             }
         }
         else if (!!mFadeOutStartTimestamp)
@@ -234,6 +277,10 @@ public:
                 mFadeLevel = 0.0f;
                 mFadeOutStartTimestamp.reset();
 
+                // Remember we want to stay stopped when we're done
+                mDesiredPlayingStateAfterPause = false;
+
+                // Stop
                 sf::Sound::stop();
             }
             else
@@ -260,6 +307,15 @@ private:
             sf::Sound::setVolume(0.0f);
         }
     }
+
+private:
+
+    bool mIsPaused;
+
+    // The play state we want to be in after resuming from a pause:
+    // - true: we want to play
+    // - false: we want to stop
+    bool mDesiredPlayingStateAfterPause;
 
     float mVolume;
     float mMasterVolume;
@@ -443,8 +499,6 @@ struct ContinuousSound
     ContinuousSound()
         : mSoundBuffer()
         , mSound()
-        , mCurrentPauseState(false)
-        , mDesiredPlayingState(false)
     {
     }
 
@@ -536,24 +590,18 @@ struct ContinuousSound
     {
         if (!!mSound)
         {
-            if (!mCurrentPauseState)
+            if (StartMode::WithFadeIn == startMode)
             {
-                if (StartMode::WithFadeIn == startMode)
+                mSound->fadeToPlay();
+            }
+            else
+            {
+                if (sf::Sound::Status::Playing != mSound->getStatus())
                 {
-                    mSound->fadeToPlay();
-                }
-                else
-                {
-                    if (sf::Sound::Status::Playing != mSound->getStatus())
-                    {
-                        mSound->play();
-                    }
+                    mSound->play();
                 }
             }
         }
-
-        // Remember we want to play when we resume
-        mDesiredPlayingState = true;
     }
 
     void SetPaused(bool isPaused)
@@ -563,18 +611,14 @@ struct ContinuousSound
             if (isPaused)
             {
                 // Pausing
-                if (sf::Sound::Status::Playing == mSound->getStatus())
-                    mSound->pause();
+                mSound->pause();
             }
             else
             {
-                // Resuming - look at the desired playing state
-                if (mDesiredPlayingState)
-                    mSound->play();
+                // Resuming
+                mSound->resume();
             }
         }
-
-        mCurrentPauseState = isPaused;
     }
 
     enum class StopMode
@@ -596,9 +640,6 @@ struct ContinuousSound
                     mSound->stop();
             }
         }
-
-        // Remember we want to stay stopped when we resume
-        mDesiredPlayingState = false;
     }
 
     void Update()
@@ -609,14 +650,6 @@ struct ContinuousSound
 private:
     std::unique_ptr<sf::SoundBuffer> mSoundBuffer;
     std::unique_ptr<GameSound> mSound;
-
-    // True/False if we are paused/not paused
-    bool mCurrentPauseState;
-
-    // The play state we want to be after resuming from a pause:
-    // - true: we want to play
-    // - false: we want to stop
-    bool mDesiredPlayingState;
 };
 
 /*

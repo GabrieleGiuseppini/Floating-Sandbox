@@ -455,18 +455,18 @@ void SoundController::SetPaused(bool isPaused)
         {
             if (isPaused)
             {
-                if (sf::Sound::Status::Playing == playingSound.Sound->getStatus())
-                    playingSound.Sound->pause();
+                playingSound.Sound->pause();
             }
             else
             {
-                if (sf::Sound::Status::Paused == playingSound.Sound->getStatus())
-                    playingSound.Sound->play();
+                playingSound.Sound->resume();
             }
         }
     }
 
-    // We don't pause the continuous tool sounds
+    // We don't pause the sounds of those continuous tools that keep "working" while paused;
+    // we only pause the sounds of those that stop functioning
+    mWaveMakerSound.SetPaused(isPaused);
 
     mWaterRushSound.SetPaused(isPaused);
     mWaterSplashSound.SetPaused(isPaused);
@@ -475,6 +475,7 @@ void SoundController::SetPaused(bool isPaused)
     mTimerBombFastFuseSound.SetPaused(isPaused);
     mAntiMatterBombContainedSounds.SetPaused(isPaused);
 
+    // Sinking music
     if (isPaused)
     {
         if (sf::Sound::Status::Playing == mSinkingMusic.getStatus())

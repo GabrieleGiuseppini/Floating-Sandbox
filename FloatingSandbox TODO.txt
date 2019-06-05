@@ -285,6 +285,7 @@ Render:
 				+ Cleanup changes.txt
 				+ Trim changes.txt at www
 				+ Timer: 10 sec
+		+ Make sure sfml network is crt statically linked
 
 		= Wine:
 			+ Test checking for the APPLE extension for VAO's: https://developer.apple.com/opengl/OpenGL-Capabilities-Tables.pdf
@@ -294,19 +295,21 @@ Render:
 				- No fullscreen mode
 
 
-		- Bugs:
-			- Wavemaker sound when paused does not pause
+		= Bugs:
+			+ Wavemaker sound when paused does not pause
 			- Move tool now doesn't work when paused
 				- See why
-				- Ain't that needed for world bounds though? Should run wold bound check inline while moving?
+				- Ain't that needed for world bounds though? Should run world bound check inline while moving?
 
 
 		- Repair tool improvement:
-			- RepairTool passes RepairSessionId
-			- Points has buffer of struct RepairSmoothing{RepairSessionId currentSessionId, float smoothing}
-			- Repair interaction:
-				- Zero's smoothing if currentSessionId != this session ID
-				- Advanced smoothing (afterwards?)
+			- RepairTool passes RepairSessionId, RepairSessionStepId
+			- Points has buffer of struct RepairSmoothing{RepairSessionId currentSessionId, RepairSessionStepId currentSessionStepId, float smoothing}
+			- Repair interaction when engaging "other endpoint":
+				- Zero's smoothing iff currentSessionId != this session ID
+					- And sets currentSessionId = this session ID
+				- Advances smoothing (smoothing += (1-smoothing)*alpha) iff currentSessionStepId != this session step ID
+					- And sets currentSessionStepId = this session step ID
 			- OLD:
 			- When both points are in radius, use forces instead of velocity
 			- OR: if both points in range, lower displacement more
