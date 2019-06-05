@@ -333,8 +333,8 @@ void OceanSurface::AdjustTo(
             // Start wave
             mSWEInteractiveWaveStateMachine.emplace(
                 SWEOuterLayerSamples + sampleIndex,
-                mHeightField[SWEOuterLayerSamples + sampleIndex], // LowHeight
-                targetHeight,
+                mHeightField[SWEOuterLayerSamples + sampleIndex],   // LowHeight == current height
+                targetHeight,                                       // HighHeight == target
                 currentSimulationTime);
         }
         else
@@ -370,7 +370,8 @@ void OceanSurface::TriggerTsunami(float currentSimulationTime)
     float constexpr AverageTsunamiHeight = 250.0f / SWEHeightFieldAmplification;
     float const tsunamiHeight = GameRandomEngine::GetInstance().GenerateRandomReal(
         AverageTsunamiHeight * 0.96f,
-        AverageTsunamiHeight * 1.04f);
+        AverageTsunamiHeight * 1.04f)
+        + SWEHeightFieldOffset;
 
     // Make it a sample index
     auto const sampleIndex = ToSampleIndex(tsunamiWorldX);
@@ -378,8 +379,8 @@ void OceanSurface::TriggerTsunami(float currentSimulationTime)
     // (Re-)start state machine
     mSWETsunamiWaveStateMachine.emplace(
         SWEOuterLayerSamples + sampleIndex,
-        mHeightField[SWEOuterLayerSamples + sampleIndex], // LowHeight
-        mHeightField[SWEOuterLayerSamples + sampleIndex] + tsunamiHeight, // HighHeight
+        mHeightField[SWEOuterLayerSamples + sampleIndex],   // LowHeight == current height
+        tsunamiHeight,                                      // HighHeight == tsunami height
         7.0f,
         5.0f,
         currentSimulationTime);
@@ -410,7 +411,8 @@ void OceanSurface::TriggerRogueWave(
     float constexpr MaxRogueWaveHeight = 50.0f / SWEHeightFieldAmplification;
     float const rogueWaveHeight = GameRandomEngine::GetInstance().GenerateRandomReal(
         MaxRogueWaveHeight * 0.35f,
-        MaxRogueWaveHeight);
+        MaxRogueWaveHeight)
+        + SWEHeightFieldOffset;
 
     // Choose rate
     float const rogueWaveDelay = GameRandomEngine::GetInstance().GenerateRandomReal(
@@ -420,8 +422,8 @@ void OceanSurface::TriggerRogueWave(
     // (Re-)start state machine
     mSWERogueWaveWaveStateMachine.emplace(
         centerIndex,
-        mHeightField[centerIndex], // LowHeight
-        mHeightField[centerIndex] + rogueWaveHeight, // HighHeight
+        mHeightField[centerIndex],  // LowHeight == current height
+        rogueWaveHeight,            // HighHeight == rogue wave height
         rogueWaveDelay, // Rise delay
         rogueWaveDelay, // Fall delay
         currentSimulationTime);
