@@ -11,7 +11,7 @@
 #include "ShipRenderContext.h"
 #include "TextRenderContext.h"
 #include "TextureAtlas.h"
-#include "TextureRenderManager.h"
+#include "UploadedTextureManager.h"
 #include "ViewModel.h"
 
 #include <GameOpenGL/GameOpenGL.h>
@@ -1286,7 +1286,7 @@ private:
     //
 
     std::unique_ptr<ShaderManager<ShaderManagerTraits>> mShaderManager;
-    std::unique_ptr<TextureRenderManager> mTextureRenderManager;
+    std::unique_ptr<UploadedTextureManager> mUploadedTextureManager;
     std::unique_ptr<TextRenderContext> mTextRenderContext;
 
     //

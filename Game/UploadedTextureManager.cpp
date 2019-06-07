@@ -3,13 +3,13 @@
 * Created:              2018-09-28
 * Copyright:            Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
-#include "TextureRenderManager.h"
+#include "UploadedTextureManager.h"
 
 #include <GameCore/GameException.h>
 
 namespace Render {
 
-void TextureRenderManager::UploadGroup(
+void UploadedTextureManager::UploadGroup(
     TextureGroup const & group,
     ProgressCallback const & progressCallback)
 {
@@ -64,7 +64,7 @@ void TextureRenderManager::UploadGroup(
     }
 }
 
-void TextureRenderManager::UploadMipmappedGroup(
+void UploadedTextureManager::UploadMipmappedGroup(
     TextureGroup const & group,
     GLint minFilter,
     ProgressCallback const & progressCallback)

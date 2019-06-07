@@ -85,8 +85,8 @@ set  (RENDER_SOURCES
 	TextureAtlas.h
 	TextureDatabase.cpp
 	TextureDatabase.h
-	TextureRenderManager.cpp
-	TextureRenderManager.h
+	UploadedTextureManager.cpp
+	UploadedTextureManager.h
 	ViewModel.h)
 
 source_group(" " FILES ${GAME_SOURCES})

@@ -324,7 +324,9 @@ Render:
 				+ SettingsDialog: drop-down
 				+ RenderContext::SetOceanFloorTexture(size_t)
 				+ Test ShipPreviewControl (for zero-sized bitmap)
-				- Rename TextureRenderManager to UploadedTextureManager
+				+ Rename TextureRenderManager to UploadedTextureManager
+			- Ocean
+			- Changes.txt
 		- Ocean shaders:
 			- Gradient: make non-linear
 			- Texture: add non-linear (same non-linearity) darkening

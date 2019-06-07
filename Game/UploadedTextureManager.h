@@ -23,7 +23,7 @@ namespace Render {
 /*
  * This class maintains metadata about a number of textures uploaded to the GPU.
  */
-class TextureRenderManager
+class UploadedTextureManager
 {
 public:
 

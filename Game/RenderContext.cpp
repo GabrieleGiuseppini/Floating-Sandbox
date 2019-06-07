@@ -54,7 +54,7 @@ RenderContext::RenderContext(
     , mIsWorldBorderVisible(false)
     // Managers
     , mShaderManager()
-    , mTextureRenderManager()
+    , mUploadedTextureManager()
     , mTextRenderContext()
     // Render parameters
     , mViewModel(1.0f, vec2f::zero(), 100, 100)
@@ -136,8 +136,8 @@ RenderContext::RenderContext(
             progressCallback((2.0f + progress) / TotalProgressSteps, "Loading textures...");
         });
 
-    // Create texture render manager
-    mTextureRenderManager = std::make_unique<TextureRenderManager>();
+    // Create uploaded texture manager
+    mUploadedTextureManager = std::make_unique<UploadedTextureManager>();
 
 
 
@@ -408,7 +408,7 @@ RenderContext::RenderContext(
     mShaderManager->ActivateTexture<ProgramParameterType::OceanTexture>();
 
     // Upload texture
-    mTextureRenderManager->UploadMipmappedGroup(
+    mUploadedTextureManager->UploadMipmappedGroup(
         textureDatabase.GetGroup(TextureGroupType::Ocean),
         GL_LINEAR_MIPMAP_NEAREST,
         [&progressCallback](float progress, std::string const &)
@@ -417,7 +417,7 @@ RenderContext::RenderContext(
         });
 
     // Bind texture
-    glBindTexture(GL_TEXTURE_2D, mTextureRenderManager->GetOpenGLHandle(TextureGroupType::Ocean, 0));
+    glBindTexture(GL_TEXTURE_2D, mUploadedTextureManager->GetOpenGLHandle(TextureGroupType::Ocean, 0));
     CheckOpenGLError();
 
     // Set texture and texture parameters in shader
@@ -435,7 +435,7 @@ RenderContext::RenderContext(
 
     mShaderManager->ActivateTexture<ProgramParameterType::WorldBorderTexture>();
 
-    mTextureRenderManager->UploadMipmappedGroup(
+    mUploadedTextureManager->UploadMipmappedGroup(
         textureDatabase.GetGroup(TextureGroupType::WorldBorder),
         GL_LINEAR_MIPMAP_NEAREST,
         [](float, std::string const &)
@@ -444,7 +444,7 @@ RenderContext::RenderContext(
         });
 
     // Bind texture
-    glBindTexture(GL_TEXTURE_2D, mTextureRenderManager->GetOpenGLHandle(TextureGroupType::WorldBorder, 0));
+    glBindTexture(GL_TEXTURE_2D, mUploadedTextureManager->GetOpenGLHandle(TextureGroupType::WorldBorder, 0));
     CheckOpenGLError();
 
     // Store metadata
