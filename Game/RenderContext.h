@@ -270,12 +270,12 @@ public:
 
     size_t GetTextureLandTextureIndex() const
     {
-        return mTextureLandTextureIndex;
+        return mSelectedLandTextureIndex;
     }
 
     void SetTextureLandTextureIndex(size_t index)
     {
-        mTextureLandTextureIndex = index;
+        mSelectedLandTextureIndex = index;
 
         OnTextureLandTextureIndexUpdated();
     }
@@ -1259,6 +1259,10 @@ private:
     GameOpenGLTexture mCloudTextureAtlasOpenGLHandle;
     std::unique_ptr<TextureAtlasMetadata> mCloudTextureAtlasMetadata;
 
+    std::vector<TextureFrameSpecification> mLandTextureFrameSpecifications;
+    GameOpenGLTexture mLandTextureOpenGLHandle;
+    size_t mLoadedLandTextureIndex;
+
     //
     // Ships
     //
@@ -1305,7 +1309,7 @@ private:
     rgbColor mFlatOceanColor;
     LandRenderMode mLandRenderMode;
     std::vector<std::pair<std::string, RgbaImageData>> mTextureLandAvailableThumbnails;
-    size_t mTextureLandTextureIndex;
+    size_t mSelectedLandTextureIndex;
     rgbColor mFlatLandColor;
     VectorFieldRenderMode mVectorFieldRenderMode;
     float mVectorFieldLengthMultiplier;

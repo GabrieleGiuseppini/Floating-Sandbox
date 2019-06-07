@@ -42,6 +42,9 @@ RenderContext::RenderContext(
     // Textures
     , mCloudTextureAtlasOpenGLHandle()
     , mCloudTextureAtlasMetadata()
+    , mLandTextureFrameSpecifications()
+    , mLandTextureOpenGLHandle()
+    , mLoadedLandTextureIndex(std::numeric_limits<size_t>::max())
     // Ships
     , mShips()
     , mGenericTextureAtlasOpenGLHandle()
@@ -69,7 +72,7 @@ RenderContext::RenderContext(
     , mFlatOceanColor(0x00, 0x3d, 0x99)
     , mLandRenderMode(LandRenderMode::Texture)
     , mTextureLandAvailableThumbnails()
-    , mTextureLandTextureIndex(0)
+    , mSelectedLandTextureIndex(3) // Rock Coarse 3
     , mFlatLandColor(0x72, 0x46, 0x05)
     , mVectorFieldRenderMode(VectorFieldRenderMode::None)
     , mVectorFieldLengthMultiplier(1.0f)
@@ -378,8 +381,10 @@ RenderContext::RenderContext(
     // Initialize land textures
     //
 
+    mLandTextureFrameSpecifications = textureDatabase.GetGroup(TextureGroupType::Land).GetFrameSpecifications();
+
     // Create list of available textures for user
-    for (auto const & tfs : textureDatabase.GetGroup(TextureGroupType::Land).GetFrameSpecifications())
+    for (auto const & tfs : mLandTextureFrameSpecifications)
     {
         static ImageSize const ThumbnailSize(32, 32);
 
@@ -387,34 +392,12 @@ RenderContext::RenderContext(
             tfs.FilePath,
             ThumbnailSize);
 
+        assert(static_cast<size_t>(tfs.Metadata.FrameId.FrameIndex) == mTextureLandAvailableThumbnails.size());
+
         mTextureLandAvailableThumbnails.emplace_back(
             tfs.Metadata.FrameName,
             std::move(textureThumbnail));
     }
-
-    // TODO: move following to helper function invoked upon texture selection
-
-    mShaderManager->ActivateTexture<ProgramParameterType::LandTexture>();
-
-    mTextureRenderManager->UploadMipmappedGroup(
-        textureDatabase.GetGroup(TextureGroupType::Land),
-        GL_LINEAR_MIPMAP_NEAREST,
-        [&progressCallback](float progress, std::string const &)
-        {
-            progressCallback((3.0f + GenericTextureProgressSteps + CloudTextureProgressSteps + progress) / TotalProgressSteps, "Loading textures...");
-        });
-
-    // Bind texture
-    glBindTexture(GL_TEXTURE_2D, mTextureRenderManager->GetOpenGLHandle(TextureGroupType::Land, 0));
-    CheckOpenGLError();
-
-    // Set texture and texture parameters in shader
-    auto const & landTextureMetadata = textureDatabase.GetFrameMetadata(TextureGroupType::Land, 0);
-    mShaderManager->ActivateProgram<ProgramType::LandTexture>();
-    mShaderManager->SetProgramParameter<ProgramType::LandTexture, ProgramParameterType::TextureScaling>(
-            1.0f / landTextureMetadata.WorldWidth,
-            1.0f / landTextureMetadata.WorldHeight);
-    mShaderManager->SetTextureParameters<ProgramType::LandTexture>();
 
 
     //
@@ -1206,7 +1189,50 @@ void RenderContext::OnLandRenderParametersUpdated()
 
 void RenderContext::OnTextureLandTextureIndexUpdated()
 {
-    //TODOHERE
+    if (mSelectedLandTextureIndex != mLoadedLandTextureIndex)
+    {
+        //
+        // Reload the land texture
+        //
+
+        // Clamp the texture index
+        mLoadedLandTextureIndex = std::min(mSelectedLandTextureIndex, mLandTextureFrameSpecifications.size() - 1);
+
+        // Load texture image
+        auto landTextureFrame = mLandTextureFrameSpecifications[mLoadedLandTextureIndex].LoadFrame();
+
+        // Activate texture
+        mShaderManager->ActivateTexture<ProgramParameterType::LandTexture>();
+
+        // Create texture
+        GLuint tmpGLuint;
+        glGenTextures(1, &tmpGLuint);
+        mLandTextureOpenGLHandle = tmpGLuint; // Eventually destroy previous one
+
+        // Bind texture
+        glBindTexture(GL_TEXTURE_2D, *mLandTextureOpenGLHandle);
+        CheckOpenGLError();
+
+        // Upload texture
+        GameOpenGL::UploadMipmappedTexture(std::move(landTextureFrame.TextureData));
+
+        // Set repeat mode
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        CheckOpenGLError();
+
+        // Set filtering
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        CheckOpenGLError();
+
+        // Set texture and texture parameters in shader
+        mShaderManager->ActivateProgram<ProgramType::LandTexture>();
+        mShaderManager->SetProgramParameter<ProgramType::LandTexture, ProgramParameterType::TextureScaling>(
+            1.0f / landTextureFrame.Metadata.WorldWidth,
+            1.0f / landTextureFrame.Metadata.WorldHeight);
+        mShaderManager->SetTextureParameters<ProgramType::LandTexture>();
+    }
 }
 
 void RenderContext::OnWaterContrastUpdated()

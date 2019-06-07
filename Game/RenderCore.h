@@ -77,7 +77,7 @@ enum class ProgramParameterType : uint8_t
     GenericTexturesAtlasTexture,    // 2
     LandTexture,                    // 3
     OceanTexture,                   // 4
-    WorldBorderTexture,                // 5
+    WorldBorderTexture,             // 5
 
     _FirstTexture = SharedTexture,
     _LastTexture = WorldBorderTexture

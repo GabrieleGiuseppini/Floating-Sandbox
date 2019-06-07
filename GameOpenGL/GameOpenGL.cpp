@@ -254,7 +254,7 @@ void GameOpenGL::UploadMipmappedTexture(RgbaImageData baseTexture)
             throw GameException("Error uploading minified texture onto GPU: " + std::to_string(glError));
         }
 
-        // Swap buffer
+        // Swap buffers
         readImageSize = ImageSize(width, height);
         readBuffer = std::move(writeBuffer);
     }

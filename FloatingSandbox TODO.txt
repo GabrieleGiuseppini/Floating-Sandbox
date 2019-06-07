@@ -289,10 +289,10 @@ Render:
 		= Waves need to be further limited
 			+ Make repro: tsunami on manually-created high wave field
 			+ Tsunami and rogue wave: target H is absolute, not based on current H
-			- Ask testers to test
+			= Ask testers to test
 			- If ok:
 				- Update changes.txt
-			- Other attempts:
+			- Other older attempts:
 			- Try first with lower sea depth and more amplification
 			- If not: TBD
 
@@ -310,28 +310,32 @@ Render:
 			+ See why points fly at weird angles
 				+ See if due to (wrong) intertial: does it happen with no inertial? NO.
 			- Attempt with forcing each point only once per step
+				- Use conn comp size and/or # of attached springs to decide Attractor vs Attracted
 			- OLD:
 			- Attempt with pinning connected component to session ID
 			- When both points are in radius, use forces instead of velocity
 			- OR: if both points in range, lower displacement more
 
 		= Multiple textures for:
-			= Land
-				= Each has entry in texture DB
-					- Some new ones have 512 - decide one by one
+			+ Land
+				+ Each has entry in texture DB
+					+ Some new ones have 512 - decide one by one
 				+ RenderContext::GetAvailableLandTextures()
 				+ SettingsDialog: drop-down
-				- RenderContext::SetOceanFloorTexture(size_t)
+				+ RenderContext::SetOceanFloorTexture(size_t)
 				+ Test ShipPreviewControl (for zero-sized bitmap)
+				- Rename TextureRenderManager to UploadedTextureManager
 		- Ocean shaders:
 			- Gradient: make non-linear
 			- Texture: add non-linear (same non-linearity) darkening
 		- Land shaders:
 			- Texture: add non-linear (same non-linearity) darkening (lightest at ocean surface)
 
+		- Optimize GameOpenGL::UploadMipmappedTexture: alloc write buffer once and swap pointers
+		- Make slider for air bubble density
+			- SettingDialog: enable/disable based off checkbox
+				- Move checkbox
 			 
-		- Interior layer (*)
-
 		- Heat and combustion (*)
 
 		- Spring and NonSpring force separation optimization (*)
@@ -339,6 +343,8 @@ Render:
 		- Attempt to re-instate square water drag (*)
 		- Attempt to use total point masses for springs (*)
 		- Attempt to get rid of boundary checks at OceanFloor and OceanSurface sampling
+
+		- Interior layer (*)
 
 		- Settings Manager (*)
 
@@ -950,11 +956,13 @@ Render:
 
 	- Ocean floor deforming/breaking up upon impact
 		- WATCH OUT: might be ugly with peaks (very vertical slope)
+			- Increase resolution of ocean floor - shouldn't impact perf other than for cache misses
 		- @ Ocean floor collision:
-			- Upon point entering floor:
+			- Upon (non-opphaned) point entering floor:
 				- Points goes back by displacement * FloorHardness
 					- displacement is whatever displacement we currently use
 				- Ocean floor's H goes back by displacement * (1 - FloorHardness)
+				- Displacement of both might be influenced by point's connected component size
 
 	- Breaking waves (Muller's paper)
 
@@ -1219,6 +1227,7 @@ Render:
 - Game Interactions and Controls:
 
 	- Interior layer (multiple textures) (*):
+		- ASK FIRST MIKE IF STRUCTURE IS SAME
 		- JSON: texture is optionally an array
 		- ShipDefinition: texture is vector
 			- Always non-empty
