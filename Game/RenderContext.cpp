@@ -14,6 +14,8 @@
 
 namespace Render {
 
+ImageSize constexpr ThumbnailSize(32, 32);
+
 RenderContext::RenderContext(
     ResourceLoader & resourceLoader,
     ProgressCallback const & progressCallback)
@@ -42,6 +44,9 @@ RenderContext::RenderContext(
     // Textures
     , mCloudTextureAtlasOpenGLHandle()
     , mCloudTextureAtlasMetadata()
+    , mOceanTextureFrameSpecifications()
+    , mOceanTextureOpenGLHandle()
+    , mLoadedOceanTextureIndex(std::numeric_limits<size_t>::max())
     , mLandTextureFrameSpecifications()
     , mLandTextureOpenGLHandle()
     , mLoadedLandTextureIndex(std::numeric_limits<size_t>::max())
@@ -67,11 +72,13 @@ RenderContext::RenderContext(
     , mShipRenderMode(ShipRenderMode::Texture)
     , mDebugShipRenderMode(DebugShipRenderMode::None)
     , mOceanRenderMode(OceanRenderMode::Texture)
+    , mOceanAvailableThumbnails()
+    , mSelectedOceanTextureIndex(0) // Wavy Thin
     , mDepthOceanColorStart(0xda, 0xf1, 0xfe)
     , mDepthOceanColorEnd(0x00, 0x00, 0x00)
     , mFlatOceanColor(0x00, 0x3d, 0x99)
     , mLandRenderMode(LandRenderMode::Texture)
-    , mTextureLandAvailableThumbnails()
+    , mLandAvailableThumbnails()
     , mSelectedLandTextureIndex(3) // Rock Coarse 3
     , mFlatLandColor(0x72, 0x46, 0x05)
     , mVectorFieldRenderMode(VectorFieldRenderMode::None)
@@ -83,8 +90,8 @@ RenderContext::RenderContext(
     static constexpr float GenericTextureProgressSteps = 10.0f;
     static constexpr float CloudTextureProgressSteps = 4.0f;
 
-    // Shaders, TextRenderContext, TextureDatabase, GenericTextureAtlas, Clouds, Land, Ocean
-    static constexpr float TotalProgressSteps = 3.0f + GenericTextureProgressSteps + CloudTextureProgressSteps + 2.0f;
+    // Shaders, TextRenderContext, TextureDatabase, GenericTextureAtlas, Clouds
+    static constexpr float TotalProgressSteps = 3.0f + GenericTextureProgressSteps + CloudTextureProgressSteps;
 
     GLuint tmpGLuint;
 
@@ -386,47 +393,38 @@ RenderContext::RenderContext(
     // Create list of available textures for user
     for (auto const & tfs : mLandTextureFrameSpecifications)
     {
-        static ImageSize const ThumbnailSize(32, 32);
-
         auto textureThumbnail = ImageFileTools::LoadImageRgbaLowerLeftAndResize(
             tfs.FilePath,
             ThumbnailSize);
 
-        assert(static_cast<size_t>(tfs.Metadata.FrameId.FrameIndex) == mTextureLandAvailableThumbnails.size());
+        assert(static_cast<size_t>(tfs.Metadata.FrameId.FrameIndex) == mLandAvailableThumbnails.size());
 
-        mTextureLandAvailableThumbnails.emplace_back(
+        mLandAvailableThumbnails.emplace_back(
             tfs.Metadata.FrameName,
             std::move(textureThumbnail));
     }
 
 
     //
-    // Initialize ocean texture
+    // Initialize ocean textures
     //
 
-    // Activate texture
-    mShaderManager->ActivateTexture<ProgramParameterType::OceanTexture>();
+    mOceanTextureFrameSpecifications = textureDatabase.GetGroup(TextureGroupType::Ocean).GetFrameSpecifications();
 
-    // Upload texture
-    mUploadedTextureManager->UploadMipmappedGroup(
-        textureDatabase.GetGroup(TextureGroupType::Ocean),
-        GL_LINEAR_MIPMAP_NEAREST,
-        [&progressCallback](float progress, std::string const &)
-        {
-            progressCallback((3.0f + GenericTextureProgressSteps + CloudTextureProgressSteps + 1.0f + progress) / TotalProgressSteps, "Loading textures...");
-        });
+    // Create list of available textures for user
+    for (auto const & tfs : mOceanTextureFrameSpecifications)
+    {
+        auto textureThumbnail = ImageFileTools::LoadImageRgbaLowerLeftAndResize(
+            tfs.FilePath,
+            ThumbnailSize);
 
-    // Bind texture
-    glBindTexture(GL_TEXTURE_2D, mUploadedTextureManager->GetOpenGLHandle(TextureGroupType::Ocean, 0));
-    CheckOpenGLError();
+        assert(static_cast<size_t>(tfs.Metadata.FrameId.FrameIndex) == mOceanAvailableThumbnails.size());
 
-    // Set texture and texture parameters in shader
-    auto const & oceanTextureMetadata = textureDatabase.GetFrameMetadata(TextureGroupType::Ocean, 0);
-    mShaderManager->ActivateProgram<ProgramType::OceanTexture>();
-    mShaderManager->SetProgramParameter<ProgramType::OceanTexture, ProgramParameterType::TextureScaling>(
-            1.0f / oceanTextureMetadata.WorldWidth,
-            1.0f / oceanTextureMetadata.WorldHeight);
-    mShaderManager->SetTextureParameters<ProgramType::OceanTexture>();
+        mOceanAvailableThumbnails.emplace_back(
+            tfs.Metadata.FrameName,
+            std::move(textureThumbnail));
+    }
+
 
 
     //
@@ -485,8 +483,9 @@ RenderContext::RenderContext(
     OnAmbientLightIntensityUpdated();
     OnOceanTransparencyUpdated();
     OnOceanRenderParametersUpdated();
+    OnOceanTextureIndexUpdated();
     OnLandRenderParametersUpdated();
-    OnTextureLandTextureIndexUpdated();
+    OnLandTextureIndexUpdated();
     OnWaterContrastUpdated();
     OnWaterLevelOfDetailUpdated();
     OnShipRenderModeUpdated();
@@ -1175,6 +1174,54 @@ void RenderContext::OnOceanRenderParametersUpdated()
     }
 }
 
+void RenderContext::OnOceanTextureIndexUpdated()
+{
+    if (mSelectedOceanTextureIndex != mLoadedOceanTextureIndex)
+    {
+        //
+        // Reload the ocean texture
+        //
+
+        // Clamp the texture index
+        mLoadedOceanTextureIndex = std::min(mSelectedOceanTextureIndex, mOceanTextureFrameSpecifications.size() - 1);
+
+        // Load texture image
+        auto oceanTextureFrame = mOceanTextureFrameSpecifications[mLoadedOceanTextureIndex].LoadFrame();
+
+        // Activate texture
+        mShaderManager->ActivateTexture<ProgramParameterType::OceanTexture>();
+
+        // Create texture
+        GLuint tmpGLuint;
+        glGenTextures(1, &tmpGLuint);
+        mOceanTextureOpenGLHandle = tmpGLuint; // Eventually destroy previous one
+
+        // Bind texture
+        glBindTexture(GL_TEXTURE_2D, *mOceanTextureOpenGLHandle);
+        CheckOpenGLError();
+
+        // Upload texture
+        GameOpenGL::UploadMipmappedTexture(std::move(oceanTextureFrame.TextureData));
+
+        // Set repeat mode
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        CheckOpenGLError();
+
+        // Set filtering
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        CheckOpenGLError();
+
+        // Set texture and texture parameters in shader
+        mShaderManager->ActivateProgram<ProgramType::OceanTexture>();
+        mShaderManager->SetProgramParameter<ProgramType::OceanTexture, ProgramParameterType::TextureScaling>(
+            1.0f / oceanTextureFrame.Metadata.WorldWidth,
+            1.0f / oceanTextureFrame.Metadata.WorldHeight);
+        mShaderManager->SetTextureParameters<ProgramType::OceanTexture>();
+    }
+}
+
 void RenderContext::OnLandRenderParametersUpdated()
 {
     // Set land parameters in all water programs
@@ -1187,7 +1234,7 @@ void RenderContext::OnLandRenderParametersUpdated()
         flatColor.z);
 }
 
-void RenderContext::OnTextureLandTextureIndexUpdated()
+void RenderContext::OnLandTextureIndexUpdated()
 {
     if (mSelectedLandTextureIndex != mLoadedLandTextureIndex)
     {

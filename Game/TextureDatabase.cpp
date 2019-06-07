@@ -12,6 +12,7 @@
 
 #include <map>
 #include <regex>
+#include <set>
 
 namespace Render {
 
@@ -48,6 +49,8 @@ TextureDatabase TextureDatabase::Load(
     };
 
     std::vector<FileData> allTextureFiles;
+
+    std::set<std::filesystem::path> matchedTextureFiles;
 
     for (auto const & entryIt : std::filesystem::directory_iterator(texturesRoot))
     {
@@ -121,6 +124,7 @@ TextureDatabase TextureDatabase::Load(
             auto frameJson = frameValue.get<picojson::object>();
 
             // Get frame properties
+            std::optional<int> frameOptionalIndex = Utils::GetOptionalJsonMember<int>(frameJson, "index");
             std::optional<float> frameWorldScaling = Utils::GetOptionalJsonMember<float>(frameJson, "worldScaling");
             std::optional<float> frameWorldWidth = Utils::GetOptionalJsonMember<float>(frameJson, "worldWidth");
             std::optional<float> frameWorldHeight = Utils::GetOptionalJsonMember<float>(frameJson, "worldHeight");
@@ -133,9 +137,9 @@ TextureDatabase TextureDatabase::Load(
             std::string frameFilename = Utils::GetMandatoryJsonMember<std::string>(frameJson, "filename");
             std::regex const frameFilenameRegex("^" + frameFilename + "$");
 
-            // Find files matching the regex
-            int filesFoundCount = 0;
-            for (auto fileIt = allTextureFiles.begin(); fileIt!= allTextureFiles.end(); /* incremented in loop */)
+            // Find all files matching the regex
+            int filesFoundFromFrameCount = 0;
+            for (auto fileIt = allTextureFiles.cbegin(); fileIt!= allTextureFiles.cend(); ++fileIt)
             {
                 FileData const & fileData = *fileIt;
 
@@ -154,15 +158,26 @@ TextureDatabase TextureDatabase::Load(
                     // Extract frame index
                     //
 
-                    static std::regex const TextureFilenameFrameIndexRegex("^.+?_(\\d+)$");
-                    std::smatch frameIndexMatch;
-                    if (!std::regex_match(fileData.Stem, frameIndexMatch, TextureFilenameFrameIndexRegex))
-                    {
-                        throw GameException("Texture database: cannot find frame index in texture filename \"" + fileData.Stem + "\"");
-                    }
+                    TextureFrameIndex frameIndex;
 
-                    assert(frameIndexMatch.size() == 2);
-                    TextureFrameIndex frameIndex = static_cast<TextureFrameIndex>(std::stoi(frameIndexMatch[1].str()));
+                    if (!!frameOptionalIndex)
+                    {
+                        // Take provided index
+                        frameIndex = static_cast<TextureFrameIndex>(*frameOptionalIndex);
+                    }
+                    else
+                    {
+                        // Extract index from filename
+                        static std::regex const TextureFilenameFrameIndexRegex("^.+?_(\\d+)$");
+                        std::smatch frameIndexMatch;
+                        if (!std::regex_match(fileData.Stem, frameIndexMatch, TextureFilenameFrameIndexRegex))
+                        {
+                            throw GameException("Texture database: cannot find frame index in texture filename \"" + fileData.Stem + "\"");
+                        }
+
+                        assert(frameIndexMatch.size() == 2);
+                        frameIndex = static_cast<TextureFrameIndex>(std::stoi(frameIndexMatch[1].str()));
+                    }
 
 
                     //
@@ -227,6 +242,7 @@ TextureDatabase TextureDatabase::Load(
 
                     std::string name = !!frameName ? *frameName : std::to_string(frameIndex);
 
+
                     //
                     // Store frame specification
                     //
@@ -244,13 +260,14 @@ TextureDatabase TextureDatabase::Load(
                                 name),
                             fileData.Path));
 
+
                     //
-                    // Remove this file from the list
+                    // Remember this file was matched
                     //
 
-                    fileIt = allTextureFiles.erase(fileIt);
+                    matchedTextureFiles.insert(fileData.Path);
 
-                    ++filesFoundCount;
+                    ++filesFoundFromFrameCount;
 
 
                     //
@@ -260,15 +277,10 @@ TextureDatabase TextureDatabase::Load(
                     framesLoaded += 1.0f;
                     progressCallback(framesLoaded / framesToLoad, "Loading textures...");
                 }
-                else
-                {
-                    // Advance
-                    ++fileIt;
-                }
             }
 
             // Make sure at least one matching file was found for this frame specification
-            if (0 == filesFoundCount)
+            if (0 == filesFoundFromFrameCount)
             {
                 throw GameException("Texture database: couldn't match any file to frame file \"" + frameFilename + "\"");
             }
@@ -325,9 +337,9 @@ TextureDatabase TextureDatabase::Load(
     }
 
     // Make sure all textures found in file system have been exhausted
-    if (!allTextureFiles.empty())
+    if (matchedTextureFiles.size() != allTextureFiles.size())
     {
-        throw GameException("Texture database: couldn't match " + std::to_string(allTextureFiles.size()) + " texture files (e.g. \"" + allTextureFiles[0].Stem + "\") to texture specification file");
+        throw GameException("Texture database: couldn't match " + std::to_string(allTextureFiles.size()) + " texture files to texture specification file");
     }
 
     // Notify progress

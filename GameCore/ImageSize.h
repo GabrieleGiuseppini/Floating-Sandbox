@@ -16,7 +16,7 @@ public:
     int Width;
     int Height;
 
-    ImageSize(
+    constexpr ImageSize(
         int width,
         int height)
         : Width(width)

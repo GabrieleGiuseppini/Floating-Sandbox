@@ -402,6 +402,10 @@ public:
     OceanRenderMode GetOceanRenderMode() const { return mRenderContext->GetOceanRenderMode(); }
     void SetOceanRenderMode(OceanRenderMode oceanRenderMode) { mRenderContext->SetOceanRenderMode(oceanRenderMode); }
 
+    std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureOceanAvailableThumbnails() const { return mRenderContext->GetTextureOceanAvailableThumbnails(); }
+    size_t GetTextureOceanTextureIndex() const { return mRenderContext->GetTextureOceanTextureIndex(); }
+    void SetTextureOceanTextureIndex(size_t index) { mRenderContext->SetTextureOceanTextureIndex(index); }
+
     rgbColor const & GetDepthOceanColorStart() const { return mRenderContext->GetDepthOceanColorStart(); }
     void SetDepthOceanColorStart(rgbColor const & color) { mRenderContext->SetDepthOceanColorStart(color); }
 

@@ -45,6 +45,7 @@ private:
     void OnModulateWindCheckBoxClick(wxCommandEvent & event);
 
     void OnTextureOceanRenderModeRadioButtonClick(wxCommandEvent & event);
+    void OnTextureOceanChanged(wxCommandEvent & event);
     void OnDepthOceanRenderModeRadioButtonClick(wxCommandEvent & event);
     void OnDepthOceanColorStartChanged(wxColourPickerEvent & event);
     void OnDepthOceanColorEndChanged(wxColourPickerEvent & event);
@@ -129,6 +130,7 @@ private:
     // Rendering
     wxRadioButton * mTextureOceanRenderModeRadioButton;
     wxRadioButton * mDepthOceanRenderModeRadioButton;
+    wxBitmapComboBox * mTextureOceanComboBox;
     wxColourPickerCtrl * mDepthOceanColorStartPicker;
     wxColourPickerCtrl * mDepthOceanColorEndPicker;
     wxRadioButton * mFlatOceanRenderModeRadioButton;

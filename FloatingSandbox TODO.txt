@@ -278,6 +278,17 @@ Render:
 			+ Move tool now doesn't work when paused
 				+ See why
 				+ Fix
+		+ Multiple textures for:
+			+ Land
+				+ Each has entry in texture DB
+					+ Some new ones have 512 - decide one by one
+				+ RenderContext::GetAvailableLandTextures()
+				+ SettingsDialog: drop-down
+				+ RenderContext::SetOceanFloorTexture(size_t)
+				+ Test ShipPreviewControl (for zero-sized bitmap)
+				+ Rename TextureRenderManager to UploadedTextureManager
+			+ Ocean
+			+ Changes.txt
 
 		= Wine:
 			+ Test checking for the APPLE extension for VAO's: https://developer.apple.com/opengl/OpenGL-Capabilities-Tables.pdf
@@ -309,29 +320,25 @@ Render:
 			+ Fine-tune inertial velocity exponent
 			+ See why points fly at weird angles
 				+ See if due to (wrong) intertial: does it happen with no inertial? NO.
+			- See Moleskine for Attractor vs Attracted
+			- OLD:
 			- Attempt with forcing each point only once per step
 				- Use conn comp size and/or # of attached springs to decide Attractor vs Attracted
-			- OLD:
 			- Attempt with pinning connected component to session ID
 			- When both points are in radius, use forces instead of velocity
 			- OR: if both points in range, lower displacement more
 
-		= Multiple textures for:
-			+ Land
-				+ Each has entry in texture DB
-					+ Some new ones have 512 - decide one by one
-				+ RenderContext::GetAvailableLandTextures()
-				+ SettingsDialog: drop-down
-				+ RenderContext::SetOceanFloorTexture(size_t)
-				+ Test ShipPreviewControl (for zero-sized bitmap)
-				+ Rename TextureRenderManager to UploadedTextureManager
-			- Ocean
-			- Changes.txt
+		- Land shaders:
+			- Texture:
+				- texture compression on edge
+					- Try x^(0.2) / (x^2+1) + x
+				- add non-linear (same non-linearity) darkening (lightest at ocean surface)
+
 		- Ocean shaders:
 			- Gradient: make non-linear
-			- Texture: add non-linear (same non-linearity) darkening
-		- Land shaders:
-			- Texture: add non-linear (same non-linearity) darkening (lightest at ocean surface)
+			- Texture:
+				- texture compression on edge			
+				- add non-linear (same non-linearity) darkening
 
 		- Optimize GameOpenGL::UploadMipmappedTexture: alloc write buffer once and swap pointers
 		- Make slider for air bubble density

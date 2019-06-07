@@ -300,6 +300,12 @@ void SettingsDialog::OnTextureOceanRenderModeRadioButtonClick(wxCommandEvent & /
     mApplyButton->Enable(true);
 }
 
+void SettingsDialog::OnTextureOceanChanged(wxCommandEvent & /*event*/)
+{
+    // Remember we're dirty now
+    mApplyButton->Enable(true);
+}
+
 void SettingsDialog::OnDepthOceanRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
 {
     ReconciliateOceanRenderModeSettings();
@@ -1360,50 +1366,59 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                 oceanRenderModeBoxSizer1->AddSpacer(StaticBoxTopMargin);
 
                 {
-                    wxFlexGridSizer * oceanRenderModeBoxSizer2 = new wxFlexGridSizer(3, 5, 5);
-                    oceanRenderModeBoxSizer2->SetFlexibleDirection(wxHORIZONTAL);
+                    wxGridBagSizer * oceanRenderModeBoxSizer2 = new wxGridBagSizer(5, 5);
 
                     mTextureOceanRenderModeRadioButton = new wxRadioButton(oceanRenderModeBox, wxID_ANY, _("Texture"),
                         wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
                     mTextureOceanRenderModeRadioButton->SetToolTip("Draws the ocean using a static pattern.");
                     mTextureOceanRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnTextureOceanRenderModeRadioButtonClick, this);
-                    oceanRenderModeBoxSizer2->Add(mTextureOceanRenderModeRadioButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 0);
+                    oceanRenderModeBoxSizer2->Add(mTextureOceanRenderModeRadioButton, wxGBPosition(0, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
 
-                    oceanRenderModeBoxSizer2->AddSpacer(0);
+                    mTextureOceanComboBox = new wxBitmapComboBox(oceanRenderModeBox, wxID_ANY, wxEmptyString,
+                        wxDefaultPosition, wxSize(140, -1), wxArrayString(), wxCB_READONLY);
+                    for (auto const & entry : mGameController->GetTextureOceanAvailableThumbnails())
+                    {
+                        mTextureOceanComboBox->Append(
+                            entry.first,
+                            WxHelpers::MakeBitmap(entry.second));
+                    }
+                    mTextureOceanComboBox->SetToolTip("Sets the texture to use for the ocean.");
+                    mTextureOceanComboBox->Bind(wxEVT_COMBOBOX, &SettingsDialog::OnTextureOceanChanged, this);
+                    oceanRenderModeBoxSizer2->Add(mTextureOceanComboBox, wxGBPosition(0, 1), wxGBSpan(1, 2), wxALL, 0);
 
-                    oceanRenderModeBoxSizer2->AddSpacer(0);
+                    //
 
                     mDepthOceanRenderModeRadioButton = new wxRadioButton(oceanRenderModeBox, wxID_ANY, _("Depth Gradient"),
                         wxDefaultPosition, wxDefaultSize);
                     mDepthOceanRenderModeRadioButton->SetToolTip("Draws the ocean using a vertical color gradient.");
                     mDepthOceanRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnDepthOceanRenderModeRadioButtonClick, this);
-                    oceanRenderModeBoxSizer2->Add(mDepthOceanRenderModeRadioButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 0);
+                    oceanRenderModeBoxSizer2->Add(mDepthOceanRenderModeRadioButton, wxGBPosition(1, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
 
                     mDepthOceanColorStartPicker = new wxColourPickerCtrl(oceanRenderModeBox, wxID_ANY, wxColour("WHITE"),
                         wxDefaultPosition, wxDefaultSize);
                     mDepthOceanColorStartPicker->SetToolTip("Sets the starting (top) color of the gradient.");
                     mDepthOceanColorStartPicker->Bind(wxEVT_COLOURPICKER_CHANGED, &SettingsDialog::OnDepthOceanColorStartChanged, this);
-                    oceanRenderModeBoxSizer2->Add(mDepthOceanColorStartPicker, 0, wxALL, 0);
+                    oceanRenderModeBoxSizer2->Add(mDepthOceanColorStartPicker, wxGBPosition(1, 1), wxGBSpan(1, 1), wxALL, 0);
 
                     mDepthOceanColorEndPicker = new wxColourPickerCtrl(oceanRenderModeBox, wxID_ANY, wxColour("WHITE"),
                         wxDefaultPosition, wxDefaultSize);
                     mDepthOceanColorEndPicker->SetToolTip("Sets the ending (bottom) color of the gradient.");
                     mDepthOceanColorEndPicker->Bind(wxEVT_COLOURPICKER_CHANGED, &SettingsDialog::OnDepthOceanColorEndChanged, this);
-                    oceanRenderModeBoxSizer2->Add(mDepthOceanColorEndPicker, 0, wxALL, 0);
+                    oceanRenderModeBoxSizer2->Add(mDepthOceanColorEndPicker, wxGBPosition(1, 2), wxGBSpan(1, 1), wxALL, 0);
+
+                    //
 
                     mFlatOceanRenderModeRadioButton = new wxRadioButton(oceanRenderModeBox, wxID_ANY, _("Flat"),
                         wxDefaultPosition, wxDefaultSize);
                     mFlatOceanRenderModeRadioButton->SetToolTip("Draws the ocean using a single color.");
                     mFlatOceanRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnFlatOceanRenderModeRadioButtonClick, this);
-                    oceanRenderModeBoxSizer2->Add(mFlatOceanRenderModeRadioButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 0);
+                    oceanRenderModeBoxSizer2->Add(mFlatOceanRenderModeRadioButton, wxGBPosition(2, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
 
                     mFlatOceanColorPicker = new wxColourPickerCtrl(oceanRenderModeBox, wxID_ANY, wxColour("WHITE"),
                         wxDefaultPosition, wxDefaultSize);
                     mFlatOceanColorPicker->SetToolTip("Sets the single color of the ocean.");
                     mFlatOceanColorPicker->Bind(wxEVT_COLOURPICKER_CHANGED, &SettingsDialog::OnFlatOceanColorChanged, this);
-                    oceanRenderModeBoxSizer2->Add(mFlatOceanColorPicker, 0, wxALL, 0);
-
-                    oceanRenderModeBoxSizer2->AddSpacer(0);
+                    oceanRenderModeBoxSizer2->Add(mFlatOceanColorPicker, wxGBPosition(2, 1), wxGBSpan(1, 1), wxALL, 0);
 
                     oceanRenderModeBoxSizer1->Add(oceanRenderModeBoxSizer2, 0, wxALL, StaticBoxInsetMargin);
                 }
@@ -2014,6 +2029,8 @@ void SettingsDialog::ReadSettings()
         }
     }
 
+    mTextureOceanComboBox->Select(static_cast<int>(mGameController->GetTextureOceanTextureIndex()));
+
     auto depthOceanColorStart = mGameController->GetDepthOceanColorStart();
     mDepthOceanColorStartPicker->SetColour(wxColor(depthOceanColorStart.r, depthOceanColorStart.g, depthOceanColorStart.b));
 
@@ -2176,6 +2193,7 @@ void SettingsDialog::ReadSettings()
 
 void SettingsDialog::ReconciliateOceanRenderModeSettings()
 {
+    mTextureOceanComboBox->Enable(mTextureOceanRenderModeRadioButton->GetValue());
     mDepthOceanColorStartPicker->Enable(mDepthOceanRenderModeRadioButton->GetValue());
     mDepthOceanColorEndPicker->Enable(mDepthOceanRenderModeRadioButton->GetValue());
     mFlatOceanColorPicker->Enable(mFlatOceanRenderModeRadioButton->GetValue());
@@ -2315,6 +2333,8 @@ void SettingsDialog::ApplySettings()
         assert(mFlatOceanRenderModeRadioButton->GetValue());
         mGameController->SetOceanRenderMode(OceanRenderMode::Flat);
     }
+
+    mGameController->SetTextureOceanTextureIndex(static_cast<size_t>(mTextureOceanComboBox->GetSelection()));
 
     auto depthOceanColorStart = mDepthOceanColorStartPicker->GetColour();
     mGameController->SetDepthOceanColorStart(

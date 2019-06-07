@@ -215,6 +215,23 @@ public:
         OnOceanRenderParametersUpdated();
     }
 
+    std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureOceanAvailableThumbnails() const
+    {
+        return mOceanAvailableThumbnails;
+    }
+
+    size_t GetTextureOceanTextureIndex() const
+    {
+        return mSelectedOceanTextureIndex;
+    }
+
+    void SetTextureOceanTextureIndex(size_t index)
+    {
+        mSelectedOceanTextureIndex = index;
+
+        OnOceanTextureIndexUpdated();
+    }
+
     rgbColor const & GetDepthOceanColorStart() const
     {
         return mDepthOceanColorStart;
@@ -265,7 +282,7 @@ public:
 
     std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureLandAvailableThumbnails() const
     {
-        return mTextureLandAvailableThumbnails;
+        return mLandAvailableThumbnails;
     }
 
     size_t GetTextureLandTextureIndex() const
@@ -277,7 +294,7 @@ public:
     {
         mSelectedLandTextureIndex = index;
 
-        OnTextureLandTextureIndexUpdated();
+        OnLandTextureIndexUpdated();
     }
 
     rgbColor const & GetFlatLandColor() const
@@ -1091,8 +1108,9 @@ private:
     void OnAmbientLightIntensityUpdated();
     void OnOceanTransparencyUpdated();
     void OnOceanRenderParametersUpdated();
+    void OnOceanTextureIndexUpdated();
     void OnLandRenderParametersUpdated();
-    void OnTextureLandTextureIndexUpdated();
+    void OnLandTextureIndexUpdated();
     void OnWaterContrastUpdated();
     void OnWaterLevelOfDetailUpdated();
     void OnShipRenderModeUpdated();
@@ -1259,6 +1277,10 @@ private:
     GameOpenGLTexture mCloudTextureAtlasOpenGLHandle;
     std::unique_ptr<TextureAtlasMetadata> mCloudTextureAtlasMetadata;
 
+    std::vector<TextureFrameSpecification> mOceanTextureFrameSpecifications;
+    GameOpenGLTexture mOceanTextureOpenGLHandle;
+    size_t mLoadedOceanTextureIndex;
+
     std::vector<TextureFrameSpecification> mLandTextureFrameSpecifications;
     GameOpenGLTexture mLandTextureOpenGLHandle;
     size_t mLoadedLandTextureIndex;
@@ -1304,11 +1326,13 @@ private:
     ShipRenderMode mShipRenderMode;
     DebugShipRenderMode mDebugShipRenderMode;
     OceanRenderMode mOceanRenderMode;
+    std::vector<std::pair<std::string, RgbaImageData>> mOceanAvailableThumbnails;
+    size_t mSelectedOceanTextureIndex;
     rgbColor mDepthOceanColorStart;
     rgbColor mDepthOceanColorEnd;
     rgbColor mFlatOceanColor;
     LandRenderMode mLandRenderMode;
-    std::vector<std::pair<std::string, RgbaImageData>> mTextureLandAvailableThumbnails;
+    std::vector<std::pair<std::string, RgbaImageData>> mLandAvailableThumbnails;
     size_t mSelectedLandTextureIndex;
     rgbColor mFlatLandColor;
     VectorFieldRenderMode mVectorFieldRenderMode;
