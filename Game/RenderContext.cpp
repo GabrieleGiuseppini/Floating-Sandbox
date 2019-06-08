@@ -66,6 +66,7 @@ RenderContext::RenderContext(
     , mFlatSkyColor(0x87, 0xce, 0xfa) // (cornflower blue)
     , mAmbientLightIntensity(1.0f)
     , mOceanTransparency(0.8125f)
+    , mOceanDarkeningRate(0.359375f)
     , mShowShipThroughOcean(false)
     , mWaterContrast(0.8125f)
     , mWaterLevelOfDetail(0.6875f)
@@ -275,7 +276,7 @@ RenderContext::RenderContext(
     // Describe vertex attributes
     glBindBuffer(GL_ARRAY_BUFFER, *mLandVBO);
     glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Land));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Land), 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Land), 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     CheckOpenGLError();
 
     glBindVertexArray(0);
@@ -482,6 +483,7 @@ RenderContext::RenderContext(
 
     OnAmbientLightIntensityUpdated();
     OnOceanTransparencyUpdated();
+    OnOceanDarkeningRateUpdated();
     OnOceanRenderParametersUpdated();
     OnOceanTextureIndexUpdated();
     OnLandRenderParametersUpdated();
@@ -1136,6 +1138,23 @@ void RenderContext::OnOceanTransparencyUpdated()
     mShaderManager->ActivateProgram<ProgramType::OceanTexture>();
     mShaderManager->SetProgramParameter<ProgramType::OceanTexture, ProgramParameterType::OceanTransparency>(
         mOceanTransparency);
+}
+
+void RenderContext::OnOceanDarkeningRateUpdated()
+{
+    // Set parameter in all programs
+
+    mShaderManager->ActivateProgram<ProgramType::LandTexture>();
+    mShaderManager->SetProgramParameter<ProgramType::LandTexture, ProgramParameterType::OceanDarkeningRate>(
+        mOceanDarkeningRate / 50.0f);
+
+    mShaderManager->ActivateProgram<ProgramType::OceanDepth>();
+    mShaderManager->SetProgramParameter<ProgramType::OceanDepth, ProgramParameterType::OceanDarkeningRate>(
+        mOceanDarkeningRate / 50.0f);
+
+    mShaderManager->ActivateProgram<ProgramType::OceanTexture>();
+    mShaderManager->SetProgramParameter<ProgramType::OceanTexture, ProgramParameterType::OceanDarkeningRate>(
+        mOceanDarkeningRate / 50.0f);
 }
 
 void RenderContext::OnOceanRenderParametersUpdated()

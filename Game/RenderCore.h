@@ -60,6 +60,7 @@ enum class ProgramParameterType : uint8_t
     LandFlatColor,
     MatteColor,
     OceanTransparency,
+    OceanDarkeningRate,
     OceanDepthColorStart,
     OceanDepthColorEnd,
     OceanFlatColor,

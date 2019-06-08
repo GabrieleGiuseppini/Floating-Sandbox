@@ -328,17 +328,17 @@ Render:
 			- When both points are in radius, use forces instead of velocity
 			- OR: if both points in range, lower displacement more
 
-		- Land shaders:
-			- Texture:
-				- texture compression on edge
-					- Try x^(0.2) / (x^2+1) + x
-				- add non-linear (same non-linearity) darkening (lightest at ocean surface)
-
-		- Ocean shaders:
-			- Gradient: make non-linear
-			- Texture:
-				- texture compression on edge			
-				- add non-linear (same non-linearity) darkening
+		= Shaders:
+			+ Land texture:
+				+ Texture compression on edge
+					+ Try (4*x)^(0.2) / (3 * ((4*x)^2+1)) + x
+				+ Add non-linear (same non-linearity as ocean) darkening (lightest at ocean surface)
+			+ Ocean gradient: make non-linear
+				+ Cleanup shader afterwards
+			+ Ocean texture:
+				+ texture compression on edge			
+				+ add non-linear (same non-linearity) darkening
+			= Try Mike's defaults - ask if transparency breaks game
 
 		- Optimize GameOpenGL::UploadMipmappedTexture: alloc write buffer once and swap pointers
 		- Make slider for air bubble density
@@ -352,8 +352,6 @@ Render:
 		- Attempt to re-instate square water drag (*)
 		- Attempt to use total point masses for springs (*)
 		- Attempt to get rid of boundary checks at OceanFloor and OceanSurface sampling
-
-		- Interior layer (*)
 
 		- Settings Manager (*)
 
@@ -447,8 +445,11 @@ Render:
 
 
 - Suggestions to spec:
+	- Sun rays
+	- Moving furniture
+		- Need way to prevent springs made to other materials
 	- Slow motion
-		- When bombs explode,
+		- When bombs explode
 	- Wreno's suggestions: https://docs.google.com/document/d/1kOYAgvh2rFYJJBnSp4DCiFm3FdJlfVEiCXQWNzJzO-I/edit
 	- Tools turning white at night
 	- Once we have ships, make "Lock Ship in View" flag and move camera with ship's center of mass (representative point or real CoM)
@@ -1235,8 +1236,8 @@ Render:
 
 - Game Interactions and Controls:
 
-	- Interior layer (multiple textures) (*):
-		- ASK FIRST MIKE IF STRUCTURE IS SAME
+	- Interior layer (multiple textures):
+		- NOTE: not really useful as normally different textures require different structures
 		- JSON: texture is optionally an array
 		- ShipDefinition: texture is vector
 			- Always non-empty

@@ -1474,6 +1474,32 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     CellBorder);
             }
 
+            // Ocean Darkening Rate
+            {
+                mOceanDarkeningRateSlider = std::make_unique<SliderControl>(
+                    oceanBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Darkening Rate",
+                    "Adjusts the rate at which the ocean darkens with depth.",
+                    mGameController->GetOceanDarkeningRate(),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        0.0f,
+                        1.0f));
+
+                oceanSizer->Add(
+                    mOceanDarkeningRateSlider.get(),
+                    wxGBPosition(0,2),
+                    wxGBSpan(2, 1),
+                    wxALL,
+                    CellBorder);
+            }
+
             oceanBoxSizer1->Add(oceanSizer, 0, wxALL, StaticBoxInsetMargin);
         }
 
@@ -2046,6 +2072,8 @@ void SettingsDialog::ReadSettings()
 
     mOceanTransparencySlider->SetValue(mGameController->GetOceanTransparency());
 
+    mOceanDarkeningRateSlider->SetValue(mGameController->GetOceanDarkeningRate());
+
     auto landRenderMode = mGameController->GetLandRenderMode();
     switch (landRenderMode)
     {
@@ -2352,6 +2380,9 @@ void SettingsDialog::ApplySettings()
 
     mGameController->SetOceanTransparency(
         mOceanTransparencySlider->GetValue());
+
+    mGameController->SetOceanDarkeningRate(
+        mOceanDarkeningRateSlider->GetValue());
 
     if (mTextureLandRenderModeRadioButton->GetValue())
     {

@@ -193,6 +193,18 @@ public:
         OnOceanTransparencyUpdated();
     }
 
+    float GetOceanDarkeningRate() const
+    {
+        return mOceanDarkeningRate;
+    }
+
+    void SetOceanDarkeningRate(float darkeningRate)
+    {
+        mOceanDarkeningRate = darkeningRate;
+
+        OnOceanDarkeningRateUpdated();
+    }
+
     bool GetShowShipThroughOcean() const
     {
         return mShowShipThroughOcean;
@@ -568,10 +580,13 @@ public:
 
         landSegment.x1 = x;
         landSegment.y1 = yLand;
+        landSegment.depth1 = 0.0f;
         landSegment.x2 = x;
         // If land is invisible (below), then keep both points at same height, or else interpolated lines
         // will have a slope varying with the y of the visible world bottom
-        landSegment.y2 = yLand >= yVisibleWorldBottom ? yVisibleWorldBottom : yLand;
+        float yBottom = yLand >= yVisibleWorldBottom ? yVisibleWorldBottom : yLand;
+        landSegment.y2 = yBottom;
+        landSegment.depth2 = -(yBottom - yLand); // Height of land
    }
 
     void UploadLandEnd();
@@ -1107,6 +1122,7 @@ private:
     void OnViewModelUpdated();
     void OnAmbientLightIntensityUpdated();
     void OnOceanTransparencyUpdated();
+    void OnOceanDarkeningRateUpdated();
     void OnOceanRenderParametersUpdated();
     void OnOceanTextureIndexUpdated();
     void OnLandRenderParametersUpdated();
@@ -1183,8 +1199,10 @@ private:
     {
         float x1;
         float y1;
+        float depth1;
         float x2;
         float y2;
+        float depth2;
     };
 
     struct OceanSegment
@@ -1320,6 +1338,7 @@ private:
     rgbColor mFlatSkyColor;
     float mAmbientLightIntensity;
     float mOceanTransparency;
+    float mOceanDarkeningRate;
     bool mShowShipThroughOcean;
     float mWaterContrast;
     float mWaterLevelOfDetail;

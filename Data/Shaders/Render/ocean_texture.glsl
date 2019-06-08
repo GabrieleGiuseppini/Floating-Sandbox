@@ -6,18 +6,18 @@
 #define out varying
 
 // Inputs
-in vec3 inOcean;	// Position (vec2), Texture coordinate Y (float)
+in vec3 inOcean;	// Position (vec2), Texture coordinate Y (float) (0 at top, +X at bottom)
 
 // Parameters
 uniform mat4 paramOrthoMatrix;
 
 // Outputs
-out vec2 texturePos;
+out vec3 textureCoord;
 
 void main()
 {
     gl_Position = paramOrthoMatrix * vec4(inOcean.xy, -1.0, 1.0);
-    texturePos = inOcean.xz;
+    textureCoord = inOcean;
 }
 
 
@@ -28,7 +28,7 @@ void main()
 #define in varying
 
 // Inputs from previous shader
-in vec2 texturePos;
+in vec3 textureCoord;
 
 // The texture
 uniform sampler2D paramOceanTexture;
@@ -37,9 +37,18 @@ uniform sampler2D paramOceanTexture;
 uniform float paramAmbientLightIntensity;
 uniform float paramOceanTransparency;
 uniform vec2 paramTextureScaling;
+uniform float paramOceanDarkeningRate;
 
 void main()
 {
-    vec4 textureColor = texture2D(paramOceanTexture, texturePos * paramTextureScaling);
+    float increment = -exp(-textureCoord.z) * 10.0;
+    vec2 textureCoord2 = vec2(textureCoord.x, textureCoord.z + increment);
+
+    float darkMix = 1.0 - exp(min(0.0, textureCoord.y) * paramOceanDarkeningRate); // Darkening is based on world Y (more negative Y, more dark)
+    vec4 textureColor = mix(
+        texture2D(paramOceanTexture, textureCoord2 * paramTextureScaling),
+        vec4(0,0,0,0), 
+        pow(darkMix, 3.0));
+
     gl_FragColor = vec4(textureColor.xyz * paramAmbientLightIntensity, 1.0 - paramOceanTransparency);
 } 

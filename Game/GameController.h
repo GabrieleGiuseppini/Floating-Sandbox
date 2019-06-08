@@ -385,6 +385,9 @@ public:
     float GetOceanTransparency() const { return mRenderContext->GetOceanTransparency(); }
     void SetOceanTransparency(float value) { mRenderContext->SetOceanTransparency(value); }
 
+    float GetOceanDarkeningRate() const { return mRenderContext->GetOceanDarkeningRate(); }
+    void SetOceanDarkeningRate(float value) { mRenderContext->SetOceanDarkeningRate(value); }
+
     bool GetShowShipThroughOcean() const { return mRenderContext->GetShowShipThroughOcean(); }
     void SetShowShipThroughOcean(bool value) { mRenderContext->SetShowShipThroughOcean(value); }
 

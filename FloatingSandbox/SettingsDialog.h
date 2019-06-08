@@ -137,6 +137,7 @@ private:
     wxColourPickerCtrl * mFlatOceanColorPicker;
     wxCheckBox * mSeeShipThroughOceanCheckBox;
     std::unique_ptr<SliderControl> mOceanTransparencySlider;
+    std::unique_ptr<SliderControl> mOceanDarkeningRateSlider;
     wxRadioButton * mTextureLandRenderModeRadioButton;
     wxBitmapComboBox * mTextureLandComboBox;
     wxRadioButton * mFlatLandRenderModeRadioButton;
