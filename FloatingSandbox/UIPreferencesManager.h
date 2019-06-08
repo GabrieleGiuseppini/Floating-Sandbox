@@ -48,14 +48,14 @@ public:
                 if (*it == shipLoadDirectory)
                 {
                     // Move it to second place
-                    std::rotate(mShipLoadDirectories.begin() + 1, it, it + 1);
+                    std::rotate(std::next(mShipLoadDirectories.begin()), it, it + 1);
 
                     return;
                 }
             }
 
             // Add to second place
-            mShipLoadDirectories.insert(mShipLoadDirectories.begin() + 1, shipLoadDirectory);
+            mShipLoadDirectories.insert(std::next(mShipLoadDirectories.cbegin()), shipLoadDirectory);
         }
     }
 
@@ -82,17 +82,17 @@ public:
     bool IsUpdateBlacklisted(Version const & version) const
     {
         return std::find(
-            mBlacklistedUpdates.begin(),
-            mBlacklistedUpdates.end(),
-            version) != mBlacklistedUpdates.end();
+            mBlacklistedUpdates.cbegin(),
+            mBlacklistedUpdates.cend(),
+            version) != mBlacklistedUpdates.cend();
     }
 
     void AddUpdateToBlacklist(Version const & version)
     {
         if (std::find(
-            mBlacklistedUpdates.begin(),
-            mBlacklistedUpdates.end(),
-            version) == mBlacklistedUpdates.end())
+            mBlacklistedUpdates.cbegin(),
+            mBlacklistedUpdates.cend(),
+            version) == mBlacklistedUpdates.cend())
         {
             mBlacklistedUpdates.push_back(version);
         }

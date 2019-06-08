@@ -110,15 +110,15 @@ std::string NewVersionDisplayDialog::MakeHtml(
     {
         ss << "<li>";
 
-        auto sfIt = feature.begin();
-        assert(sfIt != feature.end());
+        auto sfIt = feature.cbegin();
+        assert(sfIt != feature.cend());
         ss << *(sfIt++);
 
-        if (sfIt != feature.end())
+        if (sfIt != feature.cend())
         {
             ss << "<ul>";
 
-            for (; sfIt != feature.end(); ++sfIt)
+            for (; sfIt != feature.cend(); ++sfIt)
             {
                 ss << "<li>" << *sfIt << "</li>";
             }

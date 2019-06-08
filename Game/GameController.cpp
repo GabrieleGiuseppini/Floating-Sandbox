@@ -395,7 +395,7 @@ void GameController::RepairAt(
     vec2f const & screenCoordinates,
     float radiusMultiplier,
     RepairSessionId sessionId,
-    RepairSessionStepId stepId)
+    RepairStepId stepId)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 

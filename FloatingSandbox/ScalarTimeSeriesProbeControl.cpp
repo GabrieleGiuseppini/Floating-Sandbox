@@ -22,7 +22,7 @@ ScalarTimeSeriesProbeControl::ScalarTimeSeriesProbeControl(
     : wxPanel(
         parent,
         wxID_ANY,
-        wxDefaultPosition, 
+        wxDefaultPosition,
         wxDefaultSize,
         wxBORDER_SIMPLE)
     , mWidth(width)
@@ -173,12 +173,12 @@ void ScalarTimeSeriesProbeControl::Render(wxDC & dc)
 
         dc.SetPen(mTimeSeriesPen);
 
-        auto it = mSamples.begin();
+        auto it = mSamples.cbegin();
         int lastX = mWidth - 2;
         int lastY = MapValueToY(*it);
         ++it;
 
-        if (it == mSamples.end())
+        if (it == mSamples.cend())
         {
             // Draw just a point
             dc.DrawPoint(lastX, lastY);
@@ -201,16 +201,16 @@ void ScalarTimeSeriesProbeControl::Render(wxDC & dc)
 
                 ++it;
             }
-            while (it != mSamples.end());
+            while (it != mSamples.cend());
         }
-    
+
 
         //
         // Draw label
         //
 
         std::stringstream ss;
-        ss << std::fixed << std::setprecision(3) << *mSamples.begin() << " (" << mMaxValue << ")";
+        ss << std::fixed << std::setprecision(3) << *mSamples.cbegin() << " (" << mMaxValue << ")";
 
         wxString labelText(ss.str());
         dc.DrawText(labelText, 0, 1);

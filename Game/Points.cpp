@@ -85,7 +85,7 @@ void Points::Add(
 
     mIsPinnedBuffer.emplace_back(false);
 
-    mRepairSmoothingBuffer.emplace_back();
+    mRepairStateBuffer.emplace_back();
 
     mColorBuffer.emplace_back(color);
     mTextureCoordinatesBuffer.emplace_back(textureCoordinates);

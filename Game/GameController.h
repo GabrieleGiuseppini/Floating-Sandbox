@@ -112,7 +112,7 @@ public:
     void RotateBy(ElementId elementId, float screenDeltaY, vec2f const & screenCenter);
     void RotateAllBy(ShipId shipId, float screenDeltaY, vec2f const & screenCenter);
     void DestroyAt(vec2f const & screenCoordinates, float radiusFraction);
-    void RepairAt(vec2f const & screenCoordinates, float radiusMultiplier, RepairSessionId sessionId, RepairSessionStepId stepId);
+    void RepairAt(vec2f const & screenCoordinates, float radiusMultiplier, RepairSessionId sessionId, RepairStepId stepId);
     void SawThrough(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates);
     void DrawTo(vec2f const & screenCoordinates, float strengthFraction);
     void SwirlAt(vec2f const & screenCoordinates, float strengthFraction);

@@ -320,7 +320,7 @@ Render:
 			+ Fine-tune inertial velocity exponent
 			+ See why points fly at weird angles
 				+ See if due to (wrong) intertial: does it happen with no inertial? NO.
-			- See Moleskine for Attractor vs Attracted
+			+ See Moleskine for Attractor vs Attracted
 			- OLD:
 			- Attempt with forcing each point only once per step
 				- Use conn comp size and/or # of attached springs to decide Attractor vs Attracted
@@ -339,6 +339,8 @@ Render:
 				+ texture compression on edge			
 				+ add non-linear (same non-linearity) darkening
 			= Try Mike's defaults - ask if transparency breaks game
+
+		- Ocean rendering: replace stencil with first rendering w/zero transparency
 
 		- Optimize GameOpenGL::UploadMipmappedTexture: alloc write buffer once and swap pointers
 		- Make slider for air bubble density

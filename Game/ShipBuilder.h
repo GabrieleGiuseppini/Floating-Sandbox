@@ -70,10 +70,10 @@ private:
         bool ContainsConnectedSpring(ElementIndex springIndex1)
         {
             return std::find(
-                ConnectedSprings1.begin(),
-                ConnectedSprings1.end(),
+                ConnectedSprings1.cbegin(),
+                ConnectedSprings1.cend(),
                 springIndex1)
-                != ConnectedSprings1.end();
+                != ConnectedSprings1.cend();
         }
 
         void AddConnectedSpring(ElementIndex springIndex1)

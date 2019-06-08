@@ -434,8 +434,8 @@ public:
         assert(mSuperTrianglesBuffer[springElementIndex].empty());
 
         std::copy(
-            mFactorySuperTrianglesBuffer[springElementIndex].begin(),
-            mFactorySuperTrianglesBuffer[springElementIndex].end(),
+            mFactorySuperTrianglesBuffer[springElementIndex].cbegin(),
+            mFactorySuperTrianglesBuffer[springElementIndex].cend(),
             mSuperTrianglesBuffer[springElementIndex].begin());
     }
 

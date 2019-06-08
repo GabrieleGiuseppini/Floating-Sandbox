@@ -13,7 +13,7 @@
 /*
  * This class implements a circular list of elements.
  *
- * Elements can be added up to the specified maximum size, after which older elements 
+ * Elements can be added up to the specified maximum size, after which older elements
  * start being overwritten.
  *
  * The list keeps elements in the order of their insertion, and allows for visits
@@ -88,9 +88,9 @@ private:
 public:
 
     typedef _iterator<TElement, CircularList> iterator;
-    
+
     typedef _iterator<TElement const, CircularList const> const_iterator;
-    
+
 public:
 
     CircularList()
@@ -139,6 +139,20 @@ public:
             this);
     }
 
+    inline const_iterator cbegin() const noexcept
+    {
+        return const_iterator(
+            mHead,
+            this);
+    }
+
+    inline const_iterator cend() const noexcept
+    {
+        return const_iterator(
+            mTail,
+            this);
+    }
+
     inline size_t size() const noexcept
     {
         if (mHead >= mTail)
@@ -166,7 +180,7 @@ public:
     TElement & emplace(
         ElementPurgedHandler onElementPurged,
         Args&&... args)
-    {        
+    {
         TElement & res = *new (&(mArray[mHead])) TElement(std::forward<Args>(args)...);
 
         mHead = (mHead + 1) % (MaxSize + 1);
@@ -187,7 +201,7 @@ public:
         //
         // it.mCurrentHead points to one after the to-be-deleted point
         //
-        
+
         assert((mTail < mHead && (mTail < it.mCurrentHead && it.mCurrentHead <= mHead))
             || (mHead < mTail && (it.mCurrentHead <= mHead || mTail < it.mCurrentHead)));
 

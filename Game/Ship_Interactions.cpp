@@ -245,7 +245,7 @@ void Ship::RepairAt(
     vec2f const & targetPos,
     float radiusMultiplier,
     RepairSessionId sessionId,
-    RepairSessionStepId stepId,
+    RepairStepId stepId,
     float /*currentSimulationTime*/,
     GameParameters const & gameParameters)
 {
@@ -275,7 +275,7 @@ void Ship::RepairAt(
         // Attempt to restore this point's springs if the point meets all these conditions:
         // - The point is in radius
         // - The point is not orphaned
-        // - The point has not been acted upon already as the "other endpoint" of another point (TODOHERE)
+        // - The point has not been acted upon already as an attracted in this step
         //
         // If we were to attempt to restore also orphaned points, then two formerly-connected
         // orphaned points within the search radius would interact with each other and nullify
@@ -283,10 +283,10 @@ void Ship::RepairAt(
         float const squareRadius = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
         if (squareRadius <= squareSearchRadius
             && mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() > 0
-            && mPoints.GetRepairSmoothing(pointIndex).StepId != stepId) // (TODOHERE)
+            && mPoints.GetRepairState(pointIndex).AttractedStepId != stepId)
         {
-            // Remember that this point has been acted upon in this step
-            mPoints.GetRepairSmoothing(pointIndex).StepId = stepId; // (TODOHERE)
+            // Remember that this point has taken the role of attractor in this step
+            mPoints.GetRepairState(pointIndex).AttractorStepId = stepId;
 
             //
             // 1) (Attempt to) restore this point's delete springs
@@ -297,11 +297,27 @@ void Ship::RepairAt(
                 (1.0f - (squareRadius / squareSearchRadius) * (squareRadius / squareSearchRadius))
                 * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
-            // Visit all the springs that were connected at factory time
+            // Visit all the deleted springs that were connected at factory time
             for (auto const & fcs : mPoints.GetFactoryConnectedSprings(pointIndex).ConnectedSprings)
             {
-                // Check if this spring is deleted
-                if (mSprings.IsDeleted(fcs.SpringIndex))
+                auto const otherEndpointIndex = fcs.OtherEndpointIndex;
+
+                // Consider this spring (and thus the other endpoint) iff:
+                // - The spring is deleted, AND
+                // - The other endpoint is out-of-range of the tool, OR it is in-range but not used
+                //   already as attractor in this step
+                bool considerSpring = mSprings.IsDeleted(fcs.SpringIndex);
+                if (considerSpring)
+                {
+                    float otherEndpointSquareRadius = (mPoints.GetPosition(otherEndpointIndex) - targetPos).squareLength();
+                    if (otherEndpointSquareRadius < squareSearchRadius
+                        && mPoints.GetRepairState(otherEndpointIndex).AttractorStepId == stepId)
+                    {
+                        considerSpring = false;
+                    }
+                }
+
+                if (considerSpring)
                 {
                     ////////////////////////////////////////////////////////
                     //
@@ -309,30 +325,29 @@ void Ship::RepairAt(
                     //
                     ////////////////////////////////////////////////////////
 
-                    auto const otherEndpointIndex = fcs.OtherEndpointIndex;
+                    // Remember this point is being used as attracted in this session
+                    mPoints.GetRepairState(otherEndpointIndex).AttractedStepId == stepId;
 
                     //
                     // Advance the other endpoint's repair smoothing
                     //
 
-                    if (mPoints.GetRepairSmoothing(otherEndpointIndex).SessionId != sessionId)
+                    if (mPoints.GetRepairState(otherEndpointIndex).SmoothingSessionId != sessionId)
                     {
                         // First time this point is repaired in this session...
                         // ...make its smoothing start from zero
-                        mPoints.GetRepairSmoothing(otherEndpointIndex).Smoothing = 0.0f;
-
-                        mPoints.GetRepairSmoothing(otherEndpointIndex).SessionId = sessionId;
+                        mPoints.GetRepairState(otherEndpointIndex).SmoothingSessionId = sessionId;
+                        mPoints.GetRepairState(otherEndpointIndex).Smoothing = 0.0f;
                     }
 
-                    if (mPoints.GetRepairSmoothing(otherEndpointIndex).StepId != stepId)
+                    if (mPoints.GetRepairState(otherEndpointIndex).SmoothingStepId != stepId)
                     {
                         // First time this point is considered in this session step...
                         // ...advance its smoothing
-                        mPoints.GetRepairSmoothing(otherEndpointIndex).Smoothing +=
-                            (1.0f - mPoints.GetRepairSmoothing(otherEndpointIndex).Smoothing)
+                        mPoints.GetRepairState(otherEndpointIndex).SmoothingStepId = stepId;
+                        mPoints.GetRepairState(otherEndpointIndex).Smoothing +=
+                            (1.0f - mPoints.GetRepairState(otherEndpointIndex).Smoothing)
                             * SmoothingAlpha;
-
-                        mPoints.GetRepairSmoothing(otherEndpointIndex).StepId = stepId;
                     }
 
                     //
@@ -497,7 +512,7 @@ void Ship::RepairAt(
                             pow(displacementMagnitude, gameParameters.RepairStrengthAdjustment)
                             * MovementFraction
                             * toolStrength
-                            * mPoints.GetRepairSmoothing(otherEndpointIndex).Smoothing;
+                            * mPoints.GetRepairState(otherEndpointIndex).Smoothing;
 
                         // Move point
                         mPoints.GetPosition(otherEndpointIndex) +=

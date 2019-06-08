@@ -1636,7 +1636,7 @@ float ShipBuilder::CalculateVertexScore(VertexData const & vertexData)
 template<size_t Size>
 bool ShipBuilder::TestLRUVertexCache<Size>::UseVertex(size_t vertexIndex)
 {
-    for (auto it = mEntries.begin(); it != mEntries.end(); ++it)
+    for (auto it = mEntries.cbegin(); it != mEntries.cend(); ++it)
     {
         if (vertexIndex == *it)
         {

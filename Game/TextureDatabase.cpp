@@ -319,9 +319,9 @@ TextureDatabase TextureDatabase::Load(
         textureGroups.begin(),
         textureGroups.end(),
         [](auto const & a, auto const & b)
-    {
-        return a.Group < b.Group;
-    });
+        {
+            return a.Group < b.Group;
+        });
 
     // Make sure all group indices are found
     for (uint16_t expectedIndex = 0; expectedIndex <= static_cast<uint16_t>(TextureGroupType::_Last); ++expectedIndex)

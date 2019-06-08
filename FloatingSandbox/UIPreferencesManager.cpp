@@ -92,9 +92,9 @@ void UIPreferencesManager::LoadPreferences()
 
                     // Make sure dir still exists, and it's not in the vector already
                     if (std::filesystem::exists(shipLoadDirectoryPath)
-                        && mShipLoadDirectories.end() == std::find(
-                            mShipLoadDirectories.begin(),
-                            mShipLoadDirectories.end(),
+                        && mShipLoadDirectories.cend() == std::find(
+                            mShipLoadDirectories.cbegin(),
+                            mShipLoadDirectories.cend(),
                             shipLoadDirectoryPath))
                     {
                         mShipLoadDirectories.push_back(shipLoadDirectoryPath);
@@ -131,10 +131,10 @@ void UIPreferencesManager::LoadPreferences()
                 {
                     auto blacklistedVersion = Version::FromString(blacklistedUpdate.get<std::string>());
 
-                    if (mBlacklistedUpdates.end() == std::find(
-                        mBlacklistedUpdates.begin(),
-                        mBlacklistedUpdates.end(),
-                            blacklistedVersion))
+                    if (mBlacklistedUpdates.cend() == std::find(
+                        mBlacklistedUpdates.cbegin(),
+                        mBlacklistedUpdates.cend(),
+                        blacklistedVersion))
                     {
                         mBlacklistedUpdates.push_back(blacklistedVersion);
                     }

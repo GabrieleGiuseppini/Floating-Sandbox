@@ -121,6 +121,16 @@ public:
         return const_iterator(mArray.data() + mCurrentSize);
     }
 
+    inline const_iterator cbegin() const noexcept
+    {
+        return const_iterator(mArray.data());
+    }
+
+    inline const_iterator cend() const noexcept
+    {
+        return const_iterator(mArray.data() + mCurrentSize);
+    }
+
     inline TElement & operator[](size_t index) noexcept
     {
         assert(index < mCurrentSize);

@@ -106,7 +106,7 @@ public:
         vec2f const & targetPos,
         float radiusMultiplier,
         RepairSessionId sessionId,
-        RepairSessionStepId stepId,
+        RepairStepId stepId,
         GameParameters const & gameParameters);
 
     void SawThrough(

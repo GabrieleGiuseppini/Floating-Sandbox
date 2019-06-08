@@ -101,8 +101,8 @@ public:
     int GetMaxDimension() const
     {
         int maxDimension = std::accumulate(
-            mFrameMetadata.begin(),
-            mFrameMetadata.end(),
+            mFrameMetadata.cbegin(),
+            mFrameMetadata.cend(),
             std::numeric_limits<int>::lowest(),
             [](int minDimension, TextureAtlasFrameMetadata const & frameMd)
             {

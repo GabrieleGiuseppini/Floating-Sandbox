@@ -61,17 +61,25 @@ public:
     };
 
     /*
-     * The state required for smoothing velocities of particles being repaired.
+     * The state required for repairing particles.
      */
-    struct RepairSmoothing
+    struct RepairState
     {
-        RepairSessionId SessionId;
-        RepairSessionStepId StepId;
+        // The step ID in which this particle was last used as an attractor
+        RepairSessionId AttractorStepId;
+        // The step ID in which this particle was last used as an attracted
+        RepairSessionId AttractedStepId;
+
+        // The session and step ID that this state is currently smoothing at
+        RepairSessionId SmoothingSessionId;
+        RepairStepId SmoothingStepId;
         float Smoothing; // Grows from 0.0 to 1.0
 
-        RepairSmoothing()
-            : SessionId(0)
-            , StepId(0)
+        RepairState()
+            : AttractorStepId(0)
+            , AttractedStepId(0)
+            , SmoothingSessionId(0)
+            , SmoothingStepId(0)
             , Smoothing(0.0f)
         {}
     };
@@ -362,7 +370,7 @@ public:
         // Pinning
         , mIsPinnedBuffer(mBufferElementCount, shipPointCount, false)
         // Repair
-        , mRepairSmoothingBuffer(mBufferElementCount, shipPointCount, RepairSmoothing())
+        , mRepairStateBuffer(mBufferElementCount, shipPointCount, RepairState())
         // Immutable render attributes
         , mColorBuffer(mBufferElementCount, shipPointCount, vec4f::zero())
         , mIsWholeColorBufferDirty(true)
@@ -1104,9 +1112,9 @@ public:
     // Repair
     //
 
-    RepairSmoothing & GetRepairSmoothing(ElementIndex pointElementIndex)
+    RepairState & GetRepairState(ElementIndex pointElementIndex)
     {
-        return mRepairSmoothingBuffer[pointElementIndex];
+        return mRepairStateBuffer[pointElementIndex];
     }
 
     //
@@ -1275,10 +1283,10 @@ private:
     Buffer<bool> mIsPinnedBuffer;
 
     //
-    // Repair smoothing
+    // Repair state
     //
 
-    Buffer<RepairSmoothing> mRepairSmoothingBuffer;
+    Buffer<RepairState> mRepairStateBuffer;
 
     //
     // Immutable render attributes
