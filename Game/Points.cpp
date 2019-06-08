@@ -439,6 +439,7 @@ void Points::Query(ElementIndex pointElementIndex) const
     LogMessage("Velocity: ", mVelocityBuffer[pointElementIndex].toString());
     LogMessage("Decay: ", mDecayBuffer[pointElementIndex]);
     LogMessage("Water: ", mWaterBuffer[pointElementIndex]);
+    LogMessage("Springs: ", mConnectedSpringsBuffer[pointElementIndex].ConnectedSprings.size(), " (factory: ", mFactoryConnectedSpringsBuffer[pointElementIndex].ConnectedSprings.size(), ")");
     LogMessage("PlaneID: ", mPlaneIdBuffer[pointElementIndex]);
     LogMessage("ConnectedComponentID: ", mConnectedComponentIdBuffer[pointElementIndex]);
 }

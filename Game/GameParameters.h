@@ -161,7 +161,9 @@ struct GameParameters
     static constexpr std::chrono::milliseconds MaxSparkleParticlesLifetime = std::chrono::milliseconds(500);
 
     bool DoGenerateAirBubbles;
-    static float constexpr CumulatedIntakenWaterThresholdForAirBubbles = 7.0f;
+    float CumulatedIntakenWaterThresholdForAirBubbles;
+    static float constexpr MinCumulatedIntakenWaterThresholdForAirBubbles = 2.0f;
+    static float constexpr MaxCumulatedIntakenWaterThresholdForAirBubbles = 64.0f;
     static float constexpr MinAirBubblesVortexAmplitude = 0.05f;
     static float constexpr MaxAirBubblesVortexAmplitude = 2.0f;
     static float constexpr MinAirBubblesVortexPeriod = 3.0f; // seconds

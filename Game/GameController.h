@@ -358,6 +358,10 @@ public:
 
     bool GetDoGenerateAirBubbles() const { return mGameParameters.DoGenerateAirBubbles; }
     void SetDoGenerateAirBubbles(bool value) { mGameParameters.DoGenerateAirBubbles = value; }
+    float GetCumulatedIntakenWaterThresholdForAirBubbles() const { return mGameParameters.CumulatedIntakenWaterThresholdForAirBubbles; }
+    void SetCumulatedIntakenWaterThresholdForAirBubbles(float value) { mGameParameters.CumulatedIntakenWaterThresholdForAirBubbles = value; }
+    float GetMinCumulatedIntakenWaterThresholdForAirBubbles() const { return GameParameters::MinCumulatedIntakenWaterThresholdForAirBubbles; }
+    float GetMaxCumulatedIntakenWaterThresholdForAirBubbles() const { return GameParameters::MaxCumulatedIntakenWaterThresholdForAirBubbles; }
 
     size_t GetNumberOfStars() const { return mGameParameters.NumberOfStars; }
     void SetNumberOfStars(size_t value) { mGameParameters.NumberOfStars = value; }

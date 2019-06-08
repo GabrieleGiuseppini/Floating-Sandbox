@@ -300,7 +300,7 @@ Render:
 		= Waves need to be further limited
 			+ Make repro: tsunami on manually-created high wave field
 			+ Tsunami and rogue wave: target H is absolute, not based on current H
-			= Ask testers to test
+			- Ask testers to test
 			- If ok:
 				- Update changes.txt
 			- Other older attempts:
@@ -321,12 +321,12 @@ Render:
 			+ See why points fly at weird angles
 				+ See if due to (wrong) intertial: does it happen with no inertial? NO.
 			+ See Moleskine for Attractor vs Attracted
-			- OLD:
-			- Attempt with forcing each point only once per step
-				- Use conn comp size and/or # of attached springs to decide Attractor vs Attracted
-			- Attempt with pinning connected component to session ID
-			- When both points are in radius, use forces instead of velocity
-			- OR: if both points in range, lower displacement more
+			+ Deal with same conn comp ID
+			+ Undo decay (halve it)
+			+ See missing springs
+			= Get AwesomeYorkie's feedback
+
+		- Settings dialog: merge Mechanics + World into Mechanics and Light
 
 		= Shaders:
 			+ Land texture:
@@ -340,13 +340,22 @@ Render:
 				+ add non-linear (same non-linearity) darkening
 			= Try Mike's defaults - ask if transparency breaks game
 
+		- Merge to master
+
 		- Ocean rendering: replace stencil with first rendering w/zero transparency
 
-		- Optimize GameOpenGL::UploadMipmappedTexture: alloc write buffer once and swap pointers
-		- Make slider for air bubble density
-			- SettingDialog: enable/disable based off checkbox
-				- Move checkbox
+		+ Optimize GameOpenGL::UploadMipmappedTexture: alloc write buffer once and swap pointers
+		= Make slider for air bubble density
+			+ SettingDialog: enable/disable based off checkbox
+				+ Move checkbox
+			- Max=128
+				- Ensure cur value fits slider
 			 
+		- Send to testers
+
+		- Increase resolution of default ocean floor 
+			- Or interpolate it on load
+
 		- Heat and combustion (*)
 
 		- Spring and NonSpring force separation optimization (*)
@@ -361,12 +370,6 @@ Render:
 
 
 		- Underwater currents (*)
-
-		- Do air bubbles sounds, very low volume
-			- At creation and at expiry
-			- New events at IGameEventHandler
-				- Dispatcher aggregates with counter
-				- Ship takes shared_ptr<Dispatcher> now, for perf
 
 		- Black cloth, black wood
 		
@@ -857,8 +860,6 @@ Render:
 		- https://www.shadertoy.com/view/4tdXDl
 
 - Dynamics:
-
-	- Repair tool: undo decay (halve it)
 
 	- Randomize decay
 		- Perlin noise on ship, created at ShipBuilder, stored as Points::WeakNoise
@@ -1371,6 +1372,12 @@ Render:
 					- Enables/Disabled buttons and menus
 
 - Sounds:
+	- Do air bubbles sounds, very low volume
+		- At creation and at expiry
+		- New events at IGameEventHandler
+			- Dispatcher aggregates with counter
+			- Ship takes shared_ptr<Dispatcher> now, for perf
+
 	- New sounds:
 		- Ship sinking: https://www.youtube.com/watch?v=-f2B_bzcgV8
 		- ShipSoundsForFS (in Scratch)

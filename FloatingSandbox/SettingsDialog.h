@@ -126,6 +126,7 @@ private:
     wxCheckBox * mGenerateDebrisCheckBox;
     wxCheckBox * mGenerateSparklesCheckBox;
     wxCheckBox * mGenerateAirBubblesCheckBox;
+    std::unique_ptr<SliderControl> mAirBubbleDensitySlider;
 
     // Rendering
     wxRadioButton * mTextureOceanRenderModeRadioButton;

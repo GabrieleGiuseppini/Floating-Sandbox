@@ -859,7 +859,7 @@ public:
         // Randomize the initial water intaken, so that air bubbles won't come out all at the same moment
         mCumulatedIntakenWater[pointElementIndex] = GameRandomEngine::GetInstance().GenerateRandomReal(
             0.0f,
-            GameParameters::CumulatedIntakenWaterThresholdForAirBubbles);
+            7.0f);
     }
 
     void RestoreFactoryIsLeaking(ElementIndex pointElementIndex)

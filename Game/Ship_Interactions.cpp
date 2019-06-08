@@ -287,6 +287,7 @@ void Ship::RepairAt(
         {
             // Remember that this point has taken the role of attractor in this step
             mPoints.GetRepairState(pointIndex).AttractorStepId = stepId;
+            assert(mPoints.GetRepairState(pointIndex).AttractedStepId != stepId);
 
             //
             // 1) (Attempt to) restore this point's delete springs
@@ -305,15 +306,28 @@ void Ship::RepairAt(
                 // Consider this spring (and thus the other endpoint) iff:
                 // - The spring is deleted, AND
                 // - The other endpoint is out-of-range of the tool, OR it is in-range but not used
-                //   already as attractor in this step
+                //   already as attractor in this step and not a better candidate as an attractor
                 bool considerSpring = mSprings.IsDeleted(fcs.SpringIndex);
                 if (considerSpring)
                 {
                     float otherEndpointSquareRadius = (mPoints.GetPosition(otherEndpointIndex) - targetPos).squareLength();
-                    if (otherEndpointSquareRadius < squareSearchRadius
-                        && mPoints.GetRepairState(otherEndpointIndex).AttractorStepId == stepId)
+                    if (otherEndpointSquareRadius < squareSearchRadius)
                     {
-                        considerSpring = false;
+                        // Ignore if the other endpoint has already been used as an attractor in this step
+                        if (mPoints.GetRepairState(otherEndpointIndex).AttractorStepId == stepId)
+                        {
+                            considerSpring = false;
+                        }
+                        // Leave a chance for the other endpoint to be an attractor if these are two separate
+                        // connected components, and the other endpoint's connected component is larger
+                        // than the current attractor's
+                        else if (mPoints.GetConnectedComponentId(otherEndpointIndex) != mPoints.GetConnectedComponentId(pointIndex))
+                        {
+                            if (GetPointConnectedComponentSize(otherEndpointIndex) > GetPointConnectedComponentSize(pointIndex))
+                            {
+                                considerSpring = false;
+                            }
+                        }
                     }
                 }
 
@@ -326,7 +340,8 @@ void Ship::RepairAt(
                     ////////////////////////////////////////////////////////
 
                     // Remember this point is being used as attracted in this session
-                    mPoints.GetRepairState(otherEndpointIndex).AttractedStepId == stepId;
+                    mPoints.GetRepairState(otherEndpointIndex).AttractedStepId = stepId;
+                    assert(mPoints.GetRepairState(otherEndpointIndex).AttractorStepId != stepId);
 
                     //
                     // Advance the other endpoint's repair smoothing
@@ -456,7 +471,11 @@ void Ship::RepairAt(
                             + interpolatedAngleFromCWSpring;
                     }
 
-                    // Calculate target position
+
+                    //
+                    // Calculate target position for the other endpoint
+                    //
+
                     vec2f const targetOtherEndpointPosition =
                         mPoints.GetPosition(pointIndex)
                         + vec2f::fromPolar(
@@ -559,6 +578,16 @@ void Ship::RepairAt(
 
                         // Brake the other endpoint
                         mPoints.SetVelocity(otherEndpointIndex, vec2f::zero());
+
+                        // Halve the decay of both endpoints
+                        float const pointDecay = mPoints.GetDecay(pointIndex);
+                        mPoints.SetDecay(
+                            pointIndex,
+                            pointDecay + (1.0f - pointDecay) / 2.0f);
+                        float const otherPointDecay = mPoints.GetDecay(otherEndpointIndex);
+                        mPoints.SetDecay(
+                            otherEndpointIndex,
+                            otherPointDecay + (1.0f - otherPointDecay) / 2.0f);
 
                         // Remember that we've acted on the other endpoint
                         hasOtherEndpointPointBeenMoved = true;

@@ -280,6 +280,8 @@ void SettingsDialog::OnGenerateSparklesCheckBoxClick(wxCommandEvent & /*event*/)
 
 void SettingsDialog::OnGenerateAirBubblesCheckBoxClick(wxCommandEvent & /*event*/)
 {
+    mAirBubbleDensitySlider->Enable(mGenerateAirBubblesCheckBox->IsChecked());
+
     // Remember we're dirty now
     mApplyButton->Enable(true);
 }
@@ -1243,17 +1245,78 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
     Connect(ID_GENERATE_SPARKLES_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnGenerateSparklesCheckBoxClick);
     checkboxesSizer->Add(mGenerateSparklesCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
 
-    mGenerateAirBubblesCheckBox = new wxCheckBox(panel, ID_GENERATE_AIR_BUBBLES_CHECKBOX, _("Generate Air Bubbles"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Generate Air Bubbles Checkbox"));
-    mGenerateAirBubblesCheckBox->SetToolTip("Enables or disables generation of air bubbles when water enters a physical body.");
-    Connect(ID_GENERATE_AIR_BUBBLES_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnGenerateAirBubblesCheckBoxClick);
-    checkboxesSizer->Add(mGenerateAirBubblesCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
-
     gridSizer->Add(
         checkboxesSizer,
         wxGBPosition(0, 3),
         wxGBSpan(1, 1),
         wxALL,
         SliderBorder);
+
+    // Air Bubbles
+
+    {
+        wxBoxSizer * airBubblesBoxSizer = new wxBoxSizer(wxVERTICAL);
+
+        // Generate Air Bubbles
+        {
+            mGenerateAirBubblesCheckBox = new wxCheckBox(panel, ID_GENERATE_AIR_BUBBLES_CHECKBOX, _("Generate Air Bubbles"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Generate Air Bubbles Checkbox"));
+            mGenerateAirBubblesCheckBox->SetToolTip("Enables or disables generation of air bubbles when water enters a physical body.");
+            Connect(ID_GENERATE_AIR_BUBBLES_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnGenerateAirBubblesCheckBoxClick);
+
+            airBubblesBoxSizer->Add(mGenerateAirBubblesCheckBox, 0, 0, 0);
+        }
+
+        // Air Bubbles Density
+        {
+            // TODOTEST
+            ////mAirBubbleDensitySlider = std::make_unique<SliderControl>(
+            ////    panel,
+            ////    SliderWidth,
+            ////    -1,
+            ////    "Air Bubbles Density",
+            ////    "The density of air bubbles generated when water enters a ship.",
+            ////    mGameController->GetCumulatedIntakenWaterThresholdForAirBubbles(),
+            ////    [this](float /*value*/)
+            ////    {
+            ////        // Remember we're dirty now
+            ////        this->mApplyButton->Enable(true);
+            ////    },
+            ////    std::make_unique<LinearSliderCore>(
+            ////        mGameController->GetMinCumulatedIntakenWaterThresholdForAirBubbles(),
+            ////        mGameController->GetMaxCumulatedIntakenWaterThresholdForAirBubbles()));
+
+            ////airBubblesBoxSizer->Add(mAirBubbleDensitySlider.get(), 1, wxEXPAND, 0);
+
+            // TODOTEST
+            wxPanel * foo = new wxPanel(panel);
+            foo->SetBackgroundColour(*wxBLACK);
+            airBubblesBoxSizer->Add(foo, 1, wxEXPAND, 0);
+        }
+
+        gridSizer->Add(
+            airBubblesBoxSizer,
+            wxGBPosition(0, 4),
+            wxGBSpan(1, 1),
+            wxALL,
+            SliderBorder);
+    }
+
+    mAirBubbleDensitySlider = std::make_unique<SliderControl>(
+        panel,
+        SliderWidth,
+        -1,
+        "Air Bubbles Density",
+        "The density of air bubbles generated when water enters a ship.",
+        mGameController->GetCumulatedIntakenWaterThresholdForAirBubbles(),
+        [this](float /*value*/)
+        {
+            // Remember we're dirty now
+            this->mApplyButton->Enable(true);
+        },
+        std::make_unique<LinearSliderCore>(
+            mGameController->GetMinCumulatedIntakenWaterThresholdForAirBubbles(),
+            mGameController->GetMaxCumulatedIntakenWaterThresholdForAirBubbles()));
+
 
     //
     // Row 2
@@ -2031,6 +2094,9 @@ void SettingsDialog::ReadSettings()
 
     mGenerateAirBubblesCheckBox->SetValue(mGameController->GetDoGenerateAirBubbles());
 
+    mAirBubbleDensitySlider->SetValue(mGameController->GetCumulatedIntakenWaterThresholdForAirBubbles());
+    mAirBubbleDensitySlider->Enable(mGameController->GetDoGenerateAirBubbles());
+
     // Render
 
     auto oceanRenderMode = mGameController->GetOceanRenderMode();
@@ -2344,6 +2410,8 @@ void SettingsDialog::ApplySettings()
     mGameController->SetDoGenerateSparkles(mGenerateSparklesCheckBox->IsChecked());
 
     mGameController->SetDoGenerateAirBubbles(mGenerateAirBubblesCheckBox->IsChecked());
+
+    mGameController->SetCumulatedIntakenWaterThresholdForAirBubbles(mAirBubbleDensitySlider->GetValue());
 
 
     // Render

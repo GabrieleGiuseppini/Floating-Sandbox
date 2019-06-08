@@ -62,6 +62,7 @@ Ship::Ship(
     , mCurrentConnectivityVisitSequenceNumber()
     , mMaxMaxPlaneId(0)
     , mCurrentElectricalVisitSequenceNumber()
+    , mConnectedComponentSizes()
     , mIsStructureDirty(true)
     , mLastDebugShipRenderMode()
     , mPlaneTriangleIndicesToRender()
@@ -1450,6 +1451,9 @@ void Ship::RunConnectivityVisit()
     PlaneId currentPlaneId = 0; // Also serves as Connected Component ID
     float currentPlaneIdFloat = 0.0f;
 
+    // Reset count of points per connected component
+    mConnectedComponentSizes.clear();
+
 #ifdef RENDER_FLOOD_DISTANCE
     std::optional<float> floodDistanceColor;
 #endif
@@ -1481,6 +1485,9 @@ void Ship::RunConnectivityVisit()
             // Add point to queue
             assert(pointsToPropagateFrom.empty());
             pointsToPropagateFrom.push(pointIndex);
+
+            // Initialize count of points in this connected component
+            size_t currentConnectedComponentPointCount = 1;
 
             // Visit all points reachable from this point via springs
             while (!pointsToPropagateFrom.empty())
@@ -1520,12 +1527,19 @@ void Ship::RunConnectivityVisit()
 
                         // Add point to queue
                         pointsToPropagateFrom.push(cs.OtherEndpointIndex);
+
+                        // Update count of points in this connected component
+                        ++currentConnectedComponentPointCount;
                     }
                 }
 
                 // Update count of triangles with this points's triangles
                 totalPlaneTrianglesCount += mPoints.GetConnectedOwnedTrianglesCount(currentPointIndex);
             }
+
+            // Remember count of points in this connected component
+            assert(mConnectedComponentSizes.size() == static_cast<size_t>(currentPlaneId));
+            mConnectedComponentSizes.push_back(currentConnectedComponentPointCount);
 
             // Remember the starting index of the triangles in the next plane
             assert(mPlaneTriangleIndicesToRender.size() == static_cast<size_t>(currentPlaneId + 1));

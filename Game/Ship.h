@@ -316,6 +316,15 @@ private:
         }
     }
 
+    inline size_t GetPointConnectedComponentSize(ElementIndex pointIndex) const noexcept
+    {
+        auto const connCompId = mPoints.GetConnectedComponentId(pointIndex);
+        if (NoneConnectedComponentId == connCompId)
+            return 0;
+
+        return mConnectedComponentSizes[static_cast<size_t>(connCompId)];
+    }
+
 private:
 
     /////////////////////////////////////////////////////////////////////////
@@ -372,6 +381,9 @@ private:
 
     // The current electrical connectivity visit sequence number
     SequenceNumber mCurrentElectricalVisitSequenceNumber;
+
+    // The number of points in each connected component
+    std::vector<size_t> mConnectedComponentSizes;
 
     // Flag remembering whether the structure of the ship (i.e. the connectivity between elements)
     // has changed since the last step.

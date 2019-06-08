@@ -195,8 +195,9 @@ void GameOpenGL::UploadMipmappedTexture(RgbaImageData baseTexture)
 
     ImageSize readImageSize(baseTexture.Size);
 
-    std::unique_ptr<rgbaColor const []> readBuffer(std::move(baseTexture.Data));
-    std::unique_ptr<rgbaColor[]> writeBuffer;
+    std::unique_ptr<rgbaColor[]> readBuffer(std::move(baseTexture.Data));
+    std::unique_ptr<rgbaColor[]> writeBuffer = std::make_unique<rgbaColor[]>(
+        std::max(1, (readImageSize.Width / 2) * (readImageSize.Height / 2)));
 
     for (GLint textureLevel = 1; ; ++textureLevel)
     {
@@ -209,9 +210,6 @@ void GameOpenGL::UploadMipmappedTexture(RgbaImageData baseTexture)
         // Calculate dimensions of new write buffer
         int width = std::max(1, readImageSize.Width / 2);
         int height = std::max(1, readImageSize.Height / 2);
-
-        // Allocate new write buffer
-        writeBuffer.reset(new rgbaColor[width * height]);
 
         // Create new buffer
         rgbaColor const * rp = readBuffer.get();
@@ -256,7 +254,7 @@ void GameOpenGL::UploadMipmappedTexture(RgbaImageData baseTexture)
 
         // Swap buffers
         readImageSize = ImageSize(width, height);
-        readBuffer = std::move(writeBuffer);
+        readBuffer.swap(writeBuffer);
     }
 }
 
