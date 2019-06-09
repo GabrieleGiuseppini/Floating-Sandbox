@@ -443,8 +443,8 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
     {
         wxStaticBox * mechanicsBox = new wxStaticBox(panel, wxID_ANY, _("Mechanics"));
 
-        wxBoxSizer * mechanicsBoxSizer1 = new wxBoxSizer(wxVERTICAL);
-        mechanicsBoxSizer1->AddSpacer(StaticBoxTopMargin);
+        wxBoxSizer * mechanicsBoxSizer = new wxBoxSizer(wxVERTICAL);
+        mechanicsBoxSizer->AddSpacer(StaticBoxTopMargin);
 
         {
             wxGridBagSizer * mechanicsSizer = new wxGridBagSizer(0, 0);
@@ -531,10 +531,10 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     CellBorder);
             }
 
-            mechanicsBoxSizer1->Add(mechanicsSizer, 0, wxALL, StaticBoxInsetMargin);
+            mechanicsBoxSizer->Add(mechanicsSizer, 0, wxALL, StaticBoxInsetMargin);
         }
 
-        mechanicsBox->SetSizerAndFit(mechanicsBoxSizer1);
+        mechanicsBox->SetSizer(mechanicsBoxSizer);
 
         gridSizer->Add(
             mechanicsBox,
@@ -551,8 +551,8 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
     {
         wxStaticBox * lightsBox = new wxStaticBox(panel, wxID_ANY, _("Lights"));
 
-        wxBoxSizer * lightsBoxSizer1 = new wxBoxSizer(wxVERTICAL);
-        lightsBoxSizer1->AddSpacer(StaticBoxTopMargin);
+        wxBoxSizer * lightsBoxSizer = new wxBoxSizer(wxVERTICAL);
+        lightsBoxSizer->AddSpacer(StaticBoxTopMargin);
 
         {
             wxGridBagSizer * lightsSizer = new wxGridBagSizer(0, 0);
@@ -609,10 +609,10 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     CellBorder);
             }
 
-            lightsBoxSizer1->Add(lightsSizer, 0, wxALL, StaticBoxInsetMargin);
+            lightsBoxSizer->Add(lightsSizer, 0, wxALL, StaticBoxInsetMargin);
         }
 
-        lightsBox->SetSizerAndFit(lightsBoxSizer1);
+        lightsBox->SetSizer(lightsBoxSizer);
 
         gridSizer->Add(
             lightsBox,
@@ -629,8 +629,8 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
     {
         wxStaticBox * fluidsBox = new wxStaticBox(panel, wxID_ANY, _("Fluids"));
 
-        wxBoxSizer * fluidsBoxSizer1 = new wxBoxSizer(wxVERTICAL);
-        fluidsBoxSizer1->AddSpacer(StaticBoxTopMargin);
+        wxBoxSizer * fluidsBoxSizer = new wxBoxSizer(wxVERTICAL);
+        fluidsBoxSizer->AddSpacer(StaticBoxTopMargin);
 
         {
             wxGridBagSizer * fluidsSizer = new wxGridBagSizer(0, 0);
@@ -657,7 +657,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     mWaterDensitySlider.get(),
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
-                    wxALL,
+                    wxEXPAND | wxALL,
                     CellBorder);
             }
 
@@ -684,7 +684,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     mWaterDragSlider.get(),
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
-                    wxALL,
+                    wxEXPAND | wxALL,
                     CellBorder);
             }
 
@@ -710,7 +710,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     mWaterIntakeSlider.get(),
                     wxGBPosition(0, 2),
                     wxGBSpan(1, 1),
-                    wxALL,
+                    wxEXPAND | wxALL,
                     CellBorder);
             }
 
@@ -736,7 +736,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     mWaterCrazynessSlider.get(),
                     wxGBPosition(0, 3),
                     wxGBSpan(1, 1),
-                    wxALL,
+                    wxEXPAND | wxALL,
                     CellBorder);
             }
 
@@ -762,14 +762,17 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     mWaterDiffusionSpeedSlider.get(),
                     wxGBPosition(0, 4),
                     wxGBSpan(1, 1),
-                    wxALL,
+                    wxEXPAND | wxALL,
                     CellBorder);
             }
 
-            fluidsBoxSizer1->Add(fluidsSizer, 0, wxALL, StaticBoxInsetMargin);
+            fluidsBoxSizer->Add(
+                fluidsSizer,
+                0,
+                wxEXPAND | wxALL, StaticBoxInsetMargin);
         }
 
-        fluidsBox->SetSizerAndFit(fluidsBoxSizer1);
+        fluidsBox->SetSizer(fluidsBoxSizer);
 
         gridSizer->Add(
             fluidsBox,
@@ -782,7 +785,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
 
     // Finalize panel
 
-    panel->SetSizerAndFit(gridSizer);
+    panel->SetSizer(gridSizer);
 }
 
 void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
@@ -796,8 +799,8 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
     {
         wxStaticBox * oceanBox = new wxStaticBox(panel, wxID_ANY, _("Ocean"));
 
-        wxBoxSizer * oceanBoxSizerV1 = new wxBoxSizer(wxVERTICAL);
-        oceanBoxSizerV1->AddSpacer(StaticBoxTopMargin);
+        wxBoxSizer * oceanBoxSizer = new wxBoxSizer(wxVERTICAL);
+        oceanBoxSizer->AddSpacer(StaticBoxTopMargin);
 
         wxBoxSizer * oceanBoxSizerH2 = new wxBoxSizer(wxHORIZONTAL);
 
@@ -866,9 +869,9 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
             oceanBoxSizerH2->Add(mOceanFloorDetailAmplificationSlider.get(), 0, wxEXPAND | wxLEFT | wxRIGHT, SliderBorder);
         }
 
-        oceanBoxSizerV1->Add(oceanBoxSizerH2, 1, wxEXPAND | wxALL, StaticBoxInsetMargin);
+        oceanBoxSizer->Add(oceanBoxSizerH2, 1, wxEXPAND | wxALL, StaticBoxInsetMargin);
 
-        oceanBox->SetSizerAndFit(oceanBoxSizerV1);
+        oceanBox->SetSizerAndFit(oceanBoxSizer);
 
         gridSizer->Add(oceanBox, 1, wxALL, SliderBorder);
     }
