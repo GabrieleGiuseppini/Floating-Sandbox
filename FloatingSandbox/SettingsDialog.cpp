@@ -82,29 +82,16 @@ SettingsDialog::SettingsDialog(
 
 
     //
-    // Mechanics
+    // Mechanics, fluids, lights
     //
 
-    wxPanel * mechanicsPanel = new wxPanel(notebook);
+    wxPanel * mechanicsFluidsLightsPanel = new wxPanel(notebook);
 
-    mechanicsPanel->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
+    mechanicsFluidsLightsPanel->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 
-    PopulateMechanicsPanel(mechanicsPanel);
+    PopulateMechanicsFluidsLightsPanel(mechanicsFluidsLightsPanel);
 
-    notebook->AddPage(mechanicsPanel, "Mechanics");
-
-
-    //
-    // Fluids
-    //
-
-    wxPanel * fluidsPanel = new wxPanel(notebook);
-
-    fluidsPanel->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
-
-    PopulateFluidsPanel(fluidsPanel);
-
-    notebook->AddPage(fluidsPanel, "Fluids");
+    notebook->AddPage(mechanicsFluidsLightsPanel, "Mechanics, Fluids, and Lights");
 
 
     //
@@ -131,19 +118,6 @@ SettingsDialog::SettingsDialog(
     PopulateWindAndWavesPanel(windAndWavesPanel);
 
     notebook->AddPage(windAndWavesPanel, "Wind and Waves");
-
-
-    //
-    // World
-    //
-
-    wxPanel * worldPanel = new wxPanel(notebook);
-
-    worldPanel->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
-
-    PopulateWorldPanel(worldPanel);
-
-    notebook->AddPage(worldPanel, "World");
 
 
     //
@@ -458,201 +432,352 @@ void SettingsDialog::OnApplyButton(wxCommandEvent & /*event*/)
     mApplyButton->Enable(false);
 }
 
-void SettingsDialog::PopulateMechanicsPanel(wxPanel * panel)
+void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
 {
-    wxBoxSizer* controlsSizer = new wxBoxSizer(wxHORIZONTAL);
-
-
-    // Simulation quality
-
-    mMechanicalQualitySlider = std::make_unique<SliderControl>(
-        panel,
-        SliderWidth,
-        SliderHeight,
-        "Simulation Quality",
-        "Higher values improve the rigidity of simulated structures, at the expense of longer computation times.",
-        mGameController->GetNumMechanicalDynamicsIterationsAdjustment(),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<FixedTickSliderCore>(
-            0.5f,
-            mGameController->GetMinNumMechanicalDynamicsIterationsAdjustment(),
-            mGameController->GetMaxNumMechanicalDynamicsIterationsAdjustment()),
-        mWarningIcon.get());
-
-    controlsSizer->Add(mMechanicalQualitySlider.get(), 1, wxALL, SliderBorder);
-
-
-
-    // Strength
-
-    mStrengthSlider = std::make_unique<SliderControl>(
-        panel,
-        SliderWidth,
-        SliderHeight,
-        "Strength Adjust",
-        "Adjusts the strength of springs.",
-        mGameController->GetSpringStrengthAdjustment(),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<ExponentialSliderCore>(
-            mGameController->GetMinSpringStrengthAdjustment(),
-            1.0f,
-            mGameController->GetMaxSpringStrengthAdjustment()));
-
-    controlsSizer->Add(mStrengthSlider.get(), 1, wxALL, SliderBorder);
-
-
-
-    // Finalize panel
-
-    panel->SetSizerAndFit(controlsSizer);
-}
-
-void SettingsDialog::PopulateFluidsPanel(wxPanel * panel)
-{
-    wxGridSizer* gridSizer = new wxGridSizer(2, 4, 0, 0);
+    wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
 
     //
-    // Row 1
+    // Mechanics
     //
 
-    // Water Density
+    {
+        wxStaticBox * mechanicsBox = new wxStaticBox(panel, wxID_ANY, _("Mechanics"));
 
-    mWaterDensitySlider = std::make_unique<SliderControl>(
-        panel,
-        SliderWidth,
-        SliderHeight,
-        "Water Density Adjust",
-        "Adjusts the density of sea water, and thus the buoyancy it exerts on physical bodies.",
-        mGameController->GetWaterDensityAdjustment(),
-        [this](float /*value*/)
+        wxBoxSizer * mechanicsBoxSizer1 = new wxBoxSizer(wxVERTICAL);
+        mechanicsBoxSizer1->AddSpacer(StaticBoxTopMargin);
+
         {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            mGameController->GetMinWaterDensityAdjustment(),
-            mGameController->GetMaxWaterDensityAdjustment()));
+            wxGridBagSizer * mechanicsSizer = new wxGridBagSizer(0, 0);
 
-    gridSizer->Add(mWaterDensitySlider.get(), 1, wxALL, SliderBorder);
+            // Simulation Quality
+            {
+                mMechanicalQualitySlider = std::make_unique<SliderControl>(
+                    mechanicsBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Simulation Quality",
+                    "Higher values improve the rigidity of simulated structures, at the expense of longer computation times.",
+                    mGameController->GetNumMechanicalDynamicsIterationsAdjustment(),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<FixedTickSliderCore>(
+                        0.5f,
+                        mGameController->GetMinNumMechanicalDynamicsIterationsAdjustment(),
+                        mGameController->GetMaxNumMechanicalDynamicsIterationsAdjustment()),
+                        mWarningIcon.get());
 
+                mechanicsSizer->Add(
+                    mMechanicalQualitySlider.get(),
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorder);
+            }
 
-    // Water Drag
+            // Strength
+            {
+                mStrengthSlider = std::make_unique<SliderControl>(
+                    mechanicsBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Strength Adjust",
+                    "Adjusts the strength of springs.",
+                    mGameController->GetSpringStrengthAdjustment(),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameController->GetMinSpringStrengthAdjustment(),
+                        1.0f,
+                        mGameController->GetMaxSpringStrengthAdjustment()));
 
-    mWaterDragSlider = std::make_unique<SliderControl>(
-        panel,
-        SliderWidth,
-        SliderHeight,
-        "Water Drag Adjust",
-        "Adjusts the drag force exerted by sea water on physical bodies.",
-        mGameController->GetWaterDragAdjustment(),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<ExponentialSliderCore>(
-            mGameController->GetMinWaterDragAdjustment(),
-            1.0f,
-            mGameController->GetMaxWaterDragAdjustment()));
+                mechanicsSizer->Add(
+                    mStrengthSlider.get(),
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorder);
+            }
 
-    gridSizer->Add(mWaterDragSlider.get(), 1, wxALL, SliderBorder);
+            // Rot Accelerator
+            {
+                mRotAcceler8rSlider = std::make_unique<SliderControl>(
+                    mechanicsBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Rot Acceler8r",
+                    "Adjusts the speed with which materials rot when exposed to sea water.",
+                    mGameController->GetRotAcceler8r(),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameController->GetMinRotAcceler8r(),
+                        1.0f,
+                        mGameController->GetMaxRotAcceler8r()));
 
+                mechanicsSizer->Add(
+                    mRotAcceler8rSlider.get(),
+                    wxGBPosition(0, 2),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorder);
+            }
 
-    // Water Intake
+            mechanicsBoxSizer1->Add(mechanicsSizer, 0, wxALL, StaticBoxInsetMargin);
+        }
 
-    mWaterIntakeSlider = std::make_unique<SliderControl>(
-        panel,
-        SliderWidth,
-        SliderHeight,
-        "Water Intake Adjust",
-        "Adjusts the speed with which sea water enters or leaves a physical body.",
-        mGameController->GetWaterIntakeAdjustment(),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            mGameController->GetMinWaterIntakeAdjustment(),
-            mGameController->GetMaxWaterIntakeAdjustment()));
+        mechanicsBox->SetSizerAndFit(mechanicsBoxSizer1);
 
-    gridSizer->Add(mWaterIntakeSlider.get(), 1, wxALL, SliderBorder);
-
-
-    // Water Crazyness
-
-    mWaterCrazynessSlider = std::make_unique<SliderControl>(
-        panel,
-        SliderWidth,
-        SliderHeight,
-        "Water Crazyness",
-        "Adjusts how \"splashy\" water flows inside a physical body.",
-        mGameController->GetWaterCrazyness(),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            mGameController->GetMinWaterCrazyness(),
-            mGameController->GetMaxWaterCrazyness()));
-
-    gridSizer->Add(mWaterCrazynessSlider.get(), 1, wxALL, SliderBorder);
-
-
+        gridSizer->Add(
+            mechanicsBox,
+            wxGBPosition(0, 0),
+            wxGBSpan(1, 3),
+            wxEXPAND | wxALL,
+            CellBorder);
+    }
 
     //
-    // Row 2
+    // Lights
     //
 
-    // Water Diffusion Speed
+    {
+        wxStaticBox * lightsBox = new wxStaticBox(panel, wxID_ANY, _("Lights"));
 
-    mWaterDiffusionSpeedSlider = std::make_unique<SliderControl>(
-        panel,
-        SliderWidth,
-        SliderHeight,
-        "Water Diffusion Speed",
-        "Adjusts the speed with which water propagates within a physical body.",
-        mGameController->GetWaterDiffusionSpeedAdjustment(),
-        [this](float /*value*/)
+        wxBoxSizer * lightsBoxSizer1 = new wxBoxSizer(wxVERTICAL);
+        lightsBoxSizer1->AddSpacer(StaticBoxTopMargin);
+
         {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            mGameController->GetMinWaterDiffusionSpeedAdjustment(),
-            mGameController->GetMaxWaterDiffusionSpeedAdjustment()));
+            wxGridBagSizer * lightsSizer = new wxGridBagSizer(0, 0);
 
-    gridSizer->Add(mWaterDiffusionSpeedSlider.get(), 1, wxALL, SliderBorder);
+            // Luminiscence
+            {
+                mLuminiscenceSlider = std::make_unique<SliderControl>(
+                    lightsBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Luminiscence Adjust",
+                    "Adjusts the quantity of light emitted by luminiscent materials.",
+                    mGameController->GetLuminiscenceAdjustment(),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameController->GetMinLuminiscenceAdjustment(),
+                        mGameController->GetMaxLuminiscenceAdjustment()));
 
+                lightsSizer->Add(
+                    mLuminiscenceSlider.get(),
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorder);
+            }
 
-    // Water Level of Detail
+            // Light Spread
+            {
+                mLightSpreadSlider = std::make_unique<SliderControl>(
+                    lightsBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Light Spread Adjust",
+                    "Adjusts how wide light emitted by luminiscent materials spreads out.",
+                    mGameController->GetLightSpreadAdjustment(),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameController->GetMinLightSpreadAdjustment(),
+                        mGameController->GetMaxLightSpreadAdjustment()));
 
-    mWaterLevelOfDetailSlider = std::make_unique<SliderControl>(
-        panel,
-        SliderWidth,
-        SliderHeight,
-        "Water Level of Detail",
-        "Adjusts how detailed water inside a physical body looks.",
-        mGameController->GetWaterLevelOfDetail(),
-        [this](float /*value*/)
+                lightsSizer->Add(
+                    mLightSpreadSlider.get(),
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorder);
+            }
+
+            lightsBoxSizer1->Add(lightsSizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        lightsBox->SetSizerAndFit(lightsBoxSizer1);
+
+        gridSizer->Add(
+            lightsBox,
+            wxGBPosition(0, 3),
+            wxGBSpan(1, 2),
+            wxEXPAND | wxALL,
+            CellBorder);
+    }
+
+    //
+    // Fluids
+    //
+
+    {
+        wxStaticBox * fluidsBox = new wxStaticBox(panel, wxID_ANY, _("Fluids"));
+
+        wxBoxSizer * fluidsBoxSizer1 = new wxBoxSizer(wxVERTICAL);
+        fluidsBoxSizer1->AddSpacer(StaticBoxTopMargin);
+
         {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            mGameController->GetMinWaterLevelOfDetail(),
-            mGameController->GetMaxWaterLevelOfDetail()));
+            wxGridBagSizer * fluidsSizer = new wxGridBagSizer(0, 0);
 
-    gridSizer->Add(mWaterLevelOfDetailSlider.get(), 1, wxALL, SliderBorder);
+            // Water Density
+            {
+                mWaterDensitySlider = std::make_unique<SliderControl>(
+                    fluidsBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Water Density Adjust",
+                    "Adjusts the density of sea water, and thus the buoyancy it exerts on physical bodies.",
+                    mGameController->GetWaterDensityAdjustment(),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameController->GetMinWaterDensityAdjustment(),
+                        mGameController->GetMaxWaterDensityAdjustment()));
+
+                fluidsSizer->Add(
+                    mWaterDensitySlider.get(),
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorder);
+            }
+
+            // Water Drag
+            {
+                mWaterDragSlider = std::make_unique<SliderControl>(
+                    fluidsBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Water Drag Adjust",
+                    "Adjusts the drag force exerted by sea water on physical bodies.",
+                    mGameController->GetWaterDragAdjustment(),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameController->GetMinWaterDragAdjustment(),
+                        1.0f,
+                        mGameController->GetMaxWaterDragAdjustment()));
+
+                fluidsSizer->Add(
+                    mWaterDragSlider.get(),
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorder);
+            }
+
+            // Water Intake
+            {
+                mWaterIntakeSlider = std::make_unique<SliderControl>(
+                    fluidsBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Water Intake Adjust",
+                    "Adjusts the speed with which sea water enters or leaves a physical body.",
+                    mGameController->GetWaterIntakeAdjustment(),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameController->GetMinWaterIntakeAdjustment(),
+                        mGameController->GetMaxWaterIntakeAdjustment()));
+
+                fluidsSizer->Add(
+                    mWaterIntakeSlider.get(),
+                    wxGBPosition(0, 2),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorder);
+            }
+
+            // Water Crazyness
+            {
+                mWaterCrazynessSlider = std::make_unique<SliderControl>(
+                    fluidsBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Water Crazyness",
+                    "Adjusts how \"splashy\" water flows inside a physical body.",
+                    mGameController->GetWaterCrazyness(),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameController->GetMinWaterCrazyness(),
+                        mGameController->GetMaxWaterCrazyness()));
+
+                fluidsSizer->Add(
+                    mWaterCrazynessSlider.get(),
+                    wxGBPosition(0, 3),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorder);
+            }
+
+            // Water Diffusion Speed
+            {
+                mWaterDiffusionSpeedSlider = std::make_unique<SliderControl>(
+                    fluidsBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Water Diffusion Speed",
+                    "Adjusts the speed with which water propagates within a physical body.",
+                    mGameController->GetWaterDiffusionSpeedAdjustment(),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameController->GetMinWaterDiffusionSpeedAdjustment(),
+                        mGameController->GetMaxWaterDiffusionSpeedAdjustment()));
+
+                fluidsSizer->Add(
+                    mWaterDiffusionSpeedSlider.get(),
+                    wxGBPosition(0, 4),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorder);
+            }
+
+            fluidsBoxSizer1->Add(fluidsSizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        fluidsBox->SetSizerAndFit(fluidsBoxSizer1);
+
+        gridSizer->Add(
+            fluidsBox,
+            wxGBPosition(1, 0),
+            wxGBSpan(1, 5),
+            wxEXPAND | wxALL,
+            CellBorder);
+    }
 
 
     // Finalize panel
@@ -1065,81 +1190,6 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
     panel->SetSizerAndFit(gridSizer);
 }
 
-void SettingsDialog::PopulateWorldPanel(wxPanel * panel)
-{
-    wxGridSizer* gridSizer = new wxGridSizer(2, 4, 0, 0);
-
-    //
-    // Row 1
-    //
-
-    // Rot Accelerator
-
-    mRotAcceler8rSlider = std::make_unique<SliderControl>(
-        panel,
-        SliderWidth,
-        SliderHeight,
-        "Rot Acceler8r",
-        "Adjusts the speed with which materials rot when exposed to sea water.",
-        mGameController->GetRotAcceler8r(),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<ExponentialSliderCore>(
-            mGameController->GetMinRotAcceler8r(),
-            1.0f,
-            mGameController->GetMaxRotAcceler8r()));
-
-    gridSizer->Add(mRotAcceler8rSlider.get(), 1, wxALL, SliderBorder);
-
-    // Luminiscence
-
-    mLuminiscenceSlider = std::make_unique<SliderControl>(
-        panel,
-        SliderWidth,
-        SliderHeight,
-        "Luminiscence Adjust",
-        "Adjusts the quantity of light emitted by luminiscent materials.",
-        mGameController->GetLuminiscenceAdjustment(),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            mGameController->GetMinLuminiscenceAdjustment(),
-            mGameController->GetMaxLuminiscenceAdjustment()));
-
-    gridSizer->Add(mLuminiscenceSlider.get(), 1, wxALL, SliderBorder);
-
-    // Light Spread
-
-    mLightSpreadSlider = std::make_unique<SliderControl>(
-        panel,
-        SliderWidth,
-        SliderHeight,
-        "Light Spread Adjust",
-        "Adjusts how wide light emitted by luminiscent materials spreads out.",
-        mGameController->GetLightSpreadAdjustment(),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            mGameController->GetMinLightSpreadAdjustment(),
-            mGameController->GetMaxLightSpreadAdjustment()));
-
-    gridSizer->Add(mLightSpreadSlider.get(), 1, wxALL, SliderBorder);
-
-
-    // Finalize panel
-
-    panel->SetSizerAndFit(gridSizer);
-}
-
 void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 {
     wxGridBagSizer* gridSizer = new wxGridBagSizer(0, 0);
@@ -1268,54 +1318,32 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 
         // Air Bubbles Density
         {
-            // TODOTEST
-            ////mAirBubbleDensitySlider = std::make_unique<SliderControl>(
-            ////    panel,
-            ////    SliderWidth,
-            ////    -1,
-            ////    "Air Bubbles Density",
-            ////    "The density of air bubbles generated when water enters a ship.",
-            ////    mGameController->GetCumulatedIntakenWaterThresholdForAirBubbles(),
-            ////    [this](float /*value*/)
-            ////    {
-            ////        // Remember we're dirty now
-            ////        this->mApplyButton->Enable(true);
-            ////    },
-            ////    std::make_unique<LinearSliderCore>(
-            ////        mGameController->GetMinCumulatedIntakenWaterThresholdForAirBubbles(),
-            ////        mGameController->GetMaxCumulatedIntakenWaterThresholdForAirBubbles()));
+            mAirBubbleDensitySlider = std::make_unique<SliderControl>(
+                panel,
+                SliderWidth,
+                -1,
+                "Air Bubbles Density",
+                "The density of air bubbles generated when water enters a ship.",
+                mGameController->GetCumulatedIntakenWaterThresholdForAirBubbles(),
+                [this](float /*value*/)
+                {
+                    // Remember we're dirty now
+                    this->mApplyButton->Enable(true);
+                },
+                std::make_unique<LinearSliderCore>(
+                    mGameController->GetMinCumulatedIntakenWaterThresholdForAirBubbles(),
+                    mGameController->GetMaxCumulatedIntakenWaterThresholdForAirBubbles()));
 
-            ////airBubblesBoxSizer->Add(mAirBubbleDensitySlider.get(), 1, wxEXPAND, 0);
-
-            // TODOTEST
-            wxPanel * foo = new wxPanel(panel);
-            foo->SetBackgroundColour(*wxBLACK);
-            airBubblesBoxSizer->Add(foo, 1, wxEXPAND, 0);
+            airBubblesBoxSizer->Add(mAirBubbleDensitySlider.get(), 1, wxEXPAND, 0);
         }
 
         gridSizer->Add(
             airBubblesBoxSizer,
             wxGBPosition(0, 4),
             wxGBSpan(1, 1),
-            wxALL,
+            wxALL | wxEXPAND,
             SliderBorder);
     }
-
-    mAirBubbleDensitySlider = std::make_unique<SliderControl>(
-        panel,
-        SliderWidth,
-        -1,
-        "Air Bubbles Density",
-        "The density of air bubbles generated when water enters a ship.",
-        mGameController->GetCumulatedIntakenWaterThresholdForAirBubbles(),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            mGameController->GetMinCumulatedIntakenWaterThresholdForAirBubbles(),
-            mGameController->GetMaxCumulatedIntakenWaterThresholdForAirBubbles()));
 
 
     //
@@ -1798,6 +1826,33 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     CellBorder);
             }
 
+            {
+                // Water Level of Detail
+
+                mWaterLevelOfDetailSlider = std::make_unique<SliderControl>(
+                    waterBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Water Level of Detail",
+                    "Adjusts how detailed water inside a physical body looks.",
+                    mGameController->GetWaterLevelOfDetail(),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameController->GetMinWaterLevelOfDetail(),
+                        mGameController->GetMaxWaterLevelOfDetail()));
+
+                waterSizer->Add(
+                    mWaterLevelOfDetailSlider.get(),
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorder);
+            }
+
             waterBoxSizer1->Add(waterSizer, 0, wxALL, StaticBoxInsetMargin);
         }
 
@@ -2014,12 +2069,13 @@ void SettingsDialog::ReadSettings()
 {
     assert(!!mGameController);
 
+    // Mechanics, Fluids, Lights
 
     mMechanicalQualitySlider->SetValue(mGameController->GetNumMechanicalDynamicsIterationsAdjustment());
 
     mStrengthSlider->SetValue(mGameController->GetSpringStrengthAdjustment());
 
-    // Fluids
+    mRotAcceler8rSlider->SetValue(mGameController->GetRotAcceler8r());
 
     mWaterDensitySlider->SetValue(mGameController->GetWaterDensityAdjustment());
 
@@ -2031,7 +2087,9 @@ void SettingsDialog::ReadSettings()
 
     mWaterDiffusionSpeedSlider->SetValue(mGameController->GetWaterDiffusionSpeedAdjustment());
 
-    mWaterLevelOfDetailSlider->SetValue(mGameController->GetWaterLevelOfDetail());
+    mLuminiscenceSlider->SetValue(mGameController->GetLuminiscenceAdjustment());
+
+    mLightSpreadSlider->SetValue(mGameController->GetLightSpreadAdjustment());
 
     // Ocean and Sky
 
@@ -2063,14 +2121,6 @@ void SettingsDialog::ReadSettings()
     mTsunamiRateSlider->SetValue(mGameController->GetTsunamiRate());
 
     mRogueWaveRateSlider->SetValue(mGameController->GetRogueWaveRate());
-
-    // World
-
-    mLuminiscenceSlider->SetValue(mGameController->GetLuminiscenceAdjustment());
-
-    mLightSpreadSlider->SetValue(mGameController->GetLightSpreadAdjustment());
-
-    mRotAcceler8rSlider->SetValue(mGameController->GetRotAcceler8r());
 
     // Interactions
 
@@ -2185,6 +2235,8 @@ void SettingsDialog::ReadSettings()
     mShowStressCheckBox->SetValue(mGameController->GetShowShipStress());
 
     mWaterContrastSlider->SetValue(mGameController->GetWaterContrast());
+
+    mWaterLevelOfDetailSlider->SetValue(mGameController->GetWaterLevelOfDetail());
 
     // Sound
 
@@ -2303,7 +2355,7 @@ void SettingsDialog::ApplySettings()
 {
     assert(!!mGameController);
 
-    // Mechanics
+    // Mechanics, Fluids, Lights
 
     mGameController->SetNumMechanicalDynamicsIterationsAdjustment(
         mMechanicalQualitySlider->GetValue());
@@ -2311,7 +2363,8 @@ void SettingsDialog::ApplySettings()
     mGameController->SetSpringStrengthAdjustment(
         mStrengthSlider->GetValue());
 
-    // Fluids
+    mGameController->SetRotAcceler8r(
+        mRotAcceler8rSlider->GetValue());
 
     mGameController->SetWaterDensityAdjustment(
         mWaterDensitySlider->GetValue());
@@ -2328,8 +2381,11 @@ void SettingsDialog::ApplySettings()
     mGameController->SetWaterDiffusionSpeedAdjustment(
         mWaterDiffusionSpeedSlider->GetValue());
 
-    mGameController->SetWaterLevelOfDetail(
-        mWaterLevelOfDetailSlider->GetValue());
+    mGameController->SetLuminiscenceAdjustment(
+        mLuminiscenceSlider->GetValue());
+
+    mGameController->SetLightSpreadAdjustment(
+        mLightSpreadSlider->GetValue());
 
     // Ocean and Sky
 
@@ -2373,17 +2429,7 @@ void SettingsDialog::ApplySettings()
     mGameController->SetRogueWaveRate(
         mRogueWaveRateSlider->GetValue());
 
-    // World
-
-    mGameController->SetLuminiscenceAdjustment(
-        mLuminiscenceSlider->GetValue());
-
-    mGameController->SetLightSpreadAdjustment(
-        mLightSpreadSlider->GetValue());
-
-    mGameController->SetRotAcceler8r(
-        mRotAcceler8rSlider->GetValue());
-
+    // Interactions
 
     mGameController->SetDestroyRadius(
         mDestroyRadiusSlider->GetValue());
@@ -2412,7 +2458,6 @@ void SettingsDialog::ApplySettings()
     mGameController->SetDoGenerateAirBubbles(mGenerateAirBubblesCheckBox->IsChecked());
 
     mGameController->SetCumulatedIntakenWaterThresholdForAirBubbles(mAirBubbleDensitySlider->GetValue());
-
 
     // Render
 
@@ -2487,6 +2532,9 @@ void SettingsDialog::ApplySettings()
     mGameController->SetWaterContrast(
         mWaterContrastSlider->GetValue());
 
+    mGameController->SetWaterLevelOfDetail(
+        mWaterLevelOfDetailSlider->GetValue());
+
     // Sound
 
     mSoundController->SetMasterEffectsVolume(
@@ -2506,7 +2554,7 @@ void SettingsDialog::ApplySettings()
 
     mSoundController->SetPlaySinkingMusic(mPlaySinkingMusicCheckBox->IsChecked());
 
-
+    // Advanced
 
     mGameController->SetSpringStiffnessAdjustment(
         mSpringStiffnessSlider->GetValue());

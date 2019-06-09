@@ -81,17 +81,17 @@ private:
     // Control tabs
     //////////////////////////////////////////////////////
 
-    // Mechanics
+    // Mechanics, Fluids, and Light
     std::unique_ptr<SliderControl> mMechanicalQualitySlider;
     std::unique_ptr<SliderControl> mStrengthSlider;
-
-    // Fluids
+    std::unique_ptr<SliderControl> mRotAcceler8rSlider;
     std::unique_ptr<SliderControl> mWaterDensitySlider;
     std::unique_ptr<SliderControl> mWaterDragSlider;
     std::unique_ptr<SliderControl> mWaterIntakeSlider;
     std::unique_ptr<SliderControl> mWaterCrazynessSlider;
     std::unique_ptr<SliderControl> mWaterDiffusionSpeedSlider;
-    std::unique_ptr<SliderControl> mWaterLevelOfDetailSlider;
+    std::unique_ptr<SliderControl> mLuminiscenceSlider;
+    std::unique_ptr<SliderControl> mLightSpreadSlider;
 
     // Ocean and Sky
     std::unique_ptr<SliderControl> mOceanDepthSlider;
@@ -109,11 +109,6 @@ private:
     std::unique_ptr<SliderControl> mBasalWaveSpeedAdjustmentSlider;
     std::unique_ptr<SliderControl> mTsunamiRateSlider;
     std::unique_ptr<SliderControl> mRogueWaveRateSlider;
-
-    // World
-    std::unique_ptr<SliderControl> mLuminiscenceSlider;
-    std::unique_ptr<SliderControl> mLightSpreadSlider;
-    std::unique_ptr<SliderControl> mRotAcceler8rSlider;
 
     // Interactions
     std::unique_ptr<SliderControl> mDestroyRadiusSlider;
@@ -148,6 +143,7 @@ private:
     wxRadioButton * mStructureShipRenderModeRadioButton;
     wxCheckBox* mShowStressCheckBox;
     std::unique_ptr<SliderControl> mWaterContrastSlider;
+    std::unique_ptr<SliderControl> mWaterLevelOfDetailSlider;
 
     // Sound
     std::unique_ptr<SliderControl> mEffectsVolumeSlider;
@@ -176,11 +172,9 @@ private:
 
 private:
 
-    void PopulateMechanicsPanel(wxPanel * panel);
-    void PopulateFluidsPanel(wxPanel * panel);
+    void PopulateMechanicsFluidsLightsPanel(wxPanel * panel);
     void PopulateOceanAndSkyPanel(wxPanel * panel);
     void PopulateWindAndWavesPanel(wxPanel * panel);
-    void PopulateWorldPanel(wxPanel * panel);
     void PopulateInteractionsPanel(wxPanel * panel);
     void PopulateRenderingPanel(wxPanel * panel);
     void PopulateSoundPanel(wxPanel * panel);

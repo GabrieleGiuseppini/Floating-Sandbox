@@ -259,7 +259,7 @@ void Ship::RepairAt(
     //
     // Note: a higher tolerance here causes springs to...spring into life
     // already stretched or compressed, generating an undesirable force impulse
-    float constexpr DisplacementTolerance = 0.1f;
+    float constexpr DisplacementTolerance = 0.065f; // 0.1f;
 
     ///////////////////////////////////////////////////////
 
