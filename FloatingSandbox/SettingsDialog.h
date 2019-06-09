@@ -82,46 +82,46 @@ private:
     //////////////////////////////////////////////////////
 
     // Mechanics, Fluids, and Light
-    std::unique_ptr<SliderControl> mMechanicalQualitySlider;
-    std::unique_ptr<SliderControl> mStrengthSlider;
-    std::unique_ptr<SliderControl> mRotAcceler8rSlider;
-    std::unique_ptr<SliderControl> mWaterDensitySlider;
-    std::unique_ptr<SliderControl> mWaterDragSlider;
-    std::unique_ptr<SliderControl> mWaterIntakeSlider;
-    std::unique_ptr<SliderControl> mWaterCrazynessSlider;
-    std::unique_ptr<SliderControl> mWaterDiffusionSpeedSlider;
-    std::unique_ptr<SliderControl> mLuminiscenceSlider;
-    std::unique_ptr<SliderControl> mLightSpreadSlider;
+    SliderControl * mMechanicalQualitySlider;
+    SliderControl * mStrengthSlider;
+    SliderControl * mRotAcceler8rSlider;
+    SliderControl * mWaterDensitySlider;
+    SliderControl * mWaterDragSlider;
+    SliderControl * mWaterIntakeSlider;
+    SliderControl * mWaterCrazynessSlider;
+    SliderControl * mWaterDiffusionSpeedSlider;
+    SliderControl * mLuminiscenceSlider;
+    SliderControl * mLightSpreadSlider;
 
     // Ocean and Sky
-    std::unique_ptr<SliderControl> mOceanDepthSlider;
-    std::unique_ptr<SliderControl> mOceanFloorBumpinessSlider;
-    std::unique_ptr<SliderControl> mOceanFloorDetailAmplificationSlider;
-    std::unique_ptr<SliderControl> mNumberOfStarsSlider;
-    std::unique_ptr<SliderControl> mNumberOfCloudsSlider;
+    SliderControl * mOceanDepthSlider;
+    SliderControl * mOceanFloorBumpinessSlider;
+    SliderControl * mOceanFloorDetailAmplificationSlider;
+    SliderControl * mNumberOfStarsSlider;
+    SliderControl * mNumberOfCloudsSlider;
 
     // Wind and Waves
-    std::unique_ptr<SliderControl> mWindSpeedBaseSlider;
+    SliderControl * mWindSpeedBaseSlider;
     wxCheckBox* mModulateWindCheckBox;
-    std::unique_ptr<SliderControl> mWindGustAmplitudeSlider;
-    std::unique_ptr<SliderControl> mBasalWaveHeightAdjustmentSlider;
-    std::unique_ptr<SliderControl> mBasalWaveLengthAdjustmentSlider;
-    std::unique_ptr<SliderControl> mBasalWaveSpeedAdjustmentSlider;
-    std::unique_ptr<SliderControl> mTsunamiRateSlider;
-    std::unique_ptr<SliderControl> mRogueWaveRateSlider;
+    SliderControl * mWindGustAmplitudeSlider;
+    SliderControl * mBasalWaveHeightAdjustmentSlider;
+    SliderControl * mBasalWaveLengthAdjustmentSlider;
+    SliderControl * mBasalWaveSpeedAdjustmentSlider;
+    SliderControl * mTsunamiRateSlider;
+    SliderControl * mRogueWaveRateSlider;
 
     // Interactions
-    std::unique_ptr<SliderControl> mDestroyRadiusSlider;
-    std::unique_ptr<SliderControl> mBombBlastRadiusSlider;
-    std::unique_ptr<SliderControl> mAntiMatterBombImplosionStrengthSlider;
-    std::unique_ptr<SliderControl> mFloodRadiusSlider;
-    std::unique_ptr<SliderControl> mFloodQuantitySlider;
-    std::unique_ptr<SliderControl> mRepairStrengthAdjustmentSlider;
+    SliderControl * mDestroyRadiusSlider;
+    SliderControl * mBombBlastRadiusSlider;
+    SliderControl * mAntiMatterBombImplosionStrengthSlider;
+    SliderControl * mFloodRadiusSlider;
+    SliderControl * mFloodQuantitySlider;
+    SliderControl * mRepairStrengthAdjustmentSlider;
     wxCheckBox * mUltraViolentCheckBox;
     wxCheckBox * mGenerateDebrisCheckBox;
     wxCheckBox * mGenerateSparklesCheckBox;
     wxCheckBox * mGenerateAirBubblesCheckBox;
-    std::unique_ptr<SliderControl> mAirBubbleDensitySlider;
+    SliderControl * mAirBubbleDensitySlider;
 
     // Rendering
     wxRadioButton * mTextureOceanRenderModeRadioButton;
@@ -132,8 +132,8 @@ private:
     wxRadioButton * mFlatOceanRenderModeRadioButton;
     wxColourPickerCtrl * mFlatOceanColorPicker;
     wxCheckBox * mSeeShipThroughOceanCheckBox;
-    std::unique_ptr<SliderControl> mOceanTransparencySlider;
-    std::unique_ptr<SliderControl> mOceanDarkeningRateSlider;
+    SliderControl * mOceanTransparencySlider;
+    SliderControl * mOceanDarkeningRateSlider;
     wxRadioButton * mTextureLandRenderModeRadioButton;
     wxBitmapComboBox * mTextureLandComboBox;
     wxRadioButton * mFlatLandRenderModeRadioButton;
@@ -142,21 +142,21 @@ private:
     wxRadioButton * mTextureShipRenderModeRadioButton;
     wxRadioButton * mStructureShipRenderModeRadioButton;
     wxCheckBox* mShowStressCheckBox;
-    std::unique_ptr<SliderControl> mWaterContrastSlider;
-    std::unique_ptr<SliderControl> mWaterLevelOfDetailSlider;
+    SliderControl * mWaterContrastSlider;
+    SliderControl * mWaterLevelOfDetailSlider;
 
     // Sound
-    std::unique_ptr<SliderControl> mEffectsVolumeSlider;
-    std::unique_ptr<SliderControl> mToolsVolumeSlider;
-    std::unique_ptr<SliderControl> mMusicVolumeSlider;
+    SliderControl * mEffectsVolumeSlider;
+    SliderControl * mToolsVolumeSlider;
+    SliderControl * mMusicVolumeSlider;
     wxCheckBox * mPlayBreakSoundsCheckBox;
     wxCheckBox * mPlayStressSoundsCheckBox;
     wxCheckBox * mPlayWindSoundCheckBox;
     wxCheckBox * mPlaySinkingMusicCheckBox;
 
     // Advanced
-    std::unique_ptr<SliderControl> mSpringStiffnessSlider;
-    std::unique_ptr<SliderControl> mSpringDampingSlider;
+    SliderControl * mSpringStiffnessSlider;
+    SliderControl * mSpringDampingSlider;
     wxRadioBox * mDebugShipRenderModeRadioBox;
     wxRadioBox * mVectorFieldRenderModeRadioBox;
 

@@ -342,7 +342,6 @@ Render:
 				+ Interactions
 				+ Side Effects
 				- Make tools two rows and move side-effect to left
-			- Remove uq ptr
 
 		= Shaders:
 			+ Land texture:

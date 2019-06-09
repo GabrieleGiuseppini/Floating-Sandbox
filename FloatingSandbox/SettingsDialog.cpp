@@ -451,7 +451,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
 
             // Simulation Quality
             {
-                mMechanicalQualitySlider = std::make_unique<SliderControl>(
+                mMechanicalQualitySlider = new SliderControl(
                     mechanicsBox,
                     SliderWidth,
                     SliderHeight,
@@ -470,7 +470,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                         mWarningIcon.get());
 
                 mechanicsSizer->Add(
-                    mMechanicalQualitySlider.get(),
+                    mMechanicalQualitySlider,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -479,7 +479,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
 
             // Strength
             {
-                mStrengthSlider = std::make_unique<SliderControl>(
+                mStrengthSlider = new SliderControl(
                     mechanicsBox,
                     SliderWidth,
                     SliderHeight,
@@ -497,7 +497,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                         mGameController->GetMaxSpringStrengthAdjustment()));
 
                 mechanicsSizer->Add(
-                    mStrengthSlider.get(),
+                    mStrengthSlider,
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -506,7 +506,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
 
             // Rot Accelerator
             {
-                mRotAcceler8rSlider = std::make_unique<SliderControl>(
+                mRotAcceler8rSlider = new SliderControl(
                     mechanicsBox,
                     SliderWidth,
                     SliderHeight,
@@ -524,7 +524,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                         mGameController->GetMaxRotAcceler8r()));
 
                 mechanicsSizer->Add(
-                    mRotAcceler8rSlider.get(),
+                    mRotAcceler8rSlider,
                     wxGBPosition(0, 2),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -559,7 +559,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
 
             // Luminiscence
             {
-                mLuminiscenceSlider = std::make_unique<SliderControl>(
+                mLuminiscenceSlider = new SliderControl(
                     lightsBox,
                     SliderWidth,
                     SliderHeight,
@@ -576,7 +576,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                         mGameController->GetMaxLuminiscenceAdjustment()));
 
                 lightsSizer->Add(
-                    mLuminiscenceSlider.get(),
+                    mLuminiscenceSlider,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -585,7 +585,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
 
             // Light Spread
             {
-                mLightSpreadSlider = std::make_unique<SliderControl>(
+                mLightSpreadSlider = new SliderControl(
                     lightsBox,
                     SliderWidth,
                     SliderHeight,
@@ -602,7 +602,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                         mGameController->GetMaxLightSpreadAdjustment()));
 
                 lightsSizer->Add(
-                    mLightSpreadSlider.get(),
+                    mLightSpreadSlider,
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -637,7 +637,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
 
             // Water Density
             {
-                mWaterDensitySlider = std::make_unique<SliderControl>(
+                mWaterDensitySlider = new SliderControl(
                     fluidsBox,
                     SliderWidth,
                     SliderHeight,
@@ -654,7 +654,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                         mGameController->GetMaxWaterDensityAdjustment()));
 
                 fluidsSizer->Add(
-                    mWaterDensitySlider.get(),
+                    mWaterDensitySlider,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -663,7 +663,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
 
             // Water Drag
             {
-                mWaterDragSlider = std::make_unique<SliderControl>(
+                mWaterDragSlider = new SliderControl(
                     fluidsBox,
                     SliderWidth,
                     SliderHeight,
@@ -681,7 +681,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                         mGameController->GetMaxWaterDragAdjustment()));
 
                 fluidsSizer->Add(
-                    mWaterDragSlider.get(),
+                    mWaterDragSlider,
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -690,7 +690,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
 
             // Water Intake
             {
-                mWaterIntakeSlider = std::make_unique<SliderControl>(
+                mWaterIntakeSlider = new SliderControl(
                     fluidsBox,
                     SliderWidth,
                     SliderHeight,
@@ -707,7 +707,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                         mGameController->GetMaxWaterIntakeAdjustment()));
 
                 fluidsSizer->Add(
-                    mWaterIntakeSlider.get(),
+                    mWaterIntakeSlider,
                     wxGBPosition(0, 2),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -716,7 +716,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
 
             // Water Crazyness
             {
-                mWaterCrazynessSlider = std::make_unique<SliderControl>(
+                mWaterCrazynessSlider = new SliderControl(
                     fluidsBox,
                     SliderWidth,
                     SliderHeight,
@@ -733,7 +733,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                         mGameController->GetMaxWaterCrazyness()));
 
                 fluidsSizer->Add(
-                    mWaterCrazynessSlider.get(),
+                    mWaterCrazynessSlider,
                     wxGBPosition(0, 3),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -742,7 +742,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
 
             // Water Diffusion Speed
             {
-                mWaterDiffusionSpeedSlider = std::make_unique<SliderControl>(
+                mWaterDiffusionSpeedSlider = new SliderControl(
                     fluidsBox,
                     SliderWidth,
                     SliderHeight,
@@ -759,7 +759,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                         mGameController->GetMaxWaterDiffusionSpeedAdjustment()));
 
                 fluidsSizer->Add(
-                    mWaterDiffusionSpeedSlider.get(),
+                    mWaterDiffusionSpeedSlider,
                     wxGBPosition(0, 4),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -807,7 +807,7 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
 
             // Ocean Depth
             {
-                mOceanDepthSlider = std::make_unique<SliderControl>(
+                mOceanDepthSlider = new SliderControl(
                     oceanBox,
                     SliderWidth,
                     SliderHeight,
@@ -825,7 +825,7 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
                         mGameController->GetMaxSeaDepth()));
 
                 oceanSizer->Add(
-                    mOceanDepthSlider.get(),
+                    mOceanDepthSlider,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -834,7 +834,7 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
 
             // Ocean Floor Bumpiness
             {
-                mOceanFloorBumpinessSlider = std::make_unique<SliderControl>(
+                mOceanFloorBumpinessSlider = new SliderControl(
                     oceanBox,
                     SliderWidth,
                     SliderHeight,
@@ -851,7 +851,7 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
                         mGameController->GetMaxOceanFloorBumpiness()));
 
                 oceanSizer->Add(
-                    mOceanFloorBumpinessSlider.get(),
+                    mOceanFloorBumpinessSlider,
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -860,7 +860,7 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
 
             // Ocean Floor Detail Amplification
             {
-                mOceanFloorDetailAmplificationSlider = std::make_unique<SliderControl>(
+                mOceanFloorDetailAmplificationSlider = new SliderControl(
                     oceanBox,
                     SliderWidth,
                     SliderHeight,
@@ -878,7 +878,7 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
                         mGameController->GetMaxOceanFloorDetailAmplification()));
 
                 oceanSizer->Add(
-                    mOceanFloorDetailAmplificationSlider.get(),
+                    mOceanFloorDetailAmplificationSlider,
                     wxGBPosition(0, 2),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -914,7 +914,7 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
 
             // Number of Stars
             {
-                mNumberOfStarsSlider = std::make_unique<SliderControl>(
+                mNumberOfStarsSlider = new SliderControl(
                     skyBox,
                     SliderWidth,
                     SliderHeight,
@@ -931,7 +931,7 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
                         static_cast<float>(mGameController->GetMaxNumberOfStars())));
 
                 skySizer->Add(
-                    mNumberOfStarsSlider.get(),
+                    mNumberOfStarsSlider,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -940,7 +940,7 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
 
             // Number of Clouds
             {
-                mNumberOfCloudsSlider = std::make_unique<SliderControl>(
+                mNumberOfCloudsSlider = new SliderControl(
                     skyBox,
                     SliderWidth,
                     SliderHeight,
@@ -957,7 +957,7 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
                         static_cast<float>(mGameController->GetMaxNumberOfClouds())));
 
                 skySizer->Add(
-                    mNumberOfCloudsSlider.get(),
+                    mNumberOfCloudsSlider,
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -1003,7 +1003,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
             // Wind Speed Base
             {
-                mWindSpeedBaseSlider = std::make_unique<SliderControl>(
+                mWindSpeedBaseSlider = new SliderControl(
                     windBox,
                     SliderWidth,
                     SliderHeight,
@@ -1020,7 +1020,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                         mGameController->GetMaxWindSpeedBase()));
 
                 windSizer->Add(
-                    mWindSpeedBaseSlider.get(),
+                    mWindSpeedBaseSlider,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -1043,7 +1043,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
                 // Wind Gust Amplitude
                 {
-                    mWindGustAmplitudeSlider = std::make_unique<SliderControl>(
+                    mWindGustAmplitudeSlider = new SliderControl(
                         windBox,
                         SliderWidth,
                         -1,
@@ -1059,7 +1059,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                             mGameController->GetMinWindSpeedMaxFactor(),
                             mGameController->GetMaxWindSpeedMaxFactor()));
 
-                    windModulationBoxSizer->Add(mWindGustAmplitudeSlider.get(), 1, wxEXPAND, 0);
+                    windModulationBoxSizer->Add(mWindGustAmplitudeSlider, 1, wxEXPAND, 0);
                 }
 
                 windSizer->Add(
@@ -1098,7 +1098,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
             // Basal Wave Height Adjustment
             {
-                mBasalWaveHeightAdjustmentSlider = std::make_unique<SliderControl>(
+                mBasalWaveHeightAdjustmentSlider = new SliderControl(
                     basalWavesBox,
                     SliderWidth,
                     SliderHeight,
@@ -1115,7 +1115,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                         mGameController->GetMaxBasalWaveHeightAdjustment()));
 
                 basalWavesSizer->Add(
-                    mBasalWaveHeightAdjustmentSlider.get(),
+                    mBasalWaveHeightAdjustmentSlider,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -1124,7 +1124,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
             // Basal Wave Length Adjustment
             {
-                mBasalWaveLengthAdjustmentSlider = std::make_unique<SliderControl>(
+                mBasalWaveLengthAdjustmentSlider = new SliderControl(
                     basalWavesBox,
                     SliderWidth,
                     SliderHeight,
@@ -1142,7 +1142,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                         mGameController->GetMaxBasalWaveLengthAdjustment()));
 
                 basalWavesSizer->Add(
-                    mBasalWaveLengthAdjustmentSlider.get(),
+                    mBasalWaveLengthAdjustmentSlider,
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -1151,7 +1151,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
             // Basal Wave Speed Adjustment
             {
-                mBasalWaveSpeedAdjustmentSlider = std::make_unique<SliderControl>(
+                mBasalWaveSpeedAdjustmentSlider = new SliderControl(
                     basalWavesBox,
                     SliderWidth,
                     SliderHeight,
@@ -1168,7 +1168,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                         mGameController->GetMaxBasalWaveSpeedAdjustment()));
 
                 basalWavesSizer->Add(
-                    mBasalWaveSpeedAdjustmentSlider.get(),
+                    mBasalWaveSpeedAdjustmentSlider,
                     wxGBPosition(0, 2),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -1203,7 +1203,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
             // Tsunami Rate
             {
-                mTsunamiRateSlider = std::make_unique<SliderControl>(
+                mTsunamiRateSlider = new SliderControl(
                     abnormalWavesBox,
                     SliderWidth,
                     SliderHeight,
@@ -1220,7 +1220,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                         mGameController->GetMaxTsunamiRate()));
 
                 abnormalWavesSizer->Add(
-                    mTsunamiRateSlider.get(),
+                    mTsunamiRateSlider,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -1229,7 +1229,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
             // Rogue Wave Rate
             {
-                mRogueWaveRateSlider = std::make_unique<SliderControl>(
+                mRogueWaveRateSlider = new SliderControl(
                     abnormalWavesBox,
                     SliderWidth,
                     SliderHeight,
@@ -1246,7 +1246,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                         mGameController->GetMaxRogueWaveRate()));
 
                 abnormalWavesSizer->Add(
-                    mRogueWaveRateSlider.get(),
+                    mRogueWaveRateSlider,
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -1292,7 +1292,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 
             // Destroy Radius
             {
-                mDestroyRadiusSlider = std::make_unique<SliderControl>(
+                mDestroyRadiusSlider = new SliderControl(
                     toolsBox,
                     SliderWidth,
                     SliderHeight,
@@ -1309,7 +1309,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                         mGameController->GetMaxDestroyRadius()));
 
                 toolsSizer->Add(
-                    mDestroyRadiusSlider.get(),
+                    mDestroyRadiusSlider,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -1318,7 +1318,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 
             // Bomb Blast Radius
             {
-                mBombBlastRadiusSlider = std::make_unique<SliderControl>(
+                mBombBlastRadiusSlider = new SliderControl(
                     toolsBox,
                     SliderWidth,
                     SliderHeight,
@@ -1335,7 +1335,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                         mGameController->GetMaxBombBlastRadius()));
 
                 toolsSizer->Add(
-                    mBombBlastRadiusSlider.get(),
+                    mBombBlastRadiusSlider,
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -1344,7 +1344,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 
             // Anti-matter Bomb Implosion Strength
             {
-                mAntiMatterBombImplosionStrengthSlider = std::make_unique<SliderControl>(
+                mAntiMatterBombImplosionStrengthSlider = new SliderControl(
                     toolsBox,
                     SliderWidth,
                     SliderHeight,
@@ -1361,7 +1361,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                         mGameController->GetMaxAntiMatterBombImplosionStrength()));
 
                 toolsSizer->Add(
-                    mAntiMatterBombImplosionStrengthSlider.get(),
+                    mAntiMatterBombImplosionStrengthSlider,
                     wxGBPosition(0, 2),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -1370,7 +1370,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 
             // Flood Radius
             {
-                mFloodRadiusSlider = std::make_unique<SliderControl>(
+                mFloodRadiusSlider = new SliderControl(
                     toolsBox,
                     SliderWidth,
                     SliderHeight,
@@ -1387,7 +1387,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                         mGameController->GetMaxFloodRadius()));
 
                 toolsSizer->Add(
-                    mFloodRadiusSlider.get(),
+                    mFloodRadiusSlider,
                     wxGBPosition(0, 3),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -1396,7 +1396,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 
             // Flood Quantity
             {
-                mFloodQuantitySlider = std::make_unique<SliderControl>(
+                mFloodQuantitySlider = new SliderControl(
                     toolsBox,
                     SliderWidth,
                     SliderHeight,
@@ -1413,7 +1413,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                         mGameController->GetMaxFloodQuantity()));
 
                 toolsSizer->Add(
-                    mFloodQuantitySlider.get(),
+                    mFloodQuantitySlider,
                     wxGBPosition(0, 4),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -1422,7 +1422,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 
             // Repair Strength Adjustment
             {
-                mRepairStrengthAdjustmentSlider = std::make_unique<SliderControl>(
+                mRepairStrengthAdjustmentSlider = new SliderControl(
                     toolsBox,
                     SliderWidth,
                     SliderHeight,
@@ -1439,7 +1439,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                         mGameController->GetMaxRepairStrengthAdjustment()));
 
                 toolsSizer->Add(
-                    mRepairStrengthAdjustmentSlider.get(),
+                    mRepairStrengthAdjustmentSlider,
                     wxGBPosition(0, 5),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -1501,7 +1501,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 
                 // Air Bubbles Density
                 {
-                    mAirBubbleDensitySlider = std::make_unique<SliderControl>(
+                    mAirBubbleDensitySlider = new SliderControl(
                         sideEffectsBox,
                         SliderWidth,
                         -1,
@@ -1517,7 +1517,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                             mGameController->GetMinCumulatedIntakenWaterThresholdForAirBubbles(),
                             mGameController->GetMaxCumulatedIntakenWaterThresholdForAirBubbles()));
 
-                    airBubblesBoxSizer->Add(mAirBubbleDensitySlider.get(), 1, wxEXPAND, 0);
+                    airBubblesBoxSizer->Add(mAirBubbleDensitySlider, 1, wxEXPAND, 0);
                 }
 
                 sideEffectsSizer->Add(
@@ -1688,7 +1688,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
             // Ocean Transparency
             {
-                mOceanTransparencySlider = std::make_unique<SliderControl>(
+                mOceanTransparencySlider = new SliderControl(
                     oceanBox,
                     SliderWidth,
                     SliderHeight,
@@ -1705,7 +1705,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                         1.0f));
 
                 oceanSizer->Add(
-                    mOceanTransparencySlider.get(),
+                    mOceanTransparencySlider,
                     wxGBPosition(0, 1),
                     wxGBSpan(2, 1),
                     wxALL,
@@ -1714,7 +1714,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
             // Ocean Darkening Rate
             {
-                mOceanDarkeningRateSlider = std::make_unique<SliderControl>(
+                mOceanDarkeningRateSlider = new SliderControl(
                     oceanBox,
                     SliderWidth,
                     SliderHeight,
@@ -1731,7 +1731,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                         1.0f));
 
                 oceanSizer->Add(
-                    mOceanDarkeningRateSlider.get(),
+                    mOceanDarkeningRateSlider,
                     wxGBPosition(0,2),
                     wxGBSpan(2, 1),
                     wxALL,
@@ -1949,7 +1949,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
             // Water contrast
             {
-                mWaterContrastSlider = std::make_unique<SliderControl>(
+                mWaterContrastSlider = new SliderControl(
                     waterBox,
                     SliderWidth,
                     SliderHeight,
@@ -1966,7 +1966,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                         1.0f));
 
                 waterSizer->Add(
-                    mWaterContrastSlider.get(),
+                    mWaterContrastSlider,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
                     wxALL,
@@ -1976,7 +1976,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
             {
                 // Water Level of Detail
 
-                mWaterLevelOfDetailSlider = std::make_unique<SliderControl>(
+                mWaterLevelOfDetailSlider = new SliderControl(
                     waterBox,
                     SliderWidth,
                     SliderHeight,
@@ -1993,7 +1993,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                         mGameController->GetMaxWaterLevelOfDetail()));
 
                 waterSizer->Add(
-                    mWaterLevelOfDetailSlider.get(),
+                    mWaterLevelOfDetailSlider,
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
                     wxALL,
@@ -2025,7 +2025,7 @@ void SettingsDialog::PopulateSoundPanel(wxPanel * panel)
 
     // Effects volume
 
-    mEffectsVolumeSlider = std::make_unique<SliderControl>(
+    mEffectsVolumeSlider = new SliderControl(
         panel,
         SliderWidth,
         SliderHeight,
@@ -2041,12 +2041,12 @@ void SettingsDialog::PopulateSoundPanel(wxPanel * panel)
             0.0f,
             100.0f));
 
-    controlsSizer->Add(mEffectsVolumeSlider.get(), 1, wxALL, SliderBorder);
+    controlsSizer->Add(mEffectsVolumeSlider, 1, wxALL, SliderBorder);
 
 
     // Tools volume
 
-    mToolsVolumeSlider = std::make_unique<SliderControl>(
+    mToolsVolumeSlider = new SliderControl(
         panel,
         SliderWidth,
         SliderHeight,
@@ -2062,12 +2062,12 @@ void SettingsDialog::PopulateSoundPanel(wxPanel * panel)
             0.0f,
             100.0f));
 
-    controlsSizer->Add(mToolsVolumeSlider.get(), 1, wxALL, SliderBorder);
+    controlsSizer->Add(mToolsVolumeSlider, 1, wxALL, SliderBorder);
 
 
     // Music volume
 
-    mMusicVolumeSlider = std::make_unique<SliderControl>(
+    mMusicVolumeSlider = new SliderControl(
         panel,
         SliderWidth,
         SliderHeight,
@@ -2083,7 +2083,7 @@ void SettingsDialog::PopulateSoundPanel(wxPanel * panel)
             0.0f,
             100.0f));
 
-    controlsSizer->Add(mMusicVolumeSlider.get(), 1, wxALL, SliderBorder);
+    controlsSizer->Add(mMusicVolumeSlider, 1, wxALL, SliderBorder);
 
 
     // Check boxes
@@ -2124,7 +2124,7 @@ void SettingsDialog::PopulateAdvancedPanel(wxPanel * panel)
 
     // Spring Stiffness
 
-    mSpringStiffnessSlider = std::make_unique<SliderControl>(
+    mSpringStiffnessSlider = new SliderControl(
         panel,
         SliderWidth,
         SliderHeight,
@@ -2142,11 +2142,11 @@ void SettingsDialog::PopulateAdvancedPanel(wxPanel * panel)
             mGameController->GetMaxSpringStiffnessAdjustment()),
         mWarningIcon.get());
 
-    controlsSizer->Add(mSpringStiffnessSlider.get(), 1, wxALL, SliderBorder);
+    controlsSizer->Add(mSpringStiffnessSlider, 1, wxALL, SliderBorder);
 
     // Spring Damping
 
-    mSpringDampingSlider = std::make_unique<SliderControl>(
+    mSpringDampingSlider = new SliderControl(
         panel,
         SliderWidth,
         SliderHeight,
@@ -2164,7 +2164,7 @@ void SettingsDialog::PopulateAdvancedPanel(wxPanel * panel)
             mGameController->GetMaxSpringDampingAdjustment()),
             mWarningIcon.get());
 
-    controlsSizer->Add(mSpringDampingSlider.get(), 1, wxALL, SliderBorder);
+    controlsSizer->Add(mSpringDampingSlider, 1, wxALL, SliderBorder);
 
     // Check boxes
 
