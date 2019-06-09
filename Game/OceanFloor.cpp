@@ -65,9 +65,13 @@ OceanFloor::OceanFloor(ResourceLoader & resourceLoader)
             * Dx
             * worldXToImageX;
 
-        // Calculate the left and right x's, repeating bump map as necessary
-        int x1 = static_cast<int>(floor(imageX)) % bumpMapImage.Size.Width;
-        int x2 = static_cast<int>(ceil(imageX)) % bumpMapImage.Size.Width;
+        // Integral and fractional parts
+        int imageXI = static_cast<int>(floor(imageX));
+        float imageXIF = imageX - static_cast<float>(imageXI);
+
+        // Calculate the left and right x's, wrapping around bump map as necessary
+        int x1 = imageXI % bumpMapImage.Size.Width;
+        int x2 = (imageXI + 1) % bumpMapImage.Size.Width;
 
         // Find topmost Y's
         float sampleValue1 = static_cast<float>(bumpMapImage.Size.Height - GetTopmostY(bumpMapImage, x1)) - halfHeight;
@@ -76,7 +80,7 @@ OceanFloor::OceanFloor(ResourceLoader & resourceLoader)
         // Store sample
         mBumpMapSamples[s] =
             sampleValue1
-            + (sampleValue2 - sampleValue1) / Dx;
+            + (sampleValue2 - sampleValue1) / Dx * imageXIF;
     }
 
     // Populate extra sample

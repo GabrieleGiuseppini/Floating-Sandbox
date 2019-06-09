@@ -289,6 +289,7 @@ Render:
 				+ Rename TextureRenderManager to UploadedTextureManager
 			+ Ocean
 			+ Changes.txt
+		+ Fix bug at bump-map interpolation at ocean floor: need to calc fractional part
 
 		= Wine:
 			+ Test checking for the APPLE extension for VAO's: https://developer.apple.com/opengl/OpenGL-Capabilities-Tables.pdf
@@ -337,11 +338,11 @@ Render:
 				+ Fluids box
 					+ Move WaterLevelOfDetail to Rendering, next to WaterContrast
 				+ Lights box
-			= Do spacers at Ocean+Sky and Wind+Waves as Mechanics and Rendering
-			= Interactions: add boxes (and make like Mechanics):
+			+ Do spacers at Ocean+Sky and Wind+Waves as Mechanics and Rendering
+			+ Interactions: add boxes (and make like Mechanics):
 				+ Interactions
 				+ Side Effects
-				- Make tools two rows and move side-effect to left
+				+ Make tools two rows and move side-effect to left
 
 		= Shaders:
 			+ Land texture:
@@ -363,15 +364,12 @@ Render:
 		= Make slider for air bubble density
 			+ SettingDialog: enable/disable based off checkbox
 				+ Move checkbox
-			= Max=128
-				- Ensure cur value fits slider
+			+ Max=128
+				+ Ensure cur value fits slider
 			- Fix issue with randomization of density
 				- Try with redoing randomization of all leaking points at each param change
 			 
 		- Send to testers
-
-		- Increase resolution of default ocean floor 
-			- Or interpolate it on load
 
 		- Heat and combustion (*)
 

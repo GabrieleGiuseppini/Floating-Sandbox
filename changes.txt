@@ -6,6 +6,7 @@
 - Improved behavior of tools when the game is paused
 - Bug fixes:
 	- Wavemaker sound does not pause when game is paused
+- ...and a few more small improvements here and there
 
 1.11.1
 - Fixed crash that occurred at times when particles would near the world's end, for example while repairing a ship

@@ -1368,6 +1368,32 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     CellBorder);
             }
 
+            // Repair Strength Adjustment
+            {
+                mRepairStrengthAdjustmentSlider = new SliderControl(
+                    toolsBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Repair Strength Adjust",
+                    "Adjusts the strength with which the repair tool attracts the particles needed to repair damage.",
+                    mGameController->GetRepairStrengthAdjustment(),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameController->GetMinRepairStrengthAdjustment(),
+                        mGameController->GetMaxRepairStrengthAdjustment()));
+
+                toolsSizer->Add(
+                    mRepairStrengthAdjustmentSlider,
+                    wxGBPosition(0, 3),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
             // Flood Radius
             {
                 mFloodRadiusSlider = new SliderControl(
@@ -1388,7 +1414,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 
                 toolsSizer->Add(
                     mFloodRadiusSlider,
-                    wxGBPosition(0, 3),
+                    wxGBPosition(1, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
@@ -1414,49 +1440,31 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 
                 toolsSizer->Add(
                     mFloodQuantitySlider,
-                    wxGBPosition(0, 4),
+                    wxGBPosition(1, 1),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
             }
 
-            // Repair Strength Adjustment
+            // Checkboxes
             {
-                mRepairStrengthAdjustmentSlider = new SliderControl(
-                    toolsBox,
-                    SliderWidth,
-                    SliderHeight,
-                    "Repair Strength Adjust",
-                    "Adjusts the strength with which the repair tool attracts the particles needed to repair damage.",
-                    mGameController->GetRepairStrengthAdjustment(),
-                    [this](float /*value*/)
-                    {
-                        // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
-                    },
-                    std::make_unique<LinearSliderCore>(
-                        mGameController->GetMinRepairStrengthAdjustment(),
-                        mGameController->GetMaxRepairStrengthAdjustment()));
+                wxBoxSizer* checkboxesSizer = new wxBoxSizer(wxVERTICAL);
+
+                {
+                    mUltraViolentCheckBox = new wxCheckBox(toolsBox, ID_ULTRA_VIOLENT_CHECKBOX, _("Ultra-Violent Mode"));
+                    mUltraViolentCheckBox->SetToolTip("Enables or disables amplification of tool forces and inflicted damages.");
+                    Connect(ID_ULTRA_VIOLENT_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnUltraViolentCheckBoxClick);
+
+                    checkboxesSizer->Add(mUltraViolentCheckBox, 0, wxALIGN_LEFT, 0);
+
+                    checkboxesSizer->AddStretchSpacer(1);
+                }
 
                 toolsSizer->Add(
-                    mRepairStrengthAdjustmentSlider,
-                    wxGBPosition(0, 5),
+                    checkboxesSizer,
+                    wxGBPosition(1, 2),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
-                    CellBorder);
-            }
-
-            // Ultra-violent Mode
-            {
-                mUltraViolentCheckBox = new wxCheckBox(toolsBox, ID_ULTRA_VIOLENT_CHECKBOX, _("Ultra-Violent Mode"));
-                mUltraViolentCheckBox->SetToolTip("Enables or disables amplification of tool forces and inflicted damages.");
-                Connect(ID_ULTRA_VIOLENT_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnUltraViolentCheckBoxClick);
-
-                toolsSizer->Add(
-                    mUltraViolentCheckBox,
-                    wxGBPosition(0, 6),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxALL | wxALIGN_TOP,
                     CellBorder);
             }
 
@@ -1468,7 +1476,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
         gridSizer->Add(
             toolsBox,
             wxGBPosition(0, 0),
-            wxGBSpan(1, 2),
+            wxGBSpan(2, 1),
             wxEXPAND | wxALL,
             CellBorder);
     }
@@ -1565,7 +1573,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 
         gridSizer->Add(
             sideEffectsBox,
-            wxGBPosition(1, 0),
+            wxGBPosition(0, 1),
             wxGBSpan(1, 1),
             wxEXPAND | wxALL,
             CellBorder);
