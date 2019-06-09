@@ -324,9 +324,23 @@ Render:
 			+ Deal with same conn comp ID
 			+ Undo decay (halve it)
 			+ See missing springs
+			= Play with tolerance
+			- See if conn comp logic:
+				- Is broken (think)
+				- Is useful			
 			= Get AwesomeYorkie's feedback
 
-		- Settings dialog: merge Mechanics + World into Mechanics and Light
+		= Settings dialog: 
+			+ Merge Mechanics and Fluids and World into "Generic"
+				+ Mechanics box
+					+ Add decay
+				+ Fluids box
+					+ Move WaterLevelOfDetail to Rendering, next to WaterContrast
+				+ Lights box
+			= Do spacers at Ocean+Sky and Wind+Waves as Mechanics and Rendering
+			- Interactions: add boxes (and make like Mechanics):
+				- Interactions
+				- Ephemeral particles
 
 		= Shaders:
 			+ Land texture:
@@ -348,8 +362,10 @@ Render:
 		= Make slider for air bubble density
 			+ SettingDialog: enable/disable based off checkbox
 				+ Move checkbox
-			- Max=128
+			= Max=128
 				- Ensure cur value fits slider
+			- Fix issue with randomization of density
+				- Try with redoing randomization of all leaking points at each param change
 			 
 		- Send to testers
 
