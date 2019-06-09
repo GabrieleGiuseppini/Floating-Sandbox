@@ -338,9 +338,11 @@ Render:
 					+ Move WaterLevelOfDetail to Rendering, next to WaterContrast
 				+ Lights box
 			= Do spacers at Ocean+Sky and Wind+Waves as Mechanics and Rendering
-			- Interactions: add boxes (and make like Mechanics):
-				- Interactions
-				- Ephemeral particles
+			= Interactions: add boxes (and make like Mechanics):
+				+ Interactions
+				+ Side Effects
+				- Make tools two rows and move side-effect to left
+			- Remove uq ptr
 
 		= Shaders:
 			+ Land texture:

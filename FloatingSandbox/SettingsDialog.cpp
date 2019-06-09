@@ -995,80 +995,92 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
     {
         wxStaticBox * windBox = new wxStaticBox(panel, wxID_ANY, _("Wind"));
 
-        wxBoxSizer * windBoxSizerV1 = new wxBoxSizer(wxVERTICAL);
-        windBoxSizerV1->AddSpacer(StaticBoxTopMargin);
+        wxBoxSizer * windBoxSizer = new wxBoxSizer(wxVERTICAL);
+        windBoxSizer->AddSpacer(StaticBoxTopMargin);
 
-        wxBoxSizer * windBoxSizerH2 = new wxBoxSizer(wxHORIZONTAL);
-
-        // Wind Speed Base
         {
-            mWindSpeedBaseSlider = std::make_unique<SliderControl>(
-                windBox,
-                SliderWidth,
-                SliderHeight,
-                "Wind Speed Base",
-                "The base speed of wind (Km/h), before modulation takes place. Wind speed in turn determines ocean wave characteristics such as their height, speed, and width.",
-                mGameController->GetWindSpeedBase(),
-                [this](float /*value*/)
-                {
-                    // Remember we're dirty now
-                    this->mApplyButton->Enable(true);
-                },
-                std::make_unique<LinearSliderCore>(
-                    mGameController->GetMinWindSpeedBase(),
-                    mGameController->GetMaxWindSpeedBase()));
+            wxGridBagSizer * windSizer = new wxGridBagSizer(0, 0);
 
-            windBoxSizerH2->Add(mWindSpeedBaseSlider.get(), 0, wxEXPAND | wxLEFT | wxRIGHT, SliderBorder);
-        }
-
-        // Wind modulation
-        {
-            wxBoxSizer * windModulationBoxSizer = new wxBoxSizer(wxVERTICAL);
-
-            // Modulate Wind
+            // Wind Speed Base
             {
-                mModulateWindCheckBox = new wxCheckBox(windBox, ID_MODULATE_WIND_CHECKBOX, _("Modulate Wind"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Modulate Wind Checkbox"));
-                mModulateWindCheckBox->SetToolTip("Enables or disables simulation of wind variations, alternating between dead calm and high-speed gusts.");
-
-                Connect(ID_MODULATE_WIND_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnModulateWindCheckBoxClick);
-
-                windModulationBoxSizer->Add(mModulateWindCheckBox, 0, 0, 0);
-            }
-
-            // Wind Gust Amplitude
-            {
-                mWindGustAmplitudeSlider = std::make_unique<SliderControl>(
+                mWindSpeedBaseSlider = std::make_unique<SliderControl>(
                     windBox,
                     SliderWidth,
-                    -1,
-                    "Wind Gust Amplitude",
-                    "The amplitude of wind gusts, as a multiplier of the base wind speed.",
-                    mGameController->GetWindSpeedMaxFactor(),
+                    SliderHeight,
+                    "Wind Speed Base",
+                    "The base speed of wind (Km/h), before modulation takes place. Wind speed in turn determines ocean wave characteristics such as their height, speed, and width.",
+                    mGameController->GetWindSpeedBase(),
                     [this](float /*value*/)
                     {
                         // Remember we're dirty now
                         this->mApplyButton->Enable(true);
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameController->GetMinWindSpeedMaxFactor(),
-                        mGameController->GetMaxWindSpeedMaxFactor()));
+                        mGameController->GetMinWindSpeedBase(),
+                        mGameController->GetMaxWindSpeedBase()));
 
-                windModulationBoxSizer->Add(mWindGustAmplitudeSlider.get(), 1, wxEXPAND, 0);
+                windSizer->Add(
+                    mWindSpeedBaseSlider.get(),
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
             }
 
-            windBoxSizerH2->Add(windModulationBoxSizer, 0, wxEXPAND | wxLEFT | wxRIGHT, SliderBorder);
+            // Wind modulation
+            {
+                wxBoxSizer * windModulationBoxSizer = new wxBoxSizer(wxVERTICAL);
+
+                // Modulate Wind
+                {
+                    mModulateWindCheckBox = new wxCheckBox(windBox, ID_MODULATE_WIND_CHECKBOX, _("Modulate Wind"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Modulate Wind Checkbox"));
+                    mModulateWindCheckBox->SetToolTip("Enables or disables simulation of wind variations, alternating between dead calm and high-speed gusts.");
+
+                    Connect(ID_MODULATE_WIND_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnModulateWindCheckBoxClick);
+
+                    windModulationBoxSizer->Add(mModulateWindCheckBox, 0, wxALIGN_LEFT, 0);
+                }
+
+                // Wind Gust Amplitude
+                {
+                    mWindGustAmplitudeSlider = std::make_unique<SliderControl>(
+                        windBox,
+                        SliderWidth,
+                        -1,
+                        "Wind Gust Amplitude",
+                        "The amplitude of wind gusts, as a multiplier of the base wind speed.",
+                        mGameController->GetWindSpeedMaxFactor(),
+                        [this](float /*value*/)
+                        {
+                            // Remember we're dirty now
+                            this->mApplyButton->Enable(true);
+                        },
+                        std::make_unique<LinearSliderCore>(
+                            mGameController->GetMinWindSpeedMaxFactor(),
+                            mGameController->GetMaxWindSpeedMaxFactor()));
+
+                    windModulationBoxSizer->Add(mWindGustAmplitudeSlider.get(), 1, wxEXPAND, 0);
+                }
+
+                windSizer->Add(
+                    windModulationBoxSizer,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            windBoxSizer->Add(windSizer, 0, wxALL, StaticBoxInsetMargin);
         }
 
-        windBoxSizerV1->Add(windBoxSizerH2, 1, wxEXPAND | wxALL, StaticBoxInsetMargin);
-
-        windBox->SetSizerAndFit(windBoxSizerV1);
+        windBox->SetSizerAndFit(windBoxSizer);
 
         gridSizer->Add(
             windBox,
             wxGBPosition(0, 0),
             wxGBSpan(1, 1),
-            wxALL,
-            SliderBorder);
+            wxEXPAND | wxALL,
+            CellBorder);
     }
 
     //
@@ -1078,85 +1090,102 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
     {
         wxStaticBox * basalWavesBox = new wxStaticBox(panel, wxID_ANY, _("Basal Waves"));
 
-        wxBoxSizer * basalWavesBoxSizerV1 = new wxBoxSizer(wxVERTICAL);
-        basalWavesBoxSizerV1->AddSpacer(StaticBoxTopMargin);
+        wxBoxSizer * basalWavesBoxSizer = new wxBoxSizer(wxVERTICAL);
+        basalWavesBoxSizer->AddSpacer(StaticBoxTopMargin);
 
-        wxBoxSizer * basalWavesSizerH2 = new wxBoxSizer(wxHORIZONTAL);
-
-        // Basal Wave Height Adjustment
         {
-            mBasalWaveHeightAdjustmentSlider = std::make_unique<SliderControl>(
-                basalWavesBox,
-                SliderWidth,
-                SliderHeight,
-                "Wave Height Adjust",
-                "Adjusts the height of ocean waves wrt their optimal value, which is determined by wind speed.",
-                static_cast<float>(mGameController->GetBasalWaveHeightAdjustment()),
-                [this](float /*value*/)
-                {
-                    // Remember we're dirty now
-                    this->mApplyButton->Enable(true);
-                },
-                std::make_unique<LinearSliderCore>(
-                    mGameController->GetMinBasalWaveHeightAdjustment(),
-                    mGameController->GetMaxBasalWaveHeightAdjustment()));
+            wxGridBagSizer * basalWavesSizer = new wxGridBagSizer(0, 0);
 
-            basalWavesSizerH2->Add(mBasalWaveHeightAdjustmentSlider.get(), 0, wxEXPAND | wxLEFT | wxRIGHT, SliderBorder);
+            // Basal Wave Height Adjustment
+            {
+                mBasalWaveHeightAdjustmentSlider = std::make_unique<SliderControl>(
+                    basalWavesBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Wave Height Adjust",
+                    "Adjusts the height of ocean waves wrt their optimal value, which is determined by wind speed.",
+                    static_cast<float>(mGameController->GetBasalWaveHeightAdjustment()),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameController->GetMinBasalWaveHeightAdjustment(),
+                        mGameController->GetMaxBasalWaveHeightAdjustment()));
+
+                basalWavesSizer->Add(
+                    mBasalWaveHeightAdjustmentSlider.get(),
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            // Basal Wave Length Adjustment
+            {
+                mBasalWaveLengthAdjustmentSlider = std::make_unique<SliderControl>(
+                    basalWavesBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Wave Width Adjust",
+                    "Adjusts the width of ocean waves wrt their optimal value, which is determined by wind speed.",
+                    static_cast<float>(mGameController->GetBasalWaveLengthAdjustment()),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameController->GetMinBasalWaveLengthAdjustment(),
+                        1.0f,
+                        mGameController->GetMaxBasalWaveLengthAdjustment()));
+
+                basalWavesSizer->Add(
+                    mBasalWaveLengthAdjustmentSlider.get(),
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            // Basal Wave Speed Adjustment
+            {
+                mBasalWaveSpeedAdjustmentSlider = std::make_unique<SliderControl>(
+                    basalWavesBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Wave Speed Adjust",
+                    "Adjusts the speed of ocean waves wrt their optimal value, which is determined by wind speed.",
+                    static_cast<float>(mGameController->GetBasalWaveSpeedAdjustment()),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameController->GetMinBasalWaveSpeedAdjustment(),
+                        mGameController->GetMaxBasalWaveSpeedAdjustment()));
+
+                basalWavesSizer->Add(
+                    mBasalWaveSpeedAdjustmentSlider.get(),
+                    wxGBPosition(0, 2),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            basalWavesBoxSizer->Add(basalWavesSizer, 0, wxALL, StaticBoxInsetMargin);
         }
 
-        // Basal Wave Length Adjustment
-        {
-            mBasalWaveLengthAdjustmentSlider = std::make_unique<SliderControl>(
-                basalWavesBox,
-                SliderWidth,
-                SliderHeight,
-                "Wave Width Adjust",
-                "Adjusts the width of ocean waves wrt their optimal value, which is determined by wind speed.",
-                static_cast<float>(mGameController->GetBasalWaveLengthAdjustment()),
-                [this](float /*value*/)
-                {
-                    // Remember we're dirty now
-                    this->mApplyButton->Enable(true);
-                },
-                std::make_unique<ExponentialSliderCore>(
-                    mGameController->GetMinBasalWaveLengthAdjustment(),
-                    1.0f,
-                    mGameController->GetMaxBasalWaveLengthAdjustment()));
-
-            basalWavesSizerH2->Add(mBasalWaveLengthAdjustmentSlider.get(), 0, wxEXPAND | wxLEFT | wxRIGHT, SliderBorder);
-        }
-
-        // Basal Wave Speed Adjustment
-        {
-            mBasalWaveSpeedAdjustmentSlider = std::make_unique<SliderControl>(
-                basalWavesBox,
-                SliderWidth,
-                SliderHeight,
-                "Wave Speed Adjust",
-                "Adjusts the speed of ocean waves wrt their optimal value, which is determined by wind speed.",
-                static_cast<float>(mGameController->GetBasalWaveSpeedAdjustment()),
-                [this](float /*value*/)
-                {
-                    // Remember we're dirty now
-                    this->mApplyButton->Enable(true);
-                },
-                std::make_unique<LinearSliderCore>(
-                    mGameController->GetMinBasalWaveSpeedAdjustment(),
-                    mGameController->GetMaxBasalWaveSpeedAdjustment()));
-
-            basalWavesSizerH2->Add(mBasalWaveSpeedAdjustmentSlider.get(), 0, wxEXPAND | wxLEFT | wxRIGHT, SliderBorder);
-        }
-
-        basalWavesBoxSizerV1->Add(basalWavesSizerH2, 1, wxEXPAND | wxALL, StaticBoxInsetMargin);
-
-        basalWavesBox->SetSizerAndFit(basalWavesBoxSizerV1);
+        basalWavesBox->SetSizerAndFit(basalWavesBoxSizer);
 
         gridSizer->Add(
             basalWavesBox,
             wxGBPosition(0, 1),
             wxGBSpan(1, 1),
-            wxALL,
-            SliderBorder);
+            wxEXPAND | wxALL,
+            CellBorder);
     }
 
     //
@@ -1166,63 +1195,75 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
     {
         wxStaticBox * abnormalWavesBox = new wxStaticBox(panel, wxID_ANY, _("Wave Phenomena"));
 
-        wxBoxSizer * abnormalWavesBoxSizerV1 = new wxBoxSizer(wxVERTICAL);
-        abnormalWavesBoxSizerV1->AddSpacer(StaticBoxTopMargin);
+        wxBoxSizer * abnormalWavesBoxSizer = new wxBoxSizer(wxVERTICAL);
+        abnormalWavesBoxSizer->AddSpacer(StaticBoxTopMargin);
 
-        wxBoxSizer * abnormalWavesSizerH2 = new wxBoxSizer(wxHORIZONTAL);
-
-        // Tsunami Rate
         {
-            mTsunamiRateSlider = std::make_unique<SliderControl>(
-                abnormalWavesBox,
-                SliderWidth,
-                SliderHeight,
-                "Tsunami Rate",
-                "The expected time between two automatically-generated tsunami waves (minutes). Set to zero to disable automatic generation of tsunami waves altogether.",
-                static_cast<float>(mGameController->GetTsunamiRate()),
-                [this](float /*value*/)
-                {
-                    // Remember we're dirty now
-                    this->mApplyButton->Enable(true);
-                },
-                std::make_unique<LinearSliderCore>(
-                    mGameController->GetMinTsunamiRate(),
-                    mGameController->GetMaxTsunamiRate()));
+            wxGridBagSizer * abnormalWavesSizer = new wxGridBagSizer(0, 0);
 
-            abnormalWavesSizerH2->Add(mTsunamiRateSlider.get(), 0, wxEXPAND | wxLEFT | wxRIGHT, SliderBorder);
+            // Tsunami Rate
+            {
+                mTsunamiRateSlider = std::make_unique<SliderControl>(
+                    abnormalWavesBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Tsunami Rate",
+                    "The expected time between two automatically-generated tsunami waves (minutes). Set to zero to disable automatic generation of tsunami waves altogether.",
+                    static_cast<float>(mGameController->GetTsunamiRate()),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameController->GetMinTsunamiRate(),
+                        mGameController->GetMaxTsunamiRate()));
+
+                abnormalWavesSizer->Add(
+                    mTsunamiRateSlider.get(),
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            // Rogue Wave Rate
+            {
+                mRogueWaveRateSlider = std::make_unique<SliderControl>(
+                    abnormalWavesBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Rogue Wave Rate",
+                    "The expected time between two automatically-generated rogue waves (minutes). Set to zero to disable automatic generation of rogue waves altogether.",
+                    static_cast<float>(mGameController->GetRogueWaveRate()),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameController->GetMinRogueWaveRate(),
+                        mGameController->GetMaxRogueWaveRate()));
+
+                abnormalWavesSizer->Add(
+                    mRogueWaveRateSlider.get(),
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            abnormalWavesBoxSizer->Add(abnormalWavesSizer, 0, wxALL, StaticBoxInsetMargin);
         }
 
-        // Rogue Wave Rate
-        {
-            mRogueWaveRateSlider = std::make_unique<SliderControl>(
-                abnormalWavesBox,
-                SliderWidth,
-                SliderHeight,
-                "Rogue Wave Rate",
-                "The expected time between two automatically-generated rogue waves (minutes). Set to zero to disable automatic generation of rogue waves altogether.",
-                static_cast<float>(mGameController->GetRogueWaveRate()),
-                [this](float /*value*/)
-                {
-                    // Remember we're dirty now
-                    this->mApplyButton->Enable(true);
-                },
-                std::make_unique<LinearSliderCore>(
-                    mGameController->GetMinRogueWaveRate(),
-                    mGameController->GetMaxRogueWaveRate()));
-
-            abnormalWavesSizerH2->Add(mRogueWaveRateSlider.get(), 0, wxEXPAND | wxLEFT | wxRIGHT, SliderBorder);
-        }
-
-        abnormalWavesBoxSizerV1->Add(abnormalWavesSizerH2, 1, wxEXPAND | wxALL, StaticBoxInsetMargin);
-
-        abnormalWavesBox->SetSizerAndFit(abnormalWavesBoxSizerV1);
+        abnormalWavesBox->SetSizerAndFit(abnormalWavesBoxSizer);
 
         gridSizer->Add(
             abnormalWavesBox,
             wxGBPosition(1, 0),
             wxGBSpan(1, 1),
-            wxALL,
-            SliderBorder);
+            wxEXPAND | wxALL,
+            CellBorder);
     }
 
 
@@ -1236,236 +1277,300 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 {
     wxGridBagSizer* gridSizer = new wxGridBagSizer(0, 0);
 
-
     //
-    // Row 1
+    // Tools
     //
-
-    // Destroy Radius
-
-    mDestroyRadiusSlider = std::make_unique<SliderControl>(
-        panel,
-        SliderWidth,
-        SliderHeight,
-        "Destroy Radius",
-        "The starting radius of the damage caused by destructive tools (m).",
-        mGameController->GetDestroyRadius(),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            mGameController->GetMinDestroyRadius(),
-            mGameController->GetMaxDestroyRadius()));
-
-    gridSizer->Add(
-        mDestroyRadiusSlider.get(),
-        wxGBPosition(0, 0),
-        wxGBSpan(1, 1),
-        wxALL,
-        SliderBorder);
-
-
-    // Bomb Blast Radius
-
-    mBombBlastRadiusSlider = std::make_unique<SliderControl>(
-        panel,
-        SliderWidth,
-        SliderHeight,
-        "Bomb Blast Radius",
-        "The radius of bomb explosions (m).",
-        mGameController->GetBombBlastRadius(),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            mGameController->GetMinBombBlastRadius(),
-            mGameController->GetMaxBombBlastRadius()));
-
-    gridSizer->Add(
-        mBombBlastRadiusSlider.get(),
-        wxGBPosition(0, 1),
-        wxGBSpan(1, 1),
-        wxALL,
-        SliderBorder);
-
-
-    // Anti-matter Bomb Implosion Strength
-
-    mAntiMatterBombImplosionStrengthSlider = std::make_unique<SliderControl>(
-        panel,
-        SliderWidth,
-        SliderHeight,
-        "AM Bomb Implosion Strength",
-        "Adjusts the strength of the initial anti-matter bomb implosion.",
-        mGameController->GetAntiMatterBombImplosionStrength(),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            mGameController->GetMinAntiMatterBombImplosionStrength(),
-            mGameController->GetMaxAntiMatterBombImplosionStrength()));
-
-    gridSizer->Add(
-        mAntiMatterBombImplosionStrengthSlider.get(),
-        wxGBPosition(0, 2),
-        wxGBSpan(1, 1),
-        wxALL,
-        SliderBorder);
-
-    // Check boxes
-
-    wxStaticBoxSizer* checkboxesSizer = new wxStaticBoxSizer(wxVERTICAL, panel);
-
-    mUltraViolentCheckBox = new wxCheckBox(panel, ID_ULTRA_VIOLENT_CHECKBOX, _("Ultra-Violent Mode"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Ultra-Violent Mode Checkbox"));
-    mUltraViolentCheckBox->SetToolTip("Enables or disables amplification of tool forces and inflicted damages.");
-    Connect(ID_ULTRA_VIOLENT_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnUltraViolentCheckBoxClick);
-    checkboxesSizer->Add(mUltraViolentCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
-
-    mGenerateDebrisCheckBox = new wxCheckBox(panel, ID_GENERATE_DEBRIS_CHECKBOX, _("Generate Debris"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Generate Debris Checkbox"));
-    mGenerateDebrisCheckBox->SetToolTip("Enables or disables generation of debris when using destructive tools.");
-    Connect(ID_GENERATE_DEBRIS_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnGenerateDebrisCheckBoxClick);
-    checkboxesSizer->Add(mGenerateDebrisCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
-
-    mGenerateSparklesCheckBox = new wxCheckBox(panel, ID_GENERATE_SPARKLES_CHECKBOX, _("Generate Sparkles"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Generate Sparkles Checkbox"));
-    mGenerateSparklesCheckBox->SetToolTip("Enables or disables generation of sparkles when using the saw tool on metal.");
-    Connect(ID_GENERATE_SPARKLES_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnGenerateSparklesCheckBoxClick);
-    checkboxesSizer->Add(mGenerateSparklesCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
-
-    gridSizer->Add(
-        checkboxesSizer,
-        wxGBPosition(0, 3),
-        wxGBSpan(1, 1),
-        wxALL,
-        SliderBorder);
-
-    // Air Bubbles
 
     {
-        wxBoxSizer * airBubblesBoxSizer = new wxBoxSizer(wxVERTICAL);
+        wxStaticBox * toolsBox = new wxStaticBox(panel, wxID_ANY, _("Tools"));
 
-        // Generate Air Bubbles
+        wxBoxSizer * toolsBoxSizer = new wxBoxSizer(wxVERTICAL);
+        toolsBoxSizer->AddSpacer(StaticBoxTopMargin);
+
         {
-            mGenerateAirBubblesCheckBox = new wxCheckBox(panel, ID_GENERATE_AIR_BUBBLES_CHECKBOX, _("Generate Air Bubbles"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Generate Air Bubbles Checkbox"));
-            mGenerateAirBubblesCheckBox->SetToolTip("Enables or disables generation of air bubbles when water enters a physical body.");
-            Connect(ID_GENERATE_AIR_BUBBLES_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnGenerateAirBubblesCheckBoxClick);
+            wxGridBagSizer * toolsSizer = new wxGridBagSizer(0, 0);
 
-            airBubblesBoxSizer->Add(mGenerateAirBubblesCheckBox, 0, 0, 0);
+            // Destroy Radius
+            {
+                mDestroyRadiusSlider = std::make_unique<SliderControl>(
+                    toolsBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Destroy Radius",
+                    "The starting radius of the damage caused by destructive tools (m).",
+                    mGameController->GetDestroyRadius(),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameController->GetMinDestroyRadius(),
+                        mGameController->GetMaxDestroyRadius()));
+
+                toolsSizer->Add(
+                    mDestroyRadiusSlider.get(),
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            // Bomb Blast Radius
+            {
+                mBombBlastRadiusSlider = std::make_unique<SliderControl>(
+                    toolsBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Bomb Blast Radius",
+                    "The radius of bomb explosions (m).",
+                    mGameController->GetBombBlastRadius(),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameController->GetMinBombBlastRadius(),
+                        mGameController->GetMaxBombBlastRadius()));
+
+                toolsSizer->Add(
+                    mBombBlastRadiusSlider.get(),
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            // Anti-matter Bomb Implosion Strength
+            {
+                mAntiMatterBombImplosionStrengthSlider = std::make_unique<SliderControl>(
+                    toolsBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "AM Bomb Implosion Strength",
+                    "Adjusts the strength of the initial anti-matter bomb implosion.",
+                    mGameController->GetAntiMatterBombImplosionStrength(),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameController->GetMinAntiMatterBombImplosionStrength(),
+                        mGameController->GetMaxAntiMatterBombImplosionStrength()));
+
+                toolsSizer->Add(
+                    mAntiMatterBombImplosionStrengthSlider.get(),
+                    wxGBPosition(0, 2),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            // Flood Radius
+            {
+                mFloodRadiusSlider = std::make_unique<SliderControl>(
+                    toolsBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Flood Radius",
+                    "How wide an area is flooded by the flood tool (m).",
+                    mGameController->GetFloodRadius(),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameController->GetMinFloodRadius(),
+                        mGameController->GetMaxFloodRadius()));
+
+                toolsSizer->Add(
+                    mFloodRadiusSlider.get(),
+                    wxGBPosition(0, 3),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            // Flood Quantity
+            {
+                mFloodQuantitySlider = std::make_unique<SliderControl>(
+                    toolsBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Flood Quantity",
+                    "How much water is injected by the flood tool (m3).",
+                    mGameController->GetFloodQuantity(),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameController->GetMinFloodQuantity(),
+                        mGameController->GetMaxFloodQuantity()));
+
+                toolsSizer->Add(
+                    mFloodQuantitySlider.get(),
+                    wxGBPosition(0, 4),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            // Repair Strength Adjustment
+            {
+                mRepairStrengthAdjustmentSlider = std::make_unique<SliderControl>(
+                    toolsBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Repair Strength Adjust",
+                    "Adjusts the strength with which the repair tool attracts the particles needed to repair damage.",
+                    mGameController->GetRepairStrengthAdjustment(),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameController->GetMinRepairStrengthAdjustment(),
+                        mGameController->GetMaxRepairStrengthAdjustment()));
+
+                toolsSizer->Add(
+                    mRepairStrengthAdjustmentSlider.get(),
+                    wxGBPosition(0, 5),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            // Ultra-violent Mode
+            {
+                mUltraViolentCheckBox = new wxCheckBox(toolsBox, ID_ULTRA_VIOLENT_CHECKBOX, _("Ultra-Violent Mode"));
+                mUltraViolentCheckBox->SetToolTip("Enables or disables amplification of tool forces and inflicted damages.");
+                Connect(ID_ULTRA_VIOLENT_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnUltraViolentCheckBoxClick);
+
+                toolsSizer->Add(
+                    mUltraViolentCheckBox,
+                    wxGBPosition(0, 6),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL | wxALIGN_TOP,
+                    CellBorder);
+            }
+
+            toolsBoxSizer->Add(toolsSizer, 0, wxALL, StaticBoxInsetMargin);
         }
 
-        // Air Bubbles Density
-        {
-            mAirBubbleDensitySlider = std::make_unique<SliderControl>(
-                panel,
-                SliderWidth,
-                -1,
-                "Air Bubbles Density",
-                "The density of air bubbles generated when water enters a ship.",
-                mGameController->GetCumulatedIntakenWaterThresholdForAirBubbles(),
-                [this](float /*value*/)
-                {
-                    // Remember we're dirty now
-                    this->mApplyButton->Enable(true);
-                },
-                std::make_unique<LinearSliderCore>(
-                    mGameController->GetMinCumulatedIntakenWaterThresholdForAirBubbles(),
-                    mGameController->GetMaxCumulatedIntakenWaterThresholdForAirBubbles()));
-
-            airBubblesBoxSizer->Add(mAirBubbleDensitySlider.get(), 1, wxEXPAND, 0);
-        }
+        toolsBox->SetSizerAndFit(toolsBoxSizer);
 
         gridSizer->Add(
-            airBubblesBoxSizer,
-            wxGBPosition(0, 4),
-            wxGBSpan(1, 1),
-            wxALL | wxEXPAND,
-            SliderBorder);
+            toolsBox,
+            wxGBPosition(0, 0),
+            wxGBSpan(1, 2),
+            wxEXPAND | wxALL,
+            CellBorder);
     }
 
-
     //
-    // Row 2
+    // Side-Effects
     //
 
-    // Flood Radius
+    {
+        wxStaticBox * sideEffectsBox = new wxStaticBox(panel, wxID_ANY, _("Side-Effects"));
 
-    mFloodRadiusSlider = std::make_unique<SliderControl>(
-        panel,
-        SliderWidth,
-        SliderHeight,
-        "Flood Radius",
-        "How wide an area is flooded by the flood tool (m).",
-        mGameController->GetFloodRadius(),
-        [this](float /*value*/)
+        wxBoxSizer * sideEffectsBoxSizer = new wxBoxSizer(wxVERTICAL);
+        sideEffectsBoxSizer->AddSpacer(StaticBoxTopMargin);
+
         {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            mGameController->GetMinFloodRadius(),
-            mGameController->GetMaxFloodRadius()));
+            wxGridBagSizer * sideEffectsSizer = new wxGridBagSizer(0, 0);
 
-    gridSizer->Add(
-        mFloodRadiusSlider.get(),
-        wxGBPosition(1, 0),
-        wxGBSpan(1, 1),
-        wxALL,
-        SliderBorder);
+            // Air Bubbles
+            {
+                wxBoxSizer * airBubblesBoxSizer = new wxBoxSizer(wxVERTICAL);
 
-    // Flood Quantity
+                // Generate Air Bubbles
+                {
+                    mGenerateAirBubblesCheckBox = new wxCheckBox(sideEffectsBox, ID_GENERATE_AIR_BUBBLES_CHECKBOX, _("Generate Air Bubbles"));
+                    mGenerateAirBubblesCheckBox->SetToolTip("Enables or disables generation of air bubbles when water enters a physical body.");
+                    Connect(ID_GENERATE_AIR_BUBBLES_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnGenerateAirBubblesCheckBoxClick);
 
-    mFloodQuantitySlider = std::make_unique<SliderControl>(
-        panel,
-        SliderWidth,
-        SliderHeight,
-        "Flood Quantity",
-        "How much water is injected by the flood tool (m3).",
-        mGameController->GetFloodQuantity(),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            mGameController->GetMinFloodQuantity(),
-            mGameController->GetMaxFloodQuantity()));
+                    airBubblesBoxSizer->Add(mGenerateAirBubblesCheckBox, 0, wxALIGN_LEFT, 0);
+                }
 
-    gridSizer->Add(
-        mFloodQuantitySlider.get(),
-        wxGBPosition(1, 1),
-        wxGBSpan(1, 1),
-        wxALL,
-        SliderBorder);
+                // Air Bubbles Density
+                {
+                    mAirBubbleDensitySlider = std::make_unique<SliderControl>(
+                        sideEffectsBox,
+                        SliderWidth,
+                        -1,
+                        "Air Bubbles Density",
+                        "The density of air bubbles generated when water enters a ship.",
+                        mGameController->GetCumulatedIntakenWaterThresholdForAirBubbles(),
+                        [this](float /*value*/)
+                        {
+                            // Remember we're dirty now
+                            this->mApplyButton->Enable(true);
+                        },
+                        std::make_unique<LinearSliderCore>(
+                            mGameController->GetMinCumulatedIntakenWaterThresholdForAirBubbles(),
+                            mGameController->GetMaxCumulatedIntakenWaterThresholdForAirBubbles()));
 
-    // Repair Strength Adjustment
+                    airBubblesBoxSizer->Add(mAirBubbleDensitySlider.get(), 1, wxEXPAND, 0);
+                }
 
-    mRepairStrengthAdjustmentSlider = std::make_unique<SliderControl>(
-        panel,
-        SliderWidth,
-        SliderHeight,
-        "Repair Strength Adjust",
-        "Adjusts the strength with which the repair tool attracts the particles needed to repair damage.",
-        mGameController->GetRepairStrengthAdjustment(),
-        [this](float /*value*/)
-        {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
-        },
-        std::make_unique<LinearSliderCore>(
-            mGameController->GetMinRepairStrengthAdjustment(),
-            mGameController->GetMaxRepairStrengthAdjustment()));
+                sideEffectsSizer->Add(
+                    airBubblesBoxSizer,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
 
-    gridSizer->Add(
-        mRepairStrengthAdjustmentSlider.get(),
-        wxGBPosition(1, 2),
-        wxGBSpan(1, 1),
-        wxALL,
-        SliderBorder);
+            // Checkboxes
+            {
+                wxBoxSizer* checkboxesSizer = new wxBoxSizer(wxVERTICAL);
+
+                {
+                    mGenerateDebrisCheckBox = new wxCheckBox(sideEffectsBox, ID_GENERATE_DEBRIS_CHECKBOX, _("Generate Debris"));
+                    mGenerateDebrisCheckBox->SetToolTip("Enables or disables generation of debris when using destructive tools.");
+                    Connect(ID_GENERATE_DEBRIS_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnGenerateDebrisCheckBoxClick);
+
+                    checkboxesSizer->Add(mGenerateDebrisCheckBox, 0, wxALIGN_LEFT, 0);
+
+                    checkboxesSizer->AddSpacer(5);
+
+                    mGenerateSparklesCheckBox = new wxCheckBox(sideEffectsBox, ID_GENERATE_SPARKLES_CHECKBOX, _("Generate Sparkles"));
+                    mGenerateSparklesCheckBox->SetToolTip("Enables or disables generation of sparkles when using the saw tool on metal.");
+                    Connect(ID_GENERATE_SPARKLES_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnGenerateSparklesCheckBoxClick);
+
+                    checkboxesSizer->Add(mGenerateSparklesCheckBox, 0, wxALIGN_LEFT, 0);
+
+                    checkboxesSizer->AddStretchSpacer(1);
+                }
+
+                sideEffectsSizer->Add(
+                    checkboxesSizer,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            sideEffectsBoxSizer->Add(sideEffectsSizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        sideEffectsBox->SetSizerAndFit(sideEffectsBoxSizer);
+
+        gridSizer->Add(
+            sideEffectsBox,
+            wxGBPosition(1, 0),
+            wxGBSpan(1, 1),
+            wxEXPAND | wxALL,
+            CellBorder);
+    }
+
 
     // Finalize panel
 
