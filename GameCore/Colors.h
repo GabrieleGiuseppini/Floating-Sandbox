@@ -152,6 +152,16 @@ public:
     {
     }
 
+    inline rgbaColor(
+        vec3f const & c,
+        uint8_t _a)
+        : r(static_cast<uint8_t>(round(c.x * 255.0f)))
+        , g(static_cast<uint8_t>(round(c.y * 255.0f)))
+        , b(static_cast<uint8_t>(round(c.z * 255.0f)))
+        , a(_a)
+    {
+    }
+
     inline bool operator==(rgbaColor const & other) const
     {
         return r == other.r
@@ -174,12 +184,31 @@ public:
             || (r == other.r && g == other.g && b == other.b && a < other.a);
     }
 
+    inline rgbaColor mix(
+        rgbColor const & otherColor,
+        float alpha) const noexcept
+    {
+        vec3f const result =
+            this->toVec3f() * (1.0f - alpha)
+            + otherColor.toVec3f() * alpha;
+
+        return rgbaColor(result, this->a);
+    }
+
     inline rgbColor toRgbColor() const
     {
         return rgbColor(r, g, b);
     }
 
-    inline vec4f toVec4f() const
+    inline vec3f toVec3f() const noexcept
+    {
+        return vec3f(
+            static_cast<float>(r) / 255.0f,
+            static_cast<float>(g) / 255.0f,
+            static_cast<float>(b) / 255.0f);
+    }
+
+    inline vec4f toVec4f() const noexcept
     {
         return vec4f(
             static_cast<float>(r) / 255.0f,

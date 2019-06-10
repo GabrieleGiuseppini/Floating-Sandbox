@@ -29,7 +29,6 @@ enum class ProgramType
     CrossOfLight,
     LandFlat,
     LandTexture,
-    MatteOcean,
     OceanDepth,
     OceanFlat,
     OceanTexture,

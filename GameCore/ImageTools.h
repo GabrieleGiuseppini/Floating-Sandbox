@@ -17,6 +17,11 @@ class ImageTools
 {
 public:
 
+    static void BlendWithColor(
+        RgbaImageData & imageData,
+        rgbColor const & color,
+        float alpha);
+
     static inline vec4f SamplePixel(
         RgbaImageData const & imageData,
         float x,

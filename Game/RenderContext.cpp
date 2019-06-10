@@ -8,6 +8,7 @@
 #include <Game/ImageFileTools.h>
 
 #include <GameCore/GameException.h>
+#include <GameCore/ImageTools.h>
 #include <GameCore/Log.h>
 
 #include <cstring>
@@ -75,7 +76,7 @@ RenderContext::RenderContext(
     , mOceanRenderMode(OceanRenderMode::Texture)
     , mOceanAvailableThumbnails()
     , mSelectedOceanTextureIndex(0) // Wavy Thin
-    , mDepthOceanColorStart(0xda, 0xf1, 0xfe)
+    , mDepthOceanColorStart(0x8b, 0xc5, 0xfe)
     , mDepthOceanColorEnd(0x00, 0x00, 0x00)
     , mFlatOceanColor(0x00, 0x3d, 0x99)
     , mLandRenderMode(LandRenderMode::Texture)
@@ -617,12 +618,10 @@ void RenderContext::RenderStart()
     // Set polygon mode
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-    // Clear canvas - and stencil buffer
+    // Clear canvas - and depth buffer
     vec3f const clearColor = mFlatSkyColor.toVec3f() * mAmbientLightIntensity;
     glClearColor(clearColor.x, clearColor.y, clearColor.z, 1.0f);
-    glClearStencil(0x00);
-    glStencilMask(0xFF);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -718,50 +717,7 @@ void RenderContext::UploadCloudsEnd()
 void RenderContext::RenderSkyEnd()
 {
     ////////////////////////////////////////////////////
-    // Draw ocean stencil
-    ////////////////////////////////////////////////////
-
-    // Enable stencil test
-    glEnable(GL_STENCIL_TEST);
-
-    // Disable writing to the color buffer
-    glColorMask(false, false, false, false);
-
-    // Write all one's to stencil buffer
-    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-    glStencilFunc(GL_ALWAYS, 1, 0xFF);
-    glStencilMask(0xFF);
-
-    //
-    // Draw ocean
-    //
-
-    glBindVertexArray(*mOceanVAO);
-
-    // Use matte ocean program
-    mShaderManager->ActivateProgram<ProgramType::MatteOcean>();
-
-    // Make sure polygons are filled in any case
-    if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mOceanSegmentBuffer.size()));
-
-    // Don't write anything to stencil buffer now
-    glStencilMask(0x00);
-
-    // Re-enable writing to the color buffer
-    glColorMask(true, true, true, true);
-
-    // Reset wireframe mode, if enabled
-    if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-    // Enable stenciling - now only draw where there are no 1's
-    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-
-    ////////////////////////////////////////////////////
-    // Draw stars with stencil test
+    // Draw stars
     ////////////////////////////////////////////////////
 
     glBindVertexArray(*mStarVAO);
@@ -774,7 +730,7 @@ void RenderContext::RenderSkyEnd()
     CheckOpenGLError();
 
     ////////////////////////////////////////////////////
-    // Draw clouds with stencil test
+    // Draw clouds
     ////////////////////////////////////////////////////
 
     if (mCloudQuadBuffer.size() > 0)
@@ -793,9 +749,6 @@ void RenderContext::RenderSkyEnd()
     ////////////////////////////////////////////////////
 
     glBindVertexArray(0);
-
-    // Disable stencil test
-    glDisable(GL_STENCIL_TEST);
 }
 
 void RenderContext::UploadLandStart(size_t slices)
@@ -893,8 +846,10 @@ void RenderContext::UploadOceanEnd()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void RenderContext::RenderOcean()
+void RenderContext::RenderOcean(bool opaquely)
 {
+    float const transparency = opaquely ? 0.0f : mOceanTransparency;
+
     glBindVertexArray(*mOceanVAO);
 
     switch (mOceanRenderMode)
@@ -902,18 +857,27 @@ void RenderContext::RenderOcean()
         case OceanRenderMode::Depth:
         {
             mShaderManager->ActivateProgram<ProgramType::OceanDepth>();
+            mShaderManager->SetProgramParameter<ProgramType::OceanDepth, ProgramParameterType::OceanTransparency>(
+                transparency);
+
             break;
         }
 
         case OceanRenderMode::Flat:
         {
             mShaderManager->ActivateProgram<ProgramType::OceanFlat>();
+            mShaderManager->SetProgramParameter<ProgramType::OceanFlat, ProgramParameterType::OceanTransparency>(
+                transparency);
+
             break;
         }
 
         case OceanRenderMode::Texture:
         {
             mShaderManager->ActivateProgram<ProgramType::OceanTexture>();
+            mShaderManager->SetProgramParameter<ProgramType::OceanTexture, ProgramParameterType::OceanTransparency>(
+                transparency);
+
             break;
         }
     }
@@ -1038,10 +1002,6 @@ void RenderContext::OnViewModelUpdated()
 
     mShaderManager->ActivateProgram<ProgramType::OceanTexture>();
     mShaderManager->SetProgramParameter<ProgramType::OceanTexture, ProgramParameterType::OrthoMatrix>(
-        globalOrthoMatrix);
-
-    mShaderManager->ActivateProgram<ProgramType::MatteOcean>();
-    mShaderManager->SetProgramParameter<ProgramType::MatteOcean, ProgramParameterType::OrthoMatrix>(
         globalOrthoMatrix);
 
     mShaderManager->ActivateProgram<ProgramType::CrossOfLight>();
@@ -1206,6 +1166,12 @@ void RenderContext::OnOceanTextureIndexUpdated()
 
         // Load texture image
         auto oceanTextureFrame = mOceanTextureFrameSpecifications[mLoadedOceanTextureIndex].LoadFrame();
+
+        // Soften texture image
+        ImageTools::BlendWithColor(
+            oceanTextureFrame.TextureData,
+            rgbColor(0x87, 0xce, 0xfa), // cornflower blue
+            mOceanTransparency);
 
         // Activate texture
         mShaderManager->ActivateTexture<ProgramParameterType::OceanTexture>();

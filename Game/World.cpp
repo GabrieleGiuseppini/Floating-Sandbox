@@ -487,15 +487,6 @@ void World::Render(
     Render::RenderContext & renderContext) const
 {
     //
-    // Upload land and ocean data (before clouds and stars are rendered, as the latters
-    // need the ocean stencil)
-    //
-
-    mOceanFloor.Upload(gameParameters, renderContext);
-    mOceanSurface.Upload(gameParameters, renderContext);
-
-
-    //
     // Render sky
     //
 
@@ -511,13 +502,18 @@ void World::Render(
 
 
     //
-    // Render the ocean now, if we want to see the ship through the ocean
+    // Upload land and ocean
     //
 
-    if (renderContext.GetShowShipThroughOcean())
-    {
-        renderContext.RenderOcean();
-    }
+    mOceanFloor.Upload(gameParameters, renderContext);
+    mOceanSurface.Upload(gameParameters, renderContext);
+
+
+    //
+    // Render ocean (opaquely over sky)
+    //
+
+    renderContext.RenderOceanOpaquely();
 
 
     //
@@ -537,12 +533,12 @@ void World::Render(
 
 
     //
-    // Render the ocean now, if we want to see the ship *in* the ocean instead
+    // Render the ocean transparently, if we want to see the ship *in* the ocean instead
     //
 
     if (!renderContext.GetShowShipThroughOcean())
     {
-        renderContext.RenderOcean();
+        renderContext.RenderOceanTransparently();
     }
 
 

@@ -657,7 +657,15 @@ public:
 
     void UploadOceanEnd();
 
-    void RenderOcean();
+    void RenderOceanOpaquely()
+    {
+        RenderOcean(true);
+    }
+
+    void RenderOceanTransparently()
+    {
+        RenderOcean(false);
+    }
 
 
     //
@@ -1115,6 +1123,8 @@ public:
     void RenderEnd();
 
 private:
+
+    void RenderOcean(bool opaquely);
 
     void RenderCrossesOfLight();
     void RenderWorldBorder();
