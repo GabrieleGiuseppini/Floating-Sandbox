@@ -394,7 +394,7 @@ void Ship::RepairAt(
                         // One or more springs...
 
                         //
-                        // 1. Find nearest spring CW and closest spring CCW
+                        // 1. Find nearest CW spring and nearest CCW spring
                         // (which might and up being the same spring in case there's only one spring)
                         //
 
