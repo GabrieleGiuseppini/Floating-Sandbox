@@ -253,13 +253,15 @@ void Ship::RepairAt(
 
     // Rate at which the "other" endpoint of a spring accelerates towards the velocity
     // required for repairing
-    float constexpr SmoothingAlpha = 0.01f;
+    // TODOTEST
+    //float constexpr SmoothingAlpha = 0.01f;
+    float constexpr SmoothingAlpha = 0.02f;
 
     // Tolerance to distance
     //
     // Note: a higher tolerance here causes springs to...spring into life
     // already stretched or compressed, generating an undesirable force impulse
-    float constexpr DisplacementTolerance = 0.065f; // 0.1f;
+    float constexpr DisplacementTolerance = 0.065f;
 
     ///////////////////////////////////////////////////////
 
@@ -318,16 +320,17 @@ void Ship::RepairAt(
                         {
                             considerSpring = false;
                         }
-                        // Leave a chance for the other endpoint to be an attractor if these are two separate
-                        // connected components, and the other endpoint's connected component is larger
-                        // than the current attractor's
-                        else if (mPoints.GetConnectedComponentId(otherEndpointIndex) != mPoints.GetConnectedComponentId(pointIndex))
-                        {
-                            if (GetPointConnectedComponentSize(otherEndpointIndex) > GetPointConnectedComponentSize(pointIndex))
-                            {
-                                considerSpring = false;
-                            }
-                        }
+                        // TODOTEST
+                        ////// Leave a chance for the other endpoint to be an attractor if these are two separate
+                        ////// connected components, and the other endpoint's connected component is larger
+                        ////// than the current attractor's
+                        ////else if (mPoints.GetConnectedComponentId(otherEndpointIndex) != mPoints.GetConnectedComponentId(pointIndex))
+                        ////{
+                        ////    if (GetPointConnectedComponentSize(otherEndpointIndex) > GetPointConnectedComponentSize(pointIndex))
+                        ////    {
+                        ////        considerSpring = false;
+                        ////    }
+                        ////}
                     }
                 }
 
@@ -335,7 +338,7 @@ void Ship::RepairAt(
                 {
                     ////////////////////////////////////////////////////////
                     //
-                    // Restore this spring moving the other endpoint nearer
+                    // Restore this spring by moving the other endpoint nearer
                     //
                     ////////////////////////////////////////////////////////
 

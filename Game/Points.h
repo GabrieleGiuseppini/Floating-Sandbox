@@ -387,6 +387,7 @@ public:
         , mDetachHandler()
         , mEphemeralParticleDestroyHandler()
         , mCurrentNumMechanicalDynamicsIterations(gameParameters.NumMechanicalDynamicsIterations<float>())
+        , mCurrentCumulatedIntakenWaterThresholdForAirBubbles(gameParameters.CumulatedIntakenWaterThresholdForAirBubbles)
         , mFloatBufferAllocator(mBufferElementCount)
         , mVec2fBufferAllocator(mBufferElementCount)
         , mFreeEphemeralParticleSearchStartIndex(mShipPointCount)
@@ -857,9 +858,7 @@ public:
         mIsLeakingBuffer[pointElementIndex] = true;
 
         // Randomize the initial water intaken, so that air bubbles won't come out all at the same moment
-        mCumulatedIntakenWater[pointElementIndex] = GameRandomEngine::GetInstance().GenerateRandomReal(
-            0.0f,
-            7.0f);
+        mCumulatedIntakenWater[pointElementIndex] = RandomizeCumulatedIntakenWater(mCurrentCumulatedIntakenWaterThresholdForAirBubbles);
     }
 
     void RestoreFactoryIsLeaking(ElementIndex pointElementIndex)
@@ -1155,6 +1154,13 @@ private:
             * GameParameters::MechanicalSimulationStepTimeDuration<float>(numMechanicalDynamicsIterations);
     }
 
+    static inline float RandomizeCumulatedIntakenWater(float cumulatedIntakenWaterThresholdForAirBubbles)
+    {
+        return GameRandomEngine::GetInstance().GenerateRandomReal(
+            0.0f,
+            cumulatedIntakenWaterThresholdForAirBubbles);
+    }
+
     ElementIndex FindFreeEphemeralParticle(
         float currentSimulationTime,
         bool force);
@@ -1324,6 +1330,7 @@ private:
     // in the values of these parameters will trigger a re-calculation
     // of pre-calculated coefficients
     float mCurrentNumMechanicalDynamicsIterations;
+    float mCurrentCumulatedIntakenWaterThresholdForAirBubbles;
 
     // Allocators for work buffers
     BufferAllocator<float> mFloatBufferAllocator;

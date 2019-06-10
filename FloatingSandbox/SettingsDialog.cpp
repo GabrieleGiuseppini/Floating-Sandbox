@@ -1515,15 +1515,15 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                         -1,
                         "Air Bubbles Density",
                         "The density of air bubbles generated when water enters a ship.",
-                        mGameController->GetCumulatedIntakenWaterThresholdForAirBubbles(),
+                        mGameController->GetAirBubblesDensity(),
                         [this](float /*value*/)
                         {
                             // Remember we're dirty now
                             this->mApplyButton->Enable(true);
                         },
                         std::make_unique<LinearSliderCore>(
-                            mGameController->GetMinCumulatedIntakenWaterThresholdForAirBubbles(),
-                            mGameController->GetMaxCumulatedIntakenWaterThresholdForAirBubbles()));
+                            mGameController->GetMinAirBubblesDensity(),
+                            mGameController->GetMaxAirBubblesDensity()));
 
                     airBubblesBoxSizer->Add(mAirBubbleDensitySlider, 1, wxEXPAND, 0);
                 }
@@ -2299,7 +2299,7 @@ void SettingsDialog::ReadSettings()
 
     mGenerateAirBubblesCheckBox->SetValue(mGameController->GetDoGenerateAirBubbles());
 
-    mAirBubbleDensitySlider->SetValue(mGameController->GetCumulatedIntakenWaterThresholdForAirBubbles());
+    mAirBubbleDensitySlider->SetValue(mGameController->GetAirBubblesDensity());
     mAirBubbleDensitySlider->Enable(mGameController->GetDoGenerateAirBubbles());
 
     // Render
@@ -2612,7 +2612,7 @@ void SettingsDialog::ApplySettings()
 
     mGameController->SetDoGenerateAirBubbles(mGenerateAirBubblesCheckBox->IsChecked());
 
-    mGameController->SetCumulatedIntakenWaterThresholdForAirBubbles(mAirBubbleDensitySlider->GetValue());
+    mGameController->SetAirBubblesDensity(mAirBubbleDensitySlider->GetValue());
 
     // Render
 

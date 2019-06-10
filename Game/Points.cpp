@@ -300,6 +300,10 @@ void Points::DestroyEphemeralParticle(
 
 void Points::UpdateGameParameters(GameParameters const & gameParameters)
 {
+    //
+    // Check parameter changes
+    //
+
     float const numMechanicalDynamicsIterations = gameParameters.NumMechanicalDynamicsIterations<float>();
     if (numMechanicalDynamicsIterations != mCurrentNumMechanicalDynamicsIterations)
     {
@@ -311,6 +315,22 @@ void Points::UpdateGameParameters(GameParameters const & gameParameters)
 
         // Remember the new values
         mCurrentNumMechanicalDynamicsIterations = numMechanicalDynamicsIterations;
+    }
+
+    float const cumulatedIntakenWaterThresholdForAirBubbles = gameParameters.CumulatedIntakenWaterThresholdForAirBubbles;
+    if (cumulatedIntakenWaterThresholdForAirBubbles != mCurrentCumulatedIntakenWaterThresholdForAirBubbles)
+    {
+        // Randomize cumulated water intaken for each leaking point
+        for (ElementIndex i : NonEphemeralPoints())
+        {
+            if (IsLeaking(i))
+            {
+                mCumulatedIntakenWater[i] = RandomizeCumulatedIntakenWater(cumulatedIntakenWaterThresholdForAirBubbles);
+            }
+        }
+
+        // Remember the new values
+        mCurrentCumulatedIntakenWaterThresholdForAirBubbles = cumulatedIntakenWaterThresholdForAirBubbles;
     }
 }
 

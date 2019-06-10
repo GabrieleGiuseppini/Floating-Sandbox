@@ -289,7 +289,38 @@ Render:
 				+ Rename TextureRenderManager to UploadedTextureManager
 			+ Ocean
 			+ Changes.txt
+		+ Shaders:
+			+ Land texture:
+				+ Texture compression on edge
+					+ Try (4*x)^(0.2) / (3 * ((4*x)^2+1)) + x
+				+ Add non-linear (same non-linearity as ocean) darkening (lightest at ocean surface)
+			+ Ocean gradient: make non-linear
+				+ Cleanup shader afterwards
+			+ Ocean texture:
+				+ texture compression on edge			
+				+ add non-linear (same non-linearity) darkening
+		+ Optimize GameOpenGL::UploadMipmappedTexture: alloc write buffer once and swap pointers
+
 		+ Fix bug at bump-map interpolation at ocean floor: need to calc fractional part
+		+ Settings dialog: 
+			+ Merge Mechanics and Fluids and World into "Generic"
+				+ Mechanics box
+					+ Add decay
+				+ Fluids box
+					+ Move WaterLevelOfDetail to Rendering, next to WaterContrast
+				+ Lights box
+			+ Do spacers at Ocean+Sky and Wind+Waves as Mechanics and Rendering
+			+ Interactions: add boxes (and make like Mechanics):
+				+ Interactions
+				+ Side Effects
+				+ Make tools two rows and move side-effect to left
+		+ Make slider for air bubble density
+			+ SettingDialog: enable/disable based off checkbox
+				+ Move checkbox
+			+ Max=128
+				+ Ensure cur value fits slider
+			+ Fix issue with randomization of density
+				+ Try with redoing randomization of all leaking points at each param change
 
 		= Wine:
 			+ Test checking for the APPLE extension for VAO's: https://developer.apple.com/opengl/OpenGL-Capabilities-Tables.pdf
@@ -301,7 +332,7 @@ Render:
 		= Waves need to be further limited
 			+ Make repro: tsunami on manually-created high wave field
 			+ Tsunami and rogue wave: target H is absolute, not based on current H
-			- Ask testers to test
+			= Ask ShippyMcPenguin to test
 			- If ok:
 				- Update changes.txt
 			- Other older attempts:
@@ -325,49 +356,18 @@ Render:
 			+ Deal with same conn comp ID
 			+ Undo decay (halve it)
 			+ See missing springs
-			= Play with tolerance
-			- See if conn comp logic:
-				- Is broken (think)
-				- Is useful			
-			= Get AwesomeYorkie's feedback
-
-		= Settings dialog: 
-			+ Merge Mechanics and Fluids and World into "Generic"
-				+ Mechanics box
-					+ Add decay
-				+ Fluids box
-					+ Move WaterLevelOfDetail to Rendering, next to WaterContrast
-				+ Lights box
-			+ Do spacers at Ocean+Sky and Wind+Waves as Mechanics and Rendering
-			+ Interactions: add boxes (and make like Mechanics):
-				+ Interactions
-				+ Side Effects
-				+ Make tools two rows and move side-effect to left
-
-		= Shaders:
-			+ Land texture:
-				+ Texture compression on edge
-					+ Try (4*x)^(0.2) / (3 * ((4*x)^2+1)) + x
-				+ Add non-linear (same non-linearity as ocean) darkening (lightest at ocean surface)
-			+ Ocean gradient: make non-linear
-				+ Cleanup shader afterwards
-			+ Ocean texture:
-				+ texture compression on edge			
-				+ add non-linear (same non-linearity) darkening
-			= Try Mike's defaults - ask if transparency breaks game
-
-		- Merge to master
+			+ Play with tolerance
+			= See if conn comp logic:
+				+ Is broken (think): NO
+				= Is useful: commented our for the time being
+			= Get AwesomeYorkie's second feedback
+			- If ok w/commented out conn comp logic:
+				- Remove it altogether
+				- Comment out conn comp sizes
 
 		- Ocean rendering: replace stencil with first rendering w/zero transparency
 
-		+ Optimize GameOpenGL::UploadMipmappedTexture: alloc write buffer once and swap pointers
-		= Make slider for air bubble density
-			+ SettingDialog: enable/disable based off checkbox
-				+ Move checkbox
-			+ Max=128
-				+ Ensure cur value fits slider
-			- Fix issue with randomization of density
-				- Try with redoing randomization of all leaking points at each param change
+		- Merge to master
 			 
 		- Send to testers
 
@@ -1291,9 +1291,12 @@ Render:
 	- SettingsDialog: save settings, defaults, and real-time changes (*)
 		- Spec: 
 			- Game starts always with default settings; user has the ability though to load named settings
-				- Where "defaults" is hardcoded bag of settings
-			- Review the below based on this
+				- Where "defaults" is hardcoded name
+			- Game also comes with own settings
+				- Under Data
+				- Managed by SettingsDialog
 			- Saved settings have a name, which is the one shown to the user (filename is opaque and has unique prefix before mangled name)
+			- Review the below based on this (named settings)
 
 			- SettingsManager (@FloatingSandbox):
 				- Has GameController, SoundController, etc.

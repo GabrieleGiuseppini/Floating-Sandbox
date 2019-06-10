@@ -3,5 +3,7 @@
 	"offset":{"x":0.0, "y":0.0},
 	"ship_name":"H.M.S. Thunderchild",
 	"year_built":"1898",
-	"created_by":"KikoTheBoatBuilder"
+	"created_by":"KikoTheBoatBuilder",
+	"description":
+		"The 'H.M.S. Thunder Child' is a fictional ironclad torpedo ram from the H.G. Wells Science fiction story The War of The Worlds. It was destroyed by Martian fighting machines in Essex, a county in the United Kingdom. She was regarded as the royal Navy's most powerful ship at the time of the story."
 }
