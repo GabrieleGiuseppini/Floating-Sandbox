@@ -275,14 +275,21 @@ void Ship::RepairAt(
         // Attempt to restore this point's springs if the point meets all these conditions:
         // - The point is in radius
         // - The point is not orphaned
+        // - The point has not taken already the role of attracted in this session step
         //
-        // If we were to attempt to restore also orphaned points, then two formerly-connected
+        // Note: if we were to attempt to restore also orphaned points, then two formerly-connected
         // orphaned points within the search radius would interact with each other and nullify
         // the effort put by the main structure's points
         float const squareRadius = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
         if (squareRadius <= squareSearchRadius
-            && mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() > 0)
+            && mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() > 0
+            && (mPoints.GetRepairState(pointIndex).AttractedSessionId != sessionId
+                 || mPoints.GetRepairState(pointIndex).AttractedSessionStepId != sessionStepId))
         {
+            // Remember this point has taken over the role of attractor in this step
+            mPoints.GetRepairState(pointIndex).AttractorSessionId = sessionId;
+            mPoints.GetRepairState(pointIndex).AttractorSessionStepId = sessionStepId;
+
             //
             // Advance this attractor smoothing state machine, but only if it has deleted springs
             //
@@ -302,7 +309,7 @@ void Ship::RepairAt(
                 else
                 {
                     //
-                    // Advance
+                    // Same session, advance
                     //
 
                     assert(sessionStepId > mPoints.GetRepairState(pointIndex).SmoothingSessionStepId);
@@ -311,6 +318,7 @@ void Ship::RepairAt(
                         mPoints.GetRepairState(pointIndex).Smoothing
                         + (1.0f - mPoints.GetRepairState(pointIndex).Smoothing) * SmoothingAlpha;
 
+                    // Scale smoothing by steps elapsed since last time
                     mPoints.GetRepairState(pointIndex).Smoothing =
                         newSmoothing
                         / static_cast<float>(sessionStepId - mPoints.GetRepairState(pointIndex).SmoothingSessionStepId);
@@ -336,249 +344,260 @@ void Ship::RepairAt(
                 {
                     auto const otherEndpointIndex = fcs.OtherEndpointIndex;
 
-                    ////////////////////////////////////////////////////////
-                    //
-                    // Restore this spring by moving the other endpoint nearer
-                    //
-                    ////////////////////////////////////////////////////////
-
-                    //
-                    // The target position of the endpoint is on the circle whose radius
-                    // is the spring's rest length, and the angle is interpolated between
-                    // the two non-deleted springs immediately CW and CCW of this spring
-                    //
-
-                    float targetWorldAngle; // In world coordinates, positive when CCW, 0 at E
-
-                    // The angle of the spring wrt this point
-                    // 0 = E, 1 = SE, ..., 7 = NE
-                    int32_t const factoryPointSpringOctant = mSprings.GetFactoryEndpointOctant(
-                        fcs.SpringIndex,
-                        pointIndex);
-
-                    size_t const connectedSpringsCount = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size();
-                    if (connectedSpringsCount == 0)
+                    // Do not consider the spring if the other endpoint has already taken
+                    // the role of attractor in this step
+                    if (mPoints.GetRepairState(otherEndpointIndex).AttractorSessionId != sessionId
+                        || mPoints.GetRepairState(otherEndpointIndex).AttractorSessionStepId != sessionStepId)
                     {
-                        // No springs exist yet for this point...
-                        // ...arbitrarily, use its factory octant as if it were a world angle
-                        targetWorldAngle = Pi<float> / 4.0f * static_cast<float>(8.0f - factoryPointSpringOctant);
-                    }
-                    else
-                    {
-                        // One or more springs...
+                        // Remember this point has taken over the role of attracted in this step
+                        mPoints.GetRepairState(otherEndpointIndex).AttractedSessionId = sessionId;
+                        mPoints.GetRepairState(otherEndpointIndex).AttractedSessionStepId = sessionStepId;
+
+
+                        ////////////////////////////////////////////////////////
+                        //
+                        // Restore this spring by moving the other endpoint nearer
+                        //
+                        ////////////////////////////////////////////////////////
 
                         //
-                        // 1. Find nearest CW spring and nearest CCW spring
-                        // (which might and up being the same spring in case there's only one spring)
+                        // The target position of the endpoint is on the circle whose radius
+                        // is the spring's rest length, and the angle is interpolated between
+                        // the two non-deleted springs immediately CW and CCW of this spring
                         //
 
-                        int nearestCWSpringIndex = -1;
-                        int nearestCWSpringDeltaOctant = std::numeric_limits<int>::max();
-                        int nearestCCWSpringIndex = -1;
-                        int nearestCCWSpringDeltaOctant = std::numeric_limits<int>::max();
-                        for (auto const & cs : mPoints.GetConnectedSprings(pointIndex).ConnectedSprings)
+                        float targetWorldAngle; // In world coordinates, positive when CCW, 0 at E
+
+                        // The angle of the spring wrt this point
+                        // 0 = E, 1 = SE, ..., 7 = NE
+                        int32_t const factoryPointSpringOctant = mSprings.GetFactoryEndpointOctant(
+                            fcs.SpringIndex,
+                            pointIndex);
+
+                        size_t const connectedSpringsCount = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size();
+                        if (connectedSpringsCount == 0)
                         {
+                            // No springs exist yet for this point...
+                            // ...arbitrarily, use its factory octant as if it were a world angle
+                            targetWorldAngle = Pi<float> / 4.0f * static_cast<float>(8.0f - factoryPointSpringOctant);
+                        }
+                        else
+                        {
+                            // One or more springs...
+
                             //
-                            // CW
+                            // 1. Find nearest CW spring and nearest CCW spring
+                            // (which might and up being the same spring in case there's only one spring)
                             //
 
-                            int cwDelta =
-                                mSprings.GetFactoryEndpointOctant(cs.SpringIndex, pointIndex)
-                                - factoryPointSpringOctant;
-
-                            if (cwDelta < 0)
-                                cwDelta += 8;
-
-                            if (cwDelta < nearestCWSpringDeltaOctant)
+                            int nearestCWSpringIndex = -1;
+                            int nearestCWSpringDeltaOctant = std::numeric_limits<int>::max();
+                            int nearestCCWSpringIndex = -1;
+                            int nearestCCWSpringDeltaOctant = std::numeric_limits<int>::max();
+                            for (auto const & cs : mPoints.GetConnectedSprings(pointIndex).ConnectedSprings)
                             {
-                                nearestCWSpringIndex = cs.SpringIndex;
-                                nearestCWSpringDeltaOctant = cwDelta;
+                                //
+                                // CW
+                                //
+
+                                int cwDelta =
+                                    mSprings.GetFactoryEndpointOctant(cs.SpringIndex, pointIndex)
+                                    - factoryPointSpringOctant;
+
+                                if (cwDelta < 0)
+                                    cwDelta += 8;
+
+                                if (cwDelta < nearestCWSpringDeltaOctant)
+                                {
+                                    nearestCWSpringIndex = cs.SpringIndex;
+                                    nearestCWSpringDeltaOctant = cwDelta;
+                                }
+
+                                //
+                                // CCW
+                                //
+
+                                assert(cwDelta > 0 && cwDelta < 8);
+                                int ccwDelta = 8 - cwDelta;
+                                assert(ccwDelta > 0);
+
+                                if (ccwDelta < nearestCCWSpringDeltaOctant)
+                                {
+                                    nearestCCWSpringIndex = cs.SpringIndex;
+                                    nearestCCWSpringDeltaOctant = ccwDelta;
+                                }
                             }
 
+                            assert(nearestCWSpringIndex >= 0);
+                            assert(nearestCWSpringDeltaOctant > 0);
+                            assert(nearestCCWSpringIndex >= 0);
+                            assert(nearestCCWSpringDeltaOctant > 0);
+
                             //
-                            // CCW
+                            // 2. Calculate this spring's world angle by
+                            // interpolating among these two springs
                             //
 
-                            assert(cwDelta > 0 && cwDelta < 8);
-                            int ccwDelta = 8 - cwDelta;
-                            assert(ccwDelta > 0);
+                            ElementIndex const ccwSpringOtherEndpointIndex =
+                                mSprings.GetOtherEndpointIndex(nearestCCWSpringIndex, pointIndex);
 
-                            if (ccwDelta < nearestCCWSpringDeltaOctant)
-                            {
-                                nearestCCWSpringIndex = cs.SpringIndex;
-                                nearestCCWSpringDeltaOctant = ccwDelta;
-                            }
+                            ElementIndex const cwSpringOtherEndpointIndex =
+                                mSprings.GetOtherEndpointIndex(nearestCWSpringIndex, pointIndex);
+
+                            // Angle between this two springs
+                            float neighborsAngle =
+                                (ccwSpringOtherEndpointIndex == cwSpringOtherEndpointIndex)
+                                ? 2.0f * Pi<float>
+                                : (mPoints.GetPosition(ccwSpringOtherEndpointIndex) - mPoints.GetPosition(pointIndex))
+                                .angle(mPoints.GetPosition(cwSpringOtherEndpointIndex) - mPoints.GetPosition(pointIndex));
+
+                            if (neighborsAngle < 0.0f)
+                                neighborsAngle += 2.0f * Pi<float>;
+
+                            // Interpolated angle from CW spring
+                            float const interpolatedAngleFromCWSpring =
+                                neighborsAngle
+                                / static_cast<float>(nearestCWSpringDeltaOctant + nearestCCWSpringDeltaOctant)
+                                * static_cast<float>(nearestCWSpringDeltaOctant);
+
+                            // And finally, the target world angle (world angle is 0 at E)
+                            targetWorldAngle =
+                                (mPoints.GetPosition(cwSpringOtherEndpointIndex) - mPoints.GetPosition(pointIndex)).angle(vec2f(1.0f, 0.0f))
+                                + interpolatedAngleFromCWSpring;
                         }
 
-                        assert(nearestCWSpringIndex >= 0);
-                        assert(nearestCWSpringDeltaOctant > 0);
-                        assert(nearestCCWSpringIndex >= 0);
-                        assert(nearestCCWSpringDeltaOctant > 0);
 
                         //
-                        // 2. Calculate this spring's world angle by
-                        // interpolating among these two springs
+                        // Calculate target position for the other endpoint
                         //
 
-                        ElementIndex const ccwSpringOtherEndpointIndex =
-                            mSprings.GetOtherEndpointIndex(nearestCCWSpringIndex, pointIndex);
-
-                        ElementIndex const cwSpringOtherEndpointIndex =
-                            mSprings.GetOtherEndpointIndex(nearestCWSpringIndex, pointIndex);
-
-                        // Angle between this two springs
-                        float neighborsAngle =
-                            (ccwSpringOtherEndpointIndex == cwSpringOtherEndpointIndex)
-                            ? 2.0f * Pi<float>
-                            : (mPoints.GetPosition(ccwSpringOtherEndpointIndex) - mPoints.GetPosition(pointIndex))
-                              .angle(mPoints.GetPosition(cwSpringOtherEndpointIndex) - mPoints.GetPosition(pointIndex));
-
-                        if (neighborsAngle < 0.0f)
-                            neighborsAngle += 2.0f * Pi<float>;
-
-                        // Interpolated angle from CW spring
-                        float const interpolatedAngleFromCWSpring =
-                            neighborsAngle
-                            / static_cast<float>(nearestCWSpringDeltaOctant + nearestCCWSpringDeltaOctant)
-                            * static_cast<float>(nearestCWSpringDeltaOctant);
-
-                        // And finally, the target world angle (world angle is 0 at E)
-                        targetWorldAngle =
-                            (mPoints.GetPosition(cwSpringOtherEndpointIndex) - mPoints.GetPosition(pointIndex)).angle(vec2f(1.0f, 0.0f))
-                            + interpolatedAngleFromCWSpring;
-                    }
+                        vec2f const targetOtherEndpointPosition =
+                            mPoints.GetPosition(pointIndex)
+                            + vec2f::fromPolar(
+                                mSprings.GetRestLength(fcs.SpringIndex),
+                                targetWorldAngle);
 
 
-                    //
-                    // Calculate target position for the other endpoint
-                    //
-
-                    vec2f const targetOtherEndpointPosition =
-                        mPoints.GetPosition(pointIndex)
-                        + vec2f::fromPolar(
-                            mSprings.GetRestLength(fcs.SpringIndex),
-                            targetWorldAngle);
-
-
-                    //
-                    // Check progress of other endpoint towards the target position
-                    //
-
-                    // Displacement vector (positive towards target point)
-                    vec2f const displacementVector = targetOtherEndpointPosition - mPoints.GetPosition(otherEndpointIndex);
-
-                    // Distance
-                    float displacementMagnitude = displacementVector.length();
-
-                    // Check whether we are still further away than our tolerance,
-                    // and whether this point is free to move
-                    bool hasOtherEndpointPointBeenMoved = false;
-                    if (displacementMagnitude > DisplacementTolerance
-                        && !mPoints.IsPinned(otherEndpointIndex))
-                    {
                         //
-                        // Endpoints are too far...
-                        // ...move them closer by moving the other endpoint towards its target position
+                        // Check progress of other endpoint towards the target position
                         //
 
-                        // Fraction of the movement that we want to do in this step
-                        // (which is once per SimulationStep)
+                        // Displacement vector (positive towards target point)
+                        vec2f const displacementVector = targetOtherEndpointPosition - mPoints.GetPosition(otherEndpointIndex);
+
+                        // Distance
+                        float displacementMagnitude = displacementVector.length();
+
+                        // Check whether we are still further away than our tolerance,
+                        // and whether this point is free to move
+                        bool hasOtherEndpointPointBeenMoved = false;
+                        if (displacementMagnitude > DisplacementTolerance
+                            && !mPoints.IsPinned(otherEndpointIndex))
+                        {
+                            //
+                            // Endpoints are too far...
+                            // ...move them closer by moving the other endpoint towards its target position
+                            //
+
+                            // Fraction of the movement that we want to do in this step
+                            // (which is once per SimulationStep)
+                            //
+                            // A higher value destroys the other point's (which might be already repaired) springs too quickly;
+                            // a lower value makes the other point follow a moving point forever
+                            float constexpr MovementFraction =
+                                4.0f // We want a point to cover the whole distance in 1/4th of a simulated second
+                                * GameParameters::SimulationStepTimeDuration<float>;
+
+                            // Movement direction (positive towards this point)
+                            vec2f const movementDir = displacementVector.normalise(displacementMagnitude);
+
+                            // Movement magnitude
+                            //
+                            // The magnitude is multiplied with the point's repair smoothing, which goes
+                            // from 0.0 at the moment the point is first engaged, to 1.0 later on.
+                            //
+                            // Note: here we calculate the movement based on the static positions
+                            // of the two endpoints; however, if the two endpoints have a non-zero
+                            // relative velocity, then this movement won't achieve the desired effect
+                            // (it will undershoot or overshoot). I do think the end result is cool
+                            // though, as you end up, for example, with points chasing a part of a ship
+                            // that's moving away!
+                            float const movementMagnitude =
+                                pow(displacementMagnitude, gameParameters.RepairStrengthAdjustment)
+                                * MovementFraction
+                                * toolStrength
+                                * (mSprings.IsRope(fcs.SpringIndex) ? 0.75f : 1.0f) // Ropes are crazy, hence need more kindness
+                                * mPoints.GetRepairState(pointIndex).Smoothing;
+
+                            // Move point
+                            mPoints.GetPosition(otherEndpointIndex) +=
+                                movementDir
+                                * movementMagnitude;
+
+                            // Adjust displacement
+                            assert(movementMagnitude < displacementMagnitude);
+                            displacementMagnitude -= movementMagnitude;
+
+                            // Impart some non-linear inertia (smaller at higher displacements),
+                            // retaining a bit of the previous velocity
+                            // (note: last one that pulls this point wins)
+                            auto const displacementVelocity =
+                                movementDir
+                                * ((movementMagnitude < 0.0f) ? -1.0f : 1.0f)
+                                * pow(abs(movementMagnitude), 0.2f)
+                                / GameParameters::SimulationStepTimeDuration<float>
+                                * 0.5f;
+                            mPoints.GetVelocity(otherEndpointIndex) =
+                                (mPoints.GetVelocity(otherEndpointIndex) * 0.35f)
+                                + (displacementVelocity * 0.65f);
+
+                            // Remember that we've acted on the other endpoint
+                            hasOtherEndpointPointBeenMoved = true;
+                        }
+
+                        // Check whether we are now close enough
+                        if (displacementMagnitude <= DisplacementTolerance)
+                        {
+                            //
+                            // The other endpoint is close enough to its target, implying that
+                            // the spring length should be close to its rest length...
+                            // ...we can restore the spring
+                            //
+
+                            // Restore the spring
+                            mSprings.Restore(
+                                fcs.SpringIndex,
+                                gameParameters,
+                                mPoints);
+
+                            assert(!mSprings.IsDeleted(fcs.SpringIndex));
+
+                            // Brake the other endpoint
+                            mPoints.SetVelocity(otherEndpointIndex, vec2f::zero());
+
+                            // Halve the decay of both endpoints
+                            float const pointDecay = mPoints.GetDecay(pointIndex);
+                            mPoints.SetDecay(
+                                pointIndex,
+                                pointDecay + (1.0f - pointDecay) / 2.0f);
+                            float const otherPointDecay = mPoints.GetDecay(otherEndpointIndex);
+                            mPoints.SetDecay(
+                                otherEndpointIndex,
+                                otherPointDecay + (1.0f - otherPointDecay) / 2.0f);
+
+                            // Remember that we've acted on the other endpoint
+                            hasOtherEndpointPointBeenMoved = true;
+                        }
+
+
                         //
-                        // A higher value destroys the other point's (which might be already repaired) springs too quickly;
-                        // a lower value makes the other point follow a moving point forever
-                        float constexpr MovementFraction =
-                            4.0f // We want a point to cover the whole distance in 1/4th of a simulated second
-                            * GameParameters::SimulationStepTimeDuration<float>;
-
-                        // Movement direction (positive towards this point)
-                        vec2f const movementDir = displacementVector.normalise(displacementMagnitude);
-
-                        // Movement magnitude
-                        //
-                        // The magnitude is multiplied with the point's repair smoothing, which goes
-                        // from 0.0 at the moment the point is first engaged, to 1.0 later on.
-                        //
-                        // Note: here we calculate the movement based on the static positions
-                        // of the two endpoints; however, if the two endpoints have a non-zero
-                        // relative velocity, then this movement won't achieve the desired effect
-                        // (it will undershoot or overshoot). I do think the end result is cool
-                        // though, as you end up, for example, with points chasing a part of a ship
-                        // that's moving away!
-                        float const movementMagnitude =
-                            pow(displacementMagnitude, gameParameters.RepairStrengthAdjustment)
-                            * MovementFraction
-                            * toolStrength
-                            * (mSprings.IsRope(fcs.SpringIndex) ? 0.75f : 1.0f) // Ropes are crazy, hence need more kindness
-                            * mPoints.GetRepairState(pointIndex).Smoothing;
-
-                        // Move point
-                        mPoints.GetPosition(otherEndpointIndex) +=
-                            movementDir
-                            * movementMagnitude;
-
-                        // Adjust displacement
-                        assert(movementMagnitude < displacementMagnitude);
-                        displacementMagnitude -= movementMagnitude;
-
-                        // Impart some non-linear inertia (smaller at higher displacements),
-                        // retaining a bit of the previous velocity
-                        // (note: last one that pulls this point wins)
-                        auto const displacementVelocity =
-                            movementDir
-                            * ((movementMagnitude < 0.0f) ? -1.0f : 1.0f)
-                            * pow(abs(movementMagnitude), 0.2f)
-                            / GameParameters::SimulationStepTimeDuration<float>
-                            * 0.5f;
-                        mPoints.GetVelocity(otherEndpointIndex) =
-                            (mPoints.GetVelocity(otherEndpointIndex) * 0.35f)
-                            + (displacementVelocity * 0.65f);
-
-                        // Remember that we've acted on the other endpoint
-                        hasOtherEndpointPointBeenMoved = true;
-                    }
-
-                    // Check whether we are now close enough
-                    if (displacementMagnitude <= DisplacementTolerance)
-                    {
-                        //
-                        // The other endpoint is close enough to its target, implying that
-                        // the spring length should be close to its rest length...
-                        // ...we can restore the spring
+                        // Dry the ohter endpoint, if we've messed with it
                         //
 
-                        // Restore the spring
-                        mSprings.Restore(
-                            fcs.SpringIndex,
-                            gameParameters,
-                            mPoints);
-
-                        assert(!mSprings.IsDeleted(fcs.SpringIndex));
-
-                        // Brake the other endpoint
-                        mPoints.SetVelocity(otherEndpointIndex, vec2f::zero());
-
-                        // Halve the decay of both endpoints
-                        float const pointDecay = mPoints.GetDecay(pointIndex);
-                        mPoints.SetDecay(
-                            pointIndex,
-                            pointDecay + (1.0f - pointDecay) / 2.0f);
-                        float const otherPointDecay = mPoints.GetDecay(otherEndpointIndex);
-                        mPoints.SetDecay(
-                            otherEndpointIndex,
-                            otherPointDecay + (1.0f - otherPointDecay) / 2.0f);
-
-                        // Remember that we've acted on the other endpoint
-                        hasOtherEndpointPointBeenMoved = true;
-                    }
-
-
-                    //
-                    // Dry the ohter endpoint, if we've messed with it
-                    //
-
-                    if (hasOtherEndpointPointBeenMoved)
-                    {
-                        mPoints.GetWater(otherEndpointIndex) /= 2.0f;
+                        if (hasOtherEndpointPointBeenMoved)
+                        {
+                            mPoints.GetWater(otherEndpointIndex) /= 2.0f;
+                        }
                     }
                 }
             }

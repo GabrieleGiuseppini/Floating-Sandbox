@@ -392,6 +392,8 @@ private:
         {
             case SoundType::Break:
             case SoundType::Destroy:
+            case SoundType::RepairSpring:
+            case SoundType::RepairTriangle:
                 return std::chrono::milliseconds(200);
             case SoundType::Stress:
                 return std::chrono::milliseconds(600);

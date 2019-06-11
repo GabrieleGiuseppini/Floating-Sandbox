@@ -65,13 +65,23 @@ public:
      */
     struct RepairState
     {
+        // Each point is only allowed one role (attractor or attracted) per session step
+        RepairSessionId AttractorSessionId;
+        RepairSessionStepId AttractorSessionStepId;
+        RepairSessionId AttractedSessionId;
+        RepairSessionStepId AttractedSessionStepId;
+
         // The session and session step IDs that smoothing was last applied on from an attractor
         RepairSessionId SmoothingSessionId;
         RepairSessionStepId SmoothingSessionStepId;
         float Smoothing; // Grows from 0.0 to 1.0
 
         RepairState()
-            : SmoothingSessionId(0)
+            : AttractorSessionId(0)
+            , AttractorSessionStepId(0)
+            , AttractedSessionId(0)
+            , AttractedSessionStepId(0)
+            , SmoothingSessionId(0)
             , SmoothingSessionStepId(0)
             , Smoothing(0.0f)
         {}
