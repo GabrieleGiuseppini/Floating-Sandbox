@@ -366,7 +366,7 @@ Render:
 				+ Is useful: commented out for the time being (for AwesomeYorkie)
 			+ Get AwesomeYorkie's second feedback
 			+ Try with smoothing done only at attractors via step ID
-			- Ropes
+			+ Ropes strength amplifier/reducer
 			- Try to put back attractor/attractee exclusion 
 
 		- Merge to master

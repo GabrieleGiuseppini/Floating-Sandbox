@@ -527,6 +527,41 @@ void ShipBuilder::AppendRopes(
             stepW = dy / fabs(dy);
         }
 
+        // Calculate spring directions
+        int factoryDirectionStart, factoryDirectionEnd;
+        if (dx > 0)
+        {
+            // West->East
+            if (dy > 0)
+            {
+                // South->North
+                factoryDirectionStart = 3; // SW
+                factoryDirectionEnd = 7; // NE
+            }
+            else
+            {
+                // North->South
+                factoryDirectionStart = 5; // NW
+                factoryDirectionEnd = 1; // SE
+            }
+        }
+        else
+        {
+            // East->West
+            if (dy > 0)
+            {
+                // South->North
+                factoryDirectionStart = 1; // SE
+                factoryDirectionEnd = 5; // NW
+            }
+            else
+            {
+                // North-South
+                factoryDirectionStart = 7; // NE
+                factoryDirectionEnd = 3; // SW
+            }
+        }
+
         float curW = startW;
         float curN = startN;
         float const halfW = fabs(endW - curW) / 2.0f;
@@ -560,9 +595,9 @@ void ShipBuilder::AppendRopes(
             ElementIndex const springIndex = static_cast<ElementIndex>(springInfos1.size());
             springInfos1.emplace_back(
                 curStartPointIndex,
-                0,  // Arbitrary factory direction (E)
+                factoryDirectionStart,
                 newPointIndex,
-                4); // Arbitrary factory direction (W)
+                factoryDirectionEnd);
 
             // Add PointInfo
             pointInfos1.emplace_back(

@@ -496,7 +496,7 @@ void Ship::RepairAt(
                         // Movement magnitude
                         //
                         // The magnitude is multiplied with the point's repair smoothing, which goes
-                        // from 0.0 at the moment the point is first engaged, to 1.0 later on
+                        // from 0.0 at the moment the point is first engaged, to 1.0 later on.
                         //
                         // Note: here we calculate the movement based on the static positions
                         // of the two endpoints; however, if the two endpoints have a non-zero
@@ -508,6 +508,7 @@ void Ship::RepairAt(
                             pow(displacementMagnitude, gameParameters.RepairStrengthAdjustment)
                             * MovementFraction
                             * toolStrength
+                            * (mSprings.IsRope(fcs.SpringIndex) ? 0.75f : 1.0f) // Ropes are crazy, hence need more kindness
                             * mPoints.GetRepairState(pointIndex).Smoothing;
 
                         // Move point
