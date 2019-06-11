@@ -1999,21 +1999,24 @@ public:
             {
                 // State change
                 mCurrentSessionId += 1;
+                mCurrentSessionStepId = 0;
                 mEngagementStartTimestamp = std::chrono::steady_clock::now();
 
                 // Start sound
                 mSoundController->PlayRepairStructureSound();
             }
-
-            // Increment step
-            mCurrentStepId += 1;
+            else
+            {
+                // Increment step
+                mCurrentSessionStepId += 1;
+            }
 
             // Repair
             mGameController->RepairAt(
                 inputState.MousePosition,
                 1.0f,
                 mCurrentSessionId,
-                mCurrentStepId);
+                mCurrentSessionStepId);
 
             // Update cursor
             UpdateCurrentCursor();
@@ -2089,9 +2092,9 @@ private:
     // When set, we are engaged
     std::optional<std::chrono::steady_clock::time_point> mEngagementStartTimestamp;
 
-    // The current session id and the current step id
+    // The current session id and the current step id in the session
     RepairSessionId mCurrentSessionId;
-    RepairStepId mCurrentStepId;
+    RepairSessionStepId mCurrentSessionStepId;
 
     // The currently-chosen cursor
     wxCursor * mCurrentCursor;

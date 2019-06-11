@@ -65,21 +65,14 @@ public:
      */
     struct RepairState
     {
-        // The step ID in which this particle was last used as an attractor
-        RepairSessionId AttractorStepId;
-        // The step ID in which this particle was last used as an attracted
-        RepairSessionId AttractedStepId;
-
-        // The session and step ID that this state is currently smoothing at
+        // The session and session step IDs that smoothing was last applied on from an attractor
         RepairSessionId SmoothingSessionId;
-        RepairStepId SmoothingStepId;
+        RepairSessionStepId SmoothingSessionStepId;
         float Smoothing; // Grows from 0.0 to 1.0
 
         RepairState()
-            : AttractorStepId(0)
-            , AttractedStepId(0)
-            , SmoothingSessionId(0)
-            , SmoothingStepId(0)
+            : SmoothingSessionId(0)
+            , SmoothingSessionStepId(0)
             , Smoothing(0.0f)
         {}
     };

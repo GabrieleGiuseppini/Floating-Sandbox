@@ -361,17 +361,13 @@ Render:
 			+ Undo decay (halve it)
 			+ See missing springs
 			+ Play with tolerance
-			= See if conn comp logic:
+			+ See if conn comp logic:
 				+ Is broken (think): NO
-				= Is useful: commented out for the time being
-			= Get AwesomeYorkie's second feedback
-			- If ok w/commented-out conn comp logic:
-				- Remove it altogether
-				- Comment out conn comp sizes
-			- If not OK:
-				- Alpha = 1
-			- Another test: "attractive force" gets higher as attracted doesn't change position from step to another
-				- If this works, try again with low alpha
+				+ Is useful: commented out for the time being (for AwesomeYorkie)
+			+ Get AwesomeYorkie's second feedback
+			+ Try with smoothing done only at attractors via step ID
+			- Ropes
+			- Try to put back attractor/attractee exclusion 
 
 		- Merge to master
 			 
@@ -1217,10 +1213,13 @@ Render:
 			- Revisit need to have SuperTriangles and SubSprings, as we might now use edges
 				- We would now only upload springs that have 0 or 1 edges
 		- Follow-ups:
-			- Waves: generate wave (change height) when frontier (points) touch water for the first time
+			- Waves: 
+				- Generate wave (change height) when frontier (points) touch water for the first time
 			- Water drag 
 				- The one already there assumes velocity always normal to surface, but we should consider surface normal instead
-				- The new directional drag could make parts of the ship break off
+				- Should also consider normal to surface of ocean, so if two surfaces intersect, we get
+				  momentum from waves to ship
+				- The new directional drag should make parts of the ship break off
 			- External water pressure should inflict stress on springs
 				- Have to visit frontier points and, if underwater, do force perpendicular towards interior
 
@@ -1278,6 +1277,8 @@ Render:
 		- How to Guide
 
 - UI:
+	- ShipLoadDialog: search bar
+
 	- SettingsDialog: make slider textboxes editable
 
 	- Save ocean floor terrain and load it at startup

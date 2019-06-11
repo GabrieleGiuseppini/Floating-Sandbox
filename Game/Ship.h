@@ -108,7 +108,7 @@ public:
         vec2f const & targetPos,
         float radiusMultiplier,
         RepairSessionId sessionId,
-        RepairStepId stepId,
+        RepairSessionStepId sessionStepId,
         float currentSimulationTime,
         GameParameters const & gameParameters);
 

@@ -245,7 +245,7 @@ void Ship::RepairAt(
     vec2f const & targetPos,
     float radiusMultiplier,
     RepairSessionId sessionId,
-    RepairStepId stepId,
+    RepairSessionStepId sessionStepId,
     float /*currentSimulationTime*/,
     GameParameters const & gameParameters)
 {
@@ -253,15 +253,13 @@ void Ship::RepairAt(
 
     // Rate at which the "other" endpoint of a spring accelerates towards the velocity
     // required for repairing
-    // TODOTEST
-    //float constexpr SmoothingAlpha = 0.01f;
-    float constexpr SmoothingAlpha = 0.02f;
+    float constexpr SmoothingAlpha = 0.03f;
 
     // Tolerance to distance
     //
     // Note: a higher tolerance here causes springs to...spring into life
     // already stretched or compressed, generating an undesirable force impulse
-    float constexpr DisplacementTolerance = 0.065f;
+    float constexpr DisplacementTolerance = 0.07f;
 
     ///////////////////////////////////////////////////////
 
@@ -277,19 +275,50 @@ void Ship::RepairAt(
         // Attempt to restore this point's springs if the point meets all these conditions:
         // - The point is in radius
         // - The point is not orphaned
-        // - The point has not been acted upon already as an attracted in this step
         //
         // If we were to attempt to restore also orphaned points, then two formerly-connected
         // orphaned points within the search radius would interact with each other and nullify
         // the effort put by the main structure's points
         float const squareRadius = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
         if (squareRadius <= squareSearchRadius
-            && mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() > 0
-            && mPoints.GetRepairState(pointIndex).AttractedStepId != stepId)
+            && mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() > 0)
         {
-            // Remember that this point has taken the role of attractor in this step
-            mPoints.GetRepairState(pointIndex).AttractorStepId = stepId;
-            assert(mPoints.GetRepairState(pointIndex).AttractedStepId != stepId);
+            //
+            // Advance this attractor smoothing state machine, but only if it has deleted springs
+            //
+
+            if (mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() !=
+                mPoints.GetFactoryConnectedSprings(pointIndex).ConnectedSprings.size())
+            {
+                if (sessionId != mPoints.GetRepairState(pointIndex).SmoothingSessionId)
+                {
+                    //
+                    // New session altogether
+                    //
+
+                    mPoints.GetRepairState(pointIndex).Smoothing = 0.0f;
+                    mPoints.GetRepairState(pointIndex).SmoothingSessionId = sessionId;
+                }
+                else
+                {
+                    //
+                    // Advance
+                    //
+
+                    assert(sessionStepId > mPoints.GetRepairState(pointIndex).SmoothingSessionStepId);
+
+                    float newSmoothing =
+                        mPoints.GetRepairState(pointIndex).Smoothing
+                        + (1.0f - mPoints.GetRepairState(pointIndex).Smoothing) * SmoothingAlpha;
+
+                    mPoints.GetRepairState(pointIndex).Smoothing =
+                        newSmoothing
+                        / static_cast<float>(sessionStepId - mPoints.GetRepairState(pointIndex).SmoothingSessionStepId);
+                }
+
+                mPoints.GetRepairState(pointIndex).SmoothingSessionStepId = sessionStepId;
+            }
+
 
             //
             // 1) (Attempt to) restore this point's delete springs
@@ -303,70 +332,15 @@ void Ship::RepairAt(
             // Visit all the deleted springs that were connected at factory time
             for (auto const & fcs : mPoints.GetFactoryConnectedSprings(pointIndex).ConnectedSprings)
             {
-                auto const otherEndpointIndex = fcs.OtherEndpointIndex;
-
-                // Consider this spring (and thus the other endpoint) iff:
-                // - The spring is deleted, AND
-                // - The other endpoint is out-of-range of the tool, OR it is in-range but not used
-                //   already as attractor in this step and not a better candidate as an attractor
-                bool considerSpring = mSprings.IsDeleted(fcs.SpringIndex);
-                if (considerSpring)
+                if (mSprings.IsDeleted(fcs.SpringIndex))
                 {
-                    float otherEndpointSquareRadius = (mPoints.GetPosition(otherEndpointIndex) - targetPos).squareLength();
-                    if (otherEndpointSquareRadius < squareSearchRadius)
-                    {
-                        // Ignore if the other endpoint has already been used as an attractor in this step
-                        if (mPoints.GetRepairState(otherEndpointIndex).AttractorStepId == stepId)
-                        {
-                            considerSpring = false;
-                        }
-                        // TODOTEST
-                        ////// Leave a chance for the other endpoint to be an attractor if these are two separate
-                        ////// connected components, and the other endpoint's connected component is larger
-                        ////// than the current attractor's
-                        ////else if (mPoints.GetConnectedComponentId(otherEndpointIndex) != mPoints.GetConnectedComponentId(pointIndex))
-                        ////{
-                        ////    if (GetPointConnectedComponentSize(otherEndpointIndex) > GetPointConnectedComponentSize(pointIndex))
-                        ////    {
-                        ////        considerSpring = false;
-                        ////    }
-                        ////}
-                    }
-                }
+                    auto const otherEndpointIndex = fcs.OtherEndpointIndex;
 
-                if (considerSpring)
-                {
                     ////////////////////////////////////////////////////////
                     //
                     // Restore this spring by moving the other endpoint nearer
                     //
                     ////////////////////////////////////////////////////////
-
-                    // Remember this point is being used as attracted in this session
-                    mPoints.GetRepairState(otherEndpointIndex).AttractedStepId = stepId;
-                    assert(mPoints.GetRepairState(otherEndpointIndex).AttractorStepId != stepId);
-
-                    //
-                    // Advance the other endpoint's repair smoothing
-                    //
-
-                    if (mPoints.GetRepairState(otherEndpointIndex).SmoothingSessionId != sessionId)
-                    {
-                        // First time this point is repaired in this session...
-                        // ...make its smoothing start from zero
-                        mPoints.GetRepairState(otherEndpointIndex).SmoothingSessionId = sessionId;
-                        mPoints.GetRepairState(otherEndpointIndex).Smoothing = 0.0f;
-                    }
-
-                    if (mPoints.GetRepairState(otherEndpointIndex).SmoothingStepId != stepId)
-                    {
-                        // First time this point is considered in this session step...
-                        // ...advance its smoothing
-                        mPoints.GetRepairState(otherEndpointIndex).SmoothingStepId = stepId;
-                        mPoints.GetRepairState(otherEndpointIndex).Smoothing +=
-                            (1.0f - mPoints.GetRepairState(otherEndpointIndex).Smoothing)
-                            * SmoothingAlpha;
-                    }
 
                     //
                     // The target position of the endpoint is on the circle whose radius
@@ -534,7 +508,7 @@ void Ship::RepairAt(
                             pow(displacementMagnitude, gameParameters.RepairStrengthAdjustment)
                             * MovementFraction
                             * toolStrength
-                            * mPoints.GetRepairState(otherEndpointIndex).Smoothing;
+                            * mPoints.GetRepairState(pointIndex).Smoothing;
 
                         // Move point
                         mPoints.GetPosition(otherEndpointIndex) +=
