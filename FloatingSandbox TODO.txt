@@ -370,8 +370,7 @@ Render:
 			+ Try to put back attractor/attractee exclusion 
 			- Get AwesomeYorkie's final feedback
 
-		- Merge to master
-			 
+		+ Merge to master			 
 		+ Send to testers
 
 		- Heat and combustion (*)
