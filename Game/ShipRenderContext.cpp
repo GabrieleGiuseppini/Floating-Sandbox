@@ -96,8 +96,8 @@ ShipRenderContext::ShipRenderContext(
     , mDebugShipRenderMode(debugShipRenderMode)
     , mVectorFieldRenderMode(vectorFieldRenderMode)
     , mShowStressedSprings(showStressedSprings)
-    , mHalfFlameWidth(1.5f)
-    , mFlameHeight(9.0f)
+    , mHalfFlameQuadWidth(9.0f)
+    , mFlameQuadHeight(6.0f)
     // Statistics
     , mRenderStatistics(renderStatistics)
 {
@@ -368,12 +368,6 @@ void ShipRenderContext::OnViewModelUpdated()
 {
     // Recalculate ortho matrices
     UpdateOrthoMatrices();
-
-    // Set viewport parameter
-    mShaderManager.ActivateProgram<ProgramType::ShipFlames>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipFlames, ProgramParameterType::ViewportSize>(
-        static_cast<float>(mViewModel.GetCanvasWidth()),
-        static_cast<float>(mViewModel.GetCanvasHeight()));
 }
 
 void ShipRenderContext::UpdateOrthoMatrices()

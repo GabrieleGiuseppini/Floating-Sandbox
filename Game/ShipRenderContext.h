@@ -238,9 +238,9 @@ public:
         vec2f const & baseCenterPosition)
     {
         // Calculate flame quad
-        float const leftX = baseCenterPosition.x - mHalfFlameWidth;
-        float const rightX = baseCenterPosition.x + mHalfFlameWidth;
-        float const topY = baseCenterPosition.y + mFlameHeight;
+        float const leftX = baseCenterPosition.x - mHalfFlameQuadWidth;
+        float const rightX = baseCenterPosition.x + mHalfFlameQuadWidth;
+        float const topY = baseCenterPosition.y + mFlameQuadHeight;
         float const bottomY = baseCenterPosition.y;
 
         // Triangle 1
@@ -249,19 +249,19 @@ public:
         mFlameVertexBuffer.emplace_back(
             vec2f(leftX, topY),
             static_cast<float>(planeId),
-            baseCenterPosition);
+            vec2f(-1.0, 1.0));
 
         // Top-right
         mFlameVertexBuffer.emplace_back(
             vec2f(rightX, topY),
             static_cast<float>(planeId),
-            baseCenterPosition);
+            vec2f(1.0, 1.0));
 
         // Bottom-left
         mFlameVertexBuffer.emplace_back(
             vec2f(leftX, bottomY),
             static_cast<float>(planeId),
-            baseCenterPosition);
+            vec2f(-1.0, 0.0));
 
         // Triangle 2
 
@@ -269,19 +269,19 @@ public:
         mFlameVertexBuffer.emplace_back(
             vec2f(rightX, topY),
             static_cast<float>(planeId),
-            baseCenterPosition);
+            vec2f(1.0, 1.0));
 
         // Bottom-left
         mFlameVertexBuffer.emplace_back(
             vec2f(leftX, bottomY),
             static_cast<float>(planeId),
-            baseCenterPosition);
+            vec2f(-1.0, 0.0));
 
         // Bottom-right
         mFlameVertexBuffer.emplace_back(
             vec2f(rightX, bottomY),
             static_cast<float>(planeId),
-            baseCenterPosition);
+            vec2f(1.0, 0.0));
     }
 
     void UploadFlamesEnd();
@@ -559,15 +559,15 @@ private:
         vec2f vertexPosition;
         float planeId;
 
-        vec2f baseCenterPosition;
+        vec2f flameSpacePosition;
 
         FlameVertex(
             vec2f _vertexPosition,
             float _planeId,
-            vec2f _baseCenterPosition)
+            vec2f _flameSpacePosition)
             : vertexPosition(_vertexPosition)
             , planeId(_planeId)
-            , baseCenterPosition(_baseCenterPosition)
+            , flameSpacePosition(_flameSpacePosition)
         {}
     };
 
@@ -705,8 +705,8 @@ private:
     DebugShipRenderMode mDebugShipRenderMode;
     VectorFieldRenderMode mVectorFieldRenderMode;
     bool mShowStressedSprings;
-    float mHalfFlameWidth;
-    float mFlameHeight;
+    float mHalfFlameQuadWidth;
+    float mFlameQuadHeight;
 
     //
     // Statistics

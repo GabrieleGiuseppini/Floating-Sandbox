@@ -7,18 +7,17 @@
 
 // Inputs
 in vec3 inFlame1; // Position, PlaneId
-in vec2 inFlame2; // BaseCenterPosition
+in vec2 inFlame2; // FlameSpacePosition (x=[-0.5, 0.5], y=[0.0, 1.0])
 
 // Outputs
-out vec2 vertexCenterPosition;
+out vec2 flameSpacePosition;
 
 // Params
 uniform mat4 paramOrthoMatrix;
 
 void main()
 {
-    vertexCenterPosition = 
-        (paramOrthoMatrix * vec4(inFlame2.xy, -1.0, 1.0)).xy;
+    flameSpacePosition = inFlame2.xy;
 
     gl_Position = paramOrthoMatrix * vec4(inFlame1.xyz, 1.0);
 }
@@ -30,11 +29,10 @@ void main()
 #define in varying
 
 // Inputs from previous shader
-in vec2 vertexCenterPosition;
+in vec2 flameSpacePosition;
 
 // Params
 uniform float paramTime;
-uniform vec2 paramViewportSize;
 uniform float paramWindSpeedMagnitude;
 
 mat2 GetRotationMatrix(float angle)
@@ -50,19 +48,10 @@ mat2 GetRotationMatrix(float angle)
 
 void main()
 {
-    // Calculate fragment's coordinates in the pseudo-NDC space (-0.5, +0.5)
-    vec2 ndc = (gl_FragCoord.xy / paramViewportSize.xy) - vec2(0.5);
-
-    // Center and flip vertically
-    ndc = vec2(ndc.x - vertexCenterPosition.x / 2.0, vertexCenterPosition.y / 2.0 - ndc.y);
-
-    // Adjust for aspect ratio
-    ndc.y /= (paramViewportSize.x / paramViewportSize.y);
-
     // TODOHERE
-    float d = length(ndc);
+    float d = length(flameSpacePosition);
     d = d + paramTime + paramWindSpeedMagnitude;
     d = d - paramTime - paramWindSpeedMagnitude;
-    vec3 col = mix(vec3(0.8, 0.1, 0.1), vec3(0.1, 0.1, 0.8), 1.0 - smoothstep(0.0, 0.05, d));
+    vec3 col = mix(vec3(0.8, 0.1, 0.1), vec3(0.1, 0.1, 0.8), d);
     gl_FragColor = vec4(col.xyz, 1.0);
 } 
