@@ -497,6 +497,7 @@ Render:
 ======================================================================================================================
 ======================================================================================================================
 - Technical Debt:
+	- Do Pimpl for GameController
 	+ Global damp as game parameter
 	+ Ships start from 1
 	+ Do #include "foo.glsl" at ShaderManager
@@ -963,6 +964,7 @@ Render:
 		- TODO: HeatPropagation (and others?) may run sparingly
 
 		- Impl:
+			- TODOHERE
 
 		- Cleanup:
 			+ Test generic textures change (gen tex's + air bubbles at same time) and nuke comment
