@@ -927,6 +927,38 @@ public:
     }
 
     //
+    // Flames
+    //
+
+    inline void UploadShipFlamesStart(
+        ShipId shipId,
+        float windSpeedMagnitude)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        mShips[shipId]->UploadFlamesStart(windSpeedMagnitude);
+    }
+
+    inline void UploadShipFlame(
+        ShipId shipId,
+        PlaneId planeId,
+        vec2f const & baseCenterPosition)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        mShips[shipId]->UploadFlame(
+            planeId,
+            baseCenterPosition);
+    }
+
+    void UploadShipFlamesEnd(ShipId shipId)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        mShips[shipId]->UploadFlamesEnd();
+    }
+
+    //
     // Air bubbles and generic textures
     //
 
@@ -1057,6 +1089,9 @@ public:
             color);
     }
 
+
+
+
     void RenderShipEnd(ShipId shipId)
     {
         assert(shipId >= 0 && shipId < mShips.size());
@@ -1064,14 +1099,12 @@ public:
         mShips[shipId]->RenderEnd();
     }
 
-
     void RenderShipsEnd();
 
 
-
-    //
+    /////////////////////////////////////////////////////////////////////////
     // Text
-    //
+    /////////////////////////////////////////////////////////////////////////
 
     RenderedTextHandle AddText(
         std::vector<std::string> const & textLines,

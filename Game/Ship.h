@@ -370,6 +370,15 @@ private:
     Triangles mTriangles;
     ElectricalElements mElectricalElements;
 
+    // Pinned points
+    PinnedPoints mPinnedPoints;
+
+    // Bombs
+    Bombs mBombs;
+
+    // Force fields to apply at next iteration
+    std::vector<std::unique_ptr<ForceField>> mCurrentForceFields;
+
     // The current simulation sequence number
     SequenceNumber mCurrentSimulationSequenceNumber;
 
@@ -391,6 +400,16 @@ private:
     // to the rendering context
     bool mIsStructureDirty;
 
+    // Sinking detection
+    bool mIsSinking;
+
+    // Water splashes
+    RunningAverage<30> mWaterSplashedRunningAverage;
+
+    //
+    // Render members
+    //
+
     // The debug ship render mode that was in effect the last time we've uploaded elements;
     // used to detect changes and eventually re-upload
     std::optional<DebugShipRenderMode> mLastDebugShipRenderMode;
@@ -399,20 +418,8 @@ private:
     // last extra element contains total number of triangles
     std::vector<size_t> mPlaneTriangleIndicesToRender;
 
-    // Sinking detection
-    bool mIsSinking;
-
-    // Water splashes
-    RunningAverage<30> mWaterSplashedRunningAverage;
-
-    // Pinned points
-    PinnedPoints mPinnedPoints;
-
-    // Bombs
-    Bombs mBombs;
-
-    // Force fields to apply at next iteration
-    std::vector<std::unique_ptr<ForceField>> mCurrentForceFields;
+    // The wind speed magnitude to use for rendering
+    float mWindSpeedMagnitudeToRender;
 };
 
 }

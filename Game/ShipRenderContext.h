@@ -57,11 +57,7 @@ public:
 
 public:
 
-    void OnViewModelUpdated()
-    {
-        // Recalculate ortho matrices
-        UpdateOrthoMatrices();
-    }
+    void OnViewModelUpdated();
 
     void SetShipCount(size_t shipCount)
     {
@@ -229,6 +225,68 @@ public:
     void UploadElementStressedSpringsEnd();
 
     //
+    // Flames
+    //
+
+    void UploadFlamesStart(float windSpeedMagnitude);
+
+    /*
+     * Note: assumption is that upload happens in plane ID order (for depth sorting).
+     */
+    void UploadFlame(
+        PlaneId planeId,
+        vec2f const & baseCenterPosition)
+    {
+        // Calculate flame quad
+        float const leftX = baseCenterPosition.x - mHalfFlameWidth;
+        float const rightX = baseCenterPosition.x + mHalfFlameWidth;
+        float const topY = baseCenterPosition.y + mFlameHeight;
+        float const bottomY = baseCenterPosition.y;
+
+        // Triangle 1
+
+        // Top-left
+        mFlameVertexBuffer.emplace_back(
+            vec2f(leftX, topY),
+            static_cast<float>(planeId),
+            baseCenterPosition);
+
+        // Top-right
+        mFlameVertexBuffer.emplace_back(
+            vec2f(rightX, topY),
+            static_cast<float>(planeId),
+            baseCenterPosition);
+
+        // Bottom-left
+        mFlameVertexBuffer.emplace_back(
+            vec2f(leftX, bottomY),
+            static_cast<float>(planeId),
+            baseCenterPosition);
+
+        // Triangle 2
+
+        // Top-Right
+        mFlameVertexBuffer.emplace_back(
+            vec2f(rightX, topY),
+            static_cast<float>(planeId),
+            baseCenterPosition);
+
+        // Bottom-left
+        mFlameVertexBuffer.emplace_back(
+            vec2f(leftX, bottomY),
+            static_cast<float>(planeId),
+            baseCenterPosition);
+
+        // Bottom-right
+        mFlameVertexBuffer.emplace_back(
+            vec2f(rightX, bottomY),
+            static_cast<float>(planeId),
+            baseCenterPosition);
+    }
+
+    void UploadFlamesEnd();
+
+    //
     // Air bubbles and generic textures
     //
 
@@ -325,7 +383,6 @@ public:
 
     void UploadElementEphemeralPointsEnd();
 
-
     //
     // Vectors
     //
@@ -337,6 +394,9 @@ public:
         vec2f const * vector,
         float lengthAdjustment,
         vec4f const & color);
+
+
+
 
     void RenderEnd();
 
@@ -447,6 +507,7 @@ private:
     void OnWaterContrastUpdated();
     void OnWaterLevelOfDetailUpdated();
 
+    void RenderFlames();
     void RenderGenericTextures();
     void RenderVectorArrows();
 
@@ -491,6 +552,23 @@ private:
         int pointIndex1;
         int pointIndex2;
         int pointIndex3;
+    };
+
+    struct FlameVertex
+    {
+        vec2f vertexPosition;
+        float planeId;
+
+        vec2f baseCenterPosition;
+
+        FlameVertex(
+            vec2f _vertexPosition,
+            float _planeId,
+            vec2f _baseCenterPosition)
+            : vertexPosition(_vertexPosition)
+            , planeId(_planeId)
+            , baseCenterPosition(_baseCenterPosition)
+        {}
     };
 
     struct GenericTextureVertex
@@ -548,6 +626,10 @@ private:
     std::vector<LineElement> mStressedSpringElementBuffer;
     GameOpenGLVBO mStressedSpringElementVBO;
 
+    GameOpenGLMappedBuffer<FlameVertex, GL_ARRAY_BUFFER> mFlameVertexBuffer;
+    GameOpenGLVBO mFlameVertexVBO;
+    float mCurrentWindSpeedMagnitude;
+
     GameOpenGLMappedBuffer<GenericTextureVertex, GL_ARRAY_BUFFER> mAirBubbleVertexBuffer;
     std::vector<GenericTexturePlaneData> mGenericTexturePlaneVertexBuffers;
     size_t mGenericTextureTotalPlaneQuadCount;
@@ -586,6 +668,7 @@ private:
     //
 
     GameOpenGLVAO mShipVAO;
+    GameOpenGLVAO mFlameVAO;
     GameOpenGLVAO mGenericTextureVAO;
     GameOpenGLVAO mVectorArrowVAO;
 
@@ -622,6 +705,8 @@ private:
     DebugShipRenderMode mDebugShipRenderMode;
     VectorFieldRenderMode mVectorFieldRenderMode;
     bool mShowStressedSprings;
+    float mHalfFlameWidth;
+    float mFlameHeight;
 
     //
     // Statistics

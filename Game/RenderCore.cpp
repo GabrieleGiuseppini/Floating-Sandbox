@@ -29,6 +29,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::OceanFlat;
     else if (lstr == "ocean_texture")
         return ProgramType::OceanTexture;
+    else if (lstr == "ship_flames")
+        return ProgramType::ShipFlames;
     else if (lstr == "ship_generic_textures")
         return ProgramType::ShipGenericTextures;
     else if (lstr == "ship_points_color")
@@ -77,6 +79,8 @@ std::string ProgramTypeToStr(ProgramType program)
         return "OceanFlat";
     case ProgramType::OceanTexture:
         return "OceanTexture";
+    case ProgramType::ShipFlames:
+        return "ShipFlames";
     case ProgramType::ShipGenericTextures:
         return "ShipGenericTextures";
     case ProgramType::ShipPointsColor:
@@ -133,6 +137,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::StarTransparency;
     else if (str == "TextureScaling")
         return ProgramParameterType::TextureScaling;
+    else if (str == "Time")
+        return ProgramParameterType::Time;
     else if (str == "ViewportSize")
         return ProgramParameterType::ViewportSize;
     else if (str == "WaterColor")
@@ -141,6 +147,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::WaterContrast;
     else if (str == "WaterLevelThreshold")
         return ProgramParameterType::WaterLevelThreshold;
+    else if (str == "WindSpeedMagnitude")
+        return ProgramParameterType::WindSpeedMagnitude;
     // Textures
     else if (str == "SharedTexture")
         return ProgramParameterType::SharedTexture;
@@ -184,6 +192,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "StarTransparency";
     case ProgramParameterType::TextureScaling:
         return "TextureScaling";
+    case ProgramParameterType::Time:
+        return "Time";
     case ProgramParameterType::ViewportSize:
         return "ViewportSize";
     case ProgramParameterType::WaterColor:
@@ -192,6 +202,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "WaterContrast";
     case ProgramParameterType::WaterLevelThreshold:
         return "WaterLevelThreshold";
+    case ProgramParameterType::WindSpeedMagnitude:
+        return "WindSpeedMagnitude";
     // Textures
     case ProgramParameterType::SharedTexture:
         return "SharedTexture";
@@ -241,6 +253,10 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::GenericTexture2;
     else if (Utils::CaseInsensitiveEquals(str, "GenericTexture3"))
         return VertexAttributeType::GenericTexture3;
+    else if (Utils::CaseInsensitiveEquals(str, "Flame1"))
+        return VertexAttributeType::Flame1;
+    else if (Utils::CaseInsensitiveEquals(str, "Flame2"))
+        return VertexAttributeType::Flame2;
     else if (Utils::CaseInsensitiveEquals(str, "VectorArrow"))
         return VertexAttributeType::VectorArrow;
     // Text

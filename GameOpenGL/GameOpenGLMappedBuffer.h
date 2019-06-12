@@ -41,6 +41,11 @@ public:
         {
             mMappedBuffer = glMapBuffer(TTarget, GL_WRITE_ONLY);
             CheckOpenGLError();
+
+            if (nullptr == mMappedBuffer)
+            {
+                throw GameException("glMapBuffer returned null pointer");
+            }
         }
 
         mSize = 0u;

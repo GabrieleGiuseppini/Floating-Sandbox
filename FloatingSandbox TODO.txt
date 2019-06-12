@@ -375,6 +375,11 @@ Render:
 
 		- Heat and combustion (*)
 
+		- Add slider for repair tool radius
+		- Black cloth, black wood
+
+	- 1.13.0
+
 		- Spring and NonSpring force separation optimization (*)
 		- Try with SpringRelaxation updating only positions (*)
 		- Attempt to re-instate square water drag (*)
@@ -387,8 +392,6 @@ Render:
 
 
 		- Underwater currents (*)
-
-		- Black cloth, black wood
 		
 		- Electrical layer view (*)
 
@@ -401,7 +404,7 @@ Render:
 			- Propulsion (*)
 			- Batisphere ship
 
-	- 1.13.0
+	- 1.14.0
 
 		- Smoke (*)
 
@@ -473,16 +476,16 @@ Render:
 	- Slow motion
 		- When bombs explode
 	- Wreno's suggestions: https://docs.google.com/document/d/1kOYAgvh2rFYJJBnSp4DCiFm3FdJlfVEiCXQWNzJzO-I/edit
-	- Tools turning white at night
-	- Once we have ships, make "Lock Ship in View" flag and move camera with ship's center of mass (representative point or real CoM)
 	- Be able to place nuke and AM bomb anywhere
 	- Fishes
+	- Plants on the bottom - don't have to interact with the ship, just on layer in front of it
 	- Different colored lights
 	- Different maps: maps that might even have islands and grass 
 	- Black hole
 	- Tool to increase or lower mass under the cursor
 	- Can the bubble tool be used to remove water from the ship? that could be pretty cool
 	- I wonder if that's possible to make the UI dark once the brightness of the game gets lower than a specific level just like your make the FPS counter white
+		- Tools turning white at night
 	- I wonder if you can add the "Ground" material, which is a material that cannot move.
 	  No physics calculation. Plus, you're using texture, so it would be neat if the same texture as the ground can be applied to it
 	- Meteorites
@@ -784,6 +787,7 @@ Render:
 	- Ship descriptions: use Mike's drawings
 
 	- Continuous auto-focus (*)
+		- Vision: once we have ships, make "Lock Ship in View" flag and move camera with ship's center of mass (representative point or real CoM)
 		- Spec:
 			- Orchestrated by GameController by taking "optimal" AABB from World (which takes union of "optimal" AABB's from each ship)
 			  and giving it to RenderContext, which adjusts ViewModel based on it
@@ -954,9 +958,15 @@ Render:
 		- Points::UnderwaterDepth buffer
 			- Re-populated by Ship at first step that checks underwater-ness after mechanical update
 				- i.e. water update?
-			- Used by anything else afterwards
+			- Used by anything else afterwards, including heat state machine
 		- TODO: from Moleskine
 		- TODO: HeatPropagation (and others?) may run sparingly
+
+		- Impl:
+
+		- Cleanup:
+			+ Test generic textures change (gen tex's + air bubbles at same time) and nuke comment
+			+ Test cross of light change
 
 		- Flamethrower tool:
 			- Need new layer - InteractionLayer - to do flamethrower's flames

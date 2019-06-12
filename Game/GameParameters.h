@@ -209,6 +209,10 @@ struct GameParameters
     static float constexpr MinRogueWaveRate = 0.0f;
     static float constexpr MaxRogueWaveRate = 15.0f;
 
+    // Heat and combustion
+
+    static size_t constexpr MaxBurningParticles = 100;
+
     // Misc
 
     float SeaDepth;

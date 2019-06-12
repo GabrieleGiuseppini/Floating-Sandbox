@@ -32,6 +32,7 @@ enum class ProgramType
     OceanDepth,
     OceanFlat,
     OceanTexture,
+    ShipFlames,
     ShipGenericTextures,
     ShipPointsColor,
     ShipRopes,
@@ -66,10 +67,12 @@ enum class ProgramParameterType : uint8_t
     OrthoMatrix,
     StarTransparency,
     TextureScaling,
+    Time,
     ViewportSize,
     WaterColor,
     WaterContrast,
     WaterLevelThreshold,
+    WindSpeedMagnitude,
 
     // Textures
     SharedTexture,                  // 0, for programs that don't use a dedicated unit and hence will keep binding different textures
@@ -120,6 +123,9 @@ enum class VertexAttributeType : GLuint
     GenericTexture1 = 0,
     GenericTexture2 = 1,
     GenericTexture3 = 2,
+
+    Flame1 = 0,
+    Flame2 = 1,
 
     VectorArrow = 0,
 
@@ -190,6 +196,7 @@ struct RenderStatistics
     std::uint64_t LastRenderedShipSprings;
     std::uint64_t LastRenderedShipTriangles;
     std::uint64_t LastRenderedShipPlanes;
+    std::uint64_t LastRenderedShipFlames;
     std::uint64_t LastRenderedShipGenericTextures;
 
     RenderStatistics()
@@ -204,6 +211,7 @@ struct RenderStatistics
         LastRenderedShipSprings = 0;
         LastRenderedShipTriangles = 0;
         LastRenderedShipPlanes = 0;
+        LastRenderedShipFlames = 0;
         LastRenderedShipGenericTextures = 0;
     }
 };

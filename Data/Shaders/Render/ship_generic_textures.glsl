@@ -6,9 +6,9 @@
 #define out varying
 
 // Inputs
-in vec4 inGenericTexture1; // centerPosition, vertexOffset
-in vec4 inGenericTexture2; // textureCoordinates, planeId, scale
-in vec3 inGenericTexture3; // angle, alpha, ambientLightSensitivity
+in vec4 inGenericTexture1; // CenterPosition, VertexOffset
+in vec4 inGenericTexture2; // TextureCoordinates, PlaneId, Scale
+in vec3 inGenericTexture3; // Angle, Alpha, AmbientLightSensitivity
 
 // Outputs
 out vec2 vertexTextureCoordinates;

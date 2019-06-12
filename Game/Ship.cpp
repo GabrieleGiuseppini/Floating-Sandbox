@@ -58,16 +58,6 @@ Ship::Ship(
     , mSprings(std::move(springs))
     , mTriangles(std::move(triangles))
     , mElectricalElements(std::move(electricalElements))
-    , mCurrentSimulationSequenceNumber()
-    , mCurrentConnectivityVisitSequenceNumber()
-    , mMaxMaxPlaneId(0)
-    , mCurrentElectricalVisitSequenceNumber()
-    , mConnectedComponentSizes()
-    , mIsStructureDirty(true)
-    , mLastDebugShipRenderMode()
-    , mPlaneTriangleIndicesToRender()
-    , mIsSinking(false)
-    , mWaterSplashedRunningAverage()
     , mPinnedPoints(
         mParentWorld,
         mId,
@@ -82,6 +72,17 @@ Ship::Ship(
         mPoints,
         mSprings)
     , mCurrentForceFields()
+    , mCurrentSimulationSequenceNumber()
+    , mCurrentConnectivityVisitSequenceNumber()
+    , mMaxMaxPlaneId(0)
+    , mCurrentElectricalVisitSequenceNumber()
+    , mConnectedComponentSizes()
+    , mIsStructureDirty(true)
+    , mIsSinking(false)
+    , mWaterSplashedRunningAverage()
+    , mLastDebugShipRenderMode()
+    , mPlaneTriangleIndicesToRender()
+    , mWindSpeedMagnitudeToRender(0.0)
 {
     mPlaneTriangleIndicesToRender.reserve(mTriangles.GetElementCount());
 
@@ -127,6 +128,9 @@ void Ship::Update(
     mSprings.UpdateGameParameters(
         gameParameters,
         mPoints);
+
+    mWindSpeedMagnitudeToRender = mParentWorld.GetCurrentWindSpeed().x;
+
 
     //
     // Rot points
@@ -355,6 +359,18 @@ void Ship::Render(
     mPoints.UploadEphemeralParticles(
         mId,
         renderContext);
+
+
+    //
+    // Upload flames
+    //
+
+    // TODOTEST
+    renderContext.UploadShipFlamesStart(mId, -20.0f);
+    renderContext.UploadShipFlame(mId, mPoints.GetPlaneId(0), mPoints.GetPosition(0));
+    renderContext.UploadShipFlame(mId, mPoints.GetPlaneId(50), mPoints.GetPosition(50));
+    renderContext.UploadShipFlame(mId, mPoints.GetPlaneId(90), mPoints.GetPosition(90));
+    renderContext.UploadShipFlamesEnd(mId);
 
 
     //

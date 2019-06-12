@@ -47,12 +47,9 @@ void main()
     // float angle = progress;
 
     // Calculate fragment's coordinates in the NDC space
-    vec2 centeredFragCoord = gl_FragCoord.xy - paramViewportSize.xy / 2.0;
-    vec2 ndc = vec2(
-        centeredFragCoord.x / paramViewportSize.x,
-        centeredFragCoord.y / paramViewportSize.y) * 2.0;
+    vec2 ndc = (gl_FragCoord.xy / paramViewportSize.xy) * 2.0 - vec2(1.0);
 
-    // Center
+    // Center and flip vertically
     ndc = vec2(ndc.x - vertexCenterPosition.x, vertexCenterPosition.y - ndc.y);
 
     // ------------------    
