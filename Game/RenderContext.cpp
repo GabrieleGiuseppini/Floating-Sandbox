@@ -51,6 +51,7 @@ RenderContext::RenderContext(
     , mLandTextureFrameSpecifications()
     , mLandTextureOpenGLHandle()
     , mLoadedLandTextureIndex(std::numeric_limits<size_t>::max())
+    , mNoiseTextureOpenGLHandle()
     // Ships
     , mShips()
     , mGenericTextureAtlasOpenGLHandle()
@@ -92,8 +93,8 @@ RenderContext::RenderContext(
     static constexpr float GenericTextureProgressSteps = 10.0f;
     static constexpr float CloudTextureProgressSteps = 4.0f;
 
-    // Shaders, TextRenderContext, TextureDatabase, GenericTextureAtlas, Clouds
-    static constexpr float TotalProgressSteps = 3.0f + GenericTextureProgressSteps + CloudTextureProgressSteps;
+    // Shaders, TextRenderContext, TextureDatabase, GenericTextureAtlas, Clouds, Noise, WorldBorder
+    static constexpr float TotalProgressSteps = 3.0f + GenericTextureProgressSteps + CloudTextureProgressSteps + 1.0f + 1.0f;
 
     GLuint tmpGLuint;
 
@@ -156,7 +157,7 @@ RenderContext::RenderContext(
     // Atlas-ize all textures EXCEPT the following:
     // - Land, Ocean: we need these to be wrapping
     // - Clouds: we keep these in a separate atlas, we have to rebind anyway
-    // - WorldBorder
+    // - Noise, WorldBorder
     //
 
     mShaderManager->ActivateTexture<ProgramParameterType::GenericTexturesAtlasTexture>();
@@ -167,6 +168,7 @@ RenderContext::RenderContext(
         if (TextureGroupType::Land != group.Group
             && TextureGroupType::Ocean != group.Group
             && TextureGroupType::Cloud != group.Group
+            && TextureGroupType::Noise != group.Group
             && TextureGroupType::WorldBorder != group.Group)
         {
             genericTextureAtlasBuilder.Add(group);
@@ -387,6 +389,27 @@ RenderContext::RenderContext(
 
 
     //
+    // Initialize ocean textures
+    //
+
+    mOceanTextureFrameSpecifications = textureDatabase.GetGroup(TextureGroupType::Ocean).GetFrameSpecifications();
+
+    // Create list of available textures for user
+    for (auto const & tfs : mOceanTextureFrameSpecifications)
+    {
+        auto textureThumbnail = ImageFileTools::LoadImageRgbaLowerLeftAndResize(
+            tfs.FilePath,
+            ThumbnailSize);
+
+        assert(static_cast<size_t>(tfs.Metadata.FrameId.FrameIndex) == mOceanAvailableThumbnails.size());
+
+        mOceanAvailableThumbnails.emplace_back(
+            tfs.Metadata.FrameName,
+            std::move(textureThumbnail));
+    }
+
+
+    //
     // Initialize land textures
     //
 
@@ -408,25 +431,25 @@ RenderContext::RenderContext(
 
 
     //
-    // Initialize ocean textures
+    // Initialize noise texture
     //
 
-    mOceanTextureFrameSpecifications = textureDatabase.GetGroup(TextureGroupType::Ocean).GetFrameSpecifications();
+    mShaderManager->ActivateTexture<ProgramParameterType::NoiseTexture>();
 
-    // Create list of available textures for user
-    for (auto const & tfs : mOceanTextureFrameSpecifications)
-    {
-        auto textureThumbnail = ImageFileTools::LoadImageRgbaLowerLeftAndResize(
-            tfs.FilePath,
-            ThumbnailSize);
+    mUploadedTextureManager->UploadGroup(
+        textureDatabase.GetGroup(TextureGroupType::Noise),
+        [&progressCallback](float progress, std::string const &)
+        {
+            progressCallback((3.0f + GenericTextureProgressSteps + CloudTextureProgressSteps + progress) / TotalProgressSteps, "Loading textures...");
+        });
 
-        assert(static_cast<size_t>(tfs.Metadata.FrameId.FrameIndex) == mOceanAvailableThumbnails.size());
+    // Bind texture
+    glBindTexture(GL_TEXTURE_2D, mUploadedTextureManager->GetOpenGLHandle(TextureGroupType::Noise, 0));
+    CheckOpenGLError();
 
-        mOceanAvailableThumbnails.emplace_back(
-            tfs.Metadata.FrameName,
-            std::move(textureThumbnail));
-    }
-
+    // Set texture in shaders
+    mShaderManager->ActivateProgram<ProgramType::ShipFlames>();
+    mShaderManager->SetTextureParameters<ProgramType::ShipFlames>();
 
 
     //
@@ -438,9 +461,9 @@ RenderContext::RenderContext(
     mUploadedTextureManager->UploadMipmappedGroup(
         textureDatabase.GetGroup(TextureGroupType::WorldBorder),
         GL_LINEAR_MIPMAP_NEAREST,
-        [](float, std::string const &)
+        [&progressCallback](float progress, std::string const &)
         {
-            // No need to count, it's tiny
+            progressCallback((3.0f + GenericTextureProgressSteps + CloudTextureProgressSteps + 1.0f + progress) / TotalProgressSteps, "Loading textures...");
         });
 
     // Bind texture

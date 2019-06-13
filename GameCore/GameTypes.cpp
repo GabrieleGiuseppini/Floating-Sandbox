@@ -34,6 +34,8 @@ TextureGroupType StrToTextureGroupType(std::string const & str)
         return TextureGroupType::ImpactBomb;
     else if (Utils::CaseInsensitiveEquals(str, "Land"))
         return TextureGroupType::Land;
+    else if (Utils::CaseInsensitiveEquals(str, "Noise"))
+        return TextureGroupType::Noise;
     else if (Utils::CaseInsensitiveEquals(str, "Ocean"))
         return TextureGroupType::Ocean;
     else if (Utils::CaseInsensitiveEquals(str, "PinnedPoint"))

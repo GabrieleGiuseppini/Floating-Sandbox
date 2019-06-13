@@ -964,7 +964,12 @@ Render:
 		- TODO: HeatPropagation (and others?) may run sparingly
 
 		- Impl:
-			- TODOHERE
+			- Render:
+				- Make better transition for bottom
+					- May be with noise?
+				- Skew wind speed with smoothstep
+					- And reverse wind direction
+				- Reduce locality coherency of noise
 
 		- Cleanup:
 			+ Test generic textures change (gen tex's + air bubbles at same time) and nuke comment

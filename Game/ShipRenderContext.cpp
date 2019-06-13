@@ -97,7 +97,7 @@ ShipRenderContext::ShipRenderContext(
     , mVectorFieldRenderMode(vectorFieldRenderMode)
     , mShowStressedSprings(showStressedSprings)
     , mHalfFlameQuadWidth(9.0f)
-    , mFlameQuadHeight(6.0f)
+    , mFlameQuadHeight(7.0f)
     // Statistics
     , mRenderStatistics(renderStatistics)
 {

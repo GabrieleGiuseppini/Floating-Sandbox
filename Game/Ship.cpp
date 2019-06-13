@@ -366,7 +366,7 @@ void Ship::Render(
     //
 
     // TODOTEST
-    renderContext.UploadShipFlamesStart(mId, -20.0f);
+    renderContext.UploadShipFlamesStart(mId, mWindSpeedMagnitudeToRender);
     renderContext.UploadShipFlame(mId, mPoints.GetPlaneId(0), mPoints.GetPosition(0));
     renderContext.UploadShipFlame(mId, mPoints.GetPlaneId(50), mPoints.GetPosition(50));
     renderContext.UploadShipFlame(mId, mPoints.GetPlaneId(90), mPoints.GetPosition(90));

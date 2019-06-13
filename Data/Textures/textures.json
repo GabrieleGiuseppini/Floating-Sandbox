@@ -166,6 +166,18 @@
 },
 
 {
+	"groupName": "Noise",
+	"hasOwnAmbientLight": false,
+	"frames":[
+		{	
+			"worldWidth": 1.0,
+			"worldHeight": 1.0,
+			"filename": "noise_.*"
+		}
+	]
+},
+
+{
 	"groupName": "Ocean",
 	"hasOwnAmbientLight": false,
 	"frames":[

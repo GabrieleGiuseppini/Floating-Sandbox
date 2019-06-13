@@ -284,6 +284,7 @@ enum class TextureGroupType : uint16_t
     Cloud,
     ImpactBomb,
     Land,
+    Noise,
     Ocean,
     PinnedPoint,
     RcBomb,
