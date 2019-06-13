@@ -965,10 +965,11 @@ Render:
 
 		- Impl:
 			- Render:
-				- Make better transition for bottom
-					- May be with noise?
-				- Skew wind speed with smoothstep
-					- And reverse wind direction
+				= Make better transition for bottom
+				+ Skew wind speed with smoothstep
+					+ And reverse wind direction
+				- Smoothen wind change
+				- See if yellow core should be more restricted, in favor of thicker red border
 				- Reduce locality coherency of noise
 
 		- Cleanup:
