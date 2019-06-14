@@ -58,9 +58,7 @@ mat2 GetRotationMatrix(float angle)
     return m;
 }
 
-#define FlameFocus 10.0
-#define FlameSpeed 0.29
-#define FlameWidth 1.5
+#define FlameSpeed 0.23
 #define NoiseResolution 0.4
 
 void main()
@@ -99,11 +97,11 @@ void main()
     // Rotation angle
     float windAngle = -sign(paramWindSpeedMagnitude) * 2.0 * smoothstep(0.0, 100.0, abs(paramWindSpeedMagnitude));
     
+    // Randomize a bit
+    windAngle *= 1.1 * fragmentNoise;
+
     // Rotation angle is higher the higher we go
     windAngle *= flameSpacePosition.y;
-
-    // Randomize a bit
-    windAngle *= fragmentNoise;
     
     // Rotate around bottom
     uv = GetRotationMatrix(windAngle) * (uv + vec2(0.0, 0.5)) - vec2(0.0, 0.5);
@@ -113,14 +111,16 @@ void main()
     // Calculate thickness
     //
     
-    float thickness = 1.3 - abs(uv.x) * FlameWidth; 
-
+    #define FlameWidth 0.6
+    float thickness = 1.0 - smoothstep(0.1, FlameWidth, abs(uv.x));
+    
     // Taper flame depending on randomized height
-    float variationH = fragmentNoise * 1.5;
+    float variationH = fragmentNoise * 1.4;
     thickness *= smoothstep(1.3, variationH * 0.5, flameSpacePosition.y); // Taper up
-    thickness *= smoothstep(-0.35, 0.15, flameSpacePosition.y); // Taper down
- 
+    thickness *= smoothstep(-0.1, 0.15, flameSpacePosition.y); // Taper down
+    
     // Focus (less halo, larger body)
+    #define FlameFocus 2.0
     thickness = pow(clamp(thickness, 0.0, 3.0), FlameFocus);
 
 
@@ -131,7 +131,8 @@ void main()
     if (thickness < 0.3)
         discard;
 
-    vec3 col1 = mix(vec3(1.0, 1.0, 0.0), vec3(1.0, 1.0, 0.6), thickness);
-    col1 = mix(vec3(1.0, 0.0, 0.0), col1, smoothstep(0.0, 1.6, thickness));
-    gl_FragColor = vec4(col1, thickness);
+    vec3 col1 = mix(vec3(1.0, 1.0, 0.0), vec3(1.0, 1.0, 1.0), thickness);
+    col1 = mix(vec3(1.0, 0.0, 0.0), col1, thickness);    
+    
+    gl_FragColor = vec4(col1, smoothstep(0.0, 0.7, thickness));
 } 

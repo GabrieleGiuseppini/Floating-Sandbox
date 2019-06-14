@@ -375,6 +375,9 @@ Render:
 
 		- Heat and combustion (*)
 
+		- Move tool: make sling easier
+		- Bump up rot speed for dry stuff, takes 98 minutes now
+
 		- Add slider for repair tool radius
 		- Black cloth, black wood
 
@@ -478,6 +481,7 @@ Render:
 	- Wreno's suggestions: https://docs.google.com/document/d/1kOYAgvh2rFYJJBnSp4DCiFm3FdJlfVEiCXQWNzJzO-I/edit
 	- Be able to place nuke and AM bomb anywhere
 	- Fishes
+		- https://oceana.org/marine-life
 	- Plants on the bottom - don't have to interact with the ship, just on layer in front of it
 	- Different colored lights
 	- Different maps: maps that might even have islands and grass 
@@ -488,9 +492,10 @@ Render:
 		- Tools turning white at night
 	- I wonder if you can add the "Ground" material, which is a material that cannot move.
 	  No physics calculation. Plus, you're using texture, so it would be neat if the same texture as the ground can be applied to it
+	- Tornado
+		- Mixes swirl and grab
 	- Meteorites
 	- Earthquake
-	- Storm: rain and waves at ~4.4
 	- Rot tool (rots without having to flood it)
 
 ======================================================================================================================
@@ -968,9 +973,10 @@ Render:
 				= Make better transition for bottom
 				+ Skew wind speed with smoothstep
 					+ And reverse wind direction
-				- Smoothen wind change
-				- See if yellow core should be more restricted, in favor of thicker red border
+				- Smoothen wind change (via running average @ RenderContext)
+				- Make yellow core more narrow, in favor of thicker red border
 				- Reduce locality coherency of noise
+				- Try if other noise is better
 
 		- Cleanup:
 			+ Test generic textures change (gen tex's + air bubbles at same time) and nuke comment
@@ -979,6 +985,16 @@ Render:
 		- Flamethrower tool:
 			- Need new layer - InteractionLayer - to do flamethrower's flames
 				- Owned, like text layer, by GameController
+
+	- Storms
+		- Another physics component
+		- Given to Wind and OceanSurface, who uses its StormMagnitude = [0.0 ... 1.0] to increase wind in calculations
+			- OceanSurface: uses also this one when deciding whether to recalc pre-calc'd params
+		- Given to Clouds, who uses its StormMagnitude for darkness of clouds
+			- Param at shader, passed to RenderContext at RenderContext::UploadCloudsStart(...) via new "CloudDarkness" float param
+				- RenderContext::UploadCloudsStart: only sets param when val != mCurrentCloudDarkness
+		- Triggers lightnings:
+			- Communicated to RenderContext by Storms::Upload(...), for each step of the lighting state machine
 	
 	- Shooting stars
 		- Star "parks" always an extra star at (-1, -1)
@@ -1870,88 +1886,6 @@ IF WX:
 		+ Allocate() returns std::unique_ptr<Buffer<Type>>, with deleter invoking mAllocator->Release(Buffer<type>*)
 		+ Points::CheckoutWaterBufferTmp (as "AllocateWaterBufferCopy()") borrows one, copies it in, and returns it as std::unique_ptr<Buffer<float>>
 		+ Opposite for Commit() (as "UpdateWaterBuffer")
-	+ See if reordering springs according to small tiles helps, instead of according to cache heuristics
-		+ Visit point matrix as 2X2 blocks
-		+ Add all springs connected to any of the included points (0..4 points), except for already-added ones
-			+ Use vector<bool> to remember indices of springs already added
-			+ Need un_map<point index->[spring index]>
-				+ See if [spring index] could be member of PointInfo
-			+ Done like this, it favors springs extending to the right and down
-	+ Sea and Ocean Floor: take advantage of bounded-width world (*)
-		+ Main concept:
-			- OceanSurface and OceanFloor contain samples for the entire width
-				+ Have to find <#Samples==BufferWidth, MaxWorldWidth> pair that we are comfortable
-				  with *and* which gives a good resolution
-					+ Water: 
-						+ Current dx = 20*pi/512 ~= 0.122m
-						+ Next dx = W/S @ W=10K => ~80k samples
-							+ But we ended up with 8k samples!
-			+ Not anymore periodic, hence no mod anymore to get water height and ocean floor
-			+ Only the number of samples dictates final definition of surface and floor
-			+ Uploading is by sample (when not minifying a lot)
-				+ Loop uploads S(i0+ni), with i0=left start, n depending on zoom
-					+ Magnifying: n = 1, dx > 1; GPU fills-in
-					+ Minifying: n > 1, dx = n * resolution
-						+ n chosen so that number of slices kinda like now, i.e. ~= 500
-		+ Initial FPS: 29.5/29.8
-		+ Impl step 1: Ocean floor
-			+ # of samples: try 2K first
-			+ dx = MaxWorldWidth/NumberOfSamples
-			+ Initialization:
-				+ OceanBottom bitmap gets implicitly upsampled to 5000m if w < 5000
-					+ If it looks bad, made it larger until definition is enough
-				+ Then it gets cut/repeated to # of samples
-					+ ImgX = (s * dx) % 5000
-					+ Do interpolation
-			+ Update:
-				+ Sine/cosine is superimposed for each sample, like now
-			+ AdjustTo:
-				+ Fix
-			+ Sampling:
-				+ Just find sample index and interpolate in-between
-				+ See issue with x==MaxWorldWidth
-					+ Do extra sample with same val as previous
-						+ Delta is zero though
-					+ Remove change at Ship
-				+ Test last ocean floor sample, again
-			+ Since you're here, change AdjustTerrain tool to do trajectory
-			+ Test:
-				+ OceanFloor bitmap larger, not multiple (say, 700) - w/recongizable pattern			
-		+ Impl step 2: Render upload: use same spatial frequency as samples, so to avoid interpolating altogether
-			+ Need first to always render ocean up to visibleWorldBottom, in which case the two are fully independent
-				+ Test afterwards
-			+ Break World::UploadLandAndWater into OceanFloor::Upload(.) and WaterSurface::Upload(.)
-			+ Fix perf issue w/tall quads
-				+ Test waves below visible bottom
-			+ Test ocean gradient				
-			+ OceanFloor::Upload(.)
-				+ Find first sample == sample immediately to the left of visibleWorld.Left
-				+ Magnifying: n = 1, dx > 1; GPU fills-in
-				+ Minifying: n > 1, dx = n * resolution
-					+ n chosen so that number of slices kinda like now, i.e. ~= 500
-				+ No, minifying is old sampling way
-			+ WaterSurface::Upload(.)
-				+ For now, like it was at World
-			+ Go back to 500 slices
-				+ Test seams
-		+ Perf:
-			+ FPS was (during step 2): 30.2/30.4
-			+ Now: 30.5
-			+ UR was (during step 2): 214
-			+ Now: 217
-		+ Impl step 3: WaterSurface
-			+ # of samples: try 4K first
-			+ dx = MaxWorldWidth/NumberOfSamples
-			+ GetWaterHeightAt()
-			+ Init
-			+ Update
-			+ WaterSurface::Upload(.)
-				+ Do same as OceanFloor
-			+ Test if # of samples good wrt waves' resolution
-				+ Not really, but we can live with it
-		+ Perf:
-			+ FPS Now: 30.8
-			+ UR Now: 224
 	+ Points::ConnectedSprings is of struct { SpringIndex, OtherEndpointIndex }
 		+ No two separate buffers, as we seldom (if not neveer) need them separate
 		+ Init's @ShipBuilder or at whoever populates it now
@@ -2135,7 +2069,202 @@ IF WX:
 	+ Can, really?
 + Add splash screen
 
++ OpenGL Rearc:
 
+	+ Test with no repopulating buffer
+		+ Is: 54/55
+		+ Vs: 54
+		+ DISCARDED
+
+
+	+ Finish render primitives:
+		+ Water
+			+ Check for blend!!!
+		+ ShipPoints
+		+ Springs * 2
+			+ Convert to indices
+			X Check control of interpolation/end vertex?
+		+ DrawPoints
+
+	+ Remove Z depth for transparent water (shader param)
+		+ Menu with lambdas
+
+	+ AmbientLight also for water and land (calcd @ color param setting)
+		+ Use own AmbientLight render parameter (getter & setter) & shader parameter for water and land only
+			+ MainFrame sets it based off phase, and takes it for own Point::GetColour(.)
+		+ Also getters for others (separate X and Y)
+
+	+ Code cleanup:
+		+ RAII (generic)
+		+ Point description routine
+
+	+ Zoom rearc:
+		+ 0 - 1000
+			+ 1 is normal
+			+ ---> 0: smaller
+			+ ---> 1000: lerger
+			+ WorldHeight == 2*70/(zoom + 0.001)
+
+	+ Take new baseline
+		+ 22/23fps for 28,000 triangles
+
+	==================================
+	Integration:
+	==================================
+
+	+ GameController owns RenderContext (as uq_ptr)
+		+ GameController created by MainFrame after glContext created
+
+	+ GameController::Get/Set<RenderParameter>(.): // Zoom, Camx-Camy, CanvasWidth-CanvasHeight, AmbientLight, booleans
+		+ Set: forward to RenderContext::Set<RenderParameter>(.)
+			+ ...which does changes on the fly
+			+ ...and also stores those that Physics::XYZ::Render() needs for procedural and color changes
+				+ e.g. booleans, exposed as GetXYZ()
+			+ ...and also stores world bounding coordinates (R,L,T,B) to give to Physics::RenderWater/RenderLand()
+		+ Get: forward to RenderContext::Get<RenderParameter>()
+		+ Defaults: in RenderContext cctor
+		+ Nuke RenderParameters
+
+	+ GameParameters stays unchanged
+
+	+ Physics::XYZ::Render():
+		+ Takes RenderContext &
+		+ When and if needed, polls RenderContext::Get<e.g. boolean or world bounding coordinates>()
+
+	+ Screen2World and World2Screen:
+		+ Calcd by RenderContext using OrthoMatrix and its inverse (or formulas if can't do with inverse)
+		+ Exposed by GameController who asks RenderContext
+
+	+ Ship::Render:
+		+ First, all points, assigning RenderElementID - TEMPORARY
+		+ Then, springs and/or triangles, using elements
+
+	+ Nuke RenderUtils
+
+	===================================
+	Baseline perf of openGLTest:
+	- 82,524 triangles:
+		- 13/14fps
+		- OnGameTimerTrigger: 86.76%
+			- RenderShipTrianglesEnd: 73.67%
+			- fminf: 8.18%
+	- 27,324 triangles:
+		- 43/44/45fps (42fps when doing full color interpolation)
+		- OnGameTimerTrigger: 86.27%
+			- RenderShipTrianglesEnd: 71.05%
+			- fminf: 7.79%
+	-----
+	Vertex shader doing light and water:
+	- 27,324 triangles:
+		- 38/39fps
+		- OnGameTimerTrigger: 85.18%
+			- RenderShipTrianglesEnd: 75.24%
+			- fminf: 0.0%
+
+	Fragment shader doing light and water:
+	- 27,324 triangles:
+		- 35/36fps
+
+	Elements:
+	- 27,324 triangles:
+		- 39/40/41fps
+
+	Elements and light and water shading in software (still with water and light):
+	- 27,324 triangles:
+		- 49/50/51fps
+
+	Elements and light and water shading in software (no more water and light):
+	- 27,324 triangles:
+		- 49/50/51fps
+
+	Without ambient light re-calculations for each vertex (shader parameter):
+	- 27,324 triangles:
+		- 51/53fps
+		- OnGameTimerTrigger: 85.84%
+			- RenderShipTrianglesEnd: 76.26% [all external]
+			- fminf: 1.56%
+	+ See if reordering springs according to small tiles helps, instead of according to cache heuristics
+		+ Visit point matrix as 2X2 blocks
+		+ Add all springs connected to any of the included points (0..4 points), except for already-added ones
+			+ Use vector<bool> to remember indices of springs already added
+			+ Need un_map<point index->[spring index]>
+				+ See if [spring index] could be member of PointInfo
+			+ Done like this, it favors springs extending to the right and down
+	+ Sea and Ocean Floor: take advantage of bounded-width world (*)
+		+ Main concept:
+			+ OceanSurface and OceanFloor contain samples for the entire width
+				+ Have to find <#Samples==BufferWidth, MaxWorldWidth> pair that we are comfortable
+				  with *and* which gives a good resolution
+					+ Water: 
+						+ Current dx = 20*pi/512 ~= 0.122m
+						+ Next dx = W/S @ W=10K => ~80k samples
+							+ But we ended up with 8k samples!
+			+ Not anymore periodic, hence no mod anymore to get water height and ocean floor
+			+ Only the number of samples dictates final definition of surface and floor
+			+ Uploading is by sample (when not minifying a lot)
+				+ Loop uploads S(i0+ni), with i0=left start, n depending on zoom
+					+ Magnifying: n = 1, dx > 1; GPU fills-in
+					+ Minifying: n > 1, dx = n * resolution
+						+ n chosen so that number of slices kinda like now, i.e. ~= 500
+		+ Initial FPS: 29.5/29.8
+		+ Impl step 1: Ocean floor
+			+ # of samples: try 2K first
+			+ dx = MaxWorldWidth/NumberOfSamples
+			+ Initialization:
+				+ OceanBottom bitmap gets implicitly upsampled to 5000m if w < 5000
+					+ If it looks bad, made it larger until definition is enough
+				+ Then it gets cut/repeated to # of samples
+					+ ImgX = (s * dx) % 5000
+					+ Do interpolation
+			+ Update:
+				+ Sine/cosine is superimposed for each sample, like now
+			+ AdjustTo:
+				+ Fix
+			+ Sampling:
+				+ Just find sample index and interpolate in-between
+				+ See issue with x==MaxWorldWidth
+					+ Do extra sample with same val as previous
+						+ Delta is zero though
+					+ Remove change at Ship
+				+ Test last ocean floor sample, again
+			+ Since you're here, change AdjustTerrain tool to do trajectory
+			+ Test:
+				+ OceanFloor bitmap larger, not multiple (say, 700) - w/recongizable pattern			
+		+ Impl step 2: Render upload: use same spatial frequency as samples, so to avoid interpolating altogether
+			+ Need first to always render ocean up to visibleWorldBottom, in which case the two are fully independent
+				+ Test afterwards
+			+ Break World::UploadLandAndWater into OceanFloor::Upload(.) and WaterSurface::Upload(.)
+			+ Fix perf issue w/tall quads
+				+ Test waves below visible bottom
+			+ Test ocean gradient				
+			+ OceanFloor::Upload(.)
+				+ Find first sample == sample immediately to the left of visibleWorld.Left
+				+ Magnifying: n = 1, dx > 1; GPU fills-in
+				+ Minifying: n > 1, dx = n * resolution
+					+ n chosen so that number of slices kinda like now, i.e. ~= 500
+				+ No, minifying is old sampling way
+			+ WaterSurface::Upload(.)
+				+ For now, like it was at World
+			+ Go back to 500 slices
+				+ Test seams
+		+ Perf:
+			+ FPS was (during step 2): 30.2/30.4
+			+ Now: 30.5
+			+ UR was (during step 2): 214
+			+ Now: 217
+		+ Impl step 3: WaterSurface
+			+ # of samples: try 4K first
+			+ dx = MaxWorldWidth/NumberOfSamples
+			+ GetWaterHeightAt()
+			+ Init
+			+ Update
+			+ WaterSurface::Upload(.)
+				+ Do same as OceanFloor
+			+ Test if # of samples good wrt waves' resolution
+				+ Not really, but we can live with it
+		+ Perf:
+			+ FPS Now: 30.8
+			+ UR Now: 224
 + UI:
 	+ Smooth pan and zoom
 		+ Takes 1 sec to get to final value (which is stored immediately as real value)
