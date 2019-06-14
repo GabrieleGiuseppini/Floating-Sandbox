@@ -59,7 +59,6 @@ mat2 GetRotationMatrix(float angle)
 }
 
 #define FlameSpeed 0.23
-#define NoiseResolution 0.4
 
 void main()
 {
@@ -69,7 +68,8 @@ void main()
     float flameTime = paramTime * FlameSpeed;
     
     // Get noise for this fragment and time
-    float fragmentNoise = GetNoise(uv * NoiseResolution + vec2(0.0, -flameTime));
+    #define NoiseResolution 0.6
+    float fragmentNoise = GetNoise(uv * NoiseResolution + vec2(0.0, -flameTime/0.8));
 
     //
     // Rotate fragment based on noise and vertical extent

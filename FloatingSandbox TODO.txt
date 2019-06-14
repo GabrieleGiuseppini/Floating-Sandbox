@@ -958,8 +958,10 @@ Render:
 		- Rendering of flames:
 			- Need depth-sorting:
 				- Ship has heap of indices of burning points
+					- Ordering of heap: <depth buffer, y> // y: flames below cover flames above, when on same plane ID
 					- Heap created from scratch at connectivity visit
-					- Heap updated by Points's combustion state machine update (heap passed by Ship)
+					- Heap updated by Points's combustion state machine update (heap passed by Ship) when points start
+					  or stop burning					
 					- Heap used by Points's Upload() (heap passed by Ship)
 		- Points::UnderwaterDepth buffer
 			- Re-populated by Ship at first step that checks underwater-ness after mechanical update
@@ -974,9 +976,11 @@ Render:
 				+ Skew wind speed with smoothstep
 					+ And reverse wind direction
 				- Smoothen wind change (via running average @ RenderContext)
-				- Make yellow core more narrow, in favor of thicker red border
+				+ Make yellow core more narrow, in favor of thicker red border
 				- Reduce locality coherency of noise
+					- Still an issue?
 				- Try if other noise is better
+				- Make more vivid red
 
 		- Cleanup:
 			+ Test generic textures change (gen tex's + air bubbles at same time) and nuke comment
