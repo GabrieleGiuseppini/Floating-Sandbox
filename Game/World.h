@@ -71,8 +71,9 @@ public:
     // Interactions
     //
 
-    std::optional<ElementId> Pick(
+    void PickPointToMove(
         vec2f const & pickPosition,
+        std::optional<ElementId> & elementId,
         GameParameters const & gameParameters);
 
     void MoveBy(
@@ -80,7 +81,7 @@ public:
         vec2f const & offset,
         GameParameters const & gameParameters);
 
-    void MoveAllBy(
+    void MoveBy(
         ShipId shipId,
         vec2f const & offset,
         GameParameters const & gameParameters);
@@ -91,7 +92,7 @@ public:
         vec2f const & center,
         GameParameters const & gameParameters);
 
-    void RotateAllBy(
+    void RotateBy(
         ShipId shipId,
         float angle,
         vec2f const & center,

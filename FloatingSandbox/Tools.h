@@ -262,22 +262,15 @@ private:
 // Tools
 //////////////////////////////////////////////////////////////////////////////////////////
 
-class MoveTool final : public OneShotTool
+template <typename TMovableObjectId>
+class BaseMoveTool : public OneShotTool
 {
-public:
-
-    MoveTool(
-        wxFrame * parentFrame,
-        std::shared_ptr<GameController> gameController,
-        std::shared_ptr<SoundController> soundController,
-        ResourceLoader & resourceLoader);
-
 public:
 
     virtual void Initialize(InputState const & inputState) override
     {
         // Reset state
-        mEngagedElementId.reset();
+        mEngagedMovableObjectId.reset();
         mCurrentTrajectory.reset();
         mRotationCenter.reset();
 
@@ -287,9 +280,9 @@ public:
 
     virtual void Deinitialize(InputState const & /*inputState*/) override
     {
-        if (!!mEngagedElementId)
+        if (!!mEngagedMovableObjectId)
         {
-            // Tell GameController
+            // Tell GameController to stop moving
             mGameController->SetMoveToolEngaged(false);
         }
     }
@@ -324,14 +317,14 @@ public:
             {
                 // Move
                 mGameController->MoveBy(
-                    mCurrentTrajectory->EngagedElementId,
+                    mCurrentTrajectory->EngagedMovableObjectId,
                     newCurrentPosition - mCurrentTrajectory->CurrentPosition);
             }
             else
             {
                 // Rotate
                 mGameController->RotateBy(
-                    mCurrentTrajectory->EngagedElementId,
+                    mCurrentTrajectory->EngagedMovableObjectId,
                     newCurrentPosition.y - mCurrentTrajectory->CurrentPosition.y,
                     *mCurrentTrajectory->RotationCenter);
             }
@@ -345,21 +338,21 @@ public:
                 // Close trajectory
                 //
 
-                if (!!mEngagedElementId)
+                if (!!mEngagedMovableObjectId)
                 {
                     // Tell game controller to stop inertia
                     if (!mCurrentTrajectory->RotationCenter)
                     {
                         // Move
                         mGameController->MoveBy(
-                        mCurrentTrajectory->EngagedElementId,
-                        vec2f::zero());
+                            mCurrentTrajectory->EngagedMovableObjectId,
+                            vec2f::zero());
                     }
                     else
                     {
                         // Rotate
                         mGameController->RotateBy(
-                            mCurrentTrajectory->EngagedElementId,
+                            mCurrentTrajectory->EngagedMovableObjectId,
                             0.0f,
                             *mCurrentTrajectory->RotationCenter);
                     }
@@ -373,7 +366,7 @@ public:
 
     virtual void OnMouseMove(InputState const & inputState) override
     {
-        if (!!mEngagedElementId)
+        if (!!mEngagedMovableObjectId)
         {
             auto const now = std::chrono::steady_clock::now();
 
@@ -400,7 +393,7 @@ public:
                 // Start a new trajectory
                 //
 
-                mCurrentTrajectory = Trajectory(*mEngagedElementId);
+                mCurrentTrajectory = Trajectory(*mEngagedMovableObjectId);
                 mCurrentTrajectory->RotationCenter = mRotationCenter;
                 mCurrentTrajectory->StartPosition = inputState.PreviousMousePosition;
                 mCurrentTrajectory->CurrentPosition = mCurrentTrajectory->StartPosition;
@@ -436,6 +429,32 @@ public:
         ShowCurrentCursor();
     }
 
+protected:
+
+    BaseMoveTool(
+        ToolType toolType,
+        wxFrame * parentFrame,
+        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<SoundController> soundController,
+        std::unique_ptr<wxCursor> upCursor,
+        std::unique_ptr<wxCursor> downCursor,
+        std::unique_ptr<wxCursor> rotateUpCursor,
+        std::unique_ptr<wxCursor> rotateDownCursor)
+        : OneShotTool(
+            toolType,
+            parentFrame,
+            std::move(gameController),
+            std::move(soundController))
+        , mEngagedMovableObjectId(std::nullopt)
+        , mCurrentTrajectory(std::nullopt)
+        , mRotationCenter(std::nullopt)
+        , mUpCursor(std::move(upCursor))
+        , mDownCursor(std::move(downCursor))
+        , mRotateUpCursor(std::move(rotateUpCursor))
+        , mRotateDownCursor(std::move(rotateDownCursor))
+    {
+    }
+
 private:
 
     void ProcessInputStateChange(InputState const & inputState)
@@ -448,18 +467,20 @@ private:
         {
             // Left mouse down
 
-            if (!mEngagedElementId)
+            if (!mEngagedMovableObjectId)
             {
                 //
                 // We're currently not engaged
                 //
 
                 // Check with game controller
-                auto elementId = mGameController->Pick(inputState.MousePosition);
-                if (!!elementId)
+                mGameController->PickObjectToMove(
+                    inputState.MousePosition,
+                    mEngagedMovableObjectId);
+
+                if (!!mEngagedMovableObjectId)
                 {
-                    // Engaged
-                    mEngagedElementId = elementId;
+                    // Engaged!
 
                     // Tell GameController
                     mGameController->SetMoveToolEngaged(true);
@@ -470,14 +491,14 @@ private:
         {
             // Left mouse up
 
-            if (!!mEngagedElementId)
+            if (!!mEngagedMovableObjectId)
             {
                 //
                 // We're currently engaged
                 //
 
                 // Disengage
-                mEngagedElementId.reset();
+                mEngagedMovableObjectId.reset();
 
                 // Leave the trajectory running
 
@@ -493,7 +514,7 @@ private:
         {
             // Shift key down
 
-            if (!mRotationCenter && !!mEngagedElementId)
+            if (!mRotationCenter && !!mEngagedMovableObjectId)
             {
                 //
                 // We're engaged and not in rotation mode yet
@@ -522,7 +543,7 @@ private:
         // Update cursor
         //
 
-        if (!mEngagedElementId)
+        if (!mEngagedMovableObjectId)
         {
             if (!mRotationCenter)
             {
@@ -549,11 +570,11 @@ private:
 private:
 
     // When engaged, the ID of the element (point of a ship) we're currently moving
-    std::optional<ElementId> mEngagedElementId;
+    std::optional<TMovableObjectId> mEngagedMovableObjectId;
 
     struct Trajectory
     {
-        ElementId EngagedElementId;
+        TMovableObjectId EngagedMovableObjectId;
         std::optional<vec2f> RotationCenter;
 
         vec2f StartPosition;
@@ -563,8 +584,8 @@ private:
         std::chrono::steady_clock::time_point StartTimestamp;
         std::chrono::steady_clock::time_point EndTimestamp;
 
-        Trajectory(ElementId engagedElementId)
-            : EngagedElementId(engagedElementId)
+        Trajectory(TMovableObjectId engagedMovableObjectId)
+            : EngagedMovableObjectId(engagedMovableObjectId)
         {}
     };
 
@@ -583,7 +604,18 @@ private:
     std::unique_ptr<wxCursor> const mRotateDownCursor;
 };
 
-class MoveAllTool final : public OneShotTool
+class MoveTool final : public BaseMoveTool<ElementId>
+{
+public:
+
+    MoveTool(
+        wxFrame * parentFrame,
+        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<SoundController> soundController,
+        ResourceLoader & resourceLoader);
+};
+
+class MoveAllTool final : public BaseMoveTool<ShipId>
 {
 public:
 
@@ -592,295 +624,6 @@ public:
         std::shared_ptr<GameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
-
-public:
-
-    virtual void Initialize(InputState const & inputState) override
-    {
-        // Reset state
-        mEngagedShipId.reset();
-        mCurrentTrajectory.reset();
-        mRotationCenter.reset();
-
-        // Initialize state
-        ProcessInputStateChange(inputState);
-    }
-
-    virtual void Deinitialize(InputState const & /*inputState*/) override
-    {
-        if (!!mEngagedShipId)
-        {
-            // Tell GameController
-            mGameController->SetMoveToolEngaged(false);
-        }
-    }
-
-    virtual void Update(InputState const & /*inputState*/) override
-    {
-        if (!!mCurrentTrajectory)
-        {
-            //
-            // We're following a trajectory
-            //
-
-            auto const now = std::chrono::steady_clock::now();
-
-            //
-            // Smooth current position
-            //
-
-            float const rawProgress =
-                static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(now - mCurrentTrajectory->StartTimestamp).count())
-                / static_cast<float>(TrajectoryLag.count());
-
-            // ((x+0.5)^2-0.25)/2.0
-            float const progress = (pow(std::min(rawProgress, 1.0f) + 0.5f, 2.0f) - 0.25f) / 2.0f;
-
-            vec2f const newCurrentPosition =
-                mCurrentTrajectory->StartPosition
-                + (mCurrentTrajectory->EndPosition - mCurrentTrajectory->StartPosition) * progress;
-
-            // Tell GameController
-            if (!mCurrentTrajectory->RotationCenter)
-            {
-                // Move
-                mGameController->MoveAllBy(
-                    mCurrentTrajectory->EngagedShipId,
-                    newCurrentPosition - mCurrentTrajectory->CurrentPosition);
-            }
-            else
-            {
-                // Rotate
-                mGameController->RotateAllBy(
-                    mCurrentTrajectory->EngagedShipId,
-                    newCurrentPosition.y - mCurrentTrajectory->CurrentPosition.y,
-                    *mCurrentTrajectory->RotationCenter);
-            }
-
-            mCurrentTrajectory->CurrentPosition = newCurrentPosition;
-
-            // Check whether we are done
-            if (rawProgress >= 1.0f)
-            {
-                //
-                // Close trajectory
-                //
-
-                if (!!mEngagedShipId)
-                {
-                    // Tell game controller to stop inertia
-                    if (!mCurrentTrajectory->RotationCenter)
-                    {
-                        // Move
-                        mGameController->MoveAllBy(
-                            mCurrentTrajectory->EngagedShipId,
-                            vec2f::zero());
-                    }
-                    else
-                    {
-                        // Rotate
-                        mGameController->RotateAllBy(
-                            mCurrentTrajectory->EngagedShipId,
-                            0.0f,
-                            *mCurrentTrajectory->RotationCenter);
-                    }
-                }
-
-                // Reset trajectory
-                mCurrentTrajectory.reset();
-            }
-        }
-    }
-
-    virtual void OnMouseMove(InputState const & inputState) override
-    {
-        if (!!mEngagedShipId)
-        {
-            if (!!mCurrentTrajectory)
-            {
-                // Restart from here
-                mCurrentTrajectory->StartPosition = mCurrentTrajectory->CurrentPosition;
-            }
-            else
-            {
-                mCurrentTrajectory = Trajectory();
-                mCurrentTrajectory->EngagedShipId = *mEngagedShipId;
-                mCurrentTrajectory->RotationCenter = mRotationCenter;
-                mCurrentTrajectory->StartPosition = inputState.PreviousMousePosition;
-                mCurrentTrajectory->CurrentPosition = mCurrentTrajectory->StartPosition;
-            }
-
-            mCurrentTrajectory->EndPosition = inputState.MousePosition;
-            mCurrentTrajectory->StartTimestamp = std::chrono::steady_clock::now();
-            mCurrentTrajectory->EndTimestamp = mCurrentTrajectory->StartTimestamp + TrajectoryLag;
-        }
-    }
-
-    virtual void OnLeftMouseDown(InputState const & inputState) override
-    {
-        ProcessInputStateChange(inputState);
-        ShowCurrentCursor();
-    }
-
-    virtual void OnLeftMouseUp(InputState const & inputState) override
-    {
-        ProcessInputStateChange(inputState);
-        ShowCurrentCursor();
-    }
-
-    virtual void OnShiftKeyDown(InputState const & inputState) override
-    {
-        ProcessInputStateChange(inputState);
-        ShowCurrentCursor();
-    }
-
-    virtual void OnShiftKeyUp(InputState const & inputState) override
-    {
-        ProcessInputStateChange(inputState);
-        ShowCurrentCursor();
-    }
-
-private:
-
-    void ProcessInputStateChange(InputState const & inputState)
-    {
-        //
-        // Update state
-        //
-
-        if (inputState.IsLeftMouseDown)
-        {
-            // Left mouse down
-
-            if (!mEngagedShipId)
-            {
-                //
-                // We're currently not engaged
-                //
-
-                // Check with game controller
-                auto pointId = mGameController->GetNearestPointAt(inputState.MousePosition);
-                if (!!pointId)
-                {
-                    // Engaged
-                    mEngagedShipId = pointId->GetShipId();
-
-                    // Tell GameController
-                    mGameController->SetMoveToolEngaged(true);
-                }
-            }
-        }
-        else
-        {
-            // Left mouse up
-
-            if (!!mEngagedShipId)
-            {
-                //
-                // We're currently engaged
-                //
-
-                // Disengage
-                mEngagedShipId.reset();
-
-                // Leave the trajectory running
-
-                // Tell GameController
-                mGameController->SetMoveToolEngaged(false);
-            }
-
-            // Reset rotation in any case
-            mRotationCenter.reset();
-        }
-
-        if (inputState.IsShiftKeyDown)
-        {
-            // Shift key down
-
-            if (!mRotationCenter && !!mEngagedShipId)
-            {
-                //
-                // We're engaged and not in rotation mode yet
-                //
-
-                // Start rotation mode
-                mRotationCenter = inputState.MousePosition;
-            }
-        }
-        else
-        {
-            // Shift key up
-
-            if (!!mRotationCenter)
-            {
-                //
-                // We are in rotation mode
-                //
-
-                // Stop rotation mode
-                mRotationCenter.reset();
-            }
-        }
-
-        //
-        // Update cursor
-        //
-
-        if (!mEngagedShipId)
-        {
-            if (!mRotationCenter)
-            {
-                mCurrentCursor = mUpCursor.get();
-            }
-            else
-            {
-                mCurrentCursor = mRotateUpCursor.get();
-            }
-        }
-        else
-        {
-            if (!mRotationCenter)
-            {
-                mCurrentCursor = mDownCursor.get();
-            }
-            else
-            {
-                mCurrentCursor = mRotateDownCursor.get();
-            }
-        }
-    }
-
-private:
-
-    // When engaged, the ID of the ship we're currently moving
-    std::optional<ShipId> mEngagedShipId;
-
-    struct Trajectory
-    {
-        ShipId EngagedShipId;
-        std::optional<vec2f> RotationCenter;
-
-        vec2f StartPosition;
-        vec2f CurrentPosition;
-        vec2f EndPosition;
-
-        std::chrono::steady_clock::time_point StartTimestamp;
-        std::chrono::steady_clock::time_point EndTimestamp;
-    };
-
-    static constexpr std::chrono::milliseconds TrajectoryLag = std::chrono::milliseconds(300);
-
-    // When set, we're smoothing the mouse position along a trajectory
-    std::optional<Trajectory> mCurrentTrajectory;
-
-    // When set, we're rotating
-    std::optional<vec2f> mRotationCenter;
-
-    // The cursors
-    std::unique_ptr<wxCursor> const mUpCursor;
-    std::unique_ptr<wxCursor> const mDownCursor;
-    std::unique_ptr<wxCursor> const mRotateUpCursor;
-    std::unique_ptr<wxCursor> const mRotateDownCursor;
 };
 
 class SmashTool final : public ContinuousTool

@@ -106,11 +106,12 @@ public:
     void SetStatusTextEnabled(bool isEnabled);
     void SetExtendedStatusTextEnabled(bool isEnabled);
 
-    std::optional<ElementId> Pick(vec2f const & screenCoordinates);
+    void PickObjectToMove(vec2f const & screenCoordinates, std::optional<ElementId> & elementId);
+    void PickObjectToMove(vec2f const & screenCoordinates, std::optional<ShipId> & shipId);
     void MoveBy(ElementId elementId, vec2f const & screenOffset);
-    void MoveAllBy(ShipId shipId, vec2f const & screenOffset);
+    void MoveBy(ShipId shipId, vec2f const & screenOffset);
     void RotateBy(ElementId elementId, float screenDeltaY, vec2f const & screenCenter);
-    void RotateAllBy(ShipId shipId, float screenDeltaY, vec2f const & screenCenter);
+    void RotateBy(ShipId shipId, float screenDeltaY, vec2f const & screenCenter);
     void DestroyAt(vec2f const & screenCoordinates, float radiusFraction);
     void RepairAt(vec2f const & screenCoordinates, float radiusMultiplier, RepairSessionId sessionId, RepairSessionStepId sessionStepId);
     void SawThrough(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates);

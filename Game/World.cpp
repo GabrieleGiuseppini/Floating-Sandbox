@@ -71,21 +71,25 @@ size_t World::GetShipPointCount(ShipId shipId) const
 // Interactions
 //////////////////////////////////////////////////////////////////////////////
 
-std::optional<ElementId> World::Pick(
+void World::PickPointToMove(
     vec2f const & pickPosition,
+    std::optional<ElementId> & elementId,
     GameParameters const & gameParameters)
 {
     for (auto & ship : mAllShips)
     {
-        auto elementIndex = ship->Pick(
+        auto elementIndex = ship->PickPointToMove(
             pickPosition,
             gameParameters);
 
         if (!!elementIndex)
-            return ElementId(ship->GetId(), *elementIndex);
+        {
+            elementId = ElementId(ship->GetId(), *elementIndex);
+            return;
+        }
     }
 
-    return std::nullopt;
+    elementId = std::nullopt;
 }
 
 void World::MoveBy(
@@ -102,14 +106,14 @@ void World::MoveBy(
         gameParameters);
 }
 
-void World::MoveAllBy(
+void World::MoveBy(
     ShipId shipId,
     vec2f const & offset,
     GameParameters const & gameParameters)
 {
     assert(shipId >= 0 && shipId < mAllShips.size());
 
-    mAllShips[shipId]->MoveAllBy(
+    mAllShips[shipId]->MoveBy(
         offset,
         gameParameters);
 }
@@ -130,7 +134,7 @@ void World::RotateBy(
         gameParameters);
 }
 
-void World::RotateAllBy(
+void World::RotateBy(
     ShipId shipId,
     float angle,
     vec2f const & center,
@@ -138,7 +142,7 @@ void World::RotateAllBy(
 {
     assert(shipId >= 0 && shipId < mAllShips.size());
 
-    mAllShips[shipId]->RotateAllBy(
+    mAllShips[shipId]->RotateBy(
         angle,
         center,
         gameParameters);

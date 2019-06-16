@@ -28,7 +28,7 @@ namespace Physics {
 // SS   SS  H     H     I     P
 //   SSS    H     H  IIIIIII  P
 
-std::optional<ElementIndex> Ship::Pick(
+std::optional<ElementIndex> Ship::PickPointToMove(
     vec2f const & pickPosition,
     GameParameters const & gameParameters)
 {
@@ -89,7 +89,7 @@ void Ship::MoveBy(
     }
 }
 
-void Ship::MoveAllBy(
+void Ship::MoveBy(
     vec2f const & offset,
     GameParameters const & gameParameters)
 {
@@ -145,7 +145,7 @@ void Ship::RotateBy(
     }
 }
 
-void Ship::RotateAllBy(
+void Ship::RotateBy(
     float angle,
     vec2f const & center,
     GameParameters const & gameParameters)

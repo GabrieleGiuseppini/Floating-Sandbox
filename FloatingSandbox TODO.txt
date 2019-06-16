@@ -510,19 +510,20 @@ Render:
 ======================================================================================================================
 ======================================================================================================================
 - Technical Debt:
-	- Do Pimpl for GameController
 	+ Global damp as game parameter
 	+ Ships start from 1
 	+ Do #include "foo.glsl" at ShaderManager
 		+ After including redo
 		+ Detect loops with unordered_set<std::string>
 		+ Use for ship color and texture
+	+ Sound controller: complain if find extraneous files (had issue with ".flc")
+
+	- Do Pimpl for GameController
 	- Add "beta/foo" to versions
 	- Ship: replace handler registrations with points, springs, etc. with IStructureHandler, declared in own .h
 	- GameEventDispatcher: set mIsDirty at event publishing and consume at Flush()
 		- See if still needed, actually, after we break up IGameEventHandler
 	- Try 32-bit build
-	+ Sound controller: complain if find extraneous files (had issue with ".flc")
 	- Translations:
 		- Make localizable
 		- Russian: steven6886@yandex.ru

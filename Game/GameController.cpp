@@ -296,15 +296,33 @@ void GameController::SetExtendedStatusTextEnabled(bool isEnabled)
     mStatusText->SetExtendedStatusTextEnabled(isEnabled);
 }
 
-std::optional<ElementId> GameController::Pick(vec2f const & screenCoordinates)
+void GameController::PickObjectToMove(
+    vec2f const & screenCoordinates,
+    std::optional<ElementId> & elementId)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
     // Apply action
     assert(!!mWorld);
-    return mWorld->Pick(
+    mWorld->PickPointToMove(
         worldCoordinates,
+        elementId,
         mGameParameters);
+}
+
+void GameController::PickObjectToMove(
+    vec2f const & screenCoordinates,
+    std::optional<ShipId> & shipId)
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+
+    // Apply action
+    assert(!!mWorld);
+    auto elementIndex = mWorld->GetNearestPointAt(worldCoordinates, 1.0f);
+    if (!!elementIndex)
+        shipId = elementIndex->GetShipId();
+    else
+        shipId = std::nullopt;
 }
 
 void GameController::MoveBy(
@@ -321,7 +339,7 @@ void GameController::MoveBy(
         mGameParameters);
 }
 
-void GameController::MoveAllBy(
+void GameController::MoveBy(
     ShipId shipId,
     vec2f const & screenOffset)
 {
@@ -329,7 +347,7 @@ void GameController::MoveAllBy(
 
     // Apply action
     assert(!!mWorld);
-    mWorld->MoveAllBy(
+    mWorld->MoveBy(
         shipId,
         worldOffset,
         mGameParameters);
@@ -356,7 +374,7 @@ void GameController::RotateBy(
         mGameParameters);
 }
 
-void GameController::RotateAllBy(
+void GameController::RotateBy(
     ShipId shipId,
     float screenDeltaY,
     vec2f const & screenCenter)
@@ -370,7 +388,7 @@ void GameController::RotateAllBy(
 
     // Apply action
     assert(!!mWorld);
-    mWorld->RotateAllBy(
+    mWorld->RotateBy(
         shipId,
         angle,
         worldCenter,
