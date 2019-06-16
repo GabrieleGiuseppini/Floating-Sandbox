@@ -128,11 +128,11 @@ void main()
     // Emit
     //
 
-    if (thickness < 0.3)
+    if (thickness < 0.1)
         discard;
 
-    vec3 col1 = mix(vec3(1.0, 1.0, 0.0), vec3(1.0, 1.0, 1.0), thickness);
-    col1 = mix(vec3(1.0, 0.0, 0.0), col1, thickness);    
-    
-    gl_FragColor = vec4(col1, smoothstep(0.0, 0.7, thickness));
+    vec3 col1 = mix(vec3(1.0, 1.0, 0.6), vec3(1.0, 1.0, 1.0), thickness);
+    col1 = mix(vec3(1.0, 0.0, 0.0), col1, smoothstep(0.3, 0.8, thickness));    
+
+    gl_FragColor = vec4(col1, smoothstep(0.1, 0.5, thickness));
 } 

@@ -376,7 +376,15 @@ Render:
 		- Heat and combustion (*)
 
 		- Move tool: make sling easier
+			- 1) Merge Move tools
+				- Base templated class
+				- Derived only has virtual's for GameController calls
+			- 2) Tool always remembers last mouse velocity
+			- 3) Upon passing velocity, if mouse velocity is close to zero it uses last
+				- But then always remembers last *mouse* velocity
+
 		- Bump up rot speed for dry stuff, takes 98 minutes now
+			- They all agree: a ship should rot in 30 minutes on the surface, and in 15 minutes when flooded
 
 		- Add slider for repair tool radius
 		- Black cloth, black wood
@@ -510,9 +518,6 @@ Render:
 		+ Detect loops with unordered_set<std::string>
 		+ Use for ship color and texture
 	- Add "beta/foo" to versions
-	- Merge Move tools
-		- Base templated class
-		- Derived only has virtual's for GameController calls
 	- Ship: replace handler registrations with points, springs, etc. with IStructureHandler, declared in own .h
 	- GameEventDispatcher: set mIsDirty at event publishing and consume at Flush()
 		- See if still needed, actually, after we break up IGameEventHandler
@@ -888,6 +893,10 @@ Render:
 
 - Dynamics:
 
+	- Thanos Snap:
+		- From right to left or viceversa
+		- Makes snap sound
+
 	- Randomize decay
 		- Perlin noise on ship, created at ShipBuilder, stored as Points::WeakNoise
 		- Used as rotting increase
@@ -977,10 +986,10 @@ Render:
 					+ And reverse wind direction
 				- Smoothen wind change (via running average @ RenderContext)
 				+ Make yellow core more narrow, in favor of thicker red border
+				- Try if other noise is better
+				+ Make more vivid red
 				- Reduce locality coherency of noise
 					- Still an issue?
-				- Try if other noise is better
-				- Make more vivid red
 
 		- Cleanup:
 			+ Test generic textures change (gen tex's + air bubbles at same time) and nuke comment
