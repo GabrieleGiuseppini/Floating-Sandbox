@@ -55,6 +55,6 @@ GameParameters::GameParameters()
     , FloodQuantity(1.0f)
     , ScrubRadius(7.0f)
     , IsUltraViolentMode(false)
-    , MoveToolInertia(8.0f)
+    , MoveToolInertia(3.0f)
 {
 }

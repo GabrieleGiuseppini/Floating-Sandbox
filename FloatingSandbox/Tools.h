@@ -319,7 +319,7 @@ public:
                 mGameController->MoveBy(
                     mCurrentTrajectory->EngagedMovableObjectId,
                     newCurrentPosition - mCurrentTrajectory->CurrentPosition,
-                    mCurrentTrajectory->PreviousVelocity);
+                    newCurrentPosition - mCurrentTrajectory->CurrentPosition);
             }
             else
             {
@@ -328,11 +328,8 @@ public:
                     mCurrentTrajectory->EngagedMovableObjectId,
                     newCurrentPosition.y - mCurrentTrajectory->CurrentPosition.y,
                     *mCurrentTrajectory->RotationCenter,
-                    mCurrentTrajectory->PreviousVelocity.y);
+                    newCurrentPosition.y - mCurrentTrajectory->CurrentPosition.y);
             }
-
-            // Save this velocity as next step's previous velocity
-            mCurrentTrajectory->PreviousVelocity = newCurrentPosition - mCurrentTrajectory->CurrentPosition;
 
             // Store new current position
             mCurrentTrajectory->CurrentPosition = newCurrentPosition;
@@ -349,20 +346,20 @@ public:
                     // Tell game controller to stop inertia
                     if (!mCurrentTrajectory->RotationCenter)
                     {
-                        // Move
+                        // Move to stop
                         mGameController->MoveBy(
                             mCurrentTrajectory->EngagedMovableObjectId,
                             vec2f::zero(),
-                            mCurrentTrajectory->PreviousVelocity);
+                            vec2f::zero());
                     }
                     else
                     {
-                        // Rotate
+                        // Rotate to stop
                         mGameController->RotateBy(
                             mCurrentTrajectory->EngagedMovableObjectId,
                             0.0f,
                             *mCurrentTrajectory->RotationCenter,
-                            mCurrentTrajectory->PreviousVelocity.y);
+                            0.0f);
                     }
                 }
 
@@ -387,7 +384,7 @@ public:
                 // Re-register the start position from where we are now
                 mCurrentTrajectory->StartPosition = mCurrentTrajectory->CurrentPosition;
 
-                // If we're enough into the trajectory, restart the timing - to avoid cramming a mouse move stretche
+                // If we're enough into the trajectory, restart the timing - to avoid cramming a mouse move stretch
                 // into a tiny little time interval
                 if (now > mCurrentTrajectory->StartTimestamp + TrajectoryLag / 2)
                 {
@@ -511,8 +508,33 @@ private:
                 // Reset rotation
                 mRotationCenter.reset();
 
-                // Stop trajectory
-                mCurrentTrajectory.reset();
+                if (!!mCurrentTrajectory)
+                {
+                    //
+                    // We are in the midst of a trajectory
+                    //
+
+                    // Impart last inertia == distance left
+                    if (!mCurrentTrajectory->RotationCenter)
+                    {
+                        mGameController->MoveBy(
+                            mCurrentTrajectory->EngagedMovableObjectId,
+                            vec2f::zero(),
+                            mCurrentTrajectory->EndPosition - mCurrentTrajectory->CurrentPosition);
+                    }
+                    else
+                    {
+                        // Rotate to stop
+                        mGameController->RotateBy(
+                            mCurrentTrajectory->EngagedMovableObjectId,
+                            0.0f,
+                            *mCurrentTrajectory->RotationCenter,
+                            mCurrentTrajectory->EndPosition.y - mCurrentTrajectory->CurrentPosition.y);
+                    }
+
+                    // Stop trajectory
+                    mCurrentTrajectory.reset();
+                }
 
                 // Tell GameController we've stopped moving
                 mGameController->SetMoveToolEngaged(false);
@@ -592,8 +614,6 @@ private:
         vec2f CurrentPosition;
         vec2f EndPosition;
 
-        vec2f PreviousVelocity;
-
         std::chrono::steady_clock::time_point StartTimestamp;
         std::chrono::steady_clock::time_point EndTimestamp;
 
@@ -602,7 +622,7 @@ private:
         {}
     };
 
-    static constexpr std::chrono::milliseconds TrajectoryLag = std::chrono::milliseconds(300);
+    static constexpr std::chrono::milliseconds TrajectoryLag = std::chrono::milliseconds(500);
 
     // When set, we're smoothing the mouse position along a trajectory
     std::optional<Trajectory> mCurrentTrajectory;
