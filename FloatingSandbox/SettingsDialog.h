@@ -64,6 +64,9 @@ private:
     void OnStructureShipRenderModeRadioButtonClick(wxCommandEvent & event);
     void OnShowStressCheckBoxClick(wxCommandEvent & event);
 
+    void OnMode1ShipFlameRenderModeRadioButtonClick(wxCommandEvent & event);
+    void OnMode2ShipFlameRenderModeRadioButtonClick(wxCommandEvent & event);
+
     void OnDebugShipRenderModeRadioBox(wxCommandEvent & event);
     void OnVectorFieldRenderModeRadioBox(wxCommandEvent & event);
 
@@ -142,6 +145,8 @@ private:
     wxRadioButton * mTextureShipRenderModeRadioButton;
     wxRadioButton * mStructureShipRenderModeRadioButton;
     wxCheckBox* mShowStressCheckBox;
+    wxRadioButton * mMode1ShipFlameRenderModeRadioButton;
+    wxRadioButton * mMode2ShipFlameRenderModeRadioButton;
     SliderControl * mWaterContrastSlider;
     SliderControl * mWaterLevelOfDetailSlider;
 

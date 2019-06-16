@@ -411,6 +411,18 @@ public:
         OnShowStressedSpringsUpdated();
     }
 
+    ShipFlameRenderMode GetShipFlameRenderMode() const
+    {
+        return mShipFlameRenderMode;
+    }
+
+    void SetShipFlameRenderMode(ShipFlameRenderMode shipFlameRenderMode)
+    {
+        mShipFlameRenderMode = shipFlameRenderMode;
+
+        OnShipFlameRenderModeUpdated();
+    }
+
     //
     // Screen <-> World transformations
     //
@@ -1176,6 +1188,7 @@ private:
     void OnDebugShipRenderModeUpdated();
     void OnVectorFieldRenderModeUpdated();
     void OnShowStressedSpringsUpdated();
+    void OnShipFlameRenderModeUpdated();
 
     void UpdateWorldBorder();
     vec4f CalculateWaterColor() const;
@@ -1402,6 +1415,7 @@ private:
     VectorFieldRenderMode mVectorFieldRenderMode;
     float mVectorFieldLengthMultiplier;
     bool mShowStressedSprings;
+    ShipFlameRenderMode mShipFlameRenderMode;
 
     //
     // Statistics

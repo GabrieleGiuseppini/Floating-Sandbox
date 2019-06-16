@@ -374,6 +374,18 @@ void SettingsDialog::OnShowStressCheckBoxClick(wxCommandEvent & /*event*/)
     mApplyButton->Enable(true);
 }
 
+void SettingsDialog::OnMode1ShipFlameRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
+{
+    // Remember we're dirty now
+    mApplyButton->Enable(true);
+}
+
+void SettingsDialog::OnMode2ShipFlameRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
+{
+    // Remember we're dirty now
+    mApplyButton->Enable(true);
+}
+
 void SettingsDialog::OnDebugShipRenderModeRadioBox(wxCommandEvent & /*event*/)
 {
     // Remember we're dirty now
@@ -2021,6 +2033,64 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
             CellBorder);
     }
 
+    // Fire
+    {
+        wxStaticBox * fireBox = new wxStaticBox(panel, wxID_ANY, _("Fire"));
+
+        wxBoxSizer * fireBoxSizer1 = new wxBoxSizer(wxVERTICAL);
+        fireBoxSizer1->AddSpacer(StaticBoxTopMargin);
+
+        {
+            wxGridBagSizer * fireSizer = new wxGridBagSizer(0, 0);
+
+            // Fire Render Mode
+            {
+                wxStaticBox * fireRenderModeBox = new wxStaticBox(fireBox, wxID_ANY, _("Draw Mode"));
+
+                wxBoxSizer * fireRenderModeBoxSizer1 = new wxBoxSizer(wxVERTICAL);
+                fireRenderModeBoxSizer1->AddSpacer(StaticBoxTopMargin);
+
+                {
+                    wxFlexGridSizer* fireRenderModeBoxSizer2 = new wxFlexGridSizer(1, 5, 5);
+                    fireRenderModeBoxSizer2->SetFlexibleDirection(wxHORIZONTAL);
+
+                    mMode1ShipFlameRenderModeRadioButton = new wxRadioButton(fireRenderModeBox, wxID_ANY, _("Mode 1"),
+                        wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+                    mMode1ShipFlameRenderModeRadioButton->SetToolTip("Changes the way flames are drawn.");
+                    mMode1ShipFlameRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnMode1ShipFlameRenderModeRadioButtonClick, this);
+                    fireRenderModeBoxSizer2->Add(mMode1ShipFlameRenderModeRadioButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 0);
+
+                    mMode2ShipFlameRenderModeRadioButton = new wxRadioButton(fireRenderModeBox, wxID_ANY, _("Mode 2"),
+                        wxDefaultPosition, wxDefaultSize);
+                    mMode2ShipFlameRenderModeRadioButton->SetToolTip("Changes the way flames are drawn.");
+                    mMode2ShipFlameRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnMode2ShipFlameRenderModeRadioButtonClick, this);
+                    fireRenderModeBoxSizer2->Add(mMode2ShipFlameRenderModeRadioButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 0);
+
+                    fireRenderModeBoxSizer1->Add(fireRenderModeBoxSizer2, 0, wxALL, StaticBoxInsetMargin);
+                }
+
+                fireRenderModeBox->SetSizerAndFit(fireRenderModeBoxSizer1);
+
+                fireSizer->Add(
+                    fireRenderModeBox,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorder);
+            }
+
+            fireBoxSizer1->Add(fireSizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        fireBox->SetSizerAndFit(fireBoxSizer1);
+
+        gridSizer->Add(
+            fireBox,
+            wxGBPosition(1, 3),
+            wxGBSpan(1, 1),
+            wxALL,
+            CellBorder);
+    }
 
     // Finalize panel
 
@@ -2393,6 +2463,22 @@ void SettingsDialog::ReadSettings()
 
     mWaterLevelOfDetailSlider->SetValue(mGameController->GetWaterLevelOfDetail());
 
+    auto shipFlameRenderMode = mGameController->GetShipFlameRenderMode();
+    switch (shipFlameRenderMode)
+    {
+        case ShipFlameRenderMode::Mode1:
+        {
+            mMode1ShipFlameRenderModeRadioButton->SetValue(true);
+            break;
+        }
+
+        case ShipFlameRenderMode::Mode2:
+        {
+            mMode2ShipFlameRenderModeRadioButton->SetValue(true);
+            break;
+        }
+    }
+
     // Sound
 
     mEffectsVolumeSlider->SetValue(mSoundController->GetMasterEffectsVolume());
@@ -2689,6 +2775,16 @@ void SettingsDialog::ApplySettings()
 
     mGameController->SetWaterLevelOfDetail(
         mWaterLevelOfDetailSlider->GetValue());
+
+    if (mMode1ShipFlameRenderModeRadioButton->GetValue())
+    {
+        mGameController->SetShipFlameRenderMode(ShipFlameRenderMode::Mode1);
+    }
+    else
+    {
+        assert(mMode2ShipFlameRenderModeRadioButton->GetValue());
+        mGameController->SetShipFlameRenderMode(ShipFlameRenderMode::Mode2);
+    }
 
     // Sound
 

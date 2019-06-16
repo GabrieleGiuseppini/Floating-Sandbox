@@ -81,21 +81,25 @@ public:
     void MoveBy(
         ElementIndex pointElementIndex,
         vec2f const & offset,
+        vec2f const & inertialVelocity,
         GameParameters const & gameParameters);
 
     void MoveBy(
         vec2f const & offset,
+        vec2f const & inertialVelocity,
         GameParameters const & gameParameters);
 
     void RotateBy(
         ElementIndex pointElementIndex,
         float angle,
         vec2f const & center,
+        float inertialAngle,
         GameParameters const & gameParameters);
 
     void RotateBy(
         float angle,
         vec2f const & center,
+        float inertialAngle,
         GameParameters const & gameParameters);
 
     void DestroyAt(

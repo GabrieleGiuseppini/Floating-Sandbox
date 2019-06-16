@@ -79,23 +79,27 @@ public:
     void MoveBy(
         ElementId elementId,
         vec2f const & offset,
+        vec2f const & inertialVelocity,
         GameParameters const & gameParameters);
 
     void MoveBy(
         ShipId shipId,
         vec2f const & offset,
+        vec2f const & inertialVelocity,
         GameParameters const & gameParameters);
 
     void RotateBy(
         ElementId elementId,
         float angle,
         vec2f const & center,
+        float inertialAngle,
         GameParameters const & gameParameters);
 
     void RotateBy(
         ShipId shipId,
         float angle,
         vec2f const & center,
+        float inertialAngle,
         GameParameters const & gameParameters);
 
     void DestroyAt(

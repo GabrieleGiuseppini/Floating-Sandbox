@@ -51,7 +51,8 @@ public:
         ShipRenderMode shipRenderMode,
         DebugShipRenderMode debugShipRenderMode,
         VectorFieldRenderMode vectorFieldRenderMode,
-        bool showStressedSprings);
+        bool showStressedSprings,
+        ShipFlameRenderMode shipFlameRenderMode);
 
     ~ShipRenderContext();
 
@@ -117,6 +118,11 @@ public:
     void SetShowStressedSprings(bool showStressedSprings)
     {
         mShowStressedSprings = showStressedSprings;
+    }
+
+    void SetShipFlameRenderMode(ShipFlameRenderMode shipFlameRenderMode)
+    {
+        mShipFlameRenderMode = shipFlameRenderMode;
     }
 
 public:
@@ -705,8 +711,10 @@ private:
     DebugShipRenderMode mDebugShipRenderMode;
     VectorFieldRenderMode mVectorFieldRenderMode;
     bool mShowStressedSprings;
+    ShipFlameRenderMode mShipFlameRenderMode;
     float mHalfFlameQuadWidth;
     float mFlameQuadHeight;
+
 
     //
     // Statistics

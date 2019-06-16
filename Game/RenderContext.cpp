@@ -87,6 +87,7 @@ RenderContext::RenderContext(
     , mVectorFieldRenderMode(VectorFieldRenderMode::None)
     , mVectorFieldLengthMultiplier(1.0f)
     , mShowStressedSprings(false)
+    , mShipFlameRenderMode(ShipFlameRenderMode::Mode1)
     // Statistics
     , mRenderStatistics()
 {
@@ -448,8 +449,11 @@ RenderContext::RenderContext(
     CheckOpenGLError();
 
     // Set texture in shaders
-    mShaderManager->ActivateProgram<ProgramType::ShipFlames>();
-    mShaderManager->SetTextureParameters<ProgramType::ShipFlames>();
+    static_assert(2 == static_cast<size_t>(ProgramType::_LastShipFlames) - static_cast<size_t>(ProgramType::_FirstShipFlames) + 1);
+    mShaderManager->ActivateProgram<ProgramType::ShipFlames1>();
+    mShaderManager->SetTextureParameters<ProgramType::ShipFlames1>();
+    mShaderManager->ActivateProgram<ProgramType::ShipFlames2>();
+    mShaderManager->SetTextureParameters<ProgramType::ShipFlames2>();
 
 
     //
@@ -518,6 +522,8 @@ RenderContext::RenderContext(
     OnDebugShipRenderModeUpdated();
     OnVectorFieldRenderModeUpdated();
     OnShowStressedSpringsUpdated();
+    OnShipFlameRenderModeUpdated();
+
 
     //
     // Flush all pending operations
@@ -593,7 +599,8 @@ void RenderContext::AddShip(
             mShipRenderMode,
             mDebugShipRenderMode,
             mVectorFieldRenderMode,
-            mShowStressedSprings));
+            mShowStressedSprings,
+            mShipFlameRenderMode));
 }
 
 RgbImageData RenderContext::TakeScreenshot()
@@ -1347,6 +1354,16 @@ void RenderContext::OnShowStressedSpringsUpdated()
     for (auto & s : mShips)
     {
         s->SetShowStressedSprings(mShowStressedSprings);
+    }
+}
+
+void RenderContext::OnShipFlameRenderModeUpdated()
+{
+    // Set parameter in all ships
+
+    for (auto & s : mShips)
+    {
+        s->SetShipFlameRenderMode(mShipFlameRenderMode);
     }
 }
 

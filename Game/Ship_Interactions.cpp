@@ -64,10 +64,11 @@ std::optional<ElementIndex> Ship::PickPointToMove(
 void Ship::MoveBy(
     ElementIndex pointElementIndex,
     vec2f const & offset,
+    vec2f const & inertialVelocity,
     GameParameters const & gameParameters)
 {
-    vec2f const velocity =
-        offset
+    vec2f const actualInertialVelocity =
+        inertialVelocity
         * gameParameters.MoveToolInertia
         * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
 
@@ -81,7 +82,7 @@ void Ship::MoveBy(
             if (mPoints.GetConnectedComponentId(p) == connectedComponentId)
             {
                 mPoints.GetPosition(p) += offset;
-                mPoints.SetVelocity(p, velocity);
+                mPoints.SetVelocity(p, actualInertialVelocity);
             }
         }
 
@@ -91,10 +92,11 @@ void Ship::MoveBy(
 
 void Ship::MoveBy(
     vec2f const & offset,
+    vec2f const & inertialVelocity,
     GameParameters const & gameParameters)
 {
-    vec2f const velocity =
-        offset
+    vec2f const actualInertialVelocity =
+        inertialVelocity
         * gameParameters.MoveToolInertia
         * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
 
@@ -105,7 +107,7 @@ void Ship::MoveBy(
     for (size_t p = 0; p < count; ++p)
     {
         positionBuffer[p] += offset;
-        velocityBuffer[p] = velocity;
+        velocityBuffer[p] = actualInertialVelocity;
     }
 
     TrimForWorldBounds(gameParameters);
@@ -115,14 +117,18 @@ void Ship::RotateBy(
     ElementIndex pointElementIndex,
     float angle,
     vec2f const & center,
+    float inertialAngle,
     GameParameters const & gameParameters)
 {
-    float const inertia =
+    vec2f const rotX(cos(angle), sin(angle));
+    vec2f const rotY(-sin(angle), cos(angle));
+
+    float const inertiaMagnitude =
         gameParameters.MoveToolInertia
         * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
 
-    vec2f const rotX(cos(angle), sin(angle));
-    vec2f const rotY(-sin(angle), cos(angle));
+    vec2f const inertialRotX(cos(inertialAngle), sin(inertialAngle));
+    vec2f const inertialRotY(-sin(inertialAngle), cos(inertialAngle));
 
     // Get connected component ID of the point
     auto connectedComponentId = mPoints.GetConnectedComponentId(pointElementIndex);
@@ -133,11 +139,13 @@ void Ship::RotateBy(
         {
             if (mPoints.GetConnectedComponentId(p) == connectedComponentId)
             {
-                vec2f pos = mPoints.GetPosition(p) - center;
-                pos = vec2f(pos.dot(rotX), pos.dot(rotY)) + center;
+                vec2f const centeredPos = mPoints.GetPosition(p) - center;
 
-                mPoints.SetVelocity(p, (pos - mPoints.GetPosition(p)) * inertia);
-                mPoints.GetPosition(p) = pos;
+                mPoints.SetVelocity(
+                    p,
+                    (vec2f(centeredPos.dot(inertialRotX), centeredPos.dot(inertialRotY)) - centeredPos) * inertiaMagnitude);
+
+                mPoints.GetPosition(p) = vec2f(centeredPos.dot(rotX), centeredPos.dot(rotY)) + center;
             }
         }
 
@@ -148,14 +156,18 @@ void Ship::RotateBy(
 void Ship::RotateBy(
     float angle,
     vec2f const & center,
+    float inertialAngle,
     GameParameters const & gameParameters)
 {
-    float const inertia =
+    vec2f const rotX(cos(angle), sin(angle));
+    vec2f const rotY(-sin(angle), cos(angle));
+
+    float const inertiaMagnitude =
         gameParameters.MoveToolInertia
         * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
 
-    vec2f const rotX(cos(angle), sin(angle));
-    vec2f const rotY(-sin(angle), cos(angle));
+    vec2f const inertialRotX(cos(inertialAngle), sin(inertialAngle));
+    vec2f const inertialRotY(-sin(inertialAngle), cos(inertialAngle));
 
     vec2f * restrict positionBuffer = mPoints.GetPositionBufferAsVec2();
     vec2f * restrict velocityBuffer = mPoints.GetVelocityBufferAsVec2();
@@ -163,11 +175,12 @@ void Ship::RotateBy(
     size_t const count = mPoints.GetBufferElementCount();
     for (size_t p = 0; p < count; ++p)
     {
-        vec2f pos = positionBuffer[p] - center;
-        pos = vec2f(pos.dot(rotX), pos.dot(rotY)) + center;
+        vec2f const centeredPos = positionBuffer[p] - center;
 
-        velocityBuffer[p] = (pos - positionBuffer[p]) * inertia;
-        positionBuffer[p] = pos;
+        velocityBuffer[p] =
+            (vec2f(centeredPos.dot(inertialRotX), centeredPos.dot(inertialRotY)) - centeredPos) * inertiaMagnitude;
+
+        positionBuffer[p] = vec2f(centeredPos.dot(rotX), centeredPos.dot(rotY)) + center;
     }
 
     TrimForWorldBounds(gameParameters);

@@ -318,7 +318,8 @@ public:
                 // Move
                 mGameController->MoveBy(
                     mCurrentTrajectory->EngagedMovableObjectId,
-                    newCurrentPosition - mCurrentTrajectory->CurrentPosition);
+                    newCurrentPosition - mCurrentTrajectory->CurrentPosition,
+                    mCurrentTrajectory->PreviousVelocity);
             }
             else
             {
@@ -326,9 +327,14 @@ public:
                 mGameController->RotateBy(
                     mCurrentTrajectory->EngagedMovableObjectId,
                     newCurrentPosition.y - mCurrentTrajectory->CurrentPosition.y,
-                    *mCurrentTrajectory->RotationCenter);
+                    *mCurrentTrajectory->RotationCenter,
+                    mCurrentTrajectory->PreviousVelocity.y);
             }
 
+            // Save this velocity as next step's previous velocity
+            mCurrentTrajectory->PreviousVelocity = newCurrentPosition - mCurrentTrajectory->CurrentPosition;
+
+            // Store new current position
             mCurrentTrajectory->CurrentPosition = newCurrentPosition;
 
             // Check whether we are done
@@ -346,7 +352,8 @@ public:
                         // Move
                         mGameController->MoveBy(
                             mCurrentTrajectory->EngagedMovableObjectId,
-                            vec2f::zero());
+                            vec2f::zero(),
+                            mCurrentTrajectory->PreviousVelocity);
                     }
                     else
                     {
@@ -354,7 +361,8 @@ public:
                         mGameController->RotateBy(
                             mCurrentTrajectory->EngagedMovableObjectId,
                             0.0f,
-                            *mCurrentTrajectory->RotationCenter);
+                            *mCurrentTrajectory->RotationCenter,
+                            mCurrentTrajectory->PreviousVelocity.y);
                     }
                 }
 
@@ -445,9 +453,9 @@ protected:
             parentFrame,
             std::move(gameController),
             std::move(soundController))
-        , mEngagedMovableObjectId(std::nullopt)
-        , mCurrentTrajectory(std::nullopt)
-        , mRotationCenter(std::nullopt)
+        , mEngagedMovableObjectId()
+        , mCurrentTrajectory()
+        , mRotationCenter()
         , mUpCursor(std::move(upCursor))
         , mDownCursor(std::move(downCursor))
         , mRotateUpCursor(std::move(rotateUpCursor))
@@ -500,14 +508,15 @@ private:
                 // Disengage
                 mEngagedMovableObjectId.reset();
 
-                // Leave the trajectory running
+                // Reset rotation
+                mRotationCenter.reset();
 
-                // Tell GameController
+                // Stop trajectory
+                mCurrentTrajectory.reset();
+
+                // Tell GameController we've stopped moving
                 mGameController->SetMoveToolEngaged(false);
             }
-
-            // Reset rotation in any case
-            mRotationCenter.reset();
         }
 
         if (inputState.IsShiftKeyDown)
@@ -519,6 +528,8 @@ private:
                 //
                 // We're engaged and not in rotation mode yet
                 //
+
+                assert(inputState.IsLeftMouseDown);
 
                 // Start rotation mode
                 mRotationCenter = inputState.MousePosition;
@@ -580,6 +591,8 @@ private:
         vec2f StartPosition;
         vec2f CurrentPosition;
         vec2f EndPosition;
+
+        vec2f PreviousVelocity;
 
         std::chrono::steady_clock::time_point StartTimestamp;
         std::chrono::steady_clock::time_point EndTimestamp;

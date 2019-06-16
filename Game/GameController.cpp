@@ -327,36 +327,43 @@ void GameController::PickObjectToMove(
 
 void GameController::MoveBy(
     ElementId elementId,
-    vec2f const & screenOffset)
+    vec2f const & screenOffset,
+    vec2f const & inertialScreenOffset)
 {
     vec2f const worldOffset = mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
+    vec2f const inertialVelocity = mRenderContext->ScreenOffsetToWorldOffset(inertialScreenOffset);
 
     // Apply action
     assert(!!mWorld);
     mWorld->MoveBy(
         elementId,
         worldOffset,
+        inertialVelocity,
         mGameParameters);
 }
 
 void GameController::MoveBy(
     ShipId shipId,
-    vec2f const & screenOffset)
+    vec2f const & screenOffset,
+    vec2f const & inertialScreenOffset)
 {
     vec2f const worldOffset = mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
+    vec2f const inertialVelocity = mRenderContext->ScreenOffsetToWorldOffset(inertialScreenOffset);
 
     // Apply action
     assert(!!mWorld);
     mWorld->MoveBy(
         shipId,
         worldOffset,
+        inertialVelocity,
         mGameParameters);
 }
 
 void GameController::RotateBy(
     ElementId elementId,
     float screenDeltaY,
-    vec2f const & screenCenter)
+    vec2f const & screenCenter,
+    float inertialScreenDeltaY)
 {
     float const angle =
         2.0f * Pi<float>
@@ -364,6 +371,11 @@ void GameController::RotateBy(
         * screenDeltaY;
 
     vec2f const worldCenter = mRenderContext->ScreenToWorld(screenCenter);
+
+    float const inertialAngle =
+        2.0f * Pi<float>
+        / static_cast<float>(mRenderContext->GetCanvasHeight())
+        * inertialScreenDeltaY;
 
     // Apply action
     assert(!!mWorld);
@@ -371,13 +383,15 @@ void GameController::RotateBy(
         elementId,
         angle,
         worldCenter,
+        inertialAngle,
         mGameParameters);
 }
 
 void GameController::RotateBy(
     ShipId shipId,
     float screenDeltaY,
-    vec2f const & screenCenter)
+    vec2f const & screenCenter,
+    float inertialScreenDeltaY)
 {
     float const angle =
         2.0f * Pi<float>
@@ -386,12 +400,18 @@ void GameController::RotateBy(
 
     vec2f const worldCenter = mRenderContext->ScreenToWorld(screenCenter);
 
+    float const inertialAngle =
+        2.0f * Pi<float>
+        / static_cast<float>(mRenderContext->GetCanvasHeight())
+        * inertialScreenDeltaY;
+
     // Apply action
     assert(!!mWorld);
     mWorld->RotateBy(
         shipId,
         angle,
         worldCenter,
+        inertialAngle,
         mGameParameters);
 }
 

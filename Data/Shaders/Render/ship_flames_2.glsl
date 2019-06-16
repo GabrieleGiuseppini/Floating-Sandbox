@@ -58,13 +58,12 @@ mat2 GetRotationMatrix(float angle)
     return m;
 }
 
-#define FlameSpeed 0.23
-
 void main()
 {
     vec2 uv = flameSpacePosition - vec2(0.0, 0.5); // (x=[-0.5, 0.5], y=[-0.5, 0.5])
 
     // Flame time
+    #define FlameSpeed 0.23
     float flameTime = paramTime * FlameSpeed;
     
     // Get noise for this fragment and time
@@ -81,7 +80,7 @@ void main()
     angle /= max(0.1, length(uv));
 
     // Straighten the flame at the bottom and make full turbulence higher up
-    angle *= smoothstep(-0.2, 0.5, flameSpacePosition.y);
+    angle *= smoothstep(-0.1, 0.5, flameSpacePosition.y);
 
     // Smooth the angle
     angle *= 0.45;
@@ -111,7 +110,7 @@ void main()
     // Calculate thickness
     //
     
-    #define FlameWidth 0.6
+    #define FlameWidth 0.5
     float thickness = 1.0 - smoothstep(0.1, FlameWidth, abs(uv.x));
     
     // Taper flame depending on randomized height

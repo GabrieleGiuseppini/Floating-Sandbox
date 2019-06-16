@@ -373,15 +373,15 @@ Render:
 		+ Merge to master			 
 		+ Send to testers
 
-		- Heat and combustion (*)
-
-		- Move tool: make sling easier
-			- 1) Merge Move tools
-				- Base templated class
-				- Derived only has virtual's for GameController calls
+		= Move tool: make sling easier
+			+ 1) Merge Move tools
+				+ Base templated class
+				+ Derived only has virtual's for GameController calls
 			- 2) Tool always remembers last mouse velocity
 			- 3) Upon passing velocity, if mouse velocity is close to zero it uses last
 				- But then always remembers last *mouse* velocity
+
+		- Heat and combustion (*)
 
 		- Bump up rot speed for dry stuff, takes 98 minutes now
 			- They all agree: a ship should rot in 30 minutes on the surface, and in 15 minutes when flooded
@@ -481,6 +481,7 @@ Render:
 
 
 - Suggestions to spec:
+	- Make lights not propagate through hull
 	- Sun rays
 	- Moving furniture
 		- Need way to prevent springs made to other materials
@@ -982,15 +983,16 @@ Render:
 
 		- Impl:
 			- Render:
-				= Make better transition for bottom
+				+ Make better transition for bottom
 				+ Skew wind speed with smoothstep
 					+ And reverse wind direction
-				- Smoothen wind change (via running average @ RenderContext)
 				+ Make yellow core more narrow, in favor of thicker red border
-				- Try if other noise is better
 				+ Make more vivid red
+				- Smoothen wind change (via running average @ RenderContext)
+				- Add slider for flame size
 				- Reduce locality coherency of noise
-					- Still an issue?
+					- Take screenshot to show issue
+				- Try if other noise is better
 
 		- Cleanup:
 			+ Test generic textures change (gen tex's + air bubbles at same time) and nuke comment

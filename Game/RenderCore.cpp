@@ -29,8 +29,10 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::OceanFlat;
     else if (lstr == "ocean_texture")
         return ProgramType::OceanTexture;
-    else if (lstr == "ship_flames")
-        return ProgramType::ShipFlames;
+    else if (lstr == "ship_flames_1")
+        return ProgramType::ShipFlames1;
+    else if (lstr == "ship_flames_2")
+        return ProgramType::ShipFlames2;
     else if (lstr == "ship_generic_textures")
         return ProgramType::ShipGenericTextures;
     else if (lstr == "ship_points_color")
@@ -79,8 +81,10 @@ std::string ProgramTypeToStr(ProgramType program)
         return "OceanFlat";
     case ProgramType::OceanTexture:
         return "OceanTexture";
-    case ProgramType::ShipFlames:
-        return "ShipFlames";
+    case ProgramType::ShipFlames1:
+        return "ShipFlames1";
+    case ProgramType::ShipFlames2:
+        return "ShipFlames2";
     case ProgramType::ShipGenericTextures:
         return "ShipGenericTextures";
     case ProgramType::ShipPointsColor:

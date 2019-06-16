@@ -32,7 +32,8 @@ enum class ProgramType
     OceanDepth,
     OceanFlat,
     OceanTexture,
-    ShipFlames,
+    ShipFlames1,
+    ShipFlames2,
     ShipGenericTextures,
     ShipPointsColor,
     ShipRopes,
@@ -46,6 +47,9 @@ enum class ProgramType
     Stars,
     TextNDC,
     WorldBorder,
+
+    _FirstShipFlames = ShipFlames1,
+    _LastShipFlames = ShipFlames2,
 
     _Last = WorldBorder
 };

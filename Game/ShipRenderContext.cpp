@@ -34,7 +34,8 @@ ShipRenderContext::ShipRenderContext(
     ShipRenderMode shipRenderMode,
     DebugShipRenderMode debugShipRenderMode,
     VectorFieldRenderMode vectorFieldRenderMode,
-    bool showStressedSprings)
+    bool showStressedSprings,
+    ShipFlameRenderMode shipFlameRenderMode)
     : mShipId(shipId)
     , mShipCount(shipCount)
     , mPointCount(pointCount)
@@ -96,6 +97,7 @@ ShipRenderContext::ShipRenderContext(
     , mDebugShipRenderMode(debugShipRenderMode)
     , mVectorFieldRenderMode(vectorFieldRenderMode)
     , mShowStressedSprings(showStressedSprings)
+    , mShipFlameRenderMode(shipFlameRenderMode)
     , mHalfFlameQuadWidth(9.5f)
     , mFlameQuadHeight(7.5f)
     // Statistics
@@ -509,8 +511,12 @@ void ShipRenderContext::UpdateOrthoMatrices()
         NLayers,
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<ProgramType::ShipFlames>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipFlames, ProgramParameterType::OrthoMatrix>(
+    static_assert(2 == static_cast<size_t>(ProgramType::_LastShipFlames) - static_cast<size_t>(ProgramType::_FirstShipFlames) + 1);
+    mShaderManager.ActivateProgram<ProgramType::ShipFlames1>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipFlames1, ProgramParameterType::OrthoMatrix>(
+        shipOrthoMatrix);
+    mShaderManager.ActivateProgram<ProgramType::ShipFlames2>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipFlames2, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
 
     //
@@ -953,9 +959,24 @@ void ShipRenderContext::UploadFlamesStart(float windSpeedMagnitude)
     // Set wind speed magnitude parameter, if it has changed
     if (windSpeedMagnitude != mCurrentWindSpeedMagnitude)
     {
-        mShaderManager.ActivateProgram<ProgramType::ShipFlames>();
-        mShaderManager.SetProgramParameter<ProgramType::ShipFlames, ProgramParameterType::WindSpeedMagnitude>(
-            windSpeedMagnitude);
+        switch (mShipFlameRenderMode)
+        {
+            case ShipFlameRenderMode::Mode1:
+            {
+                mShaderManager.ActivateProgram<ProgramType::ShipFlames1>();
+                mShaderManager.SetProgramParameter<ProgramType::ShipFlames1, ProgramParameterType::WindSpeedMagnitude>(
+                    windSpeedMagnitude);
+                break;
+            }
+
+            case ShipFlameRenderMode::Mode2:
+            {
+                mShaderManager.ActivateProgram<ProgramType::ShipFlames2>();
+                mShaderManager.SetProgramParameter<ProgramType::ShipFlames2, ProgramParameterType::WindSpeedMagnitude>(
+                    windSpeedMagnitude);
+                break;
+            }
+        }
 
         mCurrentWindSpeedMagnitude = windSpeedMagnitude;
     }
@@ -1313,14 +1334,33 @@ void ShipRenderContext::RenderFlames()
     {
         glBindVertexArray(*mFlameVAO);
 
-        mShaderManager.ActivateProgram<ProgramType::ShipFlames>();
+        switch (mShipFlameRenderMode)
+        {
+            case ShipFlameRenderMode::Mode1:
+            {
+                mShaderManager.ActivateProgram<ProgramType::ShipFlames1>();
+
+                // Set time parameter
+                mShaderManager.SetProgramParameter<ProgramType::ShipFlames1, ProgramParameterType::Time>(
+                    GameWallClock::GetInstance().NowAsFloat());
+
+                break;
+            }
+
+            case ShipFlameRenderMode::Mode2:
+            {
+                mShaderManager.ActivateProgram<ProgramType::ShipFlames2>();
+
+                // Set time parameter
+                mShaderManager.SetProgramParameter<ProgramType::ShipFlames2, ProgramParameterType::Time>(
+                    GameWallClock::GetInstance().NowAsFloat());
+
+                break;
+            }
+        }
 
         // Bind VBO
         glBindBuffer(GL_ARRAY_BUFFER, *mFlameVertexVBO);
-
-        // Set time parameter
-        mShaderManager.SetProgramParameter<ProgramType::ShipFlames, ProgramParameterType::Time>(
-            GameWallClock::GetInstance().NowAsFloat());
 
         // Render
         assert(0 == (mFlameVertexBuffer.size() % 6));

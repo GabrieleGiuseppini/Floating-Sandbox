@@ -273,6 +273,15 @@ enum class VectorFieldRenderMode
 };
 
 /*
+ * The different ways of rendering ship flames.
+ */
+enum class ShipFlameRenderMode
+{
+    Mode1,
+    Mode2
+};
+
+/*
  * The texture groups we support.
  */
 enum class TextureGroupType : uint16_t

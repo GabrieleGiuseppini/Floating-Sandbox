@@ -108,10 +108,10 @@ public:
 
     void PickObjectToMove(vec2f const & screenCoordinates, std::optional<ElementId> & elementId);
     void PickObjectToMove(vec2f const & screenCoordinates, std::optional<ShipId> & shipId);
-    void MoveBy(ElementId elementId, vec2f const & screenOffset);
-    void MoveBy(ShipId shipId, vec2f const & screenOffset);
-    void RotateBy(ElementId elementId, float screenDeltaY, vec2f const & screenCenter);
-    void RotateBy(ShipId shipId, float screenDeltaY, vec2f const & screenCenter);
+    void MoveBy(ElementId elementId, vec2f const & screenOffset, vec2f const & inertialScreenOffset);
+    void MoveBy(ShipId shipId, vec2f const & screenOffset, vec2f const & inertialScreenOffset);
+    void RotateBy(ElementId elementId, float screenDeltaY, vec2f const & screenCenter, float inertialScreenDeltaY);
+    void RotateBy(ShipId shipId, float screenDeltaY, vec2f const & screenCenter, float intertialScreenDeltaY);
     void DestroyAt(vec2f const & screenCoordinates, float radiusFraction);
     void RepairAt(vec2f const & screenCoordinates, float radiusMultiplier, RepairSessionId sessionId, RepairSessionStepId sessionStepId);
     void SawThrough(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates);
@@ -438,6 +438,9 @@ public:
 
     bool GetShowShipStress() const { return mRenderContext->GetShowStressedSprings(); }
     void SetShowShipStress(bool value) { mRenderContext->SetShowStressedSprings(value); }
+
+    ShipFlameRenderMode GetShipFlameRenderMode() const { return mRenderContext->GetShipFlameRenderMode(); }
+    void SetShipFlameRenderMode(ShipFlameRenderMode shipFlameRenderMode) { mRenderContext->SetShipFlameRenderMode(shipFlameRenderMode); }
 
     //
     // Interaction parameters

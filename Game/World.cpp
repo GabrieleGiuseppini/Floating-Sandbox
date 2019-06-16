@@ -95,6 +95,7 @@ void World::PickPointToMove(
 void World::MoveBy(
     ElementId elementId,
     vec2f const & offset,
+    vec2f const & inertialVelocity,
     GameParameters const & gameParameters)
 {
     auto const shipId = elementId.GetShipId();
@@ -103,18 +104,21 @@ void World::MoveBy(
     mAllShips[shipId]->MoveBy(
         elementId.GetLocalObjectId(),
         offset,
+        inertialVelocity,
         gameParameters);
 }
 
 void World::MoveBy(
     ShipId shipId,
     vec2f const & offset,
+    vec2f const & inertialVelocity,
     GameParameters const & gameParameters)
 {
     assert(shipId >= 0 && shipId < mAllShips.size());
 
     mAllShips[shipId]->MoveBy(
         offset,
+        inertialVelocity,
         gameParameters);
 }
 
@@ -122,6 +126,7 @@ void World::RotateBy(
     ElementId elementId,
     float angle,
     vec2f const & center,
+    float inertialAngle,
     GameParameters const & gameParameters)
 {
     auto const shipId = elementId.GetShipId();
@@ -131,6 +136,7 @@ void World::RotateBy(
         elementId.GetLocalObjectId(),
         angle,
         center,
+        inertialAngle,
         gameParameters);
 }
 
@@ -138,6 +144,7 @@ void World::RotateBy(
     ShipId shipId,
     float angle,
     vec2f const & center,
+    float inertialAngle,
     GameParameters const & gameParameters)
 {
     assert(shipId >= 0 && shipId < mAllShips.size());
@@ -145,6 +152,7 @@ void World::RotateBy(
     mAllShips[shipId]->RotateBy(
         angle,
         center,
+        inertialAngle,
         gameParameters);
 }
 
