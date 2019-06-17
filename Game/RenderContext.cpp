@@ -88,6 +88,7 @@ RenderContext::RenderContext(
     , mVectorFieldLengthMultiplier(1.0f)
     , mShowStressedSprings(false)
     , mShipFlameRenderMode(ShipFlameRenderMode::Mode1)
+    , mShipFlameSizeAdjustment(1.0f)
     // Statistics
     , mRenderStatistics()
 {
@@ -523,6 +524,7 @@ RenderContext::RenderContext(
     OnVectorFieldRenderModeUpdated();
     OnShowStressedSpringsUpdated();
     OnShipFlameRenderModeUpdated();
+    OnShipFlameSizeAdjustmentUpdated();
 
 
     //
@@ -600,7 +602,8 @@ void RenderContext::AddShip(
             mDebugShipRenderMode,
             mVectorFieldRenderMode,
             mShowStressedSprings,
-            mShipFlameRenderMode));
+            mShipFlameRenderMode,
+            mShipFlameSizeAdjustment));
 }
 
 RgbImageData RenderContext::TakeScreenshot()
@@ -1364,6 +1367,16 @@ void RenderContext::OnShipFlameRenderModeUpdated()
     for (auto & s : mShips)
     {
         s->SetShipFlameRenderMode(mShipFlameRenderMode);
+    }
+}
+
+void RenderContext::OnShipFlameSizeAdjustmentUpdated()
+{
+    // Set parameter in all ships
+
+    for (auto & s : mShips)
+    {
+        s->SetShipFlameSizeAdjustment(mShipFlameSizeAdjustment);
     }
 }
 

@@ -6,10 +6,11 @@
 #define out varying
 
 // Inputs
-in vec3 inFlame1; // Position, PlaneId
+in vec4 inFlame1; // Position, PlaneId, FlamePersonalitySeed
 in vec2 inFlame2; // FlameSpacePosition
 
 // Outputs
+out float flamePersonalitySeed;
 out vec2 flameSpacePosition;
 
 // Params
@@ -17,6 +18,7 @@ uniform mat4 paramOrthoMatrix;
 
 void main()
 {
+    flamePersonalitySeed = inFlame1.w;
     flameSpacePosition = inFlame2.xy;
 
     gl_Position = paramOrthoMatrix * vec4(inFlame1.xyz, 1.0);
@@ -29,6 +31,7 @@ void main()
 #define in varying
 
 // Inputs from previous shader
+in float flamePersonalitySeed;
 in vec2 flameSpacePosition; // (x=[-0.5, 0.5], y=[0.0, 1.0])
 
 // The texture
@@ -64,11 +67,32 @@ void main()
 {    
     vec2 uv = flameSpacePosition - vec2(0.0, 0.5); // (x=[-0.5, 0.5], y=[-0.5, 0.5])
     
+    //
     // Flame time
+    //
+
     #define FlameSpeed 0.23
     float flameTime = paramTime * FlameSpeed;
+
     
+    //
+    // Apply wind
+    //
+    
+    // Rotation angle
+    float windAngle = -sign(paramWindSpeedMagnitude) * 1.5 * smoothstep(0.0, 100.0, abs(paramWindSpeedMagnitude));
+    
+    // Rotation angle is higher the higher we go
+    windAngle *= flameSpacePosition.y;    
+            
+    // Rotate around bottom
+    uv = GetRotationMatrix(windAngle) * (uv + vec2(0.0, 0.5)) - vec2(0.0, 0.5);
+
+
+    //
     // Get noise for this fragment and time
+    //
+
     #define NoiseResolution 0.4
     float fragmentNoise = GetNoise(uv * NoiseResolution + vec2(0.0, -flameTime));
     
@@ -90,21 +114,7 @@ void main()
     
     // Rotate!
     uv += GetRotationMatrix(angle) * uv;    
-    
-
-    //
-    // Apply wind
-    //
-    
-    // Rotation angle
-    float windAngle = -sign(paramWindSpeedMagnitude) * 1.5 * smoothstep(0.0, 100.0, abs(paramWindSpeedMagnitude));
-    
-    // Rotation angle is higher the higher we go
-    windAngle *= flameSpacePosition.y;    
-            
-    // Rotate around bottom
-    uv = GetRotationMatrix(windAngle) * (uv + vec2(0.0, 0.5)) - vec2(0.0, 0.5);
-    
+        
     
     //
     // Calculate thickness

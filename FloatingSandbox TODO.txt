@@ -988,10 +988,14 @@ Render:
 					+ And reverse wind direction
 				+ Make yellow core more narrow, in favor of thicker red border
 				+ Make more vivid red
-				- Smoothen wind change (via running average @ RenderContext)
-				- Add slider for flame size
+				+ Smoothen wind change (via running average @ RenderContext)
+				+ Add slider for flame size
+				+ Move wind rotation before noise sampling
+					+ Nuke wind randomization
 				- Reduce locality coherency of noise
-					- Take screenshot to show issue
+					- Add FlamePersonalitySeed shader param, straight from ship into vertex buffer
+				- Add param: NoiseResolutionAdjustment
+					- Changes with flamesize so that noise resolution with larger flame stays the same
 				- Try if other noise is better
 
 		- Cleanup:

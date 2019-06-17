@@ -145,10 +145,11 @@ private:
     wxRadioButton * mTextureShipRenderModeRadioButton;
     wxRadioButton * mStructureShipRenderModeRadioButton;
     wxCheckBox* mShowStressCheckBox;
-    wxRadioButton * mMode1ShipFlameRenderModeRadioButton;
-    wxRadioButton * mMode2ShipFlameRenderModeRadioButton;
     SliderControl * mWaterContrastSlider;
     SliderControl * mWaterLevelOfDetailSlider;
+    wxRadioButton * mMode1ShipFlameRenderModeRadioButton;
+    wxRadioButton * mMode2ShipFlameRenderModeRadioButton;
+    SliderControl * mShipFlameSizeAdjustmentSlider;
 
     // Sound
     SliderControl * mEffectsVolumeSlider;

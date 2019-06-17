@@ -423,6 +423,22 @@ public:
         OnShipFlameRenderModeUpdated();
     }
 
+    float GetShipFlameSizeAdjustment() const
+    {
+        return mShipFlameSizeAdjustment;
+    }
+
+    void SetShipFlameSizeAdjustment(float shipFlameSizeAdjustment)
+    {
+        mShipFlameSizeAdjustment = shipFlameSizeAdjustment;
+
+        OnShipFlameSizeAdjustmentUpdated();
+    }
+
+    static constexpr float MinShipFlameSizeAdjustment = 0.5f;
+    static constexpr float MaxShipFlameSizeAdjustment = 20.0f;
+
+
     //
     // Screen <-> World transformations
     //
@@ -954,13 +970,15 @@ public:
     inline void UploadShipFlame(
         ShipId shipId,
         PlaneId planeId,
-        vec2f const & baseCenterPosition)
+        vec2f const & baseCenterPosition,
+        float flamePersonalitySeed)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
         mShips[shipId]->UploadFlame(
             planeId,
-            baseCenterPosition);
+            baseCenterPosition,
+            flamePersonalitySeed);
     }
 
     void UploadShipFlamesEnd(ShipId shipId)
@@ -1189,6 +1207,7 @@ private:
     void OnVectorFieldRenderModeUpdated();
     void OnShowStressedSpringsUpdated();
     void OnShipFlameRenderModeUpdated();
+    void OnShipFlameSizeAdjustmentUpdated();
 
     void UpdateWorldBorder();
     vec4f CalculateWaterColor() const;
@@ -1416,6 +1435,7 @@ private:
     float mVectorFieldLengthMultiplier;
     bool mShowStressedSprings;
     ShipFlameRenderMode mShipFlameRenderMode;
+    float mShipFlameSizeAdjustment;
 
     //
     // Statistics

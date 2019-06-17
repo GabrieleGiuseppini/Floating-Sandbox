@@ -63,6 +63,7 @@ enum class ProgramParameterType : uint8_t
     AmbientLightIntensity = 0,
     LandFlatColor,
     MatteColor,
+    NoiseResolutionAdjustment,
     OceanTransparency,
     OceanDarkeningRate,
     OceanDepthColorStart,

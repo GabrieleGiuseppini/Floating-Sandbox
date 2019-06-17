@@ -442,6 +442,11 @@ public:
     ShipFlameRenderMode GetShipFlameRenderMode() const { return mRenderContext->GetShipFlameRenderMode(); }
     void SetShipFlameRenderMode(ShipFlameRenderMode shipFlameRenderMode) { mRenderContext->SetShipFlameRenderMode(shipFlameRenderMode); }
 
+    float GetShipFlameSizeAdjustment() const { return mRenderContext->GetShipFlameSizeAdjustment(); }
+    void SetShipFlameSizeAdjustment(float value) { mRenderContext->SetShipFlameSizeAdjustment(value); }
+    float GetMinShipFlameSizeAdjustment() const { return Render::RenderContext::MinShipFlameSizeAdjustment; }
+    float GetMaxShipFlameSizeAdjustment() const { return Render::RenderContext::MaxShipFlameSizeAdjustment; }
+
     //
     // Interaction parameters
     //

@@ -2079,6 +2079,32 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     CellBorder);
             }
 
+            // Flame size adjustment
+            {
+                mShipFlameSizeAdjustmentSlider = new SliderControl(
+                    fireBox,
+                    SliderWidth,
+                    -1,
+                    "Flame Size Adjust",
+                    "Adjusts the size of flames on the ship.",
+                    mGameController->GetShipFlameSizeAdjustment(),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameController->GetMinShipFlameSizeAdjustment(),
+                        mGameController->GetMaxShipFlameSizeAdjustment()));
+
+                fireSizer->Add(
+                    mShipFlameSizeAdjustmentSlider,
+                    wxGBPosition(1, 0),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorder);
+            }
+
             fireBoxSizer1->Add(fireSizer, 0, wxALL, StaticBoxInsetMargin);
         }
 
@@ -2479,6 +2505,8 @@ void SettingsDialog::ReadSettings()
         }
     }
 
+    mShipFlameSizeAdjustmentSlider->SetValue(mGameController->GetShipFlameSizeAdjustment());
+
     // Sound
 
     mEffectsVolumeSlider->SetValue(mSoundController->GetMasterEffectsVolume());
@@ -2785,6 +2813,9 @@ void SettingsDialog::ApplySettings()
         assert(mMode2ShipFlameRenderModeRadioButton->GetValue());
         mGameController->SetShipFlameRenderMode(ShipFlameRenderMode::Mode2);
     }
+
+    mGameController->SetShipFlameSizeAdjustment(
+        mShipFlameSizeAdjustmentSlider->GetValue());
 
     // Sound
 

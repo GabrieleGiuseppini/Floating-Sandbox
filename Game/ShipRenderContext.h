@@ -17,6 +17,7 @@
 #include <GameCore/BoundedVector.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/ImageData.h>
+#include <GameCore/RunningAverage.h>
 #include <GameCore/SysSpecifics.h>
 #include <GameCore/Vectors.h>
 
@@ -52,7 +53,8 @@ public:
         DebugShipRenderMode debugShipRenderMode,
         VectorFieldRenderMode vectorFieldRenderMode,
         bool showStressedSprings,
-        ShipFlameRenderMode shipFlameRenderMode);
+        ShipFlameRenderMode shipFlameRenderMode,
+        float shipFlameSizeAdjustment);
 
     ~ShipRenderContext();
 
@@ -72,7 +74,7 @@ public:
     {
         mAmbientLightIntensity = ambientLightIntensity;
 
-        // Set parameters
+        // React
         OnAmbientLightIntensityUpdated();
     }
 
@@ -80,7 +82,7 @@ public:
     {
         mWaterColor = waterColor;
 
-        // Set parameters
+        // React
         OnWaterColorUpdated();
     }
 
@@ -88,7 +90,7 @@ public:
     {
         mWaterContrast = waterContrast;
 
-        // Set parameters
+        // React
         OnWaterContrastUpdated();
     }
 
@@ -96,7 +98,7 @@ public:
     {
         mWaterLevelOfDetail = waterLevelOfDetail;
 
-        // Set parameters
+        // React
         OnWaterLevelOfDetailUpdated();
     }
 
@@ -123,6 +125,14 @@ public:
     void SetShipFlameRenderMode(ShipFlameRenderMode shipFlameRenderMode)
     {
         mShipFlameRenderMode = shipFlameRenderMode;
+    }
+
+    void SetShipFlameSizeAdjustment(float shipFlameSizeAdjustment)
+    {
+        mShipFlameSizeAdjustment = shipFlameSizeAdjustment;
+
+        // React
+        OnShipFlameSizeAdjustmentUpdated();
     }
 
 public:
@@ -241,7 +251,8 @@ public:
      */
     void UploadFlame(
         PlaneId planeId,
-        vec2f const & baseCenterPosition)
+        vec2f const & baseCenterPosition,
+        float flamePersonalitySeed)
     {
         // Calculate flame quad
         float const leftX = baseCenterPosition.x - mHalfFlameQuadWidth;
@@ -255,18 +266,21 @@ public:
         mFlameVertexBuffer.emplace_back(
             vec2f(leftX, topY),
             static_cast<float>(planeId),
+            flamePersonalitySeed,
             vec2f(-1.0, 1.0));
 
         // Top-right
         mFlameVertexBuffer.emplace_back(
             vec2f(rightX, topY),
             static_cast<float>(planeId),
+            flamePersonalitySeed,
             vec2f(1.0, 1.0));
 
         // Bottom-left
         mFlameVertexBuffer.emplace_back(
             vec2f(leftX, bottomY),
             static_cast<float>(planeId),
+            flamePersonalitySeed,
             vec2f(-1.0, 0.0));
 
         // Triangle 2
@@ -275,18 +289,21 @@ public:
         mFlameVertexBuffer.emplace_back(
             vec2f(rightX, topY),
             static_cast<float>(planeId),
+            flamePersonalitySeed,
             vec2f(1.0, 1.0));
 
         // Bottom-left
         mFlameVertexBuffer.emplace_back(
             vec2f(leftX, bottomY),
             static_cast<float>(planeId),
+            flamePersonalitySeed,
             vec2f(-1.0, 0.0));
 
         // Bottom-right
         mFlameVertexBuffer.emplace_back(
             vec2f(rightX, bottomY),
             static_cast<float>(planeId),
+            flamePersonalitySeed,
             vec2f(1.0, 0.0));
     }
 
@@ -512,6 +529,7 @@ private:
     void OnWaterColorUpdated();
     void OnWaterContrastUpdated();
     void OnWaterLevelOfDetailUpdated();
+    void OnShipFlameSizeAdjustmentUpdated();
 
     void RenderFlames();
     void RenderGenericTextures();
@@ -564,15 +582,17 @@ private:
     {
         vec2f vertexPosition;
         float planeId;
-
+        float flamePersonalitySeed;
         vec2f flameSpacePosition;
 
         FlameVertex(
             vec2f _vertexPosition,
             float _planeId,
+            float _flamePersonalitySeed,
             vec2f _flameSpacePosition)
             : vertexPosition(_vertexPosition)
             , planeId(_planeId)
+            , flamePersonalitySeed(_flamePersonalitySeed)
             , flameSpacePosition(_flameSpacePosition)
         {}
     };
@@ -634,7 +654,8 @@ private:
 
     GameOpenGLMappedBuffer<FlameVertex, GL_ARRAY_BUFFER> mFlameVertexBuffer;
     GameOpenGLVBO mFlameVertexVBO;
-    float mCurrentWindSpeedMagnitude;
+    RunningAverage<10> mWindSpeedMagnitudeRunningAverage;
+    float mCurrentWindSpeedMagnitudeAverage;
 
     GameOpenGLMappedBuffer<GenericTextureVertex, GL_ARRAY_BUFFER> mAirBubbleVertexBuffer;
     std::vector<GenericTexturePlaneData> mGenericTexturePlaneVertexBuffers;
@@ -712,6 +733,7 @@ private:
     VectorFieldRenderMode mVectorFieldRenderMode;
     bool mShowStressedSprings;
     ShipFlameRenderMode mShipFlameRenderMode;
+    float mShipFlameSizeAdjustment;
     float mHalfFlameQuadWidth;
     float mFlameQuadHeight;
 

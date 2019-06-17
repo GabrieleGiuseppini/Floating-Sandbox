@@ -16,6 +16,11 @@
 
 namespace Render {
 
+// Base dimensions of flame quads
+static float constexpr BasisHalfFlameQuadWidth = 9.5f;
+static float constexpr BasisFlameQuadHeight = 7.5f;
+
+
 ShipRenderContext::ShipRenderContext(
     ShipId shipId,
     size_t shipCount,
@@ -35,7 +40,8 @@ ShipRenderContext::ShipRenderContext(
     DebugShipRenderMode debugShipRenderMode,
     VectorFieldRenderMode vectorFieldRenderMode,
     bool showStressedSprings,
-    ShipFlameRenderMode shipFlameRenderMode)
+    ShipFlameRenderMode shipFlameRenderMode,
+    float shipFlameSizeAdjustment)
     : mShipId(shipId)
     , mShipCount(shipCount)
     , mPointCount(pointCount)
@@ -52,7 +58,8 @@ ShipRenderContext::ShipRenderContext(
     //
     , mFlameVertexBuffer()
     , mFlameVertexVBO()
-    , mCurrentWindSpeedMagnitude(0.0f)
+    , mWindSpeedMagnitudeRunningAverage(0.0f)
+    , mCurrentWindSpeedMagnitudeAverage(0.0f)
     //
     , mAirBubbleVertexBuffer()
     , mGenericTexturePlaneVertexBuffers()
@@ -98,8 +105,9 @@ ShipRenderContext::ShipRenderContext(
     , mVectorFieldRenderMode(vectorFieldRenderMode)
     , mShowStressedSprings(showStressedSprings)
     , mShipFlameRenderMode(shipFlameRenderMode)
-    , mHalfFlameQuadWidth(9.5f)
-    , mFlameQuadHeight(7.5f)
+    , mShipFlameSizeAdjustment(shipFlameSizeAdjustment)
+    , mHalfFlameQuadWidth(0.0f) // Will be calculated
+    , mFlameQuadHeight(0.0f) // Will be calculated
     // Statistics
     , mRenderStatistics(renderStatistics)
 {
@@ -221,11 +229,11 @@ ShipRenderContext::ShipRenderContext(
 
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mFlameVertexVBO);
-        static_assert(sizeof(FlameVertex) == (3 + 2) * sizeof(float));
+        static_assert(sizeof(FlameVertex) == (4 + 2) * sizeof(float));
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Flame1));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Flame1), 3, GL_FLOAT, GL_FALSE, sizeof(FlameVertex), (void*)0);
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Flame1), 4, GL_FLOAT, GL_FALSE, sizeof(FlameVertex), (void*)0);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Flame2));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Flame2), 2, GL_FLOAT, GL_FALSE, sizeof(FlameVertex), (void*)((3) * sizeof(float)));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Flame2), 2, GL_FLOAT, GL_FALSE, sizeof(FlameVertex), (void*)((4) * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -360,6 +368,7 @@ ShipRenderContext::ShipRenderContext(
     OnWaterColorUpdated();
     OnWaterContrastUpdated();
     OnWaterLevelOfDetailUpdated();
+    OnShipFlameSizeAdjustmentUpdated();
 }
 
 ShipRenderContext::~ShipRenderContext()
@@ -695,6 +704,13 @@ void ShipRenderContext::OnWaterLevelOfDetailUpdated()
         waterLevelThreshold);
 }
 
+void ShipRenderContext::OnShipFlameSizeAdjustmentUpdated()
+{
+    // Recalculate quad dimensions
+    mHalfFlameQuadWidth = BasisHalfFlameQuadWidth * mShipFlameSizeAdjustment;
+    mFlameQuadHeight = BasisFlameQuadHeight * mShipFlameSizeAdjustment;
+}
+
 //////////////////////////////////////////////////////////////////////////////////
 
 void ShipRenderContext::RenderStart(PlaneId maxMaxPlaneId)
@@ -956,8 +972,11 @@ void ShipRenderContext::UploadFlamesStart(float windSpeedMagnitude)
     CheckOpenGLError();
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+    // Update wind speed
+    float newWind = mWindSpeedMagnitudeRunningAverage.Update(windSpeedMagnitude);
+
     // Set wind speed magnitude parameter, if it has changed
-    if (windSpeedMagnitude != mCurrentWindSpeedMagnitude)
+    if (newWind != mCurrentWindSpeedMagnitudeAverage)
     {
         switch (mShipFlameRenderMode)
         {
@@ -965,7 +984,7 @@ void ShipRenderContext::UploadFlamesStart(float windSpeedMagnitude)
             {
                 mShaderManager.ActivateProgram<ProgramType::ShipFlames1>();
                 mShaderManager.SetProgramParameter<ProgramType::ShipFlames1, ProgramParameterType::WindSpeedMagnitude>(
-                    windSpeedMagnitude);
+                    newWind);
                 break;
             }
 
@@ -973,12 +992,12 @@ void ShipRenderContext::UploadFlamesStart(float windSpeedMagnitude)
             {
                 mShaderManager.ActivateProgram<ProgramType::ShipFlames2>();
                 mShaderManager.SetProgramParameter<ProgramType::ShipFlames2, ProgramParameterType::WindSpeedMagnitude>(
-                    windSpeedMagnitude);
+                    newWind);
                 break;
             }
         }
 
-        mCurrentWindSpeedMagnitude = windSpeedMagnitude;
+        mCurrentWindSpeedMagnitudeAverage = newWind;
     }
 }
 
