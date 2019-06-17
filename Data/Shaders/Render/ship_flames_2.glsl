@@ -78,7 +78,7 @@ void main()
     //
 
     // Rotation angle
-    float windAngle = -sign(paramWindSpeedMagnitude) * 2.0 * smoothstep(0.0, 100.0, abs(paramWindSpeedMagnitude));
+    float windAngle = -sign(paramWindSpeedMagnitude) * 0.4 * smoothstep(0.0, 100.0, abs(paramWindSpeedMagnitude));
     
     // Rotation angle is higher the higher we go
     windAngle *= flameSpacePosition.y;
@@ -92,7 +92,7 @@ void main()
     //
 
     #define NoiseResolution 0.7
-    float fragmentNoise = GetNoise(uv * NoiseResolution + vec2(0.0, -flameTime/0.8));
+    float fragmentNoise = GetNoise(uv * NoiseResolution + vec2(flamePersonalitySeed)/777.0 + vec2(0.0, -flameTime/0.8));
 
 
     //
