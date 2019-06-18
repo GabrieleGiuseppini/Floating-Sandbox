@@ -124,6 +124,8 @@ AboutDialog::AboutDialog(
 
         {"Chief ship literature officer:", "Maximord - https://discordapp.com/" },
 
+        {"Music:\t\t", "Dario Bazzichetto (Soul Heater) - https://soundcloud.com/soul-heater" },
+
         {"Testing:\t\t", "Pac0master - https://discordapp.com/" },
         {"\t\t\t\t", "Maximord - https://discordapp.com/" },
         {"\t\t\t\t", "The_SamminAter - https://discordapp.com/" },

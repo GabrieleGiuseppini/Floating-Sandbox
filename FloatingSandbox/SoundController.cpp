@@ -15,12 +15,12 @@
 #include <limits>
 #include <regex>
 
+float constexpr SinkingMusicVolume = 60.0f;
 float constexpr RepairVolume = 40.0f;
 float constexpr SawVolume = 50.0f;
 float constexpr SawedVolume = 80.0f;
 float constexpr StressSoundVolume = 20.0f;
 std::chrono::milliseconds constexpr SawedInertiaDuration = std::chrono::milliseconds(200);
-float constexpr SinkingMusicVolume = 20.0f;
 float constexpr WaveSplashTriggerSize = 0.5f;
 
 SoundController::SoundController(
@@ -77,12 +77,27 @@ SoundController::SoundController(
     // Initialize Music
     //
 
-    if (!mSinkingMusic.openFromFile(mResourceLoader->GetMusicFilepath("sinking_ship").string()))
-    {
-        throw GameException("Cannot load \"sinking_ship\" music");
-    }
+    auto musicNames = mResourceLoader->GetMusicNames();
 
-    mSinkingMusic.setLoop(true);
+    for (size_t i = 0; i < musicNames.size(); ++i)
+    {
+        std::string const & musicName = musicNames[i];
+
+        //
+        // Parse filename
+        //
+
+        static std::regex const MusicNameRegex(R"((.+)(?:_\d+)?)");
+        std::smatch musicNameMatch;
+        if (!std::regex_match(musicName, musicNameMatch, MusicNameRegex))
+        {
+            throw GameException("Music filename \"" + musicName + "\" is not recognized");
+        }
+
+        assert(musicNameMatch.size() == 1 + 1);
+
+        mSinkingMusic.AddAlternative(mResourceLoader->GetMusicFilepath(musicName));
+    }
 
 
     //
@@ -478,13 +493,13 @@ void SoundController::SetPaused(bool isPaused)
     // Sinking music
     if (isPaused)
     {
-        if (sf::Sound::Status::Playing == mSinkingMusic.getStatus())
-            mSinkingMusic.pause();
+        if (sf::Sound::Status::Playing == mSinkingMusic.GetStatus())
+            mSinkingMusic.Pause();
     }
     else
     {
-        if (sf::Sound::Status::Paused == mSinkingMusic.getStatus())
-            mSinkingMusic.play();
+        if (sf::Sound::Status::Paused == mSinkingMusic.GetStatus())
+            mSinkingMusic.Resume();
     }
 }
 
@@ -621,14 +636,14 @@ void SoundController::SetMasterMusicVolume(float volume)
 {
     mMasterMusicVolume = volume;
 
-    mSinkingMusic.setMasterVolume(volume);
+    mSinkingMusic.SetMasterVolume(volume);
 }
 
 void SoundController::SetMasterMusicMuted(bool isMuted)
 {
     mMasterMusicMuted = isMuted;
 
-    mSinkingMusic.setMuted(mMasterMusicMuted);
+    mSinkingMusic.SetMuted(mMasterMusicMuted);
 }
 
 void SoundController::SetPlayBreakSounds(bool playBreakSounds)
@@ -700,7 +715,7 @@ void SoundController::SetPlaySinkingMusic(bool playSinkingMusic)
 
     if (!mPlaySinkingMusic)
     {
-        mSinkingMusic.stop();
+        mSinkingMusic.Stop();
     }
 }
 
@@ -821,7 +836,7 @@ void SoundController::PlaySnapshotSound()
 void SoundController::Update()
 {
     mWaveMakerSound.Update();
-    mSinkingMusic.update();
+    mSinkingMusic.Update();
 
     // Silence the inertial sounds - this will basically be a nop in case
     // they've just been started or will be started really soon
@@ -872,10 +887,10 @@ void SoundController::Reset()
     mAntiMatterBombContainedSounds.Reset();
 
     //
-    // Stop music
+    // Reset music
     //
 
-    mSinkingMusic.stop();
+    mSinkingMusic.Reset();
 
     //
     // Reset state
@@ -965,18 +980,18 @@ void SoundController::OnSinkingBegin(ShipId /*shipId*/)
 {
     if (mPlaySinkingMusic)
     {
-        if (sf::SoundSource::Status::Playing != mSinkingMusic.getStatus())
+        if (sf::SoundSource::Status::Playing != mSinkingMusic.GetStatus())
         {
-            mSinkingMusic.play();
+            mSinkingMusic.Play();
         }
     }
 }
 
 void SoundController::OnSinkingEnd(ShipId /*shipId*/)
 {
-    if (sf::SoundSource::Status::Stopped != mSinkingMusic.getStatus())
+    if (sf::SoundSource::Status::Stopped != mSinkingMusic.GetStatus())
     {
-        mSinkingMusic.fadeToStop();
+        mSinkingMusic.FadeToStop();
     }
 }
 

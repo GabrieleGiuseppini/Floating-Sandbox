@@ -2084,7 +2084,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                 mShipFlameSizeAdjustmentSlider = new SliderControl(
                     fireBox,
                     SliderWidth,
-                    -1,
+                    SliderHeight,
                     "Flame Size Adjust",
                     "Adjusts the size of flames on the ship.",
                     mGameController->GetShipFlameSizeAdjustment(),
@@ -2099,7 +2099,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
                 fireSizer->Add(
                     mShipFlameSizeAdjustmentSlider,
-                    wxGBPosition(1, 0),
+                    wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
                     wxALL,
                     CellBorder);

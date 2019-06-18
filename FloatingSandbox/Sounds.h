@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <cassert>
 #include <chrono>
+#include <filesystem>
 #include <memory>
 #include <limits>
 #include <optional>
@@ -332,9 +333,9 @@ private:
  * Our wrapper for sf::Music.
  *
  * Provides volume control based on a master volume and a local volume,
- * and facilities to fade-in and fade-out.
+ * facilities to fade-in and fade-out, and multiple random alternatives.
  */
-class GameMusic : public sf::Music
+class GameMusic
 {
 public:
 
@@ -344,7 +345,8 @@ public:
         bool isMuted,
         std::chrono::milliseconds timeToFadeIn = std::chrono::milliseconds::zero(),
         std::chrono::milliseconds timeToFadeOut = std::chrono::milliseconds::zero())
-        : mVolume(volume)
+        : mMusic()
+        , mVolume(volume)
         , mMasterVolume(masterVolume)
         , mFadeLevel(1.0f)
         , mIsMuted(isMuted)
@@ -353,28 +355,35 @@ public:
         , mFadeInStartTimestamp()
         , mFadeOutStartTimestamp()
     {
+        mMusic.setLoop(true);
+
         InternalSetVolume();
     }
 
-    void setVolume(float volume)
+    void AddAlternative(std::filesystem::path const & filepath)
+    {
+        mAlternatives.push_back(filepath);
+    }
+
+    void SetVolume(float volume)
     {
         mVolume = volume;
         InternalSetVolume();
     }
 
-    void setMasterVolume(float masterVolume)
+    void SetMasterVolume(float masterVolume)
     {
         mMasterVolume = masterVolume;
         InternalSetVolume();
     }
 
-    void setMuted(bool isMuted)
+    void SetMuted(bool isMuted)
     {
         mIsMuted = isMuted;
         InternalSetVolume();
     }
 
-    void setVolumes(
+    void SetVolumes(
         float volume,
         float masterVolume,
         bool isMuted)
@@ -385,42 +394,70 @@ public:
         InternalSetVolume();
     }
 
-    void play() override
+    sf::Sound::Status GetStatus() const
+    {
+        return mMusic.getStatus();
+    }
+
+    void Play()
     {
         // Reset fade
         mFadeLevel = 1.0f;
         InternalSetVolume();
 
+        // Choose alternative
+        auto alternativeToPlay = GameRandomEngine::GetInstance().Choose(mAlternatives.size());
+
         // Play
-        sf::Music::play();
+        if (!mMusic.openFromFile(mAlternatives[alternativeToPlay].string()))
+        {
+            throw GameException("Cannot load \"" + mAlternatives[alternativeToPlay].string() + "\" music");
+        }
+
+        mMusic.play();
 
         // Reset state
         mFadeInStartTimestamp.reset();
         mFadeOutStartTimestamp.reset();
     }
 
-    void fadeToPlay()
+    void FadeToPlay()
     {
         mFadeInStartTimestamp = GameWallClock::GetInstance().Now();
     }
 
-    void stop() override
+    void Stop()
     {
         // Stop
-        sf::Music::stop();
+        mMusic.stop();
 
         // Reset state
         mFadeInStartTimestamp.reset();
         mFadeOutStartTimestamp.reset();
     }
 
-    void fadeToStop()
+    void FadeToStop()
     {
         mFadeInStartTimestamp.reset();
         mFadeOutStartTimestamp = GameWallClock::GetInstance().Now();
     }
 
-    void update()
+    void Pause()
+    {
+        mMusic.pause();
+    }
+
+    void Resume()
+    {
+        mMusic.play();
+    }
+
+    void Reset()
+    {
+        Stop();
+    }
+
+    void Update()
     {
         if (!!mFadeInStartTimestamp)
         {
@@ -441,9 +478,9 @@ public:
 
             InternalSetVolume();
 
-            if (sf::Sound::Status::Playing != this->getStatus())
+            if (sf::Sound::Status::Playing != GetStatus())
             {
-                this->play();
+                Play();
             }
         }
         else if (!!mFadeOutStartTimestamp)
@@ -454,7 +491,7 @@ public:
             // Check if we're done
             if (elapsedMillis >= mTimeToFadeOut)
             {
-                this->stop();
+                Stop();
                 mFadeOutStartTimestamp.reset();
             }
             else
@@ -468,12 +505,14 @@ public:
 
 private:
 
+    sf::Music mMusic;
+
     void InternalSetVolume()
     {
         if (!mIsMuted)
-            sf::Music::setVolume(100.0f * (mVolume / 100.0f) * (mMasterVolume / 100.0f) * mFadeLevel);
+            mMusic.setVolume(100.0f * (mVolume / 100.0f) * (mMasterVolume / 100.0f) * mFadeLevel);
         else
-            sf::Music::setVolume(0.0f);
+            mMusic.setVolume(0.0f);
     }
 
     float mVolume;
@@ -485,6 +524,8 @@ private:
     std::chrono::milliseconds const mTimeToFadeOut;
     std::optional<GameWallClock::time_point> mFadeInStartTimestamp;
     std::optional<GameWallClock::time_point> mFadeOutStartTimestamp;
+
+    std::vector<std::filesystem::path> mAlternatives;
 };
 
 

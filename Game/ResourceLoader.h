@@ -51,6 +51,8 @@ public:
     // Music
     //
 
+    std::vector<std::string> GetMusicNames() const;
+
     std::filesystem::path GetMusicFilepath(std::string const & musicName) const;
 
 

@@ -73,6 +73,20 @@ std::filesystem::path ResourceLoader::GetMaterialDatabaseRootFilepath() const
 // Music
 ////////////////////////////////////////////////////////////////////////////////////////////
 
+std::vector<std::string> ResourceLoader::GetMusicNames() const
+{
+    std::vector<std::string> filenames;
+    for (auto const & entryIt : std::filesystem::directory_iterator(std::filesystem::path("Data") / "Music"))
+    {
+        if (std::filesystem::is_regular_file(entryIt.path()))
+        {
+            filenames.push_back(entryIt.path().stem().string());
+        }
+    }
+
+    return filenames;
+}
+
 std::filesystem::path ResourceLoader::GetMusicFilepath(std::string const & musicName) const
 {
     std::filesystem::path localPath = std::filesystem::path("Data") / "Music" / (musicName + ".flac");

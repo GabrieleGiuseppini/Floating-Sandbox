@@ -373,15 +373,37 @@ Render:
 		+ Merge to master			 
 		+ Send to testers
 
-		= Move tool: make sling easier
+		+ Move tool: make sling easier
 			+ 1) Merge Move tools
 				+ Base templated class
 				+ Derived only has virtual's for GameController calls
-			- 2) Tool always remembers last mouse velocity
-			- 3) Upon passing velocity, if mouse velocity is close to zero it uses last
-				- But then always remembers last *mouse* velocity
+			+ 2) Improve
+		+ Multi-music
+
+		- Thanos' Snap
+			- SoundController listens to "Silence" event and:
+				- Fades out sinking music
+			- Tool managed by GameController
+				- REDO: it's a circle with increasing radius
+				- World::ApplyThanosSnap(leftX, rightX)
+					- Called for slices, advancing on two fronts from mouse position at moment of application
+					- Ship::ApplyThanosSnap(leftX, rightX)
+						- Deletes springs (and triangles) (w/no noise)
+					- OceanSurface::ApplyThanosSnap(leftX, rightX)
+						- Flatten surface to ~-1.0 
+						
+			- Cursors (up and down)
+			- Snap sound
 
 		- Heat and combustion (*)
+
+		- Flamethrower tool
+			- Use shader with radial noise + rotation
+
+		- Fire Extinguisher tool
+
+		- Smoke
+			- See if may use shader with radial noise
 
 		- Bump up rot speed for dry stuff, takes 98 minutes now
 			- They all agree: a ship should rot in 30 minutes on the surface, and in 15 minutes when flooded
