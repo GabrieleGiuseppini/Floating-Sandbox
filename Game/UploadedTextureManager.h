@@ -27,8 +27,15 @@ class UploadedTextureManager
 {
 public:
 
+    // Assumption: all previous frames have been uploaded already
+    void UploadNextFrame(
+        TextureGroup const & group,
+        TextureFrameIndex const & frameIndex,
+        GLint minFilter);
+
     void UploadGroup(
         TextureGroup const & group,
+        GLint minFilter,
         ProgressCallback const & progressCallback);
 
     void UploadMipmappedGroup(

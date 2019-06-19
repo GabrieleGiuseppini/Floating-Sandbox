@@ -1017,15 +1017,20 @@ Render:
 				+ Reduce local coherency of noise
 					+ Add FlamePersonalitySeed shader param, straight from ship into vertex buffer
 				- Adjust bottom
-				- Try if other noise is better
 
 		- Cleanup:
 			+ Test generic textures change (gen tex's + air bubbles at same time) and nuke comment
 			+ Test cross of light change
 
 		- Flamethrower tool:
-			- Need new layer - InteractionLayer - to do flamethrower's flames
-				- Owned, like text layer, by GameController
+			- RenderContext exposes UploadFlameThrower(worldPos)
+			- GameController stores worldPos at ApplyFlameThrower(screenPos) and later, at Render, invokes RenderContext::UploadFlameThrower()
+			- Cursor
+			- Sound
+				- Continuous
+			- Tool
+				- Engages (and starts sound) only if GameController::ApplyFlameThrower(screenPos) returns true (i.e. point found in radius)
+				- Which other tool is like this? 
 
 	- Storms
 		- Another physics component

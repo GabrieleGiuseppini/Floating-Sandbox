@@ -120,6 +120,11 @@ public:
         , mFrameSpecifications(std::move(frameSpecifications))
     {}
 
+    auto const & GetFrameSpecification(TextureFrameIndex frameIndex) const
+    {
+        return mFrameSpecifications[frameIndex];
+    }
+
     auto const & GetFrameSpecifications() const
     {
         return mFrameSpecifications;

@@ -27,6 +27,7 @@ enum class ProgramType
 {
     Clouds = 0,
     CrossOfLight,
+    FlameThrower,
     LandFlat,
     LandTexture,
     OceanDepth,
@@ -63,7 +64,6 @@ enum class ProgramParameterType : uint8_t
     AmbientLightIntensity = 0,
     LandFlatColor,
     MatteColor,
-    NoiseResolutionAdjustment,
     OceanTransparency,
     OceanDarkeningRate,
     OceanDepthColorStart,
@@ -84,9 +84,10 @@ enum class ProgramParameterType : uint8_t
     CloudTexture,                   // 1
     GenericTexturesAtlasTexture,    // 2
     LandTexture,                    // 3
-    NoiseTexture,                   // 4
-    OceanTexture,                   // 5
-    WorldBorderTexture,             // 6
+    NoiseTexture1,                  // 4
+    NoiseTexture2,                  // 5
+    OceanTexture,                   // 6
+    WorldBorderTexture,             // 7
 
     _FirstTexture = SharedTexture,
     _LastTexture = WorldBorderTexture
@@ -115,6 +116,8 @@ enum class VertexAttributeType : GLuint
 
     CrossOfLight1 = 0,
     CrossOfLight2 = 1,
+
+    FlameThrower = 0,
 
     WorldBorder = 0,
 

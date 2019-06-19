@@ -19,6 +19,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::Clouds;
     else if (lstr == "cross_of_light")
         return ProgramType::CrossOfLight;
+    else if (lstr == "flame_thrower")
+        return ProgramType::FlameThrower;
     else if (lstr == "land_flat")
         return ProgramType::LandFlat;
     else if (lstr == "land_texture")
@@ -71,6 +73,8 @@ std::string ProgramTypeToStr(ProgramType program)
         return "Clouds";
     case ProgramType::CrossOfLight:
         return "CrossOfLight";
+    case ProgramType::FlameThrower:
+        return "FlameThrower";
     case ProgramType::LandFlat:
         return "LandFlat";
     case ProgramType::LandTexture:
@@ -125,8 +129,6 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::LandFlatColor;
     else if (str == "MatteColor")
         return ProgramParameterType::MatteColor;
-    else if (str == "NoiseResolutionAdjustment")
-        return ProgramParameterType::NoiseResolutionAdjustment;
     else if (str == "OceanTransparency")
         return ProgramParameterType::OceanTransparency;
     else if (str == "OceanDarkeningRate")
@@ -164,8 +166,10 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::GenericTexturesAtlasTexture;
     else if (str == "LandTexture")
         return ProgramParameterType::LandTexture;
-    else if (str == "NoiseTexture")
-        return ProgramParameterType::NoiseTexture;
+    else if (str == "NoiseTexture1")
+        return ProgramParameterType::NoiseTexture1;
+    else if (str == "NoiseTexture2")
+        return ProgramParameterType::NoiseTexture2;
     else if (str == "OceanTexture")
         return ProgramParameterType::OceanTexture;
     else if (str == "WorldBorderTexture")
@@ -184,8 +188,6 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "LandFlatColor";
     case ProgramParameterType::MatteColor:
         return "MatteColor";
-    case ProgramParameterType::NoiseResolutionAdjustment:
-        return "NoiseResolutionAdjustment";
     case ProgramParameterType::OceanTransparency:
         return "OceanTransparency";
     case ProgramParameterType::OceanDarkeningRate:
@@ -223,8 +225,10 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "GenericTexturesAtlasTexture";
     case ProgramParameterType::LandTexture:
         return "LandTexture";
-    case ProgramParameterType::NoiseTexture:
-        return "NoiseTexture";
+    case ProgramParameterType::NoiseTexture1:
+        return "NoiseTexture1";
+    case ProgramParameterType::NoiseTexture2:
+        return "NoiseTexture2";
     case ProgramParameterType::OceanTexture:
         return "OceanTexture";
     case ProgramParameterType::WorldBorderTexture:
@@ -250,6 +254,8 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::CrossOfLight1;
     else if (Utils::CaseInsensitiveEquals(str, "CrossOfLight2"))
         return VertexAttributeType::CrossOfLight2;
+    else if (Utils::CaseInsensitiveEquals(str, "FlameThrower"))
+        return VertexAttributeType::FlameThrower;
     else if (Utils::CaseInsensitiveEquals(str, "WorldBorder"))
         return VertexAttributeType::WorldBorder;
     // Ship

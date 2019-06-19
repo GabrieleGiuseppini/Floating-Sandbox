@@ -35,7 +35,7 @@ in float flamePersonalitySeed;
 in vec2 flameSpacePosition; // (x=[-0.5, 0.5], y=[0.0, 1.0])
 
 // The texture
-uniform sampler2D paramNoiseTexture;
+uniform sampler2D paramNoiseTexture1;
 
 // Params
 uniform float paramTime;
@@ -47,8 +47,8 @@ uniform float paramWindSpeedMagnitude;
 
 float GetNoise(vec2 uv) // -> (0.25, 0.75)
 {
-    float n = (texture2D(paramNoiseTexture, uv).r - 0.5) * 0.5;
-    n += (texture2D(paramNoiseTexture, uv * 2.0).r - 0.5) * 0.5 * 0.5;
+    float n = (texture2D(paramNoiseTexture1, uv).r - 0.5) * 0.5;
+    n += (texture2D(paramNoiseTexture1, uv * 2.0).r - 0.5) * 0.5 * 0.5;
     
     return n + 0.5;
 }

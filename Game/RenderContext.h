@@ -1378,8 +1378,6 @@ private:
     GameOpenGLTexture mLandTextureOpenGLHandle;
     size_t mLoadedLandTextureIndex;
 
-    GameOpenGLTexture mNoiseTextureOpenGLHandle;
-
     //
     // Ships
     //

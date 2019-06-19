@@ -51,7 +51,6 @@ RenderContext::RenderContext(
     , mLandTextureFrameSpecifications()
     , mLandTextureOpenGLHandle()
     , mLoadedLandTextureIndex(std::numeric_limits<size_t>::max())
-    , mNoiseTextureOpenGLHandle()
     // Ships
     , mShips()
     , mGenericTextureAtlasOpenGLHandle()
@@ -95,8 +94,8 @@ RenderContext::RenderContext(
     static constexpr float GenericTextureProgressSteps = 10.0f;
     static constexpr float CloudTextureProgressSteps = 4.0f;
 
-    // Shaders, TextRenderContext, TextureDatabase, GenericTextureAtlas, Clouds, Noise, WorldBorder
-    static constexpr float TotalProgressSteps = 3.0f + GenericTextureProgressSteps + CloudTextureProgressSteps + 1.0f + 1.0f;
+    // Shaders, TextRenderContext, TextureDatabase, GenericTextureAtlas, Clouds, NoiseX2, WorldBorder
+    static constexpr float TotalProgressSteps = 3.0f + GenericTextureProgressSteps + CloudTextureProgressSteps + 2.0f + 1.0f;
 
     GLuint tmpGLuint;
 
@@ -358,7 +357,7 @@ RenderContext::RenderContext(
     TextureAtlas cloudTextureAtlas = cloudAtlasBuilder.BuildAtlas(
         [&progressCallback](float progress, std::string const &)
         {
-            progressCallback((3.0f + GenericTextureProgressSteps + progress * CloudTextureProgressSteps) / TotalProgressSteps, "Loading textures...");
+            progressCallback((3.0f + GenericTextureProgressSteps + progress * CloudTextureProgressSteps) / TotalProgressSteps, "Loading cloud textures...");
         });
 
     // Create OpenGL handle
@@ -433,17 +432,19 @@ RenderContext::RenderContext(
 
 
     //
-    // Initialize noise texture
+    // Initialize noise textures
     //
 
-    mShaderManager->ActivateTexture<ProgramParameterType::NoiseTexture>();
+    // Noise 1
 
-    mUploadedTextureManager->UploadGroup(
+    mShaderManager->ActivateTexture<ProgramParameterType::NoiseTexture1>();
+
+    mUploadedTextureManager->UploadNextFrame(
         textureDatabase.GetGroup(TextureGroupType::Noise),
-        [&progressCallback](float progress, std::string const &)
-        {
-            progressCallback((3.0f + GenericTextureProgressSteps + CloudTextureProgressSteps + progress) / TotalProgressSteps, "Loading textures...");
-        });
+        0,
+        GL_LINEAR);
+
+    progressCallback((3.0f + GenericTextureProgressSteps + CloudTextureProgressSteps + 1.0f) / TotalProgressSteps, "Loading noise textures...");
 
     // Bind texture
     glBindTexture(GL_TEXTURE_2D, mUploadedTextureManager->GetOpenGLHandle(TextureGroupType::Noise, 0));
@@ -455,6 +456,25 @@ RenderContext::RenderContext(
     mShaderManager->SetTextureParameters<ProgramType::ShipFlames1>();
     mShaderManager->ActivateProgram<ProgramType::ShipFlames2>();
     mShaderManager->SetTextureParameters<ProgramType::ShipFlames2>();
+
+    // Noise 2
+
+    mShaderManager->ActivateTexture<ProgramParameterType::NoiseTexture2>();
+
+    mUploadedTextureManager->UploadNextFrame(
+        textureDatabase.GetGroup(TextureGroupType::Noise),
+        1,
+        GL_LINEAR);
+
+    progressCallback((3.0f + GenericTextureProgressSteps + CloudTextureProgressSteps + 2.0f) / TotalProgressSteps, "Loading noise textures...");
+
+    // Bind texture
+    glBindTexture(GL_TEXTURE_2D, mUploadedTextureManager->GetOpenGLHandle(TextureGroupType::Noise, 1));
+    CheckOpenGLError();
+
+    // Set texture in shaders
+    mShaderManager->ActivateProgram<ProgramType::FlameThrower>();
+    mShaderManager->SetTextureParameters<ProgramType::FlameThrower>();
 
 
     //
@@ -468,7 +488,7 @@ RenderContext::RenderContext(
         GL_LINEAR_MIPMAP_NEAREST,
         [&progressCallback](float progress, std::string const &)
         {
-            progressCallback((3.0f + GenericTextureProgressSteps + CloudTextureProgressSteps + 1.0f + progress) / TotalProgressSteps, "Loading textures...");
+            progressCallback((3.0f + GenericTextureProgressSteps + CloudTextureProgressSteps + 2.0f + progress) / TotalProgressSteps, "Loading world end textures...");
         });
 
     // Bind texture
