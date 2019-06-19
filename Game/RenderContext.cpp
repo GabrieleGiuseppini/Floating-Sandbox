@@ -177,9 +177,9 @@ RenderContext::RenderContext(
     }
 
     TextureAtlas genericTextureAtlas = genericTextureAtlasBuilder.BuildAtlas(
-        [&progressCallback](float progress, std::string const &)
+        [&progressCallback](float progress, std::string const & message)
         {
-            progressCallback((3.0f + progress * GenericTextureProgressSteps) / TotalProgressSteps, "Loading textures...");
+            progressCallback((3.0f + progress * GenericTextureProgressSteps) / TotalProgressSteps, message);
         });
 
     LogMessage("Generic texture atlas size: ", genericTextureAtlas.AtlasData.Size.Width, "x", genericTextureAtlas.AtlasData.Size.Height);
