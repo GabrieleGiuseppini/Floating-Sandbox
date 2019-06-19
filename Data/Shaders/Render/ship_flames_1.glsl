@@ -141,7 +141,10 @@ void main()
         discard;
     
     vec3 col1 = mix(vec3(1.0, 1.0, 0.0), vec3(1.0, 1.0, 0.6), thickness);
-    col1 = mix(vec3(1.0, 0.0, 0.0), col1, smoothstep(0.0, 1.6, thickness));
+    col1 = mix(vec3(1.0, 0.4, 0.1), col1, smoothstep(0.2, 1.0, thickness));
+    
+    // Blend with background
+    float alpha = smoothstep(0.0, 0.5, thickness);
 
-    gl_FragColor = vec4(col1, smoothstep(-0.1, 0.5, thickness));
+    gl_FragColor = vec4(col1, alpha);
 }
