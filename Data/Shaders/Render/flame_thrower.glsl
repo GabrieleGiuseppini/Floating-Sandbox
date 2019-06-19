@@ -18,7 +18,7 @@ void main()
 {
     flameSpacePosition = inFlameThrower.zw;
 
-    gl_Position = paramOrthoMatrix * vec4(inFlameThrower.xyz, 1.0);
+    gl_Position = paramOrthoMatrix * vec4(inFlameThrower.xy, -1.0, 1.0);
 }
 
 ###FRAGMENT
@@ -110,7 +110,7 @@ void main()
     // Emit
     //
     
-    vec3 col1 = mix(vec3(1.0, 1.0, 1.0), vec3(1.0, 1.0, 0.6), smoothstep(0.05, 0.2, radius1));
+    vec3 col1 = mix(vec3(1.0, 1.0, 1.0), vec3(1.0, 1.0, 0.6), smoothstep(0.1, 0.2, radius1));
     col1 = mix(col1, vec3(1.0, 0.4, 0.1), smoothstep(0.18, 0.25, radius1));
 
     gl_FragColor = vec4(col1.xyz, brightness);

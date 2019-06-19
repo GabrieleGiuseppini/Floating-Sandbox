@@ -12,7 +12,7 @@
 ToolController::ToolController(
     ToolType initialToolType,
     wxFrame * parentFrame,
-    std::shared_ptr<GameController> gameController,
+    std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
     ResourceLoader & resourceLoader)
     : mInputState()
@@ -50,6 +50,13 @@ ToolController::ToolController(
 
     mAllTools.emplace_back(
         std::make_unique<SawTool>(
+            parentFrame,
+            gameController,
+            soundController,
+            resourceLoader));
+
+    mAllTools.emplace_back(
+        std::make_unique<FlameThrowerTool>(
             parentFrame,
             gameController,
             soundController,

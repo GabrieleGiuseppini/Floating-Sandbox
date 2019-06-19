@@ -7,8 +7,8 @@
 
 #include "ScalarTimeSeriesProbeControl.h"
 
-#include <Game/GameController.h>
 #include <Game/GameEventHandlers.h>
+#include <Game/IGameController.h>
 
 #include <wx/sizer.h>
 #include <wx/wx.h>
@@ -37,7 +37,7 @@ public:
     // Game event handlers
     //
 
-    void RegisterEventHandler(GameController & gameController)
+    void RegisterEventHandler(IGameController & gameController)
     {
         gameController.RegisterLifecycleEventHandler(this);
         gameController.RegisterStatisticsEventHandler(this);

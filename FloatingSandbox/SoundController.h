@@ -7,8 +7,8 @@
 
 #include "Sounds.h"
 
-#include <Game/GameController.h>
 #include <Game/GameEventHandlers.h>
+#include <Game/IGameController.h>
 #include <Game/ResourceLoader.h>
 
 #include <GameCore/GameRandomEngine.h>
@@ -135,6 +135,9 @@ public:
     void PlaySawSound(bool isUnderwater);
     void StopSawSound();
 
+    void PlayFlameThrowerSound();
+    void StopFlameThrowerSound();
+
     void PlaySwirlSound(bool isUnderwater);
     void StopSwirlSound();
 
@@ -172,7 +175,7 @@ public:
     // Game event handlers
     //
 
-    void RegisterEventHandler(GameController & gameController)
+    void RegisterEventHandler(IGameController & gameController)
     {
         gameController.RegisterLifecycleEventHandler(this);
         gameController.RegisterWavePhenomenaEventHandler(this);
@@ -432,6 +435,7 @@ private:
 
     ContinuousSingleChoiceSound mSawAbovewaterSound;
     ContinuousSingleChoiceSound mSawUnderwaterSound;
+    ContinuousSingleChoiceSound mFlameThrowerSound;
     ContinuousSingleChoiceSound mDrawSound;
     ContinuousSingleChoiceSound mSwirlSound;
     ContinuousSingleChoiceSound mAirBubblesSound;

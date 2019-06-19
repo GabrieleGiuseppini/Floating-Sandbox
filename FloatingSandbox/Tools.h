@@ -7,7 +7,7 @@
 
 #include "SoundController.h"
 
-#include <Game/GameController.h>
+#include <Game/IGameController.h>
 #include <Game/ResourceLoader.h>
 
 #include <wx/cursor.h>
@@ -33,22 +33,23 @@ std::unique_ptr<wxCursor> MakeCursor(
 enum class ToolType
 {
     Move = 0,
-    MoveAll = 1,
-    Smash = 2,
-    Saw = 3,
-    Grab = 4,
-    Swirl = 5,
-    Pin = 6,
-    InjectAirBubbles = 7,
-    FloodHose = 8,
-    AntiMatterBomb = 9,
-    ImpactBomb = 10,
-    RCBomb = 11,
-    TimerBomb = 12,
-    WaveMaker = 13,
-    TerrainAdjust = 14,
-    Scrub = 15,
-    RepairStructure = 16
+    MoveAll,
+    Smash,
+    Saw,
+    FlameThrower,
+    Grab,
+    Swirl,
+    Pin,
+    InjectAirBubbles,
+    FloodHose,
+    AntiMatterBomb,
+    ImpactBomb,
+    RCBomb,
+    TimerBomb,
+    WaveMaker,
+    TerrainAdjust,
+    Scrub,
+    RepairStructure
 };
 
 struct InputState
@@ -98,7 +99,7 @@ protected:
     Tool(
         ToolType toolType,
         wxFrame * parentFrame,
-        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController)
         : mToolType(toolType)
         , mParentFrame(parentFrame)
@@ -107,7 +108,7 @@ protected:
     {}
 
     wxFrame * const mParentFrame;
-    std::shared_ptr<GameController> const mGameController;
+    std::shared_ptr<IGameController> const mGameController;
     std::shared_ptr<SoundController> const mSoundController;
 
 private:
@@ -145,7 +146,7 @@ protected:
     OneShotTool(
         ToolType toolType,
         wxFrame * parentFrame,
-        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController)
         : Tool(
             toolType,
@@ -205,7 +206,7 @@ protected:
     ContinuousTool(
         ToolType toolType,
         wxFrame * parentFrame,
-        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController)
         : Tool(
             toolType,
@@ -282,7 +283,7 @@ public:
     {
         if (!!mEngagedMovableObjectId)
         {
-            // Tell GameController to stop moving
+            // Tell IGameController to stop moving
             mGameController->SetMoveToolEngaged(false);
         }
     }
@@ -312,7 +313,7 @@ public:
                 mCurrentTrajectory->StartPosition
                 + (mCurrentTrajectory->EndPosition - mCurrentTrajectory->StartPosition) * progress;
 
-            // Tell GameController
+            // Tell IGameController
             if (!mCurrentTrajectory->RotationCenter)
             {
                 // Move
@@ -439,7 +440,7 @@ protected:
     BaseMoveTool(
         ToolType toolType,
         wxFrame * parentFrame,
-        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         std::unique_ptr<wxCursor> upCursor,
         std::unique_ptr<wxCursor> downCursor,
@@ -487,7 +488,7 @@ private:
                 {
                     // Engaged!
 
-                    // Tell GameController
+                    // Tell IGameController
                     mGameController->SetMoveToolEngaged(true);
                 }
             }
@@ -536,7 +537,7 @@ private:
                     mCurrentTrajectory.reset();
                 }
 
-                // Tell GameController we've stopped moving
+                // Tell IGameController we've stopped moving
                 mGameController->SetMoveToolEngaged(false);
             }
         }
@@ -643,7 +644,7 @@ public:
 
     MoveTool(
         wxFrame * parentFrame,
-        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
 };
@@ -654,7 +655,7 @@ public:
 
     MoveAllTool(
         wxFrame * parentFrame,
-        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
 };
@@ -665,7 +666,7 @@ public:
 
     SmashTool(
         wxFrame * parentFrame,
-        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
 
@@ -731,7 +732,7 @@ public:
 
     SawTool(
         wxFrame * parentFrame,
-        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
 
@@ -867,13 +868,108 @@ private:
     bool mIsUnderwater;
 };
 
+class FlameThrowerTool final : public Tool
+{
+public:
+
+    FlameThrowerTool(
+        wxFrame * parentFrame,
+        std::shared_ptr<IGameController> gameController,
+        std::shared_ptr<SoundController> soundController,
+        ResourceLoader & resourceLoader);
+
+public:
+
+    virtual void Initialize(InputState const & inputState) override
+    {
+        if (inputState.IsLeftMouseDown)
+        {
+            mIsEngaged = mGameController->ApplyFlameThrowerAt(inputState.MousePosition);
+        }
+        else
+        {
+            mIsEngaged = false;
+        }
+    }
+
+    virtual void Deinitialize(InputState const & /*inputState*/) override
+    {
+        // Stop sound
+        mSoundController->StopFlameThrowerSound();
+    }
+
+    virtual void Update(InputState const & inputState) override
+    {
+        bool isEngaged;
+        if (inputState.IsLeftMouseDown)
+        {
+            isEngaged = mGameController->ApplyFlameThrowerAt(inputState.MousePosition);
+        }
+        else
+        {
+            isEngaged = false;
+        }
+
+        if (isEngaged)
+        {
+            if (!mIsEngaged)
+            {
+                // State change
+                mIsEngaged = true;
+
+                // Start sound
+                mSoundController->PlayFlameThrowerSound();
+
+                // Update cursor
+                ShowCurrentCursor();
+            }
+        }
+        else
+        {
+            if (mIsEngaged)
+            {
+                // State change
+                mIsEngaged = false;
+
+                // Stop sound
+                mSoundController->StopFlameThrowerSound();
+
+                // Update cursor
+                ShowCurrentCursor();
+            }
+        }
+    }
+
+    virtual void OnMouseMove(InputState const & /*inputState*/) override {}
+    virtual void OnLeftMouseDown(InputState const & /*inputState*/) override {}
+    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+    virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+    virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+
+    virtual void ShowCurrentCursor() override
+    {
+        assert(nullptr != mParentFrame);
+
+        mParentFrame->SetCursor(mIsEngaged ? *mDownCursor : *mUpCursor);
+    }
+
+private:
+
+    // Our state
+    bool mIsEngaged;
+
+    // The cursors
+    std::unique_ptr<wxCursor> const mUpCursor;
+    std::unique_ptr<wxCursor> const mDownCursor;
+};
+
 class GrabTool final : public ContinuousTool
 {
 public:
 
     GrabTool(
         wxFrame * parentFrame,
-        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
 
@@ -986,7 +1082,7 @@ public:
 
     SwirlTool(
         wxFrame * parentFrame,
-        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
 
@@ -1099,7 +1195,7 @@ public:
 
     PinTool(
         wxFrame * parentFrame,
-        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
 
@@ -1131,7 +1227,7 @@ public:
 
     InjectAirBubblesTool(
         wxFrame * parentFrame,
-        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
 
@@ -1226,7 +1322,7 @@ public:
 
     FloodHoseTool(
         wxFrame * parentFrame,
-        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
 
@@ -1327,7 +1423,7 @@ public:
 
     AntiMatterBombTool(
         wxFrame * parentFrame,
-        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
 
@@ -1359,7 +1455,7 @@ public:
 
     ImpactBombTool(
         wxFrame * parentFrame,
-        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
 
@@ -1391,7 +1487,7 @@ public:
 
     RCBombTool(
         wxFrame * parentFrame,
-        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
 
@@ -1423,7 +1519,7 @@ public:
 
     TimerBombTool(
         wxFrame * parentFrame,
-        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
 
@@ -1455,7 +1551,7 @@ public:
 
     WaveMakerTool(
         wxFrame * parentFrame,
-        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
 
@@ -1525,7 +1621,7 @@ public:
 
     TerrainAdjustTool(
         wxFrame * parentFrame,
-        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
 
@@ -1606,7 +1702,7 @@ public:
 
     ScrubTool(
         wxFrame * parentFrame,
-        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
 
@@ -1741,7 +1837,7 @@ public:
 
     RepairStructureTool(
         wxFrame * parentFrame,
-        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
 

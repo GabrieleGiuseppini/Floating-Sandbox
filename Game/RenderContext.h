@@ -739,6 +739,49 @@ public:
             progress);
     }
 
+    //
+    // FlameThrower
+    //
+
+    void UploadFlameThrower(
+        vec2f const & centerPosition,
+        float radius)
+    {
+        float const quadHalfSize = (radius * 7.5f) / 2.0f;
+        float const left = centerPosition.x - quadHalfSize;
+        float const right = centerPosition.x + quadHalfSize;
+        float const top = centerPosition.y + quadHalfSize;
+        float const bottom = centerPosition.y - quadHalfSize;
+
+        // Triangle 1
+
+        mFlameThrowerVertexBuffer.emplace_back(
+            vec2f(left, bottom),
+            vec2f(-0.5f, -0.5f));
+
+        mFlameThrowerVertexBuffer.emplace_back(
+            vec2f(left, top),
+            vec2f(-0.5f, 0.5f));
+
+        mFlameThrowerVertexBuffer.emplace_back(
+            vec2f(right, bottom),
+            vec2f(0.5f, -0.5f));
+
+        // Triangle 2
+
+        mFlameThrowerVertexBuffer.emplace_back(
+            vec2f(left, top),
+            vec2f(-0.5f, 0.5f));
+
+        mFlameThrowerVertexBuffer.emplace_back(
+            vec2f(right, bottom),
+            vec2f(0.5f, -0.5f));
+
+        mFlameThrowerVertexBuffer.emplace_back(
+            vec2f(right, top),
+            vec2f(0.5f, 0.5f));
+    }
+
     /////////////////////////////////////////////////////////////////////////
     // Ships
     /////////////////////////////////////////////////////////////////////////
@@ -1190,6 +1233,7 @@ private:
     void RenderOcean(bool opaquely);
 
     void RenderCrossesOfLight();
+    void RenderFlameThrower();
     void RenderWorldBorder();
 
     void OnViewModelUpdated();
@@ -1307,6 +1351,19 @@ private:
         {}
     };
 
+    struct FlameThrowerVertex
+    {
+        vec2f vertexPosition;
+        vec2f flameSpacePosition;
+
+        FlameThrowerVertex(
+            vec2f _vertexPosition,
+            vec2f _flameSpacePosition)
+            : vertexPosition(_vertexPosition)
+            , flameSpacePosition(_flameSpacePosition)
+        {}
+    };
+
     struct WorldBorderVertex
     {
         float x;
@@ -1349,6 +1406,9 @@ private:
     std::vector<CrossOfLightVertex> mCrossOfLightVertexBuffer;
     GameOpenGLVBO mCrossOfLightVBO;
 
+    std::vector<FlameThrowerVertex> mFlameThrowerVertexBuffer;
+    GameOpenGLVBO mFlameThrowerVBO;
+
     std::vector<WorldBorderVertex> mWorldBorderVertexBuffer;
     GameOpenGLVBO mWorldBorderVBO;
 
@@ -1361,6 +1421,7 @@ private:
     GameOpenGLVAO mLandVAO;
     GameOpenGLVAO mOceanVAO;
     GameOpenGLVAO mCrossOfLightVAO;
+    GameOpenGLVAO mFlameThrowerVAO;
     GameOpenGLVAO mWorldBorderVAO;
 
     //

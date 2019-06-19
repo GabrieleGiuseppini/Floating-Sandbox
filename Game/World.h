@@ -119,6 +119,11 @@ public:
         vec2f const & endPos,
         GameParameters const & gameParameters);
 
+    bool ApplyFlameThrowerAt(
+        vec2f const & targetPos,
+        float radius,
+        GameParameters const & gameParameters);
+
     void DrawTo(
         vec2f const & targetPos,
         float strengthFraction,

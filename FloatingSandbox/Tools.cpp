@@ -149,7 +149,7 @@ void ContinuousTool::Update(InputState const & inputState)
 
 MoveTool::MoveTool(
     wxFrame * parentFrame,
-    std::shared_ptr<GameController> gameController,
+    std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
     ResourceLoader & resourceLoader)
     : BaseMoveTool(
@@ -166,7 +166,7 @@ MoveTool::MoveTool(
 
 MoveAllTool::MoveAllTool(
     wxFrame * parentFrame,
-    std::shared_ptr<GameController> gameController,
+    std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
     ResourceLoader & resourceLoader)
     : BaseMoveTool(
@@ -187,7 +187,7 @@ MoveAllTool::MoveAllTool(
 
 SmashTool::SmashTool(
     wxFrame * parentFrame,
-    std::shared_ptr<GameController> gameController,
+    std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
     ResourceLoader & resourceLoader)
     : ContinuousTool(
@@ -230,7 +230,7 @@ void SmashTool::ApplyTool(
 
 SawTool::SawTool(
     wxFrame * parentFrame,
-    std::shared_ptr<GameController> gameController,
+    std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
     ResourceLoader & resourceLoader)
     : Tool(
@@ -249,12 +249,32 @@ SawTool::SawTool(
 }
 
 ////////////////////////////////////////////////////////////////////////
+// FlameThrower
+////////////////////////////////////////////////////////////////////////
+
+FlameThrowerTool::FlameThrowerTool(
+    wxFrame * parentFrame,
+    std::shared_ptr<IGameController> gameController,
+    std::shared_ptr<SoundController> soundController,
+    ResourceLoader & resourceLoader)
+    : Tool(
+        ToolType::FlameThrower,
+        parentFrame,
+        std::move(gameController),
+        std::move(soundController))
+    , mIsEngaged(false)
+    , mUpCursor(MakeCursor("flame_thrower_cursor_up", 5, 1, resourceLoader))
+    , mDownCursor(MakeCursor("flame_thrower_cursor_down", 5, 1, resourceLoader))
+{
+}
+
+////////////////////////////////////////////////////////////////////////
 // Grab
 ////////////////////////////////////////////////////////////////////////
 
 GrabTool::GrabTool(
     wxFrame * parentFrame,
-    std::shared_ptr<GameController> gameController,
+    std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
     ResourceLoader & resourceLoader)
     : ContinuousTool(
@@ -303,7 +323,7 @@ void GrabTool::ApplyTool(
 
 SwirlTool::SwirlTool(
     wxFrame * parentFrame,
-    std::shared_ptr<GameController> gameController,
+    std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
     ResourceLoader & resourceLoader)
     : ContinuousTool(
@@ -352,7 +372,7 @@ void SwirlTool::ApplyTool(
 
 PinTool::PinTool(
     wxFrame * parentFrame,
-    std::shared_ptr<GameController> gameController,
+    std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
     ResourceLoader & resourceLoader)
     : OneShotTool(
@@ -370,7 +390,7 @@ PinTool::PinTool(
 
 InjectAirBubblesTool::InjectAirBubblesTool(
     wxFrame * parentFrame,
-    std::shared_ptr<GameController> gameController,
+    std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
     ResourceLoader & resourceLoader)
     : Tool(
@@ -390,7 +410,7 @@ InjectAirBubblesTool::InjectAirBubblesTool(
 
 FloodHoseTool::FloodHoseTool(
     wxFrame * parentFrame,
-    std::shared_ptr<GameController> gameController,
+    std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
     ResourceLoader & resourceLoader)
     : Tool(
@@ -411,7 +431,7 @@ FloodHoseTool::FloodHoseTool(
 
 AntiMatterBombTool::AntiMatterBombTool(
     wxFrame * parentFrame,
-    std::shared_ptr<GameController> gameController,
+    std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
     ResourceLoader & resourceLoader)
     : OneShotTool(
@@ -429,7 +449,7 @@ AntiMatterBombTool::AntiMatterBombTool(
 
 ImpactBombTool::ImpactBombTool(
     wxFrame * parentFrame,
-    std::shared_ptr<GameController> gameController,
+    std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
     ResourceLoader & resourceLoader)
     : OneShotTool(
@@ -447,7 +467,7 @@ ImpactBombTool::ImpactBombTool(
 
 RCBombTool::RCBombTool(
     wxFrame * parentFrame,
-    std::shared_ptr<GameController> gameController,
+    std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
     ResourceLoader & resourceLoader)
     : OneShotTool(
@@ -465,7 +485,7 @@ RCBombTool::RCBombTool(
 
 TimerBombTool::TimerBombTool(
     wxFrame * parentFrame,
-    std::shared_ptr<GameController> gameController,
+    std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
     ResourceLoader & resourceLoader)
     : OneShotTool(
@@ -483,7 +503,7 @@ TimerBombTool::TimerBombTool(
 
 WaveMakerTool::WaveMakerTool(
     wxFrame * parentFrame,
-    std::shared_ptr<GameController> gameController,
+    std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
     ResourceLoader & resourceLoader)
     : OneShotTool(
@@ -502,7 +522,7 @@ WaveMakerTool::WaveMakerTool(
 
 TerrainAdjustTool::TerrainAdjustTool(
     wxFrame * parentFrame,
-    std::shared_ptr<GameController> gameController,
+    std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
     ResourceLoader & resourceLoader)
     : Tool(
@@ -522,7 +542,7 @@ TerrainAdjustTool::TerrainAdjustTool(
 
 ScrubTool::ScrubTool(
     wxFrame * parentFrame,
-    std::shared_ptr<GameController> gameController,
+    std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
     ResourceLoader & resourceLoader)
     : Tool(
@@ -544,7 +564,7 @@ ScrubTool::ScrubTool(
 
 RepairStructureTool::RepairStructureTool(
     wxFrame * parentFrame,
-    std::shared_ptr<GameController> gameController,
+    std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
     ResourceLoader & resourceLoader)
     : Tool(

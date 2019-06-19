@@ -257,6 +257,10 @@ struct GameParameters
     static float constexpr MinRepairStrengthAdjustment = 0.1f;
     static float constexpr MaxRepairStrengthAdjustment = 1.0f;
 
+    float FlameThrowerRadius;
+    static float constexpr MinFlameThrowerRadius = 1.0f;
+    static float constexpr MaxFlameThrowerRadius = 20.0f;
+
     static float constexpr DrawForce = 40000.0f;
 
     static float constexpr SwirlForce = 600.0f;

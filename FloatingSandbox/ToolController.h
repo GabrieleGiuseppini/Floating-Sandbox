@@ -8,7 +8,7 @@
 #include "SoundController.h"
 #include "Tools.h"
 
-#include <Game/GameController.h>
+#include <Game/IGameController.h>
 #include <Game/ResourceLoader.h>
 
 #include <wx/frame.h>
@@ -23,7 +23,7 @@ public:
     ToolController(
         ToolType initialToolType,
         wxFrame * parentFrame,
-        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
 
@@ -111,6 +111,6 @@ private:
 
     wxFrame * const mParentFrame;
     std::unique_ptr<wxCursor> mPanCursor;
-    std::shared_ptr<GameController> const mGameController;
+    std::shared_ptr<IGameController> const mGameController;
     std::shared_ptr<SoundController> const mSoundController;
 };

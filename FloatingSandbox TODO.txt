@@ -397,10 +397,8 @@ Render:
 
 		- Heat and combustion (*)
 
-		- Flamethrower tool
-			- Use shader with radial noise + rotation
-
 		- Fire Extinguisher tool
+			- Use shader with radial noise + rotation
 
 		- Smoke
 			- See if may use shader with radial noise
@@ -409,6 +407,8 @@ Render:
 			- They all agree: a ship should rot in 30 minutes on the surface, and in 15 minutes when flooded
 
 		- Add slider for repair tool radius
+		- Add slider for flamethrower tool radius
+
 		- Black cloth, black wood
 
 	- 1.13.0
@@ -794,7 +794,7 @@ Render:
 
 - Gfx optimizations:
 
-	- Test use gl_TexCoord to pass texture coords from vertex to fragment
+	- Test using gl_TexCoord to pass texture coords from vertex to fragment
 					
 	- Lights on the GPU with instanced drawing (*)
 		- We begin with doing light at vertex (Gouraud)
@@ -806,7 +806,7 @@ Render:
 		- At end:
 			- Try with light at fragment (Phong)
 
-	- Air bubbles with instanced drawing
+	- Air bubbles with instanced drawing (even though we can only do ~100 at a time, but then might do nBubbles/100 vertices)
 
 	- Try using GL_SHORT for Ship texture coordinates
 		- Passing NORMALIZE and 3 components to glVertexAttribPointer
@@ -1017,20 +1017,22 @@ Render:
 				+ Reduce local coherency of noise
 					+ Add FlamePersonalitySeed shader param, straight from ship into vertex buffer
 				- Adjust bottom
+				- Make same colors as flamethrower
 
 		- Cleanup:
 			+ Test generic textures change (gen tex's + air bubbles at same time) and nuke comment
 			+ Test cross of light change
 
-		- Flamethrower tool:
-			- RenderContext exposes UploadFlameThrower(worldPos)
-			- GameController stores worldPos at ApplyFlameThrower(screenPos) and later, at Render, invokes RenderContext::UploadFlameThrower()
-			- Cursor
-			- Sound
-				- Continuous
-			- Tool
-				- Engages (and starts sound) only if GameController::ApplyFlameThrower(screenPos) returns true (i.e. point found in radius)
-				- Which other tool is like this? 
+		= Flamethrower tool:
+			+ RenderContext exposes UploadFlameThrower(worldPos)
+			+ GameController stores worldPos at ApplyFlameThrower(screenPos) and later, at Render, invokes RenderContext::UploadFlameThrower()
+			+ Cursor
+			+ Sound
+				+ Continuous
+			+ Tool
+				+ Engages (and starts sound) only if GameController::ApplyFlameThrower(screenPos) returns true (i.e. point found in radius)
+			+ Fix radius & size (smaller radius for catching points, same render size)
+			- Apply heat
 
 	- Storms
 		- Another physics component

@@ -8,7 +8,7 @@
 #include "SliderControl.h"
 #include "SoundController.h"
 
-#include <Game/GameController.h>
+#include <Game/IGameController.h>
 #include <Game/ResourceLoader.h>
 
 #include <wx/bitmap.h>
@@ -27,7 +27,7 @@ public:
 
     SettingsDialog(
         wxWindow * parent,
-        std::shared_ptr<GameController> gameController,
+        std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader const & resourceLoader);
 
@@ -195,6 +195,6 @@ private:
 private:
 
     wxWindow * const mParent;
-    std::shared_ptr<GameController> mGameController;
+    std::shared_ptr<IGameController> mGameController;
     std::shared_ptr<SoundController> mSoundController;
 };

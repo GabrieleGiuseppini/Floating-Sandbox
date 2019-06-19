@@ -5,8 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
-#include <Game/GameController.h>
 #include <Game/GameEventHandlers.h>
+#include <Game/IGameController.h>
 
 #include <wx/wx.h>
 
@@ -34,7 +34,7 @@ public:
     // Game events
     //
 
-    void RegisterEventHandler(GameController & gameController)
+    void RegisterEventHandler(IGameController & gameController)
     {
         gameController.RegisterLifecycleEventHandler(this);
         gameController.RegisterStructuralEventHandler(this);

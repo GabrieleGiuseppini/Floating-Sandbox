@@ -718,6 +718,34 @@ void Ship::SawThrough(
     mGameEventHandler->OnSawed(false, nonMetalsSawed);
 }
 
+bool Ship::ApplyFlameThrowerAt(
+    vec2f const & targetPos,
+    float radius,
+    GameParameters const & /*gameParameters*/)
+{
+    float const squareRadius = radius * radius;
+
+    // Search all non-ephemeral points within the radius
+    bool atLeastOnePointFound = false;
+    for (auto pointIndex : mPoints.NonEphemeralPoints())
+    {
+        float const pointSquareDistance = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
+        if (pointSquareDistance < squareRadius)
+        {
+            //
+            // Inject heat at this point
+            //
+
+            // TODOHERE
+
+            // Remember we've found a point
+            atLeastOnePointFound = true;
+        }
+    }
+
+    return atLeastOnePointFound;
+}
+
 void Ship::DrawTo(
     vec2f const & targetPos,
     float strengthFraction,

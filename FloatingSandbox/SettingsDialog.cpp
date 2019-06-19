@@ -39,7 +39,7 @@ const long ID_PLAY_SINKING_MUSIC_CHECKBOX = wxNewId();
 
 SettingsDialog::SettingsDialog(
     wxWindow* parent,
-    std::shared_ptr<GameController> gameController,
+    std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
     ResourceLoader const & resourceLoader)
     : mParent(parent)

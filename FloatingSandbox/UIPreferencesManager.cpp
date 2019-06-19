@@ -13,7 +13,7 @@
 
 const std::string Filename = "ui_preferences.json";
 
-UIPreferencesManager::UIPreferencesManager(std::shared_ptr<GameController> gameController)
+UIPreferencesManager::UIPreferencesManager(std::shared_ptr<IGameController> gameController)
     : mDefaultShipLoadDirectory(ResourceLoader::GetInstalledShipFolderPath())
     , mGameController(std::move(gameController))
 {

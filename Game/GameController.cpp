@@ -48,6 +48,125 @@ std::unique_ptr<GameController> GameController::Create(
             resourceLoader));
 }
 
+GameController::GameController(
+    std::unique_ptr<Render::RenderContext> renderContext,
+    std::function<void()> swapRenderBuffersFunction,
+    std::unique_ptr<GameEventDispatcher> gameEventDispatcher,
+    std::unique_ptr<StatusText> statusText,
+    MaterialDatabase materialDatabase,
+    std::shared_ptr<ResourceLoader> resourceLoader)
+    // State
+    : mGameParameters()
+    , mLastShipLoadedFilepath()
+    , mIsPaused(false)
+    , mIsMoveToolEngaged(false)
+    , mFlameThrowerToRender()
+    , mTsunamiNotificationStateMachine()
+    // Parameters that we own
+    , mShowTsunamiNotifications(true)
+    // Doers
+    , mRenderContext(std::move(renderContext))
+    , mSwapRenderBuffersFunction(std::move(swapRenderBuffersFunction))
+    , mGameEventDispatcher(std::move(gameEventDispatcher))
+    , mResourceLoader(std::move(resourceLoader))
+    , mStatusText(std::move(statusText))
+    , mWorld(new Physics::World(
+        mGameEventDispatcher,
+        mGameParameters,
+        *mResourceLoader))
+    , mMaterialDatabase(std::move(materialDatabase))
+    // Smoothing
+    , mCurrentZoom(mRenderContext->GetZoom())
+    , mTargetZoom(mCurrentZoom)
+    , mStartingZoom(mCurrentZoom)
+    , mStartZoomTimestamp()
+    , mCurrentCameraPosition(mRenderContext->GetCameraWorldPosition())
+    , mTargetCameraPosition(mCurrentCameraPosition)
+    , mStartingCameraPosition(mCurrentCameraPosition)
+    , mStartCameraPositionTimestamp()
+    , mParameterSmoothers()
+    // Stats
+    , mTotalFrameCount(0u)
+    , mLastFrameCount(0u)
+    , mRenderStatsOriginTimestampReal(std::chrono::steady_clock::time_point::min())
+    , mRenderStatsLastTimestampReal(std::chrono::steady_clock::time_point::min())
+    , mTotalUpdateDuration(std::chrono::steady_clock::duration::zero())
+    , mLastTotalUpdateDuration(std::chrono::steady_clock::duration::zero())
+    , mTotalRenderDuration(std::chrono::steady_clock::duration::zero())
+    , mLastTotalRenderDuration(std::chrono::steady_clock::duration::zero())
+    , mOriginTimestampGame(GameWallClock::time_point::min())
+    , mSkippedFirstStatPublishes(0)
+{
+    // Register ourselves as event handler for the events we care about
+    mGameEventDispatcher->RegisterWavePhenomenaEventHandler(this);
+
+    //
+    // Initialize parameter smoothers
+    //
+
+    std::chrono::milliseconds constexpr ParameterSmoothingTrajectoryTime = std::chrono::milliseconds(1000);
+
+    assert(mParameterSmoothers.size() == SpringStiffnessAdjustmentParameterSmoother);
+    mParameterSmoothers.emplace_back(
+        [this]()
+        {
+            return this->mGameParameters.SpringStiffnessAdjustment;
+        },
+        [this](float value)
+        {
+            this->mGameParameters.SpringStiffnessAdjustment = value;
+        },
+            ParameterSmoothingTrajectoryTime);
+
+    assert(mParameterSmoothers.size() == SpringStrengthAdjustmentParameterSmoother);
+    mParameterSmoothers.emplace_back(
+        [this]()
+        {
+            return this->mGameParameters.SpringStrengthAdjustment;
+        },
+        [this](float value)
+        {
+            this->mGameParameters.SpringStrengthAdjustment = value;
+        },
+            ParameterSmoothingTrajectoryTime);
+
+    assert(mParameterSmoothers.size() == SeaDepthParameterSmoother);
+    mParameterSmoothers.emplace_back(
+        [this]()
+        {
+            return this->mGameParameters.SeaDepth;
+        },
+        [this](float value)
+        {
+            this->mGameParameters.SeaDepth = value;
+        },
+            ParameterSmoothingTrajectoryTime);
+
+    assert(mParameterSmoothers.size() == OceanFloorBumpinessParameterSmoother);
+    mParameterSmoothers.emplace_back(
+        [this]()
+        {
+            return this->mGameParameters.OceanFloorBumpiness;
+        },
+        [this](float value)
+        {
+            this->mGameParameters.OceanFloorBumpiness = value;
+        },
+            ParameterSmoothingTrajectoryTime);
+
+    assert(mParameterSmoothers.size() == OceanFloorDetailAmplificationParameterSmoother);
+    mParameterSmoothers.emplace_back(
+        [this]()
+        {
+            return this->mGameParameters.OceanFloorDetailAmplification;
+        },
+        [this](float value)
+        {
+            this->mGameParameters.OceanFloorDetailAmplification = value;
+        },
+            ParameterSmoothingTrajectoryTime);
+}
+
 ShipMetadata GameController::ResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath)
 {
     // Create a new world
@@ -296,6 +415,16 @@ void GameController::SetExtendedStatusTextEnabled(bool isEnabled)
     mStatusText->SetExtendedStatusTextEnabled(isEnabled);
 }
 
+float GameController::GetCurrentSimulationTime() const
+{
+    return mWorld->GetCurrentSimulationTime();
+}
+
+bool GameController::IsUnderwater(vec2f const & screenCoordinates) const
+{
+    return mWorld->IsUnderwater(ScreenToWorld(screenCoordinates));
+}
+
 void GameController::PickObjectToMove(
     vec2f const & screenCoordinates,
     std::optional<ElementId> & elementId)
@@ -460,6 +589,33 @@ void GameController::SawThrough(
         startWorldCoordinates,
         endWorldCoordinates,
         mGameParameters);
+}
+
+bool GameController::ApplyFlameThrowerAt(vec2f const & screenCoordinates)
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+
+    // Calculate radius
+    float radius = mGameParameters.FlameThrowerRadius;
+    if (mGameParameters.IsUltraViolentMode)
+        radius *= 10.0f;
+
+    // Apply action
+    assert(!!mWorld);
+    bool isApplied = mWorld->ApplyFlameThrowerAt(
+        worldCoordinates,
+        radius,
+        mGameParameters);
+
+    if (isApplied)
+    {
+        // Remember to render the flame thrower next time
+        mFlameThrowerToRender.emplace(
+            worldCoordinates,
+            radius);
+    }
+
+    return isApplied;
 }
 
 void GameController::DrawTo(
@@ -651,6 +807,72 @@ void GameController::TriggerRogueWave()
     mWorld->TriggerRogueWave();
 }
 
+//
+// Render controls
+//
+
+void GameController::SetCanvasSize(int width, int height)
+{
+    mRenderContext->SetCanvasSize(width, height);
+
+    // Pickup eventual changes
+    mTargetCameraPosition = mCurrentCameraPosition = mRenderContext->GetCameraWorldPosition();
+    mTargetZoom = mCurrentZoom = mRenderContext->GetZoom();
+}
+
+void GameController::Pan(vec2f const & screenOffset)
+{
+    vec2f worldOffset = mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
+    vec2f newTargetCameraPosition = mRenderContext->ClampCameraWorldPosition(mTargetCameraPosition + worldOffset);
+
+    mCurrentCameraPosition = mRenderContext->SetCameraWorldPosition(mTargetCameraPosition); // Skip straight to current target, in case we're already smoothing
+    mStartingCameraPosition = mCurrentCameraPosition;
+    mTargetCameraPosition = newTargetCameraPosition;
+
+    mStartCameraPositionTimestamp = std::chrono::steady_clock::now();
+}
+
+void GameController::PanImmediate(vec2f const & screenOffset)
+{
+    vec2f const worldOffset = mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
+
+    auto const newCameraWorldPosition = mRenderContext->SetCameraWorldPosition(
+        mRenderContext->GetCameraWorldPosition() + worldOffset);
+
+    mTargetCameraPosition = mCurrentCameraPosition = newCameraWorldPosition;
+}
+
+void GameController::ResetPan()
+{
+    auto const newCameraWorldPosition = mRenderContext->SetCameraWorldPosition(vec2f(0, 0));
+
+    mTargetCameraPosition = mCurrentCameraPosition = newCameraWorldPosition;
+}
+
+void GameController::AdjustZoom(float amount)
+{
+    float newTargetZoom = mRenderContext->ClampZoom(mTargetZoom * amount);
+
+    mCurrentZoom = mRenderContext->SetZoom(mTargetZoom); // Skip straight to current target, in case we're already smoothing
+    mStartingZoom = mCurrentZoom;
+    mTargetZoom = newTargetZoom;
+
+    mStartZoomTimestamp = std::chrono::steady_clock::now();
+}
+
+void GameController::ResetZoom()
+{
+    auto const newZoom = mRenderContext->SetZoom(1.0);
+
+    mTargetZoom = mCurrentZoom = newZoom;
+}
+
+vec2f GameController::ScreenToWorld(vec2f const & screenCoordinates) const
+{
+    return mRenderContext->ScreenToWorld(screenCoordinates);
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////////////
 
 void GameController::OnTsunami(float x)
@@ -749,6 +971,19 @@ void GameController::InternalRender()
     assert(!!mWorld);
     mWorld->Render(mGameParameters, *mRenderContext);
 
+
+    //
+    // Render flame thrower, if any
+    //
+
+    if (!!mFlameThrowerToRender)
+    {
+        mRenderContext->UploadFlameThrower(
+            std::get<0>(*mFlameThrowerToRender),
+            std::get<1>(*mFlameThrowerToRender));
+
+        mFlameThrowerToRender.reset();
+    }
 
     //
     // Render status text

@@ -205,6 +205,26 @@ void World::SawThrough(
     }
 }
 
+bool World::ApplyFlameThrowerAt(
+    vec2f const & targetPos,
+    float radius,
+    GameParameters const & gameParameters)
+{
+    bool atLeastOneShipApplied = false;
+
+    for (auto & ship : mAllShips)
+    {
+        bool isApplied = ship->ApplyFlameThrowerAt(
+            targetPos,
+            radius,
+            gameParameters);
+
+        atLeastOneShipApplied |= isApplied;
+    }
+
+    return atLeastOneShipApplied;
+}
+
 void World::DrawTo(
     vec2f const & targetPos,
     float strengthFraction,

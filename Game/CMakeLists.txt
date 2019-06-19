@@ -9,7 +9,8 @@ set  (GAME_SOURCES
 	GameEventDispatcher.h
 	GameEventHandlers.h
 	GameParameters.cpp
-	GameParameters.h	
+	GameParameters.h
+	IGameController.h
 	ImageFileTools.cpp
 	ImageFileTools.h
 	Materials.cpp

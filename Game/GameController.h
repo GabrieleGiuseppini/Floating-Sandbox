@@ -8,6 +8,7 @@
 #include "GameEventDispatcher.h"
 #include "GameEventHandlers.h"
 #include "GameParameters.h"
+#include "IGameController.h"
 #include "MaterialDatabase.h"
 #include "Physics.h"
 #include "RenderContext.h"
@@ -34,8 +35,9 @@
  * This class is responsible for managing the game, from its lifetime to the user
  * interactions.
  */
-class GameController
-    : public IWavePhenomenaGameEventHandler
+class GameController final
+    : public IGameController
+    , public IWavePhenomenaGameEventHandler
 {
 public:
 
@@ -52,407 +54,369 @@ public:
         return mGameEventDispatcher;
     }
 
-    void RegisterLifecycleEventHandler(ILifecycleGameEventHandler * handler)
+public:
+
+    /////////////////////////////////////////////////////////
+    // IGameController
+    /////////////////////////////////////////////////////////
+
+    void RegisterLifecycleEventHandler(ILifecycleGameEventHandler * handler) override
     {
         assert(!!mGameEventDispatcher);
         mGameEventDispatcher->RegisterLifecycleEventHandler(handler);
     }
 
-    void RegisterStructuralEventHandler(IStructuralGameEventHandler * handler)
+    void RegisterStructuralEventHandler(IStructuralGameEventHandler * handler) override
     {
         assert(!!mGameEventDispatcher);
         mGameEventDispatcher->RegisterStructuralEventHandler(handler);
     }
 
-    void RegisterWavePhenomenaEventHandler(IWavePhenomenaGameEventHandler * handler)
+    void RegisterWavePhenomenaEventHandler(IWavePhenomenaGameEventHandler * handler) override
     {
         assert(!!mGameEventDispatcher);
         mGameEventDispatcher->RegisterWavePhenomenaEventHandler(handler);
     }
 
-    void RegisterStatisticsEventHandler(IStatisticsGameEventHandler * handler)
+    void RegisterStatisticsEventHandler(IStatisticsGameEventHandler * handler) override
     {
         assert(!!mGameEventDispatcher);
         mGameEventDispatcher->RegisterStatisticsEventHandler(handler);
     }
 
-    void RegisterGenericEventHandler(IGenericGameEventHandler * handler)
+    void RegisterGenericEventHandler(IGenericGameEventHandler * handler) override
     {
         assert(!!mGameEventDispatcher);
         mGameEventDispatcher->RegisterGenericEventHandler(handler);
     }
 
-    ShipMetadata ResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath);
-    ShipMetadata AddShip(std::filesystem::path const & shipDefinitionFilepath);
-    void ReloadLastShip();
+    ShipMetadata ResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath) override;
+    ShipMetadata AddShip(std::filesystem::path const & shipDefinitionFilepath) override;
+    void ReloadLastShip() override;
 
-    RgbImageData TakeScreenshot();
+    RgbImageData TakeScreenshot() override;
 
-    float GetCurrentSimulationTime() const { return mWorld->GetCurrentSimulationTime(); }
+    void RunGameIteration() override;
+    void LowFrequencyUpdate() override;
 
-    void RunGameIteration();
-    void LowFrequencyUpdate();
+    void Update() override;
+    void Render() override;
 
-    void Update();
-    void Render();
+    //
+    // Game Control
+    //
 
+    void SetPaused(bool isPaused) override;
+    void SetMoveToolEngaged(bool isEngaged) override;
+    void SetStatusTextEnabled(bool isEnabled) override;
+    void SetExtendedStatusTextEnabled(bool isEnabled) override;
+
+    //
+    // World probing
+    //
+
+    float GetCurrentSimulationTime() const override;
+    bool IsUnderwater(vec2f const & screenCoordinates) const override;
 
     //
     // Interactions
     //
 
-    void SetPaused(bool isPaused);
-    void SetMoveToolEngaged(bool isEngaged);
-    void SetStatusTextEnabled(bool isEnabled);
-    void SetExtendedStatusTextEnabled(bool isEnabled);
-
-    void PickObjectToMove(vec2f const & screenCoordinates, std::optional<ElementId> & elementId);
-    void PickObjectToMove(vec2f const & screenCoordinates, std::optional<ShipId> & shipId);
-    void MoveBy(ElementId elementId, vec2f const & screenOffset, vec2f const & inertialScreenOffset);
-    void MoveBy(ShipId shipId, vec2f const & screenOffset, vec2f const & inertialScreenOffset);
-    void RotateBy(ElementId elementId, float screenDeltaY, vec2f const & screenCenter, float inertialScreenDeltaY);
-    void RotateBy(ShipId shipId, float screenDeltaY, vec2f const & screenCenter, float intertialScreenDeltaY);
-    void DestroyAt(vec2f const & screenCoordinates, float radiusFraction);
-    void RepairAt(vec2f const & screenCoordinates, float radiusMultiplier, RepairSessionId sessionId, RepairSessionStepId sessionStepId);
-    void SawThrough(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates);
-    void DrawTo(vec2f const & screenCoordinates, float strengthFraction);
-    void SwirlAt(vec2f const & screenCoordinates, float strengthFraction);
-    void TogglePinAt(vec2f const & screenCoordinates);
-    bool InjectBubblesAt(vec2f const & screenCoordinates);
-    bool FloodAt(vec2f const & screenCoordinates, float waterQuantityMultiplier);
-    void ToggleAntiMatterBombAt(vec2f const & screenCoordinates);
-    void ToggleImpactBombAt(vec2f const & screenCoordinates);
-    void ToggleRCBombAt(vec2f const & screenCoordinates);
-    void ToggleTimerBombAt(vec2f const & screenCoordinates);
-    void DetonateRCBombs();
-    void DetonateAntiMatterBombs();
-    void AdjustOceanSurfaceTo(std::optional<vec2f> const & screenCoordinates);
-    bool AdjustOceanFloorTo(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates);
-    bool ScrubThrough(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates);
+    void PickObjectToMove(vec2f const & screenCoordinates, std::optional<ElementId> & elementId) override;
+    void PickObjectToMove(vec2f const & screenCoordinates, std::optional<ShipId> & shipId) override;
+    void MoveBy(ElementId elementId, vec2f const & screenOffset, vec2f const & inertialScreenOffset) override;
+    void MoveBy(ShipId shipId, vec2f const & screenOffset, vec2f const & inertialScreenOffset) override;
+    void RotateBy(ElementId elementId, float screenDeltaY, vec2f const & screenCenter, float inertialScreenDeltaY) override;
+    void RotateBy(ShipId shipId, float screenDeltaY, vec2f const & screenCenter, float intertialScreenDeltaY) override;
+    void DestroyAt(vec2f const & screenCoordinates, float radiusFraction) override;
+    void RepairAt(vec2f const & screenCoordinates, float radiusMultiplier, RepairSessionId sessionId, RepairSessionStepId sessionStepId) override;
+    void SawThrough(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates) override;
+    bool ApplyFlameThrowerAt(vec2f const & screenCoordinates) override;
+    void DrawTo(vec2f const & screenCoordinates, float strengthFraction) override;
+    void SwirlAt(vec2f const & screenCoordinates, float strengthFraction) override;
+    void TogglePinAt(vec2f const & screenCoordinates) override;
+    bool InjectBubblesAt(vec2f const & screenCoordinates) override;
+    bool FloodAt(vec2f const & screenCoordinates, float waterQuantityMultiplier) override;
+    void ToggleAntiMatterBombAt(vec2f const & screenCoordinates) override;
+    void ToggleImpactBombAt(vec2f const & screenCoordinates) override;
+    void ToggleRCBombAt(vec2f const & screenCoordinates) override;
+    void ToggleTimerBombAt(vec2f const & screenCoordinates) override;
+    void DetonateRCBombs() override;
+    void DetonateAntiMatterBombs() override;
+    void AdjustOceanSurfaceTo(std::optional<vec2f> const & screenCoordinates) override;
+    bool AdjustOceanFloorTo(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates) override;
+    bool ScrubThrough(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates) override;
     std::optional<ElementId> GetNearestPointAt(vec2f const & screenCoordinates) const;
     void QueryNearestPointAt(vec2f const & screenCoordinates) const;
 
-    void TriggerTsunami();
-    void TriggerRogueWave();
+    void TriggerTsunami() override;
+    void TriggerRogueWave() override;
 
-    void SetCanvasSize(int width, int height)
-    {
-        mRenderContext->SetCanvasSize(width, height);
+    //
+    // Render controls
+    //
 
-        // Pickup eventual changes
-        mTargetCameraPosition = mCurrentCameraPosition = mRenderContext->GetCameraWorldPosition();
-        mTargetZoom = mCurrentZoom = mRenderContext->GetZoom();
-    }
-
-    void Pan(vec2f const & screenOffset)
-    {
-        vec2f worldOffset = mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
-        vec2f newTargetCameraPosition = mRenderContext->ClampCameraWorldPosition(mTargetCameraPosition + worldOffset);
-
-        mCurrentCameraPosition = mRenderContext->SetCameraWorldPosition(mTargetCameraPosition); // Skip straight to current target, in case we're already smoothing
-        mStartingCameraPosition = mCurrentCameraPosition;
-        mTargetCameraPosition = newTargetCameraPosition;
-
-        mStartCameraPositionTimestamp = std::chrono::steady_clock::now();
-    }
-
-    void PanImmediate(vec2f const & screenOffset)
-    {
-        vec2f const worldOffset = mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
-
-        auto const newCameraWorldPosition = mRenderContext->SetCameraWorldPosition(
-            mRenderContext->GetCameraWorldPosition() + worldOffset);
-
-        mTargetCameraPosition = mCurrentCameraPosition = newCameraWorldPosition;
-    }
-
-    void ResetPan()
-    {
-        auto const newCameraWorldPosition = mRenderContext->SetCameraWorldPosition(vec2f(0, 0));
-
-        mTargetCameraPosition = mCurrentCameraPosition = newCameraWorldPosition;
-    }
-
-    void AdjustZoom(float amount)
-    {
-        float newTargetZoom = mRenderContext->ClampZoom(mTargetZoom * amount);
-
-        mCurrentZoom = mRenderContext->SetZoom(mTargetZoom); // Skip straight to current target, in case we're already smoothing
-        mStartingZoom = mCurrentZoom;
-        mTargetZoom = newTargetZoom;
-
-        mStartZoomTimestamp = std::chrono::steady_clock::now();
-    }
-
-    void ResetZoom()
-    {
-        auto const newZoom = mRenderContext->SetZoom(1.0);
-
-        mTargetZoom = mCurrentZoom = newZoom;
-    }
-
-    vec2f ScreenToWorld(vec2f const & screenCoordinates) const
-    {
-        return mRenderContext->ScreenToWorld(screenCoordinates);
-    }
-
-    inline bool IsUnderwater(vec2f const & screenCoordinates) const
-    {
-        return mWorld->IsUnderwater(ScreenToWorld(screenCoordinates));
-    }
+    void SetCanvasSize(int width, int height) override;
+    void Pan(vec2f const & screenOffset) override;
+    void PanImmediate(vec2f const & screenOffset) override;
+    void ResetPan() override;
+    void AdjustZoom(float amount) override;
+    void ResetZoom() override;
+    vec2f ScreenToWorld(vec2f const & screenCoordinates) const override;
 
     //
     // Game parameters
     //
 
-    float GetNumMechanicalDynamicsIterationsAdjustment() const { return mGameParameters.NumMechanicalDynamicsIterationsAdjustment; }
-    void SetNumMechanicalDynamicsIterationsAdjustment(float value) { mGameParameters.NumMechanicalDynamicsIterationsAdjustment = value; }
-    float GetMinNumMechanicalDynamicsIterationsAdjustment() const { return GameParameters::MinNumMechanicalDynamicsIterationsAdjustment; }
-    float GetMaxNumMechanicalDynamicsIterationsAdjustment() const { return GameParameters::MaxNumMechanicalDynamicsIterationsAdjustment; }
+    float GetNumMechanicalDynamicsIterationsAdjustment() const override { return mGameParameters.NumMechanicalDynamicsIterationsAdjustment; }
+    void SetNumMechanicalDynamicsIterationsAdjustment(float value) override { mGameParameters.NumMechanicalDynamicsIterationsAdjustment = value; }
+    float GetMinNumMechanicalDynamicsIterationsAdjustment() const override { return GameParameters::MinNumMechanicalDynamicsIterationsAdjustment; }
+    float GetMaxNumMechanicalDynamicsIterationsAdjustment() const override { return GameParameters::MaxNumMechanicalDynamicsIterationsAdjustment; }
 
-    float GetSpringStiffnessAdjustment() const { return mParameterSmoothers[SpringStiffnessAdjustmentParameterSmoother].GetValue(); }
-    void SetSpringStiffnessAdjustment(float value) { mParameterSmoothers[SpringStiffnessAdjustmentParameterSmoother].SetValue(value); }
-    float GetMinSpringStiffnessAdjustment() const { return GameParameters::MinSpringStiffnessAdjustment; }
-    float GetMaxSpringStiffnessAdjustment() const { return GameParameters::MaxSpringStiffnessAdjustment; }
+    float GetSpringStiffnessAdjustment() const override { return mParameterSmoothers[SpringStiffnessAdjustmentParameterSmoother].GetValue(); }
+    void SetSpringStiffnessAdjustment(float value) override { mParameterSmoothers[SpringStiffnessAdjustmentParameterSmoother].SetValue(value); }
+    float GetMinSpringStiffnessAdjustment() const override { return GameParameters::MinSpringStiffnessAdjustment; }
+    float GetMaxSpringStiffnessAdjustment() const override { return GameParameters::MaxSpringStiffnessAdjustment; }
 
-    float GetSpringDampingAdjustment() const { return mGameParameters.SpringDampingAdjustment; }
-    void SetSpringDampingAdjustment(float value) { mGameParameters.SpringDampingAdjustment = value; }
-    float GetMinSpringDampingAdjustment() const { return GameParameters::MinSpringDampingAdjustment; }
-    float GetMaxSpringDampingAdjustment() const { return GameParameters::MaxSpringDampingAdjustment; }
+    float GetSpringDampingAdjustment() const override { return mGameParameters.SpringDampingAdjustment; }
+    void SetSpringDampingAdjustment(float value) override { mGameParameters.SpringDampingAdjustment = value; }
+    float GetMinSpringDampingAdjustment() const override { return GameParameters::MinSpringDampingAdjustment; }
+    float GetMaxSpringDampingAdjustment() const override { return GameParameters::MaxSpringDampingAdjustment; }
 
-    float GetSpringStrengthAdjustment() const { return mParameterSmoothers[SpringStrengthAdjustmentParameterSmoother].GetValue(); }
-    void SetSpringStrengthAdjustment(float value) { mParameterSmoothers[SpringStrengthAdjustmentParameterSmoother].SetValue(value); }
-    float GetMinSpringStrengthAdjustment() const { return GameParameters::MinSpringStrengthAdjustment;  }
-    float GetMaxSpringStrengthAdjustment() const { return GameParameters::MaxSpringStrengthAdjustment; }
+    float GetSpringStrengthAdjustment() const override { return mParameterSmoothers[SpringStrengthAdjustmentParameterSmoother].GetValue(); }
+    void SetSpringStrengthAdjustment(float value) override { mParameterSmoothers[SpringStrengthAdjustmentParameterSmoother].SetValue(value); }
+    float GetMinSpringStrengthAdjustment() const override { return GameParameters::MinSpringStrengthAdjustment;  }
+    float GetMaxSpringStrengthAdjustment() const override { return GameParameters::MaxSpringStrengthAdjustment; }
 
-    float GetRotAcceler8r() const { return mGameParameters.RotAcceler8r; }
-    void SetRotAcceler8r(float value) { mGameParameters.RotAcceler8r = value; }
-    float GetMinRotAcceler8r() const { return GameParameters::MinRotAcceler8r; }
-    float GetMaxRotAcceler8r() const { return GameParameters::MaxRotAcceler8r; }
+    float GetRotAcceler8r() const override { return mGameParameters.RotAcceler8r; }
+    void SetRotAcceler8r(float value) override { mGameParameters.RotAcceler8r = value; }
+    float GetMinRotAcceler8r() const override { return GameParameters::MinRotAcceler8r; }
+    float GetMaxRotAcceler8r() const override { return GameParameters::MaxRotAcceler8r; }
 
-    float GetWaterDensityAdjustment() const { return mGameParameters.WaterDensityAdjustment; }
-    void SetWaterDensityAdjustment(float value) { mGameParameters.WaterDensityAdjustment = value; }
-    float GetMinWaterDensityAdjustment() const { return GameParameters::MinWaterDensityAdjustment; }
-    float GetMaxWaterDensityAdjustment() const { return GameParameters::MaxWaterDensityAdjustment; }
+    float GetWaterDensityAdjustment() const override { return mGameParameters.WaterDensityAdjustment; }
+    void SetWaterDensityAdjustment(float value) override { mGameParameters.WaterDensityAdjustment = value; }
+    float GetMinWaterDensityAdjustment() const override { return GameParameters::MinWaterDensityAdjustment; }
+    float GetMaxWaterDensityAdjustment() const override { return GameParameters::MaxWaterDensityAdjustment; }
 
-    float GetWaterDragAdjustment() const { return mGameParameters.WaterDragAdjustment; }
-    void SetWaterDragAdjustment(float value) { mGameParameters.WaterDragAdjustment = value; }
-    float GetMinWaterDragAdjustment() const { return GameParameters::MinWaterDragAdjustment; }
-    float GetMaxWaterDragAdjustment() const { return GameParameters::MaxWaterDragAdjustment; }
+    float GetWaterDragAdjustment() const override { return mGameParameters.WaterDragAdjustment; }
+    void SetWaterDragAdjustment(float value) override { mGameParameters.WaterDragAdjustment = value; }
+    float GetMinWaterDragAdjustment() const override { return GameParameters::MinWaterDragAdjustment; }
+    float GetMaxWaterDragAdjustment() const override { return GameParameters::MaxWaterDragAdjustment; }
 
-    float GetWaterIntakeAdjustment() const { return mGameParameters.WaterIntakeAdjustment; }
-    void SetWaterIntakeAdjustment(float value) { mGameParameters.WaterIntakeAdjustment = value; }
-    float GetMinWaterIntakeAdjustment() const { return GameParameters::MinWaterIntakeAdjustment; }
-    float GetMaxWaterIntakeAdjustment() const { return GameParameters::MaxWaterIntakeAdjustment; }
+    float GetWaterIntakeAdjustment() const override { return mGameParameters.WaterIntakeAdjustment; }
+    void SetWaterIntakeAdjustment(float value) override { mGameParameters.WaterIntakeAdjustment = value; }
+    float GetMinWaterIntakeAdjustment() const override { return GameParameters::MinWaterIntakeAdjustment; }
+    float GetMaxWaterIntakeAdjustment() const override { return GameParameters::MaxWaterIntakeAdjustment; }
 
-    float GetWaterCrazyness() const { return mGameParameters.WaterCrazyness; }
-    void SetWaterCrazyness(float value) { mGameParameters.WaterCrazyness = value; }
-    float GetMinWaterCrazyness() const { return GameParameters::MinWaterCrazyness; }
-    float GetMaxWaterCrazyness() const { return GameParameters::MaxWaterCrazyness; }
+    float GetWaterCrazyness() const override { return mGameParameters.WaterCrazyness; }
+    void SetWaterCrazyness(float value) override { mGameParameters.WaterCrazyness = value; }
+    float GetMinWaterCrazyness() const override { return GameParameters::MinWaterCrazyness; }
+    float GetMaxWaterCrazyness() const override { return GameParameters::MaxWaterCrazyness; }
 
-    float GetWaterDiffusionSpeedAdjustment() const { return mGameParameters.WaterDiffusionSpeedAdjustment; }
-    void SetWaterDiffusionSpeedAdjustment(float value) { mGameParameters.WaterDiffusionSpeedAdjustment = value; }
-    float GetMinWaterDiffusionSpeedAdjustment() const { return GameParameters::MinWaterDiffusionSpeedAdjustment; }
-    float GetMaxWaterDiffusionSpeedAdjustment() const { return GameParameters::MaxWaterDiffusionSpeedAdjustment; }
+    float GetWaterDiffusionSpeedAdjustment() const override { return mGameParameters.WaterDiffusionSpeedAdjustment; }
+    void SetWaterDiffusionSpeedAdjustment(float value) override { mGameParameters.WaterDiffusionSpeedAdjustment = value; }
+    float GetMinWaterDiffusionSpeedAdjustment() const override { return GameParameters::MinWaterDiffusionSpeedAdjustment; }
+    float GetMaxWaterDiffusionSpeedAdjustment() const override { return GameParameters::MaxWaterDiffusionSpeedAdjustment; }
 
-    float GetBasalWaveHeightAdjustment() const { return mGameParameters.BasalWaveHeightAdjustment; }
-    void SetBasalWaveHeightAdjustment(float value) { mGameParameters.BasalWaveHeightAdjustment = value; }
-    float GetMinBasalWaveHeightAdjustment() const { return GameParameters::MinBasalWaveHeightAdjustment; }
-    float GetMaxBasalWaveHeightAdjustment() const { return GameParameters::MaxBasalWaveHeightAdjustment; }
+    float GetBasalWaveHeightAdjustment() const override { return mGameParameters.BasalWaveHeightAdjustment; }
+    void SetBasalWaveHeightAdjustment(float value) override { mGameParameters.BasalWaveHeightAdjustment = value; }
+    float GetMinBasalWaveHeightAdjustment() const override { return GameParameters::MinBasalWaveHeightAdjustment; }
+    float GetMaxBasalWaveHeightAdjustment() const override { return GameParameters::MaxBasalWaveHeightAdjustment; }
 
-    float GetBasalWaveLengthAdjustment() const { return mGameParameters.BasalWaveLengthAdjustment; }
-    void SetBasalWaveLengthAdjustment(float value) { mGameParameters.BasalWaveLengthAdjustment = value; }
-    float GetMinBasalWaveLengthAdjustment() const { return GameParameters::MinBasalWaveLengthAdjustment; }
-    float GetMaxBasalWaveLengthAdjustment() const { return GameParameters::MaxBasalWaveLengthAdjustment; }
+    float GetBasalWaveLengthAdjustment() const override { return mGameParameters.BasalWaveLengthAdjustment; }
+    void SetBasalWaveLengthAdjustment(float value) override { mGameParameters.BasalWaveLengthAdjustment = value; }
+    float GetMinBasalWaveLengthAdjustment() const override { return GameParameters::MinBasalWaveLengthAdjustment; }
+    float GetMaxBasalWaveLengthAdjustment() const override { return GameParameters::MaxBasalWaveLengthAdjustment; }
 
-    float GetBasalWaveSpeedAdjustment() const { return mGameParameters.BasalWaveSpeedAdjustment; }
-    void SetBasalWaveSpeedAdjustment(float value) { mGameParameters.BasalWaveSpeedAdjustment = value; }
-    float GetMinBasalWaveSpeedAdjustment() const { return GameParameters::MinBasalWaveSpeedAdjustment; }
-    float GetMaxBasalWaveSpeedAdjustment() const { return GameParameters::MaxBasalWaveSpeedAdjustment; }
+    float GetBasalWaveSpeedAdjustment() const override { return mGameParameters.BasalWaveSpeedAdjustment; }
+    void SetBasalWaveSpeedAdjustment(float value) override { mGameParameters.BasalWaveSpeedAdjustment = value; }
+    float GetMinBasalWaveSpeedAdjustment() const override { return GameParameters::MinBasalWaveSpeedAdjustment; }
+    float GetMaxBasalWaveSpeedAdjustment() const override { return GameParameters::MaxBasalWaveSpeedAdjustment; }
 
-    float GetTsunamiRate() const { return mGameParameters.TsunamiRate; }
-    void SetTsunamiRate(float value) { mGameParameters.TsunamiRate = value; }
-    float GetMinTsunamiRate() const { return GameParameters::MinTsunamiRate; }
-    float GetMaxTsunamiRate() const { return GameParameters::MaxTsunamiRate; }
+    float GetTsunamiRate() const override { return mGameParameters.TsunamiRate; }
+    void SetTsunamiRate(float value) override { mGameParameters.TsunamiRate = value; }
+    float GetMinTsunamiRate() const override { return GameParameters::MinTsunamiRate; }
+    float GetMaxTsunamiRate() const override { return GameParameters::MaxTsunamiRate; }
 
-    float GetRogueWaveRate() const { return mGameParameters.RogueWaveRate; }
-    void SetRogueWaveRate(float value) { mGameParameters.RogueWaveRate = value; }
-    float GetMinRogueWaveRate() const { return GameParameters::MinRogueWaveRate; }
-    float GetMaxRogueWaveRate() const { return GameParameters::MaxRogueWaveRate; }
+    float GetRogueWaveRate() const override { return mGameParameters.RogueWaveRate; }
+    void SetRogueWaveRate(float value) override { mGameParameters.RogueWaveRate = value; }
+    float GetMinRogueWaveRate() const override { return GameParameters::MinRogueWaveRate; }
+    float GetMaxRogueWaveRate() const override { return GameParameters::MaxRogueWaveRate; }
 
-    bool GetDoModulateWind() const { return mGameParameters.DoModulateWind; }
-    void SetDoModulateWind(bool value) { mGameParameters.DoModulateWind = value; }
+    bool GetDoModulateWind() const override { return mGameParameters.DoModulateWind; }
+    void SetDoModulateWind(bool value) override { mGameParameters.DoModulateWind = value; }
 
-    float GetWindSpeedBase() const { return mGameParameters.WindSpeedBase; }
-    void SetWindSpeedBase(float value) { mGameParameters.WindSpeedBase = value; }
-    float GetMinWindSpeedBase() const { return GameParameters::MinWindSpeedBase; }
-    float GetMaxWindSpeedBase() const { return GameParameters::MaxWindSpeedBase; }
+    float GetWindSpeedBase() const override { return mGameParameters.WindSpeedBase; }
+    void SetWindSpeedBase(float value) override { mGameParameters.WindSpeedBase = value; }
+    float GetMinWindSpeedBase() const override { return GameParameters::MinWindSpeedBase; }
+    float GetMaxWindSpeedBase() const override { return GameParameters::MaxWindSpeedBase; }
 
-    float GetWindSpeedMaxFactor() const { return mGameParameters.WindSpeedMaxFactor; }
-    void SetWindSpeedMaxFactor(float value) { mGameParameters.WindSpeedMaxFactor = value; }
-    float GetMinWindSpeedMaxFactor() const { return GameParameters::MinWindSpeedMaxFactor; }
-    float GetMaxWindSpeedMaxFactor() const { return GameParameters::MaxWindSpeedMaxFactor; }
+    float GetWindSpeedMaxFactor() const override { return mGameParameters.WindSpeedMaxFactor; }
+    void SetWindSpeedMaxFactor(float value) override { mGameParameters.WindSpeedMaxFactor = value; }
+    float GetMinWindSpeedMaxFactor() const override { return GameParameters::MinWindSpeedMaxFactor; }
+    float GetMaxWindSpeedMaxFactor() const override { return GameParameters::MaxWindSpeedMaxFactor; }
 
-    float GetSeaDepth() const { return mParameterSmoothers[SeaDepthParameterSmoother].GetValue(); }
-    void SetSeaDepth(float value) { mParameterSmoothers[SeaDepthParameterSmoother].SetValue(value); }
-    float GetMinSeaDepth() const { return GameParameters::MinSeaDepth; }
-    float GetMaxSeaDepth() const { return GameParameters::MaxSeaDepth; }
+    float GetSeaDepth() const override { return mParameterSmoothers[SeaDepthParameterSmoother].GetValue(); }
+    void SetSeaDepth(float value) override { mParameterSmoothers[SeaDepthParameterSmoother].SetValue(value); }
+    float GetMinSeaDepth() const override { return GameParameters::MinSeaDepth; }
+    float GetMaxSeaDepth() const override { return GameParameters::MaxSeaDepth; }
 
-    float GetOceanFloorBumpiness() const { return mParameterSmoothers[OceanFloorBumpinessParameterSmoother].GetValue(); }
-    void SetOceanFloorBumpiness(float value) { mParameterSmoothers[OceanFloorBumpinessParameterSmoother].SetValue(value); }
-    float GetMinOceanFloorBumpiness() const { return GameParameters::MinOceanFloorBumpiness; }
-    float GetMaxOceanFloorBumpiness() const { return GameParameters::MaxOceanFloorBumpiness; }
+    float GetOceanFloorBumpiness() const override { return mParameterSmoothers[OceanFloorBumpinessParameterSmoother].GetValue(); }
+    void SetOceanFloorBumpiness(float value) override { mParameterSmoothers[OceanFloorBumpinessParameterSmoother].SetValue(value); }
+    float GetMinOceanFloorBumpiness() const override { return GameParameters::MinOceanFloorBumpiness; }
+    float GetMaxOceanFloorBumpiness() const override { return GameParameters::MaxOceanFloorBumpiness; }
 
-    float GetOceanFloorDetailAmplification() const { return mParameterSmoothers[OceanFloorDetailAmplificationParameterSmoother].GetValue(); }
-    void SetOceanFloorDetailAmplification(float value) { mParameterSmoothers[OceanFloorDetailAmplificationParameterSmoother].SetValue(value); }
-    float GetMinOceanFloorDetailAmplification() const { return GameParameters::MinOceanFloorDetailAmplification; }
-    float GetMaxOceanFloorDetailAmplification() const { return GameParameters::MaxOceanFloorDetailAmplification; }
+    float GetOceanFloorDetailAmplification() const override { return mParameterSmoothers[OceanFloorDetailAmplificationParameterSmoother].GetValue(); }
+    void SetOceanFloorDetailAmplification(float value) override { mParameterSmoothers[OceanFloorDetailAmplificationParameterSmoother].SetValue(value); }
+    float GetMinOceanFloorDetailAmplification() const override { return GameParameters::MinOceanFloorDetailAmplification; }
+    float GetMaxOceanFloorDetailAmplification() const override { return GameParameters::MaxOceanFloorDetailAmplification; }
 
-    float GetDestroyRadius() const { return mGameParameters.DestroyRadius; }
-    void SetDestroyRadius(float value) { mGameParameters.DestroyRadius = value; }
-    float GetMinDestroyRadius() const { return GameParameters::MinDestroyRadius; }
-    float GetMaxDestroyRadius() const { return GameParameters::MaxDestroyRadius; }
+    float GetDestroyRadius() const override { return mGameParameters.DestroyRadius; }
+    void SetDestroyRadius(float value) override { mGameParameters.DestroyRadius = value; }
+    float GetMinDestroyRadius() const override { return GameParameters::MinDestroyRadius; }
+    float GetMaxDestroyRadius() const override { return GameParameters::MaxDestroyRadius; }
 
-    float GetRepairStrengthAdjustment() const { return mGameParameters.RepairStrengthAdjustment; }
-    void SetRepairStrengthAdjustment(float value) { mGameParameters.RepairStrengthAdjustment = value; }
-    float GetMinRepairStrengthAdjustment() const { return GameParameters::MinRepairStrengthAdjustment; }
-    float GetMaxRepairStrengthAdjustment() const { return GameParameters::MaxRepairStrengthAdjustment; }
+    float GetRepairStrengthAdjustment() const override { return mGameParameters.RepairStrengthAdjustment; }
+    void SetRepairStrengthAdjustment(float value) override { mGameParameters.RepairStrengthAdjustment = value; }
+    float GetMinRepairStrengthAdjustment() const override { return GameParameters::MinRepairStrengthAdjustment; }
+    float GetMaxRepairStrengthAdjustment() const override { return GameParameters::MaxRepairStrengthAdjustment; }
 
-    float GetBombBlastRadius() const { return mGameParameters.BombBlastRadius; }
-    void SetBombBlastRadius(float value) { mGameParameters.BombBlastRadius = value; }
-    float GetMinBombBlastRadius() const { return GameParameters::MinBombBlastRadius; }
-    float GetMaxBombBlastRadius() const { return GameParameters::MaxBombBlastRadius; }
+    float GetBombBlastRadius() const override { return mGameParameters.BombBlastRadius; }
+    void SetBombBlastRadius(float value) override { mGameParameters.BombBlastRadius = value; }
+    float GetMinBombBlastRadius() const override { return GameParameters::MinBombBlastRadius; }
+    float GetMaxBombBlastRadius() const override { return GameParameters::MaxBombBlastRadius; }
 
-    float GetAntiMatterBombImplosionStrength() const { return mGameParameters.AntiMatterBombImplosionStrength; }
-    void SetAntiMatterBombImplosionStrength(float value) { mGameParameters.AntiMatterBombImplosionStrength = value; }
-    float GetMinAntiMatterBombImplosionStrength() const { return GameParameters::MinAntiMatterBombImplosionStrength; }
-    float GetMaxAntiMatterBombImplosionStrength() const { return GameParameters::MaxAntiMatterBombImplosionStrength; }
+    float GetAntiMatterBombImplosionStrength() const override { return mGameParameters.AntiMatterBombImplosionStrength; }
+    void SetAntiMatterBombImplosionStrength(float value) override { mGameParameters.AntiMatterBombImplosionStrength = value; }
+    float GetMinAntiMatterBombImplosionStrength() const override { return GameParameters::MinAntiMatterBombImplosionStrength; }
+    float GetMaxAntiMatterBombImplosionStrength() const override { return GameParameters::MaxAntiMatterBombImplosionStrength; }
 
-    float GetFloodRadius() const { return mGameParameters.FloodRadius; }
-    void SetFloodRadius(float value) { mGameParameters.FloodRadius = value; }
-    float GetMinFloodRadius() const { return GameParameters::MinFloodRadius; }
-    float GetMaxFloodRadius() const { return GameParameters::MaxFloodRadius; }
+    float GetFloodRadius() const override { return mGameParameters.FloodRadius; }
+    void SetFloodRadius(float value) override { mGameParameters.FloodRadius = value; }
+    float GetMinFloodRadius() const override { return GameParameters::MinFloodRadius; }
+    float GetMaxFloodRadius() const override { return GameParameters::MaxFloodRadius; }
 
-    float GetFloodQuantity() const { return mGameParameters.FloodQuantity; }
-    void SetFloodQuantity(float value) { mGameParameters.FloodQuantity = value; }
-    float GetMinFloodQuantity() const { return GameParameters::MinFloodQuantity; }
-    float GetMaxFloodQuantity() const { return GameParameters::MaxFloodQuantity; }
+    float GetFloodQuantity() const override { return mGameParameters.FloodQuantity; }
+    void SetFloodQuantity(float value) override { mGameParameters.FloodQuantity = value; }
+    float GetMinFloodQuantity() const override { return GameParameters::MinFloodQuantity; }
+    float GetMaxFloodQuantity() const override { return GameParameters::MaxFloodQuantity; }
 
-    float GetLuminiscenceAdjustment() const { return mGameParameters.LuminiscenceAdjustment; }
-    void SetLuminiscenceAdjustment(float value) { mGameParameters.LuminiscenceAdjustment = value; }
-    float GetMinLuminiscenceAdjustment() const { return GameParameters::MinLuminiscenceAdjustment; }
-    float GetMaxLuminiscenceAdjustment() const { return GameParameters::MaxLuminiscenceAdjustment; }
+    float GetLuminiscenceAdjustment() const override { return mGameParameters.LuminiscenceAdjustment; }
+    void SetLuminiscenceAdjustment(float value) override { mGameParameters.LuminiscenceAdjustment = value; }
+    float GetMinLuminiscenceAdjustment() const override { return GameParameters::MinLuminiscenceAdjustment; }
+    float GetMaxLuminiscenceAdjustment() const override { return GameParameters::MaxLuminiscenceAdjustment; }
 
-    float GetLightSpreadAdjustment() const { return mGameParameters.LightSpreadAdjustment; }
-    void SetLightSpreadAdjustment(float value) { mGameParameters.LightSpreadAdjustment = value; }
-    float GetMinLightSpreadAdjustment() const { return GameParameters::MinLightSpreadAdjustment; }
-    float GetMaxLightSpreadAdjustment() const { return GameParameters::MaxLightSpreadAdjustment; }
+    float GetLightSpreadAdjustment() const override { return mGameParameters.LightSpreadAdjustment; }
+    void SetLightSpreadAdjustment(float value) override { mGameParameters.LightSpreadAdjustment = value; }
+    float GetMinLightSpreadAdjustment() const override { return GameParameters::MinLightSpreadAdjustment; }
+    float GetMaxLightSpreadAdjustment() const override { return GameParameters::MaxLightSpreadAdjustment; }
 
-    bool GetUltraViolentMode() const { return mGameParameters.IsUltraViolentMode; }
-    void SetUltraViolentMode(bool value) { mGameParameters.IsUltraViolentMode = value; }
+    bool GetUltraViolentMode() const override { return mGameParameters.IsUltraViolentMode; }
+    void SetUltraViolentMode(bool value) override { mGameParameters.IsUltraViolentMode = value; }
 
-    bool GetDoGenerateDebris() const { return mGameParameters.DoGenerateDebris; }
-    void SetDoGenerateDebris(bool value) { mGameParameters.DoGenerateDebris = value; }
+    bool GetDoGenerateDebris() const override { return mGameParameters.DoGenerateDebris; }
+    void SetDoGenerateDebris(bool value) override { mGameParameters.DoGenerateDebris = value; }
 
-    bool GetDoGenerateSparkles() const { return mGameParameters.DoGenerateSparkles; }
-    void SetDoGenerateSparkles(bool value) { mGameParameters.DoGenerateSparkles = value; }
+    bool GetDoGenerateSparkles() const override { return mGameParameters.DoGenerateSparkles; }
+    void SetDoGenerateSparkles(bool value) override { mGameParameters.DoGenerateSparkles = value; }
 
-    bool GetDoGenerateAirBubbles() const { return mGameParameters.DoGenerateAirBubbles; }
-    void SetDoGenerateAirBubbles(bool value) { mGameParameters.DoGenerateAirBubbles = value; }
-    float GetAirBubblesDensity() const { return GameParameters::MaxCumulatedIntakenWaterThresholdForAirBubbles - mGameParameters.CumulatedIntakenWaterThresholdForAirBubbles; }
-    void SetAirBubblesDensity(float value) { mGameParameters.CumulatedIntakenWaterThresholdForAirBubbles = GameParameters::MaxCumulatedIntakenWaterThresholdForAirBubbles - value; }
-    float GetMinAirBubblesDensity() const { return GameParameters::MaxCumulatedIntakenWaterThresholdForAirBubbles - GameParameters::MaxCumulatedIntakenWaterThresholdForAirBubbles; }
-    float GetMaxAirBubblesDensity() const { return GameParameters::MaxCumulatedIntakenWaterThresholdForAirBubbles -  GameParameters::MinCumulatedIntakenWaterThresholdForAirBubbles; }
+    bool GetDoGenerateAirBubbles() const override { return mGameParameters.DoGenerateAirBubbles; }
+    void SetDoGenerateAirBubbles(bool value) override { mGameParameters.DoGenerateAirBubbles = value; }
 
-    size_t GetNumberOfStars() const { return mGameParameters.NumberOfStars; }
-    void SetNumberOfStars(size_t value) { mGameParameters.NumberOfStars = value; }
-    size_t GetMinNumberOfStars() const { return GameParameters::MinNumberOfStars; }
-    size_t GetMaxNumberOfStars() const { return GameParameters::MaxNumberOfStars; }
+    float GetAirBubblesDensity() const override { return GameParameters::MaxCumulatedIntakenWaterThresholdForAirBubbles - mGameParameters.CumulatedIntakenWaterThresholdForAirBubbles; }
+    void SetAirBubblesDensity(float value) override { mGameParameters.CumulatedIntakenWaterThresholdForAirBubbles = GameParameters::MaxCumulatedIntakenWaterThresholdForAirBubbles - value; }
+    float GetMinAirBubblesDensity() const override { return GameParameters::MaxCumulatedIntakenWaterThresholdForAirBubbles - GameParameters::MaxCumulatedIntakenWaterThresholdForAirBubbles; }
+    float GetMaxAirBubblesDensity() const override { return GameParameters::MaxCumulatedIntakenWaterThresholdForAirBubbles -  GameParameters::MinCumulatedIntakenWaterThresholdForAirBubbles; }
 
-    size_t GetNumberOfClouds() const { return mGameParameters.NumberOfClouds; }
-    void SetNumberOfClouds(size_t value) { mGameParameters.NumberOfClouds = value; }
-    size_t GetMinNumberOfClouds() const { return GameParameters::MinNumberOfClouds; }
-    size_t GetMaxNumberOfClouds() const { return GameParameters::MaxNumberOfClouds; }
+    size_t GetNumberOfStars() const override { return mGameParameters.NumberOfStars; }
+    void SetNumberOfStars(size_t value) override { mGameParameters.NumberOfStars = value; }
+    size_t GetMinNumberOfStars() const override { return GameParameters::MinNumberOfStars; }
+    size_t GetMaxNumberOfStars() const override { return GameParameters::MaxNumberOfStars; }
+
+    size_t GetNumberOfClouds() const override { return mGameParameters.NumberOfClouds; }
+    void SetNumberOfClouds(size_t value) override { mGameParameters.NumberOfClouds = value; }
+    size_t GetMinNumberOfClouds() const override { return GameParameters::MinNumberOfClouds; }
+    size_t GetMaxNumberOfClouds() const override { return GameParameters::MaxNumberOfClouds; }
 
     //
     // Render parameters
     //
 
-    rgbColor const & GetFlatSkyColor() const { return mRenderContext->GetFlatSkyColor(); }
-    void SetFlatSkyColor(rgbColor const & color) { mRenderContext->SetFlatSkyColor(color); }
+    rgbColor const & GetFlatSkyColor() const override { return mRenderContext->GetFlatSkyColor(); }
+    void SetFlatSkyColor(rgbColor const & color) override { mRenderContext->SetFlatSkyColor(color); }
 
-    float GetAmbientLightIntensity() const { return mRenderContext->GetAmbientLightIntensity(); }
-    void SetAmbientLightIntensity(float value) { mRenderContext->SetAmbientLightIntensity(value); }
+    float GetAmbientLightIntensity() const override { return mRenderContext->GetAmbientLightIntensity(); }
+    void SetAmbientLightIntensity(float value) override { mRenderContext->SetAmbientLightIntensity(value); }
 
-    float GetWaterContrast() const { return mRenderContext->GetWaterContrast(); }
-    void SetWaterContrast(float value) { mRenderContext->SetWaterContrast(value); }
+    float GetWaterContrast() const override { return mRenderContext->GetWaterContrast(); }
+    void SetWaterContrast(float value) override { mRenderContext->SetWaterContrast(value); }
 
-    float GetOceanTransparency() const { return mRenderContext->GetOceanTransparency(); }
-    void SetOceanTransparency(float value) { mRenderContext->SetOceanTransparency(value); }
+    float GetOceanTransparency() const override { return mRenderContext->GetOceanTransparency(); }
+    void SetOceanTransparency(float value) override { mRenderContext->SetOceanTransparency(value); }
 
-    float GetOceanDarkeningRate() const { return mRenderContext->GetOceanDarkeningRate(); }
-    void SetOceanDarkeningRate(float value) { mRenderContext->SetOceanDarkeningRate(value); }
+    float GetOceanDarkeningRate() const override { return mRenderContext->GetOceanDarkeningRate(); }
+    void SetOceanDarkeningRate(float value) override { mRenderContext->SetOceanDarkeningRate(value); }
 
-    bool GetShowShipThroughOcean() const { return mRenderContext->GetShowShipThroughOcean(); }
-    void SetShowShipThroughOcean(bool value) { mRenderContext->SetShowShipThroughOcean(value); }
+    bool GetShowShipThroughOcean() const override { return mRenderContext->GetShowShipThroughOcean(); }
+    void SetShowShipThroughOcean(bool value) override { mRenderContext->SetShowShipThroughOcean(value); }
 
-    float GetWaterLevelOfDetail() const { return mRenderContext->GetWaterLevelOfDetail(); }
-    void SetWaterLevelOfDetail(float value) { mRenderContext->SetWaterLevelOfDetail(value); }
-    float GetMinWaterLevelOfDetail() const { return Render::RenderContext::MinWaterLevelOfDetail; }
-    float GetMaxWaterLevelOfDetail() const { return Render::RenderContext::MaxWaterLevelOfDetail; }
+    float GetWaterLevelOfDetail() const override { return mRenderContext->GetWaterLevelOfDetail(); }
+    void SetWaterLevelOfDetail(float value) override { mRenderContext->SetWaterLevelOfDetail(value); }
+    float GetMinWaterLevelOfDetail() const override { return Render::RenderContext::MinWaterLevelOfDetail; }
+    float GetMaxWaterLevelOfDetail() const override { return Render::RenderContext::MaxWaterLevelOfDetail; }
 
-    ShipRenderMode GetShipRenderMode() const { return mRenderContext->GetShipRenderMode(); }
-    void SetShipRenderMode(ShipRenderMode shipRenderMode) { mRenderContext->SetShipRenderMode(shipRenderMode); }
+    ShipRenderMode GetShipRenderMode() const override { return mRenderContext->GetShipRenderMode(); }
+    void SetShipRenderMode(ShipRenderMode shipRenderMode) override { mRenderContext->SetShipRenderMode(shipRenderMode); }
 
-    DebugShipRenderMode GetDebugShipRenderMode() const { return mRenderContext->GetDebugShipRenderMode(); }
-    void SetDebugShipRenderMode(DebugShipRenderMode debugShipRenderMode) { mRenderContext->SetDebugShipRenderMode(debugShipRenderMode); }
+    DebugShipRenderMode GetDebugShipRenderMode() const override { return mRenderContext->GetDebugShipRenderMode(); }
+    void SetDebugShipRenderMode(DebugShipRenderMode debugShipRenderMode) override { mRenderContext->SetDebugShipRenderMode(debugShipRenderMode); }
 
-    OceanRenderMode GetOceanRenderMode() const { return mRenderContext->GetOceanRenderMode(); }
-    void SetOceanRenderMode(OceanRenderMode oceanRenderMode) { mRenderContext->SetOceanRenderMode(oceanRenderMode); }
+    OceanRenderMode GetOceanRenderMode() const override { return mRenderContext->GetOceanRenderMode(); }
+    void SetOceanRenderMode(OceanRenderMode oceanRenderMode) override { mRenderContext->SetOceanRenderMode(oceanRenderMode); }
 
-    std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureOceanAvailableThumbnails() const { return mRenderContext->GetTextureOceanAvailableThumbnails(); }
-    size_t GetTextureOceanTextureIndex() const { return mRenderContext->GetTextureOceanTextureIndex(); }
-    void SetTextureOceanTextureIndex(size_t index) { mRenderContext->SetTextureOceanTextureIndex(index); }
+    std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureOceanAvailableThumbnails() const override { return mRenderContext->GetTextureOceanAvailableThumbnails(); }
+    size_t GetTextureOceanTextureIndex() const override { return mRenderContext->GetTextureOceanTextureIndex(); }
+    void SetTextureOceanTextureIndex(size_t index) override { mRenderContext->SetTextureOceanTextureIndex(index); }
 
-    rgbColor const & GetDepthOceanColorStart() const { return mRenderContext->GetDepthOceanColorStart(); }
-    void SetDepthOceanColorStart(rgbColor const & color) { mRenderContext->SetDepthOceanColorStart(color); }
+    rgbColor const & GetDepthOceanColorStart() const override { return mRenderContext->GetDepthOceanColorStart(); }
+    void SetDepthOceanColorStart(rgbColor const & color) override { mRenderContext->SetDepthOceanColorStart(color); }
 
-    rgbColor const & GetDepthOceanColorEnd() const { return mRenderContext->GetDepthOceanColorEnd(); }
-    void SetDepthOceanColorEnd(rgbColor const & color) { mRenderContext->SetDepthOceanColorEnd(color); }
+    rgbColor const & GetDepthOceanColorEnd() const override { return mRenderContext->GetDepthOceanColorEnd(); }
+    void SetDepthOceanColorEnd(rgbColor const & color) override { mRenderContext->SetDepthOceanColorEnd(color); }
 
-    rgbColor const & GetFlatOceanColor() const { return mRenderContext->GetFlatOceanColor(); }
-    void SetFlatOceanColor(rgbColor const & color) { mRenderContext->SetFlatOceanColor(color); }
+    rgbColor const & GetFlatOceanColor() const override { return mRenderContext->GetFlatOceanColor(); }
+    void SetFlatOceanColor(rgbColor const & color) override { mRenderContext->SetFlatOceanColor(color); }
 
-    LandRenderMode GetLandRenderMode() const { return mRenderContext->GetLandRenderMode(); }
-    void SetLandRenderMode(LandRenderMode landRenderMode) { mRenderContext->SetLandRenderMode(landRenderMode); }
+    LandRenderMode GetLandRenderMode() const override { return mRenderContext->GetLandRenderMode(); }
+    void SetLandRenderMode(LandRenderMode landRenderMode) override { mRenderContext->SetLandRenderMode(landRenderMode); }
 
-    std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureLandAvailableThumbnails() const { return mRenderContext->GetTextureLandAvailableThumbnails(); }
-    size_t GetTextureLandTextureIndex() const { return mRenderContext->GetTextureLandTextureIndex(); }
-    void SetTextureLandTextureIndex(size_t index) { mRenderContext->SetTextureLandTextureIndex(index); }
+    std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureLandAvailableThumbnails() const override { return mRenderContext->GetTextureLandAvailableThumbnails(); }
+    size_t GetTextureLandTextureIndex() const override { return mRenderContext->GetTextureLandTextureIndex(); }
+    void SetTextureLandTextureIndex(size_t index) override { mRenderContext->SetTextureLandTextureIndex(index); }
 
-    rgbColor const & GetFlatLandColor() const { return mRenderContext->GetFlatLandColor(); }
-    void SetFlatLandColor(rgbColor const & color) { mRenderContext->SetFlatLandColor(color); }
+    rgbColor const & GetFlatLandColor() const override { return mRenderContext->GetFlatLandColor(); }
+    void SetFlatLandColor(rgbColor const & color) override { mRenderContext->SetFlatLandColor(color); }
 
-    VectorFieldRenderMode GetVectorFieldRenderMode() const { return mRenderContext->GetVectorFieldRenderMode(); }
-    void SetVectorFieldRenderMode(VectorFieldRenderMode VectorFieldRenderMode) { mRenderContext->SetVectorFieldRenderMode(VectorFieldRenderMode); }
+    VectorFieldRenderMode GetVectorFieldRenderMode() const override { return mRenderContext->GetVectorFieldRenderMode(); }
+    void SetVectorFieldRenderMode(VectorFieldRenderMode VectorFieldRenderMode) override { mRenderContext->SetVectorFieldRenderMode(VectorFieldRenderMode); }
 
-    bool GetShowShipStress() const { return mRenderContext->GetShowStressedSprings(); }
-    void SetShowShipStress(bool value) { mRenderContext->SetShowStressedSprings(value); }
+    bool GetShowShipStress() const override { return mRenderContext->GetShowStressedSprings(); }
+    void SetShowShipStress(bool value) override { mRenderContext->SetShowStressedSprings(value); }
 
-    ShipFlameRenderMode GetShipFlameRenderMode() const { return mRenderContext->GetShipFlameRenderMode(); }
-    void SetShipFlameRenderMode(ShipFlameRenderMode shipFlameRenderMode) { mRenderContext->SetShipFlameRenderMode(shipFlameRenderMode); }
+    ShipFlameRenderMode GetShipFlameRenderMode() const override { return mRenderContext->GetShipFlameRenderMode(); }
+    void SetShipFlameRenderMode(ShipFlameRenderMode shipFlameRenderMode) override { mRenderContext->SetShipFlameRenderMode(shipFlameRenderMode); }
 
-    float GetShipFlameSizeAdjustment() const { return mRenderContext->GetShipFlameSizeAdjustment(); }
-    void SetShipFlameSizeAdjustment(float value) { mRenderContext->SetShipFlameSizeAdjustment(value); }
-    float GetMinShipFlameSizeAdjustment() const { return Render::RenderContext::MinShipFlameSizeAdjustment; }
-    float GetMaxShipFlameSizeAdjustment() const { return Render::RenderContext::MaxShipFlameSizeAdjustment; }
+    float GetShipFlameSizeAdjustment() const override { return mRenderContext->GetShipFlameSizeAdjustment(); }
+    void SetShipFlameSizeAdjustment(float value) override { mRenderContext->SetShipFlameSizeAdjustment(value); }
+    float GetMinShipFlameSizeAdjustment() const override { return Render::RenderContext::MinShipFlameSizeAdjustment; }
+    float GetMaxShipFlameSizeAdjustment() const override { return Render::RenderContext::MaxShipFlameSizeAdjustment; }
 
     //
     // Interaction parameters
     //
 
-    bool GetShowTsunamiNotifications() const { return mShowTsunamiNotifications; }
-    void SetShowTsunamiNotifications(bool value) { mShowTsunamiNotifications = value; }
+    bool GetShowTsunamiNotifications() const override { return mShowTsunamiNotifications; }
+    void SetShowTsunamiNotifications(bool value) override { mShowTsunamiNotifications = value; }
 
 private:
 
@@ -462,120 +426,7 @@ private:
         std::unique_ptr<GameEventDispatcher> gameEventDispatcher,
         std::unique_ptr<StatusText> statusText,
         MaterialDatabase materialDatabase,
-        std::shared_ptr<ResourceLoader> resourceLoader)
-        : mGameParameters()
-        , mLastShipLoadedFilepath()
-        , mIsPaused(false)
-        , mIsMoveToolEngaged(false)
-        , mTsunamiNotificationStateMachine()
-        // Parameters that we own
-        , mShowTsunamiNotifications(true)
-        // Doers
-        , mRenderContext(std::move(renderContext))
-        , mSwapRenderBuffersFunction(std::move(swapRenderBuffersFunction))
-        , mGameEventDispatcher(std::move(gameEventDispatcher))
-        , mResourceLoader(std::move(resourceLoader))
-        , mStatusText(std::move(statusText))
-        , mWorld(new Physics::World(
-            mGameEventDispatcher,
-            mGameParameters,
-            *mResourceLoader))
-        , mMaterialDatabase(std::move(materialDatabase))
-         // Smoothing
-        , mCurrentZoom(mRenderContext->GetZoom())
-        , mTargetZoom(mCurrentZoom)
-        , mStartingZoom(mCurrentZoom)
-        , mStartZoomTimestamp()
-        , mCurrentCameraPosition(mRenderContext->GetCameraWorldPosition())
-        , mTargetCameraPosition(mCurrentCameraPosition)
-        , mStartingCameraPosition(mCurrentCameraPosition)
-        , mStartCameraPositionTimestamp()
-        , mParameterSmoothers()
-        // Stats
-        , mTotalFrameCount(0u)
-        , mLastFrameCount(0u)
-        , mRenderStatsOriginTimestampReal(std::chrono::steady_clock::time_point::min())
-        , mRenderStatsLastTimestampReal(std::chrono::steady_clock::time_point::min())
-        , mTotalUpdateDuration(std::chrono::steady_clock::duration::zero())
-        , mLastTotalUpdateDuration(std::chrono::steady_clock::duration::zero())
-        , mTotalRenderDuration(std::chrono::steady_clock::duration::zero())
-        , mLastTotalRenderDuration(std::chrono::steady_clock::duration::zero())
-        , mOriginTimestampGame(GameWallClock::time_point::min())
-        , mSkippedFirstStatPublishes(0)
-    {
-        RegisterEventHandler();
-
-        //
-        // Initialize parameter smoothers
-        //
-
-        std::chrono::milliseconds constexpr ParameterSmoothingTrajectoryTime = std::chrono::milliseconds(1000);
-
-        assert(mParameterSmoothers.size() == SpringStiffnessAdjustmentParameterSmoother);
-        mParameterSmoothers.emplace_back(
-            [this]()
-            {
-                return this->mGameParameters.SpringStiffnessAdjustment;
-            },
-            [this](float value)
-            {
-                this->mGameParameters.SpringStiffnessAdjustment = value;
-            },
-            ParameterSmoothingTrajectoryTime);
-
-        assert(mParameterSmoothers.size() == SpringStrengthAdjustmentParameterSmoother);
-        mParameterSmoothers.emplace_back(
-            [this]()
-            {
-                return this->mGameParameters.SpringStrengthAdjustment;
-            },
-            [this](float value)
-            {
-                this->mGameParameters.SpringStrengthAdjustment = value;
-            },
-            ParameterSmoothingTrajectoryTime);
-
-        assert(mParameterSmoothers.size() == SeaDepthParameterSmoother);
-        mParameterSmoothers.emplace_back(
-            [this]()
-            {
-                return this->mGameParameters.SeaDepth;
-            },
-            [this](float value)
-            {
-                this->mGameParameters.SeaDepth = value;
-            },
-            ParameterSmoothingTrajectoryTime);
-
-        assert(mParameterSmoothers.size() == OceanFloorBumpinessParameterSmoother);
-        mParameterSmoothers.emplace_back(
-            [this]()
-            {
-                return this->mGameParameters.OceanFloorBumpiness;
-            },
-            [this](float value)
-            {
-                this->mGameParameters.OceanFloorBumpiness = value;
-            },
-            ParameterSmoothingTrajectoryTime);
-
-        assert(mParameterSmoothers.size() == OceanFloorDetailAmplificationParameterSmoother);
-        mParameterSmoothers.emplace_back(
-            [this]()
-            {
-                return this->mGameParameters.OceanFloorDetailAmplification;
-            },
-            [this](float value)
-            {
-                this->mGameParameters.OceanFloorDetailAmplification = value;
-            },
-            ParameterSmoothingTrajectoryTime);
-    }
-
-    void RegisterEventHandler()
-    {
-        mGameEventDispatcher->RegisterWavePhenomenaEventHandler(this);
-    }
+        std::shared_ptr<ResourceLoader> resourceLoader);
 
     virtual void OnTsunami(float x) override;
 
@@ -608,6 +459,9 @@ private:
     std::filesystem::path mLastShipLoadedFilepath;
     bool mIsPaused;
     bool mIsMoveToolEngaged;
+
+    // When set, will be uploaded to the RenderContext to display the flame thrower
+    std::optional<std::tuple<vec2f, float>> mFlameThrowerToRender;
 
     class TsunamiNotificationStateMachine
     {

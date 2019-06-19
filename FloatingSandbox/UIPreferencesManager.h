@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include <Game/GameController.h>
+#include <Game/IGameController.h>
 
 #include <GameCore/Version.h>
 
@@ -24,7 +24,7 @@ class UIPreferencesManager
 {
 public:
 
-    UIPreferencesManager(std::shared_ptr<GameController> gameController);
+    UIPreferencesManager(std::shared_ptr<IGameController> gameController);
 
     ~UIPreferencesManager();
 
@@ -153,7 +153,7 @@ private:
     std::filesystem::path const mDefaultShipLoadDirectory;
 
     // The owners/storage of our properties
-    std::shared_ptr<GameController> mGameController;
+    std::shared_ptr<IGameController> mGameController;
 
     //
     // The preferences for which we are the owners/storage

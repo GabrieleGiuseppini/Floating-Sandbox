@@ -150,6 +150,7 @@ private:
     void OnMoveAllMenuItemSelected(wxCommandEvent& event);
     void OnSmashMenuItemSelected(wxCommandEvent& event);
     void OnSliceMenuItemSelected(wxCommandEvent& event);
+    void OnFlameThrowerMenuItemSelected(wxCommandEvent& event);
     void OnGrabMenuItemSelected(wxCommandEvent& event);
     void OnSwirlMenuItemSelected(wxCommandEvent& event);
     void OnPinMenuItemSelected(wxCommandEvent& event);
@@ -188,7 +189,7 @@ private:
     // Game event handler
     //
 
-    void RegisterEventHandler(GameController & gameController)
+    void RegisterEventHandler(IGameController & gameController)
     {
         gameController.RegisterLifecycleEventHandler(this);
         gameController.RegisterGenericEventHandler(this);

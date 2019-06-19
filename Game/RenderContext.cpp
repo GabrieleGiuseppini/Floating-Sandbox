@@ -8,6 +8,7 @@
 #include <Game/ImageFileTools.h>
 
 #include <GameCore/GameException.h>
+#include <GameCore/GameWallClock.h>
 #include <GameCore/ImageTools.h>
 #include <GameCore/Log.h>
 
@@ -33,6 +34,8 @@ RenderContext::RenderContext(
     , mOceanVBO()
     , mCrossOfLightVertexBuffer()
     , mCrossOfLightVBO()
+    , mFlameThrowerVertexBuffer()
+    , mFlameThrowerVBO()
     , mWorldBorderVertexBuffer()
     , mWorldBorderVBO()
     // VAOs
@@ -41,6 +44,7 @@ RenderContext::RenderContext(
     , mLandVAO()
     , mOceanVAO()
     , mCrossOfLightVAO()
+    , mFlameThrowerVAO()
     , mWorldBorderVAO()
     // Textures
     , mCloudTextureAtlasOpenGLHandle()
@@ -219,14 +223,15 @@ RenderContext::RenderContext(
     // Initialize buffers
     //
 
-    GLuint vbos[6];
-    glGenBuffers(6, vbos);
+    GLuint vbos[7];
+    glGenBuffers(7, vbos);
     mStarVBO = vbos[0];
     mCloudVBO = vbos[1];
     mLandVBO = vbos[2];
     mOceanVBO = vbos[3];
     mCrossOfLightVBO = vbos[4];
-    mWorldBorderVBO = vbos[5];
+    mFlameThrowerVBO = vbos[5];
+    mWorldBorderVBO = vbos[6];
 
 
     //
@@ -321,6 +326,25 @@ RenderContext::RenderContext(
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::CrossOfLight1), 4, GL_FLOAT, GL_FALSE, sizeof(CrossOfLightVertex), (void*)0);
     glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::CrossOfLight2));
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::CrossOfLight2), 1, GL_FLOAT, GL_FALSE, sizeof(CrossOfLightVertex), (void*)(4 * sizeof(float)));
+    CheckOpenGLError();
+
+    glBindVertexArray(0);
+
+
+    //
+    // Initialize FlameThrower VAO
+    //
+
+    glGenVertexArrays(1, &tmpGLuint);
+    mFlameThrowerVAO = tmpGLuint;
+
+    glBindVertexArray(*mFlameThrowerVAO);
+    CheckOpenGLError();
+
+    // Describe vertex attributes
+    glBindBuffer(GL_ARRAY_BUFFER, *mFlameThrowerVBO);
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::FlameThrower));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::FlameThrower), 4, GL_FLOAT, GL_FALSE, sizeof(FlameThrowerVertex), (void*)0);
     CheckOpenGLError();
 
     glBindVertexArray(0);
@@ -682,6 +706,9 @@ void RenderContext::RenderStart()
     // Reset crosses of light, they are uploaded as needed
     mCrossOfLightVertexBuffer.clear();
 
+    // Reset flame throwers, they are uploaded as needed
+    mFlameThrowerVertexBuffer.clear();
+
     // Communicate start to child contextes
     mTextRenderContext->RenderStart();
 
@@ -963,6 +990,12 @@ void RenderContext::RenderEnd()
         RenderCrossesOfLight();
     }
 
+    // Render flame thrower
+    if (!mFlameThrowerVertexBuffer.empty())
+    {
+        RenderFlameThrower();
+    }
+
     // Render world end
     RenderWorldBorder();
 
@@ -1000,6 +1033,39 @@ void RenderContext::RenderCrossesOfLight()
 
     assert((mCrossOfLightVertexBuffer.size() % 6) == 0);
     glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mCrossOfLightVertexBuffer.size()));
+
+    glBindVertexArray(0);
+}
+
+void RenderContext::RenderFlameThrower()
+{
+    //
+    // Upload buffer
+    //
+
+    glBindBuffer(GL_ARRAY_BUFFER, *mFlameThrowerVBO);
+    glBufferData(GL_ARRAY_BUFFER,
+        sizeof(FlameThrowerVertex) * mFlameThrowerVertexBuffer.size(),
+        mFlameThrowerVertexBuffer.data(),
+        GL_DYNAMIC_DRAW);
+    CheckOpenGLError();
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+
+    //
+    // Render
+    //
+
+    glBindVertexArray(*mFlameThrowerVAO);
+
+    mShaderManager->ActivateProgram<ProgramType::FlameThrower>();
+
+    // Set time parameter
+    mShaderManager->SetProgramParameter<ProgramType::FlameThrower, ProgramParameterType::Time>(
+        GameWallClock::GetInstance().NowAsFloat());
+
+    assert((mFlameThrowerVertexBuffer.size() % 6) == 0);
+    glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mFlameThrowerVertexBuffer.size()));
 
     glBindVertexArray(0);
 }
@@ -1059,6 +1125,10 @@ void RenderContext::OnViewModelUpdated()
 
     mShaderManager->ActivateProgram<ProgramType::CrossOfLight>();
     mShaderManager->SetProgramParameter<ProgramType::CrossOfLight, ProgramParameterType::OrthoMatrix>(
+        globalOrthoMatrix);
+
+    mShaderManager->ActivateProgram<ProgramType::FlameThrower>();
+    mShaderManager->SetProgramParameter<ProgramType::FlameThrower, ProgramParameterType::OrthoMatrix>(
         globalOrthoMatrix);
 
     mShaderManager->ActivateProgram<ProgramType::WorldBorder>();

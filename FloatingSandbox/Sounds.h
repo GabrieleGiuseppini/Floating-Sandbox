@@ -34,6 +34,7 @@ enum class SoundType
     Draw,
     Saw,
     Sawed,
+    FlameThrower,
     Swirl,
     PinPoint,
     UnpinPoint,
