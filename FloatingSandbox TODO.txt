@@ -1003,8 +1003,8 @@ Render:
 		- TODO: from Moleskine
 		- TODO: HeatPropagation (and others?) may run sparingly
 
-		- Impl:
-			- Render:
+		= Impl:
+			+ Render:
 				+ Make better transition for bottom
 				+ Skew wind speed with smoothstep
 					+ And reverse wind direction
@@ -1017,7 +1017,7 @@ Render:
 				+ Reduce local coherency of noise
 					+ Add FlamePersonalitySeed shader param, straight from ship into vertex buffer
 				+ Make same colors as flamethrower
-				- Adjust bottom
+				+ Adjust bottom
 
 		- Cleanup:
 			+ Test generic textures change (gen tex's + air bubbles at same time) and nuke comment

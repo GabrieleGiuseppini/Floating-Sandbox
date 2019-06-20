@@ -126,7 +126,7 @@ void main()
     // Taper flame depending on randomized height
     float variationH = fragmentNoise * 1.5;
     thickness *= smoothstep(1.3, variationH * 0.5, flameSpacePosition.y); // Taper up
-    thickness *= smoothstep(-0.1, 0.15, flameSpacePosition.y); // Taper down    
+    thickness *= smoothstep(-0.15, 0.15, flameSpacePosition.y); // Taper down    
     
     // Focus (less halo, larger body)
     #define FlameFocus 5.0

@@ -254,11 +254,23 @@ public:
         vec2f const & baseCenterPosition,
         float flamePersonalitySeed)
     {
+        //
         // Calculate flame quad
+        //
+
+        // Y offset to focus bottom of flame at specified position
+        float constexpr YOffset = -0.25f;
+
+        // Calculate quad coordinates
         float const leftX = baseCenterPosition.x - mHalfFlameQuadWidth;
         float const rightX = baseCenterPosition.x + mHalfFlameQuadWidth;
-        float const topY = baseCenterPosition.y + mFlameQuadHeight;
-        float const bottomY = baseCenterPosition.y;
+        float const topY = baseCenterPosition.y + mFlameQuadHeight + YOffset;
+        float const bottomY = baseCenterPosition.y + YOffset;
+
+
+        //
+        // Store quad vertices
+        //
 
         // Triangle 1
 
@@ -654,7 +666,7 @@ private:
 
     GameOpenGLMappedBuffer<FlameVertex, GL_ARRAY_BUFFER> mFlameVertexBuffer;
     GameOpenGLVBO mFlameVertexVBO;
-    RunningAverage<10> mWindSpeedMagnitudeRunningAverage;
+    RunningAverage<18> mWindSpeedMagnitudeRunningAverage;
     float mCurrentWindSpeedMagnitudeAverage;
 
     GameOpenGLMappedBuffer<GenericTextureVertex, GL_ARRAY_BUFFER> mAirBubbleVertexBuffer;
