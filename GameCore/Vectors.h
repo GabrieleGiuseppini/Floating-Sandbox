@@ -175,6 +175,10 @@ public:
         return (*this) * this->length();
     }
 
+    /*
+     * Returns the angle between other and this; angle is positive when other
+     * is CW wrt this (up to PI), and then becomes -PI at 180 degrees and decreases towards -0.
+     */
     inline float angle(vec2f const & other) const
     {
         return -atan2f(
