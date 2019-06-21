@@ -187,7 +187,7 @@ private:
                 }
             }
 
-            return ImageData(
+            return ImageData<TColor>(
                 ImageSize(newWidth, newHeight),
                 std::move(imageData.Data));
         }
