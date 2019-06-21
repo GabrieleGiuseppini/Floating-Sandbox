@@ -1380,32 +1380,6 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     CellBorder);
             }
 
-            // Repair Strength Adjustment
-            {
-                mRepairStrengthAdjustmentSlider = new SliderControl(
-                    toolsBox,
-                    SliderWidth,
-                    SliderHeight,
-                    "Repair Strength Adjust",
-                    "Adjusts the strength with which the repair tool attracts the particles needed to repair damage.",
-                    mGameController->GetRepairStrengthAdjustment(),
-                    [this](float /*value*/)
-                    {
-                        // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
-                    },
-                    std::make_unique<LinearSliderCore>(
-                        mGameController->GetMinRepairStrengthAdjustment(),
-                        mGameController->GetMaxRepairStrengthAdjustment()));
-
-                toolsSizer->Add(
-                    mRepairStrengthAdjustmentSlider,
-                    wxGBPosition(0, 3),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxALL,
-                    CellBorder);
-            }
-
             // Flood Radius
             {
                 mFloodRadiusSlider = new SliderControl(
@@ -1458,6 +1432,58 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     CellBorder);
             }
 
+            // Repair Radius
+            {
+                mRepairRadiusSlider = new SliderControl(
+                    toolsBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Repair Radius",
+                    "Adjusts the radius of the repair tool (m).",
+                    mGameController->GetRepairRadius(),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameController->GetMinRepairRadius(),
+                        mGameController->GetMaxRepairRadius()));
+
+                toolsSizer->Add(
+                    mRepairRadiusSlider,
+                    wxGBPosition(1, 2),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            // Repair Strength Adjustment
+            {
+                mRepairStrengthAdjustmentSlider = new SliderControl(
+                    toolsBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Repair Strength Adjust",
+                    "Adjusts the strength with which the repair tool attracts the particles needed to repair damage.",
+                    mGameController->GetRepairStrengthAdjustment(),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameController->GetMinRepairStrengthAdjustment(),
+                        mGameController->GetMaxRepairStrengthAdjustment()));
+
+                toolsSizer->Add(
+                    mRepairStrengthAdjustmentSlider,
+                    wxGBPosition(1, 3),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
             // Checkboxes
             {
                 wxBoxSizer* checkboxesSizer = new wxBoxSizer(wxVERTICAL);
@@ -1474,7 +1500,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 
                 toolsSizer->Add(
                     checkboxesSizer,
-                    wxGBPosition(1, 2),
+                    wxGBPosition(2, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
@@ -2385,6 +2411,8 @@ void SettingsDialog::ReadSettings()
 
     mFloodQuantitySlider->SetValue(mGameController->GetFloodQuantity());
 
+    mRepairRadiusSlider->SetValue(mGameController->GetRepairRadius());
+
     mRepairStrengthAdjustmentSlider->SetValue(mGameController->GetRepairStrengthAdjustment());
 
     mUltraViolentCheckBox->SetValue(mGameController->GetUltraViolentMode());
@@ -2714,6 +2742,9 @@ void SettingsDialog::ApplySettings()
 
     mGameController->SetFloodQuantity(
         mFloodQuantitySlider->GetValue());
+
+    mGameController->SetRepairRadius(
+        mRepairRadiusSlider->GetValue());
 
     mGameController->SetRepairStrengthAdjustment(
         mRepairStrengthAdjustmentSlider->GetValue());

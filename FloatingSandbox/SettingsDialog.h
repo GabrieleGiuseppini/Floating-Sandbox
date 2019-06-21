@@ -119,6 +119,7 @@ private:
     SliderControl * mAntiMatterBombImplosionStrengthSlider;
     SliderControl * mFloodRadiusSlider;
     SliderControl * mFloodQuantitySlider;
+    SliderControl * mRepairRadiusSlider;
     SliderControl * mRepairStrengthAdjustmentSlider;
     wxCheckBox * mUltraViolentCheckBox;
     wxCheckBox * mGenerateDebrisCheckBox;

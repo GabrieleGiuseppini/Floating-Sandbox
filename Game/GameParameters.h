@@ -252,6 +252,8 @@ struct GameParameters
     static float constexpr MaxDestroyRadius = 100.0f;
 
     float RepairRadius;
+    static float constexpr MinRepairRadius = 0.1f;
+    static float constexpr MaxRepairRadius = 10.0f;
 
     float RepairStrengthAdjustment;
     static float constexpr MinRepairStrengthAdjustment = 0.1f;

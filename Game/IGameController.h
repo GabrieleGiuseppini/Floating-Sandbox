@@ -216,6 +216,11 @@ struct IGameController
     virtual float GetMinDestroyRadius() const = 0;
     virtual float GetMaxDestroyRadius() const = 0;
 
+    virtual float GetRepairRadius() const = 0;
+    virtual void SetRepairRadius(float value) = 0;
+    virtual float GetMinRepairRadius() const = 0;
+    virtual float GetMaxRepairRadius() const = 0;
+
     virtual float GetRepairStrengthAdjustment() const = 0;
     virtual void SetRepairStrengthAdjustment(float value) = 0;
     virtual float GetMinRepairStrengthAdjustment() const = 0;
