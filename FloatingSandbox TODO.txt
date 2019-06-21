@@ -384,11 +384,12 @@ Render:
 			+ Radius = 2.0
 			+ Alpha = 0.0025f
 			+ Find multiplier (play w/strength slider for the time being, make high max (for now))
-			- Commit
+			+ Commit
 			- See if can use the duration of the role
 				- Then See if can put radius back to something higher, and alpha as well
 
-			- Cleanup logs and code for Correct/Wrong counts
+			+ Cleanup logs and code for Correct/Wrong counts
+			- Cleanup TODOs
 
 		- Check bug:
 			- idk if this is a bug or not but the tiny particles that appear after something is destroyed start flickering like christmas lights with rot at 1000 when uderwater
