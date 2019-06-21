@@ -266,7 +266,9 @@ void Ship::RepairAt(
 
     // Rate at which the "other" endpoint of a spring accelerates towards the velocity
     // required for repairing
-    float constexpr SmoothingAlpha = 0.03f;
+    // TODOTEST
+    //float constexpr SmoothingAlpha = 0.03f;
+    float constexpr SmoothingAlpha = 0.001f;
 
     // Tolerance to distance
     //
@@ -338,6 +340,105 @@ void Ship::RepairAt(
                 }
 
                 mPoints.GetRepairState(pointIndex).SmoothingSessionStepId = sessionStepId;
+            }
+
+
+
+            //
+            // TODO) EXPERIMENTAL: Detect springs in wrong positions
+            //
+
+            if (mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() >= 3)
+            {
+                //
+                // Count number of springs in correct and wrong positions
+                //
+
+                int nWrongCount = 0;
+                int nCorrectCount = 0;
+
+                for (size_t s = 0; s < mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size(); ++s)
+                {
+                    ElementIndex const sIndex = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings[s].SpringIndex;
+
+                    // Ignore standalone springs
+                    if (mPoints.GetConnectedSprings(mSprings.GetOtherEndpointIndex(sIndex, pointIndex)).ConnectedSprings.size() < 2)
+                        continue;
+
+                    int const sFactoryOctant = mSprings.GetFactoryEndpointOctant(sIndex, pointIndex);
+
+                    // Find the next spring in world CW order
+                    ElementIndex sNextSpringIndexWorld = std::numeric_limits<ElementIndex>::max();
+                    float sMinAngle = std::numeric_limits<float>::max();
+                    for (size_t s2 = 0; s2 < mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size(); ++s2)
+                    {
+                        if (s2 == s)
+                            continue;
+
+                        ElementIndex const s2Index = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings[s2].SpringIndex;
+
+                        // Ignore standalone springs
+                        if (mPoints.GetConnectedSprings(mSprings.GetOtherEndpointIndex(s2Index, pointIndex)).ConnectedSprings.size() < 2)
+                            continue;
+
+                        float angle =
+                            (mPoints.GetPosition(mSprings.GetOtherEndpointIndex(sIndex, pointIndex)) - mPoints.GetPosition(pointIndex))
+                            .angle(mPoints.GetPosition(mSprings.GetOtherEndpointIndex(s2Index, pointIndex)) - mPoints.GetPosition(pointIndex));
+
+                        if (angle < 0.0f)
+                            angle += 2.0f * Pi<float>;
+
+                        if (angle < sMinAngle)
+                        {
+                            sNextSpringIndexWorld = s2Index;
+                            sMinAngle = angle;
+                        }
+                    }
+
+                    if (sNextSpringIndexWorld == std::numeric_limits<ElementIndex>::max())
+                        continue;
+
+                    // Find the next spring in factory octant CW order
+                    ElementIndex sNextSpringIndexFactoryOctant = std::numeric_limits<ElementIndex>::max();
+                    int sMinOctantDelta = std::numeric_limits<int>::max();
+                    for (size_t s2 = 0; s2 < mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size(); ++s2)
+                    {
+                        if (s2 == s)
+                            continue;
+
+                        ElementIndex const s2Index = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings[s2].SpringIndex;
+
+                        // Ignore standalone springs
+                        if (mPoints.GetConnectedSprings(mSprings.GetOtherEndpointIndex(s2Index, pointIndex)).ConnectedSprings.size() < 2)
+                            continue;
+
+                        int cwDelta =
+                            mSprings.GetFactoryEndpointOctant(s2Index, pointIndex)
+                            - sFactoryOctant;
+
+                        if (cwDelta < 0)
+                            cwDelta += 8;
+
+                        if (cwDelta < sMinOctantDelta)
+                        {
+                            sNextSpringIndexFactoryOctant = s2Index;
+                            sMinOctantDelta = cwDelta;
+                        }
+                    }
+
+                    assert(sNextSpringIndexFactoryOctant != std::numeric_limits<ElementIndex>::max());
+
+                    // Calculate right/wrong counts
+                    if (sNextSpringIndexWorld == sNextSpringIndexFactoryOctant)
+                        ++nCorrectCount;
+                    else
+                        ++nWrongCount;
+                }
+
+                if (nWrongCount != 0)
+                {
+                    LogMessage("Point: ", pointIndex, " C=", nCorrectCount, " W=", nWrongCount);
+                }
             }
 
 
@@ -490,6 +591,11 @@ void Ship::RepairAt(
                                 mSprings.GetRestLength(fcs.SpringIndex),
                                 targetWorldAngle);
 
+                        // TODOTEST
+                        ////LogMessage(pointIndex, "(@", mPoints.GetPosition(pointIndex).toString(), ") attracts ",
+                        ////    otherEndpointIndex, "(@", mPoints.GetPosition(otherEndpointIndex), ") towards ",
+                        ////    targetOtherEndpointPosition.toString());
+
 
                         //
                         // Check progress of other endpoint towards the target position
@@ -518,7 +624,9 @@ void Ship::RepairAt(
                             // A higher value destroys the other point's (which might be already repaired) springs too quickly;
                             // a lower value makes the other point follow a moving point forever
                             float constexpr MovementFraction =
-                                4.0f // We want a point to cover the whole distance in 1/4th of a simulated second
+                                // TODOTEST
+                                //4.0f // We want a point to cover the whole distance in 1/4th of a simulated second
+                                64.0f
                                 * GameParameters::SimulationStepTimeDuration<float>;
 
                             // Movement direction (positive towards this point)
@@ -536,8 +644,8 @@ void Ship::RepairAt(
                             // though, as you end up, for example, with points chasing a part of a ship
                             // that's moving away!
                             float const movementMagnitude =
-                                pow(displacementMagnitude, gameParameters.RepairStrengthAdjustment)
-                                * MovementFraction
+                                displacementMagnitude
+                                * (MovementFraction * gameParameters.RepairStrengthAdjustment)
                                 * toolStrength
                                 * (mSprings.IsRope(fcs.SpringIndex) ? 0.75f : 1.0f) // Ropes are crazy, hence need more kindness
                                 * mPoints.GetRepairState(pointIndex).Smoothing;
