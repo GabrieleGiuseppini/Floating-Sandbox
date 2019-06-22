@@ -382,7 +382,7 @@ void Ship::RepairAt(
                         // the two non-deleted springs immediately CW and CCW of this spring
                         //
 
-                        float targetWorldAngle; // In world coordinates, positive when CCW, 0 at E
+                        float targetWorldAngleCw; // In world coordinates, CW, 0 at E
 
                         // The angle of the spring wrt this point
                         // 0 = E, 1 = SE, ..., 7 = NE
@@ -390,98 +390,97 @@ void Ship::RepairAt(
                             fcs.SpringIndex,
                             pointIndex);
 
-                        size_t const connectedSpringsCount = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size();
-                        if (connectedSpringsCount == 0)
-                        {
-                            // No springs exist yet for this point...
-                            // ...arbitrarily, use its factory octant as if it were a world angle
-                            targetWorldAngle = Pi<float> / 4.0f * static_cast<float>(8.0f - factoryPointSpringOctant);
-                        }
-                        else
-                        {
-                            // One or more springs...
 
+                        //
+                        // 1. Find nearest CW spring and nearest CCW spring
+                        // (which might and up being the same spring in case there's only one spring)
+                        //
+
+                        int nearestCWSpringIndex = -1;
+                        int nearestCWSpringDeltaOctant = std::numeric_limits<int>::max();
+                        int nearestCCWSpringIndex = -1;
+                        int nearestCCWSpringDeltaOctant = std::numeric_limits<int>::max();
+                        for (auto const & cs : mPoints.GetConnectedSprings(pointIndex).ConnectedSprings)
+                        {
                             //
-                            // 1. Find nearest CW spring and nearest CCW spring
-                            // (which might and up being the same spring in case there's only one spring)
+                            // CW
                             //
 
-                            int nearestCWSpringIndex = -1;
-                            int nearestCWSpringDeltaOctant = std::numeric_limits<int>::max();
-                            int nearestCCWSpringIndex = -1;
-                            int nearestCCWSpringDeltaOctant = std::numeric_limits<int>::max();
-                            for (auto const & cs : mPoints.GetConnectedSprings(pointIndex).ConnectedSprings)
+                            int cwDelta =
+                                mSprings.GetFactoryEndpointOctant(cs.SpringIndex, pointIndex)
+                                - factoryPointSpringOctant;
+
+                            if (cwDelta < 0)
+                                cwDelta += 8;
+
+                            if (cwDelta < nearestCWSpringDeltaOctant)
                             {
-                                //
-                                // CW
-                                //
-
-                                int cwDelta =
-                                    mSprings.GetFactoryEndpointOctant(cs.SpringIndex, pointIndex)
-                                    - factoryPointSpringOctant;
-
-                                if (cwDelta < 0)
-                                    cwDelta += 8;
-
-                                if (cwDelta < nearestCWSpringDeltaOctant)
-                                {
-                                    nearestCWSpringIndex = cs.SpringIndex;
-                                    nearestCWSpringDeltaOctant = cwDelta;
-                                }
-
-                                //
-                                // CCW
-                                //
-
-                                assert(cwDelta > 0 && cwDelta < 8);
-                                int ccwDelta = 8 - cwDelta;
-                                assert(ccwDelta > 0);
-
-                                if (ccwDelta < nearestCCWSpringDeltaOctant)
-                                {
-                                    nearestCCWSpringIndex = cs.SpringIndex;
-                                    nearestCCWSpringDeltaOctant = ccwDelta;
-                                }
+                                nearestCWSpringIndex = cs.SpringIndex;
+                                nearestCWSpringDeltaOctant = cwDelta;
                             }
 
-                            assert(nearestCWSpringIndex >= 0);
-                            assert(nearestCWSpringDeltaOctant > 0);
-                            assert(nearestCCWSpringIndex >= 0);
-                            assert(nearestCCWSpringDeltaOctant > 0);
-
                             //
-                            // 2. Calculate this spring's world angle by
-                            // interpolating among these two springs
+                            // CCW
                             //
 
-                            ElementIndex const ccwSpringOtherEndpointIndex =
-                                mSprings.GetOtherEndpointIndex(nearestCCWSpringIndex, pointIndex);
+                            assert(cwDelta > 0 && cwDelta < 8);
+                            int ccwDelta = 8 - cwDelta;
+                            assert(ccwDelta > 0);
 
-                            ElementIndex const cwSpringOtherEndpointIndex =
-                                mSprings.GetOtherEndpointIndex(nearestCWSpringIndex, pointIndex);
-
-                            // Angle between this two springs
-                            float neighborsAngle =
-                                (ccwSpringOtherEndpointIndex == cwSpringOtherEndpointIndex)
-                                ? 2.0f * Pi<float>
-                                : (mPoints.GetPosition(ccwSpringOtherEndpointIndex) - mPoints.GetPosition(pointIndex))
-                                .angle(mPoints.GetPosition(cwSpringOtherEndpointIndex) - mPoints.GetPosition(pointIndex));
-
-                            if (neighborsAngle < 0.0f)
-                                neighborsAngle += 2.0f * Pi<float>;
-
-                            // Interpolated angle from CW spring
-                            float const interpolatedAngleFromCWSpring =
-                                neighborsAngle
-                                / static_cast<float>(nearestCWSpringDeltaOctant + nearestCCWSpringDeltaOctant)
-                                * static_cast<float>(nearestCWSpringDeltaOctant);
-
-                            // And finally, the target world angle (world angle is 0 at E)
-                            targetWorldAngle =
-                                (mPoints.GetPosition(cwSpringOtherEndpointIndex) - mPoints.GetPosition(pointIndex)).angle(vec2f(1.0f, 0.0f))
-                                + interpolatedAngleFromCWSpring;
+                            if (ccwDelta < nearestCCWSpringDeltaOctant)
+                            {
+                                nearestCCWSpringIndex = cs.SpringIndex;
+                                nearestCCWSpringDeltaOctant = ccwDelta;
+                            }
                         }
 
+                        assert(nearestCWSpringIndex >= 0);
+                        assert(nearestCWSpringDeltaOctant > 0);
+                        assert(nearestCCWSpringIndex >= 0);
+                        assert(nearestCCWSpringDeltaOctant > 0);
+
+                        //
+                        // 2. Calculate this spring's world angle by
+                        // interpolating among these two springs
+                        //
+
+                        ElementIndex const ccwSpringOtherEndpointIndex =
+                            mSprings.GetOtherEndpointIndex(nearestCCWSpringIndex, pointIndex);
+
+                        ElementIndex const cwSpringOtherEndpointIndex =
+                            mSprings.GetOtherEndpointIndex(nearestCWSpringIndex, pointIndex);
+
+                        // Angle between this two springs (internal angle)
+                        float neighborsAngleCw =
+                            (ccwSpringOtherEndpointIndex == cwSpringOtherEndpointIndex)
+                            ? 2.0f * Pi<float>
+                            : (mPoints.GetPosition(ccwSpringOtherEndpointIndex) - mPoints.GetPosition(pointIndex))
+                            .angleCw(mPoints.GetPosition(cwSpringOtherEndpointIndex) - mPoints.GetPosition(pointIndex));
+
+                        if (neighborsAngleCw < 0.0f)
+                            neighborsAngleCw += 2.0f * Pi<float>;
+
+                        // Interpolated angle - offset from CCW spring
+                        float const interpolatedAngleCwFromCCWSpring =
+                            neighborsAngleCw
+                            / static_cast<float>(nearestCWSpringDeltaOctant + nearestCCWSpringDeltaOctant) // Span between two springs, in octants
+                            * static_cast<float>(nearestCCWSpringDeltaOctant);
+
+                        // And finally, the target world angle (world angle is 0 at E), by adding
+                        // interpolated CCW spring angle offset to world angle of CCW spring
+                        float const nearestCCWSpringWorldAngle = vec2f(1.0f, 0.0f).angleCw(mPoints.GetPosition(ccwSpringOtherEndpointIndex) - mPoints.GetPosition(pointIndex));
+                        targetWorldAngleCw =
+                            nearestCCWSpringWorldAngle
+                            + interpolatedAngleCwFromCCWSpring;
+
+                        LogMessage("TODO: ",
+                            "@", pointIndex, " CCWP=", ccwSpringOtherEndpointIndex, " CWP=", cwSpringOtherEndpointIndex,
+                            " neighAngle=", neighborsAngleCw, " span=", (nearestCWSpringDeltaOctant + nearestCCWSpringDeltaOctant),
+                            " nearestCCWDelta=", nearestCCWSpringDeltaOctant,
+                            " nearestCWDelta=", nearestCWSpringDeltaOctant,
+                            " inter=", interpolatedAngleCwFromCCWSpring,
+                            " ccwWorld=", nearestCCWSpringWorldAngle,
+                            " world=", targetWorldAngleCw);
 
                         //
                         // Calculate target position for the other endpoint
@@ -491,7 +490,13 @@ void Ship::RepairAt(
                             mPoints.GetPosition(pointIndex)
                             + vec2f::fromPolar(
                                 mSprings.GetRestLength(fcs.SpringIndex),
-                                targetWorldAngle);
+                                targetWorldAngleCw);
+
+                        LogMessage("TODO: ",
+                            "@", pointIndex, "----", otherEndpointIndex, ":",
+                            " Pos=", mPoints.GetPosition(pointIndex), " + ",
+                            vec2f::fromPolar(mSprings.GetRestLength(fcs.SpringIndex), targetWorldAngleCw).toString(),
+                            " = ", targetOtherEndpointPosition.toString());
 
 
                         //

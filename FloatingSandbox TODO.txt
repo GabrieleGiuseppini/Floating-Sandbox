@@ -386,7 +386,9 @@ Render:
 			+ Find multiplier (play w/strength slider for the time being, make high max (for now))
 			+ Commit
 			- See if can use the duration of the role
-				- Then See if can put radius back to something higher, and alpha as well
+				- A point shouldn't take the role of attracted if it was attractor in the immediately-previous step
+				- A point shouldn't take the role of attractor if it was attracted in the immediately-previous step
+				- Then see if can put radius back to something higher, and alpha as well
 
 			+ Cleanup logs and code for Correct/Wrong counts
 			- Cleanup TODOs

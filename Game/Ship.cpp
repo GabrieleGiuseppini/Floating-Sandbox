@@ -1992,10 +1992,10 @@ void Ship::GenerateSparkles(
         //
 
         vec2f const perpendicularCutVector = (cutDirectionEndPos - cutDirectionStartPos).normalise().to_perpendicular();
-        float const axisAngle = perpendicularCutVector.angle(vec2f(1.0f, 0.0f));
+        float const axisAngleCw = perpendicularCutVector.angleCw(vec2f(1.0f, 0.0f));
         float constexpr AxisAngleWidth = Pi<float> / 7.0f;
-        float const startAngle = axisAngle - AxisAngleWidth;
-        float const endAngle = axisAngle + AxisAngleWidth;
+        float const startAngleCw = axisAngleCw - AxisAngleWidth;
+        float const endAngleCw = axisAngleCw + AxisAngleWidth;
 
 
         //
@@ -2009,8 +2009,8 @@ void Ship::GenerateSparkles(
                 GameParameters::MinSparkleParticlesVelocity, GameParameters::MaxSparkleParticlesVelocity);
 
             // Velocity angle: butterfly perpendicular to *direction of sawing*, not spring
-            float const velocityAngle =
-                GameRandomEngine::GetInstance().GenerateRandomReal(startAngle, endAngle)
+            float const velocityAngleCw =
+                GameRandomEngine::GetInstance().GenerateRandomReal(startAngleCw, endAngleCw)
                 + (GameRandomEngine::GetInstance().Choose(2) == 0 ? Pi<float> : 0.0f);
 
             // Choose a lifetime
@@ -2022,7 +2022,7 @@ void Ship::GenerateSparkles(
             // Create sparkle
             mPoints.CreateEphemeralParticleSparkle(
                 mSprings.GetMidpointPosition(springElementIndex, mPoints),
-                vec2f::fromPolar(velocityMagnitude, velocityAngle),
+                vec2f::fromPolar(velocityMagnitude, velocityAngleCw),
                 mSprings.GetBaseStructuralMaterial(springElementIndex),
                 currentSimulationTime,
                 maxLifetime,

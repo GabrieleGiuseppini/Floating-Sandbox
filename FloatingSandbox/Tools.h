@@ -1756,7 +1756,7 @@ public:
                         auto const now = std::chrono::steady_clock::now();
 
                         if (!mPreviousScrub
-                            || abs(mPreviousScrub->angle(newScrub)) > Pi<float> / 2.0f    // Direction change
+                            || abs(mPreviousScrub->angleCw(newScrub)) > Pi<float> / 2.0f    // Direction change
                             || (now - mPreviousScrubTimestamp) > std::chrono::milliseconds(250))
                         {
                             // Play sound

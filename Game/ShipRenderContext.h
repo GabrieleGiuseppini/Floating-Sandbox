@@ -370,7 +370,7 @@ public:
             textureFrameId,
             position,
             scale,
-            rotationBase.angle(rotationOffset),
+            rotationBase.angleCw(rotationOffset),
             alpha);
     }
 
@@ -379,7 +379,7 @@ public:
         TextureFrameId const & textureFrameId,
         vec2f const & position,
         float scale,
-        float angle,
+        float angleCw,
         float alpha)
     {
         size_t const planeIndex = static_cast<size_t>(planeId);
@@ -396,7 +396,7 @@ public:
             textureFrameId,
             position,
             scale,
-            angle,
+            angleCw,
             alpha,
             vertexBuffer);
 
@@ -443,7 +443,7 @@ private:
         TextureFrameId const & textureFrameId,
         vec2f const & position,
         float scale,
-        float angle,
+        float angleCw,
         float alpha,
         TVertexBuffer & vertexBuffer)
     {
@@ -472,7 +472,7 @@ private:
             vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesTopRight.y),
             static_cast<float>(planeId),
             scale,
-            angle,
+            -angleCw,
             alpha,
             lightSensitivity);
 
@@ -483,7 +483,7 @@ private:
             frame.TextureCoordinatesTopRight,
             static_cast<float>(planeId),
             scale,
-            angle,
+            -angleCw,
             alpha,
             lightSensitivity);
 
@@ -494,7 +494,7 @@ private:
             frame.TextureCoordinatesBottomLeft,
             static_cast<float>(planeId),
             scale,
-            angle,
+            -angleCw,
             alpha,
             lightSensitivity);
 
@@ -507,7 +507,7 @@ private:
             frame.TextureCoordinatesTopRight,
             static_cast<float>(planeId),
             scale,
-            angle,
+            -angleCw,
             alpha,
             lightSensitivity);
 
@@ -518,7 +518,7 @@ private:
             frame.TextureCoordinatesBottomLeft,
             static_cast<float>(planeId),
             scale,
-            angle,
+            -angleCw,
             alpha,
             lightSensitivity);
 
@@ -529,7 +529,7 @@ private:
             vec2f(frame.TextureCoordinatesTopRight.x, frame.TextureCoordinatesBottomLeft.y),
             static_cast<float>(planeId),
             scale,
-            angle,
+            -angleCw,
             alpha,
             lightSensitivity);
     }

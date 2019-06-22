@@ -24,11 +24,11 @@ public:
 
     inline static vec2f fromPolar(
         float magnitude,
-        float angle)
+        float angle) // Angle is CW
     {
         return vec2f(
             magnitude * cos(angle),
-            magnitude * sin(angle));
+            -magnitude * sin(angle)); // Angle is CW and our positive points up
     }
 
     inline constexpr vec2f()
@@ -176,10 +176,10 @@ public:
     }
 
     /*
-     * Returns the angle between other and this; angle is positive when other
+     * Returns the CW angle between other and this; angle is positive when other
      * is CW wrt this (up to PI), and then becomes -PI at 180 degrees and decreases towards -0.
      */
-    inline float angle(vec2f const & other) const
+    inline float angleCw(vec2f const & other) const
     {
         return -atan2f(
             x * other.y - y * other.x,

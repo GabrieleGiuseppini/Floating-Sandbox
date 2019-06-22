@@ -567,7 +567,8 @@ GameWallClock::time_point OceanSurface::CalculateNextAbnormalWaveTimestamp(
     return lastTimestamp
         + std::chrono::duration_cast<GameWallClock::duration>(
             std::chrono::duration<float>(
-                GameRandomEngine::GetInstance().GenerateExponentialReal(1.0f / rateSeconds)));
+                60.0f // Grace period between tsunami waves
+                + GameRandomEngine::GetInstance().GenerateExponentialReal(1.0f / rateSeconds)));
 }
 
 /* Note: in this implementation we let go of the field advections,
