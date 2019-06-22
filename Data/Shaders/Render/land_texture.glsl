@@ -40,8 +40,9 @@ uniform float paramOceanDarkeningRate;
 
 void main()
 {
-    float increment = -exp(-textureCoord.z) * 10.0;
-    vec2 textureCoord2 = vec2(textureCoord.x, -textureCoord.y + increment);
+    // Back-sample 10.0 at top, slowly going to zero
+    float sampleIncrement = -10.0 * (2.0 - 2.0 * smoothstep(-3.0, 3.0, textureCoord.z));
+    vec2 textureCoord2 = vec2(textureCoord.x, -textureCoord.y + sampleIncrement);
 
     float darkMix = 1.0 - exp(min(0.0, textureCoord.y) * paramOceanDarkeningRate); // Darkening is based on world Y (more negative Y, more dark)
     vec4 textureColor = mix(
