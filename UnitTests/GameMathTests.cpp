@@ -133,15 +133,12 @@ TEST_P(FastExpTest, FastExpTest)
     EXPECT_TRUE(ApproxEquals(result, expectedResult, std::get<1>(GetParam())));
 }
 
-
-// TODOTEST
+// COMPARISON STICK
 #include <cmath>
-
 float FastFastLog2_1(float x)
 {
     return logb(x);
 }
-
 TEST(FastFastLog2_1, Basic)
 {
     EXPECT_EQ(FastFastLog2_1(0.1f), -4.0f);
@@ -165,4 +162,21 @@ TEST(DiscreteLog2, Basic)
     EXPECT_EQ(DiscreteLog2(1700.0f), 10.0f);
     EXPECT_EQ(DiscreteLog2(65536.0f), 16.0f);
     EXPECT_EQ(DiscreteLog2(1000000.0f), 19.0f);
+}
+
+TEST(Clamp, Basic)
+{
+    EXPECT_EQ(2.0f, Clamp(-1.0f, 2.0f, 4.0f));
+    EXPECT_EQ(4.0f, Clamp(12.0f, 2.0f, 4.0f));
+    EXPECT_EQ(3.0f, Clamp(3.0f, 2.0f, 4.0f));
+}
+
+TEST(SmoothStep, Basic)
+{
+    EXPECT_EQ(0.0f, SmoothStep(1.0f, 2.0f, 0.5f));
+    EXPECT_EQ(1.0f, SmoothStep(1.0f, 2.0f, 2.5f));
+
+    EXPECT_TRUE(ApproxEquals(SmoothStep(1.0f, 2.0f, 1.25f), 0.15f, 0.05f));
+    EXPECT_TRUE(ApproxEquals(SmoothStep(1.0f, 2.0f, 1.5f), 0.5f, 0.05f));
+    EXPECT_TRUE(ApproxEquals(SmoothStep(1.0f, 2.0f, 1.75f), 0.85f, 0.05f));
 }

@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include <cassert>
 #include <cstdint>
 #include <xmmintrin.h>
 
@@ -117,4 +118,29 @@ inline float FastPow(
     float p)
 {
     return FastPow2(p * FastLog2(x));
+}
+
+inline float Clamp(
+    float x,
+    float lLimit,
+    float rLimit)
+{
+    if (x < lLimit)
+        return lLimit;
+    else if (x < rLimit)
+        return x;
+    else
+        return rLimit;
+}
+
+inline float SmoothStep(
+    float lEdge,
+    float rEdge,
+    float x)
+{
+    assert(lEdge < rEdge);
+
+    x = Clamp((x - lEdge) / (rEdge - lEdge), 0.0f, 1.0f);
+
+    return x * x * (3.0f - 2.0f * x); // 3x^2 -2x^3, Cubic Hermite
 }
