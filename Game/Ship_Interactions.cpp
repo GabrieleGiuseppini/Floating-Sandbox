@@ -473,15 +473,6 @@ void Ship::RepairAt(
                             nearestCCWSpringWorldAngle
                             + interpolatedAngleCwFromCCWSpring;
 
-                        LogMessage("TODO: ",
-                            "@", pointIndex, " CCWP=", ccwSpringOtherEndpointIndex, " CWP=", cwSpringOtherEndpointIndex,
-                            " neighAngle=", neighborsAngleCw, " span=", (nearestCWSpringDeltaOctant + nearestCCWSpringDeltaOctant),
-                            " nearestCCWDelta=", nearestCCWSpringDeltaOctant,
-                            " nearestCWDelta=", nearestCWSpringDeltaOctant,
-                            " inter=", interpolatedAngleCwFromCCWSpring,
-                            " ccwWorld=", nearestCCWSpringWorldAngle,
-                            " world=", targetWorldAngleCw);
-
                         //
                         // Calculate target position for the other endpoint
                         //
@@ -491,12 +482,6 @@ void Ship::RepairAt(
                             + vec2f::fromPolar(
                                 mSprings.GetRestLength(fcs.SpringIndex),
                                 targetWorldAngleCw);
-
-                        LogMessage("TODO: ",
-                            "@", pointIndex, "----", otherEndpointIndex, ":",
-                            " Pos=", mPoints.GetPosition(pointIndex), " + ",
-                            vec2f::fromPolar(mSprings.GetRestLength(fcs.SpringIndex), targetWorldAngleCw).toString(),
-                            " = ", targetOtherEndpointPosition.toString());
 
 
                         //
