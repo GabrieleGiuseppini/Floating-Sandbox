@@ -221,10 +221,10 @@ struct IGameController
     virtual float GetMinRepairRadius() const = 0;
     virtual float GetMaxRepairRadius() const = 0;
 
-    virtual float GetRepairStrengthAdjustment() const = 0;
-    virtual void SetRepairStrengthAdjustment(float value) = 0;
-    virtual float GetMinRepairStrengthAdjustment() const = 0;
-    virtual float GetMaxRepairStrengthAdjustment() const = 0;
+    virtual float GetRepairSpeedAdjustment() const = 0;
+    virtual void SetRepairSpeedAdjustment(float value) = 0;
+    virtual float GetMinRepairSpeedAdjustment() const = 0;
+    virtual float GetMaxRepairSpeedAdjustment() const = 0;
 
     virtual float GetBombBlastRadius() const = 0;
     virtual void SetBombBlastRadius(float value) = 0;

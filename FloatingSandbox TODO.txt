@@ -326,13 +326,6 @@ Render:
 			+ Do pass on all ocean textures doing exactly what we did before (cornflower blending)
 			+ Redo flat and gradient ocean colors
 
-		= Wine:
-			+ Test checking for the APPLE extension for VAO's: https://developer.apple.com/opengl/OpenGL-Capabilities-Tables.pdf
-				+ "APPLE_vertex_array_object"
-			- Give SamminAter another RelWithDebInfo + pdb
-			- Other issues:
-				- No fullscreen mode
-
 		= Waves need to be further limited
 			+ Make repro: tsunami on manually-created high wave field
 			+ Tsunami and rogue wave: target H is absolute, not based on current H
@@ -342,6 +335,18 @@ Render:
 			- Other older attempts:
 			- Try first with lower sea depth and more amplification
 			- If not: TBD
+
+		+ Merge to master			 
+		+ Send to testers
+
+		+ Move tool: make sling easier
+			+ 1) Merge Move tools
+				+ Base templated class
+				+ Derived only has virtual's for GameController calls
+			+ 2) Improve
+		+ Multi-music
+		+ Sea and land shaders: use smoothstep's instead of complex stuff
+			+ float increment = -10.0 * (1.0 - smoothstep(0.0, TODO.0, textureCoord.z))
 
 		= Repair tool improvement:
 			+ RepairTool passes RepairSessionId, RepairSessionStepId
@@ -368,21 +373,6 @@ Render:
 			+ Try with smoothing done only at attractors via step ID
 			+ Ropes strength amplifier/reducer
 			+ Try to put back attractor/attractee exclusion 
-			- Get AwesomeYorkie's final feedback
-
-		+ Merge to master			 
-		+ Send to testers
-
-		+ Move tool: make sling easier
-			+ 1) Merge Move tools
-				+ Base templated class
-				+ Derived only has virtual's for GameController calls
-			+ 2) Improve
-		+ Multi-music
-		+ Sea and land shaders: use smoothstep's instead of complex stuff
-			+ float increment = -10.0 * (1.0 - smoothstep(0.0, TODO.0, textureCoord.z))
-
-		= Repair tool:
 			+ Radius = 2.0
 			+ Alpha = 0.0025f
 			+ Find multiplier (play w/strength slider for the time being, make high max (for now))
@@ -394,29 +384,31 @@ Render:
 				+ Replace whole smoothing with:
 					+ Attracted force is <MaxForce>*smoothstep(0.0f, 10*60, # of consecutive session steps as attracted)
 						+ Need to track # of consecutive steps as attracted in this session
-			- Then see if can put radius back to something higher, and alpha as well
-			- See if all sliders for repair still make sense
-
+			+ Test repair strength adjustment as "repair speed adjustment"
+				+ If ok, rename @ code & settings dialog
+			- Then see if can put radius back to something higher
+			- See if rope kindness is still granted
 			+ Cleanup logs and code for Correct/Wrong counts
-			- Cleanup TODOs
+			+ Cleanup TODOs
 
 		- Check bug:
 			- idk if this is a bug or not but the tiny particles that appear after something is destroyed start flickering like christmas lights with rot at 1000 when uderwater
 
 		- Thanos' Snap
-			- SoundController listens to "Silence" event and:
-				- Fades out sinking music
 			- Tool managed by GameController
-				- REDO: it's a circle with increasing radius
-				- World::ApplyThanosSnap(leftX, rightX)
-					- Called for slices, advancing on two fronts from mouse position at moment of application
-					- Ship::ApplyThanosSnap(leftX, rightX)
-						- Deletes springs (and triangles) (w/no noise)
-					- OceanSurface::ApplyThanosSnap(leftX, rightX)
-						- Flatten surface to ~-1.0 
-						
-			- Cursors (up and down)
-			- Snap sound
+				- Dedicated state machine (mThanosSnapStateMachine)
+					- At beginning: fire "Silence" event
+						- SoundController::OnSilence: fade out sinking music
+					- At beginning and end: call Wind::SetSilence(float between 0.0 and 1.0)
+						- Wind stores it, and uses it as any other param to recalc everything
+					- Throughout: call World::ApplyThanosSnap(centerPos, innerRadius, outerRadius)
+						- Called for slices, advancing from mouse position at moment of application
+						- Ship::ApplyThanosSnap(centerPos, innerRadius, outerRadius)
+							- Deletes springs (and triangles) (w/no noise)
+						- OceanSurface::ApplyThanosSnap(centerPos, innerRadius, outerRadius)
+							- Flattens surface that falls in crown to ~-1.0 						
+			= Cursors (up and down)
+			= Snap sound
 
 		- Heat and combustion (*)
 
@@ -583,6 +575,12 @@ Render:
 		- Sign exe
 		- Sign MSI
 			- https://stackoverflow.com/questions/17589754/wix-installer-msi-publisher-unknown/17591603		
+	= Wine:
+		+ Test checking for the APPLE extension for VAO's: https://developer.apple.com/opengl/OpenGL-Capabilities-Tables.pdf
+			+ "APPLE_vertex_array_object"
+		- Give SamminAter another RelWithDebInfo + pdb
+		- Other issues:
+			- No fullscreen mode
 
 - Simulation Optimizations:
 	

@@ -120,7 +120,7 @@ private:
     SliderControl * mFloodRadiusSlider;
     SliderControl * mFloodQuantitySlider;
     SliderControl * mRepairRadiusSlider;
-    SliderControl * mRepairStrengthAdjustmentSlider;
+    SliderControl * mRepairSpeedAdjustmentSlider;
     wxCheckBox * mUltraViolentCheckBox;
     wxCheckBox * mGenerateDebrisCheckBox;
     wxCheckBox * mGenerateSparklesCheckBox;

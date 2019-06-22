@@ -255,9 +255,9 @@ struct GameParameters
     static float constexpr MinRepairRadius = 0.1f;
     static float constexpr MaxRepairRadius = 10.0f;
 
-    float RepairStrengthAdjustment;
-    static float constexpr MinRepairStrengthAdjustment = 1.0f; // TODO: was 0.1f;
-    static float constexpr MaxRepairStrengthAdjustment = 10.0f; // TODO: was 1.0f;
+    float RepairSpeedAdjustment;
+    static float constexpr MinRepairSpeedAdjustment = 0.25f;
+    static float constexpr MaxRepairSpeedAdjustment = 10.0f;
 
     float FlameThrowerRadius;
     static float constexpr MinFlameThrowerRadius = 1.0f;

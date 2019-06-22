@@ -1458,26 +1458,26 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     CellBorder);
             }
 
-            // Repair Strength Adjustment
+            // Repair Speed Adjustment
             {
-                mRepairStrengthAdjustmentSlider = new SliderControl(
+                mRepairSpeedAdjustmentSlider = new SliderControl(
                     toolsBox,
                     SliderWidth,
                     SliderHeight,
-                    "Repair Strength Adjust",
-                    "Adjusts the strength with which the repair tool attracts the particles needed to repair damage.",
-                    mGameController->GetRepairStrengthAdjustment(),
+                    "Repair Speed Adjust",
+                    "Adjusts the speed with which the repair tool attracts particles to repair damage. Warning: at high speeds the repair tool might become destructive!",
+                    mGameController->GetRepairSpeedAdjustment(),
                     [this](float /*value*/)
                     {
                         // Remember we're dirty now
                         this->mApplyButton->Enable(true);
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameController->GetMinRepairStrengthAdjustment(),
-                        mGameController->GetMaxRepairStrengthAdjustment()));
+                        mGameController->GetMinRepairSpeedAdjustment(),
+                        mGameController->GetMaxRepairSpeedAdjustment()));
 
                 toolsSizer->Add(
-                    mRepairStrengthAdjustmentSlider,
+                    mRepairSpeedAdjustmentSlider,
                     wxGBPosition(1, 3),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -2413,7 +2413,7 @@ void SettingsDialog::ReadSettings()
 
     mRepairRadiusSlider->SetValue(mGameController->GetRepairRadius());
 
-    mRepairStrengthAdjustmentSlider->SetValue(mGameController->GetRepairStrengthAdjustment());
+    mRepairSpeedAdjustmentSlider->SetValue(mGameController->GetRepairSpeedAdjustment());
 
     mUltraViolentCheckBox->SetValue(mGameController->GetUltraViolentMode());
 
@@ -2746,8 +2746,8 @@ void SettingsDialog::ApplySettings()
     mGameController->SetRepairRadius(
         mRepairRadiusSlider->GetValue());
 
-    mGameController->SetRepairStrengthAdjustment(
-        mRepairStrengthAdjustmentSlider->GetValue());
+    mGameController->SetRepairSpeedAdjustment(
+        mRepairSpeedAdjustmentSlider->GetValue());
 
     mGameController->SetUltraViolentMode(mUltraViolentCheckBox->IsChecked());
 

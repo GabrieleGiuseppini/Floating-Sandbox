@@ -281,10 +281,10 @@ public:
     float GetMinRepairRadius() const override { return GameParameters::MinRepairRadius; }
     float GetMaxRepairRadius() const override { return GameParameters::MaxRepairRadius; }
 
-    float GetRepairStrengthAdjustment() const override { return mGameParameters.RepairStrengthAdjustment; }
-    void SetRepairStrengthAdjustment(float value) override { mGameParameters.RepairStrengthAdjustment = value; }
-    float GetMinRepairStrengthAdjustment() const override { return GameParameters::MinRepairStrengthAdjustment; }
-    float GetMaxRepairStrengthAdjustment() const override { return GameParameters::MaxRepairStrengthAdjustment; }
+    float GetRepairSpeedAdjustment() const override { return mGameParameters.RepairSpeedAdjustment; }
+    void SetRepairSpeedAdjustment(float value) override { mGameParameters.RepairSpeedAdjustment = value; }
+    float GetMinRepairSpeedAdjustment() const override { return GameParameters::MinRepairSpeedAdjustment; }
+    float GetMaxRepairSpeedAdjustment() const override { return GameParameters::MaxRepairSpeedAdjustment; }
 
     float GetBombBlastRadius() const override { return mGameParameters.BombBlastRadius; }
     void SetBombBlastRadius(float value) override { mGameParameters.BombBlastRadius = value; }

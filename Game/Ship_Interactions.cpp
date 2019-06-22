@@ -264,7 +264,9 @@ void Ship::RepairAt(
 {
     ///////////////////////////////////////////////////////
 
-    // Tolerance to distance
+    // Tolerance to distance: the minimum distance between the endpoint
+    // of a broken spring and its target position, below which we restore
+    // the spring
     //
     // Note: a higher tolerance here causes springs to...spring into life
     // already stretched or compressed, generating an undesirable force impulse
@@ -477,22 +479,11 @@ void Ship::RepairAt(
                             // ...move them closer by moving the other endpoint towards its target position
                             //
 
-                            // Fraction of the movement that we want to do in this step
-                            // (which is once per SimulationStep)
-                            //
-                            // A higher value destroys the other point's (which might be already repaired) springs too quickly;
-                            // a lower value makes the other point follow a moving point forever
-                            float constexpr MovementFraction =
-                                // TODOTEST
-                                //4.0f // We want a point to cover the whole distance in 1/4th of a simulated second
-                                64.0f
-                                * GameParameters::SimulationStepTimeDuration<float>;
-
                             // Smoothing of the movement, based on how long this point has been an attracted
                             // in the current session
                             float const smoothing = SmoothStep(
                                 0.0f,
-                                10.0 * 60.0f, // Reach max in 10 seconds (at 60 fps)
+                                10.0f * 60.0f / gameParameters.RepairSpeedAdjustment, // Reach max in 10 seconds (at 60 fps)
                                 static_cast<float>(mPoints.GetRepairState(otherEndpointIndex).CurrentAttractedNumberOfSteps));
 
                             // Movement direction (positive towards this point)
@@ -511,8 +502,6 @@ void Ship::RepairAt(
                             // that's moving away!
                             float const movementMagnitude =
                                 displacementMagnitude
-                                // TODOTEST
-                                //* (MovementFraction * gameParameters.RepairStrengthAdjustment)
                                 * smoothing
                                 * toolStrength
                                 * (mSprings.IsRope(fcs.SpringIndex) ? 0.75f : 1.0f); // Ropes are crazy, hence need more kindness
