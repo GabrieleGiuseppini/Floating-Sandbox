@@ -65,25 +65,23 @@ public:
      */
     struct RepairState
     {
-        // Each point is only allowed one role (attractor or attracted) per session step
-        RepairSessionId AttractorSessionId;
-        RepairSessionStepId AttractorSessionStepId;
-        RepairSessionId AttractedSessionId;
-        RepairSessionStepId AttractedSessionStepId;
+        // Each point is only allowed one role (attractor or attracted) per session step;
+        // these keep track of when they last had each role
+        RepairSessionId LastAttractorSessionId;
+        RepairSessionStepId LastAttractorSessionStepId;
+        RepairSessionId LastAttractedSessionId;
+        RepairSessionStepId LastAttractedSessionStepId;
 
-        // The session and session step IDs that smoothing was last applied on from an attractor
-        RepairSessionId SmoothingSessionId;
-        RepairSessionStepId SmoothingSessionStepId;
-        float Smoothing; // Grows from 0.0 to 1.0
+        // The number of consecutive steps - in this session - that this point has been
+        // acting as attracted for
+        std::uint64_t CurrentAttractedNumberOfSteps;
 
         RepairState()
-            : AttractorSessionId(0)
-            , AttractorSessionStepId(0)
-            , AttractedSessionId(0)
-            , AttractedSessionStepId(0)
-            , SmoothingSessionId(0)
-            , SmoothingSessionStepId(0)
-            , Smoothing(0.0f)
+            : LastAttractorSessionId(0)
+            , LastAttractorSessionStepId(0)
+            , LastAttractedSessionId(0)
+            , LastAttractedSessionStepId(0)
+            , CurrentAttractedNumberOfSteps(0)
         {}
     };
 

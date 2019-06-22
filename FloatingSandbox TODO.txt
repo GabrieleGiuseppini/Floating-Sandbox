@@ -390,10 +390,10 @@ Render:
 			+ See if can use the duration of the role
 				+ A point shouldn't take the role of attracted if it was attractor in the immediately-previous step
 				+ A point shouldn't take the role of attractor if it was attracted in the immediately-previous step
-			- See if may have slower startup of force
-				- Replace whole smoothing with:
-					- Attracted force is <MaxForce>*smoothstep(0.0f, 10*60, # of consecutive session steps as attracted)
-						- Need to track # of consecutive steps as attracted in this session
+			+ See if may have slower startup of force
+				+ Replace whole smoothing with:
+					+ Attracted force is <MaxForce>*smoothstep(0.0f, 10*60, # of consecutive session steps as attracted)
+						+ Need to track # of consecutive steps as attracted in this session
 			- Then see if can put radius back to something higher, and alpha as well
 			- See if all sliders for repair still make sense
 

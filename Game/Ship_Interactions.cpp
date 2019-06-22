@@ -264,12 +264,6 @@ void Ship::RepairAt(
 {
     ///////////////////////////////////////////////////////
 
-    // Rate at which the "other" endpoint of a spring accelerates towards the velocity
-    // required for repairing
-    // TODOTEST
-    //float constexpr SmoothingAlpha = 0.03f;
-    float constexpr SmoothingAlpha = 0.0015f;
-
     // Tolerance to distance
     //
     // Note: a higher tolerance here causes springs to...spring into life
@@ -298,50 +292,12 @@ void Ship::RepairAt(
         float const squareRadius = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
         if (squareRadius <= squareSearchRadius
             && mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() > 0
-            && (mPoints.GetRepairState(pointIndex).AttractedSessionId != sessionId
-                 || mPoints.GetRepairState(pointIndex).AttractedSessionStepId + 1 < sessionStepId))
+            && (mPoints.GetRepairState(pointIndex).LastAttractedSessionId != sessionId
+                 || mPoints.GetRepairState(pointIndex).LastAttractedSessionStepId + 1 < sessionStepId))
         {
             // Remember this point has taken over the role of attractor in this step
-            mPoints.GetRepairState(pointIndex).AttractorSessionId = sessionId;
-            mPoints.GetRepairState(pointIndex).AttractorSessionStepId = sessionStepId;
-
-            //
-            // Advance this attractor smoothing state machine, but only if it has deleted springs
-            //
-
-            if (mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() !=
-                mPoints.GetFactoryConnectedSprings(pointIndex).ConnectedSprings.size())
-            {
-                if (sessionId != mPoints.GetRepairState(pointIndex).SmoothingSessionId)
-                {
-                    //
-                    // New session altogether
-                    //
-
-                    mPoints.GetRepairState(pointIndex).Smoothing = 0.0f;
-                    mPoints.GetRepairState(pointIndex).SmoothingSessionId = sessionId;
-                }
-                else
-                {
-                    //
-                    // Same session, advance
-                    //
-
-                    assert(sessionStepId > mPoints.GetRepairState(pointIndex).SmoothingSessionStepId);
-
-                    float newSmoothing =
-                        mPoints.GetRepairState(pointIndex).Smoothing
-                        + (1.0f - mPoints.GetRepairState(pointIndex).Smoothing) * SmoothingAlpha;
-
-                    // Scale smoothing by steps elapsed since last time
-                    mPoints.GetRepairState(pointIndex).Smoothing =
-                        newSmoothing
-                        / static_cast<float>(sessionStepId - mPoints.GetRepairState(pointIndex).SmoothingSessionStepId);
-                }
-
-                mPoints.GetRepairState(pointIndex).SmoothingSessionStepId = sessionStepId;
-            }
-
+            mPoints.GetRepairState(pointIndex).LastAttractorSessionId = sessionId;
+            mPoints.GetRepairState(pointIndex).LastAttractorSessionStepId = sessionStepId;
 
 
             //
@@ -362,12 +318,28 @@ void Ship::RepairAt(
 
                     // Do not consider the spring if the other endpoint has already taken
                     // the role of attractor in this or in the previous step
-                    if (mPoints.GetRepairState(otherEndpointIndex).AttractorSessionId != sessionId
-                        || mPoints.GetRepairState(otherEndpointIndex).AttractorSessionStepId + 1 < sessionStepId)
+                    if (mPoints.GetRepairState(otherEndpointIndex).LastAttractorSessionId != sessionId
+                        || mPoints.GetRepairState(otherEndpointIndex).LastAttractorSessionStepId + 1 < sessionStepId)
                     {
+                        //
+                        // This point has taken over the role of attracted in this step
+                        //
+
+                        // Update its number of consecutive steps
+                        if (mPoints.GetRepairState(otherEndpointIndex).LastAttractedSessionId == sessionId
+                            && mPoints.GetRepairState(otherEndpointIndex).LastAttractedSessionStepId + 1 == sessionStepId)
+                        {
+                            ++mPoints.GetRepairState(otherEndpointIndex).CurrentAttractedNumberOfSteps;
+                        }
+                        else if (mPoints.GetRepairState(otherEndpointIndex).LastAttractedSessionId != sessionId
+                            || mPoints.GetRepairState(otherEndpointIndex).LastAttractedSessionStepId + 1 < sessionStepId)
+                        {
+                            mPoints.GetRepairState(otherEndpointIndex).CurrentAttractedNumberOfSteps = 0;
+                        }
+
                         // Remember this point has taken over the role of attracted in this step
-                        mPoints.GetRepairState(otherEndpointIndex).AttractedSessionId = sessionId;
-                        mPoints.GetRepairState(otherEndpointIndex).AttractedSessionStepId = sessionStepId;
+                        mPoints.GetRepairState(otherEndpointIndex).LastAttractedSessionId = sessionId;
+                        mPoints.GetRepairState(otherEndpointIndex).LastAttractedSessionStepId = sessionStepId;
 
 
                         ////////////////////////////////////////////////////////
@@ -516,6 +488,13 @@ void Ship::RepairAt(
                                 64.0f
                                 * GameParameters::SimulationStepTimeDuration<float>;
 
+                            // Smoothing of the movement, based on how long this point has been an attracted
+                            // in the current session
+                            float const smoothing = SmoothStep(
+                                0.0f,
+                                10.0 * 60.0f, // Reach max in 10 seconds (at 60 fps)
+                                static_cast<float>(mPoints.GetRepairState(otherEndpointIndex).CurrentAttractedNumberOfSteps));
+
                             // Movement direction (positive towards this point)
                             vec2f const movementDir = displacementVector.normalise(displacementMagnitude);
 
@@ -532,10 +511,11 @@ void Ship::RepairAt(
                             // that's moving away!
                             float const movementMagnitude =
                                 displacementMagnitude
-                                * (MovementFraction * gameParameters.RepairStrengthAdjustment)
+                                // TODOTEST
+                                //* (MovementFraction * gameParameters.RepairStrengthAdjustment)
+                                * smoothing
                                 * toolStrength
-                                * (mSprings.IsRope(fcs.SpringIndex) ? 0.75f : 1.0f) // Ropes are crazy, hence need more kindness
-                                * mPoints.GetRepairState(pointIndex).Smoothing;
+                                * (mSprings.IsRope(fcs.SpringIndex) ? 0.75f : 1.0f); // Ropes are crazy, hence need more kindness
 
                             // Move point
                             mPoints.GetPosition(otherEndpointIndex) +=
