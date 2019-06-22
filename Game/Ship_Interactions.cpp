@@ -290,7 +290,7 @@ void Ship::RepairAt(
         // Attempt to restore this point's springs if the point meets all these conditions:
         // - The point is in radius
         // - The point is not orphaned
-        // - The point has not taken already the role of attracted in this session step
+        // - The point has not taken already the role of attracted in this or in the previous session step
         //
         // Note: if we were to attempt to restore also orphaned points, then two formerly-connected
         // orphaned points within the search radius would interact with each other and nullify
@@ -299,7 +299,7 @@ void Ship::RepairAt(
         if (squareRadius <= squareSearchRadius
             && mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() > 0
             && (mPoints.GetRepairState(pointIndex).AttractedSessionId != sessionId
-                 || mPoints.GetRepairState(pointIndex).AttractedSessionStepId != sessionStepId))
+                 || mPoints.GetRepairState(pointIndex).AttractedSessionStepId + 1 < sessionStepId))
         {
             // Remember this point has taken over the role of attractor in this step
             mPoints.GetRepairState(pointIndex).AttractorSessionId = sessionId;
@@ -361,9 +361,9 @@ void Ship::RepairAt(
                     auto const otherEndpointIndex = fcs.OtherEndpointIndex;
 
                     // Do not consider the spring if the other endpoint has already taken
-                    // the role of attractor in this step
+                    // the role of attractor in this or in the previous step
                     if (mPoints.GetRepairState(otherEndpointIndex).AttractorSessionId != sessionId
-                        || mPoints.GetRepairState(otherEndpointIndex).AttractorSessionStepId != sessionStepId)
+                        || mPoints.GetRepairState(otherEndpointIndex).AttractorSessionStepId + 1 < sessionStepId)
                     {
                         // Remember this point has taken over the role of attracted in this step
                         mPoints.GetRepairState(otherEndpointIndex).AttractedSessionId = sessionId;
