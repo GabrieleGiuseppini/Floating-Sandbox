@@ -985,46 +985,98 @@ Render:
 		- Do first a pass to recalc coefficients, once per simulation step
 
 	- Heat and Combustion (*)
-		- Integration of Decay with Combustion:
-			- Combustion also is a source of decay
-			- Springs should get weak based off decay, independently from source
-			- It is really 3 distinct processes:
-				+ 1a: Point rotting:
-					+ Low-frequency
-					+ water + isLeaking => decay
-				- 1b: Point combustion:
-					- Any frequency (combustion state machine update frequency)
-					- combustion y/n => decay
-				+ 2: Spring decay
-					+ Low-frequency
-					+ p.decay => s.strength
-						+ Use both endpoints' decay
-					+ Impl:
-						+ Springs::Decay(Points const &)
-							+ For each spring: strength = material's strength * avg of two endpoints' decay
-								+ float buffer: MaterialStrength
-		- Materials' new properties:
-			- combustion threshold (T)
-			- combustion type (Explosive, Burning)
-		- New materials:
-			- "gunpowder" and "diesel"
-		- Rendering of flames:
-			- Need depth-sorting:
-				- Ship has heap of indices of burning points
-					- Ordering of heap: <depth buffer, y> // y: flames below cover flames above, when on same plane ID
-					- Heap created from scratch at connectivity visit
-					- Heap updated by Points's combustion state machine update (heap passed by Ship) when points start
-					  or stop burning					
-					- Heap used by Points's Upload() (heap passed by Ship)
-		- Points::UnderwaterDepth buffer
-			- Re-populated by Ship at first step that checks underwater-ness after mechanical update
-				- i.e. water update?
-			- Used by anything else afterwards, including heat state machine
+		- Spec:
+			- Integration of Decay with Combustion:
+				- Combustion also is a source of decay
+				- Springs should get weak based off decay, independently from source
+				- It is really 3 distinct processes:
+					+ 1a: Point rotting:
+						+ Low-frequency
+						+ water + isLeaking => decay
+					- 1b: Point combustion:
+						- Any frequency (combustion state machine update frequency)
+						- combustion y/n => decay
+					+ 2: Spring decay
+						+ Low-frequency
+						+ p.decay => s.strength
+							+ Use both endpoints' decay
+						+ Impl:
+							+ Springs::Decay(Points const &)
+								+ For each spring: strength = material's strength * avg of two endpoints' decay
+									+ float buffer: MaterialStrength
+			- Rendering of flames:
+				- Need depth-sorting:
+					- Ship has heap of indices of burning points
+						- Ordering of heap: plane ID
+						- Heap created from scratch at connectivity visit
+						- Heap updated by Points's combustion state machine update (heap passed by Ship) when points start
+						  or stop burning					
+						- Heap used by Points's Upload() (heap passed by Ship)
 		- TODO: from Moleskine
 		- TODO: HeatPropagation (and others?) may run sparingly
 
 		= Impl:
-			+ Render:
+			- Properties and Materials:
+				- New StructuralMaterial properties:
+						- Ignition temperature (T)
+						- Melting temperature (T)
+						- Thermal conductivity 
+						- Combustion type (Combustion, Explosion)
+					- Add all of them via Json, with switches based off material type
+						- Then, manual tune
+					- Add all of them to guide
+				- Points:
+					- Ignition temperature
+					- Temperature/Buffer
+					- CombustionState/Buffer
+				- Springs:
+					- Melting temperature (avg of two endpoints, calcd at Add())
+					- Thermal conductivity (avg of two endpoints, calcd at Add())
+			- Heat overlay:
+				- Ship/RenderContext flag
+				- SettingsDialog
+				- Ship::Render: when flag set, upload heat buffer (much like we do w/Decay)
+					- Ship/RenderContext UploadHeat
+				- Ship/RenderContext render
+					- Shaders
+			- Physics update:
+				- Ship::Update: 
+					- @Beginning: either call Springs::UpdateParameters(params, points) or call 
+					  Springs::UpdateDecayAndTemperatureAndParameters(params, points), depending on simulation step
+						- Springs::UpdateParameters(params, points): iff params updated:
+							- (Params, P.Temperature, P.Mass) -> CurrentStiffnessCoefficient, CurrentDampingCoefficient
+								- Rename stiffness as "StructuralStiffness"						
+						- Springs::UpdateDecayAndTemperatureAndParameters(params, points):
+							- (Params, P.Temperature, P.Mass) -> CurrentStiffnessCoefficient, CurrentDampingCoefficient
+								- Rename stiffness as "StructuralStiffness", and calc it as avg(?) at Add()
+							- (P.Decay, P.Temperature) -> S.CurrentStrength (also rename Points.TotalMass as S.CurrentMass)
+								- Add "StructuralStrength", and use "CurrentStrength" for strain
+						- Nuke Ship::DecaySprings
+					- At another slot: call Ship::UpdateTemperature
+						- Propagation and dissipation
+							- New global constants: AirTemperature, WaterTemperature
+							- Use specific dt's calc's as constexpr's in UpdateTemperature based off frequency of steps
+					- At another slot: call Points::UpdateCombustion(heap, springs)
+						- Heap:
+							- Ship has heap with indices of burning points together with their PlaneID, sorted by PlaneID asc
+								- priority_queue<pair<idx, plane ID>>
+							- ConnectivityVisit: recalc heap from scratch
+							- State machine removes (at full combustion exhaustion) and/or adds (at initial combustion ignition)
+							  to heap
+						- For each point: run combustion state machine:
+							- If it's not combusting:
+								- TBD
+							- Else (it's combusting):
+								- TBD
+			- Ship::Render:
+				- Calls Points::UploadCombustion(heap)
+					- Uploads flames in order of heap
+			- GameParameters:
+				- ThermalConductivityAdjustment 
+				- IgnitionTemperatureAdjustment (in SettingsDialog: "Burning Point Adjust")
+				- MeltingTemperatureAdjustment (in SettingsDialog: "Melting Point Adjust")
+				- Add to settings dialog - new "Heat" tab or anywhere else there's room
+			+ Flame render:
 				+ Make better transition for bottom
 				+ Skew wind speed with smoothstep
 					+ And reverse wind direction
@@ -1042,7 +1094,16 @@ Render:
 		- Cleanup:
 			+ Test generic textures change (gen tex's + air bubbles at same time) and nuke comment
 			+ Test cross of light change
+			- Points::UnderwaterDepth buffer: add if it turns out that at each step we need isunderwater at least twice
+				- Re-populated by Ship at first step that checks underwater-ness after mechanical update
+					- i.e. water update?
+				- Used by anything else afterwards, including heat state machine
 
+		- Combustion:
+			- Rendering: ?
+			- New materials:
+				- "gunpowder" and "diesel"
+			
 		= Flamethrower tool:
 			+ RenderContext exposes UploadFlameThrower(worldPos)
 			+ GameController stores worldPos at ApplyFlameThrower(screenPos) and later, at Render, invokes RenderContext::UploadFlameThrower()
