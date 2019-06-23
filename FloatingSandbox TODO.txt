@@ -1024,9 +1024,9 @@ Render:
 					+ MaterialIgnitionTemperature
 					+ Temperature/Buffer
 					+ CombustionState/Buffer
-				- Springs:
-					- MaterialMeltingTemperature (avg of two endpoints, calcd at Add())
-					- MaterialThermalConductivity (avg of two endpoints, calcd at Add())
+				+ Springs:
+					+ MaterialMeltingTemperature (avg of two endpoints, calcd at Add())
+					+ MaterialThermalConductivity (avg of two endpoints, calcd at Add())
 				+ Renames:
 					+ Points::TotalMass -> "CurrentMass" (and UpdateTotalMasses)
 						+ TODO: rethink this one; "Mass" contains augmentation nowadays
@@ -1046,13 +1046,14 @@ Render:
 				- Ship/RenderContext render
 					- Shaders:
 						- Use temperature buffer (of floats) to produce "temperature color" as:
-							- tint3 = mix(c1, c2, some f of temperature) // see https://en.wikipedia.org/wiki/Incandescence#/media/File:Example_incandescence_colors_(temperature_range_550_-_1300_C).svg
+							- tint3 = mix(c1, c2, some f of temperature ~= 1-e^(-paramHeatContrast*T)) // see https://en.wikipedia.org/wiki/Incandescence#/media/File:Example_incandescence_colors_(temperature_range_550_-_1300_C).svg
 							- temperature color = (tint3, paramHeatContrast)
 						- 2 shaders:
 							- 1xTexture 
 								- Samples texture to take its alpha and multiply with alpha of temperature color
 							- 1xColor
-					- HeatContrast at SettingsDialog?
+					- HeatContrast at SettingsDialog
+						- "Render" section under "Heat"
 			- Physics update:
 				- Ship::Update: 
 					- @Beginning: either call Springs::UpdateParameters(params, points) or call 
@@ -1064,8 +1065,8 @@ Render:
 							- (P.Decay, P.Temperature) -> S.CurrentStrength
 								- Add "StructuralStrength", and use "CurrentStrength" for strain
 						- Nuke Ship::DecaySprings and, with it, Springs::Set(Current)Strength
-					- At another slot: call Ship::UpdateTemperature
-						- Propagation and dissipation
+					= At another slot: call Ship::UpdateTemperature
+						= Propagation and dissipation
 							+ New global constants: AirTemperature, WaterTemperature
 							- Use specific dt's calc's as constexpr's in UpdateTemperature based off frequency of steps
 					- At another slot: call Points::UpdateCombustion(heap, springs)
@@ -1081,6 +1082,13 @@ Render:
 							- Else (it's combusting):
 								- TBD
 								- Burn rate (i.e. decay speed) ~= structural mass (the lower the mass, the faster decays)
+			- Flamethrower:
+				- Ship::Interaction:
+					- GameParameters::FlameThrowerHeat
+						- Absolute value, in J
+						- SettingsDialog, under "Flamethrower" in "Heat"
+					- Convert into DeltaT
+				- Radius at SettingsDialog, under "Flamethrower" in "Heat"
 			- Ship::Render:
 				- Calls Points::UploadCombustion(heap)
 					- Uploads flames in order of heap
@@ -1089,7 +1097,8 @@ Render:
 				- IgnitionTemperatureAdjustment (in SettingsDialog: "Burning Point Adjust")
 				- MeltingTemperatureAdjustment (in SettingsDialog: "Melting Point Adjust")
 				- CombustionSpeedAdjustment
-				- Also add to settings dialog - new "Heat" tab or anywhere else there's room
+
+				- Also add to settings dialog - new "Heat" tab
 			+ Flame render:
 				+ Make better transition for bottom
 				+ Skew wind speed with smoothstep

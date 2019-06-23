@@ -48,7 +48,8 @@ public:
 
     std::string Name;
     float Strength;
-    float Mass;
+    float NominalMass;
+    float Density;
     float Stiffness;
     vec4f RenderColor;
 
@@ -86,10 +87,29 @@ public:
         return !!UniqueType && *UniqueType == uniqueType;
     }
 
+    /*
+     * Returns the mass of this particle, calculated assuming that the particle is a cubic meter
+     * full of a quantity of material equal to the density; for example, an iron truss has a lower
+     * density than solid iron.
+     */
+    float GetMass() const
+    {
+        return NominalMass * Density;
+    }
+
+    /*
+     * Returns the heat capacity of the material, in J/K.
+     */
+    float GetHeatCapacity() const
+    {
+        return SpecificHeat * GetMass() / 1000.0f;
+    }
+
     StructuralMaterial(
         std::string name,
         float strength,
-        float mass,
+        float nominalMass,
+        float density,
         float stiffness,
         vec4f renderColor,
         std::optional<MaterialUniqueType> uniqueType,
@@ -111,7 +131,8 @@ public:
         float windReceptivity)
         : Name(name)
         , Strength(strength)
-        , Mass(mass)
+        , NominalMass(nominalMass)
+        , Density(density)
         , Stiffness(stiffness)
         , RenderColor(renderColor)
         , UniqueType(uniqueType)

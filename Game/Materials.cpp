@@ -9,19 +9,19 @@
 
 StructuralMaterial StructuralMaterial::Create(picojson::object const & structuralMaterialJson)
 {
-    std::string name = Utils::GetMandatoryJsonMember<std::string>(structuralMaterialJson, "name");
+    std::string const name = Utils::GetMandatoryJsonMember<std::string>(structuralMaterialJson, "name");
 
     try
     {
-        float strength = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "strength");
+        float const strength = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "strength");
 
         picojson::object massJson = Utils::GetMandatoryJsonObject(structuralMaterialJson, "mass");
-        float mass = Utils::GetMandatoryJsonMember<float>(massJson, "nominal_mass")
-            * Utils::GetMandatoryJsonMember<float>(massJson, "density");
+        float const nominalMass = Utils::GetMandatoryJsonMember<float>(massJson, "nominal_mass");
+        float const density = Utils::GetMandatoryJsonMember<float>(massJson, "density");
 
-        float stiffness = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "stiffness", 1.0);
+        float const stiffness = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "stiffness", 1.0);
 
-        vec4f renderColor =
+        vec4f const renderColor =
             Utils::Hex2RgbColor(
                 Utils::GetMandatoryJsonMember<std::string>(structuralMaterialJson, "render_color"))
             .toVec4f(1.0f);
@@ -39,29 +39,30 @@ StructuralMaterial StructuralMaterial::Create(picojson::object const & structura
 
         // Water
 
-        bool isHull = Utils::GetMandatoryJsonMember<bool>(structuralMaterialJson, "is_hull");
-        float waterVolumeFill = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "water_volume_fill");
-        float waterIntake = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "water_intake", 1.0);
-        float waterDiffusionSpeed = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "water_diffusion_speed");
-        float waterRetention = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "water_retention");
-        float rustReceptivity = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "rust_receptivity", 1.0);
+        bool const isHull = Utils::GetMandatoryJsonMember<bool>(structuralMaterialJson, "is_hull");
+        float const waterVolumeFill = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "water_volume_fill");
+        float const waterIntake = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "water_intake", 1.0);
+        float const waterDiffusionSpeed = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "water_diffusion_speed");
+        float const waterRetention = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "water_retention");
+        float const rustReceptivity = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "rust_receptivity", 1.0);
 
         // Heat
 
-        float ignitionTemperature = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "ignition_temperature");
-        float meltingTemperature = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "melting_temperature");
-        float thermalConductivity = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "thermal_conductivity");
-        float specificHeat = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "specific_heat");
-        MaterialCombustionType combustionType = StrToMaterialCombustionType(Utils::GetMandatoryJsonMember<std::string>(structuralMaterialJson, "combustion_type"));
+        float const ignitionTemperature = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "ignition_temperature");
+        float const meltingTemperature = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "melting_temperature");
+        float const thermalConductivity = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "thermal_conductivity");
+        float const specificHeat = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "specific_heat");
+        MaterialCombustionType const combustionType = StrToMaterialCombustionType(Utils::GetMandatoryJsonMember<std::string>(structuralMaterialJson, "combustion_type"));
 
         // Misc
 
-        float windReceptivity = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "wind_receptivity", 0.0);
+        float const windReceptivity = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "wind_receptivity", 0.0);
 
         return StructuralMaterial(
             name,
             strength,
-            mass,
+            nominalMass,
+            density,
             stiffness,
             renderColor,
             uniqueType,

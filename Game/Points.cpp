@@ -32,8 +32,8 @@ void Points::Add(
     mPositionBuffer.emplace_back(position);
     mVelocityBuffer.emplace_back(vec2f::zero());
     mForceBuffer.emplace_back(vec2f::zero());
-    mAugmentedMaterialMassBuffer.emplace_back(structuralMaterial.Mass);
-    mMassBuffer.emplace_back(structuralMaterial.Mass);
+    mAugmentedMaterialMassBuffer.emplace_back(structuralMaterial.GetMass());
+    mMassBuffer.emplace_back(structuralMaterial.GetMass());
     mDecayBuffer.emplace_back(1.0f);
     mIntegrationFactorTimeCoefficientBuffer.emplace_back(CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations));
 
@@ -57,7 +57,7 @@ void Points::Add(
 
     // Heat dynamics
     mTemperatureBuffer.emplace_back(GameParameters::AirTemperature);
-    mMaterialSpecificHeatBuffer.emplace_back(structuralMaterial.SpecificHeat);
+    mMaterialHeatCapacityBuffer.emplace_back(structuralMaterial.GetHeatCapacity());
     mMaterialIgnitionTemperatureBuffer.emplace_back(structuralMaterial.IgnitionTemperature);
     mCombustionStateBuffer.emplace_back(CombustionState());
 
@@ -117,8 +117,8 @@ void Points::CreateEphemeralParticleAirBubble(
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = vec2f::zero();
     mForceBuffer[pointIndex] = vec2f::zero();
-    mAugmentedMaterialMassBuffer[pointIndex] = structuralMaterial.Mass;
-    mMassBuffer[pointIndex] = structuralMaterial.Mass;
+    mAugmentedMaterialMassBuffer[pointIndex] = structuralMaterial.GetMass();
+    mMassBuffer[pointIndex] = structuralMaterial.GetMass();
     mDecayBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations);
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
@@ -131,7 +131,7 @@ void Points::CreateEphemeralParticleAirBubble(
     assert(false == mIsLeakingBuffer[pointIndex]);
 
     mTemperatureBuffer[pointIndex] = GameParameters::AirTemperature;
-    mMaterialSpecificHeatBuffer[pointIndex] = structuralMaterial.SpecificHeat;
+    mMaterialHeatCapacityBuffer[pointIndex] = structuralMaterial.GetHeatCapacity();
     mMaterialIgnitionTemperatureBuffer[pointIndex] = structuralMaterial.IgnitionTemperature;
     mCombustionStateBuffer[pointIndex] = CombustionState();
 
@@ -179,8 +179,8 @@ void Points::CreateEphemeralParticleDebris(
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
     mForceBuffer[pointIndex] = vec2f::zero();
-    mAugmentedMaterialMassBuffer[pointIndex] = structuralMaterial.Mass;
-    mMassBuffer[pointIndex] = structuralMaterial.Mass;
+    mAugmentedMaterialMassBuffer[pointIndex] = structuralMaterial.GetMass();
+    mMassBuffer[pointIndex] = structuralMaterial.GetMass();
     mDecayBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations);
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
@@ -193,7 +193,7 @@ void Points::CreateEphemeralParticleDebris(
     assert(false == mIsLeakingBuffer[pointIndex]);
 
     mTemperatureBuffer[pointIndex] = GameParameters::AirTemperature;
-    mMaterialSpecificHeatBuffer[pointIndex] = structuralMaterial.SpecificHeat;
+    mMaterialHeatCapacityBuffer[pointIndex] = structuralMaterial.GetHeatCapacity();
     mMaterialIgnitionTemperatureBuffer[pointIndex] = structuralMaterial.IgnitionTemperature;
     mCombustionStateBuffer[pointIndex] = CombustionState();
 
@@ -240,8 +240,8 @@ void Points::CreateEphemeralParticleSparkle(
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
     mForceBuffer[pointIndex] = vec2f::zero();
-    mAugmentedMaterialMassBuffer[pointIndex] = structuralMaterial.Mass;
-    mMassBuffer[pointIndex] = structuralMaterial.Mass;
+    mAugmentedMaterialMassBuffer[pointIndex] = structuralMaterial.GetMass();
+    mMassBuffer[pointIndex] = structuralMaterial.GetMass();
     mDecayBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations);
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
@@ -254,7 +254,7 @@ void Points::CreateEphemeralParticleSparkle(
     assert(false == mIsLeakingBuffer[pointIndex]);
 
     mTemperatureBuffer[pointIndex] = 773.15f; // 500 Celsius, arbitrary
-    mMaterialSpecificHeatBuffer[pointIndex] = structuralMaterial.SpecificHeat;
+    mMaterialHeatCapacityBuffer[pointIndex] = structuralMaterial.GetHeatCapacity();
     mMaterialIgnitionTemperatureBuffer[pointIndex] = structuralMaterial.IgnitionTemperature;
     mCombustionStateBuffer[pointIndex] = CombustionState();
 
@@ -739,7 +739,9 @@ void Points::AugmentMaterialMass(
 {
     assert(pointElementIndex < mElementCount);
 
-    mAugmentedMaterialMassBuffer[pointElementIndex] = GetStructuralMaterial(pointElementIndex).Mass + offset;
+    mAugmentedMaterialMassBuffer[pointElementIndex] =
+        GetStructuralMaterial(pointElementIndex).GetMass()
+        + offset;
 
     // Notify all connected springs
     for (auto connectedSpring : mConnectedSpringsBuffer[pointElementIndex].ConnectedSprings)

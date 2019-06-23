@@ -72,6 +72,16 @@ void Springs::Add(
         ? 0.0f
         : 1.0f);
 
+    // Heat properties are average
+    float const thermalConductivity =
+        (points.GetStructuralMaterial(pointAIndex).ThermalConductivity + points.GetStructuralMaterial(pointBIndex).ThermalConductivity)
+        / 2.0f;
+    mMaterialThermalConductivityBuffer.emplace_back(thermalConductivity);
+    float const meltingTemperature =
+        (points.GetStructuralMaterial(pointAIndex).MeltingTemperature + points.GetStructuralMaterial(pointBIndex).MeltingTemperature)
+        / 2.0f;
+    mMaterialMeltingTemperatureBuffer.emplace_back(meltingTemperature);
+
     mIsStressedBuffer.emplace_back(false);
 
     mIsBombAttachedBuffer.emplace_back(false);

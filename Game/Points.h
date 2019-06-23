@@ -358,7 +358,7 @@ public:
         , mFactoryIsLeakingBuffer(mBufferElementCount, shipPointCount, false)
         // Heat dynamics
         , mTemperatureBuffer(mBufferElementCount, shipPointCount, 0.0f)
-        , mMaterialSpecificHeatBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mMaterialHeatCapacityBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialIgnitionTemperatureBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mCombustionStateBuffer(mBufferElementCount, shipPointCount, CombustionState())
         // Electrical dynamics
@@ -919,9 +919,9 @@ public:
         mTemperatureBuffer.copy_from(*newTemperatureBuffer);
     }
 
-    float GetMaterialSpecificHeat(ElementIndex pointElementIndex) const
+    float GetMaterialHeatCapacity(ElementIndex pointElementIndex) const
     {
-        return mMaterialSpecificHeatBuffer[pointElementIndex];
+        return mMaterialHeatCapacityBuffer[pointElementIndex];
     }
 
     //
@@ -1293,7 +1293,7 @@ private:
     //
 
     Buffer<float> mTemperatureBuffer; // Kelvin
-    Buffer<float> mMaterialSpecificHeatBuffer;
+    Buffer<float> mMaterialHeatCapacityBuffer;
     Buffer<float> mMaterialIgnitionTemperatureBuffer;
     Buffer<CombustionState> mCombustionStateBuffer;
 

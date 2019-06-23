@@ -1426,7 +1426,6 @@ void Ship::UpdateTemperature(
 
     for (auto pointIndex : mPoints)
     {
-
         // TODOHERE
     }
 

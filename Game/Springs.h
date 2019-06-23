@@ -139,6 +139,9 @@ public:
         , mBaseStructuralMaterialBuffer(mBufferElementCount, mElementCount, nullptr)
         // Water
         , mMaterialWaterPermeabilityBuffer(mBufferElementCount, mElementCount, 0.0f)
+        // Heat
+        , mMaterialThermalConductivityBuffer(mBufferElementCount, mElementCount, 0.0f)
+        , mMaterialMeltingTemperatureBuffer(mBufferElementCount, mElementCount, 0.0f)
         // Stress
         , mIsStressedBuffer(mBufferElementCount, mElementCount, false)
         // Bombs
@@ -508,6 +511,20 @@ public:
     }
 
     //
+    // Heat
+    //
+
+    float GetMaterialThermalConductivity(ElementIndex springElementIndex) const
+    {
+        return mMaterialThermalConductivityBuffer[springElementIndex];
+    }
+
+    float GetMaterialMeltingTemperature(ElementIndex springElementIndex) const
+    {
+        return mMaterialMeltingTemperatureBuffer[springElementIndex];
+    }
+
+    //
     // Bombs
     //
 
@@ -634,6 +651,13 @@ private:
     // Water propagates through this spring according to this value;
     // 0.0 makes water not propagate
     Buffer<float> mMaterialWaterPermeabilityBuffer;
+
+    //
+    // Hear
+    //
+
+    Buffer<float> mMaterialThermalConductivityBuffer;
+    Buffer<float> mMaterialMeltingTemperatureBuffer;
 
     //
     // Stress
