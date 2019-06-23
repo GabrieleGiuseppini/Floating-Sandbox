@@ -937,10 +937,6 @@ Render:
 
 - Dynamics:
 
-	- Thanos Snap:
-		- From right to left or viceversa
-		- Makes snap sound
-
 	- Randomize decay
 		- Perlin noise on ship, created at ShipBuilder, stored as Points::WeakNoise
 		- Used as rotting increase
@@ -984,7 +980,7 @@ Render:
 	- Attempt to use total point masses for springs (*)
 		- Do first a pass to recalc coefficients, once per simulation step
 
-	- Heat and Combustion (*)
+	= Heat and Combustion (*)
 		- Spec:
 			- Integration of Decay with Combustion:
 				- Combustion also is a source of decay
@@ -1012,9 +1008,6 @@ Render:
 						- Heap updated by Points's combustion state machine update (heap passed by Ship) when points start
 						  or stop burning					
 						- Heap used by Points's Upload() (heap passed by Ship)
-		- TODO: from Moleskine
-		- TODO: HeatPropagation (and others?) may run sparingly
-
 		= Impl:
 			- Properties and Materials:
 				- New StructuralMaterial properties:
@@ -1032,24 +1025,37 @@ Render:
 				- Springs:
 					- Melting temperature (avg of two endpoints, calcd at Add())
 					- Thermal conductivity (avg of two endpoints, calcd at Add())
+				- Renames:
+					- Points::TotalMass -> "CurrentMass" (and UpdateTotalMasses)
+					- Points::StructuralMass -> "MaterialMass"
+					- Springs::Stiffness -> "MaterialStiffness"
+					- Springs::StiffnessCoefficient -> "CurrentStiffnessCoefficient"
+					- Springs::DampingCoefficient -> "CurrentDampingCoefficient"
+					- Springs::Strength -> "CurrentStrength"
 			- Heat overlay:
 				- Ship/RenderContext flag
 				- SettingsDialog
 				- Ship::Render: when flag set, upload heat buffer (much like we do w/Decay)
 					- Ship/RenderContext UploadHeat
 				- Ship/RenderContext render
-					- Shaders
+					- Shaders:
+						- Use temperature buffer (of floats) to produce "temperature color" as:
+							- tint3 = mix(c1, c2, some f of temperature) // see https://en.wikipedia.org/wiki/Incandescence#/media/File:Example_incandescence_colors_(temperature_range_550_-_1300_C).svg
+							- temperature color = (tint3, paramHeatContrast)
+						- 2 shaders:
+							- 1xTexture 
+								- Samples texture to take its alpha and multiply with alpha of temperature color
+							- 1xColor
+					- HeatContrast at SettingsDialog?
 			- Physics update:
 				- Ship::Update: 
 					- @Beginning: either call Springs::UpdateParameters(params, points) or call 
 					  Springs::UpdateDecayAndTemperatureAndParameters(params, points), depending on simulation step
 						- Springs::UpdateParameters(params, points): iff params updated:
 							- (Params, P.Temperature, P.Mass) -> CurrentStiffnessCoefficient, CurrentDampingCoefficient
-								- Rename stiffness as "StructuralStiffness"						
 						- Springs::UpdateDecayAndTemperatureAndParameters(params, points):
 							- (Params, P.Temperature, P.Mass) -> CurrentStiffnessCoefficient, CurrentDampingCoefficient
-								- Rename stiffness as "StructuralStiffness", and calc it as avg(?) at Add()
-							- (P.Decay, P.Temperature) -> S.CurrentStrength (also rename Points.TotalMass as S.CurrentMass)
+							- (P.Decay, P.Temperature) -> S.CurrentStrength
 								- Add "StructuralStrength", and use "CurrentStrength" for strain
 						- Nuke Ship::DecaySprings
 					- At another slot: call Ship::UpdateTemperature
