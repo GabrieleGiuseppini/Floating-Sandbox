@@ -24,10 +24,10 @@
 
 static constexpr int LowFrequencyPeriod = 50; // Number of simulation steps
 
-static constexpr int UpdateSinkingFrequency = 12;
-static constexpr int RotPointsFrequency = 25;
-static constexpr int UpdateTemperatureFrequency = 37;
-static constexpr int DecaySpringsFrequency = 50;
+static constexpr int UpdateSinkingPeriodStep = 12;
+static constexpr int RotPointsPeriodStep = 25;
+static constexpr int UpdateTemperaturePeriodStep = 37;
+static constexpr int DecaySpringsPeriodStep = 50;
 
 
 namespace Physics {
@@ -137,7 +137,7 @@ void Ship::Update(
     // Rot points
     //
 
-    if (mCurrentSimulationSequenceNumber.IsStepOf(RotPointsFrequency - 1, LowFrequencyPeriod))
+    if (mCurrentSimulationSequenceNumber.IsStepOf(RotPointsPeriodStep - 1, LowFrequencyPeriod))
     {
         RotPoints(
             currentSimulationTime,
@@ -149,7 +149,7 @@ void Ship::Update(
     // Decay springs
     //
 
-    if (mCurrentSimulationSequenceNumber.IsStepOf(DecaySpringsFrequency - 1, LowFrequencyPeriod))
+    if (mCurrentSimulationSequenceNumber.IsStepOf(DecaySpringsPeriodStep - 1, LowFrequencyPeriod))
     {
         DecaySprings(
             currentSimulationTime,
@@ -219,7 +219,7 @@ void Ship::Update(
     // Update temperature
     //
 
-    if (mCurrentSimulationSequenceNumber.IsStepOf(UpdateTemperatureFrequency - 1, LowFrequencyPeriod))
+    if (mCurrentSimulationSequenceNumber.IsStepOf(UpdateTemperaturePeriodStep - 1, LowFrequencyPeriod))
     {
         UpdateTemperature(
             currentSimulationTime,
@@ -799,7 +799,7 @@ void Ship::UpdateWaterDynamics(
     // Run sink/unsink detection
     //
 
-    if (mCurrentSimulationSequenceNumber.IsStepOf(UpdateSinkingFrequency - 1, LowFrequencyPeriod))
+    if (mCurrentSimulationSequenceNumber.IsStepOf(UpdateSinkingPeriodStep - 1, LowFrequencyPeriod))
     {
         UpdateSinking();
     }
