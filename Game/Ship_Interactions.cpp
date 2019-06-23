@@ -792,7 +792,7 @@ bool Ship::FloodAt(
     bool anyHasFlooded = false;
     for (auto pointIndex : mPoints.NonEphemeralPoints())
     {
-        if (!mPoints.IsHull(pointIndex))
+        if (!mPoints.GetMaterialIsHull(pointIndex))
         {
             float squareDistance = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
             if (squareDistance < searchSquareRadius)

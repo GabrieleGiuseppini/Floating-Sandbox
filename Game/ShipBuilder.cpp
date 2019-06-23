@@ -1203,8 +1203,8 @@ Physics::Springs ShipBuilder::CreateSprings(
 
         // The spring is hull if at least one node is hull
         // (we don't propagate water along a hull spring)
-        if (points.IsHull(pointIndexRemap[springInfos2[s].PointAIndex1])
-            || points.IsHull(pointIndexRemap[springInfos2[s].PointBIndex1]))
+        if (points.GetMaterialIsHull(pointIndexRemap[springInfos2[s].PointAIndex1])
+            || points.GetMaterialIsHull(pointIndexRemap[springInfos2[s].PointBIndex1]))
             characteristics |= static_cast<int>(Springs::Characteristics::Hull);
 
         // If both nodes are rope, then the spring is rope

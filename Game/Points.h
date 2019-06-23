@@ -337,19 +337,19 @@ public:
         , mPositionBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mVelocityBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mForceBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
-        , mMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
+        , mAugmentedMaterialMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
+        , mCurrentMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mDecayBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mIsDecayBufferDirty(true)
         , mIntegrationFactorTimeCoefficientBuffer(mBufferElementCount, shipPointCount, 0.0f)
-        , mTotalMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mIntegrationFactorBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mForceRenderBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         // Water dynamics
-        , mIsHullBuffer(mBufferElementCount, shipPointCount, false)
-        , mWaterVolumeFillBuffer(mBufferElementCount, shipPointCount, 0.0f)
-        , mWaterIntakeBuffer(mBufferElementCount, shipPointCount, 0.0f)
-        , mWaterRestitutionBuffer(mBufferElementCount, shipPointCount, 0.0f)
-        , mWaterDiffusionSpeedBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mMaterialIsHullBuffer(mBufferElementCount, shipPointCount, false)
+        , mMaterialWaterVolumeFillBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mMaterialWaterIntakeBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mMaterialWaterRestitutionBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mMaterialWaterDiffusionSpeedBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mWaterBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mWaterVelocityBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mWaterMomentumBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
@@ -364,9 +364,9 @@ public:
         , mElectricalElementBuffer(mBufferElementCount, shipPointCount, NoneElementIndex)
         , mLightBuffer(mBufferElementCount, shipPointCount, 0.0f)
         // Wind dynamics
-        , mWindReceptivityBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mMaterialWindReceptivityBuffer(mBufferElementCount, shipPointCount, 0.0f)
         // Rust dynamics
-        , mRustReceptivityBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mMaterialRustReceptivityBuffer(mBufferElementCount, shipPointCount, 0.0f)
         // Ephemeral particles
         , mEphemeralTypeBuffer(mBufferElementCount, shipPointCount, EphemeralType::None)
         , mEphemeralStartTimeBuffer(mBufferElementCount, shipPointCount, 0.0f)
@@ -662,25 +662,29 @@ public:
         mForceBuffer[pointElementIndex] += force;
     }
 
-    float * restrict GetForceBufferAsFloat()
+    float GetAugmentedMaterialMass(ElementIndex pointElementIndex) const
     {
-        return reinterpret_cast<float *>(mForceBuffer.data());
+        return mAugmentedMaterialMassBuffer[pointElementIndex];
     }
 
-    void CopyForceBufferToForceRenderBuffer()
-    {
-        mForceRenderBuffer.copy_from(mForceBuffer);
-    }
-
-    float GetAugmentedStructuralMass(ElementIndex pointElementIndex) const
-    {
-        return mMassBuffer[pointElementIndex];
-    }
-
-    void AugmentStructuralMass(
+    void AugmentMaterialMass(
         ElementIndex pointElementIndex,
         float offset,
         Springs & springs);
+
+    /*
+     * Returns the total mass of the point, which equals the point's material's mass with
+     * all modifiers (offsets, water, etc.).
+     *
+     * Only valid after a call to UpdateTotalMasses() and when
+     * neither water quantities nor masses have changed since then.
+     */
+    float GetCurrentMass(ElementIndex pointElementIndex)
+    {
+        return mCurrentMassBuffer[pointElementIndex];
+    }
+
+    void UpdateCurrentMasses(GameParameters const & gameParameters);
 
     float GetDecay(ElementIndex pointElementIndex) const
     {
@@ -700,30 +704,16 @@ public:
     }
 
     /*
-     * Returns the total mass of the point, which equals the point's material's mass with
-     * all modifiers (offsets, water, etc.).
-     *
-     * Only valid after a call to UpdateTotalMasses() and when
-     * neither water quantities nor masses have changed since then.
-     */
-    float GetTotalMass(ElementIndex pointElementIndex)
-    {
-        return mTotalMassBuffer[pointElementIndex];
-    }
-
-    /*
      * The integration factor is the quantity which, when multiplied with the force on the point,
      * yields the change in position that occurs during a time interval equal to the dynamics simulation step.
      *
-     * Only valid after a call to UpdateTotalMasses() and when
+     * Only valid after a call to UpdateCurrentMasses() and when
      * neither water quantities nor masses have changed since then.
      */
     float * restrict GetIntegrationFactorBufferAsFloat()
     {
         return reinterpret_cast<float *>(mIntegrationFactorBuffer.data());
     }
-
-    void UpdateTotalMasses(GameParameters const & gameParameters);
 
     // Changes the point's dynamics so that it freezes in place
     // and becomes oblivious to forces
@@ -741,33 +731,44 @@ public:
         mIntegrationFactorTimeCoefficientBuffer[pointElementIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations);
     }
 
+
+    float * restrict GetForceBufferAsFloat()
+    {
+        return reinterpret_cast<float *>(mForceBuffer.data());
+    }
+
+    void CopyForceBufferToForceRenderBuffer()
+    {
+        mForceRenderBuffer.copy_from(mForceBuffer);
+    }
+
     //
     // Water dynamics
     //
 
-    bool IsHull(ElementIndex pointElementIndex) const
+    bool GetMaterialIsHull(ElementIndex pointElementIndex) const
     {
-        return mIsHullBuffer[pointElementIndex];
+        return mMaterialIsHullBuffer[pointElementIndex];
     }
 
-    float GetWaterVolumeFill(ElementIndex pointElementIndex) const
+    float GetMaterialWaterVolumeFill(ElementIndex pointElementIndex) const
     {
-        return mWaterVolumeFillBuffer[pointElementIndex];
+        return mMaterialWaterVolumeFillBuffer[pointElementIndex];
     }
 
-    float GetWaterIntake(ElementIndex pointElementIndex) const
+    float GetMaterialWaterIntake(ElementIndex pointElementIndex) const
     {
-        return mWaterIntakeBuffer[pointElementIndex];
+        return mMaterialWaterIntakeBuffer[pointElementIndex];
     }
 
-    float GetWaterRestitution(ElementIndex pointElementIndex) const
+    float GetMaterialWaterRestitution(ElementIndex pointElementIndex) const
     {
-        return mWaterRestitutionBuffer[pointElementIndex];
+        return mMaterialWaterRestitutionBuffer[pointElementIndex];
     }
 
-    float GetWaterDiffusionSpeed(ElementIndex pointElementIndex) const
+    float GetMaterialWaterDiffusionSpeed(ElementIndex pointElementIndex) const
     {
-        return mWaterDiffusionSpeedBuffer[pointElementIndex];
+        return mMaterialWaterDiffusionSpeedBuffer[pointElementIndex];
     }
 
     float * restrict GetWaterBufferAsFloat()
@@ -906,18 +907,18 @@ public:
     // Wind dynamics
     //
 
-    float GetWindReceptivity(ElementIndex pointElementIndex) const
+    float GetMaterialWindReceptivity(ElementIndex pointElementIndex) const
     {
-        return mWindReceptivityBuffer[pointElementIndex];
+        return mMaterialWindReceptivityBuffer[pointElementIndex];
     }
 
     //
     // Rust dynamics
     //
 
-    float GetRustReceptivity(ElementIndex pointElementIndex) const
+    float GetMaterialRustReceptivity(ElementIndex pointElementIndex) const
     {
-        return mRustReceptivityBuffer[pointElementIndex];
+        return mMaterialRustReceptivityBuffer[pointElementIndex];
     }
 
     //
@@ -1210,13 +1211,12 @@ private:
     Buffer<vec2f> mPositionBuffer;
     Buffer<vec2f> mVelocityBuffer;
     Buffer<vec2f> mForceBuffer;
-    Buffer<float> mMassBuffer; // Structural + Offset
+    Buffer<float> mAugmentedMaterialMassBuffer; // Structural + Offset
+    Buffer<float> mCurrentMassBuffer; // Augmented + Water
     Buffer<float> mDecayBuffer; // 1.0 -> 0.0 (completely decayed)
     mutable bool mIsDecayBufferDirty;
     Buffer<float> mIntegrationFactorTimeCoefficientBuffer; // dt^2 or zero when the point is frozen
 
-    // Continuously-Calculated values
-    Buffer<float> mTotalMassBuffer; // MassBuffer + Water
     Buffer<vec2f> mIntegrationFactorBuffer;
     Buffer<vec2f> mForceRenderBuffer;
 
@@ -1224,11 +1224,11 @@ private:
     // Water dynamics
     //
 
-    Buffer<bool> mIsHullBuffer;
-    Buffer<float> mWaterVolumeFillBuffer;
-    Buffer<float> mWaterIntakeBuffer;
-    Buffer<float> mWaterRestitutionBuffer;
-    Buffer<float> mWaterDiffusionSpeedBuffer;
+    Buffer<bool> mMaterialIsHullBuffer;
+    Buffer<float> mMaterialWaterVolumeFillBuffer;
+    Buffer<float> mMaterialWaterIntakeBuffer;
+    Buffer<float> mMaterialWaterRestitutionBuffer;
+    Buffer<float> mMaterialWaterDiffusionSpeedBuffer;
 
     // Height of a 1m2 column of water which provides a pressure equivalent to the pressure at
     // this point. Quantity of water is max(water, 1.0)
@@ -1270,13 +1270,13 @@ private:
     // Wind dynamics
     //
 
-    Buffer<float> mWindReceptivityBuffer;
+    Buffer<float> mMaterialWindReceptivityBuffer;
 
     //
     // Rust dynamics
     //
 
-    Buffer<float> mRustReceptivityBuffer;
+    Buffer<float> mMaterialRustReceptivityBuffer;
 
     //
     // Ephemeral Particles

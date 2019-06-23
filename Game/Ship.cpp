@@ -412,10 +412,10 @@ void Ship::UpdateMechanicalDynamics(
     Render::RenderContext const & renderContext)
 {
     //
-    // 1. Recalculate total masses and everything else that derives from them, once and for all
+    // 1. Recalculate current masses and everything else that derives from them, once and for all
     //
 
-    mPoints.UpdateTotalMasses(gameParameters);
+    mPoints.UpdateCurrentMasses(gameParameters);
 
     //
     // 2. Run iterations
@@ -489,7 +489,7 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
 
         mPoints.GetForce(pointIndex) +=
             gameParameters.Gravity
-            * mPoints.GetTotalMass(pointIndex);
+            * mPoints.GetCurrentMass(pointIndex); // Material + Augmentation + Water
 
         if (mPoints.GetPosition(pointIndex).y < waterHeightAtThisPoint)
         {
@@ -499,7 +499,7 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
 
             mPoints.GetForce(pointIndex) -=
                 gameParameters.Gravity
-                * mPoints.GetWaterVolumeFill(pointIndex)
+                * mPoints.GetMaterialWaterVolumeFill(pointIndex)
                 * densityAdjustedWaterMass;
         }
 
@@ -546,7 +546,7 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
             // Note: should be based on relative velocity, but we simplify here for performance reasons
             mPoints.GetForce(pointIndex) +=
                 windForce
-                * mPoints.GetWindReceptivity(pointIndex);
+                * mPoints.GetMaterialWindReceptivity(pointIndex);
         }
     }
 }
@@ -573,7 +573,7 @@ void Ship::UpdateSpringForces(GameParameters const & /*gameParameters*/)
         vec2f const fSpringA =
             springDir
             * (displacementLength - mSprings.GetRestLength(springIndex))
-            * mSprings.GetStiffnessCoefficient(springIndex);
+            * mSprings.GetCurrentStiffnessCoefficient(springIndex);
 
 
         //
@@ -588,7 +588,7 @@ void Ship::UpdateSpringForces(GameParameters const & /*gameParameters*/)
         vec2f const fDampA =
             springDir
             * relVelocity.dot(springDir)
-            * mSprings.GetDampingCoefficient(springIndex);
+            * mSprings.GetCurrentDampingCoefficient(springIndex);
 
 
         //
@@ -849,7 +849,7 @@ void Ship::UpdateWaterInflow(
             float newWater =
                 incomingWaterVelocity
                 * GameParameters::SimulationStepTimeDuration<float>
-                * mPoints.GetWaterIntake(pointIndex)
+                * mPoints.GetMaterialWaterIntake(pointIndex)
                 * gameParameters.WaterIntakeAdjustment;
 
             if (newWater < 0.0f)
@@ -860,7 +860,7 @@ void Ship::UpdateWaterInflow(
                 newWater = -std::min(-newWater, mPoints.GetWater(pointIndex));
 
                 // Honor the water retention of this material
-                newWater *= mPoints.GetWaterRestitution(pointIndex);
+                newWater *= mPoints.GetMaterialWaterRestitution(pointIndex);
             }
 
             // Adjust water
@@ -1036,10 +1036,10 @@ void Ship::UpdateWaterVelocities(
             //
 
             pointSplashFreeNeighbors +=
-                mSprings.GetWaterPermeability(cs.SpringIndex)
+                mSprings.GetMaterialWaterPermeability(cs.SpringIndex)
                 * pointFreenessFactorBufferData[cs.OtherEndpointIndex];
 
-            pointSplashNeighbors += mSprings.GetWaterPermeability(cs.SpringIndex);
+            pointSplashNeighbors += mSprings.GetMaterialWaterPermeability(cs.SpringIndex);
         }
 
 
@@ -1058,7 +1058,7 @@ void Ship::UpdateWaterVelocities(
         {
             waterQuantityNormalizationFactor =
                 oldPointWaterBufferData[pointIndex]
-                * mPoints.GetWaterDiffusionSpeed(pointIndex)
+                * mPoints.GetMaterialWaterDiffusionSpeed(pointIndex)
                 * gameParameters.WaterDiffusionSpeedAdjustment
                 / totalOutboundWaterFlowWeight;
         }
@@ -1080,7 +1080,7 @@ void Ship::UpdateWaterVelocities(
 
             assert(springOutboundQuantityOfWater >= 0.0f);
 
-            if (mSprings.GetWaterPermeability(cs.SpringIndex) != 0.0f)
+            if (mSprings.GetMaterialWaterPermeability(cs.SpringIndex) != 0.0f)
             {
                 //
                 // Water - and momentum - move from point to endpoint
@@ -1405,7 +1405,7 @@ void Ship::RotPoints(
         float const beta =
             waterEquivalent
             * (mPoints.IsLeaking(p) ? leakingAlphaIncrement : alphaIncrement)
-            * mPoints.GetRustReceptivity(p);
+            * mPoints.GetMaterialRustReceptivity(p);
 
         mPoints.SetDecay(p, mPoints.GetDecay(p) * (1.0f - beta));
     }
@@ -1427,7 +1427,7 @@ void Ship::DecaySprings(
             / 2.0f;
 
         // Adjust spring's strength
-        mSprings.SetStrength(
+        mSprings.SetCurrentStrength(
             s,
             mSprings.GetMaterialStrength(s) * springDecay);
     }
@@ -1775,10 +1775,10 @@ void Ship::SpringDestroyHandler(
     // Make non-hull endpoints leak
     //
 
-    if (!mPoints.IsHull(pointAIndex))
+    if (!mPoints.GetMaterialIsHull(pointAIndex))
         mPoints.SetLeaking(pointAIndex);
 
-    if (!mPoints.IsHull(pointBIndex))
+    if (!mPoints.GetMaterialIsHull(pointBIndex))
         mPoints.SetLeaking(pointBIndex);
 
 

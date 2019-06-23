@@ -32,20 +32,19 @@ void Points::Add(
     mPositionBuffer.emplace_back(position);
     mVelocityBuffer.emplace_back(vec2f::zero());
     mForceBuffer.emplace_back(vec2f::zero());
-    mMassBuffer.emplace_back(structuralMaterial.Mass);
+    mAugmentedMaterialMassBuffer.emplace_back(structuralMaterial.Mass);
+    mCurrentMassBuffer.emplace_back(structuralMaterial.Mass);
     mDecayBuffer.emplace_back(1.0f);
     mIntegrationFactorTimeCoefficientBuffer.emplace_back(CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations));
 
-    // These will be recalculated each time
-    mTotalMassBuffer.emplace_back(0.0f);
     mIntegrationFactorBuffer.emplace_back(vec2f::zero());
     mForceRenderBuffer.emplace_back(vec2f::zero());
 
-    mIsHullBuffer.emplace_back(structuralMaterial.IsHull);
-    mWaterVolumeFillBuffer.emplace_back(structuralMaterial.WaterVolumeFill);
-    mWaterIntakeBuffer.emplace_back(structuralMaterial.WaterIntake);
-    mWaterRestitutionBuffer.emplace_back(1.0f - structuralMaterial.WaterRetention);
-    mWaterDiffusionSpeedBuffer.emplace_back(structuralMaterial.WaterDiffusionSpeed);
+    mMaterialIsHullBuffer.emplace_back(structuralMaterial.IsHull);
+    mMaterialWaterVolumeFillBuffer.emplace_back(structuralMaterial.WaterVolumeFill);
+    mMaterialWaterIntakeBuffer.emplace_back(structuralMaterial.WaterIntake);
+    mMaterialWaterRestitutionBuffer.emplace_back(1.0f - structuralMaterial.WaterRetention);
+    mMaterialWaterDiffusionSpeedBuffer.emplace_back(structuralMaterial.WaterDiffusionSpeed);
 
     mWaterBuffer.emplace_back(0.0f);
     mWaterVelocityBuffer.emplace_back(vec2f::zero());
@@ -66,10 +65,10 @@ void Points::Add(
     mLightBuffer.emplace_back(0.0f);
 
     // Wind dynamics
-    mWindReceptivityBuffer.emplace_back(structuralMaterial.WindReceptivity);
+    mMaterialWindReceptivityBuffer.emplace_back(structuralMaterial.WindReceptivity);
 
     // Rust dynamics
-    mRustReceptivityBuffer.emplace_back(structuralMaterial.RustReceptivity);
+    mMaterialRustReceptivityBuffer.emplace_back(structuralMaterial.RustReceptivity);
 
     // Ephemeral particles
     mEphemeralTypeBuffer.emplace_back(EphemeralType::None);
@@ -117,15 +116,16 @@ void Points::CreateEphemeralParticleAirBubble(
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = vec2f::zero();
     mForceBuffer[pointIndex] = vec2f::zero();
-    mMassBuffer[pointIndex] = structuralMaterial.Mass;
+    mAugmentedMaterialMassBuffer[pointIndex] = structuralMaterial.Mass;
+    mCurrentMassBuffer[pointIndex] = structuralMaterial.Mass;
     mDecayBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations);
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
 
-    mWaterVolumeFillBuffer[pointIndex] = structuralMaterial.WaterVolumeFill;
-    mWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
-    mWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
-    mWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
+    mMaterialWaterVolumeFillBuffer[pointIndex] = structuralMaterial.WaterVolumeFill;
+    mMaterialWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
+    mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
+    mMaterialWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
     mWaterBuffer[pointIndex] = 0.0f;
     assert(false == mIsLeakingBuffer[pointIndex]);
 
@@ -134,9 +134,9 @@ void Points::CreateEphemeralParticleAirBubble(
 
     mLightBuffer[pointIndex] = 0.0f;
 
-    mWindReceptivityBuffer[pointIndex] = 0.0f;
+    mMaterialWindReceptivityBuffer[pointIndex] = 0.0f;
 
-    mRustReceptivityBuffer[pointIndex] = 0.0f;
+    mMaterialRustReceptivityBuffer[pointIndex] = 0.0f;
 
     mEphemeralTypeBuffer[pointIndex] = EphemeralType::AirBubble;
     mEphemeralStartTimeBuffer[pointIndex] = currentSimulationTime;
@@ -176,15 +176,16 @@ void Points::CreateEphemeralParticleDebris(
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
     mForceBuffer[pointIndex] = vec2f::zero();
-    mMassBuffer[pointIndex] = structuralMaterial.Mass;
+    mAugmentedMaterialMassBuffer[pointIndex] = structuralMaterial.Mass;
+    mCurrentMassBuffer[pointIndex] = structuralMaterial.Mass;
     mDecayBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations);
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
 
-    mWaterVolumeFillBuffer[pointIndex] = 0.0f; // No buoyancy
-    mWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
-    mWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
-    mWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
+    mMaterialWaterVolumeFillBuffer[pointIndex] = 0.0f; // No buoyancy
+    mMaterialWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
+    mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
+    mMaterialWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
     mWaterBuffer[pointIndex] = 0.0f;
     assert(false == mIsLeakingBuffer[pointIndex]);
 
@@ -193,9 +194,9 @@ void Points::CreateEphemeralParticleDebris(
 
     mLightBuffer[pointIndex] = 0.0f;
 
-    mWindReceptivityBuffer[pointIndex] = 3.0f;
+    mMaterialWindReceptivityBuffer[pointIndex] = 3.0f; // Debris are susceptible to wind
 
-    mRustReceptivityBuffer[pointIndex] = 0.0f;
+    mMaterialRustReceptivityBuffer[pointIndex] = 0.0f;
 
     mEphemeralTypeBuffer[pointIndex] = EphemeralType::Debris;
     mEphemeralStartTimeBuffer[pointIndex] = currentSimulationTime;
@@ -234,15 +235,16 @@ void Points::CreateEphemeralParticleSparkle(
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
     mForceBuffer[pointIndex] = vec2f::zero();
-    mMassBuffer[pointIndex] = structuralMaterial.Mass;
+    mAugmentedMaterialMassBuffer[pointIndex] = structuralMaterial.Mass;
+    mCurrentMassBuffer[pointIndex] = structuralMaterial.Mass;
     mDecayBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations);
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
 
-    mWaterVolumeFillBuffer[pointIndex] = 0.0f; // No buoyancy
-    mWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
-    mWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
-    mWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
+    mMaterialWaterVolumeFillBuffer[pointIndex] = 0.0f; // No buoyancy
+    mMaterialWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
+    mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
+    mMaterialWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
     mWaterBuffer[pointIndex] = 0.0f;
     assert(false == mIsLeakingBuffer[pointIndex]);
 
@@ -251,9 +253,9 @@ void Points::CreateEphemeralParticleSparkle(
 
     mLightBuffer[pointIndex] = 0.0f;
 
-    mWindReceptivityBuffer[pointIndex] = 3.0f;
+    mMaterialWindReceptivityBuffer[pointIndex] = 5.0f; // Sparkles are susceptible to wind
 
-    mRustReceptivityBuffer[pointIndex] = 0.0f;
+    mMaterialRustReceptivityBuffer[pointIndex] = 0.0f;
 
     mEphemeralTypeBuffer[pointIndex] = EphemeralType::Sparkle;
     mEphemeralStartTimeBuffer[pointIndex] = currentSimulationTime;
@@ -723,14 +725,14 @@ void Points::UploadEphemeralParticles(
     }
 }
 
-void Points::AugmentStructuralMass(
+void Points::AugmentMaterialMass(
     ElementIndex pointElementIndex,
     float offset,
     Springs & springs)
 {
     assert(pointElementIndex < mElementCount);
 
-    mMassBuffer[pointElementIndex] = GetStructuralMaterial(pointElementIndex).Mass + offset;
+    mAugmentedMaterialMassBuffer[pointElementIndex] = GetStructuralMaterial(pointElementIndex).Mass + offset;
 
     // Notify all connected springs
     for (auto connectedSpring : mConnectedSpringsBuffer[pointElementIndex].ConnectedSprings)
@@ -739,11 +741,11 @@ void Points::AugmentStructuralMass(
     }
 }
 
-void Points::UpdateTotalMasses(GameParameters const & gameParameters)
+void Points::UpdateCurrentMasses(GameParameters const & gameParameters)
 {
     //
     // Update:
-    //  - TotalMass: material's mass + point's water mass
+    //  - CurrentMass: augmented material mass + point's water mass
     //  - Integration factor: integration factor time coefficient / total mass
     //
 
@@ -751,17 +753,17 @@ void Points::UpdateTotalMasses(GameParameters const & gameParameters)
 
     for (ElementIndex i : *this)
     {
-        float const totalMass =
-            mMassBuffer[i]
-            + std::min(GetWater(i), GetWaterVolumeFill(i)) * densityAdjustedWaterMass;
+        float const currentMass =
+            mAugmentedMaterialMassBuffer[i]
+            + std::min(GetWater(i), GetMaterialWaterVolumeFill(i)) * densityAdjustedWaterMass;
 
-        assert(totalMass > 0.0f);
+        assert(currentMass > 0.0f);
 
-        mTotalMassBuffer[i] = totalMass;
+        mCurrentMassBuffer[i] = currentMass;
 
         mIntegrationFactorBuffer[i] = vec2f(
-            mIntegrationFactorTimeCoefficientBuffer[i] / totalMass,
-            mIntegrationFactorTimeCoefficientBuffer[i] / totalMass);
+            mIntegrationFactorTimeCoefficientBuffer[i] / currentMass,
+            mIntegrationFactorTimeCoefficientBuffer[i] / currentMass);
     }
 }
 

@@ -1026,18 +1026,22 @@ Render:
 				- Springs:
 					- MaterialMeltingTemperature (avg of two endpoints, calcd at Add())
 					- MaterialThermalConductivity (avg of two endpoints, calcd at Add())
-				- Renames:
-					- Points::TotalMass -> "CurrentMass" (and UpdateTotalMasses)
-					- Points::StructuralMass -> "MaterialMass"
-					- Springs::Stiffness -> "MaterialStiffness"
-					- Springs::StiffnessCoefficient -> "CurrentStiffnessCoefficient"
-					- Springs::DampingCoefficient -> "CurrentDampingCoefficient"
-					- Springs::Strength -> "CurrentStrength"
+				= Renames:
+					+ Points::TotalMass -> "CurrentMass" (and UpdateTotalMasses)
+						+ TODO: rethink this one; "Mass" contains augmentation nowadays
+					+ Springs::Stiffness -> "MaterialStiffness"
+					+ Springs::Coefficients -> "CurrentCoefficients"
+					+ Springs::StiffnessCoefficient -> "CurrentStiffnessCoefficient"
+					+ Springs::DampingCoefficient -> "CurrentDampingCoefficient"
+					+ Springs::Strength -> "CurrentStrength"
+					+ Springs::GetMaterialStrength
+					- See whether all "current" should go and become _just_
 			- Heat overlay:
 				- Ship/RenderContext flag
 				- SettingsDialog
 				- Ship::Render: when flag set, upload heat buffer (much like we do w/Decay)
 					- Ship/RenderContext UploadHeat
+						- Maintains dirty flag and exposes MarkTempBufAsDirty - exactly like decay
 				- Ship/RenderContext render
 					- Shaders:
 						- Use temperature buffer (of floats) to produce "temperature color" as:
@@ -1058,7 +1062,7 @@ Render:
 							- (Params, P.Temperature, P.Mass) -> CurrentStiffnessCoefficient, CurrentDampingCoefficient
 							- (P.Decay, P.Temperature) -> S.CurrentStrength
 								- Add "StructuralStrength", and use "CurrentStrength" for strain
-						- Nuke Ship::DecaySprings
+						- Nuke Ship::DecaySprings and, with it, Springs::Set(Current)Strength
 					- At another slot: call Ship::UpdateTemperature
 						- Propagation and dissipation
 							+ New global constants: AirTemperature, WaterTemperature
@@ -1316,18 +1320,14 @@ Render:
 				- For each flood door element (own separate list, for perf):
 					- Run state machine (including eventual lead-in/lead-out's)
 					- @ state changes:
-						- For all connected springs: one of the following, depending on connectivity state:
-							- Springs::SetWaterPermeability(idx, val) 
-								- See if can use fractional values for half-open/half-closed
-							- Springs::SetDefaultWaterPermeability(idx)
-								- Uses private CalculateWaterPermeability(), also used by cctor
+						- For all connected springs: Set(Current)WaterPermeability(idx, val)
+							- val depends on connectivity state and MaterialWaterPermeability
 						- Anything else? See water momenta algo
 			+ No real need to also change Point::Buoyancy
 			+ No real need to also change Point::IsHull
 				+ Points' hullness is only used to decide whether or not to make a point Leak when an attached spring breaks; we
 				  leave this determined by underlying structural material
 			+ Springs::IsHull should be gone by now
-
 
 
 	- Propulsion
