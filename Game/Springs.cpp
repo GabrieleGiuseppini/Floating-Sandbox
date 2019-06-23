@@ -32,17 +32,17 @@ void Springs::Add(
         (points.GetStructuralMaterial(pointAIndex).Strength + points.GetStructuralMaterial(pointBIndex).Strength)
         / 2.0f;
     mMaterialStrengthBuffer.emplace_back(averageStrength);
-    mCurrentStrengthBuffer.emplace_back(averageStrength);
+    mStrengthBuffer.emplace_back(averageStrength);
 
     // Stiffness is average
-    float stiffness =
+    float const stiffness =
         (points.GetStructuralMaterial(pointAIndex).Stiffness + points.GetStructuralMaterial(pointBIndex).Stiffness)
         / 2.0f;
     mMaterialStiffnessBuffer.emplace_back(stiffness);
 
     mRestLengthBuffer.emplace_back((points.GetPosition(pointAIndex) - points.GetPosition(pointBIndex)).length());
 
-    mCurrentCoefficientsBuffer.emplace_back(
+    mCoefficientsBuffer.emplace_back(
         CalculateStiffnessCoefficient(
             pointAIndex,
             pointBIndex,
@@ -60,7 +60,7 @@ void Springs::Add(
     mMaterialCharacteristicsBuffer.emplace_back(characteristics);
 
     // Base structural material is arbitrarily the weakest of the two;
-    // only affects sound and name
+    // only affects sound and name, anyway
     mBaseStructuralMaterialBuffer.emplace_back(
         points.GetStructuralMaterial(pointAIndex).Strength < points.GetStructuralMaterial(pointBIndex).Strength
         ? &points.GetStructuralMaterial(pointAIndex)
@@ -107,8 +107,8 @@ void Springs::Destroy(
     // Zero out our coefficients, so that we can still calculate Hooke's
     // and damping forces for this spring without running the risk of
     // affecting non-deleted points
-    mCurrentCoefficientsBuffer[springElementIndex].StiffnessCoefficient = 0.0f;
-    mCurrentCoefficientsBuffer[springElementIndex].DampingCoefficient = 0.0f;
+    mCoefficientsBuffer[springElementIndex].StiffnessCoefficient = 0.0f;
+    mCoefficientsBuffer[springElementIndex].DampingCoefficient = 0.0f;
 
     // Flag ourselves as deleted
     mIsDeletedBuffer[springElementIndex] = true;
@@ -127,7 +127,7 @@ void Springs::Restore(
 
     // Recalculate coefficients
 
-    mCurrentCoefficientsBuffer[springElementIndex].StiffnessCoefficient = CalculateStiffnessCoefficient(
+    mCoefficientsBuffer[springElementIndex].StiffnessCoefficient = CalculateStiffnessCoefficient(
         GetEndpointAIndex(springElementIndex),
         GetEndpointBIndex(springElementIndex),
         GetMaterialStiffness(springElementIndex),
@@ -135,7 +135,7 @@ void Springs::Restore(
         gameParameters.NumMechanicalDynamicsIterations<float>(),
         points);
 
-    mCurrentCoefficientsBuffer[springElementIndex].DampingCoefficient = CalculateDampingCoefficient(
+    mCoefficientsBuffer[springElementIndex].DampingCoefficient = CalculateDampingCoefficient(
         GetEndpointAIndex(springElementIndex),
         GetEndpointBIndex(springElementIndex),
         gameParameters.SpringDampingAdjustment,
@@ -165,7 +165,7 @@ void Springs::UpdateGameParameters(
         {
             if (!IsDeleted(i))
             {
-                mCurrentCoefficientsBuffer[i].StiffnessCoefficient = CalculateStiffnessCoefficient(
+                mCoefficientsBuffer[i].StiffnessCoefficient = CalculateStiffnessCoefficient(
                     GetEndpointAIndex(i),
                     GetEndpointBIndex(i),
                     GetMaterialStiffness(i),
@@ -173,7 +173,7 @@ void Springs::UpdateGameParameters(
                     numMechanicalDynamicsIterations,
                     points);
 
-                mCurrentCoefficientsBuffer[i].DampingCoefficient = CalculateDampingCoefficient(
+                mCoefficientsBuffer[i].DampingCoefficient = CalculateDampingCoefficient(
                     GetEndpointAIndex(i),
                     GetEndpointBIndex(i),
                     gameParameters.SpringDampingAdjustment,
@@ -293,7 +293,7 @@ bool Springs::UpdateStrains(
             float const strain = fabs(mRestLengthBuffer[s] - dx) / mRestLengthBuffer[s];
 
             // Check against strength
-            float const effectiveStrength = effectiveStrengthAdjustment * mCurrentStrengthBuffer[s];
+            float const effectiveStrength = effectiveStrengthAdjustment * mStrengthBuffer[s];
             if (strain > effectiveStrength)
             {
                 // It's broken!

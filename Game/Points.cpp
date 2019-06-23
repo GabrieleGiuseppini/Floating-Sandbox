@@ -33,7 +33,7 @@ void Points::Add(
     mVelocityBuffer.emplace_back(vec2f::zero());
     mForceBuffer.emplace_back(vec2f::zero());
     mAugmentedMaterialMassBuffer.emplace_back(structuralMaterial.Mass);
-    mCurrentMassBuffer.emplace_back(structuralMaterial.Mass);
+    mMassBuffer.emplace_back(structuralMaterial.Mass);
     mDecayBuffer.emplace_back(1.0f);
     mIntegrationFactorTimeCoefficientBuffer.emplace_back(CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations));
 
@@ -117,7 +117,7 @@ void Points::CreateEphemeralParticleAirBubble(
     mVelocityBuffer[pointIndex] = vec2f::zero();
     mForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = structuralMaterial.Mass;
-    mCurrentMassBuffer[pointIndex] = structuralMaterial.Mass;
+    mMassBuffer[pointIndex] = structuralMaterial.Mass;
     mDecayBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations);
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
@@ -177,7 +177,7 @@ void Points::CreateEphemeralParticleDebris(
     mVelocityBuffer[pointIndex] = velocity;
     mForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = structuralMaterial.Mass;
-    mCurrentMassBuffer[pointIndex] = structuralMaterial.Mass;
+    mMassBuffer[pointIndex] = structuralMaterial.Mass;
     mDecayBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations);
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
@@ -236,7 +236,7 @@ void Points::CreateEphemeralParticleSparkle(
     mVelocityBuffer[pointIndex] = velocity;
     mForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = structuralMaterial.Mass;
-    mCurrentMassBuffer[pointIndex] = structuralMaterial.Mass;
+    mMassBuffer[pointIndex] = structuralMaterial.Mass;
     mDecayBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations);
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
@@ -741,7 +741,7 @@ void Points::AugmentMaterialMass(
     }
 }
 
-void Points::UpdateCurrentMasses(GameParameters const & gameParameters)
+void Points::UpdateMasses(GameParameters const & gameParameters)
 {
     //
     // Update:
@@ -753,17 +753,17 @@ void Points::UpdateCurrentMasses(GameParameters const & gameParameters)
 
     for (ElementIndex i : *this)
     {
-        float const currentMass =
+        float const mass =
             mAugmentedMaterialMassBuffer[i]
             + std::min(GetWater(i), GetMaterialWaterVolumeFill(i)) * densityAdjustedWaterMass;
 
-        assert(currentMass > 0.0f);
+        assert(mass > 0.0f);
 
-        mCurrentMassBuffer[i] = currentMass;
+        mMassBuffer[i] = mass;
 
         mIntegrationFactorBuffer[i] = vec2f(
-            mIntegrationFactorTimeCoefficientBuffer[i] / currentMass,
-            mIntegrationFactorTimeCoefficientBuffer[i] / currentMass);
+            mIntegrationFactorTimeCoefficientBuffer[i] / mass,
+            mIntegrationFactorTimeCoefficientBuffer[i] / mass);
     }
 }
 

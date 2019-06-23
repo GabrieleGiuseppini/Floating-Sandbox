@@ -131,10 +131,10 @@ public:
         , mFactorySuperTrianglesBuffer(mBufferElementCount, mElementCount, SuperTrianglesVector())
         // Physical
         , mMaterialStrengthBuffer(mBufferElementCount, mElementCount, 0.0f)
-        , mCurrentStrengthBuffer(mBufferElementCount, mElementCount, 0.0f)
+        , mStrengthBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mMaterialStiffnessBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mRestLengthBuffer(mBufferElementCount, mElementCount, 1.0f)
-        , mCurrentCoefficientsBuffer(mBufferElementCount, mElementCount, Coefficients(0.0f, 0.0f))
+        , mCoefficientsBuffer(mBufferElementCount, mElementCount, Coefficients(0.0f, 0.0f))
         , mMaterialCharacteristicsBuffer(mBufferElementCount, mElementCount, Characteristics::None)
         , mBaseStructuralMaterialBuffer(mBufferElementCount, mElementCount, nullptr)
         // Water
@@ -226,7 +226,7 @@ public:
     {
         assert(springElementIndex < mElementCount);
 
-        mCurrentCoefficientsBuffer[springElementIndex].StiffnessCoefficient =
+        mCoefficientsBuffer[springElementIndex].StiffnessCoefficient =
             CalculateStiffnessCoefficient(
                 mEndpointsBuffer[springElementIndex].PointAIndex,
                 mEndpointsBuffer[springElementIndex].PointBIndex,
@@ -235,7 +235,7 @@ public:
                 mCurrentNumMechanicalDynamicsIterations,
                 points);
 
-        mCurrentCoefficientsBuffer[springElementIndex].DampingCoefficient =
+        mCoefficientsBuffer[springElementIndex].DampingCoefficient =
             CalculateDampingCoefficient(
                 mEndpointsBuffer[springElementIndex].PointAIndex,
                 mEndpointsBuffer[springElementIndex].PointBIndex,
@@ -448,16 +448,16 @@ public:
         return mMaterialStrengthBuffer[springElementIndex];
     }
 
-    float GetCurrentStrength(ElementIndex springElementIndex) const
+    float GetStrength(ElementIndex springElementIndex) const
     {
-        return mCurrentStrengthBuffer[springElementIndex];
+        return mStrengthBuffer[springElementIndex];
     }
 
-    void SetCurrentStrength(
+    void SetStrength(
         ElementIndex springElementIndex,
         float value)
     {
-        mCurrentStrengthBuffer[springElementIndex] = value;
+        mStrengthBuffer[springElementIndex] = value;
     }
 
     float GetMaterialStiffness(ElementIndex springElementIndex) const
@@ -479,14 +479,14 @@ public:
         return mRestLengthBuffer[springElementIndex];
     }
 
-    float GetCurrentStiffnessCoefficient(ElementIndex springElementIndex) const
+    float GetStiffnessCoefficient(ElementIndex springElementIndex) const
     {
-        return mCurrentCoefficientsBuffer[springElementIndex].StiffnessCoefficient;
+        return mCoefficientsBuffer[springElementIndex].StiffnessCoefficient;
     }
 
-    float GetCurrentDampingCoefficient(ElementIndex springElementIndex) const
+    float GetDampingCoefficient(ElementIndex springElementIndex) const
     {
-        return mCurrentCoefficientsBuffer[springElementIndex].DampingCoefficient;
+        return mCoefficientsBuffer[springElementIndex].DampingCoefficient;
     }
 
     StructuralMaterial const & GetBaseStructuralMaterial(ElementIndex springElementIndex) const
@@ -619,11 +619,11 @@ private:
     // Physical
     //
 
-    Buffer<float> mCurrentStrengthBuffer;
+    Buffer<float> mStrengthBuffer;
     Buffer<float> mMaterialStrengthBuffer;
     Buffer<float> mMaterialStiffnessBuffer;
     Buffer<float> mRestLengthBuffer;
-    Buffer<Coefficients> mCurrentCoefficientsBuffer;
+    Buffer<Coefficients> mCoefficientsBuffer;
     Buffer<Characteristics> mMaterialCharacteristicsBuffer;
     Buffer<StructuralMaterial const *> mBaseStructuralMaterialBuffer;
 

@@ -338,7 +338,7 @@ public:
         , mVelocityBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mForceBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mAugmentedMaterialMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
-        , mCurrentMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
+        , mMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mDecayBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mIsDecayBufferDirty(true)
         , mIntegrationFactorTimeCoefficientBuffer(mBufferElementCount, shipPointCount, 0.0f)
@@ -679,12 +679,12 @@ public:
      * Only valid after a call to UpdateTotalMasses() and when
      * neither water quantities nor masses have changed since then.
      */
-    float GetCurrentMass(ElementIndex pointElementIndex)
+    float GetMass(ElementIndex pointElementIndex)
     {
-        return mCurrentMassBuffer[pointElementIndex];
+        return mMassBuffer[pointElementIndex];
     }
 
-    void UpdateCurrentMasses(GameParameters const & gameParameters);
+    void UpdateMasses(GameParameters const & gameParameters);
 
     float GetDecay(ElementIndex pointElementIndex) const
     {
@@ -707,7 +707,7 @@ public:
      * The integration factor is the quantity which, when multiplied with the force on the point,
      * yields the change in position that occurs during a time interval equal to the dynamics simulation step.
      *
-     * Only valid after a call to UpdateCurrentMasses() and when
+     * Only valid after a call to UpdateMasses() and when
      * neither water quantities nor masses have changed since then.
      */
     float * restrict GetIntegrationFactorBufferAsFloat()
@@ -1212,7 +1212,7 @@ private:
     Buffer<vec2f> mVelocityBuffer;
     Buffer<vec2f> mForceBuffer;
     Buffer<float> mAugmentedMaterialMassBuffer; // Structural + Offset
-    Buffer<float> mCurrentMassBuffer; // Augmented + Water
+    Buffer<float> mMassBuffer; // Augmented + Water
     Buffer<float> mDecayBuffer; // 1.0 -> 0.0 (completely decayed)
     mutable bool mIsDecayBufferDirty;
     Buffer<float> mIntegrationFactorTimeCoefficientBuffer; // dt^2 or zero when the point is frozen

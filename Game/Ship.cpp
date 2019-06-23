@@ -415,7 +415,7 @@ void Ship::UpdateMechanicalDynamics(
     // 1. Recalculate current masses and everything else that derives from them, once and for all
     //
 
-    mPoints.UpdateCurrentMasses(gameParameters);
+    mPoints.UpdateMasses(gameParameters);
 
     //
     // 2. Run iterations
@@ -489,7 +489,7 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
 
         mPoints.GetForce(pointIndex) +=
             gameParameters.Gravity
-            * mPoints.GetCurrentMass(pointIndex); // Material + Augmentation + Water
+            * mPoints.GetMass(pointIndex); // Material + Augmentation + Water
 
         if (mPoints.GetPosition(pointIndex).y < waterHeightAtThisPoint)
         {
@@ -573,7 +573,7 @@ void Ship::UpdateSpringForces(GameParameters const & /*gameParameters*/)
         vec2f const fSpringA =
             springDir
             * (displacementLength - mSprings.GetRestLength(springIndex))
-            * mSprings.GetCurrentStiffnessCoefficient(springIndex);
+            * mSprings.GetStiffnessCoefficient(springIndex);
 
 
         //
@@ -588,7 +588,7 @@ void Ship::UpdateSpringForces(GameParameters const & /*gameParameters*/)
         vec2f const fDampA =
             springDir
             * relVelocity.dot(springDir)
-            * mSprings.GetCurrentDampingCoefficient(springIndex);
+            * mSprings.GetDampingCoefficient(springIndex);
 
 
         //
@@ -1427,7 +1427,7 @@ void Ship::DecaySprings(
             / 2.0f;
 
         // Adjust spring's strength
-        mSprings.SetCurrentStrength(
+        mSprings.SetStrength(
             s,
             mSprings.GetMaterialStrength(s) * springDecay);
     }

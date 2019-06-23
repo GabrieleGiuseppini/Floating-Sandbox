@@ -85,7 +85,7 @@ void BlastForceField::Apply(
                 (newPosition - points.GetPosition(pointIndex))
                 / DtSquared
                 * mStrength
-                * points.GetCurrentMass(pointIndex);
+                * points.GetMass(pointIndex);
         }
     }
 
@@ -148,7 +148,7 @@ void ImplosionForceField::Apply(
         vec2f normalizedDisplacement = displacement.normalise(displacementLength);
 
         // Make final acceleration somewhat independent from mass
-        float const massNormalization = points.GetCurrentMass(pointIndex) / 50.0f;
+        float const massNormalization = points.GetMass(pointIndex) / 50.0f;
 
         // Angular (constant)
         points.GetForce(pointIndex) +=

@@ -1026,7 +1026,7 @@ Render:
 				- Springs:
 					- MaterialMeltingTemperature (avg of two endpoints, calcd at Add())
 					- MaterialThermalConductivity (avg of two endpoints, calcd at Add())
-				= Renames:
+				+ Renames:
 					+ Points::TotalMass -> "CurrentMass" (and UpdateTotalMasses)
 						+ TODO: rethink this one; "Mass" contains augmentation nowadays
 					+ Springs::Stiffness -> "MaterialStiffness"
@@ -1035,7 +1035,7 @@ Render:
 					+ Springs::DampingCoefficient -> "CurrentDampingCoefficient"
 					+ Springs::Strength -> "CurrentStrength"
 					+ Springs::GetMaterialStrength
-					- See whether all "current" should go and become _just_
+					+ See whether all "current" should go and become _just_
 			- Heat overlay:
 				- Ship/RenderContext flag
 				- SettingsDialog
