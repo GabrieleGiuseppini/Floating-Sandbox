@@ -57,6 +57,7 @@ void Points::Add(
 
     // Heat dynamics
     mTemperatureBuffer.emplace_back(GameParameters::AirTemperature);
+    mMaterialSpecificHeatBuffer.emplace_back(structuralMaterial.SpecificHeat);
     mMaterialIgnitionTemperatureBuffer.emplace_back(structuralMaterial.IgnitionTemperature);
     mCombustionStateBuffer.emplace_back(CombustionState());
 
@@ -130,6 +131,8 @@ void Points::CreateEphemeralParticleAirBubble(
     assert(false == mIsLeakingBuffer[pointIndex]);
 
     mTemperatureBuffer[pointIndex] = GameParameters::AirTemperature;
+    mMaterialSpecificHeatBuffer[pointIndex] = structuralMaterial.SpecificHeat;
+    mMaterialIgnitionTemperatureBuffer[pointIndex] = structuralMaterial.IgnitionTemperature;
     mCombustionStateBuffer[pointIndex] = CombustionState();
 
     mLightBuffer[pointIndex] = 0.0f;
@@ -190,6 +193,8 @@ void Points::CreateEphemeralParticleDebris(
     assert(false == mIsLeakingBuffer[pointIndex]);
 
     mTemperatureBuffer[pointIndex] = GameParameters::AirTemperature;
+    mMaterialSpecificHeatBuffer[pointIndex] = structuralMaterial.SpecificHeat;
+    mMaterialIgnitionTemperatureBuffer[pointIndex] = structuralMaterial.IgnitionTemperature;
     mCombustionStateBuffer[pointIndex] = CombustionState();
 
     mLightBuffer[pointIndex] = 0.0f;
@@ -248,7 +253,9 @@ void Points::CreateEphemeralParticleSparkle(
     mWaterBuffer[pointIndex] = 0.0f;
     assert(false == mIsLeakingBuffer[pointIndex]);
 
-    mTemperatureBuffer[pointIndex] = 373.15f; // 100 Celsius, arbitrary
+    mTemperatureBuffer[pointIndex] = 773.15f; // 500 Celsius, arbitrary
+    mMaterialSpecificHeatBuffer[pointIndex] = structuralMaterial.SpecificHeat;
+    mMaterialIgnitionTemperatureBuffer[pointIndex] = structuralMaterial.IgnitionTemperature;
     mCombustionStateBuffer[pointIndex] = CombustionState();
 
     mLightBuffer[pointIndex] = 0.0f;

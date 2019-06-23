@@ -26,6 +26,7 @@ static constexpr int LowFrequencyPeriod = 50; // Number of simulation steps
 
 static constexpr int UpdateSinkingFrequency = 12;
 static constexpr int RotPointsFrequency = 25;
+static constexpr int UpdateTemperatureFrequency = 37;
 static constexpr int DecaySpringsFrequency = 50;
 
 
@@ -196,7 +197,6 @@ void Ship::Update(
         mPoints);
 
 
-
     //
     // Update water dynamics
     //
@@ -214,6 +214,17 @@ void Ship::Update(
         currentWallClockTime,
         gameParameters);
 
+
+    //
+    // Update temperature
+    //
+
+    if (mCurrentSimulationSequenceNumber.IsStepOf(UpdateTemperatureFrequency - 1, LowFrequencyPeriod))
+    {
+        UpdateTemperature(
+            currentSimulationTime,
+            gameParameters);
+    }
 
     //
     // Update ephemeral particles
@@ -1379,6 +1390,56 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
         }
     }
 }
+
+///////////////////////////////////////////////////////////////////////////////////
+// Temperature
+///////////////////////////////////////////////////////////////////////////////////
+
+void Ship::UpdateTemperature(
+    float currentSimulationTime,
+    GameParameters const & gameParameters)
+{
+    //
+    // Propagate temperature (via heat), and dissipate temperature
+    //
+
+    // Source and result temperature buffers
+    float * restrict oldPointTemperatureBufferData = mPoints.GetTemperatureBufferAsFloat();
+    auto newPointTemperatureBuffer = mPoints.MakeTemperatureBufferCopy();
+    float * restrict newPointTemperatureBufferData = newPointTemperatureBuffer->data();
+
+    ////// TODO: if needed
+    ////// Weights of outbound water flows along each spring, including impermeable ones;
+    ////// set to zero for springs whose resultant scalar water velocities are
+    ////// directed towards the point being visited
+    ////std::array<float, GameParameters::MaxSpringsPerPoint> springOutboundWaterFlowWeights;
+
+    ////// Total weight
+    ////float totalOutboundWaterFlowWeight;
+
+    //
+    // Visit all non-ephemeral points
+    //
+    // No particular reason to not do ephemeral points as well - at the moment
+    // temperature is not relevant to ephemeral particles
+    //
+
+    for (auto pointIndex : mPoints)
+    {
+
+        // TODOHERE
+    }
+
+    //
+    // Move result values back to point
+    //
+
+    mPoints.UpdateTemperatureBuffer(std::move(newPointTemperatureBuffer));
+}
+
+///////////////////////////////////////////////////////////////////////////////////
+// Misc
+///////////////////////////////////////////////////////////////////////////////////
 
 void Ship::RotPoints(
     float /*currentSimulationTime*/,

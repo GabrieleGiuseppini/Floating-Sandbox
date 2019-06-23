@@ -358,6 +358,7 @@ public:
         , mFactoryIsLeakingBuffer(mBufferElementCount, shipPointCount, false)
         // Heat dynamics
         , mTemperatureBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mMaterialSpecificHeatBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialIgnitionTemperatureBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mCombustionStateBuffer(mBufferElementCount, shipPointCount, CombustionState())
         // Electrical dynamics
@@ -885,6 +886,45 @@ public:
     }
 
     //
+    // Heat dynamics
+    //
+
+    float * restrict GetTemperatureBufferAsFloat()
+    {
+        return mTemperatureBuffer.data();
+    }
+
+    float GetTemperature(ElementIndex pointElementIndex) const
+    {
+        return mTemperatureBuffer[pointElementIndex];
+    }
+
+    void SetTemperature(
+        ElementIndex pointElementIndex,
+        float value)
+    {
+        mTemperatureBuffer[pointElementIndex] = value;
+    }
+
+    std::shared_ptr<Buffer<float>> MakeTemperatureBufferCopy()
+    {
+        auto temperatureBufferCopy = mFloatBufferAllocator.Allocate();
+        temperatureBufferCopy->copy_from(mTemperatureBuffer);
+
+        return temperatureBufferCopy;
+    }
+
+    void UpdateTemperatureBuffer(std::shared_ptr<Buffer<float>> newTemperatureBuffer)
+    {
+        mTemperatureBuffer.copy_from(*newTemperatureBuffer);
+    }
+
+    float GetMaterialSpecificHeat(ElementIndex pointElementIndex) const
+    {
+        return mMaterialSpecificHeatBuffer[pointElementIndex];
+    }
+
+    //
     // Electrical dynamics
     //
 
@@ -1253,6 +1293,7 @@ private:
     //
 
     Buffer<float> mTemperatureBuffer; // Kelvin
+    Buffer<float> mMaterialSpecificHeatBuffer;
     Buffer<float> mMaterialIgnitionTemperatureBuffer;
     Buffer<CombustionState> mCombustionStateBuffer;
 

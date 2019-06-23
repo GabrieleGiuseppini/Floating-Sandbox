@@ -51,6 +51,7 @@ StructuralMaterial StructuralMaterial::Create(picojson::object const & structura
         float ignitionTemperature = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "ignition_temperature");
         float meltingTemperature = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "melting_temperature");
         float thermalConductivity = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "thermal_conductivity");
+        float specificHeat = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "specific_heat");
         MaterialCombustionType combustionType = StrToMaterialCombustionType(Utils::GetMandatoryJsonMember<std::string>(structuralMaterialJson, "combustion_type"));
 
         // Misc
@@ -75,6 +76,7 @@ StructuralMaterial StructuralMaterial::Create(picojson::object const & structura
             ignitionTemperature,
             meltingTemperature,
             thermalConductivity,
+            specificHeat,
             combustionType,
             // Misc
             windReceptivity);

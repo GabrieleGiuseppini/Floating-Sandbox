@@ -1014,6 +1014,7 @@ Render:
 						+ Ignition temperature (T)
 						+ Melting temperature (T)
 						+ Thermal conductivity 
+						+ Specific Heat
 						+ Combustion type (Combustion, Explosion)
 					+ Add all of them via script, with switches based off material type
 						+ Thermal conductivity: see https://en.wikipedia.org/wiki/Thermal_conductivity#Units

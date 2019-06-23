@@ -234,6 +234,12 @@ public:
 
     void DiffuseLight(GameParameters const & gameParameters);
 
+    // Temperature
+
+    void UpdateTemperature(
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
+
     // Misc
 
     void RotPoints(

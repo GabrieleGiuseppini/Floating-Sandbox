@@ -68,6 +68,7 @@ public:
     float IgnitionTemperature; // K
     float MeltingTemperature; // K
     float ThermalConductivity; // W/(m*K)
+    float SpecificHeat; // J/(Kg*K)
     MaterialCombustionType CombustionType;
 
     // Misc
@@ -104,6 +105,7 @@ public:
         float ignitionTemperature,
         float meltingTemperature,
         float thermalConductivity,
+        float specificHeat,
         MaterialCombustionType combustionType,
         // Misc
         float windReceptivity)
@@ -123,6 +125,7 @@ public:
         , IgnitionTemperature(ignitionTemperature)
         , MeltingTemperature(meltingTemperature)
         , ThermalConductivity(thermalConductivity)
+        , SpecificHeat(specificHeat)
         , CombustionType(combustionType)
         , WindReceptivity(windReceptivity)
     {}
