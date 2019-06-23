@@ -33,12 +33,15 @@ Note: the last material must NOT be followed by a comma!
 Structural materials are as follows:
 ```
     {
-        "color_key": "#404050", 
+        "color_key": "#404050",
+	"combustion_type": "Combustion", 
+        "ignition_temperature": 1588.15, 
         "is_hull": true, 
         "mass": {
             "density": 0.0935, 
             "nominal_mass": 7950
         }, 
+	"melting_temperature": 1783.15, 
         "name": "Iron Hull", 
         "render_color": "#404050", 
         "rust_receptivity": 1.0, 
@@ -49,6 +52,7 @@ Structural materials are as follows:
             "column": 0, 
             "row": "0|Iron Hull"
         }, 
+	"thermal_conductivity": 79.5, 
         "water_diffusion_speed": 0.5, 
         "water_intake": 1.0, 
         "water_retention": 0.05, 
@@ -60,9 +64,12 @@ Structural materials are as follows:
 Here's an explanation of the elements:
 
 - _color key_: the RGB color to use in the structural layer image to tell the game which material to use for a particle.
+- _combustion type_: the type of combustion. At this moment only "Combustion" is supported.
+- _ignition temperature_: the temperature, in Kelvin, at which the material starts burning.
 - _is hull_: whether or not a point or a spring of this material is permeable to water.
 - _mass_: the mass of the material, in Kg. The mass is really the product of its nominal mass (the real physical mass of the material) with its density (how much of that material is a in a cubic meter). 
    - For example, iron has a mass of 7950 Kg/m3, but the "Iron Hull" material does not represent a cubic meter of iron (that would be insane), but rather some *structure* made of iron (think, a truss or a beam) which only fills 9.35% of that cubic meter.
+- _melting temperature_: the temperature, in Kelvin, at which the material starts melting.
 - _name_: the name of the material; only useful to carbon-based entities.
 - _render color_: the RGB color to use when rendering certain particles of this material.
 - _rust receptivity_: the degree to which this material rusts when wet; when not set, assumed to be 1.0. A value of 0.0 turns off rusting for this material altogether.
@@ -71,6 +78,7 @@ Here's an explanation of the elements:
 - _strength_: the maximum relative stretch (length difference wrt rest length, over rest length) before a spring of this material breaks. 
    - For example, 0.01 means that a spring will break after it gets shorter or longer by 1% of its rest length.
 - _template_: coordinates of the material in the automatically-generated materials template.
+- _thermal conductivity_: the speed with which heat propagates along this material, in W/(m*K).
 - _water diffusion speed_: the speed with which water at this particle spreads out of it. Technically, it's the fraction of water at this particle that is allowed to leave the particle towards its neighbors.
 - _water intake_: the amount of water that enters or leaves this particle when the particle is leaking; when not set, assumed to be 1.0.
 - _water retention_: the amount of water that will remain in this particle when the particle is leaking and finds itself at a pressure point lower than the pressure of the water it contains.

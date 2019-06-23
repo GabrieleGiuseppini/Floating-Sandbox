@@ -88,6 +88,18 @@ public:
 private:
 
     /*
+     * The combustion state.
+     */
+    struct CombustionState
+    {
+        // TODO
+
+        CombustionState()
+        {}
+    };
+
+
+    /*
      * The state of ephemeral particles.
      */
     union EphemeralState
@@ -344,6 +356,10 @@ public:
         , mCumulatedIntakenWater(mBufferElementCount, shipPointCount, 0.0f)
         , mIsLeakingBuffer(mBufferElementCount, shipPointCount, false)
         , mFactoryIsLeakingBuffer(mBufferElementCount, shipPointCount, false)
+        // Heat dynamics
+        , mTemperatureBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mMaterialIgnitionTemperatureBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mCombustionStateBuffer(mBufferElementCount, shipPointCount, CombustionState())
         // Electrical dynamics
         , mElectricalElementBuffer(mBufferElementCount, shipPointCount, NoneElementIndex)
         , mLightBuffer(mBufferElementCount, shipPointCount, 0.0f)
@@ -1231,6 +1247,14 @@ private:
     // When true, the point is intaking water
     Buffer<bool> mIsLeakingBuffer;
     Buffer<bool> mFactoryIsLeakingBuffer;
+
+    //
+    // Heat dynamics
+    //
+
+    Buffer<float> mTemperatureBuffer; // Kelvin
+    Buffer<float> mMaterialIgnitionTemperatureBuffer;
+    Buffer<CombustionState> mCombustionStateBuffer;
 
     //
     // Electrical dynamics

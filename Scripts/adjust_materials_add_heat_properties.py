@@ -27,7 +27,7 @@ def adjust_material(material):
         material["ignition_temperature"] = 453.0
         material["melting_temperature"] = 1000000.0
         material["thermal_conductivity"] = 0.1
-    elif "Glass" in name:
+    elif ("Glass" in name) or ("Lamp" in name):
         material["ignition_temperature"] = 1000000.0
         material["melting_temperature"] = 1773.15
         material["thermal_conductivity"] = 0.8
@@ -42,11 +42,31 @@ def adjust_material(material):
     elif "Cardboard" in name:
         material["ignition_temperature"] = 491.15
         material["melting_temperature"] = 1000000.0
-        material["thermal_conductivity"] = 0.0
+        material["thermal_conductivity"] = 0.05
+    elif "Rubber" in name:
+        material["ignition_temperature"] = 553.15
+        material["melting_temperature"] = 1000000.0
+        material["thermal_conductivity"] = 0.1
+    elif "Fiberglass" in name:
+        material["ignition_temperature"] = 1000000.0
+        material["melting_temperature"] = 1394.15
+        material["thermal_conductivity"] = 0.04
+    elif ("(ABS)" in name) or ("Cable" in name):
+        material["ignition_temperature"] = 689.15
+        material["melting_temperature"] = 393.15
+        material["thermal_conductivity"] = 0.25
     elif ("Tin" in name) or ("Nails" in name):
         material["ignition_temperature"] = 1213.0
         material["melting_temperature"] = 505.05
         material["thermal_conductivity"] = 66.8
+    elif "Air" in name:
+        material["ignition_temperature"] = 1000000.0
+        material["melting_temperature"] = 1000000.0
+        material["thermal_conductivity"] = 0.0262
+    elif "Generator" in name: # Arbitrary: from Aluminium
+        material["ignition_temperature"] = 1000000.0
+        material["melting_temperature"] = 933.45
+        material["thermal_conductivity"] = 205.0
     else:
         raise Exception("No rules for material '" + name + "'")
 

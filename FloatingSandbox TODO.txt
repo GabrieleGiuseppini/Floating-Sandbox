@@ -1009,22 +1009,23 @@ Render:
 						  or stop burning					
 						- Heap used by Points's Upload() (heap passed by Ship)
 		= Impl:
-			- Properties and Materials:
-				- New StructuralMaterial properties:
-						- Ignition temperature (T)
-						- Melting temperature (T)
-						- Thermal conductivity 
-						- Combustion type (Combustion, Explosion)
-					- Add all of them via Json, with switches based off material type
-						- Then, manual tune
-					- Add all of them to guide
-				- Points:
-					- Ignition temperature
-					- Temperature/Buffer
-					- CombustionState/Buffer
+			= Properties and Materials:
+				+ New StructuralMaterial properties:
+						+ Ignition temperature (T)
+						+ Melting temperature (T)
+						+ Thermal conductivity 
+						+ Combustion type (Combustion, Explosion)
+					+ Add all of them via script, with switches based off material type
+						+ Thermal conductivity: see https://en.wikipedia.org/wiki/Thermal_conductivity#Units
+						+ Then, manual tune
+					+ Add all of them to guide
+				+ Points:
+					+ MaterialIgnitionTemperature
+					+ Temperature/Buffer
+					+ CombustionState/Buffer
 				- Springs:
-					- Melting temperature (avg of two endpoints, calcd at Add())
-					- Thermal conductivity (avg of two endpoints, calcd at Add())
+					- MaterialMeltingTemperature (avg of two endpoints, calcd at Add())
+					- MaterialThermalConductivity (avg of two endpoints, calcd at Add())
 				- Renames:
 					- Points::TotalMass -> "CurrentMass" (and UpdateTotalMasses)
 					- Points::StructuralMass -> "MaterialMass"
@@ -1060,7 +1061,7 @@ Render:
 						- Nuke Ship::DecaySprings
 					- At another slot: call Ship::UpdateTemperature
 						- Propagation and dissipation
-							- New global constants: AirTemperature, WaterTemperature
+							+ New global constants: AirTemperature, WaterTemperature
 							- Use specific dt's calc's as constexpr's in UpdateTemperature based off frequency of steps
 					- At another slot: call Points::UpdateCombustion(heap, springs)
 						- Heap:
@@ -1074,6 +1075,7 @@ Render:
 								- TBD
 							- Else (it's combusting):
 								- TBD
+								- Burn rate (i.e. decay speed) ~= structural mass (the lower the mass, the faster decays)
 			- Ship::Render:
 				- Calls Points::UploadCombustion(heap)
 					- Uploads flames in order of heap
@@ -1081,7 +1083,8 @@ Render:
 				- ThermalConductivityAdjustment 
 				- IgnitionTemperatureAdjustment (in SettingsDialog: "Burning Point Adjust")
 				- MeltingTemperatureAdjustment (in SettingsDialog: "Melting Point Adjust")
-				- Add to settings dialog - new "Heat" tab or anywhere else there's room
+				- CombustionSpeedAdjustment
+				- Also add to settings dialog - new "Heat" tab or anywhere else there's room
 			+ Flame render:
 				+ Make better transition for bottom
 				+ Skew wind speed with smoothstep
@@ -1119,6 +1122,7 @@ Render:
 			+ Tool
 				+ Engages (and starts sound) only if GameController::ApplyFlameThrower(screenPos) returns true (i.e. point found in radius)
 			+ Fix radius & size (smaller radius for catching points, same render size)
+			- Radius setting (& Ultra-Violent mode)
 			- Apply heat
 
 	- Storms

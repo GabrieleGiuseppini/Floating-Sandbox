@@ -26,15 +26,6 @@ StructuralMaterial StructuralMaterial::Create(picojson::object const & structura
                 Utils::GetMandatoryJsonMember<std::string>(structuralMaterialJson, "render_color"))
             .toVec4f(1.0f);
 
-        bool isHull = Utils::GetMandatoryJsonMember<bool>(structuralMaterialJson, "is_hull");
-        float waterVolumeFill = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "water_volume_fill");
-        float waterIntake = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "water_intake", 1.0);
-        float waterDiffusionSpeed = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "water_diffusion_speed");
-        float waterRetention = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "water_retention");
-
-        float windReceptivity = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "wind_receptivity", 0.0);
-        float rustReceptivity = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "rust_receptivity", 1.0);
-
         std::optional<MaterialUniqueType> uniqueType;
         if (name == "Air")
             uniqueType = MaterialUniqueType::Air;
@@ -46,21 +37,47 @@ StructuralMaterial StructuralMaterial::Create(picojson::object const & structura
         if (!!materialSoundStr)
             materialSound = StrToMaterialSoundType(*materialSoundStr);
 
+        // Water
+
+        bool isHull = Utils::GetMandatoryJsonMember<bool>(structuralMaterialJson, "is_hull");
+        float waterVolumeFill = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "water_volume_fill");
+        float waterIntake = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "water_intake", 1.0);
+        float waterDiffusionSpeed = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "water_diffusion_speed");
+        float waterRetention = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "water_retention");
+        float rustReceptivity = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "rust_receptivity", 1.0);
+
+        // Heat
+
+        float ignitionTemperature = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "ignition_temperature");
+        float meltingTemperature = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "melting_temperature");
+        float thermalConductivity = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "thermal_conductivity");
+        MaterialCombustionType combustionType = StrToMaterialCombustionType(Utils::GetMandatoryJsonMember<std::string>(structuralMaterialJson, "combustion_type"));
+
+        // Misc
+
+        float windReceptivity = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "wind_receptivity", 0.0);
+
         return StructuralMaterial(
             name,
             strength,
             mass,
             stiffness,
             renderColor,
+            uniqueType,
+            materialSound,
             isHull,
             waterVolumeFill,
             waterIntake,
             waterDiffusionSpeed,
             waterRetention,
-            windReceptivity,
             rustReceptivity,
-            uniqueType,
-            materialSound);
+            // Heat
+            ignitionTemperature,
+            meltingTemperature,
+            thermalConductivity,
+            combustionType,
+            // Misc
+            windReceptivity);
     }
     catch (GameException const & ex)
     {
@@ -90,6 +107,19 @@ StructuralMaterial::MaterialSoundType StructuralMaterial::StrToMaterialSoundType
         return MaterialSoundType::Wood;
     else
         throw GameException("Unrecognized MaterialSoundType \"" + str + "\"");
+}
+
+StructuralMaterial::MaterialCombustionType StructuralMaterial::StrToMaterialCombustionType(std::string const & str)
+{
+    std::string lstr = Utils::ToLower(str);
+
+
+    if (lstr == "combustion")
+        return MaterialCombustionType::Combustion;
+    else if (lstr == "explosion")
+        return MaterialCombustionType::Explosion;
+    else
+        throw GameException("Unrecognized MaterialCombustionType \"" + str + "\"");
 }
 
 ElectricalMaterial ElectricalMaterial::Create(picojson::object const & electricalMaterialJson)

@@ -16,19 +16,13 @@
 
 struct StructuralMaterial
 {
-    std::string Name;
-    float Strength;
-    float Mass;
-    float Stiffness;
-    vec4f RenderColor;
+public:
 
-    bool IsHull;
-    float WaterVolumeFill;
-    float WaterIntake;
-    float WaterDiffusionSpeed;
-    float WaterRetention;
-    float WindReceptivity;
-    float RustReceptivity;
+    enum class MaterialCombustionType
+    {
+        Combustion,
+        Explosion
+    };
 
     enum class MaterialUniqueType : size_t
     {
@@ -37,8 +31,6 @@ struct StructuralMaterial
 
         _Last = Rope
     };
-
-    std::optional<MaterialUniqueType> UniqueType;
 
     enum class MaterialSoundType
     {
@@ -52,13 +44,41 @@ struct StructuralMaterial
         Wood,
     };
 
+public:
+
+    std::string Name;
+    float Strength;
+    float Mass;
+    float Stiffness;
+    vec4f RenderColor;
+
+    std::optional<MaterialUniqueType> UniqueType;
+
     std::optional<MaterialSoundType> MaterialSound;
+
+    // Water
+    bool IsHull;
+    float WaterVolumeFill;
+    float WaterIntake;
+    float WaterDiffusionSpeed;
+    float WaterRetention;
+    float RustReceptivity;
+
+    // Heat
+    float IgnitionTemperature; // K
+    float MeltingTemperature; // K
+    float ThermalConductivity; // W/(m*K)
+    MaterialCombustionType CombustionType;
+
+    // Misc
+    float WindReceptivity;
 
 public:
 
     static StructuralMaterial Create(picojson::object const & structuralMaterialJson);
 
     static MaterialSoundType StrToMaterialSoundType(std::string const & str);
+    static MaterialCombustionType StrToMaterialCombustionType(std::string const & str);
 
     bool IsUniqueType(MaterialUniqueType uniqueType) const
     {
@@ -71,29 +91,40 @@ public:
         float mass,
         float stiffness,
         vec4f renderColor,
+        std::optional<MaterialUniqueType> uniqueType,
+        std::optional<MaterialSoundType> materialSound,
+        // Water
         bool isHull,
         float waterVolumeFill,
         float waterIntake,
         float waterDiffusionSpeed,
         float waterRetention,
-        float windReceptivity,
         float rustReceptivity,
-        std::optional<MaterialUniqueType> uniqueType,
-        std::optional<MaterialSoundType> materialSound)
+        // Heat
+        float ignitionTemperature,
+        float meltingTemperature,
+        float thermalConductivity,
+        MaterialCombustionType combustionType,
+        // Misc
+        float windReceptivity)
         : Name(name)
         , Strength(strength)
         , Mass(mass)
         , Stiffness(stiffness)
         , RenderColor(renderColor)
+        , UniqueType(uniqueType)
+        , MaterialSound(materialSound)
         , IsHull(isHull)
         , WaterIntake(waterIntake)
         , WaterVolumeFill(waterVolumeFill)
         , WaterDiffusionSpeed(waterDiffusionSpeed)
         , WaterRetention(waterRetention)
-        , WindReceptivity(windReceptivity)
         , RustReceptivity(rustReceptivity)
-        , UniqueType(uniqueType)
-        , MaterialSound(materialSound)
+        , IgnitionTemperature(ignitionTemperature)
+        , MeltingTemperature(meltingTemperature)
+        , ThermalConductivity(thermalConductivity)
+        , CombustionType(combustionType)
+        , WindReceptivity(windReceptivity)
     {}
 };
 
