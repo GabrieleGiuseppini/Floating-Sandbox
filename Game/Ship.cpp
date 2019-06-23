@@ -946,7 +946,7 @@ void Ship::UpdateWaterVelocities(
     for (auto pointIndex : mPoints)
     {
         //
-        // 1) Calculate water momenta along all springs
+        // 1) Calculate water momenta along all springs connected to this point
         //
 
         // A higher crazyness gives more emphasys to bernoulli's velocity, as if pressures
@@ -1017,7 +1017,7 @@ void Ship::UpdateWaterVelocities(
                 0.0f);
 
             // Store weight along spring, scaling for the greater distance traveled along
-            // diagonalsprings
+            // diagonal springs
             springOutboundWaterFlowWeights[s] =
                 springOutboundScalarWaterVelocity
                 / mSprings.GetRestLength(cs.SpringIndex);
@@ -1058,8 +1058,7 @@ void Ship::UpdateWaterVelocities(
         {
             waterQuantityNormalizationFactor =
                 oldPointWaterBufferData[pointIndex]
-                * mPoints.GetMaterialWaterDiffusionSpeed(pointIndex)
-                * gameParameters.WaterDiffusionSpeedAdjustment
+                * mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * gameParameters.WaterDiffusionSpeedAdjustment
                 / totalOutboundWaterFlowWeight;
         }
 
