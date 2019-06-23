@@ -503,8 +503,7 @@ void Ship::RepairAt(
                             float const movementMagnitude =
                                 displacementMagnitude
                                 * smoothing
-                                * toolStrength
-                                * (mSprings.IsRope(fcs.SpringIndex) ? 0.75f : 1.0f); // Ropes are crazy, hence need more kindness
+                                * toolStrength;
 
                             // Move point
                             mPoints.GetPosition(otherEndpointIndex) +=

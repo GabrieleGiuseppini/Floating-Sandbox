@@ -347,8 +347,7 @@ Render:
 		+ Multi-music
 		+ Sea and land shaders: use smoothstep's instead of complex stuff
 			+ float increment = -10.0 * (1.0 - smoothstep(0.0, TODO.0, textureCoord.z))
-
-		= Repair tool improvement:
+		+ Repair tool improvement:
 			+ RepairTool passes RepairSessionId, RepairSessionStepId
 			+ Points has buffer of struct RepairSmoothing{RepairSessionId currentSessionId, RepairSessionStepId currentSessionStepId, float smoothing}
 			+ Repair interaction when engaging "other endpoint":
@@ -386,8 +385,8 @@ Render:
 						+ Need to track # of consecutive steps as attracted in this session
 			+ Test repair strength adjustment as "repair speed adjustment"
 				+ If ok, rename @ code & settings dialog
-			- Then see if can put radius back to something higher
-			- See if rope kindness is still granted
+			+ Then see if can put radius back to something higher
+			+ See if rope kindness is still granted
 			+ Cleanup logs and code for Correct/Wrong counts
 			+ Cleanup TODOs
 
