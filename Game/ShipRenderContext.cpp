@@ -328,6 +328,11 @@ ShipRenderContext::ShipRenderContext(
     mShaderManager.SetTextureParameters<ProgramType::ShipSpringsTexture>();
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTexture>();
     mShaderManager.SetTextureParameters<ProgramType::ShipTrianglesTexture>();
+    // TODO: names
+    mShaderManager.ActivateProgram<ProgramType::ShipTemperatureColor>();
+    mShaderManager.SetTextureParameters<ProgramType::ShipTemperatureColor>();
+    mShaderManager.ActivateProgram<ProgramType::ShipTemperatureTexture>();
+    mShaderManager.SetTextureParameters<ProgramType::ShipTemperatureTexture>();
 
     // Unbind texture
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -482,6 +487,16 @@ void ShipRenderContext::UpdateOrthoMatrices()
     mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesTexture, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
 
+    // TODO: rename program
+    mShaderManager.ActivateProgram<ProgramType::ShipTemperatureColor>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipTemperatureColor, ProgramParameterType::OrthoMatrix>(
+        shipOrthoMatrix);
+
+    // TODO: rename program
+    mShaderManager.ActivateProgram<ProgramType::ShipTemperatureTexture>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipTemperatureTexture, ProgramParameterType::OrthoMatrix>(
+        shipOrthoMatrix);
+
     //
     // Layer 3: Stressed Springs
     //
@@ -605,6 +620,16 @@ void ShipRenderContext::OnAmbientLightIntensityUpdated()
 
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTexture>();
     mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesTexture, ProgramParameterType::AmbientLightIntensity>(
+        mAmbientLightIntensity);
+
+    // TODO: name
+    mShaderManager.ActivateProgram<ProgramType::ShipTemperatureColor>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipTemperatureColor, ProgramParameterType::AmbientLightIntensity>(
+        mAmbientLightIntensity);
+
+    // TODO: name
+    mShaderManager.ActivateProgram<ProgramType::ShipTemperatureTexture>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipTemperatureTexture, ProgramParameterType::AmbientLightIntensity>(
         mAmbientLightIntensity);
 
     mShaderManager.ActivateProgram<ProgramType::ShipPointsColor>();
@@ -1198,11 +1223,33 @@ void ShipRenderContext::RenderEnd()
             if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
                 glLineWidth(0.1f);
 
+            // Draw!
             glDrawElements(
                 GL_TRIANGLES,
                 static_cast<GLsizei>(3 * mTriangleElementBuffer.size()),
                 GL_UNSIGNED_INT,
                 (GLvoid *)mTriangleElementVBOStartIndex);
+
+            if (mDrawHeatOverlay && mDebugShipRenderMode != DebugShipRenderMode::Decay) // Decay has priority
+            {
+                if (mShipRenderMode == ShipRenderMode::Texture)
+                {
+                    // Use texture program
+                    mShaderManager.ActivateProgram<ProgramType::ShipTemperatureTexture>();
+                }
+                else
+                {
+                    // Use color program
+                    mShaderManager.ActivateProgram<ProgramType::ShipTemperatureColor>();
+                }
+
+                // Draw!
+                glDrawElements(
+                    GL_TRIANGLES,
+                    static_cast<GLsizei>(3 * mTriangleElementBuffer.size()),
+                    GL_UNSIGNED_INT,
+                    (GLvoid *)mTriangleElementVBOStartIndex);
+            }
 
             // Update stats
             mRenderStatistics.LastRenderedShipTriangles += mTriangleElementBuffer.size();

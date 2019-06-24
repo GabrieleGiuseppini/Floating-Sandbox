@@ -215,6 +215,14 @@ struct GameParameters
 
     static size_t constexpr MaxBurningParticles = 100;
 
+    float FlameThrowerHeatFlow; // Joules/sec
+    static float constexpr MinFlameThrowerHeatFlow = 1000.0f;
+    static float constexpr MaxFlameThrowerHeatFlow = 100000.0f;
+
+    float FlameThrowerRadius;
+    static float constexpr MinFlameThrowerRadius = 1.0f;
+    static float constexpr MaxFlameThrowerRadius = 20.0f;
+
     // Misc
 
     float SeaDepth;
@@ -260,10 +268,6 @@ struct GameParameters
     float RepairSpeedAdjustment;
     static float constexpr MinRepairSpeedAdjustment = 0.25f;
     static float constexpr MaxRepairSpeedAdjustment = 10.0f;
-
-    float FlameThrowerRadius;
-    static float constexpr MinFlameThrowerRadius = 1.0f;
-    static float constexpr MaxFlameThrowerRadius = 20.0f;
 
     static float constexpr DrawForce = 40000.0f;
 

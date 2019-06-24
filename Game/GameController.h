@@ -256,6 +256,20 @@ public:
     float GetMinWindSpeedMaxFactor() const override { return GameParameters::MinWindSpeedMaxFactor; }
     float GetMaxWindSpeedMaxFactor() const override { return GameParameters::MaxWindSpeedMaxFactor; }
 
+    // Heat
+
+    float GetFlameThrowerHeatFlow() const override { return mGameParameters.FlameThrowerHeatFlow; }
+    void SetFlameThrowerHeatFlow(float value) override { mGameParameters.FlameThrowerHeatFlow = value; }
+    float GetMinFlameThrowerHeatFlow() const override { return GameParameters::MinFlameThrowerHeatFlow; }
+    float GetMaxFlameThrowerHeatFlow() const override { return GameParameters::MaxFlameThrowerHeatFlow; }
+
+    float GetFlameThrowerRadius() const override { return mGameParameters.FlameThrowerRadius; }
+    void SetFlameThrowerRadius(float value) override { mGameParameters.FlameThrowerRadius = value; }
+    float GetMinFlameThrowerRadius() const override { return GameParameters::MinFlameThrowerRadius; }
+    float GetMaxFlameThrowerRadius() const override { return GameParameters::MaxFlameThrowerRadius; }
+
+    // Misc
+
     float GetSeaDepth() const override { return mParameterSmoothers[SeaDepthParameterSmoother].GetValue(); }
     void SetSeaDepth(float value) override { mParameterSmoothers[SeaDepthParameterSmoother].SetValue(value); }
     float GetMinSeaDepth() const override { return GameParameters::MinSeaDepth; }

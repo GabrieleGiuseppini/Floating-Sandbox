@@ -1402,11 +1402,14 @@ void Ship::UpdateHeatDynamics(
     // Propagate heat
     //
 
-    if (mCurrentSimulationSequenceNumber.IsStepOf(PropagateHeatPeriodStep - 1, LowFrequencyPeriod))
+    // TODOTEST
+    //if (mCurrentSimulationSequenceNumber.IsStepOf(PropagateHeatPeriodStep - 1, LowFrequencyPeriod))
     {
         PropagateHeat(
             currentSimulationTime,
-            GameParameters::SimulationStepTimeDuration<float> * static_cast<float>(LowFrequencyPeriod),
+            // TODOTEST
+            //GameParameters::SimulationStepTimeDuration<float> * static_cast<float>(LowFrequencyPeriod),
+            GameParameters::SimulationStepTimeDuration<float>,
             gameParameters);
     }
 

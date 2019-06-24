@@ -196,6 +196,20 @@ struct IGameController
     virtual float GetMinWindSpeedMaxFactor() const = 0;
     virtual float GetMaxWindSpeedMaxFactor() const = 0;
 
+    // Heat
+
+    virtual float GetFlameThrowerHeatFlow() const = 0;
+    virtual void SetFlameThrowerHeatFlow(float value) = 0;
+    virtual float GetMinFlameThrowerHeatFlow() const = 0;
+    virtual float GetMaxFlameThrowerHeatFlow() const = 0;
+
+    virtual float GetFlameThrowerRadius() const = 0;
+    virtual void SetFlameThrowerRadius(float value) = 0;
+    virtual float GetMinFlameThrowerRadius() const = 0;
+    virtual float GetMaxFlameThrowerRadius() const = 0;
+
+    // Misc
+
     virtual float GetSeaDepth() const = 0;
     virtual void SetSeaDepth(float value) = 0;
     virtual float GetMinSeaDepth() const = 0;

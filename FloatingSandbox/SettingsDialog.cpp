@@ -823,10 +823,82 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
 {
     wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
 
+    // Flamethrower
 
-    //
-    // Row 1
-    //
+    {
+        wxStaticBox * flameThrowerBox = new wxStaticBox(panel, wxID_ANY, _("FlameThrower"));
+
+        wxBoxSizer * flameThrowerBoxSizer = new wxBoxSizer(wxVERTICAL);
+        flameThrowerBoxSizer->AddSpacer(StaticBoxTopMargin);
+
+        {
+            wxGridBagSizer * flameThrowerSizer = new wxGridBagSizer(0, 0);
+
+            // Radius
+            {
+                mFlameThrowerRadiusSlider = new SliderControl(
+                    flameThrowerBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Radius",
+                    "The radius of FlameThrower tool (m).",
+                    mGameController->GetFlameThrowerRadius(),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameController->GetMinFlameThrowerRadius(),
+                        mGameController->GetMaxFlameThrowerRadius()));
+
+                flameThrowerSizer->Add(
+                    mFlameThrowerRadiusSlider,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            // Heat flow
+            {
+                mFlameThrowerHeatFlowSlider = new SliderControl(
+                    flameThrowerBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Heat",
+                    "The heat produced by the FlameThrower tool (J/s).",
+                    mGameController->GetFlameThrowerHeatFlow(),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameController->GetMinFlameThrowerHeatFlow(),
+                        40000.0f,
+                        mGameController->GetMaxFlameThrowerHeatFlow()));
+
+                flameThrowerSizer->Add(
+                    mFlameThrowerHeatFlowSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            flameThrowerBoxSizer->Add(flameThrowerSizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        flameThrowerBox->SetSizerAndFit(flameThrowerBoxSizer);
+
+        gridSizer->Add(
+            flameThrowerBox,
+            wxGBPosition(0, 0),
+            wxGBSpan(1, 1),
+            wxEXPAND | wxALL,
+            CellBorder);
+    }
 
     // Rendering
     {
@@ -860,7 +932,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
 
         gridSizer->Add(
             renderBox,
-            wxGBPosition(0, 0),
+            wxGBPosition(0, 1),
             wxGBSpan(1, 1),
             wxALL,
             CellBorder);
@@ -2441,6 +2513,10 @@ void SettingsDialog::ReadSettings()
 
     // Heat
 
+    mFlameThrowerRadiusSlider->SetValue(mGameController->GetFlameThrowerRadius());
+
+    mFlameThrowerHeatFlowSlider->SetValue(mGameController->GetFlameThrowerHeatFlow());
+
     mDrawHeatOverlayCheckBox->SetValue(mGameController->GetDrawHeatOverlay());
 
     // Ocean and Sky
@@ -2760,6 +2836,12 @@ void SettingsDialog::ApplySettings()
         mLightSpreadSlider->GetValue());
 
     // Heat
+
+    mGameController->SetFlameThrowerRadius(
+        mFlameThrowerRadiusSlider->GetValue());
+
+    mGameController->SetFlameThrowerHeatFlow(
+        mFlameThrowerHeatFlowSlider->GetValue());
 
     mGameController->SetDrawHeatOverlay(mDrawHeatOverlayCheckBox->IsChecked());
 

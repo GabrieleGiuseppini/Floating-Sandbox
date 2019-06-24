@@ -684,8 +684,14 @@ void Ship::SawThrough(
 bool Ship::ApplyFlameThrowerAt(
     vec2f const & targetPos,
     float radius,
-    GameParameters const & /*gameParameters*/)
+    GameParameters const & gameParameters)
 {
+    // Q = q*dt
+    float const flameThrowerHeat =
+        gameParameters.FlameThrowerHeatFlow
+        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f)
+        * GameParameters::SimulationStepTimeDuration<float>;
+
     float const squareRadius = radius * radius;
 
     // Search all non-ephemeral points within the radius
@@ -699,7 +705,22 @@ bool Ship::ApplyFlameThrowerAt(
             // Inject heat at this point
             //
 
-            // TODOHERE
+            // Smooth heat out for radius
+            float const smoothing = 1.0f - SmoothStep(
+                0.0f,
+                radius,
+                sqrt(pointSquareDistance));
+
+            // Calc temperature delta
+            // T = Q/HeatCapacity
+            float deltaT =
+                flameThrowerHeat * smoothing
+                / mPoints.GetMaterialHeatCapacity(pointIndex);
+
+            // Increase temperature
+            mPoints.SetTemperature(pointIndex,
+                mPoints.GetTemperature(pointIndex)
+                + deltaT);
 
             // Remember we've found a point
             atLeastOnePointFound = true;

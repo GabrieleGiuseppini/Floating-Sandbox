@@ -1045,17 +1045,18 @@ Render:
 						+ Maintains dirty flag and exposes MarkTempBufAsDirty - exactly like decay - which is invoked by:
 							+ Heat propagation
 				+ Ship/RenderContext render
-					= Shader enabling
+					= Rendering:
 						+ RenderCore enums
-						- Activation and parameter setting
+						= Draw right after points, springs, and triangles (same code)
+						- Parameter setting
 					- Shaders:
-						- Use temperature buffer (of floats) to produce "temperature color" as:
-							- tint3 = mix(c1, c2, some f of temperature ~= 1-e^(-paramHeatContrast*T)) // see https://en.wikipedia.org/wiki/Incandescence#/media/File:Example_incandescence_colors_(temperature_range_550_-_1300_C).svg
-							- temperature color = (tint3, paramHeatContrast)
-						- 2 shaders:
-							- 1xTexture 
-								- Samples texture to take its alpha and multiply with alpha of temperature color
-							- 1xColor
+						- Do point, spring, and triangle shaders
+							- Do second, richer version of main ones - "...WithTemperature..."
+								- Texture
+								- Color
+						= Use temperature buffer (of floats) to produce "temperature color" as:
+							= tint3 = mix(c1, c2, some f of temperature ~= 1-e^(-paramHeatContrast*T)) // see https://en.wikipedia.org/wiki/Incandescence#/media/File:Example_incandescence_colors_(temperature_range_550_-_1300_C).svg
+							- Figure out right transparency
 					- HeatContrast at SettingsDialog
 						- "Render" section under "Heat"
 			= Physics update:
@@ -1070,10 +1071,11 @@ Render:
 								- Add "StructuralStrength", and use "CurrentStrength" for strain
 						- Nuke Ship::DecaySprings and, with it, Springs::Set(Current)Strength
 					= Later on: Ship::UpdateHeatDynamics:
-						+ At one slot: call Ship::PropagateHeat()
-							+ Propagation and dissipation
+						= At one slot: call Ship::PropagateHeat()
+							= Propagation and dissipation
 								+ New global constants: AirTemperature, WaterTemperature
 								+ Use specific dt's calc's as constexpr's in UpdateTemperature based off frequency of steps
+								- Dissipation: use air or water temp
 						- At another slot: call Points::UpdateHeatEffects(heap, springs)
 							- Heap:
 								- Ship has heap with indices of burning points together with their PlaneID, sorted by PlaneID asc
@@ -1087,13 +1089,14 @@ Render:
 								- Else (it's combusting):
 									- Run combustion state machine - TBD
 									- Burn rate (i.e. decay speed) ~= structural mass (the lower the mass, the faster decays)
-			- Flamethrower:
-				- Ship::Interaction:
-					- GameParameters::FlameThrowerHeat
-						- Absolute value, in J
-						- SettingsDialog, under "Flamethrower" in "Heat"
-					- Convert into DeltaT and inject in radius, smoothing radius
-				- Radius at SettingsDialog, under "Flamethrower" in "Heat"
+			= Flamethrower:
+				= Ship::Interaction:
+					= GameParameters::FlameThrowerHeat
+						+ Absolute value, in J
+						+ SettingsDialog, under "Flamethrower" in "Heat"
+					+ Convert into DeltaT and inject in radius, smoothing radius
+				= Radius at SettingsDialog, under "Flamethrower" in "Heat"
+				= Fix default value of heat <-> slider
 			- Ship::Render:
 				- Calls Points::UploadCombustion(heap)
 					- Uploads flames in order of heap
