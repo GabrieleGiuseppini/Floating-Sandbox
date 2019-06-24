@@ -478,10 +478,8 @@ void Points::UpdateEphemeralParticles(
 void Points::Query(ElementIndex pointElementIndex) const
 {
     LogMessage("PointIndex: ", pointElementIndex);
-    LogMessage("Position: ", mPositionBuffer[pointElementIndex].toString());
-    LogMessage("Velocity: ", mVelocityBuffer[pointElementIndex].toString());
-    LogMessage("Decay: ", mDecayBuffer[pointElementIndex]);
-    LogMessage("Water: ", mWaterBuffer[pointElementIndex]);
+    LogMessage("P=", mPositionBuffer[pointElementIndex].toString(), " V=", mVelocityBuffer[pointElementIndex].toString());
+    LogMessage("W=", mWaterBuffer[pointElementIndex], " T=", mTemperatureBuffer[pointElementIndex], " Decay=", mDecayBuffer[pointElementIndex]);
     LogMessage("Springs: ", mConnectedSpringsBuffer[pointElementIndex].ConnectedSprings.size(), " (factory: ", mFactoryConnectedSpringsBuffer[pointElementIndex].ConnectedSprings.size(), ")");
     LogMessage("PlaneID: ", mPlaneIdBuffer[pointElementIndex]);
     LogMessage("ConnectedComponentID: ", mConnectedComponentIdBuffer[pointElementIndex]);

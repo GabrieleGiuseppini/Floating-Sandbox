@@ -26,7 +26,8 @@ static constexpr int LowFrequencyPeriod = 50; // Number of simulation steps
 
 static constexpr int UpdateSinkingPeriodStep = 12;
 static constexpr int RotPointsPeriodStep = 25;
-static constexpr int UpdateTemperaturePeriodStep = 37;
+static constexpr int PropagateHeatPeriodStep = 37;
+static constexpr int UpdateHeatEffectsPeriodStep = 38; // TODO
 static constexpr int DecaySpringsPeriodStep = 50;
 
 
@@ -216,15 +217,13 @@ void Ship::Update(
 
 
     //
-    // Update temperature
+    // Update heat dynamics
     //
 
-    if (mCurrentSimulationSequenceNumber.IsStepOf(UpdateTemperaturePeriodStep - 1, LowFrequencyPeriod))
-    {
-        UpdateTemperature(
-            currentSimulationTime,
-            gameParameters);
-    }
+    UpdateHeatDynamics(
+        currentSimulationTime,
+        gameParameters);
+
 
     //
     // Update ephemeral particles
@@ -1392,11 +1391,42 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
-// Temperature
+// Heat
 ///////////////////////////////////////////////////////////////////////////////////
 
-void Ship::UpdateTemperature(
+void Ship::UpdateHeatDynamics(
     float currentSimulationTime,
+    GameParameters const & gameParameters)
+{
+    //
+    // Propagate heat
+    //
+
+    if (mCurrentSimulationSequenceNumber.IsStepOf(PropagateHeatPeriodStep - 1, LowFrequencyPeriod))
+    {
+        PropagateHeat(
+            currentSimulationTime,
+            GameParameters::SimulationStepTimeDuration<float> * static_cast<float>(LowFrequencyPeriod),
+            gameParameters);
+    }
+
+    //
+    // Update heat effects (ignition, melting, etc.)
+    //
+
+    if (mCurrentSimulationSequenceNumber.IsStepOf(UpdateHeatEffectsPeriodStep - 1, LowFrequencyPeriod))
+    {
+        // TODO
+        ////mPoints.UpdateHeatEffects(
+        ////    currentSimulationTime,
+        ////    burningPointsHeap,
+        ////    gameParameters);
+    }
+}
+
+void Ship::PropagateHeat(
+    float currentSimulationTime,
+    float dt,
     GameParameters const & gameParameters)
 {
     //
@@ -1414,9 +1444,6 @@ void Ship::UpdateTemperature(
     ////// directed towards the point being visited
     ////std::array<float, GameParameters::MaxSpringsPerPoint> springOutboundWaterFlowWeights;
 
-    ////// Total weight
-    ////float totalOutboundWaterFlowWeight;
-
     //
     // Visit all non-ephemeral points
     //
@@ -1424,10 +1451,90 @@ void Ship::UpdateTemperature(
     // temperature is not relevant to ephemeral particles
     //
 
-    for (auto pointIndex : mPoints)
+    for (auto pointIndex : mPoints.NonEphemeralPoints())
     {
-        // TODOHERE
+        // Temperature of this point
+        float const pointTemperature = oldPointTemperatureBufferData[pointIndex];
+
+        //
+        // 1) Calculate total outgoing heat
+        //
+
+        float totalOutgoingHeat = 0.0f;
+
+        // Visit all springs
+        size_t const connectedSpringCount = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size();
+        for (size_t s = 0; s < connectedSpringCount; ++s)
+        {
+            auto const & cs = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings[s];
+
+            // Calculate outgoing heat flow
+            //
+            // q = Ki * (Tp - Tpi)
+            float const outgoingHeatFlow =
+                mSprings.GetMaterialThermalConductivity(cs.SpringIndex)
+                * std::max(pointTemperature - oldPointTemperatureBufferData[cs.OtherEndpointIndex], 0.0f); // DeltaT, positive if going out
+
+            // Calculate outgoing heat due to this delta T
+            //
+            // Q = dt * q / Li
+            totalOutgoingHeat +=
+                dt
+                * outgoingHeatFlow
+                / mSprings.GetRestLength(cs.SpringIndex);
+        }
+
+
+        //
+        // 2) Calculate normalization factor - to ensure that point's temperature won't go below zero (Kelvin)
+        //
+
+        float normalizationFactor;
+        if (totalOutgoingHeat > 0.0f)
+        {
+            // Q = Kp * Tp
+            float const pointHeat =
+                pointTemperature
+                * mPoints.GetMaterialHeatCapacity(pointIndex);
+
+            normalizationFactor = std::min(
+                pointHeat / totalOutgoingHeat,
+                1.0f);
+        }
+        else
+        {
+            normalizationFactor = 0.0f;
+        }
+
+
+        //
+        // 3) Transfer outgoing heat, lowering temperature of point and increasing temperature of target points
+        //
+
+        for (size_t s = 0; s < connectedSpringCount; ++s)
+        {
+            auto const & cs = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings[s];
+
+            // Calculate outgoing heat flow (again)
+            float const outgoingHeatFlow =
+                mSprings.GetMaterialThermalConductivity(cs.SpringIndex)
+                * std::max(pointTemperature - oldPointTemperatureBufferData[cs.OtherEndpointIndex], 0.0f); // DeltaT, positive if going out
+
+            // Raise target temperature due to this flow
+            newPointTemperatureBufferData[cs.OtherEndpointIndex] +=
+                dt
+                * outgoingHeatFlow * normalizationFactor
+                / mSprings.GetRestLength(cs.SpringIndex)
+                / mPoints.GetMaterialHeatCapacity(cs.OtherEndpointIndex);
+        }
+
+        // Update point's temperature due to total flow
+        newPointTemperatureBufferData[pointIndex] -=
+            dt
+            * totalOutgoingHeat * normalizationFactor
+            / mPoints.GetMaterialHeatCapacity(pointIndex);
     }
+
 
     //
     // Move result values back to point

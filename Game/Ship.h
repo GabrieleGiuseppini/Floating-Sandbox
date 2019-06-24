@@ -234,10 +234,15 @@ public:
 
     void DiffuseLight(GameParameters const & gameParameters);
 
-    // Temperature
+    // Heat
 
-    void UpdateTemperature(
+    void UpdateHeatDynamics(
         float currentSimulationTime,
+        GameParameters const & gameParameters);
+
+    void PropagateHeat(
+        float currentSimulationTime,
+        float dt,
         GameParameters const & gameParameters);
 
     // Misc

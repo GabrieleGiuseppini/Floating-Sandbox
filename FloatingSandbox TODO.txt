@@ -1009,7 +1009,7 @@ Render:
 						  or stop burning					
 						- Heap used by Points's Upload() (heap passed by Ship)
 		= Impl:
-			= Properties and Materials:
+			+ Properties and Materials:
 				+ New StructuralMaterial properties:
 						+ Ignition temperature (T)
 						+ Melting temperature (T)
@@ -1065,29 +1065,30 @@ Render:
 							- (P.Decay, P.Temperature) -> S.CurrentStrength
 								- Add "StructuralStrength", and use "CurrentStrength" for strain
 						- Nuke Ship::DecaySprings and, with it, Springs::Set(Current)Strength
-					= At another slot: call Ship::UpdateTemperature
-						= Propagation and dissipation
-							+ New global constants: AirTemperature, WaterTemperature
-							- Use specific dt's calc's as constexpr's in UpdateTemperature based off frequency of steps
-					- At another slot: call Points::UpdateCombustion(heap, springs)
-						- Heap:
-							- Ship has heap with indices of burning points together with their PlaneID, sorted by PlaneID asc
-								- priority_queue<pair<idx, plane ID>>
-							- ConnectivityVisit: recalc heap from scratch
-							- State machine removes (at full combustion exhaustion) and/or adds (at initial combustion ignition)
-							  to heap
-						- For each point: run combustion state machine:
-							- If it's not combusting:
-								- TBD
-							- Else (it's combusting):
-								- TBD
-								- Burn rate (i.e. decay speed) ~= structural mass (the lower the mass, the faster decays)
+					= Later on: Ship::UpdateHeatDynamics:
+						+ At one slot: call Ship::PropagateHeat()
+							+ Propagation and dissipation
+								+ New global constants: AirTemperature, WaterTemperature
+								+ Use specific dt's calc's as constexpr's in UpdateTemperature based off frequency of steps
+						- At another slot: call Points::UpdateHeatEffects(heap, springs)
+							- Heap:
+								- Ship has heap with indices of burning points together with their PlaneID, sorted by PlaneID asc
+									- priority_queue<pair<idx, plane ID>>
+								- ConnectivityVisit: recalc heap from scratch
+								- State machine removes (at full combustion exhaustion) and/or adds (at initial combustion ignition)
+								  to heap
+							- For each point:
+								- If it's not combusting:
+									- TBD
+								- Else (it's combusting):
+									- Run combustion state machine - TBD
+									- Burn rate (i.e. decay speed) ~= structural mass (the lower the mass, the faster decays)
 			- Flamethrower:
 				- Ship::Interaction:
 					- GameParameters::FlameThrowerHeat
 						- Absolute value, in J
 						- SettingsDialog, under "Flamethrower" in "Heat"
-					- Convert into DeltaT
+					- Convert into DeltaT and inject in radius, smoothing radius
 				- Radius at SettingsDialog, under "Flamethrower" in "Heat"
 			- Ship::Render:
 				- Calls Points::UploadCombustion(heap)
