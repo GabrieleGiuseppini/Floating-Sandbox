@@ -47,6 +47,10 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::ShipSpringsTexture;
     else if (lstr == "ship_stressed_springs")
         return ProgramType::ShipStressedSprings;
+    else if (lstr == "ship_temperature_color")
+        return ProgramType::ShipTemperatureColor;
+    else if (lstr == "ship_temperature_texture")
+        return ProgramType::ShipTemperatureTexture;
     else if (lstr == "ship_triangles_color")
         return ProgramType::ShipTrianglesColor;
     else if (lstr == "ship_triangles_decay")
@@ -101,6 +105,10 @@ std::string ProgramTypeToStr(ProgramType program)
         return "ShipSpringsTexture";
     case ProgramType::ShipStressedSprings:
         return "ShipStressedSprings";
+    case ProgramType::ShipTemperatureColor:
+        return "ShipTemperatureColor";
+    case ProgramType::ShipTemperatureTexture:
+        return "ShipTemperatureTexture";
     case ProgramType::ShipTrianglesColor:
         return "ShipTrianglesColor";
     case ProgramType::ShipTrianglesDecay:
@@ -265,6 +273,8 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::ShipPointAttributeGroup2;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointColor"))
         return VertexAttributeType::ShipPointColor;
+    else if (Utils::CaseInsensitiveEquals(str, "ShipPointTemperature"))
+        return VertexAttributeType::ShipPointTemperature;
     else if (Utils::CaseInsensitiveEquals(str, "GenericTexture1"))
         return VertexAttributeType::GenericTexture1;
     else if (Utils::CaseInsensitiveEquals(str, "GenericTexture2"))

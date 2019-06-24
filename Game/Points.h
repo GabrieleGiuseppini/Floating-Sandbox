@@ -358,6 +358,7 @@ public:
         , mFactoryIsLeakingBuffer(mBufferElementCount, shipPointCount, false)
         // Heat dynamics
         , mTemperatureBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mIsTemperatureBufferDirty(true)
         , mMaterialHeatCapacityBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialIgnitionTemperatureBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mCombustionStateBuffer(mBufferElementCount, shipPointCount, CombustionState())
@@ -906,6 +907,11 @@ public:
         mTemperatureBuffer[pointElementIndex] = value;
     }
 
+    void MarkTemperatureBufferAsDirty()
+    {
+        mIsTemperatureBufferDirty = true;
+    }
+
     std::shared_ptr<Buffer<float>> MakeTemperatureBufferCopy()
     {
         auto temperatureBufferCopy = mFloatBufferAllocator.Allocate();
@@ -1254,7 +1260,7 @@ private:
     Buffer<float> mAugmentedMaterialMassBuffer; // Structural + Offset
     Buffer<float> mMassBuffer; // Augmented + Water
     Buffer<float> mDecayBuffer; // 1.0 -> 0.0 (completely decayed)
-    mutable bool mIsDecayBufferDirty;
+    bool mutable mIsDecayBufferDirty;
     Buffer<float> mIntegrationFactorTimeCoefficientBuffer; // dt^2 or zero when the point is frozen
 
     Buffer<vec2f> mIntegrationFactorBuffer;
@@ -1293,6 +1299,7 @@ private:
     //
 
     Buffer<float> mTemperatureBuffer; // Kelvin
+    bool mutable mIsTemperatureBufferDirty;
     Buffer<float> mMaterialHeatCapacityBuffer;
     Buffer<float> mMaterialIgnitionTemperatureBuffer;
     Buffer<CombustionState> mCombustionStateBuffer;

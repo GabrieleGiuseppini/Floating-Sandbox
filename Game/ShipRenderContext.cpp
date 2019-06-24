@@ -40,6 +40,7 @@ ShipRenderContext::ShipRenderContext(
     DebugShipRenderMode debugShipRenderMode,
     VectorFieldRenderMode vectorFieldRenderMode,
     bool showStressedSprings,
+    bool drawHeatOverlay,
     ShipFlameRenderMode shipFlameRenderMode,
     float shipFlameSizeAdjustment)
     : mShipId(shipId)
@@ -52,6 +53,7 @@ ShipRenderContext::ShipRenderContext(
     , mPointAttributeGroup2Buffer()
     , mPointAttributeGroup2VBO()
     , mPointColorVBO()
+    , mPointTemperatureVBO()
     //
     , mStressedSpringElementBuffer()
     , mStressedSpringElementVBO()
@@ -104,6 +106,7 @@ ShipRenderContext::ShipRenderContext(
     , mDebugShipRenderMode(debugShipRenderMode)
     , mVectorFieldRenderMode(vectorFieldRenderMode)
     , mShowStressedSprings(showStressedSprings)
+    , mDrawHeatOverlay(drawHeatOverlay)
     , mShipFlameRenderMode(shipFlameRenderMode)
     , mShipFlameSizeAdjustment(shipFlameSizeAdjustment)
     , mHalfFlameQuadWidth(0.0f) // Will be calculated
@@ -121,8 +124,8 @@ ShipRenderContext::ShipRenderContext(
     // Initialize buffers
     //
 
-    GLuint vbos[7];
-    glGenBuffers(7, vbos);
+    GLuint vbos[8];
+    glGenBuffers(8, vbos);
     CheckOpenGLError();
 
     mPointAttributeGroup1VBO = vbos[0];
@@ -141,19 +144,23 @@ ShipRenderContext::ShipRenderContext(
     glBindBuffer(GL_ARRAY_BUFFER, *mPointColorVBO);
     glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(vec4f), nullptr, GL_STATIC_DRAW);
 
-    mStressedSpringElementVBO = vbos[3];
+    mPointTemperatureVBO = vbos[3];
+    glBindBuffer(GL_ARRAY_BUFFER, *mPointTemperatureVBO);
+    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(float), nullptr, GL_STREAM_DRAW);
+
+    mStressedSpringElementVBO = vbos[4];
     mStressedSpringElementBuffer.reserve(1000); // Arbitrary
 
-    mFlameVertexVBO = vbos[4];
+    mFlameVertexVBO = vbos[5];
     glBindBuffer(GL_ARRAY_BUFFER, *mFlameVertexVBO);
     glBufferData(GL_ARRAY_BUFFER, GameParameters::MaxBurningParticles * 6 * sizeof(FlameVertex), nullptr, GL_STREAM_DRAW);
 
-    mGenericTextureVBO = vbos[5];
+    mGenericTextureVBO = vbos[6];
     glBindBuffer(GL_ARRAY_BUFFER, *mGenericTextureVBO);
     mGenericTextureVBOAllocatedVertexCount = GameParameters::MaxEphemeralParticles * 6; // Initial guess, might get more
     glBufferData(GL_ARRAY_BUFFER, mGenericTextureVBOAllocatedVertexCount * sizeof(GenericTextureVertex), nullptr, GL_STREAM_DRAW);
 
-    mVectorArrowVBO = vbos[6];
+    mVectorArrowVBO = vbos[7];
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -200,6 +207,11 @@ ShipRenderContext::ShipRenderContext(
         glBindBuffer(GL_ARRAY_BUFFER, *mPointColorVBO);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointColor));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointColor), 4, GL_FLOAT, GL_FALSE, sizeof(vec4f), (void*)(0));
+        CheckOpenGLError();
+
+        glBindBuffer(GL_ARRAY_BUFFER, *mPointTemperatureVBO);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointTemperature));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointTemperature), 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)(0));
         CheckOpenGLError();
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -840,6 +852,21 @@ void ShipRenderContext::UploadPointColors(
     // Upload color range
     glBindBuffer(GL_ARRAY_BUFFER, *mPointColorVBO);
     glBufferSubData(GL_ARRAY_BUFFER, startDst * sizeof(vec4f), count * sizeof(vec4f), color);
+    CheckOpenGLError();
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void ShipRenderContext::UploadPointTemperature(
+    float const * temperature,
+    size_t startDst,
+    size_t count)
+{
+    assert(startDst + count <= mPointCount);
+
+    // Upload temperature range
+    glBindBuffer(GL_ARRAY_BUFFER, *mPointTemperatureVBO);
+    glBufferSubData(GL_ARRAY_BUFFER, startDst * sizeof(float), count * sizeof(float), temperature);
     CheckOpenGLError();
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);

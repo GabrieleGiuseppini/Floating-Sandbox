@@ -348,6 +348,9 @@ struct IGameController
     virtual bool GetShowShipStress() const = 0;
     virtual void SetShowShipStress(bool value) = 0;
 
+    virtual bool GetDrawHeatOverlay() const = 0;
+    virtual void SetDrawHeatOverlay(bool value) = 0;
+
     virtual ShipFlameRenderMode GetShipFlameRenderMode() const = 0;
     virtual void SetShipFlameRenderMode(ShipFlameRenderMode shipFlameRenderMode) = 0;
 

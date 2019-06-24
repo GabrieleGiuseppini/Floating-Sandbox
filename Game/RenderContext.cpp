@@ -90,6 +90,7 @@ RenderContext::RenderContext(
     , mVectorFieldRenderMode(VectorFieldRenderMode::None)
     , mVectorFieldLengthMultiplier(1.0f)
     , mShowStressedSprings(false)
+    , mDrawHeatOverlay(false)
     , mShipFlameRenderMode(ShipFlameRenderMode::Mode1)
     , mShipFlameSizeAdjustment(1.0f)
     // Statistics
@@ -567,6 +568,7 @@ RenderContext::RenderContext(
     OnDebugShipRenderModeUpdated();
     OnVectorFieldRenderModeUpdated();
     OnShowStressedSpringsUpdated();
+    OnDrawHeatOverlayUpdated();
     OnShipFlameRenderModeUpdated();
     OnShipFlameSizeAdjustmentUpdated();
 
@@ -646,6 +648,7 @@ void RenderContext::AddShip(
             mDebugShipRenderMode,
             mVectorFieldRenderMode,
             mShowStressedSprings,
+            mDrawHeatOverlay,
             mShipFlameRenderMode,
             mShipFlameSizeAdjustment));
 }
@@ -1447,6 +1450,16 @@ void RenderContext::OnShowStressedSpringsUpdated()
     for (auto & s : mShips)
     {
         s->SetShowStressedSprings(mShowStressedSprings);
+    }
+}
+
+void RenderContext::OnDrawHeatOverlayUpdated()
+{
+    // Set parameter in all ships
+
+    for (auto & s : mShips)
+    {
+        s->SetDrawHeatOverlay(mDrawHeatOverlay);
     }
 }
 

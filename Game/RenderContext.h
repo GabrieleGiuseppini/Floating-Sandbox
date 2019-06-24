@@ -376,7 +376,6 @@ public:
         OnDebugShipRenderModeUpdated();
     }
 
-
     VectorFieldRenderMode GetVectorFieldRenderMode() const
     {
         return mVectorFieldRenderMode;
@@ -409,6 +408,18 @@ public:
         mShowStressedSprings = showStressedSprings;
 
         OnShowStressedSpringsUpdated();
+    }
+
+    bool GetDrawHeatOverlay() const
+    {
+        return mDrawHeatOverlay;
+    }
+
+    void SetDrawHeatOverlay(bool drawHeatOverlay)
+    {
+        mDrawHeatOverlay = drawHeatOverlay;
+
+        OnDrawHeatOverlayUpdated();
     }
 
     ShipFlameRenderMode GetShipFlameRenderMode() const
@@ -881,6 +892,20 @@ public:
             count);
     }
 
+    void UploadShipPointTemperature(
+        ShipId shipId,
+        float const * temperature,
+        size_t startDst,
+        size_t count)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        mShips[shipId]->UploadPointTemperature(
+            temperature,
+            startDst,
+            count);
+    }
+
     //
     // Ship elements
     //
@@ -1250,6 +1275,7 @@ private:
     void OnDebugShipRenderModeUpdated();
     void OnVectorFieldRenderModeUpdated();
     void OnShowStressedSpringsUpdated();
+    void OnDrawHeatOverlayUpdated();
     void OnShipFlameRenderModeUpdated();
     void OnShipFlameSizeAdjustmentUpdated();
 
@@ -1493,6 +1519,7 @@ private:
     VectorFieldRenderMode mVectorFieldRenderMode;
     float mVectorFieldLengthMultiplier;
     bool mShowStressedSprings;
+    bool mDrawHeatOverlay;
     ShipFlameRenderMode mShipFlameRenderMode;
     float mShipFlameSizeAdjustment;
 

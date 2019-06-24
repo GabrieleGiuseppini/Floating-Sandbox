@@ -408,6 +408,9 @@ public:
     bool GetShowShipStress() const override { return mRenderContext->GetShowStressedSprings(); }
     void SetShowShipStress(bool value) override { mRenderContext->SetShowStressedSprings(value); }
 
+    bool GetDrawHeatOverlay() const override { return mRenderContext->GetDrawHeatOverlay(); }
+    void SetDrawHeatOverlay(bool value) override { mRenderContext->SetDrawHeatOverlay(value); }
+
     ShipFlameRenderMode GetShipFlameRenderMode() const override { return mRenderContext->GetShipFlameRenderMode(); }
     void SetShipFlameRenderMode(ShipFlameRenderMode shipFlameRenderMode) override { mRenderContext->SetShipFlameRenderMode(shipFlameRenderMode); }
 

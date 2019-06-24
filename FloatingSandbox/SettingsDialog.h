@@ -42,6 +42,8 @@ private:
     void OnGenerateSparklesCheckBoxClick(wxCommandEvent & event);
     void OnGenerateAirBubblesCheckBoxClick(wxCommandEvent & event);
 
+    void OnDrawHeatOverlayCheckBoxClick(wxCommandEvent & event);
+
     void OnModulateWindCheckBoxClick(wxCommandEvent & event);
 
     void OnTextureOceanRenderModeRadioButtonClick(wxCommandEvent & event);
@@ -95,6 +97,9 @@ private:
     SliderControl * mWaterDiffusionSpeedSlider;
     SliderControl * mLuminiscenceSlider;
     SliderControl * mLightSpreadSlider;
+
+    // Heat
+    wxCheckBox * mDrawHeatOverlayCheckBox;
 
     // Ocean and Sky
     SliderControl * mOceanDepthSlider;
@@ -180,6 +185,7 @@ private:
 private:
 
     void PopulateMechanicsFluidsLightsPanel(wxPanel * panel);
+    void PopulateHeatPanel(wxPanel * panel);
     void PopulateOceanAndSkyPanel(wxPanel * panel);
     void PopulateWindAndWavesPanel(wxPanel * panel);
     void PopulateInteractionsPanel(wxPanel * panel);

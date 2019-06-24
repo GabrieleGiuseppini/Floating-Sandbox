@@ -583,6 +583,18 @@ void Points::UploadAttributes(
         mIsDecayBufferDirty = false;
     }
 
+    if (mIsTemperatureBufferDirty
+        && renderContext.GetDrawHeatOverlay())
+    {
+        renderContext.UploadShipPointTemperature(
+            shipId,
+            mTemperatureBuffer.data(),
+            0,
+            mAllPointCount);
+
+        mIsTemperatureBufferDirty = false;
+    }
+
     renderContext.UploadShipPointMutableAttributesEnd(shipId);
 }
 

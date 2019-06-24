@@ -95,6 +95,19 @@ SettingsDialog::SettingsDialog(
 
 
     //
+    // Heat
+    //
+
+    wxPanel * heatPanel = new wxPanel(notebook);
+
+    heatPanel->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
+
+    PopulateHeatPanel(heatPanel);
+
+    notebook->AddPage(heatPanel, "Heat");
+
+
+    //
     // Ocean and Sky
     //
 
@@ -256,6 +269,12 @@ void SettingsDialog::OnGenerateAirBubblesCheckBoxClick(wxCommandEvent & /*event*
 {
     mAirBubbleDensitySlider->Enable(mGenerateAirBubblesCheckBox->IsChecked());
 
+    // Remember we're dirty now
+    mApplyButton->Enable(true);
+}
+
+void SettingsDialog::OnDrawHeatOverlayCheckBoxClick(wxCommandEvent & /*event*/)
+{
     // Remember we're dirty now
     mApplyButton->Enable(true);
 }
@@ -794,6 +813,58 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
             CellBorder);
     }
 
+
+    // Finalize panel
+
+    panel->SetSizerAndFit(gridSizer);
+}
+
+void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
+{
+    wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
+
+
+    //
+    // Row 1
+    //
+
+    // Rendering
+    {
+        wxStaticBox * renderBox = new wxStaticBox(panel, wxID_ANY, _("Rendering"));
+
+        wxBoxSizer * renderBoxSizer1 = new wxBoxSizer(wxVERTICAL);
+        renderBoxSizer1->AddSpacer(StaticBoxTopMargin);
+
+        {
+            wxGridBagSizer * renderSizer = new wxGridBagSizer(0, 0);
+
+            // Draw heat overlay
+            {
+                mDrawHeatOverlayCheckBox = new wxCheckBox(renderBox, wxID_ANY,
+                    _("Draw Heat Overlay"), wxDefaultPosition, wxDefaultSize);
+                mDrawHeatOverlayCheckBox->SetToolTip("Renders the heat over ths ship.");
+                mDrawHeatOverlayCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnDrawHeatOverlayCheckBoxClick, this);
+
+                renderSizer->Add(
+                    mDrawHeatOverlayCheckBox,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorder);
+            }
+
+            renderBoxSizer1->Add(renderSizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        renderBox->SetSizerAndFit(renderBoxSizer1);
+
+        gridSizer->Add(
+            renderBox,
+            wxGBPosition(0, 0),
+            wxGBSpan(1, 1),
+            wxALL,
+            CellBorder);
+    }
 
     // Finalize panel
 
@@ -2368,6 +2439,10 @@ void SettingsDialog::ReadSettings()
 
     mLightSpreadSlider->SetValue(mGameController->GetLightSpreadAdjustment());
 
+    // Heat
+
+    mDrawHeatOverlayCheckBox->SetValue(mGameController->GetDrawHeatOverlay());
+
     // Ocean and Sky
 
     mOceanDepthSlider->SetValue(mGameController->GetSeaDepth());
@@ -2683,6 +2758,10 @@ void SettingsDialog::ApplySettings()
 
     mGameController->SetLightSpreadAdjustment(
         mLightSpreadSlider->GetValue());
+
+    // Heat
+
+    mGameController->SetDrawHeatOverlay(mDrawHeatOverlayCheckBox->IsChecked());
 
     // Ocean and Sky
 

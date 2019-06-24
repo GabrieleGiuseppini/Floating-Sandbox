@@ -53,6 +53,7 @@ public:
         DebugShipRenderMode debugShipRenderMode,
         VectorFieldRenderMode vectorFieldRenderMode,
         bool showStressedSprings,
+        bool drawHeatOverlay,
         ShipFlameRenderMode shipFlameRenderMode,
         float shipFlameSizeAdjustment);
 
@@ -122,6 +123,11 @@ public:
         mShowStressedSprings = showStressedSprings;
     }
 
+    void SetDrawHeatOverlay(bool drawHeatOverlay)
+    {
+        mDrawHeatOverlay = drawHeatOverlay;
+    }
+
     void SetShipFlameRenderMode(ShipFlameRenderMode shipFlameRenderMode)
     {
         mShipFlameRenderMode = shipFlameRenderMode;
@@ -166,6 +172,11 @@ public:
 
     void UploadPointColors(
         vec4f const * color,
+        size_t startDst,
+        size_t count);
+
+    void UploadPointTemperature(
+        float const * temperature,
         size_t startDst,
         size_t count);
 
@@ -661,6 +672,8 @@ private:
 
     GameOpenGLVBO mPointColorVBO;
 
+    GameOpenGLVBO mPointTemperatureVBO;
+
     std::vector<LineElement> mStressedSpringElementBuffer;
     GameOpenGLVBO mStressedSpringElementVBO;
 
@@ -744,6 +757,7 @@ private:
     DebugShipRenderMode mDebugShipRenderMode;
     VectorFieldRenderMode mVectorFieldRenderMode;
     bool mShowStressedSprings;
+    bool mDrawHeatOverlay;
     ShipFlameRenderMode mShipFlameRenderMode;
     float mShipFlameSizeAdjustment;
     float mHalfFlameQuadWidth;

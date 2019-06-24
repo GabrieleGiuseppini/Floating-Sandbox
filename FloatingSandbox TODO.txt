@@ -1037,13 +1037,17 @@ Render:
 					+ Springs::Strength -> "CurrentStrength"
 					+ Springs::GetMaterialStrength
 					+ See whether all "current" should go and become _just_
-			- Heat overlay:
-				- Ship/RenderContext flag
-				- SettingsDialog
-				- Ship::Render: when flag set, upload heat buffer (much like we do w/Decay)
-					- Ship/RenderContext UploadHeat
-						- Maintains dirty flag and exposes MarkTempBufAsDirty - exactly like decay
-				- Ship/RenderContext render
+			= Heat overlay:
+				+ Ship/RenderContext flag
+				+ SettingsDialog
+				+ Ship::Render: when flag set, upload heat buffer (much like we do w/Decay)
+					+ Ship/RenderContext UploadHeat
+						+ Maintains dirty flag and exposes MarkTempBufAsDirty - exactly like decay - which is invoked by:
+							+ Heat propagation
+				+ Ship/RenderContext render
+					= Shader enabling
+						+ RenderCore enums
+						- Activation and parameter setting
 					- Shaders:
 						- Use temperature buffer (of floats) to produce "temperature color" as:
 							- tint3 = mix(c1, c2, some f of temperature ~= 1-e^(-paramHeatContrast*T)) // see https://en.wikipedia.org/wiki/Incandescence#/media/File:Example_incandescence_colors_(temperature_range_550_-_1300_C).svg
@@ -1054,8 +1058,8 @@ Render:
 							- 1xColor
 					- HeatContrast at SettingsDialog
 						- "Render" section under "Heat"
-			- Physics update:
-				- Ship::Update: 
+			= Physics update:
+				= Ship::Update: 
 					- @Beginning: either call Springs::UpdateParameters(params, points) or call 
 					  Springs::UpdateDecayAndTemperatureAndParameters(params, points), depending on simulation step
 						- Springs::UpdateParameters(params, points): iff params updated:
