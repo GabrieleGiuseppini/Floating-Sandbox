@@ -1,0 +1,108 @@
+{
+        "name": "Red Neon Lamp",	
+        "template": {
+                "row": "4|Neon Lamps",
+                "column": "0|Red Neon Lamp"
+        },
+        "color_key": "#FF0000",
+        "electrical_type": "Neon Lamp",
+        "is_self_powered": false,
+        "luminiscence": 2.0,
+        "light_spread": 1.0
+    },
+    {
+        "name": "Orange Neon Lamp",	
+        "template": {
+                "row": "4|Neon Lamps",
+                "column": "1|Orange Neon Lamp"
+        },
+        "color_key": "#FF8400",
+        "electrical_type": "Neon Lamp",
+        "is_self_powered": false,
+        "luminiscence": 2.0,
+        "light_spread": 1.0
+    },
+    {
+        "name": "Yellow Neon Lamp",	
+        "template": {
+                "row": "4|Neon Lamps",
+                "column": "2|Yellow Neon Lamp"
+        },
+        "color_key": "#FFFF00",
+        "electrical_type": "Lamp",
+        "is_self_powered": false,
+        "luminiscence": 2.0,
+        "light_spread": 1.0
+    },
+    {
+        "name": "Green Neon Lamp",	
+        "template": {
+                "row": "4|Neon Lamps",
+                "column": "3|Green Neon Lamp"
+        },
+        "color_key": "#00ff08",
+        "electrical_type": "Neon Lamp",
+        "is_self_powered": false,
+        "luminiscence": 2.0,
+        "light_spread": 1.0
+    },
+      {
+        "name": "Blue Neon Lamp",	
+        "template": {
+                "row": "4|Neon Lamps",
+                "column": "4|Blue Neon Lamp"
+        },
+        "color_key": "#0000ff",
+        "electrical_type": "Neon Lamp",
+        "is_self_powered": false,
+        "luminiscence": 2.0,
+        "light_spread": 1.0
+    },
+      {
+        "name": "Purple Neon Lamp",	
+        "template": {
+                "row": "4|Neon Lamps",
+                "column": "5|Purple Neon Lamp"
+        },
+        "color_key": "#a500ff",
+        "electrical_type": "Neon Lamp",
+        "is_self_powered": false,
+        "luminiscence": 2.0,
+        "light_spread": 1.0
+    },
+      {
+        "name": "Pink Neon Lamp",	
+        "template": {
+                "row": "4|Neon Lamps",
+                "column": "6|Pink Neon Lamp"
+        },
+        "color_key": "#ff00ff",
+        "electrical_type": "Neon Lamp",
+        "is_self_powered": false,
+        "luminiscence": 2.0,
+        "light_spread": 1.0
+    },
+        {
+        "name": "White Neon Lamp",	
+        "template": {
+                "row": "4|Neon Lamps",
+                "column": "7|White Neon Lamp"
+        },
+        "color_key": "#ffffff",
+        "electrical_type": "Neon Lamp",
+        "is_self_powered": false,
+        "luminiscence": 2.0,
+        "light_spread": 1.0
+    },
+  {
+        "name": "Black Neon Lamp",	
+        "template": {
+                "row": "4|Neon Lamps",
+                "column": "8|Black Neon Lamp"
+        },
+        "color_key": "#141414",
+        "electrical_type": "Neon Lamp",
+        "is_self_powered": false,
+        "luminiscence": 2.0,
+        "light_spread": 1.0
+    },       
