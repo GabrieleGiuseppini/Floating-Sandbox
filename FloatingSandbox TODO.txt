@@ -1051,7 +1051,8 @@ Render:
 						- Parameter setting
 					- Shaders:
 						- Do point, spring, and triangle shaders
-							- Do second, richer version of main ones - "...WithTemperature..."
+							- Do second, richer version of main ones - "...WithTemperature..." - that completely
+							  replace the first ones when the heat overlay is activated
 								- Texture
 								- Color
 						= Use temperature buffer (of floats) to produce "temperature color" as:

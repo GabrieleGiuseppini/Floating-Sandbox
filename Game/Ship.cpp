@@ -1533,8 +1533,7 @@ void Ship::PropagateHeat(
 
         // Update point's temperature due to total flow
         newPointTemperatureBufferData[pointIndex] -=
-            dt
-            * totalOutgoingHeat * normalizationFactor
+            totalOutgoingHeat * normalizationFactor
             / mPoints.GetMaterialHeatCapacity(pointIndex);
     }
 
