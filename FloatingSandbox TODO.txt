@@ -1105,19 +1105,20 @@ Render:
 							  state machine
 								- Raise flames up and down
 								- Temperature
-			- Electrical update: inject heat from working lamps and generators
-				- New material property - ~"HeatProduced"
-			= Flamethrower:
-				= Ship::Interaction:
-					= GameParameters::FlameThrowerHeat
-						+ Absolute value, in J
-						+ SettingsDialog, under "Flamethrower" in "Heat"
-					+ Convert into DeltaT and inject in radius, smoothing radius
-				= Radius at SettingsDialog, under "Flamethrower" in "Heat"
-				= Fix default value of heat <-> slider
 			- Ship::Render:
 				- Calls Points::UploadCombustion(heap)
 					- Uploads flames in order of heap
+
+			- Electrical update: inject heat from working lamps and generators
+				- New material property - ~"HeatProduced"
+			+ Flamethrower physics:
+				+ Ship::Interaction:
+					+ GameParameters::FlameThrowerHeat
+						+ Absolute value, in J
+						+ SettingsDialog, under "Flamethrower" in "Heat"
+					+ Convert into DeltaT and inject in radius, smoothing radius
+				+ Radius at SettingsDialog, under "Flamethrower" in "Heat"
+				+ Fix default value of heat <-> slider
 
 			- GameParameters: make max burning points adjustable
 				- All sub-systems need to allow for > max burning particles, because when the user changes the value down,
@@ -1252,12 +1253,17 @@ Render:
 		- Fires when wet for the first time
 
 	- Switches:
-		- New electrical material type
+		- New electrical material types
+			- Two types:
+				- GameType enum
+				- Interactive switch: controlled by user
+				- Water sensing switch: controlled by water (w/constant low and high watermark thresholds)
+					- Check done at low-frequency step in ElectricalUpdate()
 			- Color trick like ropes to have unique and deterministic IDs for switches
 				- One material (base structural color) for initially on and another one for initially off
 			- New electrical property: ConductsElectricity, bool - used at connectivity visit
 				- Lights, Cables, Generators have it as true
-				- Switches have is as true or false depending on whether switch material is on or off
+				- Switches have it as true or false depending on whether switch material is on or off
 		- GameTypes:
 			+ ObjectId overhaul:
 				+ ObjectId is unique only in the context in which it's used (e.g. bombs vs switches)
@@ -1268,6 +1274,7 @@ Render:
 				+ All object ID ints become ObjectId
 			- LocalSwitchId typedef (uint32_t)
 			- SwitchId == ObjectId<LocalSwitchId>
+			- SwitchState enum (mapped to bool)
 		- Ship json adds optional names for each ID
 			- as vector<pair<local switch ID, std::string>>>
 				- local switch ID is ID from color code
@@ -1279,36 +1286,43 @@ Render:
 				- LocalObjectId is just element index of switch in ElectricalElements
 			- Each switch gets name as part of Electrical Elements data communicated to ship
 				- ObjectId is implicit (local ID is index in container of switches's ElementIndex within ElectricalElements)
-		- Create and Destroy events:
-			- Ship::cctor visits switches among ElectricalElements and fires AddSwitch(ID, name, state)
+		- New game events:
+			- Ship::cctor visits switches among ElectricalElements and fires AddSwitch(ID, name, type, state)
 			- Ship::ElectricalElementDestroyHandler fires DeleteSwitch(ID) if deleting a switch
-		- MainFrame gets switches via AddSwitch (and DeleteSwitch) event, with all metadata (ID, name, state)
-			- From Ship::cctor, visiting switches among ElectricalElements
+			- Water-sensing switching done at ElectricalUpdate() fire SwitchToggled(ID, state)
+		- MainFrame gets switches via AddSwitch event, with all metadata (ID, name, type, state)
 			- SwitchBoard panel (see below)
 				- Registers as event listener at cctor
 				- Uses GameController (own shared ptr) :: SetSwitch(ObjectId switchId, bool state) to control switches
+					- Water-sensing switches are not controllable, they just provide feedback
 		- MainFrame:
 			- Also registers for AddSwitch and shows SwitchBoard on first add
 				- As long as UIPreferences::AutoShowSwitchBoard is set (default=true)
-					- Menu item to toggle AutoShowSwitchBoard; only changes UIPreferences
+			- Menu item to toggle SwitchBoard; enabled only if there's been one AddSwitch
 			- Hides it again only at Reset()
 		- Electrical dynamics:
 			- ElectricalElement: rename "ConnectivityVisit" (sequence number, etc.) as "ElectricalPropagationVisit" (...)
 				- Ship::UpdateElectrical"Propagation"
 			- ElectricalElement has new "conductsElectricity" bool buffer
-				- Init'd with material's
+				- Material (init'd with material's) and "current"
 				- Ship::UpdateElectricalConnectivity checks conductance first when deciding to follow a connected electrical element
 			- Ship::SetSwitch(LocalSwitchId, bool):
-				- Toggles electrical element's "conductsElectricity", via ElectricalElements::SetSwitch(switch index, bool)
+				- Toggles electrical element's "current" "conductsElectricity", via ElectricalElements::SetSwitch(switch index, SwitchState)
+				- Then fires SwitchToggled event
 		- SwitchboardPanel:
 			- MainFrame menu pops it up and down (and MainFrame also pops it up automagically at first switch add, see above)
 				- Menu items to toggle it, enabled iff there's at least one switch
 			- Has control to hide it back (kinda like "close" button at top-right corner)
 			- ShipSwitchControl: much like slider, button (w/two switch images) with label below
-				- Switch event is via lambda
+				- Interactive only if type is "interactive"
+				- May be disabled/enabled (via SetEnabled(.) override), making it grey and non-functional
+				- User-generated switch event is via lambda
+				- Exposes SetState(SwitchState) for externally-generated switch events
+					- No lambda
 				- Media:
 					- 2 images
 					- 2 sounds
+				- Tooltip displays keys (whose labels are provided by creator via cctor)
 			- Panel: much like ProbePanel
 				- Has:
 					- ResourceLoader const & (used @ cctor only for button images)
@@ -1317,20 +1331,34 @@ Render:
 				- Registers as event listener
 					- Processes IGameEventHandler::OnSwitchCreate/Delete
 					- Processes Reset() to delete all
-				- Has unordered_map<ObjectId, uq_ptr<SwitchControl>>
+				- Has unordered_map<ObjectId, SwitchInfo>
+					- SwitchInfo:
+						- uq_ptr<SwitchControl>
+						- bool IsEnabled
+						- SwitchState CurrentState
 				- OnSwitchCreate:
-					- Create uq_ptr<SwitchControl>
+					- Calc key and store in vector<integer from key, ObjectId> for key mappings
+					- Create uq_ptr<SwitchControl(key)>
 					- Add to map
 					- Add to panel - left-aligned
 				- OnSwitchDelete:
-					- Remove from panel
-					- Remove from map
+					- Disable switch control
+					- Disable in SwitchInfo
+					- Leave in map
+				- OnSwitchToggled(ID, new state):
+					- Lookup from map and call SetState on control (regardless of disabling)
 				- Gets key events from MainFrame when MainFrame does not recognize
-					- XYZKeyEvent: returns bool for processed/not processed, so MainFrame can chain
+					- OnKeyEvent: returns bool for processed/not processed, so MainFrame can chain
 					- Shift and Alt do +10, +20
-			- Switch event lambda:
-				- GameController->SetSwitch(ObjectId switchId, bool state)
-				- SoundController->PlaySwitchOn/OffSound()
+					- Uses key mappings to figure out ObjectId
+					- On key:
+						- If SwitchInfo.IsEnabled:
+							- Toggle state in SwitchInfo
+							- Call SwitchControl->SetState(new state)
+							- Call (target of) lambda
+				- Target of lambda (OnInternallyToggledSwitch(...)):
+					- GameController->SetSwitch(ObjectId switchId, bool state)
+					- SoundController->PlaySwitchOn/OffSound()
 		- Do not propagate switch characteristics through ropes
 				
 

@@ -57,5 +57,5 @@ void main()
     heatColor *= paramAmbientLightIntensity;
 
     // Create fragment color using own transparency and texture's transparency
-    gl_FragColor = vec4(heatColor, 1.0); // 0.5 * vertexCol.w);
+    gl_FragColor = vec4(heatColor, 0.8 * vertexCol.w);
 } 
