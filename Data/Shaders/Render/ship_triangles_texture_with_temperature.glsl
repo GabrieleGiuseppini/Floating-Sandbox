@@ -1,0 +1,1 @@
+#include "ship_texture_with_temperature.glslinc"

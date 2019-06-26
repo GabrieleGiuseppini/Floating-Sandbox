@@ -365,6 +365,9 @@ struct IGameController
     virtual bool GetDrawHeatOverlay() const = 0;
     virtual void SetDrawHeatOverlay(bool value) = 0;
 
+    virtual float GetHeatOverlayTransparency() const = 0;
+    virtual void SetHeatOverlayTransparency(float value) = 0;
+
     virtual ShipFlameRenderMode GetShipFlameRenderMode() const = 0;
     virtual void SetShipFlameRenderMode(ShipFlameRenderMode shipFlameRenderMode) = 0;
 

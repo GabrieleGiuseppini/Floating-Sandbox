@@ -1,0 +1,1 @@
+#include "ship_color_with_temperature.glslinc"

@@ -102,6 +102,7 @@ private:
     SliderControl * mFlameThrowerRadiusSlider;
     SliderControl * mFlameThrowerHeatFlowSlider;
     wxCheckBox * mDrawHeatOverlayCheckBox;
+    SliderControl * mHeatOverlayTransparencySlider;
 
     // Ocean and Sky
     SliderControl * mOceanDepthSlider;

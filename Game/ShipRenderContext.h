@@ -54,6 +54,7 @@ public:
         VectorFieldRenderMode vectorFieldRenderMode,
         bool showStressedSprings,
         bool drawHeatOverlay,
+        float heatOverlayTransparency,
         ShipFlameRenderMode shipFlameRenderMode,
         float shipFlameSizeAdjustment);
 
@@ -126,6 +127,14 @@ public:
     void SetDrawHeatOverlay(bool drawHeatOverlay)
     {
         mDrawHeatOverlay = drawHeatOverlay;
+    }
+
+    void SetHeatOverlayTransparency(float transparency)
+    {
+        mHeatOverlayTransparency = transparency;
+
+        // React
+        OnHeatOverlayTransparencyUpdated();
     }
 
     void SetShipFlameRenderMode(ShipFlameRenderMode shipFlameRenderMode)
@@ -552,6 +561,7 @@ private:
     void OnWaterColorUpdated();
     void OnWaterContrastUpdated();
     void OnWaterLevelOfDetailUpdated();
+    void OnHeatOverlayTransparencyUpdated();
     void OnShipFlameSizeAdjustmentUpdated();
 
     void RenderFlames();
@@ -758,6 +768,7 @@ private:
     VectorFieldRenderMode mVectorFieldRenderMode;
     bool mShowStressedSprings;
     bool mDrawHeatOverlay;
+    float mHeatOverlayTransparency;
     ShipFlameRenderMode mShipFlameRenderMode;
     float mShipFlameSizeAdjustment;
     float mHalfFlameQuadWidth;

@@ -425,6 +425,9 @@ public:
     bool GetDrawHeatOverlay() const override { return mRenderContext->GetDrawHeatOverlay(); }
     void SetDrawHeatOverlay(bool value) override { mRenderContext->SetDrawHeatOverlay(value); }
 
+    float GetHeatOverlayTransparency() const override { return mRenderContext->GetHeatOverlayTransparency(); }
+    void SetHeatOverlayTransparency(float value) override { mRenderContext->SetHeatOverlayTransparency(value); }
+
     ShipFlameRenderMode GetShipFlameRenderMode() const override { return mRenderContext->GetShipFlameRenderMode(); }
     void SetShipFlameRenderMode(ShipFlameRenderMode shipFlameRenderMode) override { mRenderContext->SetShipFlameRenderMode(shipFlameRenderMode); }
 

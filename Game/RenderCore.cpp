@@ -39,24 +39,32 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::ShipGenericTextures;
     else if (lstr == "ship_points_color")
         return ProgramType::ShipPointsColor;
+    else if (lstr == "ship_points_color_with_temperature")
+        return ProgramType::ShipPointsColorWithTemperature;
     else if (lstr == "ship_ropes")
         return ProgramType::ShipRopes;
+    else if (lstr == "ship_ropes_with_temperature")
+        return ProgramType::ShipRopesWithTemperature;
     else if (lstr == "ship_springs_color")
         return ProgramType::ShipSpringsColor;
+    else if (lstr == "ship_springs_color_with_temperature")
+        return ProgramType::ShipSpringsColorWithTemperature;
     else if (lstr == "ship_springs_texture")
         return ProgramType::ShipSpringsTexture;
+    else if (lstr == "ship_springs_texture_with_temperature")
+        return ProgramType::ShipSpringsTextureWithTemperature;
     else if (lstr == "ship_stressed_springs")
         return ProgramType::ShipStressedSprings;
-    else if (lstr == "ship_temperature_color")
-        return ProgramType::ShipTemperatureColor;
-    else if (lstr == "ship_temperature_texture")
-        return ProgramType::ShipTemperatureTexture;
     else if (lstr == "ship_triangles_color")
         return ProgramType::ShipTrianglesColor;
+    else if (lstr == "ship_triangles_color_with_temperature")
+        return ProgramType::ShipTrianglesColorWithTemperature;
     else if (lstr == "ship_triangles_decay")
         return ProgramType::ShipTrianglesDecay;
     else if (lstr == "ship_triangles_texture")
         return ProgramType::ShipTrianglesTexture;
+    else if (lstr == "ship_triangles_texture_with_temperature")
+        return ProgramType::ShipTrianglesTextureWithTemperature;
     else if (lstr == "ship_vectors")
         return ProgramType::ShipVectors;
     else if (lstr == "stars")
@@ -97,24 +105,32 @@ std::string ProgramTypeToStr(ProgramType program)
         return "ShipGenericTextures";
     case ProgramType::ShipPointsColor:
         return "ShipPointsColor";
+    case ProgramType::ShipPointsColorWithTemperature:
+        return "ShipPointsColorWithTemperature";
     case ProgramType::ShipRopes:
         return "ShipRopes";
+    case ProgramType::ShipRopesWithTemperature:
+        return "ShipRopesWithTemperature";
     case ProgramType::ShipSpringsColor:
         return "ShipSpringsColor";
+    case ProgramType::ShipSpringsColorWithTemperature:
+        return "ShipSpringsColorWithTemperature";
     case ProgramType::ShipSpringsTexture:
         return "ShipSpringsTexture";
+    case ProgramType::ShipSpringsTextureWithTemperature:
+        return "ShipSpringsTextureWithTemperature";
     case ProgramType::ShipStressedSprings:
         return "ShipStressedSprings";
-    case ProgramType::ShipTemperatureColor:
-        return "ShipTemperatureColor";
-    case ProgramType::ShipTemperatureTexture:
-        return "ShipTemperatureTexture";
     case ProgramType::ShipTrianglesColor:
         return "ShipTrianglesColor";
+    case ProgramType::ShipTrianglesColorWithTemperature:
+        return "ShipTrianglesColorWithTemperature";
     case ProgramType::ShipTrianglesDecay:
         return "ShipTrianglesDecay";
     case ProgramType::ShipTrianglesTexture:
         return "ShipTrianglesTexture";
+    case ProgramType::ShipTrianglesTextureWithTemperature:
+        return "ShipTrianglesTextureWithTemperature";
     case ProgramType::ShipVectors:
         return "ShipVectors";
     case ProgramType::Stars:
@@ -133,6 +149,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
 {
     if (str == "AmbientLightIntensity")
         return ProgramParameterType::AmbientLightIntensity;
+    else if (str == "HeatOverlayTransparency")
+        return ProgramParameterType::HeatOverlayTransparency;
     else if (str == "LandFlatColor")
         return ProgramParameterType::LandFlatColor;
     else if (str == "MatteColor")
@@ -192,6 +210,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
     {
     case ProgramParameterType::AmbientLightIntensity:
         return "AmbientLightIntensity";
+    case ProgramParameterType::HeatOverlayTransparency:
+        return "HeatOverlayTransparency";
     case ProgramParameterType::LandFlatColor:
         return "LandFlatColor";
     case ProgramParameterType::MatteColor:

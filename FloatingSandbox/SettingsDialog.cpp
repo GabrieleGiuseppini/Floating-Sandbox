@@ -914,7 +914,8 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
             {
                 mDrawHeatOverlayCheckBox = new wxCheckBox(renderBox, wxID_ANY,
                     _("Draw Heat Overlay"), wxDefaultPosition, wxDefaultSize);
-                mDrawHeatOverlayCheckBox->SetToolTip("Renders the heat over ths ship.");
+                mDrawHeatOverlayCheckBox->SetToolTip("Renders heat over ships.");
+                mDrawHeatOverlayCheckBox->SetMinSize(wxSize(-1, 20));
                 mDrawHeatOverlayCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnDrawHeatOverlayCheckBoxClick, this);
 
                 renderSizer->Add(
@@ -922,6 +923,32 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
                     wxALL,
+                    CellBorder);
+            }
+
+            // Heat overlay transparency
+            {
+                mHeatOverlayTransparencySlider = new SliderControl(
+                    renderBox,
+                    SliderWidth,
+                    SliderHeight - 20 - CellBorder, // TODO
+                    "Heat Overlay Transparency",
+                    "Adjusts the transparency of the heat overlay.",
+                    mGameController->GetHeatOverlayTransparency(),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        0.0f,
+                        1.0f));
+
+                renderSizer->Add(
+                    mHeatOverlayTransparencySlider,
+                    wxGBPosition(1, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
                     CellBorder);
             }
 
@@ -2519,6 +2546,8 @@ void SettingsDialog::ReadSettings()
 
     mDrawHeatOverlayCheckBox->SetValue(mGameController->GetDrawHeatOverlay());
 
+    mHeatOverlayTransparencySlider->SetValue(mGameController->GetHeatOverlayTransparency());
+
     // Ocean and Sky
 
     mOceanDepthSlider->SetValue(mGameController->GetSeaDepth());
@@ -2844,6 +2873,9 @@ void SettingsDialog::ApplySettings()
         mFlameThrowerHeatFlowSlider->GetValue());
 
     mGameController->SetDrawHeatOverlay(mDrawHeatOverlayCheckBox->IsChecked());
+
+    mGameController->SetHeatOverlayTransparency(
+        mHeatOverlayTransparencySlider->GetValue());
 
     // Ocean and Sky
 

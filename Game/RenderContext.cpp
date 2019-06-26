@@ -90,7 +90,8 @@ RenderContext::RenderContext(
     , mVectorFieldRenderMode(VectorFieldRenderMode::None)
     , mVectorFieldLengthMultiplier(1.0f)
     , mShowStressedSprings(false)
-    , mDrawHeatOverlay(true) // TODO
+    , mDrawHeatOverlay(true) // TODO: for debugging
+    , mHeatOverlayTransparency(0.1875f)
     , mShipFlameRenderMode(ShipFlameRenderMode::Mode1)
     , mShipFlameSizeAdjustment(1.0f)
     // Statistics
@@ -99,7 +100,7 @@ RenderContext::RenderContext(
     static constexpr float GenericTextureProgressSteps = 10.0f;
     static constexpr float CloudTextureProgressSteps = 4.0f;
 
-    // Shaders, TextRenderContext, TextureDatabase, GenericTextureAtlas, Clouds, NoiseX2, WorldBorder
+    // Shaders, TextRenderContext, TextureDatabase, GenericTextureAtlas, Clouds, Noise X 2, WorldBorder
     static constexpr float TotalProgressSteps = 3.0f + GenericTextureProgressSteps + CloudTextureProgressSteps + 2.0f + 1.0f;
 
     GLuint tmpGLuint;
@@ -569,6 +570,7 @@ RenderContext::RenderContext(
     OnVectorFieldRenderModeUpdated();
     OnShowStressedSpringsUpdated();
     OnDrawHeatOverlayUpdated();
+    OnHeatOverlayTransparencyUpdated();
     OnShipFlameRenderModeUpdated();
     OnShipFlameSizeAdjustmentUpdated();
 
@@ -649,6 +651,7 @@ void RenderContext::AddShip(
             mVectorFieldRenderMode,
             mShowStressedSprings,
             mDrawHeatOverlay,
+            mHeatOverlayTransparency,
             mShipFlameRenderMode,
             mShipFlameSizeAdjustment));
 }
@@ -1460,6 +1463,16 @@ void RenderContext::OnDrawHeatOverlayUpdated()
     for (auto & s : mShips)
     {
         s->SetDrawHeatOverlay(mDrawHeatOverlay);
+    }
+}
+
+void RenderContext::OnHeatOverlayTransparencyUpdated()
+{
+    // Set parameter in all ships
+
+    for (auto & s : mShips)
+    {
+        s->SetHeatOverlayTransparency(mHeatOverlayTransparency);
     }
 }
 

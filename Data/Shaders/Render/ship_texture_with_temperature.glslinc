@@ -8,12 +8,14 @@
 // Inputs
 in vec4 inShipPointAttributeGroup1; // Position, TextureCoordinates
 in vec4 inShipPointAttributeGroup2; // Light, Water, PlaneId, Decay
+in float inShipPointTemperature; // Temperature
 
 // Outputs        
 out float vertexLight;
 out float vertexWater;
 out float vertexDecay;
 out vec2 vertexTextureCoords;
+out float vertexTemperature;
 
 // Params
 uniform mat4 paramOrthoMatrix;
@@ -24,6 +26,7 @@ void main()
     vertexWater = inShipPointAttributeGroup2.y;
     vertexDecay = inShipPointAttributeGroup2.w;
     vertexTextureCoords = inShipPointAttributeGroup1.zw;
+    vertexTemperature = inShipPointTemperature;
 
     gl_Position = paramOrthoMatrix * vec4(inShipPointAttributeGroup1.xy, inShipPointAttributeGroup2.z, 1.0);
 }
@@ -39,12 +42,14 @@ in float vertexLight;
 in float vertexWater;
 in float vertexDecay;
 in vec2 vertexTextureCoords;
+in float vertexTemperature;
 
 // Params
 uniform float paramAmbientLightIntensity;
 uniform vec4 paramWaterColor;
 uniform float paramWaterContrast;
 uniform float paramWaterLevelThreshold;
+uniform float paramHeatOverlayTransparency;
 
 // Input texture
 uniform sampler2D paramSharedTexture;
@@ -66,6 +71,10 @@ void main()
     // Apply point water
     float vertexColorWetness = min(vertexWater, paramWaterLevelThreshold) / paramWaterLevelThreshold * paramWaterContrast;
     vec4 fragColour = mix(vertexCol, paramWaterColor, vertexColorWetness);
+
+    // Calculate heat color based on temperature, between red and yellow
+    vec4 heatColor = mix(vec4(%HEAT_RED_COLOR_VEC3%, 1.0), vec4(%HEAT_YELLOW_COLOR_VEC3%, 1.0), 1.0 - exp(-0.0008 * vertexTemperature));
+    fragColour = mix(fragColour, heatColor, 1.0 - paramHeatOverlayTransparency);
 
     // Complement missing ambient light with point's light
     float totalLightIntensity = paramAmbientLightIntensity + (1.0 - paramAmbientLightIntensity) * vertexLight;

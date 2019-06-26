@@ -422,6 +422,18 @@ public:
         OnDrawHeatOverlayUpdated();
     }
 
+    float GetHeatOverlayTransparency() const
+    {
+        return mHeatOverlayTransparency;
+    }
+
+    void SetHeatOverlayTransparency(float transparency)
+    {
+        mHeatOverlayTransparency = transparency;
+
+        OnHeatOverlayTransparencyUpdated();
+    }
+
     ShipFlameRenderMode GetShipFlameRenderMode() const
     {
         return mShipFlameRenderMode;
@@ -1276,6 +1288,7 @@ private:
     void OnVectorFieldRenderModeUpdated();
     void OnShowStressedSpringsUpdated();
     void OnDrawHeatOverlayUpdated();
+    void OnHeatOverlayTransparencyUpdated();
     void OnShipFlameRenderModeUpdated();
     void OnShipFlameSizeAdjustmentUpdated();
 
@@ -1520,6 +1533,7 @@ private:
     float mVectorFieldLengthMultiplier;
     bool mShowStressedSprings;
     bool mDrawHeatOverlay;
+    float mHeatOverlayTransparency;
     ShipFlameRenderMode mShipFlameRenderMode;
     float mShipFlameSizeAdjustment;
 

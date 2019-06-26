@@ -1049,19 +1049,18 @@ Render:
 				+ Ship/RenderContext render
 					+ Rendering:
 						+ RenderCore enums
-					- Shaders:
-						- Do point, spring, and triangle shaders
-							- Do second, richer version of main ones - "...WithTemperature..." - that completely
+					+ Shaders:
+						+ Do point, spring, and triangle shaders
+							+ Do second, richer version of main ones - "...WithTemperature..." - that completely
 							  replace the first ones when the heat overlay is activated
-								- Texture
-								- Color
-							- Parameter setting
-						= Use temperature buffer (of floats) to produce "temperature color" as:
+								+ Texture
+								+ Color
+							+ Parameter setting
+						+ Use temperature buffer (of floats) to produce "temperature color" as:
 							+ tint3 = mix(c1, c2, some f of temperature ~= 1-e^(-paramHeatContrast*T)) // see https://en.wikipedia.org/wiki/Incandescence#/media/File:Example_incandescence_colors_(temperature_range_550_-_1300_C).svg
-							- Figure out right transparency (via param)
-					- Transparency at SettingsDialog
-						- "Render" section under "Heat"
-						- Figure out right default value
+					+ Transparency at SettingsDialog
+						+ "Render" section under "Heat"
+						+ Figure out right default value
 			= Physics update:
 				= Ship::Update: 
 					- @Beginning: either call Springs::UpdateParameters(params, points) or call 
@@ -1090,6 +1089,7 @@ Render:
 								- Ship has heap with indices of burning points together with their PlaneID, sorted by PlaneID asc
 									- priority_queue<pair<idx, plane ID>>
 								- ConnectivityVisit: recalc heap from scratch
+									- Faster: by visiting its points only and creating new one
 								- State machine removes (at full combustion exhaustion) and/or adds (at initial combustion ignition)
 								  to heap
 							- For each point:

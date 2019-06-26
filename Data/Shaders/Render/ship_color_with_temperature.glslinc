@@ -9,12 +9,14 @@
 in vec4 inShipPointAttributeGroup1; // Position, TextureCoordinates
 in vec4 inShipPointAttributeGroup2; // Light, Water, PlaneId, Decay
 in vec4 inShipPointColor;
+in float inShipPointTemperature; // Temperature
 
 // Outputs        
 out float vertexLight;
 out float vertexWater;
 out float vertexDecay;
 out vec4 vertexCol;
+out float vertexTemperature;
 
 // Params
 uniform mat4 paramOrthoMatrix;
@@ -25,6 +27,7 @@ void main()
     vertexWater = inShipPointAttributeGroup2.y;
     vertexDecay = inShipPointAttributeGroup2.w;
     vertexCol = inShipPointColor;
+    vertexTemperature = inShipPointTemperature;
 
     gl_Position = paramOrthoMatrix * vec4(inShipPointAttributeGroup1.xy, inShipPointAttributeGroup2.z, 1.0);
 }
@@ -40,23 +43,29 @@ in float vertexLight;
 in float vertexWater;
 in float vertexDecay;
 in vec4 vertexCol;
+in float vertexTemperature;
 
 // Params
 uniform float paramAmbientLightIntensity;
 uniform vec4 paramWaterColor;
 uniform float paramWaterContrast;
 uniform float paramWaterLevelThreshold;
+uniform float paramHeatOverlayTransparency;
 
 void main()
 {
     // Apply decay
     float originalLightness = (vertexCol.x + vertexCol.y + vertexCol.z) / 3.0;
-    vec4 blendColor = vec4(%ROT_GREEN_COLOR%) * (1.0 - originalLightness) + vec4(%ROT_BROWN_COLOR%) * originalLightness;
-    vec4 fragColour = vertexCol * vertexDecay + blendColor * (1.0 - vertexDecay);
+    vec4 decayColor = mix(vec4(%ROT_GREEN_COLOR%), vec4(%ROT_BROWN_COLOR%), originalLightness);
+    vec4 fragColour = mix(decayColor, vertexCol, vertexDecay);
 
     // Apply point water
     float vertexColorWetness = min(vertexWater, paramWaterLevelThreshold) / paramWaterLevelThreshold * paramWaterContrast;
-    fragColour = fragColour * (1.0 - vertexColorWetness) + paramWaterColor * vertexColorWetness;
+    fragColour = mix(fragColour, paramWaterColor, vertexColorWetness);
+
+    // Apply heat color based on temperature, between red and yellow
+    vec4 heatColor = mix(vec4(%HEAT_RED_COLOR_VEC3%, 1.0), vec4(%HEAT_YELLOW_COLOR_VEC3%, 1.0), 1.0 - exp(-0.0008 * vertexTemperature));
+    fragColour = mix(fragColour, heatColor, 1.0 - paramHeatOverlayTransparency);
 
     // Complement missing ambient light with point's light
     float totalLightIntensity = paramAmbientLightIntensity + (1.0 - paramAmbientLightIntensity) * vertexLight;
@@ -65,7 +74,7 @@ void main()
     fragColour *= totalLightIntensity;
 
     // Apply point light color
-    fragColour = fragColour * (1.0 - vertexLight) + vec4(%LAMPLIGHT_COLOR_VEC4%) * vertexLight;
+    fragColour = mix(fragColour, vec4(%LAMPLIGHT_COLOR_VEC4%), vertexLight);
     
     gl_FragColor = vec4(fragColour.xyz, vertexCol.w);
 } 

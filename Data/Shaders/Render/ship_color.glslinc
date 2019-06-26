@@ -51,12 +51,12 @@ void main()
 {
     // Apply decay
     float originalLightness = (vertexCol.x + vertexCol.y + vertexCol.z) / 3.0;
-    vec4 blendColor = vec4(%ROT_GREEN_COLOR%) * (1.0 - originalLightness) + vec4(%ROT_BROWN_COLOR%) * originalLightness;
-    vec4 fragColour = vertexCol * vertexDecay + blendColor * (1.0 - vertexDecay);
+    vec4 decayColor = mix(vec4(%ROT_GREEN_COLOR%), vec4(%ROT_BROWN_COLOR%), originalLightness);
+    vec4 fragColour = mix(decayColor, vertexCol, vertexDecay);
 
     // Apply point water
     float vertexColorWetness = min(vertexWater, paramWaterLevelThreshold) / paramWaterLevelThreshold * paramWaterContrast;
-    fragColour = fragColour * (1.0 - vertexColorWetness) + paramWaterColor * vertexColorWetness;
+    fragColour = mix(fragColour, paramWaterColor, vertexColorWetness);
 
     // Complement missing ambient light with point's light
     float totalLightIntensity = paramAmbientLightIntensity + (1.0 - paramAmbientLightIntensity) * vertexLight;
@@ -65,7 +65,7 @@ void main()
     fragColour *= totalLightIntensity;
 
     // Apply point light color
-    fragColour = fragColour * (1.0 - vertexLight) + vec4(%LAMPLIGHT_COLOR_VEC4%) * vertexLight;
+    fragColour = mix(fragColour, vec4(%LAMPLIGHT_COLOR_VEC4%), vertexLight);
     
     gl_FragColor = vec4(fragColour.xyz, vertexCol.w);
 } 
