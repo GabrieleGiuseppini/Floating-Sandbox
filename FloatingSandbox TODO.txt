@@ -937,6 +937,8 @@ Render:
 
 - Dynamics:
 
+	- Improve "friction" of sea floor: things don't slide down easily; may be add a slider
+
 	- Randomize decay
 		- Perlin noise on ship, created at ShipBuilder, stored as Points::WeakNoise
 		- Used as rotting increase
@@ -1045,21 +1047,21 @@ Render:
 						+ Maintains dirty flag and exposes MarkTempBufAsDirty - exactly like decay - which is invoked by:
 							+ Heat propagation
 				+ Ship/RenderContext render
-					= Rendering:
+					+ Rendering:
 						+ RenderCore enums
-						= Draw right after points, springs, and triangles (same code)
-						- Parameter setting
 					- Shaders:
 						- Do point, spring, and triangle shaders
 							- Do second, richer version of main ones - "...WithTemperature..." - that completely
 							  replace the first ones when the heat overlay is activated
 								- Texture
 								- Color
+							- Parameter setting
 						= Use temperature buffer (of floats) to produce "temperature color" as:
-							= tint3 = mix(c1, c2, some f of temperature ~= 1-e^(-paramHeatContrast*T)) // see https://en.wikipedia.org/wiki/Incandescence#/media/File:Example_incandescence_colors_(temperature_range_550_-_1300_C).svg
-							- Figure out right transparency
-					- HeatContrast at SettingsDialog
+							+ tint3 = mix(c1, c2, some f of temperature ~= 1-e^(-paramHeatContrast*T)) // see https://en.wikipedia.org/wiki/Incandescence#/media/File:Example_incandescence_colors_(temperature_range_550_-_1300_C).svg
+							- Figure out right transparency (via param)
+					- Transparency at SettingsDialog
 						- "Render" section under "Heat"
+						- Figure out right default value
 			= Physics update:
 				= Ship::Update: 
 					- @Beginning: either call Springs::UpdateParameters(params, points) or call 
@@ -1077,6 +1079,12 @@ Render:
 								+ New global constants: AirTemperature, WaterTemperature
 								+ Use specific dt's calc's as constexpr's in UpdateTemperature based off frequency of steps
 								- Dissipation: use air or water temp
+							- See if may be called at every step
+								- Do profiling (invoking it N times per frame to exaggerate)
+								- Try impact of storing outgoing flows @ local array
+							- If called at every step, consider uploading temperature buffer every N steps
+								- Nuke Points::mIsTemperatureBufferDirty
+								- Ship::Render decides how often to call Points::UploadTemperatureXYZ(...)
 						- At another slot: call Points::UpdateHeatEffects(heap, springs)
 							- Heap:
 								- Ship has heap with indices of burning points together with their PlaneID, sorted by PlaneID asc
@@ -1086,10 +1094,19 @@ Render:
 								  to heap
 							- For each point:
 								- If it's not combusting:
-									- TBD
+									- Check combustion transition (TBD)
 								- Else (it's combusting):
-									- Run combustion state machine - TBD
-									- Burn rate (i.e. decay speed) ~= structural mass (the lower the mass, the faster decays)
+									- Check exhaustion transition (TBD)									
+									- Do decay: burn rate (i.e. decay speed) ~= structural mass (the lower the mass, the faster decays)
+									- TODO: see from Moleskine if anything else
+									- No temperature and no raise and lower flames, done below at Points::UpdateCombustingPoints()
+						- At all steps: call Points::UpdateCombustingPoints(heap)
+							- Points uses heap (with burning points) and evolves the "burning"
+							  state machine
+								- Raise flames up and down
+								- Temperature
+			- Electrical update: inject heat from working lamps and generators
+				- New material property - ~"HeatProduced"
 			= Flamethrower:
 				= Ship::Interaction:
 					= GameParameters::FlameThrowerHeat
@@ -1101,14 +1118,22 @@ Render:
 			- Ship::Render:
 				- Calls Points::UploadCombustion(heap)
 					- Uploads flames in order of heap
+
+			- GameParameters: make max burning points adjustable
+				- All sub-systems need to allow for > max burning particles, because when the user changes the value down,
+				  the excess ones will need some time to disappear
+				- RenderContext: allocate VBO with MaxMax
+				- Points: doesn't care as it uses heap
+				- SettingsDialog
+					- Next to SimulationQuality, with warning icon
 			- GameParameters:
 				- ThermalConductivityAdjustment 
 				- IgnitionTemperatureAdjustment (in SettingsDialog: "Burning Point Adjust")
 				- MeltingTemperatureAdjustment (in SettingsDialog: "Melting Point Adjust")
 				- CombustionSpeedAdjustment
 
-				- Also add to settings dialog - new "Heat" tab
-			+ Flame render:
+				- Also add all of these to settings dialog, under "Heat" tab
+			= Flame render:
 				+ Make better transition for bottom
 				+ Skew wind speed with smoothstep
 					+ And reverse wind direction
@@ -1122,6 +1147,7 @@ Render:
 					+ Add FlamePersonalitySeed shader param, straight from ship into vertex buffer
 				+ Make same colors as flamethrower
 				+ Adjust bottom
+				- Test perf impact of instanced drawing
 
 		- Cleanup:
 			+ Test generic textures change (gen tex's + air bubbles at same time) and nuke comment
@@ -1131,7 +1157,7 @@ Render:
 					- i.e. water update?
 				- Used by anything else afterwards, including heat state machine
 
-		- Combustion:
+		- Explosive combustion:
 			- Rendering: ?
 			- New materials:
 				- "gunpowder" and "diesel"
@@ -1145,8 +1171,8 @@ Render:
 			+ Tool
 				+ Engages (and starts sound) only if GameController::ApplyFlameThrower(screenPos) returns true (i.e. point found in radius)
 			+ Fix radius & size (smaller radius for catching points, same render size)
-			- Radius setting (& Ultra-Violent mode)
-			- Apply heat
+			+ Radius setting
+			= Apply heat (& Ultra-Violent mode)
 
 	- Storms
 		- Another physics component

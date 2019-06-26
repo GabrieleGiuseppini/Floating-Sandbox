@@ -35,8 +35,8 @@ GameParameters::GameParameters()
     , TsunamiRate(20.0f)
     , RogueWaveRate(2.0f)
     // Heat
-    , FlameThrowerHeatFlow(40000.0f) // TODO 2273.15)
-    , FlameThrowerRadius(2.0f)
+    , FlameThrowerHeatFlow(900.0f) // 900KJ: 80kg of iron (~=1 particle) get dT=1500 in 60 seconds
+    , FlameThrowerRadius(10.0f)
     // Misc
     , SeaDepth(300.0f)
     , OceanFloorBumpiness(1.0f)

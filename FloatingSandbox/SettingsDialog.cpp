@@ -867,7 +867,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     "Heat",
-                    "The heat produced by the FlameThrower tool (J/s).",
+                    "The heat produced by the FlameThrower tool (KJ/s).",
                     mGameController->GetFlameThrowerHeatFlow(),
                     [this](float /*value*/)
                     {
@@ -876,7 +876,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     },
                     std::make_unique<ExponentialSliderCore>(
                         mGameController->GetMinFlameThrowerHeatFlow(),
-                        40000.0f,
+                        900.0f,
                         mGameController->GetMaxFlameThrowerHeatFlow()));
 
                 flameThrowerSizer->Add(

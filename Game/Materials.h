@@ -102,7 +102,7 @@ public:
      */
     float GetHeatCapacity() const
     {
-        return SpecificHeat * GetMass() / 1000.0f;
+        return SpecificHeat * GetMass();
     }
 
     StructuralMaterial(

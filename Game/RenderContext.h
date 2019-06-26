@@ -758,7 +758,7 @@ public:
         vec2f const & centerPosition,
         float radius)
     {
-        float const quadHalfSize = (radius * 7.5f) / 2.0f;
+        float const quadHalfSize = (radius * 1.5f) / 2.0f;
         float const left = centerPosition.x - quadHalfSize;
         float const right = centerPosition.x + quadHalfSize;
         float const top = centerPosition.y + quadHalfSize;

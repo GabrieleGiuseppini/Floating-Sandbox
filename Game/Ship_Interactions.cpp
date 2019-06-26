@@ -688,7 +688,7 @@ bool Ship::ApplyFlameThrowerAt(
 {
     // Q = q*dt
     float const flameThrowerHeat =
-        gameParameters.FlameThrowerHeatFlow
+        gameParameters.FlameThrowerHeatFlow * 1000.0f // KJoule->Joule
         * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f)
         * GameParameters::SimulationStepTimeDuration<float>;
 
