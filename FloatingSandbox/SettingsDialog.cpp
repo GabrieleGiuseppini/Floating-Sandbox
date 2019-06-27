@@ -915,7 +915,6 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                 mDrawHeatOverlayCheckBox = new wxCheckBox(renderBox, wxID_ANY,
                     _("Draw Heat Overlay"), wxDefaultPosition, wxDefaultSize);
                 mDrawHeatOverlayCheckBox->SetToolTip("Renders heat over ships.");
-                mDrawHeatOverlayCheckBox->SetMinSize(wxSize(-1, 20));
                 mDrawHeatOverlayCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnDrawHeatOverlayCheckBoxClick, this);
 
                 renderSizer->Add(
@@ -931,7 +930,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                 mHeatOverlayTransparencySlider = new SliderControl(
                     renderBox,
                     SliderWidth,
-                    SliderHeight - 20 - CellBorder, // TODO
+                    -1,
                     "Heat Overlay Transparency",
                     "Adjusts the transparency of the heat overlay.",
                     mGameController->GetHeatOverlayTransparency(),

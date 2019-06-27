@@ -1049,7 +1049,7 @@ Render:
 				+ Ship/RenderContext render
 					+ Rendering:
 						+ RenderCore enums
-					+ Shaders:
+					- Shaders:
 						+ Do point, spring, and triangle shaders
 							+ Do second, richer version of main ones - "...WithTemperature..." - that completely
 							  replace the first ones when the heat overlay is activated
@@ -1058,6 +1058,10 @@ Render:
 							+ Parameter setting
 						+ Use temperature buffer (of floats) to produce "temperature color" as:
 							+ tint3 = mix(c1, c2, some f of temperature ~= 1-e^(-paramHeatContrast*T)) // see https://en.wikipedia.org/wiki/Incandescence#/media/File:Example_incandescence_colors_(temperature_range_550_-_1300_C).svg
+						+ Make it glow in the night
+						- Use function (in include) to apply heat overlay
+							- Nuke static params 4 colors
+						- Try multi-band gradient
 					+ Transparency at SettingsDialog
 						+ "Render" section under "Heat"
 						+ Figure out right default value
