@@ -36,6 +36,8 @@ void main()
 
 #version 120
 
+#include "heat_overlay.glslinc"
+
 #define in varying
 
 // Inputs from previous shader        
@@ -69,9 +71,8 @@ void main()
     // Apply light
     fragColour *= totalLightIntensity;
 
-    // Apply heat color - based on temperature, between red and yellow
-    vec4 heatColor = mix(vec4(%HEAT_RED_COLOR_VEC3%, 1.0), vec4(%HEAT_YELLOW_COLOR_VEC3%, 1.0), 1.0 - exp(-0.0008 * vertexTemperature));
-    fragColour = mix(fragColour, heatColor, 1.0 - paramHeatOverlayTransparency);
+    // Apply heat
+    fragColour = apply_heat(fragColour, vertexTemperature, paramHeatOverlayTransparency);
 
     // Apply point light color
     fragColour = mix(fragColour, vec4(%LAMPLIGHT_COLOR_VEC4%), vertexLight);

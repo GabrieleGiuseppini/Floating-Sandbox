@@ -1,0 +1,6 @@
+vec4 apply_heat(vec4 fragColour, float vertexTemperature, float heatOverlayTransparency)
+{
+    // Apply heat color - based on temperature, between red and yellow
+    vec4 heatColor = mix(vec4(0.46, 0.0, 0.0, 1.0), vec4(1.0, 1.0, 0.2, 1.0), 1.0 - exp(-0.0008 * vertexTemperature));
+    return mix(fragColour, heatColor, 1.0 - heatOverlayTransparency);
+}
