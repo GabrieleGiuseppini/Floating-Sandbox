@@ -37,8 +37,6 @@ TextRenderContext::TextRenderContext(
             progressCallback(progress, "Loading fonts...");
         });
 
-    progressCallback(1.0f, "Loading fonts...");
-
 
     //
     // Initialize render machinery

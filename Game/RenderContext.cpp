@@ -97,11 +97,12 @@ RenderContext::RenderContext(
     // Statistics
     , mRenderStatistics()
 {
+    static constexpr float TextureDatabaseProgressSteps = 20.0f;
     static constexpr float GenericTextureProgressSteps = 10.0f;
     static constexpr float CloudTextureProgressSteps = 4.0f;
 
     // Shaders, TextRenderContext, TextureDatabase, GenericTextureAtlas, Clouds, Noise X 2, WorldBorder
-    static constexpr float TotalProgressSteps = 3.0f + GenericTextureProgressSteps + CloudTextureProgressSteps + 2.0f + 1.0f;
+    static constexpr float TotalProgressSteps = 2.0f + TextureDatabaseProgressSteps + GenericTextureProgressSteps + CloudTextureProgressSteps + 2.0f + 1.0f;
 
     GLuint tmpGLuint;
 
@@ -144,13 +145,11 @@ RenderContext::RenderContext(
     // Load texture database
     //
 
-    progressCallback(2.0f / TotalProgressSteps, "Loading textures...");
-
     TextureDatabase textureDatabase = TextureDatabase::Load(
         resourceLoader,
         [&progressCallback](float progress, std::string const &)
         {
-            progressCallback((2.0f + progress) / TotalProgressSteps, "Loading textures...");
+            progressCallback((2.0f + progress * TextureDatabaseProgressSteps) / TotalProgressSteps, "Loading textures...");
         });
 
     // Create uploaded texture manager
@@ -185,7 +184,7 @@ RenderContext::RenderContext(
     TextureAtlas genericTextureAtlas = genericTextureAtlasBuilder.BuildAtlas(
         [&progressCallback](float progress, std::string const & message)
         {
-            progressCallback((3.0f + progress * GenericTextureProgressSteps) / TotalProgressSteps, message);
+            progressCallback((2.0f + TextureDatabaseProgressSteps + progress * GenericTextureProgressSteps) / TotalProgressSteps, message);
         });
 
     LogMessage("Generic texture atlas size: ", genericTextureAtlas.AtlasData.Size.Width, "x", genericTextureAtlas.AtlasData.Size.Height);
@@ -383,7 +382,7 @@ RenderContext::RenderContext(
     TextureAtlas cloudTextureAtlas = cloudAtlasBuilder.BuildAtlas(
         [&progressCallback](float progress, std::string const &)
         {
-            progressCallback((3.0f + GenericTextureProgressSteps + progress * CloudTextureProgressSteps) / TotalProgressSteps, "Loading cloud textures...");
+            progressCallback((2.0f + TextureDatabaseProgressSteps + GenericTextureProgressSteps + progress * CloudTextureProgressSteps) / TotalProgressSteps, "Loading cloud textures...");
         });
 
     // Create OpenGL handle
@@ -470,7 +469,7 @@ RenderContext::RenderContext(
         0,
         GL_LINEAR);
 
-    progressCallback((3.0f + GenericTextureProgressSteps + CloudTextureProgressSteps + 1.0f) / TotalProgressSteps, "Loading noise textures...");
+    progressCallback((2.0f + TextureDatabaseProgressSteps + GenericTextureProgressSteps + CloudTextureProgressSteps + 1.0f) / TotalProgressSteps, "Loading noise textures...");
 
     // Bind texture
     glBindTexture(GL_TEXTURE_2D, mUploadedTextureManager->GetOpenGLHandle(TextureGroupType::Noise, 0));
@@ -492,7 +491,7 @@ RenderContext::RenderContext(
         1,
         GL_LINEAR);
 
-    progressCallback((3.0f + GenericTextureProgressSteps + CloudTextureProgressSteps + 2.0f) / TotalProgressSteps, "Loading noise textures...");
+    progressCallback((2.0f + TextureDatabaseProgressSteps + GenericTextureProgressSteps + CloudTextureProgressSteps + 2.0f) / TotalProgressSteps, "Loading noise textures...");
 
     // Bind texture
     glBindTexture(GL_TEXTURE_2D, mUploadedTextureManager->GetOpenGLHandle(TextureGroupType::Noise, 1));
@@ -514,7 +513,7 @@ RenderContext::RenderContext(
         GL_LINEAR_MIPMAP_NEAREST,
         [&progressCallback](float progress, std::string const &)
         {
-            progressCallback((3.0f + GenericTextureProgressSteps + CloudTextureProgressSteps + 2.0f + progress) / TotalProgressSteps, "Loading world end textures...");
+            progressCallback((2.0f + TextureDatabaseProgressSteps + GenericTextureProgressSteps + CloudTextureProgressSteps + 2.0f + progress) / TotalProgressSteps, "Loading world end textures...");
         });
 
     // Bind texture
