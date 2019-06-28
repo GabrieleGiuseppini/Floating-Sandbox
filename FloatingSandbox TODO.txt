@@ -1039,7 +1039,7 @@ Render:
 					+ Springs::Strength -> "CurrentStrength"
 					+ Springs::GetMaterialStrength
 					+ See whether all "current" should go and become _just_
-			= Heat overlay:
+			+ Heat overlay:
 				+ Ship/RenderContext flag
 				+ SettingsDialog
 				+ Ship::Render: when flag set, upload heat buffer (much like we do w/Decay)
@@ -1049,7 +1049,7 @@ Render:
 				+ Ship/RenderContext render
 					+ Rendering:
 						+ RenderCore enums
-					- Shaders:
+					+ Shaders:
 						+ Do point, spring, and triangle shaders
 							+ Do second, richer version of main ones - "...WithTemperature..." - that completely
 							  replace the first ones when the heat overlay is activated
@@ -1061,7 +1061,7 @@ Render:
 						+ Make it glow in the night
 						+ Use function (in include) to apply heat overlay
 							+ Nuke static params 4 colors
-						- Try multi-band gradient
+						+ Try multi-band gradient
 					+ Transparency at SettingsDialog
 						+ "Render" section under "Heat"
 						+ Figure out right default value
