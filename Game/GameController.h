@@ -78,6 +78,12 @@ public:
         mGameEventDispatcher->RegisterWavePhenomenaEventHandler(handler);
     }
 
+    void RegisterCombustionEventHandler(ICombustionGameEventHandler * handler) override
+    {
+        assert(!!mGameEventDispatcher);
+        mGameEventDispatcher->RegisterCombustionEventHandler(handler);
+    }
+
     void RegisterStatisticsEventHandler(IStatisticsGameEventHandler * handler) override
     {
         assert(!!mGameEventDispatcher);
@@ -257,6 +263,31 @@ public:
     float GetMaxWindSpeedMaxFactor() const override { return GameParameters::MaxWindSpeedMaxFactor; }
 
     // Heat
+
+    float GetThermalConductivityAdjustment() const override { return mGameParameters.ThermalConductivityAdjustment; }
+    void SetThermalConductivityAdjustment(float value) override { mGameParameters.ThermalConductivityAdjustment = value; }
+    float GetMinThermalConductivityAdjustment() const override { return GameParameters::MinThermalConductivityAdjustment; }
+    float GetMaxThermalConductivityAdjustment() const override { return GameParameters::MaxThermalConductivityAdjustment; }
+
+    float GetIgnitionTemperatureAdjustment() const override { return mGameParameters.IgnitionTemperatureAdjustment; }
+    void SetIgnitionTemperatureAdjustment(float value) override { mGameParameters.IgnitionTemperatureAdjustment = value; }
+    float GetMinIgnitionTemperatureAdjustment() const override { return GameParameters::MinIgnitionTemperatureAdjustment; }
+    float GetMaxIgnitionTemperatureAdjustment() const override { return GameParameters::MaxIgnitionTemperatureAdjustment; }
+
+    float GetMeltingTemperatureAdjustment() const override { return mGameParameters.MeltingTemperatureAdjustment; }
+    void SetMeltingTemperatureAdjustment(float value) override { mGameParameters.MeltingTemperatureAdjustment = value; }
+    float GetMinMeltingTemperatureAdjustment() const override { return GameParameters::MinMeltingTemperatureAdjustment; }
+    float GetMaxMeltingTemperatureAdjustment() const override { return GameParameters::MaxMeltingTemperatureAdjustment; }
+
+    float GetCombustionSpeedAdjustment() const override { return mGameParameters.CombustionSpeedAdjustment; }
+    void SetCombustionSpeedAdjustment(float value) override { mGameParameters.CombustionSpeedAdjustment = value; }
+    float GetMinCombustionSpeedAdjustment() const override { return GameParameters::MinCombustionSpeedAdjustment; }
+    float GetMaxCombustionSpeedAdjustment() const override { return GameParameters::MaxCombustionSpeedAdjustment; }
+
+    float GetCombustionHeatAdjustment() const override { return mGameParameters.CombustionHeatAdjustment; }
+    void SetCombustionHeatAdjustment(float value) override { mGameParameters.CombustionHeatAdjustment = value; }
+    float GetMinCombustionHeatAdjustment() const override { return GameParameters::MinCombustionHeatAdjustment; }
+    float GetMaxCombustionHeatAdjustment() const override { return GameParameters::MaxCombustionHeatAdjustment; }
 
     float GetFlameThrowerHeatFlow() const override { return mGameParameters.FlameThrowerHeatFlow; }
     void SetFlameThrowerHeatFlow(float value) override { mGameParameters.FlameThrowerHeatFlow = value; }

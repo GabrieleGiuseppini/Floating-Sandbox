@@ -1002,14 +1002,14 @@ Render:
 							+ Springs::Decay(Points const &)
 								+ For each spring: strength = material's strength * avg of two endpoints' decay
 									+ float buffer: MaterialStrength
-			- Rendering of flames:
-				- Need depth-sorting:
-					- Ship has heap of indices of burning points
-						- Ordering of heap: plane ID
-						- Heap created from scratch at connectivity visit
-						- Heap updated by Points's combustion state machine update (heap passed by Ship) when points start
+			+ Rendering of flames:
+				+ Need depth-sorting:
+					+ Ship has heap of indices of burning points						
+						+ Ordering of heap: plane ID
+						+ Heap created from scratch at connectivity visit
+						+ Heap updated by Points's combustion state machine update (heap passed by Ship) when points start
 						  or stop burning					
-						- Heap used by Points's Upload() (heap passed by Ship)
+						+ Heap used by Points's Upload() (heap passed by Ship)
 		= Impl:
 			+ Properties and Materials:
 				+ New StructuralMaterial properties:
@@ -1088,30 +1088,27 @@ Render:
 							- If called at every step, consider uploading temperature buffer every N steps
 								- Nuke Points::mIsTemperatureBufferDirty
 								- Ship::Render decides how often to call Points::UploadTemperatureXYZ(...)
-						- At another slot: call Points::UpdateHeatEffects(heap, springs)
-							- Heap:
-								- Ship has heap with indices of burning points together with their PlaneID, sorted by PlaneID asc
-									- priority_queue<pair<idx, plane ID>>
-								- ConnectivityVisit: recalc heap from scratch
-									- Faster: by visiting its points only and creating new one
-								- State machine removes (at full combustion exhaustion) and/or adds (at initial combustion ignition)
-								  to heap
-							- For each point:
-								- If it's not combusting:
-									- Check combustion transition (TBD)
-								- Else (it's combusting):
-									- Check exhaustion transition (TBD)									
-									- Do decay: burn rate (i.e. decay speed) ~= structural mass (the lower the mass, the faster decays)
-									- TODO: see from Moleskine if anything else
-									- No temperature and no raise and lower flames, done below at Points::UpdateCombustingPoints()
-						- At all steps: call Points::UpdateCombustingPoints(heap)
-							- Points uses heap (with burning points) and evolves the "burning"
+						= At another slot: call Points::UpdateCombustionStateMachineLowFrequency(...)
+							= For each point:
+								+ If it's not combusting:
+									+ Check combustion transition
+										+ Notify
+								= Else (it's combusting):
+									+ Check exhaustion transition
+										+ Notify (boolean for water-caused)											
+									= Do decay: burn rate (i.e. decay speed) ~= structural mass (the lower the mass, the faster decays)
+									+ No temperature and no raise and lower flames, done below at Points::UpdateCombustingPoints()
+								= FIX: water (both underwater and flood) should apply regardless of state
+						= At all steps: call Points::UpdateCombustionStateMachineHighFrequency(heap)
+							= Points uses heap (with burning points) and evolves the "burning"
 							  state machine
-								- Raise flames up and down
-								- Temperature
-			- Ship::Render:
-				- Calls Points::UploadCombustion(heap)
-					- Uploads flames in order of heap
+								+ Raise flames up and down
+								= Heat to self and neighbors
+			+ Ship::ConnectivityVisit:
+				+ Call Points::ReorderBurningPoints()
+			+ Ship::Render:
+				+ Calls Points::UploadFlames()
+					+ Uploads flames in order of heap
 
 			- Electrical update: inject heat from working lamps and generators
 				- New material property - ~"HeatProduced"
@@ -1123,21 +1120,21 @@ Render:
 					+ Convert into DeltaT and inject in radius, smoothing radius
 				+ Radius at SettingsDialog, under "Flamethrower" in "Heat"
 				+ Fix default value of heat <-> slider
-
 			- GameParameters: make max burning points adjustable
 				- All sub-systems need to allow for > max burning particles, because when the user changes the value down,
 				  the excess ones will need some time to disappear
 				- RenderContext: allocate VBO with MaxMax
-				- Points: doesn't care as it uses heap
+				+ Points: doesn't care as it uses vector
 				- SettingsDialog
 					- Next to SimulationQuality, with warning icon
-			- GameParameters:
-				- ThermalConductivityAdjustment 
-				- IgnitionTemperatureAdjustment (in SettingsDialog: "Burning Point Adjust")
-				- MeltingTemperatureAdjustment (in SettingsDialog: "Melting Point Adjust")
-				- CombustionSpeedAdjustment
-
-				- Also add all of these to settings dialog, under "Heat" tab
+			= GameParameters:
+				+ ThermalConductivityAdjustment 
+				+ IgnitionTemperatureAdjustment (in SettingsDialog: "Burning Point Adjust")
+				+ MeltingTemperatureAdjustment (in SettingsDialog: "Melting Point Adjust")
+				+ CombustionSpeedAdjustment
+				+ CombustionHeatAdjustment
+				+ Also add all of these to settings dialog, under "Heat" tab
+				- Find good min, max, and default values
 			= Flame render:
 				+ Make better transition for bottom
 				+ Skew wind speed with smoothstep
@@ -1153,6 +1150,15 @@ Render:
 				+ Make same colors as flamethrower
 				+ Adjust bottom
 				- Test perf impact of instanced drawing
+			= Sound:
+				+ Media:
+					+ Burning loop
+					+ Sizzling X 2 or 3
+				+ SoundController:
+					+ Subscribe to OnCombustionBegin/End: adjust cumulative volume of Burning sound
+					+ Subscribe to OnCombustionSmothered: play one-time sizzling
+			- Interaction with bombs:
+				- Timer, Impact, RC: TODO
 
 		- Cleanup:
 			+ Test generic textures change (gen tex's + air bubbles at same time) and nuke comment

@@ -99,6 +99,11 @@ private:
     SliderControl * mLightSpreadSlider;
 
     // Heat
+    SliderControl * mThermalConductivityAdjustmentSlider;
+    SliderControl * mIgnitionTemperatureAdjustmentSlider;
+    SliderControl * mMeltingTemperatureAdjustmentSlider;
+    SliderControl * mCombustionSpeedAdjustmentSlider;
+    SliderControl * mCombustionHeatAdjustmentSlider;
     SliderControl * mFlameThrowerRadiusSlider;
     SliderControl * mFlameThrowerHeatFlowSlider;
     wxCheckBox * mDrawHeatOverlayCheckBox;

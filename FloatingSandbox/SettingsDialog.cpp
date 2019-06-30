@@ -823,8 +823,165 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
 {
     wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
 
-    // Flamethrower
+    // Physics
+    {
+        wxStaticBox * physicsBox = new wxStaticBox(panel, wxID_ANY, _("Physics"));
 
+        wxBoxSizer * physicsBoxSizer = new wxBoxSizer(wxVERTICAL);
+        physicsBoxSizer->AddSpacer(StaticBoxTopMargin);
+
+        {
+            wxGridBagSizer * physicsSizer = new wxGridBagSizer(0, 0);
+
+            // Thermal Conductivity Adjustment
+            {
+                mThermalConductivityAdjustmentSlider = new SliderControl(
+                    physicsBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Thermal Conductivity Adjust",
+                    "Adjusts the speed with which heat propagates along materials.",
+                    mGameController->GetThermalConductivityAdjustment(),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameController->GetMinThermalConductivityAdjustment(),
+                        1.0f,
+                        mGameController->GetMaxThermalConductivityAdjustment()));
+
+                physicsSizer->Add(
+                    mThermalConductivityAdjustmentSlider,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            // Ignition Temperature Adjustment
+            {
+                mIgnitionTemperatureAdjustmentSlider = new SliderControl(
+                    physicsBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Burning Point Adjust",
+                    "Adjusts the temperature at which materials ignite.",
+                    mGameController->GetIgnitionTemperatureAdjustment(),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameController->GetMinIgnitionTemperatureAdjustment(),
+                        1.0f,
+                        mGameController->GetMaxIgnitionTemperatureAdjustment()));
+
+                physicsSizer->Add(
+                    mIgnitionTemperatureAdjustmentSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            // Melting Temperature Adjustment
+            {
+                mMeltingTemperatureAdjustmentSlider = new SliderControl(
+                    physicsBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Melting Point Adjust",
+                    "Adjusts the temperature at which materials melt.",
+                    mGameController->GetMeltingTemperatureAdjustment(),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameController->GetMinMeltingTemperatureAdjustment(),
+                        1.0f,
+                        mGameController->GetMaxMeltingTemperatureAdjustment()));
+
+                physicsSizer->Add(
+                    mMeltingTemperatureAdjustmentSlider,
+                    wxGBPosition(0, 2),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            // Combustion Speed Adjustment
+            {
+                mCombustionSpeedAdjustmentSlider = new SliderControl(
+                    physicsBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Combustion Speed Adjustment",
+                    "Adjusts the rate with which materials burn.",
+                    mGameController->GetCombustionSpeedAdjustment(),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameController->GetMinCombustionSpeedAdjustment(),
+                        1.0f,
+                        mGameController->GetMaxCombustionSpeedAdjustment()));
+
+                physicsSizer->Add(
+                    mCombustionSpeedAdjustmentSlider,
+                    wxGBPosition(0, 3),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            // Combustion Heat Adjustment
+            {
+                mCombustionHeatAdjustmentSlider = new SliderControl(
+                    physicsBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Combustion Heat Adjustment",
+                    "Adjusts the heat generated by fire, and consequently the speed at which fire spreads.",
+                    mGameController->GetCombustionHeatAdjustment(),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameController->GetMinCombustionHeatAdjustment(),
+                        1.0f,
+                        mGameController->GetMaxCombustionHeatAdjustment()));
+
+                physicsSizer->Add(
+                    mCombustionHeatAdjustmentSlider,
+                    wxGBPosition(0, 4),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            physicsBoxSizer->Add(physicsSizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        physicsBox->SetSizerAndFit(physicsBoxSizer);
+
+        gridSizer->Add(
+            physicsBox,
+            wxGBPosition(0, 0),
+            wxGBSpan(1, 1),
+            wxEXPAND | wxALL,
+            CellBorder);
+    }
+
+    // Flamethrower
     {
         wxStaticBox * flameThrowerBox = new wxStaticBox(panel, wxID_ANY, _("FlameThrower"));
 
@@ -894,7 +1051,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
 
         gridSizer->Add(
             flameThrowerBox,
-            wxGBPosition(0, 0),
+            wxGBPosition(1, 0),
             wxGBSpan(1, 1),
             wxEXPAND | wxALL,
             CellBorder);
@@ -958,7 +1115,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
 
         gridSizer->Add(
             renderBox,
-            wxGBPosition(0, 1),
+            wxGBPosition(1, 1),
             wxGBSpan(1, 1),
             wxALL,
             CellBorder);
@@ -2539,6 +2696,16 @@ void SettingsDialog::ReadSettings()
 
     // Heat
 
+    mThermalConductivityAdjustmentSlider->SetValue(mGameController->GetThermalConductivityAdjustment());
+
+    mIgnitionTemperatureAdjustmentSlider->SetValue(mGameController->GetIgnitionTemperatureAdjustment());
+
+    mMeltingTemperatureAdjustmentSlider->SetValue(mGameController->GetMeltingTemperatureAdjustment());
+
+    mCombustionSpeedAdjustmentSlider->SetValue(mGameController->GetCombustionSpeedAdjustment());
+
+    mCombustionHeatAdjustmentSlider->SetValue(mGameController->GetCombustionHeatAdjustment());
+
     mFlameThrowerRadiusSlider->SetValue(mGameController->GetFlameThrowerRadius());
 
     mFlameThrowerHeatFlowSlider->SetValue(mGameController->GetFlameThrowerHeatFlow());
@@ -2864,6 +3031,18 @@ void SettingsDialog::ApplySettings()
         mLightSpreadSlider->GetValue());
 
     // Heat
+
+    mGameController->SetThermalConductivityAdjustment(
+        mThermalConductivityAdjustmentSlider->GetValue());
+
+    mGameController->SetIgnitionTemperatureAdjustment(
+        mIgnitionTemperatureAdjustmentSlider->GetValue());
+
+    mGameController->SetMeltingTemperatureAdjustment(
+        mMeltingTemperatureAdjustmentSlider->GetValue());
+
+    mGameController->SetCombustionHeatAdjustment(
+        mCombustionHeatAdjustmentSlider->GetValue());
 
     mGameController->SetFlameThrowerRadius(
         mFlameThrowerRadiusSlider->GetValue());

@@ -1051,6 +1051,7 @@ public:
         ShipId shipId,
         PlaneId planeId,
         vec2f const & baseCenterPosition,
+        float scale,
         float flamePersonalitySeed)
     {
         assert(shipId >= 0 && shipId < mShips.size());
@@ -1058,6 +1059,7 @@ public:
         mShips[shipId]->UploadFlame(
             planeId,
             baseCenterPosition,
+            scale,
             flamePersonalitySeed);
     }
 

@@ -32,6 +32,7 @@
 class SoundController
     : public ILifecycleGameEventHandler
     , public IWavePhenomenaGameEventHandler
+    , public ICombustionGameEventHandler
     , public IStructuralGameEventHandler
     , public IGenericGameEventHandler
 {
@@ -179,6 +180,7 @@ public:
     {
         gameController.RegisterLifecycleEventHandler(this);
         gameController.RegisterWavePhenomenaEventHandler(this);
+        gameController.RegisterCombustionEventHandler(this);
         gameController.RegisterStructuralEventHandler(this);
         gameController.RegisterGenericEventHandler(this);
     }
@@ -188,6 +190,12 @@ public:
     virtual void OnSinkingEnd(ShipId shipId) override;
 
     virtual void OnTsunamiNotification(float x) override;
+
+    virtual void OnPointCombustionBegin() override;
+
+    virtual void OnPointCombustionEnd() override;
+
+    virtual void OnCombustionSmothered() override;
 
     virtual void OnStress(
         StructuralMaterial const & structuralMaterial,
@@ -446,6 +454,7 @@ private:
     ContinuousSingleChoiceSound mWaterRushSound;
     ContinuousSingleChoiceSound mWaterSplashSound;
     ContinuousSingleChoiceSound mWindSound;
+    ContinuousSingleChoiceSound mFireBurningSound;
 
     ContinuousSingleChoiceAggregateSound<BombId> mTimerBombSlowFuseSound;
     ContinuousSingleChoiceAggregateSound<BombId> mTimerBombFastFuseSound;

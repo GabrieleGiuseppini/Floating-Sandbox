@@ -49,6 +49,10 @@ SoundType StrToSoundType(std::string const & str)
         return SoundType::Wind;
     else if (Utils::CaseInsensitiveEquals(str, "WindGust"))
         return SoundType::WindGust;
+    else if (Utils::CaseInsensitiveEquals(str, "FireBurning"))
+        return SoundType::FireBurning;
+    else if (Utils::CaseInsensitiveEquals(str, "FireSizzling"))
+        return SoundType::FireSizzling;
     else if (Utils::CaseInsensitiveEquals(str, "TsunamiTriggered"))
         return SoundType::TsunamiTriggered;
     else if (Utils::CaseInsensitiveEquals(str, "BombAttached"))

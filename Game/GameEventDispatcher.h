@@ -17,6 +17,7 @@ class GameEventDispatcher
     : public ILifecycleGameEventHandler
     , public IStructuralGameEventHandler
     , public IWavePhenomenaGameEventHandler
+    , public ICombustionGameEventHandler
     , public IStatisticsGameEventHandler
     , public IGenericGameEventHandler
 {
@@ -35,6 +36,7 @@ public:
         , mLifecycleSinks()
         , mStructuralSinks()
         , mWavePhenomenaSinks()
+        , mCombustionSinks()
         , mStatisticsSinks()
         , mGenericSinks()
     {
@@ -118,6 +120,34 @@ public:
         for (auto sink : mWavePhenomenaSinks)
         {
             sink->OnTsunamiNotification(x);
+        }
+    }
+
+    //
+    // Combustion
+    //
+
+    virtual void OnPointCombustionBegin() override
+    {
+        for (auto sink : mCombustionSinks)
+        {
+            sink->OnPointCombustionBegin();
+        }
+    }
+
+    virtual void OnPointCombustionEnd() override
+    {
+        for (auto sink : mCombustionSinks)
+        {
+            sink->OnPointCombustionEnd();
+        }
+    }
+
+    virtual void OnCombustionSmothered() override
+    {
+        for (auto sink : mCombustionSinks)
+        {
+            sink->OnCombustionSmothered();
         }
     }
 
@@ -443,6 +473,11 @@ public:
         mWavePhenomenaSinks.push_back(sink);
     }
 
+    void RegisterCombustionEventHandler(ICombustionGameEventHandler * sink)
+    {
+        mCombustionSinks.push_back(sink);
+    }
+
     void RegisterStatisticsEventHandler(IStatisticsGameEventHandler * sink)
     {
         mStatisticsSinks.push_back(sink);
@@ -469,6 +504,7 @@ private:
     std::vector<ILifecycleGameEventHandler *> mLifecycleSinks;
     std::vector<IStructuralGameEventHandler *> mStructuralSinks;
     std::vector<IWavePhenomenaGameEventHandler *> mWavePhenomenaSinks;
+    std::vector<ICombustionGameEventHandler *> mCombustionSinks;
     std::vector<IStatisticsGameEventHandler *> mStatisticsSinks;
     std::vector<IGenericGameEventHandler *> mGenericSinks;
 };

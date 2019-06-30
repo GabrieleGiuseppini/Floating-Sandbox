@@ -35,6 +35,11 @@ GameParameters::GameParameters()
     , TsunamiRate(20.0f)
     , RogueWaveRate(2.0f)
     // Heat
+    , ThermalConductivityAdjustment(1.0f)
+    , IgnitionTemperatureAdjustment(1.0f)
+    , MeltingTemperatureAdjustment(1.0f)
+    , CombustionSpeedAdjustment(1.0f)
+    , CombustionHeatAdjustment(1.0f)
     , FlameThrowerHeatFlow(900.0f) // 900KJ: 80kg of iron (~=1 particle) get dT=1500 in 60 seconds
     , FlameThrowerRadius(10.0f)
     // Misc

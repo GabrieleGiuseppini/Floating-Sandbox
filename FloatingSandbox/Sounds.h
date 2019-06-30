@@ -47,6 +47,8 @@ enum class SoundType
     Wave,
     Wind,
     WindGust,
+    FireBurning,
+    FireSizzling,
     TsunamiTriggered,
     BombAttached,
     BombDetached,
@@ -176,17 +178,20 @@ public:
 
     void fadeToPlay()
     {
-        // Start fade-in now, adjusting start timestamp to match current fade level,
-        // so that if we are interrupting a fade-out half-way, the volume doesn't drop
-        mFadeInStartTimestamp =
-            GameWallClock::GetInstance().Now()
-            - std::chrono::milliseconds(static_cast<std::chrono::milliseconds::rep>(mFadeLevel * mTimeToFadeIn.count()));
+        if (!mFadeInStartTimestamp)
+        {
+            // Start fade-in now, adjusting start timestamp to match current fade level,
+            // so that if we are interrupting a fade-out half-way, the volume doesn't drop
+            mFadeInStartTimestamp =
+                GameWallClock::GetInstance().Now()
+                - std::chrono::milliseconds(static_cast<std::chrono::milliseconds::rep>(mFadeLevel * mTimeToFadeIn.count()));
 
-        // Stop fade-out, if any
-        mFadeOutStartTimestamp.reset();
+            // Stop fade-out, if any
+            mFadeOutStartTimestamp.reset();
 
-        // Remember we want to play when we resume
-        mDesiredPlayingStateAfterPause = true;
+            // Remember we want to play when we resume
+            mDesiredPlayingStateAfterPause = true;
+        }
     }
 
     void stop() override
@@ -229,14 +234,17 @@ public:
 
     void fadeToStop()
     {
-        // Start fade-out now, adjusting end timestamp to match current fade level,
-        // so that if we are interrupting a fade-in half-way, the volume doesn't explode up
-        mFadeOutStartTimestamp =
-            GameWallClock::GetInstance().Now()
-            - std::chrono::milliseconds(static_cast<std::chrono::milliseconds::rep>((1.0f - mFadeLevel) * mTimeToFadeOut.count()));
+        if (!mFadeOutStartTimestamp)
+        {
+            // Start fade-out now, adjusting end timestamp to match current fade level,
+            // so that if we are interrupting a fade-in half-way, the volume doesn't explode up
+            mFadeOutStartTimestamp =
+                GameWallClock::GetInstance().Now()
+                - std::chrono::milliseconds(static_cast<std::chrono::milliseconds::rep>((1.0f - mFadeLevel) * mTimeToFadeOut.count()));
 
-        // Stop fade-in, if any
-        mFadeInStartTimestamp.reset();
+            // Stop fade-in, if any
+            mFadeInStartTimestamp.reset();
+        }
     }
 
     void update()
@@ -568,7 +576,8 @@ struct ContinuousSound
         float masterVolume,
         bool isMuted,
         std::chrono::milliseconds timeToFadeIn = std::chrono::milliseconds::zero(),
-        std::chrono::milliseconds timeToFadeOut = std::chrono::milliseconds::zero())
+        std::chrono::milliseconds timeToFadeOut = std::chrono::milliseconds::zero(),
+        float aggregateRate = 0.3f)
     {
         assert(!mSoundBuffer && !mSound);
 
@@ -581,6 +590,8 @@ struct ContinuousSound
             timeToFadeIn,
             timeToFadeOut);
         mSound->setLoop(true);
+
+        mAggregateRate = aggregateRate;
     }
 
     void SetVolume(float volume)
@@ -604,13 +615,13 @@ struct ContinuousSound
         if (count == 0)
         {
             // Stop it
-            Stop();
+            Stop(StopMode::WithFadeOut);
         }
         else
         {
-            float volume = 100.0f * (1.0f - exp(-0.3f * static_cast<float>(count)));
+            float volume = 100.0f * (1.0f - exp(-mAggregateRate * static_cast<float>(count)));
             SetVolume(volume);
-            Start();
+            Start(StartMode::WithFadeIn);
         }
     }
 
@@ -692,6 +703,8 @@ struct ContinuousSound
 private:
     std::unique_ptr<sf::SoundBuffer> mSoundBuffer;
     std::unique_ptr<GameSound> mSound;
+
+    float mAggregateRate;
 };
 
 /*
@@ -987,6 +1000,7 @@ struct ContinuousSingleChoiceSound
 {
     ContinuousSingleChoiceSound()
         : mSound()
+        , mAggregateCount(0)
     {}
 
     void Initialize(
@@ -995,7 +1009,8 @@ struct ContinuousSingleChoiceSound
         float masterVolume,
         bool isMuted,
         std::chrono::milliseconds timeToFadeIn = std::chrono::milliseconds::zero(),
-        std::chrono::milliseconds timeToFadeOut = std::chrono::milliseconds::zero())
+        std::chrono::milliseconds timeToFadeOut = std::chrono::milliseconds::zero(),
+        float aggregateRate = 0.3f)
     {
         mSound.Initialize(
             std::move(soundBuffer),
@@ -1003,12 +1018,17 @@ struct ContinuousSingleChoiceSound
             masterVolume,
             isMuted,
             timeToFadeIn,
-            timeToFadeOut);
+            timeToFadeOut,
+            aggregateRate);
+
+        mAggregateCount = 0;
     }
 
     void Reset()
     {
         mSound.Stop();
+
+        mAggregateCount = 0;
     }
 
     void SetVolume(float volume)
@@ -1019,6 +1039,18 @@ struct ContinuousSingleChoiceSound
     void SetMasterVolume(float volume)
     {
         mSound.SetMasterVolume(volume);
+    }
+
+    void AddAggregateVolume()
+    {
+        ++mAggregateCount;
+        mSound.UpdateAggregateVolume(mAggregateCount);
+    }
+
+    void SubAggregateVolume()
+    {
+        --mAggregateCount;
+        mSound.UpdateAggregateVolume(mAggregateCount);
     }
 
     void SetMuted(bool muted)
@@ -1059,6 +1091,8 @@ struct ContinuousSingleChoiceSound
 protected:
 
     ContinuousSound mSound;
+
+    size_t mAggregateCount;
 };
 
 template<typename TObjectId>

@@ -272,6 +272,7 @@ public:
     void UploadFlame(
         PlaneId planeId,
         vec2f const & baseCenterPosition,
+        float scale,
         float flamePersonalitySeed)
     {
         //
@@ -282,9 +283,9 @@ public:
         float constexpr YOffset = -0.25f;
 
         // Calculate quad coordinates
-        float const leftX = baseCenterPosition.x - mHalfFlameQuadWidth;
-        float const rightX = baseCenterPosition.x + mHalfFlameQuadWidth;
-        float const topY = baseCenterPosition.y + mFlameQuadHeight + YOffset;
+        float const leftX = baseCenterPosition.x - mHalfFlameQuadWidth * scale;
+        float const rightX = baseCenterPosition.x + mHalfFlameQuadWidth * scale;
+        float const topY = baseCenterPosition.y + mFlameQuadHeight * scale + YOffset;
         float const bottomY = baseCenterPosition.y + YOffset;
 
 

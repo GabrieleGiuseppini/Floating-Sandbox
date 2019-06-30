@@ -27,7 +27,7 @@ static constexpr int LowFrequencyPeriod = 50; // Number of simulation steps
 static constexpr int UpdateSinkingPeriodStep = 12;
 static constexpr int RotPointsPeriodStep = 25;
 static constexpr int PropagateHeatPeriodStep = 37;
-static constexpr int UpdateHeatEffectsPeriodStep = 38; // TODO
+static constexpr int CombustionStateMachineSlowPeriodStep = 42;
 static constexpr int DecaySpringsPeriodStep = 50;
 
 
@@ -345,6 +345,16 @@ void Ship::Render(
 
 
     //
+    // Upload flames
+    //
+
+    mPoints.UploadFlames(
+        mId,
+        mWindSpeedMagnitudeToRender,
+        renderContext);
+
+
+    //
     // Upload bombs
     //
 
@@ -369,18 +379,6 @@ void Ship::Render(
     mPoints.UploadEphemeralParticles(
         mId,
         renderContext);
-
-
-    //
-    // Upload flames
-    //
-
-    // TODOTEST
-    renderContext.UploadShipFlamesStart(mId, mWindSpeedMagnitudeToRender);
-    renderContext.UploadShipFlame(mId, mPoints.GetPlaneId(1000), mPoints.GetPosition(1000), 1000.0f);
-    renderContext.UploadShipFlame(mId, mPoints.GetPlaneId(1500), mPoints.GetPosition(1500), 1500.0f);
-    renderContext.UploadShipFlame(mId, mPoints.GetPlaneId(1900), mPoints.GetPosition(1900), 1900.0f);
-    renderContext.UploadShipFlamesEnd(mId);
 
 
     //
@@ -1414,21 +1412,29 @@ void Ship::UpdateHeatDynamics(
     }
 
     //
-    // Update heat effects (ignition, melting, etc.)
+    // Update slow combustion state machine
     //
 
-    if (mCurrentSimulationSequenceNumber.IsStepOf(UpdateHeatEffectsPeriodStep - 1, LowFrequencyPeriod))
+    if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowPeriodStep - 1, LowFrequencyPeriod))
     {
-        // TODO
-        ////mPoints.UpdateHeatEffects(
-        ////    currentSimulationTime,
-        ////    burningPointsHeap,
-        ////    gameParameters);
+        mPoints.UpdateCombustionLowFrequency(
+            currentSimulationTime,
+            GameParameters::SimulationStepTimeDuration<float> * static_cast<float>(LowFrequencyPeriod),
+            gameParameters);
     }
+
+    //
+    // Update fast combustion state machine
+    //
+
+    mPoints.UpdateCombustionHighFrequency(
+        currentSimulationTime,
+        GameParameters::SimulationStepTimeDuration<float>,
+        gameParameters);
 }
 
 void Ship::PropagateHeat(
-    float currentSimulationTime,
+    float /*currentSimulationTime*/,
     float dt,
     GameParameters const & gameParameters)
 {
@@ -1475,7 +1481,7 @@ void Ship::PropagateHeat(
             //
             // q = Ki * (Tp - Tpi)
             float const outgoingHeatFlow =
-                mSprings.GetMaterialThermalConductivity(cs.SpringIndex)
+                mSprings.GetMaterialThermalConductivity(cs.SpringIndex) * gameParameters.ThermalConductivityAdjustment
                 * std::max(pointTemperature - oldPointTemperatureBufferData[cs.OtherEndpointIndex], 0.0f); // DeltaT, positive if going out
 
             // Calculate outgoing heat due to this delta T
@@ -1520,7 +1526,7 @@ void Ship::PropagateHeat(
 
             // Calculate outgoing heat flow (again)
             float const outgoingHeatFlow =
-                mSprings.GetMaterialThermalConductivity(cs.SpringIndex)
+                mSprings.GetMaterialThermalConductivity(cs.SpringIndex) * gameParameters.ThermalConductivityAdjustment
                 * std::max(pointTemperature - oldPointTemperatureBufferData[cs.OtherEndpointIndex], 0.0f); // DeltaT, positive if going out
 
             // Raise target temperature due to this flow
@@ -1536,6 +1542,13 @@ void Ship::PropagateHeat(
             totalOutgoingHeat * normalizationFactor
             / mPoints.GetMaterialHeatCapacity(pointIndex);
     }
+
+
+    //
+    // Dissipate heat
+    //
+
+    // TODO
 
 
     //
@@ -1752,6 +1765,12 @@ void Ship::RunConnectivityVisit()
 
     // Remember non-ephemeral portion of plane IDs is dirty
     mPoints.MarkPlaneIdBufferNonEphemeralAsDirty();
+
+    //
+    // Re-order burning points, as their plane IDs might have changed
+    //
+
+    mPoints.ReorderBurningPointsForDepth();
 }
 
 void Ship::DestroyConnectedTriangles(ElementIndex pointElementIndex)

@@ -215,6 +215,26 @@ struct GameParameters
 
     static size_t constexpr MaxBurningParticles = 100;
 
+    float ThermalConductivityAdjustment;
+    static float constexpr MinThermalConductivityAdjustment = 0.1f;
+    static float constexpr MaxThermalConductivityAdjustment = 100.0f;
+
+    float IgnitionTemperatureAdjustment;
+    static float constexpr MinIgnitionTemperatureAdjustment = 0.1f;
+    static float constexpr MaxIgnitionTemperatureAdjustment = 10.0f;
+
+    float MeltingTemperatureAdjustment;
+    static float constexpr MinMeltingTemperatureAdjustment = 0.1f;
+    static float constexpr MaxMeltingTemperatureAdjustment = 10.0f;
+
+    float CombustionSpeedAdjustment;
+    static float constexpr MinCombustionSpeedAdjustment = 0.1f;
+    static float constexpr MaxCombustionSpeedAdjustment = 100.0f;
+
+    float CombustionHeatAdjustment;
+    static float constexpr MinCombustionHeatAdjustment = 0.1f;
+    static float constexpr MaxCombustionHeatAdjustment = 100.0f;
+
     float FlameThrowerHeatFlow; // KJoules/sec
     static float constexpr MinFlameThrowerHeatFlow = 90.0f;
     static float constexpr MaxFlameThrowerHeatFlow = 9000.0f;

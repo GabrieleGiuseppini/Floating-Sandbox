@@ -92,9 +92,25 @@ private:
      */
     struct CombustionState
     {
-        // TODO
+    public:
+
+        enum class StateType
+        {
+            Burning,
+            Extinguishing_Consumed,
+            Extinguishing_Smothered,
+            NotBurning
+        };
+
+    public:
+
+        StateType State;
+
+        float FlameDevelopment;
 
         CombustionState()
+            : State(StateType::NotBurning)
+            , FlameDevelopment(0.0f)
         {}
     };
 
@@ -409,6 +425,7 @@ public:
         , mCurrentCumulatedIntakenWaterThresholdForAirBubbles(gameParameters.CumulatedIntakenWaterThresholdForAirBubbles)
         , mFloatBufferAllocator(mBufferElementCount)
         , mVec2fBufferAllocator(mBufferElementCount)
+        , mBurningPoints()
         , mFreeEphemeralParticleSearchStartIndex(mShipPointCount)
         , mAreEphemeralPointsDirty(false)
     {
@@ -542,6 +559,18 @@ public:
 
     void UpdateGameParameters(GameParameters const & gameParameters);
 
+    void UpdateCombustionLowFrequency(
+        float currentSimulationTime,
+        float dt,
+        GameParameters const & gameParameters);
+
+    void UpdateCombustionHighFrequency(
+        float currentSimulationTime,
+        float dt,
+        GameParameters const & gameParameters);
+
+    void ReorderBurningPointsForDepth();
+
     void UpdateEphemeralParticles(
         float currentSimulationTime,
         GameParameters const & gameParameters);
@@ -558,6 +587,11 @@ public:
 
     void UploadNonEphemeralPointElements(
         ShipId shipId,
+        Render::RenderContext & renderContext) const;
+
+    void UploadFlames(
+        ShipId shipId,
+        float windSpeedMagnitude,
         Render::RenderContext & renderContext) const;
 
     void UploadVectors(
@@ -1408,6 +1442,9 @@ private:
     // Allocators for work buffers
     BufferAllocator<float> mFloatBufferAllocator;
     BufferAllocator<vec2f> mVec2fBufferAllocator;
+
+    // The indices of the points that are currently burning
+    std::vector<ElementIndex> mBurningPoints;
 
     // The index at which to start searching for free ephemeral particles
     // (just an optimization over restarting from zero each time)

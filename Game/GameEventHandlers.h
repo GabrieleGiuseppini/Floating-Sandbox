@@ -20,10 +20,6 @@
 
 struct ILifecycleGameEventHandler
 {
-    virtual ~ILifecycleGameEventHandler()
-    {
-    }
-
     virtual void OnGameReset()
     {
         // Default-implemented
@@ -50,10 +46,6 @@ struct ILifecycleGameEventHandler
 
 struct IStructuralGameEventHandler
 {
-    virtual ~IStructuralGameEventHandler()
-    {
-    }
-
     virtual void OnStress(
         StructuralMaterial const & /*structuralMaterial*/,
         bool /*isUnderwater*/,
@@ -73,10 +65,6 @@ struct IStructuralGameEventHandler
 
 struct IWavePhenomenaGameEventHandler
 {
-    virtual ~IWavePhenomenaGameEventHandler()
-    {
-    }
-
     virtual void OnTsunami(float /*x*/)
     {
         // Default-implemented
@@ -88,12 +76,26 @@ struct IWavePhenomenaGameEventHandler
     }
 };
 
-struct IStatisticsGameEventHandler
+struct ICombustionGameEventHandler
 {
-    virtual ~IStatisticsGameEventHandler()
+    virtual void OnPointCombustionBegin()
     {
+        // Default-implemented
     }
 
+    virtual void OnPointCombustionEnd()
+    {
+        // Default-implemented
+    }
+
+    virtual void OnCombustionSmothered()
+    {
+        // Default-implemented
+    }
+};
+
+struct IStatisticsGameEventHandler
+{
     virtual void OnFrameRateUpdated(
         float /*immediateFps*/,
         float /*averageFps*/)
@@ -110,10 +112,6 @@ struct IStatisticsGameEventHandler
 
 struct IGenericGameEventHandler
 {
-    virtual ~IGenericGameEventHandler()
-    {
-    }
-
     virtual void OnDestroy(
         StructuralMaterial const & /*structuralMaterial*/,
         bool /*isUnderwater*/,

@@ -26,6 +26,7 @@ struct IGameController
     virtual void RegisterLifecycleEventHandler(ILifecycleGameEventHandler * handler) = 0;
     virtual void RegisterStructuralEventHandler(IStructuralGameEventHandler * handler) = 0;
     virtual void RegisterWavePhenomenaEventHandler(IWavePhenomenaGameEventHandler * handler) = 0;
+    virtual void RegisterCombustionEventHandler(ICombustionGameEventHandler * handler) = 0;
     virtual void RegisterStatisticsEventHandler(IStatisticsGameEventHandler * handler) = 0;
     virtual void RegisterGenericEventHandler(IGenericGameEventHandler * handler) = 0;
 
@@ -197,6 +198,31 @@ struct IGameController
     virtual float GetMaxWindSpeedMaxFactor() const = 0;
 
     // Heat
+
+    virtual float GetThermalConductivityAdjustment() const = 0;
+    virtual void SetThermalConductivityAdjustment(float value) = 0;
+    virtual float GetMinThermalConductivityAdjustment() const = 0;
+    virtual float GetMaxThermalConductivityAdjustment() const = 0;
+
+    virtual float GetIgnitionTemperatureAdjustment() const = 0;
+    virtual void SetIgnitionTemperatureAdjustment(float value) = 0;
+    virtual float GetMinIgnitionTemperatureAdjustment() const = 0;
+    virtual float GetMaxIgnitionTemperatureAdjustment() const = 0;
+
+    virtual float GetMeltingTemperatureAdjustment() const = 0;
+    virtual void SetMeltingTemperatureAdjustment(float value) = 0;
+    virtual float GetMinMeltingTemperatureAdjustment() const = 0;
+    virtual float GetMaxMeltingTemperatureAdjustment() const = 0;
+
+    virtual float GetCombustionSpeedAdjustment() const = 0;
+    virtual void SetCombustionSpeedAdjustment(float value) = 0;
+    virtual float GetMinCombustionSpeedAdjustment() const = 0;
+    virtual float GetMaxCombustionSpeedAdjustment() const = 0;
+
+    virtual float GetCombustionHeatAdjustment() const = 0;
+    virtual void SetCombustionHeatAdjustment(float value) = 0;
+    virtual float GetMinCombustionHeatAdjustment() const = 0;
+    virtual float GetMaxCombustionHeatAdjustment() const = 0;
 
     virtual float GetFlameThrowerHeatFlow() const = 0;
     virtual void SetFlameThrowerHeatFlow(float value) = 0;
