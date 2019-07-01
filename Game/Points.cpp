@@ -368,17 +368,19 @@ void Points::UpdateCombustionLowFrequency(
     // - Burning->Extinguishing transition
     // - Extinguishing->NotBurning transition
 
+    // TODO: move to game parameters
+
     static constexpr float IgnitionTemperatureHighWatermark = 20.0f;
     static constexpr float IgnitionTemperatureLowWatermark = -20.0f;
 
-    static constexpr float IgnitionWaterLowWatermark = 0.05f;
-    static constexpr float IgnitionWaterHighWatermark = 0.1f;
+    static constexpr float SmotheringWaterLowWatermark = 0.05f;
+    static constexpr float SmotheringWaterHighWatermark = 0.1f;
 
-    static constexpr float IgnitionDecayLowWatermark = 0.01f;
-    static constexpr float IgnitionDecayHighWatermark = 0.1f;
+    static constexpr float SmotheringDecayLowWatermark = 0.01f;
+    static constexpr float SmotheringDecayHighWatermark = 0.1f;
 
     // Decay rate
-    float const effectiveCombustionDecayRate = (30.0f * gameParameters.CombustionSpeedAdjustment / dt);
+    float const effectiveCombustionDecayRate = (30.0f / gameParameters.CombustionSpeedAdjustment / dt);
 
     // No real reason not to do ephemeral points as well, other than they're
     // currently not expected to burn
@@ -391,8 +393,8 @@ void Points::UpdateCombustionLowFrequency(
                 // See if this point should start burning
                 if (GetTemperature(pointIndex) >= mMaterialIgnitionTemperatureBuffer[pointIndex] * gameParameters.IgnitionTemperatureAdjustment + IgnitionTemperatureHighWatermark
                     && !mParentWorld.IsUnderwater(GetPosition(pointIndex))
-                    && GetWater(pointIndex) < IgnitionWaterLowWatermark
-                    && GetDecay(pointIndex) > IgnitionDecayHighWatermark
+                    && GetWater(pointIndex) < SmotheringWaterLowWatermark
+                    && GetDecay(pointIndex) > SmotheringDecayHighWatermark
                     && mBurningPoints.size() < GameParameters::MaxBurningParticles)
                 {
                     //
@@ -426,25 +428,11 @@ void Points::UpdateCombustionLowFrequency(
             {
                 // See if this point should start extinguishing...
 
-                // ...for water
-                if (mParentWorld.IsUnderwater(GetPosition(pointIndex))
-                    || GetWater(pointIndex) > IgnitionWaterHighWatermark)
-                {
-                    //
-                    // Transition to Extinguishing - by smothering
-                    //
+                // ...for water or sea: we do this check at high frequency
 
-                    mCombustionStateBuffer[pointIndex].State = CombustionState::StateType::Extinguishing_Smothered;
-
-                    // Notify sizzling
-                    mGameEventHandler->OnCombustionSmothered();
-
-                    // Notify combustion end
-                    mGameEventHandler->OnPointCombustionEnd();
-                }
                 // ...for temperature or decay
-                else if (GetTemperature(pointIndex) <= mMaterialIgnitionTemperatureBuffer[pointIndex] * gameParameters.IgnitionTemperatureAdjustment + IgnitionTemperatureLowWatermark
-                    || GetDecay(pointIndex) < IgnitionDecayLowWatermark)
+                if (GetTemperature(pointIndex) <= mMaterialIgnitionTemperatureBuffer[pointIndex] * gameParameters.IgnitionTemperatureAdjustment + IgnitionTemperatureLowWatermark
+                    || GetDecay(pointIndex) < SmotheringDecayLowWatermark)
                 {
                     //
                     // Transition to Extinguishing - by consumption
@@ -460,7 +448,7 @@ void Points::UpdateCombustionLowFrequency(
                     // Apply effects of burning
 
                     //
-                    // Decay - proportionally to mass
+                    // 1. Decay - proportionally to mass
                     //
                     // Our goal:
                     // - An iron hull mass (750Kg) decays completely (goes to 0.01)
@@ -506,20 +494,6 @@ void Points::UpdateCombustionLowFrequency(
                     assert(pointIt != mBurningPoints.cend());
                     mBurningPoints.erase(pointIt);
                 }
-                // Check if should extinguish faster
-                else if (mCombustionStateBuffer[pointIndex].State == CombustionState::StateType::Extinguishing_Consumed
-                    && (mParentWorld.IsUnderwater(GetPosition(pointIndex))
-                        || GetWater(pointIndex) > IgnitionWaterHighWatermark))
-                {
-                    //
-                    // Transition to Extinguishing - by smothering
-                    //
-
-                    mCombustionStateBuffer[pointIndex].State = CombustionState::StateType::Extinguishing_Smothered;
-
-                    // Notify sizzling
-                    mGameEventHandler->OnCombustionSmothered();
-                }
 
                 break;
             }
@@ -551,67 +525,119 @@ void Points::UpdateCombustionHighFrequency(
 
     for (auto const pointIndex : mBurningPoints)
     {
-        if (mCombustionStateBuffer[pointIndex].State == CombustionState::StateType::Burning)
+        switch (mCombustionStateBuffer[pointIndex].State)
         {
-            //
-            // Develop flames
-            //
-
-            mCombustionStateBuffer[pointIndex].FlameDevelopment = std::min(
-                1.0f,
-                mCombustionStateBuffer[pointIndex].FlameDevelopment + dt / DevelopmentTime);
-
-            //
-            // Generate heat at:
-            // - point itself: fix to constant temperature = ignition temperature + 10%
-            // - neighbors: 100Kw * C, 3 times if above, 1 time if below, 2 if on the sides
-            //
-
-            mTemperatureBuffer[pointIndex] = mMaterialIgnitionTemperatureBuffer[pointIndex] * 1.1f;
-
-            for (auto const s : GetConnectedSprings(pointIndex).ConnectedSprings)
+            case CombustionState::StateType::Burning:
+            case CombustionState::StateType::Extinguishing_Consumed:
             {
-                auto const otherEndpointIndex = s.OtherEndpointIndex;
+                //
+                // Check if this point should stop burning or start extinguishing faster
+                //
 
-                vec2f const displacement = GetPosition(otherEndpointIndex) - GetPosition(pointIndex);
-                float const displacementLength = displacement.length();
-                vec2f const springDir = displacement.normalise(displacementLength);
+                // TODO: move to game parameters
+                static constexpr float SmotheringWaterLowWatermark = 0.05f;
+                static constexpr float SmotheringWaterHighWatermark = 0.1f;
 
-                // Get CW angle
-                float cwAngle =
-                    vec2f(1.0f, 0.0f)
-                    .angleCw(springDir);
+                if (mParentWorld.IsUnderwater(GetPosition(pointIndex))
+                    || GetWater(pointIndex) > SmotheringWaterHighWatermark)
+                {
+                    //
+                    // Transition to Extinguishing - by smothering
+                    //
 
-                // Calculate direction coefficient
-                float dirAlpha = 2.0f - sin(cwAngle); /// [1 at S, 3 at N]
+                    // Notify combustion end - if we are burning
+                    if (mCombustionStateBuffer[pointIndex].State == CombustionState::StateType::Burning)
+                        mGameEventHandler->OnPointCombustionEnd();
 
-                // Add to temperature
-                mTemperatureBuffer[otherEndpointIndex] +=
-                    effectiveCombustionHeat
-                    / mMaterialHeatCapacityBuffer[otherEndpointIndex]
-                    * dirAlpha
-                    / (1.0f + displacementLength);
+                    // Transition
+                    mCombustionStateBuffer[pointIndex].State = CombustionState::StateType::Extinguishing_Smothered;
+
+                    // Notify sizzling
+                    mGameEventHandler->OnCombustionSmothered();
+                }
+                else if (mCombustionStateBuffer[pointIndex].State == CombustionState::StateType::Burning)
+                {
+                    //
+                    // Develop flames
+                    //
+
+                    mCombustionStateBuffer[pointIndex].FlameDevelopment = std::min(
+                        1.0f,
+                        mCombustionStateBuffer[pointIndex].FlameDevelopment + dt / DevelopmentTime);
+
+                    //
+                    // Generate heat at:
+                    // - point itself: fix to constant temperature = ignition temperature + 10%
+                    // - neighbors: 100Kw * C, scaled by directional alpha
+                    //
+
+                    mTemperatureBuffer[pointIndex] =
+                        mMaterialIgnitionTemperatureBuffer[pointIndex]
+                        * gameParameters.IgnitionTemperatureAdjustment
+                        * 1.1f;
+
+                    for (auto const s : GetConnectedSprings(pointIndex).ConnectedSprings)
+                    {
+                        auto const otherEndpointIndex = s.OtherEndpointIndex;
+
+                        vec2f const displacement = GetPosition(otherEndpointIndex) - GetPosition(pointIndex);
+                        float const displacementLength = displacement.length();
+                        vec2f const springDir = displacement.normalise(displacementLength);
+
+                        // Calculate direction coefficient
+                        //
+                        // 0.2 + 1.5*(1 - cos(theta))
+                        //  3.2 N, 0.2 S, 1.7 W and E
+                        //  sum = 13.6
+                        //
+                        float const dirAlpha =
+                            // TODOTEST
+                            //(0.2f + 1.5f * (1.0f - springDir.dot(GameParameters::GravityNormalized)))
+                            (0.2f + 8.0f * (1.0f - springDir.dot(GameParameters::GravityNormalized)))
+                            // TODOTEST
+                            /// 13.6f; // Normalize
+                            ;
+
+                        // Add to temperature
+                        mTemperatureBuffer[otherEndpointIndex] +=
+                            effectiveCombustionHeat
+                            / mMaterialHeatCapacityBuffer[otherEndpointIndex]
+                            * dirAlpha
+                            / (1.0f + displacementLength);
+                    }
+                }
+                else if (mCombustionStateBuffer[pointIndex].State == CombustionState::StateType::Extinguishing_Consumed)
+                {
+                    //
+                    // Un-develop flames
+                    //
+
+                    mCombustionStateBuffer[pointIndex].FlameDevelopment = std::max(
+                        0.0f,
+                        mCombustionStateBuffer[pointIndex].FlameDevelopment - dt / ExtinguishingConsumedTime);
+                }
+
+                break;
             }
-        }
-        else if (mCombustionStateBuffer[pointIndex].State == CombustionState::StateType::Extinguishing_Consumed)
-        {
-            //
-            // Un-develop flames
-            //
 
-            mCombustionStateBuffer[pointIndex].FlameDevelopment = std::max(
-                0.0f,
-                mCombustionStateBuffer[pointIndex].FlameDevelopment - dt / ExtinguishingConsumedTime);
-        }
-        else if (mCombustionStateBuffer[pointIndex].State == CombustionState::StateType::Extinguishing_Smothered)
-        {
-            //
-            // Un-develop flames
-            //
+            case CombustionState::StateType::NotBurning:
+            {
+                // Nothing
+                break;
+            }
 
-            mCombustionStateBuffer[pointIndex].FlameDevelopment = std::max(
-                0.0f,
-                mCombustionStateBuffer[pointIndex].FlameDevelopment - dt / ExtinguishingSmotheredTime);
+            case CombustionState::StateType::Extinguishing_Smothered:
+            {
+                //
+                // Un-develop flames
+                //
+
+                mCombustionStateBuffer[pointIndex].FlameDevelopment = std::max(
+                    0.0f,
+                    mCombustionStateBuffer[pointIndex].FlameDevelopment - dt / ExtinguishingSmotheredTime);
+
+                break;
+            }
         }
     }
 }
@@ -891,20 +917,23 @@ void Points::UploadFlames(
     float windSpeedMagnitude,
     Render::RenderContext & renderContext) const
 {
-    renderContext.UploadShipFlamesStart(shipId, windSpeedMagnitude);
-
-    // Upload flames, in order of plane ID
-    for (auto const pointIndex : mBurningPoints)
+    if (renderContext.GetShipFlameRenderMode() != ShipFlameRenderMode::NoDraw)
     {
-        renderContext.UploadShipFlame(
-            shipId,
-            GetPlaneId(pointIndex),
-            GetPosition(pointIndex),
-            mCombustionStateBuffer[pointIndex].FlameDevelopment,
-            static_cast<float>(pointIndex)); // Personality
-    }
+        renderContext.UploadShipFlamesStart(shipId, windSpeedMagnitude);
 
-    renderContext.UploadShipFlamesEnd(shipId);
+        // Upload flames, in order of plane ID
+        for (auto const pointIndex : mBurningPoints)
+        {
+            renderContext.UploadShipFlame(
+                shipId,
+                GetPlaneId(pointIndex),
+                GetPosition(pointIndex),
+                mCombustionStateBuffer[pointIndex].FlameDevelopment,
+                static_cast<float>(pointIndex)); // Personality
+        }
+
+        renderContext.UploadShipFlamesEnd(shipId);
+    }
 }
 
 void Points::UploadVectors(

@@ -291,7 +291,7 @@ SoundController::SoundController(
                 mMasterEffectsMuted,
                 1500ms,
                 1500ms,
-                0.15f);
+                0.2f);
         }
         else if (soundType == SoundType::TimerBombSlowFuse)
         {

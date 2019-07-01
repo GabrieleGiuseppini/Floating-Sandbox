@@ -98,7 +98,7 @@ private:
     SliderControl * mLuminiscenceSlider;
     SliderControl * mLightSpreadSlider;
 
-    // Heat
+    // Heat and Combustion
     SliderControl * mThermalConductivityAdjustmentSlider;
     SliderControl * mIgnitionTemperatureAdjustmentSlider;
     SliderControl * mMeltingTemperatureAdjustmentSlider;
@@ -108,6 +108,10 @@ private:
     SliderControl * mFlameThrowerHeatFlowSlider;
     wxCheckBox * mDrawHeatOverlayCheckBox;
     SliderControl * mHeatOverlayTransparencySlider;
+    wxRadioButton * mMode1ShipFlameRenderModeRadioButton;
+    wxRadioButton * mMode2ShipFlameRenderModeRadioButton;
+    wxRadioButton * mNoDrawShipFlameRenderModeRadioButton;
+    SliderControl * mShipFlameSizeAdjustmentSlider;
 
     // Ocean and Sky
     SliderControl * mOceanDepthSlider;
@@ -161,9 +165,6 @@ private:
     wxCheckBox* mShowStressCheckBox;
     SliderControl * mWaterContrastSlider;
     SliderControl * mWaterLevelOfDetailSlider;
-    wxRadioButton * mMode1ShipFlameRenderModeRadioButton;
-    wxRadioButton * mMode2ShipFlameRenderModeRadioButton;
-    SliderControl * mShipFlameSizeAdjustmentSlider;
 
     // Sound
     SliderControl * mEffectsVolumeSlider;

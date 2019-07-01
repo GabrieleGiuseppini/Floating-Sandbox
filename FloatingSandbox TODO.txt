@@ -1097,13 +1097,19 @@ Render:
 									+ Check exhaustion transition
 										+ Notify (boolean for water-caused)											
 									= Do decay: burn rate (i.e. decay speed) ~= structural mass (the lower the mass, the faster decays)
+										= FIX: Min decay does not change much
 									+ No temperature and no raise and lower flames, done below at Points::UpdateCombustingPoints()
-								= FIX: water (both underwater and flood) should apply regardless of state
+								+ Water (both underwater and flood) should apply regardless of state
+								- Do phased ignitions (5 at a time)
 						= At all steps: call Points::UpdateCombustionStateMachineHighFrequency(heap)
 							= Points uses heap (with burning points) and evolves the "burning"
 							  state machine
-								+ Raise flames up and down
+								= Raise flames up and down
+									- Try non-linear extinguishing
 								= Heat to self and neighbors
+									+ Do code changes
+									+ Do flag to turn off flame rendering
+										+ Move flame rendering to heat & combustion?
 			+ Ship::ConnectivityVisit:
 				+ Call Points::ReorderBurningPoints()
 			+ Ship::Render:
@@ -1149,6 +1155,8 @@ Render:
 					+ Add FlamePersonalitySeed shader param, straight from ship into vertex buffer
 				+ Make same colors as flamethrower
 				+ Adjust bottom
+				- Try without red border, to better merge multiple flames together
+				- Development: exponential fall should look better than linear
 				- Test perf impact of instanced drawing
 			= Sound:
 				+ Media:

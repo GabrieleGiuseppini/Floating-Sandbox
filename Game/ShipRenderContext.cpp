@@ -1179,6 +1179,11 @@ void ShipRenderContext::UploadFlamesStart(float windSpeedMagnitude)
                     newWind);
                 break;
             }
+
+            case ShipFlameRenderMode::NoDraw:
+            {
+                break;
+            }
         }
 
         mCurrentWindSpeedMagnitudeAverage = newWind;
@@ -1552,7 +1557,8 @@ void ShipRenderContext::RenderEnd()
 
 void ShipRenderContext::RenderFlames()
 {
-    if (mFlameVertexBuffer.size() > 0)
+    if (mFlameVertexBuffer.size() > 0
+        && mShipFlameRenderMode != ShipFlameRenderMode::NoDraw)
     {
         glBindVertexArray(*mFlameVAO);
 
@@ -1578,6 +1584,12 @@ void ShipRenderContext::RenderFlames()
                     GameWallClock::GetInstance().NowAsFloat());
 
                 break;
+            }
+
+            case ShipFlameRenderMode::NoDraw:
+            {
+                // Can't be here
+                assert(false);
             }
         }
 

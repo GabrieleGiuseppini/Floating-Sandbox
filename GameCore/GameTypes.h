@@ -278,7 +278,8 @@ enum class VectorFieldRenderMode
 enum class ShipFlameRenderMode
 {
     Mode1,
-    Mode2
+    Mode2,
+    NoDraw
 };
 
 /*
