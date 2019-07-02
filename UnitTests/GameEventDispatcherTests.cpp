@@ -17,6 +17,31 @@ using namespace ::testing;
 
 using MockHandler = StrictMock<_MockHandler>;
 
+StructuralMaterial MakeStructuralMaterial(std::string name)
+{
+    return StructuralMaterial(
+        name,
+        1.0f,
+        1.0f,
+        1.0f,
+        1.0f,
+        vec4f::zero(),
+        std::nullopt,
+        std::nullopt,
+        false,
+        1.0f,
+        1.0f,
+        1.0f,
+        1.0f,
+        1.0f,
+        1.0f,
+        1.0f,
+        1.0f,
+        1.0f,
+        StructuralMaterial::MaterialCombustionType::Combustion,
+        1.0f);
+}
+
 /////////////////////////////////////////////////////////////////
 
 TEST(GameEventDispatcherTests, Aggregates_OnStress)
@@ -26,21 +51,7 @@ TEST(GameEventDispatcherTests, Aggregates_OnStress)
     GameEventDispatcher dispatcher;
     dispatcher.RegisterStructuralEventHandler(&handler);
 
-    StructuralMaterial sm(
-        "Foo",
-        1.0f,
-        1.0f,
-        1.0f,
-        vec4f::zero(),
-        false,
-        1.0f,
-        1.0f,
-        1.0f,
-        1.0f,
-        1.0f,
-        1.0f,
-        std::nullopt,
-        std::nullopt);
+    StructuralMaterial sm = MakeStructuralMaterial("Foo");
 
     EXPECT_CALL(handler, OnStress(_, _, _)).Times(0);
 
@@ -63,37 +74,9 @@ TEST(GameEventDispatcherTests, Aggregates_OnStress_MultipleKeys)
     GameEventDispatcher dispatcher;
     dispatcher.RegisterStructuralEventHandler(&handler);
 
-    StructuralMaterial sm1(
-        "Foo1",
-        1.0f,
-        1.0f,
-        1.0f,
-        vec4f::zero(),
-        false,
-        1.0f,
-        1.0f,
-        1.0f,
-        1.0f,
-        1.0f,
-        1.0f,
-        std::nullopt,
-        std::nullopt);
+    StructuralMaterial sm1 = MakeStructuralMaterial("Foo1");
 
-    StructuralMaterial sm2(
-        "Foo2",
-        1.0f,
-        1.0f,
-        1.0f,
-        vec4f::zero(),
-        false,
-        1.0f,
-        1.0f,
-        1.0f,
-        1.0f,
-        1.0f,
-        1.0f,
-        std::nullopt,
-        std::nullopt);
+    StructuralMaterial sm2 = MakeStructuralMaterial("Foo2");
 
     EXPECT_CALL(handler, OnStress(_, _, _)).Times(0);
 
@@ -153,21 +136,7 @@ TEST(GameEventDispatcherTests, ClearsStateAtUpdate)
     GameEventDispatcher dispatcher;
     dispatcher.RegisterStructuralEventHandler(&handler);
 
-    StructuralMaterial sm(
-        "Foo",
-        1.0f,
-        1.0f,
-        1.0f,
-        vec4f::zero(),
-        false,
-        1.0f,
-        1.0f,
-        1.0f,
-        1.0f,
-        1.0f,
-        1.0f,
-        std::nullopt,
-        std::nullopt);
+    StructuralMaterial sm = MakeStructuralMaterial("Foo");
 
     EXPECT_CALL(handler, OnStress(_, _, _)).Times(0);
 

@@ -425,6 +425,7 @@ public:
         , mCurrentCumulatedIntakenWaterThresholdForAirBubbles(gameParameters.CumulatedIntakenWaterThresholdForAirBubbles)
         , mFloatBufferAllocator(mBufferElementCount)
         , mVec2fBufferAllocator(mBufferElementCount)
+        , mIgnitionCandidates(mShipPointCount)
         , mBurningPoints()
         , mFreeEphemeralParticleSearchStartIndex(mShipPointCount)
         , mAreEphemeralPointsDirty(false)
@@ -1442,6 +1443,10 @@ private:
     // Allocators for work buffers
     BufferAllocator<float> mFloatBufferAllocator;
     BufferAllocator<vec2f> mVec2fBufferAllocator;
+
+    // The list of candidates for burning; member only
+    // to save allocations at use time
+    BoundedVector<std::tuple<ElementIndex, float>> mIgnitionCandidates;
 
     // The indices of the points that are currently burning
     std::vector<ElementIndex> mBurningPoints;

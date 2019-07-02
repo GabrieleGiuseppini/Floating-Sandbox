@@ -7,17 +7,19 @@
 
 #include "Log.h"
 
+#include <algorithm>
 #include <array>
 #include <cassert>
 #include <functional>
 #include <iterator>
 
 /*
- * This class is a fixed-size vector for distinct value elements.
- * Elements can be added up to the specified maximum size, after which an exception occurs.
+ * This class is a fixed-size vector for value elements.
+ *
+ * Elements can be added up to the specified maximum size, after which the behavior is undefined.
  *
  * The container is optimized for fast *visit*, so that it can be used to iterate through
- * all its elements, and for fast *erase* by index. Pushes are not optimized.
+ * all its elements, and for fast *erase* by index. Pushes are not optimized, unless they are on the back.
  */
 template<typename TElement, size_t MaxSize>
 class FixedSizeVector
@@ -192,90 +194,78 @@ public:
     // Modifiers
     //
 
-    void push_front(TElement const & element)
+    void push_front(TElement const & element) noexcept
     {
-        if (mCurrentSize < MaxSize)
+        assert(mCurrentSize < MaxSize);
+
+        assert(false == contains(element));
+
+        // Shift elements (to the right) first
+        for (size_t j = mCurrentSize; j > 0; --j)
         {
-            assert(false == contains(element));
-
-            // Shift elements (to the right) first
-            for (size_t j = mCurrentSize; j > 0; --j)
-            {
-                mArray[j] = std::move(mArray[j - 1]);
-            }
-
-            // Set new element at front
-            mArray[0] = element;
-
-            ++mCurrentSize;
+            mArray[j] = std::move(mArray[j - 1]);
         }
-        else
-        {
-            throw std::runtime_error("The container is already full");
-        }
+
+        // Set new element at front
+        mArray[0] = element;
+
+        ++mCurrentSize;
     }
 
-    void push_back(TElement const & element)
+    void push_front_unique(TElement const & element) noexcept
     {
-        if (mCurrentSize < MaxSize)
-        {
-            assert(false == contains(element));
-            mArray[mCurrentSize++] = element;
-        }
-        else
-        {
-            throw std::runtime_error("The container is already full");
-        }
+        assert(false == contains(element));
+
+        push_front(element);
     }
 
-    void push_back(TElement && element)
+    void push_back(TElement const & element) noexcept
     {
-        if (mCurrentSize < MaxSize)
-        {
-            mArray[mCurrentSize++] = std::move(element);
-        }
-        else
-        {
-            throw std::runtime_error("The container is already full");
-        }
+        assert(mCurrentSize < MaxSize);
+
+        mArray[mCurrentSize++] = element;
     }
 
-    template<typename ...TArgs>
-    void emplace_front(TArgs&&... args)
+    void push_back(TElement && element) noexcept
     {
-        if (mCurrentSize < MaxSize)
-        {
-            // Shift elements (to the right) first
-            for (size_t j = mCurrentSize; j > 0; --j)
-            {
-                mArray[j] = std::move(mArray[j - 1]);
-            }
+        assert(mCurrentSize < MaxSize);
 
-            // Set new element at front
-            mArray[0] = TElement(std::forward<TArgs>(args)...);
+        mArray[mCurrentSize++] = std::move(element);
+    }
 
-            ++mCurrentSize;
-        }
-        else
-        {
-            throw std::runtime_error("The container is already full");
-        }
+    void push_back_unique(TElement const & element) noexcept
+    {
+        assert(false == contains(element));
+
+        push_back(element);
     }
 
     template<typename ...TArgs>
-    void emplace_back(TArgs&&... args)
+    void emplace_front(TArgs&&... args) noexcept
     {
-        if (mCurrentSize < MaxSize)
+        assert(mCurrentSize < MaxSize);
+
+        // Shift elements (to the right) first
+        for (size_t j = mCurrentSize; j > 0; --j)
         {
-            mArray[mCurrentSize++] = TElement(std::forward<TArgs>(args)...);
+            mArray[j] = std::move(mArray[j - 1]);
         }
-        else
-        {
-            throw std::runtime_error("The container is already full");
-        }
+
+        // Set new element at front
+        mArray[0] = TElement(std::forward<TArgs>(args)...);
+
+        ++mCurrentSize;
     }
 
-    void erase(size_t index)
+    template <typename ...TArgs>
+    void emplace_back(TArgs&&... args) noexcept
+    {
+        assert(mCurrentSize < MaxSize);
+
+        mArray[mCurrentSize++] = TElement(std::forward<TArgs>(args)...);
+    }
+
+    void erase(size_t index) noexcept
     {
         assert(index < mCurrentSize);
 
@@ -288,8 +278,8 @@ public:
         --mCurrentSize;
     }
 
-    template<typename UnaryPredicate>
-    bool erase_first(UnaryPredicate p)
+    template <typename UnaryPredicate>
+    bool erase_first(UnaryPredicate p) noexcept
     {
         for (size_t i = 0; i < mCurrentSize; /* incremented in loop */)
         {
@@ -314,7 +304,7 @@ public:
         return false;
     }
 
-    bool erase_first(TElement const & element)
+    bool erase_first(TElement const & element) noexcept
     {
         return erase_first(
             [&element](TElement const & e)
@@ -323,9 +313,18 @@ public:
             });
     }
 
-    void clear()
+    void clear() noexcept
     {
         mCurrentSize = 0u;
+    }
+
+    template <typename TCompare>
+    void sort(TCompare comp)
+    {
+        std::sort(
+            &(mArray[0]),
+            &(mArray[mCurrentSize]),
+            comp);
     }
 
 private:

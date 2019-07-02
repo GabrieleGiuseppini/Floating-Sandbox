@@ -1,6 +1,6 @@
 #include <GameCore/FixedSizeVector.h>
 
-#include <vector>
+#include <GameCore/GameTypes.h>
 
 #include "gtest/gtest.h"
 
@@ -280,22 +280,6 @@ TEST(FixedSizeVectorTests, IteratesElements_Index_Const)
     EXPECT_EQ(6u, sum);
 }
 
-TEST(FixedSizeVectorTests, ThrowsExceptionOnMaxSize)
-{
-    FixedSizeVector<int, 6> vec;
-
-    vec.push_back(1);
-    vec.push_back(2);
-    vec.push_back(3);
-    vec.push_back(4);
-    vec.push_back(5);
-    vec.push_back(6);
-
-    EXPECT_THROW(
-        vec.push_back(1),
-        std::runtime_error);
-}
-
 TEST(FixedSizeVectorTests, Erase_BecomesEmpty)
 {
     FixedSizeVector<int, 6> vec;
@@ -469,4 +453,26 @@ TEST(FixedSizeVectorTests, Back)
     vec.push_back(6);
 
     EXPECT_EQ(6, vec.back());
+}
+
+TEST(FixedSizeVectorTests, Sort)
+{
+    FixedSizeVector<std::tuple<ElementIndex, float>, 6> vec;
+    vec.emplace_back(4, 5.0f);
+    vec.emplace_back(15, 2.0f);
+    vec.emplace_back(13, 3.0f);
+    vec.emplace_back(0, 1.0f);
+
+    vec.sort(
+        [](auto const & t1, auto const & t2)
+        {
+            return std::get<1>(t1) < std::get<1>(t2);
+        });
+
+    EXPECT_EQ(4, vec.size());
+
+    EXPECT_EQ(0u, std::get<0>(vec[0]));
+    EXPECT_EQ(15u, std::get<0>(vec[1]));
+    EXPECT_EQ(13u, std::get<0>(vec[2]));
+    EXPECT_EQ(4u, std::get<0>(vec[3]));
 }

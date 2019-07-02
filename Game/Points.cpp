@@ -368,6 +368,10 @@ void Points::UpdateCombustionLowFrequency(
     // - Burning->Extinguishing transition
     // - Extinguishing->NotBurning transition
 
+    // Prepare candidates for ignition; we'll pick the top N ones
+    // based on the ignition temperature delta
+    mIgnitionCandidates.clear();
+
     // TODO: move to game parameters
 
     static constexpr float IgnitionTemperatureHighWatermark = 20.0f;
@@ -390,35 +394,19 @@ void Points::UpdateCombustionLowFrequency(
         {
             case CombustionState::StateType::NotBurning:
             {
+                float const effectiveIgnitionTemperature = mMaterialIgnitionTemperatureBuffer[pointIndex] * gameParameters.IgnitionTemperatureAdjustment;
+
                 // See if this point should start burning
-                if (GetTemperature(pointIndex) >= mMaterialIgnitionTemperatureBuffer[pointIndex] * gameParameters.IgnitionTemperatureAdjustment + IgnitionTemperatureHighWatermark
+                if (GetTemperature(pointIndex) >= effectiveIgnitionTemperature + IgnitionTemperatureHighWatermark
                     && !mParentWorld.IsUnderwater(GetPosition(pointIndex))
                     && GetWater(pointIndex) < SmotheringWaterLowWatermark
                     && GetDecay(pointIndex) > SmotheringDecayHighWatermark
                     && mBurningPoints.size() < GameParameters::MaxBurningParticles)
                 {
-                    //
-                    // Start burning
-                    //
-
-                    mCombustionStateBuffer[pointIndex].State = CombustionState::StateType::Burning;
-                    mCombustionStateBuffer[pointIndex].FlameDevelopment = 0.0f;
-
-                    // Add point to vector of burning points, sorted by plane ID
-                    assert(mBurningPoints.cend() == std::find(mBurningPoints.cbegin(), mBurningPoints.cend(), pointIndex));
-                    mBurningPoints.insert(
-                        std::upper_bound(
-                            mBurningPoints.cbegin(),
-                            mBurningPoints.cend(),
-                            pointIndex,
-                            [this](auto p1, auto p2)
-                            {
-                                return this->mPlaneIdBuffer[p1] < mPlaneIdBuffer[p2];
-                            }),
-                        pointIndex);
-
-                    // Notify
-                    mGameEventHandler->OnPointCombustionBegin();
+                    // Store point as candidate
+                    mIgnitionCandidates.emplace_back(
+                        pointIndex,
+                        (GetTemperature(pointIndex) - effectiveIgnitionTemperature) / effectiveIgnitionTemperature);
                 }
 
                 break;
@@ -498,6 +486,48 @@ void Points::UpdateCombustionLowFrequency(
                 break;
             }
         }
+    }
+
+    //
+    // Now pick candidates for ignition
+    //
+
+    // Sort candidates by ignition temperature delta
+    mIgnitionCandidates.sort(
+        [](auto const & t1, auto const & t2)
+        {
+            return std::get<1>(t1) > std::get<1>(t2);
+        });
+
+    // Ignite the first N points
+    // TODO
+    size_t constexpr MaxPointsIgnitedPerIteration = 10;
+    for (size_t i = 0; i < mIgnitionCandidates.size() && i < MaxPointsIgnitedPerIteration; ++i)
+    {
+        auto const pointIndex = std::get<0>(mIgnitionCandidates[i]);
+
+        //
+        // Start burning
+        //
+
+        mCombustionStateBuffer[pointIndex].State = CombustionState::StateType::Burning;
+        mCombustionStateBuffer[pointIndex].FlameDevelopment = 0.0f;
+
+        // Add point to vector of burning points, sorted by plane ID
+        assert(mBurningPoints.cend() == std::find(mBurningPoints.cbegin(), mBurningPoints.cend(), pointIndex));
+        mBurningPoints.insert(
+            std::upper_bound(
+                mBurningPoints.cbegin(),
+                mBurningPoints.cend(),
+                pointIndex,
+                [this](auto p1, auto p2)
+                {
+                    return this->mPlaneIdBuffer[p1] < mPlaneIdBuffer[p2];
+                }),
+            pointIndex);
+
+        // Notify
+        mGameEventHandler->OnPointCombustionBegin();
     }
 }
 

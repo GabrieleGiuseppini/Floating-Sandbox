@@ -7,6 +7,7 @@
 
 #include "Log.h"
 
+#include <algorithm>
 #include <cassert>
 #include <cstdlib>
 #include <memory>
@@ -85,6 +86,15 @@ public:
     {
         assert(mSize < mAllocatedSize);
         return *new(&(mBuffer[mSize++])) TElement(std::forward<TArgs>(args)...);
+    }
+
+    template <typename TCompare>
+    void sort(TCompare comp)
+    {
+        std::sort(
+            &(mBuffer[0]),
+            &(mBuffer[mSize]),
+            comp);
     }
 
 private:

@@ -87,8 +87,9 @@ void StatusText::SetText(
             << " RPS:" << renderStatistics.LastRenderedShipRopes
             << " SPR:" << renderStatistics.LastRenderedShipSprings
             << " TRI:" << renderStatistics.LastRenderedShipTriangles
-            << " PLANES:" << renderStatistics.LastRenderedShipPlanes
-            << " GENTEX:" << renderStatistics.LastRenderedShipGenericTextures;
+            << " PLN:" << renderStatistics.LastRenderedShipPlanes
+            << " GENTEX:" << renderStatistics.LastRenderedShipGenericTextures
+            << " FLM:" << renderStatistics.LastRenderedShipFlames;
 
         mTextLines.emplace_back(ss.str());
     }
