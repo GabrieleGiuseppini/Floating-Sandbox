@@ -1101,10 +1101,10 @@ Render:
 									+ No temperature and no raise and lower flames, done below at Points::UpdateCombustingPoints()
 								+ Water (both underwater and flood) should apply regardless of state
 								= Do phased ignitions (N at a time)
-									= Or better: choose top N ignitions at each iteration over all candidates, sorted
+									- Run low-frequency state machine M times for 1/Mth of the points each time
+									= At each step: choose top N ignitions over all candidates, sorted
 									  by temperature over ignition temperature
-										- Find right N
-										- Do some randomization
+										- Find right N: depends on M
 						= At all steps: call Points::UpdateCombustionStateMachineHighFrequency(heap)
 							= Points uses heap (with burning points) and evolves the "burning"
 							  state machine

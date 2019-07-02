@@ -500,7 +500,7 @@ void Points::UpdateCombustionLowFrequency(
         });
 
     // Ignite the first N points
-    // TODO
+    // TODO: find good value, depends likely also on step size
     size_t constexpr MaxPointsIgnitedPerIteration = 10;
     for (size_t i = 0; i < mIgnitionCandidates.size() && i < MaxPointsIgnitedPerIteration; ++i)
     {
