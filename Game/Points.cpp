@@ -611,16 +611,13 @@ void Points::UpdateCombustionHighFrequency(
                         auto const otherEndpointIndex = s.OtherEndpointIndex;
 
                         // Calculate direction coefficient so to prefer upwards direction:
-                        // 0.2 + 1.5*(1 - cos(theta))
-                        //      3.2 N, 0.2 S, 1.7 W and E
-                        //      sum = 13.6
-                        //
+                        // 0.2 + 1.5*(1 - cos(theta)): 3.2 N, 0.2 S, 1.7 W and E
                         vec2f const springDir = (GetPosition(otherEndpointIndex) - GetPosition(pointIndex)).normalise();
                         float const dirAlpha =
-                            (0.2f + 1.5f * (1.0f - springDir.dot(GameParameters::GravityNormalized)))
-                            / 13.6f; // Normalize
+                            (0.2f + 1.5f * (1.0f - springDir.dot(GameParameters::GravityNormalized)));
+                            // No normalization: if using normalization flame does not propagate along rope
 
-                        // Add heat fraction to point
+                        // Add heat to point
                         mTemperatureBuffer[otherEndpointIndex] +=
                             effectiveCombustionHeat
                             * dirAlpha
