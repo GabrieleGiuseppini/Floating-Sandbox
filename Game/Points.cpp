@@ -610,30 +610,21 @@ void Points::UpdateCombustionHighFrequency(
                     {
                         auto const otherEndpointIndex = s.OtherEndpointIndex;
 
-                        vec2f const displacement = GetPosition(otherEndpointIndex) - GetPosition(pointIndex);
-                        float const displacementLength = displacement.length();
-                        vec2f const springDir = displacement.normalise(displacementLength);
-
-                        // Calculate direction coefficient
-                        //
+                        // Calculate direction coefficient so to prefer upwards direction:
                         // 0.2 + 1.5*(1 - cos(theta))
-                        //  3.2 N, 0.2 S, 1.7 W and E
-                        //  sum = 13.6
+                        //      3.2 N, 0.2 S, 1.7 W and E
+                        //      sum = 13.6
                         //
+                        vec2f const springDir = (GetPosition(otherEndpointIndex) - GetPosition(pointIndex)).normalise();
                         float const dirAlpha =
-                            // TODOTEST
-                            //(0.2f + 1.5f * (1.0f - springDir.dot(GameParameters::GravityNormalized)))
-                            (0.2f + 8.0f * (1.0f - springDir.dot(GameParameters::GravityNormalized)))
-                            // TODOTEST
-                            /// 13.6f; // Normalize
-                            ;
+                            (0.2f + 1.5f * (1.0f - springDir.dot(GameParameters::GravityNormalized)))
+                            / 13.6f; // Normalize
 
-                        // Add to temperature
+                        // Add heat fraction to point
                         mTemperatureBuffer[otherEndpointIndex] +=
                             effectiveCombustionHeat
-                            / mMaterialHeatCapacityBuffer[otherEndpointIndex]
                             * dirAlpha
-                            / (1.0f + displacementLength);
+                            / mMaterialHeatCapacityBuffer[otherEndpointIndex];
                     }
                 }
                 else if (mCombustionStateBuffer[pointIndex].State == CombustionState::StateType::Extinguishing_Consumed)

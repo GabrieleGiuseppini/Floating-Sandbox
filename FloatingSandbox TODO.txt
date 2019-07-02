@@ -1103,17 +1103,17 @@ Render:
 								= Do phased ignitions (N at a time)
 									= Or better: choose top N ignitions at each iteration over all candidates, sorted
 									  by temperature over ignition temperature
-									 - Find right N
+										- Find right N
+										- Do some randomization
 						= At all steps: call Points::UpdateCombustionStateMachineHighFrequency(heap)
 							= Points uses heap (with burning points) and evolves the "burning"
 							  state machine
 								= Raise flames up and down
 									- Try non-linear extinguishing
-								= Heat to self and neighbors
+								+ Heat to self and neighbors
 									+ Do code changes
 									+ Do flag to turn off flame rendering
 										+ Move flame rendering to heat & combustion?
-									- Better shape (sin is too smooth - too much laterally)
 			+ Ship::ConnectivityVisit:
 				+ Call Points::ReorderBurningPoints()
 			+ Ship::Render:
