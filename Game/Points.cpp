@@ -492,6 +492,8 @@ void Points::UpdateCombustionLowFrequency(
 
         mCombustionStateBuffer[pointIndex].State = CombustionState::StateType::Developing_1;
         mCombustionStateBuffer[pointIndex].FlameDevelopment = 0.1f; // Seed for development's first phase
+        mCombustionStateBuffer[pointIndex].MaxFlameDevelopment =
+            GameRandomEngine::GetInstance().GenerateRandomReal(0.85f, 1.15f); // Randomize max development
 
         // Add point to vector of burning points, sorted by plane ID
         assert(mBurningPoints.cend() == std::find(mBurningPoints.cbegin(), mBurningPoints.cend(), pointIndex));
@@ -523,6 +525,7 @@ void Points::UpdateCombustionHighFrequency(
     // - Extinguishing points: development down
     //
 
+    // TODO: remove
     float constexpr DevelopmentTime = 1.0f; // Seconds to full development
     float constexpr ExtinguishingConsumedTime = 1.5f; // Second to full extinguishment, when consumed
     float constexpr ExtinguishingSmotheredTime = 0.4f; // Second to full extinguishment, when smothered
@@ -620,7 +623,7 @@ void Points::UpdateCombustionHighFrequency(
                     0.105f * mCombustionStateBuffer[pointIndex].FlameDevelopment;
 
                 // Check whether it's time to transition to the next development phase
-                if (mCombustionStateBuffer[pointIndex].FlameDevelopment > 1.2f)
+                if (mCombustionStateBuffer[pointIndex].FlameDevelopment > mCombustionStateBuffer[pointIndex].MaxFlameDevelopment + 0.2f)
                 {
                     mCombustionStateBuffer[pointIndex].State = CombustionState::StateType::Developing_2;
                 }
@@ -638,19 +641,19 @@ void Points::UpdateCombustionHighFrequency(
                 //
 
                 // FlameDevelopment is now in the (1.0, 1.2) range
-                auto flameDevelopmentPrime = mCombustionStateBuffer[pointIndex].FlameDevelopment - 1.0f;
-                flameDevelopmentPrime =
-                    flameDevelopmentPrime
-                    - 0.2f * flameDevelopmentPrime;
+                auto extraFlameDevelopment = mCombustionStateBuffer[pointIndex].FlameDevelopment - mCombustionStateBuffer[pointIndex].MaxFlameDevelopment;
+                extraFlameDevelopment =
+                    extraFlameDevelopment
+                    - 0.2f * extraFlameDevelopment;
 
                 mCombustionStateBuffer[pointIndex].FlameDevelopment =
-                    1.0f + flameDevelopmentPrime;
+                    mCombustionStateBuffer[pointIndex].MaxFlameDevelopment + extraFlameDevelopment;
 
                 // Check whether it's time to transition to burning
-                if (flameDevelopmentPrime < 0.02f)
+                if (extraFlameDevelopment < 0.02f)
                 {
                     mCombustionStateBuffer[pointIndex].State = CombustionState::StateType::Burning;
-                    mCombustionStateBuffer[pointIndex].FlameDevelopment = 1.0f;
+                    mCombustionStateBuffer[pointIndex].FlameDevelopment = mCombustionStateBuffer[pointIndex].MaxFlameDevelopment;
                 }
 
                 break;

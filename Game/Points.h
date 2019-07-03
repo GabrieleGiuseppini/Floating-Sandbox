@@ -109,10 +109,12 @@ private:
         StateType State;
 
         float FlameDevelopment;
+        float MaxFlameDevelopment;
 
         CombustionState()
             : State(StateType::NotBurning)
             , FlameDevelopment(0.0f)
+            , MaxFlameDevelopment(0.0f)
         {}
     };
 

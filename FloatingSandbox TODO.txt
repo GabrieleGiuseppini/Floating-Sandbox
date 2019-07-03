@@ -1090,11 +1090,10 @@ Render:
 								- Ship::Render decides how often to call Points::UploadTemperatureXYZ(...)
 						= At another slot: call Points::UpdateCombustionStateMachineLowFrequency(...)
 							= For each point:
-								= If it's not combusting:
-									= Check combustion transition
+								+ If it's not combusting:
+									+ Check combustion transition
 										+ Notify
-										- Choose random max development
-										- TODO: upload flames in inverse order
+										+ Choose random max development
 								= Else (it's combusting):
 									+ Check exhaustion transition
 										+ Notify (boolean for water-caused)											
