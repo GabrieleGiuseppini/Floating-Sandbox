@@ -1077,18 +1077,14 @@ Render:
 							- (P.Decay, P.Temperature) -> S.CurrentStrength
 								- Add "StructuralStrength", and use "CurrentStrength" for strain
 						- Nuke Ship::DecaySprings and, with it, Springs::Set(Current)Strength
+						- Cleanup low-frequency schedule now that DecaySprings is gone
 					= Later on: Ship::UpdateHeatDynamics:
 						= At one slot: call Ship::PropagateHeat()
 							= Propagation and dissipation
 								+ New global constants: AirTemperature, WaterTemperature
 								+ Use specific dt's calc's as constexpr's in UpdateTemperature based off frequency of steps
-								- Dissipation: use air or water temp, depending on whether it's above water or below
-							- See if may be called at every step
-								- Do profiling (invoking it N times per frame to exaggerate)
-								- Try impact of storing outgoing flows @ local array
-							- If called at every step, consider uploading temperature buffer every N steps
-								- Nuke Points::mIsTemperatureBufferDirty
-								- Ship::Render decides how often to call Points::UploadTemperatureXYZ(...)
+								= Dissipation: use air or water temp, depending on whether it's above water or below
+							+ Cleanup TODO's (and do we have a useless step frequency constant now?) to keep it at each step
 						+ At another slot: call Points::UpdateCombustionStateMachineLowFrequency(...)
 							+ For each point:
 								+ If it's not combusting:
@@ -1141,7 +1137,7 @@ Render:
 				- RenderContext: allocate VBO with MaxMax
 				+ Points: doesn't care as it uses vector
 				- SettingsDialog
-					- Next to SimulationQuality, with warning icon
+					- Under "Heat", with warning icon like Simulation Quality
 			= GameParameters:
 				+ ThermalConductivityAdjustment 
 				+ IgnitionTemperatureAdjustment (in SettingsDialog: "Burning Point Adjust")
@@ -1149,9 +1145,10 @@ Render:
 				+ CombustionSpeedAdjustment
 				+ CombustionHeatAdjustment
 				+ Also add all of these to settings dialog, under "Heat" tab
-				- Find good min, max, and default values
+				- Find good min, max, and default values:
+					 - MeltingTemperatureAdjustment
 
-			= Flame render:
+			+ Flame render:
 				+ Make better transition for bottom
 				+ Skew wind speed with smoothstep
 					+ And reverse wind direction
@@ -1165,10 +1162,8 @@ Render:
 					+ Add FlamePersonalitySeed shader param, straight from ship into vertex buffer
 				+ Make same colors as flamethrower
 				+ Adjust bottom
-				- Try without red border, to better merge multiple flames together
-				- Development: exponential fall should look better than linear
-				- Test perf impact of instanced drawing
-			= Sound:
+				+ Try without red border, to better merge multiple flames together
+			+ Sound:
 				+ Media:
 					+ Burning loop
 					+ Sizzling X 2 or 3
@@ -1177,9 +1172,21 @@ Render:
 					+ Subscribe to OnCombustionSmothered: play one-time sizzling
 			- Interaction with bombs:
 				- Timer, Impact, RC: TODO
+				- TODO: others?
 
 		- Optimizations:
-			- Burning candidates: use priority_queue instead of vector+sort, and avoid pushing when deltaT < Nth
+			- HeatPropagation:
+				- Do perf analysis (invoking it N times per frame to exaggerate)
+				- Try impact of storing outgoing flows @ local array
+				- Try uploading temperature buffer every N steps
+					- Nuke Points::mIsTemperatureBufferDirty
+					- Ship::Render decides how often to call Points::UploadTemperatureXYZ(...)
+			- Low-freq combustion state machine:
+				- Burning candidates: use priority_queue instead of vector+sort, and avoid pushing when deltaT < Nth
+			- Flame rendering:
+				- Do perf analysis to see why so much impact
+				- Test perf impact of instanced drawing
+
 
 		- Cleanup:
 			+ Test generic textures change (gen tex's + air bubbles at same time) and nuke comment

@@ -860,6 +860,33 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     CellBorder);
             }
 
+            // Heat Dissipation Adjustment
+            {
+                mHeatDissipationAdjustmentSlider = new SliderControl(
+                    physicsBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Heat Dissipation Adjust",
+                    "Adjusts the speed with which materials dissipate heat in air and water.",
+                    mGameController->GetHeatDissipationAdjustment(),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameController->GetMinHeatDissipationAdjustment(),
+                        1.0f,
+                        mGameController->GetMaxHeatDissipationAdjustment()));
+
+                physicsSizer->Add(
+                    mHeatDissipationAdjustmentSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
             // Ignition Temperature Adjustment
             {
                 mIgnitionTemperatureAdjustmentSlider = new SliderControl(
@@ -881,7 +908,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
 
                 physicsSizer->Add(
                     mIgnitionTemperatureAdjustmentSlider,
-                    wxGBPosition(0, 1),
+                    wxGBPosition(0, 2),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
@@ -908,7 +935,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
 
                 physicsSizer->Add(
                     mMeltingTemperatureAdjustmentSlider,
-                    wxGBPosition(0, 2),
+                    wxGBPosition(0, 3),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
@@ -935,7 +962,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
 
                 physicsSizer->Add(
                     mCombustionSpeedAdjustmentSlider,
-                    wxGBPosition(0, 3),
+                    wxGBPosition(0, 4),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
@@ -962,7 +989,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
 
                 physicsSizer->Add(
                     mCombustionHeatAdjustmentSlider,
-                    wxGBPosition(0, 4),
+                    wxGBPosition(0, 5),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
@@ -2681,6 +2708,8 @@ void SettingsDialog::ReadSettings()
 
     mThermalConductivityAdjustmentSlider->SetValue(mGameController->GetThermalConductivityAdjustment());
 
+    mHeatDissipationAdjustmentSlider->SetValue(mGameController->GetHeatDissipationAdjustment());
+
     mIgnitionTemperatureAdjustmentSlider->SetValue(mGameController->GetIgnitionTemperatureAdjustment());
 
     mMeltingTemperatureAdjustmentSlider->SetValue(mGameController->GetMeltingTemperatureAdjustment());
@@ -3022,6 +3051,9 @@ void SettingsDialog::ApplySettings()
 
     mGameController->SetThermalConductivityAdjustment(
         mThermalConductivityAdjustmentSlider->GetValue());
+
+    mGameController->SetHeatDissipationAdjustment(
+        mHeatDissipationAdjustmentSlider->GetValue());
 
     mGameController->SetIgnitionTemperatureAdjustment(
         mIgnitionTemperatureAdjustmentSlider->GetValue());

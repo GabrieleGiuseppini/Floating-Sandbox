@@ -33,7 +33,7 @@ static constexpr int UpdateSinkingPeriodStep = 5;
 static constexpr int CombustionStateMachineSlowPeriodStep1 = 11;
 static constexpr int RotPointsPeriodStep = 17;
 static constexpr int CombustionStateMachineSlowPeriodStep2 = 23;
-static constexpr int PropagateHeatPeriodStep = 29;
+static constexpr int SpringDecayAndTemperaturePeriodStep = 29;
 static constexpr int CombustionStateMachineSlowPeriodStep3 = 35;
 static constexpr int DecaySpringsPeriodStep = 41;
 static constexpr int CombustionStateMachineSlowPeriodStep4 = 47;
@@ -1411,16 +1411,10 @@ void Ship::UpdateHeatDynamics(
     // Propagate heat
     //
 
-    // TODOTEST
-    //if (mCurrentSimulationSequenceNumber.IsStepOf(PropagateHeatPeriodStep - 1, LowFrequencyPeriod))
-    {
-        PropagateHeat(
-            currentSimulationTime,
-            // TODOTEST
-            //GameParameters::SimulationStepTimeDuration<float> * static_cast<float>(LowFrequencyPeriod),
-            GameParameters::SimulationStepTimeDuration<float>,
-            gameParameters);
-    }
+    PropagateHeat(
+        currentSimulationTime,
+        GameParameters::SimulationStepTimeDuration<float>,
+        gameParameters);
 
     //
     // Update slow combustion state machine
@@ -1517,7 +1511,7 @@ void Ship::PropagateHeat(
         {
             auto const & cs = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings[s];
 
-            // Calculate outgoing heat flow
+            // Calculate outgoing heat flow per unit of time
             //
             // q = Ki * (Tp - Tpi)
             float const outgoingHeatFlow =
@@ -1564,7 +1558,7 @@ void Ship::PropagateHeat(
         {
             auto const & cs = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings[s];
 
-            // Calculate outgoing heat flow (again)
+            // Calculate outgoing heat flow per unit of time (again)
             float const outgoingHeatFlow =
                 mSprings.GetMaterialThermalConductivity(cs.SpringIndex) * gameParameters.ThermalConductivityAdjustment
                 * std::max(pointTemperature - oldPointTemperatureBufferData[cs.OtherEndpointIndex], 0.0f); // DeltaT, positive if going out
@@ -1588,7 +1582,41 @@ void Ship::PropagateHeat(
     // Dissipate heat
     //
 
-    // TODO
+    float const effectiveWaterConvectiveHeatTransferCoefficient =
+        GameParameters::WaterConvectiveHeatTransferCoefficient
+        * dt
+        * gameParameters.HeatDissipationAdjustment;
+
+    float const effectiveAirConvectiveHeatTransferCoefficient =
+        GameParameters::AirConvectiveHeatTransferCoefficient
+        * dt
+        * gameParameters.HeatDissipationAdjustment;
+
+    for (auto pointIndex : mPoints.NonEphemeralPoints())
+    {
+        // Heat lost in this time quantum (positive when outgoing)
+        float heatLost;
+        if (mParentWorld.IsUnderwater(mPoints.GetPosition(pointIndex))
+            || mPoints.GetWater(pointIndex) > GameParameters::SmotheringWaterHighWatermark)
+        {
+            // Dissipation in water
+            heatLost =
+                effectiveWaterConvectiveHeatTransferCoefficient
+                * (newPointTemperatureBufferData[pointIndex] - GameParameters::WaterTemperature);
+        }
+        else
+        {
+            // Dissipation in air
+            heatLost =
+                effectiveAirConvectiveHeatTransferCoefficient
+                * (newPointTemperatureBufferData[pointIndex] - GameParameters::AirTemperature);
+        }
+
+        // Remove this heat from the point
+        newPointTemperatureBufferData[pointIndex] -=
+            heatLost
+            / mPoints.GetMaterialHeatCapacity(pointIndex);
+    }
 
 
     //

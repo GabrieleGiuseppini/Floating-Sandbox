@@ -100,6 +100,7 @@ private:
 
     // Heat and Combustion
     SliderControl * mThermalConductivityAdjustmentSlider;
+    SliderControl * mHeatDissipationAdjustmentSlider;
     SliderControl * mIgnitionTemperatureAdjustmentSlider;
     SliderControl * mMeltingTemperatureAdjustmentSlider;
     SliderControl * mCombustionSpeedAdjustmentSlider;

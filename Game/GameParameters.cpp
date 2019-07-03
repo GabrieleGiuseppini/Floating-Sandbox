@@ -36,6 +36,7 @@ GameParameters::GameParameters()
     , RogueWaveRate(2.0f)
     // Heat
     , ThermalConductivityAdjustment(1.0f)
+    , HeatDissipationAdjustment(1.0f)
     , IgnitionTemperatureAdjustment(1.0f)
     , MeltingTemperatureAdjustment(1.0f)
     , CombustionSpeedAdjustment(1.0f)

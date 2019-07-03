@@ -204,6 +204,11 @@ struct IGameController
     virtual float GetMinThermalConductivityAdjustment() const = 0;
     virtual float GetMaxThermalConductivityAdjustment() const = 0;
 
+    virtual float GetHeatDissipationAdjustment() const = 0;
+    virtual void SetHeatDissipationAdjustment(float value) = 0;
+    virtual float GetMinHeatDissipationAdjustment() const = 0;
+    virtual float GetMaxHeatDissipationAdjustment() const = 0;
+
     virtual float GetIgnitionTemperatureAdjustment() const = 0;
     virtual void SetIgnitionTemperatureAdjustment(float value) = 0;
     virtual float GetMinIgnitionTemperatureAdjustment() const = 0;

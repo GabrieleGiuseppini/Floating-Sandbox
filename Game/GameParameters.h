@@ -52,15 +52,17 @@ struct GameParameters
     // Gravity
     static constexpr vec2f Gravity = vec2f(0.0f, -9.80f);
     static constexpr vec2f GravityNormalized = vec2f(0.0f, -1.0f);
-    static float constexpr GravityMagnitude = 9.80f;
+    static float constexpr GravityMagnitude = 9.80f; // m/s
 
     // Air
     static float constexpr AirMass = 1.2754f; // Kg
     static float constexpr AirTemperature = 298.15f; // Kelvin
+    static float constexpr AirConvectiveHeatTransferCoefficient = 10.45f; // J/(s*m2*K)
 
     // Water
     static float constexpr WaterMass = 1000.0f; // Kg
     static float constexpr WaterTemperature = 285.15f; // Kelvin
+    static float constexpr WaterConvectiveHeatTransferCoefficient = 2000.0f; // J/(s*m2*K)
 
 
 
@@ -227,6 +229,10 @@ struct GameParameters
     float ThermalConductivityAdjustment;
     static float constexpr MinThermalConductivityAdjustment = 0.1f;
     static float constexpr MaxThermalConductivityAdjustment = 100.0f;
+
+    float HeatDissipationAdjustment;
+    static float constexpr MinHeatDissipationAdjustment = 0.01f;
+    static float constexpr MaxHeatDissipationAdjustment = 100.0f;
 
     float IgnitionTemperatureAdjustment;
     static float constexpr MinIgnitionTemperatureAdjustment = 0.1f;
