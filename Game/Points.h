@@ -96,10 +96,12 @@ private:
 
         enum class StateType
         {
+            NotBurning,
+            Developing_1,
+            Developing_2,
             Burning,
             Extinguishing_Consumed,
-            Extinguishing_Smothered,
-            NotBurning
+            Extinguishing_Smothered
         };
 
     public:
@@ -561,6 +563,8 @@ public:
     void UpdateGameParameters(GameParameters const & gameParameters);
 
     void UpdateCombustionLowFrequency(
+        ElementIndex pointOffset,
+        ElementIndex pointStride,
         float currentSimulationTime,
         float dt,
         GameParameters const & gameParameters);

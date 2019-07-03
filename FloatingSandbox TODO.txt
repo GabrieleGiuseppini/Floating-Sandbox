@@ -1090,26 +1090,29 @@ Render:
 								- Ship::Render decides how often to call Points::UploadTemperatureXYZ(...)
 						= At another slot: call Points::UpdateCombustionStateMachineLowFrequency(...)
 							= For each point:
-								+ If it's not combusting:
-									+ Check combustion transition
+								= If it's not combusting:
+									= Check combustion transition
 										+ Notify
+										- Choose random max development
+										- TODO: upload flames in inverse order
 								= Else (it's combusting):
 									+ Check exhaustion transition
 										+ Notify (boolean for water-caused)											
 									= Do decay: burn rate (i.e. decay speed) ~= structural mass (the lower the mass, the faster decays)
-										= FIX: Min decay does not change much
+										- Test default, min, and max
 									+ No temperature and no raise and lower flames, done below at Points::UpdateCombustingPoints()
 								+ Water (both underwater and flood) should apply regardless of state
-								= Do phased ignitions (N at a time)
-									- Run low-frequency state machine M times for 1/Mth of the points each time
-									= At each step: choose top N ignitions over all candidates, sorted
+								+ Do phased ignitions (N at a time)
+									+ Run low-frequency state machine M times for 1/Mth of the points each time
+									+ Choose number of promoted randomly = N
+										+ Find right N: depends on M
+									+ At each step: choose top N ignitions over all candidates, sorted
 									  by temperature over ignition temperature
-										- Find right N: depends on M
 						= At all steps: call Points::UpdateCombustionStateMachineHighFrequency(heap)
 							= Points uses heap (with burning points) and evolves the "burning"
 							  state machine
 								= Raise flames up and down
-									- Try non-linear extinguishing
+									= Redo 3 curves, see paper
 								+ Heat to self and neighbors
 									+ Do code changes
 									+ Do flag to turn off flame rendering
@@ -1172,6 +1175,9 @@ Render:
 			- Interaction with bombs:
 				- Timer, Impact, RC: TODO
 
+		- Optimizations:
+			- Burning candidates: use priority_queue instead of vector+sort, and avoid pushing when deltaT < Nth
+
 		- Cleanup:
 			+ Test generic textures change (gen tex's + air bubbles at same time) and nuke comment
 			+ Test cross of light change
@@ -1185,7 +1191,7 @@ Render:
 			- New materials:
 				- "gunpowder" and "diesel"
 			
-		= Flamethrower tool:
+		+ Flamethrower tool:
 			+ RenderContext exposes UploadFlameThrower(worldPos)
 			+ GameController stores worldPos at ApplyFlameThrower(screenPos) and later, at Render, invokes RenderContext::UploadFlameThrower()
 			+ Cursor
@@ -1195,7 +1201,7 @@ Render:
 				+ Engages (and starts sound) only if GameController::ApplyFlameThrower(screenPos) returns true (i.e. point found in radius)
 			+ Fix radius & size (smaller radius for catching points, same render size)
 			+ Radius setting
-			= Apply heat (& Ultra-Violent mode)
+			+ Apply heat (& Ultra-Violent mode)
 
 	- Storms
 		- Another physics component
