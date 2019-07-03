@@ -213,6 +213,15 @@ struct GameParameters
 
     // Heat and combustion
 
+    static float constexpr IgnitionTemperatureHighWatermark = 20.0f;
+    static float constexpr IgnitionTemperatureLowWatermark = -20.0f;
+
+    static float constexpr SmotheringWaterLowWatermark = 0.05f;
+    static float constexpr SmotheringWaterHighWatermark = 0.1f;
+
+    static float constexpr SmotheringDecayLowWatermark = 0.004f;
+    static float constexpr SmotheringDecayHighWatermark = 0.05f;
+
     static size_t constexpr MaxBurningParticles = 100;
 
     float ThermalConductivityAdjustment;

@@ -1081,24 +1081,24 @@ Render:
 							= Propagation and dissipation
 								+ New global constants: AirTemperature, WaterTemperature
 								+ Use specific dt's calc's as constexpr's in UpdateTemperature based off frequency of steps
-								- Dissipation: use air or water temp
+								- Dissipation: use air or water temp, depending on whether it's above water or below
 							- See if may be called at every step
 								- Do profiling (invoking it N times per frame to exaggerate)
 								- Try impact of storing outgoing flows @ local array
 							- If called at every step, consider uploading temperature buffer every N steps
 								- Nuke Points::mIsTemperatureBufferDirty
 								- Ship::Render decides how often to call Points::UploadTemperatureXYZ(...)
-						= At another slot: call Points::UpdateCombustionStateMachineLowFrequency(...)
-							= For each point:
+						+ At another slot: call Points::UpdateCombustionStateMachineLowFrequency(...)
+							+ For each point:
 								+ If it's not combusting:
 									+ Check combustion transition
 										+ Notify
 										+ Choose random max development
-								= Else (it's combusting):
+								+ Else (it's combusting):
 									+ Check exhaustion transition
 										+ Notify (boolean for water-caused)											
-									= Do decay: burn rate (i.e. decay speed) ~= structural mass (the lower the mass, the faster decays)
-										- Test default, min, and max
+									+ Do decay: burn rate (i.e. decay speed) ~= structural mass (the lower the mass, the faster decays)
+										+ Verify default, min, and max
 									+ No temperature and no raise and lower flames, done below at Points::UpdateCombustingPoints()
 								+ Water (both underwater and flood) should apply regardless of state
 								+ Do phased ignitions (N at a time)
@@ -1107,11 +1107,11 @@ Render:
 										+ Find right N: depends on M
 									+ At each step: choose top N ignitions over all candidates, sorted
 									  by temperature over ignition temperature
-						= At all steps: call Points::UpdateCombustionStateMachineHighFrequency(heap)
-							= Points uses heap (with burning points) and evolves the "burning"
+						+ At all steps: call Points::UpdateCombustionStateMachineHighFrequency(heap)
+							+ Points uses heap (with burning points) and evolves the "burning"
 							  state machine
-								= Raise flames up and down
-									= Redo 3 curves, see paper
+								+ Raise flames up and down
+									+ Redo 3 curves, see paper
 								+ Heat to self and neighbors
 									+ Do code changes
 									+ Do flag to turn off flame rendering
@@ -1124,6 +1124,7 @@ Render:
 
 			- Electrical update: inject heat from working lamps and generators
 				- New material property - ~"HeatProduced"
+
 			+ Flamethrower physics:
 				+ Ship::Interaction:
 					+ GameParameters::FlameThrowerHeat
@@ -1132,6 +1133,7 @@ Render:
 					+ Convert into DeltaT and inject in radius, smoothing radius
 				+ Radius at SettingsDialog, under "Flamethrower" in "Heat"
 				+ Fix default value of heat <-> slider
+
 			- GameParameters: make max burning points adjustable
 				- All sub-systems need to allow for > max burning particles, because when the user changes the value down,
 				  the excess ones will need some time to disappear
@@ -1147,6 +1149,7 @@ Render:
 				+ CombustionHeatAdjustment
 				+ Also add all of these to settings dialog, under "Heat" tab
 				- Find good min, max, and default values
+
 			= Flame render:
 				+ Make better transition for bottom
 				+ Skew wind speed with smoothstep

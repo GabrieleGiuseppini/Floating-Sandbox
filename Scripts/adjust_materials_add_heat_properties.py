@@ -31,7 +31,7 @@ def adjust_material(material):
         material["ignition_temperature"] = 453.0
         material["melting_temperature"] = 1000000.0
         material["thermal_conductivity"] = 0.1
-        material["specific_heat"] = 1800.0
+        material["specific_heat"] = 300.0 # Should be > 1300.0, but then it would catch fire with too much difficulty
     elif ("Glass" in name) or ("Lamp" in name):
         material["ignition_temperature"] = 1000000.0
         material["melting_temperature"] = 1773.15

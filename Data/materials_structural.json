@@ -612,7 +612,7 @@
         "name": "Wooden Hull", 
         "render_color": "#905020", 
         "sound_type": "Wood", 
-        "specific_heat": 1800.0, 
+        "specific_heat": 300.0, 
         "stiffness": 1.0, 
         "strength": 0.2, 
         "template": {
@@ -637,7 +637,7 @@
         "name": "Wood", 
         "render_color": "#E0D8C0", 
         "sound_type": "Wood", 
-        "specific_heat": 1800.0, 
+        "specific_heat": 300.0, 
         "stiffness": 1.0, 
         "strength": 0.15, 
         "template": {
@@ -1170,7 +1170,7 @@
         "name": "Wood Hull Red", 
         "render_color": "#9E2E0C", 
         "sound_type": "Wood", 
-        "specific_heat": 1800.0, 
+        "specific_heat": 300.0, 
         "stiffness": 1.0, 
         "strength": 0.2, 
         "template": {
@@ -1195,7 +1195,7 @@
         "name": "Wood Red", 
         "render_color": "#B51B1B", 
         "sound_type": "Wood", 
-        "specific_heat": 1800.0, 
+        "specific_heat": 300.0, 
         "stiffness": 1.0, 
         "strength": 0.15, 
         "template": {
@@ -1420,7 +1420,7 @@
         "name": "Wood Hull Yellow", 
         "render_color": "#998B0A", 
         "sound_type": "Wood", 
-        "specific_heat": 1800.0, 
+        "specific_heat": 300.0, 
         "stiffness": 1.0, 
         "strength": 0.2, 
         "template": {
@@ -1445,7 +1445,7 @@
         "name": "Wood Yellow", 
         "render_color": "#AF7C18", 
         "sound_type": "Wood", 
-        "specific_heat": 1800.0, 
+        "specific_heat": 300.0, 
         "stiffness": 1.0, 
         "strength": 0.15, 
         "template": {
@@ -1620,7 +1620,7 @@
         "name": "Wood Hull Green", 
         "render_color": "#439206", 
         "sound_type": "Wood", 
-        "specific_heat": 1800.0, 
+        "specific_heat": 300.0, 
         "stiffness": 1.0, 
         "strength": 0.2, 
         "template": {
@@ -1645,7 +1645,7 @@
         "name": "Wood Green", 
         "render_color": "#78A814", 
         "sound_type": "Wood", 
-        "specific_heat": 1800.0, 
+        "specific_heat": 300.0, 
         "stiffness": 1.0, 
         "strength": 0.15, 
         "template": {
@@ -1820,7 +1820,7 @@
         "name": "Wood Hull Blue", 
         "render_color": "#036E8C", 
         "sound_type": "Wood", 
-        "specific_heat": 1800.0, 
+        "specific_heat": 300.0, 
         "stiffness": 1.0, 
         "strength": 0.2, 
         "template": {
@@ -1845,7 +1845,7 @@
         "name": "Wood Blue", 
         "render_color": "#10A19D", 
         "sound_type": "Wood", 
-        "specific_heat": 1800.0, 
+        "specific_heat": 300.0, 
         "stiffness": 1.0, 
         "strength": 0.15, 
         "template": {
@@ -2020,7 +2020,7 @@
         "name": "Wood Hull Blue2", 
         "render_color": "#1E3070", 
         "sound_type": "Wood", 
-        "specific_heat": 1800.0, 
+        "specific_heat": 300.0, 
         "stiffness": 1.0, 
         "strength": 0.2, 
         "template": {
@@ -2045,7 +2045,7 @@
         "name": "Wood Blue2", 
         "render_color": "#325989", 
         "sound_type": "Wood", 
-        "specific_heat": 1800.0, 
+        "specific_heat": 300.0, 
         "stiffness": 1.0, 
         "strength": 0.15, 
         "template": {
@@ -2220,7 +2220,7 @@
         "name": "Wood Hull Pink", 
         "render_color": "#A30085", 
         "sound_type": "Wood", 
-        "specific_heat": 1800.0, 
+        "specific_heat": 300.0, 
         "stiffness": 1.0, 
         "strength": 0.2, 
         "template": {
@@ -2245,7 +2245,7 @@
         "name": "Wood Pink", 
         "render_color": "#9B00AF", 
         "sound_type": "Wood", 
-        "specific_heat": 1800.0, 
+        "specific_heat": 300.0, 
         "stiffness": 1.0, 
         "strength": 0.15, 
         "template": {
@@ -2420,7 +2420,7 @@
         "name": "Wood Hull Orange", 
         "render_color": "#CE8100", 
         "sound_type": "Wood", 
-        "specific_heat": 1800.0, 
+        "specific_heat": 300.0, 
         "stiffness": 1.0, 
         "strength": 0.2, 
         "template": {
@@ -2445,7 +2445,7 @@
         "name": "Wood Orange", 
         "render_color": "#DE4000", 
         "sound_type": "Wood", 
-        "specific_heat": 1800.0, 
+        "specific_heat": 300.0, 
         "stiffness": 1.0, 
         "strength": 0.15, 
         "template": {
@@ -2772,7 +2772,7 @@
         "name": "Wood Hull Stiff", 
         "render_color": "#777777", 
         "sound_type": "Wood", 
-        "specific_heat": 1800.0, 
+        "specific_heat": 300.0, 
         "stiffness": 2.0, 
         "strength": 0.2, 
         "template": {
@@ -2797,7 +2797,7 @@
         "name": "Wood Stiff", 
         "render_color": "#888888", 
         "sound_type": "Wood", 
-        "specific_heat": 1800.0, 
+        "specific_heat": 300.0, 
         "stiffness": 2.4, 
         "strength": 0.15, 
         "template": {
@@ -2897,7 +2897,7 @@
         "name": "Double-Bottom Wood Red", 
         "render_color": "#9B3012", 
         "sound_type": "Wood", 
-        "specific_heat": 1800.0, 
+        "specific_heat": 300.0, 
         "stiffness": 1.0, 
         "strength": 0.5, 
         "template": {
