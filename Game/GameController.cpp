@@ -116,7 +116,7 @@ GameController::GameController(
         {
             this->mGameParameters.SpringStiffnessAdjustment = value;
         },
-            ParameterSmoothingTrajectoryTime);
+        ParameterSmoothingTrajectoryTime);
 
     assert(mParameterSmoothers.size() == SpringStrengthAdjustmentParameterSmoother);
     mParameterSmoothers.emplace_back(
@@ -128,7 +128,7 @@ GameController::GameController(
         {
             this->mGameParameters.SpringStrengthAdjustment = value;
         },
-            ParameterSmoothingTrajectoryTime);
+        ParameterSmoothingTrajectoryTime);
 
     assert(mParameterSmoothers.size() == SeaDepthParameterSmoother);
     mParameterSmoothers.emplace_back(
@@ -140,7 +140,7 @@ GameController::GameController(
         {
             this->mGameParameters.SeaDepth = value;
         },
-            ParameterSmoothingTrajectoryTime);
+        ParameterSmoothingTrajectoryTime);
 
     assert(mParameterSmoothers.size() == OceanFloorBumpinessParameterSmoother);
     mParameterSmoothers.emplace_back(
@@ -152,7 +152,7 @@ GameController::GameController(
         {
             this->mGameParameters.OceanFloorBumpiness = value;
         },
-            ParameterSmoothingTrajectoryTime);
+        ParameterSmoothingTrajectoryTime);
 
     assert(mParameterSmoothers.size() == OceanFloorDetailAmplificationParameterSmoother);
     mParameterSmoothers.emplace_back(
@@ -164,7 +164,19 @@ GameController::GameController(
         {
             this->mGameParameters.OceanFloorDetailAmplification = value;
         },
-            ParameterSmoothingTrajectoryTime);
+        ParameterSmoothingTrajectoryTime);
+
+    assert(mParameterSmoothers.size() == FlameSizeAdjustmentParameterSmoother);
+    mParameterSmoothers.emplace_back(
+        [this]()
+        {
+            return this->mRenderContext->GetShipFlameSizeAdjustment();
+        },
+        [this](float value)
+        {
+            this->mRenderContext->SetShipFlameSizeAdjustment(value);
+        },
+        ParameterSmoothingTrajectoryTime);
 }
 
 ShipMetadata GameController::ResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath)

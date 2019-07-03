@@ -517,6 +517,7 @@ Render:
 
 
 - Suggestions to spec:
+	- You should add ground burying and for the ships and debris.
 	- Make lights not propagate through hull
 	- Sun rays
 	- Moving furniture
@@ -983,17 +984,17 @@ Render:
 		- Do first a pass to recalc coefficients, once per simulation step
 
 	= Heat and Combustion (*)
-		- Spec:
-			- Integration of Decay with Combustion:
-				- Combustion also is a source of decay
-				- Springs should get weak based off decay, independently from source
-				- It is really 3 distinct processes:
+		+ Spec:
+			+ Integration of Decay with Combustion:
+				+ Combustion also is a source of decay
+				+ Springs should get weak based off decay, independently from source
+				+ It is really 3 distinct processes:
 					+ 1a: Point rotting:
 						+ Low-frequency
 						+ water + isLeaking => decay
-					- 1b: Point combustion:
-						- Any frequency (combustion state machine update frequency)
-						- combustion y/n => decay
+					+ 1b: Point combustion:
+						+ Any frequency (combustion state machine update frequency)
+						+ combustion y/n => decay
 					+ 2: Spring decay
 						+ Low-frequency
 						+ p.decay => s.strength

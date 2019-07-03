@@ -17,8 +17,8 @@
 namespace Render {
 
 // Base dimensions of flame quads
-static float constexpr BasisHalfFlameQuadWidth = 9.5f;
-static float constexpr BasisFlameQuadHeight = 7.5f;
+static float constexpr BasisHalfFlameQuadWidth = 9.5f * 2.0f;
+static float constexpr BasisFlameQuadHeight = 7.5f * 2.0f;
 
 
 ShipRenderContext::ShipRenderContext(

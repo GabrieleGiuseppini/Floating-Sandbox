@@ -90,7 +90,7 @@ RenderContext::RenderContext(
     , mVectorFieldRenderMode(VectorFieldRenderMode::None)
     , mVectorFieldLengthMultiplier(1.0f)
     , mShowStressedSprings(false)
-    , mDrawHeatOverlay(true) // TODO: for debugging
+    , mDrawHeatOverlay(false)
     , mHeatOverlayTransparency(0.1875f)
     , mShipFlameRenderMode(ShipFlameRenderMode::Mode1)
     , mShipFlameSizeAdjustment(1.0f)

@@ -462,8 +462,8 @@ public:
     ShipFlameRenderMode GetShipFlameRenderMode() const override { return mRenderContext->GetShipFlameRenderMode(); }
     void SetShipFlameRenderMode(ShipFlameRenderMode shipFlameRenderMode) override { mRenderContext->SetShipFlameRenderMode(shipFlameRenderMode); }
 
-    float GetShipFlameSizeAdjustment() const override { return mRenderContext->GetShipFlameSizeAdjustment(); }
-    void SetShipFlameSizeAdjustment(float value) override { mRenderContext->SetShipFlameSizeAdjustment(value); }
+    float GetShipFlameSizeAdjustment() const override { return mParameterSmoothers[FlameSizeAdjustmentParameterSmoother].GetValue(); }
+    void SetShipFlameSizeAdjustment(float value) override { mParameterSmoothers[FlameSizeAdjustmentParameterSmoother].SetValue(value); }
     float GetMinShipFlameSizeAdjustment() const override { return Render::RenderContext::MinShipFlameSizeAdjustment; }
     float GetMaxShipFlameSizeAdjustment() const override { return Render::RenderContext::MaxShipFlameSizeAdjustment; }
 
@@ -693,6 +693,7 @@ private:
     static constexpr size_t SeaDepthParameterSmoother = 2;
     static constexpr size_t OceanFloorBumpinessParameterSmoother = 3;
     static constexpr size_t OceanFloorDetailAmplificationParameterSmoother = 4;
+    static constexpr size_t FlameSizeAdjustmentParameterSmoother = 5;
 
     std::vector<ParameterSmoother> mParameterSmoothers;
 
