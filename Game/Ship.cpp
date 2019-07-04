@@ -135,12 +135,22 @@ void Ship::Update(
     // Process eventual parameter changes
     //
 
-    mPoints.UpdateGameParameters(
+    mPoints.UpdateForGameParameters(
         gameParameters);
 
-    mSprings.UpdateGameParameters(
-        gameParameters,
-        mPoints);
+    if (mCurrentSimulationSequenceNumber.IsStepOf(SpringDecayAndTemperaturePeriodStep, LowFrequencyPeriod))
+    {
+        mSprings.UpdateForDecayAndTemperatureAndGameParameters(
+            gameParameters,
+            mPoints);
+    }
+    else
+    {
+        // Just plain parameter check
+        mSprings.UpdateForGameParameters(
+            gameParameters,
+            mPoints);
+    }
 
     mWindSpeedMagnitudeToRender = mParentWorld.GetCurrentWindSpeed().x;
 

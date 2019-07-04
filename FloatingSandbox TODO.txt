@@ -938,6 +938,8 @@ Render:
 
 - Dynamics:
 
+	- Repair tool: see if can repair electrics
+
 	- Improve "friction" of sea floor: things don't slide down easily; may be add a slider
 
 	- Randomize decay
@@ -1071,13 +1073,22 @@ Render:
 					- @Beginning: either call Springs::UpdateParameters(params, points) or call 
 					  Springs::UpdateDecayAndTemperatureAndParameters(params, points), depending on simulation step
 						- Springs::UpdateParameters(params, points): iff params updated:
-							- (Params, P.Temperature, P.Mass) -> CurrentStiffnessCoefficient, CurrentDampingCoefficient
+							- (Params, P.Temperature, P.Mass) -> StiffnessCoefficient
+							- (Params, P.Mass) -> DampingCoefficient
 						- Springs::UpdateDecayAndTemperatureAndParameters(params, points):
-							- (Params, P.Temperature, P.Mass) -> CurrentStiffnessCoefficient, CurrentDampingCoefficient
-							- (P.Decay, P.Temperature) -> S.CurrentStrength
-								- Add "StructuralStrength", and use "CurrentStrength" for strain
+							- Assumption: Decay and Temperature have changed (Parameters not necessarily)
+							- (Params, P.Temperature, P.Mass) -> StiffnessCoefficient
+							- (Params, P.Mass) -> DampingCoefficient
+							- (P.Decay, P.Temperature) -> S.Strength
+								- Add "MaterialStrength", and use "Strength" for strain
+									- Check for all current uses of Strength and replace with MaterialStrength
+								- Since we're touching this: factor in Strength the other things that we calculate at 
+								  UpdateStrains, namely:
+									- StrengthAdjustment, NumMechanicalDynamicsIterationsAdjustment
+									- RestLength
 						- Nuke Ship::DecaySprings and, with it, Springs::Set(Current)Strength
 						- Cleanup low-frequency schedule now that DecaySprings is gone
+							- Change frequency altogether to 7*6
 					= Later on: Ship::UpdateHeatDynamics:
 						= At one slot: call Ship::PropagateHeat()
 							= Propagation and dissipation
@@ -1249,10 +1260,11 @@ Render:
 		- WATCH OUT: might be ugly with peaks (very vertical slope)
 			- Increase resolution of ocean floor - shouldn't impact perf other than for cache misses
 		- @ Ocean floor collision:
-			- Upon (non-opphaned) point entering floor:
-				- Points goes back by displacement * FloorHardness
+			- Upon (non-orphaned) point entering floor:
+				- Point goes back by displacement * FloorHardness
 					- displacement is whatever displacement we currently use
-				- Ocean floor's H goes back by displacement * (1 - FloorHardness)
+				- Ocean floor's H goes back (opposite) by displacement * (1 - FloorHardness) * (pointess)
+					- pointness = TBD
 				- Displacement of both might be influenced by point's connected component size
 
 	- Breaking waves (Muller's paper)

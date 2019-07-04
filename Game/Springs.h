@@ -219,7 +219,11 @@ public:
         GameParameters const & gameParameters,
         Points const & points);
 
-    void UpdateGameParameters(
+    void UpdateForGameParameters(
+        GameParameters const & gameParameters,
+        Points const & points);
+
+    void UpdateForDecayAndTemperatureAndGameParameters(
         GameParameters const & gameParameters,
         Points const & points);
 

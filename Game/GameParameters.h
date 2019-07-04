@@ -62,7 +62,7 @@ struct GameParameters
     // Water
     static float constexpr WaterMass = 1000.0f; // Kg
     static float constexpr WaterTemperature = 285.15f; // Kelvin
-    static float constexpr WaterConvectiveHeatTransferCoefficient = 2000.0f; // J/(s*m2*K)
+    static float constexpr WaterConvectiveHeatTransferCoefficient = 2500.0f; // J/(s*m2*K) - arbitrary, high
 
 
 

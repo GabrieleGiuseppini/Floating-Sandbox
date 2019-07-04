@@ -321,7 +321,7 @@ void Points::DestroyEphemeralParticle(
     ExpireEphemeralParticle(pointElementIndex);
 }
 
-void Points::UpdateGameParameters(GameParameters const & gameParameters)
+void Points::UpdateForGameParameters(GameParameters const & gameParameters)
 {
     //
     // Check parameter changes

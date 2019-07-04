@@ -161,7 +161,7 @@ void Springs::Restore(
     }
 }
 
-void Springs::UpdateGameParameters(
+void Springs::UpdateForGameParameters(
     GameParameters const & gameParameters,
     Points const & points)
 {
@@ -197,6 +197,14 @@ void Springs::UpdateGameParameters(
         mCurrentSpringStiffnessAdjustment = gameParameters.SpringStiffnessAdjustment;
         mCurrentSpringDampingAdjustment = gameParameters.SpringDampingAdjustment;
     }
+}
+
+void Springs::UpdateForDecayAndTemperatureAndGameParameters(
+    GameParameters const & gameParameters,
+    Points const & points)
+{
+    // TODOHERE
+    UpdateForGameParameters(gameParameters, points);
 }
 
 void Springs::UploadElements(

@@ -562,7 +562,7 @@ public:
         float currentSimulationTime,
         GameParameters const & gameParameters);
 
-    void UpdateGameParameters(GameParameters const & gameParameters);
+    void UpdateForGameParameters(GameParameters const & gameParameters);
 
     void UpdateCombustionLowFrequency(
         ElementIndex pointOffset,

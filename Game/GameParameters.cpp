@@ -42,7 +42,7 @@ GameParameters::GameParameters()
     , CombustionSpeedAdjustment(1.0f)
     , CombustionHeatAdjustment(1.0f)
     , FlameThrowerHeatFlow(900.0f) // 900KJ: 80kg of iron (~=1 particle) get dT=1500 in 60 seconds
-    , FlameThrowerRadius(10.0f)
+    , FlameThrowerRadius(6.0f)
     // Misc
     , SeaDepth(300.0f)
     , OceanFloorBumpiness(1.0f)
