@@ -676,6 +676,12 @@ private:
                     mStartValue
                     + (mTargetValue - mStartValue) * progress;
 
+                // Adjust overshooting
+                if (mStartValue < mTargetValue)
+                    mCurrentValue = std::min(mCurrentValue, mTargetValue);
+                else
+                    mCurrentValue = std::max(mCurrentValue, mTargetValue);
+
                 mSetter(mCurrentValue);
             }
         }

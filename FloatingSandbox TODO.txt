@@ -583,6 +583,22 @@ Render:
 			- No fullscreen mode
 
 - Simulation Optimizations:
+
+	- Ship::Update: cache quantities that are currently re-calculated multiple times
+		- Identify streak of calculations that need a quantity more than once, and during which the quantity never changes
+			- e.g. spring lengths between water update and heat update
+		- Cache quantities in Update loop that comes first or last
+			- Make it clear that the Update function calculates them: TBD
+			- Alternatively, use lambda
+				- Verify with assembly that there's no overhead with empty lambda
+		- Candidates:
+			- Spring length, spring dir
+				- Valid as long as points don't move
+				- Used by: water update, heat update
+			- Underwater depth 
+				- Valid as long as points don't move
+				- Used by: UpdateWaterIntake (for leaking points only), heat dissipation
+	
 	
 	- Retry cache optimization, new strategy:
 		- Points in 2x2 blocks (with any point optional), advancing one column - and then row - at a time
@@ -809,8 +825,6 @@ Render:
 				  - This allows us to call UpdatePointForces only once
 				  - Also need to reset StaticForce buffer before UpdatePointForces, so:
 					- UpdatePointForces becomes CalculateFieldForces and take care of *filling* the buffer, overwriting it
-
-	- Cache sea depth from PointDynamics at first calculation (Points?), using lambda
 
 
 - Gfx optimizations:
@@ -1070,25 +1084,30 @@ Render:
 						+ Figure out right default value
 			= Physics update:
 				= Ship::Update: 
-					- @Beginning: either call Springs::UpdateParameters(params, points) or call 
+					= @Beginning: either call Springs::UpdateParameters(params, points) or call 
 					  Springs::UpdateDecayAndTemperatureAndParameters(params, points), depending on simulation step
 						- Springs::UpdateParameters(params, points): iff params updated:
 							- (Params, P.Temperature, P.Mass) -> StiffnessCoefficient
 							- (Params, P.Mass) -> DampingCoefficient
+							- TODO: also strength, after we include StrengthAdjustment and NumMechanicalDynamicsIterationsAdjustment
 						- Springs::UpdateDecayAndTemperatureAndParameters(params, points):
 							- Assumption: Decay and Temperature have changed (Parameters not necessarily)
 							- (Params, P.Temperature, P.Mass) -> StiffnessCoefficient
 							- (Params, P.Mass) -> DampingCoefficient
-							- (P.Decay, P.Temperature) -> S.Strength
-								- Add "MaterialStrength", and use "Strength" for strain
-									- Check for all current uses of Strength and replace with MaterialStrength
+							- (Params, P.Decay, P.Temperature) -> S.Strength
+								- Params are needed to include StrengthAdjustment and NumMechanicalDynamicsIterationsAdjustment
+								  in "current" strength
+								+ Add "MaterialStrength", and use "Strength" for strain
+									+ Check for all current uses of Strength and replace with MaterialStrength
 								- Since we're touching this: factor in Strength the other things that we calculate at 
 								  UpdateStrains, namely:
 									- StrengthAdjustment, NumMechanicalDynamicsIterationsAdjustment
-									- RestLength
+									- RestLength						
 						- Nuke Ship::DecaySprings and, with it, Springs::Set(Current)Strength
 						- Cleanup low-frequency schedule now that DecaySprings is gone
 							- Change frequency altogether to 7*6
+						- When done, test with stiffness being sticky (never updated to lower because of melting temperature) 
+						  and only strength returning to normal
 					= Later on: Ship::UpdateHeatDynamics:
 						= At one slot: call Ship::PropagateHeat()
 							= Propagation and dissipation
@@ -1159,7 +1178,7 @@ Render:
 				- Find good min, max, and default values:
 					 - MeltingTemperatureAdjustment
 
-			+ Flame render:
+			- Flame render:
 				+ Make better transition for bottom
 				+ Skew wind speed with smoothstep
 					+ And reverse wind direction
@@ -1174,6 +1193,10 @@ Render:
 				+ Make same colors as flamethrower
 				+ Adjust bottom
 				+ Try without red border, to better merge multiple flames together
+				- Try dual-phase rendering: border only first, body only then
+				- Make better personality (less locality-aware, more randomized)
+				- Try more transparency on the borders
+
 			+ Sound:
 				+ Media:
 					+ Burning loop

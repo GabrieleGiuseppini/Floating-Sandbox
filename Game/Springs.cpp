@@ -272,7 +272,7 @@ bool Springs::UpdateStrains(
     // We need to adjust the strength - i.e. the displacement tolerance or spring breaking point - based
     // on the actual number of mechanics iterations we'll be performing.
     //
-    // After one iteration the spring displacement dL is reduced to:
+    // After one iteration the spring displacement dL = L - L0 is reduced to:
     //  dL * (1-SRF)
     // where SRF is the value of the SpringReductionFraction parameter. After N iterations this would be:
     //  dL * (1-SRF)^N

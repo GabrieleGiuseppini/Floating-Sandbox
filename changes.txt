@@ -6,6 +6,7 @@
 - Improved behavior of tools when the game is paused
 - Tidied up settings window
 - Bug fixes:
+	- Waves might become too tall and disappear
 	- Wavemaker sound does not pause when game is paused
 - ...and a few more small improvements here and there
 

@@ -458,7 +458,7 @@ public:
         OnShipFlameSizeAdjustmentUpdated();
     }
 
-    static constexpr float MinShipFlameSizeAdjustment = 0.5f;
+    static constexpr float MinShipFlameSizeAdjustment = 0.1f;
     static constexpr float MaxShipFlameSizeAdjustment = 20.0f;
 
 
