@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "PrecalculatedFunction.h"
 
+#include <cmath>
+
 PrecalculatedFunction<512> const PrecalcLoFreqSin(
     [](float x)
     {

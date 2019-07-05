@@ -23,13 +23,10 @@ public:
 
 private:
 
-    float const mMinValue;
-    float const mMaxValue;
-    
     float mTickSize;
     int mNumberOfTicks;
 
     float mValueOffset;
-    float mValueAtTickZero; // Net of offset    
+    float mValueAtTickZero; // Net of offset
     float mValueAtTickMax;  // Net of offset
 };

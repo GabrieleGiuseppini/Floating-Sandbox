@@ -10,8 +10,6 @@
 LinearSliderCore::LinearSliderCore(
     float minValue,
     float maxValue)
-    : mMinValue(minValue)
-    , mMaxValue(maxValue)
 {
     //
     // Calculate number of ticks and tick size, i.e. value delta for each tick, as follows:
@@ -20,7 +18,7 @@ LinearSliderCore::LinearSliderCore(
     //
     // With: TickSize = 1/2**n
     //
-    
+
     // Start with an approximate number of ticks
     float n = floorf(logf(100.0f / (maxValue - minValue)) / logf(2.0f));
     mTickSize = 1.0f / powf(2.0f, n);
@@ -36,7 +34,7 @@ LinearSliderCore::LinearSliderCore(
 
     // Store maximum tick value and maximum value (exclusive of offset) at that tick
     float theoreticalMaxValue = mValueOffset + numberOfTicks * mTickSize;
-    assert(theoreticalMaxValue - maxValue < mTickSize);    
+    assert(theoreticalMaxValue - maxValue < mTickSize);
     (void)theoreticalMaxValue;
     mValueAtTickMax = maxValue - mValueOffset;
 }
