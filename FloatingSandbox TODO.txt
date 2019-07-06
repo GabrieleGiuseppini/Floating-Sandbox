@@ -1088,11 +1088,11 @@ Render:
 					  Springs::UpdateDecayAndTemperatureAndParameters(params, points), depending on simulation step
 						+ Springs::UpdateParameters(params, points): 
 							+ iff params updated: UpdateDecayAndTemperatureAndParameters(params, points)
-						- Test:
-							- Stress and break (Titanic)
-							- Mass augmentation
-							- Repair (restore)
-							- Param changes
+						+ Test:
+							+ Stress and break (Titanic)
+							+ Mass augmentation
+							+ Repair (restore)
+							+ Param changes
 						= Springs::UpdateDecayAndTemperatureAndParameters(params, points):
 							+ Assumption: Decay and Temperature have changed (Parameters not necessarily)
 							- (Params, P.Temperature, P.Mass) -> StiffnessCoefficient

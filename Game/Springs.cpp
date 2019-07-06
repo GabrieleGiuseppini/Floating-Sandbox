@@ -163,7 +163,8 @@ void Springs::UpdateForGameParameters(
     if (gameParameters.NumMechanicalDynamicsIterations<float>() != mCurrentNumMechanicalDynamicsIterations
         || gameParameters.NumMechanicalDynamicsIterationsAdjustment != mCurrentNumMechanicalDynamicsIterationsAdjustment
         || gameParameters.SpringStiffnessAdjustment != mCurrentSpringStiffnessAdjustment
-        || gameParameters.SpringDampingAdjustment != mCurrentSpringDampingAdjustment)
+        || gameParameters.SpringDampingAdjustment != mCurrentSpringDampingAdjustment
+        || gameParameters.SpringStrengthAdjustment != mCurrentSpringStrengthAdjustment)
     {
         // Recalc
         UpdateForDecayAndTemperatureAndGameParameters(
@@ -174,6 +175,7 @@ void Springs::UpdateForGameParameters(
         assert(mCurrentNumMechanicalDynamicsIterationsAdjustment == gameParameters.NumMechanicalDynamicsIterationsAdjustment);
         assert(mCurrentSpringStiffnessAdjustment == gameParameters.SpringStiffnessAdjustment);
         assert(mCurrentSpringDampingAdjustment == gameParameters.SpringDampingAdjustment);
+        assert(mCurrentSpringStrengthAdjustment == gameParameters.SpringStrengthAdjustment);
     }
 }
 
@@ -199,6 +201,7 @@ void Springs::UpdateForDecayAndTemperatureAndGameParameters(
     mCurrentNumMechanicalDynamicsIterationsAdjustment = gameParameters.NumMechanicalDynamicsIterationsAdjustment;
     mCurrentSpringStiffnessAdjustment = gameParameters.SpringStiffnessAdjustment;
     mCurrentSpringDampingAdjustment = gameParameters.SpringDampingAdjustment;
+    mCurrentSpringStrengthAdjustment = gameParameters.SpringStrengthAdjustment;
 }
 
 void Springs::UploadElements(
@@ -274,7 +277,7 @@ void Springs::UpdateForStrains(
         if (!mIsDeletedBuffer[s]
             && !mIsBombAttachedBuffer[s])
         {
-            // Calculate strain length (plainly delta length, rest length is already in strength coefficient)
+            // Calculate strain length
             float dx = GetLength(s, points);
             float const strainLength = fabs(mRestLengthBuffer[s] - dx);
 
