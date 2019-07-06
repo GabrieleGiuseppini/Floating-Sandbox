@@ -1109,7 +1109,7 @@ Render:
 						+ Nuke Ship::DecaySprings and, with it, Springs::Set(Current)Strength
 						+ Cleanup low-frequency schedule now that DecaySprings is gone
 							+ Change frequency altogether to 7*6
-						- Verify assembly: hopefully no call to UpdateForDTP(...springIndex...) from UpdateForDTP(all)
+						+ Verify assembly: hopefully no call to UpdateForDTP(...springIndex...) from UpdateForDTP(all)
 						- When done, test with stiffness being sticky (never updated to lower because of melting temperature) 
 						  and only strength returning to normal
 					= Later on: Ship::UpdateHeatDynamics:
@@ -1186,7 +1186,7 @@ Render:
 				- Find good min, max, and default values:
 					 - MeltingTemperatureAdjustment
 
-			- Flame render:
+			= Flame render:
 				+ Make better transition for bottom
 				+ Skew wind speed with smoothstep
 					+ And reverse wind direction
@@ -1203,7 +1203,10 @@ Render:
 				+ Try without red border, to better merge multiple flames together
 				- Try dual-phase rendering: border only first, body only then
 				- Make better personality (less locality-aware, more randomized)
+					- Assign actual random number between zero and one
+					- Change shader to expect value between zero and one
 				- Try more transparency on the borders
+				- See if can fix problem with flames on ropes that swing behind triangles
 
 			+ Sound:
 				+ Media:
@@ -1213,8 +1216,18 @@ Render:
 					+ Subscribe to OnCombustionBegin/End: adjust cumulative volume of Burning sound
 					+ Subscribe to OnCombustionSmothered: play one-time sizzling
 
-			- Experiments:
-				- When state is Burning, try to also decay non-burning neighbors on top of giving them heat
+			- Experiments/Improvements:
+				+ Consider higher default heat from flamethrower tool
+					+ Current (900k) is fine for wood and ropes and cloth
+				+ Fire-generated heat should be 10x in order to spread more
+					+ Or: check if heat should depend on ignition temperature of that point 
+						+ Is it possible that the heat we release now from burning hi-ign-temp points is actually lower than the one
+						  the point has in order to be at that temperature?
+					+ Spreads just fine on wood, ropes, and cloth
+				+ Lower the min decay for extinguishing, so things break easier once burnt
+				- When state is Burning, try to also decay non-burning neighbors on top of decaying self (so to smear burnt color more around)
+					- At low-frequency update
+				- Max flame development depends on number of springs connected to point (so ropes have smaller flames)
 
 		- Optimizations:
 			- HeatPropagation:
@@ -1228,17 +1241,17 @@ Render:
 					- 1: Use priority_queue instead of vector+sort, and avoid pushing when deltaT < Nth
 					- 2: Use sticky priority_queue (leverage temporal coherence of overheated particles)
 			- Flame rendering:
-				- Do perf analysis to see why so much impact
+				- Do perf analysis to see impact
 				- Test perf impact of instanced drawing
+			- Points::UnderwaterDepth buffer: add if it turns out that at each step we need isunderwater at least twice
+				- Re-populated by Ship at first step that checks underwater-ness after mechanical update
+					- i.e. water update?
+				- Used by anything else afterwards, including heat state machine
 
 
 		- Cleanup:
 			+ Test generic textures change (gen tex's + air bubbles at same time) and nuke comment
 			+ Test cross of light change
-			- Points::UnderwaterDepth buffer: add if it turns out that at each step we need isunderwater at least twice
-				- Re-populated by Ship at first step that checks underwater-ness after mechanical update
-					- i.e. water update?
-				- Used by anything else afterwards, including heat state machine
 
 		- Explosive combustion:
 			- Rendering: ?

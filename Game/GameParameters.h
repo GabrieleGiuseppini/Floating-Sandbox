@@ -110,7 +110,7 @@ struct GameParameters
 
     float SpringStrengthAdjustment;
     static float constexpr MinSpringStrengthAdjustment = 0.01f;
-    static float constexpr MaxSpringStrengthAdjustment = 10.0f;
+    static float constexpr MaxSpringStrengthAdjustment = 50.0f;
 
     static float constexpr GlobalDamp = 0.9996f; // // We've shipped 1.7.5 with 0.9997, but splinter springs used to dance for too long
 
@@ -221,7 +221,7 @@ struct GameParameters
     static float constexpr SmotheringWaterLowWatermark = 0.05f;
     static float constexpr SmotheringWaterHighWatermark = 0.1f;
 
-    static float constexpr SmotheringDecayLowWatermark = 0.004f;
+    static float constexpr SmotheringDecayLowWatermark = 0.0005f;
     static float constexpr SmotheringDecayHighWatermark = 0.05f;
 
     static size_t constexpr MaxBurningParticles = 100;

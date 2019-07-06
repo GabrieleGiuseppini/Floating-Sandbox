@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include <algorithm>
 #include <cassert>
 #include <cstdint>
 #include <xmmintrin.h>
@@ -125,12 +126,9 @@ inline float Clamp(
     float lLimit,
     float rLimit)
 {
-    if (x < lLimit)
-        return lLimit;
-    else if (x < rLimit)
-        return x;
-    else
-        return rLimit;
+    assert(lLimit <= rLimit);
+
+    return std::min(std::max(lLimit, x), rLimit);
 }
 
 inline float SmoothStep(
@@ -138,7 +136,7 @@ inline float SmoothStep(
     float rEdge,
     float x)
 {
-    assert(lEdge < rEdge);
+    assert(lEdge <= rEdge);
 
     x = Clamp((x - lEdge) / (rEdge - lEdge), 0.0f, 1.0f);
 

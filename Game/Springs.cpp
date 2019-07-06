@@ -345,7 +345,7 @@ void Springs::UpdateForDecayAndTemperatureAndGameParameters(
     {
         if (!IsDeleted(s))
         {
-            UpdateForDecayAndTemperatureAndGameParameters(
+            inline_UpdateForDecayAndTemperatureAndGameParameters(
                 s,
                 numMechanicalDynamicsIterations,
                 stiffnessAdjustment,
@@ -366,6 +366,25 @@ void Springs::UpdateForDecayAndTemperatureAndGameParameters(
     float strengthIterationsAdjustment,
     Points const & points)
 {
+    inline_UpdateForDecayAndTemperatureAndGameParameters(
+        springIndex,
+        numMechanicalDynamicsIterations,
+        stiffnessAdjustment,
+        dampingAdjustment,
+        strengthAdjustment,
+        strengthIterationsAdjustment,
+        points);
+}
+
+void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
+    ElementIndex springIndex,
+    float numMechanicalDynamicsIterations,
+    float stiffnessAdjustment,
+    float dampingAdjustment,
+    float strengthAdjustment,
+    float strengthIterationsAdjustment,
+    Points const & points)
+{
     auto const endpointAIndex = GetEndpointAIndex(springIndex);
     auto const endpointBIndex = GetEndpointBIndex(springIndex);
 
@@ -374,6 +393,11 @@ void Springs::UpdateForDecayAndTemperatureAndGameParameters(
         / (points.GetAugmentedMaterialMass(endpointAIndex) + points.GetAugmentedMaterialMass(endpointBIndex));
 
     float const dt = GameParameters::SimulationStepTimeDuration<float> / numMechanicalDynamicsIterations;
+
+    float const springTemperature =
+        (points.GetTemperature(endpointAIndex) + points.GetTemperature(endpointBIndex)) / 2.0f;
+
+    float const meltingOverheat = springTemperature - GetMaterialMeltingTemperature(springIndex);
 
     //
     // Stiffness coefficient
@@ -395,17 +419,20 @@ void Springs::UpdateForDecayAndTemperatureAndGameParameters(
     // If the endpoints are melting, their temperature also controls the stiffness - the higher the temperature,
     // above the melting point, the lower the stiffness; this is adjusted via a smoothed multiplier with the following
     // edges:
-    //  T - Tm <= 0.0 :         1.0
-    //  T - Tm >= DeltaTMax :   0.0
+    //  T - Tm <= 0.0 :                 1.0
+    //  T - Tm >= DeltaMeltingTMax :    0.0
     //
 
-    // TODO: melting
+    float constexpr DeltaMeltingTMax = 1000.0f;
+    float const meltingMultiplier = 1.0f - SmoothStep(0.0f, DeltaMeltingTMax, meltingOverheat);
+
     mCoefficientsBuffer[springIndex].StiffnessCoefficient =
         GameParameters::SpringReductionFraction
         * GetMaterialStiffness(springIndex)
         * stiffnessAdjustment
         * massFactor
-        / (dt * dt);
+        / (dt * dt)
+        * meltingMultiplier;
 
 
     //
@@ -425,7 +452,7 @@ void Springs::UpdateForDecayAndTemperatureAndGameParameters(
     //
     // The strength of a spring - i.e. the displacement tolerance or spring breaking point - depends on:
     //  - The material strength and the strength adjustment
-    //  - The endpoints' decay (their average)
+    //  - The spring's decay (which itself is a function of the endpoints' decay)
     //  - If the endpoints are melting, their temperature - so to keep springs intact while melting makes them longer
     //  - The actual number of mechanics iterations we'll be performing
     //

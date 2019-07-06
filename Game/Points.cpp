@@ -367,7 +367,7 @@ void Points::UpdateCombustionLowFrequency(
     //
     // Take care of following:
     // - NotBurning->Developing transition (Ignition)
-    // - Burning->Heat generation, Extinguishing transition
+    // - Burning->Decay, Extinguishing transition
     //
 
     // Prepare candidates for ignition; we'll pick the top N ones

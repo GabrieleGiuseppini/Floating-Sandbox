@@ -624,6 +624,15 @@ private:
         float strengthIterationsAdjustment,
         Points const & points);
 
+    inline void inline_UpdateForDecayAndTemperatureAndGameParameters(
+        ElementIndex springIndex,
+        float numMechanicalDynamicsIterations,
+        float stiffnessAdjustment,
+        float dampingAdjustment,
+        float strengthAdjustment,
+        float strengthIterationsAdjustment,
+        Points const & points);
+
 private:
 
     //////////////////////////////////////////////////////////
