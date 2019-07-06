@@ -446,10 +446,20 @@ void Points::UpdateCombustionLowFrequency(
 
                 // decay(@ step i) = alpha^i
                 // decay(@ step T) = min_decay => alpha^T = min_decay => alpha = min_decay^(1/T)
-                float const alpha = pow(0.01f, 1.0f / totalDecaySteps);
+                float const decayAlpha = pow(0.01f, 1.0f / totalDecaySteps);
 
                 // Decay point
-                mDecayBuffer[pointIndex] *= alpha;
+                mDecayBuffer[pointIndex] *= decayAlpha;
+
+
+                //
+                // 2. Decay neighbors
+                //
+
+                for (auto const s : GetConnectedSprings(pointIndex).ConnectedSprings)
+                {
+                    mDecayBuffer[s.OtherEndpointIndex] *= decayAlpha;
+                }
             }
         }
     }
@@ -661,12 +671,12 @@ void Points::UpdateCombustionHighFrequency(
                 else
                 {
                     //
-                    // f(n-1) - 0.22*f(n-1): when starting from 1, after 15 steps (0.3s) it's under 0.02
-                    // http://www.calcul.com/show/calculator/recursive?values=[{%22n%22:0,%22value%22:1,%22valid%22:true}]&expression=f(n-1)%20-%200.22*f(n-1)&target=0&endTarget=25&range=true
+                    // f(n-1) - 0.3*f(n-1): when starting from 1, after 10 steps (0.2s) it's under 0.02
+                    // http://www.calcul.com/show/calculator/recursive?values=[{%22n%22:0,%22value%22:1,%22valid%22:true}]&expression=f(n-1)%20-%200.3*f(n-1)&target=0&endTarget=25&range=true
                     //
 
                     mCombustionStateBuffer[pointIndex].FlameDevelopment -=
-                        0.22f * mCombustionStateBuffer[pointIndex].FlameDevelopment;
+                        0.3f * mCombustionStateBuffer[pointIndex].FlameDevelopment;
                 }
 
                 // Check whether we are done now

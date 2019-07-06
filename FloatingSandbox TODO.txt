@@ -1225,8 +1225,8 @@ Render:
 						  the point has in order to be at that temperature?
 					+ Spreads just fine on wood, ropes, and cloth
 				+ Lower the min decay for extinguishing, so things break easier once burnt
-				- When state is Burning, try to also decay non-burning neighbors on top of decaying self (so to smear burnt color more around)
-					- At low-frequency update
+				+ When state is Burning, also decay non-burning neighbors on top of decaying self (so to smear burnt color more around)
+					+ At low-frequency update
 				- Max flame development depends on number of springs connected to point (so ropes have smaller flames)
 
 		- Optimizations:
