@@ -18,6 +18,8 @@ void Springs::Add(
     Characteristics characteristics,
     Points const & points)
 {
+    ElementIndex const springIndex = static_cast<ElementIndex>(mIsDeletedBuffer.GetCurrentPopulatedSize());
+
     mIsDeletedBuffer.emplace_back(false);
 
     mEndpointsBuffer.emplace_back(pointAIndex, pointBIndex);
@@ -32,7 +34,9 @@ void Springs::Add(
         (points.GetStructuralMaterial(pointAIndex).Strength + points.GetStructuralMaterial(pointBIndex).Strength)
         / 2.0f;
     mMaterialStrengthBuffer.emplace_back(averageStrength);
-    mStrengthBuffer.emplace_back(averageStrength);
+
+    // Breaking length recalculated later
+    mBreakingLengthBuffer.emplace_back(0.0f);
 
     // Stiffness is average
     float const stiffness =
@@ -42,20 +46,8 @@ void Springs::Add(
 
     mRestLengthBuffer.emplace_back((points.GetPosition(pointAIndex) - points.GetPosition(pointBIndex)).length());
 
-    mCoefficientsBuffer.emplace_back(
-        CalculateStiffnessCoefficient(
-            pointAIndex,
-            pointBIndex,
-            stiffness,
-            mCurrentSpringStiffnessAdjustment,
-            mCurrentNumMechanicalDynamicsIterations,
-            points),
-        CalculateDampingCoefficient(
-            pointAIndex,
-            pointBIndex,
-            mCurrentSpringDampingAdjustment,
-            mCurrentNumMechanicalDynamicsIterations,
-            points));
+    // Coefficients recalculated later
+    mCoefficientsBuffer.emplace_back(0.0f, 0.0f);
 
     mMaterialCharacteristicsBuffer.emplace_back(characteristics);
 
@@ -85,6 +77,16 @@ void Springs::Add(
     mIsStressedBuffer.emplace_back(false);
 
     mIsBombAttachedBuffer.emplace_back(false);
+
+    // Calculate parameters for this spring
+    UpdateForDecayAndTemperatureAndGameParameters(
+        springIndex,
+        mCurrentNumMechanicalDynamicsIterations,
+        mCurrentSpringStiffnessAdjustment,
+        mCurrentSpringDampingAdjustment,
+        mCurrentSpringStrengthAdjustment,
+        CalculateSpringStrengthIterationsAdjustment(mCurrentNumMechanicalDynamicsIterationsAdjustment),
+        points);
 }
 
 void Springs::Destroy(
@@ -135,21 +137,14 @@ void Springs::Restore(
     // Clear the delete flag
     mIsDeletedBuffer[springElementIndex] = false;
 
-    // Recalculate coefficients
-
-    mCoefficientsBuffer[springElementIndex].StiffnessCoefficient = CalculateStiffnessCoefficient(
-        GetEndpointAIndex(springElementIndex),
-        GetEndpointBIndex(springElementIndex),
-        GetMaterialStiffness(springElementIndex),
-        gameParameters.SpringStiffnessAdjustment,
-        gameParameters.NumMechanicalDynamicsIterations<float>(),
-        points);
-
-    mCoefficientsBuffer[springElementIndex].DampingCoefficient = CalculateDampingCoefficient(
-        GetEndpointAIndex(springElementIndex),
-        GetEndpointBIndex(springElementIndex),
-        gameParameters.SpringDampingAdjustment,
-        gameParameters.NumMechanicalDynamicsIterations<float>(),
+    // Recalculate parameters for this spring
+    UpdateForDecayAndTemperatureAndGameParameters(
+        springElementIndex,
+        mCurrentNumMechanicalDynamicsIterations,
+        mCurrentSpringStiffnessAdjustment,
+        mCurrentSpringDampingAdjustment,
+        mCurrentSpringStrengthAdjustment,
+        CalculateSpringStrengthIterationsAdjustment(mCurrentNumMechanicalDynamicsIterationsAdjustment),
         points);
 
     // Invoke restore handler
@@ -165,37 +160,20 @@ void Springs::UpdateForGameParameters(
     GameParameters const & gameParameters,
     Points const & points)
 {
-    float const numMechanicalDynamicsIterations = gameParameters.NumMechanicalDynamicsIterations<float>();
-    if (numMechanicalDynamicsIterations != mCurrentNumMechanicalDynamicsIterations
+    if (gameParameters.NumMechanicalDynamicsIterations<float>() != mCurrentNumMechanicalDynamicsIterations
+        || gameParameters.NumMechanicalDynamicsIterationsAdjustment != mCurrentNumMechanicalDynamicsIterationsAdjustment
         || gameParameters.SpringStiffnessAdjustment != mCurrentSpringStiffnessAdjustment
         || gameParameters.SpringDampingAdjustment != mCurrentSpringDampingAdjustment)
     {
-        // Recalc coefficients
-        for (ElementIndex i : *this)
-        {
-            if (!IsDeleted(i))
-            {
-                mCoefficientsBuffer[i].StiffnessCoefficient = CalculateStiffnessCoefficient(
-                    GetEndpointAIndex(i),
-                    GetEndpointBIndex(i),
-                    GetMaterialStiffness(i),
-                    gameParameters.SpringStiffnessAdjustment,
-                    numMechanicalDynamicsIterations,
-                    points);
+        // Recalc
+        UpdateForDecayAndTemperatureAndGameParameters(
+            gameParameters,
+            points);
 
-                mCoefficientsBuffer[i].DampingCoefficient = CalculateDampingCoefficient(
-                    GetEndpointAIndex(i),
-                    GetEndpointBIndex(i),
-                    gameParameters.SpringDampingAdjustment,
-                    numMechanicalDynamicsIterations,
-                    points);
-            }
-        }
-
-        // Remember the new values
-        mCurrentNumMechanicalDynamicsIterations = numMechanicalDynamicsIterations;
-        mCurrentSpringStiffnessAdjustment = gameParameters.SpringStiffnessAdjustment;
-        mCurrentSpringDampingAdjustment = gameParameters.SpringDampingAdjustment;
+        assert(mCurrentNumMechanicalDynamicsIterations == gameParameters.NumMechanicalDynamicsIterations<float>());
+        assert(mCurrentNumMechanicalDynamicsIterationsAdjustment == gameParameters.NumMechanicalDynamicsIterationsAdjustment);
+        assert(mCurrentSpringStiffnessAdjustment == gameParameters.SpringStiffnessAdjustment);
+        assert(mCurrentSpringDampingAdjustment == gameParameters.SpringDampingAdjustment);
     }
 }
 
@@ -203,8 +181,24 @@ void Springs::UpdateForDecayAndTemperatureAndGameParameters(
     GameParameters const & gameParameters,
     Points const & points)
 {
-    // TODOHERE
-    UpdateForGameParameters(gameParameters, points);
+    //
+    // Assumption: decay and temperature have changed; parameters might have (but most likely not)
+    //
+
+    // Recalc
+    UpdateForDecayAndTemperatureAndGameParameters(
+        gameParameters.NumMechanicalDynamicsIterations<float>(),
+        gameParameters.NumMechanicalDynamicsIterationsAdjustment,
+        gameParameters.SpringStiffnessAdjustment,
+        gameParameters.SpringDampingAdjustment,
+        gameParameters.SpringStrengthAdjustment,
+        points);
+
+    // Remember the new values
+    mCurrentNumMechanicalDynamicsIterations = gameParameters.NumMechanicalDynamicsIterations<float>();
+    mCurrentNumMechanicalDynamicsIterationsAdjustment = gameParameters.NumMechanicalDynamicsIterationsAdjustment;
+    mCurrentSpringStiffnessAdjustment = gameParameters.SpringStiffnessAdjustment;
+    mCurrentSpringDampingAdjustment = gameParameters.SpringDampingAdjustment;
 }
 
 void Springs::UploadElements(
@@ -265,38 +259,12 @@ void Springs::UploadStressedSpringElements(
     }
 }
 
-bool Springs::UpdateStrains(
+void Springs::UpdateForStrains(
     GameParameters const & gameParameters,
     Points & points)
 {
-    // We need to adjust the strength - i.e. the displacement tolerance or spring breaking point - based
-    // on the actual number of mechanics iterations we'll be performing.
-    //
-    // After one iteration the spring displacement dL = L - L0 is reduced to:
-    //  dL * (1-SRF)
-    // where SRF is the value of the SpringReductionFraction parameter. After N iterations this would be:
-    //  dL * (1-SRF)^N
-    //
-    // This formula suggests a simple exponential relationship, but empirical data (e.g. explosions on the Titanic)
-    // suggest the following relationship:
-    //
-    //  s' = s * 4 / (1 + 3*(R^1.3))
-    //
-    // Where R is the N'/N ratio.
-
-    float const iterationsAdjustmentFactor =
-        4.0f
-        / (1.0f + 3.0f * pow(gameParameters.NumMechanicalDynamicsIterationsAdjustment, 1.3f));
-
-    float const effectiveStrengthAdjustment =
-        iterationsAdjustmentFactor
-        * gameParameters.SpringStrengthAdjustment;
-
-    float constexpr StrainHighWatermark = 0.5f; // Greater than this to be stressed
-    float constexpr StrainLowWatermark = 0.08f; // Less than this to become non-stressed
-
-    // Flag remembering whether at least one spring broke
-    bool isAtLeastOneBroken = false;
+    float constexpr StrainHighWatermark = 0.5f; // Greater than this multiplier to be stressed
+    float constexpr StrainLowWatermark = 0.08f; // Less than this multiplier to become non-stressed
 
     // Visit all springs
     for (ElementIndex s : *this)
@@ -306,13 +274,13 @@ bool Springs::UpdateStrains(
         if (!mIsDeletedBuffer[s]
             && !mIsBombAttachedBuffer[s])
         {
-            // Calculate strain
+            // Calculate strain length (plainly delta length, rest length is already in strength coefficient)
             float dx = GetLength(s, points);
-            float const strain = fabs(mRestLengthBuffer[s] - dx) / mRestLengthBuffer[s];
+            float const strainLength = fabs(mRestLengthBuffer[s] - dx);
 
-            // Check against strength
-            float const effectiveStrength = effectiveStrengthAdjustment * mStrengthBuffer[s];
-            if (strain > effectiveStrength)
+            // Check against breaking length
+            float const breakingLength = mBreakingLengthBuffer[s];
+            if (strainLength > breakingLength)
             {
                 // It's broken!
 
@@ -323,15 +291,13 @@ bool Springs::UpdateStrains(
                     | DestroyOptions::DestroyAllTriangles,
                     gameParameters,
                     points);
-
-                isAtLeastOneBroken = true;
             }
             else if (mIsStressedBuffer[s])
             {
                 // Stressed spring...
                 // ...see if should un-stress it
 
-                if (strain < StrainLowWatermark * effectiveStrength)
+                if (strainLength < StrainLowWatermark * breakingLength)
                 {
                     // It's not stressed anymore
                     mIsStressedBuffer[s] = false;
@@ -342,7 +308,7 @@ bool Springs::UpdateStrains(
                 // Not stressed spring
                 // ...see if should stress it
 
-                if (strain > StrainHighWatermark * effectiveStrength)
+                if (strainLength > StrainHighWatermark * breakingLength)
                 {
                     // It's stressed!
                     mIsStressedBuffer[s] = true;
@@ -356,18 +322,58 @@ bool Springs::UpdateStrains(
             }
         }
     }
-
-    return isAtLeastOneBroken;
 }
 
-float Springs::CalculateStiffnessCoefficient(
-    ElementIndex pointAIndex,
-    ElementIndex pointBIndex,
-    float springStiffness,
-    float stiffnessAdjustment,
+////////////////////////////////////////////////////////////////////
+
+void Springs::UpdateForDecayAndTemperatureAndGameParameters(
     float numMechanicalDynamicsIterations,
+    float numMechanicalDynamicsIterationsAdjustment,
+    float stiffnessAdjustment,
+    float dampingAdjustment,
+    float strengthAdjustment,
     Points const & points)
 {
+    float const strengthIterationsAdjustment
+        = CalculateSpringStrengthIterationsAdjustment(numMechanicalDynamicsIterationsAdjustment);
+
+    // Recalc all parameters
+    for (ElementIndex s : *this)
+    {
+        if (!IsDeleted(s))
+        {
+            UpdateForDecayAndTemperatureAndGameParameters(
+                s,
+                numMechanicalDynamicsIterations,
+                stiffnessAdjustment,
+                dampingAdjustment,
+                strengthAdjustment,
+                strengthIterationsAdjustment,
+                points);
+        }
+    }
+}
+
+void Springs::UpdateForDecayAndTemperatureAndGameParameters(
+    ElementIndex springIndex,
+    float numMechanicalDynamicsIterations,
+    float stiffnessAdjustment,
+    float dampingAdjustment,
+    float strengthAdjustment,
+    float strengthIterationsAdjustment,
+    Points const & points)
+{
+    auto const endpointAIndex = GetEndpointAIndex(springIndex);
+    auto const endpointBIndex = GetEndpointBIndex(springIndex);
+
+    float const massFactor =
+        (points.GetAugmentedMaterialMass(endpointAIndex) * points.GetAugmentedMaterialMass(endpointBIndex))
+        / (points.GetAugmentedMaterialMass(endpointAIndex) + points.GetAugmentedMaterialMass(endpointBIndex));
+
+    float const dt = GameParameters::SimulationStepTimeDuration<float> / numMechanicalDynamicsIterations;
+
+    //
+    // Stiffness coefficient
     //
     // The "stiffness coefficient" is the factor which, once multiplied with the spring displacement,
     // yields the spring force, according to Hooke's law.
@@ -376,41 +382,65 @@ float Springs::CalculateStiffnessCoefficient(
     // change in position equal to a fraction SpringReductionFraction * adjustment of the spring displacement,
     // in the time interval of a single mechanical dynamics simulation.
     //
-    // The adjustment is both the material-specific adjustment and the global game adjustment.
+    // After one iteration the spring displacement dL = L - L0 is reduced to:
+    //  dL * (1-SRF)
+    // where SRF is the (adjusted) SpringReductionFraction parameter. After N iterations this would be:
+    //  dL * (1-SRF)^N
+    //
+    // The reduction adjustment is both the material-specific adjustment and the global game adjustment.
+    //
+    // If the endpoints are melting, their temperature also controls the stiffness - the higher the temperature,
+    // above the melting point, the lower the stiffness; this is adjusted via a smoothed multiplier with the following
+    // edges:
+    //  T - Tm <= 0.0 :         1.0
+    //  T - Tm >= DeltaTMax :   0.0
     //
 
-    float const massFactor =
-        (points.GetAugmentedMaterialMass(pointAIndex) * points.GetAugmentedMaterialMass(pointBIndex))
-        / (points.GetAugmentedMaterialMass(pointAIndex) + points.GetAugmentedMaterialMass(pointBIndex));
-
-    float const dtSquared =
-        (GameParameters::SimulationStepTimeDuration<float> / numMechanicalDynamicsIterations)
-        * (GameParameters::SimulationStepTimeDuration<float> / numMechanicalDynamicsIterations);
-
-    return GameParameters::SpringReductionFraction
-        * springStiffness
+    // TODO: melting
+    mCoefficientsBuffer[springIndex].StiffnessCoefficient =
+        GameParameters::SpringReductionFraction
+        * GetMaterialStiffness(springIndex)
         * stiffnessAdjustment
         * massFactor
-        / dtSquared;
-}
+        / (dt * dt);
 
-float Springs::CalculateDampingCoefficient(
-    ElementIndex pointAIndex,
-    ElementIndex pointBIndex,
-    float dampingAdjustment,
-    float numMechanicalDynamicsIterations,
-    Points const & points)
-{
-    float const massFactor =
-        (points.GetAugmentedMaterialMass(pointAIndex) * points.GetAugmentedMaterialMass(pointBIndex))
-        / (points.GetAugmentedMaterialMass(pointAIndex) + points.GetAugmentedMaterialMass(pointBIndex));
 
-    float const dt = GameParameters::SimulationStepTimeDuration<float> / numMechanicalDynamicsIterations;
+    //
+    // Damping coefficient
+    //
+    // Drag magnitude on the relative velocity component along the spring.
+    //
 
-    return GameParameters::SpringDampingCoefficient
+    mCoefficientsBuffer[springIndex].DampingCoefficient =
+        GameParameters::SpringDampingCoefficient
         * dampingAdjustment
         * massFactor
         / dt;
+
+    //
+    // Breaking length
+    //
+    // The strength of a spring - i.e. the displacement tolerance or spring breaking point - depends on:
+    //  - The material strength and the strength adjustment
+    //  - The endpoints' decay (their average)
+    //  - If the endpoints are melting, their temperature - so to keep springs intact while melting makes them longer
+    //  - The actual number of mechanics iterations we'll be performing
+    //
+    // The strength multiplied with the spring's rest length is the Breaking Length, ready to be
+    // compared against the spring absolute delta L
+    //
+
+    float const springDecay =
+        (points.GetDecay(endpointAIndex) + points.GetDecay(endpointBIndex))
+        / 2.0f;
+
+    // TODOHERE: temperature
+    mBreakingLengthBuffer[springIndex] =
+        GetRestLength(springIndex)
+        * GetMaterialStrength(springIndex)
+        * strengthAdjustment
+        * strengthIterationsAdjustment
+        * springDecay;
 }
 
 }

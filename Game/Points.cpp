@@ -1134,7 +1134,7 @@ void Points::AugmentMaterialMass(
     // Notify all connected springs
     for (auto connectedSpring : mConnectedSpringsBuffer[pointElementIndex].ConnectedSprings)
     {
-        springs.OnEndpointMassUpdated(connectedSpring.SpringIndex, *this);
+        springs.UpdateForMass(connectedSpring.SpringIndex, *this);
     }
 }
 

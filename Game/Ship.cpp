@@ -27,16 +27,15 @@
 // we distribute all of these low-frequency updates in an interval of S steps (frames).
 //
 
-static constexpr int LowFrequencyPeriod = 48; // Number of simulation steps
+static constexpr int LowFrequencyPeriod = 7 * 7; // Number of simulation steps
 
-static constexpr int UpdateSinkingPeriodStep = 5;
-static constexpr int CombustionStateMachineSlowPeriodStep1 = 11;
-static constexpr int RotPointsPeriodStep = 17;
-static constexpr int CombustionStateMachineSlowPeriodStep2 = 23;
-static constexpr int SpringDecayAndTemperaturePeriodStep = 29;
-static constexpr int CombustionStateMachineSlowPeriodStep3 = 35;
-static constexpr int DecaySpringsPeriodStep = 41;
-static constexpr int CombustionStateMachineSlowPeriodStep4 = 47;
+static constexpr int UpdateSinkingPeriodStep = 6;
+static constexpr int CombustionStateMachineSlowPeriodStep1 = 13;
+static constexpr int RotPointsPeriodStep = 20;
+static constexpr int CombustionStateMachineSlowPeriodStep2 = 27;
+static constexpr int SpringDecayAndTemperaturePeriodStep = 34;
+static constexpr int CombustionStateMachineSlowPeriodStep3 = 41;
+static constexpr int CombustionStateMachineSlowPeriodStep4 = 48;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -167,18 +166,6 @@ void Ship::Update(
     }
 
 
-    //
-    // Decay springs
-    //
-
-    if (mCurrentSimulationSequenceNumber.IsStepOf(DecaySpringsPeriodStep, LowFrequencyPeriod))
-    {
-        DecaySprings(
-            currentSimulationTime,
-            gameParameters);
-    }
-
-
 
     //
     // Update mechanical dynamics
@@ -214,7 +201,7 @@ void Ship::Update(
     // (which would flag our structure as dirty)
     //
 
-    mSprings.UpdateStrains(
+    mSprings.UpdateForStrains(
         gameParameters,
         mPoints);
 
@@ -1674,25 +1661,6 @@ void Ship::RotPoints(
 
     // Remember that the decay buffer is dirty
     mPoints.MarkDecayBufferAsDirty();
-}
-
-void Ship::DecaySprings(
-    float /*currentSimulationTime*/,
-    GameParameters const & /*gameParameters*/)
-{
-    // Update strength of all materials
-    for (auto s : mSprings)
-    {
-        // Take average decay of two endpoints
-        float const springDecay =
-            (mPoints.GetDecay(mSprings.GetEndpointAIndex(s)) + mPoints.GetDecay(mSprings.GetEndpointBIndex(s)))
-            / 2.0f;
-
-        // Adjust spring's strength
-        mSprings.SetStrength(
-            s,
-            mSprings.GetMaterialStrength(s) * springDecay);
-    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////

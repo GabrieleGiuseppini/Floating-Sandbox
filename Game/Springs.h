@@ -131,7 +131,7 @@ public:
         , mFactorySuperTrianglesBuffer(mBufferElementCount, mElementCount, SuperTrianglesVector())
         // Physical
         , mMaterialStrengthBuffer(mBufferElementCount, mElementCount, 0.0f)
-        , mStrengthBuffer(mBufferElementCount, mElementCount, 0.0f)
+        , mBreakingLengthBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mMaterialStiffnessBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mRestLengthBuffer(mBufferElementCount, mElementCount, 1.0f)
         , mCoefficientsBuffer(mBufferElementCount, mElementCount, Coefficients(0.0f, 0.0f))
@@ -154,8 +154,10 @@ public:
         , mDestroyHandler()
         , mRestoreHandler()
         , mCurrentNumMechanicalDynamicsIterations(gameParameters.NumMechanicalDynamicsIterations<float>())
+        , mCurrentNumMechanicalDynamicsIterationsAdjustment(gameParameters.NumMechanicalDynamicsIterationsAdjustment)
         , mCurrentSpringStiffnessAdjustment(gameParameters.SpringStiffnessAdjustment)
         , mCurrentSpringDampingAdjustment(gameParameters.SpringDampingAdjustment)
+        , mCurrentSpringStrengthAdjustment(gameParameters.SpringStrengthAdjustment)
         , mFloatBufferAllocator(mBufferElementCount)
         , mVec2fBufferAllocator(mBufferElementCount)
     {
@@ -227,36 +229,28 @@ public:
         GameParameters const & gameParameters,
         Points const & points);
 
-    void OnEndpointMassUpdated(
+    void UpdateForMass(
         ElementIndex springElementIndex,
         Points const & points)
     {
         assert(springElementIndex < mElementCount);
 
-        mCoefficientsBuffer[springElementIndex].StiffnessCoefficient =
-            CalculateStiffnessCoefficient(
-                mEndpointsBuffer[springElementIndex].PointAIndex,
-                mEndpointsBuffer[springElementIndex].PointBIndex,
-                mMaterialStiffnessBuffer[springElementIndex],
-                mCurrentSpringStiffnessAdjustment,
-                mCurrentNumMechanicalDynamicsIterations,
-                points);
-
-        mCoefficientsBuffer[springElementIndex].DampingCoefficient =
-            CalculateDampingCoefficient(
-                mEndpointsBuffer[springElementIndex].PointAIndex,
-                mEndpointsBuffer[springElementIndex].PointBIndex,
-                mCurrentSpringDampingAdjustment,
-                mCurrentNumMechanicalDynamicsIterations,
-                points);
+        // Recalculate parameters for this spring
+        UpdateForDecayAndTemperatureAndGameParameters(
+            springElementIndex,
+            mCurrentNumMechanicalDynamicsIterations,
+            mCurrentSpringStiffnessAdjustment,
+            mCurrentSpringDampingAdjustment,
+            mCurrentSpringStrengthAdjustment,
+            CalculateSpringStrengthIterationsAdjustment(mCurrentNumMechanicalDynamicsIterationsAdjustment),
+            points);
     }
 
     /*
-     * Calculates the current strain - due to tension or compression - and acts depending on it.
-     *
-     * Returns true if the spring got broken.
+     * Calculates the current strain - due to tension or compression - and acts depending on it,
+     * eventually breaking springs.
      */
-    bool UpdateStrains(
+    void UpdateForStrains(
         GameParameters const & gameParameters,
         Points & points);
 
@@ -455,16 +449,9 @@ public:
         return mMaterialStrengthBuffer[springElementIndex];
     }
 
-    float GetStrength(ElementIndex springElementIndex) const
+    float GetBreakingLength(ElementIndex springElementIndex) const
     {
-        return mStrengthBuffer[springElementIndex];
-    }
-
-    void SetStrength(
-        ElementIndex springElementIndex,
-        float value)
-    {
-        mStrengthBuffer[springElementIndex] = value;
+        return mBreakingLengthBuffer[springElementIndex];
     }
 
     float GetMaterialStiffness(ElementIndex springElementIndex) const
@@ -598,19 +585,43 @@ public:
 
 private:
 
-    static float CalculateStiffnessCoefficient(
-        ElementIndex pointAIndex,
-        ElementIndex pointBIndex,
-        float springStiffness,
-        float stiffnessAdjustment,
+    static float CalculateSpringStrengthIterationsAdjustment(float numMechanicalDynamicsIterationsAdjustment)
+    {
+        // We need to adjust the strength - i.e. the displacement tolerance or spring breaking point - based
+        // on the actual number of mechanics iterations we'll be performing.
+        //
+        // After one iteration the spring displacement dL = L - L0 is reduced to:
+        //  dL * (1-SRF)
+        // where SRF is the value of the SpringReductionFraction parameter. After N iterations this would be:
+        //  dL * (1-SRF)^N
+        //
+        // This formula suggests a simple exponential relationship, but empirical data (e.g. explosions on the Titanic)
+        // suggest the following relationship:
+        //
+        //  s' = s * 4 / (1 + 3*(R^1.3))
+        //
+        // Where R is the N'/N ratio.
+
+        return
+            4.0f
+            / (1.0f + 3.0f * pow(numMechanicalDynamicsIterationsAdjustment, 1.3f));
+    }
+
+    void UpdateForDecayAndTemperatureAndGameParameters(
         float numMechanicalDynamicsIterations,
+        float numMechanicalDynamicsIterationsAdjustment,
+        float stiffnessAdjustment,
+        float dampingAdjustment,
+        float strengthAdjustment,
         Points const & points);
 
-    static float CalculateDampingCoefficient(
-        ElementIndex pointAIndex,
-        ElementIndex pointBIndex,
-        float dampingAdjustment,
+    void UpdateForDecayAndTemperatureAndGameParameters(
+        ElementIndex springIndex,
         float numMechanicalDynamicsIterations,
+        float stiffnessAdjustment,
+        float dampingAdjustment,
+        float strengthAdjustment,
+        float strengthIterationsAdjustment,
         Points const & points);
 
 private:
@@ -640,8 +651,8 @@ private:
     // Physical
     //
 
-    Buffer<float> mStrengthBuffer;
     Buffer<float> mMaterialStrengthBuffer;
+    Buffer<float> mBreakingLengthBuffer;
     Buffer<float> mMaterialStiffnessBuffer;
     Buffer<float> mRestLengthBuffer;
     Buffer<Coefficients> mCoefficientsBuffer;
@@ -693,8 +704,10 @@ private:
     // in the values of these parameters will trigger a re-calculation
     // of pre-calculated coefficients
     float mCurrentNumMechanicalDynamicsIterations;
+    float mCurrentNumMechanicalDynamicsIterationsAdjustment;
     float mCurrentSpringStiffnessAdjustment;
     float mCurrentSpringDampingAdjustment;
+    float mCurrentSpringStrengthAdjustment;
 
     // Allocators for work buffers
     BufferAllocator<float> mFloatBufferAllocator;

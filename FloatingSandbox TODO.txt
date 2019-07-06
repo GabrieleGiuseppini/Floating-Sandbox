@@ -594,7 +594,7 @@ Render:
 		- Candidates:
 			- Spring length, spring dir
 				- Valid as long as points don't move
-				- Used by: water update, heat update
+				- Used by: water update, heat update, Springs::UpdateStrains
 			- Underwater depth 
 				- Valid as long as points don't move
 				- Used by: UpdateWaterIntake (for leaking points only), heat dissipation
@@ -1086,26 +1086,30 @@ Render:
 				= Ship::Update: 
 					= @Beginning: either call Springs::UpdateParameters(params, points) or call 
 					  Springs::UpdateDecayAndTemperatureAndParameters(params, points), depending on simulation step
-						- Springs::UpdateParameters(params, points): iff params updated:
+						+ Springs::UpdateParameters(params, points): 
+							+ iff params updated: UpdateDecayAndTemperatureAndParameters(params, points)
+						- Test:
+							- Stress and break (Titanic)
+							- Mass augmentation
+							- Repair (restore)
+							- Param changes
+						= Springs::UpdateDecayAndTemperatureAndParameters(params, points):
+							+ Assumption: Decay and Temperature have changed (Parameters not necessarily)
 							- (Params, P.Temperature, P.Mass) -> StiffnessCoefficient
-							- (Params, P.Mass) -> DampingCoefficient
-							- TODO: also strength, after we include StrengthAdjustment and NumMechanicalDynamicsIterationsAdjustment
-						- Springs::UpdateDecayAndTemperatureAndParameters(params, points):
-							- Assumption: Decay and Temperature have changed (Parameters not necessarily)
-							- (Params, P.Temperature, P.Mass) -> StiffnessCoefficient
-							- (Params, P.Mass) -> DampingCoefficient
+							+ (Params, P.Mass) -> DampingCoefficient
 							- (Params, P.Decay, P.Temperature) -> S.Strength
-								- Params are needed to include StrengthAdjustment and NumMechanicalDynamicsIterationsAdjustment
+								+ Params are needed to include StrengthAdjustment and NumMechanicalDynamicsIterationsAdjustment
 								  in "current" strength
 								+ Add "MaterialStrength", and use "Strength" for strain
 									+ Check for all current uses of Strength and replace with MaterialStrength
-								- Since we're touching this: factor in Strength the other things that we calculate at 
+								+ Since we're touching this: factor in Strength the other things that we calculate at 
 								  UpdateStrains, namely:
-									- StrengthAdjustment, NumMechanicalDynamicsIterationsAdjustment
-									- RestLength						
-						- Nuke Ship::DecaySprings and, with it, Springs::Set(Current)Strength
-						- Cleanup low-frequency schedule now that DecaySprings is gone
-							- Change frequency altogether to 7*6
+									+ StrengthAdjustment, NumMechanicalDynamicsIterationsAdjustment
+									+ Rest Length
+						+ Nuke Ship::DecaySprings and, with it, Springs::Set(Current)Strength
+						+ Cleanup low-frequency schedule now that DecaySprings is gone
+							+ Change frequency altogether to 7*6
+						- Verify assembly: hopefully no call to UpdateForDTP(...springIndex...) from UpdateForDTP(all)
 						- When done, test with stiffness being sticky (never updated to lower because of melting temperature) 
 						  and only strength returning to normal
 					= Later on: Ship::UpdateHeatDynamics:
@@ -1151,6 +1155,10 @@ Render:
 
 			- Electrical update: inject heat from working lamps and generators
 				- New material property - ~"HeatProduced"
+
+			- Interaction with bombs:
+				- Timer, Impact, RC: TODO
+				- TODO: others?
 
 			+ Flamethrower physics:
 				+ Ship::Interaction:
@@ -1204,9 +1212,9 @@ Render:
 				+ SoundController:
 					+ Subscribe to OnCombustionBegin/End: adjust cumulative volume of Burning sound
 					+ Subscribe to OnCombustionSmothered: play one-time sizzling
-			- Interaction with bombs:
-				- Timer, Impact, RC: TODO
-				- TODO: others?
+
+			- Experiments:
+				- When state is Burning, try to also decay non-burning neighbors on top of giving them heat
 
 		- Optimizations:
 			- HeatPropagation:
@@ -1216,7 +1224,9 @@ Render:
 					- Nuke Points::mIsTemperatureBufferDirty
 					- Ship::Render decides how often to call Points::UploadTemperatureXYZ(...)
 			- Low-freq combustion state machine:
-				- Burning candidates: use priority_queue instead of vector+sort, and avoid pushing when deltaT < Nth
+				- Burning candidates: 
+					- 1: Use priority_queue instead of vector+sort, and avoid pushing when deltaT < Nth
+					- 2: Use sticky priority_queue (leverage temporal coherence of overheated particles)
 			- Flame rendering:
 				- Do perf analysis to see why so much impact
 				- Test perf impact of instanced drawing

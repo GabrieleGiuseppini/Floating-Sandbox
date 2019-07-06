@@ -251,10 +251,6 @@ public:
         float currentSimulationTime,
         GameParameters const & gameParameters);
 
-    void DecaySprings(
-        float currentSimulationTime,
-        GameParameters const & gameParameters);
-
 private:
 
     void RunConnectivityVisit();
