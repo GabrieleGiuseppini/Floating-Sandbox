@@ -2,13 +2,13 @@
     {
         "color_key": "#404050", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1588.15, 
+        "ignition_temperature": 1783.15, 
         "is_hull": true, 
         "mass": {
             "density": 0.0935, 
             "nominal_mass": 7950
         }, 
-        "melting_temperature": 1783.15, 
+        "melting_temperature": 1588.15, 
         "name": "Iron Hull", 
         "render_color": "#404050", 
         "sound_type": "Metal", 
@@ -27,13 +27,13 @@
     {
         "color_key": "#303040", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1588.15, 
+        "ignition_temperature": 1783.15, 
         "is_hull": false, 
         "mass": {
             "density": 0.0935, 
             "nominal_mass": 7950
         }, 
-        "melting_temperature": 1783.15, 
+        "melting_temperature": 1588.15, 
         "name": "Structural Iron", 
         "render_color": "#303040", 
         "sound_type": "Metal", 
@@ -52,13 +52,13 @@
     {
         "color_key": "#808090", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1588.15, 
+        "ignition_temperature": 1783.15, 
         "is_hull": false, 
         "mass": {
             "density": 0.00935, 
             "nominal_mass": 7850
         }, 
-        "melting_temperature": 1783.15, 
+        "melting_temperature": 1588.15, 
         "name": "Iron", 
         "render_color": "#808090", 
         "sound_type": "Metal", 
@@ -77,13 +77,13 @@
     {
         "color_key": "#A0A0A0", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1089.15, 
+        "ignition_temperature": 1643.15, 
         "is_hull": true, 
         "mass": {
             "density": 0.0935, 
             "nominal_mass": 7580
         }, 
-        "melting_temperature": 1643.15, 
+        "melting_temperature": 1089.15, 
         "name": "Steel Hull", 
         "render_color": "#A0A0A0", 
         "sound_type": "Metal", 
@@ -102,13 +102,13 @@
     {
         "color_key": "#909090", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1089.15, 
+        "ignition_temperature": 1643.15, 
         "is_hull": false, 
         "mass": {
             "density": 0.0935, 
             "nominal_mass": 7580
         }, 
-        "melting_temperature": 1643.15, 
+        "melting_temperature": 1089.15, 
         "name": "Structural Steel", 
         "render_color": "#909090", 
         "sound_type": "Metal", 
@@ -127,13 +127,13 @@
     {
         "color_key": "#D8D8D8", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1089.15, 
+        "ignition_temperature": 1643.15, 
         "is_hull": false, 
         "mass": {
             "density": 0.00935, 
             "nominal_mass": 7480
         }, 
-        "melting_temperature": 1643.15, 
+        "melting_temperature": 1089.15, 
         "name": "Steel", 
         "render_color": "#D8D8D8", 
         "sound_type": "Metal", 
@@ -985,13 +985,13 @@
     {
         "color_key": "#A71000", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1089.15, 
+        "ignition_temperature": 1643.15, 
         "is_hull": true, 
         "mass": {
             "density": 0.0935, 
             "nominal_mass": 7580
         }, 
-        "melting_temperature": 1643.15, 
+        "melting_temperature": 1089.15, 
         "name": "Steel Hull Red", 
         "render_color": "#A71000", 
         "sound_type": "Metal", 
@@ -1010,13 +1010,13 @@
     {
         "color_key": "#950000", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1089.15, 
+        "ignition_temperature": 1643.15, 
         "is_hull": false, 
         "mass": {
             "density": 0.0935, 
             "nominal_mass": 7580
         }, 
-        "melting_temperature": 1643.15, 
+        "melting_temperature": 1089.15, 
         "name": "Structural Steel Red", 
         "render_color": "#950000", 
         "sound_type": "Metal", 
@@ -1035,13 +1035,13 @@
     {
         "color_key": "#D80E00", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1089.15, 
+        "ignition_temperature": 1643.15, 
         "is_hull": false, 
         "mass": {
             "density": 0.00935, 
             "nominal_mass": 7480
         }, 
-        "melting_temperature": 1643.15, 
+        "melting_temperature": 1089.15, 
         "name": "Steel Red", 
         "render_color": "#D80E00", 
         "sound_type": "Metal", 
@@ -1060,13 +1060,13 @@
     {
         "color_key": "#D80E02", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1089.15, 
+        "ignition_temperature": 1643.15, 
         "is_hull": false, 
         "mass": {
             "density": 0.00935, 
             "nominal_mass": 7480
         }, 
-        "melting_temperature": 1643.15, 
+        "melting_temperature": 1089.15, 
         "name": "Steel Red Cheap", 
         "render_color": "#D80E02", 
         "sound_type": "Metal", 
@@ -1085,13 +1085,13 @@
     {
         "color_key": "#840E00", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1588.15, 
+        "ignition_temperature": 1783.15, 
         "is_hull": true, 
         "mass": {
             "density": 0.0935, 
             "nominal_mass": 7950
         }, 
-        "melting_temperature": 1783.15, 
+        "melting_temperature": 1588.15, 
         "name": "Iron Hull Red", 
         "render_color": "#840E00", 
         "sound_type": "Metal", 
@@ -1110,13 +1110,13 @@
     {
         "color_key": "#740200", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1588.15, 
+        "ignition_temperature": 1783.15, 
         "is_hull": false, 
         "mass": {
             "density": 0.0935, 
             "nominal_mass": 7950
         }, 
-        "melting_temperature": 1783.15, 
+        "melting_temperature": 1588.15, 
         "name": "Structural Iron Red", 
         "render_color": "#740200", 
         "sound_type": "Metal", 
@@ -1135,13 +1135,13 @@
     {
         "color_key": "#9E0F00", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1588.15, 
+        "ignition_temperature": 1783.15, 
         "is_hull": false, 
         "mass": {
             "density": 0.00935, 
             "nominal_mass": 7850
         }, 
-        "melting_temperature": 1783.15, 
+        "melting_temperature": 1588.15, 
         "name": "Iron Red", 
         "render_color": "#9E0F00", 
         "sound_type": "Metal", 
@@ -1260,13 +1260,13 @@
     {
         "color_key": "#A27A00", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1089.15, 
+        "ignition_temperature": 1643.15, 
         "is_hull": true, 
         "mass": {
             "density": 0.0935, 
             "nominal_mass": 7580
         }, 
-        "melting_temperature": 1643.15, 
+        "melting_temperature": 1089.15, 
         "name": "Steel Hull Yellow", 
         "render_color": "#A27A00", 
         "sound_type": "Metal", 
@@ -1285,13 +1285,13 @@
     {
         "color_key": "#926A00", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1089.15, 
+        "ignition_temperature": 1643.15, 
         "is_hull": false, 
         "mass": {
             "density": 0.0935, 
             "nominal_mass": 7580
         }, 
-        "melting_temperature": 1643.15, 
+        "melting_temperature": 1089.15, 
         "name": "Structural Steel Yellow", 
         "render_color": "#926A00", 
         "sound_type": "Metal", 
@@ -1310,13 +1310,13 @@
     {
         "color_key": "#D29800", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1089.15, 
+        "ignition_temperature": 1643.15, 
         "is_hull": false, 
         "mass": {
             "density": 0.00935, 
             "nominal_mass": 7480
         }, 
-        "melting_temperature": 1643.15, 
+        "melting_temperature": 1089.15, 
         "name": "Steel Yellow", 
         "render_color": "#D29800", 
         "sound_type": "Metal", 
@@ -1335,13 +1335,13 @@
     {
         "color_key": "#806200", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1588.15, 
+        "ignition_temperature": 1783.15, 
         "is_hull": true, 
         "mass": {
             "density": 0.0935, 
             "nominal_mass": 7950
         }, 
-        "melting_temperature": 1783.15, 
+        "melting_temperature": 1588.15, 
         "name": "Iron Hull Yellow", 
         "render_color": "#806200", 
         "sound_type": "Metal", 
@@ -1360,13 +1360,13 @@
     {
         "color_key": "#705200", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1588.15, 
+        "ignition_temperature": 1783.15, 
         "is_hull": false, 
         "mass": {
             "density": 0.0935, 
             "nominal_mass": 7950
         }, 
-        "melting_temperature": 1783.15, 
+        "melting_temperature": 1588.15, 
         "name": "Structural Iron Yellow", 
         "render_color": "#705200", 
         "sound_type": "Metal", 
@@ -1385,13 +1385,13 @@
     {
         "color_key": "#997200", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1588.15, 
+        "ignition_temperature": 1783.15, 
         "is_hull": false, 
         "mass": {
             "density": 0.00935, 
             "nominal_mass": 7850
         }, 
-        "melting_temperature": 1783.15, 
+        "melting_temperature": 1588.15, 
         "name": "Iron Yellow", 
         "render_color": "#997200", 
         "sound_type": "Metal", 
@@ -1510,13 +1510,13 @@
     {
         "color_key": "#5A9B00", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1089.15, 
+        "ignition_temperature": 1643.15, 
         "is_hull": true, 
         "mass": {
             "density": 0.0935, 
             "nominal_mass": 7580
         }, 
-        "melting_temperature": 1643.15, 
+        "melting_temperature": 1089.15, 
         "name": "Steel Hull Green", 
         "render_color": "#5A9B00", 
         "sound_type": "Metal", 
@@ -1535,13 +1535,13 @@
     {
         "color_key": "#7BC800", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1089.15, 
+        "ignition_temperature": 1643.15, 
         "is_hull": false, 
         "mass": {
             "density": 0.00935, 
             "nominal_mass": 7480
         }, 
-        "melting_temperature": 1643.15, 
+        "melting_temperature": 1089.15, 
         "name": "Steel Green", 
         "render_color": "#7BC800", 
         "sound_type": "Metal", 
@@ -1560,13 +1560,13 @@
     {
         "color_key": "#467B00", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1588.15, 
+        "ignition_temperature": 1783.15, 
         "is_hull": true, 
         "mass": {
             "density": 0.0935, 
             "nominal_mass": 7950
         }, 
-        "melting_temperature": 1783.15, 
+        "melting_temperature": 1588.15, 
         "name": "Iron Hull Green", 
         "render_color": "#467B00", 
         "sound_type": "Metal", 
@@ -1585,13 +1585,13 @@
     {
         "color_key": "#569200", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1588.15, 
+        "ignition_temperature": 1783.15, 
         "is_hull": false, 
         "mass": {
             "density": 0.00935, 
             "nominal_mass": 7850
         }, 
-        "melting_temperature": 1783.15, 
+        "melting_temperature": 1588.15, 
         "name": "Iron Green", 
         "render_color": "#569200", 
         "sound_type": "Metal", 
@@ -1710,13 +1710,13 @@
     {
         "color_key": "#008A95", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1089.15, 
+        "ignition_temperature": 1643.15, 
         "is_hull": true, 
         "mass": {
             "density": 0.0935, 
             "nominal_mass": 7580
         }, 
-        "melting_temperature": 1643.15, 
+        "melting_temperature": 1089.15, 
         "name": "Steel Hull Blue", 
         "render_color": "#008A95", 
         "sound_type": "Metal", 
@@ -1735,13 +1735,13 @@
     {
         "color_key": "#00B6BF", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1089.15, 
+        "ignition_temperature": 1643.15, 
         "is_hull": false, 
         "mass": {
             "density": 0.00935, 
             "nominal_mass": 7480
         }, 
-        "melting_temperature": 1643.15, 
+        "melting_temperature": 1089.15, 
         "name": "Steel Blue", 
         "render_color": "#00B6BF", 
         "sound_type": "Metal", 
@@ -1760,13 +1760,13 @@
     {
         "color_key": "#006A76", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1588.15, 
+        "ignition_temperature": 1783.15, 
         "is_hull": true, 
         "mass": {
             "density": 0.0935, 
             "nominal_mass": 7950
         }, 
-        "melting_temperature": 1783.15, 
+        "melting_temperature": 1588.15, 
         "name": "Iron Hull Blue", 
         "render_color": "#006A76", 
         "sound_type": "Metal", 
@@ -1785,13 +1785,13 @@
     {
         "color_key": "#00818C", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1588.15, 
+        "ignition_temperature": 1783.15, 
         "is_hull": false, 
         "mass": {
             "density": 0.00935, 
             "nominal_mass": 7850
         }, 
-        "melting_temperature": 1783.15, 
+        "melting_temperature": 1588.15, 
         "name": "Iron Blue", 
         "render_color": "#00818C", 
         "sound_type": "Metal", 
@@ -1910,13 +1910,13 @@
     {
         "color_key": "#22437B", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1089.15, 
+        "ignition_temperature": 1643.15, 
         "is_hull": true, 
         "mass": {
             "density": 0.0935, 
             "nominal_mass": 7580
         }, 
-        "melting_temperature": 1643.15, 
+        "melting_temperature": 1089.15, 
         "name": "Steel Hull Blue2", 
         "render_color": "#22437B", 
         "sound_type": "Metal", 
@@ -1935,13 +1935,13 @@
     {
         "color_key": "#2D58A0", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1089.15, 
+        "ignition_temperature": 1643.15, 
         "is_hull": false, 
         "mass": {
             "density": 0.00935, 
             "nominal_mass": 7480
         }, 
-        "melting_temperature": 1643.15, 
+        "melting_temperature": 1089.15, 
         "name": "Steel Blue2", 
         "render_color": "#2D58A0", 
         "sound_type": "Metal", 
@@ -1960,13 +1960,13 @@
     {
         "color_key": "#1B3261", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1588.15, 
+        "ignition_temperature": 1783.15, 
         "is_hull": true, 
         "mass": {
             "density": 0.0935, 
             "nominal_mass": 7950
         }, 
-        "melting_temperature": 1783.15, 
+        "melting_temperature": 1588.15, 
         "name": "Iron Hull Blue2", 
         "render_color": "#1B3261", 
         "sound_type": "Metal", 
@@ -1985,13 +1985,13 @@
     {
         "color_key": "#203E74", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1588.15, 
+        "ignition_temperature": 1783.15, 
         "is_hull": false, 
         "mass": {
             "density": 0.00935, 
             "nominal_mass": 7850
         }, 
-        "melting_temperature": 1783.15, 
+        "melting_temperature": 1588.15, 
         "name": "Iron Blue2", 
         "render_color": "#203E74", 
         "sound_type": "Metal", 
@@ -2110,13 +2110,13 @@
     {
         "color_key": "#A900A7", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1089.15, 
+        "ignition_temperature": 1643.15, 
         "is_hull": true, 
         "mass": {
             "density": 0.0935, 
             "nominal_mass": 7580
         }, 
-        "melting_temperature": 1643.15, 
+        "melting_temperature": 1089.15, 
         "name": "Steel Hull Pink", 
         "render_color": "#A900A7", 
         "sound_type": "Metal", 
@@ -2135,13 +2135,13 @@
     {
         "color_key": "#D100D6", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1089.15, 
+        "ignition_temperature": 1643.15, 
         "is_hull": false, 
         "mass": {
             "density": 0.00935, 
             "nominal_mass": 7480
         }, 
-        "melting_temperature": 1643.15, 
+        "melting_temperature": 1089.15, 
         "name": "Steel Pink", 
         "render_color": "#D100D6", 
         "sound_type": "Metal", 
@@ -2160,13 +2160,13 @@
     {
         "color_key": "#860080", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1588.15, 
+        "ignition_temperature": 1783.15, 
         "is_hull": true, 
         "mass": {
             "density": 0.0935, 
             "nominal_mass": 7950
         }, 
-        "melting_temperature": 1783.15, 
+        "melting_temperature": 1588.15, 
         "name": "Iron Hull Pink", 
         "render_color": "#860080", 
         "sound_type": "Metal", 
@@ -2185,13 +2185,13 @@
     {
         "color_key": "#9F009C", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1588.15, 
+        "ignition_temperature": 1783.15, 
         "is_hull": false, 
         "mass": {
             "density": 0.00935, 
             "nominal_mass": 7850
         }, 
-        "melting_temperature": 1783.15, 
+        "melting_temperature": 1588.15, 
         "name": "Iron Pink", 
         "render_color": "#9F009C", 
         "sound_type": "Metal", 
@@ -2310,13 +2310,13 @@
     {
         "color_key": "#D45B00", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1089.15, 
+        "ignition_temperature": 1643.15, 
         "is_hull": true, 
         "mass": {
             "density": 0.0935, 
             "nominal_mass": 7580
         }, 
-        "melting_temperature": 1643.15, 
+        "melting_temperature": 1089.15, 
         "name": "Steel Hull Orange", 
         "render_color": "#D45B00", 
         "sound_type": "Metal", 
@@ -2335,13 +2335,13 @@
     {
         "color_key": "#F26500", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1089.15, 
+        "ignition_temperature": 1643.15, 
         "is_hull": false, 
         "mass": {
             "density": 0.00935, 
             "nominal_mass": 7480
         }, 
-        "melting_temperature": 1643.15, 
+        "melting_temperature": 1089.15, 
         "name": "Steel Orange", 
         "render_color": "#F26500", 
         "sound_type": "Metal", 
@@ -2360,13 +2360,13 @@
     {
         "color_key": "#A84F00", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1588.15, 
+        "ignition_temperature": 1783.15, 
         "is_hull": true, 
         "mass": {
             "density": 0.0935, 
             "nominal_mass": 7950
         }, 
-        "melting_temperature": 1783.15, 
+        "melting_temperature": 1588.15, 
         "name": "Iron Hull Orange", 
         "render_color": "#A84F00", 
         "sound_type": "Metal", 
@@ -2385,13 +2385,13 @@
     {
         "color_key": "#C85800", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1588.15, 
+        "ignition_temperature": 1783.15, 
         "is_hull": false, 
         "mass": {
             "density": 0.00935, 
             "nominal_mass": 7850
         }, 
-        "melting_temperature": 1783.15, 
+        "melting_temperature": 1588.15, 
         "name": "Iron Orange", 
         "render_color": "#C85800", 
         "sound_type": "Metal", 
@@ -2510,13 +2510,13 @@
     {
         "color_key": "#111111", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1588.15, 
+        "ignition_temperature": 1783.15, 
         "is_hull": true, 
         "mass": {
             "density": 0.0935, 
             "nominal_mass": 7950
         }, 
-        "melting_temperature": 1783.15, 
+        "melting_temperature": 1588.15, 
         "name": "Iron Hull Stiff", 
         "render_color": "#111111", 
         "sound_type": "Metal", 
@@ -2535,13 +2535,13 @@
     {
         "color_key": "#222222", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1588.15, 
+        "ignition_temperature": 1783.15, 
         "is_hull": false, 
         "mass": {
             "density": 0.00935, 
             "nominal_mass": 7850
         }, 
-        "melting_temperature": 1783.15, 
+        "melting_temperature": 1588.15, 
         "name": "Iron Stiff", 
         "render_color": "#222222", 
         "sound_type": "Metal", 
@@ -2560,13 +2560,13 @@
     {
         "color_key": "#1F1F1F", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1588.15, 
+        "ignition_temperature": 1783.15, 
         "is_hull": false, 
         "mass": {
             "density": 0.00935, 
             "nominal_mass": 7850
         }, 
-        "melting_temperature": 1783.15, 
+        "melting_temperature": 1588.15, 
         "name": "Iron Cheap", 
         "render_color": "#1F1F1F", 
         "sound_type": "Metal", 
@@ -2585,13 +2585,13 @@
     {
         "color_key": "#333333", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1089.15, 
+        "ignition_temperature": 1643.15, 
         "is_hull": true, 
         "mass": {
             "density": 0.0935, 
             "nominal_mass": 7580
         }, 
-        "melting_temperature": 1643.15, 
+        "melting_temperature": 1089.15, 
         "name": "Steel Hull Stiff", 
         "render_color": "#333333", 
         "sound_type": "Metal", 
@@ -2610,13 +2610,13 @@
     {
         "color_key": "#A2A2A2", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1089.15, 
+        "ignition_temperature": 1643.15, 
         "is_hull": true, 
         "mass": {
             "density": 0.0935, 
             "nominal_mass": 7580
         }, 
-        "melting_temperature": 1643.15, 
+        "melting_temperature": 1089.15, 
         "name": "Stainless Steel Hull", 
         "render_color": "#A2A2A2", 
         "rust_receptivity": 0, 
@@ -2636,13 +2636,13 @@
     {
         "color_key": "#444444", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1089.15, 
+        "ignition_temperature": 1643.15, 
         "is_hull": false, 
         "mass": {
             "density": 0.00935, 
             "nominal_mass": 7480
         }, 
-        "melting_temperature": 1643.15, 
+        "melting_temperature": 1089.15, 
         "name": "Steel Stiff", 
         "render_color": "#444444", 
         "sound_type": "Metal", 
@@ -2661,13 +2661,13 @@
     {
         "color_key": "#262626", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1089.15, 
+        "ignition_temperature": 1643.15, 
         "is_hull": false, 
         "mass": {
             "density": 0.00935, 
             "nominal_mass": 7480
         }, 
-        "melting_temperature": 1643.15, 
+        "melting_temperature": 1089.15, 
         "name": "Black Steel", 
         "render_color": "#262626", 
         "sound_type": "Metal", 
@@ -2686,13 +2686,13 @@
     {
         "color_key": "#E8E8E8", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1089.15, 
+        "ignition_temperature": 1643.15, 
         "is_hull": false, 
         "mass": {
             "density": 0.00935, 
             "nominal_mass": 7480
         }, 
-        "melting_temperature": 1643.15, 
+        "melting_temperature": 1089.15, 
         "name": "Stainless Steel", 
         "render_color": "#E8E8E8", 
         "rust_receptivity": 0, 
@@ -2812,13 +2812,13 @@
     {
         "color_key": "#A21000", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1089.15, 
+        "ignition_temperature": 1643.15, 
         "is_hull": true, 
         "mass": {
             "density": 0.17, 
             "nominal_mass": 6500
         }, 
-        "melting_temperature": 1643.15, 
+        "melting_temperature": 1089.15, 
         "name": "Double-Bottom Steel Red", 
         "render_color": "#A21000", 
         "sound_type": "Metal", 
@@ -2862,13 +2862,13 @@
     {
         "color_key": "#7E0C00", 
         "combustion_type": "Combustion", 
-        "ignition_temperature": 1588.15, 
+        "ignition_temperature": 1783.15, 
         "is_hull": true, 
         "mass": {
             "density": 0.17, 
             "nominal_mass": 7500
         }, 
-        "melting_temperature": 1783.15, 
+        "melting_temperature": 1588.15, 
         "name": "Double-Bottom Iron Red", 
         "render_color": "#7E0C00", 
         "sound_type": "Metal", 

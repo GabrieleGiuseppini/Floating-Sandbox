@@ -8,13 +8,13 @@ def adjust_material(material):
     name = material["name"]
 
     if "Steel" in name:
-        material["ignition_temperature"] = 1089.15
-        material["melting_temperature"] = 1643.15
+        material["ignition_temperature"] = 1643.15 # Should be 1089.15, but then it would burn before melting
+        material["melting_temperature"] = 1089.15 # Should be 1643.15, but then it would burn before melting
         material["thermal_conductivity"] = 50.2
         material["specific_heat"] = 490.0
     elif "Iron" in name:
-        material["ignition_temperature"] = 1588.15
-        material["melting_temperature"] = 1783.15
+        material["ignition_temperature"] = 1783.15 # Should be 1588.15, but then it would burn before melting
+        material["melting_temperature"] = 1588.15 # Should be 1783.15, but then it would burn before melting
         material["thermal_conductivity"] = 79.5
         material["specific_heat"] = 449.0
     elif "Titanium" in name:

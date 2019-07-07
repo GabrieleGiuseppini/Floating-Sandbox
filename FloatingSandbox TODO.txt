@@ -1106,6 +1106,7 @@ Render:
 								  UpdateStrains, namely:
 									+ StrengthAdjustment, NumMechanicalDynamicsIterationsAdjustment
 									+ Rest Length
+							= Flip burning and melting point in metals
 						+ Nuke Ship::DecaySprings and, with it, Springs::Set(Current)Strength
 						+ Cleanup low-frequency schedule now that DecaySprings is gone
 							+ Change frequency altogether to 7*6
