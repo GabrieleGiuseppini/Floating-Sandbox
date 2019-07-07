@@ -1082,9 +1082,9 @@ Render:
 					+ Transparency at SettingsDialog
 						+ "Render" section under "Heat"
 						+ Figure out right default value
-			= Physics update:
-				= Ship::Update: 
-					= @Beginning: either call Springs::UpdateParameters(params, points) or call 
+			+ Physics update:
+				+ Ship::Update: 
+					+ @Beginning: either call Springs::UpdateParameters(params, points) or call 
 					  Springs::UpdateDecayAndTemperatureAndParameters(params, points), depending on simulation step
 						+ Springs::UpdateParameters(params, points): 
 							+ iff params updated: UpdateDecayAndTemperatureAndParameters(params, points)
@@ -1093,11 +1093,11 @@ Render:
 							+ Mass augmentation
 							+ Repair (restore)
 							+ Param changes
-						= Springs::UpdateDecayAndTemperatureAndParameters(params, points):
+						+ Springs::UpdateDecayAndTemperatureAndParameters(params, points):
 							+ Assumption: Decay and Temperature have changed (Parameters not necessarily)
-							- (Params, P.Temperature, P.Mass) -> StiffnessCoefficient
+							+ (Params, P.Temperature, P.Mass) -> StiffnessCoefficient
 							+ (Params, P.Mass) -> DampingCoefficient
-							- (Params, P.Decay, P.Temperature) -> S.Strength
+							+ (Params, P.Decay, P.Temperature) -> S.Strength
 								+ Params are needed to include StrengthAdjustment and NumMechanicalDynamicsIterationsAdjustment
 								  in "current" strength
 								+ Add "MaterialStrength", and use "Strength" for strain
@@ -1106,13 +1106,11 @@ Render:
 								  UpdateStrains, namely:
 									+ StrengthAdjustment, NumMechanicalDynamicsIterationsAdjustment
 									+ Rest Length
-							= Flip burning and melting point in metals
+							+ Flip burning and melting point in metals
 						+ Nuke Ship::DecaySprings and, with it, Springs::Set(Current)Strength
 						+ Cleanup low-frequency schedule now that DecaySprings is gone
 							+ Change frequency altogether to 7*6
 						+ Verify assembly: hopefully no call to UpdateForDTP(...springIndex...) from UpdateForDTP(all)
-						- When done, test with stiffness being sticky (never updated to lower because of melting temperature) 
-						  and only strength returning to normal
 					+ Later on: Ship::UpdateHeatDynamics:
 						+ At one slot: call Ship::PropagateHeat()
 							+ Propagation and dissipation
@@ -1172,13 +1170,6 @@ Render:
 				+ Radius at SettingsDialog, under "Flamethrower" in "Heat"
 				+ Fix default value of heat <-> slider
 
-			- GameParameters: make max burning points adjustable
-				- All sub-systems need to allow for > max burning particles, because when the user changes the value down,
-				  the excess ones will need some time to disappear
-				- RenderContext: allocate VBO with MaxMax
-				+ Points: doesn't care as it uses vector
-				- SettingsDialog
-					- Under "Heat", with warning icon like Simulation Quality
 			= GameParameters:
 				+ ThermalConductivityAdjustment 
 				+ IgnitionTemperatureAdjustment (in SettingsDialog: "Burning Point Adjust")
@@ -1186,8 +1177,13 @@ Render:
 				+ CombustionSpeedAdjustment
 				+ CombustionHeatAdjustment
 				+ Also add all of these to settings dialog, under "Heat" tab
-				- Find good min, max, and default values:
-					 - MeltingTemperatureAdjustment
+				- Make max burning points adjustable
+					- All sub-systems need to allow for > max burning particles, because when the user changes the value down,
+					  the excess ones will need some time to disappear
+					- RenderContext: allocate VBO with MaxMax
+					+ Points: doesn't care as it uses vector
+					- SettingsDialog
+						- Under "Heat", with warning icon like Simulation Quality
 
 			= Flame render:
 				+ Make better transition for bottom
@@ -1222,7 +1218,7 @@ Render:
 					+ Subscribe to OnCombustionBegin/End: adjust cumulative volume of Burning sound
 					+ Subscribe to OnCombustionSmothered: play one-time sizzling
 
-			- Experiments/Improvements:
+			= Experiments/Improvements:
 				+ Consider higher default heat from flamethrower tool
 					+ Current (900k) is fine for wood and ropes and cloth
 				+ Fire-generated heat should be 10x in order to spread more
@@ -1233,7 +1229,7 @@ Render:
 				+ Lower the min decay for extinguishing, so things break easier once burnt
 				+ When state is Burning, also decay non-burning neighbors on top of decaying self (so to smear burnt color more around)
 					+ At low-frequency update
-				- Max flame development depends on number of springs connected to point (so ropes have smaller flames)
+				+ Max flame development depends on number of springs connected to point (so ropes have smaller flames)
 
 		- Optimizations:
 			- HeatPropagation:

@@ -492,8 +492,16 @@ void Points::UpdateCombustionLowFrequency(
 
         mCombustionStateBuffer[pointIndex].State = CombustionState::StateType::Developing_1;
         mCombustionStateBuffer[pointIndex].FlameDevelopment = 0.1f; // Seed for development's first phase
+
+        // Max development: random and depending on number of springs connected to this point
+        // (so chains have smaller flames)
+        float const deltaSizeDueToConnectedSprings =
+            static_cast<float>(mConnectedSpringsBuffer[pointIndex].ConnectedSprings.size())
+            * 0.0625f; // 0.0625 -> 0.50 (@8)
         mCombustionStateBuffer[pointIndex].MaxFlameDevelopment =
-            GameRandomEngine::GetInstance().GenerateRandomReal(0.75f, 1.25f); // Randomize max development
+            GameRandomEngine::GetInstance().GenerateRandomReal(
+                0.25f + deltaSizeDueToConnectedSprings,  // 0.75
+                0.75f + deltaSizeDueToConnectedSprings); // 1.25
 
         // Add point to vector of burning points, sorted by plane ID
         assert(mBurningPoints.cend() == std::find(mBurningPoints.cbegin(), mBurningPoints.cend(), pointIndex));

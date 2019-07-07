@@ -1060,7 +1060,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     },
                     std::make_unique<ExponentialSliderCore>(
                         mGameController->GetMinFlameThrowerHeatFlow(),
-                        900.0f,
+                        2000.0f,
                         mGameController->GetMaxFlameThrowerHeatFlow()));
 
                 flameThrowerSizer->Add(

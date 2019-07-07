@@ -423,8 +423,8 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
     //  T - Tm >= DeltaMeltingTMax :    0.0
     //
 
-    float constexpr DeltaMeltingTMax = 1000.0f;
-    float const meltingMultiplier = 1.0f - SmoothStep(0.0f, DeltaMeltingTMax, meltingOverheat);
+    float constexpr DeltaMeltingTMax = 500.0f;
+    float const meltAmount = SmoothStep(0.0f, DeltaMeltingTMax, meltingOverheat); // 0.0 when non melting, 1.0 when melting "a lot"
 
     mCoefficientsBuffer[springIndex].StiffnessCoefficient =
         GameParameters::SpringReductionFraction
@@ -432,7 +432,7 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
         * stiffnessAdjustment
         * massFactor
         / (dt * dt)
-        * meltingMultiplier;
+        * (1.0f - meltAmount);
 
 
     //
@@ -464,13 +464,13 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
         (points.GetDecay(endpointAIndex) + points.GetDecay(endpointBIndex))
         / 2.0f;
 
-    // TODOHERE: temperature
     mBreakingLengthBuffer[springIndex] =
         GetRestLength(springIndex)
         * GetMaterialStrength(springIndex)
         * strengthAdjustment
         * strengthIterationsAdjustment
-        * springDecay;
+        * springDecay
+        * (1.0f + 50.0f * meltAmount);
 }
 
 }

@@ -251,8 +251,8 @@ struct GameParameters
     static float constexpr MaxCombustionHeatAdjustment = 100.0f;
 
     float FlameThrowerHeatFlow; // KJoules/sec
-    static float constexpr MinFlameThrowerHeatFlow = 90.0f;
-    static float constexpr MaxFlameThrowerHeatFlow = 9000.0f;
+    static float constexpr MinFlameThrowerHeatFlow = 200.0f;
+    static float constexpr MaxFlameThrowerHeatFlow = 20000.0f;
 
     float FlameThrowerRadius;
     static float constexpr MinFlameThrowerRadius = 1.0f;
