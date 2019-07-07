@@ -374,8 +374,8 @@ void Points::UpdateCombustionLowFrequency(
     // based on the ignition temperature delta
     mIgnitionCandidates.clear();
 
-    // Decay rate
-    float const effectiveCombustionDecayRate = (30.0f / (gameParameters.CombustionSpeedAdjustment * dt));
+    // Decay rate - the higher this value, the slower fire consumes materials
+    float const effectiveCombustionDecayRate = (90.0f / (gameParameters.CombustionSpeedAdjustment * dt));
 
     // No real reason not to do ephemeral points as well, other than they're
     // currently not expected to burn
@@ -438,7 +438,7 @@ void Points::UpdateCombustionLowFrequency(
 
                 float const massMultiplier = pow(
                     mMaterialsBuffer[pointIndex].Structural->GetMass() / 750.0f,
-                    0.3f); // Magic number: one tenth of the mass is half of the time
+                    0.05f); // Magic number: one tenth of the mass is slightly less than 1.0
 
                 float const totalDecaySteps =
                     effectiveCombustionDecayRate
@@ -486,12 +486,14 @@ void Points::UpdateCombustionLowFrequency(
     {
         auto const pointIndex = std::get<0>(mIgnitionCandidates[i]);
 
+
         //
-        // Start burning
+        // Ignite!
         //
 
         mCombustionStateBuffer[pointIndex].State = CombustionState::StateType::Developing_1;
         mCombustionStateBuffer[pointIndex].FlameDevelopment = 0.1f; // Seed for development's first phase
+        mCombustionStateBuffer[pointIndex].Personality = GameRandomEngine::GetInstance().GenerateRandomNormalizedReal();
 
         // Max development: random and depending on number of springs connected to this point
         // (so chains have smaller flames)
@@ -499,9 +501,8 @@ void Points::UpdateCombustionLowFrequency(
             static_cast<float>(mConnectedSpringsBuffer[pointIndex].ConnectedSprings.size())
             * 0.0625f; // 0.0625 -> 0.50 (@8)
         mCombustionStateBuffer[pointIndex].MaxFlameDevelopment =
-            GameRandomEngine::GetInstance().GenerateRandomReal(
-                0.25f + deltaSizeDueToConnectedSprings,  // 0.75
-                0.75f + deltaSizeDueToConnectedSprings); // 1.25
+            0.25f + deltaSizeDueToConnectedSprings
+            + 0.5f * mCombustionStateBuffer[pointIndex].Personality; // 0.25 + dsdtcs -> 0.75 + dsdtcs
 
         // Add point to vector of burning points, sorted by plane ID
         assert(mBurningPoints.cend() == std::find(mBurningPoints.cbegin(), mBurningPoints.cend(), pointIndex));
@@ -1005,7 +1006,7 @@ void Points::UploadFlames(
                 GetPlaneId(pointIndex),
                 GetPosition(pointIndex),
                 mCombustionStateBuffer[pointIndex].FlameDevelopment,
-                static_cast<float>(pointIndex)); // Personality
+                mCombustionStateBuffer[pointIndex].Personality); // Personality
         }
 
         renderContext.UploadShipFlamesEnd(shipId);

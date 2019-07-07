@@ -92,7 +92,7 @@ void main()
     //
 
     #define NoiseResolution 0.7
-    float fragmentNoise = GetNoise(uv * NoiseResolution + vec2(flamePersonalitySeed)/777.0 + vec2(0.0, -flameTime/0.8));
+    float fragmentNoise = GetNoise(uv * NoiseResolution + vec2(flamePersonalitySeed) + vec2(0.0, -flameTime/0.8));
 
 
     //

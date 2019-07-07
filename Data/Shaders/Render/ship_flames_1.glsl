@@ -31,7 +31,7 @@ void main()
 #define in varying
 
 // Inputs from previous shader
-in float flamePersonalitySeed;
+in float flamePersonalitySeed; // [0.0, 1.0]
 in vec2 flameSpacePosition; // (x=[-0.5, 0.5], y=[0.0, 1.0])
 
 // The texture
@@ -94,7 +94,7 @@ void main()
     //
 
     #define NoiseResolution 0.4
-    float fragmentNoise = GetNoise(uv * NoiseResolution + vec2(flamePersonalitySeed)/777.0 + vec2(0.0, -flameTime));
+    float fragmentNoise = GetNoise(uv * NoiseResolution + vec2(flamePersonalitySeed) + vec2(0.0, -flameTime));
     
     
     //

@@ -948,7 +948,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     "Combustion Speed Adjustment",
-                    "Adjusts the rate with which materials burn.",
+                    "Adjusts the rate with which materials consume when burning.",
                     mGameController->GetCombustionSpeedAdjustment(),
                     [this](float /*value*/)
                     {

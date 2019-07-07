@@ -110,11 +110,13 @@ private:
 
         float FlameDevelopment;
         float MaxFlameDevelopment;
+        float Personality; // Random number between 0.0 and 1.0
 
         CombustionState()
             : State(StateType::NotBurning)
             , FlameDevelopment(0.0f)
             , MaxFlameDevelopment(0.0f)
+            , Personality(0.0f)
         {}
     };
 

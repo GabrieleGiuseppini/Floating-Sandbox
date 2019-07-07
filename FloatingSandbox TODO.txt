@@ -1202,9 +1202,9 @@ Render:
 				+ Try without red border, to better merge multiple flames together
 				- Multi-flame improvements:
 					- Try dual-phase rendering: border only first, body only then
-					- Make better personality (less locality-aware, more randomized)
-						- Assign actual random number between zero and one at ignition time
-						- Change shader to expect value between zero and one
+					+ Make better personality (less locality-aware, more randomized)
+						+ Assign actual random number between zero and one at ignition time
+						+ Change shader to expect value between zero and one
 					- Try more transparency on the borders
 				- See if can fix problem with flames on ropes that swing behind triangles
 					- Separate render step for chains, and flames belong to chains if their point
