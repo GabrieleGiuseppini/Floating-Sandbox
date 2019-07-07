@@ -1582,7 +1582,8 @@ void Ship::PropagateHeat(
     float const effectiveWaterConvectiveHeatTransferCoefficient =
         GameParameters::WaterConvectiveHeatTransferCoefficient
         * dt
-        * gameParameters.HeatDissipationAdjustment;
+        * gameParameters.HeatDissipationAdjustment
+        * 2.0f; // We exaggerate a bit to take into account water wetting the material and thus making it more difficult for fire to re-kindle
 
     float const effectiveAirConvectiveHeatTransferCoefficient =
         GameParameters::AirConvectiveHeatTransferCoefficient

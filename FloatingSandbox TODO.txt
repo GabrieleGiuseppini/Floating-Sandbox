@@ -1112,12 +1112,14 @@ Render:
 						+ Verify assembly: hopefully no call to UpdateForDTP(...springIndex...) from UpdateForDTP(all)
 						- When done, test with stiffness being sticky (never updated to lower because of melting temperature) 
 						  and only strength returning to normal
-					= Later on: Ship::UpdateHeatDynamics:
-						= At one slot: call Ship::PropagateHeat()
-							= Propagation and dissipation
+					+ Later on: Ship::UpdateHeatDynamics:
+						+ At one slot: call Ship::PropagateHeat()
+							+ Propagation and dissipation
 								+ New global constants: AirTemperature, WaterTemperature
 								+ Use specific dt's calc's as constexpr's in UpdateTemperature based off frequency of steps
-								= Dissipation: use air or water temp, depending on whether it's above water or below
+								+ Dissipation: use air or water temp, depending on whether it's above water or below
+									+ Exaggerate water dissipation, so that smothered fire does not rekindle immediately
+										+ First, double-check calculations, however
 							+ Cleanup TODO's (and do we have a useless step frequency constant now?) to keep it at each step
 						+ At another slot: call Points::UpdateCombustionStateMachineLowFrequency(...)
 							+ For each point:
@@ -1201,12 +1203,15 @@ Render:
 				+ Make same colors as flamethrower
 				+ Adjust bottom
 				+ Try without red border, to better merge multiple flames together
-				- Try dual-phase rendering: border only first, body only then
-				- Make better personality (less locality-aware, more randomized)
-					- Assign actual random number between zero and one
-					- Change shader to expect value between zero and one
-				- Try more transparency on the borders
+				- Multi-flame improvements:
+					- Try dual-phase rendering: border only first, body only then
+					- Make better personality (less locality-aware, more randomized)
+						- Assign actual random number between zero and one at ignition time
+						- Change shader to expect value between zero and one
+					- Try more transparency on the borders
 				- See if can fix problem with flames on ropes that swing behind triangles
+					- Separate render step for chains, and flames belong to chains if their point
+					  has no attached triangles
 
 			+ Sound:
 				+ Media:
