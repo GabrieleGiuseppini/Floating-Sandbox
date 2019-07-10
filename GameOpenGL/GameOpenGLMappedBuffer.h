@@ -33,7 +33,7 @@ public:
         }
     }
 
-    void map(size_t size)
+    inline void map(size_t size)
     {
         assert(nullptr == mMappedBuffer);
 
@@ -52,7 +52,13 @@ public:
         mAllocatedSize = size;
     }
 
-    void unmap()
+    inline void map_and_fill(size_t size)
+    {
+        map(size);
+        mSize = size; // "Fill" up the buffer
+    }
+
+    inline void unmap()
     {
         // Might not be mapped in case the size was zero
         if (nullptr != mMappedBuffer)
@@ -74,7 +80,17 @@ public:
         return *new(&(((TElement *)mMappedBuffer)[mSize++])) TElement(std::forward<TArgs>(args)...);
     }
 
-    void reset()
+    template<typename... TArgs>
+    inline TElement & emplace_at(
+        size_t index,
+        TArgs&&... args)
+    {
+        assert(nullptr != mMappedBuffer);
+        assert(index < mSize);
+        return *new(&(((TElement *)mMappedBuffer)[index])) TElement(std::forward<TArgs>(args)...);
+    }
+
+    inline void reset()
     {
         assert(nullptr == mMappedBuffer);
 

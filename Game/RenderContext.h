@@ -1040,11 +1040,12 @@ public:
 
     inline void UploadShipFlamesStart(
         ShipId shipId,
+        size_t count,
         float windSpeedMagnitude)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId]->UploadFlamesStart(windSpeedMagnitude);
+        mShips[shipId]->UploadFlamesStart(count, windSpeedMagnitude);
     }
 
     inline void UploadShipFlame(

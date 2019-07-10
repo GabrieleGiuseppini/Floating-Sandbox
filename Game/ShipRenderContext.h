@@ -264,7 +264,9 @@ public:
     // Flames
     //
 
-    void UploadFlamesStart(float windSpeedMagnitude);
+    void UploadFlamesStart(
+        size_t count,
+        float windSpeedMagnitude);
 
     /*
      * Note: assumption is that upload happens in plane ID order (for depth sorting).
@@ -294,28 +296,41 @@ public:
         // Store quad vertices
         //
 
-        auto & flameVertexBuffer = isOnChain
-            ? mFlameVertexBackgroundBuffer
-            : mFlameVertexForegroundBuffer;
+        size_t vertexIndex;
+        if (isOnChain)
+        {
+            vertexIndex = mFlameBackgroundCount * 6u;
+            ++mFlameBackgroundCount;
+        }
+        else
+        {
+            ++mFlameForegroundCount;
+            vertexIndex = mFlameVertexBuffer.size() - mFlameForegroundCount * 6u;
+        }
+
+        assert(vertexIndex < mFlameVertexBuffer.size());
 
         // Triangle 1
 
         // Top-left
-        flameVertexBuffer.emplace_back(
+        mFlameVertexBuffer.emplace_at(
+            vertexIndex++,
             vec2f(leftX, topY),
             static_cast<float>(planeId),
             flamePersonalitySeed,
             vec2f(-1.0, 1.0));
 
         // Top-right
-        flameVertexBuffer.emplace_back(
+        mFlameVertexBuffer.emplace_at(
+            vertexIndex++,
             vec2f(rightX, topY),
             static_cast<float>(planeId),
             flamePersonalitySeed,
             vec2f(1.0, 1.0));
 
         // Bottom-left
-        flameVertexBuffer.emplace_back(
+        mFlameVertexBuffer.emplace_at(
+            vertexIndex++,
             vec2f(leftX, bottomY),
             static_cast<float>(planeId),
             flamePersonalitySeed,
@@ -324,21 +339,24 @@ public:
         // Triangle 2
 
         // Top-Right
-        flameVertexBuffer.emplace_back(
+        mFlameVertexBuffer.emplace_at(
+            vertexIndex++,
             vec2f(rightX, topY),
             static_cast<float>(planeId),
             flamePersonalitySeed,
             vec2f(1.0, 1.0));
 
         // Bottom-left
-        flameVertexBuffer.emplace_back(
+        mFlameVertexBuffer.emplace_at(
+            vertexIndex++,
             vec2f(leftX, bottomY),
             static_cast<float>(planeId),
             flamePersonalitySeed,
             vec2f(-1.0, 0.0));
 
         // Bottom-right
-        flameVertexBuffer.emplace_back(
+        mFlameVertexBuffer.emplace_at(
+            vertexIndex++,
             vec2f(rightX, bottomY),
             static_cast<float>(planeId),
             flamePersonalitySeed,
@@ -562,8 +580,6 @@ private:
 
 private:
 
-    struct FlameVertex;
-
     void UpdateOrthoMatrices();
     void OnAmbientLightIntensityUpdated();
     void OnWaterColorUpdated();
@@ -574,9 +590,8 @@ private:
 
     template<ProgramType ShaderProgram>
     void RenderFlames(
-        GameOpenGLMappedBuffer<FlameVertex, GL_ARRAY_BUFFER> const & flameVertexBuffer,
-        GameOpenGLVBO const & flameVertexVBO,
-        GameOpenGLVAO const & flameVAO);
+        size_t startFlameIndex,
+        size_t flameCount);
     void RenderGenericTextures();
     void RenderVectorArrows();
 
@@ -699,10 +714,10 @@ private:
     std::vector<LineElement> mStressedSpringElementBuffer;
     GameOpenGLVBO mStressedSpringElementVBO;
 
-    GameOpenGLMappedBuffer<FlameVertex, GL_ARRAY_BUFFER> mFlameVertexBackgroundBuffer;
-    GameOpenGLVBO mFlameVertexBackgroundVBO;
-    GameOpenGLMappedBuffer<FlameVertex, GL_ARRAY_BUFFER> mFlameVertexForegroundBuffer;
-    GameOpenGLVBO mFlameVertexForegroundVBO;
+    GameOpenGLMappedBuffer<FlameVertex, GL_ARRAY_BUFFER> mFlameVertexBuffer;
+    size_t mFlameBackgroundCount;
+    size_t mFlameForegroundCount;
+    GameOpenGLVBO mFlameVertexVBO;
     RunningAverage<18> mWindSpeedMagnitudeRunningAverage;
     float mCurrentWindSpeedMagnitudeAverage;
 
@@ -744,8 +759,7 @@ private:
     //
 
     GameOpenGLVAO mShipVAO;
-    GameOpenGLVAO mFlameBackgroundVAO;
-    GameOpenGLVAO mFlameForegroundVAO;
+    GameOpenGLVAO mFlameVAO;
     GameOpenGLVAO mGenericTextureVAO;
     GameOpenGLVAO mVectorArrowVAO;
 

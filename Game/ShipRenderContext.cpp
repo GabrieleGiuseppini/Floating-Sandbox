@@ -59,10 +59,10 @@ ShipRenderContext::ShipRenderContext(
     , mStressedSpringElementBuffer()
     , mStressedSpringElementVBO()
     //
-    , mFlameVertexBackgroundBuffer()
-    , mFlameVertexBackgroundVBO()
-    , mFlameVertexForegroundBuffer()
-    , mFlameVertexForegroundVBO()
+    , mFlameVertexBuffer()
+    , mFlameBackgroundCount(0)
+    , mFlameForegroundCount(0)
+    , mFlameVertexVBO()
     , mWindSpeedMagnitudeRunningAverage(0.0f)
     , mCurrentWindSpeedMagnitudeAverage(0.0f)
     //
@@ -89,8 +89,7 @@ ShipRenderContext::ShipRenderContext(
     , mTriangleElementVBOStartIndex(0)
     // VAOs
     , mShipVAO()
-    , mFlameBackgroundVAO()
-    , mFlameForegroundVAO()
+    , mFlameVAO()
     , mGenericTextureVAO()
     , mVectorArrowVAO()
     // Textures
@@ -129,8 +128,8 @@ ShipRenderContext::ShipRenderContext(
     // Initialize buffers
     //
 
-    GLuint vbos[9];
-    glGenBuffers(9, vbos);
+    GLuint vbos[8];
+    glGenBuffers(8, vbos);
     CheckOpenGLError();
 
     mPointAttributeGroup1VBO = vbos[0];
@@ -156,20 +155,16 @@ ShipRenderContext::ShipRenderContext(
     mStressedSpringElementVBO = vbos[4];
     mStressedSpringElementBuffer.reserve(1000); // Arbitrary
 
-    mFlameVertexBackgroundVBO = vbos[5];
-    glBindBuffer(GL_ARRAY_BUFFER, *mFlameVertexBackgroundVBO);
+    mFlameVertexVBO = vbos[5];
+    glBindBuffer(GL_ARRAY_BUFFER, *mFlameVertexVBO);
     glBufferData(GL_ARRAY_BUFFER, GameParameters::MaxBurningParticles * 6 * sizeof(FlameVertex), nullptr, GL_STREAM_DRAW);
 
-    mFlameVertexForegroundVBO = vbos[6];
-    glBindBuffer(GL_ARRAY_BUFFER, *mFlameVertexForegroundVBO);
-    glBufferData(GL_ARRAY_BUFFER, GameParameters::MaxBurningParticles * 6 * sizeof(FlameVertex), nullptr, GL_STREAM_DRAW);
-
-    mGenericTextureVBO = vbos[7];
+    mGenericTextureVBO = vbos[6];
     glBindBuffer(GL_ARRAY_BUFFER, *mGenericTextureVBO);
     mGenericTextureVBOAllocatedVertexCount = GameParameters::MaxEphemeralParticles * 6; // Initial guess, might get more
     glBufferData(GL_ARRAY_BUFFER, mGenericTextureVBOAllocatedVertexCount * sizeof(GenericTextureVertex), nullptr, GL_STREAM_DRAW);
 
-    mVectorArrowVBO = vbos[8];
+    mVectorArrowVBO = vbos[7];
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -244,26 +239,12 @@ ShipRenderContext::ShipRenderContext(
 
     {
         glGenVertexArrays(1, &tmpGLuint);
-        mFlameBackgroundVAO = tmpGLuint;
+        mFlameVAO = tmpGLuint;
 
-        glBindVertexArray(*mFlameBackgroundVAO);
-
-        // Describe vertex attributes
-        glBindBuffer(GL_ARRAY_BUFFER, *mFlameVertexBackgroundVBO);
-        static_assert(sizeof(FlameVertex) == (4 + 2) * sizeof(float));
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Flame1));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Flame1), 4, GL_FLOAT, GL_FALSE, sizeof(FlameVertex), (void*)0);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Flame2));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Flame2), 2, GL_FLOAT, GL_FALSE, sizeof(FlameVertex), (void*)((4) * sizeof(float)));
-        CheckOpenGLError();
-
-        glGenVertexArrays(1, &tmpGLuint);
-        mFlameForegroundVAO = tmpGLuint;
-
-        glBindVertexArray(*mFlameForegroundVAO);
+        glBindVertexArray(*mFlameVAO);
 
         // Describe vertex attributes
-        glBindBuffer(GL_ARRAY_BUFFER, *mFlameVertexForegroundVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, *mFlameVertexVBO);
         static_assert(sizeof(FlameVertex) == (4 + 2) * sizeof(float));
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Flame1));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Flame1), 4, GL_FLOAT, GL_FALSE, sizeof(FlameVertex), (void*)0);
@@ -931,8 +912,9 @@ void ShipRenderContext::RenderStart(PlaneId maxMaxPlaneId)
     // Reset flames, air bubbles, and generic textures
     //
 
-    mFlameVertexBackgroundBuffer.reset();
-    mFlameVertexForegroundBuffer.reset();
+    mFlameVertexBuffer.reset();
+    mFlameBackgroundCount = 0u;
+    mFlameForegroundCount = 0u;
 
     glBindBuffer(GL_ARRAY_BUFFER, *mGenericTextureVBO);
     mAirBubbleVertexBuffer.map(mGenericTextureVBOAllocatedVertexCount);
@@ -1192,14 +1174,13 @@ void ShipRenderContext::UploadElementStressedSpringsEnd()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void ShipRenderContext::UploadFlamesStart(float windSpeedMagnitude)
+void ShipRenderContext::UploadFlamesStart(
+    size_t count,
+    float windSpeedMagnitude)
 {
     // Prepare buffer - map flame VBO's
-    glBindBuffer(GL_ARRAY_BUFFER, *mFlameVertexBackgroundVBO);
-    mFlameVertexBackgroundBuffer.map(GameParameters::MaxBurningParticles * 6);
-    CheckOpenGLError();
-    glBindBuffer(GL_ARRAY_BUFFER, *mFlameVertexForegroundVBO);
-    mFlameVertexForegroundBuffer.map(GameParameters::MaxBurningParticles * 6);
+    glBindBuffer(GL_ARRAY_BUFFER, *mFlameVertexVBO);
+    mFlameVertexBuffer.map_and_fill(count * 6);
     CheckOpenGLError();
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -1249,12 +1230,11 @@ void ShipRenderContext::UploadFlamesStart(float windSpeedMagnitude)
 
 void ShipRenderContext::UploadFlamesEnd()
 {
+    assert((mFlameBackgroundCount + mFlameForegroundCount) * 6u == mFlameVertexBuffer.size());
+
     // Unmap flame VBO's
-    glBindBuffer(GL_ARRAY_BUFFER, *mFlameVertexBackgroundVBO);
-    mFlameVertexBackgroundBuffer.unmap();
-    CheckOpenGLError();
-    glBindBuffer(GL_ARRAY_BUFFER, *mFlameVertexForegroundVBO);
-    mFlameVertexForegroundBuffer.unmap();
+    glBindBuffer(GL_ARRAY_BUFFER, *mFlameVertexVBO);
+    mFlameVertexBuffer.unmap();
     CheckOpenGLError();
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
@@ -1362,14 +1342,16 @@ void ShipRenderContext::RenderEnd()
     if (mShipFlameRenderMode == ShipFlameRenderMode::Mode1)
     {
         RenderFlames<ProgramType::ShipFlamesBackground1>(
-            mFlameVertexBackgroundBuffer, mFlameVertexBackgroundVBO, mFlameBackgroundVAO);
+            0,
+            mFlameBackgroundCount);
     }
     else
     {
         assert(mShipFlameRenderMode == ShipFlameRenderMode::Mode2);
 
         RenderFlames<ProgramType::ShipFlamesBackground2>(
-            mFlameVertexBackgroundBuffer, mFlameVertexBackgroundVBO, mFlameBackgroundVAO);
+            0,
+            mFlameBackgroundCount);
     }
 
 
@@ -1605,14 +1587,16 @@ void ShipRenderContext::RenderEnd()
     if (mShipFlameRenderMode == ShipFlameRenderMode::Mode1)
     {
         RenderFlames<ProgramType::ShipFlamesForeground1>(
-            mFlameVertexForegroundBuffer, mFlameVertexForegroundVBO, mFlameForegroundVAO);
+            mFlameBackgroundCount,
+            mFlameForegroundCount);
     }
     else
     {
         assert(mShipFlameRenderMode == ShipFlameRenderMode::Mode2);
 
         RenderFlames<ProgramType::ShipFlamesForeground2>(
-            mFlameVertexForegroundBuffer, mFlameVertexForegroundVBO, mFlameForegroundVAO);
+            mFlameBackgroundCount,
+            mFlameForegroundCount);
     }
 
 
@@ -1646,14 +1630,13 @@ void ShipRenderContext::RenderEnd()
 
 template<ProgramType ShaderProgram>
 void ShipRenderContext::RenderFlames(
-    GameOpenGLMappedBuffer<FlameVertex, GL_ARRAY_BUFFER> const & flameVertexBuffer,
-    GameOpenGLVBO const & flameVertexVBO,
-    GameOpenGLVAO const & flameVAO)
+    size_t startFlameIndex,
+    size_t flameCount)
 {
-    if (flameVertexBuffer.size() > 0
+    if (flameCount > 0
         && mShipFlameRenderMode != ShipFlameRenderMode::NoDraw)
     {
-        glBindVertexArray(*flameVAO);
+        glBindVertexArray(*mFlameVAO);
 
         mShaderManager.ActivateProgram<ShaderProgram>();
 
@@ -1662,16 +1645,18 @@ void ShipRenderContext::RenderFlames(
             GameWallClock::GetInstance().NowAsFloat());
 
         // Bind VBO
-        glBindBuffer(GL_ARRAY_BUFFER, *flameVertexVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, *mFlameVertexVBO);
 
         // Render
-        assert(0 == (flameVertexBuffer.size() % 6));
-        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(flameVertexBuffer.size()));
+        glDrawArrays(
+            GL_TRIANGLES,
+            static_cast<GLint>(startFlameIndex * 6u),
+            static_cast<GLint>(flameCount * 6u));
 
         glBindVertexArray(0);
 
         // Update stats
-        mRenderStatistics.LastRenderedShipFlames += flameVertexBuffer.size() / 6; // # of quads
+        mRenderStatistics.LastRenderedShipFlames += flameCount; // # of quads
     }
 }
 

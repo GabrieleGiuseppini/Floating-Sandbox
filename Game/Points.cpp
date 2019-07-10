@@ -996,7 +996,7 @@ void Points::UploadFlames(
 {
     if (renderContext.GetShipFlameRenderMode() != ShipFlameRenderMode::NoDraw)
     {
-        renderContext.UploadShipFlamesStart(shipId, windSpeedMagnitude);
+        renderContext.UploadShipFlamesStart(shipId, mBurningPoints.size(), windSpeedMagnitude);
 
         // Upload flames, in order of plane ID
         for (auto const pointIndex : mBurningPoints)
