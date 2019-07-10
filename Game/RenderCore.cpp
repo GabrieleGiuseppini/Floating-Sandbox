@@ -31,10 +31,14 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::OceanFlat;
     else if (lstr == "ocean_texture")
         return ProgramType::OceanTexture;
-    else if (lstr == "ship_flames_1")
-        return ProgramType::ShipFlames1;
-    else if (lstr == "ship_flames_2")
-        return ProgramType::ShipFlames2;
+    else if (lstr == "ship_flames_background_1")
+        return ProgramType::ShipFlamesBackground1;
+    else if (lstr == "ship_flames_background_2")
+        return ProgramType::ShipFlamesBackground2;
+    else if (lstr == "ship_flames_foreground_1")
+        return ProgramType::ShipFlamesForeground1;
+    else if (lstr == "ship_flames_foreground_2")
+        return ProgramType::ShipFlamesForeground2;
     else if (lstr == "ship_generic_textures")
         return ProgramType::ShipGenericTextures;
     else if (lstr == "ship_points_color")
@@ -97,10 +101,14 @@ std::string ProgramTypeToStr(ProgramType program)
         return "OceanFlat";
     case ProgramType::OceanTexture:
         return "OceanTexture";
-    case ProgramType::ShipFlames1:
-        return "ShipFlames1";
-    case ProgramType::ShipFlames2:
-        return "ShipFlames2";
+    case ProgramType::ShipFlamesBackground1:
+        return "ShipFlamesBackground1";
+    case ProgramType::ShipFlamesBackground2:
+        return "ShipFlamesBackground2";
+    case ProgramType::ShipFlamesForeground1:
+        return "ShipFlamesForeground1";
+    case ProgramType::ShipFlamesForeground2:
+        return "ShipFlamesForeground2";
     case ProgramType::ShipGenericTextures:
         return "ShipGenericTextures";
     case ProgramType::ShipPointsColor:

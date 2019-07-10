@@ -137,7 +137,7 @@ void main()
     // Emit
     //
 	        
-    if (thickness < 0.2)
+    if (thickness < 0.25)
         discard;
     
     vec3 col1 = mix(vec3(1.0, 1.0, 0.0), vec3(1.0, 1.0, 0.6), thickness);

@@ -390,12 +390,14 @@ Render:
 			+ Cleanup logs and code for Correct/Wrong counts
 			+ Cleanup TODOs
 
-		- Check bug:
-			- idk if this is a bug or not but the tiny particles that appear after something is destroyed start flickering like christmas lights with rot at 1000 when uderwater
+		- Check bugs:
+			- 1: Idk if this is a bug or not but the tiny particles that appear after something is destroyed start flickering like christmas lights with rot at 1000 when uderwater
+			- 2: Two happy fox bois crash with opengl
 
 		- Thanos' Snap
 			- Tool managed by GameController
-				- Dedicated state machine (mThanosSnapStateMachine)
+				- Dedicated state machine (mThanosSnapStateMachine) - OR NOT, see below
+					- Additive, up to N (8)
 					- At beginning: fire "Silence" event
 						- SoundController::OnSilence: fade out sinking music
 					- At beginning and end: call Wind::SetSilence(float between 0.0 and 1.0)
@@ -405,7 +407,10 @@ Render:
 						- Ship::ApplyThanosSnap(centerPos, innerRadius, outerRadius)
 							- Deletes springs (and triangles) (w/no noise)
 						- OceanSurface::ApplyThanosSnap(centerPos, innerRadius, outerRadius)
-							- Flattens surface that falls in crown to ~-1.0 						
+							- Flattens surface that falls in crown to ~-1.0
+				- Might be good to consolidate all GameController state machines in an IStateMachine
+					- IStateMachine is data only, execution done by GC in switch(type), in separate cpp file
+
 			= Cursors (up and down)
 			= Snap sound
 
@@ -517,6 +522,8 @@ Render:
 
 
 - Suggestions to spec:
+	- Temperature tool - to get temperature of points
+	- Superheated materials vaporize
 	- You should add ground burying and for the ships and debris.
 	- Make lights not propagate through hull
 	- Sun rays
@@ -1154,21 +1161,41 @@ Render:
 				+ Calls Points::UploadFlames()
 					+ Uploads flames in order of heap
 
-			- Electrical update: inject heat from working lamps and generators
-				- New material property - ~"HeatProduced"
+			- See Pac0master's bug: looks like when the cardboard of the funnel touches the water it starts generating a super high amount of heat
+
+			- Electrical:
+				- Update: inject heat from working lamps and generators
+					- New material property - ~"HeatProduced"
+				- Lights and wires break at high temperature
 
 			- Interaction with bombs:
 				- Timer, Impact, RC: TODO
 				- TODO: others?
 
-			+ Flamethrower physics:
-				+ Ship::Interaction:
-					+ GameParameters::FlameThrowerHeat
-						+ Absolute value, in J
-						+ SettingsDialog, under "Flamethrower" in "Heat"
-					+ Convert into DeltaT and inject in radius, smoothing radius
-				+ Radius at SettingsDialog, under "Flamethrower" in "Heat"
-				+ Fix default value of heat <-> slider
+			= Flamethrower:
+				+ Physics:
+					+ Ship::Interaction:
+						+ GameParameters::FlameThrowerHeat
+							+ Absolute value, in J
+							+ SettingsDialog, under "Flamethrower" in "Heat"
+						+ Convert into DeltaT and inject in radius, smoothing radius
+					+ Radius at SettingsDialog, under "Flamethrower" in "Heat"
+					+ Fix default value of heat <-> slider
+				- Bump up power
+					- See if latest value matches Pac0master's
+				- Rename it: "Heat Blaster?"
+					- Code & UI
+					- Shift cools down
+						- New HeatBlasterAction enum at GameTypes {Heat,Cool}
+						- Interaction: switch on action and either add or remove heat (w/fraction though, for 3rd principle)
+						- Rendering:
+							- Shader chosen depending on mCurrentHeatBlasterAction
+								- Two shaders, use #include's with parameters to make these changes:
+									- Flame direction (outward or inward, "speedMultiplier")
+									- Flame colors (for cooling, turn R into B) ("midColor" and "highColor")
+						- Cursor (simply upside-down and mirrored)
+				- Option to turn off flame rendering
+					- @ GameController
 
 			= GameParameters:
 				+ ThermalConductivityAdjustment 
@@ -1206,9 +1233,14 @@ Render:
 						+ Assign actual random number between zero and one at ignition time
 						+ Change shader to expect value between zero and one
 					- Try more transparency on the borders
-				- See if can fix problem with flames on ropes that swing behind triangles
-					- Separate render step for chains, and flames belong to chains if their point
+				= See if can fix problem with flames on ropes that swing behind triangles
+					+ Separate render step for chains, and flames belong to chains if their point
 					  has no attached triangles
+					+ Test
+					- If works:
+						- Go back to one single buffer (& single VBO, & single VAO), having StartUpload declare total # of flames, 
+						  and adding bg ones at beginning and fg ones at end
+						  - Keep track of beginning of fg ones == end of bg ones
 
 			+ Sound:
 				+ Media:
@@ -1643,10 +1675,15 @@ Render:
 		- Spec: 
 			- Game starts always with default settings; user has the ability though to load named settings
 				- Where "defaults" is hardcoded name
-			- Game also comes with own settings
-				- Under Data
+			- Game also comes with own "themes" settings
+				- Under Data\Themes
 				- Managed by SettingsDialog
-			- Saved settings have a name, which is the one shown to the user (filename is opaque and has unique prefix before mangled name)
+				- Read-only (marked as "system" settings)
+			- Saved settings have a name, which is the one shown to the user (filename is opaque and has unique prefix before mangled name),
+			  and a description
+				- User may overwrite non-system saved settings
+					- TBD: how does UI look like?
+			- Saved settings do not have necessarily all settings (e.g. to allow for graphical themes, which only specify certain render properties)
 			- Review the below based on this (named settings)
 
 			- SettingsManager (@FloatingSandbox):

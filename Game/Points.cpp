@@ -1006,7 +1006,8 @@ void Points::UploadFlames(
                 GetPlaneId(pointIndex),
                 GetPosition(pointIndex),
                 mCombustionStateBuffer[pointIndex].FlameDevelopment,
-                mCombustionStateBuffer[pointIndex].Personality); // Personality
+                mCombustionStateBuffer[pointIndex].Personality,
+                mConnectedTrianglesBuffer[pointIndex].ConnectedTriangles.empty()); // IsOnChain
         }
 
         renderContext.UploadShipFlamesEnd(shipId);

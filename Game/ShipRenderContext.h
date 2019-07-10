@@ -273,7 +273,8 @@ public:
         PlaneId planeId,
         vec2f const & baseCenterPosition,
         float scale,
-        float flamePersonalitySeed)
+        float flamePersonalitySeed,
+        bool isOnChain)
     {
         //
         // Calculate flame quad
@@ -293,24 +294,28 @@ public:
         // Store quad vertices
         //
 
+        auto & flameVertexBuffer = isOnChain
+            ? mFlameVertexBackgroundBuffer
+            : mFlameVertexForegroundBuffer;
+
         // Triangle 1
 
         // Top-left
-        mFlameVertexBuffer.emplace_back(
+        flameVertexBuffer.emplace_back(
             vec2f(leftX, topY),
             static_cast<float>(planeId),
             flamePersonalitySeed,
             vec2f(-1.0, 1.0));
 
         // Top-right
-        mFlameVertexBuffer.emplace_back(
+        flameVertexBuffer.emplace_back(
             vec2f(rightX, topY),
             static_cast<float>(planeId),
             flamePersonalitySeed,
             vec2f(1.0, 1.0));
 
         // Bottom-left
-        mFlameVertexBuffer.emplace_back(
+        flameVertexBuffer.emplace_back(
             vec2f(leftX, bottomY),
             static_cast<float>(planeId),
             flamePersonalitySeed,
@@ -319,21 +324,21 @@ public:
         // Triangle 2
 
         // Top-Right
-        mFlameVertexBuffer.emplace_back(
+        flameVertexBuffer.emplace_back(
             vec2f(rightX, topY),
             static_cast<float>(planeId),
             flamePersonalitySeed,
             vec2f(1.0, 1.0));
 
         // Bottom-left
-        mFlameVertexBuffer.emplace_back(
+        flameVertexBuffer.emplace_back(
             vec2f(leftX, bottomY),
             static_cast<float>(planeId),
             flamePersonalitySeed,
             vec2f(-1.0, 0.0));
 
         // Bottom-right
-        mFlameVertexBuffer.emplace_back(
+        flameVertexBuffer.emplace_back(
             vec2f(rightX, bottomY),
             static_cast<float>(planeId),
             flamePersonalitySeed,
@@ -557,6 +562,8 @@ private:
 
 private:
 
+    struct FlameVertex;
+
     void UpdateOrthoMatrices();
     void OnAmbientLightIntensityUpdated();
     void OnWaterColorUpdated();
@@ -565,7 +572,11 @@ private:
     void OnHeatOverlayTransparencyUpdated();
     void OnShipFlameSizeAdjustmentUpdated();
 
-    void RenderFlames();
+    template<ProgramType ShaderProgram>
+    void RenderFlames(
+        GameOpenGLMappedBuffer<FlameVertex, GL_ARRAY_BUFFER> const & flameVertexBuffer,
+        GameOpenGLVBO const & flameVertexVBO,
+        GameOpenGLVAO const & flameVAO);
     void RenderGenericTextures();
     void RenderVectorArrows();
 
@@ -688,8 +699,10 @@ private:
     std::vector<LineElement> mStressedSpringElementBuffer;
     GameOpenGLVBO mStressedSpringElementVBO;
 
-    GameOpenGLMappedBuffer<FlameVertex, GL_ARRAY_BUFFER> mFlameVertexBuffer;
-    GameOpenGLVBO mFlameVertexVBO;
+    GameOpenGLMappedBuffer<FlameVertex, GL_ARRAY_BUFFER> mFlameVertexBackgroundBuffer;
+    GameOpenGLVBO mFlameVertexBackgroundVBO;
+    GameOpenGLMappedBuffer<FlameVertex, GL_ARRAY_BUFFER> mFlameVertexForegroundBuffer;
+    GameOpenGLVBO mFlameVertexForegroundVBO;
     RunningAverage<18> mWindSpeedMagnitudeRunningAverage;
     float mCurrentWindSpeedMagnitudeAverage;
 
@@ -731,7 +744,8 @@ private:
     //
 
     GameOpenGLVAO mShipVAO;
-    GameOpenGLVAO mFlameVAO;
+    GameOpenGLVAO mFlameBackgroundVAO;
+    GameOpenGLVAO mFlameForegroundVAO;
     GameOpenGLVAO mGenericTextureVAO;
     GameOpenGLVAO mVectorArrowVAO;
 

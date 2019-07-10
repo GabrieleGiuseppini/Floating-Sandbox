@@ -1052,7 +1052,8 @@ public:
         PlaneId planeId,
         vec2f const & baseCenterPosition,
         float scale,
-        float flamePersonalitySeed)
+        float flamePersonalitySeed,
+        bool isOnChain)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
@@ -1060,7 +1061,8 @@ public:
             planeId,
             baseCenterPosition,
             scale,
-            flamePersonalitySeed);
+            flamePersonalitySeed,
+            isOnChain);
     }
 
     void UploadShipFlamesEnd(ShipId shipId)

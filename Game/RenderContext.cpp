@@ -475,12 +475,15 @@ RenderContext::RenderContext(
     glBindTexture(GL_TEXTURE_2D, mUploadedTextureManager->GetOpenGLHandle(TextureGroupType::Noise, 0));
     CheckOpenGLError();
 
-    // Set texture in shaders
-    static_assert(2 == static_cast<size_t>(ProgramType::_LastShipFlames) - static_cast<size_t>(ProgramType::_FirstShipFlames) + 1);
-    mShaderManager->ActivateProgram<ProgramType::ShipFlames1>();
-    mShaderManager->SetTextureParameters<ProgramType::ShipFlames1>();
-    mShaderManager->ActivateProgram<ProgramType::ShipFlames2>();
-    mShaderManager->SetTextureParameters<ProgramType::ShipFlames2>();
+    // Set noise texture in shaders
+    mShaderManager->ActivateProgram<ProgramType::ShipFlamesBackground1>();
+    mShaderManager->SetTextureParameters<ProgramType::ShipFlamesBackground1>();
+    mShaderManager->ActivateProgram<ProgramType::ShipFlamesBackground2>();
+    mShaderManager->SetTextureParameters<ProgramType::ShipFlamesBackground2>();
+    mShaderManager->ActivateProgram<ProgramType::ShipFlamesForeground1>();
+    mShaderManager->SetTextureParameters<ProgramType::ShipFlamesForeground1>();
+    mShaderManager->ActivateProgram<ProgramType::ShipFlamesForeground2>();
+    mShaderManager->SetTextureParameters<ProgramType::ShipFlamesForeground2>();
 
     // Noise 2
 
