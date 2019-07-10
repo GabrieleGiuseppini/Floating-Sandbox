@@ -1227,17 +1227,17 @@ Render:
 				+ Make same colors as flamethrower
 				+ Adjust bottom
 				+ Try without red border, to better merge multiple flames together
-				- Multi-flame improvements:
+				= Multi-flame improvements:
 					+ Make better personality (less locality-aware, more randomized)
 						+ Assign actual random number between zero and one at ignition time
 						+ Change shader to expect value between zero and one
 					- Try dual-phase rendering: border only first, body only then
 					- Try more transparency on the borders
-				= See if can fix problem with flames on ropes that swing behind triangles
+				+ See if can fix problem with flames on ropes that swing behind triangles
 					+ Separate render step for chains, and flames belong to chains if their point
 					  has no attached triangles
 					+ Test
-					= If works:
+					+ If works:
 						+ Go back to one single buffer (& single VBO, & single VAO), having StartUpload declare total # of flames, 
 						  and adding bg ones at beginning and fg ones at end
 							+ Keep track of beginning of fg ones == end of bg ones
