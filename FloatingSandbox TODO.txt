@@ -1247,7 +1247,7 @@ Render:
 							+ Keep track of beginning of fg ones == end of bg ones
 					+ OnChain detection: use # of factory triangles, not current triangles (heuristic to avoid jumping planes
 					  when triangles are destroyed by fire)
-				- See flame colors from Pac0master: "If you can mess with the colour, can you try giving it a similar colour as the Animation I've made in #gfx  ?  "
+				+ See flame colors from Pac0master: "If you can mess with the colour, can you try giving it a similar colour as the Animation I've made in #gfx  ?  "
 
 			+ Sound:
 				+ Media:
