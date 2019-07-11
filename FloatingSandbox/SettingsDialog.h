@@ -43,6 +43,7 @@ private:
     void OnGenerateAirBubblesCheckBoxClick(wxCommandEvent & event);
 
     void OnDrawHeatOverlayCheckBoxClick(wxCommandEvent & event);
+    void OnDrawHeatBlasterFlameCheckBoxClick(wxCommandEvent & event);
 
     void OnModulateWindCheckBoxClick(wxCommandEvent & event);
 
@@ -112,6 +113,7 @@ private:
     wxRadioButton * mMode1ShipFlameRenderModeRadioButton;
     wxRadioButton * mMode2ShipFlameRenderModeRadioButton;
     wxRadioButton * mNoDrawShipFlameRenderModeRadioButton;
+    wxCheckBox * mDrawHeatBlasterFlameCheckBox;
     SliderControl * mShipFlameSizeAdjustmentSlider;
 
     // Ocean and Sky

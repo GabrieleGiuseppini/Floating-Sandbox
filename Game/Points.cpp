@@ -1007,7 +1007,9 @@ void Points::UploadFlames(
                 GetPosition(pointIndex),
                 mCombustionStateBuffer[pointIndex].FlameDevelopment,
                 mCombustionStateBuffer[pointIndex].Personality,
-                mConnectedTrianglesBuffer[pointIndex].ConnectedTriangles.empty()); // IsOnChain
+                // IsOnChain: we use # of triangles as a heuristic for the point being on a chain,
+                // and we use the *factory* ones to avoid sudden depth jumps when triangles are destroyed by fire
+                mFactoryConnectedTrianglesBuffer[pointIndex].ConnectedTriangles.empty());
         }
 
         renderContext.UploadShipFlamesEnd(shipId);

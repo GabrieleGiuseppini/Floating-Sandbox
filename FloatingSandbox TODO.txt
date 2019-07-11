@@ -563,15 +563,14 @@ Render:
 		+ Use for ship color and texture
 	+ Sound controller: complain if find extraneous files (had issue with ".flc")
 
-	- Do Pimpl for GameController
 	- Add "beta/foo" to versions
 	- Ship: replace handler registrations with points, springs, etc. with IStructureHandler, declared in own .h
-	- GameEventDispatcher: set mIsDirty at event publishing and consume at Flush()
-		- See if still needed, actually, after we break up IGameEventHandler
+	- GameEventDispatcher: set mIsXYZHandlerDirty at event publishing and consume at Flush()
 	- Try 32-bit build
 	- Translations:
 		- Make localizable
 		- Russian: steven6886@yandex.ru
+	- SSL cert: https://www.sslforfree.com/
 	= Sign with certificate
 		+ https://blogs.msdn.microsoft.com/ieinternals/2011/03/22/everything-you-need-to-know-about-authenticode-code-signing/
 		+ https://www.thegeekstuff.com/2010/03/microsoft-digital-signatures/
@@ -585,7 +584,7 @@ Render:
 	= Wine:
 		+ Test checking for the APPLE extension for VAO's: https://developer.apple.com/opengl/OpenGL-Capabilities-Tables.pdf
 			+ "APPLE_vertex_array_object"
-		- Give SamminAter another RelWithDebInfo + pdb
+		+ Give SamminAter another RelWithDebInfo + pdb
 		- Other issues:
 			- No fullscreen mode
 
@@ -1162,6 +1161,7 @@ Render:
 					+ Uploads flames in order of heap
 
 			- See Pac0master's bug: looks like when the cardboard of the funnel touches the water it starts generating a super high amount of heat
+			- See Pac0master's bug: melting glitch
 
 			- Electrical:
 				- Update: inject heat from working lamps and generators
@@ -1181,8 +1181,8 @@ Render:
 						+ Convert into DeltaT and inject in radius, smoothing radius
 					+ Radius at SettingsDialog, under "Flamethrower" in "Heat"
 					+ Fix default value of heat <-> slider
-				- Max power: 20,000
-				- Rename it: "Heat Blaster?"
+				+ Max power: 20,000
+				- Rename it: "Heat Blaster"
 					- Code & UI
 					- Shift cools down
 						- New HeatBlasterAction enum at GameTypes {Heat,Cool}
@@ -1193,9 +1193,9 @@ Render:
 									- Flame direction (outward or inward, "speedMultiplier")
 									- Flame colors (for cooling, turn R into B) ("midColor" and "highColor")
 						- Cursor (simply upside-down and mirrored)
-				- Option to turn off flame rendering
-					- @ GameController
-				- Double default size? See Pac0master's answer
+						- Sound (wind)
+				+ Option to turn off flame rendering
+					+ @ GameController
 
 			= GameParameters:
 				+ ThermalConductivityAdjustment 
@@ -1211,6 +1211,8 @@ Render:
 					+ Points: doesn't care as it uses vector
 					- SettingsDialog
 						- Under "Heat", with warning icon like Simulation Quality
+				- Make air and water temperature adjustable
+					- Settings dialog: under "Heat" and, if no space available, under "World"
 
 			= Flame render:
 				+ Make better transition for bottom
@@ -1235,7 +1237,7 @@ Render:
 						+ Test
 						+ Do vertex includes
 						+ Test perf with instanced drawing(x2)
-				= See if can fix problem with flames on ropes that swing behind triangles
+				+ See if can fix problem with flames on ropes that swing behind triangles
 					+ Separate render step for chains, and flames belong to chains if their point
 					  has no attached triangles
 					+ Test
@@ -1243,7 +1245,7 @@ Render:
 						+ Go back to one single buffer (& single VBO, & single VAO), having StartUpload declare total # of flames, 
 						  and adding bg ones at beginning and fg ones at end
 							+ Keep track of beginning of fg ones == end of bg ones
-					- OnChain detection: use # of factory triangles, not current triangles (heuristic to avoid jumping planes
+					+ OnChain detection: use # of factory triangles, not current triangles (heuristic to avoid jumping planes
 					  when triangles are destroyed by fire)
 				- See flame colors from Pac0master: "If you can mess with the colour, can you try giving it a similar colour as the Animation I've made in #gfx  ?  "
 

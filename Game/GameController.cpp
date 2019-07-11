@@ -64,6 +64,7 @@ GameController::GameController(
     , mTsunamiNotificationStateMachine()
     // Parameters that we own
     , mShowTsunamiNotifications(true)
+    , mDrawHeatBlasterFlame(true)
     // Doers
     , mRenderContext(std::move(renderContext))
     , mSwapRenderBuffersFunction(std::move(swapRenderBuffersFunction))
@@ -621,10 +622,13 @@ bool GameController::ApplyFlameThrowerAt(vec2f const & screenCoordinates)
 
     if (isApplied)
     {
-        // Remember to render the flame thrower next time
-        mFlameThrowerToRender.emplace(
-            worldCoordinates,
-            radius);
+        if (mDrawHeatBlasterFlame)
+        {
+            // Remember to render the flame thrower at the next Render() step
+            mFlameThrowerToRender.emplace(
+                worldCoordinates,
+                radius);
+        }
     }
 
     return isApplied;

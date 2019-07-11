@@ -479,6 +479,9 @@ public:
     bool GetShowTsunamiNotifications() const override { return mShowTsunamiNotifications; }
     void SetShowTsunamiNotifications(bool value) override { mShowTsunamiNotifications = value; }
 
+    bool GetDrawHeatBlasterFlame() const override { return mDrawHeatBlasterFlame; }
+    void SetDrawHeatBlasterFlame(bool value) override { mDrawHeatBlasterFlame = value; }
+
 private:
 
     GameController(
@@ -564,6 +567,7 @@ private:
     //
 
     bool mShowTsunamiNotifications;
+    bool mDrawHeatBlasterFlame;
 
 
     //

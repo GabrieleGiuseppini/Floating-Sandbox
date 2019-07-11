@@ -413,4 +413,7 @@ struct IGameController
 
     virtual bool GetShowTsunamiNotifications() const = 0;
     virtual void SetShowTsunamiNotifications(bool value) = 0;
+
+    virtual bool GetDrawHeatBlasterFlame() const = 0;
+    virtual void SetDrawHeatBlasterFlame(bool value) = 0;
 };

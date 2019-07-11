@@ -279,6 +279,12 @@ void SettingsDialog::OnDrawHeatOverlayCheckBoxClick(wxCommandEvent & /*event*/)
     mApplyButton->Enable(true);
 }
 
+void SettingsDialog::OnDrawHeatBlasterFlameCheckBoxClick(wxCommandEvent & /*event*/)
+{
+    // Remember we're dirty now
+    mApplyButton->Enable(true);
+}
+
 void SettingsDialog::OnModulateWindCheckBoxClick(wxCommandEvent & /*event*/)
 {
     mWindGustAmplitudeSlider->Enable(mModulateWindCheckBox->IsChecked());
@@ -1151,6 +1157,21 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     CellBorder);
             }
 
+            // Heat blaster flame
+            {
+                mDrawHeatBlasterFlameCheckBox = new wxCheckBox(renderBox, wxID_ANY,
+                    _("Draw HeatBlaster Flame"), wxDefaultPosition, wxDefaultSize);
+                mDrawHeatBlasterFlameCheckBox->SetToolTip("Renders flames out of the HeatBlaster tool.");
+                mDrawHeatBlasterFlameCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnDrawHeatBlasterFlameCheckBoxClick, this);
+
+                renderSizer->Add(
+                    mDrawHeatBlasterFlameCheckBox,
+                    wxGBPosition(2, 0),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorder);
+            }
+
             // Heat overlay transparency
             {
                 mHeatOverlayTransparencySlider = new SliderControl(
@@ -1172,7 +1193,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                 renderSizer->Add(
                     mHeatOverlayTransparencySlider,
                     wxGBPosition(0, 1),
-                    wxGBSpan(2, 1),
+                    wxGBSpan(3, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
             }
@@ -1198,7 +1219,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                 renderSizer->Add(
                     mShipFlameSizeAdjustmentSlider,
                     wxGBPosition(0, 2),
-                    wxGBSpan(2, 1),
+                    wxGBSpan(3, 1),
                     wxALL,
                     CellBorder);
             }
@@ -2748,6 +2769,8 @@ void SettingsDialog::ReadSettings()
         }
     }
 
+    mDrawHeatBlasterFlameCheckBox->SetValue(mGameController->GetDrawHeatBlasterFlame());
+
     mShipFlameSizeAdjustmentSlider->SetValue(mGameController->GetShipFlameSizeAdjustment());
 
     // Ocean and Sky
@@ -3091,6 +3114,8 @@ void SettingsDialog::ApplySettings()
         assert(mNoDrawShipFlameRenderModeRadioButton->GetValue());
         mGameController->SetShipFlameRenderMode(ShipFlameRenderMode::NoDraw);
     }
+
+    mGameController->SetDrawHeatBlasterFlame(mDrawHeatBlasterFlameCheckBox->IsChecked());
 
     mGameController->SetShipFlameSizeAdjustment(
         mShipFlameSizeAdjustmentSlider->GetValue());

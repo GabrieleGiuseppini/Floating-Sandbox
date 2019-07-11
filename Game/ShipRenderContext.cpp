@@ -1652,7 +1652,7 @@ void ShipRenderContext::RenderFlames(
             GL_TRIANGLES,
             static_cast<GLint>(startFlameIndex * 6u),
             static_cast<GLint>(flameCount * 6u),
-            2);
+            2); // Without border, with border
 
         glBindVertexArray(0);
 
