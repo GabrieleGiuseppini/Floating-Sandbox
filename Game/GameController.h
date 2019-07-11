@@ -264,6 +264,16 @@ public:
 
     // Heat
 
+    float GetAirTemperature() const override { return mGameParameters.AirTemperature; }
+    void SetAirTemperature(float value) override { mGameParameters.AirTemperature = value; }
+    float GetMinAirTemperature() const override { return GameParameters::MinAirTemperature; }
+    float GetMaxAirTemperature() const override { return GameParameters::MaxAirTemperature; }
+
+    float GetWaterTemperature() const override { return mGameParameters.WaterTemperature; }
+    void SetWaterTemperature(float value) override { mGameParameters.WaterTemperature = value; }
+    float GetMinWaterTemperature() const override { return GameParameters::MinWaterTemperature; }
+    float GetMaxWaterTemperature() const override { return GameParameters::MaxWaterTemperature; }
+
     float GetThermalConductivityAdjustment() const override { return mGameParameters.ThermalConductivityAdjustment; }
     void SetThermalConductivityAdjustment(float value) override { mGameParameters.ThermalConductivityAdjustment = value; }
     float GetMinThermalConductivityAdjustment() const override { return GameParameters::MinThermalConductivityAdjustment; }

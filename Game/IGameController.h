@@ -199,6 +199,16 @@ struct IGameController
 
     // Heat
 
+    virtual float GetAirTemperature() const = 0;
+    virtual void SetAirTemperature(float value) = 0;
+    virtual float GetMinAirTemperature() const = 0;
+    virtual float GetMaxAirTemperature() const = 0;
+
+    virtual float GetWaterTemperature() const = 0;
+    virtual void SetWaterTemperature(float value) = 0;
+    virtual float GetMinWaterTemperature() const = 0;
+    virtual float GetMaxWaterTemperature() const = 0;
+
     virtual float GetThermalConductivityAdjustment() const = 0;
     virtual void SetThermalConductivityAdjustment(float value) = 0;
     virtual float GetMinThermalConductivityAdjustment() const = 0;

@@ -56,7 +56,7 @@ void Points::Add(
     mFactoryIsLeakingBuffer.emplace_back(isLeaking);
 
     // Heat dynamics
-    mTemperatureBuffer.emplace_back(GameParameters::AirTemperature);
+    mTemperatureBuffer.emplace_back(GameParameters::InitialTemperature);
     mMaterialHeatCapacityBuffer.emplace_back(structuralMaterial.GetHeatCapacity());
     mMaterialIgnitionTemperatureBuffer.emplace_back(structuralMaterial.IgnitionTemperature);
     mCombustionStateBuffer.emplace_back(CombustionState());
@@ -130,7 +130,7 @@ void Points::CreateEphemeralParticleAirBubble(
     mWaterBuffer[pointIndex] = 0.0f;
     assert(false == mIsLeakingBuffer[pointIndex]);
 
-    mTemperatureBuffer[pointIndex] = GameParameters::AirTemperature;
+    mTemperatureBuffer[pointIndex] = GameParameters::InitialTemperature;
     mMaterialHeatCapacityBuffer[pointIndex] = structuralMaterial.GetHeatCapacity();
     mMaterialIgnitionTemperatureBuffer[pointIndex] = structuralMaterial.IgnitionTemperature;
     mCombustionStateBuffer[pointIndex] = CombustionState();
@@ -192,7 +192,7 @@ void Points::CreateEphemeralParticleDebris(
     mWaterBuffer[pointIndex] = 0.0f;
     assert(false == mIsLeakingBuffer[pointIndex]);
 
-    mTemperatureBuffer[pointIndex] = GameParameters::AirTemperature;
+    mTemperatureBuffer[pointIndex] = GameParameters::InitialTemperature;
     mMaterialHeatCapacityBuffer[pointIndex] = structuralMaterial.GetHeatCapacity();
     mMaterialIgnitionTemperatureBuffer[pointIndex] = structuralMaterial.IgnitionTemperature;
     mCombustionStateBuffer[pointIndex] = CombustionState();
@@ -388,7 +388,8 @@ void Points::UpdateCombustionLowFrequency(
             // See if this point should start burning
             //
 
-            float const effectiveIgnitionTemperature = mMaterialIgnitionTemperatureBuffer[pointIndex] * gameParameters.IgnitionTemperatureAdjustment;
+            float const effectiveIgnitionTemperature =
+                mMaterialIgnitionTemperatureBuffer[pointIndex] * gameParameters.IgnitionTemperatureAdjustment;
 
             if (GetTemperature(pointIndex) >= effectiveIgnitionTemperature + GameParameters::IgnitionTemperatureHighWatermark
                 && !mParentWorld.IsUnderwater(GetPosition(pointIndex))
@@ -409,8 +410,12 @@ void Points::UpdateCombustionLowFrequency(
 
             // ...for water or sea: we do this check at high frequency
 
-            // ...for temperature or decay
-            if (GetTemperature(pointIndex) <= mMaterialIgnitionTemperatureBuffer[pointIndex] * gameParameters.IgnitionTemperatureAdjustment + GameParameters::IgnitionTemperatureLowWatermark
+            // ...for temperature or decay:
+
+            float const effectiveIgnitionTemperature =
+                mMaterialIgnitionTemperatureBuffer[pointIndex] * gameParameters.IgnitionTemperatureAdjustment;
+
+            if (GetTemperature(pointIndex) <= effectiveIgnitionTemperature + GameParameters::IgnitionTemperatureLowWatermark
                 || GetDecay(pointIndex) < GameParameters::SmotheringDecayLowWatermark)
             {
                 //

@@ -42,9 +42,6 @@ private:
     void OnGenerateSparklesCheckBoxClick(wxCommandEvent & event);
     void OnGenerateAirBubblesCheckBoxClick(wxCommandEvent & event);
 
-    void OnDrawHeatOverlayCheckBoxClick(wxCommandEvent & event);
-    void OnDrawHeatBlasterFlameCheckBoxClick(wxCommandEvent & event);
-
     void OnModulateWindCheckBoxClick(wxCommandEvent & event);
 
     void OnTextureOceanRenderModeRadioButtonClick(wxCommandEvent & event);
@@ -55,6 +52,8 @@ private:
     void OnFlatOceanRenderModeRadioButtonClick(wxCommandEvent & event);
     void OnFlatOceanColorChanged(wxColourPickerEvent & event);
     void OnSeeShipThroughOceanCheckBoxClick(wxCommandEvent & event);
+    void OnDrawHeatOverlayCheckBoxClick(wxCommandEvent & event);
+    void OnDrawHeatBlasterFlameCheckBoxClick(wxCommandEvent & event);
 
     void OnTextureLandRenderModeRadioButtonClick(wxCommandEvent & event);
     void OnTextureLandChanged(wxCommandEvent & event);
@@ -108,13 +107,8 @@ private:
     SliderControl * mCombustionHeatAdjustmentSlider;
     SliderControl * mFlameThrowerRadiusSlider;
     SliderControl * mFlameThrowerHeatFlowSlider;
-    wxCheckBox * mDrawHeatOverlayCheckBox;
-    SliderControl * mHeatOverlayTransparencySlider;
-    wxRadioButton * mMode1ShipFlameRenderModeRadioButton;
-    wxRadioButton * mMode2ShipFlameRenderModeRadioButton;
-    wxRadioButton * mNoDrawShipFlameRenderModeRadioButton;
-    wxCheckBox * mDrawHeatBlasterFlameCheckBox;
-    SliderControl * mShipFlameSizeAdjustmentSlider;
+    SliderControl * mAirTemperatureSlider;
+    SliderControl * mWaterTemperatureSlider;
 
     // Ocean and Sky
     SliderControl * mOceanDepthSlider;
@@ -168,6 +162,13 @@ private:
     wxCheckBox* mShowStressCheckBox;
     SliderControl * mWaterContrastSlider;
     SliderControl * mWaterLevelOfDetailSlider;
+    wxCheckBox * mDrawHeatOverlayCheckBox;
+    SliderControl * mHeatOverlayTransparencySlider;
+    wxRadioButton * mMode1ShipFlameRenderModeRadioButton;
+    wxRadioButton * mMode2ShipFlameRenderModeRadioButton;
+    wxRadioButton * mNoDrawShipFlameRenderModeRadioButton;
+    wxCheckBox * mDrawHeatBlasterFlameCheckBox;
+    SliderControl * mShipFlameSizeAdjustmentSlider;
 
     // Sound
     SliderControl * mEffectsVolumeSlider;

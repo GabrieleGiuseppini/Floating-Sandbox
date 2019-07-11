@@ -56,13 +56,9 @@ struct GameParameters
 
     // Air
     static float constexpr AirMass = 1.2754f; // Kg
-    static float constexpr AirTemperature = 298.15f; // Kelvin
-    static float constexpr AirConvectiveHeatTransferCoefficient = 10.45f; // J/(s*m2*K)
 
     // Water
     static float constexpr WaterMass = 1000.0f; // Kg
-    static float constexpr WaterTemperature = 285.15f; // Kelvin
-    static float constexpr WaterConvectiveHeatTransferCoefficient = 2500.0f; // J/(s*m2*K) - arbitrary, high
 
 
 
@@ -215,8 +211,22 @@ struct GameParameters
 
     // Heat and combustion
 
-    static float constexpr IgnitionTemperatureHighWatermark = 20.0f;
-    static float constexpr IgnitionTemperatureLowWatermark = -20.0f;
+    static float constexpr InitialTemperature = 298.15f; // 25C
+
+    float AirTemperature; // Kelvin
+    static float constexpr MinAirTemperature = 273.15f; // 0C
+    static float constexpr MaxAirTemperature = 2073.15f; // 1800C
+
+    static float constexpr AirConvectiveHeatTransferCoefficient = 100.45f; // J/(s*m2*K) - arbitrary, high
+
+    float WaterTemperature; // Kelvin
+    static float constexpr MinWaterTemperature = 273.15f; // 0C
+    static float constexpr MaxWaterTemperature = 2073.15f; // 1800C
+
+    static float constexpr WaterConvectiveHeatTransferCoefficient = 2500.0f; // J/(s*m2*K) - arbitrary, high
+
+    static float constexpr IgnitionTemperatureHighWatermark = 0.0f;
+    static float constexpr IgnitionTemperatureLowWatermark = -30.0f;
 
     static float constexpr SmotheringWaterLowWatermark = 0.05f;
     static float constexpr SmotheringWaterHighWatermark = 0.1f;

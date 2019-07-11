@@ -1585,10 +1585,14 @@ void Ship::PropagateHeat(
         * gameParameters.HeatDissipationAdjustment
         * 2.0f; // We exaggerate a bit to take into account water wetting the material and thus making it more difficult for fire to re-kindle
 
+    float const waterTemperature = gameParameters.WaterTemperature;
+
     float const effectiveAirConvectiveHeatTransferCoefficient =
         GameParameters::AirConvectiveHeatTransferCoefficient
         * dt
         * gameParameters.HeatDissipationAdjustment;
+
+    float const airTemperature = gameParameters.AirTemperature;
 
     for (auto pointIndex : mPoints.NonEphemeralPoints())
     {
@@ -1600,14 +1604,14 @@ void Ship::PropagateHeat(
             // Dissipation in water
             heatLost =
                 effectiveWaterConvectiveHeatTransferCoefficient
-                * (newPointTemperatureBufferData[pointIndex] - GameParameters::WaterTemperature);
+                * (newPointTemperatureBufferData[pointIndex] - waterTemperature);
         }
         else
         {
             // Dissipation in air
             heatLost =
                 effectiveAirConvectiveHeatTransferCoefficient
-                * (newPointTemperatureBufferData[pointIndex] - GameParameters::AirTemperature);
+                * (newPointTemperatureBufferData[pointIndex] - airTemperature);
         }
 
         // Remove this heat from the point

@@ -1191,11 +1191,12 @@ Render:
 							- Shader chosen depending on mCurrentHeatBlasterAction
 								- Two shaders, use #include's with parameters to make these changes:
 									- Flame direction (outward or inward, "speedMultiplier")
-									- Flame colors (for cooling, turn R into B) ("midColor" and "highColor")
+									- Flame colors (for cooling: turn R into B) ("midColor" and "highColor")
 						- Cursor (simply upside-down and mirrored)
-						- Sound (wind)
+						- Sound (wind or air vortex)
 				+ Option to turn off flame rendering
 					+ @ GameController
+				- Help
 
 			= GameParameters:
 				+ ThermalConductivityAdjustment 
@@ -1207,12 +1208,12 @@ Render:
 				- Make max burning points adjustable
 					- All sub-systems need to allow for > max burning particles, because when the user changes the value down,
 					  the excess ones will need some time to disappear
+					  - Test
 					- RenderContext: allocate VBO with MaxMax
 					+ Points: doesn't care as it uses vector
 					- SettingsDialog
 						- Under "Heat", with warning icon like Simulation Quality
-				- Make air and water temperature adjustable
-					- Settings dialog: under "Heat" and, if no space available, under "World"
+				+ Make air and water temperature adjustable
 
 			= Flame render:
 				+ Make better transition for bottom
@@ -1247,7 +1248,8 @@ Render:
 							+ Keep track of beginning of fg ones == end of bg ones
 					+ OnChain detection: use # of factory triangles, not current triangles (heuristic to avoid jumping planes
 					  when triangles are destroyed by fire)
-				+ See flame colors from Pac0master: "If you can mess with the colour, can you try giving it a similar colour as the Animation I've made in #gfx  ?  "
+				= See flame colors from Pac0master: "If you can mess with the colour, can you try giving it a similar colour as the Animation I've made in #gfx  ?  "
+					- If keep: do also at flames 2
 
 			+ Sound:
 				+ Media:
