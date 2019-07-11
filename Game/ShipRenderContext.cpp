@@ -1648,10 +1648,11 @@ void ShipRenderContext::RenderFlames(
         glBindBuffer(GL_ARRAY_BUFFER, *mFlameVertexVBO);
 
         // Render
-        glDrawArrays(
+        glDrawArraysInstanced(
             GL_TRIANGLES,
             static_cast<GLint>(startFlameIndex * 6u),
-            static_cast<GLint>(flameCount * 6u));
+            static_cast<GLint>(flameCount * 6u),
+            2);
 
         glBindVertexArray(0);
 
