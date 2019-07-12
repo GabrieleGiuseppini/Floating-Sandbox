@@ -215,6 +215,15 @@ DurationShortLongType StrToDurationShortLongType(std::string const & str);
 using RepairSessionId = std::uint32_t;
 using RepairSessionStepId = std::uint64_t;
 
+/*
+ * HeatBlaster action.
+ */
+enum class HeatBlasterActionType
+{
+    Heat,
+    Cool
+};
+
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // Rendering
 ////////////////////////////////////////////////////////////////////////////////////////////////

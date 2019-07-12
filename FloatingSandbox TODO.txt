@@ -1189,17 +1189,17 @@ Render:
 					+ Radius at SettingsDialog, under "Flamethrower" in "Heat"
 					+ Fix default value of heat <-> slider
 				+ Max power: 20,000
-				- Rename it: "Heat Blaster"
-					- Code & UI
+				= Rename it: "Heat Blaster"
+					+ Code & UI
 					- Shift cools down
-						- New HeatBlasterAction enum at GameTypes {Heat,Cool}
+						+ New HeatBlasterAction enum at GameTypes {Heat,Cool}
 						- Interaction: switch on action and either add or remove heat (w/fraction though, for 3rd principle)
 						- Rendering:
 							- Shader chosen depending on mCurrentHeatBlasterAction
 								- Two shaders, use #include's with parameters to make these changes:
 									- Flame direction (outward or inward, "speedMultiplier")
 									- Flame colors (for cooling: turn R into B) ("midColor" and "highColor")
-						- Cursor (simply upside-down and mirrored)
+						= Cursor (simply upside-down and mirrored)
 						- Sound (wind or air vortex)
 				+ Option to turn off flame rendering
 					+ @ GameController
@@ -1212,14 +1212,15 @@ Render:
 				+ CombustionSpeedAdjustment
 				+ CombustionHeatAdjustment
 				+ Also add all of these to settings dialog, under "Heat" tab
-				- Make max burning points adjustable
-					- All sub-systems need to allow for > max burning particles, because when the user changes the value down,
+				= Make max burning points adjustable
+					= All sub-systems need to allow for > max burning particles, because when the user changes the value down,
 					  the excess ones will need some time to disappear
-					  - Test
-					- RenderContext: allocate VBO with MaxMax
+						- Test
+					= RenderContext: allocate VBO with MaxMax
+						- See if has perf impact; if so, realloc each time # of flames changes by 100
 					+ Points: doesn't care as it uses vector
-					- SettingsDialog
-						- Under "Heat", with warning icon like Simulation Quality
+					= SettingsDialog
+						= Under "Heat", with warning icon like Simulation Quality
 				+ Make air and water temperature adjustable
 
 			= Flame render:

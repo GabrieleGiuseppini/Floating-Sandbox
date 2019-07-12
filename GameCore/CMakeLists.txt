@@ -31,6 +31,7 @@ set  (SOURCES
 	ImageSize.h
 	ImageTools.cpp
 	ImageTools.h
+	IntegralLinearSliderCore.h
 	ISliderCore.h
 	LinearSliderCore.cpp
 	LinearSliderCore.h

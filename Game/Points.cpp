@@ -481,10 +481,11 @@ void Points::UpdateCombustionLowFrequency(
         });
 
     // Randomly choose the max number of points we want to ignite now
-    assert(mBurningPoints.size() <= GameParameters::MaxBurningParticles);
     size_t maxPoints = std::min(
         size_t(4) + GameRandomEngine::GetInstance().Choose(size_t(6)),
-        GameParameters::MaxBurningParticles - mBurningPoints.size());
+        mBurningPoints.size() < gameParameters.MaxBurningParticles
+            ? gameParameters.MaxBurningParticles - mBurningPoints.size()
+            : size_t(0));
 
     // Ignite these points
     for (size_t i = 0; i < mIgnitionCandidates.size() && i < maxPoints; ++i)

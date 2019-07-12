@@ -37,14 +37,15 @@ GameParameters::GameParameters()
     // Heat
     , AirTemperature(298.15f) // 25C
     , WaterTemperature(288.15) // 15C
+    , MaxBurningParticles(128)
     , ThermalConductivityAdjustment(1.0f)
     , HeatDissipationAdjustment(1.0f)
     , IgnitionTemperatureAdjustment(1.0f)
     , MeltingTemperatureAdjustment(1.0f)
     , CombustionSpeedAdjustment(1.0f)
     , CombustionHeatAdjustment(1.0f)
-    , FlameThrowerHeatFlow(2000.0f) // 900KJ: 80kg of iron (~=1 particle) get dT=1500 in 60 seconds
-    , FlameThrowerRadius(6.0f)
+    , HeatBlasterHeatFlow(2000.0f) // 900KJ: 80kg of iron (~=1 particle) get dT=1500 in 60 seconds
+    , HeatBlasterRadius(6.0f)
     // Misc
     , SeaDepth(300.0f)
     , OceanFloorBumpiness(1.0f)

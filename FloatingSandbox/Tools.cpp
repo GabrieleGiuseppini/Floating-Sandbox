@@ -249,22 +249,25 @@ SawTool::SawTool(
 }
 
 ////////////////////////////////////////////////////////////////////////
-// FlameThrower
+// HeatBlaster
 ////////////////////////////////////////////////////////////////////////
 
-FlameThrowerTool::FlameThrowerTool(
+HeatBlasterTool::HeatBlasterTool(
     wxFrame * parentFrame,
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
     ResourceLoader & resourceLoader)
     : Tool(
-        ToolType::FlameThrower,
+        ToolType::HeatBlaster,
         parentFrame,
         std::move(gameController),
         std::move(soundController))
     , mIsEngaged(false)
-    , mUpCursor(MakeCursor("flame_thrower_cursor_up", 5, 1, resourceLoader))
-    , mDownCursor(MakeCursor("flame_thrower_cursor_down", 5, 1, resourceLoader))
+    , mCurrentAction(HeatBlasterActionType::Heat)
+    , mHeatUpCursor(MakeCursor("heat_blaster_heat_cursor_up", 5, 1, resourceLoader))
+    , mCoolUpCursor(MakeCursor("heat_blaster_cool_cursor_up", 5, 30, resourceLoader))
+    , mHeatDownCursor(MakeCursor("heat_blaster_heat_cursor_down", 5, 1, resourceLoader))
+    , mCoolDownCursor(MakeCursor("heat_blaster_cool_cursor_down", 5, 30, resourceLoader))
 {
 }
 

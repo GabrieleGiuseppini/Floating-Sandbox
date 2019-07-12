@@ -72,7 +72,7 @@ struct IGameController
     virtual void DestroyAt(vec2f const & screenCoordinates, float radiusFraction) = 0;
     virtual void RepairAt(vec2f const & screenCoordinates, float radiusMultiplier, RepairSessionId sessionId, RepairSessionStepId sessionStepId) = 0;
     virtual void SawThrough(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates) = 0;
-    virtual bool ApplyFlameThrowerAt(vec2f const & screenCoordinates) = 0;
+    virtual bool ApplyHeatBlasterAt(vec2f const & screenCoordinates, HeatBlasterActionType action) = 0;
     virtual void DrawTo(vec2f const & screenCoordinates, float strengthFraction) = 0;
     virtual void SwirlAt(vec2f const & screenCoordinates, float strengthFraction) = 0;
     virtual void TogglePinAt(vec2f const & screenCoordinates) = 0;
@@ -209,6 +209,11 @@ struct IGameController
     virtual float GetMinWaterTemperature() const = 0;
     virtual float GetMaxWaterTemperature() const = 0;
 
+    virtual size_t GetMaxBurningParticles() const = 0;
+    virtual void SetMaxBurningParticles(size_t value) = 0;
+    virtual float GetMinMaxBurningParticles() const = 0;
+    virtual float GetMaxMaxBurningParticles() const = 0;
+
     virtual float GetThermalConductivityAdjustment() const = 0;
     virtual void SetThermalConductivityAdjustment(float value) = 0;
     virtual float GetMinThermalConductivityAdjustment() const = 0;
@@ -239,15 +244,15 @@ struct IGameController
     virtual float GetMinCombustionHeatAdjustment() const = 0;
     virtual float GetMaxCombustionHeatAdjustment() const = 0;
 
-    virtual float GetFlameThrowerHeatFlow() const = 0;
-    virtual void SetFlameThrowerHeatFlow(float value) = 0;
-    virtual float GetMinFlameThrowerHeatFlow() const = 0;
-    virtual float GetMaxFlameThrowerHeatFlow() const = 0;
+    virtual float GetHeatBlasterHeatFlow() const = 0;
+    virtual void SetHeatBlasterHeatFlow(float value) = 0;
+    virtual float GetMinHeatBlasterHeatFlow() const = 0;
+    virtual float GetMaxHeatBlasterHeatFlow() const = 0;
 
-    virtual float GetFlameThrowerRadius() const = 0;
-    virtual void SetFlameThrowerRadius(float value) = 0;
-    virtual float GetMinFlameThrowerRadius() const = 0;
-    virtual float GetMaxFlameThrowerRadius() const = 0;
+    virtual float GetHeatBlasterRadius() const = 0;
+    virtual void SetHeatBlasterRadius(float value) = 0;
+    virtual float GetMinHeatBlasterRadius() const = 0;
+    virtual float GetMaxHeatBlasterRadius() const = 0;
 
     // Misc
 

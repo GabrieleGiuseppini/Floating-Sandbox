@@ -56,7 +56,7 @@ ToolController::ToolController(
             resourceLoader));
 
     mAllTools.emplace_back(
-        std::make_unique<FlameThrowerTool>(
+        std::make_unique<HeatBlasterTool>(
             parentFrame,
             gameController,
             soundController,

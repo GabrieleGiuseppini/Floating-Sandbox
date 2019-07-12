@@ -7,7 +7,7 @@
 
 #include "ISliderCore.h"
 
-class LinearSliderCore final : public ISliderCore
+class LinearSliderCore final : public ISliderCore<float>
 {
 public:
 

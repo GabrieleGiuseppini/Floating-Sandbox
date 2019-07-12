@@ -13,6 +13,7 @@
  * This interface is implemented by logics that drive mapping between
  * sliders and float values.
  */
+template <typename TValue>
 class ISliderCore
 {
 public:
@@ -22,7 +23,7 @@ public:
 
     virtual int GetNumberOfTicks() const = 0;
 
-    virtual float TickToValue(int tick) const = 0;
+    virtual TValue TickToValue(int tick) const = 0;
 
-    virtual int ValueToTick(float value) const = 0;
+    virtual int ValueToTick(TValue value) const = 0;
 };

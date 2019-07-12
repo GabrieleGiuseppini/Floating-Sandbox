@@ -87,59 +87,60 @@ private:
     //////////////////////////////////////////////////////
 
     // Mechanics, Fluids, and Light
-    SliderControl * mMechanicalQualitySlider;
-    SliderControl * mStrengthSlider;
-    SliderControl * mRotAcceler8rSlider;
-    SliderControl * mWaterDensitySlider;
-    SliderControl * mWaterDragSlider;
-    SliderControl * mWaterIntakeSlider;
-    SliderControl * mWaterCrazynessSlider;
-    SliderControl * mWaterDiffusionSpeedSlider;
-    SliderControl * mLuminiscenceSlider;
-    SliderControl * mLightSpreadSlider;
+    SliderControl<float> * mMechanicalQualitySlider;
+    SliderControl<float> * mStrengthSlider;
+    SliderControl<float> * mRotAcceler8rSlider;
+    SliderControl<float> * mWaterDensitySlider;
+    SliderControl<float> * mWaterDragSlider;
+    SliderControl<float> * mWaterIntakeSlider;
+    SliderControl<float> * mWaterCrazynessSlider;
+    SliderControl<float> * mWaterDiffusionSpeedSlider;
+    SliderControl<float> * mLuminiscenceSlider;
+    SliderControl<float> * mLightSpreadSlider;
 
     // Heat and Combustion
-    SliderControl * mThermalConductivityAdjustmentSlider;
-    SliderControl * mHeatDissipationAdjustmentSlider;
-    SliderControl * mIgnitionTemperatureAdjustmentSlider;
-    SliderControl * mMeltingTemperatureAdjustmentSlider;
-    SliderControl * mCombustionSpeedAdjustmentSlider;
-    SliderControl * mCombustionHeatAdjustmentSlider;
-    SliderControl * mFlameThrowerRadiusSlider;
-    SliderControl * mFlameThrowerHeatFlowSlider;
-    SliderControl * mAirTemperatureSlider;
-    SliderControl * mWaterTemperatureSlider;
+    SliderControl<float> * mThermalConductivityAdjustmentSlider;
+    SliderControl<float> * mHeatDissipationAdjustmentSlider;
+    SliderControl<float> * mIgnitionTemperatureAdjustmentSlider;
+    SliderControl<float> * mMeltingTemperatureAdjustmentSlider;
+    SliderControl<float> * mCombustionSpeedAdjustmentSlider;
+    SliderControl<float> * mCombustionHeatAdjustmentSlider;
+    SliderControl<size_t> * mMaxBurningParticlesSlider;
+    SliderControl<float> * mHeatBlasterRadiusSlider;
+    SliderControl<float> * mHeatBlasterHeatFlowSlider;
+    SliderControl<float> * mAirTemperatureSlider;
+    SliderControl<float> * mWaterTemperatureSlider;
 
     // Ocean and Sky
-    SliderControl * mOceanDepthSlider;
-    SliderControl * mOceanFloorBumpinessSlider;
-    SliderControl * mOceanFloorDetailAmplificationSlider;
-    SliderControl * mNumberOfStarsSlider;
-    SliderControl * mNumberOfCloudsSlider;
+    SliderControl<float> * mOceanDepthSlider;
+    SliderControl<float> * mOceanFloorBumpinessSlider;
+    SliderControl<float> * mOceanFloorDetailAmplificationSlider;
+    SliderControl<float> * mNumberOfStarsSlider;
+    SliderControl<float> * mNumberOfCloudsSlider;
 
     // Wind and Waves
-    SliderControl * mWindSpeedBaseSlider;
+    SliderControl<float> * mWindSpeedBaseSlider;
     wxCheckBox* mModulateWindCheckBox;
-    SliderControl * mWindGustAmplitudeSlider;
-    SliderControl * mBasalWaveHeightAdjustmentSlider;
-    SliderControl * mBasalWaveLengthAdjustmentSlider;
-    SliderControl * mBasalWaveSpeedAdjustmentSlider;
-    SliderControl * mTsunamiRateSlider;
-    SliderControl * mRogueWaveRateSlider;
+    SliderControl<float> * mWindGustAmplitudeSlider;
+    SliderControl<float> * mBasalWaveHeightAdjustmentSlider;
+    SliderControl<float> * mBasalWaveLengthAdjustmentSlider;
+    SliderControl<float> * mBasalWaveSpeedAdjustmentSlider;
+    SliderControl<float> * mTsunamiRateSlider;
+    SliderControl<float> * mRogueWaveRateSlider;
 
     // Interactions
-    SliderControl * mDestroyRadiusSlider;
-    SliderControl * mBombBlastRadiusSlider;
-    SliderControl * mAntiMatterBombImplosionStrengthSlider;
-    SliderControl * mFloodRadiusSlider;
-    SliderControl * mFloodQuantitySlider;
-    SliderControl * mRepairRadiusSlider;
-    SliderControl * mRepairSpeedAdjustmentSlider;
+    SliderControl<float> * mDestroyRadiusSlider;
+    SliderControl<float> * mBombBlastRadiusSlider;
+    SliderControl<float> * mAntiMatterBombImplosionStrengthSlider;
+    SliderControl<float> * mFloodRadiusSlider;
+    SliderControl<float> * mFloodQuantitySlider;
+    SliderControl<float> * mRepairRadiusSlider;
+    SliderControl<float> * mRepairSpeedAdjustmentSlider;
     wxCheckBox * mUltraViolentCheckBox;
     wxCheckBox * mGenerateDebrisCheckBox;
     wxCheckBox * mGenerateSparklesCheckBox;
     wxCheckBox * mGenerateAirBubblesCheckBox;
-    SliderControl * mAirBubbleDensitySlider;
+    SliderControl<float> * mAirBubbleDensitySlider;
 
     // Rendering
     wxRadioButton * mTextureOceanRenderModeRadioButton;
@@ -150,8 +151,8 @@ private:
     wxRadioButton * mFlatOceanRenderModeRadioButton;
     wxColourPickerCtrl * mFlatOceanColorPicker;
     wxCheckBox * mSeeShipThroughOceanCheckBox;
-    SliderControl * mOceanTransparencySlider;
-    SliderControl * mOceanDarkeningRateSlider;
+    SliderControl<float> * mOceanTransparencySlider;
+    SliderControl<float> * mOceanDarkeningRateSlider;
     wxRadioButton * mTextureLandRenderModeRadioButton;
     wxBitmapComboBox * mTextureLandComboBox;
     wxRadioButton * mFlatLandRenderModeRadioButton;
@@ -160,28 +161,28 @@ private:
     wxRadioButton * mTextureShipRenderModeRadioButton;
     wxRadioButton * mStructureShipRenderModeRadioButton;
     wxCheckBox* mShowStressCheckBox;
-    SliderControl * mWaterContrastSlider;
-    SliderControl * mWaterLevelOfDetailSlider;
+    SliderControl<float> * mWaterContrastSlider;
+    SliderControl<float> * mWaterLevelOfDetailSlider;
     wxCheckBox * mDrawHeatOverlayCheckBox;
-    SliderControl * mHeatOverlayTransparencySlider;
+    SliderControl<float> * mHeatOverlayTransparencySlider;
     wxRadioButton * mMode1ShipFlameRenderModeRadioButton;
     wxRadioButton * mMode2ShipFlameRenderModeRadioButton;
     wxRadioButton * mNoDrawShipFlameRenderModeRadioButton;
     wxCheckBox * mDrawHeatBlasterFlameCheckBox;
-    SliderControl * mShipFlameSizeAdjustmentSlider;
+    SliderControl<float> * mShipFlameSizeAdjustmentSlider;
 
     // Sound
-    SliderControl * mEffectsVolumeSlider;
-    SliderControl * mToolsVolumeSlider;
-    SliderControl * mMusicVolumeSlider;
+    SliderControl<float> * mEffectsVolumeSlider;
+    SliderControl<float> * mToolsVolumeSlider;
+    SliderControl<float> * mMusicVolumeSlider;
     wxCheckBox * mPlayBreakSoundsCheckBox;
     wxCheckBox * mPlayStressSoundsCheckBox;
     wxCheckBox * mPlayWindSoundCheckBox;
     wxCheckBox * mPlaySinkingMusicCheckBox;
 
     // Advanced
-    SliderControl * mSpringStiffnessSlider;
-    SliderControl * mSpringDampingSlider;
+    SliderControl<float> * mSpringStiffnessSlider;
+    SliderControl<float> * mSpringDampingSlider;
     wxRadioBox * mDebugShipRenderModeRadioBox;
     wxRadioBox * mVectorFieldRenderModeRadioBox;
 

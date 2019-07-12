@@ -20,15 +20,15 @@ LinearSliderCore::LinearSliderCore(
     //
 
     // Start with an approximate number of ticks
-    float n = floorf(logf(100.0f / (maxValue - minValue)) / logf(2.0f));
-    mTickSize = 1.0f / powf(2.0f, n);
+    float n = std::floor(std::log(100.0f / (maxValue - minValue)) / std::log(2.0f));
+    mTickSize = 1.0f / std::pow(2.0f, n);
 
     // Now calculate the real number of ticks
-    float numberOfTicks = ceilf((maxValue - minValue) / mTickSize);
+    float numberOfTicks = std::ceil((maxValue - minValue) / mTickSize);
     mNumberOfTicks = static_cast<int>(numberOfTicks);
 
     // Re-adjust min: calc min at tick 0 (exclusive of offset), and offset to add to slider's value
-    mValueOffset = floorf(minValue / mTickSize) * mTickSize;
+    mValueOffset = std::floor(minValue / mTickSize) * mTickSize;
     mValueAtTickZero = minValue - mValueOffset;
     assert(mValueAtTickZero < mTickSize);
 

@@ -157,7 +157,7 @@ ShipRenderContext::ShipRenderContext(
 
     mFlameVertexVBO = vbos[5];
     glBindBuffer(GL_ARRAY_BUFFER, *mFlameVertexVBO);
-    glBufferData(GL_ARRAY_BUFFER, GameParameters::MaxBurningParticles * 6 * sizeof(FlameVertex), nullptr, GL_STREAM_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, GameParameters::MaxMaxBurningParticles * 6 * sizeof(FlameVertex), nullptr, GL_STREAM_DRAW); // Max possible
 
     mGenericTextureVBO = vbos[6];
     glBindBuffer(GL_ARRAY_BUFFER, *mGenericTextureVBO);

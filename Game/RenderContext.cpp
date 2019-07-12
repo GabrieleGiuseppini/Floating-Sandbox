@@ -34,8 +34,8 @@ RenderContext::RenderContext(
     , mOceanVBO()
     , mCrossOfLightVertexBuffer()
     , mCrossOfLightVBO()
-    , mFlameThrowerVertexBuffer()
-    , mFlameThrowerVBO()
+    , mHeatBlasterFlameVertexBuffer()
+    , mHeatBlasterFlameVBO()
     , mWorldBorderVertexBuffer()
     , mWorldBorderVBO()
     // VAOs
@@ -44,7 +44,7 @@ RenderContext::RenderContext(
     , mLandVAO()
     , mOceanVAO()
     , mCrossOfLightVAO()
-    , mFlameThrowerVAO()
+    , mHeatBlasterFlameVAO()
     , mWorldBorderVAO()
     // Textures
     , mCloudTextureAtlasOpenGLHandle()
@@ -231,7 +231,7 @@ RenderContext::RenderContext(
     mLandVBO = vbos[2];
     mOceanVBO = vbos[3];
     mCrossOfLightVBO = vbos[4];
-    mFlameThrowerVBO = vbos[5];
+    mHeatBlasterFlameVBO = vbos[5];
     mWorldBorderVBO = vbos[6];
 
 
@@ -333,19 +333,19 @@ RenderContext::RenderContext(
 
 
     //
-    // Initialize FlameThrower VAO
+    // Initialize HeatBlaster flame VAO
     //
 
     glGenVertexArrays(1, &tmpGLuint);
-    mFlameThrowerVAO = tmpGLuint;
+    mHeatBlasterFlameVAO = tmpGLuint;
 
-    glBindVertexArray(*mFlameThrowerVAO);
+    glBindVertexArray(*mHeatBlasterFlameVAO);
     CheckOpenGLError();
 
     // Describe vertex attributes
-    glBindBuffer(GL_ARRAY_BUFFER, *mFlameThrowerVBO);
-    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::FlameThrower));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::FlameThrower), 4, GL_FLOAT, GL_FALSE, sizeof(FlameThrowerVertex), (void*)0);
+    glBindBuffer(GL_ARRAY_BUFFER, *mHeatBlasterFlameVBO);
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::HeatBlasterFlame));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::HeatBlasterFlame), 4, GL_FLOAT, GL_FALSE, sizeof(HeatBlasterFlameVertex), (void*)0);
     CheckOpenGLError();
 
     glBindVertexArray(0);
@@ -500,9 +500,11 @@ RenderContext::RenderContext(
     glBindTexture(GL_TEXTURE_2D, mUploadedTextureManager->GetOpenGLHandle(TextureGroupType::Noise, 1));
     CheckOpenGLError();
 
-    // Set texture in shaders
-    mShaderManager->ActivateProgram<ProgramType::FlameThrower>();
-    mShaderManager->SetTextureParameters<ProgramType::FlameThrower>();
+    // Set noise texture in shaders
+    mShaderManager->ActivateProgram<ProgramType::HeatBlasterFlameCool>();
+    mShaderManager->SetTextureParameters<ProgramType::HeatBlasterFlameCool>();
+    mShaderManager->ActivateProgram<ProgramType::HeatBlasterFlameHeat>();
+    mShaderManager->SetTextureParameters<ProgramType::HeatBlasterFlameHeat>();
 
 
     //
@@ -714,8 +716,8 @@ void RenderContext::RenderStart()
     // Reset crosses of light, they are uploaded as needed
     mCrossOfLightVertexBuffer.clear();
 
-    // Reset flame throwers, they are uploaded as needed
-    mFlameThrowerVertexBuffer.clear();
+    // Reset HeatBlaster flames, they are uploaded as needed
+    mHeatBlasterFlameVertexBuffer.clear();
 
     // Communicate start to child contextes
     mTextRenderContext->RenderStart();
@@ -998,10 +1000,10 @@ void RenderContext::RenderEnd()
         RenderCrossesOfLight();
     }
 
-    // Render flame thrower
-    if (!mFlameThrowerVertexBuffer.empty())
+    // Render HeatBlaster flames
+    if (!mHeatBlasterFlameVertexBuffer.empty())
     {
-        RenderFlameThrower();
+        RenderHeatBlasterFlame();
     }
 
     // Render world end
@@ -1045,16 +1047,16 @@ void RenderContext::RenderCrossesOfLight()
     glBindVertexArray(0);
 }
 
-void RenderContext::RenderFlameThrower()
+void RenderContext::RenderHeatBlasterFlame()
 {
     //
     // Upload buffer
     //
 
-    glBindBuffer(GL_ARRAY_BUFFER, *mFlameThrowerVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, *mHeatBlasterFlameVBO);
     glBufferData(GL_ARRAY_BUFFER,
-        sizeof(FlameThrowerVertex) * mFlameThrowerVertexBuffer.size(),
-        mFlameThrowerVertexBuffer.data(),
+        sizeof(HeatBlasterFlameVertex) * mHeatBlasterFlameVertexBuffer.size(),
+        mHeatBlasterFlameVertexBuffer.data(),
         GL_DYNAMIC_DRAW);
     CheckOpenGLError();
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -1064,16 +1066,16 @@ void RenderContext::RenderFlameThrower()
     // Render
     //
 
-    glBindVertexArray(*mFlameThrowerVAO);
+    glBindVertexArray(*mHeatBlasterFlameVAO);
 
-    mShaderManager->ActivateProgram<ProgramType::FlameThrower>();
+    mShaderManager->ActivateProgram<ProgramType::HeatBlasterFlameHeat>();
 
     // Set time parameter
-    mShaderManager->SetProgramParameter<ProgramType::FlameThrower, ProgramParameterType::Time>(
+    mShaderManager->SetProgramParameter<ProgramType::HeatBlasterFlameHeat, ProgramParameterType::Time>(
         GameWallClock::GetInstance().NowAsFloat());
 
-    assert((mFlameThrowerVertexBuffer.size() % 6) == 0);
-    glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mFlameThrowerVertexBuffer.size()));
+    assert((mHeatBlasterFlameVertexBuffer.size() % 6) == 0);
+    glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mHeatBlasterFlameVertexBuffer.size()));
 
     glBindVertexArray(0);
 }
@@ -1135,8 +1137,12 @@ void RenderContext::OnViewModelUpdated()
     mShaderManager->SetProgramParameter<ProgramType::CrossOfLight, ProgramParameterType::OrthoMatrix>(
         globalOrthoMatrix);
 
-    mShaderManager->ActivateProgram<ProgramType::FlameThrower>();
-    mShaderManager->SetProgramParameter<ProgramType::FlameThrower, ProgramParameterType::OrthoMatrix>(
+    mShaderManager->ActivateProgram<ProgramType::HeatBlasterFlameCool>();
+    mShaderManager->SetProgramParameter<ProgramType::HeatBlasterFlameCool, ProgramParameterType::OrthoMatrix>(
+        globalOrthoMatrix);
+
+    mShaderManager->ActivateProgram<ProgramType::HeatBlasterFlameHeat>();
+    mShaderManager->SetProgramParameter<ProgramType::HeatBlasterFlameHeat, ProgramParameterType::OrthoMatrix>(
         globalOrthoMatrix);
 
     mShaderManager->ActivateProgram<ProgramType::WorldBorder>();

@@ -150,7 +150,7 @@ private:
     void OnMoveAllMenuItemSelected(wxCommandEvent& event);
     void OnSmashMenuItemSelected(wxCommandEvent& event);
     void OnSliceMenuItemSelected(wxCommandEvent& event);
-    void OnFlameThrowerMenuItemSelected(wxCommandEvent& event);
+    void OnHeatBlasterMenuItemSelected(wxCommandEvent& event);
     void OnGrabMenuItemSelected(wxCommandEvent& event);
     void OnSwirlMenuItemSelected(wxCommandEvent& event);
     void OnPinMenuItemSelected(wxCommandEvent& event);

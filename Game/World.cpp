@@ -205,8 +205,9 @@ void World::SawThrough(
     }
 }
 
-bool World::ApplyFlameThrowerAt(
+bool World::ApplyHeatBlasterAt(
     vec2f const & targetPos,
+    HeatBlasterActionType action,
     float radius,
     GameParameters const & gameParameters)
 {
@@ -214,8 +215,9 @@ bool World::ApplyFlameThrowerAt(
 
     for (auto & ship : mAllShips)
     {
-        bool isApplied = ship->ApplyFlameThrowerAt(
+        bool isApplied = ship->ApplyHeatBlasterAt(
             targetPos,
+            action,
             radius,
             gameParameters);
 

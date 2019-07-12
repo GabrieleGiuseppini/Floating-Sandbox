@@ -7,7 +7,7 @@
 
 #include "ISliderCore.h"
 
-class ExponentialSliderCore final : public ISliderCore
+class ExponentialSliderCore final : public ISliderCore<float>
 {
 public:
 

@@ -27,7 +27,8 @@ enum class ProgramType
 {
     Clouds = 0,
     CrossOfLight,
-    FlameThrower,
+    HeatBlasterFlameCool,
+    HeatBlasterFlameHeat,
     LandFlat,
     LandTexture,
     OceanDepth,
@@ -123,7 +124,7 @@ enum class VertexAttributeType : GLuint
     CrossOfLight1 = 0,
     CrossOfLight2 = 1,
 
-    FlameThrower = 0,
+    HeatBlasterFlame = 0,
 
     WorldBorder = 0,
 

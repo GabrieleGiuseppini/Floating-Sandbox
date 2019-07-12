@@ -36,7 +36,7 @@ enum class ToolType
     MoveAll,
     Smash,
     Saw,
-    FlameThrower,
+    HeatBlaster,
     Grab,
     Swirl,
     Pin,
@@ -868,11 +868,11 @@ private:
     bool mIsUnderwater;
 };
 
-class FlameThrowerTool final : public Tool
+class HeatBlasterTool final : public Tool
 {
 public:
 
-    FlameThrowerTool(
+    HeatBlasterTool(
         wxFrame * parentFrame,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
@@ -882,9 +882,11 @@ public:
 
     virtual void Initialize(InputState const & inputState) override
     {
+        mCurrentAction = inputState.IsShiftKeyDown ? HeatBlasterActionType::Cool : HeatBlasterActionType::Heat;
+
         if (inputState.IsLeftMouseDown)
         {
-            mIsEngaged = mGameController->ApplyFlameThrowerAt(inputState.MousePosition);
+            mIsEngaged = mGameController->ApplyHeatBlasterAt(inputState.MousePosition, mCurrentAction);
         }
         else
         {
@@ -895,7 +897,7 @@ public:
     virtual void Deinitialize(InputState const & /*inputState*/) override
     {
         // Stop sound
-        mSoundController->StopFlameThrowerSound();
+        mSoundController->StopHeatBlasterSound();
     }
 
     virtual void Update(InputState const & inputState) override
@@ -903,7 +905,7 @@ public:
         bool isEngaged;
         if (inputState.IsLeftMouseDown)
         {
-            isEngaged = mGameController->ApplyFlameThrowerAt(inputState.MousePosition);
+            isEngaged = mGameController->ApplyHeatBlasterAt(inputState.MousePosition, mCurrentAction);
         }
         else
         {
@@ -918,7 +920,7 @@ public:
                 mIsEngaged = true;
 
                 // Start sound
-                mSoundController->PlayFlameThrowerSound();
+                mSoundController->PlayHeatBlasterSound(mCurrentAction);
 
                 // Update cursor
                 ShowCurrentCursor();
@@ -932,7 +934,7 @@ public:
                 mIsEngaged = false;
 
                 // Stop sound
-                mSoundController->StopFlameThrowerSound();
+                mSoundController->StopHeatBlasterSound();
 
                 // Update cursor
                 ShowCurrentCursor();
@@ -943,24 +945,44 @@ public:
     virtual void OnMouseMove(InputState const & /*inputState*/) override {}
     virtual void OnLeftMouseDown(InputState const & /*inputState*/) override {}
     virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
-    virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
-    virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+
+    virtual void OnShiftKeyDown(InputState const & /*inputState*/) override
+    {
+        mCurrentAction = HeatBlasterActionType::Cool;
+        ShowCurrentCursor();
+    }
+
+    virtual void OnShiftKeyUp(InputState const & /*inputState*/) override
+    {
+        mCurrentAction = HeatBlasterActionType::Heat;
+        ShowCurrentCursor();
+    }
 
     virtual void ShowCurrentCursor() override
     {
         assert(nullptr != mParentFrame);
 
-        mParentFrame->SetCursor(mIsEngaged ? *mDownCursor : *mUpCursor);
+        if (mIsEngaged)
+        {
+            mParentFrame->SetCursor(mCurrentAction == HeatBlasterActionType::Cool ? *mCoolDownCursor : *mHeatDownCursor);
+        }
+        else
+        {
+            mParentFrame->SetCursor(mCurrentAction == HeatBlasterActionType::Cool ? *mCoolUpCursor : *mHeatUpCursor);
+        }
     }
 
 private:
 
     // Our state
     bool mIsEngaged;
+    HeatBlasterActionType mCurrentAction;
 
     // The cursors
-    std::unique_ptr<wxCursor> const mUpCursor;
-    std::unique_ptr<wxCursor> const mDownCursor;
+    std::unique_ptr<wxCursor> const mHeatUpCursor;
+    std::unique_ptr<wxCursor> const mCoolUpCursor;
+    std::unique_ptr<wxCursor> const mHeatDownCursor;
+    std::unique_ptr<wxCursor> const mCoolDownCursor;
 };
 
 class GrabTool final : public ContinuousTool

@@ -122,8 +122,9 @@ public:
         float currentSimulationTime,
         GameParameters const & gameParameters);
 
-    bool ApplyFlameThrowerAt(
+    bool ApplyHeatBlasterAt(
         vec2f const & targetPos,
+        HeatBlasterActionType action,
         float radius,
         GameParameters const & gameParameters);
 

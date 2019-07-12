@@ -23,8 +23,10 @@ SoundType StrToSoundType(std::string const & str)
         return SoundType::Saw;
     else if (Utils::CaseInsensitiveEquals(str, "Sawed"))
         return SoundType::Sawed;
-    else if (Utils::CaseInsensitiveEquals(str, "FlameThrower"))
-        return SoundType::FlameThrower;
+    else if (Utils::CaseInsensitiveEquals(str, "HeatBlasterCool"))
+        return SoundType::HeatBlasterCool;
+    else if (Utils::CaseInsensitiveEquals(str, "HeatBlasterHeat"))
+        return SoundType::HeatBlasterHeat;
     else if (Utils::CaseInsensitiveEquals(str, "Swirl"))
         return SoundType::Swirl;
     else if (Utils::CaseInsensitiveEquals(str, "PinPoint"))

@@ -137,7 +137,7 @@ public:
     void DestroyAt(vec2f const & screenCoordinates, float radiusFraction) override;
     void RepairAt(vec2f const & screenCoordinates, float radiusMultiplier, RepairSessionId sessionId, RepairSessionStepId sessionStepId) override;
     void SawThrough(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates) override;
-    bool ApplyFlameThrowerAt(vec2f const & screenCoordinates) override;
+    bool ApplyHeatBlasterAt(vec2f const & screenCoordinates, HeatBlasterActionType action) override;
     void DrawTo(vec2f const & screenCoordinates, float strengthFraction) override;
     void SwirlAt(vec2f const & screenCoordinates, float strengthFraction) override;
     void TogglePinAt(vec2f const & screenCoordinates) override;
@@ -274,6 +274,11 @@ public:
     float GetMinWaterTemperature() const override { return GameParameters::MinWaterTemperature; }
     float GetMaxWaterTemperature() const override { return GameParameters::MaxWaterTemperature; }
 
+    size_t GetMaxBurningParticles() const override { return mGameParameters.MaxBurningParticles; }
+    void SetMaxBurningParticles(size_t value) override { mGameParameters.MaxBurningParticles = value; }
+    float GetMinMaxBurningParticles() const override { return GameParameters::MinMaxBurningParticles; }
+    float GetMaxMaxBurningParticles() const override { return GameParameters::MaxMaxBurningParticles; }
+
     float GetThermalConductivityAdjustment() const override { return mGameParameters.ThermalConductivityAdjustment; }
     void SetThermalConductivityAdjustment(float value) override { mGameParameters.ThermalConductivityAdjustment = value; }
     float GetMinThermalConductivityAdjustment() const override { return GameParameters::MinThermalConductivityAdjustment; }
@@ -304,15 +309,15 @@ public:
     float GetMinCombustionHeatAdjustment() const override { return GameParameters::MinCombustionHeatAdjustment; }
     float GetMaxCombustionHeatAdjustment() const override { return GameParameters::MaxCombustionHeatAdjustment; }
 
-    float GetFlameThrowerHeatFlow() const override { return mGameParameters.FlameThrowerHeatFlow; }
-    void SetFlameThrowerHeatFlow(float value) override { mGameParameters.FlameThrowerHeatFlow = value; }
-    float GetMinFlameThrowerHeatFlow() const override { return GameParameters::MinFlameThrowerHeatFlow; }
-    float GetMaxFlameThrowerHeatFlow() const override { return GameParameters::MaxFlameThrowerHeatFlow; }
+    float GetHeatBlasterHeatFlow() const override { return mGameParameters.HeatBlasterHeatFlow; }
+    void SetHeatBlasterHeatFlow(float value) override { mGameParameters.HeatBlasterHeatFlow = value; }
+    float GetMinHeatBlasterHeatFlow() const override { return GameParameters::MinHeatBlasterHeatFlow; }
+    float GetMaxHeatBlasterHeatFlow() const override { return GameParameters::MaxHeatBlasterHeatFlow; }
 
-    float GetFlameThrowerRadius() const override { return mGameParameters.FlameThrowerRadius; }
-    void SetFlameThrowerRadius(float value) override { mGameParameters.FlameThrowerRadius = value; }
-    float GetMinFlameThrowerRadius() const override { return GameParameters::MinFlameThrowerRadius; }
-    float GetMaxFlameThrowerRadius() const override { return GameParameters::MaxFlameThrowerRadius; }
+    float GetHeatBlasterRadius() const override { return mGameParameters.HeatBlasterRadius; }
+    void SetHeatBlasterRadius(float value) override { mGameParameters.HeatBlasterRadius = value; }
+    float GetMinHeatBlasterRadius() const override { return GameParameters::MinHeatBlasterRadius; }
+    float GetMaxHeatBlasterRadius() const override { return GameParameters::MaxHeatBlasterRadius; }
 
     // Misc
 
@@ -534,8 +539,8 @@ private:
     bool mIsPaused;
     bool mIsMoveToolEngaged;
 
-    // When set, will be uploaded to the RenderContext to display the flame thrower
-    std::optional<std::tuple<vec2f, float>> mFlameThrowerToRender;
+    // When set, will be uploaded to the RenderContext to display the HeatBlaster flame
+    std::optional<std::tuple<vec2f, float>> mHeatBlasterFlameToRender;
 
     class TsunamiNotificationStateMachine
     {

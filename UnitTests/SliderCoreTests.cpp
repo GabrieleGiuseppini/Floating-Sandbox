@@ -1,3 +1,4 @@
+#include <GameCore/IntegralLinearSliderCore.h>
 #include <GameCore/LinearSliderCore.h>
 
 #include "gtest/gtest.h"
@@ -85,4 +86,26 @@ TEST_F(LinearSliderCoreTest, TwentyToFiveHundred)
 
     EXPECT_EQ(core.TickToValue(60), 500.0f);
     EXPECT_EQ(core.ValueToTick(500.0f), 60);
+}
+
+TEST(IntegralLinearSliderCoreTest, ZeroToTen)
+{
+    IntegralLinearSliderCore<size_t> core(100, 1000); // TickSize = 16
+
+    EXPECT_EQ(core.GetNumberOfTicks(), 57);
+
+    EXPECT_EQ(core.TickToValue(0), 100);
+    EXPECT_EQ(core.ValueToTick(100), 0);
+
+    EXPECT_EQ(core.TickToValue(1), 112); // 96 + 16
+    EXPECT_EQ(core.ValueToTick(111), 0);
+    EXPECT_EQ(core.ValueToTick(112), 1);
+
+    EXPECT_EQ(core.TickToValue(2), 128); // 96 + 32
+    EXPECT_EQ(core.ValueToTick(127), 1);
+    EXPECT_EQ(core.ValueToTick(128), 2);
+
+    EXPECT_EQ(core.TickToValue(57), 1000);
+    EXPECT_EQ(core.ValueToTick(999), 56);
+    EXPECT_EQ(core.ValueToTick(1000), 57);
 }

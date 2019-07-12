@@ -234,7 +234,9 @@ struct GameParameters
     static float constexpr SmotheringDecayLowWatermark = 0.0005f;
     static float constexpr SmotheringDecayHighWatermark = 0.05f;
 
-    static size_t constexpr MaxBurningParticles = 100;
+    size_t MaxBurningParticles;
+    static size_t constexpr MaxMaxBurningParticles = 10000;
+    static size_t constexpr MinMaxBurningParticles = 10;
 
     float ThermalConductivityAdjustment;
     static float constexpr MinThermalConductivityAdjustment = 0.1f;
@@ -260,13 +262,13 @@ struct GameParameters
     static float constexpr MinCombustionHeatAdjustment = 0.1f;
     static float constexpr MaxCombustionHeatAdjustment = 100.0f;
 
-    float FlameThrowerHeatFlow; // KJoules/sec
-    static float constexpr MinFlameThrowerHeatFlow = 200.0f;
-    static float constexpr MaxFlameThrowerHeatFlow = 20000.0f;
+    float HeatBlasterHeatFlow; // KJoules/sec
+    static float constexpr MinHeatBlasterHeatFlow = 200.0f;
+    static float constexpr MaxHeatBlasterHeatFlow = 20000.0f;
 
-    float FlameThrowerRadius;
-    static float constexpr MinFlameThrowerRadius = 1.0f;
-    static float constexpr MaxFlameThrowerRadius = 100.0f;
+    float HeatBlasterRadius;
+    static float constexpr MinHeatBlasterRadius = 1.0f;
+    static float constexpr MaxHeatBlasterRadius = 100.0f;
 
     // Misc
 

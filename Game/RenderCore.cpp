@@ -19,8 +19,10 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::Clouds;
     else if (lstr == "cross_of_light")
         return ProgramType::CrossOfLight;
-    else if (lstr == "flame_thrower")
-        return ProgramType::FlameThrower;
+    else if (lstr == "heat_blaster_flame_cool")
+        return ProgramType::HeatBlasterFlameCool;
+    else if (lstr == "heat_blaster_flame_heat")
+        return ProgramType::HeatBlasterFlameHeat;
     else if (lstr == "land_flat")
         return ProgramType::LandFlat;
     else if (lstr == "land_texture")
@@ -89,8 +91,10 @@ std::string ProgramTypeToStr(ProgramType program)
         return "Clouds";
     case ProgramType::CrossOfLight:
         return "CrossOfLight";
-    case ProgramType::FlameThrower:
-        return "FlameThrower";
+    case ProgramType::HeatBlasterFlameCool:
+        return "HeatBlasterFlameCool";
+    case ProgramType::HeatBlasterFlameHeat:
+        return "HeatBlasterFlameHeat";
     case ProgramType::LandFlat:
         return "LandFlat";
     case ProgramType::LandTexture:
@@ -290,8 +294,8 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::CrossOfLight1;
     else if (Utils::CaseInsensitiveEquals(str, "CrossOfLight2"))
         return VertexAttributeType::CrossOfLight2;
-    else if (Utils::CaseInsensitiveEquals(str, "FlameThrower"))
-        return VertexAttributeType::FlameThrower;
+    else if (Utils::CaseInsensitiveEquals(str, "HeatBlasterFlame"))
+        return VertexAttributeType::HeatBlasterFlame;
     else if (Utils::CaseInsensitiveEquals(str, "WorldBorder"))
         return VertexAttributeType::WorldBorder;
     // Ship

@@ -60,7 +60,7 @@ GameController::GameController(
     , mLastShipLoadedFilepath()
     , mIsPaused(false)
     , mIsMoveToolEngaged(false)
-    , mFlameThrowerToRender()
+    , mHeatBlasterFlameToRender()
     , mTsunamiNotificationStateMachine()
     // Parameters that we own
     , mShowTsunamiNotifications(true)
@@ -604,19 +604,22 @@ void GameController::SawThrough(
         mGameParameters);
 }
 
-bool GameController::ApplyFlameThrowerAt(vec2f const & screenCoordinates)
+bool GameController::ApplyHeatBlasterAt(
+    vec2f const & screenCoordinates,
+    HeatBlasterActionType action)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
     // Calculate radius
-    float radius = mGameParameters.FlameThrowerRadius;
+    float radius = mGameParameters.HeatBlasterRadius;
     if (mGameParameters.IsUltraViolentMode)
         radius *= 10.0f;
 
     // Apply action
     assert(!!mWorld);
-    bool isApplied = mWorld->ApplyFlameThrowerAt(
+    bool isApplied = mWorld->ApplyHeatBlasterAt(
         worldCoordinates,
+        action,
         radius,
         mGameParameters);
 
@@ -624,8 +627,8 @@ bool GameController::ApplyFlameThrowerAt(vec2f const & screenCoordinates)
     {
         if (mDrawHeatBlasterFlame)
         {
-            // Remember to render the flame thrower at the next Render() step
-            mFlameThrowerToRender.emplace(
+            // Remember to render the flame at the next Render() step
+            mHeatBlasterFlameToRender.emplace(
                 worldCoordinates,
                 radius);
         }
@@ -989,16 +992,16 @@ void GameController::InternalRender()
 
 
     //
-    // Render flame thrower, if any
+    // Render HeatBlaster flame, if any
     //
 
-    if (!!mFlameThrowerToRender)
+    if (!!mHeatBlasterFlameToRender)
     {
-        mRenderContext->UploadFlameThrower(
-            std::get<0>(*mFlameThrowerToRender),
-            std::get<1>(*mFlameThrowerToRender));
+        mRenderContext->UploadHeatBlasterFlame(
+            std::get<0>(*mHeatBlasterFlameToRender),
+            std::get<1>(*mHeatBlasterFlameToRender));
 
-        mFlameThrowerToRender.reset();
+        mHeatBlasterFlameToRender.reset();
     }
 
     //

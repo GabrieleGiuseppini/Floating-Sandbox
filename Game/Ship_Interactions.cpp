@@ -681,14 +681,15 @@ void Ship::SawThrough(
     mGameEventHandler->OnSawed(false, nonMetalsSawed);
 }
 
-bool Ship::ApplyFlameThrowerAt(
+bool Ship::ApplyHeatBlasterAt(
     vec2f const & targetPos,
+    HeatBlasterActionType action,
     float radius,
     GameParameters const & gameParameters)
 {
     // Q = q*dt
-    float const flameThrowerHeat =
-        gameParameters.FlameThrowerHeatFlow * 1000.0f // KJoule->Joule
+    float const heatBlasterHeat =
+        gameParameters.HeatBlasterHeatFlow * 1000.0f // KJoule->Joule
         * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f)
         * GameParameters::SimulationStepTimeDuration<float>;
 
@@ -702,7 +703,7 @@ bool Ship::ApplyFlameThrowerAt(
         if (pointSquareDistance < squareRadius)
         {
             //
-            // Inject heat at this point
+            // Inject/remove heat at this point
             //
 
             // Smooth heat out for radius
@@ -714,7 +715,7 @@ bool Ship::ApplyFlameThrowerAt(
             // Calc temperature delta
             // T = Q/HeatCapacity
             float deltaT =
-                flameThrowerHeat * smoothing
+                heatBlasterHeat * smoothing
                 / mPoints.GetMaterialHeatCapacity(pointIndex);
 
             // Increase temperature

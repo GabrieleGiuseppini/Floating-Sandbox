@@ -763,10 +763,10 @@ public:
     }
 
     //
-    // FlameThrower
+    // HeatBlaster flame
     //
 
-    void UploadFlameThrower(
+    void UploadHeatBlasterFlame(
         vec2f const & centerPosition,
         float radius)
     {
@@ -778,29 +778,29 @@ public:
 
         // Triangle 1
 
-        mFlameThrowerVertexBuffer.emplace_back(
+        mHeatBlasterFlameVertexBuffer.emplace_back(
             vec2f(left, bottom),
             vec2f(-0.5f, -0.5f));
 
-        mFlameThrowerVertexBuffer.emplace_back(
+        mHeatBlasterFlameVertexBuffer.emplace_back(
             vec2f(left, top),
             vec2f(-0.5f, 0.5f));
 
-        mFlameThrowerVertexBuffer.emplace_back(
+        mHeatBlasterFlameVertexBuffer.emplace_back(
             vec2f(right, bottom),
             vec2f(0.5f, -0.5f));
 
         // Triangle 2
 
-        mFlameThrowerVertexBuffer.emplace_back(
+        mHeatBlasterFlameVertexBuffer.emplace_back(
             vec2f(left, top),
             vec2f(-0.5f, 0.5f));
 
-        mFlameThrowerVertexBuffer.emplace_back(
+        mHeatBlasterFlameVertexBuffer.emplace_back(
             vec2f(right, bottom),
             vec2f(0.5f, -0.5f));
 
-        mFlameThrowerVertexBuffer.emplace_back(
+        mHeatBlasterFlameVertexBuffer.emplace_back(
             vec2f(right, top),
             vec2f(0.5f, 0.5f));
     }
@@ -1275,7 +1275,7 @@ private:
     void RenderOcean(bool opaquely);
 
     void RenderCrossesOfLight();
-    void RenderFlameThrower();
+    void RenderHeatBlasterFlame();
     void RenderWorldBorder();
 
     void OnViewModelUpdated();
@@ -1395,12 +1395,12 @@ private:
         {}
     };
 
-    struct FlameThrowerVertex
+    struct HeatBlasterFlameVertex
     {
         vec2f vertexPosition;
         vec2f flameSpacePosition;
 
-        FlameThrowerVertex(
+        HeatBlasterFlameVertex(
             vec2f _vertexPosition,
             vec2f _flameSpacePosition)
             : vertexPosition(_vertexPosition)
@@ -1450,8 +1450,8 @@ private:
     std::vector<CrossOfLightVertex> mCrossOfLightVertexBuffer;
     GameOpenGLVBO mCrossOfLightVBO;
 
-    std::vector<FlameThrowerVertex> mFlameThrowerVertexBuffer;
-    GameOpenGLVBO mFlameThrowerVBO;
+    std::vector<HeatBlasterFlameVertex> mHeatBlasterFlameVertexBuffer;
+    GameOpenGLVBO mHeatBlasterFlameVBO;
 
     std::vector<WorldBorderVertex> mWorldBorderVertexBuffer;
     GameOpenGLVBO mWorldBorderVBO;
@@ -1465,7 +1465,7 @@ private:
     GameOpenGLVAO mLandVAO;
     GameOpenGLVAO mOceanVAO;
     GameOpenGLVAO mCrossOfLightVAO;
-    GameOpenGLVAO mFlameThrowerVAO;
+    GameOpenGLVAO mHeatBlasterFlameVAO;
     GameOpenGLVAO mWorldBorderVAO;
 
     //

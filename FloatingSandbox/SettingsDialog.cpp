@@ -9,6 +9,7 @@
 
 #include <GameCore/ExponentialSliderCore.h>
 #include <GameCore/FixedTickSliderCore.h>
+#include <GameCore/IntegralLinearSliderCore.h>
 #include <GameCore/LinearSliderCore.h>
 #include <GameCore/Log.h>
 
@@ -488,7 +489,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
 
             // Simulation Quality
             {
-                mMechanicalQualitySlider = new SliderControl(
+                mMechanicalQualitySlider = new SliderControl<float>(
                     mechanicsBox,
                     SliderWidth,
                     SliderHeight,
@@ -504,7 +505,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                         0.5f,
                         mGameController->GetMinNumMechanicalDynamicsIterationsAdjustment(),
                         mGameController->GetMaxNumMechanicalDynamicsIterationsAdjustment()),
-                        mWarningIcon.get());
+                    mWarningIcon.get());
 
                 mechanicsSizer->Add(
                     mMechanicalQualitySlider,
@@ -516,7 +517,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
 
             // Strength
             {
-                mStrengthSlider = new SliderControl(
+                mStrengthSlider = new SliderControl<float>(
                     mechanicsBox,
                     SliderWidth,
                     SliderHeight,
@@ -543,7 +544,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
 
             // Rot Accelerator
             {
-                mRotAcceler8rSlider = new SliderControl(
+                mRotAcceler8rSlider = new SliderControl<float>(
                     mechanicsBox,
                     SliderWidth,
                     SliderHeight,
@@ -596,7 +597,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
 
             // Luminiscence
             {
-                mLuminiscenceSlider = new SliderControl(
+                mLuminiscenceSlider = new SliderControl<float>(
                     lightsBox,
                     SliderWidth,
                     SliderHeight,
@@ -622,7 +623,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
 
             // Light Spread
             {
-                mLightSpreadSlider = new SliderControl(
+                mLightSpreadSlider = new SliderControl<float>(
                     lightsBox,
                     SliderWidth,
                     SliderHeight,
@@ -674,7 +675,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
 
             // Water Density
             {
-                mWaterDensitySlider = new SliderControl(
+                mWaterDensitySlider = new SliderControl<float>(
                     fluidsBox,
                     SliderWidth,
                     SliderHeight,
@@ -700,7 +701,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
 
             // Water Drag
             {
-                mWaterDragSlider = new SliderControl(
+                mWaterDragSlider = new SliderControl<float>(
                     fluidsBox,
                     SliderWidth,
                     SliderHeight,
@@ -727,7 +728,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
 
             // Water Intake
             {
-                mWaterIntakeSlider = new SliderControl(
+                mWaterIntakeSlider = new SliderControl<float>(
                     fluidsBox,
                     SliderWidth,
                     SliderHeight,
@@ -753,7 +754,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
 
             // Water Crazyness
             {
-                mWaterCrazynessSlider = new SliderControl(
+                mWaterCrazynessSlider = new SliderControl<float>(
                     fluidsBox,
                     SliderWidth,
                     SliderHeight,
@@ -779,7 +780,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
 
             // Water Diffusion Speed
             {
-                mWaterDiffusionSpeedSlider = new SliderControl(
+                mWaterDiffusionSpeedSlider = new SliderControl<float>(
                     fluidsBox,
                     SliderWidth,
                     SliderHeight,
@@ -841,7 +842,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
 
             // Thermal Conductivity Adjustment
             {
-                mThermalConductivityAdjustmentSlider = new SliderControl(
+                mThermalConductivityAdjustmentSlider = new SliderControl<float>(
                     physicsBox,
                     SliderWidth,
                     SliderHeight,
@@ -868,7 +869,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
 
             // Heat Dissipation Adjustment
             {
-                mHeatDissipationAdjustmentSlider = new SliderControl(
+                mHeatDissipationAdjustmentSlider = new SliderControl<float>(
                     physicsBox,
                     SliderWidth,
                     SliderHeight,
@@ -895,7 +896,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
 
             // Ignition Temperature Adjustment
             {
-                mIgnitionTemperatureAdjustmentSlider = new SliderControl(
+                mIgnitionTemperatureAdjustmentSlider = new SliderControl<float>(
                     physicsBox,
                     SliderWidth,
                     SliderHeight,
@@ -922,7 +923,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
 
             // Melting Temperature Adjustment
             {
-                mMeltingTemperatureAdjustmentSlider = new SliderControl(
+                mMeltingTemperatureAdjustmentSlider = new SliderControl<float>(
                     physicsBox,
                     SliderWidth,
                     SliderHeight,
@@ -949,7 +950,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
 
             // Combustion Speed Adjustment
             {
-                mCombustionSpeedAdjustmentSlider = new SliderControl(
+                mCombustionSpeedAdjustmentSlider = new SliderControl<float>(
                     physicsBox,
                     SliderWidth,
                     SliderHeight,
@@ -976,12 +977,12 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
 
             // Combustion Heat Adjustment
             {
-                mCombustionHeatAdjustmentSlider = new SliderControl(
+                mCombustionHeatAdjustmentSlider = new SliderControl<float>(
                     physicsBox,
                     SliderWidth,
                     SliderHeight,
                     "Combustion Heat Adjust",
-                    "Adjusts the heat generated by fire; together with the maximum number of burning points, determines the speed with which fire spreads to adjacent particles.",
+                    "Adjusts the heat generated by fire; together with the maximum number of burning particles, determines the speed with which fire spreads to adjacent particles.",
                     mGameController->GetCombustionHeatAdjustment(),
                     [this](float /*value*/)
                     {
@@ -1014,36 +1015,86 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
             CellBorder);
     }
 
-    // Flamethrower
+    // Fire
     {
-        wxStaticBox * flameThrowerBox = new wxStaticBox(panel, wxID_ANY, _("FlameThrower"));
+        wxStaticBox * fireBox = new wxStaticBox(panel, wxID_ANY, _("Fire"));
 
-        wxBoxSizer * flameThrowerBoxSizer = new wxBoxSizer(wxVERTICAL);
-        flameThrowerBoxSizer->AddSpacer(StaticBoxTopMargin);
+        wxBoxSizer * fireBoxSizer = new wxBoxSizer(wxVERTICAL);
+        fireBoxSizer->AddSpacer(StaticBoxTopMargin);
 
         {
-            wxGridBagSizer * flameThrowerSizer = new wxGridBagSizer(0, 0);
+            wxGridBagSizer * fireSizer = new wxGridBagSizer(0, 0);
+
+            // Max Particles
+            {
+                mMaxBurningParticlesSlider = new SliderControl<size_t>(
+                    fireBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Max Burning Particles",
+                    "The maximum number of particles that may burn at any given moment in time; together with the combustion heat adjustment, determines the speed with which fire spreads to adjacent particles. Warning: higher values require more computing resources, with the risk of slowing the simulation down!",
+                    mGameController->GetMaxBurningParticles(),
+                    [this](size_t /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<IntegralLinearSliderCore<size_t>>(
+                        mGameController->GetMinMaxBurningParticles(),
+                        mGameController->GetMaxMaxBurningParticles()),
+                    mWarningIcon.get());
+
+                fireSizer->Add(
+                    mMaxBurningParticlesSlider,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            fireBoxSizer->Add(fireSizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        fireBox->SetSizerAndFit(fireBoxSizer);
+
+        gridSizer->Add(
+            fireBox,
+            wxGBPosition(1, 0),
+            wxGBSpan(1, 1),
+            wxEXPAND | wxALL,
+            CellBorder);
+    }
+
+    // HeatBlaster
+    {
+        wxStaticBox * heatBlasterBox = new wxStaticBox(panel, wxID_ANY, _("HeatBlaster"));
+
+        wxBoxSizer * heatBlasterBoxSizer = new wxBoxSizer(wxVERTICAL);
+        heatBlasterBoxSizer->AddSpacer(StaticBoxTopMargin);
+
+        {
+            wxGridBagSizer * heatBlasterSizer = new wxGridBagSizer(0, 0);
 
             // Radius
             {
-                mFlameThrowerRadiusSlider = new SliderControl(
-                    flameThrowerBox,
+                mHeatBlasterRadiusSlider = new SliderControl<float>(
+                    heatBlasterBox,
                     SliderWidth,
                     SliderHeight,
                     "Radius",
-                    "The radius of FlameThrower tool (m).",
-                    mGameController->GetFlameThrowerRadius(),
+                    "The radius of HeatBlaster tool (m).",
+                    mGameController->GetHeatBlasterRadius(),
                     [this](float /*value*/)
                     {
                         // Remember we're dirty now
                         this->mApplyButton->Enable(true);
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameController->GetMinFlameThrowerRadius(),
-                        mGameController->GetMaxFlameThrowerRadius()));
+                        mGameController->GetMinHeatBlasterRadius(),
+                        mGameController->GetMaxHeatBlasterRadius()));
 
-                flameThrowerSizer->Add(
-                    mFlameThrowerRadiusSlider,
+                heatBlasterSizer->Add(
+                    mHeatBlasterRadiusSlider,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -1052,39 +1103,39 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
 
             // Heat flow
             {
-                mFlameThrowerHeatFlowSlider = new SliderControl(
-                    flameThrowerBox,
+                mHeatBlasterHeatFlowSlider = new SliderControl<float>(
+                    heatBlasterBox,
                     SliderWidth,
                     SliderHeight,
                     "Heat",
-                    "The heat produced by the FlameThrower tool (KJ/s).",
-                    mGameController->GetFlameThrowerHeatFlow(),
+                    "The heat produced by the HeatBlaster tool (KJ/s).",
+                    mGameController->GetHeatBlasterHeatFlow(),
                     [this](float /*value*/)
                     {
                         // Remember we're dirty now
                         this->mApplyButton->Enable(true);
                     },
                     std::make_unique<ExponentialSliderCore>(
-                        mGameController->GetMinFlameThrowerHeatFlow(),
+                        mGameController->GetMinHeatBlasterHeatFlow(),
                         2000.0f,
-                        mGameController->GetMaxFlameThrowerHeatFlow()));
+                        mGameController->GetMaxHeatBlasterHeatFlow()));
 
-                flameThrowerSizer->Add(
-                    mFlameThrowerHeatFlowSlider,
+                heatBlasterSizer->Add(
+                    mHeatBlasterHeatFlowSlider,
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
             }
 
-            flameThrowerBoxSizer->Add(flameThrowerSizer, 0, wxALL, StaticBoxInsetMargin);
+            heatBlasterBoxSizer->Add(heatBlasterSizer, 0, wxALL, StaticBoxInsetMargin);
         }
 
-        flameThrowerBox->SetSizerAndFit(flameThrowerBoxSizer);
+        heatBlasterBox->SetSizerAndFit(heatBlasterBoxSizer);
 
         gridSizer->Add(
-            flameThrowerBox,
-            wxGBPosition(1, 0),
+            heatBlasterBox,
+            wxGBPosition(1, 1),
             wxGBSpan(1, 1),
             wxEXPAND | wxALL,
             CellBorder);
@@ -1102,7 +1153,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
 
             // Air Temperature
             {
-                mAirTemperatureSlider = new SliderControl(
+                mAirTemperatureSlider = new SliderControl<float>(
                     worldBox,
                     SliderWidth,
                     SliderHeight,
@@ -1128,7 +1179,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
 
             // Water Temperature
             {
-                mWaterTemperatureSlider = new SliderControl(
+                mWaterTemperatureSlider = new SliderControl<float>(
                     worldBox,
                     SliderWidth,
                     SliderHeight,
@@ -1159,7 +1210,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
 
         gridSizer->Add(
             worldBox,
-            wxGBPosition(1, 1),
+            wxGBPosition(1, 2),
             wxGBSpan(1, 1),
             wxEXPAND | wxALL,
             CellBorder);
@@ -1189,7 +1240,7 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
 
             // Ocean Depth
             {
-                mOceanDepthSlider = new SliderControl(
+                mOceanDepthSlider = new SliderControl<float>(
                     oceanBox,
                     SliderWidth,
                     SliderHeight,
@@ -1216,7 +1267,7 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
 
             // Ocean Floor Bumpiness
             {
-                mOceanFloorBumpinessSlider = new SliderControl(
+                mOceanFloorBumpinessSlider = new SliderControl<float>(
                     oceanBox,
                     SliderWidth,
                     SliderHeight,
@@ -1242,7 +1293,7 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
 
             // Ocean Floor Detail Amplification
             {
-                mOceanFloorDetailAmplificationSlider = new SliderControl(
+                mOceanFloorDetailAmplificationSlider = new SliderControl<float>(
                     oceanBox,
                     SliderWidth,
                     SliderHeight,
@@ -1296,7 +1347,7 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
 
             // Number of Stars
             {
-                mNumberOfStarsSlider = new SliderControl(
+                mNumberOfStarsSlider = new SliderControl<float>(
                     skyBox,
                     SliderWidth,
                     SliderHeight,
@@ -1322,7 +1373,7 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
 
             // Number of Clouds
             {
-                mNumberOfCloudsSlider = new SliderControl(
+                mNumberOfCloudsSlider = new SliderControl<float>(
                     skyBox,
                     SliderWidth,
                     SliderHeight,
@@ -1385,7 +1436,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
             // Wind Speed Base
             {
-                mWindSpeedBaseSlider = new SliderControl(
+                mWindSpeedBaseSlider = new SliderControl<float>(
                     windBox,
                     SliderWidth,
                     SliderHeight,
@@ -1425,7 +1476,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
                 // Wind Gust Amplitude
                 {
-                    mWindGustAmplitudeSlider = new SliderControl(
+                    mWindGustAmplitudeSlider = new SliderControl<float>(
                         windBox,
                         SliderWidth,
                         -1,
@@ -1480,7 +1531,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
             // Basal Wave Height Adjustment
             {
-                mBasalWaveHeightAdjustmentSlider = new SliderControl(
+                mBasalWaveHeightAdjustmentSlider = new SliderControl<float>(
                     basalWavesBox,
                     SliderWidth,
                     SliderHeight,
@@ -1506,7 +1557,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
             // Basal Wave Length Adjustment
             {
-                mBasalWaveLengthAdjustmentSlider = new SliderControl(
+                mBasalWaveLengthAdjustmentSlider = new SliderControl<float>(
                     basalWavesBox,
                     SliderWidth,
                     SliderHeight,
@@ -1533,7 +1584,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
             // Basal Wave Speed Adjustment
             {
-                mBasalWaveSpeedAdjustmentSlider = new SliderControl(
+                mBasalWaveSpeedAdjustmentSlider = new SliderControl<float>(
                     basalWavesBox,
                     SliderWidth,
                     SliderHeight,
@@ -1585,7 +1636,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
             // Tsunami Rate
             {
-                mTsunamiRateSlider = new SliderControl(
+                mTsunamiRateSlider = new SliderControl<float>(
                     abnormalWavesBox,
                     SliderWidth,
                     SliderHeight,
@@ -1611,7 +1662,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
             // Rogue Wave Rate
             {
-                mRogueWaveRateSlider = new SliderControl(
+                mRogueWaveRateSlider = new SliderControl<float>(
                     abnormalWavesBox,
                     SliderWidth,
                     SliderHeight,
@@ -1674,7 +1725,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 
             // Destroy Radius
             {
-                mDestroyRadiusSlider = new SliderControl(
+                mDestroyRadiusSlider = new SliderControl<float>(
                     toolsBox,
                     SliderWidth,
                     SliderHeight,
@@ -1700,7 +1751,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 
             // Bomb Blast Radius
             {
-                mBombBlastRadiusSlider = new SliderControl(
+                mBombBlastRadiusSlider = new SliderControl<float>(
                     toolsBox,
                     SliderWidth,
                     SliderHeight,
@@ -1726,7 +1777,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 
             // Anti-matter Bomb Implosion Strength
             {
-                mAntiMatterBombImplosionStrengthSlider = new SliderControl(
+                mAntiMatterBombImplosionStrengthSlider = new SliderControl<float>(
                     toolsBox,
                     SliderWidth,
                     SliderHeight,
@@ -1752,7 +1803,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 
             // Flood Radius
             {
-                mFloodRadiusSlider = new SliderControl(
+                mFloodRadiusSlider = new SliderControl<float>(
                     toolsBox,
                     SliderWidth,
                     SliderHeight,
@@ -1778,7 +1829,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 
             // Flood Quantity
             {
-                mFloodQuantitySlider = new SliderControl(
+                mFloodQuantitySlider = new SliderControl<float>(
                     toolsBox,
                     SliderWidth,
                     SliderHeight,
@@ -1804,7 +1855,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 
             // Repair Radius
             {
-                mRepairRadiusSlider = new SliderControl(
+                mRepairRadiusSlider = new SliderControl<float>(
                     toolsBox,
                     SliderWidth,
                     SliderHeight,
@@ -1830,7 +1881,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 
             // Repair Speed Adjustment
             {
-                mRepairSpeedAdjustmentSlider = new SliderControl(
+                mRepairSpeedAdjustmentSlider = new SliderControl<float>(
                     toolsBox,
                     SliderWidth,
                     SliderHeight,
@@ -1917,7 +1968,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 
                 // Air Bubbles Density
                 {
-                    mAirBubbleDensitySlider = new SliderControl(
+                    mAirBubbleDensitySlider = new SliderControl<float>(
                         sideEffectsBox,
                         SliderWidth,
                         -1,
@@ -2104,7 +2155,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
             // Ocean Transparency
             {
-                mOceanTransparencySlider = new SliderControl(
+                mOceanTransparencySlider = new SliderControl<float>(
                     oceanBox,
                     SliderWidth,
                     SliderHeight,
@@ -2130,7 +2181,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
             // Ocean Darkening Rate
             {
-                mOceanDarkeningRateSlider = new SliderControl(
+                mOceanDarkeningRateSlider = new SliderControl<float>(
                     oceanBox,
                     SliderWidth,
                     SliderHeight,
@@ -2364,7 +2415,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
             // Heat overlay transparency
             {
-                mHeatOverlayTransparencySlider = new SliderControl(
+                mHeatOverlayTransparencySlider = new SliderControl<float>(
                     heatBox,
                     SliderWidth,
                     SliderHeight,
@@ -2390,7 +2441,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
             // Flame size adjustment
             {
-                mShipFlameSizeAdjustmentSlider = new SliderControl(
+                mShipFlameSizeAdjustmentSlider = new SliderControl<float>(
                     heatBox,
                     SliderWidth,
                     SliderHeight,
@@ -2514,7 +2565,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
             // Water contrast
             {
-                mWaterContrastSlider = new SliderControl(
+                mWaterContrastSlider = new SliderControl<float>(
                     waterBox,
                     SliderWidth,
                     SliderHeight,
@@ -2541,7 +2592,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
             {
                 // Water Level of Detail
 
-                mWaterLevelOfDetailSlider = new SliderControl(
+                mWaterLevelOfDetailSlider = new SliderControl<float>(
                     waterBox,
                     SliderWidth,
                     SliderHeight,
@@ -2589,7 +2640,7 @@ void SettingsDialog::PopulateSoundPanel(wxPanel * panel)
 
     // Effects volume
 
-    mEffectsVolumeSlider = new SliderControl(
+    mEffectsVolumeSlider = new SliderControl<float>(
         panel,
         SliderWidth,
         SliderHeight,
@@ -2610,7 +2661,7 @@ void SettingsDialog::PopulateSoundPanel(wxPanel * panel)
 
     // Tools volume
 
-    mToolsVolumeSlider = new SliderControl(
+    mToolsVolumeSlider = new SliderControl<float>(
         panel,
         SliderWidth,
         SliderHeight,
@@ -2631,7 +2682,7 @@ void SettingsDialog::PopulateSoundPanel(wxPanel * panel)
 
     // Music volume
 
-    mMusicVolumeSlider = new SliderControl(
+    mMusicVolumeSlider = new SliderControl<float>(
         panel,
         SliderWidth,
         SliderHeight,
@@ -2688,7 +2739,7 @@ void SettingsDialog::PopulateAdvancedPanel(wxPanel * panel)
 
     // Spring Stiffness
 
-    mSpringStiffnessSlider = new SliderControl(
+    mSpringStiffnessSlider = new SliderControl<float>(
         panel,
         SliderWidth,
         SliderHeight,
@@ -2710,7 +2761,7 @@ void SettingsDialog::PopulateAdvancedPanel(wxPanel * panel)
 
     // Spring Damping
 
-    mSpringDampingSlider = new SliderControl(
+    mSpringDampingSlider = new SliderControl<float>(
         panel,
         SliderWidth,
         SliderHeight,
@@ -2816,9 +2867,11 @@ void SettingsDialog::ReadSettings()
 
     mCombustionHeatAdjustmentSlider->SetValue(mGameController->GetCombustionHeatAdjustment());
 
-    mFlameThrowerRadiusSlider->SetValue(mGameController->GetFlameThrowerRadius());
+    mMaxBurningParticlesSlider->SetValue(mGameController->GetMaxBurningParticles());
 
-    mFlameThrowerHeatFlowSlider->SetValue(mGameController->GetFlameThrowerHeatFlow());
+    mHeatBlasterRadiusSlider->SetValue(mGameController->GetHeatBlasterRadius());
+
+    mHeatBlasterHeatFlowSlider->SetValue(mGameController->GetHeatBlasterHeatFlow());
 
     mAirTemperatureSlider->SetValue(mGameController->GetAirTemperature());
 
@@ -3171,11 +3224,14 @@ void SettingsDialog::ApplySettings()
     mGameController->SetCombustionHeatAdjustment(
         mCombustionHeatAdjustmentSlider->GetValue());
 
-    mGameController->SetFlameThrowerRadius(
-        mFlameThrowerRadiusSlider->GetValue());
+    mGameController->SetMaxBurningParticles(
+        mMaxBurningParticlesSlider->GetValue());
 
-    mGameController->SetFlameThrowerHeatFlow(
-        mFlameThrowerHeatFlowSlider->GetValue());
+    mGameController->SetHeatBlasterRadius(
+        mHeatBlasterRadiusSlider->GetValue());
+
+    mGameController->SetHeatBlasterHeatFlow(
+        mHeatBlasterHeatFlowSlider->GetValue());
 
     mGameController->SetAirTemperature(
         mAirTemperatureSlider->GetValue());
