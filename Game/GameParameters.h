@@ -217,13 +217,13 @@ struct GameParameters
     static float constexpr MinAirTemperature = 273.15f; // 0C
     static float constexpr MaxAirTemperature = 2073.15f; // 1800C
 
-    static float constexpr AirConvectiveHeatTransferCoefficient = 100.45f; // J/(s*m2*K) - arbitrary, high
+    static float constexpr AirConvectiveHeatTransferCoefficient = 100.45f; // J/(s*m2*K) - arbitrary, higher than real
 
     float WaterTemperature; // Kelvin
     static float constexpr MinWaterTemperature = 273.15f; // 0C
     static float constexpr MaxWaterTemperature = 2073.15f; // 1800C
 
-    static float constexpr WaterConvectiveHeatTransferCoefficient = 2500.0f; // J/(s*m2*K) - arbitrary, high
+    static float constexpr WaterConvectiveHeatTransferCoefficient = 2500.0f; // J/(s*m2*K) - arbitrary, higher than real
 
     static float constexpr IgnitionTemperatureHighWatermark = 0.0f;
     static float constexpr IgnitionTemperatureLowWatermark = -30.0f;

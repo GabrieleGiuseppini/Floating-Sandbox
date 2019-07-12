@@ -1161,11 +1161,18 @@ Render:
 					+ Uploads flames in order of heap
 
 			- See Pac0master's bug: looks like when the cardboard of the funnel touches the water it starts generating a super high amount of heat
-			- See Pac0master's bug: melting glitch
+
+			- See Pac0master's bug: Spawn the default ship,  max out the Thermal conductivity and  dissipation the back of the ship will start to heat up and melt very fast
+
+			- Melting improvements:
+				- See Pac0master's bug
+				- Test with sticky strength
+					- Springs has new buffer, "MeltStrengthComponent"
+				- Allow for more melting by making strength more "relaxed"
 
 			- Electrical:
 				- Update: inject heat from working lamps and generators
-					- New material property - ~"HeatProduced"
+					- New electrical material property - ~"HeatProduced"
 				- Lights and wires break at high temperature
 
 			- Interaction with bombs:
@@ -1249,6 +1256,7 @@ Render:
 					+ OnChain detection: use # of factory triangles, not current triangles (heuristic to avoid jumping planes
 					  when triangles are destroyed by fire)
 				= See flame colors from Pac0master: "If you can mess with the colour, can you try giving it a similar colour as the Animation I've made in #gfx  ?  "
+					- See what to do with his other color scheme
 					- If keep: do also at flames 2
 
 			+ Sound:
