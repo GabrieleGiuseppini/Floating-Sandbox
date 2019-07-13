@@ -630,7 +630,8 @@ bool GameController::ApplyHeatBlasterAt(
             // Remember to render the flame at the next Render() step
             mHeatBlasterFlameToRender.emplace(
                 worldCoordinates,
-                radius);
+                radius,
+                action);
         }
     }
 
@@ -999,7 +1000,8 @@ void GameController::InternalRender()
     {
         mRenderContext->UploadHeatBlasterFlame(
             std::get<0>(*mHeatBlasterFlameToRender),
-            std::get<1>(*mHeatBlasterFlameToRender));
+            std::get<1>(*mHeatBlasterFlameToRender),
+            std::get<2>(*mHeatBlasterFlameToRender));
 
         mHeatBlasterFlameToRender.reset();
     }

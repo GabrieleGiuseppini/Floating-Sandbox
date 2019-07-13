@@ -1159,15 +1159,13 @@ Render:
 			+ Ship::Render:
 				+ Calls Points::UploadFlames()
 					+ Uploads flames in order of heap
-
-			- See Pac0master's bug: looks like when the cardboard of the funnel touches the water it starts generating a super high amount of heat
-
-			- See Pac0master's bug: Spawn the default ship,  max out the Thermal conductivity and  dissipation the back of the ship will start to heat up and melt very fast
+			+ See Pac0master's bug: looks like when the cardboard of the funnel touches the water it starts generating a super high amount of heat
+			+ See Pac0master's bug: Spawn the default ship,  max out the Thermal conductivity and  dissipation the back of the ship will start to heat up and melt very fast
 
 			- Melting improvements:
-				- See Pac0master's bug
 				- Test with sticky strength
-					- Springs has new buffer, "MeltStrengthComponent"
+					- Springs has new buffer, "MeltStrengthComponent", always > 1.0
+					- We might also need sticky stiffness, but try with strength first
 				- Allow for more melting by making strength more "relaxed"
 
 			- Electrical:
@@ -1175,9 +1173,18 @@ Render:
 					- New electrical material property - ~"HeatProduced"
 				- Lights and wires break at high temperature
 
-			- Interaction with bombs:
-				- Timer, Impact, RC: TODO
-				- TODO: others?
+			= Interaction with bombs:
+				+ Triggering:
+					+ Timer, Impact, RC: 
+						+ Trigger when temperature > GameParameters::BombsTemperatureTrigger = 773.15 (500C)
+					+ Anti-Matter: + 1000
+				- Explosion:
+					- Timer, Impact, RC: 
+						- Produce heat directly at Ship::DoBombExplosion
+							+ Verify first it's called at these 3
+							- Add heat to each point in blastRadius, considering ultra-violent mode as well
+								- Use GameParameters::BombExplosionHeatProduced
+									- Also at settings dialog, under Interactions
 
 			= Flamethrower:
 				+ Physics:
@@ -1191,37 +1198,38 @@ Render:
 				+ Max power: 20,000
 				= Rename it: "Heat Blaster"
 					+ Code & UI
-					- Shift cools down
+					= Shift cools down
 						+ New HeatBlasterAction enum at GameTypes {Heat,Cool}
-						- Interaction: switch on action and either add or remove heat (w/fraction though, for 3rd principle)
-						- Rendering:
-							- Shader chosen depending on mCurrentHeatBlasterAction
-								- Two shaders, use #include's with parameters to make these changes:
-									- Flame direction (outward or inward, "speedMultiplier")
-									- Flame colors (for cooling: turn R into B) ("midColor" and "highColor")
-						= Cursor (simply upside-down and mirrored)
+						+ Interaction: switch on action and either add or remove heat (w/fraction though, for 3rd principle)
+						+ Rendering:
+							+ Shader chosen depending on mCurrentHeatBlasterAction
+								+ Two shaders, use #include's returning radius with parameters to make these changes:
+									+ Flame direction (outward or inward, "speedMultiplier")
+									+ Then make flame colors (for cooling: turn R into B)
+						+ Cursor (simply upside-down and mirrored)
 						- Sound (wind or air vortex)
 				+ Option to turn off flame rendering
 					+ @ GameController
 				- Help
 
-			= GameParameters:
+			+ GameParameters:
 				+ ThermalConductivityAdjustment 
 				+ IgnitionTemperatureAdjustment (in SettingsDialog: "Burning Point Adjust")
 				+ MeltingTemperatureAdjustment (in SettingsDialog: "Melting Point Adjust")
 				+ CombustionSpeedAdjustment
 				+ CombustionHeatAdjustment
 				+ Also add all of these to settings dialog, under "Heat" tab
-				= Make max burning points adjustable
-					= All sub-systems need to allow for > max burning particles, because when the user changes the value down,
+				+ Make max burning points adjustable
+					+ All sub-systems need to allow for > max burning particles, because when the user changes the value down,
 					  the excess ones will need some time to disappear
-						- Test
-					= RenderContext: allocate VBO with MaxMax
-						- See if has perf impact; if so, realloc each time # of flames changes by 100
+						+ Test
+					+ RenderContext: realloc VBO each time # of flames changes by 100
 					+ Points: doesn't care as it uses vector
-					= SettingsDialog
-						= Under "Heat", with warning icon like Simulation Quality
+					+ SettingsDialog
+						+ Under "Heat", with warning icon like Simulation Quality
 				+ Make air and water temperature adjustable
+				+ See if should lower default MaxBurningParticles (per impact of all burning)
+				+ See if should allow higher heat blaster
 
 			= Flame render:
 				+ Make better transition for bottom

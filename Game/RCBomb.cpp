@@ -41,40 +41,55 @@ bool RCBomb::Update(
     switch (mState)
     {
         case State::IdlePingOff:
-        {
-            if (currentWallClockTime > mNextStateTransitionTimePoint)
-            {
-                //
-                // Transition to PingOn state
-                //
-
-                mState = State::IdlePingOn;
-
-                ++mPingOnStepCounter;
-
-                mGameEventHandler->OnRCBombPing(
-                    mParentWorld.IsUnderwater(GetPosition()),
-                    1);
-
-                // Schedule next transition
-                mNextStateTransitionTimePoint = currentWallClockTime + SlowPingOnInterval;
-            }
-
-            return true;
-        }
-
         case State::IdlePingOn:
         {
             if (currentWallClockTime > mNextStateTransitionTimePoint)
             {
-                //
-                // Transition to PingOff state
-                //
+                if (mState == State::IdlePingOff)
+                {
+                    //
+                    // Transition to PingOn state
+                    //
 
-                mState = State::IdlePingOff;
+                    mState = State::IdlePingOn;
 
-                // Schedule next transition
-                mNextStateTransitionTimePoint = currentWallClockTime + SlowPingOffInterval;
+                    ++mPingOnStepCounter;
+
+                    mGameEventHandler->OnRCBombPing(
+                        mParentWorld.IsUnderwater(GetPosition()),
+                        1);
+
+                    // Schedule next transition
+                    mNextStateTransitionTimePoint = currentWallClockTime + SlowPingOnInterval;
+                }
+                else
+                {
+                    assert(mState == State::IdlePingOn);
+
+                    //
+                    // Transition to PingOff state
+                    //
+
+                    mState = State::IdlePingOff;
+
+                    // Schedule next transition
+                    mNextStateTransitionTimePoint = currentWallClockTime + SlowPingOffInterval;
+                }
+            }
+            else
+            {
+                // Check if any of the spring endpoints has reached the trigger temperature
+                auto springIndex = GetAttachedSpringIndex();
+                if (!!springIndex)
+                {
+                    if (mShipPoints.GetTemperature(mShipSprings.GetEndpointAIndex(*springIndex)) > GameParameters::BombsTemperatureTrigger
+                        || mShipPoints.GetTemperature(mShipSprings.GetEndpointBIndex(*springIndex)) > GameParameters::BombsTemperatureTrigger)
+                    {
+                        // Triggered!
+
+                        Detonate();
+                    }
+                }
             }
 
             return true;

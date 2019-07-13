@@ -94,12 +94,12 @@ void GameOpenGL::CompileShader(
 
     // Compile
     glCompileShader(shader);
-    int success;
+    GLint success;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-    if (!success)
+    if (GL_FALSE == success)
     {
         char infoLog[1024];
-        glGetShaderInfoLog(shader, sizeof(infoLog), NULL, infoLog);
+        glGetShaderInfoLog(shader, sizeof(infoLog) - 1, NULL, infoLog);
         throw GameException("Error compiling " + shaderTypeName + " shader: " + std::string(infoLog));
     }
 

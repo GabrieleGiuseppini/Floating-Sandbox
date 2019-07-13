@@ -691,7 +691,8 @@ bool Ship::ApplyHeatBlasterAt(
     float const heatBlasterHeat =
         gameParameters.HeatBlasterHeatFlow * 1000.0f // KJoule->Joule
         * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f)
-        * GameParameters::SimulationStepTimeDuration<float>;
+        * GameParameters::SimulationStepTimeDuration<float>
+        * (action == HeatBlasterActionType::Cool ? -1.0f : 1.0f); // Heat vs. Cool
 
     float const squareRadius = radius * radius;
 
@@ -719,9 +720,9 @@ bool Ship::ApplyHeatBlasterAt(
                 / mPoints.GetMaterialHeatCapacity(pointIndex);
 
             // Increase temperature
-            mPoints.SetTemperature(pointIndex,
-                mPoints.GetTemperature(pointIndex)
-                + deltaT);
+            mPoints.SetTemperature(
+                pointIndex,
+                std::max(mPoints.GetTemperature(pointIndex) + deltaT, 0.1f)); // 3rd principle of thermodynamics
 
             // Remember we've found a point
             atLeastOnePointFound = true;

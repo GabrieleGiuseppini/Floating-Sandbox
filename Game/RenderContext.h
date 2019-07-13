@@ -31,6 +31,7 @@
 #include <array>
 #include <cassert>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -768,8 +769,13 @@ public:
 
     void UploadHeatBlasterFlame(
         vec2f const & centerPosition,
-        float radius)
+        float radius,
+        HeatBlasterActionType action)
     {
+        //
+        // Populate vertices
+        //
+
         float const quadHalfSize = (radius * 1.5f) / 2.0f;
         float const left = centerPosition.x - quadHalfSize;
         float const right = centerPosition.x + quadHalfSize;
@@ -778,31 +784,44 @@ public:
 
         // Triangle 1
 
-        mHeatBlasterFlameVertexBuffer.emplace_back(
-            vec2f(left, bottom),
-            vec2f(-0.5f, -0.5f));
+        mHeatBlasterFlameVertexBuffer[0].vertexPosition = vec2f(left, bottom);
+        mHeatBlasterFlameVertexBuffer[0].flameSpacePosition = vec2f(-0.5f, -0.5f);
 
-        mHeatBlasterFlameVertexBuffer.emplace_back(
-            vec2f(left, top),
-            vec2f(-0.5f, 0.5f));
+        mHeatBlasterFlameVertexBuffer[1].vertexPosition = vec2f(left, top);
+        mHeatBlasterFlameVertexBuffer[1].flameSpacePosition = vec2f(-0.5f, 0.5f);
 
-        mHeatBlasterFlameVertexBuffer.emplace_back(
-            vec2f(right, bottom),
-            vec2f(0.5f, -0.5f));
+        mHeatBlasterFlameVertexBuffer[2].vertexPosition = vec2f(right, bottom);
+        mHeatBlasterFlameVertexBuffer[2].flameSpacePosition = vec2f(0.5f, -0.5f);
 
         // Triangle 2
 
-        mHeatBlasterFlameVertexBuffer.emplace_back(
-            vec2f(left, top),
-            vec2f(-0.5f, 0.5f));
+        mHeatBlasterFlameVertexBuffer[3].vertexPosition = vec2f(left, top);
+        mHeatBlasterFlameVertexBuffer[3].flameSpacePosition = vec2f(-0.5f, 0.5f);
 
-        mHeatBlasterFlameVertexBuffer.emplace_back(
-            vec2f(right, bottom),
-            vec2f(0.5f, -0.5f));
+        mHeatBlasterFlameVertexBuffer[4].vertexPosition = vec2f(right, bottom);
+        mHeatBlasterFlameVertexBuffer[4].flameSpacePosition = vec2f(0.5f, -0.5f);
 
-        mHeatBlasterFlameVertexBuffer.emplace_back(
-            vec2f(right, top),
-            vec2f(0.5f, 0.5f));
+        mHeatBlasterFlameVertexBuffer[5].vertexPosition = vec2f(right, top);
+        mHeatBlasterFlameVertexBuffer[5].flameSpacePosition = vec2f(0.5f, 0.5f);
+
+        //
+        // Store shader
+        //
+
+        switch (action)
+        {
+            case HeatBlasterActionType::Cool:
+            {
+                mHeatBlasterFlameShaderToRender = Render::ProgramType::HeatBlasterFlameCool;
+                break;
+            }
+
+            case HeatBlasterActionType::Heat:
+            {
+                mHeatBlasterFlameShaderToRender = Render::ProgramType::HeatBlasterFlameHeat;
+                break;
+            }
+        }
     }
 
     /////////////////////////////////////////////////////////////////////////
@@ -1400,11 +1419,7 @@ private:
         vec2f vertexPosition;
         vec2f flameSpacePosition;
 
-        HeatBlasterFlameVertex(
-            vec2f _vertexPosition,
-            vec2f _flameSpacePosition)
-            : vertexPosition(_vertexPosition)
-            , flameSpacePosition(_flameSpacePosition)
+        HeatBlasterFlameVertex()
         {}
     };
 
@@ -1450,7 +1465,7 @@ private:
     std::vector<CrossOfLightVertex> mCrossOfLightVertexBuffer;
     GameOpenGLVBO mCrossOfLightVBO;
 
-    std::vector<HeatBlasterFlameVertex> mHeatBlasterFlameVertexBuffer;
+    std::array<HeatBlasterFlameVertex, 6> mHeatBlasterFlameVertexBuffer;
     GameOpenGLVBO mHeatBlasterFlameVBO;
 
     std::vector<WorldBorderVertex> mWorldBorderVertexBuffer;
@@ -1498,6 +1513,13 @@ private:
 
     ImageSize mWorldBorderTextureSize;
     bool mIsWorldBorderVisible;
+
+    //
+    // HeatBlaster
+    //
+
+    std::optional<Render::ProgramType> mHeatBlasterFlameShaderToRender;
+
 
 private:
 

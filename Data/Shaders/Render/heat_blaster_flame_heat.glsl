@@ -8,7 +8,7 @@
 
 void main()
 {         
-    float radius1 = GetFlameRadius();
+    float radius1 = GetFlameRadius(1.0);
     
     // Focus (compress dynamics)
     float radius2 = smoothstep(0.2, 0.35, radius1);

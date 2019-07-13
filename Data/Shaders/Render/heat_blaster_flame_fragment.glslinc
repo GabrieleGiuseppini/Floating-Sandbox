@@ -21,7 +21,7 @@ float GetNoise(vec2 uv) // -> (0.25, 0.75)
     return n + 0.5;
 }
 
-float GetFlameRadius()
+float GetFlameRadius(float direction) // direction: +1 => outward, -1 => inward
 {      
     //
     // Transform to polar coordinates
@@ -49,7 +49,7 @@ float GetFlameRadius()
     //
     
     #define NoiseResolution 1.0
-    float fragmentNoise = GetNoise(uv * vec2(NoiseResolution / 4.0, NoiseResolution) + vec2(-flameTime, 0.0));
+    float fragmentNoise = GetNoise(uv * vec2(NoiseResolution / 4.0, NoiseResolution) + vec2(-flameTime * direction, 0.0));
         
     
     //

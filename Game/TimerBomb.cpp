@@ -93,6 +93,25 @@ bool TimerBomb::Update(
                         mNextStateTransitionTimePoint = currentWallClockTime + FastFuseToDetonationLeadInInterval / FuseStepCount;
                 }
             }
+            else if (mState == State::SlowFuseBurning)
+            {
+                // Check if any of the spring endpoints has reached the trigger temperature
+                auto springIndex = GetAttachedSpringIndex();
+                if (!!springIndex)
+                {
+                    if (mShipPoints.GetTemperature(mShipSprings.GetEndpointAIndex(*springIndex)) > GameParameters::BombsTemperatureTrigger
+                        || mShipPoints.GetTemperature(mShipSprings.GetEndpointBIndex(*springIndex)) > GameParameters::BombsTemperatureTrigger)
+                    {
+                        // Triggered!
+
+                        //
+                        // Transition to fast fusing
+                        //
+
+                        TransitionToFastFusing(currentWallClockTime);
+                    }
+                }
+            }
 
             // Alternate sparkle frame
             if (mFuseFlameFrameIndex == mFuseStepCounter)
@@ -219,23 +238,7 @@ void TimerBomb::OnNeighborhoodDisturbed()
         // Transition (again, if we're defused) to fast fuse burning
         //
 
-        mState = State::FastFuseBurning;
-
-        if (State::Defused == mState)
-        {
-            // Start from scratch
-            mFuseStepCounter = 0;
-            mDefuseStepCounter = 0;
-        }
-
-        // Notify fast fuse
-        mGameEventHandler->OnTimerBombFuse(
-            mId,
-            true);
-
-        // Schedule next transition
-        mNextStateTransitionTimePoint = GameWallClock::GetInstance().Now()
-            + FastFuseToDetonationLeadInInterval / FuseStepCount;
+        TransitionToFastFusing(GameWallClock::GetInstance().Now());
     }
 }
 
@@ -356,6 +359,27 @@ void TimerBomb::Upload(
             break;
         }
     }
+}
+
+void TimerBomb::TransitionToFastFusing(GameWallClock::time_point currentWallClockTime)
+{
+    mState = State::FastFuseBurning;
+
+    if (State::Defused == mState)
+    {
+        // Start from scratch
+        mFuseStepCounter = 0;
+        mDefuseStepCounter = 0;
+    }
+
+    // Notify fast fuse
+    mGameEventHandler->OnTimerBombFuse(
+        mId,
+        true);
+
+    // Schedule next transition
+    mNextStateTransitionTimePoint = currentWallClockTime
+        + FastFuseToDetonationLeadInInterval / FuseStepCount;
 }
 
 }

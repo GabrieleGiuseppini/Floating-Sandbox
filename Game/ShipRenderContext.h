@@ -715,6 +715,7 @@ private:
     GameOpenGLVBO mStressedSpringElementVBO;
 
     GameOpenGLMappedBuffer<FlameVertex, GL_ARRAY_BUFFER> mFlameVertexBuffer;
+    size_t mFlameVertexBufferAllocatedSize;
     size_t mFlameBackgroundCount;
     size_t mFlameForegroundCount;
     GameOpenGLVBO mFlameVertexVBO;

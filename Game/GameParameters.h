@@ -235,7 +235,7 @@ struct GameParameters
     static float constexpr SmotheringDecayHighWatermark = 0.05f;
 
     size_t MaxBurningParticles;
-    static size_t constexpr MaxMaxBurningParticles = 10000;
+    static size_t constexpr MaxMaxBurningParticles = 1000;
     static size_t constexpr MinMaxBurningParticles = 10;
 
     float ThermalConductivityAdjustment;
@@ -244,7 +244,7 @@ struct GameParameters
 
     float HeatDissipationAdjustment;
     static float constexpr MinHeatDissipationAdjustment = 0.01f;
-    static float constexpr MaxHeatDissipationAdjustment = 100.0f;
+    static float constexpr MaxHeatDissipationAdjustment = 20.0f;
 
     float IgnitionTemperatureAdjustment;
     static float constexpr MinIgnitionTemperatureAdjustment = 0.1f;
@@ -264,7 +264,7 @@ struct GameParameters
 
     float HeatBlasterHeatFlow; // KJoules/sec
     static float constexpr MinHeatBlasterHeatFlow = 200.0f;
-    static float constexpr MaxHeatBlasterHeatFlow = 20000.0f;
+    static float constexpr MaxHeatBlasterHeatFlow = 100000.0f;
 
     float HeatBlasterRadius;
     static float constexpr MinHeatBlasterRadius = 1.0f;
@@ -329,6 +329,8 @@ struct GameParameters
     static float constexpr MaxAntiMatterBombImplosionStrength = 10.0f;
 
     static float constexpr BombNeighborhoodRadius = 3.5f;
+
+    static float constexpr BombsTemperatureTrigger = 373.15f; // 100C
 
     std::chrono::seconds TimerBombInterval;
 

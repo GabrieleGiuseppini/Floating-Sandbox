@@ -48,6 +48,18 @@ bool AntiMatterBomb::Update(
     {
         case State::Contained_1:
         {
+            // Check if any of the spring endpoints has reached the trigger temperature
+            auto springIndex = GetAttachedSpringIndex();
+            if (!!springIndex)
+            {
+                if (mShipPoints.GetTemperature(mShipSprings.GetEndpointAIndex(*springIndex)) > GameParameters::BombsTemperatureTrigger + 1000.0f
+                    || mShipPoints.GetTemperature(mShipSprings.GetEndpointBIndex(*springIndex)) > GameParameters::BombsTemperatureTrigger + 1000.0f)
+                {
+                    // Triggered!
+                    Detonate();
+                }
+            }
+
             // Update cloud rotation angle
             mCurrentCloudRotationAngle += ContainedCloudRevolutionSpeed * elapsed.count();
 

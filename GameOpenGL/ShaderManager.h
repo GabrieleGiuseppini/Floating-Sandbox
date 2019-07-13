@@ -77,14 +77,22 @@ public:
     template <typename Traits::ProgramType Program, typename Traits::ProgramParameterType Parameter>
     inline void SetProgramParameter(float value)
     {
-        constexpr uint32_t programIndex = static_cast<uint32_t>(Program);
+        SetProgramParameter<Parameter>(Program, value);
+    }
+
+    template <typename Traits::ProgramParameterType Parameter>
+    inline void SetProgramParameter(
+        typename Traits::ProgramType program,
+        float value)
+    {
+        const uint32_t programIndex = static_cast<uint32_t>(program);
         constexpr uint32_t parameterIndex = static_cast<uint32_t>(Parameter);
 
         glUniform1f(
             mPrograms[programIndex].UniformLocations[parameterIndex],
             value);
 
-        CheckUniformError<Program, Parameter>();
+        CheckUniformError(program, Parameter);
     }
 
     template <typename Traits::ProgramType Program, typename Traits::ProgramParameterType Parameter>
@@ -151,12 +159,19 @@ public:
     template <typename Traits::ProgramType Program>
     inline void ActivateProgram()
     {
-        uint32_t const programIndex = static_cast<uint32_t>(Program);
+        ActivateProgram(Program);
+    }
+
+    // At any given moment, only one program may be active
+    inline void ActivateProgram(typename Traits::ProgramType program)
+    {
+        uint32_t const programIndex = static_cast<uint32_t>(program);
 
         glUseProgram(*(mPrograms[programIndex].OpenGLHandle));
 
         CheckOpenGLError();
     }
+
 
     // At any given moment, only one texture (unit) may be active
     template <typename Traits::ProgramParameterType Parameter>
@@ -170,7 +185,7 @@ public:
 private:
 
     template <typename Traits::ProgramType Program, typename Traits::ProgramParameterType Parameter>
-    static void CheckUniformError()
+    static inline void CheckUniformError()
     {
         GLenum glError = glGetError();
         if (GL_NO_ERROR != glError)
@@ -179,7 +194,7 @@ private:
         }
     }
 
-    static void CheckUniformError(
+    static inline void CheckUniformError(
         typename Traits::ProgramType program,
         typename Traits::ProgramParameterType parameter)
     {

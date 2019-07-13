@@ -40,6 +40,25 @@ bool ImpactBomb::Update(
     {
         case State::Idle:
         {
+            // Check if any of the spring endpoints has reached the trigger temperature
+            auto springIndex = GetAttachedSpringIndex();
+            if (!!springIndex)
+            {
+                if (mShipPoints.GetTemperature(mShipSprings.GetEndpointAIndex(*springIndex)) > GameParameters::BombsTemperatureTrigger
+                    || mShipPoints.GetTemperature(mShipSprings.GetEndpointBIndex(*springIndex)) > GameParameters::BombsTemperatureTrigger)
+                {
+                    // Triggered...
+
+                    //
+                    // Transition to Exploding state
+                    //
+
+                    TransitionToExploding(
+                        currentWallClockTime,
+                        gameParameters);
+                }
+            }
+
             return true;
         }
 

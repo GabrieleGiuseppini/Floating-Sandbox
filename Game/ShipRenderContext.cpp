@@ -60,6 +60,7 @@ ShipRenderContext::ShipRenderContext(
     , mStressedSpringElementVBO()
     //
     , mFlameVertexBuffer()
+    , mFlameVertexBufferAllocatedSize(0)
     , mFlameBackgroundCount(0)
     , mFlameForegroundCount(0)
     , mFlameVertexVBO()
@@ -156,8 +157,6 @@ ShipRenderContext::ShipRenderContext(
     mStressedSpringElementBuffer.reserve(1000); // Arbitrary
 
     mFlameVertexVBO = vbos[5];
-    glBindBuffer(GL_ARRAY_BUFFER, *mFlameVertexVBO);
-    glBufferData(GL_ARRAY_BUFFER, GameParameters::MaxMaxBurningParticles * 6 * sizeof(FlameVertex), nullptr, GL_STREAM_DRAW); // Max possible
 
     mGenericTextureVBO = vbos[6];
     glBindBuffer(GL_ARRAY_BUFFER, *mGenericTextureVBO);
@@ -1178,13 +1177,33 @@ void ShipRenderContext::UploadFlamesStart(
     size_t count,
     float windSpeedMagnitude)
 {
+    //
     // Prepare buffer - map flame VBO's
+    //
+
     glBindBuffer(GL_ARRAY_BUFFER, *mFlameVertexVBO);
+
+    if (count > mFlameVertexBufferAllocatedSize
+        || count < mFlameVertexBufferAllocatedSize - 100)
+    {
+        // Reallocate
+        mFlameVertexBufferAllocatedSize = ((count / 100) + 1) * 100;
+        glBufferData(GL_ARRAY_BUFFER, mFlameVertexBufferAllocatedSize * 6 * sizeof(FlameVertex), nullptr, GL_STREAM_DRAW);
+
+    }
+
+    // Map buffer
     mFlameVertexBuffer.map_and_fill(count * 6);
     CheckOpenGLError();
+
+
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+
+    //
     // Update wind speed
+    //
+
     float newWind = mWindSpeedMagnitudeRunningAverage.Update(windSpeedMagnitude);
 
     // Set wind speed magnitude parameter, if it has changed

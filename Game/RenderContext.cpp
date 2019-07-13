@@ -34,7 +34,6 @@ RenderContext::RenderContext(
     , mOceanVBO()
     , mCrossOfLightVertexBuffer()
     , mCrossOfLightVBO()
-    , mHeatBlasterFlameVertexBuffer()
     , mHeatBlasterFlameVBO()
     , mWorldBorderVertexBuffer()
     , mWorldBorderVBO()
@@ -62,6 +61,8 @@ RenderContext::RenderContext(
     // World border
     , mWorldBorderTextureSize(0, 0)
     , mIsWorldBorderVisible(false)
+    // HeatBlaster
+    , mHeatBlasterFlameShaderToRender()
     // Managers
     , mShaderManager()
     , mUploadedTextureManager()
@@ -717,7 +718,7 @@ void RenderContext::RenderStart()
     mCrossOfLightVertexBuffer.clear();
 
     // Reset HeatBlaster flames, they are uploaded as needed
-    mHeatBlasterFlameVertexBuffer.clear();
+    mHeatBlasterFlameShaderToRender.reset();
 
     // Communicate start to child contextes
     mTextRenderContext->RenderStart();
@@ -1001,7 +1002,7 @@ void RenderContext::RenderEnd()
     }
 
     // Render HeatBlaster flames
-    if (!mHeatBlasterFlameVertexBuffer.empty())
+    if (!!mHeatBlasterFlameShaderToRender)
     {
         RenderHeatBlasterFlame();
     }
@@ -1068,10 +1069,13 @@ void RenderContext::RenderHeatBlasterFlame()
 
     glBindVertexArray(*mHeatBlasterFlameVAO);
 
-    mShaderManager->ActivateProgram<ProgramType::HeatBlasterFlameHeat>();
+    assert(!!mHeatBlasterFlameShaderToRender);
+
+    mShaderManager->ActivateProgram(*mHeatBlasterFlameShaderToRender);
 
     // Set time parameter
-    mShaderManager->SetProgramParameter<ProgramType::HeatBlasterFlameHeat, ProgramParameterType::Time>(
+    mShaderManager->SetProgramParameter<ProgramParameterType::Time>(
+        *mHeatBlasterFlameShaderToRender,
         GameWallClock::GetInstance().NowAsFloat());
 
     assert((mHeatBlasterFlameVertexBuffer.size() % 6) == 0);

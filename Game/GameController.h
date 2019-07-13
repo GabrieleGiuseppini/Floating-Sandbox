@@ -540,7 +540,7 @@ private:
     bool mIsMoveToolEngaged;
 
     // When set, will be uploaded to the RenderContext to display the HeatBlaster flame
-    std::optional<std::tuple<vec2f, float>> mHeatBlasterFlameToRender;
+    std::optional<std::tuple<vec2f, float, HeatBlasterActionType>> mHeatBlasterFlameToRender;
 
     class TsunamiNotificationStateMachine
     {

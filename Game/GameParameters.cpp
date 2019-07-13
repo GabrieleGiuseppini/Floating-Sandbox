@@ -37,7 +37,7 @@ GameParameters::GameParameters()
     // Heat
     , AirTemperature(298.15f) // 25C
     , WaterTemperature(288.15) // 15C
-    , MaxBurningParticles(128)
+    , MaxBurningParticles(112)
     , ThermalConductivityAdjustment(1.0f)
     , HeatDissipationAdjustment(1.0f)
     , IgnitionTemperatureAdjustment(1.0f)
