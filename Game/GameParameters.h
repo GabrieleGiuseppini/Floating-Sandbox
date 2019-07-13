@@ -248,11 +248,11 @@ struct GameParameters
 
     float IgnitionTemperatureAdjustment;
     static float constexpr MinIgnitionTemperatureAdjustment = 0.1f;
-    static float constexpr MaxIgnitionTemperatureAdjustment = 10.0f;
+    static float constexpr MaxIgnitionTemperatureAdjustment = 1000.0f;
 
     float MeltingTemperatureAdjustment;
     static float constexpr MinMeltingTemperatureAdjustment = 0.1f;
-    static float constexpr MaxMeltingTemperatureAdjustment = 10.0f;
+    static float constexpr MaxMeltingTemperatureAdjustment = 1000.0f;
 
     float CombustionSpeedAdjustment;
     static float constexpr MinCombustionSpeedAdjustment = 0.1f;

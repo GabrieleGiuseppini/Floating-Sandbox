@@ -132,6 +132,7 @@ public:
         // Physical
         , mMaterialStrengthBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mBreakingLengthBuffer(mBufferElementCount, mElementCount, 0.0f)
+        , mBreakingLengthMeltingComponentBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mMaterialStiffnessBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mRestLengthBuffer(mBufferElementCount, mElementCount, 1.0f)
         , mCoefficientsBuffer(mBufferElementCount, mElementCount, Coefficients(0.0f, 0.0f))
@@ -662,6 +663,7 @@ private:
 
     Buffer<float> mMaterialStrengthBuffer;
     Buffer<float> mBreakingLengthBuffer;
+    Buffer<float> mBreakingLengthMeltingComponentBuffer;
     Buffer<float> mMaterialStiffnessBuffer;
     Buffer<float> mRestLengthBuffer;
     Buffer<Coefficients> mCoefficientsBuffer;

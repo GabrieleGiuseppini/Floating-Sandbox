@@ -37,6 +37,7 @@ void Springs::Add(
 
     // Breaking length recalculated later
     mBreakingLengthBuffer.emplace_back(0.0f);
+    mBreakingLengthMeltingComponentBuffer.emplace_back(0.0f);
 
     // Stiffness is average
     float const stiffness =
@@ -454,15 +455,25 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
     //  - The material strength and the strength adjustment
     //  - The spring's decay (which itself is a function of the endpoints' decay)
     //  - If the endpoints are melting, their temperature - so to keep springs intact while melting makes them longer
+    //      - This component of the breaking length is "sticky" - it never returns to normal
     //  - The actual number of mechanics iterations we'll be performing
     //
     // The strength multiplied with the spring's rest length is the Breaking Length, ready to be
     // compared against the spring absolute delta L
     //
 
+    // Decay of spring == avg of two endpoints' decay
     float const springDecay =
         (points.GetDecay(endpointAIndex) + points.GetDecay(endpointBIndex))
         / 2.0f;
+
+    // The additional breaking length tolerance due to melting
+    float const meltingComponent = std::max(
+        100.0f * meltAmount, // Magic number
+        mBreakingLengthMeltingComponentBuffer[springIndex]);
+
+    // Store the melting component, so it sticks
+    mBreakingLengthMeltingComponentBuffer[springIndex] = meltingComponent;
 
     mBreakingLengthBuffer[springIndex] =
         GetRestLength(springIndex)
@@ -470,7 +481,7 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
         * strengthAdjustment
         * strengthIterationsAdjustment
         * springDecay
-        * (1.0f + 50.0f * meltAmount);
+        * (1.0f + meltingComponent);
 }
 
 }
