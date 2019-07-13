@@ -1186,7 +1186,7 @@ Render:
 								- Use GameParameters::BombExplosionHeatProduced
 									- Also at settings dialog, under Interactions
 
-			= Flamethrower:
+			+ Flamethrower:
 				+ Physics:
 					+ Ship::Interaction:
 						+ GameParameters::FlameThrowerHeat
@@ -1210,7 +1210,7 @@ Render:
 						+ Sound (wind or air vortex)
 				+ Option to turn off flame rendering
 					+ @ GameController
-				- Help
+				+ Help
 
 			+ GameParameters:
 				+ ThermalConductivityAdjustment 
