@@ -110,6 +110,22 @@ private:
         {}
     };
 
+    /*
+     * The sticky breaking length components - we maintain memory of these.
+     */
+    struct StickyBreakingLengthComponents
+    {
+        float StiffnessMeltingComponent;
+        float BreakingLengthMeltingComponent;
+
+        StickyBreakingLengthComponents(
+            float stiffnessMeltingComponent,
+            float breakingLengthMeltingComponent)
+            : StiffnessMeltingComponent(stiffnessMeltingComponent)
+            , BreakingLengthMeltingComponent(breakingLengthMeltingComponent)
+        {}
+    };
+
 public:
 
     Springs(
@@ -132,7 +148,7 @@ public:
         // Physical
         , mMaterialStrengthBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mBreakingLengthBuffer(mBufferElementCount, mElementCount, 0.0f)
-        , mBreakingLengthMeltingComponentBuffer(mBufferElementCount, mElementCount, 0.0f)
+        , mStickyBreakingLengthComponentsBuffer(mBufferElementCount, mElementCount, StickyBreakingLengthComponents(1.0f, 0.0f))
         , mMaterialStiffnessBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mRestLengthBuffer(mBufferElementCount, mElementCount, 1.0f)
         , mCoefficientsBuffer(mBufferElementCount, mElementCount, Coefficients(0.0f, 0.0f))
@@ -663,7 +679,7 @@ private:
 
     Buffer<float> mMaterialStrengthBuffer;
     Buffer<float> mBreakingLengthBuffer;
-    Buffer<float> mBreakingLengthMeltingComponentBuffer;
+    Buffer<StickyBreakingLengthComponents> mStickyBreakingLengthComponentsBuffer;
     Buffer<float> mMaterialStiffnessBuffer;
     Buffer<float> mRestLengthBuffer;
     Buffer<Coefficients> mCoefficientsBuffer;
