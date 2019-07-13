@@ -1162,10 +1162,10 @@ Render:
 			+ See Pac0master's bug: looks like when the cardboard of the funnel touches the water it starts generating a super high amount of heat
 			+ See Pac0master's bug: Spawn the default ship,  max out the Thermal conductivity and  dissipation the back of the ship will start to heat up and melt very fast
 
-			- Melting improvements:
-				- Test with sticky strength
-					- Springs has new buffer, "MeltStrengthComponent", always > 1.0
-					- We might also need sticky stiffness, but try with strength first
+			= Melting improvements:
+				= Test with sticky strength
+					+ Springs has new buffer, "MeltStrengthComponent", always > 1.0
+					= We might also need sticky stiffness, but try with strength first
 				- Allow for more melting by making strength more "relaxed"
 
 			- Electrical:
@@ -1196,9 +1196,9 @@ Render:
 					+ Radius at SettingsDialog, under "Flamethrower" in "Heat"
 					+ Fix default value of heat <-> slider
 				+ Max power: 20,000
-				= Rename it: "Heat Blaster"
+				+ Rename it: "Heat Blaster"
 					+ Code & UI
-					= Shift cools down
+					+ Shift cools down
 						+ New HeatBlasterAction enum at GameTypes {Heat,Cool}
 						+ Interaction: switch on action and either add or remove heat (w/fraction though, for 3rd principle)
 						+ Rendering:
@@ -1207,7 +1207,7 @@ Render:
 									+ Flame direction (outward or inward, "speedMultiplier")
 									+ Then make flame colors (for cooling: turn R into B)
 						+ Cursor (simply upside-down and mirrored)
-						- Sound (wind or air vortex)
+						+ Sound (wind or air vortex)
 				+ Option to turn off flame rendering
 					+ @ GameController
 				- Help

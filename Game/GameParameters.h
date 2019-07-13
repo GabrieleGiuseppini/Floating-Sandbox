@@ -270,6 +270,10 @@ struct GameParameters
     static float constexpr MinHeatBlasterRadius = 1.0f;
     static float constexpr MaxHeatBlasterRadius = 100.0f;
 
+    float ElectricalElementHeatProducedAdjustment;
+    static float constexpr MinElectricalElementHeatProducedAdjustment = 0.0f;
+    static float constexpr MaxElectricalElementHeatProducedAdjustment = 1000.0f;
+
     // Misc
 
     float SeaDepth;
@@ -331,6 +335,10 @@ struct GameParameters
     static float constexpr BombNeighborhoodRadius = 3.5f;
 
     static float constexpr BombsTemperatureTrigger = 373.15f; // 100C
+
+    float BombExplosionHeatProduced; // KJoules/sec
+    static float constexpr MinBombExplosionHeatProduced = 0.0f;
+    static float constexpr MaxBombExplosionHeatProduced = 100000.0f;
 
     std::chrono::seconds TimerBombInterval;
 

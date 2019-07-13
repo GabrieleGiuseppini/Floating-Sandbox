@@ -903,6 +903,8 @@ public:
     virtual void Update(InputState const & inputState) override
     {
         bool isEngaged;
+        HeatBlasterActionType currentAction = inputState.IsShiftKeyDown ? HeatBlasterActionType::Cool : HeatBlasterActionType::Heat;
+
         if (inputState.IsLeftMouseDown)
         {
             isEngaged = mGameController->ApplyHeatBlasterAt(inputState.MousePosition, mCurrentAction);
@@ -914,10 +916,12 @@ public:
 
         if (isEngaged)
         {
-            if (!mIsEngaged)
+            if (!mIsEngaged
+                || mCurrentAction != currentAction)
             {
                 // State change
                 mIsEngaged = true;
+                mCurrentAction = currentAction;
 
                 // Start sound
                 mSoundController->PlayHeatBlasterSound(mCurrentAction);
@@ -939,24 +943,22 @@ public:
                 // Update cursor
                 ShowCurrentCursor();
             }
+            else if (mCurrentAction != currentAction)
+            {
+                // State change
+                mCurrentAction = currentAction;
+
+                // Update cursor
+                ShowCurrentCursor();
+            }
         }
     }
 
     virtual void OnMouseMove(InputState const & /*inputState*/) override {}
     virtual void OnLeftMouseDown(InputState const & /*inputState*/) override {}
     virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
-
-    virtual void OnShiftKeyDown(InputState const & /*inputState*/) override
-    {
-        mCurrentAction = HeatBlasterActionType::Cool;
-        ShowCurrentCursor();
-    }
-
-    virtual void OnShiftKeyUp(InputState const & /*inputState*/) override
-    {
-        mCurrentAction = HeatBlasterActionType::Heat;
-        ShowCurrentCursor();
-    }
+    virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+    virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
 
     virtual void ShowCurrentCursor() override
     {
