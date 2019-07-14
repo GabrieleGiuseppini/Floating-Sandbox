@@ -498,7 +498,12 @@ void Points::UpdateCombustionLowFrequency(
         //
 
         mCombustionStateBuffer[pointIndex].State = CombustionState::StateType::Developing_1;
-        mCombustionStateBuffer[pointIndex].FlameDevelopment = 0.1f; // Seed for development's first phase
+
+        // Initial development depends on how deep this particle is in its burning zone
+        mCombustionStateBuffer[pointIndex].FlameDevelopment =
+            0.1f + 0.5f * SmoothStep(0.0f, 2.0f, std::get<1>(mIgnitionCandidates[i]));
+
+        // Assign a personality, we'll use it for noise
         mCombustionStateBuffer[pointIndex].Personality = GameRandomEngine::GetInstance().GenerateRandomNormalizedReal();
 
         // Max development: random and depending on number of springs connected to this point
@@ -506,9 +511,9 @@ void Points::UpdateCombustionLowFrequency(
         float const deltaSizeDueToConnectedSprings =
             static_cast<float>(mConnectedSpringsBuffer[pointIndex].ConnectedSprings.size())
             * 0.0625f; // 0.0625 -> 0.50 (@8)
-        mCombustionStateBuffer[pointIndex].MaxFlameDevelopment =
-            0.25f + deltaSizeDueToConnectedSprings
-            + 0.5f * mCombustionStateBuffer[pointIndex].Personality; // 0.25 + dsdtcs -> 0.75 + dsdtcs
+        mCombustionStateBuffer[pointIndex].MaxFlameDevelopment = std::max(
+            0.25f + deltaSizeDueToConnectedSprings + 0.5f * mCombustionStateBuffer[pointIndex].Personality, // 0.25 + dsdtcs -> 0.75 + dsdtcs
+            mCombustionStateBuffer[pointIndex].FlameDevelopment);
 
         // Add point to vector of burning points, sorted by plane ID
         assert(mBurningPoints.cend() == std::find(mBurningPoints.cbegin(), mBurningPoints.cend(), pointIndex));

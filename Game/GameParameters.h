@@ -277,7 +277,7 @@ struct GameParameters
     // Misc
 
     float SeaDepth;
-    static float constexpr MinSeaDepth = 20.0f;
+    static float constexpr MinSeaDepth = -50.0f;
     static float constexpr MaxSeaDepth = 10000.0f;
 
     float OceanFloorBumpiness;
@@ -328,6 +328,10 @@ struct GameParameters
     static float constexpr MinBombBlastRadius = 0.1f;
     static float constexpr MaxBombBlastRadius = 20.0f;
 
+    float BombBlastHeat; // KJoules/sec
+    static float constexpr MinBombBlastHeat = 0.0f;
+    static float constexpr MaxBombBlastHeat = 10000000.0f;
+
     float AntiMatterBombImplosionStrength;
     static float constexpr MinAntiMatterBombImplosionStrength = 0.1f;
     static float constexpr MaxAntiMatterBombImplosionStrength = 10.0f;
@@ -335,10 +339,6 @@ struct GameParameters
     static float constexpr BombNeighborhoodRadius = 3.5f;
 
     static float constexpr BombsTemperatureTrigger = 373.15f; // 100C
-
-    float BombExplosionHeatProduced; // KJoules/sec
-    static float constexpr MinBombExplosionHeatProduced = 0.0f;
-    static float constexpr MaxBombExplosionHeatProduced = 100000.0f;
 
     std::chrono::seconds TimerBombInterval;
 

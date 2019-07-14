@@ -719,7 +719,7 @@ bool Ship::ApplyHeatBlasterAt(
                 heatBlasterHeat * smoothing
                 / mPoints.GetMaterialHeatCapacity(pointIndex);
 
-            // Increase temperature
+            // Increase/lower temperature
             mPoints.SetTemperature(
                 pointIndex,
                 std::max(mPoints.GetTemperature(pointIndex) + deltaT, 0.1f)); // 3rd principle of thermodynamics

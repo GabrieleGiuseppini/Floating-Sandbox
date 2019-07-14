@@ -2,7 +2,7 @@
 Two-dimensional particle system in C++, simulating physical bodies floating in water and sinking.
 
 # Overview
-This game is a realistic two-dimensional particle system, which uses mass-spring networks to simulate rigid bodies (such as ships) floating in water. You can punch holes in an object, slice it, apply forces to it, and smash it with bomb explosions. Once water starts rushing inside the object, it will start sinking and, if you're lucky enough, it will start breaking up!
+This game is a realistic two-dimensional particle system, which uses mass-spring networks to simulate rigid bodies (such as ships) floating in water. You can punch holes in an object, slice it, apply forces and heat to it, set it on fire, and smash it with bomb explosions. Once water starts rushing inside the object, it will start sinking and, if you're lucky enough, it will start breaking up!
 
 <img src="https://i.imgur.com/c8fTsgY.png">
 <img src="https://i.imgur.com/kovxCty.png">

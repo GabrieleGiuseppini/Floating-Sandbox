@@ -388,7 +388,8 @@ Render:
 			+ Then see if can put radius back to something higher
 			+ See if rope kindness is still granted
 			+ Cleanup logs and code for Correct/Wrong counts
-			+ Cleanup TODOs
+			+ Cleanup TODO
+		+ Fix exponential slider core for negative edges
 
 		- Check bugs:
 			- 1: Idk if this is a bug or not but the tiny particles that appear after something is destroyed start flickering like christmas lights with rot at 1000 when uderwater
@@ -1163,28 +1164,39 @@ Render:
 			+ See Pac0master's bug: Spawn the default ship,  max out the Thermal conductivity and  dissipation the back of the ship will start to heat up and melt very fast
 
 			= Melting improvements:
-				= Test with sticky strength
+				= Option 1: Test with sticky strength
 					+ Springs has new buffer, "MeltStrengthComponent", always > 1.0
 					= We might also need sticky stiffness, but try with strength first
+				- Option 2: Test with sticky rest length
+					- StiffnessCoeff and Strength are memory-less: they return to their original values when no melting occurs,
+					  but RestLength not
+					- First test in-place modifying RestLength; if ok:
+						- Make "FactoryRestLength" buffer
+						- Verify all usages of RestLength and choose accordingly
+							- Repair: try using both as targets and choose best
 				- Allow for more melting by making strength more "relaxed"
 
 			- Electrical:
 				- Update: inject heat from working lamps and generators
 					- New electrical material property - ~"HeatProduced"
+					- GameParameters: adjustment
+						- Also at settings dialog
 				- Lights and wires break at high temperature
 
-			= Interaction with bombs:
+			+ Interaction with bombs:
 				+ Triggering:
 					+ Timer, Impact, RC: 
 						+ Trigger when temperature > GameParameters::BombsTemperatureTrigger = 773.15 (500C)
 					+ Anti-Matter: + 1000
-				- Explosion:
-					- Timer, Impact, RC: 
-						- Produce heat directly at Ship::DoBombExplosion
+				+ Explosion:
+					+ Timer, Impact, RC: 
+						+ Produce heat directly at Ship::DoBombExplosion
 							+ Verify first it's called at these 3
-							- Add heat to each point in blastRadius, considering ultra-violent mode as well
-								- Use GameParameters::BombExplosionHeatProduced
-									- Also at settings dialog, under Interactions
+							+ Add heat to each point in blastRadius, considering ultra-violent mode as well
+								+ Use GameParameters::BombExplosionHeatProduced
+									+ Also at settings dialog, under Interactions
+					+ Check if default value is good
+					+ Check maximum again
 
 			+ Flamethrower:
 				+ Physics:
@@ -1265,8 +1277,10 @@ Render:
 					+ OnChain detection: use # of factory triangles, not current triangles (heuristic to avoid jumping planes
 					  when triangles are destroyed by fire)
 				= See flame colors from Pac0master: "If you can mess with the colour, can you try giving it a similar colour as the Animation I've made in #gfx  ?  "
-					- See what to do with his other color scheme
-					- If keep: do also at flames 2
+					= See what to do with his other color scheme
+					- If keep: do also at:
+						- Flames2
+						- HeatBlaster flame
 
 			+ Sound:
 				+ Media:

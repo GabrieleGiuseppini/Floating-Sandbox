@@ -131,6 +131,7 @@ private:
     // Interactions
     SliderControl<float> * mDestroyRadiusSlider;
     SliderControl<float> * mBombBlastRadiusSlider;
+    SliderControl<float> * mBombBlastHeatSlider;
     SliderControl<float> * mAntiMatterBombImplosionStrengthSlider;
     SliderControl<float> * mFloodRadiusSlider;
     SliderControl<float> * mFloodQuantitySlider;

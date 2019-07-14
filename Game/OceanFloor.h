@@ -57,7 +57,7 @@ public:
         // iterations per step, each of the interim steps might exceed the world boundaries. The checks
         // might be removed once the mechanical simulation may guarantee that each position update
         // is followed by a world boundary trim
-        if (sampleIndexI < 0)
+        if (sampleIndexF < 0)
             return mSamples[0].SampleValue;
         else if (sampleIndexI > SamplesCount)
             return mSamples[SamplesCount].SampleValue;
