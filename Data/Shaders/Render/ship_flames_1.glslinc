@@ -157,8 +157,9 @@ void main()
     col1 = mix(vec3(0.3, 0.0, 0.0), col1, smoothstep(0.2, 0.6, focusedThickness) + noBorder);
     
     // Blend with background
-    // When no border: transparent < 0.7 --- opaque > 1.2
-    float alpha = smoothstep(0.0 + noBorder*0.7, 0.5 + noBorder*0.7, focusedThickness);
+    // When no border: transparent < 0.7  --- opaque > 1.2
+    // When border:    transparent < 0.0 --- opaque > 0.5
+    float alpha = smoothstep(0.0 + noBorder*0.7, 0.5 + noBorder*0.7, thickness);
     
     gl_FragColor = vec4(col1, alpha);
 }
