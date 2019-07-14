@@ -50,7 +50,10 @@ float ExponentialSliderCore::TickToValue(int tick) const
     if (tick < NumberOfTicks<int> / 2.0f)
     {
         // Lower part
-        return mLowerA - mLowerB * exp(Gamma * (NumberOfTicks<float> / 2.0f - static_cast<float>(tick)));
+        if (tick == 0)
+            return mMinValue;
+        else
+            return mLowerA - mLowerB * exp(Gamma * (NumberOfTicks<float> / 2.0f - static_cast<float>(tick)));
     }
     else
     {

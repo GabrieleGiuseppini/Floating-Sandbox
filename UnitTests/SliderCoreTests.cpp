@@ -1,5 +1,8 @@
+#include <GameCore/ExponentialSliderCore.h>
 #include <GameCore/IntegralLinearSliderCore.h>
 #include <GameCore/LinearSliderCore.h>
+
+#include "Utils.h"
 
 #include "gtest/gtest.h"
 
@@ -69,6 +72,31 @@ TEST_F(LinearSliderCoreTest, AlmostZeroToTen)
     EXPECT_EQ(core.ValueToTick(10.f), 80);
 }
 
+TEST_F(LinearSliderCoreTest, NegativeMin)
+{
+    LinearSliderCore core(-10.0f, 10.0f); // Step=0.25
+
+    EXPECT_EQ(core.GetNumberOfTicks(), 80);
+
+    EXPECT_EQ(core.TickToValue(0), -10.0f);
+    EXPECT_EQ(core.ValueToTick(-10.0f), 0);
+
+    EXPECT_EQ(core.TickToValue(1), -9.75f);
+    EXPECT_EQ(core.ValueToTick(-9.75f), 1);
+
+    EXPECT_EQ(core.TickToValue(2), -9.5f);
+    EXPECT_EQ(core.ValueToTick(-9.5f), 2);
+
+    EXPECT_EQ(core.TickToValue(4), -9.0f);
+    EXPECT_EQ(core.ValueToTick(-9.0f), 4);
+
+    EXPECT_EQ(core.TickToValue(79), 9.75f);
+    EXPECT_EQ(core.ValueToTick(9.75f), 79);
+
+    EXPECT_EQ(core.TickToValue(80), 10.0f);
+    EXPECT_EQ(core.ValueToTick(10.f), 80);
+}
+
 TEST_F(LinearSliderCoreTest, TwentyToFiveHundred)
 {
     LinearSliderCore core(20.0f, 500.0f); // Step=8
@@ -108,4 +136,52 @@ TEST(IntegralLinearSliderCoreTest, ZeroToTen)
     EXPECT_EQ(core.TickToValue(57), 1000);
     EXPECT_EQ(core.ValueToTick(999), 56);
     EXPECT_EQ(core.ValueToTick(1000), 57);
+}
+
+TEST(ExponentialSliderCoreTest, PositiveEdges)
+{
+    ExponentialSliderCore core(0.01f, 1.0f, 1000.0f);
+
+    EXPECT_EQ(core.GetNumberOfTicks(), 100);
+
+    EXPECT_TRUE(ApproxEquals(core.TickToValue(0), 0.01f, 0.001f));
+    EXPECT_EQ(core.ValueToTick(0.01f), 0);
+
+    EXPECT_EQ(core.TickToValue(50), 1.0f);
+    EXPECT_EQ(core.ValueToTick(1.0f), 50);
+
+    EXPECT_EQ(core.TickToValue(100), 1000.0f);
+    EXPECT_EQ(core.ValueToTick(1000.0f), 100);
+}
+
+TEST(ExponentialSliderCoreTest, NegativeEdges)
+{
+    ExponentialSliderCore core(-50.0f, 1.0f, 100000.0f);
+
+    EXPECT_EQ(core.GetNumberOfTicks(), 100);
+
+    EXPECT_EQ(core.TickToValue(0), -50.0f);
+    EXPECT_EQ(core.ValueToTick(-50.0f), 0);
+
+    EXPECT_EQ(core.TickToValue(50), 1.0f);
+    EXPECT_EQ(core.ValueToTick(1.0f), 50);
+
+    EXPECT_EQ(core.TickToValue(100), 100000.0f);
+    EXPECT_EQ(core.ValueToTick(100000.0f), 100);
+}
+
+TEST(ExponentialSliderCoreTest, NegativeEdges_ArbitraryMidpoint)
+{
+    ExponentialSliderCore core(-50.0f, 300.0f, 100000.0f);
+
+    EXPECT_EQ(core.GetNumberOfTicks(), 100);
+
+    EXPECT_EQ(core.TickToValue(0), -50.0f);
+    EXPECT_EQ(core.ValueToTick(-50.0f), 0);
+
+    EXPECT_EQ(core.TickToValue(50), 300.0f);
+    EXPECT_EQ(core.ValueToTick(300.0f), 50);
+
+    EXPECT_EQ(core.TickToValue(100), 100000.0f);
+    EXPECT_EQ(core.ValueToTick(100000.0f), 100);
 }

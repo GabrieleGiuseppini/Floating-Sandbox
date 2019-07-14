@@ -2,6 +2,8 @@
 
 #include <cmath>
 
+#include "Utils.h"
+
 #include "gtest/gtest.h"
 
 TEST(CeilPowerOfTwo, Basic)
@@ -16,18 +18,6 @@ TEST(CeilPowerOfTwo, Basic)
     EXPECT_EQ(CeilPowerOfTwo(7), 8);
     EXPECT_EQ(CeilPowerOfTwo(8), 8);
     EXPECT_EQ(CeilPowerOfTwo(9), 16);
-}
-
-::testing::AssertionResult ApproxEquals(float a, float b, float tolerance)
-{
-    if (abs(a - b) < tolerance)
-    {
-        return ::testing::AssertionSuccess();
-    }
-    else
-    {
-        return ::testing::AssertionFailure() << "Result " << a << " too different than expected value " << b;
-    }
 }
 
 TEST(FastPowTest, Basic)
