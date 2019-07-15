@@ -605,7 +605,7 @@ void Ship::RepairAt(
                         mSprings.SetRestLength(
                             fcs.SpringIndex,
                             mSprings.GetFactoryRestLength(fcs.SpringIndex)
-                            + 0.95f * (mSprings.GetRestLength(fcs.SpringIndex) - mSprings.GetFactoryRestLength(fcs.SpringIndex)));
+                            + 0.97f * (mSprings.GetRestLength(fcs.SpringIndex) - mSprings.GetFactoryRestLength(fcs.SpringIndex)));
 
                         // Check if may fully restore
                         if (std::abs(mSprings.GetRestLength(fcs.SpringIndex) - mSprings.GetFactoryRestLength(fcs.SpringIndex)) < RestLengthDivergenceTolerance)

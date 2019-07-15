@@ -1166,11 +1166,11 @@ Render:
 			+ See Pac0master's bug: looks like when the cardboard of the funnel touches the water it starts generating a super high amount of heat
 			+ See Pac0master's bug: Spawn the default ship,  max out the Thermal conductivity and  dissipation the back of the ship will start to heat up and melt very fast
 
-			= Melting improvements:
+			+ Melting improvements:
 				+ Option 1: Test with sticky strength
 					+ Springs has new buffer, "MeltStrengthComponent", always > 1.0
 					+ We might also need sticky stiffness, but try with strength first
-				= Option 2: Test with sticky rest length
+				+ Option 2: Test with sticky rest length
 					+ StiffnessCoeff and Strength are memory-less: they return to their original values when no melting occurs,
 					  but RestLength not
 					+ First test in-place modifying RestLength; if ok:
@@ -1179,8 +1179,8 @@ Render:
 							+ Repair: try using both as targets and choose best
 						+ Decide performant way of making rest length sticky
 						+ Update comments at Springs
-					= Do asymptotic stiffness, not zero
-					= Try different DeltaTMax's
+					+ Do asymptotic stiffness, not zero
+					+ Try different DeltaTMax's
 					+ Repair: recalc coeffs when we've set a new rest length
 						+ Adjust rest length before all, "snapping" rest length to factory when close enough
 							+ Also set rest length to factory when spring restored
@@ -1298,7 +1298,7 @@ Render:
 					+ OnChain detection: use # of factory triangles, not current triangles (heuristic to avoid jumping planes
 					  when triangles are destroyed by fire)
 				= See flame colors from Pac0master: "If you can mess with the colour, can you try giving it a similar colour as the Animation I've made in #gfx  ?  "
-					= See what to do with his other color scheme
+					+ See what to do with his other color scheme
 					- If keep: do also at:
 						- Flames2
 						- HeatBlaster flame

@@ -429,8 +429,8 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
     // per simulation step
     float constexpr MinStiffnessFraction = 0.0008f;
 
-    // We reach max softness at T+150
-    float const meltAmount = SmoothStep(0.0f, 150.0f, meltingOverheat);
+    // We reach max softness at T+100
+    float const meltAmount = SmoothStep(0.0f, 100.0f, meltingOverheat);
 
     // 1.0 when non melting, MinStiffnessFraction when melting "a lot"
     float const meltMultiplier =
