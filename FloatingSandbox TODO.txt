@@ -602,6 +602,9 @@ Render:
 			- Spring length, spring dir
 				- Valid as long as points don't move
 				- Used by: water update, heat update, Springs::UpdateStrains
+					- Also use instead of factory rest lengths at:
+						- Water
+						- Heat
 			- Underwater depth 
 				- Valid as long as points don't move
 				- Used by: UpdateWaterIntake (for leaking points only), heat dissipation
@@ -1164,17 +1167,28 @@ Render:
 			+ See Pac0master's bug: Spawn the default ship,  max out the Thermal conductivity and  dissipation the back of the ship will start to heat up and melt very fast
 
 			= Melting improvements:
-				= Option 1: Test with sticky strength
+				+ Option 1: Test with sticky strength
 					+ Springs has new buffer, "MeltStrengthComponent", always > 1.0
-					= We might also need sticky stiffness, but try with strength first
-				- Option 2: Test with sticky rest length
-					- StiffnessCoeff and Strength are memory-less: they return to their original values when no melting occurs,
+					+ We might also need sticky stiffness, but try with strength first
+				= Option 2: Test with sticky rest length
+					+ StiffnessCoeff and Strength are memory-less: they return to their original values when no melting occurs,
 					  but RestLength not
-					- First test in-place modifying RestLength; if ok:
-						- Make "FactoryRestLength" buffer
-						- Verify all usages of RestLength and choose accordingly
-							- Repair: try using both as targets and choose best
-				- Allow for more melting by making strength more "relaxed"
+					+ First test in-place modifying RestLength; if ok:
+						+ Make "FactoryRestLength" buffer
+						+ Verify all usages of RestLength and choose accordingly
+							+ Repair: try using both as targets and choose best
+						+ Decide performant way of making rest length sticky
+						+ Update comments at Springs
+					= Do asymptotic stiffness, not zero
+					= Try different DeltaTMax's
+					+ Repair: recalc coeffs when we've set a new rest length
+						+ Adjust rest length before all, "snapping" rest length to factory when close enough
+							+ Also set rest length to factory when spring restored
+						+ Use boolean flag to recalc coeffs just once per spring
+						+ General:
+							+ See if should be faster (play with settings' speed)
+							+ See if UltraViolent mode makes sense
+						+ Decide whether to target current or factory rest length
 
 			- Electrical:
 				- Update: inject heat from working lamps and generators
@@ -1182,6 +1196,13 @@ Render:
 					- GameParameters: adjustment
 						- Also at settings dialog
 				- Lights and wires break at high temperature
+
+			- Make flames smaller when point is orphaned
+				- 1: Ship::SpringDestroyHandler: invoke Ship::OnPointOrphaned for each endpoint that becomes orphaned
+				- 2: Ship::OnPointOrphaned: invoke Points::OnPointOrphaned
+				- 3: Points::OnPointOrphaned: 
+					- a) first off, see if may get away with suddenly truncating development;
+					- b) if not, change state machine: TODOHERE, see Moleskine
 
 			+ Interaction with bombs:
 				+ Triggering:
@@ -1316,6 +1337,8 @@ Render:
 					- 2: Use sticky priority_queue (leverage temporal coherence of overheated particles)
 			- Flame rendering:
 				- Do perf analysis to see impact
+				- Shader:
+					- Replace pow with 3 mult's - see FPS gain
 				- Test perf impact of instanced drawing
 			- Points::UnderwaterDepth buffer: add if it turns out that at each step we need isunderwater at least twice
 				- Re-populated by Ship at first step that checks underwater-ness after mechanical update

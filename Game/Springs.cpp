@@ -37,7 +37,6 @@ void Springs::Add(
 
     // Breaking length recalculated later
     mBreakingLengthBuffer.emplace_back(0.0f);
-    mStickyBreakingLengthComponentsBuffer.emplace_back(1.0f, 0.0f);
 
     // Stiffness is average
     float const stiffness =
@@ -45,6 +44,7 @@ void Springs::Add(
         / 2.0f;
     mMaterialStiffnessBuffer.emplace_back(stiffness);
 
+    mFactoryRestLengthBuffer.emplace_back((points.GetPosition(pointAIndex) - points.GetPosition(pointBIndex)).length());
     mRestLengthBuffer.emplace_back((points.GetPosition(pointAIndex) - points.GetPosition(pointBIndex)).length());
 
     // Coefficients recalculated later
@@ -418,19 +418,23 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
     // The reduction adjustment is both the material-specific adjustment and the global game adjustment.
     //
     // If the endpoints are melting, their temperature also controls the stiffness - the higher the temperature,
-    // above the melting point, the lower the stiffness; this is adjusted via a smoothed multiplier with the following
+    // above the melting point, the lower the stiffness; this is achieved with a smoothed multiplier with the following
     // edges:
     //  T - Tm <= 0.0 :                 1.0
-    //  T - Tm >= DeltaMeltingTMax :    0.0
+    //  T - Tm >= DeltaMeltingTMax :    < 1.0 (== MinStiffnessFraction, asymptote)
     //
 
-    float constexpr DeltaMeltingTMax = 500.0f;
-    float const meltAmount = SmoothStep(0.0f, DeltaMeltingTMax, meltingOverheat); // 0.0 when non melting, 1.0 when melting "a lot"
+    // Asymptote
+    // NOTE: This value should be adjusted based on the number of spring iterations we perform
+    // per simulation step
+    float constexpr MinStiffnessFraction = 0.0008f;
 
-    // Make the melting component sticky - never grow back up
-    float const stiffnessMeltingComponent = std::min(
-        (1.0f - meltAmount),
-        mStickyBreakingLengthComponentsBuffer[springIndex].StiffnessMeltingComponent);
+    // We reach max softness at T+150
+    float const meltAmount = SmoothStep(0.0f, 150.0f, meltingOverheat);
+
+    // 1.0 when non melting, MinStiffnessFraction when melting "a lot"
+    float const meltMultiplier =
+        1.0f - (1.0f - MinStiffnessFraction) * meltAmount;
 
     mCoefficientsBuffer[springIndex].StiffnessCoefficient =
         GameParameters::SpringReductionFraction
@@ -438,7 +442,7 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
         * stiffnessAdjustment
         * massFactor
         / (dt * dt)
-        * stiffnessMeltingComponent;
+        * meltMultiplier;
 
 
     //
@@ -460,7 +464,6 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
     //  - The material strength and the strength adjustment
     //  - The spring's decay (which itself is a function of the endpoints' decay)
     //  - If the endpoints are melting, their temperature - so to keep springs intact while melting makes them longer
-    //      - This component of the breaking length is "sticky" - it never returns to normal
     //  - The actual number of mechanics iterations we'll be performing
     //
     // The strength multiplied with the spring's rest length is the Breaking Length, ready to be
@@ -472,10 +475,16 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
         (points.GetDecay(endpointAIndex) + points.GetDecay(endpointBIndex))
         / 2.0f;
 
-    // The additional breaking length tolerance due to melting, which never goes back down
-    float const breakingLengthMeltingComponent = std::max(
-        100.0f * meltAmount, // Magic number
-        mStickyBreakingLengthComponentsBuffer[springIndex].BreakingLengthMeltingComponent);
+    // If we're melting, the current spring length, when longer than the
+    // previous rest length, is also its new rest length
+    if (meltingOverheat > 0.0f)
+    {
+        SetRestLength(
+            springIndex,
+            std::max(
+                GetRestLength(springIndex),
+                GetLength(springIndex, points)));
+    }
 
     mBreakingLengthBuffer[springIndex] =
         GetRestLength(springIndex)
@@ -483,14 +492,7 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
         * strengthAdjustment
         * strengthIterationsAdjustment
         * springDecay
-        * (1.0f + breakingLengthMeltingComponent);
-
-    //
-    // Store sticky components for next time
-    //
-
-    mStickyBreakingLengthComponentsBuffer[springIndex].StiffnessMeltingComponent = stiffnessMeltingComponent;
-    mStickyBreakingLengthComponentsBuffer[springIndex].BreakingLengthMeltingComponent = breakingLengthMeltingComponent;
+        * (1.0f + 100.0f * meltAmount);
 }
 
 }

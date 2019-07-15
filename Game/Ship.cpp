@@ -1036,7 +1036,7 @@ void Ship::UpdateWaterVelocities(
             // diagonal springs
             springOutboundWaterFlowWeights[s] =
                 springOutboundScalarWaterVelocity
-                / mSprings.GetRestLength(cs.SpringIndex);
+                / mSprings.GetFactoryRestLength(cs.SpringIndex);
 
             // Resultant outbound velocity along spring
             springOutboundWaterVelocities[s] =
@@ -1521,7 +1521,7 @@ void Ship::PropagateHeat(
             totalOutgoingHeat +=
                 dt
                 * outgoingHeatFlow
-                / mSprings.GetRestLength(cs.SpringIndex);
+                / mSprings.GetFactoryRestLength(cs.SpringIndex);
         }
 
 
@@ -1564,7 +1564,7 @@ void Ship::PropagateHeat(
             newPointTemperatureBufferData[cs.OtherEndpointIndex] +=
                 dt
                 * outgoingHeatFlow * normalizationFactor
-                / mSprings.GetRestLength(cs.SpringIndex)
+                / mSprings.GetFactoryRestLength(cs.SpringIndex)
                 / mPoints.GetMaterialHeatCapacity(cs.OtherEndpointIndex);
         }
 

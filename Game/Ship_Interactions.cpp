@@ -272,7 +272,11 @@ void Ship::RepairAt(
     // already stretched or compressed, generating an undesirable force impulse
     float constexpr DisplacementTolerance = 0.07f;
 
+    // Tolerance to rest length vs. factory rest length, before restoring to it factory
+    float constexpr RestLengthDivergenceTolerance = 0.05f;
+
     ///////////////////////////////////////////////////////
+
 
     float const searchRadius =
         gameParameters.RepairRadius
@@ -286,7 +290,7 @@ void Ship::RepairAt(
         // Attempt to restore this point's springs if the point meets all these conditions:
         // - The point is in radius
         // - The point is not orphaned
-        // - The point has not taken already the role of attracted in this or in the previous session step
+        // - The point has not taken already the role of attracted in the last two session steps
         //
         // Note: if we were to attempt to restore also orphaned points, then two formerly-connected
         // orphaned points within the search radius would interact with each other and nullify
@@ -301,19 +305,24 @@ void Ship::RepairAt(
             mPoints.GetRepairState(pointIndex).LastAttractorSessionId = sessionId;
             mPoints.GetRepairState(pointIndex).LastAttractorSessionStepId = sessionStepId;
 
-
-            //
-            // 1) (Attempt to) restore this point's delete springs
-            //
-
             // Calculate tool strength (1.0 at center and zero at border, fourth power)
             float const toolStrength =
                 (1.0f - (squareRadius / squareSearchRadius) * (squareRadius / squareSearchRadius))
                 * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
+            //
+            // 1) (Attempt to) restore this point's deleted springs
+            //
+
             // Visit all the deleted springs that were connected at factory time
             for (auto const & fcs : mPoints.GetFactoryConnectedSprings(pointIndex).ConnectedSprings)
             {
+                bool doRecalculateSpringCoefficients = false;
+
+                //
+                // Restore the spring itself, if it's deleted
+                //
+
                 if (mSprings.IsDeleted(fcs.SpringIndex))
                 {
                     auto const otherEndpointIndex = fcs.OtherEndpointIndex;
@@ -454,7 +463,7 @@ void Ship::RepairAt(
                         vec2f const targetOtherEndpointPosition =
                             mPoints.GetPosition(pointIndex)
                             + vec2f::fromPolar(
-                                mSprings.GetRestLength(fcs.SpringIndex),
+                                mSprings.GetFactoryRestLength(fcs.SpringIndex),
                                 targetWorldAngleCw);
 
 
@@ -483,7 +492,7 @@ void Ship::RepairAt(
                             // in the current session
                             float const smoothing = SmoothStep(
                                 0.0f,
-                                10.0f * 60.0f / gameParameters.RepairSpeedAdjustment, // Reach max in 10 seconds (at 60 fps)
+                                10.0f * 30.0f / gameParameters.RepairSpeedAdjustment, // Reach max in 5 seconds (at 60 fps)
                                 static_cast<float>(mPoints.GetRepairState(otherEndpointIndex).CurrentAttractedNumberOfSteps));
 
                             // Movement direction (positive towards this point)
@@ -561,6 +570,15 @@ void Ship::RepairAt(
                                 otherEndpointIndex,
                                 otherPointDecay + (1.0f - otherPointDecay) / 2.0f);
 
+                            // Restore the spring's rest length to its factory value
+                            mSprings.SetRestLength(
+                                fcs.SpringIndex,
+                                mSprings.GetFactoryRestLength(fcs.SpringIndex));
+
+                            // Remember to recalculate the spring's coefficients, now that we
+                            // have changed its rest length
+                            doRecalculateSpringCoefficients = true;
+
                             // Remember that we've acted on the other endpoint
                             hasOtherEndpointPointBeenMoved = true;
                         }
@@ -575,6 +593,43 @@ void Ship::RepairAt(
                             mPoints.GetWater(otherEndpointIndex) /= 2.0f;
                         }
                     }
+                }
+                else
+                {
+                    //
+                    // (Partially) restore this spring's rest length
+                    //
+
+                    if (mSprings.GetRestLength(fcs.SpringIndex) != mSprings.GetFactoryRestLength(fcs.SpringIndex))
+                    {
+                        mSprings.SetRestLength(
+                            fcs.SpringIndex,
+                            mSprings.GetFactoryRestLength(fcs.SpringIndex)
+                            + 0.95f * (mSprings.GetRestLength(fcs.SpringIndex) - mSprings.GetFactoryRestLength(fcs.SpringIndex)));
+
+                        // Check if may fully restore
+                        if (std::abs(mSprings.GetRestLength(fcs.SpringIndex) - mSprings.GetFactoryRestLength(fcs.SpringIndex)) < RestLengthDivergenceTolerance)
+                        {
+                            mSprings.SetRestLength(
+                                fcs.SpringIndex,
+                                mSprings.GetFactoryRestLength(fcs.SpringIndex));
+                        }
+
+                        // Remember to recalculate the spring's coefficients, now that we have changed its rest length
+                        doRecalculateSpringCoefficients = true;
+                    }
+                }
+
+
+                //
+                // Recalculate the spring's coefficients, if we have messed with it
+                //
+
+                if (doRecalculateSpringCoefficients)
+                {
+                    mSprings.UpdateForRestLength(
+                        fcs.SpringIndex,
+                        mPoints);
                 }
             }
 

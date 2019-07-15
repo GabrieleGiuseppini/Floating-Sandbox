@@ -110,22 +110,6 @@ private:
         {}
     };
 
-    /*
-     * The sticky breaking length components - we maintain memory of these.
-     */
-    struct StickyBreakingLengthComponents
-    {
-        float StiffnessMeltingComponent;
-        float BreakingLengthMeltingComponent;
-
-        StickyBreakingLengthComponents(
-            float stiffnessMeltingComponent,
-            float breakingLengthMeltingComponent)
-            : StiffnessMeltingComponent(stiffnessMeltingComponent)
-            , BreakingLengthMeltingComponent(breakingLengthMeltingComponent)
-        {}
-    };
-
 public:
 
     Springs(
@@ -148,8 +132,8 @@ public:
         // Physical
         , mMaterialStrengthBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mBreakingLengthBuffer(mBufferElementCount, mElementCount, 0.0f)
-        , mStickyBreakingLengthComponentsBuffer(mBufferElementCount, mElementCount, StickyBreakingLengthComponents(1.0f, 0.0f))
         , mMaterialStiffnessBuffer(mBufferElementCount, mElementCount, 0.0f)
+        , mFactoryRestLengthBuffer(mBufferElementCount, mElementCount, 1.0f)
         , mRestLengthBuffer(mBufferElementCount, mElementCount, 1.0f)
         , mCoefficientsBuffer(mBufferElementCount, mElementCount, Coefficients(0.0f, 0.0f))
         , mMaterialCharacteristicsBuffer(mBufferElementCount, mElementCount, Characteristics::None)
@@ -246,12 +230,25 @@ public:
         GameParameters const & gameParameters,
         Points const & points);
 
+    void UpdateForRestLength(
+        ElementIndex springElementIndex,
+        Points const & points)
+    {
+        // Recalculate parameters for this spring
+        UpdateForDecayAndTemperatureAndGameParameters(
+            springElementIndex,
+            mCurrentNumMechanicalDynamicsIterations,
+            mCurrentSpringStiffnessAdjustment,
+            mCurrentSpringDampingAdjustment,
+            mCurrentSpringStrengthAdjustment,
+            CalculateSpringStrengthIterationsAdjustment(mCurrentNumMechanicalDynamicsIterationsAdjustment),
+            points);
+    }
+
     void UpdateForMass(
         ElementIndex springElementIndex,
         Points const & points)
     {
-        assert(springElementIndex < mElementCount);
-
         // Recalculate parameters for this spring
         UpdateForDecayAndTemperatureAndGameParameters(
             springElementIndex,
@@ -485,9 +482,21 @@ public:
             .length();
     }
 
+    float GetFactoryRestLength(ElementIndex springElementIndex) const
+    {
+        return mFactoryRestLengthBuffer[springElementIndex];
+    }
+
     float GetRestLength(ElementIndex springElementIndex) const
     {
         return mRestLengthBuffer[springElementIndex];
+    }
+
+    void SetRestLength(
+        ElementIndex springElementIndex,
+        float restLength)
+    {
+        mRestLengthBuffer[springElementIndex] = restLength;
     }
 
     float GetStiffnessCoefficient(ElementIndex springElementIndex) const
@@ -679,8 +688,8 @@ private:
 
     Buffer<float> mMaterialStrengthBuffer;
     Buffer<float> mBreakingLengthBuffer;
-    Buffer<StickyBreakingLengthComponents> mStickyBreakingLengthComponentsBuffer;
     Buffer<float> mMaterialStiffnessBuffer;
+    Buffer<float> mFactoryRestLengthBuffer;
     Buffer<float> mRestLengthBuffer;
     Buffer<Coefficients> mCoefficientsBuffer;
     Buffer<Characteristics> mMaterialCharacteristicsBuffer;
