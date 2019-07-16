@@ -183,7 +183,7 @@ private:
     void OnAboutMenuItemSelected(wxCommandEvent& event);
     void OnCheckForUpdatesMenuItemSelected(wxCommandEvent& event);
     void OnOpenHomePageMenuItemSelected(wxCommandEvent& event);
-    void OnOpenCodePageMenuItemSelected(wxCommandEvent& event);
+    void OnOpenDownloadPageMenuItemSelected(wxCommandEvent& event);
 
     //
     // Game event handler

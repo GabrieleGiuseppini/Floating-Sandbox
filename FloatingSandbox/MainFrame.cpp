@@ -89,7 +89,7 @@ const long ID_HELP_MENUITEM = wxNewId();
 const long ID_ABOUT_MENUITEM = wxNewId();
 const long ID_CHECK_FOR_UPDATES_MENUITEM = wxNewId();
 const long ID_OPEN_HOME_PAGE_MENUITEM = wxNewId();
-const long ID_OPEN_CODE_PAGE_MENUITEM = wxNewId();
+const long ID_OPEN_DOWNLOAD_PAGE_MENUITEM = wxNewId();
 
 const long ID_POSTIINITIALIZE_TIMER = wxNewId();
 const long ID_GAME_TIMER = wxNewId();
@@ -455,13 +455,13 @@ MainFrame::MainFrame(wxApp * mainApp)
 
     helpMenu->Append(new wxMenuItem(helpMenu, wxID_SEPARATOR));
 
-    wxMenuItem * openHomePageMenuItem = new wxMenuItem(helpMenu, ID_OPEN_HOME_PAGE_MENUITEM, _("Open Home Page (Game Jolt)"));
+    wxMenuItem * openHomePageMenuItem = new wxMenuItem(helpMenu, ID_OPEN_HOME_PAGE_MENUITEM, _("Open Home Page"));
     helpMenu->Append(openHomePageMenuItem);
     Connect(ID_OPEN_HOME_PAGE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnOpenHomePageMenuItemSelected);
 
-    wxMenuItem * openCodePageMenuItem = new wxMenuItem(helpMenu, ID_OPEN_CODE_PAGE_MENUITEM, _("Open Code Page (GitHub)"));
-    helpMenu->Append(openCodePageMenuItem);
-    Connect(ID_OPEN_CODE_PAGE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnOpenCodePageMenuItemSelected);
+    wxMenuItem * openDownloadPageMenuItem = new wxMenuItem(helpMenu, ID_OPEN_DOWNLOAD_PAGE_MENUITEM, _("Open Download Page"));
+    helpMenu->Append(openDownloadPageMenuItem);
+    Connect(ID_OPEN_DOWNLOAD_PAGE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnOpenDownloadPageMenuItemSelected);
 
     mainMenuBar->Append(helpMenu, _("Help"));
 
@@ -1522,12 +1522,12 @@ void MainFrame::OnCheckForUpdatesMenuItemSelected(wxCommandEvent & /*event*/)
 
 void MainFrame::OnOpenHomePageMenuItemSelected(wxCommandEvent & /*event*/)
 {
-    wxLaunchDefaultBrowser("https://gamejolt.com/games/floating-sandbox/353572");
+    wxLaunchDefaultBrowser("https://www.floatingsandbox.com");
 }
 
-void MainFrame::OnOpenCodePageMenuItemSelected(wxCommandEvent & /*event*/)
+void MainFrame::OnOpenDownloadPageMenuItemSelected(wxCommandEvent & /*event*/)
 {
-    wxLaunchDefaultBrowser("https://github.com/GabrieleGiuseppini/Floating-Sandbox");
+    wxLaunchDefaultBrowser("https://gamejolt.com/games/floating-sandbox/353572");
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

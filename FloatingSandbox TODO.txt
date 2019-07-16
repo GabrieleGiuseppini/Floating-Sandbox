@@ -417,6 +417,8 @@ Render:
 
 		- Heat and combustion (*)
 
+		- Pu back links
+
 		- Fire Extinguisher tool
 			- Use shader with radial noise + rotation
 
@@ -571,7 +573,7 @@ Render:
 	- Translations:
 		- Make localizable
 		- Russian: steven6886@yandex.ru
-	- SSL cert: https://www.sslforfree.com/
+	+ SSL cert: https://www.sslforfree.com/
 	= Sign with certificate
 		+ https://blogs.msdn.microsoft.com/ieinternals/2011/03/22/everything-you-need-to-know-about-authenticode-code-signing/
 		+ https://www.thegeekstuff.com/2010/03/microsoft-digital-signatures/
@@ -1376,6 +1378,11 @@ Render:
 				- RenderContext::UploadCloudsStart: only sets param when val != mCurrentCloudDarkness
 		- Triggers lightnings:
 			- Communicated to RenderContext by Storms::Upload(...), for each step of the lighting state machine
+			- TBD: Storms' lightning state machine should hit Ship (for fire)
+				- What about: via handler owned (implemented) and passed by World?
+			- Also manual trigger for lightning
+			- Shader:
+				- TBD
 	
 	- Shooting stars
 		- Star "parks" always an extra star at (-1, -1)
@@ -1729,10 +1736,6 @@ Render:
 				- Conditionally, by polling GameController who checks if it has mUserOceanFloorTerrain
 				- When reset -> GameController::ResetOceanFloorTerranToDefault
 					- Nukes mUserOceanFloorTerrain and calls World::ResetOceanFloorTerranToDefault which propagates
-
-	- floatingsandbox.com: 
-		- About box (wxHyperlinkCtrl)
-		- Links menu
 
 	- SettingsDialog: save settings, defaults, and real-time changes (*)
 		- Spec: 
@@ -2877,6 +2880,8 @@ IF WX:
 			+ Checkbox 
 				+ @ ShipDescription window
 				+ @ PreferencesDialog
+	+ floatingsandbox.com: 
+		+ Links menu
 
 + Gfx:
 	+ Do ropes with two endpoints (000xxx)
