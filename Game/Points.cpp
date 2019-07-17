@@ -311,7 +311,7 @@ void Points::OnOrphaned(ElementIndex pointElementIndex)
     if (mCombustionStateBuffer[pointElementIndex].State == CombustionState::StateType::Burning)
     {
         mCombustionStateBuffer[pointElementIndex].FlameDevelopment = GameRandomEngine::GetInstance()
-            .GenerateRandomReal(0.1f, 0.25f);
+            .GenerateRandomReal(0.1f, 0.14f);
     }
 }
 
@@ -456,7 +456,7 @@ void Points::UpdateCombustionLowFrequency(
 
                 float const massMultiplier = pow(
                     mMaterialsBuffer[pointIndex].Structural->GetMass() / 750.0f,
-                    0.05f); // Magic number: one tenth of the mass is slightly less than 1.0
+                    0.15f); // Magic number: one tenth of the mass is 0.70 times the number of steps
 
                 float const totalDecaySteps =
                     effectiveCombustionDecayRate
