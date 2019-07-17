@@ -1256,13 +1256,26 @@ void Ship::UpdateElectricalDynamics(
     // Generate a new visit sequence number
     ++mCurrentElectricalVisitSequenceNumber;
 
+    //
+    // Update connectivity first
+    //
+
     UpdateElectricalConnectivity(mCurrentElectricalVisitSequenceNumber); // Invoked regardless of dirty elements, as generators might become wet
+
+
+    //
+    // Update elements
+    //
 
     mElectricalElements.Update(
         currentWallclockTime,
         mCurrentElectricalVisitSequenceNumber,
         mPoints,
         gameParameters);
+
+    //
+    // Diffuse light from lamps
+    //
 
     DiffuseLight(gameParameters);
 }

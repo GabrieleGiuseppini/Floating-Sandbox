@@ -58,6 +58,7 @@ SoundController::SoundController(
     , mSawUnderwaterSound()
     , mHeatBlasterCoolSound()
     , mHeatBlasterHeatSound()
+    , mFireExtinguisherSound()
     , mDrawSound()
     , mSwirlSound()
     , mAirBubblesSound()
@@ -222,6 +223,14 @@ SoundController::SoundController(
             mHeatBlasterHeatSound.Initialize(
                 std::move(soundBuffer),
                 60.0f,
+                mMasterToolsVolume,
+                mMasterToolsMuted);
+        }
+        else if (soundType == SoundType::FireExtinguisher)
+        {
+            mFireExtinguisherSound.Initialize(
+                std::move(soundBuffer),
+                100.0f,
                 mMasterToolsVolume,
                 mMasterToolsMuted);
         }
@@ -555,6 +564,7 @@ void SoundController::SetMasterEffectsVolume(float volume)
             && playingSoundIt.first != SoundType::Saw
             && playingSoundIt.first != SoundType::HeatBlasterCool
             && playingSoundIt.first != SoundType::HeatBlasterHeat
+            && playingSoundIt.first != SoundType::FireExtinguisher
             && playingSoundIt.first != SoundType::Swirl
             && playingSoundIt.first != SoundType::AirBubbles
             && playingSoundIt.first != SoundType::FloodHose)
@@ -588,6 +598,7 @@ void SoundController::SetMasterEffectsMuted(bool isMuted)
             && playingSoundIt.first != SoundType::Saw
             && playingSoundIt.first != SoundType::HeatBlasterCool
             && playingSoundIt.first != SoundType::HeatBlasterHeat
+            && playingSoundIt.first != SoundType::FireExtinguisher
             && playingSoundIt.first != SoundType::Swirl
             && playingSoundIt.first != SoundType::AirBubbles
             && playingSoundIt.first != SoundType::FloodHose)
@@ -623,6 +634,7 @@ void SoundController::SetMasterToolsVolume(float volume)
             || playingSoundIt.first == SoundType::Saw
             || playingSoundIt.first == SoundType::HeatBlasterCool
             || playingSoundIt.first == SoundType::HeatBlasterHeat
+            || playingSoundIt.first == SoundType::FireExtinguisher
             || playingSoundIt.first == SoundType::Swirl
             || playingSoundIt.first == SoundType::AirBubbles
             || playingSoundIt.first == SoundType::FloodHose)
@@ -638,6 +650,7 @@ void SoundController::SetMasterToolsVolume(float volume)
     mSawUnderwaterSound.SetMasterVolume(mMasterToolsVolume);
     mHeatBlasterCoolSound.SetMasterVolume(mMasterToolsVolume);
     mHeatBlasterHeatSound.SetMasterVolume(mMasterToolsVolume);
+    mFireExtinguisherSound.SetMasterVolume(mMasterToolsVolume);
     mDrawSound.SetMasterVolume(mMasterToolsVolume);
     mSwirlSound.SetMasterVolume(mMasterToolsVolume);
     mAirBubblesSound.SetMasterVolume(mMasterToolsVolume);
@@ -656,6 +669,7 @@ void SoundController::SetMasterToolsMuted(bool isMuted)
             || playingSoundIt.first == SoundType::Saw
             || playingSoundIt.first == SoundType::HeatBlasterCool
             || playingSoundIt.first == SoundType::HeatBlasterHeat
+            || playingSoundIt.first == SoundType::FireExtinguisher
             || playingSoundIt.first == SoundType::Swirl
             || playingSoundIt.first == SoundType::AirBubbles
             || playingSoundIt.first == SoundType::FloodHose)
@@ -671,6 +685,7 @@ void SoundController::SetMasterToolsMuted(bool isMuted)
     mSawUnderwaterSound.SetMuted(mMasterToolsMuted);
     mHeatBlasterCoolSound.SetMuted(mMasterToolsMuted);
     mHeatBlasterHeatSound.SetMuted(mMasterToolsMuted);
+    mFireExtinguisherSound.SetMuted(mMasterToolsMuted);
     mDrawSound.SetMuted(mMasterToolsMuted);
     mSwirlSound.SetMuted(mMasterToolsMuted);
     mAirBubblesSound.SetMuted(mMasterToolsMuted);
@@ -833,6 +848,16 @@ void SoundController::StopHeatBlasterSound()
     mHeatBlasterHeatSound.Stop();
 }
 
+void SoundController::PlayFireExtinguisherSound()
+{
+    mFireExtinguisherSound.Start();
+}
+
+void SoundController::StopFireExtinguisherSound()
+{
+    mFireExtinguisherSound.Stop();
+}
+
 void SoundController::PlaySwirlSound(bool /*isUnderwater*/)
 {
     // At the moment we ignore the water-ness
@@ -950,6 +975,7 @@ void SoundController::Reset()
     mSawUnderwaterSound.Reset();
     mHeatBlasterCoolSound.Reset();
     mHeatBlasterHeatSound.Reset();
+    mFireExtinguisherSound.Reset();
     mDrawSound.Reset();
     mSwirlSound.Reset();
     mAirBubblesSound.Reset();

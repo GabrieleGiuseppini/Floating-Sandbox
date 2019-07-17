@@ -35,6 +35,7 @@ RenderContext::RenderContext(
     , mCrossOfLightVertexBuffer()
     , mCrossOfLightVBO()
     , mHeatBlasterFlameVBO()
+    , mFireExtinguisherSprayVBO()
     , mWorldBorderVertexBuffer()
     , mWorldBorderVBO()
     // VAOs
@@ -44,6 +45,7 @@ RenderContext::RenderContext(
     , mOceanVAO()
     , mCrossOfLightVAO()
     , mHeatBlasterFlameVAO()
+    , mFireExtinguisherSprayVAO()
     , mWorldBorderVAO()
     // Textures
     , mCloudTextureAtlasOpenGLHandle()
@@ -63,6 +65,8 @@ RenderContext::RenderContext(
     , mIsWorldBorderVisible(false)
     // HeatBlaster
     , mHeatBlasterFlameShaderToRender()
+    // Fire extinguisher
+    , mFireExtinguisherSprayShaderToRender()
     // Managers
     , mShaderManager()
     , mUploadedTextureManager()
@@ -225,7 +229,7 @@ RenderContext::RenderContext(
     // Initialize buffers
     //
 
-    GLuint vbos[7];
+    GLuint vbos[8];
     glGenBuffers(7, vbos);
     mStarVBO = vbos[0];
     mCloudVBO = vbos[1];
@@ -233,7 +237,8 @@ RenderContext::RenderContext(
     mOceanVBO = vbos[3];
     mCrossOfLightVBO = vbos[4];
     mHeatBlasterFlameVBO = vbos[5];
-    mWorldBorderVBO = vbos[6];
+    mFireExtinguisherSprayVBO = vbos[6];
+    mWorldBorderVBO = vbos[7];
 
 
     //
@@ -347,6 +352,25 @@ RenderContext::RenderContext(
     glBindBuffer(GL_ARRAY_BUFFER, *mHeatBlasterFlameVBO);
     glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::HeatBlasterFlame));
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::HeatBlasterFlame), 4, GL_FLOAT, GL_FALSE, sizeof(HeatBlasterFlameVertex), (void*)0);
+    CheckOpenGLError();
+
+    glBindVertexArray(0);
+
+
+    //
+    // Initialize fire extinguisher spray VAO
+    //
+
+    glGenVertexArrays(1, &tmpGLuint);
+    mFireExtinguisherSprayVAO = tmpGLuint;
+
+    glBindVertexArray(*mFireExtinguisherSprayVAO);
+    CheckOpenGLError();
+
+    // Describe vertex attributes
+    glBindBuffer(GL_ARRAY_BUFFER, *mFireExtinguisherSprayVBO);
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::FireExtinguisherSpray));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::FireExtinguisherSpray), 4, GL_FLOAT, GL_FALSE, sizeof(FireExtinguisherSprayVertex), (void*)0);
     CheckOpenGLError();
 
     glBindVertexArray(0);
@@ -506,6 +530,8 @@ RenderContext::RenderContext(
     mShaderManager->SetTextureParameters<ProgramType::HeatBlasterFlameCool>();
     mShaderManager->ActivateProgram<ProgramType::HeatBlasterFlameHeat>();
     mShaderManager->SetTextureParameters<ProgramType::HeatBlasterFlameHeat>();
+    mShaderManager->ActivateProgram<ProgramType::FireExtinguisherSpray>();
+    mShaderManager->SetTextureParameters<ProgramType::FireExtinguisherSpray>();
 
 
     //
@@ -717,8 +743,11 @@ void RenderContext::RenderStart()
     // Reset crosses of light, they are uploaded as needed
     mCrossOfLightVertexBuffer.clear();
 
-    // Reset HeatBlaster flames, they are uploaded as needed
+    // Reset HeatBlaster flame, it's uploaded as needed
     mHeatBlasterFlameShaderToRender.reset();
+
+    // Reset fire extinguisher spray, it's uploaded as needed
+    mFireExtinguisherSprayShaderToRender.reset();
 
     // Communicate start to child contextes
     mTextRenderContext->RenderStart();
@@ -1007,6 +1036,12 @@ void RenderContext::RenderEnd()
         RenderHeatBlasterFlame();
     }
 
+    // Render fire extinguisher spray
+    if (!!mFireExtinguisherSprayShaderToRender)
+    {
+        RenderFireExtinguisherSpray();
+    }
+
     // Render world end
     RenderWorldBorder();
 
@@ -1084,6 +1119,42 @@ void RenderContext::RenderHeatBlasterFlame()
     glBindVertexArray(0);
 }
 
+void RenderContext::RenderFireExtinguisherSpray()
+{
+    //
+    // Upload buffer
+    //
+
+    glBindBuffer(GL_ARRAY_BUFFER, *mFireExtinguisherSprayVBO);
+    glBufferData(GL_ARRAY_BUFFER,
+        sizeof(FireExtinguisherSprayVertex) * mFireExtinguisherSprayVertexBuffer.size(),
+        mFireExtinguisherSprayVertexBuffer.data(),
+        GL_DYNAMIC_DRAW);
+    CheckOpenGLError();
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+
+    //
+    // Render
+    //
+
+    glBindVertexArray(*mFireExtinguisherSprayVAO);
+
+    assert(!!mFireExtinguisherSprayShaderToRender);
+
+    mShaderManager->ActivateProgram(*mFireExtinguisherSprayShaderToRender);
+
+    // Set time parameter
+    mShaderManager->SetProgramParameter<ProgramParameterType::Time>(
+        *mFireExtinguisherSprayShaderToRender,
+        GameWallClock::GetInstance().NowAsFloat());
+
+    assert((mFireExtinguisherSprayVertexBuffer.size() % 6) == 0);
+    glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mFireExtinguisherSprayVertexBuffer.size()));
+
+    glBindVertexArray(0);
+}
+
 void RenderContext::RenderWorldBorder()
 {
     if (mIsWorldBorderVisible)
@@ -1147,6 +1218,10 @@ void RenderContext::OnViewModelUpdated()
 
     mShaderManager->ActivateProgram<ProgramType::HeatBlasterFlameHeat>();
     mShaderManager->SetProgramParameter<ProgramType::HeatBlasterFlameHeat, ProgramParameterType::OrthoMatrix>(
+        globalOrthoMatrix);
+
+    mShaderManager->ActivateProgram<ProgramType::FireExtinguisherSpray>();
+    mShaderManager->SetProgramParameter<ProgramType::FireExtinguisherSpray, ProgramParameterType::OrthoMatrix>(
         globalOrthoMatrix);
 
     mShaderManager->ActivateProgram<ProgramType::WorldBorder>();

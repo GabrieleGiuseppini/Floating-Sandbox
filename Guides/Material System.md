@@ -100,9 +100,12 @@ Each material is as follows:
         },
         "color_key": "#FFE010",
         "electrical_type": "Lamp",
+	"heat_generated": 900.0,
         "is_self_powered": false,
         "luminiscence": 2.0,
-        "light_spread": 1.0
+        "light_spread": 1.0,
+	"minimum_operating_temperature": 233.15,
+	"maximum_operating_temperature": 398.15
     },
 ``` 
 Here's an explanation of the elements:
@@ -114,8 +117,11 @@ Here's an explanation of the elements:
    - "Generator": propagates an electrical current through all connected cables.
    - "Cable": propagates an electrical current through its endpoints.
    - "Lamp": emits light.
+- _heat generated_: the amount of heat generated when functioning, in KJ/s.
 - _is self powered_: whether a lamp emits light on its own (when *true*) or only when it's powered by an electrical current (when *false*).
 - _luminiscence_: the amount of light emitted by a lamp; between 0.0 and 1.0.
 - _light spread_: the spread of light emitted by a lamp. Higher values make for a narrower focus, while lower values make for a broader focus.
+- _minimum operating temperature_: the minimum temperature, in Kelvin, below which the material/device will stop working.
+- _maximum operating temperature_: the maximum temperature, in Kelvin, above which the material/device will stop working.
 - _wet failure rate_: the average number of lamps of this material that will fail in a minute when wet.
    - For example, 2.0 means that a wet lamp will most likely turn off after 30 seconds of becoming wet.

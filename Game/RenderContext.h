@@ -776,7 +776,7 @@ public:
         // Populate vertices
         //
 
-        float const quadHalfSize = (radius * 1.5f) / 2.0f;
+        float const quadHalfSize = (radius * 1.5f) / 2.0f; // Add some slack for transparency
         float const left = centerPosition.x - quadHalfSize;
         float const right = centerPosition.x + quadHalfSize;
         float const top = centerPosition.y + quadHalfSize;
@@ -822,6 +822,53 @@ public:
                 break;
             }
         }
+    }
+
+    //
+    // Fire extinguisher spray
+    //
+
+    void UploadFireExtinguisherSpray(
+        vec2f const & centerPosition,
+        float radius)
+    {
+        //
+        // Populate vertices
+        //
+
+        float const quadHalfSize = (radius * 1.5f) / 2.0f; // Add some slack for transparency
+        float const left = centerPosition.x - quadHalfSize;
+        float const right = centerPosition.x + quadHalfSize;
+        float const top = centerPosition.y + quadHalfSize;
+        float const bottom = centerPosition.y - quadHalfSize;
+
+        // Triangle 1
+
+        mFireExtinguisherSprayVertexBuffer[0].vertexPosition = vec2f(left, bottom);
+        mFireExtinguisherSprayVertexBuffer[0].spraySpacePosition = vec2f(-0.5f, -0.5f);
+
+        mFireExtinguisherSprayVertexBuffer[1].vertexPosition = vec2f(left, top);
+        mFireExtinguisherSprayVertexBuffer[1].spraySpacePosition = vec2f(-0.5f, 0.5f);
+
+        mFireExtinguisherSprayVertexBuffer[2].vertexPosition = vec2f(right, bottom);
+        mFireExtinguisherSprayVertexBuffer[2].spraySpacePosition = vec2f(0.5f, -0.5f);
+
+        // Triangle 2
+
+        mFireExtinguisherSprayVertexBuffer[3].vertexPosition = vec2f(left, top);
+        mFireExtinguisherSprayVertexBuffer[3].spraySpacePosition = vec2f(-0.5f, 0.5f);
+
+        mFireExtinguisherSprayVertexBuffer[4].vertexPosition = vec2f(right, bottom);
+        mFireExtinguisherSprayVertexBuffer[4].spraySpacePosition = vec2f(0.5f, -0.5f);
+
+        mFireExtinguisherSprayVertexBuffer[5].vertexPosition = vec2f(right, top);
+        mFireExtinguisherSprayVertexBuffer[5].spraySpacePosition = vec2f(0.5f, 0.5f);
+
+        //
+        // Store shader
+        //
+
+        mFireExtinguisherSprayShaderToRender = Render::ProgramType::FireExtinguisherSpray;
     }
 
     /////////////////////////////////////////////////////////////////////////
@@ -1295,6 +1342,7 @@ private:
 
     void RenderCrossesOfLight();
     void RenderHeatBlasterFlame();
+    void RenderFireExtinguisherSpray();
     void RenderWorldBorder();
 
     void OnViewModelUpdated();
@@ -1423,6 +1471,15 @@ private:
         {}
     };
 
+    struct FireExtinguisherSprayVertex
+    {
+        vec2f vertexPosition;
+        vec2f spraySpacePosition;
+
+        FireExtinguisherSprayVertex()
+        {}
+    };
+
     struct WorldBorderVertex
     {
         float x;
@@ -1468,6 +1525,9 @@ private:
     std::array<HeatBlasterFlameVertex, 6> mHeatBlasterFlameVertexBuffer;
     GameOpenGLVBO mHeatBlasterFlameVBO;
 
+    std::array<FireExtinguisherSprayVertex, 6> mFireExtinguisherSprayVertexBuffer;
+    GameOpenGLVBO mFireExtinguisherSprayVBO;
+
     std::vector<WorldBorderVertex> mWorldBorderVertexBuffer;
     GameOpenGLVBO mWorldBorderVBO;
 
@@ -1481,6 +1541,7 @@ private:
     GameOpenGLVAO mOceanVAO;
     GameOpenGLVAO mCrossOfLightVAO;
     GameOpenGLVAO mHeatBlasterFlameVAO;
+    GameOpenGLVAO mFireExtinguisherSprayVAO;
     GameOpenGLVAO mWorldBorderVAO;
 
     //
@@ -1520,6 +1581,11 @@ private:
 
     std::optional<Render::ProgramType> mHeatBlasterFlameShaderToRender;
 
+    //
+    // Fire extinguisher
+    //
+
+    std::optional<Render::ProgramType> mFireExtinguisherSprayShaderToRender;
 
 private:
 

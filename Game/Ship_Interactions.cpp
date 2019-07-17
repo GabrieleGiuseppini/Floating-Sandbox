@@ -787,6 +787,47 @@ bool Ship::ApplyHeatBlasterAt(
     return atLeastOnePointFound;
 }
 
+bool Ship::ExtinguishFireAt(
+    vec2f const & targetPos,
+    float radius,
+    GameParameters const & gameParameters)
+{
+    float const squareRadius =
+        radius * radius
+        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
+    // Search for burning points within the radius
+    bool atLeastOnePointFound = false;
+    for (auto pointIndex : mPoints.NonEphemeralPoints())
+    {
+        float const pointSquareDistance = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
+        if (pointSquareDistance < squareRadius)
+        {
+            // Check if the point is in a state in which we can smother its combustion
+            if (mPoints.IsBurningForSmothering(pointIndex))
+            {
+                //
+                // Extinguish point
+                //
+
+                mPoints.SmotherCombustion(pointIndex);
+
+                // Also lower the point's temperature, or else it'll start burning
+                // right away
+                // TODO: do with heat
+                mPoints.SetTemperature(
+                    pointIndex,
+                    std::max(0.0f, mPoints.GetTemperature(pointIndex) - 60.0f));
+            }
+
+            // Remember we've found a point
+            atLeastOnePointFound = true;
+        }
+    }
+
+    return atLeastOnePointFound;
+}
+
 void Ship::DrawTo(
     vec2f const & targetPos,
     float strengthFraction,

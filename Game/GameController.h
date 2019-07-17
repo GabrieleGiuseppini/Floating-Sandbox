@@ -138,6 +138,7 @@ public:
     void RepairAt(vec2f const & screenCoordinates, float radiusMultiplier, RepairSessionId sessionId, RepairSessionStepId sessionStepId) override;
     void SawThrough(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates) override;
     bool ApplyHeatBlasterAt(vec2f const & screenCoordinates, HeatBlasterActionType action) override;
+    bool ExtinguishFireAt(vec2f const & screenCoordinates) override;
     void DrawTo(vec2f const & screenCoordinates, float strengthFraction) override;
     void SwirlAt(vec2f const & screenCoordinates, float strengthFraction) override;
     void TogglePinAt(vec2f const & screenCoordinates) override;
@@ -546,6 +547,9 @@ private:
 
     // When set, will be uploaded to the RenderContext to display the HeatBlaster flame
     std::optional<std::tuple<vec2f, float, HeatBlasterActionType>> mHeatBlasterFlameToRender;
+
+    // When set, will be uploaded to the RenderContext to display the fire extinguisher spray
+    std::optional<std::tuple<vec2f, float>> mFireExtinguisherSprayToRender;
 
     class TsunamiNotificationStateMachine
     {

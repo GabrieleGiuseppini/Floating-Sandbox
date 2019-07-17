@@ -417,11 +417,20 @@ Render:
 
 		- Heat and combustion (*)
 
-		- Pu back links
+		+ Put back links
 
-		- Fire Extinguisher tool
-			- Use shader with radial noise + rotation
-
+		= Fire Extinguisher tool
+			= Action
+				= Cool
+			- Shader
+				- Radial noise + rotation
+				- Somewhat transparent, so that flames show through
+				- Full radius 
+			+ Sound
+				+ Volume
+			+ Cursor
+				+ HotSpot
+			
 		- Smoke
 			- See if may use shader with radial noise
 
@@ -1194,26 +1203,36 @@ Render:
 							+ See if UltraViolent mode makes sense
 						+ Decide whether to target current or factory rest length
 
-			- Electrical:
-				- Update: inject heat from working lamps and generators
-					- New electrical material property - ~"HeatProduced"
-					- GameParameters: adjustment
-						- Also at settings dialog
-				- Lights and wires break at high temperature
+			= Electrical: devices generate heat, and lights and generators break at low and high temperatures
+				+ New electrical material properties - "HeatGenerated" and operating temperatures
+				= GameParameters: electrical heat generated adjustment
+					- Settings dialog: ele new section between HeatBlaster and Worl
+				- Rearc:
+					- ElectricalElements::UpdateSourcesAndPropagation (rename from "Connectivity")
+							- Also rename sequence number members from "Connectivity" to "~Propagation"
+						- Move from Ship
+						- Uses mSourceIndices as starting point, instead of just generators
+							- Nuke generator indices
+						- For each source:
+							- Check preconditions:
+								- Wetness
+								- Operating temperature
+							- If ok:
+								- Generate heat (using also adjustment)
+								- Flood graph for VisitSequenceNumber
+					- Rename "AvailableCurrent" as "AvailableLight"
+					- ElectricalElements::UpdateSinks (replaces "Update")
+						- Uses mSinkIndices (vector of indices, not only lamps)
+						- Lamps:
+							- Consider also operating temperatures in state machine and transition accordingly
+							- Each time AvailableLight is > 0, generate heat (using also adjustment)
 
-			= Make flames smaller when point is orphaned
+			+ Make flames smaller when point is orphaned
 				+ 1: Ship::SpringDestroyHandler: invoke Ship::OnPointOrphaned for each endpoint that becomes orphaned
 				+ 2: Ship::OnPointOrphaned: invoke Points::OnPointOrphaned
-				= 3: Points::OnPointOrphaned: 
-					= a) first off, see if may get away with suddenly truncating development
-						- Try even smaller ?
-					- b) if not, change state machine: 
-						- Developing state:
-							- Params:
-								- developmentRate
-								- developmentTarget
-							TODOHERE, see Moleskine
-
+				+ 3: Points::OnPointOrphaned: 
+					+ Suddenly truncate development
+						+ Try even smaller ?
 			+ Interaction with bombs:
 				+ Triggering:
 					+ Timer, Impact, RC: 

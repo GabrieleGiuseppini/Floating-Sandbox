@@ -61,6 +61,7 @@ GameController::GameController(
     , mIsPaused(false)
     , mIsMoveToolEngaged(false)
     , mHeatBlasterFlameToRender()
+    , mFireExtinguisherSprayToRender()
     , mTsunamiNotificationStateMachine()
     // Parameters that we own
     , mShowTsunamiNotifications(true)
@@ -638,6 +639,33 @@ bool GameController::ApplyHeatBlasterAt(
     return isApplied;
 }
 
+bool GameController::ExtinguishFireAt(vec2f const & screenCoordinates)
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+
+    // Calculate radius
+    float radius = mGameParameters.FireExtinguisherRadius;
+    if (mGameParameters.IsUltraViolentMode)
+        radius *= 10.0f;
+
+    // Apply action
+    assert(!!mWorld);
+    bool isApplied = mWorld->ExtinguishFireAt(
+        worldCoordinates,
+        radius,
+        mGameParameters);
+
+    if (isApplied)
+    {
+        // Remember to render the extinguisher at the next Render() step
+        mFireExtinguisherSprayToRender.emplace(
+            worldCoordinates,
+            radius);
+    }
+
+    return isApplied;
+}
+
 void GameController::DrawTo(
     vec2f const & screenCoordinates,
     float strengthFraction)
@@ -1004,6 +1032,18 @@ void GameController::InternalRender()
             std::get<2>(*mHeatBlasterFlameToRender));
 
         mHeatBlasterFlameToRender.reset();
+    }
+
+    //
+    // Render fire extinguisher spray, if any
+
+    if (!!mFireExtinguisherSprayToRender)
+    {
+        mRenderContext->UploadFireExtinguisherSpray(
+            std::get<0>(*mFireExtinguisherSprayToRender),
+            std::get<1>(*mFireExtinguisherSprayToRender));
+
+        mFireExtinguisherSprayToRender.reset();
     }
 
     //

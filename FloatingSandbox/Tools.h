@@ -37,6 +37,7 @@ enum class ToolType
     Smash,
     Saw,
     HeatBlaster,
+    FireExtinguisher,
     Grab,
     Swirl,
     Pin,
@@ -985,6 +986,109 @@ private:
     std::unique_ptr<wxCursor> const mCoolUpCursor;
     std::unique_ptr<wxCursor> const mHeatDownCursor;
     std::unique_ptr<wxCursor> const mCoolDownCursor;
+};
+
+class FireExtinguisherTool final : public Tool
+{
+public:
+
+    FireExtinguisherTool(
+        wxFrame * parentFrame,
+        std::shared_ptr<IGameController> gameController,
+        std::shared_ptr<SoundController> soundController,
+        ResourceLoader & resourceLoader);
+
+public:
+
+    virtual void Initialize(InputState const & inputState) override
+    {
+        if (inputState.IsLeftMouseDown)
+        {
+            mIsEngaged = mGameController->ExtinguishFireAt(inputState.MousePosition);
+        }
+        else
+        {
+            mIsEngaged = false;
+        }
+    }
+
+    virtual void Deinitialize(InputState const & /*inputState*/) override
+    {
+        // Stop sound
+        mSoundController->StopFireExtinguisherSound();
+    }
+
+    virtual void Update(InputState const & inputState) override
+    {
+        bool isEngaged;
+
+        if (inputState.IsLeftMouseDown)
+        {
+            isEngaged = mGameController->ExtinguishFireAt(inputState.MousePosition);
+        }
+        else
+        {
+            isEngaged = false;
+        }
+
+        if (isEngaged)
+        {
+            if (!mIsEngaged)
+            {
+                // State change
+                mIsEngaged = true;
+
+                // Start sound
+                mSoundController->PlayFireExtinguisherSound();
+
+                // Update cursor
+                ShowCurrentCursor();
+            }
+        }
+        else
+        {
+            if (mIsEngaged)
+            {
+                // State change
+                mIsEngaged = false;
+
+                // Stop sound
+                mSoundController->StopFireExtinguisherSound();
+
+                // Update cursor
+                ShowCurrentCursor();
+            }
+       }
+    }
+
+    virtual void OnMouseMove(InputState const & /*inputState*/) override {}
+    virtual void OnLeftMouseDown(InputState const & /*inputState*/) override {}
+    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+    virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+    virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+
+    virtual void ShowCurrentCursor() override
+    {
+        assert(nullptr != mParentFrame);
+
+        if (mIsEngaged)
+        {
+            mParentFrame->SetCursor(*mDownCursor);
+        }
+        else
+        {
+            mParentFrame->SetCursor(*mUpCursor);
+        }
+    }
+
+private:
+
+    // Our state
+    bool mIsEngaged;
+
+    // The cursors
+    std::unique_ptr<wxCursor> const mUpCursor;
+    std::unique_ptr<wxCursor> const mDownCursor;
 };
 
 class GrabTool final : public ContinuousTool

@@ -56,6 +56,7 @@ const long ID_MOVE_ALL_MENUITEM = wxNewId();
 const long ID_SMASH_MENUITEM = wxNewId();
 const long ID_SLICE_MENUITEM = wxNewId();
 const long ID_HEAT_BLASTER_MENUITEM = wxNewId();
+const long ID_FIRE_EXTINGUISHER_MENUITEM = wxNewId();
 const long ID_GRAB_MENUITEM = wxNewId();
 const long ID_SWIRL_MENUITEM = wxNewId();
 const long ID_PIN_MENUITEM = wxNewId();
@@ -297,6 +298,10 @@ MainFrame::MainFrame(wxApp * mainApp)
     wxMenuItem * heatBlasterMenuItem = new wxMenuItem(mToolsMenu, ID_HEAT_BLASTER_MENUITEM, _("HeatBlaster\tH"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(heatBlasterMenuItem);
     Connect(ID_HEAT_BLASTER_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnHeatBlasterMenuItemSelected);
+
+    wxMenuItem * fireExtinguisherMenuItem = new wxMenuItem(mToolsMenu, ID_FIRE_EXTINGUISHER_MENUITEM, _("Fire Extinguisher\tX"), wxEmptyString, wxITEM_RADIO);
+    mToolsMenu->Append(fireExtinguisherMenuItem);
+    Connect(ID_FIRE_EXTINGUISHER_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnFireExtinguisherMenuItemSelected);
 
     wxMenuItem * grabMenuItem = new wxMenuItem(mToolsMenu, ID_GRAB_MENUITEM, _("Grab\tG"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(grabMenuItem);
@@ -1268,6 +1273,12 @@ void MainFrame::OnHeatBlasterMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
     mToolController->SetTool(ToolType::HeatBlaster);
+}
+
+void MainFrame::OnFireExtinguisherMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mToolController);
+    mToolController->SetTool(ToolType::FireExtinguisher);
 }
 
 void MainFrame::OnGrabMenuItemSelected(wxCommandEvent & /*event*/)

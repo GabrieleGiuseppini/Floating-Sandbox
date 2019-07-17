@@ -36,6 +36,7 @@ enum class SoundType
     Sawed,
     HeatBlasterCool,
     HeatBlasterHeat,
+    FireExtinguisher,
     Swirl,
     PinPoint,
     UnpinPoint,

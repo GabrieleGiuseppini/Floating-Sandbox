@@ -272,6 +272,26 @@ HeatBlasterTool::HeatBlasterTool(
 }
 
 ////////////////////////////////////////////////////////////////////////
+// FireExtinguisher
+////////////////////////////////////////////////////////////////////////
+
+FireExtinguisherTool::FireExtinguisherTool(
+    wxFrame * parentFrame,
+    std::shared_ptr<IGameController> gameController,
+    std::shared_ptr<SoundController> soundController,
+    ResourceLoader & resourceLoader)
+    : Tool(
+        ToolType::FireExtinguisher,
+        parentFrame,
+        std::move(gameController),
+        std::move(soundController))
+    , mIsEngaged(false)
+    , mUpCursor(MakeCursor("fire_extinguisher_cursor_up", 6, 3, resourceLoader))
+    , mDownCursor(MakeCursor("fire_extinguisher_cursor_down", 6, 3, resourceLoader))
+{
+}
+
+////////////////////////////////////////////////////////////////////////
 // Grab
 ////////////////////////////////////////////////////////////////////////
 

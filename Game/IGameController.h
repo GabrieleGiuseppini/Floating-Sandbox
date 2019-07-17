@@ -73,6 +73,7 @@ struct IGameController
     virtual void RepairAt(vec2f const & screenCoordinates, float radiusMultiplier, RepairSessionId sessionId, RepairSessionStepId sessionStepId) = 0;
     virtual void SawThrough(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates) = 0;
     virtual bool ApplyHeatBlasterAt(vec2f const & screenCoordinates, HeatBlasterActionType action) = 0;
+    virtual bool ExtinguishFireAt(vec2f const & screenCoordinates) = 0;
     virtual void DrawTo(vec2f const & screenCoordinates, float strengthFraction) = 0;
     virtual void SwirlAt(vec2f const & screenCoordinates, float strengthFraction) = 0;
     virtual void TogglePinAt(vec2f const & screenCoordinates) = 0;

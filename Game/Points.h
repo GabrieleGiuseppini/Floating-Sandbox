@@ -975,6 +975,38 @@ public:
         return mMaterialHeatCapacityBuffer[pointElementIndex];
     }
 
+    /*
+     * Checks whether a point is eligible for being extinguished by smotherning.
+     */
+    bool IsBurningForSmothering(ElementIndex pointElementIndex) const
+    {
+        auto const combustionState = mCombustionStateBuffer[pointElementIndex].State;
+
+        return combustionState == CombustionState::StateType::Burning
+            || combustionState == CombustionState::StateType::Developing_1
+            || combustionState == CombustionState::StateType::Developing_2
+            || combustionState == CombustionState::StateType::Extinguishing_Consumed;
+    }
+
+    void SmotherCombustion(ElementIndex pointElementIndex)
+    {
+        assert(IsBurningForSmothering(pointElementIndex));
+
+        auto const combustionState = mCombustionStateBuffer[pointElementIndex].State;
+
+        // Notify combustion end - if we are burning
+        if (combustionState == CombustionState::StateType::Developing_1
+            || combustionState == CombustionState::StateType::Developing_2
+            || combustionState == CombustionState::StateType::Burning)
+            mGameEventHandler->OnPointCombustionEnd();
+
+        // Transition
+        mCombustionStateBuffer[pointElementIndex].State = CombustionState::StateType::Extinguishing_Smothered;
+
+        // Notify sizzling
+        mGameEventHandler->OnCombustionSmothered();
+    }
+
     //
     // Electrical dynamics
     //

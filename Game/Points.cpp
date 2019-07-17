@@ -583,17 +583,7 @@ void Points::UpdateCombustionHighFrequency(
             // Transition to Extinguishing - by smothering
             //
 
-            // Notify combustion end - if we are burning
-            if (currentState == CombustionState::StateType::Developing_1
-                || currentState == CombustionState::StateType::Developing_2
-                || currentState == CombustionState::StateType::Burning)
-                mGameEventHandler->OnPointCombustionEnd();
-
-            // Transition
-            mCombustionStateBuffer[pointIndex].State = CombustionState::StateType::Extinguishing_Smothered;
-
-            // Notify sizzling
-            mGameEventHandler->OnCombustionSmothered();
+            SmotherCombustion(pointIndex);
         }
         else if (currentState == CombustionState::StateType::Burning)
         {

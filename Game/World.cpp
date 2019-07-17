@@ -227,6 +227,26 @@ bool World::ApplyHeatBlasterAt(
     return atLeastOneShipApplied;
 }
 
+bool World::ExtinguishFireAt(
+    vec2f const & targetPos,
+    float radius,
+    GameParameters const & gameParameters)
+{
+    bool atLeastOneShipApplied = false;
+
+    for (auto & ship : mAllShips)
+    {
+        bool isApplied = ship->ExtinguishFireAt(
+            targetPos,
+            radius,
+            gameParameters);
+
+        atLeastOneShipApplied |= isApplied;
+    }
+
+    return atLeastOneShipApplied;
+}
+
 void World::DrawTo(
     vec2f const & targetPos,
     float strengthFraction,

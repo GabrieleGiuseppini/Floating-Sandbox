@@ -63,6 +63,13 @@ ToolController::ToolController(
             resourceLoader));
 
     mAllTools.emplace_back(
+        std::make_unique<FireExtinguisherTool>(
+            parentFrame,
+            gameController,
+            soundController,
+            resourceLoader));
+
+    mAllTools.emplace_back(
         std::make_unique<GrabTool>(
             parentFrame,
             gameController,

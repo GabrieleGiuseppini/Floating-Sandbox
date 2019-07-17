@@ -128,6 +128,11 @@ public:
         float radius,
         GameParameters const & gameParameters);
 
+    bool ExtinguishFireAt(
+        vec2f const & targetPos,
+        float radius,
+        GameParameters const & gameParameters);
+
     void DrawTo(
         vec2f const & targetPos,
         float strengthFraction,

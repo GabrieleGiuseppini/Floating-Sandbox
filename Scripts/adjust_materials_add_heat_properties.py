@@ -3,7 +3,7 @@ import sys
 
 from collections import OrderedDict
  
-def adjust_material(material):
+def adjust_structural_material(material):
 
     name = material["name"]
 
@@ -87,19 +87,49 @@ def adjust_material(material):
 
     material["combustion_type"] = "Combustion"
 
+
+def adjust_electrical_material(material):
+
+    name = material["name"]
+
+    if "Lamp Watertight" in name:
+        material["heat_generated"] = 600.0
+        material["minimum_operating_temperature"] = 233.15
+        material["maximum_operating_temperature"] = 398.15
+    elif "Lamp" in name:
+        material["heat_generated"] = 200.0
+        material["minimum_operating_temperature"] = 233.15
+        material["maximum_operating_temperature"] = 398.15
+    elif "Generator" in name:
+        material["heat_generated"] = 900.0
+        material["minimum_operating_temperature"] = 233.15
+        material["maximum_operating_temperature"] = 398.15
+    elif ("Cable" in name) or ("Porthole" in name):
+        material["heat_generated"] = 0.0
+        material["minimum_operating_temperature"] = 233.15
+        material["maximum_operating_temperature"] = 398.15
+    else:
+        raise Exception("No rules for material '" + name + "'")
+
+
 def main():
     
-    if len(sys.argv) != 3:
-        print("Usage: adjust_materials.py <input_json> <output_json>")
+    if len(sys.argv) != 4:
+        print("Usage: adjust_materials.py -s|-e <input_json> <output_json>")
         sys.exit(-1)
 
-    with open(sys.argv[1], "r") as in_file:
+    with open(sys.argv[2], "r") as in_file:
         json_obj = json.load(in_file)
 
     for material in json_obj:
-        adjust_material(material)
+        if sys.argv[1] == "-s":
+            adjust_structural_material(material)
+        elif sys.argv[1] == "-e":
+            adjust_electrical_material(material)
+        else:
+            raise Exception("Unrecognized material type argument '" + sys.argv[1] + "'")
 
-    with open(sys.argv[2], "w") as out_file:
+    with open(sys.argv[3], "w") as out_file:
         out_file.write(json.dumps(json_obj, indent=4, sort_keys=True))
 
 main()

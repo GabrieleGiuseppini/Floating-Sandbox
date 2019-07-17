@@ -173,6 +173,11 @@ struct ElectricalMaterial
     float LightSpread;
     float WetFailureRate; // Number of lamp failures per minute
 
+    // Heat
+    float HeatGenerated; // KJ/s
+    float MinimumOperatingTemperature; // K
+    float MaximumOperatingTemperature; // K
+
     static ElectricalMaterial Create(picojson::object const & electricalMaterialJson);
 
     static ElectricalElementType StrToElectricalElementType(std::string const & str);
@@ -184,7 +189,10 @@ struct ElectricalMaterial
         float luminiscence,
         vec4f lightColor,
         float lightSpread,
-        float wetFailureRate)
+        float wetFailureRate,
+        float heatGenerated,
+        float minimumOperatingTemperature,
+        float maximumOperatingTemperature)
         : Name(name)
         , ElectricalType(electricalType)
         , IsSelfPowered(isSelfPowered)
@@ -192,6 +200,9 @@ struct ElectricalMaterial
         , LightColor(lightColor)
         , LightSpread(lightSpread)
         , WetFailureRate(wetFailureRate)
+        , HeatGenerated(heatGenerated)
+        , MinimumOperatingTemperature(minimumOperatingTemperature)
+        , MaximumOperatingTemperature(maximumOperatingTemperature)
     {
     }
 };

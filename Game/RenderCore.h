@@ -27,6 +27,7 @@ enum class ProgramType
 {
     Clouds = 0,
     CrossOfLight,
+    FireExtinguisherSpray,
     HeatBlasterFlameCool,
     HeatBlasterFlameHeat,
     LandFlat,
@@ -123,6 +124,8 @@ enum class VertexAttributeType : GLuint
 
     CrossOfLight1 = 0,
     CrossOfLight2 = 1,
+
+    FireExtinguisherSpray = 0,
 
     HeatBlasterFlame = 0,
 

@@ -162,6 +162,11 @@ ElectricalMaterial ElectricalMaterial::Create(picojson::object const & electrica
                 throw GameException("Error loading electrical material \"" + name + "\": the value of the \"wet_failure_rate\" parameter must be greater than or equal 0.0");
         }
 
+        // Heat
+        float heatGenerated = Utils::GetMandatoryJsonMember<float>(electricalMaterialJson, "heat_generated");
+        float minimumOperatingTemperature = Utils::GetMandatoryJsonMember<float>(electricalMaterialJson, "minimum_operating_temperature");
+        float maximumOperatingTemperature = Utils::GetMandatoryJsonMember<float>(electricalMaterialJson, "maximum_operating_temperature");
+
         return ElectricalMaterial(
             name,
             electricalType,
@@ -169,7 +174,10 @@ ElectricalMaterial ElectricalMaterial::Create(picojson::object const & electrica
             luminiscence,
             lightColor,
             lightSpread,
-            wetFailureRate);
+            wetFailureRate,
+            heatGenerated,
+            minimumOperatingTemperature,
+            maximumOperatingTemperature);
     }
     catch (GameException const & ex)
     {

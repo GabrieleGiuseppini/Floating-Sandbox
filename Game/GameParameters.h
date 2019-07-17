@@ -352,6 +352,8 @@ struct GameParameters
     static float constexpr MinFloodQuantity = 0.1f;
     static float constexpr MaxFloodQuantity = 100.0f;
 
+    float FireExtinguisherRadius;
+
     float ScrubRadius;
 
     bool IsUltraViolentMode;

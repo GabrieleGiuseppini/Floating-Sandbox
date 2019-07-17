@@ -27,6 +27,8 @@ SoundType StrToSoundType(std::string const & str)
         return SoundType::HeatBlasterCool;
     else if (Utils::CaseInsensitiveEquals(str, "HeatBlasterHeat"))
         return SoundType::HeatBlasterHeat;
+    else if (Utils::CaseInsensitiveEquals(str, "FireExtinguisher"))
+        return SoundType::FireExtinguisher;
     else if (Utils::CaseInsensitiveEquals(str, "Swirl"))
         return SoundType::Swirl;
     else if (Utils::CaseInsensitiveEquals(str, "PinPoint"))
