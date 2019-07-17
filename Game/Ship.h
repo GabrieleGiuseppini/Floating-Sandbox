@@ -268,6 +268,9 @@ private:
         float currentSimulationTime,
         GameParameters const & gameParameters);
 
+    void OnPointOrphaned(
+        ElementIndex pointElementIndex);
+
     void EphemeralParticleDestroyHandler(
         ElementIndex pointElementIndex);
 

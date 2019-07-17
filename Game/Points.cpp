@@ -302,6 +302,19 @@ void Points::Detach(
     }
 }
 
+void Points::OnOrphaned(ElementIndex pointElementIndex)
+{
+    //
+    // If we're in flames, make the flame tiny
+    //
+
+    if (mCombustionStateBuffer[pointElementIndex].State == CombustionState::StateType::Burning)
+    {
+        mCombustionStateBuffer[pointElementIndex].FlameDevelopment = GameRandomEngine::GetInstance()
+            .GenerateRandomReal(0.1f, 0.25f);
+    }
+}
+
 void Points::DestroyEphemeralParticle(
     ElementIndex pointElementIndex)
 {

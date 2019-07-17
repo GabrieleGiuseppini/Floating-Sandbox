@@ -1953,6 +1953,12 @@ void Ship::PointDetachHandler(
     }
 }
 
+void Ship::OnPointOrphaned(ElementIndex pointElementIndex)
+{
+    // Notify points
+    mPoints.OnOrphaned(pointElementIndex);
+}
+
 void Ship::EphemeralParticleDestroyHandler(ElementIndex pointElementIndex)
 {
     // Notify pins
@@ -1980,6 +1986,12 @@ void Ship::SpringDestroyHandler(
     // Remove the spring from its endpoints
     mPoints.DisconnectSpring(pointAIndex, springElementIndex, true); // Owner
     mPoints.DisconnectSpring(pointBIndex, springElementIndex, false); // Not owner
+
+    // Notify endpoints that have become orphaned
+    if (mPoints.GetConnectedSprings(pointAIndex).ConnectedSprings.empty())
+        OnPointOrphaned(pointAIndex);
+    if (mPoints.GetConnectedSprings(pointBIndex).ConnectedSprings.empty())
+        OnPointOrphaned(pointBIndex);
 
 
     //

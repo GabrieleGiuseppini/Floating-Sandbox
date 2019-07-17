@@ -95,7 +95,7 @@ void main()
     // Get noise for this fragment and time
     //
 
-    #define NoiseResolution 0.7
+    #define NoiseResolution 0.5
     float fragmentNoise = GetNoise(uv * NoiseResolution + vec2(flamePersonalitySeed) + vec2(0.0, -flameTime/0.8));
 
 
@@ -109,7 +109,7 @@ void main()
     angle /= max(0.1, length(uv));
 
     // Straighten the flame at the bottom and make full turbulence higher up
-    angle *= smoothstep(-0.1, 0.5, flameSpacePosition.y);
+    angle *= smoothstep(-0.3, 0.5, flameSpacePosition.y);
 
     // Smooth the angle
     angle *= 0.45;
@@ -131,25 +131,30 @@ void main()
     thickness *= smoothstep(-0.15, 0.15, flameSpacePosition.y); // Taper down
     
     // Focus (less halo, larger body)
-    #define FlameFocus 2.0
-    thickness = pow(clamp(thickness, 0.0, 3.0), FlameFocus);
+    #define FlameFocus 1.5
+    float focusedThickness = pow(clamp(thickness, 0.0, 3.0), FlameFocus);
 
 
     //
     // Emit
     //
 
-    if (thickness < 0.3)
+    if (focusedThickness < 0.28) // thickness = 0.54
         discard;
 
-    // Core (white-yellow)
-    vec3 col1 = mix(vec3(1.0, 1.0, 0.6), vec3(1.0, 1.0, 1.0), thickness);
+    // Core1 (white->yellow)
+    vec3 col1 = mix(vec3(1.0, 0.764, 0.1), vec3(1.0, 1.0, 1.0), smoothstep(0.82, 1.2, thickness));
 
-    // Border (red)
-    col1 = mix(vec3(1.0, 0.4, 0.1), col1, smoothstep(0.3, 0.8, thickness) + noBorder);
+    // Core2 (->orange)
+    col1 = mix(vec3(1.0, 0.35, 0.0), col1, smoothstep(0.65, 1.18, thickness));
+
+    // Border (->dark red)
+    col1 = mix(vec3(0.3, 0.0, 0.0), col1, smoothstep(0.3, 0.55, focusedThickness) + noBorder);
 
     // Blend with background
-    float alpha = smoothstep(0.0 + noBorder*0.5, 0.5 + noBorder*0.2, thickness);
+    // When no border: transparent < 0.53  --- opaque > 0.86
+    // When border:    transparent < 0.0 --- opaque > 0.7
+    float alpha = smoothstep(0.0 + noBorder*0.53, 0.7 + noBorder*0.16, thickness);
 
     gl_FragColor = vec4(col1, alpha);
 } 

@@ -564,6 +564,8 @@ public:
         float currentSimulationTime,
         GameParameters const & gameParameters);
 
+    void OnOrphaned(ElementIndex pointElementIndex);
+
     void UpdateForGameParameters(GameParameters const & gameParameters);
 
     void UpdateCombustionLowFrequency(

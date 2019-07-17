@@ -603,6 +603,8 @@ Render:
 		- Candidates:
 			- Spring length, spring dir
 				- Valid as long as points don't move
+					- In DEBUG, mark mPoints.mArePositionsDirty, and expose mPoints.Diagnostic_ClearDirtyPositions() which is
+					  invoked when Springs' cached lengths are re-calculated
 				- Used by: water update, heat update, Springs::UpdateStrains
 					- Also use instead of factory rest lengths at:
 						- Water
@@ -1199,12 +1201,18 @@ Render:
 						- Also at settings dialog
 				- Lights and wires break at high temperature
 
-			- Make flames smaller when point is orphaned
-				- 1: Ship::SpringDestroyHandler: invoke Ship::OnPointOrphaned for each endpoint that becomes orphaned
-				- 2: Ship::OnPointOrphaned: invoke Points::OnPointOrphaned
-				- 3: Points::OnPointOrphaned: 
-					- a) first off, see if may get away with suddenly truncating development;
-					- b) if not, change state machine: TODOHERE, see Moleskine
+			= Make flames smaller when point is orphaned
+				+ 1: Ship::SpringDestroyHandler: invoke Ship::OnPointOrphaned for each endpoint that becomes orphaned
+				+ 2: Ship::OnPointOrphaned: invoke Points::OnPointOrphaned
+				= 3: Points::OnPointOrphaned: 
+					= a) first off, see if may get away with suddenly truncating development
+						- Try even smaller ?
+					- b) if not, change state machine: 
+						- Developing state:
+							- Params:
+								- developmentRate
+								- developmentTarget
+							TODOHERE, see Moleskine
 
 			+ Interaction with bombs:
 				+ Triggering:
@@ -1266,7 +1274,7 @@ Render:
 				+ See if should lower default MaxBurningParticles (per impact of all burning)
 				+ See if should allow higher heat blaster
 
-			= Flame render:
+			+ Flame render:
 				+ Make better transition for bottom
 				+ Skew wind speed with smoothstep
 					+ And reverse wind direction
@@ -1299,11 +1307,10 @@ Render:
 							+ Keep track of beginning of fg ones == end of bg ones
 					+ OnChain detection: use # of factory triangles, not current triangles (heuristic to avoid jumping planes
 					  when triangles are destroyed by fire)
-				= See flame colors from Pac0master: "If you can mess with the colour, can you try giving it a similar colour as the Animation I've made in #gfx  ?  "
-					+ See what to do with his other color scheme
-					- If keep: do also at:
-						- Flames2
-						- HeatBlaster flame
+				+ Try different color scheme
+					+ If keep: do also at:
+						+ Flames2
+						+ HeatBlaster flame
 
 			+ Sound:
 				+ Media:
@@ -1313,18 +1320,24 @@ Render:
 					+ Subscribe to OnCombustionBegin/End: adjust cumulative volume of Burning sound
 					+ Subscribe to OnCombustionSmothered: play one-time sizzling
 
-			= Experiments/Improvements:
-				+ Consider higher default heat from flamethrower tool
-					+ Current (900k) is fine for wood and ropes and cloth
-				+ Fire-generated heat should be 10x in order to spread more
-					+ Or: check if heat should depend on ignition temperature of that point 
-						+ Is it possible that the heat we release now from burning hi-ign-temp points is actually lower than the one
-						  the point has in order to be at that temperature?
-					+ Spreads just fine on wood, ropes, and cloth
-				+ Lower the min decay for extinguishing, so things break easier once burnt
-				+ When state is Burning, also decay non-burning neighbors on top of decaying self (so to smear burnt color more around)
-					+ At low-frequency update
-				+ Max flame development depends on number of springs connected to point (so ropes have smaller flames)
+		= Experiments/Improvements:
+			+ Consider higher default heat from flamethrower tool
+				+ Current (900k) is fine for wood and ropes and cloth
+			+ Fire-generated heat should be 10x in order to spread more
+				+ Or: check if heat should depend on ignition temperature of that point 
+					+ Is it possible that the heat we release now from burning hi-ign-temp points is actually lower than the one
+					  the point has in order to be at that temperature?
+				+ Spreads just fine on wood, ropes, and cloth
+			+ Lower the min decay for extinguishing, so things break easier once burnt
+			+ When state is Burning, also decay non-burning neighbors on top of decaying self (so to smear burnt color more around)
+				+ At low-frequency update
+			+ Max flame development depends on number of springs connected to point (so ropes have smaller flames)
+			- Flame render:
+				- Transparency on border - slightly more transparent at discard threshold
+				- Noise sampling:
+					- Try different noise resolution
+					- Try without second noise component
+					- Try with third noise component
 
 		- Optimizations:
 			- HeatPropagation:

@@ -59,7 +59,7 @@ float GetFlameRadius(float direction) // direction: +1 => outward, -1 => inward
     float variationR = (fragmentNoise - 0.5);
 
     // Straighten the flame at the center and make full turbulence outside
-    variationR *= smoothstep(0.05, 0.4, uv.x);
+    variationR *= smoothstep(-0.05, 0.4, uv.x);
     
     // Scale variation
     variationR *= 0.65;
