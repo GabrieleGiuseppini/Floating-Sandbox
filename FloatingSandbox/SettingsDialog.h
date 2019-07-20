@@ -105,11 +105,12 @@ private:
     SliderControl<float> * mMeltingTemperatureAdjustmentSlider;
     SliderControl<float> * mCombustionSpeedAdjustmentSlider;
     SliderControl<float> * mCombustionHeatAdjustmentSlider;
-    SliderControl<size_t> * mMaxBurningParticlesSlider;
-    SliderControl<float> * mHeatBlasterRadiusSlider;
-    SliderControl<float> * mHeatBlasterHeatFlowSlider;
     SliderControl<float> * mAirTemperatureSlider;
     SliderControl<float> * mWaterTemperatureSlider;
+    SliderControl<float> * mElectricalElementHeatProducedAdjustmentSlider;
+    SliderControl<float> * mHeatBlasterRadiusSlider;
+    SliderControl<float> * mHeatBlasterHeatFlowSlider;
+    SliderControl<size_t> * mMaxBurningParticlesSlider;
 
     // Ocean and Sky
     SliderControl<float> * mOceanDepthSlider;

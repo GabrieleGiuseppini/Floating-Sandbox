@@ -1010,56 +1010,133 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
         gridSizer->Add(
             physicsBox,
             wxGBPosition(0, 0),
-            wxGBSpan(1, 3),
+            wxGBSpan(1, 4),
             wxEXPAND | wxALL,
             CellBorder);
     }
 
-    // Fire
-    {
-        wxStaticBox * fireBox = new wxStaticBox(panel, wxID_ANY, _("Fire"));
+    /////////////////////////////////////////////////////////////////////////////////
 
-        wxBoxSizer * fireBoxSizer = new wxBoxSizer(wxVERTICAL);
-        fireBoxSizer->AddSpacer(StaticBoxTopMargin);
+    // World
+    {
+        wxStaticBox * worldBox = new wxStaticBox(panel, wxID_ANY, _("World"));
+
+        wxBoxSizer * worldBoxSizer = new wxBoxSizer(wxVERTICAL);
+        worldBoxSizer->AddSpacer(StaticBoxTopMargin);
 
         {
-            wxGridBagSizer * fireSizer = new wxGridBagSizer(0, 0);
+            wxGridBagSizer * worldSizer = new wxGridBagSizer(0, 0);
 
-            // Max Particles
+            // Air Temperature
             {
-                mMaxBurningParticlesSlider = new SliderControl<size_t>(
-                    fireBox,
+                mAirTemperatureSlider = new SliderControl<float>(
+                    worldBox,
                     SliderWidth,
                     SliderHeight,
-                    "Max Burning Particles",
-                    "The maximum number of particles that may burn at any given moment in time; together with the combustion heat adjustment, determines the speed with which fire spreads to adjacent particles. Warning: higher values require more computing resources, with the risk of slowing the simulation down!",
-                    mGameController->GetMaxBurningParticles(),
-                    [this](size_t /*value*/)
+                    "Air Temperature",
+                    "The temperature of air (K).",
+                    mGameController->GetAirTemperature(),
+                    [this](float /*value*/)
                     {
                         // Remember we're dirty now
                         this->mApplyButton->Enable(true);
                     },
-                    std::make_unique<IntegralLinearSliderCore<size_t>>(
-                        mGameController->GetMinMaxBurningParticles(),
-                        mGameController->GetMaxMaxBurningParticles()),
-                    mWarningIcon.get());
+                    std::make_unique<LinearSliderCore>(
+                        mGameController->GetMinAirTemperature(),
+                        mGameController->GetMaxAirTemperature()));
 
-                fireSizer->Add(
-                    mMaxBurningParticlesSlider,
+                worldSizer->Add(
+                    mAirTemperatureSlider,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
             }
 
-            fireBoxSizer->Add(fireSizer, 0, wxALL, StaticBoxInsetMargin);
+            // Water Temperature
+            {
+                mWaterTemperatureSlider = new SliderControl<float>(
+                    worldBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Water Temperature",
+                    "The temperature of water (K).",
+                    mGameController->GetWaterTemperature(),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameController->GetMinWaterTemperature(),
+                        mGameController->GetMaxWaterTemperature()));
+
+                worldSizer->Add(
+                    mWaterTemperatureSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            worldBoxSizer->Add(worldSizer, 0, wxALL, StaticBoxInsetMargin);
         }
 
-        fireBox->SetSizerAndFit(fireBoxSizer);
+        worldBox->SetSizerAndFit(worldBoxSizer);
 
         gridSizer->Add(
-            fireBox,
+            worldBox,
             wxGBPosition(1, 0),
+            wxGBSpan(1, 1),
+            wxEXPAND | wxALL,
+            CellBorder);
+    }
+
+    // Electrical
+    {
+        wxStaticBox * electricalBox = new wxStaticBox(panel, wxID_ANY, _("Electrical"));
+
+        wxBoxSizer * electricalBoxSizer = new wxBoxSizer(wxVERTICAL);
+        electricalBoxSizer->AddSpacer(StaticBoxTopMargin);
+
+        {
+            wxGridBagSizer * electricalSizer = new wxGridBagSizer(0, 0);
+
+            // Heat Generated Adjustment
+            {
+                mElectricalElementHeatProducedAdjustmentSlider = new SliderControl<float>(
+                    electricalBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Heat Generated Adjust",
+                    "Adjusts the amount of heat generated by working electrical elements, such as lamps and generators.",
+                    mGameController->GetElectricalElementHeatProducedAdjustment(),
+                    [this](float /*value*/)
+                    {
+                        // Remember we're dirty now
+                        this->mApplyButton->Enable(true);
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameController->GetMinElectricalElementHeatProducedAdjustment(),
+                        1.0f,
+                        mGameController->GetMaxElectricalElementHeatProducedAdjustment()));
+
+                electricalSizer->Add(
+                    mElectricalElementHeatProducedAdjustmentSlider,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            electricalBoxSizer->Add(electricalSizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        electricalBox->SetSizerAndFit(electricalBoxSizer);
+
+        gridSizer->Add(
+            electricalBox,
+            wxGBPosition(1, 1),
             wxGBSpan(1, 1),
             wxEXPAND | wxALL,
             CellBorder);
@@ -1135,86 +1212,62 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
 
         gridSizer->Add(
             heatBlasterBox,
-            wxGBPosition(1, 1),
+            wxGBPosition(1, 2),
             wxGBSpan(1, 1),
             wxEXPAND | wxALL,
             CellBorder);
     }
 
-    // World
+    // Fire
     {
-        wxStaticBox * worldBox = new wxStaticBox(panel, wxID_ANY, _("World"));
+        wxStaticBox * fireBox = new wxStaticBox(panel, wxID_ANY, _("Fire"));
 
-        wxBoxSizer * worldBoxSizer = new wxBoxSizer(wxVERTICAL);
-        worldBoxSizer->AddSpacer(StaticBoxTopMargin);
+        wxBoxSizer * fireBoxSizer = new wxBoxSizer(wxVERTICAL);
+        fireBoxSizer->AddSpacer(StaticBoxTopMargin);
 
         {
-            wxGridBagSizer * worldSizer = new wxGridBagSizer(0, 0);
+            wxGridBagSizer * fireSizer = new wxGridBagSizer(0, 0);
 
-            // Air Temperature
+            // Max Particles
             {
-                mAirTemperatureSlider = new SliderControl<float>(
-                    worldBox,
+                mMaxBurningParticlesSlider = new SliderControl<size_t>(
+                    fireBox,
                     SliderWidth,
                     SliderHeight,
-                    "Air Temperature",
-                    "The temperature of air (K).",
-                    mGameController->GetAirTemperature(),
-                    [this](float /*value*/)
+                    "Max Burning Particles",
+                    "The maximum number of particles that may burn at any given moment in time; together with the combustion heat adjustment, determines the speed with which fire spreads to adjacent particles. Warning: higher values require more computing resources, with the risk of slowing the simulation down!",
+                    mGameController->GetMaxBurningParticles(),
+                    [this](size_t /*value*/)
                     {
                         // Remember we're dirty now
                         this->mApplyButton->Enable(true);
                     },
-                    std::make_unique<LinearSliderCore>(
-                        mGameController->GetMinAirTemperature(),
-                        mGameController->GetMaxAirTemperature()));
+                    std::make_unique<IntegralLinearSliderCore<size_t>>(
+                        mGameController->GetMinMaxBurningParticles(),
+                        mGameController->GetMaxMaxBurningParticles()),
+                    mWarningIcon.get());
 
-                worldSizer->Add(
-                    mAirTemperatureSlider,
+                fireSizer->Add(
+                    mMaxBurningParticlesSlider,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
             }
 
-            // Water Temperature
-            {
-                mWaterTemperatureSlider = new SliderControl<float>(
-                    worldBox,
-                    SliderWidth,
-                    SliderHeight,
-                    "Water Temperature",
-                    "The temperature of water (K).",
-                    mGameController->GetWaterTemperature(),
-                    [this](float /*value*/)
-                    {
-                        // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
-                    },
-                    std::make_unique<LinearSliderCore>(
-                        mGameController->GetMinWaterTemperature(),
-                        mGameController->GetMaxWaterTemperature()));
-
-                worldSizer->Add(
-                    mWaterTemperatureSlider,
-                    wxGBPosition(0, 1),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxALL,
-                    CellBorder);
-            }
-
-            worldBoxSizer->Add(worldSizer, 0, wxALL, StaticBoxInsetMargin);
+            fireBoxSizer->Add(fireSizer, 0, wxALL, StaticBoxInsetMargin);
         }
 
-        worldBox->SetSizerAndFit(worldBoxSizer);
+        fireBox->SetSizerAndFit(fireBoxSizer);
 
         gridSizer->Add(
-            worldBox,
-            wxGBPosition(1, 2),
+            fireBox,
+            wxGBPosition(1, 3),
             wxGBSpan(1, 1),
             wxEXPAND | wxALL,
             CellBorder);
     }
+
 
     // Finalize panel
 
@@ -2894,15 +2947,17 @@ void SettingsDialog::ReadSettings()
 
     mCombustionHeatAdjustmentSlider->SetValue(mGameController->GetCombustionHeatAdjustment());
 
-    mMaxBurningParticlesSlider->SetValue(mGameController->GetMaxBurningParticles());
+    mAirTemperatureSlider->SetValue(mGameController->GetAirTemperature());
+
+    mWaterTemperatureSlider->SetValue(mGameController->GetWaterTemperature());
+
+    mElectricalElementHeatProducedAdjustmentSlider->SetValue(mGameController->GetElectricalElementHeatProducedAdjustment());
 
     mHeatBlasterRadiusSlider->SetValue(mGameController->GetHeatBlasterRadius());
 
     mHeatBlasterHeatFlowSlider->SetValue(mGameController->GetHeatBlasterHeatFlow());
 
-    mAirTemperatureSlider->SetValue(mGameController->GetAirTemperature());
-
-    mWaterTemperatureSlider->SetValue(mGameController->GetWaterTemperature());
+    mMaxBurningParticlesSlider->SetValue(mGameController->GetMaxBurningParticles());
 
     // Ocean and Sky
 
@@ -3253,8 +3308,14 @@ void SettingsDialog::ApplySettings()
     mGameController->SetCombustionHeatAdjustment(
         mCombustionHeatAdjustmentSlider->GetValue());
 
-    mGameController->SetMaxBurningParticles(
-        mMaxBurningParticlesSlider->GetValue());
+    mGameController->SetAirTemperature(
+        mAirTemperatureSlider->GetValue());
+
+    mGameController->SetWaterTemperature(
+        mWaterTemperatureSlider->GetValue());
+
+    mGameController->SetElectricalElementHeatProducedAdjustment(
+        mElectricalElementHeatProducedAdjustmentSlider->GetValue());
 
     mGameController->SetHeatBlasterRadius(
         mHeatBlasterRadiusSlider->GetValue());
@@ -3262,11 +3323,8 @@ void SettingsDialog::ApplySettings()
     mGameController->SetHeatBlasterHeatFlow(
         mHeatBlasterHeatFlowSlider->GetValue());
 
-    mGameController->SetAirTemperature(
-        mAirTemperatureSlider->GetValue());
-
-    mGameController->SetWaterTemperature(
-        mWaterTemperatureSlider->GetValue());
+    mGameController->SetMaxBurningParticles(
+        mMaxBurningParticlesSlider->GetValue());
 
     // Ocean and Sky
 

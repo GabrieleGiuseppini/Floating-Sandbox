@@ -1203,7 +1203,7 @@ Render:
 			= Electrical: devices generate heat, and lights and generators break at low and high temperatures
 				+ New electrical material properties - "HeatGenerated" and operating temperatures
 				= GameParameters: electrical heat generated adjustment
-					- Settings dialog: new "Electrical" section between HeatBlaster and World
+					= Settings dialog: new "Electrical" section between HeatBlaster and World
 				= Rearc:
 					- ElectricalElements::UpdateSourcesAndPropagation (rename from "Connectivity")
 						- Move from Ship

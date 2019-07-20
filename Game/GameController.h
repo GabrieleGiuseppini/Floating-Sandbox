@@ -320,6 +320,11 @@ public:
     float GetMinHeatBlasterRadius() const override { return GameParameters::MinHeatBlasterRadius; }
     float GetMaxHeatBlasterRadius() const override { return GameParameters::MaxHeatBlasterRadius; }
 
+    float GetElectricalElementHeatProducedAdjustment() const override { return mGameParameters.ElectricalElementHeatProducedAdjustment; }
+    void SetElectricalElementHeatProducedAdjustment(float value) override { mGameParameters.ElectricalElementHeatProducedAdjustment = value; }
+    float GetMinElectricalElementHeatProducedAdjustment() const override { return GameParameters::MinElectricalElementHeatProducedAdjustment; }
+    float GetMaxElectricalElementHeatProducedAdjustment() const override { return GameParameters::MaxElectricalElementHeatProducedAdjustment; }
+
     // Misc
 
     float GetSeaDepth() const override { return mParameterSmoothers[SeaDepthParameterSmoother].GetValue(); }

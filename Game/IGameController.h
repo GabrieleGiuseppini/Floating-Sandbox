@@ -255,6 +255,11 @@ struct IGameController
     virtual float GetMinHeatBlasterRadius() const = 0;
     virtual float GetMaxHeatBlasterRadius() const = 0;
 
+    virtual float GetElectricalElementHeatProducedAdjustment() const = 0;
+    virtual void SetElectricalElementHeatProducedAdjustment(float value) = 0;
+    virtual float GetMinElectricalElementHeatProducedAdjustment() const = 0;
+    virtual float GetMaxElectricalElementHeatProducedAdjustment() const = 0;
+
     // Misc
 
     virtual float GetSeaDepth() const = 0;
