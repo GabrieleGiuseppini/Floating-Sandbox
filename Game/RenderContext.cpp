@@ -85,7 +85,7 @@ RenderContext::RenderContext(
     , mOceanRenderMode(OceanRenderMode::Texture)
     , mOceanAvailableThumbnails()
     , mSelectedOceanTextureIndex(0) // Wavy Thin
-    , mDepthOceanColorStart(0x8b, 0xc5, 0xfe)
+    , mDepthOceanColorStart(0x4a, 0x84, 0x9f)
     , mDepthOceanColorEnd(0x00, 0x00, 0x00)
     , mFlatOceanColor(0x00, 0x3d, 0x99)
     , mLandRenderMode(LandRenderMode::Texture)
