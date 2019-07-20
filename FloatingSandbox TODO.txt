@@ -390,6 +390,20 @@ Render:
 			+ Cleanup logs and code for Correct/Wrong counts
 			+ Cleanup TODO
 		+ Fix exponential slider core for negative edges
+		+ Put back links
+		+ Fire Extinguisher tool
+			+ Action
+				+ Cool, with heat subtraction
+			+ Shader
+				+ Radial noise + rotation
+				+ Somewhat transparent, so that flames show through
+				+ Full radius 
+			+ Sound
+				+ Volume
+			+ Cursor
+				+ HotSpot
+		+ Add slider for repair tool radius
+		+ Add slider for flamethrower tool radius
 
 		- Check bugs:
 			- 1: Idk if this is a bug or not but the tiny particles that appear after something is destroyed start flickering like christmas lights with rot at 1000 when uderwater
@@ -415,30 +429,13 @@ Render:
 			= Cursors (up and down)
 			= Snap sound
 
-		- Heat and combustion (*)
-
-		+ Put back links
-
-		= Fire Extinguisher tool
-			= Action
-				= Cool
-			- Shader
-				- Radial noise + rotation
-				- Somewhat transparent, so that flames show through
-				- Full radius 
-			+ Sound
-				+ Volume
-			+ Cursor
-				+ HotSpot
+		= Heat and combustion (*)
 			
 		- Smoke
 			- See if may use shader with radial noise
 
 		- Bump up rot speed for dry stuff, takes 98 minutes now
 			- They all agree: a ship should rot in 30 minutes on the surface, and in 15 minutes when flooded
-
-		- Add slider for repair tool radius
-		- Add slider for flamethrower tool radius
 
 		- Black cloth, black wood
 
@@ -1206,10 +1203,9 @@ Render:
 			= Electrical: devices generate heat, and lights and generators break at low and high temperatures
 				+ New electrical material properties - "HeatGenerated" and operating temperatures
 				= GameParameters: electrical heat generated adjustment
-					- Settings dialog: ele new section between HeatBlaster and Worl
-				- Rearc:
+					- Settings dialog: new "Electrical" section between HeatBlaster and World
+				= Rearc:
 					- ElectricalElements::UpdateSourcesAndPropagation (rename from "Connectivity")
-							- Also rename sequence number members from "Connectivity" to "~Propagation"
 						- Move from Ship
 						- Uses mSourceIndices as starting point, instead of just generators
 							- Nuke generator indices
@@ -1220,7 +1216,7 @@ Render:
 							- If ok:
 								- Generate heat (using also adjustment)
 								- Flood graph for VisitSequenceNumber
-					- Rename "AvailableCurrent" as "AvailableLight"
+					+ Rename "AvailableCurrent" as "AvailableLight"
 					- ElectricalElements::UpdateSinks (replaces "Update")
 						- Uses mSinkIndices (vector of indices, not only lamps)
 						- Lamps:

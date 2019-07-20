@@ -1007,6 +1007,15 @@ public:
         mGameEventHandler->OnCombustionSmothered();
     }
 
+    void AddHeat(
+        ElementIndex pointElementIndex,
+        float heat) // J
+    {
+        mTemperatureBuffer[pointElementIndex] +=
+            heat
+            / GetMaterialHeatCapacity(pointElementIndex);
+    }
+
     //
     // Electrical dynamics
     //

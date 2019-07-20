@@ -46,7 +46,7 @@ public:
         , mLightSpreadBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mConnectedElectricalElementsBuffer(mBufferElementCount, mElementCount, {})
         , mElementStateBuffer(mBufferElementCount, mElementCount, ElementState::CableState())
-        , mAvailableCurrentBuffer(mBufferElementCount, mElementCount, 0.0f)
+        , mAvailableLightBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mCurrentConnectivityVisitSequenceNumberBuffer(mBufferElementCount, mElementCount, SequenceNumber())
         //////////////////////////////////
         // Container
@@ -183,12 +183,12 @@ public:
     }
 
     //
-    // Available Current
+    // Available Light
     //
 
-    inline float GetAvailableCurrent(ElementIndex electricalElementIndex) const
+    inline float GetAvailableLight(ElementIndex electricalElementIndex) const
     {
-        return mAvailableCurrentBuffer[electricalElementIndex];
+        return mAvailableLightBuffer[electricalElementIndex];
     }
 
     //
@@ -313,8 +313,8 @@ private:
     // Element state
     Buffer<ElementState> mElementStateBuffer;
 
-    // Available current (to lamps)
-    Buffer<float> mAvailableCurrentBuffer;
+    // Available light (from lamps)
+    Buffer<float> mAvailableLightBuffer;
 
     // Connectivity detection visit sequence number
     Buffer<SequenceNumber> mCurrentConnectivityVisitSequenceNumberBuffer;

@@ -22,7 +22,7 @@ void ElectricalElements::Add(
     mLightColorBuffer.emplace_back(electricalMaterial.LightColor);
     mLightSpreadBuffer.emplace_back(electricalMaterial.LightSpread);
     mConnectedElectricalElementsBuffer.emplace_back();
-    mAvailableCurrentBuffer.emplace_back(0.f);
+    mAvailableLightBuffer.emplace_back(0.f);
 
     switch (electricalMaterial.ElectricalType)
     {
@@ -58,8 +58,8 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
     assert(electricalElementIndex < mElementCount);
     assert(!IsDeleted(electricalElementIndex));
 
-    // Zero out our current
-    mAvailableCurrentBuffer[electricalElementIndex] = 0.0f;
+    // Zero out our light
+    mAvailableLightBuffer[electricalElementIndex] = 0.0f;
 
     // Note: no need to remove self from connected electrical elements, as Ship's PointDestroyHandler,
     // which is the caller of this Destroy(), has already destroyed the point's springs, hence
@@ -99,7 +99,7 @@ void ElectricalElements::Update(
         }
         else
         {
-            assert(0.0f == mAvailableCurrentBuffer[iLamp]);
+            assert(0.0f == mAvailableLightBuffer[iLamp]);
         }
     }
 }
@@ -127,14 +127,14 @@ void ElectricalElements::RunLampStateMachine(
             if (currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[elementLampIndex]
                 || lamp.IsSelfPowered)
             {
-                mAvailableCurrentBuffer[elementLampIndex] = 1.f;
+                mAvailableLightBuffer[elementLampIndex] = 1.f;
                 lamp.State = ElementState::LampState::StateType::LightOn;
                 lamp.NextWetFailureCheckTimePoint = currentWallclockTime + std::chrono::seconds(1);
             }
             else
             {
                 // Transition to OFF
-                mAvailableCurrentBuffer[elementLampIndex] = 0.f;
+                mAvailableLightBuffer[elementLampIndex] = 0.f;
                 lamp.State = ElementState::LampState::StateType::LightOff;
             }
 
@@ -155,7 +155,7 @@ void ElectricalElements::RunLampStateMachine(
                 // Start flicker state machine
                 //
 
-                mAvailableCurrentBuffer[elementLampIndex] = 0.f;
+                mAvailableLightBuffer[elementLampIndex] = 0.f;
 
                 // Transition state, choose whether to A or B
                 lamp.FlickerCounter = 0u;
@@ -178,7 +178,7 @@ void ElectricalElements::RunLampStateMachine(
                 || lamp.IsSelfPowered)
                 && !points.IsWet(GetPointIndex(elementLampIndex), LampWetFailureWaterThreshold))
             {
-                mAvailableCurrentBuffer[elementLampIndex] = 1.f;
+                mAvailableLightBuffer[elementLampIndex] = 1.f;
 
                 // Transition state
                 lamp.State = ElementState::LampState::StateType::LightOn;
@@ -192,7 +192,7 @@ void ElectricalElements::RunLampStateMachine(
                 {
                     // Flicker to on, for a short time
 
-                    mAvailableCurrentBuffer[elementLampIndex] = 1.f;
+                    mAvailableLightBuffer[elementLampIndex] = 1.f;
 
                     mGameEventHandler->OnLightFlicker(
                         DurationShortLongType::Short,
@@ -205,7 +205,7 @@ void ElectricalElements::RunLampStateMachine(
                 {
                     // Flicker to off, for a short time
 
-                    mAvailableCurrentBuffer[elementLampIndex] = 0.f;
+                    mAvailableLightBuffer[elementLampIndex] = 0.f;
 
                     lamp.NextStateTransitionTimePoint = currentWallclockTime + ElementState::LampState::FlickerAInterval;
                 }
@@ -214,7 +214,7 @@ void ElectricalElements::RunLampStateMachine(
                     assert(4 == lamp.FlickerCounter);
 
                     // Transition to off for good
-                    mAvailableCurrentBuffer[elementLampIndex] = 0.f;
+                    mAvailableLightBuffer[elementLampIndex] = 0.f;
                     lamp.State = ElementState::LampState::StateType::LightOff;
                 }
             }
@@ -231,7 +231,7 @@ void ElectricalElements::RunLampStateMachine(
                 || lamp.IsSelfPowered)
                 && !points.IsWet(GetPointIndex(elementLampIndex), LampWetFailureWaterThreshold))
             {
-                mAvailableCurrentBuffer[elementLampIndex] = 1.f;
+                mAvailableLightBuffer[elementLampIndex] = 1.f;
 
                 // Transition state
                 lamp.State = ElementState::LampState::StateType::LightOn;
@@ -245,7 +245,7 @@ void ElectricalElements::RunLampStateMachine(
                 {
                     // Flicker to on, for a short time
 
-                    mAvailableCurrentBuffer[elementLampIndex] = 1.f;
+                    mAvailableLightBuffer[elementLampIndex] = 1.f;
 
                     mGameEventHandler->OnLightFlicker(
                         DurationShortLongType::Short,
@@ -259,7 +259,7 @@ void ElectricalElements::RunLampStateMachine(
                 {
                     // Flicker to off, for a short time
 
-                    mAvailableCurrentBuffer[elementLampIndex] = 0.f;
+                    mAvailableLightBuffer[elementLampIndex] = 0.f;
 
                     lamp.NextStateTransitionTimePoint = currentWallclockTime + ElementState::LampState::FlickerBInterval;
                 }
@@ -267,7 +267,7 @@ void ElectricalElements::RunLampStateMachine(
                 {
                     // Flicker to on, for a longer time
 
-                    mAvailableCurrentBuffer[elementLampIndex] = 1.f;
+                    mAvailableLightBuffer[elementLampIndex] = 1.f;
 
                     mGameEventHandler->OnLightFlicker(
                         DurationShortLongType::Long,
@@ -281,7 +281,7 @@ void ElectricalElements::RunLampStateMachine(
                     assert(6 == lamp.FlickerCounter);
 
                     // Transition to off for good
-                    mAvailableCurrentBuffer[elementLampIndex] = 0.f;
+                    mAvailableLightBuffer[elementLampIndex] = 0.f;
                     lamp.State = ElementState::LampState::StateType::LightOff;
                 }
             }
@@ -291,14 +291,14 @@ void ElectricalElements::RunLampStateMachine(
 
         case ElementState::LampState::StateType::LightOff:
         {
-            assert(mAvailableCurrentBuffer[elementLampIndex] == 0.f);
+            assert(mAvailableLightBuffer[elementLampIndex] == 0.f);
 
             // Check if we should become ON again
             if ((currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[elementLampIndex]
                 || lamp.IsSelfPowered)
                 && !points.IsWet(GetPointIndex(elementLampIndex), LampWetFailureWaterThreshold))
             {
-                mAvailableCurrentBuffer[elementLampIndex] = 1.f;
+                mAvailableLightBuffer[elementLampIndex] = 1.f;
 
                 mGameEventHandler->OnLightFlicker(
                     DurationShortLongType::Short,

@@ -836,7 +836,7 @@ public:
         // Populate vertices
         //
 
-        float const quadHalfSize = (radius * 1.5f) / 2.0f; // Add some slack for transparency
+        float const quadHalfSize = (radius * 3.5f) / 2.0f; // Add some slack to account for transparency
         float const left = centerPosition.x - quadHalfSize;
         float const right = centerPosition.x + quadHalfSize;
         float const top = centerPosition.y + quadHalfSize;

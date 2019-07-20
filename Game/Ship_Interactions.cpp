@@ -812,12 +812,19 @@ bool Ship::ExtinguishFireAt(
 
                 mPoints.SmotherCombustion(pointIndex);
 
+                //
                 // Also lower the point's temperature, or else it'll start burning
                 // right away
-                // TODO: do with heat
-                mPoints.SetTemperature(
+                //
+
+                float const strength = 1.0f - SmoothStep(
+                    0.0f,
+                    squareRadius,
+                    pointSquareDistance);
+
+                mPoints.AddHeat(
                     pointIndex,
-                    std::max(0.0f, mPoints.GetTemperature(pointIndex) - 60.0f));
+                    -400000.0f * strength);
             }
 
             // Remember we've found a point

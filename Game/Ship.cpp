@@ -1363,10 +1363,10 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
         float const effectiveLampLight =
             gameParameters.LuminiscenceAdjustment >= 1.0f
             ?   FastPow(
-                    mElectricalElements.GetAvailableCurrent(lampIndex)
+                    mElectricalElements.GetAvailableLight(lampIndex)
                     * mElectricalElements.GetLuminiscence(lampIndex),
                     1.0f / gameParameters.LuminiscenceAdjustment)
-            :   mElectricalElements.GetAvailableCurrent(lampIndex)
+            :   mElectricalElements.GetAvailableLight(lampIndex)
                 * mElectricalElements.GetLuminiscence(lampIndex)
                 * gameParameters.LuminiscenceAdjustment;
 
