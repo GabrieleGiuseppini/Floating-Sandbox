@@ -326,19 +326,13 @@ Render:
 			+ Do pass on all ocean textures doing exactly what we did before (cornflower blending)
 			+ Redo flat and gradient ocean colors
 
-		= Waves need to be further limited
+		+ Waves need to be further limited
 			+ Make repro: tsunami on manually-created high wave field
 			+ Tsunami and rogue wave: target H is absolute, not based on current H
-			= Ask ShippyMcPenguin to test
-			- If ok:
-				- Update changes.txt
-			- Other older attempts:
-			- Try first with lower sea depth and more amplification
-			- If not: TBD
-
+			+ If ok:
+				+ Update changes.txt
 		+ Merge to master			 
 		+ Send to testers
-
 		+ Move tool: make sling easier
 			+ 1) Merge Move tools
 				+ Base templated class
@@ -437,7 +431,10 @@ Render:
 		- Bump up rot speed for dry stuff, takes 98 minutes now
 			- They all agree: a ship should rot in 30 minutes on the surface, and in 15 minutes when flooded
 
-		- Black cloth, black wood
+		+ Black cloth, black wood
+
+		- Break lights when structure gets "broken"
+			- Whenever a triangle is destroyed, lights attached to any of the three vertices will break
 
 	- 1.13.0
 
@@ -618,7 +615,6 @@ Render:
 			- Underwater depth 
 				- Valid as long as points don't move
 				- Used by: UpdateWaterIntake (for leaking points only), heat dissipation
-	
 	
 	- Retry cache optimization, new strategy:
 		- Points in 2x2 blocks (with any point optional), advancing one column - and then row - at a time
@@ -1199,29 +1195,40 @@ Render:
 							+ See if should be faster (play with settings' speed)
 							+ See if UltraViolent mode makes sense
 						+ Decide whether to target current or factory rest length
-
-			= Electrical: devices generate heat, and lights and generators break at low and high temperatures
+			+ Electrical: devices generate heat, and lights and generators break at low and high temperatures
 				+ New electrical material properties - "HeatGenerated" and operating temperatures
-				= GameParameters: electrical heat generated adjustment
-					= Settings dialog: new "Electrical" section between HeatBlaster and World
-				= Rearc:
-					- ElectricalElements::UpdateSourcesAndPropagation (rename from "Connectivity")
-						- Move from Ship
-						- Uses mSourceIndices as starting point, instead of just generators
-							- Nuke generator indices
-						- For each source:
-							- Check preconditions:
-								- Wetness
-								- Operating temperature
-							- If ok:
-								- Generate heat (using also adjustment)
-								- Flood graph for VisitSequenceNumber
+				+ GameParameters: electrical heat generated adjustment
+					+ Settings dialog: new "Electrical" section between HeatBlaster and World
+				+ Rearc:
+					+ ElectricalElements has buffer with operating temperatures
+					+ ElectricalElements::UpdateSourcesAndPropagation (rename from "Connectivity")
+						+ Move from Ship
+						+ Uses mSourceIndices as starting point, instead of just generators
+							+ Nuke generator indices
+						+ For each source:
+							+ Check preconditions:
+								+ Wetness
+								+ Operating temperature
+							+ If ok:
+								+ Generate heat (using also adjustment)
+								+ Flood graph for VisitSequenceNumber
 					+ Rename "AvailableCurrent" as "AvailableLight"
-					- ElectricalElements::UpdateSinks (replaces "Update")
-						- Uses mSinkIndices (vector of indices, not only lamps)
-						- Lamps:
-							- Consider also operating temperatures in state machine and transition accordingly
-							- Each time AvailableLight is > 0, generate heat (using also adjustment)
+					+ ElectricalElements::UpdateSinks (replaces "Update")
+						+ Uses mSinkIndices (vector of indices, not only lamps)
+						+ Lamps: run lamp state machine
+							+ Consider also operating temperatures in state machine and transition accordingly
+							+ Each time AvailableLight is > 0, generate heat (using also adjustment)
+					+ Make self-combusting ship:
+						+ Make heat-resistant materials (low thermal conductivity and high heat capacity):
+							+ Electrical:
+								+ Generator
+								+ Lamp
+								+ Heating Element
+									+ And catch at script
+						+ Do ship
+						+ Redo template
+							
+			- Melting improvement
 
 			+ Make flames smaller when point is orphaned
 				+ 1: Ship::SpringDestroyHandler: invoke Ship::OnPointOrphaned for each endpoint that becomes orphaned
@@ -1355,26 +1362,24 @@ Render:
 					- Try with third noise component
 
 		- Optimizations:
+			- Do perf analysis for low-hanging fruit first
 			- HeatPropagation:
-				- Do perf analysis (invoking it N times per frame to exaggerate)
+				- Do perf analysis invoking it N times per frame to exaggerate
 				- Try impact of storing outgoing flows @ local array
-				- Try uploading temperature buffer every N steps
+				- If it has impact: try uploading temperature buffer every N steps					
 					- Nuke Points::mIsTemperatureBufferDirty
 					- Ship::Render decides how often to call Points::UploadTemperatureXYZ(...)
 			- Low-freq combustion state machine:
 				- Burning candidates: 
-					- 1: Use priority_queue instead of vector+sort, and avoid pushing when deltaT < Nth
-					- 2: Use sticky priority_queue (leverage temporal coherence of overheated particles)
+					- Do benchmarks with nth_largest
+					- Old:
+						- a) Use priority_queue instead of vector+sort, and avoid pushing when deltaT < Nth
+						- b) Use sticky priority_queue (leverage temporal coherence of overheated particles)
 			- Flame rendering:
 				- Do perf analysis to see impact
 				- Shader:
 					- Replace pow with 3 mult's - see FPS gain
 				- Test perf impact of instanced drawing
-			- Points::UnderwaterDepth buffer: add if it turns out that at each step we need isunderwater at least twice
-				- Re-populated by Ship at first step that checks underwater-ness after mechanical update
-					- i.e. water update?
-				- Used by anything else afterwards, including heat state machine
-
 
 		- Cleanup:
 			+ Test generic textures change (gen tex's + air bubbles at same time) and nuke comment

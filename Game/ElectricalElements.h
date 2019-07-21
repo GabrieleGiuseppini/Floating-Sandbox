@@ -28,6 +28,118 @@ public:
 
     using DestroyHandler = std::function<void(ElementIndex)>;
 
+private:
+
+    struct OperatingTemperatures
+    {
+        float MinOperatingTemperature;
+        float MaxOperatingTemperature;
+
+        OperatingTemperatures(
+            float minOperatingTemperature,
+            float maxOperatingTemperature)
+            : MinOperatingTemperature(minOperatingTemperature)
+            , MaxOperatingTemperature(maxOperatingTemperature)
+        {}
+
+        inline bool IsInRange(float temperature) const
+        {
+            float constexpr OuterWatermarkOffset = 10.0f;
+            return temperature >= MinOperatingTemperature - OuterWatermarkOffset
+                && temperature <= MaxOperatingTemperature + OuterWatermarkOffset;
+        }
+
+        inline bool IsBackInRange(float temperature) const
+        {
+            float constexpr InnerWatermarkOffset = 10.0f;
+            return temperature >= MinOperatingTemperature + InnerWatermarkOffset
+                && temperature <= MaxOperatingTemperature - InnerWatermarkOffset;
+        }
+    };
+
+    union ElementState
+    {
+        struct CableState
+        {
+        };
+
+        struct GeneratorState
+        {
+            bool IsProducingCurrent;
+
+            GeneratorState(bool isProducingCurrent)
+                : IsProducingCurrent(isProducingCurrent)
+            {}
+        };
+
+        struct LampState
+        {
+            bool IsSelfPowered;
+
+            // Probability that light fails within 1 second
+            float WetFailureRateCdf;
+
+            enum class StateType
+            {
+                Initial, // At ship load
+                LightOn,
+                FlickerA,
+                FlickerB,
+                LightOff
+            };
+
+            static constexpr auto FlickerStartInterval = 100ms;
+            static constexpr auto FlickerAInterval = 150ms;
+            static constexpr auto FlickerBInterval = 100ms;
+
+            StateType State;
+            std::uint8_t FlickerCounter;
+            GameWallClock::time_point NextStateTransitionTimePoint;
+            GameWallClock::time_point NextWetFailureCheckTimePoint;
+
+            LampState(
+                bool isSelfPowered,
+                float wetFailureRate)
+                : IsSelfPowered(isSelfPowered)
+                , WetFailureRateCdf(1.0f - exp(-wetFailureRate / 60.0f))
+                , State(StateType::Initial)
+                , FlickerCounter(0u)
+                , NextStateTransitionTimePoint()
+                , NextWetFailureCheckTimePoint()
+            {}
+        };
+
+        struct OtherSinkState
+        {
+            bool IsPowered;
+
+            OtherSinkState(bool isPowered)
+                : IsPowered(isPowered)
+            {}
+        };
+
+        CableState Cable;
+        GeneratorState Generator;
+        LampState Lamp;
+        OtherSinkState OtherSink;
+
+        ElementState(CableState cable)
+            : Cable(cable)
+        {}
+
+        ElementState(GeneratorState generator)
+            : Generator(generator)
+        {}
+
+        ElementState(LampState lamp)
+            : Lamp(lamp)
+        {}
+
+        ElementState(OtherSinkState otherSink)
+            : OtherSink(otherSink)
+        {}
+    };
+
 public:
 
     ElectricalElements(
@@ -41,6 +153,8 @@ public:
         , mIsDeletedBuffer(mBufferElementCount, mElementCount, true)
         , mPointIndexBuffer(mBufferElementCount, mElementCount, NoneElementIndex)
         , mTypeBuffer(mBufferElementCount, mElementCount, ElectricalMaterial::ElectricalElementType::Cable)
+        , mHeatGeneratedBuffer(mBufferElementCount, mElementCount, 0.0f)
+        , mOperatingTemperaturesBuffer(mBufferElementCount, mElementCount, OperatingTemperatures(0.0f, 0.0f))
         , mLuminiscenceBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mLightColorBuffer(mBufferElementCount, mElementCount, vec4f::zero())
         , mLightSpreadBuffer(mBufferElementCount, mElementCount, 0.0f)
@@ -54,20 +168,13 @@ public:
         , mParentWorld(parentWorld)
         , mGameEventHandler(std::move(gameEventDispatcher))
         , mDestroyHandler()
-        , mGenerators()
+        , mSources()
+        , mSinks()
         , mLamps()
     {
     }
 
     ElectricalElements(ElectricalElements && other) = default;
-
-    /*
-     * Returns an iterator for the generator elements only.
-     */
-    inline auto const & Generators() const
-    {
-        return mGenerators;
-    }
 
     /*
      * Returns an iterator for the lamp elements only.
@@ -101,7 +208,12 @@ public:
 
     void Destroy(ElementIndex electricalElementIndex);
 
-    void Update(
+    void UpdateSourcesAndPropagation(
+        SequenceNumber newConnectivityVisitSequenceNumber,
+        Points & points,
+        GameParameters const & gameParameters);
+
+    void UpdateSinks(
         GameWallClock::time_point currentWallclockTime,
         SequenceNumber currentConnectivityVisitSequenceNumber,
         Points & points,
@@ -191,89 +303,6 @@ public:
         return mAvailableLightBuffer[electricalElementIndex];
     }
 
-    //
-    // Connectivity detection visit sequence number
-    //
-
-    inline SequenceNumber GetCurrentConnectivityVisitSequenceNumber(ElementIndex electricalElementIndex) const
-    {
-        return mCurrentConnectivityVisitSequenceNumberBuffer[electricalElementIndex];
-    }
-
-    inline void SetConnectivityVisitSequenceNumber(
-        ElementIndex electricalElementIndex,
-        SequenceNumber connectivityVisitSequenceNumber)
-    {
-        mCurrentConnectivityVisitSequenceNumberBuffer[electricalElementIndex] =
-            connectivityVisitSequenceNumber;
-    }
-
-private:
-
-    union ElementState
-    {
-        struct CableState
-        {
-        };
-
-        struct GeneratorState
-        {
-        };
-
-        struct LampState
-        {
-            bool IsSelfPowered;
-
-            // Probability that light fails within 1 second
-            float WetFailureRateCdf;
-
-            enum class StateType
-            {
-                Initial, // At ship load
-                LightOn,
-                FlickerA,
-                FlickerB,
-                LightOff
-            };
-
-            static constexpr auto FlickerStartInterval = 100ms;
-            static constexpr auto FlickerAInterval = 150ms;
-            static constexpr auto FlickerBInterval = 100ms;
-
-            StateType State;
-            std::uint8_t FlickerCounter;
-            GameWallClock::time_point NextStateTransitionTimePoint;
-            GameWallClock::time_point NextWetFailureCheckTimePoint;
-
-            LampState(
-                bool isSelfPowered,
-                float wetFailureRate)
-                : IsSelfPowered(isSelfPowered)
-                , WetFailureRateCdf(1.0f - exp(-wetFailureRate/60.0f))
-                , State(StateType::Initial)
-                , FlickerCounter(0u)
-                , NextStateTransitionTimePoint()
-                , NextWetFailureCheckTimePoint()
-            {}
-        };
-
-        CableState Cable;
-        GeneratorState Generator;
-        LampState Lamp;
-
-        ElementState(CableState cable)
-            : Cable(cable)
-        {}
-
-        ElementState(GeneratorState generator)
-            : Generator(generator)
-        {}
-
-        ElementState(LampState lamp)
-            : Lamp(lamp)
-        {}
-    };
-
 private:
 
     void RunLampStateMachine(
@@ -301,6 +330,10 @@ private:
 
     // Type
     Buffer<ElectricalMaterial::ElectricalElementType> mTypeBuffer;
+
+    // Properties
+    Buffer<float> mHeatGeneratedBuffer;
+    Buffer<OperatingTemperatures> mOperatingTemperaturesBuffer;
 
     // Light
     Buffer<float> mLuminiscenceBuffer;
@@ -330,7 +363,8 @@ private:
     DestroyHandler mDestroyHandler;
 
     // Indices of specific types in this container - just a shortcut
-    std::vector<ElementIndex> mGenerators;
+    std::vector<ElementIndex> mSources;
+    std::vector<ElementIndex> mSinks;
     std::vector<ElementIndex> mLamps;
 };
 

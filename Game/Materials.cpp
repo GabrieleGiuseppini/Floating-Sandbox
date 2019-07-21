@@ -116,7 +116,6 @@ StructuralMaterial::MaterialCombustionType StructuralMaterial::StrToMaterialComb
 {
     std::string lstr = Utils::ToLower(str);
 
-
     if (lstr == "combustion")
         return MaterialCombustionType::Combustion;
     else if (lstr == "explosion")
@@ -195,6 +194,8 @@ ElectricalMaterial::ElectricalElementType ElectricalMaterial::StrToElectricalEle
         return ElectricalElementType::Cable;
     else if (lstr == "generator")
         return ElectricalElementType::Generator;
+    else if (lstr == "othersink")
+        return ElectricalElementType::OtherSink;
     else
         throw GameException("Unrecognized ElectricalElementType \"" + str + "\"");
 }

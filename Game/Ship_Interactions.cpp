@@ -824,7 +824,7 @@ bool Ship::ExtinguishFireAt(
 
                 mPoints.AddHeat(
                     pointIndex,
-                    -400000.0f * strength);
+                    -750000.0f * strength);
             }
 
             // Remember we've found a point

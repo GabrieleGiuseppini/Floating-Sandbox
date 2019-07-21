@@ -7,6 +7,8 @@
 
 #include <GameCore/GameRandomEngine.h>
 
+#include <queue>
+
 namespace Physics {
 
 constexpr float LampWetFailureWaterThreshold = 0.1f;
@@ -15,9 +17,15 @@ void ElectricalElements::Add(
     ElementIndex pointElementIndex,
     ElectricalMaterial const & electricalMaterial)
 {
+    ElementIndex const elementIndex = static_cast<ElementIndex>(mIsDeletedBuffer.GetCurrentPopulatedSize());
+
     mIsDeletedBuffer.emplace_back(false);
     mPointIndexBuffer.emplace_back(pointElementIndex);
     mTypeBuffer.emplace_back(electricalMaterial.ElectricalType);
+    mHeatGeneratedBuffer.emplace_back(electricalMaterial.HeatGenerated);
+    mOperatingTemperaturesBuffer.emplace_back(
+        electricalMaterial.MinimumOperatingTemperature,
+        electricalMaterial.MaximumOperatingTemperature);
     mLuminiscenceBuffer.emplace_back(electricalMaterial.Luminiscence);
     mLightColorBuffer.emplace_back(electricalMaterial.LightColor);
     mLightSpreadBuffer.emplace_back(electricalMaterial.LightSpread);
@@ -34,18 +42,26 @@ void ElectricalElements::Add(
 
         case ElectricalMaterial::ElectricalElementType::Generator:
         {
-            mGenerators.emplace_back(static_cast<ElementIndex>(mElementStateBuffer.GetCurrentPopulatedSize()));
-            mElementStateBuffer.emplace_back(ElementState::GeneratorState());
+            mSources.emplace_back(elementIndex);
+            mElementStateBuffer.emplace_back(ElementState::GeneratorState(true));
             break;
         }
 
         case ElectricalMaterial::ElectricalElementType::Lamp:
         {
-            mLamps.emplace_back(static_cast<ElementIndex>(mElementStateBuffer.GetCurrentPopulatedSize()));
+            mSinks.emplace_back(elementIndex);
+            mLamps.emplace_back(elementIndex);
             mElementStateBuffer.emplace_back(
                 ElementState::LampState(
                     electricalMaterial.IsSelfPowered,
                     electricalMaterial.WetFailureRate));
+            break;
+        }
+
+        case ElectricalMaterial::ElectricalElementType::OtherSink:
+        {
+            mSinks.emplace_back(elementIndex);
+            mElementStateBuffer.emplace_back(ElementState::OtherSinkState(false));
             break;
         }
     }
@@ -76,30 +92,207 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
     mIsDeletedBuffer[electricalElementIndex] = true;
 }
 
-void ElectricalElements::Update(
+void ElectricalElements::UpdateSourcesAndPropagation(
+    SequenceNumber newConnectivityVisitSequenceNumber,
+    Points & points,
+    GameParameters const & gameParameters)
+{
+    //
+    // Visit electrical graph starting from sources, and propagate connectivity state
+    // by means of visit sequence number
+    //
+
+    std::queue<ElementIndex> electricalElementsToVisit;
+
+    for (auto sourceIndex : mSources)
+    {
+        // Do not visit deleted sources
+        if (!IsDeleted(sourceIndex))
+        {
+            // Make sure we haven't visited it already
+            if (newConnectivityVisitSequenceNumber != mCurrentConnectivityVisitSequenceNumberBuffer[sourceIndex])
+            {
+                // Mark it as visited
+                mCurrentConnectivityVisitSequenceNumberBuffer[sourceIndex] = newConnectivityVisitSequenceNumber;
+
+                //
+                // Check pre-conditions that need to be satisfied before visiting the connectivity graph
+                //
+
+                auto const sourcePointIndex = GetPointIndex(sourceIndex);
+
+                bool preconditionsSatisfied = false;
+
+                switch (GetType(sourceIndex))
+                {
+                    case ElectricalMaterial::ElectricalElementType::Generator:
+                    {
+                        //
+                        // Preconditions to produce current:
+                        // - Not too wet
+                        // - Temperature within operating temperature
+                        //
+
+                        if (mElementStateBuffer[sourceIndex].Generator.IsProducingCurrent)
+                        {
+                            if (points.IsWet(sourcePointIndex, 0.3f)
+                                || !mOperatingTemperaturesBuffer[sourceIndex].IsInRange(points.GetTemperature(sourcePointIndex)))
+                            {
+                                mElementStateBuffer[sourceIndex].Generator.IsProducingCurrent = false;
+                            }
+                        }
+                        else
+                        {
+                            if (!points.IsWet(sourcePointIndex, 0.3f)
+                                && mOperatingTemperaturesBuffer[sourceIndex].IsBackInRange(points.GetTemperature(sourcePointIndex)))
+                            {
+                                mElementStateBuffer[sourceIndex].Generator.IsProducingCurrent = true;
+                            }
+                        }
+
+                        preconditionsSatisfied = mElementStateBuffer[sourceIndex].Generator.IsProducingCurrent;
+
+                        break;
+                    }
+
+                    default:
+                    {
+                        assert(false); // At the moment our only sources are generators
+                        break;
+                    }
+                }
+
+                if (preconditionsSatisfied)
+                {
+                    //
+                    // Flood graph
+                    //
+
+                    // Add source to queue
+                    assert(electricalElementsToVisit.empty());
+                    electricalElementsToVisit.push(sourceIndex);
+
+                    // Visit all electrical elements reachable from this source
+                    while (!electricalElementsToVisit.empty())
+                    {
+                        auto e = electricalElementsToVisit.front();
+                        electricalElementsToVisit.pop();
+
+                        // Already marked as visited
+                        assert(currentVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[e]);
+
+                        for (auto reachableElectricalElementIndex : GetConnectedElectricalElements(e))
+                        {
+                            assert(!IsDeleted(reachableElectricalElementIndex));
+
+                            // Make sure not visited already
+                            if (newConnectivityVisitSequenceNumber != mCurrentConnectivityVisitSequenceNumberBuffer[reachableElectricalElementIndex])
+                            {
+                                // Add to queue
+                                electricalElementsToVisit.push(reachableElectricalElementIndex);
+
+                                // Mark it as visited
+                                mCurrentConnectivityVisitSequenceNumberBuffer[reachableElectricalElementIndex] = newConnectivityVisitSequenceNumber;
+                            }
+                        }
+                    }
+
+
+                    //
+                    // Generate heat
+                    //
+
+                    points.AddHeat(sourcePointIndex,
+                        mHeatGeneratedBuffer[sourceIndex]
+                        * gameParameters.ElectricalElementHeatProducedAdjustment
+                        * GameParameters::SimulationStepTimeDuration<float>);
+                }
+            }
+        }
+    }
+}
+
+void ElectricalElements::UpdateSinks(
     GameWallClock::time_point currentWallclockTime,
     SequenceNumber currentConnectivityVisitSequenceNumber,
     Points & points,
     GameParameters const & gameParameters)
 {
     //
-    // Visit all lamps and run their state machine
+    // Visit all sinks and run their state machine
     //
 
-    for (auto iLamp : Lamps())
+    for (auto sinkIndex : mSinks)
     {
-        if (!mIsDeletedBuffer[iLamp])
+        if (!IsDeleted(sinkIndex))
         {
-            RunLampStateMachine(
-                iLamp,
-                currentWallclockTime,
-                currentConnectivityVisitSequenceNumber,
-                points,
-                gameParameters);
-        }
-        else
-        {
-            assert(0.0f == mAvailableLightBuffer[iLamp]);
+            //
+            // Update state machine
+            //
+
+            bool isOperating = false;
+
+            switch (GetType(sinkIndex))
+            {
+                case ElectricalMaterial::ElectricalElementType::Lamp:
+                {
+                    // Update state machine
+                    RunLampStateMachine(
+                        sinkIndex,
+                        currentWallclockTime,
+                        currentConnectivityVisitSequenceNumber,
+                        points,
+                        gameParameters);
+
+                    isOperating = (GetAvailableLight(sinkIndex) > 0.0f);
+
+                    break;
+                }
+
+                case ElectricalMaterial::ElectricalElementType::OtherSink:
+                {
+                    // Update state machine
+                    if (mElementStateBuffer[sinkIndex].OtherSink.IsPowered)
+                    {
+                        if (currentConnectivityVisitSequenceNumber != mCurrentConnectivityVisitSequenceNumberBuffer[sinkIndex]
+                            || !mOperatingTemperaturesBuffer[sinkIndex].IsInRange(points.GetTemperature(GetPointIndex(sinkIndex))))
+                        {
+                            mElementStateBuffer[sinkIndex].OtherSink.IsPowered = false;
+                        }
+                    }
+                    else
+                    {
+                        if (currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[sinkIndex]
+                            && mOperatingTemperaturesBuffer[sinkIndex].IsBackInRange(points.GetTemperature(GetPointIndex(sinkIndex))))
+                        {
+                            mElementStateBuffer[sinkIndex].OtherSink.IsPowered = true;
+                        }
+                    }
+
+                    isOperating = mElementStateBuffer[sinkIndex].OtherSink.IsPowered;
+
+                    break;
+                }
+
+                default:
+                {
+                    assert(false);
+                    break;
+                }
+            }
+
+
+            //
+            // Generate heat if sink is working
+            //
+
+            if (isOperating)
+            {
+                points.AddHeat(GetPointIndex(sinkIndex),
+                    mHeatGeneratedBuffer[sinkIndex]
+                    * gameParameters.ElectricalElementHeatProducedAdjustment
+                    * GameParameters::SimulationStepTimeDuration<float>);
+            }
         }
     }
 }
@@ -112,7 +305,8 @@ void ElectricalElements::RunLampStateMachine(
     GameParameters const & /*gameParameters*/)
 {
     //
-    // Normal lamp, only on if visited of self-powered, and controlled by flicker state machine
+    // Lamp is only on if visited or self-powered and within operating temperature;
+    // actual lights depends on flicker state machine
     //
 
     auto const pointIndex = GetPointIndex(elementLampIndex);
@@ -123,9 +317,10 @@ void ElectricalElements::RunLampStateMachine(
     {
         case ElementState::LampState::StateType::Initial:
         {
-            // Transition to ON - if we have current or if we're self-powered
-            if (currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[elementLampIndex]
+            // Transition to ON - if we have current or if we're self-powered AND if within operating temperature
+            if ((currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[elementLampIndex]
                 || lamp.IsSelfPowered)
+                && mOperatingTemperaturesBuffer[elementLampIndex].IsInRange(points.GetTemperature(pointIndex)))
             {
                 mAvailableLightBuffer[elementLampIndex] = 1.f;
                 lamp.State = ElementState::LampState::StateType::LightOn;
@@ -143,12 +338,16 @@ void ElectricalElements::RunLampStateMachine(
 
         case ElementState::LampState::StateType::LightOn:
         {
-            // Check whether we still have current, or we're wet and it's time to fail
+            // Check whether we still have current, or we're wet and it's time to fail,
+            // or whether we are outside of the operating temperature range
             if ((   currentConnectivityVisitSequenceNumber != mCurrentConnectivityVisitSequenceNumberBuffer[elementLampIndex]
                     && !lamp.IsSelfPowered
                 ) ||
                 (   points.IsWet(GetPointIndex(elementLampIndex), LampWetFailureWaterThreshold)
                     && CheckWetFailureTime(lamp, currentWallclockTime)
+                ) ||
+                (
+                    !mOperatingTemperaturesBuffer[elementLampIndex].IsInRange(points.GetTemperature(pointIndex))
                 ))
             {
                 //
@@ -176,7 +375,8 @@ void ElectricalElements::RunLampStateMachine(
             // Check if we should become ON again
             if ((currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[elementLampIndex]
                 || lamp.IsSelfPowered)
-                && !points.IsWet(GetPointIndex(elementLampIndex), LampWetFailureWaterThreshold))
+                && !points.IsWet(GetPointIndex(elementLampIndex), LampWetFailureWaterThreshold)
+                && mOperatingTemperaturesBuffer[elementLampIndex].IsBackInRange(points.GetTemperature(pointIndex)))
             {
                 mAvailableLightBuffer[elementLampIndex] = 1.f;
 
@@ -229,7 +429,8 @@ void ElectricalElements::RunLampStateMachine(
             // Check if we should become ON again
             if ((currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[elementLampIndex]
                 || lamp.IsSelfPowered)
-                && !points.IsWet(GetPointIndex(elementLampIndex), LampWetFailureWaterThreshold))
+                && !points.IsWet(GetPointIndex(elementLampIndex), LampWetFailureWaterThreshold)
+                && mOperatingTemperaturesBuffer[elementLampIndex].IsBackInRange(points.GetTemperature(pointIndex)))
             {
                 mAvailableLightBuffer[elementLampIndex] = 1.f;
 
@@ -296,7 +497,8 @@ void ElectricalElements::RunLampStateMachine(
             // Check if we should become ON again
             if ((currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[elementLampIndex]
                 || lamp.IsSelfPowered)
-                && !points.IsWet(GetPointIndex(elementLampIndex), LampWetFailureWaterThreshold))
+                && !points.IsWet(GetPointIndex(elementLampIndex), LampWetFailureWaterThreshold)
+                && mOperatingTemperaturesBuffer[elementLampIndex].IsBackInRange(points.GetTemperature(pointIndex)))
             {
                 mAvailableLightBuffer[elementLampIndex] = 1.f;
 

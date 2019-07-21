@@ -1257,17 +1257,22 @@ void Ship::UpdateElectricalDynamics(
     ++mCurrentElectricalVisitSequenceNumber;
 
     //
-    // Update connectivity first
+    // Update sources and connectivity first
+    //
+    // We do this regardless of dirty elements, as generators might become wet
     //
 
-    UpdateElectricalConnectivity(mCurrentElectricalVisitSequenceNumber); // Invoked regardless of dirty elements, as generators might become wet
+    mElectricalElements.UpdateSourcesAndPropagation(
+        mCurrentElectricalVisitSequenceNumber,
+        mPoints,
+        gameParameters);
 
 
     //
-    // Update elements
+    // Update sinks
     //
 
-    mElectricalElements.Update(
+    mElectricalElements.UpdateSinks(
         currentWallclockTime,
         mCurrentElectricalVisitSequenceNumber,
         mPoints,
@@ -1278,66 +1283,6 @@ void Ship::UpdateElectricalDynamics(
     //
 
     DiffuseLight(gameParameters);
-}
-
-void Ship::UpdateElectricalConnectivity(SequenceNumber currentVisitSequenceNumber)
-{
-    //
-    // Visit electrical graph starting from (non-wet) generators, and propagate
-    // visit sequence number
-    //
-
-    std::queue<ElementIndex> electricalElementsToVisit;
-
-    for (auto generatorIndex : mElectricalElements.Generators())
-    {
-        // Do not visit deleted generators
-        if (!mElectricalElements.IsDeleted(generatorIndex))
-        {
-            // Make sure we haven't visited it already
-            if (currentVisitSequenceNumber != mElectricalElements.GetCurrentConnectivityVisitSequenceNumber(generatorIndex))
-            {
-                // Mark it as visited
-                mElectricalElements.SetConnectivityVisitSequenceNumber(
-                    generatorIndex,
-                    currentVisitSequenceNumber);
-
-                // Check if dry enough
-                if (!mPoints.IsWet(mElectricalElements.GetPointIndex(generatorIndex), 0.3f))
-                {
-                    // Add generator to queue
-                    assert(electricalElementsToVisit.empty());
-                    electricalElementsToVisit.push(generatorIndex);
-
-                    // Visit all electrical elements reachable from this generator
-                    while (!electricalElementsToVisit.empty())
-                    {
-                        auto e = electricalElementsToVisit.front();
-                        electricalElementsToVisit.pop();
-
-                        assert(currentVisitSequenceNumber == mElectricalElements.GetCurrentConnectivityVisitSequenceNumber(e));
-
-                        for (auto reachableElectricalElementIndex : mElectricalElements.GetConnectedElectricalElements(e))
-                        {
-                            assert(!mElectricalElements.IsDeleted(reachableElectricalElementIndex));
-
-                            // Make sure not visited already
-                            if (currentVisitSequenceNumber != mElectricalElements.GetCurrentConnectivityVisitSequenceNumber(reachableElectricalElementIndex))
-                            {
-                                // Add to queue
-                                electricalElementsToVisit.push(reachableElectricalElementIndex);
-
-                                // Mark it as visited
-                                mElectricalElements.SetConnectivityVisitSequenceNumber(
-                                    reachableElectricalElementIndex,
-                                    currentVisitSequenceNumber);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
 }
 
 void Ship::DiffuseLight(GameParameters const & gameParameters)

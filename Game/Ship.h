@@ -236,8 +236,6 @@ public:
         GameWallClock::time_point currentWallclockTime,
         GameParameters const & gameParameters);
 
-    void UpdateElectricalConnectivity(SequenceNumber currentSimulationSequenceNumber);
-
     void DiffuseLight(GameParameters const & gameParameters);
 
     // Heat

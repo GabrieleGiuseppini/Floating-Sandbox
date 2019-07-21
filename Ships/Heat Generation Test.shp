@@ -1,0 +1,9 @@
+{
+	"structure_image":"heat_generation_test_structural.png.dat",
+	"electrical_image":"heat_generation_test_electrical.png.dat",
+	"offset":{"x":0.0, "y":-4.0},
+	"ship_name":"Heat Generation Test",
+	"created_by":"Gabriele Giuseppini",
+	"description":
+		"This ship is sadly doomed to catch fire spontaneously. In fact it sports a <i>Heat-Resistant Generator</i>, which operates up to very high temperatures; a few <i>Heat-Resistant Lamps</i>, which also are able to operate at high temperatures, and a <i>Heating Element</i>, which produces heat as long as it's powered. All these nifty dangerous elements are enclosed in fiberglass enclosures, which minimize heat dissipation and contribute to heat buildup. Turn the heat overlay on, let it run for a while, and see which parts of the ship catch fire first!"
+}

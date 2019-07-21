@@ -806,6 +806,33 @@
         "wind_receptivity": 0.5
     }, 
     {
+        "color_key": "#060606", 
+        "combustion_type": "Combustion", 
+        "ignition_temperature": 393.15, 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.0215, 
+            "nominal_mass": 30
+        }, 
+        "melting_temperature": 1000000.0, 
+        "name": "Cloth Black", 
+        "render_color": "#060606", 
+        "sound_type": "Cloth", 
+        "specific_heat": 1400.0, 
+        "stiffness": 0.012, 
+        "strength": 3.8, 
+        "template": {
+            "column": 6, 
+            "row": "50|Cloth"
+        }, 
+        "thermal_conductivity": 0.04, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.5, 
+        "water_volume_fill": 0.05, 
+        "wind_receptivity": 0.5
+    }, 
+
+    {
         "color_key": "#000000", 
         "combustion_type": "Combustion", 
         "ignition_temperature": 393.15, 
@@ -822,7 +849,7 @@
         "stiffness": 0.8, 
         "strength": 0.8, 
         "template": {
-            "column": 6, 
+            "column": 7, 
             "row": "50|Rope"
         }, 
         "thermal_conductivity": 0.04, 
@@ -2457,6 +2484,60 @@
         "water_retention": 0.05, 
         "water_volume_fill": 1.0
     }, 
+
+
+    {
+        "color_key": "#070707", 
+        "combustion_type": "Combustion", 
+        "ignition_temperature": 453.0, 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.0935, 
+            "nominal_mass": 1000
+        }, 
+        "melting_temperature": 1000000.0, 
+        "name": "Wood Hull Black", 
+        "render_color": "#070707", 
+        "sound_type": "Wood", 
+        "specific_heat": 300.0, 
+        "stiffness": 1.0, 
+        "strength": 0.2, 
+        "template": {
+            "column": 8, 
+            "row": "40|Wood Hull"
+        }, 
+        "thermal_conductivity": 0.1, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 0.0
+    }, 
+    {
+        "color_key": "#090909", 
+        "combustion_type": "Combustion", 
+        "ignition_temperature": 453.0, 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.022935, 
+            "nominal_mass": 800
+        }, 
+        "melting_temperature": 1000000.0, 
+        "name": "Wood Black", 
+        "render_color": "#090909", 
+        "sound_type": "Wood", 
+        "specific_heat": 300.0, 
+        "stiffness": 1.0, 
+        "strength": 0.15, 
+        "template": {
+            "column": 8, 
+            "row": "42|Wood"
+        }, 
+        "thermal_conductivity": 0.1, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "water_volume_fill": 1.0
+    }, 
+
+
     {
         "color_key": "#BA7100", 
         "combustion_type": "Combustion", 
@@ -2801,7 +2882,7 @@
         "stiffness": 2.4, 
         "strength": 0.15, 
         "template": {
-            "column": 8, 
+            "column": 9, 
             "row": "42|Wood"
         }, 
         "thermal_conductivity": 0.1, 
@@ -3003,7 +3084,7 @@
         "stiffness": 0.5, 
         "strength": 2.5, 
         "template": {
-            "column": 9, 
+            "column": 10, 
             "row": "32|Rubber Hull Soft"
         }, 
         "thermal_conductivity": 0.1, 
@@ -3029,7 +3110,7 @@
         "stiffness": 0.5, 
         "strength": 2.5, 
         "template": {
-            "column": 10, 
+            "column": 11, 
             "row": "32|Rubber Hull Soft"
         }, 
         "thermal_conductivity": 0.1, 
@@ -3055,7 +3136,7 @@
         "stiffness": 0.5, 
         "strength": 2.5, 
         "template": {
-            "column": 11, 
+            "column": 12, 
             "row": "32|Rubber Hull Soft"
         }, 
         "thermal_conductivity": 0.1, 
@@ -3081,7 +3162,7 @@
         "stiffness": 0.5, 
         "strength": 2.5, 
         "template": {
-            "column": 9, 
+            "column": 10, 
             "row": "40|Rubber Soft"
         }, 
         "thermal_conductivity": 0.1, 
@@ -3107,7 +3188,7 @@
         "stiffness": 0.5, 
         "strength": 2.5, 
         "template": {
-            "column": 10, 
+            "column": 11, 
             "row": "40|Rubber Soft"
         }, 
         "thermal_conductivity": 0.1, 
@@ -3133,7 +3214,7 @@
         "stiffness": 0.5, 
         "strength": 2.5, 
         "template": {
-            "column": 11, 
+            "column": 12, 
             "row": "40|Rubber Soft"
         }, 
         "thermal_conductivity": 0.1, 
@@ -3159,7 +3240,7 @@
         "stiffness": 1.0, 
         "strength": 2.5, 
         "template": {
-            "column": 9, 
+            "column": 10, 
             "row": "42|Rubber Hull Hard"
         }, 
         "thermal_conductivity": 0.1, 
@@ -3185,7 +3266,7 @@
         "stiffness": 1.0, 
         "strength": 2.5, 
         "template": {
-            "column": 10, 
+            "column": 11, 
             "row": "42|Rubber Hull Hard"
         }, 
         "thermal_conductivity": 0.1, 
@@ -3211,7 +3292,7 @@
         "stiffness": 1.0, 
         "strength": 2.5, 
         "template": {
-            "column": 11, 
+            "column": 12, 
             "row": "42|Rubber Hull Hard"
         }, 
         "thermal_conductivity": 0.1, 
@@ -3237,7 +3318,7 @@
         "stiffness": 1.0, 
         "strength": 2.5, 
         "template": {
-            "column": 8, 
+            "column": 9, 
             "row": "50|Rubber Hard"
         }, 
         "thermal_conductivity": 0.1, 
@@ -3263,7 +3344,7 @@
         "stiffness": 1.0, 
         "strength": 2.5, 
         "template": {
-            "column": 9, 
+            "column": 10, 
             "row": "50|Rubber Hard"
         }, 
         "thermal_conductivity": 0.1, 
@@ -3289,7 +3370,7 @@
         "stiffness": 1.0, 
         "strength": 2.5, 
         "template": {
-            "column": 10, 
+            "column": 11, 
             "row": "50|Rubber Hard"
         }, 
         "thermal_conductivity": 0.1, 
@@ -3315,7 +3396,7 @@
         "stiffness": 1.1, 
         "strength": 0.05, 
         "template": {
-            "column": 8, 
+            "column": 9, 
             "row": "55|Fiberglass Hull"
         }, 
         "thermal_conductivity": 0.04, 
@@ -3341,7 +3422,7 @@
         "stiffness": 1.1, 
         "strength": 0.05, 
         "template": {
-            "column": 9, 
+            "column": 10, 
             "row": "55|Fiberglass Hull"
         }, 
         "thermal_conductivity": 0.04, 
@@ -3367,7 +3448,7 @@
         "stiffness": 1.1, 
         "strength": 0.05, 
         "template": {
-            "column": 10, 
+            "column": 11, 
             "row": "55|Fiberglass Hull"
         }, 
         "thermal_conductivity": 0.04, 
@@ -3393,7 +3474,7 @@
         "stiffness": 1.1, 
         "strength": 0.05, 
         "template": {
-            "column": 8, 
+            "column": 9, 
             "row": "60|Fiberglass"
         }, 
         "thermal_conductivity": 0.04, 
@@ -3419,7 +3500,7 @@
         "stiffness": 1.1, 
         "strength": 0.05, 
         "template": {
-            "column": 9, 
+            "column": 10, 
             "row": "60|Fiberglass"
         }, 
         "thermal_conductivity": 0.04, 
@@ -3445,7 +3526,7 @@
         "stiffness": 1.1, 
         "strength": 0.05, 
         "template": {
-            "column": 10, 
+            "column": 11, 
             "row": "60|Fiberglass"
         }, 
         "thermal_conductivity": 0.04, 
@@ -3471,7 +3552,7 @@
         "stiffness": 1.1, 
         "strength": 0.05, 
         "template": {
-            "column": 6, 
+            "column": 5, 
             "row": "70|LEGO Hull (ABS)"
         }, 
         "thermal_conductivity": 0.25, 
@@ -3497,7 +3578,7 @@
         "stiffness": 1.1, 
         "strength": 0.05, 
         "template": {
-            "column": 7, 
+            "column": 6,
             "row": "70|LEGO Hull (ABS)"
         }, 
         "thermal_conductivity": 0.25, 
@@ -3523,7 +3604,7 @@
         "stiffness": 1.1, 
         "strength": 0.05, 
         "template": {
-            "column": 8, 
+            "column": 7, 
             "row": "70|LEGO Hull (ABS)"
         }, 
         "thermal_conductivity": 0.25, 
@@ -3549,7 +3630,7 @@
         "stiffness": 1.1, 
         "strength": 0.05, 
         "template": {
-            "column": 9, 
+            "column": 8, 
             "row": "70|LEGO Hull (ABS)"
         }, 
         "thermal_conductivity": 0.25, 
@@ -3575,7 +3656,7 @@
         "stiffness": 1.1, 
         "strength": 0.05, 
         "template": {
-            "column": 10, 
+            "column": 9, 
             "row": "70|LEGO Hull (ABS)"
         }, 
         "thermal_conductivity": 0.25, 
@@ -3601,7 +3682,7 @@
         "stiffness": 1.1, 
         "strength": 0.05, 
         "template": {
-            "column": 11, 
+            "column": 10, 
             "row": "70|LEGO Hull (ABS)"
         }, 
         "thermal_conductivity": 0.25, 
@@ -3627,7 +3708,7 @@
         "stiffness": 1.1, 
         "strength": 0.05, 
         "template": {
-            "column": 10, 
+            "column": 9, 
             "row": "80|LEGO (ABS)"
         }, 
         "thermal_conductivity": 0.25, 
@@ -3653,7 +3734,7 @@
         "stiffness": 1.1, 
         "strength": 0.05, 
         "template": {
-            "column": 11, 
+            "column": 10, 
             "row": "80|LEGO (ABS)"
         }, 
         "thermal_conductivity": 0.25, 
@@ -3679,7 +3760,7 @@
         "stiffness": 1.1, 
         "strength": 0.05, 
         "template": {
-            "column": 12, 
+            "column": 11, 
             "row": "80|LEGO (ABS)"
         }, 
         "thermal_conductivity": 0.25, 
@@ -3705,7 +3786,7 @@
         "stiffness": 1.1, 
         "strength": 0.05, 
         "template": {
-            "column": 13, 
+            "column": 12, 
             "row": "80|LEGO (ABS)"
         }, 
         "thermal_conductivity": 0.25, 
@@ -3731,7 +3812,7 @@
         "stiffness": 1.1, 
         "strength": 0.05, 
         "template": {
-            "column": 14, 
+            "column": 13, 
             "row": "80|LEGO (ABS)"
         }, 
         "thermal_conductivity": 0.25, 
@@ -3757,7 +3838,7 @@
         "stiffness": 1.1, 
         "strength": 0.05, 
         "template": {
-            "column": 15, 
+            "column": 14, 
             "row": "80|LEGO (ABS)"
         }, 
         "thermal_conductivity": 0.25, 

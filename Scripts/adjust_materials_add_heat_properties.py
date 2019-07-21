@@ -92,7 +92,11 @@ def adjust_electrical_material(material):
 
     name = material["name"]
 
-    if "Lamp Watertight" in name:
+    if "Heat-Resistant Lamp" in name:
+        material["heat_generated"] = 2400.0
+        material["minimum_operating_temperature"] = 173.15
+        material["maximum_operating_temperature"] = 698.15
+    elif "Lamp Watertight" in name:
         material["heat_generated"] = 600.0
         material["minimum_operating_temperature"] = 233.15
         material["maximum_operating_temperature"] = 398.15
@@ -100,6 +104,10 @@ def adjust_electrical_material(material):
         material["heat_generated"] = 200.0
         material["minimum_operating_temperature"] = 233.15
         material["maximum_operating_temperature"] = 398.15
+    elif "Heat-Resistant Generator" in name:
+        material["heat_generated"] = 2400.0
+        material["minimum_operating_temperature"] = 173.15
+        material["maximum_operating_temperature"] = 698.15
     elif "Generator" in name:
         material["heat_generated"] = 900.0
         material["minimum_operating_temperature"] = 233.15
@@ -108,6 +116,10 @@ def adjust_electrical_material(material):
         material["heat_generated"] = 0.0
         material["minimum_operating_temperature"] = 233.15
         material["maximum_operating_temperature"] = 398.15
+    elif "Heating Element" in name:
+        material["heat_generated"] = 50000.0
+        material["minimum_operating_temperature"] = 173.15
+        material["maximum_operating_temperature"] = 1783.15
     else:
         raise Exception("No rules for material '" + name + "'")
 

@@ -216,6 +216,47 @@
         }
     }, 
     {
+        "color_key": "#FC1010", 
+        "electrical_type": "Generator", 
+        "heat_generated": 2400.0, 
+        "maximum_operating_temperature": 698.15, 
+        "minimum_operating_temperature": 173.15, 
+        "name": "Heat-Resistant Generator", 
+        "template": {
+            "column": "1|HR Generator", 
+            "row": "5|Generators"
+        }
+    }, 
+    {
+        "color_key": "#FC2020", 
+        "electrical_type": "OtherSink", 
+        "heat_generated": 50000.0, 
+        "maximum_operating_temperature": 1783.15, 
+        "minimum_operating_temperature": 173.15, 
+        "name": "Heating Element", 
+        "template": {
+            "column": "0|Heating Element", 
+            "row": "7|Heating"
+        }
+    }, 
+    {
+        "color_key": "#FFE018", 
+        "electrical_type": "Lamp", 
+        "heat_generated": 2400.0, 
+        "is_self_powered": false, 
+        "light_color": "#FFFF40", 
+        "light_spread": 1.0, 
+        "luminiscence": 1.0, 
+        "maximum_operating_temperature": 698.15, 
+        "minimum_operating_temperature": 173.15, 
+        "name": "Heat-Resistant Lamp Watertight", 
+        "template": {
+            "column": "6|HR Lamp WT", 
+            "row": "0|Lamps"
+        }, 
+        "wet_failure_rate": 0.0
+    }, 
+    {
         "color_key": "#4C0000", 
         "description": "This material is here exclusively to ease development of one-layer ships; the proper way to make hull electrical structures is to provide electrical properties in the electrical layer corresponding to hull points in the structural layer.", 
         "electrical_type": "Cable", 

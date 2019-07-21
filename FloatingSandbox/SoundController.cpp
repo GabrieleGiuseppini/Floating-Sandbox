@@ -230,7 +230,7 @@ SoundController::SoundController(
         {
             mFireExtinguisherSound.Initialize(
                 std::move(soundBuffer),
-                100.0f,
+                80.0f,
                 mMasterToolsVolume,
                 mMasterToolsMuted);
         }

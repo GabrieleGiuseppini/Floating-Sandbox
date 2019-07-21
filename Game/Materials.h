@@ -160,7 +160,8 @@ struct ElectricalMaterial
     {
         Lamp,
         Cable,
-        Generator
+        Generator,
+        OtherSink
     };
 
     ElectricalElementType ElectricalType;
