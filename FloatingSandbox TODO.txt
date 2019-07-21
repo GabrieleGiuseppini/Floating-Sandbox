@@ -1227,9 +1227,6 @@ Render:
 									+ And catch at script
 						+ Do ship
 						+ Redo template
-							
-			- Melting improvement
-
 			+ Make flames smaller when point is orphaned
 				+ 1: Ship::SpringDestroyHandler: invoke Ship::OnPointOrphaned for each endpoint that becomes orphaned
 				+ 2: Ship::OnPointOrphaned: invoke Points::OnPointOrphaned
@@ -1250,7 +1247,6 @@ Render:
 									+ Also at settings dialog, under Interactions
 					+ Check if default value is good
 					+ Check maximum again
-
 			+ Flamethrower:
 				+ Physics:
 					+ Ship::Interaction:
@@ -1276,7 +1272,6 @@ Render:
 				+ Option to turn off flame rendering
 					+ @ GameController
 				+ Help
-
 			+ GameParameters:
 				+ ThermalConductivityAdjustment 
 				+ IgnitionTemperatureAdjustment (in SettingsDialog: "Burning Point Adjust")
@@ -1295,7 +1290,6 @@ Render:
 				+ Make air and water temperature adjustable
 				+ See if should lower default MaxBurningParticles (per impact of all burning)
 				+ See if should allow higher heat blaster
-
 			+ Flame render:
 				+ Make better transition for bottom
 				+ Skew wind speed with smoothstep
@@ -1333,7 +1327,6 @@ Render:
 					+ If keep: do also at:
 						+ Flames2
 						+ HeatBlaster flame
-
 			+ Sound:
 				+ Media:
 					+ Burning loop

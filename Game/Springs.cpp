@@ -47,8 +47,8 @@ void Springs::Add(
     mFactoryRestLengthBuffer.emplace_back((points.GetPosition(pointAIndex) - points.GetPosition(pointBIndex)).length());
     mRestLengthBuffer.emplace_back((points.GetPosition(pointAIndex) - points.GetPosition(pointBIndex)).length());
 
-    // Coefficients recalculated later
-    mCoefficientsBuffer.emplace_back(0.0f, 0.0f);
+    // Coefficients recalculated later, but stiffness grows slowly and shrinks fast, hence we want to start high
+    mCoefficientsBuffer.emplace_back(std::numeric_limits<float>::max(), 0.0f);
 
     mMaterialCharacteristicsBuffer.emplace_back(characteristics);
 
@@ -436,7 +436,8 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
     float const meltMultiplier =
         1.0f - (1.0f - MinStiffnessFraction) * meltAmount;
 
-    mCoefficientsBuffer[springIndex].StiffnessCoefficient =
+    // Our desired stiffness coefficient
+    float const desiredStiffnessCoefficient =
         GameParameters::SpringReductionFraction
         * GetMaterialStiffness(springIndex)
         * stiffnessAdjustment
@@ -444,11 +445,26 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
         / (dt * dt)
         * meltMultiplier;
 
+    // If the coefficient is growing (spring is becoming more stiff), then
+    // approach the desired stiffness coefficient slowly,
+    // or else we have too much discontinuity and might explode
+    if (desiredStiffnessCoefficient > mCoefficientsBuffer[springIndex].StiffnessCoefficient)
+    {
+        mCoefficientsBuffer[springIndex].StiffnessCoefficient +=
+            0.05f // 0.05: ~43 steps to 1/10th off target
+            * (desiredStiffnessCoefficient - mCoefficientsBuffer[springIndex].StiffnessCoefficient);
+    }
+    else
+    {
+        mCoefficientsBuffer[springIndex].StiffnessCoefficient = desiredStiffnessCoefficient;
+    }
+
+
 
     //
     // Damping coefficient
     //
-    // Drag magnitude on the relative velocity component along the spring.
+    // Magnitude of the drag force on the relative velocity component along the spring.
     //
 
     mCoefficientsBuffer[springIndex].DampingCoefficient =
