@@ -1368,7 +1368,7 @@ Render:
 			- See if heating element should heat less
 			- Max air and water temp to 5K
 			- Flame render:
-				- Move more with wind
+				+ Move more with wind
 				- Transparency on border - slightly more transparent at discard threshold
 				- Noise sampling:
 					- Try different noise resolution
