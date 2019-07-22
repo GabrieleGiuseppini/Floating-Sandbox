@@ -50,7 +50,8 @@ enum class ToolType
     WaveMaker,
     TerrainAdjust,
     Scrub,
-    RepairStructure
+    RepairStructure,
+    ThanosSnap
 };
 
 struct InputState
@@ -2103,4 +2104,44 @@ private:
     std::unique_ptr<wxCursor> const mUpCursor;
     std::array<std::unique_ptr<wxCursor>, 5> const mDownCursors;
 
+};
+
+class ThanosSnapTool final : public OneShotTool
+{
+public:
+
+    ThanosSnapTool(
+        wxFrame * parentFrame,
+        std::shared_ptr<IGameController> gameController,
+        std::shared_ptr<SoundController> soundController,
+        ResourceLoader & resourceLoader);
+
+public:
+
+    virtual void Initialize(InputState const & inputState) override
+    {
+        // Reset cursor
+        mCurrentCursor = inputState.IsLeftMouseDown ? mDownCursor.get() : mUpCursor.get();
+    }
+
+    virtual void OnLeftMouseDown(InputState const & inputState) override
+    {
+        // Do snap
+        mGameController->ApplyThanosSnapAt(inputState.MousePosition);
+        mSoundController->PlayThanosSnapSound();
+
+        mCurrentCursor = mDownCursor.get();
+        ShowCurrentCursor();
+    }
+
+    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override
+    {
+        mCurrentCursor = mUpCursor.get();
+        ShowCurrentCursor();
+    }
+
+private:
+
+    std::unique_ptr<wxCursor> const mUpCursor;
+    std::unique_ptr<wxCursor> const mDownCursor;
 };

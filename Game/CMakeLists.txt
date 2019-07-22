@@ -5,6 +5,7 @@
 
 set  (GAME_SOURCES
 	GameController.cpp
+	GameController_StateMachines.cpp
 	GameController.h
 	GameEventDispatcher.h
 	GameEventHandlers.h

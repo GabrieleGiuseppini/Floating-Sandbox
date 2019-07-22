@@ -3,6 +3,7 @@ set (BENCHMARK_SOURCES
 	GameMath.cpp
 	Logarithm.cpp
 	PrecalculatedFunction.cpp
+	TopN.cpp
 	UpdateSpringForces.cpp
 	Utils.cpp
 	Utils.h

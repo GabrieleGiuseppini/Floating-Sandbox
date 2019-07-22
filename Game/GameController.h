@@ -30,6 +30,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <vector>
 
 /*
  * This class is responsible for managing the game, from its lifetime to the user
@@ -153,6 +154,7 @@ public:
     void AdjustOceanSurfaceTo(std::optional<vec2f> const & screenCoordinates) override;
     bool AdjustOceanFloorTo(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates) override;
     bool ScrubThrough(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates) override;
+    void ApplyThanosSnapAt(vec2f const & screenCoordinates) override;
     std::optional<ElementId> GetNearestPointAt(vec2f const & screenCoordinates) const;
     void QueryNearestPointAt(vec2f const & screenCoordinates) const;
 
@@ -542,6 +544,27 @@ private:
 private:
 
     //
+    // State machines
+    //
+
+    class TsunamiNotificationStateMachine;
+    struct TsunamiNotificationStateMachineDeleter { void operator()(TsunamiNotificationStateMachine *) const; };
+    std::unique_ptr<TsunamiNotificationStateMachine, TsunamiNotificationStateMachineDeleter> mTsunamiNotificationStateMachine;
+
+    void StartTsunamiNotificationStateMachine(float x);
+
+    class ThanosSnapStateMachine;
+    struct ThanosSnapStateMachineDeleter { void operator()(ThanosSnapStateMachine *) const; };
+    std::vector<std::unique_ptr<ThanosSnapStateMachine, ThanosSnapStateMachineDeleter >> mThanosSnapStateMachines;
+
+    void StartThanosSnapStateMachine(float x);
+
+    void ResetStateMachines();
+    void UpdateStateMachines();
+
+private:
+
+    //
     // Our current state
     //
 
@@ -556,40 +579,6 @@ private:
     // When set, will be uploaded to the RenderContext to display the fire extinguisher spray
     std::optional<std::tuple<vec2f, float>> mFireExtinguisherSprayToRender;
 
-    class TsunamiNotificationStateMachine
-    {
-    public:
-
-        TsunamiNotificationStateMachine(std::shared_ptr<Render::RenderContext> renderContext);
-
-        ~TsunamiNotificationStateMachine();
-
-        /*
-         * When returns false, the state machine is over.
-         */
-        bool Update();
-
-    private:
-
-        std::shared_ptr<Render::RenderContext> mRenderContext;
-        RenderedTextHandle mTextHandle;
-
-        enum class StateType
-        {
-            RumblingFadeIn,
-            Rumbling1,
-            WarningFadeIn,
-            Warning,
-            WarningFadeOut,
-            Rumbling2,
-            RumblingFadeOut
-        };
-
-        StateType mCurrentState;
-        float mCurrentStateStartTime;
-    };
-
-    std::optional<TsunamiNotificationStateMachine> mTsunamiNotificationStateMachine;
 
     //
     // The parameters that we own

@@ -67,6 +67,7 @@ enum class SoundType
     TerrainAdjust,
     Scrub,
     RepairStructure,
+    ThanosSnap,
     WaveMaker
 };
 

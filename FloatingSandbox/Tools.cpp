@@ -582,7 +582,7 @@ ScrubTool::ScrubTool(
 }
 
 ////////////////////////////////////////////////////////////////////////
-// Scrub
+// Repair Structure
 ////////////////////////////////////////////////////////////////////////
 
 RepairStructureTool::RepairStructureTool(
@@ -606,5 +606,24 @@ RepairStructureTool::RepairStructureTool(
         MakeCursor("repair_structure_cursor_down_2", 8, 8, resourceLoader),
         MakeCursor("repair_structure_cursor_down_3", 8, 8, resourceLoader),
         MakeCursor("repair_structure_cursor_down_4", 8, 8, resourceLoader) }
+{
+}
+
+////////////////////////////////////////////////////////////////////////
+// ThanosSnap
+////////////////////////////////////////////////////////////////////////
+
+ThanosSnapTool::ThanosSnapTool(
+    wxFrame * parentFrame,
+    std::shared_ptr<IGameController> gameController,
+    std::shared_ptr<SoundController> soundController,
+    ResourceLoader & resourceLoader)
+    : OneShotTool(
+        ToolType::ThanosSnap,
+        parentFrame,
+        std::move(gameController),
+        std::move(soundController))
+    , mUpCursor(MakeCursor("thanos_snap_cursor_up", 15, 15, resourceLoader))
+    , mDownCursor(MakeCursor("thanos_snap_cursor_down", 15, 15, resourceLoader))
 {
 }

@@ -160,6 +160,13 @@ ToolController::ToolController(
             soundController,
             resourceLoader));
 
+    mAllTools.emplace_back(
+        std::make_unique<ThanosSnapTool>(
+            parentFrame,
+            gameController,
+            soundController,
+            resourceLoader));
+
     // Prepare own cursor(s)
     mPanCursor = MakeCursor("pan_cursor", 15, 15, resourceLoader);
 

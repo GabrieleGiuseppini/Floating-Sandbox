@@ -66,6 +66,7 @@ const long ID_TIMERBOMB_MENUITEM = wxNewId();
 const long ID_RCBOMB_MENUITEM = wxNewId();
 const long ID_IMPACTBOMB_MENUITEM = wxNewId();
 const long ID_ANTIMATTERBOMB_MENUITEM = wxNewId();
+const long ID_THANOSSNAP_MENUITEM = wxNewId();
 const long ID_WAVEMAKER_MENUITEM = wxNewId();
 const long ID_ADJUSTTERRAIN_MENUITEM = wxNewId();
 const long ID_REPAIRSTRUCTURE_MENUITEM = wxNewId();
@@ -340,6 +341,10 @@ MainFrame::MainFrame(wxApp * mainApp)
     wxMenuItem * antiMatterBombMenuItem = new wxMenuItem(mToolsMenu, ID_ANTIMATTERBOMB_MENUITEM, _("Toggle Anti-Matter Bomb\tA"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(antiMatterBombMenuItem);
     Connect(ID_ANTIMATTERBOMB_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAntiMatterBombMenuItemSelected);
+
+    wxMenuItem * thanosSnapMenuItem = new wxMenuItem(mToolsMenu, ID_THANOSSNAP_MENUITEM, _("Thanos' Snap\tQ"), wxEmptyString, wxITEM_RADIO);
+    mToolsMenu->Append(thanosSnapMenuItem);
+    Connect(ID_THANOSSNAP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnThanosSnapMenuItemSelected);
 
     wxMenuItem * waveMakerMenuItem = new wxMenuItem(mToolsMenu, ID_WAVEMAKER_MENUITEM, _("WaveMaker\tV"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(waveMakerMenuItem);
@@ -1369,6 +1374,12 @@ void MainFrame::OnAntiMatterBombMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
     mToolController->SetTool(ToolType::AntiMatterBomb);
+}
+
+void MainFrame::OnThanosSnapMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mToolController);
+    mToolController->SetTool(ToolType::ThanosSnap);
 }
 
 void MainFrame::OnTriggerTsunamiMenuItemSelected(wxCommandEvent & /*event*/)

@@ -414,11 +414,11 @@ Render:
 		- Check bugs:
 			- "Two happy fox bois"'s crash with opengl
 
-		- Thanos' Snap
-			- Tool managed by GameController
-				- Dedicated state machine (mThanosSnapStateMachine) stored in queue
+		= Thanos' Snap
+			= Tool managed by GameController
+				= Dedicated state machine (mThanosSnapStateMachine) stored in queue
 					- Additive, up to N (8), circular
-					- Move state machines to separate cpp: GameController_StateMachines.cpp
+					+ Move state machines to separate cpp: GameController_StateMachines.cpp
 					- At beginning (first insert): 
 						- Fire "StartSilence" event
 							- SoundController::OnSilenceStarted: pause sinking music
@@ -440,7 +440,7 @@ Render:
 						- Call Wind::SetSilence(0.0)
 
 			= Cursors (up and down)
-			= Snap sound
+			+ Snap sound
 
 		= Heat and combustion (*)
 			

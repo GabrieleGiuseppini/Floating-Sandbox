@@ -89,6 +89,8 @@ SoundType StrToSoundType(std::string const & str)
         return SoundType::Scrub;
     else if (Utils::CaseInsensitiveEquals(str, "RepairStructure"))
         return SoundType::RepairStructure;
+    else if (Utils::CaseInsensitiveEquals(str, "ThanosSnap"))
+        return SoundType::ThanosSnap;
     else if (Utils::CaseInsensitiveEquals(str, "WaveMaker"))
         return SoundType::WaveMaker;
     else

@@ -88,6 +88,7 @@ struct IGameController
     virtual void AdjustOceanSurfaceTo(std::optional<vec2f> const & screenCoordinates) = 0;
     virtual bool AdjustOceanFloorTo(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates) = 0;
     virtual bool ScrubThrough(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates) = 0;
+    virtual void ApplyThanosSnapAt(vec2f const & screenCoordinates) = 0;
     virtual std::optional<ElementId> GetNearestPointAt(vec2f const & screenCoordinates) const = 0;
     virtual void QueryNearestPointAt(vec2f const & screenCoordinates) const = 0;
 

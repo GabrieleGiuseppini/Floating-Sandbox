@@ -415,6 +415,7 @@ SoundController::SoundController(
                 || soundType == SoundType::AntiMatterBombImplosion
                 || soundType == SoundType::Snapshot
                 || soundType == SoundType::TerrainAdjust
+                || soundType == SoundType::ThanosSnap
                 || soundType == SoundType::Scrub)
         {
             //
@@ -905,6 +906,14 @@ void SoundController::PlayRepairStructureSound()
 void SoundController::StopRepairStructureSound()
 {
     mRepairStructureSound.Stop();
+}
+
+void SoundController::PlayThanosSnapSound()
+{
+    PlayOneShotMultipleChoiceSound(
+        SoundType::ThanosSnap,
+        100.0f,
+        true);
 }
 
 void SoundController::PlayWaveMakerSound()

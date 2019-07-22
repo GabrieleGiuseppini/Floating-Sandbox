@@ -156,6 +156,8 @@ public:
     void PlayRepairStructureSound();
     void StopRepairStructureSound();
 
+    void PlayThanosSnapSound();
+
     void PlayWaveMakerSound();
     void StopWaveMakerSound();
 
@@ -392,6 +394,7 @@ private:
             case SoundType::Stress:
                 return 30;
             case SoundType::TerrainAdjust:
+            case SoundType::ThanosSnap:
             case SoundType::Scrub:
             case SoundType::Snapshot:
                 return 2;
