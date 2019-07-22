@@ -131,6 +131,14 @@ inline float Clamp(
     return std::min(std::max(lLimit, x), rLimit);
 }
 
+inline float Mix(
+    float val1,
+    float val2,
+    float x)
+{
+    return (1.0f - x) * val1 + x * val2;
+}
+
 inline float SmoothStep(
     float lEdge,
     float rEdge,

@@ -300,7 +300,6 @@ Render:
 				+ texture compression on edge			
 				+ add non-linear (same non-linearity) darkening
 		+ Optimize GameOpenGL::UploadMipmappedTexture: alloc write buffer once and swap pointers
-
 		+ Fix bug at bump-map interpolation at ocean floor: need to calc fractional part
 		+ Settings dialog: 
 			+ Merge Mechanics and Fluids and World into "Generic"
@@ -398,39 +397,53 @@ Render:
 				+ HotSpot
 		+ Add slider for repair tool radius
 		+ Add slider for flamethrower tool radius
+		+ Rotting:
+			+ Fix bug: "Idk if this is a bug or not but the tiny particles that appear after something is destroyed start flickering like 
+			  christmas lights with rot at 1000 when uderwater"
+			     + Yes: W=112.826 T=288.003 Decay=3.93467e+06
+			+ Bump up rot speed for dry stuff, takes 98 minutes now
+				+ They all agree: a ship should rot in 30 minutes on the surface, and in 15 minutes when flooded
+			+ Tests:
+				+ Surface rots zero, submerged a bit more, flooded more, leaking a lot
+				+ Christmas light bug: with acceler8r at 1000.0 when uderwater
+				+ Stainless steel does not rot when acceler8r at 1000.0
+				+ 15mins (@50fps) for flooded when acceler8r at 1.0
+				+ 30mins (@50fps) for exposed when acceler8r at 1.0
+				+ Doesn't rot when acceler8r at 0.0
 
 		- Check bugs:
-			- 1: Idk if this is a bug or not but the tiny particles that appear after something is destroyed start flickering like christmas lights with rot at 1000 when uderwater
-			- 2: Two happy fox bois crash with opengl
+			- "Two happy fox bois"'s crash with opengl
 
 		- Thanos' Snap
 			- Tool managed by GameController
-				- Dedicated state machine (mThanosSnapStateMachine) - OR NOT, see below
-					- Additive, up to N (8)
-					- At beginning: fire "Silence" event
-						- SoundController::OnSilence: fade out sinking music
-					- At beginning and end: call Wind::SetSilence(float between 0.0 and 1.0)
-						- Wind stores it, and uses it as any other param to recalc everything
+				- Dedicated state machine (mThanosSnapStateMachine) stored in queue
+					- Additive, up to N (8), circular
+					- Move state machines to separate cpp: GameController_StateMachines.cpp
+					- At beginning (first insert): 
+						- Fire "StartSilence" event
+							- SoundController::OnSilenceStarted: pause sinking music
+						- Call Wind::SetSilence(float between 0.0 and 1.0)
+							- Wind stores it, and uses it at Update() as any other param to recalc everything
+							- Wind state machine progresses, but final result is multiplied by silence
+								- And rely on moving avg to smooth the step
 					- Throughout: call World::ApplyThanosSnap(centerPos, innerRadius, outerRadius)
 						- Called for slices, advancing from mouse position at moment of application
 						- Ship::ApplyThanosSnap(centerPos, innerRadius, outerRadius)
-							- Deletes springs (and triangles) (w/no noise)
+							- Deletes springs (and consequently triangles) (w/no noise)
+							- Imparts velocity on particles
+								- TODO: super-duper vortices?
 						- OceanSurface::ApplyThanosSnap(centerPos, innerRadius, outerRadius)
 							- Flattens surface that falls in crown to ~-1.0
-				- Might be good to consolidate all GameController state machines in an IStateMachine
-					- IStateMachine is data only, execution done by GC in switch(type), in separate cpp file
+					- At end (last removal):
+						- Fire "LiftSilence" event
+							- SoundController: resume (if was playing) sinking music
+						- Call Wind::SetSilence(0.0)
 
 			= Cursors (up and down)
 			= Snap sound
 
 		= Heat and combustion (*)
 			
-		- Smoke
-			- See if may use shader with radial noise
-
-		- Bump up rot speed for dry stuff, takes 98 minutes now
-			- They all agree: a ship should rot in 30 minutes on the surface, and in 15 minutes when flooded
-
 		+ Black cloth, black wood
 
 		- Break lights when structure gets "broken"
@@ -445,6 +458,11 @@ Render:
 		- Attempt to get rid of boundary checks at OceanFloor and OceanSurface sampling
 
 		- Settings Manager (*)
+
+
+		- Smoke
+			- See if may use shader with radial noise
+
 
 		- Instanced drawing for lights (*)
 
@@ -1043,7 +1061,7 @@ Render:
 						+ Heap updated by Points's combustion state machine update (heap passed by Ship) when points start
 						  or stop burning					
 						+ Heap used by Points's Upload() (heap passed by Ship)
-		= Impl:
+		+ Impl:
 			+ Properties and Materials:
 				+ New StructuralMaterial properties:
 						+ Ignition temperature (T)
@@ -1347,7 +1365,10 @@ Render:
 			+ When state is Burning, also decay non-burning neighbors on top of decaying self (so to smear burnt color more around)
 				+ At low-frequency update
 			+ Max flame development depends on number of springs connected to point (so ropes have smaller flames)
+			- See if heating element should heat less
+			- Max air and water temp to 5K
 			- Flame render:
+				- Move more with wind
 				- Transparency on border - slightly more transparent at discard threshold
 				- Noise sampling:
 					- Try different noise resolution
@@ -1356,18 +1377,23 @@ Render:
 
 		- Optimizations:
 			- Do perf analysis for low-hanging fruit first
+			- Low-freq combustion state machine:
+				- Burning candidates: 
+					- Do benchmarks: (10 out of 20/100/500)
+						- Vector_AddAndSort
+						- PriorityQueue_Add
+						- Vector_AddAndNthElement
+						- ? Sticky_PriorityQueue
+							- Loop: makeup index w/ (i%200)
+					- Old:
+						- a) Use priority_queue instead of vector+sort, and avoid pushing when deltaT < Nth
+						- b) Use sticky priority_queue (leverage temporal coherence of overheated particles)
 			- HeatPropagation:
 				- Do perf analysis invoking it N times per frame to exaggerate
 				- Try impact of storing outgoing flows @ local array
 				- If it has impact: try uploading temperature buffer every N steps					
 					- Nuke Points::mIsTemperatureBufferDirty
 					- Ship::Render decides how often to call Points::UploadTemperatureXYZ(...)
-			- Low-freq combustion state machine:
-				- Burning candidates: 
-					- Do benchmarks with nth_largest
-					- Old:
-						- a) Use priority_queue instead of vector+sort, and avoid pushing when deltaT < Nth
-						- b) Use sticky priority_queue (leverage temporal coherence of overheated particles)
 			- Flame rendering:
 				- Do perf analysis to see impact
 				- Shader:
@@ -1377,11 +1403,6 @@ Render:
 		- Cleanup:
 			+ Test generic textures change (gen tex's + air bubbles at same time) and nuke comment
 			+ Test cross of light change
-
-		- Explosive combustion:
-			- Rendering: ?
-			- New materials:
-				- "gunpowder" and "diesel"
 			
 		+ Flamethrower tool:
 			+ RenderContext exposes UploadFlameThrower(worldPos)
@@ -1394,6 +1415,11 @@ Render:
 			+ Fix radius & size (smaller radius for catching points, same render size)
 			+ Radius setting
 			+ Apply heat (& Ultra-Violent mode)
+
+	- Explosive combustion:
+		- Rendering: ?
+		- New materials:
+			- "gunpowder" and "diesel"
 
 	- Storms
 		- Another physics component

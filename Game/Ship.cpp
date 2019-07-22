@@ -1597,29 +1597,56 @@ void Ship::RotPoints(
     float /*currentSimulationTime*/,
     GameParameters const & gameParameters)
 {
-    // Calculate rot increment for each step
-    float const alphaIncrement =
-        gameParameters.RotAcceler8r != 0.0f
-        ? 1.0f - powf(1e-10f, gameParameters.RotAcceler8r / 20000.0f)   // Accel=1 => this many steps to total decay
-        : 0.0f;
+    //
+    // Rotting is done with a recursive equation:
+    //  decay(0) = 1.0
+    //  decay(n) = A * decay(n-1), with 0 < A < 1
+    //
+    // This converges to:
+    //  decay(n) = A^n
+    //
+    // We want full decay (decay=1e-10) after Nf steps when flooded (Nf => 15 minutes @ 50fps):
+    //
+    //  ZeroDecay = Af ^ Nf
+    //
 
-    // Higher rot increment for leaking points - they are directly in contact
-    // with water after all!
-    float const leakingAlphaIncrement = alphaIncrement * 3.0f;
+    // After 15 mins: on the surface=>0.75, flooded=>0.25
+    float constexpr Nf =
+        15.0f * 60.0f * 50.0f / static_cast<float>(LowFrequencyPeriod)
+        * 10.0f; // Upping up a bit to fight against initial steep curve
+
+    float const alphaMax =
+        gameParameters.RotAcceler8r != 0.0f
+        ? powf(1e-10f, gameParameters.RotAcceler8r / Nf)
+        : 1.0f;
+
+    // Leaking points rot faster - they are directly in contact with water after all!
+    float const leakingAlphaMax =
+        gameParameters.RotAcceler8r != 0.0f
+        ? alphaMax / 3.0f
+        : 1.0f;
 
     // Process all points - including ephemerals
     for (auto p : mPoints)
     {
-        float const waterEquivalent =
-            std::min(mPoints.GetWater(p), 1.0f)
+        float waterEquivalent =
+            mPoints.GetWater(p)
             + (mParentWorld.IsUnderwater(mPoints.GetPosition(p)) ? 0.2f : 0.0f); // Also rust a bit underwater points, even hull ones
 
-        float const beta =
-            waterEquivalent
-            * (mPoints.IsLeaking(p) ? leakingAlphaIncrement : alphaIncrement)
-            * mPoints.GetMaterialRustReceptivity(p);
+        // Adjust with material's rust receptivity
+        waterEquivalent *= mPoints.GetMaterialRustReceptivity(p);
 
-        mPoints.SetDecay(p, mPoints.GetDecay(p) * (1.0f - beta));
+        // Clamp
+        waterEquivalent = std::min(waterEquivalent, 1.0f);
+
+        // Interpolate alpha
+        float const alpha = Mix(
+            1.0f,
+            (mPoints.IsLeaking(p) ? leakingAlphaMax : alphaMax),
+            waterEquivalent);
+
+        // Decay
+        mPoints.SetDecay(p, mPoints.GetDecay(p) * alpha);
     }
 
     // Remember that the decay buffer is dirty

@@ -179,7 +179,7 @@ void ElectricalElements::UpdateSourcesAndPropagation(
                         electricalElementsToVisit.pop();
 
                         // Already marked as visited
-                        assert(currentVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[e]);
+                        assert(newConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[e]);
 
                         for (auto reachableElectricalElementIndex : GetConnectedElectricalElements(e))
                         {

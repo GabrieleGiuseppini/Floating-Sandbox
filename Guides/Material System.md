@@ -74,7 +74,7 @@ Here's an explanation of the elements:
 - _name_: the name of the material; only useful to carbon-based entities.
 - _render color_: the RGB color to use when rendering certain particles of this material.
 - _rust receptivity_: the degree to which this material rusts when wet; when not set, assumed to be 1.0. A value of 0.0 turns off rusting for this material altogether.
-- _sound type_: the type of sound to play when a spring or point of this material is stressed or breaks. Valid values are: "Cable", "Cloth", "Glass", "Metal", "Wood".
+- _sound type_: the type of sound to play when a spring or point of this material is stressed or breaks. Valid values are: "AirBubble", "Cable", "Cloth", "Glass", "Metal", "Plastic", "Rubber", and "Wood".
 - _specific hear_: how much heat this material needs in order to raise its temperature by one Kelvin, in J/(Kg*K)
 - _stiffness_: how quickly a spring of this material wants to return to its original length. This is not really free, as values higher than 1.2 tend to make springs explode. Lower values will though make the spring quite soft.
 - _strength_: the maximum relative stretch (length difference wrt rest length, over rest length) before a spring of this material breaks. 
