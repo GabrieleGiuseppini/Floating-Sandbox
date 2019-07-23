@@ -1382,10 +1382,10 @@ Render:
 			- Do perf analysis for low-hanging fruit first
 			- Low-freq combustion state machine:
 				- Burning candidates: 
-					- Do benchmarks: (10 out of 20/100/500)
-						- Vector_AddAndSort
-						- PriorityQueue_Add
-						- Vector_AddAndNthElement
+					= Do benchmarks: (10 out of 20/100/500)
+						+ Vector_AddAndSort
+						+ PriorityQueue_Add
+						+ Vector_AddAndNthElement
 						- ? Sticky_PriorityQueue
 							- Loop: makeup index w/ (i%200)
 					- Old:

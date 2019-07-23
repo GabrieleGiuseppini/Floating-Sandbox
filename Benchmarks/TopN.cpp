@@ -1,155 +1,112 @@
 #include "Utils.h"
 
-#include <GameCore/GameMath.h>
-
 #include <benchmark/benchmark.h>
 
 #include <algorithm>
 #include <limits>
+#include <queue>
+#include <vector>
 
-static constexpr size_t Size = 10000000;
+static constexpr size_t Size = 100000;
 
-static void FastPow_Pow(benchmark::State& state)
-{
-    auto bases = MakeFloats(Size);
-    auto exponents = MakeFloats(Size);
-    std::vector<float> results(Size);
-    for (auto _ : state)
-    {
-        for (size_t i = 0; i < Size; ++i)
-        {
-            results.push_back(pow(bases[i], exponents[i]));
-        }
-    }
+using Element = std::tuple<int64_t, float>;
 
-    benchmark::DoNotOptimize(results);
-}
-BENCHMARK(FastPow_Pow);
-
-static void FastPow_FastPow(benchmark::State& state)
-{
-    auto bases = MakeFloats(Size);
-    auto exponents = MakeFloats(Size);
-    std::vector<float> results(Size);
-    for (auto _ : state)
-    {
-        for (size_t i = 0; i < Size; ++i)
-        {
-            results.push_back(FastPow(bases[i], exponents[i]));
-        }
-    }
-
-    benchmark::DoNotOptimize(results);
-}
-BENCHMARK(FastPow_FastPow);
-
-static void FastExp_Exp(benchmark::State& state)
-{
-    auto exponents = MakeFloats(Size);
-    std::vector<float> results(Size);
-    for (auto _ : state)
-    {
-        for (size_t i = 0; i < Size; ++i)
-        {
-            results.push_back(exp(exponents[i]));
-        }
-    }
-
-    benchmark::DoNotOptimize(results);
-}
-BENCHMARK(FastExp_Exp);
-
-static void FastExp_FastExp(benchmark::State& state)
-{
-    auto exponents = MakeFloats(Size);
-    std::vector<float> results(Size);
-    for (auto _ : state)
-    {
-        for (size_t i = 0; i < Size; ++i)
-        {
-            results.push_back(FastExp(exponents[i]));
-        }
-    }
-
-    benchmark::DoNotOptimize(results);
-}
-BENCHMARK(FastExp_FastExp);
-
-////////////////////////////////////////////////////////////////
-
-inline float Clamp1(
-    float x,
-    float lLimit,
-    float rLimit)
-{
-    if (x < lLimit)
-        return lLimit;
-    else if (x < rLimit)
-        return x;
-    else
-        return rLimit;
-}
-
-inline float SmoothStep1(
-    float lEdge,
-    float rEdge,
-    float x)
-{
-    assert(lEdge < rEdge);
-
-    x = Clamp1((x - lEdge) / (rEdge - lEdge), 0.0f, 1.0f);
-
-    return x * x * (3.0f - 2.0f * x); // 3x^2 -2x^3, Cubic Hermite
-}
-
-static void Smoothstep1(benchmark::State& state)
+static void TopN_Vector_EmplaceAndSort(benchmark::State& state)
 {
     auto vals = MakeFloats(Size);
-    std::vector<float> results(Size);
+    size_t v = 0;
+
+    std::vector<Element> results;
+
     for (auto _ : state)
     {
-        for (size_t i = 0; i < Size - 2; ++i)
+        results.clear();
+
+        for (int64_t i = 0; i < state.range(0); ++i, ++v)
         {
-            results.push_back(SmoothStep1(vals[i], vals[i + 1], vals[i + 3]));
+            results.emplace_back(i, vals[v % Size]);
         }
+
+        std::sort(
+            results.begin(),
+            results.end(),
+            [](auto const & t1, auto const & t2)
+            {
+                return std::get<1>(t1) > std::get<1>(t2);
+            });
+
+        benchmark::DoNotOptimize(results);
     }
-
-    benchmark::DoNotOptimize(results);
 }
-BENCHMARK(Smoothstep1);
+BENCHMARK(TopN_Vector_EmplaceAndSort)->Arg(20)->Arg(100)->Arg(500)->Arg(1000);
 
-inline float Clamp2(
-    float x,
-    float lLimit,
-    float rLimit)
+
+
+struct TupleComparer
 {
-    return std::min(std::max(lLimit, x), rLimit);
-}
+    bool operator()(Element const & t1, Element const & t2)
+    {
+        return std::get<1>(t1) > std::get<1>(t2);
+    }
+};
 
-inline float SmoothStep2(
-    float lEdge,
-    float rEdge,
-    float x)
+class PriQueue : public std::priority_queue<Element, std::vector<Element>, TupleComparer>
 {
-    assert(lEdge < rEdge);
+public:
 
-    x = Clamp2((x - lEdge) / (rEdge - lEdge), 0.0f, 1.0f);
+    void clear()
+    {
+        this->c.clear();
+    }
+};
 
-    return x * x * (3.0f - 2.0f * x); // 3x^2 -2x^3, Cubic Hermite
-}
-
-static void Smoothstep2(benchmark::State& state)
+static void TopN_PriorityQueue_Emplace(benchmark::State& state)
 {
     auto vals = MakeFloats(Size);
-    std::vector<float> results(Size);
+    size_t v = 0;
+
+    PriQueue results;
+
     for (auto _ : state)
     {
-        for (size_t i = 0; i < Size - 2; ++i)
-        {
-            results.push_back(SmoothStep2(vals[i], vals[i + 1], vals[i + 3]));
-        }
-    }
+        results.clear();
 
-    benchmark::DoNotOptimize(results);
+        for (int64_t i = 0; i < state.range(0); ++i, ++v)
+        {
+            results.emplace(i, vals[v % Size]);
+        }
+
+        benchmark::DoNotOptimize(results);
+    }
 }
-BENCHMARK(Smoothstep2);
+BENCHMARK(TopN_PriorityQueue_Emplace)->Arg(20)->Arg(100)->Arg(500)->Arg(1000);
+
+
+static void TopN_Vector_EmplaceAndNthElement(benchmark::State& state)
+{
+    auto vals = MakeFloats(Size);
+    size_t v = 0;
+
+    std::vector<Element> results;
+
+    TupleComparer tc;
+
+    for (auto _ : state)
+    {
+        results.clear();
+
+        for (int64_t i = 0; i < state.range(0); ++i, ++v)
+        {
+            results.emplace_back(i, vals[v % Size]);
+        }
+
+        std::nth_element(
+            results.begin(),
+            results.begin() + 10,
+            results.end(),
+            tc);
+
+        benchmark::DoNotOptimize(results);
+    }
+}
+BENCHMARK(TopN_Vector_EmplaceAndNthElement)->Arg(20)->Arg(100)->Arg(500)->Arg(1000);
