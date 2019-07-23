@@ -291,6 +291,7 @@ void Points::Detach(
         mDetachHandler(
             pointElementIndex,
             !!(detachOptions & Points::DetachOptions::GenerateDebris),
+            !!(detachOptions & Points::DetachOptions::FireDestroyEvent),
             currentSimulationTime,
             gameParameters);
     }

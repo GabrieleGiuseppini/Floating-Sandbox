@@ -99,7 +99,7 @@ Ship::Ship(
     mPlaneTriangleIndicesToRender.reserve(mTriangles.GetElementCount());
 
     // Set handlers
-    mPoints.RegisterDetachHandler(std::bind(&Ship::PointDetachHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
+    mPoints.RegisterDetachHandler(std::bind(&Ship::PointDetachHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5));
     mPoints.RegisterEphemeralParticleDestroyHandler(std::bind(&Ship::EphemeralParticleDestroyHandler, this, std::placeholders::_1));
     mSprings.RegisterDestroyHandler(std::bind(&Ship::SpringDestroyHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     mSprings.RegisterRestoreHandler(std::bind(&Ship::SpringRestoreHandler, this, std::placeholders::_1, std::placeholders::_2));
@@ -1861,6 +1861,7 @@ void Ship::DestroyConnectedTriangles(
 void Ship::PointDetachHandler(
     ElementIndex pointElementIndex,
     bool generateDebris,
+    bool fireDestroyEvent,
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
@@ -1927,11 +1928,14 @@ void Ship::PointDetachHandler(
                 gameParameters);
         }
 
-        // Notify destroy
-        mGameEventHandler->OnDestroy(
-            mPoints.GetStructuralMaterial(pointElementIndex),
-            mParentWorld.IsUnderwater(mPoints.GetPosition(pointElementIndex)),
-            1);
+        if (fireDestroyEvent)
+        {
+            // Notify destroy
+            mGameEventHandler->OnDestroy(
+                mPoints.GetStructuralMaterial(pointElementIndex),
+                mParentWorld.IsUnderwater(mPoints.GetPosition(pointElementIndex)),
+                1);
+        }
 
         // Remember the structure is now dirty
         mIsStructureDirty = true;

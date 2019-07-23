@@ -460,6 +460,30 @@ bool World::ScrubThrough(
     return anyHasScrubbed;
 }
 
+void World::ApplyThanosSnap(
+    float centerX,
+    float radius,
+    float leftFrontX,
+    float rightFrontX,
+    float currentSimulationTime,
+    GameParameters const & gameParameters)
+{
+    // Apply to all ships
+    for (auto & ship : mAllShips)
+    {
+        ship->ApplyThanosSnap(
+            centerX,
+            radius,
+            leftFrontX,
+            rightFrontX,
+            currentSimulationTime,
+            gameParameters);
+    }
+
+    // Apply to ocean surface
+    mOceanSurface.ApplyThanosSnap(leftFrontX, rightFrontX);
+}
+
 std::optional<ElementId> World::GetNearestPointAt(
     vec2f const & targetPos,
     float radius) const
@@ -506,6 +530,11 @@ void World::TriggerRogueWave()
     mOceanSurface.TriggerRogueWave(
         mCurrentSimulationTime,
         mWind);
+}
+
+void World::SetSilence(float silenceAmount)
+{
+    mWind.SetSilence(silenceAmount);
 }
 
 //////////////////////////////////////////////////////////////////////////////

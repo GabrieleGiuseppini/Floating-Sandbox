@@ -410,38 +410,37 @@ Render:
 				+ 15mins (@50fps) for flooded when acceler8r at 1.0
 				+ 30mins (@50fps) for exposed when acceler8r at 1.0
 				+ Doesn't rot when acceler8r at 0.0
+		+ Thanos' Snap
+			+ Tool managed by GameController
+				+ Dedicated state machine (mThanosSnapStateMachine) stored in queue
+					+ Additive, up to N (8), circular
+					+ Move state machines to separate cpp: GameController_StateMachines.cpp
+					+ At beginning (first insert): 
+						+ Fire "StartSilence" event
+							+ SoundController::OnSilenceStarted: stop sinking music
+						+ Call Wind::SetSilence(float between 0.0 and 1.0)
+							+ Wind stores it, and uses it at Update()
+							+ Wind state machine progresses, but final result is multiplied by silence
+								+ And rely on moving avg to smooth the step
+					+ Throughout: call World::ApplyThanosSnap(centerPos, innerRadius, outerRadius) X 2
+						+ Called for slices, advancing from mouse position at moment of application
+						+ Ship::ApplyThanosSnap(centerPos, innerRadius, outerRadius)
+							+ Only does between two outermost edges, so to catch moving things
+							+ Deletes springs (and consequently triangles) (w/no noise)
+							+ Imparts velocity on particles
+						+ OceanSurface::ApplyThanosSnap(centerPos, innerRadius, outerRadius)
+							+ Flattens surface that falls in crown to ~-1.0
+					+ At end (last removal):
+						+ Fire "LiftSilence" event
+							+ SoundController: niks
+						+ Call Wind::SetSilence(0.0)
+
+			+ Cursors (up and down)
+			+ Snap sound
 
 		- Check bugs:
+			= Scrolling past world end/black triangle
 			- "Two happy fox bois"'s crash with opengl
-
-		= Thanos' Snap
-			= Tool managed by GameController
-				= Dedicated state machine (mThanosSnapStateMachine) stored in queue
-					- Additive, up to N (8), circular
-					+ Move state machines to separate cpp: GameController_StateMachines.cpp
-					- At beginning (first insert): 
-						- Fire "StartSilence" event
-							- SoundController::OnSilenceStarted: pause sinking music
-						- Call Wind::SetSilence(float between 0.0 and 1.0)
-							- Wind stores it, and uses it at Update() as any other param to recalc everything
-							- Wind state machine progresses, but final result is multiplied by silence
-								- And rely on moving avg to smooth the step
-					- Throughout: call World::ApplyThanosSnap(centerPos, innerRadius, outerRadius) TODO: X 2?
-						- Called for slices, advancing from mouse position at moment of application
-						- Ship::ApplyThanosSnap(centerPos, innerRadius, outerRadius)
-							- Only does between two outermost edges, so to catch moving things
-							- Deletes springs (and consequently triangles) (w/no noise)
-							- Imparts velocity on particles
-								- TODO: super-duper vortices?
-						- OceanSurface::ApplyThanosSnap(centerPos, innerRadius, outerRadius)
-							- Flattens surface that falls in crown to ~-1.0
-					- At end (last removal):
-						- Fire "LiftSilence" event
-							- SoundController: resume (if was playing) sinking music
-						- Call Wind::SetSilence(0.0)
-
-			= Cursors (up and down)
-			+ Snap sound
 
 		= Heat and combustion (*)
 			

@@ -35,10 +35,16 @@ Wind::Wind(std::shared_ptr<GameEventDispatcher> gameEventDispatcher)
     , mNextStateTransitionTimestamp()
     , mNextPoissonSampleTimestamp()
     , mCurrentGustTransitionTimestamp()
+    , mCurrentSilenceAmount(0.0f)
     , mCurrentRawWindSpeedMagnitude(0.0f)
     , mCurrentWindSpeedMagnitudeRunningAverage()
     , mCurrentWindSpeed(vec2f::zero())
 {
+}
+
+void Wind::SetSilence(float silenceAmount)
+{
+    mCurrentSilenceAmount = silenceAmount;
 }
 
 void Wind::Update(GameParameters const & gameParameters)
@@ -279,7 +285,9 @@ void Wind::Update(GameParameters const & gameParameters)
     // Update average and store current speed
     mCurrentWindSpeed =
         GameParameters::WindDirection
-        * mCurrentWindSpeedMagnitudeRunningAverage.Update(mCurrentRawWindSpeedMagnitude);
+        * mCurrentWindSpeedMagnitudeRunningAverage.Update(
+            mCurrentRawWindSpeedMagnitude
+            * (1.0f - mCurrentSilenceAmount));
 
     // Publish interesting quantities for probes
     mGameEventHandler->OnWindSpeedUpdated(

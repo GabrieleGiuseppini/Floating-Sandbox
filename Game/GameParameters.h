@@ -375,10 +375,10 @@ struct GameParameters
 
     static constexpr size_t MaxBombs = 64u;
     static constexpr size_t MaxPinnedPoints = 64u;
+    static constexpr size_t MaxThanosSnaps = 8u;
 
-    // 8 neighbours and 1 rope spring, when this is a rope endpoint
-    static constexpr size_t MaxSpringsPerPoint = 8u + 1u;
 
+    static constexpr size_t MaxSpringsPerPoint = 8u + 1u; // 8 neighbours and 1 rope spring, when this is a rope endpoint
     static constexpr size_t MaxTrianglesPerPoint = 8u;
 
 

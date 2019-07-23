@@ -178,6 +178,16 @@ struct IGenericGameEventHandler
         // Default-implemented
     }
 
+    virtual void OnSilenceStarted()
+    {
+        // Default-implemented
+    }
+
+    virtual void OnSilenceLifted()
+    {
+        // Default-implemented
+    }
+
     virtual void OnCustomProbe(
         std::string const & /*name*/,
         float /*value*/)

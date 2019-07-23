@@ -11,10 +11,8 @@
 // Tsunami Notifications
 ////////////////////////////////////////////////////////////////////////
 
-class GameController::TsunamiNotificationStateMachine
+struct GameController::TsunamiNotificationStateMachine
 {
-public:
-
     TsunamiNotificationStateMachine(std::shared_ptr<Render::RenderContext> renderContext);
 
     ~TsunamiNotificationStateMachine();
@@ -227,29 +225,144 @@ void GameController::StartTsunamiNotificationStateMachine(float x)
 // Thanos Snap
 ////////////////////////////////////////////////////////////////////////
 
-class GameController::ThanosSnapStateMachine
-{};
+struct GameController::ThanosSnapStateMachine
+{
+    float const CenterX;
+    float const StartSimulationTimestamp;
+
+    ThanosSnapStateMachine(
+        float centerX,
+        float startSimulationTimestamp)
+        : CenterX(centerX)
+        , StartSimulationTimestamp(startSimulationTimestamp)
+    {}
+};
 
 void GameController::ThanosSnapStateMachineDeleter::operator()(ThanosSnapStateMachine * ptr) const
 {
     delete ptr;
 }
 
-void GameController::StartThanosSnapStateMachine(float x)
+void GameController::StartThanosSnapStateMachine(
+    float x,
+    float currentSimulationTime)
 {
-    // TODO
+    if (mThanosSnapStateMachines.empty())
+    {
+        //
+        // First Thanos snap
+        //
+
+        // Start silence
+        mGameEventDispatcher->OnSilenceStarted();
+
+        // Silence world
+        mWorld->SetSilence(1.0f);
+    }
+    else
+    {
+        // If full, make room for this latest arrival
+        if (mThanosSnapStateMachines.size() == GameParameters::MaxThanosSnaps)
+            mThanosSnapStateMachines.erase(mThanosSnapStateMachines.cbegin());
+    }
+
+    //
+    // Start new state machine
+    //
+
+    mThanosSnapStateMachines.emplace_back(
+        new ThanosSnapStateMachine(
+            x,
+            currentSimulationTime));
+}
+
+bool GameController::UpdateThanosSnapStateMachine(
+    ThanosSnapStateMachine & stateMachine,
+    float currentSimulationTime)
+{
+    //
+    // Calculate new radius
+    //
+
+    float constexpr AdvancingWaveSpeed = 25.0f; // m/s
+    float constexpr SliceWidth = AdvancingWaveSpeed * GameParameters::SimulationStepTimeDuration<float>;
+
+    float const radius =
+        (currentSimulationTime - stateMachine.StartSimulationTimestamp)
+        * AdvancingWaveSpeed;
+
+
+    //
+    // Apply Thanos Destructive Wave to both sides
+    //
+
+    bool hasAppliedWave = false;
+
+    float const leftOuterEdgeX = stateMachine.CenterX - radius;
+    float const leftInnerEdgeX = leftOuterEdgeX + SliceWidth / 2.0f;
+    if (leftInnerEdgeX > -GameParameters::HalfMaxWorldWidth)
+    {
+        mWorld->ApplyThanosSnap(
+            stateMachine.CenterX,
+            radius,
+            leftOuterEdgeX,
+            leftInnerEdgeX,
+            currentSimulationTime,
+            mGameParameters);
+
+        hasAppliedWave = true;
+    }
+
+    float const rightOuterEdgeX = stateMachine.CenterX + radius;
+    float const rightInnerEdgeX = rightOuterEdgeX - SliceWidth / 2.0f;
+    if (rightInnerEdgeX < GameParameters::HalfMaxWorldWidth)
+    {
+        mWorld->ApplyThanosSnap(
+            stateMachine.CenterX,
+            radius,
+            rightInnerEdgeX,
+            rightOuterEdgeX,
+            currentSimulationTime,
+            mGameParameters);
+
+        hasAppliedWave = true;
+    }
+
+    return hasAppliedWave;
 }
 
 ////////////////////////////////////////////////////////////////////////
 // All state machines
 ////////////////////////////////////////////////////////////////////////
 
-void GameController::UpdateStateMachines()
+void GameController::UpdateStateMachines(float currentSimulationTime)
 {
+    // Tsunami notifications
     if (!!mTsunamiNotificationStateMachine)
     {
         if (!mTsunamiNotificationStateMachine->Update())
             mTsunamiNotificationStateMachine.reset();
+    }
+
+    // Thanos' snap
+    for (auto it = mThanosSnapStateMachines.begin(); it != mThanosSnapStateMachines.end(); /* incremented in loop */)
+    {
+        if (!UpdateThanosSnapStateMachine(*(it->get()), currentSimulationTime))
+        {
+            it = mThanosSnapStateMachines.erase(it);
+
+            // If this was the last one, lift silence
+            if (mThanosSnapStateMachines.empty())
+            {
+                // Lift silence on world
+                mWorld->SetSilence(0.0f);
+
+                // Lift silence
+                mGameEventDispatcher->OnSilenceLifted();
+            }
+        }
+        else
+            ++it;
     }
 }
 

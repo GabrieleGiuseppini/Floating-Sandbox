@@ -359,6 +359,21 @@ void OceanSurface::AdjustTo(
     }
 }
 
+void OceanSurface::ApplyThanosSnap(
+    float leftFrontX,
+    float rightFrontX)
+{
+    auto const sampleIndexStart = SWEOuterLayerSamples + ToSampleIndex(std::max(leftFrontX, -GameParameters::HalfMaxWorldWidth));
+    auto const sampleIndexEnd = SWEOuterLayerSamples + ToSampleIndex(std::min(rightFrontX, GameParameters::HalfMaxWorldWidth));
+
+    assert(sampleIndexStart >= 0 && sampleIndexStart < SWETotalSamples);
+
+    float constexpr WaterDepression = 1.0f / SWEHeightFieldAmplification;
+
+    for (size_t idx = sampleIndexStart; idx <= sampleIndexEnd; ++idx)
+        mHeightField[idx] -= WaterDepression;
+}
+
 void OceanSurface::TriggerTsunami(float currentSimulationTime)
 {
     // Choose X

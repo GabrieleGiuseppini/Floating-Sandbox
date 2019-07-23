@@ -1292,6 +1292,17 @@ void SoundController::OnWindSpeedUpdated(
     mLastWindSpeedAbsoluteMagnitude = windSpeedAbsoluteMagnitude;
 }
 
+void SoundController::OnSilenceStarted()
+{
+    mSinkingMusic.FadeToStop();
+}
+
+void SoundController::OnSilenceLifted()
+{
+    // Nothing at the moment - if we were sinking,
+    // we won't resume the music
+}
+
 void SoundController::OnBombPlaced(
     BombId /*bombId*/,
     BombType /*bombType*/,

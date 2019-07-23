@@ -230,7 +230,7 @@ RenderContext::RenderContext(
     //
 
     GLuint vbos[8];
-    glGenBuffers(7, vbos);
+    glGenBuffers(8, vbos);
     mStarVBO = vbos[0];
     mCloudVBO = vbos[1];
     mLandVBO = vbos[2];

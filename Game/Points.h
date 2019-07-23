@@ -36,12 +36,16 @@ public:
     enum class DetachOptions
     {
         DoNotGenerateDebris = 0,
-        GenerateDebris = 1
+        GenerateDebris = 1,
+
+        DoNotFireDestroyEvent = 0,
+        FireDestroyEvent = 2,
     };
 
     using DetachHandler = std::function<void(
         ElementIndex,
         bool /*generateDebris*/,
+        bool /*fireDestroyEvent*/,
         float /*currentSimulationTime*/,
         GameParameters const &)>;
 

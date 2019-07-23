@@ -240,7 +240,8 @@ void Ship::DestroyAt(
                     mPoints.Detach(
                         pointIndex,
                         detachVelocity,
-                        Points::DetachOptions::GenerateDebris,
+                        Points::DetachOptions::GenerateDebris
+                        | Points::DetachOptions::FireDestroyEvent,
                         currentSimulationTime,
                         gameParameters);
                 }
@@ -1042,6 +1043,66 @@ bool Ship::ScrubThrough(
     }
 
     return hasScrubbed;
+}
+
+void Ship::ApplyThanosSnap(
+    float centerX,
+    float /*radius*/,
+    float leftFrontX,
+    float rightFrontX,
+    float currentSimulationTime,
+    GameParameters const & gameParameters)
+{
+    // Calculate direction
+    float leftX, rightX;
+    float direction;
+    if (rightFrontX <= centerX)
+    {
+        // Left wave front
+
+        assert(leftFrontX < centerX);
+        leftX = leftFrontX;
+        rightX = centerX;
+        direction = -1.0f;
+    }
+    else
+    {
+        // Right wave front
+
+        assert(leftFrontX >= centerX);
+        leftX = centerX;
+        rightX = rightFrontX;
+        direction = 1.0f;
+    }
+
+
+    // Visit all points (excluding ephemerals, there's nothing to detach there)
+    for (auto pointIndex : mPoints.NonEphemeralPoints())
+    {
+        auto const x = mPoints.GetPosition(pointIndex).x;
+        if (leftX <= x
+            && x <= rightX
+            && !mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.empty())
+        {
+            //
+            // Detach this point
+            //
+
+            // Choose a detach velocity
+            vec2f detachVelocity = vec2f(
+                direction * GameRandomEngine::GetInstance().GenerateRandomReal(35.0f, 60.0f),
+                GameRandomEngine::GetInstance().GenerateRandomReal(-3.0f, 18.0f));
+
+            // Detach
+            mPoints.Detach(
+                pointIndex,
+                mPoints.GetVelocity(pointIndex) + detachVelocity,
+                Points::DetachOptions::DoNotGenerateDebris
+                | Points::DetachOptions::DoNotFireDestroyEvent,
+                currentSimulationTime,
+                gameParameters);
+        }
+    }
 }
 
 ElementIndex Ship::GetNearestPointAt(

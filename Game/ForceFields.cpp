@@ -106,7 +106,8 @@ void BlastForceField::Apply(
         points.Detach(
             closestPointIndex,
             detachVelocity,
-            Points::DetachOptions::GenerateDebris,
+            Points::DetachOptions::GenerateDebris
+            | Points::DetachOptions::FireDestroyEvent,
             currentSimulationTime,
             gameParameters);
     }

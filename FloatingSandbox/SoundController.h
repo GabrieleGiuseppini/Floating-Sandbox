@@ -251,6 +251,10 @@ public:
         float const maxSpeedMagnitude,
         vec2f const & windSpeed) override;
 
+    virtual void OnSilenceStarted() override;
+
+    virtual void OnSilenceLifted() override;
+
     virtual void OnBombPlaced(
         BombId bombId,
         BombType bombType,

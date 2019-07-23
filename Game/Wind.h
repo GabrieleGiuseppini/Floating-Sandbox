@@ -23,6 +23,8 @@ public:
 
     Wind(std::shared_ptr<GameEventDispatcher> gameEventDispatcher);
 
+    void SetSilence(float silenceAmount);
+
     void Update(GameParameters const & gameParameters);
 
     /*
@@ -122,6 +124,9 @@ private:
 
     // The next time at which the current gust should end
     GameWallClock::time_point mCurrentGustTransitionTimestamp;
+
+    // The current silence amount
+    float mCurrentSilenceAmount;
 
     // The current wind speed magnitude, before averaging
     float mCurrentRawWindSpeedMagnitude;

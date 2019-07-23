@@ -182,6 +182,14 @@ public:
         vec2f const & endPos,
         GameParameters const & gameParameters);
 
+    void ApplyThanosSnap(
+        float centerX,
+        float radius,
+        float leftFrontX,
+        float rightFrontX,
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
+
     ElementIndex GetNearestPointAt(
         vec2f const & targetPos,
         float radius) const;
@@ -268,6 +276,7 @@ private:
     void PointDetachHandler(
         ElementIndex pointElementIndex,
         bool generateDebris,
+        bool fireDestroyEvent,
         float currentSimulationTime,
         GameParameters const & gameParameters);
 

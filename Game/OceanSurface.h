@@ -72,6 +72,10 @@ public:
         std::optional<vec2f> const & worldCoordinates,
         float currentSimulationTime);
 
+    void ApplyThanosSnap(
+        float leftFrontX,
+        float rightFrontX);
+
     void TriggerTsunami(float currentSimulationTime);
 
     void TriggerRogueWave(

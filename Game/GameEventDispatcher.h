@@ -276,6 +276,24 @@ public:
         }
     }
 
+    virtual void OnSilenceStarted() override
+    {
+        // No need to aggregate this one
+        for (auto sink : mGenericSinks)
+        {
+            sink->OnSilenceStarted();
+        }
+    }
+
+    virtual void OnSilenceLifted() override
+    {
+        // No need to aggregate this one
+        for (auto sink : mGenericSinks)
+        {
+            sink->OnSilenceLifted();
+        }
+    }
+
     virtual void OnCustomProbe(
         std::string const & name,
         float value) override

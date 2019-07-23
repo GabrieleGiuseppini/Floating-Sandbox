@@ -547,20 +547,21 @@ private:
     // State machines
     //
 
-    class TsunamiNotificationStateMachine;
+    struct TsunamiNotificationStateMachine;
     struct TsunamiNotificationStateMachineDeleter { void operator()(TsunamiNotificationStateMachine *) const; };
     std::unique_ptr<TsunamiNotificationStateMachine, TsunamiNotificationStateMachineDeleter> mTsunamiNotificationStateMachine;
 
     void StartTsunamiNotificationStateMachine(float x);
 
-    class ThanosSnapStateMachine;
+    struct ThanosSnapStateMachine;
     struct ThanosSnapStateMachineDeleter { void operator()(ThanosSnapStateMachine *) const; };
     std::vector<std::unique_ptr<ThanosSnapStateMachine, ThanosSnapStateMachineDeleter >> mThanosSnapStateMachines;
 
-    void StartThanosSnapStateMachine(float x);
+    void StartThanosSnapStateMachine(float x, float currentSimulationTime);
+    bool UpdateThanosSnapStateMachine(ThanosSnapStateMachine & stateMachine, float currentSimulationTime);
 
     void ResetStateMachines();
-    void UpdateStateMachines();
+    void UpdateStateMachines(float currentSimulationTime);
 
 private:
 

@@ -186,6 +186,14 @@ public:
         vec2f const & endPos,
         GameParameters const & gameParameters);
 
+    void ApplyThanosSnap(
+        float centerX,
+        float radius,
+        float leftFrontX,
+        float rightFrontX,
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
+
     std::optional<ElementId> GetNearestPointAt(
         vec2f const & targetPos,
         float radius) const;
@@ -197,6 +205,8 @@ public:
     void TriggerTsunami();
 
     void TriggerRogueWave();
+
+    void SetSilence(float silenceAmount);
 
 public:
 

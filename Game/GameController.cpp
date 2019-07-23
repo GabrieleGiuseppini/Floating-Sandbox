@@ -833,7 +833,7 @@ void GameController::ApplyThanosSnapAt(vec2f const & screenCoordinates)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
-    StartThanosSnapStateMachine(worldCoordinates.x);
+    StartThanosSnapStateMachine(worldCoordinates.x, mWorld->GetCurrentSimulationTime());
 }
 
 std::optional<ElementId> GameController::GetNearestPointAt(vec2f const & screenCoordinates) const
@@ -963,7 +963,7 @@ void GameController::InternalUpdate()
     mGameEventDispatcher->Flush();
 
     // Update state machines
-    UpdateStateMachines();
+    UpdateStateMachines(mWorld->GetCurrentSimulationTime());
 }
 
 void GameController::InternalRender()
