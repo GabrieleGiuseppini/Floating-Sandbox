@@ -426,9 +426,10 @@ Render:
 							- Wind stores it, and uses it at Update() as any other param to recalc everything
 							- Wind state machine progresses, but final result is multiplied by silence
 								- And rely on moving avg to smooth the step
-					- Throughout: call World::ApplyThanosSnap(centerPos, innerRadius, outerRadius)
+					- Throughout: call World::ApplyThanosSnap(centerPos, innerRadius, outerRadius) TODO: X 2?
 						- Called for slices, advancing from mouse position at moment of application
 						- Ship::ApplyThanosSnap(centerPos, innerRadius, outerRadius)
+							- Only does between two outermost edges, so to catch moving things
 							- Deletes springs (and consequently triangles) (w/no noise)
 							- Imparts velocity on particles
 								- TODO: super-duper vortices?
@@ -450,6 +451,9 @@ Render:
 			- Whenever a triangle is destroyed, lights attached to any of the three vertices will break
 
 	- 1.13.0
+
+		- Do shader at Anti-Matter bomb pre-implosion
+			- Corona with random noise inside circle
 
 		- Spring and NonSpring force separation optimization (*)
 		- Try with SpringRelaxation updating only positions (*)
@@ -1365,8 +1369,9 @@ Render:
 			+ When state is Burning, also decay non-burning neighbors on top of decaying self (so to smear burnt color more around)
 				+ At low-frequency update
 			+ Max flame development depends on number of springs connected to point (so ropes have smaller flames)
-			- See if heating element should heat less
-			- Max air and water temp to 5K
+			+ See if heating element should heat less
+			+ Try max air and water temp to 5K
+			- More melting
 			- Flame render:
 				+ Move more with wind
 				- Transparency on border - slightly more transparent at discard threshold

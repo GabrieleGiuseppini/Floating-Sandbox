@@ -230,7 +230,7 @@
     {
         "color_key": "#FC2020", 
         "electrical_type": "OtherSink", 
-        "heat_generated": 50000.0, 
+        "heat_generated": 25000.0, 
         "maximum_operating_temperature": 1783.15, 
         "minimum_operating_temperature": 173.15, 
         "name": "Heating Element", 

@@ -117,7 +117,7 @@ def adjust_electrical_material(material):
         material["minimum_operating_temperature"] = 233.15
         material["maximum_operating_temperature"] = 398.15
     elif "Heating Element" in name:
-        material["heat_generated"] = 50000.0
+        material["heat_generated"] = 25000.0
         material["minimum_operating_temperature"] = 173.15
         material["maximum_operating_temperature"] = 1783.15
     else:
