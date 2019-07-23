@@ -1371,7 +1371,6 @@ Render:
 			+ Max flame development depends on number of springs connected to point (so ropes have smaller flames)
 			+ See if heating element should heat less
 			+ Try max air and water temp to 5K
-			- More melting
 			- Flame render:
 				+ Move more with wind
 				- Transparency on border - slightly more transparent at discard threshold
