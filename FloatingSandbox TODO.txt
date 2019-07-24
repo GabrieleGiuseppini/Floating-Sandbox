@@ -443,6 +443,8 @@ Render:
 			- "Two happy fox bois"'s crash with opengl
 
 		= Heat and combustion (*)
+
+		- Invite Sup3rfastgamer and add to testers list
 			
 		+ Black cloth, black wood
 
@@ -1370,6 +1372,7 @@ Render:
 			+ Max flame development depends on number of springs connected to point (so ropes have smaller flames)
 			+ See if heating element should heat less
 			+ Try max air and water temp to 5K
+			- Make melted stuff break earlier (limit rest length somehow)
 			- Flame render:
 				+ Move more with wind
 				- Transparency on border - slightly more transparent at discard threshold
@@ -1382,15 +1385,25 @@ Render:
 			- Do perf analysis for low-hanging fruit first
 			- Low-freq combustion state machine:
 				- Burning candidates: 
+					- Sticky priority queue: leverage temporal coherence of overheated particles
+						- Contains:
+							- buffer for heap, maxSize = nPoints
+							- buffer of int32_t where element I contains either index in heap buffer of that element,
+							  or max<int32>
+						- Exposes:
+							- remove_if_in(ElementIndex)
+								- If in heap, removes it
+							- add_or_update(ElementIndex, val)
+								- If in heap: update and update heap
+								- Else: add
+
 					= Do benchmarks: (10 out of 20/100/500)
 						+ Vector_AddAndSort
 						+ PriorityQueue_Add
+						- PriorityQueue_AddAndPop (sort by lowest, and keep top 10)
 						+ Vector_AddAndNthElement
-						- ? Sticky_PriorityQueue
+						- Sticky_PriorityQueue
 							- Loop: makeup index w/ (i%200)
-					- Old:
-						- a) Use priority_queue instead of vector+sort, and avoid pushing when deltaT < Nth
-						- b) Use sticky priority_queue (leverage temporal coherence of overheated particles)
 			- HeatPropagation:
 				- Do perf analysis invoking it N times per frame to exaggerate
 				- Try impact of storing outgoing flows @ local array

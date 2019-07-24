@@ -1077,6 +1077,7 @@ void Ship::ApplyThanosSnap(
 
 
     // Visit all points (excluding ephemerals, there's nothing to detach there)
+    bool atLeastOneDetached = false;
     for (auto pointIndex : mPoints.NonEphemeralPoints())
     {
         auto const x = mPoints.GetPosition(pointIndex).x;
@@ -1101,7 +1102,18 @@ void Ship::ApplyThanosSnap(
                 | Points::DetachOptions::DoNotFireDestroyEvent,
                 currentSimulationTime,
                 gameParameters);
+
+            // Set decay to min, so that debris gets darkened
+            mPoints.SetDecay(pointIndex, 0.0f);
+
+            atLeastOneDetached = true;
         }
+    }
+
+    if (atLeastOneDetached)
+    {
+        // We've changed the decay buffer, need to upload it next then!
+        mPoints.MarkDecayBufferAsDirty();
     }
 }
 
