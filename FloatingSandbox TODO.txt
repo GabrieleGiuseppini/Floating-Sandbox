@@ -1408,8 +1408,10 @@ Render:
 						+ PriorityQueue_Add
 						+ PriorityQueue_AddAndPop (sort by lowest, and keep top 10)
 						+ Vector_AddAndNthElement
-						- Sticky_PriorityQueue
-							- Loop: makeup index w/ (i%200)
+						+ Sticky_PriorityQueue
+							+ Loop: makeup index w/ (i%200)
+						- TruncatedPriorityQueue
+							- New class altogether, no tracking
 			- HeatPropagation:
 				- Do perf analysis invoking it N times per frame to exaggerate
 				- Try impact of storing outgoing flows @ local array
