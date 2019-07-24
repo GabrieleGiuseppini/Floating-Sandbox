@@ -159,3 +159,26 @@ static void TopN_TemporallyCoherentPriorityQueue_Add(benchmark::State& state)
     }
 }
 BENCHMARK(TopN_TemporallyCoherentPriorityQueue_Add)->Arg(20)->Arg(100)->Arg(500)->Arg(1000);
+
+
+static void TopN_TemporallyCoherentPriorityQueue_AddCoherently(benchmark::State& state)
+{
+    auto vals = MakeFloats(Size);
+
+    TemporallyCoherentPriorityQueue<float> results(state.range(0));
+
+    size_t phase = 0;
+    for (auto _ : state)
+    {
+        for (int64_t i = 0; i < state.range(0); ++i)
+        {
+            float delta = 1.0f * std::sin(static_cast<float>(i) + static_cast<float>(phase / 10.0f));
+            results.add_or_update(static_cast<ElementIndex>(i), static_cast<float>(i) + delta);
+        }
+
+        ++phase;
+    }
+
+    benchmark::DoNotOptimize(results);
+}
+BENCHMARK(TopN_TemporallyCoherentPriorityQueue_AddCoherently)->Arg(20)->Arg(100)->Arg(500)->Arg(1000);
