@@ -874,6 +874,9 @@ Render:
 
 - Gfx optimizations:
 
+	- Test perf: allocate (and thus upload) Points' mutable attributes in one single buffer
+		- Replace individual buffers with local pointers to starting segment in buffer
+
 	- Test using gl_TexCoord to pass texture coords from vertex to fragment
 					
 	- Lights on the GPU with instanced drawing (*)
