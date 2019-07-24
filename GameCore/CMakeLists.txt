@@ -43,6 +43,7 @@ set  (SOURCES
 	RunningAverage.h
 	Segment.h
 	SysSpecifics.h
+	TemporallyCoherentPriorityQueue.h
 	TupleKeys.h
 	Utils.cpp
 	Utils.h	

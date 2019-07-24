@@ -619,6 +619,12 @@ Render:
 
 - Simulation Optimizations:
 
+	- Lights/exp:
+		- See first impact of exp (use ship w/many lights)
+		- Then:
+			- Try approximations
+			- Try pre-calcd function(s)
+
 	- Ship::Update: cache quantities that are currently re-calculated multiple times
 		- Identify streak of calculations that need a quantity more than once, and during which the quantity never changes
 			- e.g. spring lengths between water update and heat update
@@ -1400,7 +1406,7 @@ Render:
 					= Do benchmarks: (10 out of 20/100/500)
 						+ Vector_AddAndSort
 						+ PriorityQueue_Add
-						- PriorityQueue_AddAndPop (sort by lowest, and keep top 10)
+						+ PriorityQueue_AddAndPop (sort by lowest, and keep top 10)
 						+ Vector_AddAndNthElement
 						- Sticky_PriorityQueue
 							- Loop: makeup index w/ (i%200)

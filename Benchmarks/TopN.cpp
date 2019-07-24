@@ -1,5 +1,7 @@
 #include "Utils.h"
 
+#include <GameCore/TemporallyCoherentPriorityQueue.h>
+
 #include <benchmark/benchmark.h>
 
 #include <algorithm>
@@ -82,6 +84,31 @@ static void TopN_PriorityQueue_Emplace(benchmark::State& state)
 BENCHMARK(TopN_PriorityQueue_Emplace)->Arg(20)->Arg(100)->Arg(500)->Arg(1000);
 
 
+static void TopN_PriorityQueue_EmplaceAndPop(benchmark::State& state)
+{
+    auto vals = MakeFloats(Size);
+    size_t v = 0;
+
+    PriQueue results;
+
+    for (auto _ : state)
+    {
+        results.clear();
+
+        for (int64_t i = 0; i < state.range(0); ++i, ++v)
+        {
+            results.emplace(i, vals[v % Size]);
+
+            if (results.size() > 10)
+                results.pop();
+        }
+
+        benchmark::DoNotOptimize(results);
+    }
+}
+BENCHMARK(TopN_PriorityQueue_EmplaceAndPop)->Arg(20)->Arg(100)->Arg(500)->Arg(1000);
+
+
 static void TopN_Vector_EmplaceAndNthElement(benchmark::State& state)
 {
     auto vals = MakeFloats(Size);
@@ -110,3 +137,25 @@ static void TopN_Vector_EmplaceAndNthElement(benchmark::State& state)
     }
 }
 BENCHMARK(TopN_Vector_EmplaceAndNthElement)->Arg(20)->Arg(100)->Arg(500)->Arg(1000);
+
+
+static void TopN_TemporallyCoherentPriorityQueue_Add(benchmark::State& state)
+{
+    auto vals = MakeFloats(Size);
+    size_t v = 0;
+
+    TemporallyCoherentPriorityQueue<float> results(state.range(0));
+
+    for (auto _ : state)
+    {
+        results.clear();
+
+        for (int64_t i = 0; i < state.range(0); ++i, ++v)
+        {
+            results.add_or_update(static_cast<ElementIndex>(i), vals[v % Size]);
+        }
+
+        benchmark::DoNotOptimize(results);
+    }
+}
+BENCHMARK(TopN_TemporallyCoherentPriorityQueue_Add)->Arg(20)->Arg(100)->Arg(500)->Arg(1000);
