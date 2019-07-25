@@ -619,11 +619,13 @@ Render:
 
 - Simulation Optimizations:
 
-	- Lights/exp:
+	- Lights:
+		- Try with pre-calculated luminiscence function, for each light, as a function of square distance
+			- Point's total light = sum[for each light](interpolation of pre-calc'd lum function)
 		- See first impact of exp (use ship w/many lights)
-		- Then:
-			- Try approximations
-			- Try pre-calcd function(s)
+			- Then:
+				- Try approximations
+				- Try pre-calcd function(s)
 
 	- Ship::Update: cache quantities that are currently re-calculated multiple times
 		- Identify streak of calculations that need a quantity more than once, and during which the quantity never changes
