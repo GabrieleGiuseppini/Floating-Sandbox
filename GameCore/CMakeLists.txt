@@ -44,6 +44,7 @@ set  (SOURCES
 	Segment.h
 	SysSpecifics.h
 	TemporallyCoherentPriorityQueue.h
+	TruncatedPriorityQueue.h
 	TupleKeys.h
 	Utils.cpp
 	Utils.h	
