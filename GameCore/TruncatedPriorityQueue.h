@@ -7,6 +7,7 @@
 
 #include "GameTypes.h"
 
+#include <algorithm>
 #include <cassert>
 #include <cstdint>
 #include <limits>
@@ -34,54 +35,54 @@ private:
 
 public:
 
-    TruncatedPriorityQueue(size_t size)
-        : mMaxSize(size)
-        , mHeap(std::make_unique<HeapEntry[]>(mMaxSize + 1)) // Entry at zero is sentinel
+    TruncatedPriorityQueue(size_t maxSize)
+        : mHeap(std::make_unique<HeapEntry[]>(maxSize + 1)) // Entry at zero is sentinel
+        , mAllocatedSize(maxSize)
     {
-        reset();
+        reset(maxSize);
     }
 
     inline bool empty() const noexcept
     {
-        return mHeapSize == 0;
+        return mCurrentHeapSize == 0;
     }
 
     inline size_t size() const noexcept
     {
-        return mHeapSize;
-    }
-
-    inline ElementIndex pop() noexcept
-    {
-        assert(!empty());
-
-        // Remove root
-        auto const e = mHeap[1].elementIndex;
-
-        // Move smallest to root
-        mHeap[1] = mHeap[mHeapSize];
-        --mHeapSize;
-
-        fix_down(1);
-
-        return e;
+        return mCurrentHeapSize;
     }
 
     inline void emplace(ElementIndex e, PriorityType p) noexcept
     {
+        assert(mCurrentHeapSize + 1 <= mAllocatedSize);
+
         // Insert at bottom
-        ++mHeapSize;
-        auto i = static_cast<HeapIndex>(mHeapSize);
+        ++mCurrentHeapSize;
+        auto i = static_cast<HeapIndex>(mCurrentHeapSize);
         mHeap[i].priority = p;
         mHeap[i].elementIndex = e;
 
         // Restore heap
         fix_up(i);
+
+        // Truncate
+        mCurrentHeapSize = std::min(mCurrentHeapSize, mMaxHeapSize);
+    }
+
+    inline ElementIndex const & operator[](size_t index) const noexcept
+    {
+        assert(index <= mCurrentHeapSize);
+        return mHeap[index + 1].elementIndex;
     }
 
     inline void clear() noexcept
     {
-        reset();
+        reset(mMaxHeapSize);
+    }
+
+    inline void clear(size_t maxSize) noexcept
+    {
+        reset(maxSize);
     }
 
     // Mostly for unit tests
@@ -112,12 +113,12 @@ private:
     {
         Compare cmp;
 
-        while (2 * i <= mHeapSize)
+        while (2 * i <= mCurrentHeapSize)
         {
             auto j = 2 * i;
 
             // Find largest of two
-            if (j < mHeapSize && !cmp(mHeap[j].priority, mHeap[j + 1].priority))
+            if (j < mCurrentHeapSize && !cmp(mHeap[j].priority, mHeap[j + 1].priority))
                 ++j;
 
             // Check whether heap property is statisfed
@@ -137,7 +138,7 @@ private:
 
         // Check left
         HeapIndex l = 2 * i;
-        if (l <= mHeapSize)
+        if (l <= mCurrentHeapSize)
         {
             if (!cmp(mHeap[i].priority, mHeap[l].priority))
             {
@@ -150,7 +151,7 @@ private:
 
         // Check right
         HeapIndex r = l + 1;
-        if (r <= mHeapSize)
+        if (r <= mCurrentHeapSize)
         {
             if (!cmp(mHeap[i].priority, mHeap[r].priority))
             {
@@ -164,15 +165,17 @@ private:
         return true;
     }
 
-    void reset()
+    void reset(size_t maxHeapSize)
     {
-        mHeapSize = 0;
+        mCurrentHeapSize = 0;
+        mMaxHeapSize = maxHeapSize;
     }
 
 private:
 
-    size_t const mMaxSize;
+    std::unique_ptr<HeapEntry[]> const mHeap; // Entry at zero is unused
+    size_t const mAllocatedSize; // Excludes extra entry at zero
 
-    std::unique_ptr<HeapEntry[]> mHeap; // Entry at zero is unused
-    size_t mHeapSize;
+    size_t mCurrentHeapSize; // Excludes extra entry at zero
+    size_t mMaxHeapSize; // Excludes extra entry at zero
 };

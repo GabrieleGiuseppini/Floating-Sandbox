@@ -185,7 +185,7 @@ static void TopN_TemporallyCoherentPriorityQueue_AddCoherently(benchmark::State&
 BENCHMARK(TopN_TemporallyCoherentPriorityQueue_AddCoherently)->Arg(20)->Arg(100)->Arg(500)->Arg(1000);
 
 
-static void TopN_TruncatedPriorityQueue_Emplace(benchmark::State& state)
+static void TopN_10TruncatedPriorityQueue_Emplace(benchmark::State& state)
 {
     auto vals = MakeFloats(Size);
     size_t v = 0;
@@ -194,7 +194,7 @@ static void TopN_TruncatedPriorityQueue_Emplace(benchmark::State& state)
 
     for (auto _ : state)
     {
-        results.clear();
+        results.clear(10);
 
         for (int64_t i = 0; i < state.range(0); ++i, ++v)
         {
@@ -204,4 +204,4 @@ static void TopN_TruncatedPriorityQueue_Emplace(benchmark::State& state)
         benchmark::DoNotOptimize(results);
     }
 }
-BENCHMARK(TopN_TruncatedPriorityQueue_Emplace)->Arg(20)->Arg(100)->Arg(500)->Arg(1000);
+BENCHMARK(TopN_10TruncatedPriorityQueue_Emplace)->Arg(20)->Arg(100)->Arg(500)->Arg(1000);

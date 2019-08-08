@@ -29,6 +29,7 @@ set (UNIT_TEST_SOURCES
 	SliderCoreTests.cpp
 	TemporallyCoherentPriorityQueueTests.cpp
 	TextureAtlasTests.cpp
+	TruncatedPriorityQueueTests.cpp
 	TupleKeysTests.cpp
 	Utils.cpp
 	Utils.h
