@@ -142,10 +142,85 @@ TEST(TruncatedPriorityQueueTest, KeepsTopN_MoreThanMax)
     EXPECT_EQ(12u, sortedElems[3]);
 }
 
-/*
-TEST(TruncatedPriorityQueueTest, Sorting_CustomComparer)
+TEST(TruncatedPriorityQueueTest, KeepsTopN_MoreThanMax_InverseOrder)
 {
-    struct larger_first
+    TruncatedPriorityQueue<float> q(4);
+
+    q.emplace(12, 4.0f);
+    q.emplace(2, 12.0f);
+    q.emplace(3, 1.0f);
+    q.emplace(8, 3.0f);
+    q.emplace(5, 6.0f);
+
+    ASSERT_EQ(4, q.size());
+
+    auto sortedElems = MakeSortedVector(q);
+
+    ASSERT_EQ(4, sortedElems.size());
+    EXPECT_EQ(3u, sortedElems[0]);
+    EXPECT_EQ(5u, sortedElems[1]);
+    EXPECT_EQ(8u, sortedElems[2]);
+    EXPECT_EQ(12u, sortedElems[3]);
+}
+
+TEST(TruncatedPriorityQueueTest, KeepsTopN_OverflowIsIgnored)
+{
+    TruncatedPriorityQueue<float> q(4);
+
+    q.emplace(5, 6.0f);
+    q.emplace(8, 3.0f);
+    q.emplace(3, 2.0f);
+    q.emplace(2, 12.0f);
+    q.emplace(20, 13.0f);
+
+    ASSERT_EQ(4, q.size());
+
+    auto sortedElems = MakeSortedVector(q);
+
+    ASSERT_EQ(4, sortedElems.size());
+    EXPECT_EQ(2u, sortedElems[0]);
+    EXPECT_EQ(3u, sortedElems[1]);
+    EXPECT_EQ(5u, sortedElems[2]);
+    EXPECT_EQ(8u, sortedElems[3]);
+}
+
+TEST(TruncatedPriorityQueueTest, KeepsTopN_MoreThanMax_SamePriorities)
+{
+    TruncatedPriorityQueue<float> q(4);
+
+    q.emplace(5, 6.0f);
+    q.emplace(8, 6.0f);
+    q.emplace(3, 6.0f);
+    q.emplace(2, 6.0f);
+    q.emplace(12, 6.0f); // Replaces root anyway
+
+    ASSERT_EQ(4, q.size());
+
+    auto sortedElems = MakeSortedVector(q);
+
+    ASSERT_EQ(4, sortedElems.size());
+    EXPECT_EQ(3u, sortedElems[0]);
+    EXPECT_EQ(5u, sortedElems[1]);
+    EXPECT_EQ(8u, sortedElems[2]);
+    EXPECT_EQ(12u, sortedElems[3]);
+}
+
+TEST(TruncatedPriorityQueueTest, ZeroMaxSize)
+{
+    TruncatedPriorityQueue<float> q(0);
+
+    q.emplace(5, 6.0f);
+    q.emplace(8, 6.0f);
+    q.emplace(3, 6.0f);
+    q.emplace(2, 6.0f);
+    q.emplace(12, 6.0f);
+
+    ASSERT_EQ(0, q.size());
+}
+
+TEST(TruncatedPriorityQueueTest, KeepsTopN_MoreThanMax_CustomComparer)
+{
+    struct larger_eq_first
     {
         bool operator()(float a, float b)
         {
@@ -153,32 +228,24 @@ TEST(TruncatedPriorityQueueTest, Sorting_CustomComparer)
         }
     };
 
-    TruncatedPriorityQueue<float, larger_first> q(10);
+    TruncatedPriorityQueue<float, larger_eq_first> q(4);
 
-    q.add_or_update(5, 6.0f);
-    q.add_or_update(8, 3.0f);
-    q.add_or_update(3, 1.0f);
-    q.add_or_update(2, 12.0f);
+    q.emplace(5, 6.0f);
+    q.emplace(8, 3.0f);
+    q.emplace(3, 1.0f);
+    q.emplace(2, 12.0f);
+    q.emplace(12, 4.0f);
 
-    ASSERT_EQ(4u, q.size());
+    ASSERT_EQ(4, q.size());
 
-    auto i = q.pop();
-    EXPECT_EQ(2u, i);
+    auto sortedElems = MakeSortedVector(q);
 
-    i = q.pop();
-    EXPECT_EQ(5u, i);
-
-    i = q.pop();
-    EXPECT_EQ(8u, i);
-
-    i = q.pop();
-    EXPECT_EQ(3u, i);
-
-    EXPECT_TRUE(q.empty());
-    EXPECT_EQ(0u, q.size());
-    EXPECT_TRUE(q.verify_heap());
+    ASSERT_EQ(4, sortedElems.size());
+    EXPECT_EQ(2u, sortedElems[0]);
+    EXPECT_EQ(5u, sortedElems[1]);
+    EXPECT_EQ(8u, sortedElems[2]);
+    EXPECT_EQ(12u, sortedElems[3]);
 }
-*/
 
 TEST(TruncatedPriorityQueueTest, Populate_Asymmetrically)
 {
@@ -197,7 +264,59 @@ TEST(TruncatedPriorityQueueTest, Populate_Asymmetrically)
     EXPECT_TRUE(q.verify_heap());
 }
 
-// TODO:
-// - Clear with new max size
-//      - smaller than before
-//      - larger than before
+TEST(TruncatedPriorityQueueTest, Clear_WithSmallerMaxSize)
+{
+    TruncatedPriorityQueue<float> q(100);
+
+    q.clear(4);
+
+    q.emplace(5, 6.0f);
+    q.emplace(8, 3.0f);
+    q.emplace(3, 1.0f);
+    q.emplace(2, 12.0f);
+    q.emplace(12, 4.0f);
+
+    ASSERT_EQ(4, q.size());
+
+    q.clear(2);
+
+    q.emplace(8, 3.0f);
+    q.emplace(3, 1.0f);
+    q.emplace(2, 12.0f);
+
+    auto sortedElems = MakeSortedVector(q);
+
+    ASSERT_EQ(2, sortedElems.size());
+    EXPECT_EQ(3u, sortedElems[0]);
+    EXPECT_EQ(8u, sortedElems[1]);
+}
+
+TEST(TruncatedPriorityQueueTest, Clear_WithLargerMaxSize)
+{
+    TruncatedPriorityQueue<float> q(100);
+
+    q.clear(2);
+
+    q.emplace(8, 3.0f);
+    q.emplace(3, 1.0f);
+
+    ASSERT_EQ(2, q.size());
+
+    q.clear(4);
+
+    q.emplace(5, 6.0f);
+    q.emplace(8, 3.0f);
+    q.emplace(3, 1.0f);
+    q.emplace(2, 12.0f);
+    q.emplace(12, 4.0f);
+
+    ASSERT_EQ(4, q.size());
+
+    auto sortedElems = MakeSortedVector(q);
+
+    ASSERT_EQ(4, sortedElems.size());
+    EXPECT_EQ(3u, sortedElems[0]);
+    EXPECT_EQ(5u, sortedElems[1]);
+    EXPECT_EQ(8u, sortedElems[2]);
+    EXPECT_EQ(12u, sortedElems[3]);
+}

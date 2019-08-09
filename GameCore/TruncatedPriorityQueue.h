@@ -18,7 +18,9 @@
  * which may only hold a fixed number of elements.
  *
  * The heap property is honored so that:
- *      cmp(parent, child) == true
+ *      cmp(parent, child) == false
+ *
+ * ...so that the root always contains the least priority one.
  */
 template <typename PriorityType, typename Compare = std::less_equal<PriorityType>>
 class TruncatedPriorityQueue
@@ -54,19 +56,34 @@ public:
 
     inline void emplace(ElementIndex e, PriorityType p) noexcept
     {
-        assert(mCurrentHeapSize + 1 <= mAllocatedSize);
+        Compare cmp;
 
-        // Insert at bottom
-        ++mCurrentHeapSize;
-        auto i = static_cast<HeapIndex>(mCurrentHeapSize);
-        mHeap[i].priority = p;
-        mHeap[i].elementIndex = e;
+        if (mCurrentHeapSize == mMaxHeapSize)
+        {
+            if (mCurrentHeapSize > 0
+                && cmp(p, mHeap[1].priority))
+            {
+                // Replace root
+                mHeap[1].priority = p;
+                mHeap[1].elementIndex = e;
 
-        // Restore heap
-        fix_up(i);
+                // Restore heap
+                fix_down(1);
+            }
+        }
+        else
+        {
+            // Insert at bottom
+            ++mCurrentHeapSize;
+            auto i = static_cast<HeapIndex>(mCurrentHeapSize);
+            mHeap[i].priority = p;
+            mHeap[i].elementIndex = e;
 
-        // Truncate
-        mCurrentHeapSize = std::min(mCurrentHeapSize, mMaxHeapSize);
+            // Restore heap
+            fix_up(i);
+
+            assert(mCurrentHeapSize <= mMaxHeapSize);
+        }
     }
 
     inline ElementIndex const & operator[](size_t index) const noexcept
@@ -100,7 +117,7 @@ private:
     {
         Compare cmp;
 
-        while (i > 1 && !cmp(mHeap[i / 2].priority, mHeap[i].priority))
+        while (i > 1 && cmp(mHeap[i / 2].priority, mHeap[i].priority))
         {
             std::swap(mHeap[i], mHeap[i / 2]);
 
@@ -118,11 +135,11 @@ private:
             auto j = 2 * i;
 
             // Find largest of two
-            if (j < mCurrentHeapSize && !cmp(mHeap[j].priority, mHeap[j + 1].priority))
+            if (j < mCurrentHeapSize && cmp(mHeap[j].priority, mHeap[j + 1].priority))
                 ++j;
 
             // Check whether heap property is statisfed
-            if (cmp(mHeap[i].priority, mHeap[j].priority))
+            if (!cmp(mHeap[i].priority, mHeap[j].priority))
                 break;
 
             std::swap(mHeap[i], mHeap[j]);
@@ -140,7 +157,7 @@ private:
         HeapIndex l = 2 * i;
         if (l <= mCurrentHeapSize)
         {
-            if (!cmp(mHeap[i].priority, mHeap[l].priority))
+            if (cmp(mHeap[i].priority, mHeap[l].priority))
             {
                 return false;
             }
@@ -153,7 +170,7 @@ private:
         HeapIndex r = l + 1;
         if (r <= mCurrentHeapSize)
         {
-            if (!cmp(mHeap[i].priority, mHeap[r].priority))
+            if (cmp(mHeap[i].priority, mHeap[r].priority))
             {
                 return false;
             }
@@ -167,6 +184,8 @@ private:
 
     void reset(size_t maxHeapSize)
     {
+        assert(maxHeapSize <= mAllocatedSize);
+
         mCurrentHeapSize = 0;
         mMaxHeapSize = maxHeapSize;
     }

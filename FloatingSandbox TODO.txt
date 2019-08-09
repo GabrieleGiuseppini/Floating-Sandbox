@@ -444,14 +444,22 @@ Render:
 
 		= Heat and combustion (*)
 
+		- Version overhaul
+			- No build number but beta instead, with beta=X always < beta=0
+
+		- Add those 2 Lava textures
+			- Need to remove blue overlay first, apply to textures directly
+
 		- Invite Sup3rfastgamer and add to testers list
 			
 		+ Black cloth, black wood
 
+	- 1.13.0
+
+		- Lights perf improvement (*)
+		
 		- Break lights when structure gets "broken"
 			- Whenever a triangle is destroyed, lights attached to any of the three vertices will break
-
-	- 1.13.0
 
 		- Do shader at Anti-Matter bomb pre-implosion
 			- Corona with random noise inside circle
@@ -505,22 +513,14 @@ Render:
 		# An SR71 Habu: NotTelling
 		# JackMellon: JackTheBrickfilmMaker (Discord, https://drive.google.com/drive/folders/1isy3QiRzMfyu69v5M0gwD5tvBnYZMWXx)
 	- New ships:
-		- To make:
-			- Antonia Graza:
-				- https://www.deviantart.com/izaquebr2015/art/M-S-Antonia-Graza-Final-Version-2015-570603964
-				- https://www.deviantart.com/izaquebr2015/art/M-S-Antonia-Graza-FV-Without-Boats-2015-570604582
-				- https://www.deviantart.com/izaquebr2015/art/M-S-Antonia-Graza-Rusty-FV-2015-570604977
-		- To adjust:
-			- HMT Olympic B: texture has steam - remove it
-			- SS France (Awesomeyorkie): bends a lot
-			- Ed Fitzgerald (Kiko); year: 1975
 		- To test:
+			- Last ones from Mike
 			- mrpasta444_ship_pack
 			- TheodoreRoosevelt
 			- Others in TODO
 			- Graza's from awesomeyorkie
-		- Asked:
-			- Aegir_Mark_III (coolman asks original designer)
+			- Add MasterGarfield to credits in About box
+			- Add Aqua to credits in About box
 	- Descriptions:
 		+ Tell maximord about new ships - give him names
 		= Copy all descriptions into their respective .shp files
@@ -552,8 +552,7 @@ Render:
 
 - Suggestions to spec:
 	- Temperature tool - to get temperature of points
-	- Superheated materials vaporize
-	- You should add ground burying and for the ships and debris.
+	- You should add ground burying and for the ships and debris
 	- Make lights not propagate through hull
 	- Sun rays
 	- Moving furniture
@@ -578,7 +577,7 @@ Render:
 		- Mixes swirl and grab
 	- Meteorites
 	- Earthquake
-	- Rot tool (rots without having to flood it)
+	- Add circular zones around bombs when placing showing what the expected blast radius should be. The circle should change in size when settings are tweaked. Much better than crunching numbers to figure out what's gonna happen.
 
 ======================================================================================================================
 ======================================================================================================================
@@ -598,7 +597,7 @@ Render:
 	- Try 32-bit build
 	- Translations:
 		- Make localizable
-		- Russian: steven6886@yandex.ru
+		- Russian: steven6886@yandex.ru, rbugaev2@gmail.com
 	+ SSL cert: https://www.sslforfree.com/
 	= Sign with certificate
 		+ https://blogs.msdn.microsoft.com/ieinternals/2011/03/22/everything-you-need-to-know-about-authenticode-code-signing/
@@ -619,13 +618,9 @@ Render:
 
 - Simulation Optimizations:
 
-	- Lights:
+	- Lights: (*)
 		- Try with pre-calculated luminiscence function, for each light, as a function of square distance
 			- Point's total light = sum[for each light](interpolation of pre-calc'd lum function)
-		- See first impact of exp (use ship w/many lights)
-			- Then:
-				- Try approximations
-				- Try pre-calcd function(s)
 
 	- Ship::Update: cache quantities that are currently re-calculated multiple times
 		- Identify streak of calculations that need a quantity more than once, and during which the quantity never changes
@@ -877,7 +872,8 @@ Render:
 - Gfx optimizations:
 
 	- Test perf: allocate (and thus upload) Points' mutable attributes in one single buffer
-		- Replace individual buffers with local pointers to starting segment in buffer
+		- Replace Points' individual buffers with pointers to starting segment in same buffer
+		- Then do a single upload
 
 	- Test using gl_TexCoord to pass texture coords from vertex to fragment
 					
@@ -903,8 +899,6 @@ Render:
 
 
 - Gfx:
-
-	- Ship descriptions: use Mike's drawings
 
 	- Continuous auto-focus (*)
 		- Vision: once we have ships, make "Lock Ship in View" flag and move camera with ship's center of mass (representative point or real CoM)
@@ -1001,6 +995,15 @@ Render:
 		- https://www.shadertoy.com/view/4tdXDl
 
 - Dynamics:
+
+	- Move tool:
+		- Allow for moving orhpaned points
+			- At this moment we avoid that in PickPointToMove, but could allow for orhpaned point if no non-orphaned
+			  points are in radius
+
+	- Rot tool: rots without having to flood it
+		- Then merge scrub tool into this one, with SHIFT 
+		- Icon: ?
 
 	- Repair tool: see if can repair electrics
 
@@ -1383,30 +1386,34 @@ Render:
 			+ Max flame development depends on number of springs connected to point (so ropes have smaller flames)
 			+ See if heating element should heat less
 			+ Try max air and water temp to 5K
-			- Make melted stuff break earlier (limit rest length somehow)
+			- Make melted stuff break earlier (limit breaking length somehow)				
 			- Flame render:
 				+ Move more with wind
 				- Transparency on border - slightly more transparent at discard threshold
-				- Noise sampling:
+				- Noise sampling tests, who knows - it might get better:
 					- Try different noise resolution
 					- Try without second noise component
 					- Try with third noise component
+			- Flamethrower flame render:
+				- Large flamethrower should have higher resolution
+			- Superheated materials vaporize
+				- 
 
 		- Optimizations:
 			- Do perf analysis for low-hanging fruit first
 			- Low-freq combustion state machine:
 				- Burning candidates: 
-					- Sticky priority queue: leverage temporal coherence of overheated particles
-						- Contains:
-							- buffer for heap, maxSize = nPoints
-							- buffer of int32_t where element I contains either index in heap buffer of that element,
+					= Sticky priority queue: leverage temporal coherence of overheated particles
+						+ Contains:
+							+ buffer for heap, maxSize = nPoints
+							+ buffer of int32_t where element I contains either index in heap buffer of that element,
 							  or max<int32>
-						- Exposes:
-							- remove_if_in(ElementIndex)
-								- If in heap, removes it
-							- add_or_update(ElementIndex, val)
-								- If in heap: update and update heap
-								- Else: add
+						+ Exposes:
+							+ remove_if_in(ElementIndex)
+								+ If in heap, removes it
+							+ add_or_update(ElementIndex, val)
+								+ If in heap: update and update heap
+								+ Else: add
 
 					= Do benchmarks: (10 out of 20/100/500)
 						+ Vector_AddAndSort
@@ -1808,15 +1815,7 @@ Render:
 
 	- SettingsDialog: make slider textboxes editable
 
-	- Save ocean floor terrain and load it at startup
-		- GameController takes root path of user world data (given by MainFrame via StandardPaths)
-			- Loads (optional) data at startup (if exists)
-			- Saves data at dctor
-			- Passes this data to world at World::cctor
-			- Preferences allows user to reset to default
-				- Conditionally, by polling GameController who checks if it has mUserOceanFloorTerrain
-				- When reset -> GameController::ResetOceanFloorTerranToDefault
-					- Nukes mUserOceanFloorTerrain and calls World::ResetOceanFloorTerranToDefault which propagates
+	- Ship descriptions: use Mike's drawings
 
 	- SettingsDialog: save settings, defaults, and real-time changes (*)
 		- Spec: 
@@ -1924,7 +1923,18 @@ Render:
 					- Stores flag
 					- Enables/Disabled buttons and menus
 
+	- Save ocean floor terrain and load it at startup
+		- GameController takes root path of user world data (given by MainFrame via StandardPaths)
+			- Loads (optional) data at startup (if exists)
+			- Saves data at dctor
+			- Passes this data to world at World::cctor
+			- Preferences allows user to reset to default
+				- Conditionally, by polling GameController who checks if it has mUserOceanFloorTerrain
+				- When reset -> GameController::ResetOceanFloorTerranToDefault
+					- Nukes mUserOceanFloorTerrain and calls World::ResetOceanFloorTerranToDefault which propagates
+
 - Sounds:
+
 	- Do air bubbles sounds, very low volume
 		- At creation and at expiry
 		- New events at IGameEventHandler
