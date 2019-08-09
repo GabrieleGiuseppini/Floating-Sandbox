@@ -52,6 +52,11 @@ public:
         return mBuffer.get();
     }
 
+    inline TElement * data() noexcept
+    {
+        return mBuffer.get();
+    }
+
     inline TElement const & operator[](size_t index) const noexcept
     {
         assert(index < mSize);

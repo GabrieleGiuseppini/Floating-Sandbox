@@ -1400,10 +1400,11 @@ Render:
 				- 
 
 		- Optimizations:
+			- Pre FPS: 17/18 @ 111 flames
 			- Do perf analysis for low-hanging fruit first
 			- Low-freq combustion state machine:
 				- Burning candidates: 
-					= Sticky priority queue: leverage temporal coherence of overheated particles
+					+ Sticky priority queue: leverage temporal coherence of overheated particles
 						+ Contains:
 							+ buffer for heap, maxSize = nPoints
 							+ buffer of int32_t where element I contains either index in heap buffer of that element,
@@ -1422,8 +1423,8 @@ Render:
 						+ Vector_AddAndNthElement
 						+ Sticky_PriorityQueue
 							+ Loop: makeup index w/ (i%200)
-						- TruncatedPriorityQueue
-							- New class altogether, no tracking
+						+ TruncatedPriorityQueue
+							+ New class altogether, no tracking
 			- HeatPropagation:
 				- Do perf analysis invoking it N times per frame to exaggerate
 				- Try impact of storing outgoing flows @ local array

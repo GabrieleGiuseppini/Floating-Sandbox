@@ -195,7 +195,7 @@ private:
             if (j < mHeapSize && !cmp(mHeap[j].priority, mHeap[j + 1].priority))
                 ++j;
 
-            // Check whether heap property is statisfed
+            // Check whether heap property is satisfed
             if (cmp(mHeap[i].priority, mHeap[j].priority))
                 break;
 

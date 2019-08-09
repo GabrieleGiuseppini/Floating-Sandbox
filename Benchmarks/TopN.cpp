@@ -1,5 +1,6 @@
 #include "Utils.h"
 
+#include <GameCore/BoundedVector.h>
 #include <GameCore/TemporallyCoherentPriorityQueue.h>
 #include <GameCore/TruncatedPriorityQueue.h>
 
@@ -41,7 +42,7 @@ static void TopN_Vector_EmplaceAndSort(benchmark::State& state)
         benchmark::DoNotOptimize(results);
     }
 }
-BENCHMARK(TopN_Vector_EmplaceAndSort)->Arg(20)->Arg(100)->Arg(500)->Arg(1000);
+BENCHMARK(TopN_Vector_EmplaceAndSort)->Arg(20)->Arg(100)->Arg(1000)->Arg(5000);
 
 
 
@@ -82,7 +83,7 @@ static void TopN_PriorityQueue_Emplace(benchmark::State& state)
         benchmark::DoNotOptimize(results);
     }
 }
-BENCHMARK(TopN_PriorityQueue_Emplace)->Arg(20)->Arg(100)->Arg(500)->Arg(1000);
+BENCHMARK(TopN_PriorityQueue_Emplace)->Arg(20)->Arg(100)->Arg(1000)->Arg(5000);
 
 
 static void TopN_PriorityQueue_EmplaceAndPop(benchmark::State& state)
@@ -107,7 +108,7 @@ static void TopN_PriorityQueue_EmplaceAndPop(benchmark::State& state)
         benchmark::DoNotOptimize(results);
     }
 }
-BENCHMARK(TopN_PriorityQueue_EmplaceAndPop)->Arg(20)->Arg(100)->Arg(500)->Arg(1000);
+BENCHMARK(TopN_PriorityQueue_EmplaceAndPop)->Arg(20)->Arg(100)->Arg(1000)->Arg(5000);
 
 
 static void TopN_Vector_EmplaceAnd10thElement(benchmark::State& state)
@@ -137,7 +138,37 @@ static void TopN_Vector_EmplaceAnd10thElement(benchmark::State& state)
         benchmark::DoNotOptimize(results);
     }
 }
-BENCHMARK(TopN_Vector_EmplaceAnd10thElement)->Arg(20)->Arg(100)->Arg(500)->Arg(1000);
+BENCHMARK(TopN_Vector_EmplaceAnd10thElement)->Arg(20)->Arg(100)->Arg(1000)->Arg(5000);
+
+
+static void TopN_BoundedVector_EmplaceAnd10thElement(benchmark::State& state)
+{
+    auto vals = MakeFloats(Size);
+    size_t v = 0;
+
+    BoundedVector<Element> results(state.range(0));
+
+    TupleComparer tc;
+
+    for (auto _ : state)
+    {
+        results.clear();
+
+        for (int64_t i = 0; i < state.range(0); ++i, ++v)
+        {
+            results.emplace_back(i, vals[v % Size]);
+        }
+
+        std::nth_element(
+            results.data(),
+            results.data() + 10,
+            results.data() + results.size(),
+            tc);
+
+        benchmark::DoNotOptimize(results);
+    }
+}
+BENCHMARK(TopN_BoundedVector_EmplaceAnd10thElement)->Arg(20)->Arg(100)->Arg(1000)->Arg(5000);
 
 
 static void TopN_TemporallyCoherentPriorityQueue_Add(benchmark::State& state)
@@ -159,7 +190,7 @@ static void TopN_TemporallyCoherentPriorityQueue_Add(benchmark::State& state)
         benchmark::DoNotOptimize(results);
     }
 }
-BENCHMARK(TopN_TemporallyCoherentPriorityQueue_Add)->Arg(20)->Arg(100)->Arg(500)->Arg(1000);
+BENCHMARK(TopN_TemporallyCoherentPriorityQueue_Add)->Arg(20)->Arg(100)->Arg(1000)->Arg(5000);
 
 
 static void TopN_TemporallyCoherentPriorityQueue_AddCoherently(benchmark::State& state)
@@ -182,7 +213,7 @@ static void TopN_TemporallyCoherentPriorityQueue_AddCoherently(benchmark::State&
 
     benchmark::DoNotOptimize(results);
 }
-BENCHMARK(TopN_TemporallyCoherentPriorityQueue_AddCoherently)->Arg(20)->Arg(100)->Arg(500)->Arg(1000);
+BENCHMARK(TopN_TemporallyCoherentPriorityQueue_AddCoherently)->Arg(20)->Arg(100)->Arg(1000)->Arg(5000);
 
 
 static void TopN_10TruncatedPriorityQueue_Emplace(benchmark::State& state)
@@ -204,4 +235,4 @@ static void TopN_10TruncatedPriorityQueue_Emplace(benchmark::State& state)
         benchmark::DoNotOptimize(results);
     }
 }
-BENCHMARK(TopN_10TruncatedPriorityQueue_Emplace)->Arg(20)->Arg(100)->Arg(500)->Arg(1000);
+BENCHMARK(TopN_10TruncatedPriorityQueue_Emplace)->Arg(20)->Arg(100)->Arg(1000)->Arg(5000);

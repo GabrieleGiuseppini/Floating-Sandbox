@@ -58,6 +58,8 @@ public:
     {
         Compare cmp;
 
+        assert(mCurrentHeapSize <= mMaxHeapSize);
+
         if (mCurrentHeapSize == mMaxHeapSize)
         {
             if (mCurrentHeapSize > 0
@@ -130,18 +132,18 @@ private:
     {
         Compare cmp;
 
-        while (2 * i <= mCurrentHeapSize)
+        auto const currentHeapSize = mCurrentHeapSize;
+        for (auto j = 2 * i; j <= currentHeapSize; j = 2 * i)
         {
-            auto j = 2 * i;
-
-            // Find largest of two
-            if (j < mCurrentHeapSize && cmp(mHeap[j].priority, mHeap[j + 1].priority))
+            // Find largest of two children
+            if (j < currentHeapSize && cmp(mHeap[j].priority, mHeap[j + 1].priority))
                 ++j;
 
-            // Check whether heap property is statisfed
+            // Check whether heap property is satisfed
             if (!cmp(mHeap[i].priority, mHeap[j].priority))
                 break;
 
+            // Swap with largest child
             std::swap(mHeap[i], mHeap[j]);
 
             // Go down
