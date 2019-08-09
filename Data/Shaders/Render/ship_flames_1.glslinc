@@ -51,10 +51,7 @@ uniform float paramWindSpeedMagnitude;
 
 float GetNoise(vec2 uv) // -> (0.25, 0.75)
 {
-    float n = (texture2D(paramNoiseTexture1, uv).r - 0.5) * 0.5;
-    n += (texture2D(paramNoiseTexture1, uv * 2.0).r - 0.5) * 0.5 * 0.5;
-    
-    return n + 0.5;
+    return texture2D(paramNoiseTexture1, uv).r * 0.5 + 0.25;
 }
 
 mat2 GetRotationMatrix(float angle)
@@ -75,7 +72,7 @@ void main()
     // Flame time
     //
 
-    #define FlameSpeed 0.23
+    #define FlameSpeed 0.345
     float flameTime = paramTime * FlameSpeed;
 
     
@@ -97,7 +94,7 @@ void main()
     // Get noise for this fragment and time
     //
 
-    #define NoiseResolution 0.4
+    #define NoiseResolution 0.6
     float fragmentNoise = GetNoise(uv * NoiseResolution + vec2(flamePersonalitySeed) + vec2(0.0, -flameTime));
     
     

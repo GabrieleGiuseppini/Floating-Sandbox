@@ -1390,18 +1390,18 @@ Render:
 			- Flame render:
 				+ Move more with wind
 				- Transparency on border - slightly more transparent at discard threshold
-				- Noise sampling tests, who knows - it might get better:
-					- Try different noise resolution
-					- Try without second noise component
-					- Try with third noise component
-			- Flamethrower flame render:
-				- Large flamethrower should have higher resolution
+				+ Noise sampling tests, who knows - it might get better:
+					+ Try different noise resolution
+					+ Try without second noise component
+					+ Try with third noise component
+			+ Flamethrower flame render:
+				+ Large flamethrower should have higher resolution
 			- Superheated materials vaporize
 				- 
 
 		- Optimizations:
-			- Pre FPS: 17/18 @ 111 flames
-			- Do perf analysis for low-hanging fruit first
+			+ Pre FPS: 17/18 fps, 34 U/R @ 111 flames (normally 40, 188)
+			+ Do perf analysis for low-hanging fruit first
 			- Low-freq combustion state machine:
 				- Burning candidates: 
 					+ Sticky priority queue: leverage temporal coherence of overheated particles
@@ -1415,8 +1415,7 @@ Render:
 							+ add_or_update(ElementIndex, val)
 								+ If in heap: update and update heap
 								+ Else: add
-
-					= Do benchmarks: (10 out of 20/100/500)
+					+ Do benchmarks: (10 out of 20/100/500)
 						+ Vector_AddAndSort
 						+ PriorityQueue_Add
 						+ PriorityQueue_AddAndPop (sort by lowest, and keep top 10)
@@ -1425,16 +1424,18 @@ Render:
 							+ Loop: makeup index w/ (i%200)
 						+ TruncatedPriorityQueue
 							+ New class altogether, no tracking
+					- Use NthElement w/member BoundedVector
 			- HeatPropagation:
 				- Do perf analysis invoking it N times per frame to exaggerate
 				- Try impact of storing outgoing flows @ local array
 				- If it has impact: try uploading temperature buffer every N steps					
 					- Nuke Points::mIsTemperatureBufferDirty
 					- Ship::Render decides how often to call Points::UploadTemperatureXYZ(...)
-			- Flame rendering:
-				- Do perf analysis to see impact
-				- Shader:
-					- Replace pow with 3 mult's - see FPS gain
+			= Flame rendering:
+				+ Do perf analysis to see impact
+				+ Shader:
+					+ Replace pow with 3 mult's - see FPS gain
+				- When YesBorder, also discard at core
 				- Test perf impact of instanced drawing
 
 		- Cleanup:
