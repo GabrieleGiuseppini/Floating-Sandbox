@@ -30,7 +30,7 @@ public:
     {
     }
 
-    ImageSize(ImageSize && other)
+    ImageSize(ImageSize && other) noexcept
         : Width(other.Width)
         , Height(other.Height)
     {

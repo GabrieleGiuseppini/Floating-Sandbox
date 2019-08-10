@@ -39,7 +39,7 @@ public:
     {
     }
 
-    ImageData(ImageData && other)
+    ImageData(ImageData && other) noexcept
         : Size(other.Size)
         , Data(std::move(other.Data))
     {

@@ -30,7 +30,7 @@ public:
         std::filesystem::path const & filepath,
         ImageSize const & maxSize);
 
-    ShipPreview(ShipPreview && other)
+    ShipPreview(ShipPreview && other) noexcept
         : PreviewImage(std::move(other.PreviewImage))
         , OriginalSize(std::move(other.OriginalSize))
         , Metadata(std::move(other.Metadata))

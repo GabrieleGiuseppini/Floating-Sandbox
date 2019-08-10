@@ -115,7 +115,7 @@ TextureAtlasBuilder::AtlasSpecification TextureAtlasBuilder::BuildAtlasSpecifica
             throw GameException("Dimensions of texture frame \"" + ti.FrameId.ToString() + "\" are not a power of two");
         }
 
-        totalArea += ti.Size.Width * ti.Size.Height;
+        totalArea += static_cast<uint64_t>(ti.Size.Width * ti.Size.Height);
     }
 
     // Square root of area, floor'd to next power of two, minimized

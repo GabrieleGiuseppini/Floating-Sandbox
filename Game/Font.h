@@ -32,7 +32,7 @@ public:
     {
         uint32_t width = 0;
         for (size_t c = 0; c < length; ++c)
-            width += mGlyphWidths[text[c]];
+            width += mGlyphWidths[static_cast<unsigned char>(text[c])];
 
         return ImageSize(width, mCellSize.Height);
     }
@@ -53,9 +53,11 @@ public:
 
         for (size_t c = 0; c < length; ++c)
         {
-            float const textureULeft = mGlyphTextureOrigins[text[c]].x;
+            unsigned char ch = static_cast<unsigned char>(text[c]);
+
+            float const textureULeft = mGlyphTextureOrigins[ch].x;
             float const textureURight = textureULeft + mGlyphTextureWidth;
-            float const textureVBottom = mGlyphTextureOrigins[text[c]].y;
+            float const textureVBottom = mGlyphTextureOrigins[ch].y;
             float const textureVTop = textureVBottom - mGlyphTextureHeight;
 
             // Top-left
@@ -106,7 +108,7 @@ public:
                 textureVBottom,
                 alpha);
 
-            cursorPositionNdc.x += screenToNdcX * mGlyphWidths[text[c]];
+            cursorPositionNdc.x += screenToNdcX * mGlyphWidths[ch];
 
             totalVertices += 6;
         }

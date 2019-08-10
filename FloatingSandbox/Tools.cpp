@@ -445,6 +445,7 @@ FloodHoseTool::FloodHoseTool(
     , mUpCursor(MakeCursor("flood_cursor_up", 20, 0, resourceLoader))
     , mDownCursor1(MakeCursor("flood_cursor_down_1", 20, 0, resourceLoader))
     , mDownCursor2(MakeCursor("flood_cursor_down_2", 20, 0, resourceLoader))
+    , mDownCursorCounter(0)
 {
 }
 
@@ -575,6 +576,7 @@ ScrubTool::ScrubTool(
         std::move(soundController))
     , mUpCursor(MakeCursor("scrub_cursor_up", 15, 15, resourceLoader))
     , mDownCursor(MakeCursor("scrub_cursor_down", 15, 15, resourceLoader))
+    , mCurrentCursor(nullptr)
     , mPreviousMousePos()
     , mPreviousScrub()
     , mPreviousScrubTimestamp(std::chrono::steady_clock::time_point::min())

@@ -48,7 +48,7 @@ public:
             mBuffer[i] = fillValue;
     }
 
-    Buffer(Buffer && other)
+    Buffer(Buffer && other) noexcept
         : mBuffer(other.mBuffer)
         , mSize(other.mSize)
         , mCurrentPopulatedSize(other.mCurrentPopulatedSize)

@@ -180,7 +180,7 @@ private:
             , mVAOHandle(vaoHandle)
         {}
 
-        FontRenderInfo(FontRenderInfo && other)
+        FontRenderInfo(FontRenderInfo && other) noexcept
             : mFontMetadata(std::move(other.mFontMetadata))
             , mFontTextureHandle(std::move(other.mFontTextureHandle))
             , mVertexBufferVBOHandle(std::move(other.mVertexBufferVBOHandle))
