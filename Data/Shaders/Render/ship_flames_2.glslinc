@@ -106,7 +106,7 @@ void main()
     float thickness = 1.0 - smoothstep(0.1, FlameWidth, abs(uv.x));
     
     // Taper flame depending on randomized height
-    thickness *= smoothstep(1.3, fragmentNoise * 0.7, flameSpacePosition.y); // Taper up
+    thickness *= 1.0 - smoothstep(fragmentNoise * 0.7, 1.3, flameSpacePosition.y); // Taper up
     thickness *= smoothstep(-0.15, 0.15, flameSpacePosition.y); // Taper down
 
     // Discard if we are on the edge, i.e. if:
