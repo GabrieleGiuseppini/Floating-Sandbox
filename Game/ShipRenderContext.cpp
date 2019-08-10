@@ -1209,17 +1209,22 @@ void ShipRenderContext::UploadFlamesStart(
     // Set wind speed magnitude parameter, if it has changed
     if (newWind != mCurrentWindSpeedMagnitudeAverage)
     {
+        // Calculate wind angle: we do this here once instead of doing it for each and every pixel
+        float const windRotationAngle = std::copysign(
+            0.8f * SmoothStep(0.0f, 100.0f, std::abs(newWind)),
+            -newWind);
+
         switch (mShipFlameRenderMode)
         {
             case ShipFlameRenderMode::Mode1:
             {
                 mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground1>();
-                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground1, ProgramParameterType::WindSpeedMagnitude>(
-                    newWind);
+                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground1, ProgramParameterType::FlameWindRotationAngle>(
+                    windRotationAngle);
 
                 mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground1>();
-                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground1, ProgramParameterType::WindSpeedMagnitude>(
-                    newWind);
+                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground1, ProgramParameterType::FlameWindRotationAngle>(
+                    windRotationAngle);
 
                 break;
             }
@@ -1227,12 +1232,12 @@ void ShipRenderContext::UploadFlamesStart(
             case ShipFlameRenderMode::Mode2:
             {
                 mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground2>();
-                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground2, ProgramParameterType::WindSpeedMagnitude>(
-                    newWind);
+                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground2, ProgramParameterType::FlameWindRotationAngle>(
+                    windRotationAngle);
 
                 mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground2>();
-                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground2, ProgramParameterType::WindSpeedMagnitude>(
-                    newWind);
+                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground2, ProgramParameterType::FlameWindRotationAngle>(
+                    windRotationAngle);
 
                 break;
             }

@@ -165,6 +165,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
 {
     if (str == "AmbientLightIntensity")
         return ProgramParameterType::AmbientLightIntensity;
+    else if (str == "FlameWindRotationAngle")
+        return ProgramParameterType::FlameWindRotationAngle;
     else if (str == "HeatOverlayTransparency")
         return ProgramParameterType::HeatOverlayTransparency;
     else if (str == "LandFlatColor")
@@ -197,8 +199,6 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::WaterContrast;
     else if (str == "WaterLevelThreshold")
         return ProgramParameterType::WaterLevelThreshold;
-    else if (str == "WindSpeedMagnitude")
-        return ProgramParameterType::WindSpeedMagnitude;
     // Textures
     else if (str == "SharedTexture")
         return ProgramParameterType::SharedTexture;
@@ -226,6 +226,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
     {
     case ProgramParameterType::AmbientLightIntensity:
         return "AmbientLightIntensity";
+    case ProgramParameterType::FlameWindRotationAngle:
+        return "FlameWindRotationAngle";
     case ProgramParameterType::HeatOverlayTransparency:
         return "HeatOverlayTransparency";
     case ProgramParameterType::LandFlatColor:
@@ -258,8 +260,6 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "WaterContrast";
     case ProgramParameterType::WaterLevelThreshold:
         return "WaterLevelThreshold";
-    case ProgramParameterType::WindSpeedMagnitude:
-        return "WindSpeedMagnitude";
     // Textures
     case ProgramParameterType::SharedTexture:
         return "SharedTexture";
