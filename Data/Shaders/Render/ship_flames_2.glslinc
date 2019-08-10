@@ -11,18 +11,19 @@ in vec4 inFlame1; // Position, PlaneId, FlamePersonalitySeed
 in vec2 inFlame2; // FlameSpacePosition
 
 // Outputs
-out float flamePersonalitySeed;
 out vec2 flameSpacePosition;
 out float noBorder;
+out vec2 noiseOffset;
 
 // Params
 uniform mat4 paramOrthoMatrix;
+uniform float paramFlameSpeed;
 
 void main()
 {
-    flamePersonalitySeed = inFlame1.w;
     flameSpacePosition = inFlame2.xy;
     noBorder = float(gl_InstanceIDARB);
+    noiseOffset = vec2(inFlame1.w, inFlame1.w - paramFlameSpeed / 0.8);
 
     gl_Position = paramOrthoMatrix * vec4(inFlame1.xyz, 1.0);
 }
@@ -34,15 +35,14 @@ void main()
 #define in varying
 
 // Inputs from previous shader
-in float flamePersonalitySeed; // [0.0, 1.0]
 in vec2 flameSpacePosition; // (x=[-0.5, 0.5], y=[0.0, 1.0])
 in float noBorder;
+in vec2 noiseOffset;
 
 // The texture
 uniform sampler2D paramNoiseTexture1;
 
 // Params
-uniform float paramFlameSpeed;
 uniform float paramFlameWindRotationAngle;
 
 //
@@ -75,7 +75,7 @@ void main()
     //
 
     #define NoiseResolution 0.75
-    vec2 noiseUv = uv * NoiseResolution + vec2(flamePersonalitySeed, flamePersonalitySeed - paramFlameSpeed / 0.8);
+    vec2 noiseUv = uv * NoiseResolution + noiseOffset;
     float fragmentNoise = texture2D(paramNoiseTexture1, noiseUv).r * 0.5 + 0.25; // -> (0.25, 0.75)
 
 

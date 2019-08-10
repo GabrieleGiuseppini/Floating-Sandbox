@@ -1433,16 +1433,16 @@ Render:
 				- If this has impact: try uploading temperature buffer every N steps					
 					- Nuke Points::mIsTemperatureBufferDirty
 					- Ship::Render decides how often to call Points::UploadTemperatureXYZ(...)
-			= Flame rendering:
+			+ Flame rendering:
 				+ Do perf analysis to see impact
-				= Shader:
+				+ Shader:
 					+ Replace pow with 3 mult's - see FPS gain
 					+ When YesBorder, also discard at core
 					+ Move discard earlier
 					+ Move GetNoise inline
 					+ Precalc wind angle in code and send as param
-					- Precalc noise offset in code and send as vertex attrib, replacing flame personality seed
-						- And do not set param time anymore
+					+ Precalc noise offset in code and send as vertex attrib, replacing flame personality seed
+						+ And do not set param time anymore
 				+ Get timings
 
 		- Cleanup:
