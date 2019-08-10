@@ -128,18 +128,20 @@ void main()
     //
 
     // Core1 (white->yellow)
-    vec3 col1 = mix(vec3(1.0, 0.764, 0.1), vec3(1.0, 1.0, 1.0), smoothstep(0.82, 1.2, thickness));
+    vec4 col1 = mix(vec4(1.0, 0.764, 0.1, 0.0), vec4(1.0, 1.0, 1.0, 0.0), smoothstep(0.82, 1.2, thickness));
 
     // Core2 (->orange)
-    col1 = mix(vec3(1.0, 0.35, 0.0), col1, smoothstep(0.65, 1.18, thickness));
+    col1 = mix(vec4(1.0, 0.35, 0.0, 0.0), col1, smoothstep(0.65, 1.18, thickness));
 
     // Border (->dark red)
-    col1 = mix(vec3(0.3, 0.0, 0.0), col1, smoothstep(0.448, 0.671, thickness) + noBorder);
+    col1 = mix(vec4(0.3, 0.0, 0.0, 0.0), col1, smoothstep(0.448, 0.671, thickness) + noBorder);
 
     // Blend with background
     // When no border: transparent < 0.53  --- opaque > 0.86
     // When border:    transparent < 0.0 --- opaque > 0.7
-    float alpha = smoothstep(0.0 + noBorder*0.53, 0.7 + noBorder*0.16, thickness);
+    float alpha = smoothstep(0.0 + noBorder * 0.53, 0.7 + noBorder * 0.16, thickness);
 
-    gl_FragColor = vec4(col1, alpha);
+    // Make final color
+    vec3 constantList = vec3(1.0f, 0.0f, alpha);
+    gl_FragColor = col1.xyzw * constantList.xxxy + constantList.yyyz;
 } 
