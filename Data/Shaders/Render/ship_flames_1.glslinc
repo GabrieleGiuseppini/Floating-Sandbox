@@ -49,11 +49,6 @@ uniform float paramWindSpeedMagnitude;
 // Based on "Flame in the Wind" by kuvkar (https://www.shadertoy.com/view/4tXXRn)
 //
 
-float GetNoise(vec2 uv) // -> (0.25, 0.75)
-{
-    return texture2D(paramNoiseTexture1, uv).r * 0.5 + 0.25;
-}
-
 mat2 GetRotationMatrix(float angle)
 {
     mat2 m;
@@ -95,7 +90,11 @@ void main()
     //
 
     #define NoiseResolution 0.6
-    float fragmentNoise = GetNoise(uv * NoiseResolution + vec2(flamePersonalitySeed) + vec2(0.0, -flameTime));
+    vec2 noiseUv = 
+        uv * NoiseResolution 
+        + vec2(flamePersonalitySeed) 
+        + vec2(0.0, -flameTime);    
+    float fragmentNoise = texture2D(paramNoiseTexture1, noiseUv).r * 0.5 + 0.25; // -> (0.25, 0.75)
     
     
     //
@@ -113,7 +112,7 @@ void main()
     // Smooth the angle
     angle *= 0.45;
     
-    // Rotate!
+    // Rotate and add!
     uv += GetRotationMatrix(angle) * uv;    
         
     
@@ -128,6 +127,11 @@ void main()
     float variationH = fragmentNoise * 1.5;
     thickness *= smoothstep(1.3, variationH * 0.5, flameSpacePosition.y); // Taper up
     thickness *= smoothstep(-0.15, 0.15, flameSpacePosition.y); // Taper down    
+
+    // Discard if we are on the edge, i.e. if:
+    // thickness < 0.62996 => focusedThickness < 0.25 (@FlameFocus=3.0)
+    if (thickness < 0.62996)
+        discard;
     
     // Cut flame
     thickness = clamp(thickness, 0.0, 3.0);
@@ -141,9 +145,6 @@ void main()
     // Emit
     //
 	        
-    if (focusedThickness < 0.25) // thickness=0.62
-        discard;
-
     // Core1 (white->yellow)
     vec3 col1 = mix(vec3(1.0, 0.764, 0.1), vec3(1.0, 1.0, 1.0), smoothstep(0.8, 1.5, thickness));
 

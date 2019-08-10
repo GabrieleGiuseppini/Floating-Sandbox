@@ -659,8 +659,9 @@ Render:
 			- Then does spring loop:
 				- Spring forces
 					- Have to add to spring forces (because of network), but they are already cleared by now
-				- Integrate - and reset spring forces
+				- Integrate both forces - and reset spring forces
 					- Later we try with position-based SpringRelaxation (*)
+					- At this step we integrate using dt=DT/NumMechanicalIterations
 				- HandleCollisionsWithSeaFloor
 		- Test final L'n'F'
 		- Test:
@@ -1387,17 +1388,18 @@ Render:
 			+ See if heating element should heat less
 			+ Try max air and water temp to 5K
 			- Make melted stuff break earlier (limit breaking length somehow)				
-			- Flame render:
+			- Superheated materials vaporize
+				- 
+			+ Flame render:
 				+ Move more with wind
-				- Transparency on border - slightly more transparent at discard threshold
+				+ Transparency on border - slightly more transparent at discard threshold
 				+ Noise sampling tests, who knows - it might get better:
 					+ Try different noise resolution
 					+ Try without second noise component
 					+ Try with third noise component
 			+ Flamethrower flame render:
 				+ Large flamethrower should have higher resolution
-			- Superheated materials vaporize
-				- 
+				+ Softer border
 
 		- Optimizations:
 			+ Pre FPS: 17/18 fps, 34 U/R @ 111 flames (normally 40, 188)
@@ -1428,19 +1430,25 @@ Render:
 			- HeatPropagation:
 				- Do perf analysis invoking it N times per frame to exaggerate
 				- Try impact of storing outgoing flows @ local array
-				- If it has impact: try uploading temperature buffer every N steps					
+				- If this has impact: try uploading temperature buffer every N steps					
 					- Nuke Points::mIsTemperatureBufferDirty
 					- Ship::Render decides how often to call Points::UploadTemperatureXYZ(...)
 			= Flame rendering:
 				+ Do perf analysis to see impact
-				+ Shader:
+				= Shader:
 					+ Replace pow with 3 mult's - see FPS gain
-				- When YesBorder, also discard at core
-				- Test perf impact of instanced drawing
+					+ When YesBorder, also discard at core
+					+ Move discard earlier
+					+ Move GetNoise inline
+					- Precalc wind angle in code and send as param
+						- 1
+						- 2
+				+ Get timings
 
 		- Cleanup:
 			+ Test generic textures change (gen tex's + air bubbles at same time) and nuke comment
 			+ Test cross of light change
+			- Run in Debug
 			
 		+ Flamethrower tool:
 			+ RenderContext exposes UploadFlameThrower(worldPos)

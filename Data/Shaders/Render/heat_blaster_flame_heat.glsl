@@ -13,6 +13,7 @@ void main()
     // Focus (compress dynamics)
     float radius2 = smoothstep(0.2, 0.35, radius1);
     
+    // Transparent when radius1 >= 0.35, opaque when radius <= 0.2
     float alpha = 1.0 - radius2;
 
     // Core1 (white->yellow)
