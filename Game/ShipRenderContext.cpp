@@ -1664,9 +1664,9 @@ void ShipRenderContext::RenderFlames(
 
         mShaderManager.ActivateProgram<ShaderProgram>();
 
-        // Set time parameter
-        mShaderManager.SetProgramParameter<ShaderProgram, ProgramParameterType::Time>(
-            GameWallClock::GetInstance().NowAsFloat());
+        // Set flame speed parameter
+        mShaderManager.SetProgramParameter<ShaderProgram, ProgramParameterType::FlameSpeed>(
+            GameWallClock::GetInstance().NowAsFloat() * 0.345f);
 
         // Bind VBO
         glBindBuffer(GL_ARRAY_BUFFER, *mFlameVertexVBO);

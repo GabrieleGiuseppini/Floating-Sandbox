@@ -69,6 +69,7 @@ std::string ProgramTypeToStr(ProgramType program);
 enum class ProgramParameterType : uint8_t
 {
     AmbientLightIntensity = 0,
+    FlameSpeed,
     FlameWindRotationAngle,
     HeatOverlayTransparency,
     LandFlatColor,

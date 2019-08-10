@@ -165,6 +165,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
 {
     if (str == "AmbientLightIntensity")
         return ProgramParameterType::AmbientLightIntensity;
+    else if (str == "FlameSpeed")
+        return ProgramParameterType::FlameSpeed;
     else if (str == "FlameWindRotationAngle")
         return ProgramParameterType::FlameWindRotationAngle;
     else if (str == "HeatOverlayTransparency")
@@ -226,6 +228,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
     {
     case ProgramParameterType::AmbientLightIntensity:
         return "AmbientLightIntensity";
+    case ProgramParameterType::FlameSpeed:
+        return "FlameSpeed";
     case ProgramParameterType::FlameWindRotationAngle:
         return "FlameWindRotationAngle";
     case ProgramParameterType::HeatOverlayTransparency:
