@@ -65,7 +65,7 @@ void main()
     // Flame time
     //
 
-    #define FlameSpeed 0.345
+    #define FlameSpeed 0.345 / 0.8
     float flameTime = paramTime * FlameSpeed;
 
     
@@ -85,10 +85,7 @@ void main()
     //
 
     #define NoiseResolution 0.75
-    vec2 noiseUv = 
-        uv * NoiseResolution 
-        + vec2(flamePersonalitySeed) 
-        + vec2(0.0, -flameTime / 0.8);
+    vec2 noiseUv = uv * NoiseResolution + vec2(flamePersonalitySeed, flamePersonalitySeed - flameTime);
     float fragmentNoise = texture2D(paramNoiseTexture1, noiseUv).r * 0.5 + 0.25; // -> (0.25, 0.75)
 
 
