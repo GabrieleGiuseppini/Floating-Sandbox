@@ -127,14 +127,7 @@ void main()
     if (thickness < 0.62996)
         discard;
     
-    // Cut flame
-    thickness = clamp(thickness, 0.0, 3.0);
-
-    // Focus (less halo, larger body)
-    #define FlameFocus 3.0
-    float focusedThickness = pow(thickness, FlameFocus);
-
-    
+   
     //
     // Emit
     //
@@ -146,7 +139,7 @@ void main()
     col1 = mix(vec3(1.0, 0.35, 0.0), col1, smoothstep(0.72, 1.6, thickness));
 
     // Border (->dark red)
-    col1 = mix(vec3(0.3, 0.0, 0.0), col1, smoothstep(0.2, 0.6, focusedThickness) + noBorder);
+    col1 = mix(vec3(0.3, 0.0, 0.0), col1, smoothstep(0.585, 0.843, thickness) + noBorder);
     
     // Blend with background
     // When no border: transparent < 0.7  --- opaque > 1.2
