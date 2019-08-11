@@ -480,8 +480,8 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
     //  - If the endpoints are melting, their temperature - so to keep springs intact while melting makes them longer
     //  - The actual number of mechanics iterations we'll be performing
     //
-    // The strength multiplied with the spring's rest length is the Breaking Length, ready to be
-    // compared against the spring's absolute delta L
+    // The breaking elongation is the strength multiplied with the spring's rest length, so that it's ready to be
+    // compared against the spring's absolute delta L without dividing the delta L by the rest length
     //
 
     // Decay of spring == avg of two endpoints' decay
@@ -491,7 +491,7 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
 
     // If we're melting, the current spring length, when longer than the
     // previous rest length, is also its new rest length - but no more than a few times
-    // the factory rest length
+    // the factory rest length, or else springs become abnormally-long spikes
     if (meltingOverheat > 0.0f)
     {
         SetRestLength(
@@ -500,7 +500,7 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
                 std::max(
                     GetRestLength(springIndex),
                     GetLength(springIndex, points)),
-                mFactoryRestLengthBuffer[springIndex] * 6.0f)); // 6 times the factory rest length is the max
+                mFactoryRestLengthBuffer[springIndex] * 6.0f));
     }
 
     mBreakingElongationBuffer[springIndex] =
@@ -508,7 +508,7 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
         * strengthAdjustment
         * strengthIterationsAdjustment
         * springDecay
-        * GetRestLength(springIndex) // To make strain calculation independeng from rest length
+        * GetRestLength(springIndex) // To make strain comparison independent from rest length
         * (1.0f + 15.0f * meltFraction); // When melting, springs are more tolerant
 }
 
