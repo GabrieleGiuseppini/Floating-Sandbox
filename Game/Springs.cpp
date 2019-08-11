@@ -500,7 +500,7 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
                 std::max(
                     GetRestLength(springIndex),
                     GetLength(springIndex, points)),
-                mFactoryRestLengthBuffer[springIndex] * 6.0f));
+                mFactoryRestLengthBuffer[springIndex] * 2.0f));
     }
 
     mBreakingElongationBuffer[springIndex] =
@@ -509,7 +509,7 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
         * strengthIterationsAdjustment
         * springDecay
         * GetRestLength(springIndex) // To make strain comparison independent from rest length
-        * (1.0f + 15.0f * meltFraction); // When melting, springs are more tolerant
+        * (1.0f + 25.0f * meltFraction); // When melting, springs are more tolerant
 }
 
 }
