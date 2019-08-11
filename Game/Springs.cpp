@@ -429,10 +429,10 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
     float constexpr MinStiffnessFraction = 0.0008f;
 
     // We reach max softness at T+100
-    float const meltFraction = SmoothStep(0.0f, 100.0f, meltingOverheat);
+    float const meltDepthFraction = SmoothStep(0.0f, 100.0f, meltingOverheat);
 
     // 1.0 when not melting, MinStiffnessFraction when melting "a lot"
-    float const meltMultiplier = Mix(1.0f, MinStiffnessFraction, meltFraction);
+    float const meltMultiplier = Mix(1.0f, MinStiffnessFraction, meltDepthFraction);
 
     // Our desired stiffness coefficient
     float const desiredStiffnessCoefficient =
@@ -509,7 +509,7 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
         * strengthIterationsAdjustment
         * springDecay
         * GetRestLength(springIndex) // To make strain comparison independent from rest length
-        * (1.0f + 25.0f * meltFraction); // When melting, springs are more tolerant
+        * (1.0f + 25.0f * meltDepthFraction); // When melting, springs are more tolerant
 }
 
 }
