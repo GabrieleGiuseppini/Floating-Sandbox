@@ -438,17 +438,20 @@ Render:
 			+ Cursors (up and down)
 			+ Snap sound
 
-		- Check bugs:
-			= Scrolling past world end/black triangle
+		= Check bugs:
+			+ Scrolling past world end/black triangle
 			- "Two happy fox bois"'s crash with opengl
 
 		= Heat and combustion (*)
+
+		= Decide whether to keep ShipPreviewPanel's thread yield fix for Pac0master
 
 		- Version overhaul
 			- No build number but beta instead, with beta=X always < beta=0
 
 		- Add those 2 Lava textures
 			- Need to remove blue overlay first, apply to textures directly
+				- But see why it's needed first
 
 		- Invite Sup3rfastgamer and add to testers list
 			
@@ -875,8 +878,6 @@ Render:
 	- Test perf: allocate (and thus upload) Points' mutable attributes in one single buffer
 		- Replace Points' individual buffers with pointers to starting segment in same buffer
 		- Then do a single upload
-
-	- Test using gl_TexCoord to pass texture coords from vertex to fragment
 					
 	- Lights on the GPU with instanced drawing (*)
 		- We begin with doing light at vertex (Gouraud)
@@ -897,6 +898,7 @@ Render:
 		+ Finalize render (glFlush) before render step, not after
 			+ Research glFlush()
 			+ By invoking glFlush() and SwapBuffers() in MainFrame, before Render()
+	+ Test using gl_TexCoord to pass texture coords from vertex to fragment
 
 
 - Gfx:
@@ -1387,9 +1389,12 @@ Render:
 			+ Max flame development depends on number of springs connected to point (so ropes have smaller flames)
 			+ See if heating element should heat less
 			+ Try max air and water temp to 5K
-			- Make melted stuff break earlier (limit breaking length somehow)				
+			= Make melted stuff break earlier
+				+ Limit breaking length somehow
+				- Try with limiting rest length instead
 			- Superheated materials vaporize
-				- 
+				- New combustion type, "TBD"
+				- Same state machine as normal combustion, but no flames, and no generation of heat
 			+ Flame render:
 				+ Move more with wind
 				+ Transparency on border - slightly more transparent at discard threshold
@@ -1448,6 +1453,7 @@ Render:
 		- Cleanup:
 			+ Test generic textures change (gen tex's + air bubbles at same time) and nuke comment
 			+ Test cross of light change
+			- SettingsDialog: Heat Dissipation tooltip: "...dissipate or acquire..."
 			- Run in Debug
 			
 		+ Flamethrower tool:

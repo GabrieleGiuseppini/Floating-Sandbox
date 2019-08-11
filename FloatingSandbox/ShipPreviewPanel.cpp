@@ -378,7 +378,7 @@ void ShipPreviewPanel::RunPreviewThread()
             assert(PanelToThreadMessage::MessageType::SetDirectory == message->GetMessageType());
 
             //
-            // Set directory
+            // Scan directory
             //
 
             try
@@ -404,7 +404,9 @@ void ShipPreviewPanel::ScanDirectory(std::filesystem::path const & directoryPath
 {
     LogMessage("PreviewThread::ScanDirectory(", directoryPath.string(), ")");
 
-    bool isSingleCore = (std::thread::hardware_concurrency() < 2);
+    // TODO: test for Pac0master's freezing issue
+    //bool isSingleCore = (std::thread::hardware_concurrency() < 2);
+    bool isSingleCore = true;
 
 
     //
@@ -448,6 +450,7 @@ void ShipPreviewPanel::ScanDirectory(std::filesystem::path const & directoryPath
             fsEVT_DIR_SCANNED,
             this->GetId(),
             shipFilepaths));
+
 
     if (isSingleCore)
     {

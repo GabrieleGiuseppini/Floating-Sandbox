@@ -35,8 +35,8 @@ void Springs::Add(
         / 2.0f;
     mMaterialStrengthBuffer.emplace_back(averageStrength);
 
-    // Breaking length recalculated later
-    mBreakingLengthBuffer.emplace_back(0.0f);
+    // Breaking elongation recalculated later
+    mBreakingElongationBuffer.emplace_back(0.0f);
 
     // Stiffness is average
     float const stiffness =
@@ -279,12 +279,11 @@ void Springs::UpdateForStrains(
             && !mIsBombAttachedBuffer[s])
         {
             // Calculate strain length
-            float dx = GetLength(s, points);
-            float const strainLength = fabs(mRestLengthBuffer[s] - dx);
+            float const strain = fabs(GetLength(s, points) - mRestLengthBuffer[s]);
 
-            // Check against breaking length
-            float const breakingLength = mBreakingLengthBuffer[s];
-            if (strainLength > breakingLength)
+            // Check against breaking elongation
+            float const breakingElongation = mBreakingElongationBuffer[s];
+            if (strain > breakingElongation)
             {
                 // It's broken!
 
@@ -301,7 +300,7 @@ void Springs::UpdateForStrains(
                 // Stressed spring...
                 // ...see if should un-stress it
 
-                if (strainLength < StrainLowWatermark * breakingLength)
+                if (strain < StrainLowWatermark * breakingElongation)
                 {
                     // It's not stressed anymore
                     mIsStressedBuffer[s] = false;
@@ -312,7 +311,7 @@ void Springs::UpdateForStrains(
                 // Not stressed spring
                 // ...see if should stress it
 
-                if (strainLength > StrainHighWatermark * breakingLength)
+                if (strain > StrainHighWatermark * breakingElongation)
                 {
                     // It's stressed!
                     mIsStressedBuffer[s] = true;
@@ -430,10 +429,10 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
     float constexpr MinStiffnessFraction = 0.0008f;
 
     // We reach max softness at T+100
-    float const meltAmount = SmoothStep(0.0f, 100.0f, meltingOverheat);
+    float const meltFraction = SmoothStep(0.0f, 100.0f, meltingOverheat);
 
     // 1.0 when not melting, MinStiffnessFraction when melting "a lot"
-    float const meltMultiplier = Mix(1.0f, MinStiffnessFraction, meltAmount);
+    float const meltMultiplier = Mix(1.0f, MinStiffnessFraction, meltFraction);
 
     // Our desired stiffness coefficient
     float const desiredStiffnessCoefficient =
@@ -459,7 +458,6 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
     }
 
 
-
     //
     // Damping coefficient
     //
@@ -472,17 +470,18 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
         * massFactor
         / dt;
 
+
     //
-    // Breaking length
+    // Breaking elongation
     //
-    // The strength of a spring - i.e. the displacement tolerance or spring breaking point - depends on:
+    // The breaking elongation - i.e. the max delta L, aka displacement tolerance - depends on:
     //  - The material strength and the strength adjustment
     //  - The spring's decay (which itself is a function of the endpoints' decay)
     //  - If the endpoints are melting, their temperature - so to keep springs intact while melting makes them longer
     //  - The actual number of mechanics iterations we'll be performing
     //
     // The strength multiplied with the spring's rest length is the Breaking Length, ready to be
-    // compared against the spring absolute delta L
+    // compared against the spring's absolute delta L
     //
 
     // Decay of spring == avg of two endpoints' decay
@@ -491,23 +490,26 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
         / 2.0f;
 
     // If we're melting, the current spring length, when longer than the
-    // previous rest length, is also its new rest length
+    // previous rest length, is also its new rest length - but no more than a few times
+    // the factory rest length
     if (meltingOverheat > 0.0f)
     {
         SetRestLength(
             springIndex,
-            std::max(
-                GetRestLength(springIndex),
-                GetLength(springIndex, points)));
+            std::min(
+                std::max(
+                    GetRestLength(springIndex),
+                    GetLength(springIndex, points)),
+                mFactoryRestLengthBuffer[springIndex] * 6.0f)); // 6 times the factory rest length is the max
     }
 
-    mBreakingLengthBuffer[springIndex] =
-        GetRestLength(springIndex)
-        * GetMaterialStrength(springIndex)
+    mBreakingElongationBuffer[springIndex] =
+        GetMaterialStrength(springIndex)
         * strengthAdjustment
         * strengthIterationsAdjustment
         * springDecay
-        * (1.0f + 100.0f * meltAmount);
+        * GetRestLength(springIndex) // To make strain calculation independeng from rest length
+        * (1.0f + 15.0f * meltFraction); // When melting, springs are more tolerant
 }
 
 }

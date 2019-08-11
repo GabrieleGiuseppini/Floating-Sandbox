@@ -131,7 +131,7 @@ public:
         , mFactorySuperTrianglesBuffer(mBufferElementCount, mElementCount, SuperTrianglesVector())
         // Physical
         , mMaterialStrengthBuffer(mBufferElementCount, mElementCount, 0.0f)
-        , mBreakingLengthBuffer(mBufferElementCount, mElementCount, 0.0f)
+        , mBreakingElongationBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mMaterialStiffnessBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mFactoryRestLengthBuffer(mBufferElementCount, mElementCount, 1.0f)
         , mRestLengthBuffer(mBufferElementCount, mElementCount, 1.0f)
@@ -463,11 +463,6 @@ public:
         return mMaterialStrengthBuffer[springElementIndex];
     }
 
-    float GetBreakingLength(ElementIndex springElementIndex) const
-    {
-        return mBreakingLengthBuffer[springElementIndex];
-    }
-
     float GetMaterialStiffness(ElementIndex springElementIndex) const
     {
         return mMaterialStiffnessBuffer[springElementIndex];
@@ -687,7 +682,7 @@ private:
     //
 
     Buffer<float> mMaterialStrengthBuffer;
-    Buffer<float> mBreakingLengthBuffer;
+    Buffer<float> mBreakingElongationBuffer;
     Buffer<float> mMaterialStiffnessBuffer;
     Buffer<float> mFactoryRestLengthBuffer;
     Buffer<float> mRestLengthBuffer;
