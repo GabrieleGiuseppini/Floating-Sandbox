@@ -509,7 +509,7 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
         * strengthIterationsAdjustment
         * springDecay
         * GetRestLength(springIndex) // To make strain comparison independent from rest length
-        * (1.0f + 25.0f * meltDepthFraction); // When melting, springs are more tolerant to elongation
+        * (1.0f + 30.0f * meltDepthFraction); // When melting, springs are more tolerant to elongation
 }
 
 }
