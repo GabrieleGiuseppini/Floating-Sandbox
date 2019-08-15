@@ -404,9 +404,7 @@ void ShipPreviewPanel::ScanDirectory(std::filesystem::path const & directoryPath
 {
     LogMessage("PreviewThread::ScanDirectory(", directoryPath.string(), ")");
 
-    // TODO: test for Pac0master's freezing issue
-    //bool isSingleCore = (std::thread::hardware_concurrency() < 2);
-    bool isSingleCore = true;
+    bool isSingleCore = (std::thread::hardware_concurrency() < 2);
 
 
     //

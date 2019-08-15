@@ -444,7 +444,7 @@ Render:
 
 		= Heat and combustion (*)
 
-		= Decide whether to keep ShipPreviewPanel's thread yield fix for Pac0master
+		+ Decide whether to keep ShipPreviewPanel's thread yield fix for Pac0master
 
 		- Version overhaul
 			- No build number but beta instead, with beta=X always < beta=0
@@ -452,10 +452,10 @@ Render:
 		- Add those 2 Lava textures
 			- Need to remove blue overlay first, apply to textures directly
 				- But see why it's needed first
-
-		- Invite Sup3rfastgamer and add to testers list
 			
 		+ Black cloth, black wood
+
+		- ShipLoadDialog: build bitmap with Image
 
 	- 1.13.0
 
@@ -516,14 +516,17 @@ Render:
 		# An SR71 Habu: NotTelling
 		# JackMellon: JackTheBrickfilmMaker (Discord, https://drive.google.com/drive/folders/1isy3QiRzMfyu69v5M0gwD5tvBnYZMWXx)
 	- New ships:
-		- To test:
-			- Last ones from Mike
+		- To test & take:
 			- mrpasta444_ship_pack
+			- The bunker parodie (desktop)
+			- Last ones (thid) from Mike
 			- TheodoreRoosevelt
 			- Others in TODO
 			- Graza's from awesomeyorkie
-			- Add MasterGarfield to credits in About box
-			- Add Aqua to credits in About box
+			- Add MasterGarfield to credits in About box (if we take his ship)
+			- Add Aqua to credits in About box (if we take his ship)
+			- John Smith's ark
+				- Add John Smith to about box (if we take his ship)
 	- Descriptions:
 		+ Tell maximord about new ships - give him names
 		= Copy all descriptions into their respective .shp files
@@ -1391,7 +1394,8 @@ Render:
 			+ Try max air and water temp to 5K
 			= Make melted stuff break earlier
 				+ Limit breaking length somehow
-				- Try with limiting rest length instead
+				+ Try with limiting rest length instead
+				- Avoid breaking: try with non-smoothstep melt depth (and lower breaking length when melted)
 			- Superheated materials vaporize
 				- New combustion type, "TBD"
 				- Same state machine as normal combustion, but no flames, and no generation of heat
@@ -1809,6 +1813,8 @@ Render:
 
 - Game Interactions and Controls:
 
+	- .shp file allows for overriding/addition of materials
+
 	- Interior layer (multiple textures):
 		- NOTE: not really useful as normally different textures require different structures
 		- JSON: texture is optionally an array
@@ -1967,6 +1973,7 @@ Render:
 		- Morse code: text-to-morse encoder would be cool
 			- Default "S.O.S.", also customizable via ship property
 	- Volume of effects should depend on distance/zoom
+	- Global mute setting
 
 -Probing:
 	- IProbe:

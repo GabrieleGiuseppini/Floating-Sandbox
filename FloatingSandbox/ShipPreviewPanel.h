@@ -117,7 +117,7 @@ public:
     fsPreviewReadyEvent(fsPreviewReadyEvent const & other)
         : wxEvent(other)
         , mShipIndex(other.mShipIndex)
-        , mShipPreview(std::move(other.mShipPreview))
+        , mShipPreview(other.mShipPreview)
     {
     }
 
