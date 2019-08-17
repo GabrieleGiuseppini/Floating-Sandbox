@@ -74,6 +74,15 @@ RgbaImageData ImageFileTools::LoadImageRgbaLowerLeft(std::filesystem::path const
         std::nullopt);
 }
 
+RgbImageData ImageFileTools::LoadImageRgbLowerLeft(std::filesystem::path const & filepath)
+{
+    return InternalLoadImage<rgbColor>(
+        filepath,
+        IL_RGB,
+        IL_ORIGIN_LOWER_LEFT,
+        std::nullopt);
+}
+
 RgbaImageData ImageFileTools::LoadImageRgbaLowerLeftAndMagnify(
     std::filesystem::path const & filepath,
     int magnificationFactor)
@@ -123,6 +132,30 @@ RgbaImageData ImageFileTools::LoadImageRgbaLowerLeftAndResize(
     return InternalLoadImage<rgbaColor>(
         filepath,
         IL_RGBA,
+        IL_ORIGIN_LOWER_LEFT,
+        ResizeInfo(
+            [maxSize](ImageSize const & originalImageSize)
+            {
+                float wShrinkFactor = static_cast<float>(maxSize.Width) / static_cast<float>(originalImageSize.Width);
+                float hShrinkFactor = static_cast<float>(maxSize.Height) / static_cast<float>(originalImageSize.Height);
+                float shrinkFactor = std::min(
+                    std::min(wShrinkFactor, hShrinkFactor),
+                    1.0f);
+
+                return ImageSize(
+                    static_cast<int>(round(static_cast<float>(originalImageSize.Width) * shrinkFactor)),
+                    static_cast<int>(round(static_cast<float>(originalImageSize.Height) * shrinkFactor)));
+            },
+            ILU_BILINEAR));
+}
+
+RgbImageData ImageFileTools::LoadImageRgbLowerLeftAndResize(
+    std::filesystem::path const & filepath,
+    ImageSize const & maxSize)
+{
+    return InternalLoadImage<rgbColor>(
+        filepath,
+        IL_RGB,
         IL_ORIGIN_LOWER_LEFT,
         ResizeInfo(
             [maxSize](ImageSize const & originalImageSize)

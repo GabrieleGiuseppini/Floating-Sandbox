@@ -451,13 +451,16 @@ Render:
 
 		- Add those 2 Lava textures
 			- Need to remove blue overlay first, apply to textures directly
-				- But see why it's needed first
+				- But see why it's needed first: play with trick of setting ocean transparency to zero and then changing texture
 			
 		+ Black cloth, black wood
-
-		- ShipLoadDialog: build bitmap with Image
+			
 
 	- 1.13.0
+
+		- Ship preview database
+
+		- Points' buffer perf improvement (*)
 
 		- Lights perf improvement (*)
 		
@@ -1214,7 +1217,6 @@ Render:
 					+ Uploads flames in order of heap
 			+ See Pac0master's bug: looks like when the cardboard of the funnel touches the water it starts generating a super high amount of heat
 			+ See Pac0master's bug: Spawn the default ship,  max out the Thermal conductivity and  dissipation the back of the ship will start to heat up and melt very fast
-
 			+ Melting improvements:
 				+ Option 1: Test with sticky strength
 					+ Springs has new buffer, "MeltStrengthComponent", always > 1.0
@@ -1377,8 +1379,7 @@ Render:
 				+ SoundController:
 					+ Subscribe to OnCombustionBegin/End: adjust cumulative volume of Burning sound
 					+ Subscribe to OnCombustionSmothered: play one-time sizzling
-
-		= Experiments/Improvements:
+		+ Experiments/Improvements:
 			+ Consider higher default heat from flamethrower tool
 				+ Current (900k) is fine for wood and ropes and cloth
 			+ Fire-generated heat should be 10x in order to spread more
@@ -1392,13 +1393,10 @@ Render:
 			+ Max flame development depends on number of springs connected to point (so ropes have smaller flames)
 			+ See if heating element should heat less
 			+ Try max air and water temp to 5K
-			= Make melted stuff break earlier
+			+ Make melted stuff break earlier
 				+ Limit breaking length somehow
 				+ Try with limiting rest length instead
-				- Avoid breaking: try with non-smoothstep melt depth (and lower breaking length when melted)
-			- Superheated materials vaporize
-				- New combustion type, "TBD"
-				- Same state machine as normal combustion, but no flames, and no generation of heat
+				+ Avoid breaking: try with non-smoothstep melt depth (and lower breaking length when melted)
 			+ Flame render:
 				+ Move more with wind
 				+ Transparency on border - slightly more transparent at discard threshold
@@ -1410,11 +1408,11 @@ Render:
 				+ Large flamethrower should have higher resolution
 				+ Softer border
 
-		- Optimizations:
+		= Optimizations:
 			+ Pre FPS: 17/18 fps, 34 U/R @ 111 flames (normally 40, 188)
 			+ Do perf analysis for low-hanging fruit first
-			- Low-freq combustion state machine:
-				- Burning candidates: 
+			+ Low-freq combustion state machine:
+				= Burning candidates: 
 					+ Sticky priority queue: leverage temporal coherence of overheated particles
 						+ Contains:
 							+ buffer for heap, maxSize = nPoints
@@ -1435,13 +1433,10 @@ Render:
 							+ Loop: makeup index w/ (i%200)
 						+ TruncatedPriorityQueue
 							+ New class altogether, no tracking
-					- Use NthElement w/member BoundedVector
+					+ Use NthElement w/member BoundedVector
 			- HeatPropagation:
 				- Do perf analysis invoking it N times per frame to exaggerate
 				- Try impact of storing outgoing flows @ local array
-				- If this has impact: try uploading temperature buffer every N steps					
-					- Nuke Points::mIsTemperatureBufferDirty
-					- Ship::Render decides how often to call Points::UploadTemperatureXYZ(...)
 			+ Flame rendering:
 				+ Do perf analysis to see impact
 				+ Shader:
@@ -1454,10 +1449,10 @@ Render:
 						+ And do not set param time anymore
 				+ Get timings
 
-		- Cleanup:
+		= Cleanup:
 			+ Test generic textures change (gen tex's + air bubbles at same time) and nuke comment
 			+ Test cross of light change
-			- SettingsDialog: Heat Dissipation tooltip: "...dissipate or acquire..."
+			+ SettingsDialog: Heat Dissipation tooltip: "...dissipate or acquire..."
 			- Run in Debug
 			
 		+ Flamethrower tool:
@@ -1472,8 +1467,14 @@ Render:
 			+ Radius setting
 			+ Apply heat (& Ultra-Violent mode)
 
+	- Degrading combustion
+		- Superheated materials vaporize
+		- New combustion type, "Degrading - TBD"
+		- Same state machine as normal combustion, but no flames, and no generation of heat
+
 	- Explosive combustion:
-		- Rendering: ?
+		- Rendering: ? need shader with explosion
+			- Shader might then replace bombs' texture explosions
 		- New materials:
 			- "gunpowder" and "diesel"
 

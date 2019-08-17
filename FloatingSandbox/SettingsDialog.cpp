@@ -874,7 +874,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     "Heat Dissipation Adjust",
-                    "Adjusts the speed with which materials dissipate heat in air and water.",
+                    "Adjusts the speed with which materials dissipate or accumulate heat to or from air and water.",
                     mGameController->GetHeatDissipationAdjustment(),
                     [this](float /*value*/)
                     {

@@ -384,7 +384,6 @@ public:
         , mFactoryIsLeakingBuffer(mBufferElementCount, shipPointCount, false)
         // Heat dynamics
         , mTemperatureBuffer(mBufferElementCount, shipPointCount, 0.0f)
-        , mIsTemperatureBufferDirty(true)
         , mMaterialHeatCapacityBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialIgnitionTemperatureBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mCombustionStateBuffer(mBufferElementCount, shipPointCount, CombustionState())
@@ -956,11 +955,6 @@ public:
         mTemperatureBuffer[pointElementIndex] = value;
     }
 
-    void MarkTemperatureBufferAsDirty()
-    {
-        mIsTemperatureBufferDirty = true;
-    }
-
     std::shared_ptr<Buffer<float>> MakeTemperatureBufferCopy()
     {
         auto temperatureBufferCopy = mFloatBufferAllocator.Allocate();
@@ -1389,7 +1383,6 @@ private:
     //
 
     Buffer<float> mTemperatureBuffer; // Kelvin
-    bool mutable mIsTemperatureBufferDirty;
     Buffer<float> mMaterialHeatCapacityBuffer;
     Buffer<float> mMaterialIgnitionTemperatureBuffer;
     Buffer<CombustionState> mCombustionStateBuffer;

@@ -483,16 +483,10 @@ void Points::UpdateCombustionLowFrequency(
         }
     }
 
+
     //
     // Now pick candidates for ignition
     //
-
-    // Sort candidates by ignition temperature delta
-    mIgnitionCandidates.sort(
-        [](auto const & t1, auto const & t2)
-        {
-            return std::get<1>(t1) > std::get<1>(t2);
-        });
 
     // Randomly choose the max number of points we want to ignite now
     size_t maxPoints = std::min(
@@ -501,11 +495,20 @@ void Points::UpdateCombustionLowFrequency(
             ? gameParameters.MaxBurningParticles - mBurningPoints.size()
             : size_t(0));
 
+    // Sort top N candidates by ignition temperature delta
+    std::nth_element(
+        mIgnitionCandidates.data(),
+        mIgnitionCandidates.data() + maxPoints,
+        mIgnitionCandidates.data() + mIgnitionCandidates.size(),
+        [](auto const & t1, auto const & t2)
+        {
+            return std::get<1>(t1) > std::get<1>(t2);
+        });
+
     // Ignite these points
     for (size_t i = 0; i < mIgnitionCandidates.size() && i < maxPoints; ++i)
     {
         auto const pointIndex = std::get<0>(mIgnitionCandidates[i]);
-
 
         //
         // Ignite!
@@ -971,16 +974,13 @@ void Points::UploadAttributes(
         mIsDecayBufferDirty = false;
     }
 
-    if (mIsTemperatureBufferDirty
-        && renderContext.GetDrawHeatOverlay())
+    if (renderContext.GetDrawHeatOverlay())
     {
         renderContext.UploadShipPointTemperature(
             shipId,
             mTemperatureBuffer.data(),
             0,
             mAllPointCount);
-
-        mIsTemperatureBufferDirty = false;
     }
 
     renderContext.UploadShipPointMutableAttributesEnd(shipId);

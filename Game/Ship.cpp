@@ -1584,9 +1584,6 @@ void Ship::PropagateHeat(
     //
 
     mPoints.UpdateTemperatureBuffer(std::move(newPointTemperatureBuffer));
-
-    // Remember that the temperature buffer is dirty
-    mPoints.MarkTemperatureBufferAsDirty();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////

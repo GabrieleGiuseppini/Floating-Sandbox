@@ -18,10 +18,11 @@ public:
     static ImageSize GetImageSize(std::filesystem::path const & filepath);
 
     static RgbaImageData LoadImageRgbaLowerLeft(std::filesystem::path const & filepath);
+    static RgbImageData LoadImageRgbLowerLeft(std::filesystem::path const & filepath);
     static RgbaImageData LoadImageRgbaLowerLeftAndMagnify(std::filesystem::path const & filepath, int magnificationFactor);
     static RgbaImageData LoadImageRgbaLowerLeftAndResize(std::filesystem::path const & filepath, int resizedWidth);
     static RgbaImageData LoadImageRgbaLowerLeftAndResize(std::filesystem::path const & filepath, ImageSize const & maxSize);
-
+    static RgbImageData LoadImageRgbLowerLeftAndResize(std::filesystem::path const & filepath, ImageSize const & maxSize);
     static RgbImageData LoadImageRgbUpperLeft(std::filesystem::path const & filepath);
 
     static void SaveImage(
