@@ -1407,8 +1407,7 @@ Render:
 			+ Flamethrower flame render:
 				+ Large flamethrower should have higher resolution
 				+ Softer border
-
-		= Optimizations:
+		+ Optimizations:
 			+ Pre FPS: 17/18 fps, 34 U/R @ 111 flames (normally 40, 188)
 			+ Do perf analysis for low-hanging fruit first
 			+ Low-freq combustion state machine:
@@ -1434,9 +1433,9 @@ Render:
 						+ TruncatedPriorityQueue
 							+ New class altogether, no tracking
 					+ Use NthElement w/member BoundedVector
-			- HeatPropagation:
-				- Do perf analysis invoking it N times per frame to exaggerate
-				- Try impact of storing outgoing flows @ local array
+			+ HeatPropagation:
+				+ Do perf analysis invoking it N times per frame to exaggerate: 10.4/10.6
+				+ Try impact of storing outgoing flows @ local array
 			+ Flame rendering:
 				+ Do perf analysis to see impact
 				+ Shader:

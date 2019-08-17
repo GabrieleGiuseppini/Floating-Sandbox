@@ -1436,11 +1436,8 @@ void Ship::PropagateHeat(
     auto newPointTemperatureBuffer = mPoints.MakeTemperatureBufferCopy();
     float * restrict newPointTemperatureBufferData = newPointTemperatureBuffer->data();
 
-    ////// TODO: if needed
-    ////// Weights of outbound water flows along each spring, including impermeable ones;
-    ////// set to zero for springs whose resultant scalar water velocities are
-    ////// directed towards the point being visited
-    ////std::array<float, GameParameters::MaxSpringsPerPoint> springOutboundWaterFlowWeights;
+    // Outbound heat flows along each spring
+    std::array<float, GameParameters::MaxSpringsPerPoint> springOutboundHeatFlows;
 
     //
     // Visit all non-ephemeral points
@@ -1472,6 +1469,9 @@ void Ship::PropagateHeat(
             float const outgoingHeatFlow =
                 mSprings.GetMaterialThermalConductivity(cs.SpringIndex) * gameParameters.ThermalConductivityAdjustment
                 * std::max(pointTemperature - oldPointTemperatureBufferData[cs.OtherEndpointIndex], 0.0f); // DeltaT, positive if going out
+
+            // Store flow
+            springOutboundHeatFlows[s] = outgoingHeatFlow;
 
             // Calculate outgoing heat due to this delta T
             //
@@ -1513,15 +1513,10 @@ void Ship::PropagateHeat(
         {
             auto const & cs = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings[s];
 
-            // Calculate outgoing heat flow per unit of time (again)
-            float const outgoingHeatFlow =
-                mSprings.GetMaterialThermalConductivity(cs.SpringIndex) * gameParameters.ThermalConductivityAdjustment
-                * std::max(pointTemperature - oldPointTemperatureBufferData[cs.OtherEndpointIndex], 0.0f); // DeltaT, positive if going out
-
             // Raise target temperature due to this flow
             newPointTemperatureBufferData[cs.OtherEndpointIndex] +=
                 dt
-                * outgoingHeatFlow * normalizationFactor
+                * springOutboundHeatFlows[s] * normalizationFactor
                 / mSprings.GetFactoryRestLength(cs.SpringIndex)
                 / mPoints.GetMaterialHeatCapacity(cs.OtherEndpointIndex);
         }
