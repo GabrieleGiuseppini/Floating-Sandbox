@@ -37,7 +37,10 @@ private:
     void OnDirCtrlDirSelected(wxCommandEvent & event);
     void OnShipFileSelected(fsShipFileSelectedEvent & event);
     void OnShipFileChosen(fsShipFileChosenEvent & event);
+    void OnDirectoryPreviewComplete(fsDirPreviewCompleteEvent & event);
     void OnRecentDirectorySelected(wxCommandEvent & event);
+    void OnShipSearchTextCtrlText(wxCommandEvent & event);
+    void OnShipSearchTextCtrlTextEnter(wxCommandEvent & event);
     void OnHomeDirButtonClicked(wxCommandEvent & event);
     void OnInfoButtonClicked(wxCommandEvent & event);
     void OnLoadButton(wxCommandEvent & event);
@@ -60,6 +63,7 @@ private:
     wxGenericDirCtrl * mDirCtrl;
     ShipPreviewPanel * mShipPreviewPanel;
     wxComboBox * mRecentDirectoriesComboBox;
+    wxTextCtrl * mShipSearchTextCtrl;
     wxButton * mInfoButton;
     wxButton * mLoadButton;
 

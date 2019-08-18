@@ -171,6 +171,36 @@ ShipPreviewControl::~ShipPreviewControl()
 {
 }
 
+void ShipPreviewControl::Select()
+{
+    //
+    // Fire our custom event
+    //
+
+    auto event = fsShipFileSelectedEvent(
+        fsEVT_SHIP_FILE_SELECTED,
+        this->GetId(),
+        mShipIndex,
+        mShipMetadata,
+        mShipFilepath);
+
+    ProcessWindowEvent(event);
+}
+
+void ShipPreviewControl::Choose()
+{
+    //
+    // Fire our custom event
+    //
+
+    auto event = fsShipFileChosenEvent(
+        fsEVT_SHIP_FILE_CHOSEN,
+        this->GetId(),
+        mShipFilepath);
+
+    ProcessWindowEvent(event);
+}
+
 void ShipPreviewControl::SetSelected(bool isSelected)
 {
     // Set border
@@ -239,32 +269,12 @@ void ShipPreviewControl::SetPreviewContent(
 
 void ShipPreviewControl::OnMouseSingleClick(wxMouseEvent & /*event*/)
 {
-    //
-    // Fire our custom event
-    //
-
-    auto event = fsShipFileSelectedEvent(
-        fsEVT_SHIP_FILE_SELECTED,
-        this->GetId(),
-        mShipIndex,
-        mShipMetadata,
-        mShipFilepath);
-
-    ProcessWindowEvent(event);
+    this->Select();
 }
 
 void ShipPreviewControl::OnMouseDoubleClick(wxMouseEvent & /*event*/)
 {
-    //
-    // Fire our custom event
-    //
-
-    auto event = fsShipFileChosenEvent(
-        fsEVT_SHIP_FILE_CHOSEN,
-        this->GetId(),
-        mShipFilepath);
-
-    ProcessWindowEvent(event);
+    this->Choose();
 }
 
 void ShipPreviewControl::SetImageContent(RgbaImageData const & imageData)

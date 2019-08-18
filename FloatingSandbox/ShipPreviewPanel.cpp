@@ -35,6 +35,7 @@ ShipPreviewPanel::ShipPreviewPanel(
     , mWaitImage(ImageFileTools::LoadImageRgbaLowerLeft(resourceLoader.GetBitmapFilepath("ship_preview_wait")))
     , mErrorImage(ImageFileTools::LoadImageRgbaLowerLeft(resourceLoader.GetBitmapFilepath("ship_preview_error")))
     , mCurrentlyCompletedDirectory()
+    , mShipNameToPreviewIndex()
     // Preview Thread
     , mPreviewThread()
     , mPanelToThreadMessage()
@@ -125,6 +126,79 @@ void ShipPreviewPanel::SetDirectory(std::filesystem::path const & directoryPath)
         mPanelToThreadMessage.reset(new PanelToThreadMessage(PanelToThreadMessage::MakeSetDirectoryMessage(directoryPath)));
         mPanelToThreadMessageEvent.notify_one();
         mPanelToThreadMessageLock.unlock();
+    }
+    else
+    {
+        // Fire completion
+        QueueEvent(
+            new fsDirPreviewCompleteEvent(
+                fsEVT_DIR_PREVIEW_COMPLETE,
+                this->GetId(),
+                *mCurrentlyCompletedDirectory));
+    }
+}
+
+void ShipPreviewPanel::Search(std::string const & shipName)
+{
+    if (!mPreviewPanelSizer || shipName.empty())
+        return;
+
+    std::string const shipNameLCase = Utils::ToLower(shipName);
+
+    //
+    // Find first ship whose name has the requested name as prefix
+    //
+
+    std::optional<size_t> shipIndex;
+    for (size_t s = 0; s < mShipNameToPreviewIndex.size(); ++s)
+    {
+        auto minChars = std::min(mShipNameToPreviewIndex[s].length(), shipNameLCase.length());
+        if (minChars > 0
+            && mShipNameToPreviewIndex[s].substr(0, minChars) == shipNameLCase)
+        {
+            shipIndex = s;
+            break;
+        }
+    }
+
+    if (!!shipIndex)
+    {
+        //
+        // Scroll to the item
+        //
+
+        assert(*shipIndex < mPreviewPanelSizer->GetItemCount());
+
+        auto item = mPreviewPanelSizer->GetItem(*shipIndex);
+        if (nullptr != item)
+        {
+            int xUnit, yUnit;
+            GetScrollPixelsPerUnit(&xUnit, &yUnit);
+            if (yUnit != 0)
+            {
+                this->Scroll(
+                    -1,
+                    item->GetPosition().y / yUnit);
+            }
+        }
+
+        //
+        // Select the item
+        //
+
+        assert(*shipIndex < mPreviewControls.size());
+
+        mPreviewControls[*shipIndex]->Select();
+    }
+}
+
+void ShipPreviewPanel::ChooseSearched()
+{
+    if (!!mSelectedPreview)
+    {
+        assert(*mSelectedPreview < mPreviewControls.size());
+
+        mPreviewControls[*mSelectedPreview]->Choose();
     }
 }
 
@@ -264,6 +338,16 @@ void ShipPreviewPanel::OnDirScanned(fsDirScannedEvent & event)
 
     // Re-trigger scroll bar
     this->FitInside();
+
+
+    //
+    // Reset ship name search map
+    //
+
+    mShipNameToPreviewIndex.resize(newPreviewControls.size());
+
+    // Continue processing
+    event.Skip();
 }
 
 void ShipPreviewPanel::OnDirScanError(fsDirScanErrorEvent & event)
@@ -278,19 +362,32 @@ void ShipPreviewPanel::OnPreviewReady(fsPreviewReadyEvent & event)
     assert(event.GetShipIndex() < mPreviewControls.size());
     mPreviewControls[event.GetShipIndex()]->SetPreviewContent(*(event.GetShipPreview()));
 
+    // Populate name search map
+    assert(event.GetShipIndex() < mShipNameToPreviewIndex.size());
+    mShipNameToPreviewIndex[event.GetShipIndex()] = Utils::ToLower(event.GetShipPreview()->Metadata.ShipName);
+
     LogMessage("ShipPreviewPanel::OnPreviewReady(): ...preview content set.");
+
+    // Continue processing
+    event.Skip();
 }
 
 void ShipPreviewPanel::OnPreviewError(fsPreviewErrorEvent & event)
 {
     assert(event.GetShipIndex() < mPreviewControls.size());
     mPreviewControls[event.GetShipIndex()]->SetPreviewContent(mErrorImage, event.GetErrorMessage(), "");
+
+    // Continue processing
+    event.Skip();
 }
 
 void ShipPreviewPanel::OnDirPreviewComplete(fsDirPreviewCompleteEvent & event)
 {
     // Remember the current directory, now that it's complete
     mCurrentlyCompletedDirectory = event.GetDirectoryPath();
+
+    // Continue processing
+    event.Skip();
 }
 
 void ShipPreviewPanel::OnShipFileSelected(fsShipFileSelectedEvent & event)

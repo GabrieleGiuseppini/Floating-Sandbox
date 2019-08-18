@@ -201,12 +201,14 @@ public:
         : wxEvent(winid, eventType)
         , mDirectoryPath(directoryPath)
     {
+        m_propagationLevel = wxEVENT_PROPAGATE_MAX;
     }
 
     fsDirPreviewCompleteEvent(fsDirPreviewCompleteEvent const & other)
         : wxEvent(other)
         , mDirectoryPath(other.mDirectoryPath)
     {
+        m_propagationLevel = wxEVENT_PROPAGATE_MAX;
     }
 
     virtual wxEvent *Clone() const override
@@ -252,6 +254,9 @@ public:
 
     void SetDirectory(std::filesystem::path const & directoryPath);
 
+    void Search(std::string const & shipName);
+    void ChooseSearched();
+
 private:
 
     void OnResized(wxSizeEvent & event);
@@ -291,6 +296,9 @@ private:
     // When set, indicates that the preview of this directory is completed
     std::optional<std::filesystem::path> mCurrentlyCompletedDirectory;
 
+    // Ship name (lcase) to preview index, used when searching for a ship by name
+    std::vector<std::string> mShipNameToPreviewIndex;
+
     ////////////////////////////////////////////////
     // Preview Thread
     ////////////////////////////////////////////////
@@ -299,7 +307,6 @@ private:
 
     void RunPreviewThread();
     void ScanDirectory(std::filesystem::path const & directoryPath);
-
 
     //
     // Panel-to-Thread communication

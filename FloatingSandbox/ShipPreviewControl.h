@@ -139,6 +139,9 @@ public:
 
     virtual ~ShipPreviewControl();
 
+    void Select();
+    void Choose();
+
     void SetSelected(bool isSelected);
 
     void SetPreviewContent(ShipPreview const & shipPreview);
