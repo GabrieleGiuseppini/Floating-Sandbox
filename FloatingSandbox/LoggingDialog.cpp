@@ -96,12 +96,7 @@ void LoggingDialog::OnKeyDown(wxKeyEvent& event)
         // Log a marker
         //
 
-        auto now = std::chrono::system_clock::now();
-
-        auto secs = std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count();
-        auto usecs = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch() % std::chrono::seconds(1)).count();
-
-        LogMessage("-------------------- ", secs, ".", usecs);
+        LogMessage("-------------------- ");
     }
     else if (event.GetKeyCode() == 'X')
     {

@@ -257,6 +257,7 @@ void ShipPreviewPanel::OnDirScanned(fsDirScannedEvent & event)
     wxGridSizer * newPreviewPanelSizer = nullptr;
 
     std::vector<ShipPreviewControl *> newPreviewControls;
+    std::vector<std::string> newShipNameToPreviewIndex;
 
     if (!event.GetShipFilepaths().empty())
     {
@@ -284,6 +285,9 @@ void ShipPreviewPanel::OnDirScanned(fsDirScannedEvent & event)
 
             // Add to sizer
             newPreviewPanelSizer->Add(shipPreviewControl, 0, wxALIGN_CENTRE_HORIZONTAL | wxALIGN_TOP);
+
+            // Populate name->index map for search
+            newShipNameToPreviewIndex.push_back(Utils::ToLower(event.GetShipFilepaths()[shipIndex].filename().string()));
         }
 
         newPreviewPanel->SetSizerAndFit(newPreviewPanelSizer);
@@ -320,6 +324,7 @@ void ShipPreviewPanel::OnDirScanned(fsDirScannedEvent & event)
         mPreviewPanel->Destroy(); // Will also destroy sizer and preview controls
 
     mPreviewControls = newPreviewControls;
+    mShipNameToPreviewIndex = newShipNameToPreviewIndex;
 
     mPreviewPanel = newPreviewPanel;
     mPreviewPanelSizer = newPreviewPanelSizer;
@@ -340,12 +345,6 @@ void ShipPreviewPanel::OnDirScanned(fsDirScannedEvent & event)
     this->FitInside();
 
 
-    //
-    // Reset ship name search map
-    //
-
-    mShipNameToPreviewIndex.resize(newPreviewControls.size());
-
     // Continue processing
     event.Skip();
 }
@@ -361,10 +360,6 @@ void ShipPreviewPanel::OnPreviewReady(fsPreviewReadyEvent & event)
 
     assert(event.GetShipIndex() < mPreviewControls.size());
     mPreviewControls[event.GetShipIndex()]->SetPreviewContent(*(event.GetShipPreview()));
-
-    // Populate name search map
-    assert(event.GetShipIndex() < mShipNameToPreviewIndex.size());
-    mShipNameToPreviewIndex[event.GetShipIndex()] = Utils::ToLower(event.GetShipPreview()->Metadata.ShipName);
 
     LogMessage("ShipPreviewPanel::OnPreviewReady(): ...preview content set.");
 
@@ -569,6 +564,7 @@ void ShipPreviewPanel::ScanDirectory(std::filesystem::path const & directoryPath
     {
         // Give the main thread time to process this
         std::this_thread::yield();
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
     }
 
 
@@ -606,10 +602,11 @@ void ShipPreviewPanel::ScanDirectory(std::filesystem::path const & directoryPath
 
             LogMessage("PreviewThread::ScanDirectory(): ...event fired.");
 
-            if (isSingleCore && (3 == (iShip % 4)))
+            if (isSingleCore && 3 == (iShip % 4))
             {
                 // Give the main thread time to process this
                 std::this_thread::yield();
+                std::this_thread::sleep_for(std::chrono::milliseconds(20));
             }
         }
         catch (std::exception const & ex)

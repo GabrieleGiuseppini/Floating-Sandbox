@@ -437,21 +437,19 @@ Render:
 
 			+ Cursors (up and down)
 			+ Snap sound
+		+ ShipLoadDialog: search bar
+		+ Heat and combustion
 
 		= Check bugs:
 			+ Scrolling past world end/black triangle
 			- "Two happy fox bois"'s crash with opengl
 			= Ship load dialog freeze:
 				+ Log all w/timestamps
-				- Add more log lines
-				- Change LoggingDialog::'L'
-				- Send to Pac0master
-				-
-				- Re-enable Thanos
-
-		= Heat and combustion (*)
-
-		+ Decide whether to keep ShipPreviewPanel's thread yield fix for Pac0master
+				+ Add more log lines
+				+ Change LoggingDialog::'L'
+				+ Send to Pac0master
+				- Wait for his answer
+				+ Re-enable Thanos
 
 		- Version overhaul
 			- No build number but beta instead, with beta=X always < beta=0
@@ -1073,413 +1071,6 @@ Render:
 	- Attempt to use total point masses for springs (*)
 		- Do first a pass to recalc coefficients, once per simulation step
 
-	= Heat and Combustion (*)
-		+ Spec:
-			+ Integration of Decay with Combustion:
-				+ Combustion also is a source of decay
-				+ Springs should get weak based off decay, independently from source
-				+ It is really 3 distinct processes:
-					+ 1a: Point rotting:
-						+ Low-frequency
-						+ water + isLeaking => decay
-					+ 1b: Point combustion:
-						+ Any frequency (combustion state machine update frequency)
-						+ combustion y/n => decay
-					+ 2: Spring decay
-						+ Low-frequency
-						+ p.decay => s.strength
-							+ Use both endpoints' decay
-						+ Impl:
-							+ Springs::Decay(Points const &)
-								+ For each spring: strength = material's strength * avg of two endpoints' decay
-									+ float buffer: MaterialStrength
-			+ Rendering of flames:
-				+ Need depth-sorting:
-					+ Ship has heap of indices of burning points						
-						+ Ordering of heap: plane ID
-						+ Heap created from scratch at connectivity visit
-						+ Heap updated by Points's combustion state machine update (heap passed by Ship) when points start
-						  or stop burning					
-						+ Heap used by Points's Upload() (heap passed by Ship)
-		+ Impl:
-			+ Properties and Materials:
-				+ New StructuralMaterial properties:
-						+ Ignition temperature (T)
-						+ Melting temperature (T)
-						+ Thermal conductivity 
-						+ Specific Heat
-						+ Combustion type (Combustion, Explosion)
-					+ Add all of them via script, with switches based off material type
-						+ Thermal conductivity: see https://en.wikipedia.org/wiki/Thermal_conductivity#Units
-						+ Then, manual tune
-					+ Add all of them to guide
-				+ Points:
-					+ MaterialIgnitionTemperature
-					+ Temperature/Buffer
-					+ CombustionState/Buffer
-				+ Springs:
-					+ MaterialMeltingTemperature (avg of two endpoints, calcd at Add())
-					+ MaterialThermalConductivity (avg of two endpoints, calcd at Add())
-				+ Renames:
-					+ Points::TotalMass -> "CurrentMass" (and UpdateTotalMasses)
-						+ TODO: rethink this one; "Mass" contains augmentation nowadays
-					+ Springs::Stiffness -> "MaterialStiffness"
-					+ Springs::Coefficients -> "CurrentCoefficients"
-					+ Springs::StiffnessCoefficient -> "CurrentStiffnessCoefficient"
-					+ Springs::DampingCoefficient -> "CurrentDampingCoefficient"
-					+ Springs::Strength -> "CurrentStrength"
-					+ Springs::GetMaterialStrength
-					+ See whether all "current" should go and become _just_
-			+ Heat overlay:
-				+ Ship/RenderContext flag
-				+ SettingsDialog
-				+ Ship::Render: when flag set, upload heat buffer (much like we do w/Decay)
-					+ Ship/RenderContext UploadHeat
-						+ Maintains dirty flag and exposes MarkTempBufAsDirty - exactly like decay - which is invoked by:
-							+ Heat propagation
-				+ Ship/RenderContext render
-					+ Rendering:
-						+ RenderCore enums
-					+ Shaders:
-						+ Do point, spring, and triangle shaders
-							+ Do second, richer version of main ones - "...WithTemperature..." - that completely
-							  replace the first ones when the heat overlay is activated
-								+ Texture
-								+ Color
-							+ Parameter setting
-						+ Use temperature buffer (of floats) to produce "temperature color" as:
-							+ tint3 = mix(c1, c2, some f of temperature ~= 1-e^(-paramHeatContrast*T)) // see https://en.wikipedia.org/wiki/Incandescence#/media/File:Example_incandescence_colors_(temperature_range_550_-_1300_C).svg
-						+ Make it glow in the night
-						+ Use function (in include) to apply heat overlay
-							+ Nuke static params 4 colors
-						+ Try multi-band gradient
-					+ Transparency at SettingsDialog
-						+ "Render" section under "Heat"
-						+ Figure out right default value
-			+ Physics update:
-				+ Ship::Update: 
-					+ @Beginning: either call Springs::UpdateParameters(params, points) or call 
-					  Springs::UpdateDecayAndTemperatureAndParameters(params, points), depending on simulation step
-						+ Springs::UpdateParameters(params, points): 
-							+ iff params updated: UpdateDecayAndTemperatureAndParameters(params, points)
-						+ Test:
-							+ Stress and break (Titanic)
-							+ Mass augmentation
-							+ Repair (restore)
-							+ Param changes
-						+ Springs::UpdateDecayAndTemperatureAndParameters(params, points):
-							+ Assumption: Decay and Temperature have changed (Parameters not necessarily)
-							+ (Params, P.Temperature, P.Mass) -> StiffnessCoefficient
-							+ (Params, P.Mass) -> DampingCoefficient
-							+ (Params, P.Decay, P.Temperature) -> S.Strength
-								+ Params are needed to include StrengthAdjustment and NumMechanicalDynamicsIterationsAdjustment
-								  in "current" strength
-								+ Add "MaterialStrength", and use "Strength" for strain
-									+ Check for all current uses of Strength and replace with MaterialStrength
-								+ Since we're touching this: factor in Strength the other things that we calculate at 
-								  UpdateStrains, namely:
-									+ StrengthAdjustment, NumMechanicalDynamicsIterationsAdjustment
-									+ Rest Length
-							+ Flip burning and melting point in metals
-						+ Nuke Ship::DecaySprings and, with it, Springs::Set(Current)Strength
-						+ Cleanup low-frequency schedule now that DecaySprings is gone
-							+ Change frequency altogether to 7*6
-						+ Verify assembly: hopefully no call to UpdateForDTP(...springIndex...) from UpdateForDTP(all)
-					+ Later on: Ship::UpdateHeatDynamics:
-						+ At one slot: call Ship::PropagateHeat()
-							+ Propagation and dissipation
-								+ New global constants: AirTemperature, WaterTemperature
-								+ Use specific dt's calc's as constexpr's in UpdateTemperature based off frequency of steps
-								+ Dissipation: use air or water temp, depending on whether it's above water or below
-									+ Exaggerate water dissipation, so that smothered fire does not rekindle immediately
-										+ First, double-check calculations, however
-							+ Cleanup TODO's (and do we have a useless step frequency constant now?) to keep it at each step
-						+ At another slot: call Points::UpdateCombustionStateMachineLowFrequency(...)
-							+ For each point:
-								+ If it's not combusting:
-									+ Check combustion transition
-										+ Notify
-										+ Choose random max development
-								+ Else (it's combusting):
-									+ Check exhaustion transition
-										+ Notify (boolean for water-caused)											
-									+ Do decay: burn rate (i.e. decay speed) ~= structural mass (the lower the mass, the faster decays)
-										+ Verify default, min, and max
-									+ No temperature and no raise and lower flames, done below at Points::UpdateCombustingPoints()
-								+ Water (both underwater and flood) should apply regardless of state
-								+ Do phased ignitions (N at a time)
-									+ Run low-frequency state machine M times for 1/Mth of the points each time
-									+ Choose number of promoted randomly = N
-										+ Find right N: depends on M
-									+ At each step: choose top N ignitions over all candidates, sorted
-									  by temperature over ignition temperature
-						+ At all steps: call Points::UpdateCombustionStateMachineHighFrequency(heap)
-							+ Points uses heap (with burning points) and evolves the "burning"
-							  state machine
-								+ Raise flames up and down
-									+ Redo 3 curves, see paper
-								+ Heat to self and neighbors
-									+ Do code changes
-									+ Do flag to turn off flame rendering
-										+ Move flame rendering to heat & combustion?
-			+ Ship::ConnectivityVisit:
-				+ Call Points::ReorderBurningPoints()
-			+ Ship::Render:
-				+ Calls Points::UploadFlames()
-					+ Uploads flames in order of heap
-			+ See Pac0master's bug: looks like when the cardboard of the funnel touches the water it starts generating a super high amount of heat
-			+ See Pac0master's bug: Spawn the default ship,  max out the Thermal conductivity and  dissipation the back of the ship will start to heat up and melt very fast
-			+ Melting improvements:
-				+ Option 1: Test with sticky strength
-					+ Springs has new buffer, "MeltStrengthComponent", always > 1.0
-					+ We might also need sticky stiffness, but try with strength first
-				+ Option 2: Test with sticky rest length
-					+ StiffnessCoeff and Strength are memory-less: they return to their original values when no melting occurs,
-					  but RestLength not
-					+ First test in-place modifying RestLength; if ok:
-						+ Make "FactoryRestLength" buffer
-						+ Verify all usages of RestLength and choose accordingly
-							+ Repair: try using both as targets and choose best
-						+ Decide performant way of making rest length sticky
-						+ Update comments at Springs
-					+ Do asymptotic stiffness, not zero
-					+ Try different DeltaTMax's
-					+ Repair: recalc coeffs when we've set a new rest length
-						+ Adjust rest length before all, "snapping" rest length to factory when close enough
-							+ Also set rest length to factory when spring restored
-						+ Use boolean flag to recalc coeffs just once per spring
-						+ General:
-							+ See if should be faster (play with settings' speed)
-							+ See if UltraViolent mode makes sense
-						+ Decide whether to target current or factory rest length
-			+ Electrical: devices generate heat, and lights and generators break at low and high temperatures
-				+ New electrical material properties - "HeatGenerated" and operating temperatures
-				+ GameParameters: electrical heat generated adjustment
-					+ Settings dialog: new "Electrical" section between HeatBlaster and World
-				+ Rearc:
-					+ ElectricalElements has buffer with operating temperatures
-					+ ElectricalElements::UpdateSourcesAndPropagation (rename from "Connectivity")
-						+ Move from Ship
-						+ Uses mSourceIndices as starting point, instead of just generators
-							+ Nuke generator indices
-						+ For each source:
-							+ Check preconditions:
-								+ Wetness
-								+ Operating temperature
-							+ If ok:
-								+ Generate heat (using also adjustment)
-								+ Flood graph for VisitSequenceNumber
-					+ Rename "AvailableCurrent" as "AvailableLight"
-					+ ElectricalElements::UpdateSinks (replaces "Update")
-						+ Uses mSinkIndices (vector of indices, not only lamps)
-						+ Lamps: run lamp state machine
-							+ Consider also operating temperatures in state machine and transition accordingly
-							+ Each time AvailableLight is > 0, generate heat (using also adjustment)
-					+ Make self-combusting ship:
-						+ Make heat-resistant materials (low thermal conductivity and high heat capacity):
-							+ Electrical:
-								+ Generator
-								+ Lamp
-								+ Heating Element
-									+ And catch at script
-						+ Do ship
-						+ Redo template
-			+ Make flames smaller when point is orphaned
-				+ 1: Ship::SpringDestroyHandler: invoke Ship::OnPointOrphaned for each endpoint that becomes orphaned
-				+ 2: Ship::OnPointOrphaned: invoke Points::OnPointOrphaned
-				+ 3: Points::OnPointOrphaned: 
-					+ Suddenly truncate development
-						+ Try even smaller ?
-			+ Interaction with bombs:
-				+ Triggering:
-					+ Timer, Impact, RC: 
-						+ Trigger when temperature > GameParameters::BombsTemperatureTrigger = 773.15 (500C)
-					+ Anti-Matter: + 1000
-				+ Explosion:
-					+ Timer, Impact, RC: 
-						+ Produce heat directly at Ship::DoBombExplosion
-							+ Verify first it's called at these 3
-							+ Add heat to each point in blastRadius, considering ultra-violent mode as well
-								+ Use GameParameters::BombExplosionHeatProduced
-									+ Also at settings dialog, under Interactions
-					+ Check if default value is good
-					+ Check maximum again
-			+ Flamethrower:
-				+ Physics:
-					+ Ship::Interaction:
-						+ GameParameters::FlameThrowerHeat
-							+ Absolute value, in J
-							+ SettingsDialog, under "Flamethrower" in "Heat"
-						+ Convert into DeltaT and inject in radius, smoothing radius
-					+ Radius at SettingsDialog, under "Flamethrower" in "Heat"
-					+ Fix default value of heat <-> slider
-				+ Max power: 20,000
-				+ Rename it: "Heat Blaster"
-					+ Code & UI
-					+ Shift cools down
-						+ New HeatBlasterAction enum at GameTypes {Heat,Cool}
-						+ Interaction: switch on action and either add or remove heat (w/fraction though, for 3rd principle)
-						+ Rendering:
-							+ Shader chosen depending on mCurrentHeatBlasterAction
-								+ Two shaders, use #include's returning radius with parameters to make these changes:
-									+ Flame direction (outward or inward, "speedMultiplier")
-									+ Then make flame colors (for cooling: turn R into B)
-						+ Cursor (simply upside-down and mirrored)
-						+ Sound (wind or air vortex)
-				+ Option to turn off flame rendering
-					+ @ GameController
-				+ Help
-			+ GameParameters:
-				+ ThermalConductivityAdjustment 
-				+ IgnitionTemperatureAdjustment (in SettingsDialog: "Burning Point Adjust")
-				+ MeltingTemperatureAdjustment (in SettingsDialog: "Melting Point Adjust")
-				+ CombustionSpeedAdjustment
-				+ CombustionHeatAdjustment
-				+ Also add all of these to settings dialog, under "Heat" tab
-				+ Make max burning points adjustable
-					+ All sub-systems need to allow for > max burning particles, because when the user changes the value down,
-					  the excess ones will need some time to disappear
-						+ Test
-					+ RenderContext: realloc VBO each time # of flames changes by 100
-					+ Points: doesn't care as it uses vector
-					+ SettingsDialog
-						+ Under "Heat", with warning icon like Simulation Quality
-				+ Make air and water temperature adjustable
-				+ See if should lower default MaxBurningParticles (per impact of all burning)
-				+ See if should allow higher heat blaster
-			+ Flame render:
-				+ Make better transition for bottom
-				+ Skew wind speed with smoothstep
-					+ And reverse wind direction
-				+ Make yellow core more narrow, in favor of thicker red border
-				+ Make more vivid red
-				+ Smoothen wind change (via running average @ RenderContext)
-				+ Add slider for flame size
-				+ Move wind rotation before noise sampling
-					+ Nuke wind randomization
-				+ Reduce local coherency of noise
-					+ Add FlamePersonalitySeed shader param, straight from ship into vertex buffer
-				+ Make same colors as flamethrower
-				+ Adjust bottom
-				+ Try without red border, to better merge multiple flames together
-				+ Multi-flame improvements:
-					+ Make better personality (less locality-aware, more randomized)
-						+ Assign actual random number between zero and one at ignition time
-						+ Change shader to expect value between zero and one
-					+ Try dual-phase rendering: border only first, body only then
-						+ Test
-						+ Do vertex includes
-						+ Test perf with instanced drawing(x2)
-				+ See if can fix problem with flames on ropes that swing behind triangles
-					+ Separate render step for chains, and flames belong to chains if their point
-					  has no attached triangles
-					+ Test
-					+ If works:
-						+ Go back to one single buffer (& single VBO, & single VAO), having StartUpload declare total # of flames, 
-						  and adding bg ones at beginning and fg ones at end
-							+ Keep track of beginning of fg ones == end of bg ones
-					+ OnChain detection: use # of factory triangles, not current triangles (heuristic to avoid jumping planes
-					  when triangles are destroyed by fire)
-				+ Try different color scheme
-					+ If keep: do also at:
-						+ Flames2
-						+ HeatBlaster flame
-			+ Sound:
-				+ Media:
-					+ Burning loop
-					+ Sizzling X 2 or 3
-				+ SoundController:
-					+ Subscribe to OnCombustionBegin/End: adjust cumulative volume of Burning sound
-					+ Subscribe to OnCombustionSmothered: play one-time sizzling
-		+ Experiments/Improvements:
-			+ Consider higher default heat from flamethrower tool
-				+ Current (900k) is fine for wood and ropes and cloth
-			+ Fire-generated heat should be 10x in order to spread more
-				+ Or: check if heat should depend on ignition temperature of that point 
-					+ Is it possible that the heat we release now from burning hi-ign-temp points is actually lower than the one
-					  the point has in order to be at that temperature?
-				+ Spreads just fine on wood, ropes, and cloth
-			+ Lower the min decay for extinguishing, so things break easier once burnt
-			+ When state is Burning, also decay non-burning neighbors on top of decaying self (so to smear burnt color more around)
-				+ At low-frequency update
-			+ Max flame development depends on number of springs connected to point (so ropes have smaller flames)
-			+ See if heating element should heat less
-			+ Try max air and water temp to 5K
-			+ Make melted stuff break earlier
-				+ Limit breaking length somehow
-				+ Try with limiting rest length instead
-				+ Avoid breaking: try with non-smoothstep melt depth (and lower breaking length when melted)
-			+ Flame render:
-				+ Move more with wind
-				+ Transparency on border - slightly more transparent at discard threshold
-				+ Noise sampling tests, who knows - it might get better:
-					+ Try different noise resolution
-					+ Try without second noise component
-					+ Try with third noise component
-			+ Flamethrower flame render:
-				+ Large flamethrower should have higher resolution
-				+ Softer border
-		+ Optimizations:
-			+ Pre FPS: 17/18 fps, 34 U/R @ 111 flames (normally 40, 188)
-			+ Do perf analysis for low-hanging fruit first
-			+ Low-freq combustion state machine:
-				= Burning candidates: 
-					+ Sticky priority queue: leverage temporal coherence of overheated particles
-						+ Contains:
-							+ buffer for heap, maxSize = nPoints
-							+ buffer of int32_t where element I contains either index in heap buffer of that element,
-							  or max<int32>
-						+ Exposes:
-							+ remove_if_in(ElementIndex)
-								+ If in heap, removes it
-							+ add_or_update(ElementIndex, val)
-								+ If in heap: update and update heap
-								+ Else: add
-					+ Do benchmarks: (10 out of 20/100/500)
-						+ Vector_AddAndSort
-						+ PriorityQueue_Add
-						+ PriorityQueue_AddAndPop (sort by lowest, and keep top 10)
-						+ Vector_AddAndNthElement
-						+ Sticky_PriorityQueue
-							+ Loop: makeup index w/ (i%200)
-						+ TruncatedPriorityQueue
-							+ New class altogether, no tracking
-					+ Use NthElement w/member BoundedVector
-			+ HeatPropagation:
-				+ Do perf analysis invoking it N times per frame to exaggerate: 10.4/10.6
-				+ Try impact of storing outgoing flows @ local array
-			+ Flame rendering:
-				+ Do perf analysis to see impact
-				+ Shader:
-					+ Replace pow with 3 mult's - see FPS gain
-					+ When YesBorder, also discard at core
-					+ Move discard earlier
-					+ Move GetNoise inline
-					+ Precalc wind angle in code and send as param
-					+ Precalc noise offset in code and send as vertex attrib, replacing flame personality seed
-						+ And do not set param time anymore
-				+ Get timings
-
-		= Cleanup:
-			+ Test generic textures change (gen tex's + air bubbles at same time) and nuke comment
-			+ Test cross of light change
-			+ SettingsDialog: Heat Dissipation tooltip: "...dissipate or acquire..."
-			- Run in Debug
-			
-		+ Flamethrower tool:
-			+ RenderContext exposes UploadFlameThrower(worldPos)
-			+ GameController stores worldPos at ApplyFlameThrower(screenPos) and later, at Render, invokes RenderContext::UploadFlameThrower()
-			+ Cursor
-			+ Sound
-				+ Continuous
-			+ Tool
-				+ Engages (and starts sound) only if GameController::ApplyFlameThrower(screenPos) returns true (i.e. point found in radius)
-			+ Fix radius & size (smaller radius for catching points, same render size)
-			+ Radius setting
-			+ Apply heat (& Ultra-Violent mode)
-
-		- Update changes.txt
-
 	- Degrading combustion
 		- Superheated materials vaporize
 		- New combustion type, "Degrading - TBD"
@@ -1847,8 +1438,6 @@ Render:
 		- How to Guide
 
 - UI:
-	- ShipLoadDialog: search bar
-
 	- SettingsDialog: make slider textboxes editable
 
 	- Ship descriptions: use Mike's drawings
@@ -4919,7 +4508,7 @@ IF WX:
 				+ Sound: scrub, with movement (based off feedback from GameController, like saw)
 				+ Better sounds with vector directions
 				+ Help
-	+ Repair tool (*)
+	+ Repair tool
 		+ 1) No Points::Destroy/Delete, but Detach()
 			+ Points::Detach(.), also at Handler
 			+ No IsDeleted() checks anymore, anywhere
@@ -5038,7 +4627,7 @@ IF WX:
 						+ Lower volume
 		+ Parameters:
 			+ Remove repair force adjustment from GameParameters
-	+ Also dry points should rot, albeit very slowly (*)
+	+ Also dry points should rot, albeit very slowly
 		+ ...and also do "rust_receptivity" material property
 		+ Rotting factor: (inner water + (isUnderwater ? 0.1 : 0.0)) * material.rust_receptivity
 			+ 0.2
@@ -5219,6 +4808,409 @@ IF WX:
 				+ Test first in visible world
 				+ Finalize
 			+ Merge
+	+ Heat and Combustion (*)
+		+ Spec:
+			+ Integration of Decay with Combustion:
+				+ Combustion also is a source of decay
+				+ Springs should get weak based off decay, independently from source
+				+ It is really 3 distinct processes:
+					+ 1a: Point rotting:
+						+ Low-frequency
+						+ water + isLeaking => decay
+					+ 1b: Point combustion:
+						+ Any frequency (combustion state machine update frequency)
+						+ combustion y/n => decay
+					+ 2: Spring decay
+						+ Low-frequency
+						+ p.decay => s.strength
+							+ Use both endpoints' decay
+						+ Impl:
+							+ Springs::Decay(Points const &)
+								+ For each spring: strength = material's strength * avg of two endpoints' decay
+									+ float buffer: MaterialStrength
+			+ Rendering of flames:
+				+ Need depth-sorting:
+					+ Ship has heap of indices of burning points						
+						+ Ordering of heap: plane ID
+						+ Heap created from scratch at connectivity visit
+						+ Heap updated by Points's combustion state machine update (heap passed by Ship) when points start
+						  or stop burning					
+						+ Heap used by Points's Upload() (heap passed by Ship)
+		+ Impl:
+			+ Properties and Materials:
+				+ New StructuralMaterial properties:
+						+ Ignition temperature (T)
+						+ Melting temperature (T)
+						+ Thermal conductivity 
+						+ Specific Heat
+						+ Combustion type (Combustion, Explosion)
+					+ Add all of them via script, with switches based off material type
+						+ Thermal conductivity: see https://en.wikipedia.org/wiki/Thermal_conductivity#Units
+						+ Then, manual tune
+					+ Add all of them to guide
+				+ Points:
+					+ MaterialIgnitionTemperature
+					+ Temperature/Buffer
+					+ CombustionState/Buffer
+				+ Springs:
+					+ MaterialMeltingTemperature (avg of two endpoints, calcd at Add())
+					+ MaterialThermalConductivity (avg of two endpoints, calcd at Add())
+				+ Renames:
+					+ Points::TotalMass -> "CurrentMass" (and UpdateTotalMasses)
+						+ TODO: rethink this one; "Mass" contains augmentation nowadays
+					+ Springs::Stiffness -> "MaterialStiffness"
+					+ Springs::Coefficients -> "CurrentCoefficients"
+					+ Springs::StiffnessCoefficient -> "CurrentStiffnessCoefficient"
+					+ Springs::DampingCoefficient -> "CurrentDampingCoefficient"
+					+ Springs::Strength -> "CurrentStrength"
+					+ Springs::GetMaterialStrength
+					+ See whether all "current" should go and become _just_
+			+ Heat overlay:
+				+ Ship/RenderContext flag
+				+ SettingsDialog
+				+ Ship::Render: when flag set, upload heat buffer (much like we do w/Decay)
+					+ Ship/RenderContext UploadHeat
+						+ Maintains dirty flag and exposes MarkTempBufAsDirty - exactly like decay - which is invoked by:
+							+ Heat propagation
+				+ Ship/RenderContext render
+					+ Rendering:
+						+ RenderCore enums
+					+ Shaders:
+						+ Do point, spring, and triangle shaders
+							+ Do second, richer version of main ones - "...WithTemperature..." - that completely
+							  replace the first ones when the heat overlay is activated
+								+ Texture
+								+ Color
+							+ Parameter setting
+						+ Use temperature buffer (of floats) to produce "temperature color" as:
+							+ tint3 = mix(c1, c2, some f of temperature ~= 1-e^(-paramHeatContrast*T)) // see https://en.wikipedia.org/wiki/Incandescence#/media/File:Example_incandescence_colors_(temperature_range_550_-_1300_C).svg
+						+ Make it glow in the night
+						+ Use function (in include) to apply heat overlay
+							+ Nuke static params 4 colors
+						+ Try multi-band gradient
+					+ Transparency at SettingsDialog
+						+ "Render" section under "Heat"
+						+ Figure out right default value
+			+ Physics update:
+				+ Ship::Update: 
+					+ @Beginning: either call Springs::UpdateParameters(params, points) or call 
+					  Springs::UpdateDecayAndTemperatureAndParameters(params, points), depending on simulation step
+						+ Springs::UpdateParameters(params, points): 
+							+ iff params updated: UpdateDecayAndTemperatureAndParameters(params, points)
+						+ Test:
+							+ Stress and break (Titanic)
+							+ Mass augmentation
+							+ Repair (restore)
+							+ Param changes
+						+ Springs::UpdateDecayAndTemperatureAndParameters(params, points):
+							+ Assumption: Decay and Temperature have changed (Parameters not necessarily)
+							+ (Params, P.Temperature, P.Mass) -> StiffnessCoefficient
+							+ (Params, P.Mass) -> DampingCoefficient
+							+ (Params, P.Decay, P.Temperature) -> S.Strength
+								+ Params are needed to include StrengthAdjustment and NumMechanicalDynamicsIterationsAdjustment
+								  in "current" strength
+								+ Add "MaterialStrength", and use "Strength" for strain
+									+ Check for all current uses of Strength and replace with MaterialStrength
+								+ Since we're touching this: factor in Strength the other things that we calculate at 
+								  UpdateStrains, namely:
+									+ StrengthAdjustment, NumMechanicalDynamicsIterationsAdjustment
+									+ Rest Length
+							+ Flip burning and melting point in metals
+						+ Nuke Ship::DecaySprings and, with it, Springs::Set(Current)Strength
+						+ Cleanup low-frequency schedule now that DecaySprings is gone
+							+ Change frequency altogether to 7*6
+						+ Verify assembly: hopefully no call to UpdateForDTP(...springIndex...) from UpdateForDTP(all)
+					+ Later on: Ship::UpdateHeatDynamics:
+						+ At one slot: call Ship::PropagateHeat()
+							+ Propagation and dissipation
+								+ New global constants: AirTemperature, WaterTemperature
+								+ Use specific dt's calc's as constexpr's in UpdateTemperature based off frequency of steps
+								+ Dissipation: use air or water temp, depending on whether it's above water or below
+									+ Exaggerate water dissipation, so that smothered fire does not rekindle immediately
+										+ First, double-check calculations, however
+							+ Cleanup TODO's (and do we have a useless step frequency constant now?) to keep it at each step
+						+ At another slot: call Points::UpdateCombustionStateMachineLowFrequency(...)
+							+ For each point:
+								+ If it's not combusting:
+									+ Check combustion transition
+										+ Notify
+										+ Choose random max development
+								+ Else (it's combusting):
+									+ Check exhaustion transition
+										+ Notify (boolean for water-caused)											
+									+ Do decay: burn rate (i.e. decay speed) ~= structural mass (the lower the mass, the faster decays)
+										+ Verify default, min, and max
+									+ No temperature and no raise and lower flames, done below at Points::UpdateCombustingPoints()
+								+ Water (both underwater and flood) should apply regardless of state
+								+ Do phased ignitions (N at a time)
+									+ Run low-frequency state machine M times for 1/Mth of the points each time
+									+ Choose number of promoted randomly = N
+										+ Find right N: depends on M
+									+ At each step: choose top N ignitions over all candidates, sorted
+									  by temperature over ignition temperature
+						+ At all steps: call Points::UpdateCombustionStateMachineHighFrequency(heap)
+							+ Points uses heap (with burning points) and evolves the "burning"
+							  state machine
+								+ Raise flames up and down
+									+ Redo 3 curves, see paper
+								+ Heat to self and neighbors
+									+ Do code changes
+									+ Do flag to turn off flame rendering
+										+ Move flame rendering to heat & combustion?
+			+ Ship::ConnectivityVisit:
+				+ Call Points::ReorderBurningPoints()
+			+ Ship::Render:
+				+ Calls Points::UploadFlames()
+					+ Uploads flames in order of heap
+			+ See Pac0master's bug: looks like when the cardboard of the funnel touches the water it starts generating a super high amount of heat
+			+ See Pac0master's bug: Spawn the default ship,  max out the Thermal conductivity and  dissipation the back of the ship will start to heat up and melt very fast
+			+ Melting improvements:
+				+ Option 1: Test with sticky strength
+					+ Springs has new buffer, "MeltStrengthComponent", always > 1.0
+					+ We might also need sticky stiffness, but try with strength first
+				+ Option 2: Test with sticky rest length
+					+ StiffnessCoeff and Strength are memory-less: they return to their original values when no melting occurs,
+					  but RestLength not
+					+ First test in-place modifying RestLength; if ok:
+						+ Make "FactoryRestLength" buffer
+						+ Verify all usages of RestLength and choose accordingly
+							+ Repair: try using both as targets and choose best
+						+ Decide performant way of making rest length sticky
+						+ Update comments at Springs
+					+ Do asymptotic stiffness, not zero
+					+ Try different DeltaTMax's
+					+ Repair: recalc coeffs when we've set a new rest length
+						+ Adjust rest length before all, "snapping" rest length to factory when close enough
+							+ Also set rest length to factory when spring restored
+						+ Use boolean flag to recalc coeffs just once per spring
+						+ General:
+							+ See if should be faster (play with settings' speed)
+							+ See if UltraViolent mode makes sense
+						+ Decide whether to target current or factory rest length
+			+ Electrical: devices generate heat, and lights and generators break at low and high temperatures
+				+ New electrical material properties - "HeatGenerated" and operating temperatures
+				+ GameParameters: electrical heat generated adjustment
+					+ Settings dialog: new "Electrical" section between HeatBlaster and World
+				+ Rearc:
+					+ ElectricalElements has buffer with operating temperatures
+					+ ElectricalElements::UpdateSourcesAndPropagation (rename from "Connectivity")
+						+ Move from Ship
+						+ Uses mSourceIndices as starting point, instead of just generators
+							+ Nuke generator indices
+						+ For each source:
+							+ Check preconditions:
+								+ Wetness
+								+ Operating temperature
+							+ If ok:
+								+ Generate heat (using also adjustment)
+								+ Flood graph for VisitSequenceNumber
+					+ Rename "AvailableCurrent" as "AvailableLight"
+					+ ElectricalElements::UpdateSinks (replaces "Update")
+						+ Uses mSinkIndices (vector of indices, not only lamps)
+						+ Lamps: run lamp state machine
+							+ Consider also operating temperatures in state machine and transition accordingly
+							+ Each time AvailableLight is > 0, generate heat (using also adjustment)
+					+ Make self-combusting ship:
+						+ Make heat-resistant materials (low thermal conductivity and high heat capacity):
+							+ Electrical:
+								+ Generator
+								+ Lamp
+								+ Heating Element
+									+ And catch at script
+						+ Do ship
+						+ Redo template
+			+ Make flames smaller when point is orphaned
+				+ 1: Ship::SpringDestroyHandler: invoke Ship::OnPointOrphaned for each endpoint that becomes orphaned
+				+ 2: Ship::OnPointOrphaned: invoke Points::OnPointOrphaned
+				+ 3: Points::OnPointOrphaned: 
+					+ Suddenly truncate development
+						+ Try even smaller ?
+			+ Interaction with bombs:
+				+ Triggering:
+					+ Timer, Impact, RC: 
+						+ Trigger when temperature > GameParameters::BombsTemperatureTrigger = 773.15 (500C)
+					+ Anti-Matter: + 1000
+				+ Explosion:
+					+ Timer, Impact, RC: 
+						+ Produce heat directly at Ship::DoBombExplosion
+							+ Verify first it's called at these 3
+							+ Add heat to each point in blastRadius, considering ultra-violent mode as well
+								+ Use GameParameters::BombExplosionHeatProduced
+									+ Also at settings dialog, under Interactions
+					+ Check if default value is good
+					+ Check maximum again
+			+ Flamethrower:
+				+ Physics:
+					+ Ship::Interaction:
+						+ GameParameters::FlameThrowerHeat
+							+ Absolute value, in J
+							+ SettingsDialog, under "Flamethrower" in "Heat"
+						+ Convert into DeltaT and inject in radius, smoothing radius
+					+ Radius at SettingsDialog, under "Flamethrower" in "Heat"
+					+ Fix default value of heat <-> slider
+				+ Max power: 20,000
+				+ Rename it: "Heat Blaster"
+					+ Code & UI
+					+ Shift cools down
+						+ New HeatBlasterAction enum at GameTypes {Heat,Cool}
+						+ Interaction: switch on action and either add or remove heat (w/fraction though, for 3rd principle)
+						+ Rendering:
+							+ Shader chosen depending on mCurrentHeatBlasterAction
+								+ Two shaders, use #include's returning radius with parameters to make these changes:
+									+ Flame direction (outward or inward, "speedMultiplier")
+									+ Then make flame colors (for cooling: turn R into B)
+						+ Cursor (simply upside-down and mirrored)
+						+ Sound (wind or air vortex)
+				+ Option to turn off flame rendering
+					+ @ GameController
+				+ Help
+			+ GameParameters:
+				+ ThermalConductivityAdjustment 
+				+ IgnitionTemperatureAdjustment (in SettingsDialog: "Burning Point Adjust")
+				+ MeltingTemperatureAdjustment (in SettingsDialog: "Melting Point Adjust")
+				+ CombustionSpeedAdjustment
+				+ CombustionHeatAdjustment
+				+ Also add all of these to settings dialog, under "Heat" tab
+				+ Make max burning points adjustable
+					+ All sub-systems need to allow for > max burning particles, because when the user changes the value down,
+					  the excess ones will need some time to disappear
+						+ Test
+					+ RenderContext: realloc VBO each time # of flames changes by 100
+					+ Points: doesn't care as it uses vector
+					+ SettingsDialog
+						+ Under "Heat", with warning icon like Simulation Quality
+				+ Make air and water temperature adjustable
+				+ See if should lower default MaxBurningParticles (per impact of all burning)
+				+ See if should allow higher heat blaster
+			+ Flame render:
+				+ Make better transition for bottom
+				+ Skew wind speed with smoothstep
+					+ And reverse wind direction
+				+ Make yellow core more narrow, in favor of thicker red border
+				+ Make more vivid red
+				+ Smoothen wind change (via running average @ RenderContext)
+				+ Add slider for flame size
+				+ Move wind rotation before noise sampling
+					+ Nuke wind randomization
+				+ Reduce local coherency of noise
+					+ Add FlamePersonalitySeed shader param, straight from ship into vertex buffer
+				+ Make same colors as flamethrower
+				+ Adjust bottom
+				+ Try without red border, to better merge multiple flames together
+				+ Multi-flame improvements:
+					+ Make better personality (less locality-aware, more randomized)
+						+ Assign actual random number between zero and one at ignition time
+						+ Change shader to expect value between zero and one
+					+ Try dual-phase rendering: border only first, body only then
+						+ Test
+						+ Do vertex includes
+						+ Test perf with instanced drawing(x2)
+				+ See if can fix problem with flames on ropes that swing behind triangles
+					+ Separate render step for chains, and flames belong to chains if their point
+					  has no attached triangles
+					+ Test
+					+ If works:
+						+ Go back to one single buffer (& single VBO, & single VAO), having StartUpload declare total # of flames, 
+						  and adding bg ones at beginning and fg ones at end
+							+ Keep track of beginning of fg ones == end of bg ones
+					+ OnChain detection: use # of factory triangles, not current triangles (heuristic to avoid jumping planes
+					  when triangles are destroyed by fire)
+				+ Try different color scheme
+					+ If keep: do also at:
+						+ Flames2
+						+ HeatBlaster flame
+			+ Sound:
+				+ Media:
+					+ Burning loop
+					+ Sizzling X 2 or 3
+				+ SoundController:
+					+ Subscribe to OnCombustionBegin/End: adjust cumulative volume of Burning sound
+					+ Subscribe to OnCombustionSmothered: play one-time sizzling
+		+ Experiments/Improvements:
+			+ Consider higher default heat from flamethrower tool
+				+ Current (900k) is fine for wood and ropes and cloth
+			+ Fire-generated heat should be 10x in order to spread more
+				+ Or: check if heat should depend on ignition temperature of that point 
+					+ Is it possible that the heat we release now from burning hi-ign-temp points is actually lower than the one
+					  the point has in order to be at that temperature?
+				+ Spreads just fine on wood, ropes, and cloth
+			+ Lower the min decay for extinguishing, so things break easier once burnt
+			+ When state is Burning, also decay non-burning neighbors on top of decaying self (so to smear burnt color more around)
+				+ At low-frequency update
+			+ Max flame development depends on number of springs connected to point (so ropes have smaller flames)
+			+ See if heating element should heat less
+			+ Try max air and water temp to 5K
+			+ Make melted stuff break earlier
+				+ Limit breaking length somehow
+				+ Try with limiting rest length instead
+				+ Avoid breaking: try with non-smoothstep melt depth (and lower breaking length when melted)
+			+ Flame render:
+				+ Move more with wind
+				+ Transparency on border - slightly more transparent at discard threshold
+				+ Noise sampling tests, who knows - it might get better:
+					+ Try different noise resolution
+					+ Try without second noise component
+					+ Try with third noise component
+			+ Flamethrower flame render:
+				+ Large flamethrower should have higher resolution
+				+ Softer border
+		+ Optimizations:
+			+ Pre FPS: 17/18 fps, 34 U/R @ 111 flames (normally 40, 188)
+			+ Do perf analysis for low-hanging fruit first
+			+ Low-freq combustion state machine:
+				= Burning candidates: 
+					+ Sticky priority queue: leverage temporal coherence of overheated particles
+						+ Contains:
+							+ buffer for heap, maxSize = nPoints
+							+ buffer of int32_t where element I contains either index in heap buffer of that element,
+							  or max<int32>
+						+ Exposes:
+							+ remove_if_in(ElementIndex)
+								+ If in heap, removes it
+							+ add_or_update(ElementIndex, val)
+								+ If in heap: update and update heap
+								+ Else: add
+					+ Do benchmarks: (10 out of 20/100/500)
+						+ Vector_AddAndSort
+						+ PriorityQueue_Add
+						+ PriorityQueue_AddAndPop (sort by lowest, and keep top 10)
+						+ Vector_AddAndNthElement
+						+ Sticky_PriorityQueue
+							+ Loop: makeup index w/ (i%200)
+						+ TruncatedPriorityQueue
+							+ New class altogether, no tracking
+					+ Use NthElement w/member BoundedVector
+			+ HeatPropagation:
+				+ Do perf analysis invoking it N times per frame to exaggerate: 10.4/10.6
+				+ Try impact of storing outgoing flows @ local array
+			+ Flame rendering:
+				+ Do perf analysis to see impact
+				+ Shader:
+					+ Replace pow with 3 mult's - see FPS gain
+					+ When YesBorder, also discard at core
+					+ Move discard earlier
+					+ Move GetNoise inline
+					+ Precalc wind angle in code and send as param
+					+ Precalc noise offset in code and send as vertex attrib, replacing flame personality seed
+						+ And do not set param time anymore
+				+ Get timings
+		+ Cleanup:
+			+ Test generic textures change (gen tex's + air bubbles at same time) and nuke comment
+			+ Test cross of light change
+			+ SettingsDialog: Heat Dissipation tooltip: "...dissipate or acquire..."
+			+ Run in Debug			
+		+ Flamethrower tool:
+			+ RenderContext exposes UploadFlameThrower(worldPos)
+			+ GameController stores worldPos at ApplyFlameThrower(screenPos) and later, at Render, invokes RenderContext::UploadFlameThrower()
+			+ Cursor
+			+ Sound
+				+ Continuous
+			+ Tool
+				+ Engages (and starts sound) only if GameController::ApplyFlameThrower(screenPos) returns true (i.e. point found in radius)
+			+ Fix radius & size (smaller radius for catching points, same render size)
+			+ Radius setting
+			+ Apply heat (& Ultra-Violent mode)
+		+ Update changes.txt
 
 + Water
 	+ Water

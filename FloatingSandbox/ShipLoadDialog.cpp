@@ -94,6 +94,9 @@ ShipLoadDialog::ShipLoadDialog(
 
         wxFlexGridSizer * gridSizer = new wxFlexGridSizer(2, 5, 0, 0);
 
+        gridSizer->AddGrowableCol(1, 4);
+        gridSizer->AddGrowableCol(3, 1);
+
         //
         // ROW 1
         //
@@ -164,8 +167,6 @@ ShipLoadDialog::ShipLoadDialog(
                 wxDefaultSize,
                 wxTE_PROCESS_ENTER);
 
-            mShipSearchTextCtrl->Enable(false);
-
             mShipSearchTextCtrl->Bind(wxEVT_TEXT, &ShipLoadDialog::OnShipSearchTextCtrlText, this);
             mShipSearchTextCtrl->Bind(wxEVT_TEXT_ENTER, &ShipLoadDialog::OnShipSearchTextCtrlTextEnter, this);
 
@@ -173,74 +174,6 @@ ShipLoadDialog::ShipLoadDialog(
         }
 
         gridSizer->AddSpacer(10);
-
-
-        // TODOOLD
-        /*
-
-        {
-            wxBoxSizer * vSizer2 = new wxBoxSizer(wxVERTICAL);
-
-            wxStaticText * recentDirsLabel = new wxStaticText(this, wxID_ANY, "Recent directories:");
-            vSizer2->Add(recentDirsLabel, 0, wxALIGN_LEFT);
-
-            wxBoxSizer * hComboSizer = new wxBoxSizer(wxHORIZONTAL);
-
-            // Combo
-
-            wxArrayString emptyComboChoices;
-            mRecentDirectoriesComboBox = new wxComboBox(
-                this,
-                wxID_ANY,
-                "",
-                wxDefaultPosition,
-                wxDefaultSize,
-                emptyComboChoices,
-                wxCB_DROPDOWN | wxCB_READONLY);
-            mRecentDirectoriesComboBox->Bind(wxEVT_COMBOBOX, &ShipLoadDialog::OnRecentDirectorySelected, this);
-            hComboSizer->Add(mRecentDirectoriesComboBox, 1, wxEXPAND);
-
-            hComboSizer->AddSpacer(4);
-
-            // HomeDir button
-
-            wxButton * homeDirButton = new wxButton(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(24, -1));
-            wxBitmap homeBitmap(resourceLoader.GetIconFilepath("home").string(), wxBITMAP_TYPE_PNG);
-            homeDirButton->SetBitmap(homeBitmap);
-            homeDirButton->Bind(wxEVT_BUTTON, (wxObjectEventFunction)&ShipLoadDialog::OnHomeDirButtonClicked, this);
-            hComboSizer->Add(homeDirButton, 0, 0);
-
-            vSizer2->Add(hComboSizer, 0, wxEXPAND);
-
-            hSizer2->Add(vSizer2, 4, 0);
-        }
-
-        hSizer2->AddSpacer(10);
-
-        {
-            wxBoxSizer * vSizer2 = new wxBoxSizer(wxVERTICAL);
-
-            wxStaticText * searchLabel = new wxStaticText(this, wxID_ANY, "Search in this folder:");
-            vSizer2->Add(searchLabel, 0, wxALIGN_LEFT);
-
-            mShipSearchTextCtrl = new wxTextCtrl(
-                this,
-                wxID_ANY,
-                "",
-                wxDefaultPosition,
-                wxDefaultSize,
-                0);
-            mShipSearchTextCtrl->Bind(wxEVT_TEXT, &ShipLoadDialog::OnShipSearchTextCtrlText, this);
-
-            vSizer2->Add(mShipSearchTextCtrl, 0, wxEXPAND | wxALIGN_LEFT);
-
-            hSizer2->Add(vSizer2, 1, 0);
-        }
-
-        hSizer2->AddSpacer(10);
-
-        vSizer->Add(hSizer2, 0, wxEXPAND);
-        */
 
         vSizer->Add(gridSizer, 0, wxEXPAND | wxALL);
     }
@@ -311,9 +244,11 @@ void ShipLoadDialog::Open()
         mSelectedShipFilepath.reset();
 
         // Disable controls
-        mShipSearchTextCtrl->Enable(false);
         mInfoButton->Enable(false);
         mLoadButton->Enable(false);
+
+        // Clear search
+        mShipSearchTextCtrl->Clear();
 
 
         //
@@ -386,8 +321,6 @@ void ShipLoadDialog::OnShipFileChosen(fsShipFileChosenEvent & event)
 
 void ShipLoadDialog::OnDirectoryPreviewComplete(fsDirPreviewCompleteEvent & event)
 {
-    mShipSearchTextCtrl->Enable(true);
-
     // Continue processing
     event.Skip();
 }
@@ -459,9 +392,11 @@ void ShipLoadDialog::OnDirectorySelected(std::filesystem::path directoryPath)
     mSelectedShipFilepath.reset();
 
     // Disable controls
-    mShipSearchTextCtrl->Enable(false);
     mInfoButton->Enable(false);
     mLoadButton->Enable(false);
+
+    // Clear search
+    mShipSearchTextCtrl->Clear();
 
     // Propagate to preview panel
     mShipPreviewPanel->SetDirectory(directoryPath);

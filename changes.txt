@@ -1,4 +1,5 @@
 1.12.0
+- Added heat and combustion physics sub-systems, and coupled them with most of the other sub-systems (bombs, springs, decay, etc.)
 - Improved repair tool
 - Added automatic check for updates, which will notify the user when a new version is available for downloading
 - Added more options for ocean and land rendering
