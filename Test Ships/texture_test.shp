@@ -1,0 +1,7 @@
+{
+	"structure_image":"texture_test_structure.png",
+	"texture_image":"texture_test_texture.png",
+	"ship_name":"Trellis",
+	"offset":{"x":0.0, "y":-20.0},
+	"created_by":"Pac0master"
+}
