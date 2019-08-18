@@ -441,6 +441,13 @@ Render:
 		= Check bugs:
 			+ Scrolling past world end/black triangle
 			- "Two happy fox bois"'s crash with opengl
+			= Ship load dialog freeze:
+				+ Log all w/timestamps
+				- Add more log lines
+				- Change LoggingDialog::'L'
+				- Send to Pac0master
+				-
+				- Re-enable Thanos
 
 		= Heat and combustion (*)
 
@@ -1055,8 +1062,13 @@ Render:
 	
 	- Try to re-instate square velocity drag (*)
 		- Goal: falling ship should break upon impact with water
-		- Need to max out drag force
+		- Need to clamp drag force 
 			- So better done after spring/nonspring forces rearc
+		- Then, increase the amount of drag adjustment users may do
+			- Goal: water should become lava
+
+	- See if we still need the high global damp - it affects the parabole traveled by slinged ships, they fall vertically
+	  at the end
 
 	- Attempt to use total point masses for springs (*)
 		- Do first a pass to recalc coefficients, once per simulation step
@@ -1465,6 +1477,8 @@ Render:
 			+ Fix radius & size (smaller radius for catching points, same render size)
 			+ Radius setting
 			+ Apply heat (& Ultra-Violent mode)
+
+		- Update changes.txt
 
 	- Degrading combustion
 		- Superheated materials vaporize

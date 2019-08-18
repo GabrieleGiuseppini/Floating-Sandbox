@@ -130,7 +130,7 @@ void ShipPreviewPanel::SetDirectory(std::filesystem::path const & directoryPath)
 
 void ShipPreviewPanel::OnResized(wxSizeEvent & event)
 {
-    LogMessage("ShipPreviewPanel::OnResized(", event.GetSize().GetWidth(), ", ", event.GetSize().GetHeight(), ")");
+    LogMessage("ShipPreviewPanel::OnResized(", event.GetSize().GetWidth(), ", ", event.GetSize().GetHeight(), "): processing...");
 
     // Store size
     mWidth = event.GetSize().GetWidth();
@@ -150,6 +150,8 @@ void ShipPreviewPanel::OnResized(wxSizeEvent & event)
             // Rearrange
             //
 
+            LogMessage("ShipPreviewPanel::OnResized: rearranging...");
+
             Freeze();
 
             mPreviewPanelSizer->SetCols(nCols);
@@ -158,10 +160,14 @@ void ShipPreviewPanel::OnResized(wxSizeEvent & event)
             this->Refresh();
 
             Thaw();
+
+            LogMessage("ShipPreviewPanel::OnResized: ...rearranged.");
         }
     }
 
     event.Skip();
+
+    LogMessage("ShipPreviewPanel::OnResized: ...processing completed.");
 }
 
 void ShipPreviewPanel::OnDirScanned(fsDirScannedEvent & event)
@@ -267,8 +273,12 @@ void ShipPreviewPanel::OnDirScanError(fsDirScanErrorEvent & event)
 
 void ShipPreviewPanel::OnPreviewReady(fsPreviewReadyEvent & event)
 {
+    LogMessage("ShipPreviewPanel::OnPreviewReady(): setting preview content...");
+
     assert(event.GetShipIndex() < mPreviewControls.size());
     mPreviewControls[event.GetShipIndex()]->SetPreviewContent(*(event.GetShipPreview()));
+
+    LogMessage("ShipPreviewPanel::OnPreviewReady(): ...preview content set.");
 }
 
 void ShipPreviewPanel::OnPreviewError(fsPreviewErrorEvent & event)
@@ -285,6 +295,8 @@ void ShipPreviewPanel::OnDirPreviewComplete(fsDirPreviewCompleteEvent & event)
 
 void ShipPreviewPanel::OnShipFileSelected(fsShipFileSelectedEvent & event)
 {
+    LogMessage("ShipPreviewPanel::OnShipFileSelected(): processing...");
+
     //
     // Toggle selection
     //
@@ -302,6 +314,8 @@ void ShipPreviewPanel::OnShipFileSelected(fsShipFileSelectedEvent & event)
 
     // Propagate up
     ProcessWindowEvent(event);
+
+    LogMessage("ShipPreviewPanel::OnShipFileSelected(): ...processing completed.");
 }
 
 int ShipPreviewPanel::CalculateTileColumns()
@@ -402,7 +416,7 @@ void ShipPreviewPanel::RunPreviewThread()
 
 void ShipPreviewPanel::ScanDirectory(std::filesystem::path const & directoryPath)
 {
-    LogMessage("PreviewThread::ScanDirectory(", directoryPath.string(), ")");
+    LogMessage("PreviewThread::ScanDirectory(", directoryPath.string(), "): processing...");
 
     bool isSingleCore = (std::thread::hardware_concurrency() < 2);
 
@@ -410,6 +424,8 @@ void ShipPreviewPanel::ScanDirectory(std::filesystem::path const & directoryPath
     //
     // Get listings and fire event
     //
+
+    LogMessage("PreviewThread::ScanDirectory(): scanning directory...");
 
     std::vector<std::filesystem::path> shipFilepaths;
 
@@ -432,6 +448,8 @@ void ShipPreviewPanel::ScanDirectory(std::filesystem::path const & directoryPath
     }
     catch (...)
     { /* interrupt scan here */ }
+
+    LogMessage("PreviewThread::ScanDirectory(): ...directory scanned.");
 
     // Sort by filename
     std::sort(
@@ -465,14 +483,21 @@ void ShipPreviewPanel::ScanDirectory(std::filesystem::path const & directoryPath
     {
         // Check whether we have been interrupted
         if (!!mPanelToThreadMessage)
+        {
+            LogMessage("PreviewThread::ScanDirectory(): interrupted, exiting");
             return;
+        }
 
         try
         {
+            LogMessage("PreviewThread::ScanDirectory(): loading preview for \"", shipFilepaths[iShip].filename().string(), "\"...");
+
             // Load preview
             auto shipPreview = ShipPreview::Load(
                 shipFilepaths[iShip],
                 ImageSize(ShipPreviewControl::ImageWidth, ShipPreviewControl::ImageHeight));
+
+            LogMessage("PreviewThread::ScanDirectory(): ...preview loaded; firing event...");
 
             // Fire event
             QueueEvent(
@@ -482,6 +507,8 @@ void ShipPreviewPanel::ScanDirectory(std::filesystem::path const & directoryPath
                     iShip,
                     std::make_shared<ShipPreview>(std::move(shipPreview))));
 
+            LogMessage("PreviewThread::ScanDirectory(): ...event fired.");
+
             if (isSingleCore && (3 == (iShip % 4)))
             {
                 // Give the main thread time to process this
@@ -490,6 +517,8 @@ void ShipPreviewPanel::ScanDirectory(std::filesystem::path const & directoryPath
         }
         catch (std::exception const & ex)
         {
+            LogMessage("PreviewThread::ScanDirectory(): encountered error, firing event...");
+
             // Fire error event
             QueueEvent(
                 new fsPreviewErrorEvent(
@@ -497,6 +526,8 @@ void ShipPreviewPanel::ScanDirectory(std::filesystem::path const & directoryPath
                     this->GetId(),
                     iShip,
                     ex.what()));
+
+            LogMessage("PreviewThread::ScanDirectory(): ...event fired.");
         }
     }
 
@@ -505,9 +536,15 @@ void ShipPreviewPanel::ScanDirectory(std::filesystem::path const & directoryPath
     // Fire completion event
     //
 
+    LogMessage("PreviewThread::ScanDirectory(): firing completion event...");
+
     QueueEvent(
         new fsDirPreviewCompleteEvent(
             fsEVT_DIR_PREVIEW_COMPLETE,
             this->GetId(),
             directoryPath));
+
+    LogMessage("PreviewThread::ScanDirectory(): ...event fired.");
+
+    LogMessage("PreviewThread::ScanDirectory(): ...processing completed.");
 }

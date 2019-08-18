@@ -6,8 +6,11 @@
 #pragma once
 
 #include <cassert>
+#include <chrono>
+#include <ctime>
 #include <deque>
 #include <functional>
+#include <iomanip>
 #include <iostream>
 #include <mutex>
 #include <sstream>
@@ -84,7 +87,17 @@ public:
 	template<typename...TArgs>
 	void Log(TArgs&&... args)
 	{
+        auto now = std::chrono::system_clock::now();
+        std::time_t now_c = std::chrono::system_clock::to_time_t(now);
+        auto now_epoch = now.time_since_epoch();
+        auto usecs = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch() % std::chrono::seconds(1)).count();
+
 		std::stringstream ss;
+
+        ss
+            << std::put_time(std::localtime(&now_c), "%T") << "."
+            << std::setfill('0') << std::setw(6) << usecs << ":";
+
 		_LogToStream(ss, std::forward<TArgs>(args)...);
 
 		std::string const & message = ss.str();
