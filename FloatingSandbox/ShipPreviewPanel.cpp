@@ -146,30 +146,28 @@ void ShipPreviewPanel::Search(std::string const & shipName)
     std::string const shipNameLCase = Utils::ToLower(shipName);
 
     //
-    // Find first ship whose name has the requested name as prefix
+    // Find first ship that contains the requested name as a substring
     //
 
-    std::optional<size_t> shipIndex;
+    std::optional<size_t> foundShipIndex;
     for (size_t s = 0; s < mShipNameToPreviewIndex.size(); ++s)
     {
-        auto minChars = std::min(mShipNameToPreviewIndex[s].length(), shipNameLCase.length());
-        if (minChars > 0
-            && mShipNameToPreviewIndex[s].substr(0, minChars) == shipNameLCase)
+        if (mShipNameToPreviewIndex[s].find(shipNameLCase) != std::string::npos)
         {
-            shipIndex = s;
+            foundShipIndex = s;
             break;
         }
     }
 
-    if (!!shipIndex)
+    if (!!foundShipIndex)
     {
         //
         // Scroll to the item
         //
 
-        assert(*shipIndex < mPreviewPanelSizer->GetItemCount());
+        assert(*foundShipIndex < mPreviewPanelSizer->GetItemCount());
 
-        auto item = mPreviewPanelSizer->GetItem(*shipIndex);
+        auto item = mPreviewPanelSizer->GetItem(*foundShipIndex);
         if (nullptr != item)
         {
             int xUnit, yUnit;
@@ -186,9 +184,9 @@ void ShipPreviewPanel::Search(std::string const & shipName)
         // Select the item
         //
 
-        assert(*shipIndex < mPreviewControls.size());
+        assert(*foundShipIndex < mPreviewControls.size());
 
-        mPreviewControls[*shipIndex]->Select();
+        mPreviewControls[*foundShipIndex]->Select();
     }
 }
 
@@ -356,12 +354,8 @@ void ShipPreviewPanel::OnDirScanError(fsDirScanErrorEvent & event)
 
 void ShipPreviewPanel::OnPreviewReady(fsPreviewReadyEvent & event)
 {
-    LogMessage("ShipPreviewPanel::OnPreviewReady(): setting preview content...");
-
     assert(event.GetShipIndex() < mPreviewControls.size());
     mPreviewControls[event.GetShipIndex()]->SetPreviewContent(*(event.GetShipPreview()));
-
-    LogMessage("ShipPreviewPanel::OnPreviewReady(): ...preview content set.");
 
     // Continue processing
     event.Skip();
@@ -590,7 +584,7 @@ void ShipPreviewPanel::ScanDirectory(std::filesystem::path const & directoryPath
                 shipFilepaths[iShip],
                 ImageSize(ShipPreviewControl::ImageWidth, ShipPreviewControl::ImageHeight));
 
-            LogMessage("PreviewThread::ScanDirectory(): ...preview loaded; firing event...");
+            LogMessage("PreviewThread::ScanDirectory(): ...preview loaded.");
 
             // Fire event
             QueueEvent(
@@ -599,8 +593,6 @@ void ShipPreviewPanel::ScanDirectory(std::filesystem::path const & directoryPath
                     this->GetId(),
                     iShip,
                     std::make_shared<ShipPreview>(std::move(shipPreview))));
-
-            LogMessage("PreviewThread::ScanDirectory(): ...event fired.");
 
             if (isSingleCore && 3 == (iShip % 4))
             {
@@ -621,7 +613,7 @@ void ShipPreviewPanel::ScanDirectory(std::filesystem::path const & directoryPath
                     iShip,
                     ex.what()));
 
-            LogMessage("PreviewThread::ScanDirectory(): ...event fired.");
+            LogMessage("PreviewThread::ScanDirectory(): ...error event fired.");
         }
     }
 
@@ -638,7 +630,7 @@ void ShipPreviewPanel::ScanDirectory(std::filesystem::path const & directoryPath
             this->GetId(),
             directoryPath));
 
-    LogMessage("PreviewThread::ScanDirectory(): ...event fired.");
+    LogMessage("PreviewThread::ScanDirectory(): ...completion event fired.");
 
     LogMessage("PreviewThread::ScanDirectory(): ...processing completed.");
 }

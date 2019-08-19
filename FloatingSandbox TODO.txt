@@ -437,8 +437,8 @@ Render:
 
 			+ Cursors (up and down)
 			+ Snap sound
-		+ ShipLoadDialog: search bar
 		+ Heat and combustion
+		+ ShipLoadDialog: search bar
 
 		= Check bugs:
 			+ Scrolling past world end/black triangle
@@ -450,18 +450,26 @@ Render:
 				+ Send to Pac0master
 				- Wait for his answer
 				+ Re-enable Thanos
-
-		- Version overhaul
-			- No build number but beta instead, with beta=X always < beta=0
-
-		- Add those 2 Lava textures
-			- Need to remove blue overlay first, apply to textures directly
-				- But see why it's needed first: play with trick of setting ocean transparency to zero and then changing texture
+				- Remove some logging
 			
 		+ Black cloth, black wood
 			
 
 	- 1.13.0
+
+		- Add those 2 Lava textures
+			- Need to remove blue overlay first, apply to textures directly
+				- But see why it's needed first: play with trick of setting ocean transparency to zero and then changing texture
+
+		- Version overhaul
+			! Goal: "beta" shows up in file details (product version, etc.) and in About Box
+				- See if may also appear in installer
+			- Version class:
+				- No build number but beta instead, with beta=X always < beta=0
+			- RC file:
+				- Fields that may contain "Beta foo":
+					- ProductVersion
+					+ NOT FileVersion
 
 		- Ship preview database
 
@@ -483,13 +491,10 @@ Render:
 
 		- Settings Manager (*)
 
-
 		- Smoke
 			- See if may use shader with radial noise
 
-
 		- Instanced drawing for lights (*)
-
 
 		- Underwater currents (*)
 		
