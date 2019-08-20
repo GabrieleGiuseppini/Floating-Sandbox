@@ -1,0 +1,7 @@
+{
+	"structure_image":"ssn-683_parche_structure.png.dat",
+	"texture_image":"ssn-683_parche_texture.png.dat",
+	"ship_name":"SSN-683 Parche",
+	"offset":{"x":0.0, "y":-14.0},
+	"created_by":"Michael Bozarth"
+}

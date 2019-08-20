@@ -1,0 +1,8 @@
+{
+	"structure_image":"rms_titanic_front_structure.png.dat",
+	"texture_image":"rms_titanic_front_texture.png.dat",
+	"offset":{"x":0.0, "y":0.0},
+	"ship_name":"R.M.S. Titanic Front",
+	"created_by":"Michael Bozarth",
+	"year_built":"1912"
+}

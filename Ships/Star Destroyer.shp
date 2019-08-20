@@ -1,0 +1,8 @@
+{
+	"structure_image":"star_destroyer_structure.png.dat",
+	"texture_image":"star_destroyer_texture.png.dat",
+	"offset":{"x":70.0, "y":0.0},
+	"ship_name":"Star Destroyer",
+	"created_by":"Michael Bozarth",
+	"year_built":"1977"
+}

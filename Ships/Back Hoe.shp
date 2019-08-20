@@ -1,0 +1,8 @@
+{
+	"structure_image":"back_hoe_structure.png.dat",
+	"texture_image":"back_hoe_texture.png.dat",
+	"offset":{"x":0.0, "y":0.0},
+	"ship_name":"Back Hoe",
+	"created_by":"Michael Bozarth; Nestin (Shipbucket.com)",
+	"year_built":"2003"
+}

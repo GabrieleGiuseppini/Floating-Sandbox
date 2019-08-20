@@ -1,0 +1,7 @@
+{
+	"structure_image":"css_stonewall_structure.png.dat",
+	"texture_image":"css_stonewall_texture.png.dat",
+	"ship_name":"C.S.S. Stonewall",
+	"offset":{"x":40.0, "y":-4.0},
+	"created_by":"Michael Bozarth"
+}

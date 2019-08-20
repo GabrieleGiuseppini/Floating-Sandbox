@@ -1,0 +1,9 @@
+{
+	"structure_image":"ss_queen_of_unova_cardboard_structure.png.dat",
+	"electrical_image":"ss_queen_of_unova_cardboard_electrical.png.dat",
+	"ropes_image":"ss_queen_of_unova_cardboard_ropes.png.dat",
+	"texture_image":"ss_queen_of_unova_cardboard_texture.png.dat",
+	"ship_name":"Cardboard S.S. Queen of Unova",
+	"offset":{"x":0.0, "y":-6.0},
+	"created_by":"Michael Bozarth; OceanLinerOrca"
+}

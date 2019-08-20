@@ -1,0 +1,8 @@
+{
+	"structure_image":"rms_titanic_cardboard_structure.png.dat",
+	"texture_image":"rms_titanic_cardboard_texture.png.dat",
+	"offset":{"x":0.0, "y":0.0},
+	"ship_name":"Cardboard Titanic",
+	"created_by":"Michael Bozarth",
+	"year_built":"2019"
+}

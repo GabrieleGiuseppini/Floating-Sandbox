@@ -1,0 +1,9 @@
+{
+	"structure_image":"aston_martin_one_77_structure.png.dat",
+	"texture_image":"aston_martin_one_77_texture.png.dat",
+	"electrical_image":"aston_martin_one_77_electrical.png.dat",
+	"offset":{"x":60.0, "y":0.0},
+	"ship_name":"Aston Martin One-77",
+	"created_by":"Michael Bozarth; Paul 2013 (Shipbucket.com)",
+	"year_built":"2011"
+}

@@ -1,0 +1,8 @@
+{
+	"structure_image":"titanic_II_structure.png.dat",
+	"texture_image":"titanic_II_texture.png.dat",
+	"offset":{"x":5.0, "y":-30.0},
+	"ship_name":"Titanic II",
+	"created_by":"Michael Bozarth",
+	"year_built":"2020"
+}

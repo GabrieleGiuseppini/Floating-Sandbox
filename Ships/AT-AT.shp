@@ -1,0 +1,8 @@
+{
+	"structure_image":"at-at_structure.png.dat",
+	"texture_image":"at-at_texture.png.dat",
+	"offset":{"x":40.0, "y":-20.0},
+	"ship_name":"AT-AT",
+	"created_by":"Michael Bozarth; Guillermo2312 (Shipbucket.com)",
+	"year_built":"1977"
+}

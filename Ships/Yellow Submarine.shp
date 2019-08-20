@@ -1,0 +1,8 @@
+{
+	"structure_image":"yellow_submarine_structure.png.dat",
+	"texture_image":"yellow_submarine_texture.png.dat",
+	"offset":{"x":0.0, "y":0.0},
+	"ship_name":"Yellow Submarine",
+	"created_by":"Michael Bozarth",
+	"year_built":"1968"
+}

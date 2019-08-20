@@ -1,0 +1,8 @@
+{
+	"structure_image":"hms_the_squid_structure.png.dat",
+	"texture_image":"hms_the_squid_texture.png.dat",
+	"offset":{"x":20.0, "y":0.0},
+	"ship_name":"H.M.S. The Squid",
+	"created_by":"Michael Bozarth; ALVAMA (Shipbucket.com)",
+	"year_built":"2197"
+}

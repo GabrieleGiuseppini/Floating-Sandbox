@@ -1,0 +1,8 @@
+{
+	"structure_image":"cargo_ship_2_structure.png.dat",
+	"texture_image":"cargo_ship_2_texture.png.dat",
+	"offset":{"x":0.0, "y":-16.0},
+	"ship_name":"Cargo Ship 2",
+	"created_by":"Michael Bozarth",
+	"year_built":"2008"
+}

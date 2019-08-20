@@ -538,7 +538,7 @@ Render:
 			- mrpasta444_ship_pack
 			- The bunker parodie (desktop)
 			- TheodoreRoosevelt
-			= Last ones (third) from Mike
+			+ Last ones (third) from Mike
 			- Others in TODO
 			- Graza's from awesomeyorkie
 			- Add MasterGarfield to credits in About box (if we take any of his ships)

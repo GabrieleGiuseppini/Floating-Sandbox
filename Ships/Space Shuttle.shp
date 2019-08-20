@@ -1,0 +1,8 @@
+{
+	"structure_image":"space_shuttle_structure.png.dat",
+	"texture_image":"space_shuttle_texture.png.dat",
+	"offset":{"x":50.0, "y":35.0},
+	"ship_name":"Space Shuttle",
+	"created_by":"Michael Bozarth",
+	"year_built":"1969"
+}

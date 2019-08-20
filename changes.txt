@@ -12,6 +12,7 @@
 - Bug fixes:
 	- Sometimes sea disappears when waves become too tall
 	- Wavemaker sound does not pause when game is paused
+- 20 new ships
 - ...and a few more small improvements here and there
 
 1.11.1
