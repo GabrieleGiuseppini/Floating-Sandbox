@@ -37,7 +37,6 @@ private:
     void OnDirCtrlDirSelected(wxCommandEvent & event);
     void OnShipFileSelected(fsShipFileSelectedEvent & event);
     void OnShipFileChosen(fsShipFileChosenEvent & event);
-    void OnDirectoryPreviewComplete(fsDirPreviewCompleteEvent & event);
     void OnRecentDirectorySelected(wxCommandEvent & event);
     void OnShipSearchTextCtrlText(wxCommandEvent & event);
     void OnShipSearchTextCtrlTextEnter(wxCommandEvent & event);

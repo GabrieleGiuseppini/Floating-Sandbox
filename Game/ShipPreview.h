@@ -26,16 +26,9 @@ public:
     ImageSize OriginalSize;
     ShipMetadata Metadata;
 
-    static ShipPreview Load(
+    static std::unique_ptr<ShipPreview> Load(
         std::filesystem::path const & filepath,
         ImageSize const & maxSize);
-
-    ShipPreview(ShipPreview && other) noexcept
-        : PreviewImage(std::move(other.PreviewImage))
-        , OriginalSize(std::move(other.OriginalSize))
-        , Metadata(std::move(other.Metadata))
-    {
-    }
 
 private:
 

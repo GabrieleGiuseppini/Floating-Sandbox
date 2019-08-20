@@ -12,7 +12,7 @@
 
 #include <cassert>
 
-ShipPreview ShipPreview::Load(
+std::unique_ptr<ShipPreview> ShipPreview::Load(
     std::filesystem::path const & filepath,
     ImageSize const & maxSize)
 {
@@ -72,8 +72,9 @@ ShipPreview ShipPreview::Load(
 
     auto trimmedPreviewImage = ImageTools::Trim(std::move(previewImage));
 
-    return ShipPreview(
-        std::move(trimmedPreviewImage),
-        std::move(*originalSize),
-        *shipMetadata);
+    return std::unique_ptr<ShipPreview>(
+        new ShipPreview(
+            std::move(trimmedPreviewImage),
+            std::move(*originalSize),
+            *shipMetadata));
 }

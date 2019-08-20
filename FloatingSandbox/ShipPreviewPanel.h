@@ -12,221 +12,17 @@
 
 #include <GameCore/ImageData.h>
 
+#include <wx/timer.h>
 #include <wx/wx.h>
 
 #include <condition_variable>
+#include <deque>
 #include <filesystem>
 #include <memory>
 #include <mutex>
 #include <string>
 #include <thread>
 #include <vector>
-
-//
-// Custom events
-//
-
-// A directory has been scanned
-class fsDirScannedEvent : public wxEvent
-{
-public:
-
-    fsDirScannedEvent(
-        wxEventType eventType,
-        int winid,
-        std::vector<std::filesystem::path> const & shipFilepaths)
-        : wxEvent(winid, eventType)
-        , mShipFilepaths(shipFilepaths)
-    {
-    }
-
-    fsDirScannedEvent(fsDirScannedEvent const & other)
-        : wxEvent(other)
-        , mShipFilepaths(other.mShipFilepaths)
-    {
-    }
-
-    virtual wxEvent *Clone() const override
-    {
-        return new fsDirScannedEvent(*this);
-    }
-
-    std::vector<std::filesystem::path> const & GetShipFilepaths() const
-    {
-        return mShipFilepaths;
-    }
-
-private:
-    std::vector<std::filesystem::path> const mShipFilepaths;
-};
-
-wxDECLARE_EVENT(fsEVT_DIR_SCANNED, fsDirScannedEvent);
-
-// An error was encountered while scanning a directory
-class fsDirScanErrorEvent : public wxEvent
-{
-public:
-
-    fsDirScanErrorEvent(
-        wxEventType eventType,
-        int winid,
-        std::string const & errorMessage)
-        : wxEvent(winid, eventType)
-        , mErrorMessage(errorMessage)
-    {
-    }
-
-    fsDirScanErrorEvent(fsDirScanErrorEvent const & other)
-        : wxEvent(other)
-        , mErrorMessage(other.mErrorMessage)
-    {
-    }
-
-    virtual wxEvent *Clone() const override
-    {
-        return new fsDirScanErrorEvent(*this);
-    }
-
-    std::string const & GetErrorMessage() const
-    {
-        return mErrorMessage;
-    }
-
-private:
-    std::string const mErrorMessage;
-};
-
-wxDECLARE_EVENT(fsEVT_DIR_SCAN_ERROR, fsDirScanErrorEvent);
-
-// A preview is ready
-class fsPreviewReadyEvent : public wxEvent
-{
-public:
-
-    fsPreviewReadyEvent(
-        wxEventType eventType,
-        int winid,
-        size_t shipIndex,
-        std::shared_ptr<ShipPreview> shipPreview)
-        : wxEvent(winid, eventType)
-        , mShipIndex(shipIndex)
-        , mShipPreview(std::move(shipPreview))
-    {
-    }
-
-    fsPreviewReadyEvent(fsPreviewReadyEvent const & other)
-        : wxEvent(other)
-        , mShipIndex(other.mShipIndex)
-        , mShipPreview(other.mShipPreview)
-    {
-    }
-
-    virtual wxEvent *Clone() const override
-    {
-        return new fsPreviewReadyEvent(*this);
-    }
-
-    size_t GetShipIndex() const
-    {
-        return mShipIndex;
-    }
-
-    std::shared_ptr<ShipPreview> GetShipPreview()
-    {
-        return mShipPreview;
-    }
-
-private:
-    size_t const mShipIndex;
-    std::shared_ptr<ShipPreview> mShipPreview;
-};
-
-wxDECLARE_EVENT(fsEVT_PREVIEW_READY, fsPreviewReadyEvent);
-
-// An error occurred while preparing a preview
-class fsPreviewErrorEvent : public wxEvent
-{
-public:
-
-    fsPreviewErrorEvent(
-        wxEventType eventType,
-        int winid,
-        size_t shipIndex,
-        std::string errorMessage)
-        : wxEvent(winid, eventType)
-        , mShipIndex(shipIndex)
-        , mErrorMessage(errorMessage)
-    {
-    }
-
-    fsPreviewErrorEvent(fsPreviewErrorEvent const & other)
-        : wxEvent(other)
-        , mShipIndex(other.mShipIndex)
-        , mErrorMessage(other.mErrorMessage)
-    {
-    }
-
-    virtual wxEvent *Clone() const override
-    {
-        return new fsPreviewErrorEvent(*this);
-    }
-
-    size_t GetShipIndex() const
-    {
-        return mShipIndex;
-    }
-
-    std::string const & GetErrorMessage() const
-    {
-        return mErrorMessage;
-    }
-
-private:
-
-    size_t const mShipIndex;
-    std::string const mErrorMessage;
-};
-
-wxDECLARE_EVENT(fsEVT_PREVIEW_ERROR, fsPreviewErrorEvent);
-
-// The directory preview was completed
-class fsDirPreviewCompleteEvent : public wxEvent
-{
-public:
-
-    fsDirPreviewCompleteEvent(
-        wxEventType eventType,
-        int winid,
-        std::filesystem::path const & directoryPath)
-        : wxEvent(winid, eventType)
-        , mDirectoryPath(directoryPath)
-    {
-        m_propagationLevel = wxEVENT_PROPAGATE_MAX;
-    }
-
-    fsDirPreviewCompleteEvent(fsDirPreviewCompleteEvent const & other)
-        : wxEvent(other)
-        , mDirectoryPath(other.mDirectoryPath)
-    {
-        m_propagationLevel = wxEVENT_PROPAGATE_MAX;
-    }
-
-    virtual wxEvent *Clone() const override
-    {
-        return new fsDirPreviewCompleteEvent(*this);
-    }
-
-    std::filesystem::path const & GetDirectoryPath() const
-    {
-        return mDirectoryPath;
-    }
-
-private:
-
-    std::filesystem::path const mDirectoryPath;
-};
-
-wxDECLARE_EVENT(fsEVT_DIR_PREVIEW_COMPLETE, fsDirPreviewCompleteEvent);
 
 /*
  * This panel populates itself with previews of all ships found in a directory.
@@ -260,20 +56,13 @@ public:
 private:
 
     void OnResized(wxSizeEvent & event);
-
-private:
-
-    // Thread-to-Panel communication - we use wxWidgets' custom events
-    void OnDirScanned(fsDirScannedEvent & event);
-    void OnDirScanError(fsDirScanErrorEvent & event);
-    void OnPreviewReady(fsPreviewReadyEvent & event);
-    void OnPreviewError(fsPreviewErrorEvent & event);
-    void OnDirPreviewComplete(fsDirPreviewCompleteEvent & event);
-
-    // Preview selected event
+    void OnPollQueueTimer(wxTimerEvent & event);
     void OnShipFileSelected(fsShipFileSelectedEvent & event);
 
 private:
+
+    void OnDirScanCompleted(std::vector<std::filesystem::path> const & scannedShipFilepaths);
+    // TODO: others
 
     int CalculateTileColumns();
     void ShutdownPreviewThread();
@@ -287,6 +76,8 @@ private:
     wxGridSizer * mPreviewPanelSizer;
     std::vector<ShipPreviewControl *> mPreviewControls;
     std::optional<size_t> mSelectedPreview;
+
+    std::unique_ptr<wxTimer> mPollQueueTimer;
 
     RgbaImageData mWaitImage;
     RgbaImageData mErrorImage;
@@ -367,4 +158,125 @@ private:
     std::mutex mPanelToThreadMessageMutex;
     std::unique_lock<std::mutex> mPanelToThreadMessageLock;
     std::condition_variable mPanelToThreadMessageEvent;
+
+    //
+    // Thread-to-panel communication
+    //
+
+    struct ThreadToPanelMessage
+    {
+    public:
+
+        enum class MessageType
+        {
+            DirScanCompleted,
+            DirScanError,
+            PreviewReady,
+            PreviewError,
+            PreviewCompleted
+        };
+
+        static std::unique_ptr<ThreadToPanelMessage> MakeDirScanCompletedMessage(std::vector<std::filesystem::path> scannedShipFilepaths)
+        {
+            std::unique_ptr<ThreadToPanelMessage> msg(new ThreadToPanelMessage(MessageType::DirScanCompleted));
+            msg->mScannedShipFilepaths = std::move(scannedShipFilepaths);
+            return msg;
+        }
+
+        static std::unique_ptr<ThreadToPanelMessage> MakeDirScanErrorMessage(std::string errorMessage)
+        {
+            std::unique_ptr<ThreadToPanelMessage> msg(new ThreadToPanelMessage(MessageType::DirScanError));
+            msg->mErrorMessage = std::move(errorMessage);
+            return msg;
+        }
+
+        static std::unique_ptr<ThreadToPanelMessage> MakePreviewReadyMessage(
+            size_t shipIndex,
+            std::unique_ptr<ShipPreview> shipPreview)
+        {
+            std::unique_ptr<ThreadToPanelMessage> msg(new ThreadToPanelMessage(MessageType::PreviewReady));
+            msg->mShipIndex = shipIndex;
+            msg->mShipPreview = std::move(shipPreview);
+            return msg;
+        }
+
+        static std::unique_ptr<ThreadToPanelMessage> MakePreviewErrorMessage(
+            size_t shipIndex,
+            std::string errorMessage)
+        {
+            std::unique_ptr<ThreadToPanelMessage> msg(new ThreadToPanelMessage(MessageType::PreviewError));
+            msg->mShipIndex = shipIndex;
+            msg->mErrorMessage = std::move(errorMessage);
+            return msg;
+        }
+
+        static std::unique_ptr<ThreadToPanelMessage> MakePreviewCompletedMessage(std::filesystem::path scannedDirectoryPath)
+        {
+            std::unique_ptr<ThreadToPanelMessage> msg(new ThreadToPanelMessage(MessageType::PreviewCompleted));
+            msg->mScannedDirectoryPath = std::move(scannedDirectoryPath);
+            return msg;
+        }
+
+        ThreadToPanelMessage(ThreadToPanelMessage && other) = default;
+
+        ThreadToPanelMessage & operator=(ThreadToPanelMessage && other) = default;
+
+        MessageType GetMessageType() const
+        {
+            return mMessageType;
+        }
+
+        std::filesystem::path const & GetScannedDirectoryPath() const
+        {
+            return mScannedDirectoryPath;
+        }
+
+        std::vector<std::filesystem::path> const & GetScannedShipFilepaths() const
+        {
+            return mScannedShipFilepaths;
+        }
+
+        std::string const & GetErrorMessage() const
+        {
+            return mErrorMessage;
+        }
+
+        size_t GetShipIndex() const
+        {
+            assert(!!mShipIndex);
+            return *mShipIndex;
+        }
+
+        ShipPreview const & GetShipPreview()
+        {
+            return *mShipPreview;
+        }
+
+    private:
+
+        ThreadToPanelMessage(MessageType messageType)
+            : mMessageType(messageType)
+            , mScannedDirectoryPath()
+            , mScannedShipFilepaths()
+            , mErrorMessage()
+            , mShipIndex()
+            , mShipPreview()
+        {}
+
+        MessageType const mMessageType;
+
+        std::filesystem::path mScannedDirectoryPath;
+        std::vector<std::filesystem::path> mScannedShipFilepaths;
+        std::string mErrorMessage;
+        std::optional<size_t> mShipIndex;
+        std::unique_ptr<ShipPreview> mShipPreview;
+    };
+
+    void QueueThreadToPanelMessage(std::unique_ptr<ThreadToPanelMessage> message);
+
+    // Queue of messages
+    std::deque<std::unique_ptr<ThreadToPanelMessage>> mThreadToPanelMessageQueue;
+
+    // Locks for the thread-to-panel message queue
+    std::mutex mThreadToPanelMessageQueueMutex;
 };

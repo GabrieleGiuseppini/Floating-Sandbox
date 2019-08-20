@@ -72,7 +72,6 @@ ShipLoadDialog::ShipLoadDialog(
 
         mShipPreviewPanel->Bind(fsEVT_SHIP_FILE_SELECTED, &ShipLoadDialog::OnShipFileSelected, this);
         mShipPreviewPanel->Bind(fsEVT_SHIP_FILE_CHOSEN, &ShipLoadDialog::OnShipFileChosen, this);
-        mShipPreviewPanel->Bind(fsEVT_DIR_PREVIEW_COMPLETE, &ShipLoadDialog::OnDirectoryPreviewComplete, this);
 
         hSizer1->Add(mShipPreviewPanel, 1, wxALIGN_TOP | wxEXPAND);
 
@@ -315,14 +314,7 @@ void ShipLoadDialog::OnShipFileChosen(fsShipFileChosenEvent & event)
     // Process
     OnShipFileChosen(*mSelectedShipFilepath);
 
-    // Continue processing
-    event.Skip();
-}
-
-void ShipLoadDialog::OnDirectoryPreviewComplete(fsDirPreviewCompleteEvent & event)
-{
-    // Continue processing
-    event.Skip();
+    // Do not continue processing, as OnShipFileChosen() will fire event again
 }
 
 void ShipLoadDialog::OnRecentDirectorySelected(wxCommandEvent & /*event*/)

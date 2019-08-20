@@ -11,12 +11,6 @@
 #include <GameCore/GameException.h>
 #include <GameCore/Log.h>
 
-wxDEFINE_EVENT(fsEVT_DIR_SCANNED, fsDirScannedEvent);
-wxDEFINE_EVENT(fsEVT_DIR_SCAN_ERROR, fsDirScanErrorEvent);
-wxDEFINE_EVENT(fsEVT_PREVIEW_READY, fsPreviewReadyEvent);
-wxDEFINE_EVENT(fsEVT_PREVIEW_ERROR, fsPreviewErrorEvent);
-wxDEFINE_EVENT(fsEVT_DIR_PREVIEW_COMPLETE, fsDirPreviewCompleteEvent);
-
 ShipPreviewPanel::ShipPreviewPanel(
     wxWindow* parent,
     ResourceLoader const & resourceLoader)
@@ -42,6 +36,8 @@ ShipPreviewPanel::ShipPreviewPanel(
     , mPanelToThreadMessageMutex()
     , mPanelToThreadMessageLock(mPanelToThreadMessageMutex, std::defer_lock)
     , mPanelToThreadMessageEvent()
+    , mThreadToPanelMessageQueue()
+    , mThreadToPanelMessageQueueMutex()
 {
     SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW));
     SetScrollRate(5, 5);
@@ -51,12 +47,9 @@ ShipPreviewPanel::ShipPreviewPanel(
 
     Bind(wxEVT_SIZE, &ShipPreviewPanel::OnResized, this, this->GetId());
 
-    // Register for the thread events
-    Bind(fsEVT_DIR_SCANNED, &ShipPreviewPanel::OnDirScanned, this);
-    Bind(fsEVT_DIR_SCAN_ERROR, &ShipPreviewPanel::OnDirScanError, this);
-    Bind(fsEVT_PREVIEW_READY, &ShipPreviewPanel::OnPreviewReady, this);
-    Bind(fsEVT_PREVIEW_ERROR, &ShipPreviewPanel::OnPreviewError, this);
-    Bind(fsEVT_DIR_PREVIEW_COMPLETE, &ShipPreviewPanel::OnDirPreviewComplete, this);
+    // Setup poll queue timer
+    mPollQueueTimer = std::make_unique<wxTimer>(this, wxID_ANY);
+    Bind(wxEVT_TIMER, &ShipPreviewPanel::OnPollQueueTimer, this, mPollQueueTimer->GetId());
 
     // Make our own sizer
     wxBoxSizer * panelSizer = new wxBoxSizer(wxVERTICAL);
@@ -76,22 +69,28 @@ void ShipPreviewPanel::OnOpen()
 {
     assert(!mSelectedPreview);
 
-    //
-    // Start thread
-    //
+    // Clear message queue
+    mThreadToPanelMessageQueue.clear();
 
+    // Start thread
     assert(!mPreviewThread.joinable());
     mPreviewThread = std::thread(&ShipPreviewPanel::RunPreviewThread, this);
+
+    // Start queue poll timer
+    mPollQueueTimer->Start(100, false);
 }
 
 void ShipPreviewPanel::OnClose()
 {
-    //
-    // Stop thread
-    //
+    // Stop queue poll timer
+    mPollQueueTimer->Stop();
 
+    // Stop thread
     assert(mPreviewThread.joinable());
     ShutdownPreviewThread();
+
+    // Clear message queue
+    mThreadToPanelMessageQueue.clear();
 
 
     //
@@ -126,15 +125,6 @@ void ShipPreviewPanel::SetDirectory(std::filesystem::path const & directoryPath)
         mPanelToThreadMessage.reset(new PanelToThreadMessage(PanelToThreadMessage::MakeSetDirectoryMessage(directoryPath)));
         mPanelToThreadMessageEvent.notify_one();
         mPanelToThreadMessageLock.unlock();
-    }
-    else
-    {
-        // Fire completion
-        QueueEvent(
-            new fsDirPreviewCompleteEvent(
-                fsEVT_DIR_PREVIEW_COMPLETE,
-                this->GetId(),
-                *mCurrentlyCompletedDirectory));
     }
 }
 
@@ -242,7 +232,88 @@ void ShipPreviewPanel::OnResized(wxSizeEvent & event)
     LogMessage("ShipPreviewPanel::OnResized: ...processing completed.");
 }
 
-void ShipPreviewPanel::OnDirScanned(fsDirScannedEvent & event)
+void ShipPreviewPanel::OnPollQueueTimer(wxTimerEvent & /*event*/)
+{
+    // Lock queue
+    std::scoped_lock lock(mThreadToPanelMessageQueueMutex);
+
+    // Process a few messages at a time
+    for (size_t i = 0; i < 3 && !mThreadToPanelMessageQueue.empty(); ++i)
+    {
+        auto message = std::move(mThreadToPanelMessageQueue.front());
+        mThreadToPanelMessageQueue.pop_front();
+
+        switch (message->GetMessageType())
+        {
+            case ThreadToPanelMessage::MessageType::DirScanCompleted:
+            {
+                OnDirScanCompleted(message->GetScannedShipFilepaths());
+
+                break;
+            }
+
+            case ThreadToPanelMessage::MessageType::DirScanError:
+            {
+                throw GameException(message->GetErrorMessage());
+            }
+
+            case ThreadToPanelMessage::MessageType::PreviewReady:
+            {
+                assert(message->GetShipIndex() < mPreviewControls.size());
+                mPreviewControls[message->GetShipIndex()]->SetPreviewContent(message->GetShipPreview());
+
+                break;
+            }
+
+            case ThreadToPanelMessage::MessageType::PreviewError:
+            {
+                assert(message->GetShipIndex() < mPreviewControls.size());
+                mPreviewControls[message->GetShipIndex()]->SetPreviewContent(mErrorImage, message->GetErrorMessage(), "");
+
+                break;
+            }
+
+            case ThreadToPanelMessage::MessageType::PreviewCompleted:
+            {
+                LogMessage("ShipPreviewPanel::OnPollQueueTimer: PreviewCompleted for ", message->GetScannedDirectoryPath().string());
+
+                // Remember the current directory, now that it's complete
+                mCurrentlyCompletedDirectory = message->GetScannedDirectoryPath();
+
+                break;
+            }
+        }
+    }
+}
+
+void ShipPreviewPanel::OnShipFileSelected(fsShipFileSelectedEvent & event)
+{
+    LogMessage("ShipPreviewPanel::OnShipFileSelected(): processing...");
+
+    //
+    // Toggle selection
+    //
+
+    if (!!mSelectedPreview)
+    {
+        assert(*mSelectedPreview < mPreviewControls.size());
+        mPreviewControls[*mSelectedPreview]->SetSelected(false);
+    }
+
+    assert(event.GetShipIndex() < mPreviewControls.size());
+    mPreviewControls[event.GetShipIndex()]->SetSelected(true);
+
+    mSelectedPreview = event.GetShipIndex();
+
+    // Propagate up
+    ProcessWindowEvent(event);
+
+    LogMessage("ShipPreviewPanel::OnShipFileSelected(): ...processing completed.");
+}
+
+/////////////////////////////////////////////////////////////////////////////////
+
+void ShipPreviewPanel::OnDirScanCompleted(std::vector<std::filesystem::path> const & scannedShipFilepaths)
 {
     //
     // Create new panel
@@ -257,7 +328,7 @@ void ShipPreviewPanel::OnDirScanned(fsDirScannedEvent & event)
     std::vector<ShipPreviewControl *> newPreviewControls;
     std::vector<std::string> newShipNameToPreviewIndex;
 
-    if (!event.GetShipFilepaths().empty())
+    if (!scannedShipFilepaths.empty())
     {
 
         //
@@ -266,12 +337,12 @@ void ShipPreviewPanel::OnDirScanned(fsDirScannedEvent & event)
 
         newPreviewPanelSizer = new wxGridSizer(CalculateTileColumns(), 0, 0);
 
-        for (size_t shipIndex = 0; shipIndex < event.GetShipFilepaths().size(); ++shipIndex)
+        for (size_t shipIndex = 0; shipIndex < scannedShipFilepaths.size(); ++shipIndex)
         {
             auto shipPreviewControl = new ShipPreviewControl(
                 newPreviewPanel,
                 shipIndex,
-                event.GetShipFilepaths()[shipIndex],
+                scannedShipFilepaths[shipIndex],
                 PreviewVGap,
                 mWaitImage,
                 mErrorImage);
@@ -285,7 +356,7 @@ void ShipPreviewPanel::OnDirScanned(fsDirScannedEvent & event)
             newPreviewPanelSizer->Add(shipPreviewControl, 0, wxALIGN_CENTRE_HORIZONTAL | wxALIGN_TOP);
 
             // Populate name->index map for search
-            newShipNameToPreviewIndex.push_back(Utils::ToLower(event.GetShipFilepaths()[shipIndex].filename().string()));
+            newShipNameToPreviewIndex.push_back(Utils::ToLower(scannedShipFilepaths[shipIndex].filename().string()));
         }
 
         newPreviewPanel->SetSizerAndFit(newPreviewPanelSizer);
@@ -339,69 +410,14 @@ void ShipPreviewPanel::OnDirScanned(fsDirScannedEvent & event)
 
     mPreviewPanel->Show();
 
-    // Re-trigger scroll bar
+
+    //
+    // Refresh scroll bar
+    //
+
+    this->Scroll(-1, 0);
+
     this->FitInside();
-
-
-    // Continue processing
-    event.Skip();
-}
-
-void ShipPreviewPanel::OnDirScanError(fsDirScanErrorEvent & event)
-{
-    throw GameException(event.GetErrorMessage());
-}
-
-void ShipPreviewPanel::OnPreviewReady(fsPreviewReadyEvent & event)
-{
-    assert(event.GetShipIndex() < mPreviewControls.size());
-    mPreviewControls[event.GetShipIndex()]->SetPreviewContent(*(event.GetShipPreview()));
-
-    // Continue processing
-    event.Skip();
-}
-
-void ShipPreviewPanel::OnPreviewError(fsPreviewErrorEvent & event)
-{
-    assert(event.GetShipIndex() < mPreviewControls.size());
-    mPreviewControls[event.GetShipIndex()]->SetPreviewContent(mErrorImage, event.GetErrorMessage(), "");
-
-    // Continue processing
-    event.Skip();
-}
-
-void ShipPreviewPanel::OnDirPreviewComplete(fsDirPreviewCompleteEvent & event)
-{
-    // Remember the current directory, now that it's complete
-    mCurrentlyCompletedDirectory = event.GetDirectoryPath();
-
-    // Continue processing
-    event.Skip();
-}
-
-void ShipPreviewPanel::OnShipFileSelected(fsShipFileSelectedEvent & event)
-{
-    LogMessage("ShipPreviewPanel::OnShipFileSelected(): processing...");
-
-    //
-    // Toggle selection
-    //
-
-    if (!!mSelectedPreview)
-    {
-        assert(*mSelectedPreview < mPreviewControls.size());
-        mPreviewControls[*mSelectedPreview]->SetSelected(false);
-    }
-
-    assert(event.GetShipIndex() < mPreviewControls.size());
-    mPreviewControls[event.GetShipIndex()]->SetSelected(true);
-
-    mSelectedPreview = event.GetShipIndex();
-
-    // Propagate up
-    ProcessWindowEvent(event);
-
-    LogMessage("ShipPreviewPanel::OnShipFileSelected(): ...processing completed.");
 }
 
 int ShipPreviewPanel::CalculateTileColumns()
@@ -487,11 +503,9 @@ void ShipPreviewPanel::RunPreviewThread()
             }
             catch (std::exception const & ex)
             {
-                // Fire error event
-                QueueEvent(
-                    new fsDirScanErrorEvent(
-                        fsEVT_DIR_SCAN_ERROR,
-                        this->GetId(),
+                // Send error message
+                QueueThreadToPanelMessage(
+                    ThreadToPanelMessage::MakeDirScanErrorMessage(
                         ex.what()));
             }
         }
@@ -503,8 +517,6 @@ void ShipPreviewPanel::RunPreviewThread()
 void ShipPreviewPanel::ScanDirectory(std::filesystem::path const & directoryPath)
 {
     LogMessage("PreviewThread::ScanDirectory(", directoryPath.string(), "): processing...");
-
-    bool isSingleCore = (std::thread::hardware_concurrency() < 2);
 
 
     //
@@ -547,19 +559,9 @@ void ShipPreviewPanel::ScanDirectory(std::filesystem::path const & directoryPath
         });
 
     // Notify
-    QueueEvent(
-        new fsDirScannedEvent(
-            fsEVT_DIR_SCANNED,
-            this->GetId(),
+    QueueThreadToPanelMessage(
+        ThreadToPanelMessage::MakeDirScanCompletedMessage(
             shipFilepaths));
-
-
-    if (isSingleCore)
-    {
-        // Give the main thread time to process this
-        std::this_thread::yield();
-        std::this_thread::sleep_for(std::chrono::milliseconds(20));
-    }
 
 
     //
@@ -586,51 +588,43 @@ void ShipPreviewPanel::ScanDirectory(std::filesystem::path const & directoryPath
 
             LogMessage("PreviewThread::ScanDirectory(): ...preview loaded.");
 
-            // Fire event
-            QueueEvent(
-                new fsPreviewReadyEvent(
-                    fsEVT_PREVIEW_READY,
-                    this->GetId(),
+            // Notify
+            QueueThreadToPanelMessage(
+                ThreadToPanelMessage::MakePreviewReadyMessage(
                     iShip,
-                    std::make_shared<ShipPreview>(std::move(shipPreview))));
-
-            if (isSingleCore && 3 == (iShip % 4))
-            {
-                // Give the main thread time to process this
-                std::this_thread::yield();
-                std::this_thread::sleep_for(std::chrono::milliseconds(20));
-            }
+                    std::move(shipPreview)));
         }
         catch (std::exception const & ex)
         {
-            LogMessage("PreviewThread::ScanDirectory(): encountered error, firing event...");
+            LogMessage("PreviewThread::ScanDirectory(): encountered error, notifying...");
 
-            // Fire error event
-            QueueEvent(
-                new fsPreviewErrorEvent(
-                    fsEVT_PREVIEW_ERROR,
-                    this->GetId(),
+            // Notify
+            QueueThreadToPanelMessage(
+                ThreadToPanelMessage::MakePreviewErrorMessage(
                     iShip,
                     ex.what()));
 
-            LogMessage("PreviewThread::ScanDirectory(): ...error event fired.");
+            LogMessage("PreviewThread::ScanDirectory(): ...error notified.");
         }
     }
 
 
     //
-    // Fire completion event
+    // Notify completion
     //
 
-    LogMessage("PreviewThread::ScanDirectory(): firing completion event...");
-
-    QueueEvent(
-        new fsDirPreviewCompleteEvent(
-            fsEVT_DIR_PREVIEW_COMPLETE,
-            this->GetId(),
+    QueueThreadToPanelMessage(
+        ThreadToPanelMessage::MakePreviewCompletedMessage(
             directoryPath));
 
-    LogMessage("PreviewThread::ScanDirectory(): ...completion event fired.");
+    LogMessage("PreviewThread::ScanDirectory(): ...preview completed.");
+}
 
-    LogMessage("PreviewThread::ScanDirectory(): ...processing completed.");
+void ShipPreviewPanel::QueueThreadToPanelMessage(std::unique_ptr<ThreadToPanelMessage> message)
+{
+    // Lock queue
+    std::scoped_lock lock(mThreadToPanelMessageQueueMutex);
+
+    // Push message
+    mThreadToPanelMessageQueue.push_back(std::move(message));
 }

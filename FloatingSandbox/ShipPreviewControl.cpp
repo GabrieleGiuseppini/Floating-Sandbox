@@ -10,6 +10,7 @@
 #include <GameCore/Log.h>
 
 #include <wx/rawbmp.h>
+#include <wx/wupdlock.h>
 
 wxDEFINE_EVENT(fsEVT_SHIP_FILE_SELECTED, fsShipFileSelectedEvent);
 wxDEFINE_EVENT(fsEVT_SHIP_FILE_CHOSEN, fsShipFileChosenEvent);
@@ -216,6 +217,7 @@ void ShipPreviewControl::SetPreviewContent(ShipPreview const & shipPreview)
 
     mShipMetadata.emplace(shipPreview.Metadata);
 
+
     //
     // Create description text 1
     //
@@ -242,6 +244,7 @@ void ShipPreviewControl::SetPreviewContent(ShipPreview const & shipPreview)
     if (!!shipPreview.Metadata.Author)
         descriptionLabelText2 += " - by " + *(shipPreview.Metadata.Author);
 
+
     //
     // Set content
     //
@@ -257,8 +260,10 @@ void ShipPreviewControl::SetPreviewContent(
     std::string const & description1,
     std::string const & description2)
 {
+    // Freeze updates until we're done
+    wxWindowUpdateLocker locker(this);
+
     SetImageContent(image);
-    mImagePanel->Refresh();
 
     mDescriptionLabel1->SetLabel(description1);
     mDescriptionLabel2->SetLabel(description2);

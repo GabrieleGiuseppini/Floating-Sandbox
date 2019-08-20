@@ -450,10 +450,15 @@ Render:
 				+ Send to Pac0master
 				- Wait for his answer
 				+ Re-enable Thanos
-				- Remove some logging
+				+ Remove some logging
+			- Mike's rotting when water is inside: he's right
 			
 		+ Black cloth, black wood
+
+		- Test Mike's music
+			- Eventually add him to about box if we take the music
 			
+		- Send payment to Mike: mbsquidlover@gmail.com
 
 	- 1.13.0
 
@@ -532,11 +537,11 @@ Render:
 		- To test & take:
 			- mrpasta444_ship_pack
 			- The bunker parodie (desktop)
-			- Last ones (thid) from Mike
 			- TheodoreRoosevelt
+			= Last ones (third) from Mike
 			- Others in TODO
 			- Graza's from awesomeyorkie
-			- Add MasterGarfield to credits in About box (if we take his ship)
+			- Add MasterGarfield to credits in About box (if we take any of his ships)
 			- Add Aqua to credits in About box (if we take his ship)
 			- John Smith's ark
 				- Add John Smith to about box (if we take his ship)
