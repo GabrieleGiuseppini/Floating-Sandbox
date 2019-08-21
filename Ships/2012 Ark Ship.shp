@@ -1,0 +1,8 @@
+{
+	"structure_image":"2012_ark_ship_structure.png.dat",
+	"texture_image":"2012_ark_ship_texture.png.dat",
+	"offset":{"x":0.0, "y":-9.0},
+	"ship_name":"2012 Ark Ship",
+	"created_by":"John Smith",
+	"year_built":"2012"
+}

@@ -119,6 +119,12 @@ AboutDialog::AboutDialog(
         {"\t\t\t\t", "Serhiiiihres - https://discordapp.com/" },
         {"\t\t\t\t", "JackTheBrickfilmMaker - https://www.youtube.com/channel/UCshPbiTqFuwpNNh7BlpffhQ" },
         {"\t\t\t\t", "Pandadude12345 - https://discordapp.com/" },
+        {"\t\t\t\t", "John Smith - https://discordapp.com/" },
+        {"\t\t\t\t", "Dkuz - https://discordapp.com/" },
+        {"\t\t\t\t", "Loree - https://discordapp.com/" },
+        {"\t\t\t\t", "Daewoom - https://discordapp.com/" },
+        {"\t\t\t\t", "Aqua - https://discordapp.com/" },
+        {"\t\t\t\t", "MasterGarfield - https://discordapp.com/" },
 
         {"Ship art:\t\t", "OceanLinerOrca - https://www.deviantart.com/oceanlinerorca" },
 

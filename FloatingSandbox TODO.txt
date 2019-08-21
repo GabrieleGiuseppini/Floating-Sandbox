@@ -536,17 +536,20 @@ Render:
 	- New ships:
 		- To test & take:
 			- mrpasta444_ship_pack
-			- The bunker parodie (desktop)
 			- TheodoreRoosevelt
 			+ Last ones (third) from Mike
 			= Others in TODO
 			- Graza's from awesomeyorkie
-			- Add MasterGarfield to credits in About box (if we take any of his ships)
-			- Add Aqua to credits in About box (if we take his ship)
-			- Add John Smith to about box (if we take his ship)
-			- Add daewoom (?) to about box (if we take his ship)
-			- Add Loree to about box (if we take his ship)
-				- Ask him name of ship
+			+ Add MasterGarfield to credits in About box (if we take any of his ships)
+			+ Add Aqua to credits in About box (if we take his ship)
+			+ Add John Smith to about box (if we take his ship)
+			+ Add daewoom (?) to about box (if we take his ship)
+			+ Add Loree to about box (if we take his ship)
+			+ Add Dkuz to about box: {"\t\t\t\t", "Dkuz - https://discordapp.com/" },
+			- Add The Bunker Parodie to about box
+				= Ask name
+				- Replace in the SS Pacific ship files
+				
 	- Descriptions:
 		+ Tell maximord about new ships - give him names
 		= Copy all descriptions into their respective .shp files

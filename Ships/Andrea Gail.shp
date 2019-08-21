@@ -1,0 +1,7 @@
+{
+	"structure_image":"andrea_gail_structure.png.dat",
+	"texture_image":"andrea_gail_texture.png.dat",
+	"offset":{"x":0.0, "y":-10.0},
+	"ship_name":"Andrea Gail",
+	"created_by":"Nomadavid"
+}
