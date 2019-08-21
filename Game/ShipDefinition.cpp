@@ -25,7 +25,7 @@ ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
         // Load full definition
         //
 
-        ShipDefinitionFile sdf = ShipDefinitionFile::Create(filepath);
+        ShipDefinitionFile sdf = ShipDefinitionFile::Load(filepath);
 
         //
         // Make paths absolute

@@ -23,10 +23,10 @@ std::unique_ptr<ShipPreview> ShipPreview::Load(
     if (ShipDefinitionFile::IsShipDefinitionFile(filepath))
     {
         //
-        // Load full definition
+        // Load definition
         //
 
-        ShipDefinitionFile sdf = ShipDefinitionFile::Create(filepath);
+        ShipDefinitionFile sdf = ShipDefinitionFile::Load(filepath);
 
         std::filesystem::path basePath = filepath.parent_path();
 
@@ -41,7 +41,7 @@ std::unique_ptr<ShipPreview> ShipPreview::Load(
             previewImageFilePath = basePath / sdf.StructuralLayerImageFilePath;
         }
 
-        // Original size is from structure
+        // Original size is from structure anyway
         originalSize = ImageFileTools::GetImageSize(basePath / sdf.StructuralLayerImageFilePath);
 
         shipMetadata.emplace(sdf.Metadata);

@@ -7,7 +7,7 @@
 
 #include <GameCore/Utils.h>
 
-ShipDefinitionFile ShipDefinitionFile::Create(std::filesystem::path definitionFilePath)
+ShipDefinitionFile ShipDefinitionFile::Load(std::filesystem::path definitionFilePath)
 {
     // Load JSON file
     picojson::value root = Utils::ParseJSONFile(definitionFilePath.string());
