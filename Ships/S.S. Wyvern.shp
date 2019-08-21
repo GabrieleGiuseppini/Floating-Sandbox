@@ -1,0 +1,9 @@
+{
+	"structure_image":"ss_wyvern_structural.png.dat",
+	"offset":{"x":0.0, "y":-18.0},
+	"ship_name":"S.S. Wyvern",
+	"created_by":"Darek225",
+	"year_built":"1932",
+	"description":
+		"The S.S. Wyvern was built on May 2nd 1932. She was used as a small passenger ship up until 1940 when she became militarized. A year later she fell victim to a U-Boat attack and sank off the coast of France."
+}

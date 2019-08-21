@@ -125,12 +125,14 @@ AboutDialog::AboutDialog(
         {"\t\t\t\t", "Daewoom - https://discordapp.com/" },
         {"\t\t\t\t", "Aqua - https://discordapp.com/" },
         {"\t\t\t\t", "MasterGarfield - https://discordapp.com/" },
+        {"\t\t\t\t", "Darek225 - https://www.youtube.com/channel/UC5l6t4P8NLA8n81XdX6yl6w" },
 
         {"Ship art:\t\t", "OceanLinerOrca - https://www.deviantart.com/oceanlinerorca" },
 
         {"Chief ship literature officer:", "Maximord - https://discordapp.com/" },
 
         {"Music:\t\t", "Dario Bazzichetto (Soul Heater) - https://soundcloud.com/soul-heater" },
+        {"\t\t\t\t", "Michael Bozarth - https://www.youtube.com/channel/UCaJkgYP6yNw64U3WUZ3t1sw" },
 
         {"Testing:\t\t", "Pac0master - https://discordapp.com/" },
         {"\t\t\t\t", "Maximord - https://discordapp.com/" },
