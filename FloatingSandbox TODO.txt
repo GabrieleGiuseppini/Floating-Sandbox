@@ -534,21 +534,22 @@ Render:
 		# An SR71 Habu: NotTelling
 		# JackMellon: JackTheBrickfilmMaker (Discord, https://drive.google.com/drive/folders/1isy3QiRzMfyu69v5M0gwD5tvBnYZMWXx)
 	- New ships:
-		- To test & take:
+		- To test:
 			- mrpasta444_ship_pack
 			- TheodoreRoosevelt
-			+ Last ones (third) from Mike
-			= Others in TODO
 			- Graza's from awesomeyorkie
-			+ Add MasterGarfield to credits in About box (if we take any of his ships)
-			+ Add Aqua to credits in About box (if we take his ship)
-			+ Add John Smith to about box (if we take his ship)
-			+ Add daewoom (?) to about box (if we take his ship)
-			+ Add Loree to about box (if we take his ship)
-			+ Add Dkuz to about box: {"\t\t\t\t", "Dkuz - https://discordapp.com/" },
+				- Asked Antonia vs Antonio
+				- Asked if ropes of abandoned are cut on purpose
+				- Require .shp to limit initial sink
+			- Pac0master's Structures
+
 			- Add The Bunker Parodie to about box
 				= Ask name
 				- Replace in the SS Pacific ship files
+			- PM's Titanic
+				= Asked about rename
+		- To take:
+			- All the ones under "Ready"
 				
 	- Descriptions:
 		+ Tell maximord about new ships - give him names
