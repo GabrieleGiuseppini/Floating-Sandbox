@@ -439,23 +439,13 @@ Render:
 			+ Snap sound
 		+ Heat and combustion
 		+ ShipLoadDialog: search bar
-
-		= Check bugs:
+		+ Check bugs:
 			+ Scrolling past world end/black triangle
-			- "Two happy fox bois"'s crash with opengl
-			= Ship load dialog freeze:
-				+ Log all w/timestamps
-				+ Add more log lines
-				+ Change LoggingDialog::'L'
-				+ Send to Pac0master
-				- Wait for his answer
-				+ Re-enable Thanos
-				+ Remove some logging
-			- Mike's rotting when water is inside: he's right
-			
-		+ Black cloth, black wood
+			+ Mike's rotting when water is inside: he's right			
+		+ Add new materials: black cloth, black wood
 
-		- Test Mike's music
+		= Test Mike's music
+			- Asked flac
 			- Eventually add him to about box if we take the music
 			
 		- Send payment to Mike: mbsquidlover@gmail.com

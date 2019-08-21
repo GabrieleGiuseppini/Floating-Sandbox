@@ -843,7 +843,8 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
     if (mHasStartupTipBeenChecked)
     {
         // We've already checked the startup tip...
-        // ...so we'd better post the timer event as early as possible
+        // ...so we can safely post the timer event for the next
+        // frame - the earlier the better (mind the 15ms minimum on MSW)
         PostGameStepTimer();
     }
 
