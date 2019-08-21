@@ -476,7 +476,7 @@ Render:
 					- ProductVersion
 					+ NOT FileVersion
 
-		- Ship preview database
+		- Ship preview database/cache
 
 		- Points' buffer perf improvement (*)
 
