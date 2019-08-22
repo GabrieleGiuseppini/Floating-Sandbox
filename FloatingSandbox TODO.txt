@@ -536,14 +536,6 @@ Render:
 				- Asked if ropes of abandoned are cut on purpose
 				- Require .shp to limit initial sink
 			- Pac0master's Structures
-
-			= Add The Bunker Parodie to about box
-				+ Ask name
-				= Replace in the SS Pacific ship files
-					- Asked about URL
-			+ PM's Titanic
-				+ Asked about rename
-			- Test both groups, copy, and update changes.txt
 		- To take:
 			- All the ones under "Ready"		
 				
