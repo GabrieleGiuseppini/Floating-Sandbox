@@ -207,7 +207,7 @@ Render:
 
 - Testers:
 	- Maximord - "Maximord" (Parallels)
-	- Pac0master - "<Same as now>" (Intel core i5-8600K, NVIDIA GeForce RTX 2070)
+	- Pac0master - "<Same as now>" (Intel core i5-8600K 6 cores, NVIDIA GeForce RTX 2070)
 	- The_SamminAter - "The_SamminAter" (Parallels)
 	- Costin88boss: Windows 10, AMD, ATI OpenGL 4.6 w/Radeon RX 560 Series w/2GB RAM
 
@@ -446,15 +446,14 @@ Render:
 
 		= Test Mike's music
 			- Asked flac
-			- Eventually add him to about box if we take the music
+			= Eventually remove him from about box if we don't take the music
 			
 		- Send payment to Mike: mbsquidlover@gmail.com
 
 	- 1.13.0
 
 		- Add those 2 Lava textures
-			- Need to remove blue overlay first, apply to textures directly
-				- But see why it's needed first: play with trick of setting ocean transparency to zero and then changing texture
+			- Need to remove blue overlay first, apply to textures directly making a second "Caraibic" version of them
 
 		- Version overhaul
 			! Goal: "beta" shows up in file details (product version, etc.) and in About Box
@@ -466,7 +465,9 @@ Render:
 					- ProductVersion
 					+ NOT FileVersion
 
-		- Ship preview database/cache
+		- ShipLoadDialog:
+			- Ship preview database/cache
+			- Search: button for "next"
 
 		- Points' buffer perf improvement (*)
 
@@ -485,6 +486,9 @@ Render:
 		- Attempt to get rid of boundary checks at OceanFloor and OceanSurface sampling
 
 		- Settings Manager (*)
+
+
+
 
 		- Smoke
 			- See if may use shader with radial noise
@@ -533,13 +537,15 @@ Render:
 				- Require .shp to limit initial sink
 			- Pac0master's Structures
 
-			- Add The Bunker Parodie to about box
-				= Ask name
-				- Replace in the SS Pacific ship files
-			- PM's Titanic
-				= Asked about rename
+			= Add The Bunker Parodie to about box
+				+ Ask name
+				= Replace in the SS Pacific ship files
+					- Asked about URL
+			+ PM's Titanic
+				+ Asked about rename
+			- Test both groups, copy, and update changes.txt
 		- To take:
-			- All the ones under "Ready"
+			- All the ones under "Ready"		
 				
 	- Descriptions:
 		+ Tell maximord about new ships - give him names
