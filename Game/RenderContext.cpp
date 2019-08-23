@@ -78,7 +78,7 @@ RenderContext::RenderContext(
     , mOceanTransparency(0.8125f)
     , mOceanDarkeningRate(0.359375f)
     , mShowShipThroughOcean(false)
-    , mWaterContrast(0.8125f)
+    , mWaterContrast(0.71875f)
     , mWaterLevelOfDetail(0.6875f)
     , mShipRenderMode(ShipRenderMode::Texture)
     , mDebugShipRenderMode(DebugShipRenderMode::None)
