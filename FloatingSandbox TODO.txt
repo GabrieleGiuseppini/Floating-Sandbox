@@ -466,6 +466,8 @@ Render:
 				- Fields that may contain "Beta foo":
 					- ProductVersion
 					+ NOT FileVersion
+			- Windows Installer
+				- See if may take version as X.Y.Z; if not, do hardcoded version string in include (same include as GUIDs)
 
 		- ShipLoadDialog:
 			- Ship preview database/cache

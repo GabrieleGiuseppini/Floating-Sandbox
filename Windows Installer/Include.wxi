@@ -6,5 +6,5 @@
     <?define FloatingSandboxVersion = "!(bind.FileVersion.FloatingSandboxExe)"?>
     <?define ShortApplicationName = "Floating Sandbox"?>
     <?define FullApplicationName = "$(var.ShortApplicationName) $(var.FloatingSandboxVersion)"?>
-    <?define InfoURL="http://www.floatingsandbox.com/" ?>
+    <?define InfoURL="https://www.floatingsandbox.com/" ?>
 </Include>

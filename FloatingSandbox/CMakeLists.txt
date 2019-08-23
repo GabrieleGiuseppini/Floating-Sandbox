@@ -190,7 +190,7 @@ install(DIRECTORY "${CMAKE_SOURCE_DIR}/Guides"
 install(DIRECTORY "${CMAKE_SOURCE_DIR}/Ships"
 	DESTINATION .
 	PATTERN "default_ship.png" EXCLUDE)
-install(FILES "${CMAKE_SOURCE_DIR}/Ships/I.K.C. Krafting.shp"
+install(FILES "${CMAKE_SOURCE_DIR}/Ships/R.M.S. Titanic.shp"
 	DESTINATION Ships
 	RENAME "default_ship.shp")
 

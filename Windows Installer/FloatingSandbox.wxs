@@ -52,6 +52,7 @@
                         <File Source="$(var.SourceInstallFolderPath)\ILUT.dll" Id="ILUTdll" />
                         <File Source="$(var.SourceInstallFolderPath)\openal32.dll" Id="openal32dll" />
                         <File Source="$(var.SourceInstallFolderPath)\sfml-audio-2.dll" Id="sfmlaudio2dll" />
+                        <File Source="$(var.SourceInstallFolderPath)\sfml-network-2.dll" Id="sfmlnetwork2dll" />
                         <File Source="$(var.SourceInstallFolderPath)\sfml-system-2.dll" Id="sfmlsystem2dll" />
                         <RegistryValue Root="HKCU" Key="Software\Gabriele Giuseppini\Floating Sandbox" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
                     </Component>

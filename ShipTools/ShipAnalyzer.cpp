@@ -52,15 +52,15 @@ ShipAnalyzer::AnalysisInfo ShipAnalyzer::Analyze(
             {
                 numPoints += 1.0f;
 
-                totalMass += structuralMaterial->Mass;
+                totalMass += structuralMaterial->GetMass();
 
                 buoyantMass +=
-                    structuralMaterial->Mass
+                    structuralMaterial->GetMass()
                     - (structuralMaterial->WaterVolumeFill * GameParameters::WaterMass);
 
                 // Update center of mass
-                analysisInfo.BaricentricX += worldX * structuralMaterial->Mass;
-                analysisInfo.BaricentricY += worldY * structuralMaterial->Mass;
+                analysisInfo.BaricentricX += worldX * structuralMaterial->GetMass();
+                analysisInfo.BaricentricY += worldY * structuralMaterial->GetMass();
             }
         }
     }
