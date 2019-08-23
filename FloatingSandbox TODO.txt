@@ -443,17 +443,19 @@ Render:
 			+ Scrolling past world end/black triangle
 			+ Mike's rotting when water is inside: he's right			
 		+ Add new materials: black cloth, black wood
-
-		= Test Mike's music
-			- Asked flac
-			= Eventually remove him from about box if we don't take the music
+		+ Take Mike's music
+			+ Test flac versions
+			+ About box: add Stuart's Piano World, https://stuartspianoworld.com/
 			
 		- Send payment to Mike: mbsquidlover@gmail.com
 
 	- 1.13.0
 
+		- Cache layout optimization for points and springs (*)
+
 		- Add those 2 Lava textures
 			- Need to remove blue overlay first, apply to textures directly making a second "Caraibic" version of them
+				- Make "Caraibic" version the default
 
 		- Version overhaul
 			! Goal: "beta" shows up in file details (product version, etc.) and in About Box
@@ -472,9 +474,12 @@ Render:
 		- Points' buffer perf improvement (*)
 
 		- Lights perf improvement (*)
+
+		- Cached quantities (*)
 		
 		- Break lights when structure gets "broken"
-			- Whenever a triangle is destroyed, lights attached to any of the three vertices will break
+			- Whenever a triangle or spring is destroyed, break also *lights* attached to any of the endpoints
+				- @ Ship::DestroyHandler's
 
 		- Do shader at Anti-Matter bomb pre-implosion
 			- Corona with random noise inside circle
@@ -486,12 +491,6 @@ Render:
 		- Attempt to get rid of boundary checks at OceanFloor and OceanSurface sampling
 
 		- Settings Manager (*)
-
-
-
-
-		- Smoke
-			- See if may use shader with radial noise
 
 		- Instanced drawing for lights (*)
 
@@ -640,7 +639,7 @@ Render:
 		- Try with pre-calculated luminiscence function, for each light, as a function of square distance
 			- Point's total light = sum[for each light](interpolation of pre-calc'd lum function)
 
-	- Ship::Update: cache quantities that are currently re-calculated multiple times
+	- Ship::Update: cache quantities that are currently re-calculated multiple times (*)
 		- Identify streak of calculations that need a quantity more than once, and during which the quantity never changes
 			- e.g. spring lengths between water update and heat update
 		- Cache quantities in Update loop that comes first or last
@@ -660,7 +659,7 @@ Render:
 				- Valid as long as points don't move
 				- Used by: UpdateWaterIntake (for leaking points only), heat dissipation
 	
-	- Retry cache optimization, new strategy:
+	- Retry cache layout optimization, new strategy: (*)
 		- Points in 2x2 blocks (with any point optional), advancing one column - and then row - at a time
 		- Springs in those 2x2 blocks, advancing one column - and then row - at a time
 
@@ -890,8 +889,16 @@ Render:
 
 - Gfx optimizations:
 
-	- Test perf: allocate (and thus upload) Points' mutable attributes in one single buffer
-		- Replace Points' individual buffers with pointers to starting segment in same buffer
+	- Test perf: allocate (and thus upload) Points' mutable attributes in one single buffer (*)
+		- Changes to Buffer:
+			- static size_t CalculateByteSize(size_t alignedElementCount)
+			- cctor that takes shader_ptr<uint8_t *>, byte offset, et al
+			- Add UTs
+		- Replace Points' individual buffers with:
+			- 0: mAlignedElementCount = SysSpecifics::align_element_count // based on float
+			- 1: mAttributesBuffer == shared_ptr<uint8_t *> SysSpecifics::aligned_alloc_shared(byte size) // alignment is of # of floats in AVX-512
+				- Uses AlignedMemoryDeleter in SysSpecifics.h
+			- 2: bounded vectors offseted to three portions, using Buffer::CalculateByteSize(.) for previous
 		- Then do a single upload
 					
 	- Lights on the GPU with instanced drawing (*)
@@ -1136,7 +1143,7 @@ Render:
 
 	- Breaking waves (Muller's paper)
 
-	- Ephemeral particle emitters
+	- Ephemeral particle emitters (*)
 		- TODO: decide between the below (emitter is new object type in its own right) and having instead emitters as special
 		  types of electricals
 		- Implemented like electrical elements, i.e.:
@@ -1151,22 +1158,24 @@ Render:
 		- Ship::UpdateEphemeralParticles: invokes EphemeralParticlesEmitters::Update(...)
 			- Which invokes IEphemeralParticleEmitter::Update(clockNow, mPoints) for each emitter
 		
-	- Smoke:
+	- Smoke: (*)
 		- New material: smoke emitter
 			- Recognized by ship builder via "particle_emitter_properties" sub-object
 		- New material: smoke
 			- Lighter than air
 		- UpdatePointForces: if any point is above water, apply air buoyancy (*)
 			- i.e. always end up applying one buoyancy, either water or air
-		- IEphemeralParticleEmitter implementation: SmokeEphemeralParticleEmitter
+		- IEphemeralParticleEmitter (*) implementation: SmokeEphemeralParticleEmitter
 		- Research particle motion - inject random walk in smoke and bubbles
 			- https://core.ac.uk/download/pdf/337937.pdf !!!
 			- http://orbit.dtu.dk/files/3706687/Visser6.pdf
 			- @ Smoke
 				- http://matthias-mueller-fischer.ch/publications/sca03.pdf
+		- Rendering:
+			- Do shader
 
 	- Fireworks
-		- New emitter material, much like smoke emitters
+		- New emitter material, much like smoke emitters (*)
 		- Fires when wet for the first time
 
 	- Switches:

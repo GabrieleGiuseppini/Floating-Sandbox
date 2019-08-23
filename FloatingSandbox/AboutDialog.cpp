@@ -133,7 +133,7 @@ AboutDialog::AboutDialog(
         {"Chief ship literature officer:", "Maximord - https://discordapp.com/" },
 
         {"Music:\t\t", "Dario Bazzichetto (Soul Heater) - https://soundcloud.com/soul-heater" },
-        {"\t\t\t\t", "Michael Bozarth - https://www.youtube.com/channel/UCaJkgYP6yNw64U3WUZ3t1sw" },
+        {"\t\t\t\t", "Michael Bozarth; Stuart's Piano World - https://stuartspianoworld.com/" },
 
         {"Testing:\t\t", "Pac0master - https://discordapp.com/" },
         {"\t\t\t\t", "Maximord - https://discordapp.com/" },

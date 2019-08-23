@@ -2,13 +2,13 @@
 - Added heat and combustion physics sub-systems, and coupled them with most of the other sub-systems (bombs, springs, decay, etc.)
 	- ...including new tools for playing with heat and fire!
 - Improved repair tool
-- Added automatic check for updates, which will notify the user when a new version is available for downloading
+- Smoothened move tool
 - Added more options for ocean and land rendering
-- Smoother move tool
 - Improved behavior of tools when the game is paused
 - Tidied up settings window
 - Added a few new materials
 - Improved rotting speed
+- Added automatic check for updates, which will display a notification when a new version is available for downloading
 - Bug fixes:
 	- Sometimes sea disappears when waves become too tall
 	- Wavemaker sound does not pause when game is paused
