@@ -218,238 +218,9 @@ Render:
 
 - Roadmap:
 
-	- 1.12.0:
-		+ Fix latency of move tool
-		+ Do perf analysis
-			+ Usual sample-based one
-		+ SFML fixing:
-			+ Re-run FS cmake
-			+ Redo FS release build 
-				+ Verify static CRT in output
-			+ Redo FS install build 
-				+ Verify static CRT in output
-				+ Verify guides in output
-		+ Automatic updates checker via file placed on floatingsandbox.com
-			+ UIPreferences::CheckForUpdatesAtStartup
-			+ class UpdateChecker:
-				+ Wraps separate thread and conveys result via UpdateCheckOutcome
-				+ Getter for UpdateCheckOutcome:
-					+ Returns null if not done yet
-					+ Returns UpdateCheckOutcome when done
-				+ Uses SFML::Network::Http
-			+ At startup:
-				+ MainFrame starts UpdateChecker at end of PostInitialize, and then polls it as long
-				  as it's not null
-				+ If poll OK && new version, displays popup, then nullifies it
-					+ Uses NewVersionDisplayDialog
-				+ Redo: kick-off is by timer after 10 secs, rather than at PostInitialize() - everything else stays
-			+ Help->Check for Updates
-				+ MainFrame: menu item
-				+ CheckForUpdatesDialog (Modal Dialog)
-				+ cctor starts UpdateChecker 
-				+ Timer does progress (calling wxGauge::Pulse)
-				+ On poll OK, displays with NewVersionDisplayDialog
-			+ NewVersionDisplayDialog:
-				+ If ccted with "atStartup", displays checkbox for turning off check on startup
-			+ Preferences window:
-				+ Check for updates at startup
-					+ Toggling checkbox resets version blacklist
-			+ Test:
-				+ Does not notify for old version (Startup, Check)
-				+ Notifies for new version (Startup, Check)
-				+ Everything stays the same at next check (Startup, Check)
-				+ Blacklist checkbox clicked and re-clicked does nothing (Startup)
-				+ Blacklists version for next check (after checkbox) (Startup, Check)
-				+ Does not check at next check (after checkbox) (Startup)
-				+ Preferences
-					+ Blacklist reset
-				+ From http
-			+ Cleanup:
-				+ "Click here to download ...":
-					+ Button
-					+ Change text
-				+ Cleanup changes.txt
-				+ Trim changes.txt at www
-				+ Timer: 10 sec
-		+ Make sure sfml network is crt statically linked
-		+ Bugs:
-			+ Wavemaker sound when paused does not pause
-			+ Emplace force fields at interactions
-			+ Move tool now doesn't work when paused
-				+ See why
-				+ Fix
-		+ Multiple textures for:
-			+ Land
-				+ Each has entry in texture DB
-					+ Some new ones have 512 - decide one by one
-				+ RenderContext::GetAvailableLandTextures()
-				+ SettingsDialog: drop-down
-				+ RenderContext::SetOceanFloorTexture(size_t)
-				+ Test ShipPreviewControl (for zero-sized bitmap)
-				+ Rename TextureRenderManager to UploadedTextureManager
-			+ Ocean
-			+ Changes.txt
-		+ Shaders:
-			+ Land texture:
-				+ Texture compression on edge
-					+ Try (4*x)^(0.2) / (3 * ((4*x)^2+1)) + x
-				+ Add non-linear (same non-linearity as ocean) darkening (lightest at ocean surface)
-			+ Ocean gradient: make non-linear
-				+ Cleanup shader afterwards
-			+ Ocean texture:
-				+ texture compression on edge			
-				+ add non-linear (same non-linearity) darkening
-		+ Optimize GameOpenGL::UploadMipmappedTexture: alloc write buffer once and swap pointers
-		+ Fix bug at bump-map interpolation at ocean floor: need to calc fractional part
-		+ Settings dialog: 
-			+ Merge Mechanics and Fluids and World into "Generic"
-				+ Mechanics box
-					+ Add decay
-				+ Fluids box
-					+ Move WaterLevelOfDetail to Rendering, next to WaterContrast
-				+ Lights box
-			+ Do spacers at Ocean+Sky and Wind+Waves as Mechanics and Rendering
-			+ Interactions: add boxes (and make like Mechanics):
-				+ Interactions
-				+ Side Effects
-				+ Make tools two rows and move side-effect to left
-		+ Make slider for air bubble density
-			+ SettingDialog: enable/disable based off checkbox
-				+ Move checkbox
-			+ Max=128
-				+ Ensure cur value fits slider
-			+ Fix issue with randomization of density
-				+ Try with redoing randomization of all leaking points at each param change
-		+ Ocean rendering: replace stencil with first rendering w/zero transparency
-			+ Remove MatteOcean shader, now that it's not needed anymore
-			+ Do pass on all ocean textures doing exactly what we did before (cornflower blending)
-			+ Redo flat and gradient ocean colors
-
-		+ Waves need to be further limited
-			+ Make repro: tsunami on manually-created high wave field
-			+ Tsunami and rogue wave: target H is absolute, not based on current H
-			+ If ok:
-				+ Update changes.txt
-		+ Merge to master			 
-		+ Send to testers
-		+ Move tool: make sling easier
-			+ 1) Merge Move tools
-				+ Base templated class
-				+ Derived only has virtual's for GameController calls
-			+ 2) Improve
-		+ Multi-music
-		+ Sea and land shaders: use smoothstep's instead of complex stuff
-			+ float increment = -10.0 * (1.0 - smoothstep(0.0, TODO.0, textureCoord.z))
-		+ Repair tool improvement:
-			+ RepairTool passes RepairSessionId, RepairSessionStepId
-			+ Points has buffer of struct RepairSmoothing{RepairSessionId currentSessionId, RepairSessionStepId currentSessionStepId, float smoothing}
-			+ Repair interaction when engaging "other endpoint":
-				+ Zero's smoothing iff currentSessionId != this session ID
-					+ And sets currentSessionId = this session ID
-				+ Advances smoothing (smoothing += (1-smoothing)*alpha) iff currentSessionStepId != this session step ID
-					+ And sets currentSessionStepId = this session step ID
-			+ Test and fine-tune alpha
-			+ Remove logging
-			+ Fine-tune inertial velocity exponent
-			+ See why points fly at weird angles
-				+ See if due to (wrong) intertial: does it happen with no inertial? NO.
-			+ See Moleskine for Attractor vs Attracted
-			+ Deal with same conn comp ID
-			+ Undo decay (halve it)
-			+ See missing springs
-			+ Play with tolerance
-			+ See if conn comp logic:
-				+ Is broken (think): NO
-				+ Is useful: commented out for the time being (for AwesomeYorkie)
-			+ Get AwesomeYorkie's second feedback
-			+ Try with smoothing done only at attractors via step ID
-			+ Ropes strength amplifier/reducer
-			+ Try to put back attractor/attractee exclusion 
-			+ Radius = 2.0
-			+ Alpha = 0.0025f
-			+ Find multiplier (play w/strength slider for the time being, make high max (for now))
-			+ Commit
-			+ See if can use the duration of the role
-				+ A point shouldn't take the role of attracted if it was attractor in the immediately-previous step
-				+ A point shouldn't take the role of attractor if it was attracted in the immediately-previous step
-			+ See if may have slower startup of force
-				+ Replace whole smoothing with:
-					+ Attracted force is <MaxForce>*smoothstep(0.0f, 10*60, # of consecutive session steps as attracted)
-						+ Need to track # of consecutive steps as attracted in this session
-			+ Test repair strength adjustment as "repair speed adjustment"
-				+ If ok, rename @ code & settings dialog
-			+ Then see if can put radius back to something higher
-			+ See if rope kindness is still granted
-			+ Cleanup logs and code for Correct/Wrong counts
-			+ Cleanup TODO
-		+ Fix exponential slider core for negative edges
-		+ Put back links
-		+ Fire Extinguisher tool
-			+ Action
-				+ Cool, with heat subtraction
-			+ Shader
-				+ Radial noise + rotation
-				+ Somewhat transparent, so that flames show through
-				+ Full radius 
-			+ Sound
-				+ Volume
-			+ Cursor
-				+ HotSpot
-		+ Add slider for repair tool radius
-		+ Add slider for flamethrower tool radius
-		+ Rotting:
-			+ Fix bug: "Idk if this is a bug or not but the tiny particles that appear after something is destroyed start flickering like 
-			  christmas lights with rot at 1000 when uderwater"
-			     + Yes: W=112.826 T=288.003 Decay=3.93467e+06
-			+ Bump up rot speed for dry stuff, takes 98 minutes now
-				+ They all agree: a ship should rot in 30 minutes on the surface, and in 15 minutes when flooded
-			+ Tests:
-				+ Surface rots zero, submerged a bit more, flooded more, leaking a lot
-				+ Christmas light bug: with acceler8r at 1000.0 when uderwater
-				+ Stainless steel does not rot when acceler8r at 1000.0
-				+ 15mins (@50fps) for flooded when acceler8r at 1.0
-				+ 30mins (@50fps) for exposed when acceler8r at 1.0
-				+ Doesn't rot when acceler8r at 0.0
-		+ Thanos' Snap
-			+ Tool managed by GameController
-				+ Dedicated state machine (mThanosSnapStateMachine) stored in queue
-					+ Additive, up to N (8), circular
-					+ Move state machines to separate cpp: GameController_StateMachines.cpp
-					+ At beginning (first insert): 
-						+ Fire "StartSilence" event
-							+ SoundController::OnSilenceStarted: stop sinking music
-						+ Call Wind::SetSilence(float between 0.0 and 1.0)
-							+ Wind stores it, and uses it at Update()
-							+ Wind state machine progresses, but final result is multiplied by silence
-								+ And rely on moving avg to smooth the step
-					+ Throughout: call World::ApplyThanosSnap(centerPos, innerRadius, outerRadius) X 2
-						+ Called for slices, advancing from mouse position at moment of application
-						+ Ship::ApplyThanosSnap(centerPos, innerRadius, outerRadius)
-							+ Only does between two outermost edges, so to catch moving things
-							+ Deletes springs (and consequently triangles) (w/no noise)
-							+ Imparts velocity on particles
-						+ OceanSurface::ApplyThanosSnap(centerPos, innerRadius, outerRadius)
-							+ Flattens surface that falls in crown to ~-1.0
-					+ At end (last removal):
-						+ Fire "LiftSilence" event
-							+ SoundController: niks
-						+ Call Wind::SetSilence(0.0)
-
-			+ Cursors (up and down)
-			+ Snap sound
-		+ Heat and combustion
-		+ ShipLoadDialog: search bar
-		+ Check bugs:
-			+ Scrolling past world end/black triangle
-			+ Mike's rotting when water is inside: he's right			
-		+ Add new materials: black cloth, black wood
-		+ Take Mike's music
-			+ Test flac versions
-			+ About box: add Stuart's Piano World, https://stuartspianoworld.com/
-			
-		- Send payment to Mike: mbsquidlover@gmail.com
-
 	- 1.13.0
+
+		- Refresh current perf
 
 		- Windows installer: rethink strategy, go for upgrades
 			- Do own Heat in python
@@ -920,12 +691,6 @@ Render:
 
 	- Try using GL_SHORT for Ship texture coordinates
 		- Passing NORMALIZE and 3 components to glVertexAttribPointer
-
-	+ (Retry) Use CPU and GPU in parallel
-		+ Finalize render (glFlush) before render step, not after
-			+ Research glFlush()
-			+ By invoking glFlush() and SwapBuffers() in MainFrame, before Render()
-	+ Test using gl_TexCoord to pass texture coords from vertex to fragment
 
 
 - Gfx:
@@ -2877,6 +2642,11 @@ IF WX:
 			+ Renders quad for each side
 				+ Width is in NDC
 				+ alpha = 0.5 (in shader)
+	+ (Retry) Use CPU and GPU in parallel
+		+ Finalize render (glFlush) before render step, not after
+			+ Research glFlush()
+			+ By invoking glFlush() and SwapBuffers() in MainFrame, before Render()
+	+ Test using gl_TexCoord to pass texture coords from vertex to fragment
 
 + Gfx Optimizations:
 	+ Try without buffer population: 			
@@ -6678,5 +6448,233 @@ IF WX:
 			+ Git
 			+ GameJolt
 		+ Merge into 1.12
+	+ 1.12.0:
+		+ Fix latency of move tool
+		+ Do perf analysis
+			+ Usual sample-based one
+		+ SFML fixing:
+			+ Re-run FS cmake
+			+ Redo FS release build 
+				+ Verify static CRT in output
+			+ Redo FS install build 
+				+ Verify static CRT in output
+				+ Verify guides in output
+		+ Automatic updates checker via file placed on floatingsandbox.com
+			+ UIPreferences::CheckForUpdatesAtStartup
+			+ class UpdateChecker:
+				+ Wraps separate thread and conveys result via UpdateCheckOutcome
+				+ Getter for UpdateCheckOutcome:
+					+ Returns null if not done yet
+					+ Returns UpdateCheckOutcome when done
+				+ Uses SFML::Network::Http
+			+ At startup:
+				+ MainFrame starts UpdateChecker at end of PostInitialize, and then polls it as long
+				  as it's not null
+				+ If poll OK && new version, displays popup, then nullifies it
+					+ Uses NewVersionDisplayDialog
+				+ Redo: kick-off is by timer after 10 secs, rather than at PostInitialize() - everything else stays
+			+ Help->Check for Updates
+				+ MainFrame: menu item
+				+ CheckForUpdatesDialog (Modal Dialog)
+				+ cctor starts UpdateChecker 
+				+ Timer does progress (calling wxGauge::Pulse)
+				+ On poll OK, displays with NewVersionDisplayDialog
+			+ NewVersionDisplayDialog:
+				+ If ccted with "atStartup", displays checkbox for turning off check on startup
+			+ Preferences window:
+				+ Check for updates at startup
+					+ Toggling checkbox resets version blacklist
+			+ Test:
+				+ Does not notify for old version (Startup, Check)
+				+ Notifies for new version (Startup, Check)
+				+ Everything stays the same at next check (Startup, Check)
+				+ Blacklist checkbox clicked and re-clicked does nothing (Startup)
+				+ Blacklists version for next check (after checkbox) (Startup, Check)
+				+ Does not check at next check (after checkbox) (Startup)
+				+ Preferences
+					+ Blacklist reset
+				+ From http
+			+ Cleanup:
+				+ "Click here to download ...":
+					+ Button
+					+ Change text
+				+ Cleanup changes.txt
+				+ Trim changes.txt at www
+				+ Timer: 10 sec
+		+ Make sure sfml network is crt statically linked
+		+ Bugs:
+			+ Wavemaker sound when paused does not pause
+			+ Emplace force fields at interactions
+			+ Move tool now doesn't work when paused
+				+ See why
+				+ Fix
+		+ Multiple textures for:
+			+ Land
+				+ Each has entry in texture DB
+					+ Some new ones have 512 - decide one by one
+				+ RenderContext::GetAvailableLandTextures()
+				+ SettingsDialog: drop-down
+				+ RenderContext::SetOceanFloorTexture(size_t)
+				+ Test ShipPreviewControl (for zero-sized bitmap)
+				+ Rename TextureRenderManager to UploadedTextureManager
+			+ Ocean
+			+ Changes.txt
+		+ Shaders:
+			+ Land texture:
+				+ Texture compression on edge
+					+ Try (4*x)^(0.2) / (3 * ((4*x)^2+1)) + x
+				+ Add non-linear (same non-linearity as ocean) darkening (lightest at ocean surface)
+			+ Ocean gradient: make non-linear
+				+ Cleanup shader afterwards
+			+ Ocean texture:
+				+ texture compression on edge			
+				+ add non-linear (same non-linearity) darkening
+		+ Optimize GameOpenGL::UploadMipmappedTexture: alloc write buffer once and swap pointers
+		+ Fix bug at bump-map interpolation at ocean floor: need to calc fractional part
+		+ Settings dialog: 
+			+ Merge Mechanics and Fluids and World into "Generic"
+				+ Mechanics box
+					+ Add decay
+				+ Fluids box
+					+ Move WaterLevelOfDetail to Rendering, next to WaterContrast
+				+ Lights box
+			+ Do spacers at Ocean+Sky and Wind+Waves as Mechanics and Rendering
+			+ Interactions: add boxes (and make like Mechanics):
+				+ Interactions
+				+ Side Effects
+				+ Make tools two rows and move side-effect to left
+		+ Make slider for air bubble density
+			+ SettingDialog: enable/disable based off checkbox
+				+ Move checkbox
+			+ Max=128
+				+ Ensure cur value fits slider
+			+ Fix issue with randomization of density
+				+ Try with redoing randomization of all leaking points at each param change
+		+ Ocean rendering: replace stencil with first rendering w/zero transparency
+			+ Remove MatteOcean shader, now that it's not needed anymore
+			+ Do pass on all ocean textures doing exactly what we did before (cornflower blending)
+			+ Redo flat and gradient ocean colors
+
+		+ Waves need to be further limited
+			+ Make repro: tsunami on manually-created high wave field
+			+ Tsunami and rogue wave: target H is absolute, not based on current H
+			+ If ok:
+				+ Update changes.txt
+		+ Merge to master			 
+		+ Send to testers
+		+ Move tool: make sling easier
+			+ 1) Merge Move tools
+				+ Base templated class
+				+ Derived only has virtual's for GameController calls
+			+ 2) Improve
+		+ Multi-music
+		+ Sea and land shaders: use smoothstep's instead of complex stuff
+			+ float increment = -10.0 * (1.0 - smoothstep(0.0, TODO.0, textureCoord.z))
+		+ Repair tool improvement:
+			+ RepairTool passes RepairSessionId, RepairSessionStepId
+			+ Points has buffer of struct RepairSmoothing{RepairSessionId currentSessionId, RepairSessionStepId currentSessionStepId, float smoothing}
+			+ Repair interaction when engaging "other endpoint":
+				+ Zero's smoothing iff currentSessionId != this session ID
+					+ And sets currentSessionId = this session ID
+				+ Advances smoothing (smoothing += (1-smoothing)*alpha) iff currentSessionStepId != this session step ID
+					+ And sets currentSessionStepId = this session step ID
+			+ Test and fine-tune alpha
+			+ Remove logging
+			+ Fine-tune inertial velocity exponent
+			+ See why points fly at weird angles
+				+ See if due to (wrong) intertial: does it happen with no inertial? NO.
+			+ See Moleskine for Attractor vs Attracted
+			+ Deal with same conn comp ID
+			+ Undo decay (halve it)
+			+ See missing springs
+			+ Play with tolerance
+			+ See if conn comp logic:
+				+ Is broken (think): NO
+				+ Is useful: commented out for the time being (for AwesomeYorkie)
+			+ Get AwesomeYorkie's second feedback
+			+ Try with smoothing done only at attractors via step ID
+			+ Ropes strength amplifier/reducer
+			+ Try to put back attractor/attractee exclusion 
+			+ Radius = 2.0
+			+ Alpha = 0.0025f
+			+ Find multiplier (play w/strength slider for the time being, make high max (for now))
+			+ Commit
+			+ See if can use the duration of the role
+				+ A point shouldn't take the role of attracted if it was attractor in the immediately-previous step
+				+ A point shouldn't take the role of attractor if it was attracted in the immediately-previous step
+			+ See if may have slower startup of force
+				+ Replace whole smoothing with:
+					+ Attracted force is <MaxForce>*smoothstep(0.0f, 10*60, # of consecutive session steps as attracted)
+						+ Need to track # of consecutive steps as attracted in this session
+			+ Test repair strength adjustment as "repair speed adjustment"
+				+ If ok, rename @ code & settings dialog
+			+ Then see if can put radius back to something higher
+			+ See if rope kindness is still granted
+			+ Cleanup logs and code for Correct/Wrong counts
+			+ Cleanup TODO
+		+ Fix exponential slider core for negative edges
+		+ Put back links
+		+ Fire Extinguisher tool
+			+ Action
+				+ Cool, with heat subtraction
+			+ Shader
+				+ Radial noise + rotation
+				+ Somewhat transparent, so that flames show through
+				+ Full radius 
+			+ Sound
+				+ Volume
+			+ Cursor
+				+ HotSpot
+		+ Add slider for repair tool radius
+		+ Add slider for flamethrower tool radius
+		+ Rotting:
+			+ Fix bug: "Idk if this is a bug or not but the tiny particles that appear after something is destroyed start flickering like 
+			  christmas lights with rot at 1000 when uderwater"
+			     + Yes: W=112.826 T=288.003 Decay=3.93467e+06
+			+ Bump up rot speed for dry stuff, takes 98 minutes now
+				+ They all agree: a ship should rot in 30 minutes on the surface, and in 15 minutes when flooded
+			+ Tests:
+				+ Surface rots zero, submerged a bit more, flooded more, leaking a lot
+				+ Christmas light bug: with acceler8r at 1000.0 when uderwater
+				+ Stainless steel does not rot when acceler8r at 1000.0
+				+ 15mins (@50fps) for flooded when acceler8r at 1.0
+				+ 30mins (@50fps) for exposed when acceler8r at 1.0
+				+ Doesn't rot when acceler8r at 0.0
+		+ Thanos' Snap
+			+ Tool managed by GameController
+				+ Dedicated state machine (mThanosSnapStateMachine) stored in queue
+					+ Additive, up to N (8), circular
+					+ Move state machines to separate cpp: GameController_StateMachines.cpp
+					+ At beginning (first insert): 
+						+ Fire "StartSilence" event
+							+ SoundController::OnSilenceStarted: stop sinking music
+						+ Call Wind::SetSilence(float between 0.0 and 1.0)
+							+ Wind stores it, and uses it at Update()
+							+ Wind state machine progresses, but final result is multiplied by silence
+								+ And rely on moving avg to smooth the step
+					+ Throughout: call World::ApplyThanosSnap(centerPos, innerRadius, outerRadius) X 2
+						+ Called for slices, advancing from mouse position at moment of application
+						+ Ship::ApplyThanosSnap(centerPos, innerRadius, outerRadius)
+							+ Only does between two outermost edges, so to catch moving things
+							+ Deletes springs (and consequently triangles) (w/no noise)
+							+ Imparts velocity on particles
+						+ OceanSurface::ApplyThanosSnap(centerPos, innerRadius, outerRadius)
+							+ Flattens surface that falls in crown to ~-1.0
+					+ At end (last removal):
+						+ Fire "LiftSilence" event
+							+ SoundController: niks
+						+ Call Wind::SetSilence(0.0)
+
+			+ Cursors (up and down)
+			+ Snap sound
+		+ Heat and combustion
+		+ ShipLoadDialog: search bar
+		+ Check bugs:
+			+ Scrolling past world end/black triangle
+			+ Mike's rotting when water is inside: he's right			
+		+ Add new materials: black cloth, black wood
+		+ Take Mike's music
+			+ Test flac versions
+			+ About box: add Stuart's Piano World, https://stuartspianoworld.com/
 
 
