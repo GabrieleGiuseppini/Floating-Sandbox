@@ -84,7 +84,7 @@ RenderContext::RenderContext(
     , mDebugShipRenderMode(DebugShipRenderMode::None)
     , mOceanRenderMode(OceanRenderMode::Texture)
     , mOceanAvailableThumbnails()
-    , mSelectedOceanTextureIndex(0) // Wavy Thin
+    , mSelectedOceanTextureIndex(0) // Wavy Clear Thin
     , mDepthOceanColorStart(0x4a, 0x84, 0x9f)
     , mDepthOceanColorEnd(0x00, 0x00, 0x00)
     , mFlatOceanColor(0x00, 0x3d, 0x99)
@@ -1382,12 +1382,6 @@ void RenderContext::OnOceanTextureIndexUpdated()
 
         // Load texture image
         auto oceanTextureFrame = mOceanTextureFrameSpecifications[mLoadedOceanTextureIndex].LoadFrame();
-
-        // Soften texture image
-        ImageTools::BlendWithColor(
-            oceanTextureFrame.TextureData,
-            rgbColor(0x87, 0xce, 0xfa), // cornflower blue
-            mOceanTransparency);
 
         // Activate texture
         mShaderManager->ActivateTexture<ProgramParameterType::OceanTexture>();

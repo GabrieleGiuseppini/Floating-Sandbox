@@ -226,17 +226,14 @@ Render:
 
 		+ Refresh current perf
 
-		- Windows installer: rethink strategy, go for upgrades
-			- Fix UpgradeCode
-			- Do <MajorUpgrade> w/AllowSameVersionUpgrades=Yes
-				- See https://support.firegiant.com/hc/en-us/articles/230912187-Implement-major-upgrade-
-			- TODO: Do own Heat in python
-
 		- Cache layout optimization for points and springs (*)
 
-		- Add those 2 Lava textures
-			- Need to remove blue overlay first, apply to textures directly making a second "Caraibic" version of them
-				- Make "Caraibic" version the default
+		+ Add those 2 Lava textures
+			+ Need to remove blue overlay first, apply to textures directly making a second "Caraibic" version of them
+				+ Color: 87cefa rgbColor(0x87, 0xce, 0xfa), // cornflower blue
+				+ Transparency: 0.8125
+				+ Make "Caraibic" version the default
+			+ Add two lava
 
 		- Version overhaul
 			! Goal: "beta" shows up in file details (product version, etc.) and in About Box
@@ -249,6 +246,12 @@ Render:
 					+ NOT FileVersion
 			- Windows Installer
 				- See if may take version as X.Y.Z; if not, do hardcoded version string in include (same include as GUIDs)
+
+		- Windows installer: rethink strategy, go for upgrades
+			- Fix UpgradeCode
+			- Do <MajorUpgrade> w/AllowSameVersionUpgrades=Yes
+				- See https://support.firegiant.com/hc/en-us/articles/230912187-Implement-major-upgrade-
+			- TODO: Do own Heat in python
 
 		- ShipLoadDialog:
 			- Ship preview database/cache

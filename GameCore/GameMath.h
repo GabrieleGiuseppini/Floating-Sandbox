@@ -131,12 +131,13 @@ inline float Clamp(
     return std::min(std::max(lLimit, x), rLimit);
 }
 
-inline float Mix(
-    float val1,
-    float val2,
-    float x)
+template<typename T>
+inline T Mix(
+    T val1,
+    T val2,
+    float x) noexcept
 {
-    return (1.0f - x) * val1 + x * val2;
+    return val1 * (1.0f - x) + val2 * x;
 }
 
 inline float SmoothStep(
