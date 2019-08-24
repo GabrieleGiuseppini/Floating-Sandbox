@@ -3,10 +3,6 @@
 
     <?include Include.wxi ?>
 
-    <!-- Change at each release!!! -->
-    <?define ProductCode = "AAC0E053-D766-48F3-894F-341026B0BE3B"?> <!-- 1.12.0.0 -->
-    <?define UpgradeCode = "1818FEB2-3F9C-4095-B140-3FCF7075F2AD"?> <!-- 1.12.0.0 -->
-
 	<Product Id="$(var.ProductCode)"
              Name="$(var.FullApplicationName)" Language="1033"
              Version="$(var.FloatingSandboxVersion)"
@@ -16,7 +12,7 @@
             Comments="This package installs Floating Sandbox $(var.FloatingSandboxVersion) on your computer."
             Description="$(var.FullApplicationName)"
             Platform="x64"
-            InstallerVersion="200"
+            InstallerVersion="400"
             Compressed="yes"
             InstallScope="perUser"
             InstallPrivileges="limited" />
@@ -34,19 +30,19 @@
 
                 <Directory Id="INSTALLFOLDER" Name="$(var.FullApplicationName)">
 
-                    <Component Id="RootDir_comp" Guid="B6CAED5D-BC81-4530-98DE-CFEDC5ABD0BC">
+                    <Component Id="RootDir_comp" Guid="$(var.RootDirComponentGUID)">
                         <CreateFolder />
                         <RemoveFile Id="RemoveFilesFromRootDir" Name="*.*" On="uninstall" />
                         <RemoveFolder Id="RemoveRootDir" Directory="INSTALLFOLDER" On="uninstall" />
-                        <RegistryValue Root="HKCU" Key="Software\Gabriele Giuseppini\Floating Sandbox" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
+                        <RegistryValue Root="HKCU" Key="$(var.ProductRegistryKey)" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
                     </Component>
 
-                    <Component Id="FloatingSandboxExe_comp" Guid="391F6B0C-C946-4032-B215-EBB178730107" Win64="yes">
+                    <Component Id="FloatingSandboxExe_comp" Guid="$(var.FloatingSandboxExeComponentGUID)" Win64="yes">
                         <File Id="FloatingSandboxExe" Source="$(var.SourceInstallFolderPath)\FloatingSandbox.exe" KeyPath="no" />
-                        <RegistryValue Root="HKCU" Key="Software\Gabriele Giuseppini\Floating Sandbox" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
+                        <RegistryValue Root="HKCU" Key="$(var.ProductRegistryKey)" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
                     </Component>
 
-                    <Component Id="RuntimeBinaries_comp" Guid="77F0F0A0-7B10-4851-AAFA-E534D934CEAE" Win64="yes">
+                    <Component Id="RuntimeBinaries_comp" Guid="$(var.RuntimeBinariesComponentGUID)" Win64="yes">
                         <File Source="$(var.SourceInstallFolderPath)\DevIL.dll" Id="DevILdll" />
                         <File Source="$(var.SourceInstallFolderPath)\ILU.dll" Id="ILUdll" />
                         <File Source="$(var.SourceInstallFolderPath)\ILUT.dll" Id="ILUTdll" />
@@ -54,36 +50,36 @@
                         <File Source="$(var.SourceInstallFolderPath)\sfml-audio-2.dll" Id="sfmlaudio2dll" />
                         <File Source="$(var.SourceInstallFolderPath)\sfml-network-2.dll" Id="sfmlnetwork2dll" />
                         <File Source="$(var.SourceInstallFolderPath)\sfml-system-2.dll" Id="sfmlsystem2dll" />
-                        <RegistryValue Root="HKCU" Key="Software\Gabriele Giuseppini\Floating Sandbox" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
+                        <RegistryValue Root="HKCU" Key="$(var.ProductRegistryKey)" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
                     </Component>
 
-                    <Component Id="MiscFiles_comp" Guid="8A25B156-AE5C-4AC2-AD30-D995ECAC5417">
+                    <Component Id="MiscFiles_comp" Guid="$(var.MiscFilesComponentGUID)">
                         <File Source="$(var.SourceInstallFolderPath)\README.md" Id="READMEmd" />
                         <File Source="$(var.SourceInstallFolderPath)\changes.txt" Id="changestxt" />
                         <File Source="$(var.SourceInstallFolderPath)\license.txt" Id="licensetxt" />
-                        <RegistryValue Root="HKCU" Key="Software\Gabriele Giuseppini\Floating Sandbox" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
+                        <RegistryValue Root="HKCU" Key="$(var.ProductRegistryKey)" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
                     </Component>
 
                     <Directory Id="DataDir" Name="Data">
-                        <Component Id="DataDir_comp" Guid="FAF8E6EB-6129-498E-A91B-D36B7B02D92A">
+                        <Component Id="DataDir_comp" Guid="$(var.DataDirComponentGUID)">
                             <RemoveFolder Id="DataDirRemoval" Directory="DataDir" On="uninstall" />
-                            <RegistryValue Root="HKCU" Key="Software\Gabriele Giuseppini\Floating Sandbox" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
+                            <RegistryValue Root="HKCU" Key="$(var.ProductRegistryKey)" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
                         </Component>
                     </Directory>
 
                     <Directory Id="GuidesDir" Name="Guides">
-                        <Component Id="GuidesDir_comp" Guid="E9630471-51AF-4460-9709-1A388D0B2A71">
+                        <Component Id="GuidesDir_comp" Guid="$(var.GuidesDirComponentGUID)">
                             <RemoveFolder Id="GuidesDirRemoval" Directory="GuidesDir" On="uninstall" />
-                            <RegistryValue Root="HKCU" Key="Software\Gabriele Giuseppini\Floating Sandbox" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
+                            <RegistryValue Root="HKCU" Key="$(var.ProductRegistryKey)" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
                         </Component>
                     </Directory>
 
                     <Directory Id="ShipsDir" Name="Ships">
-                        <Component Id="ShipsDir_comp" Guid="203AA07F-B62C-4788-804E-068FC09AC4A3">
+                        <Component Id="ShipsDir_comp" Guid="$(var.ShipsDirComponentGUID)">
                             <CreateFolder />
                             <RemoveFolder Id="ShipsDirRemoval" Directory="ShipsDir" On="uninstall" />
                             <RemoveFile Id="RemoveFilesFromShipsDir" Name="*.*" On="uninstall" />
-                            <RegistryValue Root="HKCU" Key="Software\Gabriele Giuseppini\Floating Sandbox" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
+                            <RegistryValue Root="HKCU" Key="$(var.ProductRegistryKey)" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
                         </Component>
                     </Directory>
 
@@ -92,27 +88,27 @@
             </Directory>
 
             <Directory Id="DesktopFolder" Name="Desktop">
-                <Component Id="FloatingSandboxDesktopShortcut_comp" Guid="BF8DBA16-B79B-4B27-9021-E7563C43340D">
+                <Component Id="FloatingSandboxDesktopShortcut_comp" Guid="$(var.FloatingSandboxDesktopShortcutComponentGUID)">
                     <Shortcut Id="FloatingSandboxDesktopShortcut"
                         Name="$(var.FullApplicationName)"
                         Description="$(var.FullApplicationName)"
                         Target="[#FloatingSandboxExe]"
                         WorkingDirectory="INSTALLFOLDER" />
                     <RemoveFolder Id="DesktopFolder" On="uninstall" />
-                    <RegistryValue Root="HKCU" Key="Software\Gabriele Giuseppini\Floating Sandbox" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
+                    <RegistryValue Root="HKCU" Key="$(var.ProductRegistryKey)" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
                 </Component>
             </Directory>
 
             <Directory Id="ProgramMenuFolder">
                 <Directory Id="FloatingSandboxProgramMenuFolder" Name="$(var.FullApplicationName)">
-                    <Component Id="FloatingSandboxProgramMenuShortcut_comp" Guid="739A99F0-EE1E-4B7E-905B-A288D953499F">
+                    <Component Id="FloatingSandboxProgramMenuShortcut_comp" Guid="$(var.FloatingSandboxProgramMenuShortcutComponentGUID)">
                         <Shortcut Id="FloatingSandboxProgramMenuShortcut"
                                   Name="$(var.FullApplicationName)"
                                   Description="$(var.FullApplicationName)"
                                   Target="[#FloatingSandboxExe]"
                                   WorkingDirectory="INSTALLFOLDER" />
                         <RemoveFolder Id="CleanupFolder" Directory="FloatingSandboxProgramMenuFolder" On="uninstall" />
-                        <RegistryValue Root="HKCU" Key="Software\Gabriele Giuseppini\Floating Sandbox" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
+                        <RegistryValue Root="HKCU" Key="$(var.ProductRegistryKey)" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
                     </Component>
                 </Directory>
             </Directory>

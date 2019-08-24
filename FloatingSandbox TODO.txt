@@ -451,6 +451,9 @@ Render:
 
 	- 1.13.0
 
+		- Windows installer: rethink strategy, go for upgrades
+			- Do own Heat in python
+
 		- Cache layout optimization for points and springs (*)
 
 		- Add those 2 Lava textures

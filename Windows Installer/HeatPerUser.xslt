@@ -5,6 +5,9 @@
                 xmlns="http://schemas.microsoft.com/wix/2006/wi"
                 exclude-result-prefixes="xsl wix">
 
+    <!-- Change with each release! -->
+    <xsl:variable name="ProductRegistryKey" select="'Software\Gabriele Giuseppini\Floating Sandbox 1.12.0.0'" />
+
     <xsl:output method="xml" indent="yes" omit-xml-declaration="yes" />
 
     <xsl:strip-space elements="*" />
@@ -27,7 +30,7 @@
                 <xsl:text>HKCU</xsl:text>
             </xsl:attribute>
             <xsl:attribute name="Key">
-                <xsl:text>Software\Gabriele Giuseppini\Floating Sandbox</xsl:text>
+                <xsl:value-of select="$ProductRegistryKey" />
             </xsl:attribute>
             <xsl:attribute name="Name">
                 <xsl:text>Installed</xsl:text>
@@ -132,9 +135,28 @@
                     <xsl:value-of select="concat('$(var.', @Id, 'ChildRemovalCompGuid)')" />
                 </xsl:attribute>
 
-
                 <xsl:apply-templates select=".//wix:Directory" mode="DirectoryRemoval" />
-                <RegistryValue Root="HKCU" Key="Software\Gabriele Giuseppini\Floating Sandbox" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
+
+                <xsl:element name="RegistryValue">
+                    <xsl:attribute name="Root">
+                        <xsl:text>HKCU</xsl:text>
+                    </xsl:attribute>
+                    <xsl:attribute name="Key">
+                        <xsl:value-of select="$ProductRegistryKey" />
+                    </xsl:attribute>
+                    <xsl:attribute name="Name">
+                        <xsl:text>Installed</xsl:text>
+                    </xsl:attribute>
+                    <xsl:attribute name="Type">
+                        <xsl:text>integer</xsl:text>
+                    </xsl:attribute>
+                    <xsl:attribute name="Value">
+                        <xsl:text>1</xsl:text>
+                    </xsl:attribute>
+                    <xsl:attribute name="KeyPath">
+                        <xsl:text>yes</xsl:text>
+                    </xsl:attribute>
+                </xsl:element>
 
             </xsl:element>
 
