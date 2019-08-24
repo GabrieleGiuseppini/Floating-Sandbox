@@ -1,6 +1,10 @@
 =================================================
 Current perf:
 =================================================
+1.12
+- fps: 29.1/29.5/30.1
+- UR: 221/227
+=================================================
 - fps: 29.2/29.4 (Samsung w/Krafting: 17.0) 
 - UR: 210/220 (Samsung w/Krafting: 690%)
 - GameController::InternalUpdate: 62.0%
@@ -218,12 +222,15 @@ Render:
 
 - Roadmap:
 
-	- 1.13.0
+	= 1.13.0
 
-		- Refresh current perf
+		+ Refresh current perf
 
 		- Windows installer: rethink strategy, go for upgrades
-			- Do own Heat in python
+			- Fix UpgradeCode
+			- Do <MajorUpgrade> w/AllowSameVersionUpgrades=Yes
+				- See https://support.firegiant.com/hc/en-us/articles/230912187-Implement-major-upgrade-
+			- TODO: Do own Heat in python
 
 		- Cache layout optimization for points and springs (*)
 
