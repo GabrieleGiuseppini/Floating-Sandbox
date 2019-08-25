@@ -223,9 +223,7 @@ Render:
 - Roadmap:
 
 	= 1.13.0
-
 		+ Refresh current perf
-
 		+ Add those 2 Lava textures
 			+ Need to remove blue overlay first, apply to textures directly making a second "Caraibic" version of them
 				+ Color: 87cefa rgbColor(0x87, 0xce, 0xfa), // cornflower blue
@@ -233,23 +231,25 @@ Render:
 				+ Make "Caraibic" version the default
 			+ Add two lava
 
-		- Version overhaul
+		= Version overhaul
 			! Goal: "beta" shows up in file details (product version, etc.) and in About Box
-				- See if may also appear in installer
-			- Version class:
-				- No build number but beta instead, with beta=X always < beta=0
-			- RC file:
-				- Fields that may contain "Beta foo":
-					- ProductVersion
-					+ NOT FileVersion
+			+ Version class:
+				+ No build number but beta instead, with beta=X always < beta=0
+				+ Unit tests
+			+ RC file
+				+ Test with both FileVersion,ProductVersion having the same (w/"beta")
+					+ Beta 1
+					+ Beta 0
 			- Windows Installer
 				- See if may take version as X.Y.Z; if not, do hardcoded version string in include (same include as GUIDs)
 
 		- Windows installer: rethink strategy, go for upgrades
-			- Fix UpgradeCode
+			- Make UpgradeCode fixed value, that is, the one from 1.12.0
 			- Do <MajorUpgrade> w/AllowSameVersionUpgrades=Yes
 				- See https://support.firegiant.com/hc/en-us/articles/230912187-Implement-major-upgrade-
-			- TODO: Do own Heat in python
+
+		- Make sure we don't copy Temperature buffer twice
+			- Check also Water
 
 		- Cache layout optimization for points and springs (*)
 
