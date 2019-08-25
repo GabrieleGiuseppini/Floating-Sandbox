@@ -139,6 +139,9 @@ AboutDialog::AboutDialog(
         {"\t\t\t\t", "Maximord - https://discordapp.com/" },
         {"\t\t\t\t", "The_SamminAter - https://discordapp.com/" },
         {"\t\t\t\t", "McShooter2018 - https://discordapp.com/" },
+        {"\t\t\t\t", "Wreno - https://discordapp.com/" },
+        {"\t\t\t\t", "Dkuz - https://discordapp.com/" },
+        {"\t\t\t\t", "Michael Bozarth - https://www.youtube.com/channel/UCaJkgYP6yNw64U3WUZ3t1sw" },
 
         {"Webmaster:\t\t", "Maximord - https://discordapp.com/" },
 

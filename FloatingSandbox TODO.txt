@@ -226,8 +226,6 @@ Render:
 
 		+ Refresh current perf
 
-		- Cache layout optimization for points and springs (*)
-
 		+ Add those 2 Lava textures
 			+ Need to remove blue overlay first, apply to textures directly making a second "Caraibic" version of them
 				+ Color: 87cefa rgbColor(0x87, 0xce, 0xfa), // cornflower blue
@@ -252,6 +250,8 @@ Render:
 			- Do <MajorUpgrade> w/AllowSameVersionUpgrades=Yes
 				- See https://support.firegiant.com/hc/en-us/articles/230912187-Implement-major-upgrade-
 			- TODO: Do own Heat in python
+
+		- Cache layout optimization for points and springs (*)
 
 		- ShipLoadDialog:
 			- Ship preview database/cache
