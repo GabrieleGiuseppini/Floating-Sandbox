@@ -2,24 +2,10 @@
 <Include xmlns="http://schemas.microsoft.com/wix/2006/wi">
 
     <!-- Change at each release!!! -->
-    <!-- Also change ProductRegistryKey at HeatPerUser.xslt!!! -->
-    <!-- Also change 3 GUIDs at wixproj file!!! -->
-    <!-- 1.12.0.0 -->
-    <?define ProductCode = "AAC0E053-D766-48F3-894F-341026B0BE3B"?>
-    <?define UpgradeCode = "2DDDB95C-9D3E-4EFE-95BC-FD06A2F33FA7"?>
-    <?define RootDirComponentGUID = "EAB0458C-D3EC-44BE-9C6F-BEA5E7FD1E07"?>
-    <?define FloatingSandboxExeComponentGUID = "861CEF76-5773-4736-A6D4-C6CB50112C3A"?>
-    <?define RuntimeBinariesComponentGUID = "E6862ECF-0527-478C-B756-E66E2B493474"?>
-    <?define MiscFilesComponentGUID = "5B791D70-CD49-44A1-B503-14096A74206D"?>
-    <?define DataDirComponentGUID = "9BA20495-296D-4555-BFB8-5C6AB66AC965"?>
-    <?define GuidesDirComponentGUID = "2A5A85BA-E1E0-4008-ADCF-E796E639E510"?>
-    <?define ShipsDirComponentGUID = "5DE0B9D5-322B-412F-A174-D673E2A54FDD"?>
-    <?define FloatingSandboxDesktopShortcutComponentGUID = "1A90694D-7112-4E97-B18D-372AEE93B350"?>
-    <?define FloatingSandboxProgramMenuShortcutComponentGUID = "CEAF3E78-384A-48BC-AC0B-4702C493BAD2"?>
-
-
+    <?define ProductCode = "271B0327-AB12-475F-819C-219D6C825A7E"?> <!-- 1.13.0 -->
 
     <!-- Static properties -->
+    <?define UpgradeCode = "2DDDB95C-9D3E-4EFE-95BC-FD06A2F33FA7"?> <!-- First used in 1.12.0 -->
     <?define SourceInstallFolderPath = "C:\Users\Neurodancer\source\build\Floating-Sandbox\Install"?>
     <?define FloatingSandboxVersion = "!(bind.FileVersion.FloatingSandboxExe)"?>
     <?define ShortApplicationName = "Floating Sandbox"?>

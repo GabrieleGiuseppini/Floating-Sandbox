@@ -5,7 +5,8 @@
                 xmlns="http://schemas.microsoft.com/wix/2006/wi"
                 exclude-result-prefixes="xsl wix">
 
-    <!-- Change with each release! -->
+    <!-- Note: we are stuck with 1.12.0.0 as this is the first release for the continuous "upgrade" streak; there is
+         no need to change this reg key in other versions -->
     <xsl:variable name="ProductRegistryKey" select="'Software\Gabriele Giuseppini\Floating Sandbox 1.12.0.0'" />
 
     <xsl:output method="xml" indent="yes" omit-xml-declaration="yes" />

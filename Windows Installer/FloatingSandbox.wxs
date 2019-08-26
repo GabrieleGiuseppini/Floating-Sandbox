@@ -17,6 +17,8 @@
             InstallScope="perUser"
             InstallPrivileges="limited" />
 
+        <MajorUpgrade DowngradeErrorMessage="A newer version of $(var.ShortApplicationName) is already installed." />
+
         <Icon Id="FsIcon.ico" SourceFile="..\FloatingSandbox\Resources\Ship.ico" />
         <Property Id="ARPPRODUCTICON" Value="FsIcon.ico" />
 
@@ -30,19 +32,19 @@
 
                 <Directory Id="INSTALLFOLDER" Name="$(var.FullApplicationName)">
 
-                    <Component Id="RootDir_comp" Guid="$(var.RootDirComponentGUID)">
+                    <Component Id="RootDir_comp" Guid="EAB0458C-D3EC-44BE-9C6F-BEA5E7FD1E07">
                         <CreateFolder />
                         <RemoveFile Id="RemoveFilesFromRootDir" Name="*.*" On="uninstall" />
                         <RemoveFolder Id="RemoveRootDir" Directory="INSTALLFOLDER" On="uninstall" />
                         <RegistryValue Root="HKCU" Key="$(var.ProductRegistryKey)" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
                     </Component>
 
-                    <Component Id="FloatingSandboxExe_comp" Guid="$(var.FloatingSandboxExeComponentGUID)" Win64="yes">
+                    <Component Id="FloatingSandboxExe_comp" Guid="861CEF76-5773-4736-A6D4-C6CB50112C3A" Win64="yes">
                         <File Id="FloatingSandboxExe" Source="$(var.SourceInstallFolderPath)\FloatingSandbox.exe" KeyPath="no" />
                         <RegistryValue Root="HKCU" Key="$(var.ProductRegistryKey)" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
                     </Component>
 
-                    <Component Id="RuntimeBinaries_comp" Guid="$(var.RuntimeBinariesComponentGUID)" Win64="yes">
+                    <Component Id="RuntimeBinaries_comp" Guid="E6862ECF-0527-478C-B756-E66E2B493474" Win64="yes">
                         <File Source="$(var.SourceInstallFolderPath)\DevIL.dll" Id="DevILdll" />
                         <File Source="$(var.SourceInstallFolderPath)\ILU.dll" Id="ILUdll" />
                         <File Source="$(var.SourceInstallFolderPath)\ILUT.dll" Id="ILUTdll" />
@@ -53,7 +55,7 @@
                         <RegistryValue Root="HKCU" Key="$(var.ProductRegistryKey)" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
                     </Component>
 
-                    <Component Id="MiscFiles_comp" Guid="$(var.MiscFilesComponentGUID)">
+                    <Component Id="MiscFiles_comp" Guid="5B791D70-CD49-44A1-B503-14096A74206D">
                         <File Source="$(var.SourceInstallFolderPath)\README.md" Id="READMEmd" />
                         <File Source="$(var.SourceInstallFolderPath)\changes.txt" Id="changestxt" />
                         <File Source="$(var.SourceInstallFolderPath)\license.txt" Id="licensetxt" />
@@ -61,21 +63,21 @@
                     </Component>
 
                     <Directory Id="DataDir" Name="Data">
-                        <Component Id="DataDir_comp" Guid="$(var.DataDirComponentGUID)">
+                        <Component Id="DataDir_comp" Guid="9BA20495-296D-4555-BFB8-5C6AB66AC965">
                             <RemoveFolder Id="DataDirRemoval" Directory="DataDir" On="uninstall" />
                             <RegistryValue Root="HKCU" Key="$(var.ProductRegistryKey)" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
                         </Component>
                     </Directory>
 
                     <Directory Id="GuidesDir" Name="Guides">
-                        <Component Id="GuidesDir_comp" Guid="$(var.GuidesDirComponentGUID)">
+                        <Component Id="GuidesDir_comp" Guid="2A5A85BA-E1E0-4008-ADCF-E796E639E510">
                             <RemoveFolder Id="GuidesDirRemoval" Directory="GuidesDir" On="uninstall" />
                             <RegistryValue Root="HKCU" Key="$(var.ProductRegistryKey)" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
                         </Component>
                     </Directory>
 
                     <Directory Id="ShipsDir" Name="Ships">
-                        <Component Id="ShipsDir_comp" Guid="$(var.ShipsDirComponentGUID)">
+                        <Component Id="ShipsDir_comp" Guid="5DE0B9D5-322B-412F-A174-D673E2A54FDD">
                             <CreateFolder />
                             <RemoveFolder Id="ShipsDirRemoval" Directory="ShipsDir" On="uninstall" />
                             <RemoveFile Id="RemoveFilesFromShipsDir" Name="*.*" On="uninstall" />
@@ -88,7 +90,7 @@
             </Directory>
 
             <Directory Id="DesktopFolder" Name="Desktop">
-                <Component Id="FloatingSandboxDesktopShortcut_comp" Guid="$(var.FloatingSandboxDesktopShortcutComponentGUID)">
+                <Component Id="FloatingSandboxDesktopShortcut_comp" Guid="1A90694D-7112-4E97-B18D-372AEE93B350">
                     <Shortcut Id="FloatingSandboxDesktopShortcut"
                         Name="$(var.FullApplicationName)"
                         Description="$(var.FullApplicationName)"
@@ -101,7 +103,7 @@
 
             <Directory Id="ProgramMenuFolder">
                 <Directory Id="FloatingSandboxProgramMenuFolder" Name="$(var.FullApplicationName)">
-                    <Component Id="FloatingSandboxProgramMenuShortcut_comp" Guid="$(var.FloatingSandboxProgramMenuShortcutComponentGUID)">
+                    <Component Id="FloatingSandboxProgramMenuShortcut_comp" Guid="CEAF3E78-384A-48BC-AC0B-4702C493BAD2">
                         <Shortcut Id="FloatingSandboxProgramMenuShortcut"
                                   Name="$(var.FullApplicationName)"
                                   Description="$(var.FullApplicationName)"
