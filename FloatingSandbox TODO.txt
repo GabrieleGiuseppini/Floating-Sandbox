@@ -230,8 +230,7 @@ Render:
 				+ Transparency: 0.8125
 				+ Make "Caraibic" version the default
 			+ Add two lava
-
-		= Version overhaul
+		+ Version overhaul
 			! Goal: "beta" shows up in file details (product version, etc.) and in About Box
 			+ Version class:
 				+ No build number but beta instead, with beta=X always < beta=0
@@ -252,8 +251,19 @@ Render:
 			+ Change HeatPerUser.xslt: TODOHERE comments for 1.12 fixed
 				! Ideal would be to have version-agnostic reg key as keypath (a new one), but then 1.12.0 components would not seem
 				  to be installed
-			- Do <MajorUpgrade> w/AllowSameVersionUpgrades=Yes
-				- See https://support.firegiant.com/hc/en-us/articles/230912187-Implement-major-upgrade-
+			+ Do <MajorUpgrade> w/AllowSameVersionUpgrades=Yes
+				+ See https://support.firegiant.com/hc/en-us/articles/230912187-Implement-major-upgrade-
+			- Tests:
+				- To verify:
+					- Final result
+					- Text of dialogs
+				- Clean install
+				- Upgrade
+				- Maintenance->Repair
+				- Maintenance->Uninstall
+				- Upgrade when Ships folder contains additional ship files
+			- Add to changes.txt: From now on, the installation of newer versions of Floating Sandbox will automatically uninstall older versions
+
 
 		- ShipLoadDialog: 
 			- ask guy for log

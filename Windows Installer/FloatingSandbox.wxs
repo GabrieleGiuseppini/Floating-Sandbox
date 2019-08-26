@@ -17,7 +17,7 @@
             InstallScope="perUser"
             InstallPrivileges="limited" />
 
-        <MajorUpgrade DowngradeErrorMessage="A newer version of $(var.ShortApplicationName) is already installed." />
+        <MajorUpgrade AllowSameVersionUpgrades="yes" DowngradeErrorMessage="A newer version of $(var.ShortApplicationName) is already installed." />
 
         <Icon Id="FsIcon.ico" SourceFile="..\FloatingSandbox\Resources\Ship.ico" />
         <Property Id="ARPPRODUCTICON" Value="FsIcon.ico" />
@@ -80,7 +80,9 @@
                         <Component Id="ShipsDir_comp" Guid="5DE0B9D5-322B-412F-A174-D673E2A54FDD">
                             <CreateFolder />
                             <RemoveFolder Id="ShipsDirRemoval" Directory="ShipsDir" On="uninstall" />
+                            <!--
                             <RemoveFile Id="RemoveFilesFromShipsDir" Name="*.*" On="uninstall" />
+                            -->
                             <RegistryValue Root="HKCU" Key="$(var.ProductRegistryKey)" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
                         </Component>
                     </Directory>
