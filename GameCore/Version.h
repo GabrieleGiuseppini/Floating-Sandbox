@@ -16,22 +16,20 @@
 
 #define APPLICATION_VERSION_MAJOR               1
 #define APPLICATION_VERSION_MINOR               13
-#define APPLICATION_VERSION_PATCH               0
-#define APPLICATION_VERSION_BETA                1
+#define APPLICATION_VERSION_REVISION            0
+#define APPLICATION_VERSION_BUILD               0
+
+#define APPLICATION_VERSION_LONG_STR    STRINGIZE(APPLICATION_VERSION_MAJOR)        \
+                                        "." STRINGIZE(APPLICATION_VERSION_MINOR)    \
+                                        "." STRINGIZE(APPLICATION_VERSION_REVISION) \
+                                        "." STRINGIZE(APPLICATION_VERSION_BUILD)
 
 #define APPLICATION_VERSION_SHORT_STR   STRINGIZE(APPLICATION_VERSION_MAJOR)        \
                                         "." STRINGIZE(APPLICATION_VERSION_MINOR)    \
-                                        "." STRINGIZE(APPLICATION_VERSION_PATCH)
-
-#if APPLICATION_VERSION_BETA != 0
-#define APPLICATION_VERSION_STR         APPLICATION_VERSION_SHORT_STR               \
-                                        ".beta" STRINGIZE(APPLICATION_VERSION_BETA)
-#else
-#define APPLICATION_VERSION_STR         APPLICATION_VERSION_SHORT_STR
-#endif
+                                        "." STRINGIZE(APPLICATION_VERSION_REVISION)
 
 #define APPLICATION_NAME                "Floating Sandbox"
-#define APPLICATION_NAME_WITH_VERSION   APPLICATION_NAME " " APPLICATION_VERSION_STR
+#define APPLICATION_NAME_WITH_VERSION   APPLICATION_NAME " " APPLICATION_VERSION_SHORT_STR
 
 #define APPLICATION_DOWNLOAD_URL        "https://gamejolt.com/games/floating-sandbox/353572"
 
@@ -51,7 +49,7 @@ inline std::string GetVersionInfo(VersionFormat versionFormat)
     {
         case VersionFormat::Short:
         {
-            return std::string(APPLICATION_VERSION_STR);
+            return std::string(APPLICATION_VERSION_LONG_STR);
         }
 
         case VersionFormat::Long:
@@ -83,19 +81,19 @@ public:
         return Version(
             APPLICATION_VERSION_MAJOR,
             APPLICATION_VERSION_MINOR,
-            APPLICATION_VERSION_PATCH,
-            APPLICATION_VERSION_BETA);
+            APPLICATION_VERSION_REVISION,
+            APPLICATION_VERSION_BUILD);
     }
 
     Version(
         int major,
         int minor,
-        int patch,
-        int beta)
+        int revision,
+        int build)
         : mMajor(major)
         , mMinor(minor)
-        , mPatch(patch)
-        , mBeta(beta)
+        , mRevision(revision)
+        , mBuild(build)
     {}
 
     Version(Version const & other) = default;
@@ -108,8 +106,8 @@ public:
     {
         return l.mMajor == r.mMajor
             && l.mMinor == r.mMinor
-            && l.mPatch == r.mPatch
-            && l.mBeta == r.mBeta;
+            && l.mRevision == r.mRevision
+            && l.mBuild == r.mBuild;
     }
 
     friend inline bool operator!=(Version const & l, Version const & r)
@@ -119,11 +117,8 @@ public:
 
     friend inline bool operator<(Version const & l, Version const & r)
     {
-        // Rule: (beta = 0) is always > (beta > 0)
-        return std::tie(l.mMajor, l.mMinor, l.mPatch) < std::tie(r.mMajor, r.mMinor, r.mPatch)
-            || (std::tie(l.mMajor, l.mMinor, l.mPatch) == std::tie(r.mMajor, r.mMinor, r.mPatch)
-                && l.mBeta > 0 // if it were 0 then l would always be >= r
-                && (r.mBeta == 0 || l.mBeta < r.mBeta));
+        return std::tie(l.mMajor, l.mMinor, l.mRevision, l.mBuild)
+            < std::tie(r.mMajor, r.mMinor, r.mRevision, r.mBuild);
     }
 
     friend inline bool operator>(Version const & l, Version const & r)
@@ -143,20 +138,20 @@ public:
 
     static Version FromString(std::string const & str)
     {
-        static std::regex VersionRegex(R"(^\s*(\d+)\.(\d+)\.(\d+)(?:\.beta(\d+))?\s*$)");
+        static std::regex VersionRegex(R"(^\s*(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?\s*$)");
         std::smatch versionMatch;
         if (std::regex_match(str, versionMatch, VersionRegex))
         {
             assert(versionMatch.size() == 1 + 4);
 
-            unsigned int major = std::stoul(versionMatch[1].str());
-            unsigned int minor = std::stoul(versionMatch[2].str());
-            unsigned int patch = std::stoul(versionMatch[3].str());
-            unsigned int beta = (versionMatch[4].matched)
-                ? std::stoul(versionMatch[4].str())
+            int major = std::stoi(versionMatch[1].str());
+            int minor = std::stoi(versionMatch[2].str());
+            int revision = std::stoi(versionMatch[3].str());
+            int build = (versionMatch[4].matched)
+                ? std::stoi(versionMatch[4].str())
                 : 0;
 
-            return Version(major, minor, patch, beta);
+            return Version(major, minor, revision, build);
         }
         else
         {
@@ -171,18 +166,16 @@ public:
         ss
             << mMajor << "."
             << mMinor << "."
-            << mPatch;
-
-        if (mBeta > 0)
-            ss << ".beta" << mBeta;
+            << mRevision << "."
+            << mBuild;
 
         return ss.str();
     }
 
 private:
 
-    unsigned int mMajor;
-    unsigned int mMinor;
-    unsigned int mPatch;
-    unsigned int mBeta;
+    int mMajor;
+    int mMinor;
+    int mRevision;
+    int mBuild;
 };
