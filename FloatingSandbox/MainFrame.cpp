@@ -115,7 +115,7 @@ MainFrame::MainFrame(wxApp * mainApp)
     Create(
         nullptr,
         wxID_ANY,
-        GetVersionInfo(VersionFormat::Long),
+        std::string(APPLICATION_NAME_WITH_SHORT_VERSION),
         wxDefaultPosition,
         wxDefaultSize,
         wxDEFAULT_FRAME_STYLE,
@@ -1574,7 +1574,7 @@ void MainFrame::UpdateFrameTitle()
 
     ss.fill('0');
 
-    ss << GetVersionInfo(VersionFormat::Long);
+    ss << std::string(APPLICATION_NAME_WITH_SHORT_VERSION);
 
     if (!mCurrentShipTitles.empty())
     {

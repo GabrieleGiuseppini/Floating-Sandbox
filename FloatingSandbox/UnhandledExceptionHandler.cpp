@@ -43,7 +43,7 @@ void create_minidump(struct _EXCEPTION_POINTERS* apExceptionInfo)
                 { /* ignore*/ }
             }
 
-            std::filesystem::path dumpPath = folderPath / APPLICATION_NAME_WITH_VERSION "_core.dmp";
+            std::filesystem::path dumpPath = folderPath / APPLICATION_NAME_WITH_LONG_VERSION "_core.dmp";
             std::string dumpPathStr = dumpPath.string();
 
             //

@@ -223,9 +223,7 @@ Render:
 - Roadmap:
 
 	= 1.13.0
-
 		+ Refresh current perf
-
 		+ Add those 2 Lava textures
 			+ Need to remove blue overlay first, apply to textures directly making a second "Caraibic" version of them
 				+ Color: 87cefa rgbColor(0x87, 0xce, 0xfa), // cornflower blue
@@ -233,23 +231,37 @@ Render:
 				+ Make "Caraibic" version the default
 			+ Add two lava
 
-		- Version overhaul
+		= Version overhaul
 			! Goal: "beta" shows up in file details (product version, etc.) and in About Box
-				- See if may also appear in installer
-			- Version class:
-				- No build number but beta instead, with beta=X always < beta=0
-			- RC file:
-				- Fields that may contain "Beta foo":
-					- ProductVersion
-					+ NOT FileVersion
-			- Windows Installer
-				- See if may take version as X.Y.Z; if not, do hardcoded version string in include (same include as GUIDs)
+			+ Version class:
+				+ No build number but beta instead, with beta=X always < beta=0
+				+ Unit tests
+			+ RC file
+				+ Test with both FileVersion,ProductVersion having the same (w/"beta")
+					+ Beta 1
+					+ Beta 0
+			+ Revert all changes:
+				! We are happy to release 1.13.0.592
+				+ No beta's needed, revert to 4 components, just rename them (patch, build)
 
-		- Windows installer: rethink strategy, go for upgrades
-			- Fix UpgradeCode
+		= Windows installer: rethink strategy, go for upgrades
+			+ Make UpgradeCode fixed value, that is, the one from 1.12.0
+			+ ProductCode changes for each release
+				+ It's the only one that changes
+			+ Move back component GUIDs from vars to hardcoded attributes, using same as in 1.12.0
+			+ Change HeatPerUser.xslt: TODOHERE comments for 1.12 fixed
+				! Ideal would be to have version-agnostic reg key as keypath (a new one), but then 1.12.0 components would not seem
+				  to be installed
 			- Do <MajorUpgrade> w/AllowSameVersionUpgrades=Yes
 				- See https://support.firegiant.com/hc/en-us/articles/230912187-Implement-major-upgrade-
-			- TODO: Do own Heat in python
+
+		- ShipLoadDialog: 
+			- ask guy for log
+			- pause updates via GameController::MakeScopedPause() (RIIA)
+
+		- Make sure we don't copy Temperature buffer twice
+			- Make Buffer::swap(Buffer<T> & other)
+			- Check also Water
 
 		- Cache layout optimization for points and springs (*)
 
@@ -394,7 +406,6 @@ Render:
 		+ Use for ship color and texture
 	+ Sound controller: complain if find extraneous files (had issue with ".flc")
 
-	- Add "beta/foo" to versions
 	- Ship: replace handler registrations with points, springs, etc. with IStructureHandler, declared in own .h
 	- GameEventDispatcher: set mIsXYZHandlerDirty at event publishing and consume at Flush()
 	- Try 32-bit build
@@ -405,6 +416,8 @@ Render:
 	= Sign with certificate
 		+ https://blogs.msdn.microsoft.com/ieinternals/2011/03/22/everything-you-need-to-know-about-authenticode-code-signing/
 		+ https://www.thegeekstuff.com/2010/03/microsoft-digital-signatures/
+		- Reasons:
+			- Anti-virus complains of saving
 		- Buy certificate
 			- https://comodosslstore.com/code-signing/microsoft-authenticode
 			- https://comodosslstore.com/codesigning.aspx
