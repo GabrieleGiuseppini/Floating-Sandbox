@@ -242,8 +242,7 @@ Render:
 			+ Revert all changes:
 				! We are happy to release 1.13.0.592
 				+ No beta's needed, revert to 4 components, just rename them (patch, build)
-
-		= Windows installer: rethink strategy, go for upgrades
+		+ Windows installer: rethink strategy, go for upgrades
 			+ Make UpgradeCode fixed value, that is, the one from 1.12.0
 			+ ProductCode changes for each release
 				+ It's the only one that changes
@@ -253,33 +252,23 @@ Render:
 				  to be installed
 			+ Do <MajorUpgrade> w/AllowSameVersionUpgrades=Yes
 				+ See https://support.firegiant.com/hc/en-us/articles/230912187-Implement-major-upgrade-
-			= Try changing keypaths (folder & reg key)
-				+ Rethink their values
-				- Try full upgrade again
-					- Verify old is gone fully
-						- Shortcuts x 2
-						- Folder
-						- RegKey
-					- Verify new is there
-						- Shortcuts x 2
-						- Folder
-						- RegKey
-						
-			= Tests:
+			+ Try changing keypaths (folder & reg key)
+				+ Rethink their values					
+			+ Tests:
 				! To verify:
 					! Final result
 					! Text of dialogs
-				- Clean install
+				+ Clean install
 				+ Upgrade
-				- Maintenance->Repair
+				+ Maintenance->Repair
 				+ Maintenance->Uninstall
-				- Upgrade when Ships folder contains additional ship files
-			- Add to changes.txt: From now on, the installation of newer versions of Floating Sandbox will automatically uninstall older versions
-
+				+ Upgrade when Ships folder contains additional ship files
+			+ Add to changes.txt
 
 		- ShipLoadDialog: 
-			- ask guy for log
 			- pause updates via GameController::MakeScopedPause() (RIIA)
+
+		- Adjustable zoom increments
 
 		- Make sure we don't copy Temperature buffer twice
 			- Make Buffer::swap(Buffer<T> & other)
@@ -351,8 +340,8 @@ Render:
 			- mrpasta444_ship_pack
 			- TheodoreRoosevelt
 			- Graza's from awesomeyorkie
-				- Asked Antonia vs Antonio
-				- Asked if ropes of abandoned are cut on purpose
+				+ Asked if ropes of abandoned are cut on purpose: yes
+				- Fix Antonia vs Antonio
 				- Require .shp to limit initial sink
 			- Pac0master's Structures
 		- To take:

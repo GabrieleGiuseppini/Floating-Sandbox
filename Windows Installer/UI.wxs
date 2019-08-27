@@ -28,6 +28,9 @@
         <Property Id="ACTION_TEXT_DOING" Value="TO_BE_SET" />
         <Property Id="ACTION_TEXT_DONE" Value="TO_BE_SET" />
 
+        <Property Id="ShortApplicationName" Value="$(var.ShortApplicationName)" />
+        <Property Id="FloatingSandboxVersion" Value="$(var.FloatingSandboxVersion)" />
+
         <!-- Conditional text -->
         <!-- UNUSED!
         <SetProperty Action="SetInstallOrUpgrade0" Id="InstallOrUpgradeLabel" Value="Install" After="FindRelatedProducts">NOT WIX_UPGRADE_DETECTED</SetProperty>
