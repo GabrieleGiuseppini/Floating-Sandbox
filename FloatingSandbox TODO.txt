@@ -253,8 +253,18 @@ Render:
 				  to be installed
 			+ Do <MajorUpgrade> w/AllowSameVersionUpgrades=Yes
 				+ See https://support.firegiant.com/hc/en-us/articles/230912187-Implement-major-upgrade-
-			- Try changing keypaths (folder & reg key)
+			= Try changing keypaths (folder & reg key)
+				+ Rethink their values
 				- Try full upgrade again
+					- Verify old is gone fully
+						- Shortcuts x 2
+						- Folder
+						- RegKey
+					- Verify new is there
+						- Shortcuts x 2
+						- Folder
+						- RegKey
+						
 			= Tests:
 				! To verify:
 					! Final result

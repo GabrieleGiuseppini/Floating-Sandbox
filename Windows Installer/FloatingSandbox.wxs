@@ -30,7 +30,7 @@
 
             <Directory Id="LocalAppDataFolder">
 
-                <Directory Id="INSTALLFOLDER" Name="$(var.FullApplicationName)">
+                <Directory Id="INSTALLFOLDER" Name="$(var.ShortApplicationName)">
 
                     <Component Id="RootDir_comp" Guid="EAB0458C-D3EC-44BE-9C6F-BEA5E7FD1E07">
                         <CreateFolder />

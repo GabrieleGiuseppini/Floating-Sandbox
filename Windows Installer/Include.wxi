@@ -10,6 +10,6 @@
     <?define FloatingSandboxVersion = "!(bind.FileVersion.FloatingSandboxExe)"?>
     <?define ShortApplicationName = "Floating Sandbox"?>
     <?define FullApplicationName = "$(var.ShortApplicationName) $(var.FloatingSandboxVersion)"?>
-    <?define ProductRegistryKey = "Software\Gabriele Giuseppini\$(var.FullApplicationName)"?>
+    <?define ProductRegistryKey = "Software\Gabriele Giuseppini\$(var.ShortApplicationName) V1"?>
     <?define InfoURL="https://www.floatingsandbox.com/" ?>
 </Include>
