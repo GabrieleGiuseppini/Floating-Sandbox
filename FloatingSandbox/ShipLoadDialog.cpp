@@ -234,52 +234,51 @@ ShipLoadDialog::~ShipLoadDialog()
 {
 }
 
-void ShipLoadDialog::Open()
+int ShipLoadDialog::ShowModal()
 {
-    if (!IsShown())
+    // Reset our current ship selection
+    mSelectedShipMetadata.reset();
+    mSelectedShipFilepath.reset();
+    mChosenShipFilepath.reset();
+
+    // Disable controls
+    mInfoButton->Enable(false);
+    mLoadButton->Enable(false);
+
+    // Clear search
+    mShipSearchTextCtrl->Clear();
+
+
+    //
+    // Load settings from preferences, if needed
+    //
+
+    if (mRecentDirectoriesComboBox->GetCount() == 0)
     {
-        // Reset our current ship selection
-        mSelectedShipMetadata.reset();
-        mSelectedShipFilepath.reset();
+        RepopulateRecentDirectoriesComboBox();
 
-        // Disable controls
-        mInfoButton->Enable(false);
-        mLoadButton->Enable(false);
+        assert(mRecentDirectoriesComboBox->GetCount() > 0);
 
-        // Clear search
-        mShipSearchTextCtrl->Clear();
-
-
-        //
-        // Load settings from preferences, if needed
-        //
-
-        if (mRecentDirectoriesComboBox->GetCount() == 0)
-        {
-            RepopulateRecentDirectoriesComboBox();
-
-            assert(mRecentDirectoriesComboBox->GetCount() > 0);
-
-            // Set the first one everywhere
-            auto dir = mRecentDirectoriesComboBox->GetStrings().front();
-            mDirCtrl->SetPath(dir);
-            mRecentDirectoriesComboBox->SetValue(dir);
-            mShipPreviewPanel->SetDirectory(dir.ToStdString());
-        }
-
-
-        //
-        // Open dialog
-        //
-
-        mShipPreviewPanel->OnOpen();
-
-        auto selectedPath = mDirCtrl->GetPath();
-        if (!selectedPath.IsEmpty())
-            mShipPreviewPanel->SetDirectory(std::filesystem::path(selectedPath.ToStdString()));
-
-        Show(true);
+        // Set the first one everywhere
+        auto dir = mRecentDirectoriesComboBox->GetStrings().front();
+        mDirCtrl->SetPath(dir);
+        mRecentDirectoriesComboBox->SetValue(dir);
+        mShipPreviewPanel->SetDirectory(dir.ToStdString());
     }
+
+
+    //
+    // Initialize preview panel
+    //
+
+    mShipPreviewPanel->OnOpen();
+
+    auto selectedPath = mDirCtrl->GetPath();
+    if (!selectedPath.IsEmpty())
+        mShipPreviewPanel->SetDirectory(std::filesystem::path(selectedPath.ToStdString()));
+
+    // Run modal
+    return wxDialog::ShowModal();
 }
 
 void ShipLoadDialog::OnDirCtrlDirSelected(wxCommandEvent & /*event*/)
@@ -301,9 +300,6 @@ void ShipLoadDialog::OnShipFileSelected(fsShipFileSelectedEvent & event)
     // Enable buttons
     mInfoButton->Enable(!!(event.GetShipMetadata()) && !!(event.GetShipMetadata()->Description));
     mLoadButton->Enable(true);
-
-    // Continue processing
-    event.Skip();
 }
 
 void ShipLoadDialog::OnShipFileChosen(fsShipFileChosenEvent & event)
@@ -369,12 +365,14 @@ void ShipLoadDialog::OnLoadButton(wxCommandEvent & /*event*/)
 
 void ShipLoadDialog::OnCancelButton(wxCommandEvent & /*event*/)
 {
-    Close();
+    EndModal(wxID_CANCEL);
 }
 
 void ShipLoadDialog::OnCloseWindow(wxCloseEvent & /*event*/)
 {
-    Close();
+    // Invoked when the user has tried to close a frame or dialog box
+    // using the window manager (X) or system menu (Windows); it can also be invoked by the application itself
+    EndModal(wxID_CANCEL);
 }
 
 void ShipLoadDialog::OnDirectorySelected(std::filesystem::path directoryPath)
@@ -398,9 +396,6 @@ void ShipLoadDialog::OnShipFileChosen(std::filesystem::path shipFilepath)
 {
     LogMessage("ShipLoadDialog::OnShipFileChosen: ", shipFilepath);
 
-    // Close ourselves
-    Close();
-
     // Store directory in preferences
     auto dir = shipFilepath.parent_path();
     mUIPreferencesManager->AddShipLoadDirectory(dir);
@@ -411,21 +406,22 @@ void ShipLoadDialog::OnShipFileChosen(std::filesystem::path shipFilepath)
     // Select this directory in the combo box
     mRecentDirectoriesComboBox->SetValue(dir.string());
 
-    // Fire select event
-    auto event = fsShipFileChosenEvent(
-        fsEVT_SHIP_FILE_CHOSEN,
-        this->GetId(),
-        shipFilepath);
+    // Store path
+    mChosenShipFilepath = shipFilepath;
 
-    ProcessWindowEvent(event);
+    // End modal dialog
+    EndModal(wxID_OK);
 }
 
-void ShipLoadDialog::Close()
+////////////////////////////////////////////////////////////////////////////
+
+void ShipLoadDialog::EndModal(int retCode)
 {
+    LogMessage("ShipLoadDialog::EndModal(", retCode, ")");
+
     mShipPreviewPanel->OnClose();
 
-    // We just hide ourselves, so we can re-show ourselves again
-    this->Hide();
+    wxDialog::EndModal(retCode);
 }
 
 void ShipLoadDialog::RepopulateRecentDirectoriesComboBox()

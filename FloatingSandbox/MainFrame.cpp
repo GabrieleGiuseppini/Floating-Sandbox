@@ -107,6 +107,7 @@ MainFrame::MainFrame(wxApp * mainApp)
     , mUIPreferencesManager()
     , mHasWindowBeenShown(false)
     , mHasStartupTipBeenChecked(false)
+    , mPauseCount(0)
     , mCurrentShipTitles()
     , mCurrentRCBombCount(0u)
     , mCurrentAntiMatterBombCount(0u)
@@ -951,38 +952,6 @@ void MainFrame::OnIdle(wxIdleEvent & /*event*/)
 {
 }
 
-void MainFrame::OnShipFileChosen(fsShipFileChosenEvent & event)
-{
-    //
-    // Load ship
-    //
-
-    ResetState();
-
-    assert(!!mGameController);
-    try
-    {
-        auto shipMetadata = mGameController->ResetAndLoadShip(event.GetShipFilepath());
-
-        // Open description, if a description exists and the user allows
-        if (!!shipMetadata.Description
-            && mUIPreferencesManager->GetShowShipDescriptionsAtShipLoad())
-        {
-            ShipDescriptionDialog shipDescriptionDialog(
-                this,
-                shipMetadata,
-                true,
-                mUIPreferencesManager);
-
-            shipDescriptionDialog.ShowModal();
-        }
-    }
-    catch (std::exception const & ex)
-    {
-        OnError(ex.what(), false);
-    }
-}
-
 //
 // Main canvas event handlers
 //
@@ -1058,19 +1027,54 @@ void MainFrame::OnMainGLCanvasCaptureMouseLost(wxCloseEvent & /*event*/)
 
 void MainFrame::OnLoadShipMenuItemSelected(wxCommandEvent & /*event*/)
 {
+    SetPaused(true);
+
+    // See if we need to create the ShipLoad dialog
     if (!mShipLoadDialog)
     {
         mShipLoadDialog = std::make_unique<ShipLoadDialog>(
             this,
             mUIPreferencesManager,
             *mResourceLoader);
-
-        mShipLoadDialog->Bind(fsEVT_SHIP_FILE_CHOSEN, &MainFrame::OnShipFileChosen, this);
     }
 
-    assert(!!mShipLoadDialog);
+    // Open dialog
+    auto res = mShipLoadDialog->ShowModal();
 
-    mShipLoadDialog->Open(); // Will fire a ShipFileChosen event if user ends up selecting a ship
+    // Process result
+    if (res == wxID_OK)
+    {
+        //
+        // Load ship
+        //
+
+        ResetState();
+
+        assert(!!mGameController);
+        try
+        {
+            auto shipMetadata = mGameController->ResetAndLoadShip(mShipLoadDialog->GetChosenShipFilepath());
+
+            // Open description, if a description exists and the user allows
+            if (!!shipMetadata.Description
+                && mUIPreferencesManager->GetShowShipDescriptionsAtShipLoad())
+            {
+                ShipDescriptionDialog shipDescriptionDialog(
+                    this,
+                    shipMetadata,
+                    true,
+                    mUIPreferencesManager);
+
+                shipDescriptionDialog.ShowModal();
+            }
+        }
+        catch (std::exception const & ex)
+        {
+            OnError(ex.what(), false);
+        }
+    }
+
+    SetPaused(false);
 }
 
 void MainFrame::OnReloadLastShipMenuItemSelected(wxCommandEvent & /*event*/)
@@ -1182,30 +1186,7 @@ void MainFrame::OnSaveScreenshotMenuItemSelected(wxCommandEvent & /*event*/)
 
 void MainFrame::OnPauseMenuItemSelected(wxCommandEvent & /*event*/)
 {
-    if (mPauseMenuItem->IsChecked())
-    {
-        GameWallClock::GetInstance().SetPaused(true);
-
-        if (!!mGameController)
-            mGameController->SetPaused(true);
-
-        if (!!mSoundController)
-            mSoundController->SetPaused(true);
-
-        mStepMenuItem->Enable(true);
-    }
-    else
-    {
-        GameWallClock::GetInstance().SetPaused(false);
-
-        if (!!mGameController)
-            mGameController->SetPaused(false);
-
-        if (!!mSoundController)
-            mSoundController->SetPaused(false);
-
-        mStepMenuItem->Enable(false);
-    }
+    SetPaused(mPauseMenuItem->IsChecked());
 }
 
 void MainFrame::OnStepMenuItemSelected(wxCommandEvent & /*event*/)
@@ -1636,4 +1617,43 @@ void MainFrame::PostGameStepTimer()
 void MainFrame::StartLowFrequencyTimer()
 {
     mLowFrequencyTimer->Start(1000, false);
+}
+
+void MainFrame::SetPaused(bool isPaused)
+{
+    if (isPaused)
+    {
+        if (0 == mPauseCount)
+        {
+            // Set pause
+
+            if (!!mGameController)
+                mGameController->SetPaused(true);
+
+            if (!!mSoundController)
+                mSoundController->SetPaused(true);
+
+            mStepMenuItem->Enable(true);
+        }
+
+        ++mPauseCount;
+    }
+    else
+    {
+        assert(mPauseCount > 0);
+        --mPauseCount;
+
+        if (0 == mPauseCount)
+        {
+            // Resume
+
+            if (!!mGameController)
+                mGameController->SetPaused(false);
+
+            if (!!mSoundController)
+                mSoundController->SetPaused(false);
+
+            mStepMenuItem->Enable(false);
+        }
+    }
 }

@@ -30,7 +30,13 @@ public:
 
 	virtual ~ShipLoadDialog();
 
-    void Open();
+    virtual int ShowModal() override;
+
+    std::filesystem::path GetChosenShipFilepath() const
+    {
+        assert(!!mChosenShipFilepath);
+        return *mChosenShipFilepath;
+    }
 
 private:
 
@@ -51,7 +57,8 @@ private:
 
 private:
 
-    void Close();
+    virtual void EndModal(int retCode) override;
+
     void RepopulateRecentDirectoriesComboBox();
 
 private:
@@ -70,4 +77,5 @@ private:
 
     std::optional<ShipMetadata> mSelectedShipMetadata;
     std::optional<std::filesystem::path> mSelectedShipFilepath;
+    std::optional<std::filesystem::path> mChosenShipFilepath;
 };

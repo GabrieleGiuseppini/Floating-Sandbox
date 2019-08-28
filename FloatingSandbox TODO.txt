@@ -264,11 +264,23 @@ Render:
 				+ Maintenance->Uninstall
 				+ Upgrade when Ships folder contains additional ship files
 			+ Add to changes.txt
-
-		- ShipLoadDialog: 
-			- pause updates via GameController::MakeScopedPause() (RIIA)
+		+ ShipLoadDialog: Crack ShowModal() puzzle
+			+ ShowModal()
+			+ Try:
+				+ PollQueue: consume 10 events at a time
+				+ Pre-created ShipLoadDialog member
+			+ Cleanup:
+				+ GameController::Pause:
+					+ Move GameWallClock pause here from MainFrame
+				+ Make MainFrame::SetPaused(bool) with content of pause menu handler
+					+ MainFrame has "stack" (counter)
+					+ Invoked by:
+						+ Pause menu handler
+						+ ShipLoad cycle
+				+ Remove TODOTEST Log's at ShipLoadDialog
 
 		- Adjustable zoom increments
+			- Under UIPreferences
 
 		- Make sure we don't copy Temperature buffer twice
 			- Make Buffer::swap(Buffer<T> & other)

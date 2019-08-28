@@ -70,14 +70,15 @@ void ShipPreviewPanel::OnOpen()
     assert(!mSelectedPreview);
 
     // Clear message queue
-    mThreadToPanelMessageQueue.clear();
+    assert(mThreadToPanelMessageQueue.empty());
+    mThreadToPanelMessageQueue.clear(); // You never know there's another path that leads to Open() without going through Close()
 
     // Start thread
     assert(!mPreviewThread.joinable());
     mPreviewThread = std::thread(&ShipPreviewPanel::RunPreviewThread, this);
 
     // Start queue poll timer
-    mPollQueueTimer->Start(100, false);
+    mPollQueueTimer->Start(10, false);
 }
 
 void ShipPreviewPanel::OnClose()
@@ -237,8 +238,8 @@ void ShipPreviewPanel::OnPollQueueTimer(wxTimerEvent & /*event*/)
     // Lock queue
     std::scoped_lock lock(mThreadToPanelMessageQueueMutex);
 
-    // Process a few messages at a time
-    for (size_t i = 0; i < 3 && !mThreadToPanelMessageQueue.empty(); ++i)
+    // Process these many messages at a time
+    for (size_t i = 0; i < 2 && !mThreadToPanelMessageQueue.empty(); ++i)
     {
         auto message = std::move(mThreadToPanelMessageQueue.front());
         mThreadToPanelMessageQueue.pop_front();
