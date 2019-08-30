@@ -18,6 +18,7 @@ set_property(
 
 set (UNIT_TEST_SOURCES
 	BoundedVectorTests.cpp
+	BufferTests.cpp
 	CircularListTests.cpp
 	EnumFlagsTests.cpp
 	FixedSizeVectorTests.cpp
@@ -27,6 +28,7 @@ set (UNIT_TEST_SOURCES
 	SegmentTests.cpp
 	ShaderManagerTests.cpp
 	SliderCoreTests.cpp
+	SysSpecificsTests.cpp
 	TemporallyCoherentPriorityQueueTests.cpp
 	TextureAtlasTests.cpp
 	TruncatedPriorityQueueTests.cpp

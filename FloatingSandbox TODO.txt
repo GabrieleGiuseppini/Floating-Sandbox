@@ -279,8 +279,13 @@ Render:
 						+ ShipLoad cycle
 				+ Remove TODOTEST Log's at ShipLoadDialog
 
+		- Points' buffer perf improvement (*)
+
 		- Adjustable zoom increments
 			- Under UIPreferences
+			- See if can use Smoothstep for...smoothing
+				- @ Controls
+				- @ Smoothed params
 
 		- Make sure we don't copy Temperature buffer twice
 			- Make Buffer::swap(Buffer<T> & other)
@@ -291,8 +296,6 @@ Render:
 		- ShipLoadDialog:
 			- Ship preview database/cache
 			- Search: button for "next"
-
-		- Points' buffer perf improvement (*)
 
 		- Lights perf improvement (*)
 
@@ -486,14 +489,15 @@ Render:
 		- Springs in those 2x2 blocks, advancing one column - and then row - at a time
 
 	- Forces rearc (*):
-		- Rationale: multiple spring iterations are really artificial; in reality, changes due to spring position changes in-between 
+		! Rationale: multiple spring iterations are really artificial; in reality, changes due to spring position changes in-between 
 		  iterations shouldn't impact physical world (e.g. buoyancy/drag) yet
 		- Points has two Force buffers: SpringForces and PointForces (or "NonSpringForces")
 		- Assumption: no deletions take place during mech loop
 		- UpdateMechanicalDynamics:
 			- First resets PointForces (or not, may reorder the below to do a first "set" loop rather than "add")
 			- Then populates PointForces with force fields
-			- Then populates PointForces with gravity/buoyancy/water drag (this one might "set" rather than "add")
+			- Then populates PointForces with gravity/buoyancy/water drag (this is the one that might "set" rather than "add",
+			  so we save the PointForces' reset step)
 			- Then ...propulsion, etc..... all PointForces
 			- Then does spring loop:
 				- Spring forces
@@ -506,6 +510,9 @@ Render:
 		- Test:
 			- See bounces from ocean floor
 				- The back-sending should be fine as it's based off real initial velocity TODO: double-check
+		- Cleanup:
+			- If UpdateMechanicalDynamics ends up using PointForces as it is at the beginning of the loop, then
+			  might get rid of force fields
 
 	- Try with SpringRelaxation updating only positions (*)
 		- Still runs N times, but only updates positions (does a local "integration" based on "forces")
@@ -711,16 +718,27 @@ Render:
 
 - Gfx optimizations:
 
-	- Test perf: allocate (and thus upload) Points' mutable attributes in one single buffer (*)
-		- Changes to Buffer:
-			- static size_t CalculateByteSize(size_t alignedElementCount)
-			- cctor that takes shader_ptr<uint8_t *>, byte offset, et al
-			- Add UTs
+	= Points' buffer perf improvement: (*)
+		! Test perf: allocate (and thus upload) Points' mutable attributes in one single buffer 
+		+ Changes to Buffer:
+			+ Hierarchy with two Buffers:
+				+ 1: 
+					+ static size_t CalculateByteSize(size_t elements)
+						+ Also use at UTs
+					+ cctor that takes shader_ptr<uint8_t *>, byte offset, et al
+					+ No swap(.)
+					+ Add UTs
+				+ 2:
+					+ Like now (makes and owns own buffer)
+					+ Yes swap(.)
+						+ Add UT
 		- Replace Points' individual buffers with:
-			- 0: mAlignedElementCount = SysSpecifics::align_element_count // based on float
-			- 1: mAttributesBuffer == shared_ptr<uint8_t *> SysSpecifics::aligned_alloc_shared(byte size) // alignment is of # of floats in AVX-512
-				- Uses AlignedMemoryDeleter in SysSpecifics.h
-			- 2: bounded vectors offseted to three portions, using Buffer::CalculateByteSize(.) for previous
+			- 0: ElementContainer(SysSpecifics::make_aligned_float_element_count(.))
+				- Move logic out of ElementContainer
+			TODOHERE
+			- 1: mAttributesBuffer == unique_aligned_buffer, SysSpecifics::make_unique_aligned_buffer...(byte size)
+				- Calc total byte size via Buffer<T>::CalculateByteSize(size_t elements)
+			- 2: Buffers offseted to three portions, using sums of Buffer::CalculateByteSize(.) for previous
 		- Then do a single upload
 					
 	- Lights on the GPU with instanced drawing (*)

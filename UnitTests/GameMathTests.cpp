@@ -6,20 +6,6 @@
 
 #include "gtest/gtest.h"
 
-TEST(CeilPowerOfTwo, Basic)
-{
-    EXPECT_EQ(CeilPowerOfTwo(0), 1);
-    EXPECT_EQ(CeilPowerOfTwo(1), 1);
-    EXPECT_EQ(CeilPowerOfTwo(2), 2);
-    EXPECT_EQ(CeilPowerOfTwo(3), 4);
-    EXPECT_EQ(CeilPowerOfTwo(4), 4);
-    EXPECT_EQ(CeilPowerOfTwo(5), 8);
-    EXPECT_EQ(CeilPowerOfTwo(6), 8);
-    EXPECT_EQ(CeilPowerOfTwo(7), 8);
-    EXPECT_EQ(CeilPowerOfTwo(8), 8);
-    EXPECT_EQ(CeilPowerOfTwo(9), 16);
-}
-
 TEST(FastPowTest, Basic)
 {
     float result = FastPow(0.1f, 2.0f);

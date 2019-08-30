@@ -98,14 +98,14 @@ protected:
 
     ElementContainer(ElementCount elementCount)
         : mElementCount(elementCount)
-        , mBufferElementCount(static_cast<ElementCount>(make_aligned_element_count(elementCount)))
+        , mBufferElementCount(static_cast<ElementCount>(make_aligned_float_element_count(elementCount)))
     {
     }
 
     ElementCount const mElementCount;
 
     // The number of elements available in the buffers of this container;
-    // differs from the element count as this is rounded up to the 
+    // differs from the element count as this is rounded up to the
     // vectorization word size
     ElementCount const mBufferElementCount;
 };
