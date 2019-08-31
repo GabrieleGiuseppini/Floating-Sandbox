@@ -15,10 +15,13 @@
 #include <memory>
 
 /*
-* This class is the base of a hierarchy implementing a simple buffer of "things".
-* The buffer is fixed-size and cannot grow more than the size that it is initially
-* constructed with.
-*/
+ * This class is the base of a hierarchy implementing a simple buffer of "things".
+ * The buffer is fixed-size and cannot grow more than the size that it is initially
+ * constructed with.
+ *
+ * The buffer is assumed to be mem-aligned so that if TElement is float,
+ * then the buffer is aligned to the vectorization number of floats.
+ */
 template <typename TElement>
 class BaseBuffer
 {
@@ -128,6 +131,7 @@ protected:
         , mCurrentPopulatedSize(0)
     {
         assert(nullptr != mBuffer);
+        assert(is_aligned_to_vectorization_word(buffer));
     }
 
     BaseBuffer(
@@ -243,8 +247,8 @@ private:
 /*
  * A buffer that sees a segment of another buffer, with external ownership.
  *
- * The buffer is assumed to be mem-aligned so that if TElement is float, then the buffer
- * is aligned to the vectorization number of floats.
+ * The buffer's segment is assumed to be mem-aligned so that if TElement is float,
+ * then the buffer is aligned to the vectorization number of floats.
  */
 template <typename TElement>
 class BufferSegment : public BaseBuffer<TElement>

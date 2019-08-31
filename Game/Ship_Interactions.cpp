@@ -103,6 +103,7 @@ void Ship::MoveBy(
     vec2f * restrict positionBuffer = mPoints.GetPositionBufferAsVec2();
     vec2f * restrict velocityBuffer = mPoints.GetVelocityBufferAsVec2();
 
+    // TODOHERE
     size_t const count = mPoints.GetBufferElementCount();
     for (size_t p = 0; p < count; ++p)
     {
@@ -172,6 +173,7 @@ void Ship::RotateBy(
     vec2f * restrict positionBuffer = mPoints.GetPositionBufferAsVec2();
     vec2f * restrict velocityBuffer = mPoints.GetVelocityBufferAsVec2();
 
+    // TODOHERE
     size_t const count = mPoints.GetBufferElementCount();
     for (size_t p = 0; p < count; ++p)
     {

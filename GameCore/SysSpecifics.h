@@ -39,18 +39,22 @@ inline constexpr T ceil_power_of_two(T value)
 
 // The number of floats we want to be able to compute in a single vectorization step.
 // Dictates alignment of buffers.
-// Targeting AVX-512 (though at the moment we might be compiling for a lower fp arch)
-static constexpr size_t vectorization_float_count = 8; // A.k.a. the vectorization word size
-static constexpr size_t vectorization_byte_count = vectorization_float_count * sizeof(float);
+// Targeting AVX-256 (though at the moment we might be compiling for a lower fp arch)
+
+template <typename T>
+static constexpr T vectorization_float_count = 8; // A.k.a. the vectorization word size
+
+template <typename T>
+static constexpr T vectorization_byte_count = vectorization_float_count<T> * sizeof(float);
 
 /*
  * Checks whether the specified pointer is aligned to the vectorization
  * float count.
  */
-inline bool is_aligned(void const * ptr) noexcept
+inline bool is_aligned_to_vectorization_word(void const * ptr) noexcept
 {
     auto ui_ptr = reinterpret_cast<std::uintptr_t>(ptr);
-    return !(ui_ptr % vectorization_byte_count);
+    return !(ui_ptr % vectorization_byte_count<std::uintptr_t>);
 }
 
 /*
@@ -65,18 +69,20 @@ inline bool is_aligned(void const * ptr) noexcept
  * vectorization word:
  *    result*sizeof(f) % word_byte_size == 0 --> result*n*sizeof(f) % word_byte_size == 0
  */
-inline constexpr size_t make_aligned_float_element_count(size_t element_count) noexcept
+template<typename T>
+inline constexpr T make_aligned_float_element_count(T element_count) noexcept
 {
-    return (element_count % vectorization_float_count) == 0
+    return (element_count % vectorization_float_count<T>) == 0
         ? element_count
-        : element_count + vectorization_float_count - (element_count % vectorization_float_count);
+        : element_count + vectorization_float_count<T> - (element_count % vectorization_float_count<T>);
 }
 
 /*
  * Checks whether the specified number of float elements is aligned
  * with the vectorization float count.
  */
-inline constexpr bool is_aligned_float_element_count(size_t element_count) noexcept
+template<typename T>
+inline constexpr bool is_aligned_to_float_element_count(T element_count) noexcept
 {
     return element_count == make_aligned_float_element_count(element_count);
 }
@@ -87,23 +93,24 @@ inline constexpr bool is_aligned_float_element_count(size_t element_count) noexc
  */
 inline void * alloc_aligned_to_vectorization_word(size_t byte_size)
 {
-    static_assert(vectorization_byte_count == ceil_power_of_two(vectorization_byte_count));
+    static_assert(vectorization_byte_count<size_t> == ceil_power_of_two(vectorization_byte_count<size_t>));
 
     // Calculate byte size required to satisfy the aligned_alloc constraints
-    auto aligned_byte_size = (byte_size % vectorization_byte_count) == 0
+    auto aligned_byte_size = (byte_size % vectorization_byte_count<size_t>) == 0
         ? byte_size
-        : byte_size + vectorization_byte_count - (byte_size % vectorization_byte_count);
+        : byte_size + vectorization_byte_count<size_t> - (byte_size % vectorization_byte_count<size_t>);
 
 #ifdef _MSC_VER
-    return _aligned_malloc(aligned_byte_size, vectorization_byte_count);
+    return _aligned_malloc(aligned_byte_size, vectorization_byte_count<size_t>);
 #else
-    return std::aligned_alloc(vectorization_byte_count, aligned_byte_size);
+    return std::aligned_alloc(vectorization_byte_count<size_t>, aligned_byte_size);
 #endif
 }
 
 inline void free_aligned(void * ptr)
 {
-    assert(is_aligned(ptr));
+    assert(is_aligned_to_vectorization_word(ptr));
+
 #ifdef _MSC_VER
     _aligned_free(ptr);
 #else

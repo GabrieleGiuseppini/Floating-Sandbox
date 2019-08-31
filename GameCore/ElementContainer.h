@@ -13,7 +13,8 @@
 #include <iterator>
 
 /*
- * This class is the base class of all containers of core elements.
+ * This class is the base class of all containers of core elements, providing
+ * services that are common to all containers.
  *
  * For data locality, we don't work with "objects" in the OO way, but rather
  * with sets of objects, whose properties are located in multiple, non-overlapping buffers.
@@ -98,13 +99,17 @@ protected:
 
     ElementContainer(ElementCount elementCount)
         : mElementCount(elementCount)
-        , mBufferElementCount(static_cast<ElementCount>(make_aligned_float_element_count(elementCount)))
+        // We round our number of buffer elements to the next multiple of the vectorized float count, so that
+        // buffers of single floats are aligned on vectorized word boundaries.
+        // Note that buffers of more than single floats would also automatically be aligned.
+        , mBufferElementCount(make_aligned_float_element_count(elementCount))
     {
     }
 
+    // The actual number of elements in this container
     ElementCount const mElementCount;
 
-    // The number of elements available in the buffers of this container;
+    // The number of elements available in the *buffers* of this container;
     // differs from the element count as this is rounded up to the
     // vectorization word size
     ElementCount const mBufferElementCount;
