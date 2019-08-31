@@ -5,12 +5,12 @@
 ***************************************************************************************/
 #pragma once
 
+#include "ElementIndexRangeIterator.h"
 #include "GameTypes.h"
 #include "SysSpecifics.h"
 
 #include <cassert>
 #include <cstdint>
-#include <iterator>
 
 /*
  * This class is the base class of all containers of core elements, providing
@@ -23,50 +23,6 @@
  */
 class ElementContainer
 {
-public:
-
-    /*
-     * Our iterator, which simply iterates through indices.
-     */
-    struct iterator
-    {
-    public:
-
-        typedef std::input_iterator_tag iterator_category;
-
-    public:
-
-        inline bool operator==(iterator const & other) const noexcept
-        {
-            return mCurrent == other.mCurrent;
-        }
-
-        inline bool operator!=(iterator const & other) const noexcept
-        {
-            return !(mCurrent == other.mCurrent);
-        }
-
-        inline void operator++() noexcept
-        {
-            ++mCurrent;
-        }
-
-        inline ElementIndex operator*() noexcept
-        {
-            return mCurrent;
-        }
-
-    private:
-
-        friend class ElementContainer;
-
-        explicit iterator(ElementIndex current) noexcept
-            : mCurrent(current)
-        {}
-
-        ElementIndex mCurrent;
-    };
-
 public:
 
     /*
@@ -85,14 +41,19 @@ public:
      * Visitors. These iterators iterate the (non-vectorized) *indices* of the elements.
      */
 
-    inline iterator begin() const noexcept
+    inline element_index_range_iterator begin() const noexcept
     {
-        return iterator(0u);
+        return element_index_range_iterator(0u);
     }
 
-    inline iterator end() const noexcept
+    inline element_index_range_iterator end() const noexcept
     {
-        return iterator(mElementCount);
+        return element_index_range_iterator(mElementCount);
+    }
+
+    inline ElementIndexRangeIterable BufferElements() const noexcept
+    {
+        return ElementIndexRangeIterable(0u, mBufferElementCount);
     }
 
 protected:

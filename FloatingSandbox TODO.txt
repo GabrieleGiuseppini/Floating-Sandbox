@@ -738,12 +738,11 @@ Render:
 		= Replace Points' individual buffers with:
 			+ 0: ElementContainer(SysSpecifics::make_aligned_float_element_count(.))
 				+ Move logic out of ElementContainer
-			= Undo changes to containers
-			- ElementContainer:
-				- See if iterator could be the range iterator
-					- If so, add one for buffer
-					- If so, use the one for buffer @ 2 places in Ship_Interactions.cpp
-				- See if may move isDeleted buffer
+			+ Undo changes to containers
+			+ ElementContainer:
+				+ See if iterator could be the range iterator
+					+ If so, add one for buffer
+					+ If so, use the one for buffer @ 2 places in Ship_Interactions.cpp
 			- 1: mMutableAttributesBuffer == unique_aligned_buffer, SysSpecifics::make_unique_aligned_buffer...(byte size)
 				- Calc total byte size via Buffer<T>::CalculateByteSize(size_t elements)
 			- 2: Buffers offseted to three portions, using sums of Buffer::CalculateByteSize(.) for previous
