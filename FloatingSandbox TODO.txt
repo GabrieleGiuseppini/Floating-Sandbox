@@ -278,11 +278,14 @@ Render:
 						+ Pause menu handler
 						+ ShipLoad cycle
 				+ Remove TODOTEST Log's at ShipLoadDialog
-
-		- Make sure we don't copy Temperature buffer twice
-			- Zero-copy
+		+ Run with AppVerifier to detect cause of crash at reload
+		+ Make sure we don't copy Temperature buffer twice
 			+ Make Buffer::swap(Buffer<T> & other)
-			- Do also at Water
+			+ Pre: 28.1/28.8
+			+ One copy only
+			+ Post: 28.5/28.7
+			+ Do also at Water
+			+ Post: 28.9/29.1
 
 		- Lights perf improvement (*)
 

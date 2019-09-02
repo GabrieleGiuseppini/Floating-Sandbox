@@ -924,9 +924,9 @@ void Ship::UpdateWaterVelocities(
     mPoints.UpdateWaterMomentaFromVelocities();
 
     // Source and result water buffers
-    float * restrict oldPointWaterBufferData = mPoints.GetWaterBufferAsFloat();
-    auto newPointWaterBuffer = mPoints.MakeWaterBufferCopy();
-    float * restrict newPointWaterBufferData = newPointWaterBuffer->data();
+    auto oldPointWaterBuffer = mPoints.MakeWaterBufferCopy();
+    float const * restrict oldPointWaterBufferData = oldPointWaterBuffer->data();
+    float * restrict newPointWaterBufferData = mPoints.GetWaterBufferAsFloat();
     vec2f * restrict oldPointWaterVelocityBufferData = mPoints.GetWaterVelocityBufferAsVec2();
     vec2f * restrict newPointWaterMomentumBufferData = mPoints.GetWaterMomentumBufferAsVec2f();
 
@@ -1204,10 +1204,9 @@ void Ship::UpdateWaterVelocities(
 
 
     //
-    // Move result values back to point, transforming momenta into velocities
+    // Transforming momenta into velocities
     //
 
-    mPoints.UpdateWaterBuffer(std::move(newPointWaterBuffer));
     mPoints.UpdateWaterVelocitiesFromMomenta();
 }
 
@@ -1432,9 +1431,9 @@ void Ship::PropagateHeat(
     //
 
     // Source and result temperature buffers
-    float * restrict oldPointTemperatureBufferData = mPoints.GetTemperatureBufferAsFloat();
-    auto newPointTemperatureBuffer = mPoints.MakeTemperatureBufferCopy();
-    float * restrict newPointTemperatureBufferData = newPointTemperatureBuffer->data();
+    auto oldPointTemperatureBuffer = mPoints.MakeTemperatureBufferCopy();
+    float const * restrict oldPointTemperatureBufferData = oldPointTemperatureBuffer->data();
+    float * restrict newPointTemperatureBufferData = mPoints.GetTemperatureBufferAsFloat();
 
     // Outbound heat flows along each spring
     std::array<float, GameParameters::MaxSpringsPerPoint> springOutboundHeatFlows;
@@ -1572,13 +1571,6 @@ void Ship::PropagateHeat(
             heatLost
             / mPoints.GetMaterialHeatCapacity(pointIndex);
     }
-
-
-    //
-    // Move result values back to point
-    //
-
-    mPoints.UpdateTemperatureBuffer(std::move(newPointTemperatureBuffer));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
