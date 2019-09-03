@@ -134,8 +134,8 @@ public:
         size_t shipIndex,
         std::filesystem::path const & shipFilepath,
         int vMargin,
-        RgbaImageData const & waitImage,
-        RgbaImageData const & errorImage);
+        wxBitmap const & waitBitmap,
+        wxBitmap const & errorBitmap);
 
     virtual ~ShipPreviewControl();
 
@@ -147,7 +147,7 @@ public:
     void SetPreviewContent(ShipPreview const & shipPreview);
 
     void SetPreviewContent(
-        RgbaImageData const & image,
+        wxBitmap const & bitmap,
         std::string const & description1,
         std::string const & description2);
 
@@ -158,7 +158,7 @@ private:
 
 private:
 
-    void SetImageContent(RgbaImageData const & imageData);
+    void SetImageContent(wxBitmap const & bitmap);
 
 private:
 
@@ -175,8 +175,8 @@ private:
 
     size_t const mShipIndex;
     std::filesystem::path const mShipFilepath;
-    RgbaImageData const & mWaitImage;
-    RgbaImageData const & mErrorImage;
+    wxBitmap const & mWaitBitmap;
+    wxBitmap const & mErrorBitmap;
 
     // State
     std::optional<ShipMetadata> mShipMetadata;

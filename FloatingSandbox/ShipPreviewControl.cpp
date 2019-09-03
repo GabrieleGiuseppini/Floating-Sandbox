@@ -20,8 +20,8 @@ ShipPreviewControl::ShipPreviewControl(
     size_t shipIndex,
     std::filesystem::path const & shipFilepath,
     int vMargin,
-    RgbaImageData const & waitImage,
-    RgbaImageData const & errorImage)
+    wxBitmap const & waitBitmap,
+    wxBitmap const & errorBitmap)
     : wxPanel(
         parent,
         wxID_ANY,
@@ -29,16 +29,20 @@ ShipPreviewControl::ShipPreviewControl(
     , mImageGenericStaticBitmap(nullptr)
     , mShipIndex(shipIndex)
     , mShipFilepath(shipFilepath)
-    , mWaitImage(waitImage)
-    , mErrorImage(errorImage)
+    , mWaitBitmap(waitBitmap)
+    , mErrorBitmap(errorBitmap)
     , mShipMetadata()
 {
+    LogMessage("TODOHERE:B-B-A");
+
     SetBackgroundColour(wxColour("WHITE"));
 
 
     //
     // Background panel
     //
+
+    LogMessage("TODOHERE:B-B-B");
 
     mBackgroundPanel = new wxPanel(this);
 
@@ -47,7 +51,7 @@ ShipPreviewControl::ShipPreviewControl(
     mBackgroundPanel->Bind(wxEVT_LEFT_DOWN, &ShipPreviewControl::OnMouseSingleClick, this);
     mBackgroundPanel->Bind(wxEVT_LEFT_DCLICK, &ShipPreviewControl::OnMouseDoubleClick, this);
 
-
+    LogMessage("TODOHERE:B-B-D");
 
     //
     // Content
@@ -66,20 +70,32 @@ ShipPreviewControl::ShipPreviewControl(
         wxDefaultPosition,
         wxSize(ImageWidth, ImageHeight));
 
+    LogMessage("TODOHERE:B-B-G");
+
     mImagePanel->SetMinSize(wxSize(ImageWidth, ImageHeight));
     mImagePanel->SetMaxSize(wxSize(ImageWidth, ImageHeight));
 
+    LogMessage("TODOHERE:B-B-I");
+
     mImagePanel->Bind(wxEVT_LEFT_DOWN, &ShipPreviewControl::OnMouseSingleClick, this);
     mImagePanel->Bind(wxEVT_LEFT_DCLICK, &ShipPreviewControl::OnMouseDoubleClick, this);
+
+    LogMessage("TODOHERE:B-B-J");
 
     // Create sizer that we'll use to size image
     auto imageSizer = new wxBoxSizer(wxVERTICAL);
     mImagePanel->SetSizer(imageSizer);
 
-    // Set initial content to "Wait" image
-    SetImageContent(mWaitImage);
+    LogMessage("TODOHERE:B-B-L");
+
+    // Set initial content to "Wait" bitmap
+    SetImageContent(mWaitBitmap);
+
+    LogMessage("TODOHERE:B-B-M");
 
     mVSizer->Add(mImagePanel, 1, wxALIGN_CENTER_HORIZONTAL);
+
+    LogMessage("TODOHERE:B-B-N");
 
     mVSizer->AddSpacer(4);
 
@@ -88,6 +104,8 @@ ShipPreviewControl::ShipPreviewControl(
     //
     // Description Labels
     //
+
+    LogMessage("TODOHERE:B-B-O");
 
     mDescriptionLabel1 = new wxStaticText(
         mBackgroundPanel,
@@ -104,6 +122,7 @@ ShipPreviewControl::ShipPreviewControl(
 
     mVSizer->Add(mDescriptionLabel1, 0, wxEXPAND);
 
+    LogMessage("TODOHERE:B-B-R");
 
     mDescriptionLabel2 = new wxStaticText(
         mBackgroundPanel,
@@ -122,6 +141,8 @@ ShipPreviewControl::ShipPreviewControl(
 
     mVSizer->AddSpacer(4);
 
+
+    LogMessage("TODOHERE:B-B-T");
 
     //
     // Filename Label
@@ -142,6 +163,7 @@ ShipPreviewControl::ShipPreviewControl(
 
     mVSizer->Add(mFilenameLabel, 0, wxEXPAND);
 
+    LogMessage("TODOHERE:B-B-U");
 
     //
     // Bottom margin
@@ -154,6 +176,8 @@ ShipPreviewControl::ShipPreviewControl(
     // Finalize content
     //
 
+    LogMessage("TODOHERE:B-B-W");
+
     mBackgroundPanel->SetSizer(mVSizer);
 
 
@@ -161,11 +185,17 @@ ShipPreviewControl::ShipPreviewControl(
     // Finalize this panel
     //
 
+    LogMessage("TODOHERE:B-B-X");
+
     // Wrap the background panel with border
     wxSizer * backgroundSizer = new wxBoxSizer(wxVERTICAL);
     backgroundSizer->Add(mBackgroundPanel, 0, wxALL, BorderSize);
 
+    LogMessage("TODOHERE:B-B-Y");
+
     this->SetSizer(backgroundSizer);
+
+    LogMessage("TODOHERE:B-B-Z");
 }
 
 ShipPreviewControl::~ShipPreviewControl()
@@ -212,6 +242,37 @@ void ShipPreviewControl::SetSelected(bool isSelected)
 void ShipPreviewControl::SetPreviewContent(ShipPreview const & shipPreview)
 {
     //
+    // Create bitmap with content
+    //
+
+    wxBitmap bitmap;
+    try
+    {
+        bitmap = WxHelpers::MakeBitmap(shipPreview.PreviewImage);
+    }
+    catch (...)
+    {
+        //
+        // Error, use 1x1 white bitmap
+        //
+
+        bitmap.Create(1, 1, 32);
+
+        wxPixelData<wxBitmap, wxAlphaPixelFormat> pixelData(bitmap);
+        if (!pixelData)
+        {
+            throw std::runtime_error("Cannot get bitmap pixel data");
+        }
+
+        auto writeIt = pixelData.GetPixels();
+        writeIt.Red() = 0xff;
+        writeIt.Green() = 0xff;
+        writeIt.Blue() = 0xff;
+        writeIt.Alpha() = 0x00;
+    }
+
+
+    //
     // Store ship metadata
     //
 
@@ -250,21 +311,23 @@ void ShipPreviewControl::SetPreviewContent(ShipPreview const & shipPreview)
     //
 
     SetPreviewContent(
-        shipPreview.PreviewImage,
+        bitmap,
         descriptionLabelText1,
         descriptionLabelText2);
 }
 
 void ShipPreviewControl::SetPreviewContent(
-    RgbaImageData const & image,
+    wxBitmap const & bitmap,
     std::string const & description1,
     std::string const & description2)
 {
     // Freeze updates until we're done
     wxWindowUpdateLocker locker(this);
 
-    SetImageContent(image);
+    // Set image
+    SetImageContent(bitmap);
 
+    // Set labels
     mDescriptionLabel1->SetLabel(description1);
     mDescriptionLabel2->SetLabel(description2);
 
@@ -282,38 +345,8 @@ void ShipPreviewControl::OnMouseDoubleClick(wxMouseEvent & /*event*/)
     this->Choose();
 }
 
-void ShipPreviewControl::SetImageContent(RgbaImageData const & imageData)
+void ShipPreviewControl::SetImageContent(wxBitmap const & bitmap)
 {
-    //
-    // Create bitmap with content
-    //
-
-    wxBitmap bitmap;
-    try
-    {
-        bitmap = WxHelpers::MakeBitmap(imageData);
-    }
-    catch (...)
-    {
-        //
-        // Error, use 1x1 white bitmap
-        //
-
-        bitmap.Create(1, 1, 32);
-
-        wxPixelData<wxBitmap, wxAlphaPixelFormat> pixelData(bitmap);
-        if (!pixelData)
-        {
-            throw std::runtime_error("Cannot get bitmap pixel data");
-        }
-
-        auto writeIt = pixelData.GetPixels();
-        writeIt.Red() = 0xff;
-        writeIt.Green() = 0xff;
-        writeIt.Blue() = 0xff;
-        writeIt.Alpha() = 0x00;
-    }
-
     //
     // Create new static bitmap
     //

@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "ShipPreviewPanel.h"
 
+#include "WxHelpers.h"
+
 #include <Game/ImageFileTools.h>
 #include <Game/ShipDefinitionFile.h>
 
@@ -26,8 +28,8 @@ ShipPreviewPanel::ShipPreviewPanel(
     , mPreviewPanelSizer(nullptr)
     , mPreviewControls()
     , mSelectedPreview(std::nullopt)
-    , mWaitImage(ImageFileTools::LoadImageRgbaLowerLeft(resourceLoader.GetBitmapFilepath("ship_preview_wait")))
-    , mErrorImage(ImageFileTools::LoadImageRgbaLowerLeft(resourceLoader.GetBitmapFilepath("ship_preview_error")))
+    , mWaitBitmap(WxHelpers::MakeBitmap(ImageFileTools::LoadImageRgbaLowerLeft(resourceLoader.GetBitmapFilepath("ship_preview_wait"))))
+    , mErrorBitmap(WxHelpers::MakeBitmap(ImageFileTools::LoadImageRgbaLowerLeft(resourceLoader.GetBitmapFilepath("ship_preview_error"))))
     , mCurrentlyCompletedDirectory()
     , mShipNameToPreviewIndex()
     // Preview Thread
@@ -235,20 +237,33 @@ void ShipPreviewPanel::OnResized(wxSizeEvent & event)
 
 void ShipPreviewPanel::OnPollQueueTimer(wxTimerEvent & /*event*/)
 {
-    // Lock queue
-    std::scoped_lock lock(mThreadToPanelMessageQueueMutex);
-
     // Process these many messages at a time
-    for (size_t i = 0; i < 2 && !mThreadToPanelMessageQueue.empty(); ++i)
+    for (size_t i = 0; i < 2; ++i)
     {
-        auto message = std::move(mThreadToPanelMessageQueue.front());
-        mThreadToPanelMessageQueue.pop_front();
+        // Poll a message
+        std::unique_ptr<ThreadToPanelMessage> message;
+        {
+            std::scoped_lock lock(mThreadToPanelMessageQueueMutex);
+
+            if (!mThreadToPanelMessageQueue.empty())
+            {
+                message = std::move(mThreadToPanelMessageQueue.front());
+                mThreadToPanelMessageQueue.pop_front();
+            }
+        }
+
+        if (!message)
+            break; // No message found
 
         switch (message->GetMessageType())
         {
             case ThreadToPanelMessage::MessageType::DirScanCompleted:
             {
+                LogMessage("ShipPreviewPanel::Poll: Processing DirScanCompleted...");
+
                 OnDirScanCompleted(message->GetScannedShipFilepaths());
+
+                LogMessage("ShipPreviewPanel::Poll: ...DirScanCompleted processed.");
 
                 break;
             }
@@ -260,8 +275,12 @@ void ShipPreviewPanel::OnPollQueueTimer(wxTimerEvent & /*event*/)
 
             case ThreadToPanelMessage::MessageType::PreviewReady:
             {
+                LogMessage("ShipPreviewPanel::Poll: Processing preview for ", message->GetShipIndex(), "...");
+
                 assert(message->GetShipIndex() < mPreviewControls.size());
                 mPreviewControls[message->GetShipIndex()]->SetPreviewContent(message->GetShipPreview());
+
+                LogMessage("ShipPreviewPanel::Poll: ...preview processed.");
 
                 break;
             }
@@ -269,7 +288,7 @@ void ShipPreviewPanel::OnPollQueueTimer(wxTimerEvent & /*event*/)
             case ThreadToPanelMessage::MessageType::PreviewError:
             {
                 assert(message->GetShipIndex() < mPreviewControls.size());
-                mPreviewControls[message->GetShipIndex()]->SetPreviewContent(mErrorImage, message->GetErrorMessage(), "");
+                mPreviewControls[message->GetShipIndex()]->SetPreviewContent(mErrorBitmap, message->GetErrorMessage(), "");
 
                 break;
             }
@@ -316,6 +335,8 @@ void ShipPreviewPanel::OnShipFileSelected(fsShipFileSelectedEvent & event)
 
 void ShipPreviewPanel::OnDirScanCompleted(std::vector<std::filesystem::path> const & scannedShipFilepaths)
 {
+    LogMessage("TODOHERE:A");
+
     //
     // Create new panel
     //
@@ -338,15 +359,21 @@ void ShipPreviewPanel::OnDirScanCompleted(std::vector<std::filesystem::path> con
 
         newPreviewPanelSizer = new wxGridSizer(CalculateTileColumns(), 0, 0);
 
+        LogMessage("TODOHERE:B-A");
+
         for (size_t shipIndex = 0; shipIndex < scannedShipFilepaths.size(); ++shipIndex)
         {
+            LogMessage("TODOHERE:B-B");
+
             auto shipPreviewControl = new ShipPreviewControl(
                 newPreviewPanel,
                 shipIndex,
                 scannedShipFilepaths[shipIndex],
                 PreviewVGap,
-                mWaitImage,
-                mErrorImage);
+                mWaitBitmap,
+                mErrorBitmap);
+
+            LogMessage("TODOHERE:B-C");
 
             newPreviewControls.push_back(shipPreviewControl);
 
@@ -360,7 +387,11 @@ void ShipPreviewPanel::OnDirScanCompleted(std::vector<std::filesystem::path> con
             newShipNameToPreviewIndex.push_back(Utils::ToLower(scannedShipFilepaths[shipIndex].filename().string()));
         }
 
+        LogMessage("TODOHERE:B-Y");
+
         newPreviewPanel->SetSizerAndFit(newPreviewPanelSizer);
+
+        LogMessage("TODOHERE:B-Z");
     }
     else
     {
@@ -385,6 +416,7 @@ void ShipPreviewPanel::OnDirScanCompleted(std::vector<std::filesystem::path> con
         newPreviewPanel->SetSizerAndFit(labelSizer);
     }
 
+    LogMessage("TODOHERE:C");
 
     //
     // Swap panels
@@ -399,6 +431,7 @@ void ShipPreviewPanel::OnDirScanCompleted(std::vector<std::filesystem::path> con
     mPreviewPanel = newPreviewPanel;
     mPreviewPanelSizer = newPreviewPanelSizer;
 
+    LogMessage("TODOHERE:G");
 
     //
     // Add panel to our sizer
@@ -409,7 +442,11 @@ void ShipPreviewPanel::OnDirScanCompleted(std::vector<std::filesystem::path> con
     GetSizer()->Add(mPreviewPanel, 1, wxEXPAND);
     GetSizer()->Layout();
 
+    LogMessage("TODOHERE:H");
+
     mPreviewPanel->Show();
+
+    LogMessage("TODOHERE:I");
 
 
     //
@@ -418,7 +455,11 @@ void ShipPreviewPanel::OnDirScanCompleted(std::vector<std::filesystem::path> con
 
     this->Scroll(-1, 0);
 
+    LogMessage("TODOHERE:W");
+
     this->FitInside();
+
+    LogMessage("TODOHERE:Z");
 }
 
 int ShipPreviewPanel::CalculateTileColumns()

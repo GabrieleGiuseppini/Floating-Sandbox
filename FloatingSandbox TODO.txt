@@ -462,8 +462,14 @@ Render:
 
 - Simulation Optimizations:
 
+	= ShipLoadDialog:
+		= ShipPreviewControl takes wxBitmap for wait and error icons
+		- Remove TODO Log's
+
 	- Lights perf improvement (*)
-		- Try with pre-calculated luminiscence function, for each light, as a function of square distance
+		- Try with pre-calculated luminiscence function, as a function of square distance
+			- Function only depends on game parameters; lives at ElectricalElements and is re-calc'd by
+			  ElectricalElements at each ElectricalElements::UpdateGameParameters() when params differ
 			- Point's total light = sum[for each light](interpolation of pre-calc'd lum function)
 		- Additional: see if making vector of lamp positions first - reused for each point - helps even further
 

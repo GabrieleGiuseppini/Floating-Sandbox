@@ -79,8 +79,8 @@ private:
 
     std::unique_ptr<wxTimer> mPollQueueTimer;
 
-    RgbaImageData mWaitImage;
-    RgbaImageData mErrorImage;
+    wxBitmap mWaitBitmap;
+    wxBitmap mErrorBitmap;
 
 private:
 
