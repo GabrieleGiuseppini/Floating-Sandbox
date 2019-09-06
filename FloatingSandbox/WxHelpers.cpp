@@ -7,6 +7,8 @@
 
 #include <wx/rawbmp.h>
 
+#include <stdexcept>
+
 wxBitmap WxHelpers::MakeBitmap(RgbaImageData const & imageData)
 {
     if (imageData.Size.Width == 0 || imageData.Size.Height == 0)
@@ -50,6 +52,27 @@ wxBitmap WxHelpers::MakeBitmap(RgbaImageData const & imageData)
         writeIt = rowStart;
         writeIt.OffsetY(pixelData, -1);
     }
+
+    return bitmap;
+}
+
+wxBitmap WxHelpers::MakeEmptyBitmap()
+{
+    wxBitmap bitmap;
+
+    bitmap.Create(1, 1, 32);
+
+    wxPixelData<wxBitmap, wxAlphaPixelFormat> pixelData(bitmap);
+    if (!pixelData)
+    {
+        throw std::runtime_error("Cannot get bitmap pixel data");
+    }
+
+    auto writeIt = pixelData.GetPixels();
+    writeIt.Red() = 0xff;
+    writeIt.Green() = 0xff;
+    writeIt.Blue() = 0xff;
+    writeIt.Alpha() = 0xff;
 
     return bitmap;
 }

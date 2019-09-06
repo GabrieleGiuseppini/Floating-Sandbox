@@ -219,6 +219,8 @@ private:
 
     void Choose(size_t infoTileIndex);
 
+    wxBitmap MakeBitmap(ShipPreview const & shipPreview) const;
+
     void RecalculateGeometry(
         wxSize clientSize,
         int nPreviews);

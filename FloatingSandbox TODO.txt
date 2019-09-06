@@ -300,7 +300,7 @@ Render:
 				+ Double-click
 			+ Try making panel a wxWindow instead (as it doesn't have child controls)
 			+ Nuke old code and rename ShipPreviewPanel 
-			= Fix long labels
+			+ Fix empty bitmap/exception
 			- Search:
 				- Test adding author
 				- Button for "next"

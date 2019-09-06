@@ -309,7 +309,7 @@ void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
 
                 assert(message->GetShipIndex() < mInfoTiles.size());
 
-                mInfoTiles[message->GetShipIndex()].Bitmap = WxHelpers::MakeBitmap(message->GetShipPreview().PreviewImage);
+                mInfoTiles[message->GetShipIndex()].Bitmap = MakeBitmap(message->GetShipPreview());
 
                 std::string descriptionLabelText1 = message->GetShipPreview().Metadata.ShipName;
                 if (!!message->GetShipPreview().Metadata.YearBuilt)
@@ -342,7 +342,8 @@ void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
                 // Set error image
                 assert(message->GetShipIndex() < mInfoTiles.size());
                 mInfoTiles[message->GetShipIndex()].Bitmap = mErrorBitmap;
-                mInfoTiles[message->GetShipIndex()].Description1 = message->GetErrorMessage();
+                mInfoTiles[message->GetShipIndex()].OriginalDescription1 = message->GetErrorMessage();
+                mInfoTiles[message->GetShipIndex()].Description1Size.reset();
 
                 doRefresh = true;
 
@@ -382,13 +383,17 @@ void ShipPreviewWindow::Select(size_t infoTileIndex)
         // Draw selection
         Refresh();
 
+        //
         // Fire selected event
+        //
+
         auto event = fsShipFileSelectedEvent(
             fsEVT_SHIP_FILE_SELECTED,
             this->GetId(),
             infoTileIndex,
             mInfoTiles[infoTileIndex].Metadata,
             mInfoTiles[infoTileIndex].ShipFilepath);
+
         ProcessWindowEvent(event);
     }
 }
@@ -398,7 +403,7 @@ void ShipPreviewWindow::Choose(size_t infoTileIndex)
     assert(infoTileIndex < mInfoTiles.size());
 
     //
-    // Fire our custom event
+    // Fire chosen event
     //
 
     auto event = fsShipFileChosenEvent(
@@ -407,6 +412,18 @@ void ShipPreviewWindow::Choose(size_t infoTileIndex)
         mInfoTiles[infoTileIndex].ShipFilepath);
 
     ProcessWindowEvent(event);
+}
+
+wxBitmap ShipPreviewWindow::MakeBitmap(ShipPreview const & shipPreview) const
+{
+    try
+    {
+        return WxHelpers::MakeBitmap(shipPreview.PreviewImage);
+    }
+    catch (...)
+    {
+        return WxHelpers::MakeEmptyBitmap();
+    }
 }
 
 void ShipPreviewWindow::RecalculateGeometry(

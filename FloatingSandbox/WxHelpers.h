@@ -15,5 +15,6 @@ class WxHelpers
 public:
 
     static wxBitmap MakeBitmap(RgbaImageData const & imageData);
+    static wxBitmap MakeEmptyBitmap();
 };
 
