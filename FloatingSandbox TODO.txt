@@ -294,10 +294,21 @@ Render:
 				+ But we have to deal with mouse events anyway
 			+ See if we need the mem DC and/or double-buffering 
 				+ Try with double-buffering off
-			- Mouse events
-				- Calc tile based off mouse coords, panel position, and vscroll
+			= Mouse events
+				+ Calc tile based off mouse coords, panel position, and vscroll
+				+ Single-click
+				- Double-click
 			- To try:
 				- Make panel a wxWindow instead (as it doesn't have child controls)
+			- Search: button for "next"
+
+			- Test:
+				- Dir changes
+					- With tree
+					- With dropdown
+					- With Home
+
+
 			- Nuke old code and rename ShipPreviewPanel 
 			- Remove TODO Log's
 			- Fix SS Arizona
@@ -316,7 +327,6 @@ Render:
 
 		- ShipLoadDialog:
 			- Ship preview database/cache
-			- Search: button for "next"
 
 		- Cached quantities (*)
 		

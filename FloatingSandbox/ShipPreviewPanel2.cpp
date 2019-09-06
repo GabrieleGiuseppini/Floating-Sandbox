@@ -26,6 +26,7 @@ ShipPreviewPanel2::ShipPreviewPanel2(
     , mVirtualHeight(0)
     , mCols(0)
     , mRows(0)
+    , mColumnWidth(0)
     , mExpandedHorizontalMargin(0)
     , mWaitBitmap(WxHelpers::MakeBitmap(ImageFileTools::LoadImageRgbaLowerLeft(resourceLoader.GetBitmapFilepath("ship_preview_wait"))))
     , mErrorBitmap(WxHelpers::MakeBitmap(ImageFileTools::LoadImageRgbaLowerLeft(resourceLoader.GetBitmapFilepath("ship_preview_error"))))
@@ -49,7 +50,7 @@ ShipPreviewPanel2::ShipPreviewPanel2(
     // Initialize rendering
     SetDoubleBuffered(true);
     SetBackgroundColour(wxColour("WHITE"));
-    mSelectionPen = wxPen(wxColor(0x00, 0x00, 0x00), 1, wxPENSTYLE_SOLID);
+    mSelectionPen = wxPen(wxColor(0x10, 0x10, 0x10), 1, wxPENSTYLE_SOLID);
     mDescriptionFont = wxFont(wxFontInfo(7));
     mFilenameFont = wxFont(wxFontInfo(7).Italic());
 
@@ -57,8 +58,12 @@ ShipPreviewPanel2::ShipPreviewPanel2(
     SetMinSize(wxSize(PanelWidthMin + 20, -1));
 
     // Register paint and resize
-    Bind(wxEVT_PAINT, &ShipPreviewPanel2::OnPaint, this, this->GetId());
-    Bind(wxEVT_SIZE, &ShipPreviewPanel2::OnResized, this, this->GetId());
+    Bind(wxEVT_PAINT, &ShipPreviewPanel2::OnPaint, this);
+    Bind(wxEVT_SIZE, &ShipPreviewPanel2::OnResized, this);
+
+    // Register mouse events
+    Bind(wxEVT_LEFT_DOWN, &ShipPreviewPanel2::OnMouseSingleClick, this);
+    Bind(wxEVT_LEFT_DCLICK, &ShipPreviewPanel2::OnMouseDoubleClick, this);
 
     // Setup poll queue timer
     mPollQueueTimer = std::make_unique<wxTimer>(this, wxID_ANY);
@@ -123,6 +128,7 @@ void ShipPreviewPanel2::SetDirectory(std::filesystem::path const & directoryPath
         // Clear state
         mInfoTiles.clear();
         mSelectedInfoTileIndex.reset();
+        mShipNameToInfoTileIndex.clear();
 
         // Tell thread (if it's running)
         mPanelToThreadMessageLock.lock();
@@ -134,26 +140,23 @@ void ShipPreviewPanel2::SetDirectory(std::filesystem::path const & directoryPath
 
 void ShipPreviewPanel2::Search(std::string const & shipName)
 {
-    // TODO
-    ////if (!mPreviewPanelSizer || shipName.empty())
-    ////    return;
+    std::string const shipNameLCase = Utils::ToLower(shipName);
 
-    ////std::string const shipNameLCase = Utils::ToLower(shipName);
+    //
+    // Find first ship that contains the requested name as a substring
+    //
 
-    //////
-    ////// Find first ship that contains the requested name as a substring
-    //////
+    std::optional<size_t> foundShipIndex;
+    for (size_t s = 0; s < mShipNameToInfoTileIndex.size(); ++s)
+    {
+        if (mShipNameToInfoTileIndex[s].find(shipNameLCase) != std::string::npos)
+        {
+            foundShipIndex = s;
+            break;
+        }
+    }
 
-    ////std::optional<size_t> foundShipIndex;
-    ////for (size_t s = 0; s < mShipNameToPreviewIndex.size(); ++s)
-    ////{
-    ////    if (mShipNameToPreviewIndex[s].find(shipNameLCase) != std::string::npos)
-    ////    {
-    ////        foundShipIndex = s;
-    ////        break;
-    ////    }
-    ////}
-
+    // TODOHERE
     ////if (!!foundShipIndex)
     ////{
     ////    //
@@ -220,6 +223,18 @@ void ShipPreviewPanel2::OnResized(wxSizeEvent & event)
     event.Skip();
 }
 
+void ShipPreviewPanel2::OnMouseSingleClick(wxMouseEvent & event)
+{
+    Select(MapMousePositionToInfoTile(event.GetPosition()));
+}
+
+void ShipPreviewPanel2::OnMouseDoubleClick(wxMouseEvent & event)
+{
+    // TODO
+
+    // TODO: fire chosen event
+}
+
 void ShipPreviewPanel2::OnPollQueueTimer(wxTimerEvent & /*event*/)
 {
     bool doRefresh = false;
@@ -257,7 +272,7 @@ void ShipPreviewPanel2::OnPollQueueTimer(wxTimerEvent & /*event*/)
                         mWaitBitmap,
                         "",
                         "",
-                        shipFilepath.filename().string());
+                        shipFilepath);
                 }
 
                 // Recalculate geometry
@@ -290,7 +305,8 @@ void ShipPreviewPanel2::OnPollQueueTimer(wxTimerEvent & /*event*/)
                 std::string descriptionLabelText1 = message->GetShipPreview().Metadata.ShipName;
                 if (!!message->GetShipPreview().Metadata.YearBuilt)
                     descriptionLabelText1 += " (" + *(message->GetShipPreview().Metadata.YearBuilt) + ")";
-                mInfoTiles[message->GetShipIndex()].Description1 = std::move(descriptionLabelText1);
+                mInfoTiles[message->GetShipIndex()].OriginalDescription1 = std::move(descriptionLabelText1);
+                mInfoTiles[message->GetShipIndex()].Description1Size.reset();
 
                 int metres = message->GetShipPreview().OriginalSize.Width;
                 int feet = static_cast<int>(round(3.28f * metres));
@@ -301,11 +317,19 @@ void ShipPreviewPanel2::OnPollQueueTimer(wxTimerEvent & /*event*/)
                     + "ft";
                 if (!!message->GetShipPreview().Metadata.Author)
                     descriptionLabelText2 += " - by " + *(message->GetShipPreview().Metadata.Author);
-                mInfoTiles[message->GetShipIndex()].Description2 = std::move(descriptionLabelText2);
+                mInfoTiles[message->GetShipIndex()].OriginalDescription2 = std::move(descriptionLabelText2);
+                mInfoTiles[message->GetShipIndex()].Description2Size.reset();
+
+                mInfoTiles[message->GetShipIndex()].Metadata.emplace(message->GetShipPreview().Metadata);
+
+                // Populate name->index map
+                mShipNameToInfoTileIndex.push_back(
+                    Utils::ToLower(mInfoTiles[message->GetShipIndex()].ShipFilepath.filename().string()));
+
+                // Remember we need to refresh now
+                doRefresh = true;
 
                 LogMessage("ShipPreviewPanel::Poll: ...preview processed.");
-
-                doRefresh = true;
 
                 break;
             }
@@ -340,33 +364,34 @@ void ShipPreviewPanel2::OnPollQueueTimer(wxTimerEvent & /*event*/)
     }
 }
 
-void ShipPreviewPanel2::OnShipFileSelected(fsShipFileSelectedEvent & event)
-{
-    LogMessage("ShipPreviewPanel::OnShipFileSelected(): processing...");
-
-    // TODO
-    //////
-    ////// Toggle selection
-    //////
-
-    ////if (!!mSelectedPreview)
-    ////{
-    ////    assert(*mSelectedPreview < mPreviewControls.size());
-    ////    mPreviewControls[*mSelectedPreview]->SetSelected(false);
-    ////}
-
-    ////assert(event.GetShipIndex() < mPreviewControls.size());
-    ////mPreviewControls[event.GetShipIndex()]->SetSelected(true);
-
-    ////mSelectedPreview = event.GetShipIndex();
-
-    // Propagate up
-    ProcessWindowEvent(event);
-
-    LogMessage("ShipPreviewPanel::OnShipFileSelected(): ...processing completed.");
-}
-
 /////////////////////////////////////////////////////////////////////////////////
+
+void ShipPreviewPanel2::Select(size_t infoTileIndex)
+{
+    if (infoTileIndex < mInfoTiles.size())
+    {
+        // Valid tile index
+
+        bool isDirty = (mSelectedInfoTileIndex != infoTileIndex);
+
+        mSelectedInfoTileIndex = infoTileIndex;
+
+        if (isDirty)
+        {
+            // Draw selection
+            Refresh();
+
+            // Fire selected event
+            auto event = fsShipFileSelectedEvent(
+                fsEVT_SHIP_FILE_SELECTED,
+                this->GetId(),
+                infoTileIndex,
+                mInfoTiles[infoTileIndex].Metadata,
+                mInfoTiles[infoTileIndex].ShipFilepath);
+            ProcessWindowEvent(event);
+        }
+    }
+}
 
 void ShipPreviewPanel2::RecalculateGeometry(
     wxSize clientSize,
@@ -383,8 +408,8 @@ void ShipPreviewPanel2::RecalculateGeometry(
     mExpandedHorizontalMargin = (clientSize.GetWidth() - mCols * InfoTileWidth) / mCols;
     assert(mExpandedHorizontalMargin >= HorizontalMarginMin);
 
-    // TODOTEST
-    LogMessage("RECALC TODOTEST: w=", clientSize.GetWidth(), " calcdW=", mCols * (InfoTileWidth + mExpandedHorizontalMargin));
+    // Calculate column width
+    mColumnWidth = InfoTileWidth + mExpandedHorizontalMargin;
 
     // Calculate number of rows
     mRows =
@@ -401,16 +426,56 @@ void ShipPreviewPanel2::RecalculateGeometry(
         mCols, " nRows=", mRows, " expHMargin=", mExpandedHorizontalMargin, " virtH=", mVirtualHeight);
 
     // Update all info tiles's rectangles
-    int const columnWidth = InfoTileWidth + mExpandedHorizontalMargin;
     for (int i = 0; i < mInfoTiles.size(); ++i)
     {
+        mInfoTiles[i].Description1Size.reset();
+        mInfoTiles[i].Description2Size.reset();
+        mInfoTiles[i].FilenameSize.reset();
+
         mInfoTiles[i].Col = i % mCols;
         mInfoTiles[i].Row = i / mCols;
 
-        int x = mInfoTiles[i].Col * columnWidth;
+        int x = mInfoTiles[i].Col * mColumnWidth;
         int y = mInfoTiles[i].Row * RowHeight;
-        mInfoTiles[i].RectVirtual = wxRect(x, y, columnWidth, RowHeight);
+        mInfoTiles[i].RectVirtual = wxRect(x, y, mColumnWidth, RowHeight);
     }
+}
+
+size_t ShipPreviewPanel2::MapMousePositionToInfoTile(wxPoint const & mousePosition)
+{
+    wxPoint virtualMouse = CalcUnscrolledPosition(mousePosition);
+
+    assert(mColumnWidth > 0);
+
+    int c = virtualMouse.x / mColumnWidth;
+    int r = virtualMouse.y / RowHeight;
+
+    return static_cast<size_t>(c + r * mCols);
+}
+
+std::tuple<wxString, wxSize> ShipPreviewPanel2::CalculateTextSizeWithCurrentFont(
+    wxDC & dc,
+    std::string const & text)
+{
+    //
+    // Calculate coordinates of text (x is relative to the text bounding rect, y is height),
+    // and eventually make ellipsis in text
+    //
+
+    wxString wxText(text);
+
+    wxSize textSize = dc.GetTextExtent(wxText);
+    while (textSize.GetWidth() > PreviewImageWidth
+        && wxText.Len() > 3)
+    {
+        // Make ellipsis
+        wxText.Truncate(wxText.Len() - 4).Append("...");
+
+        // Recalc width now
+        textSize = dc.GetTextExtent(wxText);
+    }
+
+    return std::make_tuple(wxText, textSize);
 }
 
 void ShipPreviewPanel2::Render(wxDC & dc)
@@ -423,10 +488,6 @@ void ShipPreviewPanel2::Render(wxDC & dc)
         wxRect visibleRectVirtual(GetClientSize());
         visibleRectVirtual.Offset(CalcUnscrolledPosition(visibleRectVirtual.GetTopLeft()));
 
-        // TODOTEST
-        LogMessage("VisibleRectVirtual: x=", visibleRectVirtual.GetX(), " y=", visibleRectVirtual.GetY(),
-            " w=", visibleRectVirtual.GetWidth(), " h=", visibleRectVirtual.GetHeight());
-
         // Calculate virtual origin - all virtual coordinates will need this subtracted from them in
         // order to become device coordinates
         wxPoint originVirtual = visibleRectVirtual.GetTopLeft();
@@ -437,14 +498,15 @@ void ShipPreviewPanel2::Render(wxDC & dc)
         // Process all info tiles
         for (size_t i = 0; i < mInfoTiles.size(); ++i)
         {
-            auto const & infoTile = mInfoTiles[i];
+            auto & infoTile = mInfoTiles[i];
 
             // Check if this info tile's virtual rect intersects the visible one
             if (visibleRectVirtual.Intersects(infoTile.RectVirtual))
             {
-                // TODOHERE
+                //
+                // Bitmap
+                //
 
-                // Draw bitmap
                 dc.DrawBitmap(
                     infoTile.Bitmap,
                     infoTile.RectVirtual.GetLeft() + infoTileContentLeftMargin
@@ -454,6 +516,91 @@ void ShipPreviewPanel2::Render(wxDC & dc)
                         + PreviewImageHeight - infoTile.Bitmap.GetHeight()
                         - originVirtual.y,
                     true);
+
+                //
+                // Description 1
+                //
+
+                dc.SetFont(mDescriptionFont);
+
+                if (!infoTile.Description1Size)
+                {
+                    auto [descr, size] = CalculateTextSizeWithCurrentFont(dc, infoTile.OriginalDescription1);
+                    infoTile.Description1 = descr;
+                    infoTile.Description1Size = size;
+                }
+
+                dc.DrawText(
+                    infoTile.Description1,
+                    infoTile.RectVirtual.GetLeft() + infoTileContentLeftMargin
+                        + PreviewImageWidth / 2 - infoTile.Description1Size->GetWidth() / 2
+                        - originVirtual.x,
+                    infoTile.RectVirtual.GetTop() + InfoTileInset
+                        + PreviewImageHeight + PreviewImageBottomMargin
+                        + DescriptionLabel1Height - infoTile.Description1Size->GetHeight()
+                        - originVirtual.y);
+
+                //
+                // Description 2
+                //
+
+                if (!infoTile.Description2Size)
+                {
+                    auto[descr, size] = CalculateTextSizeWithCurrentFont(dc, infoTile.OriginalDescription2);
+                    infoTile.Description2 = descr;
+                    infoTile.Description2Size = size;
+                }
+
+                dc.DrawText(
+                    infoTile.Description2,
+                    infoTile.RectVirtual.GetLeft() + infoTileContentLeftMargin
+                        + PreviewImageWidth / 2 - infoTile.Description2Size->GetWidth() / 2
+                        - originVirtual.x,
+                    infoTile.RectVirtual.GetTop() + InfoTileInset
+                        + PreviewImageHeight + PreviewImageBottomMargin
+                            + DescriptionLabel1Height + DescriptionLabel1BottomMargin
+                        + DescriptionLabel2Height - infoTile.Description2Size->GetHeight()
+                        - originVirtual.y);
+
+                //
+                // Filename
+                //
+
+                dc.SetFont(mFilenameFont);
+
+                if (!infoTile.FilenameSize)
+                {
+                    auto[descr, size] = CalculateTextSizeWithCurrentFont(dc, infoTile.ShipFilepath.filename().string());
+                    infoTile.Filename = descr;
+                    infoTile.FilenameSize = size;
+                }
+
+                dc.DrawText(
+                    infoTile.Filename,
+                    infoTile.RectVirtual.GetLeft() + infoTileContentLeftMargin
+                        + PreviewImageWidth / 2 - infoTile.FilenameSize->GetWidth() / 2
+                        - originVirtual.x,
+                    infoTile.RectVirtual.GetTop() + InfoTileInset
+                        + PreviewImageHeight + PreviewImageBottomMargin
+                            + DescriptionLabel1Height + DescriptionLabel1BottomMargin
+                            + DescriptionLabel2Height + DescriptionLabel2BottomMargin
+                        + FilenameLabelHeight - infoTile.FilenameSize->GetHeight()
+                            - originVirtual.y);
+
+                //
+                // Selection
+                //
+
+                if (i == mSelectedInfoTileIndex)
+                {
+                    dc.SetPen(mSelectionPen);
+                    dc.SetBrush(*wxTRANSPARENT_BRUSH);
+                    dc.DrawRectangle(
+                        infoTile.RectVirtual.GetLeft() + 2 - originVirtual.x,
+                        infoTile.RectVirtual.GetTop() + 2 - originVirtual.y,
+                        infoTile.RectVirtual.GetWidth() - 4,
+                        infoTile.RectVirtual.GetHeight() - 4);
+                }
             }
         }
     }

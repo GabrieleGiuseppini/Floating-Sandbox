@@ -139,13 +139,13 @@ public:
     static int constexpr PreviewImageWidth = 200;
     static int constexpr PreviewImageHeight = 150;
 
-    static int constexpr InfoTileBottomMargin = 4;
+    static int constexpr PreviewImageBottomMargin = 9;
 
-    static int constexpr DescriptionLabel1Height = 10; // TODO
-    static int constexpr DescriptionLabel1BottomMargin = 0;
-    static int constexpr DescriptionLabel2Height = 10; // TODO
-    static int constexpr DescriptionLabel2BottomMargin = 4;
-    static int constexpr FilenameLabelHeight = 10; // TODO
+    static int constexpr DescriptionLabel1Height = 7;
+    static int constexpr DescriptionLabel1BottomMargin = 6;
+    static int constexpr DescriptionLabel2Height = 7;
+    static int constexpr DescriptionLabel2BottomMargin = 12;
+    static int constexpr FilenameLabelHeight = 7;
     static int constexpr FilenameLabelBottomMargin = 0;
 
 
@@ -157,7 +157,7 @@ public:
     static int constexpr InfoTileHeight =
         InfoTileInset
         + PreviewImageHeight
-        + InfoTileBottomMargin
+        + PreviewImageBottomMargin
         + DescriptionLabel1Height
         + DescriptionLabel1BottomMargin
         + DescriptionLabel2Height
@@ -208,21 +208,31 @@ private:
 
     void OnPaint(wxPaintEvent & event);
     void OnResized(wxSizeEvent & event);
+    void OnMouseSingleClick(wxMouseEvent & event);
+    void OnMouseDoubleClick(wxMouseEvent & event);
     void OnPollQueueTimer(wxTimerEvent & event);
-    void OnShipFileSelected(fsShipFileSelectedEvent & event);
 
 private:
+
+    void Select(size_t infoTileIndex);
 
     void RecalculateGeometry(
         wxSize clientSize,
         int nPreviews);
 
-    void Render(wxDC& dc);
+    size_t MapMousePositionToInfoTile(wxPoint const & mousePosition);
+
+    std::tuple<wxString, wxSize> CalculateTextSizeWithCurrentFont(
+        wxDC & dc,
+        std::string const & text);
+
+    void Render(wxDC & dc);
 
     wxSize mClientSize;
     int mVirtualHeight;
     int mCols;
     int mRows;
+    int mColumnWidth;
     int mExpandedHorizontalMargin;
 
     wxPen mSelectionPen;
@@ -241,26 +251,32 @@ private:
     struct InfoTile
     {
         wxBitmap Bitmap;
+        std::string OriginalDescription1;
+        std::string OriginalDescription2;
+        std::filesystem::path ShipFilepath;
+
         wxString Description1;
+        std::optional<wxSize> Description1Size;
         wxString Description2;
+        std::optional<wxSize> Description2Size;
         wxString Filename;
+        std::optional<wxSize> FilenameSize;
 
         int Col;
         int Row;
         wxRect RectVirtual;
 
+        std::optional<ShipMetadata> Metadata;
+
         InfoTile(
             wxBitmap bitmap,
             std::string const & description1,
             std::string const & description2,
-            std::string const & filename)
+            std::filesystem::path const & shipFilepath)
             : Bitmap(bitmap)
-            , Description1(description1)
-            , Description2(description2)
-            , Filename(filename)
-            , Col(0)
-            , Row(0)
-            , RectVirtual()
+            , OriginalDescription1(description1)
+            , OriginalDescription2(description2)
+            , ShipFilepath(shipFilepath)
         {}
     };
 
