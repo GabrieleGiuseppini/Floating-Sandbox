@@ -36,9 +36,13 @@ wxBitmap WxHelpers::MakeBitmap(RgbaImageData const & imageData)
 
         for (int x = 0; x < imageData.Size.Width; ++x, ++readIt, ++writeIt)
         {
-            writeIt.Red() = readIt->r;
-            writeIt.Green() = readIt->g;
-            writeIt.Blue() = readIt->b;
+            // We have to pre-multiply r, g, and b by alpha,
+            // see https://forums.wxwidgets.org/viewtopic.php?f=1&t=46322,
+            // because Windows and Mac require the first term to be pre-computed,
+            // as it only takes care of the second
+            writeIt.Red() = readIt->r * readIt->a / 256;
+            writeIt.Green() = readIt->g * readIt->a / 256;
+            writeIt.Blue() = readIt->b * readIt->a / 256;
             writeIt.Alpha() = readIt->a;
         }
 

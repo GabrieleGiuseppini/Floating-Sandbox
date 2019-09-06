@@ -37,6 +37,8 @@ set  (FLOATING_SANDBOX_SOURCES
 	ShipPreviewControl.h
 	ShipPreviewPanel.cpp
 	ShipPreviewPanel.h
+	ShipPreviewPanel2.cpp
+	ShipPreviewPanel2.h
 	SliderControl.h
 	SoundController.cpp
 	SoundController.h

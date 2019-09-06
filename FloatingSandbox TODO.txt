@@ -287,6 +287,23 @@ Render:
 			+ Do also at Water
 			+ Post: 28.9/29.1
 
+		= ShipLoadDialog:
+			! Do own paint, no controls
+			+ Replace paint with overriding OnDraw(), // https://docs.wxwidgets.org/3.0/classwx_scrolled.html
+			  which provides scrolled coords
+				+ But we have to deal with mouse events anyway
+			+ See if we need the mem DC and/or double-buffering 
+				+ Try with double-buffering off
+			- Mouse events
+				- Calc tile based off mouse coords, panel position, and vscroll
+			- To try:
+				- Make panel a wxWindow instead (as it doesn't have child controls)
+			- Nuke old code and rename ShipPreviewPanel 
+			- Remove TODO Log's
+			- Fix SS Arizona
+
+		- Lava textures(see Pac0's message)
+
 		- Lights perf improvement (*)
 
 		- Adjustable zoom increments
@@ -461,10 +478,6 @@ Render:
 			- No fullscreen mode
 
 - Simulation Optimizations:
-
-	= ShipLoadDialog:
-		= ShipPreviewControl takes wxBitmap for wait and error icons
-		- Remove TODO Log's
 
 	- Lights perf improvement (*)
 		- Try with pre-calculated luminiscence function, as a function of square distance

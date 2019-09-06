@@ -68,8 +68,9 @@ ShipLoadDialog::ShipLoadDialog(
 
         // Preview
 
-        mShipPreviewPanel = new ShipPreviewPanel(this, resourceLoader);
+        mShipPreviewPanel = new ShipPreviewPanel2(this, resourceLoader);
 
+        mShipPreviewPanel->SetMinSize(wxSize(ShipPreviewPanel2::CalculateMinWidthForColumns(3) + 40, -1));
         mShipPreviewPanel->Bind(fsEVT_SHIP_FILE_SELECTED, &ShipLoadDialog::OnShipFileSelected, this);
         mShipPreviewPanel->Bind(fsEVT_SHIP_FILE_CHOSEN, &ShipLoadDialog::OnShipFileChosen, this);
 
@@ -223,9 +224,8 @@ ShipLoadDialog::ShipLoadDialog(
 
     SetSizerAndFit(vSizer);
 
-    // Size so that we have 3 columns of previews right away
-    constexpr int Width = MinDirCtrlWidth + ShipPreviewPanel::MinPreviewWidth * 3 + 20;
-    SetSize(wxSize(Width, 600 * Width / 800));
+    int const TotalWidth = MinDirCtrlWidth + mShipPreviewPanel->GetMinWidth() + 10;
+    SetSize(wxSize(TotalWidth, 600 * TotalWidth / 800));
 
     Centre();
 }
