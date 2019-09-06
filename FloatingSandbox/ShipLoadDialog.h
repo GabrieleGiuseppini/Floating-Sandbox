@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include "ShipPreviewPanel2.h"
+#include "ShipPreviewWindow.h"
 #include "UIPreferencesManager.h"
 
 #include <Game/ResourceLoader.h>
@@ -67,7 +67,7 @@ private:
     std::shared_ptr<UIPreferencesManager> mUIPreferencesManager;
 
     wxGenericDirCtrl * mDirCtrl;
-    ShipPreviewPanel2 * mShipPreviewPanel;
+    ShipPreviewWindow * mShipPreviewWindow;
     wxComboBox * mRecentDirectoriesComboBox;
     wxTextCtrl * mShipSearchTextCtrl;
     wxButton * mInfoButton;

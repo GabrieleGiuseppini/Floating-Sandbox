@@ -298,12 +298,13 @@ Render:
 				+ Calc tile based off mouse coords, panel position, and vscroll
 				+ Single-click
 				+ Double-click
-			- To try:
-				- Make panel a wxWindow instead (as it doesn't have child controls)
+			+ Try making panel a wxWindow instead (as it doesn't have child controls)
+			+ Nuke old code and rename ShipPreviewPanel 
+			= Fix long labels
 			- Search:
-				- Button for "next"
 				- Test adding author
-			- Nuke old code and rename ShipPreviewPanel 
+				- Button for "next"
+					- Do icon
 			- Remove TODO Log's
 			- Fix SS Arizona
 			- Test:
@@ -311,8 +312,13 @@ Render:
 					- With tree
 					- With dropdown
 					- With Home
+			- Merge into 1.13
+			- Update changes.txt
 
 		- Lava textures(see Pac0's message)
+			- Update changes.txt
+
+		- Benchmark vectorized spring lengths (see Moleskine)
 
 		- Lights perf improvement (*)
 

@@ -122,11 +122,11 @@ private:
 wxDECLARE_EVENT(fsEVT_SHIP_FILE_CHOSEN, fsShipFileChosenEvent);
 
 /*
- * This panel populates itself with previews of all ships found in a directory.
+ * This window populates itself with previews of all ships found in a directory.
  * The search for ships and extraction of previews is done by a separate thread,
  * so to not interfere with the UI message pump.
  */
-class ShipPreviewPanel2 : public wxScrolled<wxPanel>
+class ShipPreviewWindow : public wxScrolled<wxWindow>
 {
 public:
 
@@ -191,11 +191,11 @@ public:
 
 public:
 
-    ShipPreviewPanel2(
+    ShipPreviewWindow(
         wxWindow* parent,
         ResourceLoader const & resourceLoader);
 
-	virtual ~ShipPreviewPanel2();
+	virtual ~ShipPreviewWindow();
 
     void OnOpen();
     void OnClose();

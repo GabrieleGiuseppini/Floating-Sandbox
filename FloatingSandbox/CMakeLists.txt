@@ -33,12 +33,8 @@ set  (FLOATING_SANDBOX_SOURCES
 	ShipDescriptionDialog.h
 	ShipLoadDialog.cpp
 	ShipLoadDialog.h
-	ShipPreviewControl.cpp
-	ShipPreviewControl.h
-	ShipPreviewPanel.cpp
-	ShipPreviewPanel.h
-	ShipPreviewPanel2.cpp
-	ShipPreviewPanel2.h
+	ShipPreviewWindow.cpp
+	ShipPreviewWindow.h
 	SliderControl.h
 	SoundController.cpp
 	SoundController.h

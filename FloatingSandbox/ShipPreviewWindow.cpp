@@ -3,7 +3,7 @@
 * Created:				2019-09-03
 * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
-#include "ShipPreviewPanel2.h"
+#include "ShipPreviewWindow.h"
 
 #include "WxHelpers.h"
 
@@ -13,10 +13,13 @@
 #include <GameCore/GameException.h>
 #include <GameCore/Log.h>
 
-ShipPreviewPanel2::ShipPreviewPanel2(
+wxDEFINE_EVENT(fsEVT_SHIP_FILE_SELECTED, fsShipFileSelectedEvent);
+wxDEFINE_EVENT(fsEVT_SHIP_FILE_CHOSEN, fsShipFileChosenEvent);
+
+ShipPreviewWindow::ShipPreviewWindow(
     wxWindow* parent,
     ResourceLoader const & resourceLoader)
-    : wxScrolled<wxPanel>(
+    : wxScrolled<wxWindow>(
         parent,
         wxID_ANY,
         wxDefaultPosition,
@@ -58,19 +61,19 @@ ShipPreviewPanel2::ShipPreviewPanel2(
     SetMinSize(wxSize(PanelWidthMin + 20, -1));
 
     // Register paint and resize
-    Bind(wxEVT_PAINT, &ShipPreviewPanel2::OnPaint, this);
-    Bind(wxEVT_SIZE, &ShipPreviewPanel2::OnResized, this);
+    Bind(wxEVT_PAINT, &ShipPreviewWindow::OnPaint, this);
+    Bind(wxEVT_SIZE, &ShipPreviewWindow::OnResized, this);
 
     // Register mouse events
-    Bind(wxEVT_LEFT_DOWN, &ShipPreviewPanel2::OnMouseSingleClick, this);
-    Bind(wxEVT_LEFT_DCLICK, &ShipPreviewPanel2::OnMouseDoubleClick, this);
+    Bind(wxEVT_LEFT_DOWN, &ShipPreviewWindow::OnMouseSingleClick, this);
+    Bind(wxEVT_LEFT_DCLICK, &ShipPreviewWindow::OnMouseDoubleClick, this);
 
     // Setup poll queue timer
     mPollQueueTimer = std::make_unique<wxTimer>(this, wxID_ANY);
-    Bind(wxEVT_TIMER, &ShipPreviewPanel2::OnPollQueueTimer, this, mPollQueueTimer->GetId());
+    Bind(wxEVT_TIMER, &ShipPreviewWindow::OnPollQueueTimer, this, mPollQueueTimer->GetId());
 }
 
-ShipPreviewPanel2::~ShipPreviewPanel2()
+ShipPreviewWindow::~ShipPreviewWindow()
 {
     // Stop thread
     if (mPreviewThread.joinable())
@@ -79,7 +82,7 @@ ShipPreviewPanel2::~ShipPreviewPanel2()
     }
 }
 
-void ShipPreviewPanel2::OnOpen()
+void ShipPreviewWindow::OnOpen()
 {
     assert(!mSelectedInfoTileIndex);
 
@@ -89,13 +92,13 @@ void ShipPreviewPanel2::OnOpen()
 
     // Start thread
     assert(!mPreviewThread.joinable());
-    mPreviewThread = std::thread(&ShipPreviewPanel2::RunPreviewThread, this);
+    mPreviewThread = std::thread(&ShipPreviewWindow::RunPreviewThread, this);
 
     // Start queue poll timer
     mPollQueueTimer->Start(50, false);
 }
 
-void ShipPreviewPanel2::OnClose()
+void ShipPreviewWindow::OnClose()
 {
     // Stop queue poll timer
     mPollQueueTimer->Stop();
@@ -114,7 +117,7 @@ void ShipPreviewPanel2::OnClose()
     mSelectedInfoTileIndex.reset();
 }
 
-void ShipPreviewPanel2::SetDirectory(std::filesystem::path const & directoryPath)
+void ShipPreviewWindow::SetDirectory(std::filesystem::path const & directoryPath)
 {
     // Check if different than current
     if (directoryPath != mCurrentlyCompletedDirectory)
@@ -138,7 +141,7 @@ void ShipPreviewPanel2::SetDirectory(std::filesystem::path const & directoryPath
     }
 }
 
-bool ShipPreviewPanel2::Search(std::string const & shipName)
+bool ShipPreviewWindow::Search(std::string const & shipName)
 {
     assert(!shipName.empty());
 
@@ -189,7 +192,7 @@ bool ShipPreviewPanel2::Search(std::string const & shipName)
     return foundShipIndex.has_value();
 }
 
-void ShipPreviewPanel2::ChooseSelected()
+void ShipPreviewWindow::ChooseSelected()
 {
     if (!!mSelectedInfoTileIndex)
     {
@@ -197,13 +200,13 @@ void ShipPreviewPanel2::ChooseSelected()
     }
 }
 
-void ShipPreviewPanel2::OnPaint(wxPaintEvent & /*event*/)
+void ShipPreviewWindow::OnPaint(wxPaintEvent & /*event*/)
 {
     wxPaintDC dc(this);
     Render(dc);
 }
 
-void ShipPreviewPanel2::OnResized(wxSizeEvent & event)
+void ShipPreviewWindow::OnResized(wxSizeEvent & event)
 {
     auto clientSize = GetClientSize();
 
@@ -221,7 +224,7 @@ void ShipPreviewPanel2::OnResized(wxSizeEvent & event)
     event.Skip();
 }
 
-void ShipPreviewPanel2::OnMouseSingleClick(wxMouseEvent & event)
+void ShipPreviewWindow::OnMouseSingleClick(wxMouseEvent & event)
 {
     auto selectedInfoTileIndex = MapMousePositionToInfoTile(event.GetPosition());
     if (selectedInfoTileIndex < mInfoTiles.size())
@@ -230,7 +233,7 @@ void ShipPreviewPanel2::OnMouseSingleClick(wxMouseEvent & event)
     }
 }
 
-void ShipPreviewPanel2::OnMouseDoubleClick(wxMouseEvent & event)
+void ShipPreviewWindow::OnMouseDoubleClick(wxMouseEvent & event)
 {
     auto selectedInfoTileIndex = MapMousePositionToInfoTile(event.GetPosition());
     if (selectedInfoTileIndex < mInfoTiles.size())
@@ -239,7 +242,7 @@ void ShipPreviewPanel2::OnMouseDoubleClick(wxMouseEvent & event)
     }
 }
 
-void ShipPreviewPanel2::OnPollQueueTimer(wxTimerEvent & /*event*/)
+void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
 {
     bool doRefresh = false;
 
@@ -277,6 +280,10 @@ void ShipPreviewPanel2::OnPollQueueTimer(wxTimerEvent & /*event*/)
                         "",
                         "",
                         shipFilepath);
+
+                    // Populate name->index map
+                    mShipNameToInfoTileIndex.push_back(
+                        Utils::ToLower(shipFilepath.filename().string()));
                 }
 
                 // Recalculate geometry
@@ -296,8 +303,6 @@ void ShipPreviewPanel2::OnPollQueueTimer(wxTimerEvent & /*event*/)
 
             case ThreadToPanelMessage::MessageType::PreviewReady:
             {
-                LogMessage("ShipPreviewPanel::Poll: Processing preview for ", message->GetShipIndex(), "...");
-
                 //
                 // Populate info tile
                 //
@@ -326,14 +331,8 @@ void ShipPreviewPanel2::OnPollQueueTimer(wxTimerEvent & /*event*/)
 
                 mInfoTiles[message->GetShipIndex()].Metadata.emplace(message->GetShipPreview().Metadata);
 
-                // Populate name->index map
-                mShipNameToInfoTileIndex.push_back(
-                    Utils::ToLower(mInfoTiles[message->GetShipIndex()].ShipFilepath.filename().string()));
-
                 // Remember we need to refresh now
                 doRefresh = true;
-
-                LogMessage("ShipPreviewPanel::Poll: ...preview processed.");
 
                 break;
             }
@@ -370,7 +369,7 @@ void ShipPreviewPanel2::OnPollQueueTimer(wxTimerEvent & /*event*/)
 
 /////////////////////////////////////////////////////////////////////////////////
 
-void ShipPreviewPanel2::Select(size_t infoTileIndex)
+void ShipPreviewWindow::Select(size_t infoTileIndex)
 {
     assert(infoTileIndex < mInfoTiles.size());
 
@@ -394,7 +393,7 @@ void ShipPreviewPanel2::Select(size_t infoTileIndex)
     }
 }
 
-void ShipPreviewPanel2::Choose(size_t infoTileIndex)
+void ShipPreviewWindow::Choose(size_t infoTileIndex)
 {
     assert(infoTileIndex < mInfoTiles.size());
 
@@ -410,7 +409,7 @@ void ShipPreviewPanel2::Choose(size_t infoTileIndex)
     ProcessWindowEvent(event);
 }
 
-void ShipPreviewPanel2::RecalculateGeometry(
+void ShipPreviewWindow::RecalculateGeometry(
     wxSize clientSize,
     int nPreviews)
 {
@@ -458,7 +457,7 @@ void ShipPreviewPanel2::RecalculateGeometry(
     }
 }
 
-size_t ShipPreviewPanel2::MapMousePositionToInfoTile(wxPoint const & mousePosition)
+size_t ShipPreviewWindow::MapMousePositionToInfoTile(wxPoint const & mousePosition)
 {
     wxPoint virtualMouse = CalcUnscrolledPosition(mousePosition);
 
@@ -470,7 +469,7 @@ size_t ShipPreviewPanel2::MapMousePositionToInfoTile(wxPoint const & mousePositi
     return static_cast<size_t>(c + r * mCols);
 }
 
-wxRect ShipPreviewPanel2::GetVisibleRectVirtual() const
+wxRect ShipPreviewWindow::GetVisibleRectVirtual() const
 {
     wxRect visibleRectVirtual(GetClientSize());
     visibleRectVirtual.Offset(CalcUnscrolledPosition(visibleRectVirtual.GetTopLeft()));
@@ -478,7 +477,7 @@ wxRect ShipPreviewPanel2::GetVisibleRectVirtual() const
     return visibleRectVirtual;
 }
 
-std::tuple<wxString, wxSize> ShipPreviewPanel2::CalculateTextSizeWithCurrentFont(
+std::tuple<wxString, wxSize> ShipPreviewWindow::CalculateTextSizeWithCurrentFont(
     wxDC & dc,
     std::string const & text)
 {
@@ -503,7 +502,7 @@ std::tuple<wxString, wxSize> ShipPreviewPanel2::CalculateTextSizeWithCurrentFont
     return std::make_tuple(wxText, textSize);
 }
 
-void ShipPreviewPanel2::Render(wxDC & dc)
+void ShipPreviewWindow::Render(wxDC & dc)
 {
     dc.Clear();
 
@@ -632,7 +631,7 @@ void ShipPreviewPanel2::Render(wxDC & dc)
 
 /////////////////////////////////////////////////////////////////////////////////
 
-void ShipPreviewPanel2::ShutdownPreviewThread()
+void ShipPreviewWindow::ShutdownPreviewThread()
 {
     mPanelToThreadMessageLock.lock();
     mPanelToThreadMessage.reset(new PanelToThreadMessage(PanelToThreadMessage::MakeExitMessage()));
@@ -647,7 +646,7 @@ void ShipPreviewPanel2::ShutdownPreviewThread()
 // Preview Thread
 ///////////////////////////////////////////////////////////////////////////////////
 
-void ShipPreviewPanel2::RunPreviewThread()
+void ShipPreviewWindow::RunPreviewThread()
 {
     LogMessage("PreviewThread::Enter");
 
@@ -718,7 +717,7 @@ void ShipPreviewPanel2::RunPreviewThread()
     LogMessage("PreviewThread::Exit");
 }
 
-void ShipPreviewPanel2::ScanDirectory(std::filesystem::path const & directoryPath)
+void ShipPreviewWindow::ScanDirectory(std::filesystem::path const & directoryPath)
 {
     LogMessage("PreviewThread::ScanDirectory(", directoryPath.string(), "): processing...");
 
@@ -827,7 +826,7 @@ void ShipPreviewPanel2::ScanDirectory(std::filesystem::path const & directoryPat
     LogMessage("PreviewThread::ScanDirectory(): ...preview completed.");
 }
 
-void ShipPreviewPanel2::QueueThreadToPanelMessage(std::unique_ptr<ThreadToPanelMessage> message)
+void ShipPreviewWindow::QueueThreadToPanelMessage(std::unique_ptr<ThreadToPanelMessage> message)
 {
     // Lock queue
     std::scoped_lock lock(mThreadToPanelMessageQueueMutex);

@@ -68,13 +68,13 @@ ShipLoadDialog::ShipLoadDialog(
 
         // Preview
 
-        mShipPreviewPanel = new ShipPreviewPanel2(this, resourceLoader);
+        mShipPreviewWindow = new ShipPreviewWindow(this, resourceLoader);
 
-        mShipPreviewPanel->SetMinSize(wxSize(ShipPreviewPanel2::CalculateMinWidthForColumns(3) + 40, -1));
-        mShipPreviewPanel->Bind(fsEVT_SHIP_FILE_SELECTED, &ShipLoadDialog::OnShipFileSelected, this);
-        mShipPreviewPanel->Bind(fsEVT_SHIP_FILE_CHOSEN, &ShipLoadDialog::OnShipFileChosen, this);
+        mShipPreviewWindow->SetMinSize(wxSize(ShipPreviewWindow::CalculateMinWidthForColumns(3) + 40, -1));
+        mShipPreviewWindow->Bind(fsEVT_SHIP_FILE_SELECTED, &ShipLoadDialog::OnShipFileSelected, this);
+        mShipPreviewWindow->Bind(fsEVT_SHIP_FILE_CHOSEN, &ShipLoadDialog::OnShipFileChosen, this);
 
-        hSizer1->Add(mShipPreviewPanel, 1, wxALIGN_TOP | wxEXPAND);
+        hSizer1->Add(mShipPreviewWindow, 1, wxALIGN_TOP | wxEXPAND);
 
 
         vSizer->Add(hSizer1, 1, wxEXPAND);
@@ -224,7 +224,7 @@ ShipLoadDialog::ShipLoadDialog(
 
     SetSizerAndFit(vSizer);
 
-    int const TotalWidth = MinDirCtrlWidth + mShipPreviewPanel->GetMinWidth() + 10;
+    int const TotalWidth = MinDirCtrlWidth + mShipPreviewWindow->GetMinWidth() + 10;
     SetSize(wxSize(TotalWidth, 600 * TotalWidth / 800));
 
     Centre();
@@ -263,7 +263,7 @@ int ShipLoadDialog::ShowModal()
         auto dir = mRecentDirectoriesComboBox->GetStrings().front();
         mDirCtrl->SetPath(dir);
         mRecentDirectoriesComboBox->SetValue(dir);
-        mShipPreviewPanel->SetDirectory(dir.ToStdString());
+        mShipPreviewWindow->SetDirectory(dir.ToStdString());
     }
 
 
@@ -271,11 +271,11 @@ int ShipLoadDialog::ShowModal()
     // Initialize preview panel
     //
 
-    mShipPreviewPanel->OnOpen();
+    mShipPreviewWindow->OnOpen();
 
     auto selectedPath = mDirCtrl->GetPath();
     if (!selectedPath.IsEmpty())
-        mShipPreviewPanel->SetDirectory(std::filesystem::path(selectedPath.ToStdString()));
+        mShipPreviewWindow->SetDirectory(std::filesystem::path(selectedPath.ToStdString()));
 
     // Run modal
     return wxDialog::ShowModal();
@@ -322,13 +322,13 @@ void ShipLoadDialog::OnShipSearchTextCtrlText(wxCommandEvent & event)
 {
     if (!event.GetString().empty())
     {
-        mShipPreviewPanel->Search(event.GetString().ToStdString());
+        mShipPreviewWindow->Search(event.GetString().ToStdString());
     }
 }
 
 void ShipLoadDialog::OnShipSearchTextCtrlTextEnter(wxCommandEvent & /*event*/)
 {
-    mShipPreviewPanel->ChooseSelected();
+    mShipPreviewWindow->ChooseSelected();
 }
 
 void ShipLoadDialog::OnHomeDirButtonClicked(wxCommandEvent & /*event*/)
@@ -392,7 +392,7 @@ void ShipLoadDialog::OnDirectorySelected(std::filesystem::path directoryPath)
     mShipSearchTextCtrl->Clear();
 
     // Propagate to preview panel
-    mShipPreviewPanel->SetDirectory(directoryPath);
+    mShipPreviewWindow->SetDirectory(directoryPath);
 }
 
 void ShipLoadDialog::OnShipFileChosen(std::filesystem::path shipFilepath)
@@ -422,7 +422,7 @@ void ShipLoadDialog::EndModal(int retCode)
 {
     LogMessage("ShipLoadDialog::EndModal(", retCode, ")");
 
-    mShipPreviewPanel->OnClose();
+    mShipPreviewWindow->OnClose();
 
     wxDialog::EndModal(retCode);
 }
