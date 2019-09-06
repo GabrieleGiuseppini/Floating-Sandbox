@@ -320,12 +320,15 @@ void ShipLoadDialog::OnRecentDirectorySelected(wxCommandEvent & /*event*/)
 
 void ShipLoadDialog::OnShipSearchTextCtrlText(wxCommandEvent & event)
 {
-    mShipPreviewPanel->Search(event.GetString().ToStdString());
+    if (!event.GetString().empty())
+    {
+        mShipPreviewPanel->Search(event.GetString().ToStdString());
+    }
 }
 
 void ShipLoadDialog::OnShipSearchTextCtrlTextEnter(wxCommandEvent & /*event*/)
 {
-    mShipPreviewPanel->ChooseSearched();
+    mShipPreviewPanel->ChooseSelected();
 }
 
 void ShipLoadDialog::OnHomeDirButtonClicked(wxCommandEvent & /*event*/)

@@ -203,7 +203,7 @@ public:
     void SetDirectory(std::filesystem::path const & directoryPath);
 
     bool Search(std::string const & shipName);
-    void ChooseSearched();
+    void ChooseSelected();
 
 private:
 
@@ -216,6 +216,8 @@ private:
 private:
 
     void Select(size_t infoTileIndex);
+
+    void Choose(size_t infoTileIndex);
 
     void RecalculateGeometry(
         wxSize clientSize,

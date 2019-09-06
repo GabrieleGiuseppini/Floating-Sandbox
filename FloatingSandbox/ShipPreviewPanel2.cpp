@@ -140,6 +140,8 @@ void ShipPreviewPanel2::SetDirectory(std::filesystem::path const & directoryPath
 
 bool ShipPreviewPanel2::Search(std::string const & shipName)
 {
+    assert(!shipName.empty());
+
     std::string const shipNameLCase = Utils::ToLower(shipName);
 
     //
@@ -187,18 +189,15 @@ bool ShipPreviewPanel2::Search(std::string const & shipName)
     return foundShipIndex.has_value();
 }
 
-void ShipPreviewPanel2::ChooseSearched()
+void ShipPreviewPanel2::ChooseSelected()
 {
-    // TODO
-    ////if (!!mSelectedPreview)
-    ////{
-    ////    assert(*mSelectedPreview < mPreviewControls.size());
-
-    ////    mPreviewControls[*mSelectedPreview]->Choose();
-    ////}
+    if (!!mSelectedInfoTileIndex)
+    {
+        Choose(*mSelectedInfoTileIndex);
+    }
 }
 
-void ShipPreviewPanel2::OnPaint(wxPaintEvent & event)
+void ShipPreviewPanel2::OnPaint(wxPaintEvent & /*event*/)
 {
     wxPaintDC dc(this);
     Render(dc);
@@ -224,14 +223,20 @@ void ShipPreviewPanel2::OnResized(wxSizeEvent & event)
 
 void ShipPreviewPanel2::OnMouseSingleClick(wxMouseEvent & event)
 {
-    Select(MapMousePositionToInfoTile(event.GetPosition()));
+    auto selectedInfoTileIndex = MapMousePositionToInfoTile(event.GetPosition());
+    if (selectedInfoTileIndex < mInfoTiles.size())
+    {
+        Select(selectedInfoTileIndex);
+    }
 }
 
 void ShipPreviewPanel2::OnMouseDoubleClick(wxMouseEvent & event)
 {
-    // TODO
-
-    // TODO: fire chosen event
+    auto selectedInfoTileIndex = MapMousePositionToInfoTile(event.GetPosition());
+    if (selectedInfoTileIndex < mInfoTiles.size())
+    {
+        Choose(selectedInfoTileIndex);
+    }
 }
 
 void ShipPreviewPanel2::OnPollQueueTimer(wxTimerEvent & /*event*/)
@@ -367,29 +372,42 @@ void ShipPreviewPanel2::OnPollQueueTimer(wxTimerEvent & /*event*/)
 
 void ShipPreviewPanel2::Select(size_t infoTileIndex)
 {
-    if (infoTileIndex < mInfoTiles.size())
+    assert(infoTileIndex < mInfoTiles.size());
+
+    bool isDirty = (mSelectedInfoTileIndex != infoTileIndex);
+
+    mSelectedInfoTileIndex = infoTileIndex;
+
+    if (isDirty)
     {
-        // Valid tile index
+        // Draw selection
+        Refresh();
 
-        bool isDirty = (mSelectedInfoTileIndex != infoTileIndex);
-
-        mSelectedInfoTileIndex = infoTileIndex;
-
-        if (isDirty)
-        {
-            // Draw selection
-            Refresh();
-
-            // Fire selected event
-            auto event = fsShipFileSelectedEvent(
-                fsEVT_SHIP_FILE_SELECTED,
-                this->GetId(),
-                infoTileIndex,
-                mInfoTiles[infoTileIndex].Metadata,
-                mInfoTiles[infoTileIndex].ShipFilepath);
-            ProcessWindowEvent(event);
-        }
+        // Fire selected event
+        auto event = fsShipFileSelectedEvent(
+            fsEVT_SHIP_FILE_SELECTED,
+            this->GetId(),
+            infoTileIndex,
+            mInfoTiles[infoTileIndex].Metadata,
+            mInfoTiles[infoTileIndex].ShipFilepath);
+        ProcessWindowEvent(event);
     }
+}
+
+void ShipPreviewPanel2::Choose(size_t infoTileIndex)
+{
+    assert(infoTileIndex < mInfoTiles.size());
+
+    //
+    // Fire our custom event
+    //
+
+    auto event = fsShipFileChosenEvent(
+        fsEVT_SHIP_FILE_CHOSEN,
+        this->GetId(),
+        mInfoTiles[infoTileIndex].ShipFilepath);
+
+    ProcessWindowEvent(event);
 }
 
 void ShipPreviewPanel2::RecalculateGeometry(
