@@ -169,6 +169,7 @@ public:
     static int constexpr HorizontalMarginMin = 4;
     static int constexpr VerticalMargin = 8;
 
+
     //
     // Grid
     //
@@ -201,7 +202,7 @@ public:
 
     void SetDirectory(std::filesystem::path const & directoryPath);
 
-    void Search(std::string const & shipName);
+    bool Search(std::string const & shipName);
     void ChooseSearched();
 
 private:
@@ -221,6 +222,8 @@ private:
         int nPreviews);
 
     size_t MapMousePositionToInfoTile(wxPoint const & mousePosition);
+
+    wxRect GetVisibleRectVirtual() const;
 
     std::tuple<wxString, wxSize> CalculateTextSizeWithCurrentFont(
         wxDC & dc,

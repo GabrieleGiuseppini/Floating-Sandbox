@@ -45,7 +45,7 @@ ShipPreviewPanel2::ShipPreviewPanel2(
     , mThreadToPanelMessageQueue()
     , mThreadToPanelMessageQueueMutex()
 {
-    SetScrollRate(5, 5);
+    SetScrollRate(0, 20);
 
     // Initialize rendering
     SetDoubleBuffered(true);
@@ -138,7 +138,7 @@ void ShipPreviewPanel2::SetDirectory(std::filesystem::path const & directoryPath
     }
 }
 
-void ShipPreviewPanel2::Search(std::string const & shipName)
+bool ShipPreviewPanel2::Search(std::string const & shipName)
 {
     std::string const shipNameLCase = Utils::ToLower(shipName);
 
@@ -156,36 +156,35 @@ void ShipPreviewPanel2::Search(std::string const & shipName)
         }
     }
 
-    // TODOHERE
-    ////if (!!foundShipIndex)
-    ////{
-    ////    //
-    ////    // Scroll to the item
-    ////    //
+    if (!!foundShipIndex)
+    {
+        //
+        // Scroll to the item if it's not fully visible
+        //
 
-    ////    assert(*foundShipIndex < mPreviewPanelSizer->GetItemCount());
+        assert(*foundShipIndex < mInfoTiles.size());
 
-    ////    auto item = mPreviewPanelSizer->GetItem(*foundShipIndex);
-    ////    if (nullptr != item)
-    ////    {
-    ////        int xUnit, yUnit;
-    ////        GetScrollPixelsPerUnit(&xUnit, &yUnit);
-    ////        if (yUnit != 0)
-    ////        {
-    ////            this->Scroll(
-    ////                -1,
-    ////                item->GetPosition().y / yUnit);
-    ////        }
-    ////    }
+        wxRect visibleRectVirtual = GetVisibleRectVirtual();
+        if (!visibleRectVirtual.Contains(mInfoTiles[*foundShipIndex].RectVirtual))
+        {
+            int xUnit, yUnit;
+            GetScrollPixelsPerUnit(&xUnit, &yUnit);
+            if (yUnit != 0)
+            {
+                this->Scroll(
+                    -1,
+                    mInfoTiles[*foundShipIndex].RectVirtual.GetTop() / yUnit);
+            }
+        }
 
-    ////    //
-    ////    // Select the item
-    ////    //
+        //
+        // Select item
+        //
 
-    ////    assert(*foundShipIndex < mPreviewControls.size());
+        Select(*foundShipIndex);
+    }
 
-    ////    mPreviewControls[*foundShipIndex]->Select();
-    ////}
+    return foundShipIndex.has_value();
 }
 
 void ShipPreviewPanel2::ChooseSearched()
@@ -453,6 +452,14 @@ size_t ShipPreviewPanel2::MapMousePositionToInfoTile(wxPoint const & mousePositi
     return static_cast<size_t>(c + r * mCols);
 }
 
+wxRect ShipPreviewPanel2::GetVisibleRectVirtual() const
+{
+    wxRect visibleRectVirtual(GetClientSize());
+    visibleRectVirtual.Offset(CalcUnscrolledPosition(visibleRectVirtual.GetTopLeft()));
+
+    return visibleRectVirtual;
+}
+
 std::tuple<wxString, wxSize> ShipPreviewPanel2::CalculateTextSizeWithCurrentFont(
     wxDC & dc,
     std::string const & text)
@@ -485,8 +492,7 @@ void ShipPreviewPanel2::Render(wxDC & dc)
     if (!mInfoTiles.empty())
     {
         // Calculate visible portion in virtual space
-        wxRect visibleRectVirtual(GetClientSize());
-        visibleRectVirtual.Offset(CalcUnscrolledPosition(visibleRectVirtual.GetTopLeft()));
+        wxRect visibleRectVirtual = GetVisibleRectVirtual();
 
         // Calculate virtual origin - all virtual coordinates will need this subtracted from them in
         // order to become device coordinates
