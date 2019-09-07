@@ -89,8 +89,8 @@ ShipLoadDialog::ShipLoadDialog(
     //
 
     {
-        // |  | Label       |   | Label   | |
-        // |  | Combo, Home |   | TextBox | |
+        // |  | Label       |   | Label          | |
+        // |  | Combo, Home |   | TextBox [Next] | |
 
         wxFlexGridSizer * gridSizer = new wxFlexGridSizer(2, 5, 0, 0);
 
@@ -139,6 +139,7 @@ ShipLoadDialog::ShipLoadDialog(
                 emptyComboChoices,
                 wxCB_DROPDOWN | wxCB_READONLY);
             mRecentDirectoriesComboBox->Bind(wxEVT_COMBOBOX, &ShipLoadDialog::OnRecentDirectorySelected, this);
+
             hComboSizer->Add(mRecentDirectoriesComboBox, 1, wxEXPAND);
 
             hComboSizer->AddSpacer(4);
@@ -149,14 +150,17 @@ ShipLoadDialog::ShipLoadDialog(
             wxBitmap homeBitmap(resourceLoader.GetIconFilepath("home").string(), wxBITMAP_TYPE_PNG);
             homeDirButton->SetBitmap(homeBitmap);
             homeDirButton->Bind(wxEVT_BUTTON, (wxObjectEventFunction)&ShipLoadDialog::OnHomeDirButtonClicked, this);
-            hComboSizer->Add(homeDirButton, 0, 0);
 
-            gridSizer->Add(hComboSizer, 4, wxALIGN_LEFT | wxEXPAND | wxALL);
+            hComboSizer->Add(homeDirButton, 0, wxEXPAND);
+
+            gridSizer->Add(hComboSizer, 1, wxALIGN_LEFT | wxEXPAND | wxALL);
         }
 
         gridSizer->AddSpacer(10);
 
         {
+            wxBoxSizer * hSearchSizer = new wxBoxSizer(wxHORIZONTAL);
+
             // Search TextCtrl
 
             mShipSearchTextCtrl = new wxTextCtrl(
@@ -170,7 +174,16 @@ ShipLoadDialog::ShipLoadDialog(
             mShipSearchTextCtrl->Bind(wxEVT_TEXT, &ShipLoadDialog::OnShipSearchTextCtrlText, this);
             mShipSearchTextCtrl->Bind(wxEVT_TEXT_ENTER, &ShipLoadDialog::OnShipSearchTextCtrlTextEnter, this);
 
-            gridSizer->Add(mShipSearchTextCtrl, 1, wxALIGN_LEFT | wxEXPAND | wxALL);
+            hSearchSizer->Add(mShipSearchTextCtrl, 1, wxEXPAND);
+
+            mSearchNextButton = new wxButton(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(24, -1));
+            wxBitmap searchNextBitmap(resourceLoader.GetIconFilepath("right_arrow").string(), wxBITMAP_TYPE_PNG);
+            mSearchNextButton->SetBitmap(searchNextBitmap);
+            mSearchNextButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnSearchNextButtonClicked, this);
+
+            hSearchSizer->Add(mSearchNextButton, 0, wxEXPAND);
+
+            gridSizer->Add(hSearchSizer, 1, wxALIGN_LEFT | wxEXPAND | wxALL);
         }
 
         gridSizer->AddSpacer(10);
@@ -247,6 +260,7 @@ int ShipLoadDialog::ShowModal()
 
     // Clear search
     mShipSearchTextCtrl->Clear();
+    mSearchNextButton->Enable(false);
 
 
     //
@@ -318,12 +332,25 @@ void ShipLoadDialog::OnRecentDirectorySelected(wxCommandEvent & /*event*/)
     mDirCtrl->SetPath(mRecentDirectoriesComboBox->GetValue()); // Will send its own event
 }
 
-void ShipLoadDialog::OnShipSearchTextCtrlText(wxCommandEvent & event)
+void ShipLoadDialog::OnShipSearchTextCtrlText(wxCommandEvent & /*event*/)
 {
-    if (!event.GetString().empty())
+    bool found = false;
+
+    auto searchString = mShipSearchTextCtrl->GetValue();
+    if (!searchString.IsEmpty())
     {
-        mShipPreviewWindow->Search(event.GetString().ToStdString());
+        found = mShipPreviewWindow->Search(searchString.ToStdString());
     }
+
+    mSearchNextButton->Enable(found);
+}
+
+void ShipLoadDialog::OnSearchNextButtonClicked(wxCommandEvent & /*event*/)
+{
+    auto searchString = mShipSearchTextCtrl->GetValue();
+    assert(!searchString.IsEmpty());
+
+    mShipPreviewWindow->Search(searchString.ToStdString());
 }
 
 void ShipLoadDialog::OnShipSearchTextCtrlTextEnter(wxCommandEvent & /*event*/)
@@ -390,6 +417,7 @@ void ShipLoadDialog::OnDirectorySelected(std::filesystem::path directoryPath)
 
     // Clear search
     mShipSearchTextCtrl->Clear();
+    mSearchNextButton->Enable(false);
 
     // Propagate to preview panel
     mShipPreviewWindow->SetDirectory(directoryPath);

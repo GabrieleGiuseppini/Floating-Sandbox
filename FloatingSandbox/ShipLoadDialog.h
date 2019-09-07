@@ -45,6 +45,7 @@ private:
     void OnShipFileChosen(fsShipFileChosenEvent & event);
     void OnRecentDirectorySelected(wxCommandEvent & event);
     void OnShipSearchTextCtrlText(wxCommandEvent & event);
+    void OnSearchNextButtonClicked(wxCommandEvent & event);
     void OnShipSearchTextCtrlTextEnter(wxCommandEvent & event);
     void OnHomeDirButtonClicked(wxCommandEvent & event);
     void OnInfoButtonClicked(wxCommandEvent & event);
@@ -72,6 +73,7 @@ private:
     wxTextCtrl * mShipSearchTextCtrl;
     wxButton * mInfoButton;
     wxButton * mLoadButton;
+    wxButton * mSearchNextButton;
 
 private:
 

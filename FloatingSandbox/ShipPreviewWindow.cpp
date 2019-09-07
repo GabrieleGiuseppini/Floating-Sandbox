@@ -36,7 +36,6 @@ ShipPreviewWindow::ShipPreviewWindow(
     //
     , mPollQueueTimer()
     , mInfoTiles()
-    , mShipNameToInfoTileIndex()
     , mSelectedInfoTileIndex()
     , mCurrentlyCompletedDirectory()
     //
@@ -131,7 +130,6 @@ void ShipPreviewWindow::SetDirectory(std::filesystem::path const & directoryPath
         // Clear state
         mInfoTiles.clear();
         mSelectedInfoTileIndex.reset();
-        mShipNameToInfoTileIndex.clear();
 
         // Tell thread (if it's running)
         mPanelToThreadMessageLock.lock();
@@ -148,13 +146,23 @@ bool ShipPreviewWindow::Search(std::string const & shipName)
     std::string const shipNameLCase = Utils::ToLower(shipName);
 
     //
-    // Find first ship that contains the requested name as a substring
+    // Find first ship that contains the requested name as a substring,
+    // doing a circular search from the currently-selected ship
     //
 
     std::optional<size_t> foundShipIndex;
-    for (size_t s = 0; s < mShipNameToInfoTileIndex.size(); ++s)
+    size_t sOffset = mSelectedInfoTileIndex ? (*mSelectedInfoTileIndex + 1) : 0;
+    for (size_t i = 0; i < mInfoTiles.size(); ++i)
     {
-        if (mShipNameToInfoTileIndex[s].find(shipNameLCase) != std::string::npos)
+        size_t s = (sOffset + i) % mInfoTiles.size();
+
+        if (std::any_of(
+            mInfoTiles[s].SearchStrings.cbegin(),
+            mInfoTiles[s].SearchStrings.cend(),
+            [&shipNameLCase](auto const & str)
+            {
+                return str.find(shipNameLCase) != std::string::npos;
+            }))
         {
             foundShipIndex = s;
             break;
@@ -273,17 +281,18 @@ void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
                 assert(mInfoTiles.empty());
                 mInfoTiles.reserve(message->GetScannedShipFilepaths().size());
 
-                for (auto const & shipFilepath : message->GetScannedShipFilepaths())
+                for (size_t s = 0; s < message->GetScannedShipFilepaths().size(); ++s)
                 {
                     mInfoTiles.emplace_back(
                         mWaitBitmap,
                         "",
                         "",
-                        shipFilepath);
+                        message->GetScannedShipFilepaths()[s]);
 
-                    // Populate name->index map
-                    mShipNameToInfoTileIndex.push_back(
-                        Utils::ToLower(shipFilepath.filename().string()));
+                    // Add ship filename to search map
+                    mInfoTiles[s].SearchStrings.push_back(
+                        Utils::ToLower(
+                            message->GetScannedShipFilepaths()[s].filename().string()));
                 }
 
                 // Recalculate geometry
@@ -309,13 +318,15 @@ void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
 
                 assert(message->GetShipIndex() < mInfoTiles.size());
 
-                mInfoTiles[message->GetShipIndex()].Bitmap = MakeBitmap(message->GetShipPreview());
+                auto & infoTile = mInfoTiles[message->GetShipIndex()];
+
+                infoTile.Bitmap = MakeBitmap(message->GetShipPreview());
 
                 std::string descriptionLabelText1 = message->GetShipPreview().Metadata.ShipName;
                 if (!!message->GetShipPreview().Metadata.YearBuilt)
                     descriptionLabelText1 += " (" + *(message->GetShipPreview().Metadata.YearBuilt) + ")";
-                mInfoTiles[message->GetShipIndex()].OriginalDescription1 = std::move(descriptionLabelText1);
-                mInfoTiles[message->GetShipIndex()].Description1Size.reset();
+                infoTile.OriginalDescription1 = std::move(descriptionLabelText1);
+                infoTile.Description1Size.reset();
 
                 int metres = message->GetShipPreview().OriginalSize.Width;
                 int feet = static_cast<int>(round(3.28f * metres));
@@ -326,10 +337,18 @@ void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
                     + "ft";
                 if (!!message->GetShipPreview().Metadata.Author)
                     descriptionLabelText2 += " - by " + *(message->GetShipPreview().Metadata.Author);
-                mInfoTiles[message->GetShipIndex()].OriginalDescription2 = std::move(descriptionLabelText2);
-                mInfoTiles[message->GetShipIndex()].Description2Size.reset();
+                infoTile.OriginalDescription2 = std::move(descriptionLabelText2);
+                infoTile.Description2Size.reset();
 
-                mInfoTiles[message->GetShipIndex()].Metadata.emplace(message->GetShipPreview().Metadata);
+                infoTile.Metadata.emplace(message->GetShipPreview().Metadata);
+
+                // Add author to search map
+                if (!!message->GetShipPreview().Metadata.Author)
+                {
+                    infoTile.SearchStrings.push_back(
+                        Utils::ToLower(
+                            *(message->GetShipPreview().Metadata.Author)));
+                }
 
                 // Remember we need to refresh now
                 doRefresh = true;

@@ -301,12 +301,14 @@ Render:
 			+ Try making panel a wxWindow instead (as it doesn't have child controls)
 			+ Nuke old code and rename ShipPreviewPanel 
 			+ Fix empty bitmap/exception
-			- Search:
-				- Test adding author
-				- Button for "next"
-					- Do icon
-			- Remove TODO Log's
-			- Fix SS Arizona
+			= Search:
+				+ Test adding author
+				= Button for "next"
+					+ Do icon
+					+ Functionality				
+					= Do enable state machine
+			+ Remove TODO Log's
+			+ Fix SS Arizona
 			- Test:
 				- Dir changes
 					- With tree

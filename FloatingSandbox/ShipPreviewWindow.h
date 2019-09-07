@@ -275,6 +275,8 @@ private:
 
         std::optional<ShipMetadata> Metadata;
 
+        std::vector<std::string> SearchStrings;
+
         InfoTile(
             wxBitmap bitmap,
             std::string const & description1,
@@ -289,9 +291,6 @@ private:
 
     // The info tiles currently populated
     std::vector<InfoTile> mInfoTiles;
-
-    // Ship name (lcase) to info tile index, used when searching for a ship by name
-    std::vector<std::string> mShipNameToInfoTileIndex;
 
     // The currently-selected info tile
     std::optional<size_t> mSelectedInfoTileIndex;
