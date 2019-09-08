@@ -315,11 +315,11 @@ Render:
 					+ With Home
 			+ Merge into 1.13
 			+ Update changes.txt
+		+ Lava textures
+			+ Update changes.txt
 
-		- Unix build break
+		= Unix build break
 
-		- Lava textures(see Pac0's message)
-			- Update changes.txt
 
 		- Benchmark vectorized spring lengths (see Moleskine)
 

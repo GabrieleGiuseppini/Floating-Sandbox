@@ -1,5 +1,6 @@
 1.13.0
 - Improved performance of "load ship" window - no more freezing when browsing a large number of ships!
+- Added "Lava" ocean textures (thanks to Pac0master!)
 - From now on, the installation of newer versions of Floating Sandbox will automatically uninstall older versions
 	- Save your ships first - if you've added ships to the game's Ships directory, or else they will be lost with the upgrade!
 - Added a few more ocean textures
