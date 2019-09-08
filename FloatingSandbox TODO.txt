@@ -286,8 +286,7 @@ Render:
 			+ Post: 28.5/28.7
 			+ Do also at Water
 			+ Post: 28.9/29.1
-
-		= ShipLoadDialog:
+		+ ShipLoadDialog:
 			! Do own paint, no controls
 			+ Replace paint with overriding OnDraw(), // https://docs.wxwidgets.org/3.0/classwx_scrolled.html
 			  which provides scrolled coords
@@ -314,8 +313,8 @@ Render:
 					+ With tree
 					+ With dropdown
 					+ With Home
-			- Merge into 1.13
-			- Update changes.txt
+			+ Merge into 1.13
+			+ Update changes.txt
 
 		- Lava textures(see Pac0's message)
 			- Update changes.txt
