@@ -239,7 +239,7 @@ private:
     CircularList<std::unique_ptr<Bomb>, GameParameters::MaxBombs> mCurrentBombs;
 
     // The next bomb ID value
-    typename LocalBombId mNextLocalBombId;
+    LocalBombId mNextLocalBombId;
 };
 
 }
