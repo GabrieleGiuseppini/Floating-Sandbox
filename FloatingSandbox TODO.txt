@@ -316,18 +316,14 @@ Render:
 			+ Merge into 1.13
 			+ Update changes.txt
 
+		- Unix build break
+
 		- Lava textures(see Pac0's message)
 			- Update changes.txt
 
 		- Benchmark vectorized spring lengths (see Moleskine)
 
 		- Lights perf improvement (*)
-
-		- Adjustable zoom increments
-			- Under UIPreferences
-			- See if can use Smoothstep for...smoothing
-				- @ Controls
-				- @ Smoothed params
 
 		- Cache layout optimization for points and springs (*)
 
@@ -1304,6 +1300,12 @@ Render:
 		- How to Guide
 
 - UI:
+	- Adjustable zoom increments
+		- Under UIPreferences
+		- See if can use Smoothstep for...smoothing
+			- @ Controls
+			- @ Smoothed params
+
 	- SettingsDialog: make slider textboxes editable
 
 	- Ship descriptions: use Mike's drawings

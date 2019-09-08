@@ -11,6 +11,7 @@
 #include "RenderContext.h"
 
 #include <GameCore/CircularList.h>
+#include <GameCore/GameTypes.h>
 #include <GameCore/Vectors.h>
 
 #include <functional>
