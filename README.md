@@ -92,7 +92,6 @@ In order to build the game, you will need the following dependencies:
 - <a href="http://openil.sourceforge.net/">DevIL</a> (cross-platform image library)*
 - <a href="https://www.sfml-dev.org/index.php">SFML</a> (cross-platform multimedia library)*
 - <a href="https://github.com/kazuho/picojson">picojson</a> (header-only JSON parser and serializer)
-- <a href="https://github.com/p12tic/libsimdpp">libsimdpp</a> (header-only SIMD library)
 - <a href="https://github.com/google/benchmark">Google Benchmark</a>
 - <a href="https://github.com/google/googletest/">Google Test</a>
 

@@ -40,12 +40,6 @@ set (UNIT_TEST_SOURCES
 	VersionTests.cpp
 )
 
-if (MSVC)
-	# We only use intrinsics when in MSVC
-	list(APPEND UNIT_TEST_SOURCES
-		LibSimdPpTests.cpp)
-endif (MSVC)
-
 source_group(" " FILES ${UNIT_TEST_SOURCES})
 
 add_executable (UnitTests ${UNIT_TEST_SOURCES})

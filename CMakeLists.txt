@@ -27,13 +27,9 @@ endif()
 ####################################################
 
 list(APPEND CMAKE_PREFIX_PATH "${BENCHMARK_ROOT_DIR}")
-list(APPEND CMAKE_PREFIX_PATH "${LIBSIMDPP_ROOT_DIR}")
 
 find_package(PicoJSON REQUIRED)
 find_package(benchmark REQUIRED)
-
-find_path(LIBSIMDPP_INCLUDE_DIRS
-    NAMES simdpp/simd.h)
 
 find_package(wxWidgets REQUIRED base gl core html media)
 

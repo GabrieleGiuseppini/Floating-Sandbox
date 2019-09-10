@@ -2,10 +2,6 @@
 
 #include <GameCore/SysSpecifics.h>
 
-// TODO: move to GameLib's LibSimdPp.h
-#define SIMDPP_ARCH_X86_SSSE3
-#include "simdpp/simd.h"
-
 #include <benchmark/benchmark.h>
 
 #include <algorithm>
@@ -78,6 +74,7 @@ static void UpdateSpringForces_Naive(benchmark::State& state)
 }
 BENCHMARK(UpdateSpringForces_Naive);
 
+/* LibSimDpp has been purged
 static void UpdateSpringForces_LibSimdPpAndIntrinsics(benchmark::State& state)
 {
     auto const size = MakeSize(SampleSize);
@@ -263,3 +260,4 @@ static void UpdateSpringForces_LibSimdPpAndIntrinsics(benchmark::State& state)
     benchmark::DoNotOptimize(pointsForce);
 }
 BENCHMARK(UpdateSpringForces_LibSimdPpAndIntrinsics);
+*/

@@ -1,34 +1,48 @@
 #include <GameCore/Algorithms.h>
 
+#include "Utils.h"
+
+#include <GameCore/GameTypes.h>
+
 #include <cmath>
 
 #include "gtest/gtest.h"
 
-TEST(AlgorithmTests, CalculateVectorLengthsAndDirs)
+struct SpringEndpoints
 {
-    float inOutXBuffer[4] = { 1.0f, 2.0f, 10.0f, 3.0f };
-    float inOutYBuffer[4] = { 2.0f, 4.0f, 5.0f, 4.0f };
-    float outLengthBuffer[4];
+    ElementIndex PointAIndex;
+    ElementIndex PointBIndex;
+};
 
-    Algorithms::CalculateVectorLengthsAndDirs(
-        inOutXBuffer,
-        inOutYBuffer,
-        outLengthBuffer,
+TEST(AlgorithmsTests, CalculateVectorDirsAndReciprocalLengths)
+{
+    vec2f pointPositions[] = { { 1.0f, 2.0f}, {2.0f, 4.0f}, {10.0f, 5.0f}, {3.0f, 4.0f} };
+    SpringEndpoints springs[] = { {0, 1}, {1, 2}, {0, 3}, {2, 3} };
+    vec2f outDirs[4];
+    float outReciprocalLengths[4];
+
+    Algorithms::CalculateVectorDirsAndReciprocalLengths(
+        pointPositions,
+        springs,
+        outDirs,
+        outReciprocalLengths,
         4);
 
-    EXPECT_FLOAT_EQ(1.0f / std::sqrt(5.0f), inOutXBuffer[0]);
-    EXPECT_FLOAT_EQ(2.0f / std::sqrt(5.0f), inOutYBuffer[0]);
-    EXPECT_FLOAT_EQ(std::sqrt(5.0f), outLengthBuffer[0]);
+    float constexpr Tolerance = 0.001f;
 
-    EXPECT_FLOAT_EQ(2.0f / std::sqrt(20.0f), inOutXBuffer[1]);
-    EXPECT_FLOAT_EQ(4.0f / std::sqrt(20.0f), inOutYBuffer[1]);
-    EXPECT_FLOAT_EQ(std::sqrt(20.0f), outLengthBuffer[1]);
+    EXPECT_TRUE(ApproxEquals(1.0f / std::sqrt(5.0f), outReciprocalLengths[0], Tolerance));
+    EXPECT_TRUE(ApproxEquals(1.0f / std::sqrt(5.0f), outDirs[0].x, Tolerance));
+    EXPECT_TRUE(ApproxEquals(2.0f / std::sqrt(5.0f), outDirs[0].y, Tolerance));
 
-    EXPECT_FLOAT_EQ(10.0f / std::sqrt(125.0f), inOutXBuffer[2]);
-    EXPECT_FLOAT_EQ(5.0f / std::sqrt(125.0f), inOutYBuffer[2]);
-    EXPECT_FLOAT_EQ(std::sqrt(125.0f), outLengthBuffer[2]);
+    EXPECT_TRUE(ApproxEquals(1.0f / std::sqrt(65.0f), outReciprocalLengths[1], Tolerance));
+    EXPECT_TRUE(ApproxEquals(8.0f / std::sqrt(65.0f), outDirs[1].x, Tolerance));
+    EXPECT_TRUE(ApproxEquals(1.0f / std::sqrt(65.0f), outDirs[1].y, Tolerance));
 
-    EXPECT_FLOAT_EQ(3.0f / std::sqrt(25.0f), inOutXBuffer[3]);
-    EXPECT_FLOAT_EQ(4.0f / std::sqrt(25.0f), inOutYBuffer[3]);
-    EXPECT_FLOAT_EQ(std::sqrt(25.0f), outLengthBuffer[3]);
+    EXPECT_TRUE(ApproxEquals(1.0f / std::sqrt(8.0f), outReciprocalLengths[2], Tolerance));
+    EXPECT_TRUE(ApproxEquals(2.0f / std::sqrt(8.0f), outDirs[2].x, Tolerance));
+    EXPECT_TRUE(ApproxEquals(2.0f / std::sqrt(8.0f), outDirs[2].y, Tolerance));
+
+    EXPECT_TRUE(ApproxEquals(1.0f / std::sqrt(50.0f), outReciprocalLengths[3], Tolerance));
+    EXPECT_TRUE(ApproxEquals(-7.0f / std::sqrt(50.0f), outDirs[3].x, Tolerance));
+    EXPECT_TRUE(ApproxEquals(-1.0f / std::sqrt(50.0f), outDirs[3].y, Tolerance));
 }
