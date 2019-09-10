@@ -320,15 +320,12 @@ Render:
 
 		= Unix build break
 
-
-		- Benchmark vectorized spring lengths (see Moleskine)
+		= Benchmark vectorized spring lengths (see Moleskine)
+			- Move VectorNormalization_Vectorized_AndLength_Reciprocal_LibSimDpp to Algorithms
 
 		- Lights perf improvement (*)
 
 		- Cache layout optimization for points and springs (*)
-
-		- ShipLoadDialog:
-			- Ship preview database/cache
 
 		- Cached quantities (*)
 		
@@ -1313,17 +1310,34 @@ Render:
 	- SettingsDialog: save settings, defaults, and real-time changes (*)
 		- Spec: 
 			- Game starts always with default settings; user has the ability though to load named settings
-				- Where "defaults" is hardcoded name
+				- Where "defaults" is hardcoded name for default settings
 			- Game also comes with own "themes" settings
 				- Under Data\Themes
-				- Managed by SettingsDialog
-				- Read-only (marked as "system" settings)
-			- Saved settings have a name, which is the one shown to the user (filename is opaque and has unique prefix before mangled name),
+				- Managed by SettingsDialog (not by SettingsManager)
+				- Read-only (marked as "system" settings to avoid overwriting)
+			- Saved settings have a name, which is the one shown to the user (filename is opaque and has unique prefix before FS-mangled name),
 			  and a description
-				- User may overwrite non-system saved settings
-					- TBD: how does UI look like?
-			- Saved settings do not have necessarily all settings (e.g. to allow for graphical themes, which only specify certain render properties)
-			- Review the below based on this (named settings)
+				- Names are unique
+					- Prefix is only to avoid filenames conflicts after FS-mangling
+				- User may overwrite non-system saved settings only
+			- Saved settings do not have necessarily all settings 
+			  (e.g. to allow for graphical themes, which only specify certain render properties)
+				- But unless we track individual settings' dirtyness, users may not save subsets of settings
+			- Ocean floor is just another setting
+				- GameController only exposes ocean floor as float buffer
+				- GameController::cctor takes it
+				- MainFrame provides the initial one loaded via ResourceManager::LoadOceanFloor(path of default system one)
+				- SettingsManager saves it in binary file (possible shared w/other buffer settings) next to user settings' json file,
+				  w/same name but different extension
+			- Saved settings are thus:
+				- prefix_mangledname.json
+				- prefix_mangledname.dat
+			- Changing settings in the GUI puts them in effect immediately
+				- ...and GameController will smooth them
+			- Loaded settings go to GameController
+				- ...and GameController will smooth them
+
+			- TODO: Now review the below based on this 
 
 			- SettingsManager (@FloatingSandbox):
 				- Has GameController, SoundController, etc.
@@ -1417,6 +1431,7 @@ Render:
 					- Enables/Disabled buttons and menus
 
 	- Save ocean floor terrain and load it at startup
+		- TODO: might become pointless if we take care of this at SettingsManager as spec'dabove
 		- GameController takes root path of user world data (given by MainFrame via StandardPaths)
 			- Loads (optional) data at startup (if exists)
 			- Saves data at dctor
@@ -1425,6 +1440,9 @@ Render:
 				- Conditionally, by polling GameController who checks if it has mUserOceanFloorTerrain
 				- When reset -> GameController::ResetOceanFloorTerranToDefault
 					- Nukes mUserOceanFloorTerrain and calls World::ResetOceanFloorTerranToDefault which propagates
+
+	- ShipLoadDialog:
+		- Ship preview database/cache
 
 - Sounds:
 

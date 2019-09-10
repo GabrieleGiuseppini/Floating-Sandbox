@@ -17,6 +17,7 @@ set_property(
 #
 
 set (UNIT_TEST_SOURCES
+	AlgorithmsTests.cpp
 	BoundedVectorTests.cpp
 	BufferTests.cpp
 	CircularListTests.cpp
