@@ -317,15 +317,15 @@ Render:
 			+ Update changes.txt
 		+ Lava textures
 			+ Update changes.txt
+		+ Benchmark vectorized spring lengths (see Moleskine)
+			+ Move VectorNormalization_Vectorized_AndLength_Reciprocal_LibSimDpp to Algorithms
+
+		= Cache layout optimization for points and springs (*)
 
 		= Unix build break
 
-		= Benchmark vectorized spring lengths (see Moleskine)
-			- Move VectorNormalization_Vectorized_AndLength_Reciprocal_LibSimDpp to Algorithms
 
 		- Lights perf improvement (*)
-
-		- Cache layout optimization for points and springs (*)
 
 		- Cached quantities (*)
 		
@@ -503,6 +503,7 @@ Render:
 			- Make it clear that the Update function calculates them: TBD
 			- Alternatively, use lambda
 				- Verify with assembly that there's no overhead with empty lambda
+			- Alternatively use Algorithms::CalculateSpringDirAndReciprocalLengths
 		- Candidates:
 			- Spring length, spring dir
 				- Valid as long as points don't move
@@ -516,9 +517,16 @@ Render:
 				- Valid as long as points don't move
 				- Used by: UpdateWaterIntake (for leaking points only), heat dissipation
 	
-	- Retry cache layout optimization, new strategy: (*)
+	= Retry cache layout optimization, new strategy: (*)
+		+ Starting point:
+			! ReorderSpringsOptimally_Tiling<2>
+			! ReorderPointsOptimally_FollowingSprings
+			! No Triangles reordering
+			+ ACMR: 0.516807 ->  0.389524
+			+ FPS: 28.5/28.8
 		- Points in 2x2 blocks (with any point optional), advancing one column - and then row - at a time
 		- Springs in those 2x2 blocks, advancing one column - and then row - at a time
+		- Triangles: in those 2x2 blocks - TODO
 
 	- Forces rearc (*):
 		! Rationale: multiple spring iterations are really artificial; in reality, changes due to spring position changes in-between 
