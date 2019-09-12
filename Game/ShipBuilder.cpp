@@ -202,38 +202,30 @@ std::unique_ptr<Ship> ShipBuilder::Create(
 
 
     //
-    // Optimize order of SpringInfo's to minimize cache misses
+    // Optimize order of PointInfo's and SpringInfo's to minimize cache misses
     //
 
     float originalSpringACMR = CalculateACMR(springInfos);
 
-    // Tiling algorithm
-    springInfos = ReorderSpringsOptimally_Tiling<2>(
+    // Block algorithm
+    auto[pointInfos2, pointIndexRemap2, springInfos2] = ReorderPointsAndSpringsOptimally_Blocks(
+        pointInfos,
         springInfos,
         pointIndexMatrix,
-        shipDefinition.StructuralLayerImage.Size,
-        pointInfos);
+        shipDefinition.StructuralLayerImage.Size);
 
-    float optimizedSpringACMR = CalculateACMR(springInfos);
+    float optimizedSpringACMR = CalculateACMR(springInfos2);
 
     LogMessage("Spring ACMR: original=", originalSpringACMR, ", optimized=", optimizedSpringACMR);
 
 
-    // Note: we don't optimize triangles, as tests indicate that performance gets (marginally) worse,
+    //
+    // TODO: Triangles
+    //
+
+    // TODOHERE: REUSE IF STILL APPLIES: Note: we don't optimize triangles, as tests indicate that performance gets (marginally) worse,
     // and at the same time, it makes sense to use the natural order of the triangles as it ensures
     // that higher elements in the ship cover lower elements when they are semi-detached
-
-
-    //
-    // Now reorder points to improve data locality when visiting springs
-    //
-
-    std::vector<ElementIndex> pointIndexRemap;
-
-    pointInfos = ReorderPointsOptimally_FollowingSprings(
-        pointInfos,
-        springInfos,
-        pointIndexRemap);
 
 
     //
@@ -241,7 +233,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     //
 
     Points points = CreatePoints(
-        pointInfos,
+        pointInfos2,
         parentWorld,
         gameEventDispatcher,
         gameParameters);
@@ -251,11 +243,11 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     // Filter out redundant triangles
     //
 
-    triangleInfos = FilterOutRedundantTriangles(
+    auto triangleInfos2 = FilterOutRedundantTriangles(
         triangleInfos,
         points,
-        pointIndexRemap,
-        springInfos);
+        pointIndexRemap2,
+        springInfos2);
 
 
     //
@@ -263,8 +255,8 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     //
 
     ConnectSpringsAndTriangles(
-        springInfos,
-        triangleInfos);
+        springInfos2,
+        triangleInfos2);
 
 
     //
@@ -272,9 +264,9 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     //
 
     Springs springs = CreateSprings(
-        springInfos,
+        springInfos2,
         points,
-        pointIndexRemap,
+        pointIndexRemap2,
         parentWorld,
         gameEventDispatcher,
         gameParameters);
@@ -285,9 +277,9 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     //
 
     Triangles triangles = CreateTriangles(
-        triangleInfos,
+        triangleInfos2,
         points,
-        pointIndexRemap);
+        pointIndexRemap2);
 
 
     //
@@ -803,131 +795,6 @@ void ShipBuilder::CreateShipElementInfos(
     }
 }
 
-template <int BlockSize>
-std::vector<ShipBuilder::SpringInfo> ShipBuilder::ReorderSpringsOptimally_Tiling(
-    std::vector<SpringInfo> const & springInfos1,
-    std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
-    ImageSize const & structureImageSize,
-    std::vector<PointInfo> const & pointInfos1)
-{
-    //
-    // 1. Visit the point matrix in 2x2 blocks, and add all springs connected to any
-    // of the included points (0..4 points), except for already-added ones
-    //
-
-    std::vector<SpringInfo> springInfos2;
-    springInfos2.reserve(springInfos1.size());
-
-    std::vector<bool> addedSprings;
-    addedSprings.resize(springInfos1.size(), false);
-
-    // From bottom to top
-    for (int y = 1; y <= structureImageSize.Height; y += BlockSize)
-    {
-        for (int x = 1; x <= structureImageSize.Width; x += BlockSize)
-        {
-            for (int y2 = 0; y2 < BlockSize && y + y2 <= structureImageSize.Height; ++y2)
-            {
-                for (int x2 = 0; x2 < BlockSize && x + x2 <= structureImageSize.Width; ++x2)
-                {
-                    if (!!pointIndexMatrix[x + x2][y + y2])
-                    {
-                        ElementIndex pointIndex = *(pointIndexMatrix[x + x2][y + y2]);
-
-                        // Add all springs connected to this point
-                        for (auto connectedSpringIndex : pointInfos1[pointIndex].ConnectedSprings1)
-                        {
-                            if (!addedSprings[connectedSpringIndex])
-                            {
-                                springInfos2.push_back(springInfos1[connectedSpringIndex]);
-                                addedSprings[connectedSpringIndex] = true;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    //
-    // 2. Add all remaining springs
-    //
-
-    for (size_t s = 0; s < springInfos1.size(); ++s)
-    {
-        if (!addedSprings[s])
-            springInfos2.push_back(springInfos1[s]);
-    }
-
-    assert(springInfos2.size() == springInfos1.size());
-
-    return springInfos2;
-}
-
-std::vector<ShipBuilder::PointInfo> ShipBuilder::ReorderPointsOptimally_FollowingSprings(
-    std::vector<ShipBuilder::PointInfo> const & pointInfos1,
-    std::vector<ShipBuilder::SpringInfo> const & springInfos2,
-    std::vector<ElementIndex> & pointIndexRemap)
-{
-    //
-    // Order points in the order they first appear when visiting springs linearly
-    //
-    // a.k.a. Bas van den Berg's optimization!
-    //
-
-    std::vector<PointInfo> pointInfos2;
-    pointIndexRemap.resize(pointInfos1.size());
-
-    std::unordered_set<ElementIndex> visitedPoints;
-
-    for (auto const & springInfo : springInfos2)
-    {
-        if (visitedPoints.insert(springInfo.PointAIndex1).second)
-        {
-            pointIndexRemap[springInfo.PointAIndex1] = static_cast<ElementIndex>(pointInfos2.size());
-            pointInfos2.push_back(pointInfos1[springInfo.PointAIndex1]);
-        }
-
-        if (visitedPoints.insert(springInfo.PointBIndex1).second)
-        {
-            pointIndexRemap[springInfo.PointBIndex1] = static_cast<ElementIndex>(pointInfos2.size());
-            pointInfos2.push_back(pointInfos1[springInfo.PointBIndex1]);
-        }
-    }
-
-
-    //
-    // Add missing points
-    //
-
-    for (ElementIndex p = 0; p < pointInfos1.size(); ++p)
-    {
-        if (0 == visitedPoints.count(p))
-        {
-            pointIndexRemap[p] = static_cast<ElementIndex>(pointInfos2.size());
-            pointInfos2.push_back(pointInfos1[p]);
-        }
-    }
-
-    assert(pointInfos2.size() == pointInfos1.size());
-
-    return pointInfos2;
-}
-
-std::vector<ShipBuilder::PointInfo> ShipBuilder::ReorderPointsOptimally_Idempotent(
-    std::vector<ShipBuilder::PointInfo> const & pointInfos1,
-    std::vector<ElementIndex> & pointIndexRemap)
-{
-    pointIndexRemap.reserve(pointInfos1.size());
-
-    for (ElementIndex p = 0; p < pointInfos1.size(); ++p)
-    {
-        pointIndexRemap.push_back(p);
-    }
-
-    return pointInfos1;
-}
-
 Points ShipBuilder::CreatePoints(
     std::vector<PointInfo> const & pointInfos2,
     World & parentWorld,
@@ -1031,34 +898,6 @@ void ShipBuilder::ConnectSpringsAndTriangles(
     //
     // 1. Build Edge -> Spring table
     //
-
-    struct Edge
-    {
-        ElementIndex Endpoint1Index;
-        ElementIndex Endpoint2Index;
-
-        Edge(
-            ElementIndex endpoint1Index,
-            ElementIndex endpoint2Index)
-            : Endpoint1Index(std::min(endpoint1Index, endpoint2Index))
-            , Endpoint2Index(std::max(endpoint1Index, endpoint2Index))
-        {}
-
-        bool operator==(Edge const & other) const
-        {
-            return this->Endpoint1Index == other.Endpoint1Index
-                && this->Endpoint2Index == other.Endpoint2Index;
-        }
-
-        struct Hasher
-        {
-            size_t operator()(Edge const & edge) const
-            {
-                return edge.Endpoint1Index * 23
-                    + edge.Endpoint2Index;
-            }
-        };
-    };
 
     std::unordered_map<Edge, ElementIndex, Edge::Hasher> pointToSpringMap;
 
@@ -1323,6 +1162,339 @@ ElectricalElements ShipBuilder::CreateElectricalElements(
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
+// Reordering
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+std::tuple<std::vector<ShipBuilder::PointInfo>, std::vector<ElementIndex>, std::vector<ShipBuilder::SpringInfo>>
+ShipBuilder::ReorderPointsAndSpringsOptimally_Blocks(
+    std::vector<PointInfo> const & pointInfos1,
+    std::vector<SpringInfo> const & springInfos1,
+    std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
+    ImageSize const & structureImageSize)
+{
+    //
+    // 1. Build Edge -> Spring table
+    //
+
+    std::unordered_map<Edge, ElementIndex, Edge::Hasher> edgeToSpringIndex1Map;
+
+    for (ElementIndex s = 0; s < springInfos1.size(); ++s)
+    {
+        edgeToSpringIndex1Map.emplace(
+            std::piecewise_construct,
+            std::forward_as_tuple(springInfos1[s].PointAIndex1, springInfos1[s].PointBIndex1),
+            std::forward_as_tuple(s));
+    }
+
+
+    //
+    // 2. Visit the point matrix by all rows, from top to bottom
+    //
+
+    std::vector<bool> reorderedPointInfos1(pointInfos1.size(), false);
+    std::vector<bool> reorderedSpringInfos1(springInfos1.size(), false);
+
+    std::vector<PointInfo> pointInfos2;
+    pointInfos2.reserve(pointInfos1.size());
+
+    std::vector<ElementIndex> pointIndexRemap(pointInfos1.size(), NoneElementIndex);
+
+    std::vector<SpringInfo> springInfos2;
+    springInfos2.reserve(springInfos1.size());
+
+    // From top to bottom, starting at second row from top (i.e. first real row),
+    // skipping one row of points to ensure full squares
+    for (int y = structureImageSize.Height; y >= 1; y -= 2)
+    {
+        ReorderPointsAndSpringsOptimally_Blocks_Row(
+            y,
+            pointInfos1,
+            reorderedPointInfos1,
+            springInfos1,
+            reorderedSpringInfos1,
+            pointIndexMatrix,
+            structureImageSize,
+            edgeToSpringIndex1Map,
+            pointInfos2,
+            pointIndexRemap,
+            springInfos2);
+    }
+
+
+    //
+    // 3. Add/Sort leftovers
+    //
+    // At this moment leftovers are:
+    //  - Points: rope endpoints (because unreachable via matrix)
+    //  - Springs: spring connecting points on left edge of ship with points SW of those points, and rope springs
+    //
+
+    // Here we use a greedy algorithm: for each not-yet-reordered point we add 
+    // all of its connected springs that are still not reordered
+    for (size_t pointIndex1 = 0; pointIndex1 < pointInfos1.size(); ++pointIndex1)
+    {
+        if (!reorderedPointInfos1[pointIndex1])
+        {
+            // Add/sort point
+            pointIndexRemap[pointIndex1] = static_cast<ElementIndex>(pointInfos2.size());
+            pointInfos2.push_back(pointInfos1[pointIndex1]);
+
+            // Visit all connected not-yet-reordered springs
+            for (ElementIndex springIndex1 : pointInfos1[pointIndex1].ConnectedSprings1)
+            {
+                if (!reorderedSpringInfos1[springIndex1])
+                {
+                    // Add/sort spring
+                    springInfos2.push_back(springInfos1[springIndex1]);
+
+                    // Don't reorder this spring again
+                    reorderedSpringInfos1[springIndex1] = true;
+                }
+            }
+        }
+    }
+
+    // Finally add all not-yet-reordered springs
+    for (size_t springIndex1 = 0; springIndex1 < springInfos1.size(); ++springIndex1)
+    {
+        if (!reorderedSpringInfos1[springIndex1])
+        {
+            // Add/sort spring
+            springInfos2.push_back(springInfos1[springIndex1]);
+        }
+    }
+
+    //
+    // 4. Return results
+    //
+
+    assert(pointInfos2.size() == pointInfos1.size());
+    assert(pointIndexRemap.size() == pointInfos1.size());
+    assert(springInfos2.size() == springInfos1.size());
+
+    return std::make_tuple(pointInfos2, pointIndexRemap, springInfos2);
+}
+
+void ShipBuilder::ReorderPointsAndSpringsOptimally_Blocks_Row(
+    int y,
+    std::vector<PointInfo> const & pointInfos1,
+    std::vector<bool> & reorderedPointInfos1,
+    std::vector<SpringInfo> const & springInfos1,
+    std::vector<bool> & reorderedSpringInfos1,
+    std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
+    ImageSize const & structureImageSize,
+    std::unordered_map<Edge, ElementIndex, Edge::Hasher> const & edgeToSpringIndex1Map,
+    std::vector<PointInfo> & pointInfos2,
+    std::vector<ElementIndex> & pointIndexRemap,
+    std::vector<SpringInfo> & springInfos2)
+{
+    //
+    // Visit each square as follows:
+    //
+    //  b----c
+    //  |    |
+    //  a----d
+    //
+    // ...where b is the current point
+
+    std::vector<ElementIndex> squarePointIndices1;
+
+    // From left to right, start at first real col
+    for (int x = 1; x <= structureImageSize.Width; ++x)
+    {
+        squarePointIndices1.clear();
+
+        // Check if b exists
+        if (!!pointIndexMatrix[x][y])
+        {
+            //
+            // 1. Collect all the points that we have around this square
+            //
+
+            // Add a if it exists
+            if (!!pointIndexMatrix[x][y - 1])
+                squarePointIndices1.push_back(*(pointIndexMatrix[x][y - 1]));
+
+            // Add b
+            squarePointIndices1.push_back(*(pointIndexMatrix[x][y]));
+
+            // Add c if it exists
+            if (!!pointIndexMatrix[x + 1][y])
+                squarePointIndices1.push_back(*(pointIndexMatrix[x + 1][y]));
+
+            // Add d if it exists
+            if (!!pointIndexMatrix[x + 1][y - 1])
+                squarePointIndices1.push_back(*(pointIndexMatrix[x + 1][y - 1]));
+
+            //
+            // 2. Add/sort all existing, not-yet-reordered springs among all these points
+            // 
+
+            for (size_t i1 = 0; i1 < squarePointIndices1.size() - 1; ++i1)
+            {
+                for (size_t i2 = i1 + 1; i2 < squarePointIndices1.size(); ++i2)
+                {
+                    auto const springIndexIt = edgeToSpringIndex1Map.find({ squarePointIndices1[i1], squarePointIndices1[i2] });
+                    if (springIndexIt != edgeToSpringIndex1Map.end())
+                    {
+                        ElementIndex const springIndex1 = springIndexIt->second;
+                        if (!reorderedSpringInfos1[springIndex1])
+                        {
+                            springInfos2.push_back(springInfos1[springIndex1]);
+
+                            // Don't reorder this spring again
+                            reorderedSpringInfos1[springIndex1] = true;
+                        }
+                    }
+                }
+            }
+
+
+            //
+            // 3. Add/sort all not yet reordered points among all these points
+            // 
+
+            for (ElementIndex pointIndex1 : squarePointIndices1)
+            {
+                if (!reorderedPointInfos1[pointIndex1])
+                {
+                    pointIndexRemap[pointIndex1] = static_cast<ElementIndex>(pointInfos2.size());
+                    pointInfos2.push_back(pointInfos1[pointIndex1]);
+
+                    // Don't reorder this point again
+                    reorderedPointInfos1[pointIndex1] = true;
+                }
+            }
+        }
+    }
+}
+
+template <int BlockSize>
+std::vector<ShipBuilder::SpringInfo> ShipBuilder::ReorderSpringsOptimally_Tiling(
+    std::vector<SpringInfo> const & springInfos1,
+    std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
+    ImageSize const & structureImageSize,
+    std::vector<PointInfo> const & pointInfos1)
+{
+    //
+    // 1. Visit the point matrix in 2x2 blocks, and add all springs connected to any
+    // of the included points (0..4 points), except for already-added ones
+    //
+
+    std::vector<SpringInfo> springInfos2;
+    springInfos2.reserve(springInfos1.size());
+
+    std::vector<bool> addedSprings;
+    addedSprings.resize(springInfos1.size(), false);
+
+    // From bottom to top
+    for (int y = 1; y <= structureImageSize.Height; y += BlockSize)
+    {
+        for (int x = 1; x <= structureImageSize.Width; x += BlockSize)
+        {
+            for (int y2 = 0; y2 < BlockSize && y + y2 <= structureImageSize.Height; ++y2)
+            {
+                for (int x2 = 0; x2 < BlockSize && x + x2 <= structureImageSize.Width; ++x2)
+                {
+                    if (!!pointIndexMatrix[x + x2][y + y2])
+                    {
+                        ElementIndex pointIndex = *(pointIndexMatrix[x + x2][y + y2]);
+
+                        // Add all springs connected to this point
+                        for (auto connectedSpringIndex : pointInfos1[pointIndex].ConnectedSprings1)
+                        {
+                            if (!addedSprings[connectedSpringIndex])
+                            {
+                                springInfos2.push_back(springInfos1[connectedSpringIndex]);
+                                addedSprings[connectedSpringIndex] = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    //
+    // 2. Add all remaining springs
+    //
+
+    for (size_t s = 0; s < springInfos1.size(); ++s)
+    {
+        if (!addedSprings[s])
+            springInfos2.push_back(springInfos1[s]);
+    }
+
+    assert(springInfos2.size() == springInfos1.size());
+
+    return springInfos2;
+}
+
+std::vector<ShipBuilder::PointInfo> ShipBuilder::ReorderPointsOptimally_FollowingSprings(
+    std::vector<ShipBuilder::PointInfo> const & pointInfos1,
+    std::vector<ShipBuilder::SpringInfo> const & springInfos2,
+    std::vector<ElementIndex> & pointIndexRemap)
+{
+    //
+    // Order points in the order they first appear when visiting springs linearly
+    //
+    // a.k.a. Bas van den Berg's optimization!
+    //
+
+    std::vector<PointInfo> pointInfos2;
+    pointIndexRemap.resize(pointInfos1.size());
+
+    std::unordered_set<ElementIndex> visitedPoints;
+
+    for (auto const & springInfo : springInfos2)
+    {
+        if (visitedPoints.insert(springInfo.PointAIndex1).second)
+        {
+            pointIndexRemap[springInfo.PointAIndex1] = static_cast<ElementIndex>(pointInfos2.size());
+            pointInfos2.push_back(pointInfos1[springInfo.PointAIndex1]);
+        }
+
+        if (visitedPoints.insert(springInfo.PointBIndex1).second)
+        {
+            pointIndexRemap[springInfo.PointBIndex1] = static_cast<ElementIndex>(pointInfos2.size());
+            pointInfos2.push_back(pointInfos1[springInfo.PointBIndex1]);
+        }
+    }
+
+
+    //
+    // Add missing points
+    //
+
+    for (ElementIndex p = 0; p < pointInfos1.size(); ++p)
+    {
+        if (0 == visitedPoints.count(p))
+        {
+            pointIndexRemap[p] = static_cast<ElementIndex>(pointInfos2.size());
+            pointInfos2.push_back(pointInfos1[p]);
+        }
+    }
+
+    assert(pointInfos2.size() == pointInfos1.size());
+
+    return pointInfos2;
+}
+
+std::vector<ShipBuilder::PointInfo> ShipBuilder::ReorderPointsOptimally_Idempotent(
+    std::vector<ShipBuilder::PointInfo> const & pointInfos1,
+    std::vector<ElementIndex> & pointIndexRemap)
+{
+    pointIndexRemap.reserve(pointInfos1.size());
+
+    for (ElementIndex p = 0; p < pointInfos1.size(); ++p)
+    {
+        pointIndexRemap.push_back(p);
+    }
+
+    return pointInfos1;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
 // Vertex cache optimization
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1526,6 +1698,8 @@ std::vector<size_t> ShipBuilder::ReorderOptimally(
 
 float ShipBuilder::CalculateACMR(std::vector<SpringInfo> const & springInfos)
 {
+    size_t constexpr IntervalReportingSamples = 1000;
+
     //
     // Calculate the average cache miss ratio
     //
@@ -1538,17 +1712,30 @@ float ShipBuilder::CalculateACMR(std::vector<SpringInfo> const & springInfos)
     TestLRUVertexCache<VertexCacheSize> cache;
 
     float cacheMisses = 0.0f;
+    float intervalCacheMisses = 0.0f;
 
-    for (auto const & springInfo : springInfos)
+    for (size_t s = 0; s < springInfos.size(); ++s)
     {
-        if (!cache.UseVertex(springInfo.PointAIndex1))
+        if (!cache.UseVertex(springInfos[s].PointAIndex1))
         {
             cacheMisses += 1.0f;
+            intervalCacheMisses += 1.0f;
         }
 
-        if (!cache.UseVertex(springInfo.PointBIndex1))
+        if (!cache.UseVertex(springInfos[s].PointBIndex1))
         {
             cacheMisses += 1.0f;
+            intervalCacheMisses += 1.0f;
+        }
+
+        if (s < 6 + 5 + 5)
+            LogMessage(s, ":", cacheMisses, " (", springInfos[s].PointAIndex1, " -> ", springInfos[s].PointBIndex1, ")");
+        
+        if (s > 0 && 0 == (s % IntervalReportingSamples))
+        {
+            LogMessage("   ACMR @ ", s, ": T-avg=", static_cast<float>(intervalCacheMisses) / static_cast<float>(IntervalReportingSamples),
+                " So-far=", static_cast<float>(cacheMisses) / static_cast<float>(s));
+            intervalCacheMisses = 0.0f;
         }
     }
 

@@ -524,9 +524,13 @@ Render:
 			! No Triangles reordering
 			+ ACMR: 0.516807 ->  0.389524
 			+ FPS: 28.5/28.8
-		- Points in 2x2 blocks (with any point optional), advancing one column - and then row - at a time
-		- Springs in those 2x2 blocks, advancing one column - and then row - at a time
-		- Triangles: in those 2x2 blocks - TODO
+		= 1:
+			= Points in 2x2 blocks (with any point optional), advancing one column - and then row - at a time
+			= Springs in those 2x2 blocks, advancing one column - and then row - at a time
+			= ACMR: 0.516807 ->  0.508228
+			- Triangles: in those 2x2 blocks - TODO
+		- 2:
+			- Do alternate rows (full optimization of one row, little optimization of row below)
 
 	- Forces rearc (*):
 		! Rationale: multiple spring iterations are really artificial; in reality, changes due to spring position changes in-between 

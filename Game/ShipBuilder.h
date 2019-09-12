@@ -165,6 +165,34 @@ private:
     // Building helpers
     /////////////////////////////////////////////////////////////////
 
+    struct Edge
+    {
+        ElementIndex Endpoint1Index;
+        ElementIndex Endpoint2Index;
+
+        Edge(
+            ElementIndex endpoint1Index,
+            ElementIndex endpoint2Index)
+            : Endpoint1Index(std::min(endpoint1Index, endpoint2Index))
+            , Endpoint2Index(std::max(endpoint1Index, endpoint2Index))
+        {}
+
+        bool operator==(Edge const & other) const
+        {
+            return this->Endpoint1Index == other.Endpoint1Index
+                && this->Endpoint2Index == other.Endpoint2Index;
+        }
+
+        struct Hasher
+        {
+            size_t operator()(Edge const & edge) const
+            {
+                return edge.Endpoint1Index * 23
+                    + edge.Endpoint2Index;
+            }
+        };
+    };
+
     static bool IsConnectedToNonRopePoints(
         ElementIndex pointIndex,
         Physics::Points const & points,
@@ -227,22 +255,6 @@ private:
         std::vector<TriangleInfo> & triangleInfos1,
         size_t & leakingPointsCount);
 
-    template <int BlockSize>
-    static std::vector<SpringInfo> ReorderSpringsOptimally_Tiling(
-        std::vector<SpringInfo> const & springInfos1,
-        std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
-        ImageSize const & structureImageSize,
-        std::vector<PointInfo> const & pointInfos1);
-
-    static std::vector<PointInfo> ReorderPointsOptimally_FollowingSprings(
-        std::vector<PointInfo> const & pointInfos1,
-        std::vector<SpringInfo> const & springInfos2,
-        std::vector<ElementIndex> & pointIndexRemap);
-
-    static std::vector<PointInfo> ReorderPointsOptimally_Idempotent(
-        std::vector<PointInfo> const & pointInfos1,
-        std::vector<ElementIndex> & pointIndexRemap);
-
     static Physics::Points CreatePoints(
         std::vector<PointInfo> const & pointInfos2,
         Physics::World & parentWorld,
@@ -276,6 +288,47 @@ private:
         Physics::Points const & points,
         Physics::World & parentWorld,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher);
+
+private:
+
+        //
+        // Reordering
+        //
+
+        static std::tuple<std::vector<PointInfo>, std::vector<ElementIndex>, std::vector<SpringInfo>> ReorderPointsAndSpringsOptimally_Blocks(
+            std::vector<PointInfo> const & pointInfos1,
+            std::vector<SpringInfo> const & springInfos1,
+            std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
+            ImageSize const & structureImageSize);
+
+        static void ReorderPointsAndSpringsOptimally_Blocks_Row(
+            int y,
+            std::vector<PointInfo> const & pointInfos1,
+            std::vector<bool> & reorderedPointInfos1,
+            std::vector<SpringInfo> const & springInfos1,
+            std::vector<bool> & reorderedSpringInfos1,
+            std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
+            ImageSize const & structureImageSize,
+            std::unordered_map<Edge, ElementIndex, Edge::Hasher> const & edgeToSpringIndex1Map,
+            std::vector<PointInfo> & pointInfos2,
+            std::vector<ElementIndex> & pointIndexRemap,
+            std::vector<SpringInfo> & springInfos2);
+
+        template <int BlockSize>
+        static std::vector<SpringInfo> ReorderSpringsOptimally_Tiling(
+            std::vector<SpringInfo> const & springInfos1,
+            std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
+            ImageSize const & structureImageSize,
+            std::vector<PointInfo> const & pointInfos1);
+
+        static std::vector<PointInfo> ReorderPointsOptimally_FollowingSprings(
+            std::vector<PointInfo> const & pointInfos1,
+            std::vector<SpringInfo> const & springInfos2,
+            std::vector<ElementIndex> & pointIndexRemap);
+
+        static std::vector<PointInfo> ReorderPointsOptimally_Idempotent(
+            std::vector<PointInfo> const & pointInfos1,
+            std::vector<ElementIndex> & pointIndexRemap);
 
 private:
 
