@@ -291,44 +291,45 @@ private:
 
 private:
 
-        //
-        // Reordering
-        //
+    using ReorderingResults = std::tuple<std::vector<PointInfo>, std::vector<ElementIndex>, std::vector<SpringInfo>>;
 
-        static std::tuple<std::vector<PointInfo>, std::vector<ElementIndex>, std::vector<SpringInfo>> ReorderPointsAndSpringsOptimally_Blocks(
-            std::vector<PointInfo> const & pointInfos1,
-            std::vector<SpringInfo> const & springInfos1,
-            std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
-            ImageSize const & structureImageSize);
+    //
+    // Reordering
+    //
 
-        static void ReorderPointsAndSpringsOptimally_Blocks_Row(
-            int y,
-            std::vector<PointInfo> const & pointInfos1,
-            std::vector<bool> & reorderedPointInfos1,
-            std::vector<SpringInfo> const & springInfos1,
-            std::vector<bool> & reorderedSpringInfos1,
-            std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
-            ImageSize const & structureImageSize,
-            std::unordered_map<Edge, ElementIndex, Edge::Hasher> const & edgeToSpringIndex1Map,
-            std::vector<PointInfo> & pointInfos2,
-            std::vector<ElementIndex> & pointIndexRemap,
-            std::vector<SpringInfo> & springInfos2);
+    static ReorderingResults ReorderPointsAndSpringsOptimally_Blocks(
+        std::vector<PointInfo> const & pointInfos1,
+        std::vector<SpringInfo> const & springInfos1,
+        std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
+        ImageSize const & structureImageSize);
 
-        template <int BlockSize>
-        static std::vector<SpringInfo> ReorderSpringsOptimally_Tiling(
-            std::vector<SpringInfo> const & springInfos1,
-            std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
-            ImageSize const & structureImageSize,
-            std::vector<PointInfo> const & pointInfos1);
+    static void ReorderPointsAndSpringsOptimally_Blocks_Row(
+        int y,
+        std::vector<PointInfo> const & pointInfos1,
+        std::vector<bool> & reorderedPointInfos1,
+        std::vector<SpringInfo> const & springInfos1,
+        std::vector<bool> & reorderedSpringInfos1,
+        std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
+        ImageSize const & structureImageSize,
+        std::unordered_map<Edge, ElementIndex, Edge::Hasher> const & edgeToSpringIndex1Map,
+        std::vector<PointInfo> & pointInfos2,
+        std::vector<ElementIndex> & pointIndexRemap,
+        std::vector<SpringInfo> & springInfos2);
 
-        static std::vector<PointInfo> ReorderPointsOptimally_FollowingSprings(
-            std::vector<PointInfo> const & pointInfos1,
-            std::vector<SpringInfo> const & springInfos2,
-            std::vector<ElementIndex> & pointIndexRemap);
+    template <int BlockSize>
+    static ReorderingResults ReorderPointsAndSpringsOptimally_Tiling(
+        std::vector<PointInfo> const & pointInfos1,
+        std::vector<SpringInfo> const & springInfos1,
+        std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
+        ImageSize const & structureImageSize);
 
-        static std::vector<PointInfo> ReorderPointsOptimally_Idempotent(
-            std::vector<PointInfo> const & pointInfos1,
-            std::vector<ElementIndex> & pointIndexRemap);
+    static std::vector<SpringInfo> ReorderSpringsOptimally_TomForsyth(
+        std::vector<SpringInfo> & springInfos1,
+        size_t vertexCount);
+
+    static std::vector<TriangleInfo> ReorderTrianglesSpringsOptimally_TomForsyth(
+        std::vector<TriangleInfo> & triangleInfos1,
+        size_t vertexCount);
 
 private:
 
@@ -368,15 +369,6 @@ private:
         {
         }
     };
-
-    static std::vector<SpringInfo> ReorderSpringsOptimally_TomForsyth(
-        std::vector<SpringInfo> & springInfos1,
-        size_t vertexCount);
-
-    static std::vector<TriangleInfo> ReorderTrianglesSpringsOptimally_TomForsyth(
-        std::vector<TriangleInfo> & triangleInfos1,
-        size_t vertexCount);
-
 
     template <size_t VerticesInElement>
     static std::vector<size_t> ReorderOptimally(
